@@ -1,0 +1,45 @@
+
+I will try to explain in sorta how HOST is working..
+-----------------------------------------------------
+
+Ps2 have the ability to use loader also other than cd-rom.
+That is done through special syscall. Of course the file that
+you load must support that..
+
+Basically we wrote that for PSMS1.2
+
+As you can see in the psms1.2 zip there is a file called psms-naplink.elf.
+Well that is basically created from sjeep (hi sjeep) for be able to 
+use psms through your USB naplink to your ps2. (so no need to burn a cd)
+Well pcsx2 does exactly that. Emulate Host +client (host is your pc,
+client is your ps2).
+
+So how is work?
+---------------
+Imagine that HOst is your cd-rom .
+For psms e.g
+place FILES.TXT  + roms in folders that specificate in files.txt and you are
+ready..
+
+e.g 
+
+Host
+FILES.TXT
+-ROMS1
+--Alienstorm.sms
+--IamLamer.sms 
+
+I think you get the Idea...
+For more questions mail me..(shadow@pcsx.net)
+
+About
+-----
+This doc has been written from shadow...
+Host support was added kindly to pcsx2 by Linuzappz
+Thanks to sjeep for his psms1.2 emu and his support..
+Also thanks to Keith,bobbi,thorgal,akumax,now3d and probably to some more...
+
+Log off
+shadow/linuzappz
+
+      

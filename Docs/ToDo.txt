@@ -1,0 +1,22 @@
+To do for Pcsx2:
+ * Fix threads, semas & events (linuzappz, Florin)
+ * Deci2: iop debug (since pcsx2 cannot run only one processor) (Florin)
+	  tty notifications
+ * Continue RunCDVD option for PS1 exes loading.
+ * Continue Bios emulation. (linuzappz)
+ * Continue Recompiler. (linuzappz, basara)
+ * Fix bios execution. (linuzappz)
+ * Recheck TLBS.
+ * Continue HW stuff. (linuzappz)
+ * Fix VU code. (shadow)
+ * Check MMI.c.
+ * Check FPU code.
+ * Implement remaining COP0 opcodes.
+ * Deci2:
+	-speed up execution with Cpu->ExecuteBlock(); 
+	-fix reentrancy problem with threads (if pressed step button to soon,
+		you get a false run state: the emu is on pause, but the debugger
+		thinks that it is running) (solution: critical zones)
+	-add drfp support [i guess this will not be done as it is not really needed]
+	-add iop files load&run support (iloadp; not a priority also)
+							 (Florin)

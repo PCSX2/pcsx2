@@ -1,0 +1,112 @@
+Changes made to make v0.9 work in Linux:
+
+Common.h - PCSX2_MULTICORE undefined.
+  In my version of linux, spinlocks are bleeding edge calls, and not
+implemented as standard. There may be a #define that can be used, but
+as it would likely include either a kernel rebuild or thread library,
+I hadn't bothered.
+
+Misc.c - SYNC_LOGGING undefined
+  I suspect because of PCSX2_MULTICORE being undefined, "g_mtxLog"
+didn't get defined either.
+
+Interpreter.c - all "_controlfp" calls commented out.
+  I suspect a .h file is missing for the above call.
+
+Vif.c - Control of MMX, SSE, SSE2 (and SSE3) instructions.
+  Presence of the above CPU intrinsic calls can be detected using
+__MMX__, __SSE__, __SSE2__, and __SSE3__. Header dependancies are
+as follows:
+  __MMX__ can stand alone.
+  __SSE__ needs __MMX__.
+  __SSE2__ needs __SSE__ (which needs __MMX__)
+  __SSE3__ needs __SSE2__ and __SSE__ (which needs __MMX__)
+  Each of these flags can be used to load their own set of functions
+as well as loading all functions in the dependant headers...
+  __MMX__ - #include <mmintrin.h>
+  __SSE__ - #include <xmmintrin.h>
+  __SSE2__ - #include <emmintrin.h>
+  __SSE3__ - #include <pmmintrin.h>
+  Since no tests for the above flags were conducted before loading
+emmintrin.h, I blocked out that section of code with an "#if 0" line.
+
+IPU/IPU.c - After finding out that a dozen mutexes were set here without
+  PCSX2_MULTICORE blocking, I went back to Common.h and turned back on
+PCSX2_MULTICORE. I knew now I would have to hunt down all instances of
+spinlocks and replace them with straight mutexes.
+  R5900.h lines 150-167 - Spinlock defines commented out.
+  R5900.c lines 32-38 - Spinlock define commented out.
+
+IPU/IPU.c - invalid initializer - NULL on pthread_mutex_t / pthread_cond_t
+  Separated the variables initialized. Hunted up valid initializers in
+pthread documentation in Linux.
+  __declspec() - In Common.h, I told Linux to ignore all references to this
+function. #pragma pack(16) and/or __attribute__ ((?)) might be a better
+choice for this. A couple of compiler flags also control byte alignment.
+For dynamically allocatable blocks, memalign() might work.
+  Note: for 64 bit compiles (like athlon64), 16 byte alignment is assumed.
+  EBUSY undeclared - This relates to the define DESTROY_MUTEX in Common.h.
+Included <errno.h> in Common.h so EBUSY is defined.
+  __forceinline - placed "#define __forceinline inline" in Common.h as Linux
+has no equivlent (that I know of) to this.
+
+IPU/Idct.o - no target
+  Moved to IPU/mpeg2lib. Adjusted Makefile to find it.
+
+IPU/Mpeg.o - no target
+  Moved to IPU/mpeg2lib. Adjusted Makefile to find it.
+
+VifDma.c - See Vif.c for complaints about __SSE__ detection.
+
+Linux/Config.c - no member "PadHack"
+  Seems it was removed from the "Config" structure. Commented out the
+set/get commands for it.
+
+x86/iVU0micro.c line 494 - too many arguments in 'vurecAnalyzeBlock'
+  This might be leftover code from a testrun. I removed the extra 'old'
+variables.
+
+x86/iVU1micro.c - all "_controlfp" commands commented out.
+  See Interpreter.c above for details.
+
+Then I finally got to the Link portion of the compiler...
+
+Hw.o:
+  _aligned_malloc() is not defined in Linux. memalign() was obsoleted.
+POSIX now recommends posix_memalign(boundary, size) from <stdlib.h>
+for accurate boundary allocation... and working free() calls.
+  _aligned_free(), companion to the call above, is also not defined in
+Linux. Fortunately, posix_memalign() only needs a free() call.
+  Both of the above was defined in Common.h
+
+IPU/IPU.o:
+  couldn't find pthread_... calls. Added -lpthread to $(LIBS) in Makefile
+
+FPU.o:
+  Certain math calls were added from <math.h>. FPU2.cpp compiles those
+calls... and adds a C interface to get to them. Included FPU2.o in the
+object list in the Makefile.
+
+R5900.o:
+  pthread_mutex__unlock()? I thought it was just 1 underline there. Didn't
+take any chances, though. Put in a define in Common.h to change it to
+pthread_mutex_unlock().
+
+Left to fix:
+
+x86/iVUmicro.o:
+  __assume(0): I don't know what this is used for.
+
+R5900.o:
+  InterlockedAnd(), InterlockedExchange(): Are these grouped mutex calls?
+
+VifDma.o:
+  SetNewMask(), g_vif1Masks(), g_vif0Masks():
+    These were sliced off when I cut SSE off. Some work could bring them
+back in, if they're needed for non-MMX/SSE/SSE2/SSE3 refrencing...
+
+
+This doesn't even guarentee that once just these problems are fixed, the
+compiled program will run. I only looked at compiling/linking.
+
+efp - Feb 16, 2006
