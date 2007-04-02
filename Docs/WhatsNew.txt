@@ -1,0 +1,598 @@
+             *********************************
+             *What's new in pcsx2 v0.8       * 13th release 
+             *********************************
+
+General
+-------
+Compatibility has been increased since last release. More games go ingame now and 3d is okay in most of
+them. Vurecs improved and speeded up a lot (buggy in many causes so use the simple rec for compatibility)
+and IPU should work in some cases.(e.g VF4)
+
+CPUs
+----
+Fixed QFSRV/MTSAH/MTSAB
+Fixed SBUS IRQ at iop
+Fix for end chain mode at vif
+Fixed SPR0 chain mode
+Fixed intc/dmac interrupts that gets cleared right away
+Added offset/difference UNPACK modes in vif
+VIF irq by vifcode seems ok now
+Added interleave mode for SPR
+Fixed UNPACK V4_5 with mask
+Fixed small bug over VIF1 dma FIFO
+VIF1 doens't clears str on MFIFO
+Fixed some MFIFO bugs in both GS/VIF1
+Fixed bug in REF/REFS dma at VIF1/GS MFIFO
+
+IPU
+---
+Finally fixed IPU. Mpegs and IPU streams run so do PSS files
+Quality of ipu playback improved
+
+PLUGINS
+-------
+Added GSsetCSR
+added CDVDreadSubQ, CDVDgetTOC, CDVDctrlTrayOpen, CDVDctrlTrayClose to cdvd 
+
+CDVD
+----
+Added some more debug info to CDVD
+Fixed cdReadKey function to emulate correctly.  
+Modified GetToc stuff in cdvd to support dvds
+cdvdTD uses lsn now
+Fixed NVM (eeprom) access from cdvd stuff
+Added reading of mecha version from an external file
+Fixed raw dvd sector readng for dvd9 discs (otp and ptp)
+Added hw-reg read/write for DecSet register 0x1f40203A
+Made cdSeek change the current cdvd sector
+Fixed NReady busy stuff
+
+Memory
+------
+Added more memRead/Write funcs for speed
+
+VUS
+---
+Fixed bug in branch address in vus
+Implemented MFLAG for VU0
+Fixed some iVUmicro bugs
+Fixed some VPU-STAT related issues
+Fixed vu flushing over vuExecMicro
+Fixed some pipelines bug within VU1,VU0
+Reworked MAX/MINI
+Fixed VU's JR/JALR/BAL,ISUBIU
+Added EFU pipeline to VUmicro
+Fixed DIV/RSQRT exceptions 
+
+GUI
+---
+Some improvements on interface.
+Added placetopatch == 1, which means patches will be applied every vsync
+
+
+             *********************************
+             *What's new in pcsx2 v0.7       * 12th release 
+             *********************************
+
+GENERAL
+-------
+Memcards and pads should work okay now. More compatibility earned since so many things
+have been fixed from previous release :)
+
+VIF-VUS
+-------
+VIF-FIFO transfers seems to work better 
+VU1 regs now are mapped to VU0 mem
+Implemented VU0 Interlocks over CFC2/CTC2/QMFC2/QMTC2
+Fixed vu branch negative overflows
+VU D/T flags are handled now 
+VU pointer gets aligned now
+
+PLUGINS
+-------
+
+Added Firewire plugin protocol
+
+SPU2
+----
+Fixed SPU2async cycle
+SPUdma timings changed to 80
+
+CDVD
+----
+Implemented ReadNVM/WriteNVM
+BCR now decrements for each cdvdReadSector
+Fixes to SCMD's
+ReadILink/GetMecaconVersion are really implemented
+CdReadConfig/CdWriteConfig now uses NVM
+
+Interface
+---------
+sstates now use CRC
+Added IOP disasm in the debugger
+Added rom2/erom support
+Added Patch Browser for win32
+
+IPU
+---
+Several changes for IPU
+
+
+HARDWARE
+--------
+Fixed bug IOP counters
+Fixed some bugs over interrupts and exceptions
+Newer bios will now work with pcsx2. Pads fixed, more compatibility
+Fixed SIF0/1 when fifo got filled up
+Fixed EXL bug
+Fixed SIF SMFLAG/MSFLAG
+Fixed MCDS
+
+
+
+             *********************************
+             *What's new in pcsx2 v0.6       * 11th release 
+             *********************************
+
+General
+-------
+pcsx2 is 3 years old. Happy birthday pcsx2 :)
+Now you can run even more games. some 3d games should work too . so enjoy :)
+
+
+CPUS
+----
+Recompiled VUs. Needs work but some stuff might work okay now
+Fixed bug in Vif.c, masks hopefully are ok
+Fixed alot of bugs in VUs, hopefully some stuff will now work as it should
+Added Interlock for CFC2/CTC2
+Improvements to TLB code
+Restructured VU code and VIF. Fixed stuff in Interpreter and added CTC2 VU1 Microinstruction caller
+Fixed UNPACK modes in VIF, the Indeterminate fields are now set to 1 by default
+VUflags now should handle overflow/userflow ok
+
+Hardware
+--------
+Fixed DMA8
+Fixed bug in GS for CSR stuff
+Fixed savestates
+Fixed several SIF bugs
+FIFO is now really 128bit as it should be 
+Added code for dma interrupts
+Added some scmds to CDVD
+Improved and fixed sio2 stuff
+Modified the DEV9irq stuff
+loadElfFile now reads the whole file first
+DMA4/7 interrupt timings are more accurate now
+Patches names are now using crc
+
+GUI
+---
+Memory patcher (supports only 32bit patches so far)
+Fixed Bios Detection for HK Bios
+
+PLUGINS
+-------
+ADDED usb plugins
+
+
+             *********************************
+             *What's new in pcsx2 v0.5       * 10th release 
+             *********************************
+
+General
+-------
+A release that make you look things more promising. Several games can boot now and plenty of them can reach even ingame.
+There are still big issues with graphics but many improvements have done from 0.41. Some games that now can reach ingame 
+are:
+wild wild racing PAL (with patches)
+Street fighter ex3 PAL (with patches)
+Le Mans 24 Hours (24 Heures Du Mans) PAL (with patches)
+V-rally 3 pal (with patches)
+
+and probably a lot more :)
+
+
+
+CPUs
+---
+Fixes to VUs
+Handle for the EDI flag at ERET(cop0)
+New improved cpu detection routine
+Commented D/T flags for VUmicro
+fixed some FPU bugs in recompiler
+fixed PCPYLD in interpreter
+Add compiler blocks for vu0, vu1 and few instructions
+Several other fixes in cpu cores
+Reg caching recompiler (not enable in 0.5 )
+
+Debugger
+--------
+Fixed Debugger/rdebugger (there are still some issues)
+
+Memory
+------
+Added TLB exceptions
+Fixed IOP mem accesses from EE Memory
+New memory routines
+
+VIF
+---
+Fixed VIF Transfers to include MARK reg in VIF0 aswell.
+FIFO for VIF0/1 now works
+More improvements to VifDma
+Improved VIF for transfers in parts
+FiFo VIF1 can read data now
+
+IPU
+---
+Fixed IDEC bitstream decoding. Now, all *.ipu files should work fine
+bug fixes to IPU 
+
+
+Hardware
+--------
+Fixed clock in bios
+Fixed MFIFO for GS dma
+CDVDgetTD function need a 2nd parametre (new cdvd plugins needed!!)
+cdgetTOC + cdReadSubq
+HSync stuff, and better CSR/IMR handling
+Implemented mskpath3 / m3r flags
+Fixed VU memory64 writes masks
+Implemented INTC_STAT/MASK and DMAC_STAT for 64bits
+Added/fixed SCMDs (2,3,1A) in cdvd
+Vif0/1 regs are now mapped to hardware
+Fixes in sio, sio2
+Destination Chain for SPR0 dma and added Vif masking
+Now pad2 works in lle mode [tested with bios browser]
+New SCMDs and MC commands
+Fixed dmaIrq's for Source Chain mode
+Fixed ret DMA op
+Added a base interrupt delay for the dma7 (spu2)
+Fixed pads. Now it should work okay most of the times
+Changed the way we handle SPR TTE transfers
+
+MISC
+----
+Added the possibility to load the System.map from ps2linux
+Added patching system. *pnach files are used now 
+Added dev9 plugins
+Savestates
+
+
+             *********************************
+             *What's new in pcsx2 v0.41       * 9th release ( Update )
+             *********************************
+
+General
+-------
+This release fixes a minor issue with the DVD iso's not booting, as of now DVD iso booting
+is fixed so please try all your games again !:)
+
+Hardware (lle)
+--------
+Fixed bug in CDVD code for DvdReads, now DVD iso's should boot just fine.
+
+
+             *********************************
+             *What's new in pcsx2 v0.4       * 9th release
+             *********************************
+
+General
+-------
+This release is how we wanted the first pcsx2 release to be. Finally bios is working so
+many things can happend from now on. Also "Bust a Move" seems to work and other games
+like Kengo 2 goes much further. All of course is done in LLE now :) . 
+
+CPUS
+----
+fix the recompiler bug that made recompiler not to work in pcsx2 0.3
+new vu code. VU0 macromode should be perfect now.
+new optimaze code for fpu
+Rewrote VIF once again
+bug fixes to MMI
+reorganize recompiler
+
+
+DMAS
+----
+Improved SIF0,SIF1,SRP1
+Added IPU0,IP1 dmas
+
+IPU
+---
+Added decoding and commands. Some samples are working. NO pss support yet!
+
+IOP
+---
+improved the IOP stuff.IOP is functional under bios execution :)
+
+HLE
+---
+more WIP in Threads .Much better now
+more WIP in padman.
+
+
+Hardware (lle)
+--------
+ADDED SPU2 functions. SPU2 is now possible if someone implement a SPU2 plugin.
+Changed a bit the GS protocol. Gs plugins need to modificate in order to work with 0.4
+SIO2 added .Pads seems to work . Memcard partial functional
+CDVD emulation added.
+IOP rootcounters fixed
+IOP dmas implemented 
+MFIFO implemented
+
+
+
+General
+------
+Fixed elf loader
+
+
+             *********************************
+             *What's new in pcsx2 v0.3       * 8th release
+             *********************************
+
+
+
+General
+-------
+This version of pcsx is the first that shows ingame progress from 1 game "Sven Goran's World Manager 2002".IT is the first 
+ps2 emu that reaches ingame :) . Also this version have Deci2 support (usefull only for developers althought) and several
+bugs have been fixed. Enjoy ;)
+
+
+
+GUI
+---
+-Added MiltuLingual support( English,Catalan,German,greek,italiano,romanian,spanish)
+
+CPUS
+----
+-Fake BC0 opcodes in cop0
+-Trap instructions fixed in interpreter
+-Fixed some fpu bugs in interpreter
+-Fixed MMI bugs in interpreter
+-VIF1 cmd now handles the i bit, still not 100% correct
+-VIF1dma now handles 'from Memory' transfers
+-More Unpack case in vif
+-fixed several VIF1 bugs
+-VIF0 fixed also
+
+Hardware
+--------
+-8 bit DMAS
+-mem128 read/write routines
+-Implemented latency interrupt thingy
+-Fixes to rootcounters
+-FIFO fix 
+-IOPmem fix 
+-optimaze gs dma
+
+Debugging
+---------
+-DECI 2 Protocol !!
+-fix some stuff in pcsx2 debugger
+-add cpu ops debug in debugger
+-Logging to STDOUT added
+-add more memory mapping for EE and IOP
+
+HLE
+---
+-rewrote of HLE code for pads (padman-xpadman). This will solve some pad problems
+-rewrote the HLE code for Loadmodule
+-New INTC handling in HLE bios
+-Implement VSyncSetFlag in HLE bios
+-Added memory dummies in mcserv. Now memcards wil be appear as functional.
+-sceCDReadIOPm in CDVD HLE
+-Added dummy handles for mtapman901/3
+-new Threads at BIOS HLE. Still not finished
+
+
+
+             *********************************
+             *What's new in pcsx2 v0.2       * 7th release
+             *********************************
+General
+-------
+pcsx2 have now a more speedy recompiler using 3dnow-3dnow2-sse instructions. Vu macromode
+have been recompiled with 3d now instructions so you can see more speed there if you have a 
+cpu that supports 3d now. The most speed is possible with an Athlon XP cpu or a Althon 4 mobile
+More support for sse or probably for sse2 soon :)
+
+
+
+rewrite of MMI
+fix bugs in fileio
+fix counters
+new thread HLE code
+fixes to CDVD HLE code
+fixes-adds to VU code More vu opcodes
+add some more cpu opcodes
+more ipu code
+add 3dnow-3dnow2-sse instructions to recompiler
+
+
+             *********************************
+             *What's new in pcsx2 v0.1       * 6th release
+             *********************************
+
+General
+-------
+PSMS cd version seems to work. Pgen starts to work also.. (no roms seems to working althought)
+and some games might boot now... This is the first ps2 emu that boots cds :)
+
+GUI
+---
+Added command line parsing for main's argc
+Added ps2 bios check for config dialog
+
+
+Memory
+------
+Some more adds to memory maps
+
+CPUS
+----
+Implement VU flags + some more vu0-vu1 opcodes
+Fix some VIF unpack cases
+Some more opcodes to R5900
+
+HLE
+---
+better HLE +
+
+RPC services for
+014D704Enaplink
+0B001337cdvd
+80000001fileio
+80000003sysmem
+80000592cdvdfsv
+80000597cdvdfsv
+80000595cdvdfsv
++for some more but mostly dummies 
+
+CDVD iso parser (thanks Sjeep - hiryu)
+support for SJDATA file system
+
+
+            *********************************
+             *What's new in pcsx2 v0.042     * 5th release
+             *********************************
+
+GENERAL COMMENTS
+----------------
+Micromode works at the release. Also some more macromode demo should
+work on this release.Enjoy ;)
+NOTE: Logging has been disable  from the release. If you need it 
+Mail me ( shadow@ngemu.com)
+
+
+GUI
+---
+-ADD CDVD plugin (partially)
+-change a bit the controller plugin protocol
+-change a bit the GS plugin protocol (for the VUmicromode transfers)
+
+
+CPUS
+----
+-FIXES to R5900 
+-FIXES to FPU
+-More work in recompiler
+-ADDS+fixes opcodes for MMI
+-Rewritten/updated iop code
+-More work to micromode (vu0-vu1)
+
+
+
+DMA
+---
+-More to VIFS DMA
+-More to SIFS DMA
+
+
+
+-----------------------------------------------------------------------
+             *********************************
+             *What's new in pcsx2 v0.038     * 4th release
+             *********************************
+
+
+GENERAL COMMENTS
+----------------
+Vu0 appears functional now. (Most of the causes )
+
+
+CPUS
+----
+Fixes to main R5900.Many opcodes fixed ( thanks Goldfinger)
+Fixes to FPU 
+Add some Framework for the IPU
+Add some more opcodes to the recompiler including FPU opcodes
+
+
+Debugger
+--------
+Logging system
+
+
+BIOS HLE
+--------
+some support for sjpcm.irx
+Fixed fileio for dummy files 
+
+
+-----------------------------------------------------------------------
+
+             *********************************
+             *What's new in pcsx2 v0.036     * 3rd release
+             *********************************
+
+
+Debugger
+-------
+-Add VU0 - VU1 register window
+-Add VU0 macromode in disasm (still not finished)
+-Added support for Symbols
+
+GUI
+---
+-Add SPU2 interface (very partial)
+-change GS specifications a bit
+
+CPUS
+----
+-Fixed some bugs in R5900.c
+-Improve recompiler
+-Add VIF0 - VIF1 (very partial)
+-Add more VU0 macromode instructions
+-Add IOP proccesor (partial)
+-Add More opcodes in MMI
+-better COP0 emulation (more tlbs)
+
+DMA
+---
+-add Stratchpad DMAS
+-add VIF dmas
+-add SIF dmas (very partial)
+
+Memory
+------
+-Total rewrite to support more HW 
+
+BIOS HLE
+--------
+Many more syscall is hle now. Compatibility increase a lot
+
+
+
+General
+------
+Many stuff that we are not able to explain them in details :)
+
+
+-----------------------------------------------------------------------
+             *********************************
+             *What's new in pcsx2 v0.031     * 2nd release
+             *********************************
+-New icon 
+-New logo
+-Some startup work on VU0.Many VUO macromode opcodes
+-Some more opcodes in the main cpu. MFSA,MTSA,SQC2,LQC2
+-More opcodes to the MMI.
+-Finished R5900 FPU.
+-pad emulation using HLE.. both pad1 + pad2
+-more fixes to Recompiler (still far from finish)
+-add the 4 Couters(partial)
+-add FIFO registers
+-Add support for HOST
+
+-----------------------------------------------------------------------
+             *********************************
+             *What's new in pcsx2 v0.026     *  1st release
+             *********************************
+
+FIRST RELEASE ALL ARE NEW :)
+

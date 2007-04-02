@@ -1,0 +1,24 @@
+ Translating PCSX2
+ -----------------
+
+Just some small notes for translators.
+
+PCSX2 translations are based on the gettext library:
+http://www.gnu.org/software/gettext.
+
+The main file to translate is pcsx2.po located at the
+'Intl' dir, note that you must place the translated
+strings over the msgstr and leave untouched the msgid.
+
+To test the translation use the msgfmt.exe utility to
+convert the translated pcsx2.po file to a pcsx2.mo file
+with this command: 'msgfmt pcsx2.po -o pcsx2.mo', after translating
+the file please send it to us and please ask before
+translating it, maybe someone has already started it 
+for your language.
+
+If you have any problems contact us and we'll try to 
+help you.
+
+     linuzappz
+

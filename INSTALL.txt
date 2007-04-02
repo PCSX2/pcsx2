@@ -1,0 +1,24 @@
+Pcsx2 Emulator
+
+Windows Compilation
+-------------------
+
+Goto windows/VCprojects, open up the appropriate sln and compile
+
+Linux Compilation
+-----------------
+
+[Currently in beta stages]
+
+in the main directory type:
+aclocal
+autoconf
+automake
+./configure [options]
+make
+
+
+[options] include
+
+--enable-debug {Build with symbols and no optimizations}
+--enable-devbuild {Build with extra tests}

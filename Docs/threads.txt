@@ -1,0 +1,34 @@
+ OK  -> done & tested
+---- -> not applicable
+xxxx -> dummy
+32³CreateThread               º OK ³----³
+33³DeleteThread               º----³    ³
+34³StartThread                º----³ OK ³
+35³ExitThread                 º----³    ³
+36³ExitDeleteThread           º----³    ³
+37³TerminateThread            º----³    ³
+38³iTerminateThread           º    ³    ³
+39³DisableDispatchThread      ºxxxx³xxxx³
+40³EnableDispatchThread       ºxxxx³xxxx³
+41³ChangeThreadPriority       º----³ OK ³
+42³iChangeThreadPriority      º OK ³----³
+43³RotateThreadReadyQueue     º----³    ³
+44³iRotateThreadReadyQueue    º    ³    ³
+45³ReleaseWaitThread          º----³    ³
+46³iReleaseWaitThread         º    ³    ³
+47³GetThreadId                º OK ³----³
+48³ReferThreadStatus    ÍÍ»   º OK ³----³
+49³iReferThreadStatus   ÍÍ¼   º OK ³----³
+50³SleepThread                º----³    ³
+51³WakeupThread               º----³    ³
+52³iWakeupThread              º    ³    ³
+53³CancelWakeupThread   ÍÍ»   ºdone³----³
+54³iCancelWakeupThread  ÍÍ¼   ºdone³----³
+55³SuspendThread        ÍÍ»   º    ³    ³
+56³iSuspendThread       ÍÍ¼   º    ³    ³
+57³ResumeThread               º----³    ³
+58³iResumeThread              º    ³    ³
+59³JoinThread                 ºxxxx³xxxx³
+60³RFU060_InitializeMainThreadº OK ³----³
+61³RFU061_InitializeHeapArea  º OK ³----³
+62³EndOfHeap                  º OK ³----³
