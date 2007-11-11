@@ -2987,7 +2987,7 @@ void memWrite8 (u32 mem, u8  value)   {
 
         *(u8 *)(p + (mem & 0xfff)) = value;
 		if (CHECK_EEREC) {
-            CHECK_VUMEM();
+            //CHECK_VUMEM();
 			REC_CLEARM(mem&(~3));
 //			PSXREC_CLEARM(mem & 0x1ffffc);
 		}
@@ -3029,7 +3029,7 @@ void memWrite16(u32 mem, u16 value) {
 #endif
 		*(u16*)(p + (mem & 0xfff)) = value;
 		if (CHECK_EEREC) {
-            CHECK_VUMEM();
+            //CHECK_VUMEM();
 			REC_CLEARM(mem&~1);
 			//PSXREC_CLEARM(mem & 0x1ffffe);
 		}
@@ -3077,7 +3077,7 @@ void memWrite32(u32 mem, u32 value)
 #endif
 		*(u32*)(p + (mem & 0xfff)) = value;
 		if (CHECK_EEREC) {
-            CHECK_VUMEM();
+            //CHECK_VUMEM();
 			REC_CLEARM(mem);
 //			PSXREC_CLEARM(mem & 0x1fffff);
 		}
@@ -3122,7 +3122,7 @@ void memWrite64(u32 mem, u64 value)   {
 			);*/
 		*(u64*)(p + (mem & 0xfff)) = value;
 		if (CHECK_EEREC) {
-            CHECK_VUMEM();
+            //CHECK_VUMEM();
 			REC_CLEARM(mem);
 			REC_CLEARM(mem+4);
 		}
@@ -3159,7 +3159,7 @@ void memWrite128(u32 mem, u64 *value) {
 		((u64*)p)[0] = value[0];
 		((u64*)p)[1] = value[1];
 		if (CHECK_EEREC) {
-            CHECK_VUMEM();
+            //CHECK_VUMEM();
 			REC_CLEARM(mem);
 			REC_CLEARM(mem+4);
 			REC_CLEARM(mem+8);
