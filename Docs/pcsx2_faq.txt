@@ -1,0 +1,229 @@
+
+  PPPP      CCCC     SSS    X     X   2222
+  P   P    C    C   S   S    X   X   2    2
+  P    P  C        S         X   X         2
+  P    P  C        S          X X          2
+  P    P  C         S         X X          2
+  P   P   C          SSS       X          2
+  PPPP    C             S     X X        2
+  P       C              S    X X       2
+  P       C              S   X   X     2
+  P        C    C   S   S    X   X    2
+  P         CCCC     SSS    X     X  2222222
+
+****************
+*PCSX2 FAQ v0.1*
+****************
+
+This FAQ has been written for PCSX2 v0.6
+
+FAQ Written by: CKemu & shadow
+_________________________________________________________
+
+Q: What is PCSX2?
+
+A: PCSX2 is a WIP PS2 (PlayStation 2) emulator, written by
+linuzappz, shadow, florin. basara, asadr, goldfinger. PCSX2 is
+constantly WIP (work in progress), and is in the early
+stages of development (so don't expect much yet ;) ).
+
+Q: Why doesn't XYZ game work?
+
+A: PCSX2 is able to get many games to show 'screens'. Some of the games can reach ingame
+and less more can be consider playable. Speed is too slow on many of them so 'viewable' is
+a beter way to describe it :)
+
+
+Q: Why don't these games work?
+
+A: PCSX2 is in the early stages of development. It can run some games (many of them without glitches)
+but the speed issue prevent us of making the emu more compatible. 
+
+Q: Where abouts do I find these demos?
+
+A:You can find some demos at http://pcsx2.ngemu.com or
+http://ps2dev.livemedia.com.au. There are proberbly more
+sites with PS2 homebrew demos.
+
+Q: Does PCSX2 require a 'real' PS2 BIOS.
+
+A: PCSX2 can use a 'real' BIOS, and is preferable to HLE
+BIOS as it is more compatible. But HLE does work well 
+with many homebrew demos.
+
+Q: Why not use HLE?
+
+A: HLE is a difficult thing to do for a PS2. Game
+developers use their own modules for each game. That
+would mean we would have to HLE each module. This would
+be a massive task, and not a good idea, as emulating
+the real BIOS will mean compatibility with all released
+games.
+
+Q: Where do I get a BIOS?
+
+A: You can dump the BIOS from your own PS2, DO NOT ask us
+or anyone else for a BIOS, the BIOS is copyright of SONY
+and is illegal to download, so we won't help you with 
+that.
+
+Q: I try to run a game, or the BIOS, but nothing happens!
+
+A: If no BIOS screen shows from attempting to run a
+CD/DVD, your BIOS maybe incorrect. Go to
+'config>configure', and under the BIOS menu, check that
+firstly you haven't got the HLE BIOS selected, if you do
+change to a 'real' BIOS. If you have a 'real' BIOS
+selected and it still doesn't work, check that NO 
+percentage is written next to the BIOS, if it is for 
+instance "40%", your BIOS is to small (by 60%), or 
+corrupt (by 60%), you may need to redump it. Also if no 
+'real' BIOS is listed, check its not compressed 'eg 
+*.zip / *.rar' and extract it to the BIOS dir (note 
+sub-folders NOT supported, it must be in /BIOS/).
+
+If that is not the case, your BIOS isn't an actual PS2 
+BIOS. To ensure that doesn't happen, dump your own ;)
+
+Q: I see lots of glitches with games/demos, why?
+
+A: Incomplete emulation of the GS, Vector Units etc, this
+is a WIP emulator, and will have many bugs for some time,
+until more is known about the PS2 hardware. Things 
+generally improve with each release, so you never know,
+it may be fixed in the next release.
+
+Q: How can I help fix these bugs?
+
+A: Report these bugs to us, post at the offical PCSX2 
+forums at http://www.ngemu.com. Make a post describing 
+the bug/glitch, perhaps with a screenshot showing it, 
+and details on your system setup, what plugins your 
+using etc.
+
+If you find any other bugs, with regards to the debugger,
+plugins, or differences between what you see in the 
+emulator and a real PS2, feel free to email us.
+
+Q: How can I help develop for PCSX2?
+
+A: You can find the open-source plugins at 
+http://pcsx2.ngemu.com , coding a GS plugin or and SPU2 
+plugin would help us greatly. Also if you have any 
+technical information on the PS2, please email us, 
+anyhelp is greatly appreciated.
+
+Q: Your emulator sucks!! I don't want to use it!
+
+A: Then don't, buy a real PS2. If you don't like it, 
+just don't and there is no need to tell us you don't 
+like it, the PCSX2 team put alot of hardwork into this 
+emulator, and don't care to know.
+
+Q: Can you give me some more 'technical' answers?
+
+A: A technical FAQ would be massive, and take months to 
+write. Instead email shadow / linuz with your questions.
+
+Q: When is the next release?
+
+A: The next release will happen when there is something 
+to show, internal changes, and technical changes don't 
+mean anything to the user, if they don't see something. 
+Pestering us will make no difference :P
+
+Q: GSsoft is s..l..o..w!!
+
+A: Then use one of the OpenGL plugins found at our site
+http://pcsx2.ngemu.com or the GStaris plugin 
+( http://gstaris.ngemu.com ).
+
+Q: The emulator even with GStaris / GSmax is slow! Why?
+
+A: First of all, the PS2 is a powerfull piece of 
+hardware, and will require a powerfull machine to achive
+NEAR correct speeds,
+
+Given that PCSX2 does not run any 'complex' commercial 
+games, it is hard to judge the system requirements that 
+will be eventually needed. Plugins and Emulator will get 
+faster as new releases are made, but you can improve 
+preformance by turning OFF "Enable Console Output" and 
+"Enable Interpreter CPU" under 'config>CPU>' in the menu.
+
+Q: Do I need a DVD drive?
+
+A: Yes, if you want to read a DVDrom you will need a DVD
+ drive, many PS2 games are written to CDrom, so its not 
+essential, unless you have a DVD based game you wish to 
+try.
+
+You can also use 'Linuz's CDVD ISO' plugin to run PS2 
+games in ISO / BIN format from your HDD. Note only 
+NTFS Format drives (eg not FAT32) can store greater than 
+4GB in a single file.
+
+Q: I hear no sound!
+
+A: SPU2 Plugins are being worked on by a few coders, but 
+as of now the only SPU2 plugin is nullSPU, which outputs 
+no sound, If you are a coder, and feel you can help with 
+SPU2, please email us.
+
+Q: Where can I get help!!!
+
+A: You can get help from the people over at
+http://www.ngemu.com or on IRC. Using an IRC client, log
+onto #PCSX2 or #NGEMU (EFnet). You can politly ask for
+help there (No BIOS / ROM / ISO requests, or you shall be
+banned). If you cannot get help there, email the PCSX2
+team.
+
+_________________________________________________________
+
+This FAQ was based on shadow's original FAQ, so thanks to
+him. This was written to clear up some of the basic
+questions you may have, and I hope it was of help.
+
+Written with very little sleep and too much coffee, so
+please excuse the mistakes, they will be fixed shortly :D
+
+************
+*Thanks to:*
+************
+
+The PCSX2 team for making me a betatester, and providing us
+with a fantastic PS2 emulator, and the opportinity for me to
+work on SPU2 (highly WIP :P )
+
+shadow, Linuzappz, Absolute0, [Tyranid], F|res, Roor, 
+Goldfinger, Florin, basara, asadr, CpUmaster, snake785, 
+mike9010, bositman, DWatcher, Keith, Martin64.....and many 
+more I am sure :D
+
+My lady, Lucy. Without her I would be lost.
+
+Coffee, where would we be without coffee :D
+
+**********
+*Contact:*
+**********
+
+If you think I should add something to this FAQ, or you
+spotted a bug, you can contact me  (CKemu) via IRC in 
+the #PCSX2 (EFnet) channel.
+
+You can contact the authors via:
+http://pcsx2.ngemu.com (homepage)
+http://www.pcsx2.net (homepage)
+http://www.ngemu.com (offical forums)
+
+or on IRC:
+
+#PCSX2 (EFnet)
+
+Enjoy PCSX2!!
+
+Best Regards CKemu ( http://www.ckemu.com ).
+
+/EOF/

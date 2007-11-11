@@ -1,0 +1,86 @@
+
+RunCDVD - New feature explained
+===============================
+
+Q: What CDVD stands for?
+
+A: It is a short form for CD/DVD i.e. CD or DVD.
+
+----------------------------------------------------
+
+Q: Can I run games?
+
+A: What do you mean by games?
+   There are two types of games: commercial ones and homebrew ones.
+   There are also two types of demos: from magazines and homebrew.
+   Homebrew SW will run first as they are simpler and are open-source sometimes.
+
+----------------------------------------------------
+
+Q: Can I run commercial games?
+
+A: Yes, but this answer is not good for you:P
+   You cannot play them...
+   Technicaly, the game starts but it does not go very far,
+   because this is only the beginning...
+
+----------------------------------------------------
+
+Q: So, what's the deal then? Is there any game that run? more?
+
+A: Yes, but as far as we know, not any comercial game.
+   Homebrew iso version of PSMS runs ok.
+   Also we cannot test with all the games as we don't have them all:P
+
+----------------------------------------------------
+
+Q: When can I play game X ?
+
+A: Dunno, only time can say that...
+   We only added the CDVD loading option for now.
+   You will have to wait for another version of the emu to see any screenshot.
+
+----------------------------------------------------
+
+Q: How do I run a CD/DVD game or iso/bin?
+
+A: You need a CDVD plugin.
+   Get the CDVDbin for Windows & CDVDlinuz for Linux
+   from http://pcsx2.ngemu.com (Download section) or from http://www.ngemu.com
+   Place it in Plugins directory. Run the emu and in configure dialog choose
+   that plugin. Then Run->Execute. When using the CDVDbin plugin
+   you will be promted to choose a file to use.
+   Select the iso or the bin of the game you own.
+   (To test that use psms.iso)
+
+----------------------------------------------------
+
+Q: I have the game X on CD/DVD. What's the iso/bin stuff anyway?
+
+A: Well, if you have a game on CD/DVD and a bad CD/DVD drive,
+   you can backup it on the harddisk with a CD/DVD recording program or a simple
+   iso/bin ripper. That program will make an image of the CD/DVD disc
+   on the harddisk and you can use that image with the CDVDbin plugin.
+
+----------------------------------------------------
+
+Q: What's the difference between .iso and .bin formats?
+
+A: Bin is an image with raw sectors of 2352 bytes.
+   Iso contains only the data part from a CD sector; ie. 2048 bytes
+
+----------------------------------------------------
+
+Q: I have more questions. Where are the answers?
+
+A: First of all, think twice before asking a question.
+   It might be already answered or the answer is toooooo simple.
+   Also, there can be more questions that i missed. Use the PCSX2 forum
+   on http://www.ngemu.com for that. Thank you!
+
+
+===============================
+Florin (florin@ngemu.com)
+
+
+
