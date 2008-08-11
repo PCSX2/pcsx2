@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "mingw\afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -1456,9 +1456,9 @@ BEGIN
     CONTROL         "CDR log",IDC_IOPCDRLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,104,43,10
     CONTROL         "VUMicro log",IDC_VUMICROLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,110,55,10
     CONTROL         "RPC services log",IDC_RPCSERVICES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,125,67,10
-    CONTROL         "Log to STDOUT",IDC_STDOUTPUTLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,125,68,10
+    CONTROL         "Log to STDOUT",IDC_STDOUTPUTLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,140,53,10
     CONTROL         "Log",IDC_LOGS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,140,28,10
-    CONTROL         "Symbols log",IDC_SYMLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,140,53,10
+    CONTROL         "Symbols log",IDC_SYMLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,125,68,10
     CONTROL         "Counters log",IDC_IOPCNTLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,118,55,10
     CONTROL         "EE Counters log",IDC_EECNTLOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,139,73,11
 END

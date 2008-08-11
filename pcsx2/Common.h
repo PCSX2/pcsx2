@@ -46,6 +46,9 @@ typedef struct {
 extern AppData gApp;
 #define pthread_mutex__unlock pthread_mutex_unlock
 
+#define strnicmp _strnicmp
+#define stricmp _stricmp
+
 #elif defined(__MINGW32__)
 
 #include <sys/types.h>

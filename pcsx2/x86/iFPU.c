@@ -505,6 +505,7 @@ void recSQRT_S_(int info)
 
 void recABS_S_(int info)
 {
+	//AND32ItoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, 0x7fffffff ); // isn't this faster?
 	MOV32MtoR( EAX, (uptr)&fpuRegs.fpr[ _Fs_ ].f );
 	AND32ItoR( EAX, 0x7fffffff );
 	MOV32RtoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, EAX );
@@ -518,6 +519,7 @@ void recMOV_S_(int info)
 
 void recNEG_S_(int info)
 {
+	//XOR32ItoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, 0x80000000 ); // isn't this faster?
 	MOV32MtoR( EAX,(uptr)&fpuRegs.fpr[ _Fs_ ].f );
 	XOR32ItoR( EAX, 0x80000000 );
 	MOV32RtoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, EAX );
@@ -1088,8 +1090,8 @@ FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 
 void recMADDtemp(int info, int regd)
 {
-	int vreg;
-	u32 mreg;	
+	//int vreg;
+	//u32 mreg;	
 	int t0reg;
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
@@ -1194,8 +1196,8 @@ FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|X
 
 void recMSUBtemp(int info, int regd)
 {
-	int vreg;
-	u32 mreg;	
+	//int vreg;
+	//u32 mreg;	
 	int t0reg;
 
 

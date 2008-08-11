@@ -409,11 +409,11 @@ void UNPACK_V4_5(u32 *dest, u32 *data, int size) {
 
 static int cycles;
 extern int g_vifCycles;
-int vifqwc = 0;
+u16 vifqwc = 0;
 __inline int mfifoVIF1rbTransfer() {
 	u32 maddr = psHu32(DMAC_RBOR);
-	int msize = psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR) + 16, ret;
-	int mfifoqwc = min(vif1ch->qwc, vifqwc);
+	u32 ret, msize = psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR) + 16;
+	u16 mfifoqwc = min(vif1ch->qwc, vifqwc);
 	u32 *src;
 	
 	/* Check if the transfer should wrap around the ring buffer */

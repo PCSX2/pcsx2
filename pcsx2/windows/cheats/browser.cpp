@@ -691,7 +691,7 @@ BOOL CALLBACK AddPatchProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			
 			// Spin Control
 			SendMessage(GetDlgItem(hWnd, IDC_SPIN1), UDM_SETBUDDY, (WPARAM)GetDlgItem(hWnd, IDC_GROUP), 0);
-			SendMessage(GetDlgItem(hWnd, IDC_SPIN1), UDM_SETRANGE32, (WPARAM)-2147483648, (LPARAM)2147483647);
+			SendMessage(GetDlgItem(hWnd, IDC_SPIN1), UDM_SETRANGE32, (WPARAM)(0-0x80000000), (LPARAM)0x7FFFFFFF);
 			
 			break;
 		case WM_COMMAND:
@@ -800,7 +800,7 @@ BOOL CALLBACK EditPatch(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					
 					// Spin Control
 					SendMessage(GetDlgItem(hWnd, IDC_SPIN1), UDM_SETBUDDY, (WPARAM)GetDlgItem(hWnd, IDC_GROUP), 0);
-					SendMessage(GetDlgItem(hWnd, IDC_SPIN1), UDM_SETRANGE32, (WPARAM)-2147483648, (LPARAM)2147483647);
+					SendMessage(GetDlgItem(hWnd, IDC_SPIN1), UDM_SETRANGE32, (WPARAM)(0-0x80000000), (LPARAM)0x7FFFFFFF);
 					break;
 				}
 			}

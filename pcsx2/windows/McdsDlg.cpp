@@ -356,7 +356,7 @@ class Dir
 
 		void Release()
 		{
-			for(int i=0;i<Sons.size();i++)
+			for(unsigned int i=0;i<Sons.size();i++)
 			{
 				Sons[i].Release();
 			}
@@ -409,7 +409,7 @@ class Dir
 			u32 NumberOfFrames = *(u32 *)(File + AnimationSegmentOffset + 16);
 
 			u32 Offset = AnimationSegmentOffset + 20;
-			for(int i=0;i<NumberOfFrames;i++)
+			for(u32 i=0;i<NumberOfFrames;i++)
 			{
 				u32 KeyNum = *(u32 *)(File + Offset + 4);
 				Offset += 16 + (KeyNum * 8) - 8; // The -8 is there because the doc with the ico format spec is either wrong or I'm stupid
@@ -501,7 +501,7 @@ class SaveGame
 			D = _Dir;
 
 			// Find icon.sys
-			for(int i=0;i<D->Sons.size();i++)
+			for(unsigned int i=0;i<D->Sons.size();i++)
 			{
 				if(!strcmp("icon.sys", D->Sons[i].Name))
 				{
@@ -546,7 +546,7 @@ class SaveGame
 			}
 
 			// Find the icon now
-			for(int i=0;i<D->Sons.size();i++)
+			for(unsigned int i=0;i<D->Sons.size();i++)
 			{
 				if(!strcmp(IconName, D->Sons[i].Name))
 				{
@@ -840,7 +840,7 @@ class MemoryCard
 		
 		void AddDirToTreeView(HWND hWnd, HTREEITEM tree, Dir *d)
 		{
-			for(int i=0;i<d->Sons.size();i++)
+			for(unsigned int i=0;i<d->Sons.size();i++)
 			{
 				HTREEITEM temptree = AddTreeItem(hWnd, tree, d->Sons[i].Name, 0);
 				if(d->Sons[i].IsDirectory())
@@ -870,7 +870,7 @@ class MemoryCard
 			item.iIndent = 0;
 			item.lParam = 0;
 
-			for(int i=0;i<SaveGameList.size();i++)
+			for(unsigned int i=0;i<SaveGameList.size();i++)
 			{
 				strcpy(item.pszText, SaveGameList[i].Name1);
 				if(SaveGameList[i].Name2[0] != 0)
@@ -895,7 +895,7 @@ class MemoryCard
 		Dir *FindFile(char *dir, char *file)
 		{
 			//Find the dir first
-			int i;
+			unsigned int i;
 			for(i=0;i<Root.Sons.size();i++)
 			{
 				if(!strcmp(dir, Root.Sons[i].Name))
@@ -971,7 +971,7 @@ class MemoryCard
 			u32 NumberOfFrames = *(u32 *)(d->File + AnimationSegmentOffset + 16);
 
 			u32 Offset = AnimationSegmentOffset + 20;
-			for(int i=0;i<NumberOfFrames;i++)
+			for(unsigned int i=0;i<NumberOfFrames;i++)
 			{
 				u32 KeyNum = *(u32 *)(d->File + Offset + 4);
 				Offset += 16 + (KeyNum * 8) - 8; // The -8 is there because the doc with the ico format spec is either wrong or I'm stupid
@@ -1059,7 +1059,7 @@ class MemoryCard
 			// Create the image list
 			ImageList = ImageList_Create(64, 64, ILC_COLOR32, 10, 256);
 
-			for(int i=0;i<Root.Sons.size();i++)
+			for(unsigned int i=0;i<Root.Sons.size();i++)
 			{
 				if(Root.Sons[i].Name[0] != '.')
 				{

@@ -1353,8 +1353,8 @@ void hwDmacIrq(int n) {
 }
 
 /* Write 'size' bytes to memory address 'addr' from 'data'. */
-int hwMFIFOWrite(u32 addr, u8 *data, int size) {
-	int msize = psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR)+16;
+int hwMFIFOWrite(u32 addr, u8 *data, u32 size) {
+	u32 msize = psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR)+16;
 	u8 *dst;
 
 

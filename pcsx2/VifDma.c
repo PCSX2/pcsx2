@@ -469,10 +469,10 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 		if (v->size != (size>>2))ProcessMemSkip(size, unpackType, VIFdmanum);
 
         if(vifRegs->offset < (u32)ft->qsize){
-			if((size/ft->dsize) < (ft->qsize - vifRegs->offset)){
+			if(((u32)size/(u32)ft->dsize) < ((u32)ft->qsize - vifRegs->offset)){
 				SysPrintf("wasnt enough left size/dsize = %x left to write %x\n", (size/ft->dsize), (ft->qsize - vifRegs->offset));
 			}
-            unpacksize = min((size/ft->dsize), (ft->qsize - vifRegs->offset));
+            unpacksize = min(((u32)size/(u32)ft->dsize), ((u32)ft->qsize - vifRegs->offset));
         } else {
             unpacksize = 0;
             SysPrintf("Unpack align offset = 0\n");

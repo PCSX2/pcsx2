@@ -650,7 +650,7 @@ void cdvdReset()
     cdvd.RTC.hour = 1;
     cdvd.RTC.day = 25;
     cdvd.RTC.month = 5;
-    cdvd.RTC.year = 2007;
+    cdvd.RTC.year = 7; //2007
 
 #ifndef _DEBUG
 #ifdef _WIN32

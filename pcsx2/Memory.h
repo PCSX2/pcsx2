@@ -55,6 +55,7 @@ typedef struct _PSMEMORYMAP
 
 // function for mapping memory
 #define PS2MEM_PSXHW	((u8*)((u32)PS2MEM_BASE+0x1f800000))
+//#define PS2MEM_PSXHW2	((u8*)((u32)PS2MEM_BASE+0x1fa00000))
 #define PS2MEM_PSXHW4	((u8*)((u32)PS2MEM_BASE+0x1f400000))
 #define PS2MEM_GS		((u8*)((u32)PS2MEM_BASE+0x12000000))
 #define PS2MEM_DEV9		((u8*)((u32)PS2MEM_BASE+0x14000000))

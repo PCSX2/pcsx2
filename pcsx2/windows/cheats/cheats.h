@@ -19,11 +19,14 @@
 #define CHEATS_H_INCLUDED
 
 #ifndef __cplusplus
-typedef enum ebool
-{
-	false,
-	true
-} bool;
+//typedef enum ebool
+//{
+//	false,
+//	true
+//} bool;
+#define bool unsigned __int8
+#define false 0
+#define true 1
 #endif
 
 extern HINSTANCE pInstance;

@@ -132,7 +132,7 @@ PSMEMORYMAP initMemoryMap(ULONG_PTR* aPFNs, ULONG_PTR* aVFNs)
 
 // only do vm hack for release
 #ifndef PCSX2_DEVBUILD
-#define VM_HACK
+//#define VM_HACK
 #endif
 
 // virtual memory blocks
@@ -172,6 +172,7 @@ int memInit() {
 	PHYSICAL_ALLOC(PS2MEM_VU0MICRO, 0x00010000, s_psVuMem);
 
 	VIRTUAL_ALLOC(PS2MEM_PSXHW, 0x00010000, PAGE_READWRITE);
+	//VIRTUAL_ALLOC(PS2MEM_PSXHW2, 0x00010000, PAGE_READWRITE);
 	VIRTUAL_ALLOC(PS2MEM_PSXHW4, 0x00010000, PAGE_NOACCESS);
 	VIRTUAL_ALLOC(PS2MEM_GS, 0x00002000, PAGE_READWRITE);
 	VIRTUAL_ALLOC(PS2MEM_DEV9, 0x00010000, PAGE_NOACCESS);
@@ -247,6 +248,7 @@ void memShutdown()
 	VIRTUAL_FREE(PS2MEM_VU0MICRO, 0x00010000); // allocate for all VUs
 
 	VIRTUAL_FREE(PS2MEM_PSXHW, 0x00010000);
+	//VIRTUAL_FREE(PS2MEM_PSXHW2, 0x00010000);
 	VIRTUAL_FREE(PS2MEM_PSXHW4, 0x00010000);
 	VIRTUAL_FREE(PS2MEM_GS, 0x00010000);
 	VIRTUAL_FREE(PS2MEM_DEV9, 0x00010000);
@@ -344,59 +346,63 @@ int SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS* eps)
 	// get bad virtual address
 	addr = (u32)ExceptionRecord->ExceptionInformation[1];
 
-	if( addr >= (u32)PS2MEM_BASE && addr < (u32)PS2MEM_BASE+0x60000000) {
+	if( (unsigned)(addr-(u32)PS2MEM_BASE) < 0x60000000) {
 		PSMEMORYMAP* pmap;
 		
 		pmap = &memLUT[(addr-(u32)PS2MEM_BASE)>>12];
 		
-		if( pmap->aPFNs == NULL ) {
+		if( !pmap->aPFNs ) {
 			// NOTE: this is a hack because the address is truncated and there's no way
 			// to tell what it's upper bits are (due to OS limitations).
 			pmap += 0x80000;
-			if( pmap->aPFNs == NULL ) {
+			if( !pmap->aPFNs ) {
 				pmap += 0x20000;
+				if( !pmap->aPFNs ) goto OtherException;
 			}
 			//else addr += 0x20000000;
 		}
 
-		if( pmap->aPFNs != NULL ) {
-			LPVOID pnewaddr;
-			DWORD oldaddr = pmap->aVFNs[0];
+		{
+			//LPVOID pnewaddr; not used
+			uptr curvaddr = pmap->aVFNs[0];
 
-			if( pmap->aVFNs[0] != 0 ) {
+			if( curvaddr ) {
 				// delete the current mapping
-				SysMapUserPhysicalPages((void*)pmap->aVFNs[0], 1, NULL, 0);
+				SysMapUserPhysicalPages((void*)curvaddr, 1, NULL, 0);
 			}
 
 			assert( pmap->aPFNs[0] != 0 );
 
-			pmap->aVFNs[0] = addr&~0xfff;
-			if( SysMapUserPhysicalPages((void*)(addr&~0xfff), 1, pmap->aPFNs, 0) )
+			pmap->aVFNs[0] = curvaddr = addr&~0xfff;
+			if( SysMapUserPhysicalPages((void*)curvaddr, 1, pmap->aPFNs, 0) )
 				return EXCEPTION_CONTINUE_EXECUTION;
 
 			// try allocing the virtual mem
-			pnewaddr = VirtualAlloc((void*)(addr&~0xffff), 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
+			//pnewaddr = <- not used
+			/* use here the size of allocation granularity and force rounding down,
+			   because in reserve mode the address is rounded up/down to the nearest
+			   multiple of this granularity; if you did it not this way, in some cases
+			   the same address would be used twice, so the api fails */
+			VirtualAlloc((void*)(curvaddr&~0xffff), 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
 
-			if( SysMapUserPhysicalPages((void*)(addr&~0xfff), 1, pmap->aPFNs, 0) )
+			if( SysMapUserPhysicalPages((void*)curvaddr, 1, pmap->aPFNs, 0) )
 				return EXCEPTION_CONTINUE_EXECUTION;
 
 			SysPrintf("Fatal error, virtual page 0x%x cannot be found %d (p:%x,v:%x)\n",
-				addr-(u32)PS2MEM_BASE, GetLastError(), pmap->aPFNs[0], pmap->aVFNs[0]);
+				addr-(u32)PS2MEM_BASE, GetLastError(), pmap->aPFNs[0], curvaddr);
 		}
 	}
-	else {
-		// check if vumem
+	// check if vumem
+	else if( (addr&0xffff4000) == 0x11000000 ) {
+		// vu0mem
+		SysMapUserPhysicalPages((void*)s_psVuMem.aVFNs[1], 1, NULL, 0);
+		
+		s_psVuMem.aVFNs[1] = addr&~0xfff;
+		SysMapUserPhysicalPages((void*)addr, 1, s_psVuMem.aPFNs, 1);
 
-		if( (addr&0xffff4000) == 0x11000000 ) {
-			// vu0mem
-			SysMapUserPhysicalPages((void*)s_psVuMem.aVFNs[1], 1, NULL, 0);
-			
-			s_psVuMem.aVFNs[1] = addr&~0xfff;
-			SysMapUserPhysicalPages((void*)addr, 1, s_psVuMem.aPFNs, 1);
-
-			return EXCEPTION_CONTINUE_EXECUTION;
-		}
+		return EXCEPTION_CONTINUE_EXECUTION;
 	}
+OtherException:
 
 #ifdef VM_HACK
 	{

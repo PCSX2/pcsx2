@@ -1481,7 +1481,7 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 int recInit( void ) 
 {
 	int i;
-	const u8 macarr[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+	static const u8 macarr[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
 
 	recLUT = (uptr*) _aligned_malloc( 0x010000 * sizeof(uptr), 16 );
 	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
@@ -2136,7 +2136,6 @@ void SetBranchReg( u32 reg )
 
 void SetBranchImm( u32 imm )
 {
-	u32* ptr;
 	branch = 1;
 
 	assert( imm );
@@ -2149,8 +2148,10 @@ void SetBranchImm( u32 imm )
 	if( bExecBIOS ) CheckForBIOSEnd();
 
 	MOV32ItoR(EDX, 0);
-	ptr = (u32*)(x86Ptr-4);
-	*ptr = (u32)JMP32((u32)Dispatcher - ( (u32)x86Ptr + 5 ));
+	{
+		u32* ptr = (u32*)(x86Ptr-4);
+		*ptr = (u32)JMP32((u32)Dispatcher - ( (u32)x86Ptr + 5 ));
+	}
 }
 
 void SaveBranchState()
@@ -2834,9 +2835,9 @@ void recRecompile( u32 startpc )
 	else {
 		s_pCurBlockEx = NULL;
 		for(i = 0; i < EE_NUMBLOCKS; ++i) {
-			if( recBlocks[(i+s_nNextBlock)%EE_NUMBLOCKS].size == 0 ) {
-				s_pCurBlockEx = recBlocks+(i+s_nNextBlock)%EE_NUMBLOCKS;
-				s_nNextBlock = (i+s_nNextBlock+1)%EE_NUMBLOCKS;
+			if( recBlocks[(i+s_nNextBlock)&(EE_NUMBLOCKS-1)].size == 0 ) {
+				s_pCurBlockEx = recBlocks+((i+s_nNextBlock)&(EE_NUMBLOCKS-1));
+				s_nNextBlock = (i+s_nNextBlock+1)&(EE_NUMBLOCKS-1);
 				break;
 			}
 		}

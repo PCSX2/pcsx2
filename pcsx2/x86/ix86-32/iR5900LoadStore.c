@@ -261,7 +261,7 @@ int recSetMemLocation(int regs, int imm, int mmreg, int msize, int j32)
 		SetMMXstate();
 	}
 	else {
-		MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ regs ].UL[ 0 ] );		
+		MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ regs ].UL[ 0 ] );		
 	}
 
 	if ( imm != 0 ) ADD32ItoR( ECX, imm );
@@ -313,7 +313,7 @@ int recSetMemLocation(int regs, int imm, int mmreg, int msize, int j32)
 		AND8RtoR(ECX, EAX);
 		ROR32ItoR(ECX, 4);
 
-		OR16RtoR(EAX, EAX);
+		TEST16RtoR(EAX, EAX); // this is faster, because sets no dependend reg.
 
 		if( s_bCachingMem & 2 ) j32Ptr[2] = j32Ptr[3] = JS32(0);
 		else j8Ptr[0] = j8Ptr[3] = JS8(0);
@@ -1327,8 +1327,8 @@ void recLQ( void )
 
 				SET_HWLOC();
 
-				PUSH32I( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
-				CALLFunc( (int)recMemRead128 );
+				PUSH32I( (u32)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+				CALLFunc( (uptr)recMemRead128 );
 
 				if( mmreg >= 0 && (mmreg & MEM_MMXTAG) ) MOVQMtoR(mmreg&0xf, (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
 				else if( mmreg >= 0 && (mmreg & MEM_XMMTAG) ) SSEX_MOVDQA_M128_to_XMM(mmreg&0xf, (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
@@ -1343,8 +1343,8 @@ void recLQ( void )
 
 				SET_HWLOC();
 
-				PUSH32I( (int)&retValues[0] );
-				CALLFunc( (int)recMemRead128 );
+				PUSH32I( (u32)&retValues[0] );
+				CALLFunc( (uptr)recMemRead128 );
 				ADD32ItoR(ESP, 4);
 			}
 		}

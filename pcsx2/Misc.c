@@ -581,8 +581,8 @@ int SaveState(char *file) {
 	SysPrintf("Saving GS\n");
     if( CHECK_MULTIGS ) {
         // have to call in thread, otherwise weird stuff will start happening
-        uptr uf = (uptr)f;
-        GSRingBufSimplePacket(GS_RINGTYPE_SAVE, (int)(uf&0xffffffff), (int)(uf>>32), 0);
+        u64 uf = (uptr)f;
+        GSRingBufSimplePacket(GS_RINGTYPE_SAVE, (u32)(uf&0xffffffff), (u32)(uf>>32), 0);
         gsWaitGS();
     }
     else {
@@ -713,8 +713,8 @@ int LoadState(char *file) {
 	SysPrintf("Loading GS\n");
     if( CHECK_MULTIGS ) {
         // have to call in thread, otherwise weird stuff will start happening
-        uptr uf = (uptr)f;
-        GSRingBufSimplePacket(GS_RINGTYPE_LOAD, (int)(uf&0xffffffff), (int)(uf>>32), 0);
+        u64 uf = (uptr)f;
+        GSRingBufSimplePacket(GS_RINGTYPE_LOAD, (u32)(uf&0xffffffff), (u32)(uf>>32), 0);
         gsWaitGS();
     }
     else {
@@ -757,7 +757,7 @@ int SaveGSState(char *file)
 	return 0;
 }
 
-extern long pDsp;
+extern HWND pDsp;
 int LoadGSState(char *file)
 {
 	int ret;

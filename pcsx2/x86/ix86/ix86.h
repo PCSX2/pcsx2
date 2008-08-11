@@ -43,6 +43,7 @@ extern "C" {
 #define MMXREGS 8
 
 #define SIB 4
+#define SIBDISP 5
 #define DISP32 5
 
 // general types
@@ -258,8 +259,8 @@ void x86Align( int bytes );
 u64 GetCPUTick( void );
 
 // General Helper functions
-void ModRM( int mod, int rm, int reg );
-void SibSB( int ss, int rm, int index );
+void ModRM( int mod, int reg, int rm );
+void SibSB( int ss, int index, int base );
 void SET8R( int cc, int to );
 u8* J8Rel( int cc, int to );
 u32* J32Rel( int cc, u32 to );
@@ -363,6 +364,7 @@ void MOV8MtoR( x86IntRegType to, uptr from );
 // mov [r32] to r8
 void MOV8RmtoR(x86IntRegType to, x86IntRegType from);
 void MOV8RmtoROffset(x86IntRegType to, x86IntRegType from, int offset);
+void MOV8RmSOffsettoR( x86IntRegType to, x86IntRegType from1, u32 from2, int scale );
 // mov r8 to [r32]
 void MOV8RtoRm(x86IntRegType to, x86IntRegType from);
 // mov imm8 to m8 
@@ -640,6 +642,9 @@ void SHR32ItoM( uptr to, u8 from );
 // shr cl to r32 
 void SHR32CLtoR( x86IntRegType to );
 
+// shr imm8 to r16
+void SHR16ItoR( x86IntRegType to, u8 from );
+
 // shr imm8 to r8
 void SHR8ItoR( x86IntRegType to, u8 from );
 
@@ -654,9 +659,10 @@ void SAR32CLtoR( x86IntRegType to );
 void SAR16ItoR( x86IntRegType to, u8 from );
 
 // ror imm8 to r32 (rotate right)
-void ROR32ItoR( x86IntRegType to,u8 from );
+void ROR32ItoR( x86IntRegType to, u8 from );
 
-void RCR32ItoR( x86IntRegType to,u8 from );
+void RCR32ItoR( x86IntRegType to, u8 from );
+void RCR32ItoM( uptr to, u8 from );
 // shld imm8 to r32
 void SHLD32ItoR( x86IntRegType to, x86IntRegType from, u8 shift );
 // shrd imm8 to r32
@@ -954,6 +960,8 @@ void TEST32ItoRm( x86IntRegType to, u32 from );
 void TEST16ItoR( x86IntRegType to, u16 from );
 // test r16 to r16
 void TEST16RtoR( x86IntRegType to, x86IntRegType from );
+// test r8 to r8
+void TEST8RtoR( x86IntRegType to, x86IntRegType from );
 // test imm8 to r8
 void TEST8ItoR( x86IntRegType to, u8 from );
 // test imm8 to r8
@@ -1029,7 +1037,8 @@ void CDQE( void );
 void LAHF();
 void SAHF();
 
-void BT32ItoR( x86IntRegType to, x86IntRegType from );
+void BT32ItoR( x86IntRegType to, u8 from );
+void BTR32ItoR( x86IntRegType to, u8 from );
 void BSRRtoR(x86IntRegType to, x86IntRegType from);
 void BSWAP32R( x86IntRegType to );
 
@@ -1683,6 +1692,8 @@ void SSE4_DPPS_M128_to_XMM(x86SSERegType to, uptr from, u8 imm8);
 void SSE4_INSERTPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from, u8 imm8);
 void SSE4_EXTRACTPS_XMM_to_R32(x86IntRegType to, x86SSERegType from, u8 imm8);
 void SSE4_BLENDPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from, u8 imm8);
+void SSE4_BLENDVPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
+void SSE4_BLENDVPS_M128_to_XMM(x86SSERegType to, uptr from);
 
 //*********************
 // SSE-X - uses both SSE,SSE2 code and tries to keep consistensies between the data

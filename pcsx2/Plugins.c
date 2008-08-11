@@ -508,7 +508,7 @@ int LoadPlugins() {
 	return 0;
 }
 
-uptr pDsp;
+HWND pDsp;
 static pluginsopened = 0;
 extern void spu2DMA4Irq();
 extern void spu2DMA7Irq();

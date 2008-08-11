@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1253"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="pcsx2"
 	ProjectGUID="{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}"
 	RootNamespace="pcsx2"
@@ -265,6 +265,29 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="./;../../;../../IPU;../../ZLIB;../../DebugTools;../../x86;&quot;../../x86/ix86-32&quot;;../libs"
+				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,__MSCW32__,__WIN32__,__i386__,ENABLE_NLS,PACKAGE=\&quot;pcsx2\&quot;;PCSX2_DEVBUILD;_CRT_SECURE_NO_DEPRECATE;TIXML_USE_STL"
+				StringPooling="true"
+				ExceptionHandling="1"
+				RuntimeLibrary="0"
+				StructMemberAlignment="5"
+				BufferSecurityCheck="false"
+				EnableFunctionLevelLinking="false"
+				EnableEnhancedInstructionSet="2"
+				PrecompiledHeaderFile=".\ReleaseTLB/pcsx2.pch"
+				AssemblerListingLocation=".\ReleaseTLB/"
+				ObjectFile=".\ReleaseTLB/"
+				ProgramDataBaseFileName=".\ReleaseTLB/"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -336,6 +359,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				EnableFiberSafeOptimizations="true"
+				EnableEnhancedInstructionSet="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -349,6 +374,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="..\..\..\bin\pcsx2r.exe"
+				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -405,7 +431,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\McdsDlg.c"
+				RelativePath="..\McdsDlg.cpp"
 				>
 			</File>
 			<File

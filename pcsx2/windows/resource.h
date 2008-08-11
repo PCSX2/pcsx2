@@ -637,8 +637,8 @@
 #define IDC_IOPGPULOG                   1527
 #define IDC_IOPCNTLOG                   1529
 #define IDC_EECNTLOG                    1530
-#define IDC_SYMLOG                      1531
-#define IDC_STDOUTPUTLOG                1532
+#define IDC_STDOUTPUTLOG                1531
+#define IDC_SYMLOG                      1532
 #define IDC_SEARCH                      1701
 #define IDC_VALUE                       1702
 #define IDC_OLD                         1703

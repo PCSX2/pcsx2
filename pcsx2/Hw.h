@@ -64,7 +64,7 @@ void ConstWriteFIFO(u32 mem);
 // --- DMA ---
 //
 
-typedef struct {
+typedef struct tagDMACh{
 	u32 chcr;
 	u32 null0[3];
 	u32 madr;
@@ -407,8 +407,8 @@ void hwConstWrite128(u32 mem, int xmmreg);
 void hwIntcIrq(int n);
 void hwDmacIrq(int n);
 
-int  hwMFIFORead(u32 addr, u8 *data, int size);
-int  hwMFIFOWrite(u32 addr, u8 *data, int size);
+int  hwMFIFORead(u32 addr, u8 *data, u32 size);
+int  hwMFIFOWrite(u32 addr, u8 *data, u32 size);
 
 int  hwDmacSrcChainWithStack(DMACh *dma, int id);
 int  hwDmacSrcChain(DMACh *dma, int id);

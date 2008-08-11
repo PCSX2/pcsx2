@@ -586,13 +586,13 @@ void  cdrReadInterrupt() {
 	cdr.StatP|= 0x22;
     cdr.Result[0] = cdr.StatP;
 
-	SysMessage("Reading From CDR");
+	SysPrintf("Reading From CDR");
 	buf = CDVDgetBuffer();
 	if (buf == NULL) cdr.RErr = -1;
 
 	if (cdr.RErr == -1) {
 #ifdef CDR_LOG
-		fprintf(emuLog, " err\n");
+		CDR_LOG(" err\n");
 #endif
 		memset(cdr.Transfer, 0, 2340);
 		cdr.Stat = DiskError;
@@ -607,7 +607,7 @@ void  cdrReadInterrupt() {
     cdr.Stat = DataReady;
 
 #ifdef CDR_LOG
-	fprintf(emuLog, " %x:%x:%x\n", cdr.Transfer[0], cdr.Transfer[1], cdr.Transfer[2]);
+	CDR_LOG(" %x:%x:%x\n", cdr.Transfer[0], cdr.Transfer[1], cdr.Transfer[2]);
 #endif
 
 /*	if ((cdr.Muted == 1) && (cdr.Mode & 0x40) && (!Config.Xa) && (cdr.FirstSector != -1)) { // CD-XA

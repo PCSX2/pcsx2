@@ -1215,6 +1215,25 @@ void SSE4_BLENDPS_XMM_to_XMM(x86IntRegType to, x86SSERegType from, u8 imm8)
 	write8(imm8);
 }
 
+void SSE4_BLENDVPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
+{
+	write8(0x66);
+    RexRB(0, to, from);
+	write24(0x14380F);
+	ModRM(3, to, from);
+}
+
+void SSE4_BLENDVPS_M128_to_XMM(x86SSERegType to, uptr from)
+{
+	const int overb = 0; // TODO: x64?
+
+	write8(0x66);
+    RexR(0, to);
+	write24(0x14380F);
+	ModRM(0, to, DISP32);
+	write32(MEMADDR(from, 4 + overb));
+}
+
 // SSE-X
 void SSEX_MOVDQA_M128_to_XMM( x86SSERegType to, uptr from )
 {

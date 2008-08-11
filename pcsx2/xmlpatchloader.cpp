@@ -55,6 +55,9 @@ extern "C" {
 #ifndef stricmp
 #define stricmp strcasecmp
 #endif
+#else
+#define strnicmp _strnicmp
+#define stricmp _stricmp
 #endif
 
 #include "../cheatscpp.h"

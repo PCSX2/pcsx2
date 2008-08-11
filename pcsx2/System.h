@@ -39,7 +39,7 @@ typedef struct _PSMEMORYBLOCK
 {
 #ifdef _WIN32
     int NumberPages;
-	uptr* aPFNs;
+	PULONG_PTR aPFNs;
 	uptr* aVFNs; // virtual pages that own the physical pages
 #else
     int fd; // file descriptor

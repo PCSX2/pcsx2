@@ -116,7 +116,7 @@ extern void _vu0WaitMicro();
 
 static void recCFC2()
 {
-	int mmreg, creg;
+	int mmreg;
 
 	if (cpuRegs.code & 1) {
 		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
@@ -130,7 +130,7 @@ static void recCFC2()
 #ifdef __x86_64__
     mmreg = _allocX86reg(-1, X86TYPE_GPR, _Rt_, MODE_WRITE);
 
-    if( (creg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_READ)) >= 0 ) {
+    if( (int creg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_READ)) >= 0 ) {
         if(EEINST_ISLIVE1(_Rt_)) {
 			if( _Fs_ < 16 ) {
                 // zero extending
@@ -211,8 +211,6 @@ static void recCFC2()
 
 static void recCTC2()
 {
-    int mmreg;
-
 	if (cpuRegs.code & 1) {
 		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
 		CALLFunc((uptr)_vu0WaitMicro);
@@ -227,7 +225,7 @@ static void recCTC2()
 			case REG_VPU_STAT: // read-only
 				break;
 			case REG_FBRST:
-
+			{
                 if( g_cpuConstRegs[_Rt_].UL[0] & 0x202 )
                     iFlushCall(FLUSH_FREE_TEMPX86);
                 _deleteX86reg(X86TYPE_VI, REG_FBRST, 2);
@@ -242,9 +240,9 @@ static void recCTC2()
 
 				MOV16ItoM((uptr)&VU0.VI[REG_FBRST].UL,g_cpuConstRegs[_Rt_].UL[0]&0x0c0c);
 				break;
-
+			}
 			case REG_CMSAR1: // REG_CMSAR1
-
+			{
 				iFlushCall(IS_X8664?FLUSH_FREE_TEMPX86:FLUSH_NOCONST); // since CALLFunc
                 assert( _checkX86reg(X86TYPE_VI, REG_VPU_STAT, 0) < 0 &&
                         _checkX86reg(X86TYPE_VI, REG_TPC, 0) < 0 );
@@ -271,12 +269,14 @@ static void recCTC2()
 #endif
 				//x86SetJ8( j8Ptr[0] );
 				break;
+			}
 			default:
+			{
                 if( _Fs_ < 16 )
                     assert( (g_cpuConstRegs[_Rt_].UL[0]&0xffff0000)==0);
 
 #ifdef __x86_64__
-                if( (mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
+                if( (int mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
                     MOV32ItoR(mmreg, g_cpuConstRegs[_Rt_].UL[0]);
                 else
 #else
@@ -307,6 +307,7 @@ static void recCTC2()
 #endif
                 //x86SetJ8(j8Ptr[0]);
 				break;
+			}
 		}
 	}
 	else {
@@ -316,6 +317,7 @@ static void recCTC2()
 			case REG_VPU_STAT: // read-only
 				break;
 			case REG_FBRST:
+			{
                 iFlushCall(FLUSH_FREE_TEMPX86);
                 assert( _checkX86reg(X86TYPE_VI, REG_FBRST, 0) < 0 );
 
@@ -336,8 +338,9 @@ static void recCTC2()
 				AND32ItoR(EAX,0x0C0C);
 				MOV16RtoM((uptr)&VU0.VI[REG_FBRST].UL,EAX);
 				break;
+			}
 			case REG_CMSAR1: // REG_CMSAR1
-
+			{
 				iFlushCall(IS_X8664?FLUSH_FREE_TEMPX86:FLUSH_NOCONST); // since CALLFunc
 
 				// ignore if VU1 is operating
@@ -351,9 +354,11 @@ static void recCTC2()
 				/*FreezeXMMRegs(0);*/
 				//x86SetJ8( j8Ptr[0] );
 				break;
+			}
 			default:
+			{
 #ifdef __x86_64__
-                if( (mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
+                if( (int mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
                     _eeMoveGPRtoR(mmreg, _Rt_);
                 else
 #else
@@ -381,6 +386,7 @@ static void recCTC2()
 #endif
               //  x86SetJ8(j8Ptr[0]);
 				break;
+			}
 		}
 	}
 }

@@ -647,11 +647,15 @@ void rcntWmode(int index, u32 value)
 		}
 		//if(change != 0) SysPrintf("Weee\n");
 		//counters[index].sCycleT = cpuRegs.cycle - ((cpuRegs.cycle - counters[index].sCycleT) % counters[index].rate);
+#ifdef PCSX2_DEVBUILD
 		if(!(value & 0x80)) SysPrintf("Stopping\n");
+#endif
 		}
 	else {
+#ifdef PCSX2_DEVBUILD
 		SysPrintf("Counter %d not running c%x s%x c%x\n", index, counters[index].count, counters[index].sCycleT, cpuRegs.cycle);
 		if(value & 0x80) SysPrintf("Starting %d, v%x\n", index, value);
+#endif
 		counters[index].sCycleT = cpuRegs.cycle;
 		}
 	//if((value & 0x80) && !(counters[index].mode & 0x80)) rcntUpd(index); //Counter wasnt started, so set the start cycle
