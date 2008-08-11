@@ -90,6 +90,9 @@ typedef struct {
 	int ThPriority;
 	int CustomFps;
 	int Hacks;
+	int CustomFrameSkip;
+	int CustomConsecutiveFrames;
+	int CustomConsecutiveSkip;
 } PcsxConfig;
 
 extern PcsxConfig Config;

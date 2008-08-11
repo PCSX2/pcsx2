@@ -69,7 +69,10 @@ int LoadConfig() {
     strcpy(Conf->Mcd1, szValue);
 	GetPrivateProfileString("Interface", "Mcd2", NULL, szValue, 256, szIniFile);
     strcpy(Conf->Mcd2, szValue); 
-	Config.CustomFps=GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
+	Config.CustomFps				=	GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
+	Config.CustomFrameSkip			=	GetPrivateProfileInt("Interface", "CustomFrameskip", 0, szIniFile);
+	Config.CustomConsecutiveFrames	=	GetPrivateProfileInt("Interface", "CustomConsecutiveFrames", 0, szIniFile);
+	Config.CustomConsecutiveSkip	=	GetPrivateProfileInt("Interface", "CustomConsecutiveSkip", 0, szIniFile);
     //plugins
 	GetPrivateProfileString("Plugins", "GS", NULL, szValue, 256, szIniFile);
     strcpy(Conf->GS, szValue); 
@@ -100,7 +103,7 @@ int LoadConfig() {
     varLog = strtoul(szValue, NULL, 16);
 #endif
 	GetPrivateProfileString("Misc", "Hacks", NULL, szValue, 20, szIniFile);
-    Conf->Hacks = strtoul(szValue, NULL, 16);
+    Conf->Hacks = strtoul(szValue, NULL, 0);
 
 #ifdef ENABLE_NLS
 	sprintf(text, "LANGUAGE=%s", Conf->Lang);
@@ -146,6 +149,12 @@ void SaveConfig() {
     WritePrivateProfileString("Interface","Mcd2",szValue,szIniFile);
     sprintf(szValue,"%d",Conf->CustomFps);
 	WritePrivateProfileString("Interface", "CustomFps", szValue, szIniFile);
+	sprintf(szValue,"%d",Conf->CustomFrameSkip);
+	WritePrivateProfileString("Interface", "CustomFrameskip", szValue, szIniFile);
+	sprintf(szValue,"%d",Conf->CustomConsecutiveFrames);
+	WritePrivateProfileString("Interface", "CustomConsecutiveFrames", szValue, szIniFile);
+	sprintf(szValue,"%d",Conf->CustomConsecutiveSkip);
+	WritePrivateProfileString("Interface", "CustomConsecutiveSkip", szValue, szIniFile);
     //plugins
 	sprintf(szValue,"%s",Conf->GS);
     WritePrivateProfileString("Plugins","GS",szValue,szIniFile);

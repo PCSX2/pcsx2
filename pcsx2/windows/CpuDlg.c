@@ -35,6 +35,9 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	char cpuspeedc[20];
 	char features[256];
 	char cfps[20];
+	char cFrameskip[20];
+	char cConsecutiveFrames[20];
+	char cConsecutiveSkip[20];
 	u32 newopts;
 
 	switch(uMsg) {
@@ -59,7 +62,15 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_LIMIT), _("Limit - Force frames to normal speeds if too fast."));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_SKIP), _("Frame Skip - In order to achieve normal speeds,\nsome frames are skipped (fast).\nFps displayed counts skipped frames too."));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_SKIPVU), _("VU Skip - Same as 'Frame Skip', but tries to skip more.\nArtifacts might be present, but will be faster."));
-			Static_SetText(GetDlgItem(hW, IDC_CUSTOM_FPS), _("Custom FPS (0=auto)"));
+			Static_SetText(GetDlgItem(hW, IDC_CUSTOM_FPS), _("Custom FPS Limit (0=auto):"));
+			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL1), _("Skip Frames when slower than:\n(See Note 1)"));
+			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL2), _("Consecutive Frames before skipping:\n(See Note 2)"));
+			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL3), _("*Note 1: Will only skip when slower than this fps number.\n (0 = Auto) ; (9999 = Forced-Frameskip regardless of speed.)\n (e.g. If set to 45, will only skip when slower than 45fps.)"));
+			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL4), _("*Note 2: Will render this number of consecutive frames before\n  skipping the next frame. (0=default)\n (e.g. If set to 2, will render 2 frames before skipping 1.)"));
+			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL5), _("Consecutive Frames to skip:\n(See Note 3)"));
+			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL6), _("*Note 3: Will skip this number of frames before\n  rendering the next sequence of frames. (0=default)\n (e.g. If set to 2, will skip 2 consecutive frames whenever its time\n  to skip.)"));
+
+			
 
 			Button_SetText(GetDlgItem(hW, IDOK), _("OK"));
 			Button_SetText(GetDlgItem(hW, IDCANCEL), _("Cancel"));
@@ -109,6 +120,15 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			sprintf(cfps,"%d",Config.CustomFps);
 			SetDlgItemText(hW, IDC_CUSTOMFPS, cfps);
 
+			sprintf(cFrameskip,"%d",Config.CustomFrameSkip);
+			SetDlgItemText(hW, IDC_CUSTOM_FRAMESKIP, cFrameskip);
+			
+			sprintf(cConsecutiveFrames,"%d",Config.CustomConsecutiveFrames);
+			SetDlgItemText(hW, IDC_CUSTOM_CONSECUTIVE_FRAMES, cConsecutiveFrames);
+
+			sprintf(cConsecutiveSkip,"%d",Config.CustomConsecutiveSkip);
+			SetDlgItemText(hW, IDC_CUSTOM_CONSECUTIVE_SKIP, cConsecutiveSkip);
+
 			return TRUE;
 
 		case WM_COMMAND:
@@ -155,6 +175,15 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 					GetDlgItemText(hW, IDC_CUSTOMFPS, cfps, 20);
 					Config.CustomFps = atoi(cfps);
+
+					GetDlgItemText(hW, IDC_CUSTOM_FRAMESKIP, cFrameskip, 20);
+					Config.CustomFrameSkip = atoi(cFrameskip);
+
+					GetDlgItemText(hW, IDC_CUSTOM_CONSECUTIVE_FRAMES, cConsecutiveFrames, 20);
+					Config.CustomConsecutiveFrames = atoi(cConsecutiveFrames);
+
+					GetDlgItemText(hW, IDC_CUSTOM_CONSECUTIVE_SKIP, cConsecutiveSkip, 20);
+					Config.CustomConsecutiveSkip = atoi(cConsecutiveSkip);
 
 					UpdateVSyncRate();
 					SaveConfig();

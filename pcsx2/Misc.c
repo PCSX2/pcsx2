@@ -930,12 +930,14 @@ void ProcessFKeys(int fkey, int shift)
 
 			switch(CHECK_FRAMELIMIT) {
 				case PCSX2_FRAMELIMIT_NORMAL:
-					if( GSsetFrameSkip != NULL ) GSsetFrameSkip(0);
+					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+					else GSsetFrameSkip(0);
 					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 					SysPrintf("Normal - Frame Limit Mode Changed\n");
 					break;
 				case PCSX2_FRAMELIMIT_LIMIT:
-					if( GSsetFrameSkip != NULL ) GSsetFrameSkip(0);
+					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+					else GSsetFrameSkip(0);
 					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 					SysPrintf("Limit - Frame Limit Mode Changed\n");
 					break;

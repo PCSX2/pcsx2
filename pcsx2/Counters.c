@@ -234,7 +234,7 @@ extern u32 vu0time;
 
 extern void DummyExecuteVU1Block(void);
 
-static u32 lastWasSkip=0;
+//static u32 lastWasSkip=0;
 //extern u32 unpacktotal;
 
 #include "VU.h"
@@ -273,93 +273,60 @@ void VSync()
 				break;
 
 			case PCSX2_FRAMELIMIT_SKIP:
-			case PCSX2_FRAMELIMIT_VUSKIP:
+			case PCSX2_FRAMELIMIT_VUSKIP: //Skips a sequence of consecutive frames after a sequence of rendered frames
 			{
-				// the 6 was after trial and error
-				static u32 uPrevTimes[6] = {0}, uNextFrame = 0, uNumFrames = 0, uTotalTime = 0;
-				static u32 uLastTime = 0;
-				static int nConsecutiveSkip = 0, nConsecutiveRender = 0;
-				static short int changed = 0;
-				static short int nNoSkipFrames = 0;
-				
-				u32 uExpectedTime;
-				u32 uCurTime = timeGetTime();
-				u32 uDeltaTime = uCurTime - uLastTime;
+				// This is the least number of consecutive frames we will render w/o skipping
+				#define noSkipFrames (Config.CustomConsecutiveFrames>0) ? Config.CustomConsecutiveFrames : 2
+				// This is the number of consecutive frames we will skip				
+				#define yesSkipFrames (Config.CustomConsecutiveSkip>0) ? Config.CustomConsecutiveSkip : 2
+				static u8 bOkayToSkip = 0;
+				static u8 bKeepSkipping = 0;
+				static u64 uLastTime = 0;
 
-				if( uLastTime > 0 ) {
+				// This is some Extra Time to add to our Expected Time to compensate for lack of precision.
+				#define extraTimeBuffer 0
+				// If uDeltaTime is less than this value, then we can frameskip. (45 & 54 FPS is 90% of fullspeed for Pal & NTSC respectively, the default is to only skip when slower than 90%)
+				u64 uExpectedTime = (Config.CustomFrameSkip>0) ? (GetTickFrequency()/Config.CustomFrameSkip + extraTimeBuffer) : ((Config.PsxType&1) ? (GetTickFrequency()/45 + extraTimeBuffer) : (GetTickFrequency()/54 + extraTimeBuffer));
+				// This is used for the framelimiter; The user can set a custom FPS limit, if none is specified, used default FPS limit (50fps or 60fps).
+				//u64 uLimiterExpectedTime = (Config.CustomFps>0) ? (GetTickFrequency()/Config.CustomFps + extraTimeBuffer) : ((Config.PsxType&1) ? (GetTickFrequency()/50 + extraTimeBuffer) : (GetTickFrequency()/60 + extraTimeBuffer));
+				u64 uCurTime = GetCPUTicks();
+				u64 uDeltaTime = uCurTime - uLastTime;
 
-					if( uNumFrames == ARRAYSIZE(uPrevTimes) ) uTotalTime -= uPrevTimes[uNextFrame];
+				// Don't skip the Very First Frame PCSX2 renders. (This line might not be needed, but was included incase it breaks something.)
+				if (uDeltaTime == uCurTime) uDeltaTime = 0;
 
-					uPrevTimes[uNextFrame] = uDeltaTime;
-					uNextFrame = (uNextFrame + 1) % ARRAYSIZE(uPrevTimes);
-					uTotalTime += uDeltaTime;
-
-					if( uNumFrames < ARRAYSIZE(uPrevTimes) ) ++uNumFrames;
-				}
-				//the +6 accounts for calling FrameLimiter() instead Sleep()
-				uExpectedTime = (Config.PsxType&1) ? (ARRAYSIZE(uPrevTimes) * 1000 / 50 +6) : (ARRAYSIZE(uPrevTimes) * 1000 / 60 +6); 
-
-				if( nNoSkipFrames > 0 )  --nNoSkipFrames;
-
-				// hmm... this might be more complicated than it needs to be... or not?
-				if( changed != 0 ) {
-					if( changed > 0 ) {
-						++nConsecutiveRender;
-						--changed;
-
-						if( nConsecutiveRender > 20 && uTotalTime + 1 < uExpectedTime ) nNoSkipFrames = ARRAYSIZE(uPrevTimes);
-	
-					}
-					else {
-						++nConsecutiveSkip;
-						++changed;
-					}
-				}
-				else {
-					
-					if( nNoSkipFrames == 0 && nConsecutiveRender > 1 && nConsecutiveSkip < 1 &&
-						(CHECK_MULTIGS? (uTotalTime >= uExpectedTime + uDeltaTime/4 && (uTotalTime >= uExpectedTime + uDeltaTime*3/4 || nConsecutiveSkip==0)) : 
-										(uTotalTime >= uExpectedTime + (uDeltaTime/4))) ) {
-
-
-						if( nConsecutiveSkip == 0 ) {
-
-							//first freeze GS regs THEN send dummy packet
-							if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 1, 0, 0);
-							else GSsetFrameSkip(1);
-							if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) {	
+				if (bOkayToSkip == 0) // If we're done rendering our consecutive frames, its okay to skip.
+				{
+					if (uDeltaTime > uExpectedTime) // Only skip if running slow.
+					{
+						//first freeze GS regs THEN send dummy packet
+						if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 1, 0, 0);
+						else GSsetFrameSkip(1);
+						if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
 							Cpu->ExecuteVU1Block = DummyExecuteVU1Block;
-							}
-						}
-
-						changed = -1;
-						nConsecutiveSkip++;
-					}
-					else {
-
-						if( nConsecutiveSkip > 1) {
-							//first set VU1 to enabled THEN unfreeze GS regs
-							if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
-								Cpu->ExecuteVU1Block = s_prevExecuteVU1Block;
-							if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
-							else GSsetFrameSkip(0);
-				
-							nConsecutiveRender = 0;
-						}
-
-						changed = 3;
-						nConsecutiveRender++;
-						nConsecutiveSkip = 0;
-
-						if( nConsecutiveRender > 20 && uTotalTime + 1 < uExpectedTime ) {
-							
-							nNoSkipFrames = ARRAYSIZE(uPrevTimes);
-						}
+						bOkayToSkip = noSkipFrames;
+						bKeepSkipping = yesSkipFrames;
 					}
 				}
-				uLastTime = uCurTime;
-				//dont get too fast, instead keep at smooth full fps
+				else if (bOkayToSkip == noSkipFrames) // If we skipped last frame, unfreeze the GS regs
+				{
+					if (bKeepSkipping <= 1) {
+						//first set VU1 to enabled THEN unfreeze GS regs
+						if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
+							Cpu->ExecuteVU1Block = s_prevExecuteVU1Block;
+						if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+						else GSsetFrameSkip(0);
+						bOkayToSkip--;
+					}
+					else {bKeepSkipping--;}
+				}
+				else {bOkayToSkip--;}
+
+				//Frame Limit so we don't go over the FPS limit
 				FrameLimiter();
+
+				uLastTime = GetCPUTicks();
+
 				break;
 			}
 		}
