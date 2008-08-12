@@ -89,18 +89,18 @@ _vuopinfo *cinfo = NULL;
 
 #define _X_Y_Z_W  ((( VU->code >> 21 ) & 0xF ) )
 
-PCSX2_ALIGNED16(float recMult_float_to_int4[4]) = { 16.0, 16.0, 16.0, 16.0 };
-PCSX2_ALIGNED16(float recMult_float_to_int12[4]) = { 4096.0, 4096.0, 4096.0, 4096.0 };
-PCSX2_ALIGNED16(float recMult_float_to_int15[4]) = { 32768.0, 32768.0, 32768.0, 32768.0 };
+const static PCSX2_ALIGNED16(float recMult_float_to_int4[4]) = { 16.0, 16.0, 16.0, 16.0 };
+const static PCSX2_ALIGNED16(float recMult_float_to_int12[4]) = { 4096.0, 4096.0, 4096.0, 4096.0 };
+const static PCSX2_ALIGNED16(float recMult_float_to_int15[4]) = { 32768.0, 32768.0, 32768.0, 32768.0 };
 
-PCSX2_ALIGNED16(float recMult_int_to_float4[4]) = { 0.0625f, 0.0625f, 0.0625f, 0.0625f };
-PCSX2_ALIGNED16(float recMult_int_to_float12[4]) = { 0.000244140625, 0.000244140625, 0.000244140625, 0.000244140625 };
-PCSX2_ALIGNED16(float recMult_int_to_float15[4]) = { 0.000030517578125, 0.000030517578125, 0.000030517578125, 0.000030517578125 };
+const static PCSX2_ALIGNED16(float recMult_int_to_float4[4]) = { 0.0625f, 0.0625f, 0.0625f, 0.0625f };
+const static PCSX2_ALIGNED16(float recMult_int_to_float12[4]) = { 0.000244140625, 0.000244140625, 0.000244140625, 0.000244140625 };
+const static PCSX2_ALIGNED16(float recMult_int_to_float15[4]) = { 0.000030517578125, 0.000030517578125, 0.000030517578125, 0.000030517578125 };
 static s32 bpc;
 _VURegsNum* g_VUregs = NULL;
 u8 g_MACFlagTransform[256] = {0}; // used to flip xyzw bits
 
-static int SSEmovMask[ 16 ][ 4 ] =
+const static int SSEmovMask[ 16 ][ 4 ] =
 {
 { 0x00000000, 0x00000000, 0x00000000, 0x00000000 },
 { 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF },
@@ -1007,20 +1007,20 @@ int _vuGetTempXMMreg(int info)
 PCSX2_ALIGNED16(u32 g_minvals[4]) = {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
 PCSX2_ALIGNED16(u32 g_maxvals[4]) = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
-static PCSX2_ALIGNED16(int const_clip[]) = {
+const static PCSX2_ALIGNED16(int const_clip[]) = {
 	0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
 	0x80000000, 0x80000000, 0x80000000, 0x80000000 };
 
-static PCSX2_ALIGNED16(u32 s_FloatMinMax[]) = {
+const static PCSX2_ALIGNED16(u32 s_FloatMinMax[]) = {
 	0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff,
 	0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff,
 	0,			0,			0,			0 };
 
-static PCSX2_ALIGNED16(float s_fones[]) = { 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
-static PCSX2_ALIGNED16(u32 s_mask[]) = {0x7fffff, 0x7fffff, 0x7fffff, 0x7fffff };
-static PCSX2_ALIGNED16(u32 s_expmask[]) = {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+const static PCSX2_ALIGNED16(float s_fones[]) = { 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+const static PCSX2_ALIGNED16(u32 s_mask[]) = {0x7fffff, 0x7fffff, 0x7fffff, 0x7fffff };
+const static PCSX2_ALIGNED16(u32 s_expmask[]) = {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
 
-static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0xf0000000, 0xf0000000, 0xf0000000, 0xf0000000};
+const static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0xf0000000, 0xf0000000, 0xf0000000, 0xf0000000};
 
 void SetVUNanMode(int mode)
 {
@@ -1296,7 +1296,7 @@ void vuFloat3(uptr x86ptr)
 
 void CheckForOverflow(VURegs *VU, int info, int regd)
 {
-	testWhenOverflow(info, regd, EEREC_TEMP);
+	//testWhenOverflow(info, regd, EEREC_TEMP);
 	//CheckForOverflow_(regd, EEREC_TEMP, _X_Y_Z_W);
 	if (EEREC_TEMP != regd) {
 		//testWhenOverflow(info, regd, EEREC_TEMP);
@@ -1322,11 +1322,11 @@ void ClampUnordered(int regd, int t0reg, int dosign)
 //    __asm ret
 //}
 
-static PCSX2_ALIGNED16(u32 VU_Underflow_Mask1[4])	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])	= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
-static PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
-static PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
-static PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
+const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask1[4])	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])	= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
+const static PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
+const static PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
+const static PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
 // VU Flags
 // NOTE: flags don't compute under/over flows since it is highly unlikely
@@ -1409,12 +1409,12 @@ DD:CC:BB:AA
 		SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
-		SSE_ANDNPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP = !EEREC_TEMP & reg
-
-		// Now we have Denormals are Positive Zero in EEREC_TEMP; the next two lines take Signed Zero into account
-		SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-		SSE_ORPS_XMM_to_XMM(reg, EEREC_TEMP);
-
+		if (!(Config.Hacks & 0x8)) {  //only use if denormals hack is off
+			SSE_ANDNPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP = !EEREC_TEMP & reg
+			// Now we have Denormals are Positive Zero in EEREC_TEMP; the next two lines take Signed Zero into account
+			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
+			SSE_ORPS_XMM_to_XMM(reg, EEREC_TEMP);
+		}
 		//-------------------------Check for Signed flags------------------------------
 
 		//SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
@@ -1558,7 +1558,7 @@ DD:CC:BB:AA
 /*   VU Upper instructions    */
 /******************************/
 
-static PCSX2_ALIGNED16(u32 const_abs_table[16][4]) = 
+const static PCSX2_ALIGNED16(u32 const_abs_table[16][4]) = 
 {
    { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff },
    { 0xffffffff, 0xffffffff, 0xffffffff, 0x7fffffff },
