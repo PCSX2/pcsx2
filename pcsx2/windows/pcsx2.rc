@@ -938,19 +938,30 @@ BEGIN
     CONTROL         132,IDC_PS2SILVER_RECT,"Static",SS_BITMAP,0,167,70,74
 END
 
-IDD_HACKS DIALOGEX 0, 0, 186, 103
+IDD_HACKS DIALOGEX 0, 0, 343, 159
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCSX2 Speed Hacks"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,41,82,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,96,82,50,14
-    CONTROL         "EE/IOP Sync Hack - General Speedup",IDC_SYNCHACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,46,172,10
-    CONTROL         "Disable Forced ABS - Speeds up intense 3D",IDC_ABSHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,34,160,10
-    CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,172,17
+    DEFPUSHBUTTON   "OK",IDOK,119,138,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,174,138,50,14
+    CONTROL         "EE Sync Hack (x2) - Doubles the cycle rate of the EE.",IDC_SYNCHACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,329,10
+    CONTROL         "Disable All Overflow Checks - Doesn't check for overflow at all in the VU Recs.",IDC_OVERFLOWHACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,37,329,10
+    CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,329,17
     CONTROL         "Tighter SPU2 Sync ( FFXII vids) - slower",IDC_SOUNDHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,59,154,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,329,9
+    CONTROL         "Denormals are Zero - Makes very small numbers be equal to zero. (Big speedup on Intel CPUs)",IDC_DENORMALS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,104,329,9
+    CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP.",IDC_SYNCHACK2,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,62,329,10
+    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate instead of doubling it.",IDC_SYNCHACK3,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,329,10
+    CONTROL         "Disable Extra Overflow Checks - Disables extra overflow checks used to help stop SPS.",IDC_OVERFLOWHACK_EXTRA,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,24,329,10
+    CONTROL         "EE/IOP Fast Branches - Quick branching (very small speedup)",IDC_FASTBRANCHES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,89,329,10
 END
 
 
@@ -971,9 +982,9 @@ BEGIN
     IDD_HACKS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 179
+        RIGHTMARGIN, 336
         TOPMARGIN, 7
-        BOTTOMMARGIN, 96
+        BOTTOMMARGIN, 152
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1549,7 +1560,7 @@ BEGIN
     IDD_CPUDLG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 551
+        RIGHTMARGIN, 558
         TOPMARGIN, 7
     END
 END

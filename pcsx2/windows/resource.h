@@ -1,21 +1,3 @@
-/*  Pcsx2 - Pc Ps2 Emulator
- *  Copyright (C) 2002-2008  Pcsx2 Team
- *  Original code (2.0 and earlier )copyright (c) 2000-2002 Lee Thomason (www.grinninglizard.com)
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
- */
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by pcsx2.rc
@@ -508,8 +490,12 @@
 #define IDC_CHECK2                      1217
 #define IDC_SYNCHACK                    1217
 #define IDC_SPU2HACK                    1218
+#define IDC_SYNCHACK2                   1218
 #define IDC_VSYNCRATE                   1219
+#define IDC_SYNCHACK3                   1219
 #define IDC_IOPGPR0                     1220
+#define IDC_SYNCHACK4                   1220
+#define IDC_FASTBRANCHES                1220
 #define IDC_IOPGPR1                     1221
 #define IDC_IOPGPR2                     1222
 #define IDC_IOPGPR16                    1223
@@ -582,6 +568,7 @@
 #define IDC_ADDGS                       1278
 #define IDC_CONVERTEDCODE               1278
 #define IDC_CUSTOM_CONSECUTIVE_FRAMES   1278
+#define IDC_OVERFLOWHACK                1278
 #define IDC_HACKDESC                    1279
 #define IDC_CONVERT                     1279
 #define IDC_EDITPATCH                   1279
@@ -589,6 +576,7 @@
 #define IDC_READY                       1280
 #define IDC_ADDPATCH                    1280
 #define IDC_FRAMESKIP_LABEL2            1280
+#define IDC_OVERFLOWHACK_EXTRA          1280
 #define IDC_GROUP                       1281
 #define IDC_ADDRAW                      1281
 #define IDC_FRAMESKIP_LABEL3            1281
@@ -617,6 +605,7 @@
 #define IDC_ICON2                       1300
 #define IDC_CHECK1                      1300
 #define IDC_SOUNDHACK                   1300
+#define IDC_DENORMALS                   1301
 #define IDC_FRAMELIMIT_OPTIONS          1303
 #define IDC_LOG                         1500
 #define IDC_CPULOG                      1500
@@ -647,8 +636,8 @@
 #define IDC_IOPGPULOG                   1527
 #define IDC_IOPCNTLOG                   1529
 #define IDC_EECNTLOG                    1530
-#define IDC_STDOUTPUTLOG                1531
-#define IDC_SYMLOG                      1532
+#define IDC_SYMLOG                      1531
+#define IDC_STDOUTPUTLOG                1532
 #define IDC_SEARCH                      1701
 #define IDC_VALUE                       1702
 #define IDC_OLD                         1703
@@ -752,7 +741,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1301
+#define _APS_NEXT_CONTROL_VALUE         1304
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

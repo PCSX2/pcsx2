@@ -1,19 +1,19 @@
 /*  Pcsx2 - Pc Ps2 Emulator
- *  Copyright (C) 2002-2008  Pcsx2 Team
+ *  Copyright (C) 2002-2003  Pcsx2 Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef __IVUMICRO_H__
@@ -37,8 +37,12 @@
 #define RECOMPILE_VUMI_MAX
 #define RECOMPILE_VUMI_MINI
 #define RECOMPILE_VUMI_FTOI
+#define RECOMPILE_VUMI_OPM
+#define RECOMPILE_VUMI_OTHER
+
 
 #define RECOMPILE_VUMI_MATH
+//
 #define RECOMPILE_VUMI_MISC
 #define RECOMPILE_VUMI_E
 #define RECOMPILE_VUMI_X
@@ -46,6 +50,7 @@
 #define RECOMPILE_VUMI_FLAG
 #define RECOMPILE_VUMI_BRANCH
 #define RECOMPILE_VUMI_ARITHMETIC
+//
 #define RECOMPILE_VUMI_LOADSTORE
 
 #ifdef __x86_64__

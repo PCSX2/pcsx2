@@ -1,19 +1,19 @@
 /*  Pcsx2 - Pc Ps2 Emulator
- *  Copyright (C) 2002-2008  Pcsx2 Team
+ *  Copyright (C) 2002-2005  Pcsx2 Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 // recompiler reworked to add dynamic linking Jan06
@@ -969,8 +969,8 @@ void psxSetBranchImm( u32 imm )
 	*ptr = (uptr)JMP32((uptr)psxDispatcher - ( (uptr)x86Ptr + 5 ));
 }
 
-#define USE_FAST_BRANCHES (Config.Hacks & 1)
-#define PSXCYCLE_MULT ((Config.Hacks & 1) ? 2.125 : (17/16))
+#define USE_FAST_BRANCHES CHECK_FASTBRANCHES
+#define PSXCYCLE_MULT (CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16))
 
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {

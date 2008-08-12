@@ -945,7 +945,7 @@ static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0, 0, 0 };
 void recSQRT_S_xmm(int info)
 {
 	if( info & PROCESS_EE_T ) {
-		//if( CHECK_FORCEABS ) {
+		//if( CHECK_OVERFLOW ) {
 			if( EEREC_D == EEREC_T ) SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
 			else {
 				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T);
@@ -960,7 +960,7 @@ void recSQRT_S_xmm(int info)
 		}*/
 	}
 	else {
-		//if( CHECK_FORCEABS ) {
+		//if( CHECK_OVERFLOW ) {
 			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
 			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
 

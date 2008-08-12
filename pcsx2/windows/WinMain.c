@@ -5,15 +5,15 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #define WINVER 0x0500
@@ -48,8 +48,6 @@
 #include "iVUzerorec.h"
 
 #include "cheats/cheats.h"
-
-#include "../Paths.h"
 
 #define COMPILEDATE         __DATE__
 
@@ -606,6 +604,10 @@ void CALLBACK KeyEvent(keyEvent* ev)
         case VK_F10: ProcessFKeys(10, shiftkey); break;
         case VK_F11: ProcessFKeys(11, shiftkey); break;
         case VK_F12: ProcessFKeys(12, shiftkey); break;
+		/*case VK_NUMPAD0:
+			Config.Hacks ^= 2;
+			if (Config.Hacks & 2) {SysPrintf( "Overflow Check OFF\n" );} else {SysPrintf( "Overflow Check ON\n" );}
+			break;*/
 
 		case VK_ESCAPE:
 #ifdef PCSX2_DEVBUILD
@@ -616,16 +618,21 @@ void CALLBACK KeyEvent(keyEvent* ev)
 			}
 #endif
 
-			ClosePlugins();
 
-            if( !UseGui ) {
-                // not using GUI and user just quit, so exit
-                exit(0);
-            }
+			ClosePlugins();
+			SysClose();
+			//ReleasePlugins();
+			//needReset = 1;
+			//efile = 0;
+			
+			//if( !UseGui ) {
+			//not using GUI and user just quit, so exit
+				exit(0);
+			//}
 
 			CreateMainWindow(SW_SHOWNORMAL);
 			RunGui();
-            nDisableSC = 0;
+			nDisableSC = 0;
 			break;
 		default:
 			GSkeyEvent(ev);
@@ -707,18 +714,28 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 
     switch (message) {
         case WM_INITDIALOG:
-			if(Config.Hacks & 1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
-			if(Config.Hacks & 2) CheckDlgButton(hDlg, IDC_ABSHACK, TRUE);
-			if(Config.Hacks & 4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
-            return TRUE;
+			if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
+			if(Config.Hacks & 0x2) CheckDlgButton(hDlg, IDC_OVERFLOWHACK, TRUE);
+			if(Config.Hacks & 0x4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
+			if(Config.Hacks & 0x8) CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
+            if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
+			if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
+			if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_OVERFLOWHACK_EXTRA, TRUE);
+			if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
+			return TRUE;
 
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK) {
 				Config.Hacks = 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 1 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ABSHACK) ? 2 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 4 : 0;
-			
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_OVERFLOWHACK) ? 0x2 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_OVERFLOWHACK_EXTRA) ? 0x40 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
+
 				SaveConfig();              
 
                 EndDialog(hDlg, TRUE);
@@ -1350,16 +1367,16 @@ void ChangeLanguage(char *lang) {
 static int sinit=0;
 
 int SysInit() {
-	CreateDirectory(MEMCARDS_DIR, NULL);
-	CreateDirectory(SSTATES_DIR, NULL);
+	CreateDirectory("memcards", NULL);
+	CreateDirectory("sstates", NULL);
 #ifdef EMU_LOG
-	CreateDirectory(LOGS_DIR, NULL);
+	CreateDirectory("logs", NULL);
 
 #ifdef PCSX2_DEVBUILD
 	if( g_TestRun.plogname != NULL )
 		emuLog = fopen(g_TestRun.plogname, "w");
 	if( emuLog == NULL )
-		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
+		emuLog = fopen("logs\\emuLog.txt","w");
 #endif
 
 	if( emuLog != NULL )

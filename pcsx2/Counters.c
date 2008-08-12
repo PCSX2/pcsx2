@@ -5,15 +5,15 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include <string.h>
@@ -31,7 +31,9 @@ extern u8 psxhblankgate;
 int hblankend = 0;
 Counter counters[6];
 u32 nextCounter, nextsCounter;
+static void (*s_prevExecuteVU0Block)() = NULL;
 static void (*s_prevExecuteVU1Block)() = NULL;
+
 LARGE_INTEGER lfreq;
 
 // its so it doesnt keep triggering an interrupt once its reached its target
@@ -126,7 +128,9 @@ void rcntInit() {
 	rcntSet();
 
 	assert(Cpu != NULL && Cpu->ExecuteVU1Block != NULL );
+	s_prevExecuteVU0Block = Cpu->ExecuteVU0Block;
 	s_prevExecuteVU1Block = Cpu->ExecuteVU1Block;
+
 }
 
 // debug code, used for stats
@@ -246,7 +250,10 @@ void VSync()
 		// swap the vsync field
 		u32 newfield = (*(u32*)(PS2MEM_GS+0x1000)&0x2000) ? 0 : 0x2000;
 		*(u32*)(PS2MEM_GS+0x1000) = (*(u32*)(PS2MEM_GS+0x1000) & ~(1<<13)) | newfield;
+		
+
 		iFrame++;
+
 
 		// wait until GS stops
 		if( CHECK_MULTIGS ) {
@@ -303,7 +310,10 @@ void VSync()
 						if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 1, 0, 0);
 						else GSsetFrameSkip(1);
 						if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
+						{
 							Cpu->ExecuteVU1Block = DummyExecuteVU1Block;
+							//Cpu->ExecuteVU0Block = NULL;
+						}
 						bOkayToSkip = noSkipFrames;
 						bKeepSkipping = yesSkipFrames;
 					}
@@ -312,8 +322,11 @@ void VSync()
 				{
 					if (bKeepSkipping <= 1) {
 						//first set VU1 to enabled THEN unfreeze GS regs
-						if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
+						if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
+						{
 							Cpu->ExecuteVU1Block = s_prevExecuteVU1Block;
+							//Cpu->ExecuteVU0Block = s_prevExecuteVU0Block;
+						}
 						if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 						else GSsetFrameSkip(0);
 						bOkayToSkip--;
@@ -614,15 +627,11 @@ void rcntWmode(int index, u32 value)
 		}
 		//if(change != 0) SysPrintf("Weee\n");
 		//counters[index].sCycleT = cpuRegs.cycle - ((cpuRegs.cycle - counters[index].sCycleT) % counters[index].rate);
-#ifdef PCSX2_DEVBUILD
 		if(!(value & 0x80)) SysPrintf("Stopping\n");
-#endif
 		}
 	else {
-#ifdef PCSX2_DEVBUILD
 		SysPrintf("Counter %d not running c%x s%x c%x\n", index, counters[index].count, counters[index].sCycleT, cpuRegs.cycle);
 		if(value & 0x80) SysPrintf("Starting %d, v%x\n", index, value);
-#endif
 		counters[index].sCycleT = cpuRegs.cycle;
 		}
 	//if((value & 0x80) && !(counters[index].mode & 0x80)) rcntUpd(index); //Counter wasnt started, so set the start cycle

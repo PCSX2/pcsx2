@@ -13,7 +13,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef __MISC_H__
@@ -52,7 +52,14 @@
 #define CHECK_DUALCORE (Config.Options&PCSX2_DUALCORE)
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
-#define CHECK_FORCEABS (~(Config.Hacks >> 1) & 1) // always on, (Config.Options&PCSX2_FORCEABS)
+//------------ SPEED HACKS!!! ---------------
+#define CHECK_OVERFLOW (!(Config.Hacks & 0x2))
+#define CHECK_EXTRA_OVERFLOW (!(Config.Hacks & 0x40))
+#define CHECK_EESYNC_HACK (Config.Hacks & 0x1)
+#define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
+#define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
+#define CHECK_DENORMALS ((Config.Hacks & 0x8) ? 0xffc0 : 0xff80) //If enabled, Denormals are Zero for the recs
+#define CHECK_FASTBRANCHES (Config.Hacks & 0x80)
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
 

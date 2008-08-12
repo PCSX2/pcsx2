@@ -1,19 +1,19 @@
 /*  Pcsx2 - Pc Ps2 Emulator
- *  Copyright (C) 2002-2008  Pcsx2 Team
+ *  Copyright (C) 2002-2003  Pcsx2 Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include <stdio.h>
@@ -39,8 +39,6 @@
 #include "GS.h"
 
 #include "Cache.h"
-
-#include "Paths.h"
 
 u32 dwSaveVersion = 0x7a300010;
 u32 dwCurSaveStateVer = 0;
@@ -581,8 +579,8 @@ int SaveState(char *file) {
 	SysPrintf("Saving GS\n");
     if( CHECK_MULTIGS ) {
         // have to call in thread, otherwise weird stuff will start happening
-        u64 uf = (uptr)f;
-        GSRingBufSimplePacket(GS_RINGTYPE_SAVE, (u32)(uf&0xffffffff), (u32)(uf>>32), 0);
+        uptr uf = (uptr)f;
+        GSRingBufSimplePacket(GS_RINGTYPE_SAVE, (int)(uf&0xffffffff), (int)(uf>>32), 0);
         gsWaitGS();
     }
     else {
@@ -713,8 +711,8 @@ int LoadState(char *file) {
 	SysPrintf("Loading GS\n");
     if( CHECK_MULTIGS ) {
         // have to call in thread, otherwise weird stuff will start happening
-        u64 uf = (uptr)f;
-        GSRingBufSimplePacket(GS_RINGTYPE_LOAD, (u32)(uf&0xffffffff), (u32)(uf>>32), 0);
+        uptr uf = (uptr)f;
+        GSRingBufSimplePacket(GS_RINGTYPE_LOAD, (int)(uf&0xffffffff), (int)(uf>>32), 0);
         gsWaitGS();
     }
     else {
@@ -757,7 +755,7 @@ int SaveGSState(char *file)
 	return 0;
 }
 
-extern HWND pDsp;
+extern long pDsp;
 int LoadGSState(char *file)
 {
 	int ret;
@@ -768,7 +766,7 @@ int LoadGSState(char *file)
 	f = gzopen(file, "rb");
 	if (f == NULL) {
 		
-		sprintf(strfile, SSTATES_DIR "/%s", file);
+		sprintf(strfile, "sstates/%s", file);
 		// try prefixing with sstates
 		f = gzopen(strfile, "rb");
 		if( f == NULL ) {
@@ -894,7 +892,7 @@ void ProcessFKeys(int fkey, int shift)
     assert(fkey >= 1 && fkey <= 12 );
     switch(fkey) {
         case 1:
-			sprintf(Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, StatesC);
+			sprintf(Text, "sstates/%8.8X.%3.3d", ElfCRC, StatesC);
 			ret = SaveState(Text);
 			break;
 		case 2:
@@ -904,12 +902,12 @@ void ProcessFKeys(int fkey, int shift)
 				StatesC = (StatesC+1)%NUM_STATES;
 			SysPrintf("*PCSX2*: Selected State %ld\n", StatesC);
 			if( GSchangeSaveState != NULL ) {
-				sprintf(Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, StatesC);
+				sprintf(Text, "sstates/%8.8X.%3.3d", ElfCRC, StatesC);
 				GSchangeSaveState(StatesC, Text);
 			}
 			break;
 		case 3:			
-			sprintf (Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, StatesC);
+			sprintf (Text, "sstates/%8.8X.%3.3d", ElfCRC, StatesC);
 			ret = LoadState(Text);
 			break;	
 
@@ -996,10 +994,10 @@ void ProcessFKeys(int fkey, int shift)
 					tok = strtok(NULL, " ");
 					if( tok != NULL ) strcat(name, tok);
 
-					sprintf(Text, SSTATES_DIR "/%s.%d.gs", name, StatesC);
+					sprintf(Text, "sstates/%s.%d.gs", name, StatesC);
 				}
 				else
-					sprintf(Text, SSTATES_DIR "/%8.8X.%d.gs", ElfCRC, StatesC);
+					sprintf(Text, "sstates/%8.8X.%d.gs", ElfCRC, StatesC);
 
 				SaveGSState(Text);
 			}

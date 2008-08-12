@@ -1,19 +1,19 @@
 /*  Pcsx2 - Pc Ps2 Emulator
- *  Copyright (C) 2002-2008  Pcsx2 Team
+ *  Copyright (C) 2002-2005  Pcsx2 Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 // recompiler reworked to add dynamic linking zerofrog(@gmail.com) Jan06
@@ -1450,8 +1450,8 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 ////////////////////////////////////////////////////
 extern u8 g_MACFlagTransform[256]; // for vus
 
-u32 g_sseMXCSR = 0x9fc0; // disable all exception, round to 0, flush to 0
-u32 g_sseVUMXCSR = 0xff80; // set to 0xffc0 to enable DAZ
+u32 g_sseMXCSR = 0x9fc0; //0x9fc0 disable all exception, round to 0, flush to 0
+u32 g_sseVUMXCSR = 0;
 
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 {
@@ -1481,7 +1481,7 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 int recInit( void ) 
 {
 	int i;
-	static const u8 macarr[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+	const u8 macarr[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
 
 	recLUT = (uptr*) _aligned_malloc( 0x010000 * sizeof(uptr), 16 );
 	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
@@ -1576,10 +1576,11 @@ int recInit( void )
 
 	SuperVUInit(-1);
 
-	for(i = 0; i < 256; ++i) {
+	for(i = 0; i < 256; ++i) {       //x0-xF       //0x-Fx
 		g_MACFlagTransform[i] = macarr[i>>4]|(macarr[i&15]<<4);
 	}
 
+	g_sseVUMXCSR = CHECK_DENORMALS;
 	SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
 
 	return 0;
@@ -2136,6 +2137,7 @@ void SetBranchReg( u32 reg )
 
 void SetBranchImm( u32 imm )
 {
+	u32* ptr;
 	branch = 1;
 
 	assert( imm );
@@ -2148,10 +2150,8 @@ void SetBranchImm( u32 imm )
 	if( bExecBIOS ) CheckForBIOSEnd();
 
 	MOV32ItoR(EDX, 0);
-	{
-		u32* ptr = (u32*)(x86Ptr-4);
-		*ptr = (u32)JMP32((u32)Dispatcher - ( (u32)x86Ptr + 5 ));
-	}
+	ptr = (u32*)(x86Ptr-4);
+	*ptr = (u32)JMP32((u32)Dispatcher - ( (u32)x86Ptr + 5 ));
 }
 
 void SaveBranchState()
@@ -2227,7 +2227,7 @@ void iFlushCall(int flushtype)
 	}
 }
 
-#define USE_FAST_BRANCHES (Config.Hacks & 1)
+#define USE_FAST_BRANCHES CHECK_FASTBRANCHES
 
 //void testfpu()
 //{
@@ -2250,7 +2250,7 @@ void iFlushCall(int flushtype)
 //	assert( !g_globalXMMSaved );
 //}
 
-#define EECYCLE_MULT ((Config.Hacks & 1) ? 2.25 : (9/8))
+#define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.375 : 2.25) : (9/8))
 
 static void iBranchTest(u32 newpc, u32 cpuBranch)
 {
@@ -2835,9 +2835,9 @@ void recRecompile( u32 startpc )
 	else {
 		s_pCurBlockEx = NULL;
 		for(i = 0; i < EE_NUMBLOCKS; ++i) {
-			if( recBlocks[(i+s_nNextBlock)&(EE_NUMBLOCKS-1)].size == 0 ) {
-				s_pCurBlockEx = recBlocks+((i+s_nNextBlock)&(EE_NUMBLOCKS-1));
-				s_nNextBlock = (i+s_nNextBlock+1)&(EE_NUMBLOCKS-1);
+			if( recBlocks[(i+s_nNextBlock)%EE_NUMBLOCKS].size == 0 ) {
+				s_pCurBlockEx = recBlocks+(i+s_nNextBlock)%EE_NUMBLOCKS;
+				s_nNextBlock = (i+s_nNextBlock+1)%EE_NUMBLOCKS;
 				break;
 			}
 		}
