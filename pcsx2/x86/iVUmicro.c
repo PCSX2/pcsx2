@@ -2038,7 +2038,7 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 	//if( addr == VU_REGQ_ADDR ) CheckForOverflow(VU, info, EEREC_D);
 }
 
-static PCSX2_ALIGNED16(s_unaryminus[4]) = {0x80000000, 0, 0, 0};
+const static PCSX2_ALIGNED16(s_unaryminus[4]) = {0x80000000, 0, 0, 0};
 
 void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 {
@@ -4702,6 +4702,7 @@ void recVUMI_ILW(VURegs *VU, int info)
 	else if (_Y) off = 4;
 	else if (_Z) off = 8;
 	else if (_W) off = 12;
+	else { SysPrintf("Problem in recVUMI_ILW!!"); off=0; }
 
 	ADD_VI_NEEDED(_Fs_);
 	ftreg = ALLOCVI(_Ft_, MODE_WRITE);
@@ -4756,6 +4757,7 @@ void recVUMI_ILWR( VURegs *VU, int info )
 	else if (_Y) off = 4;
 	else if (_Z) off = 8;
 	else if (_W) off = 12;
+	else { SysPrintf("Problem in recVUMI_ILWR!!"); off=0; }
 
 	ADD_VI_NEEDED(_Fs_);
 	ftreg = ALLOCVI(_Ft_, MODE_WRITE);
@@ -5566,41 +5568,43 @@ void recVUMI_ESQRT( VURegs *VU, int info )
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 
-#if defined(_MSC_VER) && !defined(__x86_64__)
+//below code isn't used anymore, scheduled for deletion
 
-static u32 s_saveecx, s_saveedx, s_saveebx, s_saveesi, s_saveedi, s_saveebp;
-float tempsqrt = 0;
-extern float vuDouble(u32 f);
-__declspec(naked) void tempERSQRT()
-{
-    __asm {
-		mov s_saveecx, ecx
-		mov s_saveedx, edx
-		mov s_saveebx, ebx
-		mov s_saveesi, esi
-		mov s_saveedi, edi
-		mov s_saveebp, ebp
-	}
-
-	if (tempsqrt >= 0) {
-		tempsqrt = fpusqrtf(tempsqrt);
-		if (tempsqrt) {
-			tempsqrt = 1.0f / tempsqrt; 
-		}
-        tempsqrt = vuDouble(*(u32*)&tempsqrt);
-	}
-
-    __asm {
-		mov ecx, s_saveecx
-		mov edx, s_saveedx
-		mov ebx, s_saveebx
-		mov esi, s_saveesi
-		mov edi, s_saveedi
-		mov ebp, s_saveebp
-		ret
-	}
-}
-#endif
+//#if defined(_MSC_VER) && !defined(__x86_64__)
+//
+//static u32 s_saveecx, s_saveedx, s_saveebx, s_saveesi, s_saveedi, s_saveebp;
+//float tempsqrt = 0;
+//extern float vuDouble(u32 f);
+//__declspec(naked) void tempERSQRT()
+//{
+//    __asm {
+//		mov s_saveecx, ecx
+//		mov s_saveedx, edx
+//		mov s_saveebx, ebx
+//		mov s_saveesi, esi
+//		mov s_saveedi, edi
+//		mov s_saveebp, ebp
+//	}
+//
+//	if (tempsqrt >= 0) {
+//		tempsqrt = fpusqrtf(tempsqrt);
+//		if (tempsqrt) {
+//			tempsqrt = 1.0f / tempsqrt; 
+//		}
+//        tempsqrt = vuDouble(*(u32*)&tempsqrt);
+//	}
+//
+//    __asm {
+//		mov ecx, s_saveecx
+//		mov edx, s_saveedx
+//		mov ebx, s_saveebx
+//		mov esi, s_saveesi
+//		mov edi, s_saveedi
+//		mov ebp, s_saveebp
+//		ret
+//	}
+//}
+//#endif
 
 void recVUMI_ERSQRT( VURegs *VU, int info )
 {

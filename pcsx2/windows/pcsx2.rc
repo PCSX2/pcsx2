@@ -946,24 +946,24 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,119,197,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,174,197,50,14
     CONTROL         "EE Sync Hack (x2) - Doubles the cycle rate of the EE.",IDC_SYNCHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,336,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,100,186,10
     CONTROL         "Disable All Overflow Checks - Doesn't check for overflow at all in the VU Recs.",IDC_OVERFLOWHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,53,336,10
-    CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,336,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,53,264,10
+    CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,42,7,269,8
     CONTROL         "Tighter SPU2 Sync ( FFXII vids) - slower, not usefull anymore",IDC_SOUNDHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,180,336,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,168,211,10
     CONTROL         "Denormals are Zero - Makes very small numbers be equal to zero. (Big speedup on Intel CPUs)",IDC_DENORMALS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,67,336,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,67,317,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP.",IDC_SYNCHACK2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,120,336,10
-    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate instead of doubling it.",IDC_SYNCHACK3,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,135,336,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,114,194,10
+    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate (not recommended)",IDC_SYNCHACK3,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,126,309,10
     CONTROL         "Disable Extra Overflow Checks - Disables extra overflow checks used to help stop SPS.",IDC_OVERFLOWHACK_EXTRA,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,40,336,10
-    CONTROL         "EE/IOP Fast Branches - Quick branching (very small speedup)",IDC_FASTBRANCHES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,150,336,10
-    LTEXT           "Choose either the x2 OR the x3 hacks, not both",IDC_STATIC,78,93,181,8
-    LTEXT           "If you have problems, disable all these and try again",IDC_STATIC,79,18,181,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,40,293,10
+    CONTROL         "EE/IOP Fast Branches - Quick branching (very small speedup, use only when you need every fps)",IDC_FASTBRANCHES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,154,327,10
+    LTEXT           "",IDC_STATIC,78,93,181,8
+    LTEXT           "If you have problems, disable all these and try again",IDC_STATIC,79,21,169,8
 END
 
 
