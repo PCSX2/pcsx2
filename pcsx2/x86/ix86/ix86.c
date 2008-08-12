@@ -72,16 +72,16 @@ void WriteRmOffset(x86IntRegType to, int offset)
 	if( (to&7) == ESP ) {
 		if( offset == 0 ) {
 			ModRM( 0, 0, 4 );
-			ModRM( 0, ESP, 4 );
+			SibSB( 0, ESP, 4 );
 		}
 		else if( offset < 128 && offset >= -128 ) {
 			ModRM( 1, 0, 4 );
-			ModRM( 0, ESP, 4 );
+			SibSB( 0, ESP, 4 );
 			write8(offset);
 		}
 		else {
 			ModRM( 2, 0, 4 );
-			ModRM( 0, ESP, 4 );
+			SibSB( 0, ESP, 4 );
 			write32(offset);
 		}
 	}
@@ -1117,32 +1117,56 @@ void ADD64RtoR( x86IntRegType to, x86IntRegType from )
 void ADD32ItoR( x86IntRegType to, u32 from ) 
 {
     RexB(0, to);
-	if ( to == EAX) {
-        write8( 0x05 ); 
-    }
-    else {
-		write8( 0x81 ); 
+	if(from < 0x80)
+	{
+		write8( 0x83 ); 
 		ModRM( 3, 0, to );
+		write8( from ); 
 	}
-	write32( from );
+	else
+	{
+		if ( to == EAX) {
+			write8( 0x05 ); 
+		}
+		else {
+			write8( 0x81 ); 
+			ModRM( 3, 0, to );
+		}
+		write32( from );
+	}
 }
 
 /* add imm32 to m32 */
 void ADD32ItoM( uptr to, u32 from ) 
 {
-	write8( 0x81 ); 
-	ModRM( 0, 0, DISP32 );
-	write32( MEMADDR(to, 8) );
-	write32( from );
+	if(from < 0x80)
+	{
+		write8( 0x83 ); 
+		ModRM( 0, 0, DISP32 );
+		write32( MEMADDR(to, 8) );
+		write8( from );
+	} else {
+		write8( 0x81 ); 
+		ModRM( 0, 0, DISP32 );
+		write32( MEMADDR(to, 8) );
+		write32( from );
+	}
 }
 
 // add imm32 to [r32+off]
 void ADD32ItoRmOffset( x86IntRegType to, u32 from, int offset)
 {
-    RexB(0,to);
-    write8( 0x81 );
-    WriteRmOffset(to,offset);
-	write32(from);
+	RexB(0,to);
+	if(from < 0x80)
+	{
+		write8( 0x83 );
+		WriteRmOffset(to,offset);
+		write8(from);
+	} else {
+		write8( 0x81 );
+		WriteRmOffset(to,offset);
+		write32(from);
+	}
 }
 
 /* add r32 to r32 */
@@ -1183,28 +1207,46 @@ void ADD16RtoR( x86IntRegType to , x86IntRegType from )
 /* add imm16 to r16 */
 void ADD16ItoR( x86IntRegType to, u16 from ) 
 {
-	write8( 0x66 );
     RexB(0,to);
+
+	write8( 0x66 );
 	if ( to == EAX) 
-   {
+	{
 		write8( 0x05 ); 
+		write16( from );
 	}
-   else 
-   {
+	else if(from < 0x80)
+	{
+		write8( 0x83 ); 
+		ModRM( 3, 0, to );
+		write8( from );
+	}
+	else
+	{
 		write8( 0x81 ); 
 		ModRM( 3, 0, to );
+		write16( from );
 	}
-	write16( from );
 }
 
 /* add imm16 to m16 */
 void ADD16ItoM( uptr to, u16 from ) 
 {
 	write8( 0x66 );
-	write8( 0x81 ); 
-	ModRM( 0, 0, DISP32 );
-	write32( MEMADDR(to, 6) );
-	write16( from );
+	if(from < 0x80)
+	{
+		write8( 0x83 ); 
+		ModRM( 0, 0, DISP32 );
+		write32( MEMADDR(to, 6) );
+		write8( from );
+	}
+	else
+	{
+		write8( 0x81 ); 
+		ModRM( 0, 0, DISP32 );
+		write32( MEMADDR(to, 6) );
+		write16( from );
+	}
 }
 
 /* add r16 to m16 */
@@ -2286,13 +2328,20 @@ void AND64I32toM( uptr to, u32 from )
 void AND32ItoR( x86IntRegType to, u32 from ) 
 {
     RexB(0,to);
-	if ( to == EAX ) {
-		write8( 0x25 ); 
-	} else {
-		write8( 0x81 ); 
-		ModRM( 3, 0x4, to );
+	if(from < 0x80)
+	{
+		AND32I8toR(to, (u8)from);
 	}
-	write32( from ); 
+	else
+	{
+		if ( to == EAX ) {
+			write8( 0x25 ); 
+		} else {
+			write8( 0x81 ); 
+			ModRM( 3, 0x4, to );
+		}
+		write32( from );
+	}
 }
 
 /* and sign ext imm8 to r32 */
@@ -2307,10 +2356,17 @@ void AND32I8toR( x86IntRegType to, u8 from )
 /* and imm32 to m32 */
 void AND32ItoM( uptr to, u32 from ) 
 {
-	write8( 0x81 ); 
-	ModRM( 0, 0x4, DISP32 );
-	write32( MEMADDR(to, 8) );
-	write32( from ); 
+	if(from < 0x80)
+	{
+		AND32I8toM(to, (u8)from);
+	}
+	else
+	{
+		write8( 0x81 ); 
+		ModRM( 0, 0x4, DISP32 );
+		write32( MEMADDR(to, 8) );
+		write32( from ); 
+	}
 }
 
 /* and sign ext imm8 to m32 */
@@ -2360,24 +2416,38 @@ void AND16RtoR( x86IntRegType to, x86IntRegType from )
 /* and imm16 to r16 */
 void AND16ItoR( x86IntRegType to, u16 from ) 
 {
-    write8(0x66);
     RexB(0,to);
+
+    write8(0x66);
 	if ( to == EAX ) {
 		write8( 0x25 ); 
+		write16( from ); 
+	} else if ( from < 0x80 ) {
+		write8( 0x83 ); 
+		ModRM( 3, 0x4, to );
+		write8( from ); 
 	} else {
 		write8( 0x81 ); 
 		ModRM( 3, 0x4, to );
+		write16( from ); 
 	}
-	write16( from ); 
 }
 
 /* and imm16 to m16 */
 void AND16ItoM( uptr to, u16 from ) 
 {
-	write16( 0x8166 ); 
-	ModRM( 0, 0x4, DISP32 );
-	write32( MEMADDR(to, 6) );
-	write16( from ); 
+    write8(0x66);
+	if ( from < 0x80 ) {
+		write8( 0x83 ); 
+		ModRM( 0, 0x4, DISP32 );
+		write32( MEMADDR(to, 6) );
+		write8( from );
+	} else {
+		write8( 0x81 ); 
+		ModRM( 0, 0x4, DISP32 );
+		write32( MEMADDR(to, 6) );
+		write16( from );
+	}
 }
 
 /* and r16 to m16 */
