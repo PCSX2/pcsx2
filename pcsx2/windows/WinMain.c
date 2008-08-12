@@ -13,7 +13,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #define WINVER 0x0500
@@ -48,6 +48,8 @@
 #include "iVUzerorec.h"
 
 #include "cheats/cheats.h"
+
+#include "../Paths.h"
 
 #define COMPILEDATE         __DATE__
 
@@ -1367,8 +1369,8 @@ void ChangeLanguage(char *lang) {
 static int sinit=0;
 
 int SysInit() {
-	CreateDirectory("memcards", NULL);
-	CreateDirectory("sstates", NULL);
+	CreateDirectory(MEMCARDS_DIR, NULL);
+	CreateDirectory(SSTATES_DIR, NULL);
 #ifdef EMU_LOG
 	CreateDirectory("logs", NULL);
 
@@ -1380,7 +1382,7 @@ int SysInit() {
 #endif
 
 	if( emuLog != NULL )
-		setvbuf(emuLog, NULL,  _IONBF, 0);
+		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
 
 #endif
 	if (cpuInit() == -1) return -1;
