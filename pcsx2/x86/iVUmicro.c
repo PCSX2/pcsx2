@@ -4910,8 +4910,8 @@ void recVUMI_FSAND( VURegs *VU, int info )
 	if(_Ft_ == 0) return; 
 
 	ftreg = ALLOCVI(_Ft_, MODE_WRITE);
-	MOV32MtoR(ftreg, VU_VI_ADDR(REG_STATUS_FLAG, 1));
-	AND32ItoR( ftreg, 0xFF&imm ); // yes 0xff not 0xfff since only first 8 bits are valid!
+	MOV32MtoR( ftreg, VU_VI_ADDR(REG_STATUS_FLAG, 1) );
+	AND32ItoR( ftreg, imm );
 }
 
 void recVUMI_FSEQ( VURegs *VU, int info )
@@ -4955,31 +4955,20 @@ void recVUMI_FSSET(VURegs *VU, int info)
 
     // keep the low 6 bits ONLY if the upper instruction is an fmac instruction (otherwise rewrite) - metal gear solid 3
     //if( (info & PROCESS_VU_SUPER) && VUREC_FMAC ) {
-    //    MOV32MtoR(EAX, prevaddr);
-	//    AND32ItoR(EAX, 0x3f);
-	//    if ((imm&0xfc0) != 0) OR32ItoR(EAX, imm & 0xFC0);
-    //    MOV32RtoM(writeaddr ? writeaddr : prevaddr, EAX);
+        MOV32MtoR(EAX, prevaddr);
+	    AND32ItoR(EAX, 0x3f);
+	    if ((imm&0xfc0) != 0) OR32ItoR(EAX, imm & 0xFC0);
+        MOV32RtoM(writeaddr ? writeaddr : prevaddr, EAX);
     //}
     //else {
     //    MOV32ItoM(writeaddr ? writeaddr : prevaddr, imm&0xfc0);
 	//}
-	if (writeaddr) {
-		AND32ItoM(writeaddr, 0x3f);
-		OR32ItoM(writeaddr, imm&0xfc0);
-	}
-	else {
-		AND32ItoM(prevaddr, 0x3f);
-		OR32ItoM(prevaddr, imm&0xfc0);
-	}
 }
 
 void recVUMI_FMAND( VURegs *VU, int info )
 {
 	int fsreg, ftreg;
 	if ( _Ft_ == 0 ) return;
-
-	//fsreg = ALLOCVI(_Fs_, MODE_READ); //_checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
-	//ftreg = ALLOCVI(_Ft_, MODE_WRITE);//|MODE_8BITREG);
 
 	if( _Ft_ != _Fs_ ) {
 		fsreg = ALLOCVI(_Fs_, MODE_READ);
@@ -4991,15 +4980,6 @@ void recVUMI_FMAND( VURegs *VU, int info )
 		ftreg = ALLOCVI(_Ft_, MODE_WRITE);
 		AND16MtoR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1) );
 	}
-	/*
-	if( fsreg >= 0 ) {
-		if( ftreg != fsreg ) MOV32RtoR(ftreg, fsreg);
-	}
-	else MOV16MtoR(ftreg, VU_VI_ADDR(_Fs_, 1));
-
-	AND16MtoR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
-	MOVZX32R8toR(ftreg, ftreg);
-	*/
 }
 
 void recVUMI_FMEQ( VURegs *VU, int info )
@@ -5041,20 +5021,9 @@ void recVUMI_FMOR( VURegs *VU, int info )
 		OR16MtoR(ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
 	}
 	else {
-		if( info & PROCESS_VU_SUPER ) SysPrintf( "VU ERROR: can't get VI ADDR\n" );
 		ftreg = ALLOCVI(_Ft_, MODE_WRITE);
 		MOVZX32M16toR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
 		OR16MtoR( ftreg, VU_VI_ADDR(_Fs_, 1) );
-
-
-		//fsreg = ALLOCVI(_Ft_, MODE_READ); //_checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
-		//MOVZX32M16toR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
-		/*
-		if( fsreg >= 0 )
-			OR16RtoR( ftreg, fsreg);
-		else
-			OR16MtoR( ftreg, VU_VI_ADDR(_Fs_, 1));
-		*/
 	}
 }
 
@@ -5062,9 +5031,10 @@ void recVUMI_FCAND( VURegs *VU, int info )
 {
 	int ftreg = ALLOCVI(1, MODE_WRITE|MODE_8BITREG);
 
-	MOV32MtoR( EAX, VU_VI_ADDR(REG_CLIP_FLAG, 1));
-	XOR32RtoR(ftreg, ftreg);
+	MOV32MtoR( EAX, VU_VI_ADDR(REG_CLIP_FLAG, 1) );
+	XOR32RtoR( ftreg, ftreg );
 	AND32ItoR( EAX, VU->code & 0xFFFFFF );
+
 	SETNZ8R(ftreg);
 }
 
@@ -5072,10 +5042,11 @@ void recVUMI_FCEQ( VURegs *VU, int info )
 {
 	int ftreg = ALLOCVI(1, MODE_WRITE|MODE_8BITREG);
 
-	MOV32MtoR( EAX, VU_VI_ADDR(REG_CLIP_FLAG, 1));
-	//AND32ItoR( EAX, 0xffffff);
-	XOR32RtoR(ftreg, ftreg);
+	MOV32MtoR( EAX, VU_VI_ADDR(REG_CLIP_FLAG, 1) );
+	AND32ItoR( EAX, 0xffffff );
+	XOR32RtoR( ftreg, ftreg );
 	CMP32ItoR( EAX, VU->code&0xffffff );
+
 	SETE8R(ftreg);
 }
 
@@ -5083,13 +5054,12 @@ void recVUMI_FCOR( VURegs *VU, int info )
 {
 	int ftreg = ALLOCVI(1, MODE_WRITE|MODE_8BITREG);
 
-	MOV32MtoR( EAX, VU_VI_ADDR(REG_CLIP_FLAG, 1));
-	//AND32ItoR( EAX, 0xffffff);
-	XOR32RtoR(ftreg, ftreg);
-	OR32ItoR( EAX, VU->code | 0xff000000 );
-	ADD32ItoR(EAX, 1);
+	MOV32MtoR( EAX, VU_VI_ADDR(REG_CLIP_FLAG, 1) );
+	XOR32RtoR( ftreg, ftreg );
+	OR32ItoR( EAX, VU->code );
+	AND32ItoR( EAX, 0xffffff );
+	CMP32ItoR( EAX, 0xffffff );
 
-	// set to 1 if EAX is 0
 	SETZ8R(ftreg);
 }
 
