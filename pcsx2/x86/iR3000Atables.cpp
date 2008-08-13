@@ -1796,7 +1796,7 @@ extern void (*rpsxCP2BSC[32])();
 static void rpsxSPECIAL() { rpsxSPC[_Funct_](); }
 static void rpsxREGIMM() { rpsxREG[_Rt_](); }
 static void rpsxCOP0() { rpsxCP0[_Rs_](); }
-static void rpsxBASIC() { rpsxCP2BSC[_Rs_](); }
+//static void rpsxBASIC() { rpsxCP2BSC[_Rs_](); }
 
 static void rpsxNULL() {
 	SysPrintf("psxUNK: %8.8x\n", psxRegs.code);
