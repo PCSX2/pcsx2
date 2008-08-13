@@ -1263,7 +1263,11 @@ void vuFloat(int regd, int XYZW) {
 // Clamps infinities to max/min non-infinity number (uses a temp reg)
 void vuFloat2(int regd, int regTemp, int XYZW) {
 	if( CHECK_OVERFLOW ) {
-		if (XYZW != 0xf) { // here we use a temp reg because not all xyzw are being modified
+		if (XYZW == 8) {
+			SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
+			SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
+		}
+		else if (XYZW != 0xf) { // here we use a temp reg because not all xyzw are being modified
 			SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
 			SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
 			SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
@@ -5309,7 +5313,7 @@ void vuSqSumXYZ(int regd, int regs, int regtemp)
 	else 
 	{
 		SSE_MOVAPS_XMM_to_XMM(regtemp, regs);
-		SSE_MULPS_XMM_to_XMM(regtemp, regtemp);
+		SSE_MULPS_XMM_to_XMM(regtemp, regtemp); // xyzw ^ 2
 
 		if( cpucaps.hasStreamingSIMD3Extensions ) {
 			SSE3_HADDPS_XMM_to_XMM(regd, regtemp);
@@ -5318,10 +5322,10 @@ void vuSqSumXYZ(int regd, int regs, int regtemp)
 		}
 		else {
 			SSE_MOVSS_XMM_to_XMM(regd, regtemp);
-			SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xE1);
-			SSE_ADDSS_XMM_to_XMM(regd, regtemp);
-			SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xD2);
-			SSE_ADDSS_XMM_to_XMM(regd, regtemp);
+			SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xE1); // wzyx -> wzxy
+			SSE_ADDSS_XMM_to_XMM(regd, regtemp); // x ^ 2 + y ^ 2
+			SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xD2); // wzxy -> wxyz 
+			SSE_ADDSS_XMM_to_XMM(regd, regtemp); // x ^ 2 + y ^ 2 + z ^ 2
 			//SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xC6);
 		}
 	}
@@ -5356,9 +5360,7 @@ void recVUMI_ESADD( VURegs *VU, int info)
 		}
 	}
 
-	CheckForOverflowSS_(EEREC_TEMP, EEREC_D);
-	//SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
-	//SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
+	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
@@ -5395,9 +5397,7 @@ void recVUMI_ERSADD( VURegs *VU, int info )
 
 	// don't use RCPSS (very bad precision)
 	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-	CheckForOverflowSS_(EEREC_TEMP, EEREC_D);
-	//SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
-	//SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
+	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
@@ -5414,17 +5414,13 @@ void recVUMI_ELENG( VURegs *VU, int info )
 void recVUMI_ERLENG( VURegs *VU, int info )
 {
 	assert( VU == &VU1 );
-	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP); //Dont want to use EEREC_D incase it overwrites something
+	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
 	//SysPrintf("ERLENG\n");
-	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
-	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
-	SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_P, 0));
-	//SSE_RSQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-	//CheckForOverflowSS_(EEREC_TEMP, EEREC_D);
-	//SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
-	//SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
-	
+	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // sqrt(x^2 + y^2 + z^2)
+	SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP); // d <- sqrt(x^2 + y^2 + z^2)
+	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // temp <- 1
+	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // temp = 1 / sqrt(x^2 + y^2 + z^2)
+	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 
