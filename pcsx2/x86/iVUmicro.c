@@ -5380,6 +5380,12 @@ void recVUMI_ESADD( VURegs *VU, int info)
 {
 	assert( VU == &VU1 );
 	//SysPrintf("ESADD\n");
+	if( EEREC_TEMP == EEREC_D ) {
+		SysPrintf("ESADD: Resetting P reg!!!\n");
+		// special code to reset P (don't know if this is still useful)
+		MOV32ItoM(VU_VI_ADDR(REG_P, 0), 0);
+		return;
+	}
 	if( cpucaps.hasStreamingSIMD4Extensions )
 	{
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
