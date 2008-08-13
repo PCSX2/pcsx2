@@ -1331,6 +1331,7 @@ const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])		= {0x007fffff, 0x007fff
 const static PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 const static PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 const static PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
+PCSX2_ALIGNED16(u64 TEMPXMMData[2];)
 
 // VU Flags
 // NOTE: Flags now compute under/over flows! :p
@@ -1470,7 +1471,14 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	//-------------------------Flag Setting if (reg == EEREC_TEMP)------------------------------
 	else {
 
-		int t1reg = _allocTempXMMreg(XMMT_FPS, -1);//_getFreeXMMreg();//_vuGetTempXMMreg(info);
+		int t1reg = _vuGetTempXMMreg(info);
+		int t1regBoolean = 0;
+		if (t1reg == -1) {
+			//SysPrintf( "VU ALLOCATION ERROR: Temp reg can't be allocated!!!!\n" );
+			t1reg = (reg >= XMMREGS) ? (reg - 1) : (reg + 1);
+			SSE_MOVAPS_XMM_to_M128( (uptr)TEMPXMMData, t1reg );
+			t1regBoolean = 1;
+		}
 
 		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
 
@@ -1571,7 +1579,10 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		//-------------------------Finally: Send the Flags to the Mac Address------------------------------
 		//SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Don't need to restore the reg since this is a temp reg
 
-		_freeXMMreg(t1reg);
+		if (t1regBoolean)
+			SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)TEMPXMMData );
+		else
+			_freeXMMreg(t1reg);
 
 		if( macaddr != 0 )
 			MOV16RtoM(macaddr, x86macflag);
