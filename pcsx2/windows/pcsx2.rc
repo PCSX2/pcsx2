@@ -962,7 +962,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,351,10
     CTEXT           "If you have problems, disable all these and try again",IDC_STATIC,7,22,391,8
     GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,391,60
-    CONTROL         "Denormals are Zero - Makes very small numbers be equal to zero. (Big speedup on Intel CPUs)",IDC_DENORMALS,
+    CONTROL         "Denormals are Zero - Makes very small numbers equal zero. (Big speedup on Intel CPUs) (Restart the emu!)",IDC_DENORMALS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,76,364,10
     GROUPBOX        "Sync Hacks",IDC_STATIC,7,101,391,59
     GROUPBOX        "Miscellaneous",IDC_STATIC,7,168,391,46

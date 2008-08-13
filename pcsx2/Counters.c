@@ -203,7 +203,6 @@ void UpdateVSyncRate() {
 	rcntSet();
 }
 
-u32 pauses=0;
 
 void FrameLimiter()
 {
@@ -221,7 +220,6 @@ void FrameLimiter()
 	}
 	else do {
 		Sleep(1);
-		pauses++;
 		iEnd = GetCPUTicks();
 	} while(iEnd<iExpectedEnd);
 	iStart = iExpectedEnd; //remember the expected value frame. improves smoothness

@@ -674,21 +674,101 @@ void cdvdReset()
 void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
 	int readspeed = 0;	// 1 Sector size
 	int amount = 0;		// Total bytes transfered at 1x speed
-	//if(mode) amount = 153600;
-	//else 
+
+	//static int last_sector = 0;
+	//int start_sector = cdvd.Sector;
+	//int sector_difference = abs(start_sector - last_sector);
+
 	amount = cdvd.BlockSize; // in Bytes
+
 	if(mode == 0)
 		readspeed = ((PSXCLK /1382400)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //1350KB = dvd x 1
 	else
 		readspeed = ((PSXCLK /153600)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //150KB = cd x 1
 	
-	//amount = 1280000;
+
+	cdvdReadTime = readspeed; //+sector_difference/14;
+	//if (sector_difference > 500000){SysPrintf("making longer\n");cdvdReadTime*=6;}
 	
-	
-	//readsize = amount / cdvd.BlockSize; // Time taken for 1 sector to be read
-	cdvdReadTime = readspeed; //(PSXCLK / readspeed); /// amount;
-	//SysPrintf("CDVD Cnt Time = %x\n", cdvdReadTime);
+	//SysPrintf("secdiff = %d cdvdReadTime = %d\n", sector_difference, cdvdReadTime);
+	//SysPrintf("CDVD Cnt Time = %d\n", cdvd.nSectors);
+	//last_sector = start_sector;
 }
+
+//void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
+// 
+//	/* rant by giga:
+// 
+//		4x reading speed = ~5.40mb/s
+//		4x reading time  = ~0,185 seconds/mb
+//						 = ~0.00036169e-4 seconds/sector
+//						 = ~0.36169 ms/sector
+// 
+//		psx clock = 48000 * 768 = 36864000 Hz
+// 
+//		4x reading time  = 13333 cycles/sector
+// 
+//		so:
+//		1x reading time  = 53333 cycles/sector
+// 
+//		now:
+//		ps2's drive is CAV, so at the end of the disc it gets faster.
+//		The inner edge is roughly 2cm radius, while the outer edge is 6cm
+// 
+//		so at the outer edge, the speed is roughly 3x the speed at the inner edge.
+// 
+//		question: the 1x speed refers to the inner or the outer edge? I assume inner.
+// 
+//		then:
+//		if the inner timing is 53333cycles/sector
+//		then the outer timing woudl be 1/3 of that
+// 
+//		so:
+//		1x outer reading time = 17777 cycles/sector
+// 
+//		1x reading time would follow a function similar to:
+// 
+//			f(start_sector->cycle_delay) = 53333 - (start_sector) * (53333-17777) / cdvd_layer_size
+// 
+//		assuming cdvd_layer_size is 2300000 (it's slightly smaller)
+//		we can say:
+// 
+//			f(start_sector->cycle_delay) = 53333 - (start_sector) * (53333-17777) / 2300000
+// 
+//		because those numbers are too ugly, I will simplify everything and round it up
+// 
+//			f(start_sector->cycle_delay) = 54000 - (start_sector) * (54-18) / 2300
+//			f(start_sector->cycle_delay) = 54000 - (start_sector) * 36 / 2300
+//			f(start_sector->cycle_delay) = 54000 - (start_sector) / 64
+//			f(start_sector->cycle_delay) = 54000 - (start_sector >> 6)
+// 
+//	*/
+// 
+//	static int last_sector = 0;
+// 
+//	int start_sector = cdvd.Sector;
+//	
+//	int amount = (cdvd.BlockSize+2047)/2048; // in Sectors
+//
+//	int sector_difference = abs(start_sector - last_sector);
+// 
+//	if(mode==0)
+//	{
+//		cdvdReadTime = (54000 - (start_sector >> 6)) * amount / cdvd.Speed;
+//	}
+//	else
+//	{
+//		// 1 sector = 1/75 of a second
+//		cdvdReadTime = (PSXCLK * amount / 75) / cdvd.Speed; //150KB = cd x 1
+//	}
+// 
+//	//calculate seek delay
+//	cdvdReadTime += sector_difference / 14;
+// 
+//	SysPrintf("CDVD Cnt Time = %d  \n", cdvdReadTime);
+//	SysPrintf("CDVD Debug: Sector difference: %d\n", sector_difference);
+//	last_sector = start_sector;
+//}
 
 int  cdvdFreeze(gzFile f, int Mode) {
 	gzfreeze(&cdvd, sizeof(cdvd));
