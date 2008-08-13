@@ -1016,9 +1016,9 @@ const static PCSX2_ALIGNED16(u32 s_FloatMinMax[]) = {
 	0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff,
 	0,			0,			0,			0 };
 
-const static PCSX2_ALIGNED16(float s_fones[]) = { 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
-const static PCSX2_ALIGNED16(u32 s_mask[]) = {0x7fffff, 0x7fffff, 0x7fffff, 0x7fffff };
-const static PCSX2_ALIGNED16(u32 s_expmask[]) = {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+const static PCSX2_ALIGNED16(float s_fones[])	= { 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+const static PCSX2_ALIGNED16(u32 s_mask[])		= {0x7fffff, 0x7fffff, 0x7fffff, 0x7fffff };
+const static PCSX2_ALIGNED16(u32 s_expmask[])	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
 
 const static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0xf0000000, 0xf0000000, 0xf0000000, 0xf0000000};
 
@@ -1322,8 +1322,8 @@ void ClampUnordered(int regd, int t0reg, int dosign)
 //    __asm ret
 //}
 
-const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask1[4])	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])	= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
+const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask1[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
 const static PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 const static PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 const static PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
@@ -4695,14 +4695,13 @@ void recVUMI_ILW(VURegs *VU, int info)
 	int ftreg;
 	s16 imm, off;
  
-	if ( _Ft_ == 0 ) return;
+	if ( ( _Ft_ == 0 ) || ( _X_Y_Z_W == 0 ) ) return;
 
 	imm = ( VU->code & 0x400) ? ( VU->code & 0x3ff) | 0xfc00 : ( VU->code & 0x3ff);
 	if (_X) off = 0;
 	else if (_Y) off = 4;
 	else if (_Z) off = 8;
 	else if (_W) off = 12;
-	else { SysPrintf("Problem in recVUMI_ILW!!"); off=0; }
 
 	ADD_VI_NEEDED(_Fs_);
 	ftreg = ALLOCVI(_Ft_, MODE_WRITE);
@@ -4751,13 +4750,12 @@ void recVUMI_ILWR( VURegs *VU, int info )
 {
 	int off, ftreg;
 
-	if ( _Ft_ == 0 ) return;
+	if ( ( _Ft_ == 0 ) || ( _X_Y_Z_W == 0 ) ) return;
 
 	if (_X) off = 0;
 	else if (_Y) off = 4;
 	else if (_Z) off = 8;
 	else if (_W) off = 12;
-	else { SysPrintf("Problem in recVUMI_ILWR!!"); off=0; }
 
 	ADD_VI_NEEDED(_Fs_);
 	ftreg = ALLOCVI(_Ft_, MODE_WRITE);
