@@ -31,13 +31,13 @@ extern u32 nextCounter, nextsCounter;
 
 void rcntInit();
 void rcntUpdate();
-void rcntStartGate(int mode);
-void rcntEndGate(int mode);
+void rcntStartGate(unsigned int mode);
+void rcntEndGate(unsigned int mode);
 void rcntWcount(int index, u32 value);
 void rcntWmode(int index, u32 value);
 void rcntWtarget(int index, u32 value);
 void rcntWhold(int index, u32 value);
-u16  rcntRcount(int index);
+u32  rcntRcount(int index);
 u32 rcntCycle(int index);
 int  rcntFreeze(gzFile f, int Mode);
 

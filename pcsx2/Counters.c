@@ -661,7 +661,7 @@ void rcntWmode(int index, u32 value)
 
 }
 
-void rcntStartGate(int mode){
+void rcntStartGate(unsigned int mode){
 	int i;
 
 	if(mode == 0){
@@ -699,7 +699,7 @@ void rcntStartGate(int mode){
 		}
 	}
 }
-void rcntEndGate(int mode){
+void rcntEndGate(unsigned int mode){
 	int i;
 
 	for(i=0; i <=3; i++){  //Gates for counters
@@ -750,8 +750,8 @@ void rcntWhold(int index, u32 value) {
 	counters[index].hold = value;
 }
 
-u16 rcntRcount(int index) {
-	u16 ret;
+u32 rcntRcount(int index) {
+	u32 ret;
 
 	if ((counters[index].mode & 0x80)) {
 		ret = counters[index].count + (int)((cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate);
@@ -761,7 +761,7 @@ u16 rcntRcount(int index) {
 #ifdef EECNT_LOG
 	EECNT_LOG("EE count read %d value %x\n", index, ret);
 #endif
-	return (u16)ret;
+	return ret;
 }
 
 u32 rcntCycle(int index) {
