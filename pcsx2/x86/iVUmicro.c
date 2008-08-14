@@ -1004,6 +1004,30 @@ int _vuGetTempXMMreg(int info)
 	return t1reg;
 }
 
+// gets a temp reg that is not regd
+int _vuGetTempXMMreg2(int info, int regd)
+{
+	int t1reg = -1;
+
+	if( _hasFreeXMMreg() ) {
+		t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+
+		if( t1reg == regd ) {
+			if( _hasFreeXMMreg() ) {
+				int t = _allocTempXMMreg(XMMT_FPS, -1);
+				_freeXMMreg(t1reg);
+				t1reg = t;
+			}
+			else {
+				_freeXMMreg(t1reg);
+				t1reg = -1;
+			}
+		}
+	}
+	
+	return t1reg;
+}
+
 PCSX2_ALIGNED16(u32 g_minvals[4]) = {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
 PCSX2_ALIGNED16(u32 g_maxvals[4]) = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
@@ -1105,9 +1129,37 @@ void testWhenOverflow(int info, int regd, int t0reg) {
 		SysPrintf( "VU OVERFLOW!: Changing to -Fmax!!!!!!!!!!!!\n" );
 }
 
-// Clamps infinities to max/min non-infinity number (doesn't use any temp regs)
-void vuFloat(int regd, int XYZW) {
+// Clamps infinities to max/min non-infinity number (uses a temp reg)
+void vuFloat2(int regd, int regTemp, int XYZW) {
 	if( CHECK_OVERFLOW ) {
+		if (XYZW == 8) {
+			SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
+			SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
+		}
+		else if (XYZW != 0xf) { // here we use a temp reg because not all xyzw are being modified
+			SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
+			SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
+			SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
+			VU_MERGE_REGS_CUSTOM(regd, regTemp, XYZW);
+		}
+		else { // all xyzw are being modified, so no need to use temp reg
+			SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
+			SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
+		}
+	}
+}
+
+// Clamps infinities to max/min non-infinity number (doesn't use any temp regs)
+void vuFloat( int info, int regd, int XYZW) {
+	if( CHECK_OVERFLOW ) {
+		if ( (XYZW != 0) || (XYZW != 8) || (XYZW != 0xF) ) {
+			int t1reg = _vuGetTempXMMreg2(info, regd);
+			if (t1reg >= 0) {
+				vuFloat2( regd, t1reg, XYZW );
+				_freeXMMreg( t1reg );
+				return;
+			}
+		}
 		switch (XYZW) {
 			case 0: // Don't do anything if no vectors are being modified.
 				break;
@@ -1260,26 +1312,6 @@ void vuFloat(int regd, int XYZW) {
 	}
 }
 
-// Clamps infinities to max/min non-infinity number (uses a temp reg)
-void vuFloat2(int regd, int regTemp, int XYZW) {
-	if( CHECK_OVERFLOW ) {
-		if (XYZW == 8) {
-			SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-			SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-		}
-		else if (XYZW != 0xf) { // here we use a temp reg because not all xyzw are being modified
-			SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-			SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
-			SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
-			VU_MERGE_REGS_CUSTOM(regd, regTemp, XYZW);
-		}
-		else { // all xyzw are being modified, so no need to use temp reg
-			SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
-			SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
-		}
-	}
-}
-
 // Clamps infinities to max/min non-infinity number
 void vuFloat3(uptr x86ptr)
 {
@@ -1307,7 +1339,7 @@ void CheckForOverflow(VURegs *VU, int info, int regd)
 		vuFloat2(regd, EEREC_TEMP, _X_Y_Z_W);
 	}
 	else
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 }
 
 // if unordered replaces with 0x7f7fffff
@@ -1657,8 +1689,8 @@ void recVUMI_ADD(VURegs *VU, int info)
 	}
 	else {
 		if (CHECK_EXTRA_OVERFLOW) {
-			vuFloat(EEREC_S, _X_Y_Z_W);
-			vuFloat(EEREC_T, _X_Y_Z_W);
+			vuFloat( info, EEREC_S, _X_Y_Z_W);
+			vuFloat( info, EEREC_T, _X_Y_Z_W);
 		}
 		if( _X_Y_Z_W == 8 ) { // If only adding x, then we can do a Scalar Add
 			if (EEREC_D == EEREC_S) SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_T);
@@ -1694,7 +1726,7 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat(EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
 	}
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 
@@ -1755,8 +1787,8 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 void recVUMI_ADD_xyzw(VURegs *VU, int xyzw, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		//vuFloat(EEREC_T, xyzw);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		//vuFloat( info, EEREC_T, xyzw);
 	}
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 
@@ -1827,9 +1859,9 @@ void recVUMI_ADDw(VURegs *VU, int info) { recVUMI_ADD_xyzw(VU, 3, info); }
 void recVUMI_ADDA(VURegs *VU, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
 	}
 	if( _X_Y_Z_W == 8 ) {
 		if (EEREC_ACC == EEREC_S) SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
@@ -1861,8 +1893,8 @@ void recVUMI_ADDA_iq(VURegs *VU, uptr addr, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
 	}
 
 	if( _XYZW_SS ) {
@@ -1911,9 +1943,9 @@ void recVUMI_ADDA_iq(VURegs *VU, uptr addr, int info)
 void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		//vuFloat(EEREC_T, xyzw);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		//vuFloat( info, EEREC_T, xyzw);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -1962,8 +1994,8 @@ void recVUMI_ADDAw(VURegs *VU, int info) { recVUMI_ADDA_xyzw(VU, 3, info); }
 void recVUMI_SUB(VURegs *VU, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
 	}
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 
@@ -2013,7 +2045,7 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat(EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
 	}
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 
@@ -2090,8 +2122,8 @@ const static PCSX2_ALIGNED16(s_unaryminus[4]) = {0x80000000, 0, 0, 0};
 void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		//vuFloat(EEREC_T, xyzw);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		//vuFloat( info, EEREC_T, xyzw);
 	}
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 
@@ -2225,9 +2257,9 @@ void recVUMI_SUBw(VURegs *VU, int info) { recVUMI_SUB_xyzw(VU, 3, info); }
 void recVUMI_SUBA(VURegs *VU, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
 	}
 
 	if( EEREC_S == EEREC_T ) {
@@ -2272,8 +2304,8 @@ void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
 	}
 
 	if( _XYZW_SS ) {
@@ -2329,9 +2361,9 @@ void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		//vuFloat(EEREC_T, xyzw);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		//vuFloat( info, EEREC_T, xyzw);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -2384,9 +2416,9 @@ void recVUMI_SUBAw(VURegs *VU, int info) { recVUMI_SUBA_xyzw(VU, 3, info); }
 void recVUMI_MUL_toD(VURegs *VU, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 	}
 
 	if (_X_Y_Z_W == 1 && (_Ft_ == 0 || _Fs_==0) ) { // W
@@ -2426,8 +2458,8 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 	}
 
 	if( _XYZW_SS ) {
@@ -2480,9 +2512,9 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
-		//vuFloat(EEREC_T, xyzw);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
+		//vuFloat( info, EEREC_T, xyzw);
 	}
 
 	if( _Ft_ == 0 ) {
@@ -2610,9 +2642,9 @@ void recVUMI_MULAw(VURegs *VU, int info) { recVUMI_MULA_xyzw(VU, 3, info); }
 void recVUMI_MADD_toD(VURegs *VU, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -2668,8 +2700,8 @@ void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -2746,9 +2778,9 @@ void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 	}
 	
 	if( _Ft_ == 0 ) {
@@ -2933,9 +2965,9 @@ void recVUMI_MADDAw( VURegs *VU , int info)
 void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 	}
 
 	if (_X_Y_Z_W != 0xf) {
@@ -2988,9 +3020,9 @@ void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_ACC, _X_Y_Z_W);
-		vuFloat(regd, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
+		vuFloat( info, regd, _X_Y_Z_W);
 	}
 
 	if (_X_Y_Z_W != 0xf) {
@@ -3157,8 +3189,8 @@ void recVUMI_MAX(VURegs *VU, int info)
 {	
 	if ( _Fd_ == 0 ) return;
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -3189,7 +3221,7 @@ void recVUMI_MAX_iq(VURegs *VU, uptr addr, int info)
 {	
 	if ( _Fd_ == 0 ) return;
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat3(addr);
 	}
 
@@ -3247,8 +3279,8 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 {	
 	if ( _Fd_ == 0 ) return;
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		//vuFloat(EEREC_T, xyzw);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		//vuFloat( info, EEREC_T, xyzw);
 	}
 
 	if( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP)) {
@@ -3326,8 +3358,8 @@ void recVUMI_MINI(VURegs *VU, int info)
 {
 	if ( _Fd_ == 0 ) return;
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		vuFloat(EEREC_T, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_T, _X_Y_Z_W);
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -3366,7 +3398,7 @@ void recVUMI_MINI_iq(VURegs *VU, uptr addr, int info)
 {
 	if ( _Fd_ == 0 ) return;
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat3(addr);
 	}
 
@@ -3424,8 +3456,8 @@ void recVUMI_MINI_xyzw(VURegs *VU, int xyzw, int info)
 {
 	if ( _Fd_ == 0 ) return;
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, _X_Y_Z_W);
-		//vuFloat(EEREC_T, xyzw);
+		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		//vuFloat( info, EEREC_T, xyzw);
 	}
 
 	if( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP)) {
@@ -3469,8 +3501,8 @@ void recVUMI_MINIw(VURegs *VU, int info) { recVUMI_MINI_xyzw(VU, 3, info); }
 void recVUMI_OPMULA( VURegs *VU, int info )
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, 0xE);
-		vuFloat(EEREC_T, 0xE);
+		vuFloat( info, EEREC_S, 0xE);
+		vuFloat( info, EEREC_T, 0xE);
 	}
 
 	SSE_MOVAPS_XMM_to_XMM( EEREC_TEMP, EEREC_S );
@@ -3491,8 +3523,8 @@ void recVUMI_OPMULA( VURegs *VU, int info )
 void recVUMI_OPMSUB( VURegs *VU, int info )
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat(EEREC_S, 0xE);
-		vuFloat(EEREC_T, 0xE);
+		vuFloat( info, EEREC_S, 0xE);
+		vuFloat( info, EEREC_T, 0xE);
 	}
 
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
@@ -3700,16 +3732,19 @@ void recVUMI_DIV(VURegs *VU, int info)
 					//SysPrintf("DIV 0/0\n");
 					OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag (only when 0/0)
 					MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x7f7fffff);				
-				} else { // 0/1
+				} 
+				else { // 0/1
 					//SysPrintf("DIV 0/1\n");
 					OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); //Zero divide (only when not 0/0)
 					MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x7f7fffff);
 				}
-			}else if( _Ftf_ < 3 ) { // 1/0
+			}
+			else if( _Ftf_ < 3 ) { // 1/0
 				//SysPrintf("DIV 1/0\n");
 				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); //Zero divide (only when not 0/0)
 				MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x7f7fffff);
-			} else { // 1/1
+			}
+			else { // 1/1
 				//SysPrintf("DIV 1/1\n");
 				MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x3f800000);
 			}
@@ -3718,7 +3753,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 
 		if( _Fsf_ == 3 ) { // = 1
 			// don't use RCPSS (very bad precision)
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
+			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
 
 			if( _Ftf_ != 0 || (xmmregs[EEREC_T].mode & MODE_WRITE) )
 			{
@@ -3760,7 +3795,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 			return;
 		}
 	}
-	else {
+	else { // _Fs_ != 0
 		if( _Ft_ == 0 ) {
 			if( _Ftf_ < 3 ) { 
 				//SysPrintf("FS != 0, FT == 0\n");
