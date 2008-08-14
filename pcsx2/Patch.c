@@ -172,11 +172,11 @@ void _applypatch(int place, IniPatch *p) {
 				// Check if needed to read another pointer
 				if (IterationCount == 0){
 					PrevCheatType = 0;
-					if (LastType=0x0)
+					if (LastType==0x0)
 						memWrite8(PrevCheataddr,IterationIncrement&0xFF);
-					if (LastType=0x1)
+					if (LastType==0x1)
 						memWrite16(PrevCheataddr,IterationIncrement&0xFFFF);
-					if (LastType=0x2)
+					if (LastType==0x2)
 						memWrite32(PrevCheataddr,IterationIncrement);
 				}else{
 					PrevCheatType = 0x6001;
@@ -192,11 +192,11 @@ void _applypatch(int place, IniPatch *p) {
 				// Check if needed to read another pointer
 				if (IterationCount == 0){
 					PrevCheatType = 0;
-					if (LastType=0x0)
+					if (LastType==0x0)
 						memWrite8(PrevCheataddr,IterationIncrement&0xFF);
-					if (LastType=0x1)
+					if (LastType==0x1)
 						memWrite16(PrevCheataddr,IterationIncrement&0xFFFF);
-					if (LastType=0x2)
+					if (LastType==0x2)
 						memWrite32(PrevCheataddr,IterationIncrement);
 				}else{
 					memRead32(PrevCheataddr,&u32Val);	
@@ -204,11 +204,11 @@ void _applypatch(int place, IniPatch *p) {
 					IterationCount--;
 					if (IterationCount == 0){
 						PrevCheatType = 0;
-						if (LastType=0x0)
+						if (LastType==0x0)
 							memWrite8(PrevCheataddr,IterationIncrement&0xFF);
-						if (LastType=0x1)
+						if (LastType==0x1)
 							memWrite16(PrevCheataddr,IterationIncrement&0xFFFF);
-						if (LastType=0x2)
+						if (LastType==0x2)
 							memWrite32(PrevCheataddr,IterationIncrement);
 					}
 				}
