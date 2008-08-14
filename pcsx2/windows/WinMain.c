@@ -620,22 +620,26 @@ void CALLBACK KeyEvent(keyEvent* ev)
 			}
 #endif
 
-
+			/*
 			ClosePlugins();
 			SysClose();
 			//ReleasePlugins();
 			//needReset = 1;
 			//efile = 0;
-			
-			//if( !UseGui ) {
-			//not using GUI and user just quit, so exit
-				exit(0);
-			//}
+			exit(0);*/
+
+			ClosePlugins();
+
+            if( !UseGui ) {
+                // not using GUI and user just quit, so exit
+                exit(0);
+            }
 
 			CreateMainWindow(SW_SHOWNORMAL);
 			RunGui();
-			nDisableSC = 0;
+            nDisableSC = 0;
 			break;
+
 		default:
 			GSkeyEvent(ev);
 			break;
