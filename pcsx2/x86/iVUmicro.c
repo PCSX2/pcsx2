@@ -3806,14 +3806,14 @@ void recVUMI_DIV(VURegs *VU, int info)
 					}
 				}
 				else
-				{
+				{ // needs work, ft can also be zero!
 					if (CHECK_EXTRA_OVERFLOW)
 						vuFloat2(EEREC_T, EEREC_TEMP, 0x8);
 					SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
 					SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 				}
 			}
-			else {
+			else { // needs work, ft can also be zero!
 				if (CHECK_EXTRA_OVERFLOW)
 					vuFloat3( (uptr)&VU->VF[_Ft_].UL[_Ftf_] );
 				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
@@ -3821,7 +3821,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 			}
 		}
 		else { // = 0 So result is +/- 0, or +/- Fmax if (FT == 0)
-			//SysPrintf("FS = 0, FT != 0\n");
+			SysPrintf("FS = 0, FT != 0\n");
 
 			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_); // EEREC_TEMP.x <- EEREC_T.ftf
 
@@ -3866,16 +3866,20 @@ void recVUMI_DIV(VURegs *VU, int info)
 	}
 	else { // _Fs_ != 0
 		if( _Ft_ == 0 ) {
-			if( _Ftf_ < 3 ) { 
-				//SysPrintf("FS != 0, FT == 0\n");
+			if( _Ftf_ < 3 ) {  // needs extra work, fs can also be zero!
+				SysPrintf("FS != 0, FT == n/0");
 				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); //Zero divide (only when not 0/0)
-				AND32ItoM(VU_VI_ADDR(REG_Q, 0), 0x80000000);
-				OR32ItoM(VU_VI_ADDR(REG_Q, 0), 0x7f7fffff);
+				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_); // EEREC_TEMP.x <- EEREC_S.fsf
+				SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
+				SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
+				SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 				
 			} else {
-				//SysPrintf("FS != 0, FT == 1\n");
+				SysPrintf("FS != 0, FT == n/1");
 				if( _Fsf_ == 0 ) SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 				else _unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
+				if (CHECK_EXTRA_OVERFLOW)
+					vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 				SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 			}
 				
