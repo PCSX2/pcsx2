@@ -950,20 +950,20 @@ BEGIN
     CONTROL         "Disable All Overflow Checks - Doesn't check for overflow at all in the VU Recs.",IDC_OVERFLOWHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,63,373,10
     CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,391,8
-    CONTROL         "Tighter SPU2 Sync ( FFXII vids) - slower, not usefull anymore",IDC_SOUNDHACK,
+    CONTROL         "Tighter SPU2 Sync ( FFXII vids) - Slower, not useful anymore.",IDC_SOUNDHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,197,323,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP.",IDC_SYNCHACK2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,128,270,10
-    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate (not recommended)",IDC_SYNCHACK3,
+    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate ( Not Recommended! )",IDC_SYNCHACK3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,142,359,10
-    CONTROL         "Disable Extra Overflow Checks - Disables extra overflow checks used to help stop SPS.",IDC_OVERFLOWHACK_EXTRA,
+    CONTROL         "Disable Extra Overflow Checks - Disables extra overflow checks used to help stop SPS. ( Big Speedup! )",IDC_OVERFLOWHACK_EXTRA,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,50,377,10
-    CONTROL         "EE/IOP Fast Branches - Quick branching (very small speedup, use only when you need every fps)",IDC_FASTBRANCHES,
+    CONTROL         "EE/IOP Fast Branches - Quick branching ( Very small speedup, use only when you need every fps! )",IDC_FASTBRANCHES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,351,10
     CTEXT           "If you have problems, disable all these and try again",IDC_STATIC,7,22,391,8
     GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,391,60
-    CONTROL         "Denormals are Zero - Makes very small numbers equal zero. (Big speedup on Intel CPUs) (Restart the emu!)",IDC_DENORMALS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,76,364,10
+    CONTROL         "Denormals are Zero - Makes very small numbers equal zero. ( Big speedup on Intel CPUs ) ( Needs Restart! )",IDC_DENORMALS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,76,377,10
     GROUPBOX        "Sync Hacks",IDC_STATIC,7,101,391,59
     GROUPBOX        "Miscellaneous",IDC_STATIC,7,168,391,46
 END

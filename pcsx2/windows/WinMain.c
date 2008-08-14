@@ -738,7 +738,7 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_OVERFLOWHACK_EXTRA) ? 0x40 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
 
-				SaveConfig();              
+				SaveConfig(); 
 
                 EndDialog(hDlg, TRUE);
             } else

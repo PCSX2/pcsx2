@@ -3851,6 +3851,7 @@ void recVUMI_SQRT( VURegs *VU, int info )
 
 	SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
 	SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
+	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 	_freeX86reg(vftemp);
@@ -3964,11 +3965,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 		}
 	}
 
-	//if( CHECK_OVERFLOW ) {
-		SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
-		SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
-	//}
-
+	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 	
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 	_freeX86reg(vftemp);
@@ -3989,7 +3986,7 @@ void _addISIMMtoIT(VURegs *VU, s16 imm, int info)
 	fsreg = ALLOCVI(_Fs_, MODE_READ);
 	ftreg = ALLOCVI(_Ft_, MODE_WRITE);
 
-	if (ftreg == fsreg) {
+	if ( _Ft_ == _Fs_ ) {
 		if (imm != 0 ) {
 			ADD16ItoR(ftreg, imm);
 		}
@@ -4009,13 +4006,14 @@ void recVUMI_IADDI(VURegs *VU, int info)
 	if ( _Ft_ == 0 ) return;
 
 	imm = ( VU->code >> 6 ) & 0x1f;
-	imm = ( imm & 0x10 ? 0xfff0 : 0) | ( imm & 0xf );
+	imm = ( imm & 0x10 ? 0xfff0 : 0) | ( imm & 0xf ); // This is one's complement
+	//imm = ( imm & 0x10 ) ? ( ( ~( imm & 0xf ) ) + 1 ) : ( imm ); // This is two's complement
 	_addISIMMtoIT(VU, imm, info);
 }
 
 void recVUMI_IADDIU(VURegs *VU, int info)
 {
-	int imm;
+	s16 imm;
 
 	if ( _Ft_ == 0 ) return;
 
@@ -4057,7 +4055,7 @@ void recVUMI_IADD( VURegs *VU, int info )
 		}
 	}
 	else {
-		ADD_VI_NEEDED(_Ft_);
+		//ADD_VI_NEEDED(_Ft_);
 		fsreg = ALLOCVI(_Fs_, MODE_READ);
 		ftreg = ALLOCVI(_Ft_, MODE_READ);
 
@@ -4200,7 +4198,7 @@ void recVUMI_ISUBIU( VURegs *VU, int info )
 
 	imm = ( ( VU->code >> 10 ) & 0x7800 ) | ( VU->code & 0x7ff );
 	imm = -imm;
-	_addISIMMtoIT(VU, (u32)imm & 0xffff, info);
+	_addISIMMtoIT(VU, imm, info);
 }
 
 void recVUMI_MOVE( VURegs *VU, int info )
