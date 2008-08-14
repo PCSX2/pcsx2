@@ -3805,10 +3805,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 		}
 	}
 
-	//if( !CHECK_OVERFLOW ) {
-		SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
-		SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
-	//}
+	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 }
@@ -3849,8 +3846,6 @@ void recVUMI_SQRT( VURegs *VU, int info )
 
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 
-	SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
-	SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
 	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
