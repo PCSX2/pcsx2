@@ -1338,7 +1338,7 @@ void vuFloat3(uptr x86ptr)
 
 void CheckForOverflow(VURegs *VU, int info, int regd)
 {
-	testWhenOverflow(info, regd, EEREC_TEMP);
+	//testWhenOverflow(info, regd, EEREC_TEMP);
 	//CheckForOverflow_(regd, EEREC_TEMP, _X_Y_Z_W);
 	if (EEREC_TEMP != regd) {
 		//testWhenOverflow(info, regd, EEREC_TEMP);
@@ -3610,18 +3610,21 @@ void recVUMI_ITOF0( VURegs *VU, int info )
 		
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
-		vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
+		if (CHECK_EXTRA_OVERFLOW)
+			vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
 	}
 	else {
 		if( cpucaps.hasStreamingSIMD2Extensions ) {
 			SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
-			vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
+			if (CHECK_EXTRA_OVERFLOW)
+				vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
 		}
 		else {
 			_deleteVFtoXMMreg(_Fs_, VU==&VU1, 1);
 			SSE2EMU_CVTDQ2PS_M128_to_XMM(EEREC_T, VU_VFx_ADDR( _Fs_ ));
 			xmmregs[EEREC_T].mode |= MODE_WRITE;
-			vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
+			if (CHECK_EXTRA_OVERFLOW)
+				vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
 		}
 	}
 }
@@ -3640,7 +3643,8 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
-		vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
+		if (CHECK_EXTRA_OVERFLOW)
+			vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
 	} else {
 		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
 		else {
@@ -3650,7 +3654,8 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 		}
 
 		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
-		vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
+		if (CHECK_EXTRA_OVERFLOW)
+			vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
 	}
 }
 
@@ -3891,8 +3896,8 @@ void recVUMI_DIV(VURegs *VU, int info)
 			SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 		}
 	}
-
-	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
+	if (CHECK_EXTRA_OVERFLOW)
+		vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 }
@@ -3932,8 +3937,9 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	//SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip);
 
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-
-	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
+	
+	if (CHECK_EXTRA_OVERFLOW)
+		vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 	_freeX86reg(vftemp);
@@ -4046,8 +4052,9 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 			SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_Q, 0));
 		}
 	}
-
-	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
+	
+	if (CHECK_EXTRA_OVERFLOW)
+		vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 	
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 	_freeX86reg(vftemp);
@@ -5488,7 +5495,8 @@ void recVUMI_ESADD( VURegs *VU, int info)
 			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
 		}
 	}
-
+	
+	if (CHECK_EXTRA_OVERFLOW)
 	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
@@ -5526,7 +5534,8 @@ void recVUMI_ERSADD( VURegs *VU, int info )
 
 	// don't use RCPSS (very bad precision)
 	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
+	if (CHECK_EXTRA_OVERFLOW)
+		vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
