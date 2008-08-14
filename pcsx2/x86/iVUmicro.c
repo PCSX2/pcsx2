@@ -1184,6 +1184,12 @@ void vuFloat( int info, int regd, int XYZW) {
 				break;
 
 			case 3://1100
+				/*
+				dd:cc:bb:aa
+				11:10:01:00
+				11:00:01:10
+				00:10:01:11
+				*/
 				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
 				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -2512,10 +2518,11 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat( info, regd, _X_Y_Z_W);
 		//vuFloat( info, EEREC_T, xyzw);
 	}
+	// This is needed for alot of games
+	vuFloat( info, EEREC_S, _X_Y_Z_W);
 
 	if( _Ft_ == 0 ) {
 		if( xyzw < 3 ) {
@@ -2778,10 +2785,11 @@ void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
 	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
 		vuFloat( info, regd, _X_Y_Z_W);
 	}
+	// This is needed for alot of games
+	vuFloat( info, EEREC_S, _X_Y_Z_W);
 	
 	if( _Ft_ == 0 ) {
 
