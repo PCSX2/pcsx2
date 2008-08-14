@@ -1152,7 +1152,7 @@ void vuFloat2(int regd, int regTemp, int XYZW) {
 // Clamps infinities to max/min non-infinity number (doesn't use any temp regs)
 void vuFloat( int info, int regd, int XYZW) {
 	if( CHECK_OVERFLOW ) {
-		if ( (XYZW != 0) || (XYZW != 8) || (XYZW != 0xF) ) {
+		if ( (XYZW != 0) && (XYZW != 8) && (XYZW != 0xF) ) {
 			int t1reg = _vuGetTempXMMreg2(info, regd);
 			if (t1reg >= 0) {
 				vuFloat2( regd, t1reg, XYZW );
