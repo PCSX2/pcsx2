@@ -1152,14 +1152,14 @@ void vuFloat2(int regd, int regTemp, int XYZW) {
 // Clamps infinities to max/min non-infinity number (doesn't use any temp regs)
 void vuFloat( int info, int regd, int XYZW) {
 	if( CHECK_OVERFLOW ) {
-		if ( (XYZW != 0) && (XYZW != 8) && (XYZW != 0xF) ) {
+		/*if ( (XYZW != 0) && (XYZW != 8) && (XYZW != 0xF) ) {
 			int t1reg = _vuGetTempXMMreg2(info, regd);
 			if (t1reg >= 0) {
 				vuFloat2( regd, t1reg, XYZW );
 				_freeXMMreg( t1reg );
 				return;
 			}
-		}
+		}*/
 		switch (XYZW) {
 			case 0: // Don't do anything if no vectors are being modified.
 				break;
@@ -1507,7 +1507,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		int t1regBoolean = 0;
 		if (t1reg == -1) {
 			//SysPrintf( "VU ALLOCATION ERROR: Temp reg can't be allocated!!!!\n" );
-			t1reg = (reg >= XMMREGS) ? (reg - 1) : (reg + 1);
+			t1reg = (reg == 0) ? (reg + 1) : (reg - 1);
 			SSE_MOVAPS_XMM_to_M128( (uptr)TEMPXMMData, t1reg );
 			t1regBoolean = 1;
 		}
@@ -3719,10 +3719,12 @@ void recVUMI_CLIP(VURegs *VU, int info)
 /******************************/
 /*   VU Lower instructions    */
 /******************************/
+PCSX2_ALIGNED16(u64 DIV_TEMP_XMM[2];)
 
 void recVUMI_DIV(VURegs *VU, int info)
 {
 	int t1reg;
+	u8* pjmp;
 
 	if( _Fs_ == 0 ) {
 
@@ -3751,10 +3753,8 @@ void recVUMI_DIV(VURegs *VU, int info)
 			return;
 		}
 
-		if( _Fsf_ == 3 ) { // = 1
-			// don't use RCPSS (very bad precision)
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
-
+		if( _Fsf_ == 3 ) // = 1
+		{ // don't use RCPSS (very bad precision)
 			if( _Ftf_ != 0 || (xmmregs[EEREC_T].mode & MODE_WRITE) )
 			{
 				if( _Ftf_ )
@@ -3765,33 +3765,77 @@ void recVUMI_DIV(VURegs *VU, int info)
 					{
 						_unpackVFSS_xyzw(t1reg, EEREC_T, _Ftf_);
 
+						if (CHECK_EXTRA_OVERFLOW)
+							vuFloat2(t1reg, EEREC_TEMP, 0x8);
+
+						SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
 						SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, t1reg);
 
 						_freeXMMreg(t1reg);
 					}
 					else
 					{
+						_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
+
+						if (CHECK_EXTRA_OVERFLOW)
+							vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
+
+						t1reg = (EEREC_TEMP == 0) ? (EEREC_TEMP + 1) : (EEREC_TEMP - 1);
+						SSE_MOVAPS_XMM_to_M128( (uptr)DIV_TEMP_XMM, t1reg ); // backup data in t1reg to a temp address
+
+						SSE_MOVSS_M32_to_XMM(t1reg, (uptr)&VU->VF[0].UL[3]); // t1reg.x <- 1
+						SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP); // t1reg = 1 / EEREC_TEMP
+						SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg); // q <- t1reg
+
+						SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)DIV_TEMP_XMM ); // restore data to t1reg
+						return;
+						/*
 						SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, (0xe4e4>>(2*_Ftf_))&0xff);
 						SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 						SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, (0xe4e4>>(8-2*_Ftf_))&0xff); // revert
+						*/
 					}
 				}
 				else
 				{
+					if (CHECK_EXTRA_OVERFLOW)
+						vuFloat2(EEREC_T, EEREC_TEMP, 0x8);
+					SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
 					SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 				}
 			}
 			else {
+				if (CHECK_EXTRA_OVERFLOW)
+					vuFloat3( (uptr)&VU->VF[_Ft_].UL[_Ftf_] );
+				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
 				SSE_DIVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Ft_].UL[_Ftf_]);
 			}
 		}
 		else { // = 0 So result is -MAX/+MAX
 			//SysPrintf("FS = 0, FT != 0\n");
-			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag (only when 0/0)
-			SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-			SSE_ORPS_M128_to_XMM(EEREC_TEMP, (u32)&g_maxvals);
+
+			// FT can still be zero here! so we need to check if its zero and set the correct flag.
+
+			SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
+			XOR32RtoR( EAX, EAX ); // Clear EAX
+			SSE_CMPEQPS_XMM_to_XMM(EEREC_TEMP, EEREC_T); // Set all F's if each vector is zero
+
+			SSE_MOVMSKPS_XMM_to_R32(EAX, EEREC_TEMP); // Move the sign bits of the previous calculation
+
+			AND32ItoR( EAX, 0x0000000f & ( 1 << _Ftf_ ) );  // Grab "Is Zero" bits from the previous calculation
+			pjmp = JZ8(0); // Skip if none are
+			OR32ItoR(EAX, 0x410); // Set invalid flag they are
+			x86SetJ8(pjmp);
+
+			OR32RtoM( VU_VI_ADDR(REG_STATUS_FLAG, 2), EAX );
+
+			// Now that we've finished the 0/0 flag checking, we can just set Q to +/- Fmax
+			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
+
+			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
+			SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
 			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
-			//MOV32ItoR(VU_VI_ADDR(REG_Q, 0), 0);
+
 			return;
 		}
 	}
