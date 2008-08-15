@@ -2123,7 +2123,7 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 	//if( addr == VU_REGQ_ADDR ) CheckForOverflow(VU, info, EEREC_D);
 }
 
-const static PCSX2_ALIGNED16(s_unaryminus[4]) = {0x80000000, 0, 0, 0};
+const static PCSX2_ALIGNED16(u32 s_unaryminus[4]) = {0x80000000, 0, 0, 0};
 
 void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 {
