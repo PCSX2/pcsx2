@@ -54,7 +54,7 @@
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
 //------------ SPEED HACKS!!! ---------------
 #define CHECK_OVERFLOW (!(Config.Hacks & 0x2))
-#define CHECK_EXTRA_OVERFLOW (Config.Hacks & 0x40)
+#define CHECK_EXTRA_OVERFLOW (Config.Hacks & 0x40) // If enabled, Operands are checked for infinities before being used in the VU recs
 #define CHECK_EESYNC_HACK (Config.Hacks & 0x1)
 #define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
 #define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)

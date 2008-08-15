@@ -3746,8 +3746,8 @@ void recVUMI_DIV(VURegs *VU, int info)
 					OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag (only when 0/0)
 					MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x7f7fffff);				
 				} 
-				else { // 0/1
-					// zero divided by 1 is zero! :p
+				else { // 0/1 ----- zero divided by 1 is zero! :p
+					//SysPrintf("DIV 0/0\n");
 					MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x00000000);
 				}
 			}
@@ -3771,8 +3771,9 @@ void recVUMI_DIV(VURegs *VU, int info)
 				{
 					t1reg = _vuGetTempXMMreg(info);
 
-					if( t1reg >= 0 )
-					{
+					if( t1reg >= 0 ) // 1/n ---- needs work, ft can also be zero!
+					{ 
+						SysPrintf("DIV: needs work, ft can also be zero! 1 \n");
 						_unpackVFSS_xyzw(t1reg, EEREC_T, _Ftf_);
 
 						if (CHECK_EXTRA_OVERFLOW)
@@ -3783,40 +3784,38 @@ void recVUMI_DIV(VURegs *VU, int info)
 
 						_freeXMMreg(t1reg);
 					}
-					else
-					{
+					else // 1/n ---- needs work, ft can also be zero!
+					{ 
+						SysPrintf("DIV: needs work, ft can also be zero! 2 \n");
 						_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
 
 						if (CHECK_EXTRA_OVERFLOW)
 							vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 
-						t1reg = (EEREC_TEMP == 0) ? (EEREC_TEMP + 1) : (EEREC_TEMP - 1);
-						SSE_MOVAPS_XMM_to_M128( (uptr)DIV_TEMP_XMM, t1reg ); // backup data in t1reg to a temp address
+						t1reg = (EEREC_TEMP == 0) ? (EEREC_TEMP + 1) : (EEREC_TEMP - 1); // find a xmm reg thats not EEREC_TEMP
+						SSE_MOVAPS_XMM_to_M128( (uptr)&DIV_TEMP_XMM[0], t1reg ); // backup data in t1reg to a temp address
 
 						SSE_MOVSS_M32_to_XMM(t1reg, (uptr)&VU->VF[0].UL[3]); // t1reg.x <- 1
 						SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP); // t1reg = 1 / EEREC_TEMP
+						vuFloat2(t1reg, t1reg, 0x8);
 						SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg); // q <- t1reg
 
-						SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)DIV_TEMP_XMM ); // restore data to t1reg
+						SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&DIV_TEMP_XMM[0] ); // restore data to t1reg
+
 						return;
-						/*
-						SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, (0xe4e4>>(2*_Ftf_))&0xff);
-						SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-						SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, (0xe4e4>>(8-2*_Ftf_))&0xff); // revert
-						*/
 					}
 				}
 				else
-				{ // needs work, ft can also be zero!
-					SysPrintf("DIV: needs work, ft can also be zero! \n");
+				{ // 1/n ---- (SS) needs work, ft can also be zero!
+					SysPrintf("DIV: needs work, ft can also be zero! 3 \n");
 					if (CHECK_EXTRA_OVERFLOW)
 						vuFloat2(EEREC_T, EEREC_TEMP, 0x8);
 					SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
 					SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 				}
 			}
-			else { // needs work, ft can also be zero!
-				SysPrintf("DIV: needs work, ft can also be zero! \n");
+			else { // 1/n ---- (SS) needs work, ft can also be zero!
+				SysPrintf("DIV: needs work, ft can also be zero! 4 \n");
 				if (CHECK_EXTRA_OVERFLOW)
 					vuFloat3( (uptr)&VU->VF[_Ft_].UL[_Ftf_] );
 				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // TEMP.x <- 1
@@ -3824,15 +3823,14 @@ void recVUMI_DIV(VURegs *VU, int info)
 			}
 		}
 		else { // = 0 So result is +/- 0, or +/- Fmax if (FT == 0)
-			SysPrintf("FS = 0, FT != 0\n");
+			SysPrintf("FS = 0, FT = n \n");
 
 			if( _Ftf_ == 0 ) SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 			else _unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_); // EEREC_TEMP.x <- EEREC_T.ftf
 
 			t1reg = (EEREC_TEMP == 0) ? (EEREC_TEMP + 1) : (EEREC_TEMP - 1);
-			t2reg = (EEREC_TEMP <= 1) ? (EEREC_TEMP + 2) : (EEREC_TEMP - 2);
+			//t2reg = (EEREC_TEMP <= 1) ? (EEREC_TEMP + 2) : (EEREC_TEMP - 2);
 			SSE_MOVAPS_XMM_to_M128( (uptr)&DIV_TEMP_XMM[0], t1reg ); // backup data in t1reg to a temp address
-			SSE_MOVAPS_XMM_to_M128( (uptr)&DIV_TEMP_XMM2[0], t2reg ); // backup data in t2reg to a temp address
 
 			// FT can still be zero here! so we need to check if its zero and set the correct flag.
 			SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
@@ -3842,27 +3840,23 @@ void recVUMI_DIV(VURegs *VU, int info)
 			SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
 
 			AND32ItoR( EAX, 0x00000001 );  // Grab "Is Zero" bits from the previous calculation
-			pjmp = JZ8(0); // Skip if none are
+			pjmp32 = JZ32(0); // Skip if none are
+
 				OR32ItoM( VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820 ); //Zero divide (only when not 0/0)
-			x86SetJ8(pjmp);
 
+				SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
+				SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]); // If 0, then EEREC_TEMP = +/- fmax
 
-			SSE_MOVAPS_XMM_to_XMM(t2reg, t1reg);
+				pjmp2 = JMP8(0);
 
-			SSE_ANDPS_XMM_to_XMM(t1reg, EEREC_TEMP);
-			SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Signed_Zero_Mask[0]);
-			SSE_ORPS_M128_to_XMM(t1reg, (uptr)&g_maxvals[0]); // If 0, then t1reg = +/- fmax
+			x86SetJ32(pjmp32);
 
+			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]); // If != 0, then EEREC_TEMP = +/- 0
 
-			SSE_ANDNPS_XMM_to_XMM(t2reg, EEREC_TEMP);
-			SSE_ANDPS_M128_to_XMM(t2reg, (uptr)&VU_Signed_Zero_Mask[0]); // If != 0, then t2reg = +/- 0
+			x86SetJ8(pjmp2);
 
-			SSE_ORPS_XMM_to_XMM(t1reg, t2reg); // t1reg = 0 or fmax
-
-			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg);
-
+			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 			SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&DIV_TEMP_XMM[0] ); // restore t1reg data
-			SSE_MOVAPS_M128_to_XMM( t2reg, (uptr)&DIV_TEMP_XMM2[0] ); // restore t2reg data
 
 			return;
 		}
@@ -3870,15 +3864,15 @@ void recVUMI_DIV(VURegs *VU, int info)
 	else { // _Fs_ != 0
 		if( _Ft_ == 0 ) {
 			if( _Ftf_ < 3 ) {  // needs extra work, fs can also be zero!
-				SysPrintf("FS != 0, FT == n/0 \n");
+				SysPrintf("DIV: FS = n, FT == 0 ---- Not Finished! \n");
 				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); //Zero divide (only when not 0/0)
 				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_); // EEREC_TEMP.x <- EEREC_S.fsf
 				SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
 				SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
-				SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
-				
-			} else {
-				SysPrintf("FS != 0, FT == n/1 \n");
+				SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);			
+			}
+			else {
+				SysPrintf("DIV: FS = n, FT == 1 \n");
 				if( _Fsf_ == 0 ) SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 				else _unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 				if (CHECK_EXTRA_OVERFLOW)
@@ -4015,14 +4009,8 @@ void recVUMI_DIV(VURegs *VU, int info)
 
 				SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&DIV_TEMP_XMM[0] ); // restore t1reg data
 				SSE_MOVAPS_M128_to_XMM( t2reg, (uptr)&DIV_TEMP_XMM2[0] ); // restore t2reg data
+
 				return;
-				/*
-				SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, (0xe4e4>>(2*_Ftf_))&0xff);
-				if (CHECK_EXTRA_OVERFLOW)
-					vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
-				SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-				SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, (0xe4e4>>(8-2*_Ftf_))&0xff); // revert
-				*/
 			}
 		}
 		else
@@ -4079,6 +4067,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 
 			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 			SSE_MOVAPS_M128_to_XMM( t2reg, (uptr)&DIV_TEMP_XMM2[0] ); // restore t2reg data
+
 			return;
 		}
 	}
