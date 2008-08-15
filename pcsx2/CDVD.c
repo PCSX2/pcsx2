@@ -688,12 +688,14 @@ void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
 	//add cycles due to access times, based on try and error
 	//fixes most of Tales of the Abyss crashes and some Digital Devil Saga videos
 	//slightly longer loading times now (shouldnt be noticable)
-	if (sector_difference > 128 && sector_difference < 1000000){
+	
+	//ok, this is too much delay for games that dont need it. will make it a speedhack later
+	/*if (sector_difference > 128 && sector_difference < 1000000){
 		readspeed += (sector_difference+sector_difference) / 32;
 	}
 	else if (sector_difference >= 1000000){
 		readspeed += (sector_difference+sector_difference) / 4;
-	}
+	}*/
 
 	//simulates spin-up time, fixes hdloader
 	if (cdvd.Sector < 17) cdvdReadTime=60000;
