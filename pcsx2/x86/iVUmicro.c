@@ -285,10 +285,11 @@ void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw)
 {
 	if( cpucaps.hasStreamingSIMD4Extensions ) {
 		switch (xyzw) {
-			case 0: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(0, 0, 0)); break;
-			case 1: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(1, 0, 0)); break;
-			case 2: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(2, 0, 0)); break;
-			case 3: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(3, 0, 0)); break;
+			case 0: if( dstreg != srcreg ) { 
+					SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(0, 0, 0));}	break;
+			case 1: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(1, 0, 0));		break;
+			case 2: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(2, 0, 0));		break;
+			case 3: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(3, 0, 0));		break;
 		}
 	}
 	else {
@@ -4210,38 +4211,26 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	SysPrintf("SQRT Opcode \n");
 	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFDF); //Divide flag cleared regardless of result
 	
-	if( _Ftf_ ) {
-		if( xmmregs[EEREC_T].mode & MODE_WRITE ) {
-			//SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip);
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-			_unpackVF_xyzw(EEREC_TEMP, EEREC_TEMP, _Ftf_);
-		}
-		else {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Ft_].UL[_Ftf_]);
-			//SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip);
-			}
-	}
-	else {
-		//SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (u32)const_clip);
-		SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-	}
+	if( xmmregs[EEREC_T].mode & MODE_WRITE )
+		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
+	else
+		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Ft_].UL[_Ftf_]);
+
 	/* Check for negative divide */
 	XOR32RtoR(vftemp, vftemp);
 	SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_TEMP);
 	AND32ItoR(vftemp, 1);  //Check sign
 	pjmp = JZ8(0); //Skip if none are
-	//SysPrintf("Invalid SQRT\n");
-	OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag - Negative number sqrt
-	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //So we do a cardinal sqrt
+		OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag - Negative number sqrt
+		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //So we do a cardinal sqrt
 	x86SetJ8(pjmp);
 
-	//SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip);
-
+	if (CHECK_EXTRA_OVERFLOW)
+		vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-
 	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
-
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
+
 	_freeX86reg(vftemp);
 	
 }
