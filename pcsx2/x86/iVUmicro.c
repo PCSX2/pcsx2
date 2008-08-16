@@ -4225,8 +4225,8 @@ void recVUMI_SQRT( VURegs *VU, int info )
 		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //So we do a cardinal sqrt
 	x86SetJ8(pjmp);
 
-	if (CHECK_EXTRA_OVERFLOW)
-		vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
+	if (CHECK_EXTRA_OVERFLOW) // Clamp Infinities to Fmax
+		SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals);
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
@@ -4235,117 +4235,109 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	
 }
 
+PCSX2_ALIGNED16(u64 RSQRT_TEMP_XMM[2];)
+
 void recVUMI_RSQRT(VURegs *VU, int info)
 {
 	int vftemp = ALLOCTEMPX86(MODE_8BITREG);
-	u8* njmp;
+	int t1reg;
+	u32* ajmp32;
+	u32* bjmp32;
 
-	SysPrintf("RSQRT Opcode \n");
-	if( _Ftf_ ) {
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-		_unpackVF_xyzw(EEREC_TEMP, EEREC_TEMP, _Ftf_);
-	}
-	else {
+	if( _Ftf_ )
+		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
+	else
 		SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-	}
+
 	/* Check for negative divide */
 	XOR32RtoR(vftemp, vftemp);
 	SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_TEMP);
 	AND32ItoR(vftemp, 1);  //Check sign
-	njmp = JZ8(0); //Skip if none are
-	//SysPrintf("Invalid RSQRT\n");
-	OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag - Negative number sqrt
-	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //So we do a cardinal sqrt
-	x86SetJ8(njmp);
+	ajmp32 = JZ32(0); //Skip if none are
+		OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag - Negative number sqrt
+		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //So we do a cardinal sqrt
+	x86SetJ32(ajmp32);
 
-	//SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip);
+	if (CHECK_EXTRA_OVERFLOW) // Clamp Infinities to Fmax
+		SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals);
 
-	if( _Fs_ == 0 ) {
-		if( _Fsf_ == 3 ) {
-			if(_Ft_ != 0 ||_Ftf_ == 3 )
-			{
-				//SysPrintf("_Fs_ = 0.3 _Ft_ != 0 || _Ft_ = 0.3 \n");
-				SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);    //Dont use RSQRT, terrible accuracy
-				SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
-				//SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-				_unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
-				SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_Q, 0));
+	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 
-				
-			} 
-			else 
-			{
-				//SysPrintf("FS0.3 / 0!\n");
-				SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); //Zero divide (only when not 0/0)
-				MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x7f7fffff);
-				_freeX86reg(vftemp);
-				return;
-			}
-		}else {
-			if(_Ft_ != 0 || _Ftf_ == 3) {
-				//SysPrintf("FS = 0 FT != 0\n");
-				//SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); //Zero divide (only when not 0/0)
-				MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0x7f7fffff); // +MAX, no negative in here :p
-				_freeX86reg(vftemp);
-				return;
-			} 
-			else 
-			{
-				//SysPrintf("FS = 0 FT = 0!\n");
-				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag (only when 0/0)
-				MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0);
-				_freeX86reg(vftemp);
-				return;
-			}
-		}
-	}
-	else {
-		int t1reg;
-		if( _Ft_ == 0 ) {
-			if( _Ftf_ < 3 ) {
-				//SysPrintf("FS != 0 FT = 0!\n");
-				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag (only when 0/0)
-				SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_S);
-				SHL32ItoR(vftemp, 31);  //Check sign				
-				OR32ItoR(vftemp, 0x7f7fffff);
-				MOV32RtoM(VU_VI_ADDR(REG_Q, 0), vftemp);
-				_freeX86reg(vftemp);
-				return;
-			}else { 
-				//SysPrintf("FS != 0 FT = 1!\n");
-				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); //Zero divide (only when not 0/0)
-				MOV32ItoM(VU_VI_ADDR(REG_Q, 0), 0xff7fffff);
-				_freeX86reg(vftemp);
-				return;
-			} 
-			
-		} 
-		//SysPrintf("Normal RSQRT\n");
- 
-		SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
- 
-		t1reg = _vuGetTempXMMreg(info);
- 
-		if( t1reg >= 0 )
-		{
-			_unpackVFSS_xyzw(t1reg, EEREC_S, _Fsf_);
-			SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP);
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, t1reg);
-			_freeXMMreg(t1reg);
-		}
-		else
-		{
-			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
+	t1reg = _vuGetTempXMMreg(info);
+
+	if( t1reg >= 0 )
+	{
+		SysPrintf("RSQRT Opcode Part 1 \n");
+		// Ft can still be zero here! so we need to check if its zero and set the correct flag.
+		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+		XOR32RtoR(vftemp, vftemp);
+		SSE_CMPEQSS_XMM_to_XMM(t1reg, EEREC_TEMP); // Set all F's if each vector is zero
+
+		SSE_MOVMSKPS_XMM_to_R32(vftemp, t1reg); // Move the sign bits of the previous calculation
+
+		AND32ItoR( vftemp, 0x01 );  // Grab "Is Zero" bits from the previous calculation
+		ajmp32 = JZ32(0); // Skip if none are
+
+			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
+
 			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
-			SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_Q, 0));
-		}
+			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
+			SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]); // If division by zero, then EEREC_TEMP = positive fmax
+			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
+			bjmp32 = JMP32(0);
+
+		x86SetJ32(ajmp32);
+
+			_unpackVFSS_xyzw(t1reg, EEREC_S, _Fsf_);
+			if (CHECK_EXTRA_OVERFLOW) // Clamp Infinities
+				vuFloat2(t1reg, t1reg, 0x8);
+			SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP);
+			vuFloat2(t1reg, t1reg, 0x8);
+			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg);
+
+		x86SetJ32(bjmp32);
+
+		_freeXMMreg(t1reg);
+	}
+	else
+	{
+		SysPrintf("RSQRT Opcode Part 2 \n");
+		for (t1reg = 0; ( (t1reg == EEREC_TEMP) || (t1reg == EEREC_S) ); t1reg++)
+			; // Makes t1reg not be EEREC_TEMP or EEREC_S.
+		SSE_MOVAPS_XMM_to_M128( (uptr)&RSQRT_TEMP_XMM[0], t1reg ); // backup data in t1reg to a temp address
+
+		// Ft can still be zero here! so we need to check if its zero and set the correct flag.
+		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+		XOR32RtoR(vftemp, vftemp);
+		SSE_CMPEQSS_XMM_to_XMM(t1reg, EEREC_TEMP); // Set all F's if each vector is zero
+
+		SSE_MOVMSKPS_XMM_to_R32(vftemp, t1reg); // Move the sign bits of the previous calculation
+
+		AND32ItoR( vftemp, 0x01 );  // Grab "Is Zero" bits from the previous calculation
+		ajmp32 = JZ32(0); // Skip if none are
+
+			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
+
+			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
+			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
+			SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]); // If division by zero, then EEREC_TEMP = positive fmax
+			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
+			bjmp32 = JMP32(0);
+
+		x86SetJ32(ajmp32);
+
+			_unpackVFSS_xyzw(t1reg, EEREC_S, _Fsf_);
+			if (CHECK_EXTRA_OVERFLOW) // Clamp Infinities
+				vuFloat2(t1reg, t1reg, 0x8);
+			SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP);
+			vuFloat2(t1reg, t1reg, 0x8);
+			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg);
+
+		x86SetJ32(bjmp32);
+
+		SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&RSQRT_TEMP_XMM[0] ); // restore t1reg data
 	}
 
-	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
-	
-	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 	_freeX86reg(vftemp);
 }
 
