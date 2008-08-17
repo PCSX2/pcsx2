@@ -58,7 +58,7 @@
 #define CHECK_EESYNC_HACK (Config.Hacks & 0x1)
 #define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
 #define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
-#define CHECK_DENORMALS ((Config.Hacks & 0x8) ? 0x7fc0 : 0xff80) //If enabled, Denormals are Zero for the recs; and flush to zero is enabled as well
+#define CHECK_DENORMALS ((Config.Hacks & 0x8) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs; and flush to zero is enabled as well
 #define CHECK_FASTBRANCHES (Config.Hacks & 0x80)
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
