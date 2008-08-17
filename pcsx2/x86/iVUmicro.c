@@ -1153,8 +1153,7 @@ void vuFloat2(int regd, int regTemp, int XYZW) {
 // Clamps infinities to max/min non-infinity number (doesn't use any temp regs)
 void vuFloat( int info, int regd, int XYZW) {
 	if( CHECK_OVERFLOW ) {
-		//Faster, doesnt break games, but seems unsafe to enable
-		/*if ( !(CHECK_EXTRA_OVERFLOW) && (XYZW != 0) && (XYZW != 8) && (XYZW != 0xF) ) {
+		/*if ( (XYZW != 0) && (XYZW != 8) && (XYZW != 0xF) ) {
 			int t1reg = _vuGetTempXMMreg2(info, regd);
 			if (t1reg >= 0) {
 				vuFloat2( regd, t1reg, XYZW );
@@ -1380,7 +1379,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	u32 flagmask;
 	u8* pjmp;
 	u32 macaddr, stataddr, prevstataddr;
-	int x86macflag, x86newflag, x86oldflag;
+	int x86macflag, x86newflag, x86temp;
 	const static u8 macarr[16] =  {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
 
 	if( !(info & PROCESS_VU_UPDATEFLAGS) )
@@ -1397,16 +1396,14 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	
 
 	// 20 insts
-	x86newflag = ALLOCTEMPX86(MODE_8BITREG);
-	x86macflag = ALLOCTEMPX86(0);
-	x86oldflag = ALLOCTEMPX86(0);
+	x86newflag	= ALLOCTEMPX86(MODE_8BITREG);
+	x86macflag	= ALLOCTEMPX86(0);
+	x86temp		= ALLOCTEMPX86(0);
 	
 	// can do with 8 bits since only computing zero/sign flags
 	if( EEREC_TEMP != reg ) {
 
 		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-
-		MOV32MtoR(x86oldflag, prevstataddr); // Load the previous status in to x86oldflag
 
 		//-------------------------Check for Overflow flags------------------------------
 
@@ -1417,11 +1414,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
 
-		XOR32RtoR(EAX, EAX); //Clear EAX
+		XOR32RtoR(x86temp, x86temp); //Clear x86temp
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 8); // Set if they are
+		OR32ItoR(x86temp, 8); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1442,7 +1439,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 4); // Set if they are
+		OR32ItoR(x86temp, 4); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1474,7 +1471,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 2); // Set if they are
+		OR32ItoR(x86temp, 2); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1495,7 +1492,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 1); // Set if they are
+		OR32ItoR(x86temp, 1); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1506,7 +1503,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		if( macaddr != 0 )
 			MOV16RtoM(macaddr, x86macflag);
 		else
-			SysPrintf( "VU ALLOCATION ERROR: Macaddr == EAX!!! Can't set Mac Flags!\n" );
+			SysPrintf( "VU ALLOCATION ERROR: Can't set Mac Flags!\n" );
 	}
 	//-------------------------Flag Setting if (reg == EEREC_TEMP)------------------------------
 	else {
@@ -1522,8 +1519,6 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
 
-		MOV32MtoR(x86oldflag, prevstataddr); // Load the previous status in to x86oldflag
-
 		//-------------------------Check for Overflow flags------------------------------
 
 		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
@@ -1533,11 +1528,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
 
-		XOR32RtoR(EAX, EAX); //Clear EAX
+		XOR32RtoR(x86temp, x86temp); //Clear x86temp
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 8); // Set if they are
+		OR32ItoR(x86temp, 8); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1558,7 +1553,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 4); // Set if they are
+		OR32ItoR(x86temp, 4); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1590,7 +1585,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 2); // Set if they are
+		OR32ItoR(x86temp, 2); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1611,7 +1606,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(EAX, 1); // Set if they are
+		OR32ItoR(x86temp, 1); // Set if they are
 		x86SetJ8(pjmp);
 
 		OR32RtoR(x86macflag, x86newflag);
@@ -1627,18 +1622,19 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		if( macaddr != 0 )
 			MOV16RtoM(macaddr, x86macflag);
 		else
-			SysPrintf( "VU ALLOCATION ERROR: Macaddr == EAX!!! Can't set Mac Flags!\n" );
+			SysPrintf( "VU ALLOCATION ERROR: Can't set Mac Flags!\n" );
 	}
 
-	SHR32ItoR(x86oldflag, 6);
-	OR32RtoR(x86oldflag, EAX);
-	SHL32ItoR(x86oldflag, 6);
-	OR32RtoR(x86oldflag, EAX);
-	MOV32RtoM(stataddr, x86oldflag);
+	MOV32MtoR(x86macflag, prevstataddr); // Load the previous status in to x86macflag
+	AND32ItoR(x86macflag, 0xff0); // Keep Sticky and D/I flags
+	OR32RtoR(x86macflag, x86temp);
+	SHL32ItoR(x86temp, 6);
+	OR32RtoR(x86macflag, x86temp);
+	MOV32RtoM(stataddr, x86macflag);
 
 	_freeX86reg(x86macflag);
 	_freeX86reg(x86newflag);
-	_freeX86reg(x86oldflag);
+	_freeX86reg(x86temp);
 }
 
 /******************************/
@@ -3664,7 +3660,7 @@ void recVUMI_CLIP(VURegs *VU, int info)
 {
 	int t1reg = EEREC_D;
 	int t2reg = EEREC_ACC;
-	int x86temp0, x86temp1;
+	int x86temp1, x86temp2;
 
 	u32 clipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 0);
 	u32 prevclipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 2);
@@ -3676,54 +3672,53 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	}
 	assert( clipaddr != 0 );
 	assert( t1reg != t2reg && t1reg != EEREC_TEMP && t2reg != EEREC_TEMP );
-
+	
 	x86temp1 = ALLOCTEMPX86(MODE_8BITREG);
-	x86temp0 = ALLOCTEMPX86(0);
+	x86temp2 = ALLOCTEMPX86(MODE_8BITREG);
+
+	if ( (x86temp1 == 0) || (x86temp2 == 0) ) SysPrintf("VU CLIP Allocation Error: EAX being allocated!");
 
 	if( _Ft_ == 0 ) {
 		// all 1s
 		SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&s_fones[0]);
 		SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)&s_fones[4]);
-
-		MOV32MtoR(EAX, prevclipaddr);
 	}
 	else {
 		_unpackVF_xyzw(EEREC_TEMP, EEREC_T, 3);
-		SSE_XORPS_XMM_to_XMM(t1reg, t1reg);
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (int)const_clip);
-
-		MOV32MtoR(EAX, prevclipaddr);
-	
+		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[0]);
 		SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_TEMP);
 		SSE_ORPS_M128_to_XMM(t1reg, (uptr)&const_clip[4]);
 	}
 
-	SSE_CMPNLEPS_XMM_to_XMM(t1reg, EEREC_S);  //-w, -z, -y, -x
-	SSE_CMPLTPS_XMM_to_XMM(EEREC_TEMP, EEREC_S); //+w, +z, +y, +x
+	MOV32MtoR(EAX, prevclipaddr);
+
+	SSE_CMPNLTPS_XMM_to_XMM(t1reg, EEREC_S);  //-w, -z, -y, -x
+	SSE_CMPLEPS_XMM_to_XMM(EEREC_TEMP, EEREC_S); //+w, +z, +y, +x
 
 	SHL32ItoR(EAX, 6);
 
 	SSE_MOVAPS_XMM_to_XMM(t2reg, EEREC_TEMP); //t2 = +w, +z, +y, +x
 	SSE_UNPCKLPS_XMM_to_XMM(EEREC_TEMP, t1reg); //EEREC_TEMP = -y,+y,-x,+x
 	SSE_UNPCKHPS_XMM_to_XMM(t2reg, t1reg); //t2reg = -w,+w,-z,+z
-	SSE_MOVMSKPS_XMM_to_R32(x86temp0, EEREC_TEMP); // -y,+y,-x,+x
+	SSE_MOVMSKPS_XMM_to_R32(x86temp2, EEREC_TEMP); // -y,+y,-x,+x
 	SSE_MOVMSKPS_XMM_to_R32(x86temp1, t2reg); // -w,+w,-z,+z
 
+	AND8ItoR(x86temp1, 0x3);
+	SHL8ItoR(x86temp1, 4);
+	OR8RtoR(EAX, x86temp1);
+	AND8ItoR(x86temp2, 0xf);
+	OR8RtoR(EAX, x86temp2);
 	AND32ItoR(EAX, 0xffffff);
 
-	AND8ItoR(x86temp1, 0x3);
-	SHL32ItoR(x86temp1, 4);
-	OR32RtoR(EAX, x86temp0);
-	OR32RtoR(EAX, x86temp1);
-
 	MOV32RtoM(clipaddr, EAX);
-	/*if( !(info&(PROCESS_VU_SUPER|PROCESS_VU_COP2)) )*/ MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
+	MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
 
-	_freeXMMreg(t1reg);
-	_freeXMMreg(t2reg);
+	//if( !(info&(PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
+	//_freeXMMreg(t1reg); // We Never Allocated these regs, so no need to free them
+	//_freeXMMreg(t2reg);
 
-	_freeX86reg(x86temp0);
 	_freeX86reg(x86temp1);
+	_freeX86reg(x86temp2);
 }
 
 /******************************/
@@ -3739,6 +3734,8 @@ void recVUMI_DIV(VURegs *VU, int info)
 	u8* pjmp1;
 	u32* pjmp2;
 	u32* pjmp32;
+
+	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFCF); // Clear D/I flags
 
 	if( _Fs_ == 0 ) {
 
@@ -4210,7 +4207,7 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	u8* pjmp;
 
 	SysPrintf("SQRT Opcode \n");
-	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFDF); //Divide flag cleared regardless of result
+	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFCF); // Clear D/I flags
 	
 	if( xmmregs[EEREC_T].mode & MODE_WRITE )
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
@@ -4244,6 +4241,8 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 	int t1reg;
 	u32* ajmp32;
 	u32* bjmp32;
+
+	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFCF); // Clear D/I flags
 
 	if( _Ftf_ )
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
