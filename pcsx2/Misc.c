@@ -931,24 +931,24 @@ void ProcessFKeys(int fkey, int shift)
 
 			switch(CHECK_FRAMELIMIT) {
 				case PCSX2_FRAMELIMIT_NORMAL:
-					/*if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 					else GSsetFrameSkip(0);
-					Cpu->ExecuteVU1Block = recExecuteVU1Block;*/
+					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 					if(SPU2setTimeStretcher != NULL)
 						SPU2setTimeStretcher(1);
 					SysPrintf("Normal - Frame Limit Mode Changed\n");
 					break;
 				case PCSX2_FRAMELIMIT_LIMIT:
-					/*if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 					else GSsetFrameSkip(0);
-					Cpu->ExecuteVU1Block = recExecuteVU1Block;*/
+					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 					//Quality option, turn off timestretching on the SPU2 plugin
 					if(SPU2setTimeStretcher != NULL)
 						SPU2setTimeStretcher(0);
 					SysPrintf("Limit - Frame Limit Mode Changed\n");
 					break;
 				case PCSX2_FRAMELIMIT_SKIP:
-					//Cpu->ExecuteVU1Block = recExecuteVU1Block;
+					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 					if(SPU2setTimeStretcher != NULL)
 						SPU2setTimeStretcher(1);
 					SysPrintf("Frame Skip - Frame Limit Mode Changed\n");
