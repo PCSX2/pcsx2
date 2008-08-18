@@ -251,6 +251,7 @@ int LoadSPU2plugin(char *filename) {
 	LoadSPU2sym1(irqCallback,  "SPU2irqCallback");
 
     LoadSPU2symN(setClockPtr, "SPU2setClockPtr");
+	LoadSPU2symN(setTimeStretcher, "SPU2setTimeStretcher");
 
 	LoadSPU2symN(setupRecording, "SPU2setupRecording");
 

@@ -359,6 +359,7 @@ void CALLBACK SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void
 int CALLBACK SPU2setupRecording(int start, void* pData);
 
 void CALLBACK SPU2setClockPtr(u32* ptr);
+void CALLBACK SPU2setTimeStretcher(short int enable);
 
 void CALLBACK SPU2async(u32 cycles);
 s32  CALLBACK SPU2freeze(int mode, freezeData *data);
@@ -592,6 +593,7 @@ typedef void (CALLBACK* _SPU2irqCallback)(void (*SPU2callback)(),void (*DMA4call
 typedef int (CALLBACK* _SPU2setupRecording)(int, void*);
 
 typedef void (CALLBACK* _SPU2setClockPtr)(u32*ptr);
+typedef void (CALLBACK* _SPU2setTimeStretcher)(short int enable);
 
 typedef u32 (CALLBACK* _SPU2ReadMemAddr)(int core);
 typedef void (CALLBACK* _SPU2WriteMemAddr)(int core,u32 value);
@@ -791,6 +793,7 @@ _SPU2WriteMemAddr   SPU2WriteMemAddr;
 _SPU2irqCallback   SPU2irqCallback;
 
 _SPU2setClockPtr   SPU2setClockPtr;
+_SPU2setTimeStretcher SPU2setTimeStretcher;
 
 _SPU2async         SPU2async;
 _SPU2freeze        SPU2freeze;
