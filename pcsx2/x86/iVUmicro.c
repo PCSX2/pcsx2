@@ -3648,7 +3648,7 @@ void recVUMI_CLIP(VURegs *VU, int info)
 {
 	int t1reg = EEREC_D;
 	int t2reg = EEREC_ACC;
-	int x86temp1;
+	int x86temp1, x86temp2;
 
 	u32 clipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 0);
 	u32 prevclipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 2);
@@ -3662,8 +3662,9 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	assert( t1reg != t2reg && t1reg != EEREC_TEMP && t2reg != EEREC_TEMP );
 	
 	x86temp1 = ALLOCTEMPX86(MODE_8BITREG);
+	x86temp2 = ALLOCTEMPX86(MODE_8BITREG);
 
-	if (x86temp1 == 0) SysPrintf("VU CLIP Allocation Error: EAX being allocated!");
+	if ( (x86temp1 == 0) || (x86temp2 == 0) ) SysPrintf("VU CLIP Allocation Error: EAX being allocated!");
 
 	if( _Ft_ == 0 ) {
 		// all 1s
@@ -3687,16 +3688,14 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	SSE_MOVAPS_XMM_to_XMM(t2reg, EEREC_TEMP); //t2 = +w, +z, +y, +x
 	SSE_UNPCKLPS_XMM_to_XMM(EEREC_TEMP, t1reg); //EEREC_TEMP = -y,+y,-x,+x
 	SSE_UNPCKHPS_XMM_to_XMM(t2reg, t1reg); //t2reg = -w,+w,-z,+z
+	SSE_MOVMSKPS_XMM_to_R32(x86temp2, EEREC_TEMP); // -y,+y,-x,+x
 	SSE_MOVMSKPS_XMM_to_R32(x86temp1, t2reg); // -w,+w,-z,+z
 
 	AND8ItoR(x86temp1, 0x3);
 	SHL8ItoR(x86temp1, 4);
 	OR8RtoR(EAX, x86temp1);
-
-	SSE_MOVMSKPS_XMM_to_R32(x86temp1, EEREC_TEMP); // -y,+y,-x,+x
-
-	AND8ItoR(x86temp1, 0xf);
-	OR8RtoR(EAX, x86temp1);
+	AND8ItoR(x86temp2, 0xf);
+	OR8RtoR(EAX, x86temp2);
 	AND32ItoR(EAX, 0xffffff);
 
 	MOV32RtoM(clipaddr, EAX);
@@ -3707,6 +3706,7 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	//_freeXMMreg(t2reg);
 
 	_freeX86reg(x86temp1);
+	_freeX86reg(x86temp2);
 }
 
 /******************************/
