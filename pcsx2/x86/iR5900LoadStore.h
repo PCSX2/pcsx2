@@ -81,7 +81,7 @@ void recSQC2_co( void );
 void recLD_coX(int num);
 void recLQ_coX(int num);
 void recLWC1_coX(int num);
-void recSD_coX(int num);
+void recSD_coX(int num, int align);
 void recSQ_coX(int num);
 void recSWC1_coX(int num);
 

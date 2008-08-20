@@ -518,7 +518,6 @@ void _deleteEEreg(int reg, int flush)
 // if not mmx, then xmm
 int eeProcessHILO(int reg, int mode, int mmx)
 {
-	int info = 0;
     int usemmx = mmx && _hasFreeMMXreg();
 	if( (usemmx || _hasFreeXMMreg()) || !(g_pCurInstInfo->regs[reg]&EEINST_LASTUSE) ) {
 		if( usemmx ) return _allocMMXreg(-1, MMX_GPR+reg, mode);
@@ -1295,7 +1294,8 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 {
 	int mmregs=-1, mmregt=-1, mmregd=-1, mmregacc=-1;
 
-	if( EE_FPU_REGCACHING && cpucaps.hasStreamingSIMDExtensions ) {
+#ifdef EE_FPU_REGCACHING
+	if( cpucaps.hasStreamingSIMDExtensions ) {
 		int info = PROCESS_EE_XMM;
 
 		if( xmminfo & XMMINFO_READS ) _addNeededFPtoXMMreg(_Fs_);
@@ -1435,6 +1435,7 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 		_clearNeededXMMregs();
 		return;
 	}
+#endif //EE_FPU_REGCACHING
 
 	if( xmminfo & XMMINFO_READS ) _deleteFPtoXMMreg(_Fs_, 0);
 	if( xmminfo & XMMINFO_READT ) _deleteFPtoXMMreg(_Ft_, 0);
@@ -2608,7 +2609,7 @@ void recompileNextInstruction(int delayslot)
 				case 49: recLWC1_coX(g_pCurInstInfo->numpeeps); break;
 				case 57: recSWC1_coX(g_pCurInstInfo->numpeeps); break;
 				case 55: recLD_coX(g_pCurInstInfo->numpeeps); break;
-				case 63: recSD_coX(g_pCurInstInfo->numpeeps); break;
+				case 63: recSD_coX(g_pCurInstInfo->numpeeps, 0); break; //the 0 is just temporary, find out what should go there
 				default:
 					assert(0);
 			}
@@ -2957,7 +2958,7 @@ void recRecompile( u32 startpc )
 				
 				if( _Rt_ < 4 || (_Rt_ >= 16 && _Rt_ < 20) ) {
 					// branches
-					if( _Rt_ == 2 && _Rt_ == 3 && _Rt_ == 18 && _Rt_ == 19 ) s_nHasDelay = 1;
+					if( _Rt_ == 2 || _Rt_ == 3 || _Rt_ == 18 || _Rt_ == 19 ) s_nHasDelay = 1;
 					else s_nHasDelay = 2;
 
 					branchTo = _Imm_ * 4 + i + 4;
