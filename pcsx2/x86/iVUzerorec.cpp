@@ -2857,13 +2857,11 @@ void VuBaseBlock::Recompile()
 		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
 	}
 	if( s_PrevStatusWrite != (uptr)&VU->VI[REG_STATUS_FLAG] ) {
-        // only lower 8 bits valid!
-		MOVZX32M8toR(EAX, s_PrevStatusWrite);
+		MOV32MtoR(EAX, s_PrevStatusWrite);
 		MOV32RtoM((uptr)&VU->VI[REG_STATUS_FLAG], EAX);
 	}
 	if( s_PrevMACWrite != (uptr)&VU->VI[REG_MAC_FLAG] ) {
-        // only lower 8 bits valid!
-		MOVZX32M8toR(EAX, s_PrevMACWrite);
+		MOV32MtoR(EAX, s_PrevMACWrite);
 		MOV32RtoM((uptr)&VU->VI[REG_MAC_FLAG], EAX);
 	}
 //    if( s_StatusRead != (uptr)&VU->VI[REG_STATUS_FLAG] ) {
@@ -3213,6 +3211,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 				s_ClipRead = (uptr)&VU->VI[REG_CLIP_FLAG];
 			else {
 				s_ClipRead = s_pCurBlock->GetInstIterAtPc(nParentPc)->pClipWrite;
+				if (s_ClipRead == NULL) SysPrintf("super ClipRead allocation error! \n");
 			}
 		}
 
@@ -3274,6 +3273,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
                 }
 				else {
 					s_StatusRead = s_pCurBlock->GetInstIterAtPc(nParentPc)->pStatusWrite;
+					if (s_StatusRead == NULL) SysPrintf("super StatusRead allocation error! \n");
 //                    if( pc >= (u32)s_pCurBlock->endpc-8 ) {
 //                        // towards the end, so variable might be leaded to another block (silent hill 4)
 //                        uptr tempstatus = (uptr)SuperVUStaticAlloc(4);
@@ -3409,7 +3409,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 		}
 	}
 
-    if( pClipWrite == 0 && ((regs[0].VIwrite|regs[1].VIwrite) & (1<<REG_CLIP_FLAG)) ) {
+	if( pClipWrite == NULL && ((regs[0].VIwrite|regs[1].VIwrite) & (1<<REG_CLIP_FLAG)) ) {
 		pClipWrite = (uptr)SuperVUStaticAlloc(4);
         //MOV32ItoM(pClipWrite, 0);
     }

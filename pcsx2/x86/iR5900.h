@@ -41,7 +41,7 @@
 #define CP2_RECOMPILE
 
 #define EE_CONST_PROP // rec2 - enables constant propagation (faster)
-#define EE_FPU_REGCACHING
+#define EE_FPU_REGCACHING 1
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 

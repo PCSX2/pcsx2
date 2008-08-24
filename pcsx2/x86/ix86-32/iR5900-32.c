@@ -1294,8 +1294,7 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 {
 	int mmregs=-1, mmregt=-1, mmregd=-1, mmregacc=-1;
 
-#ifdef EE_FPU_REGCACHING
-	if( cpucaps.hasStreamingSIMDExtensions ) {
+	if( EE_FPU_REGCACHING && cpucaps.hasStreamingSIMDExtensions ) {
 		int info = PROCESS_EE_XMM;
 
 		if( xmminfo & XMMINFO_READS ) _addNeededFPtoXMMreg(_Fs_);
@@ -1435,7 +1434,6 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 		_clearNeededXMMregs();
 		return;
 	}
-#endif //EE_FPU_REGCACHING
 
 	if( xmminfo & XMMINFO_READS ) _deleteFPtoXMMreg(_Fs_, 0);
 	if( xmminfo & XMMINFO_READT ) _deleteFPtoXMMreg(_Ft_, 0);

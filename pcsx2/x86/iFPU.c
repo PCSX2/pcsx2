@@ -316,12 +316,10 @@ void LoadCW( void ) {
 void recCOP1_S( void ) 
 {
 #ifndef __x86_64__
-#ifndef EE_FPU_REGCACHING
-	if( !cpucaps.hasStreamingSIMD2Extensions) {
+	if( !EE_FPU_REGCACHING || !cpucaps.hasStreamingSIMD2Extensions ) {
 		_freeMMXreg(6);
 		_freeMMXreg(7);
 	}
-#endif
 #endif
 	recCP1S[ _Funct_ ]( );
 }
@@ -330,10 +328,10 @@ void recCOP1_S( void )
 void recCOP1_W( void ) 
 {
 #ifndef __x86_64__
-#ifndef EE_FPU_REGCACHING
+	if( !EE_FPU_REGCACHING ) {
 		_freeMMXreg(6);
 		_freeMMXreg(7);
-#endif	
+	}
 #endif
     recCP1W[ _Funct_ ]( );
 }
