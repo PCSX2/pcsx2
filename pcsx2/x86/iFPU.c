@@ -505,7 +505,6 @@ void recSQRT_S_(int info)
 
 void recABS_S_(int info)
 {
-	//AND32ItoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, 0x7fffffff ); // isn't this faster?
 	MOV32MtoR( EAX, (uptr)&fpuRegs.fpr[ _Fs_ ].f );
 	AND32ItoR( EAX, 0x7fffffff );
 	MOV32RtoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, EAX );
@@ -519,7 +518,6 @@ void recMOV_S_(int info)
 
 void recNEG_S_(int info)
 {
-	//XOR32ItoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, 0x80000000 ); // isn't this faster?
 	MOV32MtoR( EAX,(uptr)&fpuRegs.fpr[ _Fs_ ].f );
 	XOR32ItoR( EAX, 0x80000000 );
 	MOV32RtoM( (uptr)&fpuRegs.fpr[ _Fd_ ].f, EAX );
@@ -755,7 +753,10 @@ static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0x7f7fffff, 0x7f7fffff, 0x7f7fff
 static u32 s_signbit = 0x80000000;
 extern int g_VuNanHandling;
 
-void ClampValues(regd){ 
+void ClampValues(regd) { 
+	SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+	SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+/*
 	int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
     SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
@@ -767,10 +768,15 @@ void ClampValues(regd){
 	SSE_ANDPS_XMM_to_XMM(regd, t5reg); 
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
 	SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+
     _freeXMMreg(t5reg); 
+*/
 }
 
-void ClampValues2(regd){ 
+void ClampValues2(regd) { 
+	SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+	SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+/*
 	int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
     SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
@@ -785,6 +791,7 @@ void ClampValues2(regd){
 	SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
 
     _freeXMMreg(t5reg); 
+*/
 }
 
 static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {

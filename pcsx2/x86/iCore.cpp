@@ -179,7 +179,7 @@ int  _getFreeXMMreg()
 		_freeXMMreg(tempi);
 		return tempi;
 	}
-	SysPrintf("*PCSX2*: VUrec ERROR\n");
+	SysPrintf("*PCSX2*: XMM Reg Allocation Error in _getFreeXMMreg()!\n");
 
 	return -1;
 }
