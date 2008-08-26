@@ -951,6 +951,7 @@ static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0, 0, 0 };
 
 void recSQRT_S_xmm(int info)
 {
+	SysPrintf("FPU: SQRT \n");
 	if( info & PROCESS_EE_T ) {
 		//if( CHECK_OVERFLOW ) {
 			if( EEREC_D == EEREC_T ) SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
@@ -1028,6 +1029,7 @@ FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
 void recRSQRT_S_xmm(int info)
 {	
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	SysPrintf("FPU: RSQRT \n");
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			if( EEREC_D == EEREC_S ) {

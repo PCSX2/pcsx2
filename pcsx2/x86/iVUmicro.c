@@ -3761,7 +3761,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 
 					if( t1reg >= 0 ) // 1/n ---- needs work, ft can also be zero!
 					{ 
-						SysPrintf("DIV: Fixed! 1 \n");
+						//SysPrintf("DIV: Fixed! 1 \n");
 
 						_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
 
@@ -3800,7 +3800,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 					}
 					else // 1/n ---- needs work, ft can also be zero!
 					{ 
-						SysPrintf("DIV: Fixed! 2 \n");
+						//SysPrintf("DIV: Fixed! 2 \n");
 						_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
 
 						if (CHECK_EXTRA_OVERFLOW)
@@ -3842,7 +3842,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 				}
 				else
 				{ // 1/n ---- (SS) needs work, ft can also be zero!
-					SysPrintf("DIV: Fixed! 3 \n");
+					//SysPrintf("DIV: Fixed! 3 \n");
 
 					if (CHECK_EXTRA_OVERFLOW)
 						vuFloat2(EEREC_T, EEREC_TEMP, 0x8);
@@ -3878,7 +3878,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 				}
 			}
 			else { // 1/n ---- (SS) needs work, ft can also be zero!
-				SysPrintf("DIV: Fixed! 4 \n");
+				//SysPrintf("DIV: Fixed! 4 \n");
 
 				t1reg = (EEREC_TEMP == 0) ? (EEREC_TEMP + 1) : (EEREC_TEMP - 1); // find a xmm reg thats not EEREC_TEMP
 				SSE_MOVAPS_XMM_to_M128( (uptr)&DIV_TEMP_XMM[0], t1reg ); // backup data in t1reg to a temp address
@@ -3920,7 +3920,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 			}
 		}
 		else { // 0/n ---- So result is +/- 0, or +/- Fmax if (FT == 0)
-			SysPrintf("FS = 0, FT = n \n");
+			//SysPrintf("FS = 0, FT = n \n");
 
 			if( _Ftf_ == 0 ) SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 			else _unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_); // EEREC_TEMP.x <- EEREC_T.ftf
@@ -3961,7 +3961,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 	else { // _Fs_ != 0
 		if( _Ft_ == 0 ) {
 			if( _Ftf_ < 3 ) {  // needs extra work, fs can also be zero!
-				SysPrintf("DIV: FS = n, FT == 0 ---- Finished! \n");
+				//SysPrintf("DIV: FS = n, FT == 0 ---- Finished! \n");
 
 				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_); // EEREC_TEMP.x <- EEREC_S.fsf
 
@@ -3990,7 +3990,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 				SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&DIV_TEMP_XMM[0] ); // restore data to t1reg
 			}
 			else {
-				SysPrintf("DIV: FS = n, FT == 1 \n");
+				//SysPrintf("DIV: FS = n, FT == 1 \n");
 				if( _Fsf_ == 0 ) SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 				else _unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 				if (CHECK_EXTRA_OVERFLOW)
@@ -4010,7 +4010,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 
 			if( t1reg >= 0 )
 			{
-				SysPrintf("Second Half of DIV Opcode: Fixed 1 \n");
+				//SysPrintf("Second Half of DIV Opcode: Fixed 1 \n");
 				_unpackVFSS_xyzw(t1reg, EEREC_T, _Ftf_);
 
 				if (CHECK_EXTRA_OVERFLOW) {
@@ -4068,7 +4068,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 			}
 			else
 			{
-				SysPrintf("Second Half of DIV Opcode: Fixed 2 \n");
+				//SysPrintf("Second Half of DIV Opcode: Fixed 2 \n");
 				t1reg = EEREC_T;
 				SSE_MOVAPS_XMM_to_M128( (uptr)&DIV_TEMP_XMM[0], t1reg ); // backup data in t1reg to a temp address
 				_unpackVFSS_xyzw(t1reg, EEREC_T, _Ftf_);
@@ -4129,7 +4129,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 		}
 		else
 		{
-			SysPrintf("Second Half of DIV Opcode: Fixed 3 \n");
+			//SysPrintf("Second Half of DIV Opcode: Fixed 3 \n");
 
 			if (CHECK_EXTRA_OVERFLOW) {
 				vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
@@ -4194,7 +4194,7 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	int vftemp = ALLOCTEMPX86(MODE_8BITREG);
 	u8* pjmp;
 
-	SysPrintf("SQRT Opcode \n");
+	//SysPrintf("SQRT Opcode \n");
 	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFCF); // Clear D/I flags
 	
 	if( xmmregs[EEREC_T].mode & MODE_WRITE )
@@ -4255,7 +4255,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 
 	if( t1reg >= 0 )
 	{
-		SysPrintf("RSQRT Opcode Part 1 \n");
+		//SysPrintf("RSQRT Opcode Part 1 \n");
 		// Ft can still be zero here! so we need to check if its zero and set the correct flag.
 		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
 		XOR32RtoR(vftemp, vftemp);
@@ -4289,7 +4289,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 	}
 	else
 	{
-		SysPrintf("RSQRT Opcode Part 2 \n");
+		//SysPrintf("RSQRT Opcode Part 2 \n");
 		for (t1reg = 0; ( (t1reg == EEREC_TEMP) || (t1reg == EEREC_S) ); t1reg++)
 			; // Makes t1reg not be EEREC_TEMP or EEREC_S.
 		SSE_MOVAPS_XMM_to_M128( (uptr)&RSQRT_TEMP_XMM[0], t1reg ); // backup data in t1reg to a temp address
