@@ -123,7 +123,7 @@ u32 g_MTGSDebug = 0, g_MTGSId = 0;
 u32 CSRw;
 void gsWaitGS();
 
-extern long pDsp;
+extern uptr pDsp;
 typedef u8* PU8;
 
 PCSX2_ALIGNED16(u8 g_MTGSMem[0x2000]); // mtgs has to have its own memory
