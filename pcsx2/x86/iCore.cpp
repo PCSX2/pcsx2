@@ -57,7 +57,7 @@ char g_globalXMMLocked = 0;
 #endif
 
 _xmmregs xmmregs[XMMREGS], s_saveXMMregs[XMMREGS];
-PCSX2_ALIGNED16(u64 g_globalXMMData[2*XMMREGS];)
+PCSX2_ALIGNED16(u64 g_globalXMMData[2*XMMREGS]);
 
 // X86 caching
 _x86regs x86regs[X86REGS], s_saveX86regs[X86REGS];

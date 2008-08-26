@@ -24,6 +24,9 @@
 #include "ix86/ix86.h"
 #include "iR5900.h"
 #include "iFPU.h"
+#include "stdio.h" //Linux needs this?
+#include "stdlib.h" //Linux needs this?
+
 
 #define REC_FPUBRANCH(f) \
 	void f(); \

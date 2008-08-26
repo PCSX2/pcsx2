@@ -1356,7 +1356,7 @@ const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])		= {0x007fffff, 0x007fff
 const static PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 const static PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 const static PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
-PCSX2_ALIGNED16(u64 TEMPXMMData[2];)
+PCSX2_ALIGNED16(u64 TEMPXMMData[2]);
 
 // VU Flags
 // NOTE: Flags now compute under/over flows! :p
@@ -3712,8 +3712,8 @@ void recVUMI_CLIP(VURegs *VU, int info)
 /******************************/
 /*   VU Lower instructions    */
 /******************************/
-PCSX2_ALIGNED16(u64 DIV_TEMP_XMM[2];)
-PCSX2_ALIGNED16(u64 DIV_TEMP_XMM2[2];)
+PCSX2_ALIGNED16(u64 DIV_TEMP_XMM[2]);
+PCSX2_ALIGNED16(u64 DIV_TEMP_XMM2[2]);
 
 void recVUMI_DIV(VURegs *VU, int info)
 {
@@ -4221,7 +4221,7 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	
 }
 
-PCSX2_ALIGNED16(u64 RSQRT_TEMP_XMM[2];)
+PCSX2_ALIGNED16(u64 RSQRT_TEMP_XMM[2]);
 
 void recVUMI_RSQRT(VURegs *VU, int info)
 {
