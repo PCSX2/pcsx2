@@ -123,7 +123,7 @@ u32 g_MTGSDebug = 0, g_MTGSId = 0;
 u32 CSRw;
 void gsWaitGS();
 
-extern HWND pDsp;
+extern long pDsp;
 typedef u8* PU8;
 
 PCSX2_ALIGNED16(u8 g_MTGSMem[0x2000]); // mtgs has to have its own memory
@@ -712,7 +712,6 @@ u64 gsRead64(u32 mem)
 
 void gsIrq() {
 	hwIntcIrq(0);
-	//SysPrintf("GSIRQ called\n");
 }
 
 static void GSRegHandlerSIGNAL(u32* data)
@@ -1031,7 +1030,7 @@ static u64 s_gstag=0; // used for querying the last tag
 
 int  _GIFchain() {
 #ifdef GSPATH3FIX
-	u32 qwc = (psHu32(GIF_MODE) & 0x4 && vif1Regs->mskpath3 && gif->qwc & ~7) ? 8 : gif->qwc;
+	u32 qwc = (psHu32(GIF_MODE) & 0x4 && vif1Regs->mskpath3) ? min(8, (int)gif->qwc) : gif->qwc;
 #else
 	u32 qwc = gif->qwc;
 #endif
@@ -1609,18 +1608,18 @@ void* GSThreadProc(void* lpParam)
                             int qsize = (tag>>16);
 							MTGS_RECREAD(g_pGSRingPos+16, (qsize<<4));
                             // make sure that tag>>16 is the MAX size readable
-							GSgifTransfer1((u32*)(g_pGSRingPos+0x10) - 0x1000 + 4*qsize, 0x4000-qsize*16);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + (qsize<<4));
+							GSgifTransfer1((u32*)(g_pGSRingPos+16) - 0x1000 + 4*qsize, 0x4000-qsize*16);
+							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
 							break;
                         }
 						case GS_RINGTYPE_P2:
 							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
-							GSgifTransfer2((u32*)(g_pGSRingPos+0x10), tag>>16);
+							GSgifTransfer2((u32*)(g_pGSRingPos+16), tag>>16);
 							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
 							break;
 						case GS_RINGTYPE_P3:
 							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
-							GSgifTransfer3((u32*)(g_pGSRingPos+0x10), tag>>16);
+							GSgifTransfer3((u32*)(g_pGSRingPos+16), tag>>16);
 							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
 							break;
 						case GS_RINGTYPE_VSYNC:

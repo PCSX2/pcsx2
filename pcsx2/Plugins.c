@@ -251,7 +251,6 @@ int LoadSPU2plugin(char *filename) {
 	LoadSPU2sym1(irqCallback,  "SPU2irqCallback");
 
     LoadSPU2symN(setClockPtr, "SPU2setClockPtr");
-	LoadSPU2symN(setTimeStretcher, "SPU2setTimeStretcher");
 
 	LoadSPU2symN(setupRecording, "SPU2setupRecording");
 
@@ -509,7 +508,7 @@ int LoadPlugins() {
 	return 0;
 }
 
-HWND pDsp;
+uptr pDsp;
 static pluginsopened = 0;
 extern void spu2DMA4Irq();
 extern void spu2DMA7Irq();

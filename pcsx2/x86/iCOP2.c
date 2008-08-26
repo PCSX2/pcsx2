@@ -117,6 +117,9 @@ extern void _vu0WaitMicro();
 static void recCFC2()
 {
 	int mmreg;
+#ifdef __x86_64__
+	int creg;
+#endif
 
 	if (cpuRegs.code & 1) {
 		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
@@ -130,7 +133,7 @@ static void recCFC2()
 #ifdef __x86_64__
     mmreg = _allocX86reg(-1, X86TYPE_GPR, _Rt_, MODE_WRITE);
 
-    if( (int creg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_READ)) >= 0 ) {
+    if( (creg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_READ)) >= 0 ) {
         if(EEINST_ISLIVE1(_Rt_)) {
 			if( _Fs_ < 16 ) {
                 // zero extending
@@ -211,6 +214,9 @@ static void recCFC2()
 
 static void recCTC2()
 {
+#ifdef __x86_64__
+	int mmreg;
+#endif
 	if (cpuRegs.code & 1) {
 		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
 		CALLFunc((uptr)_vu0WaitMicro);
@@ -276,7 +282,7 @@ static void recCTC2()
                     assert( (g_cpuConstRegs[_Rt_].UL[0]&0xffff0000)==0);
 
 #ifdef __x86_64__
-                if( (int mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
+                if( (mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
                     MOV32ItoR(mmreg, g_cpuConstRegs[_Rt_].UL[0]);
                 else
 #else
@@ -358,7 +364,7 @@ static void recCTC2()
 			default:
 			{
 #ifdef __x86_64__
-                if( (int mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
+                if( (mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
                     _eeMoveGPRtoR(mmreg, _Rt_);
                 else
 #else
