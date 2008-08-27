@@ -5375,16 +5375,16 @@ void recVUMI_FMAND( VURegs *VU, int info )
 	int fsreg, ftreg;
 	if ( _Ft_ == 0 ) return;
 
-	if( _Ft_ != _Fs_ ) {
-		fsreg = ALLOCVI(_Fs_, MODE_READ);
-		ftreg = ALLOCVI(_Ft_, MODE_WRITE);
-		MOVZX32M16toR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1) );
-		AND16RtoR( ftreg, fsreg);
+	fsreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
+	ftreg = ALLOCVI(_Ft_, MODE_WRITE);//|MODE_8BITREG);
+
+	if( fsreg >= 0 ) {
+		if( ftreg != fsreg ) MOV32RtoR(ftreg, fsreg);
 	}
-	else {
-		ftreg = ALLOCVI(_Ft_, MODE_WRITE);
-		AND16MtoR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1) );
-	}
+	else MOV16MtoR(ftreg, VU_VI_ADDR(_Fs_, 1));
+
+	AND16MtoR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
+	//MOVZX32R16toR(ftreg, ftreg);
 }
 
 void recVUMI_FMEQ( VURegs *VU, int info )
