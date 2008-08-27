@@ -5413,22 +5413,27 @@ void recVUMI_FMEQ( VURegs *VU, int info )
 
 void recVUMI_FMOR( VURegs *VU, int info )
 {
-	//int fsreg, ftreg;
-	int ftreg;
+	int fsreg, ftreg;
 	if ( _Ft_ == 0 ) return;
 
 	if( _Fs_ == 0 ) {
-		ftreg = ALLOCVI(_Ft_,MODE_WRITE);//|MODE_8BITREG);
-		MOVZX32M16toR(ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
+		ftreg = ALLOCVI(_Ft_, MODE_WRITE);//|MODE_8BITREG);
+		MOVZX32M16toR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1) );
 	}
-	if( _Ft_ == _Fs_ ) {
-		ftreg = ALLOCVI(_Ft_, MODE_WRITE|MODE_READ);//|MODE_8BITREG);
-		OR16MtoR(ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
+	else if( _Ft_ == _Fs_ ) {
+		ftreg = ALLOCVI(_Ft_, MODE_WRITE);//|MODE_READ|MODE_8BITREG);
+		OR16MtoR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1) );
 	}
 	else {
+		fsreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
 		ftreg = ALLOCVI(_Ft_, MODE_WRITE);
-		MOVZX32M16toR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1));
-		OR16MtoR( ftreg, VU_VI_ADDR(_Fs_, 1) );
+
+		MOVZX32M16toR( ftreg, VU_VI_ADDR(REG_MAC_FLAG, 1) );
+
+		if( fsreg >= 0 )
+			OR16RtoR( ftreg, fsreg );
+		else
+			OR16MtoR( ftreg, VU_VI_ADDR(_Fs_, 1) );
 	}
 }
 
