@@ -1338,11 +1338,15 @@ void psxHwWrite32(u32 add, u32 value) {
 			return;
 
 		case 0x1f8010c0:
+#ifdef PSXHW_LOG
 			PSXHW_LOG("DMA4 MADR 32bit write %lx\n", value);
+#endif
 			SPU2WriteMemAddr(0,value);
 			HW_DMA4_MADR = value; return; // DMA4 madr
 		case 0x1f8010c4:
+#ifdef PSXHW_LOG
 			PSXHW_LOG("DMA4 BCR 32bit write %lx\n", value);
+#endif
 			HW_DMA4_BCR  = value; return; // DMA4 bcr
 		case 0x1f8010c8:
 #ifdef PSXHW_LOG
@@ -1375,11 +1379,15 @@ void psxHwWrite32(u32 add, u32 value) {
 			return;
 
 		case 0x1f801500:
+#ifdef PSXHW_LOG
 			PSXHW_LOG("DMA7 MADR 32bit write %lx\n", value);
+#endif
 			SPU2WriteMemAddr(1,value);
 			HW_DMA7_MADR = value; return; // DMA7 madr
 		case 0x1f801504:
+#ifdef PSXHW_LOG
 			PSXHW_LOG("DMA7 BCR 32bit write %lx\n", value);
+#endif
 			HW_DMA7_BCR  = value; return; // DMA7 bcr
 		case 0x1f801508:
 #ifdef PSXHW_LOG

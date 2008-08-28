@@ -790,7 +790,9 @@ static BOOL ipuFDEC(u32 val)
 
 static BOOL ipuSETIQ(u32 val)
 {
+#ifdef PCSX2_DEVBUILD
 	int i;
+#endif
 
  	if ((val >> 27) & 1){
 		g_nCmdPos[0] += getBits((u8*)niq + g_nCmdPos[0], 512-8*g_nCmdPos[0], 1); // 8*8*8

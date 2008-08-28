@@ -147,7 +147,9 @@ void SIO_CommandWrite(u8 value,int way) {
 			sio.parp = 1;
 			switch (value) {
 			case 0x11: // RESET
+#ifdef PAD_LOG
 				PAD_LOG("RESET MEMORY CARD\n");
+#endif
 				sio.bufcount =  8; 
 				memset(sio.buf, 0xFF, 256);
 				sio.buf[3] = sio.terminator;
@@ -516,7 +518,9 @@ void InitializeSIO(u8 value)
 			sio2.packet.recvVal1 = 0x1100; // Memcards are present
 			sio.count = 0;
 			SIO_INT();
+#ifdef PAD_LOG
 			PAD_LOG("START MEMORY CARD\n");
+#endif
 			return;
 	}
 }

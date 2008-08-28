@@ -1083,7 +1083,9 @@ void hwWrite32(u32 mem, u32 value) {
 			break;
 
 		case 0x1000f590: // DMAC_ENABLEW
+#ifdef HW_LOG
 			HW_LOG("DMAC_ENABLEW Write 32bit %lx\n", value);
+#endif
 			psHu32(0xf590) = value;
 			psHu32(0xf520) = value;
 			return;

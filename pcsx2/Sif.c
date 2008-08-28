@@ -333,8 +333,9 @@ notDone = 1;
 				{
 					static PCSX2_ALIGNED16(u32 tag[4]);
 					SIF0read((u32*)&tag[0], 4); // Tag
+#ifdef SIF_LOG
                     SIF_LOG(" EE SIF read tag: %x %x %x %x\n", tag[0], tag[1], tag[2], tag[3]);
-
+#endif
 					sif0dma->qwc = (u16)tag[0];
 					sif0dma->madr = tag[1];
 					sif0dma->chcr = (sif0dma->chcr & 0xffff) | (tag[0] & 0xffff0000);

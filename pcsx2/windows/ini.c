@@ -175,7 +175,11 @@ void SaveConfig() {
 	//Misc
     sprintf(szValue,"%u",Conf->Patch);
     WritePrivateProfileString("Misc","Patch",szValue,szIniFile);
+#ifdef PCSX2_DEVBUILD	
 	sprintf(szValue,"%x",varLog);
+#else
+	sprintf(szValue,"%x",0);
+#endif
     WritePrivateProfileString("Misc","varLog",szValue,szIniFile);
 	sprintf(szValue,"%u",Conf->Hacks);
     WritePrivateProfileString("Misc","Hacks",szValue,szIniFile);
