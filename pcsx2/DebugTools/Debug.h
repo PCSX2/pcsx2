@@ -104,11 +104,11 @@ void __Log(char *fmt, ...);
 
 #else // PCSX2_DEVBUILD
 
+#define varLog 0
+#define Log 0
+
 //NOTE: uncomment these if you want them in release to public builds
 
-//#define varLog 0
-//#define Log 0
-//
 //#define CPU_LOG  0&&
 //#define MEM_LOG  0&&
 //#define HW_LOG   0&&
