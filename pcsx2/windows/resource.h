@@ -606,7 +606,10 @@
 #define IDC_CHECK1                      1300
 #define IDC_SOUNDHACK                   1300
 #define IDC_DENORMALS                   1301
+#define IDC_SOUNDHACK2                  1302
+#define IDC_VUCLIPHACK                  1302
 #define IDC_FRAMELIMIT_OPTIONS          1303
+#define IDC_VUMINIHACK                  1303
 #define IDC_LOG                         1500
 #define IDC_CPULOG                      1500
 #define IDC_MEMLOG                      1501

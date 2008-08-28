@@ -938,18 +938,18 @@ BEGIN
     CONTROL         132,IDC_PS2SILVER_RECT,"Static",SS_BITMAP,0,167,70,74
 END
 
-IDD_HACKS DIALOGEX 0, 0, 405, 251
+IDD_HACKS DIALOGEX 0, 0, 406, 273
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCSX2 Speed Hacks"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,146,230,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,202,230,50,14
+    DEFPUSHBUTTON   "OK",IDOK,146,252,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,202,252,50,14
     CONTROL         "EE Sync Hack (x2) - Doubles the cycle rate of the EE.",IDC_SYNCHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,114,252,10
     CONTROL         "Disable All Overflow Checks - Doesn't check for overflow at all in the VU Recs.",IDC_OVERFLOWHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,63,373,10
-    CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,391,8
+    CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,392,8
     CONTROL         "Tighter SPU2 Sync ( FFXII vids) - Slower, not useful anymore.",IDC_SOUNDHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,197,323,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP.",IDC_SYNCHACK2,
@@ -960,12 +960,16 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,50,377,10
     CONTROL         "EE/IOP Fast Branches - Quick branching ( Very small speedup, use only when you need every fps! )",IDC_FASTBRANCHES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,351,10
-    CTEXT           "If you have problems, disable all these and try again",IDC_STATIC,7,22,391,8
-    GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,391,60
+    CTEXT           "If you have problems, disable all these and try again",IDC_STATIC,7,22,392,8
+    GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,392,60
     CONTROL         "Denormals are Zero - Makes very small numbers equal zero. ( Big speedup on Intel CPUs ) ( Needs Restart! )",IDC_DENORMALS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,76,377,10
-    GROUPBOX        "Sync Hacks",IDC_STATIC,7,101,391,59
-    GROUPBOX        "Miscellaneous",IDC_STATIC,7,168,391,46
+    GROUPBOX        "Sync Hacks",IDC_STATIC,7,101,392,59
+    GROUPBOX        "Miscellaneous / Special Game Fixes",IDC_STATIC,7,168,392,76
+    CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_VUCLIPHACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,211,323,10
+    CONTROL         "VU Mini Hack - Special fix for Grand Turismo 4",IDC_VUMINIHACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,224,323,10
 END
 
 
@@ -986,9 +990,9 @@ BEGIN
     IDD_HACKS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 398
+        RIGHTMARGIN, 399
         TOPMARGIN, 7
-        BOTTOMMARGIN, 244
+        BOTTOMMARGIN, 266
     END
 END
 #endif    // APSTUDIO_INVOKED

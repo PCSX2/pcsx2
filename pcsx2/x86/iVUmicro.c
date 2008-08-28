@@ -3351,12 +3351,12 @@ void recVUMI_MAXw(VURegs *VU, int info) { recVUMI_MAX_xyzw(VU, 3, info); }
 void recVUMI_MINI(VURegs *VU, int info)
 {
 	if ( _Fd_ == 0 ) return;
-	if (CHECK_EXTRA_OVERFLOW) {
-		vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-		vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
-	}
 
 	if( _X_Y_Z_W == 8 ) {
+		if (CHECK_EXTRA_OVERFLOW) {
+			vuFloat2( EEREC_S, EEREC_TEMP, 8);
+			vuFloat2( EEREC_T, EEREC_TEMP, 8);
+		}
 		if (EEREC_D == EEREC_S) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_T);
 		else if (EEREC_D == EEREC_T) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_S);
 		else {
@@ -3365,6 +3365,10 @@ void recVUMI_MINI(VURegs *VU, int info)
 		}
 	}
 	else if (_X_Y_Z_W != 0xf) {
+		if (CHECK_EXTRA_OVERFLOW) {
+			vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+			vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
+		}
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_MINPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 
@@ -3372,16 +3376,28 @@ void recVUMI_MINI(VURegs *VU, int info)
 	}
 	else {
 		if( EEREC_D == EEREC_S ) {
-			// need for GT4 vu0rec
-			//ClampUnordered(EEREC_T, EEREC_TEMP, 0);
+			if (CHECK_VUMINIHACK)
+				ClampUnordered(EEREC_T, EEREC_TEMP, 0); // need for GT4 vu0rec
+			else if (CHECK_EXTRA_OVERFLOW) {
+				vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+				vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
+			}	
 			SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_T);
 		}
 		else if( EEREC_D == EEREC_T ) {
-			// need for GT4 vu0rec
-			//ClampUnordered(EEREC_S, EEREC_TEMP, 0);
+			if (CHECK_VUMINIHACK)
+				ClampUnordered(EEREC_S, EEREC_TEMP, 0); // need for GT4 vu0rec
+			else if (CHECK_EXTRA_OVERFLOW) {
+				vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+				vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
+			}
 			SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_S);
 		}
 		else {
+			if (CHECK_EXTRA_OVERFLOW) {
+				vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+				vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
+			}
 			SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
 			SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_T);
 		}
@@ -3664,7 +3680,7 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	x86temp1 = ALLOCTEMPX86(MODE_8BITREG);
 	x86temp2 = ALLOCTEMPX86(MODE_8BITREG);
 
-	if ( (x86temp1 == 0) || (x86temp2 == 0) ) SysPrintf("VU CLIP Allocation Error: EAX being allocated!");
+	//if ( (x86temp1 == 0) || (x86temp2 == 0) ) SysPrintf("VU CLIP Allocation Error: EAX being allocated! \n");
 
 	if( _Ft_ == 0 ) {
 		// all 1s
@@ -3699,9 +3715,11 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	AND32ItoR(EAX, 0xffffff);
 
 	MOV32RtoM(clipaddr, EAX);
-	MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
 
-	//if( !(info&(PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
+	// God of War needs this additional move, but it breaks Rockstar games; ideally this hack shouldn't be needed, i think its a clipflag allocation bug in iVUzerorec.cpp
+	if ( ( CHECK_VUCLIPHACK ) || ( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) ) 
+		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
+
 	//_freeXMMreg(t1reg); // We Never Allocated these regs, so no need to free them
 	//_freeXMMreg(t2reg);
 

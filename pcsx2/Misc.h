@@ -52,14 +52,17 @@
 #define CHECK_DUALCORE (Config.Options&PCSX2_DUALCORE)
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
-//------------ SPEED HACKS!!! ---------------
+//------------ SPEED/MISC HACKS!!! ---------------
 #define CHECK_OVERFLOW (!(Config.Hacks & 0x2))
 #define CHECK_EXTRA_OVERFLOW (Config.Hacks & 0x40) // If enabled, Operands are checked for infinities before being used in the VU recs
 #define CHECK_EESYNC_HACK (Config.Hacks & 0x1)
 #define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
 #define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
-#define CHECK_DENORMALS ((Config.Hacks & 0x8) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs; and flush to zero is enabled as well
+#define CHECK_DENORMALS ((Config.Hacks & 0x8) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs and flush to zero is enabled as well
 #define CHECK_FASTBRANCHES (Config.Hacks & 0x80)
+#define CHECK_VUCLIPHACK (Config.Hacks & 0x100) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
+#define CHECK_VUMINIHACK (Config.Hacks & 0x200) // Special Fix for GT4, different clamping for recVUMI_MINI() (Note: sets negative infinity to positive fMax when clamping, which the real ps2 doesn't do)
+
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
 

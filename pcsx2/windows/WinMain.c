@@ -728,6 +728,9 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 			if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
 			if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_OVERFLOWHACK_EXTRA, TRUE);
 			if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
+			if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VUCLIPHACK, TRUE);
+			if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_VUMINIHACK, TRUE);
+
 			return TRUE;
 
         case WM_COMMAND:
@@ -741,6 +744,8 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_OVERFLOWHACK_EXTRA) ? 0x40 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VUCLIPHACK) ? 0x100 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VUMINIHACK) ? 0x200 : 0;
 
 				SaveConfig(); 
 
