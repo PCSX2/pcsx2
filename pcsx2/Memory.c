@@ -132,7 +132,7 @@ PSMEMORYMAP initMemoryMap(ULONG_PTR* aPFNs, ULONG_PTR* aVFNs)
 
 // only do vm hack for release
 #ifndef PCSX2_DEVBUILD
-//#define VM_HACK
+#define VM_HACK
 #endif
 
 // virtual memory blocks
