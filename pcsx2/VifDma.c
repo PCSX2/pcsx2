@@ -2049,7 +2049,7 @@ int VIF1transfer(u32 *data, int size, int istag) {
 		
 	if (vif1.irq && vif1.tag.size == 0) {
 		vif1.vifstalled = 1;
-		if(((vif1Regs->code >> 24) & 0x7f) != 0x7)vif1Regs->stat|= VIF1_STAT_VIS;
+		if(((vif1Regs->code >> 24) & 0x7f) != 0x7)vif1Regs->stat|= VIF1_STAT_VIS; // Note: commenting this out fixes WALL-E
 		//else SysPrintf("Stall on Vif1 MARK\n");
 		// spiderman doesn't break on qw boundaries
 		vif1.irqoffset = transferred%4; // cannot lose the offset

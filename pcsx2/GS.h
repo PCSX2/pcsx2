@@ -19,6 +19,11 @@
 #ifndef __GS_H__
 #define __GS_H__
 
+// GCC needs these includes
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct
 {
 	u32 SIGID;
