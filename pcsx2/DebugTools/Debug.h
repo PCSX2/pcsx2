@@ -107,40 +107,38 @@ void __Log(char *fmt, ...);
 #define varLog 0
 #define Log 0
 
-//NOTE: uncomment these if you want them in release to public builds
+#define CPU_LOG  0&&
+#define MEM_LOG  0&&
+#define HW_LOG   0&&
+#define DMA_LOG  0&&
+#define BIOS_LOG 0&&
+#define ELF_LOG  0&&
+#define FPU_LOG  0&&
+#define MMI_LOG  0&&
+#define VU0_LOG  0&&
+#define COP0_LOG 0&&
+#define VIF_LOG  0&&
+#define SPR_LOG  0&&
+#define GIF_LOG  0&&
+#define SIF_LOG  0&&
+#define IPU_LOG  0&&
+#define VUM_LOG  0&&
+#define RPC_LOG  0&&
 
-//#define CPU_LOG  0&&
-//#define MEM_LOG  0&&
-//#define HW_LOG   0&&
-//#define DMA_LOG  0&&
-//#define BIOS_LOG 0&&
-//#define ELF_LOG  0&&
-//#define FPU_LOG  0&&
-//#define MMI_LOG  0&&
-//#define VU0_LOG  0&&
-//#define COP0_LOG 0&&
-//#define VIF_LOG  0&&
-//#define SPR_LOG  0&&
-//#define GIF_LOG  0&&
-//#define SIF_LOG  0&&
-//#define IPU_LOG  0&&
-//#define VUM_LOG  0&&
-//#define RPC_LOG  0&&
-//
-//#define PSXCPU_LOG  0&&
-//#define PSXMEM_LOG  0&&
-//#define PSXHW_LOG   0&&
-//#define PSXBIOS_LOG 0&&
-//#define PSXDMA_LOG  0&&
-//
-//#define PAD_LOG  0&&
-//#define GTE_LOG  0&&
-//#define CDR_LOG  0&&
-//#define GPU_LOG  0&&
-//#define PSXCNT_LOG 0&&
-//#define EECNT_LOG 0&&
-//
-//#define EMU_LOG 0&&
+#define PSXCPU_LOG  0&&
+#define PSXMEM_LOG  0&&
+#define PSXHW_LOG   0&&
+#define PSXBIOS_LOG 0&&
+#define PSXDMA_LOG  0&&
+
+#define PAD_LOG  0&&
+#define GTE_LOG  0&&
+#define CDR_LOG  0&&
+#define GPU_LOG  0&&
+#define PSXCNT_LOG 0&&
+#define EECNT_LOG 0&&
+
+#define EMU_LOG 0&&
 
 #endif
 

@@ -2607,7 +2607,7 @@ void recompileNextInstruction(int delayslot)
 				case 49: recLWC1_coX(g_pCurInstInfo->numpeeps); break;
 				case 57: recSWC1_coX(g_pCurInstInfo->numpeeps); break;
 				case 55: recLD_coX(g_pCurInstInfo->numpeeps); break;
-				case 63: recSD_coX(g_pCurInstInfo->numpeeps, 1); break;
+				case 63: recSD_coX(g_pCurInstInfo->numpeeps, 0); break; //the 0 is just temporary, find out what should go there
 				default:
 					assert(0);
 			}
