@@ -1035,63 +1035,46 @@ FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
 void recRSQRT_S_xmm(int info)
 {	
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-	SysPrintf("FPU: RSQRT \n");
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			if( EEREC_D == EEREC_S ) {
-				if (CHECK_EXTRA_OVERFLOW) { 
-					SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-					ClampValues(t0reg); 
-					ClampValues(EEREC_D);
-					SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
-				}
-				else { SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); }
+				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
 				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
 			}
 			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				if (CHECK_EXTRA_OVERFLOW) { 
-					SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-					ClampValues(t0reg);
-					ClampValues(EEREC_D);
-					SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
-				}
-				else { SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); }
+				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);				
 				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
 			}
-			break;
 
-		case PROCESS_EE_T:
-			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-			if (CHECK_EXTRA_OVERFLOW) { ClampValues(EEREC_T); ClampValues(EEREC_D); }
-			SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);	
+			break;
+		case PROCESS_EE_T:			
+				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
+				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+						
 			SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
 			break;
-
-		case (PROCESS_EE_S | PROCESS_EE_T):
-			if( EEREC_D == EEREC_S ) {
-				if (CHECK_EXTRA_OVERFLOW) { ClampValues(EEREC_T); ClampValues(EEREC_D); }
-				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-			} 
-			else {
+		default:
+			if( (info & PROCESS_EE_T) && (info & PROCESS_EE_S) ) {
+				if( EEREC_D == EEREC_T ){
+					SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
+					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);						
+					SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
+				}
+				else if( EEREC_D == EEREC_S ){
+					SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
+					SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
+				} else {
+				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);		
 				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				if (CHECK_EXTRA_OVERFLOW) { ClampValues(EEREC_T); ClampValues(EEREC_D); }
-				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
+				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);				
+				}
+			}else{
+				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);		
 				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);				
 			}
-			break;
-
-		default:
-			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-			if (CHECK_EXTRA_OVERFLOW) { 
-				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				ClampValues(t0reg);
-				ClampValues(EEREC_D);
-				SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
-			}
-			else { SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); }	
-			SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
+			
 			break;
 	}
 	_freeXMMreg(t0reg);
