@@ -3353,10 +3353,7 @@ void recVUMI_MINI(VURegs *VU, int info)
 	if ( _Fd_ == 0 ) return;
 
 	if( _X_Y_Z_W == 8 ) {
-		if (CHECK_EXTRA_OVERFLOW) {
-			vuFloat2( EEREC_S, EEREC_TEMP, 8);
-			vuFloat2( EEREC_T, EEREC_TEMP, 8);
-		}
+		if (CHECK_EXTRA_OVERFLOW) { vuFloat2( EEREC_S, EEREC_TEMP, 8); vuFloat2( EEREC_T, EEREC_TEMP, 8); }
 		if (EEREC_D == EEREC_S) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_T);
 		else if (EEREC_D == EEREC_T) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_S);
 		else {
@@ -3365,39 +3362,23 @@ void recVUMI_MINI(VURegs *VU, int info)
 		}
 	}
 	else if (_X_Y_Z_W != 0xf) {
-		if (CHECK_EXTRA_OVERFLOW) {
-			vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-			vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
-		}
+		if (CHECK_EXTRA_OVERFLOW) { vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W); vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W); }
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_MINPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 
 		VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 	}
 	else {
+		if (CHECK_EXTRA_OVERFLOW) { vuFloat2( EEREC_S, EEREC_TEMP, 0xf); vuFloat2( EEREC_T, EEREC_TEMP, 0xf); }
 		if( EEREC_D == EEREC_S ) {
-			if (CHECK_VUMINIHACK)
-				ClampUnordered(EEREC_T, EEREC_TEMP, 0); // need for GT4 vu0rec
-			else if (CHECK_EXTRA_OVERFLOW) {
-				vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-				vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
-			}	
+			//ClampUnordered(EEREC_T, EEREC_TEMP, 0); // need for GT4 vu0rec
 			SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_T);
 		}
 		else if( EEREC_D == EEREC_T ) {
-			if (CHECK_VUMINIHACK)
-				ClampUnordered(EEREC_S, EEREC_TEMP, 0); // need for GT4 vu0rec
-			else if (CHECK_EXTRA_OVERFLOW) {
-				vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-				vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
-			}
+			//ClampUnordered(EEREC_S, EEREC_TEMP, 0); // need for GT4 vu0rec
 			SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_S);
 		}
 		else {
-			if (CHECK_EXTRA_OVERFLOW) {
-				vuFloat2( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-				vuFloat2( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
-			}
 			SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
 			SSE_MINPS_XMM_to_XMM(EEREC_D, EEREC_T);
 		}

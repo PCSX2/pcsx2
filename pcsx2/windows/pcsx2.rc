@@ -967,9 +967,9 @@ BEGIN
     GROUPBOX        "Sync Hacks",IDC_STATIC,7,101,392,59
     GROUPBOX        "Miscellaneous / Special Game Fixes",IDC_STATIC,7,168,392,76
     CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_VUCLIPHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,211,323,10
-    CONTROL         "VU Mini Hack - Special fix for Grand Turismo 4",IDC_VUMINIHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,224,323,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,227,323,10
+    CONTROL         "FPU Clamp Hack - Special fix for Gran Turismo 4 and possibly other games",IDC_FPUCLAMPHACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,212,323,10
 END
 
 

@@ -777,24 +777,27 @@ void ClampValues(regd) {
 }
 
 void ClampValues2(regd) { 
-	SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
-	SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
-/*
-	int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
+	if (CHECK_FPUCLAMPHACK) { // This fixes Gran Turismo graphics
 
-    SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
-	SSE_CMPORDSS_XMM_to_XMM(t5reg, regd); 
+		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
-    SSE_ORPS_M128_to_XMM(t5reg, (uptr)s_overflowmask); // fixes katamari falling off podium
+		SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
+		SSE_CMPORDSS_XMM_to_XMM(t5reg, regd); 
 
-	SSE_ANDPS_XMM_to_XMM(regd, t5reg); 
+		SSE_ORPS_M128_to_XMM(t5reg, (uptr)s_overflowmask); // fixes katamari falling off podium
 
-    // not necessary since above ORPS handles that (i think) Lets enable it for now ;)
-	SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
-	SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+		SSE_ANDPS_XMM_to_XMM(regd, t5reg); 
 
-    _freeXMMreg(t5reg); 
-*/
+		// not necessary since above ORPS handles that (i think) Lets enable it for now ;)
+		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+
+		_freeXMMreg(t5reg); 
+	}
+	else {
+		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+	}
 }
 
 static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
