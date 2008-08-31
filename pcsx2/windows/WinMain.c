@@ -47,6 +47,7 @@
 #include "iCore.h"
 #include "iVUzerorec.h"
 
+#include "patch.h"
 #include "cheats/cheats.h"
 
 #include "../Paths.h"
@@ -56,6 +57,9 @@
 static int efile;
 char filename[256];
 extern int g_SaveGSStream;
+
+extern u32 g_sseMXCSR;
+extern u32 g_sseVUMXCSR;
 
 static int AccBreak = 0;
 int needReset = 1;
@@ -730,6 +734,7 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 			if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
 			if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VUCLIPHACK, TRUE);
 			if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPUCLAMPHACK, TRUE);
+			if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_DENORMALS, 2);
 
 			return TRUE;
 
@@ -739,13 +744,16 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_OVERFLOWHACK) ? 0x2 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_OVERFLOWHACK_EXTRA) ? 0x40 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VUCLIPHACK) ? 0x100 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPUCLAMPHACK) ? 0x200 : 0;
+				Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_DENORMALS) == 2 ) ? 0x408 : (IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0); // 0x408 == greyed checkbox (DaZ SSE flag; so the CPU sets denormals to zero)
+
+				g_sseVUMXCSR = CHECK_DENORMALS;
+				SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
 
 				SaveConfig(); 
 

@@ -58,7 +58,8 @@
 #define CHECK_EESYNC_HACK (Config.Hacks & 0x1)
 #define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
 #define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
-#define CHECK_DENORMALS ((Config.Hacks & 0x8) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs and flush to zero is enabled as well
+#define CHECK_UNDERFLOW (!(Config.Hacks & 0x8))
+#define CHECK_DENORMALS ((Config.Hacks & 0x400) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs and flush to zero is enabled as well
 #define CHECK_FASTBRANCHES (Config.Hacks & 0x80)
 #define CHECK_VUCLIPHACK (Config.Hacks & 0x100) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
 #define CHECK_FPUCLAMPHACK (Config.Hacks & 0x200) // Special Fix for GT4, different clamping for FPU (Note: sets negative infinity to positive fMax when clamping, which the real ps2 doesn't do)

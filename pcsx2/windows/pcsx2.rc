@@ -950,7 +950,7 @@ BEGIN
     CONTROL         "Disable All Overflow Checks - Doesn't check for overflow at all in the VU Recs.",IDC_OVERFLOWHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,63,373,10
     CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,392,8
-    CONTROL         "Tighter SPU2 Sync ( FFXII vids) - Slower, not useful anymore.",IDC_SOUNDHACK,
+    CONTROL         "Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore.",IDC_SOUNDHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,197,323,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP.",IDC_SYNCHACK2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,128,270,10
@@ -958,12 +958,12 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,142,359,10
     CONTROL         "Enable Extra Overflow Checks - Enable extra overflow checks used to help stop SPS. ( Slow! )",IDC_OVERFLOWHACK_EXTRA,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,50,377,10
-    CONTROL         "EE/IOP Fast Branches - Quick branching ( Very small speedup, use only when you need every fps! )",IDC_FASTBRANCHES,
+    CONTROL         "EE/IOP Fast Branches - Quick branching ( Very small speedup; Not Recommended!  )",IDC_FASTBRANCHES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,351,10
     CTEXT           "If you have problems, disable all these and try again",IDC_STATIC,7,22,392,8
     GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,392,60
-    CONTROL         "Denormals are Zero - Makes very small numbers equal zero. ( Big speedup on Intel CPUs ) ( Needs Restart! )",IDC_DENORMALS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,76,377,10
+    CONTROL         "Disable Underflow Checks - ( Checked = Small Speedup. ) ( Grey = DaZ Flag; Big Speedup for Intel CPU's! )",IDC_DENORMALS,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,14,76,377,10
     GROUPBOX        "Sync Hacks",IDC_STATIC,7,101,392,59
     GROUPBOX        "Miscellaneous / Special Game Fixes",IDC_STATIC,7,168,392,76
     CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_VUCLIPHACK,

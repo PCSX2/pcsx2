@@ -1432,7 +1432,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
-		if (!(Config.Hacks & 0x8)) {  //only use if denormals hack is off
+		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
 			SSE_ANDNPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP = !EEREC_TEMP & reg
 			// Now we have Denormals are Positive Zero in EEREC_TEMP; the next two lines take Signed Zero into account
 			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
@@ -1546,7 +1546,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
-		if (!(Config.Hacks & 0x8)) {  //only use if denormals hack is off
+		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
 			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
 			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
 			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
