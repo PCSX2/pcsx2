@@ -1457,6 +1457,9 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 	// SSE STATE //
 	// WARNING: do not touch unless you know what you are doing
 
+	sseMXCSR &= 0xffff; // clear the upper 16 bits since they shouldn't be set
+	sseVUMXCSR &= 0xffff;
+
 	if( cpucaps.hasStreamingSIMDExtensions ) {
 		g_sseMXCSR = sseMXCSR;
 		g_sseVUMXCSR = sseVUMXCSR;
