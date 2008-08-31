@@ -58,9 +58,6 @@ static int efile;
 char filename[256];
 extern int g_SaveGSStream;
 
-extern u32 g_sseMXCSR;
-extern u32 g_sseVUMXCSR;
-
 static int AccBreak = 0;
 int needReset = 1;
 unsigned int langsMax;

@@ -90,6 +90,9 @@ int AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 
 void SetFastMemory(int); // iR5900LoadStore.c
 void SetVUNanMemory(int); // iVUmicro.c
+
+extern u32 g_sseMXCSR;
+extern u32 g_sseVUMXCSR;
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR);
 
 void SetRoundMode(u32 ee, u32 vu);

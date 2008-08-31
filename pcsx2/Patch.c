@@ -631,8 +631,8 @@ void patchFunc_zerogs(char* cmd, char* param)
 
 void SetRoundMode(u32 ee, u32 vu)
 {
-	// don't set a state for interpreter only
+// don't set a state for interpreter only
 #ifndef PCSX2_NORECBUILD
-	SetCPUState(0x9f80|ee, 0x9f80|vu);
+	SetCPUState( (g_sseMXCSR & ~6000) | ee, (g_sseVUMXCSR & ~6000) | vu);
 #endif
 }
