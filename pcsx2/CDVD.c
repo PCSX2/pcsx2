@@ -983,7 +983,7 @@ void cdvdVsync() {
 	cdvd.RTC.day = 1;
 
 	cdvd.RTC.month++;
-	if (cdvd.RTC.month < 12) return;
+	if (cdvd.RTC.month <= 12) return;
 	cdvd.RTC.month = 1;
 
 	cdvd.RTC.year++;
