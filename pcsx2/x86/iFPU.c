@@ -752,13 +752,15 @@ FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS|XMMINFO_READT);
 
 	// Doesnt seem to like negatives - Ruins katamari graphics
 	// I REPEAT THE SIGN BIT (THATS 0x80000000) MUST *NOT* BE SET, jeez.
-static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
+static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 static u32 s_signbit = 0x80000000;
 extern int g_VuNanHandling;
 
 void ClampValues(regd) { 
-	SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
-	SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+	if (CHECK_FPU_OVERFLOW) {
+		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+	}
 /*
 	int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
@@ -788,15 +790,17 @@ void ClampValues2(regd) {
 
 		SSE_ANDPS_XMM_to_XMM(regd, t5reg); 
 
-		// not necessary since above ORPS handles that (i think) Lets enable it for now ;)
-		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
-		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+		// clamp infinities
+		//SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
+		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); // after above calculations, unordered floats will be positive
 
 		_freeXMMreg(t5reg); 
 	}
 	else {
-		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
-		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+		if (CHECK_FPU_OVERFLOW) {
+			SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+			SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+		}
 	}
 }
 
@@ -807,23 +811,67 @@ static void (*recComOpM32_to_XMM[] )(x86SSERegType, uptr) = {
 	SSE_ADDSS_M32_to_XMM, SSE_MULSS_M32_to_XMM, SSE_MAXSS_M32_to_XMM, SSE_MINSS_M32_to_XMM };
 
 int recCommutativeOp(int info, int regd, int op) {
+	if (CHECK_FPU_EXTRA_OVERFLOW) { 
+		int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+		if (t0reg < 0) goto allocationError;
+
+		switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+			case PROCESS_EE_S:
+				if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+				ClampValues (regd);
+				ClampValues (t0reg);		
+				recComOpXMM_to_XMM[op](regd, t0reg);
+				break;
+			case PROCESS_EE_T:
+				if (regd != EEREC_T) SSE_MOVSS_XMM_to_XMM(regd, EEREC_T);
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]);
+				ClampValues (regd);
+				ClampValues (t0reg);		
+				recComOpXMM_to_XMM[op](regd, t0reg);
+				break;
+			case (PROCESS_EE_S|PROCESS_EE_T):
+				if (regd == EEREC_S) {
+					ClampValues (regd);
+					ClampValues (EEREC_T);		
+					recComOpXMM_to_XMM[op](regd, EEREC_T);
+				}
+				else if (regd == EEREC_T) {
+					ClampValues (regd);
+					ClampValues (EEREC_S);		
+					recComOpXMM_to_XMM[op](regd, EEREC_S);
+				}
+				else {
+					ClampValues (EEREC_S);
+					ClampValues (EEREC_T);
+					SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
+					recComOpXMM_to_XMM[op](regd, EEREC_T);
+				}
+				break;
+			default:
+				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+				ClampValues (regd);
+				ClampValues (t0reg);		
+				recComOpXMM_to_XMM[op](regd, t0reg);
+				break;
+		}
+		_freeXMMreg(t0reg); 
+
+		return regd;
+allocationError:
+		SysPrintf("recCommutativeOp() allocation error! Skipping Pre-Opcode Overflow checks! \n");
+	} // End of pre-opcode overflow checking
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
-			if (regd == EEREC_S) recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
-			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
-			}
+			if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
+			recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
 			break;
 		case PROCESS_EE_T:
-			if (regd == EEREC_T) recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Fs_]);
-			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_T);
-				recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Fs_]);
-			}
+			if (regd != EEREC_T) SSE_MOVSS_XMM_to_XMM(regd, EEREC_T);
+			recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Fs_]);
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
-		//	SysPrintf("Hello2 :)\n");
 			if (regd == EEREC_S) recComOpXMM_to_XMM[op](regd, EEREC_T);
 			else if (regd == EEREC_T) recComOpXMM_to_XMM[op](regd, EEREC_S);
 			else {
@@ -832,17 +880,6 @@ int recCommutativeOp(int info, int regd, int op) {
 			}
 			break;
 		default:
-			SysPrintf("But we dont have regs2 :(\n");
-			/*if (regd == EEREC_S) {
-				recComOpXMM_to_XMM[op](regd, EEREC_T);
-			}
-			else if (regd == EEREC_T) {
-				recComOpXMM_to_XMM[op](regd, EEREC_S);
-			}
-			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				recComOpXMM_to_XMM[op](regd, EEREC_T);
-			}*/
 			SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
 			recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
 			break;
@@ -959,32 +996,18 @@ void recSQRT_S_xmm(int info)
 {
 	SysPrintf("FPU: SQRT \n");
 	if( info & PROCESS_EE_T ) {
-		//if( CHECK_OVERFLOW ) {
-			if( EEREC_D == EEREC_T ) SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
-			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T);
-				SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
-				
-			}
-
+			if (CHECK_FPU_EXTRA_OVERFLOW) { ClampValues(EEREC_T); }
+			if( EEREC_D != EEREC_T ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T);
+			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);	
 			SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
-		//}
-		/*else {
-			SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_T);
-		}*/
 	}
 	else {
-		//if( CHECK_OVERFLOW ) {
 			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
 			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
-
+			if (CHECK_FPU_EXTRA_OVERFLOW) { ClampValues(EEREC_D); }
 			SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
-		/*}
-		else {
-			SSE_SQRTSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
-		}*/
 	}
-	ClampValues(EEREC_D);
+	//ClampValues(EEREC_D); // No need to clamp since sqrt of a number is always smaller than that number
 }
 
 FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);
@@ -999,7 +1022,6 @@ void recABS_S_xmm(int info)
 	else {
 			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
 			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
-			//xmmregs[EEREC_D].mode &= ~MODE_WRITE;
 	}
 	ClampValues(EEREC_D);
 }
@@ -1037,43 +1059,51 @@ void recRSQRT_S_xmm(int info)
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
-			if( EEREC_D == EEREC_S ) {
-				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			SSE_ANDPS_M128_to_XMM(t0reg, (uptr)&s_pos[0]);
+			if (CHECK_FPU_EXTRA_OVERFLOW) {
+				ClampValues(EEREC_S);
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
 			}
-			else {
-				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);				
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-			}
+			if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
+			SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
 
 			break;
-		case PROCESS_EE_T:			
-				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
-				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-						
+		case PROCESS_EE_T:
+			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+			SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
+			SSE_ANDPS_M128_to_XMM(t0reg, (uptr)&s_pos[0]);
+			if (CHECK_FPU_EXTRA_OVERFLOW) { 
+				ClampValues(EEREC_D);
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+			}
+			SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
 			SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
+
+			break;
+		case (PROCESS_EE_S | PROCESS_EE_T):
+			SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
+			SSE_ANDPS_M128_to_XMM(t0reg, (uptr)&s_pos[0]);
+			if (CHECK_FPU_EXTRA_OVERFLOW) { 
+				ClampValues(EEREC_S); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]); 
+			}
+			if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
+			SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
+
 			break;
 		default:
-			if( (info & PROCESS_EE_T) && (info & PROCESS_EE_S) ) {
-				if( EEREC_D == EEREC_T ){
-					SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);						
-					SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-				}
-				else if( EEREC_D == EEREC_S ){
-					SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
-					SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-				} else {
-				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);		
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);				
-				}
-			}else{
-				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);		
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);				
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			SSE_ANDPS_M128_to_XMM(t0reg, (uptr)&s_pos[0]);
+			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+			if (CHECK_FPU_EXTRA_OVERFLOW) { 
+				ClampValues(EEREC_D); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]); 
 			}
+			SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
+			SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
 			
 			break;
 	}

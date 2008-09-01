@@ -569,6 +569,7 @@
 #define IDC_CONVERTEDCODE               1278
 #define IDC_CUSTOM_CONSECUTIVE_FRAMES   1278
 #define IDC_OVERFLOWHACK                1278
+#define IDC_VU_OVERFLOWHACK             1278
 #define IDC_HACKDESC                    1279
 #define IDC_CONVERT                     1279
 #define IDC_EDITPATCH                   1279
@@ -577,6 +578,7 @@
 #define IDC_ADDPATCH                    1280
 #define IDC_FRAMESKIP_LABEL2            1280
 #define IDC_OVERFLOWHACK_EXTRA          1280
+#define IDC_FPU_OVERFLOWHACK            1280
 #define IDC_GROUP                       1281
 #define IDC_ADDRAW                      1281
 #define IDC_FRAMESKIP_LABEL3            1281
@@ -608,7 +610,6 @@
 #define IDC_DENORMALS                   1301
 #define IDC_VUCLIPHACK                  1302
 #define IDC_FRAMELIMIT_OPTIONS          1303
-#define IDC_VUCLAMPHACK                 1303
 #define IDC_FPUCLAMPHACK                1303
 #define IDC_LOG                         1500
 #define IDC_CPULOG                      1500

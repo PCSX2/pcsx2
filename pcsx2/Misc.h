@@ -55,6 +55,8 @@
 //------------ SPEED/MISC HACKS!!! ---------------
 #define CHECK_OVERFLOW (!(Config.Hacks & 0x2))
 #define CHECK_EXTRA_OVERFLOW (Config.Hacks & 0x40) // If enabled, Operands are checked for infinities before being used in the VU recs
+#define CHECK_FPU_OVERFLOW (!(Config.Hacks & 0x800))
+#define CHECK_FPU_EXTRA_OVERFLOW (Config.Hacks & 0x1000) // If enabled, Operands are checked for infinities before being used in the FPU recs
 #define CHECK_EESYNC_HACK (Config.Hacks & 0x1)
 #define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
 #define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
