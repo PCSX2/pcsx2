@@ -1461,8 +1461,6 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 	sseVUMXCSR &= 0xffff;
 
 	if( cpucaps.hasStreamingSIMDExtensions ) {
-		if(Config.GameFixes & 0x1) g_sseMXCSR = 0xffc0;
-		else g_sseMXCSR = sseMXCSR;
 
 		g_sseVUMXCSR = sseVUMXCSR;
 		// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)

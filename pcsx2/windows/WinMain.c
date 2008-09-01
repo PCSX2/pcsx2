@@ -731,6 +731,9 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				Config.GameFixes = 0;
 				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_ROUNDMODE) ? 0x1 : 0;
                 
+				if (Config.GameFixes & 0x1) g_sseMXCSR |= 0x6000;
+				SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
+
 				SaveConfig();
 
 				EndDialog(hDlg, TRUE);
