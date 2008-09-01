@@ -1583,6 +1583,8 @@ int recInit( void )
 	}
 
 	g_sseVUMXCSR = CHECK_DENORMALS;
+	if (Config.GameFixes & 0x1) g_sseMXCSR |= 0x6000;
+	else g_sseMXCSR &= 0x9fff;
 	SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
 
 	return 0;
