@@ -716,6 +716,34 @@ BOOL APIENTRY AdvancedProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
     return FALSE;
 }
 
+BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+        case WM_INITDIALOG:
+			SetWindowText(hDlg, _("Game specific Fixes"));
+			if(Config.GameFixes & 0x1) CheckDlgButton(hDlg, IDC_ROUNDMODE, TRUE);
+            return TRUE;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == IDOK)
+            {  
+				Config.GameFixes = 0;
+				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_ROUNDMODE) ? 0x1 : 0;
+                
+				SaveConfig();
+
+				EndDialog(hDlg, TRUE);
+            } 
+			else if (LOWORD(wParam) == IDCANCEL) {
+                EndDialog(hDlg, TRUE);
+            }
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
 BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 	//char str[256];
 
@@ -803,6 +831,9 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) 
 			{
+			case ID_GAMEFIXES:
+				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_GAMEFIXES), hWnd, (DLGPROC)GameFixes);
+				 return TRUE;
 			case ID_HACKS:
 				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_HACKS), hWnd, (DLGPROC)HacksProc);
 				 return TRUE;
@@ -1136,6 +1167,7 @@ void CreateMainMenu() {
 //	ADDMENUITEM(0,_("&Advanced"), ID_CONFIG_ADVANCED);
 #endif
 	ADDMENUITEM(0,_("Speed &Hacks"), ID_HACKS);
+	ADDMENUITEM(0,_("Gamefixes"), ID_GAMEFIXES);
 	ADDMENUITEM(0,_("&Patches"), ID_PATCHBROWSER);
 	ADDMENUITEM(0,_("C&pu"), ID_CONFIG_CPU);
 	ADDMENUITEM(0,_("&Memcards"), ID_CONFIG_MEMCARDS);
@@ -1301,7 +1333,6 @@ BOOL Open_File_Proc(char * filename) {
 
 	return FALSE;
 }
-
 //2002-09-20 (Florin)
 BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {

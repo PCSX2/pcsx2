@@ -103,6 +103,7 @@ typedef struct {
 	int ThPriority;
 	int CustomFps;
 	int Hacks;
+	int GameFixes;
 	int CustomFrameSkip;
 	int CustomConsecutiveFrames;
 	int CustomConsecutiveSkip;
