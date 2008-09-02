@@ -1462,6 +1462,7 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 
 	if( cpucaps.hasStreamingSIMDExtensions ) {
 
+		g_sseMXCSR = sseMXCSR;
 		g_sseVUMXCSR = sseVUMXCSR;
 		// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)
 		// Update 11/05/08 - Doesnt seem to effect it anymore, for the speed boost, its on :p
