@@ -1130,194 +1130,20 @@ void testWhenOverflow(int info, int regd, int t0reg) {
 		SysPrintf( "VU OVERFLOW!: Changing to -Fmax!!!!!!!!!!!!\n" );
 }
 
-// Clamps infinities to max/min non-infinity number (uses a temp reg)
-void vuFloat2(int regd, int regTemp, int XYZW) {
-	//if( CHECK_OVERFLOW ) {
-	//	if (XYZW == 8) {
-	//		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-	//		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-	//	}
-	//	else if (XYZW != 0xf) { // here we use a temp reg because not all xyzw are being modified
-	//		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-	//		SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
-	//		SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
-	//		VU_MERGE_REGS_CUSTOM(regd, regTemp, XYZW);
-	//	}
-	//	else { // all xyzw are being modified, so no need to use temp reg
-	//		SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
-	//		SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
-	//	}
-	//}
-
-	
-	// THIS IS STILL FASTER ><
-	if( CHECK_OVERFLOW ) {
-		/*if ( (XYZW != 0) && (XYZW != 8) && (XYZW != 0xF) ) {
-			int t1reg = _vuGetTempXMMreg2(info, regd);
-			if (t1reg >= 0) {
-				vuFloat2( regd, t1reg, XYZW );
-				_freeXMMreg( t1reg );
-				return;
-			}
-		}*/
-		switch (XYZW) {
-			case 0: // Don't do anything if no vectors are being modified.
-				break;
- 
-			case 15: //1111  //15 and 14 happen most often
-				SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
-				break;
-
-			case 14: //0111  //15 and 14 happen most often
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc9);
-				break;
- 
-			case 1:  //1000
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				break;
-
-			case 2: //0100
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				break;
-
-			case 3://1100
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x36);
-				break;
- 
-			case 4: //0010
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				break;
- 
-			case 5://1010
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x2d);
-				break;
- 
-			case 6: //0110
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc9);
-				break;
- 
-			case 7: //1110
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x39);
-				break;
- 
-			case 8: //0001
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				break;
- 
-			case 9: //1001
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				break;
- 
-			case 10: //0101
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				break;
- 
-			case 11: //1101
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x36);
-				break;
- 
-			case 12: //0011
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				break;
- 
-			case 13: //1011
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
-				SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-				SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-				SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x2d);
-				break;
-		}
-	}
-}
-
-void vFloat0(int regd) { } //0000
-void vFloat1(int regd) { //1000
+void vFloat0(int regd, int regTemp) { } //0000
+void vFloat1(int regd, int regTemp) { //1000
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
 }
-void vFloat2(int regd) { //0100
+void vFloat2(int regd, int regTemp) { //0100
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
 }
-void vFloat3(int regd) { //1100
+void vFloat3(int regd, int regTemp) { //1100
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1326,13 +1152,13 @@ void vFloat3(int regd) { //1100
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x36);
 }
-void vFloat4(int regd) { //0010
+void vFloat4(int regd, int regTemp) { //0010
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
 }
-void vFloat5(int regd) { //1010
+void vFloat5(int regd, int regTemp) { //1010
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1341,7 +1167,7 @@ void vFloat5(int regd) { //1010
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x2d);
 }
-void vFloat6(int regd) { //0110
+void vFloat6(int regd, int regTemp) { //0110
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1350,7 +1176,7 @@ void vFloat6(int regd) { //0110
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc9);
 }
-void vFloat7(int regd) { //1110
+void vFloat7(int regd, int regTemp) { //1110
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1362,11 +1188,17 @@ void vFloat7(int regd) { //1110
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x39);
 }
-void vFloat8(int regd) { //0001
+void vFloat7b(int regd, int regTemp) { //1110 //regTemp is Modified
+	SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
+	SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
+	SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
+	VU_MERGE_REGS_CUSTOM(regd, regTemp, 7);
+}
+void vFloat8(int regd, int regTemp) { //0001
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 }
-void vFloat9(int regd) { //1001
+void vFloat9(int regd, int regTemp) { //1001
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
@@ -1374,7 +1206,7 @@ void vFloat9(int regd) { //1001
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
 }
-void vFloat10(int regd) { //0101
+void vFloat10(int regd, int regTemp) { //0101
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
@@ -1382,7 +1214,7 @@ void vFloat10(int regd) { //0101
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
 }
-void vFloat11(int regd) { //1101
+void vFloat11(int regd, int regTemp) { //1101
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
@@ -1393,7 +1225,13 @@ void vFloat11(int regd) { //1101
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x36);
 }
-void vFloat12(int regd) { //0011
+void vFloat11b(int regd, int regTemp) { //1101 //regTemp is Modified
+	SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
+	SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
+	SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
+	VU_MERGE_REGS_CUSTOM(regd, regTemp, 11);
+}
+void vFloat12(int regd, int regTemp) { //0011
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
@@ -1401,7 +1239,7 @@ void vFloat12(int regd) { //0011
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
 }
-void vFloat13(int regd) { //1011
+void vFloat13(int regd, int regTemp) { //1011
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
@@ -1412,7 +1250,13 @@ void vFloat13(int regd) { //1011
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x2d);
 }
-void vFloat14(int regd) { //0111
+void vFloat13b(int regd, int regTemp) { //1011 //regTemp is Modified
+	SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
+	SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
+	SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
+	VU_MERGE_REGS_CUSTOM(regd, regTemp, 13);
+}
+void vFloat14(int regd, int regTemp) { //0111
 	SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xe1);
@@ -1423,17 +1267,29 @@ void vFloat14(int regd) { //0111
 	SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 	SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc9);
 }
-void vFloat15(int regd) { //1111
+void vFloat14b(int regd, int regTemp) { //0111 //regTemp is Modified
+	SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
+	SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
+	SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
+	VU_MERGE_REGS_CUSTOM(regd, regTemp, 14);
+}
+void vFloat15(int regd, int regTemp) { //1111
 	SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
 	SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
 }
 
-typedef void (*vFloat)(int regd);
-static vFloat vFloats[16] = {
+typedef void (*vFloat)(int regd, int regTemp);
+static vFloat vFloats1[16] = { //regTemp is not modified
 	vFloat0, vFloat1, vFloat2, vFloat3,
 	vFloat4, vFloat5, vFloat6, vFloat7,
 	vFloat8, vFloat9, vFloat10, vFloat11,
 	vFloat12, vFloat13, vFloat14, vFloat15 };
+
+static vFloat vFloats2[16] = { //regTemp is modified
+	vFloat0, vFloat1, vFloat2, vFloat3,
+	vFloat4, vFloat5, vFloat6, vFloat7b,
+	vFloat8, vFloat9, vFloat10, vFloat11b,
+	vFloat12, vFloat13b, vFloat14b, vFloat15 };
 
 // Clamps infinities to max/min non-infinity number (doesn't use any temp regs)
 void vuFloat( int info, int regd, int XYZW) {
@@ -1446,8 +1302,29 @@ void vuFloat( int info, int regd, int XYZW) {
 				return;
 			}
 		}*/
-		vFloats[XYZW](regd);
+		vFloats1[XYZW](regd, regd);
 	}
+}
+
+// Clamps infinities to max/min non-infinity number (uses a temp reg)
+void vuFloat2(int regd, int regTemp, int XYZW) {
+	/*if( CHECK_OVERFLOW ) {
+		if (XYZW == 8) {
+			SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
+			SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
+		}
+		else if (XYZW != 0xf) { // here we use a temp reg because not all xyzw are being modified
+			SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
+			SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
+			SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
+			VU_MERGE_REGS_CUSTOM(regd, regTemp, XYZW);
+		}
+		else { // all xyzw are being modified, so no need to use temp reg
+			SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
+			SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
+		}
+	}*/
+	vFloats2[XYZW](regd, regTemp);
 }
 
 // Clamps infinities to max/min non-infinity number
