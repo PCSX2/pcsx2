@@ -1308,23 +1308,9 @@ void vuFloat( int info, int regd, int XYZW) {
 
 // Clamps infinities to max/min non-infinity number (uses a temp reg)
 void vuFloat2(int regd, int regTemp, int XYZW) {
-	/*if( CHECK_OVERFLOW ) {
-		if (XYZW == 8) {
-			SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
-			SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
-		}
-		else if (XYZW != 0xf) { // here we use a temp reg because not all xyzw are being modified
-			SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-			SSE_MINPS_M128_to_XMM(regTemp, (uptr)g_maxvals);
-			SSE_MAXPS_M128_to_XMM(regTemp, (uptr)g_minvals);
-			VU_MERGE_REGS_CUSTOM(regd, regTemp, XYZW);
-		}
-		else { // all xyzw are being modified, so no need to use temp reg
-			SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
-			SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
-		}
-	}*/
-	vFloats2[XYZW](regd, regTemp);
+	if( CHECK_OVERFLOW ) {
+		vFloats2[XYZW](regd, regTemp);
+	}
 }
 
 // Clamps infinities to max/min non-infinity number
