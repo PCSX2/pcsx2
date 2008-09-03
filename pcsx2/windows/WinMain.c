@@ -47,7 +47,7 @@
 #include "iCore.h"
 #include "iVUzerorec.h"
 
-#include "patch.h"
+#include "Patch.h"
 #include "cheats/cheats.h"
 
 #include "../Paths.h"
@@ -722,18 +722,16 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     {
         case WM_INITDIALOG:
 			SetWindowText(hDlg, _("Game specific Fixes"));
-			if(Config.GameFixes & 0x1) CheckDlgButton(hDlg, IDC_ROUNDMODE, TRUE);
+			if(Config.GameFixes & 0x1) CheckDlgButton(hDlg, IDC_GAMEFIX1, TRUE);
+			if(Config.GameFixes & 0x2) CheckDlgButton(hDlg, IDC_GAMEFIX2, TRUE);
             return TRUE;
 
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK)
             {  
 				Config.GameFixes = 0;
-				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_ROUNDMODE) ? 0x1 : 0;
-                
-				if (Config.GameFixes & 0x1) g_sseMXCSR |= 0x6000;
-				else g_sseMXCSR &= 0x9fff;
-				SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
+				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX1) ? 0x1 : 0;
+				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX2) ? 0x2 : 0;
 
 				SaveConfig();
 
@@ -761,9 +759,9 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 			if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
 			if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);
 			if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
-			if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VUCLIPHACK, TRUE);
-			if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPUCLAMPHACK, TRUE);
-			if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_DENORMALS, 2);
+			//if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VUCLIPHACK, TRUE);
+			//if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPUCLAMPHACK, TRUE);
+			//if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_DENORMALS, 2);
 			if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
 			if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);
 
@@ -779,14 +777,11 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VUCLIPHACK) ? 0x100 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPUCLAMPHACK) ? 0x200 : 0;
-				Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_DENORMALS) == 2 ) ? 0x408 : (IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0); // 0x408 == greyed checkbox (DaZ SSE flag; so the CPU sets denormals to zero)
+				//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VUCLIPHACK) ? 0x100 : 0;
+				//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPUCLAMPHACK) ? 0x200 : 0;
+				//Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_DENORMALS) == 2 ) ? 0x408 : (IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0); // 0x408 == greyed checkbox (DaZ SSE flag; so the CPU sets denormals to zero)
 				Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0); // 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)
 				
-				g_sseVUMXCSR = CHECK_DENORMALS;
-				SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
-
 				SaveConfig(); 
 
                 EndDialog(hDlg, TRUE);
@@ -795,6 +790,82 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
                 EndDialog(hDlg, FALSE);
             } else
             return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+        case WM_INITDIALOG:
+			SetWindowText(hDlg, _("Advanced Options"));
+			CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ( (Config.sseMXCSR & 0x6000) >> 13));
+			CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( (Config.sseVUMXCSR & 0x6000) >> 13));
+
+			if (Config.sseMXCSR & 0x8000)	CheckDlgButton(hDlg, IDC_EE_CHECK1, TRUE);
+			if (Config.sseVUMXCSR & 0x8000) CheckDlgButton(hDlg, IDC_VU_CHECK1, TRUE);
+
+			if (Config.sseMXCSR & 0x0040)	CheckDlgButton(hDlg, IDC_EE_CHECK2, TRUE);
+			if (Config.sseVUMXCSR & 0x0040) CheckDlgButton(hDlg, IDC_VU_CHECK2, TRUE);
+            
+			return TRUE;
+
+        case WM_COMMAND:
+            switch (LOWORD(wParam))
+			{
+				case IDOK:
+
+					Config.sseMXCSR &= 0x1fbf;
+					Config.sseVUMXCSR &= 0x1fbf;
+
+					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE0) ? 0x0000 : 0; // Round Nearest
+					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE1) ? 0x2000 : 0; // Round Negative
+					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE2) ? 0x4000 : 0; // Round Postive
+					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE3) ? 0x6000 : 0; // Round Zero / Chop
+
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE0) ? 0x0000 : 0;
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE1) ? 0x2000 : 0;
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE2) ? 0x4000 : 0;
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE3) ? 0x6000 : 0;
+
+					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK1) ? 0x8000 : 0;
+					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK1) ? 0x8000 : 0;
+
+					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK2) ? 0x0040 : 0;
+					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK2) ? 0x0040 : 0;
+					
+					SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
+					SaveConfig();
+
+					EndDialog(hDlg, TRUE);
+					break;
+
+				case IDCANCEL:
+					
+					EndDialog(hDlg, TRUE);
+					break;
+					
+				case IDC_EE_ROUNDMODE0:
+				case IDC_EE_ROUNDMODE1:
+				case IDC_EE_ROUNDMODE2:
+				case IDC_EE_ROUNDMODE3:
+
+					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ( LOWORD(wParam) % IDC_EE_ROUNDMODE0 )  );
+					break;
+
+				case IDC_VU_ROUNDMODE0:
+				case IDC_VU_ROUNDMODE1:
+				case IDC_VU_ROUNDMODE2:
+				case IDC_VU_ROUNDMODE3:
+
+					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( LOWORD(wParam) % IDC_VU_ROUNDMODE0 )  );
+					break;
+
+			}
+
+			return TRUE;
     }
 
     return FALSE;
@@ -838,9 +909,15 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			case ID_GAMEFIXES:
 				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_GAMEFIXES), hWnd, (DLGPROC)GameFixes);
 				 return TRUE;
+
 			case ID_HACKS:
 				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_HACKS), hWnd, (DLGPROC)HacksProc);
 				 return TRUE;
+
+			case ID_ADVANCED_OPTIONS:
+				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_ADVANCED_OPTIONS), hWnd, (DLGPROC)AdvancedOptionsProc);
+				 return TRUE;
+
 			case ID_CHEAT_FINDER_SHOW:
 				ShowFinder(pInstance,hWnd);
 				return TRUE;
@@ -1167,9 +1244,10 @@ void CreateMainMenu() {
 	ADDMENUITEM(0,_("E&xecute"), ID_RUN_EXECUTE);
 
 	ADDSUBMENU(0,_("&Config"));
-#ifdef PCSX2_DEVBUILD
+//#ifdef PCSX2_DEVBUILD
 //	ADDMENUITEM(0,_("&Advanced"), ID_CONFIG_ADVANCED);
-#endif
+//#endif
+	ADDMENUITEM(0,_("Advanced"), ID_ADVANCED_OPTIONS);
 	ADDMENUITEM(0,_("Speed &Hacks"), ID_HACKS);
 	ADDMENUITEM(0,_("Gamefixes"), ID_GAMEFIXES);
 	ADDMENUITEM(0,_("&Patches"), ID_PATCHBROWSER);

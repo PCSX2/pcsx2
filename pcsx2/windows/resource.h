@@ -38,6 +38,8 @@
 #define IDD_DUMP                        136
 #define IDD_DUMPMEM                     137
 #define IDD_PATCHBROWSER                138
+#define IDD_ADVOPTIONS                  140
+#define IDD_ADVANCED_OPTIONS            140
 #define IDD_FINDER                      174
 #define IDD_ADD                         175
 #define IDD_ADDGS                       176
@@ -608,11 +610,26 @@
 #define IDC_ICON2                       1300
 #define IDC_CHECK1                      1300
 #define IDC_SOUNDHACK                   1300
+#define IDC_EE_CHECK1                   1300
+#define IDC_GAMEFIX1                    1300
 #define IDC_DENORMALS                   1301
+#define IDC_EE_CHECK2                   1301
+#define IDC_CHECK3                      1301
+#define IDC_GAMEFIX2                    1301
 #define IDC_VUCLIPHACK                  1302
+#define IDC_VU_CHECK1                   1302
 #define IDC_FRAMELIMIT_OPTIONS          1303
 #define IDC_FPUCLAMPHACK                1303
+#define IDC_VU_CHECK2                   1303
 #define IDC_ROUNDMODE                   1304
+#define IDC_EE_ROUNDMODE0               1305
+#define IDC_EE_ROUNDMODE1               1306
+#define IDC_EE_ROUNDMODE2               1307
+#define IDC_EE_ROUNDMODE3               1308
+#define IDC_VU_ROUNDMODE0               1311
+#define IDC_VU_ROUNDMODE1               1312
+#define IDC_VU_ROUNDMODE2               1313
+#define IDC_VU_ROUNDMODE3               1314
 #define IDC_LOG                         1500
 #define IDC_CPULOG                      1500
 #define IDC_MEMLOG                      1501
@@ -740,15 +757,16 @@
 #define ID_CHEAT_BROWSER_SHOW           40101
 #define ID_HACKS                        40102
 #define ID_GAMEFIXES                    40103
+#define ID_ADVANCED_OPTIONS             40104
 #define ID_LANGS                        50000
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1304
+#define _APS_NEXT_CONTROL_VALUE         1309
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

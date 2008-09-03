@@ -586,8 +586,8 @@ void patchFunc_roundmode( char * cmd, char * param )
 	int index;
 	char * pText;
 
-	u32 eetype = (g_sseMXCSR & 0x6000);
-	u32 vutype = (g_sseVUMXCSR & 0x6000);
+	u32 eetype = (Config.sseMXCSR & 0x6000);
+	u32 vutype = (Config.sseVUMXCSR & 0x6000);
 	
 	index = 0;
 	pText = strtok( param, ", " );
@@ -633,6 +633,6 @@ void SetRoundMode(u32 ee, u32 vu)
 {
 // don't set a state for interpreter only
 #ifndef PCSX2_NORECBUILD
-	SetCPUState( (g_sseMXCSR & 0x9fff) | ee, (g_sseVUMXCSR & 0x9fff) | vu);
+	SetCPUState( (Config.sseMXCSR & 0x9fff) | ee, (Config.sseVUMXCSR & 0x9fff) | vu);
 #endif
 }

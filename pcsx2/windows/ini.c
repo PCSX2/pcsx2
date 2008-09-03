@@ -26,6 +26,9 @@
 #include "win32.h"
 #include <sys/stat.h>
 
+//extern u32 g_sseMXCSR;
+//extern u32 g_sseVUMXCSR;
+
 int LoadConfig() {
    FILE *fp;
 
@@ -90,7 +93,19 @@ int LoadConfig() {
 	//cpu
 	GetPrivateProfileString("Cpu Options", "Options", NULL, szValue, 20, szIniFile);
     Conf->Options= (u32)strtoul(szValue, NULL, 10);
-	
+
+	if ( GetPrivateProfileString("Cpu Options", "sseMXCSR", NULL, szValue, 20, szIniFile) ) {
+		Conf->sseMXCSR = strtoul(szValue, NULL, 0);
+		g_sseMXCSR = Conf->sseMXCSR;
+	}
+	else Config.sseMXCSR = g_sseMXCSR;
+
+	if ( GetPrivateProfileString("Cpu Options", "sseVUMXCSR", NULL, szValue, 20, szIniFile) ) {
+		Conf->sseVUMXCSR = strtoul(szValue, NULL, 0);
+		g_sseVUMXCSR = Conf->sseVUMXCSR;
+	}
+	else Config.sseVUMXCSR = g_sseVUMXCSR;
+
 	//Misc
 	GetPrivateProfileString("Misc", "Patch", NULL, szValue, 20, szIniFile);
     Conf->Patch = strtoul(szValue, NULL, 10);
@@ -103,6 +118,7 @@ int LoadConfig() {
     Conf->Hacks = strtoul(szValue, NULL, 0);
 	GetPrivateProfileString("Misc", "GameFixes", NULL, szValue, 20, szIniFile);
     Conf->GameFixes = strtoul(szValue, NULL, 0);
+
 
 #ifdef ENABLE_NLS
 	sprintf(text, "LANGUAGE=%s", Conf->Lang);
@@ -174,6 +190,10 @@ void SaveConfig() {
 	//cpu
     sprintf(szValue,"%u", Conf->Options);
     WritePrivateProfileString("Cpu Options","Options",szValue,szIniFile);
+	sprintf(szValue,"%u",Conf->sseMXCSR);
+    WritePrivateProfileString("Cpu Options","sseMXCSR",szValue,szIniFile);
+	sprintf(szValue,"%u",Conf->sseVUMXCSR);
+    WritePrivateProfileString("Cpu Options","sseVUMXCSR",szValue,szIniFile);
 	//Misc
     sprintf(szValue,"%u",Conf->Patch);
     WritePrivateProfileString("Misc","Patch",szValue,szIniFile);
@@ -183,7 +203,6 @@ void SaveConfig() {
     WritePrivateProfileString("Misc","Hacks",szValue,szIniFile);
 	sprintf(szValue,"%u",Conf->GameFixes);
     WritePrivateProfileString("Misc","GameFixes",szValue,szIniFile);
-
 
 }
 

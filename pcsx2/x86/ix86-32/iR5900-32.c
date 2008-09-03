@@ -1583,10 +1583,8 @@ int recInit( void )
 		g_MACFlagTransform[i] = macarr[i>>4]|(macarr[i&15]<<4);
 	}
 
-	g_sseVUMXCSR = CHECK_DENORMALS;
-	if (Config.GameFixes & 0x1) g_sseMXCSR |= 0x6000;
-	else g_sseMXCSR &= 0x9fff;
-	SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
+
+	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 
 	return 0;
 }

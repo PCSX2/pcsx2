@@ -75,15 +75,18 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 // Dialog
 //
 
-IDD_GAMEFIXES DIALOGEX 0, 0, 316, 184
+IDD_GAMEFIXES DIALOGEX 0, 0, 291, 153
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
+CAPTION "Game Special Fixes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,205,163,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,259,163,50,14
-    LTEXT           "Some games need special settings. Configure them here",IDC_STATIC,60,7,181,8
-    CONTROL         "Change EE Recompiler Roundmode",IDC_ROUNDMODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,25,127,10
+    DEFPUSHBUTTON   "OK",IDOK,99,132,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,153,132,50,14
+    CTEXT           "Some games need special settings.\nConfigure them here.",IDC_STATIC,7,7,277,17
+    CONTROL         "FPU Clamp Hack - Special fix for Gran Turismo 4 and possibly other games.",IDC_GAMEFIX1,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,34,277,12
+    CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_GAMEFIX2,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,277,12
 END
 
 
@@ -98,11 +101,9 @@ BEGIN
     IDD_GAMEFIXES, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        VERTGUIDE, 60
-        VERTGUIDE, 241
+        RIGHTMARGIN, 284
         TOPMARGIN, 7
-        BOTTOMMARGIN, 177
+        BOTTOMMARGIN, 146
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -889,6 +890,31 @@ BEGIN
     LTEXT           "User Name:",IDC_STATIC,7,41,38,8
 END
 
+IDD_ADVANCED_OPTIONS DIALOGEX 0, 0, 231, 163
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Advanced Options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,64,142,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,123,142,50,14
+    RADIOBUTTON     "Nearest",IDC_EE_ROUNDMODE0,23,33,59,16
+    RADIOBUTTON     "Negative",IDC_EE_ROUNDMODE1,23,48,49,16
+    RADIOBUTTON     "Positive",IDC_EE_ROUNDMODE2,23,62,44,16
+    RADIOBUTTON     "Chop / Zero",IDC_EE_ROUNDMODE3,23,76,54,16
+    GROUPBOX        "Roundmode",IDC_STATIC,14,23,69,75
+    GROUPBOX        "Roundmode",IDC_STATIC,130,23,72,76
+    GROUPBOX        "EE Recs Options",IDC_STATIC,7,7,101,129
+    CONTROL         "Flush to Zero",IDC_EE_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,103,58,13
+    CONTROL         "Denormals are Zero",IDC_EE_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,117,79,13
+    CONTROL         "Flush to Zero",IDC_VU_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,103,58,13
+    CONTROL         "Denormals are Zero",IDC_VU_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,117,81,13
+    GROUPBOX        "VU Recs Options",IDC_STATIC,121,7,103,129
+    RADIOBUTTON     "Nearest",IDC_VU_ROUNDMODE0,141,35,42,12
+    RADIOBUTTON     "Negative",IDC_VU_ROUNDMODE1,141,50,41,12
+    RADIOBUTTON     "Positive",IDC_VU_ROUNDMODE2,141,65,39,12
+    RADIOBUTTON     "Chop / Zero",IDC_VU_ROUNDMODE3,141,79,52,12
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -945,6 +971,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 72
     END
+
+    IDD_ADVANCED_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        VERTGUIDE, 14
+        VERTGUIDE, 23
+        VERTGUIDE, 130
+        VERTGUIDE, 141
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 156
+        HORZGUIDE, 23
+        HORZGUIDE, 103
+        HORZGUIDE, 117
+        HORZGUIDE, 136
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -988,13 +1030,13 @@ BEGIN
     CONTROL         132,IDC_PS2SILVER_RECT,"Static",SS_BITMAP,0,167,70,74
 END
 
-IDD_HACKS DIALOGEX 0, 0, 511, 275
+IDD_HACKS DIALOGEX 0, 0, 511, 243
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCSX2 Speed Hacks"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,195,254,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,251,254,50,14
+    DEFPUSHBUTTON   "OK",IDOK,205,222,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,261,222,50,14
     CONTROL         "EE Sync Hack (x2) - Doubles the cycle rate of the EE. ( Big Speedup in most games! )",IDC_SYNCHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,111,418,10
     CONTROL         "Disable VU Overflow Checks - *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_VU_OVERFLOWHACK,
@@ -1012,14 +1054,10 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,180,423,10
     CTEXT           "If you have problems, disable all these and try again",IDC_STATIC,7,22,497,8
     GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,497,58
-    CONTROL         "Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! ) *Greyed = DaZ flag. ( Big Speedup on Intel CPU's )",IDC_DENORMALS,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,14,77,483,10
+    CONTROL         "Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )",IDC_DENORMALS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,77,319,10
     GROUPBOX        "Sync Hacks",IDC_STATIC,7,98,497,63
-    GROUPBOX        "Miscellaneous / Special Game Fixes",IDC_STATIC,7,165,497,76
-    CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_VUCLIPHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,224,421,10
-    CONTROL         "FPU Clamp Hack - Special fix for Gran Turismo 4 and possibly other games.",IDC_FPUCLAMPHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,209,428,10
+    GROUPBOX        "Miscellaneous",IDC_STATIC,7,165,497,50
 END
 
 
@@ -1042,7 +1080,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 504
         TOPMARGIN, 7
-        BOTTOMMARGIN, 268
+        BOTTOMMARGIN, 236
     END
 END
 #endif    // APSTUDIO_INVOKED

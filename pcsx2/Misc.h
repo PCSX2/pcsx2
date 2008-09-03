@@ -52,7 +52,7 @@
 #define CHECK_DUALCORE (Config.Options&PCSX2_DUALCORE)
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
-//------------ SPEED/MISC HACKS!!! ---------------
+//------------ SPEED HACKS!!! ---------------
 #define CHECK_OVERFLOW (!(Config.Hacks & 0x2))
 #define CHECK_EXTRA_OVERFLOW (Config.Hacks & 0x40) // If enabled, Operands are checked for infinities before being used in the VU recs
 #define CHECK_FPU_OVERFLOW (!(Config.Hacks & 0x800))
@@ -61,10 +61,11 @@
 #define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
 #define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
 #define CHECK_UNDERFLOW (!(Config.Hacks & 0x8))
-#define CHECK_DENORMALS ((Config.Hacks & 0x400) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs and flush to zero is enabled as well
+//#define CHECK_DENORMALS ((Config.Hacks & 0x400) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs and flush to zero is enabled as well
 #define CHECK_FASTBRANCHES (Config.Hacks & 0x80)
-#define CHECK_VUCLIPHACK (Config.Hacks & 0x100) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
-#define CHECK_FPUCLAMPHACK (Config.Hacks & 0x200) // Special Fix for GT4, different clamping for FPU (Note: sets negative infinity to positive fMax when clamping, which the real ps2 doesn't do)
+//------------ SPECIAL GAME FIXES!!! ---------------
+#define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x1) // Special Fix for GT4, different clamping for FPU (Note: sets negative infinity to positive fMax when clamping, which the real ps2 doesn't do)
+#define CHECK_VUCLIPHACK (Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
 
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
@@ -107,6 +108,8 @@ typedef struct {
 	int CustomFrameSkip;
 	int CustomConsecutiveFrames;
 	int CustomConsecutiveSkip;
+	u32 sseMXCSR;
+	u32 sseVUMXCSR;
 } PcsxConfig;
 
 extern PcsxConfig Config;
