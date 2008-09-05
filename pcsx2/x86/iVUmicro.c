@@ -2515,7 +2515,7 @@ void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 		vuFloat( info, EEREC_T, ( 1 << (3 - xyzw) ) );
 	}
 	// This is needed for alot of games
-	vuFloat( info, EEREC_S, _X_Y_Z_W);
+	vFloats1[_X_Y_Z_W]( EEREC_S, EEREC_S ); // Always clamp EEREC_S, regardless if CHECK_OVERFLOW is set
 
 	if( _Ft_ == 0 ) {
 		if( xyzw < 3 ) {
@@ -2783,7 +2783,7 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 		vuFloat( info, regd, _X_Y_Z_W);
 	}
 	// This is needed for alot of games
-	vuFloat( info, EEREC_S, _X_Y_Z_W);
+	vFloats1[_X_Y_Z_W]( EEREC_S, EEREC_S ); // Always clamp EEREC_S, regardless if CHECK_OVERFLOW is set
 	
 	if( _Ft_ == 0 ) {
 
