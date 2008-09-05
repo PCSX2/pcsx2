@@ -27,7 +27,6 @@
 #include "stdio.h" //Linux needs this?
 #include "stdlib.h" //Linux needs this?
 
-
 #define REC_FPUBRANCH(f) \
 	void f(); \
 	void rec##f() { \
@@ -55,6 +54,17 @@
 #define _Ft_ _Rt_
 #define _Fs_ _Rd_
 #define _Fd_ _Sa_
+
+// FCR31 Flags
+#define FPUflagC	0X00800000
+#define FPUflagI	0X00020000
+#define FPUflagD	0X00010000
+#define FPUflagO	0X00008000
+#define FPUflagU	0X00004000
+#define FPUflagSI	0X00000040
+#define FPUflagSD	0X00000020
+#define FPUflagSO	0X00000010
+#define FPUflagSU	0X00000008
 
 extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
@@ -927,6 +937,7 @@ int recNonCommutativeOp(int info, int regd, int op)
 
 void recADD_S_xmm(int info)
 {
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
     ClampValues(recCommutativeOp(info, EEREC_D, 0));
 }
 
@@ -935,7 +946,8 @@ FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 ////////////////////////////////////////////////////
 void recSUB_S_xmm(int info)
 {
-   ClampValues(recNonCommutativeOp(info, EEREC_D, 0));
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
+	ClampValues(recNonCommutativeOp(info, EEREC_D, 0));
 }
 
 FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -943,6 +955,7 @@ FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 ////////////////////////////////////////////////////
 void recMUL_S_xmm(int info)
 {			
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
     ClampValues(recCommutativeOp(info, EEREC_D, 1)); 
 }
 
@@ -951,6 +964,7 @@ FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 ////////////////////////////////////////////////////
 void recDIV_S_xmm(int info)
 {				
+	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
     ClampValues2(recNonCommutativeOp(info, EEREC_D, 1));
 }
 
@@ -961,51 +975,51 @@ static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0, 0, 0 };
 
 void recSQRT_S_xmm(int info)
 {
+	int tempReg;
+	u8* pjmp;
+
 	SysPrintf("FPU: SQRT \n");
-	if( info & PROCESS_EE_T ) {
-		//if( CHECK_OVERFLOW ) {
-			if( EEREC_D == EEREC_T ) SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
-			else {
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T);
-				SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
-				
-			}
+	tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	if (tempReg == -1) {SysPrintf("FPU: SQRT Allocation Error! \n"); tempReg = EAX;}
 
-			SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
-		//}
-		/*else {
-			SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_T);
-		}*/
+	if( info & PROCESS_EE_T ) { 
+		if ( EEREC_D != EEREC_T ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T); 
 	}
-	else {
-		//if( CHECK_OVERFLOW ) {
-			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
-			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
+	else SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
 
-			SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
-		/*}
-		else {
-			SSE_SQRTSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
-		}*/
-	}
-	ClampValues(EEREC_D);
+	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+
+	/*--- Check for negative SQRT ---*/
+	XOR32RtoR(tempReg, tempReg);
+	SSE_MOVMSKPS_XMM_to_R32(tempReg, EEREC_D);
+	AND32ItoR(tempReg, 1);  //Check sign
+	pjmp = JZ8(0); //Skip if none are
+		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagI|FPUflagSI); // Set I and SI flags
+		SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]); // Make EEREC_D Positive
+	x86SetJ8(pjmp);
+	
+	if (CHECK_FPU_OVERFLOW) // Only need to do positive clamp, since EEREC_D is positive
+		SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)&g_maxvals[0]);
+	SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
+	//ClampValues(EEREC_D); // No need to clamp again since SQRT of a number will always be smaller than the original number
+
+	_freeX86reg(tempReg);
 }
 
 FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);
 
 void recABS_S_xmm(int info)
 {	
-
 	if( info & PROCESS_EE_S ) {
 		if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-		SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
 	}
-	else {
-			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
-			//xmmregs[EEREC_D].mode &= ~MODE_WRITE;
-	}
-	ClampValues(EEREC_D);
+	else SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+
+	SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]);
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
+
+	if (CHECK_FPU_OVERFLOW) // Only need to do positive clamp, since EEREC_D is positive
+		SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)&g_maxvals[0]);
 }
 
 FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
@@ -1030,6 +1044,7 @@ void recNEG_S_xmm(int info) {
 		SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
 	}
 
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&s_neg[0]);
 	ClampValues(EEREC_D);
 }
@@ -1039,6 +1054,7 @@ FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
 void recRSQRT_S_xmm(int info)
 {	
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			if( EEREC_D == EEREC_S ) {
@@ -1089,19 +1105,22 @@ FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recADDA_S_xmm(int info)
 {
+	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
     ClampValues(recCommutativeOp(info, EEREC_ACC, 0));
 }
 
 FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 
-void recSUBA_S_xmm(int info) {				
-    ClampValues(recNonCommutativeOp(info, EEREC_ACC, 0));
+void recSUBA_S_xmm(int info) { 
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
+	ClampValues(recNonCommutativeOp(info, EEREC_ACC, 0));
 }
 
 FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 
-void recMULA_S_xmm(int info) {			
-     ClampValues(recCommutativeOp(info, EEREC_ACC, 1));
+void recMULA_S_xmm(int info) { 
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
+	ClampValues(recCommutativeOp(info, EEREC_ACC, 1));
 }
 
 FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
@@ -1200,6 +1219,7 @@ void recMADDtemp(int info, int regd)
 
 void recMADD_S_xmm(int info)
 {
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	recMADDtemp(info, EEREC_D);
 }
 
@@ -1207,6 +1227,7 @@ FPURECOMPILE_CONSTCODE(MADD_S, XMMINFO_WRITED|XMMINFO_READACC|XMMINFO_READS|XMMI
 
 void recMADDA_S_xmm(int info)
 {
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	recMADDtemp(info, EEREC_ACC);
 }
 
@@ -1335,6 +1356,7 @@ void recMSUBtemp(int info, int regd)
 
 void recMSUB_S_xmm(int info)
 {
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	recMSUBtemp(info, EEREC_D);
 }
 
@@ -1342,6 +1364,7 @@ FPURECOMPILE_CONSTCODE(MSUB_S, XMMINFO_WRITED|XMMINFO_READACC|XMMINFO_READS|XMMI
 
 void recMSUBA_S_xmm(int info)
 {
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	recMSUBtemp(info, EEREC_ACC);
 }
 
@@ -1430,6 +1453,7 @@ void recCVT_W()
 
 void recMAX_S_xmm(int info)
 {
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
     recCommutativeOp(info, EEREC_D, 2);
 }
 
@@ -1437,6 +1461,7 @@ FPURECOMPILE_CONSTCODE(MAX_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recMIN_S_xmm(int info)
 {
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
     recCommutativeOp(info, EEREC_D, 3);
 }
 
