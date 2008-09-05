@@ -1030,34 +1030,39 @@ BEGIN
     CONTROL         132,IDC_PS2SILVER_RECT,"Static",SS_BITMAP,0,167,70,74
 END
 
-IDD_HACKS DIALOGEX 0, 0, 511, 243
+IDD_HACKS DIALOGEX 0, 0, 511, 295
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCSX2 Speed Hacks"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,205,222,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,261,222,50,14
+    DEFPUSHBUTTON   "OK",IDOK,205,274,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,261,274,50,14
     CONTROL         "EE Sync Hack (x2) - Doubles the cycle rate of the EE. ( Big Speedup in most games! )",IDC_SYNCHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,111,418,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,162,418,10
     CONTROL         "Disable VU Overflow Checks - *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_VU_OVERFLOWHACK,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,14,49,475,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,49,475,10
     CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,497,8
     CONTROL         "Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore.",IDC_SOUNDHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,194,421,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,245,421,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )",IDC_SYNCHACK2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,125,410,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,176,410,10
     CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Sometimes speeds games a bit more, but can break games. )",IDC_SYNCHACK3,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,139,464,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,190,464,11
     CONTROL         "Disable FPU Overflow Checks -  *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_FPU_OVERFLOWHACK,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,14,63,483,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,63,483,10
     CONTROL         "EE/IOP Fast Branches - Quick branching ( Very small speedup; Not Recommended!  )",IDC_FASTBRANCHES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,180,423,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,231,423,10
     CTEXT           "If you have problems, disable all these and try again",IDC_STATIC,7,22,497,8
     GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,497,58
     CONTROL         "Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )",IDC_DENORMALS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,77,319,10
-    GROUPBOX        "Sync Hacks",IDC_STATIC,7,98,497,63
-    GROUPBOX        "Miscellaneous",IDC_STATIC,7,165,497,50
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,77,319,10
+    GROUPBOX        "Sync Hacks",IDC_STATIC,7,149,497,63
+    GROUPBOX        "Miscellaneous",IDC_STATIC,7,216,497,50
+    GROUPBOX        "Flag Setting",IDC_STATIC,7,100,497,41
+    CONTROL         "Disable Extra VU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )",IDC_VU_FLAGS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,113,442,10
+    CONTROL         "Disable Extra FPU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )",IDC_FPU_FLAGS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,126,414,10
 END
 
 
@@ -1079,8 +1084,9 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 504
+        VERTGUIDE, 15
         TOPMARGIN, 7
-        BOTTOMMARGIN, 236
+        BOTTOMMARGIN, 288
     END
 END
 #endif    // APSTUDIO_INVOKED

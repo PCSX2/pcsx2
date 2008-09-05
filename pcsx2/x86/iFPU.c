@@ -978,25 +978,27 @@ void recSQRT_S_xmm(int info)
 	int tempReg;
 	u8* pjmp;
 
-	SysPrintf("FPU: SQRT \n");
+	SysPrintf("FPU: SQRT\n");
 	tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (tempReg == -1) {SysPrintf("FPU: SQRT Allocation Error! \n"); tempReg = EAX;}
+	if (tempReg == -1) {SysPrintf("FPU: SQRT Allocation Error!\n"); tempReg = EAX;}
 
 	if( info & PROCESS_EE_T ) { 
 		if ( EEREC_D != EEREC_T ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T); 
 	}
 	else SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
 
-	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+	if (CHECK_FPU_EXTRA_FLAGS) {
+		AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
-	/*--- Check for negative SQRT ---*/
-	XOR32RtoR(tempReg, tempReg);
-	SSE_MOVMSKPS_XMM_to_R32(tempReg, EEREC_D);
-	AND32ItoR(tempReg, 1);  //Check sign
-	pjmp = JZ8(0); //Skip if none are
-		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagI|FPUflagSI); // Set I and SI flags
-		SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]); // Make EEREC_D Positive
-	x86SetJ8(pjmp);
+		/*--- Check for negative SQRT ---*/
+		SSE_MOVMSKPS_XMM_to_R32(tempReg, EEREC_D);
+		AND32ItoR(tempReg, 1);  //Check sign
+		pjmp = JZ8(0); //Skip if none are
+			OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagI|FPUflagSI); // Set I and SI flags
+			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]); // Make EEREC_D Positive
+		x86SetJ8(pjmp);
+	}
+	else SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]); // Make EEREC_D Positive
 	
 	if (CHECK_FPU_OVERFLOW) // Only need to do positive clamp, since EEREC_D is positive
 		SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)&g_maxvals[0]);
@@ -1051,54 +1053,105 @@ void recNEG_S_xmm(int info) {
 
 FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
 
-void recRSQRT_S_xmm(int info)
-{	
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+// Preforms the RSQRT function when regd <- Fs and t0reg <- Ft (Sets correct flags)
+void recRSQRThelper1(int regd, int t0reg)
+{
+	u8* pjmp1;
+	u8* pjmp2;
+	u32* pjmp32;
+	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	if (t1reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
+	if (tempReg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n"); tempReg = EAX;}
+
 	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+
+	/*--- Check for zero ---*/
+	SSE_XORPS_XMM_to_XMM(t1reg, t1reg);
+	SSE_CMPEQSS_XMM_to_XMM(t1reg, t0reg);
+	SSE_MOVMSKPS_XMM_to_R32(tempReg, t1reg);
+	AND32ItoR(tempReg, 1);  //Check sign (if t0reg == zero, sign will be set)
+	pjmp1 = JZ8(0); //Skip if not set
+		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagD|FPUflagSD); // Set D and SD flags
+		SSE_XORPS_XMM_to_XMM(regd, t0reg); // Make regd Positive or Negative
+		SSE_ANDPS_M128_to_XMM(regd, (uptr)&s_neg[0]); // Get the sign bit
+		SSE_ORPS_M128_to_XMM(regd, (uptr)&g_maxvals[0]); // regd = +/- Maximum
+		pjmp32 = JMP32(0);
+	x86SetJ8(pjmp1);
+
+	/*--- Check for negative SQRT ---*/
+	SSE_MOVMSKPS_XMM_to_R32(tempReg, t0reg);
+	AND32ItoR(tempReg, 1);  //Check sign
+	pjmp2 = JZ8(0); //Skip if not set
+		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagI|FPUflagSI); // Set I and SI flags
+		SSE_ANDPS_M128_to_XMM(t0reg, (uptr)&s_pos[0]); // Make t0reg Positive
+	x86SetJ8(pjmp2);
+
+	if (CHECK_FPU_EXTRA_OVERFLOW) {
+		SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]); // Only need to do positive clamp, since t0reg is positive
+		ClampValues(regd);
+	}
+
+	SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
+	SSE_DIVSS_XMM_to_XMM(regd, t0reg);
+
+	ClampValues(regd);
+	x86SetJ32(pjmp32);
+
+	_freeXMMreg(t1reg);
+	_freeX86reg(tempReg);
+}
+
+// Preforms the RSQRT function when regd <- Fs and t0reg <- Ft (Doesn't set flags)
+void recRSQRThelper2(int regd, int t0reg)
+{
+	SSE_ANDPS_M128_to_XMM(t0reg, (uptr)&s_pos[0]); // Make t0reg Positive
+	if (CHECK_FPU_EXTRA_OVERFLOW) {
+		SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]); // Only need to do positive clamp, since t0reg is positive
+		ClampValues(regd);
+	}
+	SSE_SQRTSS_XMM_to_XMM(t0reg, t0reg);
+	SSE_DIVSS_XMM_to_XMM(regd, t0reg);
+	ClampValues(regd);
+}
+
+void recRSQRT_S_xmm(int info)
+{
+	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	SysPrintf("FPU: RSQRT\n");
+	if (t0reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
+
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
-			if( EEREC_D == EEREC_S ) {
-				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-			}
-			else {
-				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);				
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-			}
-
+			//SysPrintf("FPU: RSQRT case 1\n");
+			if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
+			else recRSQRThelper2(EEREC_D, t0reg);
 			break;
-		case PROCESS_EE_T:			
-				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
-				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-						
-			SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
+		case PROCESS_EE_T:	
+			//SysPrintf("FPU: RSQRT case 2\n");
+			SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
+			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
+			else recRSQRThelper2(EEREC_D, t0reg);
+			break;
+		case (PROCESS_EE_S|PROCESS_EE_T):
+			//SysPrintf("FPU: RSQRT case 3\n");
+			SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);		
+			if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
+			else recRSQRThelper2(EEREC_D, t0reg);
 			break;
 		default:
-			if( (info & PROCESS_EE_T) && (info & PROCESS_EE_S) ) {
-				if( EEREC_D == EEREC_T ){
-					SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
-					SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);						
-					SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-				}
-				else if( EEREC_D == EEREC_S ){
-					SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);
-					SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);
-				} else {
-				SSE_SQRTSS_XMM_to_XMM(t0reg, EEREC_T);		
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);				
-				}
-			}else{
-				SSE_SQRTSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);		
-				SSE_DIVSS_XMM_to_XMM(EEREC_D, t0reg);				
-			}
-			
+			//SysPrintf("FPU: RSQRT case 4\n");
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);		
+			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
+			else recRSQRThelper2(EEREC_D, t0reg);
 			break;
 	}
 	_freeXMMreg(t0reg);
-	ClampValues(EEREC_D);
 }
 
 FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);

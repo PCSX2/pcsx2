@@ -614,13 +614,15 @@
 #define IDC_GAMEFIX1                    1300
 #define IDC_DENORMALS                   1301
 #define IDC_EE_CHECK2                   1301
-#define IDC_CHECK3                      1301
 #define IDC_GAMEFIX2                    1301
 #define IDC_VUCLIPHACK                  1302
 #define IDC_VU_CHECK1                   1302
+#define IDC_VU_FLAGS                    1302
 #define IDC_FRAMELIMIT_OPTIONS          1303
 #define IDC_FPUCLAMPHACK                1303
 #define IDC_VU_CHECK2                   1303
+#define IDC_VU_FLAGS2                   1303
+#define IDC_FPU_FLAGS                   1303
 #define IDC_ROUNDMODE                   1304
 #define IDC_EE_ROUNDMODE0               1305
 #define IDC_EE_ROUNDMODE1               1306

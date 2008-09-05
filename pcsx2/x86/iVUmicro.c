@@ -1398,53 +1398,53 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	if( EEREC_TEMP != reg ) {
 
 		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-
-		//-------------------------Check for Overflow flags------------------------------
-
-		SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
-		SSE_CMPUNORDPS_XMM_to_XMM(EEREC_TEMP, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
-
 		XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
-
-		SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
-
 		XOR32RtoR(x86temp, x86temp); //Clear x86temp
 
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
-		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 8); // Set if they are
-		x86SetJ8(pjmp);
+		if (CHECK_VU_EXTRA_FLAGS) {
+			//-------------------------Check for Overflow flags------------------------------
 
-		OR32RtoR(x86macflag, x86newflag);
-		SHL32ItoR(x86macflag, 4); // Shift the Overflow flags left 4
+			SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
+			SSE_CMPUNORDPS_XMM_to_XMM(EEREC_TEMP, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
 
-		//-------------------------Check for Underflow flags------------------------------
+			SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
 
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP <- reg
+			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
+			pjmp = JZ8(0); // Skip if none are
+			OR32ItoR(x86temp, 8); // Set if they are
+			x86SetJ8(pjmp);
 
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Underflow_Mask1[ 0 ]);
-		SSE_CMPEQPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Mask[ 0 ]); // If (EEREC_TEMP == zero exponent) then set Vector to 0xFFFFFFFF
+			OR32RtoR(x86macflag, x86newflag);
+			SHL32ItoR(x86macflag, 4); // Shift the Overflow flags left 4
 
-		SSE_ANDPS_XMM_to_XMM(EEREC_TEMP, reg);
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Underflow_Mask2[ 0 ]);
-		SSE_CMPNEPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Mask[ 0 ]); // If (EEREC_TEMP != zero mantisa) then set Vector to 0xFFFFFFFF
+			//-------------------------Check for Underflow flags------------------------------
 
-		SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
+			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP <- reg
 
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
-		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 4); // Set if they are
-		x86SetJ8(pjmp);
+			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Underflow_Mask1[ 0 ]);
+			SSE_CMPEQPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Mask[ 0 ]); // If (EEREC_TEMP == zero exponent) then set Vector to 0xFFFFFFFF
 
-		OR32RtoR(x86macflag, x86newflag);
-		SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
+			SSE_ANDPS_XMM_to_XMM(EEREC_TEMP, reg);
+			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Underflow_Mask2[ 0 ]);
+			SSE_CMPNEPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Mask[ 0 ]); // If (EEREC_TEMP != zero mantisa) then set Vector to 0xFFFFFFFF
 
-		//-------------------------Optional Code: Denormals Are Zero------------------------------
-		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
-			SSE_ANDNPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP = !EEREC_TEMP & reg
-			// Now we have Denormals are Positive Zero in EEREC_TEMP; the next two lines take Signed Zero into account
-			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-			SSE_ORPS_XMM_to_XMM(reg, EEREC_TEMP);
+			SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
+
+			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
+			pjmp = JZ8(0); // Skip if none are
+			OR32ItoR(x86temp, 4); // Set if they are
+			x86SetJ8(pjmp);
+
+			OR32RtoR(x86macflag, x86newflag);
+			SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
+
+			//-------------------------Optional Code: Denormals Are Zero------------------------------
+			if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
+				SSE_ANDNPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP = !EEREC_TEMP & reg
+				// Now we have Denormals are Positive Zero in EEREC_TEMP; the next two lines take Signed Zero into account
+				SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
+				SSE_ORPS_XMM_to_XMM(reg, EEREC_TEMP);
+			}
 		}
 		//-------------------------Check for Signed flags------------------------------
 
@@ -1512,53 +1512,53 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		}
 
 		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-
-		//-------------------------Check for Overflow flags------------------------------
-
-		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		SSE_CMPUNORDPS_XMM_to_XMM(t1reg, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
-
 		XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
-
-		SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
-
 		XOR32RtoR(x86temp, x86temp); //Clear x86temp
 
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
-		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 8); // Set if they are
-		x86SetJ8(pjmp);
+		if (CHECK_VU_EXTRA_FLAGS) {
+			//-------------------------Check for Overflow flags------------------------------
 
-		OR32RtoR(x86macflag, x86newflag);
-		SHL32ItoR(x86macflag, 4); // Shift the Overflow flags left 4
+			SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+			SSE_CMPUNORDPS_XMM_to_XMM(t1reg, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
 
-		//-------------------------Check for Underflow flags------------------------------
+			SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
 
-		SSE_MOVAPS_XMM_to_XMM(t1reg, reg); // t1reg <- reg
+			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
+			pjmp = JZ8(0); // Skip if none are
+			OR32ItoR(x86temp, 8); // Set if they are
+			x86SetJ8(pjmp);
 
-		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask1[ 0 ]);
-		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg == zero exponent) then set Vector to 0xFFFFFFFF
+			OR32RtoR(x86macflag, x86newflag);
+			SHL32ItoR(x86macflag, 4); // Shift the Overflow flags left 4
 
-		SSE_ANDPS_XMM_to_XMM(t1reg, reg);
-		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask2[ 0 ]);
-		SSE_CMPNEPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg != zero mantisa) then set Vector to 0xFFFFFFFF
+			//-------------------------Check for Underflow flags------------------------------
 
-		SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
+			SSE_MOVAPS_XMM_to_XMM(t1reg, reg); // t1reg <- reg
 
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
-		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 4); // Set if they are
-		x86SetJ8(pjmp);
+			SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask1[ 0 ]);
+			SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg == zero exponent) then set Vector to 0xFFFFFFFF
 
-		OR32RtoR(x86macflag, x86newflag);
-		SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
+			SSE_ANDPS_XMM_to_XMM(t1reg, reg);
+			SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask2[ 0 ]);
+			SSE_CMPNEPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg != zero mantisa) then set Vector to 0xFFFFFFFF
 
-		//-------------------------Optional Code: Denormals Are Zero------------------------------
-		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
-			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
-			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
-			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-			SSE_ORPS_XMM_to_XMM(reg, t1reg);
+			SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
+
+			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
+			pjmp = JZ8(0); // Skip if none are
+			OR32ItoR(x86temp, 4); // Set if they are
+			x86SetJ8(pjmp);
+
+			OR32RtoR(x86macflag, x86newflag);
+			SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
+
+			//-------------------------Optional Code: Denormals Are Zero------------------------------
+			if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
+				SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
+				// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
+				SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
+				SSE_ORPS_XMM_to_XMM(reg, t1reg);
+			}
 		}
 		//-------------------------Check for Signed flags------------------------------
 

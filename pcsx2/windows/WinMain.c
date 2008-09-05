@@ -759,8 +759,8 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 			if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
 			if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);
 			if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
-			//if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VUCLIPHACK, TRUE);
-			//if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPUCLAMPHACK, TRUE);
+			if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
+			if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
 			//if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_DENORMALS, 2);
 			if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
 			if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);
@@ -778,8 +778,8 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
 				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
-				//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VUCLIPHACK) ? 0x100 : 0;
-				//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPUCLAMPHACK) ? 0x200 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;
+				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;
 				//Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_DENORMALS) == 2 ) ? 0x408 : (IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0); // 0x408 == greyed checkbox (DaZ SSE flag; so the CPU sets denormals to zero)
 				Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0); // 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)
 				
