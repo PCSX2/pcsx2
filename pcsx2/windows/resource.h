@@ -618,10 +618,10 @@
 #define IDC_VUCLIPHACK                  1302
 #define IDC_VU_CHECK1                   1302
 #define IDC_VU_FLAGS                    1302
+#define IDC_GAMEFIX3                    1302
 #define IDC_FRAMELIMIT_OPTIONS          1303
 #define IDC_FPUCLAMPHACK                1303
 #define IDC_VU_CHECK2                   1303
-#define IDC_VU_FLAGS2                   1303
 #define IDC_FPU_FLAGS                   1303
 #define IDC_ROUNDMODE                   1304
 #define IDC_EE_ROUNDMODE0               1305

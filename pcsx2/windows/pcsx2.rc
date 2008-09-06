@@ -83,9 +83,11 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,99,132,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,153,132,50,14
     CTEXT           "Some games need special settings.\nConfigure them here.",IDC_STATIC,7,7,277,17
-    CONTROL         "FPU Clamp Hack - Special fix for Gran Turismo 4 and possibly other games.",IDC_GAMEFIX1,
+    CONTROL         "FPU Clamp Hack - Special fix for Gran Turismo 4 and maybe other games.",IDC_GAMEFIX1,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,34,277,12
     CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_GAMEFIX2,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,64,277,12
+    CONTROL         "FPU Clamp Hack 2 - Special fix for Tekken 5 and maybe other games.",IDC_GAMEFIX3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,277,12
 END
 
