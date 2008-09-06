@@ -69,6 +69,9 @@
 extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
 
+static u32 PCSX2_ALIGNED16(s_neg[4]) = { 0x80000000, 0, 0, 0 };
+static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0, 0, 0 };
+
 ////////////////////////////////////////////////////
 void recMFC1(void) {
 	int regt, regs;
@@ -795,7 +798,7 @@ void ClampValues(regd) {
 }
 
 void ClampValues2(regd) { 
-	if (CHECK_FPUCLAMPHACK) { // This fixes Gran Turismo graphics
+	if (CHECK_FPUCLAMPHACK) { // This fixes Gran Turismo 4 graphics ( Converts NaN to Positive Maximum )
 
 		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
@@ -962,16 +965,119 @@ void recMUL_S_xmm(int info)
 FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 ////////////////////////////////////////////////////
-void recDIV_S_xmm(int info)
-{				
+
+// Sets flags
+void recDIVhelper1(int regd, int regt)
+{
+	u8 *pjmp1, *pjmp2;
+	u32 *ajmp32, *bjmp32;
+	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	if (t1reg == -1) {SysPrintf("FPU: DIV Allocation Error!\n");}
+	if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+
 	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
-    ClampValues2(recNonCommutativeOp(info, EEREC_D, 1));
+
+	/*--- Check for divide by zero ---*/
+	SSE_XORPS_XMM_to_XMM(t1reg, t1reg);
+	SSE_CMPEQSS_XMM_to_XMM(t1reg, regt);
+	SSE_MOVMSKPS_XMM_to_R32(tempReg, t1reg);
+	AND32ItoR(tempReg, 1);  //Check sign (if regt == zero, sign will be set)
+	ajmp32 = JZ32(0); //Skip if not set
+
+		/*--- Check for 0/0 ---*/
+		SSE_XORPS_XMM_to_XMM(t1reg, t1reg);
+		SSE_CMPEQSS_XMM_to_XMM(t1reg, regd);
+		SSE_MOVMSKPS_XMM_to_R32(tempReg, t1reg);
+		AND32ItoR(tempReg, 1);  //Check sign (if regd == zero, sign will be set)
+		pjmp1 = JZ8(0); //Skip if not set
+			OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagI|FPUflagSI); // Set I and SI flags ( 0/0 )
+			pjmp2 = JMP8(0);
+		x86SetJ8(pjmp1); //x/0 but not 0/0
+			OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagD|FPUflagSD); // Set D and SD flags ( x/0 )
+		x86SetJ8(pjmp2);
+
+		/*--- Make regd +/- Maximum ---*/
+		SSE_XORPS_XMM_to_XMM(regd, regt); // Make regd Positive or Negative
+		SSE_ANDPS_M128_to_XMM(regd, (uptr)&s_neg[0]); // Get the sign bit
+		SSE_ORPS_M128_to_XMM(regd, (uptr)&g_maxvals[0]); // regd = +/- Maximum
+		//SSE_MOVSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
+		bjmp32 = JMP32(0);
+
+	x86SetJ32(ajmp32);
+
+	/*--- Normal Divide ---*/
+	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
+	SSE_DIVSS_XMM_to_XMM(regd, regt);
+
+	ClampValues2(regd);
+	x86SetJ32(bjmp32);
+
+	_freeXMMreg(t1reg);
+	_freeX86reg(tempReg);
+}
+
+// Doesn't sets flags
+void recDIVhelper2(int regd, int regt)
+{
+	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
+	SSE_DIVSS_XMM_to_XMM(regd, regt);
+	ClampValues2(regd);
+}
+
+void recDIV_S_xmm(int info)
+{
+	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+    if (t0reg == -1) {SysPrintf("FPU: DIV Allocation Error!\n");}
+
+	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+		case PROCESS_EE_S:
+			//SysPrintf("FPU: DIV case 1\n");
+			if (EEREC_D != EEREC_S) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
+			else recDIVhelper2(EEREC_D, t0reg);
+			break;
+		case PROCESS_EE_T:
+			//SysPrintf("FPU: DIV case 2\n");
+			if (EEREC_D == EEREC_T) {
+				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
+				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
+				else recDIVhelper2(EEREC_D, t0reg);
+			}
+			else {
+				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, EEREC_T);
+				else recDIVhelper2(EEREC_D, EEREC_T);
+			}
+			break;
+		case (PROCESS_EE_S|PROCESS_EE_T):
+			//SysPrintf("FPU: DIV case 3\n");
+			if (EEREC_D == EEREC_T) {
+				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
+				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
+				else recDIVhelper2(EEREC_D, t0reg);
+			}
+			else {
+				if (EEREC_D != EEREC_S) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, EEREC_T);
+				else recDIVhelper2(EEREC_D, EEREC_T);
+			}
+			break;
+		default:
+			//SysPrintf("FPU: DIV case 4\n");
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+			if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
+			else recDIVhelper2(EEREC_D, t0reg);
+			break;
+	}
+	_freeXMMreg(t0reg);
 }
 
 FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
-
-static u32 PCSX2_ALIGNED16(s_neg[4]) = { 0x80000000, 0, 0, 0 };
-static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0, 0, 0 };
 
 void recSQRT_S_xmm(int info)
 {
