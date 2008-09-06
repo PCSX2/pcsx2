@@ -1242,8 +1242,8 @@ void CreateMainMenu() {
 	ADDMENUITEM(1, _("&Low"), ID_PROCESSLOW );
 	ADDMENUITEM(1, _("High"), ID_PROCESSHIGH);
 	ADDMENUITEM(1, _("Normal"), ID_PROCESSNORMAL);
-	ADDMENUITEM(0,_("&Arguments"), ID_RUN_CMDLINE);
 	ADDMENUITEM(0,_("Re&set"), ID_RUN_RESET);
+	ADDMENUITEM(0,_("&Arguments"), ID_RUN_CMDLINE);
 	ADDMENUITEM(0,_("E&xecute"), ID_RUN_EXECUTE);
 
 	ADDSUBMENU(0,_("&Config"));
