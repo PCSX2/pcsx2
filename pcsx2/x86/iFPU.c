@@ -823,47 +823,56 @@ static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
 static void (*recComOpM32_to_XMM[] )(x86SSERegType, uptr) = {
 	SSE_ADDSS_M32_to_XMM, SSE_MULSS_M32_to_XMM, SSE_MAXSS_M32_to_XMM, SSE_MINSS_M32_to_XMM };
 
-int recCommutativeOp(int info, int regd, int op) {
+int recCommutativeOp(int info, int regd, int op) 
+{
+	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+    if (t0reg == -1) {SysPrintf("FPU: CommutativeOp Allocation Error!\n");}
+
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
-			if (regd == EEREC_S) recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
+			if (regd == EEREC_S) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
+				recComOpXMM_to_XMM[op](regd, t0reg);
+			}
 			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
+				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Ft_]);
+				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_S); }
+				recComOpXMM_to_XMM[op](regd, EEREC_S);
 			}
 			break;
 		case PROCESS_EE_T:
-			if (regd == EEREC_T) recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Fs_]);
+			if (regd == EEREC_T) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]);
+				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
+				recComOpXMM_to_XMM[op](regd, t0reg);
+			}
 			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_T);
-				recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Fs_]);
+				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
+				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_T); }
+				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
-		//	SysPrintf("Hello2 :)\n");
-			if (regd == EEREC_S) recComOpXMM_to_XMM[op](regd, EEREC_T);
-			else if (regd == EEREC_T) recComOpXMM_to_XMM[op](regd, EEREC_S);
+			if (regd == EEREC_T) {
+				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_S); }
+				recComOpXMM_to_XMM[op](regd, EEREC_S);
+			}
 			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
+				if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
+				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_T); }
 				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
 		default:
-			SysPrintf("But we dont have regs2 :(\n");
-			/*if (regd == EEREC_S) {
-				recComOpXMM_to_XMM[op](regd, EEREC_T);
-			}
-			else if (regd == EEREC_T) {
-				recComOpXMM_to_XMM[op](regd, EEREC_S);
-			}
-			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				recComOpXMM_to_XMM[op](regd, EEREC_T);
-			}*/
 			SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
-			recComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
+			recComOpXMM_to_XMM[op](regd, t0reg);
 			break;
 	}
+
+	_freeXMMreg(t0reg);
 	return regd;
 }
 
@@ -947,10 +956,61 @@ void recADD_S_xmm(int info)
 FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 ////////////////////////////////////////////////////
+
+void recSUBhelper(int regd, int regt)
+{
+	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
+	SSE_SUBSS_XMM_to_XMM(regd, regt);
+}
+
 void recSUB_S_xmm(int info)
 {
+	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+    if (t0reg == -1) {SysPrintf("FPU: SUB Allocation Error!\n");}
+
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-	ClampValues(recNonCommutativeOp(info, EEREC_D, 0));
+
+	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+		case PROCESS_EE_S:
+			//SysPrintf("FPU: SUB case 1\n");
+			if (EEREC_D != EEREC_S) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			recSUBhelper(EEREC_D, t0reg);
+			break;
+		case PROCESS_EE_T:
+			//SysPrintf("FPU: SUB case 2\n");
+			if (EEREC_D == EEREC_T) {
+				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
+				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+				recSUBhelper(EEREC_D, t0reg);
+			}
+			else {
+				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+				recSUBhelper(EEREC_D, EEREC_T);
+			}
+			break;
+		case (PROCESS_EE_S|PROCESS_EE_T):
+			//SysPrintf("FPU: SUB case 3\n");
+			if (EEREC_D == EEREC_T) {
+				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
+				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+				recSUBhelper(EEREC_D, t0reg);
+			}
+			else {
+				if (EEREC_D != EEREC_S) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+				recSUBhelper(EEREC_D, EEREC_T);
+			}
+			break;
+		default:
+			//SysPrintf("FPU: SUB case 4\n");
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
+			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
+			recSUBhelper(EEREC_D, t0reg);
+			break;
+	}
+	_freeXMMreg(t0reg);
+
+	ClampValues(EEREC_D);
 }
 
 FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -1007,7 +1067,7 @@ void recDIVhelper1(int regd, int regt)
 	x86SetJ32(ajmp32);
 
 	/*--- Normal Divide ---*/
-	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
+	if (CHECK_FPU_EXTRA_OVERFLOW && (!CHECK_FPUCLAMPHACK)) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_DIVSS_XMM_to_XMM(regd, regt);
 
 	ClampValues2(regd);
@@ -1020,7 +1080,7 @@ void recDIVhelper1(int regd, int regt)
 // Doesn't sets flags
 void recDIVhelper2(int regd, int regt)
 {
-	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
+	if (CHECK_FPU_EXTRA_OVERFLOW && (!CHECK_FPUCLAMPHACK)) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_DIVSS_XMM_to_XMM(regd, regt);
 	ClampValues2(regd);
 }
@@ -1081,12 +1141,10 @@ FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recSQRT_S_xmm(int info)
 {
-	int tempReg;
 	u8* pjmp;
-
-	SysPrintf("FPU: SQRT\n");
-	tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
 	if (tempReg == -1) {SysPrintf("FPU: SQRT Allocation Error!\n"); tempReg = EAX;}
+	//SysPrintf("FPU: SQRT\n");
 
 	if( info & PROCESS_EE_T ) { 
 		if ( EEREC_D != EEREC_T ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T); 
@@ -1137,9 +1195,7 @@ void recMOV_S_xmm(int info)
 	if( info & PROCESS_EE_S ) {
 		if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
 	}
-	else {
-		SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-	}
+	else SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
 }
 
 FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED|XMMINFO_READS);
@@ -1148,9 +1204,7 @@ void recNEG_S_xmm(int info) {
 	if( info & PROCESS_EE_S ) {
 		if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
 	}
-	else {
-		SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-	}
+	else SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
 
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&s_neg[0]);
@@ -1162,9 +1216,8 @@ FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
 // Preforms the RSQRT function when regd <- Fs and t0reg <- Ft (Sets correct flags)
 void recRSQRThelper1(int regd, int t0reg)
 {
-	u8* pjmp1;
-	u8* pjmp2;
-	u32* pjmp32;
+	u8 *pjmp1, *pjmp2;
+	u32 *pjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
 	if (t1reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
@@ -1224,8 +1277,8 @@ void recRSQRThelper2(int regd, int t0reg)
 void recRSQRT_S_xmm(int info)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-	SysPrintf("FPU: RSQRT\n");
 	if (t0reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
+	//SysPrintf("FPU: RSQRT\n");
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
