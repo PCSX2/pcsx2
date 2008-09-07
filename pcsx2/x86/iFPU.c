@@ -876,77 +876,6 @@ int recCommutativeOp(int info, int regd, int op)
 	return regd;
 }
 
-static void (*recNonComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
-	SSE_SUBSS_XMM_to_XMM, SSE_DIVSS_XMM_to_XMM };
-
-static void (*recNonComOpM32_to_XMM[] )(x86SSERegType, uptr) = {
-	SSE_SUBSS_M32_to_XMM, SSE_DIVSS_M32_to_XMM };
-
-int recNonCommutativeOp(int info, int regd, int op)
-{
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
-		case PROCESS_EE_S:
-			if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-			recNonComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
-			break;
-		case PROCESS_EE_T:
-			if (regd == EEREC_T) {
-				int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]);
-				recNonComOpXMM_to_XMM[op](t0reg, EEREC_T);
-				SSE_MOVSS_XMM_to_XMM(regd, t0reg);
-				_freeXMMreg(t0reg);
-			}
-			else {
-				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
-				recNonComOpXMM_to_XMM[op](regd, EEREC_T);
-			}
-			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
-			//SysPrintf("Hello1 :)\n");
-			if (regd == EEREC_T) {
-				int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_S);
-				recNonComOpXMM_to_XMM[op](t0reg, EEREC_T);
-				SSE_MOVSS_XMM_to_XMM(regd, t0reg);
-				_freeXMMreg(t0reg);
-			}
-			else if (regd == EEREC_S) {
-				recNonComOpXMM_to_XMM[op](regd, EEREC_T);				
-			}
-			else 
-			{
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				recNonComOpXMM_to_XMM[op](regd, EEREC_T);
-			}
-			break;
-		default:
-			SysPrintf("But we dont have regs1 :(\n");
-			/*if (regd == EEREC_S) {
-				recNonComOpXMM_to_XMM[op](regd, EEREC_T);
-			} else
-			if (regd == EEREC_T) {
-				int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_S);
-				recNonComOpXMM_to_XMM[op](t0reg, regd);
-
-				// swap regs
-				xmmregs[t0reg] = xmmregs[regd];
-				xmmregs[regd].inuse = 0;
-				return t0reg;
-			}
-			else {
-				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				recNonComOpXMM_to_XMM[op](regd, EEREC_T);
-			}*/
-			SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
-			recNonComOpM32_to_XMM[op](regd, (uptr)&fpuRegs.fpr[_Ft_]);
-			break;
-	}
-
-	return regd;
-}
-
 void recADD_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
@@ -963,7 +892,7 @@ void recSUBhelper(int regd, int regt)
 	SSE_SUBSS_XMM_to_XMM(regd, regt);
 }
 
-void recSUB_S_xmm(int info)
+void recSUBop(int info, int regd)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
     if (t0reg == -1) {SysPrintf("FPU: SUB Allocation Error!\n");}
@@ -973,44 +902,49 @@ void recSUB_S_xmm(int info)
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			//SysPrintf("FPU: SUB case 1\n");
-			if (EEREC_D != EEREC_S) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
 			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-			recSUBhelper(EEREC_D, t0reg);
+			recSUBhelper(regd, t0reg);
 			break;
 		case PROCESS_EE_T:
 			//SysPrintf("FPU: SUB case 2\n");
-			if (EEREC_D == EEREC_T) {
+			if (regd == EEREC_T) {
 				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
-				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-				recSUBhelper(EEREC_D, t0reg);
+				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
+				recSUBhelper(regd, t0reg);
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-				recSUBhelper(EEREC_D, EEREC_T);
+				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
+				recSUBhelper(regd, EEREC_T);
 			}
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
 			//SysPrintf("FPU: SUB case 3\n");
-			if (EEREC_D == EEREC_T) {
+			if (regd == EEREC_T) {
 				SSE_MOVSS_XMM_to_XMM(t0reg, EEREC_T);
-				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				recSUBhelper(EEREC_D, t0reg);
+				SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
+				recSUBhelper(regd, t0reg);
 			}
 			else {
-				if (EEREC_D != EEREC_S) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				recSUBhelper(EEREC_D, EEREC_T);
+				if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
+				recSUBhelper(regd, EEREC_T);
 			}
 			break;
 		default:
 			//SysPrintf("FPU: SUB case 4\n");
 			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-			SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-			recSUBhelper(EEREC_D, t0reg);
+			SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
+			recSUBhelper(regd, t0reg);
 			break;
 	}
-	_freeXMMreg(t0reg);
 
-	ClampValues(EEREC_D);
+	ClampValues(regd);
+	_freeXMMreg(t0reg);
+}
+
+void recSUB_S_xmm(int info)
+{
+	recSUBop(info, EEREC_D);
 }
 
 FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -1317,20 +1251,21 @@ FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recADDA_S_xmm(int info)
 {
-	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
+	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
     ClampValues(recCommutativeOp(info, EEREC_ACC, 0));
 }
 
 FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 
-void recSUBA_S_xmm(int info) { 
-	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-	ClampValues(recNonCommutativeOp(info, EEREC_ACC, 0));
+void recSUBA_S_xmm(int info) 
+{ 
+	recSUBop(info, EEREC_ACC);
 }
 
 FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 
-void recMULA_S_xmm(int info) { 
+void recMULA_S_xmm(int info) 
+{ 
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	ClampValues(recCommutativeOp(info, EEREC_ACC, 1));
 }
