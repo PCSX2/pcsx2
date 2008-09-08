@@ -980,7 +980,7 @@ void recDIVhelper1(int regd, int regt)
 	x86SetJ32(ajmp32);
 
 	/*--- Normal Divide ---*/
-	if (CHECK_FPU_EXTRA_OVERFLOW && (!CHECK_FPUCLAMPHACK)) { fpuFloat(regd); fpuFloat(regt); }
+	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_DIVSS_XMM_to_XMM(regd, regt);
 
 	ClampValues2(regd);
@@ -993,7 +993,7 @@ void recDIVhelper1(int regd, int regt)
 // Doesn't sets flags
 void recDIVhelper2(int regd, int regt)
 {
-	if (CHECK_FPU_EXTRA_OVERFLOW && (!CHECK_FPUCLAMPHACK)) { fpuFloat(regd); fpuFloat(regt); }
+	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_DIVSS_XMM_to_XMM(regd, regt);
 	ClampValues2(regd);
 }
