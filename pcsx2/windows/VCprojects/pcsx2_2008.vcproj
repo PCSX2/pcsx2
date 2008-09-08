@@ -280,7 +280,6 @@
 				StructMemberAlignment="5"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
-				EnableEnhancedInstructionSet="2"
 				PrecompiledHeaderFile=".\ReleaseTLB/pcsx2.pch"
 				AssemblerListingLocation=".\ReleaseTLB/"
 				ObjectFile=".\ReleaseTLB/"
