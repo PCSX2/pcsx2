@@ -46,6 +46,12 @@
 	CALLFunc((uptr)f); \
 }
 
+#define REC_FPUOP(f) \
+	MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code); \
+	MOV32ItoM((uptr)&cpuRegs.pc, pc); \
+	iFlushCall(FLUSH_EVERYTHING); \
+	CALLFunc((uptr)f);
+
 /*********************************************************
 *   COP1 opcodes                                         *
 *                                                        *
@@ -773,6 +779,10 @@ void fpuFloat(regd) {
 }
 
 void ClampValues(regd) { 
+	fpuFloat(regd);
+}
+
+void ClampValues2(regd) { 
 	
 	if (CHECK_FPUCLAMPHACK) {
 		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
@@ -792,10 +802,6 @@ void ClampValues(regd) {
 
 }
 
-void ClampValues2(regd) { 
-	fpuFloat(regd);
-}
-
 static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
 	SSE_ADDSS_XMM_to_XMM, SSE_MULSS_XMM_to_XMM, SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM };
 
@@ -811,42 +817,43 @@ int recCommutativeOp(int info, int regd, int op)
 		case PROCESS_EE_S:
 			if (regd == EEREC_S) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
+				if (CHECK_FPU_EXTRA_OVERFLOW && !CHECK_FPUCLAMPHACK && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
 				recComOpXMM_to_XMM[op](regd, t0reg);
 			}
 			else {
 				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Ft_]);
-				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_S); }
+				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_S); }
 				recComOpXMM_to_XMM[op](regd, EEREC_S);
 			}
 			break;
 		case PROCESS_EE_T:
 			if (regd == EEREC_T) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]);
-				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
+				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
 				recComOpXMM_to_XMM[op](regd, t0reg);
 			}
 			else {
 				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
-				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_T); }
+				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_T); }
 				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
 			if (regd == EEREC_T) {
-				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_S); }
+				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_S); }
 				recComOpXMM_to_XMM[op](regd, EEREC_S);
 			}
 			else {
 				if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_T); }
+				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat(regd); fpuFloat(EEREC_T); }
 				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
 		default:
+			SysPrintf("FPU: recCommutativeOp case 4\n");
 			SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
 			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-			if ((CHECK_FPU_EXTRA_OVERFLOW) && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
+			if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
 			recComOpXMM_to_XMM[op](regd, t0reg);
 			break;
 	}
@@ -858,7 +865,8 @@ int recCommutativeOp(int info, int regd, int op)
 void recADD_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_D, 0));
+    ClampValues2(recCommutativeOp(info, EEREC_D, 0));
+	//REC_FPUOP(ADD_S);
 }
 
 FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -867,7 +875,7 @@ FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recSUBhelper(int regd, int regt)
 {
-	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
+	if (CHECK_FPU_EXTRA_OVERFLOW && !CHECK_FPUCLAMPHACK) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_SUBSS_XMM_to_XMM(regd, regt);
 }
 
@@ -910,14 +918,14 @@ void recSUBop(int info, int regd)
 			}
 			break;
 		default:
-			//SysPrintf("FPU: SUB case 4\n");
+			SysPrintf("FPU: SUB case 4\n");
 			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
 			SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
 			recSUBhelper(regd, t0reg);
 			break;
 	}
 
-	ClampValues(regd);
+	ClampValues2(regd);
 	_freeXMMreg(t0reg);
 }
 
@@ -983,7 +991,7 @@ void recDIVhelper1(int regd, int regt)
 	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_DIVSS_XMM_to_XMM(regd, regt);
 
-	ClampValues2(regd);
+	ClampValues(regd);
 	x86SetJ32(bjmp32);
 
 	_freeXMMreg(t1reg);
@@ -995,7 +1003,7 @@ void recDIVhelper2(int regd, int regt)
 {
 	if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_DIVSS_XMM_to_XMM(regd, regt);
-	ClampValues2(regd);
+	ClampValues(regd);
 }
 
 void recDIV_S_xmm(int info)
@@ -1477,7 +1485,7 @@ void recMSUBtemp(int info, int regd)
 			}
 			break;
 	}
-    
+	ClampValues(regd);
 }
 
 void recMSUB_S_xmm(int info)
