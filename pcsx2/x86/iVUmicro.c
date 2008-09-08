@@ -1404,8 +1404,13 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		if (CHECK_VU_EXTRA_FLAGS) {
 			//-------------------------Check for Overflow flags------------------------------
 
-			SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
-			SSE_CMPUNORDPS_XMM_to_XMM(EEREC_TEMP, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
+			//SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
+			//SSE_CMPUNORDPS_XMM_to_XMM(EEREC_TEMP, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
+
+			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, reg);
+			SSE_MINPS_M128_to_XMM(EEREC_TEMP, (uptr)g_maxvals);
+			SSE_MAXPS_M128_to_XMM(EEREC_TEMP, (uptr)g_minvals);
+			SSE_CMPNEPS_XMM_to_XMM(EEREC_TEMP, reg); // If they're not equal, then overflow has occured
 
 			SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
 
@@ -1518,8 +1523,13 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		if (CHECK_VU_EXTRA_FLAGS) {
 			//-------------------------Check for Overflow flags------------------------------
 
-			SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-			SSE_CMPUNORDPS_XMM_to_XMM(t1reg, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
+			//SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+			//SSE_CMPUNORDPS_XMM_to_XMM(t1reg, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
+
+			SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
+			SSE_MINPS_M128_to_XMM(t1reg, (uptr)g_maxvals);
+			SSE_MAXPS_M128_to_XMM(t1reg, (uptr)g_minvals);
+			SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occured
 
 			SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
 
