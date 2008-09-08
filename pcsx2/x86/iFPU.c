@@ -762,34 +762,29 @@ FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS|XMMINFO_READT);
 
 ////////////////////////////////////////////////////
 
-
-	// Doesnt seem to like negatives - Ruins katamari graphics
-	// I REPEAT THE SIGN BIT (THATS 0x80000000) MUST *NOT* BE SET, jeez.
-static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 static u32 s_signbit = 0x80000000;
 extern int g_VuNanHandling;
 
 void fpuFloat(regd) { 
-	if (CHECK_FPU_OVERFLOW) {
-		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+	if (CHECK_FPU_OVERFLOW) { // MIN() must be before MAX()!
 		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
 	}
 }
 
 void ClampValues(regd) { 
 	
-	if (CHECK_FPUCLAMPHACK2) {
+	if (CHECK_FPUCLAMPHACK) {
 		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
 		SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
 		SSE_CMPORDSS_XMM_to_XMM(t5reg, regd); 
 
-		//if( g_VuNanHandling )
-			//SSE_ORPS_M128_to_XMM(t5reg, (uptr)s_overflowmask);
-
 		SSE_ANDPS_XMM_to_XMM(regd, t5reg); 
-		//SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
-		//SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+
+		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
+		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
+		 
 
 		_freeXMMreg(t5reg); 
 	}
@@ -798,23 +793,7 @@ void ClampValues(regd) {
 }
 
 void ClampValues2(regd) { 
-	if (CHECK_FPUCLAMPHACK) { // This fixes Gran Turismo 4 graphics ( Converts NaN to Positive Maximum )
-
-		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
-
-		SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
-		SSE_CMPORDSS_XMM_to_XMM(t5reg, regd); 
-
-		SSE_ORPS_M128_to_XMM(t5reg, (uptr)s_overflowmask); // fixes katamari falling off podium
-
-		SSE_ANDPS_XMM_to_XMM(regd, t5reg); 
-
-		//SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
-		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
-
-		_freeXMMreg(t5reg); 
-	}
-	else fpuFloat(regd);
+	fpuFloat(regd);
 }
 
 static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
