@@ -772,8 +772,8 @@ static u32 s_signbit = 0x80000000;
 extern int g_VuNanHandling;
 
 void fpuFloat(regd) { 
-	if (CHECK_FPU_OVERFLOW) { // MIN() must be before MAX()!
-		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); 
+	if (CHECK_FPU_OVERFLOW && !CHECK_FPUCLAMPHACK) { // Tekken 5 doesn't like clamping infinities.
+		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); // MIN() must be before MAX()! So that NaN's become +Maximum
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
 	}
 }
@@ -784,7 +784,7 @@ void ClampValues(regd) {
 
 void ClampValues2(regd) { 
 	
-	if (CHECK_FPUCLAMPHACK) {
+	if (CHECK_FPUCLAMPHACK) { // Fixes Tekken 5
 		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
 		SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
@@ -792,10 +792,10 @@ void ClampValues2(regd) {
 
 		SSE_ANDPS_XMM_to_XMM(regd, t5reg); 
 
-		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
-		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]); 
-		 
-
+		/* --- Its odd but tekken dosn't like Infinities to be clamped. --- */
+		//SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
+		//SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
+		
 		_freeXMMreg(t5reg); 
 	}
 	else fpuFloat(regd);
@@ -817,7 +817,7 @@ int recCommutativeOp(int info, int regd, int op)
 		case PROCESS_EE_S:
 			if (regd == EEREC_S) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				if (CHECK_FPU_EXTRA_OVERFLOW && !CHECK_FPUCLAMPHACK && (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
+				if (CHECK_FPU_EXTRA_OVERFLOW && /*!CHECK_FPUCLAMPHACK &&*/ (op < 2)) { fpuFloat(regd); fpuFloat(t0reg); }
 				recComOpXMM_to_XMM[op](regd, t0reg);
 			}
 			else {
@@ -875,7 +875,7 @@ FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recSUBhelper(int regd, int regt)
 {
-	if (CHECK_FPU_EXTRA_OVERFLOW && !CHECK_FPUCLAMPHACK) { fpuFloat(regd); fpuFloat(regt); }
+	if (CHECK_FPU_EXTRA_OVERFLOW /*&& !CHECK_FPUCLAMPHACK*/) { fpuFloat(regd); fpuFloat(regt); }
 	SSE_SUBSS_XMM_to_XMM(regd, regt);
 }
 

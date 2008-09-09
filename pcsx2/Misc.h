@@ -69,7 +69,7 @@
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 //#define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x1) // Special Fix for GT4, different clamping for FPU (Note: sets negative infinity to positive fMax when clamping, which the real ps2 doesn't do)
-#define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets infinities to zero)
+#define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
 #define CHECK_VUCLIPHACK (Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
