@@ -811,7 +811,7 @@ static void (*recComOpM32_to_XMM[] )(x86SSERegType, uptr) = {
 int recCommutativeOp(int info, int regd, int op) 
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    if (t0reg == -1) {SysPrintf("FPU: CommutativeOp Allocation Error!\n");}
+    //if (t0reg == -1) {SysPrintf("FPU: CommutativeOp Allocation Error!\n");}
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -882,7 +882,7 @@ void recSUBhelper(int regd, int regt)
 void recSUBop(int info, int regd)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    if (t0reg == -1) {SysPrintf("FPU: SUB Allocation Error!\n");}
+    //if (t0reg == -1) {SysPrintf("FPU: SUB Allocation Error!\n");}
 
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 
@@ -954,7 +954,7 @@ void recDIVhelper1(int regd, int regt)
 	u32 *ajmp32, *bjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (t1reg == -1) {SysPrintf("FPU: DIV Allocation Error!\n");}
+	//if (t1reg == -1) {SysPrintf("FPU: DIV Allocation Error!\n");}
 	if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
 
 	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
@@ -1009,7 +1009,7 @@ void recDIVhelper2(int regd, int regt)
 void recDIV_S_xmm(int info)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    if (t0reg == -1) {SysPrintf("FPU: DIV Allocation Error!\n");}
+    //if (t0reg == -1) {SysPrintf("FPU: DIV Allocation Error!\n");}
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -1141,7 +1141,7 @@ void recRSQRThelper1(int regd, int t0reg)
 	u32 *pjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (t1reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
+	//if (t1reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
 	if (tempReg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n"); tempReg = EAX;}
 
 	AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
@@ -1198,7 +1198,7 @@ void recRSQRThelper2(int regd, int t0reg)
 void recRSQRT_S_xmm(int info)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-	if (t0reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
+	//if (t0reg == -1) {SysPrintf("FPU: RSQRT Allocation Error!\n");}
 	//SysPrintf("FPU: RSQRT\n");
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
