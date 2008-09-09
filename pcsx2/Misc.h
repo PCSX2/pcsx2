@@ -52,7 +52,7 @@
 #define CHECK_DUALCORE (Config.Options&PCSX2_DUALCORE)
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
-//------------ SPEED HACKS!!! ---------------
+//------------ SPEED/MISC HACKS!!! ---------------
 #define CHECK_OVERFLOW (!(Config.Hacks & 0x2))
 #define CHECK_EXTRA_OVERFLOW (Config.Hacks & 0x40) // If enabled, Operands are checked for infinities before being used in the VU recs
 #define CHECK_FPU_OVERFLOW (!(Config.Hacks & 0x800))
@@ -65,6 +65,7 @@
 #define CHECK_FASTBRANCHES (Config.Hacks & 0x80)
 #define CHECK_VU_EXTRA_FLAGS (!(Config.Hacks & 0x100)) // Sets correct flags in the VU recs
 #define CHECK_FPU_EXTRA_FLAGS (!(Config.Hacks & 0x200)) // Sets correct flags in the FPU recs
+#define CHECK_ESCAPE_HACK (Config.Hacks & 0x400)
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 //#define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x1) // Special Fix for GT4, different clamping for FPU (Note: sets negative infinity to positive fMax when clamping, which the real ps2 doesn't do)

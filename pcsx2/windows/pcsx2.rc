@@ -1032,13 +1032,13 @@ BEGIN
     CONTROL         132,IDC_PS2SILVER_RECT,"Static",SS_BITMAP,0,167,70,74
 END
 
-IDD_HACKS DIALOGEX 0, 0, 511, 295
+IDD_HACKS DIALOGEX 0, 0, 511, 313
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCSX2 Speed Hacks"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,205,274,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,261,274,50,14
+    DEFPUSHBUTTON   "OK",IDOK,205,292,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,261,292,50,14
     CONTROL         "EE Sync Hack (x2) - Doubles the cycle rate of the EE. ( Big Speedup in most games! )",IDC_SYNCHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,162,418,10
     CONTROL         "Disable VU Overflow Checks - *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_VU_OVERFLOWHACK,
@@ -1059,12 +1059,14 @@ BEGIN
     CONTROL         "Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )",IDC_DENORMALS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,77,319,10
     GROUPBOX        "Sync Hacks",IDC_STATIC,7,149,497,63
-    GROUPBOX        "Miscellaneous",IDC_STATIC,7,216,497,50
+    GROUPBOX        "Miscellaneous",IDC_STATIC,7,216,497,61
     GROUPBOX        "Flag Setting",IDC_STATIC,7,100,497,41
     CONTROL         "Disable Extra VU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )",IDC_VU_FLAGS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,113,442,10
     CONTROL         "Disable Extra FPU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )",IDC_FPU_FLAGS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,126,414,10
+    CONTROL         "Escape Hack - Use Esc key to fully exit PCSX2.",IDC_ESCHACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,259,421,10
 END
 
 
@@ -1088,7 +1090,7 @@ BEGIN
         RIGHTMARGIN, 504
         VERTGUIDE, 15
         TOPMARGIN, 7
-        BOTTOMMARGIN, 288
+        BOTTOMMARGIN, 306
     END
 END
 #endif    // APSTUDIO_INVOKED

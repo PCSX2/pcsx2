@@ -624,6 +624,8 @@
 #define IDC_VU_CHECK2                   1303
 #define IDC_FPU_FLAGS                   1303
 #define IDC_ROUNDMODE                   1304
+#define IDC_SOUNDHACK2                  1304
+#define IDC_ESCHACK                     1304
 #define IDC_EE_ROUNDMODE0               1305
 #define IDC_EE_ROUNDMODE1               1306
 #define IDC_EE_ROUNDMODE2               1307
