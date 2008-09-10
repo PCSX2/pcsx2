@@ -622,13 +622,10 @@ void CALLBACK KeyEvent(keyEvent* ev)
 #endif
 
 			if (CHECK_ESCAPE_HACK) {
-				//ClosePlugins();
-				//SysClose();
 				PostMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
-				//ReleasePlugins();
-				//needReset = 1;
-				//efile = 0;
-				//exit(0);
+				ClosePlugins();
+				//SysClose();
+				exit(0);
 			}
 			else {
 				ClosePlugins();
