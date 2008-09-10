@@ -622,24 +622,26 @@ void CALLBACK KeyEvent(keyEvent* ev)
 #endif
 
 			if (CHECK_ESCAPE_HACK) {
-				ClosePlugins();
-				SysClose();
+				//ClosePlugins();
+				//SysClose();
+				PostMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
 				//ReleasePlugins();
 				//needReset = 1;
 				//efile = 0;
-				exit(0);
+				//exit(0);
 			}
+			else {
+				ClosePlugins();
 
-			ClosePlugins();
+				if( !UseGui ) {
+					// not using GUI and user just quit, so exit
+					exit(0);
+				}
 
-            if( !UseGui ) {
-                // not using GUI and user just quit, so exit
-                exit(0);
-            }
-
-			CreateMainWindow(SW_SHOWNORMAL);
-			RunGui();
-            nDisableSC = 0;
+				CreateMainWindow(SW_SHOWNORMAL);
+				RunGui();
+				nDisableSC = 0;
+			}
 			break;
 
 		default:
