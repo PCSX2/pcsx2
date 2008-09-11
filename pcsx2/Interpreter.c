@@ -121,6 +121,7 @@ __inline void doBranch(u32 tar) {
 }
 
 void intDoBranch(u32 target) {
+	SysPrintf("Interpreter Branch \n");
 	doBranch(target);
 }
 

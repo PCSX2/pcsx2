@@ -339,6 +339,7 @@ void VXITOP()  { VU0.code = cpuRegs.code; _vuXITOP(&VU0); }
 
 #define BC2(cond) \
 	if (CP2COND cond) { \
+		SysPrintf("VU0 Macro Branch \n"); \
 		intDoBranch(_BranchTarget_); \
 	}
 
@@ -347,6 +348,7 @@ void BC2T() { BC2(== 1);}
 
 #define BC2L(cond) \
 	if (CP2COND cond) { \
+		SysPrintf("VU0 Macro Branch \n"); \
 		intDoBranch(_BranchTarget_); \
 	} else cpuRegs.pc+= 4;
 

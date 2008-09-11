@@ -1294,7 +1294,7 @@ static vFloat vFloats2[16] = { //regTemp is modified
 
 PCSX2_ALIGNED16(u64 vuFloatData[2]);
 PCSX2_ALIGNED16(u64 vuFloatData2[2]);
-// Makes NaN == 0; Very Slow - Use only for debugging
+// Makes NaN == 0, Infinities stay the same; Very Slow - Use only for debugging
 void vuFloatExtra( int regd, int XYZW) {
 	int t1reg = (regd == 0) ? (regd + 1) : (regd - 1);
 	int t2reg = (regd <= 1) ? (regd + 2) : (regd - 2);
@@ -1356,11 +1356,8 @@ void vuFloat3(uptr x86ptr)
 void CheckForOverflow(VURegs *VU, int info, int regd)
 {
 	//testWhenOverflow(info, regd, EEREC_TEMP);
-	//CheckForOverflow_(regd, EEREC_TEMP, _X_Y_Z_W);
-	if (EEREC_TEMP != regd) {
-		//testWhenOverflow(info, regd, EEREC_TEMP);
+	if (EEREC_TEMP != regd)
 		vuFloat2(regd, EEREC_TEMP, _X_Y_Z_W);
-	}
 	else
 		vuFloat( info, regd, _X_Y_Z_W);
 }
@@ -1433,8 +1430,9 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 			SSE_MINPS_M128_to_XMM(EEREC_TEMP, (uptr)g_maxvals);
 			SSE_MAXPS_M128_to_XMM(EEREC_TEMP, (uptr)g_minvals);
 			SSE_CMPNEPS_XMM_to_XMM(EEREC_TEMP, reg); // If they're not equal, then overflow has occured
-
+			
 			SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
+			vuFloat2(reg, EEREC_TEMP, _X_Y_Z_W); // Clamp overflowed vectors that were modified
 
 			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 			pjmp = JZ8(0); // Skip if none are
@@ -1554,6 +1552,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 			SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occured
 
 			SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
+			vuFloat(info, reg, _X_Y_Z_W); // Clamp overflowed vectors that were modified
 
 			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 			pjmp = JZ8(0); // Skip if none are
@@ -1749,7 +1748,7 @@ void recVUMI_ADD(VURegs *VU, int info)
 //	if( _Fd_ == 0 && (_Fs_ == 0 || _Ft_ == 0) )
 //		info |= PROCESS_VU_UPDATEFLAGS;
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
@@ -1809,7 +1808,7 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 
 	//if( addr == VU_REGQ_ADDR ) CheckForOverflow(VU, info, EEREC_D);
 }
@@ -1876,7 +1875,7 @@ void recVUMI_ADD_xyzw(VURegs *VU, int xyzw, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_ADDi(VURegs *VU, int info) { recVUMI_ADD_iq(VU, VU_VI_ADDR(REG_I, 1), info); }
@@ -1916,7 +1915,7 @@ void recVUMI_ADDA(VURegs *VU, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_ADDA_iq(VURegs *VU, uptr addr, int info)
@@ -1967,7 +1966,7 @@ void recVUMI_ADDA_iq(VURegs *VU, uptr addr, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
@@ -2011,7 +2010,7 @@ void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_ADDAi(VURegs *VU, int info) { recVUMI_ADDA_iq(VU, VU_VI_ADDR(REG_I, 1), info); }
@@ -2066,7 +2065,7 @@ void recVUMI_SUB(VURegs *VU, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 	// neopets works better with this?
 	//CheckForOverflow(info, EEREC_D);
 }
@@ -2142,7 +2141,7 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 
 	//if( addr == VU_REGQ_ADDR ) CheckForOverflow(VU, info, EEREC_D);
 }
@@ -2274,7 +2273,7 @@ void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_SUBi(VURegs *VU, int info) { recVUMI_SUB_iq(VU, VU_VI_ADDR(REG_I, 1), info); }
@@ -2327,7 +2326,7 @@ void recVUMI_SUBA(VURegs *VU, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
@@ -2385,7 +2384,7 @@ void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
@@ -2433,7 +2432,7 @@ void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
 		}
 	}
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_SUBAi(VURegs *VU, int info) { recVUMI_SUBA_iq(VU, VU_VI_ADDR(REG_I, 1), info); }
@@ -2612,7 +2611,7 @@ void recVUMI_MUL(VURegs *VU, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MUL_toD(VU, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MUL_iq(VURegs *VU, int addr, int info)
@@ -2620,7 +2619,7 @@ void recVUMI_MUL_iq(VURegs *VU, int addr, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MUL_iq_toD(VU, addr, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 	// spacefisherman needs overflow checking on MULi.z
 	//if( addr == VU_REGQ_ADDR || _Z )
 	//	CheckForOverflow(VU, info, EEREC_D);
@@ -2631,7 +2630,7 @@ void recVUMI_MUL_xyzw(VURegs *VU, int xyzw, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MUL_xyzw_toD(VU, xyzw, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MULi(VURegs *VU, int info) { recVUMI_MUL_iq(VU, VU_VI_ADDR(REG_I, 1), info); }
@@ -2645,21 +2644,21 @@ void recVUMI_MULA( VURegs *VU, int info )
 {
 	recVUMI_MUL_toD(VU, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MULA_iq(VURegs *VU, int addr, int info)
 {	
 	recVUMI_MUL_iq_toD(VU, addr, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MULA_xyzw(VURegs *VU, int xyzw, int info)
 {
 	recVUMI_MUL_xyzw_toD(VU, xyzw, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MULAi(VURegs *VU, int info) { recVUMI_MULA_iq(VU, VU_VI_ADDR(REG_I, 1), info); }
@@ -2940,7 +2939,7 @@ void recVUMI_MADD(VURegs *VU, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MADD_toD(VU, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MADD_iq(VURegs *VU, int addr, int info)
@@ -2948,7 +2947,7 @@ void recVUMI_MADD_iq(VURegs *VU, int addr, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MADD_iq_toD(VU, addr, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 
 	//if( addr == VU_REGQ_ADDR ) CheckForOverflow(VU, info, EEREC_D);
 }
@@ -2958,7 +2957,7 @@ void recVUMI_MADD_xyzw(VURegs *VU, int xyzw, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MADD_xyzw_toD(VU, xyzw, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 
 	// super bust-a-move arrows
 	//CheckForOverflow(VU, info, EEREC_D);
@@ -2975,49 +2974,49 @@ void recVUMI_MADDA( VURegs *VU, int info )
 {
 	recVUMI_MADD_toD(VU, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MADDAi( VURegs *VU , int info)
 {
 	recVUMI_MADD_iq_toD( VU, VU_VI_ADDR(REG_I, 1), EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MADDAq( VURegs *VU , int info)
 {
 	recVUMI_MADD_iq_toD( VU, VU_REGQ_ADDR, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MADDAx( VURegs *VU , int info)
 {
 	recVUMI_MADD_xyzw_toD(VU, 0, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MADDAy( VURegs *VU , int info)
 {
 	recVUMI_MADD_xyzw_toD(VU, 1, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MADDAz( VURegs *VU , int info)
 {
 	recVUMI_MADD_xyzw_toD(VU, 2, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MADDAw( VURegs *VU , int info)
 {
 	recVUMI_MADD_xyzw_toD(VU, 3, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
@@ -3157,7 +3156,7 @@ void recVUMI_MSUB(VURegs *VU, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_toD(VU, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MSUB_iq(VURegs *VU, int addr, int info)
@@ -3165,7 +3164,7 @@ void recVUMI_MSUB_iq(VURegs *VU, int addr, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_iq_toD(VU, EEREC_D, addr, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 
 	//if( addr == VU_REGQ_ADDR ) CheckForOverflow(VU, info, EEREC_D);
 }
@@ -3177,7 +3176,7 @@ void recVUMI_MSUBx(VURegs *VU, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 0, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MSUBy(VURegs *VU, int info)
@@ -3185,7 +3184,7 @@ void recVUMI_MSUBy(VURegs *VU, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 1, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MSUBz(VURegs *VU, int info)
@@ -3193,7 +3192,7 @@ void recVUMI_MSUBz(VURegs *VU, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 2, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MSUBw(VURegs *VU, int info)
@@ -3201,56 +3200,56 @@ void recVUMI_MSUBw(VURegs *VU, int info)
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 3, info);
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_MSUBA( VURegs *VU, int info )
 {
 	recVUMI_MSUB_toD(VU, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MSUBAi( VURegs *VU, int info )
 {
 	recVUMI_MSUB_iq_toD( VU, EEREC_ACC, VU_VI_ADDR(REG_I, 1), info );
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MSUBAq( VURegs *VU, int info )
 {
 	recVUMI_MSUB_iq_toD( VU, EEREC_ACC, VU_REGQ_ADDR, info );
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MSUBAx( VURegs *VU, int info )
 {
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 0, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MSUBAy( VURegs *VU, int info )
 {
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 1, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MSUBAz( VURegs *VU, int info )
 {
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 2, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MSUBAw( VURegs *VU, int info )
 {
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 3, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_MAX(VURegs *VU, int info)
@@ -3582,7 +3581,7 @@ void recVUMI_OPMULA( VURegs *VU, int info )
 		SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0xC9);
 
 	recUpdateFlags(VU, EEREC_ACC, info);
-	CheckForOverflow(VU, info, EEREC_ACC);
+	//CheckForOverflow(VU, info, EEREC_ACC);
 }
 
 void recVUMI_OPMSUB( VURegs *VU, int info )
@@ -3608,7 +3607,7 @@ void recVUMI_OPMSUB( VURegs *VU, int info )
 		SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0xC9);
 
 	recUpdateFlags(VU, EEREC_D, info);
-	CheckForOverflow(VU, info, EEREC_D);
+	//CheckForOverflow(VU, info, EEREC_D);
 }
 
 void recVUMI_NOP( VURegs *VU, int info ) 
@@ -4276,7 +4275,7 @@ void recVUMI_SQRT( VURegs *VU, int info )
 		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Ft_].UL[_Ftf_]);
 
 	/* Check for negative divide */
-	XOR32RtoR(vftemp, vftemp);
+	//XOR32RtoR(vftemp, vftemp);
 	SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_TEMP);
 	AND32ItoR(vftemp, 1);  //Check sign
 	pjmp = JZ8(0); //Skip if none are
@@ -4284,10 +4283,8 @@ void recVUMI_SQRT( VURegs *VU, int info )
 		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //So we do a cardinal sqrt
 	x86SetJ8(pjmp);
 
-	if (CHECK_EXTRA_OVERFLOW) // Clamp Infinities to Fmax
-		SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals);
+	SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); //Clamp infinities (only need to do positive clamp since EEREC_TEMP is positive)
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 
 	_freeX86reg(vftemp);
@@ -4311,7 +4308,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 		SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 
 	/* Check for negative divide */
-	XOR32RtoR(vftemp, vftemp);
+	//XOR32RtoR(vftemp, vftemp);
 	SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_TEMP);
 	AND32ItoR(vftemp, 1);  //Check sign
 	ajmp32 = JZ32(0); //Skip if none are
@@ -4331,7 +4328,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 		//SysPrintf("RSQRT Opcode Part 1 \n");
 		// Ft can still be zero here! so we need to check if its zero and set the correct flag.
 		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		XOR32RtoR(vftemp, vftemp);
+		//XOR32RtoR(vftemp, vftemp);
 		SSE_CMPEQSS_XMM_to_XMM(t1reg, EEREC_TEMP); // Set all F's if each vector is zero
 
 		SSE_MOVMSKPS_XMM_to_R32(vftemp, t1reg); // Move the sign bits of the previous calculation
@@ -4369,7 +4366,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 
 		// Ft can still be zero here! so we need to check if its zero and set the correct flag.
 		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		XOR32RtoR(vftemp, vftemp);
+		//XOR32RtoR(vftemp, vftemp);
 		SSE_CMPEQSS_XMM_to_XMM(t1reg, EEREC_TEMP); // Set all F's if each vector is zero
 
 		SSE_MOVMSKPS_XMM_to_R32(vftemp, t1reg); // Move the sign bits of the previous calculation
@@ -5976,26 +5973,57 @@ void recVUMI_ESUM( VURegs *VU, int info )
 
 void recVUMI_ERCPR( VURegs *VU, int info )
 {
+	int t1reg;
 	assert( VU == &VU1 );
-
+	
+	SysPrintf("VU1: ERCPR\n");
 	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
 
 	// don't use RCPSS (very bad precision)
 	if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
-		if( _Fsf_ ) SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, (0xe4e4>>(2*_Fsf_))&0xff);
-		SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-
-		// revert
-		if( _Fsf_ ) SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, (0xe4e4>>(8-2*_Fsf_))&0xff);
+		switch ( _Fsf_ ) {
+			case 0: //0001
+				if (CHECK_EXTRA_OVERFLOW) vuFloat(info, EEREC_S, 8);
+				SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				break;
+			case 1: //0010
+				SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
+				if (CHECK_EXTRA_OVERFLOW) vuFloat(info, EEREC_S, 8);
+				SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
+				break;
+			case 2: //0100
+				SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xc6);
+				if (CHECK_EXTRA_OVERFLOW) vuFloat(info, EEREC_S, 8);
+				SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xc6);
+				break;
+			case 3: //1000
+				SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
+				if (CHECK_EXTRA_OVERFLOW) vuFloat(info, EEREC_S, 8);
+				SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+				SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
+				break;
+		}
 	}
 	else {
-		SSE_DIVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
+		if (CHECK_EXTRA_OVERFLOW) {
+			t1reg = _vuGetTempXMMreg(info);
+			if (t1reg >= 0) {
+				SSE_MOVSS_M32_to_XMM(t1reg, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
+				vuFloat(info, t1reg, 8);
+				SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, t1reg);
+				_freeXMMreg(t1reg);
+			}
+			else {
+				SysPrintf("VU1: ERCPR Operan Clamp Skipped\n");
+				SSE_DIVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
+			}
+		}
+		else SSE_DIVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
 	}
 
-	CheckForOverflowSS_(EEREC_TEMP, EEREC_D);
-	//SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]);
-	//SSE_MAXSS_M32_to_XMM(EEREC_TEMP, (uptr)&g_minvals[0]);
-	
+	vuFloat(info, EEREC_TEMP, 8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 
@@ -6003,138 +6031,51 @@ void recVUMI_ESQRT( VURegs *VU, int info )
 {
 	assert( VU == &VU1 );
 
+	SysPrintf("VU1: ESQRT\n");
 	if( _Fsf_ ) {
 		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
+			vuFloat(info, EEREC_TEMP, 8);
 			SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 		}
 		else {
-			SSE_SQRTSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
+			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
+			vuFloat(info, EEREC_TEMP, 8);
+			SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 		}
 	}
-	else SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+	else {
+		vuFloat(info, EEREC_S, 8);
+		SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+	}
 
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 
-//below code isn't used anymore, scheduled for deletion
-
-//#if defined(_MSC_VER) && !defined(__x86_64__)
-//
-//static u32 s_saveecx, s_saveedx, s_saveebx, s_saveesi, s_saveedi, s_saveebp;
-//float tempsqrt = 0;
-//extern float vuDouble(u32 f);
-//__declspec(naked) void tempERSQRT()
-//{
-//    __asm {
-//		mov s_saveecx, ecx
-//		mov s_saveedx, edx
-//		mov s_saveebx, ebx
-//		mov s_saveesi, esi
-//		mov s_saveedi, edi
-//		mov s_saveebp, ebp
-//	}
-//
-//	if (tempsqrt >= 0) {
-//		tempsqrt = fpusqrtf(tempsqrt);
-//		if (tempsqrt) {
-//			tempsqrt = 1.0f / tempsqrt; 
-//		}
-//        tempsqrt = vuDouble(*(u32*)&tempsqrt);
-//	}
-//
-//    __asm {
-//		mov ecx, s_saveecx
-//		mov edx, s_saveedx
-//		mov ebx, s_saveebx
-//		mov esi, s_saveesi
-//		mov edi, s_saveedi
-//		mov ebp, s_saveebp
-//		ret
-//	}
-//}
-//#endif
-
 void recVUMI_ERSQRT( VURegs *VU, int info )
 {
-		int t1reg;
+	int t1reg = _vuGetTempXMMreg(info);
+	int vftemp = ALLOCTEMPX86(MODE_8BITREG);
  
 	assert( VU == &VU1 );
- 
-//    if( _Fsf_ ) {
-//		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
-//			_unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);        
-//            SSE_MOVSS_XMM_to_M32((uptr)&tempsqrt, EEREC_TEMP);
-//		}
-//		else {
-//            MOV32MtoR(EAX, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
-//            MOV32RtoM((uptr)&tempsqrt, EAX);
-//		}
-//	}
-//    else {
-//        SSE_MOVSS_XMM_to_M32((uptr)&tempsqrt, EEREC_S);
-//    }
-//
-//    
-//    CALLFunc((uptr)tempERSQRT);
-//    MOV32MtoR(EAX, (uptr)&tempsqrt);
-//    MOV32RtoM(VU_VI_ADDR(REG_P, 0), EAX);
-/*
-    // need to explicitly check for 0 (naruto ultimate ninja)
-	if( _Fsf_ ) {
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
-			//int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			_unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
-            //SSE_XORPS_XMM_to_XMM(EEREC_D, EEREC_D);
-            //SSE_CMPNESS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			SysPrintf("ERSQRT\n");
-			SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
-			SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_P, 0));
-            //SSE_ANDPS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-		}
-		else {
-            //SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-            //CMP32ItoM((uptr)&VU->VF[_Fs_].UL[_Fsf_], 0);
-            //j8Ptr[0] = JE8(0);
-			SysPrintf("ERSQRT2\n");
-			SSE_RSQRTSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
-            //x86SetJ8(j8Ptr[0]);
-		}
-	}
-    else {
-		SysPrintf("ERSQRT3\n");
-        SSE_RSQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-        //SSE_XORPS_XMM_to_XMM(EEREC_D, EEREC_D);
-        //SSE_CMPNESS_XMM_to_XMM(EEREC_D, EEREC_S);
-        //SSE_ANDPS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-    }
+	SysPrintf("VU1: ERSQRT\n");
 
-*/
-	//SysPrintf("ERSQRT\n");
 	if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
-		if( _Fsf_ ) {
-			_unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
-		}
-		else {
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		}
+		if( _Fsf_ ) _unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
+		else SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 	}
-	else {
-		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
-	}
+	else SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
  
-	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
- 
-	t1reg = _vuGetTempXMMreg(info);
- 
+	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); // abs(x)
+	SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); // Clamp Infinities to Fmax
+	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // SQRT(abs(x))
+
 	if( t1reg >= 0 )
 	{
 		SSE_MOVSS_M32_to_XMM(t1reg, (uptr)&VU->VF[0].UL[3]);
 		SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP);
+		vuFloat(info, t1reg, 8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), t1reg);
- 
 		_freeXMMreg(t1reg);
 	}
 	else
@@ -6142,8 +6083,10 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
 		SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_P, 0));
+		vuFloat(info, EEREC_TEMP, 8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 	}
+	_freeX86reg(vftemp);
 }
 
 void recVUMI_ESIN( VURegs *VU, int info )
