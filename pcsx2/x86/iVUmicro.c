@@ -5805,7 +5805,7 @@ void vuSqSumXYZ(int regd, int regs, int regtemp)
 			//SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xC6);
 		}
 	}
-	
+
 	//SysPrintf("SUMXYZ\n");
 }
 
@@ -5886,8 +5886,10 @@ void recVUMI_ERSADD( VURegs *VU, int info )
 
 void recVUMI_ELENG( VURegs *VU, int info )
 {
+	SysPrintf("VU: ELENG\n");
 	assert( VU == &VU1 );
 	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
+	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
 	
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
@@ -5895,9 +5897,10 @@ void recVUMI_ELENG( VURegs *VU, int info )
 
 void recVUMI_ERLENG( VURegs *VU, int info )
 {
+	SysPrintf("VU: ERLENG\n");
 	assert( VU == &VU1 );
 	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
-	//SysPrintf("ERLENG\n");
+	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // sqrt(x^2 + y^2 + z^2)
 	SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP); // d <- sqrt(x^2 + y^2 + z^2)
 	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // temp <- 1
@@ -5953,6 +5956,7 @@ void recVUMI_EATANxz( VURegs *VU, int info )
 
 void recVUMI_ESUM( VURegs *VU, int info )
 {
+	SysPrintf("VU: ESUM\n");
 	assert( VU == &VU1 );
 
 	if( cpucaps.hasStreamingSIMD3Extensions ) {
@@ -5961,13 +5965,14 @@ void recVUMI_ESUM( VURegs *VU, int info )
 		SSE3_HADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 	}
 	else {
-		SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S); // y+w, x+z
-		SSE_UNPCKLPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // y+w, y+w, x+z, x+z
-		SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-		SSE_ADDSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
+		SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S); // z, w, z, w
+		SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S); // z+x, w+y, z+z, w+w
+		SSE_UNPCKLPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // z+x, z+x, w+y, w+y
+		SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_TEMP); // w+y, w+y, w+y, w+y
+		SSE_ADDSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // x+y+z+w, w+y, w+y, w+y 
 	}
 
+	vuFloat(info, EEREC_TEMP, 8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 
