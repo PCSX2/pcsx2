@@ -68,7 +68,7 @@
 #define CHECK_ESCAPE_HACK (Config.Hacks & 0x400)
 
 //------------ SPECIAL GAME FIXES!!! ---------------
-//#define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x1) // Special Fix for GT4, different clamping for FPU (Note: sets negative infinity to positive fMax when clamping, which the real ps2 doesn't do)
+#define SLOWDVD (Config.GameFixes & 0x1) // Slow DVD access times, for games that are strict about them (Tales of the Abyss)
 #define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
 #define CHECK_VUCLIPHACK (Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
 

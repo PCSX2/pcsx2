@@ -671,35 +671,56 @@ void cdvdReset()
 #endif
 
 }
+
 void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
-	int readspeed = 0;	// 1 Sector size
-	int amount = 0;		// Total bytes transfered at 1x speed
-
-	//static int last_sector = 0;
-	//int start_sector = cdvd.Sector;
-	//int sector_difference = abs(start_sector - last_sector);
-	amount = cdvd.BlockSize; // in Bytes
-
-	if(mode == 0)
-		readspeed = ((PSXCLK /1382400)/* 1 Byte Time @ x1 NOTE: was (PSXCLK /1382400)*/ * amount) / cdvd.Speed; //1350KB = dvd x 1
-	else
-		readspeed = ((PSXCLK /153600)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //150KB = cd x 1
 	
-	//add cycles due to access times, based on try and error
-	//fixes most of Tales of the Abyss crashes and some Digital Devil Saga videos
-	//slightly longer loading times now (shouldnt be noticable)
-	/*if (sector_difference > 128 && sector_difference < 1000000){
-		readspeed += (sector_difference+sector_difference) / 32;
-	}
-	else if (sector_difference >= 1000000){
-		readspeed += (sector_difference+sector_difference) / 4;
-	}*/
+	if (SLOWDVD){
+		int readspeed = 0;	// 1 Sector size
+		int amount = 0;		// Total bytes transfered at 1x speed
 
-	//simulates spin-up time, fixes hdloader
-	cdvdReadTime = readspeed;
-	//SysPrintf("secdiff = %d cdvdReadTime = %d\n", sector_difference, cdvdReadTime);
-	//SysPrintf("CDVD Cnt Time = %d\n", cdvd.nSectors);
-	//last_sector = start_sector;
+		static int last_sector = 0;
+		int start_sector = cdvd.Sector;
+		int sector_difference = abs(start_sector - last_sector);
+		amount = cdvd.BlockSize; // in Bytes
+
+		if(mode == 0)
+			readspeed = ((PSXCLK /1382400)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //1350KB = dvd x 1
+		else
+			readspeed = ((PSXCLK /153600)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //150KB = cd x 1
+	
+		//add cycles due to access times, based on try and error
+		//fixes most of Tales of the Abyss crashes and some Digital Devil Saga videos
+		//slightly longer loading times now
+		if (sector_difference > 128 && sector_difference < 1000000){
+			readspeed += (sector_difference+sector_difference) / 32;
+		}
+		else if (sector_difference >= 1000000){
+			readspeed += (sector_difference+sector_difference) / 4;
+		}
+
+		//simulates spin-up time, fixes hdloader
+		if (cdvd.Sector == 16 /* DVD TOC */) readspeed = 30000;
+		cdvdReadTime = readspeed;
+		//SysPrintf("secdiff = %d cdvdReadTime = %d\n", sector_difference, cdvdReadTime);
+		last_sector = start_sector;
+	}
+	else {	
+		int readspeed = 0;	// 1 Sector size
+		int amount = 0;		// Total bytes transfered at 1x speed
+
+		amount = cdvd.BlockSize; // in Bytes
+
+		if(mode == 0)
+			readspeed = ((PSXCLK /1382400)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //1350KB = dvd x 1
+		else
+			readspeed = ((PSXCLK /153600)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //150KB = cd x 1
+
+		//simulates spin-up time, fixes hdloader
+		if (cdvd.Sector == 16 /* DVD TOC */) readspeed = 30000;
+		cdvdReadTime = readspeed;
+		//SysPrintf("secdiff = %d cdvdReadTime = %d\n", sector_difference, cdvdReadTime);
+	}
+
 }
 
 //void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
