@@ -3723,8 +3723,7 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	u32 clipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 0);
 	u32 prevclipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 2);
 
-	if( clipaddr == 0 ) {
-		// battle star has a clip right before fcset
+	if( clipaddr == 0 ) { // battle star has a clip right before fcset
 		SysPrintf("skipping vu clip\n");
 		return;
 	}
@@ -3737,8 +3736,7 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	//if ( (x86temp1 == 0) || (x86temp2 == 0) ) SysPrintf("VU CLIP Allocation Error: EAX being allocated! \n");
 
 	if( _Ft_ == 0 ) {
-		// all 1s
-		SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&s_fones[0]);
+		SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&s_fones[0]); // all 1s
 		SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)&s_fones[4]);
 	}
 	else {
@@ -4415,10 +4413,9 @@ void _addISIMMtoIT(VURegs *VU, s16 imm, int info)
 	ftreg = ALLOCVI(_Ft_, MODE_WRITE);
 
 	if ( _Ft_ == _Fs_ ) {
-		if (imm != 0 ) {
-			ADD16ItoR(ftreg, imm);
-		}
-	} else {
+		if (imm != 0 ) ADD16ItoR(ftreg, imm);
+	} 
+	else {
 		if( imm ) {
 			LEA32RtoR(ftreg, fsreg, imm);
 			MOVZX32R16toR(ftreg, ftreg);
@@ -4469,18 +4466,14 @@ void recVUMI_IADD( VURegs *VU, int info )
 		if( (ftreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Ft_, MODE_READ)) >= 0 ) {
 			if( fdreg != ftreg ) MOV32RtoR(fdreg, ftreg);
 		}
-		else {
-			MOVZX32M16toR(fdreg, VU_VI_ADDR(_Ft_, 1));
-		}
+		else MOVZX32M16toR(fdreg, VU_VI_ADDR(_Ft_, 1));
 	}
 	else if ( _Ft_ == 0 )
 	{
 		if( (fsreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Fs_, MODE_READ)) >= 0 ) {
 			if( fdreg != fsreg ) MOV32RtoR(fdreg, fsreg);
 		}
-		else {
-			MOVZX32M16toR(fdreg, VU_VI_ADDR(_Fs_, 1));
-		}
+		else MOVZX32M16toR(fdreg, VU_VI_ADDR(_Fs_, 1));
 	}
 	else {
 		//ADD_VI_NEEDED(_Ft_);
@@ -4540,18 +4533,14 @@ void recVUMI_IOR( VURegs *VU, int info )
 		if( (ftreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Ft_, MODE_READ)) >= 0 ) {
 			if( fdreg != ftreg ) MOV32RtoR(fdreg, ftreg);
 		}
-		else {
-			MOVZX32M16toR(fdreg, VU_VI_ADDR(_Ft_, 1));
-		}
+		else MOVZX32M16toR(fdreg, VU_VI_ADDR(_Ft_, 1));
 	}
 	else if ( _Ft_ == 0 )
 	{
 		if( (fsreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Fs_, MODE_READ)) >= 0 ) {
 			if( fdreg != fsreg ) MOV32RtoR(fdreg, fsreg);
 		}
-		else {
-			MOVZX32M16toR(fdreg, VU_VI_ADDR(_Fs_, 1));
-		}
+		else MOVZX32M16toR(fdreg, VU_VI_ADDR(_Fs_, 1));
 	}
 	else
 	{
@@ -4569,7 +4558,7 @@ void recVUMI_IOR( VURegs *VU, int info )
 
 void recVUMI_ISUB( VURegs *VU, int info )
 {
-   int fdreg, fsreg = -1, ftreg = -1;
+	int fdreg, fsreg = -1, ftreg = -1;
 	if ( _Fd_ == 0 ) return;
 
 	if ( ( _Ft_ == 0 ) && ( _Fs_ == 0 ) ) {
@@ -4587,9 +4576,7 @@ void recVUMI_ISUB( VURegs *VU, int info )
 		if( (ftreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Ft_, MODE_READ)) >= 0 ) {
 			if( fdreg != ftreg ) MOV32RtoR(fdreg, ftreg);
 		}
-		else {
-			MOVZX32M16toR(fdreg, VU_VI_ADDR(_Ft_, 1));
-		}
+		else MOVZX32M16toR(fdreg, VU_VI_ADDR(_Ft_, 1));
 		NEG16R(fdreg);
 	}
 	else if ( _Ft_ == 0 )
@@ -4597,9 +4584,7 @@ void recVUMI_ISUB( VURegs *VU, int info )
 		if( (fsreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Fs_, MODE_READ)) >= 0 ) {
 			if( fdreg != fsreg ) MOV32RtoR(fdreg, fsreg);
 		}
-		else {
-			MOVZX32M16toR(fdreg, VU_VI_ADDR(_Fs_, 1));
-		}
+		else MOVZX32M16toR(fdreg, VU_VI_ADDR(_Fs_, 1));
 	}
 	else
 	{
@@ -5568,14 +5553,9 @@ void recVUMI_FCGET( VURegs *VU, int info )
 static s32 _recbranchAddr(VURegs * VU)
 {
 	bpc = pc + (_Imm11_ << 3); 
-	if (bpc < 0) {
-		bpc = pc + (_UImm11_ << 3); 
-	}
-	if (VU == &VU1) {
-		bpc&= 0x3fff;
-	} else {
-		bpc&= 0x0fff;
-	}
+
+	if (bpc < 0) bpc = pc + (_UImm11_ << 3);
+	bpc&= (VU == &VU1) ? 0x3fff: 0x0fff;
 
 	return bpc;
 }
@@ -5813,9 +5793,8 @@ void recVUMI_ESADD( VURegs *VU, int info)
 {
 	assert( VU == &VU1 );
 	//SysPrintf("ESADD\n");
-	if( EEREC_TEMP == EEREC_D ) {
+	if( EEREC_TEMP == EEREC_D ) { // special code to reset P (don't know if this is still useful!)
 		SysPrintf("ESADD: Resetting P reg!!!\n");
-		// special code to reset P (don't know if this is still useful)
 		MOV32ItoM(VU_VI_ADDR(REG_P, 0), 0);
 		return;
 	}
@@ -5886,7 +5865,7 @@ void recVUMI_ERSADD( VURegs *VU, int info )
 
 void recVUMI_ELENG( VURegs *VU, int info )
 {
-	SysPrintf("VU: ELENG\n");
+	//SysPrintf("VU: ELENG\n");
 	assert( VU == &VU1 );
 	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
@@ -5897,7 +5876,7 @@ void recVUMI_ELENG( VURegs *VU, int info )
 
 void recVUMI_ERLENG( VURegs *VU, int info )
 {
-	SysPrintf("VU: ERLENG\n");
+	//SysPrintf("VU: ERLENG\n");
 	assert( VU == &VU1 );
 	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
@@ -5905,7 +5884,7 @@ void recVUMI_ERLENG( VURegs *VU, int info )
 	SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP); // d <- sqrt(x^2 + y^2 + z^2)
 	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // temp <- 1
 	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // temp = 1 / sqrt(x^2 + y^2 + z^2)
-	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
+	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); // Only need to do positive clamp
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 
@@ -5956,7 +5935,7 @@ void recVUMI_EATANxz( VURegs *VU, int info )
 
 void recVUMI_ESUM( VURegs *VU, int info )
 {
-	SysPrintf("VU: ESUM\n");
+	//SysPrintf("VU: ESUM\n");
 	assert( VU == &VU1 );
 
 	if( cpucaps.hasStreamingSIMD3Extensions ) {
@@ -5981,7 +5960,7 @@ void recVUMI_ERCPR( VURegs *VU, int info )
 	int t1reg;
 	assert( VU == &VU1 );
 	
-	SysPrintf("VU1: ERCPR\n");
+	//SysPrintf("VU1: ERCPR\n");
 	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
 
 	// don't use RCPSS (very bad precision)
@@ -6036,7 +6015,7 @@ void recVUMI_ESQRT( VURegs *VU, int info )
 {
 	assert( VU == &VU1 );
 
-	SysPrintf("VU1: ESQRT\n");
+	//SysPrintf("VU1: ESQRT\n");
 	if( _Fsf_ ) {
 		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
@@ -6063,7 +6042,7 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 	int vftemp = ALLOCTEMPX86(MODE_8BITREG);
  
 	assert( VU == &VU1 );
-	SysPrintf("VU1: ERSQRT\n");
+	//SysPrintf("VU1: ERSQRT\n");
 
 	if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
 		if( _Fsf_ ) _unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
