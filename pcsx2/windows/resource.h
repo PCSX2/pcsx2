@@ -2,6 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by pcsx2.rc
 //
+#define IDCANCEL2                       3
+#define IDDEFAULT                       3
 #define IDR_MENU                        101
 #define IDD_CONFIG                      101
 #define IDD_MCDCONF                     102

@@ -1449,8 +1449,8 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 ////////////////////////////////////////////////////
 extern u8 g_MACFlagTransform[256]; // for vus
 
-u32 g_sseMXCSR = 0x9fc0; //0x9fc0 disable all exception, round to 0, flush to 0
-u32 g_sseVUMXCSR = 0x7f80;
+u32 g_sseMXCSR = DEFAULT_sseMXCSR; 
+u32 g_sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 {

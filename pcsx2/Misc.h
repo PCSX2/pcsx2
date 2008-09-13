@@ -66,23 +66,18 @@
 #define CHECK_VU_EXTRA_FLAGS (!(Config.Hacks & 0x100)) // Sets correct flags in the VU recs
 #define CHECK_FPU_EXTRA_FLAGS (!(Config.Hacks & 0x200)) // Sets correct flags in the FPU recs
 #define CHECK_ESCAPE_HACK (Config.Hacks & 0x400)
-
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define SLOWDVD (Config.GameFixes & 0x1) // Slow DVD access times, for games that are strict about them (Tales of the Abyss)
 #define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
 #define CHECK_VUCLIPHACK (Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
+//------------ DEFAULT sseMXCSR VALUES!!! ---------------
+#define DEFAULT_sseMXCSR 0x9fc0 //disable all exception, round to 0, flush to 0
+#define DEFAULT_sseVUMXCSR 0x7f80 //disable all exception
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
 
-//#ifdef PCSX2_DEVBUILD
 #define CHECK_VU0REC (Config.Options&PCSX2_VU0REC)
 #define CHECK_VU1REC (Config.Options&PCSX2_VU1REC)
-//#else
-//// force to VU recs all the time
-//#define CHECK_VU0REC 1
-//#define CHECK_VU1REC 1
-//
-//#endif
 
 typedef struct {
 	char Bios[256];

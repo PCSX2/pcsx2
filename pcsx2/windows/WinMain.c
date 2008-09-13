@@ -464,6 +464,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		strcpy(Config.PluginsDir, "Plugins\\");
 		Config.Patch = 1;
         Config.Options = PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC;
+		Config.sseMXCSR = g_sseMXCSR;
+		Config.sseVUMXCSR = g_sseVUMXCSR;
+
 
 		SysMessage(_("Pcsx2 needs to be configured"));
 		Pcsx2Configure(NULL);
@@ -850,6 +853,21 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 					
 					EndDialog(hDlg, TRUE);
 					break;
+
+				case IDDEFAULT:
+
+					Config.sseMXCSR = DEFAULT_sseMXCSR;
+					Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+
+					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ( (Config.sseMXCSR & 0x6000) >> 13));
+					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( (Config.sseVUMXCSR & 0x6000) >> 13));
+
+					CheckDlgButton(hDlg, IDC_EE_CHECK1, (Config.sseMXCSR & 0x8000) ? TRUE : FALSE);
+					CheckDlgButton(hDlg, IDC_VU_CHECK1, (Config.sseVUMXCSR & 0x8000) ? TRUE : FALSE);
+
+					CheckDlgButton(hDlg, IDC_EE_CHECK2, (Config.sseMXCSR & 0x0040) ? TRUE : FALSE);
+					CheckDlgButton(hDlg, IDC_VU_CHECK2, (Config.sseVUMXCSR & 0x0040) ? TRUE : FALSE);
+					break;
 					
 				case IDC_EE_ROUNDMODE0:
 				case IDC_EE_ROUNDMODE1:
@@ -866,7 +884,6 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( LOWORD(wParam) % IDC_VU_ROUNDMODE0 )  );
 					break;
-
 			}
 
 			return TRUE;
