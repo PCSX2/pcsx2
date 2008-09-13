@@ -190,9 +190,11 @@ void SaveConfig() {
 	//cpu
     sprintf(szValue,"%u", Conf->Options);
     WritePrivateProfileString("Cpu Options","Options",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf->sseMXCSR);
-    WritePrivateProfileString("Cpu Options","sseMXCSR",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf->sseVUMXCSR);
+	if (Conf->sseMXCSR != 0)   sprintf(szValue,"%u",Conf->sseMXCSR);
+	else sprintf(szValue,"%u",40896); // defaults
+	WritePrivateProfileString("Cpu Options","sseMXCSR",szValue,szIniFile);
+	if (Conf->sseVUMXCSR != 0) sprintf(szValue,"%u",Conf->sseVUMXCSR);
+	else sprintf(szValue,"%u",32640); // defaults
     WritePrivateProfileString("Cpu Options","sseVUMXCSR",szValue,szIniFile);
 	//Misc
     sprintf(szValue,"%u",Conf->Patch);
