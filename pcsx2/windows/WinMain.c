@@ -464,8 +464,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		strcpy(Config.PluginsDir, "Plugins\\");
 		Config.Patch = 1;
         Config.Options = PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC;
-		Config.sseMXCSR = g_sseMXCSR;
-		Config.sseVUMXCSR = g_sseVUMXCSR;
+		Config.sseMXCSR = DEFAULT_sseMXCSR;
+		Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
 
 		SysMessage(_("Pcsx2 needs to be configured"));
