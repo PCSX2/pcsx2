@@ -103,8 +103,8 @@ using namespace std;
 
 #define VU_EXESIZE 0x00800000
 
-#define _Imm11_ 	((s32)(vucode & 0x400 ? 0xfffffc00 | (vucode & 0x3ff) : vucode & 0x3ff)&0x3fff)
-#define _UImm11_	((s32)(vucode & 0x7ff)&0x3fff)
+#define _Imm11_ 	(s32)( (vucode & 0x400) ? (0xfffffc00 | (vucode & 0x3ff)) : (vucode & 0x3ff) )
+#define _UImm11_	(s32)(vucode & 0x7ff)
 
 #define _Ft_ ((VU->code >> 16) & 0x1F)  // The rt part of the instruction register 
 #define _Fs_ ((VU->code >> 11) & 0x1F)  // The rd part of the instruction register 
@@ -903,11 +903,10 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 }
 
 static int _recbranchAddr(u32 vucode) {
-	//u32 bpc = pc + (_Imm11_ << 3);
-	int bpc = pc + (_Imm11_ << 3);
+	s32 bpc = pc + (_Imm11_ << 3);
 
-	if (bpc < 0) {	//how can u32 be < 0? (rama)
-		SysPrintf("Warning: bpc < 0 ( %d ), this should not happen \n", bpc);
+	if ( bpc < 0 ) {
+		SysPrintf("zerorec branch warning: bpc < 0 ( %x ); Using unsigned imm11\n", bpc);
 		bpc = pc + (_UImm11_ << 3); 
 	}
 	bpc &= (s_MemSize[s_vu]-1);
