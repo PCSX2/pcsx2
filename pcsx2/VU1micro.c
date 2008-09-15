@@ -235,7 +235,9 @@ void _vu1Exec(VURegs* VU) {
 
 	VU->code = ptr[1]; 
 	VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
+#ifndef INT_VUSTALLHACK
 	_vuTestUpperStalls(VU, &uregs);
+#endif
 
 	/* check upper flags */ 
 	if (ptr[1] & 0x80000000) { /* I flag */ 
@@ -245,7 +247,9 @@ void _vu1Exec(VURegs* VU) {
 	} else {
 		VU->code = ptr[0];
 		VU1regs_LOWER_OPCODE[VU->code >> 25](&lregs);
+#ifndef INT_VUSTALLHACK
 		_vuTestLowerStalls(VU, &lregs);
+#endif
 
 		vu1branch = lregs.pipe == VUPIPE_BRANCH;
 

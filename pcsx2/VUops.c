@@ -330,8 +330,8 @@ void _vuAddLowerStalls(VURegs * VU, _VURegsNum *VUregsn) {
 /******************************/
 /*   VU Upper instructions    */
 /******************************/
+#ifndef INT_VUDOUBLEHACK
 static u32 d;
-
 float vuDouble(u32 f)
 {
 	switch(f & 0x7f800000){
@@ -348,6 +348,12 @@ float vuDouble(u32 f)
 			break;
 	}	
 }
+#else
+float vuDouble(u32 f)
+{
+	return *(float*)&f;
+}
+#endif
 
 void _vuABS(VURegs * VU) {
 	if (_Ft_ == 0) return;

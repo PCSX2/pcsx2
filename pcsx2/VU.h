@@ -36,6 +36,10 @@
 #define REG_VPU_STAT	29
 #define REG_CMSAR1		31
 
+//interpreter hacks, WIP
+//#define INT_VUSTALLHACK //some games work without those, big speedup
+//#define INT_VUDOUBLEHACK
+
 enum VUStatus {
 	VU_Ready = 0,
 	VU_Run   = 1,
