@@ -65,7 +65,7 @@ typedef struct {
 	int Readed;
 	int Reading;
 	int ReadMode;
-	int BlockSize;
+	int BlockSize; // Total bytes transfered at 1x speed
 	int Speed;
 	int RetryCnt;
 	int RetryCntP;

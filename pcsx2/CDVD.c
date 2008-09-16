@@ -672,53 +672,41 @@ void cdvdReset()
 
 }
 
-void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
-	
-	if (SLOWDVD){
-		int readspeed = 0;	// 1 Sector size
-		int amount = 0;		// Total bytes transfered at 1x speed
+#define PSX_CD_READSPEED (PSXCLK / 153600) // 1 Byte Time @ x1 (150KB = cd x 1)
+#define PSX_DVD_READSPEED (PSXCLK / 1382400) // 1 Byte Time @ x1 (1350KB = dvd x 1)
 
+void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
+{	
+	if (CHECK_SLOWDVD)
+	{
+		int readspeed;	// 1 Sector size
 		static int last_sector = 0;
-		int start_sector = cdvd.Sector;
-		int sector_difference = abs(start_sector - last_sector);
-		amount = cdvd.BlockSize; // in Bytes
-
-		if(mode == 0)
-			readspeed = ((PSXCLK /1382400)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //1350KB = dvd x 1
-		else
-			readspeed = ((PSXCLK /153600)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //150KB = cd x 1
-	
+		int sector_difference = abs(cdvd.Sector - last_sector);
+		
+		readspeed = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
+		
 		//add cycles due to access times, based on try and error
 		//fixes most of Tales of the Abyss crashes and some Digital Devil Saga videos
 		//slightly longer loading times now
-		if (sector_difference > 128 && sector_difference < 1000000){
-			readspeed += (sector_difference+sector_difference) / 32;
+		if (sector_difference > 128 && sector_difference < 1000000) {
+			readspeed += (sector_difference * 2) / 32;
 		}
-		else if (sector_difference >= 1000000){
-			readspeed += (sector_difference+sector_difference) / 4;
+		else if (sector_difference >= 1000000) {
+			readspeed += (sector_difference * 2) / 4;
 		}
 
 		//simulates spin-up time, fixes hdloader
 		if (cdvd.Sector == 16 /* DVD TOC */) readspeed = 30000;
 		cdvdReadTime = readspeed;
 		//SysPrintf("secdiff = %d cdvdReadTime = %d\n", sector_difference, cdvdReadTime);
-		last_sector = start_sector;
+		last_sector = cdvd.Sector;
 	}
-	else {	
-		int readspeed = 0;	// 1 Sector size
-		int amount = 0;		// Total bytes transfered at 1x speed
-
-		amount = cdvd.BlockSize; // in Bytes
-
-		if(mode == 0)
-			readspeed = ((PSXCLK /1382400)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //1350KB = dvd x 1
+	else 
+	{
+		if (cdvd.Sector == 16) //DVD TOC
+			cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader
 		else
-			readspeed = ((PSXCLK /153600)/* 1 Byte Time @ x1 */ * amount) / cdvd.Speed; //150KB = cd x 1
-
-		//simulates spin-up time, fixes hdloader
-		if (cdvd.Sector == 16 /* DVD TOC */) readspeed = 30000;
-		cdvdReadTime = readspeed;
-		//SysPrintf("secdiff = %d cdvdReadTime = %d\n", sector_difference, cdvdReadTime);
+			cdvdReadTime = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
 	}
 
 }
@@ -746,6 +734,10 @@ void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
 //		so at the outer edge, the speed is roughly 3x the speed at the inner edge.
 // 
 //		question: the 1x speed refers to the inner or the outer edge? I assume inner.
+//
+//		(cottonvibes: i think this assumption is wrong, a cd's 1x speed is their theoretical fastest read-speed
+//		so you should assume the fastest value as the base speed. therfore you should start
+//		with the outer-edge, and base your calculations on that.)
 // 
 //		then:
 //		if the inner timing is 53333cycles/sector
