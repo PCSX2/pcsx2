@@ -1085,10 +1085,9 @@ void recSQRT_S_xmm(int info)
 	}
 	else SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]); // Make EEREC_D Positive
 	
-	if (CHECK_FPU_OVERFLOW) // Only need to do positive clamp, since EEREC_D is positive
-		SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)&g_maxvals[0]);
+	if (CHECK_FPU_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)&g_maxvals[0]);// Only need to do positive clamp, since EEREC_D is positive
 	SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
-	//ClampValues(EEREC_D); // No need to clamp again since SQRT of a number will always be smaller than the original number
+	if (CHECK_FPU_EXTRA_OVERFLOW) ClampValues(EEREC_D); // Shouldn't need to clamp again since SQRT of a number will always be smaller than the original number, doing it just incase :/
 
 	_freeX86reg(tempReg);
 }

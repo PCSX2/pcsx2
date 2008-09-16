@@ -4286,9 +4286,9 @@ void recVUMI_SQRT( VURegs *VU, int info )
 
 	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //Do a cardinal sqrt
 
-	SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); //Clamp infinities (only need to do positive clamp since EEREC_TEMP is positive)
+	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); //Clamp infinities (only need to do positive clamp since EEREC_TEMP is positive)
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-	//SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); //Shouldn't need to clamp again
+	if (CHECK_EXTRA_OVERFLOW) vuFloat2(EEREC_TEMP, EEREC_TEMP, 8); //Shouldn't need to clamp again, doing it incase...
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
 }
 
@@ -4318,8 +4318,9 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 	}
 
 	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //Do a cardinal sqrt
-	if (CHECK_EXTRA_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals);// Clamp Infinities to Fmax
+	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals);// Clamp Infinities to Fmax
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+	if (CHECK_EXTRA_OVERFLOW) vuFloat2(EEREC_TEMP, EEREC_TEMP, 8); //Clamp again just incase :/
 
 	t1reg = _vuGetTempXMMreg(info);
 
@@ -4436,8 +4437,7 @@ void recVUMI_IADDI(VURegs *VU, int info)
 	if ( _Ft_ == 0 ) return;
 
 	imm = ( VU->code >> 6 ) & 0x1f;
-	imm = ( imm & 0x10 ? 0xfff0 : 0) | ( imm & 0xf ); // This is one's complement
-	//imm = ( imm & 0x10 ) ? ( ( ~( imm & 0x000f ) ) + 1 ) : ( imm ); // This is two's complement
+	imm = ( imm & 0x10 ? 0xfff0 : 0) | ( imm & 0xf );
 	_addISIMMtoIT(VU, imm, info);
 }
 
