@@ -1298,10 +1298,11 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
 			switch (cdvd.Param[9]) {
-				case 0x01: cdvd.Speed =  1; break;	// CD
-				case 0x02: cdvd.Speed =  2; break;	// CD
-				case 0x03: cdvd.Speed =  4; break;	// CD
-				case 0x04: cdvd.Speed = 12; break;	// CD
+				//always do 24x for now
+				//case 0x01: cdvd.Speed =  1; break;	// CD
+				//case 0x02: cdvd.Speed =  2; break;	// CD
+				//case 0x03: cdvd.Speed =  4; break;	// CD
+				//case 0x04: cdvd.Speed = 12; break;	// CD
 				default:   cdvd.Speed = 24; break;	// CD
 			}
 			switch (cdvd.Param[10]) {
