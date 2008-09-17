@@ -673,7 +673,7 @@ void cdvdReset()
 }
 
 #define PSX_CD_READSPEED (PSXCLK / 153600) // 1 Byte Time @ x1 (150KB = cd x 1)
-#define PSX_DVD_READSPEED (CHECK_SLOWDVD ? (PSXCLK / 270000) : (PSXCLK /1382400)) // normal is 1 Byte Time @ x1 (1350KB = dvd x 1)
+#define PSX_DVD_READSPEED (PSXCLK /1382400) // normal is 1 Byte Time @ x1 (1350KB = dvd x 1)
 
 void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
 {	
@@ -1271,14 +1271,16 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			switch (cdvd.Param[9]) {
-				//always do 24x for now
-				//case 0x01: cdvd.Speed =  1; break;	// CD
-				//case 0x02: cdvd.Speed =  2; break;	// CD
-				//case 0x03: cdvd.Speed =  4; break;	// CD
-				//case 0x04: cdvd.Speed = 12; break;	// CD
-				default:   cdvd.Speed = 24; break;	// CD
+			if (CHECK_SLOWDVD) {
+				switch (cdvd.Param[9]) {
+					case 0x01: cdvd.Speed =  1; break;	// CD
+					case 0x02: cdvd.Speed =  2; break;	// CD
+					case 0x03: cdvd.Speed =  4; break;	// CD
+					case 0x04: cdvd.Speed = 12; break;	// CD
+					default:   cdvd.Speed = 24; break;	// CD
+				}
 			}
+			else cdvd.Speed = 24; // Fast cd reads; better performance
 			switch (cdvd.Param[10]) {
 				case 2: cdvd.ReadMode = CDVD_MODE_2340; cdvd.BlockSize = 2340; break;
 				case 1: cdvd.ReadMode = CDVD_MODE_2328; cdvd.BlockSize = 2328; break;
@@ -1332,7 +1334,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			cdvd.Speed = 4;
+			cdvd.Speed = CHECK_SLOWDVD ? 1 : 4; //Some games need to read slower
 			cdvd.ReadMode = CDVD_MODE_2048; cdvd.BlockSize = 2064;	// Why oh why was it 2064
 			cdvdReadTimeRcnt(0);
 #ifdef CDR_LOG
