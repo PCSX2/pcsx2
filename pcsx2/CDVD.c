@@ -708,7 +708,7 @@ void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
 		else
 			cdvdReadTime = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
 	}
-
+	//SysPrintf("cdvd type = %x \n", cdvd.Type);
 }
 
 //void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
@@ -1309,8 +1309,10 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 				case 1: cdvd.ReadMode = CDVD_MODE_2328; cdvd.BlockSize = 2328; break;
 				case 0: default: cdvd.ReadMode = CDVD_MODE_2048; cdvd.BlockSize = 2048; break;
 			}
-			if(cdvd.Speed > 4) cdvdReadTimeRcnt(1);
-			else cdvdReadTimeRcnt(0);
+			/*if(cdvd.Speed > 4) cdvdReadTimeRcnt(1); // why are we reading a cd as a dvd!???
+			else cdvdReadTimeRcnt(0);*/
+			cdvdReadTimeRcnt(1);
+
 #ifdef CDR_LOG
 			CDR_LOG(  "CdRead: %d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)\n", cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 #endif
