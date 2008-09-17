@@ -673,42 +673,16 @@ void cdvdReset()
 }
 
 #define PSX_CD_READSPEED (PSXCLK / 153600) // 1 Byte Time @ x1 (150KB = cd x 1)
-#define PSX_DVD_READSPEED (PSXCLK / 1382400) // 1 Byte Time @ x1 (1350KB = dvd x 1)
+#define PSX_DVD_READSPEED (CHECK_SLOWDVD ? (PSXCLK / 270000) : (PSXCLK /1382400)) // normal is 1 Byte Time @ x1 (1350KB = dvd x 1)
 
 void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
 {	
-	if (CHECK_SLOWDVD)
-	{
-		int readspeed;	// 1 Sector size
-		static int last_sector = 0;
-		int sector_difference = abs(cdvd.Sector - last_sector);
-		
-		readspeed = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
-		
-		//add cycles due to access times, based on try and error
-		//fixes most of Tales of the Abyss crashes and some Digital Devil Saga videos
-		//slightly longer loading times now
-		if (sector_difference > 128 && sector_difference < 1000000) {
-			readspeed += (sector_difference * 2) / 32;
-		}
-		else if (sector_difference >= 1000000) {
-			readspeed += (sector_difference * 2) / 4;
-		}
-
-		//simulates spin-up time, fixes hdloader
-		if (cdvd.Sector == 16 /* DVD TOC */) readspeed = 30000;
-		cdvdReadTime = readspeed;
-		//SysPrintf("secdiff = %d cdvdReadTime = %d\n", sector_difference, cdvdReadTime);
-		last_sector = cdvd.Sector;
-	}
-	else 
-	{
-		if (cdvd.Sector == 16) //DVD TOC
-			cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader
-		else
-			cdvdReadTime = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
-	}
-	//SysPrintf("cdvd type = %x \n", cdvd.Type);
+	if (cdvd.Sector == 16) //DVD TOC
+		cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader
+	else
+		cdvdReadTime = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
+	
+	//SysPrintf("cdvdReadTime = %d \n", cdvdReadTime);
 }
 
 //void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
