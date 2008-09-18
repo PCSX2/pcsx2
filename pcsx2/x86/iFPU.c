@@ -1798,7 +1798,7 @@ void recBC1F( void ) {
 	
 	_eeFlushAllUnused();
 	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
-	TEST32ItoR(EAX, 0x00800000);
+	TEST32ItoR(EAX, FPUflagC);
 	j32Ptr[0] = JNZ32(0);
 
 	SaveBranchState();
@@ -1820,7 +1820,7 @@ void recBC1T( void ) {
 
 	_eeFlushAllUnused();
 	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
-	TEST32ItoR(EAX, 0x00800000);
+	TEST32ItoR(EAX, FPUflagC);
 	j32Ptr[0] = JZ32(0);
 
 	SaveBranchState();
@@ -1845,7 +1845,7 @@ void recBC1FL( void ) {
 
 	_eeFlushAllUnused();
 	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
-	TEST32ItoR(EAX, 0x00800000);
+	TEST32ItoR(EAX, FPUflagC);
 	j32Ptr[0] = JNZ32(0);
 
 	SaveBranchState();
@@ -1864,7 +1864,7 @@ void recBC1TL( void ) {
 
 	_eeFlushAllUnused();
 	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
-	TEST32ItoR(EAX, 0x00800000);
+	TEST32ItoR(EAX, FPUflagC);
 	j32Ptr[0] = JZ32(0);
 
 	SaveBranchState();
