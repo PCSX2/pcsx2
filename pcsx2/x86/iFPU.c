@@ -302,8 +302,8 @@ void recCOP1_BC1()
 	recCP1BC1[_Rt_]();
 }
 
-static u32 _mxcsr = 0x7F80;
-static u32 _mxcsrs;
+//static u32 _mxcsr = 0x7F80;
+//static u32 _mxcsrs;
 static u32 fpucw = 0x007f;
 static u32 fpucws = 0;
 
@@ -360,7 +360,6 @@ void recCOP1_W( void )
 
 #ifndef FPU_RECOMPILE
 
-
 REC_FPUFUNC(ADD_S);
 REC_FPUFUNC(SUB_S);
 REC_FPUFUNC(MUL_S);
@@ -385,10 +384,10 @@ REC_FPUBRANCH(BC1F);
 REC_FPUBRANCH(BC1T);
 REC_FPUBRANCH(BC1FL);
 REC_FPUBRANCH(BC1TL);
-REC_FPUFUNC(C_F);
 REC_FPUFUNC(C_EQ);
-REC_FPUFUNC(C_LE);
+REC_FPUFUNC(C_F);
 REC_FPUFUNC(C_LT);
+REC_FPUFUNC(C_LE);
 
 #else
 
@@ -676,97 +675,7 @@ void recMIN_S_(int info) {
 #endif
 
 ////////////////////////////////////////////////////
-void recC_EQ_xmm(int info)
-{
-	// assumes that inputs are valid
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
-		case PROCESS_EE_S: SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); break;
-		case PROCESS_EE_T: SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]); break;
-		default: SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); break;
-	}
 
-	//write8(0x9f); // lahf
-	//TEST16ItoR(EAX, 0x4400);
-	j8Ptr[0] = JZ8(0);
-	AND32ItoM( (uptr)&fpuRegs.fprc[31], ~0x00800000 );
-	j8Ptr[1] = JMP8(0);
-	x86SetJ8(j8Ptr[0]);
-	OR32ItoM((uptr)&fpuRegs.fprc[31], 0x00800000);
-	x86SetJ8(j8Ptr[1]);
-}
-
-FPURECOMPILE_CONSTCODE(C_EQ, XMMINFO_READS|XMMINFO_READT);
-
-////////////////////////////////////////////////////
-void recC_F()
-{
-	AND32ItoM( (uptr)&fpuRegs.fprc[31], ~0x00800000 );
-}
-
-////////////////////////////////////////////////////
-void recC_LT_xmm(int info)
-{
-	// assumes that inputs are valid
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
-		case PROCESS_EE_S: SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); break;
-		case PROCESS_EE_T: SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]); break;
-		default: SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); break;
-	}
-
-	//write8(0x9f); // lahf
-	//TEST16ItoR(EAX, 0x4400);
-	if( info & PROCESS_EE_S ) {
-		j8Ptr[0] = JB8(0);
-		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~0x00800000 );
-		j8Ptr[1] = JMP8(0);
-		x86SetJ8(j8Ptr[0]);
-		OR32ItoM((uptr)&fpuRegs.fprc[31], 0x00800000);
-		x86SetJ8(j8Ptr[1]);
-	}
-	else {
-		j8Ptr[0] = JBE8(0);
-		OR32ItoM((uptr)&fpuRegs.fprc[31], 0x00800000);
-		j8Ptr[1] = JMP8(0);
-		x86SetJ8(j8Ptr[0]);
-		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~0x00800000 );
-		x86SetJ8(j8Ptr[1]);
-	}
-}
-
-FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS|XMMINFO_READT);
-
-////////////////////////////////////////////////////
-void recC_LE_xmm(int info )
-{
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
-		case PROCESS_EE_S: SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); break;
-		case PROCESS_EE_T: SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]); break;
-		default: SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); break;
-	}
-
-	//write8(0x9f); // lahf
-	//TEST16ItoR(EAX, 0x4400);
-	if( info & PROCESS_EE_S ) {
-		j8Ptr[0] = JBE8(0);
-		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~0x00800000 );
-		j8Ptr[1] = JMP8(0);
-		x86SetJ8(j8Ptr[0]);
-		OR32ItoM((uptr)&fpuRegs.fprc[31], 0x00800000);
-		x86SetJ8(j8Ptr[1]);
-	}
-	else {
-		j8Ptr[0] = JB8(0);
-		OR32ItoM((uptr)&fpuRegs.fprc[31], 0x00800000);
-		j8Ptr[1] = JMP8(0);
-		x86SetJ8(j8Ptr[0]);
-		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~0x00800000 );
-		x86SetJ8(j8Ptr[1]);
-	}
-}
-
-FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS|XMMINFO_READT);
-
-////////////////////////////////////////////////////
 
 static u32 s_signbit = 0x80000000;
 extern int g_VuNanHandling;
@@ -801,6 +710,199 @@ void ClampValues2(regd) {
 	else fpuFloat(regd);
 
 }
+
+////////////////////////////////////////////////////
+void recC_EQ_xmm(int info)
+{
+	int tempReg;
+
+	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+		case PROCESS_EE_S: SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); break;
+		case PROCESS_EE_T: SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]); break;
+		case (PROCESS_EE_S|PROCESS_EE_T): 
+			fpuFloat(EEREC_S);
+			fpuFloat(EEREC_T);
+			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
+			break;
+		default: 
+			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
+			CMP32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Ft_]); 
+
+			j8Ptr[0] = JZ8(0);
+				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+				j8Ptr[1] = JMP8(0);
+			x86SetJ8(j8Ptr[0]);
+				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+			x86SetJ8(j8Ptr[1]);
+
+			_freeX86reg(tempReg);
+			return;
+	}
+
+	j8Ptr[0] = JZ8(0);
+		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+		j8Ptr[1] = JMP8(0);
+	x86SetJ8(j8Ptr[0]);
+		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+	x86SetJ8(j8Ptr[1]);
+}
+
+FPURECOMPILE_CONSTCODE(C_EQ, XMMINFO_READS|XMMINFO_READT);
+//REC_FPUFUNC(C_EQ);
+
+////////////////////////////////////////////////////
+void recC_F()
+{
+	AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+}
+//REC_FPUFUNC(C_F);
+////////////////////////////////////////////////////
+void recC_LT_xmm(int info)
+{
+	int tempReg;
+
+	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+		case PROCESS_EE_S: 
+			//SysPrintf("PROCESS_EE_S\n");
+			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
+			break;
+		case PROCESS_EE_T: 
+			//SysPrintf("PROCESS_EE_T\n");
+			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
+			j8Ptr[0] = JA8(0);
+				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+				j8Ptr[1] = JMP8(0);
+			x86SetJ8(j8Ptr[0]);
+				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+			x86SetJ8(j8Ptr[1]);
+			return;
+		case (PROCESS_EE_S|PROCESS_EE_T):
+			//SysPrintf("PROCESS_EE_S|PROCESS_EE_T\n");
+			fpuFloat(EEREC_S);
+			fpuFloat(EEREC_T);
+			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
+			break;
+		default:
+			//SysPrintf("Default\n");
+			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
+			CMP32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Ft_]); 
+			
+			j8Ptr[0] = JL8(0);
+				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+				j8Ptr[1] = JMP8(0);
+			x86SetJ8(j8Ptr[0]);
+				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+			x86SetJ8(j8Ptr[1]);
+
+			_freeX86reg(tempReg);
+			return;
+	}
+
+	j8Ptr[0] = JB8(0);
+		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+		j8Ptr[1] = JMP8(0);
+	x86SetJ8(j8Ptr[0]);
+		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+	x86SetJ8(j8Ptr[1]);
+}
+
+FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS|XMMINFO_READT);
+//REC_FPUFUNC(C_LT);
+/*
+void recC_LT() 
+{
+	int tempS, tempT, tempReg;
+	iFlushCall(FLUSH_EVERYTHING);
+	tempS = _allocTempXMMreg(XMMT_FPS, -1);
+	tempT = _allocTempXMMreg(XMMT_FPS, -1);
+	tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+	if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+	SysPrintf("Default\n");
+	
+	SSE_MOVSS_M32_to_XMM(tempS, (uptr)&fpuRegs.fpr[_Fs_]);
+	SSE_MINSS_M32_to_XMM(tempS, (uptr)&g_maxvals[0]);
+	SSE_MAXSS_M32_to_XMM(tempS, (uptr)&g_minvals[0]);
+
+	SSE_MOVSS_M32_to_XMM(tempT, (uptr)&fpuRegs.fpr[_Ft_]);
+	SSE_MINSS_M32_to_XMM(tempT, (uptr)&g_maxvals[0]);
+	SSE_MAXSS_M32_to_XMM(tempT, (uptr)&g_minvals[0]);
+	
+	SSE_UCOMISS_XMM_to_XMM(tempS, tempT);
+	//MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
+	//CMP32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Ft_]); 
+	//j8Ptr[0] = JL8(0);
+
+	j8Ptr[0] = JB8(0);
+		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+		j8Ptr[1] = JMP8(0);
+	x86SetJ8(j8Ptr[0]);
+		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+	x86SetJ8(j8Ptr[1]);
+
+	_freeXMMreg(tempS);
+	_freeXMMreg(tempT);
+	_freeX86reg(tempReg);
+}*/
+
+////////////////////////////////////////////////////
+void recC_LE_xmm(int info )
+{
+	int tempReg;
+
+	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+		case PROCESS_EE_S: 
+			//SysPrintf("PROCESS_EE_S\n");
+			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
+			break;
+		case PROCESS_EE_T: 
+			//SysPrintf("PROCESS_EE_T\n");
+			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
+			j8Ptr[0] = JAE8(0);
+				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+				j8Ptr[1] = JMP8(0);
+			x86SetJ8(j8Ptr[0]);
+				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+			x86SetJ8(j8Ptr[1]);
+			return;
+		case (PROCESS_EE_S|PROCESS_EE_T):
+			//SysPrintf("PROCESS_EE_S|PROCESS_EE_T\n");
+			fpuFloat(EEREC_S);
+			fpuFloat(EEREC_T);
+			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
+			break;
+		default:
+			//SysPrintf("Default\n");
+			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
+			CMP32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Ft_]); 
+			
+			j8Ptr[0] = JLE8(0);
+				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+				j8Ptr[1] = JMP8(0);
+			x86SetJ8(j8Ptr[0]);
+				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+			x86SetJ8(j8Ptr[1]);
+
+			_freeX86reg(tempReg);
+			return;
+	}
+
+	j8Ptr[0] = JBE8(0);
+		AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+		j8Ptr[1] = JMP8(0);
+	x86SetJ8(j8Ptr[0]);
+		OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+	x86SetJ8(j8Ptr[1]);
+}
+
+FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS|XMMINFO_READT);
+//REC_FPUFUNC(C_LE);
+////////////////////////////////////////////////////
 
 static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
 	SSE_ADDSS_XMM_to_XMM, SSE_MULSS_XMM_to_XMM, SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM };
