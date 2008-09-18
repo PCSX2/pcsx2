@@ -693,7 +693,7 @@ void ClampValues(regd) {
 
 void ClampValues2(regd) { 
 	
-	if (CHECK_FPUCLAMPHACK) { // Fixes Tekken 5
+	if (CHECK_FPUCLAMPHACK) { // Fixes Tekken 5 ( Makes NaN equal 0, infinities stay the same )
 		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
 		SSE_XORPS_XMM_to_XMM(t5reg, t5reg); 
@@ -717,14 +717,21 @@ void recC_EQ_xmm(int info)
 	int tempReg;
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
-		case PROCESS_EE_S: SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); break;
-		case PROCESS_EE_T: SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]); break;
+		case PROCESS_EE_S: 
+			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
+			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
+			break;
+		case PROCESS_EE_T: 
+			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
+			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]); 
+			break;
 		case (PROCESS_EE_S|PROCESS_EE_T): 
-			fpuFloat(EEREC_S);
-			fpuFloat(EEREC_T);
+			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
+			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
 			break;
 		default: 
+			SysPrintf("recC_EQ_xmm: Default\n");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
 			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
 			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
@@ -764,12 +771,12 @@ void recC_LT_xmm(int info)
 	int tempReg;
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
-		case PROCESS_EE_S: 
-			//SysPrintf("PROCESS_EE_S\n");
+		case PROCESS_EE_S:
+			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
 			break;
-		case PROCESS_EE_T: 
-			//SysPrintf("PROCESS_EE_T\n");
+		case PROCESS_EE_T:
+			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
 			j8Ptr[0] = JA8(0);
 				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
@@ -779,13 +786,15 @@ void recC_LT_xmm(int info)
 			x86SetJ8(j8Ptr[1]);
 			return;
 		case (PROCESS_EE_S|PROCESS_EE_T):
-			//SysPrintf("PROCESS_EE_S|PROCESS_EE_T\n");
-			fpuFloat(EEREC_S);
-			fpuFloat(EEREC_T);
+			// Makes NaNs and +Infinity be +maximum; -Infinity stays 
+			// the same, but this is okay for a Compare operation.
+			// Note: This fixes a crash in Rule of Rose.
+			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
+			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
 			break;
 		default:
-			//SysPrintf("Default\n");
+			SysPrintf("recC_LT_xmm: Default\n");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
 			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
 			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
@@ -855,11 +864,11 @@ void recC_LE_xmm(int info )
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S: 
-			//SysPrintf("PROCESS_EE_S\n");
+			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
 			break;
 		case PROCESS_EE_T: 
-			//SysPrintf("PROCESS_EE_T\n");
+			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
 			j8Ptr[0] = JAE8(0);
 				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
@@ -869,13 +878,12 @@ void recC_LE_xmm(int info )
 			x86SetJ8(j8Ptr[1]);
 			return;
 		case (PROCESS_EE_S|PROCESS_EE_T):
-			//SysPrintf("PROCESS_EE_S|PROCESS_EE_T\n");
-			fpuFloat(EEREC_S);
-			fpuFloat(EEREC_T);
+			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
+			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
 			break;
 		default:
-			//SysPrintf("Default\n");
+			SysPrintf("recC_LE_xmm: Default\n");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
 			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
 			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
