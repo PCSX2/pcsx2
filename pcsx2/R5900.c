@@ -534,10 +534,15 @@ void cpuExecuteBios()
 	{
 		extern u64 GetTickFrequency();
 		extern u64 iTicks;
-		u32 vsyncs = (Config.PsxType&1) ? 50:60;
-		if(Config.CustomFps>0) vsyncs = Config.CustomFps;
-		iTicks = GetTickFrequency()/vsyncs;
-		SysPrintf("Framelimiter rate updated (cpuExecuteBios): %d fps\n",vsyncs);
+		u32 vsyncs = (Config.PsxType&1) ? 5000:5994;
+		if(Config.CustomFps>0) vsyncs = Config.CustomFps*100;
+		iTicks = GetTickFrequency()/vsyncs*100;
+		if (Config.CustomFps != 0)
+			SysPrintf("Framelimiter rate updated (UpdateVSyncRate): %d fps\n", Config.CustomFps);
+		else if (Config.PsxType&1)
+			SysPrintf("Framelimiter rate updated (UpdateVSyncRate): 50 fps\n");
+		else
+			SysPrintf("Framelimiter rate updated (UpdateVSyncRate): 50.94 fps\n");
 	}
 
 	SysPrintf("* PCSX2 *: ExecuteBios\n");
