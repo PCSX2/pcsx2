@@ -1432,7 +1432,6 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 			SSE_CMPNEPS_XMM_to_XMM(EEREC_TEMP, reg); // If they're not equal, then overflow has occured
 			
 			SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
-			vuFloat2(reg, EEREC_TEMP, _X_Y_Z_W); // Clamp overflowed vectors that were modified
 
 			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 			pjmp = JZ8(0); // Skip if none are
@@ -1471,6 +1470,9 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 				SSE_ORPS_XMM_to_XMM(reg, EEREC_TEMP);
 			}
 		}
+
+		vuFloat2(reg, EEREC_TEMP, _X_Y_Z_W); // Clamp overflowed vectors that were modified
+
 		//-------------------------Check for Signed flags------------------------------
 
 		//SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
@@ -1552,7 +1554,6 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 			SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occured
 
 			SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
-			vuFloat(info, reg, _X_Y_Z_W); // Clamp overflowed vectors that were modified
 
 			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 			pjmp = JZ8(0); // Skip if none are
@@ -1591,6 +1592,9 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 				SSE_ORPS_XMM_to_XMM(reg, t1reg);
 			}
 		}
+
+		vuFloat2(reg, t1reg, _X_Y_Z_W); // Clamp overflowed vectors that were modified
+
 		//-------------------------Check for Signed flags------------------------------
 
 		//SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
