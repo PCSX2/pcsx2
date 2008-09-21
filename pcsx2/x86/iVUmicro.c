@@ -1383,276 +1383,154 @@ const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])		= {0x007fffff, 0x007fff
 const static PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 const static PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 const static PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
+const static PCSX2_ALIGNED16(u32 VU_Pos_Infinity[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+const static PCSX2_ALIGNED16(u32 VU_Neg_Infinity[4])		= {0xff800000, 0xff800000, 0xff800000, 0xff800000};
 PCSX2_ALIGNED16(u64 TEMPXMMData[2]);
 
-// VU Flags
 // NOTE: Flags now compute under/over flows! :p
 void recUpdateFlags(VURegs * VU, int reg, int info)
 {
-	u32 flagmask;
-	u8* pjmp;
-	u32 macaddr, stataddr, prevstataddr;
-	int x86macflag, x86newflag, x86temp;
-	const static u8 macarr[16] =  {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+	static u8* pjmp;
+	static u32* pjmp32;
+	static u32 macaddr, stataddr, prevstataddr;
+	static int x86macflag, x86newflag, x86temp;
+	static int t1reg, t1regBoolean;
 
-	if( !(info & PROCESS_VU_UPDATEFLAGS) )
-		return;
+	if( !(info & PROCESS_VU_UPDATEFLAGS) ) return;
 
-	flagmask = macarr[_X_Y_Z_W];
 	macaddr = VU_VI_ADDR(REG_MAC_FLAG, 0);
 	stataddr = VU_VI_ADDR(REG_STATUS_FLAG, 0); // write address
 	prevstataddr = VU_VI_ADDR(REG_STATUS_FLAG, 2); // previous address
 
-	if( stataddr == 0 )
-		stataddr = prevstataddr;
-	//assert( stataddr != 0);
+	if( stataddr == 0 ) stataddr = prevstataddr;
+	if( macaddr == 0 ) {
+		SysPrintf( "VU ALLOCATION WARNING: Using Mac Flag Previous Address!\n" );
+		macaddr = VU_VI_ADDR(REG_MAC_FLAG, 2);
+	}
 	
-
-	// 20 insts
 	x86newflag	= ALLOCTEMPX86(MODE_8BITREG);
 	x86macflag	= ALLOCTEMPX86(0);
 	x86temp		= ALLOCTEMPX86(0);
 	
-	// can do with 8 bits since only computing zero/sign flags
-	if( EEREC_TEMP != reg ) {
-
-		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-		XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
-		XOR32RtoR(x86temp, x86temp); //Clear x86temp
-
-		if (CHECK_VU_EXTRA_FLAGS) {
-			//-------------------------Check for Overflow flags------------------------------
-
-			//SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
-			//SSE_CMPUNORDPS_XMM_to_XMM(EEREC_TEMP, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
-
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, reg);
-			SSE_MINPS_M128_to_XMM(EEREC_TEMP, (uptr)g_maxvals);
-			SSE_MAXPS_M128_to_XMM(EEREC_TEMP, (uptr)g_minvals);
-			SSE_CMPNEPS_XMM_to_XMM(EEREC_TEMP, reg); // If they're not equal, then overflow has occured
-			
-			SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
-
-			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
-			pjmp = JZ8(0); // Skip if none are
-			OR32ItoR(x86temp, 8); // Set if they are
-			x86SetJ8(pjmp);
-
-			OR32RtoR(x86macflag, x86newflag);
-			SHL32ItoR(x86macflag, 4); // Shift the Overflow flags left 4
-
-			//-------------------------Check for Underflow flags------------------------------
-
-			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP <- reg
-
-			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Underflow_Mask1[ 0 ]);
-			SSE_CMPEQPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Mask[ 0 ]); // If (EEREC_TEMP == zero exponent) then set Vector to 0xFFFFFFFF
-
-			SSE_ANDPS_XMM_to_XMM(EEREC_TEMP, reg);
-			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Underflow_Mask2[ 0 ]);
-			SSE_CMPNEPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Mask[ 0 ]); // If (EEREC_TEMP != zero mantisa) then set Vector to 0xFFFFFFFF
-
-			SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
-
-			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
-			pjmp = JZ8(0); // Skip if none are
-			OR32ItoR(x86temp, 4); // Set if they are
-			x86SetJ8(pjmp);
-
-			OR32RtoR(x86macflag, x86newflag);
-			SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
-
-			//-------------------------Optional Code: Denormals Are Zero------------------------------
-			if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
-				SSE_ANDNPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP = !EEREC_TEMP & reg
-				// Now we have Denormals are Positive Zero in EEREC_TEMP; the next two lines take Signed Zero into account
-				SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-				SSE_ORPS_XMM_to_XMM(reg, EEREC_TEMP);
-			}
-		}
-
-		vuFloat2(reg, EEREC_TEMP, _X_Y_Z_W); // Clamp overflowed vectors that were modified
-
-		//-------------------------Check for Signed flags------------------------------
-
-		//SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-		//SSE_CMPEQPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[ 0 ]); // If (EEREC_TEMP == 0x80000000) set all F's for that vector
-
-		//SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP <- reg
-
-		// The following code makes sure the Signed Bit isn't set with Negative Zero
-		SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
-		SSE_CMPNEPS_XMM_to_XMM(EEREC_TEMP, reg); // Set all F's if each vector is not zero
-		SSE_ANDPS_XMM_to_XMM(EEREC_TEMP, reg);
-
-		SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the EEREC_TEMP
-
-		// Replace the 4 lines of code above with this line if you don't care that Negative Zero sets the Signed flag
-		//SSE_MOVMSKPS_XMM_to_R32(x86newflag, reg); // Move the sign bits of the reg
-
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
-		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 2); // Set if they are
-		x86SetJ8(pjmp);
-
-		OR32RtoR(x86macflag, x86newflag);
-		SHL32ItoR(x86macflag, 4); // Shift the Overflow, Underflow, and Zero flags left 4
-
-		//-------------------------Check for Zero flags------------------------------
-		
-		SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
-		SSE_CMPEQPS_XMM_to_XMM(EEREC_TEMP, reg); // Set all F's if each vector is zero
-
-		/* This code does the same thing as the above two lines
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, reg); // EEREC_TEMP <- reg
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Helper_Mask[ 0 ]); // EEREC_TEMP &= 0x7fffffff
-		SSE_CMPEQPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Zero_Mask[ 0 ]); // If (EEREC_TEMP == 0x00000000) set all F's for that vector
-		*/
-
-		SSE_MOVMSKPS_XMM_to_R32(x86newflag, EEREC_TEMP); // Move the sign bits of the previous calculation
-
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
-		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 1); // Set if they are
-		x86SetJ8(pjmp);
-
-		OR32RtoR(x86macflag, x86newflag);
-
-		//-------------------------Finally: Send the Flags to the Mac Address------------------------------
-		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip back reg to wzyx
-		
-		if( macaddr != 0 )
-			MOV16RtoM(macaddr, x86macflag);
-		else
-			SysPrintf( "VU ALLOCATION ERROR: Can't set Mac Flags!\n" );
-	}
-	//-------------------------Flag Setting if (reg == EEREC_TEMP)------------------------------
-	else {
-
-		int t1reg = _vuGetTempXMMreg(info);
-		int t1regBoolean = 0;
-		if (t1reg == -1) {
+	if (reg == EEREC_TEMP) {
+		t1reg = _vuGetTempXMMreg(info);
+		if (t1reg < 0) {
 			//SysPrintf( "VU ALLOCATION ERROR: Temp reg can't be allocated!!!!\n" );
 			t1reg = (reg == 0) ? (reg + 1) : (reg - 1);
 			SSE_MOVAPS_XMM_to_M128( (uptr)TEMPXMMData, t1reg );
 			t1regBoolean = 1;
 		}
+		else t1regBoolean = 0;
+	}
+	else {
+		t1reg = EEREC_TEMP;
+		t1regBoolean = 2;
+	}
 
-		SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-		XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
-		XOR32RtoR(x86temp, x86temp); //Clear x86temp
+	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
+	XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
+	XOR32RtoR(x86temp, x86temp); //Clear x86temp
 
-		if (CHECK_VU_EXTRA_FLAGS) {
-			//-------------------------Check for Overflow flags------------------------------
+	if (CHECK_VU_EXTRA_FLAGS) {
+		//-------------------------Check for Overflow flags------------------------------
 
-			//SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-			//SSE_CMPUNORDPS_XMM_to_XMM(t1reg, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
+		//SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+		//SSE_CMPUNORDPS_XMM_to_XMM(t1reg, reg); // If reg == NaN then set Vector to 0xFFFFFFFF
 
-			SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
-			SSE_MINPS_M128_to_XMM(t1reg, (uptr)g_maxvals);
-			SSE_MAXPS_M128_to_XMM(t1reg, (uptr)g_minvals);
-			SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occured
+		//SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
+		//SSE_MINPS_M128_to_XMM(t1reg, (uptr)g_maxvals);
+		//SSE_MAXPS_M128_to_XMM(t1reg, (uptr)g_minvals);
+		//SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occured
 
-			SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
-
-			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
-			pjmp = JZ8(0); // Skip if none are
-			OR32ItoR(x86temp, 8); // Set if they are
-			x86SetJ8(pjmp);
-
-			OR32RtoR(x86macflag, x86newflag);
-			SHL32ItoR(x86macflag, 4); // Shift the Overflow flags left 4
-
-			//-------------------------Check for Underflow flags------------------------------
-
-			SSE_MOVAPS_XMM_to_XMM(t1reg, reg); // t1reg <- reg
-
-			SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask1[ 0 ]);
-			SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg == zero exponent) then set Vector to 0xFFFFFFFF
-
-			SSE_ANDPS_XMM_to_XMM(t1reg, reg);
-			SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask2[ 0 ]);
-			SSE_CMPNEPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg != zero mantisa) then set Vector to 0xFFFFFFFF
-
-			SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
-
-			AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
-			pjmp = JZ8(0); // Skip if none are
-			OR32ItoR(x86temp, 4); // Set if they are
-			x86SetJ8(pjmp);
-
-			OR32RtoR(x86macflag, x86newflag);
-			SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
-
-			//-------------------------Optional Code: Denormals Are Zero------------------------------
-			if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
-				SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
-				// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
-				SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-				SSE_ORPS_XMM_to_XMM(reg, t1reg);
-			}
-		}
-
-		vuFloat2(reg, t1reg, _X_Y_Z_W); // Clamp overflowed vectors that were modified
-
-		//-------------------------Check for Signed flags------------------------------
-
-		//SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-		//SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]); // If (t1reg == 0x80000000) set all F's for that vector
-
-		//SSE_MOVAPS_XMM_to_XMM(t1reg, reg); // t1reg <- reg
-
-		// The following code makes sure the Signed Bit isn't set with Negative Zero
-		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is not zero
-		SSE_ANDPS_XMM_to_XMM(t1reg, reg);
-
-		SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the t1reg
-
-		// Replace the 4 lines of code above with this line if you don't care that Negative Zero sets the Signed flag
-		//SSE_MOVMSKPS_XMM_to_R32(x86newflag, reg); // Move the sign bits of the reg
-
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
-		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 2); // Set if they are
-		x86SetJ8(pjmp);
-
-		OR32RtoR(x86macflag, x86newflag);
-		SHL32ItoR(x86macflag, 4); // Shift the Overflow, Underflow, and Zero flags left 4
-
-		//-------------------------Check for Zero flags------------------------------
-		
-		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-		SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
-
-		/* This code does the same thing as the above two lines
-		SSE_MOVAPS_XMM_to_XMM(t1reg, reg); // t1reg <- reg
-		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Helper_Mask[ 0 ]); // t1reg &= 0x7fffffff
-		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg == 0x00000000) set all F's for that vector
-		*/
+		SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
+		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)VU_Zero_Helper_Mask);
+		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)VU_Pos_Infinity); // If infinity, then overflow has occured (NaN's don't report as overflow) (NaN's and Infinities report as overflow)
 
 		SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
 
-		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 		pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 1); // Set if they are
+			OR32ItoR(x86temp, 8); // Set if they are
+			OR32RtoR(x86macflag, x86newflag);
+			SHL32ItoR(x86macflag, 8); // Shift the Overflow flags left 8
+			pjmp32 = JMP32(0); // Skip Underflow Check
 		x86SetJ8(pjmp);
 
-		OR32RtoR(x86macflag, x86newflag);
+		//-------------------------Check for Underflow flags------------------------------
 
-		//-------------------------Finally: Send the Flags to the Mac Address------------------------------
-		//SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Don't need to restore the reg since this is a temp reg
+		SSE_MOVAPS_XMM_to_XMM(t1reg, reg); // t1reg <- reg
 
-		if (t1regBoolean)
-			SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)TEMPXMMData );
-		else
-			_freeXMMreg(t1reg);
+		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask1[ 0 ]);
+		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg == zero exponent) then set Vector to 0xFFFFFFFF
 
-		if( macaddr != 0 )
-			MOV16RtoM(macaddr, x86macflag);
-		else
-			SysPrintf( "VU ALLOCATION ERROR: Can't set Mac Flags!\n" );
+		SSE_ANDPS_XMM_to_XMM(t1reg, reg);
+		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&VU_Underflow_Mask2[ 0 ]);
+		SSE_CMPNEPS_M128_to_XMM(t1reg, (uptr)&VU_Zero_Mask[ 0 ]); // If (t1reg != zero mantisa) then set Vector to 0xFFFFFFFF
+
+		SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
+
+		AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
+		pjmp = JZ8(0); // Skip if none are
+			OR32ItoR(x86temp, 4); // Set if they are
+			OR32RtoR(x86macflag, x86newflag);
+			SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
+		x86SetJ8(pjmp);
+
+		//-------------------------Optional Code: Denormals Are Zero------------------------------
+		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
+			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
+			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
+			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
+			SSE_ORPS_XMM_to_XMM(reg, t1reg);
+		}
+
+		x86SetJ32(pjmp32); // If we skipped the Underflow Flag Checking (when we had an Overflow), return here
 	}
+
+	vuFloat2(reg, t1reg, _X_Y_Z_W); // Clamp overflowed vectors that were modified
+
+	//-------------------------Check for Signed flags------------------------------
+
+	// The following code makes sure the Signed Bit isn't set with Negative Zero
+	SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+	SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is not zero
+	SSE_ANDPS_XMM_to_XMM(t1reg, reg);
+
+	SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the t1reg
+
+	AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
+	pjmp = JZ8(0); // Skip if none are
+		OR32ItoR(x86temp, 2); // Set if they are
+		OR32RtoR(x86macflag, x86newflag);
+		SHL32ItoR(x86macflag, 4); // Shift the Overflow, Underflow, and Zero flags left 4
+		pjmp32 = JMP32(0); // If negative and not Zero, we can skip the Zero Flag checking
+	x86SetJ8(pjmp);
+
+	SHL32ItoR(x86macflag, 4); // Shift the Overflow, Underflow, and Zero flags left 4
+
+	//-------------------------Check for Zero flags------------------------------
+	
+	SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+	SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
+
+	SSE_MOVMSKPS_XMM_to_R32(x86newflag, t1reg); // Move the sign bits of the previous calculation
+
+	AND32ItoR(x86newflag, 0x0f & _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+	pjmp = JZ8(0); // Skip if none are
+		OR32ItoR(x86temp, 1); // Set if they are
+		OR32RtoR(x86macflag, x86newflag);
+	x86SetJ8(pjmp);
+
+	//-------------------------Finally: Send the Flags to the Mac Flag Address------------------------------
+
+	x86SetJ32(pjmp32); // If we skipped the Zero Flag Checking, return here
+
+	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip back reg to wzyx
+
+	if (t1regBoolean == 1) SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)TEMPXMMData );
+	else if (t1regBoolean == 0) _freeXMMreg(t1reg);
+
+	MOV16RtoM(macaddr, x86macflag);
 
 	MOV32MtoR(x86macflag, prevstataddr); // Load the previous status in to x86macflag
 	AND32ItoR(x86macflag, 0xff0); // Keep Sticky and D/I flags
