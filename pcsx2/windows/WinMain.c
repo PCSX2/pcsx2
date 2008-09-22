@@ -751,52 +751,97 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
+#define HacksInit()  \
+{  \
+	if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);  \
+	if(Config.Hacks & 0x2) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);  \
+	if(Config.Hacks & 0x4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);  \
+	if(Config.Hacks & 0x8) CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);  \
+    if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);  \
+	if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);  \
+	if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);  \
+	if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);  \
+	if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);  \
+	if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);  \
+	if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);  \
+	if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);  \
+	if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);  \
+}
+
+#define HacksChecked()  \
+{  \
+	Config.Hacks = 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;  \
+	/* 0x40 == greyed checkbox (extra overflow checking); 0x2 == checked (disable overflow checking) */  \
+	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) == 2 ) ? 0x40 : (IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) ? 0x2 : 0);  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;  \
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;  \
+	/* 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)*/  \
+	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0);  \
+}
+
 BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 	//char str[256];
 
     switch (message) {
         case WM_INITDIALOG:
-			if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
-			if(Config.Hacks & 0x2) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
-			if(Config.Hacks & 0x4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
-			if(Config.Hacks & 0x8) CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
-            if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
-			if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
-			if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);
-			if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
-			if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
-			if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
-			if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
-			if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
-			if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);
-
-
+			HacksInit();
 			return TRUE;
 
         case WM_COMMAND:
-            if (LOWORD(wParam) == IDOK) {
-				Config.Hacks = 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
-				Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) == 2 ) ? 0x40 : (IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) ? 0x2 : 0); // 0x40 == greyed checkbox (extra overflow checking); 0x2 == checked (disable overflow checking)
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;
-				Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
-				//Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_DENORMALS) == 2 ) ? 0x408 : (IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0); // 0x408 == greyed checkbox (DaZ SSE flag; so the CPU sets denormals to zero)
-				Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0); // 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)
-				
-				SaveConfig(); 
+			switch (LOWORD(wParam)) {
+				case IDOK:
+					HacksChecked();
+					SaveConfig(); 
+					EndDialog(hDlg, TRUE);
+					break;
 
-                EndDialog(hDlg, TRUE);
-            } else
-            if (LOWORD(wParam) == IDCANCEL) {
-                EndDialog(hDlg, FALSE);
-            } else
-            return TRUE;
+				case IDCANCEL:
+					EndDialog(hDlg, FALSE);
+					break;
+
+				case IDBUTTON1:
+					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
+					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
+					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
+					CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
+					CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
+					CheckDlgButton(hDlg, IDC_FASTBRANCHES, FALSE);
+					//CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
+					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
+					
+					HacksChecked();
+					HacksInit();
+					break;
+
+				case IDBUTTON2:
+					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
+					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
+					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
+					CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
+					CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
+					CheckDlgButton(hDlg, IDC_FASTBRANCHES, FALSE);
+					CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE);
+					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
+
+					HacksChecked();
+					HacksInit();
+					break;
+
+				default: return TRUE;
+			}
     }
 
     return FALSE;
