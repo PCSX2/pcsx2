@@ -419,7 +419,7 @@ void cpuBranchTest()
     // stall mtgs if it is taking too long
     if( g_MTGSVifCount > 0 ) {
         if( cpuRegs.cycle-g_MTGSVifStart > g_MTGSVifCount ) {
-            gsWaitGS();
+//            gsWaitGS();
             g_MTGSVifCount = 0;
         }
     }

@@ -636,7 +636,7 @@ int LoadState(char *file) {
 	}
 
 	// stop and reset the system first
-	gsWaitGS();
+	//gsWaitGS();
 
 	for (i=0; i<48; i++) ClearTLB(i);
 
@@ -716,7 +716,7 @@ int LoadState(char *file) {
         // have to call in thread, otherwise weird stuff will start happening
         u64 uf = (uptr)f;
         GSRingBufSimplePacket(GS_RINGTYPE_LOAD, (u32)(uf&0xffffffff), (u32)(uf>>32), 0);
-        gsWaitGS();
+ //       gsWaitGS();
     }
     else {
         _PS2Eload(GS);
