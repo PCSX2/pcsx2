@@ -221,21 +221,22 @@ void gsInit()
 #endif
 	}
 }
-
+//commented out for the time, as this costs fps, breaks savestates a bit (ZeroSPU2)
+//and doesn't seem to help anything (rama)
 void gsWaitGS()
 {
-    if( CHECK_DUALCORE ) {
-        while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos );
-    }
-    else {
-	    while( g_pGSRingPos != g_pGSWritePos ) {
-#ifdef _WIN32
-		    Sleep(1);
-#else
-		    usleep(500);
-#endif
-	    }
-    }
+//    if( CHECK_DUALCORE ) {
+//        while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos );
+//    }
+//    else {
+//	    while( g_pGSRingPos != g_pGSWritePos ) {
+//#ifdef _WIN32
+//		    Sleep(1);
+//#else
+//		    usleep(500);
+//#endif
+//	    }
+//    }
 }
 
 void gsShutdown()
