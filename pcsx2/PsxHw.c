@@ -1792,7 +1792,7 @@ void psxHw4Write8(u32 add, u8 value) {
 		case 0x1f402016:
 			cdvdWrite16(value);
 			FreezeMMXRegs(0);
-			FreezeXMMRegs(0)
+			FreezeXMMRegs(0);
 			return;
 		case 0x1f402017: cdvdWrite17(value); return;
 		case 0x1f402018: cdvdWrite18(value); return;

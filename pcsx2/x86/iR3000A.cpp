@@ -1500,8 +1500,11 @@ StartRecomp:
 		s_pCurBlock = PSX_GETBLOCK(psxpc);
 		assert( ptr != NULL );
 		
-		if( s_pCurBlock->startpc != psxpc ) 
+		if( s_pCurBlock->startpc != psxpc ){
+			FreezeXMMRegs(1);
  			psxRecRecompile(psxpc);
+			FreezeXMMRegs(0);
+		}
 
 		// could have reset
 		if( pcurblock->startpc == startpc ) {
@@ -1510,7 +1513,9 @@ StartRecomp:
 			*ptr = (u32)((uptr)s_pCurBlock->pFnptr - ( (uptr)ptr + 4 ));
 		}
 		else {
+			FreezeXMMRegs(1);
 			psxRecRecompile(startpc);
+			FreezeXMMRegs(0);
 			assert( pcurblock->pFnptr != 0 );
 		}
 	}
