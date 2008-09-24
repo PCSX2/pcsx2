@@ -1237,6 +1237,10 @@ void psxRecRecompile(u32 startpc)
 	u32 willbranch3 = 0;
 	u32* ptr;
 
+#ifdef __x86_64__ 
+	FreezeXMMRegs(1); //check why this is needed on x64 builds (rama)
+#endif
+
 #ifdef _DEBUG
 	//psxdump |= 4;
 	if( psxdump & 4 )
@@ -1501,9 +1505,7 @@ StartRecomp:
 		assert( ptr != NULL );
 		
 		if( s_pCurBlock->startpc != psxpc ){
-			FreezeXMMRegs(1);
  			psxRecRecompile(psxpc);
-			FreezeXMMRegs(0);
 		}
 
 		// could have reset
@@ -1513,14 +1515,16 @@ StartRecomp:
 			*ptr = (u32)((uptr)s_pCurBlock->pFnptr - ( (uptr)ptr + 4 ));
 		}
 		else {
-			FreezeXMMRegs(1);
 			psxRecRecompile(startpc);
-			FreezeXMMRegs(0);
 			assert( pcurblock->pFnptr != 0 );
 		}
 	}
     else
         assert( s_pCurBlock->pFnptr != 0 );
+
+#ifdef __x86_64__ 
+		FreezeXMMRegs(0); //check why this is needed on x64 builds (rama)
+#endif
 }
 
 R3000Acpu psxRec = {
