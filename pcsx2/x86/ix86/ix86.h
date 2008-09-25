@@ -403,17 +403,17 @@ extern void MOVZX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int offs
 extern void MOVZX32M16toR( x86IntRegType to, u32 from );
 
 #ifdef __x86_64__
-void MOVZX64R8toR( x86IntRegType to, x86IntRegType from );
-void MOVZX64Rm8toR( x86IntRegType to, x86IntRegType from );
-void MOVZX64Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset );
+extern void MOVZX64R8toR( x86IntRegType to, x86IntRegType from );
+extern void MOVZX64Rm8toR( x86IntRegType to, x86IntRegType from );
+extern void MOVZX64Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset );
 // movzx m8 to r64
-void MOVZX64M8toR( x86IntRegType to, u32 from );
+extern void MOVZX64M8toR( x86IntRegType to, u32 from );
 // movzx r16 to r64 
-void MOVZX64R16toR( x86IntRegType to, x86IntRegType from );
-void MOVZX64Rm16toR( x86IntRegType to, x86IntRegType from );
-void MOVZX64Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset );
+extern void MOVZX64R16toR( x86IntRegType to, x86IntRegType from );
+extern void MOVZX64Rm16toR( x86IntRegType to, x86IntRegType from );
+extern void MOVZX64Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset );
 // movzx m16 to r64
-void MOVZX64M16toR( x86IntRegType to, u32 from );
+extern void MOVZX64M16toR( x86IntRegType to, u32 from );
 #endif
 
 // cmovbe r32 to r32 
