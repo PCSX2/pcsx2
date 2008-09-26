@@ -66,7 +66,7 @@ int sifInit() {
 }
 int wP0;
 int wP1;
-void SIF0write(u32 *from, int words)
+_inline void SIF0write(u32 *from, int words)
 {
 	/*if(FIFO_SIF0_W < (words+sif0.fifoWritePos)) {*/
 		wP0 = min((FIFO_SIF0_W-sif0.fifoWritePos),words);
@@ -99,7 +99,7 @@ void SIF0write(u32 *from, int words)
 	}*/
 }
 
-void SIF0read(u32 *to, int words)
+_inline void SIF0read(u32 *to, int words)
 {
 	/*if(FIFO_SIF0_W < (words+sif0.fifoReadPos)) 
 	{*/
@@ -123,7 +123,7 @@ void SIF0read(u32 *to, int words)
 #endif
 }
 
-void SIF1write(u32 *from, int words)
+_inline void SIF1write(u32 *from, int words)
 {
 	/*if(FIFO_SIF1_W < (words+sif1.fifoWritePos)) 
 	{*/
@@ -151,7 +151,7 @@ void SIF1write(u32 *from, int words)
 	}*/
 }
 
-void SIF1read(u32 *to, int words)
+_inline void SIF1read(u32 *to, int words)
 {
 	/*if(FIFO_SIF1_W < (words+sif1.fifoReadPos)) 
 	{*/
@@ -175,7 +175,7 @@ void SIF1read(u32 *to, int words)
 #endif
 }
 
-void SIF0Dma()
+_inline void SIF0Dma()
 {
 	u32 *ptag;
 	int notDone;
@@ -359,7 +359,7 @@ notDone = 1;
 	}while(notDone);
 }
 
-void SIF1Dma()
+_inline void SIF1Dma()
 {
 	int id;
 	u32 *ptag;
@@ -558,7 +558,7 @@ void SIF1Dma()
 	
 }
 
-void  sif0Interrupt() {
+_inline void  sif0Interrupt() {
 	/*if (psxHu32(0x1070) & 8) {
 		PSX_INT(9, 0x800);
 		return 0;
@@ -571,7 +571,7 @@ void  sif0Interrupt() {
 	//return 1;
 }
 
-void  sif1Interrupt() {
+_inline void  sif1Interrupt() {
 	/*if (psxHu32(0x1070) & 8) {
 		PSX_INT(10, 0x800);
 		return 0;
@@ -584,7 +584,7 @@ void  sif1Interrupt() {
 	//return 1;
 }
 
-void  EEsif0Interrupt() {
+_inline void  EEsif0Interrupt() {
 	/*if (psHu32(DMAC_STAT) & (1<<5)) {
 		INT(5, 0x800);
 		return 0;
@@ -596,7 +596,7 @@ void  EEsif0Interrupt() {
 	//return 1;
 }
 
-void  EEsif1Interrupt() {
+_inline void  EEsif1Interrupt() {
 	/*if (psHu32(DMAC_STAT) & (1<<6)) {
 		INT(6, 0x800);
 		return 0;
@@ -608,7 +608,7 @@ void  EEsif1Interrupt() {
 //	return 1;
 }
 
-void dmaSIF0() {
+_inline void dmaSIF0() {
 
 #ifdef SIF_LOG
 	SIF_LOG("EE: dmaSIF0 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
@@ -635,7 +635,7 @@ void dmaSIF0() {
 	}
 }
 
-void dmaSIF1() {
+_inline void dmaSIF1() {
 
 #ifdef SIF_LOG
 	SIF_LOG("EE: dmaSIF1 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
@@ -664,7 +664,7 @@ void dmaSIF1() {
 	
 }
 
-void dmaSIF2() {
+_inline void dmaSIF2() {
 
 #ifdef SIF_LOG
 	SIF_LOG("dmaSIF2 chcr = %lx, madr = %lx, qwc  = %lx\n",
