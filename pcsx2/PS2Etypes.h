@@ -20,6 +20,7 @@
 
 #if defined (__linux__) && !defined(__LINUX__)  // some distributions are lower case
 #define __LINUX__
+#define _inline __inline__
 #endif
 
 #ifdef __CYGWIN__

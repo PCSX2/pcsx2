@@ -362,7 +362,7 @@ void _cpuTestInterrupts() {
 u32 s_iLastCOP0Cycle = 0;
 u32 s_iLastPERFCycle[2] = {0,0};
 
-static void _cpuTestTIMR() {
+_inline static void _cpuTestTIMR() {
 	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
 	s_iLastCOP0Cycle = cpuRegs.cycle;
 

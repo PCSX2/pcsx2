@@ -45,7 +45,7 @@ extern void  sif0Interrupt();
 extern void  EEsif1Interrupt();
 extern void  EEsif0Interrupt();
 extern int  EEsif2Interrupt();
-extern int  sifFreeze(gzFile f, int Mode);
+int  sifFreeze(gzFile f, int Mode);
 
 
 #endif /* __SIF_H__ */
