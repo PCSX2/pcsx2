@@ -1308,8 +1308,9 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 		}
 
 		if( xmminfo & XMMINFO_READS ) {
-			if( (!(xmminfo&XMMINFO_READT)||mmregt>=0) && (g_pCurInstInfo->fpuregs[_Fs_] & EEINST_LASTUSE) )
+			if( ( !(xmminfo & XMMINFO_READT) || (mmregt >= 0) ) && (g_pCurInstInfo->fpuregs[_Fs_] & EEINST_LASTUSE) ) {
 				mmregs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+			}
 			else mmregs = _allocFPtoXMMreg(-1, _Fs_, MODE_READ);
 		}
 

@@ -317,24 +317,21 @@ extern __forceinline u8* dmaGetAddr(u32 mem)
 	u8* p, *pbase;
 	mem &= ~0xf;
 
-#ifdef _DEBUG
-	if( (mem & 0xffff0000) == 0x10000000 )
-		SysPrintf("dma to/from %x!\n", mem);
-#endif
-	if( mem == 0x50000000 ) // reserved scratch pad mem
-		return NULL;
-
-	p = (u8*)dmaGetAddrBase(mem); //, *pbase;
-	
-#ifdef _WIN32
-    // do manual LUT since IPU/SPR seems to use addrs 0x3000xxxx quite often
-    // linux doesn't suffer from this because it has better vm support
-#ifndef PCSX2_RELEASE
-	if( memLUT[ (p-PS2MEM_BASE)>>12 ].aPFNs == NULL ) {
-		SysPrintf("*PCSX2*: DMA error: %8.8x\n", mem);
-		return NULL;
+	if( (mem&0xffff0000) == 0x50000000 ) {// reserved scratch pad mem
+		SysPrintf("dmaGetAddr: reserved scratch pad mem\n");
+		return (u8*)&PS2MEM_SCRATCH[(mem) & 0x3ff0];
 	}
-#endif
+
+	p = (u8*)dmaGetAddrBase(mem);
+
+#ifdef _WIN32	
+	// do manual LUT since IPU/SPR seems to use addrs 0x3000xxxx quite often
+    // linux doesn't suffer from this because it has better vm support
+	if( memLUT[ (p-PS2MEM_BASE)>>12 ].aPFNs == NULL ) {
+		SysPrintf("dmaGetAddr: memLUT PFN warning\n");
+		return p;
+	}
+
 	pbase = (u8*)memLUT[ (p-PS2MEM_BASE)>>12 ].aVFNs[0];
 	if( pbase != NULL )
 		p = pbase + ((u32)p&0xfff);

@@ -262,11 +262,12 @@ int _checkXMMreg(int type, int reg, int mode)
 	for (i=0; i<XMMREGS; i++) {
 		if (xmmregs[i].inuse && xmmregs[i].type == (type&0xff) && xmmregs[i].reg == reg ) {
 
-			if( !(xmmregs[i].mode & MODE_READ) && (mode&(MODE_READ|MODE_READHALF)) ) {
-				if(mode&MODE_READ)
+			if ( !(xmmregs[i].mode & MODE_READ) ) {
+				if (mode & MODE_READ) {
 					SSEX_MOVDQA_M128_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
-				else {
-					if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[i]==XMMT_INT )
+				}
+				else if (mode & MODE_READHALF) {
+					if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[i] == XMMT_INT )
 						SSE2_MOVQ_M64_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
 					else
 						SSE_MOVLPS_M64_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
@@ -347,7 +348,7 @@ int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode) {
 		if (xmmregs[i].type != XMMTYPE_FPREG) continue;
 		if (xmmregs[i].reg != fpreg) continue;
 
-		if( !(xmmregs[i].mode & MODE_READ) && (mode&MODE_READ)) {
+		if( !(xmmregs[i].mode & MODE_READ) && (mode & MODE_READ)) {
 			SSE_MOVSS_M32_to_XMM(i, (uptr)&fpuRegs.fpr[fpreg].f);
 			xmmregs[i].mode |= MODE_READ;
 		}
@@ -791,28 +792,25 @@ void _deleteFPtoXMMreg(int reg, int flush)
 {
 	int i;
 	for (i=0; i<XMMREGS; i++) {
-
 		if (xmmregs[i].inuse && xmmregs[i].type == XMMTYPE_FPREG && xmmregs[i].reg == reg ) {
-
 			switch(flush) {
 				case 0:
 					_freeXMMreg(i);
-					break;
+					return;
+
 				case 1:
-				case 2:
-					if( flush == 1 && (xmmregs[i].mode & MODE_WRITE) ) {
+					if (xmmregs[i].mode & MODE_WRITE) {
 						SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[reg].UL, i);
 						// get rid of MODE_WRITE since don't want to flush again
 						xmmregs[i].mode &= ~MODE_WRITE;
 						xmmregs[i].mode |= MODE_READ;
 					}
+					return;
 
-					if( flush == 2 )
-						xmmregs[i].inuse = 0;
-					break;
+				case 2:
+					xmmregs[i].inuse = 0;
+					return;
 			}
-				
-			return;
 		}
 	}
 }

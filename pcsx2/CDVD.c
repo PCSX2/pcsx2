@@ -793,18 +793,15 @@ void cdvdNewDiskCB() {
 void mechaDecryptBytes(unsigned char* buffer, int size)
 {
 	int i;
-	
+
 	int shiftAmount = (cdvd.decSet>>4) & 7;
 	int doXor = (cdvd.decSet) & 1;
 	int doShift = (cdvd.decSet) & 2;
-	unsigned char key = cdvd.Key[4];
 	
-	for(i=0; i<size; i++)
+	for (i=0; i<size; i++) 
 	{
-		if(doXor)
-			buffer[i] ^= key;
-		if(doShift)
-			buffer[i] = (buffer[i]>>shiftAmount) | (buffer[i]<<(8-shiftAmount));
+		if (doXor) buffer[i] ^= cdvd.Key[4];
+		if (doShift) buffer[i] = (buffer[i]>>shiftAmount) | (buffer[i]<<(8-shiftAmount));
 	}
 }
 
