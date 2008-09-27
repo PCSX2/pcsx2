@@ -237,7 +237,7 @@ void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
 void rec##fn(void) \
 { \
-	eeFPURecompileCode(rec##fn##_xmm, NULL, xmminfo); \
+	eeFPURecompileCode(rec##fn##_xmm, fn, xmminfo); \
 }
 #else
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
