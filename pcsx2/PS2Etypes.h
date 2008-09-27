@@ -20,7 +20,6 @@
 
 #if defined (__linux__) && !defined(__LINUX__)  // some distributions are lower case
 #define __LINUX__
-#define _inline __inline__
 #endif
 
 #ifdef __CYGWIN__
@@ -69,6 +68,7 @@ typedef union _LARGE_INTEGER
 {
 	long long QuadPart;
 } LARGE_INTEGER;
+#define _inline __inline__
 #endif
 
 #if defined(__MINGW32__)
