@@ -41,7 +41,7 @@
 #define CP2_RECOMPILE
 
 #define EE_CONST_PROP // rec2 - enables constant propagation (faster)
-#define EE_FPU_REGCACHING 1
+//#define EE_FPU_REGCACHING 1 // Not used anymore, its always on!
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
@@ -243,12 +243,12 @@ void rec##fn(void) \
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
 void rec##fn(void) \
 { \
-	eeFPURecompileCode(rec##fn##_xmm, rec##fn##_, xmminfo); \
+	eeFPURecompileCode(rec##fn##_xmm, fn, xmminfo); \
 }
 #endif
 
 // rd = rs op rt (all regs need to be in xmm)
 int eeRecompileCodeXMM(int xmminfo);
-void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xmminfo);
+void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo);
 
 #endif // __IR5900_H__
