@@ -1075,10 +1075,10 @@ int eeRecompileCodeXMM(int xmminfo)
 #define PROCESS_EE_SETMODET_XMM(mmreg) ((xmmregs[mmreg].mode&MODE_WRITE)?PROCESS_EE_MODEWRITET:0)
 
 // rd = rs op rt
-void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xmminfo)
+void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo)
 {
     int mmregs=-1, mmregt=-1, mmregd=-1, mmregacc=-1;
-	if( fpucode == NULL || (EE_FPU_REGCACHING && cpucaps.hasStreamingSIMDExtensions) ) {
+	if( cpucaps.hasStreamingSIMDExtensions ) {
 		int info = PROCESS_EE_XMM;
 
 		if( xmminfo & XMMINFO_READS ) _addNeededFPtoXMMreg(_Fs_);
@@ -1214,11 +1214,10 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR_INFO fpucode, int xm
 		return;
 	}
 
-	if( xmminfo & XMMINFO_READS ) _deleteFPtoXMMreg(_Fs_, 0);
-	if( xmminfo & XMMINFO_READT ) _deleteFPtoXMMreg(_Ft_, 0);
-	if( xmminfo & (XMMINFO_READD|XMMINFO_WRITED) ) _deleteFPtoXMMreg(_Fd_, 0);
-	if( xmminfo & (XMMINFO_READACC|XMMINFO_WRITEACC) ) _deleteFPtoXMMreg(XMMFPU_ACC, 0);
-	fpucode(0);
+	MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code);
+	MOV32ItoM((uptr)&cpuRegs.pc, pc);
+	iFlushCall(FLUSH_EVERYTHING);
+	CALLFunc((uptr)fpucode);
 }
 
 #undef _Ft_
