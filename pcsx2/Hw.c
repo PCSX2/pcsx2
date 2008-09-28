@@ -1066,7 +1066,10 @@ void hwWrite32(u32 mem, u32 value) {
 			}
 */
 			// omg, just xor it
-			psHu32(0xf010) ^= value;
+			//psHu32(0xf010) ^= value;
+			//drk says its wrong (updates all 32bits instead of 16 only 
+			//so lets use this and see :) (rama)
+			psHu32(0xf010) ^= (u16)value;
 
 			if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401)
                 cpuTestINTCInts();
