@@ -784,7 +784,7 @@ void hwWrite16(u32 mem, u16 value)
 }
 
 void hwWrite32(u32 mem, u32 value) {
-	int i;
+	//int i;
 
 	//IPU regs
 	if ((mem>=0x10002000) && (mem<0x10003000)) {
@@ -1033,13 +1033,19 @@ void hwWrite32(u32 mem, u32 value) {
 			HW_LOG("DMAC_STAT Write 32bit %x\n", value);
 #endif
 			psHu16(0xe010)&= ~(value & 0xffff); // clear on 1
+/*
 			value = value >> 16;
+
 			for (i=0; i<16; i++) { // reverse on 1
 				if (value & (1<<i)) {
 					if (psHu16(0xe012) & (1<<i)) psHu16(0xe012)&= ~(1<<i);
 					else psHu16(0xe012)|= 1<<i;
 				}
 			}
+*/
+			//just XOR it! :p
+			psHu16(0xe012) ^= (u16)(value >> 16);
+
 			if ((cpuRegs.CP0.n.Status.val & 0x10807) == 0x10801)
                 cpuTestDMACInts();
 			break;
