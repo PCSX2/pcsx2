@@ -1043,7 +1043,9 @@ void hwWrite32(u32 mem, u32 value) {
 //------------------------------------------------------------------
 		case 0x1000f130:
 		case 0x1000f410:
+#ifdef PCSX2_DEVBUILD
 			HW_LOG("Unknown Hardware write 32 at %x with value %x (%x)\n", mem, value, cpuRegs.CP0.n.Status);
+#endif
 			break;
 //------------------------------------------------------------------
 		default:
@@ -1053,7 +1055,9 @@ void hwWrite32(u32 mem, u32 value) {
 		{
 			psHu32(mem) = value;
 		}
+#ifdef PCSX2_DEVBUILD
 			HW_LOG("Unknown Hardware write 32 at %x with value %x (%x)\n", mem, value, cpuRegs.CP0.n.Status);
+#endif
 			break;
 	}
 }
