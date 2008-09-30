@@ -3654,8 +3654,8 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	if ( ( CHECK_VUCLIPHACK ) || ( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) ) 
 		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
 
-	//_freeXMMreg(t1reg); // We Never Allocated these regs, so no need to free them
-	//_freeXMMreg(t2reg);
+	_freeXMMreg(t1reg);
+	_freeXMMreg(t2reg);
 
 	_freeX86reg(x86temp1);
 	_freeX86reg(x86temp2);
