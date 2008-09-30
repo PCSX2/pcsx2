@@ -50,8 +50,8 @@
 extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
 
-static u32 PCSX2_ALIGNED16(s_neg[4]) = { 0x80000000, 0, 0, 0 };
-static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0, 0, 0 };
+static u32 PCSX2_ALIGNED16(s_neg[4]) = { 0x80000000, 0xffffffff, 0xffffffff, 0xffffffff };
+static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff };
 
 #define REC_FPUBRANCH(f) \
 	void f(); \
