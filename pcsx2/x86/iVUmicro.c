@@ -3732,7 +3732,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 	}
 
 	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, t1reg);
-	if (CHECK_OVERFLOW) vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
+	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
 	
 	x86SetJ32(pjmp2);
 
