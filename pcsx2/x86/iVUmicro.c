@@ -3668,16 +3668,13 @@ PCSX2_ALIGNED16(u64 DIV_TEMP_XMM[2]);
 
 void recVUMI_DIV(VURegs *VU, int info)
 {
-	int t1reg, t1boolean, vftemp;
+	int t1reg, t1boolean;
 	u8* pjmp, * pjmp1;
 	u32* pjmp2, * pjmp32;
 
 	//SysPrintf("VU DIV Opcode \n");
 	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFCF); // Clear D/I flags
 	
-	vftemp = ALLOCTEMPX86(MODE_8BITREG);
-	if (vftemp < 0) {SysPrintf("VU: SQRT allocation error!!!\n"); vftemp = EAX;}
-
 	t1reg = _vuGetTempXMMreg(info);
 	if( t1reg < 0 ) {
 		for (t1reg = 0; ( (t1reg == EEREC_TEMP) || (t1reg == EEREC_S)|| (t1reg == EEREC_T) ); t1reg++)
@@ -3691,16 +3688,16 @@ void recVUMI_DIV(VURegs *VU, int info)
 	SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
 	SSE_CMPEQSS_XMM_to_XMM(EEREC_TEMP, EEREC_T); // Set all F's if each vector is zero
 
-	SSE_MOVMSKPS_XMM_to_R32( vftemp, EEREC_TEMP); // Move the sign bits of the previous calculation
+	SSE_MOVMSKPS_XMM_to_R32( EAX, EEREC_TEMP); // Move the sign bits of the previous calculation
 
-	AND32ItoR( vftemp, (1<<_Ftf_) );  // Grab "Is Zero" bits from the previous calculation
+	AND32ItoR( EAX, (1<<_Ftf_) );  // Grab "Is Zero" bits from the previous calculation
 	pjmp32 = JZ32(0); // Skip if none are
 
 		SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // Clear EEREC_TEMP
 		SSE_CMPEQSS_XMM_to_XMM(EEREC_TEMP, EEREC_S); // Set all F's if each vector is zero
-		SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_TEMP); // Move the sign bits of the previous calculation
+		SSE_MOVMSKPS_XMM_to_R32(EAX, EEREC_TEMP); // Move the sign bits of the previous calculation
 
-		AND32ItoR( vftemp, (1<<_Fsf_) );  // Grab "Is Zero" bits from the previous calculation
+		AND32ItoR( EAX, (1<<_Fsf_) );  // Grab "Is Zero" bits from the previous calculation
 		pjmp = JZ8(0);
 			OR32ItoM( VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410 ); // Set invalid flag (0/0)
 			pjmp1 = JMP8(0);
@@ -3740,8 +3737,6 @@ void recVUMI_DIV(VURegs *VU, int info)
 
 	if (t1boolean) SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&DIV_TEMP_XMM[0] ); // restore t1reg data
 	else _freeXMMreg(t1reg); // free t1reg
-
-	_freeX86reg(vftemp); // free vftemp
 }
 
 void recVUMI_SQRT( VURegs *VU, int info )
@@ -3756,17 +3751,12 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFCF); // Clear D/I flags
 
 	if (CHECK_VU_EXTRA_FLAGS) {
-		vftemp = ALLOCTEMPX86(MODE_8BITREG);
-		if (vftemp < 0) {SysPrintf("VU: SQRT allocation error!!!\n"); vftemp = EAX;}
-
 		/* Check for negative divide */
-		SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_TEMP);
+		SSE_MOVMSKPS_XMM_to_R32(EAX, EEREC_TEMP);
 		AND32ItoR(vftemp, 1);  //Check sign
 		pjmp = JZ8(0); //Skip if none are
 			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag - Negative number sqrt
 		x86SetJ8(pjmp);
-
-		_freeX86reg(vftemp);
 	}
 
 	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //Do a cardinal sqrt
@@ -3783,7 +3773,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 {
 	u8* ajmp8;
 	u32* ajmp32, * bjmp32;
-	int t1reg, vftemp;
+	int t1reg;
 
 	if( _Ftf_ ) _unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
 	else SSE_MOVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
@@ -3791,12 +3781,9 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 	AND32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0xFCF); // Clear D/I flags
 
 	if (CHECK_VU_EXTRA_FLAGS) {
-		vftemp = ALLOCTEMPX86(MODE_8BITREG);
-		if (vftemp < 0) { SysPrintf("VU: RSQRT allocation error!!!\n"); vftemp = EAX; }
-
 		/* Check for negative divide */
-		SSE_MOVMSKPS_XMM_to_R32(vftemp, EEREC_TEMP);
-		AND32ItoR(vftemp, 1);  //Check sign
+		SSE_MOVMSKPS_XMM_to_R32(EAX, EEREC_TEMP);
+		AND32ItoR(EAX, 1);  //Check sign
 		ajmp8 = JZ8(0); //Skip if none are
 			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag - Negative number sqrt
 		x86SetJ8(ajmp8);
@@ -3818,9 +3805,9 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 			SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
 			SSE_CMPEQSS_XMM_to_XMM(t1reg, EEREC_TEMP); // Set all F's if each vector is zero
 
-			SSE_MOVMSKPS_XMM_to_R32(vftemp, t1reg); // Move the sign bits of the previous calculation
+			SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
 
-			AND32ItoR( vftemp, 0x01 );  // Grab "Is Zero" bits from the previous calculation
+			AND32ItoR( EAX, 0x01 );  // Grab "Is Zero" bits from the previous calculation
 			ajmp32 = JZ32(0); // Skip if none are
 				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
 
@@ -3838,10 +3825,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 		vuFloat2(t1reg, t1reg, 0x8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg);
 
-		if (CHECK_VU_EXTRA_FLAGS) {
-			x86SetJ32(bjmp32);
-			_freeX86reg(vftemp);
-		}
+		if (CHECK_VU_EXTRA_FLAGS) x86SetJ32(bjmp32);
 
 		_freeXMMreg(t1reg);
 	}
@@ -3855,12 +3839,11 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 		if (CHECK_VU_EXTRA_FLAGS) {
 			// Ft can still be zero here! so we need to check if its zero and set the correct flag.
 			SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-			//XOR32RtoR(vftemp, vftemp);
 			SSE_CMPEQSS_XMM_to_XMM(t1reg, EEREC_TEMP); // Set all F's if each vector is zero
 
-			SSE_MOVMSKPS_XMM_to_R32(vftemp, t1reg); // Move the sign bits of the previous calculation
+			SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
 
-			AND32ItoR( vftemp, 0x01 );  // Grab "Is Zero" bits from the previous calculation
+			AND32ItoR( EAX, 0x01 );  // Grab "Is Zero" bits from the previous calculation
 			ajmp32 = JZ32(0); // Skip if none are
 				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
 
@@ -3879,10 +3862,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 		vuFloat2(t1reg, t1reg, 0x8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg);
 
-		if (CHECK_VU_EXTRA_FLAGS) {
-			x86SetJ32(bjmp32);
-			_freeX86reg(vftemp);
-		}
+		if (CHECK_VU_EXTRA_FLAGS) x86SetJ32(bjmp32);
 
 		SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&RSQRT_TEMP_XMM[0] ); // restore t1reg data
 	}
