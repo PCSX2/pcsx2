@@ -3740,7 +3740,6 @@ void recVUMI_DIV(VURegs *VU, int info)
 void recVUMI_SQRT( VURegs *VU, int info )
 {
 	u8* pjmp;
-	int vftemp;
 
 	//SysPrintf("SQRT Opcode \n");
 	if( xmmregs[EEREC_T].mode & MODE_WRITE ) _unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, _Ftf_);
@@ -3751,7 +3750,7 @@ void recVUMI_SQRT( VURegs *VU, int info )
 	if (CHECK_VU_EXTRA_FLAGS) {
 		/* Check for negative divide */
 		SSE_MOVMSKPS_XMM_to_R32(EAX, EEREC_TEMP);
-		AND32ItoR(vftemp, 1);  //Check sign
+		AND32ItoR(EAX, 1);  //Check sign
 		pjmp = JZ8(0); //Skip if none are
 			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x410); //Invalid Flag - Negative number sqrt
 		x86SetJ8(pjmp);
