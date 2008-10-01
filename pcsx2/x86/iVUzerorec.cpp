@@ -904,11 +904,11 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 
 static int _recbranchAddr(u32 vucode) {
 	s32 bpc = pc + (_Imm11_ << 3);
-
+/*
 	if ( bpc < 0 ) {
 		SysPrintf("zerorec branch warning: bpc < 0 ( %x ); Using unsigned imm11\n", bpc);
 		bpc = pc + (_UImm11_ << 3); 
-	}
+	}*/
 	bpc &= (s_MemSize[s_vu]-1);
 
 	return bpc;

@@ -1876,16 +1876,9 @@ void _vuFCGET(VURegs * VU) {
 }
 
 s32 _branchAddr(VURegs * VU) {
-	s32 bpc = VU->VI[REG_TPC].SL + _Imm11_ * 8; 
-	if (bpc < 0) {
-		bpc = VU->VI[REG_TPC].SL + _UImm11_ * 8; 
-	}
-	if (VU == &VU1) {
-		bpc&= 0x3fff;
-	} else {
-		bpc&= 0x0fff;
-	}
-
+	s32 bpc = VU->VI[REG_TPC].SL + ( _Imm11_ * 8 ); 
+	//if (bpc < 0) bpc = VU->VI[REG_TPC].SL + _UImm11_ * 8; 
+	bpc&= (VU == &VU1) ? 0x3fff : 0x0fff;
 	return bpc;
 }
 

@@ -5021,7 +5021,7 @@ static s32 _recbranchAddr(VURegs * VU)
 {
 	bpc = pc + (_Imm11_ << 3); 
 
-	if (bpc < 0) bpc = pc + (_UImm11_ << 3);
+	//if (bpc < 0) bpc = pc + (_UImm11_ << 3);
 	bpc&= (VU == &VU1) ? 0x3fff: 0x0fff;
 
 	return bpc;
