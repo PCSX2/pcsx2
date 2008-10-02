@@ -1395,6 +1395,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	static u32 macaddr, stataddr, prevstataddr;
 	static int x86macflag, x86temp;
 	static int t1reg, t1regBoolean;
+	const static int flipMask[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
 	if( !(info & PROCESS_VU_UPDATEFLAGS) ) return;
 
@@ -1443,7 +1444,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
 		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)VU_Zero_Helper_Mask);
-		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)VU_Pos_Infinity); // If infinity, then overflow has occured (NaN's don't report as overflow) (NaN's and Infinities report as overflow)
+		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)VU_Pos_Infinity); // If infinity, then overflow has occured (NaN's don't report as overflow)
 
 		SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
 
@@ -1477,19 +1478,19 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
 		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
-			/*
+		/*
 			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
 			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
 			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
 			SSE_ORPS_XMM_to_XMM(reg, t1reg);
-			*/
+		*/
 			// ToDO: Make it so that we only set modified vectors to zero! (the current code sets denormals to zero even if the vector isn't used in the calculation)
 		}
 
 		x86SetJ32(pjmp32); // If we skipped the Underflow Flag Checking (when we had an Overflow), return here
 	}
 
-	vuFloat2(reg, t1reg, _X_Y_Z_W); // Clamp overflowed vectors that were modified
+	vuFloat2(reg, t1reg, flipMask[_X_Y_Z_W]); // Clamp overflowed vectors that were modified (remember reg's vectors have been flipped, so have to use a flipmask)
 
 	//-------------------------Check for Signed flags------------------------------
 
