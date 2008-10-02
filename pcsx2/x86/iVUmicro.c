@@ -1478,13 +1478,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
 		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
-		/*
-			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
+			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg (t1reg = denormals are positive zero)
+			VU_MERGE_REGS_CUSTOM(t1reg, reg, (15 - flipMask[_X_Y_Z_W])); // Send t1reg the vectors that shouldn't be modified (since reg was flipped, we need a mask to get the unmodified vectors)
 			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
-			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
-			SSE_ORPS_XMM_to_XMM(reg, t1reg);
-		*/
-			// ToDO: Make it so that we only set modified vectors to zero! (the current code sets denormals to zero even if the vector isn't used in the calculation)
+			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]); // Only keep the sign bit for each vector
+			SSE_ORPS_XMM_to_XMM(reg, t1reg); // Denormals are Signed Zero, and unmodified vectors stay the same!
 		}
 
 		x86SetJ32(pjmp32); // If we skipped the Underflow Flag Checking (when we had an Overflow), return here
