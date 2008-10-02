@@ -1477,10 +1477,13 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
 		if (CHECK_UNDERFLOW) {  // Sets underflow/denormals to zero
+			/*
 			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg
 			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
 			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]);
 			SSE_ORPS_XMM_to_XMM(reg, t1reg);
+			*/
+			// ToDO: Make it so that we only set modified vectors to zero! (the current code sets denormals to zero even if the vector isn't used in the calculation)
 		}
 
 		x86SetJ32(pjmp32); // If we skipped the Underflow Flag Checking (when we had an Overflow), return here
