@@ -138,7 +138,7 @@ void recCOP1_W( void ) {
 //------------------------------------------------------------------
 void recCFC1(void)
 {
-	if ( ! _Rt_ ) return;
+	if ( !_Rt_ || ( (_Fs_ != 0) && (_Fs_ != 31) ) ) return;
 
 	_eeOnWriteReg(_Rt_, 1);
 
@@ -163,7 +163,9 @@ void recCFC1(void)
 
 void recCTC1( void )
 {
-	if( GPR_IS_CONST1(_Rt_)) {
+	if ( _Fs_ != 31 ) return;
+
+	if ( GPR_IS_CONST1(_Rt_) ) {
 		MOV32ItoM((uptr)&fpuRegs.fprc[ _Fs_ ], g_cpuConstRegs[_Rt_].UL[0]);
 	}
 	else {
@@ -172,11 +174,11 @@ void recCTC1( void )
 			SSEX_MOVD_XMM_to_M32((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
 		}
 #ifdef __x86_64__
-        else if( (mmreg = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ)) >= 0 ) {
+        else if ( (mmreg = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ) ) >= 0 ) {
 			MOV32RtoM((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
 		}
 #else
-		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0 ) {
+		else if ( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0 ) {
 			MOVDMMXtoM((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
 			SetMMXstate();
 		}

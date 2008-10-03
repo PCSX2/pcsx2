@@ -249,7 +249,7 @@ void CFC1() {
 }
 
 void CTC1() {
-	if(_Fs_!=31) return;
+	if ( _Fs_ != 31 ) return;
 	fpuRegs.fprc[_Fs_] = cpuRegs.GPR.r[_Rt_].UL[0];
 }
 
