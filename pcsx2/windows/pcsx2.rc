@@ -1046,7 +1046,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,162,418,10
     CONTROL         "Disable VU Overflow Checks - *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_VU_OVERFLOWHACK,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,15,49,475,10
-    CTEXT           "These hacks will effect the speed of PCSX2 but possibly comprimise on compatability",IDC_HACKDESC,7,7,497,8
+    CTEXT           "These hacks will effect the speed of PCSX2 but possibly compromise on compatability",IDC_HACKDESC,7,7,497,8
     CONTROL         "Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore.",IDC_SOUNDHACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,245,421,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )",IDC_SYNCHACK2,

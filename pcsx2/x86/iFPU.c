@@ -129,9 +129,240 @@ void recCOP1_W( void ) {
 
 
 //------------------------------------------------------------------
-// FPU Opcodes!
+// *FPU Opcodes!*
 //------------------------------------------------------------------
-#ifndef FPU_RECOMPILE
+
+
+//------------------------------------------------------------------
+// CFC1 / CTC1
+//------------------------------------------------------------------
+void recCFC1(void)
+{
+	if ( ! _Rt_ ) return;
+
+	_eeOnWriteReg(_Rt_, 1);
+
+	MOV32MtoR( EAX, (uptr)&fpuRegs.fprc[ _Fs_ ] );
+	_deleteEEreg(_Rt_, 0);
+
+	if(EEINST_ISLIVE1(_Rt_)) {
+#ifdef __x86_64__
+        CDQE();
+        MOV64RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], RAX );
+#else
+		CDQ( );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+#endif
+	}
+	else {
+		EEINST_RESETHASLIVE1(_Rt_);
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+	}
+}
+
+void recCTC1( void )
+{
+	if( GPR_IS_CONST1(_Rt_)) {
+		MOV32ItoM((uptr)&fpuRegs.fprc[ _Fs_ ], g_cpuConstRegs[_Rt_].UL[0]);
+	}
+	else {
+		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+		if( mmreg >= 0 ) {
+			SSEX_MOVD_XMM_to_M32((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
+		}
+#ifdef __x86_64__
+        else if( (mmreg = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ)) >= 0 ) {
+			MOV32RtoM((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
+		}
+#else
+		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0 ) {
+			MOVDMMXtoM((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
+			SetMMXstate();
+		}
+#endif
+		else {
+			_deleteGPRtoXMMreg(_Rt_, 1);
+
+#ifdef __x86_64__
+            _deleteX86reg(X86TYPE_GPR, _Rt_, 1);
+#else
+			_deleteMMXreg(MMX_GPR+_Rt_, 1);
+#endif
+			MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+			MOV32RtoM( (uptr)&fpuRegs.fprc[ _Fs_ ], EAX );
+		}
+	}
+}
+//------------------------------------------------------------------
+
+
+//------------------------------------------------------------------
+// MFC1
+//------------------------------------------------------------------
+void recMFC1(void) {
+	int regt, regs;
+	if ( ! _Rt_ ) return;
+
+	_eeOnWriteReg(_Rt_, 1);
+
+	regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+	if( regs >= 0 ) {
+		_deleteGPRtoXMMreg(_Rt_, 2);
+
+#ifdef __x86_64__
+        regt = _allocCheckGPRtoX86(g_pCurInstInfo, _Rt_, MODE_WRITE);
+		
+		if( regt >= 0 ) {
+
+			if(EEINST_ISLIVE1(_Rt_)) {
+                SSE2_MOVD_XMM_to_R(RAX, regs);
+                // sign extend
+                CDQE();
+                MOV64RtoR(regt, RAX);
+            }
+            else {
+                SSE2_MOVD_XMM_to_R(regt, regs);
+                EEINST_RESETHASLIVE1(_Rt_);
+            }
+		}
+#else
+		regt = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rt_, MODE_WRITE);
+		
+		if( regt >= 0 ) {
+			SSE2_MOVDQ2Q_XMM_to_MM(regt, regs);
+
+			if(EEINST_ISLIVE1(_Rt_)) _signExtendGPRtoMMX(regt, _Rt_, 0);
+			else EEINST_RESETHASLIVE1(_Rt_);
+		}
+#endif
+		else {
+			if(EEINST_ISLIVE1(_Rt_)) {
+				_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs, 0);
+			}
+			else {
+				EEINST_RESETHASLIVE1(_Rt_);
+				SSE_MOVSS_XMM_to_M32((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs);
+			}
+		}
+	}
+#ifndef __x86_64__
+	else if( (regs = _checkMMXreg(MMX_FPU+_Fs_, MODE_READ)) >= 0 ) {
+		// convert to mmx reg
+		mmxregs[regs].reg = MMX_GPR+_Rt_;
+		mmxregs[regs].mode |= MODE_READ|MODE_WRITE;
+		_signExtendGPRtoMMX(regs, _Rt_, 0);
+	}
+#endif
+	else {
+		regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+	
+		if( regt >= 0 ) {
+			if( xmmregs[regt].mode & MODE_WRITE ) {
+				SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[_Rt_].UL[2], regt);
+			}
+			xmmregs[regt].inuse = 0;
+		}
+#ifdef __x86_64__
+        else if( (regt = _allocCheckGPRtoX86(g_pCurInstInfo, _Rt_, MODE_WRITE)) >= 0 ) {
+
+            if(EEINST_ISLIVE1(_Rt_)) {
+                MOV32MtoR( RAX, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
+                CDQE();
+                MOV64RtoR(regt, RAX);
+            }
+            else {
+                MOV32MtoR( regt, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
+                EEINST_RESETHASLIVE1(_Rt_);
+            }
+        }
+        else
+#endif
+        {
+
+            _deleteEEreg(_Rt_, 0);
+            MOV32MtoR( EAX, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
+            
+            if(EEINST_ISLIVE1(_Rt_)) {
+#ifdef __x86_64__
+                CDQE();
+                MOV64RtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], RAX);
+#else
+                CDQ( );
+                MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+                MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+#endif
+            }
+            else {
+                EEINST_RESETHASLIVE1(_Rt_);
+                MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+            }
+		}
+	}
+}
+//------------------------------------------------------------------
+
+
+//------------------------------------------------------------------
+// MTC1
+//------------------------------------------------------------------
+void recMTC1(void)
+{
+	if( GPR_IS_CONST1(_Rt_) ) {
+		_deleteFPtoXMMreg(_Fs_, 0);
+		MOV32ItoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, g_cpuConstRegs[_Rt_].UL[0]);
+	}
+	else {
+		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+		if( mmreg >= 0 ) {
+			if( g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE ) {
+				// transfer the reg directly
+				_deleteGPRtoXMMreg(_Rt_, 2);
+				_deleteFPtoXMMreg(_Fs_, 2);
+				_allocFPtoXMMreg(mmreg, _Fs_, MODE_WRITE);
+			}
+			else {
+				int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
+				if( mmreg2 >= 0 ) SSE_MOVSS_XMM_to_XMM(mmreg2, mmreg);
+				else SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
+			}
+		}
+#ifndef __x86_64__
+		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0 ) {
+
+			if( cpucaps.hasStreamingSIMD2Extensions ) {
+				int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
+				if( mmreg2 >= 0 ) {
+					SetMMXstate();
+					SSE2_MOVQ2DQ_MM_to_XMM(mmreg2, mmreg);
+				}
+				else {
+					SetMMXstate();
+					MOVDMMXtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
+				}
+			}
+			else {
+				_deleteFPtoXMMreg(_Fs_, 0);
+				SetMMXstate();
+				MOVDMMXtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
+			}
+		}
+#endif
+		else {
+			int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
+
+			if( mmreg2 >= 0 ) SSE_MOVSS_M32_to_XMM(mmreg2, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
+			else {
+				MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
+				MOV32RtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, EAX);
+			}
+		}
+	}
+}
+//------------------------------------------------------------------
+
+
+#ifndef FPU_RECOMPILE // If FPU_RECOMPILE is not defined, then use the interpreter opcodes. (CFC1, CTC1, MFC1, and MTC1 are special because they work specifically with the EE rec so they're defined above)
 
 REC_FPUFUNC(ABS_S);
 REC_FPUFUNC(ADD_S);
@@ -560,70 +791,6 @@ FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS|XMMINFO_READT);
 
 
 //------------------------------------------------------------------
-// CFC1 / CTC1 XMM
-//------------------------------------------------------------------
-void recCFC1(void)
-{
-	if ( ! _Rt_ ) return;
-
-	_eeOnWriteReg(_Rt_, 1);
-
-	MOV32MtoR( EAX, (uptr)&fpuRegs.fprc[ _Fs_ ] );
-	_deleteEEreg(_Rt_, 0);
-
-	if(EEINST_ISLIVE1(_Rt_)) {
-#ifdef __x86_64__
-        CDQE();
-        MOV64RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], RAX );
-#else
-		CDQ( );
-		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
-#endif
-	}
-	else {
-		EEINST_RESETHASLIVE1(_Rt_);
-		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-	}
-}
-
-void recCTC1( void )
-{
-	if( GPR_IS_CONST1(_Rt_)) {
-		MOV32ItoM((uptr)&fpuRegs.fprc[ _Fs_ ], g_cpuConstRegs[_Rt_].UL[0]);
-	}
-	else {
-		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
-		if( mmreg >= 0 ) {
-			SSEX_MOVD_XMM_to_M32((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
-		}
-#ifdef __x86_64__
-        else if( (mmreg = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ)) >= 0 ) {
-			MOV32RtoM((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
-		}
-#else
-		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0 ) {
-			MOVDMMXtoM((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
-			SetMMXstate();
-		}
-#endif
-		else {
-			_deleteGPRtoXMMreg(_Rt_, 1);
-
-#ifdef __x86_64__
-            _deleteX86reg(X86TYPE_GPR, _Rt_, 1);
-#else
-			_deleteMMXreg(MMX_GPR+_Rt_, 1);
-#endif
-			MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
-			MOV32RtoM( (uptr)&fpuRegs.fprc[ _Fs_ ], EAX );
-		}
-	}
-}
-//------------------------------------------------------------------
-
-
-//------------------------------------------------------------------
 // CVT.x XMM
 //------------------------------------------------------------------
 void recCVT_S_xmm(int info)
@@ -1032,112 +1199,6 @@ FPURECOMPILE_CONSTCODE(MIN_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 
 //------------------------------------------------------------------
-// MFC1 XMM
-//------------------------------------------------------------------
-void recMFC1(void) {
-	int regt, regs;
-	if ( ! _Rt_ ) return;
-
-	_eeOnWriteReg(_Rt_, 1);
-
-	regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
-	if( regs >= 0 ) {
-		_deleteGPRtoXMMreg(_Rt_, 2);
-
-#ifdef __x86_64__
-        regt = _allocCheckGPRtoX86(g_pCurInstInfo, _Rt_, MODE_WRITE);
-		
-		if( regt >= 0 ) {
-
-			if(EEINST_ISLIVE1(_Rt_)) {
-                SSE2_MOVD_XMM_to_R(RAX, regs);
-                // sign extend
-                CDQE();
-                MOV64RtoR(regt, RAX);
-            }
-            else {
-                SSE2_MOVD_XMM_to_R(regt, regs);
-                EEINST_RESETHASLIVE1(_Rt_);
-            }
-		}
-#else
-		regt = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rt_, MODE_WRITE);
-		
-		if( regt >= 0 ) {
-			SSE2_MOVDQ2Q_XMM_to_MM(regt, regs);
-
-			if(EEINST_ISLIVE1(_Rt_)) _signExtendGPRtoMMX(regt, _Rt_, 0);
-			else EEINST_RESETHASLIVE1(_Rt_);
-		}
-#endif
-		else {
-			if(EEINST_ISLIVE1(_Rt_)) {
-				_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs, 0);
-			}
-			else {
-				EEINST_RESETHASLIVE1(_Rt_);
-				SSE_MOVSS_XMM_to_M32((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs);
-			}
-		}
-	}
-#ifndef __x86_64__
-	else if( (regs = _checkMMXreg(MMX_FPU+_Fs_, MODE_READ)) >= 0 ) {
-		// convert to mmx reg
-		mmxregs[regs].reg = MMX_GPR+_Rt_;
-		mmxregs[regs].mode |= MODE_READ|MODE_WRITE;
-		_signExtendGPRtoMMX(regs, _Rt_, 0);
-	}
-#endif
-	else {
-		regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
-	
-		if( regt >= 0 ) {
-			if( xmmregs[regt].mode & MODE_WRITE ) {
-				SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[_Rt_].UL[2], regt);
-			}
-			xmmregs[regt].inuse = 0;
-		}
-#ifdef __x86_64__
-        else if( (regt = _allocCheckGPRtoX86(g_pCurInstInfo, _Rt_, MODE_WRITE)) >= 0 ) {
-
-            if(EEINST_ISLIVE1(_Rt_)) {
-                MOV32MtoR( RAX, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
-                CDQE();
-                MOV64RtoR(regt, RAX);
-            }
-            else {
-                MOV32MtoR( regt, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
-                EEINST_RESETHASLIVE1(_Rt_);
-            }
-        }
-        else
-#endif
-        {
-
-            _deleteEEreg(_Rt_, 0);
-            MOV32MtoR( EAX, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
-            
-            if(EEINST_ISLIVE1(_Rt_)) {
-#ifdef __x86_64__
-                CDQE();
-                MOV64RtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], RAX);
-#else
-                CDQ( );
-                MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-                MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
-#endif
-            }
-            else {
-                EEINST_RESETHASLIVE1(_Rt_);
-                MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-            }
-		}
-	}
-}
-//------------------------------------------------------------------
-
-
-//------------------------------------------------------------------
 // MOV XMM
 //------------------------------------------------------------------
 void recMOV_S_xmm(int info)
@@ -1302,65 +1363,6 @@ void recMSUBA_S_xmm(int info)
 }
 
 FPURECOMPILE_CONSTCODE(MSUBA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
-//------------------------------------------------------------------
-
-
-//------------------------------------------------------------------
-// MTC1 XMM
-//------------------------------------------------------------------
-void recMTC1(void)
-{
-	if( GPR_IS_CONST1(_Rt_) ) {
-		_deleteFPtoXMMreg(_Fs_, 0);
-		MOV32ItoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, g_cpuConstRegs[_Rt_].UL[0]);
-	}
-	else {
-		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
-		if( mmreg >= 0 ) {
-			if( g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE ) {
-				// transfer the reg directly
-				_deleteGPRtoXMMreg(_Rt_, 2);
-				_deleteFPtoXMMreg(_Fs_, 2);
-				_allocFPtoXMMreg(mmreg, _Fs_, MODE_WRITE);
-			}
-			else {
-				int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
-				if( mmreg2 >= 0 ) SSE_MOVSS_XMM_to_XMM(mmreg2, mmreg);
-				else SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
-			}
-		}
-#ifndef __x86_64__
-		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0 ) {
-
-			if( cpucaps.hasStreamingSIMD2Extensions ) {
-				int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
-				if( mmreg2 >= 0 ) {
-					SetMMXstate();
-					SSE2_MOVQ2DQ_MM_to_XMM(mmreg2, mmreg);
-				}
-				else {
-					SetMMXstate();
-					MOVDMMXtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
-				}
-			}
-			else {
-				_deleteFPtoXMMreg(_Fs_, 0);
-				SetMMXstate();
-				MOVDMMXtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
-			}
-		}
-#endif
-		else {
-			int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
-
-			if( mmreg2 >= 0 ) SSE_MOVSS_M32_to_XMM(mmreg2, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
-			else {
-				MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
-				MOV32RtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, EAX);
-			}
-		}
-	}
-}
 //------------------------------------------------------------------
 
 
