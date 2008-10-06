@@ -340,7 +340,7 @@ EERECOMPILE_CODEX(eeRecompileCode1, SLTI);
 //// ANDI
 void recANDI_const()
 {
-	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & (s64)_ImmU_;
+	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & (u64)_ImmU_; // should be zero-extended
 }
 
 extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
@@ -356,49 +356,41 @@ void recLogicalOpI(int info, int op)
 		SetMMXstate();
 
 		if( _ImmU_ != 0 ) {
-			u32* ptempmem = recAllocStackMem(8, 8);
-			ptempmem[0] = _ImmU_;
-			ptempmem[1] = 0;
+			u64* ptempmem = recAllocStackMem(8, 8);
+			*ptempmem = (op == 1) ? (s64)_ImmU_ : (u64)_ImmU_; // for ORI, IMM is sign-extended, for the others its zero-extended
 
 			if( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
 			LogicalOpMtoR(EEREC_T, (u32)ptempmem, op);
 		}
 		else {
 			if( op == 0 ) PXORRtoR(EEREC_T, EEREC_T);
-			else {
-				if( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
-			}
+			else if( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
 		}
 		return;
 	}
 
 	if( (g_pCurInstInfo->regs[_Rt_]&EEINST_MMX) && ((_Rt_ != _Rs_) || (_ImmU_==0)) ) {
 		int rtreg = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_WRITE);
-		u32* ptempmem;
-
 		SetMMXstate();
-
-		ptempmem = recAllocStackMem(8, 8);
-		ptempmem[0] = _ImmU_;
-		ptempmem[1] = 0;
 
 		if( op == 0 ) {
 			if ( _ImmU_ != 0 ) {
-				if( _ImmU_ == 0xffff ) {
-					// take a shortcut
-					MOVDMtoMMX(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] - 2);
-					PSRLDItoR(rtreg, 16);
-				}
-				else {
-					MOVDMtoMMX(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
-					PANDMtoR(rtreg, (u32)ptempmem);
-				}
+				u64* ptempmem = recAllocStackMem(8, 8);
+				*ptempmem = (u64)_ImmU_; // for ANDI, IMM is zero-extended
+
+				MOVDMtoMMX(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
+				PANDMtoR(rtreg, (u32)ptempmem);
 			}
 			else PXORRtoR(rtreg, rtreg);
 		}
 		else {
 			MOVQMtoR(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
-			if ( _ImmU_ != 0 ) LogicalOpMtoR(rtreg, (u32)ptempmem, op);
+			if ( _ImmU_ != 0 ) {
+				u64* ptempmem = recAllocStackMem(8, 8);
+				*ptempmem = (op == 1) ? (s64)_ImmU_ : (u64)_ImmU_; // for ORI, IMM is sign-extended, for the others its zero-extended
+				
+				LogicalOpMtoR(rtreg, (u32)ptempmem, op);
+			}
 		}
 	}
 	else {
@@ -406,14 +398,17 @@ void recLogicalOpI(int info, int op)
 		{
 			if( _Rt_ == _Rs_ ) {
 				LogicalOp32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _ImmU_, op);
+				//LogicalOp32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], (_ImmSB_ && (op == 1)) ? 0xffffffff : 0, op);
 			}
 			else {
 				MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-				if( op != 0 && EEINST_ISLIVE1(_Rt_) )
+				if( op != 0 && EEINST_ISLIVE1(_Rt_) ) {
 					MOV32MtoR( EDX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
-				LogicalOp32ItoR( EAX, _ImmU_, op);
-				if( op != 0 && EEINST_ISLIVE1(_Rt_) )
+					LogicalOp32ItoR( EAX, _ImmU_, op);
 					MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+				}
+				else LogicalOp32ItoR( EAX, _ImmU_, op);
+
 				MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
 			}
 
@@ -468,7 +463,7 @@ EERECOMPILE_CODEX(eeRecompileCode1, ORI);
 ////////////////////////////////////////////////////
 void recXORI_const()
 {
-	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] ^ (s64)_ImmU_;
+	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] ^ (u64)_ImmU_; // should be zero-extended
 }
 
 void recXORI_(int info)

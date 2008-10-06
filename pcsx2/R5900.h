@@ -211,6 +211,7 @@ extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 
 #define _Imm_	((s16)cpuRegs.code) // sign-extended immediate
 #define _ImmU_	(cpuRegs.code&0xffff) // zero-extended immediate
+#define _ImmSB_	(cpuRegs.code&0x8000) // gets the sign-bit of the immediate value
 
 
 //#define _JumpTarget_     ((_Target_ * 4) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
