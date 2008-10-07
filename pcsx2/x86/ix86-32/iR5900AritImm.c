@@ -340,7 +340,7 @@ EERECOMPILE_CODEX(eeRecompileCode1, SLTI);
 //// ANDI
 void recANDI_const()
 {
-	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & (u64)_ImmU_; // should be zero-extended
+	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & (u64)_ImmU_; // Zero-extended Immediate
 }
 
 extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
@@ -356,8 +356,9 @@ void recLogicalOpI(int info, int op)
 		SetMMXstate();
 
 		if( _ImmU_ != 0 ) {
-			u64* ptempmem = recAllocStackMem(8, 8);
-			*ptempmem = (op == 1) ? (s64)_ImmU_ : (u64)_ImmU_; // for ORI, IMM is sign-extended, for the others its zero-extended
+			u32* ptempmem = recAllocStackMem(8, 8);
+			ptempmem[0] = _ImmU_;
+			ptempmem[1] = 0;
 
 			if( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
 			LogicalOpMtoR(EEREC_T, (u32)ptempmem, op);
@@ -375,9 +376,9 @@ void recLogicalOpI(int info, int op)
 
 		if( op == 0 ) {
 			if ( _ImmU_ != 0 ) {
-				u64* ptempmem = recAllocStackMem(8, 8);
-				*ptempmem = (u64)_ImmU_; // for ANDI, IMM is zero-extended
-
+				u32* ptempmem = recAllocStackMem(8, 8);
+				ptempmem[0] = _ImmU_;
+				ptempmem[1] = 0;
 				MOVDMtoMMX(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
 				PANDMtoR(rtreg, (u32)ptempmem);
 			}
@@ -386,41 +387,32 @@ void recLogicalOpI(int info, int op)
 		else {
 			MOVQMtoR(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
 			if ( _ImmU_ != 0 ) {
-				u64* ptempmem = recAllocStackMem(8, 8);
-				*ptempmem = (op == 1) ? (s64)_ImmU_ : (u64)_ImmU_; // for ORI, IMM is sign-extended, for the others its zero-extended
-				
+				u32* ptempmem = recAllocStackMem(8, 8);
+				ptempmem[0] = _ImmU_;
+				ptempmem[1] = 0;
 				LogicalOpMtoR(rtreg, (u32)ptempmem, op);
 			}
 		}
 	}
 	else {
-		//SysPrintf("recLogicalOpI\n");
 		if ( _ImmU_ != 0 )
 		{
 			if( _Rt_ == _Rs_ ) {
 				LogicalOp32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _ImmU_, op);
-				if (op == 0) {
-					if ( EEINST_ISLIVE1(_Rt_) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
-					else EEINST_RESETHASLIVE1(_Rt_);
-				}
-				else if ( EEINST_ISLIVE1(_Rt_) && _ImmSB_ && (op == 1) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0xffffffff );
 			}
 			else {
 				MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+				if( op != 0 && EEINST_ISLIVE1(_Rt_) )
+					MOV32MtoR( EDX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
 				LogicalOp32ItoR( EAX, _ImmU_, op);
+				if( op != 0 && EEINST_ISLIVE1(_Rt_) )
+					MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
 				MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+			}
 
-				if (op == 0) {
-					if ( EEINST_ISLIVE1(_Rt_) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
-					else EEINST_RESETHASLIVE1(_Rt_);
-				}
-				else if ( EEINST_ISLIVE1(_Rt_) ) {
-					if (_ImmSB_ && (op == 1)) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0xffffffff );
-					else {
-						MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
-						MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EAX );
-					}
-				}
+			if( op == 0 ) {
+				if( EEINST_ISLIVE1(_Rt_ ) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
+				else EEINST_RESETHASLIVE1(_Rt_);
 			}
 		}
 		else
@@ -433,11 +425,11 @@ void recLogicalOpI(int info, int op)
 			else {
 				if( _Rt_ != _Rs_ ) {
 					MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+					if( EEINST_ISLIVE1(_Rt_ ) ) 
+						MOV32MtoR(EDX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
 					MOV32RtoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-					if( EEINST_ISLIVE1(_Rt_ ) ) {
-						MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
-						MOV32RtoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EAX );
-					}
+					if( EEINST_ISLIVE1(_Rt_ ) ) 
+						MOV32RtoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
 				}
 			}
 
@@ -456,7 +448,7 @@ EERECOMPILE_CODEX(eeRecompileCode1, ANDI);
 ////////////////////////////////////////////////////
 void recORI_const()
 {
-	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] | (s64)_ImmU_;
+	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] | (u64)_ImmU_; // Zero-extended Immediate
 }
 
 void recORI_(int info)
@@ -469,7 +461,7 @@ EERECOMPILE_CODEX(eeRecompileCode1, ORI);
 ////////////////////////////////////////////////////
 void recXORI_const()
 {
-	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] ^ (u64)_ImmU_; // should be zero-extended
+	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] ^ (u64)_ImmU_; // Zero-extended Immediate
 }
 
 void recXORI_(int info)
