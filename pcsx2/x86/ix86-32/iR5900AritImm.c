@@ -394,27 +394,33 @@ void recLogicalOpI(int info, int op)
 		}
 	}
 	else {
+		//SysPrintf("recLogicalOpI\n");
 		if ( _ImmU_ != 0 )
 		{
 			if( _Rt_ == _Rs_ ) {
 				LogicalOp32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _ImmU_, op);
-				//LogicalOp32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], (_ImmSB_ && (op == 1)) ? 0xffffffff : 0, op);
+				if (op == 0) {
+					if ( EEINST_ISLIVE1(_Rt_) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
+					else EEINST_RESETHASLIVE1(_Rt_);
+				}
+				else if ( EEINST_ISLIVE1(_Rt_) && _ImmSB_ && (op == 1) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0xffffffff );
 			}
 			else {
 				MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-				if( op != 0 && EEINST_ISLIVE1(_Rt_) ) {
-					MOV32MtoR( EDX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
-					LogicalOp32ItoR( EAX, _ImmU_, op);
-					MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
-				}
-				else LogicalOp32ItoR( EAX, _ImmU_, op);
-
+				LogicalOp32ItoR( EAX, _ImmU_, op);
 				MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-			}
 
-			if( op == 0 ) {
-				if( EEINST_ISLIVE1(_Rt_ ) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
-				else EEINST_RESETHASLIVE1(_Rt_);
+				if (op == 0) {
+					if ( EEINST_ISLIVE1(_Rt_) ) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
+					else EEINST_RESETHASLIVE1(_Rt_);
+				}
+				else if ( EEINST_ISLIVE1(_Rt_) ) {
+					if (_ImmSB_ && (op == 1)) MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0xffffffff );
+					else {
+						MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
+						MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EAX );
+					}
+				}
 			}
 		}
 		else
@@ -427,11 +433,11 @@ void recLogicalOpI(int info, int op)
 			else {
 				if( _Rt_ != _Rs_ ) {
 					MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-					if( EEINST_ISLIVE1(_Rt_ ) ) 
-						MOV32MtoR(EDX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
 					MOV32RtoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-					if( EEINST_ISLIVE1(_Rt_ ) ) 
-						MOV32RtoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+					if( EEINST_ISLIVE1(_Rt_ ) ) {
+						MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
+						MOV32RtoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EAX );
+					}
 				}
 			}
 
