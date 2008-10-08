@@ -506,7 +506,8 @@ u32 SuperVUGetVIAddr(int reg, int read)
 #ifdef SUPERVU_VIBRANCHDELAY
     if( read != 0 && (s_pCurInst->regs[0].pipe == VUPIPE_BRANCH) && s_pCurInst->vicached >= 0 && s_pCurInst->vicached == reg ) {
         // test for branch delays
-        return (uptr)&s_VIBranchDelay;
+		//return (uptr)&s_VIBranchDelay;
+		SysPrintf("VIBRANCHDELAY! Report if this breaks anything (rama)\n");
     }
 #endif
 
