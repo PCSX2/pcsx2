@@ -93,6 +93,11 @@ using namespace std;
 #define SUPERVU_VIBRANCHDELAY   // when integers are modified right before a branch that uses the integer,
                                 // the old integer value is used in the branch
                                 // fixes kh2
+#ifdef SUPERVU_VIBRANCHDELAY
+//#define SUPERVU_VIBRANCHDELAY2	// stores the old integer value for SUPERVU_VIBRANCHDELAY into s_VIBranchDelay; when this is not-defined, we just return (uptr)&VU->VI[reg] instead.
+									// Note: this method breaks Magna Carta.
+#endif
+
 #define SUPERVU_PROPAGATEFLAGS  // the correct behavior of VUs, for some reason superman breaks gfx with it on...
 
 #ifndef _DEBUG
@@ -462,7 +467,13 @@ static VuInstruction* s_pCurInst = NULL;
 static u32 s_StatusRead = 0, s_MACRead = 0, s_ClipRead = 0; // read addrs
 static u32 s_PrevStatusWrite = 0, s_PrevMACWrite = 0, s_PrevClipWrite = 0, s_PrevIWrite = 0;
 static u32 s_WriteToReadQ = 0;
-static u32 s_VIBranchDelay = 0; // value of register to use in a vi branch delayed situation
+
+#ifdef SUPERVU_VIBRANCHDELAY2
+static u32 s_VIBranchDelay = 0; 
+//Value of register to use in a vi branch delayed situation 
+//If SUPERVU_VIBRANCHDELAY2 is not defined, we just return (uptr)&VU->VI[reg]
+//Test this with Kingdom Hearts II and Magna Carta
+#endif
 
 extern "C" {
 u32 s_TotalVUCycles; // total cycles since start of program execution
@@ -506,8 +517,11 @@ u32 SuperVUGetVIAddr(int reg, int read)
 #ifdef SUPERVU_VIBRANCHDELAY
     if( read != 0 && (s_pCurInst->regs[0].pipe == VUPIPE_BRANCH) && s_pCurInst->vicached >= 0 && s_pCurInst->vicached == reg ) {
         // test for branch delays
-		//return (uptr)&s_VIBranchDelay;
+#ifdef SUPERVU_VIBRANCHDELAY2
+		return (uptr)&s_VIBranchDelay;
+#else
 		SysPrintf("VIBRANCHDELAY! Report if this breaks anything (rama)\n");
+#endif
     }
 #endif
 
@@ -3660,7 +3674,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 		if( s_JumpX86 > 0 ) x86regs[s_JumpX86].needed = 1;
 		if( s_ScheduleXGKICK && s_XGKICKReg > 0 ) x86regs[s_XGKICKReg].needed = 1;
 
-#ifdef SUPERVU_VIBRANCHDELAY
+#ifdef SUPERVU_VIBRANCHDELAY2
         if( type & INST_CACHE_VI ) {
             assert( vicached >= 0 );
             int cachedreg = _allocX86reg(-1, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), vicached, MODE_READ);
