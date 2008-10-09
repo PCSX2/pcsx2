@@ -65,39 +65,34 @@ void recADDI_(int info)
 	EEINST_SETSIGNEXT(_Rt_);
 	EEINST_SETSIGNEXT(_Rs_);
 
-	if( info & PROCESS_EE_MMX ) {
-		if( _Imm_ != 0 ) {
+	if ( info & PROCESS_EE_MMX ) {
+		if ( _Imm_ != 0 ) {
 
 			u32* ptempmem = recAllocStackMem(8, 8);
 			ptempmem[0] = (s32)_Imm_;
 			ptempmem[1] = 0;
 
-			if( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
+			if ( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
 			PADDDMtoR(EEREC_T, (u32)ptempmem);
-			if( EEINST_ISLIVE1(_Rt_) ) _signExtendGPRtoMMX(EEREC_T, _Rt_, 0);
+			if ( EEINST_ISLIVE1(_Rt_) ) _signExtendGPRtoMMX(EEREC_T, _Rt_, 0);
 			else EEINST_RESETHASLIVE1(_Rt_);
 		}
 		else {
 			// just move and sign extend
-			if( !EEINST_HASLIVE1(_Rs_) ) {
-
-				if( EEINST_ISLIVE1(_Rt_) )
-					_signExtendGPRMMXtoMMX(EEREC_T, _Rt_, EEREC_S, _Rs_);
-				else
-					EEINST_RESETHASLIVE1(_Rt_);
+			if ( !EEINST_HASLIVE1(_Rs_) ) {
+				if ( EEINST_ISLIVE1(_Rt_) ) _signExtendGPRMMXtoMMX(EEREC_T, _Rt_, EEREC_S, _Rs_);
+				else EEINST_RESETHASLIVE1(_Rt_);
 			}
-			else {
-				if( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
-			}
+			else if ( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
 		}
 		return;
 	}
 
-	if( (g_pCurInstInfo->regs[_Rt_]&EEINST_MMX) && (_Rt_ != _Rs_) ) {
+	if ( (g_pCurInstInfo->regs[_Rt_]&EEINST_MMX) && (_Rt_ != _Rs_) ) {
 		int rtreg = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_WRITE);
 		SetMMXstate();
 
-		if( _Imm_ != 0 ) {
+		if ( _Imm_ != 0 ) {
 			u32* ptempmem = recAllocStackMem(8, 8);
 			ptempmem[0] = (s32)_Imm_;
 			ptempmem[1] = 0;
@@ -105,33 +100,31 @@ void recADDI_(int info)
 			MOVDMtoMMX(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
 			PADDDMtoR(rtreg, (u32)ptempmem);
 
-			if( EEINST_ISLIVE1(_Rt_) ) _signExtendGPRtoMMX(rtreg, _Rt_, 0);
+			if ( EEINST_ISLIVE1(_Rt_) ) _signExtendGPRtoMMX(rtreg, _Rt_, 0);
 			else EEINST_RESETHASLIVE1(_Rt_);
 		}
 		else {
 			// just move and sign extend
-			if( !EEINST_HASLIVE1(_Rs_) ) {
+			if ( !EEINST_HASLIVE1(_Rs_) ) {
 				MOVDMtoMMX(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
-				if( EEINST_ISLIVE1(_Rt_) ) _signExtendGPRtoMMX(rtreg, _Rt_, 0);
+				if ( EEINST_ISLIVE1(_Rt_) ) _signExtendGPRtoMMX(rtreg, _Rt_, 0);
 				else EEINST_RESETHASLIVE1(_Rt_);
 			}
-			else {
-				MOVQMtoR(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
-			}
+			else MOVQMtoR(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
 		}
 	}
 	else {
-		if( _Rt_ == _Rs_ ) {
+		if ( _Rt_ == _Rs_ ) {
 			ADD32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _Imm_);
-			if( EEINST_ISLIVE1(_Rt_) ) _signExtendSFtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
+			if ( EEINST_ISLIVE1(_Rt_) ) _signExtendSFtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
 			else EEINST_RESETHASLIVE1(_Rt_);
 		}
 		else {
 			MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-			if ( _Imm_ != 0 )
-				ADD32ItoR( EAX, _Imm_ );
 
-			if( EEINST_ISLIVE1(_Rt_) ) {
+			if ( _Imm_ != 0 ) ADD32ItoR( EAX, _Imm_ );
+
+			if ( EEINST_ISLIVE1(_Rt_) ) {
 				CDQ( );
 				MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
 				MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );

@@ -90,6 +90,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,58,253,10
     CONTROL         "Slow DVD access (fixes Tales of the Abyss)",IDC_GAMEFIX1,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,44,252,10
+    CONTROL         "VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!",IDC_GAMEFIX4,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,84,252,10
 END
 
 
