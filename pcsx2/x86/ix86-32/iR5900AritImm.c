@@ -56,7 +56,7 @@ REC_FUNC(SLTIU);
 //// ADDI
 void recADDI_const( void ) 
 {
-   g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].SL[0] + _Imm_;
+	g_cpuConstRegs[_Rt_].SD[0] = (s64)(g_cpuConstRegs[_Rs_].SL[0] + (s32)_Imm_);
 }
 
 void recADDI_(int info) 
@@ -68,8 +68,9 @@ void recADDI_(int info)
 	if( info & PROCESS_EE_MMX ) {
 		if( _Imm_ != 0 ) {
 
-			u32* ptempmem = recAllocStackMem(4, 4);
-			ptempmem[0] = _Imm_;
+			u32* ptempmem = recAllocStackMem(8, 8);
+			ptempmem[0] = (s32)_Imm_;
+			ptempmem[1] = 0;
 
 			if( EEREC_T != EEREC_S ) MOVQRtoR(EEREC_T, EEREC_S);
 			PADDDMtoR(EEREC_T, (u32)ptempmem);
@@ -97,8 +98,9 @@ void recADDI_(int info)
 		SetMMXstate();
 
 		if( _Imm_ != 0 ) {
-			u32* ptempmem = recAllocStackMem(4, 4);
-			ptempmem[0] = _Imm_;
+			u32* ptempmem = recAllocStackMem(8, 8);
+			ptempmem[0] = (s32)_Imm_;
+			ptempmem[1] = 0;
 
 			MOVDMtoMMX(rtreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
 			PADDDMtoR(rtreg, (u32)ptempmem);
@@ -153,7 +155,7 @@ void recADDIU( void )
 ////////////////////////////////////////////////////
 void recDADDI_const( void ) 
 {
-	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].SD[0] + _Imm_;
+	g_cpuConstRegs[_Rt_].SD[0] = g_cpuConstRegs[_Rs_].SD[0] + (s64)_Imm_;
 }
 
 void recDADDI_(int info) 
