@@ -88,6 +88,17 @@ int LoadConfig() {
 	
 	// cpu
 	GetValuel("Options", Config.Options);
+	//hacks
+	GetValuel("Hacks",        Config.Hacks);
+	GetValuel("Fixes",        Config.GameFixes);
+	
+	Config.sseMXCSR = DEFAULT_sseMXCSR;
+	Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+	
+	//sseMXCSR
+	GetValuel("sseMXCSR",        Config.sseMXCSR);
+	//sseVUMXCSR
+	GetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
 
 	GetValuel("Patch",      Config.Patch);
 
@@ -137,6 +148,13 @@ void SaveConfig() {
 	SetValue("FW",  Config.FW);
 	//cpu
 	SetValuel("Options",        Config.Options);
+	//hacks
+	SetValuel("Hacks",        Config.Hacks);
+	SetValuel("Fixes",        Config.GameFixes);
+	//sseMXCSR
+	SetValuel("sseMXCSR",        Config.sseMXCSR);
+	//sseVUMXCSR
+	SetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
 	// misc
 	SetValuel("Patch",      Config.Patch);
 

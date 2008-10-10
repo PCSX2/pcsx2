@@ -19,29 +19,63 @@
 #ifndef __LINUX_H__
 #define __LINUX_H__
 
+#include <stdio.h> 
+#include <stdarg.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <dirent.h>
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+
+#include <sys/time.h>
+#include <pthread.h> 
+
+#include <X11/keysym.h>
+#include <gtk/gtk.h>
+#include <glib/gthread.h>
+#include <gdk/gdkkeysyms.h>
+#include <gtk/gtkdialog.h>
+
+
+#include "../Paths.h"
 #include "Common.h"
 
 typedef struct {
 	char lang[256];
 } _langs;
 
+typedef enum
+{
+	GS,
+	PAD1,
+	PAD2,
+	SPU,
+	CDVD,
+	DEV9,
+	USB,
+	FW,
+	BIOS
+} plugin_types;
+
+GtkWidget *check_eerec, *check_vu0rec, *check_vu1rec;
+GtkWidget *check_mtgs , *check_cpu_dc;
+GtkWidget *check_console , *check_patches;
+GtkWidget *radio_normal_limit, *radio_limit_limit, *radio_fs_limit, *radio_vuskip_limit;
+
 _langs *langs;
 unsigned int langsMax;
 
-extern int UseGui;
+extern int g_SaveGSStream;
+extern int g_ZeroGSOptions;
+
 char cfgfile[256];
 
-int LoadConfig();
-void SaveConfig();
-
-void StartGui();
-void RunGui();
-
-int Pcsx2Configure();
-
-void InitLanguages();
-char *GetLanguageNext();
-void CloseLanguages();
-void ChangeLanguage(char *lang);
 
 #endif /* __LINUX_H__ */

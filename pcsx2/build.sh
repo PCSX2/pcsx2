@@ -17,6 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #
 
+#export PCSX2OPTIONS="--enable-debug --enable-devbuild --enable-sse2 --enable-sse3 --prefix `pwd`"
+
 echo ---------------
 echo Building Pcsx2 
 echo ---------------

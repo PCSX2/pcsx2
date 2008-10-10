@@ -15,107 +15,39 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <dirent.h>
-#include <dlfcn.h>
-#include <sys/stat.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#include <gtk/gtkdialog.h>
-//#include <gtk/gtkmessagedialog.h>
-#include <signal.h>
-#include <sys/time.h>
 
 #include "support.h"
 #include "callbacks.h"
 #include "interface.h"
 #include "Linux.h"
-
-#include "Paths.h"
-
-
-static int needReset = 1;
-int confret;
-int confplug=0;
-extern int RunExe;
-
-_PS2EgetLibType		PS2EgetLibType = NULL;
-_PS2EgetLibVersion2	PS2EgetLibVersion2 = NULL;
-_PS2EgetLibName		PS2EgetLibName = NULL;
-
-// Helper Functions
-void FindPlugins();
-
-// Functions Callbacks
-void OnFile_LoadElf(GtkMenuItem *menuitem, gpointer user_data);
-void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data);
-void OnEmu_Run(GtkMenuItem *menuitem, gpointer user_data);
-void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data);
-void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data);
-void OnConf_Gs(GtkMenuItem *menuitem, gpointer user_data);
-void OnConf_Pads(GtkMenuItem *menuitem, gpointer user_data);
-void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data);
-void OnConf_Conf(GtkMenuItem *menuitem, gpointer user_data);
-void OnLanguage(GtkMenuItem *menuitem, gpointer user_data);
-void OnHelp_Help();
-void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data);
-
-GtkWidget *Window;
-GtkWidget* pStatusBar = NULL;
-GtkWidget *CmdLine;	//2002-09-28 (Florin)
-GtkWidget *ConfDlg;
-GtkWidget *AboutDlg;
-GtkWidget *DebugWnd;
-GtkWidget *LogDlg;
-GtkWidget *FileSel;
-
-GtkAccelGroup *AccelGroup;
-
-typedef struct {
-	GtkWidget *Combo;
-	GList *glist;
-	char plist[255][255];
-	int plugins;
-} PluginConf;
-
-PluginConf GSConfS;
-PluginConf PAD1ConfS;
-PluginConf PAD2ConfS;
-PluginConf SPU2ConfS;
-PluginConf CDVDConfS;
-PluginConf DEV9ConfS;
-PluginConf USBConfS;
-PluginConf FWConfS;
-PluginConf BiosConfS;
+#include "GtkGui.h"
+#include "R3000A.h"
+#include "PsxMem.h"
 
 void StartGui() {
 	GtkWidget *Menu;
 	GtkWidget *Item;
-    GtkWidget* vbox;
+	GtkWidget* vbox;
 	int i;
 
-    add_pixmap_directory(".pixmaps");
-
+	add_pixmap_directory(".pixmaps");
 	Window = create_MainWindow();
-
+	
 #ifdef PCSX2_VIRTUAL_MEM
-    gtk_window_set_title(GTK_WINDOW(Window), "PCSX2 "PCSX2_VERSION" Watermoose VM");
+	gtk_window_set_title(GTK_WINDOW(Window), "PCSX2 "PCSX2_VERSION" Watermoose VM");
 #else
-    gtk_window_set_title(GTK_WINDOW(Window), "PCSX2 "PCSX2_VERSION" Watermoose");
+	gtk_window_set_title(GTK_WINDOW(Window), "PCSX2 "PCSX2_VERSION" Watermoose");
 #endif
 
-    // status bar
-    pStatusBar = gtk_statusbar_new ();
-    gtk_box_pack_start (GTK_BOX(lookup_widget(Window, "status_box")), pStatusBar, TRUE, TRUE, 0);
-    gtk_widget_show (pStatusBar);
+	// status bar
+	pStatusBar = gtk_statusbar_new ();
+	gtk_box_pack_start (GTK_BOX(lookup_widget(Window, "status_box")), pStatusBar, TRUE, TRUE, 0);
+	gtk_widget_show (pStatusBar);
 
-    gtk_statusbar_push(GTK_STATUSBAR(pStatusBar),0,
+	gtk_statusbar_push(GTK_STATUSBAR(pStatusBar),0,
                        "F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot");
 
-    // add all the languages
+	// add all the languages
 	Item = lookup_widget(Window, "GtkMenuItem_Language");
 	Menu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(Item), Menu);
@@ -133,12 +65,17 @@ void StartGui() {
                            (gpointer)(uptr)i);
 	}
 
-    // check the appropriate menu items
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(Window, "enable_console1")), Config.PsxOut);
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(Window, "enable_patches1")), Config.Patch);
-
+	// check the appropriate menu items
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(Window, "enable_console1")), Config.PsxOut);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(Window, "enable_patches1")), Config.Patch);
+	
+	// disable anything not implemented or not working properly.
+	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(Window, "patch_browser1")), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(Window, "patch_finder2")), FALSE);
+	//gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(Window, "GtkMenuItem_Advanced")), FALSE);
+	
 	gtk_widget_show_all(Window);
-    gtk_window_activate_focus(GTK_WINDOW(Window));
+	gtk_window_activate_focus(GTK_WINDOW(Window));
 	gtk_main();
 }
 
@@ -146,29 +83,27 @@ void RunGui() {
 	StartGui();
 }
 
-int destroy=0;
-
 void OnDestroy(GtkObject *object, gpointer user_data) {
 	if (!destroy) OnFile_Exit(NULL, user_data);
 }
 
 int Pcsx2Configure() {
-	if (!UseGui) return 0;
-	confplug = 1;
+	if (!UseGui) 
+		return 0;
+	
+	configuringplug = TRUE;
 	Window = NULL;
 	OnConf_Conf(NULL, 0);
-	confplug = 0;
-	return confret;
+	configuringplug = FALSE;
+	
+	return applychanges;
 }
-
-int efile=0;
-char elfname[256];
 
 void OnLanguage(GtkMenuItem *menuitem, gpointer user_data) {
 	ChangeLanguage(langs[(int)(uptr)user_data].lang);
-	destroy=1;
+	destroy = TRUE;
 	gtk_widget_destroy(Window);
-	destroy=0;
+	destroy = FALSE;
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
 	StartGui();
@@ -179,40 +114,36 @@ void SignalExit(int sig) {
 	OnFile_Exit(NULL, 0);
 }
 
-extern int g_ZeroGSOptions;
 void RunExecute(int run)
 {
-    if (needReset == 1) {
+    if (needReset == TRUE) {
 		SysReset();
 	}
 
-	destroy=1;
+	destroy= TRUE;
 	gtk_widget_destroy(Window);
-	destroy=0;
+	destroy=FALSE;
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
 
 	if (OpenPlugins(NULL) == -1) {
-		RunGui(); return;
+		RunGui(); 
+		return;
 	}
 	signal(SIGINT, SignalExit);
 	signal(SIGPIPE, SignalExit);
 
-	if (needReset == 1) { 
+	if (needReset == TRUE) { 
 		
-        if( RunExe == 0 )
-            cpuExecuteBios();
-        if(!efile)
-            efile=GetPS2ElfName(elfname);
-        loadElfFile(elfname);
+		if( RunExe == 0 )
+			cpuExecuteBios();
+		if(!efile)
+			efile=GetPS2ElfName(elfname);
+		loadElfFile(elfname);
 
-		//if (efile == 2)
-		//	efile=GetPS2ElfName(elfname);
-		//if (efile)
-		//	loadElfFile(elfname);
-        RunExe = 0;
-		efile=0;
-		needReset = 0;
+		RunExe = 0;
+		efile = 0;
+		needReset = FALSE;
 	}
 
     // this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
@@ -223,7 +154,7 @@ void RunExecute(int run)
 }
 
 void OnFile_RunCD(GtkMenuItem *menuitem, gpointer user_data) {
-    needReset = 1;
+	needReset = TRUE;
 	efile = 0;
 	RunExecute(1);
 }
@@ -234,7 +165,7 @@ void OnRunElf_Ok(GtkButton* button, gpointer user_data) {
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
 	strcpy(elfname, File);
 	gtk_widget_destroy(FileSel);
-	needReset = 1;
+	needReset = TRUE;
 	efile = 1;
 	RunExecute(1);
 }
@@ -281,34 +212,41 @@ void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data) {
 	}
 
 	printf(_("PCSX2 Quitting\n"));
-	if (UseGui) gtk_main_quit();
-	SysClose();
-	if (UseGui) gtk_exit(0);
-	else exit(0);
+	
+	if (UseGui)
+	{
+		gtk_main_quit();
+		SysClose();
+		gtk_exit(0);
+	}
+	else
+	{
+		SysClose();
+		exit(0);
+	}
 }
 
 void OnEmu_Run(GtkMenuItem *menuitem, gpointer user_data)
 {
-    if(needReset == 1)
-        RunExe = 1;
-    efile = 0;
+	if(needReset == TRUE)
+		RunExe = 1;
+	efile = 0;
 	RunExecute(1);
 }
 
 void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
 {
-    ResetPlugins();
-    needReset = 1;
-    efile = 0;
+	ResetPlugins();
+	needReset = TRUE;
+	efile = 0;
 }
 
-int Slots[5] = { -1, -1, -1, -1, -1 };
-
-void ResetMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
+ 
+ void ResetMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 	GtkWidget *Item;
 	char str[256];
 	int i;
-
+ 
 	for (i=0; i<5; i++) {
 		sprintf(str, "GtkMenuItem_LoadSlot%d", i+1);
 		Item = lookup_widget(Window, str);
@@ -317,11 +255,11 @@ void ResetMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 		else
 			gtk_widget_set_sensitive(Item, TRUE);
 	}
-}
+ }
 
 void UpdateMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 	char str[256];
-	int i;
+	int i = 0;
 
 	for (i=0; i<5; i++) {
 		sprintf(str, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, i);
@@ -338,10 +276,6 @@ void States_Load(int num) {
 
 	sprintf (Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, num);
 	ret = LoadState(Text);
-/*	if (ret == 0)
-		 sprintf (Text, _("*PCSX2*: Loaded State %d"), num+1);
-	else sprintf (Text, _("*PCSX2*: Error Loading State %d"), num+1);
-	GPU_displayText(Text);*/
 
 	Cpu->Execute();
 }
@@ -352,10 +286,10 @@ void States_Save(int num) {
 
 	sprintf (Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, num);
 	ret = SaveState(Text);
-    if (ret == 0)
-		 sprintf(Text, _("*PCSX2*: Saving State %d"), num+1);
-	else sprintf(Text, _("*PCSX2*: Error Saving State %d"), num+1);
-	//StatusSet(Text);
+	if (ret == 0)
+		sprintf(Text, _("*PCSX2*: Saving State %d"), num+1);
+	else 
+		sprintf(Text, _("*PCSX2*: Error Saving State %d"), num+1);
 
     RunExecute(1);
 }
@@ -380,10 +314,6 @@ void OnLoadOther_Ok(GtkButton* button, gpointer user_data) {
 	RunExecute(0);
 
 	ret = LoadState(str);
-/*	if (ret == 0)
-		 sprintf (Text, _("*PCSX*: Loaded State %s"), str);
-	else sprintf (Text, _("*PCSX*: Error Loading State %s"), str);
-	GPU_displayText(Text);*/
 
 	Cpu->Execute();
 }
@@ -428,10 +358,6 @@ void OnSaveOther_Ok(GtkButton* button, gpointer user_data) {
 	RunExecute(0);
 
 	ret = SaveState(str);
-/*	if (ret == 0)
-		 sprintf (Text, _("*PCSX*: Saved State %s"), str);
-	else sprintf (Text, _("*PCSX*: Error Saving State %s"), str);
-	GPU_displayText(Text);*/
 
 	Cpu->Execute();
 }
@@ -460,10 +386,8 @@ void OnStates_SaveOther(GtkMenuItem *menuitem, gpointer user_data) {
 
 //2002-09-28 (Florin)
 void OnArguments_Ok(GtkButton *button, gpointer user_data) {
-	GtkWidget *widgetCmdLine;
 	char *str;
 
-	widgetCmdLine = lookup_widget(CmdLine, "GtkEntry_dCMDLINE");
 	str = (char*)gtk_entry_get_text(GTK_ENTRY(widgetCmdLine));
 	memcpy(args, str, 256);
 
@@ -485,6 +409,7 @@ void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_window_set_title(GTK_WINDOW(CmdLine), _("Program arguments"));
 
 	widgetCmdLine = lookup_widget(CmdLine, "GtkEntry_dCMDLINE");
+	
 	gtk_entry_set_text(GTK_ENTRY(widgetCmdLine), args);
 						//args exported by ElfHeader.h
 	gtk_widget_show_all(CmdLine);
@@ -495,40 +420,44 @@ void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data) {
 
 void OnConf_Gs(GtkMenuItem *menuitem, gpointer user_data)
 {
-    char file[255];
-    getcwd(file, ARRAYSIZE(file));
-    chdir(Config.PluginsDir);
+	char file[255];
+	
+	getcwd(file, ARRAYSIZE(file));
+	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(Window, FALSE);
-    GSconfigure();
-    chdir(file);
+	GSconfigure();
+	chdir(file);
 	gtk_widget_set_sensitive(Window, TRUE);
 }
 
 void OnConf_Pads(GtkMenuItem *menuitem, gpointer user_data) {
-    char file[255];
-    getcwd(file, ARRAYSIZE(file));
-    chdir(Config.PluginsDir);
+	char file[255];
+	
+	getcwd(file, ARRAYSIZE(file));
+	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(Window, FALSE);
 	PAD1configure();
 	if (strcmp(Config.PAD1, Config.PAD2)) PAD2configure();
-    chdir(file);
+	chdir(file);
 	gtk_widget_set_sensitive(Window, TRUE);
 }
 
 void OnConf_Spu2(GtkMenuItem *menuitem, gpointer user_data) {
-    char file[255];
-    getcwd(file, ARRAYSIZE(file));
-    chdir(Config.PluginsDir);
+	char file[255];
+	
+	getcwd(file, ARRAYSIZE(file));
+	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(Window, FALSE);
 	SPU2configure();
 	gtk_widget_set_sensitive(Window, TRUE);
-    chdir(file);
+	chdir(file);
 }
 
 void OnConf_Cdvd(GtkMenuItem *menuitem, gpointer user_data) {
-    char file[255];
-    getcwd(file, ARRAYSIZE(file));
-    chdir(Config.PluginsDir);
+	char file[255];
+	
+	getcwd(file, ARRAYSIZE(file));
+	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(Window, FALSE);
 	CDVDconfigure();
 	gtk_widget_set_sensitive(Window, TRUE);
@@ -536,36 +465,37 @@ void OnConf_Cdvd(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void OnConf_Dev9(GtkMenuItem *menuitem, gpointer user_data) {
-    char file[255];
-    getcwd(file, ARRAYSIZE(file));
-    chdir(Config.PluginsDir);
+	char file[255];
+	
+	getcwd(file, ARRAYSIZE(file));
+	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(Window, FALSE);
 	DEV9configure();
 	gtk_widget_set_sensitive(Window, TRUE);
-    chdir(file);
+	chdir(file);
 }
 
 void OnConf_Usb(GtkMenuItem *menuitem, gpointer user_data) {
-    char file[255];
-    getcwd(file, ARRAYSIZE(file));
-    chdir(Config.PluginsDir);
+	char file[255];
+	
+	getcwd(file, ARRAYSIZE(file));
+	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(Window, FALSE);
 	USBconfigure();
 	gtk_widget_set_sensitive(Window, TRUE);
-    chdir(file);
+	chdir(file);
 }
 
 void OnConf_Fw(GtkMenuItem *menuitem, gpointer user_data) {
-    char file[255];
-    getcwd(file, ARRAYSIZE(file));
-    chdir(Config.PluginsDir);
+	char file[255];
+	
+	getcwd(file, ARRAYSIZE(file));
+	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(Window, FALSE);
 	FWconfigure();
 	gtk_widget_set_sensitive(Window, TRUE);
-    chdir(file);
+	chdir(file);
 }
-
-GtkWidget *CpuDlg;
 
 void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	GtkWidget *Btn;
@@ -575,35 +505,34 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	Cpu->Shutdown();
 	vu0Shutdown();
 	vu1Shutdown();
-
-	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_EERec"))) ) {
+	
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_EERec"))))
 		newopts |= PCSX2_EEREC;
-    }
-	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU0rec"))) )
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU0rec"))))
 		newopts |= PCSX2_VU0REC;
-	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU1rec"))) )
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU1rec"))))
 		newopts |= PCSX2_VU1REC;
-	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_MTGS"))) )
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_MTGS"))))
 		newopts |= PCSX2_GSMULTITHREAD;
-	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_CpuDC"))) )
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_CpuDC"))))
 		newopts |= PCSX2_DUALCORE;
-	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitNormal"))) )
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitNormal"))))
 		newopts |= PCSX2_FRAMELIMIT_NORMAL;
-	else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitLimit"))) )
+	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitLimit"))))
 		newopts |= PCSX2_FRAMELIMIT_LIMIT;
-	else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitFS"))) )
+	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitFS"))))
 		newopts |= PCSX2_FRAMELIMIT_SKIP;
-	else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_VUSkip"))) )
+	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_VUSkip"))))
 		newopts |= PCSX2_FRAMELIMIT_VUSKIP;
 
-	if( (Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD) ) {
+	if ((Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD)) {
 		Config.Options = newopts;
 		SaveConfig();
-        SysMessage("Restart Pcsx2");
+		SysMessage("Restart Pcsx2");
 		exit(0);
 	}
 	
-	if( newopts & PCSX2_EEREC ) newopts |= PCSX2_COP2REC;
+	if (newopts & PCSX2_EEREC ) newopts |= PCSX2_COP2REC;
 	
 	Config.Options = newopts;
 	
@@ -611,9 +540,8 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	SaveConfig();
 	
 	cpuRestartCPU();
-
+	
 	gtk_widget_destroy(CpuDlg);
-
 	if (Window) gtk_widget_set_sensitive(Window, TRUE);
 	gtk_main_quit();
 }
@@ -628,67 +556,87 @@ void OnCpu_Cancel(GtkButton *button, gpointer user_data) {
 void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data)
 {
 	GtkWidget *Btn;
-    char str[512];
+	char str[512];
 
 	CpuDlg = create_CpuDlg();
 	gtk_window_set_title(GTK_WINDOW(CpuDlg), _("Configuration"));
-
-    if(!cpucaps.hasStreamingSIMDExtensions) {
-        Config.Options &= (PCSX2_VU0REC|PCSX2_VU1REC);//disable the config just in case
-    }
-    if(!cpucaps.hasMultimediaExtensions) {
-        Config.Options &= ~(PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC);//return to interpreter mode       
-    }
-
-	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_EERec")), !!CHECK_EEREC);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU0rec")), !!CHECK_VU0REC);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU1rec")), !!CHECK_VU1REC);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_MTGS")), !!CHECK_MULTIGS);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_CpuDC")), !!CHECK_DUALCORE);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitNormal")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_NORMAL);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitLimit")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_LIMIT);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitFS")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_SKIP);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_VUSkip")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_VUSKIP);
+	
+	if(!cpucaps.hasStreamingSIMDExtensions) {
+		Config.Options &= (PCSX2_VU0REC|PCSX2_VU1REC);//disable the config just in case
+	}
+	if(!cpucaps.hasMultimediaExtensions) {
+		Config.Options &= ~(PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC);//return to interpreter mode       
+	}
+	
+        gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_EERec")), !!CHECK_EEREC);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU0rec")), !!CHECK_VU0REC);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU1rec")), !!CHECK_VU1REC);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_MTGS")), !!CHECK_MULTIGS);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_CpuDC")), !!CHECK_DUALCORE);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitNormal")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_NORMAL);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitLimit")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_LIMIT);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitFS")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_SKIP);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_VUSkip")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_VUSKIP);
     
-    sprintf(str, "Cpu Vendor:     %s", cpuinfo.x86ID);
-    gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_CpuVendor")), str);
-    sprintf(str, "Familly:   %s", cpuinfo.x86Fam);
-    gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_Family")), str);
-    sprintf(str, "Cpu Speed:   %d MHZ", cpuinfo.cpuspeed);
-    gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_CpuSpeed")), str);
+	sprintf(str, "Cpu Vendor:     %s", cpuinfo.x86ID);
+	gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_CpuVendor")), str);
+	sprintf(str, "Familly:   %s", cpuinfo.x86Fam);
+	gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_Family")), str);
+	sprintf(str, "Cpu Speed:   %d MHZ", cpuinfo.cpuspeed);
+	gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_CpuSpeed")), str);
 
-    strcpy(str,"Features:    ");
-    if(cpucaps.hasMultimediaExtensions) strcat(str,"MMX");
-    if(cpucaps.hasStreamingSIMDExtensions) strcat(str,",SSE");
-    if(cpucaps.hasStreamingSIMD2Extensions) strcat(str,",SSE2");
-    if(cpucaps.hasStreamingSIMD3Extensions) strcat(str,",SSE3");
-    if(cpucaps.hasAMD64BitArchitecture) strcat(str,",x86-64");
-    gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_Features")), str);
+	strcpy(str,"Features:    ");
+	if(cpucaps.hasMultimediaExtensions) strcat(str,"MMX");
+	if(cpucaps.hasStreamingSIMDExtensions) strcat(str,",SSE");
+	if(cpucaps.hasStreamingSIMD2Extensions) strcat(str,",SSE2");
+	if(cpucaps.hasStreamingSIMD3Extensions) strcat(str,",SSE3");
+	if(cpucaps.hasAMD64BitArchitecture) strcat(str,",x86-64");
+	gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_Features")), str);
 
-    //GtkLabel_CpuVendor
-    //GtkLabel_Family
-    //GtkLabel_CpuSpeed
-    //GtkLabel_Features
 	gtk_widget_show_all(CpuDlg);
 	if (Window) gtk_widget_set_sensitive(Window, FALSE);
 	gtk_main();
 }
 
-#define FindComboText(combo,list,conf) \
-	if (strlen(conf) > 0) { \
-		int i; \
-		for (i=2;i<255;i+=2) { \
-			if (!strcmp(conf, list[i-2])) { \
-				gtk_entry_set_text(GTK_ENTRY(GTK_COMBO(combo)->entry), list[i-1]); \
-				break; \
-			} \
-		} \
+void SetActiveComboItem(GtkComboBox *widget,char plist[255][255], GList *list, char *conf)
+{
+	GList *temp;
+	int i = 0, pindex = 0, item = -1;
+	
+	if (strlen(conf) > 0) { 
+		for (i=2;i<255;i+=2) { 
+			if (!strcmp(conf, plist[i-2])) { 
+				pindex = i - 1;
+				break; 
+			} 
+		} 
 	}
+	
+	i = 0;
+	temp = list;
+	
+	while (temp)
+	{
+		if (!strcmp(plist[pindex],temp->data))
+			item = i;
+		
+		temp = temp->next;
+		i++;
+	}
+	
+	if (item <= 0) item = 0;
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), item);
+}
 
+#define FindComboText(combo,plist, list, conf) \
+	if (strlen(conf) > 0) { \
+		SetActiveComboItem(GTK_COMBO_BOX(combo), plist, list, conf); \
+	}
+	
 #define GetComboText(combo,list,conf) \
 	{ \
 	int i; \
-	char *tmp = (char*)gtk_entry_get_text(GTK_ENTRY(GTK_COMBO(combo)->entry)); \
+	char *tmp = (char*)gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo)); \
 	for (i=2;i<255;i+=2) { \
 		if (!strcmp(tmp, list[i-1])) { \
 			strcpy(conf, list[i-2]); \
@@ -696,7 +644,7 @@ void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data)
 		} \
 	} \
 	}
-
+	
 void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
 	GetComboText(GSConfS.Combo, GSConfS.plist, Config.GS)
 	GetComboText(PAD1ConfS.Combo, PAD1ConfS.plist, Config.PAD1);
@@ -710,23 +658,23 @@ void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
 
 	SaveConfig();
 
-	if (confplug == 0) {
+	if (configuringplug == FALSE) {
 		ReleasePlugins();
 		LoadPlugins();
     }
 
-	needReset = 1;
+	needReset = TRUE;
 	gtk_widget_destroy(ConfDlg);
 	if (Window) gtk_widget_set_sensitive(Window, TRUE);
 	gtk_main_quit();
-	confret = 1;
+	applychanges = TRUE;
 }
 
 void OnConfConf_Cancel(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(ConfDlg);
 	if (Window) gtk_widget_set_sensitive(Window, TRUE);
 	gtk_main_quit();
-	confret = 0;
+	applychanges = FALSE;
 }
 
 #define ConfPlugin(src, confs, plugin, name) \
@@ -860,91 +808,93 @@ void OnConfConf_FWAbout(GtkButton *button, gpointer user_data) {
 	ConfPlugin(_FWabout, FWConfS, Config.FW, "FWabout");
 }
 
+
+void SetComboToGList(GtkComboBox *widget, GList *list)
+{
+	GList *temp;
+	
+	while (gtk_combo_box_get_active_text(widget) != NULL)
+	{
+		gtk_combo_box_remove_text(GTK_COMBO_BOX(widget), 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
+	}
+	
+	temp = list;
+	while (temp != NULL)
+	{
+		gtk_combo_box_append_text (GTK_COMBO_BOX (widget), temp->data);
+		
+		temp = temp->next;
+	}
+	
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
+}
+
 #define ConfCreatePConf(name, type) \
-	type##ConfS.Combo = lookup_widget(ConfDlg, "GtkCombo_" name); \
-    gtk_combo_set_popdown_strings(GTK_COMBO(type##ConfS.Combo), type##ConfS.glist); \
-	FindComboText(type##ConfS.Combo, type##ConfS.plist, Config.type); \
+        type##ConfS.Combo = lookup_widget(ConfDlg, "GtkCombo_" name); \
+	SetComboToGList(GTK_COMBO_BOX(type##ConfS.Combo), type##ConfS.PluginNameList);  \
+	FindComboText(type##ConfS.Combo, type##ConfS.plist, type##ConfS.PluginNameList, Config.type); 
 
 void UpdateConfDlg() {
-	FindPlugins();
+        FindPlugins();
 
-	ConfCreatePConf("Gs", GS);
-	ConfCreatePConf("Pad1", PAD1);
-	ConfCreatePConf("Pad2", PAD2);
-	ConfCreatePConf("Spu2", SPU2);
-	ConfCreatePConf("Cdvd", CDVD);
-	ConfCreatePConf("Dev9", DEV9);
-	ConfCreatePConf("Usb",  USB);
-	ConfCreatePConf("FW",  FW);
-	ConfCreatePConf("Bios", Bios);
-}
-
-void OnPluginsPath_Ok() {
-	gchar *File;
-
-	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
-	strcpy(Config.PluginsDir, File);
-	if (Config.PluginsDir[strlen(Config.PluginsDir)-1] != '/')
-		strcat(Config.PluginsDir, "/");
-
-	UpdateConfDlg();
-
-	gtk_widget_destroy(FileSel);
-}
-
-void OnPluginsPath_Cancel() {
-	gtk_widget_destroy(FileSel);
+        ConfCreatePConf("Gs", GS);
+        ConfCreatePConf("Pad1", PAD1);
+        ConfCreatePConf("Pad2", PAD2);
+        ConfCreatePConf("Spu2", SPU2);
+        ConfCreatePConf("Cdvd", CDVD);
+        ConfCreatePConf("Dev9", DEV9);
+        ConfCreatePConf("Usb",  USB);
+        ConfCreatePConf("FW",  FW);
+        ConfCreatePConf("Bios", Bios);
 }
 
 void OnConfConf_PluginsPath(GtkButton *button, gpointer user_data) {
-	GtkWidget *Ok,*Cancel;
-
-	FileSel = gtk_file_selection_new(_("Select Plugins Directory"));
-
-	Ok = GTK_FILE_SELECTION(FileSel)->ok_button;
-	gtk_signal_connect (GTK_OBJECT(Ok), "clicked", GTK_SIGNAL_FUNC(OnPluginsPath_Ok), NULL);
-	gtk_widget_show(Ok);
-
-	Cancel = GTK_FILE_SELECTION(FileSel)->cancel_button;
-	gtk_signal_connect (GTK_OBJECT(Cancel), "clicked", GTK_SIGNAL_FUNC(OnPluginsPath_Cancel), NULL);
-	gtk_widget_show(Cancel);
-
-	gtk_widget_show(FileSel);
-	gdk_window_raise(FileSel->window);
-}
-
-void OnBiosPath_Ok() {
 	gchar *File;
+	GtkWidget *dialog;
+	gint result;
+	
+	dialog = gtk_file_chooser_dialog_new ("Choose the Plugin Directory:", GTK_WINDOW (ConfDlg), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	result = gtk_dialog_run (GTK_DIALOG (dialog));
+	
+	switch (result)
+	{
+	case (GTK_RESPONSE_OK):
+		File = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (dialog));
 
-	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
-	strcpy(Config.BiosDir, File);
-	if (Config.BiosDir[strlen(Config.BiosDir)-1] != '/')
-		strcat(Config.BiosDir, "/");
-
+		strcpy(Config.PluginsDir, File);
+		if (Config.PluginsDir[strlen(Config.PluginsDir)-1] != '/')
+			strcat(Config.PluginsDir, "/");
+	
+		default:
+		gtk_widget_destroy (dialog);
+	}
+		
 	UpdateConfDlg();
-
-	gtk_widget_destroy(FileSel);
-}
-
-void OnBiosPath_Cancel() {
-	gtk_widget_destroy(FileSel);
 }
 
 void OnConfConf_BiosPath(GtkButton *button, gpointer user_data) {
-	GtkWidget *Ok,*Cancel;
+	gchar *File;
+	GtkWidget *dialog;
+	gint result;
+	
+	dialog = gtk_file_chooser_dialog_new ("Choose the Bios Directory:", GTK_WINDOW (ConfDlg), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	result = gtk_dialog_run (GTK_DIALOG (dialog));
+	
+	switch (result)
+	{
+	case (GTK_RESPONSE_OK):
+		File = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (dialog));
 
-	FileSel = gtk_file_selection_new(_("Select Bios Directory"));
-
-	Ok = GTK_FILE_SELECTION(FileSel)->ok_button;
-	gtk_signal_connect (GTK_OBJECT(Ok), "clicked", GTK_SIGNAL_FUNC(OnBiosPath_Ok), NULL);
-	gtk_widget_show(Ok);
-
-	Cancel = GTK_FILE_SELECTION(FileSel)->cancel_button;
-	gtk_signal_connect (GTK_OBJECT(Cancel), "clicked", GTK_SIGNAL_FUNC(OnBiosPath_Cancel), NULL);
-	gtk_widget_show(Cancel);
-
-	gtk_widget_show(FileSel);
-	gdk_window_raise(FileSel->window);
+		strcpy(Config.BiosDir, File);
+		if (Config.PluginsDir[strlen(Config.BiosDir)-1] != '/')
+			strcat(Config.BiosDir, "/");
+	
+		default:
+		gtk_widget_destroy (dialog);
+	}
+		
+	UpdateConfDlg();
 }
 
 void OnConf_Conf(GtkMenuItem *menuitem, gpointer user_data) {
@@ -960,25 +910,6 @@ void OnConf_Conf(GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_main();
 }
 
-GtkWidget *CmdLine;
-GtkWidget *ListDV;
-GtkListStore *ListDVModel;
-GtkWidget *SetPCDlg, *SetPCEntry;
-GtkWidget *SetBPADlg, *SetBPAEntry;
-GtkWidget *SetBPCDlg, *SetBPCEntry;
-GtkWidget *DumpCDlg, *DumpCTEntry, *DumpCFEntry;
-GtkWidget *DumpRDlg, *DumpRTEntry, *DumpRFEntry;
-GtkWidget *MemWriteDlg, *MemEntry, *DataEntry;
-GtkAdjustment *DebugAdj;
-static u32 dPC;
-static u32 dBPA = -1;
-static u32 dBPC = -1;
-static char nullAddr[256];
-int DebugMode; // 0 - EE | 1 - IOP
-
-#include "R3000A.h"
-#include "PsxMem.h"
-
 void UpdateDebugger() {
 
 	char *str;
@@ -992,10 +923,16 @@ void UpdateDebugger() {
 		u32 pc = dPC + i*4;
 		if (DebugMode) {
 			mem = (u32*)PSXM(pc);
-		} else
+		} 
+		else
 			mem = PSM(pc);
-		if (mem == NULL) { sprintf(nullAddr, "%8.8lX:\tNULL MEMORY", pc); str = nullAddr; }
-		else str = disR5900Fasm(*mem, pc);
+		
+		if (mem == NULL) { 
+			sprintf(nullAddr, "%8.8lX:\tNULL MEMORY", pc);
+			str = nullAddr; 
+			}
+		else 
+			str = disR5900Fasm(*mem, pc);
 		gtk_list_store_append(ListDVModel, &iter);
 		gtk_list_store_set(ListDVModel, &iter, 0, str, -1);
 
@@ -1038,7 +975,7 @@ void OnDebug_SetPC(GtkButton *button, gpointer user_data) {
 	SetPCDlg = create_SetPCDlg();
 	
 	SetPCEntry = lookup_widget(SetPCDlg, "GtkEntry_dPC");
-
+	
 	gtk_widget_show_all(SetPCDlg);
 	gtk_widget_set_sensitive(DebugWnd, FALSE);
 	gtk_main();
@@ -1067,7 +1004,7 @@ void OnDebug_SetBPA(GtkButton *button, gpointer user_data) {
 	
 	SetBPAEntry = lookup_widget(SetBPADlg, "GtkEntry_BPA");
 
-	gtk_widget_show_all(SetBPADlg);
+ 	gtk_widget_show_all(SetBPADlg);
 	gtk_widget_set_sensitive(DebugWnd, FALSE);
 	gtk_main();
 }
@@ -1094,7 +1031,7 @@ void OnDebug_SetBPC(GtkButton *button, gpointer user_data) {
 	
 	SetBPCEntry = lookup_widget(SetBPCDlg, "GtkEntry_BPC");
 
-	gtk_widget_show_all(SetBPCDlg);
+ 	gtk_widget_show_all(SetBPCDlg);
 	gtk_widget_set_sensitive(DebugWnd, FALSE);
 	gtk_main();
 }
@@ -1121,25 +1058,30 @@ void OnDumpC_Ok(GtkButton *button, gpointer user_data) {
 
 		if (DebugMode) {
 			mem = PSXM(addrf);
-		} else {
+		} 
+		else {
 			mem = PSM(addrf);
 		}
-		if (mem == NULL) { sprintf(nullAddr, "%8.8lX:\tNULL MEMORY", addrf); str = nullAddr; }
-		else str = disR5900Fasm(*mem, addrf);
+		
+		if (mem == NULL) { 
+			sprintf(nullAddr, "%8.8lX:\tNULL MEMORY", addrf); 
+			str = nullAddr; 
+		}
+		else 
+			str = disR5900Fasm(*mem, addrf);
 
 		fprintf(f, "%s\n", str);
 		addrf+= 4;
 	}
 
 	fclose(f);
-
 	gtk_widget_destroy(DumpCDlg);
 	gtk_main_quit();
 	gtk_widget_set_sensitive(DebugWnd, TRUE);
 }
 
 void OnDumpC_Cancel(GtkButton *button, gpointer user_data) {
-	gtk_widget_destroy(DumpCDlg);
+gtk_widget_destroy(DumpCDlg);
 	gtk_main_quit();
 	gtk_widget_set_sensitive(DebugWnd, TRUE);
 }
@@ -1150,7 +1092,7 @@ void OnDebug_DumpCode(GtkButton *button, gpointer user_data) {
 	DumpCFEntry = lookup_widget(DumpCDlg, "GtkEntry_DumpCF");
 	DumpCTEntry = lookup_widget(DumpCDlg, "GtkEntry_DumpCT");
 
-	gtk_widget_show_all(DumpCDlg);
+ 	gtk_widget_show_all(DumpCDlg);
 	gtk_widget_set_sensitive(DebugWnd, FALSE);
 	gtk_main();
 }
@@ -1184,7 +1126,6 @@ void OnDumpR_Ok(GtkButton *button, gpointer user_data) {
 	}
 
 	fclose(f);
-
 	gtk_widget_destroy(DumpRDlg);
 	gtk_main_quit();
 	gtk_widget_set_sensitive(DebugWnd, TRUE);
@@ -1202,7 +1143,7 @@ void OnDebug_RawDump(GtkButton *button, gpointer user_data) {
 	DumpRFEntry = lookup_widget(DumpRDlg, "GtkEntry_DumpRF");
 	DumpRTEntry = lookup_widget(DumpRDlg, "GtkEntry_DumpRT");
 
-	gtk_widget_show_all(DumpRDlg);
+ 	gtk_widget_show_all(DumpRDlg);
 	gtk_widget_set_sensitive(DebugWnd, FALSE);
 	gtk_main();
 }
@@ -1264,7 +1205,6 @@ void OnMemWrite32_Ok(GtkButton *button, gpointer user_data) {
 
 	printf("memWrite32: %s, %s\n", mem, data);
 	memWrite32(strtol(mem, (char**)NULL, 0), strtol(data, (char**)NULL, 0));
-
 	gtk_widget_destroy(MemWriteDlg);
 	gtk_main_quit();
 	gtk_widget_set_sensitive(DebugWnd, TRUE);
@@ -1282,7 +1222,7 @@ void OnDebug_memWrite32(GtkButton *button, gpointer user_data) {
 	MemEntry = lookup_widget(MemWriteDlg, "GtkEntry_Mem");
 	DataEntry = lookup_widget(MemWriteDlg, "GtkEntry_Data");
 
-	gtk_widget_show_all(MemWriteDlg);
+ 	gtk_widget_show_all(MemWriteDlg);
 	gtk_widget_set_sensitive(DebugWnd, FALSE);
 	gtk_main();
 
@@ -1291,11 +1231,14 @@ void OnDebug_memWrite32(GtkButton *button, gpointer user_data) {
 
 void OnDebug_Debugger(GtkMenuItem *menuitem, gpointer user_data) {
 	GtkWidget *scroll;
-    GtkCellRenderer *renderer;
-    GtkTreeViewColumn *column;
+	GtkCellRenderer *renderer;
+	GtkTreeViewColumn *column;
 
 	if (OpenPlugins(NULL) == -1) return;
-	if (needReset) { SysReset(); needReset = 0; }
+	if (needReset) { 
+		SysReset(); 
+		needReset = FALSE; 
+	}
 
 	if (!efile)
 		efile=GetPS2ElfName(elfname);
@@ -1304,10 +1247,10 @@ void OnDebug_Debugger(GtkMenuItem *menuitem, gpointer user_data) {
 	efile=0;
 
 	dPC = cpuRegs.pc;
-
+	
 	DebugWnd = create_DebugWnd();
-
-	ListDVModel = gtk_list_store_new (1, G_TYPE_STRING);
+	
+ 	ListDVModel = gtk_list_store_new (1, G_TYPE_STRING);
 	ListDV = lookup_widget(DebugWnd, "GtkList_DisView");
 	gtk_tree_view_set_model(GTK_TREE_VIEW(ListDV), GTK_TREE_MODEL(ListDVModel));
 	renderer = gtk_cell_renderer_text_new ();
@@ -1315,7 +1258,6 @@ void OnDebug_Debugger(GtkMenuItem *menuitem, gpointer user_data) {
 	                                                   "text", 0,
 	                                                   NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (ListDV), column);
-
 	scroll = lookup_widget(DebugWnd, "GtkVScrollbar_VList");
 
 	DebugAdj = GTK_RANGE(scroll)->adjustment;
@@ -1342,6 +1284,7 @@ void OnLogging_Ok(GtkButton *button, gpointer user_data) {
 	int i, ret;
 
 #ifdef PCSX2_DEVBUILD
+		
 	for (i=0; i<17; i++) {
 		sprintf(str, "Log%d", i);
 		Btn = lookup_widget(LogDlg, str);
@@ -1389,13 +1332,12 @@ void OnDebug_Logging(GtkMenuItem *menuitem, gpointer user_data) {
 	int i;
 
 	LogDlg = create_Logging();
-
 	for (i=0; i<17; i++) {
 		sprintf(str, "Log%d", i);
 		Btn = lookup_widget(LogDlg, str);
 		gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), varLog & (1<<i));
 	}
-
+ 
 	for (i=20; i<29; i++) {
 		sprintf(str, "Log%d", i);
 		Btn = lookup_widget(LogDlg, str);
@@ -1430,12 +1372,12 @@ void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data) {
 	GtkWidget *Label;
 
 	AboutDlg = create_AboutDlg();
-	gtk_window_set_title(GTK_WINDOW(AboutDlg), _("About"));
+ 	gtk_window_set_title(GTK_WINDOW(AboutDlg), _("About"));
 
 	Label = lookup_widget(AboutDlg, "GtkAbout_LabelVersion");
-	sprintf(str, _("PCSX2 For Linux\nVersion %s"), PCSX2_VERSION);
-	gtk_label_set_text(GTK_LABEL(Label), str);
-
+ 	sprintf(str, _("PCSX2 For Linux\nVersion %s"), PCSX2_VERSION);
+	gtk_label_set_text(GTK_LABEL(Label), str);	
+	
 	Label = lookup_widget(AboutDlg, "GtkAbout_LabelAuthors");
 	gtk_label_set_text(GTK_LABEL(Label), _(LabelAuthors));
 
@@ -1452,7 +1394,7 @@ void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data) {
 	type##ConfS.plugins+=2; \
 	strcpy(type##ConfS.plist[type##ConfS.plugins-1], name); \
 	strcpy(type##ConfS.plist[type##ConfS.plugins-2], ent->d_name); \
-	type##ConfS.glist = g_list_append(type##ConfS.glist, type##ConfS.plist[type##ConfS.plugins-1]); \
+	type##ConfS.PluginNameList = g_list_append(type##ConfS.PluginNameList, type##ConfS.plist[type##ConfS.plugins-1]); \
 }
 
 void FindPlugins() {
@@ -1460,13 +1402,13 @@ void FindPlugins() {
 	struct dirent *ent;
 	void *Handle;
 	char plugin[256],name[256];
-
+	
 	GSConfS.plugins  = 0;  CDVDConfS.plugins = 0; DEV9ConfS.plugins = 0;
 	PAD1ConfS.plugins = 0; PAD2ConfS.plugins = 0; SPU2ConfS.plugins = 0;
 	USBConfS.plugins = 0;  FWConfS.plugins = 0;  BiosConfS.plugins = 0;
-	GSConfS.glist  = NULL;  CDVDConfS.glist = NULL; DEV9ConfS.glist = NULL;
-	PAD1ConfS.glist = NULL; PAD2ConfS.glist = NULL; SPU2ConfS.glist = NULL;
-	USBConfS.glist = NULL;  FWConfS.glist = NULL;  BiosConfS.glist = NULL;
+	GSConfS.PluginNameList  = NULL;  CDVDConfS.PluginNameList = NULL; DEV9ConfS.PluginNameList = NULL;
+	PAD1ConfS.PluginNameList = NULL; PAD2ConfS.PluginNameList = NULL; SPU2ConfS.PluginNameList = NULL;
+	USBConfS.PluginNameList = NULL;  FWConfS.PluginNameList = NULL;  BiosConfS.PluginNameList = NULL;
 
 	dir = opendir(Config.PluginsDir);
 	if (dir == NULL) {
@@ -1557,7 +1499,6 @@ void FindPlugins() {
 
 		sprintf (plugin, "%s%s", Config.BiosDir, ent->d_name);
 		if (stat(plugin, &buf) == -1) continue;
-//		if (buf.st_size < (1024*512)) continue;
 		if (buf.st_size > (1024*4096)) continue;	//2002-09-28 (Florin)
 		if (!IsBIOS(ent->d_name, description)) continue;//2002-09-28 (Florin)
 
@@ -1566,7 +1507,7 @@ void FindPlugins() {
         strncat(BiosConfS.plist[BiosConfS.plugins-1], ent->d_name, min(sizeof(BiosConfS.plist[0]-2), strlen(ent->d_name)));
         strcat(BiosConfS.plist[BiosConfS.plugins-1], ")");
 		strcpy(BiosConfS.plist[BiosConfS.plugins-2], ent->d_name);
-		BiosConfS.glist = g_list_append(BiosConfS.glist, BiosConfS.plist[BiosConfS.plugins-1]);
+		BiosConfS.PluginNameList = g_list_append(BiosConfS.PluginNameList, BiosConfS.plist[BiosConfS.plugins-1]);
 	}
 	closedir(dir);
 }
@@ -1588,9 +1529,13 @@ void SysMessage(char *fmt, ...) {
 	vsprintf(msg, fmt, list);
 	va_end(list);
 
-	if (msg[strlen(msg)-1] == '\n') msg[strlen(msg)-1] = 0;
+	if (msg[strlen(msg)-1] == '\n')
+		msg[strlen(msg)-1] = 0;
 
-	if (!UseGui) { printf("%s\n",msg); return; }
+	if (!UseGui) { 
+		printf("%s\n",msg); 
+		return; 
+	}
 
 	MsgDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(MsgDlg), GTK_WIN_POS_CENTER);
@@ -1622,30 +1567,260 @@ void SysMessage(char *fmt, ...) {
 	gtk_main();
 }
 
-void
-on_patch_browser1_activate             (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-}
+void on_patch_browser1_activate(GtkMenuItem *menuitem, gpointer user_data) {}
 
-void
-on_patch_finder2_activate              (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
-{
-}
+void on_patch_finder2_activate(GtkMenuItem *menuitem, gpointer user_data) {}
 
-void
-on_enable_console1_activate            (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+void on_enable_console1_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
     Config.PsxOut=(int)gtk_check_menu_item_get_active((GtkCheckMenuItem*)menuitem);
     SaveConfig();
 }
 
-void
-on_enable_patches1_activate            (GtkMenuItem     *menuitem,
-                                        gpointer         user_data)
+void on_enable_patches1_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
     Config.Patch=(int)gtk_check_menu_item_get_active((GtkCheckMenuItem*)menuitem);
     SaveConfig();
+}
+
+void on_Game_Fixes(GtkMenuItem *menuitem, gpointer user_data) 
+{
+	GameFixDlg = create_GameFixDlg();
+	
+        set_checked(GameFixDlg, "check_Slow_DVD", (Config.GameFixes & FLAG_SLOW_DVD));
+	set_checked(GameFixDlg, "check_VU_Clip", (Config.GameFixes & FLAG_VU_CLIP));
+	set_checked(GameFixDlg, "check_FPU_Clamp", (Config.GameFixes & FLAG_FPU_CLAMP));
+	set_checked(GameFixDlg, "check_VU_Branch", (Config.GameFixes & FLAG_VU_BRANCH));
+	
+	gtk_widget_show_all(GameFixDlg);
+	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_main();
+	}
+void on_Game_Fix_Cancel(GtkButton *button, gpointer user_data)
+{
+	gtk_widget_destroy(GameFixDlg);
+	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_main_quit();
+}
+void on_Game_Fix_OK(GtkButton *button, gpointer user_data) 
+{
+	
+	Config.GameFixes = 0;
+	Config.GameFixes |= is_checked(GameFixDlg, "check_Slow_DVD") ? FLAG_SLOW_DVD : 0;
+	Config.GameFixes |= is_checked(GameFixDlg, "check_VU_Clip") ? FLAG_VU_CLIP : 0;
+	Config.GameFixes |= is_checked(GameFixDlg, "check_FPU_Clamp") ? FLAG_FPU_CLAMP : 0;
+	Config.GameFixes |= is_checked(GameFixDlg, "check_VU_Branch") ? FLAG_VU_BRANCH : 0;
+	
+	SaveConfig();
+	gtk_widget_destroy(GameFixDlg);
+	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_main_quit();
+}
+
+void on_Speed_Hacks(GtkMenuItem *menuitem, gpointer user_data)
+{
+	int index;
+	SpeedHacksDlg = create_SpeedHacksDlg();
+	
+	index = 1; //Default to normal
+	if get_flag(Config.Hacks, FLAG_VU_EXTRA_OVERFLOW) index = 2;
+	if  get_flag(Config.Hacks, FLAG_VU_NO_OVERFLOW) index = 0;
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), index);
+	
+	index = 1; //Default to normal
+	if get_flag(Config.Hacks, FLAG_FPU_EXTRA_OVERFLOW) index = 2;
+	if get_flag(Config.Hacks, FLAG_FPU_NO_OVERFLOW) index = 0;
+
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), index);
+	
+        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", (Config.Hacks & FLAG_EE_2_SYNC));
+	set_checked(SpeedHacksDlg, "check_Tight_SPU_Sync", (Config.Hacks & FLAG_TIGHT_SPU_SYNC));
+	set_checked(SpeedHacksDlg, "check_Disable_Underflow", (Config.Hacks & FLAG_NO_UNDERFLOW));
+	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", (Config.Hacks & FLAG_IOP_2_SYNC));
+	set_checked(SpeedHacksDlg, "check_Triple_Sync",(Config.Hacks & FLAG_TRIPLE_SYNC));
+        set_checked(SpeedHacksDlg, "check_EE_Fast_Branches", (Config.Hacks & FLAG_FAST_BRANCHES));
+        set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", (Config.Hacks & FLAG_NO_VU_FLAGS));
+	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", (Config.Hacks & FLAG_NO_FPU_FLAGS));
+	set_checked(SpeedHacksDlg, "check_ESC_Hack", (Config.Hacks & FLAG_ESC));
+	
+	gtk_widget_show_all(SpeedHacksDlg);
+	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_main();
+	}
+void on_Speed_Hack_Compatability(GtkButton *button, gpointer user_data)
+{
+        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", FALSE);
+       
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 2);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 2);
+	
+	set_checked(SpeedHacksDlg, "check_Disable_Underflow", TRUE);
+	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", FALSE);
+	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
+        set_checked(SpeedHacksDlg, "check_EE_Fast_Branches", FALSE);
+        set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", TRUE);
+	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", TRUE);
+	
+}
+void on_Speed_Hack_Speed(GtkButton *button, gpointer user_data)
+{
+        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", TRUE);
+        
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 0);
+	
+	set_checked(SpeedHacksDlg, "check_Tight_SPU_Sync", FALSE);
+	set_checked(SpeedHacksDlg, "check_Disable_Underflow", TRUE);
+	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", TRUE);
+	set_checked(SpeedHacksDlg, "check_Triple_Sync", TRUE);
+        set_checked(SpeedHacksDlg, "check_EE_Fast_Branches", FALSE);
+        set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", TRUE);
+	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", TRUE);
+	
+}
+void on_Speed_Hack_Cancel(GtkButton *button, gpointer user_data)
+{
+	gtk_widget_destroy(SpeedHacksDlg);
+	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_main_quit();
+}
+void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
+{
+	int index;
+	
+	Config.Hacks = 0;
+
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_EE_Double_Sync") ? FLAG_EE_2_SYNC : 0;  
+	
+	switch (gtk_combo_box_get_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")))) {
+		case 0: //Disabled
+			set_flag(Config.Hacks, FLAG_VU_NO_OVERFLOW, TRUE);
+			break;
+		case 1: //Normal
+			// Not having either flag set to true is normal
+			break;
+		case 2: //Extra
+			set_flag(Config.Hacks, FLAG_VU_EXTRA_OVERFLOW, TRUE);
+			break;
+	}
+	
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Tight_SPU_Sync") ? FLAG_TIGHT_SPU_SYNC : 0;	
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_Underflow") ? FLAG_NO_UNDERFLOW : 0;  
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_IOP_Double_Sync") ? FLAG_IOP_2_SYNC : 0;  
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Triple_Sync") ? FLAG_TRIPLE_SYNC : 0;  
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_EE_Fast_Branches") ? FLAG_FAST_BRANCHES : 0; 
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_VU_Flags") ? FLAG_NO_VU_FLAGS : 0;  
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_FPU_Flags")? FLAG_NO_FPU_FLAGS : 0;  
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_ESC_Hack") ? FLAG_ESC : 0;  
+	
+	switch (gtk_combo_box_get_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")))) {
+		case 0: //Disabled
+			set_flag(Config.Hacks, FLAG_FPU_NO_OVERFLOW, TRUE);
+			break;
+		case 1: //Normal
+			// Not having either flag set to true is normal
+			break;
+		case 2: //Extra
+			set_flag(Config.Hacks, FLAG_FPU_EXTRA_OVERFLOW, TRUE);
+			break;
+	}
+	
+	SaveConfig();
+
+	gtk_widget_destroy(SpeedHacksDlg);
+	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_main_quit();
+}
+void setAdvancedOptions()
+{
+	switch((Config.sseMXCSR & 0x6000) >> 13)
+	{
+		case 0:
+			set_checked(AdvDlg, "radio_EE_Round_Near", TRUE);
+			break;
+		case 1:
+			set_checked(AdvDlg, "radio_EE_Round_Negative",TRUE);
+			break;
+		case 2:
+			set_checked(AdvDlg, "radio_EE_Round_Positive", TRUE);
+			break;
+		case 3:
+			set_checked(AdvDlg, "radio_EE_Round_Zero", TRUE);
+			break;
+	}
+	
+	switch((Config.sseVUMXCSR & 0x6000) >> 13)
+	{
+		case 0:
+			set_checked(AdvDlg, "radio_VU_Round_Near", TRUE);
+			break;
+		case 1:
+			set_checked(AdvDlg, "radio_VU_Round_Negative",TRUE);
+			break;
+		case 2:
+			set_checked(AdvDlg, "radio_VU_Round_Positive", TRUE);
+			break;
+		case 3:
+			set_checked(AdvDlg, "radio_VU_Round_Zero", TRUE);
+			break;
+	}
+	
+	set_checked(AdvDlg, "check_EE_Flush_Zero", (Config.sseMXCSR & FLAG_FLUSH_ZERO) ? TRUE : FALSE);
+	set_checked(AdvDlg, "check_EE_Denormal_Zero", (Config.sseMXCSR & FLAG_DENORMAL_ZERO) ? TRUE : FALSE);
+	
+	set_checked(AdvDlg, "check_VU_Flush_Zero", (Config.sseVUMXCSR & FLAG_FLUSH_ZERO) ? TRUE : FALSE);
+	set_checked(AdvDlg, "check_VU_Denormal_Zero", (Config.sseVUMXCSR & FLAG_DENORMAL_ZERO) ? TRUE : FALSE);
+}
+void on_Advanced(GtkMenuItem *menuitem, gpointer user_data)
+{
+	AdvDlg = create_AdvDlg();
+	
+	setAdvancedOptions();
+	
+	gtk_widget_show_all(AdvDlg);
+	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_main();
+	}
+
+void on_Advanced_Defaults(GtkButton *button, gpointer user_data)
+{
+	Config.sseMXCSR = DEFAULT_sseMXCSR;
+	Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+	
+	setAdvancedOptions();
+      }
+void on_Advanced_Cancel(GtkButton *button, gpointer user_data)
+{
+	gtk_widget_destroy(AdvDlg);
+	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_main_quit();
+}
+void on_Advanced_OK(GtkButton *button, gpointer user_data) 
+{
+	Config.sseMXCSR &= 0x1fbf;
+	Config.sseVUMXCSR &= 0x1fbf;
+	
+	
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Near") ? FLAG_ROUND_NEAR : 0; 
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
+
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Near") ? FLAG_ROUND_NEAR : 0; 
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
+	
+	Config.sseMXCSR |= is_checked(AdvDlg, "check_EE_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "check_VU_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
+	
+	Config.sseMXCSR |= is_checked(AdvDlg, "check_EE_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "check_VU_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	
+	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
+	SaveConfig();
+	
+	gtk_widget_destroy(AdvDlg);
+	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_main_quit();
 }

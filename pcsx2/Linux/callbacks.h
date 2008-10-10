@@ -1,20 +1,3 @@
-/*  Pcsx2 - Pc Ps2 Emulator
- *  Copyright (C) 2002-2008  Pcsx2 Team
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
- */
 #include <gtk/gtk.h>
 
 
@@ -128,6 +111,18 @@ OnConf_Fw                              (GtkMenuItem     *menuitem,
 
 void
 OnConf_Cpu                             (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
+on_Game_Fixes                          (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
+on_Speed_Hacks                         (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
+on_Advanced                            (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
 void
@@ -400,4 +395,40 @@ OnMemWrite32_Ok                        (GtkButton       *button,
 
 void
 OnMemWrite32_Cancel                    (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Game_Fix_OK                         (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Game_Fix_Cancel                     (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Speed_Hack_Compatability            (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Speed_Hack_Speed                    (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Speed_Hack_OK                       (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Speed_Hack_Cancel                   (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Advanced_Defaults                   (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Advanced_OK                         (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_Advanced_Cancel                     (GtkButton       *button,
                                         gpointer         user_data);
