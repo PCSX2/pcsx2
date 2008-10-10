@@ -319,7 +319,7 @@ extern __forceinline u8* dmaGetAddr(u32 mem)
 
 	if( (mem&0xffff0000) == 0x50000000 ) {// reserved scratch pad mem
 		SysPrintf("dmaGetAddr: reserved scratch pad mem\n");
-		return (u8*)&PS2MEM_SCRATCH[(mem) & 0x3ff0];
+		return NULL;//(u8*)&PS2MEM_SCRATCH[(mem) & 0x3ff0];
 	}
 
 	p = (u8*)dmaGetAddrBase(mem);
@@ -329,7 +329,7 @@ extern __forceinline u8* dmaGetAddr(u32 mem)
     // linux doesn't suffer from this because it has better vm support
 	if( memLUT[ (p-PS2MEM_BASE)>>12 ].aPFNs == NULL ) {
 		SysPrintf("dmaGetAddr: memLUT PFN warning\n");
-		return p;
+		return NULL;//p;
 	}
 
 	pbase = (u8*)memLUT[ (p-PS2MEM_BASE)>>12 ].aVFNs[0];
