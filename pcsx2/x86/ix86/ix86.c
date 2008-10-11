@@ -35,7 +35,6 @@
 
 #ifdef __x86_64__
 
-#define _64_BIT_HACK
 #ifdef _MSC_VER
 // visual studio calling convention
 x86IntRegType g_x86savedregs[] = { RBX, RBP, RSI, RDI, R12, R13, R14, R15 };
@@ -1139,17 +1138,15 @@ _inline void ADD32ItoR( x86IntRegType to, u32 from )
 
 /* add imm32 to m32 */
 _inline void ADD32ItoM( uptr to, u32 from ) 
-{
-	#ifndef _64_BIT_HACK  // Stops any games from running in the 64 bit version
-	if(from < 0x80)
+{ 
+	/*if(from < 0x80) // crashes games in 64bit build; TODO: figure out why.
 	{
 		write8( 0x83 ); 
 		ModRM( 0, 0, DISP32 );
 		write32( MEMADDR(to, 8) );
 		write8( from );
 	} 
-	else 
-	#endif
+	else*/
 	{
 		write8( 0x81 ); 
 		ModRM( 0, 0, DISP32 );
@@ -1214,14 +1211,8 @@ _inline void ADD16RtoR( x86IntRegType to , x86IntRegType from )
 /* add imm16 to r16 */
 _inline void ADD16ItoR( x86IntRegType to, u16 from ) 
 {
-	#ifndef _64_BIT_HACK 
-	// Breaks loading saved gaves in Kingdom Hearts with "Assertion `s_vu1esp == 0' failed." in the 64 bit version
-	RexB(0,to);
-	write8( 0x66 );
-	#else
 	write8( 0x66 );
 	RexB(0,to);
-	#endif
 	
 	if ( to == EAX) 
 	{
@@ -1505,7 +1496,8 @@ _inline void SBB32ItoR( x86IntRegType to, u32 from ) {
 	RexB(0,to);
 	if ( to == EAX ) {
 		write8( 0x1D );
-	} else {
+	} 
+	else {
 		write8( 0x81 );
 		ModRM( 3, 3, to );
 	}
@@ -2430,14 +2422,8 @@ _inline void AND16RtoR( x86IntRegType to, x86IntRegType from )
 /* and imm16 to r16 */
 _inline void AND16ItoR( x86IntRegType to, u16 from ) 
 {
-	#ifndef _64_BIT_HACK
-	// Given what happened with ADD16ItoR, I'll change this back as a precaution.
-	RexB(0,to);
-	write8(0x66);
-	#else
 	write8(0x66);
 	RexB(0,to);
-	#endif
 	
 	if ( to == EAX ) {
 		write8( 0x25 ); 

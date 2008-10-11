@@ -400,6 +400,7 @@ int SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS* eps)
 		s_psVuMem.aVFNs[1] = addr&~0xfff;
 		SysMapUserPhysicalPages((void*)addr, 1, s_psVuMem.aPFNs, 1);
 
+		//SysPrintf("Exception: vumem\n");
 		return EXCEPTION_CONTINUE_EXECUTION;
 	}
 OtherException:
@@ -412,6 +413,7 @@ OtherException:
 		if( ExceptionRecord->ExceptionInformation[0] ) {
 			//SKIP_WRITE();
 			// shouldn't be writing
+			SysPrintf("Exception: Write\n"); // Naruto Ultimate Ninja 3 crashes right after a write!
 		}
 		else {
 			SysPrintf("vmhack ");
