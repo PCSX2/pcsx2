@@ -537,8 +537,6 @@ void _deleteEEreg(int reg, int flush)
 // if not mmx, then xmm
 int eeProcessHILO(int reg, int mode, int x86)
 {
-	int info = 0;
-
     int usex86 = x86 && _hasFreeX86reg();
 	if( (usex86 || _hasFreeXMMreg()) || !(g_pCurInstInfo->regs[reg]&EEINST_LASTUSE) ) {
 		if( usex86 ) return _allocX86reg(-1, X86TYPE_GPR, reg, mode);
@@ -1077,7 +1075,8 @@ int eeRecompileCodeXMM(int xmminfo)
 // rd = rs op rt
 void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo)
 {
-    int mmregs=-1, mmregt=-1, mmregd=-1, mmregacc=-1;
+	int mmregs=-1, mmregt=-1, mmregd=-1, mmregacc=-1;
+	
 	if( cpucaps.hasStreamingSIMDExtensions ) {
 		int info = PROCESS_EE_XMM;
 
@@ -1092,8 +1091,9 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 		}
 
 		if( xmminfo & XMMINFO_READS ) {
-			if( (!(xmminfo&XMMINFO_READT)||mmregt>=0) && (g_pCurInstInfo->fpuregs[_Fs_] & EEINST_LASTUSE) )
+			if( ( !(xmminfo & XMMINFO_READT) || (mmregt >= 0) ) && (g_pCurInstInfo->fpuregs[_Fs_] & EEINST_LASTUSE) ) {
 				mmregs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+			}
 			else mmregs = _allocFPtoXMMreg(-1, _Fs_, MODE_READ);
 		}
 
@@ -1227,8 +1227,8 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 ////////////////////////////////////////////////////
 extern u8 g_MACFlagTransform[256]; // for vus
 
-u32 g_sseMXCSR = 0x9f80; // disable all exception, round to 0, flush to 0
-u32 g_sseVUMXCSR = 0xff80;
+u32 g_sseMXCSR = DEFAULT_sseMXCSR; 
+u32 g_sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
 #if defined(_MSC_VER)
 #include <mmintrin.h>
@@ -1239,10 +1239,15 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 	// SSE STATE //
 	// WARNING: do not touch unless you know what you are doing
 
+	sseMXCSR &= 0xffff; // clear the upper 16 bits since they shouldn't be set
+	sseVUMXCSR &= 0xffff;
+
 	if( cpucaps.hasStreamingSIMDExtensions ) {
+		
 		g_sseMXCSR = sseMXCSR;
 		g_sseVUMXCSR = sseVUMXCSR;
 		// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)
+		// Update 11/05/08 - Doesnt seem to effect it anymore, for the speed boost, its on :p
 		//g_sseMXCSR = 0x9f80; // changing the rounding mode to 0x2000 (near) kills grandia III!
 							// changing the rounding mode to 0x0000 or 0x4000 totally kills gitaroo
 							// so... grandia III wins (you can change individual games with the 'roundmode' patch command)
@@ -1349,7 +1354,7 @@ int recInit( void )
 
 	if ( cpuinfo.x86ID[0] == 'A' ) //AMD cpu
 	{
-		SysPrintf( " Extented AMD Features: \n" );
+		SysPrintf( " Extended AMD Features: \n" );
 		SysPrintf( "\t%sDetected MMX2\n",     cpucaps.hasMultimediaExtensionsExt       ? "" : "Not " );
 		SysPrintf( "\t%sDetected 3DNOW\n",    cpucaps.has3DNOWInstructionExtensions    ? "" : "Not " );
 		SysPrintf( "\t%sDetected 3DNOW2\n",   cpucaps.has3DNOWInstructionExtensionsExt ? "" : "Not " );
@@ -1362,11 +1367,11 @@ int recInit( void )
 
 	SuperVUInit(-1);
 
-	for(i = 0; i < 256; ++i) {
+	for(i = 0; i < 256; ++i) {       //x0-xF       //0x-Fx
 		g_MACFlagTransform[i] = macarr[i>>4]|(macarr[i&15]<<4);
 	}
 
-	SetCPUState(g_sseMXCSR, g_sseVUMXCSR);
+	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 
 	return 0;
 }
@@ -1736,7 +1741,7 @@ void StopPerfCounter()
 #endif
 }
 
-#define USE_FAST_BRANCHES 0
+#define USE_FAST_BRANCHES CHECK_FASTBRANCHES
 
 //void testfpu()
 //{
@@ -1758,6 +1763,8 @@ void StopPerfCounter()
 //	assert( !g_globalXMMSaved );
 //}
 
+#define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.375 : 2.25) : (9/8))
+
 static void iBranchTest(u32 newpc, u32 cpuBranch)
 {
 #ifdef PCSX2_DEVBUILD
@@ -1773,7 +1780,7 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 
 	if( !USE_FAST_BRANCHES || cpuBranch ) {
 		MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
-		ADD32ItoR(ECX, s_nBlockCycles*9/8); // NOTE: mulitply cycles here, 6/5 ratio stops pal ffx from randomly crashing, but crashes jakI
+		ADD32ItoR(ECX, s_nBlockCycles * EECYCLE_MULT); // NOTE: mulitply cycles here, 6/5 ratio stops pal ffx from randomly crashing, but crashes jakI
 		MOV32RtoM((uptr)&cpuRegs.cycle, ECX); // update cycles
 	}
 	else {
@@ -2103,7 +2110,7 @@ void recompileNextInstruction(int delayslot)
 				case 49: recLWC1_coX(g_pCurInstInfo->numpeeps); break;
 				case 57: recSWC1_coX(g_pCurInstInfo->numpeeps); break;
 				case 55: recLD_coX(g_pCurInstInfo->numpeeps); break;
-				case 63: recSD_coX(g_pCurInstInfo->numpeeps); break;
+				case 63: recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
 				default:
 					assert(0);
 			}
@@ -2386,7 +2393,7 @@ void recRecompile( u32 startpc )
 				
 				if( _Rt_ < 4 || (_Rt_ >= 16 && _Rt_ < 20) ) {
 					// branches
-					if( _Rt_ == 2 && _Rt_ == 3 && _Rt_ == 18 && _Rt_ == 19 ) s_nHasDelay = 1;
+					if( _Rt_ == 2 || _Rt_ == 3 || _Rt_ == 18 || _Rt_ == 19 ) s_nHasDelay = 1;
 					else s_nHasDelay = 2;
 
 					branchTo = _Imm_ * 4 + i + 4;

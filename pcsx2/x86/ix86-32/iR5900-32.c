@@ -1564,7 +1564,7 @@ int recInit( void )
 
 	if ( cpuinfo.x86ID[0] == 'A' ) //AMD cpu
 	{
-		SysPrintf( " Extented AMD Features: \n" );
+		SysPrintf( " Extended AMD Features: \n" );
 		SysPrintf( "\t%sDetected MMX2\n",     cpucaps.hasMultimediaExtensionsExt       ? "" : "Not " );
 		SysPrintf( "\t%sDetected 3DNOW\n",    cpucaps.has3DNOWInstructionExtensions    ? "" : "Not " );
 		SysPrintf( "\t%sDetected 3DNOW2\n",   cpucaps.has3DNOWInstructionExtensionsExt ? "" : "Not " );
