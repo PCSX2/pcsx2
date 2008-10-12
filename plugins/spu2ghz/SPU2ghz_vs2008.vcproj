@@ -70,8 +70,8 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
 				CompileAs="0"
-				EnablePREfast="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -87,7 +87,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="F:\Pcsx2\plugins\SPU2ghz.dll"
+				OutputFile=".\bin\SPU2ghz.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
@@ -275,8 +275,8 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
 				CompileAs="0"
-				EnablePREfast="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -296,9 +296,11 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
-				StripPrivateSymbols=".\bin\spu2ghz.pdb"
+				StripPrivateSymbols=""
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/SPU2ghz.lib"
@@ -326,8 +328,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Building Release RAR..."
-				CommandLine=".\mkrelease.cmd"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
