@@ -1,0 +1,253 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Spanish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESN)
+#ifdef _WIN32
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_MODERN
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CONFIG DIALOGEX 3, 1, 414, 217
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "SPU2ghz Settings"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "OK",IDOK,300,198,54,15,NOT WS_TABSTOP
+    PUSHBUTTON      "Cancel",IDCANCEL,354,198,54,15,NOT WS_TABSTOP
+    GROUPBOX        "Effects (Reverb) Settings",IDC_STATIC,6,156,119,30
+    CHECKBOX        "Enable Effect Processing",IDC_EFFECTS,12,168,95,10,NOT WS_TABSTOP
+    GROUPBOX        "Output Settings",IDC_STATIC,132,6,119,111
+    LTEXT           "Buffer Size",IDC_STATIC,138,35,35,8,NOT WS_GROUP
+    LTEXT           "Sample Rate",IDC_STATIC,139,19,42,8,NOT WS_GROUP
+    GROUPBOX        "Mixing Settings",IDC_STATIC,6,6,119,80
+    LTEXT           "Interpolation:",IDC_STATIC,11,58,42,8,NOT WS_GROUP
+    GROUPBOX        "",IDC_STATIC,264,18,135,61
+    GROUPBOX        "Dumps (on close)",IDC_STATIC,264,131,135,51
+    CHECKBOX        "Dump Register Data",IDC_DUMPREGS,270,169,80,10,NOT WS_TABSTOP
+    CHECKBOX        "Dump Memory Contents",IDC_DUMPMEM,270,156,91,10,NOT WS_TABSTOP
+    CHECKBOX        "Dump Core and Voice State",IDC_DUMPCORE,270,145,104,10,NOT WS_TABSTOP
+    GROUPBOX        "Logging",IDC_STATIC,263,80,136,50
+    CHECKBOX        "Log Audio Output",IDC_LOGWAVE,269,116,71,10,NOT WS_TABSTOP
+    CHECKBOX        "Log DMA Writes",IDC_LOGDMA,269,104,68,10,NOT WS_TABSTOP
+    CHECKBOX        "Log Register/DMA Actions",IDC_LOGREGS,269,92,101,10,NOT WS_TABSTOP
+    CHECKBOX        "KeyOn/Off Events",IDC_MSGKEY,276,30,74,10,NOT WS_TABSTOP
+    COMBOBOX        IDC_INTERPOLATE,12,66,108,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SRATE,192,18,54,201,CBS_DROPDOWN | WS_DISABLED | WS_TABSTOP,WS_EX_RIGHT
+    CONTROL         "Slider2",IDC_BUFFER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,138,42,65,10
+    EDITTEXT        IDC_BSIZE,204,42,42,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Output Module:",IDC_STATIC,12,16,50,8,NOT WS_GROUP
+    COMBOBOX        IDC_OUTPUT,12,24,108,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Number of Buffers:",IDC_STATIC,139,62,60,8
+    EDITTEXT        IDC_BCOUNT,204,60,42,12,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "",IDC_STATIC,258,6,150,180
+    CHECKBOX        "Enable Debug Options",IDC_DEBUG,264,6,87,10,NOT WS_TABSTOP
+    CONTROL         "DMA Operations",IDC_MSGDMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,54,68,10
+    CONTROL         "AutoDMA Operations",IDC_MSGADMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,282,66,83,10
+    CONTROL         "Voice Stop Events",IDC_MSGVOICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,42,75,10
+    CONTROL         "Show In Console",IDC_MSGSHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,270,18,69,10
+    GROUPBOX        "Speed Limiter",IDC_STATIC,132,119,120,68
+    LTEXT           "The number value works better if it's in the 5-20 range. The buffer size works better in powers of 2 (1024/2048) specially in Vista.",IDC_STATIC,138,75,108,35
+    CONTROL         "Limit speed to output speed.",IDC_SPEEDLIMIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,132,108,12
+    PUSHBUTTON      "Configure...",IDC_OUTCONF,72,42,48,12
+    LTEXT           "WARNING: The effects processing is experimental and _could_ hurt your ears .\n If that happens, tell me about what game, so I can fix it!",IDC_STATIC,20,191,255,21
+    GROUPBOX        "DSP && Stretching",IDC_STATIC,6,87,119,68
+    CONTROL         "Enable Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,100,103,10
+    LTEXT           "(configure in the .ini)",IDC_STATIC,41,116,64,8
+    CONTROL         "Enable Timestretcher",IDC_TS_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,137,83,10
+    LTEXT           "Use this to time the FPS to SPU2. Makes the audio play at best speed when your games allow it.",IDC_STATIC,138,149,108,31
+END
+
+IDD_DEBUG DIALOGEX 0, 0, 326, 525
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "SPU2ghz Debug"
+FONT 9, "Lucida Console", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,269,504,50,14
+END
+
+IDD_DSOUND DIALOGEX 0, 0, 186, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DirectSound Output Module Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,75,37,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,37,50,14
+    COMBOBOX        IDC_DS_DEVICE,7,17,172,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "DirectSound Device",IDC_STATIC,7,7,63,8
+END
+
+IDD_DSOUND51 DIALOGEX 0, 0, 265, 182
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DirectSound 5.1 Output Module Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,154,161,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,208,161,50,14
+    COMBOBOX        IDC_DS_DEVICE,7,17,251,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "DirectSound Device",IDC_STATIC,7,7,63,8
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,18,54,30,36
+    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,60,56,30,34
+    CONTROL         "",IDC_SLIDER3,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,102,56,30,34
+    GROUPBOX        "Surround Volume Correction",IDC_STATIC,7,36,142,139
+    CTEXT           "Center",IDC_STATIC,54,48,42,8
+    CTEXT           "Left",IDC_STATIC,12,48,42,8
+    CTEXT           "Right",IDC_STATIC,96,48,42,8
+    CONTROL         "",IDC_SLIDER4,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,18,116,30,40
+    CONTROL         "",IDC_SLIDER5,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,60,116,30,40
+    CONTROL         "",IDC_SLIDER6,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,102,116,30,40
+    CTEXT           "LFE (sub)",IDC_STATIC,54,108,42,8
+    CTEXT           "Rear Left",IDC_STATIC,12,108,42,8
+    CTEXT           "Rear Right",IDC_STATIC,96,108,42,8
+    GROUPBOX        "Other Tweaks",IDC_STATIC,155,36,103,120
+    CONTROL         "",IDC_SLIDER7,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,168,56,30,49
+    CTEXT           "Center in LR",IDC_STATIC,162,48,42,8
+    EDITTEXT        IDC_EDIT1,18,90,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,60,90,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,102,90,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT4,18,156,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT5,60,156,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT6,102,156,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,168,108,30,14,ES_AUTOHSCROLL
+END
+
+IDD_ASIO DIALOGEX 0, 0, 186, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ASIO Output Module Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,75,37,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,37,50,14
+    COMBOBOX        IDC_DS_DEVICE,7,17,172,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "ASIO Driver",IDC_STATIC,7,7,39,8
+END
+
+IDD_WAVEOUT DIALOGEX 0, 0, 186, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "waveOut Output Module Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,75,37,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,37,50,14
+    COMBOBOX        IDC_DS_DEVICE,7,17,172,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "waveOut Device",IDC_STATIC,7,7,54,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 408
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 212
+    END
+
+    IDD_DEBUG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 319
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 518
+    END
+
+    IDD_DSOUND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
+
+    IDD_DSOUND51, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 258
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
+
+    IDD_ASIO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
+
+    IDD_WAVEOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Spanish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
