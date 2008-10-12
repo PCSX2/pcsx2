@@ -31,24 +31,24 @@ void StartGui() {
 	int i;
 
 	add_pixmap_directory(".pixmaps");
-	Window = create_MainWindow();
+	MainWindow = create_MainWindow();
 	
 #ifdef PCSX2_VIRTUAL_MEM
-	gtk_window_set_title(GTK_WINDOW(Window), "PCSX2 "PCSX2_VERSION" Watermoose VM");
+	gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose VM");
 #else
-	gtk_window_set_title(GTK_WINDOW(Window), "PCSX2 "PCSX2_VERSION" Watermoose");
+	gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose");
 #endif
 
 	// status bar
 	pStatusBar = gtk_statusbar_new ();
-	gtk_box_pack_start (GTK_BOX(lookup_widget(Window, "status_box")), pStatusBar, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX(lookup_widget(MainWindow, "status_box")), pStatusBar, TRUE, TRUE, 0);
 	gtk_widget_show (pStatusBar);
 
 	gtk_statusbar_push(GTK_STATUSBAR(pStatusBar),0,
                        "F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot");
 
 	// add all the languages
-	Item = lookup_widget(Window, "GtkMenuItem_Language");
+	Item = lookup_widget(MainWindow, "GtkMenuItem_Language");
 	Menu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(Item), Menu);
 
@@ -66,16 +66,15 @@ void StartGui() {
 	}
 
 	// check the appropriate menu items
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(Window, "enable_console1")), Config.PsxOut);
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(Window, "enable_patches1")), Config.Patch);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(MainWindow, "enable_console1")), Config.PsxOut);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(MainWindow, "enable_patches1")), Config.Patch);
 	
 	// disable anything not implemented or not working properly.
-	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(Window, "patch_browser1")), FALSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(Window, "patch_finder2")), FALSE);
-	//gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(Window, "GtkMenuItem_Advanced")), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(MainWindow, "patch_browser1")), FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(MainWindow, "patch_finder2")), FALSE);
 	
-	gtk_widget_show_all(Window);
-	gtk_window_activate_focus(GTK_WINDOW(Window));
+	gtk_widget_show_all(MainWindow);
+	gtk_window_activate_focus(GTK_WINDOW(MainWindow));
 	gtk_main();
 }
 
@@ -92,7 +91,7 @@ int Pcsx2Configure() {
 		return 0;
 	
 	configuringplug = TRUE;
-	Window = NULL;
+	MainWindow = NULL;
 	OnConf_Conf(NULL, 0);
 	configuringplug = FALSE;
 	
@@ -102,7 +101,7 @@ int Pcsx2Configure() {
 void OnLanguage(GtkMenuItem *menuitem, gpointer user_data) {
 	ChangeLanguage(langs[(int)(uptr)user_data].lang);
 	destroy = TRUE;
-	gtk_widget_destroy(Window);
+	gtk_widget_destroy(MainWindow);
 	destroy = FALSE;
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
@@ -121,7 +120,7 @@ void RunExecute(int run)
 	}
 
 	destroy= TRUE;
-	gtk_widget_destroy(Window);
+	gtk_widget_destroy(MainWindow);
 	destroy=FALSE;
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
@@ -249,7 +248,7 @@ void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
  
 	for (i=0; i<5; i++) {
 		sprintf(str, "GtkMenuItem_LoadSlot%d", i+1);
-		Item = lookup_widget(Window, str);
+		Item = lookup_widget(MainWindow, str);
 		if (Slots[i] == -1) 
 			gtk_widget_set_sensitive(Item, FALSE);
 		else
@@ -392,13 +391,13 @@ void OnArguments_Ok(GtkButton *button, gpointer user_data) {
 	memcpy(args, str, 256);
 
 	gtk_widget_destroy(CmdLine);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
 void OnArguments_Cancel(GtkButton* button, gpointer user_data) {
 	gtk_widget_destroy(CmdLine);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
@@ -413,7 +412,7 @@ void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_entry_set_text(GTK_ENTRY(widgetCmdLine), args);
 						//args exported by ElfHeader.h
 	gtk_widget_show_all(CmdLine);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 }
 //-------------------
@@ -424,10 +423,10 @@ void OnConf_Gs(GtkMenuItem *menuitem, gpointer user_data)
 	
 	getcwd(file, ARRAYSIZE(file));
 	chdir(Config.PluginsDir);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	GSconfigure();
 	chdir(file);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 }
 
 void OnConf_Pads(GtkMenuItem *menuitem, gpointer user_data) {
@@ -435,11 +434,11 @@ void OnConf_Pads(GtkMenuItem *menuitem, gpointer user_data) {
 	
 	getcwd(file, ARRAYSIZE(file));
 	chdir(Config.PluginsDir);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	PAD1configure();
 	if (strcmp(Config.PAD1, Config.PAD2)) PAD2configure();
 	chdir(file);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 }
 
 void OnConf_Spu2(GtkMenuItem *menuitem, gpointer user_data) {
@@ -447,9 +446,9 @@ void OnConf_Spu2(GtkMenuItem *menuitem, gpointer user_data) {
 	
 	getcwd(file, ARRAYSIZE(file));
 	chdir(Config.PluginsDir);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	SPU2configure();
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	chdir(file);
 }
 
@@ -458,9 +457,9 @@ void OnConf_Cdvd(GtkMenuItem *menuitem, gpointer user_data) {
 	
 	getcwd(file, ARRAYSIZE(file));
 	chdir(Config.PluginsDir);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	CDVDconfigure();
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
     chdir(file);
 }
 
@@ -469,9 +468,9 @@ void OnConf_Dev9(GtkMenuItem *menuitem, gpointer user_data) {
 	
 	getcwd(file, ARRAYSIZE(file));
 	chdir(Config.PluginsDir);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	DEV9configure();
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	chdir(file);
 }
 
@@ -480,9 +479,9 @@ void OnConf_Usb(GtkMenuItem *menuitem, gpointer user_data) {
 	
 	getcwd(file, ARRAYSIZE(file));
 	chdir(Config.PluginsDir);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	USBconfigure();
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	chdir(file);
 }
 
@@ -491,9 +490,9 @@ void OnConf_Fw(GtkMenuItem *menuitem, gpointer user_data) {
 	
 	getcwd(file, ARRAYSIZE(file));
 	chdir(Config.PluginsDir);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	FWconfigure();
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	chdir(file);
 }
 
@@ -542,13 +541,13 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	cpuRestartCPU();
 	
 	gtk_widget_destroy(CpuDlg);
-	if (Window) gtk_widget_set_sensitive(Window, TRUE);
+	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
 void OnCpu_Cancel(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(CpuDlg);
-	if (Window) gtk_widget_set_sensitive(Window, TRUE);
+	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
@@ -594,7 +593,7 @@ void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data)
 	gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_Features")), str);
 
 	gtk_widget_show_all(CpuDlg);
-	if (Window) gtk_widget_set_sensitive(Window, FALSE);
+	if (MainWindow) gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 }
 
@@ -665,14 +664,14 @@ void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
 
 	needReset = TRUE;
 	gtk_widget_destroy(ConfDlg);
-	if (Window) gtk_widget_set_sensitive(Window, TRUE);
+	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 	applychanges = TRUE;
 }
 
 void OnConfConf_Cancel(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(ConfDlg);
-	if (Window) gtk_widget_set_sensitive(Window, TRUE);
+	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 	applychanges = FALSE;
 }
@@ -906,7 +905,7 @@ void OnConf_Conf(GtkMenuItem *menuitem, gpointer user_data) {
 	UpdateConfDlg();
 
 	gtk_widget_show_all(ConfDlg);
-	if (Window) gtk_widget_set_sensitive(Window, FALSE);
+	if (MainWindow) gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 }
 
@@ -943,7 +942,7 @@ void OnDebug_Close(GtkButton *button, gpointer user_data) {
 	ClosePlugins();
 	gtk_widget_destroy(DebugWnd);
 	gtk_main_quit();
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 }
 
 void OnDebug_ScrollChange(GtkAdjustment *adj) {
@@ -1274,7 +1273,7 @@ void OnDebug_Debugger(GtkMenuItem *menuitem, gpointer user_data) {
 	UpdateDebugger();
 
 	gtk_widget_show_all(DebugWnd);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 }
 
@@ -1316,13 +1315,13 @@ void OnLogging_Ok(GtkButton *button, gpointer user_data) {
 #endif
 
 	gtk_widget_destroy(LogDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
 void OnLogging_Cancel(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(LogDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
@@ -1354,7 +1353,7 @@ void OnDebug_Logging(GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), Log);
 
 	gtk_widget_show_all(LogDlg);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 }
 
@@ -1363,7 +1362,7 @@ void OnHelp_Help() {
 
 void OnHelpAbout_Ok(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(AboutDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
@@ -1385,7 +1384,7 @@ void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_label_set_text(GTK_LABEL(Label), _(LabelGreets));
 
 	gtk_widget_show_all(AboutDlg);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 }
 
@@ -1593,13 +1592,13 @@ void on_Game_Fixes(GtkMenuItem *menuitem, gpointer user_data)
 	set_checked(GameFixDlg, "check_VU_Branch", (Config.GameFixes & FLAG_VU_BRANCH));
 	
 	gtk_widget_show_all(GameFixDlg);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 	}
 void on_Game_Fix_Cancel(GtkButton *button, gpointer user_data)
 {
 	gtk_widget_destroy(GameFixDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 void on_Game_Fix_OK(GtkButton *button, gpointer user_data) 
@@ -1613,7 +1612,7 @@ void on_Game_Fix_OK(GtkButton *button, gpointer user_data)
 	
 	SaveConfig();
 	gtk_widget_destroy(GameFixDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 
@@ -1644,7 +1643,7 @@ void on_Speed_Hacks(GtkMenuItem *menuitem, gpointer user_data)
 	set_checked(SpeedHacksDlg, "check_ESC_Hack", (Config.Hacks & FLAG_ESC));
 	
 	gtk_widget_show_all(SpeedHacksDlg);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 	}
 void on_Speed_Hack_Compatability(GtkButton *button, gpointer user_data)
@@ -1681,7 +1680,7 @@ void on_Speed_Hack_Speed(GtkButton *button, gpointer user_data)
 void on_Speed_Hack_Cancel(GtkButton *button, gpointer user_data)
 {
 	gtk_widget_destroy(SpeedHacksDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
@@ -1728,7 +1727,7 @@ void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 	SaveConfig();
 
 	gtk_widget_destroy(SpeedHacksDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 void setAdvancedOptions()
@@ -1778,7 +1777,7 @@ void on_Advanced(GtkMenuItem *menuitem, gpointer user_data)
 	setAdvancedOptions();
 	
 	gtk_widget_show_all(AdvDlg);
-	gtk_widget_set_sensitive(Window, FALSE);
+	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 	}
 
@@ -1792,7 +1791,7 @@ void on_Advanced_Defaults(GtkButton *button, gpointer user_data)
 void on_Advanced_Cancel(GtkButton *button, gpointer user_data)
 {
 	gtk_widget_destroy(AdvDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
 void on_Advanced_OK(GtkButton *button, gpointer user_data) 
@@ -1821,6 +1820,6 @@ void on_Advanced_OK(GtkButton *button, gpointer user_data)
 	SaveConfig();
 	
 	gtk_widget_destroy(AdvDlg);
-	gtk_widget_set_sensitive(Window, TRUE);
+	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }

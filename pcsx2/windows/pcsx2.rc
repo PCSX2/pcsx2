@@ -35,7 +35,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,99,37,50,14
     CTEXT           "Tip: If you don't know what to write\nleave it blank",IDC_TIP,7,56,172,19,WS_BORDER
     EDITTEXT        IDC_CMDLINE,7,17,172,14,ES_AUTOHSCROLL
-    LTEXT           "Fill in the command line arguments for opened program:",IDC_TEXT,7,7,174,8
+    LTEXT           "Fill in the command line arguments for the opened program:",IDC_TEXT,7,7,174,8
 END
 
 
@@ -1030,7 +1030,7 @@ FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,205,250,50,14
     CTEXT           "PCSX2 \nVersion x.x",IDC_PCSX_ABOUT_TEXT,55,10,45,15,0,WS_EX_TRANSPARENT
-    CTEXT           "PCSX2 a PS2 Emulator...",IDC_PCSX_ABOUT_AUTHORS,9,36,135,92,0,WS_EX_TRANSPARENT
+    CTEXT           "PCSX2: a PS2 Emulator...",IDC_PCSX_ABOUT_AUTHORS,9,36,135,92,0,WS_EX_TRANSPARENT
     CTEXT           "Greets to...",IDC_PCSX_ABOUT_GREETS,88,158,311,77
     GROUPBOX        "",IDC_STATIC,5,29,145,113
     GROUPBOX        "",IDC_STATIC,77,148,333,91
@@ -1141,7 +1141,7 @@ BEGIN
     CONTROL         "8bits",IDC_8B,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,54,33,10
     PUSHBUTTON      "Close",IDCANCEL,208,192,49,15,NOT WS_TABSTOP
     PUSHBUTTON      "Search",IDC_SEARCH,96,192,49,15,NOT WS_TABSTOP
-    GROUPBOX        "Comapred to",IDC_STATIC,5,162,86,45
+    GROUPBOX        "Compared to",IDC_STATIC,5,162,86,45
     EDITTEXT        IDC_VALUE,21,192,65,12,ES_AUTOHSCROLL | NOT WS_TABSTOP
     CONTROL         "Specific Value",IDC_SET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,182,75,10
     CONTROL         "Old Value",IDC_OLD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,172,75,10

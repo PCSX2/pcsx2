@@ -27,6 +27,2776 @@
   g_object_set_data (G_OBJECT (component), name, widget)
 
 GtkWidget*
+create_AdvDlg (void)
+{
+  GtkWidget *AdvDlg;
+  GtkWidget *dialog_vbox4;
+  GtkWidget *hbox21;
+  GtkWidget *frame15;
+  GtkWidget *alignment10;
+  GtkWidget *vbox36;
+  GtkWidget *frame17;
+  GtkWidget *alignment12;
+  GtkWidget *vbox38;
+  GtkWidget *radio_EE_Round_Near;
+  GSList *radio_EE_Round_Near_group = NULL;
+  GtkWidget *radio_EE_Round_Negative;
+  GtkWidget *radio_EE_Round_Positive;
+  GtkWidget *radio_EE_Round_Zero;
+  GtkWidget *label50;
+  GtkWidget *check_EE_Flush_Zero;
+  GtkWidget *check_EE_Denormal_Zero;
+  GtkWidget *label48;
+  GtkWidget *frame16;
+  GtkWidget *alignment11;
+  GtkWidget *vbox37;
+  GtkWidget *frame18;
+  GtkWidget *alignment13;
+  GtkWidget *vbox39;
+  GtkWidget *radio_VU_Round_Near;
+  GSList *radio_VU_Round_Near_group = NULL;
+  GtkWidget *radio_VU_Round_Negative;
+  GtkWidget *radio_VU_Round_Positive;
+  GtkWidget *radio_VU_Round_Zero;
+  GtkWidget *label51;
+  GtkWidget *check_VU_Flush_Zero;
+  GtkWidget *check_VU_Denormal_Zero;
+  GtkWidget *label49;
+  GtkWidget *dialog_action_area4;
+  GtkWidget *AdvDefaultBtn;
+  GtkWidget *button79;
+  GtkWidget *button80;
+
+  AdvDlg = gtk_dialog_new ();
+  gtk_window_set_title (GTK_WINDOW (AdvDlg), _("Advanced Options"));
+  gtk_window_set_type_hint (GTK_WINDOW (AdvDlg), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+  dialog_vbox4 = GTK_DIALOG (AdvDlg)->vbox;
+  gtk_widget_show (dialog_vbox4);
+
+  hbox21 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox21);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox4), hbox21, TRUE, TRUE, 0);
+
+  frame15 = gtk_frame_new (NULL);
+  gtk_widget_show (frame15);
+  gtk_box_pack_start (GTK_BOX (hbox21), frame15, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame15), GTK_SHADOW_NONE);
+
+  alignment10 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment10);
+  gtk_container_add (GTK_CONTAINER (frame15), alignment10);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment10), 0, 0, 12, 0);
+
+  vbox36 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox36);
+  gtk_container_add (GTK_CONTAINER (alignment10), vbox36);
+
+  frame17 = gtk_frame_new (NULL);
+  gtk_widget_show (frame17);
+  gtk_box_pack_start (GTK_BOX (vbox36), frame17, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame17), GTK_SHADOW_NONE);
+
+  alignment12 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment12);
+  gtk_container_add (GTK_CONTAINER (frame17), alignment12);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment12), 0, 0, 12, 0);
+
+  vbox38 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox38);
+  gtk_container_add (GTK_CONTAINER (alignment12), vbox38);
+
+  radio_EE_Round_Near = gtk_radio_button_new_with_mnemonic (NULL, _("Nearest"));
+  gtk_widget_show (radio_EE_Round_Near);
+  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Near, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Near), radio_EE_Round_Near_group);
+  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Near));
+
+  radio_EE_Round_Negative = gtk_radio_button_new_with_mnemonic (NULL, _("Negative"));
+  gtk_widget_show (radio_EE_Round_Negative);
+  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Negative, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Negative), radio_EE_Round_Near_group);
+  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Negative));
+
+  radio_EE_Round_Positive = gtk_radio_button_new_with_mnemonic (NULL, _("Positive"));
+  gtk_widget_show (radio_EE_Round_Positive);
+  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Positive, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Positive), radio_EE_Round_Near_group);
+  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Positive));
+
+  radio_EE_Round_Zero = gtk_radio_button_new_with_mnemonic (NULL, _("Zero"));
+  gtk_widget_show (radio_EE_Round_Zero);
+  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Zero, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Zero), radio_EE_Round_Near_group);
+  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Zero));
+
+  label50 = gtk_label_new (_("<b>Roundmode</b>"));
+  gtk_widget_show (label50);
+  gtk_frame_set_label_widget (GTK_FRAME (frame17), label50);
+  gtk_label_set_use_markup (GTK_LABEL (label50), TRUE);
+
+  check_EE_Flush_Zero = gtk_check_button_new_with_mnemonic (_("Flush to Zero"));
+  gtk_widget_show (check_EE_Flush_Zero);
+  gtk_box_pack_start (GTK_BOX (vbox36), check_EE_Flush_Zero, FALSE, FALSE, 0);
+
+  check_EE_Denormal_Zero = gtk_check_button_new_with_mnemonic (_("Denormals are Zero"));
+  gtk_widget_show (check_EE_Denormal_Zero);
+  gtk_box_pack_start (GTK_BOX (vbox36), check_EE_Denormal_Zero, FALSE, FALSE, 0);
+
+  label48 = gtk_label_new (_("<b>EE Recs Options</b>"));
+  gtk_widget_show (label48);
+  gtk_frame_set_label_widget (GTK_FRAME (frame15), label48);
+  gtk_label_set_use_markup (GTK_LABEL (label48), TRUE);
+
+  frame16 = gtk_frame_new (NULL);
+  gtk_widget_show (frame16);
+  gtk_box_pack_start (GTK_BOX (hbox21), frame16, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame16), GTK_SHADOW_NONE);
+
+  alignment11 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment11);
+  gtk_container_add (GTK_CONTAINER (frame16), alignment11);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment11), 0, 0, 12, 0);
+
+  vbox37 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox37);
+  gtk_container_add (GTK_CONTAINER (alignment11), vbox37);
+
+  frame18 = gtk_frame_new (NULL);
+  gtk_widget_show (frame18);
+  gtk_box_pack_start (GTK_BOX (vbox37), frame18, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame18), GTK_SHADOW_NONE);
+
+  alignment13 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment13);
+  gtk_container_add (GTK_CONTAINER (frame18), alignment13);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment13), 0, 0, 12, 0);
+
+  vbox39 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox39);
+  gtk_container_add (GTK_CONTAINER (alignment13), vbox39);
+
+  radio_VU_Round_Near = gtk_radio_button_new_with_mnemonic (NULL, _("Nearest"));
+  gtk_widget_show (radio_VU_Round_Near);
+  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Near, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Near), radio_VU_Round_Near_group);
+  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Near));
+
+  radio_VU_Round_Negative = gtk_radio_button_new_with_mnemonic (NULL, _("Negative"));
+  gtk_widget_show (radio_VU_Round_Negative);
+  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Negative, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Negative), radio_VU_Round_Near_group);
+  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Negative));
+
+  radio_VU_Round_Positive = gtk_radio_button_new_with_mnemonic (NULL, _("Positive"));
+  gtk_widget_show (radio_VU_Round_Positive);
+  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Positive, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Positive), radio_VU_Round_Near_group);
+  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Positive));
+
+  radio_VU_Round_Zero = gtk_radio_button_new_with_mnemonic (NULL, _("Zero"));
+  gtk_widget_show (radio_VU_Round_Zero);
+  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Zero, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Zero), radio_VU_Round_Near_group);
+  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Zero));
+
+  label51 = gtk_label_new (_("<b>Roundmode</b>"));
+  gtk_widget_show (label51);
+  gtk_frame_set_label_widget (GTK_FRAME (frame18), label51);
+  gtk_label_set_use_markup (GTK_LABEL (label51), TRUE);
+
+  check_VU_Flush_Zero = gtk_check_button_new_with_mnemonic (_("Flush to Zero"));
+  gtk_widget_show (check_VU_Flush_Zero);
+  gtk_box_pack_start (GTK_BOX (vbox37), check_VU_Flush_Zero, FALSE, FALSE, 0);
+
+  check_VU_Denormal_Zero = gtk_check_button_new_with_mnemonic (_("Denormals are Zero"));
+  gtk_widget_show (check_VU_Denormal_Zero);
+  gtk_box_pack_start (GTK_BOX (vbox37), check_VU_Denormal_Zero, FALSE, FALSE, 0);
+
+  label49 = gtk_label_new (_("<b>VU Recs Options</b>"));
+  gtk_widget_show (label49);
+  gtk_frame_set_label_widget (GTK_FRAME (frame16), label49);
+  gtk_label_set_use_markup (GTK_LABEL (label49), TRUE);
+
+  dialog_action_area4 = GTK_DIALOG (AdvDlg)->action_area;
+  gtk_widget_show (dialog_action_area4);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area4), GTK_BUTTONBOX_SPREAD);
+
+  AdvDefaultBtn = gtk_button_new_with_mnemonic (_("Defaults"));
+  gtk_widget_show (AdvDefaultBtn);
+  gtk_dialog_add_action_widget (GTK_DIALOG (AdvDlg), AdvDefaultBtn, 0);
+  GTK_WIDGET_SET_FLAGS (AdvDefaultBtn, GTK_CAN_DEFAULT);
+
+  button79 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button79);
+  gtk_dialog_add_action_widget (GTK_DIALOG (AdvDlg), button79, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (button79, GTK_CAN_DEFAULT);
+
+  button80 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button80);
+  gtk_dialog_add_action_widget (GTK_DIALOG (AdvDlg), button80, GTK_RESPONSE_CANCEL);
+  GTK_WIDGET_SET_FLAGS (button80, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) AdvDefaultBtn, "clicked",
+                    G_CALLBACK (on_Advanced_Defaults),
+                    NULL);
+  g_signal_connect ((gpointer) button79, "clicked",
+                    G_CALLBACK (on_Advanced_OK),
+                    NULL);
+  g_signal_connect ((gpointer) button80, "clicked",
+                    G_CALLBACK (on_Advanced_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, AdvDlg, "AdvDlg");
+  GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, dialog_vbox4, "dialog_vbox4");
+  GLADE_HOOKUP_OBJECT (AdvDlg, hbox21, "hbox21");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame15, "frame15");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment10, "alignment10");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox36, "vbox36");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame17, "frame17");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment12, "alignment12");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox38, "vbox38");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Near, "radio_EE_Round_Near");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Negative, "radio_EE_Round_Negative");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Positive, "radio_EE_Round_Positive");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Zero, "radio_EE_Round_Zero");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label50, "label50");
+  GLADE_HOOKUP_OBJECT (AdvDlg, check_EE_Flush_Zero, "check_EE_Flush_Zero");
+  GLADE_HOOKUP_OBJECT (AdvDlg, check_EE_Denormal_Zero, "check_EE_Denormal_Zero");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label48, "label48");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame16, "frame16");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment11, "alignment11");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox37, "vbox37");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame18, "frame18");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment13, "alignment13");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox39, "vbox39");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Near, "radio_VU_Round_Near");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Negative, "radio_VU_Round_Negative");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Positive, "radio_VU_Round_Positive");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Zero, "radio_VU_Round_Zero");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label51, "label51");
+  GLADE_HOOKUP_OBJECT (AdvDlg, check_VU_Flush_Zero, "check_VU_Flush_Zero");
+  GLADE_HOOKUP_OBJECT (AdvDlg, check_VU_Denormal_Zero, "check_VU_Denormal_Zero");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label49, "label49");
+  GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, dialog_action_area4, "dialog_action_area4");
+  GLADE_HOOKUP_OBJECT (AdvDlg, AdvDefaultBtn, "AdvDefaultBtn");
+  GLADE_HOOKUP_OBJECT (AdvDlg, button79, "button79");
+  GLADE_HOOKUP_OBJECT (AdvDlg, button80, "button80");
+
+  return AdvDlg;
+}
+
+GtkWidget*
+create_SpeedHacksDlg (void)
+{
+  GtkWidget *SpeedHacksDlg;
+  GtkWidget *dialog_vbox3;
+  GtkWidget *vbox31;
+  GtkWidget *label43;
+  GtkWidget *frame11;
+  GtkWidget *alignment6;
+  GtkWidget *vbox32;
+  GtkWidget *hbox22;
+  GtkWidget *ComboVUOverflow;
+  GtkWidget *label52;
+  GtkWidget *hbox23;
+  GtkWidget *ComboFPUOverflow;
+  GtkWidget *label53;
+  GtkWidget *check_Disable_Underflow;
+  GtkWidget *label44;
+  GtkWidget *frame12;
+  GtkWidget *alignment7;
+  GtkWidget *vbox35;
+  GtkWidget *check_Disable_VU_Flags;
+  GtkWidget *check_Disable_FPU_Flags;
+  GtkWidget *label45;
+  GtkWidget *frame13;
+  GtkWidget *alignment8;
+  GtkWidget *vbox34;
+  GtkWidget *check_EE_Double_Sync;
+  GtkWidget *check_IOP_Double_Sync;
+  GtkWidget *check_Triple_Sync;
+  GtkWidget *label46;
+  GtkWidget *frame14;
+  GtkWidget *alignment9;
+  GtkWidget *vbox33;
+  GtkWidget *check_EE_Fast_Branches;
+  GtkWidget *check_Tight_SPU_Sync;
+  GtkWidget *check_ESC_Hack;
+  GtkWidget *label47;
+  GtkWidget *dialog_action_area3;
+  GtkWidget *button73;
+  GtkWidget *button74;
+  GtkWidget *button75;
+  GtkWidget *button76;
+
+  SpeedHacksDlg = gtk_dialog_new ();
+  gtk_window_set_title (GTK_WINDOW (SpeedHacksDlg), _("PCSX2 Speed Hacks"));
+  gtk_window_set_type_hint (GTK_WINDOW (SpeedHacksDlg), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+  dialog_vbox3 = GTK_DIALOG (SpeedHacksDlg)->vbox;
+  gtk_widget_show (dialog_vbox3);
+
+  vbox31 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox31);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox3), vbox31, TRUE, TRUE, 0);
+
+  label43 = gtk_label_new (_("These hacks will affect the speed of PCSX2 but possibly compromise compatibility.\nIf you have problems, Disable all of these and try again."));
+  gtk_widget_show (label43);
+  gtk_box_pack_start (GTK_BOX (vbox31), label43, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label43), GTK_JUSTIFY_CENTER);
+
+  frame11 = gtk_frame_new (NULL);
+  gtk_widget_show (frame11);
+  gtk_box_pack_start (GTK_BOX (vbox31), frame11, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame11), GTK_SHADOW_NONE);
+
+  alignment6 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment6);
+  gtk_container_add (GTK_CONTAINER (frame11), alignment6);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment6), 0, 0, 12, 0);
+
+  vbox32 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox32);
+  gtk_container_add (GTK_CONTAINER (alignment6), vbox32);
+
+  hbox22 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox22);
+  gtk_box_pack_start (GTK_BOX (vbox32), hbox22, FALSE, FALSE, 0);
+
+  ComboVUOverflow = gtk_combo_box_new_text ();
+  gtk_widget_show (ComboVUOverflow);
+  gtk_box_pack_start (GTK_BOX (hbox22), ComboVUOverflow, FALSE, TRUE, 0);
+  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Disabled (Speedup!)"));
+  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Normal"));
+  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Enabled (Helps SPS, Slow)"));
+
+  label52 = gtk_label_new (_("VU Overflow Checks"));
+  gtk_widget_show (label52);
+  gtk_box_pack_start (GTK_BOX (hbox22), label52, FALSE, FALSE, 0);
+
+  hbox23 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox23);
+  gtk_box_pack_start (GTK_BOX (vbox32), hbox23, FALSE, FALSE, 0);
+
+  ComboFPUOverflow = gtk_combo_box_new_text ();
+  gtk_widget_show (ComboFPUOverflow);
+  gtk_box_pack_start (GTK_BOX (hbox23), ComboFPUOverflow, FALSE, TRUE, 0);
+  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Disabled (Speedup!)"));
+  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Normal"));
+  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Enabled (Helps SPS, Slow)"));
+
+  label53 = gtk_label_new (_("FPU Overflow Checks"));
+  gtk_widget_show (label53);
+  gtk_box_pack_start (GTK_BOX (hbox23), label53, FALSE, FALSE, 0);
+
+  check_Disable_Underflow = gtk_check_button_new_with_mnemonic (_("Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )"));
+  gtk_widget_show (check_Disable_Underflow);
+  gtk_box_pack_start (GTK_BOX (vbox32), check_Disable_Underflow, FALSE, FALSE, 0);
+
+  label44 = gtk_label_new (_("<b>Overflow and Underflow</b>"));
+  gtk_widget_show (label44);
+  gtk_frame_set_label_widget (GTK_FRAME (frame11), label44);
+  gtk_label_set_use_markup (GTK_LABEL (label44), TRUE);
+
+  frame12 = gtk_frame_new (NULL);
+  gtk_widget_show (frame12);
+  gtk_box_pack_start (GTK_BOX (vbox31), frame12, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame12), GTK_SHADOW_NONE);
+
+  alignment7 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment7);
+  gtk_container_add (GTK_CONTAINER (frame12), alignment7);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment7), 0, 0, 12, 0);
+
+  vbox35 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox35);
+  gtk_container_add (GTK_CONTAINER (alignment7), vbox35);
+
+  check_Disable_VU_Flags = gtk_check_button_new_with_mnemonic (_("Disable Extra VU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )"));
+  gtk_widget_show (check_Disable_VU_Flags);
+  gtk_box_pack_start (GTK_BOX (vbox35), check_Disable_VU_Flags, FALSE, FALSE, 0);
+
+  check_Disable_FPU_Flags = gtk_check_button_new_with_mnemonic (_("Disable Extra FPU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )"));
+  gtk_widget_show (check_Disable_FPU_Flags);
+  gtk_box_pack_start (GTK_BOX (vbox35), check_Disable_FPU_Flags, FALSE, FALSE, 0);
+
+  label45 = gtk_label_new (_("<b>Flag Settings</b>"));
+  gtk_widget_show (label45);
+  gtk_frame_set_label_widget (GTK_FRAME (frame12), label45);
+  gtk_label_set_use_markup (GTK_LABEL (label45), TRUE);
+
+  frame13 = gtk_frame_new (NULL);
+  gtk_widget_show (frame13);
+  gtk_box_pack_start (GTK_BOX (vbox31), frame13, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame13), GTK_SHADOW_NONE);
+
+  alignment8 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment8);
+  gtk_container_add (GTK_CONTAINER (frame13), alignment8);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment8), 0, 0, 12, 0);
+
+  vbox34 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox34);
+  gtk_container_add (GTK_CONTAINER (alignment8), vbox34);
+
+  check_EE_Double_Sync = gtk_check_button_new_with_mnemonic (_("EE Sync Hack (x2) - Doubles the cycle rate of the EE. ( Big Speedup in most games! )"));
+  gtk_widget_show (check_EE_Double_Sync);
+  gtk_box_pack_start (GTK_BOX (vbox34), check_EE_Double_Sync, FALSE, FALSE, 0);
+
+  check_IOP_Double_Sync = gtk_check_button_new_with_mnemonic (_("IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )"));
+  gtk_widget_show (check_IOP_Double_Sync);
+  gtk_box_pack_start (GTK_BOX (vbox34), check_IOP_Double_Sync, FALSE, FALSE, 0);
+
+  check_Triple_Sync = gtk_check_button_new_with_mnemonic (_("EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Sometimes speeds games a bit more, but can break games. )"));
+  gtk_widget_show (check_Triple_Sync);
+  gtk_box_pack_start (GTK_BOX (vbox34), check_Triple_Sync, FALSE, FALSE, 0);
+
+  label46 = gtk_label_new (_("<b>Sync Hacks</b>"));
+  gtk_widget_show (label46);
+  gtk_frame_set_label_widget (GTK_FRAME (frame13), label46);
+  gtk_label_set_use_markup (GTK_LABEL (label46), TRUE);
+
+  frame14 = gtk_frame_new (NULL);
+  gtk_widget_show (frame14);
+  gtk_box_pack_start (GTK_BOX (vbox31), frame14, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame14), GTK_SHADOW_NONE);
+
+  alignment9 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment9);
+  gtk_container_add (GTK_CONTAINER (frame14), alignment9);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment9), 0, 0, 12, 0);
+
+  vbox33 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox33);
+  gtk_container_add (GTK_CONTAINER (alignment9), vbox33);
+
+  check_EE_Fast_Branches = gtk_check_button_new_with_mnemonic (_("EE/IOP Fast Branches - Quick branching ( Very small speedup; Not Recommended!  )"));
+  gtk_widget_show (check_EE_Fast_Branches);
+  gtk_box_pack_start (GTK_BOX (vbox33), check_EE_Fast_Branches, FALSE, FALSE, 0);
+
+  check_Tight_SPU_Sync = gtk_check_button_new_with_mnemonic (_("Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore."));
+  gtk_widget_show (check_Tight_SPU_Sync);
+  gtk_box_pack_start (GTK_BOX (vbox33), check_Tight_SPU_Sync, FALSE, FALSE, 0);
+
+  check_ESC_Hack = gtk_check_button_new_with_mnemonic (_("Escape Hack - Use Esc key to fully exit PCSX2."));
+  gtk_widget_show (check_ESC_Hack);
+  gtk_box_pack_start (GTK_BOX (vbox33), check_ESC_Hack, FALSE, FALSE, 0);
+
+  label47 = gtk_label_new (_("<b>Misc</b>"));
+  gtk_widget_show (label47);
+  gtk_frame_set_label_widget (GTK_FRAME (frame14), label47);
+  gtk_label_set_use_markup (GTK_LABEL (label47), TRUE);
+
+  dialog_action_area3 = GTK_DIALOG (SpeedHacksDlg)->action_area;
+  gtk_widget_show (dialog_action_area3);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area3), GTK_BUTTONBOX_END);
+
+  button73 = gtk_button_new_with_mnemonic (_("Compatability"));
+  gtk_widget_show (button73);
+  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button73, 0);
+  GTK_WIDGET_SET_FLAGS (button73, GTK_CAN_DEFAULT);
+
+  button74 = gtk_button_new_with_mnemonic (_("Speed"));
+  gtk_widget_show (button74);
+  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button74, 0);
+  GTK_WIDGET_SET_FLAGS (button74, GTK_CAN_DEFAULT);
+
+  button75 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button75);
+  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button75, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (button75, GTK_CAN_DEFAULT);
+
+  button76 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button76);
+  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button76, GTK_RESPONSE_CANCEL);
+  GTK_WIDGET_SET_FLAGS (button76, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button73, "clicked",
+                    G_CALLBACK (on_Speed_Hack_Compatability),
+                    NULL);
+  g_signal_connect ((gpointer) button74, "clicked",
+                    G_CALLBACK (on_Speed_Hack_Speed),
+                    NULL);
+  g_signal_connect ((gpointer) button75, "clicked",
+                    G_CALLBACK (on_Speed_Hack_OK),
+                    NULL);
+  g_signal_connect ((gpointer) button76, "clicked",
+                    G_CALLBACK (on_Speed_Hack_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, SpeedHacksDlg, "SpeedHacksDlg");
+  GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_vbox3, "dialog_vbox3");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox31, "vbox31");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label43, "label43");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame11, "frame11");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment6, "alignment6");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox32, "vbox32");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hbox22, "hbox22");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, ComboVUOverflow, "ComboVUOverflow");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label52, "label52");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hbox23, "hbox23");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, ComboFPUOverflow, "ComboFPUOverflow");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label53, "label53");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_Underflow, "check_Disable_Underflow");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label44, "label44");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame12, "frame12");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment7, "alignment7");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox35, "vbox35");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_VU_Flags, "check_Disable_VU_Flags");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_FPU_Flags, "check_Disable_FPU_Flags");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label45, "label45");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame13, "frame13");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment8, "alignment8");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox34, "vbox34");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_EE_Double_Sync, "check_EE_Double_Sync");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_IOP_Double_Sync, "check_IOP_Double_Sync");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Triple_Sync, "check_Triple_Sync");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label46, "label46");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame14, "frame14");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment9, "alignment9");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox33, "vbox33");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_EE_Fast_Branches, "check_EE_Fast_Branches");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Tight_SPU_Sync, "check_Tight_SPU_Sync");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_ESC_Hack, "check_ESC_Hack");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label47, "label47");
+  GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_action_area3, "dialog_action_area3");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button73, "button73");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button74, "button74");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button75, "button75");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button76, "button76");
+
+  return SpeedHacksDlg;
+}
+
+GtkWidget*
+create_GameFixDlg (void)
+{
+  GtkWidget *GameFixDlg;
+  GtkWidget *dialog_vbox1;
+  GtkWidget *GameSettings;
+  GtkWidget *alignment5;
+  GtkWidget *vbox30;
+  GtkWidget *check_VU_Clip;
+  GtkWidget *check_FPU_Clamp;
+  GtkWidget *check_Slow_DVD;
+  GtkWidget *check_VU_Branch;
+  GtkWidget *label42;
+  GtkWidget *dialog_action_area1;
+  GtkWidget *cancelbutton1;
+  GtkWidget *button83;
+
+  GameFixDlg = gtk_dialog_new ();
+  gtk_window_set_title (GTK_WINDOW (GameFixDlg), _("Game Special Fixes"));
+  gtk_window_set_type_hint (GTK_WINDOW (GameFixDlg), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+  dialog_vbox1 = GTK_DIALOG (GameFixDlg)->vbox;
+  gtk_widget_show (dialog_vbox1);
+
+  GameSettings = gtk_frame_new (NULL);
+  gtk_widget_show (GameSettings);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox1), GameSettings, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (GameSettings), GTK_SHADOW_NONE);
+
+  alignment5 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment5);
+  gtk_container_add (GTK_CONTAINER (GameSettings), alignment5);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment5), 0, 0, 12, 0);
+
+  vbox30 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox30);
+  gtk_container_add (GTK_CONTAINER (alignment5), vbox30);
+
+  check_VU_Clip = gtk_check_button_new_with_mnemonic (_("VU Clip Hack - Special fix for God of War; Breaks Rockstar games!"));
+  gtk_widget_show (check_VU_Clip);
+  gtk_box_pack_start (GTK_BOX (vbox30), check_VU_Clip, FALSE, FALSE, 0);
+
+  check_FPU_Clamp = gtk_check_button_new_with_mnemonic (_("FPU Clamp Hack - Special fix for Tekken 5 and maybe other games."));
+  gtk_widget_show (check_FPU_Clamp);
+  gtk_box_pack_start (GTK_BOX (vbox30), check_FPU_Clamp, FALSE, FALSE, 0);
+
+  check_Slow_DVD = gtk_check_button_new_with_mnemonic (_("Slow DVD access (fixes Tales of the Abyss)"));
+  gtk_widget_show (check_Slow_DVD);
+  gtk_box_pack_start (GTK_BOX (vbox30), check_Slow_DVD, FALSE, FALSE, 0);
+
+  check_VU_Branch = gtk_check_button_new_with_mnemonic (_("VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!"));
+  gtk_widget_show (check_VU_Branch);
+  gtk_box_pack_start (GTK_BOX (vbox30), check_VU_Branch, FALSE, FALSE, 0);
+
+  label42 = gtk_label_new (_("<b>Some games need special settings.\nConfigure them here.</b>"));
+  gtk_widget_show (label42);
+  gtk_frame_set_label_widget (GTK_FRAME (GameSettings), label42);
+  gtk_label_set_use_markup (GTK_LABEL (label42), TRUE);
+
+  dialog_action_area1 = GTK_DIALOG (GameFixDlg)->action_area;
+  gtk_widget_show (dialog_action_area1);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
+
+  cancelbutton1 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (cancelbutton1);
+  gtk_dialog_add_action_widget (GTK_DIALOG (GameFixDlg), cancelbutton1, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (cancelbutton1, GTK_CAN_DEFAULT);
+
+  button83 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button83);
+  gtk_dialog_add_action_widget (GTK_DIALOG (GameFixDlg), button83, GTK_RESPONSE_CANCEL);
+  GTK_WIDGET_SET_FLAGS (button83, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) cancelbutton1, "clicked",
+                    G_CALLBACK (on_Game_Fix_OK),
+                    NULL);
+  g_signal_connect ((gpointer) button83, "clicked",
+                    G_CALLBACK (on_Game_Fix_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, GameFixDlg, "GameFixDlg");
+  GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, dialog_vbox1, "dialog_vbox1");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, GameSettings, "GameSettings");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, alignment5, "alignment5");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, vbox30, "vbox30");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Clip, "check_VU_Clip");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, check_FPU_Clamp, "check_FPU_Clamp");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, check_Slow_DVD, "check_Slow_DVD");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Branch, "check_VU_Branch");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, label42, "label42");
+  GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, dialog_action_area1, "dialog_action_area1");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, cancelbutton1, "cancelbutton1");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, button83, "button83");
+
+  return GameFixDlg;
+}
+
+GtkWidget*
+create_MemWrite32 (void)
+{
+  GtkWidget *MemWrite32;
+  GtkWidget *vbox25;
+  GtkWidget *hbox18;
+  GtkWidget *label27;
+  GtkWidget *label25;
+  GtkWidget *GtkEntry_Mem;
+  GtkWidget *hbox19;
+  GtkWidget *label28;
+  GtkWidget *label26;
+  GtkWidget *GtkEntry_Data;
+  GtkWidget *hbuttonbox22;
+  GtkWidget *button71;
+  GtkWidget *button72;
+
+  MemWrite32 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (MemWrite32), 5);
+  gtk_window_set_title (GTK_WINDOW (MemWrite32), _("memWrite32"));
+
+  vbox25 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox25);
+  gtk_container_add (GTK_CONTAINER (MemWrite32), vbox25);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox25), 5);
+
+  hbox18 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox18);
+  gtk_box_pack_start (GTK_BOX (vbox25), hbox18, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox18), 5);
+
+  label27 = gtk_label_new (_("Address  "));
+  gtk_widget_show (label27);
+  gtk_box_pack_start (GTK_BOX (hbox18), label27, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label27), GTK_JUSTIFY_CENTER);
+
+  label25 = gtk_label_new (_("0x"));
+  gtk_widget_show (label25);
+  gtk_box_pack_start (GTK_BOX (hbox18), label25, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label25), GTK_JUSTIFY_CENTER);
+
+  GtkEntry_Mem = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_Mem);
+  gtk_box_pack_start (GTK_BOX (hbox18), GtkEntry_Mem, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_Mem), 8226);
+
+  hbox19 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox19);
+  gtk_box_pack_start (GTK_BOX (vbox25), hbox19, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox19), 5);
+
+  label28 = gtk_label_new (_("Data       "));
+  gtk_widget_show (label28);
+  gtk_box_pack_start (GTK_BOX (hbox19), label28, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label28), GTK_JUSTIFY_CENTER);
+
+  label26 = gtk_label_new (_("0x"));
+  gtk_widget_show (label26);
+  gtk_box_pack_start (GTK_BOX (hbox19), label26, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label26), GTK_JUSTIFY_CENTER);
+
+  GtkEntry_Data = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_Data);
+  gtk_box_pack_start (GTK_BOX (hbox19), GtkEntry_Data, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_Data), 8226);
+
+  hbuttonbox22 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox22);
+  gtk_box_pack_start (GTK_BOX (vbox25), hbuttonbox22, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox22), 30);
+
+  button71 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button71);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox22), button71);
+  GTK_WIDGET_SET_FLAGS (button71, GTK_CAN_DEFAULT);
+
+  button72 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button72);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox22), button72);
+  GTK_WIDGET_SET_FLAGS (button72, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button71, "clicked",
+                    G_CALLBACK (OnMemWrite32_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button72, "clicked",
+                    G_CALLBACK (OnMemWrite32_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (MemWrite32, MemWrite32, "MemWrite32");
+  GLADE_HOOKUP_OBJECT (MemWrite32, vbox25, "vbox25");
+  GLADE_HOOKUP_OBJECT (MemWrite32, hbox18, "hbox18");
+  GLADE_HOOKUP_OBJECT (MemWrite32, label27, "label27");
+  GLADE_HOOKUP_OBJECT (MemWrite32, label25, "label25");
+  GLADE_HOOKUP_OBJECT (MemWrite32, GtkEntry_Mem, "GtkEntry_Mem");
+  GLADE_HOOKUP_OBJECT (MemWrite32, hbox19, "hbox19");
+  GLADE_HOOKUP_OBJECT (MemWrite32, label28, "label28");
+  GLADE_HOOKUP_OBJECT (MemWrite32, label26, "label26");
+  GLADE_HOOKUP_OBJECT (MemWrite32, GtkEntry_Data, "GtkEntry_Data");
+  GLADE_HOOKUP_OBJECT (MemWrite32, hbuttonbox22, "hbuttonbox22");
+  GLADE_HOOKUP_OBJECT (MemWrite32, button71, "button71");
+  GLADE_HOOKUP_OBJECT (MemWrite32, button72, "button72");
+
+  return MemWrite32;
+}
+
+GtkWidget*
+create_CmdLine (void)
+{
+  GtkWidget *CmdLine;
+  GtkWidget *vbox24;
+  GtkWidget *GtkLabel_Text;
+  GtkWidget *hbox17;
+  GtkWidget *GtkEntry_dCMDLINE;
+  GtkWidget *GtkLabel_Note;
+  GtkWidget *hbuttonbox20;
+  GtkWidget *GtkButton_Ok3;
+  GtkWidget *GtkButton_Cancel2;
+  GtkTooltips *tooltips;
+
+  tooltips = gtk_tooltips_new ();
+
+  CmdLine = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (CmdLine), 5);
+  gtk_window_set_title (GTK_WINDOW (CmdLine), _("Program arguments"));
+  gtk_window_set_modal (GTK_WINDOW (CmdLine), TRUE);
+
+  vbox24 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox24);
+  gtk_container_add (GTK_CONTAINER (CmdLine), vbox24);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox24), 5);
+
+  GtkLabel_Text = gtk_label_new (_("Fill in the command line arguments for the opened program:"));
+  gtk_widget_show (GtkLabel_Text);
+  gtk_box_pack_start (GTK_BOX (vbox24), GtkLabel_Text, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_Text), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Text), 0.1, 0.5);
+
+  hbox17 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox17);
+  gtk_box_pack_start (GTK_BOX (vbox24), hbox17, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox17), 5);
+
+  GtkEntry_dCMDLINE = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_dCMDLINE);
+  gtk_box_pack_start (GTK_BOX (hbox17), GtkEntry_dCMDLINE, TRUE, TRUE, 0);
+  gtk_tooltips_set_tip (tooltips, GtkEntry_dCMDLINE, _("If you don't know what to write leave it blank"), NULL);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_dCMDLINE), 8226);
+
+  GtkLabel_Note = gtk_label_new (_("Note: this is intended for developers only."));
+  gtk_widget_show (GtkLabel_Note);
+  gtk_box_pack_start (GTK_BOX (vbox24), GtkLabel_Note, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_Note), GTK_JUSTIFY_CENTER);
+
+  hbuttonbox20 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox20);
+  gtk_box_pack_start (GTK_BOX (vbox24), hbuttonbox20, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox20), 30);
+
+  GtkButton_Ok3 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (GtkButton_Ok3);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox20), GtkButton_Ok3);
+  GTK_WIDGET_SET_FLAGS (GtkButton_Ok3, GTK_CAN_DEFAULT);
+
+  GtkButton_Cancel2 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (GtkButton_Cancel2);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox20), GtkButton_Cancel2);
+  GTK_WIDGET_SET_FLAGS (GtkButton_Cancel2, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) GtkButton_Ok3, "clicked",
+                    G_CALLBACK (OnArguments_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_Cancel2, "clicked",
+                    G_CALLBACK (OnArguments_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (CmdLine, CmdLine, "CmdLine");
+  GLADE_HOOKUP_OBJECT (CmdLine, vbox24, "vbox24");
+  GLADE_HOOKUP_OBJECT (CmdLine, GtkLabel_Text, "GtkLabel_Text");
+  GLADE_HOOKUP_OBJECT (CmdLine, hbox17, "hbox17");
+  GLADE_HOOKUP_OBJECT (CmdLine, GtkEntry_dCMDLINE, "GtkEntry_dCMDLINE");
+  GLADE_HOOKUP_OBJECT (CmdLine, GtkLabel_Note, "GtkLabel_Note");
+  GLADE_HOOKUP_OBJECT (CmdLine, hbuttonbox20, "hbuttonbox20");
+  GLADE_HOOKUP_OBJECT (CmdLine, GtkButton_Ok3, "GtkButton_Ok3");
+  GLADE_HOOKUP_OBJECT (CmdLine, GtkButton_Cancel2, "GtkButton_Cancel2");
+  GLADE_HOOKUP_OBJECT_NO_REF (CmdLine, tooltips, "tooltips");
+
+  return CmdLine;
+}
+
+GtkWidget*
+create_Logging (void)
+{
+  GtkWidget *Logging;
+  GtkWidget *vbox23;
+  GtkWidget *hbox15;
+  GtkWidget *frame4;
+  GtkWidget *table3;
+  GtkWidget *Log30;
+  GtkWidget *Log;
+  GtkWidget *Log31;
+  GtkWidget *Log16;
+  GtkWidget *Log14;
+  GtkWidget *Log15;
+  GtkWidget *Log13;
+  GtkWidget *Log12;
+  GtkWidget *Log11;
+  GtkWidget *Log10;
+  GtkWidget *Log9;
+  GtkWidget *Log8;
+  GtkWidget *Log7;
+  GtkWidget *Log6;
+  GtkWidget *Log5;
+  GtkWidget *Log4;
+  GtkWidget *Log3;
+  GtkWidget *Log2;
+  GtkWidget *Log1;
+  GtkWidget *Log0;
+  GtkWidget *label33;
+  GtkWidget *frame5;
+  GtkWidget *table4;
+  GtkWidget *Log28;
+  GtkWidget *Log20;
+  GtkWidget *Log21;
+  GtkWidget *Log22;
+  GtkWidget *Log23;
+  GtkWidget *Log24;
+  GtkWidget *Log25;
+  GtkWidget *Log26;
+  GtkWidget *Log27;
+  GtkWidget *label34;
+  GtkWidget *hbuttonbox19;
+  GtkWidget *button66;
+  GtkWidget *button67;
+
+  Logging = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (Logging), 5);
+  gtk_window_set_title (GTK_WINDOW (Logging), _("Logging"));
+
+  vbox23 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox23);
+  gtk_container_add (GTK_CONTAINER (Logging), vbox23);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox23), 5);
+
+  hbox15 = gtk_hbox_new (FALSE, 5);
+  gtk_widget_show (hbox15);
+  gtk_box_pack_start (GTK_BOX (vbox23), hbox15, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox15), 5);
+
+  frame4 = gtk_frame_new (NULL);
+  gtk_widget_show (frame4);
+  gtk_box_pack_start (GTK_BOX (hbox15), frame4, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame4), 5);
+
+  table3 = gtk_table_new (8, 3, FALSE);
+  gtk_widget_show (table3);
+  gtk_container_add (GTK_CONTAINER (frame4), table3);
+  gtk_container_set_border_width (GTK_CONTAINER (table3), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table3), 5);
+  gtk_table_set_col_spacings (GTK_TABLE (table3), 5);
+
+  Log30 = gtk_check_button_new_with_mnemonic (_("SYMs Log"));
+  gtk_widget_show (Log30);
+  gtk_table_attach (GTK_TABLE (table3), Log30, 2, 3, 6, 7,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log = gtk_check_button_new_with_mnemonic (_("Log"));
+  gtk_widget_show (Log);
+  gtk_table_attach (GTK_TABLE (table3), Log, 2, 3, 7, 8,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log31 = gtk_check_button_new_with_mnemonic (_("Log to STDOUT"));
+  gtk_widget_show (Log31);
+  gtk_table_attach (GTK_TABLE (table3), Log31, 2, 3, 5, 6,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log16 = gtk_check_button_new_with_mnemonic (_("RPC Log"));
+  gtk_widget_show (Log16);
+  gtk_table_attach (GTK_TABLE (table3), Log16, 2, 3, 0, 1,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log14 = gtk_check_button_new_with_mnemonic (_("IPU Log"));
+  gtk_widget_show (Log14);
+  gtk_table_attach (GTK_TABLE (table3), Log14, 1, 2, 6, 7,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log15 = gtk_check_button_new_with_mnemonic (_("VU Micro Log"));
+  gtk_widget_show (Log15);
+  gtk_table_attach (GTK_TABLE (table3), Log15, 1, 2, 7, 8,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log13 = gtk_check_button_new_with_mnemonic (_("Sif Log"));
+  gtk_widget_show (Log13);
+  gtk_table_attach (GTK_TABLE (table3), Log13, 1, 2, 5, 6,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log12 = gtk_check_button_new_with_mnemonic (_("GIF Log"));
+  gtk_widget_show (Log12);
+  gtk_table_attach (GTK_TABLE (table3), Log12, 1, 2, 4, 5,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log11 = gtk_check_button_new_with_mnemonic (_("SPR Log"));
+  gtk_widget_show (Log11);
+  gtk_table_attach (GTK_TABLE (table3), Log11, 1, 2, 3, 4,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log10 = gtk_check_button_new_with_mnemonic (_("Vif Log"));
+  gtk_widget_show (Log10);
+  gtk_table_attach (GTK_TABLE (table3), Log10, 1, 2, 2, 3,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log9 = gtk_check_button_new_with_mnemonic (_("Cop0 Log"));
+  gtk_widget_show (Log9);
+  gtk_table_attach (GTK_TABLE (table3), Log9, 1, 2, 1, 2,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log8 = gtk_check_button_new_with_mnemonic (_("VU0 Log"));
+  gtk_widget_show (Log8);
+  gtk_table_attach (GTK_TABLE (table3), Log8, 1, 2, 0, 1,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log7 = gtk_check_button_new_with_mnemonic (_("MMI Log"));
+  gtk_widget_show (Log7);
+  gtk_table_attach (GTK_TABLE (table3), Log7, 0, 1, 7, 8,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log6 = gtk_check_button_new_with_mnemonic (_("Fpu Log"));
+  gtk_widget_show (Log6);
+  gtk_table_attach (GTK_TABLE (table3), Log6, 0, 1, 6, 7,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log5 = gtk_check_button_new_with_mnemonic (_("Elf Log"));
+  gtk_widget_show (Log5);
+  gtk_table_attach (GTK_TABLE (table3), Log5, 0, 1, 5, 6,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log4 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
+  gtk_widget_show (Log4);
+  gtk_table_attach (GTK_TABLE (table3), Log4, 0, 1, 4, 5,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log3 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
+  gtk_widget_show (Log3);
+  gtk_table_attach (GTK_TABLE (table3), Log3, 0, 1, 3, 4,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log2 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
+  gtk_widget_show (Log2);
+  gtk_table_attach (GTK_TABLE (table3), Log2, 0, 1, 2, 3,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log1 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
+  gtk_widget_show (Log1);
+  gtk_table_attach (GTK_TABLE (table3), Log1, 0, 1, 1, 2,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log0 = gtk_check_button_new_with_mnemonic (_("Cpu Log"));
+  gtk_widget_show (Log0);
+  gtk_table_attach (GTK_TABLE (table3), Log0, 0, 1, 0, 1,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  label33 = gtk_label_new (_("EE Logs"));
+  gtk_widget_show (label33);
+  gtk_frame_set_label_widget (GTK_FRAME (frame4), label33);
+
+  frame5 = gtk_frame_new (NULL);
+  gtk_widget_show (frame5);
+  gtk_box_pack_start (GTK_BOX (hbox15), frame5, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame5), 5);
+
+  table4 = gtk_table_new (8, 2, FALSE);
+  gtk_widget_show (table4);
+  gtk_container_add (GTK_CONTAINER (frame5), table4);
+  gtk_container_set_border_width (GTK_CONTAINER (table4), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table4), 5);
+  gtk_table_set_col_spacings (GTK_TABLE (table4), 5);
+
+  Log28 = gtk_check_button_new_with_mnemonic (_("GPU Log"));
+  gtk_widget_show (Log28);
+  gtk_table_attach (GTK_TABLE (table4), Log28, 1, 2, 0, 1,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log20 = gtk_check_button_new_with_mnemonic (_("IOP Log"));
+  gtk_widget_show (Log20);
+  gtk_table_attach (GTK_TABLE (table4), Log20, 0, 1, 0, 1,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log21 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
+  gtk_widget_show (Log21);
+  gtk_table_attach (GTK_TABLE (table4), Log21, 0, 1, 1, 2,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log22 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
+  gtk_widget_show (Log22);
+  gtk_table_attach (GTK_TABLE (table4), Log22, 0, 1, 2, 3,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log23 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
+  gtk_widget_show (Log23);
+  gtk_table_attach (GTK_TABLE (table4), Log23, 0, 1, 3, 4,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log24 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
+  gtk_widget_show (Log24);
+  gtk_table_attach (GTK_TABLE (table4), Log24, 0, 1, 4, 5,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log25 = gtk_check_button_new_with_mnemonic (_("Pad Log"));
+  gtk_widget_show (Log25);
+  gtk_table_attach (GTK_TABLE (table4), Log25, 0, 1, 5, 6,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log26 = gtk_check_button_new_with_mnemonic (_("Gte Log"));
+  gtk_widget_show (Log26);
+  gtk_table_attach (GTK_TABLE (table4), Log26, 0, 1, 6, 7,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  Log27 = gtk_check_button_new_with_mnemonic (_("Cdr Log"));
+  gtk_widget_show (Log27);
+  gtk_table_attach (GTK_TABLE (table4), Log27, 0, 1, 7, 8,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  label34 = gtk_label_new (_("IOP Logs"));
+  gtk_widget_show (label34);
+  gtk_frame_set_label_widget (GTK_FRAME (frame5), label34);
+
+  hbuttonbox19 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox19);
+  gtk_box_pack_start (GTK_BOX (vbox23), hbuttonbox19, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox19), 30);
+
+  button66 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button66);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox19), button66);
+  GTK_WIDGET_SET_FLAGS (button66, GTK_CAN_DEFAULT);
+
+  button67 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button67);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox19), button67);
+  GTK_WIDGET_SET_FLAGS (button67, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button66, "clicked",
+                    G_CALLBACK (OnLogging_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button67, "clicked",
+                    G_CALLBACK (OnLogging_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (Logging, Logging, "Logging");
+  GLADE_HOOKUP_OBJECT (Logging, vbox23, "vbox23");
+  GLADE_HOOKUP_OBJECT (Logging, hbox15, "hbox15");
+  GLADE_HOOKUP_OBJECT (Logging, frame4, "frame4");
+  GLADE_HOOKUP_OBJECT (Logging, table3, "table3");
+  GLADE_HOOKUP_OBJECT (Logging, Log30, "Log30");
+  GLADE_HOOKUP_OBJECT (Logging, Log, "Log");
+  GLADE_HOOKUP_OBJECT (Logging, Log31, "Log31");
+  GLADE_HOOKUP_OBJECT (Logging, Log16, "Log16");
+  GLADE_HOOKUP_OBJECT (Logging, Log14, "Log14");
+  GLADE_HOOKUP_OBJECT (Logging, Log15, "Log15");
+  GLADE_HOOKUP_OBJECT (Logging, Log13, "Log13");
+  GLADE_HOOKUP_OBJECT (Logging, Log12, "Log12");
+  GLADE_HOOKUP_OBJECT (Logging, Log11, "Log11");
+  GLADE_HOOKUP_OBJECT (Logging, Log10, "Log10");
+  GLADE_HOOKUP_OBJECT (Logging, Log9, "Log9");
+  GLADE_HOOKUP_OBJECT (Logging, Log8, "Log8");
+  GLADE_HOOKUP_OBJECT (Logging, Log7, "Log7");
+  GLADE_HOOKUP_OBJECT (Logging, Log6, "Log6");
+  GLADE_HOOKUP_OBJECT (Logging, Log5, "Log5");
+  GLADE_HOOKUP_OBJECT (Logging, Log4, "Log4");
+  GLADE_HOOKUP_OBJECT (Logging, Log3, "Log3");
+  GLADE_HOOKUP_OBJECT (Logging, Log2, "Log2");
+  GLADE_HOOKUP_OBJECT (Logging, Log1, "Log1");
+  GLADE_HOOKUP_OBJECT (Logging, Log0, "Log0");
+  GLADE_HOOKUP_OBJECT (Logging, label33, "label33");
+  GLADE_HOOKUP_OBJECT (Logging, frame5, "frame5");
+  GLADE_HOOKUP_OBJECT (Logging, table4, "table4");
+  GLADE_HOOKUP_OBJECT (Logging, Log28, "Log28");
+  GLADE_HOOKUP_OBJECT (Logging, Log20, "Log20");
+  GLADE_HOOKUP_OBJECT (Logging, Log21, "Log21");
+  GLADE_HOOKUP_OBJECT (Logging, Log22, "Log22");
+  GLADE_HOOKUP_OBJECT (Logging, Log23, "Log23");
+  GLADE_HOOKUP_OBJECT (Logging, Log24, "Log24");
+  GLADE_HOOKUP_OBJECT (Logging, Log25, "Log25");
+  GLADE_HOOKUP_OBJECT (Logging, Log26, "Log26");
+  GLADE_HOOKUP_OBJECT (Logging, Log27, "Log27");
+  GLADE_HOOKUP_OBJECT (Logging, label34, "label34");
+  GLADE_HOOKUP_OBJECT (Logging, hbuttonbox19, "hbuttonbox19");
+  GLADE_HOOKUP_OBJECT (Logging, button66, "button66");
+  GLADE_HOOKUP_OBJECT (Logging, button67, "button67");
+
+  return Logging;
+}
+
+GtkWidget*
+create_DumpRDlg (void)
+{
+  GtkWidget *DumpRDlg;
+  GtkWidget *vbox21;
+  GtkWidget *label18;
+  GtkWidget *hbox13;
+  GtkWidget *label19;
+  GtkWidget *GtkEntry_DumpRF;
+  GtkWidget *hbox14;
+  GtkWidget *label20;
+  GtkWidget *GtkEntry_DumpRT;
+  GtkWidget *label22;
+  GtkWidget *hbuttonbox18;
+  GtkWidget *button50;
+  GtkWidget *button51;
+
+  DumpRDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (DumpRDlg), 5);
+  gtk_window_set_title (GTK_WINDOW (DumpRDlg), _("Raw Dump"));
+
+  vbox21 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox21);
+  gtk_container_add (GTK_CONTAINER (DumpRDlg), vbox21);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox21), 5);
+
+  label18 = gtk_label_new (_("Set Dump Addr (in Hex):"));
+  gtk_widget_show (label18);
+  gtk_box_pack_start (GTK_BOX (vbox21), label18, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label18), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label18), 0.1, 0.5);
+
+  hbox13 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox13);
+  gtk_box_pack_start (GTK_BOX (vbox21), hbox13, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox13), 5);
+
+  label19 = gtk_label_new (_("From 0x"));
+  gtk_widget_show (label19);
+  gtk_box_pack_start (GTK_BOX (hbox13), label19, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label19), GTK_JUSTIFY_CENTER);
+  gtk_label_set_line_wrap (GTK_LABEL (label19), TRUE);
+
+  GtkEntry_DumpRF = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_DumpRF);
+  gtk_box_pack_start (GTK_BOX (hbox13), GtkEntry_DumpRF, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpRF), 8226);
+
+  hbox14 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox14);
+  gtk_box_pack_start (GTK_BOX (vbox21), hbox14, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox14), 5);
+
+  label20 = gtk_label_new (_("To    0x"));
+  gtk_widget_show (label20);
+  gtk_box_pack_start (GTK_BOX (hbox14), label20, FALSE, FALSE, 0);
+
+  GtkEntry_DumpRT = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_DumpRT);
+  gtk_box_pack_start (GTK_BOX (hbox14), GtkEntry_DumpRT, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpRT), 8226);
+
+  label22 = gtk_label_new (_("Dump File = \"dump.txt\""));
+  gtk_widget_show (label22);
+  gtk_box_pack_start (GTK_BOX (vbox21), label22, FALSE, FALSE, 0);
+  gtk_misc_set_alignment (GTK_MISC (label22), 0.1, 0.5);
+
+  hbuttonbox18 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox18);
+  gtk_box_pack_start (GTK_BOX (vbox21), hbuttonbox18, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox18), 30);
+
+  button50 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button50);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox18), button50);
+  GTK_WIDGET_SET_FLAGS (button50, GTK_CAN_DEFAULT);
+
+  button51 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button51);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox18), button51);
+  GTK_WIDGET_SET_FLAGS (button51, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button50, "clicked",
+                    G_CALLBACK (OnDumpR_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button51, "clicked",
+                    G_CALLBACK (OnDumpR_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (DumpRDlg, DumpRDlg, "DumpRDlg");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, vbox21, "vbox21");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, label18, "label18");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, hbox13, "hbox13");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, label19, "label19");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, GtkEntry_DumpRF, "GtkEntry_DumpRF");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, hbox14, "hbox14");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, label20, "label20");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, GtkEntry_DumpRT, "GtkEntry_DumpRT");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, label22, "label22");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, hbuttonbox18, "hbuttonbox18");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, button50, "button50");
+  GLADE_HOOKUP_OBJECT (DumpRDlg, button51, "button51");
+
+  return DumpRDlg;
+}
+
+GtkWidget*
+create_DumpCDlg (void)
+{
+  GtkWidget *DumpCDlg;
+  GtkWidget *vbox20;
+  GtkWidget *label15;
+  GtkWidget *hbox11;
+  GtkWidget *label16;
+  GtkWidget *GtkEntry_DumpCF;
+  GtkWidget *hbox12;
+  GtkWidget *label17;
+  GtkWidget *GtkEntry_DumpCT;
+  GtkWidget *label21;
+  GtkWidget *hbuttonbox17;
+  GtkWidget *button48;
+  GtkWidget *button49;
+
+  DumpCDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (DumpCDlg), 5);
+  gtk_window_set_title (GTK_WINDOW (DumpCDlg), _("Dump code"));
+
+  vbox20 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox20);
+  gtk_container_add (GTK_CONTAINER (DumpCDlg), vbox20);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox20), 5);
+
+  label15 = gtk_label_new (_("Set Dump Addr (in Hex):"));
+  gtk_widget_show (label15);
+  gtk_box_pack_start (GTK_BOX (vbox20), label15, FALSE, FALSE, 0);
+  gtk_misc_set_alignment (GTK_MISC (label15), 0.1, 0.5);
+
+  hbox11 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox11);
+  gtk_box_pack_start (GTK_BOX (vbox20), hbox11, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox11), 5);
+
+  label16 = gtk_label_new (_("From 0x"));
+  gtk_widget_show (label16);
+  gtk_box_pack_start (GTK_BOX (hbox11), label16, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label16), GTK_JUSTIFY_CENTER);
+  gtk_label_set_line_wrap (GTK_LABEL (label16), TRUE);
+
+  GtkEntry_DumpCF = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_DumpCF);
+  gtk_box_pack_start (GTK_BOX (hbox11), GtkEntry_DumpCF, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpCF), 8226);
+
+  hbox12 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox12);
+  gtk_box_pack_start (GTK_BOX (vbox20), hbox12, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox12), 5);
+
+  label17 = gtk_label_new (_("To    0x"));
+  gtk_widget_show (label17);
+  gtk_box_pack_start (GTK_BOX (hbox12), label17, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label17), GTK_JUSTIFY_CENTER);
+
+  GtkEntry_DumpCT = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_DumpCT);
+  gtk_box_pack_start (GTK_BOX (hbox12), GtkEntry_DumpCT, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpCT), 8226);
+
+  label21 = gtk_label_new (_("Dump File = \"dump.txt\""));
+  gtk_widget_show (label21);
+  gtk_box_pack_start (GTK_BOX (vbox20), label21, FALSE, FALSE, 0);
+  gtk_misc_set_alignment (GTK_MISC (label21), 0.1, 0.5);
+
+  hbuttonbox17 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox17);
+  gtk_box_pack_start (GTK_BOX (vbox20), hbuttonbox17, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox17), 30);
+
+  button48 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button48);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox17), button48);
+  GTK_WIDGET_SET_FLAGS (button48, GTK_CAN_DEFAULT);
+
+  button49 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button49);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox17), button49);
+  GTK_WIDGET_SET_FLAGS (button49, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button48, "clicked",
+                    G_CALLBACK (OnDumpC_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button49, "clicked",
+                    G_CALLBACK (OnDumpC_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (DumpCDlg, DumpCDlg, "DumpCDlg");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, vbox20, "vbox20");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, label15, "label15");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, hbox11, "hbox11");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, label16, "label16");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, GtkEntry_DumpCF, "GtkEntry_DumpCF");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, hbox12, "hbox12");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, label17, "label17");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, GtkEntry_DumpCT, "GtkEntry_DumpCT");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, label21, "label21");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, hbuttonbox17, "hbuttonbox17");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, button48, "button48");
+  GLADE_HOOKUP_OBJECT (DumpCDlg, button49, "button49");
+
+  return DumpCDlg;
+}
+
+GtkWidget*
+create_SetBPCDlg (void)
+{
+  GtkWidget *SetBPCDlg;
+  GtkWidget *vbox19;
+  GtkWidget *label13;
+  GtkWidget *hbox10;
+  GtkWidget *label14;
+  GtkWidget *GtkEntry_BPC;
+  GtkWidget *hbuttonbox16;
+  GtkWidget *button46;
+  GtkWidget *button47;
+
+  SetBPCDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (SetBPCDlg), 5);
+  gtk_window_set_title (GTK_WINDOW (SetBPCDlg), _("SetBreakPoint Addr"));
+
+  vbox19 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox19);
+  gtk_container_add (GTK_CONTAINER (SetBPCDlg), vbox19);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox19), 5);
+
+  label13 = gtk_label_new (_("Set New BP Count (in Hex):"));
+  gtk_widget_show (label13);
+  gtk_box_pack_start (GTK_BOX (vbox19), label13, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label13), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label13), 0.1, 0.5);
+
+  hbox10 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox10);
+  gtk_box_pack_start (GTK_BOX (vbox19), hbox10, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox10), 5);
+
+  label14 = gtk_label_new (_("0x"));
+  gtk_widget_show (label14);
+  gtk_box_pack_start (GTK_BOX (hbox10), label14, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label14), GTK_JUSTIFY_CENTER);
+
+  GtkEntry_BPC = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_BPC);
+  gtk_box_pack_start (GTK_BOX (hbox10), GtkEntry_BPC, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_BPC), 8226);
+
+  hbuttonbox16 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox16);
+  gtk_box_pack_start (GTK_BOX (vbox19), hbuttonbox16, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox16), 30);
+
+  button46 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button46);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox16), button46);
+  GTK_WIDGET_SET_FLAGS (button46, GTK_CAN_DEFAULT);
+
+  button47 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button47);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox16), button47);
+  GTK_WIDGET_SET_FLAGS (button47, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button46, "clicked",
+                    G_CALLBACK (OnSetBPC_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button47, "clicked",
+                    G_CALLBACK (OnSetBPC_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (SetBPCDlg, SetBPCDlg, "SetBPCDlg");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, vbox19, "vbox19");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, label13, "label13");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, hbox10, "hbox10");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, label14, "label14");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, GtkEntry_BPC, "GtkEntry_BPC");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, hbuttonbox16, "hbuttonbox16");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, button46, "button46");
+  GLADE_HOOKUP_OBJECT (SetBPCDlg, button47, "button47");
+
+  return SetBPCDlg;
+}
+
+GtkWidget*
+create_SetBPADlg (void)
+{
+  GtkWidget *SetBPADlg;
+  GtkWidget *vbox18;
+  GtkWidget *label11;
+  GtkWidget *hbox9;
+  GtkWidget *label12;
+  GtkWidget *GtkEntry_BPA;
+  GtkWidget *hbuttonbox15;
+  GtkWidget *button44;
+  GtkWidget *button45;
+
+  SetBPADlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (SetBPADlg), 5);
+  gtk_window_set_title (GTK_WINDOW (SetBPADlg), _("SetBreakPoint Addr"));
+
+  vbox18 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox18);
+  gtk_container_add (GTK_CONTAINER (SetBPADlg), vbox18);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox18), 5);
+
+  label11 = gtk_label_new (_("Set New BP Address (in Hex):"));
+  gtk_widget_show (label11);
+  gtk_box_pack_start (GTK_BOX (vbox18), label11, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label11), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label11), 0.1, 0.5);
+
+  hbox9 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox9);
+  gtk_box_pack_start (GTK_BOX (vbox18), hbox9, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox9), 5);
+
+  label12 = gtk_label_new (_("0x"));
+  gtk_widget_show (label12);
+  gtk_box_pack_start (GTK_BOX (hbox9), label12, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label12), GTK_JUSTIFY_CENTER);
+
+  GtkEntry_BPA = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_BPA);
+  gtk_box_pack_start (GTK_BOX (hbox9), GtkEntry_BPA, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_BPA), 8226);
+
+  hbuttonbox15 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox15);
+  gtk_box_pack_start (GTK_BOX (vbox18), hbuttonbox15, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox15), 30);
+
+  button44 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button44);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox15), button44);
+  GTK_WIDGET_SET_FLAGS (button44, GTK_CAN_DEFAULT);
+
+  button45 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button45);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox15), button45);
+  GTK_WIDGET_SET_FLAGS (button45, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button44, "clicked",
+                    G_CALLBACK (OnSetBPA_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button45, "clicked",
+                    G_CALLBACK (OnSetBPA_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (SetBPADlg, SetBPADlg, "SetBPADlg");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, vbox18, "vbox18");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, label11, "label11");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, hbox9, "hbox9");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, label12, "label12");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, GtkEntry_BPA, "GtkEntry_BPA");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, hbuttonbox15, "hbuttonbox15");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, button44, "button44");
+  GLADE_HOOKUP_OBJECT (SetBPADlg, button45, "button45");
+
+  return SetBPADlg;
+}
+
+GtkWidget*
+create_SetPCDlg (void)
+{
+  GtkWidget *SetPCDlg;
+  GtkWidget *vbox17;
+  GtkWidget *label9;
+  GtkWidget *hbox8;
+  GtkWidget *label10;
+  GtkWidget *GtkEntry_dPC;
+  GtkWidget *hbuttonbox14;
+  GtkWidget *button42;
+  GtkWidget *button43;
+
+  SetPCDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (SetPCDlg), 5);
+  gtk_window_set_title (GTK_WINDOW (SetPCDlg), _("SetPCDlg"));
+
+  vbox17 = gtk_vbox_new (FALSE, 5);
+  gtk_widget_show (vbox17);
+  gtk_container_add (GTK_CONTAINER (SetPCDlg), vbox17);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox17), 5);
+
+  label9 = gtk_label_new (_("Set New PC Address (in Hex):"));
+  gtk_widget_show (label9);
+  gtk_box_pack_start (GTK_BOX (vbox17), label9, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label9), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label9), 0.1, 0.5);
+
+  hbox8 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox8);
+  gtk_box_pack_start (GTK_BOX (vbox17), hbox8, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox8), 5);
+
+  label10 = gtk_label_new (_("0x"));
+  gtk_widget_show (label10);
+  gtk_box_pack_start (GTK_BOX (hbox8), label10, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label10), GTK_JUSTIFY_CENTER);
+
+  GtkEntry_dPC = gtk_entry_new ();
+  gtk_widget_show (GtkEntry_dPC);
+  gtk_box_pack_start (GTK_BOX (hbox8), GtkEntry_dPC, TRUE, TRUE, 0);
+  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_dPC), 8226);
+
+  hbuttonbox14 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox14);
+  gtk_box_pack_start (GTK_BOX (vbox17), hbuttonbox14, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox14), 30);
+
+  button42 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button42);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox14), button42);
+  GTK_WIDGET_SET_FLAGS (button42, GTK_CAN_DEFAULT);
+
+  button43 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button43);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox14), button43);
+  GTK_WIDGET_SET_FLAGS (button43, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button42, "clicked",
+                    G_CALLBACK (OnSetPC_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button43, "clicked",
+                    G_CALLBACK (OnSetPC_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (SetPCDlg, SetPCDlg, "SetPCDlg");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, vbox17, "vbox17");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, label9, "label9");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, hbox8, "hbox8");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, label10, "label10");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, GtkEntry_dPC, "GtkEntry_dPC");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, hbuttonbox14, "hbuttonbox14");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, button42, "button42");
+  GLADE_HOOKUP_OBJECT (SetPCDlg, button43, "button43");
+
+  return SetPCDlg;
+}
+
+GtkWidget*
+create_DebugWnd (void)
+{
+  GtkWidget *DebugWnd;
+  GtkWidget *vbox16;
+  GtkWidget *hbox16;
+  GtkWidget *GtkRadioButton_EE;
+  GSList *GtkRadioButton_EE_group = NULL;
+  GtkWidget *GtkRadioButton_IOP;
+  GtkWidget *hbox6;
+  GtkWidget *hbox7;
+  GtkWidget *scrolledwindow1;
+  GtkWidget *viewport1;
+  GtkWidget *GtkList_DisView;
+  GtkWidget *GtkVScrollbar_VList;
+  GtkWidget *vbox22;
+  GtkWidget *vbuttonbox2;
+  GtkWidget *button52;
+  GtkWidget *button53;
+  GtkWidget *button65;
+  GtkWidget *button64;
+  GtkWidget *vbuttonbox3;
+  GtkWidget *button58;
+  GtkWidget *button59;
+  GtkWidget *button60;
+  GtkWidget *button61;
+  GtkWidget *vbuttonbox1;
+  GtkWidget *button39;
+  GtkWidget *button40;
+  GtkWidget *button41;
+  GtkWidget *vbuttonbox4;
+  GtkWidget *button68;
+  GtkWidget *button69;
+  GtkWidget *button70;
+
+  DebugWnd = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (DebugWnd), 5);
+  gtk_window_set_title (GTK_WINDOW (DebugWnd), _("PCSX2 Debugger"));
+
+  vbox16 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox16);
+  gtk_container_add (GTK_CONTAINER (DebugWnd), vbox16);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox16), 5);
+
+  hbox16 = gtk_hbox_new (FALSE, 5);
+  gtk_widget_show (hbox16);
+  gtk_box_pack_start (GTK_BOX (vbox16), hbox16, FALSE, TRUE, 0);
+
+  GtkRadioButton_EE = gtk_radio_button_new_with_mnemonic (NULL, _("EE Debug Mode"));
+  gtk_widget_show (GtkRadioButton_EE);
+  gtk_box_pack_start (GTK_BOX (hbox16), GtkRadioButton_EE, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_EE), GtkRadioButton_EE_group);
+  GtkRadioButton_EE_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_EE));
+
+  GtkRadioButton_IOP = gtk_radio_button_new_with_mnemonic (NULL, _("IOP Debug Mode"));
+  gtk_widget_show (GtkRadioButton_IOP);
+  gtk_box_pack_start (GTK_BOX (hbox16), GtkRadioButton_IOP, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_IOP), GtkRadioButton_EE_group);
+  GtkRadioButton_EE_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_IOP));
+
+  hbox6 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox6);
+  gtk_box_pack_start (GTK_BOX (vbox16), hbox6, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox6), 5);
+
+  hbox7 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox7);
+  gtk_box_pack_start (GTK_BOX (hbox6), hbox7, TRUE, TRUE, 0);
+
+  scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_show (scrolledwindow1);
+  gtk_box_pack_start (GTK_BOX (hbox7), scrolledwindow1, TRUE, TRUE, 0);
+  GTK_WIDGET_UNSET_FLAGS (scrolledwindow1, GTK_CAN_FOCUS);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_ALWAYS, GTK_POLICY_NEVER);
+
+  viewport1 = gtk_viewport_new (NULL, NULL);
+  gtk_widget_show (viewport1);
+  gtk_container_add (GTK_CONTAINER (scrolledwindow1), viewport1);
+
+  GtkList_DisView = gtk_tree_view_new ();
+  gtk_widget_show (GtkList_DisView);
+  gtk_container_add (GTK_CONTAINER (viewport1), GtkList_DisView);
+  GTK_WIDGET_UNSET_FLAGS (GtkList_DisView, GTK_CAN_FOCUS);
+  gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (GtkList_DisView), FALSE);
+
+  GtkVScrollbar_VList = gtk_vscrollbar_new (GTK_ADJUSTMENT (gtk_adjustment_new (0, 0, 412, 1, 20, 2)));
+  gtk_widget_show (GtkVScrollbar_VList);
+  gtk_box_pack_start (GTK_BOX (hbox7), GtkVScrollbar_VList, FALSE, TRUE, 0);
+
+  vbox22 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox22);
+  gtk_box_pack_start (GTK_BOX (hbox6), vbox22, FALSE, TRUE, 0);
+
+  vbuttonbox2 = gtk_vbutton_box_new ();
+  gtk_widget_show (vbuttonbox2);
+  gtk_box_pack_start (GTK_BOX (vbox22), vbuttonbox2, FALSE, TRUE, 0);
+
+  button52 = gtk_button_new_with_mnemonic (_("Step"));
+  gtk_widget_show (button52);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button52);
+  GTK_WIDGET_SET_FLAGS (button52, GTK_CAN_DEFAULT);
+
+  button53 = gtk_button_new_with_mnemonic (_("Skip"));
+  gtk_widget_show (button53);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button53);
+  GTK_WIDGET_SET_FLAGS (button53, GTK_CAN_DEFAULT);
+
+  button65 = gtk_button_new_with_mnemonic (_("Go"));
+  gtk_widget_show (button65);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button65);
+  GTK_WIDGET_SET_FLAGS (button65, GTK_CAN_DEFAULT);
+
+  button64 = gtk_button_new_with_mnemonic (_("Log On/Off"));
+  gtk_widget_show (button64);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button64);
+  GTK_WIDGET_SET_FLAGS (button64, GTK_CAN_DEFAULT);
+
+  vbuttonbox3 = gtk_vbutton_box_new ();
+  gtk_widget_show (vbuttonbox3);
+  gtk_box_pack_start (GTK_BOX (vbox22), vbuttonbox3, FALSE, TRUE, 0);
+
+  button58 = gtk_button_new_with_mnemonic (_("Set PC"));
+  gtk_widget_show (button58);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button58);
+  GTK_WIDGET_SET_FLAGS (button58, GTK_CAN_DEFAULT);
+
+  button59 = gtk_button_new_with_mnemonic (_("Set BP Addr"));
+  gtk_widget_show (button59);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button59);
+  GTK_WIDGET_SET_FLAGS (button59, GTK_CAN_DEFAULT);
+
+  button60 = gtk_button_new_with_mnemonic (_("Set BP Count"));
+  gtk_widget_show (button60);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button60);
+  GTK_WIDGET_SET_FLAGS (button60, GTK_CAN_DEFAULT);
+
+  button61 = gtk_button_new_with_mnemonic (_("Clear BPs"));
+  gtk_widget_show (button61);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button61);
+  GTK_WIDGET_SET_FLAGS (button61, GTK_CAN_DEFAULT);
+
+  vbuttonbox1 = gtk_vbutton_box_new ();
+  gtk_widget_show (vbuttonbox1);
+  gtk_box_pack_start (GTK_BOX (vbox22), vbuttonbox1, FALSE, TRUE, 0);
+
+  button39 = gtk_button_new_with_mnemonic (_("Dump code"));
+  gtk_widget_show (button39);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox1), button39);
+  GTK_WIDGET_SET_FLAGS (button39, GTK_CAN_DEFAULT);
+
+  button40 = gtk_button_new_with_mnemonic (_("Raw Dump"));
+  gtk_widget_show (button40);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox1), button40);
+  GTK_WIDGET_SET_FLAGS (button40, GTK_CAN_DEFAULT);
+
+  button41 = gtk_button_new_with_mnemonic (_("Close"));
+  gtk_widget_show (button41);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox1), button41);
+  GTK_WIDGET_SET_FLAGS (button41, GTK_CAN_DEFAULT);
+
+  vbuttonbox4 = gtk_vbutton_box_new ();
+  gtk_widget_show (vbuttonbox4);
+  gtk_box_pack_start (GTK_BOX (hbox6), vbuttonbox4, FALSE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (vbuttonbox4), 10);
+
+  button68 = gtk_button_new_with_mnemonic (_("memWrite32"));
+  gtk_widget_show (button68);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button68);
+  GTK_WIDGET_SET_FLAGS (button68, GTK_CAN_DEFAULT);
+
+  button69 = gtk_button_new_with_mnemonic (_("button69"));
+  gtk_widget_show (button69);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button69);
+  GTK_WIDGET_SET_FLAGS (button69, GTK_CAN_DEFAULT);
+
+  button70 = gtk_button_new_with_mnemonic (_("button70"));
+  gtk_widget_show (button70);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button70);
+  GTK_WIDGET_SET_FLAGS (button70, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) GtkRadioButton_EE, "toggled",
+                    G_CALLBACK (OnDebug_EEMode),
+                    NULL);
+  g_signal_connect ((gpointer) GtkRadioButton_IOP, "toggled",
+                    G_CALLBACK (OnDebug_IOPMode),
+                    NULL);
+  g_signal_connect ((gpointer) button52, "clicked",
+                    G_CALLBACK (OnDebug_Step),
+                    NULL);
+  g_signal_connect ((gpointer) button53, "clicked",
+                    G_CALLBACK (OnDebug_Skip),
+                    NULL);
+  g_signal_connect ((gpointer) button65, "clicked",
+                    G_CALLBACK (OnDebug_Go),
+                    NULL);
+  g_signal_connect ((gpointer) button64, "clicked",
+                    G_CALLBACK (OnDebug_Log),
+                    NULL);
+  g_signal_connect ((gpointer) button58, "clicked",
+                    G_CALLBACK (OnDebug_SetPC),
+                    NULL);
+  g_signal_connect ((gpointer) button59, "clicked",
+                    G_CALLBACK (OnDebug_SetBPA),
+                    NULL);
+  g_signal_connect ((gpointer) button60, "clicked",
+                    G_CALLBACK (OnDebug_SetBPC),
+                    NULL);
+  g_signal_connect ((gpointer) button61, "clicked",
+                    G_CALLBACK (OnDebug_ClearBPs),
+                    NULL);
+  g_signal_connect ((gpointer) button39, "clicked",
+                    G_CALLBACK (OnDebug_DumpCode),
+                    NULL);
+  g_signal_connect ((gpointer) button40, "clicked",
+                    G_CALLBACK (OnDebug_RawDump),
+                    NULL);
+  g_signal_connect ((gpointer) button41, "clicked",
+                    G_CALLBACK (OnDebug_Close),
+                    NULL);
+  g_signal_connect ((gpointer) button68, "clicked",
+                    G_CALLBACK (OnDebug_memWrite32),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (DebugWnd, DebugWnd, "DebugWnd");
+  GLADE_HOOKUP_OBJECT (DebugWnd, vbox16, "vbox16");
+  GLADE_HOOKUP_OBJECT (DebugWnd, hbox16, "hbox16");
+  GLADE_HOOKUP_OBJECT (DebugWnd, GtkRadioButton_EE, "GtkRadioButton_EE");
+  GLADE_HOOKUP_OBJECT (DebugWnd, GtkRadioButton_IOP, "GtkRadioButton_IOP");
+  GLADE_HOOKUP_OBJECT (DebugWnd, hbox6, "hbox6");
+  GLADE_HOOKUP_OBJECT (DebugWnd, hbox7, "hbox7");
+  GLADE_HOOKUP_OBJECT (DebugWnd, scrolledwindow1, "scrolledwindow1");
+  GLADE_HOOKUP_OBJECT (DebugWnd, viewport1, "viewport1");
+  GLADE_HOOKUP_OBJECT (DebugWnd, GtkList_DisView, "GtkList_DisView");
+  GLADE_HOOKUP_OBJECT (DebugWnd, GtkVScrollbar_VList, "GtkVScrollbar_VList");
+  GLADE_HOOKUP_OBJECT (DebugWnd, vbox22, "vbox22");
+  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox2, "vbuttonbox2");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button52, "button52");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button53, "button53");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button65, "button65");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button64, "button64");
+  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox3, "vbuttonbox3");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button58, "button58");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button59, "button59");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button60, "button60");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button61, "button61");
+  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox1, "vbuttonbox1");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button39, "button39");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button40, "button40");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button41, "button41");
+  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox4, "vbuttonbox4");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button68, "button68");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button69, "button69");
+  GLADE_HOOKUP_OBJECT (DebugWnd, button70, "button70");
+
+  return DebugWnd;
+}
+
+GtkWidget*
+create_CpuDlg (void)
+{
+  GtkWidget *CpuDlg;
+  GtkWidget *vbox8;
+  GtkWidget *hbox20;
+  GtkWidget *alignment1;
+  GtkWidget *vbox27;
+  GtkWidget *alignment3;
+  GtkWidget *frame8;
+  GtkWidget *alignment2;
+  GtkWidget *vbox28;
+  GtkWidget *GtkLabel_CpuVendor;
+  GtkWidget *GtkLabel_Family;
+  GtkWidget *GtkLabel_CpuSpeed;
+  GtkWidget *GtkLabel_Features;
+  GtkWidget *label35;
+  GtkWidget *GtkCheckButton_EERec;
+  GtkWidget *frame6;
+  GtkWidget *vbox26;
+  GtkWidget *GtkCheckButton_VU0rec;
+  GtkWidget *GtkCheckButton_VU1rec;
+  GtkWidget *label32;
+  GtkWidget *GtkCheckButton_MTGS;
+  GtkWidget *GtkCheckButton_CpuDC;
+  GtkWidget *frame9;
+  GtkWidget *alignment4;
+  GtkWidget *vbox29;
+  GtkWidget *GtkRadioButton_LimitNormal;
+  GSList *GtkRadioButton_LimitNormal_group = NULL;
+  GtkWidget *GtkRadioButton_LimitLimit;
+  GtkWidget *GtkRadioButton_LimitFS;
+  GtkWidget *GtkRadioButton_VUSkip;
+  GtkWidget *label41;
+  GtkWidget *hbuttonbox3;
+  GtkWidget *GtkButton_Ok2;
+  GtkWidget *GtkButton_Cancel1;
+
+  CpuDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (CpuDlg), 5);
+  gtk_window_set_title (GTK_WINDOW (CpuDlg), _("Cpu"));
+
+  vbox8 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox8);
+  gtk_container_add (GTK_CONTAINER (CpuDlg), vbox8);
+
+  hbox20 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox20);
+  gtk_box_pack_start (GTK_BOX (vbox8), hbox20, TRUE, TRUE, 0);
+
+  alignment1 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment1);
+  gtk_box_pack_start (GTK_BOX (hbox20), alignment1, TRUE, TRUE, 0);
+
+  vbox27 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox27);
+  gtk_container_add (GTK_CONTAINER (alignment1), vbox27);
+
+  alignment3 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment3);
+  gtk_box_pack_start (GTK_BOX (vbox27), alignment3, TRUE, TRUE, 0);
+
+  frame8 = gtk_frame_new (NULL);
+  gtk_widget_show (frame8);
+  gtk_container_add (GTK_CONTAINER (alignment3), frame8);
+
+  alignment2 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment2);
+  gtk_container_add (GTK_CONTAINER (frame8), alignment2);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment2), 0, 0, 12, 0);
+
+  vbox28 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox28);
+  gtk_container_add (GTK_CONTAINER (alignment2), vbox28);
+
+  GtkLabel_CpuVendor = gtk_label_new (_("CPU vendor"));
+  gtk_widget_show (GtkLabel_CpuVendor);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuVendor, FALSE, FALSE, 0);
+
+  GtkLabel_Family = gtk_label_new (_("Family"));
+  gtk_widget_show (GtkLabel_Family);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Family, FALSE, FALSE, 0);
+
+  GtkLabel_CpuSpeed = gtk_label_new (_("Cpu Speed"));
+  gtk_widget_show (GtkLabel_CpuSpeed);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuSpeed, FALSE, FALSE, 0);
+
+  GtkLabel_Features = gtk_label_new (_("Features"));
+  gtk_widget_show (GtkLabel_Features);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Features, FALSE, FALSE, 0);
+
+  label35 = gtk_label_new ("");
+  gtk_widget_show (label35);
+  gtk_frame_set_label_widget (GTK_FRAME (frame8), label35);
+  gtk_label_set_use_markup (GTK_LABEL (label35), TRUE);
+
+  GtkCheckButton_EERec = gtk_check_button_new_with_mnemonic (_("EERec - EE/IOP recompiler"));
+  gtk_widget_show (GtkCheckButton_EERec);
+  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_EERec, FALSE, FALSE, 0);
+
+  frame6 = gtk_frame_new (NULL);
+  gtk_widget_show (frame6);
+  gtk_box_pack_start (GTK_BOX (vbox8), frame6, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame6), 5);
+
+  vbox26 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox26);
+  gtk_container_add (GTK_CONTAINER (frame6), vbox26);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox26), 5);
+
+  GtkCheckButton_VU0rec = gtk_check_button_new_with_mnemonic (_("VU0rec - enable recompiler for VU0 unit"));
+  gtk_widget_show (GtkCheckButton_VU0rec);
+  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU0rec, FALSE, FALSE, 0);
+
+  GtkCheckButton_VU1rec = gtk_check_button_new_with_mnemonic (_("VU1rec - enable recompiler for VU1 unit"));
+  gtk_widget_show (GtkCheckButton_VU1rec);
+  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU1rec, FALSE, FALSE, 0);
+
+  label32 = gtk_label_new (_("VU Recompilers - All options are set by default"));
+  gtk_widget_show (label32);
+  gtk_frame_set_label_widget (GTK_FRAME (frame6), label32);
+
+  GtkCheckButton_MTGS = gtk_check_button_new_with_mnemonic (_("Multi threaded GS mode (MTGS)\n (faster on dual core/HT CPUs, requires pcsx2 restart)"));
+  gtk_widget_show (GtkCheckButton_MTGS);
+  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_MTGS, FALSE, FALSE, 0);
+
+  GtkCheckButton_CpuDC = gtk_check_button_new_with_mnemonic (_("Dual Core Mode (DC) - Much faster, but only valid with MTGS"));
+  gtk_widget_show (GtkCheckButton_CpuDC);
+  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_CpuDC, FALSE, FALSE, 0);
+
+  frame9 = gtk_frame_new (NULL);
+  gtk_widget_show (frame9);
+  gtk_box_pack_start (GTK_BOX (vbox8), frame9, TRUE, TRUE, 0);
+
+  alignment4 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment4);
+  gtk_container_add (GTK_CONTAINER (frame9), alignment4);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment4), 0, 0, 12, 0);
+
+  vbox29 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox29);
+  gtk_container_add (GTK_CONTAINER (alignment4), vbox29);
+
+  GtkRadioButton_LimitNormal = gtk_radio_button_new_with_mnemonic (NULL, _("Normal - All frames are rendered as fast as possible"));
+  gtk_widget_show (GtkRadioButton_LimitNormal);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitNormal, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal));
+
+  GtkRadioButton_LimitLimit = gtk_radio_button_new_with_mnemonic (NULL, _("Limit - Force frames to normal speeds if too fast"));
+  gtk_widget_show (GtkRadioButton_LimitLimit);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitLimit, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit));
+
+  GtkRadioButton_LimitFS = gtk_radio_button_new_with_mnemonic (NULL, _("Frame Skip - In order to achieve normal speeds, \n                   some frames are skipped (faster).\n                   Fps displayed counts skipped frames too"));
+  gtk_widget_show (GtkRadioButton_LimitFS);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitFS, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS));
+
+  GtkRadioButton_VUSkip = gtk_radio_button_new_with_mnemonic (NULL, _("VU Skip - Same as Frame Skip, but tried to skip more. \n               Artifacts might be present, but will be faster"));
+  gtk_widget_show (GtkRadioButton_VUSkip);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_VUSkip, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip));
+
+  label41 = gtk_label_new (_("Frame Limiting"));
+  gtk_widget_show (label41);
+  gtk_frame_set_label_widget (GTK_FRAME (frame9), label41);
+  gtk_label_set_use_markup (GTK_LABEL (label41), TRUE);
+
+  hbuttonbox3 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox3);
+  gtk_box_pack_start (GTK_BOX (vbox8), hbuttonbox3, TRUE, TRUE, 0);
+  gtk_box_set_spacing (GTK_BOX (hbuttonbox3), 30);
+
+  GtkButton_Ok2 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (GtkButton_Ok2);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_Ok2);
+  GTK_WIDGET_SET_FLAGS (GtkButton_Ok2, GTK_CAN_DEFAULT);
+
+  GtkButton_Cancel1 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (GtkButton_Cancel1);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_Cancel1);
+  GTK_WIDGET_SET_FLAGS (GtkButton_Cancel1, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) GtkButton_Ok2, "clicked",
+                    G_CALLBACK (OnCpu_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_Cancel1, "clicked",
+                    G_CALLBACK (OnCpu_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (CpuDlg, CpuDlg, "CpuDlg");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox8, "vbox8");
+  GLADE_HOOKUP_OBJECT (CpuDlg, hbox20, "hbox20");
+  GLADE_HOOKUP_OBJECT (CpuDlg, alignment1, "alignment1");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox27, "vbox27");
+  GLADE_HOOKUP_OBJECT (CpuDlg, alignment3, "alignment3");
+  GLADE_HOOKUP_OBJECT (CpuDlg, frame8, "frame8");
+  GLADE_HOOKUP_OBJECT (CpuDlg, alignment2, "alignment2");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox28, "vbox28");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuVendor, "GtkLabel_CpuVendor");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Family, "GtkLabel_Family");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuSpeed, "GtkLabel_CpuSpeed");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Features, "GtkLabel_Features");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label35, "label35");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_EERec, "GtkCheckButton_EERec");
+  GLADE_HOOKUP_OBJECT (CpuDlg, frame6, "frame6");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox26, "vbox26");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU0rec, "GtkCheckButton_VU0rec");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU1rec, "GtkCheckButton_VU1rec");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label32, "label32");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_MTGS, "GtkCheckButton_MTGS");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_CpuDC, "GtkCheckButton_CpuDC");
+  GLADE_HOOKUP_OBJECT (CpuDlg, frame9, "frame9");
+  GLADE_HOOKUP_OBJECT (CpuDlg, alignment4, "alignment4");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox29, "vbox29");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitNormal, "GtkRadioButton_LimitNormal");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitLimit, "GtkRadioButton_LimitLimit");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitFS, "GtkRadioButton_LimitFS");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_VUSkip, "GtkRadioButton_VUSkip");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label41, "label41");
+  GLADE_HOOKUP_OBJECT (CpuDlg, hbuttonbox3, "hbuttonbox3");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkButton_Ok2, "GtkButton_Ok2");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkButton_Cancel1, "GtkButton_Cancel1");
+
+  return CpuDlg;
+}
+
+GtkWidget*
+create_ConfDlg (void)
+{
+  GtkWidget *ConfDlg;
+  GtkWidget *vbox12;
+  GtkWidget *table2;
+  GtkWidget *GtkLabel_Bios;
+  GtkWidget *label30;
+  GtkWidget *hbuttonbox24;
+  GtkWidget *GtkButton_FWconfigure;
+  GtkWidget *GtkButton_FWtest;
+  GtkWidget *GtkButton_FireWireabout;
+  GtkWidget *hbuttonbox23;
+  GtkWidget *GtkButton_USBconfigure;
+  GtkWidget *GtkButton_USBtest;
+  GtkWidget *GtkButton_USBabout;
+  GtkWidget *label29;
+  GtkWidget *hbuttonbox13;
+  GtkWidget *GtkButton_CDVDconfigure;
+  GtkWidget *GtkButton_CDVDtest;
+  GtkWidget *GtkButton_CDVDabout;
+  GtkWidget *GtkLabel_Cdvdrom;
+  GtkWidget *label23;
+  GtkWidget *hbuttonbox21;
+  GtkWidget *GtkButton_DEV9configure;
+  GtkWidget *GtkButton_DEV9test;
+  GtkWidget *GtkButton_DEV9about;
+  GtkWidget *hbuttonbox12;
+  GtkWidget *GtkButton_SPU2configure;
+  GtkWidget *GtkButton_SPU2test;
+  GtkWidget *GtkButton_SPU2about;
+  GtkWidget *GtkLabel_Sound;
+  GtkWidget *GtkLabel_SecondController;
+  GtkWidget *GtkLabel_FirstController;
+  GtkWidget *GtkLabel_Graphics;
+  GtkWidget *hbuttonbox8;
+  GtkWidget *GtkButton_GSconfigure;
+  GtkWidget *GtkButton_GStest;
+  GtkWidget *GtkButton_GSabout;
+  GtkWidget *hbuttonbox7;
+  GtkWidget *GtkButton_PAD1configure;
+  GtkWidget *GtkButton_PAD1test;
+  GtkWidget *GtkButton_PAD1about;
+  GtkWidget *hbuttonbox6;
+  GtkWidget *GtkButton_PAD2configure;
+  GtkWidget *GtkButton_PAD2test;
+  GtkWidget *GtkButton_PAD2about;
+  GtkWidget *GtkCombo_FW;
+  GtkWidget *GtkCombo_Usb;
+  GtkWidget *GtkCombo_Cdvd;
+  GtkWidget *GtkCombo_Dev9;
+  GtkWidget *GtkCombo_Pad2;
+  GtkWidget *GtkCombo_Pad1;
+  GtkWidget *GtkCombo_Spu2;
+  GtkWidget *GtkCombo_Gs;
+  GtkWidget *GtkCombo_Bios;
+  GtkWidget *hbox5;
+  GtkWidget *hbuttonbox11;
+  GtkWidget *GtkButton_SelectPluginsDir;
+  GtkWidget *GtkButton_SelectBiosDir;
+  GtkWidget *hbuttonbox10;
+  GtkWidget *GtkButton_Ok1;
+  GtkWidget *GtkButton_Cancel;
+
+  ConfDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (ConfDlg), 10);
+  gtk_window_set_title (GTK_WINDOW (ConfDlg), _("Conf"));
+  gtk_window_set_resizable (GTK_WINDOW (ConfDlg), FALSE);
+
+  vbox12 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox12);
+  gtk_container_add (GTK_CONTAINER (ConfDlg), vbox12);
+
+  table2 = gtk_table_new (14, 2, FALSE);
+  gtk_widget_show (table2);
+  gtk_box_pack_start (GTK_BOX (vbox12), table2, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (table2), 2);
+  gtk_table_set_col_spacings (GTK_TABLE (table2), 15);
+
+  GtkLabel_Bios = gtk_label_new (_("Bios"));
+  gtk_widget_show (GtkLabel_Bios);
+  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Bios, 1, 2, 12, 13,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_Bios), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Bios), 0, 0.5);
+
+  label30 = gtk_label_new (_("FireWire"));
+  gtk_widget_show (label30);
+  gtk_table_attach (GTK_TABLE (table2), label30, 1, 2, 9, 10,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label30), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label30), 0, 0.5);
+
+  hbuttonbox24 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox24);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox24, 1, 2, 11, 12,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  GtkButton_FWconfigure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_FWconfigure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox24), GtkButton_FWconfigure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_FWconfigure, GTK_CAN_DEFAULT);
+
+  GtkButton_FWtest = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_FWtest);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox24), GtkButton_FWtest);
+  GTK_WIDGET_SET_FLAGS (GtkButton_FWtest, GTK_CAN_DEFAULT);
+
+  GtkButton_FireWireabout = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_FireWireabout);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox24), GtkButton_FireWireabout);
+  GTK_WIDGET_SET_FLAGS (GtkButton_FireWireabout, GTK_CAN_DEFAULT);
+
+  hbuttonbox23 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox23);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox23, 0, 1, 11, 12,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkButton_USBconfigure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_USBconfigure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox23), GtkButton_USBconfigure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_USBconfigure, GTK_CAN_DEFAULT);
+
+  GtkButton_USBtest = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_USBtest);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox23), GtkButton_USBtest);
+  GTK_WIDGET_SET_FLAGS (GtkButton_USBtest, GTK_CAN_DEFAULT);
+
+  GtkButton_USBabout = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_USBabout);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox23), GtkButton_USBabout);
+  GTK_WIDGET_SET_FLAGS (GtkButton_USBabout, GTK_CAN_DEFAULT);
+
+  label29 = gtk_label_new (_("Usb"));
+  gtk_widget_show (label29);
+  gtk_table_attach (GTK_TABLE (table2), label29, 0, 1, 9, 10,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label29), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label29), 0, 0.5);
+
+  hbuttonbox13 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox13);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox13, 1, 2, 8, 9,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  GtkButton_CDVDconfigure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_CDVDconfigure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox13), GtkButton_CDVDconfigure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_CDVDconfigure, GTK_CAN_DEFAULT);
+
+  GtkButton_CDVDtest = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_CDVDtest);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox13), GtkButton_CDVDtest);
+  GTK_WIDGET_SET_FLAGS (GtkButton_CDVDtest, GTK_CAN_DEFAULT);
+
+  GtkButton_CDVDabout = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_CDVDabout);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox13), GtkButton_CDVDabout);
+  GTK_WIDGET_SET_FLAGS (GtkButton_CDVDabout, GTK_CAN_DEFAULT);
+
+  GtkLabel_Cdvdrom = gtk_label_new (_("Cdvdrom"));
+  gtk_widget_show (GtkLabel_Cdvdrom);
+  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Cdvdrom, 1, 2, 6, 7,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_Cdvdrom), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Cdvdrom), 0, 0.5);
+
+  label23 = gtk_label_new (_("Dev9"));
+  gtk_widget_show (label23);
+  gtk_table_attach (GTK_TABLE (table2), label23, 0, 1, 6, 7,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label23), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label23), 0, 0.5);
+
+  hbuttonbox21 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox21);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox21, 0, 1, 8, 9,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkButton_DEV9configure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_DEV9configure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox21), GtkButton_DEV9configure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_DEV9configure, GTK_CAN_DEFAULT);
+
+  GtkButton_DEV9test = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_DEV9test);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox21), GtkButton_DEV9test);
+  GTK_WIDGET_SET_FLAGS (GtkButton_DEV9test, GTK_CAN_DEFAULT);
+
+  GtkButton_DEV9about = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_DEV9about);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox21), GtkButton_DEV9about);
+  GTK_WIDGET_SET_FLAGS (GtkButton_DEV9about, GTK_CAN_DEFAULT);
+
+  hbuttonbox12 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox12);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox12, 1, 2, 2, 3,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  GtkButton_SPU2configure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_SPU2configure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox12), GtkButton_SPU2configure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_SPU2configure, GTK_CAN_DEFAULT);
+
+  GtkButton_SPU2test = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_SPU2test);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox12), GtkButton_SPU2test);
+  GTK_WIDGET_SET_FLAGS (GtkButton_SPU2test, GTK_CAN_DEFAULT);
+
+  GtkButton_SPU2about = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_SPU2about);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox12), GtkButton_SPU2about);
+  GTK_WIDGET_SET_FLAGS (GtkButton_SPU2about, GTK_CAN_DEFAULT);
+
+  GtkLabel_Sound = gtk_label_new (_("Sound"));
+  gtk_widget_show (GtkLabel_Sound);
+  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Sound, 1, 2, 0, 1,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_Sound), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Sound), 0, 0.5);
+
+  GtkLabel_SecondController = gtk_label_new (_("Second Controller"));
+  gtk_widget_show (GtkLabel_SecondController);
+  gtk_table_attach (GTK_TABLE (table2), GtkLabel_SecondController, 1, 2, 3, 4,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_SecondController), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (GtkLabel_SecondController), 0, 0.5);
+
+  GtkLabel_FirstController = gtk_label_new (_("First Controller"));
+  gtk_widget_show (GtkLabel_FirstController);
+  gtk_table_attach (GTK_TABLE (table2), GtkLabel_FirstController, 0, 1, 3, 4,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_FirstController), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (GtkLabel_FirstController), 0, 0.5);
+
+  GtkLabel_Graphics = gtk_label_new (_("Graphics"));
+  gtk_widget_show (GtkLabel_Graphics);
+  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Graphics, 0, 1, 0, 1,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkLabel_Graphics), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Graphics), 0, 0.5);
+
+  hbuttonbox8 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox8);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox8, 0, 1, 2, 3,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkButton_GSconfigure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_GSconfigure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox8), GtkButton_GSconfigure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_GSconfigure, GTK_CAN_DEFAULT);
+
+  GtkButton_GStest = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_GStest);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox8), GtkButton_GStest);
+  GTK_WIDGET_SET_FLAGS (GtkButton_GStest, GTK_CAN_DEFAULT);
+
+  GtkButton_GSabout = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_GSabout);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox8), GtkButton_GSabout);
+  GTK_WIDGET_SET_FLAGS (GtkButton_GSabout, GTK_CAN_DEFAULT);
+
+  hbuttonbox7 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox7);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox7, 0, 1, 5, 6,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  GtkButton_PAD1configure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_PAD1configure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox7), GtkButton_PAD1configure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_PAD1configure, GTK_CAN_DEFAULT);
+
+  GtkButton_PAD1test = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_PAD1test);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox7), GtkButton_PAD1test);
+  GTK_WIDGET_SET_FLAGS (GtkButton_PAD1test, GTK_CAN_DEFAULT);
+
+  GtkButton_PAD1about = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_PAD1about);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox7), GtkButton_PAD1about);
+  GTK_WIDGET_SET_FLAGS (GtkButton_PAD1about, GTK_CAN_DEFAULT);
+
+  hbuttonbox6 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox6);
+  gtk_table_attach (GTK_TABLE (table2), hbuttonbox6, 1, 2, 5, 6,
+                    (GtkAttachOptions) (0),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkButton_PAD2configure = gtk_button_new_with_mnemonic (_("Configure"));
+  gtk_widget_show (GtkButton_PAD2configure);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox6), GtkButton_PAD2configure);
+  GTK_WIDGET_SET_FLAGS (GtkButton_PAD2configure, GTK_CAN_DEFAULT);
+
+  GtkButton_PAD2test = gtk_button_new_with_mnemonic (_("Test"));
+  gtk_widget_show (GtkButton_PAD2test);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox6), GtkButton_PAD2test);
+  GTK_WIDGET_SET_FLAGS (GtkButton_PAD2test, GTK_CAN_DEFAULT);
+
+  GtkButton_PAD2about = gtk_button_new_with_mnemonic (_("About"));
+  gtk_widget_show (GtkButton_PAD2about);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox6), GtkButton_PAD2about);
+  GTK_WIDGET_SET_FLAGS (GtkButton_PAD2about, GTK_CAN_DEFAULT);
+
+  GtkCombo_FW = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_FW);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_FW, 1, 2, 10, 11,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Usb = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Usb);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Usb, 0, 1, 10, 11,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Cdvd = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Cdvd);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Cdvd, 1, 2, 7, 8,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Dev9 = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Dev9);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Dev9, 0, 1, 7, 8,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Pad2 = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Pad2);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Pad2, 1, 2, 4, 5,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Pad1 = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Pad1);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Pad1, 0, 1, 4, 5,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Spu2 = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Spu2);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Spu2, 1, 2, 1, 2,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Gs = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Gs);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Gs, 0, 1, 1, 2,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  GtkCombo_Bios = gtk_combo_box_new_text ();
+  gtk_widget_show (GtkCombo_Bios);
+  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Bios, 1, 2, 13, 14,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
+
+  hbox5 = gtk_hbox_new (FALSE, 14);
+  gtk_widget_show (hbox5);
+  gtk_box_pack_start (GTK_BOX (vbox12), hbox5, TRUE, TRUE, 0);
+
+  hbuttonbox11 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox11);
+  gtk_box_pack_start (GTK_BOX (hbox5), hbuttonbox11, FALSE, TRUE, 0);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox11), GTK_BUTTONBOX_START);
+
+  GtkButton_SelectPluginsDir = gtk_button_new_with_mnemonic (_("Select Plugins Dir"));
+  gtk_widget_show (GtkButton_SelectPluginsDir);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox11), GtkButton_SelectPluginsDir);
+  GTK_WIDGET_SET_FLAGS (GtkButton_SelectPluginsDir, GTK_CAN_DEFAULT);
+
+  GtkButton_SelectBiosDir = gtk_button_new_with_mnemonic (_("Select Bios Dir"));
+  gtk_widget_show (GtkButton_SelectBiosDir);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox11), GtkButton_SelectBiosDir);
+  GTK_WIDGET_SET_FLAGS (GtkButton_SelectBiosDir, GTK_CAN_DEFAULT);
+
+  hbuttonbox10 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox10);
+  gtk_box_pack_start (GTK_BOX (hbox5), hbuttonbox10, TRUE, TRUE, 0);
+
+  GtkButton_Ok1 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (GtkButton_Ok1);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox10), GtkButton_Ok1);
+  GTK_WIDGET_SET_FLAGS (GtkButton_Ok1, GTK_CAN_DEFAULT);
+
+  GtkButton_Cancel = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (GtkButton_Cancel);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox10), GtkButton_Cancel);
+  GTK_WIDGET_SET_FLAGS (GtkButton_Cancel, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) GtkButton_FWconfigure, "clicked",
+                    G_CALLBACK (OnConfConf_FWConf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_FWtest, "clicked",
+                    G_CALLBACK (OnConfConf_FWTest),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_FireWireabout, "clicked",
+                    G_CALLBACK (OnConfConf_FWAbout),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_USBconfigure, "clicked",
+                    G_CALLBACK (OnConfConf_UsbConf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_USBtest, "clicked",
+                    G_CALLBACK (OnConfConf_UsbTest),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_USBabout, "clicked",
+                    G_CALLBACK (OnConfConf_UsbAbout),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_CDVDconfigure, "clicked",
+                    G_CALLBACK (OnConfConf_CdvdConf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_CDVDtest, "clicked",
+                    G_CALLBACK (OnConfConf_CdvdTest),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_CDVDabout, "clicked",
+                    G_CALLBACK (OnConfConf_CdvdAbout),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_DEV9configure, "clicked",
+                    G_CALLBACK (OnConfConf_Dev9Conf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_DEV9test, "clicked",
+                    G_CALLBACK (OnConfConf_Dev9Test),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_DEV9about, "clicked",
+                    G_CALLBACK (OnConfConf_Dev9About),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_SPU2configure, "clicked",
+                    G_CALLBACK (OnConfConf_Spu2Conf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_SPU2test, "clicked",
+                    G_CALLBACK (OnConfConf_Spu2Test),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_SPU2about, "clicked",
+                    G_CALLBACK (OnConfConf_Spu2About),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_GSconfigure, "clicked",
+                    G_CALLBACK (OnConfConf_GsConf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_GStest, "clicked",
+                    G_CALLBACK (OnConfConf_GsTest),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_GSabout, "clicked",
+                    G_CALLBACK (OnConfConf_GsAbout),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_PAD1configure, "clicked",
+                    G_CALLBACK (OnConfConf_Pad1Conf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_PAD1test, "clicked",
+                    G_CALLBACK (OnConfConf_Pad1Test),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_PAD1about, "clicked",
+                    G_CALLBACK (OnConfConf_Pad1About),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_PAD2configure, "clicked",
+                    G_CALLBACK (OnConfConf_Pad2Conf),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_PAD2test, "clicked",
+                    G_CALLBACK (OnConfConf_Pad2Test),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_PAD2about, "clicked",
+                    G_CALLBACK (OnConfConf_Pad2About),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_SelectPluginsDir, "clicked",
+                    G_CALLBACK (OnConfConf_PluginsPath),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_SelectBiosDir, "clicked",
+                    G_CALLBACK (OnConfConf_BiosPath),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_Ok1, "clicked",
+                    G_CALLBACK (OnConfConf_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_Cancel, "clicked",
+                    G_CALLBACK (OnConfConf_Cancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (ConfDlg, ConfDlg, "ConfDlg");
+  GLADE_HOOKUP_OBJECT (ConfDlg, vbox12, "vbox12");
+  GLADE_HOOKUP_OBJECT (ConfDlg, table2, "table2");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Bios, "GtkLabel_Bios");
+  GLADE_HOOKUP_OBJECT (ConfDlg, label30, "label30");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox24, "hbuttonbox24");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_FWconfigure, "GtkButton_FWconfigure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_FWtest, "GtkButton_FWtest");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_FireWireabout, "GtkButton_FireWireabout");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox23, "hbuttonbox23");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_USBconfigure, "GtkButton_USBconfigure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_USBtest, "GtkButton_USBtest");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_USBabout, "GtkButton_USBabout");
+  GLADE_HOOKUP_OBJECT (ConfDlg, label29, "label29");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox13, "hbuttonbox13");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_CDVDconfigure, "GtkButton_CDVDconfigure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_CDVDtest, "GtkButton_CDVDtest");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_CDVDabout, "GtkButton_CDVDabout");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Cdvdrom, "GtkLabel_Cdvdrom");
+  GLADE_HOOKUP_OBJECT (ConfDlg, label23, "label23");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox21, "hbuttonbox21");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_DEV9configure, "GtkButton_DEV9configure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_DEV9test, "GtkButton_DEV9test");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_DEV9about, "GtkButton_DEV9about");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox12, "hbuttonbox12");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SPU2configure, "GtkButton_SPU2configure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SPU2test, "GtkButton_SPU2test");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SPU2about, "GtkButton_SPU2about");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Sound, "GtkLabel_Sound");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_SecondController, "GtkLabel_SecondController");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_FirstController, "GtkLabel_FirstController");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Graphics, "GtkLabel_Graphics");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox8, "hbuttonbox8");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_GSconfigure, "GtkButton_GSconfigure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_GStest, "GtkButton_GStest");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_GSabout, "GtkButton_GSabout");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox7, "hbuttonbox7");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD1configure, "GtkButton_PAD1configure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD1test, "GtkButton_PAD1test");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD1about, "GtkButton_PAD1about");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox6, "hbuttonbox6");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD2configure, "GtkButton_PAD2configure");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD2test, "GtkButton_PAD2test");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD2about, "GtkButton_PAD2about");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_FW, "GtkCombo_FW");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Usb, "GtkCombo_Usb");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Cdvd, "GtkCombo_Cdvd");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Dev9, "GtkCombo_Dev9");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Pad2, "GtkCombo_Pad2");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Pad1, "GtkCombo_Pad1");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Spu2, "GtkCombo_Spu2");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Gs, "GtkCombo_Gs");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Bios, "GtkCombo_Bios");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbox5, "hbox5");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox11, "hbuttonbox11");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SelectPluginsDir, "GtkButton_SelectPluginsDir");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SelectBiosDir, "GtkButton_SelectBiosDir");
+  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox10, "hbuttonbox10");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_Ok1, "GtkButton_Ok1");
+  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_Cancel, "GtkButton_Cancel");
+
+  return ConfDlg;
+}
+
+GtkWidget*
+create_AboutDlg (void)
+{
+  GtkWidget *AboutDlg;
+  GtkWidget *vbox2;
+  GtkWidget *hbox1;
+  GtkWidget *vbox4;
+  GtkWidget *GtkAbout_LabelVersion;
+  GtkWidget *frame1;
+  GtkWidget *vbox6;
+  GtkWidget *GtkAbout_LabelAuthors;
+  GtkWidget *pixmap1;
+  GtkWidget *frame2;
+  GtkWidget *vbox5;
+  GtkWidget *GtkAbout_LabelGreets;
+  GtkWidget *hbuttonbox1;
+  GtkWidget *GtkButton_Ok;
+
+  AboutDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width (GTK_CONTAINER (AboutDlg), 10);
+  gtk_window_set_title (GTK_WINDOW (AboutDlg), _("Pcsx About"));
+
+  vbox2 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox2);
+  gtk_container_add (GTK_CONTAINER (AboutDlg), vbox2);
+
+  hbox1 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox1);
+  gtk_box_pack_start (GTK_BOX (vbox2), hbox1, TRUE, TRUE, 0);
+
+  vbox4 = gtk_vbox_new (TRUE, 0);
+  gtk_widget_show (vbox4);
+  gtk_box_pack_start (GTK_BOX (hbox1), vbox4, TRUE, TRUE, 0);
+
+  GtkAbout_LabelVersion = gtk_label_new (_("PCSX2\n\nVersion x.x"));
+  gtk_widget_show (GtkAbout_LabelVersion);
+  gtk_box_pack_start (GTK_BOX (vbox4), GtkAbout_LabelVersion, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelVersion), GTK_JUSTIFY_CENTER);
+
+  frame1 = gtk_frame_new (NULL);
+  gtk_widget_show (frame1);
+  gtk_box_pack_start (GTK_BOX (vbox4), frame1, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame1), 5);
+
+  vbox6 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox6);
+  gtk_container_add (GTK_CONTAINER (frame1), vbox6);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox6), 5);
+
+  GtkAbout_LabelAuthors = gtk_label_new (_("written by..."));
+  gtk_widget_show (GtkAbout_LabelAuthors);
+  gtk_box_pack_start (GTK_BOX (vbox6), GtkAbout_LabelAuthors, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelAuthors), GTK_JUSTIFY_CENTER);
+
+  pixmap1 = create_pixmap (AboutDlg, "pcsxAbout.xpm");
+  gtk_widget_show (pixmap1);
+  gtk_box_pack_start (GTK_BOX (hbox1), pixmap1, TRUE, TRUE, 0);
+
+  frame2 = gtk_frame_new (NULL);
+  gtk_widget_show (frame2);
+  gtk_box_pack_start (GTK_BOX (vbox2), frame2, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame2), 5);
+
+  vbox5 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox5);
+  gtk_container_add (GTK_CONTAINER (frame2), vbox5);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox5), 5);
+
+  GtkAbout_LabelGreets = gtk_label_new (_("greets to..."));
+  gtk_widget_show (GtkAbout_LabelGreets);
+  gtk_box_pack_start (GTK_BOX (vbox5), GtkAbout_LabelGreets, TRUE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelGreets), GTK_JUSTIFY_CENTER);
+
+  hbuttonbox1 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox1);
+  gtk_box_pack_start (GTK_BOX (vbox2), hbuttonbox1, FALSE, TRUE, 0);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox1), GTK_BUTTONBOX_EDGE);
+
+  GtkButton_Ok = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (GtkButton_Ok);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox1), GtkButton_Ok);
+  GTK_WIDGET_SET_FLAGS (GtkButton_Ok, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) GtkButton_Ok, "clicked",
+                    G_CALLBACK (OnHelpAbout_Ok),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (AboutDlg, AboutDlg, "AboutDlg");
+  GLADE_HOOKUP_OBJECT (AboutDlg, vbox2, "vbox2");
+  GLADE_HOOKUP_OBJECT (AboutDlg, hbox1, "hbox1");
+  GLADE_HOOKUP_OBJECT (AboutDlg, vbox4, "vbox4");
+  GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelVersion, "GtkAbout_LabelVersion");
+  GLADE_HOOKUP_OBJECT (AboutDlg, frame1, "frame1");
+  GLADE_HOOKUP_OBJECT (AboutDlg, vbox6, "vbox6");
+  GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelAuthors, "GtkAbout_LabelAuthors");
+  GLADE_HOOKUP_OBJECT (AboutDlg, pixmap1, "pixmap1");
+  GLADE_HOOKUP_OBJECT (AboutDlg, frame2, "frame2");
+  GLADE_HOOKUP_OBJECT (AboutDlg, vbox5, "vbox5");
+  GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelGreets, "GtkAbout_LabelGreets");
+  GLADE_HOOKUP_OBJECT (AboutDlg, hbuttonbox1, "hbuttonbox1");
+  GLADE_HOOKUP_OBJECT (AboutDlg, GtkButton_Ok, "GtkButton_Ok");
+
+  return AboutDlg;
+}
+
+GtkWidget*
 create_MainWindow (void)
 {
   GtkWidget *MainWindow;
@@ -536,2770 +3306,455 @@ create_MainWindow (void)
 }
 
 GtkWidget*
-create_AboutDlg (void)
+create_PatchBrowserWindow (void)
 {
-  GtkWidget *AboutDlg;
-  GtkWidget *vbox2;
-  GtkWidget *hbox1;
-  GtkWidget *vbox4;
-  GtkWidget *GtkAbout_LabelVersion;
-  GtkWidget *frame1;
-  GtkWidget *vbox6;
-  GtkWidget *GtkAbout_LabelAuthors;
-  GtkWidget *pixmap1;
-  GtkWidget *frame2;
-  GtkWidget *vbox5;
-  GtkWidget *GtkAbout_LabelGreets;
-  GtkWidget *hbuttonbox1;
-  GtkWidget *GtkButton_Ok;
+  GtkWidget *PatchBrowserWindow;
+  GtkWidget *hbox24;
+  GtkWidget *scrolledwindow2;
+  GtkWidget *treeview1;
+  GtkWidget *vbox40;
+  GtkWidget *button84;
+  GtkWidget *button85;
+  GtkWidget *button86;
+  GtkWidget *button87;
+  GtkWidget *button88;
+  GtkWidget *button89;
+  GtkWidget *button90;
+  GtkWidget *button91;
 
-  AboutDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (AboutDlg), 10);
-  gtk_window_set_title (GTK_WINDOW (AboutDlg), _("Pcsx About"));
+  PatchBrowserWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (PatchBrowserWindow), _("Patch List"));
+  gtk_window_set_modal (GTK_WINDOW (PatchBrowserWindow), TRUE);
+  gtk_window_set_decorated (GTK_WINDOW (PatchBrowserWindow), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (PatchBrowserWindow), GDK_WINDOW_TYPE_HINT_DIALOG);
 
-  vbox2 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox2);
-  gtk_container_add (GTK_CONTAINER (AboutDlg), vbox2);
+  hbox24 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox24);
+  gtk_container_add (GTK_CONTAINER (PatchBrowserWindow), hbox24);
 
-  hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox1);
-  gtk_box_pack_start (GTK_BOX (vbox2), hbox1, TRUE, TRUE, 0);
+  scrolledwindow2 = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_show (scrolledwindow2);
+  gtk_box_pack_start (GTK_BOX (hbox24), scrolledwindow2, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow2), GTK_SHADOW_IN);
 
-  vbox4 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox4);
-  gtk_box_pack_start (GTK_BOX (hbox1), vbox4, TRUE, TRUE, 0);
+  treeview1 = gtk_tree_view_new ();
+  gtk_widget_show (treeview1);
+  gtk_container_add (GTK_CONTAINER (scrolledwindow2), treeview1);
 
-  GtkAbout_LabelVersion = gtk_label_new (_("PCSX2\n\nVersion x.x"));
-  gtk_widget_show (GtkAbout_LabelVersion);
-  gtk_box_pack_start (GTK_BOX (vbox4), GtkAbout_LabelVersion, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelVersion), GTK_JUSTIFY_CENTER);
+  vbox40 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox40);
+  gtk_box_pack_start (GTK_BOX (hbox24), vbox40, TRUE, TRUE, 0);
 
-  frame1 = gtk_frame_new (NULL);
-  gtk_widget_show (frame1);
-  gtk_box_pack_start (GTK_BOX (vbox4), frame1, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame1), 5);
+  button84 = gtk_button_new_with_mnemonic (_("Enable / Diable"));
+  gtk_widget_show (button84);
+  gtk_box_pack_start (GTK_BOX (vbox40), button84, FALSE, FALSE, 0);
 
-  vbox6 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox6);
-  gtk_container_add (GTK_CONTAINER (frame1), vbox6);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox6), 5);
+  button85 = gtk_button_new_with_mnemonic (_("Add Patch"));
+  gtk_widget_show (button85);
+  gtk_box_pack_start (GTK_BOX (vbox40), button85, FALSE, FALSE, 0);
 
-  GtkAbout_LabelAuthors = gtk_label_new (_("written by..."));
-  gtk_widget_show (GtkAbout_LabelAuthors);
-  gtk_box_pack_start (GTK_BOX (vbox6), GtkAbout_LabelAuthors, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelAuthors), GTK_JUSTIFY_CENTER);
+  button86 = gtk_button_new_with_mnemonic (_("Edit Patch"));
+  gtk_widget_show (button86);
+  gtk_box_pack_start (GTK_BOX (vbox40), button86, FALSE, FALSE, 0);
 
-  pixmap1 = create_pixmap (AboutDlg, "pcsxAbout.xpm");
-  gtk_widget_show (pixmap1);
-  gtk_box_pack_start (GTK_BOX (hbox1), pixmap1, TRUE, TRUE, 0);
+  button87 = gtk_button_new_with_mnemonic (_("Add GS2v3-4"));
+  gtk_widget_show (button87);
+  gtk_box_pack_start (GTK_BOX (vbox40), button87, FALSE, FALSE, 0);
 
-  frame2 = gtk_frame_new (NULL);
-  gtk_widget_show (frame2);
-  gtk_box_pack_start (GTK_BOX (vbox2), frame2, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame2), 5);
+  button88 = gtk_button_new_with_mnemonic (_("Add Raw"));
+  gtk_widget_show (button88);
+  gtk_box_pack_start (GTK_BOX (vbox40), button88, FALSE, FALSE, 0);
 
-  vbox5 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox5);
-  gtk_container_add (GTK_CONTAINER (frame2), vbox5);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox5), 5);
+  button89 = gtk_button_new_with_mnemonic (_("Pnach Writer"));
+  gtk_widget_show (button89);
+  gtk_box_pack_start (GTK_BOX (vbox40), button89, FALSE, FALSE, 0);
 
-  GtkAbout_LabelGreets = gtk_label_new (_("greets to..."));
-  gtk_widget_show (GtkAbout_LabelGreets);
-  gtk_box_pack_start (GTK_BOX (vbox5), GtkAbout_LabelGreets, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelGreets), GTK_JUSTIFY_CENTER);
+  button90 = gtk_button_new_with_mnemonic (_("Skip Mpeg"));
+  gtk_widget_show (button90);
+  gtk_box_pack_start (GTK_BOX (vbox40), button90, FALSE, FALSE, 0);
 
-  hbuttonbox1 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox1);
-  gtk_box_pack_start (GTK_BOX (vbox2), hbuttonbox1, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox1), 30);
-
-  GtkButton_Ok = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (GtkButton_Ok);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox1), GtkButton_Ok);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Ok, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) GtkButton_Ok, "clicked",
-                    G_CALLBACK (OnHelpAbout_Ok),
-                    NULL);
+  button91 = gtk_button_new_from_stock ("gtk-close");
+  gtk_widget_show (button91);
+  gtk_box_pack_start (GTK_BOX (vbox40), button91, FALSE, FALSE, 0);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (AboutDlg, AboutDlg, "AboutDlg");
-  GLADE_HOOKUP_OBJECT (AboutDlg, vbox2, "vbox2");
-  GLADE_HOOKUP_OBJECT (AboutDlg, hbox1, "hbox1");
-  GLADE_HOOKUP_OBJECT (AboutDlg, vbox4, "vbox4");
-  GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelVersion, "GtkAbout_LabelVersion");
-  GLADE_HOOKUP_OBJECT (AboutDlg, frame1, "frame1");
-  GLADE_HOOKUP_OBJECT (AboutDlg, vbox6, "vbox6");
-  GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelAuthors, "GtkAbout_LabelAuthors");
-  GLADE_HOOKUP_OBJECT (AboutDlg, pixmap1, "pixmap1");
-  GLADE_HOOKUP_OBJECT (AboutDlg, frame2, "frame2");
-  GLADE_HOOKUP_OBJECT (AboutDlg, vbox5, "vbox5");
-  GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelGreets, "GtkAbout_LabelGreets");
-  GLADE_HOOKUP_OBJECT (AboutDlg, hbuttonbox1, "hbuttonbox1");
-  GLADE_HOOKUP_OBJECT (AboutDlg, GtkButton_Ok, "GtkButton_Ok");
+  GLADE_HOOKUP_OBJECT_NO_REF (PatchBrowserWindow, PatchBrowserWindow, "PatchBrowserWindow");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, hbox24, "hbox24");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, scrolledwindow2, "scrolledwindow2");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, treeview1, "treeview1");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, vbox40, "vbox40");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button84, "button84");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button85, "button85");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button86, "button86");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button87, "button87");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button88, "button88");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button89, "button89");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button90, "button90");
+  GLADE_HOOKUP_OBJECT (PatchBrowserWindow, button91, "button91");
 
-  return AboutDlg;
+  return PatchBrowserWindow;
 }
 
 GtkWidget*
-create_ConfDlg (void)
+create_PatchFinderWindow (void)
 {
-  GtkWidget *ConfDlg;
-  GtkWidget *vbox12;
-  GtkWidget *table2;
-  GtkWidget *hbuttonbox6;
-  GtkWidget *GtkButton_PAD2configure;
-  GtkWidget *GtkButton_PAD2test;
-  GtkWidget *GtkButton_PAD2about;
-  GtkWidget *hbuttonbox7;
-  GtkWidget *GtkButton_PAD1configure;
-  GtkWidget *GtkButton_PAD1test;
-  GtkWidget *GtkButton_PAD1about;
-  GtkWidget *hbuttonbox8;
-  GtkWidget *GtkButton_GSconfigure;
-  GtkWidget *GtkButton_GStest;
-  GtkWidget *GtkButton_GSabout;
-  GtkWidget *GtkLabel_Graphics;
-  GtkWidget *GtkLabel_FirstController;
-  GtkWidget *GtkLabel_SecondController;
-  GtkWidget *GtkLabel_Sound;
-  GtkWidget *hbuttonbox12;
-  GtkWidget *GtkButton_SPU2configure;
-  GtkWidget *GtkButton_SPU2test;
-  GtkWidget *GtkButton_SPU2about;
-  GtkWidget *hbuttonbox21;
-  GtkWidget *GtkButton_DEV9configure;
-  GtkWidget *GtkButton_DEV9test;
-  GtkWidget *GtkButton_DEV9about;
-  GtkWidget *label23;
-  GtkWidget *GtkLabel_Cdvdrom;
-  GtkWidget *hbuttonbox13;
-  GtkWidget *GtkButton_CDVDconfigure;
-  GtkWidget *GtkButton_CDVDtest;
-  GtkWidget *GtkButton_CDVDabout;
-  GtkWidget *label29;
-  GtkWidget *hbuttonbox23;
-  GtkWidget *GtkButton_USBconfigure;
-  GtkWidget *GtkButton_USBtest;
-  GtkWidget *GtkButton_USBabout;
-  GtkWidget *hbuttonbox24;
-  GtkWidget *GtkButton_FWconfigure;
-  GtkWidget *GtkButton_FWtest;
-  GtkWidget *GtkButton_FireWireabout;
-  GtkWidget *label30;
-  GtkWidget *GtkLabel_Bios;
-  GtkWidget *GtkCombo_Gs;
-  GtkWidget *GtkCombo_Spu2;
-  GtkWidget *GtkCombo_Pad1;
-  GtkWidget *GtkCombo_Pad2;
-  GtkWidget *GtkCombo_Dev9;
-  GtkWidget *GtkCombo_Cdvd;
-  GtkWidget *GtkCombo_Usb;
-  GtkWidget *GtkCombo_FW;
-  GtkWidget *GtkCombo_Bios;
-  GtkWidget *hbox5;
-  GtkWidget *hbuttonbox11;
-  GtkWidget *GtkButton_SelectPluginsDir;
-  GtkWidget *GtkButton_SelectBiosDir;
-  GtkWidget *hbuttonbox10;
-  GtkWidget *GtkButton_Ok;
-  GtkWidget *GtkButton_Cancel;
+  GtkWidget *PatchFinderWindow;
+  GtkWidget *hbox25;
+  GtkWidget *vbox43;
+  GtkWidget *frame19;
+  GtkWidget *alignment14;
+  GtkWidget *vbox44;
+  GtkWidget *radiobutton1;
+  GSList *radiobutton1_group = NULL;
+  GtkWidget *radiobutton2;
+  GtkWidget *label55;
+  GtkWidget *frame20;
+  GtkWidget *alignment15;
+  GtkWidget *table6;
+  GtkWidget *radiobutton3;
+  GSList *radiobutton3_group = NULL;
+  GtkWidget *radiobutton4;
+  GtkWidget *radiobutton5;
+  GtkWidget *radiobutton6;
+  GtkWidget *checkbutton1;
+  GtkWidget *label56;
+  GtkWidget *frame21;
+  GtkWidget *alignment16;
+  GtkWidget *vbox45;
+  GtkWidget *radiobutton7;
+  GSList *radiobutton7_group = NULL;
+  GtkWidget *radiobutton8;
+  GtkWidget *radiobutton9;
+  GtkWidget *radiobutton10;
+  GtkWidget *radiobutton11;
+  GtkWidget *radiobutton12;
+  GtkWidget *label57;
+  GtkWidget *frame22;
+  GtkWidget *alignment17;
+  GtkWidget *vbox46;
+  GtkWidget *radiobutton13;
+  GSList *radiobutton13_group = NULL;
+  GtkWidget *radiobutton14;
+  GtkWidget *entry1;
+  GtkWidget *label58;
+  GtkWidget *vbox41;
+  GtkWidget *vbox42;
+  GtkWidget *hbox26;
+  GtkWidget *label59;
+  GtkWidget *label60;
+  GtkWidget *label61;
+  GtkWidget *scrolledwindow3;
+  GtkWidget *treeview2;
+  GtkWidget *table5;
+  GtkWidget *button92;
+  GtkWidget *button93;
+  GtkWidget *button94;
+  GtkWidget *button95;
 
-  ConfDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (ConfDlg), 10);
-  gtk_window_set_title (GTK_WINDOW (ConfDlg), _("Conf"));
+  PatchFinderWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (PatchFinderWindow), _("Patch Finder"));
+  gtk_window_set_modal (GTK_WINDOW (PatchFinderWindow), TRUE);
+  gtk_window_set_type_hint (GTK_WINDOW (PatchFinderWindow), GDK_WINDOW_TYPE_HINT_DIALOG);
 
-  vbox12 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox12);
-  gtk_container_add (GTK_CONTAINER (ConfDlg), vbox12);
+  hbox25 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox25);
+  gtk_container_add (GTK_CONTAINER (PatchFinderWindow), hbox25);
 
-  table2 = gtk_table_new (14, 2, FALSE);
-  gtk_widget_show (table2);
-  gtk_box_pack_start (GTK_BOX (vbox12), table2, TRUE, TRUE, 0);
-  gtk_table_set_col_spacings (GTK_TABLE (table2), 15);
+  vbox43 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox43);
+  gtk_box_pack_start (GTK_BOX (hbox25), vbox43, TRUE, TRUE, 0);
 
-  hbuttonbox6 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox6);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox6, 1, 2, 5, 6,
+  frame19 = gtk_frame_new (NULL);
+  gtk_widget_show (frame19);
+  gtk_box_pack_start (GTK_BOX (vbox43), frame19, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame19), GTK_SHADOW_NONE);
+
+  alignment14 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment14);
+  gtk_container_add (GTK_CONTAINER (frame19), alignment14);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment14), 0, 0, 12, 0);
+
+  vbox44 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox44);
+  gtk_container_add (GTK_CONTAINER (alignment14), vbox44);
+
+  radiobutton1 = gtk_radio_button_new_with_mnemonic (NULL, _("EE RAM"));
+  gtk_widget_show (radiobutton1);
+  gtk_box_pack_start (GTK_BOX (vbox44), radiobutton1, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton1), radiobutton1_group);
+  radiobutton1_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton1));
+
+  radiobutton2 = gtk_radio_button_new_with_mnemonic (NULL, _("IOP RAM"));
+  gtk_widget_show (radiobutton2);
+  gtk_box_pack_start (GTK_BOX (vbox44), radiobutton2, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton2), radiobutton1_group);
+  radiobutton1_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton2));
+
+  label55 = gtk_label_new (_("<b>Search In</b>"));
+  gtk_widget_show (label55);
+  gtk_frame_set_label_widget (GTK_FRAME (frame19), label55);
+  gtk_label_set_use_markup (GTK_LABEL (label55), TRUE);
+
+  frame20 = gtk_frame_new (NULL);
+  gtk_widget_show (frame20);
+  gtk_box_pack_start (GTK_BOX (vbox43), frame20, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame20), GTK_SHADOW_NONE);
+
+  alignment15 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment15);
+  gtk_container_add (GTK_CONTAINER (frame20), alignment15);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment15), 0, 0, 12, 0);
+
+  table6 = gtk_table_new (3, 2, FALSE);
+  gtk_widget_show (table6);
+  gtk_container_add (GTK_CONTAINER (alignment15), table6);
+
+  radiobutton3 = gtk_radio_button_new_with_mnemonic (NULL, _("8 bits"));
+  gtk_widget_show (radiobutton3);
+  gtk_table_attach (GTK_TABLE (table6), radiobutton3, 0, 1, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-
-  GtkButton_PAD2configure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_PAD2configure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox6), GtkButton_PAD2configure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_PAD2configure, GTK_CAN_DEFAULT);
-
-  GtkButton_PAD2test = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_PAD2test);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox6), GtkButton_PAD2test);
-  GTK_WIDGET_SET_FLAGS (GtkButton_PAD2test, GTK_CAN_DEFAULT);
-
-  GtkButton_PAD2about = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_PAD2about);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox6), GtkButton_PAD2about);
-  GTK_WIDGET_SET_FLAGS (GtkButton_PAD2about, GTK_CAN_DEFAULT);
-
-  hbuttonbox7 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox7);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox7, 0, 1, 5, 6,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkButton_PAD1configure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_PAD1configure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox7), GtkButton_PAD1configure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_PAD1configure, GTK_CAN_DEFAULT);
-
-  GtkButton_PAD1test = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_PAD1test);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox7), GtkButton_PAD1test);
-  GTK_WIDGET_SET_FLAGS (GtkButton_PAD1test, GTK_CAN_DEFAULT);
-
-  GtkButton_PAD1about = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_PAD1about);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox7), GtkButton_PAD1about);
-  GTK_WIDGET_SET_FLAGS (GtkButton_PAD1about, GTK_CAN_DEFAULT);
-
-  hbuttonbox8 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox8);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox8, 0, 1, 2, 3,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-
-  GtkButton_GSconfigure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_GSconfigure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox8), GtkButton_GSconfigure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_GSconfigure, GTK_CAN_DEFAULT);
-
-  GtkButton_GStest = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_GStest);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox8), GtkButton_GStest);
-  GTK_WIDGET_SET_FLAGS (GtkButton_GStest, GTK_CAN_DEFAULT);
-
-  GtkButton_GSabout = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_GSabout);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox8), GtkButton_GSabout);
-  GTK_WIDGET_SET_FLAGS (GtkButton_GSabout, GTK_CAN_DEFAULT);
-
-  GtkLabel_Graphics = gtk_label_new (_("Graphics"));
-  gtk_widget_show (GtkLabel_Graphics);
-  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Graphics, 0, 1, 0, 1,
-                    (GtkAttachOptions) (0),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_Graphics), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Graphics), 0, 0.5);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton3), radiobutton3_group);
+  radiobutton3_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton3));
 
-  GtkLabel_FirstController = gtk_label_new (_("First Controller"));
-  gtk_widget_show (GtkLabel_FirstController);
-  gtk_table_attach (GTK_TABLE (table2), GtkLabel_FirstController, 0, 1, 3, 4,
-                    (GtkAttachOptions) (0),
+  radiobutton4 = gtk_radio_button_new_with_mnemonic (NULL, _("16 bits"));
+  gtk_widget_show (radiobutton4);
+  gtk_table_attach (GTK_TABLE (table6), radiobutton4, 1, 2, 0, 1,
+                    (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_FirstController), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (GtkLabel_FirstController), 0, 0.5);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton4), radiobutton3_group);
+  radiobutton3_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton4));
 
-  GtkLabel_SecondController = gtk_label_new (_("Second Controller"));
-  gtk_widget_show (GtkLabel_SecondController);
-  gtk_table_attach (GTK_TABLE (table2), GtkLabel_SecondController, 1, 2, 3, 4,
-                    (GtkAttachOptions) (0),
+  radiobutton5 = gtk_radio_button_new_with_mnemonic (NULL, _("32 bits"));
+  gtk_widget_show (radiobutton5);
+  gtk_table_attach (GTK_TABLE (table6), radiobutton5, 0, 1, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_SecondController), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (GtkLabel_SecondController), 0, 0.5);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton5), radiobutton3_group);
+  radiobutton3_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton5));
 
-  GtkLabel_Sound = gtk_label_new (_("Sound"));
-  gtk_widget_show (GtkLabel_Sound);
-  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Sound, 1, 2, 0, 1,
-                    (GtkAttachOptions) (0),
+  radiobutton6 = gtk_radio_button_new_with_mnemonic (NULL, _("64 bits"));
+  gtk_widget_show (radiobutton6);
+  gtk_table_attach (GTK_TABLE (table6), radiobutton6, 1, 2, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_Sound), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Sound), 0, 0.5);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton6), radiobutton3_group);
+  radiobutton3_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton6));
 
-  hbuttonbox12 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox12);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox12, 1, 2, 2, 3,
+  checkbutton1 = gtk_check_button_new_with_mnemonic (_("Unsigned"));
+  gtk_widget_show (checkbutton1);
+  gtk_table_attach (GTK_TABLE (table6), checkbutton1, 0, 1, 2, 3,
                     (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkButton_SPU2configure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_SPU2configure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox12), GtkButton_SPU2configure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_SPU2configure, GTK_CAN_DEFAULT);
-
-  GtkButton_SPU2test = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_SPU2test);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox12), GtkButton_SPU2test);
-  GTK_WIDGET_SET_FLAGS (GtkButton_SPU2test, GTK_CAN_DEFAULT);
-
-  GtkButton_SPU2about = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_SPU2about);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox12), GtkButton_SPU2about);
-  GTK_WIDGET_SET_FLAGS (GtkButton_SPU2about, GTK_CAN_DEFAULT);
-
-  hbuttonbox21 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox21);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox21, 0, 1, 8, 9,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-
-  GtkButton_DEV9configure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_DEV9configure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox21), GtkButton_DEV9configure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_DEV9configure, GTK_CAN_DEFAULT);
-
-  GtkButton_DEV9test = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_DEV9test);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox21), GtkButton_DEV9test);
-  GTK_WIDGET_SET_FLAGS (GtkButton_DEV9test, GTK_CAN_DEFAULT);
-
-  GtkButton_DEV9about = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_DEV9about);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox21), GtkButton_DEV9about);
-  GTK_WIDGET_SET_FLAGS (GtkButton_DEV9about, GTK_CAN_DEFAULT);
-
-  label23 = gtk_label_new (_("Dev9"));
-  gtk_widget_show (label23);
-  gtk_table_attach (GTK_TABLE (table2), label23, 0, 1, 6, 7,
-                    (GtkAttachOptions) (0),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (label23), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (label23), 0, 0.5);
 
-  GtkLabel_Cdvdrom = gtk_label_new (_("Cdvdrom"));
-  gtk_widget_show (GtkLabel_Cdvdrom);
-  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Cdvdrom, 1, 2, 6, 7,
-                    (GtkAttachOptions) (0),
+  label56 = gtk_label_new (_("<b>Values of Size</b>"));
+  gtk_widget_show (label56);
+  gtk_frame_set_label_widget (GTK_FRAME (frame20), label56);
+  gtk_label_set_use_markup (GTK_LABEL (label56), TRUE);
+
+  frame21 = gtk_frame_new (NULL);
+  gtk_widget_show (frame21);
+  gtk_box_pack_start (GTK_BOX (vbox43), frame21, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame21), GTK_SHADOW_NONE);
+
+  alignment16 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment16);
+  gtk_container_add (GTK_CONTAINER (frame21), alignment16);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment16), 0, 0, 12, 0);
+
+  vbox45 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox45);
+  gtk_container_add (GTK_CONTAINER (alignment16), vbox45);
+
+  radiobutton7 = gtk_radio_button_new_with_mnemonic (NULL, _("Equal"));
+  gtk_widget_show (radiobutton7);
+  gtk_box_pack_start (GTK_BOX (vbox45), radiobutton7, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton7), radiobutton7_group);
+  radiobutton7_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton7));
+
+  radiobutton8 = gtk_radio_button_new_with_mnemonic (NULL, _("Greater Then"));
+  gtk_widget_show (radiobutton8);
+  gtk_box_pack_start (GTK_BOX (vbox45), radiobutton8, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton8), radiobutton7_group);
+  radiobutton7_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton8));
+
+  radiobutton9 = gtk_radio_button_new_with_mnemonic (NULL, _("Less Then"));
+  gtk_widget_show (radiobutton9);
+  gtk_box_pack_start (GTK_BOX (vbox45), radiobutton9, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton9), radiobutton7_group);
+  radiobutton7_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton9));
+
+  radiobutton10 = gtk_radio_button_new_with_mnemonic (NULL, _("Greater Then or Equal"));
+  gtk_widget_show (radiobutton10);
+  gtk_box_pack_start (GTK_BOX (vbox45), radiobutton10, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton10), radiobutton7_group);
+  radiobutton7_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton10));
+
+  radiobutton11 = gtk_radio_button_new_with_mnemonic (NULL, _("Less Then or Equal"));
+  gtk_widget_show (radiobutton11);
+  gtk_box_pack_start (GTK_BOX (vbox45), radiobutton11, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton11), radiobutton7_group);
+  radiobutton7_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton11));
+
+  radiobutton12 = gtk_radio_button_new_with_mnemonic (NULL, _("Not Equal"));
+  gtk_widget_show (radiobutton12);
+  gtk_box_pack_start (GTK_BOX (vbox45), radiobutton12, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton12), radiobutton7_group);
+  radiobutton7_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton12));
+
+  label57 = gtk_label_new (_("<b>Being</b>"));
+  gtk_widget_show (label57);
+  gtk_frame_set_label_widget (GTK_FRAME (frame21), label57);
+  gtk_label_set_use_markup (GTK_LABEL (label57), TRUE);
+
+  frame22 = gtk_frame_new (NULL);
+  gtk_widget_show (frame22);
+  gtk_box_pack_start (GTK_BOX (vbox43), frame22, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame22), GTK_SHADOW_NONE);
+
+  alignment17 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment17);
+  gtk_container_add (GTK_CONTAINER (frame22), alignment17);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment17), 0, 0, 12, 0);
+
+  vbox46 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox46);
+  gtk_container_add (GTK_CONTAINER (alignment17), vbox46);
+
+  radiobutton13 = gtk_radio_button_new_with_mnemonic (NULL, _("Old Value"));
+  gtk_widget_show (radiobutton13);
+  gtk_box_pack_start (GTK_BOX (vbox46), radiobutton13, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton13), radiobutton13_group);
+  radiobutton13_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton13));
+
+  radiobutton14 = gtk_radio_button_new_with_mnemonic (NULL, _("Specific Value"));
+  gtk_widget_show (radiobutton14);
+  gtk_box_pack_start (GTK_BOX (vbox46), radiobutton14, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radiobutton14), radiobutton13_group);
+  radiobutton13_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radiobutton14));
+
+  entry1 = gtk_entry_new ();
+  gtk_widget_show (entry1);
+  gtk_box_pack_start (GTK_BOX (vbox46), entry1, FALSE, FALSE, 0);
+
+  label58 = gtk_label_new (_("<b>Compared To</b>"));
+  gtk_widget_show (label58);
+  gtk_frame_set_label_widget (GTK_FRAME (frame22), label58);
+  gtk_label_set_use_markup (GTK_LABEL (label58), TRUE);
+
+  vbox41 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox41);
+  gtk_box_pack_start (GTK_BOX (hbox25), vbox41, TRUE, TRUE, 0);
+
+  vbox42 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox42);
+  gtk_box_pack_start (GTK_BOX (vbox41), vbox42, TRUE, TRUE, 0);
+
+  hbox26 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox26);
+  gtk_box_pack_start (GTK_BOX (vbox42), hbox26, FALSE, FALSE, 0);
+
+  label59 = gtk_label_new (_("Results:"));
+  gtk_widget_show (label59);
+  gtk_box_pack_start (GTK_BOX (hbox26), label59, FALSE, FALSE, 0);
+
+  label60 = gtk_label_new (_("%s"));
+  gtk_widget_show (label60);
+  gtk_box_pack_start (GTK_BOX (hbox26), label60, TRUE, TRUE, 0);
+  gtk_label_set_justify (GTK_LABEL (label60), GTK_JUSTIFY_CENTER);
+
+  label61 = gtk_label_new (_("Ready to Search"));
+  gtk_widget_show (label61);
+  gtk_box_pack_start (GTK_BOX (hbox26), label61, TRUE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label61), GTK_JUSTIFY_RIGHT);
+
+  scrolledwindow3 = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_show (scrolledwindow3);
+  gtk_box_pack_start (GTK_BOX (vbox42), scrolledwindow3, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow3), GTK_SHADOW_IN);
+
+  treeview2 = gtk_tree_view_new ();
+  gtk_widget_show (treeview2);
+  gtk_container_add (GTK_CONTAINER (scrolledwindow3), treeview2);
+
+  table5 = gtk_table_new (2, 2, FALSE);
+  gtk_widget_show (table5);
+  gtk_box_pack_start (GTK_BOX (vbox41), table5, FALSE, TRUE, 0);
+
+  button92 = gtk_button_new_from_stock ("gtk-clear");
+  gtk_widget_show (button92);
+  gtk_table_attach (GTK_TABLE (table5), button92, 0, 1, 0, 1,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_Cdvdrom), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Cdvdrom), 0, 0.5);
 
-  hbuttonbox13 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox13);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox13, 1, 2, 8, 9,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkButton_CDVDconfigure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_CDVDconfigure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox13), GtkButton_CDVDconfigure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_CDVDconfigure, GTK_CAN_DEFAULT);
-
-  GtkButton_CDVDtest = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_CDVDtest);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox13), GtkButton_CDVDtest);
-  GTK_WIDGET_SET_FLAGS (GtkButton_CDVDtest, GTK_CAN_DEFAULT);
-
-  GtkButton_CDVDabout = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_CDVDabout);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox13), GtkButton_CDVDabout);
-  GTK_WIDGET_SET_FLAGS (GtkButton_CDVDabout, GTK_CAN_DEFAULT);
-
-  label29 = gtk_label_new (_("Usb"));
-  gtk_widget_show (label29);
-  gtk_table_attach (GTK_TABLE (table2), label29, 0, 1, 9, 10,
-                    (GtkAttachOptions) (0),
+  button93 = gtk_button_new_from_stock ("gtk-find");
+  gtk_widget_show (button93);
+  gtk_table_attach (GTK_TABLE (table5), button93, 1, 2, 0, 1,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (label29), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (label29), 0, 0.5);
 
-  hbuttonbox23 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox23);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox23, 0, 1, 11, 12,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-
-  GtkButton_USBconfigure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_USBconfigure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox23), GtkButton_USBconfigure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_USBconfigure, GTK_CAN_DEFAULT);
-
-  GtkButton_USBtest = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_USBtest);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox23), GtkButton_USBtest);
-  GTK_WIDGET_SET_FLAGS (GtkButton_USBtest, GTK_CAN_DEFAULT);
-
-  GtkButton_USBabout = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_USBabout);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox23), GtkButton_USBabout);
-  GTK_WIDGET_SET_FLAGS (GtkButton_USBabout, GTK_CAN_DEFAULT);
-
-  hbuttonbox24 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox24);
-  gtk_table_attach (GTK_TABLE (table2), hbuttonbox24, 1, 2, 11, 12,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkButton_FWconfigure = gtk_button_new_with_mnemonic (_("Configure"));
-  gtk_widget_show (GtkButton_FWconfigure);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox24), GtkButton_FWconfigure);
-  GTK_WIDGET_SET_FLAGS (GtkButton_FWconfigure, GTK_CAN_DEFAULT);
-
-  GtkButton_FWtest = gtk_button_new_with_mnemonic (_("Test"));
-  gtk_widget_show (GtkButton_FWtest);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox24), GtkButton_FWtest);
-  GTK_WIDGET_SET_FLAGS (GtkButton_FWtest, GTK_CAN_DEFAULT);
-
-  GtkButton_FireWireabout = gtk_button_new_with_mnemonic (_("About"));
-  gtk_widget_show (GtkButton_FireWireabout);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox24), GtkButton_FireWireabout);
-  GTK_WIDGET_SET_FLAGS (GtkButton_FireWireabout, GTK_CAN_DEFAULT);
-
-  label30 = gtk_label_new (_("FireWire"));
-  gtk_widget_show (label30);
-  gtk_table_attach (GTK_TABLE (table2), label30, 1, 2, 9, 10,
-                    (GtkAttachOptions) (0),
+  button94 = gtk_button_new_from_stock ("gtk-add");
+  gtk_widget_show (button94);
+  gtk_table_attach (GTK_TABLE (table5), button94, 0, 1, 1, 2,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (label30), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (label30), 0, 0.5);
 
-  GtkLabel_Bios = gtk_label_new (_("Bios"));
-  gtk_widget_show (GtkLabel_Bios);
-  gtk_table_attach (GTK_TABLE (table2), GtkLabel_Bios, 1, 2, 12, 13,
-                    (GtkAttachOptions) (0),
+  button95 = gtk_button_new_from_stock ("gtk-close");
+  gtk_widget_show (button95);
+  gtk_table_attach (GTK_TABLE (table5), button95, 1, 2, 1, 2,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_Bios), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Bios), 0, 0.5);
-
-  GtkCombo_Gs = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Gs);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Gs, 0, 1, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_Spu2 = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Spu2);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Spu2, 1, 2, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_Pad1 = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Pad1);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Pad1, 0, 1, 4, 5,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_Pad2 = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Pad2);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Pad2, 1, 2, 4, 5,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_Dev9 = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Dev9);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Dev9, 0, 1, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_Cdvd = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Cdvd);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Cdvd, 1, 2, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_Usb = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Usb);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Usb, 0, 1, 10, 11,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_FW = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_FW);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_FW, 1, 2, 10, 11,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  GtkCombo_Bios = gtk_combo_box_new_text ();
-  gtk_widget_show (GtkCombo_Bios);
-  gtk_table_attach (GTK_TABLE (table2), GtkCombo_Bios, 1, 2, 13, 14,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
-
-  hbox5 = gtk_hbox_new (FALSE, 14);
-  gtk_widget_show (hbox5);
-  gtk_box_pack_start (GTK_BOX (vbox12), hbox5, TRUE, TRUE, 0);
-
-  hbuttonbox11 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox11);
-  gtk_box_pack_start (GTK_BOX (hbox5), hbuttonbox11, FALSE, TRUE, 0);
-  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox11), GTK_BUTTONBOX_START);
-
-  GtkButton_SelectPluginsDir = gtk_button_new_with_mnemonic (_("Select Plugins Dir"));
-  gtk_widget_show (GtkButton_SelectPluginsDir);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox11), GtkButton_SelectPluginsDir);
-  GTK_WIDGET_SET_FLAGS (GtkButton_SelectPluginsDir, GTK_CAN_DEFAULT);
-
-  GtkButton_SelectBiosDir = gtk_button_new_with_mnemonic (_("Select Bios Dir"));
-  gtk_widget_show (GtkButton_SelectBiosDir);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox11), GtkButton_SelectBiosDir);
-  GTK_WIDGET_SET_FLAGS (GtkButton_SelectBiosDir, GTK_CAN_DEFAULT);
-
-  hbuttonbox10 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox10);
-  gtk_box_pack_start (GTK_BOX (hbox5), hbuttonbox10, TRUE, TRUE, 0);
-
-  GtkButton_Ok = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (GtkButton_Ok);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox10), GtkButton_Ok);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Ok, GTK_CAN_DEFAULT);
-
-  GtkButton_Cancel = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (GtkButton_Cancel);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox10), GtkButton_Cancel);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Cancel, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) GtkButton_PAD2configure, "clicked",
-                    G_CALLBACK (OnConfConf_Pad2Conf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_PAD2test, "clicked",
-                    G_CALLBACK (OnConfConf_Pad2Test),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_PAD2about, "clicked",
-                    G_CALLBACK (OnConfConf_Pad2About),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_PAD1configure, "clicked",
-                    G_CALLBACK (OnConfConf_Pad1Conf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_PAD1test, "clicked",
-                    G_CALLBACK (OnConfConf_Pad1Test),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_PAD1about, "clicked",
-                    G_CALLBACK (OnConfConf_Pad1About),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_GSconfigure, "clicked",
-                    G_CALLBACK (OnConfConf_GsConf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_GStest, "clicked",
-                    G_CALLBACK (OnConfConf_GsTest),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_GSabout, "clicked",
-                    G_CALLBACK (OnConfConf_GsAbout),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_SPU2configure, "clicked",
-                    G_CALLBACK (OnConfConf_Spu2Conf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_SPU2test, "clicked",
-                    G_CALLBACK (OnConfConf_Spu2Test),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_SPU2about, "clicked",
-                    G_CALLBACK (OnConfConf_Spu2About),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_DEV9configure, "clicked",
-                    G_CALLBACK (OnConfConf_Dev9Conf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_DEV9test, "clicked",
-                    G_CALLBACK (OnConfConf_Dev9Test),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_DEV9about, "clicked",
-                    G_CALLBACK (OnConfConf_Dev9About),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_CDVDconfigure, "clicked",
-                    G_CALLBACK (OnConfConf_CdvdConf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_CDVDtest, "clicked",
-                    G_CALLBACK (OnConfConf_CdvdTest),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_CDVDabout, "clicked",
-                    G_CALLBACK (OnConfConf_CdvdAbout),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_USBconfigure, "clicked",
-                    G_CALLBACK (OnConfConf_UsbConf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_USBtest, "clicked",
-                    G_CALLBACK (OnConfConf_UsbTest),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_USBabout, "clicked",
-                    G_CALLBACK (OnConfConf_UsbAbout),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_FWconfigure, "clicked",
-                    G_CALLBACK (OnConfConf_FWConf),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_FWtest, "clicked",
-                    G_CALLBACK (OnConfConf_FWTest),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_FireWireabout, "clicked",
-                    G_CALLBACK (OnConfConf_FWAbout),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_SelectPluginsDir, "clicked",
-                    G_CALLBACK (OnConfConf_PluginsPath),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_SelectBiosDir, "clicked",
-                    G_CALLBACK (OnConfConf_BiosPath),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_Ok, "clicked",
-                    G_CALLBACK (OnConfConf_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_Cancel, "clicked",
-                    G_CALLBACK (OnConfConf_Cancel),
-                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (ConfDlg, ConfDlg, "ConfDlg");
-  GLADE_HOOKUP_OBJECT (ConfDlg, vbox12, "vbox12");
-  GLADE_HOOKUP_OBJECT (ConfDlg, table2, "table2");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox6, "hbuttonbox6");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD2configure, "GtkButton_PAD2configure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD2test, "GtkButton_PAD2test");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD2about, "GtkButton_PAD2about");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox7, "hbuttonbox7");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD1configure, "GtkButton_PAD1configure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD1test, "GtkButton_PAD1test");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_PAD1about, "GtkButton_PAD1about");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox8, "hbuttonbox8");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_GSconfigure, "GtkButton_GSconfigure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_GStest, "GtkButton_GStest");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_GSabout, "GtkButton_GSabout");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Graphics, "GtkLabel_Graphics");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_FirstController, "GtkLabel_FirstController");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_SecondController, "GtkLabel_SecondController");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Sound, "GtkLabel_Sound");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox12, "hbuttonbox12");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SPU2configure, "GtkButton_SPU2configure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SPU2test, "GtkButton_SPU2test");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SPU2about, "GtkButton_SPU2about");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox21, "hbuttonbox21");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_DEV9configure, "GtkButton_DEV9configure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_DEV9test, "GtkButton_DEV9test");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_DEV9about, "GtkButton_DEV9about");
-  GLADE_HOOKUP_OBJECT (ConfDlg, label23, "label23");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Cdvdrom, "GtkLabel_Cdvdrom");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox13, "hbuttonbox13");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_CDVDconfigure, "GtkButton_CDVDconfigure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_CDVDtest, "GtkButton_CDVDtest");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_CDVDabout, "GtkButton_CDVDabout");
-  GLADE_HOOKUP_OBJECT (ConfDlg, label29, "label29");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox23, "hbuttonbox23");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_USBconfigure, "GtkButton_USBconfigure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_USBtest, "GtkButton_USBtest");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_USBabout, "GtkButton_USBabout");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox24, "hbuttonbox24");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_FWconfigure, "GtkButton_FWconfigure");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_FWtest, "GtkButton_FWtest");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_FireWireabout, "GtkButton_FireWireabout");
-  GLADE_HOOKUP_OBJECT (ConfDlg, label30, "label30");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkLabel_Bios, "GtkLabel_Bios");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Gs, "GtkCombo_Gs");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Spu2, "GtkCombo_Spu2");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Pad1, "GtkCombo_Pad1");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Pad2, "GtkCombo_Pad2");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Dev9, "GtkCombo_Dev9");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Cdvd, "GtkCombo_Cdvd");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Usb, "GtkCombo_Usb");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_FW, "GtkCombo_FW");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkCombo_Bios, "GtkCombo_Bios");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbox5, "hbox5");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox11, "hbuttonbox11");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SelectPluginsDir, "GtkButton_SelectPluginsDir");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_SelectBiosDir, "GtkButton_SelectBiosDir");
-  GLADE_HOOKUP_OBJECT (ConfDlg, hbuttonbox10, "hbuttonbox10");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_Ok, "GtkButton_Ok");
-  GLADE_HOOKUP_OBJECT (ConfDlg, GtkButton_Cancel, "GtkButton_Cancel");
-
-  return ConfDlg;
-}
-
-GtkWidget*
-create_CpuDlg (void)
-{
-  GtkWidget *CpuDlg;
-  GtkWidget *vbox8;
-  GtkWidget *hbox20;
-  GtkWidget *alignment1;
-  GtkWidget *vbox27;
-  GtkWidget *alignment3;
-  GtkWidget *frame8;
-  GtkWidget *alignment2;
-  GtkWidget *vbox28;
-  GtkWidget *GtkLabel_CpuVendor;
-  GtkWidget *GtkLabel_Family;
-  GtkWidget *GtkLabel_CpuSpeed;
-  GtkWidget *GtkLabel_Features;
-  GtkWidget *label35;
-  GtkWidget *GtkCheckButton_EERec;
-  GtkWidget *frame6;
-  GtkWidget *vbox26;
-  GtkWidget *GtkCheckButton_VU0rec;
-  GtkWidget *GtkCheckButton_VU1rec;
-  GtkWidget *label32;
-  GtkWidget *GtkCheckButton_MTGS;
-  GtkWidget *GtkCheckButton_CpuDC;
-  GtkWidget *frame9;
-  GtkWidget *alignment4;
-  GtkWidget *vbox29;
-  GtkWidget *GtkRadioButton_LimitNormal;
-  GSList *GtkRadioButton_LimitNormal_group = NULL;
-  GtkWidget *GtkRadioButton_LimitLimit;
-  GtkWidget *GtkRadioButton_LimitFS;
-  GtkWidget *GtkRadioButton_VUSkip;
-  GtkWidget *label41;
-  GtkWidget *hbuttonbox3;
-  GtkWidget *GtkButton_Ok;
-  GtkWidget *GtkButton_Cancel;
-
-  CpuDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (CpuDlg), 5);
-  gtk_window_set_title (GTK_WINDOW (CpuDlg), _("Cpu"));
-
-  vbox8 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox8);
-  gtk_container_add (GTK_CONTAINER (CpuDlg), vbox8);
-
-  hbox20 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox20);
-  gtk_box_pack_start (GTK_BOX (vbox8), hbox20, TRUE, TRUE, 0);
-
-  alignment1 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment1);
-  gtk_box_pack_start (GTK_BOX (hbox20), alignment1, TRUE, TRUE, 0);
-
-  vbox27 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox27);
-  gtk_container_add (GTK_CONTAINER (alignment1), vbox27);
-
-  alignment3 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment3);
-  gtk_box_pack_start (GTK_BOX (vbox27), alignment3, TRUE, TRUE, 0);
-
-  frame8 = gtk_frame_new (NULL);
-  gtk_widget_show (frame8);
-  gtk_container_add (GTK_CONTAINER (alignment3), frame8);
-
-  alignment2 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment2);
-  gtk_container_add (GTK_CONTAINER (frame8), alignment2);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment2), 0, 0, 12, 0);
-
-  vbox28 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox28);
-  gtk_container_add (GTK_CONTAINER (alignment2), vbox28);
-
-  GtkLabel_CpuVendor = gtk_label_new (_("CPU vendor"));
-  gtk_widget_show (GtkLabel_CpuVendor);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuVendor, FALSE, FALSE, 0);
-
-  GtkLabel_Family = gtk_label_new (_("Family"));
-  gtk_widget_show (GtkLabel_Family);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Family, FALSE, FALSE, 0);
-
-  GtkLabel_CpuSpeed = gtk_label_new (_("Cpu Speed"));
-  gtk_widget_show (GtkLabel_CpuSpeed);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuSpeed, FALSE, FALSE, 0);
-
-  GtkLabel_Features = gtk_label_new (_("Features"));
-  gtk_widget_show (GtkLabel_Features);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Features, FALSE, FALSE, 0);
-
-  label35 = gtk_label_new ("");
-  gtk_widget_show (label35);
-  gtk_frame_set_label_widget (GTK_FRAME (frame8), label35);
-  gtk_label_set_use_markup (GTK_LABEL (label35), TRUE);
-
-  GtkCheckButton_EERec = gtk_check_button_new_with_mnemonic (_("EERec - EE/IOP recompiler"));
-  gtk_widget_show (GtkCheckButton_EERec);
-  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_EERec, FALSE, FALSE, 0);
-
-  frame6 = gtk_frame_new (NULL);
-  gtk_widget_show (frame6);
-  gtk_box_pack_start (GTK_BOX (vbox8), frame6, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame6), 5);
-
-  vbox26 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox26);
-  gtk_container_add (GTK_CONTAINER (frame6), vbox26);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox26), 5);
-
-  GtkCheckButton_VU0rec = gtk_check_button_new_with_mnemonic (_("VU0rec - enable recompiler for VU0 unit"));
-  gtk_widget_show (GtkCheckButton_VU0rec);
-  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU0rec, FALSE, FALSE, 0);
-
-  GtkCheckButton_VU1rec = gtk_check_button_new_with_mnemonic (_("VU1rec - enable recompiler for VU1 unit"));
-  gtk_widget_show (GtkCheckButton_VU1rec);
-  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU1rec, FALSE, FALSE, 0);
-
-  label32 = gtk_label_new (_("VU Recompilers - All options are set by default"));
-  gtk_widget_show (label32);
-  gtk_frame_set_label_widget (GTK_FRAME (frame6), label32);
-
-  GtkCheckButton_MTGS = gtk_check_button_new_with_mnemonic (_("Multi threaded GS mode (MTGS)\n (faster on dual core/HT CPUs, requires pcsx2 restart)"));
-  gtk_widget_show (GtkCheckButton_MTGS);
-  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_MTGS, FALSE, FALSE, 0);
-
-  GtkCheckButton_CpuDC = gtk_check_button_new_with_mnemonic (_("Dual Core Mode (DC) - Much faster, but only valid with MTGS"));
-  gtk_widget_show (GtkCheckButton_CpuDC);
-  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_CpuDC, FALSE, FALSE, 0);
-
-  frame9 = gtk_frame_new (NULL);
-  gtk_widget_show (frame9);
-  gtk_box_pack_start (GTK_BOX (vbox8), frame9, TRUE, TRUE, 0);
-
-  alignment4 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment4);
-  gtk_container_add (GTK_CONTAINER (frame9), alignment4);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment4), 0, 0, 12, 0);
-
-  vbox29 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox29);
-  gtk_container_add (GTK_CONTAINER (alignment4), vbox29);
-
-  GtkRadioButton_LimitNormal = gtk_radio_button_new_with_mnemonic (NULL, _("Normal - All frames are rendered as fast as possible"));
-  gtk_widget_show (GtkRadioButton_LimitNormal);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitNormal, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal));
-
-  GtkRadioButton_LimitLimit = gtk_radio_button_new_with_mnemonic (NULL, _("Limit - Force frames to normal speeds if too fast"));
-  gtk_widget_show (GtkRadioButton_LimitLimit);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitLimit, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit));
-
-  GtkRadioButton_LimitFS = gtk_radio_button_new_with_mnemonic (NULL, _("Frame Skip - In order to achieve normal speeds, \n                   some frames are skipped (faster).\n                   Fps displayed counts skipped frames too"));
-  gtk_widget_show (GtkRadioButton_LimitFS);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitFS, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS));
-
-  GtkRadioButton_VUSkip = gtk_radio_button_new_with_mnemonic (NULL, _("VU Skip - Same as Frame Skip, but tried to skip more. \n               Artifacts might be present, but will be faster"));
-  gtk_widget_show (GtkRadioButton_VUSkip);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_VUSkip, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip));
-
-  label41 = gtk_label_new (_("Frame Limiting"));
-  gtk_widget_show (label41);
-  gtk_frame_set_label_widget (GTK_FRAME (frame9), label41);
-  gtk_label_set_use_markup (GTK_LABEL (label41), TRUE);
-
-  hbuttonbox3 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox3);
-  gtk_box_pack_start (GTK_BOX (vbox8), hbuttonbox3, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox3), 30);
-
-  GtkButton_Ok = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (GtkButton_Ok);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_Ok);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Ok, GTK_CAN_DEFAULT);
-
-  GtkButton_Cancel = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (GtkButton_Cancel);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_Cancel);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Cancel, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) GtkButton_Ok, "clicked",
-                    G_CALLBACK (OnCpu_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_Cancel, "clicked",
-                    G_CALLBACK (OnCpu_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (CpuDlg, CpuDlg, "CpuDlg");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox8, "vbox8");
-  GLADE_HOOKUP_OBJECT (CpuDlg, hbox20, "hbox20");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment1, "alignment1");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox27, "vbox27");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment3, "alignment3");
-  GLADE_HOOKUP_OBJECT (CpuDlg, frame8, "frame8");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment2, "alignment2");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox28, "vbox28");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuVendor, "GtkLabel_CpuVendor");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Family, "GtkLabel_Family");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuSpeed, "GtkLabel_CpuSpeed");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Features, "GtkLabel_Features");
-  GLADE_HOOKUP_OBJECT (CpuDlg, label35, "label35");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_EERec, "GtkCheckButton_EERec");
-  GLADE_HOOKUP_OBJECT (CpuDlg, frame6, "frame6");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox26, "vbox26");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU0rec, "GtkCheckButton_VU0rec");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU1rec, "GtkCheckButton_VU1rec");
-  GLADE_HOOKUP_OBJECT (CpuDlg, label32, "label32");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_MTGS, "GtkCheckButton_MTGS");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_CpuDC, "GtkCheckButton_CpuDC");
-  GLADE_HOOKUP_OBJECT (CpuDlg, frame9, "frame9");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment4, "alignment4");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox29, "vbox29");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitNormal, "GtkRadioButton_LimitNormal");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitLimit, "GtkRadioButton_LimitLimit");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitFS, "GtkRadioButton_LimitFS");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_VUSkip, "GtkRadioButton_VUSkip");
-  GLADE_HOOKUP_OBJECT (CpuDlg, label41, "label41");
-  GLADE_HOOKUP_OBJECT (CpuDlg, hbuttonbox3, "hbuttonbox3");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkButton_Ok, "GtkButton_Ok");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkButton_Cancel, "GtkButton_Cancel");
-
-  return CpuDlg;
-}
-
-GtkWidget*
-create_DebugWnd (void)
-{
-  GtkWidget *DebugWnd;
-  GtkWidget *vbox16;
-  GtkWidget *hbox16;
-  GtkWidget *GtkRadioButton_EE;
-  GSList *GtkRadioButton_EE_group = NULL;
-  GtkWidget *GtkRadioButton_IOP;
-  GtkWidget *hbox6;
-  GtkWidget *hbox7;
-  GtkWidget *scrolledwindow1;
-  GtkWidget *viewport1;
-  GtkWidget *GtkList_DisView;
-  GtkWidget *GtkVScrollbar_VList;
-  GtkWidget *vbox22;
-  GtkWidget *vbuttonbox2;
-  GtkWidget *button52;
-  GtkWidget *button53;
-  GtkWidget *button65;
-  GtkWidget *button64;
-  GtkWidget *vbuttonbox3;
-  GtkWidget *button58;
-  GtkWidget *button59;
-  GtkWidget *button60;
-  GtkWidget *button61;
-  GtkWidget *vbuttonbox1;
-  GtkWidget *button39;
-  GtkWidget *button40;
-  GtkWidget *button41;
-  GtkWidget *vbuttonbox4;
-  GtkWidget *button68;
-  GtkWidget *button69;
-  GtkWidget *button70;
-
-  DebugWnd = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (DebugWnd), 5);
-  gtk_window_set_title (GTK_WINDOW (DebugWnd), _("PCSX2 Debugger"));
-
-  vbox16 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox16);
-  gtk_container_add (GTK_CONTAINER (DebugWnd), vbox16);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox16), 5);
-
-  hbox16 = gtk_hbox_new (FALSE, 5);
-  gtk_widget_show (hbox16);
-  gtk_box_pack_start (GTK_BOX (vbox16), hbox16, FALSE, TRUE, 0);
-
-  GtkRadioButton_EE = gtk_radio_button_new_with_mnemonic (NULL, _("EE Debug Mode"));
-  gtk_widget_show (GtkRadioButton_EE);
-  gtk_box_pack_start (GTK_BOX (hbox16), GtkRadioButton_EE, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_EE), GtkRadioButton_EE_group);
-  GtkRadioButton_EE_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_EE));
-
-  GtkRadioButton_IOP = gtk_radio_button_new_with_mnemonic (NULL, _("IOP Debug Mode"));
-  gtk_widget_show (GtkRadioButton_IOP);
-  gtk_box_pack_start (GTK_BOX (hbox16), GtkRadioButton_IOP, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_IOP), GtkRadioButton_EE_group);
-  GtkRadioButton_EE_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_IOP));
-
-  hbox6 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox6);
-  gtk_box_pack_start (GTK_BOX (vbox16), hbox6, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox6), 5);
-
-  hbox7 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox7);
-  gtk_box_pack_start (GTK_BOX (hbox6), hbox7, TRUE, TRUE, 0);
-
-  scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_show (scrolledwindow1);
-  gtk_box_pack_start (GTK_BOX (hbox7), scrolledwindow1, TRUE, TRUE, 0);
-  GTK_WIDGET_UNSET_FLAGS (scrolledwindow1, GTK_CAN_FOCUS);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_ALWAYS, GTK_POLICY_NEVER);
-
-  viewport1 = gtk_viewport_new (NULL, NULL);
-  gtk_widget_show (viewport1);
-  gtk_container_add (GTK_CONTAINER (scrolledwindow1), viewport1);
-
-  GtkList_DisView = gtk_tree_view_new ();
-  gtk_widget_show (GtkList_DisView);
-  gtk_container_add (GTK_CONTAINER (viewport1), GtkList_DisView);
-  GTK_WIDGET_UNSET_FLAGS (GtkList_DisView, GTK_CAN_FOCUS);
-  gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (GtkList_DisView), FALSE);
-
-  GtkVScrollbar_VList = gtk_vscrollbar_new (GTK_ADJUSTMENT (gtk_adjustment_new (0, 0, 412, 1, 20, 2)));
-  gtk_widget_show (GtkVScrollbar_VList);
-  gtk_box_pack_start (GTK_BOX (hbox7), GtkVScrollbar_VList, FALSE, TRUE, 0);
-
-  vbox22 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox22);
-  gtk_box_pack_start (GTK_BOX (hbox6), vbox22, FALSE, TRUE, 0);
-
-  vbuttonbox2 = gtk_vbutton_box_new ();
-  gtk_widget_show (vbuttonbox2);
-  gtk_box_pack_start (GTK_BOX (vbox22), vbuttonbox2, FALSE, TRUE, 0);
-
-  button52 = gtk_button_new_with_mnemonic (_("Step"));
-  gtk_widget_show (button52);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button52);
-  GTK_WIDGET_SET_FLAGS (button52, GTK_CAN_DEFAULT);
-
-  button53 = gtk_button_new_with_mnemonic (_("Skip"));
-  gtk_widget_show (button53);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button53);
-  GTK_WIDGET_SET_FLAGS (button53, GTK_CAN_DEFAULT);
-
-  button65 = gtk_button_new_with_mnemonic (_("Go"));
-  gtk_widget_show (button65);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button65);
-  GTK_WIDGET_SET_FLAGS (button65, GTK_CAN_DEFAULT);
-
-  button64 = gtk_button_new_with_mnemonic (_("Log On/Off"));
-  gtk_widget_show (button64);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox2), button64);
-  GTK_WIDGET_SET_FLAGS (button64, GTK_CAN_DEFAULT);
-
-  vbuttonbox3 = gtk_vbutton_box_new ();
-  gtk_widget_show (vbuttonbox3);
-  gtk_box_pack_start (GTK_BOX (vbox22), vbuttonbox3, FALSE, TRUE, 0);
-
-  button58 = gtk_button_new_with_mnemonic (_("Set PC"));
-  gtk_widget_show (button58);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button58);
-  GTK_WIDGET_SET_FLAGS (button58, GTK_CAN_DEFAULT);
-
-  button59 = gtk_button_new_with_mnemonic (_("Set BP Addr"));
-  gtk_widget_show (button59);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button59);
-  GTK_WIDGET_SET_FLAGS (button59, GTK_CAN_DEFAULT);
-
-  button60 = gtk_button_new_with_mnemonic (_("Set BP Count"));
-  gtk_widget_show (button60);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button60);
-  GTK_WIDGET_SET_FLAGS (button60, GTK_CAN_DEFAULT);
-
-  button61 = gtk_button_new_with_mnemonic (_("Clear BPs"));
-  gtk_widget_show (button61);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox3), button61);
-  GTK_WIDGET_SET_FLAGS (button61, GTK_CAN_DEFAULT);
-
-  vbuttonbox1 = gtk_vbutton_box_new ();
-  gtk_widget_show (vbuttonbox1);
-  gtk_box_pack_start (GTK_BOX (vbox22), vbuttonbox1, FALSE, TRUE, 0);
-
-  button39 = gtk_button_new_with_mnemonic (_("Dump code"));
-  gtk_widget_show (button39);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox1), button39);
-  GTK_WIDGET_SET_FLAGS (button39, GTK_CAN_DEFAULT);
-
-  button40 = gtk_button_new_with_mnemonic (_("Raw Dump"));
-  gtk_widget_show (button40);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox1), button40);
-  GTK_WIDGET_SET_FLAGS (button40, GTK_CAN_DEFAULT);
-
-  button41 = gtk_button_new_with_mnemonic (_("Close"));
-  gtk_widget_show (button41);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox1), button41);
-  GTK_WIDGET_SET_FLAGS (button41, GTK_CAN_DEFAULT);
-
-  vbuttonbox4 = gtk_vbutton_box_new ();
-  gtk_widget_show (vbuttonbox4);
-  gtk_box_pack_start (GTK_BOX (hbox6), vbuttonbox4, FALSE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (vbuttonbox4), 10);
-
-  button68 = gtk_button_new_with_mnemonic (_("memWrite32"));
-  gtk_widget_show (button68);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button68);
-  GTK_WIDGET_SET_FLAGS (button68, GTK_CAN_DEFAULT);
-
-  button69 = gtk_button_new_with_mnemonic (_("button69"));
-  gtk_widget_show (button69);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button69);
-  GTK_WIDGET_SET_FLAGS (button69, GTK_CAN_DEFAULT);
-
-  button70 = gtk_button_new_with_mnemonic (_("button70"));
-  gtk_widget_show (button70);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button70);
-  GTK_WIDGET_SET_FLAGS (button70, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) GtkRadioButton_EE, "toggled",
-                    G_CALLBACK (OnDebug_EEMode),
-                    NULL);
-  g_signal_connect ((gpointer) GtkRadioButton_IOP, "toggled",
-                    G_CALLBACK (OnDebug_IOPMode),
-                    NULL);
-  g_signal_connect ((gpointer) button52, "clicked",
-                    G_CALLBACK (OnDebug_Step),
-                    NULL);
-  g_signal_connect ((gpointer) button53, "clicked",
-                    G_CALLBACK (OnDebug_Skip),
-                    NULL);
-  g_signal_connect ((gpointer) button65, "clicked",
-                    G_CALLBACK (OnDebug_Go),
-                    NULL);
-  g_signal_connect ((gpointer) button64, "clicked",
-                    G_CALLBACK (OnDebug_Log),
-                    NULL);
-  g_signal_connect ((gpointer) button58, "clicked",
-                    G_CALLBACK (OnDebug_SetPC),
-                    NULL);
-  g_signal_connect ((gpointer) button59, "clicked",
-                    G_CALLBACK (OnDebug_SetBPA),
-                    NULL);
-  g_signal_connect ((gpointer) button60, "clicked",
-                    G_CALLBACK (OnDebug_SetBPC),
-                    NULL);
-  g_signal_connect ((gpointer) button61, "clicked",
-                    G_CALLBACK (OnDebug_ClearBPs),
-                    NULL);
-  g_signal_connect ((gpointer) button39, "clicked",
-                    G_CALLBACK (OnDebug_DumpCode),
-                    NULL);
-  g_signal_connect ((gpointer) button40, "clicked",
-                    G_CALLBACK (OnDebug_RawDump),
-                    NULL);
-  g_signal_connect ((gpointer) button41, "clicked",
-                    G_CALLBACK (OnDebug_Close),
-                    NULL);
-  g_signal_connect ((gpointer) button68, "clicked",
-                    G_CALLBACK (OnDebug_memWrite32),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (DebugWnd, DebugWnd, "DebugWnd");
-  GLADE_HOOKUP_OBJECT (DebugWnd, vbox16, "vbox16");
-  GLADE_HOOKUP_OBJECT (DebugWnd, hbox16, "hbox16");
-  GLADE_HOOKUP_OBJECT (DebugWnd, GtkRadioButton_EE, "GtkRadioButton_EE");
-  GLADE_HOOKUP_OBJECT (DebugWnd, GtkRadioButton_IOP, "GtkRadioButton_IOP");
-  GLADE_HOOKUP_OBJECT (DebugWnd, hbox6, "hbox6");
-  GLADE_HOOKUP_OBJECT (DebugWnd, hbox7, "hbox7");
-  GLADE_HOOKUP_OBJECT (DebugWnd, scrolledwindow1, "scrolledwindow1");
-  GLADE_HOOKUP_OBJECT (DebugWnd, viewport1, "viewport1");
-  GLADE_HOOKUP_OBJECT (DebugWnd, GtkList_DisView, "GtkList_DisView");
-  GLADE_HOOKUP_OBJECT (DebugWnd, GtkVScrollbar_VList, "GtkVScrollbar_VList");
-  GLADE_HOOKUP_OBJECT (DebugWnd, vbox22, "vbox22");
-  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox2, "vbuttonbox2");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button52, "button52");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button53, "button53");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button65, "button65");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button64, "button64");
-  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox3, "vbuttonbox3");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button58, "button58");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button59, "button59");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button60, "button60");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button61, "button61");
-  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox1, "vbuttonbox1");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button39, "button39");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button40, "button40");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button41, "button41");
-  GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox4, "vbuttonbox4");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button68, "button68");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button69, "button69");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button70, "button70");
-
-  return DebugWnd;
-}
-
-GtkWidget*
-create_SetPCDlg (void)
-{
-  GtkWidget *SetPCDlg;
-  GtkWidget *vbox17;
-  GtkWidget *label9;
-  GtkWidget *hbox8;
-  GtkWidget *label10;
-  GtkWidget *GtkEntry_dPC;
-  GtkWidget *hbuttonbox14;
-  GtkWidget *button42;
-  GtkWidget *button43;
-
-  SetPCDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (SetPCDlg), 5);
-  gtk_window_set_title (GTK_WINDOW (SetPCDlg), _("SetPCDlg"));
-
-  vbox17 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox17);
-  gtk_container_add (GTK_CONTAINER (SetPCDlg), vbox17);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox17), 5);
-
-  label9 = gtk_label_new (_("Set New PC Address (in Hex):"));
-  gtk_widget_show (label9);
-  gtk_box_pack_start (GTK_BOX (vbox17), label9, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label9), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (label9), 0.1, 0.5);
-
-  hbox8 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox8);
-  gtk_box_pack_start (GTK_BOX (vbox17), hbox8, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox8), 5);
-
-  label10 = gtk_label_new (_("0x"));
-  gtk_widget_show (label10);
-  gtk_box_pack_start (GTK_BOX (hbox8), label10, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label10), GTK_JUSTIFY_CENTER);
-
-  GtkEntry_dPC = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_dPC);
-  gtk_box_pack_start (GTK_BOX (hbox8), GtkEntry_dPC, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_dPC), 8226);
-
-  hbuttonbox14 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox14);
-  gtk_box_pack_start (GTK_BOX (vbox17), hbuttonbox14, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox14), 30);
-
-  button42 = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (button42);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox14), button42);
-  GTK_WIDGET_SET_FLAGS (button42, GTK_CAN_DEFAULT);
-
-  button43 = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (button43);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox14), button43);
-  GTK_WIDGET_SET_FLAGS (button43, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button42, "clicked",
-                    G_CALLBACK (OnSetPC_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button43, "clicked",
-                    G_CALLBACK (OnSetPC_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (SetPCDlg, SetPCDlg, "SetPCDlg");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, vbox17, "vbox17");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, label9, "label9");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, hbox8, "hbox8");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, label10, "label10");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, GtkEntry_dPC, "GtkEntry_dPC");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, hbuttonbox14, "hbuttonbox14");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, button42, "button42");
-  GLADE_HOOKUP_OBJECT (SetPCDlg, button43, "button43");
-
-  return SetPCDlg;
-}
-
-GtkWidget*
-create_SetBPADlg (void)
-{
-  GtkWidget *SetBPADlg;
-  GtkWidget *vbox18;
-  GtkWidget *label11;
-  GtkWidget *hbox9;
-  GtkWidget *label12;
-  GtkWidget *GtkEntry_BPA;
-  GtkWidget *hbuttonbox15;
-  GtkWidget *button44;
-  GtkWidget *button45;
-
-  SetBPADlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (SetBPADlg), 5);
-  gtk_window_set_title (GTK_WINDOW (SetBPADlg), _("SetBreakPoint Addr"));
-
-  vbox18 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox18);
-  gtk_container_add (GTK_CONTAINER (SetBPADlg), vbox18);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox18), 5);
-
-  label11 = gtk_label_new (_("Set New BP Address (in Hex):"));
-  gtk_widget_show (label11);
-  gtk_box_pack_start (GTK_BOX (vbox18), label11, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label11), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (label11), 0.1, 0.5);
-
-  hbox9 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox9);
-  gtk_box_pack_start (GTK_BOX (vbox18), hbox9, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox9), 5);
-
-  label12 = gtk_label_new (_("0x"));
-  gtk_widget_show (label12);
-  gtk_box_pack_start (GTK_BOX (hbox9), label12, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label12), GTK_JUSTIFY_CENTER);
-
-  GtkEntry_BPA = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_BPA);
-  gtk_box_pack_start (GTK_BOX (hbox9), GtkEntry_BPA, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_BPA), 8226);
-
-  hbuttonbox15 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox15);
-  gtk_box_pack_start (GTK_BOX (vbox18), hbuttonbox15, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox15), 30);
-
-  button44 = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (button44);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox15), button44);
-  GTK_WIDGET_SET_FLAGS (button44, GTK_CAN_DEFAULT);
-
-  button45 = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (button45);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox15), button45);
-  GTK_WIDGET_SET_FLAGS (button45, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button44, "clicked",
-                    G_CALLBACK (OnSetBPA_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button45, "clicked",
-                    G_CALLBACK (OnSetBPA_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (SetBPADlg, SetBPADlg, "SetBPADlg");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, vbox18, "vbox18");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, label11, "label11");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, hbox9, "hbox9");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, label12, "label12");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, GtkEntry_BPA, "GtkEntry_BPA");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, hbuttonbox15, "hbuttonbox15");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, button44, "button44");
-  GLADE_HOOKUP_OBJECT (SetBPADlg, button45, "button45");
-
-  return SetBPADlg;
-}
-
-GtkWidget*
-create_SetBPCDlg (void)
-{
-  GtkWidget *SetBPCDlg;
-  GtkWidget *vbox19;
-  GtkWidget *label13;
-  GtkWidget *hbox10;
-  GtkWidget *label14;
-  GtkWidget *GtkEntry_BPC;
-  GtkWidget *hbuttonbox16;
-  GtkWidget *button46;
-  GtkWidget *button47;
-
-  SetBPCDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (SetBPCDlg), 5);
-  gtk_window_set_title (GTK_WINDOW (SetBPCDlg), _("SetBreakPoint Addr"));
-
-  vbox19 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox19);
-  gtk_container_add (GTK_CONTAINER (SetBPCDlg), vbox19);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox19), 5);
-
-  label13 = gtk_label_new (_("Set New BP Count (in Hex):"));
-  gtk_widget_show (label13);
-  gtk_box_pack_start (GTK_BOX (vbox19), label13, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label13), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (label13), 0.1, 0.5);
-
-  hbox10 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox10);
-  gtk_box_pack_start (GTK_BOX (vbox19), hbox10, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox10), 5);
-
-  label14 = gtk_label_new (_("0x"));
-  gtk_widget_show (label14);
-  gtk_box_pack_start (GTK_BOX (hbox10), label14, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label14), GTK_JUSTIFY_CENTER);
-
-  GtkEntry_BPC = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_BPC);
-  gtk_box_pack_start (GTK_BOX (hbox10), GtkEntry_BPC, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_BPC), 8226);
-
-  hbuttonbox16 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox16);
-  gtk_box_pack_start (GTK_BOX (vbox19), hbuttonbox16, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox16), 30);
-
-  button46 = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (button46);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox16), button46);
-  GTK_WIDGET_SET_FLAGS (button46, GTK_CAN_DEFAULT);
-
-  button47 = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (button47);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox16), button47);
-  GTK_WIDGET_SET_FLAGS (button47, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button46, "clicked",
-                    G_CALLBACK (OnSetBPC_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button47, "clicked",
-                    G_CALLBACK (OnSetBPC_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (SetBPCDlg, SetBPCDlg, "SetBPCDlg");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, vbox19, "vbox19");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, label13, "label13");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, hbox10, "hbox10");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, label14, "label14");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, GtkEntry_BPC, "GtkEntry_BPC");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, hbuttonbox16, "hbuttonbox16");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, button46, "button46");
-  GLADE_HOOKUP_OBJECT (SetBPCDlg, button47, "button47");
-
-  return SetBPCDlg;
-}
-
-GtkWidget*
-create_DumpCDlg (void)
-{
-  GtkWidget *DumpCDlg;
-  GtkWidget *vbox20;
-  GtkWidget *label15;
-  GtkWidget *hbox11;
-  GtkWidget *label16;
-  GtkWidget *GtkEntry_DumpCF;
-  GtkWidget *hbox12;
-  GtkWidget *label17;
-  GtkWidget *GtkEntry_DumpCT;
-  GtkWidget *label21;
-  GtkWidget *hbuttonbox17;
-  GtkWidget *button48;
-  GtkWidget *button49;
-
-  DumpCDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (DumpCDlg), 5);
-  gtk_window_set_title (GTK_WINDOW (DumpCDlg), _("Dump code"));
-
-  vbox20 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox20);
-  gtk_container_add (GTK_CONTAINER (DumpCDlg), vbox20);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox20), 5);
-
-  label15 = gtk_label_new (_("Set Dump Addr (in Hex):"));
-  gtk_widget_show (label15);
-  gtk_box_pack_start (GTK_BOX (vbox20), label15, FALSE, FALSE, 0);
-  gtk_misc_set_alignment (GTK_MISC (label15), 0.1, 0.5);
-
-  hbox11 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox11);
-  gtk_box_pack_start (GTK_BOX (vbox20), hbox11, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox11), 5);
-
-  label16 = gtk_label_new (_("From 0x"));
-  gtk_widget_show (label16);
-  gtk_box_pack_start (GTK_BOX (hbox11), label16, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label16), GTK_JUSTIFY_CENTER);
-  gtk_label_set_line_wrap (GTK_LABEL (label16), TRUE);
-
-  GtkEntry_DumpCF = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_DumpCF);
-  gtk_box_pack_start (GTK_BOX (hbox11), GtkEntry_DumpCF, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpCF), 8226);
-
-  hbox12 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox12);
-  gtk_box_pack_start (GTK_BOX (vbox20), hbox12, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox12), 5);
-
-  label17 = gtk_label_new (_("To    0x"));
-  gtk_widget_show (label17);
-  gtk_box_pack_start (GTK_BOX (hbox12), label17, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label17), GTK_JUSTIFY_CENTER);
-
-  GtkEntry_DumpCT = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_DumpCT);
-  gtk_box_pack_start (GTK_BOX (hbox12), GtkEntry_DumpCT, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpCT), 8226);
-
-  label21 = gtk_label_new (_("Dump File = \"dump.txt\""));
-  gtk_widget_show (label21);
-  gtk_box_pack_start (GTK_BOX (vbox20), label21, FALSE, FALSE, 0);
-  gtk_misc_set_alignment (GTK_MISC (label21), 0.1, 0.5);
-
-  hbuttonbox17 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox17);
-  gtk_box_pack_start (GTK_BOX (vbox20), hbuttonbox17, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox17), 30);
-
-  button48 = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (button48);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox17), button48);
-  GTK_WIDGET_SET_FLAGS (button48, GTK_CAN_DEFAULT);
-
-  button49 = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (button49);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox17), button49);
-  GTK_WIDGET_SET_FLAGS (button49, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button48, "clicked",
-                    G_CALLBACK (OnDumpC_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button49, "clicked",
-                    G_CALLBACK (OnDumpC_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (DumpCDlg, DumpCDlg, "DumpCDlg");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, vbox20, "vbox20");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, label15, "label15");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, hbox11, "hbox11");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, label16, "label16");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, GtkEntry_DumpCF, "GtkEntry_DumpCF");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, hbox12, "hbox12");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, label17, "label17");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, GtkEntry_DumpCT, "GtkEntry_DumpCT");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, label21, "label21");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, hbuttonbox17, "hbuttonbox17");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, button48, "button48");
-  GLADE_HOOKUP_OBJECT (DumpCDlg, button49, "button49");
-
-  return DumpCDlg;
-}
-
-GtkWidget*
-create_DumpRDlg (void)
-{
-  GtkWidget *DumpRDlg;
-  GtkWidget *vbox21;
-  GtkWidget *label18;
-  GtkWidget *hbox13;
-  GtkWidget *label19;
-  GtkWidget *GtkEntry_DumpRF;
-  GtkWidget *hbox14;
-  GtkWidget *label20;
-  GtkWidget *GtkEntry_DumpRT;
-  GtkWidget *label22;
-  GtkWidget *hbuttonbox18;
-  GtkWidget *button50;
-  GtkWidget *button51;
-
-  DumpRDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (DumpRDlg), 5);
-  gtk_window_set_title (GTK_WINDOW (DumpRDlg), _("Raw Dump"));
-
-  vbox21 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox21);
-  gtk_container_add (GTK_CONTAINER (DumpRDlg), vbox21);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox21), 5);
-
-  label18 = gtk_label_new (_("Set Dump Addr (in Hex):"));
-  gtk_widget_show (label18);
-  gtk_box_pack_start (GTK_BOX (vbox21), label18, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label18), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (label18), 0.1, 0.5);
-
-  hbox13 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox13);
-  gtk_box_pack_start (GTK_BOX (vbox21), hbox13, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox13), 5);
-
-  label19 = gtk_label_new (_("From 0x"));
-  gtk_widget_show (label19);
-  gtk_box_pack_start (GTK_BOX (hbox13), label19, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label19), GTK_JUSTIFY_CENTER);
-  gtk_label_set_line_wrap (GTK_LABEL (label19), TRUE);
-
-  GtkEntry_DumpRF = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_DumpRF);
-  gtk_box_pack_start (GTK_BOX (hbox13), GtkEntry_DumpRF, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpRF), 8226);
-
-  hbox14 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox14);
-  gtk_box_pack_start (GTK_BOX (vbox21), hbox14, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox14), 5);
-
-  label20 = gtk_label_new (_("To    0x"));
-  gtk_widget_show (label20);
-  gtk_box_pack_start (GTK_BOX (hbox14), label20, FALSE, FALSE, 0);
-
-  GtkEntry_DumpRT = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_DumpRT);
-  gtk_box_pack_start (GTK_BOX (hbox14), GtkEntry_DumpRT, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_DumpRT), 8226);
-
-  label22 = gtk_label_new (_("Dump File = \"dump.txt\""));
-  gtk_widget_show (label22);
-  gtk_box_pack_start (GTK_BOX (vbox21), label22, FALSE, FALSE, 0);
-  gtk_misc_set_alignment (GTK_MISC (label22), 0.1, 0.5);
-
-  hbuttonbox18 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox18);
-  gtk_box_pack_start (GTK_BOX (vbox21), hbuttonbox18, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox18), 30);
-
-  button50 = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (button50);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox18), button50);
-  GTK_WIDGET_SET_FLAGS (button50, GTK_CAN_DEFAULT);
-
-  button51 = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (button51);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox18), button51);
-  GTK_WIDGET_SET_FLAGS (button51, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button50, "clicked",
-                    G_CALLBACK (OnDumpR_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button51, "clicked",
-                    G_CALLBACK (OnDumpR_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (DumpRDlg, DumpRDlg, "DumpRDlg");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, vbox21, "vbox21");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, label18, "label18");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, hbox13, "hbox13");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, label19, "label19");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, GtkEntry_DumpRF, "GtkEntry_DumpRF");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, hbox14, "hbox14");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, label20, "label20");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, GtkEntry_DumpRT, "GtkEntry_DumpRT");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, label22, "label22");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, hbuttonbox18, "hbuttonbox18");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, button50, "button50");
-  GLADE_HOOKUP_OBJECT (DumpRDlg, button51, "button51");
-
-  return DumpRDlg;
-}
-
-GtkWidget*
-create_Logging (void)
-{
-  GtkWidget *Logging;
-  GtkWidget *vbox23;
-  GtkWidget *hbox15;
-  GtkWidget *frame4;
-  GtkWidget *table3;
-  GtkWidget *Log0;
-  GtkWidget *Log1;
-  GtkWidget *Log2;
-  GtkWidget *Log3;
-  GtkWidget *Log4;
-  GtkWidget *Log5;
-  GtkWidget *Log6;
-  GtkWidget *Log7;
-  GtkWidget *Log8;
-  GtkWidget *Log9;
-  GtkWidget *Log10;
-  GtkWidget *Log11;
-  GtkWidget *Log12;
-  GtkWidget *Log13;
-  GtkWidget *Log15;
-  GtkWidget *Log14;
-  GtkWidget *Log16;
-  GtkWidget *Log31;
-  GtkWidget *Log;
-  GtkWidget *Log30;
-  GtkWidget *label33;
-  GtkWidget *frame5;
-  GtkWidget *table4;
-  GtkWidget *Log27;
-  GtkWidget *Log26;
-  GtkWidget *Log25;
-  GtkWidget *Log24;
-  GtkWidget *Log23;
-  GtkWidget *Log22;
-  GtkWidget *Log21;
-  GtkWidget *Log20;
-  GtkWidget *Log28;
-  GtkWidget *label34;
-  GtkWidget *hbuttonbox19;
-  GtkWidget *button66;
-  GtkWidget *button67;
-
-  Logging = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (Logging), 5);
-  gtk_window_set_title (GTK_WINDOW (Logging), _("Logging"));
-
-  vbox23 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox23);
-  gtk_container_add (GTK_CONTAINER (Logging), vbox23);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox23), 5);
-
-  hbox15 = gtk_hbox_new (FALSE, 5);
-  gtk_widget_show (hbox15);
-  gtk_box_pack_start (GTK_BOX (vbox23), hbox15, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox15), 5);
-
-  frame4 = gtk_frame_new (NULL);
-  gtk_widget_show (frame4);
-  gtk_box_pack_start (GTK_BOX (hbox15), frame4, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame4), 5);
-
-  table3 = gtk_table_new (8, 3, FALSE);
-  gtk_widget_show (table3);
-  gtk_container_add (GTK_CONTAINER (frame4), table3);
-  gtk_container_set_border_width (GTK_CONTAINER (table3), 5);
-  gtk_table_set_row_spacings (GTK_TABLE (table3), 5);
-  gtk_table_set_col_spacings (GTK_TABLE (table3), 5);
-
-  Log0 = gtk_check_button_new_with_mnemonic (_("Cpu Log"));
-  gtk_widget_show (Log0);
-  gtk_table_attach (GTK_TABLE (table3), Log0, 0, 1, 0, 1,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log1 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
-  gtk_widget_show (Log1);
-  gtk_table_attach (GTK_TABLE (table3), Log1, 0, 1, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log2 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
-  gtk_widget_show (Log2);
-  gtk_table_attach (GTK_TABLE (table3), Log2, 0, 1, 2, 3,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log3 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
-  gtk_widget_show (Log3);
-  gtk_table_attach (GTK_TABLE (table3), Log3, 0, 1, 3, 4,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log4 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
-  gtk_widget_show (Log4);
-  gtk_table_attach (GTK_TABLE (table3), Log4, 0, 1, 4, 5,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log5 = gtk_check_button_new_with_mnemonic (_("Elf Log"));
-  gtk_widget_show (Log5);
-  gtk_table_attach (GTK_TABLE (table3), Log5, 0, 1, 5, 6,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log6 = gtk_check_button_new_with_mnemonic (_("Fpu Log"));
-  gtk_widget_show (Log6);
-  gtk_table_attach (GTK_TABLE (table3), Log6, 0, 1, 6, 7,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log7 = gtk_check_button_new_with_mnemonic (_("MMI Log"));
-  gtk_widget_show (Log7);
-  gtk_table_attach (GTK_TABLE (table3), Log7, 0, 1, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log8 = gtk_check_button_new_with_mnemonic (_("VU0 Log"));
-  gtk_widget_show (Log8);
-  gtk_table_attach (GTK_TABLE (table3), Log8, 1, 2, 0, 1,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log9 = gtk_check_button_new_with_mnemonic (_("Cop0 Log"));
-  gtk_widget_show (Log9);
-  gtk_table_attach (GTK_TABLE (table3), Log9, 1, 2, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log10 = gtk_check_button_new_with_mnemonic (_("Vif Log"));
-  gtk_widget_show (Log10);
-  gtk_table_attach (GTK_TABLE (table3), Log10, 1, 2, 2, 3,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log11 = gtk_check_button_new_with_mnemonic (_("SPR Log"));
-  gtk_widget_show (Log11);
-  gtk_table_attach (GTK_TABLE (table3), Log11, 1, 2, 3, 4,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log12 = gtk_check_button_new_with_mnemonic (_("GIF Log"));
-  gtk_widget_show (Log12);
-  gtk_table_attach (GTK_TABLE (table3), Log12, 1, 2, 4, 5,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log13 = gtk_check_button_new_with_mnemonic (_("Sif Log"));
-  gtk_widget_show (Log13);
-  gtk_table_attach (GTK_TABLE (table3), Log13, 1, 2, 5, 6,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log15 = gtk_check_button_new_with_mnemonic (_("VU Micro Log"));
-  gtk_widget_show (Log15);
-  gtk_table_attach (GTK_TABLE (table3), Log15, 1, 2, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log14 = gtk_check_button_new_with_mnemonic (_("IPU Log"));
-  gtk_widget_show (Log14);
-  gtk_table_attach (GTK_TABLE (table3), Log14, 1, 2, 6, 7,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log16 = gtk_check_button_new_with_mnemonic (_("RPC Log"));
-  gtk_widget_show (Log16);
-  gtk_table_attach (GTK_TABLE (table3), Log16, 2, 3, 0, 1,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log31 = gtk_check_button_new_with_mnemonic (_("Log to STDOUT"));
-  gtk_widget_show (Log31);
-  gtk_table_attach (GTK_TABLE (table3), Log31, 2, 3, 5, 6,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log = gtk_check_button_new_with_mnemonic (_("Log"));
-  gtk_widget_show (Log);
-  gtk_table_attach (GTK_TABLE (table3), Log, 2, 3, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log30 = gtk_check_button_new_with_mnemonic (_("SYMs Log"));
-  gtk_widget_show (Log30);
-  gtk_table_attach (GTK_TABLE (table3), Log30, 2, 3, 6, 7,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  label33 = gtk_label_new (_("EE Logs"));
-  gtk_widget_show (label33);
-  gtk_frame_set_label_widget (GTK_FRAME (frame4), label33);
-
-  frame5 = gtk_frame_new (NULL);
-  gtk_widget_show (frame5);
-  gtk_box_pack_start (GTK_BOX (hbox15), frame5, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame5), 5);
-
-  table4 = gtk_table_new (8, 2, FALSE);
-  gtk_widget_show (table4);
-  gtk_container_add (GTK_CONTAINER (frame5), table4);
-  gtk_container_set_border_width (GTK_CONTAINER (table4), 5);
-  gtk_table_set_row_spacings (GTK_TABLE (table4), 5);
-  gtk_table_set_col_spacings (GTK_TABLE (table4), 5);
-
-  Log27 = gtk_check_button_new_with_mnemonic (_("Cdr Log"));
-  gtk_widget_show (Log27);
-  gtk_table_attach (GTK_TABLE (table4), Log27, 0, 1, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log26 = gtk_check_button_new_with_mnemonic (_("Gte Log"));
-  gtk_widget_show (Log26);
-  gtk_table_attach (GTK_TABLE (table4), Log26, 0, 1, 6, 7,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log25 = gtk_check_button_new_with_mnemonic (_("Pad Log"));
-  gtk_widget_show (Log25);
-  gtk_table_attach (GTK_TABLE (table4), Log25, 0, 1, 5, 6,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log24 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
-  gtk_widget_show (Log24);
-  gtk_table_attach (GTK_TABLE (table4), Log24, 0, 1, 4, 5,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log23 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
-  gtk_widget_show (Log23);
-  gtk_table_attach (GTK_TABLE (table4), Log23, 0, 1, 3, 4,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log22 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
-  gtk_widget_show (Log22);
-  gtk_table_attach (GTK_TABLE (table4), Log22, 0, 1, 2, 3,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log21 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
-  gtk_widget_show (Log21);
-  gtk_table_attach (GTK_TABLE (table4), Log21, 0, 1, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log20 = gtk_check_button_new_with_mnemonic (_("IOP Log"));
-  gtk_widget_show (Log20);
-  gtk_table_attach (GTK_TABLE (table4), Log20, 0, 1, 0, 1,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log28 = gtk_check_button_new_with_mnemonic (_("GPU Log"));
-  gtk_widget_show (Log28);
-  gtk_table_attach (GTK_TABLE (table4), Log28, 1, 2, 0, 1,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  label34 = gtk_label_new (_("IOP Logs"));
-  gtk_widget_show (label34);
-  gtk_frame_set_label_widget (GTK_FRAME (frame5), label34);
-
-  hbuttonbox19 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox19);
-  gtk_box_pack_start (GTK_BOX (vbox23), hbuttonbox19, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox19), 30);
-
-  button66 = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (button66);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox19), button66);
-  GTK_WIDGET_SET_FLAGS (button66, GTK_CAN_DEFAULT);
-
-  button67 = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (button67);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox19), button67);
-  GTK_WIDGET_SET_FLAGS (button67, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button66, "clicked",
-                    G_CALLBACK (OnLogging_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button67, "clicked",
-                    G_CALLBACK (OnLogging_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (Logging, Logging, "Logging");
-  GLADE_HOOKUP_OBJECT (Logging, vbox23, "vbox23");
-  GLADE_HOOKUP_OBJECT (Logging, hbox15, "hbox15");
-  GLADE_HOOKUP_OBJECT (Logging, frame4, "frame4");
-  GLADE_HOOKUP_OBJECT (Logging, table3, "table3");
-  GLADE_HOOKUP_OBJECT (Logging, Log0, "Log0");
-  GLADE_HOOKUP_OBJECT (Logging, Log1, "Log1");
-  GLADE_HOOKUP_OBJECT (Logging, Log2, "Log2");
-  GLADE_HOOKUP_OBJECT (Logging, Log3, "Log3");
-  GLADE_HOOKUP_OBJECT (Logging, Log4, "Log4");
-  GLADE_HOOKUP_OBJECT (Logging, Log5, "Log5");
-  GLADE_HOOKUP_OBJECT (Logging, Log6, "Log6");
-  GLADE_HOOKUP_OBJECT (Logging, Log7, "Log7");
-  GLADE_HOOKUP_OBJECT (Logging, Log8, "Log8");
-  GLADE_HOOKUP_OBJECT (Logging, Log9, "Log9");
-  GLADE_HOOKUP_OBJECT (Logging, Log10, "Log10");
-  GLADE_HOOKUP_OBJECT (Logging, Log11, "Log11");
-  GLADE_HOOKUP_OBJECT (Logging, Log12, "Log12");
-  GLADE_HOOKUP_OBJECT (Logging, Log13, "Log13");
-  GLADE_HOOKUP_OBJECT (Logging, Log15, "Log15");
-  GLADE_HOOKUP_OBJECT (Logging, Log14, "Log14");
-  GLADE_HOOKUP_OBJECT (Logging, Log16, "Log16");
-  GLADE_HOOKUP_OBJECT (Logging, Log31, "Log31");
-  GLADE_HOOKUP_OBJECT (Logging, Log, "Log");
-  GLADE_HOOKUP_OBJECT (Logging, Log30, "Log30");
-  GLADE_HOOKUP_OBJECT (Logging, label33, "label33");
-  GLADE_HOOKUP_OBJECT (Logging, frame5, "frame5");
-  GLADE_HOOKUP_OBJECT (Logging, table4, "table4");
-  GLADE_HOOKUP_OBJECT (Logging, Log27, "Log27");
-  GLADE_HOOKUP_OBJECT (Logging, Log26, "Log26");
-  GLADE_HOOKUP_OBJECT (Logging, Log25, "Log25");
-  GLADE_HOOKUP_OBJECT (Logging, Log24, "Log24");
-  GLADE_HOOKUP_OBJECT (Logging, Log23, "Log23");
-  GLADE_HOOKUP_OBJECT (Logging, Log22, "Log22");
-  GLADE_HOOKUP_OBJECT (Logging, Log21, "Log21");
-  GLADE_HOOKUP_OBJECT (Logging, Log20, "Log20");
-  GLADE_HOOKUP_OBJECT (Logging, Log28, "Log28");
-  GLADE_HOOKUP_OBJECT (Logging, label34, "label34");
-  GLADE_HOOKUP_OBJECT (Logging, hbuttonbox19, "hbuttonbox19");
-  GLADE_HOOKUP_OBJECT (Logging, button66, "button66");
-  GLADE_HOOKUP_OBJECT (Logging, button67, "button67");
-
-  return Logging;
-}
-
-GtkWidget*
-create_CmdLine (void)
-{
-  GtkWidget *CmdLine;
-  GtkWidget *vbox24;
-  GtkWidget *GtkLabel_Text;
-  GtkWidget *hbox17;
-  GtkWidget *GtkEntry_dCMDLINE;
-  GtkWidget *GtkLabel_Note;
-  GtkWidget *hbuttonbox20;
-  GtkWidget *GtkButton_Ok;
-  GtkWidget *GtkButton_Cancel;
-  GtkTooltips *tooltips;
-
-  tooltips = gtk_tooltips_new ();
-
-  CmdLine = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (CmdLine), 5);
-  gtk_window_set_title (GTK_WINDOW (CmdLine), _("Program arguments"));
-  gtk_window_set_modal (GTK_WINDOW (CmdLine), TRUE);
-
-  vbox24 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox24);
-  gtk_container_add (GTK_CONTAINER (CmdLine), vbox24);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox24), 5);
-
-  GtkLabel_Text = gtk_label_new (_("Fill in the command line arguments for opened program:"));
-  gtk_widget_show (GtkLabel_Text);
-  gtk_box_pack_start (GTK_BOX (vbox24), GtkLabel_Text, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_Text), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_alignment (GTK_MISC (GtkLabel_Text), 0.1, 0.5);
-
-  hbox17 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox17);
-  gtk_box_pack_start (GTK_BOX (vbox24), hbox17, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox17), 5);
-
-  GtkEntry_dCMDLINE = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_dCMDLINE);
-  gtk_box_pack_start (GTK_BOX (hbox17), GtkEntry_dCMDLINE, TRUE, TRUE, 0);
-  gtk_tooltips_set_tip (tooltips, GtkEntry_dCMDLINE, _("If you don't know what to write leave it blank"), NULL);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_dCMDLINE), 8226);
-
-  GtkLabel_Note = gtk_label_new (_("Note: this is intented for developers only."));
-  gtk_widget_show (GtkLabel_Note);
-  gtk_box_pack_start (GTK_BOX (vbox24), GtkLabel_Note, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (GtkLabel_Note), GTK_JUSTIFY_CENTER);
-
-  hbuttonbox20 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox20);
-  gtk_box_pack_start (GTK_BOX (vbox24), hbuttonbox20, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox20), 30);
-
-  GtkButton_Ok = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (GtkButton_Ok);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox20), GtkButton_Ok);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Ok, GTK_CAN_DEFAULT);
-
-  GtkButton_Cancel = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (GtkButton_Cancel);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox20), GtkButton_Cancel);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Cancel, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) GtkButton_Ok, "clicked",
-                    G_CALLBACK (OnArguments_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_Cancel, "clicked",
-                    G_CALLBACK (OnArguments_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (CmdLine, CmdLine, "CmdLine");
-  GLADE_HOOKUP_OBJECT (CmdLine, vbox24, "vbox24");
-  GLADE_HOOKUP_OBJECT (CmdLine, GtkLabel_Text, "GtkLabel_Text");
-  GLADE_HOOKUP_OBJECT (CmdLine, hbox17, "hbox17");
-  GLADE_HOOKUP_OBJECT (CmdLine, GtkEntry_dCMDLINE, "GtkEntry_dCMDLINE");
-  GLADE_HOOKUP_OBJECT (CmdLine, GtkLabel_Note, "GtkLabel_Note");
-  GLADE_HOOKUP_OBJECT (CmdLine, hbuttonbox20, "hbuttonbox20");
-  GLADE_HOOKUP_OBJECT (CmdLine, GtkButton_Ok, "GtkButton_Ok");
-  GLADE_HOOKUP_OBJECT (CmdLine, GtkButton_Cancel, "GtkButton_Cancel");
-  GLADE_HOOKUP_OBJECT_NO_REF (CmdLine, tooltips, "tooltips");
-
-  return CmdLine;
-}
-
-GtkWidget*
-create_MemWrite32 (void)
-{
-  GtkWidget *MemWrite32;
-  GtkWidget *vbox25;
-  GtkWidget *hbox18;
-  GtkWidget *label27;
-  GtkWidget *label25;
-  GtkWidget *GtkEntry_Mem;
-  GtkWidget *hbox19;
-  GtkWidget *label28;
-  GtkWidget *label26;
-  GtkWidget *GtkEntry_Data;
-  GtkWidget *hbuttonbox22;
-  GtkWidget *button71;
-  GtkWidget *button72;
-
-  MemWrite32 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (MemWrite32), 5);
-  gtk_window_set_title (GTK_WINDOW (MemWrite32), _("memWrite32"));
-
-  vbox25 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox25);
-  gtk_container_add (GTK_CONTAINER (MemWrite32), vbox25);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox25), 5);
-
-  hbox18 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox18);
-  gtk_box_pack_start (GTK_BOX (vbox25), hbox18, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox18), 5);
-
-  label27 = gtk_label_new (_("Address  "));
-  gtk_widget_show (label27);
-  gtk_box_pack_start (GTK_BOX (hbox18), label27, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label27), GTK_JUSTIFY_CENTER);
-
-  label25 = gtk_label_new (_("0x"));
-  gtk_widget_show (label25);
-  gtk_box_pack_start (GTK_BOX (hbox18), label25, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label25), GTK_JUSTIFY_CENTER);
-
-  GtkEntry_Mem = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_Mem);
-  gtk_box_pack_start (GTK_BOX (hbox18), GtkEntry_Mem, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_Mem), 8226);
-
-  hbox19 = gtk_hbox_new (FALSE, 2);
-  gtk_widget_show (hbox19);
-  gtk_box_pack_start (GTK_BOX (vbox25), hbox19, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox19), 5);
-
-  label28 = gtk_label_new (_("Data       "));
-  gtk_widget_show (label28);
-  gtk_box_pack_start (GTK_BOX (hbox19), label28, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label28), GTK_JUSTIFY_CENTER);
-
-  label26 = gtk_label_new (_("0x"));
-  gtk_widget_show (label26);
-  gtk_box_pack_start (GTK_BOX (hbox19), label26, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label26), GTK_JUSTIFY_CENTER);
-
-  GtkEntry_Data = gtk_entry_new ();
-  gtk_widget_show (GtkEntry_Data);
-  gtk_box_pack_start (GTK_BOX (hbox19), GtkEntry_Data, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (GtkEntry_Data), 8226);
-
-  hbuttonbox22 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox22);
-  gtk_box_pack_start (GTK_BOX (vbox25), hbuttonbox22, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox22), 30);
-
-  button71 = gtk_button_new_with_mnemonic (_("Ok"));
-  gtk_widget_show (button71);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox22), button71);
-  GTK_WIDGET_SET_FLAGS (button71, GTK_CAN_DEFAULT);
-
-  button72 = gtk_button_new_with_mnemonic (_("Cancel"));
-  gtk_widget_show (button72);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox22), button72);
-  GTK_WIDGET_SET_FLAGS (button72, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button71, "clicked",
-                    G_CALLBACK (OnMemWrite32_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button72, "clicked",
-                    G_CALLBACK (OnMemWrite32_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (MemWrite32, MemWrite32, "MemWrite32");
-  GLADE_HOOKUP_OBJECT (MemWrite32, vbox25, "vbox25");
-  GLADE_HOOKUP_OBJECT (MemWrite32, hbox18, "hbox18");
-  GLADE_HOOKUP_OBJECT (MemWrite32, label27, "label27");
-  GLADE_HOOKUP_OBJECT (MemWrite32, label25, "label25");
-  GLADE_HOOKUP_OBJECT (MemWrite32, GtkEntry_Mem, "GtkEntry_Mem");
-  GLADE_HOOKUP_OBJECT (MemWrite32, hbox19, "hbox19");
-  GLADE_HOOKUP_OBJECT (MemWrite32, label28, "label28");
-  GLADE_HOOKUP_OBJECT (MemWrite32, label26, "label26");
-  GLADE_HOOKUP_OBJECT (MemWrite32, GtkEntry_Data, "GtkEntry_Data");
-  GLADE_HOOKUP_OBJECT (MemWrite32, hbuttonbox22, "hbuttonbox22");
-  GLADE_HOOKUP_OBJECT (MemWrite32, button71, "button71");
-  GLADE_HOOKUP_OBJECT (MemWrite32, button72, "button72");
-
-  return MemWrite32;
-}
-
-GtkWidget*
-create_GameFixDlg (void)
-{
-  GtkWidget *GameFixDlg;
-  GtkWidget *dialog_vbox1;
-  GtkWidget *GameSettings;
-  GtkWidget *alignment5;
-  GtkWidget *vbox30;
-  GtkWidget *check_VU_Clip;
-  GtkWidget *check_FPU_Clamp;
-  GtkWidget *check_Slow_DVD;
-  GtkWidget *check_VU_Branch;
-  GtkWidget *label42;
-  GtkWidget *dialog_action_area1;
-  GtkWidget *cancelbutton1;
-  GtkWidget *button83;
-
-  GameFixDlg = gtk_dialog_new ();
-  gtk_window_set_title (GTK_WINDOW (GameFixDlg), _("Game Special Fixes"));
-  gtk_window_set_type_hint (GTK_WINDOW (GameFixDlg), GDK_WINDOW_TYPE_HINT_DIALOG);
-
-  dialog_vbox1 = GTK_DIALOG (GameFixDlg)->vbox;
-  gtk_widget_show (dialog_vbox1);
-
-  GameSettings = gtk_frame_new (NULL);
-  gtk_widget_show (GameSettings);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox1), GameSettings, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (GameSettings), GTK_SHADOW_NONE);
-
-  alignment5 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment5);
-  gtk_container_add (GTK_CONTAINER (GameSettings), alignment5);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment5), 0, 0, 12, 0);
-
-  vbox30 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox30);
-  gtk_container_add (GTK_CONTAINER (alignment5), vbox30);
-
-  check_VU_Clip = gtk_check_button_new_with_mnemonic (_("VU Clip Hack - Special fix for God of War; Breaks Rockstar games!"));
-  gtk_widget_show (check_VU_Clip);
-  gtk_box_pack_start (GTK_BOX (vbox30), check_VU_Clip, FALSE, FALSE, 0);
-
-  check_FPU_Clamp = gtk_check_button_new_with_mnemonic (_("FPU Clamp Hack - Special fix for Tekken 5 and maybe other games."));
-  gtk_widget_show (check_FPU_Clamp);
-  gtk_box_pack_start (GTK_BOX (vbox30), check_FPU_Clamp, FALSE, FALSE, 0);
-
-  check_Slow_DVD = gtk_check_button_new_with_mnemonic (_("Slow DVD access (fixes Tales of the Abyss)"));
-  gtk_widget_show (check_Slow_DVD);
-  gtk_box_pack_start (GTK_BOX (vbox30), check_Slow_DVD, FALSE, FALSE, 0);
-
-  check_VU_Branch = gtk_check_button_new_with_mnemonic (_("VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!"));
-  gtk_widget_show (check_VU_Branch);
-  gtk_box_pack_start (GTK_BOX (vbox30), check_VU_Branch, FALSE, FALSE, 0);
-
-  label42 = gtk_label_new (_("<b>Some games need special settings.\nConfigure them here.</b>"));
-  gtk_widget_show (label42);
-  gtk_frame_set_label_widget (GTK_FRAME (GameSettings), label42);
-  gtk_label_set_use_markup (GTK_LABEL (label42), TRUE);
-
-  dialog_action_area1 = GTK_DIALOG (GameFixDlg)->action_area;
-  gtk_widget_show (dialog_action_area1);
-  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
-
-  cancelbutton1 = gtk_button_new_from_stock ("gtk-ok");
-  gtk_widget_show (cancelbutton1);
-  gtk_dialog_add_action_widget (GTK_DIALOG (GameFixDlg), cancelbutton1, GTK_RESPONSE_OK);
-  GTK_WIDGET_SET_FLAGS (cancelbutton1, GTK_CAN_DEFAULT);
-
-  button83 = gtk_button_new_from_stock ("gtk-cancel");
-  gtk_widget_show (button83);
-  gtk_dialog_add_action_widget (GTK_DIALOG (GameFixDlg), button83, GTK_RESPONSE_CANCEL);
-  GTK_WIDGET_SET_FLAGS (button83, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) cancelbutton1, "clicked",
-                    G_CALLBACK (on_Game_Fix_OK),
-                    NULL);
-  g_signal_connect ((gpointer) button83, "clicked",
-                    G_CALLBACK (on_Game_Fix_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, GameFixDlg, "GameFixDlg");
-  GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, dialog_vbox1, "dialog_vbox1");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, GameSettings, "GameSettings");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, alignment5, "alignment5");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, vbox30, "vbox30");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Clip, "check_VU_Clip");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, check_FPU_Clamp, "check_FPU_Clamp");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, check_Slow_DVD, "check_Slow_DVD");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Branch, "check_VU_Branch");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, label42, "label42");
-  GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, dialog_action_area1, "dialog_action_area1");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, cancelbutton1, "cancelbutton1");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, button83, "button83");
-
-  return GameFixDlg;
-}
-
-GtkWidget*
-create_SpeedHacksDlg (void)
-{
-  GtkWidget *SpeedHacksDlg;
-  GtkWidget *dialog_vbox3;
-  GtkWidget *vbox31;
-  GtkWidget *label43;
-  GtkWidget *frame11;
-  GtkWidget *alignment6;
-  GtkWidget *vbox32;
-  GtkWidget *hbox22;
-  GtkWidget *ComboVUOverflow;
-  GtkWidget *label52;
-  GtkWidget *hbox23;
-  GtkWidget *ComboFPUOverflow;
-  GtkWidget *label53;
-  GtkWidget *check_Disable_Underflow;
-  GtkWidget *label44;
-  GtkWidget *frame12;
-  GtkWidget *alignment7;
-  GtkWidget *vbox35;
-  GtkWidget *check_Disable_VU_Flags;
-  GtkWidget *check_Disable_FPU_Flags;
-  GtkWidget *label45;
-  GtkWidget *frame13;
-  GtkWidget *alignment8;
-  GtkWidget *vbox34;
-  GtkWidget *check_EE_Double_Sync;
-  GtkWidget *check_IOP_Double_Sync;
-  GtkWidget *check_Triple_Sync;
-  GtkWidget *label46;
-  GtkWidget *frame14;
-  GtkWidget *alignment9;
-  GtkWidget *vbox33;
-  GtkWidget *check_EE_Fast_Branches;
-  GtkWidget *check_Tight_SPU_Sync;
-  GtkWidget *check_ESC_Hack;
-  GtkWidget *label47;
-  GtkWidget *dialog_action_area3;
-  GtkWidget *button73;
-  GtkWidget *button74;
-  GtkWidget *button75;
-  GtkWidget *button76;
-
-  SpeedHacksDlg = gtk_dialog_new ();
-  gtk_window_set_title (GTK_WINDOW (SpeedHacksDlg), _("PCSX2 Speed Hacks"));
-  gtk_window_set_type_hint (GTK_WINDOW (SpeedHacksDlg), GDK_WINDOW_TYPE_HINT_DIALOG);
-
-  dialog_vbox3 = GTK_DIALOG (SpeedHacksDlg)->vbox;
-  gtk_widget_show (dialog_vbox3);
-
-  vbox31 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox31);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox3), vbox31, TRUE, TRUE, 0);
-
-  label43 = gtk_label_new (_("These hacks will affect the speed of PCSX2 but possibly compromise compatibility.\nIf you have problems, Disable all of these and try again."));
-  gtk_widget_show (label43);
-  gtk_box_pack_start (GTK_BOX (vbox31), label43, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label43), GTK_JUSTIFY_CENTER);
-
-  frame11 = gtk_frame_new (NULL);
-  gtk_widget_show (frame11);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame11, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame11), GTK_SHADOW_NONE);
-
-  alignment6 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment6);
-  gtk_container_add (GTK_CONTAINER (frame11), alignment6);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment6), 0, 0, 12, 0);
-
-  vbox32 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox32);
-  gtk_container_add (GTK_CONTAINER (alignment6), vbox32);
-
-  hbox22 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox22);
-  gtk_box_pack_start (GTK_BOX (vbox32), hbox22, FALSE, FALSE, 0);
-
-  ComboVUOverflow = gtk_combo_box_new_text ();
-  gtk_widget_show (ComboVUOverflow);
-  gtk_box_pack_start (GTK_BOX (hbox22), ComboVUOverflow, FALSE, TRUE, 0);
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Disabled (Speedup!)"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Normal"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Enabled (Helps SPS, Slow)"));
-
-  label52 = gtk_label_new (_("VU Overflow Checks"));
-  gtk_widget_show (label52);
-  gtk_box_pack_start (GTK_BOX (hbox22), label52, FALSE, FALSE, 0);
-
-  hbox23 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox23);
-  gtk_box_pack_start (GTK_BOX (vbox32), hbox23, FALSE, FALSE, 0);
-
-  ComboFPUOverflow = gtk_combo_box_new_text ();
-  gtk_widget_show (ComboFPUOverflow);
-  gtk_box_pack_start (GTK_BOX (hbox23), ComboFPUOverflow, FALSE, TRUE, 0);
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Disabled (Speedup!)"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Normal"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Enabled (Helps SPS, Slow)"));
-
-  label53 = gtk_label_new (_("FPU Overflow Checks"));
-  gtk_widget_show (label53);
-  gtk_box_pack_start (GTK_BOX (hbox23), label53, FALSE, FALSE, 0);
-
-  check_Disable_Underflow = gtk_check_button_new_with_mnemonic (_("Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )"));
-  gtk_widget_show (check_Disable_Underflow);
-  gtk_box_pack_start (GTK_BOX (vbox32), check_Disable_Underflow, FALSE, FALSE, 0);
-
-  label44 = gtk_label_new (_("<b>Overflow and Underflow</b>"));
-  gtk_widget_show (label44);
-  gtk_frame_set_label_widget (GTK_FRAME (frame11), label44);
-  gtk_label_set_use_markup (GTK_LABEL (label44), TRUE);
-
-  frame12 = gtk_frame_new (NULL);
-  gtk_widget_show (frame12);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame12, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame12), GTK_SHADOW_NONE);
-
-  alignment7 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment7);
-  gtk_container_add (GTK_CONTAINER (frame12), alignment7);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment7), 0, 0, 12, 0);
-
-  vbox35 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox35);
-  gtk_container_add (GTK_CONTAINER (alignment7), vbox35);
-
-  check_Disable_VU_Flags = gtk_check_button_new_with_mnemonic (_("Disable Extra VU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )"));
-  gtk_widget_show (check_Disable_VU_Flags);
-  gtk_box_pack_start (GTK_BOX (vbox35), check_Disable_VU_Flags, FALSE, FALSE, 0);
-
-  check_Disable_FPU_Flags = gtk_check_button_new_with_mnemonic (_("Disable Extra FPU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )"));
-  gtk_widget_show (check_Disable_FPU_Flags);
-  gtk_box_pack_start (GTK_BOX (vbox35), check_Disable_FPU_Flags, FALSE, FALSE, 0);
-
-  label45 = gtk_label_new (_("<b>Flag Settings</b>"));
-  gtk_widget_show (label45);
-  gtk_frame_set_label_widget (GTK_FRAME (frame12), label45);
-  gtk_label_set_use_markup (GTK_LABEL (label45), TRUE);
-
-  frame13 = gtk_frame_new (NULL);
-  gtk_widget_show (frame13);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame13, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame13), GTK_SHADOW_NONE);
-
-  alignment8 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment8);
-  gtk_container_add (GTK_CONTAINER (frame13), alignment8);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment8), 0, 0, 12, 0);
-
-  vbox34 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox34);
-  gtk_container_add (GTK_CONTAINER (alignment8), vbox34);
-
-  check_EE_Double_Sync = gtk_check_button_new_with_mnemonic (_("EE Sync Hack (x2) - Doubles the cycle rate of the EE. ( Big Speedup in most games! )"));
-  gtk_widget_show (check_EE_Double_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox34), check_EE_Double_Sync, FALSE, FALSE, 0);
-
-  check_IOP_Double_Sync = gtk_check_button_new_with_mnemonic (_("IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )"));
-  gtk_widget_show (check_IOP_Double_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox34), check_IOP_Double_Sync, FALSE, FALSE, 0);
-
-  check_Triple_Sync = gtk_check_button_new_with_mnemonic (_("EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Sometimes speeds games a bit more, but can break games. )"));
-  gtk_widget_show (check_Triple_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox34), check_Triple_Sync, FALSE, FALSE, 0);
-
-  label46 = gtk_label_new (_("<b>Sync Hacks</b>"));
-  gtk_widget_show (label46);
-  gtk_frame_set_label_widget (GTK_FRAME (frame13), label46);
-  gtk_label_set_use_markup (GTK_LABEL (label46), TRUE);
-
-  frame14 = gtk_frame_new (NULL);
-  gtk_widget_show (frame14);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame14, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame14), GTK_SHADOW_NONE);
-
-  alignment9 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment9);
-  gtk_container_add (GTK_CONTAINER (frame14), alignment9);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment9), 0, 0, 12, 0);
-
-  vbox33 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox33);
-  gtk_container_add (GTK_CONTAINER (alignment9), vbox33);
-
-  check_EE_Fast_Branches = gtk_check_button_new_with_mnemonic (_("EE/IOP Fast Branches - Quick branching ( Very small speedup; Not Recommended!  )"));
-  gtk_widget_show (check_EE_Fast_Branches);
-  gtk_box_pack_start (GTK_BOX (vbox33), check_EE_Fast_Branches, FALSE, FALSE, 0);
-
-  check_Tight_SPU_Sync = gtk_check_button_new_with_mnemonic (_("Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore."));
-  gtk_widget_show (check_Tight_SPU_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox33), check_Tight_SPU_Sync, FALSE, FALSE, 0);
-
-  check_ESC_Hack = gtk_check_button_new_with_mnemonic (_("Escape Hack - Use Esc key to fully exit PCSX2."));
-  gtk_widget_show (check_ESC_Hack);
-  gtk_box_pack_start (GTK_BOX (vbox33), check_ESC_Hack, FALSE, FALSE, 0);
-
-  label47 = gtk_label_new (_("<b>Misc</b>"));
-  gtk_widget_show (label47);
-  gtk_frame_set_label_widget (GTK_FRAME (frame14), label47);
-  gtk_label_set_use_markup (GTK_LABEL (label47), TRUE);
-
-  dialog_action_area3 = GTK_DIALOG (SpeedHacksDlg)->action_area;
-  gtk_widget_show (dialog_action_area3);
-  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area3), GTK_BUTTONBOX_END);
-
-  button73 = gtk_button_new_with_mnemonic (_("Compatability"));
-  gtk_widget_show (button73);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button73, 0);
-  GTK_WIDGET_SET_FLAGS (button73, GTK_CAN_DEFAULT);
-
-  button74 = gtk_button_new_with_mnemonic (_("Speed"));
-  gtk_widget_show (button74);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button74, 0);
-  GTK_WIDGET_SET_FLAGS (button74, GTK_CAN_DEFAULT);
-
-  button75 = gtk_button_new_from_stock ("gtk-ok");
-  gtk_widget_show (button75);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button75, GTK_RESPONSE_OK);
-  GTK_WIDGET_SET_FLAGS (button75, GTK_CAN_DEFAULT);
-
-  button76 = gtk_button_new_from_stock ("gtk-cancel");
-  gtk_widget_show (button76);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button76, GTK_RESPONSE_CANCEL);
-  GTK_WIDGET_SET_FLAGS (button76, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button73, "clicked",
-                    G_CALLBACK (on_Speed_Hack_Compatability),
-                    NULL);
-  g_signal_connect ((gpointer) button74, "clicked",
-                    G_CALLBACK (on_Speed_Hack_Speed),
-                    NULL);
-  g_signal_connect ((gpointer) button75, "clicked",
-                    G_CALLBACK (on_Speed_Hack_OK),
-                    NULL);
-  g_signal_connect ((gpointer) button76, "clicked",
-                    G_CALLBACK (on_Speed_Hack_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, SpeedHacksDlg, "SpeedHacksDlg");
-  GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_vbox3, "dialog_vbox3");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox31, "vbox31");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label43, "label43");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame11, "frame11");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment6, "alignment6");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox32, "vbox32");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hbox22, "hbox22");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, ComboVUOverflow, "ComboVUOverflow");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label52, "label52");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hbox23, "hbox23");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, ComboFPUOverflow, "ComboFPUOverflow");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label53, "label53");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_Underflow, "check_Disable_Underflow");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label44, "label44");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame12, "frame12");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment7, "alignment7");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox35, "vbox35");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_VU_Flags, "check_Disable_VU_Flags");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_FPU_Flags, "check_Disable_FPU_Flags");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label45, "label45");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame13, "frame13");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment8, "alignment8");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox34, "vbox34");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_EE_Double_Sync, "check_EE_Double_Sync");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_IOP_Double_Sync, "check_IOP_Double_Sync");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Triple_Sync, "check_Triple_Sync");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label46, "label46");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame14, "frame14");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment9, "alignment9");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox33, "vbox33");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_EE_Fast_Branches, "check_EE_Fast_Branches");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Tight_SPU_Sync, "check_Tight_SPU_Sync");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_ESC_Hack, "check_ESC_Hack");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label47, "label47");
-  GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_action_area3, "dialog_action_area3");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button73, "button73");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button74, "button74");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button75, "button75");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button76, "button76");
-
-  return SpeedHacksDlg;
-}
-
-GtkWidget*
-create_AdvDlg (void)
-{
-  GtkWidget *AdvDlg;
-  GtkWidget *dialog_vbox4;
-  GtkWidget *hbox21;
-  GtkWidget *frame15;
-  GtkWidget *alignment10;
-  GtkWidget *vbox36;
-  GtkWidget *frame17;
-  GtkWidget *alignment12;
-  GtkWidget *vbox38;
-  GtkWidget *radio_EE_Round_Near;
-  GSList *radio_EE_Round_Near_group = NULL;
-  GtkWidget *radio_EE_Round_Negative;
-  GtkWidget *radio_EE_Round_Positive;
-  GtkWidget *radio_EE_Round_Zero;
-  GtkWidget *label50;
-  GtkWidget *check_EE_Flush_Zero;
-  GtkWidget *check_EE_Denormal_Zero;
-  GtkWidget *label48;
-  GtkWidget *frame16;
-  GtkWidget *alignment11;
-  GtkWidget *vbox37;
-  GtkWidget *frame18;
-  GtkWidget *alignment13;
-  GtkWidget *vbox39;
-  GtkWidget *radio_VU_Round_Near;
-  GSList *radio_VU_Round_Near_group = NULL;
-  GtkWidget *radio_VU_Round_Negative;
-  GtkWidget *radio_VU_Round_Positive;
-  GtkWidget *radio_VU_Round_Zero;
-  GtkWidget *label51;
-  GtkWidget *check_VU_Flush_Zero;
-  GtkWidget *check_VU_Denormal_Zero;
-  GtkWidget *label49;
-  GtkWidget *dialog_action_area4;
-  GtkWidget *AdvDefaultBtn;
-  GtkWidget *button79;
-  GtkWidget *button80;
-
-  AdvDlg = gtk_dialog_new ();
-  gtk_window_set_title (GTK_WINDOW (AdvDlg), _("Advanced Options"));
-  gtk_window_set_type_hint (GTK_WINDOW (AdvDlg), GDK_WINDOW_TYPE_HINT_DIALOG);
-
-  dialog_vbox4 = GTK_DIALOG (AdvDlg)->vbox;
-  gtk_widget_show (dialog_vbox4);
-
-  hbox21 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox21);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox4), hbox21, TRUE, TRUE, 0);
-
-  frame15 = gtk_frame_new (NULL);
-  gtk_widget_show (frame15);
-  gtk_box_pack_start (GTK_BOX (hbox21), frame15, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame15), GTK_SHADOW_NONE);
-
-  alignment10 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment10);
-  gtk_container_add (GTK_CONTAINER (frame15), alignment10);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment10), 0, 0, 12, 0);
-
-  vbox36 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox36);
-  gtk_container_add (GTK_CONTAINER (alignment10), vbox36);
-
-  frame17 = gtk_frame_new (NULL);
-  gtk_widget_show (frame17);
-  gtk_box_pack_start (GTK_BOX (vbox36), frame17, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame17), GTK_SHADOW_NONE);
-
-  alignment12 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment12);
-  gtk_container_add (GTK_CONTAINER (frame17), alignment12);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment12), 0, 0, 12, 0);
-
-  vbox38 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox38);
-  gtk_container_add (GTK_CONTAINER (alignment12), vbox38);
-
-  radio_EE_Round_Near = gtk_radio_button_new_with_mnemonic (NULL, _("Nearest"));
-  gtk_widget_show (radio_EE_Round_Near);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Near, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Near), radio_EE_Round_Near_group);
-  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Near));
-
-  radio_EE_Round_Negative = gtk_radio_button_new_with_mnemonic (NULL, _("Negative"));
-  gtk_widget_show (radio_EE_Round_Negative);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Negative, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Negative), radio_EE_Round_Near_group);
-  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Negative));
-
-  radio_EE_Round_Positive = gtk_radio_button_new_with_mnemonic (NULL, _("Positive"));
-  gtk_widget_show (radio_EE_Round_Positive);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Positive, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Positive), radio_EE_Round_Near_group);
-  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Positive));
-
-  radio_EE_Round_Zero = gtk_radio_button_new_with_mnemonic (NULL, _("Zero"));
-  gtk_widget_show (radio_EE_Round_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Zero, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Zero), radio_EE_Round_Near_group);
-  radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Zero));
-
-  label50 = gtk_label_new (_("<b>Roundmode</b>"));
-  gtk_widget_show (label50);
-  gtk_frame_set_label_widget (GTK_FRAME (frame17), label50);
-  gtk_label_set_use_markup (GTK_LABEL (label50), TRUE);
-
-  check_EE_Flush_Zero = gtk_check_button_new_with_mnemonic (_("Flush to Zero"));
-  gtk_widget_show (check_EE_Flush_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox36), check_EE_Flush_Zero, FALSE, FALSE, 0);
-
-  check_EE_Denormal_Zero = gtk_check_button_new_with_mnemonic (_("Denormals are Zero"));
-  gtk_widget_show (check_EE_Denormal_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox36), check_EE_Denormal_Zero, FALSE, FALSE, 0);
-
-  label48 = gtk_label_new (_("<b>EE Recs Options</b>"));
-  gtk_widget_show (label48);
-  gtk_frame_set_label_widget (GTK_FRAME (frame15), label48);
-  gtk_label_set_use_markup (GTK_LABEL (label48), TRUE);
-
-  frame16 = gtk_frame_new (NULL);
-  gtk_widget_show (frame16);
-  gtk_box_pack_start (GTK_BOX (hbox21), frame16, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame16), GTK_SHADOW_NONE);
-
-  alignment11 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment11);
-  gtk_container_add (GTK_CONTAINER (frame16), alignment11);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment11), 0, 0, 12, 0);
-
-  vbox37 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox37);
-  gtk_container_add (GTK_CONTAINER (alignment11), vbox37);
-
-  frame18 = gtk_frame_new (NULL);
-  gtk_widget_show (frame18);
-  gtk_box_pack_start (GTK_BOX (vbox37), frame18, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame18), GTK_SHADOW_NONE);
-
-  alignment13 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment13);
-  gtk_container_add (GTK_CONTAINER (frame18), alignment13);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment13), 0, 0, 12, 0);
-
-  vbox39 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox39);
-  gtk_container_add (GTK_CONTAINER (alignment13), vbox39);
-
-  radio_VU_Round_Near = gtk_radio_button_new_with_mnemonic (NULL, _("Nearest"));
-  gtk_widget_show (radio_VU_Round_Near);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Near, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Near), radio_VU_Round_Near_group);
-  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Near));
-
-  radio_VU_Round_Negative = gtk_radio_button_new_with_mnemonic (NULL, _("Negative"));
-  gtk_widget_show (radio_VU_Round_Negative);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Negative, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Negative), radio_VU_Round_Near_group);
-  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Negative));
-
-  radio_VU_Round_Positive = gtk_radio_button_new_with_mnemonic (NULL, _("Positive"));
-  gtk_widget_show (radio_VU_Round_Positive);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Positive, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Positive), radio_VU_Round_Near_group);
-  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Positive));
-
-  radio_VU_Round_Zero = gtk_radio_button_new_with_mnemonic (NULL, _("Zero"));
-  gtk_widget_show (radio_VU_Round_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Zero, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Zero), radio_VU_Round_Near_group);
-  radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Zero));
-
-  label51 = gtk_label_new (_("<b>Roundmode</b>"));
-  gtk_widget_show (label51);
-  gtk_frame_set_label_widget (GTK_FRAME (frame18), label51);
-  gtk_label_set_use_markup (GTK_LABEL (label51), TRUE);
-
-  check_VU_Flush_Zero = gtk_check_button_new_with_mnemonic (_("Flush to Zero"));
-  gtk_widget_show (check_VU_Flush_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox37), check_VU_Flush_Zero, FALSE, FALSE, 0);
-
-  check_VU_Denormal_Zero = gtk_check_button_new_with_mnemonic (_("Denormals are Zero"));
-  gtk_widget_show (check_VU_Denormal_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox37), check_VU_Denormal_Zero, FALSE, FALSE, 0);
-
-  label49 = gtk_label_new (_("<b>VU Recs Options</b>"));
-  gtk_widget_show (label49);
-  gtk_frame_set_label_widget (GTK_FRAME (frame16), label49);
-  gtk_label_set_use_markup (GTK_LABEL (label49), TRUE);
-
-  dialog_action_area4 = GTK_DIALOG (AdvDlg)->action_area;
-  gtk_widget_show (dialog_action_area4);
-  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area4), GTK_BUTTONBOX_SPREAD);
-
-  AdvDefaultBtn = gtk_button_new_with_mnemonic (_("Defaults"));
-  gtk_widget_show (AdvDefaultBtn);
-  gtk_dialog_add_action_widget (GTK_DIALOG (AdvDlg), AdvDefaultBtn, 0);
-  GTK_WIDGET_SET_FLAGS (AdvDefaultBtn, GTK_CAN_DEFAULT);
-
-  button79 = gtk_button_new_from_stock ("gtk-ok");
-  gtk_widget_show (button79);
-  gtk_dialog_add_action_widget (GTK_DIALOG (AdvDlg), button79, GTK_RESPONSE_OK);
-  GTK_WIDGET_SET_FLAGS (button79, GTK_CAN_DEFAULT);
-
-  button80 = gtk_button_new_from_stock ("gtk-cancel");
-  gtk_widget_show (button80);
-  gtk_dialog_add_action_widget (GTK_DIALOG (AdvDlg), button80, GTK_RESPONSE_CANCEL);
-  GTK_WIDGET_SET_FLAGS (button80, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) AdvDefaultBtn, "clicked",
-                    G_CALLBACK (on_Advanced_Defaults),
-                    NULL);
-  g_signal_connect ((gpointer) button79, "clicked",
-                    G_CALLBACK (on_Advanced_OK),
-                    NULL);
-  g_signal_connect ((gpointer) button80, "clicked",
-                    G_CALLBACK (on_Advanced_Cancel),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, AdvDlg, "AdvDlg");
-  GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, dialog_vbox4, "dialog_vbox4");
-  GLADE_HOOKUP_OBJECT (AdvDlg, hbox21, "hbox21");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame15, "frame15");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment10, "alignment10");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox36, "vbox36");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame17, "frame17");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment12, "alignment12");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox38, "vbox38");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Near, "radio_EE_Round_Near");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Negative, "radio_EE_Round_Negative");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Positive, "radio_EE_Round_Positive");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Zero, "radio_EE_Round_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label50, "label50");
-  GLADE_HOOKUP_OBJECT (AdvDlg, check_EE_Flush_Zero, "check_EE_Flush_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, check_EE_Denormal_Zero, "check_EE_Denormal_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label48, "label48");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame16, "frame16");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment11, "alignment11");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox37, "vbox37");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame18, "frame18");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment13, "alignment13");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox39, "vbox39");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Near, "radio_VU_Round_Near");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Negative, "radio_VU_Round_Negative");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Positive, "radio_VU_Round_Positive");
-  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Zero, "radio_VU_Round_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label51, "label51");
-  GLADE_HOOKUP_OBJECT (AdvDlg, check_VU_Flush_Zero, "check_VU_Flush_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, check_VU_Denormal_Zero, "check_VU_Denormal_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label49, "label49");
-  GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, dialog_action_area4, "dialog_action_area4");
-  GLADE_HOOKUP_OBJECT (AdvDlg, AdvDefaultBtn, "AdvDefaultBtn");
-  GLADE_HOOKUP_OBJECT (AdvDlg, button79, "button79");
-  GLADE_HOOKUP_OBJECT (AdvDlg, button80, "button80");
-
-  return AdvDlg;
+  GLADE_HOOKUP_OBJECT_NO_REF (PatchFinderWindow, PatchFinderWindow, "PatchFinderWindow");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, hbox25, "hbox25");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, vbox43, "vbox43");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, frame19, "frame19");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, alignment14, "alignment14");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, vbox44, "vbox44");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton1, "radiobutton1");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton2, "radiobutton2");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, label55, "label55");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, frame20, "frame20");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, alignment15, "alignment15");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, table6, "table6");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton3, "radiobutton3");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton4, "radiobutton4");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton5, "radiobutton5");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton6, "radiobutton6");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, checkbutton1, "checkbutton1");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, label56, "label56");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, frame21, "frame21");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, alignment16, "alignment16");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, vbox45, "vbox45");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton7, "radiobutton7");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton8, "radiobutton8");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton9, "radiobutton9");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton10, "radiobutton10");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton11, "radiobutton11");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton12, "radiobutton12");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, label57, "label57");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, frame22, "frame22");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, alignment17, "alignment17");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, vbox46, "vbox46");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton13, "radiobutton13");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, radiobutton14, "radiobutton14");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, entry1, "entry1");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, label58, "label58");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, vbox41, "vbox41");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, vbox42, "vbox42");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, hbox26, "hbox26");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, label59, "label59");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, label60, "label60");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, label61, "label61");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, scrolledwindow3, "scrolledwindow3");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, treeview2, "treeview2");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, table5, "table5");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, button92, "button92");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, button93, "button93");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, button94, "button94");
+  GLADE_HOOKUP_OBJECT (PatchFinderWindow, button95, "button95");
+
+  return PatchFinderWindow;
 }
 
