@@ -5270,11 +5270,11 @@ void recVUMI_ESADD( VURegs *VU, int info)
 {
 	//SysPrintf("VU: ESADD\n");
 	assert( VU == &VU1 );
-	if( EEREC_TEMP == EEREC_D ) { // special code to reset P (don't know if this is still useful!)
+	/*if( EEREC_TEMP == EEREC_D ) { // special code to reset P (don't know if this is still useful!)
 		SysPrintf("ESADD: Resetting P reg!!!\n");
 		MOV32ItoM(VU_VI_ADDR(REG_P, 0), 0);
 		return;
-	}
+	}*/
 	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_D);
@@ -5386,14 +5386,14 @@ void recVUMI_ESUM( VURegs *VU, int info )
 
 void recVUMI_ERCPR( VURegs *VU, int info )
 {
-	int t1reg;
+	//int t1reg;
 	assert( VU == &VU1 );
 	
 	//SysPrintf("VU1: ERCPR\n");
-	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
+	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE); // temp <- 1
 
 	// don't use RCPSS (very bad precision)
-	if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+	//if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
 		switch ( _Fsf_ ) {
 			case 0: //0001
 				if (CHECK_EXTRA_OVERFLOW) vuFloat(info, EEREC_S, 8);
@@ -5418,7 +5418,7 @@ void recVUMI_ERCPR( VURegs *VU, int info )
 				SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
 				break;
 		}
-	}
+	/*}
 	else {
 		if (CHECK_EXTRA_OVERFLOW) {
 			t1reg = _vuGetTempXMMreg(info);
@@ -5434,7 +5434,7 @@ void recVUMI_ERCPR( VURegs *VU, int info )
 			}
 		}
 		else SSE_DIVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
-	}
+	}*/
 
 	vuFloat(info, EEREC_TEMP, 8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
@@ -5446,16 +5446,16 @@ void recVUMI_ESQRT( VURegs *VU, int info )
 
 	//SysPrintf("VU1: ESQRT\n");
 	if( _Fsf_ ) {
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		//if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 			vuFloat(info, EEREC_TEMP, 8);
 			SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-		}
+		/*}
 		else {
 			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
 			vuFloat(info, EEREC_TEMP, 8);
 			SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-		}
+		}*/
 	}
 	else {
 		vuFloat(info, EEREC_S, 8);
@@ -5468,16 +5468,15 @@ void recVUMI_ESQRT( VURegs *VU, int info )
 void recVUMI_ERSQRT( VURegs *VU, int info )
 {
 	int t1reg = _vuGetTempXMMreg(info);
-	int vftemp = ALLOCTEMPX86(MODE_8BITREG);
  
 	assert( VU == &VU1 );
 	//SysPrintf("VU1: ERSQRT\n");
 
-	if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+	//if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
 		if( _Fsf_ ) _unpackVF_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 		else SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-	}
-	else SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
+	//}
+	//else SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
  
 	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); // abs(x)
 	SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); // Clamp Infinities to Fmax
@@ -5485,7 +5484,7 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 
 	if( t1reg >= 0 )
 	{
-		SSE_MOVSS_M32_to_XMM(t1reg, (uptr)&VU->VF[0].UL[3]);
+		SSE_MOVSS_M32_to_XMM(t1reg, (uptr)VU_ONE);
 		SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP);
 		vuFloat(info, t1reg, 8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), t1reg);
@@ -5494,12 +5493,11 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 	else
 	{
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
-		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
+		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE);
 		SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_P, 0));
 		vuFloat(info, EEREC_TEMP, 8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 	}
-	_freeX86reg(vftemp);
 }
 
 void recVUMI_ESIN( VURegs *VU, int info )
