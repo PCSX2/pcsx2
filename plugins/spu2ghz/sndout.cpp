@@ -19,9 +19,6 @@
 #include "SoundTouch/SoundTouch.h"
 #include "SoundTouch/WavFile.h"
 
-const u32 BufferBlockSize = 128;
-const u32 BufferTotalSize = 128 * 32;
-
 class NullOutModule: public SndOutModule
 {
 	s32  Init(SndBuffer *)  { return 0; }
@@ -219,18 +216,18 @@ public:
 		}
 		if(writewaits>0)
 		{
-			if(buffer_limit>(3*BufferBlockSize))
+			if(buffer_limit>(3*CurBufferSize))
 			{
-				buffer_limit=max(3*BufferBlockSize,buffer_limit*3/4);
+				buffer_limit=max(3*CurBufferSize,buffer_limit*3/4);
 				writewaits=0;
 			}
 			if(writewaits>10) writewaits=10;
 		}
 		if(overflows>0)
 		{
-			if(buffer_limit>(3*BufferBlockSize))
+			if(buffer_limit>(3*CurBufferSize))
 			{
-				buffer_limit=max(3*BufferBlockSize,buffer_limit*3/4);
+				buffer_limit=max(3*CurBufferSize,buffer_limit*3/4);
 				overflows=0;
 			}
 			if(overflows>3) overflows=3;
@@ -285,7 +282,8 @@ float valAccum2=0;
 float valAccum3=0;
 u32   numAccum=1;
 
-const u32 numUpdates = 64;
+
+const u32 numUpdates = 112;
 
 float lastTempo=1;
 float cTempo=1;
@@ -314,20 +312,20 @@ void UpdateTempoChange()
 	s32 bufferUsage = sndBuffer->GetBufferUsage();
 	s32 bufferSize  = sndBuffer->GetBufferSize();
  
-	bool a=(bufferUsage < BufferBlockSize * 4);
-	bool b=(bufferUsage >= (bufferSize - BufferBlockSize * 4));
+	bool a=(bufferUsage < CurBufferSize * 4);
+	bool b=(bufferUsage >= (bufferSize - CurBufferSize * 4));
  
 	if(a!=b)
 	{
-		if     (bufferUsage < BufferBlockSize)	 { cTempo*=0.75f; }
-		else if(bufferUsage < BufferBlockSize * 2) { cTempo*=0.90f; }
-		else if(bufferUsage < BufferBlockSize * 3) { cTempo*=0.95f; }
-		else if(bufferUsage < BufferBlockSize * 4) { cTempo*=0.99f; }
+		if     (bufferUsage < CurBufferSize)	 { cTempo*=0.75f; }
+		else if(bufferUsage < CurBufferSize * 2) { cTempo*=0.90f; }
+		else if(bufferUsage < CurBufferSize * 3) { cTempo*=0.95f; }
+		else if(bufferUsage < CurBufferSize * 4) { cTempo*=0.99f; }
  
-		if     (bufferUsage > (bufferSize - BufferBlockSize))     { cTempo*=1.25f; }
-		else if(bufferUsage > (bufferSize - BufferBlockSize * 2)) { cTempo*=1.10f; }
-		else if(bufferUsage > (bufferSize - BufferBlockSize * 3)) { cTempo*=1.05f; }
-		else if(bufferUsage > (bufferSize - BufferBlockSize * 4)) { cTempo*=1.01f; }
+		if     (bufferUsage > (bufferSize - CurBufferSize))     { cTempo*=1.25f; }
+		else if(bufferUsage > (bufferSize - CurBufferSize * 2)) { cTempo*=1.10f; }
+		else if(bufferUsage > (bufferSize - CurBufferSize * 3)) { cTempo*=1.05f; }
+		else if(bufferUsage > (bufferSize - CurBufferSize * 4)) { cTempo*=1.01f; }
  
 		pSoundTouch->setTempo(cTempo);
 	}
@@ -354,12 +352,12 @@ void UpdateTempoChange()
  
 		if((valAccum<1.05)&&(valAccum>0.95)&&(valAccum!=1)) 
 		{
-			printf("Current Output Speed: %f (difference disregarded, using 1.0).\n",valAccum);
+			printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
 			valAccum = 1;
 		}
 		else
 		{
-			printf("Current Output Speed: %f\n",valAccum);
+			printf("Timestretch Debug > Playbackpeed: %f\n",valAccum);
 		}
  
 		pSoundTouch->setTempo(valAccum);
@@ -389,7 +387,7 @@ s32 SndInit()
 		return -1;
 
 	// initialize sound buffer
-	sndBuffer = new SndBufferImpl(BufferTotalSize * 2);
+	sndBuffer = new SndBufferImpl(CurBufferSize * MaxBufferCount * 2);
 	sndTempSize = 512;
 	sndTempProgress = 0;
 	sndTempBuffer = new s32[sndTempSize];

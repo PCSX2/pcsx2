@@ -34,12 +34,12 @@ const unsigned char build	 = 9;	// increase that with each version
 
 static char *libraryName	  = "GiGaHeRz's SPU2 (" 
 #ifdef _DEBUG
-	"Debug "
+	"Playground Debug "
 #endif
 #ifdef PUBLIC
-	"Public "
+	"Playground Mod"
 #endif
-"Beta)";
+")";
 
 DWORD CALLBACK TimeThread(PVOID /* unused param */);
 
