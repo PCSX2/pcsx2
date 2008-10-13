@@ -191,10 +191,12 @@ void psxDma10(u32 madr, u32 bcr, u32 chcr) {
 	iopsifbusy[1] = 1;
 	psHu32(0x1000F240) |= 0x4000;
 	if (eesifbusy[1] == 1 && iopsifbusy[1] == 1) {
+		FreezeXMMRegs(1);
 		SIF1Dma();
 		psHu32(0x1000F240) &= ~0x40;
 		psHu32(0x1000F240) &= ~0x100;
 		psHu32(0x1000F240) &= ~0x4000;
+		FreezeXMMRegs(0);
 	}
 }
 

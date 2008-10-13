@@ -5228,22 +5228,25 @@ void recVUMI_WAITP(VURegs *VU, int info)
 }
 
 // in all EFU insts, EEREC_D is a temp reg
-void vuSqSumXYZ(int regd, int regs, int regtemp)
+void vuSqSumXYZ(int regd, int regs, int regtemp) // regd.x =  x ^ 2 + y ^ 2 + z ^ 2
 {
+	//SysPrintf("VU: SUMXYZ\n");
 	if( cpucaps.hasStreamingSIMD4Extensions )
 	{
 		SSE_MOVAPS_XMM_to_XMM(regd, regs);
+		if (CHECK_EXTRA_OVERFLOW) vuFloat2(regd, regtemp, 0x8);
 		SSE4_DPPS_XMM_to_XMM(regd, regd, 0x71);
 	}
 	else 
 	{
 		SSE_MOVAPS_XMM_to_XMM(regtemp, regs);
+		if (CHECK_EXTRA_OVERFLOW) vuFloat2(regtemp, regd, 0x8);
 		SSE_MULPS_XMM_to_XMM(regtemp, regtemp); // xyzw ^ 2
 
 		if( cpucaps.hasStreamingSIMD3Extensions ) {
 			SSE3_HADDPS_XMM_to_XMM(regd, regtemp);
-			SSE_ADDPS_XMM_to_XMM(regd, regtemp); // regd.z = x+y+z
-			SSE_MOVHLPS_XMM_to_XMM(regd, regd); // move to x
+			SSE_ADDPS_XMM_to_XMM(regd, regtemp); // regd.z = x ^ 2 + y ^ 2 + z ^ 2
+			SSE_MOVHLPS_XMM_to_XMM(regd, regd); // regd.x = regd.z
 		}
 		else {
 			SSE_MOVSS_XMM_to_XMM(regd, regtemp);
@@ -5252,83 +5255,42 @@ void vuSqSumXYZ(int regd, int regs, int regtemp)
 			SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xD2); // wzxy -> wxyz 
 			SSE_ADDSS_XMM_to_XMM(regd, regtemp); // x ^ 2 + y ^ 2 + z ^ 2
 			//SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xC6);
+
+			/* TODO: check if this code does the same thing as above code
+			SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x55);
+			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+			*/
 		}
 	}
-
-	//SysPrintf("SUMXYZ\n");
 }
 
 void recVUMI_ESADD( VURegs *VU, int info)
 {
+	//SysPrintf("VU: ESADD\n");
 	assert( VU == &VU1 );
-	//SysPrintf("ESADD\n");
 	if( EEREC_TEMP == EEREC_D ) { // special code to reset P (don't know if this is still useful!)
 		SysPrintf("ESADD: Resetting P reg!!!\n");
 		MOV32ItoM(VU_VI_ADDR(REG_P, 0), 0);
 		return;
 	}
-	if( cpucaps.hasStreamingSIMD4Extensions )
-	{
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE4_DPPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x71);
-	}
-	else 
-	{
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-
-		if( cpucaps.hasStreamingSIMD3Extensions ) {
-			SSE3_HADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP); // EEREC_D.z = x+y+z
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_D); // move to x
-		}
-		else {
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x55);
-			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-		}
-	}
-
-	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
-
-	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
+	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
+	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
+	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_D);
 }
+
+const static PCSX2_ALIGNED16(u32 VU_ONE[4]) = {0x3f800000, 0xffffffff, 0xffffffff, 0xffffffff};
 
 void recVUMI_ERSADD( VURegs *VU, int info )
 {
+	//SysPrintf("VU: ERSADD\n");
 	assert( VU == &VU1 );
-	// almost same as vuSqSumXYZ
-
-	if( cpucaps.hasStreamingSIMD4Extensions )
-	{
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE4_DPPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x71);
-	}
-	else 
-	{
-		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-
-		if( cpucaps.hasStreamingSIMD3Extensions ) {
-			SSE3_HADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP); // EEREC_D.z = x+y+z
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_D); // move to x
-		}
-		else {
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x55);
-			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-		}
-	}
-
-	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]);
-
+	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
 	// don't use RCPSS (very bad precision)
+	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE);
 	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-	vuFloat2(EEREC_TEMP, EEREC_D, 0x8);
-
+	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 
@@ -5338,9 +5300,8 @@ void recVUMI_ELENG( VURegs *VU, int info )
 	assert( VU == &VU1 );
 	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
-	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_D);
-	
-	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
+	SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
+	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_D);
 }
 
 void recVUMI_ERLENG( VURegs *VU, int info )
@@ -5349,9 +5310,8 @@ void recVUMI_ERLENG( VURegs *VU, int info )
 	assert( VU == &VU1 );
 	vuSqSumXYZ(EEREC_D, EEREC_S, EEREC_TEMP);
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)g_maxvals); // Only need to do positive clamp since (x ^ 2 + y ^ 2 + z ^ 2) is positive
-	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // sqrt(x^2 + y^2 + z^2)
-	SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP); // d <- sqrt(x^2 + y^2 + z^2)
-	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[3]); // temp <- 1
+	SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D); // regd <- sqrt(x^2 + y^2 + z^2)
+	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE); // temp <- 1
 	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // temp = 1 / sqrt(x^2 + y^2 + z^2)
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); // Only need to do positive clamp
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
