@@ -1518,7 +1518,7 @@ void OnMsg_Ok() {
 	gtk_main_quit();
 }
 
-void SysMessage(char *fmt, ...) {
+void SysMessage(const char *fmt, ...) {
 	GtkWidget *Ok,*Txt;
 	GtkWidget *Box,*Box1;
 	va_list list;

@@ -1622,7 +1622,7 @@ int concolors[] = {
 	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
 };
 
-void SysPrintf(char *fmt, ...) {
+void SysPrintf(const char *fmt, ...) {
 	va_list list;
 	char msg[512];
 	char *ptr;
@@ -1680,7 +1680,7 @@ void SysPrintf(char *fmt, ...) {
 	WriteConsole(gApp.hConsole, ptr, (DWORD)strlen(ptr), &tmp, 0);
 }
 
-void SysMessage(char *fmt, ...) {
+void SysMessage(const char *fmt, ...) {
 	va_list list;
 	char tmp[512];
 

@@ -235,7 +235,7 @@ extern TESTRUNARGS g_TestRun;
 
 int cdCaseopen;
 
-extern void __Log(char *fmt, ...);
+extern void __Log(const char *fmt, ...);
 extern u16 logProtocol;
 extern u8  logSource;
 #define PCSX2_VERSION "0.9.5"

@@ -23,16 +23,16 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [debug build]),
 if test "x$debug" == xyes
 then
  AC_DEFINE(_DEBUG,1,[_DEBUG])
- CFLAGS+=" -g "
- CPPFLAGS+=" -g "
- CXXFLAGS+=" -g "
- CCASFLAGS+=" -D_DEBUG -g "
+ CFLAGS+=" -g   -Wall -Wextra"
+ CPPFLAGS+=" -g  -Wall -Wextra "
+ CXXFLAGS+=" -g   -Wall -Wextra"
+ CCASFLAGS+=" -D_DEBUG -g   -Wall -Wextra"
  MYOBJDIR="Debug"
 else
  AC_DEFINE(NDEBUG,1,[NDEBUG])
- CFLAGS+=" -O3 -fomit-frame-pointer "
- CPPFLAGS+=" -O3 -fomit-frame-pointer "
- CXXFLAGS+=" -O3 -fomit-frame-pointer "
+ CFLAGS+=" -O3 -fomit-frame-pointer   -Wall -Wextra"
+ CPPFLAGS+=" -O3 -fomit-frame-pointer   -Wall -Wextra"
+ CXXFLAGS+=" -O3 -fomit-frame-pointer   -Wall -Wextra"
  MYOBJDIR="Release"
 fi
 AC_MSG_RESULT($debug)

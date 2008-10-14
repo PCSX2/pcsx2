@@ -21,8 +21,8 @@
 
 int  SysInit();							// Init mem and plugins
 void SysReset();						// Resets mem
-void SysPrintf(char *fmt, ...);			// Printf used by bios syscalls
-void SysMessage(char *fmt, ...);		// Message used to print msg to users
+void SysPrintf(const char *fmt, ...);			// Printf used by bios syscalls
+void SysMessage(const char *fmt, ...);		// Message used to print msg to users
 void SysUpdate();						// Called on VBlank (to update i.e. pads)
 void SysRunGui();						// Returns to the Gui
 void SysClose();						// Close mem and plugins

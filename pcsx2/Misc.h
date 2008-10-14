@@ -258,7 +258,7 @@ void memxor_mmx(void* dst, const void* src1, int cmpsize);
 #pragma pack()
 #endif
 
-void __Log(char *fmt, ...);
+void __Log(const char *fmt, ...);
 void injectIRX(char *filename);
 
 #if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)

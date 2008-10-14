@@ -56,7 +56,7 @@ extern u32 varLog;
 extern u16 logProtocol;
 extern u8  logSource;
 
-void __Log(char *fmt, ...);
+void __Log(const char *fmt, ...);
 
 //memcars has the same number as PAD_LOG
 #define MEMCARDS_LOG if (varLog & 0x02000000) {logProtocol=7; logSource='I';} if (varLog & 0x02000000) __Log

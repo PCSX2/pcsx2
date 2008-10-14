@@ -18,7 +18,7 @@
 #ifndef _R3000A_SUPERREC_
 #define _R3000A_SUPERREC_
 
-extern void __Log(char *fmt, ...);
+extern void __Log(const char *fmt, ...);
 
 // to be consistent with EE
 #define PSX_HI XMMGPR_HI

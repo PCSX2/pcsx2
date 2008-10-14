@@ -371,7 +371,7 @@ void SysClose() {
     }
 }
 
-void SysPrintf(char *fmt, ...) {
+void SysPrintf(const char *fmt, ...) {
 	va_list list;
 	char msg[512];
 	char* ptr, *src;

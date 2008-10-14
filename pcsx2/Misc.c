@@ -450,7 +450,7 @@ int connected=0;
 
 #define SYNC_LOGGING
 
-void __Log(char *fmt, ...) {
+void __Log(const char *fmt, ...) {
 #ifdef EMU_LOG 
 	va_list list;
 	static char tmp[2024];	//hm, should be enough
