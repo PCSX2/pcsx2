@@ -311,10 +311,11 @@ void UpdateTempoChange()
  
 	s32 bufferUsage = sndBuffer->GetBufferUsage();
 	s32 bufferSize  = sndBuffer->GetBufferSize();
- 
+
+//Emergency stretch to compensate for FPS fluctuations and keep the buffers happy
 	bool a=(bufferUsage < CurBufferSize * 4);
 	bool b=(bufferUsage >= (bufferSize - CurBufferSize * 4));
- 
+
 	if(a!=b)
 	{
 		if     (bufferUsage < CurBufferSize)	 { cTempo*=0.75f; }
@@ -333,37 +334,40 @@ void UpdateTempoChange()
 	{
 		cTempo = cTempo * 0.9f + lastTempo * 0.1f;
 	}
+//////////////////////////////////////////////////////////////////////////////
 
 	sndBuffer->GetStats(cWritten,cRead,false);
   
-	valAccum1 +=(cRead-oldRead);
-	valAccum2 +=(cInput-oldInput);
-	numAccum ++;
+	valAccum1 += (cRead-oldRead);
+	valAccum2 += (cInput-oldInput);
+	numAccum++;
  
-	oldRead=cRead;
-	oldInput=cInput;
- 
- 	if(numAccum>=numUpdates)
+	oldRead = cRead;
+	oldInput = cInput;
+
+//normal stretch, scales sound to game speed
+ 	if(numAccum >= numUpdates)
 	{
 		float valAccum = 1.0;
 
-		if (valAccum1!=0)
+		if (valAccum1 != 0)
 			valAccum=valAccum2 / valAccum1;
  
-		if((valAccum<1.05)&&(valAccum>0.95)&&(valAccum!=1)) 
+		if((valAccum < 1.05) && (valAccum > 0.95) /*&& (valAccum != 1)*/) 
 		{
-			printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
+		//	printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
 			valAccum = 1;
 		}
-		else
+		/*else
 		{
 			printf("Timestretch Debug > Playbackpeed: %f\n",valAccum);
-		}
+		}*/
+		
+		if (valAccum != lastTempo) //only update soundtouch object when needed
+			pSoundTouch->setTempo(valAccum);
  
-		pSoundTouch->setTempo(valAccum);
- 
-		lastTempo =valAccum;
-		cTempo=lastTempo;
+		lastTempo = valAccum;
+		cTempo = lastTempo;
  
 		valAccum1=0;
 		valAccum2=0;

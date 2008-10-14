@@ -228,8 +228,6 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 void SPU2readDMA(int core, u16* pMem, u32 size) 
 {
-	ENTER_CS(&threadSync);
-
 	if(hasPtr) TimeUpdate(*cPtr,1);
 
 	u32 i;
@@ -252,13 +250,10 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 	//Cores[core].Regs.ATTR |= 0x30;
 	Cores[core].TADR=Cores[core].MADR+(size<<1);
 
-	LEAVE_CS(&threadSync);
 }
 
 void SPU2writeDMA(int core, u16* pMem, u32 size) 
 {
-	ENTER_CS(&threadSync);
-
 	if(hasPtr) TimeUpdate(*cPtr,1);
 
 	Cores[core].DMAPtr=pMem;
@@ -269,7 +264,6 @@ void SPU2writeDMA(int core, u16* pMem, u32 size)
 		//Cores[core].Regs.ATTR |= 0x30;
 		Cores[core].DMAICounter=1;
 
-		LEAVE_CS(&threadSync);
 		return;
 	}
 
@@ -289,8 +283,6 @@ void SPU2writeDMA(int core, u16* pMem, u32 size)
 	}
 	Cores[core].Regs.STATX &= ~0x80;
 	//Cores[core].Regs.ATTR |= 0x30;
-
-	LEAVE_CS(&threadSync);
 }
 
 u32 CALLBACK SPU2ReadMemAddr(int core)

@@ -43,7 +43,6 @@ static char *libraryName	  = "GiGaHeRz's SPU2 ("
 
 DWORD CALLBACK TimeThread(PVOID /* unused param */);
 
-bool EnableThread=false;
 
 const char *ParamNames[8]={"VOLL","VOLR","PITCH","ADSR1","ADSR2","ENVX","VOLXL","VOLXR"};
 const char *AddressNames[6]={"SSAH","SSAL","LSAH","LSAL","NAXH","NAXL"};
@@ -343,16 +342,6 @@ s32 CALLBACK SPU2open(void *pDsp) {
 	spu2open=1;
 	if (!SndInit()) 
 	{
-		if(EnableThread)
-		{
-			InitializeCriticalSection(&threadSync);
-			if ((hThreadFunc=CreateThread(NULL,0,&TimeThread,0,0,(LPDWORD)&ThreadFuncID))==NULL) {
-				SysMessage("CreateThread Failed.");
-				SPU2close(); return -1;	
-			}
-			SetThreadPriority(hThreadFunc,THREAD_PRIORITY_TIME_CRITICAL);
-		}
-
 		srate_pv=(double)SampleRate/48000.0;
 
 		spdif_init();
@@ -376,15 +365,6 @@ void CALLBACK SPU2close()
 	DspCloseLibrary();
 
 	spdif_shutdown();
-
-	if(EnableThread)
-	{
-		if(hasPtr) TimeUpdate(*cPtr,2); 
-
-		printf("Waiting for spu2 thread to finish...\n");
-		WaitForSingleObject(hThreadFunc,INFINITE);
-		DeleteCriticalSection(&threadSync);
-	}
 
 	SndClose();
 }
@@ -571,10 +551,8 @@ DWORD CALLBACK TimeThread(PVOID /* unused param */)
 		}
 		else
 		{
-			ENTER_CS(&threadSync);
 			Mix();
 			TicksThread++;
-			LEAVE_CS(&threadSync);
 		}
 	}
 	return 0;
@@ -654,14 +632,7 @@ void CALLBACK TimeUpdate(u32 cClocks, u32 syncType)
 			lClocks+=TickInterval;
 			Cycles++;
 
-			if(EnableThread)
-			{
-				TicksCore++;
-			}
-			else
-			{
-				Mix();
-			}
+			Mix();
 		}
 	}
 }
@@ -695,8 +666,6 @@ void CALLBACK SPU2async(u32 cycles)
 		}
 		numpad_minus_old = numpad_minus;
 	}
-	
-	ENTER_CS(&threadSync);
 
 	if(hasPtr)
 	{
@@ -707,8 +676,6 @@ void CALLBACK SPU2async(u32 cycles)
 		pClocks+=cycles;
 		TimeUpdate(pClocks,0);
 	}
-
-	LEAVE_CS(&threadSync);
 }
 
 void CALLBACK SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void (*DMA7callback)())
@@ -1183,8 +1150,6 @@ void CALLBACK SPU2writeLog(u32 rmem, u16 value)
 
 void CALLBACK SPU2write(u32 rmem, u16 value) 
 {
-	ENTER_CS(&threadSync);
-
 #ifdef S2R_ENABLE
 	if(!replay_mode)
 		s2r_writereg(Cycles,rmem,value);
@@ -1201,7 +1166,6 @@ void CALLBACK SPU2write(u32 rmem, u16 value)
 		spu2Mu16(Cores[0].TSA++)=value;
 		Cores[0].TSA&=0xfffff;
 
-		LEAVE_CS(&threadSync);
 		return;
 	}
 	else if(rmem==0x1f9005ac)
@@ -1215,7 +1179,6 @@ void CALLBACK SPU2write(u32 rmem, u16 value)
 		spu2Mu16(Cores[1].TSA++)=value;
 		Cores[1].TSA&=0xfffff;
 
-		LEAVE_CS(&threadSync);
 		return;
 	}
 
@@ -1507,13 +1470,10 @@ void CALLBACK SPU2write(u32 rmem, u16 value)
 	{
 		UpdateSpdifMode();
 	}
-
-	LEAVE_CS(&threadSync);
 }
 
 u16  CALLBACK SPU2read(u32 rmem) 
 {
-	ENTER_CS(&threadSync);
 
 //	if(!replay_mode)
 //		s2r_readreg(Cycles,rmem);
@@ -1543,8 +1503,6 @@ u16  CALLBACK SPU2read(u32 rmem)
 
 		FileLog("[%10d] SPU2 read mem %x (core %d, register %x): %x\n",Cycles, mem, core, (omem & 0x7ff), ret);
 	}
-
-	LEAVE_CS(&threadSync);
 
 	return ret;
 }

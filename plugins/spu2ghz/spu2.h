@@ -101,13 +101,9 @@ extern CRITICAL_SECTION threadSync;
 
 extern u32 lClocks;
 
-extern bool EnableThread;
-
-#define ENTER_CS(cs) do { if(EnableThread) EnterCriticalSection(cs); } while(0)
-#define LEAVE_CS(cs) do { if(EnableThread) LeaveCriticalSection(cs); } while(0)
-
 extern u32* cPtr;
 extern bool hasPtr;
+
 void CALLBACK TimeUpdate(u32 cClocks, u32 syncType);
 
 void TimestretchUpdate(int bufferusage,int buffersize);
