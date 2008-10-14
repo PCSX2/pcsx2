@@ -261,7 +261,7 @@ private:
 					verifyc(buffer->Lock(poffset,BufferSizeBytes,&p1,&s1,&p2,&s2,0));
 					s16 *t = (s16*)p1;
 					s32 *s = tbuffer;
-					for(int i=0;i<CurBufferSize;i++)
+					for(int j=0;j<CurBufferSize;j++)
 					{
 						// DPL2 code here: inputs s[0] and s[1]. outputs t[0] to t[5]
 						Convert(t,s[0],s[1]);

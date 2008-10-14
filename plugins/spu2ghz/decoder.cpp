@@ -46,12 +46,12 @@ int flags,srate,bitrate;
 
 int sample_flags = 0;
 
-int frame_size;
+u32 frame_size;
 
 a52_state_t* ac3dec;
 sample_t    *decode_buffer = NULL;
 
-u32 data_rate=4;
+s32 data_rate=4;
 
 int state=0;
 
@@ -112,7 +112,7 @@ void spdif_Write(s32 data)
 	}
 }
 
-void spdif_remove_data(int bytes)
+void spdif_remove_data(unsigned int bytes)
 {
 	if(bytes<data_in_buffer)
 	{

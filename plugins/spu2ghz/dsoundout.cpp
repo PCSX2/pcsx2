@@ -137,7 +137,7 @@ private:
 					verifyc(buffer->Lock(poffset,BufferSizeBytes,&p1,&s1,&p2,&s2,0));
 					s16 *t = (s16*)p1;
 					s32 *s = (s32*)tbuffer;
-					for(int i=0;i<BufferSize;i++)
+					for(int j=0;j<BufferSize;j++)
 					{
 						*(t++) = (s16)((*(s++))>>8);
 					}
