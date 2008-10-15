@@ -89,18 +89,18 @@ _vuopinfo *cinfo = NULL;
 
 #define _X_Y_Z_W  ((( VU->code >> 21 ) & 0xF ) )
 
-const static PCSX2_ALIGNED16(float recMult_float_to_int4[4]) = { 16.0, 16.0, 16.0, 16.0 };
-const static PCSX2_ALIGNED16(float recMult_float_to_int12[4]) = { 4096.0, 4096.0, 4096.0, 4096.0 };
-const static PCSX2_ALIGNED16(float recMult_float_to_int15[4]) = { 32768.0, 32768.0, 32768.0, 32768.0 };
+static const PCSX2_ALIGNED16(float recMult_float_to_int4[4]) = { 16.0, 16.0, 16.0, 16.0 };
+static const PCSX2_ALIGNED16(float recMult_float_to_int12[4]) = { 4096.0, 4096.0, 4096.0, 4096.0 };
+static const PCSX2_ALIGNED16(float recMult_float_to_int15[4]) = { 32768.0, 32768.0, 32768.0, 32768.0 };
 
-const static PCSX2_ALIGNED16(float recMult_int_to_float4[4]) = { 0.0625f, 0.0625f, 0.0625f, 0.0625f };
-const static PCSX2_ALIGNED16(float recMult_int_to_float12[4]) = { 0.000244140625, 0.000244140625, 0.000244140625, 0.000244140625 };
-const static PCSX2_ALIGNED16(float recMult_int_to_float15[4]) = { 0.000030517578125, 0.000030517578125, 0.000030517578125, 0.000030517578125 };
+static const PCSX2_ALIGNED16(float recMult_int_to_float4[4]) = { 0.0625f, 0.0625f, 0.0625f, 0.0625f };
+static const PCSX2_ALIGNED16(float recMult_int_to_float12[4]) = { 0.000244140625, 0.000244140625, 0.000244140625, 0.000244140625 };
+static const PCSX2_ALIGNED16(float recMult_int_to_float15[4]) = { 0.000030517578125, 0.000030517578125, 0.000030517578125, 0.000030517578125 };
 static s32 bpc;
 _VURegsNum* g_VUregs = NULL;
 u8 g_MACFlagTransform[256] = {0}; // used to flip xyzw bits
 
-const static PCSX2_ALIGNED16(int SSEmovMask[ 16 ][ 4 ]) =
+static const PCSX2_ALIGNED16(int SSEmovMask[ 16 ][ 4 ]) =
 {
 { 0x00000000, 0x00000000, 0x00000000, 0x00000000 },
 { 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF },
@@ -1032,20 +1032,20 @@ int _vuGetTempXMMreg2(int info, int regd)
 PCSX2_ALIGNED16(u32 g_minvals[4]) = {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
 PCSX2_ALIGNED16(u32 g_maxvals[4]) = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
-const static PCSX2_ALIGNED16(int const_clip[]) = {
+static const PCSX2_ALIGNED16(int const_clip[]) = {
 	0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
 	0x80000000, 0x80000000, 0x80000000, 0x80000000 };
 
-const static PCSX2_ALIGNED16(u32 s_FloatMinMax[]) = {
+static const PCSX2_ALIGNED16(u32 s_FloatMinMax[]) = {
 	0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff,
 	0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff,
 	0,			0,			0,			0 };
 
-const static PCSX2_ALIGNED16(float s_fones[])	= { 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
-const static PCSX2_ALIGNED16(u32 s_mask[])		= {0x7fffff, 0x7fffff, 0x7fffff, 0x7fffff };
-const static PCSX2_ALIGNED16(u32 s_expmask[])	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+static const PCSX2_ALIGNED16(float s_fones[])	= { 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+static const PCSX2_ALIGNED16(u32 s_mask[])		= {0x7fffff, 0x7fffff, 0x7fffff, 0x7fffff };
+static const PCSX2_ALIGNED16(u32 s_expmask[])	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
 
-const static PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0xf0000000, 0xf0000000, 0xf0000000, 0xf0000000};
+static const PCSX2_ALIGNED16(u32 s_overflowmask[]) = {0xf0000000, 0xf0000000, 0xf0000000, 0xf0000000};
 
 void SetVUNanMode(int mode)
 {
@@ -1378,13 +1378,13 @@ void ClampUnordered(int regd, int t0reg, int dosign)
 //    __asm ret
 //}
 
-const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask1[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-const static PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
-const static PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
-const static PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
-const static PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
-const static PCSX2_ALIGNED16(u32 VU_Pos_Infinity[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-const static PCSX2_ALIGNED16(u32 VU_Neg_Infinity[4])		= {0xff800000, 0xff800000, 0xff800000, 0xff800000};
+static const PCSX2_ALIGNED16(u32 VU_Underflow_Mask1[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+static const PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
+static const PCSX2_ALIGNED16(u32 VU_Zero_Mask[4])			= {0x00000000, 0x00000000, 0x00000000, 0x00000000};
+static const PCSX2_ALIGNED16(u32 VU_Zero_Helper_Mask[4])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
+static const PCSX2_ALIGNED16(u32 VU_Signed_Zero_Mask[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
+static const PCSX2_ALIGNED16(u32 VU_Pos_Infinity[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+static const PCSX2_ALIGNED16(u32 VU_Neg_Infinity[4])		= {0xff800000, 0xff800000, 0xff800000, 0xff800000};
 PCSX2_ALIGNED16(u64 TEMPXMMData[2]);
 
 // NOTE: Flags now compute under/over flows! :p
@@ -1395,7 +1395,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	static u32 macaddr, stataddr, prevstataddr;
 	static int x86macflag, x86temp;
 	static int t1reg, t1regBoolean;
-	const static int flipMask[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+	static const int flipMask[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
 	if( !(info & PROCESS_VU_UPDATEFLAGS) ) return;
 
@@ -1548,7 +1548,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 /*   VU Upper instructions    */
 /******************************/
 
-const static PCSX2_ALIGNED16(u32 const_abs_table[16][4]) = 
+static const PCSX2_ALIGNED16(u32 const_abs_table[16][4]) = 
 {
    { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff },
    { 0xffffffff, 0xffffffff, 0xffffffff, 0x7fffffff },
@@ -2028,7 +2028,7 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 	//if( addr == VU_REGQ_ADDR ) CheckForOverflow(VU, info, EEREC_D);
 }
 
-const static PCSX2_ALIGNED16(u32 s_unaryminus[4]) = {0x80000000, 0, 0, 0};
+static const PCSX2_ALIGNED16(u32 s_unaryminus[4]) = {0x80000000, 0, 0, 0};
 
 void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 {
@@ -5280,7 +5280,7 @@ void recVUMI_ESADD( VURegs *VU, int info)
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_D);
 }
 
-const static PCSX2_ALIGNED16(u32 VU_ONE[4]) = {0x3f800000, 0xffffffff, 0xffffffff, 0xffffffff};
+static const PCSX2_ALIGNED16(u32 VU_ONE[4]) = {0x3f800000, 0xffffffff, 0xffffffff, 0xffffffff};
 
 void recVUMI_ERSADD( VURegs *VU, int info )
 {
