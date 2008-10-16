@@ -15,6 +15,14 @@
 //License along with this library; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
+
+// [Air] Notes ----->
+//  Adding 'static' to the __forceinline methods hints to the linker that it need not
+//  actually include procedural versions of the methods in the DLL.  Under normal circumstances
+//  the compiler will still generate the procedures even though they are never used (the inline
+//  code is used instead).  Using static reduced the size of my generated .DLL by a few KB.
+//   (doesn't really make anything faster, but eh... whatever :)
+//
 #include "spu2.h"
 
 #include <assert.h>
@@ -41,6 +49,7 @@ extern u8 callirq;
 double srate_pv=1.0;
 
 extern u32 PsxRates[160];
+
 
 void InitADSR()                                    // INIT ADSR
 {
@@ -71,18 +80,18 @@ const s32 f[5][2] ={{    0,   0 },
 					{   98, -55 },
 					{  122, -60 }};
 
-s32 __forceinline XA_decode(s32 pred1, s32 pred2, s32 shift, s32& prev1, s32& prev2, s32 data)
+static s16 __forceinline XA_decode(s32 pred1, s32 pred2, s32 shift, s32& prev1, s32& prev2, s32 data)
 {
-	s32 pcm =data>>shift;
+	s32 pcm = data>>shift;
 	pcm+=((pred1*prev1)+(pred2*prev2))>>6;
 	if(pcm> 32767) pcm= 32767;
 	if(pcm<-32768) pcm=-32768;
 	prev2=prev1;
 	prev1=pcm;
-	return pcm;
+	return (s16)pcm;
 }
 
-s32 __forceinline XA_decode_block(s32* buffer, s16* block, s32& prev1, s32& prev2)
+static s16 __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
 {
 	s32 data=*block;
 	s32 Shift	 =  ((data>> 0)&0xF)+16;
@@ -102,11 +111,84 @@ s32 __forceinline XA_decode_block(s32* buffer, s16* block, s32& prev1, s32& prev
 	return data;
 }
 
-void __forceinline IncrementNextA()
+static s16 __forceinline XA_decode_block_fast(s16* buffer, const s16* block, s32& prev1, s32& prev2)
 {
-	V_Voice& vc(Cores[core].Voices[voice]);
+	s32 header = *block;
+	s32 shift =  ((header>> 0)&0xF)+16;
+	s32 pred1 = f[(header>> 4)&0xF][0];
+	s32 pred2 = f[(header>> 4)&0xF][1];
 
-	if((vc.NextA==Cores[core].IRQA)&&(Cores[core].IRQEnable)) { 
+	const s8* blockbytes = (s8*)&block[1];
+
+	for(int i=0; i<14; i++, blockbytes++)
+	{
+		s32 pcm, pcm2;
+		{
+			s32 data = ((*blockbytes)<<28) & 0xF0000000;
+			pcm = data>>shift;
+			pcm+=((pred1*prev1)+(pred2*prev2))>>6;
+			if(pcm> 32767) pcm= 32767;
+			if(pcm<-32768) pcm=-32768;
+			*(buffer++) = pcm;
+		}
+
+		//prev2=prev1;
+		//prev1=pcm;
+
+		{
+			s32 data = ((*blockbytes)<<24) & 0xF0000000;
+			pcm2 = data>>shift;
+			pcm2+=((pred1*pcm)+(pred2*prev1))>>6;
+			if(pcm2> 32767) pcm2= 32767;
+			if(pcm2<-32768) pcm2=-32768;
+			*(buffer++) = pcm2;
+		}
+
+		prev2=pcm;
+		prev1=pcm2;
+	}
+
+	return header;
+}
+
+static s16 __forceinline XA_decode_block_unsaturated(s16* buffer, const s16* block, s32& prev1, s32& prev2)
+{
+	s32 header = *block;
+	s32 shift =  ((header>> 0)&0xF)+16;
+	s32 pred1 = f[(header>> 4)&0xF][0];
+	s32 pred2 = f[(header>> 4)&0xF][1];
+
+	const s8* blockbytes = (s8*)&block[1];
+
+	for(int i=0; i<14; i++, blockbytes++)
+	{
+		s32 pcm, pcm2;
+		{
+			s32 data = ((*blockbytes)<<28) & 0xF0000000;
+			pcm = data>>shift;
+			pcm+=((pred1*prev1)+(pred2*prev2))>>6;
+			// [Air] : Fast method, no saturation is performed.
+			*(buffer++) = pcm;
+		}
+
+		{
+			s32 data = ((*blockbytes)<<24) & 0xF0000000;
+			pcm2 = data>>shift;
+			pcm2+=((pred1*pcm)+(pred2*prev1))>>6;
+			// [Air] : Fast method, no saturation is performed.
+			*(buffer++) = pcm2;
+		}
+
+		prev2=pcm;
+		prev1=pcm2;
+	}
+
+	return header;
+}
+
+static void __forceinline IncrementNextA( const V_Core& thiscore, V_Voice& vc )
+{
+	if((vc.NextA==thiscore.IRQA)&&(thiscore.IRQEnable)) { 
 		ConLog(" * SPU2: IRQ Called (IRQ passed).\n"); 
 		Spdif.Info=4<<core;
 		SetIrqCall();
@@ -116,12 +198,11 @@ void __forceinline IncrementNextA()
 	vc.NextA&=0xFFFFF;
 }
 
-void __fastcall GetNextDataBuffered(s32& Data) 
-{
-	static s32 pcm=0;
-	static s32 data=0;
 
-	V_Voice& vc(Cores[core].Voices[voice]);
+static void __fastcall GetNextDataBuffered( V_Core& thiscore, V_Voice& vc, s32& Data) 
+{
+	//static s32 pcm=0;
+	s16 data=0;
 
 	if (vc.SCurrent>=28) 
 	{
@@ -135,31 +216,48 @@ void __fastcall GetNextDataBuffered(s32& Data)
 			{
 				if(MsgVoiceOff) ConLog(" * SPU2: Voice Off by EndPoint: %d \n", voice);
 				VoiceStop(core,voice);
-				Cores[core].Regs.ENDX|=1<<voice;
+				thiscore.Regs.ENDX|=1<<voice;
 				vc.lastStopReason = 1;
 			}
 		}
 
-		data = XA_decode_block(vc.SBuffer,GetMemPtr(vc.NextA&0xFFFFF), vc.Prev1, vc.Prev2);
+		// [Air]: Original ADPCM decoder.
+		//data = XA_decode_block(vc.SBuffer,GetMemPtr(vc.NextA&0xFFFFF), vc.Prev1, vc.Prev2);
+
+		// [Air]: Testing of a new saturated decoder. (benchmark needed)
+		//   My gut tells me that this should be faster, but you never can tell with these types
+		//   of things.  Benchmark it against the original and see what you think.
+
+		//data = XA_decode_block_fast(vc.SBuffer,GetMemPtr(vc.NextA&0xFFFFF), vc.Prev1, vc.Prev2);
+
+		// [Air]: Testing use of a new unsaturated decoder. (benchmark needed)
+		//   Chances are the saturation isn't needed, but for a very few exception games.
+		//   This is definitely faster than either of the above versions, but the question is by how
+		//   much (biggest impact will be on games like Xenosaga2, which use lots of SPU2 voices).
+		//   If the speed boost is worth it then maybe it should be added as a speedhack option
+		//   in the spu2ghz config.
+
+		data = XA_decode_block_unsaturated(vc.SBuffer,GetMemPtr(vc.NextA&0xFFFFF), vc.Prev1, vc.Prev2);
+
 		vc.LoopEnd  =   (data>> 8)&1;
 		vc.Loop     =   (data>> 9)&1;
 		vc.LoopStart=   (data>>10)&1;
-		vc.FirstBlock=0;
 		vc.SCurrent = 0;
+		vc.FirstBlock = 0;
 
-		if (vc.LoopStart&&!vc.LoopMode)
+		if( vc.LoopStart && !vc.LoopMode )
 		{
 			vc.LoopStartA=vc.NextA; 
 		}
 
-		IncrementNextA();
+		IncrementNextA( thiscore, vc );
 	}
 
 	Data=vc.SBuffer[vc.SCurrent];
 
 	if((vc.SCurrent&3)==3)
 	{
-		IncrementNextA();
+		IncrementNextA( thiscore, vc );
 	}
 	vc.SCurrent++;
 }
@@ -170,9 +268,9 @@ void __fastcall GetNextDataBuffered(s32& Data)
 
 const int InvExpOffsets[] = { 0,4,6,8,9,10,11,12 };
 
-void __forceinline CalculateADSR() 
+static void __forceinline CalculateADSR( V_Voice& vc ) 
 {
-	V_ADSR& env(Cores[core].Voices[voice].ADSR);
+	V_ADSR& env(vc.ADSR);
 	u32 SLevel=((u32)env.Sl)<<27;
 	u32 off=InvExpOffsets[(env.Value>>28)&7];
 
@@ -293,6 +391,8 @@ void __forceinline CalculateADSR()
 		case 6: // release end
 			env.Value=0;
 			break;
+
+		//jNO_DEFAULT
 	}
 
 	if (env.Phase==6) {
@@ -300,17 +400,17 @@ void __forceinline CalculateADSR()
 		VoiceStop(core,voice);
 		Cores[core].Regs.ENDX|=(1<<voice);
 		env.Phase=0;
-		Cores[core].Voices[voice].lastStopReason = 2;
+		vc.lastStopReason = 2;
 	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
-s32 Seed = 0x41595321;
-
-void __forceinline GetNoiseValues(s32& VD) 
+static void __forceinline GetNoiseValues(s32& VD) 
 {
+	static s32 Seed = 0x41595321;
+
 	if(Seed&0x100) VD =(s32)((Seed&0xff)<<8);
 	else if(!(Seed&0xffff)) VD = (s32)0x8000;
 	else VD = (s32)0x7fff;
@@ -348,27 +448,31 @@ void LowPass(s32& VL, s32& VR)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-void GetVoiceValues(s32& Value) {
+static void __fastcall GetVoiceValues(V_Core& thiscore, V_Voice& vc, s32& Value)
+{
 	s64 Data=0;
 	s32 DT=0;
-	s32 pitch;
 
-	V_Voice& vc(Cores[core].Voices[voice]);
+	// [Air] : Put a scope on the pitch variable, which should help it get optimized to a
+	//   register.
+	{
+		s32 pitch;
 
-	if((voice==0)||(vc.Modulated==0))
-		pitch=vc.Pitch;
-	else
-		pitch=(vc.Pitch*(32768 + Cores[core].Voices[voice-1].OutX))>>15;
-	
-	vc.SP+=pitch;
+		// [Air] : re-ordered comparisons: Modulated is much more likely to be zero than voice,
+		//   and so the way it was before it's have to check both voice and modulated values
+		//   most of the time.  Now it'll just check Modulated and short-circut past the voice
+		//   check (not that it amounts to much, but eh every little bit helps).
+		if( (vc.Modulated==0) || (voice==0) )
+			pitch=vc.Pitch;
+		else
+			pitch=(vc.Pitch*(32768 + abs(thiscore.Voices[voice-1].OutX)))>>15;
+		
+		vc.SP+=pitch;
+	}
+
 	while(vc.SP>=4096) 
 	{
-		DT=0;
-
-		if(vc.Noise) 
-			GetNoiseValues(DT);
-		else
-			GetNextDataBuffered(DT);
+		GetNextDataBuffered( thiscore, vc, DT );
 
 		vc.PV4=vc.PV3;
 		vc.PV3=vc.PV2;
@@ -378,8 +482,7 @@ void GetVoiceValues(s32& Value) {
 		vc.SP-=4096;
 	}
 
-	CalculateADSR();
-//	CalculateADSR();
+	CalculateADSR( vc );
 
 	if(vc.ADSR.Phase==0)
 	{
@@ -388,26 +491,33 @@ void GetVoiceValues(s32& Value) {
 	}
 	else
 	{
-		if(Interpolation==0) {
+		// [Air]: if SP is zero then we landed perfectly on a sample source, no
+		// interpolation necessary (besides being a little faster this is important
+		// too, since the interpolator will pick the wrong sample to mix otherwise).
+
+		if(Interpolation==0 || vc.SP == 0)
+		{
 			Data = vc.PV1;
 		} 
 		else if(Interpolation==1) //linear
 		{
-			s64 t0 = vc.PV1 - vc.PV2;
+			// [Air]: Inverted the interpolation delta.  The old way was generating
+			// inverted waveforms.
+			s64 t0 = vc.PV2 - vc.PV1;
 			s64 t1 = vc.PV1;
 			Data = (((t0*vc.SP)>>12) + t1);
 		}
-		else if(Interpolation==2) //cubic
+		else // if(Interpolation==2) //must be cubic
 		{
 			s64 a0 = vc.PV1 - vc.PV2 - vc.PV4 + vc.PV3;
 			s64 a1 = vc.PV4 - vc.PV3 - a0;
 			s64 a2 = vc.PV1 - vc.PV4;
 			s64 a3 = vc.PV2;
-			s64 mu = vc.SP;
+			s64 mu = 4096-vc.SP;
 
-			s64 t0 = ((a0   )*mu)>>12;
-			s64 t1 = ((t0+a1)*mu)>>12;
-			s64 t2 = ((t1+a2)*mu)>>12;
+			s64 t0 = ((a0   )*mu)>>18;
+			s64 t1 = ((t0+a1)*mu)>>18;
+			s64 t2 = ((t1+a2)*mu)>>18;
 			s64 t3 = ((t2+a3));
 
 			Data = t3;
@@ -415,32 +525,73 @@ void GetVoiceValues(s32& Value) {
 
 		Value=(s32)((Data*vc.ADSR.Value)>>48); //32bit ADSR + convert to 16bit
 
-		vc.OutX=abs(Value);
+		// [Air]: Moved abs() to the modulation code above, so that the abs conditionals are
+		//   only run in select cases where modulation is active.
+		vc.OutX=Value;
 	}
-	if(vc.PeakX<vc.OutX) vc.PeakX=vc.OutX;
+}
+
+// [Air]: Noise values need to be mixed without going through interpolation, since it
+//    can wreak havoc on the noise (causing muffling or popping)
+static void __fastcall GetNoiseValues(V_Core& thiscore, V_Voice& vc, s32& Value)
+{
+	s64 Data=0;
+	s32 DT=0;
+
+	{
+		s32 pitch;
+
+		if( (vc.Modulated==0) || (voice==0) )
+			pitch=vc.Pitch;
+		else
+			pitch=(vc.Pitch*(32768 + abs(thiscore.Voices[voice-1].OutX)))>>15;
+		
+		vc.SP+=pitch;
+	}
+
+	while(vc.SP>=4096) 
+	{
+		GetNoiseValues(DT);
+		vc.SP-=4096;
+	}
+
+	Data = DT<<16; //32bit processing
+
+	CalculateADSR( vc );
+
+	if(vc.ADSR.Phase==0)
+	{
+		Value=0;
+		vc.OutX=0;
+	}
+	else
+	{
+		Value=(s32)((Data*vc.ADSR.Value)>>48); //32bit ADSR + convert to 16bit
+		vc.OutX=Value;
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-void __fastcall ReadInput(s32& PDataL,s32& PDataR) 
+void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR) 
 {
-	if((Cores[core].AutoDMACtrl&(core+1))==(core+1))
+	if((thiscore.AutoDMACtrl&(core+1))==(core+1))
 	{
 		s32 tl,tr;
 
 		if((core==1)&&((PlayMode&8)==8))
 		{
-			Cores[core].InputPos&=~1;
+			thiscore.InputPos&=~1;
 
 			//CDDA mode
 #ifdef PCM24_S1_INTERLEAVE
-			*PDataL=*(((s32*)(Cores[core].ADMATempBuffer+(Cores[core].InputPos<<1))));
-			*PDataR=*(((s32*)(Cores[core].ADMATempBuffer+(Cores[core].InputPos<<1)+2)));
+			*PDataL=*(((s32*)(thiscore.ADMATempBuffer+(thiscore.InputPos<<1))));
+			*PDataR=*(((s32*)(thiscore.ADMATempBuffer+(thiscore.InputPos<<1)+2)));
 #else
-			s32 *pl=(s32*)&(Cores[core].ADMATempBuffer[Cores[core].InputPos]);
-			s32 *pr=(s32*)&(Cores[core].ADMATempBuffer[Cores[core].InputPos+0x200]);
+			s32 *pl=(s32*)&(thiscore.ADMATempBuffer[thiscore.InputPos]);
+			s32 *pr=(s32*)&(thiscore.ADMATempBuffer[thiscore.InputPos+0x200]);
 			PDataL=*pl;
 			PDataR=*pr;
 #endif
@@ -448,73 +599,73 @@ void __fastcall ReadInput(s32& PDataL,s32& PDataR)
 			PDataL>>=4; //give 16.8 data
 			PDataR>>=4;
 
-			Cores[core].InputPos+=2;
-			if((Cores[core].InputPos==0x100)||(Cores[core].InputPos>=0x200)) {
-				Cores[core].AdmaInProgress=0;
-				if(Cores[core].InputDataLeft>=0x200)
+			thiscore.InputPos+=2;
+			if((thiscore.InputPos==0x100)||(thiscore.InputPos>=0x200)) {
+				thiscore.AdmaInProgress=0;
+				if(thiscore.InputDataLeft>=0x200)
 				{
-					u8 k=Cores[core].InputDataLeft>=Cores[core].InputDataProgress;
+					u8 k=thiscore.InputDataLeft>=thiscore.InputDataProgress;
 
 #ifdef PCM24_S1_INTERLEAVE
 					AutoDMAReadBuffer(core,1);
 #else
 					AutoDMAReadBuffer(core,0);
 #endif
-					Cores[core].AdmaInProgress=1;
+					thiscore.AdmaInProgress=1;
 
-					Cores[core].TSA=(core<<10)+Cores[core].InputPos;
+					thiscore.TSA=(core<<10)+thiscore.InputPos;
 
-					if (Cores[core].InputDataLeft<0x200) 
+					if (thiscore.InputDataLeft<0x200) 
 					{
 						FileLog("[%10d] AutoDMA%c block end.\n",Cycles, (core==0)?'4':'7');
 
-						if(Cores[core].InputDataLeft>0)
+						if(thiscore.InputDataLeft>0)
 						{
 							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
-						Cores[core].InputDataLeft=0;
-						Cores[core].DMAICounter=1;
+						thiscore.InputDataLeft=0;
+						thiscore.DMAICounter=1;
 					}
 				}
-				Cores[core].InputPos&=0x1ff;
+				thiscore.InputPos&=0x1ff;
 			}
 
 		}
 		else if((core==0)&&((PlayMode&4)==4))
 		{
-			Cores[core].InputPos&=~1;
+			thiscore.InputPos&=~1;
 
-			s32 *pl=(s32*)&(Cores[core].ADMATempBuffer[Cores[core].InputPos]);
-			s32 *pr=(s32*)&(Cores[core].ADMATempBuffer[Cores[core].InputPos+0x200]);
+			s32 *pl=(s32*)&(thiscore.ADMATempBuffer[thiscore.InputPos]);
+			s32 *pr=(s32*)&(thiscore.ADMATempBuffer[thiscore.InputPos+0x200]);
 			PDataL=*pl;
 			PDataR=*pr;
 
-			Cores[core].InputPos+=2;
-			if(Cores[core].InputPos>=0x200) {
-				Cores[core].AdmaInProgress=0;
-				if(Cores[core].InputDataLeft>=0x200)
+			thiscore.InputPos+=2;
+			if(thiscore.InputPos>=0x200) {
+				thiscore.AdmaInProgress=0;
+				if(thiscore.InputDataLeft>=0x200)
 				{
-					u8 k=Cores[core].InputDataLeft>=Cores[core].InputDataProgress;
+					u8 k=thiscore.InputDataLeft>=thiscore.InputDataProgress;
 
 					AutoDMAReadBuffer(core,0);
 
-					Cores[core].AdmaInProgress=1;
+					thiscore.AdmaInProgress=1;
 
-					Cores[core].TSA=(core<<10)+Cores[core].InputPos;
+					thiscore.TSA=(core<<10)+thiscore.InputPos;
 
-					if (Cores[core].InputDataLeft<0x200) 
+					if (thiscore.InputDataLeft<0x200) 
 					{
 						FileLog("[%10d] Spdif AutoDMA%c block end.\n",Cycles, (core==0)?'4':'7');
 
-						if(Cores[core].InputDataLeft>0)
+						if(thiscore.InputDataLeft>0)
 						{
 							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
-						Cores[core].InputDataLeft=0;
-						Cores[core].DMAICounter=1;
+						thiscore.InputDataLeft=0;
+						thiscore.DMAICounter=1;
 					}
 				}
-				Cores[core].InputPos&=0x1ff;
+				thiscore.InputPos&=0x1ff;
 			}
 
 		}
@@ -528,45 +679,45 @@ void __fastcall ReadInput(s32& PDataL,s32& PDataR)
 			else
 			{
 				// Using the temporary buffer because this area gets overwritten by some other code.
-				//*PDataL=(s32)*(s16*)(spu2mem+0x2000+(core<<10)+Cores[core].InputPos);
-				//*PDataR=(s32)*(s16*)(spu2mem+0x2200+(core<<10)+Cores[core].InputPos);
+				//*PDataL=(s32)*(s16*)(spu2mem+0x2000+(core<<10)+thiscore.InputPos);
+				//*PDataR=(s32)*(s16*)(spu2mem+0x2200+(core<<10)+thiscore.InputPos);
 
-				tl=(s32)Cores[core].ADMATempBuffer[Cores[core].InputPos];
-				tr=(s32)Cores[core].ADMATempBuffer[Cores[core].InputPos+0x200];
+				tl=(s32)thiscore.ADMATempBuffer[thiscore.InputPos];
+				tr=(s32)thiscore.ADMATempBuffer[thiscore.InputPos+0x200];
 
 			}
 
 			PDataL=tl;
 			PDataR=tr;
 
-			Cores[core].InputPos++;
-			if((Cores[core].InputPos==0x100)||(Cores[core].InputPos>=0x200)) {
-				Cores[core].AdmaInProgress=0;
-				if(Cores[core].InputDataLeft>=0x200)
+			thiscore.InputPos++;
+			if((thiscore.InputPos==0x100)||(thiscore.InputPos>=0x200)) {
+				thiscore.AdmaInProgress=0;
+				if(thiscore.InputDataLeft>=0x200)
 				{
-					u8 k=Cores[core].InputDataLeft>=Cores[core].InputDataProgress;
+					u8 k=thiscore.InputDataLeft>=thiscore.InputDataProgress;
 
 					AutoDMAReadBuffer(core,0);
 
-					Cores[core].AdmaInProgress=1;
+					thiscore.AdmaInProgress=1;
 
-					Cores[core].TSA=(core<<10)+Cores[core].InputPos;
+					thiscore.TSA=(core<<10)+thiscore.InputPos;
 
-					if (Cores[core].InputDataLeft<0x200) 
+					if (thiscore.InputDataLeft<0x200) 
 					{
 						FileLog("[%10d] AutoDMA%c block end.\n",Cycles, (core==0)?'4':'7');
 
-						Cores[core].AutoDMACtrl |=~3;
+						thiscore.AutoDMACtrl |=~3;
 
-						if(Cores[core].InputDataLeft>0)
+						if(thiscore.InputDataLeft>0)
 						{
 							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
-						Cores[core].InputDataLeft=0;
-						Cores[core].DMAICounter=1;
+						thiscore.InputDataLeft=0;
+						thiscore.DMAICounter=1;
 					}
 				}
-				Cores[core].InputPos&=0x1ff;
+				thiscore.InputPos&=0x1ff;
 			}
 		}
 	}
@@ -580,7 +731,7 @@ void __fastcall ReadInput(s32& PDataL,s32& PDataR)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-void ReadInputPV(s32& ValL,s32& ValR) 
+void __fastcall ReadInputPV(V_Core& thiscore, s32& ValL,s32& ValR) 
 {
 	s32 DL=0, DR=0;
 
@@ -588,24 +739,25 @@ void ReadInputPV(s32& ValL,s32& ValR)
 
 	if(pitch==0) pitch=48000;
 	
-	Cores[core].ADMAPV+=pitch;
-	while(Cores[core].ADMAPV>=48000) 
+	thiscore.ADMAPV+=pitch;
+	while(thiscore.ADMAPV>=48000) 
 	{
-		ReadInput(DL,DR);
-		Cores[core].ADMAPV-=48000;
-		Cores[core].ADMAPL=DL;
-		Cores[core].ADMAPR=DR;
+		ReadInput(thiscore, DL,DR);
+		thiscore.ADMAPV-=48000;
+		thiscore.ADMAPL=DL;
+		thiscore.ADMAPR=DR;
 	}
 
-	ValL=Cores[core].ADMAPL;
-	ValR=Cores[core].ADMAPR;
+	ValL=thiscore.ADMAPL;
+	ValR=thiscore.ADMAPR;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-void __forceinline UpdateVolume(V_Volume& Vol) {
+static void __forceinline UpdateVolume(V_Volume& Vol)
+{
 	s32 NVal;
 
 	// TIMINGS ARE FAKE!!! Need to investigate.
@@ -664,7 +816,7 @@ void __forceinline UpdateVolume(V_Volume& Vol) {
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-s32 __forceinline clamp(s32 x)
+static s32 __forceinline clamp(s32 x)
 {
 	if (x>0x00ffffff)  return 0x00ffffff;
 	if (x<0xff000000)  return 0xff000000;
@@ -675,12 +827,12 @@ s32 __forceinline clamp(s32 x)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-void DoReverb(s32& OutL, s32& OutR, s32 InL, s32 InR)
+static void DoReverb( V_Core& thiscore, s32& OutL, s32& OutR, s32 InL, s32 InR)
 {
 	static s32 INPUT_SAMPLE_L,INPUT_SAMPLE_R;
 	static s32 OUTPUT_SAMPLE_L,OUTPUT_SAMPLE_R;
 
-	if(!(Cores[core].FxEnable&&EffectsEnabled))
+	if(!(thiscore.FxEnable&&EffectsEnabled))
 	{
 		OUTPUT_SAMPLE_L=0;
 		OUTPUT_SAMPLE_R=0;
@@ -698,14 +850,14 @@ void DoReverb(s32& OutL, s32& OutR, s32 InL, s32 InR)
 		s32 IIR_INPUT_A0,IIR_INPUT_A1,IIR_INPUT_B0,IIR_INPUT_B1;
 		s32 ACC0,ACC1;
 		s32 FB_A0,FB_A1,FB_B0,FB_B1;
-		s32 buffsize=Cores[core].EffectsEndA-Cores[core].EffectsStartA+1;
+		s32 buffsize=thiscore.EffectsEndA-thiscore.EffectsStartA+1;
 
 		if(buffsize<0)
 		{
-			buffsize = Cores[core].EffectsEndA;
-			Cores[core].EffectsEndA=Cores[core].EffectsStartA;
-			Cores[core].EffectsStartA=buffsize;
-			buffsize=Cores[core].EffectsEndA-Cores[core].EffectsStartA+1;
+			buffsize = thiscore.EffectsEndA;
+			thiscore.EffectsEndA=thiscore.EffectsStartA;
+			thiscore.EffectsStartA=buffsize;
+			buffsize=thiscore.EffectsEndA-thiscore.EffectsStartA+1;
 		}
 
 		//filter the 2 samples (prev then current)
@@ -715,42 +867,42 @@ void DoReverb(s32& OutL, s32& OutR, s32 InL, s32 InR)
 		INPUT_SAMPLE_L=(INPUT_SAMPLE_L+InL)>>9;
 		INPUT_SAMPLE_R=(INPUT_SAMPLE_R+InR)>>9;
 
-#define BUFFER(x)	((s32)(*GetMemPtr(Cores[core].EffectsStartA + ((Cores[core].ReverbX + buffsize-((x)<<2))%buffsize))))
-#define SBUFFER(x)	(*GetMemPtr(Cores[core].EffectsStartA + ((Cores[core].ReverbX + buffsize-((x)<<2))%buffsize)))
+#define BUFFER(x)	((s32)(*GetMemPtr(thiscore.EffectsStartA + ((thiscore.ReverbX + buffsize-((x)<<2))%buffsize))))
+#define SBUFFER(x)	(*GetMemPtr(thiscore.EffectsStartA + ((thiscore.ReverbX + buffsize-((x)<<2))%buffsize)))
 		
-		Cores[core].ReverbX=((Cores[core].ReverbX + 4)%buffsize);
+		thiscore.ReverbX=((thiscore.ReverbX + 4)%buffsize);
 
-		IIR_INPUT_A0 = (BUFFER(Cores[core].Revb.IIR_SRC_A0) * Cores[core].Revb.IIR_COEF + INPUT_SAMPLE_L * Cores[core].Revb.IN_COEF_L)>>16;
-		IIR_INPUT_A1 = (BUFFER(Cores[core].Revb.IIR_SRC_A1) * Cores[core].Revb.IIR_COEF + INPUT_SAMPLE_R * Cores[core].Revb.IN_COEF_R)>>16;
-		IIR_INPUT_B0 = (BUFFER(Cores[core].Revb.IIR_SRC_B0) * Cores[core].Revb.IIR_COEF + INPUT_SAMPLE_L * Cores[core].Revb.IN_COEF_L)>>16;
-		IIR_INPUT_B1 = (BUFFER(Cores[core].Revb.IIR_SRC_B1) * Cores[core].Revb.IIR_COEF + INPUT_SAMPLE_R * Cores[core].Revb.IN_COEF_R)>>16;
+		IIR_INPUT_A0 = (BUFFER(thiscore.Revb.IIR_SRC_A0) * thiscore.Revb.IIR_COEF + INPUT_SAMPLE_L * thiscore.Revb.IN_COEF_L)>>16;
+		IIR_INPUT_A1 = (BUFFER(thiscore.Revb.IIR_SRC_A1) * thiscore.Revb.IIR_COEF + INPUT_SAMPLE_R * thiscore.Revb.IN_COEF_R)>>16;
+		IIR_INPUT_B0 = (BUFFER(thiscore.Revb.IIR_SRC_B0) * thiscore.Revb.IIR_COEF + INPUT_SAMPLE_L * thiscore.Revb.IN_COEF_L)>>16;
+		IIR_INPUT_B1 = (BUFFER(thiscore.Revb.IIR_SRC_B1) * thiscore.Revb.IIR_COEF + INPUT_SAMPLE_R * thiscore.Revb.IN_COEF_R)>>16;
 
-		SBUFFER(Cores[core].Revb.IIR_DEST_A0 + 4) = clamp((IIR_INPUT_A0 * Cores[core].Revb.IIR_ALPHA + BUFFER(Cores[core].Revb.IIR_DEST_A0) * (65535 - Cores[core].Revb.IIR_ALPHA))>>16);
-		SBUFFER(Cores[core].Revb.IIR_DEST_A1 + 4) = clamp((IIR_INPUT_A1 * Cores[core].Revb.IIR_ALPHA + BUFFER(Cores[core].Revb.IIR_DEST_A1) * (65535 - Cores[core].Revb.IIR_ALPHA))>>16);
-		SBUFFER(Cores[core].Revb.IIR_DEST_B0 + 4) = clamp((IIR_INPUT_B0 * Cores[core].Revb.IIR_ALPHA + BUFFER(Cores[core].Revb.IIR_DEST_B0) * (65535 - Cores[core].Revb.IIR_ALPHA))>>16);
-		SBUFFER(Cores[core].Revb.IIR_DEST_B1 + 4) = clamp((IIR_INPUT_B1 * Cores[core].Revb.IIR_ALPHA + BUFFER(Cores[core].Revb.IIR_DEST_B1) * (65535 - Cores[core].Revb.IIR_ALPHA))>>16);
+		SBUFFER(thiscore.Revb.IIR_DEST_A0 + 4) = clamp((IIR_INPUT_A0 * thiscore.Revb.IIR_ALPHA + BUFFER(thiscore.Revb.IIR_DEST_A0) * (65535 - thiscore.Revb.IIR_ALPHA))>>16);
+		SBUFFER(thiscore.Revb.IIR_DEST_A1 + 4) = clamp((IIR_INPUT_A1 * thiscore.Revb.IIR_ALPHA + BUFFER(thiscore.Revb.IIR_DEST_A1) * (65535 - thiscore.Revb.IIR_ALPHA))>>16);
+		SBUFFER(thiscore.Revb.IIR_DEST_B0 + 4) = clamp((IIR_INPUT_B0 * thiscore.Revb.IIR_ALPHA + BUFFER(thiscore.Revb.IIR_DEST_B0) * (65535 - thiscore.Revb.IIR_ALPHA))>>16);
+		SBUFFER(thiscore.Revb.IIR_DEST_B1 + 4) = clamp((IIR_INPUT_B1 * thiscore.Revb.IIR_ALPHA + BUFFER(thiscore.Revb.IIR_DEST_B1) * (65535 - thiscore.Revb.IIR_ALPHA))>>16);
 
-		ACC0 = (s32)(BUFFER(Cores[core].Revb.ACC_SRC_A0) * Cores[core].Revb.ACC_COEF_A +
-				BUFFER(Cores[core].Revb.ACC_SRC_B0) * Cores[core].Revb.ACC_COEF_B +
-				BUFFER(Cores[core].Revb.ACC_SRC_C0) * Cores[core].Revb.ACC_COEF_C +
-				BUFFER(Cores[core].Revb.ACC_SRC_D0) * Cores[core].Revb.ACC_COEF_D)>>16;
-		ACC1 = (s32)(BUFFER(Cores[core].Revb.ACC_SRC_A1) * Cores[core].Revb.ACC_COEF_A +
-				BUFFER(Cores[core].Revb.ACC_SRC_B1) * Cores[core].Revb.ACC_COEF_B +
-				BUFFER(Cores[core].Revb.ACC_SRC_C1) * Cores[core].Revb.ACC_COEF_C +
-				BUFFER(Cores[core].Revb.ACC_SRC_D1) * Cores[core].Revb.ACC_COEF_D)>>16;
+		ACC0 = (s32)(BUFFER(thiscore.Revb.ACC_SRC_A0) * thiscore.Revb.ACC_COEF_A +
+				BUFFER(thiscore.Revb.ACC_SRC_B0) * thiscore.Revb.ACC_COEF_B +
+				BUFFER(thiscore.Revb.ACC_SRC_C0) * thiscore.Revb.ACC_COEF_C +
+				BUFFER(thiscore.Revb.ACC_SRC_D0) * thiscore.Revb.ACC_COEF_D)>>16;
+		ACC1 = (s32)(BUFFER(thiscore.Revb.ACC_SRC_A1) * thiscore.Revb.ACC_COEF_A +
+				BUFFER(thiscore.Revb.ACC_SRC_B1) * thiscore.Revb.ACC_COEF_B +
+				BUFFER(thiscore.Revb.ACC_SRC_C1) * thiscore.Revb.ACC_COEF_C +
+				BUFFER(thiscore.Revb.ACC_SRC_D1) * thiscore.Revb.ACC_COEF_D)>>16;
 
-		FB_A0 = BUFFER(Cores[core].Revb.MIX_DEST_A0 - Cores[core].Revb.FB_SRC_A);
-		FB_A1 = BUFFER(Cores[core].Revb.MIX_DEST_A1 - Cores[core].Revb.FB_SRC_A);
-		FB_B0 = BUFFER(Cores[core].Revb.MIX_DEST_B0 - Cores[core].Revb.FB_SRC_B);
-		FB_B1 = BUFFER(Cores[core].Revb.MIX_DEST_B1 - Cores[core].Revb.FB_SRC_B);
+		FB_A0 = BUFFER(thiscore.Revb.MIX_DEST_A0 - thiscore.Revb.FB_SRC_A);
+		FB_A1 = BUFFER(thiscore.Revb.MIX_DEST_A1 - thiscore.Revb.FB_SRC_A);
+		FB_B0 = BUFFER(thiscore.Revb.MIX_DEST_B0 - thiscore.Revb.FB_SRC_B);
+		FB_B1 = BUFFER(thiscore.Revb.MIX_DEST_B1 - thiscore.Revb.FB_SRC_B);
 
-		SBUFFER(Cores[core].Revb.MIX_DEST_A0) = clamp((ACC0 - FB_A0 * Cores[core].Revb.FB_ALPHA)>>16);
-		SBUFFER(Cores[core].Revb.MIX_DEST_A1) = clamp((ACC1 - FB_A1 * Cores[core].Revb.FB_ALPHA)>>16);
-		SBUFFER(Cores[core].Revb.MIX_DEST_B0) = clamp(((Cores[core].Revb.FB_ALPHA * ACC0) - FB_A0 * (65535 - Cores[core].Revb.FB_ALPHA) - FB_B0 * Cores[core].Revb.FB_X)>>16);
-		SBUFFER(Cores[core].Revb.MIX_DEST_B1) = clamp(((Cores[core].Revb.FB_ALPHA * ACC1) - FB_A1 * (65535 - Cores[core].Revb.FB_ALPHA) - FB_B1 * Cores[core].Revb.FB_X)>>16);
+		SBUFFER(thiscore.Revb.MIX_DEST_A0) = clamp((ACC0 - FB_A0 * thiscore.Revb.FB_ALPHA)>>16);
+		SBUFFER(thiscore.Revb.MIX_DEST_A1) = clamp((ACC1 - FB_A1 * thiscore.Revb.FB_ALPHA)>>16);
+		SBUFFER(thiscore.Revb.MIX_DEST_B0) = clamp(((thiscore.Revb.FB_ALPHA * ACC0) - FB_A0 * (65535 - thiscore.Revb.FB_ALPHA) - FB_B0 * thiscore.Revb.FB_X)>>16);
+		SBUFFER(thiscore.Revb.MIX_DEST_B1) = clamp(((thiscore.Revb.FB_ALPHA * ACC1) - FB_A1 * (65535 - thiscore.Revb.FB_ALPHA) - FB_B1 * thiscore.Revb.FB_X)>>16);
 
-		OUTPUT_SAMPLE_L=clamp((BUFFER(Cores[core].Revb.MIX_DEST_A0)+BUFFER(Cores[core].Revb.MIX_DEST_B0))>>2);
-		OUTPUT_SAMPLE_R=clamp((BUFFER(Cores[core].Revb.MIX_DEST_B1)+BUFFER(Cores[core].Revb.MIX_DEST_B1))>>2);
+		OUTPUT_SAMPLE_L=clamp((BUFFER(thiscore.Revb.MIX_DEST_A0)+BUFFER(thiscore.Revb.MIX_DEST_B0))>>2);
+		OUTPUT_SAMPLE_R=clamp((BUFFER(thiscore.Revb.MIX_DEST_B1)+BUFFER(thiscore.Revb.MIX_DEST_B1))>>2);
 	} 
 	OutL=OUTPUT_SAMPLE_L;
 	OutR=OUTPUT_SAMPLE_R;
@@ -766,15 +918,13 @@ double rfactor=1;
 double cfactor=1;
 double diff=0;
 
-s32 __forceinline ApplyVolume(s32 data, s32 volume)
+static s32 __forceinline ApplyVolume(s32 data, s32 volume)
 {
 	return (volume * data);
 }
 
-void __forceinline MixVoice(s32& VValL, s32& VValR)
+static void __forceinline MixVoice(V_Voice& vc, s32& VValL, s32& VValR)
 {
-	V_Voice& vc(Cores[core].Voices[voice]);
-
 	s32 Value=0;
 
 	VValL=0;
@@ -783,11 +933,16 @@ void __forceinline MixVoice(s32& VValL, s32& VValR)
 	UpdateVolume(vc.VolumeL);
 	UpdateVolume(vc.VolumeR);
 
-	if (Cores[core].Voices[voice].ADSR.Phase>0) 
+	if (vc.ADSR.Phase>0) 
 	{
-		GetVoiceValues(Value);
+		if( vc.Noise )
+			GetNoiseValues( Cores[core], vc, Value );
+		else
+			GetVoiceValues( Cores[core], vc, Value );
 
+		#ifdef _DEBUG
 		vc.displayPeak = max(vc.displayPeak,abs(Value));
+		#endif
 
 		VValL=ApplyVolume(Value,(vc.VolumeL.Value));
 		VValR=ApplyVolume(Value,(vc.VolumeR.Value));
@@ -798,7 +953,7 @@ void __forceinline MixVoice(s32& VValL, s32& VValR)
 
 }
 
-__forceinline void MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
+static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 {
 	s32 InpL=0, InpR=0;
 
@@ -813,23 +968,25 @@ __forceinline void MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 		spu2Ms16(0xA00 + OutPos)=(s16)(ExtR>>16);
 	}
 	
+	V_Core& thiscore( Cores[core] );
+
 	if((core==0)&&((PlayMode&4)!=4))
 	{
-		ReadInputPV(InpL,InpR);	// get input data from input buffers
+		ReadInputPV(thiscore, InpL,InpR);	// get input data from input buffers
 	}
 	if((core==1)&&((PlayMode&8)!=8))
 	{
-		ReadInputPV(InpL,InpR);	// get input data from input buffers
+		ReadInputPV(thiscore, InpL,InpR);	// get input data from input buffers
 	}
 
 	s32 InputPeak = max(abs(InpL),abs(InpR));
-	if(Cores[core].AutoDMAPeak<InputPeak) Cores[core].AutoDMAPeak=InputPeak;
+	if(thiscore.AutoDMAPeak<InputPeak) thiscore.AutoDMAPeak=InputPeak;
 	
-	InpL = MulDiv(InpL,(Cores[core].InpL),1<<1);
-	InpR = MulDiv(InpR,(Cores[core].InpR),1<<1);
+	InpL = MulDiv(InpL,(thiscore.InpL),1<<1);
+	InpR = MulDiv(InpR,(thiscore.InpR),1<<1);
 
-	ExtL = MulDiv(ExtL,(Cores[core].ExtL),1<<12);
-	ExtR = MulDiv(ExtR,(Cores[core].ExtR),1<<12);
+	ExtL = MulDiv(ExtL,(thiscore.ExtL),1<<12);
+	ExtR = MulDiv(ExtR,(thiscore.ExtR),1<<12);
 
 	SDL=SDR=SWL=SWR=(s32)0;
 
@@ -837,12 +994,13 @@ __forceinline void MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	{
 		s32 VValL,VValR;
 
-		MixVoice(VValL,VValR);
+		V_Voice& vc( thiscore.Voices[voice] );
+		MixVoice( vc,VValL,VValR );
 
-		SDL += VValL * Cores[core].Voices[voice].DryL;
-		SDR += VValR * Cores[core].Voices[voice].DryR;
-		SWL += VValL * Cores[core].Voices[voice].WetL;
-		SWR += VValR * Cores[core].Voices[voice].WetR;
+		SDL += VValL * vc.DryL;
+		SDR += VValR * vc.DryR;
+		SWL += VValL * vc.WetL;
+		SWR += VValR * vc.WetR;
 	}
 
 	//Write To Output Area
@@ -852,30 +1010,30 @@ __forceinline void MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	spu2Ms16(0x1600 + (core<<12) + OutPos)=(s16)(SWR>>16);
 
 	// Mix in the Voice data
-	TDL += SDL * Cores[core].SndDryL;
-	TDR += SDR * Cores[core].SndDryR;
-	TWL += SWL * Cores[core].SndWetL;
-	TWR += SWR * Cores[core].SndWetR;
+	TDL += SDL * thiscore.SndDryL;
+	TDR += SDR * thiscore.SndDryR;
+	TWL += SWL * thiscore.SndWetL;
+	TWR += SWR * thiscore.SndWetR;
 
 	// Mix in the Input data
-	TDL += InpL * Cores[core].InpDryL;
-	TDR += InpR * Cores[core].InpDryR;
-	TWL += InpL * Cores[core].InpWetL;
-	TWR += InpR * Cores[core].InpWetR;
+	TDL += InpL * thiscore.InpDryL;
+	TDR += InpR * thiscore.InpDryR;
+	TWL += InpL * thiscore.InpWetL;
+	TWR += InpR * thiscore.InpWetR;
 
 	// Mix in the External (nothing/core0) data
-	TDL += ExtL * Cores[core].ExtDryL;
-	TDR += ExtR * Cores[core].ExtDryR;
-	TWL += ExtL * Cores[core].ExtWetL; 
-	TWR += ExtR * Cores[core].ExtWetR;
+	TDL += ExtL * thiscore.ExtDryL;
+	TDR += ExtR * thiscore.ExtDryR;
+	TWL += ExtL * thiscore.ExtWetL; 
+	TWR += ExtR * thiscore.ExtWetR;
 	
 	if(EffectsEnabled)
 	{
 		//Apply Effects
-		DoReverb(RVL,RVR,TWL>>16,TWR>>16);
+		DoReverb( thiscore, RVL,RVR,TWL>>16,TWR>>16);
 
-		TWL=ApplyVolume(RVL,VOL(Cores[core].FxL));
-		TWR=ApplyVolume(RVR,VOL(Cores[core].FxR));
+		TWL=ApplyVolume(RVL,VOL(thiscore.FxL));
+		TWR=ApplyVolume(RVR,VOL(thiscore.FxR));
 	}
 	else
 	{
@@ -888,12 +1046,12 @@ __forceinline void MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	OutR=(TDR + TWR);
 
 	//Apply Master Volume
-	UpdateVolume(Cores[core].MasterL);
-	UpdateVolume(Cores[core].MasterR);
+	UpdateVolume(thiscore.MasterL);
+	UpdateVolume(thiscore.MasterR);
 
-	if (Cores[core].Mute==0) {
-		OutL=MulDiv(OutL,Cores[core].MasterL.Value,1<<16);
-		OutR=MulDiv(OutR,Cores[core].MasterR.Value,1<<16);
+	if (thiscore.Mute==0) {
+		OutL=MulDiv(OutL,thiscore.MasterL.Value,1<<16);
+		OutR=MulDiv(OutR,thiscore.MasterR.Value,1<<16);
 	}
 	else 
 	{
@@ -903,7 +1061,7 @@ __forceinline void MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 
 	if((core==1)&&(PlayMode&8))
 	{
-		ReadInput(OutL,OutR);
+		ReadInput(thiscore, OutL,OutR);
 	}
 
 	if((core==0)&&(PlayMode&4))
@@ -923,12 +1081,13 @@ void __fastcall Mix()
 	core=0;
 	MixCore(ExtL,ExtR,0,0);
 
-	Peak0 = max(Peak0,max(ExtL,ExtR));
-
 	core=1;
 	MixCore(OutL,OutR,ExtL,ExtR);
 
+#ifdef _DEBUG
+	Peak0 = max(Peak0,max(ExtL,ExtR));
 	Peak1 = max(Peak1,max(OutL,OutR));
+#endif
 
 	ExtL=MulDiv(OutL,VolumeMultiplier,VolumeDivisor<<6);
 	ExtR=MulDiv(OutR,VolumeMultiplier,VolumeDivisor<<6);

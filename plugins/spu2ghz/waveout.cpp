@@ -54,40 +54,33 @@ private:
 	{
 		while( waveout_running )
 		{
-			int free=0;
-			int first=-1;
-			do
+			bool didsomething = false;
+			for(int i=0;i<MAX_BUFFER_COUNT;i++)
 			{
-				free=0;
-				for(int i=0;i<MAX_BUFFER_COUNT;i++)
+				if(!(whbuffer[i].dwFlags & WHDR_DONE) ) continue;
+
+				WAVEHDR *buf=whbuffer+i;
+
+				buf->dwBytesRecorded = buf->dwBufferLength;
+
+				buff->ReadSamples(tbuffer,BufferSize);
+				s16 *t = (s16*)buf->lpData;
+				s32 *s = (s32*)tbuffer;
+
+				for(int bleh=0;bleh<BufferSize;bleh++)
 				{
-					if(whbuffer[i].dwFlags & WHDR_DONE) 
-					{
-						whbuffer[i].dwFlags&=~WHDR_DONE;
-						first=i;
-						free=1;
-						break;
-					}
+					*(t++) = (s16)((*(s++))>>8);
 				}
-				if(free)
-					break;
-				else
-					Sleep(1);
-			} while(free==0);
 
-			WAVEHDR *buf=whbuffer+first;
-
-			buf->dwBytesRecorded= buf->dwBufferLength;
-
-			buff->ReadSamples(tbuffer,BufferSize);
-			s16 *t = (s16*)buf->lpData;
-			s32 *s = (s32*)tbuffer;
-			for(int i=0;i<BufferSize;i++)
-			{
-				*(t++) = (s16)((*(s++))>>8);
+				whbuffer[i].dwFlags&=~WHDR_DONE;
+				waveOutWrite(hwodevice,buf,sizeof(WAVEHDR));
+				didsomething = true;
 			}
 
-			waveOutWrite(hwodevice,buf,sizeof(WAVEHDR));
+			if( didsomething )
+				Sleep(1);
+			else
+				Sleep(0);
 		}
 		return 0;
 	}
@@ -137,9 +130,12 @@ public:
 		}
 
 		// Start Thread
+		// [Air]: The waveout code does not use wait objects, so setting a time critical
+		// priority level is a bad idea.  Standard priority will do fine.  The buffer will get the
+		// love it needs and won't suck resources idling pointlessly.
 		waveout_running=true;
-			thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
-		SetThreadPriority(thread,THREAD_PRIORITY_TIME_CRITICAL);
+		thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
+		//SetThreadPriority( thread, THREAD_PRIORITY_TIME_CRITICAL );
 
 		return 0;
 	}

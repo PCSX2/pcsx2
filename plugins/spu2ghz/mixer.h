@@ -23,5 +23,4 @@ void __fastcall Mix();
 void __fastcall LogVolInit();
 void __fastcall LogVolClose();
 
-
 #endif // MIXER_H_INCLUDED //

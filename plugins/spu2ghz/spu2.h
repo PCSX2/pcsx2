@@ -53,6 +53,37 @@
 
 #include "debug.h"
 
+// [Air] : give hints to the optimizer
+//  This is primarily useful for the default case switch optimizer, which enables VC to
+//  generate more compact switches.
+
+#ifdef NDEBUG
+#	define jBREAKPOINT() ((void) 0)
+#	ifdef _MSC_VER
+#		define jASSUME(exp) (__assume(exp))
+#	else
+#		define jASSUME(exp) ((void) sizeof(exp))
+#	endif
+#else
+#	if defined(_MSC_VER)
+#		define jBREAKPOINT() do { __asm int 3 } while(0)
+#	else
+#		define jBREAKPOINT() ((void) *(volatile char *) 0)
+#	endif
+#	define jASSUME(exp) if(exp) ; else jBREAKPOINT()
+#endif
+
+// disable the default case in a switch
+#define jNO_DEFAULT \
+{ \
+	break; \
+	\
+default: \
+	jASSUME(0); \
+	break; \
+}
+
+
 extern void spdif_set51(u32 is_5_1_out);
 extern u32  spdif_init();
 extern void spdif_shutdown();

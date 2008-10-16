@@ -565,75 +565,72 @@ void CALLBACK TimeUpdate(u32 cClocks, u32 syncType)
 	// HACKY but should work anyway.
 	if(lClocks==0) lClocks = cClocks;
 
-	if(dClocks>=TickInterval)
+	//Update Mixing Progress
+	while(dClocks>=TickInterval)
 	{
-		//Update Mixing Progress
-		while(dClocks>=TickInterval)
+		
+		//UpdateDebugDialog();
+
+		if(has_to_call_irq)
 		{
-			
-			//UpdateDebugDialog();
-
-			if(has_to_call_irq)
-			{
-				ConLog(" * SPU2: Irq Called (%04x).\n",Spdif.Info);
-				has_to_call_irq=false;
-				if(_irqcallback) _irqcallback();
-			}
-
-			if(Cores[0].InitDelay>0)
-			{
-				Cores[0].InitDelay--;
-				if(Cores[0].InitDelay==0)
-				{
-					CoreReset(0);
-				}
-			}
-
-			if(Cores[1].InitDelay>0)
-			{
-				Cores[1].InitDelay--;
-				if(Cores[1].InitDelay==0)
-				{
-					CoreReset(1);
-				}
-			}
-
-			//Update DMA4 interrupt delay counter
-			if(Cores[0].DMAICounter>0) 
-			{
-				Cores[0].DMAICounter-=TickInterval;
-				if(Cores[0].DMAICounter<=0)
-				{
-					Cores[0].MADR=Cores[0].TADR;
-					Cores[0].DMAICounter=0;
-					if(dma4callback) dma4callback();
-				}
-				else {
-					Cores[0].MADR+=TickInterval<<1;
-				}
-			}
-
-			//Update DMA7 interrupt delay counter
-			if(Cores[1].DMAICounter>0) 
-			{
-				Cores[1].DMAICounter-=TickInterval;
-				if(Cores[1].DMAICounter<=0)
-				{
-					Cores[1].MADR=Cores[1].TADR;
-					Cores[1].DMAICounter=0;
-					if(dma7callback) dma7callback();
-				}
-				else {
-					Cores[1].MADR+=TickInterval<<1;
-				}
-			}
-
-			dClocks-=TickInterval;
-			lClocks+=TickInterval;
-			Cycles++;
-
-			Mix();
+			ConLog(" * SPU2: Irq Called (%04x).\n",Spdif.Info);
+			has_to_call_irq=false;
+			if(_irqcallback) _irqcallback();
 		}
+
+		if(Cores[0].InitDelay>0)
+		{
+			Cores[0].InitDelay--;
+			if(Cores[0].InitDelay==0)
+			{
+				CoreReset(0);
+			}
+		}
+
+		if(Cores[1].InitDelay>0)
+		{
+			Cores[1].InitDelay--;
+			if(Cores[1].InitDelay==0)
+			{
+				CoreReset(1);
+			}
+		}
+
+		//Update DMA4 interrupt delay counter
+		if(Cores[0].DMAICounter>0) 
+		{
+			Cores[0].DMAICounter-=TickInterval;
+			if(Cores[0].DMAICounter<=0)
+			{
+				Cores[0].MADR=Cores[0].TADR;
+				Cores[0].DMAICounter=0;
+				if(dma4callback) dma4callback();
+			}
+			else {
+				Cores[0].MADR+=TickInterval<<1;
+			}
+		}
+
+		//Update DMA7 interrupt delay counter
+		if(Cores[1].DMAICounter>0) 
+		{
+			Cores[1].DMAICounter-=TickInterval;
+			if(Cores[1].DMAICounter<=0)
+			{
+				Cores[1].MADR=Cores[1].TADR;
+				Cores[1].DMAICounter=0;
+				if(dma7callback) dma7callback();
+			}
+			else {
+				Cores[1].MADR+=TickInterval<<1;
+			}
+		}
+
+		dClocks-=TickInterval;
+		lClocks+=TickInterval;
+		Cycles++;
+
+		Mix();
 	}
 }
 
@@ -1713,8 +1710,12 @@ void VoiceStart(int core,int vc)
 		Cores[core].Voices[vc].Prev1=0;
 		Cores[core].Voices[vc].Prev2=0;
 
-		Cores[core].Voices[vc].PV1=Cores[core].Voices[vc].PV2=0;
-		Cores[core].Voices[vc].PV3=Cores[core].Voices[vc].PV4=0;
+		// [Air]: Don't wipe interpolation values on VoiceStart.
+		//   There'll be less popping/clicking if we just interpolate from the
+		//   old sample and the new sample.
+
+		//Cores[core].Voices[vc].PV1=Cores[core].Voices[vc].PV2=0;
+		//Cores[core].Voices[vc].PV3=Cores[core].Voices[vc].PV4=0;
 
 		Cores[core].Regs.ENDX&=~(1<<vc);
 
@@ -1741,6 +1742,13 @@ void VoiceStop(int core,int vc)
 {
 	Cores[core].Voices[vc].ADSR.Value=0;
 	Cores[core].Voices[vc].ADSR.Phase=0;
+
+	// [Air]: Wipe the interpolation values here, since stopped voices
+	//   are essentially silence (and any new voices shold thusly interpolate up from
+	//   such silence)
+	Cores[core].Voices[vc].PV1=Cores[core].Voices[vc].PV2=0;
+	Cores[core].Voices[vc].PV3=Cores[core].Voices[vc].PV4=0;
+
 	//Cores[core].Regs.ENDX|=(1<<vc);
 }
 

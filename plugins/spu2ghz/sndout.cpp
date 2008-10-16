@@ -126,16 +126,18 @@ public:
 #endif
 			while((free<nSamples)&&(pw)) 
 			{
-				isWaiting=true;
+				//isWaiting=true;
 				LeaveCriticalSection(&cs);
+				ConLog( " * SPU2 : Waiting for object... " );
 				WaitForSingleObject(hSyncEvent,1000);
+				ConLog( " Signaled! \n" );
 				EnterCriticalSection(&cs);
 #ifdef DYNAMIC_BUFFER_LIMITING
 				free = buffer_limit-data;
 #else
 				free = size-data;
 #endif
-				isWaiting=false;
+				//isWaiting=false;
 			}
 		}
 
@@ -187,13 +189,19 @@ public:
 			underflows++;
 		}
 #else
+		bool uflow = false;
 		while(data<0)
 		{
 			data+=size;
+			uflow = true;
 		}
+
+		//if( uflow )
+			//ConLog( " * SPU2 : Data Underflow detected!\n" );
+
 #endif
 
-		if(isWaiting)
+		//if(isWaiting)
 		{
 			PulseEvent(hSyncEvent);
 		}

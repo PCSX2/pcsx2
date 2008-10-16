@@ -55,6 +55,7 @@ typedef struct {
 	u8 Releasing;
 } V_ADSR;
 
+
 typedef struct {
 // SPU2 cycle where the Playing started
 	u32 PlayCycle;
@@ -107,7 +108,12 @@ typedef struct {
 	s32 PeakX;
 	s32 SampleData;
 
-	s32 SBuffer[32];
+	// [Air]: Changed SBuffer from 32-bit to 16-bit. (this breaks old savestates)
+	//   Everything stored in SBuffer is 16-bit values, and on modern CPUs the benefit
+	//   of reduced data cache clutter out-weighs the benefit of using 'cpu native' 32-bit
+	//   values. (doesn't apply to SIMD of course, but no SIMD here anyway)
+	//   Because this breaks savestates it might not be worth the bother though.
+	s16 SBuffer[32];
 	s32 SCurrent;
 
 	s32 displayPeak;
