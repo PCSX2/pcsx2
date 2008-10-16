@@ -282,7 +282,7 @@ float valAccum1 = 1.0f;
 float valAccum2 = 1.0f;
 u32   numAccum = 1;
 
-const u32 numUpdates = 96;
+const u32 numUpdates = 112;
 
 float lastTempo=1;
 float cTempo=1;
@@ -312,21 +312,21 @@ void UpdateTempoChange()
 	s32 bufferSize  = sndBuffer->GetBufferSize();
 
 //Emergency stretch to compensate for FPS fluctuations and keep the buffers happy
-	bool a=(bufferUsage < CurBufferSize * 4);
-	bool b=(bufferUsage >= (bufferSize - CurBufferSize * 4));
+	bool a=(bufferUsage < CurBufferSize * 2.5);
+	bool b=(bufferUsage >= (bufferSize - CurBufferSize * 2.5));
 
 	if(a!=b)
 	{
-		if     (bufferUsage < CurBufferSize * 1.5) { cTempo*=0.70f; }
-		else if(bufferUsage < CurBufferSize * 2)   { cTempo*=0.90f; }
-		else if(bufferUsage < CurBufferSize * 3.9) { cTempo*=0.95f; }
+		if     (bufferUsage < CurBufferSize)	 { cTempo*=0.7f; }
+		else if(bufferUsage < CurBufferSize * 2) { cTempo*=0.90f; }
+		else if(bufferUsage < CurBufferSize * 2.5) { cTempo*=0.95f; }
  
-		if     (bufferUsage > (bufferSize - CurBufferSize * 1.5)) { cTempo*=1.30f; }
-		else if(bufferUsage > (bufferSize - CurBufferSize * 2))   { cTempo*=1.10f; }
-		else if(bufferUsage > (bufferSize - CurBufferSize * 3.9)) { cTempo*=1.05f; }
+		if     (bufferUsage > (bufferSize - CurBufferSize))     { cTempo*=1.3f; }
+		else if(bufferUsage > (bufferSize - CurBufferSize * 2)) { cTempo*=1.10f; }
+		else if(bufferUsage > (bufferSize - CurBufferSize * 2.5)) { cTempo*=1.05f; }
 		
 		if (cTempo != lastTempo) {
-			//printf("%f %d\n",cTempo,bufferUsage);
+			printf("%f %d\n",cTempo,bufferUsage);
 			pSoundTouch->setTempo(cTempo);
 		}
 	}
@@ -354,12 +354,12 @@ void UpdateTempoChange()
  
 		if((valAccum < 1.05f) && (valAccum > 0.95f) /*&& (valAccum != 1)*/) 
 		{
-			//printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
+			printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
 			valAccum = 1.0f;
 		}
 		else
 		{
-		//	printf("Timestretch Debug > Playbackpeed: %f\n",valAccum);
+			printf("Timestretch Debug > Playbackpeed: %f\n",valAccum);
 		}
 		
 		if (valAccum != lastTempo) //only update soundtouch object when needed

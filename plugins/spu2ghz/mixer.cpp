@@ -363,8 +363,7 @@ void GetVoiceValues(s32& Value) {
 	vc.SP+=pitch;
 	while(vc.SP>=4096) 
 	{
-		//this isn't needed.  it's garaunteed to be assigned a valid value.
-		//DT=0;
+		DT=0;
 
 		if(vc.Noise) 
 			GetNoiseValues(DT);
@@ -380,6 +379,7 @@ void GetVoiceValues(s32& Value) {
 	}
 
 	CalculateADSR();
+//	CalculateADSR();
 
 	if(vc.ADSR.Phase==0)
 	{
@@ -388,18 +388,12 @@ void GetVoiceValues(s32& Value) {
 	}
 	else
 	{
-		// if SP is zero then we landed perfectly on a sample source, no
-		// interpolation necessary (this is important too, since the
-		// interpolator will pick the wrong sample to mix).
-
-		if(Interpolation==0 || vc.SP == 0) {
+		if(Interpolation==0) {
 			Data = vc.PV1;
 		} 
 		else if(Interpolation==1) //linear
 		{
-			// [Air]: Inverted the interpolation delta.  The old way was generating
-			// inverted waveforms.
-			s64 t0 = vc.PV2 - vc.PV1;
+			s64 t0 = vc.PV1 - vc.PV2;
 			s64 t1 = vc.PV1;
 			Data = (((t0*vc.SP)>>12) + t1);
 		}
@@ -409,11 +403,11 @@ void GetVoiceValues(s32& Value) {
 			s64 a1 = vc.PV4 - vc.PV3 - a0;
 			s64 a2 = vc.PV1 - vc.PV4;
 			s64 a3 = vc.PV2;
-			s64 mu = 4096-vc.SP;
+			s64 mu = vc.SP;
 
-			s64 t0 = ((a0   )*mu)>>18; //all 3 were >>12, was causing ugly, loud overflow sound
-			s64 t1 = ((t0+a1)*mu)>>18;
-			s64 t2 = ((t1+a2)*mu)>>18;
+			s64 t0 = ((a0   )*mu)>>12;
+			s64 t1 = ((t0+a1)*mu)>>12;
+			s64 t2 = ((t1+a2)*mu)>>12;
 			s64 t3 = ((t2+a3));
 
 			Data = t3;
@@ -423,7 +417,7 @@ void GetVoiceValues(s32& Value) {
 
 		vc.OutX=abs(Value);
 	}
-	//if(vc.PeakX<vc.OutX) vc.PeakX=vc.OutX;
+	if(vc.PeakX<vc.OutX) vc.PeakX=vc.OutX;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
