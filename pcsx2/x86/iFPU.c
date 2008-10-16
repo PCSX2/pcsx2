@@ -400,18 +400,18 @@ REC_FPUFUNC(RSQRT_S);
 //------------------------------------------------------------------
 // Clamp Functions (Converts NaN's and Infinities to Normal Numbers)
 //------------------------------------------------------------------
-void fpuFloat(regd) { 
+void fpuFloat(int regd) { 
 	if (CHECK_FPU_OVERFLOW && !CHECK_FPUCLAMPHACK) { // Tekken 5 doesn't like clamping infinities.
 		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); // MIN() must be before MAX()! So that NaN's become +Maximum
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
 	}
 }
 
-void ClampValues(regd) { 
+void ClampValues(int regd) { 
 	fpuFloat(regd);
 }
 
-void ClampValues2(regd) { 
+void ClampValues2(int regd) { 
 	if (CHECK_FPUCLAMPHACK) { // Fixes Tekken 5 ( Makes NaN equal 0, infinities stay the same )
 		int t5reg = _allocTempXMMreg(XMMT_FPS, -1);
 
@@ -832,7 +832,7 @@ void recCVT_W()
 		if( regs >= 0 ) {
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 			_freeXMMreg(t0reg);
-			SSE_MOVSS_M32_to_XMM(t0reg, (u32)&s_signbit);
+			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&s_signbit);
 			SSE_CVTTSS2SI_XMM_to_R32(EAX, regs);
 			SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[ _Fs_ ], regs);
 		}
