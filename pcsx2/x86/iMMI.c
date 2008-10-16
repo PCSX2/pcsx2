@@ -255,7 +255,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI)
 			_deleteEEreg(XMMGPR_LO, 1);
 			_deleteEEreg(XMMGPR_HI, 1);
 			iFlushCall(FLUSH_CACHED_REGS); // since calling CALLFunc
-			CALLFunc( (u32)PMFHL );
+			CALLFunc( (uptr)PMFHL );
 			break;
 
 		case 0x03: // LH
@@ -876,7 +876,7 @@ CPU_SSE_XMMCACHE_END
 	else {
 		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-		CALLFunc( (u32)PMAXH ); 
+		CALLFunc( (uptr)PMAXH ); 
 	}
 }
 
@@ -1068,7 +1068,7 @@ void recPADDSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (u32)PADDSW ); 
+	CALLFunc( (uptr)PADDSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1159,7 +1159,7 @@ void recPSUBSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (u32)PSUBSW ); 
+	CALLFunc( (uptr)PSUBSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1587,7 +1587,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (u32)PABSW ); 
+	CALLFunc( (uptr)PABSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1611,7 +1611,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (u32)PABSW );
+	CALLFunc( (uptr)PABSW );
 }
 
 ////////////////////////////////////////////////////
@@ -2033,7 +2033,7 @@ CPU_SSE_XMMCACHE_END
 	else {
 		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-		CALLFunc( (u32)PMINH ); 
+		CALLFunc( (uptr)PMINH ); 
 	}
 }
 
@@ -2362,8 +2362,8 @@ CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMI
 
 	SSE2_PSHUFD_XMM_to_XMM(EEREC_HI, EEREC_LO, 0xf5);
 
-	SSE2_PAND_M128_to_XMM(EEREC_LO, (u32)s_mask);
-	SSE2_PAND_M128_to_XMM(EEREC_HI, (u32)s_mask);
+	SSE2_PAND_M128_to_XMM(EEREC_LO, (uptr)s_mask);
+	SSE2_PAND_M128_to_XMM(EEREC_HI, (uptr)s_mask);
 
 	if( !_Rd_ ) _freeXMMreg(t0reg);
 
@@ -2980,7 +2980,7 @@ CPU_SSE2_XMMCACHE_START((_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WR
 		}
 		else {
 			if( EEREC_D != EEREC_T ) SSEX_MOVDQA_XMM_to_XMM(EEREC_D, EEREC_T);
-			SSE2_PAND_M128_to_XMM(EEREC_D, (u32)s_tempPINTEH);
+			SSE2_PAND_M128_to_XMM(EEREC_D, (uptr)s_tempPINTEH);
 		}
 	}
 	else if( _Rt_ == 0 ) {

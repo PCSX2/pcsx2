@@ -98,12 +98,12 @@ void recJALR( void )
 
 	if( x86regs[ESI].inuse ) {
 		assert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-		MOV32RtoM((int)&cpuRegs.pc, ESI);
+		MOV32RtoM((uptr)&cpuRegs.pc, ESI);
 		x86regs[ESI].inuse = 0;
 	}
 	else {
-		MOV32MtoR(EAX, (u32)&g_recWriteback);
-		MOV32RtoM((int)&cpuRegs.pc, EAX);
+		MOV32MtoR(EAX, (uptr)&g_recWriteback);
+		MOV32RtoM((uptr)&cpuRegs.pc, EAX);
 	}
 
 	SetBranchReg(0xffffffff);

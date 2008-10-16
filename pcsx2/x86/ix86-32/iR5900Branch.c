@@ -516,8 +516,8 @@ void recBLTZAL(int info)
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	MOV32ItoM((u32)&cpuRegs.GPR.r[31].UL[0], pc+4);
-	MOV32ItoM((u32)&cpuRegs.GPR.r[31].UL[1], 0);
+	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc+4);
+	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		if( !(g_cpuConstRegs[_Rs_].SD[0] < 0) )
@@ -554,8 +554,8 @@ void recBGEZAL( void )
 	if( GPR_IS_CONST1(_Rs_) ) {
         // will always branch
         _deleteEEreg(31, 0);
-	    MOV32ItoM((u32)&cpuRegs.GPR.r[31].UL[0], pc+4);
-	    MOV32ItoM((u32)&cpuRegs.GPR.r[31].UL[1], 0);
+	    MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc+4);
+	    MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
 
         if( !(g_cpuConstRegs[_Rs_].SD[0] >= 0) )
 			branchTo = pc+4;

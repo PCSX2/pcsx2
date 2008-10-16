@@ -1085,7 +1085,7 @@ void CheckForOverflow_(int fdreg, int t0reg, int keepxyzw)
 	    SSE_ORPS_M128_to_XMM(t0reg, (uptr)&SSEmovMask[15-keepxyzw][0]);
     SSE_ANDPS_XMM_to_XMM(fdreg, t0reg);
 
-	//SSE_MOVAPS_M128_to_XMM(t0reg, (u32)s_expmask);
+	//SSE_MOVAPS_M128_to_XMM(t0reg, (uptr)s_expmask);
 	//SSE_ANDPS_XMM_to_XMM(t0reg, fdreg);
 	//SSE_CMPNEPS_M128_to_XMM(t0reg, (u32)s_expmask);
 	////SSE_ORPS_M128_to_XMM(t0reg, (u32)g_minvals);
@@ -1591,11 +1591,11 @@ void recVUMI_ADD(VURegs *VU, int info)
 
 	if( _Fs_ == 0 && _Ft_ == 0 ) { // if adding VF00 with VF00, then the result is always 0,0,0,2
 		if( _X_Y_Z_W != 0xf ) {
-			SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (u32)s_two);
+			SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)s_two);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
-			SSE_MOVAPS_M128_to_XMM(EEREC_D, (u32)s_two);
+			SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)s_two);
 		}
 	}
 	else {
@@ -2080,7 +2080,7 @@ void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 		    if( xyzw == 0 ) {
 			    if( EEREC_D == EEREC_T ) {
 				    if( _Fs_ > 0 ) SSE_SUBSS_XMM_to_XMM(EEREC_D, EEREC_S);
-				    SSE_XORPS_M128_to_XMM(EEREC_D, (u32)s_unaryminus);
+				    SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)s_unaryminus);
 			    }
 			    else {
 				    if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
@@ -3239,7 +3239,7 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (u32)s_fones);
+				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)s_fones);
 				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
 			}
 		}
@@ -3271,7 +3271,7 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 					SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 				}
 			}
-			else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (u32)s_fones);
+			else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)s_fones);
 		}
 		else {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
@@ -3282,7 +3282,7 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 	else {
 		if( _Fs_ == 0 && _Ft_ == 0 ) {
 			if( xyzw < 3 ) SSE_XORPS_XMM_to_XMM(EEREC_D, EEREC_D);
-			else SSE_MOVAPS_M128_to_XMM(EEREC_D, (u32)s_fones);
+			else SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)s_fones);
 		}
 		else {
 			if (EEREC_D == EEREC_S) {
@@ -3758,7 +3758,7 @@ void recVUMI_SQRT( VURegs *VU, int info )
 		x86SetJ8(pjmp);
 	}
 
-	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //Do a cardinal sqrt
+	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)const_clip); //Do a cardinal sqrt
 
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); //Clamp infinities (only need to do positive clamp since EEREC_TEMP is positive)
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
@@ -3788,7 +3788,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 		x86SetJ8(ajmp8);
 	}
 
-	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); //Do a cardinal sqrt
+	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)const_clip); //Do a cardinal sqrt
 	if (CHECK_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals);// Clamp Infinities to Fmax
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 	if (CHECK_EXTRA_OVERFLOW) vuFloat2(EEREC_TEMP, EEREC_TEMP, 8); //Clamp again just incase :/
@@ -4805,8 +4805,8 @@ void recVUMI_RXOR( VURegs *VU, int info )
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 
 		SSE_XORPS_M128_to_XMM(EEREC_TEMP, VU_REGR_ADDR);
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)s_mask);
-		SSE_ORPS_M128_to_XMM(EEREC_TEMP, (u32)s_fones);
+		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)s_mask);
+		SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)s_fones);
 		SSE_MOVSS_XMM_to_M32(VU_REGR_ADDR, EEREC_TEMP);
 	}
 	else {
@@ -5322,7 +5322,7 @@ void recVUMI_EATANxy( VURegs *VU, int info )
 	assert( VU == &VU1 );
 
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
-		SSE_MOVLPS_XMM_to_M64((u32)s_tempmem, EEREC_S);
+		SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
 		FLD32((uptr)&s_tempmem[0]);
 		FLD32((uptr)&s_tempmem[1]);
 	}
@@ -5345,7 +5345,7 @@ void recVUMI_EATANxz( VURegs *VU, int info )
 	assert( VU == &VU1 );
 
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
-		SSE_MOVLPS_XMM_to_M64((u32)s_tempmem, EEREC_S);
+		SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
 		FLD32((uptr)&s_tempmem[0]);
 		FLD32((uptr)&s_tempmem[2]);
 	}
@@ -5478,7 +5478,7 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 	//}
 	//else SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&VU->VF[_Fs_].UL[_Fsf_]);
  
-	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip); // abs(x)
+	SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)const_clip); // abs(x)
 	SSE_MINSS_M32_to_XMM(EEREC_TEMP, (uptr)g_maxvals); // Clamp Infinities to Fmax
 	SSE_SQRTSS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // SQRT(abs(x))
 
@@ -5506,8 +5506,8 @@ void recVUMI_ESIN( VURegs *VU, int info )
 
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
-			case 0: SSE_MOVSS_XMM_to_M32((u32)s_tempmem, EEREC_S);
-			case 1: SSE_MOVLPS_XMM_to_M64((u32)s_tempmem, EEREC_S);
+			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S);
+			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
 			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S);
 		}
 		FLD32((uptr)&s_tempmem[_Fsf_]);
@@ -5531,8 +5531,8 @@ void recVUMI_EATAN( VURegs *VU, int info )
 
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
-			case 0: SSE_MOVSS_XMM_to_M32((u32)s_tempmem, EEREC_S);
-			case 1: SSE_MOVLPS_XMM_to_M64((u32)s_tempmem, EEREC_S);
+			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S);
+			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
 			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S);
 		}
 		FLD32((uptr)&s_tempmem[_Fsf_]);
@@ -5558,8 +5558,8 @@ void recVUMI_EEXP( VURegs *VU, int info )
 
 	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
-			case 0: SSE_MOVSS_XMM_to_M32((u32)s_tempmem, EEREC_S);
-			case 1: SSE_MOVLPS_XMM_to_M64((u32)s_tempmem, EEREC_S);
+			case 0: SSE_MOVSS_XMM_to_M32((uptr)s_tempmem, EEREC_S);
+			case 1: SSE_MOVLPS_XMM_to_M64((uptr)s_tempmem, EEREC_S);
 			default: SSE_MOVHPS_XMM_to_M64((uptr)&s_tempmem[2], EEREC_S);
 		}
 		FMUL32((uptr)&s_tempmem[_Fsf_]);

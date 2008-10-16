@@ -145,7 +145,7 @@ void recBLTZAL( void )
     MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
     MOV32ItoM( (uptr)&cpuRegs.pc, pc );
     iFlushCall(FLUSH_EVERYTHING);
-    CALLFunc( (u32)BLTZAL );
+    CALLFunc( (uptr)BLTZAL );
     branch = 2; 
 }
 
@@ -156,7 +156,7 @@ void recBGEZAL( void )
     MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
     MOV32ItoM( (uptr)&cpuRegs.pc, pc );
     iFlushCall(FLUSH_EVERYTHING);
-    CALLFunc( (u32)BGEZAL );
+    CALLFunc( (uptr)BGEZAL );
     branch = 2; 
 }
 
@@ -472,7 +472,7 @@ void recBLTZALL( void )
 	   MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	   MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	   iFlushCall(FLUSH_EVERYTHING);
-	   CALLFunc( (u32)BLTZALL );
+	   CALLFunc( (uptr)BLTZALL );
 	   branch = 2; 
 }
 
@@ -483,7 +483,7 @@ void recBGEZALL( void )
 	   MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	   MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	   iFlushCall(FLUSH_EVERYTHING);
-	   CALLFunc( (u32)BGEZALL );
+	   CALLFunc( (uptr)BGEZALL );
 	   branch = 2; 
 }
 

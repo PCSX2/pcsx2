@@ -269,7 +269,7 @@ int recSetMemLocation(int regs, int imm, int mmreg, int msize, int j32)
 	LoadCW();
 
 #ifdef _DEBUG
-	//CALLFunc((u32)testaddrs);
+	//CALLFunc((uptr)testaddrs);
 #endif
 
 
@@ -299,7 +299,7 @@ int recSetMemLocation(int regs, int imm, int mmreg, int msize, int j32)
 		CMP32ItoR(EAX, 1);
 		ptr = JNE8(0);
 		MOV32ItoR(EDX, _Rs_);
-		CALLFunc((u32)assertmem);
+		CALLFunc((uptr)assertmem);
 		x86SetJ8(ptr);
 #endif
 		return 0;
@@ -1596,7 +1596,7 @@ void recMemConstClear(u32 mem, u32 size)
 		j8Ptr[6] = JE8(0);
 
 		PUSH32I((u32)PC_GETBLOCK(mem));
-		CALLFunc((u32)recClearMem);
+		CALLFunc((uptr)recClearMem);
 		ADD32ItoR(ESP, 4);
 		x86SetJ8(j8Ptr[6]);
 	}
@@ -1616,7 +1616,7 @@ void recMemConstClear(u32 mem, u32 size)
 		x86SetJ8( j8Ptr[6] );
 
 		PUSH32I((u32)PC_GETBLOCK(mem));
-		CALLFunc((u32)recClear64);
+		CALLFunc((uptr)recClear64);
 		ADD32ItoR(ESP, 4);
 
 		x86SetJ8( j8Ptr[8] );
@@ -1646,7 +1646,7 @@ void recMemConstClear(u32 mem, u32 size)
 		x86SetJ8( j8Ptr[9] );
 
 		PUSH32I((u32)PC_GETBLOCK(mem));
-		CALLFunc((u32)recClear128);
+		CALLFunc((uptr)recClear128);
 		ADD32ItoR(ESP, 4);
 
 		x86SetJ8( j8Ptr[10] );
@@ -2206,9 +2206,9 @@ void recStore(int bit, u32 imm, int align)
 		else j8Ptr[1] = JAE8(0);
 
 		if( bit < 32 || !align ) AND8ItoR(ECX, 0xfc);
-		if( bit <= 32 ) CALLFunc((u32)recWriteMemClear32);
-		else if( bit == 64 ) CALLFunc((u32)recWriteMemClear64);
-		else CALLFunc((u32)recWriteMemClear128);
+		if( bit <= 32 ) CALLFunc((uptr)recWriteMemClear32);
+		else if( bit == 64 ) CALLFunc((uptr)recWriteMemClear64);
+		else CALLFunc((uptr)recWriteMemClear128);
 
 		if( dohw ) {
 			if( s_bCachingMem & 2 ) j32Ptr[5] = JMP32(0);
@@ -2365,18 +2365,18 @@ void recStore_co(int bit, int align)
 		MOV32RtoM((u32)&s_tempaddr, ECX);
 
 		if( bit < 32 ) AND8ItoR(ECX, 0xfc);
-		if( bit <= 32 ) CALLFunc((u32)recWriteMemClear32);
-		else if( bit == 64 ) CALLFunc((u32)recWriteMemClear64);
-		else CALLFunc((u32)recWriteMemClear128);
+		if( bit <= 32 ) CALLFunc((uptr)recWriteMemClear32);
+		else if( bit == 64 ) CALLFunc((uptr)recWriteMemClear64);
+		else CALLFunc((uptr)recWriteMemClear128);
 
 		MOV32MtoR(ECX, (u32)&s_tempaddr);
 		if( off < 0 ) ADD32ItoR(ECX, -off);
 		else ADD32ItoR(ECX, off);
 
 		if( bit < 32 ) AND8ItoR(ECX, 0xfc);
-		if( bit <= 32 ) CALLFunc((u32)recWriteMemClear32);
-		else if( bit == 64 ) CALLFunc((u32)recWriteMemClear64);
-		else CALLFunc((u32)recWriteMemClear128);
+		if( bit <= 32 ) CALLFunc((uptr)recWriteMemClear32);
+		else if( bit == 64 ) CALLFunc((uptr)recWriteMemClear64);
+		else CALLFunc((uptr)recWriteMemClear128);
 		
 		if( dohw ) {
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
@@ -2675,12 +2675,12 @@ void recSD_coX(int num, int align)
 		
 		MOV32RtoM((u32)&s_tempaddr, ECX);
 		if( minoff != _Imm_ ) ADD32ItoR(ECX, _Imm_-minoff);
-		CALLFunc((u32)recWriteMemClear64);
+		CALLFunc((uptr)recWriteMemClear64);
 
 		for(i = 0; i < num; ++i) {
 			MOV32MtoR(ECX, (u32)&s_tempaddr);
 			if( minoff != (*(s16*)PSM(pc+i*4)) ) ADD32ItoR(ECX, (*(s16*)PSM(pc+i*4))-minoff);
-			CALLFunc((u32)recWriteMemClear64);
+			CALLFunc((uptr)recWriteMemClear64);
 		}
 
 		if( dohw ) {
@@ -2832,12 +2832,12 @@ void recSQ_coX(int num)
 		
 		MOV32RtoM((u32)&s_tempaddr, ECX);
 		if( minoff != _Imm_ ) ADD32ItoR(ECX, _Imm_-minoff);
-		CALLFunc((u32)recWriteMemClear128);
+		CALLFunc((uptr)recWriteMemClear128);
 
 		for(i = 0; i < num; ++i) {
 			MOV32MtoR(ECX, (u32)&s_tempaddr);
 			if( minoff != (*(s16*)PSM(pc+i*4)) ) ADD32ItoR(ECX, (*(s16*)PSM(pc+i*4))-minoff);
-			CALLFunc((u32)recWriteMemClear128);
+			CALLFunc((uptr)recWriteMemClear128);
 		}
 
 		if( dohw ) {

@@ -1794,7 +1794,7 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	j8Ptr[0] = JS8( 0 );
 
 	// has to be in the middle of Save/LoadBranchState
-	CALLFunc( (int)cpuBranchTest );
+	CALLFunc((uptr)cpuBranchTest );
 
 	if( newpc != 0xffffffff ) {
 		CMP32ItoM((uptr)&cpuRegs.pc, newpc);
@@ -1823,7 +1823,7 @@ void recCOP2( void )
 		MOV32ItoM( (uptr)&cpuRegs.pc, pc ); 
 		iFlushCall(FLUSH_EVERYTHING);
 		g_cpuHasConstReg = 1; // reset all since COP2 can change regs
-		CALLFunc( (u32)COP2 ); 
+		CALLFunc( (uptr)COP2 ); 
 
 		CMP32ItoM((uptr)&cpuRegs.pc, pc);
 		j8Ptr[0] = JE8(0);
@@ -1844,7 +1844,7 @@ void recSYSCALL( void ) {
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_NODESTROY);
-	CALLFunc( (u32)SYSCALL );
+	CALLFunc( (uptr)SYSCALL );
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -1859,7 +1859,7 @@ void recBREAK( void ) {
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (u32)BREAK );
+	CALLFunc( (uptr)BREAK );
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -1877,7 +1877,7 @@ void recBREAK( void ) {
 //	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 //	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 //	iFlushCall(FLUSH_EVERYTHING);
-//	CALLFunc( (u32)CACHE );
+//	CALLFunc( (uptr)CACHE );
 //	//branch = 2;
 //
 //	CMP32ItoM((uptr)&cpuRegs.pc, pc);

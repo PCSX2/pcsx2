@@ -475,7 +475,7 @@ void PUNPCKLDQMtoR( x86MMXRegType to, uptr from )
 
 void MOVQ64ItoR( x86MMXRegType reg, u64 i ) 
 {
-	MOVQMtoR( reg, ( u32 )(x86Ptr) + 2 + 7 );
+	MOVQMtoR( reg, ( uptr )(x86Ptr) + 2 + 7 );
 	JMP8( 8 );
 	write64( i );
 }

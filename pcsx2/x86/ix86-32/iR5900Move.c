@@ -446,8 +446,8 @@ void recMOVZtemp_const()
 	_deleteEEreg(_Rd_, 1);
 	_eeOnWriteReg(_Rd_, 0);
 	if (g_cpuConstRegs[_Rt_].UD[0] == 0) {
-		MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rs_].UL[0]);
-		MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rs_].UL[1]);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rs_].UL[0]);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rs_].UL[1]);
 	}
 }
 
@@ -568,8 +568,8 @@ void recMOVZ()
 		if( !GPR_IS_CONST2(_Rs_, _Rt_) ) {
 			// remove the const, since move is conditional
 			_deleteEEreg(_Rd_, 0);
-			MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rd_].UL[0]);
-			MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rd_].UL[1]);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rd_].UL[0]);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rd_].UL[1]);
 		}
 		else {
 			if (g_cpuConstRegs[_Rt_].UD[0] == 0) {
@@ -590,8 +590,8 @@ void recMOVNtemp_const()
 	_deleteEEreg(_Rd_, 1);
 	_eeOnWriteReg(_Rd_, 0);
 	if (g_cpuConstRegs[_Rt_].UD[0] != 0) {
-		MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rs_].UL[0]);
-		MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rs_].UL[1]);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rs_].UL[0]);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rs_].UL[1]);
 	}
 }
 
@@ -707,8 +707,8 @@ void recMOVN()
 		if( !GPR_IS_CONST2(_Rs_, _Rt_) ) {
 			// remove the const, since move is conditional
 			_deleteEEreg(_Rd_, 0);
-			MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rd_].UL[0]);
-			MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rd_].UL[1]);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], g_cpuConstRegs[_Rd_].UL[0]);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], g_cpuConstRegs[_Rd_].UL[1]);
 		}
 		else {
 			if (g_cpuConstRegs[_Rt_].UD[0] != 0) {

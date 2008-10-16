@@ -389,8 +389,8 @@ int _flushUnusedConstReg()
 			!_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, i) ) {
 
 			// check if will be written in the future
-			MOV32ItoM((u32)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
-			MOV32ItoM((u32)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
 			g_cpuFlushedConstReg |= 1<<i;
 			return 1;
 		}
@@ -426,8 +426,8 @@ void _flushConstRegs()
 		if( g_cpuHasConstReg & (1<<i) ) {
 			
 			if( !(g_cpuFlushedConstReg&(1<<i)) ) {
-				MOV32ItoM((u32)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
-				MOV32ItoM((u32)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+				MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
+				MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
 				g_cpuFlushedConstReg |= 1<<i;
 			}
 #if defined(_DEBUG)&&0
@@ -444,7 +444,7 @@ void _flushConstRegs()
 
 				x86SetJ8( ptemp[0] );
 				if( EEINST_ISLIVE1(i) ) x86SetJ8( ptemp[1] );
-				CALLFunc((u32)checkconstreg);
+				CALLFunc((uptr)checkconstreg);
 
 				x86SetJ8( ptemp[2] );
 			}
@@ -1944,7 +1944,7 @@ void StartPerfCounter()
 {
 #ifdef PCSX2_DEVBUILD
 	if( s_startcount ) {
-		CALLFunc((u32)_StartPerfCounter);
+		CALLFunc((uptr)_StartPerfCounter);
 	}
 #endif
 }
@@ -1953,8 +1953,8 @@ void StopPerfCounter()
 {
 #ifdef PCSX2_DEVBUILD
 	if( s_startcount ) {
-		MOV32ItoM((u32)&s_pCurBlock_ltime, (u32)&s_pCurBlockEx->ltime);
-		CALLFunc((u32)_StopPerfCounter);
+		MOV32ItoM((uptr)&s_pCurBlock_ltime, (u32)&s_pCurBlockEx->ltime);
+		CALLFunc((uptr)_StopPerfCounter);
 	}
 #endif
 }
@@ -2093,7 +2093,7 @@ void SetBranchReg( u32 reg )
 
 	if( reg != 0xffffffff ) {
 //		if( GPR_IS_CONST1(reg) )
-//			MOV32ItoM( (u32)&cpuRegs.pc, g_cpuConstRegs[reg].UL[0] );
+//			MOV32ItoM( (uptr)&cpuRegs.pc, g_cpuConstRegs[reg].UL[0] );
 //		else {
 //			int mmreg;
 //			
@@ -2127,7 +2127,7 @@ void SetBranchReg( u32 reg )
 
 //	CMP32ItoM((u32)&cpuRegs.pc, 0);
 //	j8Ptr[5] = JNE8(0);
-//	CALLFunc((u32)tempfn);
+//	CALLFunc((uptr)tempfn);
 //	x86SetJ8( j8Ptr[5] );
 
 	iFlushCall(FLUSH_EVERYTHING);
@@ -2146,7 +2146,7 @@ void SetBranchImm( u32 imm )
 	assert( imm );
 
 	// end the current block
-	MOV32ItoM( (u32)&cpuRegs.pc, imm );
+	MOV32ItoM( (uptr)&cpuRegs.pc, imm );
 	iFlushCall(FLUSH_EVERYTHING);
 
 	iBranchTest(imm, imm <= pc);
@@ -2265,7 +2265,7 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 #endif
 
 #ifdef _DEBUG
-	//CALLFunc((u32)testfpu);
+	//CALLFunc((uptr)testfpu);
 #endif
 
 	if( !USE_FAST_BRANCHES || cpuBranch ) {
@@ -2309,11 +2309,11 @@ void recCOP2( void )
 #endif
 
 	if ( !cpucaps.hasStreamingSIMDExtensions ) {
-		MOV32ItoM( (u32)&cpuRegs.code, cpuRegs.code ); 
-		MOV32ItoM( (u32)&cpuRegs.pc, pc ); 
+		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code ); 
+		MOV32ItoM( (uptr)&cpuRegs.pc, pc ); 
 		iFlushCall(FLUSH_EVERYTHING);
 		g_cpuHasConstReg = 1; // reset all since COP2 can change regs
-		CALLFunc( (u32)COP2 ); 
+		CALLFunc( (uptr)COP2 ); 
 
 		CMP32ItoM((int)&cpuRegs.pc, pc);
 		j8Ptr[0] = JE8(0);
@@ -2331,10 +2331,10 @@ void recCOP2( void )
 
 ////////////////////////////////////////////////////
 void recSYSCALL( void ) {
-	MOV32ItoM( (u32)&cpuRegs.code, cpuRegs.code );
-	MOV32ItoM( (u32)&cpuRegs.pc, pc );
+	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_NODESTROY);
-	CALLFunc( (u32)SYSCALL );
+	CALLFunc( (uptr)SYSCALL );
 
 	CMP32ItoM((int)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -2346,10 +2346,10 @@ void recSYSCALL( void ) {
 
 ////////////////////////////////////////////////////
 void recBREAK( void ) {
-	MOV32ItoM( (u32)&cpuRegs.code, cpuRegs.code );
-	MOV32ItoM( (u32)&cpuRegs.pc, pc );
+	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (u32)BREAK );
+	CALLFunc( (uptr)BREAK );
 
 	CMP32ItoM((int)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -2361,10 +2361,10 @@ void recBREAK( void ) {
 
 ////////////////////////////////////////////////////
 //static void recCACHE( void ) {
-//	MOV32ItoM( (u32)&cpuRegs.code, cpuRegs.code );
-//	MOV32ItoM( (u32)&cpuRegs.pc, pc );
+//	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+//	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 //	iFlushCall(FLUSH_EVERYTHING);
-//	CALLFunc( (u32)CACHE );
+//	CALLFunc( (uptr)CACHE );
 //	//branch = 2;
 //
 //	CMP32ItoM((int)&cpuRegs.pc, pc);
@@ -2399,14 +2399,14 @@ void recMFSA( void )
 		MOV32MtoR(EAX, (u32)&cpuRegs.sa);
 		_deleteEEreg(_Rd_, 0);
 		MOV32RtoM((u32)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
-		MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
 	}
 }
 
 void recMTSA( void )
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((u32)&cpuRegs.sa, g_cpuConstRegs[_Rs_].UL[0] );
+		MOV32ItoM((uptr)&cpuRegs.sa, g_cpuConstRegs[_Rs_].UL[0] );
 	}
 	else {
 		int mmreg;
@@ -2428,7 +2428,7 @@ void recMTSA( void )
 void recMTSAB( void ) 
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((u32)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) << 3);
+		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) << 3);
 	}
 	else {
 		_eeMoveGPRtoR(EAX, _Rs_);
@@ -2442,7 +2442,7 @@ void recMTSAB( void )
 void recMTSAH( void ) 
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((u32)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 4);
+		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 4);
 	}
 	else {
 		_eeMoveGPRtoR(EAX, _Rs_);
@@ -2473,7 +2473,7 @@ void checkpchanged(u32 startpc)
 }
 
 //#ifdef _DEBUG
-//#define CHECK_XMMCHANGED() CALLFunc((u32)checkxmmchanged);
+//#define CHECK_XMMCHANGED() CALLFunc((uptr)checkxmmchanged);
 //#else
 //#define CHECK_XMMCHANGED()
 //#endif
@@ -2511,7 +2511,7 @@ void recompileNextInstruction(int delayslot)
 			assert( PC_GETBLOCKEX(pblock)->startpc == pblock->startpc );
 			
 			iFlushCall(FLUSH_EVERYTHING);
-			MOV32ItoM((u32)&cpuRegs.pc, pc);
+			MOV32ItoM((uptr)&cpuRegs.pc, pc);
 				
 //			if( pexblock->pOldFnptr ) {
 //				// code already in place, so jump to it and exit recomp
@@ -2555,7 +2555,7 @@ void recompileNextInstruction(int delayslot)
 //	CMP32ItoM((u32)s_pCode, cpuRegs.code);
 //	j8Ptr[0] = JE8(0);
 //	MOV32ItoR(EAX, pc);
-//	CALLFunc((u32)checkcodefn);
+//	CALLFunc((uptr)checkcodefn);
 //	x86SetJ8( j8Ptr[ 0 ] );
 //
 //	if( !delayslot ) {
@@ -2567,7 +2567,7 @@ void recompileNextInstruction(int delayslot)
 //		x86SetJ8( j8Ptr[ 0 ] );
 //		x86SetJ8( j8Ptr[ 1 ] );
 //		PUSH32I(s_pCurBlockEx->startpc);
-//		CALLFunc((u32)checkpchanged);
+//		CALLFunc((uptr)checkpchanged);
 //		ADD32ItoR(ESP, 4);
 //		x86SetJ8( j8Ptr[ 2 ] );	
 //	}
@@ -2868,7 +2868,7 @@ void recRecompile( u32 startpc )
 //		MOV32RtoM((u32)&cpuRegs.cycle, ECX);
 //		//ADD32ItoR(ECX, 9);
 //		//ADD32ItoM((u32)&cpuRegs.cycle, 512);
-//		CALLFunc((u32)cpuBranchTest);
+//		CALLFunc((uptr)cpuBranchTest);
 //		CMP32ItoM((u32)&cpuRegs.pc, 0x81fc0);
 //		JE8(s_pCurBlock->pFnptr - (u32)(x86Ptr+2) );
 //		JMP32((u32)DispatcherReg - (u32)(x86Ptr+5));
@@ -2918,12 +2918,12 @@ void recRecompile( u32 startpc )
 
 #ifdef _DEBUG
 	// for debugging purposes
-	MOV32ItoM((u32)&g_lastpc, pc);
-	CALLFunc((u32)printfn);
+	MOV32ItoM((uptr)&g_lastpc, pc);
+	CALLFunc((uptr)printfn);
 
 //	CMP32MtoR(EBP, (u32)&s_uSaveEBP);
 //	j8Ptr[0] = JE8(0);
-//	CALLFunc((u32)badespfn);
+//	CALLFunc((uptr)badespfn);
 //	x86SetJ8(j8Ptr[0]);
 #endif
 
@@ -3188,7 +3188,7 @@ StartRecomp:
 //	if( pc+32 < s_nEndBlock ) {
 //		// only blocks with more than 8 insts
 //		//PUSH32I((u32)&lbase);
-//		//CALLFunc((u32)QueryPerformanceCounter);
+//		//CALLFunc((uptr)QueryPerformanceCounter);
 //		lbase.QuadPart = GetCPUTick();
 //		s_startcount = 1;
 //	}
@@ -3264,13 +3264,13 @@ StartRecomp:
 			BASEBLOCK* pblock = PC_GETBLOCK(s_nEndBlock);
 			assert( pc == s_nEndBlock );
 			iFlushCall(FLUSH_EVERYTHING);
-			MOV32ItoM((u32)&cpuRegs.pc, pc);
+			MOV32ItoM((uptr)&cpuRegs.pc, pc);
 			JMP32((u32)pblock->pFnptr - ((u32)x86Ptr + 5));
 			branch = 3;
 		}
 		else if( !branch ) {
 			// didn't branch, but had to stop
-			MOV32ItoM( (u32)&cpuRegs.pc, pc );
+			MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 
 			iFlushCall(FLUSH_EVERYTHING);
 

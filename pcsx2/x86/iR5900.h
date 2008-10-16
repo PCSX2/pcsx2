@@ -65,31 +65,31 @@ extern u16 iCWstate;
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 
 #define REC_FUNC_INLINE( f, delreg ) \
-	MOV32ItoM( (u32)&cpuRegs.code, cpuRegs.code ); \
-	MOV32ItoM( (u32)&cpuRegs.pc, pc ); \
+	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
+	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	iFlushCall(FLUSH_EVERYTHING); \
 	if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	CALLFunc( (u32)f ); 
+	CALLFunc( (uptr)f ); 
 
 #define REC_FUNC( f, delreg ) \
    void f( void ); \
    void rec##f( void ) \
    { \
-	   MOV32ItoM( (u32)&cpuRegs.code, cpuRegs.code ); \
-	   MOV32ItoM( (u32)&cpuRegs.pc, pc ); \
+	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
+	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
 	   if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	   CALLFunc( (u32)f ); \
+	   CALLFunc( (uptr)f ); \
    }
 
 #define REC_SYS( f ) \
    void f( void ); \
    void rec##f( void ) \
    { \
-	   MOV32ItoM( (u32)&cpuRegs.code, cpuRegs.code ); \
-	   MOV32ItoM( (u32)&cpuRegs.pc, pc ); \
+	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
+	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
-	   CALLFunc( (u32)f ); \
+	   CALLFunc( (uptr)f ); \
 	   branch = 2; \
    }
 
