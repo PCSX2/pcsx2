@@ -511,7 +511,7 @@ u32 SuperVUGetVIAddr(int reg, int read)
 		if (!CHECK_VUBRANCHHACK) {
 			return (uptr)&s_VIBranchDelay; // test for branch delays
 		}
-		else SysPrintf("VIBRANCHDELAY hack! Please report if this breaks anything (rama)\n");
+		//else SysPrintf("VIBRANCHDELAY hack! Please report if this breaks anything (rama)\n");
 	}
 #endif
 

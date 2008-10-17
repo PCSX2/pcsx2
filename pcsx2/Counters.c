@@ -470,7 +470,7 @@ void rcntUpdate()
 				counters[5].count -= counters[5].Cycle;
 			}
 			counters[5].count++;
-			//counters[5].sCycleT += VBLANKCNT(1); //this line brings back magna carta loading animation, but breaks vsyncs >< (rama)
+			//counters[5].sCycleT += VBLANKCNT(1);
 			counters[5].CycleT = VBLANKCNT(counters[5].count) - (VBLANKCNT(1)/2);
 			//SysPrintf("%x frames done in %x cycles cpuRegs.cycle = %x cycletdiff %x\n", counters[5].Cycle, counters[5].sCycleT, cpuRegs.cycle, (counters[5].CycleT - VBLANKCNT(1)) - (cpuRegs.cycle - counters[5].sCycleT));
 			VSyncStart();

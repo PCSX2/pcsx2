@@ -114,7 +114,7 @@ void LoadCW( void ) {
 
 void recCOP1_S( void ) {
 #ifndef __x86_64__
-	if( !cpucaps.hasStreamingSIMD2Extensions ) { // Not sure if this is needed anymore... (cottonvibes)
+	if( !cpucaps.hasStreamingSIMD2Extensions ) { // fixme - Not sure if this is needed anymore... (cottonvibes)
 		_freeMMXreg(6);
 		_freeMMXreg(7);
 	}

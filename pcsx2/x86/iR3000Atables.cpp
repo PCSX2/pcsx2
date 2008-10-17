@@ -1443,6 +1443,7 @@ void rpsxBLTZ()
 	_psxFlushAllUnused();
 
 	if( PSX_IS_CONST1(_Rs_) ) {
+		// fixme
 		// A variable of type u32 is always >= 0
 		//if( (int)g_psxConstRegs[_Rs_] >= 0 )
 			branchTo = psxpc+4;
@@ -1491,7 +1492,8 @@ void rpsxBGEZ()
 	_psxFlushAllUnused();
 
 	if( PSX_IS_CONST1(_Rs_) ) {
-	// A variable of type u32 is never less then 0!
+		// fixme
+		// A variable of type u32 is never less then 0!
 		/*if( g_psxConstRegs[_Rs_] < 0 )
 			branchTo = psxpc+4;*/
 

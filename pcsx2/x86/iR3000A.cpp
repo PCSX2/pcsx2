@@ -1238,7 +1238,7 @@ void psxRecRecompile(u32 startpc)
 	u32* ptr;
 
 #ifdef __x86_64__ 
-	FreezeXMMRegs(1); //check why this is needed on x64 builds (rama)
+	FreezeXMMRegs(1); // fixme - check why this is needed on x64 builds
 #endif
 
 #ifdef _DEBUG
@@ -1523,7 +1523,7 @@ StartRecomp:
         assert( s_pCurBlock->pFnptr != 0 );
 
 #ifdef __x86_64__ 
-		FreezeXMMRegs(0); //check why this is needed on x64 builds (rama)
+		FreezeXMMRegs(0); // fixme - check why this is needed on x64 builds (rama)
 #endif
 }
 
