@@ -113,7 +113,7 @@ int branch;		         // set for branch
 
 //#ifdef PCSX2_DEVBUILD
 LARGE_INTEGER lbase = {0}, lfinal = {0};
-static u32 s_startcount = 0;
+//static u32 s_startcount = 0;
 //#endif
 
 char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
@@ -1943,19 +1943,19 @@ extern void _StopPerfCounter();
 void StartPerfCounter()
 {
 #ifdef PCSX2_DEVBUILD
-	if( s_startcount ) {
-		CALLFunc((uptr)_StartPerfCounter);
-	}
+//	if( s_startcount ) {
+//		CALLFunc((uptr)_StartPerfCounter);
+//	}
 #endif
 }
 
 void StopPerfCounter()
 {
 #ifdef PCSX2_DEVBUILD
-	if( s_startcount ) {
-		MOV32ItoM((uptr)&s_pCurBlock_ltime, (u32)&s_pCurBlockEx->ltime);
-		CALLFunc((uptr)_StopPerfCounter);
-	}
+//	if( s_startcount ) {
+//		MOV32ItoM((uptr)&s_pCurBlock_ltime, (u32)&s_pCurBlockEx->ltime);
+//		CALLFunc((uptr)_StopPerfCounter);
+//	}
 #endif
 }
 #endif
@@ -2258,10 +2258,10 @@ void iFlushCall(int flushtype)
 static void iBranchTest(u32 newpc, u32 cpuBranch)
 {
 #ifdef PCSX2_DEVBUILD
-	if( s_startcount ) {
-		StopPerfCounter();
-		ADD32ItoM( (u32)&s_pCurBlockEx->visited, 1 );
-	}
+//	if( s_startcount ) {
+//		StopPerfCounter();
+//		ADD32ItoM( (u32)&s_pCurBlockEx->visited, 1 );
+//	}
 #endif
 
 #ifdef _DEBUG
@@ -3184,7 +3184,7 @@ StartRecomp:
 
 	// perf counters //
 #ifdef PCSX2_DEVBUILD
-	s_startcount = 0;
+//	s_startcount = 0;
 //	if( pc+32 < s_nEndBlock ) {
 //		// only blocks with more than 8 insts
 //		//PUSH32I((u32)&lbase);
