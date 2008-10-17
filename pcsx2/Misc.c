@@ -1133,7 +1133,7 @@ long InterlockedExchangeAdd(long volatile* Addend, long Value)
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xadd [%0], %%eax\n"
 						 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory" );
-	// fixme - As is this
+	// fixme - This is supposed to return a long
 }
 
 u32 timeGetTime()
