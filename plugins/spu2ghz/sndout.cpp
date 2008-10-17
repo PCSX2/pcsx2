@@ -320,21 +320,20 @@ void UpdateTempoChange()
 	s32 bufferSize  = sndBuffer->GetBufferSize();
 
 //Emergency stretch to compensate for FPS fluctuations and keep the buffers happy
-	bool a=(bufferUsage < CurBufferSize * 2.5);
-	bool b=(bufferUsage >= (bufferSize - CurBufferSize * 2.5));
+	bool a=(bufferUsage < CurBufferSize * 4);
+	bool b=(bufferUsage >= (bufferSize - CurBufferSize * 4));
 
 	if(a!=b)
 	{
-		if     (bufferUsage < CurBufferSize)	 { cTempo*=0.7f; }
-		else if(bufferUsage < CurBufferSize * 2) { cTempo*=0.90f; }
-		else if(bufferUsage < CurBufferSize * 2.5) { cTempo*=0.95f; }
+		if     (bufferUsage < CurBufferSize * 2) { cTempo*=0.80f; }
+		else if(bufferUsage < CurBufferSize * 3) { cTempo*=0.90f; }
+		else if(bufferUsage < CurBufferSize * 4) { cTempo*=0.96f; }
  
-		if     (bufferUsage > (bufferSize - CurBufferSize))     { cTempo*=1.3f; }
-		else if(bufferUsage > (bufferSize - CurBufferSize * 2)) { cTempo*=1.10f; }
-		else if(bufferUsage > (bufferSize - CurBufferSize * 2.5)) { cTempo*=1.05f; }
+		if     (bufferUsage > (bufferSize - CurBufferSize * 2))  { cTempo*=1.20f; }
+		else if(bufferUsage > (bufferSize - CurBufferSize * 3))  { cTempo*=1.10f; }
+		else if(bufferUsage >= (bufferSize - CurBufferSize * 4)) { cTempo*=1.04f; }
 		
 		if (cTempo != lastTempo) {
-			printf("%f %d\n",cTempo,bufferUsage);
 			pSoundTouch->setTempo(cTempo);
 		}
 	}
@@ -360,15 +359,15 @@ void UpdateTempoChange()
 		
 		valAccum = valAccum2 / valAccum1;
  
-		if((valAccum < 1.05f) && (valAccum > 0.95f) /*&& (valAccum != 1)*/) 
+		if((valAccum < 1.04f) && (valAccum > 0.96f) /*&& (valAccum != 1)*/) 
 		{
-			printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
+		//	printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
 			valAccum = 1.0f;
 		}
-		else
+		/*else
 		{
 			printf("Timestretch Debug > Playbackpeed: %f\n",valAccum);
-		}
+		}*/
 		
 		if (valAccum != lastTempo) //only update soundtouch object when needed
 			pSoundTouch->setTempo(valAccum);
