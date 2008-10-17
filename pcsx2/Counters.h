@@ -37,8 +37,8 @@ void rcntWcount(int index, u32 value);
 void rcntWmode(int index, u32 value);
 void rcntWtarget(int index, u32 value);
 void rcntWhold(int index, u32 value);
-u32  rcntRcount(int index);
-u32 rcntCycle(int index);
+u32	 rcntRcount(int index);
+u32	 rcntCycle(int index);
 int  rcntFreeze(gzFile f, int Mode);
 
 void UpdateVSyncRate();
