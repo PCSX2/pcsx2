@@ -19,29 +19,9 @@
 #ifndef __LNXMAIN_H__
 #define __LNXMAIN_H__
 
-extern bool UseGui;
-extern bool needReset;
-extern bool RunExe;
+#include "Linux.h"
 
 char* g_pRunGSState = NULL;
-extern GtkWidget *CpuDlg;
-
-/* Config.c */
-extern int LoadConfig();
-extern void SaveConfig();
-
-/* GtkGui */
-extern void StartGui();
-extern void RunGui();
-extern int Pcsx2Configure();
-extern void ChangeLanguage(char *lang);
-extern void init_widgets();
-
-/* LnxMain */
-void InitLanguages();
-char *GetLanguageNext();
-void CloseLanguages();
-void ChangeLanguage(char *lang);
 
 char* phelpmsg = 
 	"\tpcsx2 [options] [file]\n\n"

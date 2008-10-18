@@ -21,7 +21,6 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
-#include "Linux.h"
 #include "LnxMain.h"
 
 DIR *dir;
@@ -39,11 +38,8 @@ static int s_nShmCounter = 0;
 int main(int argc, char *argv[]) {
 	char *file = NULL;
 	char elfname[256];
-	int runcd=0;
 	int efile = 0;
-	//char* g_pRunGSState = NULL;
 	int i = 1;
-    struct stat buf;
 
 #ifdef PCSX2_VIRTUAL_MEM
 	void* pmem = mmap(PS2MEM_BASE, 0x40000000, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
@@ -275,6 +271,12 @@ void ChangeLanguage(char *lang) {
 	LoadConfig();
 }
 
+/* Quick macros for checking shift, control, alt, and caps lock. */
+#define SHIFT_EVT(evt) ((evt == XK_Shift_L) || (evt == XK_Shift_R))
+#define CTRL_EVT(evt) ((evt == XK_Control_L) || (evt == XK_Control_L))
+#define ALT_EVT(evt) ((evt == XK_Alt_L) || (evt == XK_Alt_R))
+#define CAPS_LOCK_EVT(evt) (evt == XK_Caps_Lock)
+
 void KeyEvent(keyEvent* ev) {
 	static int shift = 0;
 
@@ -282,50 +284,52 @@ void KeyEvent(keyEvent* ev) {
 	
 	if( GSkeyEvent != NULL ) GSkeyEvent(ev);
 
-	if( ev->event == KEYPRESS ) 
-		if( ev->key == XK_Shift_L || ev->key == XK_Shift_R ) 
+	if (ev->event == KEYPRESS)
+	{
+		if (SHIFT_EVT(ev->key)) 
 			shift = 1;
-	else 
-		if (ev->event == KEYRELEASE) {
-			if( ev->key == XK_Shift_L || ev->key == XK_Shift_R ) 
-				shift = 0;
-			return;
-			}
+		
+		switch (ev->key) {
+			case XK_F1: ProcessFKeys(1, shift); break;
+			case XK_F2: ProcessFKeys(2, shift); break;
+			case XK_F3: ProcessFKeys(3, shift); break;
+			case XK_F4: ProcessFKeys(4, shift); break;
+			case XK_F5: ProcessFKeys(5, shift); break;
+			case XK_F6: ProcessFKeys(6, shift); break;
+			case XK_F7: ProcessFKeys(7, shift); break;
+			case XK_F8: ProcessFKeys(8, shift); break;
+			case XK_F9: ProcessFKeys(9, shift); break;
+			case XK_F10: ProcessFKeys(10, shift); break;
+			case XK_F11: ProcessFKeys(11, shift); break;
+			case XK_F12: ProcessFKeys(12, shift); break;
 
-	switch (ev->key) {
-		case XK_F1: ProcessFKeys(1, shift); break;
-		case XK_F2: ProcessFKeys(2, shift); break;
-		case XK_F3: ProcessFKeys(3, shift); break;
-		case XK_F4: ProcessFKeys(4, shift); break;
-		case XK_F5: ProcessFKeys(5, shift); break;
-		case XK_F6: ProcessFKeys(6, shift); break;
-		case XK_F7: ProcessFKeys(7, shift); break;
-		case XK_F8: ProcessFKeys(8, shift); break;
-		case XK_F9: ProcessFKeys(9, shift); break;
-		case XK_F10: ProcessFKeys(10, shift); break;
-		case XK_F11: ProcessFKeys(11, shift); break;
-		case XK_F12: ProcessFKeys(12, shift); break;
+			case XK_Escape:
+				signal(SIGINT, SIG_DFL);
+				signal(SIGPIPE, SIG_DFL);
 
-		case XK_Escape:
-			signal(SIGINT, SIG_DFL);
-			signal(SIGPIPE, SIG_DFL);
+				#ifdef PCSX2_DEVBUILD
+				if( g_SaveGSStream >= 3 ) {
+					g_SaveGSStream = 4;// gs state
+					break;
+				}
+				#endif
 
-#ifdef PCSX2_DEVBUILD
-			if( g_SaveGSStream >= 3 ) {
-				// gs state
-				g_SaveGSStream = 4;
+				ClosePlugins();
+				if (!UseGui) exit(0);
+				RunGui();
 				break;
-			}
-#endif
-
-			ClosePlugins();
-			if (!UseGui) exit(0);
-			RunGui();
-			break;
-		default:
-			GSkeyEvent(ev);
-			break;
+			default:
+				GSkeyEvent(ev);
+				break;
+		}
 	}
+	else if (ev->event == KEYRELEASE)
+	{
+		if (SHIFT_EVT(ev->key)) 
+			shift = 0;
+	}
+	
+	return;
 }
 
 int SysInit() {
@@ -374,7 +378,7 @@ void SysClose() {
 void SysPrintf(const char *fmt, ...) {
 	va_list list;
 	char msg[512];
-	char* ptr, *src;
+	char* ptr;
 	int len, i, j, s;
 
 	va_start(list, fmt);

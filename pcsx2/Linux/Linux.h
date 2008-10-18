@@ -47,6 +47,34 @@
 #include "../Paths.h"
 #include "Common.h"
 
+extern bool UseGui;
+extern bool needReset;
+extern bool RunExe;
+
+extern GtkWidget *CpuDlg;
+
+/* Config.c */
+extern int LoadConfig();
+extern void SaveConfig();
+
+/* GtkGui */
+extern void StartGui();
+extern void RunGui();
+extern int Pcsx2Configure();
+extern void ChangeLanguage(char *lang);
+extern void init_widgets();
+
+/* LnxMain */
+extern void InitLanguages();
+extern char *GetLanguageNext();
+extern void CloseLanguages();
+extern void ChangeLanguage(char *lang);
+
+/* Misc.c */
+extern void vu0Shutdown();
+extern void vu1Shutdown();
+extern void SaveConfig();
+
 typedef struct {
 	char lang[256];
 } _langs;

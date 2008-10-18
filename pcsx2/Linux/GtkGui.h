@@ -19,6 +19,11 @@
  #ifndef __GTKGUI_H__
 #define __GTKGUI_H__
 
+#include "support.h"
+#include "callbacks.h"
+#include "interface.h"
+#include "Linux.h"
+
 bool applychanges = FALSE;
 bool configuringplug = FALSE;
 bool destroy = FALSE;

@@ -16,10 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "support.h"
-#include "callbacks.h"
-#include "interface.h"
-#include "Linux.h"
 #include "GtkGui.h"
 #include "R3000A.h"
 #include "PsxMem.h"
@@ -27,8 +23,8 @@
 void StartGui() {
 	GtkWidget *Menu;
 	GtkWidget *Item;
-	GtkWidget* vbox;
-	int i;
+	
+	u32 i;
 
 	add_pixmap_directory(".pixmaps");
 	MainWindow = create_MainWindow();
@@ -52,7 +48,7 @@ void StartGui() {
 	Menu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(Item), Menu);
 
-	for (i=0; i<langsMax; i++) {
+	for (i=0; i < langsMax; i++) {
 		Item = gtk_check_menu_item_new_with_label(ParseLang(langs[i].lang));
 		gtk_widget_show(Item);
 		gtk_container_add(GTK_CONTAINER(Menu), Item);
@@ -302,7 +298,6 @@ void OnStates_Load5(GtkMenuItem *menuitem, gpointer user_data) { States_Load(4);
 void OnLoadOther_Ok(GtkButton* button, gpointer user_data) {
 	gchar *File;
 	char str[256];
-	char Text[256];
 	int ret;
 
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
@@ -348,7 +343,6 @@ void OnStates_Save5(GtkMenuItem *menuitem, gpointer user_data) { States_Save(4);
 void OnSaveOther_Ok(GtkButton* button, gpointer user_data) {
 	gchar *File;
 	char str[256];
-	char Text[256];
 	int ret;
 
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
@@ -497,8 +491,6 @@ void OnConf_Fw(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void OnCpu_Ok(GtkButton *button, gpointer user_data) {
-	GtkWidget *Btn;
-	long t;
 	u32 newopts = 0;
 
 	Cpu->Shutdown();
@@ -554,7 +546,6 @@ void OnCpu_Cancel(GtkButton *button, gpointer user_data) {
 
 void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data)
 {
-	GtkWidget *Btn;
 	char str[512];
 
 	CpuDlg = create_CpuDlg();
@@ -1278,12 +1269,11 @@ void OnDebug_Debugger(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void OnLogging_Ok(GtkButton *button, gpointer user_data) {
+#ifdef PCSX2_DEVBUILD
 	GtkWidget *Btn;
 	char str[32];
 	int i, ret;
-
-#ifdef PCSX2_DEVBUILD
-		
+	
 	for (i=0; i<17; i++) {
 		sprintf(str, "Log%d", i);
 		Btn = lookup_widget(LogDlg, str);
@@ -1685,8 +1675,6 @@ void on_Speed_Hack_Cancel(GtkButton *button, gpointer user_data)
 }
 void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 {
-	int index;
-	
 	Config.Hacks = 0;
 
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_EE_Double_Sync") ? FLAG_EE_2_SYNC : 0;  

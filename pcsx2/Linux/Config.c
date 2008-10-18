@@ -51,7 +51,6 @@ int LoadConfig() {
 	FILE *f;
 	int size;
 	char *data,*tmp;
-	char strtemp[255];
 
 	if (stat(cfgfile, &buf) == -1) return -1;
 	size = buf.st_size;
