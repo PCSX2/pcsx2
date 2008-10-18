@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 #include "ix86.h"
+#include "Misc.h"
 
 #if defined (_MSC_VER) && _MSC_VER >= 1400
 

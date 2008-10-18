@@ -73,7 +73,6 @@ REC_FUNC( MTLO1, 0 );
 
 ////////////////////////////////////////////////////
 void recLUI( void ) {
-	int rtreg;
 
 	if (!_Rt_) return;
 

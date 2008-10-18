@@ -1176,7 +1176,7 @@ int VIF0transfer(u32 *data, int size, int istag) {
 
 int  _VIF0chain() {
 	u32 *pMem;
-	u32 qwc = vif0ch->qwc;
+	//u32 qwc = vif0ch->qwc;
 	u32 ret;
 
 	if (vif0ch->qwc == 0 && vif0.vifstalled == 0) return 0;
@@ -2084,7 +2084,7 @@ int VIF1transfer(u32 *data, int size, int istag) {
 
 int  _VIF1chain() {
 	u32 *pMem;
-	u32 qwc = vif1ch->qwc;
+	//u32 qwc = vif1ch->qwc;
 	u32 ret;
 
 	

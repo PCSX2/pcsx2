@@ -51,9 +51,9 @@ static VURegs * const VU = (VURegs*)&VU0;
 extern u32 vudump;
 #endif
 
-static u32 vuprogcount = 0;
+//static u32 vuprogcount = 0;
 
-void recExecuteVU0Block( void )
+void recExecuteVU0Block( void ) // fixme - are all these comments at all useful, or can they be removed?
 {
 	//SysPrintf("executeVU0 %x\n", VU0.VI[ REG_TPC ].UL);
 	//QueryPerformanceCounter(&vu0base);
@@ -64,7 +64,7 @@ void recExecuteVU0Block( void )
 		return;
 	}
 #ifdef _DEBUG
-	vuprogcount++;
+	//vuprogcount++;
 
 //	__Log("VU: %x %x\n", VU0.VI[ REG_TPC ].UL, vuprogcount);
 //	iDumpVU0Registers();

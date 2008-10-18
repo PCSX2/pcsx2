@@ -152,11 +152,6 @@ void tests() {
 
 ////////////////////////////////////////////////////
 void recLW( void ) {
-	int rsreg;
-	int rtreg;
-	int t0reg;
-	int t1reg;
-	int t2reg;
 
 	iFlushCall(FLUSH_EVERYTHING);
 

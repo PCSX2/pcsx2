@@ -1531,26 +1531,27 @@ void P_BC2TL(char *buf){   sprintf(buf, "bc2tl\t%s",         offset_decode()); }
 
 const char *dest_string(void)
 {
- static char str[5];
- int i;
- i = 0;
- if(_X) str[i++] = 'x';
- if(_Y) str[i++] = 'y';
- if(_Z) str[i++] = 'z';
- if(_W) str[i++] = 'w';
-  str[i++] = 0;
- return (const char *)str;
+	static char str[5];
+	int i = 0;
+	
+	if(_X) str[i++] = 'x';
+	if(_Y) str[i++] = 'y';
+	if(_Z) str[i++] = 'z';
+	if(_W) str[i++] = 'w';
+	str[i++] = 0;
+	
+	return (const char *)str;
 }
 
 char dest_fsf()
 {
-	const arr[4] = { 'x', 'y', 'z', 'w' };
+	const char arr[4] = { 'x', 'y', 'z', 'w' };
 	return arr[(cpuRegs.code>>21)&3];
 }
 
 char dest_ftf()
 {
-	const arr[4] = { 'x', 'y', 'z', 'w' };
+	const char arr[4] = { 'x', 'y', 'z', 'w' };
 	return arr[(cpuRegs.code>>23)&3];
 }
 

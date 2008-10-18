@@ -104,41 +104,6 @@ GtkWidget *DumpRDlg, *DumpRTEntry, *DumpRFEntry;
 GtkWidget *MemWriteDlg, *MemEntry, *DataEntry;
 GtkAdjustment *DebugAdj;
 GtkWidget *GameFixDlg, *SpeedHacksDlg, *AdvDlg;
-
-#define is_checked(main_widget, widget_name) (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)))) 
-#define set_checked(main_widget,widget_name, state) gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)), state)
-
-#define set_flag(v, flag, value) if (value == TRUE) v |= flag; else v &= flag;
-#define get_flag(v,flag) (v & flag)
-
-#define FLAG_SLOW_DVD 0x1
-#define FLAG_VU_CLIP 0x2
-#define FLAG_FPU_CLAMP 0x4
-#define FLAG_VU_BRANCH 0x8
-
-#define FLAG_VU_NO_OVERFLOW 0x2
-#define FLAG_VU_EXTRA_OVERFLOW 0x40
-	
-#define FLAG_FPU_NO_OVERFLOW 0x800
-#define FLAG_FPU_EXTRA_OVERFLOW 0x1000
-	
-#define FLAG_EE_2_SYNC 0x1
-#define FLAG_TIGHT_SPU_SYNC 0x4
-#define FLAG_NO_UNDERFLOW 0x8
-#define FLAG_IOP_2_SYNC 0x10
-#define FLAG_TRIPLE_SYNC 0x20
-#define FLAG_FAST_BRANCHES 0x80
-#define FLAG_NO_VU_FLAGS 0x100
-#define FLAG_NO_FPU_FLAGS 0x200
-#define FLAG_ESC 0x400
-
-#define FLAG_ROUND_NEAR 0x0000
-#define FLAG_ROUND_NEGATIVE 0x2000
-#define FLAG_ROUND_POSITIVE 0x4000
-#define FLAG_ROUND_ZERO 0x6000
-
-#define FLAG_FLUSH_ZERO 0x8000
-#define FLAG_DENORMAL_ZERO 0x0040
 	
 #endif
 

@@ -27,6 +27,7 @@
 #include <string.h>
 #include <assert.h>
 #include <malloc.h>
+#include <sys/stat.h>
 
 #include "Common.h"
 #include "Memory.h"
@@ -79,7 +80,7 @@ u32 g_EEFreezeRegs = 0; // if set, should freeze the regs
 
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
-static BASEBLOCK* s_pDispatchBlock = NULL;
+//static BASEBLOCK* s_pDispatchBlock = NULL;
 static u32 s_nEndBlock = 0; // what pc the current block ends	
 static u32 s_nHasDelay = 0;
 
@@ -1965,7 +1966,7 @@ static void checkcodefn()
 {
 	int pctemp;
 
-    __asm__("movl %%eax, %0" : "=m"(pctemp) );
+	__asm__("movl %%eax, %0" : "=m"(pctemp) );
 
 	SysPrintf("code changed! %x\n", pctemp);
 	assert(0);
@@ -2233,9 +2234,8 @@ extern u32 psxdump;
 static void printfn()
 {
 	static int lastrec = 0;
-	static int curcount = 0, count2 = 0;
+	static int curcount = 0;
 	const int skip = 0;
-	static int i;
 
 	assert( !g_globalXMMSaved );
 

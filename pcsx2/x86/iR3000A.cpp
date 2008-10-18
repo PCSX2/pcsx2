@@ -64,6 +64,8 @@ u32 g_psxMaxRecMem = 0;
 extern char *disRNameGPR[];
 extern char* disR3000Fasm(u32 code, u32 pc);
 
+u32 s_psxrecblocks[] = {0};
+
 void psxRecRecompile(u32 startpc);
 
 uptr *psxRecLUT;
@@ -79,7 +81,6 @@ uptr *psxRecLUT;
 // R3000A statics
 int psxreclog = 0;
 
-static u32 s_BranchCount = 0;
 static char *recMem;	// the recompiled blocks will be here
 static BASEBLOCK *recRAM;	// and the ptr to the blocks here
 static BASEBLOCK *recROM;	// and here
@@ -93,7 +94,11 @@ static u32 s_nInstCacheSize = 0;
 
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
+
+#if defined(_MSC_VER) && !defined(__x86_64__)
 static BASEBLOCK* s_pDispatchBlock = NULL;
+#endif
+
 static u32 s_nEndBlock = 0; // what psxpc the current block ends	
 
 static u32 s_nNextBlock = 0; // next free block in recBlocks
@@ -140,6 +145,7 @@ BASEBLOCKEX* PSX_GETBLOCKEX(BASEBLOCK* p)
 }
 
 ////////////////////////////////////////////////////
+#ifdef _DEBUG
 static void iDumpBlock( int startpc, char * ptr )
 {
 	FILE *f;
@@ -224,6 +230,7 @@ sprintf( filename, "dumps\\psxdump%.8X.txt", startpc);
     f = fopen( filename, "a+" );
 #endif
 }
+#endif
 
 u8 _psxLoadWritesRs(u32 tempcode)
 {
@@ -1197,6 +1204,7 @@ void iDumpPsxRegisters(u32 startpc, u32 temp)
 
 void iDumpPsxRegisters(u32 startpc);
 
+#ifdef _DEBUG
 static void printfn()
 {
 	static int lastrec = 0;
@@ -1227,8 +1235,7 @@ static void printfn()
 		lastrec = g_psxlastpc;
 	}
 }
-
-u32 s_psxrecblocks[] = {0};
+#endif
 
 void psxRecRecompile(u32 startpc)
 {

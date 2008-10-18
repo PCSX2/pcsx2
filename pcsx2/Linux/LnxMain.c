@@ -288,6 +288,11 @@ void KeyEvent(keyEvent* ev) {
 	{
 		if (SHIFT_EVT(ev->key)) 
 			shift = 1;
+		if (CAPS_LOCK_EVT(ev->key))
+		{
+			//Set up anything we want to happen while caps lock is down.
+			//Config_hacks_backup = Config.Hacks;
+		}
 		
 		switch (ev->key) {
 			case XK_F1: ProcessFKeys(1, shift); break;
@@ -327,6 +332,11 @@ void KeyEvent(keyEvent* ev) {
 	{
 		if (SHIFT_EVT(ev->key)) 
 			shift = 0;
+		if (CAPS_LOCK_EVT(ev->key))
+		{
+			//Release caps lock
+			//Config_hacks_backup = Config.Hacks;
+		}
 	}
 	
 	return;

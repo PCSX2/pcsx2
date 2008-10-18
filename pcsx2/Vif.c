@@ -37,7 +37,6 @@ u32* _vifRow = NULL, *_vifCol = NULL;
 vifStruct *_vif;
 
 static int n;
-static int i;
 
 __inline static int _limit( int a, int max ) 
 {
@@ -484,7 +483,6 @@ __inline int mfifoVIF1chain() {
 }
 
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
-static int tempqwc = 0;
 
 void mfifoVIF1transfer(int qwc) {
 	u32 *ptag;

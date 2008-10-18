@@ -404,13 +404,18 @@ void ipuConstRead64(u32 mem, int mmreg)
 
 #else
 
-int ipuConstRead32(u32 x86reg, u32 mem)
+int ipuConstRead32(u32 x86reg, u32 mem) 
 {
+	// Let's see if this ever gets called
+	printf("ipuConstRead32 called on a 64-bit system!\n"); 
 	assert(0);
+	return 0; //It won't return, but it makes the compiler happy.
 }
 
 void ipuConstRead64(u32 mem, int mmreg)
 {
+	// Let's see if this ever gets called
+	printf("ipuConstRead64 called on a 64-bit system!\n"); 
 	assert(0);
 }
 
@@ -1928,8 +1933,8 @@ int IPU0dma()
 	int readsize;
 	void* pMem;
 
-	int qwc = ipu0dma->qwc;
-	u32 chcr = ipu0dma->chcr;
+	//int qwc = ipu0dma->qwc;
+	//u32 chcr = ipu0dma->chcr;
 
 	if( !(ipu0dma->chcr & 0x100) || (cpuRegs.interrupt & (1<<DMAC_FROM_IPU)) ) {
 		return 0;

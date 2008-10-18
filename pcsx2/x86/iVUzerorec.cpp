@@ -524,7 +524,6 @@ void SuperVUDumpBlock(list<VuBaseBlock*>& blocks, int vuindex)
 	char filename[ 256 ], str[256];
 	u32 *mem;
 	u32 i;
-	static int gid = 0;
 
 #ifdef _WIN32
 	CreateDirectory("dumps", NULL);
@@ -973,8 +972,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 
 		// count inst non-dummy insts
 		itinst = pblock->insts.begin();
-		u32 inst = 0;
-        int cycleoff = 0;
+		int cycleoff = 0;
 
 		while(dummyinst > 0) {
 			if( itinst->type & INST_DUMMY )
@@ -2390,7 +2388,7 @@ uptr s_vu1ebp, s_vuebx, s_vuedi, s_vu1esi;
 static int s_recWriteQ, s_recWriteP; // wait times during recompilation
 static int s_needFlush; // first bit - Q, second bit - P, third bit - Q has been written, fourth bit - P has been written
 
-static u32 s_ssecsr;
+//static u32 s_ssecsr;
 static int s_JumpX86;
 static int s_ScheduleXGKICK = 0, s_XGKICKReg = -1;
 
@@ -2605,10 +2603,14 @@ static void SuperVURecompile()
 }
 
 // debug
-static u32 s_svulast = 0, s_vufnheader;
+
+#ifdef _DEBUG
 extern "C" u32 s_vucount;
-u32 g_vu1lastrec = 0, skipparent = -1;
+
+static u32 g_vu1lastrec = 0, skipparent = -1;
+static u32 s_svulast = 0, s_vufnheader;
 static u32 badaddrs[][2] = {0,0xffff};
+#endif
 extern "C" {
 
 #ifndef __x86_64__
@@ -2623,8 +2625,6 @@ u32 g_curdebugvu;
 #if defined(_MSC_VER) && !defined(__x86_64__)
 __declspec(naked) static void svudispfn()
 {
-	static u32 i;
-
 	__asm {
 		mov g_curdebugvu, eax
 		mov s_saveecx, ecx
@@ -2640,7 +2640,6 @@ extern "C" void svudispfn();
 
 extern "C" void svudispfntemp()
 {
-    static u32 i;
 #endif
 
 //    VU1.VF[7].F[0] = vuDouble(VU1.VF[7].UL[0]);
@@ -2649,7 +2648,9 @@ extern "C" void svudispfntemp()
 //    VU1.VF[7].F[3] = vuDouble(VU1.VF[7].UL[3]);
 
 #ifdef _DEBUG
-    if( ((vudump&8) && g_curdebugvu) || ((vudump&0x80) && !g_curdebugvu) ) { //&& g_vu1lastrec != g_vu1last ) {
+	static u32 i;
+	
+	if( ((vudump&8) && g_curdebugvu) || ((vudump&0x80) && !g_curdebugvu) ) { //&& g_vu1lastrec != g_vu1last ) {
 
 		if( skipparent != g_vu1lastrec ) {
 			for(i = 0; i < ARRAYSIZE(badaddrs); ++i) {
@@ -2685,7 +2686,7 @@ extern "C" void svudispfntemp()
 #endif
 }
 
-// frees an xmmreg depending on the liveness info of hte current inst
+// frees an xmmreg depending on the liveness info of the current inst
 //void SuperVUFreeXMMreg(int xmmreg, int xmmtype, int reg)
 //{
 //	if( !xmmregs[xmmreg].inuse ) return;
@@ -3151,18 +3152,18 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 	return info;
 }
 
-static void checkvucodefn(u32 curpc, u32 vuindex, u32 oldcode)
-{
-	SysPrintf("vu%c code changed (old:%x, new: %x)! %x %x\n", '0'+vuindex, oldcode, s_vu?*(u32*)&VU1.Micro[curpc]:*(u32*)&VU0.Micro[curpc], curpc, cpuRegs.cycle);
-}
+//static void checkvucodefn(u32 curpc, u32 vuindex, u32 oldcode)
+//{
+//	SysPrintf("vu%c code changed (old:%x, new: %x)! %x %x\n", '0'+vuindex, oldcode, s_vu?*(u32*)&VU1.Micro[curpc]:*(u32*)&VU0.Micro[curpc], curpc, cpuRegs.cycle);
+//}
 
 void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 {
 	static PCSX2_ALIGNED16(VECTOR _VF);
-    static PCSX2_ALIGNED16(VECTOR _VFc);
+	static PCSX2_ALIGNED16(VECTOR _VFc);
 	u32 *ptr;
 	u8* pjmp;
-	int vfregstore=0, viregstore=0;
+	int vfregstore=0;
 
 	assert( s_pCurInst == this);
 	s_WriteToReadQ = 0;
@@ -3673,7 +3674,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 #endif
 
         // check if inst before branch and the write is the same as the read in the branch (wipeout)
-		int oldreg=0;
+//		int oldreg=0;
 //		if( pc == s_pCurBlock->endpc-16 ) {
 //			itinst2 = itinst; ++itinst2;
 //			if( itinst2->regs[0].pipe == VUPIPE_BRANCH && (itinst->regs[0].VIwrite&itinst2->regs[0].VIread) ) {

@@ -1259,7 +1259,6 @@ void dmaGIF() {
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
 
 static unsigned int mfifocycles;
-static unsigned int giftempqwc = 0;
 static unsigned int gifqwc = 0;
 static unsigned int gifdone = 0;
 

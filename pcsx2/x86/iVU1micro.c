@@ -23,6 +23,7 @@
 #include <string.h>
 #include <float.h>
 #include <malloc.h>
+#include <sys/stat.h>
 
 #include "Common.h"
 #include "InterTables.h"
@@ -49,8 +50,6 @@
 
 u32 vu1recpcold = -1;
 u32 vu1reccountold = -1;
-
-static _vuopinfo _opinfo[256];
 
 //Lower/Upper instructions can use that..
 #define _Ft_ ((VU1.code >> 16) & 0x1F)  // The rt part of the instruction register 
@@ -82,8 +81,6 @@ static _vuopinfo _opinfo[256];
 #define VU1_ACCy_ADDR (uptr)&VU1.ACC.UL[1]
 #define VU1_ACCz_ADDR (uptr)&VU1.ACC.UL[2]
 #define VU1_ACCw_ADDR (uptr)&VU1.ACC.UL[3]
-
-static void VU1RecompileBlock(void);
 
 void recVU1Init()
 {

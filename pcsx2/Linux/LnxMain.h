@@ -43,10 +43,10 @@ char* phelpmsg =
 	"\n"
 #endif
 	"Load Plugins:\n"
-	"\t-cdvd [dllpath] {specify the dll load path of the CDVD plugin}\n"
-	"\t-gs [dllpath] {specify the dll load path of the GS plugin}\n"
+	"\t-cdvd [libpath] {specify the library load path of the CDVD plugin}\n"
+	"\t-gs [libpath] {specify the library load path of the GS plugin}\n"
 	"-pad [tsxcal] {specify to hold down on the triangle, square, circle, x, start, select buttons}\n"
-	"\t-spu [dllpath] {specify the dll load path of the SPU2 plugin}\n"
+	"\t-spu [libpath] {specify the library load path of the SPU2 plugin}\n"
 	"\n";
 			
  #endif

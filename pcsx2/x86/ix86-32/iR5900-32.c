@@ -27,6 +27,7 @@
 #include <string.h>
 #include <assert.h>
 #include <malloc.h>
+#include <sys/stat.h>
 
 #include "Common.h"
 #include "Memory.h"
@@ -2768,9 +2769,8 @@ extern u32 psxdump;
 static void printfn()
 {
 	static int lastrec = 0;
-	static int curcount = 0, count2 = 0;
+	static int curcount = 0;
 	const int skip = 0;
-	static int i;
 
 	assert( !g_globalMMXSaved );
 	assert( !g_globalXMMSaved );

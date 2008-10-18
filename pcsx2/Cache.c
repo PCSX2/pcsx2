@@ -51,7 +51,7 @@ int getFreeCache(u32 mem, int mode, int * way) {
 	
 	if(pCache[i].tag[number] & 0x60)	// Valid Dirty
 	{
-		t = (char *)(taddr[number]);
+		t = (char *)(taddr[number]); // fixme - this should probably be cast to (u8*)
 		out = (u8*)(t + (mem & 0xFC0));
 		((u64*)out)[0] = ((u64*)pCache[i].data[number][0].b8._8)[0];
 		((u64*)out)[1] = ((u64*)pCache[i].data[number][0].b8._8)[1];
@@ -328,7 +328,7 @@ void CACHE() {
 		{
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
-			u8 * out = pCache[index].data[way][(addr>>4) & 0x3].b8._8;
+			//u8 * out = pCache[index].data[way][(addr>>4) & 0x3].b8._8;
 			*(u32*)(&pCache[index].data[way][(addr>>4) & 0x3].b8._8[(addr&0xf)]) = cpuRegs.CP0.r[28];
 #ifdef CACHE_LOG
 	CACHE_LOG("CACHE DXSDT addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28]);

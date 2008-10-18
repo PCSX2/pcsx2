@@ -277,6 +277,8 @@ int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy); // returns tr
 #define IS_PSXCONSTREG(reg) (reg>=0&&((reg)&MEM_PSXCONSTTAG))
 #define IS_MMXREG(reg) (reg>=0&&((reg)&MEM_MMXTAG))
 #define IS_XMMREG(reg) (reg>=0&&((reg)&MEM_XMMTAG))
+
+// fixme - these 4 are only called for u32 registers; should the reg>=0 really be there?
 #define IS_X86REG(reg) (reg>=0&&((reg)&MEM_X86TAG))
 #define IS_GPRREG(reg) (reg>=0&&((reg)&MEM_GPRTAG))
 #define IS_CONSTREG(reg) (reg>=0&&((reg)&MEM_CONSTTAG))

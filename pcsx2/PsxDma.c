@@ -166,7 +166,7 @@ int  psxDma7Interrupt() {
 extern int eesifbusy[2];
 void psxDma9(u32 madr, u32 bcr, u32 chcr) {
 
-	DMACh *dma = (DMACh*)&PS2MEM_HW[0xc000];
+	//DMACh *dma = (DMACh*)&PS2MEM_HW[0xc000]; //Not used
 
 #ifdef SIF_LOG
 	SIF_LOG("IOP: dmaSIF0 chcr = %lx, madr = %lx, bcr = %lx, tadr = %lx\n",	chcr, madr, bcr, HW_DMA9_TADR);
@@ -182,7 +182,7 @@ void psxDma9(u32 madr, u32 bcr, u32 chcr) {
 }
 
 void psxDma10(u32 madr, u32 bcr, u32 chcr) {
-	DMACh *dma = (DMACh*)&PS2MEM_HW[0xc400];
+	//DMACh *dma = (DMACh*)&PS2MEM_HW[0xc400]; //Not used
 
 #ifdef SIF_LOG
 	SIF_LOG("IOP: dmaSIF1 chcr = %lx, madr = %lx, bcr = %lx\n",	chcr, madr, bcr);

@@ -75,8 +75,6 @@ void recADDIU( void )
 
 ////////////////////////////////////////////////////
 void recDADDI( void ) {
-	int rsreg;
-	int rtreg;
 
 	if (!_Rt_) return;
 

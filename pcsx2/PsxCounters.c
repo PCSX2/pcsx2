@@ -22,7 +22,6 @@
 
 psxCounter psxCounters[8];
 u32 psxNextCounter, psxNextsCounter;
-static int cnts = 6;
 u8 psxhblankgate = 0;
 u8 psxvblankgate = 0;
 u8 psxcntmask = 0;
@@ -35,12 +34,12 @@ static void psxRcntUpd32(u32 index) {
 	psxCounters[index].sCycleT = psxRegs.cycle;
 }
 
-static void psxRcntReset16(u32 index) {
-	psxCounters[index].count = 0;
+//static void psxRcntReset16(u32 index) {
+//	psxCounters[index].count = 0;
 
-	psxCounters[index].mode&= ~0x18301C00;
-	psxRcntUpd16(index);
-}
+//	psxCounters[index].mode&= ~0x18301C00;
+//	psxRcntUpd16(index);
+//}
 
 static void psxRcntReset32(u32 index) {
 	psxCounters[index].count = 0;

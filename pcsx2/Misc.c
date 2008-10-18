@@ -758,7 +758,7 @@ int SaveGSState(char *file)
 	return 0;
 }
 
-extern long pDsp;
+extern uptr pDsp;
 int LoadGSState(char *file)
 {
 	int ret;

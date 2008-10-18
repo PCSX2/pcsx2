@@ -165,10 +165,10 @@ unsigned int parseCommandLine( char *filename )
            i;
 
 		args_ptr -= 256;
-      if ( args_ptr < 0 )
+      /*if ( args_ptr < 0 ) //fixme - This, of course is impossible.
       {
          return 0;
-      }
+      }*/
 		args[ 255 ] = 0;
 		memcpy( &PS2MEM_BASE[ args_ptr ], args, 256 );				//params 1, 2, etc copied
 		memset( &PS2MEM_BASE[ args_ptr + strlen( args ) ], 0, 256 - strlen( args ) );
@@ -188,10 +188,10 @@ unsigned int parseCommandLine( char *filename )
          p = filename;
       }
 		args_ptr -= strlen( p ) + 1;
-      if ( args_ptr < 0 )
+     /* if ( args_ptr < 0 ) // fixme- This is still impossible.
       {
          return 0;
-      }
+      }*/
 		strcpy( (char*)&PS2MEM_BASE[ args_ptr ], p );						//fill param 0; i.e. name of the program
 
 		for ( i = strlen( p ) + 1 + 256, argc = 0; i > 0; i-- )
@@ -211,7 +211,7 @@ unsigned int parseCommandLine( char *filename )
 			if ( ( PS2MEM_BASE[ args_ptr + i ] != 0 ) && ( PS2MEM_BASE[ args_ptr + i ] != 32  ) )
          {	//i==0
 				argc++;
-				if ( args_ptr - 4 - 4 - argc * 4 < 0 )
+				if ( args_ptr - 4 - 4 - argc * 4 < 0 ) // fixme - Should this be cast to a signed int?
             {
                return 0;
             }
@@ -222,7 +222,7 @@ unsigned int parseCommandLine( char *filename )
 				if ( ( PS2MEM_BASE[ args_ptr + i + 1 ] != 0 ) && ( PS2MEM_BASE[ args_ptr + i + 1 ] != 32 ) )
             {
 					argc++;
-					if ( args_ptr - 4 - 4 - argc * 4 < 0 )
+					if ( args_ptr - 4 - 4 - argc * 4 < 0 ) // fixme - Should this be cast to a signed int?
                {
                   return 0;
                }
@@ -565,8 +565,7 @@ extern int LoadPatch(char *patchfile);
 extern void LoadGameSpecificSettings();
 
 int loadElfFile(char *filename) {
-	char str[256];
-	char str2[256];
+	char str[256],str2[256];
 	u32 crc;
 	u32 i;
 
