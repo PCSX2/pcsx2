@@ -29,15 +29,10 @@ u64 profile_totalticks = 0;
 
 int gates = 0;
 extern u8 psxhblankgate;
-int hblankend = 0;
 Counter counters[6];
 u32 nextCounter, nextsCounter;
 static void (*s_prevExecuteVU1Block)() = NULL;
 LARGE_INTEGER lfreq;
-
-// its so it doesnt keep triggering an interrupt once its reached its target
-// if it doesnt reset the counter it needs stopping
-u32 eecntmask = 0;
 
 void rcntUpdTarget(int index) {
 	counters[index].sCycleT = cpuRegs.cycle;
@@ -100,15 +95,7 @@ void rcntInit() {
 	counters[5].mode = 0x3c0;
 
 	UpdateVSyncRate();
-	/*hblankend = 0;
-	counters[5].mode &= ~0x10000;
-	counters[4].sCycleT = cpuRegs.cycle;
-	counters[4].CycleT = HBLANKCNT(1);
-	counters[4].count = 1;
-	counters[5].CycleT = VBLANKCNT(1);
-	counters[5].count = 1;
-	counters[5].sCycleT = cpuRegs.cycle;*/
-	
+
 #ifdef _WIN32
     QueryPerformanceFrequency(&lfreq);
 #endif
@@ -158,8 +145,7 @@ void UpdateVSyncRate() {
 	//if(Config.PsxType & 2)counters[5].rate = (Config.PsxType & 1) ?  PS2VBLANK_PAL_INT : PS2VBLANK_NTSC_INT;
 	//else counters[5].rate = (Config.PsxType & 1) ? PS2VBLANK_PAL : PS2VBLANK_NTSC;
 
-	hblankend = 0;
-	
+	counters[4].mode &= ~0x10000;
 	counters[5].mode &= ~0x10000;
 
 	counters[4].count = 1;
@@ -171,12 +157,6 @@ void UpdateVSyncRate() {
 	counters[4].sCycleT = cpuRegs.cycle;
 	counters[5].sCycleT = cpuRegs.cycle;
 
-	//rcntUpdTarget(4);
-	//counters[4].CycleT  = counters[4].rate;
-	//rcntUpdTarget(5);
-	//counters[5].CycleT  = counters[5].rate;
-	//counters[5].Cycle  = PS2VBLANKEND;
-	
 	if (Config.CustomFps > 0) {
 		iTicks = GetTickFrequency() / Config.CustomFps;
 		SysPrintf("Framelimiter rate updated (UpdateVSyncRate): %d fps\n", Config.CustomFps);
@@ -427,16 +407,14 @@ void rcntUpdate()
 		else counters[i].sCycleT = cpuRegs.cycle;
 	}
 
-	if ((u32)(cpuRegs.cycle - counters[4].sCycleT) >= (u32)counters[4].CycleT) {
+	if ((cpuRegs.cycle - counters[4].sCycleT) >= (u32)counters[4].CycleT) {
 		
-		if (hblankend == 1) {
+		if (counters[4].mode & 0x10000) {
 			if (CSRw & 0x4) GSCSRr |= 4; // signal
 			if (!(GSIMR&0x400)) gsIrq();
 			if (gates) rcntEndGate(0);
 			if (psxhblankgate) psxCheckEndGate(0);
-			hblankend = 0;
-			
-			counters[4].CycleT  = HBLANKCNT(counters[4].count);
+			counters[4].CycleT = HBLANKCNT(counters[4].count);
 		}
 		else {
 			if(counters[4].count >= counters[4].Cycle) {
@@ -446,33 +424,27 @@ void rcntUpdate()
 			}
 			//counters[4].sCycleT += HBLANKCNT(1);
 			counters[4].count++;
-				
 			counters[4].CycleT = HBLANKCNT(counters[4].count) - (HBLANKCNT(0.5));
 			
 			rcntStartGate(0);
 			psxCheckStartGate(0);
-			hblankend = 1;
-			//SysPrintf("%x hsync done in %x cycles cpuRegs.cycle = %x next will happen on %x\n", counters[4].count, counters[4].CycleT, cpuRegs.cycle, (u32)(counters[4].sCycleT + counters[4].CycleT));
 		}
+		counters[4].mode ^= 0x10000; // Alternate HBLANK Start/End
 	}
 	
 	if ((cpuRegs.cycle - counters[5].sCycleT) >= counters[5].CycleT) {
 		
 		if (counters[5].mode & 0x10000) {
-			//counters[5].sCycleT = cpuRegs.cycle;
 			counters[5].CycleT = VBLANKCNT(counters[5].count);
 			VSyncEnd();
 		}
 		else {
-			if(counters[5].count >= counters[5].Cycle) {
-				//SysPrintf("reset %x  of %x frames done in %x cycles cpuRegs.cycle = %x\n", counters[5].count, counters[5].Cycle, cpuRegs.cycle - counters[5].sCycleT, cpuRegs.cycle);	
+			if(counters[5].count >= counters[5].Cycle) { // If count >= 720
 				counters[5].sCycleT += VBLANKCNT(counters[5].Cycle);
-				counters[5].count -= counters[5].Cycle;
+				counters[5].count -= counters[5].Cycle; // Count -= 720
 			}
-			counters[5].count++;
-			//counters[5].sCycleT += VBLANKCNT(1);
-			counters[5].CycleT = VBLANKCNT(counters[5].count) - (VBLANKCNT(1)/2);
-			//SysPrintf("%x frames done in %x cycles cpuRegs.cycle = %x cycletdiff %x\n", counters[5].Cycle, counters[5].sCycleT, cpuRegs.cycle, (counters[5].CycleT - VBLANKCNT(1)) - (cpuRegs.cycle - counters[5].sCycleT));
+			counters[5].count++; // Count += 1
+			counters[5].CycleT = VBLANKCNT(counters[5].count) - (VBLANKCNT(1) / 2);
 			VSyncStart();
 		}
 	}
@@ -482,26 +454,22 @@ void rcntUpdate()
 
 		if (counters[i].count >= counters[i].target) { // Target interrupt
 				
-				//if((counters[i].target > 0xffff)) {
-					//SysPrintf("EE Correcting target %x after reset on target\n", i);
-					counters[i].target &= 0xffff;
-				//}
+			counters[i].target &= 0xffff;
 
-				if(counters[i].mode & 0x100 ) {
+			if(counters[i].mode & 0x100 ) {
 
-					EECNT_LOG("EE counter %d target reached mode %x count %x target %x\n", i, counters[i].mode, counters[i].count, counters[i].target);
-					counters[i].mode|= 0x0400; // Equal Target flag
-					hwIntcIrq(counters[i].interrupt);
+				EECNT_LOG("EE counter %d target reached mode %x count %x target %x\n", i, counters[i].mode, counters[i].count, counters[i].target);
+				counters[i].mode|= 0x0400; // Equal Target flag
+				hwIntcIrq(counters[i].interrupt);
 
-					if (counters[i].mode & 0x40) { //The PS2 only resets if the interrupt is enabled - Tested on PS2
-						//counters[i].count = 0; 
-						counters[i].count -= counters[i].target; // Reset on target	
-					} 
-					else counters[i].target += 0x10000000;
-				} 
+				if (counters[i].mode & 0x40) { //The PS2 only resets if the interrupt is enabled - Tested on PS2
+					counters[i].count -= counters[i].target; // Reset on target
+				}
 				else counters[i].target += 0x10000000;
-			
+			} 
+			else counters[i].target += 0x10000000;
 		}
+
 		if (counters[i].count > 0xffff) {
 		
 			if (counters[i].mode & 0x0200) { // Overflow interrupt
@@ -510,10 +478,9 @@ void rcntUpdate()
 				hwIntcIrq(counters[i].interrupt);
 				//SysPrintf("counter[%d] overflow interrupt (%x)\n", i, cpuRegs.cycle);
 			}
-			//counters[i].count = 0; 
 			counters[i].count -= 0x10000;
 			counters[i].target &= 0xffff;
-		} 	
+		}
 	}
 
 	rcntSet();
@@ -564,7 +531,7 @@ void rcntWmode(int index, u32 value)
 	
 	if((counters[index].mode & 0xF) == 0x7) {
 		gates &= ~(1<<index);
-		SysPrintf("Gate Disabled\n");
+		SysPrintf("Counters: Gate Disabled\n");
 		//counters[index].mode &= ~0x80;
 	}
 	else if (counters[index].mode & 0x4) {

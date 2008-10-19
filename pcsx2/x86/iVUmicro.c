@@ -3808,13 +3808,13 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 
 			AND32ItoR( EAX, 0x01 );  // Grab "Is Zero" bits from the previous calculation
 			ajmp32 = JZ32(0); // Skip if none are
-			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
-
-			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
-			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
-			SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]); // If division by zero, then EEREC_TEMP = positive fmax
-			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
-			bjmp32 = JMP32(0);
+				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
+				
+				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
+				SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
+				SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]); // If division by zero, then EEREC_TEMP = positive fmax
+				SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
+				bjmp32 = JMP32(0);
 			x86SetJ32(ajmp32);
 		}
 
@@ -3844,13 +3844,13 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 
 			AND32ItoR( EAX, 0x01 );  // Grab "Is Zero" bits from the previous calculation
 			ajmp32 = JZ32(0); // Skip if none are
-			OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
-
-			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
-			SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
-			SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]); // If division by zero, then EEREC_TEMP = positive fmax
-			SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
-			bjmp32 = JMP32(0);
+				OR32ItoM(VU_VI_ADDR(REG_STATUS_FLAG, 2), 0x820); // Zero divide flag
+				
+				_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
+				SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU_Signed_Zero_Mask[0]);
+				SSE_ORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_maxvals[0]); // If division by zero, then EEREC_TEMP = positive fmax
+				SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), EEREC_TEMP);
+				bjmp32 = JMP32(0);
 			x86SetJ32(ajmp32);
 		}
 
