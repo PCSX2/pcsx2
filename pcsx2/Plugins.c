@@ -509,7 +509,7 @@ int LoadPlugins() {
 }
 
 uptr pDsp;
-static pluginsopened = 0;
+static int pluginsopened = 0;
 extern void spu2DMA4Irq();
 extern void spu2DMA7Irq();
 extern void spu2Irq();

@@ -81,12 +81,12 @@ uptr *psxRecLUT;
 // R3000A statics
 int psxreclog = 0;
 
-static char *recMem;	// the recompiled blocks will be here
+static s8 *recMem;	// the recompiled blocks will be here
 static BASEBLOCK *recRAM;	// and the ptr to the blocks here
 static BASEBLOCK *recROM;	// and here
 static BASEBLOCK *recROM1;	// also here
 static BASEBLOCKEX *recBlocks = NULL;
-static char *recPtr;
+static s8 *recPtr;
 u32 psxpc;			// recompiler psxpc
 int psxbranch;		// set for branch
 static EEINST* s_pInstCache = NULL;
@@ -535,7 +535,7 @@ static int recInit() {
 	// can't have upper 4 bits nonzero!
 	startaddr = 0x0f000000;
 	while(!(startaddr & 0xf0000000)) {
-		recMem = (char*)SysMmap(startaddr, RECMEM_SIZE);
+		recMem = (s8*)SysMmap(startaddr, RECMEM_SIZE);
 		if( (uptr)recMem & 0xf0000000 ) {
 			SysMunmap((uptr)recMem, RECMEM_SIZE); recMem = NULL;
 			startaddr += 0x00100000;

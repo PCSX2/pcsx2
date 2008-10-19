@@ -53,6 +53,25 @@ typedef unsigned __int64 u64;
 
 #else
 
+#ifdef __LINUX__
+#ifdef HAVE_STDINT_H
+#include "stdint.h"
+
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+
+typedef uintptr_t uptr;
+typedef intptr_t sptr;
+
+#else
+
 typedef char s8;
 typedef short s16;
 typedef int s32;
@@ -62,8 +81,9 @@ typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
+#endif
 
-#ifdef __LINUX__
+
 typedef union _LARGE_INTEGER
 {
 	long long QuadPart;
@@ -85,12 +105,14 @@ typedef union _LARGE_INTEGER
 
 #endif // _MSC_VER
 
+#if !defined(__LINUX__) || !defined(HAVE_STDINT_H)
 #if defined(__x86_64__)
 typedef u64 uptr;
 typedef s64 sptr;
 #else
 typedef u32 uptr;
 typedef s32 sptr;
+#endif
 #endif
 
 typedef struct {

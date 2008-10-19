@@ -245,7 +245,7 @@ extern void write32( u32 val );
 extern void write64( u64 val );
 
 
-extern void x86SetPtr( char *ptr );
+extern void x86SetPtr( s8 *ptr );
 extern void x86Shutdown( void );
 
 extern void x86SetJ8( u8 *j8 );

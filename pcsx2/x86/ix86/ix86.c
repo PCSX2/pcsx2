@@ -207,7 +207,7 @@ _inline void CMOV32MtoR( int cc, int to, uptr from )
 }
 
 ////////////////////////////////////////////////////
-_inline void x86SetPtr( char* ptr ) 
+_inline void x86SetPtr( s8* ptr ) 
 {
 	x86Ptr = ptr;
 }

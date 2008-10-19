@@ -117,7 +117,7 @@ static const u32 PWaitTimes[] = { 53, 43, 28, 23, 17, 11, 10 };
 static u32 s_vuInfo; // info passed into rec insts
 
 static const u32 s_MemSize[2] = {VU0_MEMSIZE, VU1_MEMSIZE};
-static char* s_recVUMem = NULL, *s_recVUPtr = NULL;
+static s8* s_recVUMem = NULL, *s_recVUPtr = NULL;
 
 // tables
 extern void (*recSVU_UPPER_OPCODE[64])();
@@ -350,7 +350,7 @@ void SuperVUInit(int vuindex)
 {
 	if( vuindex < 0 ) {
         // upper 4 bits cannot be nonzero!
-		s_recVUMem = (char*)SysMmap(0x0c000000, VU_EXESIZE);
+		s_recVUMem = (s8*)SysMmap(0x0c000000, VU_EXESIZE);
         if( (uptr)s_recVUMem > 0x80000000 )
             SysPrintf("bad SuperVU alloc %x\n", s_recVUMem);
 		memset(s_recVUMem, 0xcd, VU_EXESIZE);
