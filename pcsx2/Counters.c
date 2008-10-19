@@ -183,12 +183,12 @@ void FrameLimiter()
 
 	if (iEnd>=iExpectedEnd) {
 		u64 diff = iEnd-iExpectedEnd;
-		if((diff>>3)>iTicks) iExpectedEnd=iEnd;
+		if ((diff>>3)>iTicks) iExpectedEnd=iEnd;
 	}
 	else do {
 		Sleep(1);
 		iEnd = GetCPUTicks();
-	} while(iEnd<iExpectedEnd);
+	} while (iEnd<iExpectedEnd);
 
 	iStart = iExpectedEnd; //remember the expected value frame. improves smoothness
 }
@@ -474,9 +474,8 @@ void rcntUpdate()
 		
 			if (counters[i].mode & 0x0200) { // Overflow interrupt
 				EECNT_LOG("EE counter %d overflow mode %x count %x target %x\n", i, counters[i].mode, counters[i].count, counters[i].target);
-				counters[i].mode|= 0x0800; // Overflow flag
+				counters[i].mode |= 0x0800; // Overflow flag
 				hwIntcIrq(counters[i].interrupt);
-				//SysPrintf("counter[%d] overflow interrupt (%x)\n", i, cpuRegs.cycle);
 			}
 			counters[i].count -= 0x10000;
 			counters[i].target &= 0xffff;
@@ -486,7 +485,8 @@ void rcntUpdate()
 	rcntSet();
 }
 
-void rcntWcount(int index, u32 value) {
+void rcntWcount(int index, u32 value) 
+{
 	EECNT_LOG("EE count write %d count %x with %x target %x eecycle %x\n", index, counters[index].count, value, counters[index].target, cpuRegs.eCycle);
 	counters[index].count = value & 0xffff;
 	counters[index].target &= 0xffff;	
@@ -549,7 +549,7 @@ void rcntWmode(int index, u32 value)
 	rcntSet();
 }
 
-void rcntStartGate(unsigned int mode){
+void rcntStartGate(unsigned int mode) {
 	int i;
 
 	for (i=0; i <=3; i++) { //Gates for counters

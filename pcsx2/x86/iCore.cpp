@@ -1030,14 +1030,14 @@ void FreezeXMMRegs_(int save)
                 "movaps [%0+0x60], %%xmm6\n"
                 "movaps [%0+0x70], %%xmm7\n"
 #ifdef __x86_64__
-                "movaps [%0+0x80], %%xmm0\n"
-                "movaps [%0+0x90], %%xmm1\n"
-                "movaps [%0+0xa0], %%xmm2\n"
-                "movaps [%0+0xb0], %%xmm3\n"
-                "movaps [%0+0xc0], %%xmm4\n"
-                "movaps [%0+0xd0], %%xmm5\n"
-                "movaps [%0+0xe0], %%xmm6\n"
-                "movaps [%0+0xf0], %%xmm7\n"
+                "movaps [%0+0x80], %%xmm8\n"
+                "movaps [%0+0x90], %%xmm9\n"
+                "movaps [%0+0xa0], %%xmm10\n"
+                "movaps [%0+0xb0], %%xmm11\n"
+                "movaps [%0+0xc0], %%xmm12\n"
+                "movaps [%0+0xd0], %%xmm13\n"
+                "movaps [%0+0xe0], %%xmm14\n"
+                "movaps [%0+0xf0], %%xmm15\n"
 #endif
                 ".att_syntax\n" : : "r"(g_globalXMMData) );
 
