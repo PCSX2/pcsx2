@@ -846,7 +846,7 @@
 #define UNPACK_V3_8SSE_4A UNPACK_V3_8SSE_4
 
 #define UNPACK_V3_8SSE_3(CL, TOTALCL, MaskType, ModeType) \
-	movd XMM_R0, word ptr [VIF_SRC]; \
+	movd XMM_R0, dword ptr [VIF_SRC]; \
 	movd XMM_R1, dword ptr [VIF_SRC+3]; \
 	\
 	punpcklbw XMM_R0, XMM_R0; \
