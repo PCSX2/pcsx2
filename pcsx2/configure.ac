@@ -17,7 +17,7 @@ CXXFLAGS=
 CCASFLAGS=
 
 
-WARNING_FLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-format -Wno-empty-body -Wno-unused-value"
+WARNING_FLAGS="-Wall -Wno-format -Wno-unused-value"
 NORMAL_FLAGS="-O3 -fomit-frame-pointer ${WARNING_FLAGS}"
 DEBUG_FLAGS=" -g ${WARNING_FLAGS}"
 
