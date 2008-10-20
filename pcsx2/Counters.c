@@ -45,7 +45,6 @@ void rcntUpd(int index) {
 
 void rcntReset(int index) {
 	counters[index].count = 0;
-	//counters[index].mode&= ~0x00400C00;
 	rcntUpd(index);
 }
 
@@ -422,9 +421,8 @@ void rcntUpdate()
 				counters[4].sCycleT += HBLANKCNT(counters[4].Cycle);
 				counters[4].count -= counters[4].Cycle;
 			}
-			//counters[4].sCycleT += HBLANKCNT(1);
 			counters[4].count++;
-			counters[4].CycleT = HBLANKCNT(counters[4].count) - (HBLANKCNT(0.5));
+			counters[4].CycleT = HBLANKCNT(counters[4].count) - (HBLANKCNT(1) / 2);
 			
 			rcntStartGate(0);
 			psxCheckStartGate(0);
@@ -456,7 +454,7 @@ void rcntUpdate()
 				
 			counters[i].target &= 0xffff;
 
-			if(counters[i].mode & 0x100 ) {
+			if(counters[i].mode & 0x100) {
 
 				EECNT_LOG("EE counter %d target reached mode %x count %x target %x\n", i, counters[i].mode, counters[i].count, counters[i].target);
 				counters[i].mode|= 0x0400; // Equal Target flag
@@ -465,9 +463,9 @@ void rcntUpdate()
 				if (counters[i].mode & 0x40) { //The PS2 only resets if the interrupt is enabled - Tested on PS2
 					counters[i].count -= counters[i].target; // Reset on target
 				}
-				else counters[i].target += 0x10000000;
+				else counters[i].target |= 0x10000000;
 			} 
-			else counters[i].target += 0x10000000;
+			else counters[i].target |= 0x10000000;
 		}
 
 		if (counters[i].count > 0xffff) {
@@ -541,10 +539,10 @@ void rcntWmode(int index, u32 value)
 	}
 	else gates &= ~(1<<index);
 	
-	/*if((counters[index].target > 0xffff) && (counters[index].target & 0xffff) > rcntCycle(index)) {
+	if ((value & 0x580) == 0x580) { // If we need to compare the target value again, correct the target
 		//SysPrintf("EE Correcting target %x after mode write\n", index);
 		counters[index].target &= 0xffff;
-	}*/
+	}
 
 	rcntSet();
 }
@@ -609,7 +607,7 @@ void rcntWtarget(int index, u32 value) {
 
 	if (counters[index].target <= rcntCycle(index)/* && counters[index].target != 0*/) {
 		//SysPrintf("EE Saving target %d from early trigger, target = %x, count = %x\n", index, counters[index].target, rcntCycle(index));
-		counters[index].target += 0x10000000;
+		counters[index].target |= 0x10000000;
 	}
 	rcntSet();
 }
