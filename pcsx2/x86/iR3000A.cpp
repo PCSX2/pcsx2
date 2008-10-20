@@ -146,7 +146,7 @@ BASEBLOCKEX* PSX_GETBLOCKEX(BASEBLOCK* p)
 
 ////////////////////////////////////////////////////
 #ifdef _DEBUG
-static void iDumpBlock( int startpc, char * ptr )
+static void iDumpBlock( int startpc, s8 * ptr )
 {
 	FILE *f;
 	char filename[ 256 ];

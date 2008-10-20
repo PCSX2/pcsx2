@@ -422,7 +422,7 @@ void rcntUpdate()
 				counters[4].count -= counters[4].Cycle;
 			}
 			counters[4].count++;
-			counters[4].CycleT = HBLANKCNT(counters[4].count) - (HBLANKCNT(1) / 2);
+			counters[4].CycleT = HBLANKCNT(counters[4].count) - (HBLANKCNT(0.5));
 			
 			rcntStartGate(0);
 			psxCheckStartGate(0);

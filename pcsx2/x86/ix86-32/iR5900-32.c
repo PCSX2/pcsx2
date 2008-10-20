@@ -138,7 +138,7 @@ BASEBLOCKEX* PC_GETBLOCKEX(BASEBLOCK* p)
 }
 
 ////////////////////////////////////////////////////
-void iDumpBlock( int startpc, char * ptr )
+void iDumpBlock( int startpc, s8 * ptr )
 {
 	FILE *f;
 	char filename[ 256 ];
