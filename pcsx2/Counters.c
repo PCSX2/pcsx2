@@ -67,12 +67,12 @@ void rcntSet() {
 	}
 
 	//Calculate HBlank
-	c = HBLANKCNT(0.5); //counters[4].CycleT - (cpuRegs.cycle - counters[4].sCycleT);
+	c = counters[4].CycleT - (cpuRegs.cycle - counters[4].sCycleT);//HBLANKCNT(0.5); 
 	if (c < nextCounter) nextCounter = c;
 	//if(nextCounter > 0x1000) SysPrintf("Nextcounter %x HBlank %x VBlank %x\n", nextCounter, c, counters[5].CycleT - (cpuRegs.cycle - counters[5].sCycleT));
 	
 	//Calculate VBlank
-	c = (VBLANKCNT(1) / 2); //counters[5].CycleT - (cpuRegs.cycle - counters[5].sCycleT);
+	c = counters[5].CycleT - (cpuRegs.cycle - counters[5].sCycleT);//(VBLANKCNT(1) / 2);
 	if (c < nextCounter) nextCounter = c;
 }
 
