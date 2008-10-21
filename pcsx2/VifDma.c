@@ -571,7 +571,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 				__asm movaps XMM_COL, xmmword ptr [g_vifCol1]
 			}
 			else {
-				__asm movaps XMM_ROW, xmmqword ptr [g_vifRow0]
+				__asm movaps XMM_ROW, xmmword ptr [g_vifRow0]
 				__asm movaps XMM_COL, xmmword ptr [g_vifCol0]
 			}
 #endif
