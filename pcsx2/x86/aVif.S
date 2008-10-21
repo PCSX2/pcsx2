@@ -272,7 +272,7 @@
 #define UNPACK_S_32SSE_3(CL, TOTALCL, MaskType, ModeType) UNPACK_S_32SSE_3x(CL, TOTALCL, MaskType, ModeType, movdqu)
 
 #define UNPACK_S_32SSE_2(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R1, xmmword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC]; \
 	\
 	pshufd XMM_R0, XMM_R1, 0; \
 	pshufd XMM_R1, XMM_R1, 0x55; \
@@ -295,7 +295,7 @@
 
 // S-16
 #define UNPACK_S_16SSE_4(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R3, xmmword ptr [VIF_SRC]; \
+	movq XMM_R3, qword ptr [VIF_SRC]; \
 	punpcklwd XMM_R3, XMM_R3; \
 	UNPACK_RIGHTSHIFT XMM_R3, 16; \
 	\
@@ -311,7 +311,7 @@
 #define UNPACK_S_16SSE_4A UNPACK_S_16SSE_4
 
 #define UNPACK_S_16SSE_3(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R2, xmmword ptr [VIF_SRC]; \
+	movq XMM_R2, qword ptr [VIF_SRC]; \
 	punpcklwd XMM_R2, XMM_R2; \
 	UNPACK_RIGHTSHIFT XMM_R2, 16; \
 	\
@@ -425,10 +425,10 @@
 	add VIF_SRC, 32; \
 
 #define UNPACK_V2_32SSE_4(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R1, xmmword ptr [VIF_SRC+8]; \
-	movq XMM_R2, xmmword ptr [VIF_SRC+16]; \
-	movq XMM_R3, xmmword ptr [VIF_SRC+24]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC+8]; \
+	movq XMM_R2, qword ptr [VIF_SRC+16]; \
+	movq XMM_R3, qword ptr [VIF_SRC+24]; \
 	\
 	UNPACK4_SSE(CL, TOTALCL, MaskType, ModeType); \
 	\
@@ -436,7 +436,7 @@
 
 #define UNPACK_V2_32SSE_3A(CL, TOTALCL, MaskType, ModeType) \
 	MOVDQA XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R2, xmmword ptr [VIF_SRC+16]; \
+	movq XMM_R2, qword ptr [VIF_SRC+16]; \
 	pshufd XMM_R1, XMM_R0, 0xee; \
 	\
 	UNPACK3_SSE(CL, TOTALCL, MaskType, ModeType); \
@@ -444,17 +444,17 @@
 	add VIF_SRC, 24; \
 
 #define UNPACK_V2_32SSE_3(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R1, xmmword ptr [VIF_SRC+8]; \
-	movq XMM_R2, xmmword ptr [VIF_SRC+16]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC+8]; \
+	movq XMM_R2, qword ptr [VIF_SRC+16]; \
 	\
 	UNPACK3_SSE(CL, TOTALCL, MaskType, ModeType); \
 	\
 	add VIF_SRC, 24; \
 	
 #define UNPACK_V2_32SSE_2(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R1, xmmword ptr [VIF_SRC+8]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC+8]; \
 	\
 	UNPACK2_SSE(CL, TOTALCL, MaskType, ModeType); \
 	\
@@ -463,7 +463,7 @@
 #define UNPACK_V2_32SSE_2A UNPACK_V2_32SSE_2
 
 #define UNPACK_V2_32SSE_1(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	\
 	UNPACK1_SSE(CL, TOTALCL, MaskType, ModeType); \
 	\
@@ -562,7 +562,7 @@
 	add VIF_SRC, 8; \
 
 #define UNPACK_V2_16SSE_2(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	punpcklwd XMM_R0, XMM_R0; \
 	UNPACK_RIGHTSHIFT XMM_R0, 16; \
 	\
@@ -576,7 +576,7 @@
 	add VIF_SRC, 8; \
 
 #define UNPACK_V2_16SSE_1A(CL, TOTALCL, MaskType, ModeType) \
-	punpcklwd XMM_R0, dword ptr [VIF_SRC]; \
+	punpcklwd XMM_R0, xmmword ptr [VIF_SRC]; \
 	UNPACK_RIGHTSHIFT XMM_R0, 16; \
 	punpcklqdq XMM_R0, XMM_R0; \
 	\
@@ -597,7 +597,7 @@
 // V2-8
 // and1 streetball needs to copy lower xmmword to the upper xmmword of every reg
 #define UNPACK_V2_8SSE_4(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	\
 	punpcklbw XMM_R0, XMM_R0; \
 	punpckhwd XMM_R2, XMM_R0; \
@@ -621,7 +621,7 @@
 #define UNPACK_V2_8SSE_4A UNPACK_V2_8SSE_4
 
 #define UNPACK_V2_8SSE_3(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	\
 	punpcklbw XMM_R0, XMM_R0; \
 	punpckhwd XMM_R2, XMM_R0; \
@@ -753,14 +753,14 @@
 
 // V3-16
 #define UNPACK_V3_16SSE_4(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R1, xmmword ptr [VIF_SRC+6]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC+6]; \
 	\
 	punpcklwd XMM_R0, XMM_R0; \
-	movq XMM_R2, xmmword ptr [VIF_SRC+12]; \
+	movq XMM_R2, qword ptr [VIF_SRC+12]; \
 	punpcklwd XMM_R1, XMM_R1; \
 	UNPACK_RIGHTSHIFT XMM_R0, 16; \
-	movq XMM_R3, xmmword ptr [VIF_SRC+18]; \
+	movq XMM_R3, qword ptr [VIF_SRC+18]; \
 	UNPACK_RIGHTSHIFT XMM_R1, 16; \
 	punpcklwd XMM_R2, XMM_R2; \
 	punpcklwd XMM_R3, XMM_R3; \
@@ -775,11 +775,11 @@
 #define UNPACK_V3_16SSE_4A UNPACK_V3_16SSE_4
 
 #define UNPACK_V3_16SSE_3(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R1, xmmword ptr [VIF_SRC+6]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC+6]; \
 	\
 	punpcklwd XMM_R0, XMM_R0; \
-	movq XMM_R2, xmmword ptr [VIF_SRC+12]; \
+	movq XMM_R2, qword ptr [VIF_SRC+12]; \
 	punpcklwd XMM_R1, XMM_R1; \
 	UNPACK_RIGHTSHIFT XMM_R0, 16; \
 	punpcklwd XMM_R2, XMM_R2; \
@@ -794,8 +794,8 @@
 #define UNPACK_V3_16SSE_3A UNPACK_V3_16SSE_3
 
 #define UNPACK_V3_16SSE_2(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R1, xmmword ptr [VIF_SRC+6]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC+6]; \
 	\
 	punpcklwd XMM_R0, XMM_R0; \
 	punpcklwd XMM_R1, XMM_R1; \
@@ -810,7 +810,7 @@
 #define UNPACK_V3_16SSE_2A UNPACK_V3_16SSE_2
 
 #define UNPACK_V3_16SSE_1(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	punpcklwd XMM_R0, XMM_R0; \
 	UNPACK_RIGHTSHIFT XMM_R0, 16; \
 	\
@@ -822,8 +822,8 @@
 
 // V3-8
 #define UNPACK_V3_8SSE_4(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R1, xmmword ptr [VIF_SRC]; \
-	movq XMM_R3, xmmword ptr [VIF_SRC+6]; \
+	movq XMM_R1, qword ptr [VIF_SRC]; \
+	movq XMM_R3, qword ptr [VIF_SRC+6]; \
 	\
 	punpcklbw XMM_R1, XMM_R1; \
 	punpcklbw XMM_R3, XMM_R3; \
@@ -1018,7 +1018,7 @@
 
 #define UNPACK_V4_16SSE_3(CL, TOTALCL, MaskType, ModeType) \
 	movdqu XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R2, xmmword ptr [VIF_SRC+16]; \
+	movq XMM_R2, qword ptr [VIF_SRC+16]; \
 	\
 	punpckhwd XMM_R1, XMM_R0; \
 	punpcklwd XMM_R0, XMM_R0; \
@@ -1044,8 +1044,8 @@
 	add VIF_SRC, 16; \
 
 #define UNPACK_V4_16SSE_2(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
-	movq XMM_R1, xmmword ptr [VIF_SRC+8]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
+	movq XMM_R1, qword ptr [VIF_SRC+8]; \
 	\
 	punpcklwd XMM_R0, XMM_R0; \
 	punpcklwd XMM_R1, XMM_R1; \
@@ -1066,7 +1066,7 @@
 	add VIF_SRC, 8; \
 
 #define UNPACK_V4_16SSE_1(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	punpcklwd XMM_R0, XMM_R0; \
 	UNPACK_RIGHTSHIFT XMM_R0, 16; \
 	\
@@ -1131,7 +1131,7 @@
 	add VIF_SRC, 12; \
 
 #define UNPACK_V4_8SSE_3(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	movd XMM_R2, dword ptr [VIF_SRC+8]; \
 	\
 	punpcklbw XMM_R0, XMM_R0; \
@@ -1163,7 +1163,7 @@
 	add VIF_SRC, 8; \
 
 #define UNPACK_V4_8SSE_2(CL, TOTALCL, MaskType, ModeType) \
-	movq XMM_R0, xmmword ptr [VIF_SRC]; \
+	movq XMM_R0, qword ptr [VIF_SRC]; \
 	\
 	punpcklbw XMM_R0, XMM_R0; \
 	\
@@ -1288,7 +1288,7 @@
 	shr %eax, 16; \
 	DECOMPRESS_RGBA(4); \
 	\
-	movq XMM_R0, xmmword ptr [s_TempDecompress]; \
+	movq XMM_R0, qword ptr [s_TempDecompress]; \
 	\
 	punpcklbw XMM_R0, XMM_R0; \
 	\

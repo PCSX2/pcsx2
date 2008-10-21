@@ -25,9 +25,10 @@
 #endif
 
 #include <assert.h>
-
 #include <vector>
 #include <list>
+#include <cstring> 
+#include <cstdlib>
 
 using namespace std;
 
