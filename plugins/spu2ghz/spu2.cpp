@@ -1573,10 +1573,13 @@ s32  CALLBACK SPU2freeze(int mode, freezeData *data){
 
 		spud = (SPU2freezeData*)data->data;
 
-
-		if((spud->id!=SAVE_ID)&&(spud->version!=ZEROSPU_VERSION))
+		if(spud->id!=SAVE_ID)
 		{
-			printf("Warning: The savestate not compatible with this plugin. Trying to load.\n");
+			printf("SPU2Ghz Warning:\n");
+			printf("The savestate you are trying to load was not made with this plugin.\n");
+			printf("Let it try to load a while, it could take up to one minute\n");
+			printf("If it loads ok try to reach the next memorycard savespot, save your game and continue from there.\n");
+			lClocks = 0;
 		}
 		else
 		{
@@ -1584,69 +1587,19 @@ s32  CALLBACK SPU2freeze(int mode, freezeData *data){
 			memcpy(spu2regs, spud->unkregs, 0x010000);
 			memcpy(_spu2mem, spud->mem,     0x200000);
 
-			if(spud->id==SAVE_ID)
-			{
-				memcpy(Cores, spud->Cores, sizeof(Cores));
-				memcpy(&Spdif, &spud->Spdif, sizeof(Spdif));
-				OutPos=spud->OutPos;
-				InputPos=spud->InputPos;
-				InpBuff=spud->InpBuff;
-				Cycles=spud->Cycles;
-				uTicks=spud->uTicks;
-				srate_pv=spud->srate_pv;
-				opitch=spud->opitch;
-				osps=spud->osps;
-				PlayMode=spud->PlayMode;
-				lClocks = spud->lClocks;
-
-			}
-			else
-			{
-
-				Spdif.Info = spud->interrupt;
-
-				Cores[0].MADR = spud->MemAddr[0];
-				Cores[1].MADR = spud->MemAddr[1];
-
-				SPU2write(0x1f900000+REG_S_KON+0,(spud->dwNewChannel2[0]));
-				SPU2write(0x1f900000+REG_S_KON+2,(spud->dwNewChannel2[0])>>16);
-
-				SPU2write(0x1f900000+REG_S_KON+0x400,(spud->dwNewChannel2[1]));
-				SPU2write(0x1f900000+REG_S_KON+0x402,(spud->dwNewChannel2[1])>>16);
-
-				Cores[0].Regs.ENDX = spud->dwEndChannel2[0];
-				Cores[1].Regs.ENDX = spud->dwEndChannel2[1];
-
-				for(int i=0;i<24;i++)
-				{
-					Cores[0].Voices[i].Modulated = spud->iFMod[i];
-				}
-				for(int i=0;i<24;i++)
-				{
-					Cores[1].Voices[i].Modulated = spud->iFMod[i+24];
-				}
-				
-				// Zerospu compatibility mode
-				for(int i=0;i<0x200;i++)
-				{
-					int reg = i<<1;
-					
-					if((reg!=0x1f900000+REG_S_KON)&&(((reg-1)!=0x1f900000+REG_S_KON)))
-					{
-						SPU2write(reg,spu2regs[i]);
-					}
-				}
-
-				Cores[0].AdmaInProgress = spud->adma[0].Enabled;
-				Cores[0].InputDataLeft = spud->adma[0].AmountLeft;
-				Cores[0].InputPos = spud->adma[0].Index&0x1ff;
-				Cores[1].AdmaInProgress = spud->adma[1].Enabled;
-				Cores[1].InputDataLeft = spud->adma[1].AmountLeft;
-				Cores[1].InputPos = spud->adma[1].Index&0x1ff;
-
-				lClocks = 0;
-
-			}
+			
+			memcpy(Cores, spud->Cores, sizeof(Cores));
+			memcpy(&Spdif, &spud->Spdif, sizeof(Spdif));
+			OutPos=spud->OutPos;
+			InputPos=spud->InputPos;
+			InpBuff=spud->InpBuff;
+			Cycles=spud->Cycles;
+			uTicks=spud->uTicks;
+			srate_pv=spud->srate_pv;
+			opitch=spud->opitch;
+			osps=spud->osps;
+			PlayMode=spud->PlayMode;
+			lClocks = spud->lClocks;	
 		}
 
 	} else if (mode == FREEZE_SAVE) {
@@ -1660,7 +1613,7 @@ s32  CALLBACK SPU2freeze(int mode, freezeData *data){
 		spud = (SPU2freezeData*)data->data;
 
 		spud->id=SAVE_ID;
-		spud->version=ZEROSPU_VERSION;
+		spud->version=SAVE_ID;//ZEROSPU_VERSION; //Zero compat working bad, better not save that
 
 		memcpy(spud->unkregs, spu2regs, 0x010000);
 		memcpy(spud->mem,     _spu2mem, 0x200000);
