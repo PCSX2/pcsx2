@@ -91,15 +91,14 @@ void DMALogClose() {
 
 
 u16 DmaRead(u32 core) {
-	u16 ret;
-	ret=spu2Mu16(Cores[core].TDA);
+	const u16 ret = (u16)spu2M_Read(Cores[core].TDA);
 	Cores[core].TDA++;
 	Cores[core].TDA&=0xfffff;
 	return ret;
 }
 
 void DmaWrite(u32 core, u16 value) {
-	spu2Mu16(Cores[core].TSA)=value;
+	spu2M_Write( Cores[core].TSA, value );
 	Cores[core].TSA++;
 	Cores[core].TSA&=0xfffff;
 }
@@ -207,7 +206,7 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 	Cores[core].TDA=Cores[core].TSA;
 	for (i=0;i<size;i++) {
-		spu2Mu16(Cores[core].TDA)=pMem[i];
+		spu2M_Write( Cores[core].TDA, pMem[i] );
 		Cores[core].TDA++;
 		Cores[core].TDA&=0xfffff;
 	}
@@ -228,6 +227,8 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 void SPU2readDMA(int core, u16* pMem, u32 size) 
 {
+	if( disableEverything ) return;
+
 	if(hasPtr) TimeUpdate(*cPtr,1);
 
 	u32 i;
@@ -254,6 +255,8 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 
 void SPU2writeDMA(int core, u16* pMem, u32 size) 
 {
+	if( disableEverything ) return;
+
 	if(hasPtr) TimeUpdate(*cPtr,1);
 
 	Cores[core].DMAPtr=pMem;
@@ -267,7 +270,9 @@ void SPU2writeDMA(int core, u16* pMem, u32 size)
 		return;
 	}
 
-	Cores[core].lastsize=size;
+	#ifndef PUBLIC
+	DebugCores[core].lastsize=size;
+	#endif
 	Cores[core].TSA&=~7;
 
 	bool adma_enable = ((Cores[core].AutoDMACtrl&(core+1))==(core+1));

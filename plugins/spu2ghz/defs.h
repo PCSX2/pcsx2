@@ -90,38 +90,67 @@ typedef struct {
 	s32 Prev2;
 
 	s8 LoopMode;
-	s8 LoopStart;
-	s8 Loop;
-	s8 LoopEnd;
+	s8 LoopFlags;
 
+// [Air] : Replaced loop flags read from the ADPCM header with
+//  a single LoopFlags value (above) -- more cache-friendly.
+	//s8 LoopStart;
+	//s8 Loop;
+	//s8 LoopEnd;
+
+// Sample pointer (19:12 bit fixed point)
 	s32 SP;
 
-	s32 PV1;
-	s32 PV2;
-	s32 PV3;
-	s32 PV4;
+// Sample pointer for Cubic Interpolation
+// Cubic interpolation mixes a sample behind Linear, so that it
+// can have sample data to either side of the end points from which
+// to extrapolate.  This SP represents that late sample position.
+	s32 SPc;
 
+// Previous sample values - used for interpolation
+// [Air] : Inverted order of these members to match the access order in the
+//   code (might improve cache hits).
+	s32 PV4;
+	s32 PV3;
+	s32 PV2;
+	s32 PV1;
+
+// Last outputted audio value, used for voice modulation.
 	s32 OutX;
 
-	s8 FirstBlock;
+// SBuffer now points directly to an ADPCM cache entry.
+	s16 *SBuffer;
 
-	s32 PeakX;
-	s32 SampleData;
-
-	// [Air]: Changed SBuffer from 32-bit to 16-bit. (this breaks old savestates)
-	//   Everything stored in SBuffer is 16-bit values, and on modern CPUs the benefit
-	//   of reduced data cache clutter out-weighs the benefit of using 'cpu native' 32-bit
-	//   values. (doesn't apply to SIMD of course, but no SIMD here anyway)
-	//   Because this breaks savestates it might not be worth the bother though.
-	s16 SBuffer[32];
+// sample position within the current decoded packet.
 	s32 SCurrent;
 
-	s32 displayPeak;
-
-	s32 lastSetStartA;
-
-	s32 lastStopReason;
 } V_Voice;
+
+#ifndef PUBLIC
+// ** Begin Debug-only variables section **
+// Separated from the V_Voice struct to improve cache performance of
+// the Public Release build.
+struct V_VoiceDebug
+{
+	s8 FirstBlock;
+	s32 SampleData;
+	s32 PeakX;
+	s32 displayPeak;
+	s32 lastSetStartA;
+	s32 lastStopReason;
+};
+
+struct V_CoreDebug
+{
+	V_VoiceDebug Voices[24];
+	s32 AutoDMAPeak;
+// Last Transfer Size
+	u32 lastsize;
+};
+
+// Debug tracking information - 24 voices and 2 cores.
+extern V_CoreDebug DebugCores[2];
+#endif
 
 typedef struct {
 	u16 IN_COEF_L;
@@ -256,8 +285,6 @@ typedef struct {
 	u32 EffectsStartA;
 	u32 EffectsEndA;
 	u32 ReverbX;
-// Last Transfer Size
-	u32 lastsize;
 // Registers
 	V_CoreRegs Regs;
 
@@ -279,7 +306,6 @@ typedef struct {
 	u32 ADMAPL;
 	u32 ADMAPR;
 
-	s32 AutoDMAPeak;
 } V_Core;
 
 extern V_Core Cores[2];

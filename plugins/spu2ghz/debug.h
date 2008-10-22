@@ -21,7 +21,6 @@
 
 extern FILE *spu2Log;
 
-extern int Log;
 void FileLog(const char *fmt, ...);
 void ConLog(const char *fmt, ...);
 

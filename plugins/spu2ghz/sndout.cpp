@@ -142,6 +142,32 @@ public:
 		}
 
 		// either pw=false or free>nSamples
+
+		// Problem:
+		//  If the SPU2 gets out of sync with the SndOut device, the writepos of the
+		//  circular buffer will overtake the readpos, leading to a prolonged period
+		//  of hopscotching read/write accesses (ie, lots of staticy crap sound for
+		//  several seconds).
+		//
+		// Compromise:
+		//  Same as with underruns below, an overrun can be handled by aborting
+		//  the write operation before the writepos goes past the readpos, and then
+		//  ignoring the rest of the incoming data.  The resultant sound will have
+		//  a single hiccup when an overflow occurs, instead of getting crapped out
+		//  for several seconds (or in many cases, until the SPU sndout driver was
+		//  manually reset.. grr!).
+		
+#ifndef DYNAMIC_BUFFER_LIMITING
+		while(data<size && nSamples>0)
+		{
+			buffer[wpos] = *(bData++);
+			wpos=(wpos+1)%size;
+			data++;
+			nSamples--;
+		}
+
+#elif defined( DYNAMIC_BUFFER_LIMITING )
+
 		while(nSamples>0)
 		{
 			buffer[wpos] = *(bData++);
@@ -156,10 +182,9 @@ public:
 				data-=size;
 			}
 			while(data>size);
-#ifdef DYNAMIC_BUFFER_LIMITING
 			overflows++;
-#endif
 		}
+#endif
 
 		
 		LeaveCriticalSection(&cs);
@@ -167,9 +192,70 @@ public:
 
 	virtual void ReadSamples (s32 *bData, s32 nSamples)
 	{
+		static bool underrun_freeze = false;
+
 		EnterCriticalSection(&cs);
 		dataread+=nSamples;
 		
+		// Problem:
+		//  If the SPU2 gets even the least bit out of sync with the SndOut device,
+		//  the readpos of the circular buffer will overtake the writepos,
+		//  leading to a prolonged period of hopscotching read/write accesses (ie,
+		//  lots of staticy crap sound for several seconds).
+		//
+		// Fix:
+		//  If the read position overtakes the write position, abort the
+		//  transfer immediately and force the SndOut driver to wait until
+		//  the read buffer has filled up again before proceeding.
+		//  This will cause one brief hiccup that can never exceed the user's
+		//  set buffer length in duration.
+
+#ifndef DYNAMIC_BUFFER_LIMITING
+		if( underrun_freeze )
+		{
+			if( data < (int)(size * 0.85) )
+			{
+				while( nSamples>0 )
+				{
+					*(bData++) = 0;
+					nSamples--;
+				}
+				LeaveCriticalSection(&cs);
+				return;
+			}
+
+			underrun_freeze = false;
+			//ConLog( " * SPU2 > Underrun Freeze Finished!\n" );
+		}
+
+		while(data>0 && nSamples>0)
+		{
+			*(bData++) = buffer[rpos];
+			rpos=(rpos+1)%size;
+			data--;
+			nSamples--;
+		}
+
+		while( nSamples>0 )
+		{
+			// buffer underrun code:
+			// the contents of this loop only get run if data reached zero
+			// before nSamples.
+			// Let's just dull out some silence, because that's usually the least
+			// painful way of dealing with underruns.
+
+			*(bData++) = 0;
+			nSamples--;
+		}
+
+		if( data == 0 && !pw )
+		{
+			ConLog( " * SPU2 > Underrun compensation\n" );
+			underrun_freeze = true;
+		}
+
+#elif defined( DYNAMIC_BUFFER_LIMITING )
+
 		while(nSamples>0)
 		{
 			*(bData++) = buffer[rpos];
@@ -178,7 +264,6 @@ public:
 			nSamples--;
 		}
 
-#ifdef DYNAMIC_BUFFER_LIMITING
 		if(data<0)
 		{
 			do
@@ -195,16 +280,9 @@ public:
 			data+=size;
 			uflow = true;
 		}
-
-		//if( uflow )
-			//ConLog( " * SPU2 : Data Underflow detected!\n" );
-
 #endif
 
-		//if(isWaiting)
-		{
-			PulseEvent(hSyncEvent);
-		}
+		PulseEvent(hSyncEvent);
 
 #ifdef DYNAMIC_BUFFER_LIMITING
 
@@ -318,7 +396,6 @@ void UpdateTempoChange()
  
 	s32 bufferUsage = sndBuffer->GetBufferUsage();
 	s32 bufferSize  = sndBuffer->GetBufferSize();
-
 //Emergency stretch to compensate for FPS fluctuations and keep the buffers happy
 	bool a=(bufferUsage < CurBufferSize * 4);
 	bool b=(bufferUsage >= (bufferSize - CurBufferSize * 4));
@@ -438,12 +515,18 @@ void SndClose()
 
 void SndUpdateLimitMode()
 {
-	sndBuffer->PauseOnWrite(LimitMode!=0);
+	//sndBuffer->PauseOnWrite(LimitMode!=0);
 
-	if(LimitMode!=0)
-		printf(" * SPU2 limiter is now ON.\n");
-	else
-		printf(" * SPU2 limiter is now OFF.\n");
+	if(LimitMode!=0) {
+		timeStretchEnabled = true;
+		//printf(" * SPU2 limiter is now ON.\n");
+		printf(" * SPU2 timestretch is now ON.\n");
+	}
+	else {
+		//printf(" * SPU2 limiter is now OFF.\n");
+		printf(" * SPU2 timestretch is now OFF.\n");
+		timeStretchEnabled = false;
+	}
 
 }
 

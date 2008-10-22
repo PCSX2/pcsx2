@@ -104,6 +104,9 @@ public:
 		wformat.nAvgBytesPerSec=(wformat.nSamplesPerSec * wformat.nBlockAlign);
 		wformat.cbSize=0;
 		
+		qbuffer=new s16[BufferSize*MAX_BUFFER_COUNT];
+		tbuffer=new s32[BufferSize];
+
 		woores = waveOutOpen(&hwodevice,WAVE_MAPPER,&wformat,0,0,0);
 		if (woores != MMSYSERR_NOERROR)
 		{
@@ -111,9 +114,6 @@ public:
 			SysMessage("WaveOut Error: %s",ErrText);
 			return -1;
 		}
-
-		qbuffer=new s16[BufferSize*MAX_BUFFER_COUNT];
-		tbuffer=new s32[BufferSize];
 
 		for(int i=0;i<MAX_BUFFER_COUNT;i++)
 		{
@@ -127,6 +127,12 @@ public:
 			whbuffer[i].reserved=0;
 			waveOutPrepareHeader(hwodevice,whbuffer+i,sizeof(WAVEHDR));
 			whbuffer[i].dwFlags|=WHDR_DONE; //avoid deadlock
+
+			// Feed blocks into the device.
+			// It'll all be empty samples, but it helps reduce some of the pop-on-init.
+
+			//whbuffer[i].dwFlags&=~WHDR_DONE;
+			//waveOutWrite(hwodevice,&whbuffer[i],sizeof(WAVEHDR));
 		}
 
 		// Start Thread

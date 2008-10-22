@@ -51,12 +51,44 @@ double srate_pv=1.0;
 extern u32 PsxRates[160];
 
 
+#define SPU2_DYN_MEMLINE 0x3600
+
+// Performs a 64-bit multiplication between two values and returns the
+// high 32 bits as a result (discarding the fractional 32 bits).
+// The combined fracional bits of both inputs must be 32 bits for this
+// to work properly.
+//
+// This is meant to be a drop-in replacement for times when the 'div' part
+// of a MulDiv is a constant.  (example: 1<<8, or 4096, etc)
+//
+// [Air] Performance breakdown: This is over 10 times faster than MulDiv in
+//   a *worst case* scenario.  It's also more accurate since it forces the
+//   caller to  extend the inputs so that they make use of all 32 bits of
+//   precision.
+//
+static s32 __forceinline MulShr32( s32 srcval, s32 mulval )
+{
+	s64 tmp = ((s64)srcval * mulval );
+	return ((s32*)&tmp)[1];
+
+	// Performance note: Using the temp var and memory reference
+	// actually ends up being roughly 2x faster than using a bitshift.
+	// It won't fly on big endian machines though... :)
+}
+
+static s32 __forceinline MulShr32su( s32 srcval, u32 mulval )
+{
+ 	s64 tmp = ((s64)srcval * mulval );
+	return ((s32*)&tmp)[1];
+}
+
+
 void InitADSR()                                    // INIT ADSR
 {
 	for (int i=0; i<(32+128); i++)
 		{
 			int shift=(i-32)>>2;
-			__int64 rate=(i&3)+4;
+			s64 rate=(i&3)+4;
 			if (shift<0)
 			{
 				rate>>=-shift;
@@ -80,40 +112,9 @@ const s32 f[5][2] ={{    0,   0 },
 					{   98, -55 },
 					{  122, -60 }};
 
-static s16 __forceinline XA_decode(s32 pred1, s32 pred2, s32 shift, s32& prev1, s32& prev2, s32 data)
+static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
 {
-	s32 pcm = data>>shift;
-	pcm+=((pred1*prev1)+(pred2*prev2))>>6;
-	if(pcm> 32767) pcm= 32767;
-	if(pcm<-32768) pcm=-32768;
-	prev2=prev1;
-	prev1=pcm;
-	return (s16)pcm;
-}
-
-static s16 __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
-{
-	s32 data=*block;
-	s32 Shift	 =  ((data>> 0)&0xF)+16;
-	s32 Predict1 = f[(data>> 4)&0xF][0];
-	s32 Predict2 = f[(data>> 4)&0xF][1];
-
-	for(int i=0;i<7;i++)
-	{
-		s32 SampleData=block[i+1];
-
-		*(buffer++) = XA_decode(Predict1, Predict2, Shift, prev1, prev2, (SampleData<<28)&0xF0000000);
-		*(buffer++) = XA_decode(Predict1, Predict2, Shift, prev1, prev2, (SampleData<<24)&0xF0000000);
-		*(buffer++) = XA_decode(Predict1, Predict2, Shift, prev1, prev2, (SampleData<<20)&0xF0000000);
-		*(buffer++) = XA_decode(Predict1, Predict2, Shift, prev1, prev2, (SampleData<<16)&0xF0000000);
-	}
-
-	return data;
-}
-
-static s16 __forceinline XA_decode_block_fast(s16* buffer, const s16* block, s32& prev1, s32& prev2)
-{
-	s32 header = *block;
+	const s32 header = *block;
 	s32 shift =  ((header>> 0)&0xF)+16;
 	s32 pred1 = f[(header>> 4)&0xF][0];
 	s32 pred2 = f[(header>> 4)&0xF][1];
@@ -147,13 +148,11 @@ static s16 __forceinline XA_decode_block_fast(s16* buffer, const s16* block, s32
 		prev2=pcm;
 		prev1=pcm2;
 	}
-
-	return header;
 }
 
-static s16 __forceinline XA_decode_block_unsaturated(s16* buffer, const s16* block, s32& prev1, s32& prev2)
+static void __forceinline XA_decode_block_unsaturated(s16* buffer, const s16* block, s32& prev1, s32& prev2)
 {
-	s32 header = *block;
+	const s32 header = *block;
 	s32 shift =  ((header>> 0)&0xF)+16;
 	s32 pred1 = f[(header>> 4)&0xF][0];
 	s32 pred2 = f[(header>> 4)&0xF][1];
@@ -182,14 +181,14 @@ static s16 __forceinline XA_decode_block_unsaturated(s16* buffer, const s16* blo
 		prev2=pcm;
 		prev1=pcm2;
 	}
-
-	return header;
 }
 
 static void __forceinline IncrementNextA( const V_Core& thiscore, V_Voice& vc )
 {
 	if((vc.NextA==thiscore.IRQA)&&(thiscore.IRQEnable)) { 
+		#ifndef PUBLIC
 		ConLog(" * SPU2: IRQ Called (IRQ passed).\n"); 
+		#endif
 		Spdif.Info=4<<core;
 		SetIrqCall();
 	}
@@ -199,67 +198,110 @@ static void __forceinline IncrementNextA( const V_Core& thiscore, V_Voice& vc )
 }
 
 
-static void __fastcall GetNextDataBuffered( V_Core& thiscore, V_Voice& vc, s32& Data) 
-{
-	//static s32 pcm=0;
-	s16 data=0;
+u32 *pcm_cache_flags=NULL;
+s16 *pcm_cache_data=NULL;
 
-	if (vc.SCurrent>=28) 
+#ifndef PUBLIC
+int g_counter_cache_hits=0;
+int g_counter_cache_misses=0;
+int g_counter_cache_ignores=0;
+#endif
+
+#define XAFLAG_LOOP_END		(1ul<<0)
+#define XAFLAG_LOOP			(1ul<<1)
+#define XAFLAG_LOOP_START	(1ul<<2)
+
+static void __forceinline __fastcall GetNextDataBuffered( V_Core& thiscore, V_Voice& vc, s32& Data) 
+{
+	if (vc.SCurrent<28)
 	{
-		if(vc.LoopEnd)
+		// [Air] : skip the increment?
+		//    (witness one of the rare ideal uses of a goto statement!)
+		if( (vc.SCurrent&3) != 3 ) goto _skipIncrement;
+	}
+	else
+	{
+		if(vc.LoopFlags & XAFLAG_LOOP_END)
 		{
-			if(vc.Loop)
+			if(vc.LoopFlags & XAFLAG_LOOP)
 			{
 				vc.NextA=vc.LoopStartA;
 			}
 			else
 			{
-				if(MsgVoiceOff) ConLog(" * SPU2: Voice Off by EndPoint: %d \n", voice);
 				VoiceStop(core,voice);
 				thiscore.Regs.ENDX|=1<<voice;
-				vc.lastStopReason = 1;
+				#ifndef PUBLIC
+				if(MsgVoiceOff) ConLog(" * SPU2: Voice Off by EndPoint: %d \n", voice);
+				DebugCores[core].Voices[voice].lastStopReason = 1;
+				#endif
 			}
 		}
 
-		// [Air]: Original ADPCM decoder.
-		//data = XA_decode_block(vc.SBuffer,GetMemPtr(vc.NextA&0xFFFFF), vc.Prev1, vc.Prev2);
+		// We'll need the loop flags and buffer pointers regardless of cache status:
+		// Note to Self : NextA addresses WORDS (not bytes).
 
-		// [Air]: Testing of a new saturated decoder. (benchmark needed)
-		//   My gut tells me that this should be faster, but you never can tell with these types
-		//   of things.  Benchmark it against the original and see what you think.
+		s16* memptr = GetMemPtr(vc.NextA&0xFFFFF);
+		vc.LoopFlags = *memptr >> 8;	// grab loop flags from the upper byte.
+		int nexta = vc.NextA >> 3;		// 8 words per encoded block.
+		
+		vc.SBuffer = &pcm_cache_data[nexta * 28];
 
-		//data = XA_decode_block_fast(vc.SBuffer,GetMemPtr(vc.NextA&0xFFFFF), vc.Prev1, vc.Prev2);
+		const u32 flagbitmask = 1ul<<(nexta & 31);  // 32 flags per array entry
+		nexta >>= 5;
 
-		// [Air]: Testing use of a new unsaturated decoder. (benchmark needed)
-		//   Chances are the saturation isn't needed, but for a very few exception games.
-		//   This is definitely faster than either of the above versions, but the question is by how
-		//   much (biggest impact will be on games like Xenosaga2, which use lots of SPU2 voices).
-		//   If the speed boost is worth it then maybe it should be added as a speedhack option
-		//   in the spu2ghz config.
-
-		data = XA_decode_block_unsaturated(vc.SBuffer,GetMemPtr(vc.NextA&0xFFFFF), vc.Prev1, vc.Prev2);
-
-		vc.LoopEnd  =   (data>> 8)&1;
-		vc.Loop     =   (data>> 9)&1;
-		vc.LoopStart=   (data>>10)&1;
-		vc.SCurrent = 0;
-		vc.FirstBlock = 0;
-
-		if( vc.LoopStart && !vc.LoopMode )
+		if( pcm_cache_flags[nexta] & flagbitmask )
 		{
-			vc.LoopStartA=vc.NextA; 
+			// Cached block!  Read from the cache directly (ie, do nothing)
+
+			#ifndef PUBLIC
+			g_counter_cache_hits++;
+			#endif
+		}
+		else
+		{
+			// Only flag the cache if it's a non-dynamic memory range.
+			if( nexta >= (SPU2_DYN_MEMLINE / (8*32)) )
+				pcm_cache_flags[nexta] |= flagbitmask;
+
+			#ifndef PUBLIC
+			if( nexta < (SPU2_DYN_MEMLINE / (8*32)) )
+				g_counter_cache_ignores++;
+			else
+				g_counter_cache_misses++;
+			#endif
+
+			// saturated decoder
+
+			XA_decode_block(vc.SBuffer, memptr, vc.Prev1, vc.Prev2);
+
+			// [Air]: Testing use of a new unsaturated decoder. (benchmark needed)
+			//   Chances are the saturation isn't needed, but for a very few exception games.
+			//   This is definitely faster than the above version, but is it by enough to
+			//   merit possible lower compatibility?  Especially now that games that make
+			//   heavy use of the SPU2 via music or sfx will mostly use the cache anyway.
+
+			//XA_decode_block_unsaturated( vc.SBuffer, memptr, vc.Prev1, vc.Prev2 );
+
+			//vc.LoopEnd  =   (data>> 8)&1;
+			//vc.Loop     =   (data>> 9)&1;
+			//vc.LoopStart=   (data>>10)&1;
 		}
 
-		IncrementNextA( thiscore, vc );
+		vc.SCurrent = 0;
+		if( (vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode )
+		{
+			vc.LoopStartA=vc.NextA;
+		}
+
+		// [Air] : Increment will get called below (change made to avoid needless code cache clutter)		
+		//IncrementNextA( thiscore, vc );
 	}
 
-	Data=vc.SBuffer[vc.SCurrent];
+	IncrementNextA( thiscore, vc );
 
-	if((vc.SCurrent&3)==3)
-	{
-		IncrementNextA( thiscore, vc );
-	}
-	vc.SCurrent++;
+_skipIncrement:
+	Data = vc.SBuffer[vc.SCurrent++];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -271,12 +313,17 @@ const int InvExpOffsets[] = { 0,4,6,8,9,10,11,12 };
 static void __forceinline CalculateADSR( V_Voice& vc ) 
 {
 	V_ADSR& env(vc.ADSR);
+
+	if( env.Phase == 0 ) return;
+
 	u32 SLevel=((u32)env.Sl)<<27;
 	u32 off=InvExpOffsets[(env.Value>>28)&7];
 
 	if(env.Releasing)
 	{
-		if((env.Phase>0)&&(env.Phase<5))
+		// [Air] : Simplified conditional, as phase cannot be zero here.
+		//  (zeros get trapped above)
+		if(/*(env.Phase>0)&&*/(env.Phase<5))
 		{
 			env.Phase=5;
 		}
@@ -392,15 +439,17 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 			env.Value=0;
 			break;
 
-		//jNO_DEFAULT
+		jNO_DEFAULT
 	}
 
 	if (env.Phase==6) {
+		#ifndef PUBLIC
 		if(MsgVoiceOff) ConLog(" * SPU2: Voice Off by ADSR: %d \n", voice);
+		DebugCores[core].Voices[voice].lastStopReason = 2;
+		#endif
 		VoiceStop(core,voice);
 		Cores[core].Regs.ENDX|=(1<<voice);
 		env.Phase=0;
-		vc.lastStopReason = 2;
 	}
 }
 
@@ -448,36 +497,29 @@ void LowPass(s32& VL, s32& VR)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-static void __fastcall GetVoiceValues(V_Core& thiscore, V_Voice& vc, s32& Value)
+static void __forceinline UpdatePitch( V_Voice& vc )
 {
-	s64 Data=0;
-	s32 DT=0;
+	s32 pitch;
 
-	// [Air] : Put a scope on the pitch variable, which should help it get optimized to a
-	//   register.
+	// [Air] : re-ordered comparisons: Modulated is much more likely to be zero than voice,
+	//   and so the way it was before it's have to check both voice and modulated values
+	//   most of the time.  Now it'll just check Modulated and short-circuit past the voice
+	//   check (not that it amounts to much, but eh every little bit helps).
+	if( (vc.Modulated==0) || (voice==0) )
+		pitch=vc.Pitch;
+	else
+		pitch=(vc.Pitch*(32768 + abs(Cores[core].Voices[voice-1].OutX)))>>15;
+	
+	vc.SP+=pitch;
+}
+
+static void __forceinline GetVoiceValues_Linear(V_Core& thiscore, V_Voice& vc, s32& Value)
+{
+	while( vc.SP > 0 )
 	{
-		s32 pitch;
-
-		// [Air] : re-ordered comparisons: Modulated is much more likely to be zero than voice,
-		//   and so the way it was before it's have to check both voice and modulated values
-		//   most of the time.  Now it'll just check Modulated and short-circut past the voice
-		//   check (not that it amounts to much, but eh every little bit helps).
-		if( (vc.Modulated==0) || (voice==0) )
-			pitch=vc.Pitch;
-		else
-			pitch=(vc.Pitch*(32768 + abs(thiscore.Voices[voice-1].OutX)))>>15;
-		
-		vc.SP+=pitch;
-	}
-
-	while(vc.SP>=4096) 
-	{
-		GetNextDataBuffered( thiscore, vc, DT );
-
-		vc.PV4=vc.PV3;
-		vc.PV3=vc.PV2;
 		vc.PV2=vc.PV1;
-		vc.PV1=DT<<16; //32bit processing
+
+		GetNextDataBuffered( thiscore, vc, vc.PV1 );
 
 		vc.SP-=4096;
 	}
@@ -486,89 +528,91 @@ static void __fastcall GetVoiceValues(V_Core& thiscore, V_Voice& vc, s32& Value)
 
 	if(vc.ADSR.Phase==0)
 	{
-		Value=0;
-		vc.OutX=0;
+		Value = 0;
 	}
 	else
 	{
-		// [Air]: if SP is zero then we landed perfectly on a sample source, no
-		// interpolation necessary (besides being a little faster this is important
-		// too, since the interpolator will pick the wrong sample to mix otherwise).
-
-		if(Interpolation==0 || vc.SP == 0)
+		if(Interpolation==0) // || vc.SP == 0)
 		{
-			Data = vc.PV1;
+			Value = vc.PV1;
 		} 
-		else if(Interpolation==1) //linear
+		else //if(Interpolation==1) //must be linear
 		{
-			// [Air]: Inverted the interpolation delta.  The old way was generating
-			// inverted waveforms.
-			s64 t0 = vc.PV2 - vc.PV1;
-			s64 t1 = vc.PV1;
-			Data = (((t0*vc.SP)>>12) + t1);
+			s32 t0 = vc.PV2 - vc.PV1;
+			s32 t1 = vc.PV1<<12;
+			Value = t1 - (t0*vc.SP);
 		}
-		else // if(Interpolation==2) //must be cubic
-		{
-			s64 a0 = vc.PV1 - vc.PV2 - vc.PV4 + vc.PV3;
-			s64 a1 = vc.PV4 - vc.PV3 - a0;
-			s64 a2 = vc.PV1 - vc.PV4;
-			s64 a3 = vc.PV2;
-			s64 mu = 4096-vc.SP;
-
-			s64 t0 = ((a0   )*mu)>>18;
-			s64 t1 = ((t0+a1)*mu)>>18;
-			s64 t2 = ((t1+a2)*mu)>>18;
-			s64 t3 = ((t2+a3));
-
-			Data = t3;
-		}
-
-		Value=(s32)((Data*vc.ADSR.Value)>>48); //32bit ADSR + convert to 16bit
-
-		// [Air]: Moved abs() to the modulation code above, so that the abs conditionals are
-		//   only run in select cases where modulation is active.
-		vc.OutX=Value;
+		Value = MulShr32su( Value, vc.ADSR.Value>>12 );
 	}
 }
 
-// [Air]: Noise values need to be mixed without going through interpolation, since it
-//    can wreak havoc on the noise (causing muffling or popping)
-static void __fastcall GetNoiseValues(V_Core& thiscore, V_Voice& vc, s32& Value)
+
+static void __forceinline GetVoiceValues_Cubic(V_Core& thiscore, V_Voice& vc, s32& Value)
 {
-	s64 Data=0;
-	s32 DT=0;
-
+	while( vc.SP > 0 )
 	{
-		s32 pitch;
+		vc.PV4=vc.PV3;
+		vc.PV3=vc.PV2;
+		vc.PV2=vc.PV1;
 
-		if( (vc.Modulated==0) || (voice==0) )
-			pitch=vc.Pitch;
-		else
-			pitch=(vc.Pitch*(32768 + abs(thiscore.Voices[voice-1].OutX)))>>15;
-		
-		vc.SP+=pitch;
-	}
-
-	while(vc.SP>=4096) 
-	{
-		GetNoiseValues(DT);
+		GetNextDataBuffered( thiscore, vc, vc.PV1 );
+		vc.PV1<<=3;
+		vc.SPc = vc.SP&4095;	// just the fractional part, please!
 		vc.SP-=4096;
 	}
-
-	Data = DT<<16; //32bit processing
 
 	CalculateADSR( vc );
 
 	if(vc.ADSR.Phase==0)
 	{
-		Value=0;
-		vc.OutX=0;
+		Value = 0;
 	}
 	else
 	{
-		Value=(s32)((Data*vc.ADSR.Value)>>48); //32bit ADSR + convert to 16bit
-		vc.OutX=Value;
+		s32 z0 = vc.PV3 - vc.PV4 + vc.PV1 - vc.PV2;
+		s32 z1 = (vc.PV4 - vc.PV3 - z0);
+		s32 z2 = (vc.PV2 - vc.PV4);
+
+		s32 mu = vc.SPc;
+
+		s32 val = (z0 * mu) >> 12;
+		val = ((val + z1) * mu) >> 12;
+		val = ((val + z2) * mu) >> 12;
+		val += vc.PV2;
+
+		/*
+		s64 a0 = vc.PV1 - vc.PV2 - vc.PV4 + vc.PV3;
+		s64 a1 = vc.PV4 - vc.PV3 - a0;
+		s64 a2 = vc.PV1 - vc.PV4;
+		s64 a3 = vc.PV2;
+		s64 mu = 4096+vc.SP;
+
+		s64 t0 = ((a0   )*mu)>>12;
+		s64 t1 = ((t0-a1)*mu)>>12;
+		s64 t2 = ((t1-a2)*mu)>>12;
+		s64 t3 = ((t2-a3));*/
+
+		Value = MulShr32su( val, vc.ADSR.Value>>3 );
 	}
+
+	//Value=(s32)((Data*vc.ADSR.Value)>>40); //32bit ADSR + convert to 16bit
+}
+
+// [Air]: Noise values need to be mixed without going through interpolation, since it
+//    can wreak havoc on the noise (causing muffling or popping).
+static void __forceinline __fastcall GetNoiseValues(V_Core& thiscore, V_Voice& vc, s32& Data)
+{
+	while(vc.SP>=4096) 
+	{
+		GetNoiseValues( Data );
+		vc.SP-=4096;
+	}
+
+	// GetNoiseValues can't set the phase zero on us unexpectedly
+	// like GetVoiceValues can.
+	jASSUME( vc.ADSR.Phase != 0 );	
+
+	CalculateADSR( vc );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -619,10 +663,12 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 					{
 						FileLog("[%10d] AutoDMA%c block end.\n",Cycles, (core==0)?'4':'7');
 
+						#ifndef PUBLIC
 						if(thiscore.InputDataLeft>0)
 						{
 							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
+						#endif
 						thiscore.InputDataLeft=0;
 						thiscore.DMAICounter=1;
 					}
@@ -657,10 +703,12 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 					{
 						FileLog("[%10d] Spdif AutoDMA%c block end.\n",Cycles, (core==0)?'4':'7');
 
+						#ifndef PUBLIC
 						if(thiscore.InputDataLeft>0)
 						{
 							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
+						#endif
 						thiscore.InputDataLeft=0;
 						thiscore.DMAICounter=1;
 					}
@@ -709,10 +757,12 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 
 						thiscore.AutoDMACtrl |=~3;
 
+						#ifndef PUBLIC
 						if(thiscore.InputDataLeft>0)
 						{
 							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
+						#endif
 						thiscore.InputDataLeft=0;
 						thiscore.DMAICounter=1;
 					}
@@ -756,60 +806,79 @@ void __fastcall ReadInputPV(V_Core& thiscore, s32& ValL,s32& ValR)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-static void __forceinline UpdateVolume(V_Volume& Vol)
-{
-	s32 NVal;
+#define VOLFLAG_REVERSE_PHASE	(1ul<<0)
+#define VOLFLAG_DECREMENT		(1ul<<1)
+#define VOLFLAG_EXPONENTIAL		(1ul<<2)
+#define VOLFLAG_SLIDE_ENABLE	(1ul<<3)
 
+static void __fastcall UpdateVolume(V_Volume& Vol)
+{
 	// TIMINGS ARE FAKE!!! Need to investigate.
 
-	int reverse_phase = Vol.Mode&1;
-	int exponential   = Vol.Mode&4;
-	int decrement     = Vol.Mode&2;
-	int slide_enable  = Vol.Mode&8;
-	
-	if (!slide_enable) return;
+	// [Air]: Cleaned up this code... may have broken it.  Can't really
+	//   test it here since none of my games seem to use it.  If anything's
+	//   not sounding right, we should revert the code in this method first.
 
-	NVal=Vol.Value;
-	if(reverse_phase) NVal = -NVal;
+	// [Air] Reverse phasing?
+	//   Invert our value so that exponential mathematics are applied
+	//   as if the volume were sliding the other direction.  This makes
+	//   a lot more sense than the old method's likeliness to chop off
+	//   sound volumes to zero abruptly.
 
-	if (decrement) { // Decrement
-
-		if(exponential)
-		{
-			NVal=NVal * Vol.Increment >> 7;
-		}
-		else
-		{
-			NVal-=Vol.Increment;
-		}
-		NVal-=((32768*5)>>(Vol.Increment));
-		if (NVal<0) {
-			Vol.Value=0;
-			Vol.Mode=0;
-		}
-		else Vol.Value=NVal & 0xffff;
-	}
-	else { // Increment
-		if(exponential)
-		{
-			int T = Vol.Increment>>(NVal>>12);
-			NVal+=T;
-		}
-		else
-		{
-			NVal+=Vol.Increment;
-		}
-	}
-
-	if((NVal<0)||(NVal>0x7fff))
+	if(Vol.Mode & VOLFLAG_REVERSE_PHASE)
 	{
-		NVal=decrement?0:0x7fff;
-		Vol.Mode=0; // disable slide
+		ConLog( " *** SPU2 > Reverse Phase in progress!\n" );
+		Vol.Value = 0x7fff - Vol.Value;
 	}
 
-	if(reverse_phase) NVal = -NVal;
+	if (Vol.Mode & VOLFLAG_DECREMENT)
+	{
+		// Decrement
 
-	Vol.Value=NVal;
+		if(Vol.Mode & VOLFLAG_EXPONENTIAL)
+		{
+			//ConLog( " *** SPU2 > Exponential Volume Slide Down!\n" );
+			Vol.Value *= Vol.Increment >> 7;
+			Vol.Value-=((32768*5)>>(Vol.Increment));
+		}
+		else
+		{
+			Vol.Value-=Vol.Increment;
+		}
+
+		if (Vol.Value<0)
+		{
+			Vol.Value = 0;
+			Vol.Mode=0;	// disable slide
+		}
+	}
+	else
+	{
+		//ConLog( " *** SPU2 > Volflag > Increment!\n" );
+		// Increment
+		if(Vol.Mode & VOLFLAG_EXPONENTIAL)
+		{
+			//ConLog( " *** SPU2 > Exponential Volume Slide Up!\n" );
+			int T = Vol.Increment>>(Vol.Value>>12);
+			Vol.Value+=T;
+		}
+		else
+		{
+			Vol.Value+=Vol.Increment;
+		}
+
+		if( Vol.Value > 0x7fff )
+		{
+			Vol.Value = 0x7fff;
+			Vol.Mode=0; // disable slide
+		}
+	}
+
+	// Reverse phasing
+	//  Invert the value back into output form:
+	if(Vol.Mode & VOLFLAG_REVERSE_PHASE) Vol.Value = 0x7fff-Vol.Value;
+
+	//Vol.Value=NVal;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -923,35 +992,61 @@ static s32 __forceinline ApplyVolume(s32 data, s32 volume)
 	return (volume * data);
 }
 
-static void __forceinline MixVoice(V_Voice& vc, s32& VValL, s32& VValR)
+// writes a signed value to the SPU2 ram
+// Performs no cache invalidation -- use only for dynamic memory ranges
+// of the SPU2 (between 0x0000 and SPU2_DYN_MEMLINE)
+static void __forceinline spu2M_WriteFast( u32 addr, s16 value )
+{
+	// throw an assertion if the memory range is invalid:
+	jASSUME( addr < SPU2_DYN_MEMLINE );
+	*GetMemPtr( addr ) = value;
+}
+
+
+static void __forceinline MixVoice( V_Core& thiscore, V_Voice& vc, s32& VValL, s32& VValR )
 {
 	s32 Value=0;
 
 	VValL=0;
 	VValR=0;
 
-	UpdateVolume(vc.VolumeL);
-	UpdateVolume(vc.VolumeR);
+	// [Air] : Most games don't use much volume slide effects.  So only
+	//   call the UpdateVolume methods when needed by checking the flag
+	//   outside the method here...
+
+	if( vc.VolumeL.Mode & VOLFLAG_SLIDE_ENABLE ) UpdateVolume( vc.VolumeL );
+	if( vc.VolumeR.Mode & VOLFLAG_SLIDE_ENABLE ) UpdateVolume( vc.VolumeR );
 
 	if (vc.ADSR.Phase>0) 
 	{
-		if( vc.Noise )
-			GetNoiseValues( Cores[core], vc, Value );
-		else
-			GetVoiceValues( Cores[core], vc, Value );
+		UpdatePitch( vc );
 
-		#ifdef _DEBUG
-		vc.displayPeak = max(vc.displayPeak,abs(Value));
+		if( vc.Noise )
+			GetNoiseValues( thiscore, vc, Value );
+		else
+		{
+			if( Interpolation == 2 )
+				GetVoiceValues_Cubic( thiscore, vc, Value );
+			else
+				GetVoiceValues_Linear( thiscore, vc, Value );
+		}
+
+		// Record the output (used for modulation effects)
+		vc.OutX = Value;
+
+		#ifndef PUBLIC
+		DebugCores[core].Voices[voice].displayPeak = max(DebugCores[core].Voices[voice].displayPeak,abs(Value));
 		#endif
 
 		VValL=ApplyVolume(Value,(vc.VolumeL.Value));
 		VValR=ApplyVolume(Value,(vc.VolumeR.Value));
 	}
 
-	if (voice==1)      spu2Ms16(0x400 + (core<<12) + OutPos)=(s16)((Value));
-	else if (voice==3) spu2Ms16(0x600 + (core<<12) + OutPos)=(s16)((Value));
+	if (voice==1)      spu2M_WriteFast( 0x400 + (core<<12) + OutPos, (s16)Value );
+	else if (voice==3) spu2M_WriteFast( 0x600 + (core<<12) + OutPos, (s16)Value );
 
 }
+
 
 static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 {
@@ -964,8 +1059,8 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	TDL=TDR=TWL=TWR=(s32)0;
 
 	if (core == 1) { //Core 0 doesn't have External input
-		spu2Ms16(0x800 + OutPos)=(s16)(ExtL>>16);
-		spu2Ms16(0xA00 + OutPos)=(s16)(ExtR>>16);
+		spu2M_WriteFast( 0x800 + OutPos, (s16)(ExtL>>16) );
+		spu2M_WriteFast( 0xA00 + OutPos, (s16)(ExtR>>16) );
 	}
 	
 	V_Core& thiscore( Cores[core] );
@@ -979,14 +1074,30 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 		ReadInputPV(thiscore, InpL,InpR);	// get input data from input buffers
 	}
 
+	#ifndef PUBLIC
 	s32 InputPeak = max(abs(InpL),abs(InpR));
-	if(thiscore.AutoDMAPeak<InputPeak) thiscore.AutoDMAPeak=InputPeak;
+	if(DebugCores[core].AutoDMAPeak<InputPeak) DebugCores[core].AutoDMAPeak=InputPeak;
+	#endif
 	
-	InpL = MulDiv(InpL,(thiscore.InpL),1<<1);
-	InpR = MulDiv(InpR,(thiscore.InpR),1<<1);
+	//MulShr32( InpL, thiscore.InpL, 1 );
+	//MulShr32( InpR, thiscore.InpR, 1 );
 
-	ExtL = MulDiv(ExtL,(thiscore.ExtL),1<<12);
-	ExtR = MulDiv(ExtR,(thiscore.ExtR),1<<12);
+	// [Air] : InpL and InpR don't need 64 bit muls.
+
+	InpL *= thiscore.InpL;
+	InpR *= thiscore.InpR;
+	InpL >>= 1;
+	InpR >>= 1;
+
+	// shift inputs by 20 collectively, so that the result is
+	// effectively downshifted by 12:
+	ExtL = MulShr32su( ExtL<<3, ((int)thiscore.ExtL)<<16);
+	ExtR = MulShr32su( ExtR<<3, ((int)thiscore.ExtR)<<16);
+
+	//InpL = MulDiv(InpL,(thiscore.InpL),1<<1);
+	//InpR = MulDiv(InpR,(thiscore.InpR),1<<1);
+	//ExtL = MulDiv(ExtL,(thiscore.ExtL),1<<12);
+	//ExtR = MulDiv(ExtR,(thiscore.ExtR),1<<12);
 
 	SDL=SDR=SWL=SWR=(s32)0;
 
@@ -995,7 +1106,7 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 		s32 VValL,VValR;
 
 		V_Voice& vc( thiscore.Voices[voice] );
-		MixVoice( vc,VValL,VValR );
+		MixVoice( thiscore, vc, VValL, VValR );
 
 		SDL += VValL * vc.DryL;
 		SDR += VValR * vc.DryR;
@@ -1004,10 +1115,10 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	}
 
 	//Write To Output Area
-	spu2Ms16(0x1000 + (core<<12) + OutPos)=(s16)(SDL>>16);
-	spu2Ms16(0x1200 + (core<<12) + OutPos)=(s16)(SDR>>16);
-	spu2Ms16(0x1400 + (core<<12) + OutPos)=(s16)(SWL>>16);
-	spu2Ms16(0x1600 + (core<<12) + OutPos)=(s16)(SWR>>16);
+	spu2M_WriteFast( 0x1000 + (core<<12) + OutPos, (s16)(SDL>>16) );
+	spu2M_WriteFast( 0x1200 + (core<<12) + OutPos, (s16)(SDR>>16) );
+	spu2M_WriteFast( 0x1400 + (core<<12) + OutPos, (s16)(SWL>>16) );
+	spu2M_WriteFast( 0x1600 + (core<<12) + OutPos, (s16)(SWR>>16) );
 
 	// Mix in the Voice data
 	TDL += SDL * thiscore.SndDryL;
@@ -1046,12 +1157,13 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	OutR=(TDR + TWR);
 
 	//Apply Master Volume
-	UpdateVolume(thiscore.MasterL);
-	UpdateVolume(thiscore.MasterR);
+	if( thiscore.MasterL.Mode & VOLFLAG_SLIDE_ENABLE )  UpdateVolume(thiscore.MasterL);
+	if( thiscore.MasterR.Mode & VOLFLAG_SLIDE_ENABLE )  UpdateVolume(thiscore.MasterR);
 
-	if (thiscore.Mute==0) {
-		OutL=MulDiv(OutL,thiscore.MasterL.Value,1<<16);
-		OutR=MulDiv(OutR,thiscore.MasterR.Value,1<<16);
+	if (thiscore.Mute==0)
+	{
+		OutL = MulShr32( OutL, ((s32)thiscore.MasterL.Value)<<16 );
+		OutR = MulShr32( OutR, ((s32)thiscore.MasterR.Value)<<16 );
 	}
 	else 
 	{
@@ -1071,12 +1183,12 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	}
 }
 
+// used to throttle the output rate of cache stat reports
+static int p_cachestat_counter=0;
+
 void __fastcall Mix() 
 {
 	s32 ExtL=0, ExtR=0, OutL, OutR;
-
-	static s32 Peak0,Peak1;
-	static s32 PCount;
 
 	core=0;
 	MixCore(ExtL,ExtR,0,0);
@@ -1084,10 +1196,18 @@ void __fastcall Mix()
 	core=1;
 	MixCore(OutL,OutR,ExtL,ExtR);
 
-#ifdef _DEBUG
+#ifndef PUBLIC
+	static s32 Peak0,Peak1;
+	static s32 PCount;
+
 	Peak0 = max(Peak0,max(ExtL,ExtR));
 	Peak1 = max(Peak1,max(OutL,OutR));
 #endif
+
+	// [Air] [TODO] : Replace this with MulShr32.
+	//   I haven't done it yet because it would require making the
+	//   VolumeDivisor a constant .. which it should be anyway.  The presence
+	//   of VolumeMultiplier more or less negates the need for a variable divisor.
 
 	ExtL=MulDiv(OutL,VolumeMultiplier,VolumeDivisor<<6);
 	ExtR=MulDiv(OutR,VolumeMultiplier,VolumeDivisor<<6);
@@ -1102,6 +1222,23 @@ void __fastcall Mix()
 	SndWrite(ExtL,ExtR);
 	OutPos++;
 	if (OutPos>=0x200) OutPos=0;
+
+#ifndef PUBLIC
+	// [TODO]: Create an INI option to enable/disable this particular log.
+	p_cachestat_counter++;
+	if(p_cachestat_counter > (48000*6) )
+	{
+		p_cachestat_counter = 0;
+		ConLog( " * SPU2 > CacheStatistics > Hits: %d  Misses: %d  Ignores: %d\n",
+			g_counter_cache_hits,
+			g_counter_cache_misses,
+			g_counter_cache_ignores );
+
+		g_counter_cache_hits = 
+		g_counter_cache_misses =
+		g_counter_cache_ignores = 0;
+	}
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -93,13 +93,19 @@ extern void spdif_get_samples(s32 *samples); // fills the buffer with [l,r,c,lfe
 extern short *spu2regs;
 extern short *_spu2mem;
 
-extern s16 __forceinline *GetMemPtr(u32 addr);
+extern u32 *pcm_cache_flags;
+extern s16 *pcm_cache_data;
+
+extern s16 __forceinline * __fastcall GetMemPtr(u32 addr);
+extern s16 __forceinline __fastcall spu2M_Read( u32 addr );
+extern void __inline __fastcall spu2M_Write( u32 addr, s16 value );
+extern void __inline __fastcall spu2M_Write( u32 addr, u16 value );
 
 #define spu2Rs16(mmem)	(*(s16 *)((s8 *)spu2regs + ((mmem) & 0x1fff)))
 #define spu2Ru16(mmem)	(*(u16 *)((s8 *)spu2regs + ((mmem) & 0x1fff)))
 
-#define spu2Ms16(mmem)	(*GetMemPtr((mmem) & 0xfffff))
-#define spu2Mu16(mmem)	(*(u16*)GetMemPtr((mmem) & 0xfffff))
+//#define spu2Ms16(mmem)	(*GetMemPtr((mmem) & 0xfffff))
+//#define spu2Mu16(mmem)	(*(u16*)GetMemPtr((mmem) & 0xfffff))
 
 void SysMessage(char *fmt, ...);
 
@@ -135,7 +141,9 @@ extern u32 lClocks;
 extern u32* cPtr;
 extern bool hasPtr;
 
-void CALLBACK TimeUpdate(u32 cClocks, u32 syncType);
+extern bool disableEverything;
+
+void __fastcall TimeUpdate(u32 cClocks, u32 syncType);
 
 void TimestretchUpdate(int bufferusage,int buffersize);
 
