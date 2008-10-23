@@ -372,7 +372,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\bin\pcsx2r.exe"
+				OutputFile="G:\pcsx2NEWSVN - clean\bin\pcsx2r.exe"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool

@@ -141,7 +141,7 @@ extern u32 lClocks;
 extern u32* cPtr;
 extern bool hasPtr;
 
-extern bool disableEverything;
+extern bool disableFreezes;
 
 void __fastcall TimeUpdate(u32 cClocks, u32 syncType);
 

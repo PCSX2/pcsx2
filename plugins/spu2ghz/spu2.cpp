@@ -60,9 +60,8 @@ static bool spu2init=false;	// has spu2init plugin interface been called?
 static bool resetClock = true;
 
 // Used to make spu2 more robust at loading incompatible saves.
-// You won't get any sound but it won't cause mass instability either.
-// (should allow players to get to their next save point more easily)
-bool disableEverything=false;
+// Disables re-freezing of save state data.
+bool disableFreezes=false;
 
 void (* _irqcallback)();
 void (* dma4callback)();
@@ -281,7 +280,7 @@ s32 CALLBACK SPU2init()
 #endif
 	srand((unsigned)time(NULL));
 
-	disableEverything=false;
+	disableFreezes=false;
 
 	if (spu2init)
 	{
@@ -653,10 +652,10 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 	//  If for some reason our clock value seems way off base, just mix
 	//  out a little bit, skip the rest, and hope the ship "rights" itself later on.
 
-	if( dClocks > TickInterval*32 )
+	if( dClocks > TickInterval*48 )
 	{
-		ConLog( " * SPU2 > TimeUpdate > Sanity Check Failed: %d (cc: %d)\n", dClocks/TickInterval, cClocks/TickInterval );
-		dClocks = TickInterval*32;
+		ConLog( " * SPU2 > TimeUpdate Sanity Check (Tick Delta: %d) (PS2 Ticks: %d)\n", dClocks/TickInterval, cClocks/TickInterval );
+		dClocks = TickInterval*48;
 		lClocks = cClocks-dClocks;
 	}
 
@@ -734,8 +733,6 @@ bool numpad_minus = false;
 
 void CALLBACK SPU2async(u32 cycles) 
 {
-	if( disableEverything ) return;
-
 #ifndef PUBLIC
 	u32 oldClocks = lClocks;
 	static u32 timer=0,time1=0,time2=0;
@@ -1251,8 +1248,6 @@ void CALLBACK SPU2writeLog(u32 rmem, u16 value)
 
 void CALLBACK SPU2write(u32 rmem, u16 value) 
 {
-	if( disableEverything ) return;
-
 #ifdef S2R_ENABLE
 	if(!replay_mode)
 		s2r_writereg(Cycles,rmem,value);
@@ -1583,8 +1578,6 @@ void CALLBACK SPU2write(u32 rmem, u16 value)
 
 u16  CALLBACK SPU2read(u32 rmem) 
 {
-	if( disableEverything ) return 0;
-
 //	if(!replay_mode)
 //		s2r_readreg(Cycles,rmem);
 
@@ -1677,13 +1670,11 @@ typedef struct
 
 static int getFreezeSize()
 {
-	if( disableEverything ) return 7;	// length of the string id "invalid"
+	if( disableFreezes ) return 7;	// length of the string id "invalid"
 
 	int size = sizeof(SPU2freezeData);
 
 	// calculate the amount of memory consumed by our cache:
-
-	//size += PCM_CACHE_BLOCK_COUNT / 8;
 
 	for( int bidx=0; bidx<PCM_CACHE_BLOCK_COUNT; bidx++ )
 	{
@@ -1705,39 +1696,32 @@ s32 CALLBACK SPU2freeze(int mode, freezeData *data)
 
 		if( spud->id != SAVE_ID || spud->version != SAVE_VERSION )
 		{
-			// [Air]: Running the SPU2 from an "empty" state this way is pretty unreliable.
-			//  It usually didn't crash at least, but it never output sound anyway and would
-			//  confuse the new cache system.
-			//
-			//  To fix it I introduced a new global flag that disables the SPU2 logic completely.
-			//  This is the safest way to recover from an unsupported SPU2 save, since it pretty
-			//  well garauntees the user will have a stable enough environment to reach a save spot.
-
 			printf("\n*** SPU2Ghz Warning:\n");
-			printf("The savestate you are trying to load was not made with this plugin.\n");
-			printf("Sound will be disabled until the emulator is reset.\n");
-			printf("Find a memorycard savespot to save your game, reset, and then continue from there.\n\n");
+			printf("  The savestate you are trying to load was not made with this plugin.\n");
+			printf("  The emulator will not be stable!  Find a memorycard savespot to save your\n");
+			printf("  game, reset, and then continue from there.\n\n");
 
-			// Clear stuff, not that it matters:
-
-			disableEverything=true;
+			disableFreezes=true;
 			lClocks = 0;
 			resetClock = true;
 
-			// Reset the cores.
+			// Do *not* reset the cores.
+			// We'll need some "hints" as to how the cores should be initialized,
+			// and the only way to get that is to use the game's existing core settings
+			// and hope they kinda match the settings for the savestate (IRQ enables and such).
+			//
 
-			CoreReset( 0 );
-			CoreReset( 1 );
+			//CoreReset( 0 );
+			//CoreReset( 1 );
 
-			// adpcm cache : Just clear all the cache flags, which forces the mixer
-			//   to re-decode everything.
+			// adpcm cache : Clear all the cache flags and buffers.
 
 			memset( pcm_cache_flags, 0, (0x200000 / (16*32)) * 4 );
 			memset( pcm_cache_data, 0, (0x200000 / 16) * 28 * 2 );
 		}
 		else
 		{
-			disableEverything=false;
+			disableFreezes=false;
 
 			// base stuff
 			memcpy(spu2regs, spud->unkregs, 0x010000);
@@ -1795,7 +1779,7 @@ s32 CALLBACK SPU2freeze(int mode, freezeData *data)
 	{
 		if (data->data == NULL) return -1;
 
-		if( disableEverything )
+		if( disableFreezes )
 		{
 			// No point in making a save state since the SPU2
 			// state is completely bogus anyway... Let's just
@@ -1971,7 +1955,8 @@ void StopVoices(int core, u32 value)
 // for now, pData is not used
 int CALLBACK SPU2setupRecording(int start, void* pData)
 {
-	if( disableEverything ) return 0;
+	// Don't record if we have a bogus state.
+	if( disableFreezes ) return 0;
 
 	if(start==0)
 	{

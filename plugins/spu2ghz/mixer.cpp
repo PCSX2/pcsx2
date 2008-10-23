@@ -534,15 +534,14 @@ static void __forceinline GetVoiceValues_Linear(V_Core& thiscore, V_Voice& vc, s
 	{
 		if(Interpolation==0) // || vc.SP == 0)
 		{
-			Value = vc.PV1;
+			Value = MulShr32su( vc.PV1, vc.ADSR.Value );
 		} 
 		else //if(Interpolation==1) //must be linear
 		{
 			s32 t0 = vc.PV2 - vc.PV1;
 			s32 t1 = vc.PV1<<12;
-			Value = t1 - (t0*vc.SP);
+			Value = MulShr32su( t1 - (t0*vc.SP), vc.ADSR.Value>>12 );
 		}
-		Value = MulShr32su( Value, vc.ADSR.Value>>12 );
 	}
 }
 
@@ -781,7 +780,7 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-void __fastcall ReadInputPV(V_Core& thiscore, s32& ValL,s32& ValR) 
+static void __forceinline __fastcall ReadInputPV(V_Core& thiscore, s32& ValL,s32& ValR) 
 {
 	s32 DL=0, DR=0;
 
@@ -800,6 +799,18 @@ void __fastcall ReadInputPV(V_Core& thiscore, s32& ValL,s32& ValR)
 
 	ValL=thiscore.ADMAPL;
 	ValR=thiscore.ADMAPR;
+
+	#ifndef PUBLIC
+	s32 InputPeak = max(abs(ValL),abs(ValR));
+	if(DebugCores[core].AutoDMAPeak<InputPeak) DebugCores[core].AutoDMAPeak=InputPeak;
+	#endif
+
+	// Apply volumes:
+	ValL *= thiscore.InpL;
+	ValR *= thiscore.InpR;
+	ValL >>= 1;
+	ValR >>= 1;
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1050,54 +1061,12 @@ static void __forceinline MixVoice( V_Core& thiscore, V_Voice& vc, s32& VValL, s
 
 static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 {
-	s32 InpL=0, InpR=0;
-
 	s32 RVL,RVR;
-	s32 TDL=0,TDR=0,TWL=0,TWR=0;
-	s32 SDL=0,SDR=0,SWL=0,SWR=0;
+	s32 TDL=0,TDR=0;
+	s32 SDL=0,SDR=0;
+	s32 SWL=0,SWR=0;
 
-	TDL=TDR=TWL=TWR=(s32)0;
-
-	if (core == 1) { //Core 0 doesn't have External input
-		spu2M_WriteFast( 0x800 + OutPos, (s16)(ExtL>>16) );
-		spu2M_WriteFast( 0xA00 + OutPos, (s16)(ExtR>>16) );
-	}
-	
 	V_Core& thiscore( Cores[core] );
-
-	if((core==0)&&((PlayMode&4)!=4))
-	{
-		ReadInputPV(thiscore, InpL,InpR);	// get input data from input buffers
-	}
-	if((core==1)&&((PlayMode&8)!=8))
-	{
-		ReadInputPV(thiscore, InpL,InpR);	// get input data from input buffers
-	}
-
-	#ifndef PUBLIC
-	s32 InputPeak = max(abs(InpL),abs(InpR));
-	if(DebugCores[core].AutoDMAPeak<InputPeak) DebugCores[core].AutoDMAPeak=InputPeak;
-	#endif
-	
-	//MulShr32( InpL, thiscore.InpL, 1 );
-	//MulShr32( InpR, thiscore.InpR, 1 );
-
-	// [Air] : InpL and InpR don't need 64 bit muls.
-
-	InpL *= thiscore.InpL;
-	InpR *= thiscore.InpR;
-	InpL >>= 1;
-	InpR >>= 1;
-
-	// shift inputs by 20 collectively, so that the result is
-	// effectively downshifted by 12:
-	ExtL = MulShr32su( ExtL<<3, ((int)thiscore.ExtL)<<16);
-	ExtR = MulShr32su( ExtR<<3, ((int)thiscore.ExtR)<<16);
-
-	//InpL = MulDiv(InpL,(thiscore.InpL),1<<1);
-	//InpR = MulDiv(InpR,(thiscore.InpR),1<<1);
-	//ExtL = MulDiv(ExtL,(thiscore.ExtL),1<<12);
-	//ExtR = MulDiv(ExtR,(thiscore.ExtR),1<<12);
 
 	SDL=SDR=SWL=SWR=(s32)0;
 
@@ -1120,41 +1089,45 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	spu2M_WriteFast( 0x1400 + (core<<12) + OutPos, (s16)(SWL>>16) );
 	spu2M_WriteFast( 0x1600 + (core<<12) + OutPos, (s16)(SWR>>16) );
 
+	// Mix in the Input data
+	TDL = OutL * thiscore.InpDryL;
+	TDR = OutR * thiscore.InpDryR;
+
 	// Mix in the Voice data
 	TDL += SDL * thiscore.SndDryL;
 	TDR += SDR * thiscore.SndDryR;
-	TWL += SWL * thiscore.SndWetL;
-	TWR += SWR * thiscore.SndWetR;
-
-	// Mix in the Input data
-	TDL += InpL * thiscore.InpDryL;
-	TDR += InpR * thiscore.InpDryR;
-	TWL += InpL * thiscore.InpWetL;
-	TWR += InpR * thiscore.InpWetR;
 
 	// Mix in the External (nothing/core0) data
 	TDL += ExtL * thiscore.ExtDryL;
 	TDR += ExtR * thiscore.ExtDryR;
-	TWL += ExtL * thiscore.ExtWetL; 
-	TWR += ExtR * thiscore.ExtWetR;
 	
 	if(EffectsEnabled)
 	{
+		s32 TWL=0,TWR=0;
+
+		// Mix Input, Voice, and External data:
+		TWL = OutL * thiscore.InpWetL;
+		TWR = OutR * thiscore.InpWetR;
+		TWL += SWL * thiscore.SndWetL;
+		TWR += SWR * thiscore.SndWetR;
+		TWL += ExtL * thiscore.ExtWetL; 
+		TWR += ExtR * thiscore.ExtWetR;
+
 		//Apply Effects
 		DoReverb( thiscore, RVL,RVR,TWL>>16,TWR>>16);
 
 		TWL=ApplyVolume(RVL,VOL(thiscore.FxL));
 		TWR=ApplyVolume(RVR,VOL(thiscore.FxR));
+
+		//Mix Wet,Dry
+		OutL=(TDL + TWL);
+		OutR=(TDR + TWR);
 	}
 	else
 	{
-		TWL=0;
-		TWR=0;
+		OutL = TDL;
+		OutR = TDR;
 	}
-
-	//Mix Wet,Dry
-	OutL=(TDL + TWL);
-	OutR=(TDR + TWR);
 
 	//Apply Master Volume
 	if( thiscore.MasterL.Mode & VOLFLAG_SLIDE_ENABLE )  UpdateVolume(thiscore.MasterL);
@@ -1170,17 +1143,6 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 		OutL=0;
 		OutR=0;
 	}
-
-	if((core==1)&&(PlayMode&8))
-	{
-		ReadInput(thiscore, OutL,OutR);
-	}
-
-	if((core==0)&&(PlayMode&4))
-	{
-		OutL=0;
-		OutR=0;
-	}
 }
 
 // used to throttle the output rate of cache stat reports
@@ -1190,11 +1152,45 @@ void __fastcall Mix()
 {
 	s32 ExtL=0, ExtR=0, OutL, OutR;
 
+	// ****  CORE ZERO  ****
+
 	core=0;
-	MixCore(ExtL,ExtR,0,0);
+	if( (PlayMode&4) != 4 )
+	{
+		// get input data from input buffers
+		ReadInputPV(Cores[0], ExtL, ExtR);
+	}
+
+	MixCore( ExtL, ExtR, 0, 0 );
+
+	if( PlayMode & 4 )
+	{
+		ExtL=0;
+		ExtR=0;
+	}
+
+	// Commit Core 0 output to ram before mixing Core 1:
+	ExtL>>=13;
+	ExtR>>=13;
+	spu2M_WriteFast( 0x800 + OutPos, ExtL>>3 );
+	spu2M_WriteFast( 0xA00 + OutPos, ExtR>>3 );
+
+	// ****  CORE ONE  ****
 
 	core=1;
-	MixCore(OutL,OutR,ExtL,ExtR);
+	if( (PlayMode&8) != 8 )
+	{
+		ReadInputPV(Cores[1], OutL, OutR);	// get input data from input buffers
+	}
+
+	// Apply volume to the external (Core 0) input data.
+
+	MixCore( OutL, OutR, ExtL*Cores[1].ExtL, ExtR*Cores[1].ExtR );
+
+	if( PlayMode & 8 )
+	{
+		ReadInput(Cores[1], OutL, OutR);
+	}
 
 #ifndef PUBLIC
 	static s32 Peak0,Peak1;

@@ -128,9 +128,9 @@ public:
 			{
 				//isWaiting=true;
 				LeaveCriticalSection(&cs);
-				ConLog( " * SPU2 : Waiting for object... " );
+				//ConLog( " * SPU2 : Waiting for object... " );
 				WaitForSingleObject(hSyncEvent,1000);
-				ConLog( " Signaled! \n" );
+				//ConLog( " Signaled! \n" );
 				EnterCriticalSection(&cs);
 #ifdef DYNAMIC_BUFFER_LIMITING
 				free = buffer_limit-data;
@@ -150,14 +150,28 @@ public:
 		//  several seconds).
 		//
 		// Compromise:
-		//  Same as with underruns below, an overrun can be handled by aborting
-		//  the write operation before the writepos goes past the readpos, and then
-		//  ignoring the rest of the incoming data.  The resultant sound will have
-		//  a single hiccup when an overflow occurs, instead of getting crapped out
-		//  for several seconds (or in many cases, until the SPU sndout driver was
-		//  manually reset.. grr!).
+		//  When an overrun occurs, we adapt by discarding a portion of the buffer.
+		//  The older portion of the buffer is discarded rather than incoming data,
+		//  so that the overall audio synchronization is better.
 		
 #ifndef DYNAMIC_BUFFER_LIMITING
+
+		if( data+nSamples > size )
+		{
+			// Buffer overrun!
+			// Dump samples from the read portion of the buffer instead of dropping
+			// the newly written stuff.
+
+			// Toss half the buffer plus whatever's being written anew:
+			s32 comp = (size / 2) + nSamples;
+			comp = (comp + 128) & ~127;	// probably not important but it makes the log look nicer. :P
+			if( comp > size ) comp = size;
+
+			data-=comp;
+			rpos=(rpos+comp)%size;
+			ConLog(" * SPU2 > Overrun Compensation (%d samples tossed)\n", size );
+		}
+
 		while(data<size && nSamples>0)
 		{
 			buffer[wpos] = *(bData++);
@@ -213,7 +227,13 @@ public:
 #ifndef DYNAMIC_BUFFER_LIMITING
 		if( underrun_freeze )
 		{
-			if( data < (int)(size * 0.85) )
+			// Let's fill up 80% of our buffer.
+			// (I just picked 80% arbitrarily.. there might be a better value)
+
+			int toFill = (int)(size * 0.80);
+			toFill = (toFill + 128) & ~127;	// probably not important but it makes the log look nicer. :P
+
+			if( data < toFill )
 			{
 				while( nSamples>0 )
 				{
@@ -225,7 +245,7 @@ public:
 			}
 
 			underrun_freeze = false;
-			//ConLog( " * SPU2 > Underrun Freeze Finished!\n" );
+			ConLog( " * SPU2 > Underrun compensation (%d samples buffered)\n", toFill );
 		}
 
 		while(data>0 && nSamples>0)
@@ -250,7 +270,6 @@ public:
 
 		if( data == 0 && !pw )
 		{
-			ConLog( " * SPU2 > Underrun compensation\n" );
 			underrun_freeze = true;
 		}
 

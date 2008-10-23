@@ -227,8 +227,6 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 void SPU2readDMA(int core, u16* pMem, u32 size) 
 {
-	if( disableEverything ) return;
-
 	if(hasPtr) TimeUpdate(*cPtr,1);
 
 	u32 i;
@@ -255,8 +253,6 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 
 void SPU2writeDMA(int core, u16* pMem, u32 size) 
 {
-	if( disableEverything ) return;
-
 	if(hasPtr) TimeUpdate(*cPtr,1);
 
 	Cores[core].DMAPtr=pMem;

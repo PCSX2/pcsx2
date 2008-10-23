@@ -127,12 +127,6 @@ public:
 			whbuffer[i].reserved=0;
 			waveOutPrepareHeader(hwodevice,whbuffer+i,sizeof(WAVEHDR));
 			whbuffer[i].dwFlags|=WHDR_DONE; //avoid deadlock
-
-			// Feed blocks into the device.
-			// It'll all be empty samples, but it helps reduce some of the pop-on-init.
-
-			//whbuffer[i].dwFlags&=~WHDR_DONE;
-			//waveOutWrite(hwodevice,&whbuffer[i],sizeof(WAVEHDR));
 		}
 
 		// Start Thread
