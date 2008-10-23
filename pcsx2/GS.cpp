@@ -106,7 +106,7 @@ void* GSThreadProc(void* idp);
 
 #endif
 
-static bool gsHasToExit=false;
+bool gsHasToExit=false;
 int g_FFXHack=0;
 
 #ifdef PCSX2_DEVBUILD
@@ -1471,7 +1471,6 @@ int HasToExit()
 }
 
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
-#pragma optimize ("", off)
 DWORD WINAPI GSThreadProc(LPVOID lpParam)
 {
 	HANDLE handles[2] = { g_hGsEvent, g_hVuGSExit };
@@ -1745,7 +1744,7 @@ ExitGS:
 	GSclose();
 	return 0;
 }
-#pragma optimize ("", on)
+
 int gsFreeze(gzFile f, int Mode) {
 
 	gzfreeze(PS2MEM_GS, 0x2000);
@@ -1838,4 +1837,3 @@ void RunGSState(gzFile f)
 #endif
 
 #undef GIFchain
-
