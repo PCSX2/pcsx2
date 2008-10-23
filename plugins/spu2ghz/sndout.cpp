@@ -169,6 +169,7 @@ public:
 
 			data-=comp;
 			rpos=(rpos+comp)%size;
+			timeStretchEnabled = true;
 			ConLog(" * SPU2 > Overrun Compensation (%d samples tossed)\n", size );
 		}
 
@@ -245,6 +246,7 @@ public:
 			}
 
 			underrun_freeze = false;
+			timeStretchEnabled = true;
 			ConLog( " * SPU2 > Underrun compensation (%d samples buffered)\n", toFill );
 		}
 
@@ -387,7 +389,7 @@ float valAccum1 = 1.0f;
 float valAccum2 = 1.0f;
 u32   numAccum = 1;
 
-const u32 numUpdates = 112;
+const u32 numUpdates = 160;
 
 float lastTempo=1;
 float cTempo=1;
@@ -454,7 +456,9 @@ void UpdateTempoChange()
 		float valAccum = 1.0f;
 		
 		valAccum = valAccum2 / valAccum1;
- 
+		
+		//ConLog( " * SPU2 Timestretch: ENABLED > tempo = %f\n",lastTempo);
+
 		if((valAccum < 1.04f) && (valAccum > 0.96f) /*&& (valAccum != 1)*/) 
 		{
 		//	printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
@@ -470,7 +474,12 @@ void UpdateTempoChange()
  
 		lastTempo = valAccum;
 		cTempo = valAccum;
- 
+
+		if (lastTempo == 1) {
+			timeStretchEnabled = false;
+		//	ConLog( " * SPU2 Timestretch: DISABLED > tempo = %f\n",lastTempo);
+		}
+
 		valAccum1 = 1.0f;
 		valAccum2 = 1.0f;
 		numAccum = 0;
