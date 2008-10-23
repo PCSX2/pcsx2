@@ -414,7 +414,8 @@ void UpdateTempoChange()
 	u32 cWritten;
 	u32 cRead;
 	u32 cInput = inputSamples;
- 
+	static short int runs =0;
+
 	s32 bufferUsage = sndBuffer->GetBufferUsage();
 	s32 bufferSize  = sndBuffer->GetBufferSize();
 //Emergency stretch to compensate for FPS fluctuations and keep the buffers happy
@@ -457,7 +458,7 @@ void UpdateTempoChange()
 		
 		valAccum = valAccum2 / valAccum1;
 		
-		//ConLog( " * SPU2 Timestretch: ENABLED > tempo = %f\n",lastTempo);
+		ConLog( " * SPU2 Timestretch: ENABLED > tempo = %f\n",lastTempo);
 
 		if((valAccum < 1.04f) && (valAccum > 0.96f) /*&& (valAccum != 1)*/) 
 		{
@@ -471,14 +472,20 @@ void UpdateTempoChange()
 		
 		if (valAccum != lastTempo) //only update soundtouch object when needed
 			pSoundTouch->setTempo(valAccum);
- 
+		
+		if (lastTempo == 1) {
+			runs++;
+				if (runs == 5) {
+					timeStretchEnabled = false;
+					ConLog( " * SPU2 Timestretch: DISABLED > tempo = %f\n",lastTempo);
+					runs = 0;
+				}
+		}
+		else runs = 0;
+
 		lastTempo = valAccum;
 		cTempo = valAccum;
 
-		if (lastTempo == 1) {
-			timeStretchEnabled = false;
-		//	ConLog( " * SPU2 Timestretch: DISABLED > tempo = %f\n",lastTempo);
-		}
 
 		valAccum1 = 1.0f;
 		valAccum2 = 1.0f;
