@@ -148,18 +148,19 @@ void psxRcntInit() {
 	psxRcntSet();
 }
 
-void psxVSyncStart() {
+void psxVBlankStart() {
 	cdvdVsync();
 	psxHu32(0x1070)|= 1;
 	if(psxvblankgate & 1) psxCheckStartGate(1);
 	if(psxvblankgate & (1 << 3)) psxCheckStartGate(3);
 }
 
-void psxVSyncEnd() {
+void psxVBlankEnd() {
 	psxHu32(0x1070)|= 0x800;
 	if(psxvblankgate & 1) psxCheckEndGate(1);
 	if(psxvblankgate & (1 << 3)) psxCheckEndGate(3);
 }
+
 void psxCheckEndGate(int counter) { //Check Gate events when Vsync Ends
 	int i = counter;
 	//SysPrintf("End Gate %x\n", counter);

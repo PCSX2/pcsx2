@@ -145,7 +145,7 @@ extern TESTRUNARGS g_TestRun;
 //#define PS2CLK   36864000	/* 294.912 mhz */
 //#define PSXCLK	 9216000	/* 36.864 Mhz */
 //#define PSXCLK	186864000	/* 36.864 Mhz */
-#define PS2CLK 294912000	/* 294.912 mhz */
+#define PS2CLK 294912000 //hz	/* 294.912 mhz */
 
 
 /* Config.PsxType == 1: PAL:

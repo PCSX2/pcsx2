@@ -67,13 +67,14 @@ void rcntSet() {
 	}
 
 	//Calculate HBlank
-	c = counters[4].CycleT - (cpuRegs.cycle - counters[4].sCycleT);//HBLANKCNT(0.5); 
-	if (c < nextCounter) nextCounter = c;
-	//if(nextCounter > 0x1000) SysPrintf("Nextcounter %x HBlank %x VBlank %x\n", nextCounter, c, counters[5].CycleT - (cpuRegs.cycle - counters[5].sCycleT));
-	
-	//Calculate VBlank
-	c = counters[5].CycleT - (cpuRegs.cycle - counters[5].sCycleT);//(VBLANKCNT(1) / 2);
-	if (c < nextCounter) nextCounter = c;
+	if (counters[4].mode & MODE_HBLANK) { //hBlank
+		if (Config.PsxType&1) { if (HBLANK_TIME_PAL < nextCounter) nextCounter = HBLANK_TIME_PAL; }
+		else if (HBLANK_TIME_NTSC < nextCounter) nextCounter = HBLANK_TIME_NTSC;
+	}
+	else { //not hBlank (drawing part of the scanline)
+		if (Config.PsxType&1) { if (HRENDER_TIME_PAL < nextCounter) nextCounter = HRENDER_TIME_PAL; }
+		else if (HRENDER_TIME_NTSC < nextCounter) nextCounter = HRENDER_TIME_NTSC;
+	}
 }
 
 void rcntInit() {
@@ -145,16 +146,16 @@ void UpdateVSyncRate() {
 	//else counters[5].rate = (Config.PsxType & 1) ? PS2VBLANK_PAL : PS2VBLANK_NTSC;
 
 	counters[4].mode &= ~0x10000;
-	counters[5].mode &= ~0x10000;
+	counters[5].mode &= ~0x30000;
 
-	counters[4].count = 1;
-	counters[5].count = 1;
-	counters[4].Cycle = 227000;
-	counters[5].Cycle = 720;
-	counters[4].CycleT = HBLANKCNT(1);
-	counters[5].CycleT = VBLANKCNT(1);
+	//counters[4].count = 1;
+	//counters[5].count = 1;
+	//counters[4].Cycle = 227000;
+	//counters[5].Cycle = 720;
+	//counters[4].CycleT = HBLANKCNT(1);
+	//counters[5].CycleT = VBLANKCNT(1);
 	counters[4].sCycleT = cpuRegs.cycle;
-	counters[5].sCycleT = cpuRegs.cycle;
+	//counters[5].sCycleT = cpuRegs.cycle;
 
 	if (Config.CustomFps > 0) {
 		iTicks = GetTickFrequency() / Config.CustomFps;
@@ -349,22 +350,18 @@ __forceinline void frameLimit()
 	}
 }
 
-void VSyncStart() // VSync Start (240 hsyncs) 
+__forceinline void VSyncStart() // VSync Start (240 hsyncs) 
 {
 	vSyncDebugStuff(); // EE Profiling and Debug code
 	if ((CSRw & 0x8)) GSCSRr|= 0x8;
 	if (!(GSIMR&0x800)) gsIrq(); //GS Irq
 
 	hwIntcIrq(2); // HW Irq
-	psxVSyncStart(); // psxCounters vSync Start
-	
 	if (Config.Patch) applypatch(1); // Apply patches (ToDo: clean up patch code)
-	if (gates) rcntStartGate(0x8); // Counters Start Gate code
-
-	counters[5].mode ^= 0x10000; // Alternate vSync Start/End
+	
 }
 
-void VSyncEnd() // VSync End (22 hsyncs)
+__forceinline void VSyncEnd() // VSync End (22 hsyncs)
 {
 	iFrame++;
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
@@ -378,16 +375,100 @@ void VSyncEnd() // VSync End (22 hsyncs)
         if( PAD2update != NULL ) PAD2update(1);
 	}
 
-	hwIntcIrq(3);  // HW Irq	
-	psxVSyncEnd(); // psxCounters vSync End
-	if (gates) rcntEndGate(0x8); // Counters End Gate Code
-
-	SysUpdate();  // check for and handle keyevents
+	hwIntcIrq(3);  // HW Irq
 	frameLimit(); // limit FPS (also handles frameskip and VUskip)
-
-	counters[5].mode ^= 0x10000; // Alternate vSync Start/End
 }
 
+__forceinline void VBlankStart()
+{
+	psxVBlankStart(); // psxCounters vSync Start
+	if (gates) rcntStartGate(0x8); // Counters Start Gate code
+}
+
+__forceinline void VBlankEnd()
+{
+	psxVBlankEnd(); // psxCounters vBlank End
+	if (gates) rcntEndGate(0x8); // Counters End Gate Code
+	SysUpdate();  // check for and handle keyevents
+}
+
+int hScanline() 
+{
+	u32 difference = (cpuRegs.cycle - counters[4].sCycleT);
+
+	if (counters[4].mode & MODE_HBLANK) { //HBLANK Start
+		if (difference >= HBLANK_TIME_ ) {
+			if (difference >= SCANLINE_) 
+				counters[4].count += (cpuRegs.cycle - counters[4].sCycleT) / SCANLINE_;
+			rcntStartGate(0);
+			psxCheckStartGate(0);
+			counters[4].sCycleT = cpuRegs.cycle;
+			counters[4].mode ^= MODE_HBLANK;
+		}
+	}
+	else { //HBLANK END / HRENDER Begin
+		if (difference >= (HRENDER_TIME_)) {
+			if (difference >= SCANLINE_) 
+				counters[4].count += difference / SCANLINE_;
+			if (CSRw & 0x4) GSCSRr |= 4; // signal
+			if (!(GSIMR&0x400)) gsIrq();
+			if (gates) rcntEndGate(0);
+			if (psxhblankgate) psxCheckEndGate(0);
+			counters[4].count++; //increment counter!
+			counters[4].sCycleT = cpuRegs.cycle;
+			counters[4].mode ^= MODE_HBLANK;
+
+			return 0;
+		}
+	}
+	return 1;
+}
+
+void vSync() 
+{
+	if (hScanline()) return; // render the next scanline; if no-change, then exit function
+
+	switch (counters[5].mode & 0x30000) {
+		case MODE_VRENDER: //vRender is running
+			if (counters[4].count > SCANLINES_VRENDER_) { // Check if should change state to VBlank
+				//VRENDER END/VBlank START CODE HERE
+				VBlankStart();
+				counters[4].count -= SCANLINES_VRENDER_;
+				counters[5].mode |= MODE_VBLANK; // Set to VBLANK MODE
+			}
+			break;
+		case MODE_VBLANK: //vBlank is running
+			if (counters[5].mode & MODE_VBLANK2) { //Check if should change state to VSYNC
+				if (counters[4].count > SCANLINES_VBLANK2_) {
+					//VBLANK END/VSYNC START CODE HERE
+					VSyncStart();
+					VBlankEnd();
+					counters[4].count -= SCANLINES_VBLANK2_;
+					counters[5].mode &= ~MODE_VBLANK; // Set to VSYNC MODE
+					counters[5].mode ^= MODE_VBLANK2;
+				}
+			}
+			else {
+				if (counters[4].count > SCANLINES_VBLANK1_) { //Check if should change state to VSYNC
+					//VBLANK END/VSYNC START CODE HERE
+					VSyncStart();
+					VBlankEnd();
+					counters[4].count -= SCANLINES_VBLANK1_;
+					counters[5].mode &= ~MODE_VBLANK; // Set to VSYNC MODE
+					counters[5].mode ^= MODE_VBLANK2;
+				}
+			}
+			break;
+		case MODE_VSYNC: //vSync is running
+			if (counters[4].count > SCANLINES_VSYNC_) { //Check if should change state to VRENDER
+				//VSYNC END/RENDER START CODE HERE
+				VSyncEnd();
+				counters[4].count -= SCANLINES_VSYNC_;
+				counters[5].mode |= MODE_VRENDER; // Set to VRENDER MODE
+			}
+			break;
+	}
+}
 
 void rcntUpdate()
 {
@@ -405,48 +486,30 @@ void rcntUpdate()
 		} 
 		else counters[i].sCycleT = cpuRegs.cycle;
 	}
-
-	if ((cpuRegs.cycle - counters[4].sCycleT) >= (u32)counters[4].CycleT) {
-		
+/*
+	if ((cpuRegs.cycle - counters[4].sCycleT) >= HBLANKCNT(0.5)) { //hBlank
 		if (counters[4].mode & 0x10000) {
 			if (CSRw & 0x4) GSCSRr |= 4; // signal
 			if (!(GSIMR&0x400)) gsIrq();
 			if (gates) rcntEndGate(0);
 			if (psxhblankgate) psxCheckEndGate(0);
-			counters[4].CycleT = HBLANKCNT(counters[4].count);
 		}
 		else {
-			if(counters[4].count >= counters[4].Cycle) {
-				//SysPrintf("%x of %x hblanks reorder in %x cycles cpuRegs.cycle = %x\n", counters[4].count, counters[4].Cycle, cpuRegs.cycle - counters[4].sCycleT, cpuRegs.cycle);								
-				counters[4].sCycleT += HBLANKCNT(counters[4].Cycle);
-				counters[4].count -= counters[4].Cycle;
-			}
-			counters[4].count++;
-			counters[4].CycleT = HBLANKCNT(counters[4].count) - (HBLANKCNT(0.5));
-			
 			rcntStartGate(0);
 			psxCheckStartGate(0);
 		}
 		counters[4].mode ^= 0x10000; // Alternate HBLANK Start/End
+		counters[4].sCycleT = cpuRegs.cycle;
 	}
-	
-	if ((cpuRegs.cycle - counters[5].sCycleT) >= counters[5].CycleT) {
-		
-		if (counters[5].mode & 0x10000) {
-			counters[5].CycleT = VBLANKCNT(counters[5].count);
-			VSyncEnd();
-		}
-		else {
-			if(counters[5].count >= counters[5].Cycle) { // If count >= 720
-				counters[5].sCycleT += VBLANKCNT(counters[5].Cycle);
-				counters[5].count -= counters[5].Cycle; // Count -= 720
-			}
-			counters[5].count++; // Count += 1
-			counters[5].CycleT = VBLANKCNT(counters[5].count) - (VBLANKCNT(1) / 2);
-			VSyncStart();
-		}
+
+	if ((cpuRegs.cycle - counters[5].sCycleT) >= (VBLANKCNT(1) / 2)) { //vBlank
+		if (counters[5].mode & 0x10000) VSyncEnd();
+		else VSyncStart();
+		counters[5].sCycleT = cpuRegs.cycle;
 	}
-	
+*/
+	vSync();
+
 	for (i=0; i<=3; i++) {
 		if (!(counters[i].mode & 0x80)) continue; // Stopped
 
@@ -539,10 +602,10 @@ void rcntWmode(int index, u32 value)
 	}
 	else gates &= ~(1<<index);
 	
-	if ((value & 0x580) == 0x580) { // If we need to compare the target value again, correct the target
+	/*if ((value & 0x580) == 0x580) { // If we need to compare the target value again, correct the target
 		//SysPrintf("EE Correcting target %x after mode write\n", index);
 		counters[index].target &= 0xffff;
-	}
+	}*/
 
 	rcntSet();
 }
@@ -576,6 +639,7 @@ void rcntStartGate(unsigned int mode) {
 		}
 	}
 }
+
 void rcntEndGate(unsigned int mode) {
 	int i;
 
@@ -600,6 +664,7 @@ void rcntEndGate(unsigned int mode) {
 		}
 	}
 }
+
 void rcntWtarget(int index, u32 value) {
 
 	EECNT_LOG("EE target write %d target %x value %x\n", index, counters[index].target, value);

@@ -48,8 +48,8 @@ u32  psxRcntRcount32(int index);
 u64  psxRcntCycles(int index);
 int  psxRcntFreeze(gzFile f, int Mode);
 
-void psxVSyncStart();
-void psxVSyncEnd();
+void psxVBlankStart();
+void psxVBlankEnd();
 void psxCheckStartGate(int counter);
 void psxCheckEndGate(int counter);
 
