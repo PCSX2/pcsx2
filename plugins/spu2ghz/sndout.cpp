@@ -156,7 +156,7 @@ public:
 		
 #ifndef DYNAMIC_BUFFER_LIMITING
 
-		if( data+nSamples > size )
+		if((data+nSamples > size) && !timeStretchEnabled)
 		{
 			// Buffer overrun!
 			// Dump samples from the read portion of the buffer instead of dropping
@@ -171,6 +171,7 @@ public:
 			rpos=(rpos+comp)%size;
 			timeStretchEnabled = true;
 			ConLog(" * SPU2 > Overrun Compensation (%d samples tossed)\n", size );
+			ConLog(" * SPU2 Timestretch: ENABLED\n");
 		}
 
 		while(data<size && nSamples>0)
@@ -226,7 +227,7 @@ public:
 		//  set buffer length in duration.
 
 #ifndef DYNAMIC_BUFFER_LIMITING
-		if( underrun_freeze )
+		if( underrun_freeze && !timeStretchEnabled)
 		{
 			// Let's fill up 80% of our buffer.
 			// (I just picked 80% arbitrarily.. there might be a better value)
@@ -247,8 +248,10 @@ public:
 
 			underrun_freeze = false;
 			timeStretchEnabled = true;
-			ConLog( " * SPU2 > Underrun compensation (%d samples buffered)\n", toFill );
+			ConLog(" * SPU2 > Underrun compensation (%d samples buffered)\n", toFill );
+			ConLog(" * SPU2 Timestretch: ENABLED\n");
 		}
+		else underrun_freeze = false;
 
 		while(data>0 && nSamples>0)
 		{
@@ -457,22 +460,18 @@ void UpdateTempoChange()
 		float valAccum = 1.0f;
 		
 		valAccum = valAccum2 / valAccum1;
-		
-		ConLog( " * SPU2 Timestretch: ENABLED > tempo = %f\n",lastTempo);
 
 		if((valAccum < 1.04f) && (valAccum > 0.96f) /*&& (valAccum != 1)*/) 
 		{
-		//	printf("Timestretch Debug > Playbackpeed: %f (difference disregarded, using 1.0).\n",valAccum);
 			valAccum = 1.0f;
 		}
-		/*else
-		{
-			printf("Timestretch Debug > Playbackpeed: %f\n",valAccum);
-		}*/
 		
 		if (valAccum != lastTempo) //only update soundtouch object when needed
 			pSoundTouch->setTempo(valAccum);
 		
+		lastTempo = valAccum;
+		cTempo = valAccum;
+
 		if (lastTempo == 1) {
 			runs++;
 				if (runs == 5) {
@@ -482,10 +481,6 @@ void UpdateTempoChange()
 				}
 		}
 		else runs = 0;
-
-		lastTempo = valAccum;
-		cTempo = valAccum;
-
 
 		valAccum1 = 1.0f;
 		valAccum2 = 1.0f;

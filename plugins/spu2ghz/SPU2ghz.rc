@@ -61,7 +61,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,354,198,54,15,NOT WS_TABSTOP
     GROUPBOX        "Effects (Reverb) Settings",IDC_STATIC,6,156,119,30
     CHECKBOX        "Enable Effect Processing",IDC_EFFECTS,12,168,95,10,NOT WS_TABSTOP
-    GROUPBOX        "Output Settings",IDC_STATIC,132,6,119,111
+    GROUPBOX        "Output Settings",IDC_STATIC,132,6,119,103
     LTEXT           "Buffer Size",IDC_STATIC,138,35,35,8,NOT WS_GROUP
     LTEXT           "Sample Rate",IDC_STATIC,139,19,42,8,NOT WS_GROUP
     GROUPBOX        "Mixing Settings",IDC_STATIC,6,6,119,80
@@ -90,16 +90,13 @@ BEGIN
     CONTROL         "AutoDMA Operations",IDC_MSGADMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,282,66,83,10
     CONTROL         "Voice Stop Events",IDC_MSGVOICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,42,75,10
     CONTROL         "Show In Console",IDC_MSGSHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,270,18,69,10
-    GROUPBOX        "Speed Limiter",IDC_STATIC,132,119,120,68
-    LTEXT           "The number value works better if it's in the 5-20 range. The buffer size works better in powers of 2 (1024/2048) specially in Vista.",IDC_STATIC,138,75,108,35
-    CONTROL         "Limit speed to output speed.",IDC_SPEEDLIMIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,132,108,12
+    LTEXT           "Size = 1024, Numbers = 10",IDC_STATIC,137,94,108,12
     PUSHBUTTON      "Configure...",IDC_OUTCONF,72,42,48,12
     LTEXT           "WARNING: The effects processing is experimental and _could_ hurt your ears .\n If that happens, tell me about what game, so I can fix it!",IDC_STATIC,20,191,255,21
-    GROUPBOX        "DSP && Stretching",IDC_STATIC,6,87,119,68
+    GROUPBOX        "DSP",IDC_STATIC,6,87,119,68
     CONTROL         "Enable Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,100,103,10
-    LTEXT           "(configure in the .ini)",IDC_STATIC,41,116,64,8
-    CONTROL         "Enable Timestretcher",IDC_TS_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,137,83,10
-    LTEXT           "Use this to time the FPS to SPU2. Makes the audio play at best speed when your games allow it.",IDC_STATIC,138,149,108,31
+    LTEXT           "(configure in the .ini)",IDC_STATIC,43,110,64,8
+    LTEXT           "Recommended:",IDC_STATIC,137,80,108,9
 END
 
 IDD_DEBUG DIALOGEX 0, 0, 326, 525

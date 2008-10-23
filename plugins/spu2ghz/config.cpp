@@ -229,7 +229,7 @@ void ReadSettings()
 	SampleRate=CfgReadInt("OUTPUT","Sample_Rate",48000);
 
 	CurBufferSize=CfgReadInt("OUTPUT","Buffer_Size",1024);
-	MaxBufferCount=CfgReadInt("OUTPUT","Buffer_Count",8);
+	MaxBufferCount=CfgReadInt("OUTPUT","Buffer_Count",10);
 	if(MaxBufferCount<3)	MaxBufferCount=3;
 	CurBufferCount=MaxBufferCount;
 
@@ -255,9 +255,9 @@ void ReadSettings()
 	dspPluginModule = CfgReadInt("DSP PLUGIN","ModuleNum",0);
 	dspPluginEnabled= CfgReadBool("DSP PLUGIN","Enabled",false);
 
-	timeStretchEnabled = CfgReadBool("DSP","Timestretch_Enable",false);
+	timeStretchEnabled = false; /*CfgReadBool("DSP","Timestretch_Enable",false);*/ //has to be false at init
 
-	LimiterToggleEnabled = CfgReadBool("KEYS","Limiter_Toggle_Enabled",true);
+	LimiterToggleEnabled = CfgReadBool("KEYS","Limiter_Toggle_Enabled",false);
 	LimiterToggle        = CfgReadInt ("KEYS","Limiter_Toggle",VK_SUBTRACT);
 
 	CfgReadStr("DirectSound Output (Stereo)","Device",DSoundDevice,255,"");
