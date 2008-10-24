@@ -211,7 +211,6 @@ static void recCFC2()
 
 static void recCTC2()
 {
-	SysPrintf("In recCTC2!");
 #ifdef __x86_64__
 	int mmreg;
 #endif
