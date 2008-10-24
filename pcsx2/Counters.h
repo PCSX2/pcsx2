@@ -26,6 +26,11 @@ typedef struct {
 	u32 CycleT, sCycleT;
 } Counter;
 
+//------------------------------------------------------------------
+// SPEED HACKS!!! (1 is normal) (They have inverse affects, only set 1 at a time)
+//------------------------------------------------------------------
+#define HBLANK_COUNTER_SPEED	1 //Set to '3' to double the speed of games like KHII
+#define HBLANK_TIMER_SLOWDOWN	1 //Set to '2' to increase the speed of games like God of War (FPS will be less, but game will be faster)
 
 //------------------------------------------------------------------
 // NTSC Timing Information!!! (some scanline info is guessed)
@@ -58,9 +63,9 @@ typedef struct {
 //------------------------------------------------------------------
 // PAL Timing Information!!!
 //------------------------------------------------------------------
-#define SCANLINE_		(u32)((Config.PsxType&1) ? SCANLINE_PAL : SCANLINE_NTSC)
-#define HRENDER_TIME_	(u32)((Config.PsxType&1) ? HRENDER_TIME_PAL : HRENDER_TIME_NTSC)
-#define HBLANK_TIME_	(u32)((Config.PsxType&1) ? HBLANK_TIME_PAL : HBLANK_TIME_NTSC)
+#define SCANLINE_		(u32)((Config.PsxType&1) ? SCANLINE_PAL : SCANLINE_NTSC) * HBLANK_TIMER_SLOWDOWN
+#define HRENDER_TIME_	(u32)((Config.PsxType&1) ? HRENDER_TIME_PAL : HRENDER_TIME_NTSC) * HBLANK_TIMER_SLOWDOWN
+#define HBLANK_TIME_	(u32)((Config.PsxType&1) ? HBLANK_TIME_PAL : HBLANK_TIME_NTSC) * HBLANK_TIMER_SLOWDOWN
 #define VSYNC_			(u32)((Config.PsxType&1) ? VSYNC_PAL : VSYNC_NTSC)
 
 #define SCANLINES_TOTAL_	(u32)((Config.PsxType&1) ? SCANLINES_TOTAL_PAL : SCANLINES_TOTAL_NTSC)
@@ -72,13 +77,13 @@ typedef struct {
 //------------------------------------------------------------------
 // vSync and hBlank Timing Modes
 //------------------------------------------------------------------
-#define MODE_VRENDER	0x10000	//Set during the Render/Frame Scanlines
-#define MODE_VSYNC		0x00000 //Set during the Syncing Scanlines
-#define MODE_VBLANK		0x30000	//Set during the Blanking Scanlines
-#define MODE_VBLANK2	0x40000	//Set during the Blanking Scanlines (half-frame 2)
-//#define MODE_DO_ONCE	0x80000	//Do the code once per change of state
-#define MODE_HRENDER	0x00000	//Set for ~5/6 of 1 Scanline
-#define MODE_HBLANK		0x10000	//Set for the remaining ~1/6 of 1 Scanline
+#define MODE_VRENDER	0x0		//Set during the Render/Frame Scanlines
+#define MODE_VBLANK		0x1		//Set during the Blanking Scanlines
+#define MODE_VSYNC		0x3		//Set during the Syncing Scanlines
+#define MODE_VBLANK1	0x0		//Set during the Blanking Scanlines (half-frame 1)
+#define MODE_VBLANK2	0x1		//Set during the Blanking Scanlines (half-frame 2)
+#define MODE_HRENDER	0x0		//Set for ~5/6 of 1 Scanline
+#define MODE_HBLANK		0x1		//Set for the remaining ~1/6 of 1 Scanline
 
 
 extern Counter counters[6];

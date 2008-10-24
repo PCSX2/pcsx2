@@ -91,9 +91,6 @@ void rcntInit() {
 	counters[2].interrupt = 11;
 	counters[3].interrupt = 12;
 
-	counters[4].mode = 0x3c0; // The VSync counter mode
-	counters[5].mode = 0x3c0;
-
 	UpdateVSyncRate();
 
 #ifdef _WIN32
@@ -142,20 +139,12 @@ u64 GetCPUTicks()
 
 void UpdateVSyncRate() {
 
-	//if(Config.PsxType & 2)counters[5].rate = (Config.PsxType & 1) ?  PS2VBLANK_PAL_INT : PS2VBLANK_NTSC_INT;
-	//else counters[5].rate = (Config.PsxType & 1) ? PS2VBLANK_PAL : PS2VBLANK_NTSC;
+	counters[4].count = 0;
+	counters[4].mode = MODE_HRENDER; // Counter 4 takes care of hBlanks
+	counters[4].sCycle = cpuRegs.cycle; // Update Counter 4's Start Cycle
 
-	counters[4].mode &= ~0x10000;
-	counters[5].mode &= ~0x30000;
-
-	//counters[4].count = 1;
-	//counters[5].count = 1;
-	//counters[4].Cycle = 227000;
-	//counters[5].Cycle = 720;
-	//counters[4].CycleT = HBLANKCNT(1);
-	//counters[5].CycleT = VBLANKCNT(1);
-	counters[4].sCycleT = cpuRegs.cycle;
-	//counters[5].sCycleT = cpuRegs.cycle;
+	counters[5].mode = MODE_VRENDER; // Counter 5 takes care of vSync/vBlanks
+	counters[5].rate = MODE_VBLANK1;
 
 	if (Config.CustomFps > 0) {
 		iTicks = GetTickFrequency() / Config.CustomFps;
@@ -394,28 +383,32 @@ __forceinline void VBlankEnd()
 
 int hScanline() 
 {
-	u32 difference = (cpuRegs.cycle - counters[4].sCycleT);
+	u32 difference = (cpuRegs.cycle - counters[4].sCycle);
 
 	if (counters[4].mode & MODE_HBLANK) { //HBLANK Start
 		if (difference >= HBLANK_TIME_ ) {
-			if (difference >= SCANLINE_) 
-				counters[4].count += (cpuRegs.cycle - counters[4].sCycleT) / SCANLINE_;
+			if (difference >= (SCANLINE_ + HBLANK_TIME_)) {
+				//SysPrintf("Counters Optimization 1\n");
+				counters[4].count += (cpuRegs.cycle - counters[4].sCycle) / (SCANLINE_ + HBLANK_TIME_);
+			}
 			rcntStartGate(0);
 			psxCheckStartGate(0);
-			counters[4].sCycleT = cpuRegs.cycle;
+			counters[4].sCycle = cpuRegs.cycle;
 			counters[4].mode ^= MODE_HBLANK;
 		}
 	}
 	else { //HBLANK END / HRENDER Begin
 		if (difference >= (HRENDER_TIME_)) {
-			if (difference >= SCANLINE_) 
-				counters[4].count += difference / SCANLINE_;
+			if (difference >= (SCANLINE_ + HRENDER_TIME_)) {
+				//SysPrintf("Counters Optimization 2\n");
+				counters[4].count += (cpuRegs.cycle - counters[4].sCycle) / (SCANLINE_ + HRENDER_TIME_);
+			}
 			if (CSRw & 0x4) GSCSRr |= 4; // signal
 			if (!(GSIMR&0x400)) gsIrq();
 			if (gates) rcntEndGate(0);
 			if (psxhblankgate) psxCheckEndGate(0);
-			counters[4].count++; //increment counter!
-			counters[4].sCycleT = cpuRegs.cycle;
+			counters[4].count += HBLANK_COUNTER_SPEED; //increment counter!
+			counters[4].sCycle = cpuRegs.cycle;
 			counters[4].mode ^= MODE_HBLANK;
 
 			return 0;
@@ -428,43 +421,43 @@ void vSync()
 {
 	if (hScanline()) return; // render the next scanline; if no-change, then exit function
 
-	switch (counters[5].mode & 0x30000) {
+	switch (counters[5].mode) {
 		case MODE_VRENDER: //vRender is running
 			if (counters[4].count > SCANLINES_VRENDER_) { // Check if should change state to VBlank
-				//VRENDER END/VBlank START CODE HERE
+				//VRENDER END/VBLANK START CODE HERE:
 				VBlankStart();
 				counters[4].count -= SCANLINES_VRENDER_;
-				counters[5].mode |= MODE_VBLANK; // Set to VBLANK MODE
+				counters[5].mode = MODE_VBLANK; // Set to VBLANK MODE
 			}
 			break;
 		case MODE_VBLANK: //vBlank is running
-			if (counters[5].mode & MODE_VBLANK2) { //Check if should change state to VSYNC
-				if (counters[4].count > SCANLINES_VBLANK2_) {
-					//VBLANK END/VSYNC START CODE HERE
-					VSyncStart();
+			if (counters[5].rate == MODE_VBLANK1) {
+				if (counters[4].count > SCANLINES_VBLANK1_) { //Check if should change state to VSYNC
+					//VBLANK END/VSYNC START CODE HERE:
 					VBlankEnd();
-					counters[4].count -= SCANLINES_VBLANK2_;
-					counters[5].mode &= ~MODE_VBLANK; // Set to VSYNC MODE
-					counters[5].mode ^= MODE_VBLANK2;
+					VSyncStart();
+					counters[4].count -= SCANLINES_VBLANK1_;
+					counters[5].mode = MODE_VSYNC; // Set to VSYNC MODE
+					counters[5].rate = MODE_VBLANK2;
 				}
 			}
 			else {
-				if (counters[4].count > SCANLINES_VBLANK1_) { //Check if should change state to VSYNC
-					//VBLANK END/VSYNC START CODE HERE
-					VSyncStart();
+				if (counters[4].count > SCANLINES_VBLANK2_) { //Check if should change state to VSYNC
+					//VBLANK END/VSYNC START CODE HERE:
 					VBlankEnd();
-					counters[4].count -= SCANLINES_VBLANK1_;
-					counters[5].mode &= ~MODE_VBLANK; // Set to VSYNC MODE
-					counters[5].mode ^= MODE_VBLANK2;
+					VSyncStart();
+					counters[4].count -= SCANLINES_VBLANK2_;
+					counters[5].mode = MODE_VSYNC; // Set to VSYNC MODE
+					counters[5].rate = MODE_VBLANK1;
 				}
 			}
 			break;
 		case MODE_VSYNC: //vSync is running
 			if (counters[4].count > SCANLINES_VSYNC_) { //Check if should change state to VRENDER
-				//VSYNC END/RENDER START CODE HERE
+				//VSYNC END/RENDER START CODE HERE:
 				VSyncEnd();
 				counters[4].count -= SCANLINES_VSYNC_;
-				counters[5].mode |= MODE_VRENDER; // Set to VRENDER MODE
+				counters[5].mode = MODE_VRENDER; // Set to VRENDER MODE
 			}
 			break;
 	}
@@ -486,28 +479,7 @@ void rcntUpdate()
 		} 
 		else counters[i].sCycleT = cpuRegs.cycle;
 	}
-/*
-	if ((cpuRegs.cycle - counters[4].sCycleT) >= HBLANKCNT(0.5)) { //hBlank
-		if (counters[4].mode & 0x10000) {
-			if (CSRw & 0x4) GSCSRr |= 4; // signal
-			if (!(GSIMR&0x400)) gsIrq();
-			if (gates) rcntEndGate(0);
-			if (psxhblankgate) psxCheckEndGate(0);
-		}
-		else {
-			rcntStartGate(0);
-			psxCheckStartGate(0);
-		}
-		counters[4].mode ^= 0x10000; // Alternate HBLANK Start/End
-		counters[4].sCycleT = cpuRegs.cycle;
-	}
 
-	if ((cpuRegs.cycle - counters[5].sCycleT) >= (VBLANKCNT(1) / 2)) { //vBlank
-		if (counters[5].mode & 0x10000) VSyncEnd();
-		else VSyncStart();
-		counters[5].sCycleT = cpuRegs.cycle;
-	}
-*/
 	vSync();
 
 	for (i=0; i<=3; i++) {
