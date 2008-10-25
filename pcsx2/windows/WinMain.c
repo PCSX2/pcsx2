@@ -140,7 +140,16 @@ void RunExecute(int run) {
 	if( GSsetGameCRC != NULL )
 		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
 
-	if (run) Cpu->Execute();
+	if (run)
+	{
+		// This makes sure the Windows Kernel is using high resolution
+		// timeslices for Sleep calls.
+		// (may not make much difference on most desktops but
+		//  can improve performance a lot on laptops).
+		timeBeginPeriod( 1 );
+		Cpu->Execute();
+		timeEndPeriod( 1 );
+	}
 }
 
 int Slots[5] = { -1, -1, -1, -1, -1 };
@@ -419,7 +428,7 @@ BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	char *lang;
 	int i;
-	
+
 #ifdef PCSX2_VIRTUAL_MEM
 	LPVOID lpMemReserved;
 #endif

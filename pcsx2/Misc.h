@@ -363,5 +363,15 @@ extern __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Val
 //#define InterlockedExchangePointerAdd InterlockedExchangeAdd
 //#endif
 
+// Timeslice releaser for those many idle loop spots through out PCSX2.
+static __forceinline void _TIMESLICE()
+{
+#ifdef _WIN32
+	    Sleep(0);
+#else
+	    usleep(500);
+#endif
+}
+
 #endif /* __MISC_H__ */
 

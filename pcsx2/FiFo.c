@@ -162,11 +162,7 @@ void WriteFIFO(u32 mem, u64 *value) {
 		//commiting every 16 bytes
 		while( FIFOto_write((void*)value, 1) == 0 ) {
 			SysPrintf("IPU sleeping\n");
-#ifdef _WIN32
-			Sleep(1);
-#else
-			usleep(500);
-#endif
+			_TIMESLICE();
 		}
 	} else {
 		SysPrintf("WriteFIFO Unknown %x\n", mem);

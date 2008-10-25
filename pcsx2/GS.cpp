@@ -230,11 +230,7 @@ void gsWaitGS()
     }
     else {
 	    while( g_pGSRingPos != g_pGSWritePos ) {
-#ifdef _WIN32
-		    Sleep(1);
-#else
-		    usleep(500);
-#endif
+			_TIMESLICE();
 	    }
     }
 }
@@ -305,11 +301,7 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 		while( writepos < tempbuf || tempbuf == GS_RINGBUFFERBASE ) {
 			if( !CHECK_DUALCORE ) {
 				GS_SETEVENT();
-#ifdef _WIN32
-				Sleep(1);
-#else
-				usleep(500);
-#endif
+				_TIMESLICE();
 			}
 			tempbuf = *(volatile PU8*)&g_pGSRingPos;
 
@@ -329,11 +321,7 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
         while(tempbuf == GS_RINGBUFFERBASE && tempbuf != *(volatile PU8*)&g_pGSWritePos) {
             if( !CHECK_DUALCORE ) {
 				GS_SETEVENT();
-#ifdef _WIN32
-				Sleep(1);
-#else
-				usleep(500);
-#endif
+				_TIMESLICE();
 			}
 
             tempbuf = *(volatile PU8*)&g_pGSRingPos;
@@ -343,11 +331,7 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 	while( writepos < tempbuf && (writepos+size >= tempbuf || (writepos+size == GS_RINGBUFFEREND && tempbuf == GS_RINGBUFFERBASE)) ) {
 		if( !CHECK_DUALCORE ) {
 			GS_SETEVENT();
-#ifdef _WIN32
-			Sleep(1);
-#else
-			usleep(500);
-#endif
+			_TIMESLICE();
 		}
 		tempbuf = *(volatile PU8*)&g_pGSRingPos;
 
@@ -373,11 +357,7 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 		do {
 			if( !CHECK_DUALCORE ) {
 				GS_SETEVENT();
-#ifdef _WIN32
-				Sleep(1);
-#else
-				usleep(500);
-#endif
+				_TIMESLICE();
 			}
 			tempbuf = *(volatile PU8*)&g_pGSRingPos;
 
@@ -397,11 +377,7 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
         while(tempbuf == GS_RINGBUFFERBASE && tempbuf != *(volatile PU8*)&g_pGSWritePos) {
             if( !CHECK_DUALCORE ) {
 				GS_SETEVENT();
-#ifdef _WIN32
-				Sleep(1);
-#else
-				usleep(500);
-#endif
+				_TIMESLICE();
 			}
 
             tempbuf = *(volatile PU8*)&g_pGSRingPos;
@@ -1471,6 +1447,7 @@ int HasToExit()
 }
 
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
+//#pragma optimize ("",off) //needed for a working PGO build
 DWORD WINAPI GSThreadProc(LPVOID lpParam)
 {
 	HANDLE handles[2] = { g_hGsEvent, g_hVuGSExit };
@@ -1744,7 +1721,7 @@ ExitGS:
 	GSclose();
 	return 0;
 }
-
+//#pragma optimize ("",on) //needed for a working PGO build
 int gsFreeze(gzFile f, int Mode) {
 
 	gzfreeze(PS2MEM_GS, 0x2000);

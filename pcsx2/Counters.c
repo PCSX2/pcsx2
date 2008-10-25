@@ -175,7 +175,7 @@ void FrameLimiter()
 		if ((diff>>3)>iTicks) iExpectedEnd=iEnd;
 	}
 	else do {
-		Sleep(1);
+		_TIMESLICE();
 		iEnd = GetCPUTicks();
 	} while (iEnd<iExpectedEnd);
 
