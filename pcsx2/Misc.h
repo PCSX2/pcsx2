@@ -23,6 +23,10 @@
 #include <malloc.h>
 #include <assert.h>
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 // compile-time assert
 #ifndef C_ASSERT
 #define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
