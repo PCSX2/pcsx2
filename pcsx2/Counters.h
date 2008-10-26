@@ -61,7 +61,7 @@ typedef struct {
 #define SCANLINES_VBLANK2_PAL	20  // scanlines used for vblank2 (odd interlace)
 
 //------------------------------------------------------------------
-// PAL Timing Information!!!
+// Timing (PAL/NTSC) Information!!!
 //------------------------------------------------------------------
 #define SCANLINE_		(u32)((Config.PsxType&1) ? SCANLINE_PAL : SCANLINE_NTSC) * HBLANK_TIMER_SLOWDOWN
 #define HRENDER_TIME_	(u32)((Config.PsxType&1) ? HRENDER_TIME_PAL : HRENDER_TIME_NTSC) * HBLANK_TIMER_SLOWDOWN

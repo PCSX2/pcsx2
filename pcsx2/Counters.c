@@ -139,12 +139,12 @@ u64 GetCPUTicks()
 
 void UpdateVSyncRate() {
 
-	counters[4].count = 0;
-	counters[4].mode = MODE_HRENDER; // Counter 4 takes care of hBlanks
-	counters[4].sCycle = cpuRegs.cycle; // Update Counter 4's Start Cycle
+	counters[4].count = 0; // Set number of scanlines/hblanks to zero
+	counters[4].mode = MODE_HRENDER; // Counter 4 takes care of scanlines, so set the mode to HRENDER (drawing part of scanline)
+	counters[4].sCycle = cpuRegs.cycle; // Update Counter 4's Start Cycle to match CPU's cycle
 
 	counters[5].mode = MODE_VRENDER; // Counter 5 takes care of vSync/vBlanks
-	counters[5].rate = MODE_VBLANK1;
+	counters[5].rate = MODE_VBLANK1; // Rate is just used to alternate between vBlank1 and vBlank2 modes (because of interlacing, one half-frame can have a different number of vBlank scanlines)
 
 	if (Config.CustomFps > 0) {
 		iTicks = GetTickFrequency() / Config.CustomFps;
@@ -381,16 +381,28 @@ __forceinline void VBlankEnd()
 	SysUpdate();  // check for and handle keyevents
 }
 
+#define hScanlineOptimization(diff, compareValue, incrementCounters) { \
+	if (diff >= compareValue) {  \
+		u32 increment = (diff / compareValue);  \
+		SysPrintf("Counters Optimization\n");  \
+		counters[4].count += increment;  \
+		if (incrementCounters) {  \
+			/*Update counters using the hblank as the clock*/  \
+			if ((counters[0].mode & 0x83) == 0x83) counters[0].count += (increment * HBLANK_COUNTER_SPEED);  \
+			if ((counters[1].mode & 0x83) == 0x83) counters[1].count += (increment * HBLANK_COUNTER_SPEED);  \
+			if ((counters[2].mode & 0x83) == 0x83) counters[2].count += (increment * HBLANK_COUNTER_SPEED);  \
+			if ((counters[3].mode & 0x83) == 0x83) counters[3].count += (increment * HBLANK_COUNTER_SPEED);  \
+		}  \
+	}  \
+}
+
 int hScanline() 
 {
 	u32 difference = (cpuRegs.cycle - counters[4].sCycle);
 
 	if (counters[4].mode & MODE_HBLANK) { //HBLANK Start
 		if (difference >= HBLANK_TIME_ ) {
-			if (difference >= (SCANLINE_ + HBLANK_TIME_)) {
-				//SysPrintf("Counters Optimization 1\n");
-				counters[4].count += (cpuRegs.cycle - counters[4].sCycle) / (SCANLINE_ + HBLANK_TIME_);
-			}
+			//hScanlineOptimization(difference, (SCANLINE_ + HBLANK_TIME_), 1);
 			rcntStartGate(0);
 			psxCheckStartGate(0);
 			counters[4].sCycle = cpuRegs.cycle;
@@ -399,10 +411,7 @@ int hScanline()
 	}
 	else { //HBLANK END / HRENDER Begin
 		if (difference >= (HRENDER_TIME_)) {
-			if (difference >= (SCANLINE_ + HRENDER_TIME_)) {
-				//SysPrintf("Counters Optimization 2\n");
-				counters[4].count += (cpuRegs.cycle - counters[4].sCycle) / (SCANLINE_ + HRENDER_TIME_);
-			}
+			//hScanlineOptimization(difference, (SCANLINE_ + HRENDER_TIME_), 0);
 			if (CSRw & 0x4) GSCSRr |= 4; // signal
 			if (!(GSIMR&0x400)) gsIrq();
 			if (gates) rcntEndGate(0);
@@ -411,10 +420,10 @@ int hScanline()
 			counters[4].sCycle = cpuRegs.cycle;
 			counters[4].mode ^= MODE_HBLANK;
 
-			return 0;
+			return 0; // Count Incremented
 		}
 	}
-	return 1;
+	return 1; // Count not Incremented
 }
 
 void vSync() 
@@ -559,7 +568,7 @@ void rcntWmode(int index, u32 value)
 		case 0: counters[index].rate = 2; break;
 		case 1: counters[index].rate = 32; break;
 		case 2: counters[index].rate = 512; break;
-		case 3: counters[index].rate = PS2HBLANK; break;
+		case 3: counters[index].rate = SCANLINE_; break;
 	}
 	
 	if((counters[index].mode & 0xF) == 0x7) {
@@ -587,19 +596,14 @@ void rcntStartGate(unsigned int mode) {
 
 	for (i=0; i <=3; i++) { //Gates for counters
 
-		if ((mode == 0) && ((counters[i].mode & 0x83) == 0x83)) counters[i].count++; //Update counters using the hblank as the clock
+		if ((mode == 0) && ((counters[i].mode & 0x83) == 0x83)) counters[i].count += HBLANK_COUNTER_SPEED; //Update counters using the hblank as the clock
 		if (!(gates & (1<<i))) continue;
 		if ((counters[i].mode & 0x8) != mode) continue;
 
-		//SysPrintf("Gate %d mode %d Start\n", i, (counters[i].mode & 0x30) >> 4);
 		switch (counters[i].mode & 0x30) {
 			case 0x00: //Count When Signal is low (off)
-				counters[i].count = rcntRcount(i);
 				rcntUpd(i);
-				counters[i].mode &= ~0x80;
-				break;
-			case 0x20: //Reset and start counting on Vsync end
-				//Do Nothing
+				counters[i].mode |= 0x80;
 				break;
 			case 0x10: //Reset and start counting on Vsync start
 			case 0x30: //Reset and start counting on Vsync start and end
@@ -607,7 +611,6 @@ void rcntStartGate(unsigned int mode) {
 				rcntReset(i);
 				counters[i].target &= 0xffff;
 				break;
-			
 		}
 	}
 }
@@ -618,14 +621,12 @@ void rcntEndGate(unsigned int mode) {
 	for(i=0; i <=3; i++) { //Gates for counters
 		if (!(gates & (1<<i))) continue;
 		if ((counters[i].mode & 0x8) != mode) continue;
-		//SysPrintf("Gate %d mode %d End\n", i, (counters[i].mode & 0x30) >> 4);
+
 		switch (counters[i].mode & 0x30) {
 			case 0x00: //Count When Signal is low (off)
+				counters[i].count = rcntRcount(i);
 				rcntUpd(i);
-				counters[i].mode |= 0x80;
-				break;
-			case 0x10: //Reset and start counting on Vsync start
-				//Do Nothing
+				counters[i].mode &= ~0x80;
 				break;
 			case 0x20: //Reset and start counting on Vsync end
 			case 0x30: //Reset and start counting on Vsync start and end
