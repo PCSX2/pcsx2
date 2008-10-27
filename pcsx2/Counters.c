@@ -140,7 +140,6 @@ u64 GetCPUTicks()
 
 void UpdateVSyncRate() {
 
-	counters[4].count = 0; // Set number of scanlines/hblanks to zero
 	counters[4].mode = MODE_HRENDER; // Counter 4 takes care of scanlines, so set the mode to HRENDER (drawing part of scanline)
 	counters[4].sCycle = cpuRegs.cycle; // Update Counter 4's Start Cycle to match CPU's cycle
 
@@ -427,7 +426,7 @@ void vSync()
 {
 	hScanline();
 
-	if ((cpuRegs.cycle - counters[5].sCycle) >= (VSYNC_ / 2)) {
+	if ((cpuRegs.cycle - counters[5].sCycle) >= (VSYNC_HALF_)) {
 		if (counters[5].mode == MODE_VSYNC) {
 			VSyncEnd();
 			counters[5].mode = MODE_VRENDER;
