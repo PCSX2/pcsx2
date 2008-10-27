@@ -48,7 +48,7 @@ void _EraseMCDBlock(u32 adr) {
 	EraseMcd(sio.CtrlReg&0x2000?2:1, adr);
 }
 
-unsigned char xor(unsigned char *buf, unsigned int length){
+unsigned char sio_xor(unsigned char *buf, unsigned int length){
 	register unsigned char i, x;
 
 	for (x=0, i=0; i<length; i++)	x ^= buf[i];
@@ -346,14 +346,14 @@ void SIO_CommandWrite(u8 value,int way) {
 #endif
 				} else
 				if (sio.parp==sio.bufcount-2) {
-					if (xor(&sio.buf[3], sio.bufcount-5)==value) {
+					if (sio_xor(&sio.buf[3], sio.bufcount-5)==value) {
                         _SaveMcd(&sio.buf[3], (512+16)*sio.sector+sio.k, sio.bufcount-5);
 						sio.buf[sio.bufcount-1]=value;
 						sio.k+=sio.bufcount-5;
 					}else {
 #ifdef MEMCARDS_LOG
 						MEMCARDS_LOG("MC(%d) write XOR value error 0x%02X != ^0x%02X\n",
-							((sio.CtrlReg&0x2000)>>13)+1, value, xor(&sio.buf[3], sio.bufcount-5));
+							((sio.CtrlReg&0x2000)>>13)+1, value, sio_xor(&sio.buf[3], sio.bufcount-5));
 #endif
 					}
 				}
@@ -376,7 +376,7 @@ void SIO_CommandWrite(u8 value,int way) {
 					}
 
 					sio.k+=value;
-					sio.buf[sio.bufcount-1]=xor(&sio.buf[4], value);
+					sio.buf[sio.bufcount-1]=sio_xor(&sio.buf[4], value);
 					sio.buf[sio.bufcount]=sio.terminator;
 				}
 				break;

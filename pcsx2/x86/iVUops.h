@@ -21,21 +21,21 @@
 #endif
 
 #define REC_VUOP(VU, f) { \
-	_freeXMMregs(&VU); \
+	_freeXMMregs(/*&VU*/); \
     X86_32CODE(_freeMMXregs(); SetFPUstate();) \
 	MOV32ItoM((uptr)&VU.code, (u32)VU.code); \
 	CALLFunc((uptr)VU##MI_##f); \
 }
 
 #define REC_VUOPFLAGS(VU, f) { \
-	_freeXMMregs(&VU); \
+	_freeXMMregs(/*&VU*/); \
 	X86_32CODE(_freeMMXregs(); SetFPUstate();) \
 	MOV32ItoM((uptr)&VU.code, (u32)VU.code); \
 	CALLFunc((uptr)VU##MI_##f); \
 }
 
 #define REC_VUBRANCH(VU, f) { \
-	_freeXMMregs(&VU); \
+	_freeXMMregs(/*&VU*/); \
 	X86_32CODE(_freeMMXregs(); SetFPUstate();) \
 	MOV32ItoM((uptr)&VU.code, (u32)VU.code); \
 	MOV32ItoM((uptr)&VU.VI[REG_TPC].UL, (u32)pc); \

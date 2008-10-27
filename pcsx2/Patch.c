@@ -22,12 +22,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "PsxCommon.h"
 
 #include "Paths.h"
 
 #ifdef _WIN32
 #include "windows/cheats/cheats.h"
+#else
+#include <stdio.h>
+#include <ctype.h>
 #endif
 
 #ifdef _MSC_VER

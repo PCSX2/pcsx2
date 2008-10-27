@@ -3,8 +3,8 @@ AC_INIT(pcsx2,0.9.4,zerofrog@gmail.com)
 AM_INIT_AUTOMAKE(pcsx2,0.9.4)
 
 AC_PROG_CC([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
-AC_PROG_CXX([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
-AC_PROG_CPP([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
+AC_PROG_CXX([g++ gcc cl KCC CC cxx cc++ xlC aCC c++])
+AC_PROG_CPP([g++ gcc cl KCC CC cxx cc++ xlC aCC c++])
 
 AC_PROG_RANLIB
 

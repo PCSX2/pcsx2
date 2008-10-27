@@ -24,7 +24,7 @@
 #include "Cache.h"
 
 #ifndef PCSX2_VIRTUAL_MEM
-_cacheS pCache[64];
+/*_cacheS pCache[64];*/
 int getFreeCache(u32 mem, int mode, int * way) {
 	u8 * out;
 	u32 paddr;

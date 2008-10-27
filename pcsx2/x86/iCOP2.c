@@ -102,10 +102,10 @@ void _vuRegs_C2UNK(VURegs * VU, _VURegsNum *VUregsn)
 
 void _vuRegsCOP22(VURegs * VU, _VURegsNum *VUregsn);
 
-void (*recCOP2t[32])();
+/*void (*recCOP2t[32])();
 void (*recCOP2_BC2t[32])();
 void (*recCOP2SPECIAL1t[64])();
-void (*recCOP2SPECIAL2t[128])();
+void (*recCOP2SPECIAL2t[128])();*/
 
 void recCOP2();
 void recCOP2_SPECIAL();

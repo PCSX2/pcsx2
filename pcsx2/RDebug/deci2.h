@@ -54,8 +54,9 @@ typedef struct tag_DECI2_DBGP_BRK{
 #define RUN		1
 
 extern DECI2_DBGP_BRK	ebrk[32], ibrk[32];
-extern int				ebrk_count, ibrk_count;
-extern int				runStatus, runCode, runCount;
+extern int ebrk_count, ibrk_count;
+extern volatile long runStatus;
+extern int runCode, runCount;
 
 #ifdef _WIN32
 extern HANDLE			runEvent;					//i don't like this;

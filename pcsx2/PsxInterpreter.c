@@ -64,12 +64,12 @@ static u32 branchPC;
 }
 
 // Subsets
-void (*psxBSC[64])();
-void (*psxSPC[64])();
-void (*psxREG[32])();
-void (*psxCP0[32])();
-void (*psxCP2[64])();
-void (*psxCP2BSC[32])();
+extern void (*psxBSC[64])();
+extern void (*psxSPC[64])();
+extern void (*psxREG[32])();
+extern void (*psxCP0[32])();
+extern void (*psxCP2[64])();
+extern void (*psxCP2BSC[32])();
 
 extern void bios_write();
 extern void bios_printf();

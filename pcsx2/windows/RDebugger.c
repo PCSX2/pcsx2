@@ -33,7 +33,8 @@ u32		port=8510;
 SOCKET	serversocket, remote;
 char	message[1024];		//message to add to listbox
 
-int		runStatus=STOP, runCode=0, runCount=1;
+volatile long runStatus=STOP;
+int runCode=0, runCount=1;
 HANDLE	runEvent=NULL;
 
 DECI2_DBGP_BRK	ebrk[32],

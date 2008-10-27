@@ -104,7 +104,7 @@ struct mc_command_0x26_tag{
 	u16	sectorSize;	//+03 divide to it
 	u16 field_2C;	//+05 divide to it
 	u32	mc_size;	//+07
-	u8	xor;		//+0b don't forget to recalculate it!!!
+	u8	mc_xor;		//+0b don't forget to recalculate it!!!
 	u8	Z;			//+0c
 #ifdef _MSC_VER
 };

@@ -93,7 +93,6 @@ PluginConf USBConfS;
 PluginConf FWConfS;
 PluginConf BiosConfS;
 
-GtkWidget *CmdLine;
 GtkWidget *ListDV;
 GtkListStore *ListDVModel;
 GtkWidget *SetPCDlg, *SetPCEntry;

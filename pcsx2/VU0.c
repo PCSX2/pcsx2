@@ -393,13 +393,13 @@ void VCALLMSR() {
 
 #ifndef _MSC_VER
 
-u32* GET_VU_MEM(VURegs* VU, u32 addr)
+/*u32* GET_VU_MEM(VURegs* VU, u32 addr)
 {
 	if( VU == g_pVU1 ) return (u32*)(VU1.Mem+(addr&0x3fff));
 	
 	if( addr >= 0x4200 ) return &VU1.VI[(addr>>2)&0x1f].UL;
 	
 	return (u32*)(VU0.Mem+(addr&0x0fff));	
-}
+}*/
 
 #endif

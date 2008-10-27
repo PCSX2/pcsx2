@@ -1107,7 +1107,7 @@ void injectIRX(char *filename){
 // failed inline calls, this is because of inline hell and gcc syntax
 #ifndef _WIN32
 
-void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
+/*void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
 {
 #ifdef __x86_64__
 	__asm__ __volatile__(".intel_syntax\n"
@@ -1134,9 +1134,9 @@ long InterlockedExchangeAdd(long volatile* Addend, long Value)
 						 "lock xadd [%0], %%eax\n"
 						 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory" );
 	// fixme - This is supposed to return a long
-}
+}*/
 
-u32 timeGetTime()
+/*u32 timeGetTime()
 {
 	struct timeb t;
 	ftime(&t);
@@ -1161,7 +1161,7 @@ void pcsx2_aligned_free(void* pmem)
         char* p = (char*)pmem;
         free(p - (int)*(u16*)(p-2));
     }
-}
+}*/
 
 #endif
 

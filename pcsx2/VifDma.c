@@ -67,10 +67,10 @@ extern void * memcpy_fast(void *dest, const void *src, size_t n);
 
 typedef void (*UNPACKFUNCTYPE)( u32 *dest, u32 *data, int size );
 typedef int  (*UNPACKPARTFUNCTYPESSE)( u32 *dest, u32 *data, int size );
-void (*Vif1CMDTLB[82])();
-void (*Vif0CMDTLB[75])();
-int (*Vif1TransTLB[128])(u32 *data);
-int (*Vif0TransTLB[128])(u32 *data);
+extern void (*Vif1CMDTLB[82])();
+extern void (*Vif0CMDTLB[75])();
+extern int (*Vif1TransTLB[128])(u32 *data);
+extern int (*Vif0TransTLB[128])(u32 *data);
 
 typedef struct {
 	UNPACKFUNCTYPE       funcU;
