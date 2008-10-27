@@ -52,7 +52,7 @@ void rcntSet() {
 	u32 c;
 	int i;
 
-	nextCounter = 0xffffffff;
+	nextCounter = HBLANK_TIME_;
 	nextsCounter = cpuRegs.cycle;
 
 	for (i = 0; i < 4; i++) {
@@ -67,6 +67,7 @@ void rcntSet() {
 	}
 
 	//Calculate HBlank
+	/*
 	if (counters[4].mode & MODE_HBLANK) { //hBlank
 		if (Config.PsxType&1) { if (HBLANK_TIME_PAL < nextCounter) nextCounter = HBLANK_TIME_PAL; }
 		else if (HBLANK_TIME_NTSC < nextCounter) nextCounter = HBLANK_TIME_NTSC;
@@ -74,7 +75,7 @@ void rcntSet() {
 	else { //not hBlank (drawing part of the scanline)
 		if (Config.PsxType&1) { if (HRENDER_TIME_PAL < nextCounter) nextCounter = HRENDER_TIME_PAL; }
 		else if (HRENDER_TIME_NTSC < nextCounter) nextCounter = HRENDER_TIME_NTSC;
-	}
+	}*/
 }
 
 void rcntInit() {
@@ -144,7 +145,7 @@ void UpdateVSyncRate() {
 	counters[4].sCycle = cpuRegs.cycle; // Update Counter 4's Start Cycle to match CPU's cycle
 
 	counters[5].mode = MODE_VRENDER; // Counter 5 takes care of vSync/vBlanks
-	counters[5].rate = MODE_VBLANK1; // Rate is just used to alternate between vBlank1 and vBlank2 modes (because of interlacing, one half-frame can have a different number of vBlank scanlines)
+	counters[5].sCycle = cpuRegs.cycle; // Update Counter 5's Start Cycle to match CPU's cycle
 
 	if (Config.CustomFps > 0) {
 		iTicks = GetTickFrequency() / Config.CustomFps;
@@ -339,6 +340,19 @@ __forceinline void frameLimit()
 	}
 }
 
+__forceinline void VBlankStart()
+{
+	psxVBlankStart(); // psxCounters vBlank Start
+	if (gates) rcntStartGate(0x8); // Counters Start Gate code
+}
+
+__forceinline void VBlankEnd()
+{
+	psxVBlankEnd(); // psxCounters vBlank End
+	if (gates) rcntEndGate(0x8); // Counters End Gate Code
+	SysUpdate();  // check for and handle keyevents
+}
+
 __forceinline void VSyncStart() // VSync Start (240 hsyncs) 
 {
 	vSyncDebugStuff(); // EE Profiling and Debug code
@@ -346,8 +360,8 @@ __forceinline void VSyncStart() // VSync Start (240 hsyncs)
 	if (!(GSIMR&0x800)) gsIrq(); //GS Irq
 
 	hwIntcIrq(2); // HW Irq
+	VBlankStart();
 	if (Config.Patch) applypatch(1); // Apply patches (ToDo: clean up patch code)
-	
 }
 
 __forceinline void VSyncEnd() // VSync End (22 hsyncs)
@@ -365,110 +379,64 @@ __forceinline void VSyncEnd() // VSync End (22 hsyncs)
 	}
 
 	hwIntcIrq(3);  // HW Irq
+	VBlankEnd();
 	frameLimit(); // limit FPS (also handles frameskip and VUskip)
-}
-
-__forceinline void VBlankStart()
-{
-	psxVBlankStart(); // psxCounters vSync Start
-	if (gates) rcntStartGate(0x8); // Counters Start Gate code
-}
-
-__forceinline void VBlankEnd()
-{
-	psxVBlankEnd(); // psxCounters vBlank End
-	if (gates) rcntEndGate(0x8); // Counters End Gate Code
-	SysUpdate();  // check for and handle keyevents
 }
 
 #define hScanlineOptimization(diff, compareValue, incrementCounters) { \
 	if (diff >= compareValue) {  \
-		u32 increment = (diff / compareValue);  \
 		SysPrintf("Counters Optimization\n");  \
-		counters[4].count += increment;  \
 		if (incrementCounters) {  \
-			/*Update counters using the hblank as the clock*/  \
-			if ((counters[0].mode & 0x83) == 0x83) counters[0].count += (increment * HBLANK_COUNTER_SPEED);  \
-			if ((counters[1].mode & 0x83) == 0x83) counters[1].count += (increment * HBLANK_COUNTER_SPEED);  \
-			if ((counters[2].mode & 0x83) == 0x83) counters[2].count += (increment * HBLANK_COUNTER_SPEED);  \
-			if ((counters[3].mode & 0x83) == 0x83) counters[3].count += (increment * HBLANK_COUNTER_SPEED);  \
+			u32 increment = (diff / compareValue);  \
+			/* if counter's count increases on hblank gate's off signal OR if counter increases every hblank, THEN add to the counter */  \
+			if ( (!(counters[0].mode & 0x30) && (gates & (1<<0))) || (((counters[0].mode & 0x83) == 0x83) && !(gates & (1<<0))) ) counters[0].count += (increment * HBLANK_COUNTER_SPEED);  \
+			if ( (!(counters[1].mode & 0x30) && (gates & (1<<1))) || (((counters[1].mode & 0x83) == 0x83) && !(gates & (1<<1))) ) counters[1].count += (increment * HBLANK_COUNTER_SPEED);  \
+			if ( (!(counters[2].mode & 0x30) && (gates & (1<<2))) || (((counters[2].mode & 0x83) == 0x83) && !(gates & (1<<2))) ) counters[2].count += (increment * HBLANK_COUNTER_SPEED);  \
+			if ( (!(counters[3].mode & 0x30) && (gates & (1<<3))) || (((counters[3].mode & 0x83) == 0x83) && !(gates & (1<<3))) ) counters[3].count += (increment * HBLANK_COUNTER_SPEED);  \
 		}  \
 	}  \
 }
 
-int hScanline() 
+__forceinline void hScanline() 
 {
 	u32 difference = (cpuRegs.cycle - counters[4].sCycle);
 
 	if (counters[4].mode & MODE_HBLANK) { //HBLANK Start
 		if (difference >= HBLANK_TIME_ ) {
-			//hScanlineOptimization(difference, (SCANLINE_ + HBLANK_TIME_), 1);
+			hScanlineOptimization(difference, (SCANLINE_ + HBLANK_TIME_), 1);
 			rcntStartGate(0);
 			psxCheckStartGate(0);
 			counters[4].sCycle = cpuRegs.cycle;
-			counters[4].mode ^= MODE_HBLANK;
+			counters[4].mode = MODE_HRENDER;
 		}
 	}
 	else { //HBLANK END / HRENDER Begin
 		if (difference >= (HRENDER_TIME_)) {
-			//hScanlineOptimization(difference, (SCANLINE_ + HRENDER_TIME_), 0);
+			hScanlineOptimization(difference, (SCANLINE_ + HRENDER_TIME_), 1);
 			if (CSRw & 0x4) GSCSRr |= 4; // signal
 			if (!(GSIMR&0x400)) gsIrq();
 			if (gates) rcntEndGate(0);
 			if (psxhblankgate) psxCheckEndGate(0);
-			counters[4].count += HBLANK_COUNTER_SPEED; //increment counter!
 			counters[4].sCycle = cpuRegs.cycle;
-			counters[4].mode ^= MODE_HBLANK;
-
-			return 0; // Count Incremented
+			counters[4].mode = MODE_HBLANK;
 		}
 	}
-	return 1; // Count not Incremented
 }
 
 void vSync() 
 {
-	if (hScanline()) return; // render the next scanline; if no-change, then exit function
+	hScanline();
 
-	switch (counters[5].mode) {
-		case MODE_VRENDER: //vRender is running
-			if (counters[4].count > SCANLINES_VRENDER_) { // Check if should change state to VBlank
-				//VRENDER END/VBLANK START CODE HERE:
-				VBlankStart();
-				counters[4].count -= SCANLINES_VRENDER_;
-				counters[5].mode = MODE_VBLANK; // Set to VBLANK MODE
-			}
-			break;
-		case MODE_VBLANK: //vBlank is running
-			if (counters[5].rate == MODE_VBLANK1) {
-				if (counters[4].count > SCANLINES_VBLANK1_) { //Check if should change state to VSYNC
-					//VBLANK END/VSYNC START CODE HERE:
-					VBlankEnd();
-					VSyncStart();
-					counters[4].count -= SCANLINES_VBLANK1_;
-					counters[5].mode = MODE_VSYNC; // Set to VSYNC MODE
-					counters[5].rate = MODE_VBLANK2;
-				}
-			}
-			else {
-				if (counters[4].count > SCANLINES_VBLANK2_) { //Check if should change state to VSYNC
-					//VBLANK END/VSYNC START CODE HERE:
-					VBlankEnd();
-					VSyncStart();
-					counters[4].count -= SCANLINES_VBLANK2_;
-					counters[5].mode = MODE_VSYNC; // Set to VSYNC MODE
-					counters[5].rate = MODE_VBLANK1;
-				}
-			}
-			break;
-		case MODE_VSYNC: //vSync is running
-			if (counters[4].count > SCANLINES_VSYNC_) { //Check if should change state to VRENDER
-				//VSYNC END/RENDER START CODE HERE:
-				VSyncEnd();
-				counters[4].count -= SCANLINES_VSYNC_;
-				counters[5].mode = MODE_VRENDER; // Set to VRENDER MODE
-			}
-			break;
+	if ((cpuRegs.cycle - counters[5].sCycle) >= (VSYNC_ / 2)) {
+		if (counters[5].mode == MODE_VSYNC) {
+			VSyncEnd();
+			counters[5].mode = MODE_VRENDER;
+		}
+		else {
+			VSyncStart();
+			counters[5].mode = MODE_VSYNC;
+		}
+		counters[5].sCycle = cpuRegs.cycle;
 	}
 }
 
@@ -602,8 +570,8 @@ void rcntStartGate(unsigned int mode) {
 
 		switch (counters[i].mode & 0x30) {
 			case 0x00: //Count When Signal is low (off)
+				counters[i].mode &= ~0x80; // Stop Counting since signal is On
 				rcntUpd(i);
-				counters[i].mode |= 0x80;
 				break;
 			case 0x10: //Reset and start counting on Vsync start
 			case 0x30: //Reset and start counting on Vsync start and end
@@ -624,9 +592,9 @@ void rcntEndGate(unsigned int mode) {
 
 		switch (counters[i].mode & 0x30) {
 			case 0x00: //Count When Signal is low (off)
+				counters[i].mode |= 0x80; // Start Counting since signal is Off
 				counters[i].count = rcntRcount(i);
 				rcntUpd(i);
-				counters[i].mode &= ~0x80;
 				break;
 			case 0x20: //Reset and start counting on Vsync end
 			case 0x30: //Reset and start counting on Vsync start and end

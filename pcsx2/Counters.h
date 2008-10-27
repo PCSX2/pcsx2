@@ -35,10 +35,11 @@ typedef struct {
 //------------------------------------------------------------------
 // NTSC Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
-#define SCANLINE_NTSC		18743  //(PS2CLK / 15734.25)
-#define HRENDER_TIME_NTSC	15528  //time from hblank end to hblank start (PS2CLK / 18991.368423051722991900181367568)
-#define HBLANK_TIME_NTSC	3215   //time from hblank start to hblank end (PS2CLK / 91738.91105912572817760653181028)
+#define SCANLINE_NTSC		(PS2CLK / 15734.25)//18743
+#define HRENDER_TIME_NTSC	(u32)(SCANLINE_NTSC / 2)//15528  //time from hblank end to hblank start (PS2CLK / 18991.368423051722991900181367568)
+#define HBLANK_TIME_NTSC	(u32)(SCANLINE_NTSC / 2)//3215   //time from hblank start to hblank end (PS2CLK / 91738.91105912572817760653181028)
 #define VSYNC_NTSC			(PS2CLK / 59.94)  //hz
+#define VSYNC_HALF_NTSC		(VSYNC_NTSC / 2)  //hz
 
 #define SCANLINES_TOTAL_NTSC	525 // total number of scanlines
 #define SCANLINES_VSYNC_NTSC	3   // scanlines that are used for syncing every half-frame
@@ -49,10 +50,11 @@ typedef struct {
 //------------------------------------------------------------------
 // PAL Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
-#define SCANLINE_PAL		18874
-#define HRENDER_TIME_PAL	15335  //time from hblank end to hblank start
-#define HBLANK_TIME_PAL		3539   //time from hblank start to hblank end
-#define VSYNC_PAL			(PS2CLK / 50) //hz
+#define SCANLINE_PAL		(PS2CLK / 15625)//18874
+#define HRENDER_TIME_PAL	(u32)(SCANLINE_PAL / 2)//15335  //time from hblank end to hblank start
+#define HBLANK_TIME_PAL		(u32)(SCANLINE_PAL / 2)//3539   //time from hblank start to hblank end
+#define VSYNC_PAL			(PS2CLK / 50)	//hz
+#define VSYNC_HALF_PAL		(VSYNC_PAL / 2) //hz
 
 #define SCANLINES_TOTAL_PAL		625 // total number of scanlines
 #define SCANLINES_VSYNC_PAL		5   // scanlines that are used for syncing every half-frame
@@ -67,6 +69,7 @@ typedef struct {
 #define HRENDER_TIME_	(u32)((Config.PsxType&1) ? HRENDER_TIME_PAL : HRENDER_TIME_NTSC) * HBLANK_TIMER_SLOWDOWN
 #define HBLANK_TIME_	(u32)((Config.PsxType&1) ? HBLANK_TIME_PAL : HBLANK_TIME_NTSC) * HBLANK_TIMER_SLOWDOWN
 #define VSYNC_			(u32)((Config.PsxType&1) ? VSYNC_PAL : VSYNC_NTSC)
+#define VSYNC_HALF_		(u32)((Config.PsxType&1) ? VSYNC_HALF_PAL : VSYNC_HALF_NTSC)
 
 #define SCANLINES_TOTAL_	(u32)((Config.PsxType&1) ? SCANLINES_TOTAL_PAL : SCANLINES_TOTAL_NTSC)
 #define SCANLINES_VSYNC_	(u32)((Config.PsxType&1) ? SCANLINES_VSYNC_PAL : SCANLINES_VSYNC_NTSC)
