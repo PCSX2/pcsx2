@@ -52,51 +52,57 @@ END
 // Dialog
 //
 
-IDD_CONFIG DIALOGEX 3, 1, 414, 217
+IDD_CONFIG DIALOGEX 3, 1, 410, 237
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "SPU2ghz Settings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    PUSHBUTTON      "OK",IDOK,300,198,54,15,NOT WS_TABSTOP
-    PUSHBUTTON      "Cancel",IDCANCEL,354,198,54,15,NOT WS_TABSTOP
-    GROUPBOX        "Effects (Reverb) Settings",IDC_STATIC,6,156,119,30
-    CHECKBOX        "Enable Effect Processing",IDC_EFFECTS,12,168,95,10,NOT WS_TABSTOP
-    GROUPBOX        "Output Settings",IDC_STATIC,132,6,119,103
-    LTEXT           "Buffer Size",IDC_STATIC,138,35,35,8,NOT WS_GROUP
-    LTEXT           "Sample Rate",IDC_STATIC,139,19,42,8,NOT WS_GROUP
-    GROUPBOX        "Mixing Settings",IDC_STATIC,6,6,119,80
-    LTEXT           "Interpolation:",IDC_STATIC,11,58,42,8,NOT WS_GROUP
-    GROUPBOX        "",IDC_STATIC,264,18,135,61
-    GROUPBOX        "Dumps (on close)",IDC_STATIC,264,131,135,51
-    CHECKBOX        "Dump Register Data",IDC_DUMPREGS,270,169,80,10,NOT WS_TABSTOP
-    CHECKBOX        "Dump Memory Contents",IDC_DUMPMEM,270,156,91,10,NOT WS_TABSTOP
-    CHECKBOX        "Dump Core and Voice State",IDC_DUMPCORE,270,145,104,10,NOT WS_TABSTOP
-    GROUPBOX        "Logging",IDC_STATIC,263,80,136,50
-    CHECKBOX        "Log Audio Output",IDC_LOGWAVE,269,116,71,10,NOT WS_TABSTOP
-    CHECKBOX        "Log DMA Writes",IDC_LOGDMA,269,104,68,10,NOT WS_TABSTOP
-    CHECKBOX        "Log Register/DMA Actions",IDC_LOGREGS,269,92,101,10,NOT WS_TABSTOP
-    CHECKBOX        "KeyOn/Off Events",IDC_MSGKEY,276,30,74,10,NOT WS_TABSTOP
-    COMBOBOX        IDC_INTERPOLATE,12,66,108,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_SRATE,192,18,54,201,CBS_DROPDOWN | WS_DISABLED | WS_TABSTOP,WS_EX_RIGHT
-    CONTROL         "Slider2",IDC_BUFFER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,138,42,65,10
-    EDITTEXT        IDC_BSIZE,204,42,42,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Output Module:",IDC_STATIC,12,16,50,8,NOT WS_GROUP
-    COMBOBOX        IDC_OUTPUT,12,24,108,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Number of Buffers:",IDC_STATIC,139,62,60,8
-    EDITTEXT        IDC_BCOUNT,204,60,42,12,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "",IDC_STATIC,258,6,150,180
-    CHECKBOX        "Enable Debug Options",IDC_DEBUG,264,6,87,10,NOT WS_TABSTOP
-    CONTROL         "DMA Operations",IDC_MSGDMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,54,68,10
-    CONTROL         "AutoDMA Operations",IDC_MSGADMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,282,66,83,10
-    CONTROL         "Voice Stop Events",IDC_MSGVOICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,42,75,10
-    CONTROL         "Show In Console",IDC_MSGSHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,270,18,69,10
-    LTEXT           "Size = 1024, Numbers = 10",IDC_STATIC,137,94,108,12
-    PUSHBUTTON      "Configure...",IDC_OUTCONF,72,42,48,12
-    LTEXT           "WARNING: The effects processing is experimental and _could_ hurt your ears .\n If that happens, tell me about what game, so I can fix it!",IDC_STATIC,20,191,255,21
-    GROUPBOX        "DSP",IDC_STATIC,6,87,119,68
-    CONTROL         "Enable Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,100,103,10
-    LTEXT           "(configure in the .ini)",IDC_STATIC,43,110,64,8
-    LTEXT           "Recommended:",IDC_STATIC,137,80,108,9
+    PUSHBUTTON      "OK",IDOK,291,219,54,15,NOT WS_TABSTOP
+    PUSHBUTTON      "Cancel",IDCANCEL,351,219,54,15,NOT WS_TABSTOP
+    GROUPBOX        "Mixing Settings",IDC_STATIC,6,6,119,116
+    GROUPBOX        "Speed Limiter (obsolete)",IDC_STATIC,6,127,120,98
+    GROUPBOX        "Output Settings",IDC_STATIC,132,6,119,182
+    GROUPBOX        "",IDC_DEBUG_GROUP,257,7,148,208
+    GROUPBOX        "",IDC_STATIC,264,19,135,85
+    GROUPBOX        "Logging",IDC_STATIC,264,107,136,50
+    GROUPBOX        "Dumps (on close)",IDC_STATIC,264,160,135,49
+    COMBOBOX        IDC_OUTPUT,138,27,108,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Configure...",IDC_OUTCONF,198,42,48,12
+    COMBOBOX        IDC_INTERPOLATE,12,28,108,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable at start-up",IDC_SPEEDLIMIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,176,106,12
+    COMBOBOX        IDC_SRATE,188,62,58,201,CBS_DROPDOWN | WS_DISABLED | WS_TABSTOP,WS_EX_RIGHT
+    CONTROL         "Slider2",IDC_LATENCY_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,177,94,72,10
+    CONTROL         "Use Time-stretching",IDC_TS_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,114,79,11
+    CONTROL         "Use a Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,160,103,11
+    CHECKBOX        "Enable Debug Options",IDC_DEBUG,264,7,87,10,NOT WS_TABSTOP
+    CONTROL         "Show In Console",IDC_MSGSHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,270,19,69,10
+    CHECKBOX        "KeyOn/Off Events",IDC_MSGKEY,276,31,74,10,NOT WS_TABSTOP
+    CONTROL         "Voice Stop Events",IDC_MSGVOICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,43,75,10
+    CONTROL         "DMA Operations",IDC_MSGDMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,55,68,10
+    CONTROL         "AutoDMA Operations",IDC_MSGADMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,283,67,83,10
+    CONTROL         "Buffer Over/Underruns",IDC_DBG_OVERRUNS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,79,97,11
+    CONTROL         "ADPCM Cache Statistics",IDC_DBG_CACHE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,91,114,9
+    CHECKBOX        "Dump Core and Voice State",IDC_DUMPCORE,270,172,104,10,NOT WS_TABSTOP
+    CHECKBOX        "Dump Memory Contents",IDC_DUMPMEM,270,184,91,10,NOT WS_TABSTOP
+    CHECKBOX        "Dump Register Data",IDC_DUMPREGS,270,196,80,10,NOT WS_TABSTOP
+    CHECKBOX        "Enable Effects Processing",IDC_EFFECTS,12,49,99,10,NOT WS_TABSTOP
+    LTEXT           "Latency:",IDC_STATIC,138,89,33,8,NOT WS_GROUP
+    LTEXT           "Sample Rate:",IDC_STATIC,137,63,44,8,NOT WS_GROUP
+    LTEXT           "Interpolation:",IDC_STATIC,12,18,42,10,NOT WS_GROUP
+    LTEXT           "Module:",IDC_STATIC,138,17,50,9,NOT WS_GROUP
+    LTEXT           "Experimental: Enabling this could break sound badly.",IDC_STATIC,24,61,96,17
+    LTEXT           "(configure in the .ini)",IDC_STATIC,150,172,64,8
+    LTEXT           "Uses the SPU2 to limit framerate for games that cause buffer overruns. Use Timestretching instead.",IDC_STATIC,11,138,109,34
+    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,185,84,58,10
+    LTEXT           "Helps reduce latency and usually eliminates audio skips.  Uses a little extra CPU.",IDC_STATIC,150,127,96,25
+    CHECKBOX        "Log Register/DMA Actions",IDC_LOGREGS,269,119,101,10,WS_GROUP | NOT WS_TABSTOP
+    CHECKBOX        "Log DMA Writes",IDC_LOGDMA,269,131,68,10,NOT WS_TABSTOP
+    CHECKBOX        "Log Audio Output",IDC_LOGWAVE,269,143,71,10,NOT WS_TABSTOP
+    CONTROL         "Enable runtime toggle",IDC_SPEEDLIMIT_RUNTIME_TOGGLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,190,110,10
+    LTEXT           "Allows speed limiter to be toggled with the minus (-) key.",IDC_STATIC,23,202,95,17
+    CONTROL         "Volume Boost",IDC_VOLBOOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,86,85,11
+    LTEXT           "Can break sound in games that are already loud.",IDC_STATIC,24,99,96,17
 END
 
 IDD_DEBUG DIALOGEX 0, 0, 326, 525
@@ -107,49 +113,58 @@ BEGIN
     DEFPUSHBUTTON   "Close",IDOK,269,504,50,14
 END
 
-IDD_DSOUND DIALOGEX 0, 0, 186, 58
+IDD_DSOUND DIALOGEX 0, 0, 170, 122
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "DirectSound Output Module Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,75,37,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,129,37,50,14
-    COMBOBOX        IDC_DS_DEVICE,7,17,172,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "DirectSound Device",IDC_STATIC,7,7,63,8
+    DEFPUSHBUTTON   "OK",IDOK,52,104,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,115,104,50,14
+    COMBOBOX        IDC_DS_DEVICE,4,15,161,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "DirectSound Device",IDC_STATIC,4,3,63,8
+    LTEXT           "Number of Buffers",IDC_STATIC,4,40,61,11
+    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,71,48,94,10
+    LTEXT           "Use extra buffers if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,8,66,151,27
+    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,70,37,95,11
 END
 
-IDD_DSOUND51 DIALOGEX 0, 0, 265, 182
+IDD_DSOUND51 DIALOGEX 0, 0, 336, 180
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "DirectSound 5.1 Output Module Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,154,161,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,208,161,50,14
-    COMBOBOX        IDC_DS_DEVICE,7,17,251,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "DirectSound Device",IDC_STATIC,7,7,63,8
-    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,18,54,30,36
-    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,60,56,30,34
-    CONTROL         "",IDC_SLIDER3,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,102,56,30,34
-    GROUPBOX        "Surround Volume Correction",IDC_STATIC,7,36,142,139
-    CTEXT           "Center",IDC_STATIC,54,48,42,8
-    CTEXT           "Left",IDC_STATIC,12,48,42,8
-    CTEXT           "Right",IDC_STATIC,96,48,42,8
-    CONTROL         "",IDC_SLIDER4,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,18,116,30,40
-    CONTROL         "",IDC_SLIDER5,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,60,116,30,40
-    CONTROL         "",IDC_SLIDER6,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,102,116,30,40
-    CTEXT           "LFE (sub)",IDC_STATIC,54,108,42,8
-    CTEXT           "Rear Left",IDC_STATIC,12,108,42,8
-    CTEXT           "Rear Right",IDC_STATIC,96,108,42,8
-    GROUPBOX        "Other Tweaks",IDC_STATIC,155,36,103,120
-    CONTROL         "",IDC_SLIDER7,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,168,56,30,49
-    CTEXT           "Center in LR",IDC_STATIC,162,48,42,8
-    EDITTEXT        IDC_EDIT1,18,90,30,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT2,60,90,30,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT3,102,90,30,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT4,18,156,30,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT5,60,156,30,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT6,102,156,30,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT7,168,108,30,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,228,161,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,281,161,50,14
+    COMBOBOX        IDC_DS_DEVICE,5,17,142,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "DirectSound Device",IDC_STATIC,5,5,63,8
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,15,53,30,36
+    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,57,54,30,34
+    CONTROL         "",IDC_SLIDER3,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,99,54,30,34
+    GROUPBOX        "Surround Volume Correction",IDC_STATIC,5,35,138,139
+    CTEXT           "Center",IDC_STATIC,51,46,42,8
+    CTEXT           "Left",IDC_STATIC,9,46,42,8
+    CTEXT           "Right",IDC_STATIC,93,46,42,8
+    CONTROL         "",IDC_SLIDER4,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,15,115,30,40
+    CONTROL         "",IDC_SLIDER5,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,57,115,30,40
+    CONTROL         "",IDC_SLIDER6,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,99,115,30,40
+    CTEXT           "LFE (sub)",IDC_STATIC,51,107,42,8
+    CTEXT           "Rear Left",IDC_STATIC,9,107,42,8
+    CTEXT           "Rear Right",IDC_STATIC,93,107,42,8
+    GROUPBOX        "Other Tweaks",IDC_STATIC,153,77,63,97
+    CONTROL         "",IDC_SLIDER7,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,169,98,30,49
+    CTEXT           "Center in LR",IDC_STATIC,163,90,42,8
+    EDITTEXT        IDC_EDIT1,15,88,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,57,88,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,99,88,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT4,15,155,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT5,57,155,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT6,99,155,30,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,169,150,30,14,ES_AUTOHSCROLL
+    LTEXT           "Number of Buffers",IDC_STATIC,160,32,61,11
+    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,229,40,94,10
+    LTEXT           "Use extra buffers if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,226,69,102,46
+    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL2,227,29,95,11
+    GROUPBOX        "Latency",IDC_STATIC,154,13,174,48
 END
 
 IDD_ASIO DIALOGEX 0, 0, 186, 58
@@ -163,15 +178,19 @@ BEGIN
     LTEXT           "ASIO Driver",IDC_STATIC,7,7,39,8
 END
 
-IDD_WAVEOUT DIALOGEX 0, 0, 186, 58
+IDD_WAVEOUT DIALOGEX 0, 0, 170, 122
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "waveOut Output Module Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,75,37,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,129,37,50,14
-    COMBOBOX        IDC_DS_DEVICE,7,17,172,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "waveOut Device",IDC_STATIC,7,7,54,8
+    DEFPUSHBUTTON   "OK",IDOK,52,104,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,115,104,50,14
+    COMBOBOX        IDC_DS_DEVICE,4,15,161,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "waveOut Device",IDC_STATIC,4,3,54,8
+    LTEXT           "Number of Buffers",IDC_STATIC,4,39,61,11
+    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,71,48,94,10
+    LTEXT           "Use extra buffers if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,8,66,151,27
+    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,70,37,95,11
 END
 
 
@@ -186,9 +205,8 @@ BEGIN
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 408
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 212
+        RIGHTMARGIN, 405
+        BOTTOMMARGIN, 234
     END
 
     IDD_DEBUG, DIALOG
@@ -201,17 +219,17 @@ BEGIN
 
     IDD_DSOUND, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 51
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 165
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 118
     END
 
     IDD_DSOUND51, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 258
-        TOPMARGIN, 7
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 331
+        TOPMARGIN, 5
         BOTTOMMARGIN, 175
     END
 
@@ -225,10 +243,10 @@ BEGIN
 
     IDD_WAVEOUT, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 51
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 165
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 118
     END
 END
 #endif    // APSTUDIO_INVOKED

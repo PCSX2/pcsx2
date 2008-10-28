@@ -232,7 +232,7 @@ static void __forceinline __fastcall GetNextDataBuffered( V_Core& thiscore, V_Vo
 				VoiceStop(core,voice);
 				thiscore.Regs.ENDX|=1<<voice;
 				#ifndef PUBLIC
-				if(MsgVoiceOff) ConLog(" * SPU2: Voice Off by EndPoint: %d \n", voice);
+				if(MsgVoiceOff()) ConLog(" * SPU2: Voice Off by EndPoint: %d \n", voice);
 				DebugCores[core].Voices[voice].lastStopReason = 1;
 				#endif
 			}
@@ -444,7 +444,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 
 	if (env.Phase==6) {
 		#ifndef PUBLIC
-		if(MsgVoiceOff) ConLog(" * SPU2: Voice Off by ADSR: %d \n", voice);
+		if(MsgVoiceOff()) ConLog(" * SPU2: Voice Off by ADSR: %d \n", voice);
 		DebugCores[core].Voices[voice].lastStopReason = 2;
 		#endif
 		VoiceStop(core,voice);
@@ -665,7 +665,7 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 						#ifndef PUBLIC
 						if(thiscore.InputDataLeft>0)
 						{
-							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
+							if(MsgAutoDMA()) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
 						#endif
 						thiscore.InputDataLeft=0;
@@ -705,7 +705,7 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 						#ifndef PUBLIC
 						if(thiscore.InputDataLeft>0)
 						{
-							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
+							if(MsgAutoDMA()) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
 						#endif
 						thiscore.InputDataLeft=0;
@@ -759,7 +759,7 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 						#ifndef PUBLIC
 						if(thiscore.InputDataLeft>0)
 						{
-							if(MsgAutoDMA) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
+							if(MsgAutoDMA()) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 						}
 						#endif
 						thiscore.InputDataLeft=0;
@@ -1062,13 +1062,10 @@ static void __forceinline MixVoice( V_Core& thiscore, V_Voice& vc, s32& VValL, s
 static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 {
 	s32 RVL,RVR;
-	s32 TDL=0,TDR=0;
 	s32 SDL=0,SDR=0;
 	s32 SWL=0,SWR=0;
 
 	V_Core& thiscore( Cores[core] );
-
-	SDL=SDR=SWL=SWR=(s32)0;
 
 	for (voice=0;voice<24;voice++) 
 	{
@@ -1088,6 +1085,8 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	spu2M_WriteFast( 0x1200 + (core<<12) + OutPos, (s16)(SDR>>16) );
 	spu2M_WriteFast( 0x1400 + (core<<12) + OutPos, (s16)(SWL>>16) );
 	spu2M_WriteFast( 0x1600 + (core<<12) + OutPos, (s16)(SWR>>16) );
+
+	s32 TDL,TDR;
 
 	// Mix in the Input data
 	TDL = OutL * thiscore.InpDryL;
@@ -1200,13 +1199,11 @@ void __fastcall Mix()
 	Peak1 = max(Peak1,max(OutL,OutR));
 #endif
 
-	// [Air] [TODO] : Replace this with MulShr32.
-	//   I haven't done it yet because it would require making the
-	//   VolumeDivisor a constant .. which it should be anyway.  The presence
-	//   of VolumeMultiplier more or less negates the need for a variable divisor.
-
-	ExtL=MulDiv(OutL,VolumeMultiplier,VolumeDivisor<<6);
-	ExtR=MulDiv(OutR,VolumeMultiplier,VolumeDivisor<<6);
+	// [Air] : Removed MulDiv here in favor of a more direct approach
+	//   within the SndOut driver (which ends up having to apply its own
+	//   master volume divisors anyway).
+	//ExtL=MulDiv(OutL,VolumeMultiplier,1<<6);
+	//ExtR=MulDiv(OutR,VolumeMultiplier,1<<6);
 
 	// Update spdif (called each sample)
 	if(PlayMode&4)
@@ -1215,17 +1212,17 @@ void __fastcall Mix()
 	}
 
 	// AddToBuffer
-	SndWrite(ExtL,ExtR);
+	SndWrite(OutL, OutR); //ExtL,ExtR);
 	OutPos++;
 	if (OutPos>=0x200) OutPos=0;
 
 #ifndef PUBLIC
 	// [TODO]: Create an INI option to enable/disable this particular log.
 	p_cachestat_counter++;
-	if(p_cachestat_counter > (48000*6) )
+	if(p_cachestat_counter > (48000*10) )
 	{
 		p_cachestat_counter = 0;
-		ConLog( " * SPU2 > CacheStatistics > Hits: %d  Misses: %d  Ignores: %d\n",
+		if( MsgCache() ) ConLog( " * SPU2 > CacheStats > Hits: %d  Misses: %d  Ignores: %d\n",
 			g_counter_cache_hits,
 			g_counter_cache_misses,
 			g_counter_cache_ignores );

@@ -29,8 +29,7 @@ void FileLog(const char *fmt, ...) {
 	int n;
 	va_list list;
 
-	if(!DebugEnabled) return;
-	if(!AccessLog) return;
+	if(!AccessLog()) return;
 	if(!spu2Log) return;
 
 	va_start(list, fmt);
@@ -55,8 +54,7 @@ void ConLog(const char *fmt, ...) {
 	int n;
 	va_list list;
 
-	if(!DebugEnabled) return;
-	if(!MsgToConsole) return;
+	if(!MsgToConsole()) return;
 
 	va_start(list, fmt);
 	n=vsprintf(s,fmt, list);
@@ -78,14 +76,14 @@ void DoFullDump() {
 	FILE *dump;
 	u8 c=0, v=0;
 
-	if(MemDump) {
+	if(MemDump()) {
 		dump=fopen(MemDumpFileName,"wb");
 		if (dump) {
 			fwrite(_spu2mem,0x200000,1,dump);
 			fclose(dump);
 		}
 	}
-	if(RegDump) {
+	if(RegDump()) {
 		dump=fopen(RegDumpFileName,"wb");
 		if (dump) {
 			fwrite(spu2regs,0x2000,1,dump);
@@ -93,7 +91,7 @@ void DoFullDump() {
 		}
 	}
 
-	if(!CoresDump) return;
+	if(!CoresDump()) return;
 	dump=fopen(CoresDumpFileName,"wt");
 	if (dump) {
 		for(c=0;c<2;c++) {

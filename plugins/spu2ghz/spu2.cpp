@@ -42,6 +42,7 @@ static char *libraryName	  = "GiGaHeRz's SPU2 ("
 #endif
 ")";
 
+
 DWORD CALLBACK TimeThread(PVOID /* unused param */);
 
 
@@ -171,11 +172,12 @@ void __inline __fastcall spu2M_Write( u32 addr, s16 value )
 	// Make sure the cache is invalidated:
 	// (note to self : addr address WORDs, not bytes)
 
+	addr &= 0xfffff;
 	const u32 nexta = addr >> 3;		// 8 words per encoded block.
 	const u32 flagbitmask = 1ul<<(nexta & 31);  // 31 flags per array entry
 	pcm_cache_flags[nexta>>5] &= ~flagbitmask;
 
-	*GetMemPtr( addr & 0xfffff ) = value;
+	*GetMemPtr( addr ) = value;
 }
 
 // writes an unsigned value to the SPU2 ram
@@ -271,7 +273,7 @@ s32 CALLBACK SPU2init()
 	acumCycles=0;
 
 #ifdef SPU2_LOG
-	if(AccessLog) 
+	if(AccessLog()) 
 	{
 		spu2Log = fopen(AccessLogFileName, "w");
 		setvbuf(spu2Log, NULL,  _IONBF, 0);
@@ -325,7 +327,7 @@ s32 CALLBACK SPU2init()
 
 	DMALogOpen();
 
-	if(WaveLog) 
+	if(WaveLog()) 
 	{
 		if(!wavedump_open())
 		{
@@ -459,7 +461,7 @@ void CALLBACK SPU2shutdown()
 	fclose(el0);
 	fclose(el1);
 #endif
-	if(WaveLog && wavedump_ok) wavedump_close();
+	if(WaveLog() && wavedump_ok) wavedump_close();
 
 	DMALogClose();
 
@@ -477,7 +479,7 @@ void CALLBACK SPU2shutdown()
 	pcm_cache_data = NULL;
 
 #ifdef SPU2_LOG
-	if(!AccessLog) return;
+	if(!AccessLog()) return;
 	FileLog("[%10d] SPU2shutdown\n",Cycles);
 	if(spu2Log) fclose(spu2Log);
 #endif
@@ -1895,7 +1897,7 @@ void VoiceStart(int core,int vc)
 		DebugCores[core].Voices[vc].FirstBlock=1;
 		if(core==1)
 		{
-			if(MsgKeyOnOff) ConLog(" * SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %02x%02x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
+			if(MsgKeyOnOff()) ConLog(" * SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %02x%02x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
 						core,vc,Cores[core].Voices[vc].StartA,
 						(Cores[core].Voices[vc].DryL)?"+":"-",(Cores[core].Voices[vc].DryR)?"+":"-",
 						(Cores[core].Voices[vc].WetL)?"+":"-",(Cores[core].Voices[vc].WetR)?"+":"-",
@@ -1944,7 +1946,7 @@ void StopVoices(int core, u32 value)
 	for (vc=0;vc<24;vc++) {
 		if ((value>>vc) & 1) {
 			Cores[core].Voices[vc].ADSR.Releasing=1;
-			//if(MsgKeyOnOff) ConLog(" * SPU2: KeyOff: Core %d; Voice %d.\n",core,vc);
+			//if(MsgKeyOnOff()) ConLog(" * SPU2: KeyOff: Core %d; Voice %d.\n",core,vc);
 		}
 	}
 }

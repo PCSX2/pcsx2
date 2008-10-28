@@ -20,22 +20,31 @@
 #include "dialogs.h"
 // Config Vars
 
+
+static bool VolumeBoostEnabled = false;
+static int VolumeShiftModifier = 0;
+
+
 // DEBUG
 
 bool DebugEnabled=false;
-bool MsgToConsole=false;
-bool MsgKeyOnOff=false;
-bool MsgVoiceOff=false;
-bool MsgDMA=false;
-bool MsgAutoDMA=false;
+bool _MsgToConsole=false;
+bool _MsgKeyOnOff=false;
+bool _MsgVoiceOff=false;
+bool _MsgDMA=false;
+bool _MsgAutoDMA=false;
+bool _MsgOverruns=false;
+bool _MsgCache=false;
 
-bool AccessLog=false;
-bool DMALog=false;
-bool WaveLog=false;
+bool _AccessLog=false;
+bool _DMALog=false;
+bool _WaveLog=false;
 
-bool CoresDump=false;
-bool MemDump=false;
-bool RegDump=false;
+bool _CoresDump=false;
+bool _MemDump=false;
+bool _RegDump=false;
+
+
 
 char AccessLogFileName[255];
 char WaveLogFileName[255];
@@ -59,19 +68,20 @@ int Interpolation=1;
 		2. cubic interpolation
 */
 
-// EFFECTS
 bool EffectsEnabled=false;
 
 // OUTPUT
 int SampleRate=48000;
-int CurBufferSize=1024;
-int MaxBufferCount=8;
-int CurBufferCount=MaxBufferCount;
+int SndOutLatencyMS=60;
+//int SndOutLatency=1024;
+//int MaxBufferCount=8;
+//int CurBufferCount=MaxBufferCount;
+bool timeStretchEnabled=false;
 
-int OutputModule=OUTPUT_DSOUND;
+u32 OutputModule=0; //OUTPUT_DSOUND;
 
-int VolumeMultiplier=1;
-int VolumeDivisor=1;
+//int VolumeMultiplier=1;
+//int VolumeDivisor=1;
 
 int LimitMode=0;
 /* values:
@@ -80,17 +90,14 @@ int LimitMode=0;
 	2. Hard limiter -- more cpu-intensive while limiting, but should give better (constant) speeds
 */
 
-u32 GainL  =256;
-u32 GainR  =256;
-u32 GainSL =200;
-u32 GainSR =200;
-u32 GainC  =200;
-u32 GainLFE=256;
-u32 AddCLR = 56;
-u32 LowpassLFE=80;
+
+CONFIG_DSOUNDOUT Config_DSoundOut;
+CONFIG_DSOUND51 Config_DSound51;
+CONFIG_WAVEOUT Config_WaveOut;
+CONFIG_ASIO Config_Asio;
 
 // MISC
-bool LimiterToggleEnabled=true;
+bool LimiterToggleEnabled=false;
 int  LimiterToggle=VK_SUBTRACT;
 
 // DSP
@@ -98,19 +105,15 @@ bool dspPluginEnabled=false;
 char dspPlugin[256];
 int  dspPluginModule=0;
 
-bool timeStretchEnabled=false;
-
 // OUTPUT MODULES
 char AsioDriver[129]="";
-
-/// module-specific settings
-
-char DSoundDevice[255];
 
 
 //////
 
-char CfgFile[]="inis\\SPU2Ghz.ini";
+const char NewCfgFile[]="inis\\SPU2Ghz-v2.ini";
+const char LegacyCfgFile[]="inis\\SPU2Ghz.ini";
+const char* CfgFile=NewCfgFile;
 
 
  /*| Config File Format: |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
@@ -128,26 +131,26 @@ char CfgFile[]="inis\\SPU2Ghz.ini";
  \*_____________________________________________*/
 
 
-void CfgWriteBool(char *Section, char*Name, bool Value) {
+void CfgWriteBool(const char *Section, const char*Name, bool Value) {
 	char *Data=Value?"TRUE":"FALSE";
 
 	WritePrivateProfileString(Section,Name,Data,CfgFile);
 }
 
-void CfgWriteInt(char *Section, char*Name, int Value) {
+void CfgWriteInt(const char *Section, const char*Name, int Value) {
 	char Data[255];
 	_itoa(Value,Data,10);
 
 	WritePrivateProfileString(Section,Name,Data,CfgFile);
 }
 
-void CfgWriteStr(char *Section, char*Name,char *Data) {
+void CfgWriteStr(const char *Section, const char* Name, const char *Data) {
 	WritePrivateProfileString(Section,Name,Data,CfgFile);
 }
 
 /*****************************************************************************/
 
-bool CfgReadBool(char *Section,char *Name,bool Default) {
+bool CfgReadBool(const char *Section,const char *Name,bool Default) {
 	char Data[255]="";
 	GetPrivateProfileString(Section,Name,"",Data,255,CfgFile);
 	Data[254]=0;
@@ -164,7 +167,8 @@ bool CfgReadBool(char *Section,char *Name,bool Default) {
 	return false;
 }
 
-int CfgReadInt(char *Section, char*Name,int Default) {
+
+int CfgReadInt(const char *Section, const char*Name,int Default) {
 	char Data[255]="";
 	GetPrivateProfileString(Section,Name,"",Data,255,CfgFile);
 	Data[254]=0;
@@ -177,7 +181,8 @@ int CfgReadInt(char *Section, char*Name,int Default) {
 	return atoi(Data);
 }
 
-void CfgReadStr(char *Section, char*Name,char *Data,int DataSize,char *Default) {
+
+void CfgReadStr(const char *Section, const char* Name, char *Data, int DataSize, const char *Default) {
 	int sl;
 	GetPrivateProfileString(Section,Name,"",Data,DataSize,CfgFile);
 
@@ -188,24 +193,38 @@ void CfgReadStr(char *Section, char*Name,char *Data,int DataSize,char *Default) 
 	}
 }
 
+// Tries to read the requested value.
+// Returns FALSE if the value isn't found.
+bool CfgFindName( const char *Section, const char* Name)
+{
+	// Only load 24 characters.  No need to load more.
+	char Data[24]="";
+	GetPrivateProfileString(Section,Name,"",Data,24,CfgFile);
+	Data[23]=0;
+
+	if(strlen(Data)==0) return false;
+	return true;
+}
 /*****************************************************************************/
 
 void ReadSettings()
 {
-	
 	DebugEnabled=CfgReadBool("DEBUG","Global_Debug_Enabled",0);
-	MsgToConsole=DebugEnabled&CfgReadBool("DEBUG","Show_Messages",0);
-	MsgKeyOnOff =DebugEnabled&MsgToConsole&CfgReadBool("DEBUG","Show_Messages_Key_On_Off",0);
-	MsgVoiceOff =DebugEnabled&MsgToConsole&CfgReadBool("DEBUG","Show_Messages_Voice_Off",0);
-	MsgDMA      =DebugEnabled&MsgToConsole&CfgReadBool("DEBUG","Show_Messages_DMA_Transfer",0);
-	MsgAutoDMA  =DebugEnabled&MsgToConsole&CfgReadBool("DEBUG","Show_Messages_AutoDMA",0);
-	AccessLog   =DebugEnabled&CfgReadBool("DEBUG","Log_Register_Access",0);
-	DMALog      =DebugEnabled&CfgReadBool("DEBUG","Log_DMA_Transfers",0);
-	WaveLog     =DebugEnabled&CfgReadBool("DEBUG","Log_WAVE_Output",0);
+	_MsgToConsole=CfgReadBool("DEBUG","Show_Messages",0);
+	_MsgKeyOnOff =CfgReadBool("DEBUG","Show_Messages_Key_On_Off",0);
+	_MsgVoiceOff =CfgReadBool("DEBUG","Show_Messages_Voice_Off",0);
+	_MsgDMA      =CfgReadBool("DEBUG","Show_Messages_DMA_Transfer",0);
+	_MsgAutoDMA  =CfgReadBool("DEBUG","Show_Messages_AutoDMA",0);
+	_MsgOverruns =CfgReadBool("DEBUG","Show_Messages_Overruns",0);
+	_MsgCache    =CfgReadBool("DEBUG","Show_Messages_CacheStats",0);
 
-	CoresDump   =DebugEnabled&CfgReadBool("DEBUG","Dump_Info",0);
-	MemDump     =DebugEnabled&CfgReadBool("DEBUG","Dump_Memory",0);
-	RegDump     =DebugEnabled&CfgReadBool("DEBUG","Dump_Regs",0);
+	_AccessLog   =CfgReadBool("DEBUG","Log_Register_Access",0);
+	_DMALog      =CfgReadBool("DEBUG","Log_DMA_Transfers",0);
+	_WaveLog     =CfgReadBool("DEBUG","Log_WAVE_Output",0);
+
+	_CoresDump   =CfgReadBool("DEBUG","Dump_Info",0);
+	_MemDump     =CfgReadBool("DEBUG","Dump_Memory",0);
+	_RegDump     =CfgReadBool("DEBUG","Dump_Regs",0);
 
 	CfgReadStr("DEBUG","Access_Log_Filename",AccessLogFileName,255,"logs\\SPU2Log.txt");
 	CfgReadStr("DEBUG","WaveLog_Filename",   WaveLogFileName,  255,"logs\\SPU2log.wav");
@@ -218,55 +237,82 @@ void ReadSettings()
 
 	WaveDumpFormat=CfgReadInt("DEBUG","Wave_Log_Format",0);
 
-		
-	Interpolation=CfgReadInt("MIXING","Interpolation",1);
 
 	AutoDMAPlayRate[0]=CfgReadInt("MIXING","AutoDMA_Play_Rate_0",0);
 	AutoDMAPlayRate[1]=CfgReadInt("MIXING","AutoDMA_Play_Rate_1",0);
 
-	EffectsEnabled=CfgReadBool("EFFECTS","Enable_Effects",0);
+	Interpolation=CfgReadInt("MIXING","Interpolation",1);
+
+	// Moved Timestretch from DSP to Output
+	timeStretchEnabled = CfgReadBool(
+		CfgFindName( "OUTPUT", "Timestretch_Enable" ) ? "OUTPUT" : "DSP",
+		"Timestretch_Enable", true
+	);
+
+	// Moved Effects_Enable from Effects to Mixing
+	EffectsEnabled = CfgReadBool(
+		CfgFindName( "MIXING", "Enable_Effects" ) ? "MIXING" : "EFFECTS",
+		"Enable_Effects", false
+	);
 
 	SampleRate=CfgReadInt("OUTPUT","Sample_Rate",48000);
+	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency",120);
 
-	CurBufferSize=CfgReadInt("OUTPUT","Buffer_Size",1024);
-	MaxBufferCount=CfgReadInt("OUTPUT","Buffer_Count",10);
-	if(MaxBufferCount<3)	MaxBufferCount=3;
-	CurBufferCount=MaxBufferCount;
+	//OutputModule = CfgReadInt("OUTPUT","Output_Module", OUTPUT_DSOUND );
+	char omodid[128];
+	CfgReadStr( "OUTPUT", "Output_Module", omodid, 127, DSoundOut->GetIdent() );
 
-	OutputModule=CfgReadInt("OUTPUT","Output_Module",OUTPUT_DSOUND);
+	// find the driver index of this module:
+	OutputModule = FindOutputModuleById( omodid );
 
-	VolumeMultiplier=CfgReadInt("OUTPUT","Volume_Multiplier",1);
-	VolumeDivisor   =CfgReadInt("OUTPUT","Volume_Divisor",1);
-
-	GainL  =CfgReadInt("OUTPUT","Channel_Gain_L",  256);
-	GainR  =CfgReadInt("OUTPUT","Channel_Gain_R",  256);
-	GainC  =CfgReadInt("OUTPUT","Channel_Gain_C",  256);
-	GainLFE=CfgReadInt("OUTPUT","Channel_Gain_LFE",256);
-	GainSL =CfgReadInt("OUTPUT","Channel_Gain_SL", 200);
-	GainSR =CfgReadInt("OUTPUT","Channel_Gain_SR", 200);
-	AddCLR =CfgReadInt("OUTPUT","Channel_Center_In_LR", 56);
-	LowpassLFE = CfgReadInt("OUTPUT","LFE_Lowpass_Frequency", 80);
-
+	VolumeShiftModifier = CfgReadInt( "OUTPUT","Volume_Shift", 0 );
 	LimitMode=CfgReadInt("OUTPUT","Speed_Limit_Mode",0);
-
-	CfgReadStr("OUTPUT","Asio_Driver_Name",AsioDriver,128,"");
 
 	CfgReadStr("DSP PLUGIN","Filename",dspPlugin,255,"");
 	dspPluginModule = CfgReadInt("DSP PLUGIN","ModuleNum",0);
 	dspPluginEnabled= CfgReadBool("DSP PLUGIN","Enabled",false);
 
-	timeStretchEnabled = false; /*CfgReadBool("DSP","Timestretch_Enable",false);*/ //has to be false at init
-
 	LimiterToggleEnabled = CfgReadBool("KEYS","Limiter_Toggle_Enabled",false);
 	LimiterToggle        = CfgReadInt ("KEYS","Limiter_Toggle",VK_SUBTRACT);
 
-	CfgReadStr("DirectSound Output (Stereo)","Device",DSoundDevice,255,"");
+	// Read DSOUNDOUT and WAVEOUT configs:
+	CfgReadStr( "DSOUNDOUT", "Device", Config_DSoundOut.Device, 254, "default" );
+	CfgReadStr( "WAVEOUT", "Device", Config_WaveOut.Device, 254, "default" );
+	Config_DSoundOut.NumBuffers = CfgReadInt( "DSOUNDOUT", "Buffer_Count", 3 );
+	Config_WaveOut.NumBuffers = CfgReadInt( "WAVEOUT", "Buffer_Count", 4 );
 
-	if(VolumeMultiplier<0)       VolumeMultiplier=-VolumeMultiplier;
-	else if(VolumeMultiplier==0) VolumeMultiplier=1;
+	// Read DSOUND51 config:
+	Config_DSound51.GainL  =CfgReadInt("DSOUND51","Channel_Gain_L",  256);
+	Config_DSound51.GainR  =CfgReadInt("DSOUND51","Channel_Gain_R",  256);
+	Config_DSound51.GainC  =CfgReadInt("DSOUND51","Channel_Gain_C",  256);
+	Config_DSound51.GainLFE=CfgReadInt("DSOUND51","Channel_Gain_LFE",256);
+	Config_DSound51.GainSL =CfgReadInt("DSOUND51","Channel_Gain_SL", 200);
+	Config_DSound51.GainSR =CfgReadInt("DSOUND51","Channel_Gain_SR", 200);
+	Config_DSound51.AddCLR =CfgReadInt("DSOUND51","Channel_Center_In_LR", 56);
+	Config_DSound51.LowpassLFE = CfgReadInt("DSOUND51","LFE_Lowpass_Frequency", 80);
 
-	if(VolumeDivisor<0)       VolumeDivisor=-VolumeDivisor;
-	else if(VolumeDivisor==0) VolumeDivisor=1;
+	// Read ASIOOUT config:
+	CfgReadStr("ASIO","Asio_Driver_Name",AsioDriver,128,"");
+
+	// Sanity Checks
+	// -------------
+
+	SampleRate = 48000;		// Yup nothing else is supported for now.
+	VolumeShiftModifier = min( max( VolumeShiftModifier, -2 ), 2 );
+	SndOutVolumeShift = SndOutVolumeShiftBase - VolumeShiftModifier;
+	SndOutLatencyMS = min( max( SndOutLatencyMS, 20 ), 420 );
+	
+	Config_DSoundOut.NumBuffers = min( max( Config_DSoundOut.NumBuffers, 2 ), 8 );
+	Config_WaveOut.NumBuffers = min( max( Config_DSoundOut.NumBuffers, 3 ), 8 );
+
+	if( mods[OutputModule] == NULL )
+	{
+		// Unsupported or legacy module.
+		fprintf( stderr, " * SPU2: Unknown output module '%s' specified in configuration file.\n", omodid );
+		fprintf( stderr, " * SPU2: Defaulting to DirectSound (%s).\n", DSoundOut->GetIdent() );
+		OutputModule = FindOutputModuleById( DSoundOut->GetIdent() );
+	}
+
 
 }
 
@@ -276,20 +322,24 @@ void WriteSettings()
 {
 	CfgWriteBool("DEBUG","Global_Debug_Enabled",DebugEnabled);
 
-	if(DebugEnabled) {
-		CfgWriteBool("DEBUG","Show_Messages",             MsgToConsole);
-		CfgWriteBool("DEBUG","Show_Messages_Key_On_Off",  MsgKeyOnOff);
-		CfgWriteBool("DEBUG","Show_Messages_Voice_Off",   MsgVoiceOff);
-		CfgWriteBool("DEBUG","Show_Messages_DMA_Transfer",MsgDMA);
-		CfgWriteBool("DEBUG","Show_Messages_AutoDMA",     MsgAutoDMA);
+	// [Air] : Commented out so that we retain debug settings even if disabled...
+	//if(DebugEnabled)
+	{
+		CfgWriteBool("DEBUG","Show_Messages",             _MsgToConsole);
+		CfgWriteBool("DEBUG","Show_Messages_Key_On_Off",  _MsgKeyOnOff);
+		CfgWriteBool("DEBUG","Show_Messages_Voice_Off",   _MsgVoiceOff);
+		CfgWriteBool("DEBUG","Show_Messages_DMA_Transfer",_MsgDMA);
+		CfgWriteBool("DEBUG","Show_Messages_AutoDMA",     _MsgAutoDMA);
+		CfgWriteBool("DEBUG","Show_Messages_Overruns",    _MsgOverruns);
+		CfgWriteBool("DEBUG","Show_Messages_CacheStats",  _MsgCache);
 
-		CfgWriteBool("DEBUG","Log_Register_Access",AccessLog);
-		CfgWriteBool("DEBUG","Log_DMA_Transfers",  DMALog);
-		CfgWriteBool("DEBUG","Log_WAVE_Output",    WaveLog);
+		CfgWriteBool("DEBUG","Log_Register_Access",_AccessLog);
+		CfgWriteBool("DEBUG","Log_DMA_Transfers",  _DMALog);
+		CfgWriteBool("DEBUG","Log_WAVE_Output",    _WaveLog);
 
-		CfgWriteBool("DEBUG","Dump_Info",  CoresDump);
-		CfgWriteBool("DEBUG","Dump_Memory",MemDump);
-		CfgWriteBool("DEBUG","Dump_Regs",  RegDump);
+		CfgWriteBool("DEBUG","Dump_Info",  _CoresDump);
+		CfgWriteBool("DEBUG","Dump_Memory",_MemDump);
+		CfgWriteBool("DEBUG","Dump_Regs",  _RegDump);
 
 		CfgWriteStr("DEBUG","Access_Log_Filename",AccessLogFileName);
 		CfgWriteStr("DEBUG","WaveLog_Filename",   WaveLogFileName);
@@ -308,66 +358,82 @@ void WriteSettings()
 	CfgWriteInt("MIXING","AutoDMA_Play_Rate_0",AutoDMAPlayRate[0]);
 	CfgWriteInt("MIXING","AutoDMA_Play_Rate_1",AutoDMAPlayRate[1]);
 
-	CfgWriteBool("EFFECTS","Enable_Effects",EffectsEnabled);
+	CfgWriteBool("MIXING","Enable_Effects",EffectsEnabled);
 
-	CfgWriteInt("OUTPUT","Output_Module",OutputModule);
+	CfgWriteStr("OUTPUT","Output_Module",mods[OutputModule]->GetIdent() );
 	CfgWriteInt("OUTPUT","Sample_Rate",SampleRate);
-	CfgWriteInt("OUTPUT","Buffer_Size",CurBufferSize);
-	CfgWriteInt("OUTPUT","Buffer_Count",MaxBufferCount);
-
-	CfgWriteInt("OUTPUT","Volume_Multiplier",VolumeMultiplier);
-	CfgWriteInt("OUTPUT","Volume_Divisor",VolumeDivisor);
-
-	CfgWriteInt("OUTPUT","Channel_Gain_L",  GainL);
-	CfgWriteInt("OUTPUT","Channel_Gain_R",  GainR);
-	CfgWriteInt("OUTPUT","Channel_Gain_C",  GainC);
-	CfgWriteInt("OUTPUT","Channel_Gain_LFE",GainLFE);
-	CfgWriteInt("OUTPUT","Channel_Gain_SL", GainSL);
-	CfgWriteInt("OUTPUT","Channel_Gain_SR", GainSR);
-	CfgWriteInt("OUTPUT","Channel_Center_In_LR", AddCLR);
-	CfgWriteInt("OUTPUT","LFE_Lowpass_Frequency", LowpassLFE);
-
+	CfgWriteInt("OUTPUT","Latency",SndOutLatencyMS);
+	CfgWriteBool("OUTPUT","Timestretch_Enable",timeStretchEnabled);
 	CfgWriteInt("OUTPUT","Speed_Limit_Mode",LimitMode);
 
-	CfgWriteStr("OUTPUT","Asio_Driver_Name",AsioDriver);
+	CfgWriteInt("OUTPUT","Volume_Shift",SndOutVolumeShiftBase - SndOutVolumeShift);
+
+	CfgWriteStr("DSOUNDOUT","Device",Config_DSoundOut.Device);
+	CfgWriteInt("DSOUNDOUT","Buffer_Count",Config_DSoundOut.NumBuffers);
+
+	CfgWriteStr("WAVEOUT","Device",Config_WaveOut.Device);
+	CfgWriteInt("WAVEOUT","Buffer_Count",Config_WaveOut.NumBuffers);
+
+	CfgWriteInt("DSOUND51","Channel_Gain_L",  Config_DSound51.GainL);
+	CfgWriteInt("DSOUND51","Channel_Gain_R",  Config_DSound51.GainR);
+	CfgWriteInt("DSOUND51","Channel_Gain_C",  Config_DSound51.GainC);
+	CfgWriteInt("DSOUND51","Channel_Gain_LFE",Config_DSound51.GainLFE);
+	CfgWriteInt("DSOUND51","Channel_Gain_SL", Config_DSound51.GainSL);
+	CfgWriteInt("DSOUND51","Channel_Gain_SR", Config_DSound51.GainSR);
+	CfgWriteInt("DSOUND51","Channel_Center_In_LR", Config_DSound51.AddCLR);
+	CfgWriteInt("DSOUND51","LFE_Lowpass_Frequency", Config_DSound51.LowpassLFE);
+
+	CfgWriteStr("ASIO","Asio_Driver_Name",AsioDriver);
 
 	CfgWriteStr("DSP PLUGIN","Filename",dspPlugin);
 	CfgWriteInt("DSP PLUGIN","ModuleNum",dspPluginModule);
 	CfgWriteBool("DSP PLUGIN","Enabled",dspPluginEnabled);
 
-	CfgWriteBool("DSP","Timestretch_Enable",timeStretchEnabled);
-
 	CfgWriteBool("KEYS","Limiter_Toggle_Enabled",LimiterToggleEnabled);
 	CfgWriteInt ("KEYS","Limiter_Toggle",LimiterToggle);
-
-	CfgWriteStr("DirectSound Output (Stereo)","Device",DSoundDevice);
 }
+
+static void EnableDebugMessages( HWND hWnd )
+{
+	ENABLE_CONTROL(IDC_MSGSHOW, DebugEnabled);
+	ENABLE_CONTROL(IDC_MSGKEY,  MsgToConsole());
+	ENABLE_CONTROL(IDC_MSGVOICE,MsgToConsole());
+	ENABLE_CONTROL(IDC_MSGDMA,  MsgToConsole());
+	ENABLE_CONTROL(IDC_MSGADMA, MsgDMA());
+	ENABLE_CONTROL(IDC_DBG_OVERRUNS, MsgToConsole());
+	ENABLE_CONTROL(IDC_DBG_CACHE,    MsgToConsole());
+}
+
+static void EnableDebugControls( HWND hWnd )
+{
+	EnableDebugMessages( hWnd );
+	ENABLE_CONTROL(IDC_LOGREGS, DebugEnabled);
+	ENABLE_CONTROL(IDC_LOGDMA,  DebugEnabled);
+	ENABLE_CONTROL(IDC_LOGWAVE, DebugEnabled);
+	ENABLE_CONTROL(IDC_DUMPCORE,DebugEnabled);
+	ENABLE_CONTROL(IDC_DUMPMEM, DebugEnabled);
+	ENABLE_CONTROL(IDC_DUMPREGS,DebugEnabled);
+}
+
+static int myWidth, myDebugWidth;
+static int myHeight;
+static bool debugShow = false;
 
 BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int wmId,wmEvent;
-	char temp[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	char temp[384]={0};
 
 	switch(uMsg)
 	{
 
 		case WM_PAINT:
-			SET_CHECK(IDC_EFFECTS, EffectsEnabled);
-			SET_CHECK(IDC_DEBUG,   DebugEnabled);
-			SET_CHECK(IDC_MSGKEY,  DebugEnabled&MsgToConsole);
-			SET_CHECK(IDC_MSGKEY,  DebugEnabled&MsgKeyOnOff);
-			SET_CHECK(IDC_MSGVOICE,DebugEnabled&MsgVoiceOff);
-			SET_CHECK(IDC_MSGDMA,  DebugEnabled&MsgDMA);
-			SET_CHECK(IDC_MSGADMA, DebugEnabled&MsgDMA&MsgAutoDMA);
-			SET_CHECK(IDC_LOGREGS, AccessLog);
-			SET_CHECK(IDC_LOGDMA,  DMALog);
-			SET_CHECK(IDC_LOGWAVE, WaveLog);
-			SET_CHECK(IDC_DUMPCORE,CoresDump);
-			SET_CHECK(IDC_DUMPMEM, MemDump);
-			SET_CHECK(IDC_DUMPREGS,RegDump);
-			SET_CHECK(IDC_SPEEDLIMIT,LimitMode);
 			return FALSE;
+
 		case WM_INITDIALOG:
+
+			// If debugging is enabled, show the debug box by default:
+			debugShow = DebugEnabled;
 
 			SendMessage(GetDlgItem(hWnd,IDC_SRATE),CB_RESETCONTENT,0,0); 
 			SendMessage(GetDlgItem(hWnd,IDC_SRATE),CB_ADDSTRING,0,(LPARAM)"16000");
@@ -377,62 +443,64 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetDlgItem(hWnd,IDC_SRATE),CB_ADDSTRING,0,(LPARAM)"44100");
 			SendMessage(GetDlgItem(hWnd,IDC_SRATE),CB_ADDSTRING,0,(LPARAM)"48000");
 
-			sprintf(temp,"%d",SampleRate);
+			sprintf_s(temp,48,"%d",SampleRate);
 			SetDlgItemText(hWnd,IDC_SRATE,temp);
 
 			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_RESETCONTENT,0,0); 
-			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_ADDSTRING,0,(LPARAM)"0 - Nearest (none)");
-			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_ADDSTRING,0,(LPARAM)"1 - Linear (mid)");
-			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_ADDSTRING,0,(LPARAM)"2 - Cubic (good)");
+			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_ADDSTRING,0,(LPARAM)"0 - Nearest (none/fast)");
+			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_ADDSTRING,0,(LPARAM)"1 - Linear (recommended)");
+			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_ADDSTRING,0,(LPARAM)"2 - Cubic (better/slower)");
 			SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_SETCURSEL,Interpolation,0); 
 
-			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_RESETCONTENT,0,0); 
-			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_ADDSTRING,0,(LPARAM)"0 - Disabled (Emulate only)");
-			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_ADDSTRING,0,(LPARAM)"1 - waveOut (Slow/Laggy)");
-			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_ADDSTRING,0,(LPARAM)"2 - DSound (Typical)");
-			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_ADDSTRING,0,(LPARAM)"3 - DSound 5.1 (Experimental)");
-			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_ADDSTRING,0,(LPARAM)"4 - ASIO (Low Latency, BROKEN)");
-			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_ADDSTRING,0,(LPARAM)"5 - XAudio2 (Experimental)");
+			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_RESETCONTENT,0,0);
+			
+			{
+			int modidx = 0;
+			while( mods[modidx] != NULL )
+			{
+				sprintf_s( temp, 72, "%d - %s", modidx, mods[modidx]->GetLongName() );
+				SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_ADDSTRING,0,(LPARAM)temp);
+				++modidx;
+			}
 			SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_SETCURSEL,OutputModule,0); 
+			}
 
-			INIT_SLIDER(IDC_BUFFER,512,16384,4096,2048,512);
+			//INIT_SLIDER(IDC_BUFFER,512,16384,4096,2048,512);
+			INIT_SLIDER( IDC_LATENCY_SLIDER, 20, 420, 100, 20, 5 );
 
-			SendMessage(GetDlgItem(hWnd,IDC_BUFFER),TBM_SETPOS,TRUE,CurBufferSize); 
-			sprintf(temp,"%d",CurBufferSize);
-			SetWindowText(GetDlgItem(hWnd,IDC_BSIZE),temp);
+			SendMessage(GetDlgItem(hWnd,IDC_LATENCY_SLIDER),TBM_SETPOS,TRUE,SndOutLatencyMS); 
+			sprintf_s(temp,80,"%d ms (avg)",SndOutLatencyMS);
+			SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL),temp);
 
-			sprintf(temp,"%d",MaxBufferCount);
-			SetWindowText(GetDlgItem(hWnd,IDC_BCOUNT),temp);
+			EnableDebugControls( hWnd );
 
-			ENABLE_CONTROL(IDC_MSGSHOW, DebugEnabled);
-			ENABLE_CONTROL(IDC_MSGKEY,  DebugEnabled&MsgToConsole);
-			ENABLE_CONTROL(IDC_MSGVOICE,DebugEnabled&MsgToConsole);
-			ENABLE_CONTROL(IDC_MSGDMA,  DebugEnabled&MsgToConsole);
-			ENABLE_CONTROL(IDC_MSGADMA, DebugEnabled&MsgToConsole&MsgDMA);
-			ENABLE_CONTROL(IDC_LOGREGS, DebugEnabled);
-			ENABLE_CONTROL(IDC_LOGDMA,  DebugEnabled);
-			ENABLE_CONTROL(IDC_LOGWAVE, DebugEnabled);
-			ENABLE_CONTROL(IDC_DUMPCORE,DebugEnabled);
-			ENABLE_CONTROL(IDC_DUMPMEM, DebugEnabled);
-			ENABLE_CONTROL(IDC_DUMPREGS,DebugEnabled);
-
+			// Debugging / Logging Flags:
 			SET_CHECK(IDC_EFFECTS, EffectsEnabled);
 			SET_CHECK(IDC_DEBUG,   DebugEnabled);
-			SET_CHECK(IDC_MSGSHOW, MsgToConsole);
-			SET_CHECK(IDC_MSGKEY,  MsgKeyOnOff);
-			SET_CHECK(IDC_MSGVOICE,MsgVoiceOff);
-			SET_CHECK(IDC_MSGDMA,  MsgDMA);
-			SET_CHECK(IDC_MSGADMA, MsgAutoDMA);
-			SET_CHECK(IDC_LOGREGS, AccessLog);
-			SET_CHECK(IDC_LOGDMA,  DMALog);
-			SET_CHECK(IDC_LOGWAVE, WaveLog);
-			SET_CHECK(IDC_DUMPCORE,CoresDump);
-			SET_CHECK(IDC_DUMPMEM, MemDump);
-			SET_CHECK(IDC_DUMPREGS,RegDump);
+			SET_CHECK(IDC_MSGKEY,  _MsgToConsole);
+			SET_CHECK(IDC_MSGKEY,  _MsgKeyOnOff);
+			SET_CHECK(IDC_MSGVOICE,_MsgVoiceOff);
+			SET_CHECK(IDC_MSGDMA,  _MsgDMA);
+			SET_CHECK(IDC_MSGADMA, _MsgAutoDMA);
+			SET_CHECK(IDC_DBG_OVERRUNS, _MsgOverruns );
+			SET_CHECK(IDC_DBG_CACHE, _MsgCache );
+			SET_CHECK(IDC_LOGREGS, _AccessLog);
+			SET_CHECK(IDC_LOGDMA,  _DMALog);
+			SET_CHECK(IDC_LOGWAVE, _WaveLog);
+			SET_CHECK(IDC_DUMPCORE,_CoresDump);
+			SET_CHECK(IDC_DUMPMEM, _MemDump);
+			SET_CHECK(IDC_DUMPREGS,_RegDump);
+
 			SET_CHECK(IDC_SPEEDLIMIT,LimitMode);
+			SET_CHECK(IDC_SPEEDLIMIT_RUNTIME_TOGGLE,LimiterToggleEnabled);
 			SET_CHECK(IDC_DSP_ENABLE,dspPluginEnabled);
 			SET_CHECK(IDC_TS_ENABLE,timeStretchEnabled);
+
+			VolumeBoostEnabled = ( VolumeShiftModifier > 0 ) ? true : false;
+			SET_CHECK(IDC_VOLBOOST, VolumeBoostEnabled );
+
 			break;
+
 		case WM_COMMAND:
 			wmId    = LOWORD(wParam); 
 			wmEvent = HIWORD(wParam); 
@@ -444,48 +512,13 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					temp[19]=0;
 					SampleRate=atoi(temp);
 
-					GetDlgItemText(hWnd,IDC_BSIZE,temp,20);
-					temp[19]=0;
-					CurBufferSize=atoi(temp);
+					SndOutLatencyMS = (int)SendMessage( GetDlgItem( hWnd, IDC_LATENCY_SLIDER ), TBM_GETPOS, 0, 0 );
 
-					if(CurBufferSize<512)   CurBufferSize=512;
-					if(CurBufferSize>16384) CurBufferSize=16384;
-
-					GetDlgItemText(hWnd,IDC_BCOUNT,temp,20);
-					temp[19]=0;
-					MaxBufferCount=atoi(temp);
-
-					if(MaxBufferCount<4)  MaxBufferCount=4;
-					if(MaxBufferCount>50) MaxBufferCount=50;
+					if( SndOutLatencyMS > 420 ) SndOutLatencyMS = 420;
+					if( SndOutLatencyMS < 20 ) SndOutLatencyMS = 20;
 
 					Interpolation=(int)SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_GETCURSEL,0,0);
 					OutputModule=(int)SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_GETCURSEL,0,0);
-
-					/*
-					if((BufferSize*CurBufferCount)<9600)
-					{
-						int ret=MessageBoxEx(hWnd,"The total buffer space is too small and might cause problems.\n"
-												  "Press [Cancel] to go back and increase the buffer size or number.",
-												  "WARNING",MB_OKCANCEL | MB_ICONEXCLAMATION, 0);
-						if(ret==IDCANCEL)
-							break;
-					}
-					*/
-
-					DebugEnabled=DebugEnabled;
-					MsgToConsole=DebugEnabled&MsgToConsole;
-					MsgKeyOnOff =DebugEnabled&MsgToConsole&MsgKeyOnOff;
-					MsgVoiceOff =DebugEnabled&MsgToConsole&MsgVoiceOff;
-					MsgDMA      =DebugEnabled&MsgToConsole&MsgDMA;
-					MsgAutoDMA  =DebugEnabled&MsgToConsole&MsgAutoDMA;
-					AccessLog   =DebugEnabled&AccessLog;
-					DMALog      =DebugEnabled&DMALog;
-					WaveLog     =DebugEnabled&WaveLog;
-
-					CoresDump   =DebugEnabled&CoresDump;
-					MemDump     =DebugEnabled&MemDump;
-					RegDump     =DebugEnabled&RegDump;
-
 
 					WriteSettings();
 					EndDialog(hWnd,0);
@@ -495,45 +528,41 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					break;
 
 				case IDC_OUTCONF:
-					SndConfigure(hWnd);
+					SndConfigure( hWnd,
+						(int)SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_GETCURSEL,0,0)
+					);
 					break;
-				
+
+				HANDLE_CHECKNB( IDC_VOLBOOST, VolumeBoostEnabled );
+					VolumeShiftModifier = (VolumeBoostEnabled ? 1 : 0 );
+					SndOutVolumeShift = SndOutVolumeShiftBase - VolumeShiftModifier;
+					break;
 
 				HANDLE_CHECK(IDC_EFFECTS,EffectsEnabled);
 				HANDLE_CHECKNB(IDC_DEBUG,DebugEnabled);
-					ENABLE_CONTROL(IDC_MSGSHOW, DebugEnabled);
-					ENABLE_CONTROL(IDC_MSGKEY,  DebugEnabled&MsgToConsole);
-					ENABLE_CONTROL(IDC_MSGVOICE,DebugEnabled&MsgToConsole);
-					ENABLE_CONTROL(IDC_MSGDMA,  DebugEnabled&MsgToConsole);
-					ENABLE_CONTROL(IDC_MSGADMA, DebugEnabled&MsgToConsole&MsgDMA);
-					ENABLE_CONTROL(IDC_LOGREGS, DebugEnabled);
-					ENABLE_CONTROL(IDC_LOGDMA,  DebugEnabled);
-					ENABLE_CONTROL(IDC_LOGWAVE, DebugEnabled);
-					ENABLE_CONTROL(IDC_DUMPCORE,DebugEnabled);
-					ENABLE_CONTROL(IDC_DUMPMEM, DebugEnabled);
-					ENABLE_CONTROL(IDC_DUMPREGS,DebugEnabled);
+					EnableDebugControls( hWnd );
 					break;
-				HANDLE_CHECKNB(IDC_MSGSHOW,MsgToConsole);
-					ENABLE_CONTROL(IDC_MSGKEY,  DebugEnabled&MsgToConsole);
-					ENABLE_CONTROL(IDC_MSGVOICE,DebugEnabled&MsgToConsole);
-					ENABLE_CONTROL(IDC_MSGDMA,  DebugEnabled&MsgToConsole);
-					ENABLE_CONTROL(IDC_MSGADMA, DebugEnabled&MsgToConsole&MsgDMA);
+				HANDLE_CHECKNB(IDC_MSGSHOW,_MsgToConsole);
+					EnableDebugMessages( hWnd );
 					break;
-				HANDLE_CHECK(IDC_MSGKEY,MsgKeyOnOff);
-				HANDLE_CHECK(IDC_MSGVOICE,MsgVoiceOff);
-				HANDLE_CHECKNB(IDC_MSGDMA,MsgDMA);
-					ENABLE_CONTROL(IDC_MSGADMA, DebugEnabled&MsgToConsole&MsgDMA);
+				HANDLE_CHECK(IDC_MSGKEY,_MsgKeyOnOff);
+				HANDLE_CHECK(IDC_MSGVOICE,_MsgVoiceOff);
+				HANDLE_CHECKNB(IDC_MSGDMA,_MsgDMA);
+					ENABLE_CONTROL(IDC_MSGADMA, MsgDMA());
 					break;
-				HANDLE_CHECK(IDC_MSGADMA,MsgAutoDMA);
-				HANDLE_CHECK(IDC_LOGREGS,AccessLog);
-				HANDLE_CHECK(IDC_LOGDMA, DMALog);
-				HANDLE_CHECK(IDC_LOGWAVE,WaveLog);
-				HANDLE_CHECK(IDC_DUMPCORE,CoresDump);
-				HANDLE_CHECK(IDC_DUMPMEM, MemDump);
-				HANDLE_CHECK(IDC_DUMPREGS,RegDump);
-				HANDLE_CHECK(IDC_SPEEDLIMIT,LimitMode);
+				HANDLE_CHECK(IDC_MSGADMA,_MsgAutoDMA);
+				HANDLE_CHECK(IDC_DBG_OVERRUNS,_MsgOverruns);
+				HANDLE_CHECK(IDC_DBG_CACHE,_MsgCache);
+				HANDLE_CHECK(IDC_LOGREGS,_AccessLog);
+				HANDLE_CHECK(IDC_LOGDMA, _DMALog);
+				HANDLE_CHECK(IDC_LOGWAVE,_WaveLog);
+				HANDLE_CHECK(IDC_DUMPCORE,_CoresDump);
+				HANDLE_CHECK(IDC_DUMPMEM, _MemDump);
+				HANDLE_CHECK(IDC_DUMPREGS,_RegDump);
 				HANDLE_CHECK(IDC_DSP_ENABLE,dspPluginEnabled);
 				HANDLE_CHECK(IDC_TS_ENABLE,timeStretchEnabled);
+				HANDLE_CHECK(IDC_SPEEDLIMIT,LimitMode);
+				HANDLE_CHECK(IDC_SPEEDLIMIT_RUNTIME_TOGGLE,LimiterToggleEnabled);
 				default:
 					return FALSE;
 			}
@@ -550,11 +579,11 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				case TB_PAGEDOWN:
 					wmEvent=(int)SendMessage((HWND)lParam,TBM_GETPOS,0,0);
 				case TB_THUMBTRACK:
-					if(wmEvent<512) wmEvent=512;
-					if(wmEvent>24000) wmEvent=24000;
+					if(wmEvent<20) wmEvent=20;
+					if(wmEvent>420) wmEvent=420;
 					SendMessage((HWND)lParam,TBM_SETPOS,TRUE,wmEvent);
-					sprintf(temp,"%d",wmEvent);
-					SetDlgItemText(hWnd,IDC_BSIZE,temp);
+					sprintf_s(temp,80,"%d ms (avg)",wmEvent);
+					SetDlgItemText(hWnd,IDC_LATENCY_LABEL,temp);
 					break;
 				default:
 					return FALSE;

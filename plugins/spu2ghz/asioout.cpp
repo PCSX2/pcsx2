@@ -36,8 +36,9 @@ private:
 
 	#ifndef __WIN64__
 
-	#define BufferSize      (CurBufferSize<<1)
-	#define BufferSizeBytes (BufferSize<<2)
+	// [Air] : This needs fixed.
+	static const int BufferSize = SndOutPacketSize;
+	static const int BufferSizeBytes = BufferSize << 2;
 
 	s32* asio_lbuffer;
 
@@ -175,7 +176,7 @@ private:
 	#define DBL(t) ((t*)(asioDriverInfo.bufferInfos[0].buffers[index]))
 	#define DBR(t) ((t*)(asioDriverInfo.bufferInfos[1].buffers[index]))
 
-		int BLen=BufferSize*CurBufferCount;
+		int BLen=BufferSize*Config_Asio.NumBuffers;
 		int ssize=2;
 
 		if(showBufferInfo)
@@ -241,7 +242,11 @@ private:
 			bufferInfoReady=true;
 		}
 
-		buff->ReadSamples(asio_lbuffer,buffSize<<1);
+		// [Air] : Dunno if this is right...
+		//   Maybe there shouldn't be 2 packets? (doesn't make sense for low
+		//   latency drivers, but then again using ASIO at all doesn't make sense).
+		buff->ReadSamples(asio_lbuffer);
+		buff->ReadSamples(&asio_lbuffer[SndOutPacketSize]);
 		s32 asio_read_num = 0;
 
 		// perform the processing
@@ -586,7 +591,7 @@ public:
 		for(int i=0;i<driverMax;i++)
 		{
 			ConLog(" *** %u - %s\n",i+1,driverNames[i]);
-			if(stricmp(driverNames[i],AsioDriver)==0)
+			if(_stricmp(driverNames[i],AsioDriver)==0)
 			{
 				selected=i+1;
 				break;
@@ -670,9 +675,9 @@ public:
 	{
 	}
 
-	virtual bool Is51Out() { return false; }
+	virtual bool Is51Out() const { return false; }
 
-	s32  Test()
+	s32  Test() const
 	{
 	#ifndef __WIN64__
 		if(asioDrivers->asioGetNumDev()>0)
@@ -680,6 +685,22 @@ public:
 	#endif
 		return -1;
 	}
+
+	int GetEmptySampleCount() const 
+	{
+		return 0;
+	}
+
+	const char* GetIdent() const
+	{
+		return "asio";
+	}
+
+	const char* GetLongName() const
+	{
+		return "ASIO (BROKEN)";
+	}
+
 } ASIOMod;
 
 SndOutModule *ASIOOut=&ASIOMod;

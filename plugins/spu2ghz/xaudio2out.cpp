@@ -27,13 +27,11 @@
 class XAudio2Mod: public SndOutModule
 {
 private:
+	static const int BufferSize = SndOutPacketSize;
+	static const int BufferSizeBytes = BufferSize * 2;
+//#define BufferSize      (SndOutPacketSize<<1)
+//#define BufferSizeBytes (BufferSize<<1)
 
-//#define PI 3.14159265f
-
-#define BufferSize      (CurBufferSize<<1)
-#define BufferSizeBytes (BufferSize<<1)
-
-	s32* tbuffer;
 	s16* qbuffer;
 
 	s32 out_num;
@@ -104,16 +102,9 @@ private:
 			out_num=(out_num+1)%MAX_BUFFER_COUNT;
 
 			XAUDIO2_BUFFER buf = {0};
-			buff->ReadSamples(tbuffer,BufferSize);
+			buff->ReadSamples(qb);
 
 			buf.AudioBytes = BufferSizeBytes;
-			s16 *t = qb;
-			s32 *s = (s32*)tbuffer;
-			for(int i=0;i<BufferSize;i++)
-			{
-				*(t++) = (s16)((*(s++))>>8);
-			}
-
 			buf.pAudioData=(const BYTE*)qb;
 
 			pSourceVoice->SubmitSourceBuffer( &buf );
@@ -161,7 +152,7 @@ public:
 		wfx.nChannels=2;
 		wfx.wBitsPerSample = 16;
 		wfx.nBlockAlign = 2*2;
-		wfx.nAvgBytesPerSec = SampleRate * 2 * 2;
+		wfx.nAvgBytesPerSec = SampleRate * wfx.nBlockAlign;
 		wfx.cbSize=0;
 
 		//
@@ -175,9 +166,9 @@ public:
 		}
 		pSourceVoice->Start( 0, 0 );
 
-		tbuffer = new s32[BufferSize];
+		//tbuffer = new s32[BufferSize];
 		qbuffer = new s16[BufferSize*MAX_BUFFER_COUNT];
-		ZeroMemory(qbuffer,BufferSize*MAX_BUFFER_COUNT);
+		ZeroMemory(qbuffer,BufferSize*MAX_BUFFER_COUNT*2);
 
 		// Start Thread
 		xaudio2_running=true;
@@ -218,20 +209,34 @@ public:
 
 		SAFE_RELEASE( pXAudio2 );
 		CoUninitialize();
-
-		delete tbuffer;
 	}
 
 	virtual void Configure(HWND parent)
 	{
 	}
 
-	virtual bool Is51Out() { return false; }
+	virtual bool Is51Out() const { return false; }
 
-	s32  Test()
+	s32  Test() const
 	{
 		return 0;
 	}
+
+	int GetEmptySampleCount() const
+	{
+		return 0;
+	}
+
+	const char* GetIdent() const
+	{
+		return "xaudio2";
+	}
+
+	const char* GetLongName() const
+	{
+		return "XAudio 2 (Experimental)";
+	}
+
 } XA2;
 
 SndOutModule *XAudio2Out=&XA2;

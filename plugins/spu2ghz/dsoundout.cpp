@@ -68,12 +68,11 @@ HRESULT GUIDFromString(const char *str, LPGUID guid)
 class DSound: public SndOutModule
 {
 private:
-#	define PI 3.14159265f
+	#	define MAX_BUFFER_COUNT 8
 
-#	define BufferSize      (CurBufferSize<<1)
-#	define BufferSizeBytes (BufferSize<<1)
-
-#	define TBufferSize     (BufferSize*CurBufferCount)
+	static const int PacketsPerBuffer = (1024 / SndOutPacketSize);
+	static const int BufferSize = SndOutPacketSize * PacketsPerBuffer;
+	static const int BufferSizeBytes = BufferSize << 1;
 
 	FILE *voicelog;
 
@@ -82,8 +81,6 @@ private:
 	bool dsound_running;
 	HANDLE thread;
 	DWORD tid;
-
-#	define MAX_BUFFER_COUNT 5
 
 	IDirectSound8* dsound;
 	IDirectSoundBuffer8* buffer;
@@ -96,10 +93,7 @@ private:
 
 	SndBuffer *buff;
 
-	s32 *tbuffer;
-
 #	define STRFY(x) #x
-
 #	define verifyc(x) if(Verifyc(x,STRFY(x))) return -1;
 
 	int __forceinline Verifyc(HRESULT hr,const char* fn)
@@ -122,36 +116,21 @@ private:
 
 		while( dsound_running )
 		{
-			u32 rv = WaitForMultipleObjects(MAX_BUFFER_COUNT,buffer_events,FALSE,400);
+			u32 rv = WaitForMultipleObjects(Config_DSoundOut.NumBuffers,buffer_events,FALSE,200);
 	 
-			LPVOID p1,p2;
+			s16* p1, *oldp1;
+			LPVOID p2;
 			DWORD s1,s2;
 	 
 			u32 poffset=BufferSizeBytes * rv;
 
-		    //DWORD          play, write;
-			//buffer->GetCurrentPosition( &play, &write );
-			//ConLog( " * SPU2 > Play: %d   Write: %d  poffset: %d\n", play, write, poffset );
+			verifyc(buffer->Lock(poffset,BufferSizeBytes,(LPVOID*)&p1,&s1,&p2,&s2,0));
+			oldp1 = p1;
 
-			buff->ReadSamples(tbuffer,BufferSize);
-
-			verifyc(buffer->Lock(poffset,BufferSizeBytes,&p1,&s1,&p2,&s2,0));
+			for(int p=0; p<PacketsPerBuffer; p++, p1+=SndOutPacketSize )
+				buff->ReadSamples( p1 );
 			
-			{
-				s16 *t = (s16*)p1;
-				s32 *s = (s32*)tbuffer;
-				for(int j=0;j<BufferSize;j++)
-				{
-					*(t++) = (s16)((*(s++))>>8);
-				}
-			}
-
-			/*if( p2 != NULL )
-			{
-				ConLog( " * SPU2 > DSound Driver Loop-Around Occured.  Length: %d", s2 );
-			}*/
-
-			verifyc(buffer->Unlock(p1,s1,p2,s2));
+			verifyc(buffer->Unlock(oldp1,s1,p2,s2));
 		}
 		return 0;
 	}
@@ -166,7 +145,7 @@ public:
 		//
 		GUID cGuid;
 
-		if((strlen(DSoundDevice)>0)&&(!FAILED(GUIDFromString(DSoundDevice,&cGuid))))
+		if((strlen(Config_DSoundOut.Device)>0)&&(!FAILED(GUIDFromString(Config_DSoundOut.Device,&cGuid))))
 		{
 			verifyc(DirectSoundCreate8(&cGuid,&dsound,NULL));
 		}
@@ -187,7 +166,7 @@ public:
 		wfx.nChannels=2;
 		wfx.wBitsPerSample = 16;
 		wfx.nBlockAlign = 2*2;
-		wfx.nAvgBytesPerSec = SampleRate * 2 * 2;
+		wfx.nAvgBytesPerSec = SampleRate * wfx.nBlockAlign;
 		wfx.cbSize=0;
 	 
 		// Set up DSBUFFERDESC structure. 
@@ -195,7 +174,7 @@ public:
 		memset(&desc, 0, sizeof(DSBUFFERDESC)); 
 		desc.dwSize = sizeof(DSBUFFERDESC); 
 		desc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLPOSITIONNOTIFY;// _CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY; 
-		desc.dwBufferBytes = BufferSizeBytes * MAX_BUFFER_COUNT; 
+		desc.dwBufferBytes = BufferSizeBytes * Config_DSoundOut.NumBuffers; 
 		desc.lpwfxFormat = &wfx; 
 	 
 		desc.dwFlags |=DSBCAPS_LOCSOFTWARE;
@@ -209,14 +188,18 @@ public:
 
 		DSBPOSITIONNOTIFY not[MAX_BUFFER_COUNT];
 	 
-		for(int i=0;i<MAX_BUFFER_COUNT;i++)
+		for(int i=0;i<Config_DSoundOut.NumBuffers;i++)
 		{
+			// [Air] note: wfx.nBlockAlign modifier was *10 -- seems excessive to me but maybe
+			// it was needed for some quirky driver?  Theoretically we want the notification as soon
+			// as possible after the buffer has finished playing.
+
 			buffer_events[i]=CreateEvent(NULL,FALSE,FALSE,NULL);
-			not[i].dwOffset=(wfx.nBlockAlign*10 + BufferSizeBytes*(i+1))%desc.dwBufferBytes;
+			not[i].dwOffset=(wfx.nBlockAlign*2 + BufferSizeBytes*(i+1))%desc.dwBufferBytes;
 			not[i].hEventNotify=buffer_events[i];
 		}
 	 
-		buffer_notify->SetNotificationPositions(MAX_BUFFER_COUNT,not);
+		buffer_notify->SetNotificationPositions(Config_DSoundOut.NumBuffers,not);
 	 
 		LPVOID p1=0,p2=0;
 		DWORD s1=0,s2=0;
@@ -229,13 +212,10 @@ public:
 		//Play the buffer !
 		verifyc(buffer->Play(0,0,DSBPLAY_LOOPING));
 
-		tbuffer = new s32[BufferSize];
-
 		// Start Thread
 		dsound_running=true;
-			thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
+		thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
 		SetThreadPriority(thread,THREAD_PRIORITY_TIME_CRITICAL);
- 
 
 		return 0;
 	}
@@ -257,14 +237,12 @@ public:
 		//
 		buffer->Stop();
 	 
-		for(int i=0;i<MAX_BUFFER_COUNT;i++)
+		for(int i=0;i<Config_DSoundOut.NumBuffers;i++)
 			CloseHandle(buffer_events[i]);
 	 
 		buffer_notify->Release();
 		buffer->Release();
 		dsound->Release();
-
-		delete tbuffer;
 	}
 
 private:
@@ -298,7 +276,7 @@ private:
 		{
 			case WM_INITDIALOG:
 
-				haveGuid = ! FAILED(GUIDFromString(DSoundDevice,&DevGuid));
+				haveGuid = ! FAILED(GUIDFromString(Config_DSoundOut.Device,&DevGuid));
 				SendMessage(GetDlgItem(hWnd,IDC_DS_DEVICE),CB_RESETCONTENT,0,0); 
 
 				ndevs=0;
@@ -319,6 +297,12 @@ private:
 					SendMessage(GetDlgItem(hWnd,IDC_DS_DEVICE),CB_SETCURSEL,tSel,0);
 				}
 
+				char temp[128];
+				INIT_SLIDER( IDC_BUFFERS_SLIDER, 2, MAX_BUFFER_COUNT, 2, 1, 1 );
+				SendMessage(GetDlgItem(hWnd,IDC_BUFFERS_SLIDER),TBM_SETPOS,TRUE,Config_DSoundOut.NumBuffers); 
+				sprintf_s(temp, 128, "%d (%d ms latency)",Config_DSoundOut.NumBuffers, 1000 / (96000 / (Config_DSoundOut.NumBuffers * BufferSize)));
+				SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL),temp);
+
 				break;
 			case WM_COMMAND:
 				wmId    = LOWORD(wParam); 
@@ -332,11 +316,11 @@ private:
 							
 							if(!devices[i].hasGuid)
 							{
-								DSoundDevice[0]=0; // clear device name to ""
+								Config_DSoundOut.Device[0] = 0; // clear device name to ""
 							}
 							else
 							{
-								sprintf_s(DSoundDevice,256,"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+								sprintf_s(Config_DSoundOut.Device,256,"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
 									devices[i].guid.Data1,
 									devices[i].guid.Data2,
 									devices[i].guid.Data3,
@@ -350,6 +334,11 @@ private:
 									devices[i].guid.Data4[7]
 									);
 							}
+
+							Config_DSoundOut.NumBuffers = (int)SendMessage( GetDlgItem( hWnd, IDC_BUFFERS_SLIDER ), TBM_GETPOS, 0, 0 );
+
+							if( Config_DSoundOut.NumBuffers < 2 ) Config_DSoundOut.NumBuffers = 2;
+							if( Config_DSoundOut.NumBuffers > MAX_BUFFER_COUNT ) Config_DSoundOut.NumBuffers = MAX_BUFFER_COUNT;
 						}
 						EndDialog(hWnd,0);
 						break;
@@ -360,6 +349,30 @@ private:
 						return FALSE;
 				}
 				break;
+
+			case WM_HSCROLL:
+				wmId    = LOWORD(wParam); 
+				wmEvent = HIWORD(wParam); 
+				switch(wmId) {
+					//case TB_ENDTRACK:
+					//case TB_THUMBPOSITION:
+					case TB_LINEUP:
+					case TB_LINEDOWN:
+					case TB_PAGEUP:
+					case TB_PAGEDOWN:
+						wmEvent=(int)SendMessage((HWND)lParam,TBM_GETPOS,0,0);
+					case TB_THUMBTRACK:
+						if( wmEvent < 2 ) wmEvent = 2;
+						if( wmEvent > MAX_BUFFER_COUNT ) wmEvent = MAX_BUFFER_COUNT;
+						SendMessage((HWND)lParam,TBM_SETPOS,TRUE,wmEvent);
+						sprintf_s(temp,128,"%d (%d ms latency)",wmEvent, 1000 / (96000 / (wmEvent * BufferSize)));
+						SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL),temp);
+						break;
+					default:
+						return FALSE;
+				}
+				break;
+
 			default:
 				return FALSE;
 		}
@@ -378,12 +391,36 @@ public:
 		}
 	}
 
-	virtual bool Is51Out() { return false; }
+	virtual bool Is51Out() const { return false; }
 
-	s32 Test()
+	s32 Test() const
 	{
 		return 0;
 	}
+
+	int GetEmptySampleCount() const
+	{
+		DWORD play, write;
+		buffer->GetCurrentPosition( &play, &write );
+		int filled = play - write;
+		if( filled < 0 )
+			filled = -filled;
+		else
+			filled = (BufferSizeBytes * Config_DSoundOut.NumBuffers) - filled;
+
+		return filled;
+	}
+
+	const char* GetIdent() const
+	{
+		return "dsound";
+	}
+
+	const char* GetLongName() const
+	{
+		return "DirectSound";
+	}
+
 } DS;
 
 SndOutModule *DSoundOut=&DS;

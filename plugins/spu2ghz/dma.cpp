@@ -34,7 +34,7 @@ u16* MBASE[2] = {0,0};
 u16* DMABaseAddr;
 
 void DMALogOpen() {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	DMA4LogFile=fopen(DMA4LogFileName,"wb");
 	DMA7LogFile=fopen(DMA7LogFileName,"wb");
 	ADMA4LogFile=fopen("logs/adma4.raw","wb");
@@ -44,42 +44,42 @@ void DMALogOpen() {
 	//REGWRTLogFile[1]=fopen("logs/RegWrite1.raw","wb");
 }
 void DMA4LogWrite(void *lpData, u32 ulSize) {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	if (!DMA4LogFile) return;
 	fwrite(lpData,ulSize,1,DMA4LogFile);
 }
 
 void DMA7LogWrite(void *lpData, u32 ulSize) {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	if (!DMA7LogFile) return;
 	fwrite(lpData,ulSize,1,DMA7LogFile);
 }
 
 void ADMA4LogWrite(void *lpData, u32 ulSize) {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	if (!ADMA4LogFile) return;
 	fwrite(lpData,ulSize,1,ADMA4LogFile);
 }
 void ADMA7LogWrite(void *lpData, u32 ulSize) {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	if (!ADMA7LogFile) return;
 	fwrite(lpData,ulSize,1,ADMA7LogFile);
 }
 void ADMAOutLogWrite(void *lpData, u32 ulSize) {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	if (!ADMAOutLogFile) return;
 	fwrite(lpData,ulSize,1,ADMAOutLogFile);
 }
 
 void RegWriteLog(u32 core,u16 value)
 {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	if (!REGWRTLogFile[core]) return;
 	fwrite(&value,2,1,REGWRTLogFile[core]);
 }
 
 void DMALogClose() {
-	if(!DMALog) return;
+	if(!DMALog()) return;
 	if (DMA4LogFile) fclose(DMA4LogFile);
 	if (DMA7LogFile) fclose(DMA7LogFile);
 	if (REGWRTLogFile[0]) fclose(REGWRTLogFile[0]);
@@ -142,7 +142,7 @@ void AutoDMAReadBuffer(int core, int mode) //mode: 0= split stereo; 1 = do not s
 void StartADMAWrite(int core,u16 *pMem, u32 sz)
 {
 	int size=(sz)&(~511);
-	if(MsgAutoDMA) ConLog(" * SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
+	if(MsgAutoDMA()) ConLog(" * SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
 
 	Cores[core].InputDataProgress=0;
 	if((Cores[core].AutoDMACtrl&(core+1))==0)
@@ -202,7 +202,7 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 	else
 		DMA7LogWrite(pMem,size<<1);
 
-	if(MsgDMA) ConLog(" * SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
+	if(MsgDMA()) ConLog(" * SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
 
 	Cores[core].TDA=Cores[core].TSA;
 	for (i=0;i<size;i++) {
