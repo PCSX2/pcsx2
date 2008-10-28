@@ -245,7 +245,7 @@ public:
 			if( timeStretchEnabled )
 			{
 				// timeStretcher failed it's job.  We need to slow down the audio some.
-
+				
 				cTempo -= (cTempo * 0.25f);
 				if( cTempo < 0.2f ) cTempo = 0.2f;
 				pSoundTouch->setTempo( cTempo );
@@ -488,10 +488,9 @@ void UpdateTempoChange()
 	if( statusPct < -0.20 || statusPct > 0.20 || cTempo < 0.980 || cTempo > 1.020 )
 	{
 		if( cTempo < 0.20f ) cTempo = 0.20f;
-		else if( cTempo > 5.0f ) cTempo = 5.0f;
+		else if( cTempo > 10.0f ) cTempo = 10.0f; //5.0 is suggested by soundtouch, but this is fine as well (rama)
 		pSoundTouch->setTempo( cTempo );
 		ts_stats_stretchblocks++;
-
 		ConLog(" %s * SPU2: TempoChange by %d%% (tempo: %d%%) (buffer: %d%%)\n",
 			(relation < 0.0) ? "Normalize" : "",
 			(int)(tempoChange * 100.0), (int)(cTempo * 100.0),
@@ -613,6 +612,9 @@ s32 SndWrite(s32 ValL, s32 ValR)
 	}
 
 	static int equalized = 0;
+	//use this to debug buffer usage in near realtime (rama)
+	/*if ((sndBuffer->GetStatusPct() < -0.3) || (sndBuffer->GetStatusPct() > 1.3)) 
+		printf("Buffer beyond save zone! Usage: %f\n",sndBuffer->GetStatusPct());*/
 	if(timeStretchEnabled)
 	{
 		bool progress = false;

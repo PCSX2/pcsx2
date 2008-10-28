@@ -256,7 +256,7 @@ void ReadSettings()
 	);
 
 	SampleRate=CfgReadInt("OUTPUT","Sample_Rate",48000);
-	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency",120);
+	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency",140);
 
 	//OutputModule = CfgReadInt("OUTPUT","Output_Module", OUTPUT_DSOUND );
 	char omodid[128];
@@ -278,7 +278,7 @@ void ReadSettings()
 	// Read DSOUNDOUT and WAVEOUT configs:
 	CfgReadStr( "DSOUNDOUT", "Device", Config_DSoundOut.Device, 254, "default" );
 	CfgReadStr( "WAVEOUT", "Device", Config_WaveOut.Device, 254, "default" );
-	Config_DSoundOut.NumBuffers = CfgReadInt( "DSOUNDOUT", "Buffer_Count", 3 );
+	Config_DSoundOut.NumBuffers = CfgReadInt( "DSOUNDOUT", "Buffer_Count", 4 );
 	Config_WaveOut.NumBuffers = CfgReadInt( "WAVEOUT", "Buffer_Count", 4 );
 
 	// Read DSOUND51 config:
