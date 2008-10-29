@@ -56,6 +56,9 @@ public:
 class SndOutModule
 {
 public:
+	// Virtual destructor, because it helps fight C+++ funny-business.
+	virtual ~SndOutModule(){};
+
 	// Returns a unique identification string for this driver.
 	// (usually just matches the driver's cpp filename)
 	virtual const char* GetIdent() const=0;

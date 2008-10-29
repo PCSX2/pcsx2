@@ -24,56 +24,55 @@
 #include <mmsystem.h>
 #include <conio.h>
 
+// turn off warning C4355: 'this' : used in base member initializer list
+#pragma warning( disable: 4355 )
+
 class XAudio2Mod: public SndOutModule
 {
 private:
-	static const int BufferSize = SndOutPacketSize;
+	static const int PacketsPerBuffer = 1;
+	static const int BufferSize = SndOutPacketSize * PacketsPerBuffer;
 	static const int BufferSizeBytes = BufferSize * 2;
-//#define BufferSize      (SndOutPacketSize<<1)
-//#define BufferSizeBytes (BufferSize<<1)
 
 	s16* qbuffer;
-
 	s32 out_num;
 
-#define QBUFFER(num) (qbuffer+(BufferSize*(num)))
-
 	SndBuffer *buff;
-
-	bool xaudio2_running;
-	HANDLE thread;
-	DWORD tid;
-
-	//--------------------------------------------------------------------------------------
-	// Helper macros
-	//--------------------------------------------------------------------------------------
-#ifndef SAFE_DELETE_ARRAY
-#	define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
-#endif
-#ifndef SAFE_RELEASE
-#	define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
-#endif
 
 #define MAX_BUFFER_COUNT 3
 
 	//--------------------------------------------------------------------------------------
 	// Callback structure
 	//--------------------------------------------------------------------------------------
-	struct StreamingVoiceContext : public IXAudio2VoiceCallback
+	class StreamingVoiceContext : public IXAudio2VoiceCallback
 	{
+	public:
+		SndBuffer* sndout;
+		IXAudio2SourceVoice* pSourceVoice;
+
+	protected:
 		STDMETHOD_(void, OnVoiceProcessingPassStart) () {}
 		STDMETHOD_(void, OnVoiceProcessingPassStart) (UINT32) { };
 		STDMETHOD_(void, OnVoiceProcessingPassEnd) () {}
 		STDMETHOD_(void, OnStreamEnd) () {}
 		STDMETHOD_(void, OnBufferStart) ( void* ) {}
-		STDMETHOD_(void, OnBufferEnd) ( void* ) { SetEvent( hBufferEndEvent ); }
+		STDMETHOD_(void, OnBufferEnd) ( void* context )
+		{
+			s16* qb = (s16*)context;
+
+			for(int p=0; p<PacketsPerBuffer; p++, qb+=SndOutPacketSize )
+				sndout->ReadSamples( qb );
+
+			XAUDIO2_BUFFER buf = {0};
+			buf.AudioBytes = BufferSizeBytes;
+			buf.pAudioData=(const BYTE*)context;
+			buf.pContext=context;
+
+			pSourceVoice->SubmitSourceBuffer( &buf );
+		}
 		STDMETHOD_(void, OnLoopEnd) ( void* ) {}   
 		STDMETHOD_(void, OnVoiceError) (THIS_ void* pBufferContext, HRESULT Error) { };
 
-		HANDLE hBufferEndEvent;
-
-		StreamingVoiceContext(): hBufferEndEvent( CreateEvent( NULL, FALSE, FALSE, NULL ) ){}
-		~StreamingVoiceContext(){ CloseHandle( hBufferEndEvent ); }
 	} voiceContext;
 
 	IXAudio2* pXAudio2;
@@ -82,42 +81,14 @@ private:
 
 	WAVEFORMATEX wfx;
 
-
-	static DWORD CALLBACK RThread(XAudio2Mod*obj)
-	{
-		return obj->Thread();
-	}
-
-	DWORD CALLBACK Thread()
-	{
-		while( xaudio2_running )
-		{
-			XAUDIO2_VOICE_STATE state;
-			while( pSourceVoice->GetState( &state ), state.BuffersQueued >= MAX_BUFFER_COUNT - 1)
-			{
-				WaitForSingleObject( voiceContext.hBufferEndEvent, INFINITE );
-			}
-
-			s16 *qb=QBUFFER(out_num);
-			out_num=(out_num+1)%MAX_BUFFER_COUNT;
-
-			XAUDIO2_BUFFER buf = {0};
-			buff->ReadSamples(qb);
-
-			buf.AudioBytes = BufferSizeBytes;
-			buf.pAudioData=(const BYTE*)qb;
-
-			pSourceVoice->SubmitSourceBuffer( &buf );
-		}
-		return 0;
-	}
-
 public:
+
 	s32  Init(SndBuffer *sb)
 	{
 		HRESULT hr;
 
 		buff=sb;
+		voiceContext.sndout = buff;
 
 		//
 		// Initialize XAudio2
@@ -164,50 +135,57 @@ public:
 			SAFE_RELEASE( pXAudio2 );
 			return -1;
 		}
+		voiceContext.pSourceVoice = pSourceVoice;
 		pSourceVoice->Start( 0, 0 );
 
-		//tbuffer = new s32[BufferSize];
 		qbuffer = new s16[BufferSize*MAX_BUFFER_COUNT];
-		ZeroMemory(qbuffer,BufferSize*MAX_BUFFER_COUNT*2);
+		ZeroMemory(qbuffer,BufferSizeBytes*MAX_BUFFER_COUNT);
 
-		// Start Thread
-		xaudio2_running=true;
-		thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
+		// Start two buffers.
+		// Frankly two buffers is all we should ever need since the buffer fill code
+		// is tied directly to the XAudio2 engine.
 
-		if(thread==INVALID_HANDLE_VALUE) return -1;
+		XAUDIO2_BUFFER buf = {0};
+		buf.AudioBytes = BufferSizeBytes;
+		buf.pContext=qbuffer;
+		buf.pAudioData=(BYTE*)buf.pContext;
+		pSourceVoice->SubmitSourceBuffer( &buf );
 
-		SetThreadPriority(thread,THREAD_PRIORITY_TIME_CRITICAL);
+		buf.pContext=&qbuffer[BufferSize];
+		buf.pAudioData=(BYTE*)buf.pContext;
+		pSourceVoice->SubmitSourceBuffer( &buf );
 
 		return 0;
 	}
 
 	void Close()
 	{
-		// Stop Thread
-		fprintf(stderr," * SPU2: Waiting for XAudio2 thread to finish...");
-		xaudio2_running=false;
-			
-		WaitForSingleObject(thread,INFINITE);
-		CloseHandle(thread);
-
-		fprintf(stderr," Done.\n");
-
 		//
 		// Clean up
 		//
-		pSourceVoice->Stop( 0 );
-		pSourceVoice->DestroyVoice();
+		if( pSourceVoice != NULL )
+		{
+			pSourceVoice->Stop( 0 );
+			pSourceVoice->DestroyVoice();
+			pSourceVoice = NULL;
+		}
 
-		Sleep(100);
+		Sleep(50);
 
 		//
 		// Cleanup XAudio2
 		//
 
-		// All XAudio2 interfaces are released when the engine is destroyed, but being tidy
-		pMasteringVoice->DestroyVoice();
+		// All XAudio2 interfaces are released when the engine is destroyed,
+		// but being tidy never hurt.
+
+		if( pMasteringVoice != NULL )
+			pMasteringVoice->DestroyVoice();
+		pMasteringVoice = NULL;
 
 		SAFE_RELEASE( pXAudio2 );
+		SAFE_DELETE_ARRAY( qbuffer );
+
 		CoUninitialize();
 	}
 
@@ -224,7 +202,11 @@ public:
 
 	int GetEmptySampleCount() const
 	{
-		return 0;
+		// I think this code works.
+		// It's kind of hard to know for sure.
+		XAUDIO2_VOICE_STATE state;
+		pSourceVoice->GetState( &state );
+		return state.SamplesPlayed & (BufferSize-1);
 	}
 
 	const char* GetIdent() const

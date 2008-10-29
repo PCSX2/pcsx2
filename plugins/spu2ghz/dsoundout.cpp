@@ -31,10 +31,12 @@ struct ds_device_data {
 	char name[256];
 	GUID guid;
 	bool hasGuid;
-} devices[32];
-int ndevs;
-GUID DevGuid;
-bool haveGuid;
+};
+
+static ds_device_data devices[32];
+static int ndevs;
+static GUID DevGuid;		// currently employed GUID.
+static bool haveGuid;
 
 HRESULT GUIDFromString(const char *str, LPGUID guid)
 {
@@ -70,13 +72,16 @@ class DSound: public SndOutModule
 private:
 	#	define MAX_BUFFER_COUNT 8
 
-	static const int PacketsPerBuffer = (1024 / SndOutPacketSize);
+	static const int PacketsPerBuffer = 1;
 	static const int BufferSize = SndOutPacketSize * PacketsPerBuffer;
 	static const int BufferSizeBytes = BufferSize << 1;
 
+
 	FILE *voicelog;
 
+	u32 numBuffers;		// cached copy of our configuration setting.
 	int channel;
+	int myLastWrite;	// last write position, in bytes
 
 	bool dsound_running;
 	HANDLE thread;
@@ -116,7 +121,7 @@ private:
 
 		while( dsound_running )
 		{
-			u32 rv = WaitForMultipleObjects(Config_DSoundOut.NumBuffers,buffer_events,FALSE,200);
+			u32 rv = WaitForMultipleObjects(numBuffers,buffer_events,FALSE,200);
 	 
 			s16* p1, *oldp1;
 			LPVOID p2;
@@ -124,13 +129,27 @@ private:
 	 
 			u32 poffset=BufferSizeBytes * rv;
 
+#ifdef _DEBUG
 			verifyc(buffer->Lock(poffset,BufferSizeBytes,(LPVOID*)&p1,&s1,&p2,&s2,0));
+#else
+			if( FAILED(buffer->Lock(poffset,BufferSizeBytes,(LPVOID*)&p1,&s1,&p2,&s2,0) ) )
+			{
+				fputs( " * SPU2 : Directsound Warning > Buffer lock failure.  You may need to increase the DSound buffer count.\n", stderr );
+				continue;
+			}
+#endif
 			oldp1 = p1;
 
 			for(int p=0; p<PacketsPerBuffer; p++, p1+=SndOutPacketSize )
 				buff->ReadSamples( p1 );
-			
+
+#ifndef PUBLIC
 			verifyc(buffer->Unlock(oldp1,s1,p2,s2));
+#else
+			buffer->Unlock(oldp1,s1,p2,s2);
+#endif
+			// Set the write pointer to the beginning of the next block.
+			myLastWrite = (poffset + BufferSizeBytes) & ~BufferSizeBytes;
 		}
 		return 0;
 	}
@@ -139,17 +158,22 @@ public:
 	s32 Init(SndBuffer *sb)
 	{
 		buff = sb;
+		numBuffers = Config_DSoundOut.NumBuffers;
 
 		//
 		// Initialize DSound
 		//
 		GUID cGuid;
+		bool success = false;
 
-		if((strlen(Config_DSoundOut.Device)>0)&&(!FAILED(GUIDFromString(Config_DSoundOut.Device,&cGuid))))
+		if( (strlen(Config_DSoundOut.Device)>0)&&(!FAILED(GUIDFromString(Config_DSoundOut.Device,&cGuid))))
 		{
-			verifyc(DirectSoundCreate8(&cGuid,&dsound,NULL));
+			if( !FAILED( DirectSoundCreate8(&cGuid,&dsound,NULL) ) )
+				success = true;
 		}
-		else
+
+		// if the GUID failed, just open up the default dsound driver:
+		if( !success )
 		{
 			verifyc(DirectSoundCreate8(NULL,&dsound,NULL));
 		}
@@ -174,7 +198,7 @@ public:
 		memset(&desc, 0, sizeof(DSBUFFERDESC)); 
 		desc.dwSize = sizeof(DSBUFFERDESC); 
 		desc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLPOSITIONNOTIFY;// _CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY; 
-		desc.dwBufferBytes = BufferSizeBytes * Config_DSoundOut.NumBuffers; 
+		desc.dwBufferBytes = BufferSizeBytes * numBuffers; 
 		desc.lpwfxFormat = &wfx; 
 	 
 		desc.dwFlags |=DSBCAPS_LOCSOFTWARE;
@@ -188,7 +212,7 @@ public:
 
 		DSBPOSITIONNOTIFY not[MAX_BUFFER_COUNT];
 	 
-		for(int i=0;i<Config_DSoundOut.NumBuffers;i++)
+		for(u32 i=0;i<numBuffers;i++)
 		{
 			// [Air] note: wfx.nBlockAlign modifier was *10 -- seems excessive to me but maybe
 			// it was needed for some quirky driver?  Theoretically we want the notification as soon
@@ -199,7 +223,7 @@ public:
 			not[i].hEventNotify=buffer_events[i];
 		}
 	 
-		buffer_notify->SetNotificationPositions(Config_DSoundOut.NumBuffers,not);
+		buffer_notify->SetNotificationPositions(numBuffers,not);
 	 
 		LPVOID p1=0,p2=0;
 		DWORD s1=0,s2=0;
@@ -213,6 +237,7 @@ public:
 		verifyc(buffer->Play(0,0,DSBPLAY_LOOPING));
 
 		// Start Thread
+		myLastWrite = 0;
 		dsound_running=true;
 		thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
 		SetThreadPriority(thread,THREAD_PRIORITY_TIME_CRITICAL);
@@ -222,7 +247,6 @@ public:
 
 	void Close()
 	{
-
 		// Stop Thread
 		fprintf(stderr," * SPU2: Waiting for DSound thread to finish...");
 		dsound_running=false;
@@ -235,14 +259,22 @@ public:
 		//
 		// Clean up
 		//
-		buffer->Stop();
-	 
-		for(int i=0;i<Config_DSoundOut.NumBuffers;i++)
-			CloseHandle(buffer_events[i]);
-	 
-		buffer_notify->Release();
-		buffer->Release();
-		dsound->Release();
+		if( buffer != NULL )
+		{
+			buffer->Stop();
+		 
+			for(u32 i=0;i<numBuffers;i++)
+			{
+				if( buffer_events[i] != NULL )
+					CloseHandle(buffer_events[i]);
+				buffer_events[i] = NULL;
+			}
+
+			SAFE_RELEASE( buffer_notify );
+			SAFE_RELEASE( buffer );
+		}
+
+		SAFE_RELEASE( dsound );
 	}
 
 private:
@@ -402,13 +434,14 @@ public:
 	{
 		DWORD play, write;
 		buffer->GetCurrentPosition( &play, &write );
-		int filled = play - write;
-		if( filled < 0 )
-			filled = -filled;
-		else
-			filled = (BufferSizeBytes * Config_DSoundOut.NumBuffers) - filled;
 
-		return filled;
+		// Note: Dsound's write cursor is bogus.  Use our own instead:
+
+		int empty = play - myLastWrite;
+		if( empty < 0 )
+			empty = -empty;
+
+		return empty / 2;
 	}
 
 	const char* GetIdent() const

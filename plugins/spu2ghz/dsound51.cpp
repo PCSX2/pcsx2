@@ -38,10 +38,12 @@ struct ds_device_data {
 	char name[256];
 	GUID guid;
 	bool hasGuid;
-} extern devices[];
-extern int ndevs;
-extern GUID DevGuid;
-extern bool haveGuid;
+};
+
+static ds_device_data devices[32];
+static int ndevs;
+static GUID DevGuid;		// currently employed GUID.
+static bool haveGuid;
 
 extern HRESULT GUIDFromString(const char *str, LPGUID guid);
 
@@ -50,15 +52,16 @@ class DSound51: public SndOutModule
 private:
 	#	define MAX_BUFFER_COUNT 8
 
-	static const int PacketsPerBuffer = (1024 / SndOutPacketSize);
-	static const int BufferSize = SndOutPacketSize*PacketsPerBuffer * 6;
+	static const int PacketsPerBuffer = 1;
+	static const int BufferSize = SndOutPacketSize * PacketsPerBuffer * 3;
 	static const int BufferSizeBytes = BufferSize << 1;
 
-	s32* tbuffer;
 
 	FILE *voicelog;
 
+	u32 numBuffers;		// cached copy of our configuration setting.
 	int channel;
+	int myLastWrite;
 
 	bool dsound_running;
 	HANDLE thread;
@@ -142,16 +145,19 @@ private:
 		}
 #else
 		
-		if((ValL>>8)>LMax) LMax = (ValL>>8);
-		if(-(ValL>>8)>LMax) LMax = -(ValL>>8);
-		if((ValR>>8)>RMax) RMax = (ValR>>8);
-		if(-(ValR>>8)>RMax) RMax = -(ValR>>8);
+		if(ValL>LMax) LMax = ValL;
+		if(-ValL>LMax) LMax = -ValL;
+		if(ValR>RMax) RMax = ValR;
+		if(-ValR>RMax) RMax = -ValR;
 		ANum++;
 		if(ANum>=128)
 		{
+			// shift into a 21 bit value
+			const u8 shift = SndOutVolumeShift-5;
+
 			ANum=0;
-			LAccum = (LAccum * 224 + LMax * 32)>>8;
-			RAccum = (RAccum * 224 + RMax * 32)>>8;
+			LAccum = ((LAccum * 224) + (LMax>>shift))>>8;
+			RAccum = ((RAccum * 224) + (RMax>>shift))>>8;
 
 			LMax=0;
 			RMax=0;
@@ -174,11 +180,17 @@ private:
 		}
 #endif
 
+		Gfr = 1; Gfl = 1;
+
 		s32 L,R,C,LFE,SL,SR,LL,LR;
 
 		extern double pow_2_31;
-		LL = (s32)(LPF(&lpf_l,(ValL>>4)/pow_2_31)*pow_2_31);
-		LR = (s32)(LPF(&lpf_r,(ValR>>4)/pow_2_31)*pow_2_31);
+
+		// shift Values into 12 bits:
+		u8 shift2 = SndOutVolumeShift + 4;
+
+		LL = (s32)(LPF(&lpf_l,(ValL>>shift2)/pow_2_31)*pow_2_31);
+		LR = (s32)(LPF(&lpf_r,(ValR>>shift2)/pow_2_31)*pow_2_31);
 		LFE = (LL + LR)>>4;
 
 		C=(ValL+ValR)>>1; //16.8
@@ -186,9 +198,9 @@ private:
 		ValL-=C;//16.8
 		ValR-=C;//16.8
 
-		L=ValL>>8; //16.0
-		R=ValR>>8; //16.0
-		C=C>>8;    //16.0
+		L=ValL>>SndOutVolumeShift; //16.0
+		R=ValR>>SndOutVolumeShift; //16.0
+		C=C>>SndOutVolumeShift;    //16.0
 
 		s32 VL=(ValL>>4) * Gfl; //16.12
 		s32 VR=(ValR>>4) * Gfr;
@@ -243,7 +255,7 @@ private:
 	{
 		while( dsound_running )
 		{
-			u32 rv = WaitForMultipleObjects(Config_DSound51.NumBuffers,buffer_events,FALSE,200);
+			u32 rv = WaitForMultipleObjects(numBuffers,buffer_events,FALSE,200);
 	 
 			s16* p1, *oldp1;
 			LPVOID p2;
@@ -251,7 +263,15 @@ private:
 	 
 			u32 poffset=BufferSizeBytes * rv;
 
+#ifdef _DEBUG
 			verifyc(buffer->Lock(poffset,BufferSizeBytes,(LPVOID*)&p1,&s1,&p2,&s2,0));
+#else
+			if( FAILED(buffer->Lock(poffset,BufferSizeBytes,(LPVOID*)&p1,&s1,&p2,&s2,0) ) )
+			{
+				fputs( " * SPU2 : Directsound Warning > Buffer lock failure.  You may need to increase the DSound buffer count.\n", stderr );
+				continue;
+			}
+#endif
 			oldp1 = p1;
 
 			for(int p=0; p<PacketsPerBuffer; p++, p1+=SndOutPacketSize )
@@ -271,7 +291,15 @@ private:
 				}				
 			}
 
+#ifndef PUBLIC
 			verifyc(buffer->Unlock(oldp1,s1,p2,s2));
+#else
+			buffer->Unlock(oldp1,s1,p2,s2);
+#endif
+			verifyc(buffer->Unlock(oldp1,s1,p2,s2));
+
+			// Set the write pointer to the beginning of the next block.
+			myLastWrite = (poffset + BufferSizeBytes) % (BufferSizeBytes*numBuffers);
 		}
 		return 0;
 	}
@@ -280,11 +308,25 @@ public:
 	s32  Init(SndBuffer *sb)
 	{
 		buff = sb;
+		numBuffers = Config_DSound51.NumBuffers;
 
 		//
 		// Initialize DSound
 		//
-		verifyc(DirectSoundCreate8(NULL,&dsound,NULL));
+		GUID cGuid;
+		bool success  = false;
+
+		if( (strlen(Config_DSound51.Device)>0)&&(!FAILED(GUIDFromString(Config_DSound51.Device,&cGuid))))
+		{
+			if( !FAILED( DirectSoundCreate8(&cGuid,&dsound,NULL) ) )
+				success = true;
+		}
+
+		// if the GUID failed, just open up the default dsound driver:
+		if( !success )
+		{
+			verifyc(DirectSoundCreate8(NULL,&dsound,NULL));
+		}
 	 
 		verifyc(dsound->SetCooperativeLevel(GetDesktopWindow(),DSSCL_PRIORITY));
 		IDirectSoundBuffer* buffer_;
@@ -311,7 +353,7 @@ public:
 		memset(&desc, 0, sizeof(DSBUFFERDESC)); 
 		desc.dwSize = sizeof(DSBUFFERDESC); 
 		desc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLPOSITIONNOTIFY;// _CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY; 
-		desc.dwBufferBytes = BufferSizeBytes * Config_DSound51.NumBuffers; 
+		desc.dwBufferBytes = BufferSizeBytes * numBuffers; 
 		desc.lpwfxFormat = &wfx.Format; 
 	 
 		desc.dwFlags |=DSBCAPS_LOCSOFTWARE;
@@ -325,14 +367,14 @@ public:
 
 		DSBPOSITIONNOTIFY not[MAX_BUFFER_COUNT];
 	 
-		for(int i=0;i<Config_DSound51.NumBuffers;i++)
+		for(u32 i=0;i<numBuffers;i++)
 		{
 			buffer_events[i]=CreateEvent(NULL,FALSE,FALSE,NULL);
-			not[i].dwOffset=(wfx.Format.nBlockAlign*10 + BufferSizeBytes*(i+1))%desc.dwBufferBytes;
+			not[i].dwOffset=(wfx.Format.nBlockAlign*2 + BufferSizeBytes*(i+1))%desc.dwBufferBytes;
 			not[i].hEventNotify=buffer_events[i];
 		}
 	 
-		buffer_notify->SetNotificationPositions(Config_DSound51.NumBuffers,not);
+		buffer_notify->SetNotificationPositions(numBuffers,not);
 	 
 		LPVOID p1=0,p2=0;
 		DWORD s1=0,s2=0;
@@ -348,9 +390,8 @@ public:
 		//Play the buffer !
 		verifyc(buffer->Play(0,0,DSBPLAY_LOOPING));
 
-		tbuffer = new s32[SndOutPacketSize];
-
 		// Start Thread
+		myLastWrite = 0;
 		dsound_running=true;
 		thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
 		SetThreadPriority(thread,THREAD_PRIORITY_TIME_CRITICAL);
@@ -372,16 +413,21 @@ public:
 		//
 		// Clean up
 		//
-		buffer->Stop();
+		if( buffer != NULL )
+		{
+			buffer->Stop();
 	 
-		for(int i=0;i<Config_DSound51.NumBuffers;i++)
-			CloseHandle(buffer_events[i]);
-	 
-		buffer_notify->Release();
-		buffer->Release();
-		dsound->Release();
-
-		delete tbuffer;
+			for(u32 i=0;i<numBuffers;i++)
+			{
+				if( buffer_events[i] == NULL ) continue;
+				CloseHandle( buffer_events[i] );
+				buffer_events[i] = NULL;
+			}
+		 
+			SAFE_RELEASE( buffer_notify );
+			SAFE_RELEASE( buffer );
+		}
+		SAFE_RELEASE( dsound );
 	}
 
 private:
@@ -406,11 +452,26 @@ private:
 		return FALSE;
 	}
 
-	static BOOL DoHandleScrollMessage(WPARAM wParam, LPARAM lParam, int vmin, int vmax, HWND hwndDisplay)
+	static void AssignSliderValue( HWND idcwnd, HWND hwndDisplay, int value )
+	{
+		value = min( max( value, 0 ), 512 );
+		SendMessage(idcwnd,TBM_SETPOS,TRUE,value); 
+		
+		char tbox[24];
+		sprintf_s( tbox, 16, "%d", value );
+		SetWindowText( hwndDisplay, tbox );
+	}
+
+	static void AssignSliderValue( HWND hWnd, int idc, int editbox, int value )
+	{
+		AssignSliderValue( GetDlgItem( hWnd, idc ), GetDlgItem( hWnd, editbox ), value );
+	}
+
+	static BOOL DoHandleScrollMessage(WPARAM wParam, LPARAM lParam, HWND hwndDisplay)
 	{
 		int wmId    = LOWORD(wParam); 
 		int wmEvent = HIWORD(wParam); 
-		static char temp[1024];
+		static char temp[64];
 		switch(wmId) {
 			//case TB_ENDTRACK:
 			//case TB_THUMBPOSITION:
@@ -420,19 +481,22 @@ private:
 			case TB_PAGEDOWN:
 				wmEvent=(int)SendMessage((HWND)lParam,TBM_GETPOS,0,0);
 			case TB_THUMBTRACK:
-				if(wmEvent<vmin) wmEvent=vmin;
-				if(wmEvent>vmax) wmEvent=vmax;
-				SendMessage((HWND)lParam,TBM_SETPOS,TRUE,wmEvent);
-				sprintf_s(temp,1024,"%d",vmax-wmEvent);
-				SetWindowText(hwndDisplay,temp);
+				AssignSliderValue( (HWND)lParam, hwndDisplay, wmEvent );
 				break;
 			default:
 				return FALSE;
 		}
 		return TRUE;
 	}
-#define HANDLE_SCROLL_MESSAGE(idc,vmin,vmax,idcDisplay) \
-			if((HWND)lParam == GetDlgItem(hWnd,idc)) return DoHandleScrollMessage(wParam,lParam,vmin,vmax,GetDlgItem(hWnd,idcDisplay))
+
+	static int GetSliderValue( HWND hWnd, int idc )
+	{
+		int retval = (int)SendMessage( GetDlgItem( hWnd, idc ), TBM_GETPOS, 0, 0 );
+		return min( max( retval, 0), 512);
+	}
+
+#define HANDLE_SCROLL_MESSAGE(idc,idcDisplay) \
+			if((HWND)lParam == GetDlgItem(hWnd,idc)) return DoHandleScrollMessage(wParam,lParam,GetDlgItem(hWnd,idcDisplay))
 
 	static BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	{
@@ -464,21 +528,29 @@ private:
 					SendMessage(GetDlgItem(hWnd,IDC_DS_DEVICE),CB_SETCURSEL,tSel,0);
 				}
 
-				INIT_SLIDER(IDC_SLIDER1,0,512,64,16,8);
-				INIT_SLIDER(IDC_SLIDER2,0,512,64,16,8);
-				INIT_SLIDER(IDC_SLIDER3,0,512,64,16,8);
-				INIT_SLIDER(IDC_SLIDER4,0,512,64,16,8);
-				INIT_SLIDER(IDC_SLIDER5,0,512,64,16,8);
-				INIT_SLIDER(IDC_SLIDER6,0,512,64,16,8);
-				INIT_SLIDER(IDC_SLIDER7,0,512,64,16,8);
+				INIT_SLIDER(IDC_LEFT_GAIN_SLIDER,0,512,64,16,8);
+				INIT_SLIDER(IDC_RIGHT_GAIN_SLIDER,0,512,64,16,8);
+				INIT_SLIDER(IDC_RLEFT_GAIN_SLIDER,0,512,64,16,8);
+				INIT_SLIDER(IDC_RRIGHT_GAIN_SLIDER,0,512,64,16,8);
+				INIT_SLIDER(IDC_CENTER_GAIN_SLIDER,0,512,64,16,8);
+				INIT_SLIDER(IDC_LFE_SLIDER,0,512,64,16,8);
+				INIT_SLIDER(IDC_LR_CENTER_SLIDER,0,512,64,16,8);
+
+				AssignSliderValue( hWnd, IDC_LEFT_GAIN_SLIDER, IDC_LEFT_GAIN_EDIT, Config_DSound51.GainL );
+				AssignSliderValue( hWnd, IDC_RIGHT_GAIN_SLIDER, IDC_RIGHT_GAIN_EDIT, Config_DSound51.GainR ); 
+				AssignSliderValue( hWnd, IDC_RLEFT_GAIN_SLIDER, IDC_RLEFT_GAIN_EDIT, Config_DSound51.GainSL );
+				AssignSliderValue( hWnd, IDC_RRIGHT_GAIN_SLIDER, IDC_RRIGHT_GAIN_EDIT, Config_DSound51.GainSR ); 
+				AssignSliderValue( hWnd, IDC_CENTER_GAIN_SLIDER, IDC_CENTER_GAIN_EDIT, Config_DSound51.GainC); 
+				AssignSliderValue( hWnd, IDC_LFE_SLIDER, IDC_LFE_EDIT, Config_DSound51.GainLFE);
+				AssignSliderValue( hWnd, IDC_LR_CENTER_SLIDER, IDC_LR_CENTER_EDIT, Config_DSound51.AddCLR ); 				
 
 				char temp[128];
 				INIT_SLIDER( IDC_BUFFERS_SLIDER, 2, MAX_BUFFER_COUNT, 2, 1, 1 );
 				SendMessage(GetDlgItem(hWnd,IDC_BUFFERS_SLIDER),TBM_SETPOS,TRUE,Config_DSound51.NumBuffers); 
 				sprintf_s(temp, 128, "%d (%d ms latency)",Config_DSound51.NumBuffers, 1000 / (96000 / (Config_DSound51.NumBuffers * BufferSize)));
-				SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL),temp);
-
+				SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL2),temp);
 				break;
+
 			case WM_COMMAND:
 				wmId    = LOWORD(wParam); 
 				wmEvent = HIWORD(wParam); 
@@ -509,7 +581,14 @@ private:
 									devices[i].guid.Data4[7]
 									);
 
-								Config_DSound51.NumBuffers = (int)SendMessage( GetDlgItem( hWnd, IDC_BUFFERS_SLIDER ), TBM_GETPOS, 0, 0 );
+								Config_DSound51.NumBuffers = GetSliderValue( hWnd, IDC_BUFFERS_SLIDER );
+								Config_DSound51.GainL = GetSliderValue( hWnd, IDC_LEFT_GAIN_SLIDER );
+								Config_DSound51.GainR = GetSliderValue( hWnd, IDC_RIGHT_GAIN_SLIDER );
+								Config_DSound51.GainSL = GetSliderValue( hWnd, IDC_RLEFT_GAIN_SLIDER );
+								Config_DSound51.GainSR = GetSliderValue( hWnd, IDC_RRIGHT_GAIN_SLIDER );
+								Config_DSound51.GainLFE = GetSliderValue( hWnd, IDC_LFE_SLIDER );
+								Config_DSound51.GainC = GetSliderValue( hWnd, IDC_CENTER_GAIN_SLIDER );
+								Config_DSound51.AddCLR = GetSliderValue( hWnd, IDC_LR_CENTER_SLIDER );
 
 								if( Config_DSound51.NumBuffers < 2 ) Config_DSound51.NumBuffers = 2;
 								if( Config_DSound51.NumBuffers > MAX_BUFFER_COUNT ) Config_DSound51.NumBuffers = MAX_BUFFER_COUNT;
@@ -541,7 +620,7 @@ private:
 						if( wmEvent > MAX_BUFFER_COUNT ) wmEvent = MAX_BUFFER_COUNT;
 						SendMessage((HWND)lParam,TBM_SETPOS,TRUE,wmEvent);
 						sprintf_s(temp,128,"%d (%d ms latency)",wmEvent, 1000 / (96000 / (wmEvent * BufferSize)));
-						SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL),temp);
+						SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL2),temp);
 						break;
 					default:
 						return FALSE;
@@ -549,13 +628,13 @@ private:
 				break;
 
 			case WM_VSCROLL:
-				HANDLE_SCROLL_MESSAGE(IDC_SLIDER1,0,512,IDC_EDIT1);
-				HANDLE_SCROLL_MESSAGE(IDC_SLIDER2,0,512,IDC_EDIT2);
-				HANDLE_SCROLL_MESSAGE(IDC_SLIDER3,0,512,IDC_EDIT3);
-				HANDLE_SCROLL_MESSAGE(IDC_SLIDER4,0,512,IDC_EDIT4);
-				HANDLE_SCROLL_MESSAGE(IDC_SLIDER5,0,512,IDC_EDIT5);
-				HANDLE_SCROLL_MESSAGE(IDC_SLIDER6,0,512,IDC_EDIT6);
-				HANDLE_SCROLL_MESSAGE(IDC_SLIDER7,0,512,IDC_EDIT7);
+				HANDLE_SCROLL_MESSAGE(IDC_LEFT_GAIN_SLIDER,IDC_LEFT_GAIN_EDIT);
+				HANDLE_SCROLL_MESSAGE(IDC_RIGHT_GAIN_SLIDER,IDC_RIGHT_GAIN_EDIT);
+				HANDLE_SCROLL_MESSAGE(IDC_RLEFT_GAIN_SLIDER,IDC_RLEFT_GAIN_EDIT);
+				HANDLE_SCROLL_MESSAGE(IDC_RRIGHT_GAIN_SLIDER,IDC_RRIGHT_GAIN_EDIT);
+				HANDLE_SCROLL_MESSAGE(IDC_CENTER_GAIN_SLIDER,IDC_CENTER_GAIN_EDIT);
+				HANDLE_SCROLL_MESSAGE(IDC_LFE_SLIDER,IDC_LFE_EDIT);
+				HANDLE_SCROLL_MESSAGE(IDC_LR_CENTER_SLIDER,IDC_LR_CENTER_EDIT);
 
 			default:
 				return FALSE;
@@ -584,7 +663,17 @@ public:
 
 	int GetEmptySampleCount() const
 	{
-		return 0;
+		DWORD play, write;
+		buffer->GetCurrentPosition( &play, &write );
+
+		// Note: Dsound's write cursor is bogus.  Use our own instead:
+
+		int empty = play - myLastWrite;
+		if( empty < 0 )
+			empty = -empty;
+
+		return empty / 6;
+
 	}
 
 	const char* GetIdent() const

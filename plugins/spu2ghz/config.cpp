@@ -183,12 +183,10 @@ int CfgReadInt(const char *Section, const char*Name,int Default) {
 
 
 void CfgReadStr(const char *Section, const char* Name, char *Data, int DataSize, const char *Default) {
-	int sl;
 	GetPrivateProfileString(Section,Name,"",Data,DataSize,CfgFile);
 
 	if(strlen(Data)==0) { 
-		sl=(int)strlen(Default); 
-		strncpy(Data,Default,sl>255?255:sl);
+		sprintf_s( Data, DataSize, "%s", Default );
 		CfgWriteStr(Section,Name,Data);
 	}
 }
@@ -256,7 +254,7 @@ void ReadSettings()
 	);
 
 	SampleRate=CfgReadInt("OUTPUT","Sample_Rate",48000);
-	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency",140);
+	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency", 140);
 
 	//OutputModule = CfgReadInt("OUTPUT","Output_Module", OUTPUT_DSOUND );
 	char omodid[128];
@@ -282,6 +280,8 @@ void ReadSettings()
 	Config_WaveOut.NumBuffers = CfgReadInt( "WAVEOUT", "Buffer_Count", 4 );
 
 	// Read DSOUND51 config:
+	CfgReadStr( "DSOUND51", "Device", Config_DSound51.Device, 254, "default" );
+	Config_DSound51.NumBuffers = CfgReadInt( "DSOUND51", "Buffer_Count", 5 );
 	Config_DSound51.GainL  =CfgReadInt("DSOUND51","Channel_Gain_L",  256);
 	Config_DSound51.GainR  =CfgReadInt("DSOUND51","Channel_Gain_R",  256);
 	Config_DSound51.GainC  =CfgReadInt("DSOUND51","Channel_Gain_C",  256);
@@ -300,7 +300,7 @@ void ReadSettings()
 	SampleRate = 48000;		// Yup nothing else is supported for now.
 	VolumeShiftModifier = min( max( VolumeShiftModifier, -2 ), 2 );
 	SndOutVolumeShift = SndOutVolumeShiftBase - VolumeShiftModifier;
-	SndOutLatencyMS = min( max( SndOutLatencyMS, 20 ), 420 );
+	SndOutLatencyMS = min( max( SndOutLatencyMS, 40 ), 480 );
 	
 	Config_DSoundOut.NumBuffers = min( max( Config_DSoundOut.NumBuffers, 2 ), 8 );
 	Config_WaveOut.NumBuffers = min( max( Config_DSoundOut.NumBuffers, 3 ), 8 );
@@ -368,12 +368,18 @@ void WriteSettings()
 
 	CfgWriteInt("OUTPUT","Volume_Shift",SndOutVolumeShiftBase - SndOutVolumeShift);
 
+	if( strlen( Config_DSoundOut.Device ) == 0 ) strcpy( Config_DSoundOut.Device, "default" );
+	if( strlen( Config_DSound51.Device ) == 0 ) strcpy( Config_DSound51.Device, "default" );
+	if( strlen( Config_WaveOut.Device ) == 0 ) strcpy( Config_WaveOut.Device, "default" );
+
 	CfgWriteStr("DSOUNDOUT","Device",Config_DSoundOut.Device);
 	CfgWriteInt("DSOUNDOUT","Buffer_Count",Config_DSoundOut.NumBuffers);
 
 	CfgWriteStr("WAVEOUT","Device",Config_WaveOut.Device);
 	CfgWriteInt("WAVEOUT","Buffer_Count",Config_WaveOut.NumBuffers);
 
+	CfgWriteStr("DSOUND51","Device",Config_DSound51.Device);
+	CfgWriteInt("DSOUND51","Buffer_Count",  Config_DSound51.NumBuffers);
 	CfgWriteInt("DSOUND51","Channel_Gain_L",  Config_DSound51.GainL);
 	CfgWriteInt("DSOUND51","Channel_Gain_R",  Config_DSound51.GainR);
 	CfgWriteInt("DSOUND51","Channel_Gain_C",  Config_DSound51.GainC);
@@ -466,7 +472,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 
 			//INIT_SLIDER(IDC_BUFFER,512,16384,4096,2048,512);
-			INIT_SLIDER( IDC_LATENCY_SLIDER, 20, 420, 100, 20, 5 );
+			INIT_SLIDER( IDC_LATENCY_SLIDER, 40, 480, 100, 20, 5 );
 
 			SendMessage(GetDlgItem(hWnd,IDC_LATENCY_SLIDER),TBM_SETPOS,TRUE,SndOutLatencyMS); 
 			sprintf_s(temp,80,"%d ms (avg)",SndOutLatencyMS);
@@ -514,8 +520,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					SndOutLatencyMS = (int)SendMessage( GetDlgItem( hWnd, IDC_LATENCY_SLIDER ), TBM_GETPOS, 0, 0 );
 
-					if( SndOutLatencyMS > 420 ) SndOutLatencyMS = 420;
-					if( SndOutLatencyMS < 20 ) SndOutLatencyMS = 20;
+					if( SndOutLatencyMS > 480 ) SndOutLatencyMS = 480;
+					if( SndOutLatencyMS < 40 ) SndOutLatencyMS = 40;
 
 					Interpolation=(int)SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_GETCURSEL,0,0);
 					OutputModule=(int)SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_GETCURSEL,0,0);
@@ -579,8 +585,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				case TB_PAGEDOWN:
 					wmEvent=(int)SendMessage((HWND)lParam,TBM_GETPOS,0,0);
 				case TB_THUMBTRACK:
-					if(wmEvent<20) wmEvent=20;
-					if(wmEvent>420) wmEvent=420;
+					if(wmEvent<40) wmEvent=40;
+					if(wmEvent>480) wmEvent=480;
 					SendMessage((HWND)lParam,TBM_SETPOS,TRUE,wmEvent);
 					sprintf_s(temp,80,"%d ms (avg)",wmEvent);
 					SetDlgItemText(hWnd,IDC_LATENCY_LABEL,temp);

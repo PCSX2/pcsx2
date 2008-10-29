@@ -83,6 +83,19 @@ default: \
 	break; \
 }
 
+//--------------------------------------------------------------------------------------
+// Helper macros
+//--------------------------------------------------------------------------------------
+#ifndef SAFE_DELETE_ARRAY
+#	define SAFE_DELETE_ARRAY(p)		{ if(p) { delete[] (p);   (p)=NULL; } }
+#endif
+#ifndef SAFE_DELETE
+#	define SAFE_DELETE_OBJ(p)		{ if(p) { delete (p); (p)=NULL; } }
+#endif
+#ifndef SAFE_RELEASE
+#	define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
+#endif
+
 
 extern void spdif_set51(u32 is_5_1_out);
 extern u32  spdif_init();

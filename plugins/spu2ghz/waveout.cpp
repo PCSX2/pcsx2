@@ -29,6 +29,7 @@ private:
 	static const int BufferSize = SndOutPacketSize*PacketsPerBuffer;
 	static const int BufferSizeBytes = BufferSize << 1;
 
+	u32 numBuffers;
 	HWAVEOUT hwodevice;
 	WAVEFORMATEX wformat;
 	WAVEHDR whbuffer[MAX_BUFFER_COUNT];
@@ -57,7 +58,7 @@ private:
 		while( waveout_running )
 		{
 			bool didsomething = false;
-			for(int i=0;i<MAX_BUFFER_COUNT;i++)
+			for(u32 i=0;i<numBuffers;i++)
 			{
 				if(!(whbuffer[i].dwFlags & WHDR_DONE) ) continue;
 
@@ -86,6 +87,7 @@ public:
 	s32 Init(SndBuffer *sb)
 	{
 		buff = sb;
+		numBuffers = Config_WaveOut.NumBuffers;
 
 		MMRESULT woores;
 
@@ -99,7 +101,7 @@ public:
 		wformat.nAvgBytesPerSec=(wformat.nSamplesPerSec * wformat.nBlockAlign);
 		wformat.cbSize=0;
 		
-		qbuffer=new s16[BufferSize*MAX_BUFFER_COUNT];
+		qbuffer=new s16[BufferSize*numBuffers];
 
 		woores = waveOutOpen(&hwodevice,WAVE_MAPPER,&wformat,0,0,0);
 		if (woores != MMSYSERR_NOERROR)
@@ -109,7 +111,7 @@ public:
 			return -1;
 		}
 
-		for(int i=0;i<MAX_BUFFER_COUNT;i++)
+		for(u32 i=0;i<numBuffers;i++)
 		{
 			whbuffer[i].dwBufferLength=BufferSizeBytes;
 			whbuffer[i].dwBytesRecorded=BufferSizeBytes;
@@ -126,7 +128,8 @@ public:
 		// Start Thread
 		// [Air]: The waveout code does not use wait objects, so setting a time critical
 		// priority level is a bad idea.  Standard priority will do fine.  The buffer will get the
-		// love it needs and won't suck resources idling pointlessly.
+		// love it needs and won't suck resources idling pointlessly.  Just don't try to
+		// run it in uber-low-latency mode.
 		waveout_running=true;
 		thread=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)RThread,this,0,&tid);
 		//SetThreadPriority( thread, THREAD_PRIORITY_TIME_CRITICAL );
@@ -149,13 +152,13 @@ public:
 		// Clean up
 		//
 		waveOutReset(hwodevice);
-		for(int i=0;i<MAX_BUFFER_COUNT;i++)
+		for(u32 i=0;i<numBuffers;i++)
 		{
 			waveOutUnprepareHeader(hwodevice,&whbuffer[i],sizeof(WAVEHDR));
 		}
 		waveOutClose(hwodevice);
 
-		delete qbuffer;
+		SAFE_DELETE_ARRAY( qbuffer );
 	}
 
 private:
