@@ -1636,7 +1636,7 @@ BEGIN
     EDITTEXT        IDC_CUSTOM_CONSECUTIVE_FRAMES,456,148,53,13,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Skip Frames when slower than:\n(See Note 1)",IDC_FRAMESKIP_LABEL1,327,129,106,20
     LTEXT           "Consecutive Frames before skipping:\n(See Note 2)",IDC_FRAMESKIP_LABEL2,327,149,121,17
-    GROUPBOX        "Frame Limiting",IDC_FRAMELIMIT,301,7,250,280
+    GROUPBOX        "Frame Limiting (F4 key switches the mode in-game!)",IDC_FRAMELIMIT,301,7,250,280
     GROUPBOX        "Detailed Settings",IDC_FRAMELIMIT_OPTIONS,310,99,234,185
     LTEXT           "*Note 1: Will only skip when slower than this fps number.\n (0 = Auto) ; (9999 = Forced-Frameskip regardless of speed.)\n (e.g. If set to 45, will only skip when slower than 45fps.)",IDC_FRAMESKIP_LABEL3,318,189,217,26
     LTEXT           "*Note 2: Will render this number of consecutive frames before\n  skipping the next frame. (0=default)\n (e.g. If set to 2, will render 2 frames before skipping 1.)",IDC_FRAMESKIP_LABEL4,318,216,217,25

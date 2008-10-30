@@ -57,7 +57,7 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Static_SetText(GetDlgItem(hW, IDC_CPU_VU1REC), _("VU1rec - enable recompiler for VU1 unit"));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_GSMULTI), _("Multi threaded GS mode (MTGS)\n(faster on dual core/HT procs, requires pcsx2 restart)"));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_MULTI), _("Dual Core Mode (DC) - Much faster but only valid with MTGS"));
-			Static_SetText(GetDlgItem(hW, IDC_FRAMELIMIT), _("Frame Limiting"));
+			Static_SetText(GetDlgItem(hW, IDC_FRAMELIMIT), _("Frame Limiting (F4 key switches the mode in-game!)"));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_NORMAL), _("Normal - All frames are rendered as fast as possible."));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_LIMIT), _("Limit - Force frames to normal speeds if too fast."));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_SKIP), _("Frame Skip - In order to achieve normal speeds,\nsome frames are skipped (fast).\nFps displayed counts skipped frames too."));
