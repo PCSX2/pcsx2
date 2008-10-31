@@ -438,9 +438,6 @@ void cpuBranchTest()
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;
 
-	// Force the IOP to run at least one branch test:
-	// If the IOP doesn't run it's branch test, bad things can happen.
-	g_psxNextBranchCycle = min( g_psxNextBranchCycle, EEsCycle >> 3 );
 	psxCpu->ExecuteBlock();
 	
 	if (VU0.VI[REG_VPU_STAT].UL & 0x1) {

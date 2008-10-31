@@ -167,7 +167,7 @@ static void _psxTestInterrupts() {
 // even higher and just let the IRQ/Counter targets adjust it as needed,
 // but I'll stick to a conservative value for the time being.
 
-#define IOP_WAIT_CYCLE 512		// was 64
+#define IOP_WAIT_CYCLE 2048		// was 64
 
 void psxBranchTest()
 {

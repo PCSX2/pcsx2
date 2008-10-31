@@ -997,7 +997,11 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	j8Ptr[2] = JG8(0);
 
 	// Break the Block-execute Loop here.
-    if( REC_INC_STACK )
+	// (but not without running another branch test!  And do it regardless
+	//  because the EE needs at least one IOP branch test or else bad things happen)
+	CALLFunc((uptr)psxBranchTest);
+
+	if( REC_INC_STACK )
         ADD64ItoR(ESP, REC_INC_STACK);
 	RET2();
 
