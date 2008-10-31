@@ -25,7 +25,6 @@
 // Dma8     in PsxSpd.c
 // Dma11/12 in PsxSio2.c
 //static int spudmaenable[2];
-int spu2interrupts[2];
 int iopsifbusy[2] = { 0, 0 };
 void psxDma4(u32 madr, u32 bcr, u32 chcr) { // SPU
 	int size;

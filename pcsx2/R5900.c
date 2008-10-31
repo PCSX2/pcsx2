@@ -435,6 +435,12 @@ void cpuBranchTest()
 //#endif
 	_cpuTestTIMR();
 
+	// Signal for an immediate branch test! This is important! The IOP must
+	// be able to act on the state the EE has given it before executing any
+	// additional code.  Otherwise things won't be anywhere near "in sync."
+
+	psxBranchTest();
+
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;
 

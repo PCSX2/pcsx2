@@ -161,13 +161,16 @@ static void _psxTestInterrupts() {
 	PSX_TESTINT(21, usbInterrupt);
 }
 
-#define IOP_WAIT_CYCLE 256		// was (and is again!) 64
+// Higher Wait cycle values should, in theory, reduce IOP overhead without much
+// drawback.  The IOP is almost always forced to perform branch tests at import-
+// ant intervals regardless of this value (such as counter or irq events, hsyncs,
+// etc.)
+#define IOP_WAIT_CYCLE 256
 
 void psxBranchTest()
 {
-	// g_psxNextBranchCycle is initialized for us by iPsxBranchTest.
 	g_psxNextBranchCycle = psxRegs.cycle;
-	if( EEsCycle >= 0 ) g_psxNextBranchCycle += IOP_WAIT_CYCLE;
+	//if( EEsCycle >= 0 ) g_psxNextBranchCycle += IOP_WAIT_CYCLE;
 
 	if ((int)(psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
 		psxRcntUpdate();

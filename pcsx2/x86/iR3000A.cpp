@@ -987,19 +987,16 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 	}
 	else {
-		SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*PSXCYCLE_MULT*8); // 8 EE clocks for every IOP clock.
+		SUB32ItoM((uptr)&EEsCycle, ((u32)(s_psxBlockCycles*PSXCYCLE_MULT))*8); // 8 EE clocks for every IOP clock.
 		ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
 		return;
 	}
 
 	// check if we've caught up with the EE
-	SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*PSXCYCLE_MULT*8); // 8 EE clocks for every IOP clock.
+	SUB32ItoM((uptr)&EEsCycle, ((u32)(s_psxBlockCycles*PSXCYCLE_MULT))*8); // 8 EE clocks for every IOP clock.
 	j8Ptr[2] = JGE8(0);
 
 	// Break the Block-execute Loop here.
-	// (but not without running another branch test!  And do it regardless
-	//  because the EE needs at least one IOP branch test or else bad things happen)
-	CALLFunc((uptr)psxBranchTest);
 
 	if( REC_INC_STACK )
         ADD64ItoR(ESP, REC_INC_STACK);
