@@ -161,16 +161,13 @@ static void _psxTestInterrupts() {
 	PSX_TESTINT(21, usbInterrupt);
 }
 
-
-// Can't safely lower the IOP wait cycle counter (yet).
-// 128 might be a safe value but until I know what's cuasing it to
-// suck at higher values I'll err on the side of caution.
-
-#define IOP_WAIT_CYCLE 64		// was (and is again!) 64
+#define IOP_WAIT_CYCLE 256		// was (and is again!) 64
 
 void psxBranchTest()
 {
-	g_psxNextBranchCycle = psxRegs.cycle + IOP_WAIT_CYCLE;
+	// g_psxNextBranchCycle is initialized for us by iPsxBranchTest.
+	g_psxNextBranchCycle = psxRegs.cycle;
+	if( EEsCycle >= 0 ) g_psxNextBranchCycle += IOP_WAIT_CYCLE;
 
 	if ((int)(psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
 		psxRcntUpdate();

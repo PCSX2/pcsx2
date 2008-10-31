@@ -994,7 +994,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 
 	// check if we've caught up with the EE
 	SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*PSXCYCLE_MULT*8); // 8 EE clocks for every IOP clock.
-	j8Ptr[2] = JG8(0);
+	j8Ptr[2] = JGE8(0);
 
 	// Break the Block-execute Loop here.
 	// (but not without running another branch test!  And do it regardless
