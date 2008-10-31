@@ -71,7 +71,7 @@ void psxShutdown() {
 
 void psxException(u32 code, u32 bd) {
 //	PSXCPU_LOG("psxException %x: %x, %x\n", code, psxHu32(0x1070), psxHu32(0x1074));
-//	SysPrintf("psxException %x: %x, %x\n", code, psxHu32(0x1070), psxHu32(0x1074));
+	//SysPrintf("!! psxException %x: %x, %x\n", code, psxHu32(0x1070), psxHu32(0x1074));
 	// Set the Cause
 	psxRegs.CP0.n.Cause &= ~0x7f;
 	psxRegs.CP0.n.Cause |= code;
@@ -171,16 +171,6 @@ static void _psxTestInterrupts() {
 
 void psxBranchTest()
 {
-	// EEsCycle update was moved to outside the psxBranchTest.  Since it gets run
-	// for every branch now, the following code block is obsolete.
-
-	/*EEsCycle -= (psxRegs.cycle - IOPoCycle) << 3;
-	IOPoCycle = psxRegs.cycle;
-	if( EEsCycle > 0 )
-		g_psxNextBranchCycle = psxRegs.cycle + min(IOP_WAIT_CYCLE, (EEsCycle>>3));
-	else
-		g_psxNextBranchCycle = psxRegs.cycle;*/
-
 	g_psxNextBranchCycle = psxRegs.cycle + IOP_WAIT_CYCLE;
 
 	if ((int)(psxRegs.cycle - psxNextsCounter) >= psxNextCounter)

@@ -984,34 +984,38 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	if( !USE_FAST_BRANCHES || cpuBranch ) {
 		MOV32MtoR(ECX, (uptr)&psxRegs.cycle);
 		ADD32ItoR(ECX, s_psxBlockCycles*PSXCYCLE_MULT); // greater mult factor causes nfsmw to crash
-		SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*PSXCYCLE_MULT*8); // 8 EE clocks for every IOP clock.
 		MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 	}
 	else {
-		SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*8); // 8 EE clocks for every IOP clock.
+		SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*PSXCYCLE_MULT*8); // 8 EE clocks for every IOP clock.
 		ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
 		return;
 	}
 
-	SUB32MtoR(ECX, (uptr)&g_psxNextBranchCycle);
-
-	// check if should branch
-	j8Ptr[0] = JS8( 0 );
-
-	CALLFunc((uptr)psxBranchTest);
-
-	CMP32ItoM((uptr)&EEsCycle, 0);
+	// check if we've caught up with the EE
+	SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*PSXCYCLE_MULT*8); // 8 EE clocks for every IOP clock.
 	j8Ptr[2] = JG8(0);
+
+	// Break the Block-execute Loop here.
     if( REC_INC_STACK )
         ADD64ItoR(ESP, REC_INC_STACK);
 	RET2();
+
+	// Continue onward with branching here:
 	x86SetJ8( j8Ptr[2] );
+
+	// check if should branch
+	SUB32MtoR(ECX, (uptr)&g_psxNextBranchCycle);
+	j8Ptr[0] = JS8( 0 );
+
+	CALLFunc((uptr)psxBranchTest);
 
 	if( newpc != 0xffffffff ) {
 		CMP32ItoM((uptr)&psxRegs.pc, newpc);
 		JNE32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 6 ));
 	}
 
+	// Skip branch jump target here:
 	x86SetJ8( j8Ptr[0] );
 }
 
