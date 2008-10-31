@@ -27,9 +27,27 @@
 
 #define GETNEXT_PARAM() \
 	while ( *param && ( *param != ',' ) ) param++; \
-   if ( *param ) param++; \
+	if ( *param ) param++; \
 	while ( *param && ( *param == ' ' ) ) param++; \
 	if ( *param == 0 ) { SysPrintf( _( "Not enough params for inicommand\n" ) ); return; }
+	
+//
+// Enums
+//
+
+enum patch_cpu_type {
+	NO_CPU,
+	EE,
+	IOP
+};
+enum patch_data_type {
+	NO_TYPE,
+	BYTE_T,
+	SHORT_T,
+	WORD_T,
+	DOUBLE_T,
+	EXTENDED_T
+};
 
 //
 // Typedefs
@@ -38,20 +56,20 @@ typedef void (*PATCHTABLEFUNC)( char * text1, char * text2 );
 
 typedef struct
 {
-   char           * text;
-   int            code;
-   PATCHTABLEFUNC func;
+	char *text;
+	int code;
+	PATCHTABLEFUNC func;
 } PatchTextTable;
-
+	
 typedef struct
 {
-   int enabled;
-   int group;
-   int type;
-   int cpu;
-   int placetopatch;
-   u32 addr;
-   u64 data;
+	int enabled;
+	int group;
+	enum patch_data_type type;
+	enum patch_cpu_type cpu;
+	int placetopatch;
+	u32 addr;
+	u64 data;
 } IniPatch;
 
 //
@@ -65,6 +83,8 @@ void patchFunc_path3hack( char * text1, char * text2 );
 void patchFunc_roundmode( char * text1, char * text2 );
 void patchFunc_zerogs( char * text1, char * text2 );
 void patchFunc_vunanmode( char * text1, char * text2 );
+void patchFunc_ffxhack( char * text1, char * text2 );
+void patchFunc_xkickdelay( char * text1, char * text2 );
 
 void inifile_trim( char * buffer );
 
@@ -72,11 +92,8 @@ void inifile_trim( char * buffer );
 // Variables
 //
 extern PatchTextTable commands[];
-
 extern PatchTextTable dataType[];
-
 extern PatchTextTable cpuCore[];
-
 extern IniPatch patch[ MAX_PATCH ];
 extern int patchnumber;
 
@@ -91,6 +108,11 @@ int AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 void SetFastMemory(int); // iR5900LoadStore.c
 void SetVUNanMemory(int); // iVUmicro.c
 
+extern void SetVUNanMode(int mode);
+
+extern int path3hack;
+extern int g_FFXHack;
+//extern int g_VUGameFixes;
 extern u32 g_sseMXCSR;
 extern u32 g_sseVUMXCSR;
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR);

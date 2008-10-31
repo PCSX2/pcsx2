@@ -607,7 +607,7 @@ int ReadPatch(HWND hWnd, IniPatch &temp)
 	}
 
 	// CPU
-	temp.cpu = SendMessage(GetDlgItem(hWnd, IDC_CPU), CB_GETCURSEL, 0, 0) + 1;
+	temp.cpu = (patch_cpu_type)(SendMessage(GetDlgItem(hWnd, IDC_CPU), CB_GETCURSEL, 0, 0) + 1);
 	if(temp.cpu < 1)
 	{
 		MessageBox(hWnd, "CPU is not selected.", "Error", 0);
@@ -631,7 +631,7 @@ int ReadPatch(HWND hWnd, IniPatch &temp)
 	}
 
 	// Type
-	temp.type = SendMessage(GetDlgItem(hWnd, IDC_TYPE), CB_GETCURSEL, 0, 0) + 1;
+	temp.type = (patch_data_type)(SendMessage(GetDlgItem(hWnd, IDC_TYPE), CB_GETCURSEL, 0, 0) + 1);
 	if(temp.type < 1)
 	{
 		MessageBox(hWnd, "Type is not selected.", "Error", 0);

@@ -31,8 +31,8 @@
 u32 ElfCRC;
 
 typedef struct {
-    u8	e_ident[16];    //0x7f,"ELF"  (ELF file identifier)
-    u16	e_type;         //ELF type: 0=NONE, 1=REL, 2=EXEC, 3=SHARED, 4=CORE
+	u8	e_ident[16];	//0x7f,"ELF"  (ELF file identifier)
+	u16	e_type;		 //ELF type: 0=NONE, 1=REL, 2=EXEC, 3=SHARED, 4=CORE
 	u16	e_machine;      //Processor: 8=MIPS R3000
 	u32	e_version;      //Version: 1=current
 	u32	e_entry;        //Entry point address
@@ -72,7 +72,7 @@ notes1
 
 typedef struct {
 	u32	sh_name;        //No. to the index of the Section header stringtable index
-    u32	sh_type;        //See notes2
+	u32	sh_type;        //See notes2
 	u32	sh_flags;       //see notes3
 	u32	sh_addr;        //Section start address
 	u32	sh_offset;      //Offset from start of file to section
@@ -446,22 +446,6 @@ BOOL loadSectionHeaders( char * Exepath )
 		if ( elfSectH[i].sh_flags & 0x2 ) {  
 			//2002-09-19 (Florin)
 			args_ptr = min( args_ptr, elfSectH[ i ].sh_addr & 0x1ffffff );
-			//---------------
-/*			if (elfSectH[i].sh_offset < elfsize) {
-				int size;
-
-				if ((elfSectH[i].sh_size + elfSectH[i].sh_offset) > elfsize) {
-					size = elfsize - elfSectH[i].sh_offset;
-				} else {
-					size = elfSectH[i].sh_size;
-				}
-				memcpy(&PS2MEM_BASE[ elfSectH[ i ].sh_addr &0x1ffffff ],
-					   &elfdata[elfSectH[i].sh_offset],
-					   size);
-			}
-#ifdef ELF_LOG  
-			ELF_LOG( "\t*LOADED*" );
-#endif*/
 		}
 #ifdef ELF_LOG  
       ELF_LOG("\n");
@@ -548,12 +532,7 @@ BOOL loadSectionHeaders( char * Exepath )
 
 		for ( i = 1; i < (int)( elfSectH[ i_st ].sh_size / sizeof( Elf32_Sym ) ); i++ ) {
 			if ( ( eS[ i ].st_value != 0 ) && ( ELF32_ST_TYPE( eS[ i ].st_info ) == 2 ) ) {
-//				SysPrintf("%x:%s\n", eS[i].st_value, &SymNames[eS[i].st_name]);
 				disR5900AddSym( eS[i].st_value, &SymNames[ eS[ i ].st_name ] );
-/*				if (!strcmp(&SymNames[eS[i].st_name], "sceSifCheckStatRpc")) {
-					psMu32(eS[i].st_value & 0x1ffffff) = (0x3b << 26) | 1;
-					SysPrintf("found sceSifCheckStatRpc!!\n");
-				}*/
 			}
 		}
 	}
@@ -587,15 +566,9 @@ int loadElfFile(char *filename) {
 	if (elfdata == NULL) return -1;
 	readFile(filename, (char*)elfdata, 0, elfsize);
 
-/*	{
-		FILE *f = fopen("game.elf", "wb");
-		fwrite(elfdata, 1, elfsize, f);
-		fclose(f);
-	}*/
-
 	//2002-09-19 (Florin)
 	args_ptr = 0xFFFFFFFF;	//big value, searching for minimum
-	//-------------------
+	
 	loadHeaders( filename );
 	cpuRegs.pc = elfHeader->e_entry; //set pc to proper place 
 	loadProgramHeaders( filename );
@@ -609,7 +582,6 @@ int loadElfFile(char *filename) {
 
 	//2002-09-19 (Florin)
 	cpuRegs.GPR.n.a0.UL[0] = parseCommandLine( filename );
-	//---------------
 
 	for ( i = 0; i < 0x100000; i++ ) {
 		if ( strcmp( "rom0:OSDSYS", (char*)PSM( i ) ) == 0 ) {
@@ -652,50 +624,55 @@ int loadElfFile(char *filename) {
 extern int g_FFXHack;
 extern int path3hack;
 int g_VUGameFixes = 0;
-void LoadGameSpecificSettings()
+
+// fixme - this should be moved to patches or eliminated
+void LoadGameSpecificSettings() 
 {
-    // default
-    g_VUGameFixes = 0;
-    g_FFXHack = 0;
+	// default
+	g_VUGameFixes = 0;
+	g_FFXHack = 0;
 
-    switch(ElfCRC) {
-        case 0x0c414549: // spacefisherman, missing gfx
-		    g_VUGameFixes |= VUFIX_SIGNEDZERO;
-            break;
-        case 0x4C9EE7DF: // crazy taxi (u)
-        case 0xC9C145BF: // crazy taxi, missing gfx
-            g_VUGameFixes |= VUFIX_EXTRAFLAGS;
-            break;
+	switch(ElfCRC) {
+		// The code involving VUFIX_SIGNEDZERO & VUFIX_EXTRAFLAGS
+		// is no longer in pcsx2.
+		
+		//case 0x0c414549: // spacefisherman, missing gfx
+		//	g_VUGameFixes |= VUFIX_SIGNEDZERO;
+		//	break;
+		//case 0x4C9EE7DF: // crazy taxi (u)
+		//case 0xC9C145BF: // crazy taxi, missing gfx
+		//	g_VUGameFixes |= VUFIX_EXTRAFLAGS;
+		//	break;
 
-        case 0xb99379b7: // erementar gerad (discolored chars)
-            g_VUGameFixes |= VUFIX_XGKICKDELAY2;
-            break;
+		case 0xb99379b7: // erementar gerad (discolored chars)
+			g_VUGameFixes |= VUFIX_XGKICKDELAY2;
+			break;
 		case 0xa08c4057:  //Sprint Cars (SLUS)
 		case 0x8b0725d5:  //Flinstones Bedrock Racing (SLES)
-			path3hack = 1;
+			path3hack = 1; // We can move this to patch files right now
 			break;
 
-        case 0x6a4efe60: // ffx(j)
+		case 0x6a4efe60: // ffx(j)
 		case 0xA39517AB: // ffx(e)
 		case 0xBB3D833A: // ffx(u)
 		case 0x941bb7d9: // ffx(g)
 		case 0xD9FC6310: // ffx int(j)
-        case 0xa39517ae: // ffx(f)
-        case 0xa39517a9: // ffx(i)
-        case 0x658597e2: // ffx int
-        case 0x941BB7DE: // ffx(s)
-        case 0x3866CA7E: // ffx(asia)
-        case 0x48FE0C71: // ffx2 (u)
+		case 0xa39517ae: // ffx(f)
+		case 0xa39517a9: // ffx(i)
+		case 0x658597e2: // ffx int
+		case 0x941BB7DE: // ffx(s)
+		case 0x3866CA7E: // ffx(asia)
+		case 0x48FE0C71: // ffx2 (u)
 		case 0x9aac530d: // ffx2 (g)
 		case 0x9AAC5309: // ffx2 (e)
 		case 0x8A6D7F14: // ffx2 (j)
-        case 0x9AAC530B: // ffx2 (i)
-        case 0x9AAC530A: // ffx2 (f)
-        case 0xe1fd9a2d: // ffx2 last mission (?)
-        case 0x93f9b89a: // ffx2 demo (g)
-        case 0x304C115C: // harvest moon - awl
+		case 0x9AAC530B: // ffx2 (i)
+		case 0x9AAC530A: // ffx2 (f)
+		case 0xe1fd9a2d: // ffx2 last mission (?)
+		case 0x93f9b89a: // ffx2 demo (g)
+		case 0x304C115C: // harvest moon - awl
 		case 0xF0A6D880: // harvest moon - sth
-            g_FFXHack = 1;
-            break;		
+			g_FFXHack = 1;
+			break;		
 	}
 }

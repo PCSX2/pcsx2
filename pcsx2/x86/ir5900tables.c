@@ -657,7 +657,7 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 
 		case 16: // mfhi
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
-			rpropSetRead(XMMGPR_HI, (pinst->regs[_Rd_]&EEINST_MMX|EEINST_REALXMM)|EEINST_LIVE1);
+			rpropSetRead(XMMGPR_HI, (pinst->regs[_Rd_]&(EEINST_MMX|EEINST_REALXMM))|EEINST_LIVE1);
 			break;
 		case 17: // mthi
 			rpropSetWrite(XMMGPR_HI, EEINST_LIVE1);
@@ -665,7 +665,7 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 			break;
 		case 18: // mflo
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
-			rpropSetRead(XMMGPR_LO, (pinst->regs[_Rd_]&EEINST_MMX|EEINST_REALXMM)|EEINST_LIVE1);
+			rpropSetRead(XMMGPR_LO, (pinst->regs[_Rd_]&(EEINST_MMX|EEINST_REALXMM))|EEINST_LIVE1);
 			break;
 		case 19: // mtlo
 			rpropSetWrite(XMMGPR_LO, EEINST_LIVE1);
@@ -687,6 +687,8 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 			rpropSetWrite(XMMGPR_LO, EEINST_LIVE1);
 			rpropSetWrite(XMMGPR_HI, EEINST_LIVE1);
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
+		
+			// fixme - temp is always 0, so I doubt the next three lines are right.
 			rpropSetRead(_Rs_, temp);
 			rpropSetRead(_Rt_, temp);
 			pinst->info |= temp;

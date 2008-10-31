@@ -335,11 +335,11 @@ int LoadGroup(TiXmlNode *group,int gParent)
 		
 		if(strcmp(place,"EE")==0)
 		{
-			patch[patchnumber].cpu=1;
+			patch[patchnumber].cpu= EE;
 		} else
 		if(strcmp(place,"IOP")==0)
 		{
-			patch[patchnumber].cpu=2;
+			patch[patchnumber].cpu= IOP;
 		} else
 		{
 			SysPrintf("XML Patch Loader: ERROR: Invalid place attribute.\n");
@@ -349,19 +349,19 @@ int LoadGroup(TiXmlNode *group,int gParent)
 
 		if(strcmp(size,"64")==0)
 		{
-			patch[patchnumber].type=4;
+			patch[patchnumber].type = DOUBLE_T;
 		} else
 		if(strcmp(size,"32")==0)
 		{
-			patch[patchnumber].type=3;
+			patch[patchnumber].type = WORD_T;
 		} else
 		if(strcmp(size,"16")==0)
 		{
-			patch[patchnumber].type=2;
+			patch[patchnumber].type = SHORT_T;
 		} else
 		if(strcmp(size,"8")==0)
 		{
-			patch[patchnumber].type=1;
+			patch[patchnumber].type = BYTE_T;
 		} else
 		{
 			SysPrintf("XML Patch Loader: ERROR: Invalid size attribute.\n");

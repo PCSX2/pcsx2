@@ -344,6 +344,7 @@ extern __forceinline long InterlockedExchange(long volatile* Target, long Value)
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xchg [%0], %%eax\n"
 						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
+	return 0; // The only function that even looks at this is a debugging function
 }
 
 extern __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
@@ -351,6 +352,7 @@ extern __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Val
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xadd [%0], %%eax\n"
 						 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory" );
+	return 0; // The return value is never looked at.
 }
 
 #endif
