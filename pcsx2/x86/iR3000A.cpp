@@ -984,9 +984,11 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	if( !USE_FAST_BRANCHES || cpuBranch ) {
 		MOV32MtoR(ECX, (uptr)&psxRegs.cycle);
 		ADD32ItoR(ECX, s_psxBlockCycles*PSXCYCLE_MULT); // greater mult factor causes nfsmw to crash
+		SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*PSXCYCLE_MULT*8); // 8 EE clocks for every IOP clock.
 		MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 	}
 	else {
+		SUB32ItoM((uptr)&EEsCycle, s_psxBlockCycles*8); // 8 EE clocks for every IOP clock.
 		ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
 		return;
 	}
@@ -1183,7 +1185,7 @@ void iDumpPsxRegisters(u32 startpc, u32 temp)
 
     __Log("%spsxreg: %x %x ra:%x k0: %x %x\n", pstr, startpc, psxRegs.cycle, psxRegs.GPR.n.ra, psxRegs.GPR.n.k0, *(int*)PSXM(0x13c128));
     for(i = 0; i < 34; i+=2) __Log("%spsx%s: %x %x\n", pstr, disRNameGPR[i], psxRegs.GPR.r[i], psxRegs.GPR.r[i+1]);
-	__Log("%scycle: %x %x %x %x; counters %x %x\n", pstr, psxRegs.cycle, g_psxNextBranchCycle, EEsCycle, IOPoCycle,
+	__Log("%scycle: %x %x %x; counters %x %x\n", pstr, psxRegs.cycle, g_psxNextBranchCycle, EEsCycle, 
 		(uptr)psxNextsCounter, (uptr)psxNextCounter);
 
 	__Log("psxdma%d c%x b%x m%x t%x\n", 2, HW_DMA2_CHCR, HW_DMA2_BCR, HW_DMA2_MADR, HW_DMA2_TADR);

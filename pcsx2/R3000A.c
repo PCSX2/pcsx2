@@ -161,16 +161,27 @@ static void _psxTestInterrupts() {
 	PSX_TESTINT(21, usbInterrupt);
 }
 
-#define IOP_WAIT_CYCLE 64
+
+// Since the EEsCycle update now is outside the BranchTest, we can safely
+// put a much higher threshold on the IOP wait cycle.  We could probably go
+// even higher and just let the IRQ/Counter targets adjust it as needed,
+// but I'll stick to a conservative value for the time being.
+
+#define IOP_WAIT_CYCLE 512		// was 64
 
 void psxBranchTest()
 {
-	EEsCycle -= (psxRegs.cycle - IOPoCycle) << 3;
+	// EEsCycle update was moved to outside the psxBranchTest.  Since it gets run
+	// for every branch now, the following code block is obsolete.
+
+	/*EEsCycle -= (psxRegs.cycle - IOPoCycle) << 3;
 	IOPoCycle = psxRegs.cycle;
 	if( EEsCycle > 0 )
 		g_psxNextBranchCycle = psxRegs.cycle + min(IOP_WAIT_CYCLE, (EEsCycle>>3));
 	else
-		g_psxNextBranchCycle = psxRegs.cycle;
+		g_psxNextBranchCycle = psxRegs.cycle;*/
+
+	g_psxNextBranchCycle = psxRegs.cycle + IOP_WAIT_CYCLE;
 
 	if ((int)(psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
 		psxRcntUpdate();
@@ -179,9 +190,6 @@ void psxBranchTest()
 		_psxTestInterrupts();
 	}
 
-//	if( (int)psxRegs.cycle-(int)g_psxNextBranchCycle > 0 )
-//		g_psxNextBranchCycle = psxRegs.cycle+1;
-//	else
 	if( (int)(g_psxNextBranchCycle-psxNextsCounter) >= (u32)psxNextCounter )
 		g_psxNextBranchCycle = (u32)psxNextsCounter+(u32)psxNextCounter;
 

@@ -547,7 +547,7 @@ int SaveState(char *file) {
 	gzwrite(f, (void*)&tlb, sizeof(tlb));           // tlbs
 	gzwrite(f, &EEsCycle, sizeof(EEsCycle));
 	gzwrite(f, &EEoCycle, sizeof(EEoCycle));
-	gzwrite(f, &IOPoCycle, sizeof(IOPoCycle));
+	gzwrite(f, &psxRegs.cycle, sizeof(u32));		// used to be IOPoCycle.  This retains compatibility.
 	gzwrite(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
 	gzwrite(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
 	gzwrite(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));
@@ -610,6 +610,7 @@ int LoadState(char *file) {
 	gzFile f;
 	freezeData fP;
 	int i;
+	u32 dud;		// for loading unused vars.
 #ifdef PCSX2_VIRTUAL_MEM
 	u32 OldProtect;
 #endif
@@ -678,7 +679,7 @@ int LoadState(char *file) {
 	gzread(f, (void*)&tlb, sizeof(tlb));           // tlbs
 	gzread(f, &EEsCycle, sizeof(EEsCycle));
 	gzread(f, &EEoCycle, sizeof(EEoCycle));
-	gzread(f, &IOPoCycle, sizeof(IOPoCycle));
+	gzread(f, &dud, sizeof(u32));			// was IOPoCycle
 	gzread(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
 	gzread(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
 	gzread(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));

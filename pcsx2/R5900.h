@@ -126,7 +126,7 @@ typedef struct {
 } cpuRegisters;
 
 extern int EEsCycle;
-extern u32 EEoCycle, IOPoCycle;
+extern u32 EEoCycle;
 extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
 
 // used for optimization

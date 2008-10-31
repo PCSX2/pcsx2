@@ -39,8 +39,8 @@ PCSX2_ALIGNED16(GPR_reg64 g_cpuConstRegs[32]) = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 R5900cpu *Cpu;
 
-int EEsCycle;
-u32 EEoCycle, IOPoCycle;
+int EEsCycle;		// used to sync the IOP to the EE
+u32 EEoCycle;
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
 
 extern u32 dwSaveVersion;

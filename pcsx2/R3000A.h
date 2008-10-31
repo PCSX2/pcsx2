@@ -198,7 +198,7 @@ extern u32 g_psxHasConstReg, g_psxFlushedConstReg;
 #define _SetLink(x)     psxRegs.GPR.r[x] = _PC_ + 4;       // Sets the return address in the link register
 
 extern int EEsCycle;
-extern u32 EEoCycle, IOPoCycle;
+extern u32 EEoCycle;
 
 #endif
 
