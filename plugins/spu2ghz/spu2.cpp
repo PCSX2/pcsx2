@@ -42,7 +42,8 @@ static char *libraryName	  = "GiGaHeRz's SPU2 ("
 #endif
 ")";
 
-
+static __forceinline void SPU2_FastWrite( u32 rmem, u16 value );
+static void CALLBACK SPU2writeLog(u32 rmem, u16 value);
 DWORD CALLBACK TimeThread(PVOID /* unused param */);
 
 
@@ -733,6 +734,8 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 bool numpad_minus_old=false;
 bool numpad_minus = false;
 
+bool numpad_plus = false, numpad_plus_old = false;
+
 void CALLBACK SPU2async(u32 cycles) 
 {
 #ifndef PUBLIC
@@ -762,6 +765,15 @@ void CALLBACK SPU2async(u32 cycles)
 		}
 		numpad_minus_old = numpad_minus;
 	}
+
+#ifndef PUBLIC
+	/*numpad_plus = (GetAsyncKeyState(VK_ADD)&0x8000)!=0;
+	if(numpad_plus && !numpad_plus_old)
+	{
+		DoFullDump();
+	}
+	numpad_plus_old = numpad_plus;*/
+#endif
 
 	if(hasPtr)
 	{
@@ -886,57 +898,57 @@ void CALLBACK SPU_ps1_write(u32 mem, u16 value)
 			break;
 
 		case 0x1d88://         Voice ON  (0-15)
-			SPU2write(REG_S_KON,value);
+			SPU2_FastWrite(REG_S_KON,value);
 			break;
 		case 0x1d8a://         Voice ON  (16-23)
-			SPU2write(REG_S_KON+2,value);
+			SPU2_FastWrite(REG_S_KON+2,value);
 			break;
 
 		case 0x1d8c://         Voice OFF (0-15)
-			SPU2write(REG_S_KOFF,value);
+			SPU2_FastWrite(REG_S_KOFF,value);
 			break;
 		case 0x1d8e://         Voice OFF (16-23)
-			SPU2write(REG_S_KOFF+2,value);
+			SPU2_FastWrite(REG_S_KOFF+2,value);
 			break;
 
 		case 0x1d90://         Channel FM (pitch lfo) mode (0-15)
-			SPU2write(REG_S_PMON,value);
+			SPU2_FastWrite(REG_S_PMON,value);
 			break;
 		case 0x1d92://         Channel FM (pitch lfo) mode (16-23)
-			SPU2write(REG_S_PMON+2,value);
+			SPU2_FastWrite(REG_S_PMON+2,value);
 			break;
 
 
 		case 0x1d94://         Channel Noise mode (0-15)
-			SPU2write(REG_S_NON,value);
+			SPU2_FastWrite(REG_S_NON,value);
 			break;
 		case 0x1d96://         Channel Noise mode (16-23)
-			SPU2write(REG_S_NON+2,value);
+			SPU2_FastWrite(REG_S_NON+2,value);
 			break;
 
 		case 0x1d98://         Channel Reverb mode (0-15)
-			SPU2write(REG_S_VMIXEL,value);
-			SPU2write(REG_S_VMIXER,value);
+			SPU2_FastWrite(REG_S_VMIXEL,value);
+			SPU2_FastWrite(REG_S_VMIXER,value);
 			break;
 		case 0x1d9a://         Channel Reverb mode (16-23)
-			SPU2write(REG_S_VMIXEL+2,value);
-			SPU2write(REG_S_VMIXER+2,value);
+			SPU2_FastWrite(REG_S_VMIXEL+2,value);
+			SPU2_FastWrite(REG_S_VMIXER+2,value);
 			break;
 		case 0x1d9c://         Channel Reverb mode (0-15)
-			SPU2write(REG_S_VMIXL,value);
-			SPU2write(REG_S_VMIXR,value);
+			SPU2_FastWrite(REG_S_VMIXL,value);
+			SPU2_FastWrite(REG_S_VMIXR,value);
 			break;
 		case 0x1d9e://         Channel Reverb mode (16-23)
-			SPU2write(REG_S_VMIXL+2,value);
-			SPU2write(REG_S_VMIXR+2,value);
+			SPU2_FastWrite(REG_S_VMIXL+2,value);
+			SPU2_FastWrite(REG_S_VMIXR+2,value);
 			break;
 
 		case 0x1da2://         Reverb work area start
 			{
 				u32 val=(u32)value <<8;
 
-				SPU2write(REG_A_ESA,  val&0xFFFF);
-				SPU2write(REG_A_ESA+2,val>>16);
+				SPU2_FastWrite(REG_A_ESA,  val&0xFFFF);
+				SPU2_FastWrite(REG_A_ESA+2,val>>16);
 			}
 			break;
 		case 0x1da4:
@@ -947,10 +959,10 @@ void CALLBACK SPU_ps1_write(u32 mem, u16 value)
 			break;
 
 		case 0x1daa:
-			SPU2write(REG_C_ATTR,value);
+			SPU2_FastWrite(REG_C_ATTR,value);
 			break;
 		case 0x1dae:
-			SPU2write(REG_P_STATX,value);
+			SPU2_FastWrite(REG_P_STATX,value);
 			break;
 		case 0x1da8:// Spu Write to Memory
 			DmaWrite(0,value);
@@ -1040,8 +1052,9 @@ u16 CALLBACK SPU_ps1_read(u32 mem)
 
 void RegWriteLog(u32 core,u16 value);
 
-void CALLBACK SPU2writeLog(u32 rmem, u16 value) 
+static void CALLBACK SPU2writeLog(u32 rmem, u16 value) 
 {
+#ifndef PUBLIC
 	u32 vx=0, vc=0, core=0, omem=rmem, mem=rmem&0x7FF;
 	omem=mem=mem&0x7FF; //FFFF;
 	if (mem & 0x400) { omem^=0x400; core=1; }
@@ -1058,7 +1071,7 @@ void CALLBACK SPU2writeLog(u32 rmem, u16 value)
 		FileLog("[%10d] SPU2 write mem %08x (Core %d Voice %d Address %s) value %x\n",Cycles,rmem,core,voice,AddressNames[address],value);
 	}
 	*/
-	else if ((mem >= 0x0760) && (mem < 0x07b0)) {
+	if ((mem >= 0x0760) && (mem < 0x07b0)) {
 		omem=mem; core=0;
 		if (mem >= 0x0788) {omem-=0x28; core=1;}
 		switch(omem) {
@@ -1245,60 +1258,18 @@ void CALLBACK SPU2writeLog(u32 rmem, u16 value)
 
 		default:			RegLog(2,"UNKNOWN",rmem,core,value); spu2Ru16(mem) = value;
 	}
+#endif
 }
 
 
-void CALLBACK SPU2write(u32 rmem, u16 value) 
+static __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 {
-#ifdef S2R_ENABLE
-	if(!replay_mode)
-		s2r_writereg(Cycles,rmem,value);
-#endif
-
-	if(rmem==0x1f9001ac)
-	{
-		//RegWriteLog(0,value);
-		if((Cores[0].IRQEnable)&&(Cores[0].TSA==Cores[0].IRQA))
-		{
-			Spdif.Info=4;
-			SetIrqCall();
-		}
-		spu2M_Write( Cores[0].TSA++, value );
-		Cores[0].TSA&=0xfffff;
-
-		return;
-	}
-	else if(rmem==0x1f9005ac)
-	{
-		//RegWriteLog(1,value);
-		if((Cores[0].IRQEnable)&&(Cores[0].TSA==Cores[0].IRQA))
-		{
-			Spdif.Info=4;
-			SetIrqCall();
-		}
-		spu2M_Write( Cores[1].TSA++, value );
-		Cores[1].TSA&=0xfffff;
-
-		return;
-	}
-
-	if(hasPtr) TimeUpdate(*cPtr,0);
-
-	u32 vx=0, vc=0, core=0, omem=rmem, mem=rmem&0x7FF;
-	omem=mem=mem&0x7FF; //FFFF;
+	u32 vx=0, vc=0, core=0, omem, mem;
+	omem=mem=rmem & 0x7FF; //FFFF;
 	if (mem & 0x400) { omem^=0x400; core=1; }
 
-	if (rmem>>16 == 0x1f80)
-	{
-		SPU_ps1_write(rmem,value);
-	}
-	else if ((mem&0xFFFFF)>=0x800)
-	{
-		ConLog (" * SPU2: Write to reg>=0x800: %08x value %x\n",rmem,value);
-		spu2Ru16(mem)=value;
-	}
 	//else if ((omem >= 0x0000) && (omem < 0x0180)) { // Voice Params
-	else if (omem < 0x0180) { // Voice Params
+	if (omem < 0x0180) { // Voice Params
 		u32 voice=(omem & 0x1F0) >> 4;
 		u32 param=(omem & 0xF)>>1;
 		//FileLog("[%10d] SPU2 write mem %08x (Core %d Voice %d Param %s) value %x\n",Cycles,rmem,core,voice,ParamNames[param],value);
@@ -1575,6 +1546,47 @@ void CALLBACK SPU2write(u32 rmem, u16 value)
 	if ((mem>=0x07C0) && (mem<0x07CE)) 
 	{
 		UpdateSpdifMode();
+	}
+}
+
+
+void CALLBACK SPU2write(u32 rmem, u16 value) 
+{
+#ifdef S2R_ENABLE
+	if(!replay_mode)
+		s2r_writereg(Cycles,rmem,value);
+#endif
+
+	if(rmem==0x1f9001ac)
+	{
+		//RegWriteLog(0,value);
+		if((Cores[0].IRQEnable)&&(Cores[0].TSA==Cores[0].IRQA))
+		{
+			Spdif.Info=4;
+			SetIrqCall();
+		}
+		spu2M_Write( Cores[0].TSA++, value );
+		Cores[0].TSA&=0xfffff;
+	}
+	else if(rmem==0x1f9005ac)
+	{
+		//RegWriteLog(1,value);
+		if((Cores[0].IRQEnable)&&(Cores[0].TSA==Cores[0].IRQA))
+		{
+			Spdif.Info=4;
+			SetIrqCall();
+		}
+		spu2M_Write( Cores[1].TSA++, value );
+		Cores[1].TSA&=0xfffff;
+	}
+	else
+	{
+		if(hasPtr) TimeUpdate(*cPtr,0);
+
+		if (rmem>>16 == 0x1f80)
+			SPU_ps1_write(rmem,value);
+		else
+			SPU2_FastWrite( rmem, value );
 	}
 }
 
