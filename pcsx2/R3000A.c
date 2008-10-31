@@ -162,12 +162,11 @@ static void _psxTestInterrupts() {
 }
 
 
-// Since the EEsCycle update now is outside the BranchTest, we can safely
-// put a much higher threshold on the IOP wait cycle.  We could probably go
-// even higher and just let the IRQ/Counter targets adjust it as needed,
-// but I'll stick to a conservative value for the time being.
+// Can't safely lower the IOP wait cycle counter (yet).
+// 128 might be a safe value but until I know what's cuasing it to
+// suck at higher values I'll err on the side of caution.
 
-#define IOP_WAIT_CYCLE 2048		// was 64
+#define IOP_WAIT_CYCLE 64		// was (and is again!) 64
 
 void psxBranchTest()
 {
