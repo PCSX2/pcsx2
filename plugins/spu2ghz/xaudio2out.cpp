@@ -37,8 +37,6 @@ private:
 	s16* qbuffer;
 	s32 out_num;
 
-	SndBuffer *buff;
-
 #define MAX_BUFFER_COUNT 3
 
 	//--------------------------------------------------------------------------------------
@@ -58,6 +56,7 @@ private:
 		STDMETHOD_(void, OnBufferStart) ( void* ) {}
 		STDMETHOD_(void, OnBufferEnd) ( void* context )
 		{
+			if( context == NULL || sndout == NULL ) return;
 			s16* qb = (s16*)context;
 
 			for(int p=0; p<PacketsPerBuffer; p++, qb+=SndOutPacketSize )
@@ -86,9 +85,6 @@ public:
 	s32  Init(SndBuffer *sb)
 	{
 		HRESULT hr;
-
-		buff=sb;
-		voiceContext.sndout = buff;
 
 		//
 		// Initialize XAudio2
@@ -126,15 +122,27 @@ public:
 		wfx.nAvgBytesPerSec = SampleRate * wfx.nBlockAlign;
 		wfx.cbSize=0;
 
+		// Egh.. not sure if the initializer for these values should be before
+		// or after CreateSourceVoice.  Some drivers could do evil things to
+		// our structure whn we create the voice.
+
+		voiceContext.sndout = sb;
+		voiceContext.pSourceVoice = pSourceVoice;
+
 		//
 		// Create an XAudio2 voice to stream this wave
 		//
-		if( FAILED(hr = pXAudio2->CreateSourceVoice( &pSourceVoice, &wfx, 0, 1.0f, &voiceContext ) ) )
+		if( FAILED(hr = pXAudio2->CreateSourceVoice( &pSourceVoice, &wfx,
+			XAUDIO2_VOICE_NOSRC, 1.0f, &voiceContext ) ) )
 		{
 			SysMessage( "Error %#X creating source voice\n", hr );
 			SAFE_RELEASE( pXAudio2 );
 			return -1;
 		}
+
+		// See comment above.  Leave this redundant code in to protect against
+		// potentially stupid drivers.
+		voiceContext.sndout = sb;
 		voiceContext.pSourceVoice = pSourceVoice;
 		pSourceVoice->Start( 0, 0 );
 
@@ -145,16 +153,21 @@ public:
 		// Frankly two buffers is all we should ever need since the buffer fill code
 		// is tied directly to the XAudio2 engine.
 
-		XAUDIO2_BUFFER buf = {0};
-		buf.AudioBytes = BufferSizeBytes;
-		buf.pContext=qbuffer;
-		buf.pAudioData=(BYTE*)buf.pContext;
-		pSourceVoice->SubmitSourceBuffer( &buf );
+		{
+			XAUDIO2_BUFFER buf = {0};
+			buf.AudioBytes = BufferSizeBytes;
+			buf.pContext=qbuffer;
+			buf.pAudioData=(BYTE*)buf.pContext;
+			pSourceVoice->SubmitSourceBuffer( &buf );
+		}
 
-		buf.pContext=&qbuffer[BufferSize];
-		buf.pAudioData=(BYTE*)buf.pContext;
-		pSourceVoice->SubmitSourceBuffer( &buf );
-
+		{
+			XAUDIO2_BUFFER buf = {0};
+			buf.AudioBytes = BufferSizeBytes;
+			buf.pContext=&qbuffer[BufferSize];
+			buf.pAudioData=(BYTE*)buf.pContext;
+			pSourceVoice->SubmitSourceBuffer( &buf );
+		}
 		return 0;
 	}
 
@@ -202,8 +215,6 @@ public:
 
 	int GetEmptySampleCount() const
 	{
-		// I think this code works.
-		// It's kind of hard to know for sure.
 		XAUDIO2_VOICE_STATE state;
 		pSourceVoice->GetState( &state );
 		return state.SamplesPlayed & (BufferSize-1);
