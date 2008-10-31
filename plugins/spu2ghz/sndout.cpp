@@ -241,7 +241,7 @@ public:
 		quietSampleCount = 0;
 		if( underrun_freeze )
 		{			
-			int toFill = (int)(size * ( timeStretchEnabled ? 0.45 : 0.70 ) );
+			int toFill = (int)(size * ( timeStretchEnabled ? 0.1 : 0.70 ) );
 			toFill = GetAlignedBufferSize( toFill );
 
 			// toFill is now aligned to a SndOutPacket
