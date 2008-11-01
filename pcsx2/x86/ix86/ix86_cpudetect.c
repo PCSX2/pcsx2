@@ -211,6 +211,9 @@ void cpudetectInit( void )
    //AMD 64 STUFF
    u32 x86_64_8BITBRANDID;
    u32 x86_64_12BITBRANDID; 
+   int num;
+   char str[50];	
+	
    memset( cpuinfo.x86ID, 0, sizeof( cpuinfo.x86ID ) );
    cpuinfo.x86Family = 0;
    cpuinfo.x86Model  = 0;
@@ -225,6 +228,10 @@ void cpudetectInit( void )
    ((u32*)cpuinfo.x86ID)[ 0 ] = regs[ 1 ];
    ((u32*)cpuinfo.x86ID)[ 1 ] = regs[ 3 ];
    ((u32*)cpuinfo.x86ID)[ 2 ] = regs[ 2 ];
+   
+   // Hack - prevents reg[2] & reg[3] from being optimized out of existance!
+   num = sprintf(str, "\tx86Flags  =  %8.8x %8.8x\n", regs[3], regs[2]);
+   
    if ( cmds >= 0x00000001 ) 
    {
       if ( iCpuId( 0x00000001, regs ) != -1 )
