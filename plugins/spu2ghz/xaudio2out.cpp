@@ -103,7 +103,7 @@ public:
 		//
 		// Create a mastering voice
 		//
-		if ( FAILED(hr = pXAudio2->CreateMasteringVoice( &pMasteringVoice ) ) )
+		if ( FAILED(hr = pXAudio2->CreateMasteringVoice( &pMasteringVoice, 0, SampleRate ) ) )
 		{
 			SysMessage( "Failed creating mastering voice: %#X\n", hr );
 			SAFE_RELEASE( pXAudio2 );
@@ -130,7 +130,7 @@ public:
 		// Create an XAudio2 voice to stream this wave
 		//
 		if( FAILED(hr = pXAudio2->CreateSourceVoice( &pSourceVoice, &wfx,
-			XAUDIO2_VOICE_NOPITCH, 1.0f, &voiceContext ) ) )
+			XAUDIO2_VOICE_NOSRC, 1.0f, &voiceContext ) ) )
 		{
 			SysMessage( "Error %#X creating source voice\n", hr );
 			SAFE_RELEASE( pXAudio2 );

@@ -21,8 +21,6 @@
 
 #include "regtable.h"
 
-#define SYNC_DISTANCE 4800
-
 void StartVoices(int core, u32 value);
 void StopVoices(int core, u32 value);
 
