@@ -168,7 +168,12 @@ extern PCSX2_ALIGNED16_DECL(VURegs VU0);
 
 #define VU1 (*g_pVU1)
 
+
+#ifdef _WIN32
 extern __forceinline u32* GET_VU_MEM(VURegs* VU, u32 addr)
+#else
+static __forceinline u32* GET_VU_MEM(VURegs* VU, u32 addr)
+#endif
 {
 	if( VU == g_pVU1 ) return (u32*)(VU1.Mem+(addr&0x3fff));
 	

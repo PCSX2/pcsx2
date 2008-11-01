@@ -23,6 +23,8 @@
 #include <malloc.h>
 #include <assert.h>
 
+#include "PS2Etypes.h"
+
 #ifndef _WIN32
 #include <unistd.h>
 #endif
@@ -157,7 +159,11 @@ BOOL Save_Patch_Proc( char * filename );
 
 #include <sys/timeb.h>
 
+#ifdef _WIN32
 extern __forceinline u32 timeGetTime()
+#else
+static __forceinline u32 timeGetTime()
+#endif
 {
 	struct timeb t;
 	ftime(&t);
@@ -268,7 +274,7 @@ void injectIRX(char *filename);
 #if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
 
 // declare linux equivalents
-extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
+static  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 {
     assert( align < 0x10000 );
 	char* p = (char*)malloc(size+align);
@@ -280,7 +286,7 @@ extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 	return p;
 }
 
-extern __forceinline void pcsx2_aligned_free(void* pmem)
+static __forceinline void pcsx2_aligned_free(void* pmem)
 {
     if( pmem != NULL ) {
         char* p = (char*)pmem;
@@ -291,6 +297,9 @@ extern __forceinline void pcsx2_aligned_free(void* pmem)
 #define _aligned_malloc pcsx2_aligned_malloc
 #define _aligned_free pcsx2_aligned_free
 
+// This might work, too; I'll have to test the two, and see if it makes a difference.
+//#define _aligned_malloc(size,align) memalign(align, size)
+//#define _aligned_free free
 #endif
 
 // cross-platform atomic operations
@@ -325,8 +334,11 @@ typedef void* PVOID;
              return __test_and_set(__p, (unsigned long)__q);
  #       endif
  }*/
-
+#ifdef _WIN32
 extern __forceinline void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
+#else
+static __forceinline void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
+#endif
 {
 #ifdef __x86_64__
 	__asm__ __volatile__(".intel_syntax\n"
@@ -339,7 +351,11 @@ extern __forceinline void InterlockedExchangePointer(PVOID volatile* Target, voi
 #endif
 }
 
+#ifdef _WIN32
 extern __forceinline long InterlockedExchange(long volatile* Target, long Value)
+#else
+static __forceinline long InterlockedExchange(long volatile* Target, long Value)
+#endif
 {
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xchg [%0], %%eax\n"
@@ -347,7 +363,11 @@ extern __forceinline long InterlockedExchange(long volatile* Target, long Value)
 	return 0; // The only function that even looks at this is a debugging function
 }
 
+#ifdef _WIN32
 extern __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
+#else
+static __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
+#endif
 {
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xadd [%0], %%eax\n"

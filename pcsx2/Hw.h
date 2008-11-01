@@ -310,9 +310,11 @@ typedef struct tagDMACh{
 
 #ifdef _WIN32
 extern PSMEMORYMAP* memLUT;
-#endif
 
 extern __forceinline u8* dmaGetAddr(u32 mem)
+#else
+static __forceinline u8* dmaGetAddr(u32 mem)
+#endif
 {
 	u8* p, *pbase;
 	mem &= ~0xf;
@@ -345,7 +347,12 @@ extern __forceinline u8* dmaGetAddr(u32 mem)
 extern u8  *psS; //0.015 mb, scratch pad
 extern uptr *memLUTR;
 
+
+#ifdef _WIN32	
 extern __forceinline void *dmaGetAddr(u32 addr) {
+#else
+static __forceinline void *dmaGetAddr(u32 addr) {
+#endif
 	u8 *ptr;
 
 /*#ifdef DMA_LOG

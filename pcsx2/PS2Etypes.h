@@ -88,7 +88,7 @@ typedef union _LARGE_INTEGER
 {
 	long long QuadPart;
 } LARGE_INTEGER;
-#define _inline __inline__
+#define _inline __inline__ __attribute__((unused))
 #endif
 
 #if defined(__MINGW32__)
@@ -100,7 +100,7 @@ typedef union _LARGE_INTEGER
 #define PCSX2_ALIGNED16_DECL(x) x
 
 #ifndef __forceinline
-#define __forceinline inline
+#define __forceinline __attribute__((always_inline,unused))
 #endif
 
 #endif // _MSC_VER
