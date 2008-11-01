@@ -24,9 +24,6 @@
 #include <mmsystem.h>
 #include <conio.h>
 
-// turn off warning C4355: 'this' : used in base member initializer list
-#pragma warning( disable: 4355 )
-
 class XAudio2Mod: public SndOutModule
 {
 private:
@@ -133,7 +130,7 @@ public:
 		// Create an XAudio2 voice to stream this wave
 		//
 		if( FAILED(hr = pXAudio2->CreateSourceVoice( &pSourceVoice, &wfx,
-			XAUDIO2_VOICE_NOSRC, 1.0f, &voiceContext ) ) )
+			XAUDIO2_VOICE_NOPITCH, 1.0f, &voiceContext ) ) )
 		{
 			SysMessage( "Error %#X creating source voice\n", hr );
 			SAFE_RELEASE( pXAudio2 );
@@ -183,7 +180,7 @@ public:
 			pSourceVoice = NULL;
 		}
 
-		Sleep(50);
+		Sleep(50);	// give the engine some time to stop voices
 
 		//
 		// Cleanup XAudio2

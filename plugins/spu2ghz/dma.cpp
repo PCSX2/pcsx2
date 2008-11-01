@@ -92,9 +92,9 @@ void DMALogClose() {
 
 __forceinline u16 DmaRead(u32 core)
 {
-	Cores[core].TDA&=0xfffff;
 	const u16 ret = (u16)spu2M_Read(Cores[core].TDA);
 	Cores[core].TDA++;
+	Cores[core].TDA&=0xfffff;
 	return ret;
 }
 
@@ -213,38 +213,60 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 	if(MsgDMA()) ConLog(" * SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
 
-	// Optimized!
+	// split the DMA copy into two chunks if needed.
+
 	// Instead of checking the adpcm cache for every word, we check for every block.
 	// That way we can use the optimized fast write instruction to commit the memory.
 
 	Cores[core].TDA = Cores[core].TSA & 0xfffff;
 
+	u32 buff1end = Cores[core].TDA + size;
+	s32 buff2end = buff1end - 0xfffff;
+	if( buff2end > 0 )
+		buff1end = 0xfffff;
+
 	{
-		u32 nexta = Cores[core].TDA >> 3;
-		u32 flagbitmask = 1ul << ( nexta & 31 );
+		u32 nexta = Cores[core].TDA >> 3;		// next address in 8 word blocks
+		const u32 leftsidebit = nexta & 31;
+		u32 rightsidebit;		// assigned later
 		nexta >>= 5;
 
-		// Traverse from start to finish in 8 word blocks,
-		// and clear the pcm cache flag for each block.
-		u32 stmp = ( size + 7 ) >> 3;		// round up
-		for( i=0; i<stmp; i++ )
-		{
-			pcm_cache_flags[nexta] &= ~flagbitmask;
-			flagbitmask <<= 1;
-			if( flagbitmask == 0 )
-			{
-				nexta++;
-				flagbitmask = 1;
-			}
-		}
-	}
+		// Left side remainder:
+		// this produces a bitmask of the left side remainder of the cache flags:
+		pcm_cache_flags[nexta] &= (1ul << leftsidebit)-1;
 
-	for(i=0;i<size;i++)
-	{
-		*GetMemPtr( Cores[core].TDA ) = pMem[i];
-		//spu2M_Write( Cores[core].TDA, pMem[i] );
-		Cores[core].TDA++;
-		Cores[core].TDA&=0xfffff;
+		// middle run!
+		// Traverse from start to finish in 8*32 word blocks,
+		// and clear all the the pcm cache flags for each block.
+
+		for(; Cores[core].TDA<buff1end; ++Cores[core].TDA, ++pMem)
+			*GetMemPtr( Cores[core].TDA ) = *pMem;
+
+		buff1end >>= (3+5);		// 8 words per block, 32 blocks per int.
+		memset( &pcm_cache_flags[nexta], 0, sizeof( u32 ) * (buff1end-nexta) );
+
+		if( buff2end > 0 )
+		{
+			// second branch needs cleared:
+			// It starts at the beginning of memory and moves forward to buff2end
+
+			const u32 endpt2 = buff2end >> (3+5);		// 8 words per block, 32 blocks per int.
+			memset( pcm_cache_flags, 0, sizeof( u32 ) * endpt2 );
+
+			for(Cores[core].TDA=0; Cores[core].TDA<(u32)buff2end; ++Cores[core].TDA, ++pMem)
+				*GetMemPtr( Cores[core].TDA ) = *pMem;
+
+			rightsidebit = ( buff2end >> 3 );
+			nexta = endpt2;
+		}
+		else
+		{
+			rightsidebit = (Cores[core].TDA >> 3);
+			nexta = buff1end;
+		}
+
+		// clear the right-side remainder:
+		pcm_cache_flags[nexta] &= ~((1ul << (32-(rightsidebit&31)))-1);
 	}
 
 	i=Cores[core].TSA;

@@ -19,6 +19,8 @@
 #include "SoundTouch/SoundTouch.h"
 #include "SoundTouch/WavFile.h"
 
+#include <new>
+
 static int ts_stats_stretchblocks = 0;
 static int ts_stats_normalblocks = 0;
 static int ts_stats_logcounter = 0;
@@ -432,11 +434,6 @@ s32* sndTempBuffer=NULL;
 s32 sndTempProgress=NULL;
 s16* sndTempBuffer16=NULL;
 
-void ResetTempoChange()
-{
-	pSoundTouch->setTempo(1);
-}
-
 void UpdateTempoChange()
 {
 	if( --freezeTempo > 0 )
@@ -581,49 +578,71 @@ void UpdateTempoChange()
 }
 
 
-void soundtouchInit() {
+void soundtouchInit()
+{
 	pSoundTouch = new soundtouch::SoundTouch();
 	pSoundTouch->setSampleRate(SampleRate);
     pSoundTouch->setChannels(2);
 
     pSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 0);
     pSoundTouch->setSetting(SETTING_USE_AA_FILTER, 0);
-}
+	pSoundTouch->setTempo(1);
 
-s32 SndInit()
-{
-	if( mods[OutputModule] == NULL )
-	{
-		// force us to the NullOut module if nothing assigned.
-		OutputModule = FindOutputModuleById( NullOut.GetIdent() );
-	}
-
-	// initialize sound buffer
-	// Buffer actually attempts to run ~50%, so allocate near double what
-	// the requested latency is:
-
-	sndBuffer = new SndBufferImpl( SndOutLatencyMS * (timeStretchEnabled ? 2.0 : 1.5) );
-	sndTempProgress = 0;
-	sndTempBuffer = new s32[SndOutPacketSize];
-	sndTempBuffer16 = new s16[SndOutPacketSize];
-
-	// clear buffers!
-	// Fixes loopy sounds on emu resets.
-	memset( sndTempBuffer, 0, sizeof(s32) * SndOutPacketSize );
-	memset( sndTempBuffer16, 0, sizeof(s16) * SndOutPacketSize );
+	// some timestretch management vars:
 
 	cTempo = 1.0;
 	eTempo = 1.0;
-
 	lastPct = 0;
 	lastEmergencyAdj = 0;
 
 	// just freeze tempo changes for a while at startup.
 	// the driver buffers are bogus anyway.
 	freezeTempo = 8;
-	soundtouchInit();
+}
 
-	ResetTempoChange();
+static void _sndInitFail()
+{
+	// If a failure occurs, just initialize the NoSound driver.  This'll allow
+	// the game to emulate properly (hopefully), albeit without sound.
+	OutputModule = FindOutputModuleById( NullOut.GetIdent() );
+	mods[OutputModule]->Init( sndBuffer );
+}
+
+s32 SndInit()
+{
+	if( mods[OutputModule] == NULL )
+	{
+		_sndInitFail();
+		return 0;
+	}
+
+	// initialize sound buffer
+	// Buffer actually attempts to run ~50%, so allocate near double what
+	// the requested latency is:
+
+	try
+	{
+		sndBuffer = new SndBufferImpl( SndOutLatencyMS * (timeStretchEnabled ? 2.0 : 1.5) );
+		sndTempBuffer = new s32[SndOutPacketSize];
+		sndTempBuffer16 = new s16[SndOutPacketSize];
+	}
+	catch( std::bad_alloc& )
+	{
+		// out of memory exception (most likely)
+
+		SysMessage( "Out of memory error occured while initializing SPU2." );
+		_sndInitFail();
+		return 0;
+	}
+
+	// clear buffers!
+	// Fixes loopy sounds on emu resets.
+	memset( sndTempBuffer, 0, sizeof(s32) * SndOutPacketSize );
+	memset( sndTempBuffer16, 0, sizeof(s16) * SndOutPacketSize );
+
+	sndTempProgress = 0;
+
+	soundtouchInit();		// initializes the timestretching
 
 	if(LimitMode!=0)
 	{
@@ -636,9 +655,9 @@ s32 SndInit()
 	// initialize module
 	if( mods[OutputModule]->Init(sndBuffer) == -1 )
 	{
-		OutputModule = FindOutputModuleById( NullOut.GetIdent() );
-		return mods[OutputModule]->Init( sndBuffer );
+		_sndInitFail();
 	}
+
 	return 0;
 }
 
@@ -684,8 +703,6 @@ s32 SndWrite(s32 ValL, s32 ValR)
  
 	if(mods[OutputModule] == &NullOut) // null output doesn't need buffering or stretching! :p
 		return 0;
- 
-	//inputSamples+=2;
  
 	sndTempBuffer[sndTempProgress++] = ValL;
 	sndTempBuffer[sndTempProgress++] = ValR;

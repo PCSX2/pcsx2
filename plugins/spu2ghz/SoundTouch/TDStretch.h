@@ -61,11 +61,11 @@ namespace soundtouch
 /// and vice versa.
 ///
 /// Increasing this value reduces computational burden & vice versa.
-#define DEFAULT_SEQUENCE_MS     54
+#define DEFAULT_SEQUENCE_MS     61
 
-#define DEFAULT_SEEKWINDOW_MS   15
+#define DEFAULT_SEEKWINDOW_MS   18
 
-#define DEFAULT_OVERLAP_MS      6
+#define DEFAULT_OVERLAP_MS      7
 
 
 /// Class that does the time-stretch (tempo change) effect for the processed

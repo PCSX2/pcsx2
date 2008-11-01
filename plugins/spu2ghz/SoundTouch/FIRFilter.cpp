@@ -180,7 +180,7 @@ void FIRFilter::setCoefficients(const SAMPLETYPE *coeffs, uint newLength, uint u
 #ifdef INTEGER_SAMPLES
     resultDivider = (SAMPLETYPE)(1<<resultDivFactor);
 #else
-    resultDivider = (SAMPLETYPE)powf(2, resultDivFactor);
+    resultDivider = (SAMPLETYPE)powf(2, (SAMPLETYPE)resultDivFactor);
 #endif
 
     delete[] filterCoeffs;
