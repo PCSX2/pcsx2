@@ -143,7 +143,7 @@ void UpdateVSyncRate() {
 		SysPrintf("Framelimiter rate updated (UpdateVSyncRate): %d fps\n", Config.CustomFps);
 	}
 	else if (Config.PsxType & 1) {
-		iTicks = (GetTickFrequency() / 5000) * 100;
+		iTicks = (GetTickFrequency() * 100) / 5000;
 		SysPrintf("Framelimiter rate updated (UpdateVSyncRate): 50 fps Pal\n");
 	}
 	else {
@@ -163,6 +163,9 @@ void FrameLimiter()
 	iEnd = GetCPUTicks();
 
 	if (iEnd>=iExpectedEnd) {
+
+		// Compensation: If the framelate drops too low, reset the 
+		// expected value.  This avoids "fast forward" syndrome.
 		u64 diff = iEnd-iExpectedEnd;
 		if ((diff>>3)>iTicks) iExpectedEnd=iEnd;
 	}
@@ -171,7 +174,9 @@ void FrameLimiter()
 		iEnd = GetCPUTicks();
 	} while (iEnd<iExpectedEnd);
 
-	iStart = iExpectedEnd; //remember the expected value frame. improves smoothness
+	// remember the expected value frame. improves smoothness by encouraging
+	// the framelimiter to play a little "catch up" after a slow frame.
+	iStart = iExpectedEnd; 
 }
 
 extern u32 CSRw;
