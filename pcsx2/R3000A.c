@@ -170,7 +170,6 @@ static void _psxTestInterrupts() {
 void psxBranchTest()
 {
 	g_psxNextBranchCycle = psxRegs.cycle;
-	//if( EEsCycle >= 0 ) g_psxNextBranchCycle += IOP_WAIT_CYCLE;
 
 	if ((int)(psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
 		psxRcntUpdate();

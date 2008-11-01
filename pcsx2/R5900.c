@@ -437,7 +437,7 @@ void cpuBranchTest()
 
 	// Signal for an immediate branch test! This is important! The IOP must
 	// be able to act on the state the EE has given it before executing any
-	// additional code.  Otherwise things won't be anywhere near "in sync."
+	// additional code.  Everything just seems a lot happier this way!
 
 	psxBranchTest();
 

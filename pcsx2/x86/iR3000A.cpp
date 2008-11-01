@@ -979,6 +979,11 @@ void psxSetBranchImm( u32 imm )
 #define USE_FAST_BRANCHES CHECK_FASTBRANCHES
 #define PSXCYCLE_MULT (CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16))
 
+// Important!  The following macro makes sure the rounding error of both the psxRegs.cycle
+// modifier and EEsCycle modifier are consistent (in case you wonder why it's got a u32 typecast)
+
+#define PSXCYCLE_TO_EE (((u32)(s_psxBlockCycles*PSXCYCLE_MULT)) * 8 )		// IOP to EE conversion
+
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	if( !USE_FAST_BRANCHES || cpuBranch ) {
@@ -987,13 +992,13 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 	}
 	else {
-		SUB32ItoM((uptr)&EEsCycle, ((u32)(s_psxBlockCycles*PSXCYCLE_MULT))*8); // 8 EE clocks for every IOP clock.
+		SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
 		ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
 		return;
 	}
 
 	// check if we've caught up with the EE
-	SUB32ItoM((uptr)&EEsCycle, ((u32)(s_psxBlockCycles*PSXCYCLE_MULT))*8); // 8 EE clocks for every IOP clock.
+	SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
 	j8Ptr[2] = JGE8(0);
 
 	// Break the Block-execute Loop here.
@@ -1047,6 +1052,7 @@ void rpsxSYSCALL()
 	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles);
+	SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
 	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1065,6 +1071,7 @@ void rpsxBREAK()
 	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles);
+	SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
 	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1484,7 +1491,11 @@ StartRecomp:
 	else {
 		assert( psxbranch != 3 );
 		if( psxbranch ) assert( !willbranch3 );
-		else ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
+		else
+		{
+			ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
+			SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
+		}
 
 		if( willbranch3 ) {
 			BASEBLOCK* pblock = PSX_GETBLOCK(s_nEndBlock);
