@@ -187,9 +187,7 @@ public:
 			// Dump samples from the read portion of the buffer instead of dropping
 			// the newly written stuff.
 
-			// Toss half the buffer plus whatever's being written anew:
-			s32 comp = GetAlignedBufferSize( (size + nSamples ) / 2 );
-			if( comp > (size-SndOutPacketSize) ) comp = size-SndOutPacketSize;
+			s32 comp;
 
 			if( timeStretchEnabled )
 			{
@@ -199,8 +197,18 @@ public:
 				eTempo += eTempo * 0.25f;
 				if( eTempo > 7.5f ) eTempo = 5.0f;
 				pSoundTouch->setTempo( eTempo );
-				freezeTempo = (comp / SndOutPacketSize) - 1;
-				if( freezeTempo < 1 ) freezeTempo = 1;
+				freezeTempo = 0;		// disabled tempo freeze for now.  May not be needed anymore.
+
+				// Throw out just a little bit (one packet worth) to help
+				// give the TS some room to work:
+
+				comp = SndOutPacketSize;
+			}
+			else
+			{
+				// Toss half the buffer plus whatever's being written anew:
+				s32 comp = GetAlignedBufferSize( (size + nSamples ) / 2 );
+				if( comp > (size-SndOutPacketSize) ) comp = size-SndOutPacketSize;
 			}
 
 			data-=comp;
@@ -241,7 +249,7 @@ public:
 		quietSampleCount = 0;
 		if( underrun_freeze )
 		{			
-			int toFill = (int)(size * ( timeStretchEnabled ? 0.1 : 0.70 ) );
+			int toFill = (int)(size * ( timeStretchEnabled ? 0.1 : 0.50 ) );
 			toFill = GetAlignedBufferSize( toFill );
 
 			// toFill is now aligned to a SndOutPacket
@@ -598,6 +606,11 @@ s32 SndInit()
 	sndTempProgress = 0;
 	sndTempBuffer = new s32[SndOutPacketSize];
 	sndTempBuffer16 = new s16[SndOutPacketSize];
+
+	// clear buffers!
+	// Fixes loopy sounds on emu resets.
+	memset( sndTempBuffer, 0, sizeof(s32) * SndOutPacketSize );
+	memset( sndTempBuffer16, 0, sizeof(s16) * SndOutPacketSize );
 
 	cTempo = 1.0;
 	eTempo = 1.0;

@@ -23,9 +23,9 @@ void DMA4LogWrite(void *lpData, u32 ulSize);
 void DMA7LogWrite(void *lpData, u32 ulSize);
 void DMALogClose();
 
-void DmaWrite(u32 core, u16 data);
-u16 DmaRead(u32 core);
+extern void DmaWrite(u32 core, u16 data);
+extern u16 DmaRead(u32 core);
 
-void AutoDMAReadBuffer(int core, int mode);
+extern void AutoDMAReadBuffer(int core, int mode);
 
 #endif // DMA_H_INCLUDED //

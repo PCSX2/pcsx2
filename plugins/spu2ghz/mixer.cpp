@@ -998,7 +998,7 @@ double rfactor=1;
 double cfactor=1;
 double diff=0;
 
-static s32 __forceinline ApplyVolume(s32 data, s32 volume)
+static __forceinline s32 ApplyVolume(s32 data, s32 volume)
 {
 	return (volume * data);
 }
@@ -1006,7 +1006,7 @@ static s32 __forceinline ApplyVolume(s32 data, s32 volume)
 // writes a signed value to the SPU2 ram
 // Performs no cache invalidation -- use only for dynamic memory ranges
 // of the SPU2 (between 0x0000 and SPU2_DYN_MEMLINE)
-static void __forceinline spu2M_WriteFast( u32 addr, s16 value )
+static __forceinline void spu2M_WriteFast( u32 addr, s16 value )
 {
 	// throw an assertion if the memory range is invalid:
 	jASSUME( addr < SPU2_DYN_MEMLINE );
@@ -1014,7 +1014,7 @@ static void __forceinline spu2M_WriteFast( u32 addr, s16 value )
 }
 
 
-static void __forceinline MixVoice( V_Core& thiscore, V_Voice& vc, s32& VValL, s32& VValR )
+static __forceinline void MixVoice( V_Core& thiscore, V_Voice& vc, s32& VValL, s32& VValR )
 {
 	s32 Value=0;
 

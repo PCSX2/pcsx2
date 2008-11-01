@@ -90,14 +90,16 @@ void DMALogClose() {
 }
 
 
-u16 DmaRead(u32 core) {
+__forceinline u16 DmaRead(u32 core)
+{
+	Cores[core].TDA&=0xfffff;
 	const u16 ret = (u16)spu2M_Read(Cores[core].TDA);
 	Cores[core].TDA++;
-	Cores[core].TDA&=0xfffff;
 	return ret;
 }
 
-void DmaWrite(u32 core, u16 value) {
+__forceinline void DmaWrite(u32 core, u16 value)
+{
 	spu2M_Write( Cores[core].TSA, value );
 	Cores[core].TSA++;
 	Cores[core].TSA&=0xfffff;
@@ -189,13 +191,20 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 {
 	u32 i;
 
-	u32 pa = ((u32)pMem)&7;
-	u32 pm = Cores[core].TSA&0x7;
-
-	if(pa || pm)
 	{
-		printf("* Missaligned addr in DMA write!\n");
+		// Perform an alignment check.
+		// Not really important.  Everythign should work regardless,
+		// but it could be indicative of an emulation foopah elsewhere.
+
+		uptr pa = ((uptr)pMem)&7;
+		uptr pm = Cores[core].TSA&0x7;
+
+		if(pa || pm)
+		{
+			fprintf(stderr, "* SPU2 : Missaligned addr in DMA write!\n");
+		}
 	}
+
 
 	if(core==0)
 		DMA4LogWrite(pMem,size<<1);
@@ -204,9 +213,36 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 	if(MsgDMA()) ConLog(" * SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
 
-	Cores[core].TDA=Cores[core].TSA;
-	for (i=0;i<size;i++) {
-		spu2M_Write( Cores[core].TDA, pMem[i] );
+	// Optimized!
+	// Instead of checking the adpcm cache for every word, we check for every block.
+	// That way we can use the optimized fast write instruction to commit the memory.
+
+	Cores[core].TDA = Cores[core].TSA & 0xfffff;
+
+	{
+		u32 nexta = Cores[core].TDA >> 3;
+		u32 flagbitmask = 1ul << ( nexta & 31 );
+		nexta >>= 5;
+
+		// Traverse from start to finish in 8 word blocks,
+		// and clear the pcm cache flag for each block.
+		u32 stmp = ( size + 7 ) >> 3;		// round up
+		for( i=0; i<stmp; i++ )
+		{
+			pcm_cache_flags[nexta] &= ~flagbitmask;
+			flagbitmask <<= 1;
+			if( flagbitmask == 0 )
+			{
+				nexta++;
+				flagbitmask = 1;
+			}
+		}
+	}
+
+	for(i=0;i<size;i++)
+	{
+		*GetMemPtr( Cores[core].TDA ) = pMem[i];
+		//spu2M_Write( Cores[core].TDA, pMem[i] );
 		Cores[core].TDA++;
 		Cores[core].TDA&=0xfffff;
 	}

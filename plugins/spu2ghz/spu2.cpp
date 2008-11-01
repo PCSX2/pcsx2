@@ -153,13 +153,15 @@ void SysMessage(char *fmt, ...)
 	MessageBox(0, tmp, "SPU2ghz Msg", 0);
 }
 
-s16 __forceinline * __fastcall GetMemPtr(u32 addr)
+__forceinline s16 * __fastcall GetMemPtr(u32 addr)
 {
+	// In case you're wondering, this assert is the reason spu2ghz
+	// runs so incrediously slow in Debug mode. :P
 	assert(addr<0x100000);
 	return (_spu2mem+addr);
 }
 
-s16 __forceinline __fastcall spu2M_Read( u32 addr )
+__forceinline s16 __fastcall spu2M_Read( u32 addr )
 {
 	return *GetMemPtr( addr & 0xfffff );
 }
@@ -168,7 +170,7 @@ s16 __forceinline __fastcall spu2M_Read( u32 addr )
 // Invalidates the ADPCM cache in the process.
 // Optimization note: don't use __forceinline because the footprint of this
 // function is a little too heavy now.  Better to let the compiler decide.
-void __inline __fastcall spu2M_Write( u32 addr, s16 value )
+__inline void __fastcall spu2M_Write( u32 addr, s16 value )
 {
 	// Make sure the cache is invalidated:
 	// (note to self : addr address WORDs, not bytes)
@@ -182,7 +184,7 @@ void __inline __fastcall spu2M_Write( u32 addr, s16 value )
 }
 
 // writes an unsigned value to the SPU2 ram
-void __inline __fastcall spu2M_Write( u32 addr, u16 value )
+__inline void __fastcall spu2M_Write( u32 addr, u16 value )
 {
 	spu2M_Write( addr, (s16)value );
 }
@@ -620,7 +622,6 @@ void UpdateDebugDialog()
 }
 #endif
 
-//SHOULD be 768, but 751/752 seems to get better results
 #define TickInterval 768
 
 u32 TicksCore=0;
@@ -655,10 +656,10 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 	//  If for some reason our clock value seems way off base, just mix
 	//  out a little bit, skip the rest, and hope the ship "rights" itself later on.
 
-	if( dClocks > TickInterval*48 )
+	if( dClocks > TickInterval*72 )
 	{
 		ConLog( " * SPU2 > TimeUpdate Sanity Check (Tick Delta: %d) (PS2 Ticks: %d)\n", dClocks/TickInterval, cClocks/TickInterval );
-		dClocks = TickInterval*48;
+		dClocks = TickInterval*72;
 		lClocks = cClocks-dClocks;
 	}
 
