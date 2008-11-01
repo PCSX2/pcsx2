@@ -82,8 +82,8 @@ static __forceinline s16 SndScaleVol( s32 inval )
 
 
 // records last buffer status (fill %, range -100 to 100, with 0 being 50% full)
-double lastPct;
-double lastEmergencyAdj;
+float lastPct;
+float lastEmergencyAdj;
 
 float cTempo=1;
 float eTempo = 1;
@@ -121,12 +121,12 @@ protected:
 	}
 
 public:
-	SndBufferImpl( double latencyMS )
+	SndBufferImpl( float latencyMS )
 	{
 		rpos=0;
 		wpos=0;
 		data=0;
-		size=GetAlignedBufferSize( (int)(latencyMS * SampleRate / 500.0 ) );
+		size=GetAlignedBufferSize( (int)(latencyMS * SampleRate / 500.0f ) );
 		buffer = new s32[size];
 		pw=false;
 		underrun_freeze = false;
@@ -195,16 +195,15 @@ public:
 			{
 				// If we overran it means the timestretcher failed.  We need to speed
 				// up audio playback.
-				cTempo += cTempo * 0.10f;
-				eTempo += eTempo * 0.25f;
+				cTempo += cTempo * 0.12f;
+				eTempo += eTempo * 0.40f;
 				if( eTempo > 7.5f ) eTempo = 5.0f;
 				pSoundTouch->setTempo( eTempo );
-				freezeTempo = 0;		// disabled tempo freeze for now.  May not be needed anymore.
 
-				// Throw out just a little bit (one packet worth) to help
+				// Throw out just a little bit (two packets worth) to help
 				// give the TS some room to work:
 
-				comp = SndOutPacketSize;
+				comp = SndOutPacketSize*2;
 			}
 			else
 			{
@@ -251,7 +250,7 @@ public:
 		quietSampleCount = 0;
 		if( underrun_freeze )
 		{			
-			int toFill = (int)(size * ( timeStretchEnabled ? 0.1 : 0.50 ) );
+			int toFill = (int)(size * ( timeStretchEnabled ? 0.1f : 0.50f ) );
 			toFill = GetAlignedBufferSize( toFill );
 
 			// toFill is now aligned to a SndOutPacket
@@ -263,7 +262,6 @@ public:
 			}
 
 			underrun_freeze = false;
-			freezeTempo = 0;
 			if( MsgOverruns() )
 				ConLog(" * SPU2 > Underrun compensation (%d packets buffered)\n", toFill / SndOutPacketSize );
 			lastPct = 0.0;		// normalize timestretcher
@@ -278,11 +276,10 @@ public:
 			{
 				// timeStretcher failed it's job.  We need to slow down the audio some.
 
-				cTempo -= (cTempo * 0.10f);
+				cTempo -= (cTempo * 0.12f);
 				eTempo -= (eTempo * 0.30f);
 				if( eTempo < 0.1f ) eTempo = 0.1f;
 				pSoundTouch->setTempo( eTempo );
-				freezeTempo = 3;
 			}
 
 			return nSamples != 0;
@@ -409,7 +406,7 @@ public:
 	//    1.0 = buffer overflow!
 	//    0.0 = buffer nominal (50% full)
 	//   -1.0 = buffer underflow!
-	double GetStatusPct()
+	float GetStatusPct()
 	{
 		EnterCriticalSection(&cs);
 
@@ -420,7 +417,7 @@ public:
 
 		//ConLog( "Data %d >>> driver: %d   predict: %d\n", data, drvempty, predictData );
 
-		double result = (data + predictData - drvempty) - (size/2);
+		float result = (float)(data + predictData - drvempty) - (size/2);
 		result /= (size/2);
 		LeaveCriticalSection(&cs);
 		return result;
@@ -441,12 +438,12 @@ void UpdateTempoChange()
 		return;
 	}
 
-	double statusPct = sndBuffer->GetStatusPct();
-	double pctChange = statusPct - lastPct;
+	float statusPct = sndBuffer->GetStatusPct();
+	float pctChange = statusPct - lastPct;
 
-	double tempoChange;
-	double emergencyAdj = 0;
-	double newcee = cTempo;		// workspace var. for cTempo
+	float tempoChange;
+	float emergencyAdj = 0;
+	float newcee = cTempo;		// workspace var. for cTempo
 
 	// IMPORTANT!
 	// If you plan to tweak these values, make sure you're using a release build
@@ -461,9 +458,9 @@ void UpdateTempoChange()
 	// Prediction based on the buffer change:
 	// (linear seems to work better here)
 
-	tempoChange = pctChange * 0.75;
+	tempoChange = pctChange * 0.75f;
 
-	if( statusPct * tempoChange < 0.0 )
+	if( statusPct * tempoChange < 0.0f )
 	{
 		// only apply tempo change if it is in synch with the buffer status.
 		// In other words, if the buffer is high (over 0%), and is decreasing,
@@ -491,27 +488,27 @@ void UpdateTempoChange()
 
 	// Prediction based on the buffer fill status:
 
-	const double statusWeight = 2.99;
-	const double statusRange = 0.068;
+	const float statusWeight = 2.99f;
+	const float statusRange = 0.068f;
 
 	// "non-emergency" deadzone:  In this area stretching will be strongly discouraged.
 	// Note: due tot he nature of timestretch latency, it's always a wee bit harder to
 	// cope with low fps (underruns) tha it is high fps (overruns).  So to help out a
 	// little, the low-end portions of this check are less forgiving than the high-sides.
 
-	if( cTempo < 0.965 || cTempo > 1.060 ||
-		pctChange < -0.38 || pctChange > 0.54 ||
-		statusPct < -0.32 || statusPct > 0.39 ||
-		eTempo < 0.89 || eTempo > 1.19 )
+	if( cTempo < 0.965f || cTempo > 1.060f ||
+		pctChange < -0.38f || pctChange > 0.54f ||
+		statusPct < -0.32f || statusPct > 0.39f ||
+		eTempo < 0.89f || eTempo > 1.19f )
 	{
-		emergencyAdj = ( pow( statusPct*statusWeight, 3.0 ) * statusRange);
+		emergencyAdj = ( pow( statusPct*statusWeight, 3.0f ) * statusRange);
 	}
 
 	// Smooth things out by factoring our previous adjustment into this one.
 	// It helps make the system 'feel' a little smarter by  giving it at least
 	// one packet worth of history to help work off of:
 
-	emergencyAdj = (emergencyAdj * 0.75) + (lastEmergencyAdj * 0.25 );
+	emergencyAdj = (emergencyAdj * 0.75f) + (lastEmergencyAdj * 0.25f );
 
 	lastEmergencyAdj = emergencyAdj;
 	lastPct = statusPct;
@@ -523,19 +520,19 @@ void UpdateTempoChange()
 	// at 100ms latency, which is pretty good (larger buffers normalize even
 	// quicker).
 
-	newcee += newcee * (tempoChange+emergencyAdj) * 0.03;
+	newcee += newcee * (tempoChange+emergencyAdj) * 0.03f;
 
 	// Apply tempoChange as a scale of cTempo.  That way the effect is proportional
 	// to the current tempo.  (otherwise tempos rate of change at the extremes would
 	// be too drastic)
 
-	double newTempo = newcee + ( emergencyAdj * cTempo );
+	float newTempo = newcee + ( emergencyAdj * cTempo );
 
 	// ... and as a final optimization, only stretch if the new tempo is outside
 	// a nominal threshold.  Keep this threshold check small, because it could
 	// cause some serious side effects otherwise. (enlarging the cTempo check above
 	// is usually better/safer)
-	if( newTempo < 0.970 || newTempo > 1.045 )
+	if( newTempo < 0.970f || newTempo > 1.045f )
 	{
 		cTempo = (float)newcee;
 
@@ -622,7 +619,7 @@ s32 SndInit()
 
 	try
 	{
-		sndBuffer = new SndBufferImpl( SndOutLatencyMS * (timeStretchEnabled ? 2.0 : 1.5) );
+		sndBuffer = new SndBufferImpl( SndOutLatencyMS * (timeStretchEnabled ? 2.0f : 1.5f) );
 		sndTempBuffer = new s32[SndOutPacketSize];
 		sndTempBuffer16 = new s16[SndOutPacketSize];
 	}

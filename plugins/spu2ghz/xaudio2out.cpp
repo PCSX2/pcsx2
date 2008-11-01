@@ -176,11 +176,12 @@ public:
 		if( pSourceVoice != NULL )
 		{
 			pSourceVoice->Stop( 0 );
+			Sleep(50);	// give the engine some time to stop voices
 			pSourceVoice->DestroyVoice();
 			pSourceVoice = NULL;
 		}
 
-		Sleep(50);	// give the engine some time to stop voices
+		Sleep(50);	// give the engine some more time, because I don't trust it.
 
 		//
 		// Cleanup XAudio2

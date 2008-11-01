@@ -78,7 +78,7 @@ static s32 __forceinline MulShr32( s32 srcval, s32 mulval )
 
 static s32 __forceinline MulShr32su( s32 srcval, u32 mulval )
 {
- 	s64 tmp = ((s64)srcval * mulval );
+ 	s64 tmp = ((s64)srcval * (s32)mulval );
 	return ((s32*)&tmp)[1];
 }
 
