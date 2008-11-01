@@ -269,7 +269,7 @@ void vSyncDebugStuff() {
 #endif
 }
 
-__forceinline void frameLimit() 
+static __forceinline void frameLimit() 
 {
 	switch(CHECK_FRAMELIMIT) {
 		case PCSX2_FRAMELIMIT_LIMIT:
@@ -336,7 +336,7 @@ __forceinline void frameLimit()
 	}
 }
 
-__forceinline void VSyncStart(u32 sCycle) // VSync Start 
+static __forceinline void VSyncStart(u32 sCycle) // VSync Start 
 {
 	vSyncDebugStuff(); // EE Profiling and Debug code
 	if ((CSRw & 0x8)) GSCSRr|= 0x8;
@@ -349,7 +349,7 @@ __forceinline void VSyncStart(u32 sCycle) // VSync Start
 	if (Config.Patch) applypatch(1); // Apply patches (ToDo: clean up patch code)
 }
 
-__forceinline void VSyncEnd(u32 sCycle) // VSync End
+static __forceinline void VSyncEnd(u32 sCycle) // VSync End
 {
 	iFrame++;
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
@@ -390,7 +390,7 @@ __forceinline void VSyncEnd(u32 sCycle) // VSync End
 	}  \
 }
 
-__forceinline void hScanline() 
+static __forceinline void hScanline() 
 {
 	u32 difference = (cpuRegs.cycle - counters[4].sCycle);
 

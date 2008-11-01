@@ -159,11 +159,7 @@ BOOL Save_Patch_Proc( char * filename );
 
 #include <sys/timeb.h>
 
-#ifdef _WIN32
-extern __forceinline u32 timeGetTime()
-#else
 static __forceinline u32 timeGetTime()
-#endif
 {
 	struct timeb t;
 	ftime(&t);
@@ -334,11 +330,7 @@ typedef void* PVOID;
              return __test_and_set(__p, (unsigned long)__q);
  #       endif
  }*/
-#ifdef _WIN32
-extern __forceinline void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
-#else
 static __forceinline void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
-#endif
 {
 #ifdef __x86_64__
 	__asm__ __volatile__(".intel_syntax\n"
@@ -351,11 +343,7 @@ static __forceinline void InterlockedExchangePointer(PVOID volatile* Target, voi
 #endif
 }
 
-#ifdef _WIN32
-extern __forceinline long InterlockedExchange(long volatile* Target, long Value)
-#else
 static __forceinline long InterlockedExchange(long volatile* Target, long Value)
-#endif
 {
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xchg [%0], %%eax\n"
@@ -363,11 +351,7 @@ static __forceinline long InterlockedExchange(long volatile* Target, long Value)
 	return 0; // The only function that even looks at this is a debugging function
 }
 
-#ifdef _WIN32
-extern __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
-#else
 static __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
-#endif
 {
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xadd [%0], %%eax\n"
