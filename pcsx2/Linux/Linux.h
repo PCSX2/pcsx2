@@ -102,6 +102,10 @@ typedef enum
 	BIOS
 } plugin_types;
 
+extern GtkWidget *MainWindow;
+extern bool applychanges;
+extern bool configuringplug;
+
 GtkWidget *check_eerec, *check_vu0rec, *check_vu1rec;
 GtkWidget *check_mtgs , *check_cpu_dc;
 GtkWidget *check_console , *check_patches;
