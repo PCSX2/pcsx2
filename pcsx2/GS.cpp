@@ -730,13 +730,17 @@ typedef void (*GIFRegHandler)(u32* data);
 static GIFRegHandler s_GSHandlers[3] = { GSRegHandlerSIGNAL, GSRegHandlerFINISH, GSRegHandlerLABEL };
 extern "C" int Path3transfer;
 
-#define TagPathTransfer /*midnight madness cares because the tag is 5 dwords*/ \
-	int* psrc = (int*)ptag; \
-	int* pdst = (int*)&g_path[path]; \
-	pdst[0] = psrc[0]; \
-	pdst[1] = psrc[1]; \
-	pdst[2] = psrc[2]; \
+/*midnight madness cares because the tag is 5 dwords*/ \
+static __forceinline void TagPathTransfer( GIFTAG* ptag, GIFTAG *path )
+{
+	u32* psrc = (u32*)ptag;
+	u32* pdst = (u32*)path;
+	pdst[0] = psrc[0];
+	pdst[1] = psrc[1];
+	pdst[2] = psrc[2];
 	pdst[3] = psrc[3];
+}
+
 
 // simulates a GIF tag
 u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
@@ -827,7 +831,7 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 
 				if( nloop > 0 ) {
 					assert(size == 0);
-					TagPathTransfer;
+					TagPathTransfer( ptag, &g_path[path] );
 					g_path[path].nloop = nloop;
 					g_path[path].curreg = curreg;
 					return 0;
@@ -865,7 +869,7 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 
 				if( nloop > 0 ) {
 					assert(size == 0);
-					TagPathTransfer;
+					TagPathTransfer( ptag, &g_path[path] );
 					g_path[path].nloop = nloop;
 					g_path[path].curreg = curreg;
 					return 0;
@@ -878,7 +882,7 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 			{
 				// simulate
 				if( (int)size < nloop ) {
-					TagPathTransfer;
+					TagPathTransfer( ptag, &g_path[path] );
 					g_path[path].nloop = nloop-size;
 					return 0;
 				}

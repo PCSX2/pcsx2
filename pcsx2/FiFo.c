@@ -138,7 +138,7 @@ void WriteFIFO(u32 mem, u64 *value) {
 			data[0] = value[0];
 			data[1] = value[1];
 			GSgifTransferDummy(2, (u32*)data, 1);
-			GSRINGBUF_DONECOPY(data, 16);
+			GSRINGBUF_DONECOPY((u8*)data, 16);
 
 			if( !CHECK_DUALCORE ) {
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
