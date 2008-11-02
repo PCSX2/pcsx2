@@ -367,9 +367,9 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	}
 
 	*(u32*)writepos = type;
-	*(int*)(writepos+4) = data0;
-	*(int*)(writepos+8) = data1;
-	*(int*)(writepos+12) = data2;
+	*(u32*)(writepos+4) = data0;
+	*(u32*)(writepos+8) = data1;
+	*(u32*)(writepos+12) = data2;
 
 	writepos += 16;
     if( writepos == GS_RINGBUFFEREND ) {
@@ -730,6 +730,14 @@ typedef void (*GIFRegHandler)(u32* data);
 static GIFRegHandler s_GSHandlers[3] = { GSRegHandlerSIGNAL, GSRegHandlerFINISH, GSRegHandlerLABEL };
 extern "C" int Path3transfer;
 
+#define TagPathTransfer /*midnight madness cares because the tag is 5 dwords*/ \
+	int* psrc = (int*)ptag; \
+	int* pdst = (int*)&g_path[path]; \
+	pdst[0] = psrc[0]; \
+	pdst[1] = psrc[1]; \
+	pdst[2] = psrc[2]; \
+	pdst[3] = psrc[3];
+
 // simulates a GIF tag
 u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 {
@@ -749,8 +757,8 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 
 	while(size > 0)
 	{
-		if(nloop == 0) {
-
+		if(nloop == 0) 
+		{
 			ptag = (GIFTAG*)pMem;
 			nreg = ptag->nreg == 0 ? 16 : ptag->nreg;
 
@@ -759,44 +767,36 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 
 			if( path == 2 && ptag->eop) Path3transfer = 0; //fixes SRS and others
 
-            if( path == 0 ) {
-                // if too much data for VU1, just ignore
-                if( ptag->nloop * nreg > size * (ptag->flg==1?2:1) ) {
-#ifdef PCSX2_DEVBUILD
-                    //SysPrintf("MTGS: VU1 too much data\n");
-#endif
-                    g_path[path].nloop = 0;
-                    return ++size; // have to increment or else the GS plugin will process this packet
-                }
-            }
+			if( path == 0 ) 
+			{ 				
+				// if too much data for VU1, just ignore
+				if((ptag->nloop * nreg) > (size * (ptag->flg == 1 ? 2 : 1))) {
+					g_path[path].nloop = 0;
+					return ++size; // have to increment or else the GS plugin will process this packet
+				}
+			}
 
-			if(ptag->nloop == 0 ) {
-				if( path == 0 ) {
-
-					if( ptag->eop )
-						return size;
-
-					// ffx hack
-					if( g_FFXHack )
+			if (ptag->nloop == 0 ) {
+				if (path == 0 ) {
+					if ((!ptag->eop) && (g_FFXHack))
 						continue;
-
-					return size;
+					else
+						return size;
 				}
 
 				g_path[path].nloop = 0;
 
 				// motogp graphics show
-				if( !ptag->eop )
+				if (!ptag->eop )
 					continue;
-				
-				return size;
+				else
+					return size;
 			}
 
 			tempreg = ptag->regs[0];
 			for(i = 0; i < nreg; ++i, tempreg >>= 4) {
-
-				if( i == 8 ) tempreg = ptag->regs[1];
-				s_byRegs[path][i] = tempreg&0xf;
+					if( i == 8 ) tempreg = ptag->regs[1];
+					s_byRegs[path][i] = tempreg&0xf;
 			}
 
 			nloop = ptag->nloop;
@@ -809,20 +809,6 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 			{
 				for(; size > 0; size--, pMem += 4)
 				{
-//                    if( s_byRegs[path][curreg] == 11 ) {
-//                        // pretty bad, just get out
-//                        SysPrintf("MTGS: bad GS stream\n");
-//                        g_path[path].nloop = 0;
-//                        return 0;
-//                    }
-
-//                    // if VU1, make sure pMem never exceeds VU1 mem
-//                    if( path == 0 && (u8*)pMem >= VU1.Mem + 0x4000 ) {
-//                        SysPrintf("MTGS: memory exceeds bounds\n");
-//                        g_path[path].nloop = 0;
-//                        return size;
-//                    }
-
 					if( s_byRegs[path][curreg] == 0xe  && (pMem[2]&0xff) >= 0x60 ) {
 						if( (pMem[2]&0xff) < 0x63 )
 							s_GSHandlers[pMem[2]&0x3](pMem);
@@ -841,31 +827,25 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 
 				if( nloop > 0 ) {
 					assert(size == 0);
-                    // midnight madness cares because the tag is 5 dwords
-                    int* psrc = (int*)ptag;
-                    int* pdst = (int*)&g_path[path];
-                    pdst[0] = psrc[0]; pdst[1] = psrc[1]; pdst[2] = psrc[2]; pdst[3] = psrc[3];
+					TagPathTransfer;
 					g_path[path].nloop = nloop;
 					g_path[path].curreg = curreg;
 					return 0;
 				}
-
 				break;
 			}
 			case 1: // REGLIST
 			{
 				size *= 2;
-
+	
 				tempreg = ptag->regs[0];
 				for(i = 0; i < nreg; ++i, tempreg >>= 4) {
-
 					if( i == 8 ) tempreg = ptag->regs[1];
 					assert( (tempreg&0xf) < 0x64 );
 					s_byRegs[path][i] = tempreg&0xf;
 				}
 
-				for(; size > 0; pMem+= 2, size--)
-				{
+				for(; size > 0; pMem+= 2, size--) {
 					if( s_byRegs[path][curreg] >= 0x60 && s_byRegs[path][curreg] < 0x63 )
 						s_GSHandlers[s_byRegs[path][curreg]&3](pMem);
 
@@ -885,10 +865,7 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 
 				if( nloop > 0 ) {
 					assert(size == 0);
-                    // midnight madness cares because the tag is 5 dwords
-                    int* psrc = (int*)ptag;
-                    int* pdst = (int*)&g_path[path];
-                    pdst[0] = psrc[0]; pdst[1] = psrc[1]; pdst[2] = psrc[2]; pdst[3] = psrc[3];
+					TagPathTransfer;
 					g_path[path].nloop = nloop;
 					g_path[path].curreg = curreg;
 					return 0;
@@ -901,10 +878,7 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 			{
 				// simulate
 				if( (int)size < nloop ) {
-                    // midnight madness cares because the tag is 5 dwords
-                    int* psrc = (int*)ptag;
-                    int* pdst = (int*)&g_path[path];
-                    pdst[0] = psrc[0]; pdst[1] = psrc[1]; pdst[2] = psrc[2]; pdst[3] = psrc[3];
+					TagPathTransfer;
 					g_path[path].nloop = nloop-size;
 					return 0;
 				}
@@ -970,40 +944,40 @@ void gsInterrupt() {
 
 static u64 s_gstag=0; // used for querying the last tag
 
-#define WRITERING_DMA(pMem, qwc) { \
-	psHu32(GIF_STAT) |= 0xE00;         \
-	Path3transfer = 1; \
-	if( CHECK_MULTIGS) { \
-		u8* pgsmem = GSRingBufCopy(pMem, (qwc)<<4, GS_RINGTYPE_P3); \
-		if( pgsmem != NULL ) { \
-			int sizetoread = (qwc)<<4; \
-			u32 pendmem = (u32)gif->madr + sizetoread; \
-			/* check if page of endmem is valid (dark cloud2) */ \
-			if( dmaGetAddr(pendmem-16) == NULL ) { \
-				pendmem = ((pendmem-16)&~0xfff)-16; \
-				while(dmaGetAddr(pendmem) == NULL) { \
-					pendmem = (pendmem&~0xfff)-16; \
-				} \
-				memcpy_fast(pgsmem, pMem, pendmem-(u32)gif->madr+16); \
-			} \
-			else memcpy_fast(pgsmem, pMem, sizetoread); \
-			\
-			GSRINGBUF_DONECOPY(pgsmem, sizetoread); \
-			GSgifTransferDummy(2, pMem, qwc); \
-		} \
-		\
-		if( !CHECK_DUALCORE ) GS_SETEVENT(); \
-	} \
-	else { \
-		GSGIFTRANSFER3(pMem, qwc); \
-        if( GSgetLastTag != NULL ) { \
-            GSgetLastTag(&s_gstag); \
-            if( (s_gstag) == 1 ) {        \
-                Path3transfer = 0; /* fixes SRS and others */ \
-            } \
-        } \
-	} \
-} \
+static __forceinline void WRITERING_DMA(u32 *pMem, u32 qwc) { 
+	psHu32(GIF_STAT) |= 0xE00;         
+	Path3transfer = 1; 
+	if( CHECK_MULTIGS) { 
+		u8* pgsmem = GSRingBufCopy(pMem, (qwc)<<4, GS_RINGTYPE_P3); 
+		if( pgsmem != NULL ) { 
+			int sizetoread = (qwc)<<4; 
+			u32 pendmem = (u32)gif->madr + sizetoread; 
+			/* check if page of endmem is valid (dark cloud2) */ 
+			if( dmaGetAddr(pendmem-16) == NULL ) { 
+				pendmem = ((pendmem-16)&~0xfff)-16; 
+				while(dmaGetAddr(pendmem) == NULL) { 
+					pendmem = (pendmem&~0xfff)-16; 
+				} 
+				memcpy_fast(pgsmem, pMem, pendmem-(u32)gif->madr+16); 
+			} 
+			else memcpy_fast(pgsmem, pMem, sizetoread); 
+			
+			GSRINGBUF_DONECOPY(pgsmem, sizetoread); 
+			GSgifTransferDummy(2, pMem, qwc); 
+		} 
+		
+		if( !CHECK_DUALCORE ) GS_SETEVENT(); 
+	} 
+	else { 
+		GSGIFTRANSFER3(pMem, qwc); 
+        if( GSgetLastTag != NULL ) { 
+            GSgetLastTag(&s_gstag); 
+            if( (s_gstag) == 1 ) {        
+                Path3transfer = 0; /* fixes SRS and others */ 
+            } 
+        } 
+	} 
+} 
 
 int  _GIFchain() {
 #ifdef GSPATH3FIX
@@ -1298,9 +1272,6 @@ int mfifoGIFchain() {
 		mfifocycles+= (mfifoqwc) * 2; /* guessing */
 	}
 
-	
-	
-	
 	return 0;
 }
 
@@ -1791,15 +1762,6 @@ void RunGSState(gzFile f)
 
 				if( g_SaveGSStream != 3 )
 					return;
-
-//				if( skipfirst ) {
-//					++it;
-//					it = packets.erase(packets.begin(), it);
-//					skipfirst = 0;
-//				}
-				
-				//it = packets.begin();
-				//continue;
 				break;
 			default:
 				assert(0);
