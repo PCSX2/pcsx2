@@ -26,8 +26,8 @@
 
 typedef struct
 {
-	u32 SIGID;
-	u32 LBLID;
+        u32 SIGID;
+        u32 LBLID;
 } GSRegSIGBLID;
 
 #define GSPATH3FIX
@@ -43,21 +43,21 @@ extern u8 g_RealGSMem[0x2000];
 #define GSSIGLBLID ((GSRegSIGBLID*)(g_RealGSMem+0x1080))
 #endif
 
-#define GS_RINGBUFFERBASE	(u8*)(0x10200000)
-#define GS_RINGBUFFERSIZE	0x00300000 // 3Mb
-#define GS_RINGBUFFEREND	(u8*)(GS_RINGBUFFERBASE+GS_RINGBUFFERSIZE)
+#define GS_RINGBUFFERBASE       (u8*)(0x10200000)
+#define GS_RINGBUFFERSIZE       0x00300000 // 3Mb
+#define GS_RINGBUFFEREND        (u8*)(GS_RINGBUFFERBASE+GS_RINGBUFFERSIZE)
 
 #define GS_RINGTYPE_RESTART 0
-#define GS_RINGTYPE_P1		1
-#define GS_RINGTYPE_P2		2
-#define GS_RINGTYPE_P3		3
-#define GS_RINGTYPE_VSYNC	4
-#define GS_RINGTYPE_VIFFIFO	5 // GSreadFIFO2
-#define GS_RINGTYPE_FRAMESKIP	6
-#define GS_RINGTYPE_MEMWRITE8	7
-#define GS_RINGTYPE_MEMWRITE16	8
-#define GS_RINGTYPE_MEMWRITE32	9
-#define GS_RINGTYPE_MEMWRITE64	10
+#define GS_RINGTYPE_P1          1
+#define GS_RINGTYPE_P2          2
+#define GS_RINGTYPE_P3          3
+#define GS_RINGTYPE_VSYNC       4
+#define GS_RINGTYPE_VIFFIFO     5 // GSreadFIFO2
+#define GS_RINGTYPE_FRAMESKIP   6
+#define GS_RINGTYPE_MEMWRITE8   7
+#define GS_RINGTYPE_MEMWRITE16  8
+#define GS_RINGTYPE_MEMWRITE32  9
+#define GS_RINGTYPE_MEMWRITE64  10
 #define GS_RINGTYPE_SAVE 11
 #define GS_RINGTYPE_LOAD 12
 #define GS_RINGTYPE_RECORD 13
@@ -73,23 +73,34 @@ extern u8* g_pGSWritePos;
 extern FILE* g_fMTGSWrite, *g_fMTGSRead;
 extern u32 g_MTGSDebug, g_MTGSId;
 
-static __forceinline void MTGS_RECWRITE(u32 *start, u32 size) { 
-	if( g_MTGSDebug & 1 ) { 
-		u32* pstart = (u32*)(start); 
-		u32 cursize = (u32)(size); 
-		fprintf(g_fMTGSWrite, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); 
-		if( g_MTGSDebug & 2 ) fflush(g_fMTGSWrite); 
-	} 
-} 
+#define MTGS_RECWRITE(start, size) { \
+        if( g_MTGSDebug & 1 ) { \
+                u32* pstart = (u32*)(start); \
+                u32 cursize = (u32)(size); \
+                fprintf(g_fMTGSWrite, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); \
+                /*while(cursize > 0) { \
+                        fprintf(g_fMTGSWrite, "%x %x %x %x\n", pstart[0], pstart[1], pstart[2], pstart[3]); \
+                        pstart += 4; \
+                        cursize -= 16; \
+                }*/ \
+                if( g_MTGSDebug & 2 ) fflush(g_fMTGSWrite); \
+        } \
+} \
 
-static __forceinline void MTGS_RECREAD(start, size) { 
-	if( g_MTGSDebug & 1 ) { 
-		u32* pstart = (u32*)(start); 
-		u32 cursize = (u32)(size); 
-		fprintf(g_fMTGSRead, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); 
-		if( g_MTGSDebug & 4 ) fflush(g_fMTGSRead); 
-	} 
-} 
+#define MTGS_RECREAD(start, size) { \
+        if( g_MTGSDebug & 1 ) { \
+                u32* pstart = (u32*)(start); \
+                u32 cursize = (u32)(size); \
+                fprintf(g_fMTGSRead, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); \
+                /*while(cursize > 0) { \
+                        fprintf(g_fMTGSRead, "%x %x %x %x\n", pstart[0], pstart[1], pstart[2], pstart[3]); \
+                        pstart += 4; \
+                        cursize -= 16; \
+                }*/ \
+                if( g_MTGSDebug & 4 ) fflush(g_fMTGSRead); \
+        } \
+} \
+
 #else
 
 #define MTGS_RECWRITE 0&&
@@ -98,25 +109,21 @@ static __forceinline void MTGS_RECREAD(start, size) {
 #endif
 
 // mem and size are the ones from GSRingBufCopy
-static __forceinline void GSRINGBUF_DONECOPY(u8 *mem, u32 size) { 
-	u8* temp = (u8*)(mem) + (size); 
-	assert( temp <= GS_RINGBUFFEREND); 
-	MTGS_RECWRITE(mem, size); 
-	if( temp == GS_RINGBUFFEREND ) temp = GS_RINGBUFFERBASE; 
-	InterlockedExchangePointer((void**)&g_pGSWritePos, temp);	
+#define GSRINGBUF_DONECOPY(mem, size) { \
+        u8* temp = (u8*)(mem) + (size); \
+        assert( temp <= GS_RINGBUFFEREND); \
+        MTGS_RECWRITE(mem, size); \
+        if( temp == GS_RINGBUFFEREND ) temp = GS_RINGBUFFERBASE; \
+        InterlockedExchangePointer((void**)&g_pGSWritePos, temp);       \
 }
 
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
-
 #define GS_SETEVENT() SetEvent(g_hGsEvent)
-
 #else
-
 #include <pthread.h>
 #include <semaphore.h>
 extern sem_t g_semGsThread;
 #define GS_SETEVENT() sem_post(&g_semGsThread)
-
 #endif
 
 u32 GSgifTransferDummy(int path, u32 *pMem, u32 size);
@@ -177,45 +184,46 @@ extern int g_SaveGSStream;
 extern int g_nLeftGSFrames;
 extern gzFile g_fGSSave;
 
-static __forceinline void GSGIFTRANSFER1(u32 *pMem, u32 addr) { 
-	if( g_SaveGSStream == 2) { 
-		u32 type = GSRUN_TRANS1; 
-		u32 size = (0x4000-(addr))/16; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &size, 4); \
-		gzwrite(g_fGSSave, ((u8*)pMem)+(addr), size*16); 
-	} 
-	GSgifTransfer1(pMem, addr); 
+#define GSGIFTRANSFER1(pMem, addr) { \
+        if( g_SaveGSStream == 2) { \
+                int type = GSRUN_TRANS1; \
+                int size = (0x4000-(addr))/16; \
+                gzwrite(g_fGSSave, &type, sizeof(type)); \
+                gzwrite(g_fGSSave, &size, 4); \
+                gzwrite(g_fGSSave, ((u8*)pMem)+(addr), size*16); \
+        } \
+        GSgifTransfer1(pMem, addr); \
 }
 
-static __forceinline void GSGIFTRANSFER2(u32 *pMem, u32 size) { 
-	if( g_SaveGSStream == 2) { 
-		u32 type = GSRUN_TRANS2; 
-		u32 _size = size; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &_size, 4); 
-		gzwrite(g_fGSSave, pMem, _size*16); 
-	} 
-	GSgifTransfer2(pMem, size); 
+#define GSGIFTRANSFER2(pMem, size) { \
+        if( g_SaveGSStream == 2) { \
+                int type = GSRUN_TRANS2; \
+                int _size = size; \
+                gzwrite(g_fGSSave, &type, sizeof(type)); \
+                gzwrite(g_fGSSave, &_size, 4); \
+                gzwrite(g_fGSSave, pMem, _size*16); \
+        } \
+        GSgifTransfer2(pMem, size); \
 }
 
-static __forceinline void GSGIFTRANSFER3(u32 *pMem, u32 size) { 
-	if( g_SaveGSStream == 2 ) { 
-		u32 type = GSRUN_TRANS3; 
-		u32 _size = size; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &_size, 4); 
-		gzwrite(g_fGSSave, pMem, _size*16); 
-	} 
-	GSgifTransfer3(pMem, size); 
+
+#define GSGIFTRANSFER3(pMem, size) { \
+        if( g_SaveGSStream == 2 ) { \
+                int type = GSRUN_TRANS3; \
+                int _size = size; \
+                gzwrite(g_fGSSave, &type, sizeof(type)); \
+                gzwrite(g_fGSSave, &_size, 4); \
+                gzwrite(g_fGSSave, pMem, _size*16); \
+        } \
+        GSgifTransfer3(pMem, size); \
 }
 
-static __forceinline void GSVSYNC(void) { 
-	if( g_SaveGSStream == 2 ) { 
-		u32 type = GSRUN_VSYNC; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-	} 
-} 
+#define GSVSYNC() { \
+        if( g_SaveGSStream == 2 ) { \
+                int type = GSRUN_VSYNC; \
+                gzwrite(g_fGSSave, &type, sizeof(type)); \
+        } \
+} \
 
 #else
 
