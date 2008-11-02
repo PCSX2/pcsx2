@@ -193,15 +193,20 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 	{
 		// Perform an alignment check.
-		// Not really important.  Everythign should work regardless,
+		// Not really important.  Everything should work regardless,
 		// but it could be indicative of an emulation foopah elsewhere.
 
 		uptr pa = ((uptr)pMem)&7;
 		uptr pm = Cores[core].TSA&0x7;
 
-		if(pa || pm)
+		if( pa )
 		{
-			fprintf(stderr, "* SPU2 : Missaligned addr in DMA write!\n");
+			fprintf(stderr, "* SPU2 DMA Write > Missaligned SOURCE! Core: %d  TSA: 0x%x  TDA: 0x%x  Size: 0x%x\n", core, Cores[core].TSA, Cores[core].TDA, size);
+		}
+
+		if( pm )
+		{
+			fprintf(stderr, "* SPU2 DMA Write > Missaligned TARGET! Core: %d  TSA: 0x%x  TDA: 0x%x Size: 0x%x\n", core, Cores[core].TSA, Cores[core].TDA, size );
 		}
 	}
 

@@ -695,7 +695,7 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 		//Update DMA4 interrupt delay counter
 		if(Cores[0].DMAICounter>0) 
 		{
-			Cores[0].DMAICounter-=TickInterval;
+			Cores[0].DMAICounter-=1;
 			if(Cores[0].DMAICounter<=0)
 			{
 				Cores[0].MADR=Cores[0].TADR;
@@ -703,14 +703,14 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 				if(dma4callback) dma4callback();
 			}
 			else {
-				Cores[0].MADR+=TickInterval<<1;
+				Cores[0].MADR+=2;
 			}
 		}
 
 		//Update DMA7 interrupt delay counter
 		if(Cores[1].DMAICounter>0) 
 		{
-			Cores[1].DMAICounter-=TickInterval;
+			Cores[1].DMAICounter-=1;
 			if(Cores[1].DMAICounter<=0)
 			{
 				Cores[1].MADR=Cores[1].TADR;
@@ -718,7 +718,7 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 				if(dma7callback) dma7callback();
 			}
 			else {
-				Cores[1].MADR+=TickInterval<<1;
+				Cores[1].MADR+=2;
 			}
 		}
 
