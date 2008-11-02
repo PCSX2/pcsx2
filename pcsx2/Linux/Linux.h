@@ -43,13 +43,37 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtkdialog.h>
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
+	
 #include "../Paths.h"
 #include "Common.h"
+
+/* Misc.c */
+extern void vu0Shutdown();
+extern void vu1Shutdown();
+extern void SaveConfig();
 
 extern bool UseGui;
 extern bool needReset;
 extern bool RunExe;
+	
+	
+extern int g_SaveGSStream;
+extern int g_ZeroGSOptions;
+	
+/* LnxMain */
+extern void InitLanguages();
+extern char *GetLanguageNext();
+extern void CloseLanguages();
+extern void ChangeLanguage(char *lang);
+extern void StartGui();
+extern void RunGui();
+extern int Pcsx2Configure();
+#ifdef __cplusplus
+}
+#endif
 
 extern GtkWidget *CpuDlg;
 
@@ -58,22 +82,8 @@ extern int LoadConfig();
 extern void SaveConfig();
 
 /* GtkGui */
-extern void StartGui();
-extern void RunGui();
-extern int Pcsx2Configure();
-extern void ChangeLanguage(char *lang);
 extern void init_widgets();
 
-/* LnxMain */
-extern void InitLanguages();
-extern char *GetLanguageNext();
-extern void CloseLanguages();
-extern void ChangeLanguage(char *lang);
-
-/* Misc.c */
-extern void vu0Shutdown();
-extern void vu1Shutdown();
-extern void SaveConfig();
 
 typedef struct {
 	char lang[256];
@@ -99,9 +109,6 @@ GtkWidget *radio_normal_limit, *radio_limit_limit, *radio_fs_limit, *radio_vuski
 
 _langs *langs;
 unsigned int langsMax;
-
-extern int g_SaveGSStream;
-extern int g_ZeroGSOptions;
 
 char cfgfile[256];
 

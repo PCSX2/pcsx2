@@ -431,7 +431,6 @@ void SysPrintf(const char *fmt, ...) {
 #endif
 #endif
 }
-
 void *SysLoadLibrary(char *lib) {
 	return dlopen(lib, RTLD_NOW);
 }
@@ -564,5 +563,4 @@ int SysMapUserPhysicalPages(void* Addr, uptr NumPages, PSMEMORYBLOCK* pblock, in
 
 	return 1;
 }
-
 #endif

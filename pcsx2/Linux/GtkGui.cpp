@@ -17,8 +17,6 @@
  */
 
 #include "GtkGui.h"
-#include "R3000A.h"
-#include "PsxMem.h"
 
 void StartGui() {
 	GtkWidget *Menu;
@@ -607,7 +605,7 @@ void SetActiveComboItem(GtkComboBox *widget,char plist[255][255], GList *list, c
 	
 	while (temp)
 	{
-		if (!strcmp(plist[pindex],temp->data))
+		if (!strcmp(plist[pindex],(char*)temp->data))
 			item = i;
 		
 		temp = temp->next;
@@ -678,7 +676,7 @@ void OnConfConf_Cancel(GtkButton *button, gpointer user_data) {
     getcwd(file, ARRAYSIZE(file)); /* store current dir */  \
     chdir(Config.PluginsDir); /* change dirs so that plugins can find their config file*/  \
 	if (drv == NULL) return; \
-	conf = (src) SysLoadSym(drv, name); \
+	conf = (src) SysLoadSym(drv, (char*)name); \
 	if (SysLibError() == NULL) conf(); \
     chdir(file); /* change back*/       \
     SysCloseLibrary(drv);
@@ -693,7 +691,7 @@ void OnConfConf_Cancel(GtkButton *button, gpointer user_data) {
 	strcat(file, plugin); \
 	drv = SysLoadLibrary(file); \
 	if (drv == NULL) return; \
-	conf = (src) SysLoadSym(drv, name); \
+	conf = (src) SysLoadSym(drv, (char*)name); \
 	if (SysLibError() == NULL) { \
 		ret = conf(); \
 		if (ret == 0) \
@@ -812,7 +810,7 @@ void SetComboToGList(GtkComboBox *widget, GList *list)
 	temp = list;
 	while (temp != NULL)
 	{
-		gtk_combo_box_append_text (GTK_COMBO_BOX (widget), temp->data);
+		gtk_combo_box_append_text(GTK_COMBO_BOX (widget), (char*)temp->data);
 		
 		temp = temp->next;
 	}
@@ -915,7 +913,7 @@ void UpdateDebugger() {
 			mem = (u32*)PSXM(pc);
 		} 
 		else
-			mem = PSM(pc);
+			mem =  (u32*)PSM(pc);
 		
 		if (mem == NULL) { 
 			sprintf(nullAddr, "%8.8lX:\tNULL MEMORY", pc);
@@ -1047,10 +1045,10 @@ void OnDumpC_Ok(GtkButton *button, gpointer user_data) {
 		u32 *mem;
 
 		if (DebugMode) {
-			mem = PSXM(addrf);
+			mem = (u32*)PSXM(addrf);
 		} 
 		else {
-			mem = PSM(addrf);
+			mem = (u32*)PSM(addrf);
 		}
 		
 		if (mem == NULL) { 
@@ -1104,9 +1102,9 @@ void OnDumpR_Ok(GtkButton *button, gpointer user_data) {
 		u32 out;
 
 		if (DebugMode) {
-			mem = PSXM(addrf);
+			mem = (u32*)PSXM(addrf);
 		} else {
-			mem = PSM(addrf);
+			mem = (u32*)PSM(addrf);
 		}
 		if (mem == NULL) out = 0;
 		else out = *mem;

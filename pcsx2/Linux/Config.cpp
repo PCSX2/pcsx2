@@ -22,7 +22,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+extern "C" {
 #include "Linux.h"
+}
 
 #define GetValue(name, var) \
 	tmp = strstr(data, name); \

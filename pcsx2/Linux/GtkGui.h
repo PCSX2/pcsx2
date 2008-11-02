@@ -19,10 +19,21 @@
  #ifndef __GTKGUI_H__
 #define __GTKGUI_H__
 
+#include "Linux.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+	
 #include "support.h"
 #include "callbacks.h"
 #include "interface.h"
-#include "Linux.h"
+	
+#include "R3000A.h"
+#include "PsxMem.h"
+	
+#ifdef __cplusplus
+}
+#endif
 
 bool applychanges = FALSE;
 bool configuringplug = FALSE;

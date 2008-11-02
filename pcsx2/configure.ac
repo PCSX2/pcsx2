@@ -17,9 +17,9 @@ CXXFLAGS=
 CCASFLAGS=
 
 WARNING_FLAGS="-Wall -Wno-format -Wno-unused-value"
-dnl EXTRA_FLAGS = " -Xlinker -zmuldefs -fpermissive "-ansi 
-NORMAL_FLAGS="-march=native -pipe -O3 -fomit-frame-pointer ${WARNING_FLAGS}"
-DEBUG_FLAGS=" -g ${WARNING_FLAGS}"
+dnl EXTRA_FLAGS = " -Xlinker -fpermissive -march=native"
+NORMAL_FLAGS=" -pipe -O3 -Xlinker -zmuldefs -fomit-frame-pointer ${WARNING_FLAGS}"
+DEBUG_FLAGS=" -g -Xlinker -zmuldefs ${WARNING_FLAGS}"
 
 dnl Check for debug build
 AC_MSG_CHECKING(debug build)
