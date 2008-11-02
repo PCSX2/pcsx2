@@ -316,8 +316,10 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 
 	if( env.Phase == 0 ) return;
 
-	u32 SLevel=((u32)env.Sl)<<27;
+	s32 SLevel=env.Sl<<27;
 	u32 off=InvExpOffsets[(env.Value>>28)&7];
+
+	jASSUME( SLevel >= 0 );
 
 	if(env.Releasing)
 	{
@@ -332,6 +334,13 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 	switch (env.Phase)
 	{
 		case 1: // attack
+			if( env.Value == 0x7fffffff )
+			{
+				// Already maxed out.  Progress phase and nothing more:
+				env.Phase++;
+				break;
+			}
+
 			if (env.Am) // pseudo exponential
 			{
 				if (env.Value<0x60000000) // below 75%
@@ -348,8 +357,9 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 				env.Value+=PsxRates[(env.Ar^0x7f)-0x10+32];
 			}
 
-			if (env.Value>=0x7fffffff)
+			if( env.Value < 0 )
 			{
+				// We hit the ceiling. 
 				env.Phase++;
 				env.Value=0x7fffffff;
 			}
@@ -359,10 +369,14 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 		case 2: // decay
 			env.Value-=PsxRates[((env.Dr^0x1f)<<2)-0x18+off+32];
 
-			if ((env.Value<=SLevel) || (env.Value>0x7fffffff))
+			if(env.Value <= SLevel)
 			{
-				if (env.Value>0x7fffffff)	env.Value = 0;
-				else						env.Value = SLevel;
+				// Clamp decay to SLevel or Zero
+				if (env.Value < 0)
+					env.Value = 0;
+				else
+					env.Value = SLevel;
+
 				env.Phase++;
 			}
 
@@ -378,6 +392,11 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 				else // linear
 				{
 					env.Value-=PsxRates[(env.Sr^0x7f)-0xf+32];
+				}
+				if( env.Value < 0 )
+				{
+					env.Value = 0;
+					env.Phase++;
 				}
 			} 
 			else // increasing
@@ -399,38 +418,37 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 
 					env.Value+=PsxRates[(env.Sr^0x7f)-0x10+32];
 				}
-			}
 
-			if ((env.Value>=0x7fffffff) || (env.Value==0))
-			{
-				env.Value=(env.Sm&2)?0:0x7fffffff;
-				env.Phase++;
+				if( env.Value < 0 )
+				{
+					env.Value = 0x7fffffff;
+					env.Phase++;
+				}
 			}
 
 			break;
 
 		case 4: // sustain end
-			env.Value=(env.Sm&2)?0:0x7fffffff;
+			env.Value = (env.Sm&2) ? 0 : 0x7fffffff;
 			if(env.Value==0)
 				env.Phase=6;
 			break;
 
 		case 5: // release
+
+			if (env.Rm) // exponential
 			{
-				if (env.Rm) // exponential
-				{
-					env.Value-=PsxRates[((env.Rr^0x1f)<<2)-0x18+off+32];
-				} 
-				else // linear
-				{
-					env.Value-=PsxRates[((env.Rr^0x1f)<<2)-0xc+32];
-				}
+				env.Value-=PsxRates[((env.Rr^0x1f)<<2)-0x18+off+32];
+			} 
+			else // linear
+			{
+				env.Value-=PsxRates[((env.Rr^0x1f)<<2)-0xc+32];
 			}
 
-			if ((env.Value>0x7fffffff) || (env.Value==0))
+			if( env.Value < 0 )
 			{
-				env.Phase++;
 				env.Value=0;
+				env.Phase++;
 			}
 
 			break;
@@ -532,15 +550,17 @@ static void __forceinline GetVoiceValues_Linear(V_Core& thiscore, V_Voice& vc, s
 	}
 	else
 	{
-		if(Interpolation==0) // || vc.SP == 0)
+		jASSUME( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
+
+		if(Interpolation==0)
 		{
-			Value = MulShr32su( vc.PV1, vc.ADSR.Value );
+			Value = MulShr32( vc.PV1, vc.ADSR.Value );
 		} 
 		else //if(Interpolation==1) //must be linear
 		{
 			s32 t0 = vc.PV2 - vc.PV1;
-			s32 t1 = vc.PV1<<12;
-			Value = MulShr32su( t1 - (t0*vc.SP), vc.ADSR.Value>>12 );
+			s32 t1 = vc.PV1;
+			Value = MulShr32( t1 - ((t0*vc.SP)>>12), vc.ADSR.Value );
 		}
 	}
 }
@@ -568,6 +588,8 @@ static void __forceinline GetVoiceValues_Cubic(V_Core& thiscore, V_Voice& vc, s3
 	}
 	else
 	{
+		jASSUME( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
+
 		s32 z0 = vc.PV3 - vc.PV4 + vc.PV1 - vc.PV2;
 		s32 z1 = (vc.PV4 - vc.PV3 - z0);
 		s32 z2 = (vc.PV2 - vc.PV4);
@@ -591,7 +613,7 @@ static void __forceinline GetVoiceValues_Cubic(V_Core& thiscore, V_Voice& vc, s3
 		s64 t2 = ((t1-a2)*mu)>>12;
 		s64 t3 = ((t2-a3));*/
 
-		Value = MulShr32su( val, vc.ADSR.Value>>3 );
+		Value = MulShr32( val, vc.ADSR.Value>>3 );
 	}
 
 	//Value=(s32)((Data*vc.ADSR.Value)>>40); //32bit ADSR + convert to 16bit
