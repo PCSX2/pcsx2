@@ -382,7 +382,7 @@ _inline static void _cpuTestTIMR() {
 	}
 }
 
-#define EE_WAIT_CYCLE 512
+#define EE_WAIT_CYCLE 2048
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
@@ -435,9 +435,12 @@ void cpuBranchTest()
 //#endif
 	_cpuTestTIMR();
 
+	// ---- IOP -------------
+
 	// Signal for an immediate branch test! This is important! The IOP must
 	// be able to act on the state the EE has given it before executing any
-	// additional code.  Everything just seems a lot happier this way!
+	// additional code.  Dothing this actually fixes some games that used to crash
+	// when trying to boot them through the BIOS.
 
 	psxBranchTest();
 
@@ -445,15 +448,31 @@ void cpuBranchTest()
 	EEoCycle = cpuRegs.cycle;
 
 	psxCpu->ExecuteBlock();
-	
+
+	// IOP Synchronization:
+	// If the IOP needs to branch soon then so should the EE.
+	// As the master of all, the EE should look out for its children and
+	// assure them the love they deserve:
+	{
+		u32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
+		if( g_nextBranchCycle - cpuRegs.cycle > iopDelta )
+			g_nextBranchCycle = cpuRegs.cycle + iopDelta;
+	}
+
+	// ---- VU0 -------------
+
 	if (VU0.VI[REG_VPU_STAT].UL & 0x1) {
 		FreezeXMMRegs(1);
 		Cpu->ExecuteVU0Block();
 		FreezeXMMRegs(0);
 	}
 
-	if( (int)cpuRegs.cycle-(int)g_nextBranchCycle > 0 )
-		g_nextBranchCycle = cpuRegs.cycle+1;
+	// [Air] dead code?  There shouldn't be any reason to bother checking
+	// for g_nextBranchCycle being behind cpuRegs.cycle, since the branch code will
+	// just do the same check after the next block.
+
+	//if( (int)cpuRegs.cycle-(int)g_nextBranchCycle > 0 )
+	//	g_nextBranchCycle = cpuRegs.cycle+1;
 
 #ifndef PCSX2_NORECBUILD
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );

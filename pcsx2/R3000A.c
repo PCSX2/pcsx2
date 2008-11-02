@@ -165,11 +165,11 @@ static void _psxTestInterrupts() {
 // drawback.  The IOP is almost always forced to perform branch tests at import-
 // ant intervals regardless of this value (such as counter or irq events, hsyncs,
 // etc.)
-#define IOP_WAIT_CYCLE 256
+#define IOP_WAIT_CYCLE 1024
 
 void psxBranchTest()
 {
-	g_psxNextBranchCycle = psxRegs.cycle;
+	g_psxNextBranchCycle = psxRegs.cycle + IOP_WAIT_CYCLE;
 
 	if ((int)(psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
 		psxRcntUpdate();
