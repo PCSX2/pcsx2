@@ -85,12 +85,12 @@ BEGIN
     CHECKBOX        "Dump Core and Voice State",IDC_DUMPCORE,270,172,104,10,NOT WS_TABSTOP
     CHECKBOX        "Dump Memory Contents",IDC_DUMPMEM,270,184,91,10,NOT WS_TABSTOP
     CHECKBOX        "Dump Register Data",IDC_DUMPREGS,270,196,80,10,NOT WS_TABSTOP
-    CHECKBOX        "Enable Effects Processing",IDC_EFFECTS,12,49,99,10,NOT WS_TABSTOP
+    CHECKBOX        "Enable Effects Processing",IDC_EFFECTS,12,49,99,10,WS_DISABLED | NOT WS_TABSTOP
     LTEXT           "Latency:",IDC_STATIC,138,89,33,8,NOT WS_GROUP
     LTEXT           "Sample Rate:",IDC_STATIC,137,63,44,8,NOT WS_GROUP
     LTEXT           "Interpolation:",IDC_STATIC,12,18,42,10,NOT WS_GROUP
     LTEXT           "Module:",IDC_STATIC,138,17,50,9,NOT WS_GROUP
-    LTEXT           "Experimental: Enabling this could break sound badly.",IDC_STATIC,24,61,96,17
+    LTEXT           "Not working yet, disabled for now.",IDC_STATIC,24,61,96,17
     LTEXT           "(configure in the .ini)",IDC_STATIC,150,172,64,8
     LTEXT           "Uses the SPU2 to limit framerate for games that cause buffer overruns. Use Timestretching instead.",IDC_STATIC,11,138,109,34
     CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,185,84,58,10
