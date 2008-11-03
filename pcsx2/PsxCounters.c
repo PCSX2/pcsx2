@@ -155,127 +155,133 @@ void psxRcntInit() {
 void psxVBlankStart() {
 	cdvdVsync();
 	psxHu32(0x1070)|= 1;
-	if(psxvblankgate & 1) psxCheckStartGate(1);
-	if(psxvblankgate & (1 << 3)) psxCheckStartGate(3);
+	if(psxvblankgate & 1) psxCheckStartGate16(1);
+	if(psxvblankgate & (1 << 3)) psxCheckStartGate32(3);
 }
 
 void psxVBlankEnd() {
 	psxHu32(0x1070)|= 0x800;
-	if(psxvblankgate & 1) psxCheckEndGate(1);
-	if(psxvblankgate & (1 << 3)) psxCheckEndGate(3);
+	if(psxvblankgate & 1) psxCheckEndGate16(1);
+	if(psxvblankgate & (1 << 3)) psxCheckEndGate32(3);
 }
 
-void psxCheckEndGate(int counter) { //Check Gate events when Vsync Ends
-	int i = counter;
+void psxCheckEndGate16(int i)
+{
 	//SysPrintf("End Gate %x\n", counter);
-	if(counter < 3){  //Gates for 16bit counters
-		if((psxCounters[i].mode & 0x1) == 0) return; //Ignore Gate
-	
-		switch((psxCounters[i].mode & 0x6) >> 1) {
-			case 0x0: //GATE_ON_count
-				psxCounters[i].count += (u16)psxRcntRcount16(i); //Only counts when signal is on
-				break;
-			case 0x1: //GATE_ON_ClearStart
-				if(psxCounters[i].mode & 0x10000000)psxRcntUpd16(i);
-				psxCounters[i].mode &= ~0x10000000;
-				break;
-			case 0x2: //GATE_ON_Clear_OFF_Start
-				psxCounters[i].mode &= ~0x10000000;
-				psxRcntUpd16(i);
-				break;
-			case 0x3: //GATE_ON_Start
-				break;
-			default:
-				SysPrintf("PCSX2 Warning: 16bit IOP Counter Gate Not Set!\n");
-				break;
-		}
-	}
+	assert(i < 3);
 
-	if(counter >= 3){  //Gates for 32bit counters
-		if((psxCounters[i].mode & 0x1) == 0) return; //Ignore Gate
+	if((psxCounters[i].mode & 0x1) == 0) return; //Ignore Gate
 
-		switch((psxCounters[i].mode & 0x6) >> 1) {
-			case 0x0: //GATE_ON_count
-				psxCounters[i].count += (u32)psxRcntRcount32(i);  //Only counts when signal is on
-				break;
-			case 0x1: //GATE_ON_ClearStart
-				if(psxCounters[i].mode & 0x10000000)psxRcntUpd32(i);
-				psxCounters[i].mode &= ~0x10000000;
-				break;
-			case 0x2: //GATE_ON_Clear_OFF_Start
-				psxCounters[i].mode &= ~0x10000000;
-				psxRcntUpd32(i);
-				break;
-			case 0x3: //GATE_ON_Start
-				break;
-			default:
-				SysPrintf("PCSX2 Warning: 32bit IOP Counter Gate Not Set!\n");
-				break;
-		}
+	switch((psxCounters[i].mode & 0x6) >> 1) {
+		case 0x0: //GATE_ON_count
+			psxCounters[i].count += (u16)psxRcntRcount16(i); //Only counts when signal is on
+			break;
+		case 0x1: //GATE_ON_ClearStart
+			if(psxCounters[i].mode & 0x10000000)psxRcntUpd16(i);
+			psxCounters[i].mode &= ~0x10000000;
+			break;
+		case 0x2: //GATE_ON_Clear_OFF_Start
+			psxCounters[i].mode &= ~0x10000000;
+			psxRcntUpd16(i);
+			break;
+		case 0x3: //GATE_ON_Start
+			break;
+		default:
+			SysPrintf("PCSX2 Warning: 16bit IOP Counter Gate Not Set!\n");
+			break;
 	}
 }
-void psxCheckStartGate(int counter) {  //Check Gate events when Vsync Starts
-	int i = counter;
 
-	if(counter == 0){
+void psxCheckEndGate32(int i)
+{
+	assert(i >= 3);
+
+	if((psxCounters[i].mode & 0x1) == 0) return; //Ignore Gate
+
+	switch((psxCounters[i].mode & 0x6) >> 1) {
+		case 0x0: //GATE_ON_count
+			psxCounters[i].count += (u32)psxRcntRcount32(i);  //Only counts when signal is on
+			break;
+		case 0x1: //GATE_ON_ClearStart
+			if(psxCounters[i].mode & 0x10000000)psxRcntUpd32(i);
+			psxCounters[i].mode &= ~0x10000000;
+			break;
+		case 0x2: //GATE_ON_Clear_OFF_Start
+			psxCounters[i].mode &= ~0x10000000;
+			psxRcntUpd32(i);
+			break;
+		case 0x3: //GATE_ON_Start
+			break;
+		default:
+			SysPrintf("PCSX2 Warning: 32bit IOP Counter Gate Not Set!\n");
+			break;
+	}
+}
+
+void psxCheckStartGate16(int i)
+{
+	assert( i < 3 );
+
+	//Check Gate events when Vsync Starts
+
+	if(i == 0)
+	{
 		if((psxCounters[1].mode & 0x101) == 0x100 || (psxCounters[1].mode & 0x10000101) == 0x101)psxCounters[1].count++;
 		if((psxCounters[3].mode & 0x101) == 0x100 || (psxCounters[3].mode & 0x10000101) == 0x101)psxCounters[3].count++;
-		/*if(SPU2async)
-			{	
-				SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);	
-				//SysPrintf("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
-				psxCounters[6].sCycleT = psxRegs.cycle;
-			}*/
 	}
 
 	if((psxCounters[i].mode & 0x1) == 0) return; //Ignore Gate
 
-	if(counter < 3){  //Gates for 16bit counters
-		//SysPrintf("PSX Gate %x\n", i);
-		switch((psxCounters[i].mode & 0x6) >> 1) {
-			case 0x0: //GATE_ON_count
-				psxRcntUpd32(i);
-				psxCounters[i].mode |= 0x10000000;
-				break;
-			case 0x1: //GATE_ON_ClearStart
-				if(psxCounters[i].mode & 0x10000000)psxRcntUpd16(i);
-				psxCounters[i].mode &= ~0x10000000;
-				break;
-			case 0x2: //GATE_ON_Clear_OFF_Start
-				psxRcntReset32(i);
-				psxCounters[i].mode |= 0x10000000;
-				break;
-			case 0x3: //GATE_ON_Start
-				psxCounters[i].mode &= ~0x10000000;
-				break;
-			default:
-				SysPrintf("PCSX2 Warning: 16bit IOP Counter Gate Not Set!\n");
-				break;
-		}
+	//SysPrintf("PSX Gate %x\n", i);
+	switch((psxCounters[i].mode & 0x6) >> 1)
+	{
+		case 0x0: //GATE_ON_count
+			psxRcntUpd32(i);
+			psxCounters[i].mode |= 0x10000000;
+			break;
+		case 0x1: //GATE_ON_ClearStart
+			if(psxCounters[i].mode & 0x10000000)psxRcntUpd16(i);
+			psxCounters[i].mode &= ~0x10000000;
+			break;
+		case 0x2: //GATE_ON_Clear_OFF_Start
+			psxRcntReset32(i);
+			psxCounters[i].mode |= 0x10000000;
+			break;
+		case 0x3: //GATE_ON_Start
+			psxCounters[i].mode &= ~0x10000000;
+			break;
+		default:
+			SysPrintf("PCSX2 Warning: 16bit IOP Counter Gate Not Set!\n");
+			break;
 	}
+}
 
-	if(counter >= 3){  //Gates for 32bit counters
-		//SysPrintf("PSX Gate %x\n", i);
-		switch((psxCounters[i].mode & 0x6) >> 1) {
-			case 0x0: //GATE_ON_count
-				psxRcntUpd32(i);
-				psxCounters[i].mode &= ~0x10000000;
-				break;
-			case 0x1: //GATE_ON_ClearStart
-				if(psxCounters[i].mode & 0x10000000)psxRcntUpd32(i);
-				psxCounters[i].mode &= ~0x10000000;
-				break;
-			case 0x2: //GATE_ON_Clear_OFF_Start
-				psxRcntReset32(i);
-				psxCounters[i].mode |= 0x10000000;
-				break;
-			case 0x3: //GATE_ON_Start
-				psxCounters[i].mode &= ~0x10000000;
-				break;
-			default:
-				SysPrintf("PCSX2 Warning: 32bit IOP Counter Gate Not Set!\n");
-				break;
-		}
+void psxCheckStartGate32(int i)
+{
+	assert(i >= 3);
+
+	if((psxCounters[i].mode & 0x1) == 0) return; //Ignore Gate
+
+	//SysPrintf("PSX Gate %x\n", i);
+	switch((psxCounters[i].mode & 0x6) >> 1) {
+		case 0x0: //GATE_ON_count
+			psxRcntUpd32(i);
+			psxCounters[i].mode &= ~0x10000000;
+			break;
+		case 0x1: //GATE_ON_ClearStart
+			if(psxCounters[i].mode & 0x10000000)psxRcntUpd32(i);
+			psxCounters[i].mode &= ~0x10000000;
+			break;
+		case 0x2: //GATE_ON_Clear_OFF_Start
+			psxRcntReset32(i);
+			psxCounters[i].mode |= 0x10000000;
+			break;
+		case 0x3: //GATE_ON_Start
+			psxCounters[i].mode &= ~0x10000000;
+			break;
+		default:
+			SysPrintf("PCSX2 Warning: 32bit IOP Counter Gate Not Set!\n");
+			break;
 	}
 }
 

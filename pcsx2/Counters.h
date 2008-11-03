@@ -92,8 +92,9 @@ typedef struct {
 extern Counter counters[6];
 extern u32 nextCounter, nextsCounter;
 
+extern void rcntUpdate();
+
 void rcntInit();
-void rcntUpdate();
 void rcntStartGate(unsigned int mode, u32 sCycle);
 void rcntEndGate(unsigned int mode, u32 sCycle);
 void rcntWcount(int index, u32 value);

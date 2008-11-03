@@ -50,7 +50,9 @@ int  psxRcntFreeze(gzFile f, int Mode);
 
 void psxVBlankStart();
 void psxVBlankEnd();
-void psxCheckStartGate(int counter);
-void psxCheckEndGate(int counter);
+void psxCheckStartGate16(int counter);
+void psxCheckEndGate16(int counter);
+void psxCheckStartGate32(int counter);
+void psxCheckEndGate32(int counter);
 
 #endif /* __PSXCOUNTERS_H__ */

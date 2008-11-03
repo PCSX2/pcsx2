@@ -48,23 +48,31 @@ void rcntReset(int index) {
 	rcntUpd(index);
 }
 
-void rcntSet() {
+// Updates the state of the nextCounter value (if needed) to serve
+// any pending events for the given counter.
+// Call this method after any modifications to the state of a counter.
+static __forceinline void _rcntSet( int i )
+{
 	u32 c;
+	if (!(counters[i].mode & 0x80) || (counters[i].mode & 0x3) == 0x3) return; // Stopped
+	
+	c = ((0x10000 - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
+	if (c < nextCounter) nextCounter = c;
+
+	//if(!(counters[i].mode & 0x100) || counters[i].target > 0xffff) continue;
+
+	c = ((counters[i].target - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
+	if (c < nextCounter) nextCounter = c;
+}
+
+static __forceinline void cpuRcntSet() {
 	int i;
 
 	nextCounter = (counters[4].CycleT < counters[5].CycleT) ? counters[4].CycleT : counters[5].CycleT;
 	nextsCounter = cpuRegs.cycle;
 
-	for (i = 0; i < 4; i++) {
-		if (!(counters[i].mode & 0x80) || (counters[i].mode & 0x3) == 0x3) continue; // Stopped
-		
-		c = ((0x10000 - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
-		if (c < nextCounter) nextCounter = c;
-	
-		//if(!(counters[i].mode & 0x100) || counters[i].target > 0xffff) continue;
-		c = ((counters[i].target - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
-		if (c < nextCounter) nextCounter = c;
-	}
+	for (i = 0; i < 4; i++)
+		_rcntSet( i );
 }
 
 void rcntInit() {
@@ -88,7 +96,7 @@ void rcntInit() {
 #endif
 
 	for (i=0; i<4; i++) rcntUpd(i);
-	rcntSet();
+	cpuRcntSet();
 
 	assert(Cpu != NULL && Cpu->ExecuteVU1Block != NULL );
 	s_prevExecuteVU1Block = Cpu->ExecuteVU1Block;
@@ -150,7 +158,7 @@ void UpdateVSyncRate() {
 		iTicks = (GetTickFrequency() / 5994) * 100;
 		SysPrintf("Framelimiter rate updated (UpdateVSyncRate): 59.94 fps NTSC\n");
 	}
-	rcntSet();
+	cpuRcntSet();
 }
 
 void FrameLimiter()
@@ -398,7 +406,7 @@ static __forceinline void hScanline()
 		if (difference >= HBLANK_TIME_ ) {
 			hScanlineNextCycle(difference, HBLANK_TIME_);
 			rcntStartGate(0, counters[4].sCycle);
-			psxCheckStartGate(0);
+			psxCheckStartGate16(0);
 			counters[4].mode = MODE_HRENDER;
 		}
 	}
@@ -408,13 +416,14 @@ static __forceinline void hScanline()
 			if (CSRw & 0x4) GSCSRr |= 4; // signal
 			if (!(GSIMR&0x400)) gsIrq();
 			if (gates) rcntEndGate(0, counters[4].sCycle);
-			if (psxhblankgate) psxCheckEndGate(0);
+			if (psxhblankgate) psxCheckEndGate16(0);
 			counters[4].mode = MODE_HBLANK;
 		}
 	}
 }
 
-void vSync() 
+// Only called from one place so might as well inline it.
+static __forceinline void vSync() 
 {
 	u32 diff = (cpuRegs.cycle - counters[5].sCycle);
 
@@ -435,7 +444,10 @@ void vSync()
 	}
 }
 
-void rcntUpdate()
+// forceinline note: this method is called from two locations, but one
+// of them is the interpreter, which doesn't count. ;)  So might as
+// well forceinline it!
+__forceinline void rcntUpdate()
 {
 	int i;
 
@@ -488,7 +500,7 @@ void rcntUpdate()
 		}
 	}
 
-	rcntSet();
+	cpuRcntSet();
 }
 
 void rcntWcount(int index, u32 value) 
@@ -506,7 +518,7 @@ void rcntWcount(int index, u32 value)
 		counters[index].sCycleT = cpuRegs.cycle - change;
 	}
 
-	rcntSet();
+	_rcntSet( index );
 }
 
 void rcntWmode(int index, u32 value)  
@@ -552,7 +564,7 @@ void rcntWmode(int index, u32 value)
 		counters[index].target &= 0xffff;
 	}*/
 
-	rcntSet();
+	_rcntSet( index );
 }
 
 void rcntStartGate(unsigned int mode, u32 sCycle) {
@@ -584,6 +596,9 @@ void rcntStartGate(unsigned int mode, u32 sCycle) {
 				break;
 		}
 	}
+	// Note: No need to set counters here.
+	// They'll get set later on in rcntUpdate, since we're
+	// being called from there anyway.
 }
 
 void rcntEndGate(unsigned int mode, u32 sCycle) {
@@ -601,7 +616,7 @@ void rcntEndGate(unsigned int mode, u32 sCycle) {
 				break;
 			case 0x10:
 				counters[i].count = rcntRcount(i);
-				break;
+				break;	// skip the _rcntSet
 			case 0x20: //Reset and start counting on Vsync end
 			case 0x30: //Reset and start counting on Vsync start and end
 				counters[i].mode |= 0x80;
@@ -612,6 +627,9 @@ void rcntEndGate(unsigned int mode, u32 sCycle) {
 				break;
 		}
 	}
+	// Note: No need to set counters here.
+	// They'll get set later on in rcntUpdate, since we're
+	// being called from there anyway.
 }
 
 void rcntWtarget(int index, u32 value) {
@@ -623,7 +641,7 @@ void rcntWtarget(int index, u32 value) {
 		//SysPrintf("EE Saving target %d from early trigger, target = %x, count = %x\n", index, counters[index].target, rcntCycle(index));
 		counters[index].target |= 0x10000000;
 	}
-	rcntSet();
+	_rcntSet( index );
 }
 
 void rcntWhold(int index, u32 value) {
