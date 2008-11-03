@@ -1497,31 +1497,6 @@ void ipu_csc(struct macroblock_8 *mb8, struct macroblock_rgb32 *rgb32, int sgn){
 	convert_init.start(convert_init.id, (u8*)rgb32, CONVERT_FRAME);
 	convert_init.copy(convert_init.id, (u8*)mb8->Y, (u8*)mb8->Cr, (u8*)mb8->Cb, 0);
 
-	// do alpha processing
-//	if( cpucaps.hasStreamingSIMD2Extensions ) {
-//		int i;
-//		u8* p = (u8*)rgb32;
-//
-//		__asm {
-//			movaps xmm6, s_thresh
-//			pshufd xmm7, xmm6, 0xee
-//			pshufd xmm6, xmm6, 0x44
-//			pxor xmm5, xmm5
-//		}
-//
-//		for(i = 0; i < 64; i += 4, p += 64) {
-//			// process 2 qws at a time
-//			__asm {
-//				// extract 8 dwords
-//				mov edi, p
-//				movaps xmm0, qword ptr [edi]
-//				movaps xmm1, qword ptr [edi+16]
-//				movaps xmm2, qword ptr [edi+32]
-//				movaps xmm3, qword ptr [edi+48]
-//
-//
-//	}
-	// fixes suikoden5
 	if( s_thresh[0] > 0 ) {
 		for(i = 0; i < 64*4; i++, p += 4) {
 			if( p[0] < s_thresh[0] && p[1] < s_thresh[0] && p[2] < s_thresh[0] )

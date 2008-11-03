@@ -546,7 +546,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 
 #if !defined(PCSX2_NORECBUILD)
 
-		if( size >= ft->gsize && !(v->addr&0xf) && cpucaps.hasStreamingSIMD2Extensions) {
+		if( size >= ft->gsize && !(v->addr&0xf)) {
 			const UNPACKPARTFUNCTYPESSE* pfn;
 			int writemask;
 			//static LARGE_INTEGER lbase, lfinal;

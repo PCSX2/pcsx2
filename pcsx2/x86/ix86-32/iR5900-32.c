@@ -1575,6 +1575,11 @@ int recInit( void )
 		SysMessage( _( "Processor doesn't supports MMX, can't run recompiler without that" ) );
 		return -1;
 	}
+	if ( !( cpucaps.hasStreamingSIMD2Extensions ) )
+	{
+		SysMessage( _( "Processor doesn't supports SSE2, can't run recompiler without that" ) );
+		return -1;
+	}
 		
 	x86FpuState = FPU_STATE;
 

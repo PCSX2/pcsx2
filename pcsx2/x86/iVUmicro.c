@@ -3564,13 +3564,11 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 	if ( _Ft_ == 0 ) return; 
 
 	if (_X_Y_Z_W != 0xf) {
-		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		else SSE2EMU_CVTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
-		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_S);
-		else SSE2EMU_CVTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_S);
+		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_S);
 	}	
 }
 
@@ -3581,16 +3579,14 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 	if (_X_Y_Z_W != 0xf) {
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
-		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
-		else SSE2EMU_CVTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
 		if (EEREC_T != EEREC_S) SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
-		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
-		else SSE2EMU_CVTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
+		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
 	}
 }
 
@@ -3603,27 +3599,15 @@ void recVUMI_ITOF0( VURegs *VU, int info )
 	if ( _Ft_ == 0 ) return;
 
 	if (_X_Y_Z_W != 0xf) {
-		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		else {
-			_deleteVFtoXMMreg(_Fs_, VU==&VU1, 1);
-			SSE2EMU_CVTDQ2PS_M128_to_XMM(EEREC_TEMP, VU_VFx_ADDR( _Fs_ ));
-		}
-		
+		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
 		vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
 	}
 	else {
-		if( cpucaps.hasStreamingSIMD2Extensions ) {
-			SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
-			vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
-		}
-		else {
-			_deleteVFtoXMMreg(_Fs_, VU==&VU1, 1);
-			SSE2EMU_CVTDQ2PS_M128_to_XMM(EEREC_T, VU_VFx_ADDR( _Fs_ ));
-			xmmregs[EEREC_T].mode |= MODE_WRITE;
-			vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
-		}
+		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
+		vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
 	}
 }
 
@@ -3632,24 +3616,14 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 	if ( _Ft_ == 0 ) return; 
 
 	if (_X_Y_Z_W != 0xf) {
-		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		else {
-			_deleteVFtoXMMreg(_Fs_, VU==&VU1, 1);
-			SSE2EMU_CVTDQ2PS_M128_to_XMM(EEREC_TEMP, VU_VFx_ADDR( _Fs_ ));
-		}
+		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
 		vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
 	} else {
-		if(cpucaps.hasStreamingSIMD2Extensions) SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
-		else {
-			_deleteVFtoXMMreg(_Fs_, VU==&VU1, 1);
-			SSE2EMU_CVTDQ2PS_M128_to_XMM(EEREC_T, VU_VFx_ADDR( _Fs_ ));
-			xmmregs[EEREC_T].mode |= MODE_WRITE;
-		}
-
+		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
 		vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities
 	}
@@ -4166,38 +4140,22 @@ void recVUMI_MFIR( VURegs *VU, int info )
 
 	_deleteX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Fs_, 1);
 
-	if( cpucaps.hasStreamingSIMD2Extensions ) {
-		if( _XYZW_SS ) {
-			SSE2_MOVD_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(_Fs_, 1)-2);
-			_vuFlipRegSS(VU, EEREC_T);
-			SSE2_PSRAD_I8_to_XMM(EEREC_TEMP, 16);
-			SSE_MOVSS_XMM_to_XMM(EEREC_T, EEREC_TEMP);
-			_vuFlipRegSS(VU, EEREC_T);
-		}
-		else if (_X_Y_Z_W != 0xf) {
-			SSE2_MOVD_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(_Fs_, 1)-2);
-			SSE2_PSRAD_I8_to_XMM(EEREC_TEMP, 16);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0);
-			VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
-		} else {
-			SSE2_MOVD_M32_to_XMM(EEREC_T, VU_VI_ADDR(_Fs_, 1)-2);
-			SSE2_PSRAD_I8_to_XMM(EEREC_T, 16);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0);
-		}
+	if( _XYZW_SS ) {
+		SSE2_MOVD_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(_Fs_, 1)-2);
+		_vuFlipRegSS(VU, EEREC_T);
+		SSE2_PSRAD_I8_to_XMM(EEREC_TEMP, 16);
+		SSE_MOVSS_XMM_to_XMM(EEREC_T, EEREC_TEMP);
+		_vuFlipRegSS(VU, EEREC_T);
 	}
-	else {
-		MOVSX32M16toR(EAX, VU_VI_ADDR(_Fs_, 1));
-		MOV32RtoM((uptr)&s_temp, EAX);
-
-		if( _X_Y_Z_W != 0xf ) {
-			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)&s_temp);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0);
-			VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
-		}
-		else {
-			SSE_MOVSS_M32_to_XMM(EEREC_T, (uptr)&s_temp);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0);
-		}
+	else if (_X_Y_Z_W != 0xf) {
+		SSE2_MOVD_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(_Fs_, 1)-2);
+		SSE2_PSRAD_I8_to_XMM(EEREC_TEMP, 16);
+		SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0);
+		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
+	} else {
+		SSE2_MOVD_M32_to_XMM(EEREC_T, VU_VI_ADDR(_Fs_, 1)-2);
+		SSE2_PSRAD_I8_to_XMM(EEREC_T, 16);
+		SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0);
 	}
 }
 

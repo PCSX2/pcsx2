@@ -459,7 +459,7 @@ void rpropBSC(EEINST* prev, EEINST* pinst)
 		case 5: // bne
 			rpropSetRead(_Rs_, EEINST_LIVE1);
 			rpropSetRead(_Rt_, EEINST_LIVE1);
-			pinst->info |= (cpucaps.hasStreamingSIMD2Extensions?(EEINST_REALXMM|EEINST_MMX):0);
+			pinst->info |= EEINST_REALXMM|EEINST_MMX;
 			break;
 
 		case 20: // beql
@@ -469,7 +469,7 @@ void rpropBSC(EEINST* prev, EEINST* pinst)
 			prev->info = 0;
 			rpropSetRead(_Rs_, EEINST_LIVE1);
 			rpropSetRead(_Rt_, EEINST_LIVE1);
-			pinst->info |= (cpucaps.hasStreamingSIMD2Extensions?(EEINST_REALXMM|EEINST_MMX):0);
+			pinst->info |= EEINST_REALXMM|EEINST_MMX;
 			break;
 
 		case 6: // blez
@@ -488,7 +488,7 @@ void rpropBSC(EEINST* prev, EEINST* pinst)
 		case 24: // daddi
 		case 25: // daddiu
 			rpropSetWrite(_Rt_, EEINST_LIVE1);
-			rpropSetRead(_Rs_, EEINST_LIVE1|((_Rs_!=0&&cpucaps.hasStreamingSIMD2Extensions)?EEINST_MMX:0));
+			rpropSetRead(_Rs_, EEINST_LIVE1 | (_Rs_!=0 && EEINST_MMX));
 			break;
 
 		case 8: // addi
@@ -682,7 +682,7 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 
 		case 24: // mult
 			// can do unsigned mult only if HI isn't used
-			//temp = (pinst->regs[XMMGPR_HI]&(EEINST_LIVE0|EEINST_LIVE1))?0:(cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0);
+			//temp = (pinst->regs[XMMGPR_HI]&(EEINST_LIVE0|EEINST_LIVE1))?0:EEINST_MMX;
 			temp = 0;
 			rpropSetWrite(XMMGPR_LO, EEINST_LIVE1);
 			rpropSetWrite(XMMGPR_HI, EEINST_LIVE1);
@@ -697,9 +697,9 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 			rpropSetWrite(XMMGPR_LO, EEINST_LIVE1);
 			rpropSetWrite(XMMGPR_HI, EEINST_LIVE1);
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
-			rpropSetRead(_Rs_, (cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
-			rpropSetRead(_Rt_, (cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
-			if( cpucaps.hasStreamingSIMD2Extensions ) pinst->info |= EEINST_MMX;
+			rpropSetRead(_Rs_, EEINST_MMX);
+			rpropSetRead(_Rt_, EEINST_MMX);
+			pinst->info |= EEINST_MMX;
 			break;
 
 		case 26: // div
@@ -763,10 +763,10 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 				rpropSetRead(_Rt_, (pinst->regs[_Rd_]&EEINST_LIVE1));
 			}
 			else {
-				rpropSetRead(_Rs_, (pinst->regs[_Rd_]&EEINST_LIVE1)|(cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
-				rpropSetRead(_Rt_, (pinst->regs[_Rd_]&EEINST_LIVE1)|(cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
+				rpropSetRead(_Rs_, (pinst->regs[_Rd_]&EEINST_LIVE1)|EEINST_MMX);
+				rpropSetRead(_Rt_, (pinst->regs[_Rd_]&EEINST_LIVE1)|EEINST_MMX);
 			}
-			if( cpucaps.hasStreamingSIMD2Extensions ) pinst->info |= EEINST_MMX;
+			pinst->info |= EEINST_MMX;
 			break;
 
 		// traps
@@ -781,13 +781,13 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 		case 62: // dsrl32
 		case 63: // dsra32
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
-			rpropSetRead(_Rt_, EEINST_LIVE1|(cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
+			rpropSetRead(_Rt_, EEINST_LIVE1|EEINST_MMX);
 			pinst->info |= EEINST_MMX;
 			break;
 
 		case 60: // dsll32
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
-			rpropSetRead(_Rt_, (cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
+			rpropSetRead(_Rt_, EEINST_MMX);
 			pinst->info |= EEINST_MMX;
 			break;
 
@@ -1060,7 +1060,7 @@ void rpropMMI(EEINST* prev, EEINST* pinst)
 			break;
 
 		case 24: // mult1
-			temp = (pinst->regs[XMMGPR_HI]&(EEINST_LIVE2))?0:(cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0);
+			temp = (pinst->regs[XMMGPR_HI]&(EEINST_LIVE2))?0:EEINST_MMX;
 			rpropSetWrite0(XMMGPR_LO, EEINST_LIVE2, 0);
 			rpropSetWrite0(XMMGPR_HI, EEINST_LIVE2, 0);
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
@@ -1072,9 +1072,9 @@ void rpropMMI(EEINST* prev, EEINST* pinst)
 			rpropSetWrite0(XMMGPR_LO, EEINST_LIVE2, 0);
 			rpropSetWrite0(XMMGPR_HI, EEINST_LIVE2, 0);
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
-			rpropSetRead(_Rs_, (cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
-			rpropSetRead(_Rt_, (cpucaps.hasStreamingSIMD2Extensions?EEINST_MMX:0));
-			if( cpucaps.hasStreamingSIMD2Extensions ) pinst->info |= EEINST_MMX;
+			rpropSetRead(_Rs_, EEINST_MMX);
+			rpropSetRead(_Rt_, EEINST_MMX);
+			pinst->info |= EEINST_MMX;
 			break;
 
 		case 26: // div1

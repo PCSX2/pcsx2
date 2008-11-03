@@ -101,12 +101,7 @@ void recMFHILO(int hi)
 
 			xmmregs[regd].inuse = 0;
 
-			if( cpucaps.hasStreamingSIMD2Extensions ) {
-				SSE2_MOVQ_XMM_to_M64((u32)&cpuRegs.GPR.r[_Rd_].UL[0], reghi);
-			}
-			else {
-				SSE_MOVLPS_XMM_to_M64((u32)&cpuRegs.GPR.r[_Rd_].UL[0], reghi);
-			}
+			SSE2_MOVQ_XMM_to_M64((u32)&cpuRegs.GPR.r[_Rd_].UL[0], reghi);
 
 			if( xmmregs[regd].mode & MODE_WRITE ) {
 				SSE_MOVHPS_XMM_to_M64((u32)&cpuRegs.GPR.r[_Rd_].UL[2], regd);
@@ -199,20 +194,15 @@ void recMTHILO(int hi)
 		if( regs >= 0 ) {
 			assert( reghi != regs );
 
-			if( cpucaps.hasStreamingSIMD2Extensions ) {
-				_deleteGPRtoXMMreg(_Rs_, 0);
-				SSE2_PUNPCKHQDQ_XMM_to_XMM(reghi, reghi);
-				SSE2_PUNPCKLQDQ_XMM_to_XMM(regs, reghi);
+			_deleteGPRtoXMMreg(_Rs_, 0);
+			SSE2_PUNPCKHQDQ_XMM_to_XMM(reghi, reghi);
+			SSE2_PUNPCKLQDQ_XMM_to_XMM(regs, reghi);
 
-				// swap regs
-				xmmregs[regs] = xmmregs[reghi];
-				xmmregs[reghi].inuse = 0;
-				xmmregs[regs].mode |= MODE_WRITE;
-			}
-			else {
-				SSE2EMU_MOVSD_XMM_to_XMM(reghi, regs);
-				xmmregs[reghi].mode |= MODE_WRITE;
-			}
+			// swap regs
+			xmmregs[regs] = xmmregs[reghi];
+			xmmregs[reghi].inuse = 0;
+			xmmregs[regs].mode |= MODE_WRITE;
+			
 		}
 		else {
 			regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ);
@@ -336,13 +326,8 @@ void recMFHILO1(int hi)
 	else {
 		if( regd >= 0 ) {
 			if( EEINST_ISLIVE2(_Rd_) ) {
-				if( cpucaps.hasStreamingSIMD2Extensions ) {
-					SSE2_PUNPCKHQDQ_M128_to_XMM(regd, hi ? (int)&cpuRegs.HI.UD[ 0 ] : (int)&cpuRegs.LO.UD[ 0 ]);
-					SSE2_PSHUFD_XMM_to_XMM(regd, regd, 0x4e);
-				}
-				else {
-					SSE_MOVLPS_M64_to_XMM(regd, hi ? (int)&cpuRegs.HI.UD[ 1 ] : (int)&cpuRegs.LO.UD[ 1 ]);
-				}
+				SSE2_PUNPCKHQDQ_M128_to_XMM(regd, hi ? (int)&cpuRegs.HI.UD[ 0 ] : (int)&cpuRegs.LO.UD[ 0 ]);
+				SSE2_PSHUFD_XMM_to_XMM(regd, regd, 0x4e);
 			}
 			else {
 				SSE2_MOVQ_M64_to_XMM(regd, hi ? (int)&cpuRegs.HI.UD[ 1 ] : (int)&cpuRegs.LO.UD[ 1 ]);
@@ -381,14 +366,11 @@ void recMTHILO1(int hi)
 
 	if( reghi >= 0 ) {
 		if( regs >= 0 ) {
-			if( cpucaps.hasStreamingSIMD2Extensions ) SSE2_PUNPCKLQDQ_XMM_to_XMM(reghi, regs);
-			else SSE_MOVLHPS_XMM_to_XMM(reghi, regs);
+			SSE2_PUNPCKLQDQ_XMM_to_XMM(reghi, regs);	
 		}
 		else {
 			_deleteEEreg(_Rs_, 1);
-			if( cpucaps.hasStreamingSIMD2Extensions ) SSE2_PUNPCKLQDQ_M128_to_XMM(reghi, (int)&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ]);
-			else SSE_MOVHPS_M64_to_XMM(reghi, (int)&cpuRegs.GPR.r[ _Rs_ ].UD[ 1 ]);
-			
+			SSE2_PUNPCKLQDQ_M128_to_XMM(reghi, (int)&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ]);
 		}
 	}
 	else {

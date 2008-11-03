@@ -254,7 +254,6 @@ void recDADD_constv(int info, int creg, int vreg)
 
 	if( info & PROCESS_EE_MMX ) {
 		int mmreg = vreg == _Rt_ ? EEREC_T : EEREC_S;
-		assert( cpucaps.hasStreamingSIMD2Extensions );
 
 		if( g_cpuConstRegs[ creg ].UD[0] ) {
 
@@ -267,7 +266,7 @@ void recDADD_constv(int info, int creg, int vreg)
 	}
 	else {
 
-		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) && cpucaps.hasStreamingSIMD2Extensions ) {
+		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) ) {
 			int mmreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 			SetMMXstate();
 
@@ -337,7 +336,6 @@ void recDADD_(int info)
 	assert( !(info&PROCESS_EE_XMM) );
 
 	if( info & PROCESS_EE_MMX ) {
-		assert( cpucaps.hasStreamingSIMD2Extensions );
 
 		if( EEREC_D == EEREC_S ) PADDQRtoR(EEREC_D, EEREC_T);
 		else if( EEREC_D == EEREC_T ) PADDQRtoR(EEREC_D, EEREC_S);
@@ -347,7 +345,7 @@ void recDADD_(int info)
 		}
 	}
 	else {
-		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) && cpucaps.hasStreamingSIMD2Extensions ) {
+		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) ) {
 			int mmreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 
 			MOVQMtoR(mmreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
@@ -648,7 +646,6 @@ void recDSUB_consts(int info)
 	assert( !(info&PROCESS_EE_XMM) );
 
 	if( info & PROCESS_EE_MMX ) {
-		assert( cpucaps.hasStreamingSIMD2Extensions );
 
 		if( g_cpuConstRegs[ _Rs_ ].UD[0] ) {
 
@@ -685,7 +682,7 @@ void recDSUB_consts(int info)
 		}
 	}
 	else {
-		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) && cpucaps.hasStreamingSIMD2Extensions ) {
+		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) ) {
 			int mmreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 			SetMMXstate();
 			MOVQMtoR(mmreg, (u32)_eeGetConstReg(_Rs_));
@@ -751,7 +748,6 @@ void recDSUB_constt(int info)
 	assert( !(info&PROCESS_EE_XMM) );
 
 	if( info & PROCESS_EE_MMX ) {
-		assert( cpucaps.hasStreamingSIMD2Extensions );
 
 		if( g_cpuConstRegs[ _Rt_ ].UD[0] ) {
 
@@ -763,7 +759,7 @@ void recDSUB_constt(int info)
 		}
 	}
 	else {
-		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) && cpucaps.hasStreamingSIMD2Extensions ) {
+		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) ) {
 			int mmreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 			SetMMXstate();
 			MOVQMtoR(mmreg, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
@@ -807,7 +803,6 @@ void recDSUB_(int info)
 	assert( !(info&PROCESS_EE_XMM) );
 
 	if( info & PROCESS_EE_MMX ) {
-		assert( cpucaps.hasStreamingSIMD2Extensions );
 
 		if( EEREC_D == EEREC_S ) PSUBQRtoR(EEREC_D, EEREC_T);
 		else if( EEREC_D == EEREC_T ) {
@@ -825,7 +820,7 @@ void recDSUB_(int info)
 		}
 	}
 	else {
-		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) && cpucaps.hasStreamingSIMD2Extensions ) {
+		if( (g_pCurInstInfo->regs[_Rd_]&EEINST_MMX) ) {
 			int mmreg = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
 			SetMMXstate();
 			MOVQMtoR(mmreg, (int)&cpuRegs.GPR.r[_Rs_].UL[ 0 ]);

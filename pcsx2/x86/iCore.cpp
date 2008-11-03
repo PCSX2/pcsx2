@@ -267,7 +267,7 @@ int _checkXMMreg(int type, int reg, int mode)
 					SSEX_MOVDQA_M128_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
 				}
 				else if (mode & MODE_READHALF) {
-					if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[i] == XMMT_INT )
+					if( g_xmmtypes[i] == XMMT_INT )
 						SSE2_MOVQ_M64_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
 					else
 						SSE_MOVLPS_M64_to_XMM(i, (uptr)_XMMGetAddr(xmmregs[i].type, xmmregs[i].reg, xmmregs[i].VU ? &VU1 : &VU0));
@@ -446,31 +446,25 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 
 #ifndef __x86_64__
 			if( (mmxreg = _checkMMXreg(MMX_GPR+gprreg, 0)) >= 0 ) {
-				// transfer
-				if (cpucaps.hasStreamingSIMD2Extensions ) {
+			// transfer
 
-					SetMMXstate();
-					SSE2_MOVQ2DQ_MM_to_XMM(xmmreg, mmxreg);
-					SSE2_PUNPCKLQDQ_XMM_to_XMM(xmmreg, xmmreg);
-					SSE2_PUNPCKHQDQ_M128_to_XMM(xmmreg, (u32)&cpuRegs.GPR.r[gprreg].UL[0]);
+				SetMMXstate();
+				SSE2_MOVQ2DQ_MM_to_XMM(xmmreg, mmxreg);
+				SSE2_PUNPCKLQDQ_XMM_to_XMM(xmmreg, xmmreg);
+				SSE2_PUNPCKHQDQ_M128_to_XMM(xmmreg, (u32)&cpuRegs.GPR.r[gprreg].UL[0]);
 
-					if( mmxregs[mmxreg].mode & MODE_WRITE ) {
+				if( mmxregs[mmxreg].mode & MODE_WRITE ) {
 
-						// instead of setting to write, just flush to mem
-						if( !(mode & MODE_WRITE) ) {
-							SetMMXstate();
-							MOVQRtoM((u32)&cpuRegs.GPR.r[gprreg].UL[0], mmxreg);
-						}
-						//xmmregs[xmmreg].mode |= MODE_WRITE;
+					// instead of setting to write, just flush to mem
+					if( !(mode & MODE_WRITE) ) {
+						SetMMXstate();
+						MOVQRtoM((u32)&cpuRegs.GPR.r[gprreg].UL[0], mmxreg);
 					}
+					//xmmregs[xmmreg].mode |= MODE_WRITE;
+				}
 					
-					// don't flush
-					mmxregs[mmxreg].inuse = 0;
-				}
-				else {
-					_freeMMXreg(mmxreg);
-					SSEX_MOVDQA_M128_to_XMM(xmmreg, (u32)&cpuRegs.GPR.r[gprreg].UL[0]);
-				}
+				// don't flush
+				mmxregs[mmxreg].inuse = 0;
 			}
 #else
             if( (mmxreg = _checkX86reg(X86TYPE_GPR, gprreg, 0)) >= 0 ) {
@@ -1131,49 +1125,36 @@ int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy)
 	int t0reg;
 	g_xmmtypes[from] = XMMT_INT;
 	if( candestroy ) {
-		if( g_xmmtypes[from] == XMMT_FPS || !cpucaps.hasStreamingSIMD2Extensions ) SSE_MOVSS_XMM_to_M32(to, from);
+		if( g_xmmtypes[from] == XMMT_FPS ) SSE_MOVSS_XMM_to_M32(to, from);
 		else SSE2_MOVD_XMM_to_M32(to, from);
 
-		if( cpucaps.hasStreamingSIMD2Extensions ) {
-			SSE2_PSRAD_I8_to_XMM(from, 31);
-			SSE2_MOVD_XMM_to_M32(to+4, from);
-			return 1;
-		}
-		else {
-			SSE_MOVSS_XMM_to_M32(to+4, from);
-			SAR32ItoM(to+4, 31);
-			return 0;
-		}
+		SSE2_PSRAD_I8_to_XMM(from, 31);
+		SSE2_MOVD_XMM_to_M32(to+4, from);
+		return 1;
 	}
 	else {
 		// can't destroy and type is int
 		assert( g_xmmtypes[from] == XMMT_INT );
 
-		if( cpucaps.hasStreamingSIMD2Extensions ) {
-			if( _hasFreeXMMreg() ) {
-				xmmregs[from].needed = 1;
-				t0reg = _allocTempXMMreg(XMMT_INT, -1);
-				SSEX_MOVDQA_XMM_to_XMM(t0reg, from);
-				SSE2_PSRAD_I8_to_XMM(from, 31);
-				SSE2_MOVD_XMM_to_M32(to, t0reg);
-				SSE2_MOVD_XMM_to_M32(to+4, from);
+		
+		if( _hasFreeXMMreg() ) {
+			xmmregs[from].needed = 1;
+			t0reg = _allocTempXMMreg(XMMT_INT, -1);
+			SSEX_MOVDQA_XMM_to_XMM(t0reg, from);
+			SSE2_PSRAD_I8_to_XMM(from, 31);
+			SSE2_MOVD_XMM_to_M32(to, t0reg);
+			SSE2_MOVD_XMM_to_M32(to+4, from);
 
-				// swap xmm regs.. don't ask
-				xmmregs[t0reg] = xmmregs[from];
-				xmmregs[from].inuse = 0;
-			}
-			else {
-				SSE2_MOVD_XMM_to_M32(to+4, from);
-				SSE2_MOVD_XMM_to_M32(to, from);
-				SAR32ItoM(to+4, 31);
-			}
+			// swap xmm regs.. don't ask
+			xmmregs[t0reg] = xmmregs[from];
+			xmmregs[from].inuse = 0;
 		}
 		else {
-			SSE_MOVSS_XMM_to_M32(to+4, from);
-			SSE_MOVSS_XMM_to_M32(to, from);
+			SSE2_MOVD_XMM_to_M32(to+4, from);
+			SSE2_MOVD_XMM_to_M32(to, from);
 			SAR32ItoM(to+4, 31);
 		}
-
+	
 		return 0;
 	}
 

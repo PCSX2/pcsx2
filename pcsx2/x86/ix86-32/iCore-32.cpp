@@ -515,28 +515,15 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 	else {
 		int xmmreg;
 		if( MMX_ISGPR(reg) && (xmmreg = _checkXMMreg(XMMTYPE_GPRREG, reg-MMX_GPR, 0)) >= 0 ) {
-			if (cpucaps.hasStreamingSIMD2Extensions) {
-				SSE_MOVHPS_XMM_to_M64((u32)_MMXGetAddr(reg)+8, xmmreg);
-				if( mode & MODE_READ )
-					SSE2_MOVDQ2Q_XMM_to_MM(mmxreg, xmmreg);
+			SSE_MOVHPS_XMM_to_M64((u32)_MMXGetAddr(reg)+8, xmmreg);
+			if( mode & MODE_READ )
+				SSE2_MOVDQ2Q_XMM_to_MM(mmxreg, xmmreg);
 
-				if( xmmregs[xmmreg].mode & MODE_WRITE )
-					mmxregs[mmxreg].mode |= MODE_WRITE;
+			if( xmmregs[xmmreg].mode & MODE_WRITE )
+				mmxregs[mmxreg].mode |= MODE_WRITE;
 
-				// don't flush
-				xmmregs[xmmreg].inuse = 0;
-			}
-			else {
-				_freeXMMreg(xmmreg);
-
-				if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) ) {
-					MOVDMtoMMX(mmxreg, (u32)_MMXGetAddr(reg));
-				}
-				else if( mode & MODE_READ ) {
-					MOVQMtoR(mmxreg, (u32)_MMXGetAddr(reg));
-				}
-
-			}
+			// don't flush
+			xmmregs[xmmreg].inuse = 0;
 		}
 		else {
 			if( MMX_ISGPR(reg) ) {

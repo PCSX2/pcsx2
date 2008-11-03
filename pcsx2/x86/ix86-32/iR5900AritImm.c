@@ -156,7 +156,6 @@ void recDADDI_(int info)
 	assert( !(info&PROCESS_EE_XMM) );
 
 	if( info & PROCESS_EE_MMX ) {
-		assert( cpucaps.hasStreamingSIMD2Extensions );
 
 		if( _Imm_ != 0 ) {
 
@@ -173,7 +172,7 @@ void recDADDI_(int info)
 		return;
 	}
 	
-	if( (g_pCurInstInfo->regs[_Rt_]&EEINST_MMX) && cpucaps.hasStreamingSIMD2Extensions ) {
+	if( (g_pCurInstInfo->regs[_Rt_]&EEINST_MMX) ) {
 		int rtreg;
 		u32* ptempmem = recAllocStackMem(8, 8);
 		ptempmem[0] = _Imm_;

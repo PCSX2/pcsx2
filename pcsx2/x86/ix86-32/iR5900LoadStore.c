@@ -85,7 +85,7 @@ void _eeOnLoadWrite(int reg)
 
 	if( regt >= 0 ) {
 		if( xmmregs[regt].mode & MODE_WRITE ) {
-			if( cpucaps.hasStreamingSIMD2Extensions && (reg != _Rs_) ) {
+			if( reg != _Rs_ ) {
 				SSE2_PUNPCKHQDQ_XMM_to_XMM(regt, regt);
 				SSE2_MOVQ_XMM_to_M64((u32)&cpuRegs.GPR.r[reg].UL[2], regt);
 			}

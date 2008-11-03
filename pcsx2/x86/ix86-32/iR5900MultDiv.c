@@ -440,7 +440,7 @@ void recMULTUsuper(int info, int upper, int process)
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 
-	if( (info & PROCESS_EE_MMX) && cpucaps.hasStreamingSIMD2Extensions  ) {
+	if( (info & PROCESS_EE_MMX) ) {
 
 		if( !_Rd_ ) {
 			// need some temp reg

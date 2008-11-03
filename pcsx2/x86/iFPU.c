@@ -113,12 +113,6 @@ void LoadCW( void ) {
 }
 
 void recCOP1_S( void ) {
-#ifndef __x86_64__
-	if( !cpucaps.hasStreamingSIMD2Extensions ) { // fixme - Not sure if this is needed anymore... (cottonvibes)
-		_freeMMXreg(6);
-		_freeMMXreg(7);
-	}
-#endif
 	recCP1S[ _Funct_ ]( );
 }
 
@@ -332,22 +326,16 @@ void recMTC1(void)
 #ifndef __x86_64__
 		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0 ) {
 
-			if( cpucaps.hasStreamingSIMD2Extensions ) {
-				int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
-				if( mmreg2 >= 0 ) {
-					SetMMXstate();
-					SSE2_MOVQ2DQ_MM_to_XMM(mmreg2, mmreg);
-				}
-				else {
-					SetMMXstate();
-					MOVDMMXtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
-				}
+			int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
+			
+			if( mmreg2 >= 0 ) {
+				SetMMXstate();
+				SSE2_MOVQ2DQ_MM_to_XMM(mmreg2, mmreg);
 			}
 			else {
-				_deleteFPtoXMMreg(_Fs_, 0);
 				SetMMXstate();
 				MOVDMMXtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, mmreg);
-			}
+			}	
 		}
 #endif
 		else {
@@ -801,21 +789,7 @@ void recCVT_S_xmm(int info)
 		SSE_CVTSI2SS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
 	}
 	else {
-		if( cpucaps.hasStreamingSIMD2Extensions ) {
-			SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_D, EEREC_S);
-		}
-		else {
-			if( info&PROCESS_EE_MODEWRITES ) {
-				if( xmmregs[EEREC_S].reg == _Fs_ )
-					_deleteFPtoXMMreg(_Fs_, 1);
-				else {
-					// force sync
-					SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[_Fs_], EEREC_S);
-				}
-			}
-			SSE_CVTSI2SS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Fs_]);
-			xmmregs[EEREC_D].mode |= MODE_WRITE; // in the case that _Fs_ == _Fd_
-		}
+			SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_D, EEREC_S);	
 	}
 }
 

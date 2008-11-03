@@ -281,53 +281,35 @@ _inline void SSE_MOVUPS_XMM_to_M128( uptr to, x86SSERegType from )          { SS
 
 _inline void SSE2_MOVSD_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) SSE2EMU_MOVSD_XMM_to_XMM(to, from);
-	else {
-		write8(0xf2);
-		SSERtoR( 0x100f);
-	}
+	write8(0xf2);
+	SSERtoR( 0x100f);
 }
 
 _inline void SSE2_MOVQ_M64_to_XMM( x86SSERegType to, uptr from )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) SSE2EMU_MOVQ_M64_to_XMM(to, from);
-	else {
-		write8(0xf3); SSEMtoR( 0x7e0f, 0);
-	}
+	write8(0xf3); SSEMtoR( 0x7e0f, 0);
 }
 
 _inline void SSE2_MOVQ_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) SSE2EMU_MOVQ_XMM_to_XMM(to, from);
-	else {
-		write8(0xf3); SSERtoR( 0x7e0f);
-	}
+	write8(0xf3); SSERtoR( 0x7e0f);
 }
 
 _inline void SSE2_MOVQ_XMM_to_M64( u32 to, x86SSERegType from )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) SSE_MOVLPS_XMM_to_M64(to, from);
-	else {
-		SSERtoM66(0xd60f);
-	}
+	SSERtoM66(0xd60f);
 }
 
 #ifndef __x86_64__
 _inline void SSE2_MOVDQ2Q_XMM_to_MM( x86MMXRegType to, x86SSERegType from)
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) SSE2EMU_MOVDQ2Q_XMM_to_MM(to, from);
-	else {
-		write8(0xf2);
-		SSERtoR( 0xd60f);
-	}
+	write8(0xf2);
+	SSERtoR( 0xd60f);
 }
 _inline void SSE2_MOVQ2DQ_MM_to_XMM( x86SSERegType to, x86MMXRegType from)
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) SSE2EMU_MOVQ2DQ_MM_to_XMM(to, from);
-	else {
-		write8(0xf3);
-		SSERtoR( 0xd60f);
-	}
+	write8(0xf3);
+	SSERtoR( 0xd60f);
 }
 #endif
 
@@ -710,13 +692,8 @@ _inline void SSE_SHUFPS_RmOffset_to_XMM( x86SSERegType to, x86IntRegType from, i
 //**********************************************************************************
 _inline void SSE2_PSHUFD_XMM_to_XMM( x86SSERegType to, x86SSERegType from, u8 imm8 )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) {
-		SSE2EMU_PSHUFD_XMM_to_XMM(to, from, imm8);
-	}
-	else {
-		SSERtoR66( 0x700F );
-		write8( imm8 );
-	}
+	SSERtoR66( 0x700F );
+	write8( imm8 );
 }
 _inline void SSE2_PSHUFD_M128_to_XMM( x86SSERegType to, uptr from, u8 imm8 )	{ SSEMtoR66( 0x700F ); write8( imm8 ); }
 
@@ -803,22 +780,12 @@ _inline void SSE2_PCMPEQW_XMM_to_XMM(x86SSERegType to, x86SSERegType from ){ SSE
 _inline void SSE2_PCMPEQW_M128_to_XMM(x86SSERegType to, uptr from ){ SSEMtoR66( 0x750F ); }
 _inline void SSE2_PCMPEQD_XMM_to_XMM(x86SSERegType to, x86SSERegType from )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) {
-		SSE_CMPEQPS_XMM_to_XMM(to, from);
-	}
-	else {
-		SSERtoR66( 0x760F );
-	}
+	SSERtoR66( 0x760F );
 }
 
 _inline void SSE2_PCMPEQD_M128_to_XMM(x86SSERegType to, uptr from )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) {
-		SSE_CMPEQPS_M128_to_XMM(to, from);
-	}
-	else {
-		SSEMtoR66( 0x760F );
-	}
+	SSEMtoR66( 0x760F );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -848,12 +815,7 @@ _inline void SSE2_PSUBQ_M128_to_XMM(x86SSERegType to, uptr from ){ SSEMtoR66( 0x
 _inline void SSE2_MOVD_M32_to_XMM( x86SSERegType to, uptr from ) { SSEMtoR66(0x6E0F); }
 _inline void SSE2_MOVD_R_to_XMM( x86SSERegType to, x86IntRegType from )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) {
-		SSE2EMU_MOVD_R_to_XMM(to, from);
-	}
-	else {
-		SSERtoR66(0x6E0F);
-	}
+	SSERtoR66(0x6E0F);
 }
 
 _inline void SSE2_MOVD_Rm_to_XMM( x86SSERegType to, x86IntRegType from )
@@ -873,13 +835,9 @@ _inline void SSE2_MOVD_RmOffset_to_XMM( x86SSERegType to, x86IntRegType from, in
 }
 
 _inline void SSE2_MOVD_XMM_to_M32( u32 to, x86SSERegType from ) { SSERtoM66(0x7E0F); }
-_inline void SSE2_MOVD_XMM_to_R( x86IntRegType to, x86SSERegType from ) {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) {
-		SSE2EMU_MOVD_XMM_to_R(to, from);
-	}
-	else {
-		_SSERtoR66(0x7E0F);
-	}
+_inline void SSE2_MOVD_XMM_to_R( x86IntRegType to, x86SSERegType from ) 
+{
+	_SSERtoR66(0x7E0F);
 }
 
 _inline void SSE2_MOVD_XMM_to_Rm( x86IntRegType to, x86SSERegType from )
@@ -892,15 +850,10 @@ _inline void SSE2_MOVD_XMM_to_Rm( x86IntRegType to, x86SSERegType from )
 
 _inline void SSE2_MOVD_XMM_to_RmOffset( x86IntRegType to, x86SSERegType from, int offset )
 {
-	if( !cpucaps.hasStreamingSIMD2Extensions ) {
-		SSE2EMU_MOVD_XMM_to_RmOffset(to, from, offset);
-	}
-	else {
-		write8(0x66);
-        RexRB(0, from, to);
-		write16( 0x7e0f );
-        WriteRmOffsetFrom(from, to, offset);
-	}
+	write8(0x66);
+    RexRB(0, from, to);
+	write16( 0x7e0f );
+    WriteRmOffsetFrom(from, to, offset);
 }
 
 #ifdef __x86_64__
@@ -1237,157 +1190,157 @@ _inline void SSE4_BLENDVPS_M128_to_XMM(x86SSERegType to, uptr from)
 // SSE-X
 _inline void SSEX_MOVDQA_M128_to_XMM( x86SSERegType to, uptr from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_MOVDQA_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_MOVDQA_M128_to_XMM(to, from);
 	else SSE_MOVAPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_MOVDQA_XMM_to_M128( uptr to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQA_XMM_to_M128(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQA_XMM_to_M128(to, from);
 	else SSE_MOVAPS_XMM_to_M128(to, from);
 }
 
 _inline void SSEX_MOVDQA_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQA_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQA_XMM_to_XMM(to, from);
 	else SSE_MOVAPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_MOVDQARmtoROffset( x86SSERegType to, x86IntRegType from, int offset )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_MOVDQARmtoROffset(to, from, offset);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_MOVDQARmtoROffset(to, from, offset);
 	else SSE_MOVAPSRmtoROffset(to, from, offset);
 }
 
 _inline void SSEX_MOVDQARtoRmOffset( x86IntRegType to, x86SSERegType from, int offset )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQARtoRmOffset(to, from, offset);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQARtoRmOffset(to, from, offset);
 	else SSE_MOVAPSRtoRmOffset(to, from, offset);
 }
 
 _inline void SSEX_MOVDQU_M128_to_XMM( x86SSERegType to, uptr from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_MOVDQU_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_MOVDQU_M128_to_XMM(to, from);
 	else SSE_MOVAPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_MOVDQU_XMM_to_M128( uptr to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQU_XMM_to_M128(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQU_XMM_to_M128(to, from);
 	else SSE_MOVAPS_XMM_to_M128(to, from);
 }
 
 _inline void SSEX_MOVDQU_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQU_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVDQU_XMM_to_XMM(to, from);
 	else SSE_MOVAPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_MOVD_M32_to_XMM( x86SSERegType to, uptr from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_MOVD_M32_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_MOVD_M32_to_XMM(to, from);
 	else SSE_MOVSS_M32_to_XMM(to, from);
 }
 
 _inline void SSEX_MOVD_XMM_to_M32( u32 to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVD_XMM_to_M32(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVD_XMM_to_M32(to, from);
 	else SSE_MOVSS_XMM_to_M32(to, from);
 }
 
 _inline void SSEX_MOVD_XMM_to_Rm( x86IntRegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVD_XMM_to_Rm(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVD_XMM_to_Rm(to, from);
 	else SSE_MOVSS_XMM_to_Rm(to, from);
 }
 
 _inline void SSEX_MOVD_RmOffset_to_XMM( x86SSERegType to, x86IntRegType from, int offset )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_MOVD_RmOffset_to_XMM(to, from, offset);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_MOVD_RmOffset_to_XMM(to, from, offset);
 	else SSE_MOVSS_RmOffset_to_XMM(to, from, offset);
 }
 
 _inline void SSEX_MOVD_XMM_to_RmOffset( x86IntRegType to, x86SSERegType from, int offset )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_MOVD_XMM_to_RmOffset(to, from, offset);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_MOVD_XMM_to_RmOffset(to, from, offset);
 	else SSE_MOVSS_XMM_to_RmOffset(to, from, offset);
 }
 
 _inline void SSEX_POR_M128_to_XMM( x86SSERegType to, uptr from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_POR_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_POR_M128_to_XMM(to, from);
 	else SSE_ORPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_POR_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_POR_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_POR_XMM_to_XMM(to, from);
 	else SSE_ORPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_PXOR_M128_to_XMM( x86SSERegType to, uptr from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_PXOR_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_PXOR_M128_to_XMM(to, from);
 	else SSE_XORPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_PXOR_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_PXOR_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_PXOR_XMM_to_XMM(to, from);
 	else SSE_XORPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_PAND_M128_to_XMM( x86SSERegType to, uptr from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_PAND_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_PAND_M128_to_XMM(to, from);
 	else SSE_ANDPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_PAND_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_PAND_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_PAND_XMM_to_XMM(to, from);
 	else SSE_ANDPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_PANDN_M128_to_XMM( x86SSERegType to, uptr from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_PANDN_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_PANDN_M128_to_XMM(to, from);
 	else SSE_ANDNPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_PANDN_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_PANDN_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_PANDN_XMM_to_XMM(to, from);
 	else SSE_ANDNPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_PUNPCKLDQ_M128_to_XMM(x86SSERegType to, uptr from)
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_PUNPCKLDQ_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_PUNPCKLDQ_M128_to_XMM(to, from);
 	else SSE_UNPCKLPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_PUNPCKLDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_PUNPCKLDQ_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_PUNPCKLDQ_XMM_to_XMM(to, from);
 	else SSE_UNPCKLPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_PUNPCKHDQ_M128_to_XMM(x86SSERegType to, uptr from)
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[to] == XMMT_INT ) SSE2_PUNPCKHDQ_M128_to_XMM(to, from);
+	if( g_xmmtypes[to] == XMMT_INT ) SSE2_PUNPCKHDQ_M128_to_XMM(to, from);
 	else SSE_UNPCKHPS_M128_to_XMM(to, from);
 }
 
 _inline void SSEX_PUNPCKHDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) SSE2_PUNPCKHDQ_XMM_to_XMM(to, from);
+	if( g_xmmtypes[from] == XMMT_INT ) SSE2_PUNPCKHDQ_XMM_to_XMM(to, from);
 	else SSE_UNPCKHPS_XMM_to_XMM(to, from);
 }
 
 _inline void SSEX_MOVHLPS_XMM_to_XMM( x86SSERegType to, x86SSERegType from )
 {
-	if( cpucaps.hasStreamingSIMD2Extensions && g_xmmtypes[from] == XMMT_INT ) {
+	if( g_xmmtypes[from] == XMMT_INT ) {
 		SSE2_PUNPCKHQDQ_XMM_to_XMM(to, from);
 		if( to != from ) SSE2_PSHUFD_XMM_to_XMM(to, to, 0x4e);
 	}

@@ -685,8 +685,7 @@ void recPPACW()
 {
 	if ( ! _Rd_ ) return;
 
-CPU_SSE_XMMCACHE_START(((_Rs_!=0||!cpucaps.hasStreamingSIMD2Extensions)?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
-	if( cpucaps.hasStreamingSIMD2Extensions ) {
+CPU_SSE_XMMCACHE_START(((_Rs_!=0)?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 		if( _Rs_ == 0 ) {
 			SSE2_PSHUFD_XMM_to_XMM(EEREC_D, EEREC_T, 0x88);
 			SSE2_PSRLDQ_I8_to_XMM(EEREC_D, 8);
@@ -709,17 +708,6 @@ CPU_SSE_XMMCACHE_START(((_Rs_!=0||!cpucaps.hasStreamingSIMD2Extensions)?XMMINFO_
 				xmmregs[EEREC_D].inuse = 0;
 			}
 		}
-	}
-	else {
-		if( EEREC_D != EEREC_S ) {
-			if( EEREC_D != EEREC_T ) SSEX_MOVDQA_XMM_to_XMM(EEREC_D, EEREC_T);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_S, 0x88 );
-		}
-		else {
-			SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_T, 0x88 );
-			SSE2_PSHUFD_XMM_to_XMM(EEREC_D, EEREC_D, 0x4e);
-		}
-	}
 CPU_SSE_XMMCACHE_END
 
 	_flushCachedRegs();
@@ -755,14 +743,10 @@ CPU_SSE2_XMMCACHE_START((_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 		SSE2_PSHUFHW_XMM_to_XMM(t0reg, t0reg, 0x88);
 		SSE2_PSHUFHW_XMM_to_XMM(EEREC_D, EEREC_D, 0x88);
 
-		if( cpucaps.hasStreamingSIMD2Extensions ) {
-			SSE2_PSRLDQ_I8_to_XMM(t0reg, 4);
-			SSE2_PSRLDQ_I8_to_XMM(EEREC_D, 4);
-			SSE2_PUNPCKLQDQ_XMM_to_XMM(EEREC_D, t0reg);
-		}
-		else {
-			SSE_SHUFPS_XMM_to_XMM(EEREC_D, t0reg, 0x88);
-		}
+		SSE2_PSRLDQ_I8_to_XMM(t0reg, 4);
+		SSE2_PSRLDQ_I8_to_XMM(EEREC_D, 4);
+		SSE2_PUNPCKLQDQ_XMM_to_XMM(EEREC_D, t0reg);
+
 		_freeXMMreg(t0reg);
 	}
 CPU_SSE_XMMCACHE_END
@@ -2791,8 +2775,7 @@ void recPCPYLD( void )
 {
 	if ( ! _Rd_ ) return;
 
-CPU_SSE_XMMCACHE_START(XMMINFO_WRITED|((cpucaps.hasStreamingSIMD2Extensions&&_Rs_==0)?0:XMMINFO_READS)|XMMINFO_READT)
-	if( cpucaps.hasStreamingSIMD2Extensions ) {
+CPU_SSE_XMMCACHE_START(XMMINFO_WRITED|(( _Rs_== 0) ? 0:XMMINFO_READS)|XMMINFO_READT)
 		if( _Rs_ == 0 ) {
 			SSE2_MOVQ_XMM_to_XMM(EEREC_D, EEREC_T);
 		}
@@ -2808,18 +2791,6 @@ CPU_SSE_XMMCACHE_START(XMMINFO_WRITED|((cpucaps.hasStreamingSIMD2Extensions&&_Rs
 				SSE2_PUNPCKLQDQ_XMM_to_XMM(EEREC_D, EEREC_S);
 			}
 		}
-	}
-	else {
-		if( EEREC_D == EEREC_T ) SSE_MOVLHPS_XMM_to_XMM(EEREC_D, EEREC_S);
-		else if( EEREC_D == EEREC_S ) {
-			SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_T, 0x44);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_D, 0x4e);
-		}
-		else {
-			SSEX_MOVDQA_XMM_to_XMM(EEREC_D, EEREC_T);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_S, 0x44);
-		}
-	}
 CPU_SSE_XMMCACHE_END
 
 	_flushCachedRegs();
@@ -3232,9 +3203,8 @@ void recPCPYUD( void )
 {
    if ( ! _Rd_ ) return;
 
-CPU_SSE_XMMCACHE_START(XMMINFO_READS|((cpucaps.hasStreamingSIMD2Extensions&&_Rs_==0)?0:XMMINFO_READT)|XMMINFO_WRITED)
+CPU_SSE_XMMCACHE_START(XMMINFO_READS|(( _Rs_ == 0) ? 0:XMMINFO_READT)|XMMINFO_WRITED)
 
-	if( cpucaps.hasStreamingSIMD2Extensions ) {
 		if( _Rt_ == 0 ) {
 			if( EEREC_D == EEREC_S ) {
 				SSE2_PUNPCKHQDQ_XMM_to_XMM(EEREC_D, EEREC_S);
@@ -3262,19 +3232,6 @@ CPU_SSE_XMMCACHE_START(XMMINFO_READS|((cpucaps.hasStreamingSIMD2Extensions&&_Rs_
 				}
 			}
 		}
-	}
-	else {
-		if( EEREC_D == EEREC_S ) {
-			SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_T, 0xee);
-		}
-		else if( EEREC_D == EEREC_T ) {
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_S);
-		}
-		else {
-			SSEX_MOVDQA_XMM_to_XMM(EEREC_D, EEREC_T);
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_D, EEREC_S);
-		}
-	}
 CPU_SSE_XMMCACHE_END
 
 	_flushCachedRegs();
