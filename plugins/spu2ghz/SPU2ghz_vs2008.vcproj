@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="SPU2ghz_vs2008"
 	ProjectGUID="{5307BBB7-EBB9-4AA4-8CB6-A94EC473C8C4}"
 	RootNamespace="SPU2ghz_vs2005"
@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory="c:\spu2ghz_temp\"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -27,6 +27,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -63,13 +64,11 @@
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/SPU2ghz.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
 			/>
@@ -87,12 +86,13 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile=".\bin\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Release/SPU2ghz.pdb"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/SPU2ghz.lib"
@@ -124,8 +124,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -133,6 +133,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -162,9 +163,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -184,12 +183,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="F:\Pcsx2\plugins\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="\Pcsx2\plugins\SPU2ghz.pdb"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				SupportUnloadOfDelayLoadedDLL="false"
@@ -232,6 +231,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -264,17 +264,15 @@
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
-				EnableEnhancedInstructionSet="1"
+				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=""
 				AssemblerListingLocation="$(IntDir)\"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(ConfigurationName)"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
 			/>
@@ -292,12 +290,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile=".\bin\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=""
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				StripPrivateSymbols=""
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -342,6 +340,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -372,9 +371,7 @@
 				EnableEnhancedInstructionSet="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -394,12 +391,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="F:\Pcsx2\plugins\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="\Pcsx2\plugins\SPU2ghz.pdb"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary=".\Debug/SPU2ghz1.lib"
@@ -491,6 +488,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
@@ -500,6 +498,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
@@ -645,6 +644,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
@@ -934,6 +934,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
@@ -953,6 +954,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
@@ -1039,6 +1041,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>

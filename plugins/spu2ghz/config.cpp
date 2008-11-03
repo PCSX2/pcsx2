@@ -24,6 +24,14 @@
 static bool VolumeBoostEnabled = false;
 static int VolumeShiftModifier = 0;
 
+#ifndef PUBLIC
+static const int LATENCY_MAX = 2000;
+#else
+static const int LATENCY_MAX = 500;
+#endif
+
+static const int LATENCY_MIN = 40;
+
 
 // DEBUG
 
@@ -72,7 +80,7 @@ bool EffectsEnabled=false;
 
 // OUTPUT
 int SampleRate=48000;
-int SndOutLatencyMS=60;
+int SndOutLatencyMS=140;
 //int SndOutLatency=1024;
 //int MaxBufferCount=8;
 //int CurBufferCount=MaxBufferCount;
@@ -301,7 +309,7 @@ void ReadSettings()
 	SampleRate = 48000;		// Yup nothing else is supported for now.
 	VolumeShiftModifier = min( max( VolumeShiftModifier, -2 ), 2 );
 	SndOutVolumeShift = SndOutVolumeShiftBase - VolumeShiftModifier;
-	SndOutLatencyMS = min( max( SndOutLatencyMS, 40 ), 480 );
+	SndOutLatencyMS = min( max( SndOutLatencyMS, LATENCY_MIN ), LATENCY_MAX );
 	
 	Config_DSoundOut.NumBuffers = min( max( Config_DSoundOut.NumBuffers, 2 ), 8 );
 	Config_WaveOut.NumBuffers = min( max( Config_DSoundOut.NumBuffers, 3 ), 8 );
@@ -473,7 +481,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 
 			//INIT_SLIDER(IDC_BUFFER,512,16384,4096,2048,512);
-			INIT_SLIDER( IDC_LATENCY_SLIDER, 40, 480, 100, 20, 5 );
+			INIT_SLIDER( IDC_LATENCY_SLIDER, LATENCY_MIN, LATENCY_MAX, 100, 20, 5 );
 
 			SendMessage(GetDlgItem(hWnd,IDC_LATENCY_SLIDER),TBM_SETPOS,TRUE,SndOutLatencyMS); 
 			sprintf_s(temp,80,"%d ms (avg)",SndOutLatencyMS);
@@ -521,8 +529,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					SndOutLatencyMS = (int)SendMessage( GetDlgItem( hWnd, IDC_LATENCY_SLIDER ), TBM_GETPOS, 0, 0 );
 
-					if( SndOutLatencyMS > 480 ) SndOutLatencyMS = 480;
-					if( SndOutLatencyMS < 40 ) SndOutLatencyMS = 40;
+					if( SndOutLatencyMS > LATENCY_MAX ) SndOutLatencyMS = LATENCY_MAX;
+					if( SndOutLatencyMS < LATENCY_MIN ) SndOutLatencyMS = LATENCY_MIN;
 
 					Interpolation=(int)SendMessage(GetDlgItem(hWnd,IDC_INTERPOLATE),CB_GETCURSEL,0,0);
 					OutputModule=(int)SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_GETCURSEL,0,0);
@@ -586,8 +594,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				case TB_PAGEDOWN:
 					wmEvent=(int)SendMessage((HWND)lParam,TBM_GETPOS,0,0);
 				case TB_THUMBTRACK:
-					if(wmEvent<40) wmEvent=40;
-					if(wmEvent>480) wmEvent=480;
+					if(wmEvent<LATENCY_MIN) wmEvent=LATENCY_MIN;
+					if(wmEvent>LATENCY_MAX) wmEvent=LATENCY_MAX;
 					SendMessage((HWND)lParam,TBM_SETPOS,TRUE,wmEvent);
 					sprintf_s(temp,80,"%d ms (avg)",wmEvent);
 					SetDlgItemText(hWnd,IDC_LATENCY_LABEL,temp);

@@ -15,6 +15,11 @@
 //License along with this library; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
+
+// [TODO] : The layout of this code file is now a complete hackish mess after
+// numerous timestretch-related additions.  The whole thing should really be
+// rethought and redone at this point.
+
 #include "spu2.h"
 #include "SoundTouch/SoundTouch.h"
 #include "SoundTouch/WavFile.h"

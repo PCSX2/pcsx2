@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory="c:\spu2ghz_temp\"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -26,6 +26,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -62,15 +63,13 @@
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/SPU2ghz.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
-				EnablePREfast="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -86,12 +85,15 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="F:\Pcsx2\plugins\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Release/SPU2ghz.pdb"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/SPU2ghz.lib"
 				TargetMachine="1"
 			/>
@@ -116,16 +118,13 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -133,6 +132,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -162,9 +162,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -184,12 +182,14 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="F:\Pcsx2\plugins\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="\Pcsx2\plugins\SPU2ghz.pdb"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				SupportUnloadOfDelayLoadedDLL="false"
 				ImportLibrary=".\Debug/SPU2ghz1.lib"
 				TargetMachine="1"
@@ -215,9 +215,6 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -233,6 +230,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -265,19 +263,17 @@
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
-				EnableEnhancedInstructionSet="1"
+				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=""
 				AssemblerListingLocation="$(IntDir)\"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(ConfigurationName)"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
-				EnablePREfast="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -293,13 +289,17 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile=".\bin\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
-				GenerateDebugInformation="false"
-				ProgramDatabaseFile=""
-				StripPrivateSymbols=".\bin\spu2ghz.pdb"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				StripPrivateSymbols=""
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/SPU2ghz.lib"
 				TargetMachine="1"
 			/>
@@ -324,12 +324,8 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Building Release RAR..."
-				CommandLine=".\mkrelease.cmd"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -343,6 +339,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -373,9 +370,7 @@
 				EnableEnhancedInstructionSet="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -395,12 +390,14 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="F:\Pcsx2\plugins\SPU2ghz.dll"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="\Pcsx2\plugins\SPU2ghz.pdb"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\Debug/SPU2ghz1.lib"
 				TargetMachine="1"
 			/>
@@ -423,9 +420,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -493,6 +487,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
@@ -502,12 +497,14 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug SSE2|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -646,6 +643,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
@@ -935,6 +933,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
@@ -954,6 +953,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
@@ -1040,6 +1040,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>

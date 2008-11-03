@@ -20,6 +20,7 @@
 #include <assert.h>
 
 #include "regtable.h"
+#include "svnrev.h"
 
 void StartVoices(int core, u32 value);
 void StopVoices(int core, u32 value);
@@ -29,16 +30,6 @@ void InitADSR();
 const unsigned char version  = PS2E_SPU2_VERSION;
 const unsigned char revision = 1;
 const unsigned char build	 = 9;	// increase that with each version
-
-static char *libraryName	  = "GiGaHeRz's SPU2 (" 
-#ifdef _DEBUG
-	"Playground Debug"
-#elif defined( PUBLIC )
-	"Playground Mod"
-#else
-	"Playground Dev"
-#endif
-")";
 
 static __forceinline void SPU2_FastWrite( u32 rmem, u16 value );
 static void CALLBACK SPU2writeLog(u32 rmem, u16 value);
@@ -106,7 +97,7 @@ HINSTANCE hInstance;
 bool debugDialogOpen=false;
 HWND hDebugDialog=NULL;
 
-const char *tSyncName="SPU2DoMoreTicks";
+static char libraryName[256];
 
 CRITICAL_SECTION threadSync;
 
@@ -125,6 +116,26 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD dwReason,LPVOID lpvReserved)
 	return TRUE;
 }
 
+void SysMessage(char *fmt, ...) 
+{
+	va_list list;
+	char tmp[512];
+
+	va_start(list,fmt);
+	vsprintf_s(tmp,512,fmt,list);
+	va_end(list);
+	MessageBox(0, tmp, "SPU2ghz Msg", 0);
+}
+
+static void InitLibraryName()
+{
+	sprintf_s( libraryName, 256, "GiGaHeRz SPU2 PPr %d%s",
+		revision, build,
+		SVN_REV,
+		SVN_MODS ? "m" : ""
+	);
+}
+
 u32 CALLBACK PS2EgetLibType() 
 {
 	return PS2E_LT_SPU2;
@@ -132,6 +143,7 @@ u32 CALLBACK PS2EgetLibType()
 
 char* CALLBACK PS2EgetLibName() 
 {
+	InitLibraryName();
 	return libraryName;
 }
 
@@ -140,16 +152,19 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type)
 	return (version<<16)|(revision<<8)|build;
 }
 
-void SysMessage(char *fmt, ...) 
-{
-	va_list list;
-	char tmp[512];
-
-	va_start(list,fmt);
-	_vsnprintf(tmp,512,fmt,list);
-	va_end(list);
-	MessageBox(0, tmp, "SPU2ghz Msg", 0);
+void CALLBACK SPU2configure() {
+	configure();
 }
+
+void CALLBACK SPU2about() {
+	InitLibraryName();
+	SysMessage( libraryName );
+}
+
+s32 CALLBACK SPU2test() {
+	return SndTest();
+}
+
 
 __forceinline s16 * __fastcall GetMemPtr(u32 addr)
 {
@@ -873,7 +888,12 @@ void CALLBACK SPU_ps1_write(u32 mem, u16 value)
 				Cores[0].Voices[voice].ADSR.Rm=(value & 0x20)>>5;
 				Cores[0].Voices[voice].ADSR.Rr=(value & 0x1F);
 				Cores[0].Voices[voice].ADSR.Reg_ADSR2 = value;	break;
-			case 6:	Cores[0].Voices[voice].ADSR.Value=value;	break;
+			case 6:
+				// [Air] Experimental --> shifting value into a 31 bit range.
+				//  shifting by 16 might be more correct?
+				Cores[0].Voices[voice].ADSR.Value = value<<15;
+				ConLog( "* SPU2: Mysterious ADSR Volume Set to 0x%x", value );
+			break;
 			case 7:	Cores[0].Voices[voice].LoopStartA=(u32)value <<8;	break;
 
 			jNO_DEFAULT;
@@ -1000,7 +1020,7 @@ u16 CALLBACK SPU_ps1_read(u32 mem)
 			case 3:	value=Cores[0].Voices[voice].StartA;	break;
 			case 4: value=Cores[0].Voices[voice].ADSR.Reg_ADSR1;	break;
 			case 5: value=Cores[0].Voices[voice].ADSR.Reg_ADSR2;	break;
-			case 6:	value=Cores[0].Voices[voice].ADSR.Value;	break;
+			case 6:	value=Cores[0].Voices[voice].ADSR.Value >> 16;	break;
 			case 7:	value=Cores[0].Voices[voice].LoopStartA;	break;
 
 			jNO_DEFAULT;
@@ -1310,9 +1330,12 @@ static __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 				Cores[core].Voices[voice].ADSR.Rm=(value & 0x20)>>5;
 				Cores[core].Voices[voice].ADSR.Rr=(value & 0x1F);
 				Cores[core].Voices[voice].ADSR.Reg_ADSR2 = value;	break;
-			// [Air] [TODO] : value is 16 bit but ADSR.value is 32 bit.
-			//   Should this be shifted up by 16?  Seems like it.
-			case 5: Cores[core].Voices[voice].ADSR.Value=value;		break;
+			case 5:
+				// [Air] : Mysterious volume set code.  Too bad none of my games ever use it.
+				//      (as usual... )
+				Cores[core].Voices[voice].ADSR.Value = value << 15;
+				ConLog( "* SPU2: Mysterious ADSR Volume Set to 0x%x", value );
+			break;
 			case 6:	Cores[core].Voices[voice].VolumeL.Value=value;	break;
 			case 7:	Cores[core].Voices[voice].VolumeR.Value=value;	break;
 
@@ -1623,18 +1646,6 @@ u16  CALLBACK SPU2read(u32 rmem)
 	}
 
 	return ret;
-}
-
-void CALLBACK SPU2configure() {
-	configure();
-}
-
-void CALLBACK SPU2about() {
-	SysMessage("%s %d.%d", libraryName, revision, build);
-}
-
-s32 CALLBACK SPU2test() {
-	return SndTest();
 }
 
 #define PCM_CACHE_BLOCK_COUNT ( 0x200000 / 16 )

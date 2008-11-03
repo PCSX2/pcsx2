@@ -189,8 +189,6 @@ void StartADMAWrite(int core,u16 *pMem, u32 sz)
 
 void DoDMAWrite(int core,u16 *pMem,u32 size)
 {
-	u32 i;
-
 	{
 		// Perform an alignment check.
 		// Not really important.  Everything should work regardless,
@@ -274,7 +272,7 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 				// Since the buffer wraps, the conditional might seem odd, but it works.
 
 				if( ( Cores[core].IRQA >= Cores[core].TDA ) ||
-					( Cores[core].IRQA <= buff2end ) )
+					( Cores[core].IRQA <= (u32)buff2end ) )
 				{
 					Spdif.Info=4<<core;
 					SetIrqCall();

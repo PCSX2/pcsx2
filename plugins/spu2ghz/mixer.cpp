@@ -366,7 +366,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 		case 2: // decay
 		{
 			u32 off = InvExpOffsets[(env.Value>>28)&7];
-			env.Value -= PsxRates[((env.Dr^0x1f)<<2)-0x18+off+32];
+			env.Value-=PsxRates[((env.Dr^0x1f)<<2)-0x18+off+32];
 
 			if(env.Value <= SLevel)
 			{
@@ -388,11 +388,11 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 				if (env.Sm&4) // exponential
 				{
 					u32 off = InvExpOffsets[(env.Value>>28)&7];
-					env.Value -= PsxRates[(env.Sr^0x7f)-0x1b+off+32];
+					env.Value-=PsxRates[(env.Sr^0x7f)-0x1b+off+32];
 				} 
 				else // linear
 				{
-					env.Value -= PsxRates[(env.Sr^0x7f)-0xf+32];
+					env.Value-=PsxRates[(env.Sr^0x7f)-0xf+32];
 				}
 				if( env.Value <= 0 )
 				{
@@ -856,7 +856,7 @@ static void __fastcall UpdateVolume(V_Volume& Vol)
 
 		if(Vol.Mode & VOLFLAG_EXPONENTIAL)
 		{
-			//ConLog( " *** SPU2 > Exponential Volume Slide Down!\n" );
+			ConLog( " *** SPU2 > Exponential Volume Slide Down!\n" );
 			Vol.Value *= Vol.Increment >> 7;
 			Vol.Value-=((32768*5)>>(Vol.Increment));
 		}
@@ -877,7 +877,7 @@ static void __fastcall UpdateVolume(V_Volume& Vol)
 		// Increment
 		if(Vol.Mode & VOLFLAG_EXPONENTIAL)
 		{
-			//ConLog( " *** SPU2 > Exponential Volume Slide Up!\n" );
+			ConLog( " *** SPU2 > Exponential Volume Slide Up!\n" );
 			int T = Vol.Increment>>(Vol.Value>>12);
 			Vol.Value+=T;
 		}

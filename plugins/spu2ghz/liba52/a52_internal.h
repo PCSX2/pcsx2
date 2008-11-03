@@ -87,11 +87,14 @@ struct a52_state_s {
     int downmixed;
 };
 
-#define LEVEL_PLUS6DB 2.0
-#define LEVEL_PLUS3DB 1.4142135623730951
-#define LEVEL_3DB 0.7071067811865476
-#define LEVEL_45DB 0.5946035575013605
-#define LEVEL_6DB 0.5
+// [Air]: Added sample_t casts here.
+//  Improves SSE2 optimization efficiency under Visual Studio 2008
+
+#define LEVEL_PLUS6DB ((sample_t)2.0)
+#define LEVEL_PLUS3DB ((sample_t)1.4142135623730951)
+#define LEVEL_3DB ((sample_t)0.7071067811865476)
+#define LEVEL_45DB ((sample_t)0.5946035575013605)
+#define LEVEL_6DB ((sample_t)0.5)
 
 #define EXP_REUSE (0)
 #define EXP_D15   (1)
