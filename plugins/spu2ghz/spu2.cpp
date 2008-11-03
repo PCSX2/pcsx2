@@ -130,7 +130,6 @@ void SysMessage(char *fmt, ...)
 static void InitLibraryName()
 {
 	sprintf_s( libraryName, 256, "GiGaHeRz SPU2 PPr %d%s",
-		revision, build,
 		SVN_REV,
 		SVN_MODS ? "m" : ""
 	);
