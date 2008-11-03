@@ -94,7 +94,7 @@ __forceinline void GSVSYNC(void) {
 
 #else
 
-__forceinline void GSGIFTRANSFER1(const u32 *pMem, u32 addr) { 
+__forceinline void GSGIFTRANSFER1(u32 *pMem, u32 addr) { 
 	GSgifTransfer1(pMem, addr); 
 }
 
@@ -102,7 +102,7 @@ __forceinline void GSGIFTRANSFER2(u32 *pMem, u32 size) {
 	GSgifTransfer2(pMem, size); 
 }
 
-__forceinline void GSGIFTRANSFER3(const u32 *pMem, u32 size) { 
+__forceinline void GSGIFTRANSFER3(u32 *pMem, u32 size) { 
 	GSgifTransfer3(pMem, size); 
 }
 
