@@ -285,7 +285,7 @@ u8 _eeIsLoadStoreCoIssue(u32 firstcode, u32 secondcode)
 		case 57: // swc1
 		case 54: // lqc2
 		case 62: // sqc2
-			return (secondcode>>26)==(firstcode>>26)&&cpucaps.hasStreamingSIMDExtensions;
+			return (secondcode>>26)==(firstcode>>26);
 	}
 	return 0;
 }
@@ -1294,153 +1294,144 @@ int eeRecompileCodeXMM(int xmminfo)
 void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo)
 {
 	int mmregs=-1, mmregt=-1, mmregd=-1, mmregacc=-1;
+	int info = PROCESS_EE_XMM;
 
-	if( cpucaps.hasStreamingSIMDExtensions ) {
-		int info = PROCESS_EE_XMM;
+	if( xmminfo & XMMINFO_READS ) _addNeededFPtoXMMreg(_Fs_);
+	if( xmminfo & XMMINFO_READT ) _addNeededFPtoXMMreg(_Ft_);
+	if( xmminfo & (XMMINFO_WRITED|XMMINFO_READD) ) _addNeededFPtoXMMreg(_Fd_);
+	if( xmminfo & (XMMINFO_WRITEACC|XMMINFO_READACC) ) _addNeededFPACCtoXMMreg();
 
-		if( xmminfo & XMMINFO_READS ) _addNeededFPtoXMMreg(_Fs_);
-		if( xmminfo & XMMINFO_READT ) _addNeededFPtoXMMreg(_Ft_);
-		if( xmminfo & (XMMINFO_WRITED|XMMINFO_READD) ) _addNeededFPtoXMMreg(_Fd_);
-		if( xmminfo & (XMMINFO_WRITEACC|XMMINFO_READACC) ) _addNeededFPACCtoXMMreg();
-
-		if( xmminfo & XMMINFO_READT ) {
-			if( g_pCurInstInfo->fpuregs[_Ft_] & EEINST_LASTUSE ) mmregt = _checkXMMreg(XMMTYPE_FPREG, _Ft_, MODE_READ);
-			else mmregt = _allocFPtoXMMreg(-1, _Ft_, MODE_READ);
-		}
-
-		if( xmminfo & XMMINFO_READS ) {
-			if( ( !(xmminfo & XMMINFO_READT) || (mmregt >= 0) ) && (g_pCurInstInfo->fpuregs[_Fs_] & EEINST_LASTUSE) ) {
-				mmregs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
-			}
-			else mmregs = _allocFPtoXMMreg(-1, _Fs_, MODE_READ);
-		}
-
-		if( mmregs >= 0 ) info |= PROCESS_EE_SETMODES_XMM(mmregs);
-		if( mmregt >= 0 ) info |= PROCESS_EE_SETMODET_XMM(mmregt);
-
-		if( xmminfo & XMMINFO_READD ) {
-			assert( xmminfo & XMMINFO_WRITED );
-			mmregd = _allocFPtoXMMreg(-1, _Fd_, MODE_READ);
-		}
-
-		if( xmminfo & XMMINFO_READACC ) {
-			if( !(xmminfo&XMMINFO_WRITEACC) && (g_pCurInstInfo->fpuregs[_Ft_] & EEINST_LASTUSE) )
-				mmregacc = _checkXMMreg(XMMTYPE_FPACC, 0, MODE_READ);
-			else mmregacc = _allocFPACCtoXMMreg(-1, MODE_READ);
-		}
-
-		if( xmminfo & XMMINFO_WRITEACC ) {
-			
-			// check for last used, if so don't alloc a new XMM reg
-			int readacc = MODE_WRITE|((xmminfo&XMMINFO_READACC)?MODE_READ:0);
-
-			mmregacc = _checkXMMreg(XMMTYPE_FPACC, 0, readacc);
-
-			if( mmregacc < 0 ) {
-				if( (xmminfo&XMMINFO_READT) && mmregt >= 0 && (FPUINST_LASTUSE(_Ft_) || !FPUINST_ISLIVE(_Ft_)) ) {
-					if( FPUINST_ISLIVE(_Ft_) ) {
-						_freeXMMreg(mmregt);
-						info &= ~PROCESS_EE_MODEWRITET;
-					}
-					_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
-					xmmregs[mmregt].inuse = 1;
-					xmmregs[mmregt].reg = 0;
-					xmmregs[mmregt].mode = readacc;
-					xmmregs[mmregt].type = XMMTYPE_FPACC;
-					mmregacc = mmregt;
-				}
-				else if( (xmminfo&XMMINFO_READS) && mmregs >= 0 && (FPUINST_LASTUSE(_Fs_) || !FPUINST_ISLIVE(_Fs_)) ) {
-					if( FPUINST_ISLIVE(_Fs_) ) {
-						_freeXMMreg(mmregs);
-						info &= ~PROCESS_EE_MODEWRITES;
-					}
-					_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
-					xmmregs[mmregs].inuse = 1;
-					xmmregs[mmregs].reg = 0;
-					xmmregs[mmregs].mode = readacc;
-					xmmregs[mmregs].type = XMMTYPE_FPACC;
-					mmregacc = mmregs;
-				}
-				else mmregacc = _allocFPACCtoXMMreg(-1, readacc);
-			}
-
-			xmmregs[mmregacc].mode |= MODE_WRITE;
-		}
-		else if( xmminfo & XMMINFO_WRITED ) {
-			// check for last used, if so don't alloc a new XMM reg
-			int readd = MODE_WRITE|((xmminfo&XMMINFO_READD)?MODE_READ:0);
-			if( xmminfo&XMMINFO_READD ) mmregd = _allocFPtoXMMreg(-1, _Fd_, readd);
-			else mmregd = _checkXMMreg(XMMTYPE_FPREG, _Fd_, readd);
-
-			if( mmregd < 0 ) {
-				if( (xmminfo&XMMINFO_READT) && mmregt >= 0 && (FPUINST_LASTUSE(_Ft_) || !FPUINST_ISLIVE(_Ft_)) ) {
-					if( FPUINST_ISLIVE(_Ft_) ) {
-						_freeXMMreg(mmregt);
-						info &= ~PROCESS_EE_MODEWRITET;
-					}
-					_deleteMMXreg(MMX_FPU+_Fd_, 2);
-					xmmregs[mmregt].inuse = 1;
-					xmmregs[mmregt].reg = _Fd_;
-					xmmregs[mmregt].mode = readd;
-					mmregd = mmregt;
-				}
-				else if( (xmminfo&XMMINFO_READS) && mmregs >= 0 && (FPUINST_LASTUSE(_Fs_) || !FPUINST_ISLIVE(_Fs_)) ) {
-					if( FPUINST_ISLIVE(_Fs_) ) {
-						_freeXMMreg(mmregs);
-						info &= ~PROCESS_EE_MODEWRITES;
-					}
-					_deleteMMXreg(MMX_FPU+_Fd_, 2);
-					xmmregs[mmregs].inuse = 1;
-					xmmregs[mmregs].reg = _Fd_;
-					xmmregs[mmregs].mode = readd;
-					mmregd = mmregs;
-				}
-				else if( (xmminfo&XMMINFO_READACC) && mmregacc >= 0 && (FPUINST_LASTUSE(XMMFPU_ACC) || !FPUINST_ISLIVE(XMMFPU_ACC)) ) {
-					if( FPUINST_ISLIVE(XMMFPU_ACC) )
-						_freeXMMreg(mmregacc);
-					_deleteMMXreg(MMX_FPU+_Fd_, 2);
-					xmmregs[mmregacc].inuse = 1;
-					xmmregs[mmregacc].reg = _Fd_;
-					xmmregs[mmregacc].mode = readd;
-					xmmregs[mmregacc].type = XMMTYPE_FPREG;
-					mmregd = mmregacc;
-				}
-				else mmregd = _allocFPtoXMMreg(-1, _Fd_, readd);
-			}
-		}
-
-		assert( mmregs >= 0 || mmregt >= 0 || mmregd >= 0 || mmregacc >= 0 );
-
-		if( xmminfo & XMMINFO_WRITED ) {
-			assert( mmregd >= 0 );
-			info |= PROCESS_EE_SET_D(mmregd);
-		}
-		if( xmminfo & (XMMINFO_WRITEACC|XMMINFO_READACC) ) {
-			if( mmregacc >= 0 ) info |= PROCESS_EE_SET_ACC(mmregacc)|PROCESS_EE_ACC;
-			else assert( !(xmminfo&XMMINFO_WRITEACC));		
-		}
-
-		if( xmminfo & XMMINFO_READS ) {
-			if( mmregs >= 0 ) info |= PROCESS_EE_SET_S(mmregs)|PROCESS_EE_S;
-		}
-		if( xmminfo & XMMINFO_READT ) {
-			if( mmregt >= 0 ) info |= PROCESS_EE_SET_T(mmregt)|PROCESS_EE_T;
-		}
-		
-		// at least one must be in xmm
-		if( (xmminfo & (XMMINFO_READS|XMMINFO_READT)) == (XMMINFO_READS|XMMINFO_READT) ) {
-			assert( mmregs >= 0 || mmregt >= 0 );
-		}
-
-		xmmcode(info);
-		_clearNeededXMMregs();
-		return;
+	if( xmminfo & XMMINFO_READT ) {
+		if( g_pCurInstInfo->fpuregs[_Ft_] & EEINST_LASTUSE ) mmregt = _checkXMMreg(XMMTYPE_FPREG, _Ft_, MODE_READ);
+		else mmregt = _allocFPtoXMMreg(-1, _Ft_, MODE_READ);
 	}
 
-	MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code);
-	MOV32ItoM((uptr)&cpuRegs.pc, pc);
-	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc((uptr)fpucode);
+	if( xmminfo & XMMINFO_READS ) {
+		if( ( !(xmminfo & XMMINFO_READT) || (mmregt >= 0) ) && (g_pCurInstInfo->fpuregs[_Fs_] & EEINST_LASTUSE) ) {
+			mmregs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+		}
+		else mmregs = _allocFPtoXMMreg(-1, _Fs_, MODE_READ);
+	}
+
+	if( mmregs >= 0 ) info |= PROCESS_EE_SETMODES_XMM(mmregs);
+	if( mmregt >= 0 ) info |= PROCESS_EE_SETMODET_XMM(mmregt);
+
+	if( xmminfo & XMMINFO_READD ) {
+		assert( xmminfo & XMMINFO_WRITED );
+		mmregd = _allocFPtoXMMreg(-1, _Fd_, MODE_READ);
+	}
+
+	if( xmminfo & XMMINFO_READACC ) {
+		if( !(xmminfo&XMMINFO_WRITEACC) && (g_pCurInstInfo->fpuregs[_Ft_] & EEINST_LASTUSE) )
+			mmregacc = _checkXMMreg(XMMTYPE_FPACC, 0, MODE_READ);
+		else mmregacc = _allocFPACCtoXMMreg(-1, MODE_READ);
+	}
+
+	if( xmminfo & XMMINFO_WRITEACC ) {
+			
+		// check for last used, if so don't alloc a new XMM reg
+		int readacc = MODE_WRITE|((xmminfo&XMMINFO_READACC)?MODE_READ:0);
+
+		mmregacc = _checkXMMreg(XMMTYPE_FPACC, 0, readacc);
+
+		if( mmregacc < 0 ) {
+			if( (xmminfo&XMMINFO_READT) && mmregt >= 0 && (FPUINST_LASTUSE(_Ft_) || !FPUINST_ISLIVE(_Ft_)) ) {
+				if( FPUINST_ISLIVE(_Ft_) ) {
+					_freeXMMreg(mmregt);
+					info &= ~PROCESS_EE_MODEWRITET;
+				}
+				_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
+				xmmregs[mmregt].inuse = 1;
+				xmmregs[mmregt].reg = 0;
+				xmmregs[mmregt].mode = readacc;
+				xmmregs[mmregt].type = XMMTYPE_FPACC;
+				mmregacc = mmregt;
+			}
+			else if( (xmminfo&XMMINFO_READS) && mmregs >= 0 && (FPUINST_LASTUSE(_Fs_) || !FPUINST_ISLIVE(_Fs_)) ) {
+				if( FPUINST_ISLIVE(_Fs_) ) {
+					_freeXMMreg(mmregs);
+					info &= ~PROCESS_EE_MODEWRITES;
+				}
+				_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
+				xmmregs[mmregs].inuse = 1;
+				xmmregs[mmregs].reg = 0;
+				xmmregs[mmregs].mode = readacc;
+				xmmregs[mmregs].type = XMMTYPE_FPACC;
+				mmregacc = mmregs;
+			}
+			else mmregacc = _allocFPACCtoXMMreg(-1, readacc);
+		}
+
+		xmmregs[mmregacc].mode |= MODE_WRITE;
+	}
+	else if( xmminfo & XMMINFO_WRITED ) {
+		// check for last used, if so don't alloc a new XMM reg
+		int readd = MODE_WRITE|((xmminfo&XMMINFO_READD)?MODE_READ:0);
+		if( xmminfo&XMMINFO_READD ) mmregd = _allocFPtoXMMreg(-1, _Fd_, readd);
+		else mmregd = _checkXMMreg(XMMTYPE_FPREG, _Fd_, readd);
+
+		if( mmregd < 0 ) {
+			if( (xmminfo&XMMINFO_READT) && mmregt >= 0 && (FPUINST_LASTUSE(_Ft_) || !FPUINST_ISLIVE(_Ft_)) ) {
+				if( FPUINST_ISLIVE(_Ft_) ) {
+					_freeXMMreg(mmregt);
+					info &= ~PROCESS_EE_MODEWRITET;
+				}
+				_deleteMMXreg(MMX_FPU+_Fd_, 2);
+				xmmregs[mmregt].inuse = 1;
+				xmmregs[mmregt].reg = _Fd_;
+				xmmregs[mmregt].mode = readd;
+				mmregd = mmregt;
+			}
+			else if( (xmminfo&XMMINFO_READS) && mmregs >= 0 && (FPUINST_LASTUSE(_Fs_) || !FPUINST_ISLIVE(_Fs_)) ) {
+				if( FPUINST_ISLIVE(_Fs_) ) {
+					_freeXMMreg(mmregs);
+					info &= ~PROCESS_EE_MODEWRITES;
+				}
+				_deleteMMXreg(MMX_FPU+_Fd_, 2);
+				xmmregs[mmregs].inuse = 1;
+				xmmregs[mmregs].reg = _Fd_;
+				xmmregs[mmregs].mode = readd;
+				mmregd = mmregs;
+			}
+			else if( (xmminfo&XMMINFO_READACC) && mmregacc >= 0 && (FPUINST_LASTUSE(XMMFPU_ACC) || !FPUINST_ISLIVE(XMMFPU_ACC)) ) {
+				if( FPUINST_ISLIVE(XMMFPU_ACC) )
+					_freeXMMreg(mmregacc);
+				_deleteMMXreg(MMX_FPU+_Fd_, 2);
+				xmmregs[mmregacc].inuse = 1;
+				xmmregs[mmregacc].reg = _Fd_;
+				xmmregs[mmregacc].mode = readd;
+				xmmregs[mmregacc].type = XMMTYPE_FPREG;
+				mmregd = mmregacc;
+			}
+			else mmregd = _allocFPtoXMMreg(-1, _Fd_, readd);
+		}
+	}
+
+	assert( mmregs >= 0 || mmregt >= 0 || mmregd >= 0 || mmregacc >= 0 );
+
+	if( xmminfo & XMMINFO_WRITED ) {
+		assert( mmregd >= 0 );
+		info |= PROCESS_EE_SET_D(mmregd);
+	}
+	if( xmminfo & (XMMINFO_WRITEACC|XMMINFO_READACC) ) {
+		if( mmregacc >= 0 ) info |= PROCESS_EE_SET_ACC(mmregacc)|PROCESS_EE_ACC;
+		else assert( !(xmminfo&XMMINFO_WRITEACC));		
+	}
+
+	if( xmminfo & XMMINFO_READS ) {
+		if( mmregs >= 0 ) info |= PROCESS_EE_SET_S(mmregs)|PROCESS_EE_S;
+	}
+	if( xmminfo & XMMINFO_READT ) {
+		if( mmregt >= 0 ) info |= PROCESS_EE_SET_T(mmregt)|PROCESS_EE_T;
+	}
+		
+	// at least one must be in xmm
+	if( (xmminfo & (XMMINFO_READS|XMMINFO_READT)) == (XMMINFO_READS|XMMINFO_READT) ) {
+		assert( mmregs >= 0 || mmregt >= 0 );
+	}
+
+	xmmcode(info);
+	_clearNeededXMMregs();
 }
 
 #undef _Ft_
@@ -1461,23 +1452,20 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 	sseMXCSR &= 0xffff; // clear the upper 16 bits since they shouldn't be set
 	sseVUMXCSR &= 0xffff;
 
-	if( cpucaps.hasStreamingSIMDExtensions ) {
-
-		g_sseMXCSR = sseMXCSR;
-		g_sseVUMXCSR = sseVUMXCSR;
-		// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)
-		// Update 11/05/08 - Doesnt seem to effect it anymore, for the speed boost, its on :p
-		//g_sseMXCSR = 0x9f80; // changing the rounding mode to 0x2000 (near) kills grandia III!
-							// changing the rounding mode to 0x0000 or 0x4000 totally kills gitaroo
-							// so... grandia III wins (you can change individual games with the 'roundmode' patch command)
+	g_sseMXCSR = sseMXCSR;
+	g_sseVUMXCSR = sseVUMXCSR;
+	// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)
+	// Update 11/05/08 - Doesnt seem to effect it anymore, for the speed boost, its on :p
+	//g_sseMXCSR = 0x9f80; // changing the rounding mode to 0x2000 (near) kills grandia III!
+						// changing the rounding mode to 0x0000 or 0x4000 totally kills gitaroo
+						// so... grandia III wins (you can change individual games with the 'roundmode' patch command)
 
 #ifdef _MSC_VER
-		__asm ldmxcsr g_sseMXCSR; // set the new sse control
+	__asm ldmxcsr g_sseMXCSR; // set the new sse control
 #else
-        __asm__("ldmxcsr %0" : : "m"(g_sseMXCSR) );
+    __asm__("ldmxcsr %0" : : "m"(g_sseMXCSR) );
 #endif
-		//g_sseVUMXCSR = g_sseMXCSR|0x6000;
-	}
+	//g_sseVUMXCSR = g_sseMXCSR|0x6000;
 }
 
 #define REC_CACHEMEM 0x01000000
@@ -1573,6 +1561,11 @@ int recInit( void )
 	if ( !( cpucaps.hasMultimediaExtensions  ) )
 	{
 		SysMessage( _( "Processor doesn't supports MMX, can't run recompiler without that" ) );
+		return -1;
+	}
+	if ( !( cpucaps.hasStreamingSIMDExtensions ) )
+	{
+		SysMessage( _( "Processor doesn't supports SSE, can't run recompiler without that" ) );
 		return -1;
 	}
 	if ( !( cpucaps.hasStreamingSIMD2Extensions ) )
@@ -2313,24 +2306,7 @@ void recCOP2( void )
 #ifdef CPU_LOG
 	CPU_LOG( "Recompiling COP2:%s\n", disR5900Fasm( cpuRegs.code, cpuRegs.pc ) );
 #endif
-
-	if ( !cpucaps.hasStreamingSIMDExtensions ) {
-		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code ); 
-		MOV32ItoM( (uptr)&cpuRegs.pc, pc ); 
-		iFlushCall(FLUSH_EVERYTHING);
-		g_cpuHasConstReg = 1; // reset all since COP2 can change regs
-		CALLFunc( (uptr)COP2 ); 
-
-		CMP32ItoM((int)&cpuRegs.pc, pc);
-		j8Ptr[0] = JE8(0);
-		ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles);
-		JMP32((u32)DispatcherReg - ( (u32)x86Ptr + 5 ));
-		x86SetJ8(j8Ptr[0]);
-	}
-	else
-	{
-		recCOP22( );
-	}
+	recCOP22( );
 }
 
 #endif

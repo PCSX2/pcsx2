@@ -828,7 +828,6 @@ void _eeWriteConstMem64(u32 mem, int mmreg)
 
 void _eeWriteConstMem128(u32 mem, int mmreg)
 {
-	assert( cpucaps.hasStreamingSIMDExtensions );
 	if( IS_MMXREG(mmreg) ) {
 		SetMMXstate();
 		MOVQRtoM(mem, mmreg&0xf);

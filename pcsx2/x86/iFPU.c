@@ -799,56 +799,47 @@ static u32 s_signbit = 0x80000000;
 
 void recCVT_W() 
 {
-	if( cpucaps.hasStreamingSIMDExtensions ) {
-		int t0reg;
-		int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+	int t0reg;
+	int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
-		if( regs >= 0 ) {
-			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			_freeXMMreg(t0reg);
-			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&s_signbit);
-			SSE_CVTTSS2SI_XMM_to_R32(EAX, regs);
-			SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[ _Fs_ ], regs);
-		}
-		else SSE_CVTTSS2SI_M32_to_R32(EAX, (uptr)&fpuRegs.fpr[ _Fs_ ]);
-		_deleteFPtoXMMreg(_Fd_, 2);
+	if( regs >= 0 ) {
+		t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+		_freeXMMreg(t0reg);
+		SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&s_signbit);
+		SSE_CVTTSS2SI_XMM_to_R32(EAX, regs);
+		SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[ _Fs_ ], regs);
+	}
+	else SSE_CVTTSS2SI_M32_to_R32(EAX, (uptr)&fpuRegs.fpr[ _Fs_ ]);
+	
+	_deleteFPtoXMMreg(_Fd_, 2);
 
-		MOV32MtoR(ECX, (uptr)&fpuRegs.fpr[ _Fs_ ]);
-		AND32ItoR(ECX, 0x7f800000);
-		CMP32ItoR(ECX, 0x4E800000);
-		j8Ptr[0] = JLE8(0);
+	MOV32MtoR(ECX, (uptr)&fpuRegs.fpr[ _Fs_ ]);
+	AND32ItoR(ECX, 0x7f800000);
+	CMP32ItoR(ECX, 0x4E800000);
+	j8Ptr[0] = JLE8(0);
 
-		// need to detect if reg is positive
-		/*if( regs >= 0 ) {
-			SSE_UCOMISS_XMM_to_XMM(regs, t0reg);
-			j8Ptr[2] = JB8(0);
-		}
-		else {*/
-			TEST32ItoM((uptr)&fpuRegs.fpr[ _Fs_ ], 0x80000000);
-			j8Ptr[2] = JNZ8(0);
-		//}
+	// need to detect if reg is positive
+	/*if( regs >= 0 ) {
+		SSE_UCOMISS_XMM_to_XMM(regs, t0reg);
+		j8Ptr[2] = JB8(0);
+	}
+	else {*/
+		TEST32ItoM((uptr)&fpuRegs.fpr[ _Fs_ ], 0x80000000);
+		j8Ptr[2] = JNZ8(0);
+	//}
 
-		MOV32ItoM((uptr)&fpuRegs.fpr[_Fd_], 0x7fffffff);
-		j8Ptr[1] = JMP8(0);
+	MOV32ItoM((uptr)&fpuRegs.fpr[_Fd_], 0x7fffffff);
+	j8Ptr[1] = JMP8(0);
 
-		x86SetJ8( j8Ptr[2] );
-		MOV32ItoM((uptr)&fpuRegs.fpr[_Fd_], 0x80000000);
-		j8Ptr[1] = JMP8(0);
+	x86SetJ8( j8Ptr[2] );
+	MOV32ItoM((uptr)&fpuRegs.fpr[_Fd_], 0x80000000);
+	j8Ptr[1] = JMP8(0);
 
-		x86SetJ8( j8Ptr[0] );
+	x86SetJ8( j8Ptr[0] );
 		
-		MOV32RtoM((uptr)&fpuRegs.fpr[_Fd_], EAX);
+	MOV32RtoM((uptr)&fpuRegs.fpr[_Fd_], EAX);
 
-		x86SetJ8( j8Ptr[1] );
-	}
-#ifndef __x86_64__
-	else {
-		MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code);
-		iFlushCall(FLUSH_EVERYTHING);
-		_flushConstRegs();
-		CALLFunc((uptr)CVT_W);
-	}
-#endif
+	x86SetJ8( j8Ptr[1] );
 }
 //------------------------------------------------------------------
 

@@ -435,7 +435,7 @@ void rpropMMI1(EEINST* prev, EEINST* pinst);
 void rpropMMI2(EEINST* prev, EEINST* pinst);
 void rpropMMI3(EEINST* prev, EEINST* pinst);
 
-#define EEINST_REALXMM (cpucaps.hasStreamingSIMDExtensions?EEINST_XMM:0)
+#define EEINST_REALXMM EEINST_XMM
 
 //SPECIAL, REGIMM, J,    JAL,   BEQ,  BNE,  BLEZ,  BGTZ,
 //ADDI,    ADDIU,  SLTI, SLTIU, ANDI, ORI,  XORI,  LUI,

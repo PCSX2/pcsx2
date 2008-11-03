@@ -844,24 +844,17 @@ CPU_SSE_XMMCACHE_END
 	_flushCachedRegs();
 	_deleteEEreg(_Rd_, 0);
 
-	if( cpucaps.hasStreamingSIMDExtensions ) {
-		MMX_ALLOC_TEMP4(
-			MOVQMtoR( t0reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ] );
-			MOVQMtoR( t1reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 0 ] );
-			SSE_PMAXSW_MM_to_MM( t0reg, t1reg );
-			MOVQMtoR( t2reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 1 ] );
-			MOVQMtoR( t3reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 1 ] );
-			SSE_PMAXSW_MM_to_MM( t2reg, t3reg);
-			MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ], t0reg );
-			MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 1 ], t2reg);
-			SetMMXstate();
-			)
-	}
-	else {
-		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-		CALLFunc( (uptr)PMAXH ); 
-	}
+	MMX_ALLOC_TEMP4(
+		MOVQMtoR( t0reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ] );
+		MOVQMtoR( t1reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 0 ] );
+		SSE_PMAXSW_MM_to_MM( t0reg, t1reg );
+		MOVQMtoR( t2reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 1 ] );
+		MOVQMtoR( t3reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 1 ] );
+		SSE_PMAXSW_MM_to_MM( t2reg, t3reg);
+		MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ], t0reg );
+		MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 1 ], t2reg);
+		SetMMXstate();
+		)
 }
 
 ////////////////////////////////////////////////////
@@ -2001,24 +1994,17 @@ CPU_SSE_XMMCACHE_END
 	_flushCachedRegs();
 	_deleteEEreg(_Rd_, 0);
 
-	if( cpucaps.hasStreamingSIMDExtensions ) {
-		MMX_ALLOC_TEMP4(
-			MOVQMtoR( t0reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ] );
-			MOVQMtoR( t1reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 1 ] );
-			MOVQMtoR( t2reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 0 ] );
-			MOVQMtoR( t3reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 1 ] );
-			SSE_PMINSW_MM_to_MM( t0reg, t2reg );
-			SSE_PMINSW_MM_to_MM( t1reg, t3reg );
-			MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ], t0reg );
-			MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 1 ], t1reg );
-			SetMMXstate();
-			)
-	}
-	else {
-		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-		CALLFunc( (uptr)PMINH ); 
-	}
+	MMX_ALLOC_TEMP4(
+		MOVQMtoR( t0reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ] );
+		MOVQMtoR( t1reg, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UD[ 1 ] );
+		MOVQMtoR( t2reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 0 ] );
+		MOVQMtoR( t3reg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UD[ 1 ] );
+		SSE_PMINSW_MM_to_MM( t0reg, t2reg );
+		SSE_PMINSW_MM_to_MM( t1reg, t3reg );
+		MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ], t0reg );
+		MOVQRtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UD[ 1 ], t1reg );
+		SetMMXstate();
+		)
 }
 
 ////////////////////////////////////////////////////

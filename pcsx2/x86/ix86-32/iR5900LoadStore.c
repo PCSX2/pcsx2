@@ -1237,7 +1237,7 @@ void recLQ( void )
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
-	if( cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) ) {
+	if( GPR_IS_CONST1( _Rs_ ) ) {
         // malice hits this
 		assert( (g_cpuConstRegs[_Rs_].UL[0]+_Imm_) % 16 == 0 );
 
@@ -1278,7 +1278,7 @@ void recLQ( void )
 		int mmregs;
 		int t0reg = -1;
 		
-		if( !cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) )
+		if( GPR_IS_CONST1( _Rs_ ) )
 			_flushConstReg(_Rs_);
 
 		mmregs = _eePrepareReg(_Rs_);
@@ -2100,7 +2100,7 @@ void recStore(int bit, u32 imm, int align)
 #ifdef REC_SLOWWRITE
 	_flushConstReg(_Rs_);
 #else
-	if( cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) ) {
+	if( GPR_IS_CONST1( _Rs_ ) ) {
 		u32 addr = g_cpuConstRegs[_Rs_].UL[0]+imm;
 		int doclear = 0;
 		StopPerfCounter();
@@ -2190,7 +2190,7 @@ void recStore(int bit, u32 imm, int align)
 		int dohw;
 		int mmregs;
 		
-		if( !cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) ) {
+		if( GPR_IS_CONST1( _Rs_ ) ) {
 			_flushConstReg(_Rs_);
 		}
 
@@ -3429,7 +3429,7 @@ void recLQC2( void )
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
-	if( cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) ) {
+	if( GPR_IS_CONST1( _Rs_ ) ) {
 		assert( (g_cpuConstRegs[_Rs_].UL[0]+_Imm_) % 16 == 0 );
 
 		if( _Ft_ ) mmreg = _allocVFtoXMMreg(&VU0, -1, _Ft_, MODE_WRITE);
@@ -3443,7 +3443,7 @@ void recLQC2( void )
 	{
 		int dohw, mmregs;
 
-		if( !cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) ) {
+		if( GPR_IS_CONST1( _Rs_ ) ) {
 			_flushConstReg(_Rs_);
 		}
 
@@ -3574,7 +3574,7 @@ void recSQC2( void )
 #ifdef REC_SLOWWRITE
 	_flushConstReg(_Rs_);
 #else
-	if( cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) ) {
+	if( GPR_IS_CONST1( _Rs_ ) ) {
 		assert( (g_cpuConstRegs[_Rs_].UL[0]+_Imm_)%16 == 0 );
 
 		mmreg = _allocVFtoXMMreg(&VU0, -1, _Ft_, MODE_READ)|MEM_XMMTAG;
@@ -3586,7 +3586,7 @@ void recSQC2( void )
 		s8* rawreadptr;
 		int dohw, mmregs;
 		
-		if( cpucaps.hasStreamingSIMDExtensions && GPR_IS_CONST1( _Rs_ ) ) {
+		if( GPR_IS_CONST1( _Rs_ ) ) {
 			_flushConstReg(_Rs_);
 		}
 

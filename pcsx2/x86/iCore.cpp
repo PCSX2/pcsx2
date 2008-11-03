@@ -126,7 +126,6 @@ int  _getFreeXMMreg()
 {
 	int i, tempi;
 	u32 bestcount = 0x10000;
-	if( !cpucaps.hasStreamingSIMDExtensions ) return -1;
 
 	for (i=0; i<XMMREGS; i++) {
 		if (xmmregs[(i+s_xmmchecknext)%XMMREGS].inuse == 0) {
@@ -382,7 +381,6 @@ int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode) {
 int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 {
 	int i;
-	if( !cpucaps.hasStreamingSIMDExtensions ) return -1;
 
 	for (i=0; i<XMMREGS; i++) {
 		if (xmmregs[i].inuse == 0) continue;
@@ -499,7 +497,6 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 int _allocFPACCtoXMMreg(int xmmreg, int mode)
 {
 	int i;
-	if( !cpucaps.hasStreamingSIMDExtensions ) return -1;
 
 	for (i=0; i<XMMREGS; i++) {
 		if (xmmregs[i].inuse == 0) continue;
@@ -905,8 +902,6 @@ u8 _hasFreeXMMreg()
 {
 	int i;
 
-	if( !cpucaps.hasStreamingSIMDExtensions ) return 0;
-
 	for (i=0; i<XMMREGS; i++) {
 		if (!xmmregs[i].inuse) return 1;
 	}
@@ -996,9 +991,7 @@ void FreezeXMMRegs_(int save)
 			//SysPrintf("XMM Already saved\n");
 			return;
 			}
-		// only necessary for nonsse CPUs (very rare)
-		if( !cpucaps.hasStreamingSIMDExtensions )
-			return;
+
 		g_globalXMMSaved = 1;
 
 #ifdef _MSC_VER

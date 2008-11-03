@@ -532,12 +532,6 @@ void cpuExecuteBios()
 	if( CHECK_EEREC ) Config.Options |= PCSX2_COP2REC;
 	else Config.Options &= ~PCSX2_COP2REC;
 
-#ifndef PCSX2_NORECBUILD
-	if( !cpucaps.hasStreamingSIMDExtensions ) {
-		Config.Options &= ~(PCSX2_VU1REC|PCSX2_VU0REC);
-	}
-#endif
-
 	// remove frame skipping if GS doesn't support it
 	switch(CHECK_FRAMELIMIT) {
 		case PCSX2_FRAMELIMIT_SKIP:

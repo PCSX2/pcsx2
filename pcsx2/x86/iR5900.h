@@ -219,7 +219,6 @@ void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode
 #define XMMINFO_WRITEACC	0x400
 
 #define CPU_SSE_XMMCACHE_START(xmminfo) \
-	if (cpucaps.hasStreamingSIMDExtensions) \
     { \
 		int info = eeRecompileCodeXMM(xmminfo); \
 
