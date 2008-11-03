@@ -1310,7 +1310,9 @@ static __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 				Cores[core].Voices[voice].ADSR.Rm=(value & 0x20)>>5;
 				Cores[core].Voices[voice].ADSR.Rr=(value & 0x1F);
 				Cores[core].Voices[voice].ADSR.Reg_ADSR2 = value;	break;
-			case 5:	Cores[core].Voices[voice].ADSR.Value=value;		break;
+			// [Air] [TODO] : value is 16 bit but ADSR.value is 32 bit.
+			//   Should this be shifted up by 16?  Seems like it.
+			case 5: Cores[core].Voices[voice].ADSR.Value=value;		break;
 			case 6:	Cores[core].Voices[voice].VolumeL.Value=value;	break;
 			case 7:	Cores[core].Voices[voice].VolumeR.Value=value;	break;
 

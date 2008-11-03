@@ -32,7 +32,7 @@ typedef struct {
 	u16 Reg_ADSR1;
 	u16 Reg_ADSR2;
 //also Reg_ENVX
-	u32 Value; 
+	s32 Value;		// [Air] : Ranges from 0 to 0x7fffffff (signed values are clamped to 0)
 // Phase
 	u8 Phase;
 //Attack Rate

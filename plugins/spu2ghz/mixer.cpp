@@ -50,8 +50,8 @@ double srate_pv=1.0;
 
 extern u32 PsxRates[160];
 
-
-#define SPU2_DYN_MEMLINE 0x3600
+static const s32 ADSR_MAX_VOL = 0x7fffffff;
+static const s32 SPU2_DYN_MEMLINE = 0x3600;
 
 // Performs a 64-bit multiplication between two values and returns the
 // high 32 bits as a result (discarding the fractional 32 bits).
@@ -314,18 +314,15 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 {
 	V_ADSR& env(vc.ADSR);
 
-	if( env.Phase == 0 ) return;
+	jASSUME( env.Phase != 0 );
 
-	s32 SLevel=env.Sl<<27;
-	u32 off=InvExpOffsets[(env.Value>>28)&7];
+	s32 SLevel = ((s32)env.Sl)<<27;
 
 	jASSUME( SLevel >= 0 );
 
 	if(env.Releasing)
 	{
-		// [Air] : Simplified conditional, as phase cannot be zero here.
-		//  (zeros get trapped above)
-		if(/*(env.Phase>0)&&*/(env.Phase<5))
+		if( env.Phase < 5)
 		{
 			env.Phase=5;
 		}
@@ -334,7 +331,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 	switch (env.Phase)
 	{
 		case 1: // attack
-			if( env.Value == 0x7fffffff )
+			if( env.Value == ADSR_MAX_VOL )
 			{
 				// Already maxed out.  Progress phase and nothing more:
 				env.Phase++;
@@ -361,13 +358,15 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 			{
 				// We hit the ceiling. 
 				env.Phase++;
-				env.Value=0x7fffffff;
+				env.Value = ADSR_MAX_VOL;
 			}
 
 			break;
 
 		case 2: // decay
-			env.Value-=PsxRates[((env.Dr^0x1f)<<2)-0x18+off+32];
+		{
+			u32 off = InvExpOffsets[(env.Value>>28)&7];
+			env.Value -= PsxRates[((env.Dr^0x1f)<<2)-0x18+off+32];
 
 			if(env.Value <= SLevel)
 			{
@@ -381,17 +380,19 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 			}
 
 			break;
+		}
 
 		case 3: // sustain
 			if (env.Sm&2) // decreasing
 			{
 				if (env.Sm&4) // exponential
 				{
-					env.Value-=PsxRates[(env.Sr^0x7f)-0x1b+off+32];
+					u32 off = InvExpOffsets[(env.Value>>28)&7];
+					env.Value -= PsxRates[(env.Sr^0x7f)-0x1b+off+32];
 				} 
 				else // linear
 				{
-					env.Value-=PsxRates[(env.Sr^0x7f)-0xf+32];
+					env.Value -= PsxRates[(env.Sr^0x7f)-0xf+32];
 				}
 				if( env.Value < 0 )
 				{
@@ -421,7 +422,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 
 				if( env.Value < 0 )
 				{
-					env.Value = 0x7fffffff;
+					env.Value = ADSR_MAX_VOL;
 					env.Phase++;
 				}
 			}
@@ -429,7 +430,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 			break;
 
 		case 4: // sustain end
-			env.Value = (env.Sm&2) ? 0 : 0x7fffffff;
+			env.Value = (env.Sm&2) ? 0 : ADSR_MAX_VOL;
 			if(env.Value==0)
 				env.Phase=6;
 			break;
@@ -438,6 +439,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 
 			if (env.Rm) // exponential
 			{
+				u32 off=InvExpOffsets[(env.Value>>28)&7];
 				env.Value-=PsxRates[((env.Rr^0x1f)<<2)-0x18+off+32];
 			} 
 			else // linear
@@ -542,26 +544,25 @@ static void __forceinline GetVoiceValues_Linear(V_Core& thiscore, V_Voice& vc, s
 		vc.SP-=4096;
 	}
 
-	CalculateADSR( vc );
-
-	if(vc.ADSR.Phase==0)
+	if( vc.ADSR.Phase==0 )
 	{
 		Value = 0;
+		return;
 	}
-	else
-	{
-		jASSUME( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
 
-		if(Interpolation==0)
-		{
-			Value = MulShr32( vc.PV1, vc.ADSR.Value );
-		} 
-		else //if(Interpolation==1) //must be linear
-		{
-			s32 t0 = vc.PV2 - vc.PV1;
-			s32 t1 = vc.PV1;
-			Value = MulShr32( t1 - ((t0*vc.SP)>>12), vc.ADSR.Value );
-		}
+	CalculateADSR( vc );
+
+	jASSUME( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
+
+	if(Interpolation==0)
+	{
+		Value = MulShr32( vc.PV1, vc.ADSR.Value );
+	} 
+	else //if(Interpolation==1) //must be linear
+	{
+		s32 t0 = vc.PV2 - vc.PV1;
+		s32 t1 = vc.PV1;
+		Value = MulShr32( t1 - ((t0*vc.SP)>>12), vc.ADSR.Value );
 	}
 }
 
@@ -580,43 +581,28 @@ static void __forceinline GetVoiceValues_Cubic(V_Core& thiscore, V_Voice& vc, s3
 		vc.SP-=4096;
 	}
 
-	CalculateADSR( vc );
-
-	if(vc.ADSR.Phase==0)
+	if( vc.ADSR.Phase==0 )
 	{
 		Value = 0;
-	}
-	else
-	{
-		jASSUME( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
-
-		s32 z0 = vc.PV3 - vc.PV4 + vc.PV1 - vc.PV2;
-		s32 z1 = (vc.PV4 - vc.PV3 - z0);
-		s32 z2 = (vc.PV2 - vc.PV4);
-
-		s32 mu = vc.SPc;
-
-		s32 val = (z0 * mu) >> 12;
-		val = ((val + z1) * mu) >> 12;
-		val = ((val + z2) * mu) >> 12;
-		val += vc.PV2;
-
-		/*
-		s64 a0 = vc.PV1 - vc.PV2 - vc.PV4 + vc.PV3;
-		s64 a1 = vc.PV4 - vc.PV3 - a0;
-		s64 a2 = vc.PV1 - vc.PV4;
-		s64 a3 = vc.PV2;
-		s64 mu = 4096+vc.SP;
-
-		s64 t0 = ((a0   )*mu)>>12;
-		s64 t1 = ((t0-a1)*mu)>>12;
-		s64 t2 = ((t1-a2)*mu)>>12;
-		s64 t3 = ((t2-a3));*/
-
-		Value = MulShr32( val, vc.ADSR.Value>>3 );
+		return;
 	}
 
-	//Value=(s32)((Data*vc.ADSR.Value)>>40); //32bit ADSR + convert to 16bit
+	CalculateADSR( vc );
+
+	jASSUME( vc.ADSR.Value >= 0 );	// ADSR should never be negative...
+
+	s32 z0 = vc.PV3 - vc.PV4 + vc.PV1 - vc.PV2;
+	s32 z1 = (vc.PV4 - vc.PV3 - z0);
+	s32 z2 = (vc.PV2 - vc.PV4);
+
+	s32 mu = vc.SPc;
+
+	s32 val = (z0 * mu) >> 12;
+	val = ((val + z1) * mu) >> 12;
+	val = ((val + z2) * mu) >> 12;
+	val += vc.PV2;
+
+	Value = MulShr32( val, vc.ADSR.Value>>3 );
 }
 
 // [Air]: Noise values need to be mixed without going through interpolation, since it

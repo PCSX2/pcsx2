@@ -244,8 +244,10 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 		// Traverse from start to finish in 8*32 word blocks,
 		// and clear all the the pcm cache flags for each block.
 
-		for(; Cores[core].TDA<buff1end; ++Cores[core].TDA, ++pMem)
-			*GetMemPtr( Cores[core].TDA ) = *pMem;
+		const u32 buff1size = (buff1end-Cores[core].TDA);
+		memcpy( GetMemPtr( Cores[core].TDA ), pMem, buff1size*2 );
+		//for(; Cores[core].TDA<buff1end; ++Cores[core].TDA, ++pMem)
+		//	*GetMemPtr( Cores[core].TDA ) = *pMem;
 
 		buff1end >>= (3+5);		// 8 words per block, 32 blocks per int.
 		memset( &pcm_cache_flags[nexta], 0, sizeof( u32 ) * (buff1end-nexta) );
@@ -258,34 +260,60 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 			const u32 endpt2 = buff2end >> (3+5);		// 8 words per block, 32 blocks per int.
 			memset( pcm_cache_flags, 0, sizeof( u32 ) * endpt2 );
 
-			for(Cores[core].TDA=0; Cores[core].TDA<(u32)buff2end; ++Cores[core].TDA, ++pMem)
-				*GetMemPtr( Cores[core].TDA ) = *pMem;
+			memcpy( GetMemPtr( 0 ), &pMem[buff1size], buff2end*2 );
+			//for(Cores[core].TDA=0; Cores[core].TDA<(u32)buff2end; ++Cores[core].TDA, ++pMem)
+			//	*GetMemPtr( Cores[core].TDA ) = *pMem;
 
-			rightsidebit = ( buff2end >> 3 );
+			rightsidebit = buff2end >> 3;
 			nexta = endpt2;
+
+			if(Cores[core].IRQEnable)
+			{
+				// Flag interrupt?
+				// If IRQA occurs between start and dest, flag it.
+				// Since the buffer wraps, the conditional might seem odd, but it works.
+
+				if( ( Cores[core].IRQA >= Cores[core].TDA ) ||
+					( Cores[core].IRQA <= buff2end ) )
+				{
+					Spdif.Info=4<<core;
+					SetIrqCall();
+				}
+			}
+
+			Cores[core].TDA = buff2end;
 		}
 		else
 		{
-			rightsidebit = (Cores[core].TDA >> 3);
+			rightsidebit = buff1end >> 3;
 			nexta = buff1end;
+
+			Cores[core].TDA = buff1end;
+
+			if(Cores[core].IRQEnable)
+			{
+				// Flag interrupt?
+				// If IRQA occurs between start and dest, flag it:
+
+				if( ( Cores[core].IRQA >= Cores[core].TSA ) &&
+					( Cores[core].IRQA <= Cores[core].TDA ) )
+				{
+					Spdif.Info=4<<core;
+					SetIrqCall();
+				}
+			}
 		}
 
 		// clear the right-side remainder:
 		pcm_cache_flags[nexta] &= ~((1ul << (32-(rightsidebit&31)))-1);
 	}
 
-	i=Cores[core].TSA;
-	Cores[core].TDA=Cores[core].TSA+size;
-	if((Cores[core].TDA>0xFFFFF)||((Cores[core].TDA>=Cores[core].IRQA)&&(i<=Cores[core].IRQA))) {
-		if(Cores[core].IRQEnable)
-		{
-			Spdif.Info=4<<core;
-			SetIrqCall();
-		}
-	}
+	//Cores[core].TDA=Cores[core].TSA+size;
 	Cores[core].TSA=Cores[core].TDA&0xFFFF0;
 	Cores[core].DMAICounter=size;
 	Cores[core].TADR=Cores[core].MADR+(size<<1);
+
+
 }
 
 void SPU2readDMA(int core, u16* pMem, u32 size) 

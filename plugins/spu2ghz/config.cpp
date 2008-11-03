@@ -252,6 +252,7 @@ void ReadSettings()
 		CfgFindName( "MIXING", "Enable_Effects" ) ? "MIXING" : "EFFECTS",
 		"Enable_Effects", false
 	);
+	EffectsEnabled = false;		// force disabled for now.
 
 	SampleRate=CfgReadInt("OUTPUT","Sample_Rate",48000);
 	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency", 140);
