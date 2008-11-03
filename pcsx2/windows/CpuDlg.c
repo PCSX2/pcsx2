@@ -87,18 +87,6 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //            if(cpucaps.has3DNOWInstructionExtensionsExt)strcat(features,",3DNOW+");
 			if(cpucaps.hasAMD64BitArchitecture) strcat(features,",x86-64");
             SetDlgItemText(hW, IDC_FEATURESINPUT, features);
-			if(!cpucaps.hasStreamingSIMDExtensions) 
-			{
-				EnableWindow(GetDlgItem(hW,IDC_RADIORECOMPILERVU),FALSE);//disable checkbox if no SSE2 found
-				Config.Options &= (PCSX2_VU0REC|PCSX2_VU1REC);//disable the config just in case
-			}
-			if(!cpucaps.hasMultimediaExtensions)
-			{
-                  EnableWindow(GetDlgItem(hW,IDC_RADIORECOMPILER),FALSE);
-				  Config.Options &= ~(PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC);//return to interpreter mode
-
-			}
-			SetDlgItemText(hW, IDC_FEATURESINPUT, features);
 
 			CheckDlgButton(hW, IDC_CPU_EEREC, !!CHECK_EEREC);
 
