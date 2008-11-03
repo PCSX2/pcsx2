@@ -394,7 +394,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 				{
 					env.Value -= PsxRates[(env.Sr^0x7f)-0xf+32];
 				}
-				if( env.Value < 0 )
+				if( env.Value <= 0 )
 				{
 					env.Value = 0;
 					env.Phase++;
@@ -447,7 +447,7 @@ static void __forceinline CalculateADSR( V_Voice& vc )
 				env.Value-=PsxRates[((env.Rr^0x1f)<<2)-0xc+32];
 			}
 
-			if( env.Value < 0 )
+			if( env.Value <= 0 )
 			{
 				env.Value=0;
 				env.Phase++;
