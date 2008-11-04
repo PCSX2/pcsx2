@@ -424,7 +424,7 @@ s32 CALLBACK SPU2open(void *pDsp)
 		debugDialogOpen=1;
 	}*/
 
-	spu2open=1;
+	spu2open=true;
 	if (!SndInit())
 	{
 		srate_pv=(double)SampleRate/48000.0;

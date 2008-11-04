@@ -213,7 +213,7 @@ public:
 			else
 			{
 				// Toss half the buffer plus whatever's being written anew:
-				s32 comp = GetAlignedBufferSize( (size + nSamples ) / 2 );
+				comp = GetAlignedBufferSize( (size + nSamples ) / 2 );
 				if( comp > (size-SndOutPacketSize) ) comp = size-SndOutPacketSize;
 			}
 

@@ -53,7 +53,9 @@ private:
 		STDMETHOD_(void, OnBufferStart) ( void* ) {}
 		STDMETHOD_(void, OnBufferEnd) ( void* context )
 		{
-			if( context == NULL || sndout == NULL ) return;
+			// All of these checks are necessary because XAudio2 is wonky shizat.
+			if( pSourceVoice == NULL || context == NULL || sndout == NULL ) return;
+
 			s16* qb = (s16*)context;
 
 			for(int p=0; p<PacketsPerBuffer; p++, qb+=SndOutPacketSize )
@@ -123,9 +125,6 @@ public:
 		// or after CreateSourceVoice.  Some drivers could do evil things to
 		// our structure whn we create the voice.
 
-		voiceContext.sndout = sb;
-		voiceContext.pSourceVoice = pSourceVoice;
-
 		//
 		// Create an XAudio2 voice to stream this wave
 		//
@@ -139,8 +138,8 @@ public:
 
 		// See comment above.  Leave this redundant code in to protect against
 		// potentially stupid drivers.
-		voiceContext.sndout = sb;
 		voiceContext.pSourceVoice = pSourceVoice;
+		pSourceVoice->FlushSourceBuffers();
 		pSourceVoice->Start( 0, 0 );
 
 		qbuffer = new s16[BufferSize*MAX_BUFFER_COUNT];
@@ -165,6 +164,8 @@ public:
 			buf.pAudioData=(BYTE*)buf.pContext;
 			pSourceVoice->SubmitSourceBuffer( &buf );
 		}
+		voiceContext.sndout = sb;
+
 		return 0;
 	}
 
@@ -176,7 +177,10 @@ public:
 		if( pSourceVoice != NULL )
 		{
 			pSourceVoice->Stop( 0 );
+			pSourceVoice->FlushSourceBuffers();
 			Sleep(50);	// give the engine some time to stop voices
+			voiceContext.pSourceVoice = NULL;
+			voiceContext.sndout = NULL;
 			pSourceVoice->DestroyVoice();
 			pSourceVoice = NULL;
 		}
