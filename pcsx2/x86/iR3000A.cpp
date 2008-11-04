@@ -859,9 +859,9 @@ static void recClear(u32 Addr, u32 Size)
 }
 
 #ifdef __x86_64__
-#define EE_MIN_BLOCK_BYTES 16
+#define IOP_MIN_BLOCK_BYTES 16
 #else
-#define EE_MIN_BLOCK_BYTES 15
+#define IOP_MIN_BLOCK_BYTES 15
 #endif
 
 void rpsxMemConstClear(u32 mem)
@@ -905,7 +905,7 @@ void psxRecClearMem(BASEBLOCK* p)
     PUSH32I((uptr)x86Ptr);
 #endif
 	JMP32((uptr)psxDispatcherClear - ( (uptr)x86Ptr + 5 ));
-	assert( x86Ptr == (s8*)p->pFnptr + EE_MIN_BLOCK_BYTES );
+	assert( x86Ptr == (s8*)p->pFnptr + IOP_MIN_BLOCK_BYTES );
 
 	pstart = PSX_GETBLOCK(p->startpc);
 	pexblock = PSX_GETBLOCKEX(pstart);
@@ -982,28 +982,32 @@ void psxSetBranchImm( u32 imm )
 }
 
 #define USE_FAST_BRANCHES CHECK_FASTBRANCHES
-#define PSXCYCLE_MULT (CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16))
 
 // Important!  The following macro makes sure the rounding error of both the psxRegs.cycle
 // modifier and EEsCycle modifier are consistent (in case you wonder why it's got a u32 typecast)
 
-#define PSXCYCLE_TO_EE (((u32)(s_psxBlockCycles*PSXCYCLE_MULT)) * 8 )		// IOP to EE conversion
+static u32 psxScaleBlockCycles()
+{
+	return s_psxBlockCycles * 
+		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16));
+}
 
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
+	u32 blockCycles = psxScaleBlockCycles();
 	if( !USE_FAST_BRANCHES || cpuBranch ) {
 		MOV32MtoR(ECX, (uptr)&psxRegs.cycle);
-		ADD32ItoR(ECX, s_psxBlockCycles*PSXCYCLE_MULT); // greater mult factor causes nfsmw to crash
+		ADD32ItoR(ECX, blockCycles); // greater mult factor causes nfsmw to crash
 		MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 	}
 	else {
-		SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
-		ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
+		SUB32ItoM((uptr)&EEsCycle, blockCycles*8 );
+		ADD32ItoM((uptr)&psxRegs.cycle, blockCycles);
 		return;
 	}
 
 	// check if we've caught up with the EE
-	SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
+	SUB32ItoM((uptr)&EEsCycle, blockCycles*8 );
 	j8Ptr[2] = JGE8(0);
 
 	// Break the Block-execute Loop here.
@@ -1056,8 +1060,8 @@ void rpsxSYSCALL()
 
 	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles);
-	SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
+	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
+	SUB32ItoM((uptr)&EEsCycle, psxScaleBlockCycles()*8 );
 	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1075,8 +1079,8 @@ void rpsxBREAK()
 
 	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles);
-	SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
+	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
+	SUB32ItoM((uptr)&EEsCycle, psxScaleBlockCycles()*8 );
 	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1498,8 +1502,8 @@ StartRecomp:
 		if( psxbranch ) assert( !willbranch3 );
 		else
 		{
-			ADD32ItoM((uptr)&psxRegs.cycle, s_psxBlockCycles*PSXCYCLE_MULT);
-			SUB32ItoM((uptr)&EEsCycle, PSXCYCLE_TO_EE );
+			ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
+			SUB32ItoM((uptr)&EEsCycle, psxScaleBlockCycles()*8 );
 		}
 
 		if( willbranch3 ) {
@@ -1521,7 +1525,7 @@ StartRecomp:
 		}
 	}
 
-	assert( x86Ptr >= (s8*)s_pCurBlock->pFnptr + EE_MIN_BLOCK_BYTES );
+	assert( x86Ptr >= (s8*)s_pCurBlock->pFnptr + IOP_MIN_BLOCK_BYTES );
 	assert( x86Ptr < recMem+RECMEM_SIZE );
 
 	recPtr = x86Ptr;
