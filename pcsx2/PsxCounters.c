@@ -63,14 +63,21 @@ __forceinline static void _rcntSet( int i, int bitwise )
 		assert( i < 3 );
 #endif
 
+	// psxNextCounter is relative to the cpuRegs.cycle when rcntUpdate() was last called.
+	// However, the current _rcntSet could be called at any cycle count, so we need to take
+	// that into account.  Adding the difference from that cycle count to the current one
+	// will do the trick!
+
 	if(psxCounters[i].rate == PSXHBLANK) return;
 
 	c = (u64)((overflowCap - psxCounters[i].count) * psxCounters[i].rate) - (psxRegs.cycle - psxCounters[i].sCycleT);
+	c += cpuRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < psxNextCounter) psxNextCounter = (u32)c;
 
 	//if((psxCounters[i].mode & 0x10) == 0 || psxCounters[i].target > 0xffff) continue;
 
 	c = (u64)((psxCounters[i].target - psxCounters[i].count) * psxCounters[i].rate) - (psxRegs.cycle - psxCounters[i].sCycleT);
+	c += cpuRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < psxNextCounter) psxNextCounter = (u32)c;
 }
 

@@ -56,12 +56,19 @@ static __forceinline void _rcntSet( int i )
 	u32 c;
 	if (!(counters[i].mode & 0x80) || (counters[i].mode & 0x3) == 0x3) return; // Stopped
 	
+	// psxNextCounter is relative to the cpuRegs.cycle when rcntUpdate() was last called.
+	// However, the current _rcntSet could be called at any cycle count, so we need to take
+	// that into account.  Adding the difference from that cycle count to the current one
+	// will do the trick!
+
 	c = ((0x10000 - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
+	c += cpuRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < nextCounter) nextCounter = c;
 
 	//if(!(counters[i].mode & 0x100) || counters[i].target > 0xffff) continue;
 
 	c = ((counters[i].target - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
+	c += cpuRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < nextCounter) nextCounter = c;
 }
 

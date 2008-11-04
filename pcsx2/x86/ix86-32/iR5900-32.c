@@ -1589,7 +1589,7 @@ int recInit( void )
 }
 
 ////////////////////////////////////////////////////
-void recReset( void ) {
+static void recReset( void ) {
 #ifdef PCSX2_DEVBUILD
 	SysPrintf("EE Recompiler data reset\n");
 #endif

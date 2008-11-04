@@ -582,6 +582,11 @@ static int recInit() {
 }
 
 static void recReset() {
+
+#ifdef PCSX2_DEVBUILD
+	SysPrintf("IOP Recompiler data reset\n");
+#endif
+
 	memset(recRAM, 0, sizeof(BASEBLOCK)/4*0x200000);
 	memset(recROM, 0, sizeof(BASEBLOCK)/4*0x400000);
 	memset(recROM1,0, sizeof(BASEBLOCK)/4*0x040000);
