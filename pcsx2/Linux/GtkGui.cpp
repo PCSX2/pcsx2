@@ -468,13 +468,6 @@ void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data)
 	CpuDlg = create_CpuDlg();
 	gtk_window_set_title(GTK_WINDOW(CpuDlg), _("Configuration"));
 	
-	if(!cpucaps.hasStreamingSIMDExtensions) {
-		Config.Options &= (PCSX2_VU0REC|PCSX2_VU1REC);//disable the config just in case
-	}
-	if(!cpucaps.hasMultimediaExtensions) {
-		Config.Options &= ~(PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC);//return to interpreter mode       
-	}
-	
         gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_EERec")), !!CHECK_EEREC);
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU0rec")), !!CHECK_VU0REC);
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU1rec")), !!CHECK_VU1REC);

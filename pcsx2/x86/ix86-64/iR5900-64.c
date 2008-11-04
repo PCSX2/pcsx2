@@ -1234,24 +1234,21 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 
 	sseMXCSR &= 0xffff; // clear the upper 16 bits since they shouldn't be set
 	sseVUMXCSR &= 0xffff;
-
-	if( cpucaps.hasStreamingSIMDExtensions ) {
 		
-		g_sseMXCSR = sseMXCSR;
-		g_sseVUMXCSR = sseVUMXCSR;
-		// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)
-		// Update 11/05/08 - Doesnt seem to effect it anymore, for the speed boost, its on :p
-		//g_sseMXCSR = 0x9f80; // changing the rounding mode to 0x2000 (near) kills grandia III!
-							// changing the rounding mode to 0x0000 or 0x4000 totally kills gitaroo
-							// so... grandia III wins (you can change individual games with the 'roundmode' patch command)
+	g_sseMXCSR = sseMXCSR;
+	g_sseVUMXCSR = sseVUMXCSR;
+	// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)
+	// Update 11/05/08 - Doesnt seem to effect it anymore, for the speed boost, its on :p
+	//g_sseMXCSR = 0x9f80; // changing the rounding mode to 0x2000 (near) kills grandia III!
+						// changing the rounding mode to 0x0000 or 0x4000 totally kills gitaroo
+						// so... grandia III wins (you can change individual games with the 'roundmode' patch command)
 
 #ifdef _MSC_VER
-		_mm_setcsr(g_sseMXCSR); // set the new sse control
+	_mm_setcsr(g_sseMXCSR); // set the new sse control
 #else
         __asm__("ldmxcsr %0" : : "m"(g_sseMXCSR) );
 #endif
-		//g_sseVUMXCSR = g_sseMXCSR|0x6000;
-	}
+	//g_sseVUMXCSR = g_sseMXCSR|0x6000;
 }
 
 extern BOOL install_my_handler();
