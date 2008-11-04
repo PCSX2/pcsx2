@@ -178,11 +178,11 @@ public:
 		{
 			pSourceVoice->Stop( 0 );
 			pSourceVoice->FlushSourceBuffers();
+			pSourceVoice->DestroyVoice();
 			Sleep(50);	// give the engine some time to stop voices
+			pSourceVoice = NULL;
 			voiceContext.pSourceVoice = NULL;
 			voiceContext.sndout = NULL;
-			pSourceVoice->DestroyVoice();
-			pSourceVoice = NULL;
 		}
 
 		Sleep(50);	// give the engine some more time, because I don't trust it.

@@ -616,7 +616,7 @@ static void __forceinline __fastcall GetNoiseValues(V_Core& thiscore, V_Voice& v
 	}
 
 	// GetNoiseValues can't set the phase zero on us unexpectedly
-	// like GetVoiceValues can.
+	// like GetVoiceValues can.  Better asster just in case though..
 	jASSUME( vc.ADSR.Phase != 0 );	
 
 	CalculateADSR( vc );
@@ -760,11 +760,10 @@ void __fastcall ReadInput(V_Core& thiscore, s32& PDataL,s32& PDataR)
 
 					if (thiscore.InputDataLeft<0x200) 
 					{
-						FileLog("[%10d] AutoDMA%c block end.\n",Cycles, (core==0)?'4':'7');
-
-						thiscore.AutoDMACtrl |=~3;
+						thiscore.AutoDMACtrl |= ~3;
 
 						#ifndef PUBLIC
+						FileLog("[%10d] AutoDMA%c block end.\n",Cycles, (core==0)?'4':'7');
 						if(thiscore.InputDataLeft>0)
 						{
 							if(MsgAutoDMA()) ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");

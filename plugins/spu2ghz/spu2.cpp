@@ -22,6 +22,9 @@
 #include "regtable.h"
 #include "svnrev.h"
 
+// DLL Interface exportation:
+
+
 void StartVoices(int core, u32 value);
 void StopVoices(int core, u32 value);
 
@@ -32,7 +35,7 @@ const unsigned char revision = 1;
 const unsigned char build	 = 9;	// increase that with each version
 
 static __forceinline void SPU2_FastWrite( u32 rmem, u16 value );
-static void CALLBACK SPU2writeLog(u32 rmem, u16 value);
+static void SPU2writeLog(u32 rmem, u16 value);
 DWORD CALLBACK TimeThread(PVOID /* unused param */);
 
 
@@ -66,8 +69,6 @@ u8 callirq;
 
 HANDLE hThreadFunc;
 u32	ThreadFuncID;
-
-char fname[]="01234567890123456789012345";
 
 #ifndef PUBLIC
 V_CoreDebug DebugCores[2];
@@ -129,47 +130,54 @@ void SysMessage(char *fmt, ...)
 
 static void InitLibraryName()
 {
-	sprintf_s( libraryName, 256, "GiGaHeRz SPU2 PPr %d%s",
-		SVN_REV,
+	sprintf_s( libraryName, 256, "GiGaHeRz SPU2 PPr %d%s"
+#ifdef _DEBUG
+		"-Debug"
+#elif !defined( PUBLIC )
+		"-Dev"
+#endif
+		,SVN_REV,
 		SVN_MODS ? "m" : ""
 	);
 }
 
-u32 CALLBACK PS2EgetLibType() 
+EXPORT_C_(u32) PS2EgetLibType() 
 {
 	return PS2E_LT_SPU2;
 }
 
-char* CALLBACK PS2EgetLibName() 
+EXPORT_C_(char*) PS2EgetLibName() 
 {
 	InitLibraryName();
 	return libraryName;
 }
 
-u32 CALLBACK PS2EgetLibVersion2(u32 type) 
+EXPORT_C_(u32) PS2EgetLibVersion2(u32 type) 
 {
 	return (version<<16)|(revision<<8)|build;
 }
 
-void CALLBACK SPU2configure() {
+EXPORT_C_(void) SPU2configure() {
 	configure();
 }
 
-void CALLBACK SPU2about() {
+EXPORT_C_(void) SPU2about() {
 	InitLibraryName();
 	SysMessage( libraryName );
 }
 
-s32 CALLBACK SPU2test() {
+EXPORT_C_(s32) SPU2test() {
 	return SndTest();
 }
 
 
 __forceinline s16 * __fastcall GetMemPtr(u32 addr)
 {
+#ifndef DEBUG_FAST
 	// In case you're wondering, this assert is the reason spu2ghz
 	// runs so incrediously slow in Debug mode. :P
 	assert(addr<0x100000);
+#endif
 	return (_spu2mem+addr);
 }
 
@@ -275,7 +283,7 @@ void CoreReset(int c)
 
 extern void LowPassFilterInit();
 
-s32 CALLBACK SPU2init() 
+EXPORT_C_(s32) SPU2init() 
 {
 #define MAKESURE(a,b) \
 		/*fprintf(stderr,"%08p: %08p == %08p\n",&(regtable[a>>1]),regtable[a>>1],U16P(b));*/ \
@@ -377,7 +385,7 @@ s32 CALLBACK SPU2init()
 }
 
 
-BOOL CALLBACK DebugProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
+static BOOL CALLBACK DebugProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int wmId,wmEvent;
 
@@ -411,7 +419,7 @@ BOOL CALLBACK DebugProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	return TRUE;
 }
 
-s32 CALLBACK SPU2open(void *pDsp)
+EXPORT_C_(s32) SPU2open(void *pDsp)
 {
 	if( spu2open ) return 0;
 
@@ -442,7 +450,7 @@ s32 CALLBACK SPU2open(void *pDsp)
 	};
 }
 
-void CALLBACK SPU2close() 
+EXPORT_C_(void) SPU2close() 
 {
 	if( !spu2open ) return;
 	FileLog("[%10d] SPU2 Close\n",Cycles);
@@ -454,7 +462,7 @@ void CALLBACK SPU2close()
 	spu2open = false;
 }
 
-void CALLBACK SPU2shutdown() 
+EXPORT_C_(void) SPU2shutdown() 
 {
 	if(!spu2init) return;
 
@@ -500,7 +508,7 @@ void CALLBACK SPU2shutdown()
 #endif
 }
 
-void CALLBACK SPU2setClockPtr(u32 *ptr)
+EXPORT_C_(void) SPU2setClockPtr(u32 *ptr)
 {
 	cPtr=ptr;
 	hasPtr=(cPtr!=NULL);
@@ -639,7 +647,7 @@ void UpdateDebugDialog()
 u32 TicksCore=0;
 u32 TicksThread=0;
 
-DWORD CALLBACK TimeThread(PVOID /* unused param */)
+static DWORD CALLBACK TimeThread(PVOID /* unused param */)
 {
 	while(spu2open)
 	{
@@ -729,6 +737,7 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 			{
 				Cores[1].MADR=Cores[1].TADR;
 				Cores[1].DMAICounter=0;
+				ConLog( "* SPU2 > AutoDMA 7 Callback!  %d\n", Cycles );
 				if(dma7callback) dma7callback();
 			}
 			else {
@@ -749,7 +758,7 @@ bool numpad_minus = false;
 
 bool numpad_plus = false, numpad_plus_old = false;
 
-void CALLBACK SPU2async(u32 cycles) 
+EXPORT_C_(void) SPU2async(u32 cycles) 
 {
 #ifndef PUBLIC
 	u32 oldClocks = lClocks;
@@ -799,7 +808,7 @@ void CALLBACK SPU2async(u32 cycles)
 	}
 }
 
-void CALLBACK SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void (*DMA7callback)())
+EXPORT_C_(void) SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void (*DMA7callback)())
 {
 	_irqcallback=SPU2callback;
 	dma4callback=DMA4callback;
@@ -852,7 +861,7 @@ __forceinline void RegLog(int level, char *RName,u32 mem,u32 core,u16 value)
 		FileLog("[%10d] SPU2 write mem %08x (core %d, register %s) value %04x\n",Cycles,mem,core,RName,value);
 }
 
-void CALLBACK SPU_ps1_write(u32 mem, u16 value) 
+static void SPU_ps1_write(u32 mem, u16 value) 
 {
 	bool show=true;
 
@@ -993,7 +1002,7 @@ void CALLBACK SPU_ps1_write(u32 mem, u16 value)
 	spu2Ru16(mem)=value;
 }
 
-u16 CALLBACK SPU_ps1_read(u32 mem) 
+static u16 SPU_ps1_read(u32 mem) 
 {
 	bool show=true;
 	u16 value = spu2Ru16(mem);
@@ -1070,7 +1079,7 @@ u16 CALLBACK SPU_ps1_read(u32 mem)
 
 void RegWriteLog(u32 core,u16 value);
 
-static void CALLBACK SPU2writeLog(u32 rmem, u16 value) 
+static void SPU2writeLog(u32 rmem, u16 value) 
 {
 #ifndef PUBLIC
 	u32 vx=0, vc=0, core=0, omem=rmem, mem=rmem&0x7FF;
@@ -1550,7 +1559,7 @@ static __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 			break;
 		case REG_S_ADMAS:
 			RegLog(3,"ADMAS",rmem,core,value);
-			ConLog(" * SPU2: Core %d AutoDMAControl set to %d\n",core,value);
+			//ConLog(" * SPU2: Core %d AutoDMAControl set to %d (%d)\n",core,value, Cycles);
 			Cores[core].AutoDMACtrl=value;
 
 			if(value==0)
@@ -1573,7 +1582,7 @@ static __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 }
 
 
-void CALLBACK SPU2write(u32 rmem, u16 value) 
+EXPORT_C_(void) SPU2write(u32 rmem, u16 value) 
 {
 #ifdef S2R_ENABLE
 	if(!replay_mode)
@@ -1613,7 +1622,7 @@ void CALLBACK SPU2write(u32 rmem, u16 value)
 	}
 }
 
-u16  CALLBACK SPU2read(u32 rmem) 
+EXPORT_C_(u16) SPU2read(u32 rmem) 
 {
 //	if(!replay_mode)
 //		s2r_readreg(Cycles,rmem);
@@ -1713,7 +1722,7 @@ static int getFreezeSize()
 }
 
 
-s32 CALLBACK SPU2freeze(int mode, freezeData *data)
+EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 {
 	if (mode == FREEZE_LOAD)
 	{
@@ -1978,7 +1987,7 @@ void StopVoices(int core, u32 value)
 // if start is 1, starts recording spu2 data, else stops
 // returns a non zero value if successful
 // for now, pData is not used
-int CALLBACK SPU2setupRecording(int start, void* pData)
+EXPORT_C_(int) SPU2setupRecording(int start, void* pData)
 {
 	// Don't record if we have a bogus state.
 	if( disableFreezes ) return 0;

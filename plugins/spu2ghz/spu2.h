@@ -34,8 +34,48 @@
 
 //SPU2 plugin defines
 //#define __MSCW32__
-#define SPU2defs
+//#define SPU2defs		// not using the PCSX2 defs (see below)
 #include "PS2Edefs.h"
+
+#define EXPORT_C_(type) extern "C" __declspec(dllexport) type __stdcall
+
+// We have our own versions that have the DLLExport attribute configured:
+
+EXPORT_C_(s32)  SPU2init();
+EXPORT_C_(s32)  SPU2open(void *pDsp);
+EXPORT_C_(void) SPU2close();
+EXPORT_C_(void) SPU2shutdown();
+EXPORT_C_(void) SPU2write(u32 mem, u16 value);
+EXPORT_C_(u16)  SPU2read(u32 mem);
+EXPORT_C_(void) SPU2readDMA4Mem(u16 *pMem, u32 size);
+EXPORT_C_(void) SPU2writeDMA4Mem(u16 *pMem, u32 size);
+EXPORT_C_(void) SPU2interruptDMA4();
+EXPORT_C_(void) SPU2readDMA7Mem(u16* pMem, u32 size);
+EXPORT_C_(void) SPU2writeDMA7Mem(u16 *pMem, u32 size);
+
+// all addresses passed by dma will be pointers to the array starting at baseaddr
+// This function is necessary to successfully save and reload the spu2 state
+EXPORT_C_(void) SPU2setDMABaseAddr(uptr baseaddr);
+
+EXPORT_C_(void) SPU2interruptDMA7();
+EXPORT_C_(u32) SPU2ReadMemAddr(int core);
+EXPORT_C_(void) SPU2WriteMemAddr(int core,u32 value);
+EXPORT_C_(void) SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void (*DMA7callback)());
+
+// extended funcs
+// if start is 1, starts recording spu2 data, else stops
+// returns a non zero value if successful
+// for now, pData is not used
+EXPORT_C_(int) SPU2setupRecording(int start, void* pData);
+
+EXPORT_C_(void) SPU2setClockPtr(u32* ptr);
+
+EXPORT_C_(void) SPU2async(u32 cycles);
+EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data);
+EXPORT_C_(void) SPU2configure();
+EXPORT_C_(void) SPU2about();
+EXPORT_C_(s32)  SPU2test();
+
 
 //#define EFFECTS_DUMP
 
