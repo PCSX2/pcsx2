@@ -483,24 +483,34 @@ void ShutdownPlugins() {
 }
 
 int LoadPlugins() {
-	char Plugin[256];
+	char Plugin[g_MaxPath];
 
-	sprintf(Plugin, "%s%s", Config.PluginsDir, Config.GS);
+	
+	CombinePaths( Plugin, Config.PluginsDir, Config.GS );
 	if (LoadGSplugin(Plugin) == -1) return -1;
-	sprintf(Plugin, "%s%s", Config.PluginsDir, Config.PAD1);
+
+	CombinePaths( Plugin, Config.PluginsDir, Config.PAD1 );
 	if (LoadPAD1plugin(Plugin) == -1) return -1;
-	sprintf(Plugin, "%s%s", Config.PluginsDir, Config.PAD2);
+
+	CombinePaths( Plugin, Config.PluginsDir, Config.PAD2);
 	if (LoadPAD2plugin(Plugin) == -1) return -1;
-	sprintf(Plugin, "%s%s", Config.PluginsDir, Config.SPU2);
+
+	CombinePaths( Plugin, Config.PluginsDir, Config.SPU2);
 	if (LoadSPU2plugin(Plugin) == -1) return -1;
-	sprintf(Plugin, "%s%s", Config.PluginsDir, Config.CDVD);
+
+	CombinePaths( Plugin, Config.PluginsDir, Config.CDVD);
 	if (LoadCDVDplugin(Plugin) == -1) return -1;
-	sprintf(Plugin, "%s%s", Config.PluginsDir, Config.DEV9);
+
+	CombinePaths( Plugin, Config.PluginsDir, Config.DEV9);
 	if (LoadDEV9plugin(Plugin) == -1) return -1;
-	sprintf(Plugin, "%s%s", Config.PluginsDir, Config.USB);
+
+	CombinePaths( Plugin, Config.PluginsDir, Config.USB);
 	if (LoadUSBplugin(Plugin) == -1) return -1;
-    sprintf(Plugin, "%s%s", Config.PluginsDir, Config.FW);
+
+    CombinePaths( Plugin, Config.PluginsDir, Config.FW);
 	if (LoadFWplugin(Plugin) == -1) return -1;
+
+	if( g_Error_PathTooLong ) return -1;
 	if (InitPlugins() == -1) return -1;
 
 	loadp=1;

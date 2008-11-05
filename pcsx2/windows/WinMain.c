@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <direct.h>
 
 #include <ntsecapi.h>
 
@@ -50,26 +51,33 @@
 #include "Patch.h"
 #include "cheats/cheats.h"
 
-#include "../Paths.h"
+#include "Paths.h"
 
 #define COMPILEDATE         __DATE__
 
 static int efile;
-char filename[256];
+static char filename[g_MaxPath];
+static int AccBreak = 0;
+static unsigned int langsMax;
+
+// This instance is not modified by command line overrides so
+// that command line plugins and stuff won't be saved into the
+// user's conf file accidentally.
+PcsxConfig winConfig;		// local storage of the configuration options.
+
 extern int g_SaveGSStream;
 
-static int AccBreak = 0;
 int needReset = 1;
-unsigned int langsMax;
+int RunExe = 0;
+
 typedef struct {
 	char lang[256];
 } _langs;
 _langs *langs = NULL;
 
-int UseGui = 1;
-int nDisableSC = 0; // screensaver
-int firstRun=1;
-int RunExe = 0;
+static int UseGui = 1;
+static int nDisableSC = 0; // screensaver
+
 void OpenConsole() {
 	COORD csize;
 	CONSOLE_SCREEN_BUFFER_INFO csbiInfo; 
@@ -79,7 +87,7 @@ void OpenConsole() {
 	AllocConsole();
 	SetConsoleTitle(_("Ps2 Output"));
 	csize.X = 100;
-	csize.Y = 1024;
+	csize.Y = 2048;
 	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), csize);
 
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbiInfo);
@@ -125,10 +133,8 @@ void RunExecute(int run) {
 	}
 
 	if (needReset == 1) {
-		if(RunExe == 0)cpuExecuteBios();
-		//if (efile == 2)
-		if(!efile)efile=GetPS2ElfName(filename);
-		//if (efile)
+		if(RunExe == 0) cpuExecuteBios();
+		if(!efile) efile=GetPS2ElfName(filename);
 		loadElfFile(filename);
 		
 		RunExe = 0;
@@ -185,8 +191,9 @@ void States_Load(int num) {
 	sprintf (Text, "sstates\\%8.8X.%3.3d", ElfCRC, num);
 	ret = LoadState(Text);
 	if (ret == 0)
-		 sprintf (Text, _("*PCSX2*: Loaded State %d"), num+1);
-	else sprintf (Text, _("*PCSX2*: Error Loading State %d"), num+1);
+		sprintf (Text, _("*PCSX2*: Loaded State %d"), num+1);
+	else
+		sprintf (Text, _("*PCSX2*: Error Loading State %d"), num+1);
 	StatusSet(Text);
 
 	Cpu->Execute();
@@ -200,8 +207,9 @@ void States_Save(int num) {
 	sprintf (Text, "sstates\\%8.8X.%3.3d", ElfCRC, num); 
 	ret = SaveState(Text);
 	if (ret == 0)
-		 sprintf(Text, _("*PCSX2*: Saving State %d"), num+1);
-	else sprintf(Text, _("*PCSX2*: Error Saving State %d"), num+1);
+		sprintf(Text, _("*PCSX2*: Saving State %d"), num+1);
+	else
+		sprintf(Text, _("*PCSX2*: Error Saving State %d"), num+1);
 	StatusSet(Text);
 
 	RunExecute(1);
@@ -258,7 +266,7 @@ void OnStates_Save3() { States_Save(2); }
 void OnStates_Save4() { States_Save(3); } 
 void OnStates_Save5() { States_Save(4); } 
 
-char* g_pRunGSState = NULL;
+const char* g_pRunGSState = NULL;
 
 void OnStates_SaveOther() {
 	OPENFILENAME ofn;
@@ -301,123 +309,207 @@ void OnStates_SaveOther() {
 	}
 }
 
+
 TESTRUNARGS g_TestRun;
 
-static int ParseCommandLine(char* pcmd)
-{
-	const char* pdelim = " \t\r\n";
-	char* token = strtok(pcmd, pdelim);
+#define CmdSwitchIs( text ) ( stricmp( command, text ) == 0 )
 
-	g_TestRun.efile = 0;
+static const char* phelpmsg = 
+    "pcsx2 [options] [file]\n\n"
+    "-cfg [file] {configuration file}\n"
+    "-efile [efile] {0 - reset, 1 - runcd (default), 2 - loadelf}\n"
+    "-help {display this help file}\n"
+    "-nogui {Don't use gui when launching}\n"
+	"-loadgs [file] {Loads a gsstate}\n"
+    "\n"
 
-	while(token != NULL) {
-
-		if( _stricmp(token, "-help") == 0) {
-            const char* phelpmsg = 
-                "pcsx2 [options] [file]\n\n"
-                "-cfg [file] {configuration file}\n"
-                "-efile [efile] {0 - reset, 1 - runcd (default), 2 - loadelf}\n"
-                "-help {display this help file}\n"
-                "-nogui {Don't use gui when launching}\n"
-                "-loadgs [file} {Loads a gsstate}\n"
-                "\n"
 #ifdef PCSX2_DEVBUILD
-                "Testing Options: \n"
-                "\t-frame [frame] {game will run up to this frame before exiting}\n"
-				"\t-image [name] {path and base name of image (do not include the .ext)}\n"
-                "\t-jpg {save images to jpg format}\n"
-				"\t-log [name] {log path to save log file in}\n"
-				"\t-logopt [hex] {log options in hex (see debug.h) }\n"
-				"\t-numimages [num] {after hitting frame, this many images will be captures every 20 frames}\n"
-                "\t-test {Triggers testing mode (only for dev builds)}\n"
-                "\n"
+    "Testing Options: \n"
+    "\t-frame [frame] {game will run up to this frame before exiting}\n"
+	"\t-image [name] {path and base name of image (do not include the .ext)}\n"
+    "\t-jpg {save images to jpg format}\n"
+	"\t-log [name] {log path to save log file in}\n"
+	"\t-logopt [hex] {log options in hex (see debug.h) }\n"
+	"\t-numimages [num] {after hitting frame, this many images will be captures every 20 frames}\n"
+    "\t-test {Triggers testing mode (only for dev builds)}\n"
+    "\n"
 #endif
 
-                "Load Plugins:\n"
-                "\t-cdvd [dllpath] {specify the dll load path of the CDVD plugin}\n"
-                "\t-gs [dllpath] {specify the dll load path of the GS plugin}\n"
-                "-pad [tsxcal] {specify to hold down on the triangle, square, circle, x, start, select buttons}\n"
-                "\t-spu [dllpath] {specify the dll load path of the SPU2 plugin}\n"
-                "\n";
+    "Load Plugins:\n"
+    "\t-cdvd [dllpath] {specify the dll load path of the CDVD plugin}\n"
+    "\t-gs [dllpath] {specify the dll load path of the GS plugin}\n"
+    "\t-spu [dllpath] {specify the dll load path of the SPU2 plugin}\n"
+    "\n";
 
-            printf("%s", phelpmsg);
-			MessageBox(NULL,phelpmsg,"Help", MB_OK);
+/// This code is courtesy of http://alter.org.ua/en/docs/win/args/
+static PTCHAR* _CommandLineToArgv( PTCHAR CmdLine, int* _argc )
+{
+    PTCHAR* argv;
+    PTCHAR  _argv;
+    ULONG   len;
+    ULONG   argc;
+    TCHAR   a;
+    ULONG   i, j;
+
+    BOOLEAN  in_QM;
+    BOOLEAN  in_TEXT;
+    BOOLEAN  in_SPACE;
+
+	len = _tcslen( CmdLine );
+    i = ((len+2)/2)*sizeof(PVOID) + sizeof(PVOID);
+
+    argv = (PTCHAR*)GlobalAlloc(GMEM_FIXED,
+        i + (len+2)*sizeof(a));
+
+    _argv = (PTCHAR)(((PUCHAR)argv)+i);
+
+    argc = 0;
+    argv[argc] = _argv;
+    in_QM = FALSE;
+    in_TEXT = FALSE;
+    in_SPACE = TRUE;
+    i = 0;
+    j = 0;
+
+    while( a = CmdLine[i] ) {
+        if(in_QM) {
+            if(a == '\"') {
+                in_QM = FALSE;
+            } else {
+                _argv[j] = a;
+                j++;
+            }
+        } else {
+            switch(a) {
+            case '\"':
+                in_QM = TRUE;
+                in_TEXT = TRUE;
+                if(in_SPACE) {
+                    argv[argc] = _argv+j;
+                    argc++;
+                }
+                in_SPACE = FALSE;
+                break;
+            case ' ':
+            case '\t':
+            case '\n':
+            case '\r':
+                if(in_TEXT) {
+                    _argv[j] = '\0';
+                    j++;
+                }
+                in_TEXT = FALSE;
+                in_SPACE = TRUE;
+                break;
+            default:
+                in_TEXT = TRUE;
+                if(in_SPACE) {
+                    argv[argc] = _argv+j;
+                    argc++;
+                }
+                _argv[j] = a;
+                j++;
+                in_SPACE = FALSE;
+                break;
+            }
+        }
+        i++;
+    }
+    _argv[j] = '\0';
+    argv[argc] = NULL;
+
+    (*_argc) = argc;
+    return argv;
+}
+
+// returns 1 if the user requested help (show help and exit)
+// returns zero on success.
+// returns -1 on failure (bad command line argument)
+static int ParseCommandLine( int tokenCount, const TCHAR** tokens )
+{
+	int tidx = 0;
+	g_TestRun.efile = 0;
+
+	while( tidx < tokenCount )
+	{
+		const TCHAR* command = tokens[tidx++];
+
+		if( command[0] != '-' )
+		{
+			g_TestRun.ptitle = command;
+            printf("opening file %s\n", command);
+			continue;
+		}
+
+		// jump past the '-' switch char, and skip if this is a dud switch:
+		command++;
+		if( command[0] == 0 ) continue;
+
+		if( CmdSwitchIs( "help" ) )
+		{
 			return -1;
 		}
-        else if( _stricmp(token, "-nogui") == 0 ) {
+        else if( CmdSwitchIs( "nogui" ) ) {
 			UseGui = 0;
 		}
 #ifdef PCSX2_DEVBUILD
-        else if( _stricmp(token, "-image") == 0 ) {
-			token = strtok(NULL, pdelim);
-			g_TestRun.pimagename = token;
-		}
-		else if( _stricmp(token, "-log") == 0 ) {
-			token = strtok(NULL, pdelim);
-			g_TestRun.plogname = token;
-		}
-		else if( _stricmp(token, "-logopt") == 0 ) {
-			token = strtok(NULL, pdelim);
-			if( token != NULL ) {
-				if( token[0] == '0' && token[1] == 'x' ) token += 2;
-				sscanf(token, "%x", &varLog);
-			}
-		}
-        else if( _stricmp(token, "-frame") == 0 ) {
-			token = strtok(NULL, pdelim);
-			if( token != NULL ) {
-				g_TestRun.frame = atoi(token);
-			}
-		}
-		else if( _stricmp(token, "-numimages") == 0 ) {
-			token = strtok(NULL, pdelim);
-			if( token != NULL ) {
-				g_TestRun.numimages = atoi(token);
-			}
-		}
-        else if( _stricmp(token, "-jpg") == 0 ) {
+        else if( CmdSwitchIs( "jpg" ) ) {
 			g_TestRun.jpgcapture = 1;
 		}
 #endif
-		else if( _stricmp(token, "-pad") == 0 ) {
-			token = strtok(NULL, pdelim);
-			printf("-pad ignored\n");
-		}
-		else if( _stricmp(token, "-efile") == 0 ) {
-			token = strtok(NULL, pdelim);
-			if( token != NULL ) {
-				g_TestRun.efile = atoi(token);
+		else
+		{
+			const TCHAR* param;
+			if( tidx >= tokenCount ) break;
+
+			// None of the parameter-less toggles flagged.
+			// Check for switches that require one or more parameters here:
+
+			param = tokens[tidx++];
+
+			if( CmdSwitchIs( "cfg" ) ) {
+				g_CustomConfigFile = param;
 			}
-		}
-		else if( _stricmp(token, "-gs") == 0 ) {
-			token = strtok(NULL, pdelim);
-			g_TestRun.pgsdll = token;
-		}
-		else if( _stricmp(token, "-cdvd") == 0 ) {
-			token = strtok(NULL, pdelim);
-			g_TestRun.pcdvddll = token;
-		}
-		else if( _stricmp(token, "-spu") == 0 ) {
-			token = strtok(NULL, pdelim);
-			g_TestRun.pspudll = token;
-		}
-		else if( _stricmp(token, "-loadgs") == 0 ) {
-			token = strtok(NULL, pdelim);
-			g_pRunGSState = token;
-		}
-		else {
-            g_TestRun.ptitle = token;
-            printf("opening file %s\n", token);
-		}
 
-		if( token == NULL ) {
-			printf("invalid args\n");
-			return -1;
-		}
+			else if( CmdSwitchIs( "efile" ) ) {
+				g_TestRun.efile = atoi( param );
+			}
+			else if( CmdSwitchIs( "loadgs" ) ) {
+				g_pRunGSState = param;
+			}
 
-		token = strtok(NULL, pdelim);
+			// Options to configure plugins:
+
+			else if( CmdSwitchIs( "gs" ) ) {
+				g_TestRun.pgsdll = param;
+			}
+			else if( CmdSwitchIs( "cdvd" ) ) {
+				g_TestRun.pcdvddll = param;
+			}
+			else if( CmdSwitchIs( "spu" ) ) {
+				g_TestRun.pspudll = param;
+			}
+
+#ifdef PCSX2_DEVBUILD
+			else if( CmdSwitchIs( "image" ) ) {
+				g_TestRun.pimagename = param;
+			}
+			else if( CmdSwitchIs( "log" ) ) {
+				g_TestRun.plogname = param;
+			}
+			else if( CmdSwitchIs( "logopt" ) ) {
+				if( param[0] == '0' && param[1] == 'x' ) param += 2;
+				sscanf(param, "%x", &varLog);
+			}
+			else if( CmdSwitchIs( "frame" ) ) {
+				g_TestRun.frame = atoi( param );
+			}
+			else if( CmdSwitchIs( "numimages" ) ) {
+				g_TestRun.numimages = atoi( param );
+			}
+#endif
+		}
 	}
-
 	return 0;
 }
 
@@ -466,22 +558,55 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	textdomain(PACKAGE);
 #endif
 
-	if (LoadConfig() == -1) {
-		memset(&Config, 0, sizeof(Config));
-		//strcpy(Config.Bios, "HLE");
-		strcpy(Config.BiosDir,    "Bios\\");
-		strcpy(Config.PluginsDir, "Plugins\\");
-		Config.Patch = 1;
-        Config.Options = PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC;
-		Config.sseMXCSR = DEFAULT_sseMXCSR;
-		Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+	memset(&g_TestRun, 0, sizeof(g_TestRun));
 
+	_getcwd( g_WorkingFolder, g_MaxPath );
 
-		SysMessage(_("Pcsx2 needs to be configured"));
-		Pcsx2Configure(NULL);
+	{
+		int argc;
+		TCHAR** argv;
 
-		return 0;
+		argv = _CommandLineToArgv( lpCmdLine, &argc );
+		if( argv == NULL )
+		{
+			SysMessage( "A fatal error occured while attempting to parse the command line.\n" );
+			return 2;
+		}
+
+		switch( ParseCommandLine( argc, argv ) )
+		{
+			case 1:		// display help and exit:
+				printf( "%s", phelpmsg );
+				MessageBox( NULL, phelpmsg, "Pcsx2 Help", MB_OK);
+
+			case -1:	// exit...
+			return 0;
+		}
+
+		switch( LoadConfig( &winConfig ) )
+		{
+			case 0:	break;	// everything worked!
+			case 1:	
+				// configure some defaults, notify the user, and the quit.
+				memset(&Config, 0, sizeof(Config));
+				//strcpy(Config.Bios, "HLE");
+				strcpy(Config.BiosDir,    "Bios\\");
+				strcpy(Config.PluginsDir, "Plugins\\");
+				Config.Patch = 1;
+				Config.Options = PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC;
+				Config.sseMXCSR = DEFAULT_sseMXCSR;
+				Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+
+				SysMessage(_("Pcsx2 needs to be configured"));
+				Pcsx2Configure(NULL);
+
+			case -1:		// Error occured.  Quit.
+			return 0;
+		}
+
+		if( g_Error_PathTooLong ) return 3;
 	}
+
 	if (Config.Lang[0] == 0) {
 		strcpy(Config.Lang, "en_US");
 	}
@@ -497,22 +622,36 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	CloseLanguages();
 	langsMax = i;
 
-	if (Config.PsxOut) OpenConsole();
+	if( winConfig.PsxOut )
+	{
+		OpenConsole();
 
-	memset(&g_TestRun, 0, sizeof(g_TestRun));
-
-	if( lpCmdLine == NULL || *lpCmdLine == 0 )
-		SysPrintf("-help to see arguments\n");
-	else if( ParseCommandLine(lpCmdLine) == -1 ) {
-		return 2;
+		if( lpCmdLine == NULL || *lpCmdLine == 0 )
+			SysPrintf("-help to see arguments\n");
 	}
 
+	// Load the command line overrides for plugins:
+
+	memcpy( &Config, &winConfig, sizeof( PcsxConfig ) );
+
 	if( g_TestRun.pgsdll )
-		_snprintf(Config.GS, sizeof(Config.GS), "%s", g_TestRun.pgsdll);
+	{
+		_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
+		SysPrintf( "* GS plugin override: \n\t%s\n\n", Config.GS );
+	}
 	if( g_TestRun.pcdvddll )
-		_snprintf(Config.CDVD, sizeof(Config.CDVD), "%s", g_TestRun.pcdvddll);
+	{
+		_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
+		SysPrintf( "* CDVD plugin override: \n\t%s\n\n", Config.CDVD );
+	}
 	if( g_TestRun.pspudll )
-		_snprintf(Config.SPU2, sizeof(Config.SPU2), "%s", g_TestRun.pspudll);
+	{
+		_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
+		SysPrintf( "* SPU2 plugin override: \n\t%s\n\n", Config.SPU2 );
+	}
+
+	// [TODO] : Add the other plugins here...
+
 
 	if (SysInit() == -1) return 1;
 
@@ -527,9 +666,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		SysClose();
 		return 0; // success!
 	}
-#endif
 
-#ifdef PCSX2_DEVBUILD
 	if( g_pRunGSState ) {
 		LoadGSState(g_pRunGSState);
 		SysClose();
@@ -537,9 +674,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 #endif
 
-	CreateMainWindow(nCmdShow);
+	CreateMainWindow( nCmdShow );
 
-    if( Config.PsxOut ) {
+    if( Config.PsxOut )
+	{
 	    // output the help commands
 	    SysPrintf("\tF1 - save state\n");
 	    SysPrintf("\t(Shift +) F2 - cycle states\n");
@@ -684,7 +822,7 @@ BOOL APIENTRY LogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 					 Log = 1;
 				else Log = 0;
 
-				SaveConfig();              
+				SaveConfig( &winConfig );              
 
                 EndDialog(hDlg, TRUE);
             } 
@@ -762,53 +900,52 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-#define HacksInit()  \
-{  \
-	if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);  \
-	if(Config.Hacks & 0x2) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);  \
-	if(Config.Hacks & 0x4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);  \
-	if(Config.Hacks & 0x8) CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);  \
-    if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);  \
-	if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);  \
-	if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);  \
-	if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);  \
-	if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);  \
-	if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);  \
-	if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);  \
-	if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);  \
-	if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);  \
+static void HacksInit( HWND hDlg )
+{
+	if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
+	if(Config.Hacks & 0x2) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
+	if(Config.Hacks & 0x4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
+	if(Config.Hacks & 0x8) CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
+    if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
+	if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
+	if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);
+	if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
+	if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
+	if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
+	if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
+	if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
+	if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);
 }
 
-#define HacksChecked()  \
-{  \
-	Config.Hacks = 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;  \
-	/* 0x40 == greyed checkbox (extra overflow checking); 0x2 == checked (disable overflow checking) */  \
-	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) == 2 ) ? 0x40 : (IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) ? 0x2 : 0);  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;  \
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;  \
-	/* 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)*/  \
-	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0);  \
+static void HacksChecked( HWND hDlg )
+{
+	Config.Hacks = 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
+	/* 0x40 == greyed checkbox (extra overflow checking); 0x2 == checked (disable overflow checking) */
+	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) == 2 ) ? 0x40 : (IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) ? 0x2 : 0);
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;
+	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
+	/* 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)*/
+	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0);
 }
 
-BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
-	//char str[256];
-
+BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
     switch (message) {
         case WM_INITDIALOG:
-			HacksInit();
+			HacksInit( hDlg );
 			return TRUE;
 
         case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDOK:
-					HacksChecked();
+					HacksChecked( hDlg );
 					SaveConfig(); 
 					EndDialog(hDlg, TRUE);
 					break;
@@ -830,8 +967,8 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 					//CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
 					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
 					
-					HacksChecked();
-					HacksInit();
+					HacksChecked( hDlg );
+					HacksInit( hDlg );
 					break;
 
 				case IDBUTTON2:
@@ -847,8 +984,8 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 					CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE);
 					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
 
-					HacksChecked();
-					HacksInit();
+					HacksChecked( hDlg );
+					HacksInit( hDlg );
 					break;
 
 				default: return TRUE;
@@ -1713,11 +1850,11 @@ void SysRunGui() {
 static char *err = N_("Error Loading Symbol");
 static int errval;
 
-void *SysLoadLibrary(char *lib) {
+void *SysLoadLibrary(const char *lib) {
 	return LoadLibrary(lib);
 }
 
-void *SysLoadSym(void *lib, char *sym) {
+void *SysLoadSym(void *lib, const char *sym) {
 	void *tmp = GetProcAddress((HINSTANCE)lib, sym);
 	if (tmp == NULL) errval = 1;
 	else errval = 0;

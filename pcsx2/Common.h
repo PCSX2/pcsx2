@@ -132,10 +132,10 @@ typedef struct _TESTRUNARGS
 	int efile;
 	int snapdone;
 
-	char* ptitle;
-	char* pimagename;
-	char* plogname;
-	char* pgsdll, *pcdvddll, *pspudll;
+	const char* ptitle;
+	const char* pimagename;
+	const char* plogname;
+	const char* pgsdll, *pcdvddll, *pspudll;
 
 } TESTRUNARGS;
 
@@ -221,7 +221,6 @@ extern TESTRUNARGS g_TestRun;
 #include "Vif.h"
 #include "SPR.h"
 #include "Sif.h"
-#include "Plugins.h"
 #include "PS2Edefs.h"
 #include "Misc.h"
 #include "Counters.h"

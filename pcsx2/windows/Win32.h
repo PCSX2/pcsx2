@@ -19,16 +19,28 @@
 #ifndef __WIN32_H__
 #define __WIN32_H__
 
+#include <tchar.h>
+
+// --->>  Ini Configuration [ini.c]
+
+extern char g_WorkingFolder[g_MaxPath];
+extern const char* g_CustomConfigFile;
+
+int  LoadConfig();
+void SaveConfig();
+
+// <<--- END Ini Configuration [ini.c]
+
+
 extern int needReset;
 
 AppData gApp;
 HWND hStatusWnd;
+PcsxConfig winConfig;		// local storage of the configuration options.
 
 LRESULT WINAPI MainWndProc(HWND, UINT, WPARAM, LPARAM);
 void CreateMainWindow(int nCmdShow);
 void RunGui();
-int  LoadConfig();
-void SaveConfig();
 
 BOOL Open_File_Proc(char *filename);
 BOOL Pcsx2Configure(HWND hWnd);

@@ -40,6 +40,16 @@
 #define X86_32CODE(x) x
 #endif
 
+// --->> Path Utilities [PathUtil.c]
+
+#define g_MaxPath 512
+extern int g_Error_PathTooLong;
+
+int isPathRooted( const char* path );
+void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
+
+// <<--- END Path Utilities [PathUtil.c]
+
 #define PCSX2_GSMULTITHREAD 1 // uses multithreaded gs
 #define PCSX2_DUALCORE 2 // speed up for dual cores
 #define PCSX2_FRAMELIMIT 4 // limits frames to normal speeds
@@ -88,20 +98,20 @@
 #define CHECK_VU1REC (Config.Options&PCSX2_VU1REC)
 
 typedef struct {
-	char Bios[256];
-	char GS[256];
-	char PAD1[256];
-	char PAD2[256];
-	char SPU2[256];
-	char CDVD[256];
-	char DEV9[256];
-	char USB[256];
-	char FW[256];
-	char Mcd1[256];
-	char Mcd2[256];
-	char PluginsDir[256];
-	char BiosDir[256];
-	char Lang[256];
+	char Bios[g_MaxPath];
+	char GS[g_MaxPath];
+	char PAD1[g_MaxPath];
+	char PAD2[g_MaxPath];
+	char SPU2[g_MaxPath];
+	char CDVD[g_MaxPath];
+	char DEV9[g_MaxPath];
+	char USB[g_MaxPath];
+	char FW[g_MaxPath];
+	char Mcd1[g_MaxPath];
+	char Mcd2[g_MaxPath];
+	char PluginsDir[g_MaxPath];
+	char BiosDir[g_MaxPath];
+	char Lang[g_MaxPath];
 	u32 Options; // PCSX2_X options
 	int PsxOut;
 	int PsxType;
@@ -135,12 +145,12 @@ int GetPS2ElfName(char*);
 
 extern char *LabelAuthors;
 extern char *LabelGreets;
-int SaveState(char *file);
-int LoadState(char *file);
-int CheckState(char *file);
+int SaveState(const char *file);
+int LoadState(const char *file);
+int CheckState(const char *file);
 
-int SaveGSState(char *file);
-int LoadGSState(char *file);
+int SaveGSState(const char *file);
+int LoadGSState(const char *file);
 
 char *ParseLang(char *id);
 void ProcessFKeys(int fkey, int shift); // processes fkey related commands value 1-12

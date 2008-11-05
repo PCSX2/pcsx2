@@ -22,73 +22,106 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <stdio.h>
+
 #include "Common.h"
 #include "win32.h"
+#include "Paths.h"
+
 #include <sys/stat.h>
 
-//extern u32 g_sseMXCSR;
-//extern u32 g_sseVUMXCSR;
+const char* g_CustomConfigFile;
+char g_WorkingFolder[g_MaxPath];		// Working folder at application startup
 
-int LoadConfig() {
-   FILE *fp;
+// Returns TRUE if the user has invoked the -cfg command line option.
+BOOLEAN hasCustomConfig()
+{
+	return (g_CustomConfigFile != NULL) && (g_CustomConfigFile[0] != 0);
+}
 
-#ifdef ENABLE_NLS
-	char text[256];
-	extern int _nl_msg_cat_cntr;
-#endif
-    PcsxConfig *Conf = &Config;
-	char *szTemp;
-	char szIniFile[256], szValue[256];
-
-	GetModuleFileName(GetModuleHandle((LPCSTR)gApp.hInstance), szIniFile, 256);
-	szTemp = strrchr(szIniFile, '\\');
-
-	if(!szTemp) return -1;
-	strcpy(szTemp, "\\inis\\pcsx2.ini");
-    fp=fopen("inis\\pcsx2.ini","rt");//check if pcsx2.ini really exists
-	if (!fp)
+// Returns the FULL (absolute) path and filename of the configuration file.
+void GetConfigFilename( char* dest )
+{
+	if( hasCustomConfig() )
 	{
+		// Load a user-specified configuration.
+		// If the configuration isn't found, fail outright (see below)
+
+		CombinePaths( dest, ".", g_CustomConfigFile );
+	}
+	else
+	{
+		// use the ini relative to the application's working directory.
+		// Our current working directory can change, so we use the one we detected
+		// at startup:
+
+		CombinePaths( dest, g_WorkingFolder, CONFIG_DIR "\\pcsx2.ini" );
+	}
+}
+
+int LoadConfig()
+{
+	FILE *fp;
+	PcsxConfig* Conf = &winConfig;
+
+	char szIniFile[g_MaxPath], szValue[g_MaxPath];
+
+	GetConfigFilename( szIniFile );
+
+	if( g_Error_PathTooLong ) return -1;
+
+	fp = fopen( szIniFile, "rt" );
+	if( fp == NULL)
+	{
+		if( hasCustomConfig() )
+		{
+			// using custom config, so fail outright:
+			SysMessage( "User-specified configuration file not found:\n %s\nPCSX2 will now exit." );
+			return -1;
+		}
+
+		// standard mode operation.  Create the directory.
+		// Conf File will be created and saved later.
 		CreateDirectory("inis",NULL); 
-		return -1;
+		return 1;
 	}
 	fclose(fp);
     //interface
-	GetPrivateProfileString("Interface", "Bios", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Interface", "Bios", NULL, szValue, g_MaxPath, szIniFile);
 	strcpy(Conf->Bios, szValue);
-	GetPrivateProfileString("Interface", "Lang", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Interface", "Lang", NULL, szValue, g_MaxPath, szIniFile);
 	strcpy(Conf->Lang, szValue);
 	GetPrivateProfileString("Interface", "Ps2Out", NULL, szValue, 20, szIniFile);
     Conf->PsxOut = strtoul(szValue, NULL, 10);
 	GetPrivateProfileString("Interface", "ThPriority", NULL, szValue, 20, szIniFile);
     Conf->ThPriority = strtoul(szValue, NULL, 10);
-	GetPrivateProfileString("Interface", "PluginsDir", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Interface", "PluginsDir", NULL, szValue, g_MaxPath, szIniFile);
 	strcpy(Conf->PluginsDir, szValue);
-	GetPrivateProfileString("Interface", "BiosDir", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Interface", "BiosDir", NULL, szValue, g_MaxPath, szIniFile);
 	strcpy(Conf->BiosDir, szValue);
-	GetPrivateProfileString("Interface", "Mcd1", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Interface", "Mcd1", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->Mcd1, szValue);
-	GetPrivateProfileString("Interface", "Mcd2", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Interface", "Mcd2", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->Mcd2, szValue); 
 	Config.CustomFps				=	GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
 	Config.CustomFrameSkip			=	GetPrivateProfileInt("Interface", "CustomFrameskip", 0, szIniFile);
 	Config.CustomConsecutiveFrames	=	GetPrivateProfileInt("Interface", "CustomConsecutiveFrames", 0, szIniFile);
 	Config.CustomConsecutiveSkip	=	GetPrivateProfileInt("Interface", "CustomConsecutiveSkip", 0, szIniFile);
     //plugins
-	GetPrivateProfileString("Plugins", "GS", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Plugins", "GS", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->GS, szValue); 
-    GetPrivateProfileString("Plugins", "SPU2", NULL, szValue, 256, szIniFile);
+    GetPrivateProfileString("Plugins", "SPU2", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->SPU2, szValue);
-	GetPrivateProfileString("Plugins", "CDVD", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Plugins", "CDVD", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->CDVD, szValue);
-	GetPrivateProfileString("Plugins", "PAD1", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Plugins", "PAD1", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->PAD1, szValue);
-	GetPrivateProfileString("Plugins", "PAD2", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Plugins", "PAD2", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->PAD2, szValue);
-	GetPrivateProfileString("Plugins", "DEV9", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Plugins", "DEV9", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->DEV9, szValue);
-	GetPrivateProfileString("Plugins", "USB", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Plugins", "USB", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->USB, szValue);
-	GetPrivateProfileString("Plugins", "FW", NULL, szValue, 256, szIniFile);
+	GetPrivateProfileString("Plugins", "FW", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->FW, szValue);
 	//cpu
 	GetPrivateProfileString("Cpu Options", "Options", NULL, szValue, 20, szIniFile);
@@ -119,14 +152,13 @@ int LoadConfig() {
 	GetPrivateProfileString("Misc", "GameFixes", NULL, szValue, 20, szIniFile);
     Conf->GameFixes = strtoul(szValue, NULL, 0);
 
-
 #ifdef ENABLE_NLS
-	sprintf(text, "LANGUAGE=%s", Conf->Lang);
-#ifdef _WIN32
-	gettext_putenv(text);
-#else
-	putenv(text);
-#endif
+	{
+		char text[256];
+		extern int _nl_msg_cat_cntr;
+		sprintf_s(text, 256, "LANGUAGE=%s", Conf->Lang);
+		gettext_putenv(text);
+	}
 #endif
 
 	return 0;
@@ -134,17 +166,20 @@ int LoadConfig() {
 
 /////////////////////////////////////////////////////////
 
-void SaveConfig() {
-	
-    PcsxConfig *Conf = &Config;
-	char *szTemp;
-	char szIniFile[256], szValue[256];
+void SaveConfig()
+{
+	const PcsxConfig* Conf = &Config;
+	char szIniFile[g_MaxPath], szValue[g_MaxPath];
 
-	GetModuleFileName(GetModuleHandle((LPCSTR)gApp.hInstance), szIniFile, 256);
-	szTemp = strrchr(szIniFile, '\\');
+	//GetModuleFileName(GetModuleHandle((LPCSTR)gApp.hInstance), szIniFile, 256);
+	//szTemp = strrchr(szIniFile, '\\');
 
-	if(!szTemp) return;
-	strcpy(szTemp, "\\inis\\pcsx2.ini");
+	GetConfigFilename( szIniFile );
+
+	// This should never be true anyway since long pathnames would have in theory
+	// been caught earlier by LoadConfig -- but no harm in being safe.
+	if( g_Error_PathTooLong ) return;
+
     //interface
     sprintf(szValue,"%s",Conf->Bios);
     WritePrivateProfileString("Interface","Bios",szValue,szIniFile);
@@ -170,23 +205,28 @@ void SaveConfig() {
 	WritePrivateProfileString("Interface", "CustomConsecutiveFrames", szValue, szIniFile);
 	sprintf(szValue,"%d",Conf->CustomConsecutiveSkip);
 	WritePrivateProfileString("Interface", "CustomConsecutiveSkip", szValue, szIniFile);
-    //plugins
-	sprintf(szValue,"%s",Conf->GS);
+
+	// Plugins are saved from the winConfig struct.
+	// It contains the user config settings and not the
+	// runtime cmdline overrides.
+
+	sprintf(szValue,"%s",winConfig.GS);
     WritePrivateProfileString("Plugins","GS",szValue,szIniFile);
-	sprintf(szValue,"%s",Conf->SPU2);
+	sprintf(szValue,"%s",winConfig.SPU2);
     WritePrivateProfileString("Plugins","SPU2",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf->CDVD);
+    sprintf(szValue,"%s",winConfig.CDVD);
     WritePrivateProfileString("Plugins","CDVD",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf->PAD1);
+    sprintf(szValue,"%s",winConfig.PAD1);
     WritePrivateProfileString("Plugins","PAD1",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf->PAD2);
+    sprintf(szValue,"%s",winConfig.PAD2);
     WritePrivateProfileString("Plugins","PAD2",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf->DEV9);
+    sprintf(szValue,"%s",winConfig.DEV9);
     WritePrivateProfileString("Plugins","DEV9",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf->USB);
+    sprintf(szValue,"%s",winConfig.USB);
     WritePrivateProfileString("Plugins","USB",szValue,szIniFile);
-	sprintf(szValue,"%s",Conf->FW);
+	sprintf(szValue,"%s",winConfig.FW);
     WritePrivateProfileString("Plugins","FW",szValue,szIniFile);
+
 	//cpu
     sprintf(szValue,"%u", Conf->Options);
     WritePrivateProfileString("Cpu Options","Options",szValue,szIniFile);
@@ -194,6 +234,7 @@ void SaveConfig() {
     WritePrivateProfileString("Cpu Options","sseMXCSR",szValue,szIniFile);
 	sprintf(szValue,"%u",Conf->sseVUMXCSR);
     WritePrivateProfileString("Cpu Options","sseVUMXCSR",szValue,szIniFile);
+
 	//Misc
     sprintf(szValue,"%u",Conf->Patch);
     WritePrivateProfileString("Misc","Patch",szValue,szIniFile);

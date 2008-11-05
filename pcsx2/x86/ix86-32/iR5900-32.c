@@ -2692,7 +2692,6 @@ void recompileNextInstruction(int delayslot)
 extern tIPU_BP g_BP;
 
 extern u32 psxdump;
-extern u32 psxNextCounter, psxNextsCounter;
 extern void iDumpPsxRegisters(u32 startpc, u32 temp); 
 extern Counter counters[6];
 extern int rdram_devices;	// put 8 for TOOL and 2 for PS2 and PSX

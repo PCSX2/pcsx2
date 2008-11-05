@@ -26,8 +26,8 @@ void SysMessage(const char *fmt, ...);		// Message used to print msg to users
 void SysUpdate();						// Called on VBlank (to update i.e. pads)
 void SysRunGui();						// Returns to the Gui
 void SysClose();						// Close mem and plugins
-void *SysLoadLibrary(char *lib);		// Loads Library
-void *SysLoadSym(void *lib, char *sym);	// Loads Symbol from Library
+void *SysLoadLibrary(const char *lib);		// Loads Library
+void *SysLoadSym(void *lib, const char *sym);	// Loads Symbol from Library
 char *SysLibError();					// Gets previous error loading sysbols
 void SysCloseLibrary(void *lib);		// Closes Library
 void *SysMmap(uptr base, u32 size);

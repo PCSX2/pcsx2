@@ -537,8 +537,8 @@ typedef void (CALLBACK* _GSgetDriverInfo)(GSdriverInfo *info);
 #ifdef _WIN32
 typedef s32  (CALLBACK* _GSsetWindowInfo)(winInfo *info);
 #endif
-typedef void (CALLBACK* _GSmakeSnapshot)(char *path);
-typedef void (CALLBACK* _GSmakeSnapshot2)(char *path, int*, int);
+typedef void (CALLBACK* _GSmakeSnapshot)(const char *path);
+typedef void (CALLBACK* _GSmakeSnapshot2)(const char *path, int*, int);
 typedef s32  (CALLBACK* _GSfreeze)(int mode, freezeData *data);
 typedef void (CALLBACK* _GSconfigure)();
 typedef s32  (CALLBACK* _GStest)();

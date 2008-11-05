@@ -296,7 +296,7 @@ int CheckCdrom() {
 int GetPS2ElfName(char *name){
 	FILE *fp;
 	int		f;
-	char	buffer[256];//if a file is longer...it should be shorter :D
+	char	buffer[g_MaxPath];//if a file is longer...it should be shorter :D
 	char	*pos;
 	static struct TocEntry tocEntry;
 	int i;
@@ -310,7 +310,7 @@ int GetPS2ElfName(char *name){
 	}
 	
 	f=CDVDFS_open("SYSTEM.CNF;1", 1);
-	CDVDFS_read(f, buffer, 256);
+	CDVDFS_read(f, buffer, g_MaxPath);
 	CDVDFS_close(f);
 	
 	buffer[tocEntry.fileSize]='\0';
@@ -355,7 +355,7 @@ int GetPS2ElfName(char *name){
 			for (i=2; i<10; i++) buffer[i] = fgetc(fp); buffer[i] = 0;
 			addr = strtoul(buffer, (char**)NULL, 0);
 			fseek(fp, 3, SEEK_CUR);
-			for (i=0; i<256; i++) {
+			for (i=0; i<g_MaxPath; i++) {
 				buffer[i] = fgetc(fp);
 				if (buffer[i] == '\n' || buffer[i] == 0) break;
 			}
@@ -521,7 +521,7 @@ const char Pcsx2Header[32] = STATE_VERSION " PCSX2 v" PCSX2_VERSION;
 
 extern void gsWaitGS();
 
-int SaveState(char *file) {
+int SaveState(const char *file) {
 
 	gzFile f;
 	freezeData fP;
@@ -605,7 +605,7 @@ int SaveState(char *file) {
 extern u32 dumplog;
 u32 s_vucount=0;
 
-int LoadState(char *file) {
+int LoadState(const char *file) {
 
 	gzFile f;
 	freezeData fP;
@@ -743,7 +743,7 @@ int LoadState(char *file) {
 
 #ifdef PCSX2_DEVBUILD
 
-int SaveGSState(char *file)
+int SaveGSState(const char *file)
 {
 	if( g_SaveGSStream ) return -1;
 
@@ -760,7 +760,7 @@ int SaveGSState(char *file)
 }
 
 extern uptr pDsp;
-int LoadGSState(char *file)
+int LoadGSState(const char *file)
 {
 	int ret;
 	char strfile[255];
@@ -808,7 +808,7 @@ int LoadGSState(char *file)
 
 #endif
 
-int CheckState(char *file) {
+int CheckState(const char *file) {
 	gzFile f;
 	char header[32];
 
@@ -877,8 +877,6 @@ extern void iDumpRegisters(u32 startpc, u32 temp);
 extern void recExecuteVU0Block(void);
 extern void recExecuteVU1Block(void);
 extern void DummyExecuteVU1Block(void);
-extern int  LoadConfig();
-extern void SaveConfig();
 extern char strgametitle[256];
 
 char* mystrlwr( char* string )
@@ -960,7 +958,8 @@ void ProcessFKeys(int fkey, int shift)
 					SysPrintf("VU Skip - Frame Limit Mode Changed\n");
 					break;
 			}
-            SaveConfig();
+			// [Air]: Do we really want to save runtime changes to frameskipping?
+            //SaveConfig();
 #endif
 			break;
 		// note: VK_F5-VK_F7 are reserved for GS

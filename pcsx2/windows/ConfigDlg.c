@@ -78,7 +78,7 @@ BOOL OnConfigureDialog(HWND hW) {
 			if (type & PS2E_LT_GS) {
 				version = PS2E_GetLibVersion2(PS2E_LT_GS);
 				if ( ((version >> 16)&0xff) == PS2E_GS_VERSION) {
-					ComboAddPlugin(hWC_GS, Config.GS);
+					ComboAddPlugin(hWC_GS, winConfig.GS);
 				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, 0xff&(version >> 16), PS2E_GS_VERSION);
 			}
 			if (type & PS2E_LT_PAD) {
@@ -88,39 +88,39 @@ BOOL OnConfigureDialog(HWND hW) {
 				version = PS2E_GetLibVersion2(PS2E_LT_PAD);
 				if (((version >> 16)&0xff) == PS2E_PAD_VERSION && query) {
 					if (query() & 0x1)
-						ComboAddPlugin(hWC_PAD1, Config.PAD1);
+						ComboAddPlugin(hWC_PAD1, winConfig.PAD1);
 					if (query() & 0x2)
-						ComboAddPlugin(hWC_PAD2, Config.PAD2);
+						ComboAddPlugin(hWC_PAD2, winConfig.PAD2);
 				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_PAD_VERSION);
 			}
 			if (type & PS2E_LT_SPU2) {
 				version = PS2E_GetLibVersion2(PS2E_LT_SPU2);
 				if ( ((version >> 16)&0xff) == PS2E_SPU2_VERSION) {
-					ComboAddPlugin(hWC_SPU2, Config.SPU2);
+					ComboAddPlugin(hWC_SPU2, winConfig.SPU2);
 				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_SPU2_VERSION);
 			}
 			if (type & PS2E_LT_CDVD) {
 				version = PS2E_GetLibVersion2(PS2E_LT_CDVD);
 				if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) {
-					ComboAddPlugin(hWC_CDVD, Config.CDVD);
+					ComboAddPlugin(hWC_CDVD, winConfig.CDVD);
 				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_CDVD_VERSION);
 			}
 			if (type & PS2E_LT_DEV9) {
 				version = PS2E_GetLibVersion2(PS2E_LT_DEV9);
 				if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) {
-					ComboAddPlugin(hWC_DEV9, Config.DEV9);
+					ComboAddPlugin(hWC_DEV9, winConfig.DEV9);
 				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_DEV9_VERSION);
 			}
 			if (type & PS2E_LT_USB) {
 				version = PS2E_GetLibVersion2(PS2E_LT_USB);
 				if (((version >> 16)&0xff) == PS2E_USB_VERSION) {
-					ComboAddPlugin(hWC_USB, Config.USB);
+					ComboAddPlugin(hWC_USB, winConfig.USB);
 				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_USB_VERSION);
 			}
 			if (type & PS2E_LT_FW) {
 				version = PS2E_GetLibVersion2(PS2E_LT_FW);
 				if (((version >> 16)&0xff) == PS2E_FW_VERSION) {
-					ComboAddPlugin(hWC_FW, Config.FW);
+					ComboAddPlugin(hWC_FW, winConfig.FW);
 				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_FW_VERSION);
 			}
 		}
@@ -146,7 +146,6 @@ BOOL OnConfigureDialog(HWND hW) {
 		if (Find==INVALID_HANDLE_VALUE) break;
 		if (!strcmp(FindData.cFileName, ".")) continue;
 		if (!strcmp(FindData.cFileName, "..")) continue;
-//		if (FindData.nFileSizeLow < 1024 * 512) continue;
 		if (FindData.nFileSizeLow > 1024 * 4096) continue;	//2002-09-22 (Florin)
 		if (!IsBIOS(FindData.cFileName, description)) continue;//2002-09-22 (Florin)
 		lp = (char *)malloc(strlen(FindData.cFileName)+8);
@@ -226,15 +225,15 @@ char *GetComboSel(HWND hW, int id) {
 }
 
 void OnOK(HWND hW) {
-	CheckComboSel(Config.Bios, IDC_LISTBIOS);
-	CheckComboSel(Config.GS,   IDC_LISTGS);
-	CheckComboSel(Config.PAD1, IDC_LISTPAD1);
-	CheckComboSel(Config.PAD2, IDC_LISTPAD2);
-	CheckComboSel(Config.SPU2, IDC_LISTSPU2);
-	CheckComboSel(Config.CDVD, IDC_LISTCDVD);
-	CheckComboSel(Config.DEV9, IDC_LISTDEV9);
-	CheckComboSel(Config.USB, IDC_LISTUSB);
-	CheckComboSel(Config.FW, IDC_LISTFW);
+	CheckComboSel(winConfig.Bios, IDC_LISTBIOS);
+	CheckComboSel(winConfig.GS,   IDC_LISTGS);
+	CheckComboSel(winConfig.PAD1, IDC_LISTPAD1);
+	CheckComboSel(winConfig.PAD2, IDC_LISTPAD2);
+	CheckComboSel(winConfig.SPU2, IDC_LISTSPU2);
+	CheckComboSel(winConfig.CDVD, IDC_LISTCDVD);
+	CheckComboSel(winConfig.DEV9, IDC_LISTDEV9);
+	CheckComboSel(winConfig.USB, IDC_LISTUSB);
+	CheckComboSel(winConfig.FW, IDC_LISTFW);
 	CleanUpCombos(hW);
 
 	EndDialog(hW, TRUE);
@@ -244,134 +243,145 @@ void OnOK(HWND hW) {
 }
 
 
-#define ConfPlugin(src, confs, name) \
-	void *drv; \
-	src conf; \
-	char * pDLL = GetComboSel(hW, confs); \
-	char file[256]; \
-	if(pDLL==NULL) return; \
-	strcpy(file, Config.PluginsDir); \
-	strcat(file, pDLL); \
-	drv = SysLoadLibrary(file); \
-	if (drv == NULL) return; \
-	conf = (src) SysLoadSym(drv, name); \
-	if (SysLibError() == NULL) conf(); \
+static void ConfPlugin( HWND hW, int confs, const char* name )
+{
+	void *drv;
+	void (*conf)();
+	char * pDLL = GetComboSel(hW, confs);
+	char file[g_MaxPath];
+
+	if(pDLL==NULL) return;
+	CombinePaths( file, Config.PluginsDir, pDLL );
+
+	drv = SysLoadLibrary(file);
+	if (drv == NULL) return;
+
+	conf = (void (*)()) SysLoadSym(drv, name);
+	if (SysLibError() == NULL) conf();
 	SysCloseLibrary(drv);
+}
 
 void ConfigureGS(HWND hW) {
-	ConfPlugin(_GSconfigure, IDC_LISTGS, "GSconfigure");
+	ConfPlugin(hW, IDC_LISTGS, "GSconfigure");
 }
 
 void ConfigurePAD1(HWND hW) {
-	ConfPlugin(_PADconfigure, IDC_LISTPAD1, "PADconfigure");
+	ConfPlugin(hW, IDC_LISTPAD1, "PADconfigure");
 }
 
 void ConfigurePAD2(HWND hW) {
-	ConfPlugin(_PADconfigure, IDC_LISTPAD2, "PADconfigure");
+	ConfPlugin(hW, IDC_LISTPAD2, "PADconfigure");
 }
 
 void ConfigureSPU2(HWND hW) {
-	ConfPlugin(_SPU2configure, IDC_LISTSPU2, "SPU2configure");
+	ConfPlugin(hW, IDC_LISTSPU2, "SPU2configure");
 }
 
 void ConfigureCDVD(HWND hW) {
-	ConfPlugin(_CDVDconfigure, IDC_LISTCDVD, "CDVDconfigure");
+	ConfPlugin(hW, IDC_LISTCDVD, "CDVDconfigure");
 }
 
 void ConfigureDEV9(HWND hW) {
-	ConfPlugin(_DEV9configure, IDC_LISTDEV9, "DEV9configure");
+	ConfPlugin(hW, IDC_LISTDEV9, "DEV9configure");
 }
 
 void ConfigureUSB(HWND hW) {
-	ConfPlugin(_USBconfigure, IDC_LISTUSB, "USBconfigure");
+	ConfPlugin(hW, IDC_LISTUSB, "USBconfigure");
 }
 void ConfigureFW(HWND hW) {
-	ConfPlugin(_FWconfigure, IDC_LISTFW, "FWconfigure");
+	ConfPlugin(hW, IDC_LISTFW, "FWconfigure");
 }
 
 void AboutGS(HWND hW) {
-	ConfPlugin(_GSabout, IDC_LISTGS, "GSabout");
+	ConfPlugin(hW, IDC_LISTGS, "GSabout");
 }
 
 void AboutPAD1(HWND hW) {
-	ConfPlugin(_PADabout, IDC_LISTPAD1, "PADabout");
+	ConfPlugin(hW, IDC_LISTPAD1, "PADabout");
 }
 
 void AboutPAD2(HWND hW) {
-	ConfPlugin(_PADabout, IDC_LISTPAD2, "PADabout");
+	ConfPlugin(hW, IDC_LISTPAD2, "PADabout");
 }
 
 void AboutSPU2(HWND hW) {
-	ConfPlugin(_SPU2about, IDC_LISTSPU2, "SPU2about");
+	ConfPlugin(hW, IDC_LISTSPU2, "SPU2about");
 }
 
 void AboutCDVD(HWND hW) {
-	ConfPlugin(_CDVDabout, IDC_LISTCDVD, "CDVDabout");
+	ConfPlugin(hW, IDC_LISTCDVD, "CDVDabout");
 }
 
 void AboutDEV9(HWND hW) {
-	ConfPlugin(_DEV9about, IDC_LISTDEV9, "DEV9about");
+	ConfPlugin(hW, IDC_LISTDEV9, "DEV9about");
 }
 
 void AboutUSB(HWND hW) {
-	ConfPlugin(_USBabout, IDC_LISTUSB, "USBabout");
+	ConfPlugin(hW, IDC_LISTUSB, "USBabout");
 }
 void AboutFW(HWND hW) {
-	ConfPlugin(_FWabout, IDC_LISTFW, "FWabout");
+	ConfPlugin(hW, IDC_LISTFW, "FWabout");
 }
-#define TestPlugin(src, confs, name) \
-	void *drv; \
-	src conf; \
-	int ret = 0; \
-	char * pDLL = GetComboSel(hW, confs); \
-	char file[256]; \
-	if (pDLL== NULL) return; \
-	strcpy(file, Config.PluginsDir); \
-	strcat(file, pDLL); \
-	drv = SysLoadLibrary(file); \
-	if (drv == NULL) return; \
-	conf = (src) SysLoadSym(drv, name); \
-	if (SysLibError() == NULL) ret = conf(); \
-	SysCloseLibrary(drv); \
-	if (ret == 0) \
-		 SysMessage(_("This plugin reports that should work correctly")); \
-	else SysMessage(_("This plugin reports that should not work correctly"));
+
+static void TestPlugin( HWND hW, int confs, const char* name )
+{
+	void *drv;
+	int (*conf)();
+	int ret = 0;
+	char * pDLL = GetComboSel(hW, confs);
+	char file[256];
+
+	if (pDLL== NULL) return;
+	CombinePaths( file, Config.PluginsDir, pDLL );
+
+	drv = SysLoadLibrary(file);
+	if (drv == NULL) return;
+
+	conf = (int (*)()) SysLoadSym(drv, name);
+	if (SysLibError() == NULL) ret = conf();
+	SysCloseLibrary(drv);
+
+	if (ret == 0)
+		SysMessage(_("This plugin reports that should work correctly"));
+	else
+		SysMessage(_("This plugin reports that should not work correctly"));
+}
 
 void TestGS(HWND hW) {
-	TestPlugin(_GStest, IDC_LISTGS, "GStest");
+	TestPlugin(hW, IDC_LISTGS, "GStest");
 }
 
 void TestPAD1(HWND hW) {
-	TestPlugin(_PADtest, IDC_LISTPAD1, "PADtest");
+	TestPlugin(hW, IDC_LISTPAD1, "PADtest");
 }
 
 void TestPAD2(HWND hW) {
-	TestPlugin(_PADtest, IDC_LISTPAD2, "PADtest");
+	TestPlugin(hW, IDC_LISTPAD2, "PADtest");
 }
 
 void TestSPU2(HWND hW) {
-	TestPlugin(_SPU2test, IDC_LISTSPU2, "SPU2test");
+	TestPlugin(hW, IDC_LISTSPU2, "SPU2test");
 }
 
 void TestCDVD(HWND hW) {
-	TestPlugin(_CDVDtest, IDC_LISTCDVD, "CDVDtest");
+	TestPlugin(hW, IDC_LISTCDVD, "CDVDtest");
 }
 
 void TestDEV9(HWND hW) {
-	TestPlugin(_DEV9test, IDC_LISTDEV9, "DEV9test");
+	TestPlugin(hW, IDC_LISTDEV9, "DEV9test");
 }
 
 void TestUSB(HWND hW) {
-	TestPlugin(_USBtest, IDC_LISTUSB, "USBtest");
+	TestPlugin(hW, IDC_LISTUSB, "USBtest");
 }
 void TestFW(HWND hW) {
-	TestPlugin(_FWtest, IDC_LISTFW, "FWtest");
+	TestPlugin(hW, IDC_LISTFW, "FWtest");
 }
 
 int SelectPath(HWND hW, char *Title, char *Path) {
 	LPITEMIDLIST pidl;
 	BROWSEINFO bi;
-	char Buffer[256];
+	char Buffer[g_MaxPath];
 
 	bi.hwndOwner = hW;
 	bi.pidlRoot = NULL;
@@ -392,7 +402,7 @@ int SelectPath(HWND hW, char *Title, char *Path) {
 }
 
 void SetPluginsDir(HWND hW) {
-	char Path[256];
+	char Path[g_MaxPath];
 
 	if (SelectPath(hW, _("Select Plugins Directory"), Path) == -1) return;
 	strcpy(Config.PluginsDir, Path);
@@ -401,7 +411,7 @@ void SetPluginsDir(HWND hW) {
 }
 
 void SetBiosDir(HWND hW) {
-	char Path[256];
+	char Path[g_MaxPath];
 
 	if (SelectPath(hW, _("Select Bios Directory"), Path) == -1) return;
 	strcpy(Config.BiosDir, Path);

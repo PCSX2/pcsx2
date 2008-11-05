@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1253"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="pcsx2"
 	ProjectGUID="{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}"
 	RootNamespace="pcsx2"
@@ -706,6 +706,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PathUtils.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\System.h"
 				>
 			</File>
@@ -778,6 +782,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						RuntimeLibrary="0"
+						AssemblerOutput="4"
 					/>
 				</FileConfiguration>
 			</File>
