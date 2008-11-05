@@ -10,7 +10,7 @@ CDVD.h        Elfheader.h    Memory.h        PsxCounters.h     R5900.h   VU0micr
 CDVDiso.c     FiFo.c         Misc.c          PsxDma.c          Sif.c     VU1micro.c \
 CDVDisodrv.c  FPU2.cpp       PsxDma.h          Sifcmd.h  VUflags.c \
 CDVDisodrv.h  FPU.c          MMI.c           Sif.h     VUflags.h \
-CDVDiso.h     GS.cpp         Patch.c         Sio.c     VU.h \
+CDVDiso.h     GS.cpp         PathUtils.c 	Patch.c         Sio.c     VU.h \
 CDVDlib.h     GS.h           Patch.h         PsxHw.c           Sio.h     VUmicro.h \
 Common.h      Hw.c           Plugins.c       PsxHw.h           SPR.c     VUops.c \
 COP0.c        Hw.h           Plugins.h       PsxInterpreter.c  SPR.h     VUops.h \

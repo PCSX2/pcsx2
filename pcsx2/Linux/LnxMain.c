@@ -486,11 +486,11 @@ void SysPrintf(const char *fmt, ...) {
 #endif
 #endif
 }
-void *SysLoadLibrary(char *lib) {
+void *SysLoadLibrary(const char *lib) {
 	return dlopen(lib, RTLD_NOW);
 }
 
-void *SysLoadSym(void *lib, char *sym) {
+void *SysLoadSym(void *lib, const char *sym) {
 	return dlsym(lib, sym);
 }
 
