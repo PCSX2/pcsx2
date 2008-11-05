@@ -995,16 +995,16 @@ static u32 psxScaleBlockCycles()
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	u32 blockCycles = psxScaleBlockCycles();
-	if( !USE_FAST_BRANCHES || cpuBranch ) {
-		MOV32MtoR(ECX, (uptr)&psxRegs.cycle);
-		ADD32ItoR(ECX, blockCycles); // greater mult factor causes nfsmw to crash
-		MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
-	}
-	else {
+	if( USE_FAST_BRANCHES && cpuBranch == 0 )
+	{
 		SUB32ItoM((uptr)&EEsCycle, blockCycles*8 );
 		ADD32ItoM((uptr)&psxRegs.cycle, blockCycles);
 		return;
 	}
+
+	MOV32MtoR(ECX, (uptr)&psxRegs.cycle);
+	ADD32ItoR(ECX, blockCycles); // greater mult factor causes nfsmw to crash
+	MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 
 	// check if we've caught up with the EE
 	SUB32ItoM((uptr)&EEsCycle, blockCycles*8 );

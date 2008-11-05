@@ -2320,7 +2320,7 @@ void recSYSCALL( void ) {
 
 	CMP32ItoM((int)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles);
+	ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
 	JMP32((u32)DispatcherReg - ( (u32)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;
@@ -2335,7 +2335,7 @@ void recBREAK( void ) {
 
 	CMP32ItoM((int)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles);
+	ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
 	RET();
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;

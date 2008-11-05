@@ -157,11 +157,11 @@ static void _psxTestInterrupts() {
 	PSX_TESTINT(21, usbInterrupt);
 }
 
-// Higher Wait cycle values should, in theory, reduce IOP overhead without much
-// drawback.  The IOP is almost always forced to perform branch tests at import-
-// ant intervals regardless of this value (such as counter or irq events, hsyncs,
-// etc.)
-#define IOP_WAIT_CYCLE 1024
+
+// IOP Wait cycles are still required to be a low number for maximum compatibility.
+// Some games like to freeze up if the BranchTest isn't called at fairly regular
+// intervals.  ([TODO]: figure out why?)
+#define IOP_WAIT_CYCLE 64
 
 void psxBranchTest()
 {
