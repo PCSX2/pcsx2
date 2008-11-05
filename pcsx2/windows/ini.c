@@ -46,7 +46,7 @@ void GetConfigFilename( char* dest )
 		// Load a user-specified configuration.
 		// If the configuration isn't found, fail outright (see below)
 
-		CombinePaths( dest, ".", g_CustomConfigFile );
+		CombinePaths( dest, g_WorkingFolder, g_CustomConfigFile );
 	}
 	else
 	{
