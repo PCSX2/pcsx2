@@ -27,7 +27,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
+				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) $(SolutionDir)..\common\svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -133,7 +133,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
+				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) $(SolutionDir)..\common\svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -231,7 +231,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
+				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) $(SolutionDir)..\common\svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -340,7 +340,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="SubWCRev.exe $(ProjectDir) $(SolutionDir)svnrev_template.h $(ProjectDir)svnrev.h"
+				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) $(SolutionDir)..\common\svnrev_template.h $(ProjectDir)svnrev.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -399,6 +399,103 @@
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary=".\Debug/SPU2ghz1.lib"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Debug/SPU2ghz.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="DebugFast|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) $(SolutionDir)..\common\svnrev_template.h $(ProjectDir)svnrev.h"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug/SPU2ghz.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				PreprocessorDefinitions="_DEBUG_FAST;_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_VS2005;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
+				AssemblerListingLocation="$(IntDir)\"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="3082"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="winmm.lib dsound.lib"
+				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				ModuleDefinitionFile=".\SPU2ghz.def"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				SupportUnloadOfDelayLoadedDLL="false"
 				ImportLibrary=".\Debug/SPU2ghz1.lib"
 				TargetMachine="1"
 			/>
@@ -513,6 +610,16 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugFast|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="mixer.h"
@@ -556,6 +663,15 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug SSE2|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugFast|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -651,6 +767,15 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug SSE2|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugFast|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -835,6 +960,15 @@
 								BrowseInformation="1"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="DebugFast|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
 					</File>
 				</Filter>
 				<Filter
@@ -968,6 +1102,15 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugFast|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="dma.h"
@@ -1055,6 +1198,15 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugFast|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="spu2.h"
@@ -1098,6 +1250,15 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug SSE2|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugFast|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
