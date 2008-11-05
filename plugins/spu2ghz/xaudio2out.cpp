@@ -176,17 +176,16 @@ public:
 		//
 		if( pSourceVoice != NULL )
 		{
-			pSourceVoice->Stop( 0 );
 			pSourceVoice->FlushSourceBuffers();
+			//pSourceVoice->Stop( 0 );
+			Sleep(10);	// give the engine some time to flush voices
 			pSourceVoice->DestroyVoice();
-			//The following sleep interferes with pcsx2, disable it for now (rama)
-			//Sleep(50);	// give the engine some time to stop voices
-			pSourceVoice = NULL;
-			voiceContext.pSourceVoice = NULL;
 			voiceContext.sndout = NULL;
+			voiceContext.pSourceVoice = NULL;
+			pSourceVoice = NULL;
 		}
 
-		Sleep(50);	// give the engine some more time, because I don't trust it.
+		Sleep(10);	// give the engine some more time, because I don't trust it.
 
 		//
 		// Cleanup XAudio2
