@@ -172,20 +172,18 @@ public:
 	void Close()
 	{
 		//
-		// Clean up
-		//
-		if( pSourceVoice != NULL )
-		{
-			pSourceVoice->FlushSourceBuffers();
-			//pSourceVoice->Stop( 0 );
-			Sleep(10);	// give the engine some time to flush voices
-			pSourceVoice->DestroyVoice();
-			voiceContext.sndout = NULL;
-			voiceContext.pSourceVoice = NULL;
-			pSourceVoice = NULL;
-		}
+		// Clean up?
+		// Apparently XA2 would just rather we NOT clean up...
 
-		Sleep(10);	// give the engine some more time, because I don't trust it.
+		/*if( pSourceVoice != NULL )
+		{
+			//pSourceVoice->FlushSourceBuffers();
+			//pSourceVoice->Stop( 0 );
+			//Sleep(10);	// give the engine some time to flush voices
+			//pSourceVoice->DestroyVoice();
+		}*/
+
+		//Sleep(10);	// give the engine some more time, because I don't trust it.
 
 		//
 		// Cleanup XAudio2
@@ -196,10 +194,14 @@ public:
 
 		if( pMasteringVoice != NULL )
 			pMasteringVoice->DestroyVoice();
-		pMasteringVoice = NULL;
 
 		SAFE_RELEASE( pXAudio2 );
 		SAFE_DELETE_ARRAY( qbuffer );
+
+		pMasteringVoice = NULL;
+		voiceContext.sndout = NULL;
+		voiceContext.pSourceVoice = NULL;
+		pSourceVoice = NULL;
 
 		CoUninitialize();
 	}
