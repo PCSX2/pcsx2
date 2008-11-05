@@ -23,7 +23,12 @@
 // (someday this should be replaced with proper C++ exception handling)
 int g_Error_PathTooLong = FALSE;
 
+#ifdef WIN32
 static const char PathSeparator = '\\';
+#else
+static const char PathSeparator = '/';
+#endif
+
 
 int isPathRooted( const char* path )
 {
