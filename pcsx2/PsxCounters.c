@@ -63,7 +63,7 @@ __forceinline static void _rcntSet( int i, int bitwise )
 		assert( i < 3 );
 #endif
 
-	// psxNextCounter is relative to the cpuRegs.cycle when rcntUpdate() was last called.
+	// psxNextCounter is relative to the psxRegs.cycle when rcntUpdate() was last called.
 	// However, the current _rcntSet could be called at any cycle count, so we need to take
 	// that into account.  Adding the difference from that cycle count to the current one
 	// will do the trick!
@@ -71,13 +71,13 @@ __forceinline static void _rcntSet( int i, int bitwise )
 	if(psxCounters[i].rate == PSXHBLANK) return;
 
 	c = (u64)((overflowCap - psxCounters[i].count) * psxCounters[i].rate) - (psxRegs.cycle - psxCounters[i].sCycleT);
-	c += cpuRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
+	c += psxRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < psxNextCounter) psxNextCounter = (u32)c;
 
 	//if((psxCounters[i].mode & 0x10) == 0 || psxCounters[i].target > 0xffff) continue;
 
 	c = (u64)((psxCounters[i].target - psxCounters[i].count) * psxCounters[i].rate) - (psxRegs.cycle - psxCounters[i].sCycleT);
-	c += cpuRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
+	c += psxRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < psxNextCounter) psxNextCounter = (u32)c;
 }
 
@@ -590,7 +590,7 @@ void psxRcnt1Wmode(u32 value)  {
 	if(psxCounters[1].target > 0xffff) {
 		//SysPrintf("IOP 16 Correcting target 1 after mode write\n");
 		psxCounters[1].target &= 0xffff;
-		}
+	}
 	_rcntSet( 1, 16 );
 	//}
 }
@@ -628,7 +628,7 @@ void psxRcnt2Wmode(u32 value)  {
 	if(psxCounters[2].target > 0xffff) {
 		//SysPrintf("IOP 16 Correcting target 2 after mode write\n");
 		psxCounters[2].target &= 0xffff;
-		}
+	}
 	_rcntSet( 2, 16 );
 }
 
@@ -662,7 +662,7 @@ void psxRcnt3Wmode(u32 value)  {
 	if(psxCounters[3].target > 0xffffffff) {
 		//SysPrintf("IOP 32 Correcting target 3 after mode write\n");
 		psxCounters[3].target &= 0xffffffff;
-		}
+	}
 	_rcntSet( 3, 32 );
 	//}
 }
@@ -707,7 +707,7 @@ void psxRcnt4Wmode(u32 value)  {
 	if(psxCounters[4].target > 0xffffffff) {
 		//SysPrintf("IOP 32 Correcting target 4 after mode write\n");
 		psxCounters[4].target &= 0xffffffff;
-		}
+	}
 	_rcntSet( 4, 32 );
 }
 
@@ -751,7 +751,7 @@ void psxRcnt5Wmode(u32 value)  {
 	if(psxCounters[5].target > 0xffffffff) {
 		//SysPrintf("IOP 32 Correcting target 5 after mode write\n");
 		psxCounters[5].target &= 0xffffffff;
-		}
+	}
 	_rcntSet( 5, 32 );
 }
 
@@ -763,7 +763,7 @@ void psxRcntWtarget16(int index, u32 value) {
 	if(psxCounters[index].target <= psxRcntCycles(index)/* && psxCounters[index].target != 0*/) {
 		//SysPrintf("IOP 16 Saving %x target from early trigger target = %x, count = %I64x\n", index, psxCounters[index].target, psxRcntCycles(index));
 		psxCounters[index].target += 0x1000000000;
-		}
+	}
 
 	_rcntSet( index, 16 );
 }
@@ -778,7 +778,7 @@ void psxRcntWtarget32(int index, u32 value) {
 	if(psxCounters[index].target <= psxRcntCycles(index)/* && psxCounters[index].target != 0*/) {
 		//SysPrintf("IOP 32 Saving %x target from early trigger target = %x, count = %I64x\n", index, psxCounters[index].target, psxRcntCycles(index));
 		psxCounters[index].target += 0x1000000000;
-		}
+	}
 
 	_rcntSet( index, 32 );
 }
