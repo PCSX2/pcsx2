@@ -47,7 +47,7 @@
 extern "C" {
 #endif
 	
-#include "../Paths.h"
+#include "Paths.h"
 #include "Common.h"
 
 /* Misc.c */
@@ -86,7 +86,7 @@ extern void init_widgets();
 
 
 typedef struct {
-	char lang[256];
+	char lang[g_MaxPath];
 } _langs;
 
 typedef enum
@@ -114,7 +114,7 @@ GtkWidget *radio_normal_limit, *radio_limit_limit, *radio_fs_limit, *radio_vuski
 _langs *langs;
 unsigned int langsMax;
 
-char cfgfile[256];
+char cfgfile[g_MaxPath];
 
 /* Hacks */
 

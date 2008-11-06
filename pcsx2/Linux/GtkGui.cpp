@@ -188,7 +188,7 @@ void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data) {
 	DIR *dir;
 	struct dirent *ent;
 	void *Handle;
-	char plugin[256];
+	char plugin[g_MaxPath];
 
 	// with this the problem with plugins that are linked with the pthread
 	// library is solved
@@ -237,7 +237,7 @@ void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
  
  void ResetMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 	GtkWidget *Item;
-	char str[256];
+	char str[g_MaxPath];
 	int i;
  
 	for (i=0; i<5; i++) {
@@ -251,7 +251,7 @@ void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
  }
 
 void UpdateMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
-	char str[256];
+	char str[g_MaxPath];
 	int i = 0;
 
 	for (i=0; i<5; i++) {
@@ -261,7 +261,7 @@ void UpdateMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void States_Load(int num) {
-	char Text[256];
+	char Text[g_MaxPath];
 	int ret;
 
 	efile = 2;
@@ -274,7 +274,7 @@ void States_Load(int num) {
 }
 
 void States_Save(int num) {
-	char Text[256];
+	char Text[g_MaxPath];
 	int ret;
 
 	sprintf (Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, num);
@@ -295,7 +295,7 @@ void OnStates_Load5(GtkMenuItem *menuitem, gpointer user_data) { States_Load(4);
 
 void OnLoadOther_Ok(GtkButton* button, gpointer user_data) {
 	gchar *File;
-	char str[256];
+	char str[g_MaxPath];
 	int ret;
 
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
@@ -340,7 +340,7 @@ void OnStates_Save5(GtkMenuItem *menuitem, gpointer user_data) { States_Save(4);
 
 void OnSaveOther_Ok(GtkButton* button, gpointer user_data) {
 	gchar *File;
-	char str[256];
+	char str[g_MaxPath];
 	int ret;
 
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
@@ -380,7 +380,7 @@ void OnArguments_Ok(GtkButton *button, gpointer user_data) {
 	char *str;
 
 	str = (char*)gtk_entry_get_text(GTK_ENTRY(widgetCmdLine));
-	memcpy(args, str, 256);
+	memcpy(args, str, g_MaxPath);
 
 	gtk_widget_destroy(CmdLine);
 	gtk_widget_set_sensitive(MainWindow, TRUE);
@@ -587,7 +587,7 @@ void OnHelpAbout_Ok(GtkButton *button, gpointer user_data) {
 }
 
 void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data) {
-	char str[256];
+	char str[g_MaxPath];
 	GtkWidget *Label;
 
 	AboutDlg = create_AboutDlg();

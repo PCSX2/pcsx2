@@ -53,7 +53,7 @@ __forceinline static void _rcntSet( int i, int bitwise )
 	// thanks to being forceinline'd, this conditional will always be optimized
 	// to a constant by VC (confirmed via disassembler):
 
-	u64 overflowCap = (bitwise==32) ? 0x100000000 : 0x10000;
+	u64 overflowCap = (bitwise==32) ? 0x100000000ULL : 0x10000;
 	u64 c;
 
 #ifdef _DEBUG
@@ -184,7 +184,7 @@ void psxCheckEndGate16(int i)
 			psxCounters[i].count += (u16)psxRcntRcount16(i); //Only counts when signal is on
 			break;
 		case 0x1: //GATE_ON_ClearStart
-			if(psxCounters[i].mode & 0x10000000)psxRcntUpd16(i);
+			if(psxCounters[i].mode & 0x10000000) psxRcntUpd16(i);
 			psxCounters[i].mode &= ~0x10000000;
 			break;
 		case 0x2: //GATE_ON_Clear_OFF_Start
@@ -318,10 +318,10 @@ void _testRcnt16target(int i) {
 		psxCounters[i].count -= psxCounters[i].target;
 		if((psxCounters[i].mode & 0x40) == 0){
 				SysPrintf("Counter %x repeat intr not set on zero ret, ignoring target\n", i);
-				psxCounters[i].target += 0x1000000000;
+				psxCounters[i].target += 0x1000000000ULL;
 				}
 		
-	} else psxCounters[i].target += 0x1000000000;
+	} else psxCounters[i].target += 0x1000000000ULL;
 	
 }
 
@@ -379,10 +379,10 @@ void _testRcnt32target(int i) {
 			psxCounters[i].count -= psxCounters[i].target;
 			if((psxCounters[i].mode & 0x40) == 0){
 				SysPrintf("Counter %x repeat intr not set on zero ret, ignoring target\n", i);
-				psxCounters[i].target += 0x1000000000;
+				psxCounters[i].target += 0x1000000000ULL;
 				}
 			
-	} else psxCounters[i].target += 0x1000000000;
+	} else psxCounters[i].target += 0x1000000000ULL;
 	
 }
 
@@ -400,7 +400,7 @@ void _testRcnt32overflow(int i) {
 			psxCounters[i].mode&= ~0x0400; // Interrupt flag
 		}
 	}
-	psxCounters[i].count -= 0x100000000;
+	psxCounters[i].count -= 0x100000000ULL;
 	if(psxCounters[i].target > 0xffffffff) {
 		//SysPrintf("IOP 32 Correcting target on overflow\n");
 		if((psxCounters[i].mode & 0x50) <= 0x40 && (psxCounters[i].mode & 0x50) != 0) SysPrintf("Counter %x overflowing, no repeat interrupt mode = %x\n", i, psxCounters[i].mode);
@@ -762,7 +762,7 @@ void psxRcntWtarget16(int index, u32 value) {
 	psxCounters[index].target = value & 0xffff;
 	if(psxCounters[index].target <= psxRcntCycles(index)/* && psxCounters[index].target != 0*/) {
 		//SysPrintf("IOP 16 Saving %x target from early trigger target = %x, count = %I64x\n", index, psxCounters[index].target, psxRcntCycles(index));
-		psxCounters[index].target += 0x1000000000;
+		psxCounters[index].target += 0x1000000000ULL;
 	}
 
 	_rcntSet( index, 16 );
@@ -777,7 +777,7 @@ void psxRcntWtarget32(int index, u32 value) {
 	psxCounters[index].target = value;
 	if(psxCounters[index].target <= psxRcntCycles(index)/* && psxCounters[index].target != 0*/) {
 		//SysPrintf("IOP 32 Saving %x target from early trigger target = %x, count = %I64x\n", index, psxCounters[index].target, psxRcntCycles(index));
-		psxCounters[index].target += 0x1000000000;
+		psxCounters[index].target += 0x1000000000ULL;
 	}
 
 	_rcntSet( index, 32 );

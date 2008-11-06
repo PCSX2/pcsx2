@@ -18,6 +18,56 @@
 
 #include "ConfigDlg.h"
 
+static void ConfPlugin(PluginConf confs, char* plugin, const char* name)
+{
+	void *drv;
+	void (*conf)();
+	char file[g_MaxPath];
+	
+	GetComboText(confs.Combo, confs.plist, plugin); 
+	strcpy(file, Config.PluginsDir); 
+	strcat(file, plugin); 
+
+	drv = SysLoadLibrary(file);
+	getcwd(file, ARRAYSIZE(file)); /* store current dir */  
+	chdir(Config.PluginsDir); /* change dirs so that plugins can find their config file*/  
+	if (drv == NULL) return;
+
+	conf = (void (*)()) SysLoadSym(drv, name);
+	if (SysLibError() == NULL) conf(); 
+	chdir(file); /* change back*/      
+	SysCloseLibrary(drv);
+}
+
+
+static void TestPlugin(PluginConf confs, char* plugin, const char* name)
+{
+	void *drv;
+	s32 (* (*conf)())();
+	char file[g_MaxPath];
+	int ret = 0;
+	
+	GetComboText(confs.Combo, confs.plist, plugin); 
+	strcpy(file, Config.PluginsDir); 
+	strcat(file, plugin); 
+
+	drv = SysLoadLibrary(file);
+	getcwd(file, ARRAYSIZE(file)); /* store current dir */  
+	chdir(Config.PluginsDir); /* change dirs so that plugins can find their config file*/  
+	if (drv == NULL) return;
+
+	conf = (s32 (* (*)())()) SysLoadSym(drv, name);
+	if (SysLibError() == NULL) 
+		ret = (s32) conf();
+	chdir(file); /* change back*/      
+	SysCloseLibrary(drv);
+
+	if (ret == 0)
+		SysMessage(_("This plugin reports that should work correctly"));
+	else
+		SysMessage(_("This plugin reports that should not work correctly"));
+}
+
 void OnConf_Gs(GtkMenuItem *menuitem, gpointer user_data)
 {
 	char file[255];
@@ -161,99 +211,99 @@ void OnConfConf_Cancel(GtkButton *button, gpointer user_data) {
 }
 
 void OnConfConf_GsConf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_GSconfigure, GSConfS, Config.GS, "GSconfigure");
+	ConfPlugin(GSConfS, Config.GS, "GSconfigure");
 }
 
 void OnConfConf_GsTest(GtkButton *button, gpointer user_data) {
-	TestPlugin(_GStest, GSConfS, Config.GS, "GStest");
+	TestPlugin(GSConfS, Config.GS, "GStest");
 }
 
 void OnConfConf_GsAbout(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_GSabout, GSConfS, Config.GS, "GSabout");
+	ConfPlugin(GSConfS, Config.GS, "GSabout");
 }
 
 void OnConfConf_Pad1Conf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_PADconfigure, PAD1ConfS, Config.PAD1, "PADconfigure");
+	ConfPlugin(PAD1ConfS, Config.PAD1, "PADconfigure");
 }
 
 void OnConfConf_Pad1Test(GtkButton *button, gpointer user_data) {
-	TestPlugin(_PADtest, PAD1ConfS, Config.PAD1, "PADtest");
+	TestPlugin(PAD1ConfS, Config.PAD1, "PADtest");
 }
 
 void OnConfConf_Pad1About(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_PADabout, PAD1ConfS, Config.PAD1, "PADabout");
+	ConfPlugin(PAD1ConfS, Config.PAD1, "PADabout");
 }
 
 void OnConfConf_Pad2Conf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_PADconfigure, PAD2ConfS, Config.PAD2, "PADconfigure");
+	ConfPlugin(PAD2ConfS, Config.PAD2, "PADconfigure");
 }
 
 void OnConfConf_Pad2Test(GtkButton *button, gpointer user_data) {
-	TestPlugin(_PADtest, PAD2ConfS, Config.PAD2, "PADtest");
+	TestPlugin(PAD2ConfS, Config.PAD2, "PADtest");
 }
 
 void OnConfConf_Pad2About(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_PADabout, PAD2ConfS, Config.PAD2, "PADabout");
+	ConfPlugin(PAD2ConfS, Config.PAD2, "PADabout");
 }
 
 void OnConfConf_Spu2Conf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_SPU2configure, SPU2ConfS, Config.SPU2, "SPU2configure");
+	ConfPlugin(SPU2ConfS, Config.SPU2, "SPU2configure");
 }
 
 void OnConfConf_Spu2Test(GtkButton *button, gpointer user_data) {
-	TestPlugin(_SPU2test, SPU2ConfS, Config.SPU2, "SPU2test");
+	TestPlugin(SPU2ConfS, Config.SPU2, "SPU2test");
 }
 
 void OnConfConf_Spu2About(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_SPU2about, SPU2ConfS, Config.SPU2, "SPU2about");
+	ConfPlugin(SPU2ConfS, Config.SPU2, "SPU2about");
 }
 
 void OnConfConf_CdvdConf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_CDVDconfigure, CDVDConfS, Config.CDVD, "CDVDconfigure");
+	ConfPlugin(CDVDConfS, Config.CDVD, "CDVDconfigure");
 }
 
 void OnConfConf_CdvdTest(GtkButton *button, gpointer user_data) {
-	TestPlugin(_CDVDtest, CDVDConfS, Config.CDVD, "CDVDtest");
+	TestPlugin(CDVDConfS, Config.CDVD, "CDVDtest");
 }
 
 void OnConfConf_CdvdAbout(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_CDVDabout, CDVDConfS, Config.CDVD, "CDVDabout");
+	ConfPlugin(CDVDConfS, Config.CDVD, "CDVDabout");
 }
 
 void OnConfConf_Dev9Conf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_DEV9configure, DEV9ConfS, Config.DEV9, "DEV9configure");
+	ConfPlugin( DEV9ConfS, Config.DEV9, "DEV9configure");
 }
 
 void OnConfConf_Dev9Test(GtkButton *button, gpointer user_data) {
-	TestPlugin(_DEV9test, DEV9ConfS, Config.DEV9, "DEV9test");
+	TestPlugin(DEV9ConfS, Config.DEV9, "DEV9test");
 }
 
 void OnConfConf_Dev9About(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_DEV9about, DEV9ConfS, Config.DEV9, "DEV9about");
+	ConfPlugin( DEV9ConfS, Config.DEV9, "DEV9about");
 }
 
 void OnConfConf_UsbConf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_USBconfigure, USBConfS, Config.USB, "USBconfigure");
+	ConfPlugin(USBConfS, Config.USB, "USBconfigure");
 }
 
 void OnConfConf_UsbTest(GtkButton *button, gpointer user_data) {
-	TestPlugin(_USBtest, USBConfS, Config.USB, "USBtest");
+	TestPlugin(USBConfS, Config.USB, "USBtest");
 }
 
 void OnConfConf_UsbAbout(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_USBabout, USBConfS, Config.USB, "USBabout");
+	ConfPlugin(USBConfS, Config.USB, "USBabout");
 }
 
 void OnConfConf_FWConf(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_FWconfigure, FWConfS, Config.FW, "FWconfigure");
+	ConfPlugin( FWConfS, Config.FW, "FWconfigure");
 }
 
 void OnConfConf_FWTest(GtkButton *button, gpointer user_data) {
-	TestPlugin(_FWtest, FWConfS, Config.FW, "FWtest");
+	TestPlugin(FWConfS, Config.FW, "FWtest");
 }
 
 void OnConfConf_FWAbout(GtkButton *button, gpointer user_data) {
-	ConfPlugin(_FWabout, FWConfS, Config.FW, "FWabout");
+	ConfPlugin( FWConfS, Config.FW, "FWabout");
 }
 
 
@@ -357,7 +407,7 @@ void FindPlugins() {
 	DIR *dir;
 	struct dirent *ent;
 	void *Handle;
-	char plugin[256],name[256];
+	char plugin[g_MaxPath],name[g_MaxPath];
 	
 	GSConfS.plugins  = 0;  CDVDConfS.plugins = 0; DEV9ConfS.plugins = 0;
 	PAD1ConfS.plugins = 0; PAD2ConfS.plugins = 0; SPU2ConfS.plugins = 0;

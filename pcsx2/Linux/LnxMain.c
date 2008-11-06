@@ -39,7 +39,7 @@ GtkWidget *MsgDlg;
 
 int main(int argc, char *argv[]) {
 	char *file = NULL;
-	char elfname[256];
+	char elfname[g_MaxPath];
 	int efile = 0;
 	int i = 1;
 

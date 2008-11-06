@@ -43,7 +43,7 @@ bool needReset = TRUE;
 bool RunExe = FALSE;
 
 int efile = 0;
-char elfname[256];
+char elfname[g_MaxPath];
 int Slots[5] = { -1, -1, -1, -1, -1 };
 
 GtkWidget *CpuDlg;
