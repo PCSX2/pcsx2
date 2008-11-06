@@ -69,7 +69,7 @@
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-6</property>
-	      <signal name="clicked" handler="on_Advanced_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:39:26 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -647,7 +647,7 @@
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-6</property>
-	      <signal name="clicked" handler="on_Speed_Hack_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:39:35 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -1268,7 +1268,7 @@ Enabled (Helps SPS, Slow)</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-6</property>
-	      <signal name="clicked" handler="on_Game_Fix_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:39:44 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -1637,7 +1637,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnMemWrite32_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:39:59 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -1787,7 +1787,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnArguments_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:40:09 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -2605,7 +2605,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnLogging_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:40:22 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -2837,7 +2837,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnDumpR_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:40:34 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -3069,7 +3069,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnDumpC_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:40:48 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -3218,7 +3218,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnSetBPC_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:41:07 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -3516,7 +3516,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnSetPC_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:41:00 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -3888,30 +3888,6 @@ Configure them here.&lt;/b&gt;</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">True</property>
 		  <signal name="clicked" handler="OnDebug_memWrite32"/>
-		</widget>
-	      </child>
-
-	      <child>
-		<widget class="GtkButton" id="button69">
-		  <property name="visible">True</property>
-		  <property name="can_default">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="label" translatable="yes">button69</property>
-		  <property name="use_underline">True</property>
-		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
-		</widget>
-	      </child>
-
-	      <child>
-		<widget class="GtkButton" id="button70">
-		  <property name="visible">True</property>
-		  <property name="can_default">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="label" translatable="yes">button70</property>
-		  <property name="use_underline">True</property>
-		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		</widget>
 	      </child>
 	    </widget>
@@ -4480,7 +4456,7 @@ Configure them here.&lt;/b&gt;</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="OnCpu_Cancel"/>
+	      <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:41:37 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -5430,7 +5406,7 @@ Configure them here.&lt;/b&gt;</property>
 		  <property name="use_stock">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">True</property>
-		  <signal name="clicked" handler="OnConfConf_Cancel"/>
+		  <signal name="clicked" handler="On_Dialog_Cancelled" last_modification_time="Thu, 06 Nov 2008 13:41:53 GMT"/>
 		</widget>
 	      </child>
 	    </widget>

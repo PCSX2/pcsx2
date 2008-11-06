@@ -244,7 +244,7 @@ create_AdvDlg (void)
                     G_CALLBACK (on_Advanced_OK),
                     NULL);
   g_signal_connect ((gpointer) button80, "clicked",
-                    G_CALLBACK (on_Advanced_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -523,7 +523,7 @@ create_SpeedHacksDlg (void)
                     G_CALLBACK (on_Speed_Hack_OK),
                     NULL);
   g_signal_connect ((gpointer) button76, "clicked",
-                    G_CALLBACK (on_Speed_Hack_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -648,7 +648,7 @@ create_GameFixDlg (void)
                     G_CALLBACK (on_Game_Fix_OK),
                     NULL);
   g_signal_connect ((gpointer) button83, "clicked",
-                    G_CALLBACK (on_Game_Fix_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -754,7 +754,7 @@ create_MemWrite32 (void)
                     G_CALLBACK (OnMemWrite32_Ok),
                     NULL);
   g_signal_connect ((gpointer) button72, "clicked",
-                    G_CALLBACK (OnMemWrite32_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -842,7 +842,7 @@ create_CmdLine (void)
                     G_CALLBACK (OnArguments_Ok),
                     NULL);
   g_signal_connect ((gpointer) GtkButton_Cancel2, "clicked",
-                    G_CALLBACK (OnArguments_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -1144,7 +1144,7 @@ create_Logging (void)
                     G_CALLBACK (OnLogging_Ok),
                     NULL);
   g_signal_connect ((gpointer) button67, "clicked",
-                    G_CALLBACK (OnLogging_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -1279,7 +1279,7 @@ create_DumpRDlg (void)
                     G_CALLBACK (OnDumpR_Ok),
                     NULL);
   g_signal_connect ((gpointer) button51, "clicked",
-                    G_CALLBACK (OnDumpR_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -1386,7 +1386,7 @@ create_DumpCDlg (void)
                     G_CALLBACK (OnDumpC_Ok),
                     NULL);
   g_signal_connect ((gpointer) button49, "clicked",
-                    G_CALLBACK (OnDumpC_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -1469,7 +1469,7 @@ create_SetBPCDlg (void)
                     G_CALLBACK (OnSetBPC_Ok),
                     NULL);
   g_signal_connect ((gpointer) button47, "clicked",
-                    G_CALLBACK (OnSetBPC_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -1627,7 +1627,7 @@ create_SetPCDlg (void)
                     G_CALLBACK (OnSetPC_Ok),
                     NULL);
   g_signal_connect ((gpointer) button43, "clicked",
-                    G_CALLBACK (OnSetPC_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -1676,8 +1676,6 @@ create_DebugWnd (void)
   GtkWidget *button41;
   GtkWidget *vbuttonbox4;
   GtkWidget *button68;
-  GtkWidget *button69;
-  GtkWidget *button70;
 
   DebugWnd = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_container_set_border_width (GTK_CONTAINER (DebugWnd), 5);
@@ -1814,16 +1812,6 @@ create_DebugWnd (void)
   gtk_container_add (GTK_CONTAINER (vbuttonbox4), button68);
   GTK_WIDGET_SET_FLAGS (button68, GTK_CAN_DEFAULT);
 
-  button69 = gtk_button_new_with_mnemonic (_("button69"));
-  gtk_widget_show (button69);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button69);
-  GTK_WIDGET_SET_FLAGS (button69, GTK_CAN_DEFAULT);
-
-  button70 = gtk_button_new_with_mnemonic (_("button70"));
-  gtk_widget_show (button70);
-  gtk_container_add (GTK_CONTAINER (vbuttonbox4), button70);
-  GTK_WIDGET_SET_FLAGS (button70, GTK_CAN_DEFAULT);
-
   g_signal_connect ((gpointer) GtkRadioButton_EE, "toggled",
                     G_CALLBACK (OnDebug_EEMode),
                     NULL);
@@ -1896,8 +1884,6 @@ create_DebugWnd (void)
   GLADE_HOOKUP_OBJECT (DebugWnd, button41, "button41");
   GLADE_HOOKUP_OBJECT (DebugWnd, vbuttonbox4, "vbuttonbox4");
   GLADE_HOOKUP_OBJECT (DebugWnd, button68, "button68");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button69, "button69");
-  GLADE_HOOKUP_OBJECT (DebugWnd, button70, "button70");
 
   return DebugWnd;
 }
@@ -2093,7 +2079,7 @@ create_CpuDlg (void)
                     G_CALLBACK (OnCpu_Ok),
                     NULL);
   g_signal_connect ((gpointer) GtkButton_Cancel1, "clicked",
-                    G_CALLBACK (OnCpu_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -2622,7 +2608,7 @@ create_ConfDlg (void)
                     G_CALLBACK (OnConfConf_Ok),
                     NULL);
   g_signal_connect ((gpointer) GtkButton_Cancel, "clicked",
-                    G_CALLBACK (OnConfConf_Cancel),
+                    G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */

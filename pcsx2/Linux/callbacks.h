@@ -10,7 +10,7 @@ on_Advanced_OK                         (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-on_Advanced_Cancel                     (GtkButton       *button,
+On_Dialog_Cancelled                    (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -26,15 +26,7 @@ on_Speed_Hack_OK                       (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-on_Speed_Hack_Cancel                   (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 on_Game_Fix_OK                         (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-on_Game_Fix_Cancel                     (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -42,15 +34,7 @@ OnMemWrite32_Ok                        (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-OnMemWrite32_Cancel                    (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 OnArguments_Ok                         (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnArguments_Cancel                     (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -58,15 +42,7 @@ OnLogging_Ok                           (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-OnLogging_Cancel                       (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 OnDumpR_Ok                             (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnDumpR_Cancel                         (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -74,15 +50,7 @@ OnDumpC_Ok                             (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-OnDumpC_Cancel                         (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 OnSetBPC_Ok                            (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnSetBPC_Cancel                        (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -95,10 +63,6 @@ OnSetBPA_Cancel                        (GtkButton       *button,
 
 void
 OnSetPC_Ok                             (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnSetPC_Cancel                         (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -159,10 +123,6 @@ OnDebug_memWrite32                     (GtkButton       *button,
 
 void
 OnCpu_Ok                               (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnCpu_Cancel                           (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -271,10 +231,6 @@ OnConfConf_BiosPath                    (GtkButton       *button,
 
 void
 OnConfConf_Ok                          (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnConfConf_Cancel                      (GtkButton       *button,
                                         gpointer         user_data);
 
 void

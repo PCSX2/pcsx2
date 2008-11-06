@@ -17,6 +17,11 @@
  */
 
 #include "GtkGui.h"
+void On_Dialog_Cancelled(GtkButton* button, gpointer user_data) {
+	gtk_widget_destroy((GtkWidget*)gtk_widget_get_toplevel ((GtkWidget*)button));
+	gtk_widget_set_sensitive(MainWindow, TRUE);
+	gtk_main_quit();
+}
 
 void StartGui() {
 	GtkWidget *Menu;
@@ -387,12 +392,6 @@ void OnArguments_Ok(GtkButton *button, gpointer user_data) {
 	gtk_main_quit();
 }
 
-void OnArguments_Cancel(GtkButton* button, gpointer user_data) {
-	gtk_widget_destroy(CmdLine);
-	gtk_widget_set_sensitive(MainWindow, TRUE);
-	gtk_main_quit();
-}
-
 void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data) {
 	GtkWidget *widgetCmdLine;
 
@@ -450,12 +449,6 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	
 	cpuRestartCPU();
 	
-	gtk_widget_destroy(CpuDlg);
-	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
-	gtk_main_quit();
-}
-
-void OnCpu_Cancel(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(CpuDlg);
 	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
@@ -534,12 +527,6 @@ void OnLogging_Ok(GtkButton *button, gpointer user_data) {
     SaveConfig();
 #endif
 
-	gtk_widget_destroy(LogDlg);
-	gtk_widget_set_sensitive(MainWindow, TRUE);
-	gtk_main_quit();
-}
-
-void OnLogging_Cancel(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(LogDlg);
 	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
@@ -637,12 +624,7 @@ void on_Game_Fixes(GtkMenuItem *menuitem, gpointer user_data)
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
 	}
-void on_Game_Fix_Cancel(GtkButton *button, gpointer user_data)
-{
-	gtk_widget_destroy(GameFixDlg);
-	gtk_widget_set_sensitive(MainWindow, TRUE);
-	gtk_main_quit();
-}
+
 void on_Game_Fix_OK(GtkButton *button, gpointer user_data) 
 {
 	
@@ -719,12 +701,7 @@ void on_Speed_Hack_Speed(GtkButton *button, gpointer user_data)
 	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", TRUE);
 	
 }
-void on_Speed_Hack_Cancel(GtkButton *button, gpointer user_data)
-{
-	gtk_widget_destroy(SpeedHacksDlg);
-	gtk_widget_set_sensitive(MainWindow, TRUE);
-	gtk_main_quit();
-}
+
 void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 {
 	Config.Hacks = 0;
@@ -828,12 +805,7 @@ void on_Advanced_Defaults(GtkButton *button, gpointer user_data)
 	
 	setAdvancedOptions();
       }
-void on_Advanced_Cancel(GtkButton *button, gpointer user_data)
-{
-	gtk_widget_destroy(AdvDlg);
-	gtk_widget_set_sensitive(MainWindow, TRUE);
-	gtk_main_quit();
-}
+
 void on_Advanced_OK(GtkButton *button, gpointer user_data) 
 {
 	Config.sseMXCSR &= 0x1fbf;
