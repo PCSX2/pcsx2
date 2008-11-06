@@ -27,7 +27,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) &quot;$(SolutionDir)..\common\svnrev_template.h&quot; &quot;$(ProjectDir)svnrev.h&quot;"
+				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -133,7 +133,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) &quot;$(SolutionDir)..\common\svnrev_template.h&quot; &quot;$(ProjectDir)svnrev.h&quot;"
+				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -231,7 +231,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) &quot;$(SolutionDir)..\common\svnrev_template.h&quot; &quot;$(ProjectDir)svnrev.h&quot;"
+				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -340,7 +340,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) &quot;$(SolutionDir)..\common\svnrev_template.h&quot; &quot;$(ProjectDir)svnrev.h&quot;"
+				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -437,7 +437,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\SubWCRev.exe $(ProjectDir) &quot;$(SolutionDir)..\common\svnrev_template.h&quot; &quot;$(ProjectDir)svnrev.h&quot;"
+				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"

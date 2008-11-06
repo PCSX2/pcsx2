@@ -130,15 +130,46 @@ void SysMessage(char *fmt, ...)
 
 static void InitLibraryName()
 {
-	sprintf_s( libraryName, 256, "GiGaHeRz SPU2 PPr %d%s"
-#ifdef _DEBUG
+#ifdef PUBLIC
+
+	// Public Release!
+	// Output a simplified string that's just our name:
+
+	strcpy( libraryName, "SPU2ghz Playground" );
+
+#elif defined( SVN_REV_UNKNOWN )
+
+	// Unknown revision.
+	// Output a name that includes devbuild status but not
+	// subversion revision tags:
+
+	strcpy( libraryName, "SPU2ghz Playground"
+#	ifdef _DEBUG_FAST
 		"-Debug"
-#elif !defined( PUBLIC )
+#	elif defined( DEBUG )
+		"-Debug/Strict"		// strict debugging is slow!
+#	else
 		"-Dev"
-#endif
+#	endif
+		);
+#else
+
+	// Use TortoiseSVN's SubWCRev utility's output
+	// to label the specific revision:
+
+	sprintf_s( libraryName, 256, "SPU2ghz PPr %d%s"
+#	ifdef _DEBUG_FAST
+		"-Debug"
+#	elif defined( _DEBUG )
+		"-Debug/Strict"		// strict debugging is slow!
+#	else
+		"-Dev"
+#	endif
 		,SVN_REV,
 		SVN_MODS ? "m" : ""
 	);
+#endif
+
 }
 
 EXPORT_C_(u32) PS2EgetLibType() 
@@ -173,7 +204,7 @@ EXPORT_C_(s32) SPU2test() {
 
 __forceinline s16 * __fastcall GetMemPtr(u32 addr)
 {
-#ifndef DEBUG_FAST
+#ifndef _DEBUG_FAST
 	// In case you're wondering, this assert is the reason spu2ghz
 	// runs so incrediously slow in Debug mode. :P
 	assert(addr<0x100000);
@@ -676,10 +707,10 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 	//  If for some reason our clock value seems way off base, just mix
 	//  out a little bit, skip the rest, and hope the ship "rights" itself later on.
 
-	if( dClocks > TickInterval*72 )
+	if( dClocks > TickInterval*96 )
 	{
 		ConLog( " * SPU2 > TimeUpdate Sanity Check (Tick Delta: %d) (PS2 Ticks: %d)\n", dClocks/TickInterval, cClocks/TickInterval );
-		dClocks = TickInterval*72;
+		dClocks = TickInterval*96;
 		lClocks = cClocks-dClocks;
 	}
 
@@ -737,7 +768,7 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 			{
 				Cores[1].MADR=Cores[1].TADR;
 				Cores[1].DMAICounter=0;
-				ConLog( "* SPU2 > AutoDMA 7 Callback!  %d\n", Cycles );
+				//ConLog( "* SPU2 > DMA 7 Callback!  %d\n", Cycles );
 				if(dma7callback) dma7callback();
 			}
 			else {
