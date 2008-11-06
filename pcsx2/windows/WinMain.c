@@ -172,23 +172,23 @@ void ResetMenuSlots() {
 }
 
 void UpdateMenuSlots() {
-	char str[256];
+	char str[g_MaxPath];
 	int i;
 
 	for (i=0; i<5; i++) {
-		sprintf (str, "sstates\\%8.8X.%3.3d", ElfCRC, i);
+		sprintf_s (str, g_MaxPath, "sstates\\%8.8X.%3.3d", ElfCRC, i);
 		Slots[i] = CheckState(str);
 	}
 }
 
 void States_Load(int num) {
-	char Text[256];
+	char Text[g_MaxPath];
 	int ret;
 
 	efile = 0;
 	RunExecute(0);
 
-	sprintf (Text, "sstates\\%8.8X.%3.3d", ElfCRC, num);
+	sprintf_s(Text, g_MaxPath, "sstates\\%8.8X.%3.3d", ElfCRC, num);
 	ret = LoadState(Text);
 	if (ret == 0)
 		sprintf (Text, _("*PCSX2*: Loaded State %d"), num+1);
@@ -217,9 +217,9 @@ void States_Save(int num) {
 
 void OnStates_LoadOther() {
 	OPENFILENAME ofn;
-	char szFileName[256];
-	char szFileTitle[256];
-	char szFilter[256];
+	char szFileName[g_MaxPath];
+	char szFileTitle[g_MaxPath];
+	char szFilter[g_MaxPath];
 
 	memset(&szFileName,  0, sizeof(szFileName));
 	memset(&szFileTitle, 0, sizeof(szFileTitle));
@@ -234,16 +234,16 @@ void OnStates_LoadOther() {
     ofn.nMaxCustFilter		= 0;
     ofn.nFilterIndex		= 1;
     ofn.lpstrFile			= szFileName;
-    ofn.nMaxFile			= 256;
+    ofn.nMaxFile			= g_MaxPath;
     ofn.lpstrInitialDir		= NULL;
     ofn.lpstrFileTitle		= szFileTitle;
-    ofn.nMaxFileTitle		= 256;
+    ofn.nMaxFileTitle		= g_MaxPath;
     ofn.lpstrTitle			= NULL;
     ofn.lpstrDefExt			= "EXE";
     ofn.Flags				= OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
 
 	if (GetOpenFileName ((LPOPENFILENAME)&ofn)) {
-		char Text[256];
+		char Text[g_MaxPath];
 		int ret;
 
 		efile = 2;
@@ -252,8 +252,8 @@ void OnStates_LoadOther() {
 		ret = LoadState(szFileName);
 
 		if (ret == 0)
-			 sprintf(Text, _("*PCSX2*: Saving State %s"), szFileName);
-		else sprintf(Text, _("*PCSX2*: Error Saving State %s"), szFileName);
+			 sprintf_s(Text, g_MaxPath, _("*PCSX2*: Saving State %s"), szFileName);
+		else sprintf_s(Text, g_MaxPath, _("*PCSX2*: Error Saving State %s"), szFileName);
 		StatusSet(Text);
 
 		Cpu->Execute();
@@ -270,9 +270,9 @@ const char* g_pRunGSState = NULL;
 
 void OnStates_SaveOther() {
 	OPENFILENAME ofn;
-	char szFileName[256];
-	char szFileTitle[256];
-	char szFilter[256];
+	char szFileName[g_MaxPath];
+	char szFileTitle[g_MaxPath];
+	char szFilter[g_MaxPath];
 
 	memset(&szFileName,  0, sizeof(szFileName));
 	memset(&szFileTitle, 0, sizeof(szFileTitle));
@@ -287,22 +287,22 @@ void OnStates_SaveOther() {
     ofn.nMaxCustFilter		= 0;
     ofn.nFilterIndex		= 1;
     ofn.lpstrFile			= szFileName;
-    ofn.nMaxFile			= 256;
+    ofn.nMaxFile			= g_MaxPath;
     ofn.lpstrInitialDir		= NULL;
     ofn.lpstrFileTitle		= szFileTitle;
-    ofn.nMaxFileTitle		= 256;
+    ofn.nMaxFileTitle		= g_MaxPath;
     ofn.lpstrTitle			= NULL;
     ofn.lpstrDefExt			= "EXE";
     ofn.Flags				= OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
 
 	if (GetOpenFileName ((LPOPENFILENAME)&ofn)) {
-		char Text[256];
+		char Text[g_MaxPath];
 		int ret;
 
 		ret = SaveState(szFileName);
 		if (ret == 0)
-			 sprintf(Text, _("*PCSX2*: Loaded State %s"), szFileName);
-		else sprintf(Text, _("*PCSX2*: Error Loading State %s"), szFileName);
+			 sprintf_s(Text, g_MaxPath, _("*PCSX2*: Loaded State %s"), szFileName);
+		else sprintf_s(Text, g_MaxPath, _("*PCSX2*: Error Loading State %s"), szFileName);
 		StatusSet(Text);
 
 		RunExecute(1);
@@ -1594,8 +1594,8 @@ void CreateMainWindow(int nCmdShow) {
 
 BOOL Open_File_Proc(char * filename) {
 	OPENFILENAME ofn;
-	char szFileName[ 256 ];
-	char szFileTitle[ 256 ];
+	char szFileName[ g_MaxPath ];
+	char szFileTitle[ g_MaxPath ];
 	char * filter = "ELF Files (*.ELF)\0*.ELF\0ALL Files (*.*)\0*.*\0";
 
 	memset( &szFileName, 0, sizeof( szFileName ) );
@@ -1608,10 +1608,10 @@ BOOL Open_File_Proc(char * filename) {
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 1;
 	ofn.lpstrFile			= szFileName;
-	ofn.nMaxFile			= 256;
+	ofn.nMaxFile			= g_MaxPath;
 	ofn.lpstrInitialDir		= NULL;
 	ofn.lpstrFileTitle		= szFileTitle;
-	ofn.nMaxFileTitle		= 256;
+	ofn.nMaxFileTitle		= g_MaxPath;
 	ofn.lpstrTitle			= NULL;
 	ofn.lpstrDefExt			= "ELF";
 	ofn.Flags				= OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
@@ -1652,9 +1652,7 @@ BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 				GetDlgItemText(hDlg, IDC_CMDLINE, tmp, 256);
 
-				ZeroMemory(args, 256);
-				strcpy(args, tmp);
-				args[255]=0;
+				strcpy_s(args, 256, tmp);
                 
                 EndDialog(hDlg, TRUE);
             } else if (LOWORD(wParam) == IDCANCEL) {

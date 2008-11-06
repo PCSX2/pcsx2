@@ -439,10 +439,10 @@ void cpuBranchTest()
 
 	// Signal for an immediate branch test! This is important! The IOP must
 	// be able to act on the state the EE has given it before executing any
-	// additional code.  Dothing this actually fixes some games that used to crash
+	// additional code.  Doing this actually fixes some games that used to crash
 	// when trying to boot them through the BIOS.
 
-	psxBranchTest();
+	//psxBranchTest();
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;

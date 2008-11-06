@@ -52,7 +52,7 @@ BOOL OnConfigureDialog(HWND hW) {
 	HWND hWC_USB=GetDlgItem(hW,IDC_LISTUSB);
 	HWND hWC_FW=GetDlgItem(hW,IDC_LISTFW); 
 	HWND hWC_BIOS=GetDlgItem(hW,IDC_LISTBIOS);
-	char tmpStr[256];
+	char tmpStr[g_MaxPath];
 	char *lp;
 	int i;
 
@@ -62,7 +62,7 @@ BOOL OnConfigureDialog(HWND hW) {
 
 	do {
 		if (Find==INVALID_HANDLE_VALUE) break;
-		sprintf(tmpStr,"%s%s", Config.PluginsDir, FindData.cFileName);
+		CombinePaths( tmpStr, Config.PluginsDir, FindData.cFileName );
 		Lib = LoadLibrary(tmpStr);
 		if (Lib == NULL) { SysPrintf("%s: %d\n", tmpStr, GetLastError()); continue; }
 
@@ -329,7 +329,7 @@ static void TestPlugin( HWND hW, int confs, const char* name )
 	int (*conf)();
 	int ret = 0;
 	char * pDLL = GetComboSel(hW, confs);
-	char file[256];
+	char file[g_MaxPath];
 
 	if (pDLL== NULL) return;
 	CombinePaths( file, Config.PluginsDir, pDLL );

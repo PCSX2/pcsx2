@@ -521,13 +521,13 @@ u32 SuperVUGetVIAddr(int reg, int read)
 void SuperVUDumpBlock(list<VuBaseBlock*>& blocks, int vuindex)
 {
 	FILE *f;
-	char filename[ 256 ], str[256];
+	char filename[ g_MaxPath ], str[256];
 	u32 *mem;
 	u32 i;
 
 #ifdef _WIN32
 	CreateDirectory("dumps", NULL);
-	sprintf( filename, "dumps\\svu%c_%.4X.txt", s_vu?'1':'0', s_pFnHeader->startpc );
+	sprintf_s( filename, g_MaxPath, "dumps\\svu%c_%.4X.txt", s_vu?'1':'0', s_pFnHeader->startpc );
 #else
 	mkdir("dumps", 0755);
 	sprintf( filename, "dumps/svu%c_%.4X.txt", s_vu?'1':'0', s_pFnHeader->startpc );

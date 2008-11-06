@@ -149,7 +149,7 @@ BASEBLOCKEX* PSX_GETBLOCKEX(BASEBLOCK* p)
 static void iDumpBlock( int startpc, s8 * ptr )
 {
 	FILE *f;
-	char filename[ 256 ];
+	char filename[ g_MaxPath ];
 #ifdef __LINUX__
 	char command[256];
 #endif
@@ -161,7 +161,7 @@ static void iDumpBlock( int startpc, s8 * ptr )
 	SysPrintf( "dump1 %x:%x, %x\n", startpc, psxpc, psxRegs.cycle );
 #ifdef _WIN32
 	CreateDirectory("dumps", NULL);
-sprintf( filename, "dumps\\psxdump%.8X.txt", startpc);
+	sprintf_s( filename, g_MaxPath, "dumps\\psxdump%.8X.txt", startpc);
 #else
 	mkdir("dumps", 0755);
 	sprintf( filename, "dumps/psxdump%.8X.txt", startpc);

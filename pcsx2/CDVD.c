@@ -131,16 +131,15 @@ static int mg_BIToffset(u8 *buffer);
 FILE *_cdvdOpenMechaVer() {
 	char *ptr;
 	int i;
-	char file[256];
-	char Bios[256];
+	char file[g_MaxPath];
+	char Bios[g_MaxPath];
 	FILE* fd;
 
 	// get the name of the bios file
-	strcpy(Bios, Config.BiosDir);
-	strcat(Bios, Config.Bios);
+	CombinePaths( Bios, Config.BiosDir, Config.Bios );
 	
 	// use the bios filename to get the name of the mecha ver file
-	sprintf(file, "%s", Bios);
+	strcpy(file, Bios);
 	ptr = file; i = (int)strlen(file);
 	while (i > 0) { if (ptr[i] == '.') break; i--; }
 	ptr[i+1] = '\0';
@@ -175,16 +174,15 @@ s32 cdvdGetMechaVer(u8* ver)
 FILE *_cdvdOpenNVM() {
 	char *ptr;
 	int i;
-	char Bios[256];
-	char file[256];
+	char Bios[g_MaxPath];
+	char file[g_MaxPath];
 	FILE* fd;
 
 	// get the name of the bios file
-	strcpy(Bios, Config.BiosDir);
-	strcat(Bios, Config.Bios);
+	CombinePaths( Bios, Config.BiosDir, Config.Bios );
 	
 	// use the bios filename to get the name of the nvm file
-	sprintf(file, "%s", Bios);
+	strcpy( file, Bios );
 	ptr = file; i = (int)strlen(file);
 	while (i > 0) { if (ptr[i] == '.') break; i--; }
 	ptr[i+1] = '\0';
@@ -364,7 +362,7 @@ s32 cdvdWriteConfig(const u8* config)
 
 
 void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
-	char str[256];
+	char str[g_MaxPath];
 	int numbers;
 	int letters;
 	unsigned int  key_0_3;
@@ -571,7 +569,7 @@ s32 cdvdGetDiskType() {
 
 	cdvd.Type = CDVDgetDiskType();
 	if (cdvd.Type == CDVD_TYPE_PS2CD && needReset == 1) {
-		char str[256];
+		char str[g_MaxPath];
 		if (GetPS2ElfName(str) == 1) {
 			cdvd.Type = CDVD_TYPE_PSCD;
 		} // ENDIF- Does the SYSTEM.CNF file only say "BOOT="? PS1 CD then.
@@ -783,7 +781,7 @@ int  cdvdInterrupt() {
 void cdvdNewDiskCB() {
 	cdvd.Type = CDVDgetDiskType();
 	if(cdvd.Type == CDVD_TYPE_PS2CD) {
-		char str[256];
+		char str[g_MaxPath];
 		if(GetPS2ElfName(str) == 1) {
 			cdvd.Type = CDVD_TYPE_PSCD;
 		} // ENDIF- Does the SYSTEM.CNF file only say "BOOT="? PS1 CD then.

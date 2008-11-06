@@ -110,13 +110,13 @@ void recResetVU1( void ) {
 static void iDumpBlock()
 {
 	FILE *f;
-	char filename[ 256 ];
+	char filename[ g_MaxPath ];
 	u32 *mem;
 	u32 i;
 
 #ifdef _WIN32
 	CreateDirectory("dumps", NULL);
-	sprintf( filename, "dumps\\vu%.4X.txt", VU1.VI[ REG_TPC ].UL );
+	sprintf_s( filename, g_MaxPath, "dumps\\vu%.4X.txt", VU1.VI[ REG_TPC ].UL );
 #else
 	mkdir("dumps", 0755);
 	sprintf( filename, "dumps/vu%.4X.txt", VU1.VI[ REG_TPC ].UL );

@@ -886,15 +886,30 @@ char* mystrlwr( char* string )
     return string;
 }
 
+static void GetSaveStateFilename( char* dest )
+{
+	char elfcrcText[72];
+	sprintf( elfcrcText, "%8.8X.%3.3d", ElfCRC, StatesC );
+	CombinePaths( dest, SSTATES_DIR, elfcrcText );
+}
+
+static void GetGSStateFilename( char* dest )
+{
+	char gsText[72];
+	sprintf( gsText, "/%8.8X.%d.gs", ElfCRC, StatesC);
+	CombinePaths( dest, SSTATES_DIR, gsText );
+}
+
 void ProcessFKeys(int fkey, int shift)
 {
-    char Text[256];
 	int ret;
+    char Text[g_MaxPath];
 
     assert(fkey >= 1 && fkey <= 12 );
+
     switch(fkey) {
         case 1:
-			sprintf(Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, StatesC);
+			GetSaveStateFilename(Text);
 			ret = SaveState(Text);
 			break;
 		case 2:
@@ -904,12 +919,12 @@ void ProcessFKeys(int fkey, int shift)
 				StatesC = (StatesC+1)%NUM_STATES;
 			SysPrintf("*PCSX2*: Selected State %ld\n", StatesC);
 			if( GSchangeSaveState != NULL ) {
-				sprintf(Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, StatesC);
+				GetSaveStateFilename(Text);
 				GSchangeSaveState(StatesC, Text);
 			}
 			break;
-		case 3:			
-			sprintf (Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, StatesC);
+		case 3:	
+			GetSaveStateFilename(Text);
 			ret = LoadState(Text);
 			break;	
 
@@ -999,17 +1014,19 @@ void ProcessFKeys(int fkey, int shift)
 			else {
 				if( strgametitle[0] != 0 ) {
 					// only take the first two words
-					char name[255], temptitle[255], *tok;
-					sprintf(temptitle, "%s", strgametitle);
+					char name[256], *tok;
+					char gsText[256];
+
 					tok = strtok(strgametitle, " ");
 					sprintf(name, "%s_", mystrlwr(tok));
 					tok = strtok(NULL, " ");
 					if( tok != NULL ) strcat(name, tok);
 
-					sprintf(Text, SSTATES_DIR "/%s.%d.gs", name, StatesC);
+					sprintf( gsText, "%s.%d.gs", name, StatesC);
+					CombinePaths( Text, SSTATES_DIR, gsText );
 				}
 				else
-					sprintf(Text, SSTATES_DIR "/%8.8X.%d.gs", ElfCRC, StatesC);
+					GetGSStateFilename( Text );
 
 				SaveGSState(Text);
 			}

@@ -3038,14 +3038,13 @@ void memWrite128(u32 mem, u64 *value) {
 
 void loadBiosRom(char *ext, u8 *dest) {
 	struct stat buf;
-	char Bios1[256];
-	char Bios[256];
+	char Bios1[g_MaxPath];
+	char Bios[g_MaxPath];
 	FILE *fp;
 	char *ptr;
 	int i;
 
-	strcpy(Bios, Config.BiosDir);
-	strcat(Bios, Config.Bios);
+	CombinePaths( Bios, Config.BiosDir, Config.Bios );
 
 	sprintf(Bios1, "%s.%s", Bios, ext);
 	if (stat(Bios1, &buf) != -1) {	
@@ -3082,7 +3081,7 @@ void loadBiosRom(char *ext, u8 *dest) {
 
 void memReset() {
 	struct stat buf;
-	char Bios[256];
+	char Bios[g_MaxPath];
 	FILE *fp;
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -3094,8 +3093,7 @@ void memReset() {
 	memset(psS, 0, 0x00004000);
 #endif
 
-	strcpy(Bios, Config.BiosDir);
-	strcat(Bios, Config.Bios);
+	CombinePaths( Bios, Config.BiosDir, Config.Bios );
 
 	if (stat(Bios, &buf) == -1) {	
 		SysMessage(_("Unable to load bios: '%s', PCSX2 can't run without that"), Bios);
