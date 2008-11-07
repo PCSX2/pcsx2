@@ -35,7 +35,6 @@ extern "C" {
 }
 #endif
 
-
 // Helper Functions
 void FindPlugins();
 void OnConf_Gs(GtkMenuItem *menuitem, gpointer user_data);
@@ -65,39 +64,9 @@ _PS2EgetLibType		PS2EgetLibType = NULL;
 _PS2EgetLibVersion2	PS2EgetLibVersion2 = NULL;
 _PS2EgetLibName		PS2EgetLibName = NULL;
 
-// Evil Macros - Destroy when possible
-#define FindComboText(combo,plist, list, conf) \
-	if (strlen(conf) > 0) { \
-		SetActiveComboItem(GTK_COMBO_BOX(combo), plist, list, conf); \
-	}
-	
-#define GetComboText(combo,list,conf) \
-	{ \
-	int i; \
-	char *tmp = (char*)gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo)); \
-	for (i=2;i<255;i+=2) { \
-		if (!strcmp(tmp, list[i-1])) { \
-			strcpy(conf, list[i-2]); \
-			break; \
-		} \
-	} \
-	}
-
-
+void SetActiveComboItem(GtkComboBox *widget,char plist[255][255], GList *list, char *conf);
+void SetComboToGList(GtkComboBox *widget, GList *list);
 static void ConfPlugin(PluginConf confs, char* plugin, const char* name);
 static void TestPlugin(PluginConf confs, char* plugin, const char* name);
-
-#define ConfCreatePConf(name, type) \
-        type##ConfS.Combo = lookup_widget(ConfDlg, "GtkCombo_" name); \
-	SetComboToGList(GTK_COMBO_BOX(type##ConfS.Combo), type##ConfS.PluginNameList);  \
-	FindComboText(type##ConfS.Combo, type##ConfS.plist, type##ConfS.PluginNameList, Config.type); 
-
-#define ComboAddPlugin(type) { \
-    sprintf (name, "%s %ld.%ld.%ld", PS2EgetLibName(), (version>>8)&0xff ,version&0xff, (version>>24)&0xff); \
-	type##ConfS.plugins+=2; \
-	strcpy(type##ConfS.plist[type##ConfS.plugins-1], name); \
-	strcpy(type##ConfS.plist[type##ConfS.plugins-2], ent->d_name); \
-	type##ConfS.PluginNameList = g_list_append(type##ConfS.PluginNameList, type##ConfS.plist[type##ConfS.plugins-1]); \
-}
 
 #endif // __CONFIGDLG_H__

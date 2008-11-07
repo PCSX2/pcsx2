@@ -26,45 +26,54 @@ extern "C" {
 #include "Linux.h"
 }
 
-#define GetValue(name, var) \
+	FILE *pref_file;
+	char *data;
+
+static void SetValue( const char *name, char *var)
+{
+	fprintf (pref_file,"%s = %s\n", name, var);
+}
+
+static void SetValuel( const char *name, s32 var)
+{
+	fprintf (pref_file,"%s = %x\n", name, var);
+}
+
+#define GetValue(name, var) {\
+	char * tmp; \
 	tmp = strstr(data, name); \
 	if (tmp != NULL) { \
 		tmp+=strlen(name); \
 		while ((*tmp == ' ') || (*tmp == '=')) tmp++; \
 		if (*tmp != '\n') sscanf(tmp, "%s", var); \
-	}
+	} \
+}
 
-#define GetValuel(name, var) \
+#define GetValuel(name, var) {\
+	char * tmp; \
 	tmp = strstr(data, name); \
 	if (tmp != NULL) { \
 		tmp+=strlen(name); \
 		while ((*tmp == ' ') || (*tmp == '=')) tmp++; \
 		if (*tmp != '\n') sscanf(tmp, "%x", &var); \
-	}
-
-#define SetValue(name, var) \
-	fprintf (f,"%s = %s\n", name, var);
-
-#define SetValuel(name, var) \
-	fprintf (f,"%s = %x\n", name, var);
-
+	} \
+}
+	
 int LoadConfig() {
 	struct stat buf;
-	FILE *f;
 	int size;
-	char *data,*tmp;
-
+	
 	if (stat(cfgfile, &buf) == -1) return -1;
 	size = buf.st_size;
 
-	f = fopen(cfgfile,"r");
-	if (f == NULL) return -1;
+	pref_file = fopen(cfgfile,"r");
+	if (pref_file == NULL) return -1;
 
 	data = (char*)malloc(size);
 	if (data == NULL) return -1;
 
-	fread(data, 1, size, f);
-	fclose(f);
+	fread(data, 1, size, pref_file);
+	fclose(pref_file);
 
 	GetValue("Bios", Config.Bios);
 	Config.Lang[0] = 0;
@@ -76,7 +85,6 @@ int LoadConfig() {
 	GetValue("Mcd1", Config.Mcd1);
 	GetValue("Mcd2", Config.Mcd2);
 
-	// plugins
 	GetValue("GS",   Config.GS);
 	GetValue("SPU2", Config.SPU2);
 	GetValue("CDVD", Config.CDVD);
@@ -86,19 +94,14 @@ int LoadConfig() {
 	GetValue("USB",  Config.USB);
 	GetValue("FW",  Config.FW);
 	
-	
-	// cpu
 	GetValuel("Options", Config.Options);
-	//hacks
 	GetValuel("Hacks",        Config.Hacks);
 	GetValuel("Fixes",        Config.GameFixes);
 	
 	Config.sseMXCSR = DEFAULT_sseMXCSR;
 	Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
-	
-	//sseMXCSR
+
 	GetValuel("sseMXCSR",        Config.sseMXCSR);
-	//sseVUMXCSR
 	GetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
 
 	GetValuel("Patch",      Config.Patch);
@@ -124,12 +127,10 @@ int LoadConfig() {
 /////////////////////////////////////////////////////////
 
 void SaveConfig() {
-	FILE *f;
 
-	f = fopen(cfgfile,"w");
-	if (f == NULL) return;
+	pref_file = fopen(cfgfile,"w");
+	if (pref_file == NULL) return;
 
-	// interface
 	SetValue("Bios", Config.Bios);
 	SetValue("Lang",    Config.Lang);
 	SetValue("PluginsDir", Config.PluginsDir);
@@ -138,7 +139,7 @@ void SaveConfig() {
 	SetValuel("ThPriority", Config.ThPriority);
 	SetValue("Mcd1", Config.Mcd1);
 	SetValue("Mcd2", Config.Mcd2);
-	// plugins
+
 	SetValue("GS",   Config.GS);
 	SetValue("SPU2", Config.SPU2);
 	SetValue("CDVD", Config.CDVD);
@@ -147,16 +148,14 @@ void SaveConfig() {
 	SetValue("DEV9", Config.DEV9);
 	SetValue("USB",  Config.USB);
 	SetValue("FW",  Config.FW);
-	//cpu
+	
 	SetValuel("Options",        Config.Options);
-	//hacks
 	SetValuel("Hacks",        Config.Hacks);
 	SetValuel("Fixes",        Config.GameFixes);
-	//sseMXCSR
+
 	SetValuel("sseMXCSR",        Config.sseMXCSR);
-	//sseVUMXCSR
 	SetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
-	// misc
+
 	SetValuel("Patch",      Config.Patch);
 
 #ifdef PCSX2_DEVBUILD
@@ -164,7 +163,7 @@ void SaveConfig() {
 #endif
 
 
-	fclose(f);
+	fclose(pref_file);
 
 	return;
 }

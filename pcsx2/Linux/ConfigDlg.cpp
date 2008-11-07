@@ -18,6 +18,27 @@
 
 #include "ConfigDlg.h"
 
+static void FindComboText(GtkWidget *combo, char plist[255][255], GList *list, char *conf)
+{
+	if (strlen(conf) > 0) { 
+		SetActiveComboItem(GTK_COMBO_BOX(combo), plist, list, conf); 
+	}
+}
+
+	
+static void GetComboText(GtkWidget *combo, char plist[255][255], char *conf)
+{
+	int i; 
+	
+	char *tmp = (char*)gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo)); 
+	for (i=2;i<255;i+=2) { 
+		if (!strcmp(tmp, plist[i-1])) { 
+			strcpy(conf, plist[i-2]); 
+			break; 
+		} 
+	} 
+}
+
 static void ConfPlugin(PluginConf confs, char* plugin, const char* name)
 {
 	void *drv;
@@ -179,7 +200,7 @@ void SetActiveComboItem(GtkComboBox *widget,char plist[255][255], GList *list, c
 }
 
 void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
-	GetComboText(GSConfS.Combo, GSConfS.plist, Config.GS)
+	GetComboText(GSConfS.Combo, GSConfS.plist, Config.GS);
 	GetComboText(PAD1ConfS.Combo, PAD1ConfS.plist, Config.PAD1);
 	GetComboText(PAD2ConfS.Combo, PAD2ConfS.plist, Config.PAD2);
 	GetComboText(SPU2ConfS.Combo, SPU2ConfS.plist, Config.SPU2);
@@ -321,18 +342,28 @@ void SetComboToGList(GtkComboBox *widget, GList *list)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
 }
 
+static void ConfCreatePConf(const char *name, PluginConf *confs, char *config)
+{
+	char tmp[50];
+	
+	sprintf (tmp, "GtkCombo_%s", name); 
+        confs->Combo = lookup_widget(ConfDlg, tmp); 
+	SetComboToGList(GTK_COMBO_BOX(confs->Combo), confs->PluginNameList);  
+	FindComboText(confs->Combo, confs->plist, confs->PluginNameList, config); 
+}
+
 void UpdateConfDlg() {
         FindPlugins();
 
-        ConfCreatePConf("Gs", GS);
-        ConfCreatePConf("Pad1", PAD1);
-        ConfCreatePConf("Pad2", PAD2);
-        ConfCreatePConf("Spu2", SPU2);
-        ConfCreatePConf("Cdvd", CDVD);
-        ConfCreatePConf("Dev9", DEV9);
-        ConfCreatePConf("Usb",  USB);
-        ConfCreatePConf("FW",  FW);
-        ConfCreatePConf("Bios", Bios);
+        ConfCreatePConf("Gs", &GSConfS, Config.GS);
+        ConfCreatePConf("Pad1", &PAD1ConfS, Config.PAD1);
+        ConfCreatePConf("Pad2", &PAD2ConfS, Config.PAD2);
+        ConfCreatePConf("Spu2", &SPU2ConfS, Config.SPU2);
+        ConfCreatePConf("Cdvd", &CDVDConfS, Config.CDVD);
+        ConfCreatePConf("Dev9", &DEV9ConfS, Config.DEV9);
+        ConfCreatePConf("Usb",  &USBConfS, Config.USB);
+        ConfCreatePConf("FW",  &FWConfS, Config.FW);
+        ConfCreatePConf("Bios", &BiosConfS, Config.Bios);
 }
 
 void OnConfConf_PluginsPath(GtkButton *button, gpointer user_data) {
@@ -396,6 +427,14 @@ void OnConf_Conf(GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_main();
 }
 
+static void ComboAddPlugin(char name[g_MaxPath], PluginConf *confs, u32 version, struct dirent *ent) {
+	sprintf (name, "%s %ld.%ld.%ld", PS2EgetLibName(), (version>>8)&0xff ,version&0xff, (version>>24)&0xff); 
+	confs->plugins+=2; 
+	strcpy(confs->plist[confs->plugins-1], name); 
+	strcpy(confs->plist[confs->plugins-2], ent->d_name); 
+	confs->PluginNameList = g_list_append(confs->PluginNameList, confs->plist[confs->plugins-1]); 
+}
+
 void FindPlugins() {
 	DIR *dir;
 	struct dirent *ent;
@@ -436,7 +475,7 @@ void FindPlugins() {
 		if (type & PS2E_LT_GS) {
 			version = PS2EgetLibVersion2(PS2E_LT_GS);
 			if (((version >> 16)&0xff) == PS2E_GS_VERSION) {
-				ComboAddPlugin(GS);
+				ComboAddPlugin(name, &GSConfS, version, ent);
 			}
             else
                 SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
@@ -448,39 +487,39 @@ void FindPlugins() {
 			version = PS2EgetLibVersion2(PS2E_LT_PAD);
 			if (((version >> 16)&0xff) == PS2E_PAD_VERSION && query) {
 				if (query() & 0x1)
-					ComboAddPlugin(PAD1);
+					ComboAddPlugin(name, &PAD1ConfS, version, ent);
 				if (query() & 0x2)
-					ComboAddPlugin(PAD2);
+					ComboAddPlugin(name, &PAD2ConfS, version, ent);
 			} else SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
 		}
 		if (type & PS2E_LT_SPU2) {
 			version = PS2EgetLibVersion2(PS2E_LT_SPU2);
 			if (((version >> 16)&0xff) == PS2E_SPU2_VERSION) {
-				ComboAddPlugin(SPU2);
+				ComboAddPlugin(name, &SPU2ConfS, version, ent);
 			} else SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
 		}
 		if (type & PS2E_LT_CDVD) {
 			version = PS2EgetLibVersion2(PS2E_LT_CDVD);
 			if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) {
-				ComboAddPlugin(CDVD);
+				ComboAddPlugin(name, &CDVDConfS, version, ent);
 			} else SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
 		}
 		if (type & PS2E_LT_DEV9) {
 			version = PS2EgetLibVersion2(PS2E_LT_DEV9);
 			if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) {
-				ComboAddPlugin(DEV9);
+				ComboAddPlugin(name, &DEV9ConfS, version, ent);
 			} else SysPrintf("DEV9Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
 		}
 		if (type & PS2E_LT_USB) {
 			version = PS2EgetLibVersion2(PS2E_LT_USB);
 			if (((version >> 16)&0xff) == PS2E_USB_VERSION) {
-				ComboAddPlugin(USB);
+				ComboAddPlugin(name, &USBConfS, version, ent);
 			} else SysPrintf("USBPlugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
 		}
 		if (type & PS2E_LT_FW) {
 			version = PS2EgetLibVersion2(PS2E_LT_FW);
 			if (((version >> 16)&0xff) == PS2E_FW_VERSION) {
-				ComboAddPlugin(FW);
+				ComboAddPlugin(name, &FWConfS, version, ent);
 			} else SysPrintf("FWPlugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
 		}
 	}
@@ -502,9 +541,9 @@ void FindPlugins() {
 		if (!IsBIOS(ent->d_name, description)) continue;//2002-09-28 (Florin)
 
 		BiosConfS.plugins+=2;
-        snprintf(BiosConfS.plist[BiosConfS.plugins-1], sizeof(BiosConfS.plist[0]), "%s (", description);
-        strncat(BiosConfS.plist[BiosConfS.plugins-1], ent->d_name, min(sizeof(BiosConfS.plist[0]-2), strlen(ent->d_name)));
-        strcat(BiosConfS.plist[BiosConfS.plugins-1], ")");
+		snprintf(BiosConfS.plist[BiosConfS.plugins-1], sizeof(BiosConfS.plist[0]), "%s (", description);
+		strncat(BiosConfS.plist[BiosConfS.plugins-1], ent->d_name, min(sizeof(BiosConfS.plist[0]-2), strlen(ent->d_name)));
+		strcat(BiosConfS.plist[BiosConfS.plugins-1], ")");
 		strcpy(BiosConfS.plist[BiosConfS.plugins-2], ent->d_name);
 		BiosConfS.PluginNameList = g_list_append(BiosConfS.PluginNameList, BiosConfS.plist[BiosConfS.plugins-1]);
 	}
