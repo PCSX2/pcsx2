@@ -34,7 +34,7 @@ DMACh *sif0ch;
 DMACh *sif1ch;
 DMACh *sif2ch;
 
-extern int  sifInit();
+extern void sifInit();
 extern void SIF0Dma();
 extern void SIF1Dma();
 extern void dmaSIF0();

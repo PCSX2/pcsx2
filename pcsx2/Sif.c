@@ -30,8 +30,6 @@
 #define FIFO_SIF0_W 128
 #define FIFO_SIF1_W 128
 
-int eesifbusy[2] = { 0, 0 };
-extern int iopsifbusy[2];
 typedef struct {
 	u32 fifoData[FIFO_SIF0_W];	
 	int fifoReadPos;
@@ -58,14 +56,14 @@ typedef struct {
 _sif0 sif0;
 _sif1 sif1;
 
-int sifInit() {
+int wP0, wP1;
+int eesifbusy[2] = { 0, 0 };
+extern int iopsifbusy[2];
+
+void sifInit() {
 	memset(&sif0, 0, sizeof(sif0));
 	memset(&sif1, 0, sizeof(sif1));
-
-	return 0;
 }
-int wP0;
-int wP1;
 _inline void SIF0write(u32 *from, int words)
 {
 	/*if(FIFO_SIF0_W < (words+sif0.fifoWritePos)) {*/
@@ -84,15 +82,7 @@ _inline void SIF0write(u32 *from, int words)
 	}*/
 
 	sif0.fifoSize += words;
-#ifdef SIF_LOG
 	SIF_LOG("  SIF0 + %d = %d (pos=%d)\n", words, sif0.fifoSize, sif0.fifoWritePos);
-//    {
-//        int i;
-//        for(i = 0; i < words; i += 4) {
-//        SIF_LOG(" EE SIF write data: %x %x %x %x\n", from[i], from[i+1], from[i+2], from[i+3]);
-//        }
-//    }
-#endif
 
 /*	if (sif0.fifoSize == FIFO_SIF0_W) {
 		Cpu->ExecuteBlock();
@@ -118,9 +108,7 @@ _inline void SIF0read(u32 *to, int words)
 	}*/
 
 	sif0.fifoSize -= words;
-#ifdef SIF_LOG
 	SIF_LOG("  SIF0 - %d = %d (pos=%d)\n", words, sif0.fifoSize, sif0.fifoReadPos);
-#endif
 }
 
 _inline void SIF1write(u32 *from, int words)
@@ -142,9 +130,7 @@ _inline void SIF1write(u32 *from, int words)
 	}*/
 
 	sif1.fifoSize += words;
-#ifdef SIF_LOG
 	SIF_LOG("  SIF1 + %d = %d (pos=%d)\n", words, sif1.fifoSize, sif1.fifoWritePos);
-#endif
 
 /*	if (sif1.fifoSize == FIFO_SIF1_W) {
 		psxCpu->ExecuteBlock();
@@ -170,21 +156,17 @@ _inline void SIF1read(u32 *to, int words)
 	}*/
 
 	sif1.fifoSize -= words;
-#ifdef SIF_LOG
 	SIF_LOG("  SIF1 - %d = %d (pos=%d)\n", words, sif1.fifoSize, sif1.fifoReadPos);
-#endif
 }
 
 _inline void SIF0Dma()
 {
 	u32 *ptag;
-	int notDone;
+	int notDone = 1;
 	int cycles = 0, psxCycles = 0;
 	
-#ifdef SIF_LOG
 	SIF_LOG("SIF0 DMA start...\n");
-#endif
-notDone = 1;
+
 	do
 	{
 		
@@ -200,9 +182,7 @@ notDone = 1;
 				// Note.. add normal mode here
 				if (sif0.sifData.data & 0xC0000000) // If NORMAL mode or end of CHAIN, or interrupt then stop DMA
 				{
-#ifdef SIF_LOG
 					SIF_LOG(" IOP SIF Stopped\n");
-#endif
 
 					// Stop & signal interrupts on IOP
 					//HW_DMA9_CHCR &= ~0x01000000; //reset TR flag
@@ -230,31 +210,18 @@ notDone = 1;
 					sif0.counter = sif0.sifData.words & 0xFFFFFF;
 					notDone = 1;
 
-#ifdef SIF_LOG
 					SIF_LOG(" SIF0 Tag: madr=%lx, tadr=%lx, counter=%lx (%08X_%08X)\n", HW_DMA9_MADR, HW_DMA9_TADR, sif0.counter, sif0.sifData.words, sif0.sifData.data);
-#endif
 					if(sif0.sifData.data & 0x40000000)
-					{
-#ifdef SIF_LOG
 						SIF_LOG("   END\n");
-#endif
-					}
 					else
-					{
-#ifdef SIF_LOG
 						SIF_LOG("   CNT %08X, %08X\n", sif0.sifData.data, sif0.sifData.words);
-#endif
-					}
 				}
 			}
 			else // There's some data ready to transfer into the fifo..
 			{
 				int wTransfer = min(sif0.counter, FIFO_SIF0_W-sif0.fifoSize); // HW_DMA9_BCR >> 16;
 
-				
-#ifdef SIF_LOG
 				SIF_LOG("+++++++++++ %lX of %lX\n", wTransfer, sif0.counter /*(HW_DMA9_BCR >> 16)*/ );
-#endif
 
 				SIF0write((u32*)PSXM(HW_DMA9_MADR), wTransfer);
 				HW_DMA9_MADR += wTransfer << 2;
@@ -279,9 +246,7 @@ notDone = 1;
 					int readSize = min(size, (sif0.fifoSize>>2));
 
 					//SIF_LOG(" EE SIF doing transfer %04Xqw to %08X\n", readSize, sif0dma->madr);
-#ifdef SIF_LOG
 					SIF_LOG("----------- %lX of %lX\n", readSize << 2, size << 2 );
-#endif
 
 					_dmaGetAddr(sif0dma, ptag, sif0dma->madr, 5);
 
@@ -308,9 +273,8 @@ notDone = 1;
 				if((sif0dma->chcr & 0x80000080) == 0x80000080) // Stop on tag IRQ
 				{
 					// Tag interrupt
-#ifdef SIF_LOG
 					SIF_LOG(" EE SIF interrupt\n");
-#endif
+
 					//sif0dma->chcr &= ~0x100;
 					eesifbusy[0] = 0;
 					INT(5, cycles*BIAS);
@@ -320,9 +284,8 @@ notDone = 1;
 				else if(sif0.end) // Stop on tag END
 				{
 					// End tag.
-#ifdef SIF_LOG
 					SIF_LOG(" EE SIF end\n");
-#endif
+
 					//sif0dma->chcr &= ~0x100;
 					//hwDmacIrq(5);
 					eesifbusy[0] = 0;
@@ -333,9 +296,8 @@ notDone = 1;
 				{
 					static PCSX2_ALIGNED16(u32 tag[4]);
 					SIF0read((u32*)&tag[0], 4); // Tag
-#ifdef SIF_LOG
-                    SIF_LOG(" EE SIF read tag: %x %x %x %x\n", tag[0], tag[1], tag[2], tag[3]);
-#endif
+					SIF_LOG(" EE SIF read tag: %x %x %x %x\n", tag[0], tag[1], tag[2], tag[3]);
+
 					sif0dma->qwc = (u16)tag[0];
 					sif0dma->madr = tag[1];
 					sif0dma->chcr = (sif0dma->chcr & 0xffff) | (tag[0] & 0xffff0000);
@@ -343,9 +305,8 @@ notDone = 1;
 					/*if ((sif0dma->chcr & 0x80) && (tag[0] >> 31)) {	
 						SysPrintf("SIF0 TIE\n");
 					}*/
-#ifdef SIF_LOG
 					SIF_LOG(" EE SIF dest chain tag madr:%08X qwc:%04X id:%X irq:%d(%08X_%08X)\n", sif0dma->madr, sif0dma->qwc, (tag[0]>>28)&3, (tag[0]>>31)&1, tag[1], tag[0]);
-#endif
+
 					if ((psHu32(DMAC_CTRL) & 0x30) != 0 && ((tag[0]>>28)&3) == 0)
                         psHu32(DMAC_STADR) = sif0dma->madr + (sif0dma->qwc * 16);
 					notDone = 1;
@@ -581,11 +542,8 @@ _inline void  EEsif1Interrupt() {
 }
 
 _inline void dmaSIF0() {
-
-#ifdef SIF_LOG
 	SIF_LOG("EE: dmaSIF0 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif0dma->chcr, sif0dma->madr, sif0dma->qwc, sif0dma->tadr);
-#endif
 
 	if (sif0.fifoReadPos != sif0.fifoWritePos) {
 		SysPrintf("warning, sif0.fifoReadPos != sif0.fifoWritePos\n");
@@ -608,11 +566,8 @@ _inline void dmaSIF0() {
 }
 
 _inline void dmaSIF1() {
-
-#ifdef SIF_LOG
 	SIF_LOG("EE: dmaSIF1 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif1dma->chcr, sif1dma->madr, sif1dma->qwc, sif1dma->tadr);
-#endif
 
 	if (sif1.fifoReadPos != sif1.fifoWritePos) {
 		SysPrintf("warning, sif1.fifoReadPos != sif1.fifoWritePos\n");
@@ -637,11 +592,8 @@ _inline void dmaSIF1() {
 }
 
 _inline void dmaSIF2() {
-
-#ifdef SIF_LOG
 	SIF_LOG("dmaSIF2 chcr = %lx, madr = %lx, qwc  = %lx\n",
 			sif2dma->chcr, sif2dma->madr, sif2dma->qwc);
-#endif
 
     sif2dma->chcr&= ~0x100;
 	hwDmacIrq(7);

@@ -125,7 +125,8 @@ static struct {
 };
 
 void GetRPCVersion(char *ioprp, char *rpcver){
-	char	*p=ioprp; int i;
+	char	*p=ioprp; 
+	int i;
 	struct TocEntry te;
 	
 	if (p && (CDVD_findfile(p+strlen("cdromN:"), &te) != -1)){
@@ -135,6 +136,7 @@ void GetRPCVersion(char *ioprp, char *rpcver){
 			if (ioprps[i].size>0)
 				p=ioprps[i].name;
 	}
+	// fixme - Is p really supposed to be set in the middle of an if statement?
 	if (p && (p=strstr(p, "IOPRP")+strlen("IOPRP"))){
 		for (i=0;(i<4) && p && (*p>='0') && (*p<='9');i++, p++)	rpcver[i]=*p;
 		for (   ; i<4								 ;i++     ) rpcver[i]='0';
@@ -260,25 +262,23 @@ int IsBIOS(char *filename, char *description){
 
 // LOAD STUFF
 
+// fixme - Is there any reason why we shouldn't delete this define, and replace the array lengths
+// with the actual numbers?
 #define ISODCL(from, to) (to - from + 1)
 
 struct iso_directory_record {
-	char length			[ISODCL (1, 1)]; /* 711 */
-	char ext_attr_length		[ISODCL (2, 2)]; /* 711 */
-	char extent			[ISODCL (3, 10)]; /* 733 */
-	char size			[ISODCL (11, 18)]; /* 733 */
-	char date			[ISODCL (19, 25)]; /* 7 by 711 */
-	char flags			[ISODCL (26, 26)];
-	char file_unit_size		[ISODCL (27, 27)]; /* 711 */
-	char interleave			[ISODCL (28, 28)]; /* 711 */
-	char volume_sequence_number	[ISODCL (29, 32)]; /* 723 */
-	unsigned char name_len		[ISODCL (33, 33)]; /* 711 */
+	char length			[ISODCL (1, 1)]; /* length[1];  711 */
+	char ext_attr_length		[ISODCL (2, 2)]; /* ext_attr_length[1]; 711 */
+	char extent			[ISODCL (3, 10)]; /* extent[8]; 733 */
+	char size			[ISODCL (11, 18)]; /* size[8]; 733 */
+	char date			[ISODCL (19, 25)]; /* date[7]; 7 by 711 */
+	char flags			[ISODCL (26, 26)]; /* flags[1]; */
+	char file_unit_size		[ISODCL (27, 27)]; /* file_unit_size[1]; 711 */
+	char interleave			[ISODCL (28, 28)]; /* interleave[1]; 711 */
+	char volume_sequence_number	[ISODCL (29, 32)]; /*  volume_sequence_number[3]; 723 */
+	unsigned char name_len		[ISODCL (33, 33)]; /* name_len[1]; 711 */
 	char name			[1];
 };
-
-#define READTRACK(lsn) \
-	if (CDVDreadTrack(lsn, CDVD_MODE_2352) == -1) return -1; \
-	buf = CDVDgetBuffer(); if (buf == NULL) return -1;
 
 int LoadCdrom() {
 	return 0;
@@ -287,7 +287,12 @@ int LoadCdrom() {
 int CheckCdrom() {
 	u8 *buf;
 
-	READTRACK(16);
+	if (CDVDreadTrack(16, CDVD_MODE_2352) == -1) 
+		return -1; 
+	buf = CDVDgetBuffer();
+	if (buf == NULL) 
+		return -1;
+	
 	strncpy(CdromId, (char*)buf+52, 10);
 
 	return 0;
@@ -314,11 +319,11 @@ int GetPS2ElfName(char *name){
 	CDVDFS_close(f);
 	
 	buffer[tocEntry.fileSize]='\0';
-
-//	SysPrintf(
-//		"---------------------SYSTEM.CNF---------------------\n"
-//		"%s"
-//		"----------------------------------------------------\n", buffer);
+//     SysPrintf(                                                                                                           
+//             "---------------------SYSTEM.CNF---------------------\n"                                                     
+//             "%s"                                                                                                         
+//             "----------------------------------------------------\n", buffer);  
+	
 	pos=strstr(buffer, "BOOT2");
 	if (pos==NULL){
 		pos=strstr(buffer, "BOOT");
@@ -336,14 +341,12 @@ int GetPS2ElfName(char *name){
 		return 0;
 
 	sscanf(pos, "%s", name);
-	//SysPrintf("ELF name: '%s'\n", name);
 
 	if (strncmp("cdrom0:\\", name, 8) == 0) {
 		strncpy(CdromId, name+8, 11); CdromId[11] = 0;
 	}
-
-//	inifile_read(CdromId);
-
+	
+	// inifile_read(CdromId);
 	fp = fopen("System.map", "r");
 	if (fp) {
 		u32 addr;
@@ -369,73 +372,6 @@ int GetPS2ElfName(char *name){
 
 	return 2;
 }
-
-/*#define PSX_EXE     1
-#define CPE_EXE     2
-#define COFF_EXE    3
-#define INVALID_EXE 4
-
-static int PSXGetFileType(FILE *f) {
-    unsigned long current;
-    unsigned long mybuf[2048];
-    EXE_HEADER *exe_hdr;
-    FILHDR *coff_hdr;
-
-    current = ftell(f);
-    fseek(f,0L,SEEK_SET);
-    fread(mybuf,2048,1,f);
-    fseek(f,current,SEEK_SET);
-
-    exe_hdr = (EXE_HEADER *)mybuf;
-    if (memcmp(exe_hdr->id,"PS-X EXE",8)==0)
-        return PSX_EXE;
-
-    if (mybuf[0]=='C' && mybuf[1]=='P' && mybuf[2]=='E')
-        return CPE_EXE;
-
-    coff_hdr = (FILHDR *)mybuf;
-    if (coff_hdr->f_magic == 0x0162)
-        return COFF_EXE;
-
-    return INVALID_EXE;
-}
-
-int Load(char *ExePath) {
-	FILE *tmpFile;
-	EXE_HEADER tmpHead;
-	int type;
-
-	strcpy(CdromId, "SLUS_999.99");
-
-    tmpFile = fopen(ExePath,"rb");
-	if (tmpFile == NULL) { SysMessage("Error opening file: %s", ExePath); return 0; }
-
-    type = PSXGetFileType(tmpFile);
-    switch (type) {
-    	case PSX_EXE:
-	        fread(&tmpHead,sizeof(EXE_HEADER),1,tmpFile);
-		    fseek(tmpFile, 0x800, SEEK_SET);		
-			fread((void *)PSXM(tmpHead.t_addr), tmpHead.t_size,1,tmpFile);
-			fclose(tmpFile);
-			psxRegs.pc = tmpHead.pc0;
-			psxRegs.GPR.n.gp = tmpHead.gp0;
-			psxRegs.GPR.n.sp = tmpHead.s_addr; 
-			if (psxRegs.GPR.n.sp == 0) psxRegs.GPR.n.sp = 0x801fff00;
-	        break;
-    	case CPE_EXE:
-    		SysMessage("Pcsx found that you wanna use a CPE file. CPE files not support yet");
-			break;
-    	case COFF_EXE:
-    		SysMessage("Pcsx found that you wanna use a COFF file.COFF files not support yet");
-			break;
-    	case INVALID_EXE:
-    		SysMessage("This file is not a psx file");
-			break;
-	}
-	return 1;
-}
-*/
-
 
 FILE *emuLog;
 
@@ -617,7 +553,6 @@ int LoadState(const char *file) {
 
 #ifdef _DEBUG
 	s_vucount = 0;
-	//dumplog |= 2;
 #endif
 
 	SysPrintf("LoadState: %s\n", file);
@@ -1083,6 +1018,7 @@ void injectIRX(char *filename){
 	rd[iBLANK].fileSize-=DIRENTRY_SIZE+DIRENTRY_SIZE;
 	p=(char*)PS2MEM_ROM;for (i=0; i<iBLANK; i++)p+=(rd[i].fileSize+0xF)&(~0xF);p+=DIRENTRY_SIZE;
 
+	// fixme - brevity, yes, but at the expense of readability?
 	q=(char*)PS2MEM_ROM;for (i=0; i<=iIOPBTCONF; i++)	q+=(rd[i].fileSize+0xF)&(~0xF);
 	while (p-16>q){*((u64*)p)=*((u64*)p-4);*((u64*)p+1)=*((u64*)p-3);p-=DIRENTRY_SIZE;}
 	*((u64*)p)=*((u64*)p+1)=0;p-=DIRENTRY_SIZE;rd[iIOPBTCONF].fileSize+=DIRENTRY_SIZE;
@@ -1120,65 +1056,4 @@ void injectIRX(char *filename){
 	rd[i].fileSize=filesize;
 	rd[i].extInfoSize=0;
 }
-
-// failed inline calls, this is because of inline hell and gcc syntax
-#ifndef _WIN32
-
-/*void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
-{
-#ifdef __x86_64__
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%rax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-#else
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-#endif
-}
-
-long InterlockedExchange(long volatile* Target, long Value)
-{
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-	// fixme - This is supposed to return a long
-}
-
-long InterlockedExchangeAdd(long volatile* Addend, long Value)
-{
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xadd [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory" );
-	// fixme - This is supposed to return a long
-}*/
-
-/*u32 timeGetTime()
-{
-	struct timeb t;
-	ftime(&t);
-	return (u32)(t.time*1000+t.millitm);
-}
-
-void* pcsx2_aligned_malloc(size_t size, size_t align)
-{
-    assert( align < 0x10000 );
-	char* p = (char*)malloc(size+align);
-	int off = 2+align - ((int)(uptr)(p+2) % align);
-
-	p += off;
-	*(u16*)(p-2) = off;
-
-	return p;
-}
-
-void pcsx2_aligned_free(void* pmem)
-{
-    if( pmem != NULL ) {
-        char* p = (char*)pmem;
-        free(p - (int)*(u16*)(p-2));
-    }
-}*/
-
-#endif
 

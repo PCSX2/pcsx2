@@ -75,6 +75,7 @@ cdrStruct cdr;
 
 s32  MSFtoLSN(u8 *Time);
 void LSNtoMSF(u8 *Time, s32 lsn);
+void AddIrqQueue(u8 irq, unsigned long ecycle);
 
 void cdrReset();
 void  cdrInterrupt();
