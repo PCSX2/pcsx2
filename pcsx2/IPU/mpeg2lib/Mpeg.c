@@ -1195,8 +1195,8 @@ void mpeg2sliceIDEC(void* pdone)
 void mpeg2_slice(void* pdone)
 {
 	int DCT_offset, DCT_stride;
-	u8 bit8=0;
-	u32 fp = g_BP.FP;
+	//u8 bit8=0;
+	//u32 fp = g_BP.FP;
 	u32 bp;
 	decoder_t * decoder = &g_decoder;
 	u32 size = 0;

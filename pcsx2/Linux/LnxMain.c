@@ -418,6 +418,8 @@ int SysInit() {
 	if(cpuInit() == -1 )
 		return -1;
 
+	applychanges = FALSE; // Just in case
+	
 	while (LoadPlugins() == -1) {
 		if (Pcsx2Configure() == FALSE)
 			exit(1);

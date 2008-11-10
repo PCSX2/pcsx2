@@ -168,7 +168,6 @@ void OnConf_Fw(GtkMenuItem *menuitem, gpointer user_data) {
 	chdir(file);
 }
 
-
 void SetActiveComboItem(GtkComboBox *widget,char plist[255][255], GList *list, char *conf)
 {
 	GList *temp;

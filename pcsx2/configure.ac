@@ -1,6 +1,5 @@
-AC_INIT(pcsx2,0.9.4,zerofrog@gmail.com)
-
-AM_INIT_AUTOMAKE(pcsx2,0.9.4)
+AC_INIT(pcsx2,0.9.5,zerofrog@gmail.com)
+AM_INIT_AUTOMAKE(pcsx2,0.9.5)
 
 AC_PROG_CC([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
 AC_PROG_CXX([g++ gcc cl KCC CC cxx cc++ xlC aCC c++])
@@ -10,6 +9,18 @@ AC_PROG_RANLIB
 
 dnl necessary for compiling assembly
 AM_PROG_AS
+
+svnrev="`svn info | grep Revision:`"
+
+if test -n "${svnrev}" ; then
+  AC_REVISION("${svnrev}") 
+  AC_DEFINE_UNQUOTED(SVN_REV,"${svnrev}",
+    [Define to be the subversion revision number])
+else
+  AC_REVISION([$Revision: 0 $])
+  AC_DEFINE(SVN_REV,"$Revision: 0 $",
+    [Define to be the subversion revision number])
+fi
 
 CFLAGS=
 CPPFLAGS=
@@ -64,16 +75,26 @@ then
 fi
 AC_MSG_RESULT(sse3)
 
-dnl Check for virtual memory build
-AC_MSG_CHECKING(for virtual memory build)
-AC_ARG_ENABLE(vmbuild, AC_HELP_STRING([--enable-vmbuild], [Adds low level virtual memory support to run pcsx2 faster]),
- vmbuild=$enableval,vmbuild=no)
-if test "x$vmbuild" == xyes
+AC_MSG_CHECKING(force sse4 instructions)
+AC_ARG_ENABLE(sse4, AC_HELP_STRING([--enable-sse4], [Forces sse4 detection on CPUs]),
+ sse4=$enableval,sse4=no)
+if test "x$sse4" == xyes
 then
- AC_DEFINE(PCSX2_VIRTUAL_MEM,1,[PCSX2_VIRTUAL_MEM])
- MYOBJDIR=$MYOBJDIR"VM"
+ AC_DEFINE(PCSX2_FORCESSE4,1,[PCSX2_DEVBUILD])
 fi
-AC_MSG_RESULT($vmbuild)
+AC_MSG_RESULT(sse4)
+
+dnl Check for virtual memory build
+dnl The virtual memory build hasn't worked in Linux for a long time, if ever.
+dnl AC_MSG_CHECKING(for virtual memory build)
+dnl AC_ARG_ENABLE(vmbuild, AC_HELP_STRING([--enable-vmbuild], [Adds low level virtual memory support to run pcsx2 faster]),
+dnl  vmbuild=$enableval,vmbuild=no)
+dnl if test "x$vmbuild" == xyes
+dnl then
+dnl  AC_DEFINE(PCSX2_VIRTUAL_MEM,1,[PCSX2_VIRTUAL_MEM])
+dnl  MYOBJDIR=$MYOBJDIR"VM"
+dnl fi
+dnl AC_MSG_RESULT($vmbuild)
 
 dnl Check for recompilation
 AC_MSG_CHECKING(for using platform dependent recompilers)
@@ -147,4 +168,4 @@ echo "  Debug build?	       $debug"
 echo "  Dev build?	           $devbuild"
 echo "  Force sse3?	           $sse3"
 echo "  Recompilers enabled?   $recbuild"
-echo "  Virtual memory build?  $vmbuild"
+dnl echo "  Virtual memory build?  $vmbuild"

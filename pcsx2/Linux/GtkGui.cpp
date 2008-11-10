@@ -33,9 +33,15 @@ void StartGui() {
 	MainWindow = create_MainWindow();
 	
 #ifdef PCSX2_VIRTUAL_MEM
-	gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose VM");
+	if (SVN_REV != 0)
+		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV" Watermoose VM");
+	else
+		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose VM");
 #else
-	gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose");
+	if (SVN_REV != 0)
+		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV" Watermoose");
+	else
+		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose");
 #endif
 
 	// status bar
@@ -581,7 +587,14 @@ void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data) {
  	gtk_window_set_title(GTK_WINDOW(AboutDlg), _("About"));
 
 	Label = lookup_widget(AboutDlg, "GtkAbout_LabelVersion");
- 	sprintf(str, _("PCSX2 For Linux\nVersion %s"), PCSX2_VERSION);
+	
+ 	// Include the SVN revision
+	if (SVN_REV !=0)
+		sprintf(str, _("PCSX2 Playground For Linux\nVersion %s %s\n"), PCSX2_VERSION, SVN_REV);
+	else
+		//Use this instead for a non-svn version
+		sprintf(str, _("PCSX2 Playground For Linux\nVersion %s\n"), PCSX2_VERSION);
+	
 	gtk_label_set_text(GTK_LABEL(Label), str);	
 	
 	Label = lookup_widget(AboutDlg, "GtkAbout_LabelAuthors");
