@@ -241,7 +241,7 @@ void OnOK(HWND hW) {
 	SaveConfig();
 
 	// Apply winConfig settings:
-	#define ApplyPluginPath( name ) memcpy(Config.name, winConfig.name, g_MaxPath )
+	#define ApplyPluginPath( name ) strcpy( Config.name, winConfig.name )
 	ApplyPluginPath( Bios );
 	ApplyPluginPath( GS );
 	ApplyPluginPath( PAD1 );
@@ -427,7 +427,7 @@ void SetBiosDir(HWND hW) {
 	char Path[g_MaxPath];
 
 	if (SelectPath(hW, _("Select Bios Directory"), Path) == -1) return;
-	strcpy(winConfig.BiosDir, Path);
+	strcpy(Config.BiosDir, Path);
 	CleanUpCombos(hW);
 	OnConfigureDialog(hW);
 }
