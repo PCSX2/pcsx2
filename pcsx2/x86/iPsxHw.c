@@ -328,9 +328,7 @@ int psxHwConstRead32(u32 x86reg, u32 add) {
 			
 		//case 0x1f801050: hard = serial_read32(); break;//serial port
 		case 0x1f801078:
-#ifdef PSXHW_LOG
 			PSXHW_LOG("ICTRL 32bit read %x\n", psxHu32(0x1078));
-#endif
 			_eeReadConstMem32(x86reg, (uptr)&psxH[add&0xffff]);
 			MOV32ItoM((uptr)&psxH[add&0xffff], 0);
 			return 0;

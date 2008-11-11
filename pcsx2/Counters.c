@@ -111,7 +111,6 @@ void rcntInit() {
 
 // debug code, used for stats
 int g_nCounters[4];
-extern u32 s_lastvsync[2];
 static int iFrame = 0;	
 
 #ifndef _WIN32

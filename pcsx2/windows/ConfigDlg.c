@@ -239,6 +239,19 @@ void OnOK(HWND hW) {
 	EndDialog(hW, TRUE);
 
 	SaveConfig();
+
+	// Apply winConfig settings:
+	#define ApplyPluginPath( name ) memcpy(Config.name, winConfig.name, g_MaxPath )
+	ApplyPluginPath( Bios );
+	ApplyPluginPath( GS );
+	ApplyPluginPath( PAD1 );
+	ApplyPluginPath( PAD2 );
+	ApplyPluginPath( SPU2 );
+	ApplyPluginPath( CDVD );
+	ApplyPluginPath( DEV9 );
+	ApplyPluginPath( USB );
+	ApplyPluginPath( FW );
+
 	needReset = 1;
 }
 
@@ -414,7 +427,7 @@ void SetBiosDir(HWND hW) {
 	char Path[g_MaxPath];
 
 	if (SelectPath(hW, _("Select Bios Directory"), Path) == -1) return;
-	strcpy(Config.BiosDir, Path);
+	strcpy(winConfig.BiosDir, Path);
 	CleanUpCombos(hW);
 	OnConfigureDialog(hW);
 }
