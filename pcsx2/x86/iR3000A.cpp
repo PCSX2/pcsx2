@@ -986,10 +986,18 @@ void psxSetBranchImm( u32 imm )
 // Important!  The following macro makes sure the rounding error of both the psxRegs.cycle
 // modifier and EEsCycle modifier are consistent (in case you wonder why it's got a u32 typecast)
 
+//fixme : this is all a huge hack, we base the counter advancements on the average an opcode should take (wtf?)
+//		  If that wasn't bad enough we have default values like 9/8 which will get cast to int later
+//		  (yeah, that means all sync code couldn't have worked to beginn with)
+//		  So for now these are new settings that work.
+//		  (rama)
+
 static u32 psxScaleBlockCycles()
 {
+	/*return s_psxBlockCycles * 
+		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16));*/
 	return s_psxBlockCycles * 
-		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16));
+		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : 1 );
 }
 
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
