@@ -165,7 +165,7 @@ int get_macroblock_modes (decoder_t * const decoder)
 #undef bit_ptr
 }
 
-static FORCEINLINE int get_quantizer_scale (decoder_t * const decoder)
+static __forceinline int get_quantizer_scale (decoder_t * const decoder)
 {
     int quantizer_scale_code;
 
@@ -176,7 +176,7 @@ static FORCEINLINE int get_quantizer_scale (decoder_t * const decoder)
     else return quantizer_scale_code << 1;
 }
 
-static FORCEINLINE int get_coded_block_pattern (decoder_t * const decoder)
+static __forceinline int get_coded_block_pattern (decoder_t * const decoder)
 {
     const CBPtab * tab;
 
@@ -193,7 +193,7 @@ static FORCEINLINE int get_coded_block_pattern (decoder_t * const decoder)
 	return tab->cbp;
 }
 
-static FORCEINLINE int get_luma_dc_dct_diff (decoder_t * const decoder)
+static __forceinline int get_luma_dc_dct_diff (decoder_t * const decoder)
 {
 #define bit_buf (decoder->bitstream_buf)
 #define bits (decoder->bitstream_bits)
@@ -231,7 +231,7 @@ static FORCEINLINE int get_luma_dc_dct_diff (decoder_t * const decoder)
 #undef bit_ptr
 }
 
-static FORCEINLINE int get_chroma_dc_dct_diff (decoder_t * const decoder)
+static __forceinline int get_chroma_dc_dct_diff (decoder_t * const decoder)
 {
 #define bit_buf (decoder->bitstream_buf)
 #define bits (decoder->bitstream_bits)
@@ -275,7 +275,7 @@ do {							\
 	val = SBITS (val, 1) ^ 2047;			\
 } while (0)
 
-static FORCEINLINE void get_intra_block_B14 (decoder_t * const decoder)
+static __forceinline void get_intra_block_B14 (decoder_t * const decoder)
 {
     int i;
     int j;
@@ -384,7 +384,7 @@ static FORCEINLINE void get_intra_block_B14 (decoder_t * const decoder)
     decoder->bitstream_bits = bits;
 }
 
-static FORCEINLINE void get_intra_block_B15 (decoder_t * const decoder)
+static __forceinline void get_intra_block_B15 (decoder_t * const decoder)
 {
     int i;
     int j;
@@ -489,7 +489,7 @@ static FORCEINLINE void get_intra_block_B15 (decoder_t * const decoder)
     decoder->bitstream_bits = bits;
 }
 
-static FORCEINLINE int get_non_intra_block (decoder_t * const decoder)
+static __forceinline int get_non_intra_block (decoder_t * const decoder)
 {
 #define bit_buf (decoder->bitstream_buf)
 #define bits (decoder->bitstream_bits)
@@ -617,7 +617,7 @@ static FORCEINLINE int get_non_intra_block (decoder_t * const decoder)
 #undef bit_ptr
 }
 
-static FORCEINLINE void get_mpeg1_intra_block (decoder_t * const decoder)
+static __forceinline void get_mpeg1_intra_block (decoder_t * const decoder)
 {
     int i;
     int j;
@@ -740,7 +740,7 @@ static FORCEINLINE void get_mpeg1_intra_block (decoder_t * const decoder)
     decoder->bitstream_bits = bits;
 }
 
-static FORCEINLINE int get_mpeg1_non_intra_block (decoder_t * const decoder)
+static __forceinline int get_mpeg1_non_intra_block (decoder_t * const decoder)
 {
     int i;
     int j;
@@ -1287,7 +1287,7 @@ void mpeg2_slice(void* pdone)
 	so_exit();
 }
 
-int FORCEINLINE get_motion_delta (decoder_t * const decoder,
+int __forceinline get_motion_delta (decoder_t * const decoder,
 				    const int f_code)
 {
 #define bit_buf (decoder->bitstream_buf)
@@ -1341,7 +1341,7 @@ int FORCEINLINE get_motion_delta (decoder_t * const decoder,
 #undef bit_ptr
 }
 
-int FORCEINLINE get_dmv (decoder_t * const decoder)
+int __forceinline get_dmv (decoder_t * const decoder)
 {
 #define bit_buf (decoder->bitstream_buf)
 #define bits (decoder->bitstream_bits)

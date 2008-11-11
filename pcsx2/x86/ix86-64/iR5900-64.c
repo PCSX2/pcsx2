@@ -1753,7 +1753,15 @@ void StopPerfCounter()
 //	assert( !g_globalXMMSaved );
 //}
 
-#define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.375 : 2.25) : (9/8))
+//fixme : this is all a huge hack, we base the counter advancements on the average an opcode should take (wtf?)
+//		  If that wasn't bad enough we have default values like 9/8 which will get cast to int later
+//		  (yeah, that means all sync code couldn't have worked to beginn with)
+//		  So for now these are new settings that work. I would've set 1 for default but that seemed too low
+//		  (rama)
+// applying this to 64 bit as well - arcum42
+
+//#define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.375 : 2.25) : (9/8))
+#define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : (1.2))
 
 static void iBranchTest(u32 newpc, u32 cpuBranch)
 {
