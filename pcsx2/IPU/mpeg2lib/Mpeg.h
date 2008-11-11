@@ -168,9 +168,10 @@ void mpeg2sliceIDEC(void* pdone);
 void mpeg2_slice(void* pdone);
 int get_macroblock_address_increment(decoder_t * const decoder);
 int get_macroblock_modes (decoder_t * const decoder);
-int get_motion_delta (decoder_t * const decoder,
-				    const int f_code);
-int get_dmv (decoder_t * const decoder);
+
+extern int get_motion_delta (decoder_t * const decoder, const int f_code);
+extern int get_dmv (decoder_t * const decoder);
+
 extern int non_linear_quantizer_scale[]; // JayteeMaster: it is needed in Ipu.c
 
 void ipu_csc(struct macroblock_8 *mb8, struct macroblock_rgb32 *rgb32, int sgn);

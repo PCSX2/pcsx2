@@ -1,6 +1,4 @@
 @echo off
-echo %1 %2 %3\svnrev_template.h %2\svnrev.h
-
 %1 %2 %3\svnrev_template.h %2\svnrev.h
 if not ERRORLEVEL 0 (
     echo Automatic revision update unavailable, using generic template instead.
