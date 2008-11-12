@@ -674,6 +674,7 @@ void UpdateDebugDialog()
 #endif
 
 #define TickInterval 768
+#define SanityInterval 4800
 
 u32 TicksCore=0;
 u32 TicksThread=0;
@@ -707,10 +708,10 @@ void __fastcall TimeUpdate(u32 cClocks, u32 syncType)
 	//  If for some reason our clock value seems way off base, just mix
 	//  out a little bit, skip the rest, and hope the ship "rights" itself later on.
 
-	if( dClocks > TickInterval*96 )
+	if( dClocks > TickInterval*SanityInterval )
 	{
 		ConLog( " * SPU2 > TimeUpdate Sanity Check (Tick Delta: %d) (PS2 Ticks: %d)\n", dClocks/TickInterval, cClocks/TickInterval );
-		dClocks = TickInterval*96;
+		dClocks = TickInterval*SanityInterval;
 		lClocks = cClocks-dClocks;
 	}
 
