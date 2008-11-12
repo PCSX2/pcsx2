@@ -28,9 +28,8 @@ CXXFLAGS=
 CCASFLAGS=
 
 WARNING_FLAGS="-Wall -Wno-format -Wno-unused-value"
-dnl EXTRA_FLAGS = " -Xlinker -fpermissive -march=native"
-NORMAL_FLAGS=" -pipe -O3 -Xlinker -zmuldefs -fomit-frame-pointer ${WARNING_FLAGS}"
-DEBUG_FLAGS=" -g -Xlinker -zmuldefs ${WARNING_FLAGS}"
+NORMAL_FLAGS=" -pipe -O3 -fomit-frame-pointer ${WARNING_FLAGS}"
+DEBUG_FLAGS=" -g -O0 ${WARNING_FLAGS}"
 
 dnl Check for debug build
 AC_MSG_CHECKING(debug build)
@@ -40,15 +39,15 @@ if test "x$debug" == xyes
 then
  AC_DEFINE(_DEBUG,1,[_DEBUG])
  CFLAGS+=" ${DEBUG_FLAGS}"
- CPPFLAGS+=" ${DEBUG_FLAGS}"
- CXXFLAGS+=" ${DEBUG_FLAGS}"
+ dnl CPPFLAGS+=" ${DEBUG_FLAGS}"
+ CXXFLAGS+=" ${DEBUG_FLAGS} -fpermissive -Xlinker -zmuldefs "
  CCASFLAGS+="-D_DEBUG ${DEBUG_FLAGS}"
  MYOBJDIR="Debug"
 else
  AC_DEFINE(NDEBUG,1,[NDEBUG])
  CFLAGS+=" ${NORMAL_FLAGS}"
- CPPFLAGS+="  ${NORMAL_FLAGS}"
- CXXFLAGS+=" ${NORMAL_FLAGS}"
+ dnl CPPFLAGS+="  ${NORMAL_FLAGS}"
+ CXXFLAGS+=" ${NORMAL_FLAGS} -fpermissive -Xlinker -zmuldefs "
  MYOBJDIR="Release"
 fi
 AC_MSG_RESULT($debug)

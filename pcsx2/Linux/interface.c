@@ -321,7 +321,6 @@ create_SpeedHacksDlg (void)
   GtkWidget *frame14;
   GtkWidget *alignment9;
   GtkWidget *vbox33;
-  GtkWidget *check_EE_Fast_Branches;
   GtkWidget *check_Tight_SPU_Sync;
   GtkWidget *check_ESC_Hack;
   GtkWidget *label47;
@@ -472,10 +471,6 @@ create_SpeedHacksDlg (void)
   gtk_widget_show (vbox33);
   gtk_container_add (GTK_CONTAINER (alignment9), vbox33);
 
-  check_EE_Fast_Branches = gtk_check_button_new_with_mnemonic (_("EE/IOP Fast Branches - Quick branching ( Very small speedup; Not Recommended!  )"));
-  gtk_widget_show (check_EE_Fast_Branches);
-  gtk_box_pack_start (GTK_BOX (vbox33), check_EE_Fast_Branches, FALSE, FALSE, 0);
-
   check_Tight_SPU_Sync = gtk_check_button_new_with_mnemonic (_("Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore."));
   gtk_widget_show (check_Tight_SPU_Sync);
   gtk_box_pack_start (GTK_BOX (vbox33), check_Tight_SPU_Sync, FALSE, FALSE, 0);
@@ -558,7 +553,6 @@ create_SpeedHacksDlg (void)
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame14, "frame14");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment9, "alignment9");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox33, "vbox33");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_EE_Fast_Branches, "check_EE_Fast_Branches");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Tight_SPU_Sync, "check_Tight_SPU_Sync");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_ESC_Hack, "check_ESC_Hack");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label47, "label47");

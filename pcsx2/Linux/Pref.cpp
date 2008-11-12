@@ -96,6 +96,10 @@ int LoadConfig() {
 	
 	GetValuel("Options", Config.Options);
 	GetValuel("Hacks",        Config.Hacks);
+	
+	// Remove Fast Branches hack for now:
+	Config.Hacks &= ~0x80;
+		
 	GetValuel("Fixes",        Config.GameFixes);
 	
 	Config.sseMXCSR = DEFAULT_sseMXCSR;
@@ -150,6 +154,10 @@ void SaveConfig() {
 	SetValue("FW",  Config.FW);
 	
 	SetValuel("Options",        Config.Options);
+	
+	// Remove Fast Branches hack for now:
+	Config.Hacks &= ~0x80;
+	
 	SetValuel("Hacks",        Config.Hacks);
 	SetValuel("Fixes",        Config.GameFixes);
 
