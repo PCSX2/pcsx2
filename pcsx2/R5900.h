@@ -125,7 +125,7 @@ typedef struct {
 	u32 tempcycles;	
 } cpuRegisters;
 
-extern int EEsCycle;
+extern s32 EEsCycle;
 extern u32 EEoCycle;
 extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
 
@@ -236,7 +236,6 @@ void cpuTestHwInts();
 void cpuTestINTCInts();
 void cpuTestDMACInts();
 void cpuTestTIMRInts();
-void _cpuTestInterrupts();
 void cpuExecuteBios();
 void cpuRestartCPU();
 
@@ -252,6 +251,7 @@ void JumpCheckSym(u32 addr, u32 pc);
 void JumpCheckSymRet(u32 addr);
 
 extern u32 g_EEFreezeRegs;
+extern u32 g_eeTightenSync;			// non-zero values tighten EE/IOP code synchronization for short periods.
 
 //exception code
 #define EXC_CODE(x)     ((x)<<2)

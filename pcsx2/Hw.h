@@ -39,13 +39,7 @@ extern u64 *psHD;
 #define psHu64(mem)	(*(u64*)&PS2MEM_HW[(mem) & 0xffff])
 
 extern u32 g_nextBranchCycle;
-
-#define	INT(n, ecycle) { \
-	g_nextBranchCycle = min(g_nextBranchCycle, cpuRegs.cycle+ecycle); \
-	cpuRegs.interrupt|= 1 << n; \
-	cpuRegs.sCycle[n] = cpuRegs.cycle; \
-	cpuRegs.eCycle[n] = ecycle; \
-}
+extern void CPU_INT( u32 n, u32 ecycle );
 
 // VIF0   -- 0x10004000 -- psH[0x4000]
 // VIF1   -- 0x10005000 -- psH[0x5000]

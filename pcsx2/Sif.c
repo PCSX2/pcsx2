@@ -277,7 +277,7 @@ _inline void SIF0Dma()
 
 					//sif0dma->chcr &= ~0x100;
 					eesifbusy[0] = 0;
-					INT(5, cycles*BIAS);
+					CPU_INT(5, cycles*BIAS);
 					//hwDmacIrq(5);
 					notDone = 0;
 				}
@@ -289,7 +289,7 @@ _inline void SIF0Dma()
 					//sif0dma->chcr &= ~0x100;
 					//hwDmacIrq(5);
 					eesifbusy[0] = 0;
-					INT(5, cycles*BIAS);
+					CPU_INT(5, cycles*BIAS);
 					notDone = 0;
 				}
 				else if(sif0.fifoSize >= 4) // Read a tag
@@ -344,7 +344,7 @@ _inline void SIF1Dma()
 					SIF_LOG("EE SIF1 End %x\n", sif1.end);
 					eesifbusy[1] = 0;
 					notDone = 0;
-					INT(6, cycles*BIAS);
+					CPU_INT(6, cycles*BIAS);
 					sif1.chain = 0;
 					sif1.end = 0;
 				}
@@ -519,7 +519,7 @@ _inline void  sif1Interrupt() {
 
 _inline void  EEsif0Interrupt() {
 	/*if (psHu32(DMAC_STAT) & (1<<5)) {
-		INT(5, 0x800);
+		CPU_INT(5, 0x800);
 		return 0;
 	}*/
 	sif0dma->chcr &= ~0x100;
@@ -531,7 +531,7 @@ _inline void  EEsif0Interrupt() {
 
 _inline void  EEsif1Interrupt() {
 	/*if (psHu32(DMAC_STAT) & (1<<6)) {
-		INT(6, 0x800);
+		CPU_INT(6, 0x800);
 		return 0;
 	}*/
 	hwDmacIrq(6);

@@ -270,7 +270,7 @@ void zeroEx() {
 		}
 	}
 
-#ifdef PSXBIOS_LOG
+#ifdef PCSX2_DEVBUILD
 	{char libz[9]; memcpy(libz, lib, 8); libz[8]=0;
 	PSXBIOS_LOG("%s: %s (%x)"
 		" (%x, %x, %x, %x)"	//comment this line to disable param showing
@@ -316,7 +316,7 @@ void zeroEx() {
 		SysPrintf("sifcmd sceSifRegisterRpc (%x): rpc_id %x\n", psxRegs.pc, psxRegs.GPR.n.a1);
 	}
 
-#ifdef PSXBIOS_LOG
+#ifdef PCSX2_DEVBUILD
 	if (!strncmp(lib, "sysclib", 8)) {
 		switch (code) {
 			case 0x16: // strcmp
@@ -330,7 +330,7 @@ void zeroEx() {
 	}
 #endif
 
-#ifdef PSXBIOS_LOG
+#ifdef PCSX2_DEVBUILD
 	if (varLog & 0x00800000) EMU_LOG("\n");
 #endif
 
@@ -387,7 +387,7 @@ void spyFunctions(){
 * Format:  OP rt, rs, immediate                          *
 *********************************************************/
 void psxADDI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) + _Imm_ ; }		// Rt = Rs + Im 	(Exception on Integer Overflow)
-void psxADDIU() { if (!_Rt_) { zeroEx(); return; } _rRt_ = _u32(_rRs_) + _Imm_ ; }		// Rt = Rs + Im
+void psxADDIU() { if (!_Rt_) { g_eeTightenSync+=3; zeroEx(); return; } _rRt_ = _u32(_rRs_) + _Imm_ ; }		// Rt = Rs + Im
 void psxANDI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) & _ImmU_; }		// Rt = Rs And Im
 void psxORI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) | _ImmU_; }		// Rt = Rs Or  Im
 void psxXORI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) ^ _ImmU_; }		// Rt = Rs Xor Im
@@ -774,7 +774,10 @@ extern void iDumpPsxRegisters(u32,u32);
 #endif
 
 static void intExecuteBlock() {
-	while (EEsCycle > 0){
+	psxBreak = 0;
+	psxCycleEE = EEsCycle;
+
+	while (psxCycleEE >= 0){
 		branch2 = 0;
 		while (!branch2) {
 			execI();
@@ -786,6 +789,7 @@ static void intExecuteBlock() {
 #endif
         }
 	}
+	EEsCycle = psxBreak + psxCycleEE;
 }
 
 static void intClear(u32 Addr, u32 Size) {

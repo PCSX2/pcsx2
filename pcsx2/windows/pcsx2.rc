@@ -1058,7 +1058,7 @@ BEGIN
     CONTROL         "Disable FPU Overflow Checks -  *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_FPU_OVERFLOWHACK,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,15,63,483,10
     CONTROL         "EE/IOP Fast Branches - Quick branching ( Very small speedup; Not Recommended!  )",IDC_FASTBRANCHES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,231,423,10
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,231,423,10
     CTEXT           "If you have problems, disable all these and try again!",IDC_STATIC,7,22,497,8
     GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,497,58
     CONTROL         "Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )",IDC_DENORMALS,

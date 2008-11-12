@@ -405,6 +405,7 @@ void __Log(const char *fmt, ...) {
 			SysPrintf(tmp);
 		} else if( emuLog != NULL ) {
 			vfprintf(emuLog, fmt, list);
+			fflush( emuLog );
 		}
 #else	//i assume that this will not be used (Florin)
 		vsprintf(tmp, fmt, list);

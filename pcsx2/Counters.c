@@ -75,7 +75,16 @@ static __forceinline void _rcntSet( int i )
 static __forceinline void cpuRcntSet() {
 	int i;
 
-	nextCounter = (counters[4].CycleT < counters[5].CycleT) ? counters[4].CycleT : counters[5].CycleT;
+	// Calculate our target cycle deltas.
+	// This must be done regardless of if the hblank/vblank counters updated since
+	// cpuRegs.cycle changes, even if sCycle hasn't!
+
+	u32 counter4CycleT = ( counters[4].mode == MODE_HBLANK ) ? HBLANK_TIME_ : HRENDER_TIME_;
+	u32 counter5CycleT = VSYNC_HALF_ - (cpuRegs.cycle - counters[5].sCycle);
+	counter4CycleT -= (cpuRegs.cycle - counters[4].sCycle);
+
+	nextCounter = (counter4CycleT < counter5CycleT) ? counter4CycleT : counter5CycleT;
+
 	nextsCounter = cpuRegs.cycle;
 
 	for (i = 0; i < 4; i++)
@@ -384,24 +393,38 @@ static __forceinline void VSyncEnd(u32 sCycle) // VSync End
 	frameLimit(); // limit FPS (also handles frameskip and VUskip)
 }
 
-#define hScanlineNextCycle(diff, cyclesAmount) {  \
-	u32 compareValue = (SCANLINE_ + cyclesAmount);  \
-	if (diff >= compareValue) {  \
-		u32 increment = (diff / compareValue);  \
-		/*SysPrintf("Counters Optimization\n");*/  \
-		/* if counter's count increases on hblank gate's off signal OR if counter increases every hblank, THEN add to the counter */  \
-		if ( (!(counters[0].mode & 0x30) && (gates & (1<<0))) || (((counters[0].mode & 0x83) == 0x83) && !(gates & (1<<0))) ) counters[0].count += (increment * HBLANK_COUNTER_SPEED);  \
-		if ( (!(counters[1].mode & 0x30) && (gates & (1<<1))) || (((counters[1].mode & 0x83) == 0x83) && !(gates & (1<<1))) ) counters[1].count += (increment * HBLANK_COUNTER_SPEED);  \
-		if ( (!(counters[2].mode & 0x30) && (gates & (1<<2))) || (((counters[2].mode & 0x83) == 0x83) && !(gates & (1<<2))) ) counters[2].count += (increment * HBLANK_COUNTER_SPEED);  \
-		if ( (!(counters[3].mode & 0x30) && (gates & (1<<3))) || (((counters[3].mode & 0x83) == 0x83) && !(gates & (1<<3))) ) counters[3].count += (increment * HBLANK_COUNTER_SPEED);  \
-		counters[4].sCycle += (increment * compareValue);  \
-	}  \
-	else counters[4].sCycle += cyclesAmount;  \
-	counters[4].CycleT = (s32)(cyclesAmount - (cpuRegs.cycle - counters[4].sCycle));  \
-	if ((s32)counters[4].CycleT < 0) {  \
-		counters[4].sCycle += (((s32)counters[4].CycleT) * -1);  \
-		counters[4].CycleT = 0;  \
-	}  \
+static __forceinline void hScanlineNextCycle( u32 diff, u32 cyclesAmount )
+{
+	// This function: Now Unneeded?
+	// This code doesn't appear to be run anymore after fixing the CycleT bug
+	// and fixing the EE/IOP code execution sync issues (tested on 6 games,
+	// with EEx3 hack too).
+
+	// And it makes sense -- bad behavior by the counters would have led
+	// to cpuBranchTest being delayed beyond the span of a full hsync.
+	// It could still happen in some isolated part of some particular game,
+	// but probably we're better off letting that game lose a couple hsyncs
+	// once in a while rather than slow everyone else down needlessly.
+
+	u32 scanlineCycles = SCANLINE_;
+	diff -= cyclesAmount;
+	if (diff >= scanlineCycles)
+	{
+		u32 increment = diff / scanlineCycles;
+
+		// Counter Optimization:
+		// If the time passed is beyond a single scanline, then increment all scanline
+		// counters as a set here.
+
+		SysPrintf("Counters Optimization %d\n", diff / scanlineCycles);
+
+		/* if counter's count increases on hblank gate's off signal OR if counter increases every hblank, THEN add to the counter */
+		if ( (!(counters[0].mode & 0x30) && (gates & (1<<0))) || (((counters[0].mode & 0x83) == 0x83) && !(gates & (1<<0))) ) counters[0].count += (increment * HBLANK_COUNTER_SPEED);
+		if ( (!(counters[1].mode & 0x30) && (gates & (1<<1))) || (((counters[1].mode & 0x83) == 0x83) && !(gates & (1<<1))) ) counters[1].count += (increment * HBLANK_COUNTER_SPEED);
+		if ( (!(counters[2].mode & 0x30) && (gates & (1<<2))) || (((counters[2].mode & 0x83) == 0x83) && !(gates & (1<<2))) ) counters[2].count += (increment * HBLANK_COUNTER_SPEED);
+		if ( (!(counters[3].mode & 0x30) && (gates & (1<<3))) || (((counters[3].mode & 0x83) == 0x83) && !(gates & (1<<3))) ) counters[3].count += (increment * HBLANK_COUNTER_SPEED);
+		counters[4].sCycle += (increment * scanlineCycles);
+	}
 }
 
 static __forceinline void hScanline() 
@@ -409,16 +432,20 @@ static __forceinline void hScanline()
 	u32 difference = (cpuRegs.cycle - counters[4].sCycle);
 
 	if (counters[4].mode & MODE_HBLANK) { //HBLANK Start
-		if (difference >= HBLANK_TIME_ ) {
-			hScanlineNextCycle(difference, HBLANK_TIME_);
+		const u32 modeCycles = HBLANK_TIME_;
+		if (difference >= modeCycles ) {
+			//hScanlineNextCycle(difference, modeCycles);
+			counters[4].sCycle += modeCycles;
 			rcntStartGate(0, counters[4].sCycle);
 			psxCheckStartGate16(0);
 			counters[4].mode = MODE_HRENDER;
 		}
 	}
 	else { //HBLANK END / HRENDER Begin
-		if (difference >= (HRENDER_TIME_)) {
-			hScanlineNextCycle(difference, HRENDER_TIME_);
+		const u32 modeCycles = HRENDER_TIME_;
+		if (difference >= modeCycles) {
+			//hScanlineNextCycle(difference, modeCycles);
+			counters[4].sCycle += modeCycles;
 			if (CSRw & 0x4) GSCSRr |= 4; // signal
 			if (!(GSIMR&0x400)) gsIrq();
 			if (gates) rcntEndGate(0, counters[4].sCycle);
@@ -426,18 +453,23 @@ static __forceinline void hScanline()
 			counters[4].mode = MODE_HBLANK;
 		}
 	}
+
+	/*if(counters[4].CycleT < 0) {
+		counters[4].sCycle += -counters[4].CycleT;
+		counters[4].CycleT = 0;
+	}*/
+
 }
 
 // Only called from one place so might as well inline it.
-static __forceinline void vSync() 
+static __forceinline void vSync()
 {
 	u32 diff = (cpuRegs.cycle - counters[5].sCycle);
 
 	hScanline();
 
 	if (diff >= (VSYNC_HALF_)) {
-		counters[5].sCycle += (VSYNC_HALF_ * (u32)(diff / VSYNC_HALF_));
-		counters[5].CycleT = VSYNC_HALF_ - (cpuRegs.cycle - counters[5].sCycle);
+		counters[5].sCycle += VSYNC_HALF_; // * (u32)(diff / VSYNC_HALF_));
 
 		if (counters[5].mode == MODE_VSYNC) {
 			VSyncEnd(counters[5].sCycle);
@@ -446,7 +478,16 @@ static __forceinline void vSync()
 		else {
 			VSyncStart(counters[5].sCycle);
 			counters[5].mode = MODE_VSYNC;
+
+			// Accumulate hsync rounding errors:
+			counters[4].sCycle += HSYNC_ERROR;
+
+			// Tighten up EE/IOP responsiveness for a wee bit.
+			// Games are usually most sensitive to vSync sessions since that's
+			// when the hard thinking usually occurs.
+			g_eeTightenSync += 2;
 		}
+		g_nextBranchCycle = cpuRegs.cycle + 384;
 	}
 }
 
@@ -679,6 +720,16 @@ int rcntFreeze(gzFile f, int Mode) {
 	gzfreezel(counters);
 	gzfreeze(&nextCounter, sizeof(nextCounter));
 	gzfreeze(&nextsCounter, sizeof(nextsCounter));
+
+	if( Mode == 0 )
+	{
+		// Sanity check for loading older savestates:
+		if( counters[4].sCycle == 0 )
+			counters[4].sCycle = cpuRegs.cycle;
+
+		if( counters[5].sCycle == 0 )
+			counters[5].sCycle = cpuRegs.cycle;
+	}
 
 	return 0;
 }

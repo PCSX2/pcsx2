@@ -78,12 +78,7 @@
 #define HW_DMA_PCR2  (psxHu32(0x1570))
 #define HW_DMA_ICR2  (psxHu32(0x1574))
 
-#define	PSX_INT(n, ecycle) \
-	psxRegs.interrupt|= 1 << n; \
-	g_psxNextBranchCycle = min(g_psxNextBranchCycle, psxRegs.cycle+ecycle); \
-	psxRegs.sCycle[n] = psxRegs.cycle; \
-	psxRegs.eCycle[n] = ecycle;
-
+extern void PSX_INT( int n, u32 ecycle);
 
 void psxHwReset();
 u8   psxHwRead8 (u32 add);

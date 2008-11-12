@@ -445,20 +445,26 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 }
 
 extern "C" void zeroEx();
+extern "C" u32 g_eeTightenSync;
 
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 {
     if ( ! _Rt_ ) {
-#ifdef _DEBUG
         if( (psxRegs.code>>26) == 9 ) {
             //ADDIU, call bios
+#ifdef _DEBUG
             MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
 	        MOV32ItoM( (uptr)&psxRegs.pc, psxpc );
             _psxFlushCall(FLUSH_NODESTROY);
             CALLFunc((uptr)zeroEx);
-        }
 #endif
+			// Tighten up the EE/IOP sync (helps prevent crashes)
+			// [TODO] should probably invoke a branch test or EE code control break here,
+			//  but it would require the use of registers and I have no eff'ing idea how
+			//  the register allocation stuff works in the recompiler. :/
+			ADD32ItoM( (uptr)&g_eeTightenSync, 3 );
+		}
         return;
     }
 
@@ -618,7 +624,7 @@ static void recShutdown() {
 #if !defined(__x86_64__)
 static u32 s_uSaveESP = 0;
 
-static void R3000AExecute()
+static __forceinline void R3000AExecute()
 {
 #ifdef _DEBUG
 	u8* fnptr;
@@ -629,7 +635,8 @@ static void R3000AExecute()
 
 	BASEBLOCK* pblock;
 
-	while (EEsCycle > 0) {
+	//while (EEsCycle > 0)
+	{
 		pblock = PSX_GETBLOCK(psxRegs.pc);
 
 		if ( !pblock->pFnptr || (pblock->startpc&PSX_MEMMASK) != (psxRegs.pc&PSX_MEMMASK) ) {
@@ -983,9 +990,6 @@ void psxSetBranchImm( u32 imm )
 
 #define USE_FAST_BRANCHES CHECK_FASTBRANCHES
 
-// Important!  The following macro makes sure the rounding error of both the psxRegs.cycle
-// modifier and EEsCycle modifier are consistent (in case you wonder why it's got a u32 typecast)
-
 //fixme : this is all a huge hack, we base the counter advancements on the average an opcode should take (wtf?)
 //		  If that wasn't bad enough we have default values like 9/8 which will get cast to int later
 //		  (yeah, that means all sync code couldn't have worked to beginn with)
@@ -1000,29 +1004,35 @@ static u32 psxScaleBlockCycles()
 		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : 1 );
 }
 
+extern "C" s32 psxScaleWaitCycles()
+{
+	return -40 * 
+		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16));
+}
+
+
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	u32 blockCycles = psxScaleBlockCycles();
 	if( USE_FAST_BRANCHES && cpuBranch == 0 )
 	{
-		SUB32ItoM((uptr)&EEsCycle, blockCycles*8 );
+		SUB32ItoM((uptr)&psxCycleEE, blockCycles*8 );
 		ADD32ItoM((uptr)&psxRegs.cycle, blockCycles);
 		return;
 	}
 
 	MOV32MtoR(ECX, (uptr)&psxRegs.cycle);
-	ADD32ItoR(ECX, blockCycles); // greater mult factor causes nfsmw to crash
+	MOV32MtoR(EAX, (uptr)&psxCycleEE);
+	ADD32ItoR(ECX, blockCycles);
+	SUB32ItoR(EAX, blockCycles*8);
 	MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
+	MOV32RtoM((uptr)&psxCycleEE, EAX);
 
-	// check if we've caught up with the EE
-	SUB32ItoM((uptr)&EEsCycle, blockCycles*8 );
-	j8Ptr[2] = JGE8(0);
-
-	// Break the Block-execute Loop here.
+	j8Ptr[2] = JNS8( 0 );	// jump if no, on (psxCycleEE - blockCycles*8) < 0
 
 	if( REC_INC_STACK )
         ADD64ItoR(ESP, REC_INC_STACK);
-	RET2();
+	RET2();		// returns control to the EE
 
 	// Continue onward with branching here:
 	x86SetJ8( j8Ptr[2] );
@@ -1033,7 +1043,8 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 
 	CALLFunc((uptr)psxBranchTest);
 
-	if( newpc != 0xffffffff ) {
+	if( newpc != 0xffffffff )
+	{
 		CMP32ItoM((uptr)&psxRegs.pc, newpc);
 		JNE32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 6 ));
 	}
@@ -1069,7 +1080,7 @@ void rpsxSYSCALL()
 	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-	SUB32ItoM((uptr)&EEsCycle, psxScaleBlockCycles()*8 );
+	SUB32ItoM((uptr)&psxCycleEE, psxScaleBlockCycles()*8 );
 	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1088,7 +1099,7 @@ void rpsxBREAK()
 	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-	SUB32ItoM((uptr)&EEsCycle, psxScaleBlockCycles()*8 );
+	SUB32ItoM((uptr)&psxCycleEE, psxScaleBlockCycles()*8 );
 	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1112,6 +1123,9 @@ void psxRecompileNextInstruction(int delayslot)
 	static u8 s_bFlushReg = 1;
 
 	BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
+
+	//if( psxpc == 0x5264 )
+	//	SysPrintf( "Woot!" );
 
 	// need *ppblock != s_pCurBlock because of branches
 	if( pblock->pFnptr != 0 && pblock->startpc != s_pCurBlock->startpc ) {
@@ -1200,8 +1214,12 @@ static void recExecute() {
 	for (;;) R3000AExecute();
 }
 
-static void recExecuteBlock() {
+static void recExecuteBlock()
+{
+	psxBreak = 0;
+	psxCycleEE = EEsCycle;
 	R3000AExecute();
+	EEsCycle = psxBreak + psxCycleEE;
 }
 
 #include "PsxHw.h"
@@ -1511,7 +1529,7 @@ StartRecomp:
 		else
 		{
 			ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-			SUB32ItoM((uptr)&EEsCycle, psxScaleBlockCycles()*8 );
+			SUB32ItoM((uptr)&psxCycleEE, psxScaleBlockCycles()*8 );
 		}
 
 		if( willbranch3 ) {

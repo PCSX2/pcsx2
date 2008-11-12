@@ -39,7 +39,7 @@ PCSX2_ALIGNED16(GPR_reg64 g_cpuConstRegs[32]) = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 R5900cpu *Cpu;
 
-int EEsCycle;		// used to sync the IOP to the EE
+s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
 
@@ -325,34 +325,43 @@ void cpuTestMissingHwInts() {
 	}
 }
 
-#define TESTINT(n, callback) { \
-	if ( (cpuRegs.interrupt & (1 << n)) ) { \
-		if( ((int)(cpuRegs.cycle - cpuRegs.sCycle[n]) >= cpuRegs.eCycle[n]) ) { \
-			callback(); \
-		} \
-		else if( (int)(g_nextBranchCycle - cpuRegs.sCycle[n]) > cpuRegs.eCycle[n] ) { \
-			g_nextBranchCycle = cpuRegs.sCycle[n] + cpuRegs.eCycle[n]; \
-		} \
-	} \
-} \
+static __forceinline void TESTINT( u8 n, void (*callback)() )
+{
+	if( !(cpuRegs.interrupt & (1 << n)) ) return;
 
-void _cpuTestInterrupts() {
+	if( (cpuRegs.cycle - cpuRegs.sCycle[n]) >= cpuRegs.eCycle[n] )
+	{
+		callback();
+	}
+	else if( (g_nextBranchCycle - cpuRegs.sCycle[n]) > cpuRegs.eCycle[n] )
+		g_nextBranchCycle = cpuRegs.sCycle[n] + cpuRegs.eCycle[n];
+}
 
-	inter = cpuRegs.interrupt;
+static __forceinline void _cpuTestInterrupts()
+{
 	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
 	   that depends on the cycle timings */
 
-	TESTINT(0, vif0Interrupt);
-	TESTINT(10, vifMFIFOInterrupt);
 	TESTINT(1, vif1Interrupt);
-	TESTINT(11, gifMFIFOInterrupt);
 	TESTINT(2, gsInterrupt);
-	TESTINT(3, ipu0Interrupt);
-	TESTINT(4, ipu1Interrupt);
 	TESTINT(5, EEsif0Interrupt);
 	TESTINT(6, EEsif1Interrupt);
-	TESTINT(8, SPRFROMinterrupt);
-	TESTINT(9, SPRTOinterrupt);
+
+	// Profile-guided Optimization (sorta)
+	// The following ints are rarely called.  Encasing them in a conditional
+	// as follows helps speed up most games.
+
+	if( cpuRegs.interrupt & ( 1 | (3 << 3) | (3<<8) | (3<<10)) )
+	{
+		TESTINT(0, vif0Interrupt);
+		TESTINT(3, ipu0Interrupt);
+		TESTINT(4, ipu1Interrupt);
+		TESTINT(8, SPRFROMinterrupt);
+		TESTINT(9, SPRTOinterrupt);
+
+		TESTINT(10, vifMFIFOInterrupt);
+		TESTINT(11, gifMFIFOInterrupt);
+	}
 
 	if ((cpuRegs.CP0.n.Status.val & 0x10007) != 0x10001) return;
 	TESTINT(30, intcInterrupt);
@@ -362,9 +371,16 @@ void _cpuTestInterrupts() {
 u32 s_iLastCOP0Cycle = 0;
 u32 s_iLastPERFCycle[2] = {0,0};
 
-_inline static void _cpuTestTIMR() {
+static __forceinline void _cpuTestTIMR()
+{
 	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
 	s_iLastCOP0Cycle = cpuRegs.cycle;
+
+	// [Air] : Are these necessary?  The recompiler and interpreter code both appear
+	// to recalculate them whenever they're read.  (although if they were not read
+	// for a long time they could overflow).  Maybe these checks could be moved to
+	// the Ints or Counters so they they get called less frequently, but still get
+	// called enough to avoid overflows.
 
 	if((cpuRegs.PERF.n.pccr & 0x800003E0) == 0x80000020) {
 		cpuRegs.PERF.n.pcr0 += cpuRegs.cycle-s_iLastPERFCycle[0];
@@ -382,41 +398,71 @@ _inline static void _cpuTestTIMR() {
 	}
 }
 
+// maximum wait between branches.  Lower values provide a tighter synchronization between
+// the EE and the IOP, but incur more execution overhead.
 #define EE_WAIT_CYCLE 2048
+
+// maximum wait between branches when EE/IOP sync is tightened via g_eeTightenSync.
+// Lower values don't always make games better, since places where this value is set
+// will have to use higher numbers to achieve the same cycle count.
+#define EE_ACTIVE_CYCLE 192
+#define EE_ACTIVE_CYCLE_SUB (EE_WAIT_CYCLE - EE_ACTIVE_CYCLE)
+
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
-u32 s_lastvsync[2];
+
+// if non-zero, the EE uses a shorter wait cycle (effectively tightening EE/IOP code
+// synchronization).  Value decremented each branch test.
+u32 g_eeTightenSync = 0;
+
+#if !defined( PCSX2_NORECBUILD ) && !defined( PCSX2_PUBLIC )
 extern u8 g_globalXMMSaved;
 X86_32CODE(extern u8 g_globalMMXSaved;)
+#endif
 
-u32 loaded = 0;
 u32 g_MTGSVifStart = 0, g_MTGSVifCount=0;
 extern void gsWaitGS();
 
 void cpuBranchTest()
 {
 #ifndef PCSX2_NORECBUILD
+#ifndef PCSX2_PUBLIC
     // dont' remove this check unless doing an official release
     if( g_globalXMMSaved X86_32CODE(|| g_globalMMXSaved) )
         SysPrintf("frozen regs have not been restored!!!\n");
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
+#endif
 	g_EEFreezeRegs = 0;
 #endif
 
-//	if( !loaded && cpuRegs.cycle > 0x20000000 ) {
-//		char strstate[255];
-//		sprintf(strstate, SSTATES_DIR "/%8.8X.000", ElfCRC);
-//		LoadState(strstate);
-//		loaded = 1;
-//	}
-
 	g_nextBranchCycle = cpuRegs.cycle + EE_WAIT_CYCLE;
+	if( g_eeTightenSync != 0 )
+	{
+		// This means we're running "sync-sensitive" code.
+		// tighten up the EE's cycle rate to ensure a more responsive
+		// EE/IOP operation:
 
-	if ((int)(cpuRegs.cycle - nextsCounter) >= nextCounter)
+		g_eeTightenSync--;
+		g_nextBranchCycle -= EE_ACTIVE_CYCLE_SUB;
+	}
+
+	// ---- Counters -------------
+
+	if( (cpuRegs.cycle - nextsCounter) >= nextCounter )
 		rcntUpdate();
 
-    // stall mtgs if it is taking too long
+	if( (g_nextBranchCycle-nextsCounter) >= nextCounter )
+		g_nextBranchCycle = nextsCounter+nextCounter;
+
+	// ---- Interrupts -------------
+
+	if( cpuRegs.interrupt )
+		_cpuTestInterrupts();
+
+	// ---- MTGS -------------
+	// stall mtgs if it is taking too long
+
     if( g_MTGSVifCount > 0 ) {
         if( cpuRegs.cycle-g_MTGSVifStart > g_MTGSVifCount ) {
             gsWaitGS();
@@ -424,25 +470,17 @@ void cpuBranchTest()
         }
     }
 
-	if (cpuRegs.interrupt)
-		_cpuTestInterrupts();
-
-	if( (int)(g_nextBranchCycle-nextsCounter) >= nextCounter )
-		g_nextBranchCycle = nextsCounter+nextCounter;
-
 //#ifdef CPU_LOG
 //	cpuTestMissingHwInts();
 //#endif
 	_cpuTestTIMR();
 
 	// ---- IOP -------------
-
 	// Signal for an immediate branch test! This is important! The IOP must
 	// be able to act on the state the EE has given it before executing any
-	// additional code.  Doing this actually fixes some games that used to crash
-	// when trying to boot them through the BIOS.
+	// additional code.
 
-	//psxBranchTest();
+	psxBranchTest();
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;
@@ -461,30 +499,56 @@ void cpuBranchTest()
 
 	// ---- VU0 -------------
 
-	if (VU0.VI[REG_VPU_STAT].UL & 0x1) {
+	if (VU0.VI[REG_VPU_STAT].UL & 0x1)
+	{
 		FreezeXMMRegs(1);
 		Cpu->ExecuteVU0Block();
 		FreezeXMMRegs(0);
 	}
 
-	// [Air] dead code?  There shouldn't be any reason to bother checking
-	// for g_nextBranchCycle being behind cpuRegs.cycle, since the branch code will
-	// just do the same check after the next block.
-
-	//if( (int)cpuRegs.cycle-(int)g_nextBranchCycle > 0 )
-	//	g_nextBranchCycle = cpuRegs.cycle+1;
-
 #ifndef PCSX2_NORECBUILD
+#ifndef PCSX2_PUBLIC
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
+#endif
 	g_EEFreezeRegs = 1;
 #endif
+}
+
+__forceinline void CPU_INT( u32 n, u32 ecycle)
+{
+	cpuRegs.interrupt|= 1 << n;
+	cpuRegs.sCycle[n] = cpuRegs.cycle;
+	cpuRegs.eCycle[n] = ecycle;
+
+	if( (g_nextBranchCycle - cpuRegs.sCycle[n]) <= cpuRegs.eCycle[n] ) return;
+
+	// Interrupt is happening soon: make sure everyone's aware!
+	g_nextBranchCycle = cpuRegs.sCycle[n] + cpuRegs.eCycle[n];
+
+	// Optimization note: this method inlines nicely since 'n' is almost always a
+	// constant.  The following conditional optimizes to virtually nothing in most
+	// cases.
+
+	if( ( n == 3 || n == 4 || n == 30 || n == 31 ) &&
+		ecycle <= 28 && psxCycleEE > 0 )
+	{
+		// If running in the IOP, force it to break immediately into the EE.
+		// the EE's branch test is due to run.
+
+		psxBreak += psxCycleEE;		// number of cycles we didn't run.
+		psxCycleEE = 0;
+		if( n == 3 || n == 4 )
+			g_eeTightenSync += 1;		// only tighten IPU a bit, otherwise it's too slow!
+		else
+			g_eeTightenSync += 4;
+	}
 }
 
 static void _cpuTestINTC() {
 	if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401){
 		if	(psHu32(INTC_STAT) & psHu32(INTC_MASK)) {
 			if ((cpuRegs.interrupt & (1 << 30)) == 0) {
-				INT(30,4);
+				CPU_INT(30,4);
 			}
 		}
 	}
@@ -495,7 +559,7 @@ static void _cpuTestDMAC() {
 		if	(psHu16(0xe012) & psHu16(0xe010) || 
 			 psHu16(0xe010) & 0x8000) {
 			if ( (cpuRegs.interrupt & (1 << 31)) == 0) {
-				INT(31, 4);
+				CPU_INT(31, 4);
 			}
 		}
 	}
@@ -623,21 +687,24 @@ void IntcpuBranchTest()
 	g_EEFreezeRegs = 0;
 #endif
 
-    g_nextBranchCycle = cpuRegs.cycle + EE_WAIT_CYCLE;
+    // Interpreter uses a high-resolution wait cycle all the time:
+	g_nextBranchCycle = cpuRegs.cycle + 256;
 
-	if ((int)(cpuRegs.cycle - nextsCounter) >= nextCounter)
+	if ((cpuRegs.cycle - nextsCounter) >= nextCounter)
 		rcntUpdate();
 
 	if (cpuRegs.interrupt)
 		_cpuTestInterrupts();
 
-	if( (int)(g_nextBranchCycle-nextsCounter) >= nextCounter )
+	if( (g_nextBranchCycle-nextsCounter) >= nextCounter )
 		g_nextBranchCycle = nextsCounter+nextCounter;
 
 //#ifdef CPU_LOG
 //	cpuTestMissingHwInts();
 //#endif
 	_cpuTestTIMR();
+
+	psxBranchTest();
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;
@@ -650,9 +717,6 @@ void IntcpuBranchTest()
 	if (VU0.VI[REG_VPU_STAT].UL & 0x100) {
 		Cpu->ExecuteVU1Block();
 	}
-
-	if( (int)cpuRegs.cycle-(int)g_nextBranchCycle > 0 )
-		g_nextBranchCycle = cpuRegs.cycle+1;
 
 #ifndef PCSX2_NORECBUILD
 	g_EEFreezeRegs = 1;

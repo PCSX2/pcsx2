@@ -1293,7 +1293,7 @@ void  vif0Interrupt() {
 					_chainVIF0();
 					}
 				else _VIF0chain();
-				INT(0, g_vifCycles);
+				CPU_INT(0, g_vifCycles);
 				return;
 			}
 		}
@@ -1318,7 +1318,7 @@ void  vif0Interrupt() {
 
 		if(vif0ch->qwc > 0) _VIF0chain();
 		ret = _chainVIF0();
-		INT(0, g_vifCycles);
+		CPU_INT(0, g_vifCycles);
 		return;
 		//if(ret!=2)
 		/*else*/ //return 1;
@@ -1387,7 +1387,7 @@ void dmaVIF0() {
 	}*/
 //	if(vif0ch->qwc > 0) {
 //		 _VIF0chain();
-//		 INT(0, g_vifCycles);
+//		 CPU_INT(0, g_vifCycles);
 //	}
 	g_vifCycles = 0;
 
@@ -1401,17 +1401,17 @@ void dmaVIF0() {
 			return;
 		}
 		vif0.done = 1;
-		INT(0, g_vifCycles);
+		CPU_INT(0, g_vifCycles);
 		return;
 	}
 
 /*	if (_VIF0chain() != 0) {
-		INT(0, g_vifCycles);
+		CPU_INT(0, g_vifCycles);
 		return;
 	}*/
 	// Chain Mode
 	vif0.done = 0;
-	INT(0, g_vifCycles);
+	CPU_INT(0, g_vifCycles);
 }
 
 
@@ -1477,7 +1477,7 @@ void vif0Write32(u32 mem, u32 value) {
 						} else _VIF0chain();
 						
 					vif0ch->chcr |= 0x100;
-					INT(0, g_vifCycles); // Gets the timing right - Flatout
+					CPU_INT(0, g_vifCycles); // Gets the timing right - Flatout
 				}
 			}
 		}			
@@ -1839,7 +1839,7 @@ static void Vif1CMDMskPath3(){ // MSKPATH3
 		//while(gif->chcr & 0x100) gsInterrupt();		// Finish the transfer first
 		psHu32(GIF_STAT) |= 0x2;
     } else {
-		if(gif->chcr & 0x100) INT(2, (transferred>>2) * BIAS);	// Restart Path3 on its own, time it right!
+		if(gif->chcr & 0x100) CPU_INT(2, (transferred>>2) * BIAS);	// Restart Path3 on its own, time it right!
 		psHu32(GIF_STAT) &= ~0x2;
     }
 #else
@@ -2230,7 +2230,7 @@ void vif1Interrupt() {
 					_chainVIF1();
 					}
 				else _VIF1chain();
-				INT(1, g_vifCycles);
+				CPU_INT(1, g_vifCycles);
 				return;
 			}
 		}
@@ -2249,7 +2249,7 @@ void vif1Interrupt() {
 	}
 	/*if(vif1ch->qwc > 0){
 		_VIF1chain();
-		INT(1, g_vifCycles);
+		CPU_INT(1, g_vifCycles);
 		return 0;
 	}*/
 	if ((vif1ch->chcr & 0x104) == 0x104 && vif1.done == 0) {
@@ -2260,7 +2260,7 @@ void vif1Interrupt() {
 		}
 
 		_chainVIF1();
-		INT(1, g_vifCycles);
+		CPU_INT(1, g_vifCycles);
 		
 		return;
 	}
@@ -2302,7 +2302,7 @@ void dmaVIF1()
 	}*/
 //	if(vif1ch->qwc > 0) {
 //		 _VIF1chain();
-//		 INT(1, g_vifCycles);
+//		 CPU_INT(1, g_vifCycles);
 //	}
 	vif1.done = 0;
 	g_vifCycles = 0;
@@ -2321,11 +2321,11 @@ void dmaVIF1()
 			VIF_LOG("dmaIrq Set\n");
 #endif					
 			vif1.done = 1;
-			INT(1, g_vifCycles);
+			CPU_INT(1, g_vifCycles);
 			return;
 		}
 		//vif1.done = 1;
-		INT(1, g_vifCycles);
+		CPU_INT(1, g_vifCycles);
 		return;
 	}*/
 
@@ -2356,7 +2356,7 @@ void dmaVIF1()
 				vif1.vifstalled = 1;
 				return;
 			}
-            INT(1, g_vifCycles);
+            CPU_INT(1, g_vifCycles);
 		} else { // from Memory
 			
 			
@@ -2401,7 +2401,7 @@ void dmaVIF1()
 					vif1.done = 1;
 					vif1Regs->stat&= ~0x1f000000;
 					vif1ch->qwc = 0;
-					INT(1, g_vifCycles);
+					CPU_INT(1, g_vifCycles);
 
 					return;						   //Return -1 as an error has occurred	
 				}
@@ -2427,7 +2427,7 @@ void dmaVIF1()
 				g_vifCycles += vif1ch->qwc * 2;
                 vif1ch->madr += vif1ch->qwc * 16; // mgs3 scene changes
 				vif1ch->qwc = 0;
-				INT(1, g_vifCycles);
+				CPU_INT(1, g_vifCycles);
 			}
 
 		}
@@ -2437,13 +2437,13 @@ void dmaVIF1()
 	}
 
 /*	if (_VIF1chain() != 0) {
-		INT(1, g_vifCycles);
+		CPU_INT(1, g_vifCycles);
 		return;
 	}*/
 
 	// Chain Mode
 	vif1.done = 0;
-	INT(1, g_vifCycles);
+	CPU_INT(1, g_vifCycles);
 }
 
 
@@ -2509,14 +2509,14 @@ void vif1Write32(u32 mem, u32 value) {
 					if((psHu32(DMAC_CTRL) & 0xC) == 0x8){
 						//vif1.vifstalled = 0;
 						//SysPrintf("MFIFO Stall\n");
-						INT(10, 0);
+						CPU_INT(10, 0);
 					}else {
 						if(vif1.stallontag == 1){
 							//SysPrintf("Sorting VIF Stall on tag\n");
 							_chainVIF1();
 						} else _VIF1chain();
 							//vif1.vifstalled = 0'
-						INT(1, g_vifCycles); // Gets the timing right - Flatout
+						CPU_INT(1, g_vifCycles); // Gets the timing right - Flatout
 					}
 					vif1ch->chcr |= 0x100;
 				}

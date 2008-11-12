@@ -47,6 +47,8 @@ typedef struct {
 #define SCANLINES_VBLANK1_NTSC	19  // scanlines used for vblank1 (even interlace)
 #define SCANLINES_VBLANK2_NTSC	20  // scanlines used for vblank2 (odd interlace)
 
+#define HSYNC_ERROR_NTSC ((s32)VSYNC_NTSC - (s32)(((HRENDER_TIME_NTSC+HBLANK_TIME_NTSC) * SCANLINES_TOTAL_NTSC)/2) )
+
 //------------------------------------------------------------------
 // PAL Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
@@ -62,6 +64,8 @@ typedef struct {
 #define SCANLINES_VBLANK1_PAL	19  // scanlines used for vblank1 (even interlace)
 #define SCANLINES_VBLANK2_PAL	20  // scanlines used for vblank2 (odd interlace)
 
+#define HSYNC_ERROR_PAL ((s32)VSYNC_PAL - (s32)((SCANLINE_PAL * SCANLINES_TOTAL_PAL) / 2))
+
 //------------------------------------------------------------------
 // Timing (PAL/NTSC) Information!!!
 //------------------------------------------------------------------
@@ -70,6 +74,8 @@ typedef struct {
 #define HBLANK_TIME_	((Config.PsxType&1) ? HBLANK_TIME_PAL : HBLANK_TIME_NTSC)
 #define VSYNC_			((Config.PsxType&1) ? VSYNC_PAL : VSYNC_NTSC)
 #define VSYNC_HALF_		((Config.PsxType&1) ? VSYNC_HALF_PAL : VSYNC_HALF_NTSC)
+
+#define HSYNC_ERROR		((Config.PsxType&1) ? HSYNC_ERROR_PAL : HSYNC_ERROR_NTSC)
 
 #define SCANLINES_TOTAL_	((Config.PsxType&1) ? SCANLINES_TOTAL_PAL : SCANLINES_TOTAL_NTSC)
 #define SCANLINES_VSYNC_	((Config.PsxType&1) ? SCANLINES_VSYNC_PAL : SCANLINES_VSYNC_NTSC)

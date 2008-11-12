@@ -29,6 +29,17 @@ u32 g_psxConstRegs[32];
 u32 g_psxHasConstReg, g_psxFlushedConstReg;
 u32 g_psxNextBranchCycle = 0;
 
+// This value is used when the IOP execution is broken to return contorl to the EE.
+// (which happens when the IOP throws EE-bound interrupts).  It holds the value of
+// psxCycleEE (which is set to zero to facilitate the code break), so that the unrun
+// cycles can be accounted for later.
+s32 psxBreak = 0;
+
+// tracks the IOP's current sync status with the EE.  When it dips below zero,
+// control is returned to the EE.
+s32 psxCycleEE = -1;
+
+
 PCSX2_ALIGNED16(psxRegisters psxRegs);
 
 int psxInit()
@@ -134,6 +145,36 @@ void psxException(u32 code, u32 bd) {
 	}*/
 }
 
+__forceinline void PSX_INT( int n, u32 ecycle )
+{
+	psxRegs.interrupt |= 1 << n;
+
+	psxRegs.sCycle[n] = psxRegs.cycle;
+	psxRegs.eCycle[n] = ecycle;
+
+	if( (g_psxNextBranchCycle - psxRegs.sCycle[n]) <= psxRegs.eCycle[n] ) return;
+
+	// Interrupt is happening soon: make sure everyone is aware (includeing the EE!)
+	g_psxNextBranchCycle = psxRegs.sCycle[n] + psxRegs.eCycle[n];
+
+	if( psxCycleEE < 0 )
+	{
+		// The EE called this int, so inform it to branch as needed:
+
+		u32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
+		if( g_nextBranchCycle - cpuRegs.cycle > iopDelta )
+		{
+			// Optimization note:  This method inlines witn 'n' as a constant, so the
+			// following conditionals will optimize nicely.
+
+			g_nextBranchCycle = cpuRegs.cycle + iopDelta;
+			if( n > 12 ) g_eeTightenSync += 5;
+			if( n >= 19 ) g_eeTightenSync += 2;
+		}
+	}
+}
+
+
 #define PSX_TESTINT(n, callback) \
 	if (psxRegs.interrupt & (1 << n)) { \
 		if ((int)(psxRegs.cycle - psxRegs.sCycle[n]) >= psxRegs.eCycle[n]) { \
@@ -143,46 +184,45 @@ void psxException(u32 code, u32 bd) {
 			g_psxNextBranchCycle = psxRegs.sCycle[n] + psxRegs.eCycle[n]; \
 	}
 
-static void _psxTestInterrupts() {
+static __forceinline void _psxTestInterrupts()
+{
 
 	PSX_TESTINT(9, sif0Interrupt);	// SIF0
 	PSX_TESTINT(10, sif1Interrupt);	// SIF1
-	PSX_TESTINT(11, psxDMA11Interrupt);	// SIO2
-	PSX_TESTINT(12, psxDMA12Interrupt);	// SIO2
 	PSX_TESTINT(16, sioInterrupt);
-	PSX_TESTINT(17, cdrInterrupt);
-	PSX_TESTINT(18, cdrReadInterrupt);
 	PSX_TESTINT(19, cdvdReadInterrupt);
-	PSX_TESTINT(20, dev9Interrupt);
-	PSX_TESTINT(21, usbInterrupt);
+
+	// Profile-guided Optimization (sorta)
+	// The following ints are rarely called.  Encasing them in a conditional
+	// as follows helps speed up most games.
+
+	if( psxRegs.interrupt & ( (3ul<<11) | (3ul<<20) | (3ul<<17) ) )
+	{
+		PSX_TESTINT(17, cdrInterrupt);
+		PSX_TESTINT(18, cdrReadInterrupt);
+		PSX_TESTINT(11, psxDMA11Interrupt);	// SIO2
+		PSX_TESTINT(12, psxDMA12Interrupt);	// SIO2
+		PSX_TESTINT(20, dev9Interrupt);
+		PSX_TESTINT(21, usbInterrupt);
+	}
 }
-
-
-// IOP Wait cycles are still required to be a low number for maximum compatibility.
-// Some games like to freeze up if the BranchTest isn't called at fairly regular
-// intervals.  ([TODO]: figure out why?)
-#define IOP_WAIT_CYCLE 64
 
 void psxBranchTest()
 {
-	g_psxNextBranchCycle = psxRegs.cycle + IOP_WAIT_CYCLE;
-
-	if ((int)(psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
+	if ((psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
 		psxRcntUpdate();
 
-	if (psxRegs.interrupt) {
-		_psxTestInterrupts();
-	}
+	// start the next branch at the next counter event by default
+	// the int code below will assign nearer branches if needed.
+	g_psxNextBranchCycle = psxNextsCounter+psxNextCounter;
 
-	if( (int)(g_psxNextBranchCycle-psxNextsCounter) >= (u32)psxNextCounter )
-		g_psxNextBranchCycle = (u32)psxNextsCounter+(u32)psxNextCounter;
+	if (psxRegs.interrupt) _psxTestInterrupts();
 
 	if (psxHu32(0x1078)) {
 		if(psxHu32(0x1070) & psxHu32(0x1074)){
-			if ((psxRegs.CP0.n.Status & 0xFE01) >= 0x401) {
-//#ifdef PSXCPU_LOG
-//			PSXCPU_LOG("Interrupt: %x  %x\n", HWMu32(0x1070), HWMu32(0x1074));
-//#endif
+			if ((psxRegs.CP0.n.Status & 0xFE01) >= 0x401)
+			{
+//				PSXCPU_LOG("Interrupt: %x  %x\n", HWMu32(0x1070), HWMu32(0x1074));
 				psxException(0, 0);
 			}
 		}

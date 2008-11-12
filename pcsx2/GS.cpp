@@ -1054,7 +1054,7 @@ void GIFdma()
 		SysPrintf("GS Stall Control Source = %x, Drain = %x\n MADR = %x, STADR = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3, gif->madr, psHu32(DMAC_STADR));
 
 		if( gif->madr + (gif->qwc * 16) > psHu32(DMAC_STADR) ) {
-			INT(2, gscycles);
+			CPU_INT(2, gscycles);
 			gscycles = 0;
 			return;
 		}
@@ -1165,7 +1165,7 @@ void GIFdma()
 					prevcycles = gscycles;
 					gif->tadr -= 16;
 					hwDmacIrq(13);
-					INT(2, gscycles);
+					CPU_INT(2, gscycles);
 					gscycles = 0;
 					return;
 				}
@@ -1187,14 +1187,14 @@ void GIFdma()
 	prevtag = NULL;
 	prevcycles = 0;
 	if (!(vif1Regs->mskpath3 || (psHu32(GIF_MODE) & 0x1)))	{
-		INT(2, gscycles);
+		CPU_INT(2, gscycles);
 		gscycles = 0;
 	}
 }
 
 void dmaGIF() {
 	//if(vif1Regs->mskpath3 || (psHu32(GIF_MODE) & 0x1)){
-	//	INT(2, 48); //Wait time for the buffer to fill, fixes some timing problems in path 3 masking
+	//	CPU_INT(2, 48); //Wait time for the buffer to fill, fixes some timing problems in path 3 masking
 	//}				//It takes the time of 24 QW for the BUS to become ready - The Punisher, And1 Streetball
 	//else
 	gspath3done = 0; // For some reason this doesnt clear? So when the system starts the thread, we will clear it :)
@@ -1373,7 +1373,7 @@ void mfifoGIFtransfer(int qwc) {
 
 	
 	if(gif->qwc == 0 && gifdone == 2) gifdone = 1;
-	INT(11,mfifocycles);
+	CPU_INT(11,mfifocycles);
 	
 #ifdef SPR_LOG
 	SPR_LOG("mfifoGIFtransfer end %x madr %x, tadr %x\n", gif->chcr, gif->madr, gif->tadr);
@@ -1599,7 +1599,7 @@ void* GSThreadProc(void* lpParam)
 							vif1ch->madr += vif1ch->qwc * 16;
 							if(vif1Regs->mskpath3 == 0)vif1Regs->stat&= ~0x1f000000;
 
-							INT(1, 0); // since gs thread always lags real thread
+							CPU_INT(1, 0); // since gs thread always lags real thread
                             vif1ch->qwc = 0;
 
 							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);

@@ -359,6 +359,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
+				PreprocessorDefinitions="PCSX2_PUBLIC"
 				EnableEnhancedInstructionSet="0"
 			/>
 			<Tool

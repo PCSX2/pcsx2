@@ -151,6 +151,9 @@ extern PCSX2_ALIGNED16_DECL(psxRegisters psxRegs);
 extern u32 g_psxConstRegs[32];
 extern u32 g_psxHasConstReg, g_psxFlushedConstReg;
 
+extern s32 psxBreak;		// used when the IOP execution is broken and control returned to the EE
+extern s32 psxCycleEE;		// tracks IOP's current sych status with the EE
+
 #ifndef _PC_
 
 #define _i32(x) (s32)x
@@ -197,7 +200,7 @@ extern u32 g_psxHasConstReg, g_psxFlushedConstReg;
 
 #define _SetLink(x)     psxRegs.GPR.r[x] = _PC_ + 4;       // Sets the return address in the link register
 
-extern int EEsCycle;
+extern s32 EEsCycle;
 extern u32 EEoCycle;
 
 #endif

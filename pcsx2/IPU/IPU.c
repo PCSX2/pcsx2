@@ -1032,7 +1032,7 @@ void IPUCMD_WRITE(u32 val) {
 			g_nCmdIndex = 0;
 			
 			if( ipuCSC(ipuRegs->cmd.DATA) ) {
-				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) INT(DMAC_FROM_IPU,0);
+				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) CPU_INT(DMAC_FROM_IPU,0);
 				return;
 			}
 
@@ -1051,7 +1051,7 @@ void IPUCMD_WRITE(u32 val) {
 		case SCE_IPU_IDEC:
 			if( ipuIDEC(val) ) {
 				// idec done, ipu0 done too
-				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) INT(DMAC_FROM_IPU,0);
+				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) CPU_INT(DMAC_FROM_IPU,0);
 				return;
 			}
 
@@ -1064,7 +1064,7 @@ void IPUCMD_WRITE(u32 val) {
 
 		case SCE_IPU_BDEC:
 			if( ipuBDEC(val)) {
-				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) INT(DMAC_FROM_IPU,0);
+				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) CPU_INT(DMAC_FROM_IPU,0);
 				if (ipuRegs->ctrl.SCD || ipuRegs->ctrl.ECD)
 					hwIntcIrq(INTC_IPU);
 
@@ -1136,7 +1136,7 @@ void IPUWorker()
 				return;
 			}
 
-			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) INT(DMAC_FROM_IPU,0);
+			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) CPU_INT(DMAC_FROM_IPU,0);
 			break;		
 		case SCE_IPU_PACK:
 			if( !ipuPACK(ipuRegs->cmd.DATA) )
@@ -1161,7 +1161,7 @@ void IPUWorker()
 			ipuCurCmd = 0xffffffff;
 			// CHECK!: IPU0dma remains when IDEC is done, so we need to clear it
 			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100))
-                INT(DMAC_FROM_IPU,0);
+                CPU_INT(DMAC_FROM_IPU,0);
 
 			s_routine = NULL;
 			break;
@@ -1177,7 +1177,7 @@ void IPUWorker()
 			ipuRegs->topbusy = 0;
 			ipuRegs->cmd.BUSY = 0;
 			ipuCurCmd = 0xffffffff;
-			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) INT(DMAC_FROM_IPU,0);
+			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) CPU_INT(DMAC_FROM_IPU,0);
 			s_routine = NULL;
 			if (ipuRegs->ctrl.SCD || ipuRegs->ctrl.ECD)
 				hwIntcIrq(INTC_IPU);
@@ -1642,7 +1642,7 @@ int IPU1dma()
 		if ((ipu1dma->chcr & 0x80) && (g_nDMATransfer&IPU_DMA_DOTIE1)) {			 //Check TIE bit of CHCR and IRQ bit of tag
 			SysPrintf("IPU1 TIE\n");
 
-			INT(DMAC_TO_IPU, totalqwc*BIAS);
+			CPU_INT(DMAC_TO_IPU, totalqwc*BIAS);
 			g_nDMATransfer &= ~(IPU_DMA_ACTV1|IPU_DMA_DOTIE1);
 			g_nDMATransfer |= IPU_DMA_TIE1;
 			return totalqwc;
@@ -1651,7 +1651,7 @@ int IPU1dma()
 		g_nDMATransfer &= ~(IPU_DMA_ACTV1|IPU_DMA_DOTIE1);
 
 		if( (ipu1dma->chcr&0xc) == 0 ) {
-			INT(DMAC_TO_IPU, totalqwc*BIAS);
+			CPU_INT(DMAC_TO_IPU, totalqwc*BIAS);
 			return totalqwc;
 		}
 		else {
@@ -1667,7 +1667,7 @@ int IPU1dma()
 
 				ipu1dma->chcr = (ipu1dma->chcr & 0xFFFF) | ( (*ptag) & 0xFFFF0000 );
 				IPU_LOG("IPU dmaIrq Set\n"); 
-				INT(DMAC_TO_IPU, totalqwc*BIAS);
+				CPU_INT(DMAC_TO_IPU, totalqwc*BIAS);
 				g_nDMATransfer |= IPU_DMA_TIE1;
 				return totalqwc;
 			}
@@ -1676,12 +1676,12 @@ int IPU1dma()
 			{
 			case 0x00000000:
 				ipu1dma->tadr += 16;
-				INT(DMAC_TO_IPU, (1+totalqwc)*BIAS);
+				CPU_INT(DMAC_TO_IPU, (1+totalqwc)*BIAS);
 				return totalqwc;
 
 			case 0x70000000:
 				ipu1dma->tadr = ipu1dma->madr;
-				INT(DMAC_TO_IPU, (1+totalqwc)*BIAS);
+				CPU_INT(DMAC_TO_IPU, (1+totalqwc)*BIAS);
 				return totalqwc;
 			}
 		}
@@ -1698,7 +1698,7 @@ int IPU1dma()
 		IPU_LOG("dmaIPU1 Normal size=%d, addr=%lx, fifosize=%x\n",
 			ipu1dma->qwc, ipu1dma->madr, 8 - g_BP.IFC);
 		IPU1chain();
-		INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
+		CPU_INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
 		return totalqwc;
 	}
 	else 
@@ -1780,7 +1780,7 @@ int IPU1dma()
 					ipu1dma->chcr = (ipu1dma->chcr & 0xFFFF) | ( (*ptag) & 0xFFFF0000 );
 				}
 
-				INT(DMAC_TO_IPU, ipu1cycles+totalqwc*BIAS);
+				CPU_INT(DMAC_TO_IPU, ipu1cycles+totalqwc*BIAS);
 				g_nDMATransfer |= IPU_DMA_TIE1;
 				return totalqwc;
 			}
@@ -1791,18 +1791,18 @@ int IPU1dma()
 		{
 		case 0x00000000:
 			ipu1dma->tadr += 16;
-			INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
+			CPU_INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
 			return totalqwc;
 
 		case 0x70000000:
 			ipu1dma->tadr = ipu1dma->madr;
-			INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
+			CPU_INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
 			return totalqwc;
 		}
 			}
 	}
 
-	INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
+	CPU_INT(DMAC_TO_IPU, (ipu1cycles+totalqwc)*BIAS);
 	return totalqwc;
 }
 
@@ -1912,7 +1912,7 @@ int IPU0dma()
 					break;
 			}
 		}
-		INT(DMAC_FROM_IPU,readsize*BIAS);
+		CPU_INT(DMAC_FROM_IPU,readsize*BIAS);
         
 	}
 

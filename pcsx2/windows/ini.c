@@ -152,6 +152,9 @@ int LoadConfig()
 	GetPrivateProfileString("Misc", "GameFixes", NULL, szValue, 20, szIniFile);
     Conf->GameFixes = strtoul(szValue, NULL, 0);
 
+	// Remove Fast Branches hack for now:
+	Conf->Hacks &= ~0x80;
+
 #ifdef ENABLE_NLS
 	{
 		char text[256];

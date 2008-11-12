@@ -521,7 +521,7 @@ void mfifoVIF1transfer(int qwc) {
 			VIF_LOG("MFIFO Stallon tag\n");
 #endif
 					vif1.stallontag	= 1;				
-					INT(10,cycles+g_vifCycles);
+					CPU_INT(10,cycles+g_vifCycles);
 					return;        //IRQ set by VIFTransfer
 				} 
 			}
@@ -584,20 +584,20 @@ void mfifoVIF1transfer(int qwc) {
 			SysPrintf("VIF dmaChain error size=%d, madr=%lx, tadr=%lx\n",
 					vif1ch->qwc, vif1ch->madr, vif1ch->tadr);
 			vif1.done = 1;
-			INT(10,g_vifCycles);
+			CPU_INT(10,g_vifCycles);
 		}
 		if(ret == -2){
 
 #ifdef VIF_LOG
 			VIF_LOG("MFIFO Stall\n");
 #endif
-			INT(10,g_vifCycles);
+			CPU_INT(10,g_vifCycles);
 			return;
 		}
 		
 	if(vif1.done == 2 && vif1ch->qwc == 0) vif1.done = 1;
 	
-	 INT(10,g_vifCycles);
+	 CPU_INT(10,g_vifCycles);
 
 #ifdef SPR_LOG
 	SPR_LOG("mfifoVIF1transfer end %x madr %x, tadr %x vifqwc %x\n", vif1ch->chcr, vif1ch->madr, vif1ch->tadr, vifqwc);

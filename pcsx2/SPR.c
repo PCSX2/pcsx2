@@ -127,7 +127,7 @@ void _SPR0interleave() {
 	}
 
 	spr0->qwc = 0;	
-	INT(8, cycles);
+	CPU_INT(8, cycles);
 }
 
 void _dmaSPR0() {
@@ -146,7 +146,7 @@ void _dmaSPR0() {
 	if ((spr0->chcr & 0xc) == 0x0) { // Normal Mode
 		int cycles = 0;
 		SPR0chain();
-		INT(8, cycles);
+		CPU_INT(8, cycles);
 		
 		return;
 	} else if ((spr0->chcr & 0xc) == 0x4) {
@@ -157,7 +157,7 @@ void _dmaSPR0() {
 		
 			if(spr0->qwc > 0){
 				SPR0chain();
-				INT(8, cycles);
+				CPU_INT(8, cycles);
 		
 				return;			
 				}
@@ -214,7 +214,7 @@ void _dmaSPR0() {
 			return;
 		}*/
 		}
-		INT(8, cycles);
+		CPU_INT(8, cycles);
 	} else { // Interleave Mode
 		_SPR0interleave();
 	} 
@@ -314,7 +314,7 @@ void _SPR1interleave() {
 	}
 
 		spr1->qwc = 0;
-		INT(9, cycles);
+		CPU_INT(9, cycles);
 	
 }
 
@@ -337,7 +337,7 @@ void dmaSPR1() { // toSPR
 		//if(spr1->qwc == 0 && (spr1->chcr & 0xc) == 1) spr1->qwc = 0xffff;
 		// Transfer Dn_QWC from Dn_MADR to SPR1
 		SPR1chain();
-		INT(9, cycles); 
+		CPU_INT(9, cycles); 
 		FreezeMMXRegs(0);
 		return;
 	} else if ((spr1->chcr & 0xc) == 0x4){
@@ -350,7 +350,7 @@ void dmaSPR1() { // toSPR
 		//if(spr1->qwc == 0 && (spr1->chcr & 0xc) == 1) spr1->qwc = 0xffff;
 		// Transfer Dn_QWC from Dn_MADR to SPR1
 		SPR1chain();
-		INT(9, cycles); 
+		CPU_INT(9, cycles); 
 		FreezeMMXRegs(0);
 		return;
 	}
@@ -399,7 +399,7 @@ void dmaSPR1() { // toSPR
 			break;
 		}
 	}
-	INT(9, cycles);
+	CPU_INT(9, cycles);
 	} else { // Interleave Mode
 		_SPR1interleave();
 	} 

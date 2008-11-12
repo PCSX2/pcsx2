@@ -2258,7 +2258,6 @@ void iFlushCall(int flushtype)
 //		  So for now these are new settings that work. I would've set 1 for default but that seemed too low
 //		  (rama)
 
-//#define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.375 : 2.25) : (9/8))
 #define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : (1.2))
 
 static void iBranchTest(u32 newpc, u32 cpuBranch)
@@ -2274,26 +2273,26 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	//CALLFunc((uptr)testfpu);
 #endif
 
-	if( !USE_FAST_BRANCHES || cpuBranch ) {
-		MOV32MtoR(ECX, (int)&cpuRegs.cycle);
-		ADD32ItoR(ECX, s_nBlockCycles*EECYCLE_MULT); // NOTE: mulitply cycles here, 6/5 ratio stops pal ffx from randomly crashing, but crashes jakI
-		MOV32RtoM((int)&cpuRegs.cycle, ECX); // update cycles
-	}
-	else {
-		ADD32ItoM((int)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
+	if( USE_FAST_BRANCHES && (cpuBranch==0) )
+	{
+		ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
 		return;
 	}
 
-	SUB32MtoR(ECX, (int)&g_nextBranchCycle);
+	MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
+	ADD32ItoR(ECX, s_nBlockCycles*EECYCLE_MULT);
+	MOV32RtoM((uptr)&cpuRegs.cycle, ECX); // update cycles
+	SUB32MtoR(ECX, (uptr)&g_nextBranchCycle);
 
 	// check if should branch
 	j8Ptr[0] = JS8( 0 );
 
 	// has to be in the middle of Save/LoadBranchState
-	CALLFunc( (int)cpuBranchTest );
+	CALLFunc( (uptr)cpuBranchTest );
 
-	if( newpc != 0xffffffff ) {
-		CMP32ItoM((int)&cpuRegs.pc, newpc);
+	if( newpc != 0xffffffff )
+	{
+		CMP32ItoM((uptr)&cpuRegs.pc, newpc);
 		JNE32((u32)DispatcherReg - ( (u32)x86Ptr + 6 ));
 	}
 
@@ -2325,9 +2324,9 @@ void recSYSCALL( void ) {
 	iFlushCall(FLUSH_NODESTROY);
 	CALLFunc( (uptr)SYSCALL );
 
-	CMP32ItoM((int)&cpuRegs.pc, pc);
+	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
+	ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
 	JMP32((u32)DispatcherReg - ( (u32)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;
@@ -2340,7 +2339,7 @@ void recBREAK( void ) {
 	iFlushCall(FLUSH_EVERYTHING);
 	CALLFunc( (uptr)BREAK );
 
-	CMP32ItoM((int)&cpuRegs.pc, pc);
+	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
 	RET();
