@@ -102,10 +102,10 @@ int LoadConfig()
     strcpy(Conf->Mcd1, szValue);
 	GetPrivateProfileString("Interface", "Mcd2", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->Mcd2, szValue); 
-	Config.CustomFps				=	GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
-	Config.CustomFrameSkip			=	GetPrivateProfileInt("Interface", "CustomFrameskip", 0, szIniFile);
-	Config.CustomConsecutiveFrames	=	GetPrivateProfileInt("Interface", "CustomConsecutiveFrames", 0, szIniFile);
-	Config.CustomConsecutiveSkip	=	GetPrivateProfileInt("Interface", "CustomConsecutiveSkip", 0, szIniFile);
+	Conf->CustomFps				=	GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
+	Conf->CustomFrameSkip			=	GetPrivateProfileInt("Interface", "CustomFrameskip", 0, szIniFile);
+	Conf->CustomConsecutiveFrames	=	GetPrivateProfileInt("Interface", "CustomConsecutiveFrames", 0, szIniFile);
+	Conf->CustomConsecutiveSkip	=	GetPrivateProfileInt("Interface", "CustomConsecutiveSkip", 0, szIniFile);
     //plugins
 	GetPrivateProfileString("Plugins", "GS", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->GS, szValue); 
