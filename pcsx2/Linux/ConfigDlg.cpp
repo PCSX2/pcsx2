@@ -214,7 +214,7 @@ void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
 	if (configuringplug == FALSE) {
 		ReleasePlugins();
 		LoadPlugins();
-    }
+	}
 
 	needReset = TRUE;
 	gtk_widget_destroy(ConfDlg);
@@ -467,8 +467,8 @@ void FindPlugins() {
 		PS2EgetLibType = (_PS2EgetLibType) dlsym(Handle, "PS2EgetLibType");
 		PS2EgetLibName = (_PS2EgetLibName) dlsym(Handle, "PS2EgetLibName");
 		PS2EgetLibVersion2 = (_PS2EgetLibVersion2) dlsym(Handle, "PS2EgetLibVersion2");
-		if (PS2EgetLibType == NULL || PS2EgetLibName == NULL || PS2EgetLibVersion2 == NULL)
-            continue;
+		if ((PS2EgetLibType == NULL) || (PS2EgetLibName == NULL) || (PS2EgetLibVersion2 == NULL))
+			continue;
 		type = PS2EgetLibType();
 
 		if (type & PS2E_LT_GS) {

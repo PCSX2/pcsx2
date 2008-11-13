@@ -42,6 +42,7 @@
 #include <glib/gthread.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtkdialog.h>
+#include <glib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,7 +60,7 @@ extern bool UseGui;
 extern bool needReset;
 extern bool RunExe;
 	
-	
+extern int efile;
 extern int g_SaveGSStream;
 extern int g_ZeroGSOptions;
 	

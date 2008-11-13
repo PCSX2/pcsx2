@@ -109,6 +109,11 @@ int LoadConfig() {
 	GetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
 
 	GetValuel("Patch",      Config.Patch);
+	
+	GetValuel("CustomFps",      Config.CustomFps);
+	GetValuel("CustomFrameskip",      Config.CustomFrameSkip);
+	GetValuel("CustomConsecutiveFrames",      Config.CustomConsecutiveFrames);
+	GetValuel("CustomConsecutiveSkip",      Config.CustomConsecutiveSkip);
 
 #ifdef PCSX2_DEVBUILD
 	GetValuel("varLog", varLog);
@@ -166,6 +171,11 @@ void SaveConfig() {
 
 	SetValuel("Patch",      Config.Patch);
 
+	SetValuel("CustomFps",      Config.CustomFps);
+	SetValuel("CustomFrameskip",      Config.CustomFrameSkip);
+	SetValuel("CustomConsecutiveFrames",      Config.CustomConsecutiveFrames);
+	SetValuel("CustomConsecutiveSkip",      Config.CustomConsecutiveSkip);
+	
 #ifdef PCSX2_DEVBUILD
 	SetValuel("varLog", varLog);
 #endif

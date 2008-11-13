@@ -39,14 +39,12 @@ if test "x$debug" == xyes
 then
  AC_DEFINE(_DEBUG,1,[_DEBUG])
  CFLAGS+=" ${DEBUG_FLAGS}"
- dnl CPPFLAGS+=" ${DEBUG_FLAGS}"
  CXXFLAGS+=" ${DEBUG_FLAGS} -fpermissive -Xlinker -zmuldefs "
  CCASFLAGS+="-D_DEBUG ${DEBUG_FLAGS}"
  MYOBJDIR="Debug"
 else
  AC_DEFINE(NDEBUG,1,[NDEBUG])
  CFLAGS+=" ${NORMAL_FLAGS}"
- dnl CPPFLAGS+="  ${NORMAL_FLAGS}"
  CXXFLAGS+=" ${NORMAL_FLAGS} -fpermissive -Xlinker -zmuldefs "
  MYOBJDIR="Release"
 fi
@@ -83,18 +81,6 @@ then
 fi
 AC_MSG_RESULT(sse4)
 
-dnl Check for virtual memory build
-dnl The virtual memory build hasn't worked in Linux for a long time, if ever.
-dnl AC_MSG_CHECKING(for virtual memory build)
-dnl AC_ARG_ENABLE(vmbuild, AC_HELP_STRING([--enable-vmbuild], [Adds low level virtual memory support to run pcsx2 faster]),
-dnl  vmbuild=$enableval,vmbuild=no)
-dnl if test "x$vmbuild" == xyes
-dnl then
-dnl  AC_DEFINE(PCSX2_VIRTUAL_MEM,1,[PCSX2_VIRTUAL_MEM])
-dnl  MYOBJDIR=$MYOBJDIR"VM"
-dnl fi
-dnl AC_MSG_RESULT($vmbuild)
-
 dnl Check for recompilation
 AC_MSG_CHECKING(for using platform dependent recompilers)
 AC_ARG_ENABLE(recbuild, AC_HELP_STRING([--disable-recbuild], [Disable all architecture dependent recompilers]),
@@ -108,8 +94,6 @@ AM_CONDITIONAL(RECBUILD, test x$recbuild = xyes)
 
 dnl Check for 64bit CPU
 AC_MSG_CHECKING(for a x86-64 CPU)
-dnl if test "$build_os" == "target_os"
-dnl then
 AC_TRY_RUN([
 int main()
 {
@@ -123,9 +107,7 @@ asm(".intel_syntax\n"
 return 0;
 }
 ],cpu64=yes,cpu64=no,)
-dnl else
-dnl cpu64=no
-dnl fi
+
 if test "x$cpu64" == xyes
 then
 AC_DEFINE(__x86_64__,1,[__x86_64__])
@@ -167,4 +149,3 @@ echo "  Debug build?	       $debug"
 echo "  Dev build?	           $devbuild"
 echo "  Force sse3?	           $sse3"
 echo "  Recompilers enabled?   $recbuild"
-dnl echo "  Virtual memory build?  $vmbuild"

@@ -122,10 +122,6 @@ OnDebug_memWrite32                     (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-OnCpu_Ok                               (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 OnConfConf_FWConf                      (GtkButton       *button,
                                         gpointer         user_data);
 
@@ -387,4 +383,8 @@ OnDebug_Logging                        (GtkMenuItem     *menuitem,
 
 void
 OnHelp_About                           (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+
+void
+OnCpu_Ok                               (GtkButton       *button,
                                         gpointer         user_data);

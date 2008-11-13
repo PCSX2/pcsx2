@@ -29,30 +29,14 @@ DIR *dir;
 TESTRUNARGS g_TestRun;
 #endif
 
-#ifdef PCSX2_VIRTUAL_MEM
-
-static int s_nPageSize = 0;
-static int s_nShmCounter = 0;
-#endif
-
 GtkWidget *MsgDlg;
 
 int main(int argc, char *argv[]) {
 	char *file = NULL;
 	char elfname[g_MaxPath];
-	int efile = 0;
 	int i = 1;
 
-#ifdef PCSX2_VIRTUAL_MEM
-	void* pmem = mmap(PS2MEM_BASE, 0x40000000, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-
-	if( pmem != PS2MEM_BASE ) {
-		SysMessage("Failed to allocate virtual memory %x-%x. Use  TLB build",
-				      PS2MEM_BASE, PS2MEM_BASE+0x40000000);
-		return -1;
-	}
-#endif
-
+	efile = 0;
 #ifdef ENABLE_NLS
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, "Langs");
@@ -390,7 +374,7 @@ void SysMessage(const char *fmt, ...) {
 	gtk_container_add(GTK_CONTAINER(Box1), Ok);
 	GTK_WIDGET_SET_FLAGS(Ok, GTK_CAN_DEFAULT);
 	gtk_widget_show(Ok);
-    gtk_widget_grab_focus(Ok);
+	gtk_widget_grab_focus(Ok);
 
 	gtk_widget_show(MsgDlg);
 
@@ -518,104 +502,3 @@ void *SysMmap(uptr base, u32 size) {
 void SysMunmap(uptr base, u32 size) {
 	munmap((uptr*)base, size);
 }
-
-#ifdef PCSX2_VIRTUAL_MEM
-
-int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
-{
-	assert( pblock != NULL );
-
-	if( s_nPageSize == 0 ) {
-		s_nPageSize = getpagesize();
-
-        // has to be 4k
-        if( s_nPageSize != 0x1000 ) {
-		perror("page size failed");
-		SysMessage("Error! OS page size must be 4Kb!\n"
-				"If for some reason the OS cannot have 4Kb pages, then run the TLB build.");
-			return -1;
-		}
-	}
-
-	pblock->pname = (char*)malloc(20);
-	sprintf(pblock->pname, "/pcsx2_shm%d", s_nShmCounter++);
-	shm_unlink(pblock->pname); // unlink to make sure one can be created
-	pblock->fd = shm_open(pblock->pname, O_RDWR|O_CREAT, 0);
-
-	if( pblock->fd < 0 ) {
-		perror("shm_open failed");
-		SysMessage("Failed to create shared memory object %s\n", pblock->pname);
-		return -1;
-	}
-
-	if( ftruncate(fd, size) < 0 ) {
-		perror("ftruncate failed");
-		SysMessage("Failed to allocate 0x%x bytes to shm\n", size);
-	}
-
-	pblock->size = size;
-
-	return 0;
-}
-
-void SysPhysicalFree(PSMEMORYBLOCK* pblock)
-{
-	assert( pblock != NULL );
-	if( pblock->fd )
-		close(pblock->fd);
-	if( pblock->pname ) {
-		shm_unlink(pblock->pname);
-		free(pblock->pname);
-	}
-	memset(pblock, 0, sizeof(PSMEMORYBLOCK));
-}
-
-int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
-{
-	void* pmem;
-	assert(pblock != NULL && pblock->fd >= 0 && pblock->size >= size );
-	pmem = mmap(base, size, PROT_READ|PROT_WRITE, MAP_SHARED, pblock->fd, 0);
-
-	if( pmem != base ) {
-
-		if( pmem == (void*)-1 ) {
-			munmap(base, size);
-		}
-
-        SysPrintf("Failed to map memory at 0x%x of size 0x%x with shm %s\n", (uptr)base, (uptr)size, pblock->pname);
-        return -1;
-	}
-
-    return 0;
-}
-
-void SysVirtualFree(void* lpMemReserved, u32 size)
-{
-	if( munmap(lpMemReserved, size) < 0 )
-		SysPrintf("Failed to unmap %x\n", lpMemReserved);
-}
-
-
-int SysMapUserPhysicalPages(void* Addr, uptr NumPages, PSMEMORYBLOCK* pblock, int pageoffset)
-{
-	void* pmem;
-	if( pblock == NULL ) {
-		// unmap
-		if( munmap(base, size) < 0 ) {
-			SysPrintf("SysMapUserPhysicalPages: Failed to unmap %x\n", Addr);
-			return 0;
-		}
-	}
-	else {
-		// map
-		pmem = mmap(Addr, NumPages*s_nPageSize, PROT_READ|PROT_WRITE, MAP_SHARED, pblock->fd, pageoffset*s_nPageSize);
-		if( pmem != base ) {
-			SysPrintf("SysMapUserPhysicalPages: Failed to map 0x%x, size=0x%x, offset=0x%x\n",
-				Addr, NumPages*s_nPageSize, pageoffset*s_nPageSize);
-		return 0;
-		}
-	}
-
-	return 1;
-}
-#endif

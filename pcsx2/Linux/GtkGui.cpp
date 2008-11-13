@@ -32,17 +32,10 @@ void StartGui() {
 	add_pixmap_directory(".pixmaps");
 	MainWindow = create_MainWindow();
 	
-#ifdef PCSX2_VIRTUAL_MEM
-	if (SVN_REV != 0)
-		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV" Watermoose VM");
-	else
-		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose VM");
-#else
 	if (SVN_REV != 0)
 		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV" Watermoose");
 	else
 		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose");
-#endif
 
 	// status bar
 	pStatusBar = gtk_statusbar_new ();
@@ -150,7 +143,7 @@ void RunExecute(int run)
 		needReset = FALSE;
 	}
 
-    // this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
+	// this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
 	if( GSsetGameCRC != NULL )
 		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
 
@@ -407,7 +400,6 @@ void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data) {
 	widgetCmdLine = lookup_widget(CmdLine, "GtkEntry_dCMDLINE");
 	
 	gtk_entry_set_text(GTK_ENTRY(widgetCmdLine), args);
-						//args exported by ElfHeader.h
 	gtk_widget_show_all(CmdLine);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
@@ -438,7 +430,12 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 		newopts |= PCSX2_FRAMELIMIT_SKIP;
 	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_VUSkip"))))
 		newopts |= PCSX2_FRAMELIMIT_VUSKIP;
-
+	
+	Config.CustomFps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "CustomFPSLimit")));
+	Config.CustomFrameSkip = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FrameThreshold")));
+	Config.CustomConsecutiveFrames = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesBeforeSkipping")));
+	Config.CustomConsecutiveSkip = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesToSkip")));
+		
 	if ((Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD)) {
 		Config.Options = newopts;
 		SaveConfig();
@@ -491,6 +488,11 @@ void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data)
 	if(cpucaps.hasStreamingSIMD3Extensions) strcat(str,",SSE3");
 	if(cpucaps.hasAMD64BitArchitecture) strcat(str,",x86-64");
 	gtk_label_set_text(GTK_LABEL(lookup_widget(CpuDlg, "GtkLabel_Features")), str);
+	
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "CustomFPSLimit")), (gdouble)Config.CustomFps);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FrameThreshold")), (gdouble)Config.CustomFrameSkip);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesBeforeSkipping")), (gdouble)Config.CustomConsecutiveFrames);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesToSkip")), (gdouble)Config.CustomConsecutiveSkip);
 
 	gtk_widget_show_all(CpuDlg);
 	if (MainWindow) gtk_widget_set_sensitive(MainWindow, FALSE);

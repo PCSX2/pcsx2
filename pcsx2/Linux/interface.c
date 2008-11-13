@@ -1883,238 +1883,6 @@ create_DebugWnd (void)
 }
 
 GtkWidget*
-create_CpuDlg (void)
-{
-  GtkWidget *CpuDlg;
-  GtkWidget *vbox8;
-  GtkWidget *hbox20;
-  GtkWidget *alignment1;
-  GtkWidget *vbox27;
-  GtkWidget *alignment3;
-  GtkWidget *frame8;
-  GtkWidget *alignment2;
-  GtkWidget *vbox28;
-  GtkWidget *GtkLabel_CpuVendor;
-  GtkWidget *GtkLabel_Family;
-  GtkWidget *GtkLabel_CpuSpeed;
-  GtkWidget *GtkLabel_Features;
-  GtkWidget *label35;
-  GtkWidget *GtkCheckButton_EERec;
-  GtkWidget *frame6;
-  GtkWidget *vbox26;
-  GtkWidget *GtkCheckButton_VU0rec;
-  GtkWidget *GtkCheckButton_VU1rec;
-  GtkWidget *label32;
-  GtkWidget *GtkCheckButton_MTGS;
-  GtkWidget *GtkCheckButton_CpuDC;
-  GtkWidget *frame9;
-  GtkWidget *alignment4;
-  GtkWidget *vbox29;
-  GtkWidget *GtkRadioButton_LimitNormal;
-  GSList *GtkRadioButton_LimitNormal_group = NULL;
-  GtkWidget *GtkRadioButton_LimitLimit;
-  GtkWidget *GtkRadioButton_LimitFS;
-  GtkWidget *GtkRadioButton_VUSkip;
-  GtkWidget *label41;
-  GtkWidget *hbuttonbox3;
-  GtkWidget *GtkButton_Ok2;
-  GtkWidget *GtkButton_Cancel1;
-
-  CpuDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (CpuDlg), 5);
-  gtk_window_set_title (GTK_WINDOW (CpuDlg), _("Cpu"));
-
-  vbox8 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox8);
-  gtk_container_add (GTK_CONTAINER (CpuDlg), vbox8);
-
-  hbox20 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox20);
-  gtk_box_pack_start (GTK_BOX (vbox8), hbox20, TRUE, TRUE, 0);
-
-  alignment1 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment1);
-  gtk_box_pack_start (GTK_BOX (hbox20), alignment1, TRUE, TRUE, 0);
-
-  vbox27 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox27);
-  gtk_container_add (GTK_CONTAINER (alignment1), vbox27);
-
-  alignment3 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment3);
-  gtk_box_pack_start (GTK_BOX (vbox27), alignment3, TRUE, TRUE, 0);
-
-  frame8 = gtk_frame_new (NULL);
-  gtk_widget_show (frame8);
-  gtk_container_add (GTK_CONTAINER (alignment3), frame8);
-
-  alignment2 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment2);
-  gtk_container_add (GTK_CONTAINER (frame8), alignment2);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment2), 0, 0, 12, 0);
-
-  vbox28 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox28);
-  gtk_container_add (GTK_CONTAINER (alignment2), vbox28);
-
-  GtkLabel_CpuVendor = gtk_label_new (_("CPU vendor"));
-  gtk_widget_show (GtkLabel_CpuVendor);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuVendor, FALSE, FALSE, 0);
-
-  GtkLabel_Family = gtk_label_new (_("Family"));
-  gtk_widget_show (GtkLabel_Family);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Family, FALSE, FALSE, 0);
-
-  GtkLabel_CpuSpeed = gtk_label_new (_("Cpu Speed"));
-  gtk_widget_show (GtkLabel_CpuSpeed);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuSpeed, FALSE, FALSE, 0);
-
-  GtkLabel_Features = gtk_label_new (_("Features"));
-  gtk_widget_show (GtkLabel_Features);
-  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Features, FALSE, FALSE, 0);
-
-  label35 = gtk_label_new ("");
-  gtk_widget_show (label35);
-  gtk_frame_set_label_widget (GTK_FRAME (frame8), label35);
-  gtk_label_set_use_markup (GTK_LABEL (label35), TRUE);
-
-  GtkCheckButton_EERec = gtk_check_button_new_with_mnemonic (_("EERec - EE/IOP recompiler"));
-  gtk_widget_show (GtkCheckButton_EERec);
-  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_EERec, FALSE, FALSE, 0);
-
-  frame6 = gtk_frame_new (NULL);
-  gtk_widget_show (frame6);
-  gtk_box_pack_start (GTK_BOX (vbox8), frame6, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame6), 5);
-
-  vbox26 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox26);
-  gtk_container_add (GTK_CONTAINER (frame6), vbox26);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox26), 5);
-
-  GtkCheckButton_VU0rec = gtk_check_button_new_with_mnemonic (_("VU0rec - enable recompiler for VU0 unit"));
-  gtk_widget_show (GtkCheckButton_VU0rec);
-  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU0rec, FALSE, FALSE, 0);
-
-  GtkCheckButton_VU1rec = gtk_check_button_new_with_mnemonic (_("VU1rec - enable recompiler for VU1 unit"));
-  gtk_widget_show (GtkCheckButton_VU1rec);
-  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU1rec, FALSE, FALSE, 0);
-
-  label32 = gtk_label_new (_("VU Recompilers - All options are set by default"));
-  gtk_widget_show (label32);
-  gtk_frame_set_label_widget (GTK_FRAME (frame6), label32);
-
-  GtkCheckButton_MTGS = gtk_check_button_new_with_mnemonic (_("Multi threaded GS mode (MTGS)\n (faster on dual core/HT CPUs, requires pcsx2 restart)"));
-  gtk_widget_show (GtkCheckButton_MTGS);
-  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_MTGS, FALSE, FALSE, 0);
-
-  GtkCheckButton_CpuDC = gtk_check_button_new_with_mnemonic (_("Dual Core Mode (DC) - Much faster, but only valid with MTGS"));
-  gtk_widget_show (GtkCheckButton_CpuDC);
-  gtk_box_pack_start (GTK_BOX (vbox8), GtkCheckButton_CpuDC, FALSE, FALSE, 0);
-
-  frame9 = gtk_frame_new (NULL);
-  gtk_widget_show (frame9);
-  gtk_box_pack_start (GTK_BOX (vbox8), frame9, TRUE, TRUE, 0);
-
-  alignment4 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment4);
-  gtk_container_add (GTK_CONTAINER (frame9), alignment4);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment4), 0, 0, 12, 0);
-
-  vbox29 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox29);
-  gtk_container_add (GTK_CONTAINER (alignment4), vbox29);
-
-  GtkRadioButton_LimitNormal = gtk_radio_button_new_with_mnemonic (NULL, _("Normal - All frames are rendered as fast as possible"));
-  gtk_widget_show (GtkRadioButton_LimitNormal);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitNormal, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal));
-
-  GtkRadioButton_LimitLimit = gtk_radio_button_new_with_mnemonic (NULL, _("Limit - Force frames to normal speeds if too fast"));
-  gtk_widget_show (GtkRadioButton_LimitLimit);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitLimit, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit));
-
-  GtkRadioButton_LimitFS = gtk_radio_button_new_with_mnemonic (NULL, _("Frame Skip - In order to achieve normal speeds, \n                   some frames are skipped (faster).\n                   Fps displayed counts skipped frames too"));
-  gtk_widget_show (GtkRadioButton_LimitFS);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitFS, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS));
-
-  GtkRadioButton_VUSkip = gtk_radio_button_new_with_mnemonic (NULL, _("VU Skip - Same as Frame Skip, but tried to skip more. \n               Artifacts might be present, but will be faster"));
-  gtk_widget_show (GtkRadioButton_VUSkip);
-  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_VUSkip, FALSE, FALSE, 0);
-  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip), GtkRadioButton_LimitNormal_group);
-  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip));
-
-  label41 = gtk_label_new (_("Frame Limiting"));
-  gtk_widget_show (label41);
-  gtk_frame_set_label_widget (GTK_FRAME (frame9), label41);
-  gtk_label_set_use_markup (GTK_LABEL (label41), TRUE);
-
-  hbuttonbox3 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox3);
-  gtk_box_pack_start (GTK_BOX (vbox8), hbuttonbox3, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox3), 30);
-
-  GtkButton_Ok2 = gtk_button_new_from_stock ("gtk-ok");
-  gtk_widget_show (GtkButton_Ok2);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_Ok2);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Ok2, GTK_CAN_DEFAULT);
-
-  GtkButton_Cancel1 = gtk_button_new_from_stock ("gtk-cancel");
-  gtk_widget_show (GtkButton_Cancel1);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_Cancel1);
-  GTK_WIDGET_SET_FLAGS (GtkButton_Cancel1, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) GtkButton_Ok2, "clicked",
-                    G_CALLBACK (OnCpu_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) GtkButton_Cancel1, "clicked",
-                    G_CALLBACK (On_Dialog_Cancelled),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (CpuDlg, CpuDlg, "CpuDlg");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox8, "vbox8");
-  GLADE_HOOKUP_OBJECT (CpuDlg, hbox20, "hbox20");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment1, "alignment1");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox27, "vbox27");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment3, "alignment3");
-  GLADE_HOOKUP_OBJECT (CpuDlg, frame8, "frame8");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment2, "alignment2");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox28, "vbox28");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuVendor, "GtkLabel_CpuVendor");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Family, "GtkLabel_Family");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuSpeed, "GtkLabel_CpuSpeed");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Features, "GtkLabel_Features");
-  GLADE_HOOKUP_OBJECT (CpuDlg, label35, "label35");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_EERec, "GtkCheckButton_EERec");
-  GLADE_HOOKUP_OBJECT (CpuDlg, frame6, "frame6");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox26, "vbox26");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU0rec, "GtkCheckButton_VU0rec");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU1rec, "GtkCheckButton_VU1rec");
-  GLADE_HOOKUP_OBJECT (CpuDlg, label32, "label32");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_MTGS, "GtkCheckButton_MTGS");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_CpuDC, "GtkCheckButton_CpuDC");
-  GLADE_HOOKUP_OBJECT (CpuDlg, frame9, "frame9");
-  GLADE_HOOKUP_OBJECT (CpuDlg, alignment4, "alignment4");
-  GLADE_HOOKUP_OBJECT (CpuDlg, vbox29, "vbox29");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitNormal, "GtkRadioButton_LimitNormal");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitLimit, "GtkRadioButton_LimitLimit");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitFS, "GtkRadioButton_LimitFS");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_VUSkip, "GtkRadioButton_VUSkip");
-  GLADE_HOOKUP_OBJECT (CpuDlg, label41, "label41");
-  GLADE_HOOKUP_OBJECT (CpuDlg, hbuttonbox3, "hbuttonbox3");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkButton_Ok2, "GtkButton_Ok2");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkButton_Cancel1, "GtkButton_Cancel1");
-
-  return CpuDlg;
-}
-
-GtkWidget*
 create_ConfDlg (void)
 {
   GtkWidget *ConfDlg;
@@ -3736,5 +3504,358 @@ create_PatchFinderWindow (void)
   GLADE_HOOKUP_OBJECT (PatchFinderWindow, button95, "button95");
 
   return PatchFinderWindow;
+}
+
+GtkWidget*
+create_CpuDlg (void)
+{
+  GtkWidget *CpuDlg;
+  GtkWidget *dialog_vbox5;
+  GtkWidget *hbox27;
+  GtkWidget *vbox47;
+  GtkWidget *frame8;
+  GtkWidget *alignment2;
+  GtkWidget *vbox28;
+  GtkWidget *GtkLabel_CpuVendor;
+  GtkWidget *GtkLabel_Family;
+  GtkWidget *GtkLabel_CpuSpeed;
+  GtkWidget *GtkLabel_Features;
+  GtkWidget *label35;
+  GtkWidget *GtkCheckButton_EERec;
+  GtkWidget *frame6;
+  GtkWidget *vbox26;
+  GtkWidget *GtkCheckButton_VU0rec;
+  GtkWidget *GtkCheckButton_VU1rec;
+  GtkWidget *label32;
+  GtkWidget *GtkCheckButton_MTGS;
+  GtkWidget *GtkCheckButton_CpuDC;
+  GtkWidget *vbox48;
+  GtkWidget *frame9;
+  GtkWidget *alignment4;
+  GtkWidget *vbox29;
+  GtkWidget *GtkRadioButton_LimitNormal;
+  GSList *GtkRadioButton_LimitNormal_group = NULL;
+  GtkWidget *GtkRadioButton_LimitLimit;
+  GtkWidget *GtkRadioButton_LimitFS;
+  GtkWidget *GtkRadioButton_VUSkip;
+  GtkWidget *label41;
+  GtkWidget *frame23;
+  GtkWidget *alignment18;
+  GtkWidget *vbox49;
+  GtkWidget *hbox29;
+  GtkWidget *label66;
+  GtkObject *CustomFPSLimit_adj;
+  GtkWidget *CustomFPSLimit;
+  GtkWidget *hbox30;
+  GtkWidget *label67;
+  GtkObject *FrameThreshold_adj;
+  GtkWidget *FrameThreshold;
+  GtkWidget *hbox31;
+  GtkWidget *label68;
+  GtkObject *FramesBeforeSkipping_adj;
+  GtkWidget *FramesBeforeSkipping;
+  GtkWidget *hbox32;
+  GtkWidget *label69;
+  GtkObject *FramesToSkip_adj;
+  GtkWidget *FramesToSkip;
+  GtkWidget *label63;
+  GtkWidget *label64;
+  GtkWidget *label65;
+  GtkWidget *label62;
+  GtkWidget *dialog_action_area5;
+  GtkWidget *button96;
+  GtkWidget *button97;
+
+  CpuDlg = gtk_dialog_new ();
+  gtk_window_set_title (GTK_WINDOW (CpuDlg), _("dialog1"));
+  gtk_window_set_type_hint (GTK_WINDOW (CpuDlg), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+  dialog_vbox5 = GTK_DIALOG (CpuDlg)->vbox;
+  gtk_widget_show (dialog_vbox5);
+
+  hbox27 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox27);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox5), hbox27, TRUE, TRUE, 0);
+
+  vbox47 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox47);
+  gtk_box_pack_start (GTK_BOX (hbox27), vbox47, TRUE, TRUE, 0);
+
+  frame8 = gtk_frame_new (NULL);
+  gtk_widget_show (frame8);
+  gtk_box_pack_start (GTK_BOX (vbox47), frame8, TRUE, TRUE, 0);
+
+  alignment2 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment2);
+  gtk_container_add (GTK_CONTAINER (frame8), alignment2);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment2), 0, 0, 12, 0);
+
+  vbox28 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox28);
+  gtk_container_add (GTK_CONTAINER (alignment2), vbox28);
+
+  GtkLabel_CpuVendor = gtk_label_new (_("CPU vendor"));
+  gtk_widget_show (GtkLabel_CpuVendor);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuVendor, FALSE, FALSE, 0);
+
+  GtkLabel_Family = gtk_label_new (_("Family"));
+  gtk_widget_show (GtkLabel_Family);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Family, FALSE, FALSE, 0);
+
+  GtkLabel_CpuSpeed = gtk_label_new (_("Cpu Speed"));
+  gtk_widget_show (GtkLabel_CpuSpeed);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_CpuSpeed, FALSE, FALSE, 0);
+
+  GtkLabel_Features = gtk_label_new (_("Features"));
+  gtk_widget_show (GtkLabel_Features);
+  gtk_box_pack_start (GTK_BOX (vbox28), GtkLabel_Features, FALSE, FALSE, 0);
+
+  label35 = gtk_label_new ("");
+  gtk_widget_show (label35);
+  gtk_frame_set_label_widget (GTK_FRAME (frame8), label35);
+  gtk_label_set_use_markup (GTK_LABEL (label35), TRUE);
+
+  GtkCheckButton_EERec = gtk_check_button_new_with_mnemonic (_("EERec - EE/IOP recompiler"));
+  gtk_widget_show (GtkCheckButton_EERec);
+  gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_EERec, FALSE, FALSE, 0);
+
+  frame6 = gtk_frame_new (NULL);
+  gtk_widget_show (frame6);
+  gtk_box_pack_start (GTK_BOX (vbox47), frame6, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame6), 5);
+
+  vbox26 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox26);
+  gtk_container_add (GTK_CONTAINER (frame6), vbox26);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox26), 5);
+
+  GtkCheckButton_VU0rec = gtk_check_button_new_with_mnemonic (_("VU0rec - enable recompiler for VU0 unit"));
+  gtk_widget_show (GtkCheckButton_VU0rec);
+  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU0rec, FALSE, FALSE, 0);
+
+  GtkCheckButton_VU1rec = gtk_check_button_new_with_mnemonic (_("VU1rec - enable recompiler for VU1 unit"));
+  gtk_widget_show (GtkCheckButton_VU1rec);
+  gtk_box_pack_start (GTK_BOX (vbox26), GtkCheckButton_VU1rec, FALSE, FALSE, 0);
+
+  label32 = gtk_label_new (_("VU Recompilers - All options are set by default"));
+  gtk_widget_show (label32);
+  gtk_frame_set_label_widget (GTK_FRAME (frame6), label32);
+
+  GtkCheckButton_MTGS = gtk_check_button_new_with_mnemonic (_("Multi threaded GS mode (MTGS)\n (faster on dual core/HT CPUs, requires pcsx2 restart)"));
+  gtk_widget_show (GtkCheckButton_MTGS);
+  gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_MTGS, FALSE, FALSE, 0);
+
+  GtkCheckButton_CpuDC = gtk_check_button_new_with_mnemonic (_("Dual Core Mode (DC) - Much faster, but only valid with MTGS"));
+  gtk_widget_show (GtkCheckButton_CpuDC);
+  gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_CpuDC, FALSE, FALSE, 0);
+
+  vbox48 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox48);
+  gtk_box_pack_start (GTK_BOX (hbox27), vbox48, TRUE, TRUE, 0);
+
+  frame9 = gtk_frame_new (NULL);
+  gtk_widget_show (frame9);
+  gtk_box_pack_start (GTK_BOX (vbox48), frame9, TRUE, TRUE, 0);
+
+  alignment4 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment4);
+  gtk_container_add (GTK_CONTAINER (frame9), alignment4);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment4), 0, 0, 12, 0);
+
+  vbox29 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox29);
+  gtk_container_add (GTK_CONTAINER (alignment4), vbox29);
+
+  GtkRadioButton_LimitNormal = gtk_radio_button_new_with_mnemonic (NULL, _("Normal - All frames are rendered as fast as possible"));
+  gtk_widget_show (GtkRadioButton_LimitNormal);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitNormal, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitNormal));
+
+  GtkRadioButton_LimitLimit = gtk_radio_button_new_with_mnemonic (NULL, _("Limit - Force frames to normal speeds if too fast"));
+  gtk_widget_show (GtkRadioButton_LimitLimit);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitLimit, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitLimit));
+
+  GtkRadioButton_LimitFS = gtk_radio_button_new_with_mnemonic (NULL, _("Frame Skip - In order to achieve normal speeds, \n                   some frames are skipped (faster).\n                   Fps displayed counts skipped frames too"));
+  gtk_widget_show (GtkRadioButton_LimitFS);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_LimitFS, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_LimitFS));
+
+  GtkRadioButton_VUSkip = gtk_radio_button_new_with_mnemonic (NULL, _("VU Skip - Same as Frame Skip, but tried to skip more. \n               Artifacts might be present, but will be faster"));
+  gtk_widget_show (GtkRadioButton_VUSkip);
+  gtk_box_pack_start (GTK_BOX (vbox29), GtkRadioButton_VUSkip, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip), GtkRadioButton_LimitNormal_group);
+  GtkRadioButton_LimitNormal_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (GtkRadioButton_VUSkip));
+
+  label41 = gtk_label_new (_("Frame Limiting (F4 switches in-game)"));
+  gtk_widget_show (label41);
+  gtk_frame_set_label_widget (GTK_FRAME (frame9), label41);
+  gtk_label_set_use_markup (GTK_LABEL (label41), TRUE);
+
+  frame23 = gtk_frame_new (NULL);
+  gtk_widget_show (frame23);
+  gtk_box_pack_start (GTK_BOX (vbox48), frame23, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame23), GTK_SHADOW_NONE);
+
+  alignment18 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment18);
+  gtk_container_add (GTK_CONTAINER (frame23), alignment18);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment18), 0, 0, 12, 0);
+
+  vbox49 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox49);
+  gtk_container_add (GTK_CONTAINER (alignment18), vbox49);
+
+  hbox29 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox29);
+  gtk_box_pack_start (GTK_BOX (vbox49), hbox29, TRUE, TRUE, 0);
+
+  label66 = gtk_label_new (_("Custom FPS Limit (0=auto):"));
+  gtk_widget_show (label66);
+  gtk_box_pack_start (GTK_BOX (hbox29), label66, TRUE, TRUE, 0);
+
+  CustomFPSLimit_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  CustomFPSLimit = gtk_spin_button_new (GTK_ADJUSTMENT (CustomFPSLimit_adj), 1, 0);
+  gtk_widget_show (CustomFPSLimit);
+  gtk_box_pack_end (GTK_BOX (hbox29), CustomFPSLimit, FALSE, TRUE, 0);
+  gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (CustomFPSLimit), TRUE);
+
+  hbox30 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox30);
+  gtk_box_pack_start (GTK_BOX (vbox49), hbox30, TRUE, TRUE, 0);
+
+  label67 = gtk_label_new (_("Skip Frames when slower than[1]:"));
+  gtk_widget_show (label67);
+  gtk_box_pack_start (GTK_BOX (hbox30), label67, TRUE, TRUE, 0);
+
+  FrameThreshold_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  FrameThreshold = gtk_spin_button_new (GTK_ADJUSTMENT (FrameThreshold_adj), 1, 0);
+  gtk_widget_show (FrameThreshold);
+  gtk_box_pack_end (GTK_BOX (hbox30), FrameThreshold, FALSE, TRUE, 0);
+
+  hbox31 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox31);
+  gtk_box_pack_start (GTK_BOX (vbox49), hbox31, TRUE, TRUE, 0);
+
+  label68 = gtk_label_new (_("Consecutive Frames before skipping[2]:"));
+  gtk_widget_show (label68);
+  gtk_box_pack_start (GTK_BOX (hbox31), label68, TRUE, TRUE, 0);
+
+  FramesBeforeSkipping_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  FramesBeforeSkipping = gtk_spin_button_new (GTK_ADJUSTMENT (FramesBeforeSkipping_adj), 1, 0);
+  gtk_widget_show (FramesBeforeSkipping);
+  gtk_box_pack_end (GTK_BOX (hbox31), FramesBeforeSkipping, FALSE, TRUE, 0);
+
+  hbox32 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox32);
+  gtk_box_pack_start (GTK_BOX (vbox49), hbox32, TRUE, TRUE, 0);
+
+  label69 = gtk_label_new (_("Consecutive Frames to skip[3]:"));
+  gtk_widget_show (label69);
+  gtk_box_pack_start (GTK_BOX (hbox32), label69, TRUE, TRUE, 0);
+
+  FramesToSkip_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  FramesToSkip = gtk_spin_button_new (GTK_ADJUSTMENT (FramesToSkip_adj), 1, 0);
+  gtk_widget_show (FramesToSkip);
+  gtk_box_pack_end (GTK_BOX (hbox32), FramesToSkip, FALSE, TRUE, 0);
+
+  label63 = gtk_label_new (_("[1] Only skips when slower then this number(0 is auto; 9999 always skips)."));
+  gtk_widget_show (label63);
+  gtk_box_pack_start (GTK_BOX (vbox49), label63, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label63), TRUE);
+
+  label64 = gtk_label_new (_("[2] Renders this many frames before skipping (0 is default)."));
+  gtk_widget_show (label64);
+  gtk_box_pack_start (GTK_BOX (vbox49), label64, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label64), TRUE);
+
+  label65 = gtk_label_new (_("[3] Skips this many frames before continuing (0 is default)."));
+  gtk_widget_show (label65);
+  gtk_box_pack_start (GTK_BOX (vbox49), label65, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label65), TRUE);
+
+  label62 = gtk_label_new (_("Detailed Settings"));
+  gtk_widget_show (label62);
+  gtk_frame_set_label_widget (GTK_FRAME (frame23), label62);
+  gtk_label_set_use_markup (GTK_LABEL (label62), TRUE);
+
+  dialog_action_area5 = GTK_DIALOG (CpuDlg)->action_area;
+  gtk_widget_show (dialog_action_area5);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area5), GTK_BUTTONBOX_END);
+
+  button96 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button96);
+  gtk_dialog_add_action_widget (GTK_DIALOG (CpuDlg), button96, 0);
+  GTK_WIDGET_SET_FLAGS (button96, GTK_CAN_DEFAULT);
+
+  button97 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button97);
+  gtk_dialog_add_action_widget (GTK_DIALOG (CpuDlg), button97, 0);
+  GTK_WIDGET_SET_FLAGS (button97, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button96, "clicked",
+                    G_CALLBACK (OnCpu_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) button97, "clicked",
+                    G_CALLBACK (On_Dialog_Cancelled),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (CpuDlg, CpuDlg, "CpuDlg");
+  GLADE_HOOKUP_OBJECT_NO_REF (CpuDlg, dialog_vbox5, "dialog_vbox5");
+  GLADE_HOOKUP_OBJECT (CpuDlg, hbox27, "hbox27");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox47, "vbox47");
+  GLADE_HOOKUP_OBJECT (CpuDlg, frame8, "frame8");
+  GLADE_HOOKUP_OBJECT (CpuDlg, alignment2, "alignment2");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox28, "vbox28");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuVendor, "GtkLabel_CpuVendor");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Family, "GtkLabel_Family");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_CpuSpeed, "GtkLabel_CpuSpeed");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkLabel_Features, "GtkLabel_Features");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label35, "label35");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_EERec, "GtkCheckButton_EERec");
+  GLADE_HOOKUP_OBJECT (CpuDlg, frame6, "frame6");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox26, "vbox26");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU0rec, "GtkCheckButton_VU0rec");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU1rec, "GtkCheckButton_VU1rec");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label32, "label32");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_MTGS, "GtkCheckButton_MTGS");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_CpuDC, "GtkCheckButton_CpuDC");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox48, "vbox48");
+  GLADE_HOOKUP_OBJECT (CpuDlg, frame9, "frame9");
+  GLADE_HOOKUP_OBJECT (CpuDlg, alignment4, "alignment4");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox29, "vbox29");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitNormal, "GtkRadioButton_LimitNormal");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitLimit, "GtkRadioButton_LimitLimit");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_LimitFS, "GtkRadioButton_LimitFS");
+  GLADE_HOOKUP_OBJECT (CpuDlg, GtkRadioButton_VUSkip, "GtkRadioButton_VUSkip");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label41, "label41");
+  GLADE_HOOKUP_OBJECT (CpuDlg, frame23, "frame23");
+  GLADE_HOOKUP_OBJECT (CpuDlg, alignment18, "alignment18");
+  GLADE_HOOKUP_OBJECT (CpuDlg, vbox49, "vbox49");
+  GLADE_HOOKUP_OBJECT (CpuDlg, hbox29, "hbox29");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label66, "label66");
+  GLADE_HOOKUP_OBJECT (CpuDlg, CustomFPSLimit, "CustomFPSLimit");
+  GLADE_HOOKUP_OBJECT (CpuDlg, hbox30, "hbox30");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label67, "label67");
+  GLADE_HOOKUP_OBJECT (CpuDlg, FrameThreshold, "FrameThreshold");
+  GLADE_HOOKUP_OBJECT (CpuDlg, hbox31, "hbox31");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label68, "label68");
+  GLADE_HOOKUP_OBJECT (CpuDlg, FramesBeforeSkipping, "FramesBeforeSkipping");
+  GLADE_HOOKUP_OBJECT (CpuDlg, hbox32, "hbox32");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label69, "label69");
+  GLADE_HOOKUP_OBJECT (CpuDlg, FramesToSkip, "FramesToSkip");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label63, "label63");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label64, "label64");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label65, "label65");
+  GLADE_HOOKUP_OBJECT (CpuDlg, label62, "label62");
+  GLADE_HOOKUP_OBJECT_NO_REF (CpuDlg, dialog_action_area5, "dialog_action_area5");
+  GLADE_HOOKUP_OBJECT (CpuDlg, button96, "button96");
+  GLADE_HOOKUP_OBJECT (CpuDlg, button97, "button97");
+
+  return CpuDlg;
 }
 

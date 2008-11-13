@@ -58,6 +58,7 @@ void OnLanguage(GtkMenuItem *menuitem, gpointer user_data);
 void OnHelp_Help();
 void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data);
 
+void StartGui();
 GtkWidget *MainWindow;
 GtkWidget *pStatusBar = NULL, *Status_Box;
 GtkWidget *CmdLine;	//2002-09-28 (Florin)
