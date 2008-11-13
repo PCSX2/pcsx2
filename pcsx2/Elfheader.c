@@ -283,54 +283,39 @@ int loadHeaders( char *Exepath ) {
 		elfProgH = NULL;
 	}
 
-#ifdef ELF_LOG 
     ELF_LOG( "type:      " );
-#endif
 	switch( elfHeader->e_type ) 
-   {
-		default:
-#ifdef ELF_LOG        
-		   ELF_LOG( "unknown %x", elfHeader->e_type );
-#endif
+	{
+		default: 
+			ELF_LOG( "unknown %x", elfHeader->e_type );
 			break;
 
 		case 0x0:
-#ifdef ELF_LOG        
 			ELF_LOG( "no file type" );
-#endif
 			break;
 
 		case 0x1:
-#ifdef ELF_LOG        
-		   ELF_LOG( "relocatable" );
-#endif
+			ELF_LOG( "relocatable" );
 			break;
 
-		case 0x2:
-#ifdef ELF_LOG        
-		   ELF_LOG( "executable" );
-#endif
+		case 0x2: 
+			ELF_LOG( "executable" );
 			break;
-	}
-#ifdef ELF_LOG        
+	}  
 	ELF_LOG( "\n" );
 	ELF_LOG( "machine:   " );
-#endif
+	
 	switch ( elfHeader->e_machine ) 
-   {
+	{
 		default:
-#ifdef ELF_LOG        
 			ELF_LOG( "unknown" );
-#endif
 			break;
 
 		case 0x8:
-#ifdef ELF_LOG        
 			ELF_LOG( "mips_rs3000" );
-#endif
 			break;
 	}
-#ifdef ELF_LOG  
+	
 	ELF_LOG("\n");
 	ELF_LOG("version:   %d\n",elfHeader->e_version);
 	ELF_LOG("entry:     %08x\n",elfHeader->e_entry);
@@ -345,7 +330,6 @@ int loadHeaders( char *Exepath ) {
 	ELF_LOG("sh strndx: %08x\n",elfHeader->e_shstrndx);
 	
 	ELF_LOG("\n");
-#endif 	
 
 	return TRUE;
 }
@@ -369,21 +353,17 @@ BOOL loadProgramHeaders( char *Exepath )
 	elfProgH = (ELF_PHR*)&elfdata[elfHeader->e_phoff];
 		
 	for ( i = 0 ; i < elfHeader->e_phnum ; i++ ) {
-#ifdef ELF_LOG  
-      ELF_LOG( "Elf32 Program Header\n" );	
+		ELF_LOG( "Elf32 Program Header\n" );	
 		ELF_LOG( "type:      " );
-#endif
+		
 		switch ( elfProgH[ i ].p_type ) {
 			default:
-#ifdef ELF_LOG  
 				ELF_LOG( "unknown %x", (int)elfProgH[ i ].p_type );
-#endif
 				break;
 
 			case 0x1:
-#ifdef ELF_LOG  
 				ELF_LOG("load");
-#endif
+
 				if (elfProgH[ i ].p_offset < elfsize) {
 					int size;
 
@@ -397,15 +377,12 @@ BOOL loadProgramHeaders( char *Exepath )
                         SysPrintf("ElfProgram different load addrs: paddr=0x%8.8x, vaddr=0x%8.8x\n", elfProgH[ i ].p_paddr, elfProgH[ i ].p_vaddr);
                     // used to be paddr
 					memcpy(&PS2MEM_BASE[elfProgH[ i ].p_vaddr & 0x1ffffff], 
-						   &elfdata[elfProgH[ i ].p_offset],
-						   size);
-#ifdef ELF_LOG  
+						   &elfdata[elfProgH[ i ].p_offset], size);
 					ELF_LOG("\t*LOADED*");
-#endif
 				}
 				break;
 		}
-#ifdef ELF_LOG  
+		
       ELF_LOG("\n");
 		ELF_LOG("offset:    %08x\n",(int)elfProgH[i].p_offset);
 		ELF_LOG("vaddr:     %08x\n",(int)elfProgH[i].p_vaddr);
@@ -415,7 +392,7 @@ BOOL loadProgramHeaders( char *Exepath )
 		ELF_LOG("flags:     %08x\n",elfProgH[i].p_flags);
 		ELF_LOG("palign:    %08x\n",elfProgH[i].p_align);
 		ELF_LOG("\n");
-#endif
+		
 	}
 
 	return TRUE;
@@ -440,68 +417,51 @@ BOOL loadSectionHeaders( char * Exepath )
 	}
 		
 	for ( i = 0 ; i < elfHeader->e_shnum ; i++ ) {
-#ifdef ELF_LOG  
 		ELF_LOG( "Elf32 Section Header [%x] %s", i, &sections_names[ elfSectH[ i ].sh_name ] );
-#endif
+
 		if ( elfSectH[i].sh_flags & 0x2 ) {  
 			//2002-09-19 (Florin)
 			args_ptr = min( args_ptr, elfSectH[ i ].sh_addr & 0x1ffffff );
 		}
-#ifdef ELF_LOG  
-      ELF_LOG("\n");
-		ELF_LOG("type:      ");
-#endif
+		
+	ELF_LOG("\n");
+	ELF_LOG("type:      ");
+		
 		switch ( elfSectH[ i ].sh_type )
       {
 			default:
-#ifdef ELF_LOG  
-	         ELF_LOG("unknown %08x",elfSectH[i].sh_type);
-#endif	          
+				ELF_LOG("unknown %08x",elfSectH[i].sh_type);
 				break;
 
 			case 0x0:
-#ifdef ELF_LOG  
-	         ELF_LOG("null");
-#endif
+				ELF_LOG("null");
 				break;
 
 			case 0x1:
-#ifdef ELF_LOG  
-	         ELF_LOG("progbits");
-#endif
+				ELF_LOG("progbits");
 				break;
 
 			case 0x2:
-#ifdef ELF_LOG  
-	         ELF_LOG("symtab");
-#endif
+				ELF_LOG("symtab");
 				break;
 
 			case 0x3:
-#ifdef ELF_LOG  
-	         ELF_LOG("strtab");
-#endif
+				ELF_LOG("strtab");
 				break;
 
-         case 0x4:
-#ifdef ELF_LOG  
-	         ELF_LOG("rela");
-#endif
+			case 0x4:
+				ELF_LOG("rela");
 				break;
 
 			case 0x8:
-#ifdef ELF_LOG  
-	         ELF_LOG("no bits");
-#endif
+				ELF_LOG("no bits");
 				break;
 
-         case 0x9:
-#ifdef ELF_LOG  
-	         ELF_LOG("rel");
-#endif
+			case 0x9:
+				ELF_LOG("rel");
 				break;
 		}
-#ifdef ELF_LOG  
+		
       ELF_LOG("\n");
 		ELF_LOG("flags:     %08x\n", elfSectH[i].sh_flags);
 		ELF_LOG("addr:      %08x\n", elfSectH[i].sh_addr);
@@ -511,7 +471,6 @@ BOOL loadSectionHeaders( char * Exepath )
 		ELF_LOG("info:      %08x\n", elfSectH[i].sh_info);
 		ELF_LOG("addralign: %08x\n", elfSectH[i].sh_addralign);
 		ELF_LOG("entsize:   %08x\n", elfSectH[i].sh_entsize);
-#endif			
 		// dump symbol table
 	
 		if ( elfSectH[ i ].sh_type == 0x02 ) 
@@ -574,9 +533,8 @@ int loadElfFile(char *filename) {
 	loadProgramHeaders( filename );
 	loadSectionHeaders( filename );
 	
-#ifdef ELF_LOG
 	ELF_LOG( "PC set to: %8.8lx\n", cpuRegs.pc );
-#endif
+	
 	cpuRegs.GPR.n.sp.UL[0] = 0x81f00000;
 	cpuRegs.GPR.n.gp.UL[0] = 0x81f80000; // might not be 100% ok
 
@@ -645,7 +603,7 @@ void LoadGameSpecificSettings()
 		//	break;
 
 		case 0xb99379b7: // erementar gerad (discolored chars)
-			g_VUGameFixes |= VUFIX_XGKICKDELAY2;
+			g_VUGameFixes |= VUFIX_XGKICKDELAY2; // Tested - still needed - arcum42
 			break;
 		case 0xa08c4057:  //Sprint Cars (SLUS)
 		case 0x8b0725d5:  //Flinstones Bedrock Racing (SLES)

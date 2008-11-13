@@ -38,9 +38,7 @@ extern int FOreadpos;
 // NOTE: cannot use XMM/MMX regs
 void ReadFIFO(u32 mem, u64 *out) {
 	if ((mem >= 0x10004000) && (mem < 0x10005000)) {
-#ifdef VIF_LOG
 		VIF_LOG("ReadFIFO VIF0 0x%08X\n", mem);
-#endif
 		out[0] = psHu64(mem  );
 		out[1] = psHu64(mem+8);
 		return;
@@ -96,9 +94,8 @@ void WriteFIFO(u32 mem, u64 *value) {
 	int ret;
 
 	if ((mem >= 0x10004000) && (mem < 0x10005000)) {
-#ifdef VIF_LOG
 		VIF_LOG("WriteFIFO VIF0 0x%08X\n", mem);
-#endif
+		
 		psHu64(mem  ) = value[0];
 		psHu64(mem+8) = value[1];
 		vif0ch->qwc += 1;
@@ -106,9 +103,8 @@ void WriteFIFO(u32 mem, u64 *value) {
 		assert(ret == 0 ); // vif stall code not implemented
 	}
 	else if ((mem >= 0x10005000) && (mem < 0x10006000)) {
-#ifdef VIF_LOG
 		VIF_LOG("WriteFIFO VIF1 0x%08X\n", mem);
-#endif
+		
 		psHu64(mem  ) = value[0];
 		psHu64(mem+8) = value[1];
 
@@ -125,9 +121,7 @@ void WriteFIFO(u32 mem, u64 *value) {
 	}
 	else if ((mem >= 0x10006000) && (mem < 0x10007000)) {
 		u64* data;
-#ifdef GIF_LOG
 		GIF_LOG("WriteFIFO GIF 0x%08X\n", mem);
-#endif
 
 		psHu64(mem  ) = value[0];
 		psHu64(mem+8) = value[1];
@@ -156,9 +150,8 @@ void WriteFIFO(u32 mem, u64 *value) {
 
 	} else
 	if ((mem&0xfffff010) == 0x10007010) {
-#ifdef IPU_LOG
 		IPU_LOG("WriteFIFO IPU_in[%d] <- %8.8X_%8.8X_%8.8X_%8.8X\n", (mem - 0x10007010)/8, ((u32*)value)[3], ((u32*)value)[2], ((u32*)value)[1], ((u32*)value)[0]);
-#endif
+
 		//commiting every 16 bytes
 		while( FIFOto_write((void*)value, 1) == 0 ) {
 			SysPrintf("IPU sleeping\n");

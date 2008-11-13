@@ -56,9 +56,8 @@ void _vuFMACflush(VURegs * VU) {
 		if (VU->fmac[i].enable == 0) continue;
 
 		if ((VU->cycle - VU->fmac[i].sCycle) >= VU->fmac[i].Cycle) {
-#ifdef VUM_LOG
 			if (Log) { VUM_LOG("flushing FMAC pipe[%d] (macflag=%x)\n", i, VU->fmac[i].macflag); }
-#endif
+
 			VU->fmac[i].enable = 0;
 			VU->VI[REG_MAC_FLAG].UL = VU->fmac[i].macflag;
 			VU->VI[REG_STATUS_FLAG].UL = VU->fmac[i].statusflag;
@@ -71,9 +70,8 @@ void _vuFDIVflush(VURegs * VU) {
 	if (VU->fdiv.enable == 0) return;
 
 	if ((VU->cycle - VU->fdiv.sCycle) >= VU->fdiv.Cycle) {
-#ifdef VUM_LOG
 		if (Log) { VUM_LOG("flushing FDIV pipe\n"); }
-#endif
+
 		VU->fdiv.enable = 0;
 		VU->VI[REG_Q].UL = VU->fdiv.reg.UL;
 		VU->VI[REG_STATUS_FLAG].UL = VU->fdiv.statusflag;
@@ -84,9 +82,8 @@ void _vuEFUflush(VURegs * VU) {
 	if (VU->efu.enable == 0) return;
 
 	if ((VU->cycle - VU->efu.sCycle) >= VU->efu.Cycle) {
-#ifdef VUM_LOG
 //		if (Log) { VUM_LOG("flushing EFU pipe\n"); }
-#endif
+		
 		VU->efu.enable = 0;
 		VU->VI[REG_P].UL = VU->efu.reg.UL;
 	}
@@ -106,9 +103,8 @@ void _vuFlushAll(VURegs* VU)
 			nRepeat = 1;
 
 			if ((VU->cycle - VU->fmac[i].sCycle) >= VU->fmac[i].Cycle) {
-#ifdef VUM_LOG
 				if (Log) { VUM_LOG("flushing FMAC pipe[%d] (macflag=%x)\n", i, VU->fmac[i].macflag); }
-#endif
+				
 				VU->fmac[i].enable = 0;
 				VU->VI[REG_MAC_FLAG].UL = VU->fmac[i].macflag;
 				VU->VI[REG_STATUS_FLAG].UL = VU->fmac[i].statusflag;
@@ -121,9 +117,8 @@ void _vuFlushAll(VURegs* VU)
 			nRepeat = 1;
 			
 			if ((VU->cycle - VU->fdiv.sCycle) >= VU->fdiv.Cycle) {
-	#ifdef VUM_LOG
 				if (Log) { VUM_LOG("flushing FDIV pipe\n"); }
-	#endif
+
 				nRepeat = 1;
 				VU->fdiv.enable = 0;
 				VU->VI[REG_Q].UL = VU->fdiv.reg.UL;
@@ -136,9 +131,8 @@ void _vuFlushAll(VURegs* VU)
 			nRepeat = 1;
 
 			if ((VU->cycle - VU->efu.sCycle) >= VU->efu.Cycle) {
-	#ifdef VUM_LOG
 	//			if (Log) { VUM_LOG("flushing EFU pipe\n"); }
-	#endif
+
 				nRepeat = 1;
 				VU->efu.enable = 0;
 				VU->VI[REG_P].UL = VU->efu.reg.UL;
@@ -173,9 +167,8 @@ void _vuFMACTestStall(VURegs * VU, int reg, int xyzw) {
 	VU->VI[REG_MAC_FLAG].UL = VU->fmac[i].macflag;
 	VU->VI[REG_STATUS_FLAG].UL = VU->fmac[i].statusflag;
 	VU->VI[REG_CLIP_FLAG].UL = VU->fmac[i].clipflag;
-#ifdef VUM_LOG
 	if (Log) { VUM_LOG("FMAC[%d] stall %d\n", i, cycle); }
-#endif
+
 	VU->cycle+= cycle;
 	_vuTestPipes(VU);
 }
@@ -192,9 +185,8 @@ void _vuFMACAdd(VURegs * VU, int reg, int xyzw) {
 //		SysPrintf("*PCSX2*: error , out of fmacs %d\n", VU->cycle);
 	}
 
-#ifdef VUM_LOG
 	if (Log) { VUM_LOG("adding FMAC pipe[%d]; xyzw=%x\n", i, xyzw); }
-#endif
+
 	VU->fmac[i].enable = 1;
 	VU->fmac[i].sCycle = VU->cycle;
 	VU->fmac[i].Cycle = 3;
@@ -206,9 +198,8 @@ void _vuFMACAdd(VURegs * VU, int reg, int xyzw) {
 }
 
 void _vuFDIVAdd(VURegs * VU, int cycles) {
-#ifdef VUM_LOG
 	if (Log) { VUM_LOG("adding FDIV pipe\n"); }
-#endif
+
 	VU->fdiv.enable = 1;
 	VU->fdiv.sCycle = VU->cycle;
 	VU->fdiv.Cycle  = cycles;
@@ -217,9 +208,8 @@ void _vuFDIVAdd(VURegs * VU, int cycles) {
 }
 
 void _vuEFUAdd(VURegs * VU, int cycles) {
-#ifdef VUM_LOG
 //	if (Log) { VUM_LOG("adding EFU pipe\n"); }
-#endif
+
 	VU->efu.enable = 1;
 	VU->efu.sCycle = VU->cycle;
 	VU->efu.Cycle  = cycles;
@@ -232,9 +222,8 @@ void _vuFlushFDIV(VURegs * VU) {
 	if (VU->fdiv.enable == 0) return;
 
 	cycle = VU->fdiv.Cycle - (VU->cycle - VU->fdiv.sCycle);
-#ifdef VUM_LOG
 	if (Log) { VUM_LOG("waiting FDIV pipe %d\n", cycle); }
-#endif
+
 	VU->fdiv.enable = 0;
 	VU->cycle+= cycle;
 	VU->VI[REG_Q].UL = VU->fdiv.reg.UL;
@@ -247,9 +236,8 @@ void _vuFlushEFU(VURegs * VU) {
 	if (VU->efu.enable == 0) return;
 
 	cycle = VU->efu.Cycle - (VU->cycle - VU->efu.sCycle);
-#ifdef VUM_LOG
 //	if (Log) { VUM_LOG("waiting EFU pipe %d\n", cycle); }
-#endif
+
 	VU->efu.enable = 0;
 	VU->cycle+= cycle;
 	VU->VI[REG_P].UL = VU->efu.reg.UL;

@@ -29,9 +29,7 @@ void sprInit() {
 
 //__inline static void SPR0transfer(u32 *data, int size) {
 ///*	while (size > 0) {
-//#ifdef SPR_LOG
 //		SPR_LOG("SPR1transfer: %x\n", *data);
-//#endif
 //		data++; size--;
 //	}*/
 //	size <<= 2;
@@ -105,10 +103,9 @@ void _SPR0interleave() {
 	u32 *pMem;
 	if(tqwc == 0) tqwc = qwc;
 	//SysPrintf("dmaSPR0 interleave\n");
-#ifdef SPR_LOG
 		SPR_LOG("SPR0 interleave size=%d, tqwc=%d, sqwc=%d, addr=%lx sadr=%lx\n",
 				spr0->qwc, tqwc, sqwc, spr0->madr, spr0->sadr);
-#endif
+	
 	while (qwc > 0) {
 		spr0->qwc = min(tqwc, qwc); qwc-= spr0->qwc;
 		pMem = (u32*)dmaGetAddr(spr0->madr);
@@ -176,10 +173,9 @@ void _dmaSPR0() {
 		spr0->qwc  = (u16)ptag[0];				//QWC set to lower 16bits of the tag
 		spr0->madr = ptag[1];					//MADR = ADDR field
 
-#ifdef SPR_LOG
 		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx\n",
 				ptag[1], ptag[0], spr0->qwc, id, spr0->madr);
-#endif
+
 		if ((psHu32(DMAC_CTRL) & 0x30) == 0x20) { // STS == fromSPR
 			SysPrintf("SPR stall control\n");
 		}
@@ -206,9 +202,8 @@ void _dmaSPR0() {
 		
 
 /*		if (spr0->chcr & 0x80 && ptag[0] >> 31) {
-#ifdef SPR_LOG
 			SPR_LOG("dmaIrq Set\n");
-#endif
+
 			spr0->chcr&= ~0x100;
 			hwDmacIrq(8);
 			return;
@@ -235,10 +230,9 @@ extern void mfifoGIFtransfer(int);
 void dmaSPR0() { // fromSPR
 	int qwc = spr0->qwc;
 	FreezeMMXRegs(1);
-#ifdef SPR_LOG 
+
 	SPR_LOG("dmaSPR0 chcr = %lx, madr = %lx, qwc  = %lx, sadr = %lx\n",
 			spr0->chcr, spr0->madr, spr0->qwc, spr0->sadr);
-#endif
 
 	_dmaSPR0();
 	FreezeMMXRegs(0);
@@ -262,9 +256,7 @@ __inline static void SPR1transfer(u32 *data, int size) {
 /*	{
 		int i;
 		for (i=0; i<size; i++) {
-#ifdef SPR_LOG 
 		   SPR_LOG( "SPR1transfer[0x%x]: 0x%x\n", (spr1->sadr+i*4) & 0x3fff, data[i] );
-#endif
 		}
 	}*/
 	//Cpu->Clear(spr1->sadr, size); // why?
@@ -299,11 +291,9 @@ void _SPR1interleave() {
 	int cycles = 0;
 	u32 *pMem;
 	if(tqwc == 0) tqwc = qwc;
-
-#ifdef SPR_LOG
 		SPR_LOG("SPR1 interleave size=%d, tqwc=%d, sqwc=%d, addr=%lx sadr=%lx\n",
 				spr1->qwc, tqwc, sqwc, spr1->madr, spr1->sadr);
-#endif
+
 	while (qwc > 0) {
 		spr1->qwc = min(tqwc, qwc); qwc-= spr1->qwc;
 		pMem = (u32*)dmaGetAddr(spr1->madr);
@@ -373,27 +363,19 @@ void dmaSPR1() { // toSPR
 
 		// Transfer dma tag if tte is set
 		if (spr1->chcr & 0x40) {
-#ifdef SPR_LOG
 			SPR_LOG("SPR TTE: %x_%x\n", ptag[3], ptag[2]);
-#endif
 			SPR1transfer(ptag, 4);				//Transfer Tag
-
 		}
 
-		
-
-#ifdef SPR_LOG
 		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx\n",
 				ptag[1], ptag[0], spr1->qwc, id, spr1->madr);
-#endif
 		
 		done = hwDmacSrcChain(spr1, id);
 		SPR1chain();										//Transfers the data set by the switch
 
 		if (spr1->chcr & 0x80 && ptag[0] >> 31) {			//Check TIE bit of CHCR and IRQ bit of tag
-#ifdef SPR_LOG
 			SPR_LOG("dmaIrq Set\n");
-#endif
+			
 			//SysPrintf("SPR1 TIE\n");
 			spr1->qwc = 0;
 			break;

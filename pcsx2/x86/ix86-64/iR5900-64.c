@@ -1812,9 +1812,7 @@ REC_SYS(COP2);
 
 void recCOP2( void )
 { 
-#ifdef CPU_LOG
 	CPU_LOG( "Recompiling COP2:%s\n", disR5900Fasm( cpuRegs.code, cpuRegs.pc ) );
-#endif
 	recCOP22( );
 }
 

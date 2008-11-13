@@ -131,9 +131,8 @@ void psxException(u32 code, u32 bd) {
 			   		biosB0[call]();
 				break;
 			case 0xc0:
-#ifdef PSXBIOS_LOG
 				PSXBIOS_LOG("Bios call c0: %s (%x) %x,%x,%x,%x\n", biosC0n[call], call, psxRegs.GPR.n.a0, psxRegs.GPR.n.a1, psxRegs.GPR.n.a2, psxRegs.GPR.n.a3);
-#endif
+			
 				if (biosC0[call])
 			   		biosC0[call]();
 				break;
@@ -232,9 +231,8 @@ void psxBranchTest()
 void psxExecuteBios() {
 /*	while (psxRegs.pc != 0x80030000)
 		psxCpu->ExecuteBlock();
-#ifdef PSX_LOG
 	PSX_LOG("*BIOS END*\n");
-#endif*/
+*/
 }
 
 void psxRestartCPU()

@@ -59,16 +59,14 @@ void sio2Reset() {
 }
 
 u32 sio2_getRecv1() {
-#ifdef PAD_LOG
 	PAD_LOG("Reading Recv1 = %x\n",sio2.packet.recvVal1);
-#endif
+
 	return sio2.packet.recvVal1;
 }
 
 u32 sio2_getRecv2() {
-#ifdef PAD_LOG
 	PAD_LOG("Reading Recv2 = %x\n",0xF);
-#endif
+
 	return 0xf;
 }//0, 0x10, 0x20, 0x10 | 0x20; bits 4 & 5
 
@@ -76,17 +74,17 @@ u32 sio2_getRecv3() {
 	if(sio2.packet.recvVal3 == 0x8C || sio2.packet.recvVal3 == 0x8b ||
 	   sio2.packet.recvVal3 == 0x83)
 	{
-#ifdef PAD_LOG
 		PAD_LOG("Reading Recv3 = %x\n",sio2.packet.recvVal3);
-#endif
+
 		sio.packetsize = sio2.packet.recvVal3;
 		sio2.packet.recvVal3 = 0; // Reset
 		return sio.packetsize;
-	}else{
-#ifdef PAD_LOG
+	}
+	else
+	{
 		PAD_LOG("Reading Recv3 = %x\n",sio.packetsize << 16);
-#endif
-        return sio.packetsize << 16;
+
+		return sio.packetsize << 16;
 	}
 }
 
@@ -153,9 +151,8 @@ void sio2_serialIn(u8 value){
 		ctrl |= (sio2.packet.sendArray3[sio2.cmdport] & 1) << 13;
 		//sioWriteCtrl16(SIO_RESET);
 		sioWriteCtrl16(ctrl);
-#ifdef PSXDMA_LOG
 		PSXDMA_LOG("sio2_fifoIn: ctrl = %x, cmdlength = %x, cmdport = %d (%x)\n", ctrl, sio2.cmdlength, sio2.cmdport, sio2.packet.sendArray3[sio2.cmdport]);
-#endif
+
 		sio2.cmdport++;
 	}
 
@@ -181,9 +178,8 @@ void sio2_fifoIn(u8 value){
 		ctrl |= (sio2.packet.sendArray3[sio2.cmdport] & 1) << 13;
 		//sioWriteCtrl16(SIO_RESET);
 		sioWriteCtrl16(ctrl);
-#ifdef PSXDMA_LOG
 		PSXDMA_LOG("sio2_fifoIn: ctrl = %x, cmdlength = %x, cmdport = %d (%x)\n", ctrl, sio2.cmdlength, sio2.cmdport, sio2.packet.sendArray3[sio2.cmdport]);
-#endif
+
 		sio2.cmdport++;
 	}
 
@@ -215,9 +211,7 @@ u8 sio2_fifoOut(){
 void psxDma11(u32 madr, u32 bcr, u32 chcr) {
 	unsigned int i, j;
 	int size = (bcr >> 16) * (bcr & 0xffff);
-#ifdef PSXDMA_LOG
 	PSXDMA_LOG("*** DMA 11 - SIO2 in *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
-#endif
 	
 	if (chcr != 0x01000201) return;
 
@@ -250,9 +244,8 @@ void psxDMA11Interrupt()
 
 void psxDma12(u32 madr, u32 bcr, u32 chcr) {
 	int size = bcr;
-#ifdef PSXDMA_LOG
 	PSXDMA_LOG("*** DMA 12 - SIO2 out *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
-#endif
+
 
 	if (chcr != 0x41000200) return;
 

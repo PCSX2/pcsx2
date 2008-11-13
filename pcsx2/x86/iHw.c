@@ -93,9 +93,7 @@ int hwConstRead16(u32 x86reg, u32 mem, u32 sign)
 #endif
 #ifdef PCSX2_DEVBUILD
 	if( mem >= 0x10000000 && mem < 0x10002000 ){
-#ifdef EECNT_LOG
 	EECNT_LOG("cnt read to %x\n", mem);
-#endif
 	}
 #endif
 
@@ -295,22 +293,16 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			iFlushCall(0);
 			PUSH32I(0);
 			CALLFunc((uptr)rcntRcount);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 0 count read = %x\n", rcntRcount(0));
-#endif
 			ADD32ItoR(ESP, 4);
 			return 1;
 		case 0x10000010:
 			_eeReadConstMem32(x86reg, (uptr)&counters[0].mode);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 0 mode read = %x\n", counters[0].mode);
-#endif
 			return 0;
 		case 0x10000020:
 			_eeReadConstMem32(x86reg, (uptr)&counters[0].target);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 0 target read = %x\n", counters[0].target);
-#endif
 			return 0;
 		case 0x10000030:
 			_eeReadConstMem32(x86reg, (uptr)&counters[0].hold);
@@ -320,22 +312,16 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			iFlushCall(0);
 			PUSH32I(1);
 			CALLFunc((uptr)rcntRcount);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 1 count read = %x\n", rcntRcount(1));
-#endif
 			ADD32ItoR(ESP, 4);
 			return 1;
 		case 0x10000810:
 			_eeReadConstMem32(x86reg, (uptr)&counters[1].mode);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 1 mode read = %x\n", counters[1].mode);
-#endif
 			return 0;
 		case 0x10000820:
 			_eeReadConstMem32(x86reg, (uptr)&counters[1].target);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 1 target read = %x\n", counters[1].target);
-#endif
 			return 0;
 		case 0x10000830:
 			_eeReadConstMem32(x86reg, (uptr)&counters[1].hold);
@@ -345,22 +331,16 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			iFlushCall(0);
 			PUSH32I(2);
 			CALLFunc((uptr)rcntRcount);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 2 count read = %x\n", rcntRcount(2));
-#endif
 			ADD32ItoR(ESP, 4);
 			return 1;
 		case 0x10001010:
 			_eeReadConstMem32(x86reg, (uptr)&counters[2].mode);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 2 mode read = %x\n", counters[2].mode);
-#endif
 			return 0;
 		case 0x10001020:
 			_eeReadConstMem32(x86reg, (uptr)&counters[2].target);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 2 target read = %x\n", counters[2].target);
-#endif
 			return 0;
 		case 0x10001030:
 			_eeReadConstMem32(x86reg, (uptr)&counters[2].hold);
@@ -370,22 +350,16 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			iFlushCall(0);
 			PUSH32I(3);
 			CALLFunc((uptr)rcntRcount);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 3 count read = %x\n", rcntRcount(3));
-#endif
 			ADD32ItoR(ESP, 4);
 			return 1;
 		case 0x10001810:
 			_eeReadConstMem32(x86reg, (uptr)&counters[3].mode);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 3 mode read = %x\n", counters[3].mode);
-#endif
 			return 0;
 		case 0x10001820:
 			_eeReadConstMem32(x86reg, (uptr)&counters[3].target);
-#ifdef EECNT_LOG
 			EECNT_LOG("Counter 3 target read = %x\n", counters[3].target);
-#endif
 			return 0;
 		case 0x10001830:
 			_eeReadConstMem32(x86reg, (uptr)&counters[3].hold);

@@ -303,17 +303,13 @@ int CDVD_findfile(char* fname, struct TocEntry* tocEntry){
 
 	// Find the TOC for a specific directory
 	if (CDVD_GetVolumeDescriptor() != TRUE){
-#ifdef RPC_LOG
 		RPC_LOG("Could not get CD Volume Descriptor\n");
-#endif
 		return -1;
 	}
 
 	// Read the TOC of the root directory
 	if (CdRead(CDVolDesc.rootToc.tocLBA,1,toc,&cdReadMode) != TRUE){
-#ifdef RPC_LOG
 		RPC_LOG("Couldn't Read from CD !\n");
-#endif
 		return -1;
 	}
 	//CdSync(0x00);
@@ -434,9 +430,7 @@ int CDVD_findfile(char* fname, struct TocEntry* tocEntry){
 		tocEntryPointer = (struct dirTocEntry*)((char*)tocEntryPointer + tocEntryPointer->length);
 	}
 
-#ifdef DEBUG
 	SysPrintf("CDVD_findfile: found dir, now looking for file\n");
-#endif
 
 	tocEntryPointer = (struct dirTocEntry*)toc;
 
@@ -520,21 +514,15 @@ int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_d
 
 	// Find the TOC for a specific directory
 	if (CDVD_GetVolumeDescriptor() != TRUE){
-#ifdef RPC_LOG
 		RPC_LOG("[RPC:cdvd] Could not get CD Volume Descriptor\n");
-#endif
 		return -1;
 	}
 
-#ifdef RPC_LOG
 	RPC_LOG("[RPC:cdvd] Getting Directory Listing for: \"%s\"\n", pathname);
-#endif
 
 	// Read the TOC of the root directory
 	if (CdRead(CDVolDesc.rootToc.tocLBA,1,toc,&cdReadMode) != TRUE){
-#ifdef RPC_LOG
-	RPC_LOG("[RPC:    ] Couldn't Read from CD !\n");
-#endif
+		RPC_LOG("[RPC:    ] Couldn't Read from CD !\n");
 		return -1;
 	}
 	//CdSync(0x00);
@@ -575,9 +563,8 @@ int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_d
 
 					current_sector++;
 					if (CdRead(current_sector,1,toc,&cdReadMode) != TRUE){
-#ifdef RPC_LOG
 						RPC_LOG("[RPC:    ] Couldn't Read from CD !\n");
-#endif
+						
 						return -1;
 					}
 					//CdSync(0x00);
@@ -598,10 +585,9 @@ int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_d
 				if (strcmp(dirname,localTocEntry.filename) == 0){
 					// if the name matches then we've found the directory
 					found_dir = TRUE;
-#ifdef RPC_LOG
 					RPC_LOG("[RPC:    ] Found directory %s in subdir at sector %d\n",dirname,current_sector);
 					RPC_LOG("[RPC:    ] LBA of found subdirectory = %d\n",localTocEntry.fileLBA);
-#endif
+					
 					break;
 				}
 			}
@@ -619,9 +605,7 @@ int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_d
 
 		// Read the TOC of the found subdirectory
 		if (CdRead(localTocEntry.fileLBA,1,toc,&cdReadMode) != TRUE){
-#ifdef RPC_LOG
 			RPC_LOG("[RPC:    ] Couldn't Read from CD !\n");
-#endif
 			return -1;
 		}
 		//CdSync(0x00);
@@ -673,9 +657,7 @@ int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_d
 				getDirTocData.current_sector++;
 
 				if (CdRead(getDirTocData.current_sector,1,toc,&cdReadMode) != TRUE){
-#ifdef RPC_LOG
-			RPC_LOG("[RPC:    ] Couldn't Read from CD !\n");
-#endif
+					RPC_LOG("[RPC:    ] Couldn't Read from CD !\n");
 					return -1;
 				}
 				//CdSync(0x00);
@@ -740,9 +722,7 @@ int CDVD_GetDir_RPC_get_entries(struct TocEntry tocEntry[], int req_entries){
 	struct dirTocEntry* tocEntryPointer;
 
 	if (CdRead(getDirTocData.current_sector,1,toc,&cdReadMode) != TRUE){
-#ifdef RPC_LOG
 		RPC_LOG("[RPC:cdvd]	Couldn't Read from CD !\n");
-#endif
 		return -1;
 	}
 	//CdSync(0x00);
@@ -774,9 +754,7 @@ int CDVD_GetDir_RPC_get_entries(struct TocEntry tocEntry[], int req_entries){
 				getDirTocData.current_sector++;
 
 				if (CdRead(getDirTocData.current_sector,1,toc,&cdReadMode) != TRUE){
-#ifdef RPC_LOG
 					RPC_LOG("[RPC:cdvd]	Couldn't Read from CD !\n");
-#endif
 					return -1;
 				}
 				//CdSync(0x00);

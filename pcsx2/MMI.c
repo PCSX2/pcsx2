@@ -24,9 +24,7 @@
 
 
 void MMI() {
-#ifdef MMI_LOG
 	MMI_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc));
-#endif
 	Int_MMIPrintTable[_Funct_]();
 }
 

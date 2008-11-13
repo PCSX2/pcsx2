@@ -186,9 +186,8 @@ void mdecInit(void) {
 
 
 void mdecWrite0(u32 data) {
-#ifdef CDR_LOG
 	CDR_LOG("mdec0 write %lx\n", data);
-#endif
+	
 	mdec.command = data;
 	if ((data&0xf5ff0000)==0x30000000) {
 		mdec.rlsize = data&0xffff;
@@ -196,9 +195,8 @@ void mdecWrite0(u32 data) {
 }
 
 void mdecWrite1(u32 data) {
-#ifdef CDR_LOG
 	CDR_LOG("mdec1 write %lx\n", data);
-#endif
+
 	if (data&0x80000000) { // mdec reset
 		round_init();
 //		mdecInit();
@@ -206,9 +204,8 @@ void mdecWrite1(u32 data) {
 }
 
 u32 mdecRead0(void) {
-#ifdef CDR_LOG
 	CDR_LOG("mdec0 read %lx\n", mdec.command);
-#endif
+
 	return mdec.command;
 }
 
@@ -230,9 +227,7 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 	int cmd = mdec.command;
 	int size;
 
-#ifdef CDR_LOG
 	CDR_LOG("DMA0 %lx %lx %lx\n", adr, bcr, chcr);
-#endif
 
 	if (chcr!=0x01000201) return;
 
@@ -260,9 +255,7 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	unsigned short *image;
 	int size;
 
-#ifdef CDR_LOG
 	CDR_LOG("DMA1 %lx %lx %lx (cmd = %lx)\n", adr, bcr, chcr, mdec.command);
-#endif
 
 	if (chcr!=0x01000200) return;
 
@@ -503,15 +496,10 @@ void yuv2rgb24(int *blk,unsigned char *image) {
 }
 
 int mdecFreeze(gzFile f, int Mode) {
-
 	gzfreeze(&mdec, sizeof(mdec));
-
 	gzfreezel(iq_y);
-
 	gzfreezel(iq_uv);
-
-
-
+	
 	return 0;
 
 }

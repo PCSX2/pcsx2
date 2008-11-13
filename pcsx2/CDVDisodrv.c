@@ -52,11 +52,9 @@ void CDVDFS_init(){
 
 	if (inited)	return;//might change in the future as a param; forceInit/Reset
 
-#ifdef RPC_LOG
 	RPC_LOG("[CDVDisodrv:init] CDVD Filesystem v1.00\n");
 	RPC_LOG("[CDVDisodrv     ] \tby A.Lee (aka Hiryu) & Nicholas Van Veen (aka Sjeep)\n");
 	RPC_LOG("[CDVDisodrv     ] Initializing '%s' file driver.\n", "cdfs");
-#endif
 
 	//CdInit(0);	already called by plugin loading system ;)
 	
@@ -94,18 +92,13 @@ int CDVDFS_open(char *name, int mode){
 	fd_used[j] = 1;
 	files_open++;
 
-#ifdef RPC_LOG
 	RPC_LOG("[CDVDisodrv:open] internal fd=%d\n", j);
-#endif
 
 	fd_table[j].fileSize = tocEntry.fileSize;
 	fd_table[j].LBA = tocEntry.fileLBA;
 	fd_table[j].filePos = 0;
 
-#ifdef RPC_LOG
 	RPC_LOG("[CDVDisodrv     ] tocEntry.fileSize = %d\n",tocEntry.fileSize);
-#endif
-
    	return j;
 }
 
@@ -116,9 +109,7 @@ int CDVDFS_open(char *name, int mode){
 int CDVDFS_lseek(int fd, int offset, int whence){
 
 	if ((fd >= 16) || (fd_used[fd]==0)){
-#ifdef RPC_LOG
 		RPC_LOG("[CDVDisodrv:lseek] ERROR: File does not appear to be open!\n");
-#endif
 		return -1;
 	}
 
@@ -164,9 +155,7 @@ int CDVDFS_read( int fd, char *buffer, int size ){
 	int  ssize=0, asize,   esize;
 
 	if ((fd >= 16) || (fd_used[fd]==0)){
-#ifdef RPC_LOG
 		RPC_LOG("[CDVDisodrv:read] ERROR: File does not appear to be open!\n");
-#endif
 		return -1;
 	}
 
@@ -192,14 +181,11 @@ int CDVDFS_read( int fd, char *buffer, int size ){
 	esector=asector + (asize >> 11);
 	size += ssize;
 
-#ifdef RPC_LOG
 	RPC_LOG("[CDVDisodrv:read] read sectors 0x%08X to 0x%08X\n", ssector, esector-(esize==0));
-#endif
 
-	if (ssize){	if (CdRead(ssector, 1, lb, &cdReadMode) != TRUE){
-#ifdef RPC_LOG
+	if (ssize){	
+		if (CdRead(ssector, 1, lb, &cdReadMode) != TRUE){
 			RPC_LOG("[CDVDisodrv:    ] Couldn't Read from file for some reason\n");
-#endif
 			return 0;
 		}
 		FreezeMMXRegs(1);
@@ -207,15 +193,12 @@ int CDVDFS_read( int fd, char *buffer, int size ){
 		FreezeMMXRegs(0);
 	}
 	if (asize)	if (CdRead(asector, asize >> 11, buffer+ssize, &cdReadMode) != TRUE){
-#ifdef RPC_LOG
 		RPC_LOG("[CDVDisodrv:    ] Couldn't Read from file for some reason\n");
-#endif
 		return 0;
 	}
-	if (esize){	if (CdRead(esector, 1, lb, &cdReadMode) != TRUE){
-#ifdef RPC_LOG
+	if (esize){
+		if (CdRead(esector, 1, lb, &cdReadMode) != TRUE){
 			RPC_LOG("[CDVDisodrv:    ] Couldn't Read from file for some reason\n");
-#endif
 			return 0;
 		}
 		FreezeMMXRegs(1);
@@ -228,16 +211,13 @@ int CDVDFS_read( int fd, char *buffer, int size ){
 	off_sector = (fd_table[fd].filePos & 0x7FF);
 	num_sectors = ((off_sector + size) >> 11) + 1;
 
-#ifdef RPC_LOG
 	RPC_LOG("[CDVDisodrv:read] read sectors 0x%08X to 0x%08X\n",start_sector,start_sector+num_sectors);
-#endif
 
 	// Read the data (we only ever get 16KB max request at once)
 	if (CdRead(start_sector, num_sectors, local_buffer, &cdReadMode) != TRUE){
-#ifdef RPC_LOG
+
 		//RPC_LOG("sector = %d, start sector = %d\n",sector,start_sector);
 		RPC_LOG("[CDVDisodrv:    ] Couldn't Read from file for some reason\n");
-#endif
 		return 0;
 	}
 	//CdSync(0);	hm, a wait function maybe...
@@ -266,16 +246,10 @@ int CDVDFS_write( int fd, char * buffer, int size ){
 int CDVDFS_close( int fd){
 
 	if ((fd >= 16) || (fd_used[fd]==0)){
-#ifdef RPC_LOG
 		RPC_LOG("[CDVDisodrv:close] ERROR: File does not appear to be open!\n");
-#endif
 		return -1;
 	}
-
-#ifdef RPC_LOG
 	RPC_LOG("[CDVDisodrv:close] internal fd %d\n", fd);
-#endif
-
 	fd_used[fd] = 0;
 	files_open--;
 

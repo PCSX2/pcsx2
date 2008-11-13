@@ -29,23 +29,17 @@ void COP0() {
 }
 
 void COP0_BC0() {
-#ifdef COP0_LOG
 	COP0_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc));
-#endif
     Int_COP0BC0PrintTable[(cpuRegs.code >> 16) & 0x03]();
 }
 
 void COP0_Func() {
-#ifdef COP0_LOG
 	COP0_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc));
-#endif
     Int_COP0C0PrintTable[_Funct_]();
 }
 
 void COP0_Unknown() {
-#ifdef CPU_LOG
 	CPU_LOG("COP0 Unknown opcode called\n");
-#endif
 }
 
 void UpdateCP0Status() {
@@ -70,10 +64,8 @@ extern u32 s_iLastPERFCycle[2];
 
 void MFC0() {
 	if (!_Rt_) return;
-#ifdef COP0_LOG
 	if (_Rd_ != 9) { COP0_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc)); }
-#endif
-
+	
 	//if(bExecBIOS == FALSE && _Rd_ == 25) SysPrintf("MFC0 _Rd_ %x = %x\n", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_) {
 		
@@ -112,9 +104,7 @@ void MFC0() {
 }
 
 void MTC0() {
-#ifdef COP0_LOG
 	COP0_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc));
-#endif
 	//if(bExecBIOS == FALSE && _Rd_ == 25) SysPrintf("MTC0 _Rd_ %x = %x\n", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_) {
 		case 25: 
@@ -177,11 +167,10 @@ void BC0TL() {
 }
 
 void TLBR() {
-#ifdef CPU_LOG
 /*	CPU_LOG("COP0_TLBR %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Random,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);*/
-#endif
+
 	int i = cpuRegs.CP0.n.Index&0x1f;
 
 //	if( !bExecBIOS )
@@ -278,11 +267,9 @@ void TLBWI() {
 
 	if (j > 48) return;
 
-#ifdef CPU_LOG
 /*	CPU_LOG("COP0_TLBWI %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Index,    cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);*/
-#endif
 
 //	if( !bExecBIOS )
 //		__Log("TLBWI %d\n", j);
@@ -296,11 +283,9 @@ void TLBWR() {
 
 	if (j > 48) return;
 
-#ifdef CPU_LOG
 /*	CPU_LOG("COP0_TLBWR %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Random,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);*/
-#endif
 
 //	if( !bExecBIOS )
 //		__Log("TLBWR %d\n", j);

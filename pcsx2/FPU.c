@@ -149,9 +149,7 @@
 //****************************************************************
 
 void COP1() {
-#ifdef FPU_LOG
 	FPU_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc));
-#endif
 	Int_COP1PrintTable[_Rs_]();
 }
 
@@ -168,9 +166,7 @@ void COP1_W() {
 }
 
 void COP1_Unknown() {
-#ifdef FPU_LOG
 	FPU_LOG("Unknown FPU opcode called\n");
-#endif
 }
 
 //****************************************************************

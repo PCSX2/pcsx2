@@ -92,9 +92,7 @@ static void writeX( u32 *dest, u32 data ) {
 			}
 			break;
 	}
-/*#ifdef VIF_LOG
-	VIF_LOG("writeX %8.8x : Mode %d, r0 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r0,data);
-#endif*/
+//	VIF_LOG("writeX %8.8x : Mode %d, r0 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r0,data);
 }
 
 static void writeY( u32 *dest, u32 data ) {
@@ -133,9 +131,7 @@ static void writeY( u32 *dest, u32 data ) {
 			}
 			break;
 	}
-/*#ifdef VIF_LOG
-	VIF_LOG("writeY %8.8x : Mode %d, r1 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r1,data);
-#endif*/
+//	VIF_LOG("writeY %8.8x : Mode %d, r1 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r1,data);
 }
 
 static void writeZ( u32 *dest, u32 data ) {
@@ -174,9 +170,7 @@ static void writeZ( u32 *dest, u32 data ) {
 			}
 			break;
 	}
-/*#ifdef VIF_LOG
-	VIF_LOG("writeZ %8.8x : Mode %d, r2 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r2,data);
-#endif*/
+//	VIF_LOG("writeZ %8.8x : Mode %d, r2 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r2,data);
 }
 
 static void writeW( u32 *dest, u32 data ) {
@@ -215,9 +209,7 @@ static void writeW( u32 *dest, u32 data ) {
 			}
 			break;
 	}
-/*#ifdef VIF_LOG
-	VIF_LOG("writeW %8.8x : Mode %d, r3 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r3,data);
-#endif*/
+//	VIF_LOG("writeW %8.8x : Mode %d, r3 = %x, data %8.8x\n", *dest,_vifRegs->mode,_vifRegs->r3,data);
 }
 
 void UNPACK_S_32(u32 *dest, u32 *data, int size) {
@@ -418,16 +410,16 @@ __inline int mfifoVIF1rbTransfer() {
 	/* Check if the transfer should wrap around the ring buffer */
 	if ((vif1ch->madr+(mfifoqwc << 4)) > (msize)) {
 		int s1 = ((msize) - vif1ch->madr) >> 2;
+		
+		SPR_LOG("Split MFIFO\n");
 
-#ifdef SPR_LOG
-			SPR_LOG("Split MFIFO\n");
-#endif
 		/* it does, so first copy 's1' bytes from 'addr' to 'data' */
 		src = (u32*)PSM(vif1ch->madr);
 		if (src == NULL) return -1;
 		if(vif1.vifstalled == 1){
 			ret = VIF1transfer(src+vif1.irqoffset, s1-vif1.irqoffset, 0);
-		}else
+		}
+		else
 			ret = VIF1transfer(src, s1, 0); 
 		if(ret == -2) return ret;
 	
@@ -437,10 +429,10 @@ __inline int mfifoVIF1rbTransfer() {
 		src = (u32*)PSM(maddr);
 		if (src == NULL) return -1;
 		ret = VIF1transfer(src, ((mfifoqwc << 2) - s1), 0); 
-	} else {
-#ifdef SPR_LOG
-			SPR_LOG("Direct MFIFO\n");
-#endif
+	} else 
+	{
+		SPR_LOG("Direct MFIFO\n");
+
 		/* it doesn't, so just transfer 'qwc*4' words */
 		src = (u32*)PSM(vif1ch->madr);
 		if (src == NULL) return -1;
@@ -469,9 +461,8 @@ __inline int mfifoVIF1chain() {
 		vifqwc -= startqwc - vif1ch->qwc;
 	} else {
 		u32 *pMem = (u32*)dmaGetAddr(vif1ch->madr);
-#ifdef SPR_LOG
 			SPR_LOG("Non-MFIFO Location\n");
-#endif
+		
 		if (pMem == NULL) return -1;
 		if(vif1.vifstalled == 1){
 			ret = VIF1transfer(pMem+vif1.irqoffset, vif1ch->qwc*4-vif1.irqoffset, 0);
@@ -493,9 +484,7 @@ void mfifoVIF1transfer(int qwc) {
 
 	if(qwc > 0){
 		vifqwc += qwc;
-#ifdef SPR_LOG
 			SPR_LOG("Added %x qw to mfifo, total now %x\n", qwc, vifqwc);
-#endif
 		if((vif1ch->chcr & 0x100) == 0 || vif1.vifstalled == 1) return;
 	}
 
@@ -517,9 +506,8 @@ void mfifoVIF1transfer(int qwc) {
 				if( vif1.stallontag == 1) ret = VIF1transfer(ptag+(2+vif1.irqoffset), 2-vif1.irqoffset, 1);  //Transfer Tag on Stall
 				else ret = VIF1transfer(ptag+2, 2, 1);  //Transfer Tag
 				if (ret == -2) {
-#ifdef SPR_LOG
 			VIF_LOG("MFIFO Stallon tag\n");
-#endif
+					
 					vif1.stallontag	= 1;				
 					CPU_INT(10,cycles+g_vifCycles);
 					return;        //IRQ set by VIFTransfer
@@ -533,10 +521,8 @@ void mfifoVIF1transfer(int qwc) {
 			
 			vif1ch->chcr = ( vif1ch->chcr & 0xFFFF ) | ( (*ptag) & 0xFFFF0000 );
 			
-#ifdef SPR_LOG
 			SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx mfifo qwc = %x spr0 madr = %x\n",
 					ptag[1], ptag[0], vif1ch->qwc, id, vif1ch->madr, vif1ch->tadr, vifqwc, spr0->madr);
-#endif	
 			vifqwc--;
 			
 			switch (id) {
@@ -573,9 +559,7 @@ void mfifoVIF1transfer(int qwc) {
 				}
 			
 			if ((vif1ch->chcr & 0x80) && (ptag[0] >> 31)) {
-#ifdef SPR_LOG
 			VIF_LOG("dmaIrq Set\n");
-#endif
 			vif1.done = 2;
 		}
 	 }
@@ -587,21 +571,14 @@ void mfifoVIF1transfer(int qwc) {
 			CPU_INT(10,g_vifCycles);
 		}
 		if(ret == -2){
-
-#ifdef VIF_LOG
 			VIF_LOG("MFIFO Stall\n");
-#endif
 			CPU_INT(10,g_vifCycles);
 			return;
 		}
 		
 	if(vif1.done == 2 && vif1ch->qwc == 0) vif1.done = 1;
-	
 	 CPU_INT(10,g_vifCycles);
-
-#ifdef SPR_LOG
 	SPR_LOG("mfifoVIF1transfer end %x madr %x, tadr %x vifqwc %x\n", vif1ch->chcr, vif1ch->madr, vif1ch->tadr, vifqwc);
-#endif
 }
 
 void vifMFIFOInterrupt()
@@ -636,9 +613,8 @@ void vifMFIFOInterrupt()
 	vif1.done = 0;
 	vif1ch->chcr &= ~0x100;
 	hwDmacIrq(DMAC_VIF1);
-#ifdef VIF_LOG
 			VIF_LOG("vif mfifo dma end\n");
-#endif
+	
 	vif1Regs->stat&= ~0x1F000000; // FQC=0
 //	}
 	cpuRegs.interrupt &= ~(1 << 10);

@@ -173,9 +173,8 @@ void CACHE() {
 				return;
 			}
 
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DHIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
-#endif
+			CACHE_LOG("CACHE DHIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
+
 			pCache[index].tag[way] &= ~(0x6F);
 			((u64*)pCache[index].data[way][0].b8._8)[0] = 0;
 			((u64*)pCache[index].data[way][0].b8._8)[1] = 0;
@@ -210,10 +209,8 @@ void CACHE() {
 				return;
 			}
 
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DHWBIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
-#endif
-
+			CACHE_LOG("CACHE DHWBIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
+	
 			if(pCache[index].tag[way] & 0x60)	// Valid Dirty
 			{
 				char * t = (char *)(taddr);//paddr[way]);
@@ -262,9 +259,8 @@ void CACHE() {
 			{
 				return;
 			}
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DHWOIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
-#endif
+			CACHE_LOG("CACHE DHWOIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
+			
 			if(pCache[index].tag[way] & 0x60)	// Valid Dirty
 			{
 				char * t = (char *)(taddr);
@@ -286,9 +282,9 @@ void CACHE() {
 		{
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DXIN addr %x, index %d, way %d, flag %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
-#endif
+
+			CACHE_LOG("CACHE DXIN addr %x, index %d, way %d, flag %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
+
 			pCache[index].tag[way] &= ~(0x6F);
 
 		   ((u64*)pCache[index].data[way][0].b8._8)[0] = 0;
@@ -307,9 +303,9 @@ void CACHE() {
 			int way = addr & 0x1;
 			u8 * out = pCache[index].data[way][(addr>>4) & 0x3].b8._8;
 			cpuRegs.CP0.r[28] = *(u32 *)(out+(addr&0xf));
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DXLDT addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28]);
-#endif
+
+			CACHE_LOG("CACHE DXLDT addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28]);
+
 			break;
 		}
 		case 0x10:
@@ -319,9 +315,9 @@ void CACHE() {
 			
 			cpuRegs.CP0.r[28] = 0;
 			cpuRegs.CP0.r[28] = pCache[index].tag[way];
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DXLTG addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28]);
-#endif		
+
+			CACHE_LOG("CACHE DXLTG addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28]);
+			
 			break;
 		}
 		case 0x13:
@@ -330,9 +326,9 @@ void CACHE() {
 			int way = addr & 0x1;
 			//u8 * out = pCache[index].data[way][(addr>>4) & 0x3].b8._8;
 			*(u32*)(&pCache[index].data[way][(addr>>4) & 0x3].b8._8[(addr&0xf)]) = cpuRegs.CP0.r[28];
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DXSDT addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28]);
-#endif
+
+			CACHE_LOG("CACHE DXSDT addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28]);
+
 			break;
 		}
 		case 0x12:
@@ -340,9 +336,9 @@ void CACHE() {
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
 			pCache[index].tag[way] = cpuRegs.CP0.r[28];
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DXSTG addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28] & 0x6F);
-#endif
+
+			CACHE_LOG("CACHE DXSTG addr %x, index %d, way %d, DATA %x\n",addr,index,way,cpuRegs.CP0.r[28] & 0x6F);
+
 			break;
 		}
 		case 0x14:
@@ -352,9 +348,9 @@ void CACHE() {
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
 
-#ifdef CACHE_LOG
-	CACHE_LOG("CACHE DXWBIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
-#endif
+
+			CACHE_LOG("CACHE DXWBIN addr %x, index %d, way %d, Flags %x\n",addr,index,way,pCache[index].tag[way] & 0x78);
+
 			if(pCache[index].tag[way] & 0x60)	// Dirty
 			{
 				u32 paddr = memLUTW[pCache[index].tag[way] >> 12];

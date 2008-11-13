@@ -89,9 +89,7 @@ u8  hwRead8(u32 mem)
 		SysPrintf("hwRead8 to %x\n", mem);
 #endif
 
-#ifdef SPR_LOG
 		SPR_LOG("Hardware read 8bit at %lx, ret %lx\n", mem, psHu8(mem));
-#endif
 
 	switch (mem) {
 		default:
@@ -110,9 +108,7 @@ u8  hwRead8(u32 mem)
 				ret = psHu8(mem);
 			}
 			else ret = 0;
-#ifdef HW_LOG
 			HW_LOG("Unknown Hardware Read 8 at %x\n",mem);
-#endif
 			break;
 	}
 
@@ -127,10 +123,8 @@ u16 hwRead16(u32 mem)
 	if( mem >= 0x10002000 && mem < 0x10008000 )
 		SysPrintf("hwRead16 to %x\n", mem);
 #endif
-
-#ifdef SPR_LOG
 		SPR_LOG("Hardware read 16bit at %lx, ret %lx\n", mem, psHu16(mem));
-#endif
+
 	switch (mem) {
 		case 0x10000000: ret = (u16)rcntRcount(0); break;
 		case 0x10000010: ret = (u16)counters[0].mode; break;
@@ -164,9 +158,7 @@ u16 hwRead16(u32 mem)
 				ret = psHu16(mem);
 			}
 			else ret = 0;
-#ifdef HW_LOG
 			HW_LOG("Unknown Hardware Read 16 at %x\n",mem);
-#endif
 			break;
 	}
 
@@ -279,9 +271,7 @@ u32 hwRead32(u32 mem) {
 			break;
 
 		case 0x1000f520: // DMAC_ENABLER
-#ifdef HW_LOG
 			HW_LOG("DMAC_ENABLER Read 32bit %lx\n", psHu32(0xf590));
-#endif
 			return psHu32(0xf590);
 
 		default:
@@ -314,9 +304,7 @@ u32 hwRead32(u32 mem) {
 				SysPrintf("32bit HW read of address 0x%x\n", mem);
 				ret = 0;
 			}
-#ifdef HW_LOG
 			HW_LOG("Unknown Hardware Read 32 at %lx, ret %lx\n", mem, ret);
-#endif
 			break;
 	}	
 
@@ -336,9 +324,7 @@ u64 hwRead64(u32 mem) {
 			ret = psHu64(mem);
 		}
 		else ret = 0;
-#ifdef HW_LOG
 		HW_LOG("Unknown Hardware Read 64 at %x\n",mem);
-#endif
 		break;
 	}
 
@@ -355,9 +341,7 @@ void hwRead128(u32 mem, u64 *out) {
 		out[1] = psHu64(mem+8);
 	}
 
-#ifdef HW_LOG
 			HW_LOG("Unknown Hardware Read 128 at %x\n",mem);
-#endif
 }
 
 // dark cloud2 uses it
@@ -419,30 +403,22 @@ void hwWrite8(u32 mem, u8 value) {
 			vif1Write32(mem & ~0x2, value << 16);
 			break;
 		case 0x10008001: // dma0 - vif0
-#ifdef DMA_LOG
 			DMA_LOG("VIF0dma %lx\n", value);
-#endif
 			DmaExec8(VIF0, 0);
 			break;
 
 		case 0x10009001: // dma1 - vif1
-#ifdef DMA_LOG
 			DMA_LOG("VIF1dma %lx\n", value);
-#endif
 			DmaExec8(VIF1, 1);
 			break;
 
 		case 0x1000a001: // dma2 - gif
-#ifdef DMA_LOG
 			DMA_LOG("0x%8.8x hwWrite8: GSdma %lx 0x%lx\n", cpuRegs.cycle, value);
-#endif
 			DmaExec8(GIF, 2);
 			break;
 
 		case 0x1000b001: // dma3 - fromIPU
-#ifdef DMA_LOG
 			DMA_LOG("IPU0dma %lx\n", value);
-#endif
 			DmaExec8(IPU0, 3);
 			break;
 
@@ -454,38 +430,28 @@ void hwWrite8(u32 mem, u8 value) {
 			break;
 
 		case 0x1000c001: // dma5 - sif0
-#ifdef DMA_LOG
 			DMA_LOG("SIF0dma %lx\n", value);
-#endif
 //			if (value == 0) psxSu32(0x30) = 0x40000;
 			DmaExec8(SIF0, 5);
 			break;
 
 		case 0x1000c401: // dma6 - sif1
-#ifdef DMA_LOG
 			DMA_LOG("SIF1dma %lx\n", value);
-#endif
 			DmaExec8(SIF1, 6);
 			break;
 
 		case 0x1000c801: // dma7 - sif2
-#ifdef DMA_LOG
 			DMA_LOG("SIF2dma %lx\n", value);
-#endif
 			DmaExec8(SIF2, 7);
 			break;
 
 		case 0x1000d001: // dma8 - fromSPR
-#ifdef DMA_LOG
 			DMA_LOG("fromSPRdma8 %lx\n", value);
-#endif
 			DmaExec8(SPR0, 8);
 			break;
 
 		case 0x1000d401: // dma9 - toSPR
-#ifdef DMA_LOG
 			DMA_LOG("toSPRdma8 %lx\n", value);
-#endif
 			DmaExec8(SPR1, 9);
 			break;
 
@@ -518,9 +484,7 @@ void hwWrite8(u32 mem, u8 value) {
 				default:
 					psHu8(mem) = value;
 			}
-#ifdef HW_LOG
 			HW_LOG("Unknown Hardware write 8 at %x with value %x\n", mem, value);
-#endif
 			break;
 	}
 }
@@ -541,17 +505,13 @@ void hwWrite16(u32 mem, u16 value)
 #endif
 	switch(mem) {
 		case 0x10008000: // dma0 - vif0
-#ifdef DMA_LOG
 			DMA_LOG("VIF0dma %lx\n", value);
-#endif
 			DmaExec16(VIF0, 0);
 			break;
 
 // Latest Fix for Florin by asadr (VIF1)
 		case 0x10009000: // dma1 - vif1 - chcr
-#ifdef DMA_LOG
 			DMA_LOG("VIF1dma CHCR %lx\n", value);
-#endif
 			DmaExec16(VIF1, 1);
 			break;
 
@@ -584,9 +544,7 @@ void hwWrite16(u32 mem, u16 value)
 // ---------------------------------------------------
 
 		case 0x1000a000: // dma2 - gif
-#ifdef DMA_LOG
 			DMA_LOG("0x%8.8x hwWrite32: GSdma %lx\n", cpuRegs.cycle, value);
-#endif
 			DmaExec16(GIF, 2);
 			break;
 #ifdef HW_LOG
@@ -617,9 +575,7 @@ void hwWrite16(u32 mem, u16 value)
 		    break;
 #endif
 		case 0x1000b000: // dma3 - fromIPU
-#ifdef DMA_LOG
 			DMA_LOG("IPU0dma %lx\n", value);
-#endif
 			DmaExec16(IPU0, 3);
 			break;
 		
@@ -642,9 +598,7 @@ void hwWrite16(u32 mem, u16 value)
 			break;
 #endif
 		case 0x1000b400: // dma4 - toIPU
-#ifdef DMA_LOG
 			DMA_LOG("IPU1dma %lx\n", value);
-#endif
 			DmaExec16(IPU1, 4);
 			break;
 #ifdef HW_LOG
@@ -667,9 +621,7 @@ void hwWrite16(u32 mem, u16 value)
 #endif
 
 		case 0x1000c000: // dma5 - sif0
-#ifdef DMA_LOG
 			DMA_LOG("SIF0dma %lx\n", value);
-#endif
 //			if (value == 0) psxSu32(0x30) = 0x40000;
 			DmaExec16(SIF0, 5);
 			break;
@@ -678,9 +630,7 @@ void hwWrite16(u32 mem, u16 value)
 			//?
 			break;
 		case 0x1000c400: // dma6 - sif1
-#ifdef DMA_LOG
 			DMA_LOG("SIF1dma %lx\n", value);
-#endif
 			DmaExec16(SIF1, 6);
 			break;
 
@@ -699,25 +649,19 @@ void hwWrite16(u32 mem, u16 value)
 #endif
 
 		case 0x1000c800: // dma7 - sif2
-#ifdef DMA_LOG
 			DMA_LOG("SIF2dma %lx\n", value);
-#endif
 			DmaExec16(SIF2, 7);
 			break;
 		case 0x1000c802:
 			//?
 			break;
 		case 0x1000d000: // dma8 - fromSPR
-#ifdef DMA_LOG
 			DMA_LOG("fromSPRdma %lx\n", value);
-#endif
 			DmaExec16(SPR0, 8);
 			break;
 
 		case 0x1000d400: // dma9 - toSPR
-#ifdef DMA_LOG
 			DMA_LOG("toSPRdma %lx\n", value);
-#endif
 			DmaExec16(SPR1, 9);
 			break;
 		case 0x1000f592: // DMAC_ENABLEW
@@ -766,9 +710,7 @@ void hwWrite16(u32 mem, u16 value)
 			}
 	}
 
-#ifdef HW_LOG
 	HW_LOG("Unknown Hardware write 16 at %x with value %x\n",mem,value);
-#endif
 }
 
 #define DmaExec(name, num) { \
@@ -1110,9 +1052,7 @@ void hwWrite64(u32 mem, u64 value) {
 			return;
 
 		case 0x1000a000: // dma2 - gif
-#ifdef DMA_LOG
 			DMA_LOG("0x%8.8x hwWrite64: GSdma %lx\n", cpuRegs.cycle, value);
-#endif
 			DmaExec(GIF, 2);
 			break;
 
@@ -1124,9 +1064,7 @@ void hwWrite64(u32 mem, u64 value) {
 #endif
 
 		case 0x1000e010: // DMAC_STAT
-#ifdef HW_LOG
 			HW_LOG("DMAC_STAT Write 64bit %x\n", value);
-#endif
 			val32 = (u32)value;
 			psHu16(0xe010)&= ~(val32 & 0xffff); // clear on 1
 			val32 = val32 >> 16;
@@ -1146,18 +1084,14 @@ void hwWrite64(u32 mem, u64 value) {
 			break;
 
 		case 0x1000f000: // INTC_STAT
-#ifdef HW_LOG
 			HW_LOG("INTC_STAT Write 64bit %x\n", value);
-#endif
 			psHu32(0xf000)&=~value;	
 			if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401)
                 cpuTestINTCInts();
 			break;
 
 		case 0x1000f010: // INTC_MASK
-#ifdef HW_LOG
 			HW_LOG("INTC_MASK Write 32bit %x\n", value);
-#endif
 			for (i=0; i<16; i++) { // reverse on 1
                 int s = (1<<i);
 				if (value & s) {
@@ -1220,9 +1154,7 @@ void  intcInterrupt() {
 	}
 	if ((psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0) return;
 
-#ifdef HW_LOG
 	HW_LOG("intcInterrupt %x\n", psHu32(INTC_STAT) & psHu32(INTC_MASK));
-#endif
 	if(psHu32(INTC_STAT) & 0x2){
 		counters[0].hold = rcntRcount(0);
 		counters[1].hold = rcntRcount(1);
@@ -1252,11 +1184,9 @@ void  dmacInterrupt()
 		 psHu16(0xe010) & 0x8000) == 0) return;
 
 	if((psHu32(DMAC_CTRL) & 0x1) == 0) return;
-
-#ifdef HW_LOG
+	
 	HW_LOG("dmacInterrupt %x\n", (psHu16(0xe012) & psHu16(0xe010) || 
 								  psHu16(0xe010) & 0x8000));
-#endif
 
 	cpuException(0x800, cpuRegs.branch);
 }

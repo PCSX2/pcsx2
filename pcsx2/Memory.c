@@ -84,9 +84,7 @@ extern void * memcpy_fast(void *dest, const void *src, size_t n);
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
 
 u16 ba0R16(u32 mem) {
-#ifdef MEM_LOG
 	//MEM_LOG("ba00000 Memory read16 address %x\n", mem);
-#endif
 
 #ifdef PCSX2_VIRTUAL_MEM
 	if (mem == 0x1a000006) {
@@ -631,10 +629,8 @@ u8 recMemRead8()
 		default:
 			return *(u8*)(PS2MEM_BASE+mem);
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-#endif
+	
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return 0;
@@ -903,12 +899,8 @@ u16 recMemRead16()  {
 		default:
 			return *(u16*)(PS2MEM_BASE+mem);
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return 0;
 }
 
@@ -1255,10 +1247,7 @@ void recMemWrite8()
 			*(u8*)(PS2MEM_BASE+mem) = value;
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write8   to  address %x with data %2.2x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -1330,10 +1319,7 @@ void recMemWrite16()   {
 			*(u16*)(PS2MEM_BASE+mem) = value;
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write16  to  address %x with data %4.4x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -1792,10 +1778,7 @@ int  memRead8RS (u32 mem, u64 *out)
 			*out = *(s8*)(PS2MEM_BASE+mem);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -1818,10 +1801,7 @@ int  memRead8RU (u32 mem, u64 *out)
 			*out = *(u8*)(PS2MEM_BASE+mem);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -1849,12 +1829,8 @@ int  memRead16(u32 mem, u16 *out)  {
 			*out = *(u16*)(PS2MEM_BASE+mem);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -1880,12 +1856,8 @@ int  memRead16RS(u32 mem, u64 *out)  {
 			*out = *(s16*)(PS2MEM_BASE+mem);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -1911,12 +1883,8 @@ int  memRead16RU(u32 mem, u64 *out)  {
 			*out = *(u16*)(PS2MEM_BASE+mem);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -2061,10 +2029,7 @@ void memWrite8 (u32 mem, u8  value)   {
 			}
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write8   to  address %x with data %2.2x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2089,10 +2054,7 @@ void memWrite16(u32 mem, u16 value)   {
 			}
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write16  to  address %x with data %4.4x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2118,10 +2080,7 @@ void memWrite32(u32 mem, u32 value)
 			}
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write32  to  address %x with data %8.8x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2141,10 +2100,7 @@ void memWrite64(u32 mem, u64 value)   {
 			}
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)(value>>32), (u32)value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2170,10 +2126,7 @@ void memWrite128(u32 mem, u64 *value) {
 			}
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write128 to  address %x with data %8.8x_%8.8x_%8.8x_%8.8x\n", mem, ((u32*)value)[3], ((u32*)value)[2], ((u32*)value)[1], ((u32*)value)[0]);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2387,12 +2340,8 @@ int  memRead8 (u32 mem, u8  *out)  {
 			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, *out);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -2427,10 +2376,7 @@ int  memRead8RS (u32 mem, u64 *out)  {
 			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, *out);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -2467,12 +2413,8 @@ int  memRead8RU (u32 mem, u64 *out)  {
 			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, *out);
 			return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -2499,9 +2441,7 @@ int  memRead16(u32 mem, u16 *out)  {
 		case 2: // psh
 			*out = psxHwRead16(mem & ~0xa0000000); return 0;
 		case 4: // b80
-#ifdef MEM_LOG
 			MEM_LOG("b800000 Memory read16 address %x\n", mem);
-#endif
 			*out = 0; return 0;
 		case 5: // ba0
 			*out = ba0R16(mem); return 0;
@@ -2514,10 +2454,7 @@ int  memRead16(u32 mem, u16 *out)  {
 		case 8: // spu2
 			*out = SPU2read(mem & ~0xa0000000); return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -2546,9 +2483,7 @@ int  memRead16RS(u32 mem, u64 *out)  {
 		case 2: // psh
 			*out = (s16)psxHwRead16(mem & ~0xa0000000); return 0;
 		case 4: // b80
-#ifdef MEM_LOG
 			MEM_LOG("b800000 Memory read16 address %x\n", mem);
-#endif
 			*out = 0; return 0;
 		case 5: // ba0
 			*out = (s16)ba0R16(mem); return 0;
@@ -2561,12 +2496,8 @@ int  memRead16RS(u32 mem, u64 *out)  {
 		case 8: // spu2
 			*out = (s16)SPU2read(mem & ~0xa0000000); return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -2593,9 +2524,7 @@ int  memRead16RU(u32 mem, u64 *out)  {
 		case 2: // psh
 			*out = (u16)psxHwRead16(mem & ~0xa0000000); return 0;
 		case 4: // b80
-#ifdef MEM_LOG
 			MEM_LOG("b800000 Memory read16 address %x\n", mem);
-#endif
 			*out = 0; return 0;
 		case 5: // ba0
 			*out = (u16)ba0R16(mem); return 0;
@@ -2608,12 +2537,8 @@ int  memRead16RU(u32 mem, u64 *out)  {
 		case 8: // spu2
 			*out = (u16)SPU2read(mem & ~0xa0000000); return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -2763,12 +2688,8 @@ int  memRead64(u32 mem, u64 *out)  {
 		case 6: // gsm
 			*out = gsRead64(mem & ~0xa0000000); return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read64  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -2801,12 +2722,8 @@ int  memRead128(u32 mem, u64 *out)  {
 			out[0] = gsRead64((mem  ) & ~0xa0000000);
 			out[1] = gsRead64((mem+8) & ~0xa0000000); return 0;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read128 from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
 	return -1;
 }
 
@@ -2853,10 +2770,7 @@ void memWrite8 (u32 mem, u8  value)   {
 			SysPrintf("DEV9 write8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, value);
 			return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write8   to  address %x with data %2.2x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2887,9 +2801,7 @@ void memWrite16(u32 mem, u16 value) {
 		case 2: // psh
 			psxHwWrite16(mem & ~0xa0000000, value); return;
 		case 5: // ba0
-#ifdef MEM_LOG
 			MEM_LOG("ba00000 Memory write16 to  address %x with data %x\n", mem, value);
-#endif
 			return;
 		case 6: // gsm
 			gsWrite16(mem & ~0xa0000000, value); return;
@@ -2900,10 +2812,7 @@ void memWrite16(u32 mem, u16 value) {
 		case 8: // spu2
 			SPU2write(mem & ~0xa0000000, value); return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write16  to  address %x with data %4.4x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2941,9 +2850,7 @@ void memWrite32(u32 mem, u32 value)
 			SysPrintf("DEV9 write32 %8.8lx: %8.8lx\n", mem & ~0xa4000000, value);
 			return;
 	}
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write32  to  address %x with data %8.8x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -2981,10 +2888,7 @@ void memWrite64(u32 mem, u64 value)   {
 		case 6: // gsm
 			gsWrite64(mem & ~0xa0000000, value); return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)(value>>32), (u32)value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
@@ -3026,10 +2930,7 @@ void memWrite128(u32 mem, u64 *value) {
 			gsWrite64(mem,   value[0]);
 			gsWrite64(mem+8, value[1]); return;
 	}
-
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write128 to  address %x with data %8.8x_%8.8x_%8.8x_%8.8x\n", mem, ((u32*)value)[3], ((u32*)value)[2], ((u32*)value)[1], ((u32*)value)[0]);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 

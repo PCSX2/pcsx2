@@ -343,9 +343,8 @@ extern uptr *memLUTR;
 static __forceinline void *dmaGetAddr(u32 addr) {
 	u8 *ptr;
 
-/*#ifdef DMA_LOG
-	if (addr & 0xf) { DMA_LOG("*PCSX2*: DMA address not 128bit aligned: %8.8x\n", addr); }
-#endif*/
+//	if (addr & 0xf) { DMA_LOG("*PCSX2*: DMA address not 128bit aligned: %8.8x\n", addr); }
+
 	if (addr & 0x80000000) {	//  teh sux why the f00k 0xE0000000
 		return (void*)&psS[addr & 0x3ff0];
 	}

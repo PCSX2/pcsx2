@@ -595,9 +595,7 @@ static void ipuBCLR(u32 val) {
 	ipuRegs->ctrl.BUSY = 0;
 	ipuRegs->cmd.BUSY = 0;
 	memset(readbits,0,80);
-#ifdef IPU_LOG
 	IPU_LOG("Clear IPU input FIFO. Set Bit offset=0x%X\n", g_BP.BP);
-#endif
 }
 
 static BOOL ipuIDEC(u32 val)
@@ -746,11 +744,9 @@ static BOOL ipuVDEC(u32 val) {
 	
 			BigEndian(ipuRegs->top, ipuRegs->top);
 
-#ifdef IPU_LOG
 			IPU_LOG("IPU VDEC command data 0x%x(0x%x). Skip 0x%X bits/Table=%d (%s), pct %d\n",
 				ipuRegs->cmd.DATA,ipuRegs->cmd.DATA >> 16,val & 0x3f, (val >> 26) & 3, (val >> 26) & 1 ?
 				((val >> 26) & 2 ? "DMV" : "MBT") : (((val >> 26) & 2 ? "MC" : "MBAI")),ipuRegs->ctrl.PCT);
-#endif
 
 			return TRUE;
 	}
@@ -767,9 +763,7 @@ static BOOL ipuFDEC(u32 val)
 	BigEndian(ipuRegs->cmd.DATA, ipuRegs->cmd.DATA);
 	ipuRegs->top = ipuRegs->cmd.DATA;
 
-#ifdef IPU_LOG
     IPU_LOG("FDEC read: 0x%8.8x\n", ipuRegs->top);
-#endif
 
 	return TRUE;
 }
@@ -940,9 +934,7 @@ static BOOL ipuPACK(u32 val) {
 static void ipuSETTH(u32 val) {
 	s_thresh[0] = (val & 0xff);
 	s_thresh[1] = ((val>>16) & 0xff);
-#ifdef IPU_LOG
 	IPU_LOG("IPU SETTH (Set threshold value)command %x.\n", val&0xff00ff);
-#endif
 }
 
 ///////////////////////
@@ -986,11 +978,8 @@ void IPUCMD_WRITE(u32 val) {
 			break;
 
 		case SCE_IPU_FDEC:
-
-#ifdef IPU_LOG
 			IPU_LOG("IPU FDEC command. Skip 0x%X bits, FIFO 0x%X qwords, BP 0x%X, FP %d, CHCR 0x%x, %x\n",
 				val & 0x3f,g_BP.IFC,(int)g_BP.BP,g_BP.FP,((DMACh*)&PS2MEM_HW[0xb400])->chcr,cpuRegs.pc);
-#endif
 
 			g_BP.BP+= val & 0x3F;
 
@@ -1889,10 +1878,8 @@ int IPU0dma()
 
 	assert( !(ipu0dma->chcr&0x40) );
 
-#ifdef IPU_LOG
 	IPU_LOG("dmaIPU0 chcr = %lx, madr = %lx, qwc  = %lx\n",
 			ipu0dma->chcr, ipu0dma->madr, ipu0dma->qwc);
-#endif
 
 	assert((ipu0dma->chcr & 0xC) == 0 );
 	pMem = (u32*)dmaGetAddr(ipu0dma->madr);

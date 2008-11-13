@@ -503,10 +503,7 @@ void gsWrite8(u32 mem, u8 value) {
 				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE8, mem&0x13ff, value, 0);
 			}
 	}
-
-#ifdef GIF_LOG
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx\n", mem, value);
-#endif
 }
 
 extern void UpdateVSyncRate();
@@ -555,10 +552,7 @@ void gsWrite16(u32 mem, u16 value) {
 				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
 			}
 	}
-
-#ifdef GIF_LOG
 	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx\n", mem, value);
-#endif
 }
 
 void gsWrite32(u32 mem, u32 value)
@@ -601,10 +595,7 @@ void gsWrite32(u32 mem, u32 value)
 				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
 			}
 	}
-
-#ifdef GIF_LOG
 	GIF_LOG("GS write 32 at %8.8lx with data %8.8lx\n", mem, value);
-#endif
 }
 
 void gsWrite64(u32 mem, u64 value) {
@@ -647,43 +638,32 @@ void gsWrite64(u32 mem, u64 value) {
 				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, (u32)(value>>32));
 			}
 	}
-
-#ifdef GIF_LOG
 	GIF_LOG("GS write 64 at %8.8lx with data %8.8lx_%8.8lx\n", mem, ((u32*)&value)[1], (u32)value);
-#endif
 }
 
 u8 gsRead8(u32 mem)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 8 %8.8lx, at %8.8lx\n", *(u8*)(PS2MEM_BASE+(mem&~0xc00)), mem);
-#endif
 
 	return *(u8*)PS2GS_BASE(mem);
 }
 
 u16 gsRead16(u32 mem)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 16 %8.8lx, at %8.8lx\n", *(u16*)(PS2MEM_BASE+(mem&~0xc00)), mem);
-#endif
 
 	return *(u16*)PS2GS_BASE(mem);
 }
 
-u32 gsRead32(u32 mem) {
-
-#ifdef GIF_LOG
+u32 gsRead32(u32 mem) 
+{
 	GIF_LOG("GS read 32 %8.8lx, at %8.8lx\n", *(u32*)(PS2MEM_BASE+(mem&~0xc00)), mem);
-#endif
 	return *(u32*)PS2GS_BASE(mem);
 }
 
 u64 gsRead64(u32 mem)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 64 %8.8lx, at %8.8lx\n", *(u32*)PS2GS_BASE(mem), mem);
-#endif
 	return *(u64*)PS2GS_BASE(mem);
 }
 
@@ -693,9 +673,8 @@ void gsIrq() {
 
 static void GSRegHandlerSIGNAL(u32* data)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS SIGNAL data %x_%x CSRw %x\n",data[0], data[1], CSRw);
-#endif
+
 	GSSIGLBLID->SIGID = (GSSIGLBLID->SIGID&~data[1])|(data[0]&data[1]);
 	
 	if ((CSRw & 0x1)) 
@@ -710,9 +689,8 @@ static void GSRegHandlerSIGNAL(u32* data)
 
 static void GSRegHandlerFINISH(u32* data)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS FINISH data %x_%x CSRw %x\n",data[0], data[1], CSRw);
-#endif
+
 	if ((CSRw & 0x2)) 
 		GSCSRr |= 2; // finish
 		
@@ -910,9 +888,7 @@ static int gspath3done=0;
 int gscycles = 0;
 
 void gsInterrupt() {
-#ifdef GIF_LOG 
 	GIF_LOG("gsInterrupt: %8.8x\n", cpuRegs.cycle);
-#endif
 
 	if((gif->chcr & 0x100) == 0){
 		//SysPrintf("Eh? why are you still interrupting! chcr %x, qwc %x, done = %x\n", gif->chcr, gif->qwc, done);
@@ -1291,11 +1267,7 @@ void mfifoGIFtransfer(int qwc) {
 				gifqwc += qwc;
 				if(!(gif->chcr & 0x100))return;
 			}
-#ifdef SPR_LOG
 	SPR_LOG("mfifoGIFtransfer %x madr %x, tadr %x\n", gif->chcr, gif->madr, gif->tadr);
-#endif
-
-	
 		
 	if(gif->qwc == 0){
 			if(gif->tadr == spr0->madr) {
@@ -1316,11 +1288,9 @@ void mfifoGIFtransfer(int qwc) {
 			mfifocycles += 2;
 			
 			gif->chcr = ( gif->chcr & 0xFFFF ) | ( (*ptag) & 0xFFFF0000 );
-	 
-	#ifdef SPR_LOG
 			SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx mfifo qwc = %x spr0 madr = %x\n",
 					ptag[1], ptag[0], gif->qwc, id, gif->madr, gif->tadr, gifqwc, spr0->madr);
-	#endif
+
 			gifqwc--;
 			switch (id) {
 				case 0: // Refe - Transfer Packet According to ADDR field
@@ -1354,9 +1324,7 @@ void mfifoGIFtransfer(int qwc) {
 					break;
 				}
 				if ((gif->chcr & 0x80) && (ptag[0] >> 31)) {
-#ifdef SPR_LOG
 				SPR_LOG("dmaIrq Set\n");
-#endif
 				gifdone = 2;
 			}
 	 }
@@ -1370,15 +1338,10 @@ void mfifoGIFtransfer(int qwc) {
 	FreezeXMMRegs(0); 
 	FreezeMMXRegs(0);
 		
-
-	
 	if(gif->qwc == 0 && gifdone == 2) gifdone = 1;
 	CPU_INT(11,mfifocycles);
-	
-#ifdef SPR_LOG
-	SPR_LOG("mfifoGIFtransfer end %x madr %x, tadr %x\n", gif->chcr, gif->madr, gif->tadr);
-#endif
-	
+		
+	SPR_LOG("mfifoGIFtransfer end %x madr %x, tadr %x\n", gif->chcr, gif->madr, gif->tadr);	
 }
 
 void gifMFIFOInterrupt()

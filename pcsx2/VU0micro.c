@@ -197,9 +197,8 @@ void VU0MI_XTOP() {
 }
 
 void vu0ExecMicro(u32 addr) {
-#ifdef VUM_LOG
 	VUM_LOG("vu0ExecMicro %x\n", addr);
-#endif
+	
 	if(VU0.VI[REG_VPU_STAT].UL & 0x1) {
 		SysPrintf("Previous Microprogram still running on VU0\n");
 		vu0Finish();
@@ -240,7 +239,7 @@ void _vu0Exec(VURegs* VU) {
 	int discard=0;
 
 	if(VU0.VI[REG_TPC].UL >= VU0.maxmicro){
-		#ifdef CPU_LOG
+#ifdef CPU_LOG
 		SysPrintf("VU0 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
 #endif
 		VU0.VI[REG_VPU_STAT].UL&= ~0x1;
@@ -387,16 +386,14 @@ _vuRegsTables(VU0, VU0regs);
 
 void VU0unknown() {
 	assert(0);
-#ifdef CPU_LOG
+	
 	CPU_LOG("Unknown VU micromode opcode called\n"); 
-#endif
 }  
 
 void VU0regsunknown(_VURegsNum *VUregsn) {
 	assert(0);
-#ifdef CPU_LOG
+	
 	CPU_LOG("Unknown VU micromode opcode called\n"); 
-#endif
 }  
  
  

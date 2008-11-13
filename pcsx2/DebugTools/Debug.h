@@ -92,6 +92,9 @@ void __Log(const char *fmt, ...);
 #define PSXCNT_LOG  if (varLog & 0x20000000) {logProtocol=0; logSource='I';} if (varLog & 0x20000000) __Log("%8.8lx %8.8lx: ", psxRegs.pc, psxRegs.cycle); if (varLog & 0x20000000) __Log
 #define EECNT_LOG  if (varLog & 0x40000000) {logProtocol=0; logSource='I';} if (varLog & 0x40000000) __Log("%8.8lx %8.8lx: ", cpuRegs.pc, cpuRegs.cycle); if (varLog & 0x40000000) __Log
 
+// fixme - currently we don't log cache
+#define CACHE_LOG 0&&
+
 #if defined (CPU_LOG)   || defined(MEM_LOG)   || defined(HW_LOG)     || defined(DMA_LOG)  || \
 	defined(BIOS_LOG)   || defined(ELF_LOG)   || defined(FPU_LOG)    || defined(MMI_LOG)  || \
 	defined(VU0_LOG)    || defined(COP0_LOG)  || defined(VIF_LOG)    || defined(SPR_LOG)  || \
@@ -139,7 +142,8 @@ void __Log(const char *fmt, ...);
 #define EECNT_LOG 0&&
 
 #define EMU_LOG 0&&
-
+#define CACHE_LOG 0&&
+#define MEMCARDS_LOG 0&&
 #endif
 
 #endif /* __DEBUG_H__ */

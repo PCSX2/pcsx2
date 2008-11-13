@@ -90,9 +90,7 @@ u16 psxMemRead16(u32 mem)
 			break;
 
 		case 0x1d00:
-#ifdef SIF_LOG
 			SIF_LOG("Sif reg read %x value %x\n", mem, psxHu16(mem));
-#endif
 			switch(mem & 0xF0)
 			{
 				case 0x40: return psHu16(0x1000F240) | 0x0002;
@@ -126,9 +124,7 @@ u32 psxMemRead32(u32 mem)
 			break;
 
 		case 0x1d00:
-#ifdef SIF_LOG
 			SIF_LOG("Sif reg read %x value %x\n", mem, psxHu32(mem));
-#endif
 			switch(mem & 0xF0)
 			{
 				case 0x40: return psHu32(0x1000F240) | 0xF0000002;
@@ -308,16 +304,12 @@ void psxMemWrite32(u32 mem, u32 value)
 					case 0xcc0: case 0xcc4:
 					case 0x0c4:
 						g_psxWriteOk = 0;
-#ifdef PSXMEM_LOG
-//						PSXMEM_LOG("writectrl: writenot ok\n");
-#endif
+						//PSXMEM_LOG("writectrl: writenot ok\n");
 						break;
 					case 0x1e988:
 					case 0x1edd8:
 						g_psxWriteOk = 1;
-#ifdef PSXMEM_LOG
-//						PSXMEM_LOG("writectrl: write ok\n");
-#endif
+						//PSXMEM_LOG("writectrl: write ok\n");
 						break;
 					default:
 #ifdef PSXMEM_LOG
@@ -465,9 +457,7 @@ u8 psxMemRead8(u32 mem) {
 			return *(u8 *)(p + (mem & 0xffff));
 		} else {
 			if (t == 0x1000) return DEV9read8(mem & 0x1FFFFFFF);
-#ifdef PSXMEM_LOG
 			PSXMEM_LOG("err lb %8.8lx\n", mem);
-#endif
 			return 0;
 		}
 	}
@@ -507,9 +497,7 @@ u16 psxMemRead16(u32 mem) {
 					ret = psxHu16(mem);
 					break;
 				}
-#ifdef SIF_LOG
-				SIF_LOG("Sif reg read %x value %x\n", mem, ret);			
-#endif
+				SIF_LOG("Sif reg read %x value %x\n", mem, ret);
 				return ret;
 			}
 			return *(u16 *)(p + (mem & 0xffff));
@@ -517,9 +505,7 @@ u16 psxMemRead16(u32 mem) {
 			if (t == 0x1F90)
 				return SPU2read(mem & 0x1FFFFFFF);
 			if (t == 0x1000) return DEV9read16(mem & 0x1FFFFFFF);
-#ifdef PSXMEM_LOG
 			PSXMEM_LOG("err lh %8.8lx\n", mem);
-#endif
 			return 0;
 		}
 	}
@@ -565,9 +551,7 @@ u32 psxMemRead32(u32 mem) {
 					ret = psxHu32(mem);
 					break;
 				}
-#ifdef SIF_LOG
-				SIF_LOG("Sif reg read %x value %x\n", mem, ret);			
-#endif
+				SIF_LOG("Sif reg read %x value %x\n", mem, ret);
 				return ret;
 			}
 			return *(u32 *)(p + (mem & 0xffff));
@@ -614,9 +598,7 @@ void psxMemWrite8(u32 mem, u8 value) {
 			if (t == 0x1000) {
 				DEV9write8(mem & 0x1fffffff, value); return;
 			}
-#ifdef PSXMEM_LOG
 			PSXMEM_LOG("err sb %8.8lx = %x\n", mem, value);
-#endif
 		}
 	}
 }
@@ -673,9 +655,7 @@ void psxMemWrite16(u32 mem, u16 value) {
 			if (t == 0x1000) {
 				DEV9write16(mem & 0x1fffffff, value); return;
 			}
-#ifdef PSXMEM_LOG
 			PSXMEM_LOG("err sh %8.8lx = %x\n", mem, value);
-#endif
 		}
 	}
 }
@@ -700,9 +680,7 @@ void psxMemWrite32(u32 mem, u32 value) {
 		} else {
 			if (mem != 0xfffe0130) {
 				if (t == 0x1d00) {
-#ifdef MEM_LOG
-				MEM_LOG("iop Sif reg write %x value %x\n", mem, value);			
-#endif
+				MEM_LOG("iop Sif reg write %x value %x\n", mem, value);
 					switch (mem & 0xf0) {
 						case 0x10:
 							// write to ps2 mem
@@ -765,9 +743,7 @@ void psxMemWrite32(u32 mem, u32 value) {
 						memset(psxMemWLUT + 0x0000, 0, 0x80 * sizeof(uptr));
 						memset(psxMemWLUT + 0x8000, 0, 0x80 * sizeof(uptr));
 						memset(psxMemWLUT + 0xa000, 0, 0x80 * sizeof(uptr));
-#ifdef PSXMEM_LOG
-//						PSXMEM_LOG("writectrl: writenot ok\n");
-#endif
+						//PSXMEM_LOG("writectrl: writenot ok\n");
 						break;
 					case 0x1e988:
 					case 0x1edd8:
@@ -776,14 +752,10 @@ void psxMemWrite32(u32 mem, u32 value) {
 						for (i=0; i<0x0080; i++) psxMemWLUT[i + 0x0000] = (uptr)&psxM[(i & 0x1f) << 16];
 						for (i=0; i<0x0080; i++) psxMemWLUT[i + 0x8000] = (uptr)&psxM[(i & 0x1f) << 16];
 						for (i=0; i<0x0080; i++) psxMemWLUT[i + 0xa000] = (uptr)&psxM[(i & 0x1f) << 16];
-#ifdef PSXMEM_LOG
-//						PSXMEM_LOG("writectrl: write ok\n");
-#endif
+						//PSXMEM_LOG("writectrl: write ok\n");
 						break;
 					default:
-#ifdef PSXMEM_LOG
 						PSXMEM_LOG("unk %8.8lx = %x\n", mem, value);
-#endif
 						break;
 				}
 			}

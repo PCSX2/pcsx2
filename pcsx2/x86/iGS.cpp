@@ -33,8 +33,6 @@
 using namespace std;
 
 extern "C" {
-
-
 #include "zlib.h"
 #include "Elfheader.h"
 #include "Misc.h"
@@ -51,7 +49,8 @@ extern "C" {
 
 #include "Counters.h"
 #include "GS.h"
-
+#include "Common.h"
+	
 extern u32 CSRw;
 
 }
@@ -466,36 +465,28 @@ void gsConstWrite128(u32 mem, int mmreg)
 
 int gsConstRead8(u32 x86reg, u32 mem, u32 sign)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 8 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
-#endif
 	_eeReadConstMem8(x86reg, (uptr)PS2GS_BASE(mem), sign);
 	return 0;
 }
 
 int gsConstRead16(u32 x86reg, u32 mem, u32 sign)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 16 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
-#endif
 	_eeReadConstMem16(x86reg, (uptr)PS2GS_BASE(mem), sign);
 	return 0;
 }
 
 int gsConstRead32(u32 x86reg, u32 mem)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 32 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
-#endif
 	_eeReadConstMem32(x86reg, (uptr)PS2GS_BASE(mem));
 	return 0;
 }
 
 void gsConstRead64(u32 mem, int mmreg)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 64 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
-#endif
 	if( IS_XMMREG(mmreg) ) SSE_MOVLPS_M64_to_XMM(mmreg&0xff, (uptr)PS2GS_BASE(mem));
 	else {
 #ifndef __x86_64__
@@ -509,9 +500,7 @@ void gsConstRead64(u32 mem, int mmreg)
 
 void gsConstRead128(u32 mem, int xmmreg)
 {
-#ifdef GIF_LOG
 	GIF_LOG("GS read 128 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
-#endif
 	_eeReadConstMem128( xmmreg, (uptr)PS2GS_BASE(mem));
 }
 

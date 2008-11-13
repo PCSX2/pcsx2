@@ -152,10 +152,9 @@ void vu1ExecMicro(u32 addr)
 			} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 		}
 	}
-#ifdef VUM_LOG
 	VUM_LOG("vu1ExecMicro %x\n", addr);
 	VUM_LOG("vu1ExecMicro %x (count=%d)\n", addr, count++);
-#endif
+
 	VU0.VI[REG_VPU_STAT].UL|= 0x100;
 	VU0.VI[REG_VPU_STAT].UL&= ~0x7E000;
 	vif1Regs->stat|= 0x4;
@@ -227,11 +226,9 @@ void _vu1Exec(VURegs* VU) {
 		}
 	}
 
-#ifdef VUM_LOG
 	if (Log) {
 		VUM_LOG("VU->cycle = %d (flags st=%x;mac=%x;clip=%x,q=%f)\n", VU->cycle, VU->statusflag, VU->macflag, VU->clipflag, VU->q.F);
 	}
-#endif
 
 	VU->code = ptr[1]; 
 	VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
@@ -321,9 +318,8 @@ void _vu1Exec(VURegs* VU) {
 
 void vu1Exec(VURegs* VU) {
 	if (VU->VI[REG_TPC].UL >= VU->maxmicro) { 
-#ifdef CPU_LOG
 		SysPrintf("VU1 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-#endif
+
 		VU0.VI[REG_VPU_STAT].UL&= ~0x100; 
 	} else { 
 		_vu1Exec(VU);
@@ -343,16 +339,12 @@ _vuRegsTables(VU1, VU1regs);
 
 void VU1unknown(_VURegsNum *VUregsn) {
 	//assert(0);
-#ifdef CPU_LOG
 	CPU_LOG("Unknown VU micromode opcode called\n"); 
-#endif
 }  
  
 void VU1regsunknown(_VURegsNum *VUregsn) {
 	//assert(0);
-#ifdef CPU_LOG
 	CPU_LOG("Unknown VU micromode opcode called\n"); 
-#endif
 }  
  
 

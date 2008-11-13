@@ -134,9 +134,7 @@ void REGIMM()  {Int_REGIMMPrintTable[_Rt_]();    }
 
 
 void UnknownOpcode() {
-#ifdef CPU_LOG
 	CPU_LOG("%8.8lx: Unknown opcode called\n", cpuRegs.pc);
-#endif
 }
 
 /*********************************************************
@@ -714,27 +712,21 @@ int __Deci2Call(int call, u32 *addr) {
 
 	switch (call) {
 		case 1: // open
-
 			deci2addr = (u32*)PSM(addr[1]);
-#ifdef BIOS_LOG
 			BIOS_LOG("deci2open: %x,%x,%x,%x\n",
 					 addr[3], addr[2], addr[1], addr[0]);
-#endif
 			deci2handler = addr[2];
-
 			return 1;
 
 		case 2: // close
 			return 1;
 
 		case 3: // reqsend
-
-#ifdef BIOS_LOG
 			BIOS_LOG("deci2reqsend: %x,%x,%x,%x: deci2addr: %x,%x,%x,buf=%x %x,%x,len=%x,%x\n",
 					 addr[3], addr[2], addr[1], addr[0],
 					 deci2addr[7], deci2addr[6], deci2addr[5], deci2addr[4],
 					 deci2addr[3], deci2addr[2], deci2addr[1], deci2addr[0]);
-#endif
+
 //			cpuRegs.pc = deci2handler;
 //			SysPrintf("deci2msg: %s", (char*)PSM(deci2addr[4]+0xc));
 			if (deci2addr == NULL) return 1;
@@ -750,10 +742,8 @@ int __Deci2Call(int call, u32 *addr) {
 			return 1;
 
 		case 4: // poll
-#ifdef BIOS_LOG
 			BIOS_LOG("deci2poll: %x,%x,%x,%x\n",
 					 addr[3], addr[2], addr[1], addr[0]);
-#endif
 			return 1;
 
 		case 5: // exrecv
@@ -798,12 +788,10 @@ void SYSCALL() {
 	addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(struct t_sif_dma_transfer);
 	dmat = (struct t_sif_dma_transfer*)PSM(addr);
 
-#ifdef BIOS_LOG
 	BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x\n",
 			 bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
 			 dmat->size, dmat->attr,
 			 dmat->dest, dmat->src);
-#endif
 	}
 //Log=1;
 		}

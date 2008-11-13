@@ -493,9 +493,7 @@ void psxRcntWcount16(int index, u32 value) {
 
 void psxRcntWcount32(int index, u32 value) {
 	u32 change = 0;
-#ifdef PSXCNT_LOG
 	PSXCNT_LOG("writeCcount[%d] = %x\n", index, value);
-#endif
 
 		change = psxRegs.cycle - psxCounters[index].sCycleT;
 		//psxCounters[i].count += change / psxCounters[i].rate;

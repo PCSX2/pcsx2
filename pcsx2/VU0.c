@@ -51,9 +51,7 @@
 PCSX2_ALIGNED16(VURegs VU0);
 
 void COP2() {
-#ifdef VU0_LOG
 	VU0_LOG("%s\n", disR5900Fasm(cpuRegs.code, cpuRegs.pc));
-#endif
 	Int_COP2PrintTable[_Rs_]();
 }
 
@@ -66,9 +64,7 @@ void COP2_SPECIAL2() {
 
 void COP2_Unknown()
 {
-#ifdef CPU_LOG
 	CPU_LOG("Unknown COP2 opcode called\n");
-#endif
 }
 
 void LQC2() {

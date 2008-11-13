@@ -409,10 +409,8 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 
 	dest = (u32*)(VU->Mem + v->addr);
   
-#ifdef VIF_LOG
 	VIF_LOG("VIF%d UNPACK: Mode=%x, v->size=%d, size=%d, v->addr=%x\n", 
             VIFdmanum, v->cmd & 0xf, v->size, size, v->addr );
-#endif
 
 /*	if (vifRegs->cycle.cl > vifRegs->cycle.wl) {
 	   SysPrintf( "VIF%d UNPACK: Mode=%x, v->size=%d, size=%d, v->addr=%x\n", 
@@ -420,9 +418,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 	}*/
 #ifdef _DEBUG
 	if (v->size != size) {
-#ifdef VIF_LOG
 		VIF_LOG("*PCSX2*: warning v->size != size\n");
-#endif
 	}
 	if ((v->addr+size*4) > memsize) {
 		SysPrintf("*PCSX2*: fixme unpack overflow\n");
@@ -705,9 +701,8 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 //		s_count++;
 
 		if( size >= ft->dsize && vifRegs->num > 0) {
-	#ifdef VIF_LOG
 			VIF_LOG("warning, end with size = %d\n", size);
-	#endif
+			
 			// SSE doesn't handle such small data
 			//ft = &VIFfuncTable[ unpackType ];
 			//func = vif->usn ? ft->funcU : ft->funcS;
@@ -728,9 +723,8 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 		
 	}
 	else { /* filling write */
-#ifdef VIF_LOG
 		VIF_LOG("*PCSX2*: filling write\n");
-#endif
+		
 		//ft = &VIFfuncTable[ unpackType ];
 		//func = vif->usn ? ft->funcU : ft->funcS;
 #ifdef VIFUNPACKDEBUG
@@ -904,9 +898,8 @@ static int Vif0TransNull(u32 *data){ // Shouldnt go here
 static int Vif0TransSTMask(u32 *data){ // STMASK
 	SetNewMask(g_vif0Masks, g_vif0HasMask3, data[0], vif0Regs->mask);
 	vif0Regs->mask = data[0];
-#ifdef VIF_LOG
 	VIF_LOG("STMASK == %x\n", vif0Regs->mask);
-#endif
+	
 	vif0.tag.size = 0;
 	vif0.cmd = 0;
 	return 1;
@@ -1075,15 +1068,12 @@ int VIF0transfer(u32 *data, int size, int istag) {
 	int ret;
 	int transferred=vif0.vifstalled ? vif0.irqoffset : 0; // irqoffset necessary to add up the right qws, or else will spin (spiderman)
 	//vif0.irqoffset = 0;
-#ifdef VIF_LOG 
 	VIF_LOG( "VIF0transfer: size %x (vif0.cmd %x)\n", size, vif0.cmd );
-#endif
 
 	vif0.stallontag = 0;
 	vif0.vifstalled = 0;
 	vif0.vifpacketsize = size;
 	
-
 	while (vif0.vifpacketsize > 0) {
 
 		if (vif0.cmd) {
@@ -1110,9 +1100,8 @@ int VIF0transfer(u32 *data, int size, int istag) {
 		if ((vif0.cmd & 0x60) == 0x60) {
 			vif0UNPACK(data);
 		} else {
-#ifdef VIF_LOG 
 		VIF_LOG( "VIFtransfer: cmd %x, num %x, imm %x, size %x\n", vif0.cmd, (data[0] >> 16) & 0xff, data[0] & 0xffff, size );
-#endif
+
 			if((vif0.cmd & 0x7f) > 0x4A){
 				if ((vif0Regs->err & 0x4) == 0) {  //Ignore vifcode and tag mismatch error
 						SysPrintf( "UNKNOWN VifCmd: %x\n", vif0.cmd );
@@ -1129,9 +1118,7 @@ int VIF0transfer(u32 *data, int size, int istag) {
 		
 		if ((vif0.cmd & 0x80)) { //i bit on vifcode and not masked by VIF0_ERR
 			if(!(vif0Regs->err & 0x1)){
-#ifdef VIF_LOG
 			VIF_LOG( "Interrupt on VIFcmd: %x (INTC_MASK = %x)\n", vif0.cmd, psHu32(INTC_MASK) );
-#endif
 			
 				++vif0.irq;
 				if(istag && vif0.tag.size <= vif0.vifpacketsize) vif0.stallontag = 1;
@@ -1216,11 +1203,9 @@ int _chainVIF0() {
 	vif0ch->qwc  = (u16)ptag[0];       //QWC set to lower 16bits of the tag
 	vif0ch->madr = ptag[1];            //MADR = ADDR field
 	g_vifCycles+=1; // Add 1 g_vifCycles from the QW read for the tag
-#ifdef VIF_LOG
 	VIF_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx\n",
 			ptag[1], ptag[0], vif0ch->qwc, id, vif0ch->madr, vif0ch->tadr);
-#endif
-
+	
 	vif0ch->chcr = ( vif0ch->chcr & 0xFFFF ) | ( (*ptag) & 0xFFFF0000 ); //Transfer upper part of tag to CHCR bits 31-15
 	// Transfer dma tag if tte is set
 	
@@ -1237,10 +1222,8 @@ int _chainVIF0() {
 	
 	vif0.done |= hwDmacSrcChainWithStack(vif0ch, id);
 
-#ifdef VIF_LOG
 		VIF_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx\n",
 				ptag[1], ptag[0], vif0ch->qwc, id, vif0ch->madr, vif0ch->tadr);
-#endif
 
 	//done |= hwDmacSrcChainWithStack(vif0ch, id);
 	ret = _VIF0chain();											   //Transfers the data set by the switch
@@ -1255,9 +1238,8 @@ int _chainVIF0() {
 	vif0.vifstalled = 0;
 	
 	if ((vif0ch->chcr & 0x80) && (ptag[0] >> 31)) {			       //Check TIE bit of CHCR and IRQ bit of tag
-#ifdef VIF_LOG
 		VIF_LOG( "dmaIrq Set\n" );
-#endif
+
 		//SysPrintf("VIF0 TIE\n");
 		//SysPrintf( "VIF0dmaIrq Set\n" );
 		//vif0ch->qwc = 0;
@@ -1271,9 +1253,7 @@ int _chainVIF0() {
 void  vif0Interrupt() {
 	int ret;
 	g_vifCycles = 0; //Reset the cycle count, Wouldnt reset on stall if put lower down.
-#ifdef VIF_LOG 
 	VIF_LOG("vif0Interrupt: %8.8x\n", cpuRegs.cycle);
-#endif
 
 	//if(vif0.vifstalled == 1) {
 		if(vif0.irq && vif0.tag.size == 0) {
@@ -1371,13 +1351,10 @@ void (*Vif0CMDTLB[75])() =
 };
 
 void dmaVIF0() {
-
-#ifdef VIF_LOG
 	VIF_LOG("dmaVIF0 chcr = %lx, madr = %lx, qwc  = %lx\n"
 			"        tadr = %lx, asr0 = %lx, asr1 = %lx\n",
 			vif0ch->chcr, vif0ch->madr, vif0ch->qwc,
 			vif0ch->tadr, vif0ch->asr0, vif0ch->asr1 );
-#endif
 
 	/* Check if there is a pending irq */
 	/*if (vif0.irq > 0) {
@@ -1417,17 +1394,15 @@ void dmaVIF0() {
 
 void vif0Write32(u32 mem, u32 value) {
 	if (mem == 0x10003830) { // MARK
-#ifdef VIF_LOG
 		VIF_LOG("VIF0_MARK write32 0x%8.8x\n", value);
-#endif
+
 		/* Clear mark flag in VIF0_STAT and set mark with 'value' */
 		vif0Regs->stat&= ~VIF0_STAT_MRK;
 		vif0Regs->mark = value;
 	} else
 	if (mem == 0x10003810) { // FBRST
-#ifdef VIF_LOG
 		VIF_LOG("VIF0_FBRST write32 0x%8.8x\n", value);
-#endif
+		
 		if (value & 0x1) {
 			/* Reset VIF */
 			//SysPrintf("Vif0 Reset %x\n", vif0Regs->stat);
@@ -1483,9 +1458,8 @@ void vif0Write32(u32 mem, u32 value) {
 		}			
 	} else
 	if (mem == 0x10003820) { // ERR
-#ifdef VIF_LOG
 		VIF_LOG("VIF0_ERR write32 0x%8.8x\n", value);
-#endif
+		
 		/* Set VIF0_ERR with 'value' */
 		vif0Regs->err = value;
 	} else{
@@ -1605,9 +1579,8 @@ static int Vif1TransNull(u32 *data){ // Shouldnt go here
 static int Vif1TransSTMask(u32 *data){ // STMASK
 	SetNewMask(g_vif1Masks, g_vif1HasMask3, data[0], vif1Regs->mask);
 	vif1Regs->mask = data[0];
-#ifdef VIF_LOG
 	VIF_LOG("STMASK == %x\n", vif1Regs->mask);
-#endif
+	
 	vif1.tag.size = 0;
 	vif1.cmd = 0;
 	return 1;
@@ -1968,10 +1941,7 @@ int VIF1transfer(u32 *data, int size, int istag) {
 	int ret;
 	transferred=vif1.vifstalled ? vif1.irqoffset : 0; // irqoffset necessary to add up the right qws, or else will spin (spiderman)
 	
-#ifdef VIF_LOG 
 	VIF_LOG( "VIF1transfer: size %x (vif1.cmd %x)\n", size, vif1.cmd );
-#endif
-
 	
 	vif1.irqoffset = 0;
 	vif1.vifstalled = 0;
@@ -1999,15 +1969,13 @@ int VIF1transfer(u32 *data, int size, int istag) {
 
 		vif1.cmd = (data[0] >> 24);
 		vif1Regs->code = data[0];
-		
 
 		//vif1Regs->stat |= VIF1_STAT_VPS_D;
 		if ((vif1.cmd & 0x60) == 0x60) {
 			vif1UNPACK(data);
 		} else {
-#ifdef VIF_LOG 
 		VIF_LOG( "VIFtransfer: cmd %x, num %x, imm %x, size %x\n", vif1.cmd, (data[0] >> 16) & 0xff, data[0] & 0xffff, vif1.vifpacketsize );
-#endif
+
 			//vif1CMD(data, size);
 			/*if((vif1.cmd & 0x7f) > 0x51){
 				if ((vif1Regs->err & 0x4) == 0) {  //Ignore vifcode and tag mismatch error
@@ -2024,9 +1992,8 @@ int VIF1transfer(u32 *data, int size, int istag) {
 		--vif1.vifpacketsize;
 
 		if ((vif1.cmd & 0x80)) { //i bit on vifcode and not masked by VIF1_ERR
-#ifdef VIF_LOG
 			VIF_LOG( "Interrupt on VIFcmd: %x (INTC_MASK = %x)\n", vif1.cmd, psHu32(INTC_MASK) );
-#endif
+
 			/*if((psHu32(DMAC_CTRL) & 0xC) == 0x8){
 				SysPrintf("VIF1 Stall on MFIFO, not implemented!\n");
 			}*/
@@ -2077,7 +2044,6 @@ int VIF1transfer(u32 *data, int size, int istag) {
 		//if(vif1ch->qwc > 0 && size != 0) vif1.vifstalled = 1;
 
 	}
-	
 
 	return 0;
 }
@@ -2094,10 +2060,9 @@ int  _VIF1chain() {
 	if (pMem == NULL)
 		return -1;
 
-#ifdef VIF_LOG
 	VIF_LOG("dmaChain size=%d, madr=%lx, tadr=%lx\n",
 			vif1ch->qwc, vif1ch->madr, vif1ch->tadr);
-#endif
+
 	if( vif1.vifstalled ) {
 		ret = VIF1transfer(pMem+vif1.irqoffset, vif1ch->qwc*4-vif1.irqoffset, 0);
 	}
@@ -2135,15 +2100,8 @@ int _chainVIF1() {
 	vif1ch->chcr = ( vif1ch->chcr & 0xFFFF ) | ( (*vifptag) & 0xFFFF0000 ); //Transfer upper part of tag to CHCR bits 31-15
 	// Transfer dma tag if tte is set
 	
-
-	
-	
-	
-#ifdef VIF_LOG
 	VIF_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx\n",
 			vifptag[1], vifptag[0], vif1ch->qwc, id, vif1ch->madr, vif1ch->tadr);
-#endif
-	
 
 	//} else
 	
@@ -2176,10 +2134,8 @@ int _chainVIF1() {
 	//if((psHu32(DMAC_CTRL) & 0xC0) != 0x40 || id != 4)
 	vif1.done |= hwDmacSrcChainWithStack(vif1ch, id);
 
-#ifdef VIF_LOG
 		VIF_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx\n",
 				vifptag[1], vifptag[0], vif1ch->qwc, id, vif1ch->madr, vif1ch->tadr);
-#endif
 
 	//done |= hwDmacSrcChainWithStack(vif1ch, id);
 	ret = _VIF1chain();											   //Transfers the data set by the switch
@@ -2190,9 +2146,8 @@ int _chainVIF1() {
 
 	
 	if ((vif1ch->chcr & 0x80) && (vifptag[0] >> 31)) {			       //Check TIE bit of CHCR and IRQ bit of tag
-#ifdef VIF_LOG
 		VIF_LOG( "dmaIrq Set\n" );
-#endif
+
 		//SysPrintf("VIF1 TIE\n");
 		//SysPrintf( "VIF1dmaIrq Set\n" );
 		//vif1ch->qwc = 0;
@@ -2204,10 +2159,7 @@ int _chainVIF1() {
 }
 
 void vif1Interrupt() {
-
-#ifdef VIF_LOG 
 	VIF_LOG("vif1Interrupt: %8.8x\n", cpuRegs.cycle);
-#endif
 
 	g_vifCycles = 0;
     
@@ -2283,13 +2235,10 @@ extern u32 g_MTGSVifStart, g_MTGSVifCount;
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
 void dmaVIF1()
 {
-
-#ifdef VIF_LOG
 	VIF_LOG("dmaVIF1 chcr = %lx, madr = %lx, qwc  = %lx\n"
 			"        tadr = %lx, asr0 = %lx, asr1 = %lx\n",
 			vif1ch->chcr, vif1ch->madr, vif1ch->qwc,
 			vif1ch->tadr, vif1ch->asr0, vif1ch->asr1 );
-#endif
 
 	/*if ((psHu32(DMAC_CTRL) & 0xC0)) { 
 			SysPrintf("DMA Stall Control %x\n",(psHu32(DMAC_CTRL) & 0xC0));
@@ -2449,17 +2398,15 @@ void dmaVIF1()
 
 void vif1Write32(u32 mem, u32 value) {
 	if (mem == 0x10003c30) { // MARK
-#ifdef VIF_LOG
 		VIF_LOG("VIF1_MARK write32 0x%8.8x\n", value);
-#endif
+		
 		/* Clear mark flag in VIF1_STAT and set mark with 'value' */
 		vif1Regs->stat&= ~VIF1_STAT_MRK;
 		vif1Regs->mark = value;
 	} else
 	if (mem == 0x10003c10) { // FBRST
-#ifdef VIF_LOG
 		VIF_LOG("VIF1_FBRST write32 0x%8.8x\n", value);
-#endif
+
 		if (value & 0x1) {
 			/* Reset VIF */
 			//SysPrintf("Vif1 Reset %x\n", vif1Regs->stat);
@@ -2524,16 +2471,13 @@ void vif1Write32(u32 mem, u32 value) {
 		}			
 	} else
 	if (mem == 0x10003c20) { // ERR
-#ifdef VIF_LOG
 		VIF_LOG("VIF1_ERR write32 0x%8.8x\n", value);
-#endif
+
 		/* Set VIF1_ERR with 'value' */
 		vif1Regs->err = value;
 	} else
 	if (mem == 0x10003c00) { // STAT
-#ifdef VIF_LOG
 		VIF_LOG("VIF1_STAT write32 0x%8.8x\n", value);
-#endif
 
 #ifdef PCSX2_DEVBUILD
 		/* Only FDR bit is writable, so mask the rest */

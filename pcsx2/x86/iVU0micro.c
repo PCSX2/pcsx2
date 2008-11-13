@@ -311,9 +311,7 @@ void recVU0LowerOP_T3_11( void )
 
 void recVU0unknown( void )
 { 
-#ifdef CPU_LOG
 	CPU_LOG("Unknown VU0 micromode opcode calledn"); 
-#endif
 }  
  
  

@@ -806,9 +806,8 @@ void mechaDecryptBytes(unsigned char* buffer, int size)
 int cdvdReadSector() {
 	s32 bcr;
 
-#ifdef CDR_LOG
 	CDR_LOG("SECTOR %d (BCR %x;%x)\n", cdvd.Sector, HW_DMA3_BCR_H16, HW_DMA3_BCR_L16);
-#endif
+
 	bcr = (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) *4;
 	if (bcr < cdvd.BlockSize) {
 		//SysPrintf("*PCSX2*: cdvdReadSector: bcr < cdvd.BlockSize; %x < %x\n", bcr, cdvd.BlockSize);
@@ -975,110 +974,93 @@ void cdvdVsync() {
 
 
 u8   cdvdRead04(void) { // NCOMMAND
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead04(NCMD) %x\n", cdvd.nCommand);
-#endif
+
 	return cdvd.nCommand;
 }
 
 u8   cdvdRead05(void) { // N-READY
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead05(NReady) %x\n", cdvd.Ready);
-#endif
+
 	return cdvd.Ready;
 }
 
 u8   cdvdRead06(void) { // ERROR
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead06(Error) %x\n", cdvd.Error);
-#endif
 	
 	return cdvd.Error;
 }
 
 u8   cdvdRead07(void) { // BREAK
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead07(Break) %x\n", 0);
-#endif
+
 	return 0;
 }
 
 u8   cdvdRead08(void) { // INTR_STAT
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead08(IntrReason) %x\n", cdvd.PwOff);
-#endif
+
 	return cdvd.PwOff;
 }
 
 u8   cdvdRead0A(void) { // STATUS
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead0A(Status) %x\n", cdvd.Status);
-#endif
+
 	return cdvd.Status;
 }
 
 u8   cdvdRead0B(void) { // TRAY-STATE (if tray has been opened)
 	u8 tray = cdvdGetTrayStatus();
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead0B(Tray) %x\n", tray);
-#endif
+
 	return tray;
 }
 
 u8   cdvdRead0C(void) { // CRT MINUTE
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead0C(Min) %x\n", itob((u8)(cdvd.Sector/(60*75))));
-#endif
+
 	return itob((u8)(cdvd.Sector/(60*75)));
 }
 
 u8   cdvdRead0D(void) { // CRT SECOND
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead0D(Sec) %x\n", itob((u8)((cdvd.Sector/75)%60)+2));
-#endif
+
 	return itob((u8)((cdvd.Sector/75)%60)+2);
 }
 
 u8   cdvdRead0E(void) { // CRT FRAME
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead0E(Frame) %x\n", itob((u8)(cdvd.Sector%75)));
-#endif
+
 	return itob((u8)(cdvd.Sector%75));
 }
 
 u8   cdvdRead0F(void) { // TYPE
 	u8 type = cdvdGetDiskType();
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead0F(Disc Type) %x\n", type);
-#endif
 	return type;
 }
 
 u8   cdvdRead13(void) { // UNKNOWN
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead13(Unknown) %x\n", 4);
-#endif
+	
 	return 4;
 }
 
 u8   cdvdRead15(void) { // RSV
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead15(RSV)\n");
-#endif
+	
 	return 0x01; // | 0x80 for ATAPI mode
 }
 
 u8   cdvdRead16(void) { // SCOMMAND
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead16(SCMD) %x\n", cdvd.sCommand);
-#endif
+	
 	return cdvd.sCommand;
 }
 
 u8   cdvdRead17(void) { // SREADY
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead17(SReady) %x\n", cdvd.sDataIn);
-#endif
+	
 	return cdvd.sDataIn;
 }
 
@@ -1092,137 +1074,115 @@ u8   cdvdRead18(void) { // SDATAOUT
 			ret = cdvd.Result[cdvd.ResultP-1];
 		}
 	}
-
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead18(SDataOut) %x (ResultC=%d, ResultP=%d)\n", ret, cdvd.ResultC, cdvd.ResultP);
-#endif
-
 	return ret;
 }
 
 u8   cdvdRead20(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead20(Key0) %x\n", cdvd.Key[0]);
-#endif
+	
 	return cdvd.Key[0];
 }
 
 u8   cdvdRead21(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead21(Key1) %x\n", cdvd.Key[1]);
-#endif
+	
 	return cdvd.Key[1];
 }
 
 u8   cdvdRead22(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead22(Key2) %x\n", cdvd.Key[2]);
-#endif
+	
 	return cdvd.Key[2];
 }
 
 u8   cdvdRead23(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead23(Key3) %x\n", cdvd.Key[3]);
-#endif
+	
 	return cdvd.Key[3];
 }
 
 u8   cdvdRead24(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead24(Key4) %x\n", cdvd.Key[4]);
-#endif
+	
 	return cdvd.Key[4];
 }
 
 u8   cdvdRead28(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead28(Key5) %x\n", cdvd.Key[5]);
-#endif
+	
 	return cdvd.Key[5];
 }
 
 u8   cdvdRead29(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead29(Key6) %x\n", cdvd.Key[6]);
-#endif
+	
 	return cdvd.Key[6];
 }
 
 u8   cdvdRead2A(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead2A(Key7) %x\n", cdvd.Key[7]);
-#endif
+	
 	return cdvd.Key[7];
 }
 
 u8   cdvdRead2B(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead2B(Key8) %x\n", cdvd.Key[8]);
-#endif
+	
 	return cdvd.Key[8];
 }
 
 u8   cdvdRead2C(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead2C(Key9) %x\n", cdvd.Key[9]);
-#endif
+	
 	return cdvd.Key[9];
 }
 
 u8   cdvdRead30(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead30(Key10) %x\n", cdvd.Key[10]);
-#endif
+	
 	return cdvd.Key[10];
 }
 
 u8   cdvdRead31(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead31(Key11) %x\n", cdvd.Key[11]);
-#endif
+	
 	return cdvd.Key[11];
 }
 
 u8   cdvdRead32(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead32(Key12) %x\n", cdvd.Key[12]);
-#endif
+	
 	return cdvd.Key[12];
 }
 
 u8   cdvdRead33(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead33(Key13) %x\n", cdvd.Key[13]);
-#endif
+	
 	return cdvd.Key[13];
 }
 
 u8   cdvdRead34(void) {
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead34(Key14) %x\n", cdvd.Key[14]);
-#endif
+	
 	return cdvd.Key[14];
 }
 
 u8   cdvdRead38(void) {		// valid parts of key data (first and last are valid)
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead38(KeysValid) %x\n", cdvd.Key[15]);
-#endif
+	
 	return cdvd.Key[15];
 }
 
 u8   cdvdRead39(void) {	// KEY-XOR
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead39(KeyXor) %x\n", cdvd.KeyXor);
-#endif
+	
 	return cdvd.KeyXor;
 }
 
 u8   cdvdRead3A(void) {	// DEC_SET
-#ifdef CDR_LOG
 	CDR_LOG("cdvdRead3A(DecSet) %x\n", cdvd.decSet);
-#endif
+	
 	SysPrintf("DecSet Read: %02X\n", cdvd.decSet);
 	return cdvd.decSet;
 }
@@ -1230,10 +1190,8 @@ u8   cdvdRead3A(void) {	// DEC_SET
 
 
 void cdvdWrite04(u8 rt) { // NCOMMAND
-	
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite04: NCMD %s (%x) (ParamP = %x)\n", nCmdName[rt], rt, cdvd.ParamP);
-#endif
+	
 	cdvd.nCommand = rt;
 	cdvd.Status = CDVD_STATUS_NONE;
 	switch (rt) {
@@ -1285,9 +1243,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			else cdvdReadTimeRcnt(0);*/
 			cdvdReadTimeRcnt(1);
 
-#ifdef CDR_LOG
 			CDR_LOG(  "CdRead: %d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)\n", cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
-#endif
 			//SysPrintf("CdRead: Reading Sector %d(%d Blocks of Size %d) at Speed=%dx\n", cdvd.Sector, cdvd.nSectors,cdvd.BlockSize,cdvd.Speed);
 
 			cdvd.Readed = 0;
@@ -1332,9 +1288,9 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			cdvd.Speed = CHECK_SLOWDVD ? 1 : 4; //Some games need to read slower
 			cdvd.ReadMode = CDVD_MODE_2048; cdvd.BlockSize = 2064;	// Why oh why was it 2064
 			cdvdReadTimeRcnt(0);
-#ifdef CDR_LOG
+		
 			CDR_LOG(  "DvdRead: %d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)\n", cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
-#endif
+
 			//SysPrintf("DvdRead: Reading Sector %d(%d Blocks of Size %d) at Speed=%dx\n", cdvd.Sector, cdvd.nSectors,cdvd.BlockSize,cdvd.Speed);
 			cdvd.Readed = 0;
 			cdvd.PwOff = 2;//cmdcmplt
@@ -1389,9 +1345,8 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 }
 
 void cdvdWrite05(u8 rt) { // NDATAIN
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite05(NDataIn) %x\n", rt);
-#endif
+
 	if (cdvd.ParamP < 32) {
 		cdvd.Param[cdvd.ParamP++] = rt;
 		cdvd.ParamC++;
@@ -1399,16 +1354,12 @@ void cdvdWrite05(u8 rt) { // NDATAIN
 }
 
 void cdvdWrite06(u8 rt) { // HOWTO
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite06(HowTo) %x\n", rt);
-#endif
 	cdvd.HowTo = rt;
 }
 
 void cdvdWrite07(u8 rt) { // BREAK
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite07(Break) %x\n", rt);
-#endif
 	SysPrintf("*PCSX2*: CDVD BREAK %x\n" , rt);
 }
 
@@ -1432,15 +1383,11 @@ void cdvdWrite08(u8 rt) { // INTR_STAT
 }
 
 void cdvdWrite0A(u8 rt) { // STATUS
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite0A(Status) %x\n", rt);
-#endif
 }
 
 void cdvdWrite0F(u8 rt) { // TYPE
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite0F(Type) %x\n", rt);
-#endif
 SysPrintf("*PCSX2*: CDVD TYPE %x\n", rt);
 }
 
@@ -1470,9 +1417,8 @@ void cdvdWrite16(u8 rt) { // SCOMMAND
 	int address;
 	u8 tmp;
 	
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite16: SCMD %s (%x) (ParamP = %x)\n", sCmdName[rt], rt, cdvd.ParamP);
-#endif
+
 	cdvd.sCommand = rt;
 	switch (rt) {
 
@@ -2031,9 +1977,8 @@ fail_pol_cal:
 }
 
 void cdvdWrite17(u8 rt) { // SDATAIN
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite17(SDataIn) %x\n", rt);
-#endif
+	
 	if (cdvd.ParamP < 32) {
 		cdvd.Param[cdvd.ParamP++] = rt;
 		cdvd.ParamC++;
@@ -2041,16 +1986,12 @@ void cdvdWrite17(u8 rt) { // SDATAIN
 }
 
 void cdvdWrite18(u8 rt) { // SDATAOUT
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite18(SDataOut) %x\n", rt);
-#endif
 	SysPrintf("*PCSX2* SDATAOUT\n");
 }
 
 void cdvdWrite3A(u8 rt) { // DEC-SET
-#ifdef CDR_LOG
 	CDR_LOG("cdvdWrite3A(DecSet) %x\n", rt);
-#endif
 	cdvd.decSet = rt;
 	SysPrintf("DecSet Write: %02X\n", cdvd.decSet);
 }

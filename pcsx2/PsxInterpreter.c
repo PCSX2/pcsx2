@@ -338,9 +338,7 @@ void zeroEx() {
 	pc = psxRegs.GPR.n.ra;
 	while (psxRegs.pc != pc) psxCpu->ExecuteBlock();
 
-#ifdef PSXBIOS_LOG
-	PSXBIOS_LOG("%s: %s (%x) END\n", lib, fname == NULL ? "unknown" : fname, code);
-#endif*/
+	PSXBIOS_LOG("%s: %s (%x) END\n", lib, fname == NULL ? "unknown" : fname, code);*/
 }
 /*/==========================================CALL LOG
 char* getName(char *file, u32 addr){
