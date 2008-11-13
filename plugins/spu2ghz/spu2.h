@@ -196,7 +196,7 @@ extern bool hasPtr;
 
 extern bool disableFreezes;
 
-void __fastcall TimeUpdate(u32 cClocks, u32 syncType);
+void __fastcall TimeUpdate(u32 cClocks);
 
 void TimestretchUpdate(int bufferusage,int buffersize);
 

@@ -237,7 +237,7 @@ _inline void SIF0Dma()
 		{
 			int size = sif0dma->qwc;
 			if ((psHu32(DMAC_CTRL) & 0x30) == 0x10) { // STS == fromSIF0
-				SysPrintf("SIF0 stall control\n");
+				SIF_LOG("SIF0 stall control\n");
 			}
 			if(size > 0) // If we're reading something continue to do so
 			{
@@ -332,7 +332,7 @@ _inline void SIF1Dma()
 		if(eesifbusy[1] == 1) // If EE SIF1 is enabled
 		{
 			
-			if ((psHu32(DMAC_CTRL) & 0xC0) == 0xC0) SysPrintf("SIF1 stall control\n"); // STS == fromSIF1
+			if ((psHu32(DMAC_CTRL) & 0xC0) == 0xC0) SIF_LOG("SIF1 stall control\n"); // STS == fromSIF1
 
 			if(sif1dma->qwc == 0) // If there's no more to transfer
 			{
@@ -546,7 +546,7 @@ _inline void dmaSIF0() {
 			sif0dma->chcr, sif0dma->madr, sif0dma->qwc, sif0dma->tadr);
 
 	if (sif0.fifoReadPos != sif0.fifoWritePos) {
-		SysPrintf("warning, sif0.fifoReadPos != sif0.fifoWritePos\n");
+		SIF_LOG("warning, sif0.fifoReadPos != sif0.fifoWritePos\n");
 	}
 //    if(sif0dma->qwc > 0 & (sif0dma->chcr & 0x4) == 0x4) {
 //        sif0dma->chcr &= ~4; //Halflife sets a QWC amount in chain mode, no tadr set.
@@ -570,7 +570,7 @@ _inline void dmaSIF1() {
 			sif1dma->chcr, sif1dma->madr, sif1dma->qwc, sif1dma->tadr);
 
 	if (sif1.fifoReadPos != sif1.fifoWritePos) {
-		SysPrintf("warning, sif1.fifoReadPos != sif1.fifoWritePos\n");
+		SIF_LOG("warning, sif1.fifoReadPos != sif1.fifoWritePos\n");
 	}
 
 //    if(sif1dma->qwc > 0 & (sif1dma->chcr & 0x4) == 0x4) {
