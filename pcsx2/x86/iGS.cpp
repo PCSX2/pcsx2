@@ -49,7 +49,7 @@ extern "C" {
 
 #include "Counters.h"
 #include "GS.h"
-#include "Common.h"
+#include "DebugTools/Debug.h"
 	
 extern u32 CSRw;
 
