@@ -123,8 +123,8 @@ typedef struct {
 	int Hacks;
 	int GameFixes;
 	int CustomFrameSkip;
-	int CustomConsecutiveFrames;
-	int CustomConsecutiveSkip;
+	u8 CustomConsecutiveFrames;
+	u8 CustomConsecutiveSkip;
 	u32 sseMXCSR;
 	u32 sseVUMXCSR;
 } PcsxConfig;

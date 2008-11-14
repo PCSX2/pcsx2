@@ -73,22 +73,25 @@ static __forceinline void _rcntSet( int i )
 }
 
 static __forceinline void cpuRcntSet() {
-	int i;
 
 	// Calculate our target cycle deltas.
 	// This must be done regardless of if the hblank/vblank counters updated since
 	// cpuRegs.cycle changes, even if sCycle hasn't!
 
-	u32 counter4CycleT = ( counters[4].mode == MODE_HBLANK ) ? HBLANK_TIME_ : HRENDER_TIME_;
+	//fixme : HBLANK_TIME_ and HRENDER_TIME_ are both SCANLINE_NTSC (or _PAL) / 2.. was that intended? (rama)
+	//u32 counter4CycleT = ( counters[4].mode == MODE_HBLANK ) ? HBLANK_TIME_ : HRENDER_TIME_;
+	u32 counter4CycleT = HBLANK_TIME_;
 	u32 counter5CycleT = VSYNC_HALF_ - (cpuRegs.cycle - counters[5].sCycle);
 	counter4CycleT -= (cpuRegs.cycle - counters[4].sCycle);
 
 	nextCounter = (counter4CycleT < counter5CycleT) ? counter4CycleT : counter5CycleT;
 
 	nextsCounter = cpuRegs.cycle;
-
-	for (i = 0; i < 4; i++)
-		_rcntSet( i );
+	
+	_rcntSet( 0 );
+	_rcntSet( 1 );
+	_rcntSet( 2 );
+	_rcntSet( 3 );
 }
 
 void rcntInit() {
