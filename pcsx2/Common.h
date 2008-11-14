@@ -158,7 +158,7 @@ extern TESTRUNARGS g_TestRun;
 	 HBlank					15.73426573 KHz */
 
 //VBlanks per second
-#define VBLANK_NTSC			((Config.PsxType & 2) ? 59.94005994 : 59.82)
+#define VBLANK_NTSC			((Config.PsxType & 2) ? 59.94 : 59.82) //59.94005994 is more precise
 #define VBLANK_PAL			((Config.PsxType & 2) ? 50.00 : 49.76)
 
 //HBlanks per second
@@ -168,7 +168,7 @@ extern TESTRUNARGS g_TestRun;
 //VBlank timers for EE, bit more accurate.
 #define VBLANKCNT(count)		((u32)((Config.PsxType & 1) ? (VBLANKPALSELECT * count) : (VBLANKNTSCSELECT * count)))
 #define VBLANKPALSELECT			((Config.PsxType & 2) ? (PS2CLK / 50.00) : (PS2CLK / 49.76))
-#define VBLANKNTSCSELECT		((Config.PsxType & 2) ? (PS2CLK / 59.94005994) : (PS2CLK / 59.82))
+#define VBLANKNTSCSELECT		((Config.PsxType & 2) ? (PS2CLK / 59.94) : (PS2CLK / 59.82)) //59.94005994 is more precise
 
 //EE VBlank speeds
 #define PS2VBLANK_NTSC_INT		((PS2CLK / 59.94005994))
