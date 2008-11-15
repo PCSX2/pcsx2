@@ -1223,7 +1223,7 @@ _inline void ADD16ItoR( x86IntRegType to, u16 from )
 	{
 		write8( 0x83 ); 
 		ModRM( 3, 0, to );
-		write8( from );
+		write8((u8)from );
 	}
 	else
 	{
@@ -1242,7 +1242,7 @@ _inline void ADD16ItoM( uptr to, u16 from )
 		write8( 0x83 ); 
 		ModRM( 0, 0, DISP32 );
 		write32( MEMADDR(to, 6) );
-		write8( from );
+		write8((u8)from );
 	}
 	else
 	{
@@ -2432,7 +2432,7 @@ _inline void AND16ItoR( x86IntRegType to, u16 from )
 	else if ( from < 0x80 ) {
 		write8( 0x83 ); 
 		ModRM( 3, 0x4, to );
-		write8( from ); 
+		write8((u8)from ); 
 	} 
 	else {
 		write8( 0x81 ); 
@@ -2449,7 +2449,7 @@ _inline void AND16ItoM( uptr to, u16 from )
 		write8( 0x83 ); 
 		ModRM( 0, 0x4, DISP32 );
 		write32( MEMADDR(to, 6) );
-		write8( from );
+		write8((u8)from );
 	} 
 	else 
 	{

@@ -239,9 +239,9 @@ extern u32 *j32Ptr[32];
 #define RexRXB(w, reg, index, base) if( w||(reg) >= 8 || (index) >= 8 || (base) >= 8 ) assert(0);
 #endif
 
-extern void write8( int val );
-extern void write16( int val );
-extern void write32( u32 val );
+extern __forceinline void write8( u8 val );
+extern __forceinline void write16( u16 val );
+extern __forceinline void write32( u32 val );
 extern void write64( u64 val );
 
 
@@ -1787,32 +1787,32 @@ extern void SSE2EMU_MOVD_R_to_XMM( x86SSERegType to, x86IntRegType from );
 #define WRITECHECK()
 #endif
 
-#define write8(val )  {  \
-	*(u8*)x86Ptr = (u8)val; \
-	x86Ptr++; \
-} \
+__forceinline void write8(u8 val )  {  
+	*(u8*)x86Ptr = (u8)val; 
+	x86Ptr++; 
+} 
 
-#define write16(val ) \
-{ \
-	*(u16*)x86Ptr = (u16)val; \
-	x86Ptr += 2;  \
-} \
+__forceinline void write16(u16 val ) 
+{ 
+	*(u16*)x86Ptr = (u16)val; 
+	x86Ptr += 2;  
+} 
 
-#define write24(val ) \
-{ \
-	*(u8*)x86Ptr = (u8)(val & 0xff); \
-	x86Ptr++;  \
-	*(u8*)x86Ptr = (u8)((val >> 8) & 0xff); \
-	x86Ptr++;  \
-	*(u8*)x86Ptr = (u8)((val >> 16) & 0xff); \
-	x86Ptr++;  \
-} \
+__forceinline void write24(u32 val ) 
+{ 
+	*(u8*)x86Ptr = (u8)(val & 0xff); 
+	x86Ptr++;  
+	*(u8*)x86Ptr = (u8)((val >> 8) & 0xff); 
+	x86Ptr++;  
+	*(u8*)x86Ptr = (u8)((val >> 16) & 0xff); 
+	x86Ptr++;  
+} 
 
-#define write32( val ) \
-{ \
-	*(u32*)x86Ptr = val; \
-	x86Ptr += 4; \
-} \
+__forceinline void write32(u32 val ) 
+{ 
+	*(u32*)x86Ptr = val; 
+	x86Ptr += 4; 
+} 
 
 #ifdef __cplusplus
 }

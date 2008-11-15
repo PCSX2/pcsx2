@@ -49,7 +49,7 @@ extern _GSgifTransfer1    GSgifTransfer1;
 
 #ifdef PCSX2_DEVBUILD
 
-// These would amke more sense in GS.cpp, but then the legacy "C" files
+// These would make more sense in GS.cpp, but then the legacy "C" files
 // (like this one!) wouldn't be able to access them (C++ name mangling)
 
 __forceinline void GSGIFTRANSFER1(u32 *pMem, u32 addr) { 
@@ -257,20 +257,13 @@ void VU_MERGE15(int dest, int src) { // 1111s
 }
 
 typedef void (*VUMERGEFN)(int dest, int src);
+
 static VUMERGEFN s_VuMerge[16] = {
 	VU_MERGE0, VU_MERGE1, VU_MERGE2, VU_MERGE3,
 	VU_MERGE4, VU_MERGE5, VU_MERGE6, VU_MERGE7,
 	VU_MERGE8, VU_MERGE9, VU_MERGE10, VU_MERGE11,
 	VU_MERGE12, VU_MERGE13, VU_MERGE14, VU_MERGE15 };
-/*
-#define VU_MERGE_REGS(dest, src) { \
-	if( dest != src ) s_VuMerge[_X_Y_Z_W](dest, src); \
-} \
 
-#define VU_MERGE_REGS_CUSTOM(dest, src, xyzw) { \
-	if( dest != src ) s_VuMerge[xyzw](dest, src); \
-} \
-*/
 void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw)
 {
 	xyzw &= 0xf;
@@ -1037,18 +1030,7 @@ int _vuGetTempXMMreg(int info)
 
 	if( _hasFreeXMMreg() ) {
 		t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-		/*
-		if( t1reg == EEREC_TEMP && _hasFreeXMMreg() ) {
-			int t = _allocTempXMMreg(XMMT_FPS, -1);
-			_freeXMMreg(t1reg);
-			t1reg = t;
-			_freeXMMreg(t1reg);
-		}
-		else {
-			_freeXMMreg(t1reg);
-			t1reg = -1;
-		}
-		*/
+		
 		if( t1reg == EEREC_TEMP ) {
 			if( _hasFreeXMMreg() ) {
 				int t = _allocTempXMMreg(XMMT_FPS, -1);
@@ -5642,20 +5624,14 @@ void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 
 	size = 0x4000-(size<<4)-(addr&0x3fff);
     assert( size >= 0 );
-
-    // can't exceed 0x4000
-//    left = addr+size-0x4000;
-//    if( left > 0 ) size -= left;
+	
     if( size > 0 ) {
-
 	    pmem = GSRingBufCopy(NULL, size, GS_RINGTYPE_P1);
 	    assert( pmem != NULL );
 		FreezeMMXRegs(1);
 	    memcpy_fast(pmem, (u8*)pMem+addr, size);
 		FreezeMMXRegs(0);
-    //    if( left > 0 ) {
-    //        memcpy_fast(pmem+size-left, (u8*)pMem, left);
-    //    }
+	    
 	    GSRINGBUF_DONECOPY(pmem, size);
 
         if( !CHECK_DUALCORE ) {

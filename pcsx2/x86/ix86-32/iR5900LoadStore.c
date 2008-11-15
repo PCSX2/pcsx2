@@ -160,18 +160,29 @@ void testaddrs()
 }
 #endif
 
-#define SET_HWLOC() { \
-	if( s_bCachingMem & 2 ) x86SetJ32(j32Ptr[2]); \
-	else x86SetJ8(j8Ptr[0]); \
-	if( s_bCachingMem & 2 ) x86SetJ32(j32Ptr[3]); \
-	else x86SetJ8(j8Ptr[3]); \
-	if (x86FpuState==MMX_STATE) { \
-		if (cpucaps.has3DNOWInstructionExtensions) FEMMS(); \
-		else EMMS(); \
-	} \
-	if( s_nAddMemOffset ) ADD32ItoR(ECX, s_nAddMemOffset); \
-	if( s_bCachingMem & 4 ) AND32ItoR(ECX, 0x5fffffff); \
-} \
+static __forceinline void SET_HWLOC() { 
+	if ( s_bCachingMem & 2 ) 
+	{
+		x86SetJ32(j32Ptr[2]); 
+		x86SetJ32(j32Ptr[3]); 
+	}
+	else 
+	{
+		x86SetJ8(j8Ptr[0]); 
+		x86SetJ8(j8Ptr[3]); 
+	}
+	
+	if (x86FpuState==MMX_STATE) { 
+		if (cpucaps.has3DNOWInstructionExtensions) 
+			FEMMS(); 
+		else 
+			EMMS(); 
+	} 
+	if( s_nAddMemOffset ) 
+		ADD32ItoR(ECX, s_nAddMemOffset); 
+	if( s_bCachingMem & 4 ) 
+		AND32ItoR(ECX, 0x5fffffff); 
+} 
 
 static u16 g_MemMasks0[16] = {0x00f0, 0x80f1, 0x00f2, 0x00f3,
 							  0x00f1, 0x00f5, 0x00f1, 0x00f5,

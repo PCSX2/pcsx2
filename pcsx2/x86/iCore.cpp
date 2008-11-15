@@ -1284,13 +1284,6 @@ extern "C" void cpudetectSSE3(void* pfnCallSSE3)
     // exception handling doesn't work, so disable for x86 builds of linux
     cpucaps.hasStreamingSIMD3Extensions = 0;
 #endif
-//    try {
-//        __asm__("call *%0" : : "m"(pfnCallSSE3) );
-//	}
-//    catch(...) {
-//        SysPrintf("no SSE3 found\n");
-//        cpucaps.hasStreamingSIMD3Extensions = 0;
-//    }
 #endif
 }
 
@@ -1314,13 +1307,6 @@ return;
     // exception handling doesn't work, so disable for x86 builds of linux
     cpucaps.hasStreamingSIMD4Extensions = 0;
 #endif
-//    try {
-//        __asm__("call *%0" : : "m"(pfnCallSSE4) );
-//	}
-//    catch(...) {
-//        SysPrintf("no SSE4.1 found\n");
-//        cpucaps.hasStreamingSIMD4Extensions = 0;
-//    }
 #endif
 }
 

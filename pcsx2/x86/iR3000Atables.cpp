@@ -61,7 +61,6 @@ void psx##f(); \
 static void rpsx##f() { \
 	MOV32ItoM((uptr)&psxRegs.code, (u32)psxRegs.code); \
 	_psxFlushCall(FLUSH_EVERYTHING); \
-	/*MOV32ItoM((u32)&psxRegs.pc, (u32)pc);*/ \
 	CALLFunc((uptr)psx##f); \
 	PSX_DEL_CONST(_Rt_); \
 /*	branch = 2; */\
@@ -634,11 +633,11 @@ int _psxPrepareReg(int gprreg)
 
 static u32 s_nAddMemOffset = 0;
 
-#define SET_HWLOC() { \
-	x86SetJ8(j8Ptr[0]); \
-	SHR32ItoR(ECX, 3); \
-	if( s_nAddMemOffset ) ADD32ItoR(ECX, s_nAddMemOffset); \
-} \
+static __forceinline void SET_HWLOC() { 
+	x86SetJ8(j8Ptr[0]); 
+	SHR32ItoR(ECX, 3); 
+	if( s_nAddMemOffset ) ADD32ItoR(ECX, s_nAddMemOffset); 
+} 
 
 int rpsxSetMemLocation(int regs, int mmreg)
 {
