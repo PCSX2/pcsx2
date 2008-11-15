@@ -160,7 +160,7 @@ void testaddrs()
 }
 #endif
 
-static __forceinline void SET_HWLOC() { 
+static __forceinline void SET_HWLOC_R5900() { 
 	if ( s_bCachingMem & 2 ) 
 	{
 		x86SetJ32(j32Ptr[2]); 
@@ -419,7 +419,7 @@ void recLoad32(u32 bit, u32 imm, u32 sign)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			switch(bit) {
 				case 8:
@@ -580,7 +580,7 @@ void recLoad32_co(u32 bit, u32 sign)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 			
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			switch(bit) {
 				case 8:
@@ -689,7 +689,7 @@ void recLWL( void )
 
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			iMemRead32Check();
 
@@ -771,7 +771,7 @@ void recLWR( void )
 
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			iMemRead32Check();
 
@@ -864,7 +864,7 @@ void recLoad64(u32 imm, int align)
 				if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 				else j8Ptr[2] = JMP8(0);
 
-				SET_HWLOC();
+				SET_HWLOC_R5900();
 
 				PUSH32I( (int)&cpuRegs.GPR.r[ _Rt_ ].UD[ 0 ] );
 				CALLFunc( (int)recMemRead64 );
@@ -883,7 +883,7 @@ void recLoad64(u32 imm, int align)
 				if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 				else j8Ptr[2] = JMP8(0);
 
-				SET_HWLOC();
+				SET_HWLOC_R5900();
 
 				PUSH32I( (int)&cpuRegs.GPR.r[ _Rt_ ].UD[ 0 ] );
 				CALLFunc( (int)recMemRead64 );
@@ -905,7 +905,7 @@ void recLoad64(u32 imm, int align)
 				if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 				else j8Ptr[2] = JMP8(0);
 
-				SET_HWLOC();
+				SET_HWLOC_R5900();
 
 				if( _Rt_ ) {
 					//_deleteEEreg(_Rt_, 0);
@@ -1013,7 +1013,7 @@ void recLD_co( void )
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 
@@ -1146,7 +1146,7 @@ void recLD_coX( int num )
 			if( (s_bCachingMem & 2) || num > 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 
@@ -1336,7 +1336,7 @@ void recLQ( void )
 				if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 				else j8Ptr[2] = JMP8(0);
 
-				SET_HWLOC();
+				SET_HWLOC_R5900();
 
 				PUSH32I( (u32)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 				CALLFunc( (uptr)recMemRead128 );
@@ -1352,7 +1352,7 @@ void recLQ( void )
 				if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 				else j8Ptr[2] = JMP8(0);
 
-				SET_HWLOC();
+				SET_HWLOC_R5900();
 
 				PUSH32I( (u32)&retValues[0] );
 				CALLFunc( (uptr)recMemRead128 );
@@ -1463,7 +1463,7 @@ void recLQ_co( void )
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 			if( _Rt_ ) PUSH32I( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
@@ -1557,7 +1557,7 @@ void recLQ_coX(int num)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 
@@ -2225,7 +2225,7 @@ void recStore(int bit, u32 imm, int align)
 			if( s_bCachingMem & 2 ) j32Ptr[5] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			StopPerfCounter();
 			recStore_call(bit, _Rt_, s_nAddMemOffset);
@@ -2393,7 +2393,7 @@ void recStore_co(int bit, int align)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 			recStore_call(bit, _Rt_, s_nAddMemOffset);
@@ -2458,7 +2458,7 @@ void recSWL( void )
 
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			// repeat
 			MOV32ItoR(EDX, 0x3);
@@ -2550,7 +2550,7 @@ void recSWR( void )
 
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			// repeat
 			MOV32ItoR(EDX, 0x3);
@@ -2698,7 +2698,7 @@ void recSD_coX(int num, int align)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 			recStore_call(64, _Rt_, s_nAddMemOffset);
@@ -2855,7 +2855,7 @@ void recSQ_coX(int num)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 			recStore_call(128, _Rt_, s_nAddMemOffset);
@@ -2925,7 +2925,7 @@ void recLWC1( void )
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			iMemRead32Check();
 			CALLFunc( (int)recMemRead32 );
@@ -3008,7 +3008,7 @@ void recLWC1_co( void )
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			PUSH32R(ECX);
 			CALLFunc( (int)recMemRead32 );
@@ -3156,7 +3156,7 @@ void recLWC1_coX(int num)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 			CALLFunc( (int)recMemRead32 );
@@ -3223,7 +3223,7 @@ void recSWC1( void )
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			// some type of hardware write
 			if( mmreg >= 0) SSE2_MOVD_XMM_to_R(EAX, mmreg);
@@ -3308,7 +3308,7 @@ void recSWC1_co( void )
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 
@@ -3404,7 +3404,7 @@ void recSWC1_coX(int num)
 			if( s_bCachingMem & 2 ) j32Ptr[4] = JMP32(0);
 			else j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 
@@ -3476,7 +3476,7 @@ void recLQC2( void )
 
 			if( dohw ) {
 				j8Ptr[1] = JMP8(0);
-				SET_HWLOC();
+				SET_HWLOC_R5900();
 
 				// check if writing to VUs
 				CMP32ItoR(ECX, 0x11000000);
@@ -3493,7 +3493,7 @@ void recLQC2( void )
 		else {
 			if( dohw ) {
 				j8Ptr[1] = JMP8(0);
-				SET_HWLOC();
+				SET_HWLOC_R5900();
 
 				PUSH32I( (int)&retValues[0] );
 				CALLFunc( (int)recMemRead128 );
@@ -3546,7 +3546,7 @@ void recLQC2_co( void )
 
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			// check if writing to VUs
 			CMP32ItoR(ECX, 0x11000000);
@@ -3640,7 +3640,7 @@ void recSQC2( void )
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			// check if writing to VUs
 			CMP32ItoR(ECX, 0x11000000);
@@ -3757,7 +3757,7 @@ void recSQC2_co( void )
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R5900();
 
 			// check if writing to VUs
 			CMP32ItoR(ECX, 0x11000000);

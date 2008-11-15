@@ -633,7 +633,7 @@ int _psxPrepareReg(int gprreg)
 
 static u32 s_nAddMemOffset = 0;
 
-static __forceinline void SET_HWLOC() { 
+static __forceinline void SET_HWLOC_R3000A() { 
 	x86SetJ8(j8Ptr[0]); 
 	SHR32ItoR(ECX, 3); 
 	if( s_nAddMemOffset ) ADD32ItoR(ECX, s_nAddMemOffset); 
@@ -709,7 +709,7 @@ void recLoad32(u32 bit, u32 sign)
 		if( dohw ) {
 			j8Ptr[1] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R3000A();
 
 			switch(bit) {
 				case 8:
@@ -873,7 +873,7 @@ void recStore(int bit)
 		if( dohw ) {
 			j8Ptr[2] = JMP8(0);
 
-			SET_HWLOC();
+			SET_HWLOC_R3000A();
 
 			if( PSX_IS_CONST1(_Rt_) ) {
 				switch(bit) {

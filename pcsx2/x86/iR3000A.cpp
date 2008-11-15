@@ -1004,14 +1004,6 @@ static u32 psxScaleBlockCycles()
 		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : 1 );
 }
 
-extern "C" s32 psxScaleWaitCycles()
-{
-	return -40 * 
-		/*(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16));*/
-		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : 1);
-}
-
-
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	u32 blockCycles = psxScaleBlockCycles();
