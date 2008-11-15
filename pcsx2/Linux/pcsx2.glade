@@ -7264,7 +7264,7 @@ Version x.x</property>
 				  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
-				  <property name="adjustment">0 0 9999 1 10 10</property>
+				  <property name="adjustment">0 0 9999 1 0 0</property>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -7322,7 +7322,7 @@ Version x.x</property>
 				  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
-				  <property name="adjustment">0 0 9999 1 10 10</property>
+				  <property name="adjustment">0 0 9999 1 0 0</property>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -7380,7 +7380,7 @@ Version x.x</property>
 				  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
-				  <property name="adjustment">0 0 9999 1 10 10</property>
+				  <property name="adjustment">0 0 9999 1 0 0</property>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -7438,7 +7438,7 @@ Version x.x</property>
 				  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
-				  <property name="adjustment">0 0 9999 1 10 10</property>
+				  <property name="adjustment">0 0 9999 1 0 0</property>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>

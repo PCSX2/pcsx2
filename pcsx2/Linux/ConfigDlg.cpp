@@ -50,13 +50,17 @@ static void ConfPlugin(PluginConf confs, char* plugin, const char* name)
 	strcat(file, plugin); 
 
 	drv = SysLoadLibrary(file);
+	#ifndef LOCAL_PLUGIN_INIS
 	getcwd(file, ARRAYSIZE(file)); /* store current dir */  
 	chdir(Config.PluginsDir); /* change dirs so that plugins can find their config file*/  
+	#endif
 	if (drv == NULL) return;
 
 	conf = (void (*)()) SysLoadSym(drv, name);
 	if (SysLibError() == NULL) conf(); 
-	chdir(file); /* change back*/      
+	#ifndef LOCAL_PLUGIN_INIS
+	chdir(file); /* change back*/  
+	#endif
 	SysCloseLibrary(drv);
 }
 

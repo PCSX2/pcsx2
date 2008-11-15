@@ -125,7 +125,12 @@ dnl AC_CHECK_LIB(pthread,main,[LIBS="$LIBS -lpthread"])
 AC_CHECK_LIB(stdc++,main,[LIBS="$LIBS -lstdc++"])
 AC_CHECK_LIB(z,main,[LIBS="$LIBS -lz"])
 
+AC_ARG_ENABLE(nls, AC_HELP_STRING([--disable-nls], [Disable nls support]),
+nls=$enableval,nls=yes)
+if test "x$nls" == xyes
+then
 AC_CHECK_HEADER([libintl.h], [AC_DEFINE(ENABLE_NLS,1,[__x86_64__])])
+fi
 
 AC_OUTPUT([
  Makefile
@@ -149,3 +154,4 @@ echo "  Debug build?	       $debug"
 echo "  Dev build?	           $devbuild"
 echo "  Force sse3?	           $sse3"
 echo "  Recompilers enabled?   $recbuild"
+echo "  nls support?	       $nls"

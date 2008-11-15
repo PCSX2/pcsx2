@@ -3717,7 +3717,7 @@ create_CpuDlg (void)
   gtk_widget_show (label66);
   gtk_box_pack_start (GTK_BOX (hbox29), label66, TRUE, TRUE, 0);
 
-  CustomFPSLimit_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  CustomFPSLimit_adj = gtk_adjustment_new (0, 0, 9999, 1, 0, 0);
   CustomFPSLimit = gtk_spin_button_new (GTK_ADJUSTMENT (CustomFPSLimit_adj), 1, 0);
   gtk_widget_show (CustomFPSLimit);
   gtk_box_pack_end (GTK_BOX (hbox29), CustomFPSLimit, FALSE, TRUE, 0);
@@ -3731,7 +3731,7 @@ create_CpuDlg (void)
   gtk_widget_show (label67);
   gtk_box_pack_start (GTK_BOX (hbox30), label67, TRUE, TRUE, 0);
 
-  FrameThreshold_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  FrameThreshold_adj = gtk_adjustment_new (0, 0, 9999, 1, 0, 0);
   FrameThreshold = gtk_spin_button_new (GTK_ADJUSTMENT (FrameThreshold_adj), 1, 0);
   gtk_widget_show (FrameThreshold);
   gtk_box_pack_end (GTK_BOX (hbox30), FrameThreshold, FALSE, TRUE, 0);
@@ -3744,7 +3744,7 @@ create_CpuDlg (void)
   gtk_widget_show (label68);
   gtk_box_pack_start (GTK_BOX (hbox31), label68, TRUE, TRUE, 0);
 
-  FramesBeforeSkipping_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  FramesBeforeSkipping_adj = gtk_adjustment_new (0, 0, 9999, 1, 0, 0);
   FramesBeforeSkipping = gtk_spin_button_new (GTK_ADJUSTMENT (FramesBeforeSkipping_adj), 1, 0);
   gtk_widget_show (FramesBeforeSkipping);
   gtk_box_pack_end (GTK_BOX (hbox31), FramesBeforeSkipping, FALSE, TRUE, 0);
@@ -3757,7 +3757,7 @@ create_CpuDlg (void)
   gtk_widget_show (label69);
   gtk_box_pack_start (GTK_BOX (hbox32), label69, TRUE, TRUE, 0);
 
-  FramesToSkip_adj = gtk_adjustment_new (0, 0, 9999, 1, 10, 10);
+  FramesToSkip_adj = gtk_adjustment_new (0, 0, 9999, 1, 0, 0);
   FramesToSkip = gtk_spin_button_new (GTK_ADJUSTMENT (FramesToSkip_adj), 1, 0);
   gtk_widget_show (FramesToSkip);
   gtk_box_pack_end (GTK_BOX (hbox32), FramesToSkip, FALSE, TRUE, 0);
