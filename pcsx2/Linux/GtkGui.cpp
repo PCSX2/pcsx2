@@ -70,6 +70,9 @@ void StartGui() {
 	// disable anything not implemented or not working properly.
 	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(MainWindow, "patch_browser1")), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(MainWindow, "patch_finder2")), FALSE);
+	#ifndef PCSX2_DEVBUILD
+	gtk_widget_set_sensitive(GTK_WIDGET(lookup_widget(MainWindow, "GtkMenuItem_Logging")), FALSE);
+	#endif
 	
 	gtk_widget_show_all(MainWindow);
 	gtk_window_activate_focus(GTK_WINDOW(MainWindow));
@@ -146,7 +149,7 @@ void RunExecute(int run)
 	// this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
 	if( GSsetGameCRC != NULL )
 		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
-
+		
 	if (run) Cpu->Execute();
 }
 

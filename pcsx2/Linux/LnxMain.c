@@ -254,7 +254,6 @@ void CloseLanguages() {
 void ChangeLanguage(char *lang) {
     strcpy(Config.Lang, lang);
 	SaveConfig();
-	LoadConfig();
 }
 
 /* Quick macros for checking shift, control, alt, and caps lock. */

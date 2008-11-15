@@ -189,11 +189,11 @@ void gsInit()
         if( GSsetBaseMem != NULL )
 			GSsetBaseMem(g_MTGSMem);
 
-#if defined(_DEBUG) && defined(PCSX2_DEVBUILD)
-		assert( g_fMTGSWrite == NULL && g_fMTGSRead == NULL );
-		g_fMTGSWrite = fopen("mtgswrite.txt", "w");
-		g_fMTGSRead = fopen("mtgsread.txt", "w");
-#endif
+//#if defined(_DEBUG) && defined(PCSX2_DEVBUILD)
+//		assert( g_fMTGSWrite == NULL && g_fMTGSRead == NULL );
+//		g_fMTGSWrite = fopen("mtgswrite.txt", "w");
+//		g_fMTGSRead = fopen("mtgsread.txt", "w");
+//#endif
 
         gsHasToExit=false;
 
@@ -269,16 +269,16 @@ void gsShutdown()
         SysMunmap((uptr)GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE);
 #endif
 
-#if defined(_DEBUG) && defined(PCSX2_DEVBUILD)
-		if( g_fMTGSWrite != NULL ) {
-			fclose(g_fMTGSWrite);
-			g_fMTGSWrite = NULL;
-		}
-		if( g_fMTGSRead != NULL ) {
-			fclose(g_fMTGSRead);
-			g_fMTGSRead = NULL;
-		}
-#endif
+//#if defined(_DEBUG) && defined(PCSX2_DEVBUILD)
+//		if( g_fMTGSWrite != NULL ) {
+//			fclose(g_fMTGSWrite);
+//			g_fMTGSWrite = NULL;
+//		}
+//		if( g_fMTGSRead != NULL ) {
+//			fclose(g_fMTGSRead);
+//			g_fMTGSRead = NULL;
+//		}
+//#endif
 	}
 	else
 		GSclose();
@@ -1480,19 +1480,19 @@ void* GSThreadProc(void* lpParam)
 						case GS_RINGTYPE_P1:
                         {
                             int qsize = (tag>>16);
-							MTGS_RECREAD(g_pGSRingPos+16, (qsize<<4));
+//							MTGS_RECREAD(g_pGSRingPos+16, (qsize<<4));
                             // make sure that tag>>16 is the MAX size readable
 							GSgifTransfer1((u32*)(g_pGSRingPos+16) - 0x1000 + 4*qsize, 0x4000-qsize*16);
 							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
 							break;
                         }
 						case GS_RINGTYPE_P2:
-							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
+//							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
 							GSgifTransfer2((u32*)(g_pGSRingPos+16), tag>>16);
 							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
 							break;
 						case GS_RINGTYPE_P3:
-							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
+//							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
 							GSgifTransfer3((u32*)(g_pGSRingPos+16), tag>>16);
 							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
 							break;

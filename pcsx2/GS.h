@@ -67,41 +67,41 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type);
 void GSRingBufSimplePacket(int type, int data0, int data1, int data2);
 
 extern u8* g_pGSWritePos;
-#ifdef PCSX2_DEVBUILD
+//#ifdef PCSX2_DEVBUILD
 
 // use for debugging MTGS
-extern FILE* g_fMTGSWrite, *g_fMTGSRead;
-extern u32 g_MTGSDebug, g_MTGSId;
+//extern FILE* g_fMTGSWrite, *g_fMTGSRead;
+//extern u32 g_MTGSDebug, g_MTGSId;
 
-static __forceinline void MTGS_RECWRITE(const u8 *start, u32 size) { 
-	if( g_MTGSDebug & 1 ) { 
-		const u32* pstart = (u32*)(start); 
-		u32 cursize = (size); 
-		fprintf(g_fMTGSWrite, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); 
-		if( g_MTGSDebug & 2 ) fflush(g_fMTGSWrite); 
-	} 
-} 
+//static __forceinline void MTGS_RECWRITE(const u8 *start, u32 size) { 
+//	if( g_MTGSDebug & 1 ) { 
+//		const u32* pstart = (u32*)(start); 
+//		u32 cursize = (size); 
+//		fprintf(g_fMTGSWrite, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); 
+//		if( g_MTGSDebug & 2 ) fflush(g_fMTGSWrite); 
+//	} 
+//} 
 
-static __forceinline void MTGS_RECREAD( const u8* start, u32 size) { 
-	if( g_MTGSDebug & 1 ) { 
-		const u32* pstart = (u32*)(start); 
-		u32 cursize = (size); 
-		fprintf(g_fMTGSRead, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); 
-		if( g_MTGSDebug & 4 ) fflush(g_fMTGSRead); 
-	} 
-} 
-#else
+//static __forceinline void MTGS_RECREAD( const u8* start, u32 size) { 
+//	if( g_MTGSDebug & 1 ) { 
+//		const u32* pstart = (u32*)(start); 
+//		u32 cursize = (size); 
+//		fprintf(g_fMTGSRead, "*%x-%x (%d)\n", (u32)(uptr)(start), (u32)(size), ++g_MTGSId); 
+//		if( g_MTGSDebug & 4 ) fflush(g_fMTGSRead); 
+//	} 
+//} 
+//#else
 
-#define MTGS_RECWRITE 0&&
-#define MTGS_RECREAD 0&&
+//#define MTGS_RECWRITE 0&&
+//#define MTGS_RECREAD 0&&
 
-#endif
+//#endif
 
 // mem and size are the ones from GSRingBufCopy
 static __forceinline void GSRINGBUF_DONECOPY(const u8 *mem, u32 size) { 
 	u8* temp = (u8*)(mem) + (size); 
 	assert( temp <= GS_RINGBUFFEREND); 
-	MTGS_RECWRITE(mem, size); 
+//	MTGS_RECWRITE(mem, size); 
 	if( temp == GS_RINGBUFFEREND ) temp = GS_RINGBUFFERBASE; 
 	InterlockedExchangePointer((void**)&g_pGSWritePos, temp);	
 }
