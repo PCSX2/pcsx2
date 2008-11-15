@@ -78,9 +78,7 @@ static __forceinline void cpuRcntSet() {
 	// This must be done regardless of if the hblank/vblank counters updated since
 	// cpuRegs.cycle changes, even if sCycle hasn't!
 
-	//fixme : HBLANK_TIME_ and HRENDER_TIME_ are both SCANLINE_NTSC (or _PAL) / 2.. was that intended? (rama)
-	//u32 counter4CycleT = ( counters[4].mode == MODE_HBLANK ) ? HBLANK_TIME_ : HRENDER_TIME_;
-	u32 counter4CycleT = HBLANK_TIME_;
+	u32 counter4CycleT = ( counters[4].mode == MODE_HBLANK ) ? HBLANK_TIME_ : HRENDER_TIME_;
 	u32 counter5CycleT = VSYNC_HALF_ - (cpuRegs.cycle - counters[5].sCycle);
 	counter4CycleT -= (cpuRegs.cycle - counters[4].sCycle);
 

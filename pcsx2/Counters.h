@@ -36,8 +36,6 @@ typedef struct {
 // NTSC Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
 #define SCANLINE_NTSC		(u32)(PS2CLK / 15734.25)//18743  //when using 59.94005994 it rounds to 15734.27 :p (rama)
-// fixme : Both, HRENDER_TIME_NTSC and HBLANK_TIME_NTSC the same?
-// also see cpuRcntSet() and possibly hScanline() for this issue (rama)
 #define HRENDER_TIME_NTSC	(u32)(SCANLINE_NTSC / 2)//15528  //time from hblank end to hblank start (PS2CLK / 18991.368423051722991900181367568)
 #define HBLANK_TIME_NTSC	(u32)(SCANLINE_NTSC / 2)//3215   //time from hblank start to hblank end (PS2CLK / 91738.91105912572817760653181028)
 #define VSYNC_NTSC			(u32)(PS2CLK / 59.94)  //hz //59.94005994 is more precise
@@ -55,8 +53,6 @@ typedef struct {
 // PAL Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
 #define SCANLINE_PAL		(u32)(PS2CLK / 15625)//18874
-// fixme : Both, HRENDER_TIME_PAL and HBLANK_TIME_PAL the same?
-// also see cpuRcntSet() and possibly hScanline() for this issue (rama)
 #define HRENDER_TIME_PAL	(u32)(SCANLINE_PAL / 2)//15335  //time from hblank end to hblank start
 #define HBLANK_TIME_PAL		(u32)(SCANLINE_PAL / 2)//3539   //time from hblank start to hblank end
 #define VSYNC_PAL			(u32)(PS2CLK / 50)	//hz

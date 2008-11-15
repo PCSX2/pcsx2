@@ -81,8 +81,7 @@ u32 g_EEFreezeRegs = 0; // if set, should freeze the regs
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
 static BASEBLOCK* s_pDispatchBlock = NULL;
-static u32 s_nEndBlock = 0; // what pc the current block ends	
-static u32 s_nHasDelay = 0;
+static u32 s_nEndBlock = 0; // what pc the current block ends
 
 static u32 s_nNextBlock = 0; // next free block in recBlocks
 
@@ -2914,7 +2913,6 @@ void recRecompile( u32 startpc )
 	// go until the next branch
 	i = startpc;
 	s_nEndBlock = 0xffffffff;
-	s_nHasDelay = 0;
 	
 	while(1) {
 		BASEBLOCK* pblock = PC_GETBLOCK(i);
@@ -2935,7 +2933,6 @@ void recRecompile( u32 startpc )
 
 				if( _Funct_ == 8 || _Funct_ == 9 ) { // JR, JALR
 					s_nEndBlock = i + 8;
-					s_nHasDelay = 1;
 					goto StartRecomp;
 				}
 
@@ -2944,8 +2941,6 @@ void recRecompile( u32 startpc )
 				
 				if( _Rt_ < 4 || (_Rt_ >= 16 && _Rt_ < 20) ) {
 					// branches
-					if( _Rt_ == 2 || _Rt_ == 3 || _Rt_ == 18 || _Rt_ == 19 ) s_nHasDelay = 1;
-					else s_nHasDelay = 2;
 
 					branchTo = _Imm_ * 4 + i + 4;
 					if( branchTo > startpc && branchTo < i ) s_nEndBlock = branchTo;
@@ -2958,16 +2953,12 @@ void recRecompile( u32 startpc )
 
 			case 2: // J
 			case 3: // JAL
-				s_nHasDelay = 1;
 				s_nEndBlock = i + 8;
 				goto StartRecomp;
 
 			// branches
 			case 4: case 5: case 6: case 7: 
 			case 20: case 21: case 22: case 23:
-
-				if( (cpuRegs.code >> 26) >= 20 ) s_nHasDelay = 1;
-				else s_nHasDelay = 2;
 
 				branchTo = _Imm_ * 4 + i + 4;
 				if( branchTo > startpc && branchTo < i ) s_nEndBlock = branchTo;
@@ -2989,8 +2980,6 @@ void recRecompile( u32 startpc )
 				if( _Rs_ == 8 ) {
 					// BC1F, BC1T, BC1FL, BC1TL
 					// BC2F, BC2T, BC2FL, BC2TL
-					if( _Rt_ >= 2 ) s_nHasDelay = 1;
-					else s_nHasDelay = 2;
 
 					branchTo = _Imm_ * 4 + i + 4;
 					if( branchTo > startpc && branchTo < i ) s_nEndBlock = branchTo;
