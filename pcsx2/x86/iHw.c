@@ -343,6 +343,8 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			EECNT_LOG("Counter 2 target read = %x\n", counters[2].target);
 			return 0;
 		case 0x10001030:
+			// fixme: Counters[2].hold and Counters[3].hold are never assigned values
+			// anywhere in Pcsx2.
 			_eeReadConstMem32(x86reg, (uptr)&counters[2].hold);
 			return 0;
 
@@ -362,6 +364,8 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			EECNT_LOG("Counter 3 target read = %x\n", counters[3].target);
 			return 0;
 		case 0x10001830:
+			// fixme: Counters[2].hold and Counters[3].hold are never assigned values
+			// anywhere in Pcsx2.
 			_eeReadConstMem32(x86reg, (uptr)&counters[3].hold);
 			return 0;
 
@@ -969,24 +973,26 @@ void hwConstWrite32(u32 mem, int mmreg)
 			SHR32ItoR(EAX, 16);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
 			
-			MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			AND32ItoR(EAX, 0x10807);
-			CMP32ItoR(EAX, 0x10801);
-			j8Ptr[5] = JNE8(0);
+			// cpuRegs.CP0.n.Status.val is checked by cpuTestDMACInts.
+			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
+			//AND32ItoR(EAX, 0x10807);
+			//CMP32ItoR(EAX, 0x10801);
+			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestDMACInts);
 
-			x86SetJ8( j8Ptr[5] );
+			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f000: // INTC_STAT
 			_eeWriteConstMem32OP((uptr)&PS2MEM_HW[0xf000], mmreg, 2);
-			MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			AND32ItoR(EAX, 0x10407);
-			CMP32ItoR(EAX, 0x10401);
-			j8Ptr[5] = JNE8(0);
+			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
+			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
+			//AND32ItoR(EAX, 0x10407);
+			//CMP32ItoR(EAX, 0x10401);
+			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestINTCInts);
 
-			x86SetJ8( j8Ptr[5] );
+			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f010: // INTC_MASK
@@ -994,13 +1000,14 @@ void hwConstWrite32(u32 mem, int mmreg)
 			iFlushCall(0);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xf010], EAX);
 			
-			MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			AND32ItoR(EAX, 0x10407);
-			CMP32ItoR(EAX, 0x10401);
-			j8Ptr[5] = JNE8(0);
+			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
+			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
+			//AND32ItoR(EAX, 0x10407);
+			//CMP32ItoR(EAX, 0x10401);
+			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestINTCInts);
 
-			x86SetJ8( j8Ptr[5] );
+			//x86SetJ8( j8Ptr[5] );
 			break;
 
         case 0x1000f130:
@@ -1181,13 +1188,14 @@ void hwConstWrite64(u32 mem, int mmreg)
 			SHR32ItoR(EAX, 16);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
 			
-			MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			AND32ItoR(EAX, 0x10807);
-			CMP32ItoR(EAX, 0x10801);
-			j8Ptr[5] = JNE8(0);
+			// cpuRegs.CP0.n.Status.val is checked by cpuTestDMACInts.
+			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
+			//AND32ItoR(EAX, 0x10807);
+			//CMP32ItoR(EAX, 0x10801);
+			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestDMACInts);
 
-			x86SetJ8( j8Ptr[5] );
+			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f590: // DMAC_ENABLEW
@@ -1197,13 +1205,14 @@ void hwConstWrite64(u32 mem, int mmreg)
 
 		case 0x1000f000: // INTC_STAT
 			_eeWriteConstMem32OP((uptr)&PS2MEM_HW[mem&0xffff], mmreg, 2);
-			MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			AND32ItoR(EAX, 0x10407);
-			CMP32ItoR(EAX, 0x10401);
-			j8Ptr[5] = JNE8(0);
+			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
+			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
+			//AND32ItoR(EAX, 0x10407);
+			//CMP32ItoR(EAX, 0x10401);
+			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestINTCInts);
 
-			x86SetJ8( j8Ptr[5] );
+			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f010: // INTC_MASK
@@ -1213,13 +1222,14 @@ void hwConstWrite64(u32 mem, int mmreg)
 			iFlushCall(0);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xf010], EAX);
 			
-			MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			AND32ItoR(EAX, 0x10407);
-			CMP32ItoR(EAX, 0x10401);
-			j8Ptr[5] = JNE8(0);
+			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
+			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
+			//AND32ItoR(EAX, 0x10407);
+			//CMP32ItoR(EAX, 0x10401);
+			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestINTCInts);
 
-			x86SetJ8( j8Ptr[5] );
+			//x86SetJ8( j8Ptr[5] );
 			
 			break;
 

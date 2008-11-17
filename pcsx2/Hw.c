@@ -938,16 +938,14 @@ void hwWrite32(u32 mem, u32 value) {
 		case 0x1000f000: // INTC_STAT
 			HW_LOG("INTC_STAT Write 32bit %x\n", value);
 			psHu32(0xf000)&=~value;	
-			if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401)
-                cpuTestINTCInts();
+			cpuTestINTCInts();
 			break;
 
 		case 0x1000f010: // INTC_MASK
 			HW_LOG("INTC_MASK Write 32bit %x\n", value);
 			psHu32(0xf010) ^= (u16)value;
 
-			if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401)
-                cpuTestINTCInts();
+			cpuTestINTCInts();
 			break;
 //------------------------------------------------------------------			
 		case 0x1000f430://MCH_RICM: x:4|SA:12|x:5|SDEV:1|SOP:4|SBC:1|SDEV:5
@@ -1086,8 +1084,7 @@ void hwWrite64(u32 mem, u64 value) {
 		case 0x1000f000: // INTC_STAT
 			HW_LOG("INTC_STAT Write 64bit %x\n", value);
 			psHu32(0xf000)&=~value;	
-			if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401)
-                cpuTestINTCInts();
+			cpuTestINTCInts();
 			break;
 
 		case 0x1000f010: // INTC_MASK
@@ -1099,8 +1096,7 @@ void hwWrite64(u32 mem, u64 value) {
 					else psHu32(0xf010)|= 1<<i;
 				}
 			}
-			if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401)
-                cpuTestINTCInts();
+			cpuTestINTCInts();
 			break;
 
 		case 0x1000f130:
