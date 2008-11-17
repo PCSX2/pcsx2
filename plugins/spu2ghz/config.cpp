@@ -492,7 +492,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			// Debugging / Logging Flags:
 			SET_CHECK(IDC_EFFECTS, EffectsEnabled);
 			SET_CHECK(IDC_DEBUG,   DebugEnabled);
-			SET_CHECK(IDC_MSGKEY,  _MsgToConsole);
+			SET_CHECK(IDC_MSGSHOW, _MsgToConsole);
 			SET_CHECK(IDC_MSGKEY,  _MsgKeyOnOff);
 			SET_CHECK(IDC_MSGVOICE,_MsgVoiceOff);
 			SET_CHECK(IDC_MSGDMA,  _MsgDMA);

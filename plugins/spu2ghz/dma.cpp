@@ -92,9 +92,9 @@ void DMALogClose() {
 
 __forceinline u16 DmaRead(u32 core)
 {
-	Cores[core].TDA&=0xfffff;
 	const u16 ret = (u16)spu2M_Read(Cores[core].TDA);
 	Cores[core].TDA++;
+	Cores[core].TDA&=0xfffff;
 	return ret;
 }
 
@@ -189,27 +189,24 @@ void StartADMAWrite(int core,u16 *pMem, u32 sz)
 
 void DoDMAWrite(int core,u16 *pMem,u32 size)
 {
-	u32 i;
+	// Perform an alignment check.
+	// Not really important.  Everything should work regardless,
+	// but it could be indicative of an emulation foopah elsewhere.
 
+#ifndef PUBLIC
+	uptr pa = ((uptr)pMem)&7;
+	uptr pm = Cores[core].TSA&0x7;
+
+	if( pa )
 	{
-		// Perform an alignment check.
-		// Not really important.  Everything should work regardless,
-		// but it could be indicative of an emulation foopah elsewhere.
-
-		uptr pa = ((uptr)pMem)&7;
-		uptr pm = Cores[core].TSA&0x7;
-
-		if( pa )
-		{
-			fprintf(stderr, "* SPU2 DMA Write > Missaligned SOURCE! Core: %d  TSA: 0x%x  TDA: 0x%x  Size: 0x%x\n", core, Cores[core].TSA, Cores[core].TDA, size);
-		}
-
-		if( pm )
-		{
-			fprintf(stderr, "* SPU2 DMA Write > Missaligned TARGET! Core: %d  TSA: 0x%x  TDA: 0x%x Size: 0x%x\n", core, Cores[core].TSA, Cores[core].TDA, size );
-		}
+		fprintf(stderr, "* SPU2 DMA Write > Missaligned SOURCE! Core: %d  TSA: 0x%x  TDA: 0x%x  Size: 0x%x\n", core, Cores[core].TSA, Cores[core].TDA, size);
 	}
 
+	if( pm )
+	{
+		fprintf(stderr, "* SPU2 DMA Write > Missaligned TARGET! Core: %d  TSA: 0x%x  TDA: 0x%x Size: 0x%x\n", core, Cores[core].TSA, Cores[core].TDA, size );
+	}
+#endif
 
 	if(core==0)
 		DMA4LogWrite(pMem,size<<1);
@@ -218,49 +215,91 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 	if(MsgDMA()) ConLog(" * SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
 
-	// Optimized!
-	// Instead of checking the adpcm cache for every word, we check for every block.
+	// split the DMA copy into two chunks if needed.
+
+	// Instead of checking the adpcm cache for every word, we check for every ADPCM block.
 	// That way we can use the optimized fast write instruction to commit the memory.
 
-	Cores[core].TDA = Cores[core].TSA & 0xfffff;
+	Cores[core].TSA &= 0xfffff;
 
+	u32 buff1end = Cores[core].TSA + size;
+	u32 buff2end=0;
+	if( buff1end > 0xfffff )
 	{
-		u32 nexta = Cores[core].TDA >> 3;
-		u32 flagbitmask = 1ul << ( nexta & 31 );
-		nexta >>= 5;
+		buff2end = buff1end - 0xfffff;
+		buff1end = 0xfffff;
+	}
 
-		// Traverse from start to finish in 8 word blocks,
-		// and clear the pcm cache flag for each block.
-		u32 stmp = ( size + 7 ) >> 3;		// round up
-		for( i=0; i<stmp; i++ )
+	// Ideally we would only mask bits actually written to, but it's a complex algorithm
+	// that is way more work than it's worth.  Instead we just mask out entire bytes, which
+	// means that in rare cases some games may end up having to re-decode some blocks
+	// unnecessarily.  To minimize the chance of that, I mask at the byte level instead
+	// of the dword level, so at worst there are only 7 extra blocks to the front or back
+	// of the DMA transfer that get cleared when they shouldn't be.
+
+	// First Branch needs cleared:
+	// It starts at TSA and goes to buff1end.
+
+	const u32 buff1size = (buff1end-Cores[core].TSA);
+	memcpy( GetMemPtr( Cores[core].TSA ), pMem, buff1size*2 );
+	
+	// Note: When clearing cache flags, the *endpoint* needs to be rounded upward.
+	// just rounding the count upward could cause problems if both start and end
+	// points are mis-aligned.
+
+	const u32 roundUp = (1<<(3+3))-1;
+	const u32 flagTSA = Cores[core].TSA >> (3+3);
+	const u32 flagTDA = (buff1end + roundUp) >> (3 + 3);	// endpoint, rounded up
+	u8* cache = (u8*)pcm_cache_flags;
+	
+	memset( &cache[flagTSA], 0, flagTDA - flagTSA );
+
+	if( buff2end > 0 )
+	{
+		// second branch needs cleared:
+		// It starts at the beginning of memory and moves forward to buff2end
+
+		const u32 endpt2 = (buff2end + roundUp) >> (3+3);
+		memcpy( GetMemPtr( 0 ), &pMem[buff1size], buff2end*2 );
+		memset( pcm_cache_flags, 0, endpt2 );
+
+		Cores[core].TDA = buff2end;
+
+		if(Cores[core].IRQEnable)
 		{
-			pcm_cache_flags[nexta] &= ~flagbitmask;
-			flagbitmask <<= 1;
-			if( flagbitmask == 0 )
+			// Flag interrupt?
+			// If IRQA occurs between start and dest, flag it.
+			// Since the buffer wraps, the conditional might seem odd, but it works.
+
+			if( ( Cores[core].IRQA >= Cores[core].TSA ) ||
+				( Cores[core].IRQA <= Cores[core].TDA ) )
 			{
-				nexta++;
-				flagbitmask = 1;
+				Spdif.Info=4<<core;
+				SetIrqCall();
+			}
+		}
+	}
+	else
+	{
+		// Buffer doesn't wrap/overflow!
+		// Just set the TDA and check for an IRQ...
+		
+		Cores[core].TDA = buff1end;
+
+		if(Cores[core].IRQEnable)
+		{
+			// Flag interrupt?
+			// If IRQA occurs between start and dest, flag it:
+
+			if( ( Cores[core].IRQA >= Cores[core].TSA ) &&
+				( Cores[core].IRQA <= Cores[core].TDA ) )
+			{
+				Spdif.Info=4<<core;
+				SetIrqCall();
 			}
 		}
 	}
 
-	for(i=0;i<size;i++)
-	{
-		*GetMemPtr( Cores[core].TDA ) = pMem[i];
-		//spu2M_Write( Cores[core].TDA, pMem[i] );
-		Cores[core].TDA++;
-		Cores[core].TDA&=0xfffff;
-	}
-
-	i=Cores[core].TSA;
-	Cores[core].TDA=Cores[core].TSA+size;
-	if((Cores[core].TDA>0xFFFFF)||((Cores[core].TDA>=Cores[core].IRQA)&&(i<=Cores[core].IRQA))) {
-		if(Cores[core].IRQEnable)
-		{
-			Spdif.Info=4<<core;
-			SetIrqCall();
-		}
-	}
 	Cores[core].TSA=Cores[core].TDA&0xFFFF0;
 	Cores[core].DMAICounter=size;
 	Cores[core].TADR=Cores[core].MADR+(size<<1);
@@ -321,7 +360,6 @@ void SPU2writeDMA(int core, u16* pMem, u32 size)
 	}
 	else
 	{
-
 		DoDMAWrite(core,pMem,size);
 	}
 	Cores[core].Regs.STATX &= ~0x80;
@@ -382,3 +420,4 @@ void CALLBACK SPU2interruptDMA7() {
 	Cores[1].Regs.STATX |= 0x80;
 	//Cores[1].Regs.ATTR &= ~0x30;
 }
+

@@ -22,9 +22,6 @@
 #include "regtable.h"
 #include "svnrev.h"
 
-// DLL Interface exportation:
-
-
 void StartVoices(int core, u32 value);
 void StopVoices(int core, u32 value);
 
@@ -456,7 +453,8 @@ EXPORT_C_(s32) SPU2open(void *pDsp)
 
 	FileLog("[%10d] SPU2 Open\n",Cycles);
 
-	/*if(debugDialogOpen==0)
+	/*
+	if(debugDialogOpen==0)
 	{
 		hDebugDialog = CreateDialogParam(hInstance,MAKEINTRESOURCE(IDD_DEBUG),0,DebugProc,0);
 		ShowWindow(hDebugDialog,SW_SHOWNORMAL);
@@ -656,7 +654,7 @@ void UpdateDebugDialog()
 				{
 					printf(" *** Warning! Core %d Voice %d: StartA should be %06x, and is %06x.\n",
 						c,v,vcd.lastSetStartA,vc.StartA);
-					vcd.lastSetStartA = vcd.lastSetStartA;
+					vcd.lastSetStartA = vc.StartA;
 				}
 			}
 		}
@@ -715,12 +713,11 @@ void __fastcall TimeUpdate(u32 cClocks)
 		lClocks = cClocks-dClocks;
 	}
 
+	//UpdateDebugDialog();
+
 	//Update Mixing Progress
 	while(dClocks>=TickInterval)
 	{
-		
-		//UpdateDebugDialog();
-
 		if(has_to_call_irq)
 		{
 			ConLog(" * SPU2: Irq Called (%04x).\n",Spdif.Info);
@@ -889,7 +886,7 @@ void UpdateSpdifMode()
 
 __forceinline void RegLog(int level, char *RName,u32 mem,u32 core,u16 value) 
 {
-	if(level>1)
+	if( level > 1 )
 		FileLog("[%10d] SPU2 write mem %08x (core %d, register %s) value %04x\n",Cycles,mem,core,RName,value);
 }
 
@@ -1601,12 +1598,11 @@ static __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 			break;
 
 		default:
-			SPU2writeLog(mem,value);
-			
 			*(regtable[mem>>1])=value;
 			break;
 	}
 
+	SPU2writeLog(mem,value);
 	if ((mem>=0x07C0) && (mem<0x07CE)) 
 	{
 		UpdateSpdifMode();
@@ -1932,7 +1928,7 @@ void VoiceStart(int core,int vc)
 	{
 		if(Cores[core].Voices[vc].StartA&7)
 		{
-			printf(" *** Missaligned StartA %05x!\n",Cores[core].Voices[vc].StartA);
+			fprintf( stderr, " *** Missaligned StartA %05x!\n",Cores[core].Voices[vc].StartA);
 			Cores[core].Voices[vc].StartA=(Cores[core].Voices[vc].StartA+0xFFFF8)+0x8;
 		}
 
