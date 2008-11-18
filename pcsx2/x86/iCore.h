@@ -323,9 +323,9 @@ extern EEINST* g_pCurInstInfo; // info for the cur instruction
 void _recClearInst(EEINST* pinst);
 
 // returns the number of insts + 1 until written (0 if not written)
-int _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
+u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 // returns the number of insts + 1 until used (0 if not used)
-int _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
+u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 void _recFillRegister(EEINST* pinst, int type, int reg, int write);
 
 #define EEINST_ISLIVE64(reg) (g_pCurInstInfo->regs[reg] & (EEINST_LIVE0|EEINST_LIVE1))
