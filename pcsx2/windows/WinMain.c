@@ -724,6 +724,24 @@ void RunGui() {
 	}
 }
 
+static int m_ReturnToGame = 0;		// set to 1 to exit the RunGui message pump
+static int m_GameInProgress = 0;	// if set to 1, Run->Execute will return instead of starting a new cpu->Execute session.
+
+void RunGuiAndReturn() {
+    MSG msg;
+
+	m_ReturnToGame = 0;
+    while( !m_ReturnToGame ) {
+		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		Sleep(10);
+	}
+}
+
+
 static int shiftkey = 0;
 void CALLBACK KeyEvent(keyEvent* ev)
 {
@@ -786,8 +804,10 @@ void CALLBACK KeyEvent(keyEvent* ev)
 				}
 
 				CreateMainWindow(SW_SHOWNORMAL);
-				RunGui();
+				m_GameInProgress = 1;
 				nDisableSC = 0;
+				RunGuiAndReturn();
+				m_GameInProgress = 0;
 			}
 			break;
 
@@ -1155,9 +1175,18 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				return TRUE;
 
 			case ID_RUN_EXECUTE:
-				if(needReset == 1) RunExe = 1;
+				if(needReset == 1)
+				{
+					RunExe = 1;
+					m_ReturnToGame = 0;
+					m_GameInProgress = 0;
+				}
+				else if( m_GameInProgress )
+					m_ReturnToGame = 1;
+
 				efile = 0;
-				RunExecute(1);
+				RunExecute( !m_ReturnToGame );
+				
 				return TRUE;
 
 			case ID_FILE_RUNCD:
