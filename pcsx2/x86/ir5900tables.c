@@ -682,13 +682,18 @@ void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 
 		case 24: // mult
 			// can do unsigned mult only if HI isn't used
+
+			//using this allocation for temp causes the emu to crash
 			//temp = (pinst->regs[XMMGPR_HI]&(EEINST_LIVE0|EEINST_LIVE1))?0:EEINST_MMX;
 			temp = 0;
 			rpropSetWrite(XMMGPR_LO, EEINST_LIVE1);
 			rpropSetWrite(XMMGPR_HI, EEINST_LIVE1);
 			rpropSetWrite(_Rd_, EEINST_LIVE1);
 		
-			// fixme - temp is always 0, so I doubt the next three lines are right.
+			// fixme - temp is always 0, so I doubt the next three lines are right. (arcum42)
+
+			// Yep, its wrong. Using always 0 causes the wrong damage calculations in Soul Nomad.
+			// This bug i very important to fix!! (rama)
 			rpropSetRead(_Rs_, temp);
 			rpropSetRead(_Rt_, temp);
 			pinst->info |= temp;
