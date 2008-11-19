@@ -5633,14 +5633,6 @@ void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 		FreezeMMXRegs(0);
 	    
 	    GSRINGBUF_DONECOPY(pmem, size);
-
-        if( !CHECK_DUALCORE ) {
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-            SetEvent(g_hGsEvent);
-#else
-            pthread_cond_signal(&g_condGsEvent);
-#endif
-        }
 	}
 }
 

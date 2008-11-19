@@ -133,14 +133,6 @@ void WriteFIFO(u32 mem, u64 *value) {
 			data[1] = value[1];
 			GSgifTransferDummy(2, (u32*)data, 1);
 			GSRINGBUF_DONECOPY((u8*)data, 16);
-
-			if( !CHECK_DUALCORE ) {
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-				SetEvent(g_hGsEvent);
-#else
-				pthread_cond_signal(&g_condGsEvent);
-#endif
-			}
 		}
 		else {
 			FreezeXMMRegs(1);

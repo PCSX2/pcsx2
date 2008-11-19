@@ -97,15 +97,6 @@ extern u8* g_pGSWritePos;
 
 //#endif
 
-// mem and size are the ones from GSRingBufCopy
-static __forceinline void GSRINGBUF_DONECOPY(const u8 *mem, u32 size) { 
-	u8* temp = (u8*)(mem) + (size); 
-	assert( temp <= GS_RINGBUFFEREND); 
-//	MTGS_RECWRITE(mem, size); 
-	if( temp == GS_RINGBUFFEREND ) temp = GS_RINGBUFFERBASE; 
-	InterlockedExchangePointer((void**)&g_pGSWritePos, temp);	
-}
-
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
 
 #define GS_SETEVENT() SetEvent(g_hGsEvent)
@@ -125,6 +116,8 @@ void gsInit();
 void gsShutdown();
 void gsReset();
 
+// mem and size are the ones from GSRingBufCopy
+extern void GSRINGBUF_DONECOPY(const u8 *mem, u32 size);
 extern void gsWaitGS();
 
 // used for resetting GIF fifo

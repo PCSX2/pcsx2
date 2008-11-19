@@ -863,7 +863,8 @@ void ProcessFKeys(int fkey, int shift)
 			break;	
 
 		case 4:
-
+		{
+			const char* limitMsg;
 #ifdef PCSX2_NORECBUILD
             SysPrintf("frame skipping only valid for recompiler build\n");
 #else
@@ -882,33 +883,37 @@ void ProcessFKeys(int fkey, int shift)
 					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 					else GSsetFrameSkip(0);
 					Cpu->ExecuteVU1Block = recExecuteVU1Block;
-					if(SPU2setTimeStretcher != NULL)
-						SPU2setTimeStretcher(1);
-					SysPrintf("Normal - Frame Limit Mode Changed\n");
+					limitMsg = "None/Normal";
 					break;
 				case PCSX2_FRAMELIMIT_LIMIT:
 					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 					else GSsetFrameSkip(0);
 					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 					//Quality option, turn off timestretching on the SPU2 plugin
-					if(SPU2setTimeStretcher != NULL)
-						SPU2setTimeStretcher(0);
-					SysPrintf("Limit - Frame Limit Mode Changed\n");
+					limitMsg = "Limit";
 					break;
 				case PCSX2_FRAMELIMIT_SKIP:
 					Cpu->ExecuteVU1Block = recExecuteVU1Block;
-					if(SPU2setTimeStretcher != NULL)
-						SPU2setTimeStretcher(1);
-					SysPrintf("Frame Skip - Frame Limit Mode Changed\n");
-					break;
 				case PCSX2_FRAMELIMIT_VUSKIP:
-					if(SPU2setTimeStretcher != NULL)
-						SPU2setTimeStretcher(1);
-					SysPrintf("VU Skip - Frame Limit Mode Changed\n");
+					if( GSsetFrameSkip == NULL )
+					{
+						Config.Options &= ~PCSX2_FRAMELIMIT_MASK;
+						SysPrintf("Notice: GS Plugin does not support frameskipping.\n");
+						limitMsg = "None/Normal";
+					}
+					else
+					{
+						limitMsg = (CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_SKIP) ? "Skip" : "VUSkip";
+					}
+
 					break;
 			}
+
+			SysPrintf("Frame Limit Mode Changed: %s\n", limitMsg );
+
 			// [Air]: Do we really want to save runtime changes to frameskipping?
-            //SaveConfig();
+			//SaveConfig();
+		}
 #endif
 			break;
 		// note: VK_F5-VK_F7 are reserved for GS

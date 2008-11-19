@@ -253,6 +253,19 @@ static __forceinline void gsSetEventWait()
 	}
 }
 
+// mem and size are the ones from GSRingBufCopy
+void GSRINGBUF_DONECOPY(const u8 *mem, u32 size)
+{
+	u8* temp = (u8*)(mem) + (size); 
+
+	assert( temp <= GS_RINGBUFFEREND); 
+
+	if( temp == GS_RINGBUFFEREND ) temp = GS_RINGBUFFERBASE; 
+	InterlockedExchangePointer((void**)&g_pGSWritePos, temp);
+	if( !CHECK_DUALCORE ) GS_SETEVENT();
+}
+
+
 void gsShutdown()
 {
 	if( CHECK_MULTIGS ) {
@@ -310,80 +323,88 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 	// is reading it.
 
 	u8* writepos = g_pGSWritePos;
-	u8* tempbuf;
 	assert( size < GS_RINGBUFFERSIZE );
 	assert( writepos < GS_RINGBUFFEREND );
 	assert( ((uptr)writepos & 15) == 0 );
 	assert( (size&15) == 0);
 
 	size += 16;
-	tempbuf = *(volatile PU8*)&g_pGSRingPos;
-	if( writepos + size > GS_RINGBUFFEREND ) {
-	
-		// skip to beginning
-		while( writepos < tempbuf || tempbuf == GS_RINGBUFFERBASE ) {
-			gsSetEventWait();
-			tempbuf = *(volatile PU8*)&g_pGSRingPos;
-		}
+	if( writepos + size > GS_RINGBUFFEREND )
+	{
+		// If the incoming packet doesn't fit, then start over from
+		// the start of the ring buffer (it's a lot easier than trying
+		// to wrap the packet around the end of the buffer).
 
-		// notify GS
-		if( writepos != GS_RINGBUFFEREND ) {
-			InterlockedExchangePointer((void**)writepos, GS_RINGTYPE_RESTART);
-		}
+		// We have to be careful not to leapfrog our readposition.  If it's 
+		// greater than the current write position then we need to stall
+		// until it loops around:
+
+		//const u8* readps = *(volatile PU8*)&g_pGSRingPos;
+		while( *(volatile PU8*)&g_pGSRingPos > writepos ) // && readpos == GS_RINGBUFFERBASE )
+			gsSetEventWait();
+
+		GSRingBufSimplePacket( GS_RINGTYPE_RESTART, 0, 0, 0 );
+
+		writepos = GS_RINGBUFFERBASE;
+
+		// stall until the read position is past the end of our incoming block:
+		while( writepos+size >= *(volatile PU8*)&g_pGSRingPos )
+			gsSetEventWait();
 
 		InterlockedExchangePointer((void**)&g_pGSWritePos, GS_RINGBUFFERBASE);
-		writepos = GS_RINGBUFFERBASE;
 	}
-    else if( writepos + size == GS_RINGBUFFEREND ) {
-        while(tempbuf == GS_RINGBUFFERBASE && tempbuf != writepos) {
-			gsSetEventWait();
-            tempbuf = *(volatile PU8*)&g_pGSRingPos;
-        }
-    }
+    else if( writepos + size == GS_RINGBUFFEREND )
+	{
+		// Yay.  Perfect fit.  What are the odds?
+		// ... apparently very slim because the old code just performed the equivalent
+		// of a gsWaitGS (stalling the GS until the ring buffer emptied completely) and
+		// no one noticed enough to fix it. :)
 
-	while( writepos < tempbuf && (writepos+size >= tempbuf || (writepos+size == GS_RINGBUFFEREND && tempbuf == GS_RINGBUFFERBASE)) ) {
-		gsSetEventWait();
-		tempbuf = *(volatile PU8*)&g_pGSRingPos;
+		while( writepos < *(volatile PU8*)&g_pGSRingPos )
+			gsSetEventWait();
+    }
+	else
+	{
+		// two conditionals in the following while() loop, so precache
+		// the readpos for more efficient behavior:
+		const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
+
+		// generic gs wait/stall.
+		// Waits until the readpos is outside the scope of the write area.
+		while( writepos < readpos && writepos+size >= readpos ) // || (writepos+size == GS_RINGBUFFEREND && readpos == GS_RINGBUFFERBASE)) ) {
+		{
+			gsSetEventWait();
+			readpos = *(volatile PU8*)&g_pGSRingPos;
+		}
 	}
 
 	// just copy
-	*(u32*)writepos = type|(((size-16)>>4)<<16);
+	*(u32*)writepos = type | (((size-16)>>4)<<16);
 	return writepos+16;
 }
 
 void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 {
 	u8* writepos = g_pGSWritePos;
-	u8* tempbuf;
+	u8* future_writepos = writepos+16;
 
-	assert( writepos + 16 <= GS_RINGBUFFEREND );
+	assert( future_writepos <= GS_RINGBUFFEREND );
 
-	tempbuf = *(volatile PU8*)&g_pGSRingPos;
-	while(writepos < tempbuf && writepos+16 >= tempbuf ) {
+    if( future_writepos == GS_RINGBUFFEREND )
+        future_writepos = GS_RINGBUFFERBASE;
+
+	while( future_writepos == *(volatile PU8*)&g_pGSRingPos )
 		gsSetEventWait();
-		tempbuf = *(volatile PU8*)&g_pGSRingPos;
-	}
 
 	*(u32*)writepos = type;
 	*(u32*)(writepos+4) = data0;
 	*(u32*)(writepos+8) = data1;
 	*(u32*)(writepos+12) = data2;
 
-	writepos += 16;
-    if( writepos == GS_RINGBUFFEREND ) {
-        
-        while(tempbuf == GS_RINGBUFFERBASE && tempbuf != g_pGSWritePos) {
-			gsSetEventWait();
-            tempbuf = *(volatile PU8*)&g_pGSRingPos;
-        }
+	InterlockedExchangePointer((void**)&g_pGSWritePos, future_writepos);
 
-        writepos = GS_RINGBUFFERBASE;
-    }
-	InterlockedExchangePointer((void**)&g_pGSWritePos, writepos);
-
-	if( !CHECK_DUALCORE ) {
+	if( !CHECK_DUALCORE )
 		GS_SETEVENT();
-	}
 }
 
 void gsReset()
@@ -939,8 +960,6 @@ static __forceinline void WRITERING_DMA(u32 *pMem, u32 qwc) {
 			GSRINGBUF_DONECOPY(pgsmem, sizetoread); 
 			GSgifTransferDummy(2, pMem, qwc); 
 		} 
-		
-		if( !CHECK_DUALCORE ) GS_SETEVENT(); 
 	} 
 	else { 
 		GSGIFTRANSFER3(pMem, qwc); 
@@ -1500,7 +1519,8 @@ void* GSThreadProc(void* lpParam)
 					break;
 
 				case GS_RINGTYPE_FRAMESKIP:
-					GSsetFrameSkip(*(int*)(g_pGSRingPos+4));
+					if( GSsetFrameSkip != NULL )
+						GSsetFrameSkip(*(int*)(g_pGSRingPos+4));
 					break;
 				case GS_RINGTYPE_MEMWRITE8:
 					g_MTGSMem[*(int*)(g_pGSRingPos+4)] = *(u8*)(g_pGSRingPos+8);
