@@ -125,6 +125,8 @@ void gsInit();
 void gsShutdown();
 void gsReset();
 
+extern void gsWaitGS();
+
 // used for resetting GIF fifo
 void gsGIFReset();
 

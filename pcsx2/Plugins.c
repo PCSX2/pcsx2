@@ -634,8 +634,6 @@ OpenError:
     return -1;
 }
 
-extern void gsWaitGS();
-
 void ClosePlugins()
 {
 	gsWaitGS();

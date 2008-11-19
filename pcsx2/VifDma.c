@@ -2232,7 +2232,6 @@ __forceinline void vif1Interrupt() {
 	cpuRegs.interrupt &= ~(1 << 1);
 }
 
-extern void gsWaitGS();
 extern u32 g_MTGSVifStart, g_MTGSVifCount;
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
 void dmaVIF1()

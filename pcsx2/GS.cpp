@@ -122,7 +122,6 @@ u32 g_MTGSDebug = 0, g_MTGSId = 0;
 #endif
 
 u32 CSRw;
-void gsWaitGS();
 
 extern uptr pDsp;
 typedef u8* PU8;
@@ -183,7 +182,10 @@ void gsInit()
 			exit(0);
 		}
 
-        memcpy(g_MTGSMem, PS2MEM_GS, sizeof(g_MTGSMem));
+		// I guess the InterlockedExchange below is just for practice...
+		// ... seeing how we haven't even STARTED the thread yet!
+
+		memcpy(g_MTGSMem, PS2MEM_GS, sizeof(g_MTGSMem));
         InterlockedExchangePointer((volatile PVOID*)&g_pGSWritePos, GS_RINGBUFFERBASE);
 
         if( GSsetBaseMem != NULL )
@@ -223,16 +225,32 @@ void gsInit()
 	}
 }
 
-void gsWaitGS()
+__forceinline void gsWaitGS()
 {
-    if( CHECK_DUALCORE ) {
+    // [Air] : I'm pretty sure there's no harm in doing doing timeslices
+	// from the main thread in dual-core mode now, thanks to Sleep(0).
+
+	// fixme - This may not be true under linux, which uses usleep(500), who's
+	// behavior likely does not mimic Sleep(0).  Ideally the usleep(500) should
+	// be replaced with something that matches Sleep(0) behavior.
+
+	/*if( CHECK_DUALCORE ) {
         while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos );
     }
-    else {
-	    while( g_pGSRingPos != g_pGSWritePos ) {
-			_TIMESLICE();
-	    }
-    }
+    else {*/
+
+	while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos )
+		_TIMESLICE();
+}
+
+// Sets the gsEvent flag and releases a timeslice.
+// For use in loops that wait on the GS thread to do certain things.
+static __forceinline void gsSetEventWait()
+{
+	if( !CHECK_DUALCORE ) {
+		GS_SETEVENT();
+		_TIMESLICE();
+	}
 }
 
 void gsShutdown()
@@ -286,6 +304,11 @@ void gsShutdown()
 
 u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 {
+	// Note on volatiles: g_pGSWritePos is not modified by the GS thread,
+	// so there's no need to use volatile reads here.  We still have to use
+	// interlocked exchanges when we modify it, however, since the GS thread
+	// is reading it.
+
 	u8* writepos = g_pGSWritePos;
 	u8* tempbuf;
 	assert( size < GS_RINGBUFFERSIZE );
@@ -299,14 +322,8 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 	
 		// skip to beginning
 		while( writepos < tempbuf || tempbuf == GS_RINGBUFFERBASE ) {
-			if( !CHECK_DUALCORE ) {
-				GS_SETEVENT();
-				_TIMESLICE();
-			}
+			gsSetEventWait();
 			tempbuf = *(volatile PU8*)&g_pGSRingPos;
-
-			if( tempbuf == *(volatile PU8*)&g_pGSWritePos )
-				break;
 		}
 
 		// notify GS
@@ -318,25 +335,15 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 		writepos = GS_RINGBUFFERBASE;
 	}
     else if( writepos + size == GS_RINGBUFFEREND ) {
-        while(tempbuf == GS_RINGBUFFERBASE && tempbuf != *(volatile PU8*)&g_pGSWritePos) {
-            if( !CHECK_DUALCORE ) {
-				GS_SETEVENT();
-				_TIMESLICE();
-			}
-
+        while(tempbuf == GS_RINGBUFFERBASE && tempbuf != writepos) {
+			gsSetEventWait();
             tempbuf = *(volatile PU8*)&g_pGSRingPos;
         }
     }
 
 	while( writepos < tempbuf && (writepos+size >= tempbuf || (writepos+size == GS_RINGBUFFEREND && tempbuf == GS_RINGBUFFERBASE)) ) {
-		if( !CHECK_DUALCORE ) {
-			GS_SETEVENT();
-			_TIMESLICE();
-		}
+		gsSetEventWait();
 		tempbuf = *(volatile PU8*)&g_pGSRingPos;
-
-		if( tempbuf == *(volatile PU8*)&g_pGSWritePos )
-			break;
 	}
 
 	// just copy
@@ -352,18 +359,9 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	assert( writepos + 16 <= GS_RINGBUFFEREND );
 
 	tempbuf = *(volatile PU8*)&g_pGSRingPos;
-	if( writepos < tempbuf && writepos+16 >= tempbuf ) {
-		
-		do {
-			if( !CHECK_DUALCORE ) {
-				GS_SETEVENT();
-				_TIMESLICE();
-			}
-			tempbuf = *(volatile PU8*)&g_pGSRingPos;
-
-			if( tempbuf == *(volatile PU8*)&g_pGSWritePos )
-				break;
-		} while(writepos < tempbuf && writepos+16 >= tempbuf );
+	while(writepos < tempbuf && writepos+16 >= tempbuf ) {
+		gsSetEventWait();
+		tempbuf = *(volatile PU8*)&g_pGSRingPos;
 	}
 
 	*(u32*)writepos = type;
@@ -374,12 +372,8 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	writepos += 16;
     if( writepos == GS_RINGBUFFEREND ) {
         
-        while(tempbuf == GS_RINGBUFFERBASE && tempbuf != *(volatile PU8*)&g_pGSWritePos) {
-            if( !CHECK_DUALCORE ) {
-				GS_SETEVENT();
-				_TIMESLICE();
-			}
-
+        while(tempbuf == GS_RINGBUFFERBASE && tempbuf != g_pGSWritePos) {
+			gsSetEventWait();
             tempbuf = *(volatile PU8*)&g_pGSRingPos;
         }
 
@@ -1429,8 +1423,6 @@ void* GSThreadProc(void* lpParam)
 #endif
 
 	SysPrintf("Starting GS thread\n");
-    u8* writepos;
-	u32 tag;
 	u32 counter = 0;
 
 	while(!gsHasToExit) {
@@ -1459,200 +1451,185 @@ void* GSThreadProc(void* lpParam)
 		}
 #endif
 
-		if( g_pGSRingPos != g_pGSWritePos ) {
+		// note: gsRingPos is intentionally not volatile, because it should only
+		// ever be modified by this thread.
+		while( g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos)
+		{
+			assert( g_pGSRingPos < GS_RINGBUFFEREND );
 
-			do {
-				writepos = *(volatile PU8*)&g_pGSWritePos;
+			u32 tag = *(u32*)g_pGSRingPos;
+			u32 ringposinc = 16;
 
-				while( g_pGSRingPos != writepos ) {
-					
-					assert( g_pGSRingPos < GS_RINGBUFFEREND );
-					// process until writepos
-					tag = *(u32*)g_pGSRingPos;
-					
-					switch( tag&0xffff ) {
-						case GS_RINGTYPE_RESTART:
-							InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
+			switch( tag&0xffff )
+			{
+				case GS_RINGTYPE_RESTART:
+					InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
 
-							if( GS_RINGBUFFERBASE == writepos )
-								goto ExitGS;
+					/*if( GS_RINGBUFFERBASE == writepos )
+					{
+						// force the loop to break:
+						writepos = g_pGSRingPos;
+						break;
+					}*/
 
-							continue;
+					continue;
 
-						case GS_RINGTYPE_P1:
-                        {
-                            int qsize = (tag>>16);
+				case GS_RINGTYPE_P1:
+                {
+                    int qsize = (tag>>16);
 //							MTGS_RECREAD(g_pGSRingPos+16, (qsize<<4));
-                            // make sure that tag>>16 is the MAX size readable
-							GSgifTransfer1((u32*)(g_pGSRingPos+16) - 0x1000 + 4*qsize, 0x4000-qsize*16);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
-							break;
-                        }
-						case GS_RINGTYPE_P2:
+                    // make sure that tag>>16 is the MAX size readable
+					GSgifTransfer1((u32*)(g_pGSRingPos+16) - 0x1000 + 4*qsize, 0x4000-qsize*16);
+					ringposinc += qsize<<4;
+					break;
+                }
+				case GS_RINGTYPE_P2:
 //							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
-							GSgifTransfer2((u32*)(g_pGSRingPos+16), tag>>16);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
-							break;
-						case GS_RINGTYPE_P3:
+					GSgifTransfer2((u32*)(g_pGSRingPos+16), tag>>16);
+					ringposinc += (tag>>16)<<4;
+					break;
+				case GS_RINGTYPE_P3:
 //							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
-							GSgifTransfer3((u32*)(g_pGSRingPos+16), tag>>16);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16 + ((tag>>16)<<4));
-							break;
-						case GS_RINGTYPE_VSYNC:
-							GSvsync(*(int*)(g_pGSRingPos+4));
-                            if( PAD1update != NULL ) PAD1update(0);
-                            if( PAD2update != NULL ) PAD2update(1);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-							break;
+					GSgifTransfer3((u32*)(g_pGSRingPos+16), tag>>16);
+					ringposinc += (tag>>16)<<4;
+					break;
+				case GS_RINGTYPE_VSYNC:
+					GSvsync(*(int*)(g_pGSRingPos+4));
+                    if( PAD1update != NULL ) PAD1update(0);
+                    if( PAD2update != NULL ) PAD2update(1);
+					break;
 
-						case GS_RINGTYPE_FRAMESKIP:
-							GSsetFrameSkip(*(int*)(g_pGSRingPos+4));
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-							break;
-						case GS_RINGTYPE_MEMWRITE8:
-							g_MTGSMem[*(int*)(g_pGSRingPos+4)] = *(u8*)(g_pGSRingPos+8);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-							break;
-						case GS_RINGTYPE_MEMWRITE16:
-							*(u16*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u16*)(g_pGSRingPos+8);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-							break;
-						case GS_RINGTYPE_MEMWRITE32:
-							*(u32*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u32*)(g_pGSRingPos+8);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-							break;
-						case GS_RINGTYPE_MEMWRITE64:
-							*(u64*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u64*)(g_pGSRingPos+8);
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-							break;
+				case GS_RINGTYPE_FRAMESKIP:
+					GSsetFrameSkip(*(int*)(g_pGSRingPos+4));
+					break;
+				case GS_RINGTYPE_MEMWRITE8:
+					g_MTGSMem[*(int*)(g_pGSRingPos+4)] = *(u8*)(g_pGSRingPos+8);
+					break;
+				case GS_RINGTYPE_MEMWRITE16:
+					*(u16*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u16*)(g_pGSRingPos+8);
+					break;
+				case GS_RINGTYPE_MEMWRITE32:
+					*(u32*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u32*)(g_pGSRingPos+8);
+					break;
+				case GS_RINGTYPE_MEMWRITE64:
+					*(u64*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u64*)(g_pGSRingPos+8);
+					break;
 
-						case GS_RINGTYPE_VIFFIFO:
-						{
-							u64* pMem;
-							assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
-							assert( vif1ch->qwc == (tag>>16) );
+				case GS_RINGTYPE_VIFFIFO:
+				{
+					u64* pMem;
+					assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
+					assert( vif1ch->qwc == (tag>>16) );
 
-							assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
-							pMem = (u64*)dmaGetAddr(vif1ch->madr);
+					assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
+					pMem = (u64*)dmaGetAddr(vif1ch->madr);
 
-							if (pMem == NULL) {
-								psHu32(DMAC_STAT)|= 1<<15;
-								break;
-							}
+					if (pMem == NULL) {
+						psHu32(DMAC_STAT)|= 1<<15;
+						continue;	// don't increment gsRingPos
+					}
 
-							if( GSreadFIFO2 == NULL ) {
-								int size;
-								for (size=(tag>>16); size>0; size--) {
-									GSreadFIFO((u64*)&PS2MEM_HW[0x5000]);
-									pMem[0] = psHu64(0x5000);
-									pMem[1] = psHu64(0x5008); pMem+= 2;
-								}
-							}
-							else {
-								GSreadFIFO2(pMem, tag>>16); 
-								
-								// set incase read
-								psHu64(0x5000) = pMem[2*(tag>>16)-2];
-								psHu64(0x5008) = pMem[2*(tag>>16)-1];
-							}
+					if( GSreadFIFO2 == NULL ) {
+						int size;
+						for (size=(tag>>16); size>0; size--) {
+							GSreadFIFO((u64*)&PS2MEM_HW[0x5000]);
+							pMem[0] = psHu64(0x5000);
+							pMem[1] = psHu64(0x5008); pMem+= 2;
+						}
+					}
+					else {
+						GSreadFIFO2(pMem, tag>>16); 
+						
+						// set incase read
+						psHu64(0x5000) = pMem[2*(tag>>16)-2];
+						psHu64(0x5008) = pMem[2*(tag>>16)-1];
+					}
 
-							assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
-							assert( vif1ch->qwc == (tag>>16) );
+					assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
+					assert( vif1ch->qwc == (tag>>16) );
 
 //							tag = (tag>>16) + (cpuRegs.cycle- *(u32*)(g_pGSRingPos+8));
 //							if( tag & 0x80000000 ) tag = 0;
-							vif1ch->madr += vif1ch->qwc * 16;
-							if(vif1Regs->mskpath3 == 0)vif1Regs->stat&= ~0x1f000000;
+					vif1ch->madr += vif1ch->qwc * 16;
+					if(vif1Regs->mskpath3 == 0)vif1Regs->stat&= ~0x1f000000;
 
-							CPU_INT(1, 0); // since gs thread always lags real thread
-                            vif1ch->qwc = 0;
+					// fixme : calling CPU_INT could create a race condition if it runs parallel
+					// with the EE/IOP code also calling CPU_INT.
 
-							InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-							break;
-						}
+					CPU_INT(1, 0); // since gs thread always lags real thread
+                    vif1ch->qwc = 0;
 
-                        case GS_RINGTYPE_SAVE:
-                        {
-                            gzFile f = *(gzFile*)(g_pGSRingPos+4);
-                            freezeData fP;
-
-                            if (GSfreeze(FREEZE_SIZE, &fP) == -1) {
-                                gzclose(f);
-                                InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-                                break;
-                            }
-                            fP.data = (s8*)malloc(fP.size);
-                            if (fP.data == NULL) {
-                                InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-                                break;
-                            }
-                            
-                            if (GSfreeze(FREEZE_SAVE, &fP) == -1) {
-                                gzclose(f);
-                                InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-                                break;
-                            }
-                            
-                            gzwrite(f, &fP.size, sizeof(fP.size));
-                            if (fP.size) {
-                                gzwrite(f, fP.data, fP.size);
-                                free(fP.data);
-                            }
-
-                            InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-                            break;
-                        }
-                        case GS_RINGTYPE_LOAD:
-                        {
-                            gzFile f = *(gzFile*)(g_pGSRingPos+4);
-                            freezeData fP;
-
-                            gzread(f, &fP.size, sizeof(fP.size));
-                            if (fP.size) {
-                                fP.data = (s8*)malloc(fP.size);
-                                if (fP.data == NULL) {
-                                    InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-                                    break;
-                                }
-
-                                gzread(f, fP.data, fP.size);
-                            }
-                            if (GSfreeze(FREEZE_LOAD, &fP) == -1) {
-                                // failed
-                            }
-                            if (fP.size)
-                                free(fP.data);
-
-                            InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-                            break;
-                        }
-                        case GS_RINGTYPE_RECORD:
-                        {
-                            int record = *(int*)(g_pGSRingPos+4);
-                            if( GSsetupRecording != NULL ) GSsetupRecording(record, NULL);
-                            if( SPU2setupRecording != NULL ) SPU2setupRecording(record, NULL);
-                            InterlockedExchangeAdd((long*)&g_pGSRingPos, 16);
-                            break;
-                        }
-						default:
-
-							SysPrintf("GSThreadProc, bad packet writepos: %x g_pGSRingPos: %x, g_pGSWritePos: %x\n", writepos, g_pGSRingPos, g_pGSWritePos);
-							assert(0);
-							g_pGSRingPos = g_pGSWritePos;
-							//flushall();
-					}
-
-					assert( g_pGSRingPos <= GS_RINGBUFFEREND );
-					if( g_pGSRingPos == GS_RINGBUFFEREND )
-						InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
-
-					if( g_pGSRingPos == g_pGSWritePos ) {
-						break;
-					}
+					break;
 				}
-ExitGS:
-				;
-			} while(g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos);
+
+                case GS_RINGTYPE_SAVE:
+                {
+                    gzFile f = *(gzFile*)(g_pGSRingPos+4);
+                    freezeData fP;
+
+                    if (GSfreeze(FREEZE_SIZE, &fP) == -1) {
+                        gzclose(f);
+                        break;
+                    }
+                    fP.data = (s8*)malloc(fP.size);
+                    if (fP.data == NULL) {
+                        break;
+                    }
+                    
+                    if (GSfreeze(FREEZE_SAVE, &fP) == -1) {
+                        gzclose(f);
+                        break;
+                    }
+                    
+                    gzwrite(f, &fP.size, sizeof(fP.size));
+                    if (fP.size) {
+                        gzwrite(f, fP.data, fP.size);
+                        free(fP.data);
+                    }
+                    break;
+                }
+                case GS_RINGTYPE_LOAD:
+                {
+                    gzFile f = *(gzFile*)(g_pGSRingPos+4);
+                    freezeData fP;
+
+                    gzread(f, &fP.size, sizeof(fP.size));
+                    if (fP.size) {
+                        fP.data = (s8*)malloc(fP.size);
+                        if (fP.data == NULL)
+                            break;
+
+                        gzread(f, fP.data, fP.size);
+                    }
+                    if (GSfreeze(FREEZE_LOAD, &fP) == -1) {
+                        // failed
+                    }
+                    if (fP.size)
+                        free(fP.data);
+
+                    break;
+                }
+                case GS_RINGTYPE_RECORD:
+                {
+                    int record = *(int*)(g_pGSRingPos+4);
+                    if( GSsetupRecording != NULL ) GSsetupRecording(record, NULL);
+                    if( SPU2setupRecording != NULL ) SPU2setupRecording(record, NULL);
+                    break;
+                }
+				default:
+
+					SysPrintf("GSThreadProc, bad packet (%x) at g_pGSRingPos: %x, g_pGSWritePos: %x\n", tag, g_pGSRingPos, g_pGSWritePos);
+					assert(0);
+					g_pGSRingPos = g_pGSWritePos;
+					continue;
+					//flushall();
+			}
+
+			InterlockedExchangeAdd( (long*)&g_pGSRingPos, ringposinc );
+
+			assert( g_pGSRingPos <= GS_RINGBUFFEREND );
+			if( g_pGSRingPos == GS_RINGBUFFEREND )
+				InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
 		}
 
 		// process vu1

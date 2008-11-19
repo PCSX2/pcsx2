@@ -456,8 +456,6 @@ const char Pcsx2Header[32] = STATE_VERSION " PCSX2 v" PCSX2_VERSION;
 	if (fP.size) free(fP.data);
 
 
-extern void gsWaitGS();
-
 int SaveState(const char *file) {
 
 	gzFile f;
