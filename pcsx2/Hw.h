@@ -39,7 +39,11 @@ extern u64 *psHD;
 #define psHu64(mem)	(*(u64*)&PS2MEM_HW[(mem) & 0xffff])
 
 extern u32 g_nextBranchCycle;
-extern void CPU_INT( u32 n, u32 ecycle );
+extern int cpuSetNextBranch( u32 startCycle, s32 delta );
+extern int cpuSetNextBranchDelta( s32 delta );
+extern int cpuTestCycle( u32 startCycle, s32 delta );
+
+extern void CPU_INT( u32 n, s32 ecycle );
 
 // VIF0   -- 0x10004000 -- psH[0x4000]
 // VIF1   -- 0x10005000 -- psH[0x5000]
@@ -404,7 +408,7 @@ int  hwMFIFOWrite(u32 addr, u8 *data, u32 size);
 int  hwDmacSrcChainWithStack(DMACh *dma, int id);
 int  hwDmacSrcChain(DMACh *dma, int id);
 
-void  intcInterrupt();
-void  dmacInterrupt();
+extern void  intcInterrupt();
+extern void  dmacInterrupt();
 
 #endif /* __HW_H__ */

@@ -131,7 +131,7 @@ void cpuReset()
 	fpuRegs.fprc[0]   = 0x00002e00; // fpu Revision..
 	fpuRegs.fprc[31]  = 0x01000001; // fpu Status/Control
 
-    vu0Reset();
+	vu0Reset();
     vu1Reset();  
 	hwReset();
 	vif0Reset();
@@ -325,16 +325,44 @@ void cpuTestMissingHwInts() {
 	}
 }
 
+// sets a branch test to occur some time from an arbitrary starting point.
+__forceinline int cpuSetNextBranch( u32 startCycle, s32 delta )
+{
+	// typecast the conditional to signed so that things don't blow up
+	// if startCycle is greater than our next branch cycle.
+
+	if( (int)(g_nextBranchCycle - startCycle) > delta )
+	{
+		g_nextBranchCycle = startCycle + delta;
+		return 1;
+	}
+	return 0;
+}
+
+// sets a branch to occur some time from the current cycle
+__forceinline int cpuSetNextBranchDelta( s32 delta )
+{
+	return cpuSetNextBranch( cpuRegs.cycle, delta );
+}
+
+// tests the cpu cycle agaisnt the given start and delta values.
+// Returns true if the delta time has passed.
+__forceinline int cpuTestCycle( u32 startCycle, s32 delta )
+{
+	// typecast the conditional to signed so that things don't explode
+	// if the startCycle is ahead of our current cpu cycle.
+
+	return (int)(cpuRegs.cycle - startCycle) >= delta;
+}
+
 static __forceinline void TESTINT( u8 n, void (*callback)() )
 {
 	if( !(cpuRegs.interrupt & (1 << n)) ) return;
 
-	if( (cpuRegs.cycle - cpuRegs.sCycle[n]) >= cpuRegs.eCycle[n] )
-	{
+	if( cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
 		callback();
-	}
-	else if( (g_nextBranchCycle - cpuRegs.sCycle[n]) > cpuRegs.eCycle[n] )
-		g_nextBranchCycle = cpuRegs.sCycle[n] + cpuRegs.eCycle[n];
+	else
+		cpuSetNextBranch( cpuRegs.sCycle[n], cpuRegs.eCycle[n] );
 }
 
 static __forceinline void _cpuTestInterrupts()
@@ -373,14 +401,13 @@ u32 s_iLastPERFCycle[2] = {0,0};
 
 static __forceinline void _cpuTestTIMR()
 {
-	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
-	s_iLastCOP0Cycle = cpuRegs.cycle;
+	// The interpreter and recompiler both re-calculate these values whenever they
+	// are read, so updating them at regular intervals is merely a common courtesy.
+	// For that reason they're part of the Counters event, since it's garaunteed
+	// to be called at least 100 times a second.
 
-	// [Air] : Are these necessary?  The recompiler and interpreter code both appear
-	// to recalculate them whenever they're read.  (although if they were not read
-	// for a long time they could overflow).  Maybe these checks could be moved to
-	// the Ints or Counters so they they get called less frequently, but still get
-	// called enough to avoid overflows.
+	// Updating them more frequently is pointless and, in fact, they could
+	// just as well be updated 20 times a second if it were convenient to do so.
 
 	if((cpuRegs.PERF.n.pccr & 0x800003E0) == 0x80000020) {
 		cpuRegs.PERF.n.pcr0 += cpuRegs.cycle-s_iLastPERFCycle[0];
@@ -391,6 +418,9 @@ static __forceinline void _cpuTestTIMR()
 		s_iLastPERFCycle[1] = cpuRegs.cycle;
 	}
 
+	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
+	s_iLastCOP0Cycle = cpuRegs.cycle;
+
 	if ( (cpuRegs.CP0.n.Status.val & 0x8000) &&
 		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 ) {
 		SysPrintf("timr intr: %x, %x\n", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
@@ -398,16 +428,9 @@ static __forceinline void _cpuTestTIMR()
 	}
 }
 
-// maximum wait between branches.  Lower values provide a tighter synchronization between
+// Maximum wait between branches.  Lower values provide a tighter synchronization between
 // the EE and the IOP, but incur more execution overhead.
 #define EE_WAIT_CYCLE 2048
-
-// maximum wait between branches when EE/IOP sync is tightened via g_eeTightenSync.
-// Lower values don't always make games better, since places where this value is set
-// will have to use higher numbers to achieve the same cycle count.
-#define EE_ACTIVE_CYCLE 192
-#define EE_ACTIVE_CYCLE_SUB (EE_WAIT_CYCLE - EE_ACTIVE_CYCLE)
-
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
@@ -416,13 +439,79 @@ u32 g_nextBranchCycle = 0;
 // synchronization).  Value decremented each branch test.
 u32 g_eeTightenSync = 0;
 
-#if !defined( PCSX2_NORECBUILD ) && !defined( PCSX2_PUBLIC )
+// Shared portion of the branch test, called from both the Interpreter
+// and the recompiler.  (moved here to help alleviate redundant code)
+static __forceinline void _cpuBranchTest_Shared()
+{
+	g_nextBranchCycle = cpuRegs.cycle + EE_WAIT_CYCLE;
+
+	EEsCycle += cpuRegs.cycle - EEoCycle;
+	EEoCycle = cpuRegs.cycle;
+
+	iopBranchAction = ( EEsCycle > 0 );
+
+	// ---- Counters -------------
+
+	rcntUpdate_hScanline();
+
+	if( cpuTestCycle( nextsCounter, nextCounter ) )
+	{
+		rcntUpdate();
+		_cpuTestTIMR();
+	}
+
+	//#ifdef CPU_LOG
+	//	cpuTestMissingHwInts();
+	//#endif
+
+	// ---- Interrupts -------------
+
+	if( cpuRegs.interrupt )
+		_cpuTestInterrupts();
+
+	// ---- IOP -------------
+	// * It's important to run a psxBranchTest before calling ExecuteBlock. This
+	//   is because the IOP does not always perform branch tests before returning
+	//   (during the prev branch) and also so it can act on the state the EE has
+	//   given it before executing any code.
+	//
+	// * The IOP cannot always be run.  If we run IOP code every time through the
+	//   cpuBranchTest, the IOP generally starts to run way ahead of the EE.
+	//
+	// * However! The IOP should be run during certain important events: vsync/hsync
+	//   events and IOP interrupts / exceptions -- even if it's already getting
+	//   a little ahead of the EE.  the iopBranchAction global will flag true if
+	//   something like that happens.
+
+	psxBranchTest();
+
+	if( iopBranchAction )
+	{
+		//if( EEsCycle < -400 )
+		//	SysPrintf( " IOP ahead by: %d\n", -EEsCycle );
+
+		psxCpu->ExecuteBlock();
+	}
+
+	// The IOP cound be running ahead of us, so adjust the iop's next branch by its
+	// relative position to the EE (via EEsCycle)
+	cpuSetNextBranchDelta( ((g_psxNextBranchCycle-psxRegs.cycle)*8) - EEsCycle );
+
+	// Apply the hsync counter's nextCycle
+	cpuSetNextBranch( counters[4].sCycle, counters[4].CycleT );
+
+	// Apply other counter nextCycles
+	cpuSetNextBranch( nextsCounter, nextCounter );
+}
+
+#ifndef PCSX2_NORECBUILD
+#ifndef PCSX2_PUBLIC
 extern u8 g_globalXMMSaved;
 X86_32CODE(extern u8 g_globalMMXSaved;)
 #endif
+#endif
 
 u32 g_MTGSVifStart = 0, g_MTGSVifCount=0;
-extern void gsWaitGS();
 
 void cpuBranchTest()
 {
@@ -436,66 +525,18 @@ void cpuBranchTest()
 	g_EEFreezeRegs = 0;
 #endif
 
-	g_nextBranchCycle = cpuRegs.cycle + EE_WAIT_CYCLE;
-	if( g_eeTightenSync != 0 )
-	{
-		// This means we're running "sync-sensitive" code.
-		// tighten up the EE's cycle rate to ensure a more responsive
-		// EE/IOP operation:
-
-		g_eeTightenSync--;
-		g_nextBranchCycle -= EE_ACTIVE_CYCLE_SUB;
-	}
-
-	// ---- Counters -------------
-
-	if( (cpuRegs.cycle - nextsCounter) >= nextCounter )
-		rcntUpdate();
-
-	if( (g_nextBranchCycle-nextsCounter) >= nextCounter )
-		g_nextBranchCycle = nextsCounter+nextCounter;
-
-	// ---- Interrupts -------------
-
-	if( cpuRegs.interrupt )
-		_cpuTestInterrupts();
+	// Perform counters, ints, and IOP updates:
+	_cpuBranchTest_Shared();
 
 	// ---- MTGS -------------
 	// stall mtgs if it is taking too long
 
     if( g_MTGSVifCount > 0 ) {
-        if( cpuRegs.cycle-g_MTGSVifStart > g_MTGSVifCount ) {
+        if( (int)(cpuRegs.cycle-g_MTGSVifStart) > g_MTGSVifCount ) {
             gsWaitGS();
             g_MTGSVifCount = 0;
         }
     }
-
-//#ifdef CPU_LOG
-//	cpuTestMissingHwInts();
-//#endif
-	_cpuTestTIMR();
-
-	// ---- IOP -------------
-	// Signal for an immediate branch test! This is important! The IOP must
-	// be able to act on the state the EE has given it before executing any
-	// additional code.
-
-	psxBranchTest();
-
-	EEsCycle += cpuRegs.cycle - EEoCycle;
-	EEoCycle = cpuRegs.cycle;
-
-	psxCpu->ExecuteBlock();
-
-	// IOP Synchronization:
-	// If the IOP needs to branch soon then so should the EE.
-	// As the master of all, the EE should look out for its children and
-	// assure them the love they deserve:
-	{
-		u32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
-		if( g_nextBranchCycle - cpuRegs.cycle > iopDelta )
-			g_nextBranchCycle = cpuRegs.cycle + iopDelta;
-	}
 
 	// ---- VU0 -------------
 
@@ -514,80 +555,62 @@ void cpuBranchTest()
 #endif
 }
 
-__forceinline void CPU_INT( u32 n, u32 ecycle)
+__forceinline void CPU_INT( u32 n, s32 ecycle)
 {
 	cpuRegs.interrupt|= 1 << n;
 	cpuRegs.sCycle[n] = cpuRegs.cycle;
 	cpuRegs.eCycle[n] = ecycle;
 
-	if( (g_nextBranchCycle - cpuRegs.sCycle[n]) <= cpuRegs.eCycle[n] ) return;
+	// Interrupt is happening soon: make sure both EE and IOP are aware.
 
-	// Interrupt is happening soon: make sure everyone's aware!
-	g_nextBranchCycle = cpuRegs.sCycle[n] + cpuRegs.eCycle[n];
-
-	// Optimization note: this method inlines nicely since 'n' is almost always a
-	// constant.  The following conditional optimizes to virtually nothing in most
-	// cases.
-
-	if( ( n == 3 || n == 4 || n == 30 || n == 31 ) &&
-		ecycle <= 28 && psxCycleEE > 0 )
+	if( ecycle <= 28 && psxCycleEE > 0 )
 	{
 		// If running in the IOP, force it to break immediately into the EE.
 		// the EE's branch test is due to run.
 
-		psxBreak += psxCycleEE;		// number of cycles we didn't run.
+		psxBreak += psxCycleEE;		// record the number of cycles the IOP didn't run.
 		psxCycleEE = 0;
-		if( n == 3 || n == 4 )
-			g_eeTightenSync += 1;		// only tighten IPU a bit, otherwise it's too slow!
-		else
-			g_eeTightenSync += 4;
 	}
+
+	cpuSetNextBranchDelta( cpuRegs.eCycle[n] );
 }
 
-static void _cpuTestINTC() {
-	if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401){
-		if	(psHu32(INTC_STAT) & psHu32(INTC_MASK)) {
-			if ((cpuRegs.interrupt & (1 << 30)) == 0) {
-				CPU_INT(30,4);
-			}
-		}
-	}
+__forceinline void cpuTestINTCInts() {
+	if( (cpuRegs.CP0.n.Status.val & 0x10407) != 0x10401 ) return;
+	if( (psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0 ) return;
+	if( cpuRegs.interrupt & (1 << 30) ) return;
+
+	// fixme: The counters code throws INT30's alot, and most of the time they're
+	// "late" already, so firing them immediately instead of after the next branch
+	// (in which case they'll be really late) would be a lot better in theory.
+	// However, setting this to zero for everything breaks games, so if it's done
+	// it needs to be done for counters only.
+
+	CPU_INT(30,4);
 }
 
-static void _cpuTestDMAC() {
-	if ((cpuRegs.CP0.n.Status.val & 0x10807) == 0x10801){
-		if	(psHu16(0xe012) & psHu16(0xe010) || 
-			 psHu16(0xe010) & 0x8000) {
-			if ( (cpuRegs.interrupt & (1 << 31)) == 0) {
-				CPU_INT(31, 4);
-			}
-		}
-	}
+__forceinline void cpuTestDMACInts() {
+	if ((cpuRegs.CP0.n.Status.val & 0x10807) != 0x10801) return;
+	if ( cpuRegs.interrupt & (1 << 31) ) return;
+
+	if ( ( (psHu16(0xe012) & psHu16(0xe010)) == 0) && 
+		 ( (psHu16(0xe010) & 0x8000) == 0) ) return;
+
+	CPU_INT(31, 4);
 }
 
-void cpuTestHwInts() {
-	//if ((cpuRegs.CP0.n.Status.val & 0x10007) != 0x10001) return;
-	_cpuTestINTC();
-	_cpuTestDMAC();
-	_cpuTestTIMR();
-}
-
-void cpuTestINTCInts() {
-	//if ((cpuRegs.CP0.n.Status.val & 0x10407) == 0x10401) {
-		_cpuTestINTC();
-	//}
-}
-
-void cpuTestDMACInts() {
-	//if ((cpuRegs.CP0.n.Status.val & 0x10807) == 0x10801) {
-		_cpuTestDMAC();
-	//}
-}
-
-void cpuTestTIMRInts() {
+// fixme: Unused code.  delete or find its true purpose?
+__forceinline void cpuTestTIMRInts() {
 	if ((cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001) {
 		_cpuTestTIMR();
 	}
+}
+
+// fixme: unused code.  delete or find its true purpose?
+void cpuTestHwInts() {
+	cpuTestINTCInts();
+	cpuTestDMACInts();
+	cpuTestTIMRInts();
 }
 
 void cpuExecuteBios()
@@ -601,41 +624,20 @@ void cpuExecuteBios()
 		case PCSX2_FRAMELIMIT_SKIP:
 		case PCSX2_FRAMELIMIT_VUSKIP:
 			if( GSsetFrameSkip == NULL )
+			{
 				Config.Options &= ~PCSX2_FRAMELIMIT_MASK;
+				SysPrintf("Notice: Disabling frameskip -- GS plugin does not support it.\n");
+			}
 			break;
 	}
 
-	SysPrintf("Using Frame Skipping: ");
-	switch(CHECK_FRAMELIMIT) {
-		case PCSX2_FRAMELIMIT_NORMAL: SysPrintf("Normal\n"); break;
-		case PCSX2_FRAMELIMIT_LIMIT: SysPrintf("Limit\n"); break;
-		case PCSX2_FRAMELIMIT_SKIP: SysPrintf("Skip\n"); break;
-		case PCSX2_FRAMELIMIT_VUSKIP: SysPrintf("VU Skip\n"); break;
-	}
-
-	//? if(CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_LIMIT)
-	{
-		extern u64 GetTickFrequency();
-		extern u64 iTicks;
-		if (Config.CustomFps > 0) {
-			iTicks = GetTickFrequency() / Config.CustomFps;
-			SysPrintf("Framelimiter rate updated (UpdateVSyncRate): %d fps\n", Config.CustomFps);
-		}
-		else if (Config.PsxType & 1) {
-			iTicks = (GetTickFrequency() / 5000) * 100;
-			SysPrintf("Framelimiter rate updated (UpdateVSyncRate): 50 fps\n");
-		}
-		else {
-			iTicks = (GetTickFrequency() / 5994) * 100;
-			SysPrintf("Framelimiter rate updated (UpdateVSyncRate): 59.94 fps\n");
-		}
-	}
-
+	UpdateVSyncRate();
 	SysPrintf("* PCSX2 *: ExecuteBios\n");
 
 	bExecBIOS = TRUE;
 	while (cpuRegs.pc != 0x00200008 &&
 		   cpuRegs.pc != 0x00100008) {
+		g_nextBranchCycle = cpuRegs.cycle;
 		Cpu->ExecuteBlock();
 	}
 
@@ -687,30 +689,9 @@ void IntcpuBranchTest()
 	g_EEFreezeRegs = 0;
 #endif
 
-    // Interpreter uses a high-resolution wait cycle all the time:
-	g_nextBranchCycle = cpuRegs.cycle + 256;
+	// Perform counters, ints, and IOP updates:
+	_cpuBranchTest_Shared();
 
-	if ((cpuRegs.cycle - nextsCounter) >= nextCounter)
-		rcntUpdate();
-
-	if (cpuRegs.interrupt)
-		_cpuTestInterrupts();
-
-	if( (g_nextBranchCycle-nextsCounter) >= nextCounter )
-		g_nextBranchCycle = nextsCounter+nextCounter;
-
-//#ifdef CPU_LOG
-//	cpuTestMissingHwInts();
-//#endif
-	_cpuTestTIMR();
-
-	psxBranchTest();
-
-	EEsCycle += cpuRegs.cycle - EEoCycle;
-	EEoCycle = cpuRegs.cycle;
-
-	psxCpu->ExecuteBlock();
-	
 	if (VU0.VI[REG_VPU_STAT].UL & 0x1) {
 		Cpu->ExecuteVU0Block();
 	}

@@ -19,16 +19,21 @@
 #ifndef __PSXCOUNTERS_H__
 #define __PSXCOUNTERS_H__
 
+// fixme: sCycle and Cycle are unused.
+// Can't remove them without making a new savestate version though.
+
 typedef struct {
 	u64 count, target;
     u32 mode;
 	u32 rate, interrupt, otarget;
 	u32 sCycle, Cycle;
-	u32 sCycleT, CycleT;
+	u32 sCycleT;
+	s32 CycleT;
 } psxCounter;
 
 extern psxCounter psxCounters[8];
-extern u32 psxNextCounter, psxNextsCounter;
+extern s32 psxNextCounter;
+extern u32 psxNextsCounter;
 
 void psxRcntInit();
 void psxRcntUpdate();

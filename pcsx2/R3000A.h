@@ -127,8 +127,8 @@ typedef struct psxRegisters_t {
 	u32 code;			/* The instruction */
 	u32 cycle;
 	u32 interrupt;
-	u32 sCycle[64];
-	u32 eCycle[64];
+	u32 sCycle[64];		// start cycle for signaled ints
+	s32 eCycle[64];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
 	u32 _msflag[32];
 	u32 _smflag[32];
 } psxRegisters;
@@ -212,5 +212,9 @@ void psxException(u32 code, u32 step);
 void psxBranchTest();
 void psxExecuteBios();
 void psxRestartCPU();
+
+extern s32 psxNextCounter;
+extern u32 psxNextsCounter;
+extern int iopBranchAction;
 
 #endif /* __R3000A_H__ */

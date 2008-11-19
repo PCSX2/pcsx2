@@ -23,10 +23,13 @@
 #include "PsxCommon.h"
 #include "Misc.h"
 
-// used for constant propagation
 R3000Acpu *psxCpu;
+
+// used for constant propagation
 u32 g_psxConstRegs[32];
 u32 g_psxHasConstReg, g_psxFlushedConstReg;
+
+// Controls when branch tests are performed.
 u32 g_psxNextBranchCycle = 0;
 
 // This value is used when the IOP execution is broken to return contorl to the EE.
@@ -39,12 +42,18 @@ s32 psxBreak = 0;
 // control is returned to the EE.
 s32 psxCycleEE = -1;
 
+int iopBranchAction = 0;
+
 
 PCSX2_ALIGNED16(psxRegisters psxRegs);
 
 int psxInit()
 {
 	psxCpu = CHECK_EEREC ? &psxRec : &psxInt;
+
+	g_psxNextBranchCycle = 8;
+	psxBreak = 0;
+	psxCycleEE = -1;
 
 #ifdef PCSX2_DEVBUILD
 	Log=0;
@@ -144,52 +153,68 @@ void psxException(u32 code, u32 bd) {
 	}*/
 }
 
-__forceinline void PSX_INT( int n, u32 ecycle )
+__forceinline void psxSetNextBranch( u32 startCycle, s32 delta )
+{
+	//assert( startCycle <= psxRegs.cycle );
+	// typecast the conditional to signed so that things don't blow up
+	// if startCycle is greater than our next branch cycle.
+
+	if( (int)(g_psxNextBranchCycle - startCycle) > delta )
+		g_psxNextBranchCycle = startCycle + delta;
+}
+
+__forceinline void psxSetNextBranchDelta( s32 delta )
+{
+	psxSetNextBranch( psxRegs.cycle, delta );
+}
+
+__forceinline int psxTestCycle( u32 startCycle, s32 delta )
+{
+	// typecast the conditional to signed so that things don't explode
+	// if the startCycle is ahead of our current cpu cycle.
+
+	return (int)(psxRegs.cycle - startCycle) >= delta;
+}
+
+__forceinline void PSX_INT( int n, s32 ecycle )
 {
 	psxRegs.interrupt |= 1 << n;
 
 	psxRegs.sCycle[n] = psxRegs.cycle;
 	psxRegs.eCycle[n] = ecycle;
 
-	if( (g_psxNextBranchCycle - psxRegs.sCycle[n]) <= psxRegs.eCycle[n] ) return;
+	// Interrupt is happening soon: make sure everyone is aware (including the EE!)
 
-	// Interrupt is happening soon: make sure everyone is aware (includeing the EE!)
-	g_psxNextBranchCycle = psxRegs.sCycle[n] + psxRegs.eCycle[n];
+	psxSetNextBranchDelta( ecycle );
 
 	if( psxCycleEE < 0 )
 	{
 		// The EE called this int, so inform it to branch as needed:
 
-		u32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
-		if( g_nextBranchCycle - cpuRegs.cycle > iopDelta )
-		{
-			// Optimization note:  This method inlines witn 'n' as a constant, so the
-			// following conditionals will optimize nicely.
-
-			g_nextBranchCycle = cpuRegs.cycle + iopDelta;
-			if( n > 12 ) g_eeTightenSync += 5;
-			if( n >= 19 ) g_eeTightenSync += 2;
-		}
+		s32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
+		cpuSetNextBranchDelta( iopDelta );
 	}
 }
 
+static __forceinline void PSX_TESTINT( u32 n, void (*callback)(), int runIOPcode )
+{
+	if( !(psxRegs.interrupt & (1 << n)) ) return;
 
-#define PSX_TESTINT(n, callback) \
-	if (psxRegs.interrupt & (1 << n)) { \
-		if ((int)(psxRegs.cycle - psxRegs.sCycle[n]) >= psxRegs.eCycle[n]) { \
-			callback(); \
-		} \
-		else if( (int)(g_psxNextBranchCycle - psxRegs.sCycle[n]) > psxRegs.eCycle[n] ) \
-			g_psxNextBranchCycle = psxRegs.sCycle[n] + psxRegs.eCycle[n]; \
+	if( psxTestCycle( psxRegs.sCycle[n], psxRegs.eCycle[n] ) )
+	{
+		callback();
+		//if( runIOPcode ) iopBranchAction = 1;
 	}
+	else
+		psxSetNextBranch( psxRegs.sCycle[n], psxRegs.eCycle[n] );
+}
 
 static __forceinline void _psxTestInterrupts()
 {
-
-	PSX_TESTINT(9, sif0Interrupt);	// SIF0
-	PSX_TESTINT(10, sif1Interrupt);	// SIF1
-	PSX_TESTINT(16, sioInterrupt);
-	PSX_TESTINT(19, cdvdReadInterrupt);
+	PSX_TESTINT(9, sif0Interrupt, 1);	// SIF0
+	PSX_TESTINT(10, sif1Interrupt, 1);	// SIF1
+	PSX_TESTINT(16, sioInterrupt, 0);
+	PSX_TESTINT(19, cdvdReadInterrupt, 1);
 
 	// Profile-guided Optimization (sorta)
 	// The following ints are rarely called.  Encasing them in a conditional
@@ -197,24 +222,27 @@ static __forceinline void _psxTestInterrupts()
 
 	if( psxRegs.interrupt & ( (3ul<<11) | (3ul<<20) | (3ul<<17) ) )
 	{
-		PSX_TESTINT(17, cdrInterrupt);
-		PSX_TESTINT(18, cdrReadInterrupt);
-		PSX_TESTINT(11, psxDMA11Interrupt);	// SIO2
-		PSX_TESTINT(12, psxDMA12Interrupt);	// SIO2
-		PSX_TESTINT(20, dev9Interrupt);
-		PSX_TESTINT(21, usbInterrupt);
+		PSX_TESTINT(11, psxDMA11Interrupt,0);	// SIO2
+		PSX_TESTINT(12, psxDMA12Interrupt,0);	// SIO2
+		PSX_TESTINT(17, cdrInterrupt,0);
+		PSX_TESTINT(18, cdrReadInterrupt,0);
+		PSX_TESTINT(20, dev9Interrupt,1);
+		PSX_TESTINT(21, usbInterrupt,1);
 	}
 }
 
 void psxBranchTest()
 {
-	if ((psxRegs.cycle - psxNextsCounter) >= psxNextCounter)
+	if( psxTestCycle( psxNextsCounter, psxNextCounter ) )
+	{
 		psxRcntUpdate();
+		iopBranchAction = 1;
+	}
 
 	// start the next branch at the next counter event by default
-	// the int code below will assign nearer branches if needed.
+	// the interrupt code below will assign nearer branches if needed.
 	g_psxNextBranchCycle = psxNextsCounter+psxNextCounter;
-
+	
 	if (psxRegs.interrupt) _psxTestInterrupts();
 
 	if (psxHu32(0x1078)) {
@@ -223,6 +251,7 @@ void psxBranchTest()
 			{
 //				PSXCPU_LOG("Interrupt: %x  %x\n", HWMu32(0x1070), HWMu32(0x1074));
 				psxException(0, 0);
+				iopBranchAction = 1;
 			}
 		}
 	}

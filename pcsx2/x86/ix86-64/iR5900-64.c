@@ -1776,16 +1776,15 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	//CALLFunc((uptr)testfpu);
 #endif
 
-	if( !USE_FAST_BRANCHES || cpuBranch ) {
-		MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
-		ADD32ItoR(ECX, s_nBlockCycles * EECYCLE_MULT); // NOTE: mulitply cycles here, 6/5 ratio stops pal ffx from randomly crashing, but crashes jakI
-		MOV32RtoM((uptr)&cpuRegs.cycle, ECX); // update cycles
-	}
-	else {
+	if( USE_FAST_BRANCHES && (cpuBranch==0) )
+	{
 		ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*9/8);
 		return;
 	}
 
+	MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
+	ADD32ItoR(ECX, s_nBlockCycles * EECYCLE_MULT);
+	MOV32RtoM((uptr)&cpuRegs.cycle, ECX); // update cycles
 	SUB32MtoR(ECX, (uptr)&g_nextBranchCycle);
 
 	// check if should branch

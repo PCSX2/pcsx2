@@ -59,7 +59,6 @@ extern "C" {
 #include "iR3000A.h"
 #include "PsxCounters.h"
 
-extern u32 psxNextCounter, psxNextsCounter;
 u32 g_psxMaxRecMem = 0;
 extern char *disRNameGPR[];
 extern char* disR3000Fasm(u32 code, u32 pc);
@@ -445,7 +444,6 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 }
 
 extern "C" void zeroEx();
-extern "C" u32 g_eeTightenSync;
 
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
@@ -459,11 +457,10 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
             _psxFlushCall(FLUSH_NODESTROY);
             CALLFunc((uptr)zeroEx);
 #endif
-			// Tighten up the EE/IOP sync (helps prevent crashes)
-			// [TODO] should probably invoke a branch test or EE code control break here,
-			//  but it would require the use of registers and I have no eff'ing idea how
-			//  the register allocation stuff works in the recompiler. :/
-			ADD32ItoM( (uptr)&g_eeTightenSync, 3 );
+			// Bios Call: Force the IOP to do a Branch Test ASAP.
+			// Important! This helps prevent game freeze-ups during boot-up and stage loads.
+			MOV32MtoR( EAX, (uptr)&psxRegs.cycle );
+			MOV32RtoM( (uptr)&g_psxNextBranchCycle, EAX );
 		}
         return;
     }
@@ -1021,7 +1018,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 	MOV32RtoM((uptr)&psxCycleEE, EAX);
 
-	j8Ptr[2] = JNS8( 0 );	// jump if no, on (psxCycleEE - blockCycles*8) < 0
+	j8Ptr[2] = JG8( 0 );	// jump if psxCycleEE > blockCycles*8
 
 	if( REC_INC_STACK )
         ADD64ItoR(ESP, REC_INC_STACK);
@@ -1072,9 +1069,12 @@ void rpsxSYSCALL()
 
 	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
 	j8Ptr[0] = JE8(0);
+
 	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
 	SUB32ItoM((uptr)&psxCycleEE, psxScaleBlockCycles()*8 );
 	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
+
+	// jump target for skipping blockCycle updates
 	x86SetJ8(j8Ptr[0]);
 
 	//if (!psxbranch) psxbranch = 2;
@@ -1116,9 +1116,6 @@ void psxRecompileNextInstruction(int delayslot)
 	static u8 s_bFlushReg = 1;
 
 	BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
-
-	//if( psxpc == 0x5264 )
-	//	SysPrintf( "Woot!" );
 
 	// need *ppblock != s_pCurBlock because of branches
 	if( pblock->pFnptr != 0 && pblock->startpc != s_pCurBlock->startpc ) {

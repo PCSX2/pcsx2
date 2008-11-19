@@ -78,7 +78,7 @@
 #define HW_DMA_PCR2  (psxHu32(0x1570))
 #define HW_DMA_ICR2  (psxHu32(0x1574))
 
-extern void PSX_INT( int n, u32 ecycle);
+extern void PSX_INT( int n, s32 ecycle);
 
 void psxHwReset();
 u8   psxHwRead8 (u32 add);

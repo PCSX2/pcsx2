@@ -19,11 +19,14 @@
 #ifndef __COUNTERS_H__
 #define __COUNTERS_H__
 
+// fixme: Cycle and sCycleT members are unused.
+//	      But they can't be removed without making a new savestate version.
 typedef struct {
 	u32 count, mode, target, hold;
 	u32 rate, interrupt;
 	u32 Cycle, sCycle;
-	u32 CycleT, sCycleT;
+	s32 CycleT;
+	u32 sCycleT;
 } Counter;
 
 //------------------------------------------------------------------
@@ -35,11 +38,7 @@ typedef struct {
 //------------------------------------------------------------------
 // NTSC Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
-#define SCANLINE_NTSC		(u32)(PS2CLK / 15734.25)//18743  //when using 59.94005994 it rounds to 15734.27 :p (rama)
-#define HRENDER_TIME_NTSC	(u32)(SCANLINE_NTSC / 2)//15528  //time from hblank end to hblank start (PS2CLK / 18991.368423051722991900181367568)
-#define HBLANK_TIME_NTSC	(u32)(SCANLINE_NTSC / 2)//3215   //time from hblank start to hblank end (PS2CLK / 91738.91105912572817760653181028)
-#define VSYNC_NTSC			(u32)(PS2CLK / 59.94)  //hz //59.94005994 is more precise
-#define VSYNC_HALF_NTSC		(u32)(VSYNC_NTSC / 2)  //hz
+#define FRAMERATE_NTSC			2997// frames per second * 100 (29.97)
 
 #define SCANLINES_TOTAL_NTSC	525 // total number of scanlines
 #define SCANLINES_VSYNC_NTSC	3   // scanlines that are used for syncing every half-frame
@@ -52,36 +51,13 @@ typedef struct {
 //------------------------------------------------------------------
 // PAL Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
-#define SCANLINE_PAL		(u32)(PS2CLK / 15625)//18874
-#define HRENDER_TIME_PAL	(u32)(SCANLINE_PAL / 2)//15335  //time from hblank end to hblank start
-#define HBLANK_TIME_PAL		(u32)(SCANLINE_PAL / 2)//3539   //time from hblank start to hblank end
-#define VSYNC_PAL			(u32)(PS2CLK / 50)	//hz
-#define VSYNC_HALF_PAL		(u32)(VSYNC_PAL / 2) //hz
+#define FRAMERATE_PAL			2500// frames per second * 100 (25)
 
-#define SCANLINES_TOTAL_PAL		625 // total number of scanlines
+#define SCANLINES_TOTAL_PAL		625 // total number of scanlines per frame
 #define SCANLINES_VSYNC_PAL		5   // scanlines that are used for syncing every half-frame
 #define SCANLINES_VRENDER_PAL	288 // scanlines in a half-frame (because of interlacing)
 #define SCANLINES_VBLANK1_PAL	19  // scanlines used for vblank1 (even interlace)
 #define SCANLINES_VBLANK2_PAL	20  // scanlines used for vblank2 (odd interlace)
-
-#define HSYNC_ERROR_PAL ((s32)VSYNC_PAL - (s32)((SCANLINE_PAL * SCANLINES_TOTAL_PAL) / 2))
-
-//------------------------------------------------------------------
-// Timing (PAL/NTSC) Information!!!
-//------------------------------------------------------------------
-#define SCANLINE_		((Config.PsxType&1) ? SCANLINE_PAL : SCANLINE_NTSC)
-#define HRENDER_TIME_	((Config.PsxType&1) ? HRENDER_TIME_PAL : HRENDER_TIME_NTSC)
-#define HBLANK_TIME_	((Config.PsxType&1) ? HBLANK_TIME_PAL : HBLANK_TIME_NTSC)
-#define VSYNC_			((Config.PsxType&1) ? VSYNC_PAL : VSYNC_NTSC)
-#define VSYNC_HALF_		((Config.PsxType&1) ? VSYNC_HALF_PAL : VSYNC_HALF_NTSC)
-
-#define HSYNC_ERROR		((Config.PsxType&1) ? HSYNC_ERROR_PAL : HSYNC_ERROR_NTSC)
-
-#define SCANLINES_TOTAL_	((Config.PsxType&1) ? SCANLINES_TOTAL_PAL : SCANLINES_TOTAL_NTSC)
-#define SCANLINES_VSYNC_	((Config.PsxType&1) ? SCANLINES_VSYNC_PAL : SCANLINES_VSYNC_NTSC)
-#define SCANLINES_VRENDER_	((Config.PsxType&1) ? SCANLINES_VRENDER_PAL : SCANLINES_VRENDER_NTSC)
-#define SCANLINES_VBLANK1_	((Config.PsxType&1) ? SCANLINES_VBLANK1_PAL : SCANLINES_VBLANK1_NTSC)
-#define SCANLINES_VBLANK2_	((Config.PsxType&1) ? SCANLINES_VBLANK2_PAL : SCANLINES_VBLANK2_NTSC)
 
 //------------------------------------------------------------------
 // vSync and hBlank Timing Modes
@@ -91,13 +67,19 @@ typedef struct {
 #define MODE_VSYNC		0x3		//Set during the Syncing Scanlines
 #define MODE_VBLANK1	0x0		//Set during the Blanking Scanlines (half-frame 1)
 #define MODE_VBLANK2	0x1		//Set during the Blanking Scanlines (half-frame 2)
+
 #define MODE_HRENDER	0x0		//Set for ~5/6 of 1 Scanline
 #define MODE_HBLANK		0x1		//Set for the remaining ~1/6 of 1 Scanline
 
 
 extern Counter counters[6];
-extern u32 nextCounter, nextsCounter;
+extern s32 nextCounter;		// delta until the next counter event (must be signed)
+extern u32 nextsCounter;
+extern u32 g_lastVSyncCycle;
+extern u32 g_deltaVSyncCycle;
 
+extern void rcntUpdate_hScanline();
+extern void rcntUpdate_vSync();
 extern void rcntUpdate();
 
 void rcntInit();

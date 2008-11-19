@@ -1140,7 +1140,7 @@ void hwWrite128(u32 mem, u64 *value) {
 	}
 }
 
-void  intcInterrupt() {
+__forceinline void  intcInterrupt() {
     cpuRegs.interrupt &= ~(1 << 30);
 	if ((cpuRegs.CP0.n.Status.val & 0x400) != 0x400) return;
 
@@ -1159,6 +1159,7 @@ void  intcInterrupt() {
 	cpuException(0x400, cpuRegs.branch);
 }
 
+// fixme: dead/unused code?
 void  dmacTestInterrupt() {
     cpuRegs.interrupt &= ~(1 << 31);
 	if ((cpuRegs.CP0.n.Status.val & 0x800) != 0x800) return;
@@ -1169,9 +1170,7 @@ void  dmacTestInterrupt() {
 	if((psHu32(DMAC_CTRL) & 0x1) == 0) return;
 }
 
-
-
-void  dmacInterrupt()
+__forceinline void  dmacInterrupt()
 {
     cpuRegs.interrupt &= ~(1 << 31);
     if ((cpuRegs.CP0.n.Status.val & 0x10807) != 0x10801) return;

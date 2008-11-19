@@ -385,7 +385,7 @@ void spyFunctions(){
 * Format:  OP rt, rs, immediate                          *
 *********************************************************/
 void psxADDI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) + _Imm_ ; }		// Rt = Rs + Im 	(Exception on Integer Overflow)
-void psxADDIU() { if (!_Rt_) { g_eeTightenSync+=3; zeroEx(); return; } _rRt_ = _u32(_rRs_) + _Imm_ ; }		// Rt = Rs + Im
+void psxADDIU() { if (!_Rt_) { g_psxNextBranchCycle=psxRegs.cycle; zeroEx(); return; } _rRt_ = _u32(_rRs_) + _Imm_ ; }		// Rt = Rs + Im
 void psxANDI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) & _ImmU_; }		// Rt = Rs And Im
 void psxORI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) | _ImmU_; }		// Rt = Rs Or  Im
 void psxXORI() 	{ if (!_Rt_) return; _rRt_ = _u32(_rRs_) ^ _ImmU_; }		// Rt = Rs Xor Im
