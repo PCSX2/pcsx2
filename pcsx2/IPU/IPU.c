@@ -1922,7 +1922,7 @@ void dmaIPU1() // toIPU
 
 extern void GIFdma();
 
-void ipu0Interrupt() {
+__forceinline void ipu0Interrupt() {
 	IPU_LOG("ipu0Interrupt: %x\n", cpuRegs.cycle);
 
 	if( g_nDMATransfer & IPU_DMA_FIREINT0 ) {
@@ -1953,7 +1953,7 @@ void ipu0Interrupt() {
 	cpuRegs.interrupt &= ~(1 << 3);
 }
 
-void ipu1Interrupt() {
+__forceinline void ipu1Interrupt() {
 	IPU_LOG("ipu1Interrupt %x:\n", cpuRegs.cycle);
 
 	if( g_nDMATransfer & IPU_DMA_FIREINT1 ) {

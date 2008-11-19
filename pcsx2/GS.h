@@ -157,7 +157,7 @@ void  gsConstRead64(u32 mem, int mmreg);
 void  gsConstRead128(u32 mem, int xmmreg);
 
 void gsIrq();
-void  gsInterrupt();
+extern void gsInterrupt();
 void dmaGIF();
 void GIFdma();
 void mfifoGIFtransfer(int qwc);

@@ -884,7 +884,8 @@ int cdvdReadSector() {
 	return 0;
 }
 
-void cdvdReadInterrupt() {
+// inlined due to being referenced in only one place.
+__forceinline void cdvdReadInterrupt() {
 
 	//SysPrintf("cdvdReadInterrupt %x %x %x %x %x\n", cpuRegs.interrupt, cdvd.Readed, cdvd.Reading, cdvd.nSectors, (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) *4);
 	cdvd.Ready   = 0x00;

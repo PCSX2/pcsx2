@@ -229,7 +229,7 @@ __forceinline void vif1FLUSH() {
 void vifDmaInit() {
 }
 
-__inline static int _limit( int a, int max ) {
+__forceinline static int _limit( int a, int max ) {
    return ( a > max ? max : a );
 }
 
@@ -833,7 +833,7 @@ void vif0Init()
 	SetNewMask(g_vif0Masks, g_vif0HasMask3, 0, 0xffffffff);
 }
 
-__inline void vif0UNPACK(u32 *data) {
+static __forceinline void vif0UNPACK(u32 *data) {
 	int vifNum;
     int vl, vn;
     int len;
@@ -870,7 +870,7 @@ __inline void vif0UNPACK(u32 *data) {
     vif0Regs->offset = 0;
 }
 
-__inline void _vif0mpgTransfer(u32 addr, u32 *data, int size) {
+static __forceinline void _vif0mpgTransfer(u32 addr, u32 *data, int size) {
 /*	SysPrintf("_vif0mpgTransfer addr=%x; size=%x\n", addr, size);
 	{
 		FILE *f = fopen("vu1.raw", "wb");
@@ -1510,7 +1510,7 @@ void vif1Init() {
 	SetNewMask(g_vif1Masks, g_vif1HasMask3, 0, 0xffffffff);
 }
 
-__inline void vif1UNPACK(u32 *data) {
+static __forceinline void vif1UNPACK(u32 *data) {
 	int vifNum;
     int vl, vn;
     //int len;
@@ -1551,7 +1551,7 @@ __inline void vif1UNPACK(u32 *data) {
    // vif1Regs->offset = 0;
 }
 
-__inline void _vif1mpgTransfer(u32 addr, u32 *data, int size) {
+static __forceinline void _vif1mpgTransfer(u32 addr, u32 *data, int size) {
 /*	SysPrintf("_vif1mpgTransfer addr=%x; size=%x\n", addr, size);
 	{
 		FILE *f = fopen("vu1.raw", "wb");
@@ -2158,7 +2158,7 @@ int _chainVIF1() {
 	return vif1.done;												   //Return Done
 }
 
-void vif1Interrupt() {
+__forceinline void vif1Interrupt() {
 	VIF_LOG("vif1Interrupt: %8.8x\n", cpuRegs.cycle);
 
 	g_vifCycles = 0;
@@ -2216,8 +2216,10 @@ void vif1Interrupt() {
 		
 		return;
 	}
+#ifndef PCSX2_PUBLIC
 	if(vif1ch->qwc > 0) SysPrintf("VIF1 Ending with QWC left\n");
 	if(vif1.cmd != 0) SysPrintf("vif1.cmd still set %x\n", vif1.cmd);
+#endif
 	//SysPrintf("VIF Interrupt\n");
 	//if((gif->chcr & 0x100) && vif1Regs->mskpath3) gsInterrupt();
 	prevviftag = NULL;

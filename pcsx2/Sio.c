@@ -497,7 +497,7 @@ void sioWriteCtrl16(unsigned short value) {
 	}
 }
 
-void  sioInterrupt() {
+__forceinline void  sioInterrupt() {
 	PAD_LOG("Sio Interrupt\n");
 	sio.StatReg|= IRQ;
 	psxHu32(0x1070)|=0x80;

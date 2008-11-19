@@ -887,7 +887,7 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 static int gspath3done=0;
 int gscycles = 0;
 
-void gsInterrupt() {
+__forceinline void gsInterrupt() {
 	GIF_LOG("gsInterrupt: %8.8x\n", cpuRegs.cycle);
 
 	if((gif->chcr & 0x100) == 0){
@@ -1361,11 +1361,13 @@ void gifMFIFOInterrupt()
 		mfifoGIFtransfer(0);
 		return;
 	}
+#ifndef PCSX2_PUBLIC
 	if(gifdone == 0 || gif->qwc > 0) {
-		SysPrintf("Shouldnt go here\n");
+		SysPrintf("gifMFIFO Panic > Shouldnt go here!\n");
 		cpuRegs.interrupt &= ~(1 << 11);
 		return;
 	}
+#endif
 	//if(gifqwc > 0)SysPrintf("GIF MFIFO ending with stuff in it %x\n", gifqwc);
 	gifqwc = 0;
 	gifdone = 0;

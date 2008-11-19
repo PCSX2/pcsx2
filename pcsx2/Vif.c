@@ -38,7 +38,7 @@ vifStruct *_vif;
 
 static int n;
 
-__inline static int _limit( int a, int max ) 
+__forceinline static int _limit( int a, int max ) 
 {
 	return ( a > max ? max : a );
 }
@@ -401,7 +401,7 @@ void UNPACK_V4_5(u32 *dest, u32 *data, int size) {
 static int cycles;
 extern int g_vifCycles;
 u16 vifqwc = 0;
-__inline int mfifoVIF1rbTransfer() {
+static __forceinline int mfifoVIF1rbTransfer() {
 	u32 maddr = psHu32(DMAC_RBOR);
 	u32 ret, msize = psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR) + 16;
 	u16 mfifoqwc = min(vif1ch->qwc, vifqwc);
@@ -447,7 +447,7 @@ __inline int mfifoVIF1rbTransfer() {
 	return ret;
 }
 
-__inline int mfifoVIF1chain() {
+static __forceinline int mfifoVIF1chain() {
 	int ret;
 	
 	/* Is QWC = 0? if so there is nothing to transfer */

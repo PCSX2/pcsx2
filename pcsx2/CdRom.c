@@ -91,34 +91,34 @@ unsigned long cdReadTime;// = ((PSXCLK / 75) / BIAS);
 #define CDR_INT(eCycle)    PSX_INT(17, eCycle)
 #define CDREAD_INT(eCycle) PSX_INT(18, eCycle)
 
-static __inline void StartReading(unsigned long type) {
+static __forceinline void StartReading(unsigned long type) {
    	cdr.Reading = type;
   	cdr.FirstSector = 1;
   	cdr.Readed = 0xff;
 	AddIrqQueue(READ_ACK, 0x800);
 }	
 
-static __inline void StopReading() {
+static __forceinline void StopReading() {
 	if (cdr.Reading) {
 		cdr.Reading = 0;
 		psxRegs.interrupt&=~0x40000;
 	}
 }
 
-static __inline void StopCdda() { 
+static __forceinline void StopCdda() { 
 	if (cdr.Play) { 
 		cdr.StatP&=~0x80; 
 		cdr.Play = 0; 
 	} 
 }
 
-__inline void SetResultSize(u8 size) {
+__forceinline void SetResultSize(u8 size) {
     cdr.ResultP = 0;
 	cdr.ResultC = size;
 	cdr.ResultReady = 1;
 }
 
-s32 MSFtoLSN(u8 *Time) {
+__forceinline s32 MSFtoLSN(u8 *Time) {
 	u32 lsn;
 
 	lsn = Time[2];

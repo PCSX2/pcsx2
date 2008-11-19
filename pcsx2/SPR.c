@@ -252,7 +252,7 @@ void dmaSPR0() { // fromSPR
 	
 }
 
-__inline static void SPR1transfer(u32 *data, int size) {
+__forceinline static void SPR1transfer(u32 *data, int size) {
 /*	{
 		int i;
 		for (i=0; i<size; i++) {

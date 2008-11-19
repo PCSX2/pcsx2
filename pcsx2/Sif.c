@@ -64,7 +64,7 @@ void sifInit() {
 	memset(&sif0, 0, sizeof(sif0));
 	memset(&sif1, 0, sizeof(sif1));
 }
-_inline void SIF0write(u32 *from, int words)
+static __forceinline void SIF0write(u32 *from, int words)
 {
 	/*if(FIFO_SIF0_W < (words+sif0.fifoWritePos)) {*/
 		wP0 = min((FIFO_SIF0_W-sif0.fifoWritePos),words);
@@ -89,7 +89,7 @@ _inline void SIF0write(u32 *from, int words)
 	}*/
 }
 
-_inline void SIF0read(u32 *to, int words)
+static __forceinline void SIF0read(u32 *to, int words)
 {
 	/*if(FIFO_SIF0_W < (words+sif0.fifoReadPos)) 
 	{*/
@@ -111,7 +111,7 @@ _inline void SIF0read(u32 *to, int words)
 	SIF_LOG("  SIF0 - %d = %d (pos=%d)\n", words, sif0.fifoSize, sif0.fifoReadPos);
 }
 
-_inline void SIF1write(u32 *from, int words)
+__forceinline void SIF1write(u32 *from, int words)
 {
 	/*if(FIFO_SIF1_W < (words+sif1.fifoWritePos)) 
 	{*/
@@ -137,7 +137,7 @@ _inline void SIF1write(u32 *from, int words)
 	}*/
 }
 
-_inline void SIF1read(u32 *to, int words)
+static __forceinline void SIF1read(u32 *to, int words)
 {
 	/*if(FIFO_SIF1_W < (words+sif1.fifoReadPos)) 
 	{*/
@@ -491,7 +491,7 @@ _inline void SIF1Dma()
 	} while (notDone);
 }
 
-_inline void  sif0Interrupt() {
+__forceinline void  sif0Interrupt() {
 	/*if (psxHu32(0x1070) & 8) {
 		PSX_INT(9, 0x800);
 		return 0;
@@ -504,7 +504,7 @@ _inline void  sif0Interrupt() {
 	//return 1;
 }
 
-_inline void  sif1Interrupt() {
+__forceinline void  sif1Interrupt() {
 	/*if (psxHu32(0x1070) & 8) {
 		PSX_INT(10, 0x800);
 		return 0;
@@ -517,7 +517,7 @@ _inline void  sif1Interrupt() {
 	//return 1;
 }
 
-_inline void  EEsif0Interrupt() {
+__forceinline void  EEsif0Interrupt() {
 	/*if (psHu32(DMAC_STAT) & (1<<5)) {
 		CPU_INT(5, 0x800);
 		return 0;
@@ -529,7 +529,7 @@ _inline void  EEsif0Interrupt() {
 	//return 1;
 }
 
-_inline void  EEsif1Interrupt() {
+__forceinline void  EEsif1Interrupt() {
 	/*if (psHu32(DMAC_STAT) & (1<<6)) {
 		CPU_INT(6, 0x800);
 		return 0;
@@ -541,6 +541,7 @@ _inline void  EEsif1Interrupt() {
 //	return 1;
 }
 
+// fixme: Unused code
 _inline void dmaSIF0() {
 	SIF_LOG("EE: dmaSIF0 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif0dma->chcr, sif0dma->madr, sif0dma->qwc, sif0dma->tadr);
@@ -565,6 +566,7 @@ _inline void dmaSIF0() {
 	}
 }
 
+// fixme: Unused code
 _inline void dmaSIF1() {
 	SIF_LOG("EE: dmaSIF1 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif1dma->chcr, sif1dma->madr, sif1dma->qwc, sif1dma->tadr);
@@ -591,6 +593,7 @@ _inline void dmaSIF1() {
 	
 }
 
+// fixme: Unused code
 _inline void dmaSIF2() {
 	SIF_LOG("dmaSIF2 chcr = %lx, madr = %lx, qwc  = %lx\n",
 			sif2dma->chcr, sif2dma->madr, sif2dma->qwc);

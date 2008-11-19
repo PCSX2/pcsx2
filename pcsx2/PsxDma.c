@@ -27,23 +27,23 @@
 
 int iopsifbusy[2] = { 0, 0 };
 void psxDma4(u32 madr, u32 bcr, u32 chcr) { // SPU
-	int size;
-        /*if (chcr & 0x400) SysPrintf("SPU 2 DMA 4 linked list chain mode! chcr = %x madr = %x bcr = %x\n", chcr, madr, bcr);
-        if (chcr & 0x40000000) SysPrintf("SPU 2 DMA 4 Unusual bit set on 'to' direction chcr = %x madr = %x bcr = %x\n", chcr, madr, bcr);
-        if ((chcr & 0x1) == 0) SysPrintf("SPU 2 DMA 4 loading from spu2 memory chcr = %x madr = %x bcr = %x\n", chcr, madr, bcr);*/
+	const int size = (bcr >> 16) * (bcr & 0xFFFF);			// Number of blocks to transfer
+
+    /*if (chcr & 0x400) SysPrintf("SPU 2 DMA 4 linked list chain mode! chcr = %x madr = %x bcr = %x\n", chcr, madr, bcr);
+    if (chcr & 0x40000000) SysPrintf("SPU 2 DMA 4 Unusual bit set on 'to' direction chcr = %x madr = %x bcr = %x\n", chcr, madr, bcr);
+    if ((chcr & 0x1) == 0) SysPrintf("SPU 2 DMA 4 loading from spu2 memory chcr = %x madr = %x bcr = %x\n", chcr, madr, bcr);*/
 
 	if(SPU2async)
-			{	
-				SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);
-				
-				//SysPrintf("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
-				psxCounters[6].sCycleT = psxRegs.cycle;
-				psxCounters[6].CycleT = ((bcr >> 16) * (bcr & 0xFFFF)) * 3;
-				
-				psxNextCounter -= (psxRegs.cycle-psxNextsCounter);
-				psxNextsCounter = psxRegs.cycle;
-				if(psxCounters[6].CycleT < psxNextCounter) psxNextCounter = psxCounters[6].CycleT;
-
+	{	
+		SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);
+		
+		//SysPrintf("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
+		psxCounters[6].sCycleT = psxRegs.cycle;
+		psxCounters[6].CycleT = size * 3;
+		
+		psxNextCounter -= (psxRegs.cycle-psxNextsCounter);
+		psxNextsCounter = psxRegs.cycle;
+		if(psxCounters[6].CycleT < psxNextCounter) psxNextCounter = psxCounters[6].CycleT;
 	}
 
 	switch (chcr) {
@@ -51,14 +51,12 @@ void psxDma4(u32 madr, u32 bcr, u32 chcr) { // SPU
 			PSXDMA_LOG("*** DMA 4 - SPU mem2spu *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
 			//SysPrintf("DMA4 write blocks %x, size per block %x\n", (bcr >> 16), (bcr & 0xFFFF));
 		
-			size = (bcr >> 16) * (bcr & 0xFFFF);			// Number of blocks to transfer
 			SPU2writeDMA4Mem((u16 *)PSXM(madr), size*2);
 			break;
 		case 0x01000200: //spu to cpu transfer
 			PSXDMA_LOG("*** DMA 4 - SPU spu2mem *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
 			//SysPrintf("DMA4 read blocks %x, size per block %x\n", (bcr >> 16), (bcr & 0xFFFF));
 		
-			size = (bcr >> 16) * (bcr & 0xFFFF);			// Number of blocks to transfer
 			SPU2readDMA4Mem((u16 *)PSXM(madr), size*2);
 			psxCpu->Clear(HW_DMA4_MADR, size);
 			break;
@@ -101,19 +99,18 @@ void psxDma6(u32 madr, u32 bcr, u32 chcr) {
 }
 
 void psxDma7(u32 madr, u32 bcr, u32 chcr) {
-	int size;
+	int size = (bcr >> 16) * (bcr & 0xFFFF);
 
 	if(SPU2async)
-			{	
-				SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);	
-				//SysPrintf("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
-				
-				psxCounters[6].sCycleT = psxRegs.cycle;
-				psxCounters[6].CycleT = ((bcr >> 16) * (bcr & 0xFFFF)) * 3;
-				
-				psxNextCounter -= (psxRegs.cycle-psxNextsCounter);
-				psxNextsCounter = psxRegs.cycle;
-				if(psxCounters[6].CycleT < psxNextCounter) psxNextCounter = psxCounters[6].CycleT;
+	{
+		SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);	
+		
+		psxCounters[6].sCycleT = psxRegs.cycle;
+		psxCounters[6].CycleT = size * 3;
+		
+		psxNextCounter -= (psxRegs.cycle-psxNextsCounter);
+		psxNextsCounter = psxRegs.cycle;
+		if(psxCounters[6].CycleT < psxNextCounter) psxNextCounter = psxCounters[6].CycleT;
 
 	}
 
@@ -122,14 +119,12 @@ void psxDma7(u32 madr, u32 bcr, u32 chcr) {
 			PSXDMA_LOG("*** DMA 7 - SPU2 mem2spu *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
 			//SysPrintf("DMA7 write blocks %x, size per block %x\n", (bcr >> 16), (bcr & 0xFFFF));
 		
-			size = (bcr >> 16) * (bcr & 0xFFFF);			// Number of blocks to transfer
 			SPU2writeDMA7Mem((u16 *)PSXM(madr), size*2);
 			break;
 		case 0x01000200: //spu2 to cpu transfer
 			PSXDMA_LOG("*** DMA 7 - SPU2 spu2mem *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
 			//SysPrintf("DMA7 read blocks %x, size per block %x\n", (bcr >> 16), (bcr & 0xFFFF));
 		
-			size = (bcr >> 16) * (bcr & 0xFFFF);			// Number of blocks to transfer
 			SPU2readDMA7Mem((u16 *)PSXM(madr), size*2);
 			psxCpu->Clear(HW_DMA7_MADR, size);
 			break;
