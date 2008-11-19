@@ -20,7 +20,7 @@
 # Uncomment if building by itself, rather then with all the plugins
 
 #Normal
-#export PCSX2OPTIONS="--enable-sse3 --prefix `pwd`"
+export PCSX2OPTIONS="--enable-sse3 --prefix `pwd`"
 #Debug version
 #export PCSX2OPTIONS="--enable-debug --enable-devbuild --enable-sse3 --prefix `pwd`"
 
