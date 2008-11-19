@@ -231,12 +231,6 @@ int _getNumXMMwrite();
 // used when regs aren't going to be changed be callee
 #define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
 
-#ifdef __x86_64__
-#define IS_X8664 1
-#else
-#define IS_X8664 0
-#endif
-
 // Note: All functions with _ee prefix are for EE only
 
 // finds where the GPR is stored and moves lower 32 bits to EAX

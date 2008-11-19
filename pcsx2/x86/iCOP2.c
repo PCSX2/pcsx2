@@ -114,15 +114,15 @@ void recCOP2_SPECIAL2();
 
 extern void _vu0WaitMicro();
 
+#ifdef __x86_64__
 static void recCFC2()
 {
 	int mmreg;
-#ifdef __x86_64__
 	int creg;
-#endif
-
-	if (cpuRegs.code & 1) {
-		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
+	
+	if (cpuRegs.code & 1) 
+	{
+		iFlushCall(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86);
 		CALLFunc((uptr)_vu0WaitMicro);
 	}
 
@@ -130,84 +130,123 @@ static void recCFC2()
 
 	_deleteGPRtoXMMreg(_Rt_, 2);
 	
-#ifdef __x86_64__
 	mmreg = _allocX86reg(-1, X86TYPE_GPR, _Rt_, MODE_WRITE);
-
-	if( (creg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_READ)) >= 0 ) {
-		if(EEINST_ISLIVE1(_Rt_)) {
-			if( _Fs_ < 16 ) {
+	creg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_READ);
+	
+	if( creg >= 0 ) 
+	{
+		if(EEINST_ISLIVE1(_Rt_)) 
+		{
+			if( _Fs_ < 16 ) 
+			{
 				// zero extending
 				MOVZX64R16toR(mmreg, creg);
-				}
-			else {
+			}
+			else 
+			{
 				// sign extend, use full 32 bits
 				MOV32RtoR(mmreg, creg);
 				SHL64ItoR(mmreg, 32);
 				SAR64ItoR(mmreg, 32);
-				}
+			}
 		}
-		else {
+		else 
+		{
 			// just move
 			MOV32RtoR(mmreg, creg);
 			EEINST_RESETHASLIVE1(_Rt_);
-			}
+		}
 	}
-	else {
-		if(EEINST_ISLIVE1(_Rt_)) {
-			if( _Fs_ < 16 ) {
+	else 
+	{
+		if(EEINST_ISLIVE1(_Rt_)) 
+		{
+			if( _Fs_ < 16 ) 
+			{
 				// zero extending
 				MOVZX64M16toR(mmreg, (uptr)&VU0.VI[ _Fs_ ].UL);
 			}
-			else {
+			else 
+			{
 				// sign extend, use full 32 bits
 				MOV32MtoR(RAX, (uptr)&VU0.VI[ _Fs_ ].UL);
 				CDQE();
 				MOV64RtoR(mmreg, RAX);
 			}
 		}
-		else {
+		else 
+		{
 			// just move
 			MOV32MtoR(mmreg, (uptr)&VU0.VI[ _Fs_ ].UL);
 			EEINST_RESETHASLIVE1(_Rt_);
 		}
     }
+	_eeOnWriteReg(_Rt_, 1);
+}
 #else
-	if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_WRITE)) >= 0 ) {
-		if( _Fs_ >= 16 ) {
+    
+static void recCFC2()
+{
+	int mmreg;
+
+	if (cpuRegs.code & 1) 
+	{
+		iFlushCall(FLUSH_NOCONST);
+		CALLFunc((uptr)_vu0WaitMicro);
+	}
+
+	if(!_Rt_) return;
+
+	_deleteGPRtoXMMreg(_Rt_, 2);
+	mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_WRITE);
+	
+	if( mmreg >= 0 ) 
+	{
+		if( _Fs_ >= 16 ) 
+			{
 			MOVDMtoMMX(mmreg, (uptr)&VU0.VI[ _Fs_ ].UL);
-			if( EEINST_ISLIVE1(_Rt_) ) {
+			if( EEINST_ISLIVE1(_Rt_) ) 
+			{
 				_signExtendGPRtoMMX(mmreg, _Rt_, 0);
 			}
-			else {
+			else
+			{
 				EEINST_RESETHASLIVE1(_Rt_);
 			}
 		}
-		else {
+		else 
+		{
 			MOVDMtoMMX(mmreg, (uptr)&VU0.VI[ _Fs_ ].UL);
 		}
 		SetMMXstate();
 	}
-	else {
+	else 
+	{
 		MOV32MtoR(EAX, (uptr)&VU0.VI[ _Fs_ ].UL);
 		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[0],EAX);
 
-		if(EEINST_ISLIVE1(_Rt_)) {
-			if( _Fs_ < 16 ) {
+		if(EEINST_ISLIVE1(_Rt_)) 
+		{
+			if( _Fs_ < 16 ) 
+			{
 				// no sign extending
 				MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[1],0);
 			}
-			else {
+			else 
+			{
 				CDQ();
 				MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[1], EDX);
 			}
 		}
-		else {
+		else 
+		{
 			EEINST_RESETHASLIVE1(_Rt_);
 		}
 	}
-#endif
+	
 	_eeOnWriteReg(_Rt_, 1);
 }
+#endif
 
 static void recCTC2()
 {
@@ -215,81 +254,91 @@ static void recCTC2()
 	int mmreg;
 #endif
 	if (cpuRegs.code & 1) {
-		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
+		#ifdef __x86_64__
+		iFlushCall(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86);
+		#else
+		iFlushCall(FLUSH_NOCONST);
+		#endif
 		CALLFunc((uptr)_vu0WaitMicro);
 	}
 
 	if(!_Fs_) return;
 
-	if( GPR_IS_CONST1(_Rt_) ) {
+	if( GPR_IS_CONST1(_Rt_) ) 
+	{
 		switch(_Fs_) {
 			case REG_MAC_FLAG: // read-only
 			case REG_TPC:      // read-only
 			case REG_VPU_STAT: // read-only
 				break;
 			case REG_FBRST:
-			{
 				if( g_cpuConstRegs[_Rt_].UL[0] & 0x202 )
 					iFlushCall(FLUSH_FREE_TEMPX86);
+				
 				_deleteX86reg(X86TYPE_VI, REG_FBRST, 2);
 
-				if( g_cpuConstRegs[_Rt_].UL[0] & 2 ) CALLFunc((uptr)vu0ResetRegs);
-				if( g_cpuConstRegs[_Rt_].UL[0] & 0x200 ) CALLFunc((uptr)vu1ResetRegs);
+				if( g_cpuConstRegs[_Rt_].UL[0] & 2 ) 
+					CALLFunc((uptr)vu0ResetRegs);
+				if( g_cpuConstRegs[_Rt_].UL[0] & 0x200 ) 
+					CALLFunc((uptr)vu1ResetRegs);
 				MOV16ItoM((uptr)&VU0.VI[REG_FBRST].UL,g_cpuConstRegs[_Rt_].UL[0]&0x0c0c);
 				break;
-			}
 			case REG_CMSAR1: // REG_CMSAR1
-			{
-				iFlushCall(IS_X8664?FLUSH_FREE_TEMPX86:FLUSH_NOCONST); // since CALLFunc
+#ifdef __x86_64__
+				iFlushCall(FLUSH_FREE_TEMPX86); // since CALLFunc
+				
 				assert( _checkX86reg(X86TYPE_VI, REG_VPU_STAT, 0) < 0 &&
 					    _checkX86reg(X86TYPE_VI, REG_TPC, 0) < 0 );
-
+				
 				// Execute VU1 Micro SubRoutine
-#ifdef __x86_64__
 				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 1);
 				_callFunctionArg1((uptr)vu1ExecMicro, MEM_CONSTTAG, g_cpuConstRegs[_Rt_].UL[0]&0xffff);
 				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 0);
 #else
+				iFlushCall(FLUSH_NOCONST);// since CALLFunc
+				
+				assert( _checkX86reg(X86TYPE_VI, REG_VPU_STAT, 0) < 0 &&
+					    _checkX86reg(X86TYPE_VI, REG_TPC, 0) < 0 );
+				
+				// Execute VU1 Micro SubRoutine
 				_callFunctionArg1((uptr)vu1ExecMicro, MEM_CONSTTAG, g_cpuConstRegs[_Rt_].UL[0]&0xffff);
 #endif
 				break;
-			}
 			default:
-			{
 				if( _Fs_ < 16 )
 					assert( (g_cpuConstRegs[_Rt_].UL[0]&0xffff0000)==0);
-
 #ifdef __x86_64__
-				if( (mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
-					MOV32ItoR(mmreg, g_cpuConstRegs[_Rt_].UL[0]);
-				//else // fixme - I don't believe this else statement is supposed to be here, so I'm commenting it out 
-				// and will uncomment if breakage occurs on the 64 bit version. Hasn't caused an issue for me yet.
-#else
-					MOV32ItoM((uptr)&VU0.VI[_Fs_].UL,g_cpuConstRegs[_Rt_].UL[0]);
-#endif
+				mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE);
+				
+				if( mmreg >= 0 ) MOV32ItoR(mmreg, g_cpuConstRegs[_Rt_].UL[0]);
+				
 				// a lot of games have vu0 spinning on some integer
 				// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
-				iFlushCall(IS_X8664?(FLUSH_FREE_TEMPX86|FLUSH_FREE_VU0):FLUSH_NOCONST);
-
-#ifdef __x86_64__
+				iFlushCall(FLUSH_FREE_TEMPX86|FLUSH_FREE_VU0);
+				
 				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 1);
 				CALLFunc((uptr)Cpu->ExecuteVU0Block);
 				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 0);
 #else
+				MOV32ItoM((uptr)&VU0.VI[_Fs_].UL,g_cpuConstRegs[_Rt_].UL[0]);
+				
+				// a lot of games have vu0 spinning on some integer
+				// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
+				iFlushCall(FLUSH_NOCONST);
+				
 				CALLFunc((uptr)Cpu->ExecuteVU0Block);
 #endif
 				break;
-			}
 		}
 	}
-	else {
+	else 
+	{
 		switch(_Fs_) {
 			case REG_MAC_FLAG: // read-only
 			case REG_TPC:      // read-only
 			case REG_VPU_STAT: // read-only
 				break;
 			case REG_FBRST:
-			{
 				iFlushCall(FLUSH_FREE_TEMPX86);
 				assert( _checkX86reg(X86TYPE_VI, REG_FBRST, 0) < 0 );
 
@@ -310,34 +359,35 @@ static void recCTC2()
 				AND32ItoR(EAX,0x0C0C);
 				MOV16RtoM((uptr)&VU0.VI[REG_FBRST].UL,EAX);
 				break;
-			}
 			case REG_CMSAR1: // REG_CMSAR1
-			{
-				iFlushCall(IS_X8664?FLUSH_FREE_TEMPX86:FLUSH_NOCONST); // since CALLFunc
+				#ifdef __x86_64__
+				iFlushCall(FLUSH_FREE_TEMPX86);
+				#else
+				iFlushCall(FLUSH_NOCONST);
+				#endif
 				_eeMoveGPRtoR(EAX, _Rt_);
 				_callFunctionArg1((uptr)vu1ExecMicro, MEM_X86TAG|EAX, 0);	// Execute VU1 Micro SubRoutine
 				break;
-			}
 			default:
-			{
 #ifdef __x86_64__
-			if( (mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE)) >= 0 )
-				_eeMoveGPRtoR(mmreg, _Rt_);
-				//else // fixme - I don't believe this else statement is supposed to be here, so I'm commenting it out 
-				// and will uncomment if breakage occurs on the 64 bit version. Hasn't caused an issue for me yet.
-#else
-				_eeMoveGPRtoM((uptr)&VU0.VI[_Fs_].UL,_Rt_);
-#endif
-                
+			mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE);
+				
+			if( mmreg >= 0 ) _eeMoveGPRtoR(mmreg, _Rt_);
+			
 			// a lot of games have vu0 spinning on some integer
 			// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
-			iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
-#ifdef __x86_64__
+			iFlushCall(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86);
+			
 			_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 1); // fixme - are these two calls neccessary?
 			_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 0); 
+#else
+			_eeMoveGPRtoM((uptr)&VU0.VI[_Fs_].UL,_Rt_);
+			
+			// a lot of games have vu0 spinning on some integer
+			// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
+			iFlushCall(FLUSH_NOCONST);
 #endif
 			break;
-			}
 		}
 	}
 }
@@ -345,10 +395,14 @@ static void recCTC2()
 static void recQMFC2(void)
 {
 	int t0reg, fsreg;
-	_xmmregs temp;
 
-	if (cpuRegs.code & 1) {
-		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
+	if (cpuRegs.code & 1) 
+	{
+		#ifdef __x86_64__
+		iFlushCall(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86);
+		#else
+		iFlushCall(FLUSH_NOCONST);
+		#endif
 		CALLFunc((uptr)_vu0WaitMicro);
 	}
 
@@ -365,7 +419,10 @@ static void recQMFC2(void)
 	fsreg = _checkXMMreg(XMMTYPE_VFREG, _Fs_, MODE_READ);
 
 	if( fsreg >= 0 ) {
-		if( xmmregs[fsreg].mode & MODE_WRITE ) {
+		if( xmmregs[fsreg].mode & MODE_WRITE ) 
+		{
+			_xmmregs temp;
+			
 			t0reg = _allocGPRtoXMMreg(-1, _Rt_, MODE_WRITE);
 			SSEX_MOVDQA_XMM_to_XMM(t0reg, fsreg);
 
@@ -374,7 +431,8 @@ static void recQMFC2(void)
 			xmmregs[t0reg] = xmmregs[fsreg];
 			xmmregs[fsreg] = temp;
 		}
-		else {
+		else 
+		{
 			// swap regs
 			t0reg = _allocGPRtoXMMreg(-1, _Rt_, MODE_WRITE);
 
@@ -384,12 +442,11 @@ static void recQMFC2(void)
 	}
 	else {
 		t0reg = _allocGPRtoXMMreg(-1, _Rt_, MODE_WRITE);
-		if( t0reg >= 0 ) {
+		
+		if( t0reg >= 0 ) 
 			SSE_MOVAPS_M128_to_XMM( t0reg, (uptr)&VU0.VF[_Fs_].UD[0]);
-		}
-		else {
+		else 
 			_recMove128MtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[0], (uptr)&VU0.VF[_Fs_].UL[0]);
-		}
 	}
 
 	_clearNeededXMMregs();
@@ -397,19 +454,25 @@ static void recQMFC2(void)
 
 static void recQMTC2()
 {
-	int mmreg, fsreg;
-	int flag;
+	int mmreg;
 
 	if (cpuRegs.code & 1) {
-		iFlushCall(IS_X8664?(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86):FLUSH_NOCONST);
+		
+		#ifdef __x86_64__
+		iFlushCall(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86);
+		#else
+		iFlushCall(FLUSH_NOCONST);
+		#endif
 		CALLFunc((uptr)_vu0WaitMicro);
 	}
 
-	if(!_Fs_) return;
+	if (!_Fs_) return;
 
-	if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ)) >= 0) {
-		fsreg = _checkXMMreg(XMMTYPE_VFREG, _Fs_, MODE_WRITE);
-		flag = ((xmmregs[mmreg].mode&MODE_WRITE) && (g_pCurInstInfo->regs[_Rt_]&(EEINST_LIVE0|EEINST_LIVE1|EEINST_LIVE2)));
+	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+	
+	if( mmreg >= 0) {
+		int fsreg = _checkXMMreg(XMMTYPE_VFREG, _Fs_, MODE_WRITE);
+		int flag = ((xmmregs[mmreg].mode&MODE_WRITE) && (g_pCurInstInfo->regs[_Rt_]&(EEINST_LIVE0|EEINST_LIVE1|EEINST_LIVE2)));
 		
 		if( fsreg >= 0 ) {
 
@@ -418,8 +481,6 @@ static void recQMTC2()
 			}
 			else {
 				// swap regs
-				//if (flag) SSE_MOVAPS_XMM_to_M128((uptr)&cpuRegs.GPR.r[_Rt_], mmreg);  // We already checked, and it wasn't true.
-
 				xmmregs[mmreg] = xmmregs[fsreg];
 				xmmregs[mmreg].mode = MODE_WRITE;
 				xmmregs[fsreg].inuse = 0;
@@ -438,16 +499,20 @@ static void recQMTC2()
 		}
 	}
 	else {
-		fsreg = _allocVFtoXMMreg(&VU0, -1, _Fs_, MODE_WRITE);
+		int fsreg = _allocVFtoXMMreg(&VU0, -1, _Fs_, MODE_WRITE);
 
 		if( fsreg >= 0 ) {
 #ifdef __x86_64__
-			if( (mmreg = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ)) >= 0) {
+			mmreg = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ);
+			
+			if( mmreg >= 0) {
 				SSE2_MOVQ_R_to_XMM(fsreg, mmreg);
 				SSE_MOVHPS_M64_to_XMM(fsreg, (uptr)&cpuRegs.GPR.r[_Rt_].UL[2]);
 			}
 #else
-			if( (mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ)) >= 0) {
+			mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ);
+			
+			if( mmreg >= 0) {
 				SetMMXstate();
 				SSE2_MOVQ2DQ_MM_to_XMM(fsreg, mmreg);
 				SSE_MOVHPS_M64_to_XMM(fsreg, (uptr)&cpuRegs.GPR.r[_Rt_].UL[2]);
