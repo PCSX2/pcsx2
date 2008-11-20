@@ -66,7 +66,6 @@ extern u8 g_RealGSMem[0x2000];
 u8* GSRingBufCopy(void* mem, u32 size, u32 type);
 void GSRingBufSimplePacket(int type, int data0, int data1, int data2);
 
-extern u8* g_pGSWritePos;
 //#ifdef PCSX2_DEVBUILD
 
 // use for debugging MTGS

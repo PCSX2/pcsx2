@@ -1061,3 +1061,11 @@ void injectIRX(char *filename){
 	rd[i].extInfoSize=0;
 }
 
+__forceinline void _TIMESLICE()
+{
+#ifdef _WIN32
+	    Sleep(0);
+#else
+	    usleep(500);
+#endif
+}

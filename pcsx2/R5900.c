@@ -416,7 +416,7 @@ static __forceinline void _cpuTestPERF()
 	// fixme - The interpreter and recompiler both re-calculate these values
 	// whenever they are read, so updating them at regular intervals *should be*
 	// merely a common courtesy.  But when I set them up to be called less
-	// frequently crashes happened.  I'd like to figure out why someday. [Air]
+	// frequently some games would crash.  I'd like to figure out why someday. [Air]
 
 	if((cpuRegs.PERF.n.pccr & 0x800003E0) == 0x80000020) {
 		cpuRegs.PERF.n.pcr0 += cpuRegs.cycle-s_iLastPERFCycle[0];
@@ -434,10 +434,6 @@ static __forceinline void _cpuTestPERF()
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
-
-// if non-zero, the EE uses a shorter wait cycle (effectively tightening EE/IOP code
-// synchronization).  Value decremented each branch test.
-u32 g_eeTightenSync = 0;
 
 // Shared portion of the branch test, called from both the Interpreter
 // and the recompiler.  (moved here to help alleviate redundant code)

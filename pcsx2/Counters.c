@@ -476,19 +476,13 @@ static __forceinline void VSyncStart(u32 sCycle) // VSync Start
 	if (Config.Patch) applypatch(1); // Apply patches (ToDo: clean up patch code)
 }
 
+extern void GSPostVsyncEnd();
+
 static __forceinline void VSyncEnd(u32 sCycle) // VSync End
 {
 	iFrame++;
-	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
 
-	// wait until GS stops
-	if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
-	else {
-		GSvsync((*(u32*)(PS2MEM_GS+0x1000)&0x2000));
-        // update here on single thread mode *OBSOLETE*
-        if( PAD1update != NULL ) PAD1update(0);
-        if( PAD2update != NULL ) PAD2update(1);
-	}
+	GSPostVsyncEnd();
 
 	hwIntcIrq(3);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End

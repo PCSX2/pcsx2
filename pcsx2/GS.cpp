@@ -32,6 +32,20 @@
 
 using namespace std;
 
+#ifndef _WIN32
+// fixme - Linux needs a proper implementation of locks using pthreads.
+// a set of placebo types and functions might do for now though.
+
+typedef int CRITICAL_SECTION;
+
+void EnterCriticalSection( CRITICAL_SECTION* handle ) {}
+void LeaveCriticalSection( CRITICAL_SECTION* handle ) {}
+
+void InitializeCriticalSection( CRITICAL_SECTION* handle ) {}
+void DeleteCriticalSection( CRITICAL_SECTION* handle ) {}
+#endif
+
+
 extern "C" {
 
 #define PLUGINtypedefs // for GSgifTransfer1
@@ -106,8 +120,10 @@ void* GSThreadProc(void* idp);
 
 #endif
 
-bool gsHasToExit=false;
 int g_FFXHack=0;
+
+static bool gsHasToExit=false;
+static LONG g_pGSvSyncCount = 0;
 
 #ifdef PCSX2_DEVBUILD
 
@@ -162,10 +178,18 @@ static GIFTAG g_path[3];
 static PCSX2_ALIGNED16(u8 s_byRegs[3][16]);
 
 // g_pGSRingPos == g_pGSWritePos => fifo is empty
-u8* g_pGSRingPos = NULL, // cur pos ring is at
+static u8* g_pGSRingPos = NULL, // cur pos ring is at
 	*g_pGSWritePos = NULL; // cur pos ee thread is at
 
+CRITICAL_SECTION gsRestartLock;
+
 extern int g_nCounters[];
+
+#ifdef RINGBUF_DEBUG_STACK
+#include <list>
+std::list<long> ringposStack;
+CRITICAL_SECTION stackLock;
+#endif
 
 void gsInit()
 {
@@ -182,11 +206,10 @@ void gsInit()
 			exit(0);
 		}
 
-		// I guess the InterlockedExchange below is just for practice...
-		// ... seeing how we haven't even STARTED the thread yet!
-
 		memcpy(g_MTGSMem, PS2MEM_GS, sizeof(g_MTGSMem));
-        InterlockedExchangePointer((volatile PVOID*)&g_pGSWritePos, GS_RINGBUFFERBASE);
+
+		g_pGSWritePos = GS_RINGBUFFERBASE;
+        //InterlockedExchangePointer((volatile PVOID*)&g_pGSWritePos, GS_RINGBUFFERBASE);
 
         if( GSsetBaseMem != NULL )
 			GSsetBaseMem(g_MTGSMem);
@@ -205,6 +228,12 @@ void gsInit()
 		g_hVuGSExit = CreateEvent(NULL, FALSE, FALSE, NULL);
 		g_hGSOpen = CreateEvent(NULL, FALSE, FALSE, NULL);
 		g_hGSDone = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+		InitializeCriticalSection( &gsRestartLock );
+
+#ifdef RINGBUF_DEBUG_STACK
+		InitializeCriticalSection( &stackLock );
+#endif
 
 		SysPrintf("gsInit\n");
 
@@ -265,7 +294,6 @@ void GSRINGBUF_DONECOPY(const u8 *mem, u32 size)
 	if( !CHECK_DUALCORE ) GS_SETEVENT();
 }
 
-
 void gsShutdown()
 {
 	if( CHECK_MULTIGS ) {
@@ -281,6 +309,12 @@ void gsShutdown()
 		CloseHandle(g_hVuGSExit);
 		CloseHandle(g_hGSOpen);
 		CloseHandle(g_hGSDone);
+
+		DeleteCriticalSection(&gsRestartLock);
+#ifdef RINGBUF_DEBUG_STACK
+		DeleteCriticalSection(&stackLock);
+#endif
+
 #else
         InterlockedExchange((long*)&g_nGsThreadExit, 1);
         sem_post(&g_semGsThread);
@@ -315,6 +349,7 @@ void gsShutdown()
 		GSclose();
 }
 
+
 u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 {
 	// Note on volatiles: g_pGSWritePos is not modified by the GS thread,
@@ -335,23 +370,36 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 		// the start of the ring buffer (it's a lot easier than trying
 		// to wrap the packet around the end of the buffer).
 
-		// We have to be careful not to leapfrog our readposition.  If it's 
+		// We have to be careful not to leapfrog our read-position.  If it's 
 		// greater than the current write position then we need to stall
-		// until it loops around:
+		// until it loops around to the beginning of the buffer
 
-		//const u8* readps = *(volatile PU8*)&g_pGSRingPos;
-		while( *(volatile PU8*)&g_pGSRingPos > writepos ) // && readpos == GS_RINGBUFFERBASE )
+		while( *(volatile PU8*)&g_pGSRingPos > writepos )
 			gsSetEventWait();
 
+		// Wait for the readpos to go past the start of the buffer
+		// Otherwise it'll stop dead in its tracks when we set the new write
+		// position below (bad!)
+		while( *(volatile PU8*)&g_pGSRingPos == GS_RINGBUFFERBASE)
+			gsSetEventWait();
+
+		EnterCriticalSection( &gsRestartLock );
 		GSRingBufSimplePacket( GS_RINGTYPE_RESTART, 0, 0, 0 );
+		g_pGSWritePos = writepos = GS_RINGBUFFERBASE;
+		LeaveCriticalSection( &gsRestartLock );
 
-		writepos = GS_RINGBUFFERBASE;
+		// two conditionals in the following while() loop, so precache
+		// the readpos for more efficient behavior:
+		const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
 
-		// stall until the read position is past the end of our incoming block:
-		while( writepos+size >= *(volatile PU8*)&g_pGSRingPos )
+		// stall until the read position is past the end of our incoming block,
+		// or until it reaches the new write position (signals an empty buffer)
+		// (the second part should never happen actually, but safe is safe!)
+		while( writepos+size >= readpos && readpos != writepos )
+		{
 			gsSetEventWait();
-
-		InterlockedExchangePointer((void**)&g_pGSWritePos, GS_RINGBUFFERBASE);
+			readpos = *(volatile PU8*)&g_pGSRingPos;
+		}
 	}
     else if( writepos + size == GS_RINGBUFFEREND )
 	{
@@ -360,23 +408,31 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 		// of a gsWaitGS (stalling the GS until the ring buffer emptied completely) and
 		// no one noticed enough to fix it. :)
 
+		//SysPrintf( "MTGS > Perfect Fit!\n");
 		while( writepos < *(volatile PU8*)&g_pGSRingPos )
 			gsSetEventWait();
     }
 	else
 	{
-		// two conditionals in the following while() loop, so precache
-		// the readpos for more efficient behavior:
-		const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
-
 		// generic gs wait/stall.
 		// Waits until the readpos is outside the scope of the write area.
-		while( writepos < readpos && writepos+size >= readpos ) // || (writepos+size == GS_RINGBUFFEREND && readpos == GS_RINGBUFFERBASE)) ) {
+		while( true )
 		{
+			// three conditionals in the following while() loop, so precache
+			// the readpos for more efficient behavior:
+			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
+
+			if( writepos >= readpos ) break;
+			if( writepos+size < readpos ) break;
+
 			gsSetEventWait();
-			readpos = *(volatile PU8*)&g_pGSRingPos;
 		}
 	}
+#ifdef RINGBUF_DEBUG_STACK
+	EnterCriticalSection( &stackLock );
+	ringposStack.push_front( (long)writepos );
+	LeaveCriticalSection( &stackLock );
+#endif
 
 	// just copy
 	*(u32*)writepos = type | (((size-16)>>4)<<16);
@@ -396,11 +452,18 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	while( future_writepos == *(volatile PU8*)&g_pGSRingPos )
 		gsSetEventWait();
 
+#ifdef RINGBUF_DEBUG_STACK
+	EnterCriticalSection( &stackLock );
+	ringposStack.push_front( (long)writepos );
+	LeaveCriticalSection( &stackLock );
+#endif
+
 	*(u32*)writepos = type;
 	*(u32*)(writepos+4) = data0;
 	*(u32*)(writepos+8) = data1;
 	*(u32*)(writepos+12) = data2;
 
+	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
 	InterlockedExchangePointer((void**)&g_pGSWritePos, future_writepos);
 
 	if( !CHECK_DUALCORE )
@@ -424,6 +487,7 @@ void gsReset()
 #endif
         gsHasToExit=false;
 		g_pGSRingPos = g_pGSWritePos;
+		g_pGSvSyncCount = 0;
 	}
 
 	memset(g_path, 0, sizeof(g_path));
@@ -474,7 +538,7 @@ void CSRwrite(u32 value)
 	}
 
 	if (value & 0x200) { // resetGS
-		//GSCSRr = 0x400E; // The host FIFO neeeds to be empty too or GSsync will fail (saqib)
+		//GSCSRr = 0x400E; // The host FIFO needs to be empty too or GSsync will fail (saqib)
 		//GSIMR = 0xff00;
 		if( GSgifSoftReset != NULL )  {
 			GSgifSoftReset(7);
@@ -525,15 +589,12 @@ extern void UpdateVSyncRate();
 
 void gsWrite16(u32 mem, u16 value) {
 	
+	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx\n", mem, value);
+
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
 			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
 			else Config.PsxType &= ~1;	// NTSC
-			*(u16*)PS2GS_BASE(mem) = value;
-
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
-			}
 
 			UpdateVSyncRate();
 			break;
@@ -541,38 +602,33 @@ void gsWrite16(u32 mem, u16 value) {
 		case 0x12000020: // GS_SMODE2
 			if(value & 0x1) Config.PsxType |= 2; // Interlaced
 			else Config.PsxType &= ~2;	// Non-Interlaced
-			*(u16*)PS2GS_BASE(mem) = value;
-
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
-			}
 
 			break;
 			
 		case 0x12001000: // GS_CSR
 			CSRwrite( (CSRw&0xffff0000) | value);
-			break;
+			return; // do not write to MTGS memory
 		case 0x12001002: // GS_CSR
 			CSRwrite( (CSRw&0xffff) | ((u32)value<<16));
-			break;
+			return; // do not write to MTGS memory
 		case 0x12001010: // GS_IMR
-			SysPrintf("writing to IMR 16\n");
+			//SysPrintf("writing to IMR 16\n");
 			IMRwrite(value);
-			break;
-
-		default:
-			*(u16*)PS2GS_BASE(mem) = value;
-
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
-			}
+			return; // do not write to MTGS memory
 	}
-	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx\n", mem, value);
+
+	*(u16*)PS2GS_BASE(mem) = value;
+
+	if( CHECK_MULTIGS ) {
+		GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
+	}
 }
 
 void gsWrite32(u32 mem, u32 value)
 {
 	assert( !(mem&3));
+	GIF_LOG("GS write 32 at %8.8lx with data %8.8lx\n", mem, value);
+
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
 			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
@@ -581,79 +637,60 @@ void gsWrite32(u32 mem, u32 value)
 			
 			UpdateVSyncRate();
 
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
-			}
-
 			break;
 		case 0x12000020: // GS_SMODE2
 			if(value & 0x1) Config.PsxType |= 2; // Interlaced
 			else Config.PsxType &= ~2;	// Non-Interlaced
-			*(u32*)PS2GS_BASE(mem) = value;
 
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
-			}
 			break;
 			
 		case 0x12001000: // GS_CSR
 			CSRwrite(value);
-			break;
+			return;
 
 		case 0x12001010: // GS_IMR
 			IMRwrite(value);
-			break;
-		default:
-			*(u32*)PS2GS_BASE(mem) = value;
-
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
-			}
+			return;
 	}
-	GIF_LOG("GS write 32 at %8.8lx with data %8.8lx\n", mem, value);
+
+	*(u32*)PS2GS_BASE(mem) = value;
+
+	if( CHECK_MULTIGS ) {
+		GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
+	}
 }
 
 void gsWrite64(u32 mem, u64 value) {
+
+	GIF_LOG("GS write 64 at %8.8lx with data %8.8lx_%8.8lx\n", mem, ((u32*)&value)[1], (u32)value);
 
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
 			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
 			else Config.PsxType &= ~1;	// NTSC
 			UpdateVSyncRate();
-			*(u64*)PS2GS_BASE(mem) = value;
-
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, (u32)(value>>32));
-			}
 
 			break;
 
 		case 0x12000020: // GS_SMODE2
 			if(value & 0x1) Config.PsxType |= 2; // Interlaced
 			else Config.PsxType &= ~2;	// Non-Interlaced
-			*(u64*)PS2GS_BASE(mem) = value;
-
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, 0);
-			}
 
 			break;
 		case 0x12001000: // GS_CSR
 			CSRwrite((u32)value);
-			break;
+			return;
 
 		case 0x12001010: // GS_IMR
 			IMRwrite((u32)value);
-			break;
-
-		default:
-			*(u64*)PS2GS_BASE(mem) = value;
-
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, (u32)(value>>32));
-			}
+			return;
 	}
-	GIF_LOG("GS write 64 at %8.8lx with data %8.8lx_%8.8lx\n", mem, ((u32*)&value)[1], (u32)value);
+
+	*(u64*)PS2GS_BASE(mem) = value;
+
+	if( CHECK_MULTIGS ) {
+		GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, (u32)(value>>32));
+	}
 }
 
 u8 gsRead8(u32 mem)
@@ -1399,10 +1436,32 @@ int HasToExit()
 	return (gsHasToExit!=0);
 }
 
+extern "C" void GSPostVsyncEnd()
+{
+	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
+
+	if( CHECK_MULTIGS ) 
+	{
+		//while( *(volatile LONG*)&g_pGSvSyncCount >= 8 )
+		//	gsSetEventWait();
+
+		//InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
+		//SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
+		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
+	}
+	else {
+		GSvsync((*(u32*)(PS2MEM_GS+0x1000)&0x2000));
+        // update here on single thread mode *OBSOLETE*
+        if( PAD1update != NULL ) PAD1update(0);
+        if( PAD2update != NULL ) PAD2update(1);
+	}
+}
+
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
 //#pragma optimize ("",off) //needed for a working PGO build
 DWORD WINAPI GSThreadProc(LPVOID lpParam)
 {
+	u32 prevCmd=0;
 	HANDLE handles[2] = { g_hGsEvent, g_hVuGSExit };
 	//SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
@@ -1479,18 +1538,30 @@ void* GSThreadProc(void* lpParam)
 			u32 tag = *(u32*)g_pGSRingPos;
 			u32 ringposinc = 16;
 
+#ifdef RINGBUF_DEBUG_STACK
+			// pop a ringpos off the stack.  It should match this one!
+
+			EnterCriticalSection( &stackLock );
+			long stackpos = ringposStack.back();
+			assert( stackpos == (long)g_pGSRingPos );
+			if( stackpos != (long)g_pGSRingPos )
+			{
+				SysPrintf( "Holy Fuck ---------------> %x to %x\n", stackpos, (long)g_pGSRingPos );
+				SysPrintf( "    Prev Command : %x\n", prevCmd );
+			}
+			prevCmd = tag;
+			ringposStack.pop_back();
+			LeaveCriticalSection( &stackLock );
+#endif
+
 			switch( tag&0xffff )
 			{
 				case GS_RINGTYPE_RESTART:
 					InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
-
-					/*if( GS_RINGBUFFERBASE == writepos )
-					{
-						// force the loop to break:
-						writepos = g_pGSRingPos;
-						break;
-					}*/
-
+					
+					// stall for a bit to let the MainThread have time to update the g_pGSWritePos. 
+					EnterCriticalSection( &gsRestartLock );
+					LeaveCriticalSection( &gsRestartLock );
 					continue;
 
 				case GS_RINGTYPE_P1:
@@ -1516,6 +1587,12 @@ void* GSThreadProc(void* lpParam)
 					GSvsync(*(int*)(g_pGSRingPos+4));
                     if( PAD1update != NULL ) PAD1update(0);
                     if( PAD2update != NULL ) PAD2update(1);
+
+					//SysPrintf( " Receiving VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
+					//InterlockedDecrement( (volatile LONG*)&g_pGSvSyncCount );
+
+					// vSyncCount should never dip below zero.
+					assert( *(volatile LONG*)&g_pGSvSyncCount >= 0 );
 					break;
 
 				case GS_RINGTYPE_FRAMESKIP:
@@ -1648,10 +1725,21 @@ void* GSThreadProc(void* lpParam)
 			InterlockedExchangeAdd( (long*)&g_pGSRingPos, ringposinc );
 
 			assert( g_pGSRingPos <= GS_RINGBUFFEREND );
+#ifdef _WIN32
+			InterlockedCompareExchangePointer( (volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE, GS_RINGBUFFEREND );
+#else
+			// fixme - [TODO] - InterlockedCompareExchangePointer needs a linux implementation!
 			if( g_pGSRingPos == GS_RINGBUFFEREND )
 				InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
+#endif
 		}
 
+		// buffer is empty so our vsync must be zero.
+
+		//if( *(volatile LONG*)&g_pGSvSyncCount != 0 )
+		//	SysPrintf( "MTGS > vSync count mismatch: %d\n", g_pGSvSyncCount );
+
+		//InterlockedExchange( (volatile LONG*)&g_pGSvSyncCount, 0 );
 		// process vu1
 	}
 
