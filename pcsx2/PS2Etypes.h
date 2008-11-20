@@ -90,6 +90,7 @@ typedef union _LARGE_INTEGER
 } LARGE_INTEGER;
 #define _inline __inline__ __attribute__((unused))
 #define __fastcall __attribute__((fastcall))
+#define LONG long
 #endif
 
 #if defined(__MINGW32__)
