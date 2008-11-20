@@ -1669,8 +1669,8 @@ static int Vif1TransDirectHL(u32 *data){
 				FreezeMMXRegs(1);
 				memcpy_fast(gsmem, (u32*)splittransfer[0], 16);
 				FreezeMMXRegs(0);
-				GSRINGBUF_DONECOPY(gsmem, 16);
 				GSgifTransferDummy(1, (u32*)splittransfer[0], 1);
+				GSRINGBUF_DONECOPY(gsmem, 16);
 			}
 		}
 		else {
@@ -1714,8 +1714,8 @@ static int Vif1TransDirectHL(u32 *data){
 			FreezeMMXRegs(1);
 			memcpy_fast(gsmem, data, ret<<2);
 			FreezeMMXRegs(0);
-			GSRINGBUF_DONECOPY(gsmem, ret<<2);
 			GSgifTransferDummy(1, data, ret>>2);
+			GSRINGBUF_DONECOPY(gsmem, ret<<2);
 		}
 	}
 	else {

@@ -401,13 +401,22 @@ u32 s_iLastPERFCycle[2] = {0,0};
 
 static __forceinline void _cpuTestTIMR()
 {
-	// The interpreter and recompiler both re-calculate these values whenever they
-	// are read, so updating them at regular intervals is merely a common courtesy.
-	// For that reason they're part of the Counters event, since it's garaunteed
-	// to be called at least 100 times a second.
+	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
+	s_iLastCOP0Cycle = cpuRegs.cycle;
 
-	// Updating them more frequently is pointless and, in fact, they could
-	// just as well be updated 20 times a second if it were convenient to do so.
+	if ( (cpuRegs.CP0.n.Status.val & 0x8000) &&
+		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 ) {
+		SysPrintf("timr intr: %x, %x\n", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
+		cpuException(0x808000, cpuRegs.branch);
+	}
+}
+
+static __forceinline void _cpuTestPERF()
+{
+	// fixme - The interpreter and recompiler both re-calculate these values
+	// whenever they are read, so updating them at regular intervals *should be*
+	// merely a common courtesy.  But when I set them up to be called less
+	// frequently crashes happened.  I'd like to figure out why someday. [Air]
 
 	if((cpuRegs.PERF.n.pccr & 0x800003E0) == 0x80000020) {
 		cpuRegs.PERF.n.pcr0 += cpuRegs.cycle-s_iLastPERFCycle[0];
@@ -416,15 +425,6 @@ static __forceinline void _cpuTestTIMR()
 	if((cpuRegs.PERF.n.pccr & 0x800F8000) == 0x80008000) {
 		cpuRegs.PERF.n.pcr1 += cpuRegs.cycle-s_iLastPERFCycle[1];
 		s_iLastPERFCycle[1] = cpuRegs.cycle;
-	}
-
-	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
-	s_iLastCOP0Cycle = cpuRegs.cycle;
-
-	if ( (cpuRegs.CP0.n.Status.val & 0x8000) &&
-		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 ) {
-		SysPrintf("timr intr: %x, %x\n", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
-		cpuException(0x808000, cpuRegs.branch);
 	}
 }
 
@@ -457,8 +457,11 @@ static __forceinline void _cpuBranchTest_Shared()
 	if( cpuTestCycle( nextsCounter, nextCounter ) )
 	{
 		rcntUpdate();
-		_cpuTestTIMR();
 	}
+
+	_cpuTestPERF();
+	_cpuTestTIMR();
+
 
 	//#ifdef CPU_LOG
 	//	cpuTestMissingHwInts();

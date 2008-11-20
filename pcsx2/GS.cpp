@@ -957,8 +957,8 @@ static __forceinline void WRITERING_DMA(u32 *pMem, u32 qwc) {
 			} 
 			else memcpy_fast(pgsmem, pMem, sizetoread); 
 			
-			GSRINGBUF_DONECOPY(pgsmem, sizetoread); 
 			GSgifTransferDummy(2, pMem, qwc); 
+			GSRINGBUF_DONECOPY(pgsmem, sizetoread);
 		} 
 	} 
 	else { 
