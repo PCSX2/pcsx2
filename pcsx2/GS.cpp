@@ -695,21 +695,21 @@ void gsWrite64(u32 mem, u64 value) {
 
 u8 gsRead8(u32 mem)
 {
-	GIF_LOG("GS read 8 %8.8lx, at %8.8lx\n", *(u8*)(PS2MEM_BASE+(mem&~0xc00)), mem);
+	GIF_LOG("GS read 8 %8.8lx, at %8.8lx\n", *(u8*)PS2GS_BASE(mem), mem);
 
 	return *(u8*)PS2GS_BASE(mem);
 }
 
 u16 gsRead16(u32 mem)
 {
-	GIF_LOG("GS read 16 %8.8lx, at %8.8lx\n", *(u16*)(PS2MEM_BASE+(mem&~0xc00)), mem);
+	GIF_LOG("GS read 16 %8.8lx, at %8.8lx\n", *(u16*)PS2GS_BASE(mem), mem);
 
 	return *(u16*)PS2GS_BASE(mem);
 }
 
 u32 gsRead32(u32 mem) 
 {
-	GIF_LOG("GS read 32 %8.8lx, at %8.8lx\n", *(u32*)(PS2MEM_BASE+(mem&~0xc00)), mem);
+	GIF_LOG("GS read 32 %8.8lx, at %8.8lx\n", *(u32*)PS2GS_BASE(mem), mem);
 	return *(u32*)PS2GS_BASE(mem);
 }
 
