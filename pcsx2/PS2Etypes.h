@@ -89,6 +89,7 @@ typedef union _LARGE_INTEGER
 	long long QuadPart;
 } LARGE_INTEGER;
 #define _inline __inline__ __attribute__((unused))
+#define __fastcall __attribute__((fastcall))
 #endif
 
 #if defined(__MINGW32__)
