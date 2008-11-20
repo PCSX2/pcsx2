@@ -458,7 +458,6 @@ static __forceinline void _cpuBranchTest_Shared()
 	_cpuTestPERF();
 	_cpuTestTIMR();
 
-
 	//#ifdef CPU_LOG
 	//	cpuTestMissingHwInts();
 	//#endif
@@ -598,14 +597,13 @@ __forceinline void cpuTestDMACInts() {
 	CPU_INT(31, 4);
 }
 
-// fixme: Unused code.  delete or find its true purpose?
 __forceinline void cpuTestTIMRInts() {
 	if ((cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001) {
+		_cpuTestPERF();
 		_cpuTestTIMR();
 	}
 }
 
-// fixme: unused code.  delete or find its true purpose?
 void cpuTestHwInts() {
 	cpuTestINTCInts();
 	cpuTestDMACInts();
