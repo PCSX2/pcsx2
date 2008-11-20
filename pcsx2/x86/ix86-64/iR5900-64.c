@@ -2163,7 +2163,8 @@ void recompileNextInstruction(int delayslot)
 extern tIPU_BP g_BP;
 
 extern u32 psxdump;
-extern u32 psxNextCounter, psxNextsCounter;
+extern s32 psxNextCounter;
+extern u32 psxNextsCounter;
 extern void iDumpPsxRegisters(u32 startpc, u32 temp); 
 extern Counter counters[6];
 
