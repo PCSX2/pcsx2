@@ -651,7 +651,13 @@ void patchFunc_zerogs(char* cmd, char* param)
 void SetRoundMode(u32 ee, u32 vu)
 {
 // don't set a state for interpreter only
+		SysMessage("SetRoundMode: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+
 #ifndef PCSX2_NORECBUILD
 	SetCPUState( (Config.sseMXCSR & 0x9fff) | ee, (Config.sseVUMXCSR & 0x9fff) | vu);
+#endif
+	#ifdef __LINUX__
+	LinuxsseMXCSR = Config.sseMXCSR;
+	LinuxsseVUMXCSR = Config.sseVUMXCSR;
 #endif
 }

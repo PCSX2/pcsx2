@@ -97,6 +97,11 @@ extern PatchTextTable cpuCore[];
 extern IniPatch patch[ MAX_PATCH ];
 extern int patchnumber;
 
+#ifdef __LINUX__
+// Nasty, currently neccessary hack	
+extern u32 LinuxsseMXCSR;
+extern u32 LinuxsseVUMXCSR;
+#endif
 
 void applypatch( int place );
 void inifile_read( char * name );

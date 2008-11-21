@@ -1445,6 +1445,7 @@ u32 g_sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 {
+	//SysMessage("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	// SSE STATE //
 	// WARNING: do not touch unless you know what you are doing
 
@@ -1581,7 +1582,7 @@ int recInit( void )
 		g_MACFlagTransform[i] = macarr[i>>4]|(macarr[i&15]<<4);
 	}
 
-
+	//SysMessage("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 
 	return 0;
@@ -1667,6 +1668,7 @@ static void execute( void )
 	g_EEFreezeRegs = 1;
 
 	// skip the POPs
+
 #ifdef _DEBUG
 	fnptr = (u8*)pblock->pFnptr;
 

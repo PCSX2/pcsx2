@@ -63,6 +63,11 @@ extern bool RunExe;
 extern int efile;
 extern int g_SaveGSStream;
 extern int g_ZeroGSOptions;
+
+// Nasty, currently neccessary hack	
+extern u32 LinuxsseMXCSR;
+extern u32 LinuxsseVUMXCSR;
+extern void FixCPUState(void);
 	
 /* LnxMain */
 extern void InitLanguages();

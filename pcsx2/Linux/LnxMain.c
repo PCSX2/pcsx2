@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
 
 	SysReset();
 
-	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
+	FixCPUState();
 	cpuExecuteBios();
 	if (file) strcpy(elfname, file);
 	if (!efile) efile=GetPS2ElfName(elfname);

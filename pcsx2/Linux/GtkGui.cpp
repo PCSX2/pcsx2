@@ -83,6 +83,13 @@ void RunGui() {
 	StartGui();
 }
 
+void FixCPUState(void)
+{
+	Config.sseMXCSR = LinuxsseMXCSR;
+	Config.sseVUMXCSR = LinuxsseVUMXCSR;
+	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
+}
+
 void OnDestroy(GtkObject *object, gpointer user_data) {
 	if (!destroy) OnFile_Exit(NULL, user_data);
 }
@@ -132,7 +139,8 @@ void RunExecute(int run)
 	}
 	signal(SIGINT, SignalExit);
 	signal(SIGPIPE, SignalExit);
-
+	
+	FixCPUState();
 	if (needReset == TRUE) { 
 		
 		if( RunExe == 0 )
@@ -156,6 +164,8 @@ void RunExecute(int run)
 void OnFile_RunCD(GtkMenuItem *menuitem, gpointer user_data) {
 	needReset = TRUE;
 	efile = 0;
+	
+	FixCPUState();
 	RunExecute(1);
 }
 
@@ -167,6 +177,8 @@ void OnRunElf_Ok(GtkButton* button, gpointer user_data) {
 	gtk_widget_destroy(FileSel);
 	needReset = TRUE;
 	efile = 1;
+	
+	FixCPUState();
 	RunExecute(1);
 }
 
@@ -767,6 +779,9 @@ void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 }
 void setAdvancedOptions()
 {
+	LinuxsseMXCSR = Config.sseMXCSR;
+	LinuxsseVUMXCSR = Config.sseVUMXCSR;
+	
 	switch((Config.sseMXCSR & 0x6000) >> 13)
 	{
 		case 0:
@@ -818,34 +833,40 @@ void on_Advanced(GtkMenuItem *menuitem, gpointer user_data)
 
 void on_Advanced_Defaults(GtkButton *button, gpointer user_data)
 {
-	Config.sseMXCSR = DEFAULT_sseMXCSR;
-	Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+	LinuxsseMXCSR = DEFAULT_sseMXCSR;
+	LinuxsseVUMXCSR = DEFAULT_sseVUMXCSR;
 	
 	setAdvancedOptions();
       }
 
 void on_Advanced_OK(GtkButton *button, gpointer user_data) 
 {
-	Config.sseMXCSR &= 0x1fbf;
-	Config.sseVUMXCSR &= 0x1fbf;
+	LinuxsseMXCSR &= 0x1fbf;
+	LinuxsseVUMXCSR &= 0x1fbf;
 	
-	
-	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Near") ? FLAG_ROUND_NEAR : 0; 
-	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
-	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
-	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
+	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Near") ? FLAG_ROUND_NEAR : 0; 
+	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
+	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
+	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
 
-	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Near") ? FLAG_ROUND_NEAR : 0; 
-	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
-	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
-	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
+	LinuxsseMXCSR = Config.sseMXCSR;
+	LinuxsseVUMXCSR = Config.sseVUMXCSR;
 	
-	Config.sseMXCSR |= is_checked(AdvDlg, "check_EE_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
-	Config.sseVUMXCSR |= is_checked(AdvDlg, "check_VU_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
+	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Near") ? FLAG_ROUND_NEAR : 0; 
+	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
+	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
+	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
 	
-	Config.sseMXCSR |= is_checked(AdvDlg, "check_EE_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
-	Config.sseVUMXCSR |= is_checked(AdvDlg, "check_VU_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	LinuxsseMXCSR |= is_checked(AdvDlg, "check_EE_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
+	LinuxsseVUMXCSR |= is_checked(AdvDlg, "check_VU_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
 	
+	LinuxsseMXCSR |= is_checked(AdvDlg, "check_EE_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	LinuxsseVUMXCSR |= is_checked(AdvDlg, "check_VU_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	
+	Config.sseMXCSR = LinuxsseMXCSR;
+	Config.sseVUMXCSR = LinuxsseVUMXCSR;
+	
+	//SysPrintf("Advanced: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 	SaveConfig();
 	

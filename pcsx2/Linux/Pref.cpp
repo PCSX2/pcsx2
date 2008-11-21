@@ -29,6 +29,9 @@ extern "C" {
 	FILE *pref_file;
 	char *data;
 
+	u32 LinuxsseMXCSR = DEFAULT_sseMXCSR;
+	u32 LinuxsseVUMXCSR = DEFAULT_sseVUMXCSR;
+
 static void SetValue( const char *name, char *var)
 {
 	fprintf (pref_file,"%s = %s\n", name, var);
@@ -102,12 +105,12 @@ int LoadConfig() {
 		
 	GetValuel("Fixes",        Config.GameFixes);
 	
-	Config.sseMXCSR = DEFAULT_sseMXCSR;
-	Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
-
-	GetValuel("sseMXCSR",        Config.sseMXCSR);
-	GetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
-
+	GetValuel("sseMXCSR",        LinuxsseMXCSR);
+	GetValuel("sseVUMXCSR",    LinuxsseVUMXCSR);
+	
+	Config.sseMXCSR = LinuxsseMXCSR;
+	Config.sseVUMXCSR = LinuxsseVUMXCSR;
+	
 	GetValuel("Patch",      Config.Patch);
 	
 	GetValuel("CustomFps",      Config.CustomFps);
