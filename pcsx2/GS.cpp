@@ -1458,7 +1458,6 @@ extern "C" void GSPostVsyncEnd()
 }
 
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
-//#pragma optimize ("",off) //needed for a working PGO build
 DWORD WINAPI GSThreadProc(LPVOID lpParam)
 {
 	u32 prevCmd=0;
@@ -1746,7 +1745,7 @@ void* GSThreadProc(void* lpParam)
 	GSclose();
 	return 0;
 }
-//#pragma optimize ("",on) //needed for a working PGO build
+
 int gsFreeze(gzFile f, int Mode) {
 
 	gzfreeze(PS2MEM_GS, 0x2000);

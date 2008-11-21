@@ -612,7 +612,7 @@ void rpropBSC(EEINST* prev, EEINST* pinst)
 //DSLL, NULL,  DSRL, DSRA, DSLL32,  NULL,  DSRL32, DSRA32
 void rpropSPECIAL(EEINST* prev, EEINST* pinst)
 {
-	int temp;
+	//int temp;
 	switch(_Funct_) {
 		case 0: // SLL
 		case 2: // SRL
