@@ -97,6 +97,10 @@ int LoadConfig() {
 	GetValue("USB",  Config.USB);
 	GetValue("FW",  Config.FW);
 	
+	GetValuel("Patch",      Config.Patch);
+#ifdef PCSX2_DEVBUILD
+	GetValuel("varLog", varLog);
+#endif
 	GetValuel("Options", Config.Options);
 	GetValuel("Hacks",        Config.Hacks);
 	
@@ -105,22 +109,18 @@ int LoadConfig() {
 		
 	GetValuel("Fixes",        Config.GameFixes);
 	
+	GetValuel("CustomFps",      Config.CustomFps);
+	GetValuel("CustomFrameskip",      Config.CustomFrameSkip);
+	GetValuel("CustomConsecutiveFrames",      Config.CustomConsecutiveFrames);
+	GetValuel("CustomConsecutiveSkip",      Config.CustomConsecutiveSkip);
+
+	// Note - Must get these values last.
 	GetValuel("sseMXCSR",        LinuxsseMXCSR);
 	GetValuel("sseVUMXCSR",    LinuxsseVUMXCSR);
 	
 	Config.sseMXCSR = LinuxsseMXCSR;
 	Config.sseVUMXCSR = LinuxsseVUMXCSR;
 	
-	GetValuel("Patch",      Config.Patch);
-	
-	GetValuel("CustomFps",      Config.CustomFps);
-	GetValuel("CustomFrameskip",      Config.CustomFrameSkip);
-	GetValuel("CustomConsecutiveFrames",      Config.CustomConsecutiveFrames);
-	GetValuel("CustomConsecutiveSkip",      Config.CustomConsecutiveSkip);
-
-#ifdef PCSX2_DEVBUILD
-	GetValuel("varLog", varLog);
-#endif
 	
 	free(data);
 
@@ -169,15 +169,15 @@ void SaveConfig() {
 	SetValuel("Hacks",        Config.Hacks);
 	SetValuel("Fixes",        Config.GameFixes);
 
-	SetValuel("sseMXCSR",        Config.sseMXCSR);
-	SetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
-
 	SetValuel("Patch",      Config.Patch);
 
 	SetValuel("CustomFps",      Config.CustomFps);
 	SetValuel("CustomFrameskip",      Config.CustomFrameSkip);
 	SetValuel("CustomConsecutiveFrames",      Config.CustomConsecutiveFrames);
 	SetValuel("CustomConsecutiveSkip",      Config.CustomConsecutiveSkip);
+
+	SetValuel("sseMXCSR",        Config.sseMXCSR);
+	SetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
 	
 #ifdef PCSX2_DEVBUILD
 	SetValuel("varLog", varLog);
