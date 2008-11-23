@@ -485,7 +485,9 @@ int SaveState(const char *file) {
 	gzwrite(f, &psxRegs.cycle, sizeof(u32));		// used to be IOPoCycle.  This retains compatibility.
 	gzwrite(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
 	gzwrite(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
-	gzwrite(f, &psxNextsCounter, sizeof(psxNextsCounter));
+	// [TODO] These following two lines to be addedlater in a new savestate version.
+	//gzwrite(f, &psxNextsCounter, sizeof(psxNextsCounter));
+	//gzwrite(f, &psxNextsCounter, sizeof(psxNextsCounter));
 	gzwrite(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));
 	gzwrite(f, s_iLastPERFCycle, sizeof(u32)*2);
 	gzwrite(f, &g_psxWriteOk, sizeof(g_psxWriteOk));
@@ -617,7 +619,9 @@ int LoadState(const char *file) {
 	gzread(f, &dud, sizeof(u32));			// was IOPoCycle
 	gzread(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
 	gzread(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
-	gzread(f, &psxNextsCounter, sizeof(psxNextsCounter));
+	// [TODO] these following 2 lines to be added later in a new savestate version
+	//gzread(f, &psxNextsCounter, sizeof(psxNextsCounter));
+	//gzread(f, &psxNextCounter, sizeof(psxNextsCounter));
 	gzread(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));
 	if( dwCurSaveStateVer >= 0x7a30000e ) {
 		gzread(f, s_iLastPERFCycle, sizeof(u32)*2);

@@ -733,7 +733,7 @@ int psxRcntFreeze(gzFile f, int Mode)
 	    gzfreezel(psxCounters);
 	}
 
-	if( Mode == 0 )
+	if( Mode == 0 && (dwCurSaveStateVer <= 0x7a300010) )
 	{
 		// This is needed to make old save states compatible.
 
@@ -751,6 +751,11 @@ int psxRcntFreeze(gzFile f, int Mode)
 		if(psxCounters[3].mode & IOPCNT_ALT_SOURCE)
 			psxCounters[3].rate = PSXHBLANK;
 
+		// [TODO] save these to the state when we add a new version
+		// For now forcing them to branch immediately will be good enough
+		//  (all counters will be updated and future branches predictaed accurately)
+		psxNextCounter = 0;
+		psxNextsCounter = psxRegs.cycle;
 	}
 
 	return 0;
