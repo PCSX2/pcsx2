@@ -83,14 +83,6 @@ static __forceinline void cpuRcntSet()
 	nextsCounter = cpuRegs.cycle;
 	nextCounter = (counters[5].sCycle + counters[5].CycleT) - cpuRegs.cycle;
 
-	// if we're running behind, the diff will be negative.
-	// (and running behind means we need to branch again ASAP)
-	if( nextCounter <= 0 )
-	{
-		nextCounter = 0;
-		return;
-	}
-
 	for (i = 0; i < 4; i++)
 		_rcntSet( i );
 
@@ -487,7 +479,6 @@ static __forceinline void VSyncEnd(u32 sCycle) // VSync End
 	hwIntcIrq(3);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End
 	if (gates) rcntEndGate(0x8, sCycle); // Counters End Gate Code
-	SysUpdate();  // check for and handle keyevents
 	frameLimit(); // limit FPS (also handles frameskip and VUskip)
 }
 
@@ -542,6 +533,8 @@ __forceinline void rcntUpdate_vSync()
 		counters[5].sCycle += vSyncInfo.Blank;
 		counters[5].CycleT = vSyncInfo.Render;
 		counters[5].mode = MODE_VRENDER;
+		
+		SysUpdate();  // check for and handle keyevents
 	}
 	else	// VSYNC end / VRENDER begin
 	{
@@ -570,7 +563,7 @@ __forceinline void rcntUpdate_vSync()
 
 static __forceinline void __fastcall _cpuTestTarget( int i )
 {
-	//counters[i].target &= 0xffff;
+	if (counters[i].count < counters[i].target) return;
 
 	if(counters[i].mode & 0x100) {
 
@@ -586,6 +579,21 @@ static __forceinline void __fastcall _cpuTestTarget( int i )
 	else counters[i].target |= 0x10000000;
 }
 
+static __forceinline void _cpuTestOverflow( int i )
+{
+	if (counters[i].count <= 0xffff) return;
+	
+	if (counters[i].mode & 0x0200) { // Overflow interrupt
+		EECNT_LOG("EE counter %d overflow mode %x count %x target %x\n", i, counters[i].mode, counters[i].count, counters[i].target);
+		counters[i].mode |= 0x0800; // Overflow flag
+		hwIntcIrq(counters[i].interrupt);
+	}
+	
+	// wrap counter back around zero, and enable the future target:
+	counters[i].count -= 0x10000;
+	counters[i].target &= 0xffff;
+}
+
 
 // forceinline note: this method is called from two locations, but one
 // of them is the interpreter, which doesn't count. ;)  So might as
@@ -596,14 +604,16 @@ __forceinline void rcntUpdate()
 
 	rcntUpdate_vSync();
 
-	// Update all counters?
-	// This code shouldn't be needed.  Counters are updated as needed when
-	// Reads, Writes, and Target/Overflow events occur.  The rest of the
-	// time the counters can be left unmodified.
-
+	// Update counters so that we can perform overflow and target tests.
+	
 	for (i=0; i<=3; i++) {
-		if ( gates & (1<<i) ) continue;
-		if ((counters[i].mode & 0x80) && (counters[i].mode & 0x3) != 0x3) {
+		
+		// We want to count gated counters (except the hblank which excluded below)
+		//if ( gates & (1<<i) ) continue;
+		
+		if (!(counters[i].mode & 0x80)) continue;
+		
+			if((counters[i].mode & 0x3) != 0x3) {		// don't count hblank sources
 			
 			s32 change = cpuRegs.cycle - counters[i].sCycleT;
 			if( change > 0 ) {
@@ -621,26 +631,8 @@ __forceinline void rcntUpdate()
 	{
 		if (!(counters[i].mode & 0x80)) continue; // Stopped
 
-		// Target reached?
-		if (counters[i].count >= counters[i].target)
-			_cpuTestTarget( i );
-
-		if (counters[i].count > 0xffff) {
-		
-			if (counters[i].mode & 0x0200) { // Overflow interrupt
-				EECNT_LOG("EE counter %d overflow mode %x count %x target %x\n", i, counters[i].mode, counters[i].count, counters[i].target);
-				counters[i].mode |= 0x0800; // Overflow flag
-				hwIntcIrq(counters[i].interrupt);
-			}
-			counters[i].count -= 0x10000;
-			counters[i].target &= 0xffff;
-
-			// Target reached after overflow?
-			// It's possible that a Target very near zero (1-10, etc) could have already been reached.
-			// Checking for it now 
-			//if (counters[i].count >= counters[i].target)
-			//	_cpuTestTarget( i );
-		}
+		_cpuTestTarget( i );
+		_cpuTestOverflow( i );
 	}
 	cpuRcntSet();
 }
@@ -663,6 +655,21 @@ void rcntWcount(int index, u32 value)
 	else counters[index].sCycleT = cpuRegs.cycle;
 
 	_rcntSet( index );
+}
+
+static void _rcntSetGate( int index )
+{
+	if((counters[index].mode & 0xF) == 0x7) {
+		gates &= ~(1<<index);
+		SysPrintf("Counters: Gate Disabled\n");
+		//counters[index].mode &= ~0x80;
+	}
+	else if (counters[index].mode & 0x4) {
+		gates |= (1<<index);
+		counters[index].mode &= ~0x80;
+		rcntReset(index);
+	}
+	else gates &= ~(1<<index);
 }
 
 void rcntWmode(int index, u32 value)  
@@ -692,21 +699,11 @@ void rcntWmode(int index, u32 value)
 		case 3: counters[index].rate = vSyncInfo.hBlank+vSyncInfo.hRender; break;
 	}
 	
-	if((counters[index].mode & 0xF) == 0x7) {
-		gates &= ~(1<<index);
-		SysPrintf("Counters: Gate Disabled\n");
-		//counters[index].mode &= ~0x80;
-	}
-	else if (counters[index].mode & 0x4) {
-		gates |= (1<<index);
-		counters[index].mode &= ~0x80;
-		rcntReset(index);
-	}
-	else gates &= ~(1<<index);
-	
+	_rcntSetGate( index );
 	_rcntSet( index );
 }
 
+// mode - 0 means hblank source, 8 means vblank source.
 void rcntStartGate(unsigned int mode, u32 sCycle) {
 	int i;
 
@@ -749,6 +746,7 @@ void rcntStartGate(unsigned int mode, u32 sCycle) {
 	// rcntUpdate, since we're being called from there anyway.
 }
 
+// mode - 0 means hblank signal, 8 means vblank signal.
 void rcntEndGate(unsigned int mode, u32 sCycle) {
 	int i;
 
@@ -764,7 +762,7 @@ void rcntEndGate(unsigned int mode, u32 sCycle) {
 				counters[i].count = rcntRcount(i);
 				counters[i].mode &= ~0x80;
 				counters[i].sCycleT = sCycle;
-
+				
 				break;
 			case 0x10:	// Reset and start counting on Vsync start
 				// this is the vsync end so do nothing
@@ -825,22 +823,14 @@ u32 rcntCycle(int index) {
 
 int rcntFreeze(gzFile f, int Mode) {
 
-	if( Mode == 1 )
-	{
-		// Temp Hack Fix: Adjust some values so that they'll load properly
-		// in the future (this should be removed when a new savestate version
-		// is introduced).
-
-		counters[4].sCycle += vSyncInfo.hRender;
-		counters[5].sCycle += vSyncInfo.Render;
-	}
-
 	gzfreezel(counters);
 	gzfreeze(&nextCounter, sizeof(nextCounter));
 	gzfreeze(&nextsCounter, sizeof(nextsCounter));
 
 	if( Mode == 0 )
 	{
+		int i;
+		
 		// Sanity check for loading older savestates:
 
 		if( counters[4].sCycle == 0 )
@@ -848,17 +838,14 @@ int rcntFreeze(gzFile f, int Mode) {
 
 		if( counters[5].sCycle == 0 )
 			counters[5].sCycle = cpuRegs.cycle;
+		
+		// make sure the gate flags are set based on the counter modes...
+		for( i=0; i<4; i++ )
+			_rcntSetGate( i );
 	}
 
-	// Old versions of PCSX2 saved the counters *after* incrementing them.
-	// So if we don't roll back here, the counters move past cpuRegs.cycle
-	// and everthing explodes!
-	// Note: Roll back regardless of load or save, since we roll them forward
-	// when saving (above).  It's a hack, but it works.
-
-	counters[4].sCycle -= vSyncInfo.hRender;
-	counters[5].sCycle -= vSyncInfo.Render;
-
+	iopBranchAction = 1;	// probably not needed but won't hurt anything either.
+	
 	return 0;
 }
 

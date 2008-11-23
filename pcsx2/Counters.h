@@ -24,9 +24,10 @@
 typedef struct {
 	u32 count, mode, target, hold;
 	u32 rate, interrupt;
-	u32 Cycle, sCycle;
+	u32 Cycle;
+	u32 sCycle;					// start cycle of timer
 	s32 CycleT;
-	u32 sCycleT;
+	u32 sCycleT;		// delta values should be signed.
 } Counter;
 
 //------------------------------------------------------------------
