@@ -27,41 +27,7 @@ static int branch = 0;
 static int branch2 = 0;
 static u32 branchPC;
 
-// These macros are used to assemble the repassembler functions
-
-#ifdef _DEBUG
-#define execI() { \
-	psxRegs.code = PSXMu32(psxRegs.pc); \
- \
- 	if (Log) { \
-		PSXCPU_LOG("%s\n", disR3000AF(psxRegs.code, psxRegs.pc)); \
-	} \
-	psxRegs.pc+= 4; \
-	psxRegs.cycle++; \
- \
-	psxBSC[psxRegs.code >> 26](); \
-}
-#else
-#define execI() { \
-	psxRegs.code = PSXMu32(psxRegs.pc); \
- \
- 	psxRegs.pc+= 4; \
-	psxRegs.cycle++; \
- \
-	psxBSC[psxRegs.code >> 26](); \
-}
-#endif
-
-
-#define doBranch(tar) { \
-	branch2 = branch = 1; \
-	branchPC = tar; \
-	execI(); \
-	branch = 0; \
-	psxRegs.pc = branchPC; \
- \
-	psxBranchTest(); \
-}
+static void doBranch(tar);	// forward declared prototype
 
 // Subsets
 extern void (*psxBSC[64])();
@@ -755,6 +721,31 @@ void (*psxCP2BSC[32])() = {
 
 ///////////////////////////////////////////
 
+// These macros are used to assemble the repassembler functions
+
+static __forceinline void execI() {
+	psxRegs.code = PSXMu32(psxRegs.pc);
+
+	PSXCPU_LOG("%s\n", disR3000AF(psxRegs.code, psxRegs.pc));
+
+	psxRegs.pc+= 4;
+	psxRegs.cycle++;
+	psxCycleEE-=8;
+
+	psxBSC[psxRegs.code >> 26]();
+}
+
+
+static void doBranch(tar) {
+	branch2 = branch = 1;
+	branchPC = tar;
+	execI();
+	branch = 0;
+	psxRegs.pc = branchPC;
+
+	psxBranchTest();
+}
+
 static int intInit() {
 	return 0;
 }
@@ -775,7 +766,7 @@ static void intExecuteBlock() {
 	psxBreak = 0;
 	psxCycleEE = EEsCycle;
 
-	while (psxCycleEE >= 0){
+	while (psxCycleEE > 0){
 		branch2 = 0;
 		while (!branch2) {
 			execI();

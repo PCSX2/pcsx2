@@ -90,7 +90,7 @@ static u32 branchPC;
 #define debugI()
 #endif
 
-void execI() {
+static __forceinline void execI() {
 
 	cpuRegs.cycle++;
 	//cpuRegs.CP0.n.Count++; /*count every cycles.*/
@@ -101,16 +101,12 @@ void execI() {
 #else
     cpuRegs.code = *(u32 *)PSM(cpuRegs.pc);
 #endif
-	
-	
+
 	cpuRegs.pc+= 4;
-//	if((cpuRegs.PERF.n.pccr & 0x80000020) == 0x80000020) cpuRegs.PERF.n.pcr0++;
-//	if((cpuRegs.PERF.n.pccr & 0x80008000) == 0x80008000) cpuRegs.PERF.n.pcr1++;
-	
 	Int_OpcodePrintTable[cpuRegs.code >> 26]();
 }
 
-__inline void doBranch(u32 tar) {
+static void doBranch(u32 tar) {
 	branch2 = cpuRegs.branch = 1;
 	branchPC = tar;
 	execI();
