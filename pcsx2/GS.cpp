@@ -185,10 +185,20 @@ CRITICAL_SECTION gsRestartLock;
 
 extern int g_nCounters[];
 
+// Uncomment this to enable the MTGS debug stack, which tracks to ensure reads
+// and writes stay synchronized.  Warning: the debug stack is VERY slow.
+//#define RINGBUF_DEBUG_STACK
 #ifdef RINGBUF_DEBUG_STACK
 #include <list>
 std::list<long> ringposStack;
 CRITICAL_SECTION stackLock;
+#endif
+
+#ifndef PCSX2_PUBLIC
+// debug variable used to check for bad code bits where copies are started
+// but never closed, or closed without having been started.  (GSRingBufCopy calls
+// should always be followed by acall to GSRINGBUF_DONECOPY)
+static int g_mtgsCopyLock = 0;
 #endif
 
 void gsInit()
@@ -285,13 +295,37 @@ static __forceinline void gsSetEventWait()
 // mem and size are the ones from GSRingBufCopy
 void GSRINGBUF_DONECOPY(const u8 *mem, u32 size)
 {
-	u8* temp = (u8*)(mem) + (size); 
+	const u8* temp = mem + size; 
 
-	assert( temp <= GS_RINGBUFFEREND); 
+#ifndef PCSX2_PUBLIC
+	// make sure a previous copy block has been started somewhere.
+	assert( g_mtgsCopyLock == 1 );
+	g_mtgsCopyLock = 0;
+#endif
 
-	if( temp == GS_RINGBUFFEREND ) temp = GS_RINGBUFFERBASE; 
+	assert( temp <= GS_RINGBUFFEREND);
+	if( temp == GS_RINGBUFFEREND )
+	{
+		temp = GS_RINGBUFFERBASE; 
+	}
+#ifdef _DEBUG
+	else
+	{
+		// The writepos should never leapfrog the readpos
+		// since that indicates a bad write.
+		if( mem < g_pGSRingPos )
+			assert( temp < g_pGSRingPos );
+	}
+#endif
+
+	// Updating the writepost should never make it equal the readpos, since
+	// that would stop the buffer prematurely (and indicates bad code in the
+	// ringbuffer manager)
+	assert( g_pGSRingPos != temp );
+
 	InterlockedExchangePointer((void**)&g_pGSWritePos, temp);
 	if( !CHECK_DUALCORE ) GS_SETEVENT();
+
 }
 
 void gsShutdown()
@@ -358,6 +392,13 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 	// is reading it.
 
 	u8* writepos = g_pGSWritePos;
+	
+#ifndef PCSX2_PUBLIC
+	// Checks if a previous copy is still active, and asserts if so.
+	assert( g_mtgsCopyLock == 0 );
+	g_mtgsCopyLock = 1;
+#endif
+
 	assert( size < GS_RINGBUFFERSIZE );
 	assert( writepos < GS_RINGBUFFEREND );
 	assert( ((uptr)writepos & 15) == 0 );
@@ -374,43 +415,57 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 		// greater than the current write position then we need to stall
 		// until it loops around to the beginning of the buffer
 
-		while( *(volatile PU8*)&g_pGSRingPos > writepos )
-			gsSetEventWait();
+		while( true )
+		{
+			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
 
-		// Wait for the readpos to go past the start of the buffer
-		// Otherwise it'll stop dead in its tracks when we set the new write
-		// position below (bad!)
-		while( *(volatile PU8*)&g_pGSRingPos == GS_RINGBUFFERBASE)
+			// is the buffer empty?
+			if( readpos == writepos ) break;
+
+			// Also: Wait for the readpos to go past the start of the buffer
+			// Otherwise it'll stop dead in its tracks when we set the new write
+			// position below (bad!)
+			if( readpos < writepos && readpos != GS_RINGBUFFERBASE ) break;
+
 			gsSetEventWait();
+		}
 
 		EnterCriticalSection( &gsRestartLock );
 		GSRingBufSimplePacket( GS_RINGTYPE_RESTART, 0, 0, 0 );
-		g_pGSWritePos = writepos = GS_RINGBUFFERBASE;
+		writepos = GS_RINGBUFFERBASE;
+		InterlockedExchangePointer((void**)&g_pGSWritePos, writepos );
 		LeaveCriticalSection( &gsRestartLock );
 
-		// two conditionals in the following while() loop, so precache
-		// the readpos for more efficient behavior:
-		const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
-
 		// stall until the read position is past the end of our incoming block,
-		// or until it reaches the new write position (signals an empty buffer)
-		// (the second part should never happen actually, but safe is safe!)
-		while( writepos+size >= readpos && readpos != writepos )
+		// or until it reaches the current write position (signals an empty buffer).
+		while( true )
 		{
+			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
+
+			if( readpos == g_pGSWritePos ) break;
+			if( writepos+size < readpos ) break;
+
 			gsSetEventWait();
-			readpos = *(volatile PU8*)&g_pGSRingPos;
 		}
 	}
     else if( writepos + size == GS_RINGBUFFEREND )
 	{
 		// Yay.  Perfect fit.  What are the odds?
-		// ... apparently very slim because the old code just performed the equivalent
-		// of a gsWaitGS (stalling the GS until the ring buffer emptied completely) and
-		// no one noticed enough to fix it. :)
 
 		//SysPrintf( "MTGS > Perfect Fit!\n");
-		while( writepos < *(volatile PU8*)&g_pGSRingPos )
+		while( true )
+		{
+			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
+
+			// is the buffer empty?  Don't wait...
+			if( readpos == writepos ) break;
+
+			// Copy is ready so long as readpos is less than writepos and *not*
+			// equal to the base of the ringbuffer (otherwise the buffer will stop)
+			if( readpos < writepos && readpos != GS_RINGBUFFERBASE ) break;
+
 			gsSetEventWait();
+		}
     }
 	else
 	{
@@ -422,7 +477,11 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 			// the readpos for more efficient behavior:
 			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
 
+			// if the writepos is past the readpos then we're safe:
 			if( writepos >= readpos ) break;
+			
+			// writepos is behind the readpos, so do a second check to see if the
+			// readpos is out past the end of the future write pos:
 			if( writepos+size < readpos ) break;
 
 			gsSetEventWait();
@@ -493,6 +552,10 @@ void gsReset()
 	memset(g_path, 0, sizeof(g_path));
 	memset(s_byRegs, 0, sizeof(s_byRegs));
 
+#ifndef PCSX2_PUBLIC
+	g_mtgsCopyLock = 0;
+#endif
+	
 #ifndef PCSX2_VIRTUAL_MEM
 	memset(g_RealGSMem, 0, 0x2000);
 #endif
@@ -1218,6 +1281,7 @@ void GIFdma()
 	}
 }
 
+// fixme : this function appears to be unreferenced...
 void dmaGIF() {
 	//if(vif1Regs->mskpath3 || (psHu32(GIF_MODE) & 0x1)){
 	//	CPU_INT(2, 48); //Wait time for the buffer to fill, fixes some timing problems in path 3 masking
@@ -1243,7 +1307,8 @@ static unsigned int mfifocycles;
 static unsigned int gifqwc = 0;
 static unsigned int gifdone = 0;
 
-int mfifoGIFrbTransfer() {
+// called from only one location, so forceinline it:
+static __forceinline int mfifoGIFrbTransfer() {
 	u32 qwc = (psHu32(GIF_MODE) & 0x4 && vif1Regs->mskpath3) ? min(8, (int)gif->qwc) : gif->qwc;
 	int mfifoqwc = min(gifqwc, qwc);
 	u32 *src;
@@ -1282,8 +1347,8 @@ int mfifoGIFrbTransfer() {
 	return 0;
 }
 
-
-int mfifoGIFchain() {	 
+// called from only one location, so forceinline it:
+static __forceinline int mfifoGIFchain() {	 
 	/* Is QWC = 0? if so there is nothing to transfer */
 
 	if (gif->qwc == 0) return 0;
@@ -1304,7 +1369,6 @@ int mfifoGIFchain() {
 
 	return 0;
 }
-
 
 
 void mfifoGIFtransfer(int qwc) {
@@ -1394,10 +1458,9 @@ void mfifoGIFtransfer(int qwc) {
 	SPR_LOG("mfifoGIFtransfer end %x madr %x, tadr %x\n", gif->chcr, gif->madr, gif->tadr);	
 }
 
+// fixme : this should be forceinlineable, dmaGIF is obsolete/unused.
 void gifMFIFOInterrupt()
 {
-	
-	
 	if(!(gif->chcr & 0x100)) { SysPrintf("WTF GIFMFIFO\n");cpuRegs.interrupt &= ~(1 << 11); return ; }
 	
 	if(gifdone != 1) {
@@ -1542,12 +1605,11 @@ void* GSThreadProc(void* lpParam)
 
 			EnterCriticalSection( &stackLock );
 			long stackpos = ringposStack.back();
-			assert( stackpos == (long)g_pGSRingPos );
 			if( stackpos != (long)g_pGSRingPos )
 			{
-				SysPrintf( "Holy Fuck ---------------> %x to %x\n", stackpos, (long)g_pGSRingPos );
-				SysPrintf( "    Prev Command : %x\n", prevCmd );
+				SysPrintf( "MTGS Ringbuffer Critical Failure ---> %x to %x (prevCmd: %x)\n", stackpos, (long)g_pGSRingPos, prevCmd );
 			}
+			assert( stackpos == (long)g_pGSRingPos );
 			prevCmd = tag;
 			ringposStack.pop_back();
 			LeaveCriticalSection( &stackLock );
@@ -1591,7 +1653,7 @@ void* GSThreadProc(void* lpParam)
 					//InterlockedDecrement( (volatile LONG*)&g_pGSvSyncCount );
 
 					// vSyncCount should never dip below zero.
-					assert( *(volatile LONG*)&g_pGSvSyncCount >= 0 );
+					//assert( *(volatile LONG*)&g_pGSvSyncCount >= 0 );
 					break;
 
 				case GS_RINGTYPE_FRAMESKIP:
