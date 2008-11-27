@@ -123,18 +123,14 @@ void* GSThreadProc(void* idp);
 int g_FFXHack=0;
 
 static bool gsHasToExit=false;
-//static LONG g_pGSvSyncCount = 0;
 
 #ifdef PCSX2_DEVBUILD
+static LONG g_pGSvSyncCount = 0;
 
 // GS Playback
 int g_SaveGSStream = 0; // save GS stream; 1 - prepare, 2 - save
 int g_nLeftGSFrames = 0; // when saving, number of frames left
 gzFile g_fGSSave;
-
-// MTGS recording
-FILE* g_fMTGSWrite = NULL, *g_fMTGSRead = NULL;
-u32 g_MTGSDebug = 0, g_MTGSId = 0;
 #endif
 
 u32 CSRw;
@@ -194,7 +190,7 @@ std::list<long> ringposStack;
 CRITICAL_SECTION stackLock;
 #endif
 
-#ifndef PCSX2_PUBLIC
+#ifdef _DEBUG
 // debug variable used to check for bad code bits where copies are started
 // but never closed, or closed without having been started.  (GSRingBufCopy calls
 // should always be followed by acall to GSRINGBUF_DONECOPY)
@@ -219,16 +215,9 @@ void gsInit()
 		memcpy(g_MTGSMem, PS2MEM_GS, sizeof(g_MTGSMem));
 
 		g_pGSWritePos = GS_RINGBUFFERBASE;
-        //InterlockedExchangePointer((volatile PVOID*)&g_pGSWritePos, GS_RINGBUFFERBASE);
 
         if( GSsetBaseMem != NULL )
 			GSsetBaseMem(g_MTGSMem);
-
-//#if defined(_DEBUG) && defined(PCSX2_DEVBUILD)
-//		assert( g_fMTGSWrite == NULL && g_fMTGSRead == NULL );
-//		g_fMTGSWrite = fopen("mtgswrite.txt", "w");
-//		g_fMTGSRead = fopen("mtgsread.txt", "w");
-//#endif
 
         gsHasToExit=false;
 
@@ -299,11 +288,8 @@ void GSRINGBUF_DONECOPY(const u8 *mem, u32 size)
 {
 	const u8* temp = mem + size; 
 
-#ifndef PCSX2_PUBLIC
 	// make sure a previous copy block has been started somewhere.
-	assert( g_mtgsCopyLock == 1 );
-	g_mtgsCopyLock = 0;
-#endif
+	assert( (--g_mtgsCopyLock) == 0 );
 
 	assert( temp <= GS_RINGBUFFEREND);
 	if( temp == GS_RINGBUFFEREND )
@@ -370,16 +356,6 @@ void gsShutdown()
         SysMunmap((uptr)GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE);
 #endif
 
-//#if defined(_DEBUG) && defined(PCSX2_DEVBUILD)
-//		if( g_fMTGSWrite != NULL ) {
-//			fclose(g_fMTGSWrite);
-//			g_fMTGSWrite = NULL;
-//		}
-//		if( g_fMTGSRead != NULL ) {
-//			fclose(g_fMTGSRead);
-//			g_fMTGSRead = NULL;
-//		}
-//#endif
 	}
 	else
 		GSclose();
@@ -395,11 +371,8 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 
 	u8* writepos = g_pGSWritePos;
 	
-#ifndef PCSX2_PUBLIC
 	// Checks if a previous copy is still active, and asserts if so.
-	assert( g_mtgsCopyLock == 0 );
-	g_mtgsCopyLock = 1;
-#endif
+	assert( (++g_mtgsCopyLock) == 1 );
 
 	assert( size < GS_RINGBUFFERSIZE );
 	assert( writepos < GS_RINGBUFFEREND );
@@ -548,15 +521,17 @@ void gsReset()
 #endif
         gsHasToExit=false;
 		g_pGSRingPos = g_pGSWritePos;
-		//g_pGSvSyncCount = 0;
+
+#ifdef _DEBUG
+		g_mtgsCopyLock = 0;
+#endif
+#ifdef PCSX2_DEVBUILD
+		g_pGSvSyncCount = 0;
+#endif
 	}
 
 	memset(g_path, 0, sizeof(g_path));
 	memset(s_byRegs, 0, sizeof(s_byRegs));
-
-#ifndef PCSX2_PUBLIC
-	g_mtgsCopyLock = 0;
-#endif
 	
 #ifndef PCSX2_VIRTUAL_MEM
 	memset(g_RealGSMem, 0, 0x2000);
@@ -1476,7 +1451,7 @@ void gifMFIFOInterrupt()
 		mfifoGIFtransfer(0);
 		return;
 	}
-#ifndef PCSX2_PUBLIC
+#ifdef PCSX2_DEVBUILD
 	if(gifdone == 0 || gif->qwc > 0) {
 		SysPrintf("gifMFIFO Panic > Shouldnt go here!\n");
 		cpuRegs.interrupt &= ~(1 << 11);
@@ -1507,11 +1482,10 @@ extern "C" void GSPostVsyncEnd()
 
 	if( CHECK_MULTIGS ) 
 	{
-		//while( *(volatile LONG*)&g_pGSvSyncCount >= 8 )
-		//	gsSetEventWait();
-
-		//InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
-		//SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
+#ifdef PCSX2_DEVBUILD
+		InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
+		SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
+#endif
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
 		if( !CHECK_DUALCORE ) GS_SETEVENT();
 	}
@@ -1577,25 +1551,6 @@ void* GSThreadProc(void* lpParam)
 			{
 				break; //exit thread and close gs
 			}
-			else
-			{
-				/*if( !g_gsFlushing ) && (*(volatile int*)&g_pGSvSyncCount) == 0 ) 
-				{
-					// not enough frames queued up.  But if the buffer's filling we should start
-					// purging the ring buffer anyway:
-
-					const long writepos = (long)(*(volatile PU8*)&g_pGSWritePos);
-					long delta = writepos - (long)g_pGSRingPos;
-
-					if( delta < 0 )
-					{
-						delta = (writepos - (long)GS_RINGBUFFERBASE) + ((long)(GS_RINGBUFFEREND - g_pGSRingPos));
-					}
-
-					if( delta < (long)(GS_RINGBUFFERSIZE / 2) ) continue;
-				}*/
-				//SysPrintf( "Accumulated : %d\n", *(volatile int*)&g_pGSvSyncCount );
-			}
 		}
 #else
         if( !CHECK_DUALCORE ) {
@@ -1650,19 +1605,16 @@ void* GSThreadProc(void* lpParam)
 				case GS_RINGTYPE_P1:
                 {
                     int qsize = (tag>>16);
-//							MTGS_RECREAD(g_pGSRingPos+16, (qsize<<4));
                     // make sure that tag>>16 is the MAX size readable
 					GSgifTransfer1((u32*)(g_pGSRingPos+16) - 0x1000 + 4*qsize, 0x4000-qsize*16);
 					ringposinc += qsize<<4;
 					break;
                 }
 				case GS_RINGTYPE_P2:
-//							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
 					GSgifTransfer2((u32*)(g_pGSRingPos+16), tag>>16);
 					ringposinc += (tag>>16)<<4;
 					break;
 				case GS_RINGTYPE_P3:
-//							MTGS_RECREAD(g_pGSRingPos+16, ((tag>>16)<<4));
 					GSgifTransfer3((u32*)(g_pGSRingPos+16), tag>>16);
 					ringposinc += (tag>>16)<<4;
 					break;
@@ -1671,11 +1623,12 @@ void* GSThreadProc(void* lpParam)
                     if( PAD1update != NULL ) PAD1update(0);
                     if( PAD2update != NULL ) PAD2update(1);
 
-					//SysPrintf( " Receiving VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
-					//InterlockedDecrement( (volatile LONG*)&g_pGSvSyncCount );
-
+#				ifdef PCSX2_DEVBUILD
+					//SysPrintf( " Processing VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
+					InterlockedDecrement( (volatile LONG*)&g_pGSvSyncCount );
 					// vSyncCount should never dip below zero.
-					//assert( *(volatile LONG*)&g_pGSvSyncCount >= 0 );
+					assert( *(volatile LONG*)&g_pGSvSyncCount >= 0 );
+#				endif
 					break;
 
 				case GS_RINGTYPE_FRAMESKIP:
@@ -1817,14 +1770,14 @@ void* GSThreadProc(void* lpParam)
 #endif
 		}
 
+		// some debug/troubleshooting code:
 		// buffer is empty so our vsync must be zero.
-
+#ifdef PCSX2_DEVBUILD
 		//SysPrintf( "Discharged : %d\n", *(volatile int*)&g_pGSvSyncCount );
-		//if( *(volatile LONG*)&g_pGSvSyncCount != 0 )
-		//	SysPrintf( "MTGS > vSync count mismatch: %d\n", g_pGSvSyncCount );
-
-		//InterlockedExchange( (volatile LONG*)&g_pGSvSyncCount, 0 );
-		// process vu1
+		if( *(volatile LONG*)&g_pGSvSyncCount != 0 )
+			SysPrintf( "MTGS > vSync count mismatch: %d\n", g_pGSvSyncCount );
+		InterlockedExchange( (volatile LONG*)&g_pGSvSyncCount, 0 );
+#endif
 	}
 
 	GSclose();

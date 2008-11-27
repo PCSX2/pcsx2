@@ -359,7 +359,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
-				PreprocessorDefinitions="PCSX2_PUBLIC"
+				PreprocessorDefinitions="NDEBUG"
 				EnableEnhancedInstructionSet="0"
 			/>
 			<Tool
@@ -609,6 +609,14 @@
 			<File
 				RelativePath="..\..\GS.cpp"
 				>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="4"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\GS.h"
@@ -1126,6 +1134,46 @@
 			<File
 				RelativePath="..\..\x86\iFPU.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\x86\iFPU.h"

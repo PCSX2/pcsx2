@@ -509,7 +509,7 @@ static __forceinline void _cpuBranchTest_Shared()
 }
 
 #ifndef PCSX2_NORECBUILD
-#ifndef PCSX2_PUBLIC
+#ifdef PCSX2_DEVBUILD
 extern u8 g_globalXMMSaved;
 X86_32CODE(extern u8 g_globalMMXSaved;)
 #endif
@@ -520,7 +520,7 @@ u32 g_MTGSVifStart = 0, g_MTGSVifCount=0;
 void cpuBranchTest()
 {
 #ifndef PCSX2_NORECBUILD
-#ifndef PCSX2_PUBLIC
+#ifdef PCSX2_DEVBUILD
     // dont' remove this check unless doing an official release
     if( g_globalXMMSaved X86_32CODE(|| g_globalMMXSaved) )
         SysPrintf("frozen regs have not been restored!!!\n");
@@ -552,7 +552,7 @@ void cpuBranchTest()
 	}
 
 #ifndef PCSX2_NORECBUILD
-#ifndef PCSX2_PUBLIC
+#ifdef PCSX2_DEVBUILD
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
 #endif
 	g_EEFreezeRegs = 1;

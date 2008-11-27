@@ -2213,7 +2213,7 @@ __forceinline void vif1Interrupt() {
 		
 		return;
 	}
-#ifndef PCSX2_PUBLIC
+#ifdef PCSX2_DEVBUILD
 	if(vif1ch->qwc > 0) SysPrintf("VIF1 Ending with QWC left\n");
 	if(vif1.cmd != 0) SysPrintf("vif1.cmd still set %x\n", vif1.cmd);
 #endif
