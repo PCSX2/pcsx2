@@ -130,7 +130,10 @@ static int iFrame = 0;
 #include <sys/time.h>
 #endif
 
-u64 iTicks=0;
+static s64 m_iTicks=0;
+static s64 m_iSlowTicks=0;
+static u64 m_iStart=0;
+//static u64 m_iSlowStart=0;
 
 u64 GetTickFrequency()
 {
@@ -178,7 +181,7 @@ static __forceinline void vSyncInfoCalc( vSyncTimingInfo* info, u32 framesPerSec
 
 	u64 Frame = ((u64)PS2CLK * 1000000ULL) / framesPerSecond;
 	u64 HalfFrame = Frame / 2;
-	u64 Blank = HalfFrame / 4;		// two blanks and renders per frame
+	u64 Blank = HalfFrame / 2;		// two blanks and renders per frame
 	u64 Render = HalfFrame - Blank;	// so use the half-frame value for these...
 
 	// Important!  The hRender/hBlank timers should be 50/50 for best results.
@@ -223,7 +226,7 @@ void UpdateVSyncRate()
 
 	// fixme - According to some docs, progressive-scan modes actually refresh slower than
 	// interlaced modes.  But I can't fathom how, since the refresh rate is a function of
-	// the television and all the docs I found on TVS made no indication that they ever
+	// the television and all the docs I found on TVs made no indication that they ever
 	// run anything except their native refresh rate.
 
 	//#define VBLANK_NTSC			((Config.PsxType & 2) ? 59.94 : 59.82) //59.94 is more precise
@@ -251,53 +254,40 @@ void UpdateVSyncRate()
 
 	if (Config.CustomFps > 0)
 	{
-		u32 ticks = (u32)(GetTickFrequency() / Config.CustomFps);
-		if( iTicks != ticks )
+		s64 ticks = GetTickFrequency() / Config.CustomFps;
+		if( m_iTicks != ticks )
 		{
-			iTicks = ticks;
+			m_iTicks = ticks;
 			SysPrintf( limiterMsg, (float)Config.CustomFps );
 		}
 	}
 	else
 	{
-		u32 ticks = (u32)((GetTickFrequency() * 50) / vSyncInfo.Framerate);
-		if( iTicks != ticks )
+		s64 ticks = (GetTickFrequency() * 50) / vSyncInfo.Framerate;
+		if( m_iTicks != ticks )
 		{
-			iTicks = ticks;
+			m_iTicks = ticks;
 			SysPrintf( limiterMsg, (Config.PsxType & 1) ? 50.00 : 59.94 );
 		}
 	}
-	
-	cpuRcntSet();
-}
 
-void FrameLimiter()
-{
-	static u64 iStart=0, iEnd=0, iExpectedEnd=0;
+	{
+		u32 frameSkipThreshold = Config.CustomFrameSkip;
+		if( Config.CustomFrameSkip == 0)
+		{
+			// default: load the frameSkipThreshold with a value roughly 90% of our current framerate
+			frameSkipThreshold = ( vSyncInfo.Framerate * 228 ) / 256;
+		}
 
-	if (iStart==0) iStart = GetCPUTicks();
+		m_iSlowTicks = GetTickFrequency() / frameSkipThreshold;
+		m_iStart = GetCPUTicks();
 
-	iExpectedEnd = iStart + iTicks;
-	iEnd = GetCPUTicks();
-
-	if (iEnd>=iExpectedEnd) {
-
-		// Compensation: If the framelate drops too low, reset the 
-		// expected value.  This avoids excessive amounts of
-		// "fast forward" syndrome which would occur if we tried to
-		// catch up too much.
-		
-		u64 diff = iEnd-iExpectedEnd;
-		if ((diff>>3)>iTicks) iExpectedEnd=iEnd;
+		// sanity check against users who set a "minimum" frame that's higher
+		// than the maximum framerate:
+		if( m_iSlowTicks < m_iTicks ) m_iSlowTicks = m_iTicks;
 	}
-	else do {
-		_TIMESLICE();
-		iEnd = GetCPUTicks();
-	} while (iEnd<iExpectedEnd);
 
-	// remember the expected value frame. improves smoothness by encouraging
-	// the framelimiter to play a little "catch up" after a slow frame.
-	iStart = iExpectedEnd; 
+	cpuRcntSet();
 }
 
 extern u32 CSRw;
@@ -390,68 +380,133 @@ void vSyncDebugStuff() {
 
 static __forceinline void frameLimit() 
 {
-	switch(CHECK_FRAMELIMIT) {
-		case PCSX2_FRAMELIMIT_LIMIT:
-			FrameLimiter();
-			break;
+	static u8 bOkayToSkip = 0;
+	static u8 bKeepSkipping = 0;
 
-		case PCSX2_FRAMELIMIT_SKIP:
-		case PCSX2_FRAMELIMIT_VUSKIP: //Skips a sequence of consecutive frames after a sequence of rendered frames
+	s64 sDeltaTime;
+	u64 uExpectedEnd;
+	u64 iEnd;
+
+	if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_NORMAL ) return;
+
+	uExpectedEnd = m_iStart + m_iTicks;
+	iEnd = GetCPUTicks();
+
+	sDeltaTime = iEnd - uExpectedEnd;
+
+	if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_LIMIT )
+	{
+		// Non-skip Compensation: If the framerate drops too low, reset the 
+		// expected value.  This avoids excessive amounts of
+		// "fast forward" syndrome which would occur if we tried to
+		// catch up too much.
+		
+		if( (sDeltaTime>>3) > m_iTicks )
 		{
-			// This is the least number of consecutive frames we will render w/o skipping
-			#define noSkipFrames (Config.CustomConsecutiveFrames>0) ? Config.CustomConsecutiveFrames : 2
-			// This is the number of consecutive frames we will skip				
-			#define yesSkipFrames (Config.CustomConsecutiveSkip>0) ? Config.CustomConsecutiveSkip : 2
-			static u8 bOkayToSkip = 0;
-			static u8 bKeepSkipping = 0;
-			static u64 uLastTime = 0;
+			m_iStart = iEnd;
+			return;
+		}
+	}
+	else
+	{
+		// FrameSkip and VU-Skip Magic!
+		// Skips a sequence of consecutive frames after a sequence of rendered frames
 
-			// This is some Extra Time to add to our Expected Time to compensate for lack of precision.
-			#define extraTimeBuffer 0
-			// If uDeltaTime is less than this value, then we can frameskip. (45 & 54 FPS is 90% of fullspeed for Pal & NTSC respectively, the default is to only skip when slower than 90%)
-			u64 uExpectedTime = (Config.CustomFrameSkip>0) ? (GetTickFrequency()/Config.CustomFrameSkip + extraTimeBuffer) : ((Config.PsxType&1) ? (GetTickFrequency()/45 + extraTimeBuffer) : (GetTickFrequency()/54 + extraTimeBuffer));
-			// This is used for the framelimiter; The user can set a custom FPS limit, if none is specified, used default FPS limit (50fps or 60fps).
-			//u64 uLimiterExpectedTime = (Config.CustomFps>0) ? (GetTickFrequency()/Config.CustomFps + extraTimeBuffer) : ((Config.PsxType&1) ? (GetTickFrequency()/50 + extraTimeBuffer) : (GetTickFrequency()/60 + extraTimeBuffer));
-			u64 uCurTime = GetCPUTicks();
-			u64 uDeltaTime = uCurTime - uLastTime;
+		// This is the least number of consecutive frames we will render w/o skipping
+		#define noSkipFrames (Config.CustomConsecutiveFrames>0) ? Config.CustomConsecutiveFrames : 2
+		// This is the number of consecutive frames we will skip				
+		#define yesSkipFrames (Config.CustomConsecutiveSkip>0) ? Config.CustomConsecutiveSkip : 2
 
-			// Don't skip the Very First Frame PCSX2 renders. (This line might not be needed, but was included incase it breaks something.)
-			if (uDeltaTime == uCurTime) uDeltaTime = 0;
+		{
+		const s64 uSlowExpectedEnd = m_iStart + m_iSlowTicks;
+		const s64 sSlowDeltaTime = iEnd - uSlowExpectedEnd;
 
-			if (bOkayToSkip == 0) // If we're done rendering our consecutive frames, its okay to skip.
+		if (bOkayToSkip == 0)
+		{
+			// -- Standard operation section --
+			// Means neither skipping frames nor force-rendering consecutive frames.
+
+			if( sSlowDeltaTime > 0 )
 			{
-				if (uDeltaTime > uExpectedTime) // Only skip if running slow.
+				// The game is running below the minimum framerate, so use the SlowExpectedEnd.
+				// But don't start skipping yet!  That would be too sensitive, and wouldn't
+				// allow compensation for occasional abnormal hiccups.
+				// So the skipping code is only engaged if the SlowDeltaTime falls behind by a full frame.
+
+				m_iStart = uSlowExpectedEnd;
+				
+				if( sSlowDeltaTime > m_iSlowTicks*2 )
 				{
-					//first freeze GS regs THEN send dummy packet
+					//SysPrintf( "Frameskip Initiated!\n" );
 					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 1, 0, 0);
 					else GSsetFrameSkip(1);
 					if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
 						Cpu->ExecuteVU1Block = DummyExecuteVU1Block;
+
 					bOkayToSkip = noSkipFrames;
 					bKeepSkipping = yesSkipFrames;
 				}
+				return;	// don't run the framelimiter.
 			}
-			else if (bOkayToSkip == noSkipFrames) // If we skipped last frame, unfreeze the GS regs
-			{
-				if (bKeepSkipping <= 1) {
-					//first set VU1 to enabled THEN unfreeze GS regs
-					if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
-						Cpu->ExecuteVU1Block = s_prevExecuteVU1Block;
-					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
-					else GSsetFrameSkip(0);
-					bOkayToSkip--;
-				}
-				else {bKeepSkipping--;}
-			}
-			else {bOkayToSkip--;}
-
-			//Frame Limit so we don't go over the FPS limit
-			FrameLimiter();
-
-			uLastTime = GetCPUTicks();
-
-			break;
 		}
+		else if (bOkayToSkip == noSkipFrames)
+		{
+			// -- Frames-a-Skippin' Section --
+
+			if (bKeepSkipping <= 1)
+			{
+				//first set VU1 to enabled THEN unfreeze GS regs
+				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
+					Cpu->ExecuteVU1Block = s_prevExecuteVU1Block;
+				if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+				else GSsetFrameSkip(0);
+				bOkayToSkip--;
+
+				// Note: If we lag behind by 8 frames then it's time to give up on the idea
+				// of catching up.  Force the game to drop some frames by resetting iStart to
+				// something closer iEnd.
+
+				if( sSlowDeltaTime > m_iSlowTicks * 8 )
+				{
+					//SysPrintf( "Frameskip couldn't skip enough -- had to lose some time!\n" );
+					m_iStart = iEnd - m_iSlowTicks;
+					return;
+				}
+			}
+
+			m_iStart = uSlowExpectedEnd;
+			bKeepSkipping--;
+			return;
+		}
+		else
+		{
+			// -- Consecutive frames section --
+			// Force-render consecutive frames without skipping.
+
+			bOkayToSkip--;
+
+			if( sSlowDeltaTime > 0 )
+			{
+				m_iStart = uSlowExpectedEnd;
+				return;
+			}
+		}		
+		}
+	}
+
+	// If we got this far it means the game is running near or above full framerate.
+
+	// use the expected frame completion time as our starting point.
+	// improves smoothness by making the framelimiter more adaptive to the
+	// imperfect TIMESLICE() wait, and allows it to speed up a wee bit after
+	// slow frames to "catch up."
+
+	m_iStart = uExpectedEnd;
+
+	while( sDeltaTime < 0 ) {
+		_TIMESLICE();
+		iEnd = GetCPUTicks();
+		sDeltaTime = iEnd - uExpectedEnd;
 	}
 }
 
@@ -482,7 +537,8 @@ static __forceinline void VSyncEnd(u32 sCycle) // VSync End
 	frameLimit(); // limit FPS (also handles frameskip and VUskip)
 }
 
-#ifndef PCSX2_PUBLIC
+//#define VSYNC_DEBUG		// Uncomment this to enable some vSync Timer debugging features.
+#ifdef VSYNC_DEBUG
 static u32 hsc=0;
 static int vblankinc = 0;
 #endif
@@ -514,7 +570,7 @@ __forceinline void rcntUpdate_hScanline()
 		counters[4].CycleT = vSyncInfo.hBlank;		// endpoint (delta from start value)
 		counters[4].mode = MODE_HBLANK;
 
-#		ifndef PCSX2_PUBLIC
+#		ifdef VSYNC_DEBUG
 		hsc++;
 #		endif
 	}
@@ -547,12 +603,12 @@ __forceinline void rcntUpdate_vSync()
 		// Accumulate hsync rounding errors:
 		counters[4].sCycle += vSyncInfo.hSyncError;
 
-#		ifndef PCSX2_PUBLIC
+#		ifdef VSYNC_DEBUG
 		vblankinc++;
 		if( vblankinc > 1 )
 		{
 			if( hsc != vSyncInfo.hScanlinesPerFrame )
-				SysPrintf( " ** vSync > Abnornal Scanline Count: %d\n", hsc );
+				SysPrintf( " ** vSync > Abnormal Scanline Count: %d\n", hsc );
 			hsc = 0;
 			vblankinc = 0;
 		}

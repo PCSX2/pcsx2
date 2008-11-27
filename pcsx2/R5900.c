@@ -355,6 +355,12 @@ __forceinline int cpuTestCycle( u32 startCycle, s32 delta )
 	return (int)(cpuRegs.cycle - startCycle) >= delta;
 }
 
+// tells the EE to run the branch test the next time it gets a chance.
+__forceinline void cpuSetBranch()
+{
+	g_nextBranchCycle = cpuRegs.cycle;
+}
+
 static __forceinline void TESTINT( u8 n, void (*callback)() )
 {
 	if( !(cpuRegs.interrupt & (1 << n)) ) return;
@@ -430,7 +436,7 @@ static __forceinline void _cpuTestPERF()
 
 // Maximum wait between branches.  Lower values provide a tighter synchronization between
 // the EE and the IOP, but incur more execution overhead.
-#define EE_WAIT_CYCLE 2048
+#define EE_WAIT_CYCLE 512		// 2048 is still unstable due to COP0
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
