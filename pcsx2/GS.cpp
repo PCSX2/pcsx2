@@ -123,7 +123,7 @@ void* GSThreadProc(void* idp);
 int g_FFXHack=0;
 
 static bool gsHasToExit=false;
-static LONG g_pGSvSyncCount = 0;
+//static LONG g_pGSvSyncCount = 0;
 
 #ifdef PCSX2_DEVBUILD
 
@@ -264,6 +264,8 @@ void gsInit()
 	}
 }
 
+//int g_gsFlushing = 0;
+
 __forceinline void gsWaitGS()
 {
     // [Air] : I'm pretty sure there's no harm in doing doing timeslices
@@ -273,13 +275,11 @@ __forceinline void gsWaitGS()
 	// behavior likely does not mimic Sleep(0).  Ideally the usleep(500) should
 	// be replaced with something that matches Sleep(0) behavior.
 
-	/*if( CHECK_DUALCORE ) {
-        while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos );
-    }
-    else {*/
-
+	//InterlockedIncrement( (long*)&g_gsFlushing );
+	if( !CHECK_DUALCORE ) GS_SETEVENT();
 	while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos )
 		_TIMESLICE();
+	//InterlockedDecrement( (long*)&g_gsFlushing );
 }
 
 // Sets the gsEvent flag and releases a timeslice.
@@ -287,8 +287,10 @@ __forceinline void gsWaitGS()
 static __forceinline void gsSetEventWait()
 {
 	if( !CHECK_DUALCORE ) {
+		//InterlockedIncrement( (long*)&g_gsFlushing );
 		GS_SETEVENT();
 		_TIMESLICE();
+		//InterlockedDecrement( (long*)g_gsFlushing );
 	}
 }
 
@@ -324,7 +326,7 @@ void GSRINGBUF_DONECOPY(const u8 *mem, u32 size)
 	assert( g_pGSRingPos != temp );
 
 	InterlockedExchangePointer((void**)&g_pGSWritePos, temp);
-	if( !CHECK_DUALCORE ) GS_SETEVENT();
+	//if( !CHECK_DUALCORE ) GS_SETEVENT();
 
 }
 
@@ -525,8 +527,8 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
 	InterlockedExchangePointer((void**)&g_pGSWritePos, future_writepos);
 
-	if( !CHECK_DUALCORE )
-		GS_SETEVENT();
+	//if( type == GS_RINGTYPE_VSYNC && !CHECK_DUALCORE )
+	//	GS_SETEVENT();
 }
 
 void gsReset()
@@ -546,7 +548,7 @@ void gsReset()
 #endif
         gsHasToExit=false;
 		g_pGSRingPos = g_pGSWritePos;
-		g_pGSvSyncCount = 0;
+		//g_pGSvSyncCount = 0;
 	}
 
 	memset(g_path, 0, sizeof(g_path));
@@ -1511,6 +1513,7 @@ extern "C" void GSPostVsyncEnd()
 		//InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
 		//SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
+		if( !CHECK_DUALCORE ) GS_SETEVENT();
 	}
 	else {
 		GSvsync((*(u32*)(PS2MEM_GS+0x1000)&0x2000));
@@ -1573,6 +1576,25 @@ void* GSThreadProc(void* lpParam)
 			if( WaitForMultipleObjects(2, handles, FALSE, INFINITE) == WAIT_OBJECT_0+1 ) 
 			{
 				break; //exit thread and close gs
+			}
+			else
+			{
+				/*if( !g_gsFlushing ) && (*(volatile int*)&g_pGSvSyncCount) == 0 ) 
+				{
+					// not enough frames queued up.  But if the buffer's filling we should start
+					// purging the ring buffer anyway:
+
+					const long writepos = (long)(*(volatile PU8*)&g_pGSWritePos);
+					long delta = writepos - (long)g_pGSRingPos;
+
+					if( delta < 0 )
+					{
+						delta = (writepos - (long)GS_RINGBUFFERBASE) + ((long)(GS_RINGBUFFEREND - g_pGSRingPos));
+					}
+
+					if( delta < (long)(GS_RINGBUFFERSIZE / 2) ) continue;
+				}*/
+				//SysPrintf( "Accumulated : %d\n", *(volatile int*)&g_pGSvSyncCount );
 			}
 		}
 #else
@@ -1797,6 +1819,7 @@ void* GSThreadProc(void* lpParam)
 
 		// buffer is empty so our vsync must be zero.
 
+		//SysPrintf( "Discharged : %d\n", *(volatile int*)&g_pGSvSyncCount );
 		//if( *(volatile LONG*)&g_pGSvSyncCount != 0 )
 		//	SysPrintf( "MTGS > vSync count mismatch: %d\n", g_pGSvSyncCount );
 

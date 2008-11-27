@@ -417,7 +417,6 @@ static __forceinline void frameLimit()
 		// This is the number of consecutive frames we will skip				
 		#define yesSkipFrames (Config.CustomConsecutiveSkip>0) ? Config.CustomConsecutiveSkip : 2
 
-		{
 		const s64 uSlowExpectedEnd = m_iStart + m_iSlowTicks;
 		const s64 sSlowDeltaTime = iEnd - uSlowExpectedEnd;
 
@@ -491,7 +490,6 @@ static __forceinline void frameLimit()
 				return;
 			}
 		}		
-		}
 	}
 
 	// If we got this far it means the game is running near or above full framerate.
