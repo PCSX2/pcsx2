@@ -1484,7 +1484,7 @@ extern "C" void GSPostVsyncEnd()
 	{
 #ifdef PCSX2_DEVBUILD
 		InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
-		SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
+		//SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
 #endif
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
 		if( !CHECK_DUALCORE ) GS_SETEVENT();
