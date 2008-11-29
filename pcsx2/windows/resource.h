@@ -501,7 +501,6 @@
 #define IDC_SYNCHACK3                   1219
 #define IDC_IOPGPR0                     1220
 #define IDC_SYNCHACK4                   1220
-#define IDC_FASTBRANCHES                1220
 #define IDC_IOPGPR1                     1221
 #define IDC_IOPGPR2                     1222
 #define IDC_IOPGPR16                    1223

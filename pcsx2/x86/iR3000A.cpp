@@ -985,8 +985,6 @@ void psxSetBranchImm( u32 imm )
 	*ptr = (uptr)JMP32((uptr)psxDispatcher - ( (uptr)x86Ptr + 5 ));
 }
 
-#define USE_FAST_BRANCHES CHECK_FASTBRANCHES
-
 //fixme : this is all a huge hack, we base the counter advancements on the average an opcode should take (wtf?)
 //		  If that wasn't bad enough we have default values like 9/8 which will get cast to int later
 //		  (yeah, that means all sync code couldn't have worked to beginn with)
@@ -1004,12 +1002,6 @@ static u32 psxScaleBlockCycles()
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	u32 blockCycles = psxScaleBlockCycles();
-	if( USE_FAST_BRANCHES && cpuBranch == 0 )
-	{
-		SUB32ItoM((uptr)&psxCycleEE, blockCycles*8 );
-		ADD32ItoM((uptr)&psxRegs.cycle, blockCycles);
-		return;
-	}
 
 	MOV32MtoR(ECX, (uptr)&psxRegs.cycle);
 	MOV32MtoR(EAX, (uptr)&psxCycleEE);

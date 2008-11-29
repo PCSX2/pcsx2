@@ -929,7 +929,6 @@ static void HacksInit( HWND hDlg )
     if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
 	if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
 	if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);
-	//if(Config.Hacks & 0x80) CheckDlgButton(hDlg, IDC_FASTBRANCHES, TRUE);
 	if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
 	if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
 	if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
@@ -947,7 +946,6 @@ static void HacksChecked( HWND hDlg )
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
-	//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FASTBRANCHES) ? 0x80 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
@@ -974,7 +972,7 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					EndDialog(hDlg, FALSE);
 					break;
 
-				case IDBUTTON1:
+				case IDBUTTON1: //"compatibility" setting
 					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
@@ -983,7 +981,6 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
-					//CheckDlgButton(hDlg, IDC_FASTBRANCHES, FALSE);
 					//CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
 					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
 					
@@ -991,7 +988,7 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					HacksInit( hDlg );
 					break;
 
-				case IDBUTTON2:
+				case IDBUTTON2: //"speed" setting
 					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
@@ -999,8 +996,7 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
-					//CheckDlgButton(hDlg, IDC_FASTBRANCHES, FALSE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
 					CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE);
 					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
 

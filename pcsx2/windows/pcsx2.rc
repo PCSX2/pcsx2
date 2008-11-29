@@ -896,30 +896,33 @@ BEGIN
     LTEXT           "User Name:",IDC_STATIC,7,41,38,8
 END
 
-IDD_ADVANCED_OPTIONS DIALOGEX 0, 0, 231, 163
+IDD_ADVANCED_OPTIONS DIALOGEX 0, 0, 246, 270
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced Options"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,105,142,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,165,142,50,14
-    RADIOBUTTON     "Nearest",IDC_EE_ROUNDMODE0,23,33,59,16
-    RADIOBUTTON     "Negative",IDC_EE_ROUNDMODE1,23,48,49,16
-    RADIOBUTTON     "Positive",IDC_EE_ROUNDMODE2,23,62,44,16
-    RADIOBUTTON     "Chop / Zero",IDC_EE_ROUNDMODE3,23,76,54,16
-    GROUPBOX        "Roundmode",IDC_STATIC,14,23,69,75
-    GROUPBOX        "Roundmode",IDC_STATIC,130,23,72,76
-    GROUPBOX        "EE Recs Options",IDC_STATIC,7,7,101,129
-    CONTROL         "Flush to Zero",IDC_EE_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,103,58,13
-    CONTROL         "Denormals are Zero",IDC_EE_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,117,79,13
-    CONTROL         "Flush to Zero",IDC_VU_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,103,58,13
-    CONTROL         "Denormals are Zero",IDC_VU_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,117,81,13
-    GROUPBOX        "VU Recs Options",IDC_STATIC,121,7,103,129
-    RADIOBUTTON     "Nearest",IDC_VU_ROUNDMODE0,141,35,42,12
-    RADIOBUTTON     "Negative",IDC_VU_ROUNDMODE1,141,50,41,12
-    RADIOBUTTON     "Positive",IDC_VU_ROUNDMODE2,141,65,39,12
-    RADIOBUTTON     "Chop / Zero",IDC_VU_ROUNDMODE3,141,79,52,12
-    PUSHBUTTON      "Defaults",IDDEFAULT,14,142,50,14
+    DEFPUSHBUTTON   "OK",IDOK,109,249,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,165,249,50,14
+    RADIOBUTTON     "Nearest",IDC_EE_ROUNDMODE0,23,129,59,16
+    RADIOBUTTON     "Negative",IDC_EE_ROUNDMODE1,23,143,49,16
+    RADIOBUTTON     "Positive",IDC_EE_ROUNDMODE2,23,159,44,16
+    RADIOBUTTON     "Chop / Zero",IDC_EE_ROUNDMODE3,23,172,54,16
+    CONTROL         "Flush to Zero",IDC_EE_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,199,58,13
+    CONTROL         "Denormals are Zero",IDC_EE_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,212,79,13
+    CONTROL         "Flush to Zero",IDC_VU_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,199,58,13
+    CONTROL         "Denormals are Zero",IDC_VU_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,212,81,13
+    RADIOBUTTON     "Nearest",IDC_VU_ROUNDMODE0,144,130,42,12
+    RADIOBUTTON     "Negative",IDC_VU_ROUNDMODE1,144,146,41,12
+    RADIOBUTTON     "Positive",IDC_VU_ROUNDMODE2,144,161,39,12
+    RADIOBUTTON     "Chop / Zero",IDC_VU_ROUNDMODE3,144,175,52,12
+    PUSHBUTTON      "Defaults",IDDEFAULT,14,249,50,14
+    GROUPBOX        "VU Recs Options",IDC_STATIC,125,103,114,129
+    GROUPBOX        "EE Recs Options",IDC_STATIC,7,103,101,129
+    GROUPBOX        "Roundmode",IDC_STATIC,134,119,72,76
+    GROUPBOX        "Roundmode",IDC_STATIC,14,119,69,75
+    LTEXT           "These options let you set the rounding mode of the Emotion Engine (CPU) and Vector Unit recompilers. Try changing the roundmode for EE if your game hangs, it could make it work again.",IDC_STATIC,14,18,192,37
+    LTEXT           " ""Flush to Zero"" and ""Denormals are Zero"" for the VU recompiler can speed games up, but they also break a few. Hit default if you are not sure what to use.",IDC_STATIC,14,54,198,31
+    GROUPBOX        "Help",IDC_STATIC,7,7,232,83,BS_CENTER
 END
 
 
@@ -982,13 +985,13 @@ BEGIN
     IDD_ADVANCED_OPTIONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 224
+        RIGHTMARGIN, 239
         VERTGUIDE, 14
         VERTGUIDE, 23
-        VERTGUIDE, 130
-        VERTGUIDE, 141
+        VERTGUIDE, 134
+        VERTGUIDE, 144
         TOPMARGIN, 7
-        BOTTOMMARGIN, 156
+        BOTTOMMARGIN, 263
         HORZGUIDE, 23
         HORZGUIDE, 103
         HORZGUIDE, 117
@@ -1049,16 +1052,14 @@ BEGIN
     CONTROL         "Disable VU Overflow Checks - *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_VU_OVERFLOWHACK,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,15,49,475,10
     CTEXT           "These hacks will affect the speed of PCSX2 but possibly compromise compatibility.",IDC_HACKDESC,7,7,497,8
-    CONTROL         "Tighter SPU2 Sync (Dawn of Mana FMV) - a bit slower",IDC_SOUNDHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,245,421,10
+    CONTROL         "Tighter SPU2 Sync ( Try this if you have stuttering audio ) - a bit slower",IDC_SOUNDHACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,230,421,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )",IDC_SYNCHACK2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,176,410,10
-    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Sometimes speeds games a bit more, but can break games. )",IDC_SYNCHACK3,
+    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Even faster, but very unstable. Use at your own risk! )",IDC_SYNCHACK3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,190,464,11
     CONTROL         "Disable FPU Overflow Checks -  *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_FPU_OVERFLOWHACK,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,15,63,483,10
-    CONTROL         "EE/IOP Fast Branches - Quick branching ( Very small speedup; Not Recommended!  )",IDC_FASTBRANCHES,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,231,423,10
     CTEXT           "If you have problems, disable all these and try again!",IDC_STATIC,7,22,497,8
     GROUPBOX        "Overflow and Underflow",IDC_STATIC,7,36,497,58
     CONTROL         "Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )",IDC_DENORMALS,
@@ -1071,7 +1072,7 @@ BEGIN
     CONTROL         "Disable Extra FPU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )",IDC_FPU_FLAGS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,126,414,10
     CONTROL         "Escape Hack - Use Esc key to fully exit PCSX2.",IDC_ESCHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,259,421,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,244,421,10
     PUSHBUTTON      "Compatibility",IDBUTTON1,15,293,50,14
     PUSHBUTTON      "Speed",IDBUTTON2,73,293,50,14
 END
@@ -1608,7 +1609,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,14,143,214,18
     CONTROL         "Multi threaded GS mode (MTGS)\n    (faster on dual core/HT procs, requires pcsx2 restart)",IDC_CPU_GSMULTI,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,166,231,30
-    CONTROL         "Dual Core Mode (DC) - Much faster but only valid with MTGS",IDC_CPU_MULTI,
+    CONTROL         "Dual Core Mode (DC) - Only valid with MTGS. Keeps one core busy, sometimes improving FPS. Note that this increases the heat your CPU produces, so leave it off on Notebooks.",IDC_CPU_MULTI,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,199,232,26
     CONTROL         "Normal - All frames are rendered as fast as possible.",IDC_CPU_FL_NORMAL,
                     "Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_GROUP,309,17,221,17
