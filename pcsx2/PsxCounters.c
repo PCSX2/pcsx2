@@ -86,12 +86,12 @@ void psxRcntInit() {
 	for (i=0; i<3; i++) {
 		psxCounters[i].rate = 1;
 		psxCounters[i].mode|= 0x0400;
-		psxCounters[i].target = 0x0;
+		psxCounters[i].target = IOPCNT_FUTURE_TARGET;
 	}
 	for (i=3; i<6; i++) {
 		psxCounters[i].rate = 1;
 		psxCounters[i].mode|= 0x0400;
-		psxCounters[i].target = 0x0;
+		psxCounters[i].target = IOPCNT_FUTURE_TARGET;
 	}
 
 	psxCounters[0].interrupt = 0x10;
@@ -104,7 +104,7 @@ void psxRcntInit() {
 
 	if (SPU2async != NULL)
 	{
-		psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*8));
+		psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12));
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		psxCounters[6].mode = 0x8;
 	}
@@ -129,7 +129,7 @@ static void __fastcall _rcntTestTarget( int i )
 {
 	if( psxCounters[i].count < psxCounters[i].target ) return;
 
-	PSXCNT_LOG("IOP Counter[%d] target %x >= %x (mode: %x)\n",
+	PSXCNT_LOG("IOP Counter[%d] target 0x%I64x >= 0x%I64x (mode: %x)\n",
 		i, psxCounters[i].count, psxCounters[i].target, psxCounters[i].mode);
 
 	if (psxCounters[i].mode & IOPCNT_INT_TARGET)
@@ -161,7 +161,7 @@ static __forceinline void _rcntTestOverflow( int i )
 	u64 maxTarget = ( i < 3 ) ? 0xffff : 0xfffffffful;
 	if( psxCounters[i].count <= maxTarget ) return;
 
-	PSXCNT_LOG("IOP Counter[%d] overflow 0x%x >= 0x%x (mode: %x)\n",
+	PSXCNT_LOG("IOP Counter[%d] overflow 0x%I64x >= 0x%I64x (mode: %x)\n",
 		i, psxCounters[i].count, maxTarget, psxCounters[i].mode );
 
 	if(psxCounters[i].mode & IOPCNT_INT_OVERFLOW)
@@ -281,11 +281,9 @@ void psxCheckStartGate16(int i)
 {
 	assert( i < 3 );
 
-	//Check Gate events when Vsync Starts
-
-	if(i == 0)
+	if(i == 0)	// hSync counting...
 	{
-		// Alternate/scanline counters for Gates 1 and 3.
+		// AlternateSource/scanline counters for Gates 1 and 3.
 		// We count them here so that they stay nicely synced with the EE's hsync.
 
 		const u32 altSourceCheck = IOPCNT_ALT_SOURCE | IOPCNT_ENABLE_GATE;
@@ -323,9 +321,8 @@ void psxCheckEndGate16(int i)
 
 static void psxCheckStartGate32(int i)
 {
-	// 32 it gate is called for gate 3 only.  Ever.
+	// 32 bit gate is called for gate 3 only.  Ever.
 	assert(i == 3);
-
 	_psxCheckStartGate( i );
 }
 
@@ -340,14 +337,14 @@ void psxVBlankStart()
 {
 	cdvdVsync();
 	psxHu32(0x1070) |= 1;
-	if(psxvblankgate & 1) psxCheckStartGate16(1);
+	if(psxvblankgate & (1 << 1)) psxCheckStartGate16(1);
 	if(psxvblankgate & (1 << 3)) psxCheckStartGate32(3);
 }
 
 void psxVBlankEnd()
 {
 	psxHu32(0x1070) |= 0x800;
-	if(psxvblankgate & 1) psxCheckEndGate16(1);
+	if(psxvblankgate & (1 << 1)) psxCheckEndGate16(1);
 	if(psxvblankgate & (1 << 3)) psxCheckEndGate32(3);
 }
 
@@ -668,7 +665,7 @@ u16 psxRcntRcount16(int index)
 
 	assert( index < 3 );
 
-	PSXCNT_LOG("IOP Counter[%d] > readCount16 = %lx", index, (u16)retval );
+	PSXCNT_LOG("IOP Counter[%d] > readCount16 = %lx\n", index, (u16)retval );
 
 	// Don't count HBLANK timers
 	// Don't count stopped gates either.
@@ -678,7 +675,7 @@ u16 psxRcntRcount16(int index)
 	{
 		u32 delta = (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate);
 		retval += delta;
-		PSXCNT_LOG(" (delta = %lx)", delta );
+		PSXCNT_LOG("                > (delta = %lx)\n", delta );
 	}
 	PSXCNT_LOG( "\n" );
 
@@ -691,16 +688,15 @@ u32 psxRcntRcount32(int index)
 	
 	assert( index >= 3 && index < 6 );
 
-	PSXCNT_LOG("IOP Counter[%d] > readCount32 = %lx", index, retval );
+	PSXCNT_LOG("IOP Counter[%d] > readCount32 = %lx\n", index, retval );
 
 	if( !( psxCounters[index].mode & IOPCNT_STOPPED ) &&
 		( psxCounters[index].rate != PSXHBLANK ) )
 	{
 		u32 delta = (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate);
 		retval += delta;
-		PSXCNT_LOG(" (delta = %lx)", delta );
+		PSXCNT_LOG("                > (delta = %lx)\n", delta );
 	}
-	PSXCNT_LOG( "\n" );
 
 	return retval;
 }
@@ -737,7 +733,7 @@ int psxRcntFreeze(gzFile f, int Mode)
 	{
 		// This is needed to make old save states compatible.
 
-		psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*8));
+		psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12));
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		psxCounters[7].rate = PSXCLK/1000;
 		psxCounters[7].CycleT = psxCounters[7].rate;	
