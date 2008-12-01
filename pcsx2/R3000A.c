@@ -77,6 +77,10 @@ void psxReset() {
 	psxRegs.CP0.n.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1
 	psxRegs.CP0.n.PRid   = 0x0000001f; // PRevID = Revision ID, same as the IOP R3000A
 
+	psxBreak = 0;
+	psxCycleEE = -1;
+	g_psxNextBranchCycle = psxRegs.cycle + 2;
+
 	psxHwReset();
 	psxBiosInit();
 	psxExecuteBios();
@@ -155,7 +159,6 @@ void psxException(u32 code, u32 bd) {
 
 __forceinline void psxSetNextBranch( u32 startCycle, s32 delta )
 {
-	//assert( startCycle <= psxRegs.cycle );
 	// typecast the conditional to signed so that things don't blow up
 	// if startCycle is greater than our next branch cycle.
 
@@ -182,8 +185,6 @@ __forceinline void PSX_INT( int n, s32 ecycle )
 
 	psxRegs.sCycle[n] = psxRegs.cycle;
 	psxRegs.eCycle[n] = ecycle;
-
-	// Interrupt is happening soon: make sure everyone is aware (including the EE!)
 
 	psxSetNextBranchDelta( ecycle );
 

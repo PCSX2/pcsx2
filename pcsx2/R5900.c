@@ -50,9 +50,6 @@ int cpuInit()
 	int ret;
 
 	SysPrintf("PCSX2 v" PCSX2_VERSION " save ver: %x\n", dwSaveVersion);
-	/*SysPrintf("Color Legend: White - PCSX2 message\n");
-	SysPrintf(COLOR_GREEN "              Green - EE sio2 printf\n" COLOR_RESET);
-	SysPrintf(COLOR_RED   "              Red   - IOP printf\n" COLOR_RESET);*/
     SysPrintf("EE pc offset: 0x%x, PSX pc offset: 0x%x\n", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
 
 	InitFPUOps();
@@ -77,14 +74,14 @@ int cpuInit()
 	if (memInit() == -1) {
 		PROCESS_INFORMATION pi;
 		STARTUPINFO si;
-		char strdir[255], strexe[255];
+		char strdir[g_MaxPath], strexe[g_MaxPath];
 		if( MessageBox(NULL, "Failed to allocate enough physical memory to run pcsx2. Try closing\n"
 			"down background programs, restarting windows, or buying more memory.\n\n"
 			"Launch TLB version of pcsx2 (pcsx2t.exe)?", "Memory Allocation Error", MB_YESNO) == IDYES ) {
 
 			GetCurrentDirectory(ARRAYSIZE(strdir), strdir);
-			_snprintf(strexe, ARRAYSIZE(strexe), "%s\\pcsx2t.exe", strdir);
-
+			//_snprintf(strexe, ARRAYSIZE(strexe), "%s\\pcsx2t.exe", strdir);
+			CombinePaths( strexe, strdir, "pcsx2t.exe" );
 			memset(&si, 0, sizeof(si));
 
 			if( !CreateProcess(strexe, "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir, &si, &pi)) {
@@ -131,6 +128,10 @@ void cpuReset()
 	fpuRegs.fprc[0]   = 0x00002e00; // fpu Revision..
 	fpuRegs.fprc[31]  = 0x01000001; // fpu Status/Control
 
+	g_nextBranchCycle = cpuRegs.cycle + 2;
+	EEsCycle = 0;
+	EEoCycle = cpuRegs.cycle;
+
 	vu0Reset();
     vu1Reset();  
 	hwReset();
@@ -142,13 +143,14 @@ void cpuReset()
 
 void cpuShutdown()
 {
+	gsShutdown();	// shut down the GS first because it's running a thread.
+
 	hwShutdown();
 //	biosShutdown();
 	psxShutdown();
 	vu0Shutdown();
 	vu1Shutdown();
 	memShutdown();
-	gsShutdown();
 	disR5900FreeSyms();
 
 	Cpu->Shutdown();
@@ -491,13 +493,13 @@ static __forceinline void _cpuBranchTest_Shared()
 
 	if( iopBranchAction )
 	{
-		//if( EEsCycle < -400 )
+		//if( EEsCycle < -500 )
 		//	SysPrintf( " IOP ahead by: %d\n", -EEsCycle );
 
 		psxCpu->ExecuteBlock();
 	}
 
-	// The IOP cound be running ahead of us, so adjust the iop's next branch by its
+	// The IOP cound be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
 	cpuSetNextBranchDelta( ((g_psxNextBranchCycle-psxRegs.cycle)*8) - EEsCycle );
 
