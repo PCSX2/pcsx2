@@ -57,7 +57,7 @@ void psxVBlankStart();
 void psxVBlankEnd();
 void psxCheckStartGate16(int i);
 void psxCheckEndGate16(int i);
-static void psxCheckStartGate32(int i);
-static void psxCheckEndGate32(int i);
+//static void psxCheckStartGate32(int i);
+//static void psxCheckEndGate32(int i);
 
 #endif /* __PSXCOUNTERS_H__ */

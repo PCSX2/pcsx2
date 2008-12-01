@@ -628,6 +628,20 @@
 	      <property name="visible">True</property>
 	      <property name="can_default">True</property>
 	      <property name="can_focus">True</property>
+	      <property name="label" translatable="yes">Normal</property>
+	      <property name="use_underline">True</property>
+	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
+	      <property name="response_id">0</property>
+	      <signal name="clicked" handler="on_Speed_Hack_Normal" last_modification_time="Mon, 01 Dec 2008 21:19:02 GMT"/>
+	    </widget>
+	  </child>
+
+	  <child>
+	    <widget class="GtkButton" id="button99">
+	      <property name="visible">True</property>
+	      <property name="can_default">True</property>
+	      <property name="can_focus">True</property>
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -638,7 +652,7 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkButton" id="button76">
+	    <widget class="GtkButton" id="button98">
 	      <property name="visible">True</property>
 	      <property name="can_default">True</property>
 	      <property name="can_focus">True</property>
@@ -1041,7 +1055,7 @@ Enabled (Helps SPS, Slow)</property>
 			<widget class="GtkCheckButton" id="check_Triple_Sync">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
-			  <property name="label" translatable="yes">EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Sometimes speeds games a bit more, but can break games. )</property>
+			  <property name="label" translatable="yes">EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. (Even faster, but very unstable. Use at your own risk!)</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
 			  <property name="focus_on_click">True</property>
@@ -1119,7 +1133,7 @@ Enabled (Helps SPS, Slow)</property>
 			<widget class="GtkCheckButton" id="check_Tight_SPU_Sync">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
-			  <property name="label" translatable="yes">Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore.</property>
+			  <property name="label" translatable="yes">Tighter SPU2 Sync (Try this if you have stuttering audio) - a bit slower.</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
 			  <property name="focus_on_click">True</property>
@@ -1151,10 +1165,6 @@ Enabled (Helps SPS, Slow)</property>
 			  <property name="expand">False</property>
 			  <property name="fill">False</property>
 			</packing>
-		      </child>
-
-		      <child>
-			<placeholder/>
 		      </child>
 		    </widget>
 		  </child>
@@ -7029,7 +7039,10 @@ Version x.x</property>
 		<widget class="GtkCheckButton" id="GtkCheckButton_CpuDC">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="label" translatable="yes">Dual Core Mode (DC) - Much faster, but only valid with MTGS</property>
+		  <property name="label" translatable="yes">Dual Core Mode (DC) - Only valid with MTGS. 
+Keeps one core busy, sometimes improving FPS. 
+Note that this increases the heat your CPU produces, 
+so leave it off on Notebooks.</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">True</property>

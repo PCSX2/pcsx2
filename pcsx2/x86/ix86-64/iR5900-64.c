@@ -1731,8 +1731,6 @@ void StopPerfCounter()
 #endif
 }
 
-#define USE_FAST_BRANCHES CHECK_FASTBRANCHES
-
 //void testfpu()
 //{
 //	int i;
@@ -1775,12 +1773,6 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 #ifdef _DEBUG
 	//CALLFunc((uptr)testfpu);
 #endif
-
-	if( USE_FAST_BRANCHES && (cpuBranch==0) )
-	{
-		ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*9/8);
-		return;
-	}
 
 	MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
 	ADD32ItoR(ECX, s_nBlockCycles * EECYCLE_MULT);

@@ -710,9 +710,23 @@ void on_Speed_Hack_Compatability(GtkButton *button, gpointer user_data)
 	set_checked(SpeedHacksDlg, "check_Disable_Underflow", TRUE);
 	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", FALSE);
 	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
-        //set_checked(SpeedHacksDlg, "check_EE_Fast_Branches", FALSE);
         set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", TRUE);
 	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", TRUE);
+	
+}
+void on_Speed_Hack_Normal(GtkButton *button, gpointer user_data)
+{
+        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", FALSE);
+       
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 1);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 1);
+	
+	set_checked(SpeedHacksDlg, "check_Tight_SPU_Sync", FALSE);
+	set_checked(SpeedHacksDlg, "check_Disable_Underflow", FALSE);
+	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", FALSE);
+	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
+        set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", FALSE);
+	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", FALSE);
 	
 }
 void on_Speed_Hack_Speed(GtkButton *button, gpointer user_data)
@@ -725,8 +739,7 @@ void on_Speed_Hack_Speed(GtkButton *button, gpointer user_data)
 	set_checked(SpeedHacksDlg, "check_Tight_SPU_Sync", FALSE);
 	set_checked(SpeedHacksDlg, "check_Disable_Underflow", TRUE);
 	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", TRUE);
-	set_checked(SpeedHacksDlg, "check_Triple_Sync", TRUE);
-        //set_checked(SpeedHacksDlg, "check_EE_Fast_Branches", FALSE);
+	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
         set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", TRUE);
 	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", TRUE);
 	
@@ -754,7 +767,6 @@ void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_Underflow") ? FLAG_NO_UNDERFLOW : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_IOP_Double_Sync") ? FLAG_IOP_2_SYNC : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Triple_Sync") ? FLAG_TRIPLE_SYNC : 0;  
-	//Config.Hacks |= is_checked(SpeedHacksDlg, "check_EE_Fast_Branches") ? FLAG_FAST_BRANCHES : 0; 
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_VU_Flags") ? FLAG_NO_VU_FLAGS : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_FPU_Flags")? FLAG_NO_FPU_FLAGS : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_ESC_Hack") ? FLAG_ESC : 0;  

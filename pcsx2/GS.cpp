@@ -815,8 +815,8 @@ static __forceinline void TagPathTransfer( GIFTAG* ptag, GIFTAG *path )
 // simulates a GIF tag
 u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 {
-	int nreg, i, nloop;
-	u32 curreg;
+	int nreg = 0, i, nloop;
+	u32 curreg = 0;
 	u32 tempreg;
 	GIFTAG* ptag = &g_path[path];
 

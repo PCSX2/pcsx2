@@ -328,7 +328,8 @@ create_SpeedHacksDlg (void)
   GtkWidget *button73;
   GtkWidget *button74;
   GtkWidget *button75;
-  GtkWidget *button76;
+  GtkWidget *button99;
+  GtkWidget *button98;
 
   SpeedHacksDlg = gtk_dialog_new ();
   gtk_window_set_title (GTK_WINDOW (SpeedHacksDlg), _("PCSX2 Speed Hacks"));
@@ -448,7 +449,7 @@ create_SpeedHacksDlg (void)
   gtk_widget_show (check_IOP_Double_Sync);
   gtk_box_pack_start (GTK_BOX (vbox34), check_IOP_Double_Sync, FALSE, FALSE, 0);
 
-  check_Triple_Sync = gtk_check_button_new_with_mnemonic (_("EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Sometimes speeds games a bit more, but can break games. )"));
+  check_Triple_Sync = gtk_check_button_new_with_mnemonic (_("EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. (Even faster, but very unstable. Use at your own risk!)"));
   gtk_widget_show (check_Triple_Sync);
   gtk_box_pack_start (GTK_BOX (vbox34), check_Triple_Sync, FALSE, FALSE, 0);
 
@@ -471,7 +472,7 @@ create_SpeedHacksDlg (void)
   gtk_widget_show (vbox33);
   gtk_container_add (GTK_CONTAINER (alignment9), vbox33);
 
-  check_Tight_SPU_Sync = gtk_check_button_new_with_mnemonic (_("Tighter SPU2 Sync ( FFXII vids) - Slower, not very useful anymore."));
+  check_Tight_SPU_Sync = gtk_check_button_new_with_mnemonic (_("Tighter SPU2 Sync (Try this if you have stuttering audio) - a bit slower."));
   gtk_widget_show (check_Tight_SPU_Sync);
   gtk_box_pack_start (GTK_BOX (vbox33), check_Tight_SPU_Sync, FALSE, FALSE, 0);
 
@@ -498,15 +499,20 @@ create_SpeedHacksDlg (void)
   gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button74, 0);
   GTK_WIDGET_SET_FLAGS (button74, GTK_CAN_DEFAULT);
 
-  button75 = gtk_button_new_from_stock ("gtk-ok");
+  button75 = gtk_button_new_with_mnemonic (_("Normal"));
   gtk_widget_show (button75);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button75, GTK_RESPONSE_OK);
+  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button75, 0);
   GTK_WIDGET_SET_FLAGS (button75, GTK_CAN_DEFAULT);
 
-  button76 = gtk_button_new_from_stock ("gtk-cancel");
-  gtk_widget_show (button76);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button76, GTK_RESPONSE_CANCEL);
-  GTK_WIDGET_SET_FLAGS (button76, GTK_CAN_DEFAULT);
+  button99 = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (button99);
+  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button99, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (button99, GTK_CAN_DEFAULT);
+
+  button98 = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (button98);
+  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button98, GTK_RESPONSE_CANCEL);
+  GTK_WIDGET_SET_FLAGS (button98, GTK_CAN_DEFAULT);
 
   g_signal_connect ((gpointer) button73, "clicked",
                     G_CALLBACK (on_Speed_Hack_Compatability),
@@ -515,9 +521,12 @@ create_SpeedHacksDlg (void)
                     G_CALLBACK (on_Speed_Hack_Speed),
                     NULL);
   g_signal_connect ((gpointer) button75, "clicked",
+                    G_CALLBACK (on_Speed_Hack_Normal),
+                    NULL);
+  g_signal_connect ((gpointer) button99, "clicked",
                     G_CALLBACK (on_Speed_Hack_OK),
                     NULL);
-  g_signal_connect ((gpointer) button76, "clicked",
+  g_signal_connect ((gpointer) button98, "clicked",
                     G_CALLBACK (On_Dialog_Cancelled),
                     NULL);
 
@@ -560,7 +569,8 @@ create_SpeedHacksDlg (void)
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button73, "button73");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button74, "button74");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button75, "button75");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button76, "button76");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button99, "button99");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button98, "button98");
 
   return SpeedHacksDlg;
 }
@@ -3645,7 +3655,7 @@ create_CpuDlg (void)
   gtk_widget_show (GtkCheckButton_MTGS);
   gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_MTGS, FALSE, FALSE, 0);
 
-  GtkCheckButton_CpuDC = gtk_check_button_new_with_mnemonic (_("Dual Core Mode (DC) - Much faster, but only valid with MTGS"));
+  GtkCheckButton_CpuDC = gtk_check_button_new_with_mnemonic (_("Dual Core Mode (DC) - Only valid with MTGS. \nKeeps one core busy, sometimes improving FPS. \nNote that this increases the heat your CPU produces, \nso leave it off on Notebooks."));
   gtk_widget_show (GtkCheckButton_CpuDC);
   gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_CpuDC, FALSE, FALSE, 0);
 
