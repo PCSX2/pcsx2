@@ -28,11 +28,11 @@ struct sifData{
                 addr;
 };
 
-int eeSifTransfer;
+extern int eeSifTransfer;
 
-DMACh *sif0ch;
-DMACh *sif1ch;
-DMACh *sif2ch;
+extern DMACh *sif0ch;
+extern DMACh *sif1ch;
+extern DMACh *sif2ch;
 
 extern void sifInit();
 extern void SIF0Dma();

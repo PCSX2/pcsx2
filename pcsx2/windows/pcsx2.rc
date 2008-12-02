@@ -1610,8 +1610,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,14,143,214,18
     CONTROL         "Multi threaded GS mode (MTGS)\n    (faster on dual core/HT procs, requires pcsx2 restart)",IDC_CPU_GSMULTI,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,166,231,30
-    CONTROL         "Dual Core Mode (DC) - Only valid with MTGS. Keeps one core busy, sometimes improving FPS. Note that this increases the heat your CPU produces, so leave it off on Notebooks.",IDC_CPU_MULTI,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,199,232,26
+    CONTROL         "Dual Core Mode (DC) - OBSOLETE",IDC_CPU_MULTI,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,7,199,232,26
     CONTROL         "Normal - All frames are rendered as fast as possible.",IDC_CPU_FL_NORMAL,
                     "Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_GROUP,309,17,221,17
     CONTROL         "Limit - Force frames to normal speeds if too fast.\n      (You can set a custom FPS limit below.)",IDC_CPU_FL_LIMIT,

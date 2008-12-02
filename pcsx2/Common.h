@@ -195,8 +195,6 @@ extern TESTRUNARGS g_TestRun;
 #include "x86/ix86/ix86.h"
 #endif
 
-int cdCaseopen;
-
 extern void __Log(const char *fmt, ...);
 extern u16 logProtocol;
 extern u8  logSource;

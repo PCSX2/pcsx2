@@ -32,7 +32,9 @@
 #include "PsxCommon.h"
 #include "CDVDiso.h"
 
-cdvdStruct cdvd;
+static cdvdStruct cdvd;
+static int cdCaseopen;
+
 
 char *mg_zones[8] = {"Japan", "USA", "Europe", "Oceania", "Asia", "Russia", "China", "Mexico"};
 

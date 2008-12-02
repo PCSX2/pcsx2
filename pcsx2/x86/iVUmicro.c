@@ -5626,7 +5626,7 @@ void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
     assert( size >= 0 );
 	
     if( size > 0 ) {
-	    pmem = GSRingBufCopy(NULL, size, GS_RINGTYPE_P1);
+	    pmem = GSRingBufCopy(size, GS_RINGTYPE_P1);
 	    assert( pmem != NULL );
 		FreezeMMXRegs(1);
 	    memcpy_fast(pmem, (u8*)pMem+addr, size);

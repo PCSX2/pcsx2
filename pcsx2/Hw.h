@@ -42,6 +42,7 @@ extern u32 g_nextBranchCycle;
 extern int cpuSetNextBranch( u32 startCycle, s32 delta );
 extern int cpuSetNextBranchDelta( s32 delta );
 extern int cpuTestCycle( u32 startCycle, s32 delta );
+extern void cpuSetBranch();
 
 extern void CPU_INT( u32 n, s32 ecycle );
 

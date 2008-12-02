@@ -32,17 +32,168 @@
 
 using namespace std;
 
-#ifndef _WIN32
-// fixme - Linux needs a proper implementation of locks using pthreads.
-// a set of placebo types and functions might do for now though.
+#if defined(_WIN32) && !defined(WIN32_PTHREADS)
 
-typedef int CRITICAL_SECTION;
+// Win32 Threading Model
 
-void EnterCriticalSection( CRITICAL_SECTION* handle ) {}
-void LeaveCriticalSection( CRITICAL_SECTION* handle ) {}
+#define GS_THREADPROC static DWORD WINAPI GSThreadProc(LPVOID lpParam)
+#define GS_THREAD_INIT_FAIL (DWORD)-1
 
-void InitializeCriticalSection( CRITICAL_SECTION* handle ) {}
-void DeleteCriticalSection( CRITICAL_SECTION* handle ) {}
+typedef HANDLE wait_event_t;
+typedef CRITICAL_SECTION mutex_t;
+typedef HANDLE thread_t;
+
+GS_THREADPROC;	// forward declaration of the gs threadproc
+
+static bool thread_create( thread_t& thread )
+{
+	thread = CreateThread(NULL, 0, GSThreadProc, NULL, 0, NULL);
+	return thread != NULL;
+}
+
+static void thread_close( thread_t& thread )
+{
+	if( thread == NULL ) return;
+	while( true )
+	{
+		DWORD status;
+		GetExitCodeThread( thread, &status );
+		if( status != STILL_ACTIVE ) break;
+		Sleep( 3 );
+	}
+	CloseHandle( &thread );
+	thread = NULL;
+}
+
+static void event_init( wait_event_t& evt )
+{
+	evt = CreateEvent(NULL, FALSE, FALSE, NULL);
+}
+
+static void event_destroy( wait_event_t& evt )
+{
+	if( evt == NULL ) return;
+	CloseHandle( evt );
+	evt = NULL;
+}
+
+static void event_set( wait_event_t& evt )
+{
+	SetEvent( evt );
+}
+
+static void event_wait( wait_event_t& evt )
+{
+	WaitForSingleObject( evt, INFINITE );
+}
+
+static void mutex_init( mutex_t& mutex )
+{
+	InitializeCriticalSection( &mutex );
+}
+
+static void mutex_destroy( mutex_t& mutex )
+{
+	if( mutex.LockSemaphore == NULL ) return;
+	DeleteCriticalSection( &mutex );
+	mutex.LockSemaphore = NULL;
+}
+
+static void mutex_lock( mutex_t& mutex )
+{
+	EnterCriticalSection( &mutex );
+}
+
+static void mutex_unlock( mutex_t& mutex )
+{
+	LeaveCriticalSection( &mutex );
+}
+
+#else
+
+#include <pthread.h>
+
+// PThreads Model
+#define GS_THREADPROC static void* GSThreadProc(void* idp)
+#define GS_THREAD_INIT_FAIL NULL
+
+struct wait_event_t
+{
+	pthread_cond_t cond;
+	pthread_mutex_t mutex;
+
+	wait_event_t() : cond( NULL ), mutex( NULL ) {}
+};
+
+typedef pthread_mutex_t mutex_t;
+typedef pthread_t thread_t;
+
+GS_THREADPROC;	// forward declaration of the gs threadproc
+
+static bool thread_create( thread_t& thread )
+{
+	return pthread_create( &thread, NULL, GSThreadProc, NULL ) == 0;
+}
+
+static void thread_close( thread_t& thread )
+{
+	if( thread.p == NULL ) return;
+	pthread_join( thread, NULL );
+	thread.p = NULL;
+}
+
+static void event_init( wait_event_t& evt )
+{
+	// init the pthread event and buddy mutex to default settings.
+	pthread_cond_init( &evt.cond, NULL );
+	pthread_mutex_init( &evt.mutex, NULL );
+}
+
+static void event_destroy( wait_event_t& evt )
+{
+	if( evt.cond == NULL ) return;
+	pthread_cond_destroy( &evt.cond );
+	pthread_mutex_destroy( &evt.mutex );
+	evt.cond = NULL;
+	evt.mutex = NULL;
+}
+
+static void event_set( wait_event_t& evt )
+{
+	pthread_mutex_lock( &evt.mutex );
+	pthread_cond_signal( &evt.cond );
+	pthread_mutex_unlock( &evt.mutex );
+}
+
+static void event_wait( wait_event_t& evt )
+{
+	pthread_mutex_lock( &evt.mutex );
+	pthread_cond_wait( &evt.cond, &evt.mutex );
+	pthread_mutex_unlock( &evt.mutex );
+}
+
+static void mutex_init( mutex_t& mutex )
+{
+	pthread_mutex_init( &mutex, NULL );
+}
+
+static void mutex_destroy( mutex_t& mutex )
+{
+	if( mutex == NULL ) return;
+	pthread_mutex_destroy( &mutex );
+	mutex = NULL;
+}
+
+static void mutex_lock( mutex_t& mutex )
+{
+	pthread_mutex_lock( &mutex );
+}
+
+static void mutex_unlock( mutex_t& mutex )
+{
+	pthread_mutex_unlock( &mutex );
+}
+
 #endif
 
 
@@ -50,82 +201,29 @@ extern "C" {
 
 #define PLUGINtypedefs // for GSgifTransfer1
 
-#include "PS2Edefs.h"
+#include "Common.h"
 #include "zlib.h"
-#include "Elfheader.h"
-#include "Misc.h"
-#include "System.h"
-#include "R5900.h"
-#include "Vif.h"
 #include "VU.h"
-#include "VifDma.h"
-#include "Memory.h"
-#include "Hw.h"
-#include "DebugTools/Debug.h"
 
-#include "ix86/ix86.h"
+//#include "ix86/ix86.h"
 #include "iR5900.h"
 
-#include "Counters.h"
 #include "GS.h"
 
-extern _GSinit            GSinit;
-extern _GSopen            GSopen;
-extern _GSclose           GSclose;
-extern _GSshutdown        GSshutdown;
-extern _GSvsync           GSvsync;
-extern _GSgifTransfer1    GSgifTransfer1;
-extern _GSgifTransfer2    GSgifTransfer2;
-extern _GSgifTransfer3    GSgifTransfer3;
-extern _GSgetLastTag    GSgetLastTag;
-extern _GSgifSoftReset    GSgifSoftReset;
-extern _GSreadFIFO        GSreadFIFO;
-extern _GSreadFIFO2       GSreadFIFO2;
-extern _GSfreeze GSfreeze;
+static wait_event_t g_hGsEvent; // set when path3 is ready to be processed
+static wait_event_t g_hGSDone;  // used to regulate thread startup and gsInit
+static thread_t g_hVuGsThread;
+static mutex_t gsRingRestartLock = {0};
 
-extern _GSkeyEvent        GSkeyEvent;
-extern _GSchangeSaveState GSchangeSaveState;
-extern _GSmakeSnapshot	   GSmakeSnapshot;
-extern _GSmakeSnapshot2   GSmakeSnapshot2;
-extern _GSirqCallback 	   GSirqCallback;
-extern _GSprintf      	   GSprintf;
-extern _GSsetBaseMem 	   GSsetBaseMem;
-extern _GSsetGameCRC		GSsetGameCRC;
-extern _GSsetFrameSkip 	   GSsetFrameSkip;
-extern _GSreset		   GSreset;
-extern _GSwriteCSR		   GSwriteCSR;
+static volatile bool gsHasToExit = false;
+static volatile int g_GsExitCode = 0;
 
-extern _PADupdate PAD1update, PAD2update;
-
-extern _GSsetupRecording GSsetupRecording;
-extern _SPU2setupRecording SPU2setupRecording;
-
-// could convert to pthreads only easily, just don't have the time	
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-HANDLE g_hGsEvent = NULL, // set when path3 is ready to be processed
-	g_hVuGSExit = NULL;		// set when thread needs to exit
-HANDLE g_hGSOpen = NULL, g_hGSDone = NULL;
-HANDLE g_hVuGsThread = NULL;
-
-DWORD WINAPI GSThreadProc(LPVOID lpParam);
-
-#else
-pthread_cond_t g_condGsEvent = PTHREAD_COND_INITIALIZER;
-sem_t g_semGsThread;
-pthread_mutex_t g_mutexGsThread = PTHREAD_MUTEX_INITIALIZER;
-int g_nGsThreadExit = 0;
-pthread_t g_VuGsThread;
-
-void* GSThreadProc(void* idp);
-
-#endif
+static int m_mtgsCopyCommandTally = 0;
 
 int g_FFXHack=0;
 
-static bool gsHasToExit=false;
-
 #ifdef PCSX2_DEVBUILD
-static LONG g_pGSvSyncCount = 0;
+static long g_pGSvSyncCount = 0;
 
 // GS Playback
 int g_SaveGSStream = 0; // save GS stream; 1 - prepare, 2 - save
@@ -174,10 +272,8 @@ static GIFTAG g_path[3];
 static PCSX2_ALIGNED16(u8 s_byRegs[3][16]);
 
 // g_pGSRingPos == g_pGSWritePos => fifo is empty
-static u8* g_pGSRingPos = NULL, // cur pos ring is at
-	*g_pGSWritePos = NULL; // cur pos ee thread is at
-
-CRITICAL_SECTION gsRestartLock;
+static u8* g_pGSRingPos = NULL; // cur pos ring is at
+static u8* g_pGSWritePos = NULL; // cur pos ee thread is at
 
 extern int g_nCounters[];
 
@@ -197,6 +293,8 @@ CRITICAL_SECTION stackLock;
 static int g_mtgsCopyLock = 0;
 #endif
 
+// Initializes MultiGS ringbuffer and registers.
+// (does nothing for single threaded GS)
 void gsInit()
 {
 	if( CHECK_MULTIGS ) {
@@ -218,73 +316,84 @@ void gsInit()
 
         if( GSsetBaseMem != NULL )
 			GSsetBaseMem(g_MTGSMem);
-
-        gsHasToExit=false;
-
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-		g_hGsEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-
-		g_hVuGSExit = CreateEvent(NULL, FALSE, FALSE, NULL);
-		g_hGSOpen = CreateEvent(NULL, FALSE, FALSE, NULL);
-		g_hGSDone = CreateEvent(NULL, FALSE, FALSE, NULL);
-
-		InitializeCriticalSection( &gsRestartLock );
-
-#ifdef RINGBUF_DEBUG_STACK
-		InitializeCriticalSection( &stackLock );
-#endif
-
-		SysPrintf("gsInit\n");
-
-		g_hVuGsThread = CreateThread(NULL, 0, GSThreadProc, NULL, 0, NULL);
-#else
-        SysPrintf("gsInit\n");
-        sem_init(&g_semGsThread, 0, 0);
-
-        pthread_mutex_lock(&g_mutexGsThread);
-        if( pthread_create(&g_VuGsThread, NULL, GSThreadProc, NULL) != 0 ) {
-            SysMessage("Failed to create gsthread\n");
-            exit(0);
-        }
-
-        pthread_mutex_lock(&g_mutexGsThread);
-        pthread_mutex_unlock(&g_mutexGsThread);
-#endif
 	}
 }
 
-//int g_gsFlushing = 0;
+// Opens the gsRingbuffer thread.
+s32 gsOpen()
+{
+	if( !CHECK_MULTIGS )
+		return GSopen((void *)&pDsp, "PCSX2", 0);
+
+	// MultiGS Procedure From Here Out...
+
+	SysPrintf("gsInit [Multithreaded GS]\n");
+
+    gsHasToExit = false;
+	event_init( g_hGsEvent );
+	event_init( g_hGSDone );
+	mutex_init( gsRingRestartLock );
+
+#	ifdef RINGBUF_DEBUG_STACK
+	mutex_init( &stackLock );
+#	endif
+
+	if( !thread_create( g_hVuGsThread ) )
+	{
+		SysPrintf("     > MTGS Thread creation failure!\n");
+		return -1;
+	}
+
+	// Wait for the thread to finish initialization (it runs GSinit, which can take
+	// some time since it's creating a new window and all), and then check for errors.
+
+	event_wait( g_hGSDone );
+	event_destroy( g_hGSDone );
+
+	if( g_GsExitCode != 0 )	// means the thread failed to init the GS plugin
+		return -1;
+
+	return 0;
+}
+
+// Sleep instead of timeslice.  This function is for use in cases where longer
+// delays are merited.
+__forceinline void _Sleep( int ms )
+{
+#ifdef _WIN32
+	    Sleep(ms);
+#else
+	    usleep(ms * 1000);
+#endif
+}
+
+void GS_SETEVENT()
+{
+	event_set(g_hGsEvent);
+	m_mtgsCopyCommandTally = 0;
+}
 
 __forceinline void gsWaitGS()
 {
-    // [Air] : I'm pretty sure there's no harm in doing doing timeslices
-	// from the main thread in dual-core mode now, thanks to Sleep(0).
+	if( !CHECK_MULTIGS ) return;
 
-	// fixme - This may not be true under linux, which uses usleep(500), who's
-	// behavior likely does not mimic Sleep(0).  Ideally the usleep(500) should
-	// be replaced with something that matches Sleep(0) behavior.
-
-	//InterlockedIncrement( (long*)&g_gsFlushing );
-	if( !CHECK_DUALCORE ) GS_SETEVENT();
+	GS_SETEVENT();
 	while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos )
-		_TIMESLICE();
-	//InterlockedDecrement( (long*)&g_gsFlushing );
+		_Sleep(2);
 }
 
 // Sets the gsEvent flag and releases a timeslice.
 // For use in loops that wait on the GS thread to do certain things.
-static __forceinline void gsSetEventWait()
+static void gsSetEventWait()
 {
-	if( !CHECK_DUALCORE ) {
-		//InterlockedIncrement( (long*)&g_gsFlushing );
-		GS_SETEVENT();
-		_TIMESLICE();
-		//InterlockedDecrement( (long*)g_gsFlushing );
-	}
+	GS_SETEVENT();
+	_TIMESLICE();
+
+	//m_mtgsCopyCommandTally = 0;
 }
 
-// mem and size are the ones from GSRingBufCopy
-void GSRINGBUF_DONECOPY(const u8 *mem, u32 size)
+// mem and size are the ones returned from GSRingBufCopy
+void GSRINGBUF_DONECOPY(const u8* mem, u32 size)
 {
 	const u8* temp = mem + size; 
 
@@ -299,56 +408,62 @@ void GSRINGBUF_DONECOPY(const u8 *mem, u32 size)
 #ifdef _DEBUG
 	else
 	{
-		// The writepos should never leapfrog the readpos
-		// since that indicates a bad write.
-		if( mem < g_pGSRingPos )
-			assert( temp < g_pGSRingPos );
+		const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
+		if( readpos != g_pGSWritePos )
+		{
+			// The writepos should never leapfrog the readpos
+			// since that indicates a bad write.
+			if( mem < readpos )
+				assert( temp < readpos );
+		}
+
+		// Updating the writepos should never make it equal the readpos, since
+		// that would stop the buffer prematurely (and indicates bad code in the
+		// ringbuffer manager)
+		assert( readpos != temp );
 	}
 #endif
 
-	// Updating the writepost should never make it equal the readpos, since
-	// that would stop the buffer prematurely (and indicates bad code in the
-	// ringbuffer manager)
-	assert( g_pGSRingPos != temp );
+	InterlockedExchangePointer(&g_pGSWritePos, temp);
 
-	InterlockedExchangePointer((void**)&g_pGSWritePos, temp);
-	//if( !CHECK_DUALCORE ) GS_SETEVENT();
+	// if enough copies have queued up then go ahead and initiate the GS thread..
+	
+	// Optimization notes:  16 was the best value I found so far.  Ideally there
+	// should be a secondary check for data size, since large transfers should
+	// be counted as multple commands for instance.  But I'm weary of adding too
+	// much clutter to the overhead of this function.  In any case, 16 should be
+	// a pretty decent all-weather value for the majority of games. (Air)
 
+	// tested values:
+	//  24 - very slow on HT machines (+5% drop in fps)
+	//  8 - roughly 2% slower on HT machines.
+
+	if( ++m_mtgsCopyCommandTally > 16 )
+	{
+		GS_SETEVENT();
+	}
 }
 
 void gsShutdown()
 {
 	if( CHECK_MULTIGS ) {
 
-        gsHasToExit=true;
-		
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-		SetEvent(g_hVuGSExit);
+        // not necessary to use interlocked here, since we'll send an event signal
+		// anyway. Additionally, interlocked isn't safe on booleans
+		// (they might be 1 byte under some compilers).
+		gsHasToExit = true;
+
 		SysPrintf("Closing gs thread\n");
-		WaitForSingleObject(g_hVuGsThread, INFINITE);
-		CloseHandle(g_hVuGsThread);
-		CloseHandle(g_hGsEvent);
-		CloseHandle(g_hVuGSExit);
-		CloseHandle(g_hGSOpen);
-		CloseHandle(g_hGSDone);
+		GS_SETEVENT();
 
-		DeleteCriticalSection(&gsRestartLock);
+		thread_close( g_hVuGsThread );
+		event_destroy( g_hGsEvent );
+		mutex_destroy( gsRingRestartLock );
+
 #ifdef RINGBUF_DEBUG_STACK
-		DeleteCriticalSection(&stackLock);
+		mutex_destroy( stackLock );
 #endif
-
-#else
-        InterlockedExchange((long*)&g_nGsThreadExit, 1);
-        sem_post(&g_semGsThread);
-        pthread_cond_signal(&g_condGsEvent);
-        SysPrintf("waiting for thread to terminate\n");
-        pthread_join(g_VuGsThread, NULL);
-
-        sem_destroy(&g_semGsThread);
-
-        SysPrintf("thread terminated\n");
-#endif
-        gsHasToExit=false;
+		gsHasToExit = false;
 
 #ifdef _WIN32
 		VirtualFree(GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE, MEM_DECOMMIT|MEM_RELEASE);
@@ -362,7 +477,7 @@ void gsShutdown()
 }
 
 
-u8* GSRingBufCopy(void* mem, u32 size, u32 type)
+u8* GSRingBufCopy( u32 size, u32 type )
 {
 	// Note on volatiles: g_pGSWritePos is not modified by the GS thread,
 	// so there's no need to use volatile reads here.  We still have to use
@@ -371,7 +486,7 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 
 	u8* writepos = g_pGSWritePos;
 	
-	// Checks if a previous copy is still active, and asserts if so.
+	// Checks if a previous copy was started without an accompaying call to GSRINGBUF_DONECOPY
 	assert( (++g_mtgsCopyLock) == 1 );
 
 	assert( size < GS_RINGBUFFERSIZE );
@@ -380,7 +495,28 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 	assert( (size&15) == 0);
 
 	size += 16;
-	if( writepos + size > GS_RINGBUFFEREND )
+
+	if( writepos + size < GS_RINGBUFFEREND )
+	{
+		// generic gs wait/stall.
+		// Waits until the readpos is outside the scope of the write area.
+		while( true )
+		{
+			// two conditionals in the following while() loop, so precache
+			// the readpos for more efficient behavior:
+			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
+
+			// if the writepos is past the readpos then we're safe:
+			if( writepos >= readpos ) break;
+			
+			// writepos is behind the readpos, so do a second check to see if the
+			// readpos is out past the end of the future write pos:
+			if( writepos+size < readpos ) break;
+
+			gsSetEventWait();
+		}
+	}
+	else if( writepos + size > GS_RINGBUFFEREND )
 	{
 		// If the incoming packet doesn't fit, then start over from
 		// the start of the ring buffer (it's a lot easier than trying
@@ -405,11 +541,11 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 			gsSetEventWait();
 		}
 
-		EnterCriticalSection( &gsRestartLock );
+		mutex_lock( gsRingRestartLock );
 		GSRingBufSimplePacket( GS_RINGTYPE_RESTART, 0, 0, 0 );
 		writepos = GS_RINGBUFFERBASE;
-		InterlockedExchangePointer((void**)&g_pGSWritePos, writepos );
-		LeaveCriticalSection( &gsRestartLock );
+		InterlockedExchangePointer(&g_pGSWritePos, writepos );
+		mutex_unlock( gsRingRestartLock );
 
 		// stall until the read position is past the end of our incoming block,
 		// or until it reaches the current write position (signals an empty buffer).
@@ -423,7 +559,7 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 			gsSetEventWait();
 		}
 	}
-    else if( writepos + size == GS_RINGBUFFEREND )
+    else	// always true - if( writepos + size == GS_RINGBUFFEREND )
 	{
 		// Yay.  Perfect fit.  What are the odds?
 
@@ -442,33 +578,13 @@ u8* GSRingBufCopy(void* mem, u32 size, u32 type)
 			gsSetEventWait();
 		}
     }
-	else
-	{
-		// generic gs wait/stall.
-		// Waits until the readpos is outside the scope of the write area.
-		while( true )
-		{
-			// three conditionals in the following while() loop, so precache
-			// the readpos for more efficient behavior:
-			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
 
-			// if the writepos is past the readpos then we're safe:
-			if( writepos >= readpos ) break;
-			
-			// writepos is behind the readpos, so do a second check to see if the
-			// readpos is out past the end of the future write pos:
-			if( writepos+size < readpos ) break;
-
-			gsSetEventWait();
-		}
-	}
 #ifdef RINGBUF_DEBUG_STACK
-	EnterCriticalSection( &stackLock );
+	mutex_lock( stackLock );
 	ringposStack.push_front( (long)writepos );
-	LeaveCriticalSection( &stackLock );
+	mutex_unlock( stackLock );
 #endif
 
-	// just copy
 	*(u32*)writepos = type | (((size-16)>>4)<<16);
 	return writepos+16;
 }
@@ -487,9 +603,9 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 		gsSetEventWait();
 
 #ifdef RINGBUF_DEBUG_STACK
-	EnterCriticalSection( &stackLock );
+	mutex_lock( stackLock );
 	ringposStack.push_front( (long)writepos );
-	LeaveCriticalSection( &stackLock );
+	mutex_unlock( stackLock );
 #endif
 
 	*(u32*)writepos = type;
@@ -498,40 +614,36 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	*(u32*)(writepos+12) = data2;
 
 	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
-	InterlockedExchangePointer((void**)&g_pGSWritePos, future_writepos);
-
-	//if( type == GS_RINGTYPE_VSYNC && !CHECK_DUALCORE )
-	//	GS_SETEVENT();
+	InterlockedExchangePointer(&g_pGSWritePos, future_writepos);
 }
 
 void gsReset()
 {
-	SysPrintf("GIF reset\n");
+	if( CHECK_MULTIGS )
+	{
+		// MTGS Reset process:
+		//  * clear the ringbuffer.
+		//  * Signal a reset.
+		//  * clear the path and byRegs structs (used by GIFtagDummy)
 
-	// GSDX crashes
-	//if( GSreset ) GSreset();
-
-	if( CHECK_MULTIGS ) {
-
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-		ResetEvent(g_hGsEvent);
-		ResetEvent(g_hVuGSExit);
-#else
-        //TODO
+		InterlockedExchangePointer( &g_pGSRingPos, g_pGSWritePos );
+#ifdef PCSX2_DEVBUILD
+		InterlockedExchange( &g_pGSvSyncCount, 0 );
 #endif
-        gsHasToExit=false;
-		g_pGSRingPos = g_pGSWritePos;
+		GIF_LOG( "MTGS > Sending Reset...\n" );
+		GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
 
 #ifdef _DEBUG
 		g_mtgsCopyLock = 0;
 #endif
-#ifdef PCSX2_DEVBUILD
-		g_pGSvSyncCount = 0;
-#endif
-	}
 
-	memset(g_path, 0, sizeof(g_path));
-	memset(s_byRegs, 0, sizeof(s_byRegs));
+		memset(g_path, 0, sizeof(g_path));
+		memset(s_byRegs, 0, sizeof(s_byRegs));
+	}
+	else
+	{
+		SysPrintf("GIF reset\n");
+	}
 	
 #ifndef PCSX2_VIRTUAL_MEM
 	memset(g_RealGSMem, 0, 0x2000);
@@ -544,21 +656,40 @@ void gsReset()
 	psHu32(GIF_MODE) = 0;
 }
 
+static bool _gsGIFSoftReset( int mask )
+{
+	if( CHECK_MULTIGS )
+	{
+		if(mask & 1) memset(&g_path[0], 0, sizeof(GIFTAG));
+		if(mask & 2) memset(&g_path[1], 0, sizeof(GIFTAG));
+		if(mask & 4) memset(&g_path[2], 0, sizeof(GIFTAG));
+	}
+
+	if( GSgifSoftReset == NULL )
+	{
+		SysPrintf( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!" );
+		return false;
+	}
+
+	if( CHECK_MULTIGS )
+	{
+		GIF_LOG( "MTGS > Sending GIF Soft Reset (mask: %d)\n", mask );
+		GSRingBufSimplePacket( GS_RINGTYPE_SOFTRESET, mask, 0, 0 );
+	}
+	else
+		GSgifSoftReset( mask );
+
+	return true;
+}
+
 void gsGIFReset()
 {
-	memset(g_path, 0, sizeof(g_path));
-
 #ifndef PCSX2_VIRTUAL_MEM
 	memset(g_RealGSMem, 0, 0x2000);
 #endif
 
-	if( GSgifSoftReset != NULL )
-		GSgifSoftReset(7);
-	if( CHECK_MULTIGS )
-		memset(g_path, 0, sizeof(g_path));
-
-//	else
-//		GSreset();
+	// perform a soft reset (but do not do a full reset if the soft reset API is unavailable)
+	_gsGIFSoftReset( 7 );
 
 	GSCSRr = 0x551B400F;   // Set the FINISH bit to 1 for now
 	GSIMR = 0x7f00;
@@ -569,6 +700,11 @@ void gsGIFReset()
 
 void CSRwrite(u32 value)
 {
+	// [TODO] Ideally GSwriteCSR should be run through the MTGS ringbuffer also, but it doesn't
+	// make much of a difference since the GS plugin only uses it for re-enabling gsInts, which
+	// are handled by Pcsx2's GIFtagTransferDummy function instead of the GA in MTGS mode anyway.
+	// (in other words the gs copy of CSRw is effectively ignored in MTGS mode)
+
 	CSRw |= value & ~0x60;
 	GSwriteCSR(CSRw);
 
@@ -578,24 +714,25 @@ void CSRwrite(u32 value)
 	}
 
 	if (value & 0x200) { // resetGS
-		//GSCSRr = 0x400E; // The host FIFO needs to be empty too or GSsync will fail (saqib)
-		//GSIMR = 0xff00;
-		if( GSgifSoftReset != NULL )  {
-			GSgifSoftReset(7);
-			if( CHECK_MULTIGS ) {
-				memset(g_path, 0, sizeof(g_path));
-				memset(s_byRegs, 0, sizeof(s_byRegs));
-			}
+
+		// perform a soft reset -- and fall back to doing a full reset if the plugin doesn't
+		// support soft resets.
+
+		if( !_gsGIFSoftReset( 7 ) )
+		{
+			if( CHECK_MULTIGS )
+				GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
+			else
+				GSreset();
 		}
-		else GSreset();
 
 		GSCSRr = 0x551B400F;   // Set the FINISH bit to 1 - GS is always at a finish state as we don't have a FIFO(saqib)
-	             //Since when!! Refraction, since 4/21/06 (zerofrog) ok ill let you off, looks like theyre all set (ref)
 		GSIMR = 0x7F00; //This is bits 14-8 thats all that should be 1
 
 		// and this too (fixed megaman ac)
 		//CSRw = (u32)GSCSRr;
-		GSwriteCSR(CSRw);
+		// Since the line above was commented out, I don't think this was needed anymore (Air)
+		//GSwriteCSR(CSRw);
 	}
 }
 
@@ -775,7 +912,7 @@ static void GSRegHandlerSIGNAL(u32* data)
 	
 	if (!(GSIMR&0x100) ) 
 		gsIrq();
-	
+
 	
 }
 
@@ -787,7 +924,7 @@ static void GSRegHandlerFINISH(u32* data)
 		GSCSRr |= 2; // finish
 		
 	if (!(GSIMR&0x200) )
-			gsIrq();
+		gsIrq();
 	
 }
 
@@ -801,14 +938,14 @@ static GIFRegHandler s_GSHandlers[3] = { GSRegHandlerSIGNAL, GSRegHandlerFINISH,
 extern "C" int Path3transfer;
 
 /*midnight madness cares because the tag is 5 dwords*/ \
-static __forceinline void TagPathTransfer( GIFTAG* ptag, GIFTAG *path )
+static __forceinline void TagPathTransfer( const GIFTAG* ptag, GIFTAG *path )
 {
-	u32* psrc = (u32*)ptag;
-	u32* pdst = (u32*)path;
+	const u64* psrc = (const u64*)ptag;
+	u64* pdst = (u64*)path;
 	pdst[0] = psrc[0];
 	pdst[1] = psrc[1];
-	pdst[2] = psrc[2];
-	pdst[3] = psrc[3];
+	//pdst[2] = psrc[2];
+	//pdst[3] = psrc[3];
 }
 
 
@@ -869,8 +1006,8 @@ u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
 
 			tempreg = ptag->regs[0];
 			for(i = 0; i < nreg; ++i, tempreg >>= 4) {
-					if( i == 8 ) tempreg = ptag->regs[1];
-					s_byRegs[path][i] = tempreg&0xf;
+				if( i == 8 ) tempreg = ptag->regs[1];
+				s_byRegs[path][i] = tempreg&0xf;
 			}
 
 			nloop = ptag->nloop;
@@ -997,7 +1134,7 @@ __forceinline void gsInterrupt() {
 #ifdef GSPATH3FIX
 		if ((vif1Regs->mskpath3 && (vif1ch->chcr & 0x100)) || (psHu32(GIF_MODE) & 0x1)) cpuRegs.interrupt &= ~(1 << 2);
 #endif
-			return;
+		return;
 	}
 	
 	gspath3done = 0;
@@ -1016,33 +1153,39 @@ __forceinline void gsInterrupt() {
 
 static u64 s_gstag=0; // used for querying the last tag
 
-static __forceinline void WRITERING_DMA(u32 *pMem, u32 qwc) { 
+static void WRITERING_DMA(u32 *pMem, u32 qwc)
+{ 
 	psHu32(GIF_STAT) |= 0xE00;         
 	Path3transfer = 1; 
-	if( CHECK_MULTIGS) { 
-		u8* pgsmem = GSRingBufCopy(pMem, (qwc)<<4, GS_RINGTYPE_P3); 
-		if( pgsmem != NULL ) { 
-			int sizetoread = (qwc)<<4; 
-			u32 pendmem = (u32)gif->madr + sizetoread; 
-			/* check if page of endmem is valid (dark cloud2) */ 
-			if( dmaGetAddr(pendmem-16) == NULL ) { 
-				pendmem = ((pendmem-16)&~0xfff)-16; 
-				while(dmaGetAddr(pendmem) == NULL) { 
-					pendmem = (pendmem&~0xfff)-16; 
-				} 
-				memcpy_fast(pgsmem, pMem, pendmem-(u32)gif->madr+16); 
+	if( CHECK_MULTIGS)
+	{ 
+		int sizetoread = (qwc)<<4; 
+		u8* pgsmem = GSRingBufCopy(sizetoread, GS_RINGTYPE_P3); 
+		u32 pendmem = (u32)gif->madr + sizetoread; 
+
+		/* check if page of endmem is valid (dark cloud2) */ 
+		if( dmaGetAddr(pendmem-16) == NULL )
+		{ 
+			pendmem = ((pendmem-16)&~0xfff)-16; 
+			while(dmaGetAddr(pendmem) == NULL)
+			{ 
+				pendmem = (pendmem&~0xfff)-16; 
 			} 
-			else memcpy_fast(pgsmem, pMem, sizetoread); 
-			
-			GSgifTransferDummy(2, pMem, qwc); 
-			GSRINGBUF_DONECOPY(pgsmem, sizetoread);
-		} 
+			memcpy_fast(pgsmem, pMem, pendmem-(u32)gif->madr+16);
+		}
+		else memcpy_fast(pgsmem, pMem, sizetoread); 
+		
+		GSgifTransferDummy(2, pMem, qwc); 
+		GSRINGBUF_DONECOPY(pgsmem, sizetoread);
 	} 
-	else { 
+	else 
+	{ 
 		GSGIFTRANSFER3(pMem, qwc); 
-        if( GSgetLastTag != NULL ) { 
+        if( GSgetLastTag != NULL )
+		{ 
             GSgetLastTag(&s_gstag); 
-            if( (s_gstag) == 1 ) {        
+            if( (s_gstag) == 1 )
+			{
                 Path3transfer = 0; /* fixes SRS and others */ 
             } 
         } 
@@ -1062,11 +1205,8 @@ int  _GIFchain() {
 	pMem = (u32*)dmaGetAddr(gif->madr);
 	if (pMem == NULL) {
 		// reset path3, fixes dark cloud 2
-		if( GSgifSoftReset != NULL )
-			GSgifSoftReset(4);
-		if( CHECK_MULTIGS ) {
-			memset(&g_path[2], 0, sizeof(g_path[2]));
-		}
+
+		_gsGIFSoftReset(4);
 
 		//must increment madr and clear qwc, else it loops
 		gif->madr+= gif->qwc*16;
@@ -1258,7 +1398,6 @@ void GIFdma()
 	}
 }
 
-// fixme : this function appears to be unreferenced...
 void dmaGIF() {
 	//if(vif1Regs->mskpath3 || (psHu32(GIF_MODE) & 0x1)){
 	//	CPU_INT(2, 48); //Wait time for the buffer to fill, fixes some timing problems in path 3 masking
@@ -1435,7 +1574,6 @@ void mfifoGIFtransfer(int qwc) {
 	SPR_LOG("mfifoGIFtransfer end %x madr %x, tadr %x\n", gif->chcr, gif->madr, gif->tadr);	
 }
 
-// fixme : this should be forceinlineable, dmaGIF is obsolete/unused.
 void gifMFIFOInterrupt()
 {
 	if(!(gif->chcr & 0x100)) { SysPrintf("WTF GIFMFIFO\n");cpuRegs.interrupt &= ~(1 << 11); return ; }
@@ -1471,11 +1609,6 @@ void gifMFIFOInterrupt()
 	cpuRegs.interrupt &= ~(1 << 11);
 }
 
-int HasToExit()
-{
-	return (gsHasToExit!=0);
-}
-
 extern "C" void GSPostVsyncEnd()
 {
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
@@ -1483,11 +1616,11 @@ extern "C" void GSPostVsyncEnd()
 	if( CHECK_MULTIGS ) 
 	{
 #ifdef PCSX2_DEVBUILD
-		//InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
-		//SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
+		InterlockedIncrement( &g_pGSvSyncCount );
+		//SysPrintf( " Sending VSync : %d \n", g_pGSvSyncCount );
 #endif
+		GS_SETEVENT();
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
-		if( !CHECK_DUALCORE ) GS_SETEVENT();
 	}
 	else {
 		GSvsync((*(u32*)(PS2MEM_GS+0x1000)&0x2000));
@@ -1497,76 +1630,23 @@ extern "C" void GSPostVsyncEnd()
 	}
 }
 
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-DWORD WINAPI GSThreadProc(LPVOID lpParam)
+GS_THREADPROC
 {
-	u32 prevCmd=0;
-	HANDLE handles[2] = { g_hGsEvent, g_hVuGSExit };
-	//SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-
-	{
-		int ret;
-		HANDLE openhandles[2] = { g_hGSOpen, g_hVuGSExit };
-		if( WaitForMultipleObjects(2, openhandles, FALSE, INFINITE) == WAIT_OBJECT_0+1 ) {
-			return 0;
-		}
-		ret = GSopen((void *)&pDsp, "PCSX2", 1);
-		GSCSRr = 0x551B400F; // 0x55190000
-		SysPrintf("gsOpen done\n");
-		if (ret != 0) { SysMessage ("Error Opening GS Plugin"); return (DWORD)-1; }
-		SetEvent(g_hGSDone);
-	}
-#else
-void* GSThreadProc(void* lpParam)
-{
-    // g_mutexGSThread already locked
-    SysPrintf("waiting for gsOpen\n");
-    pthread_cond_wait(&g_condGsEvent, &g_mutexGsThread);
-    pthread_mutex_unlock(&g_mutexGsThread);
-    pthread_testcancel();
-    if( g_nGsThreadExit )
-        return NULL;
-
-    int ret = GSopen((void *)&pDsp, "PCSX2", 1);
+	g_GsExitCode = GSopen((void *)&pDsp, "PCSX2", 1);
 	GSCSRr = 0x551B400F; // 0x55190000
-	SysPrintf("gsOpen done\n");
-	if (ret != 0) {
-        SysMessage ("Error Opening GS Plugin");
-        return NULL;
-    }
+	event_set( g_hGSDone );
+	if (g_GsExitCode != 0) { return GS_THREAD_INIT_FAIL; }		// error msg will be issued to the user by Plugins.c
+	SysPrintf("     > gsOpen done.\n");
 
-    sem_post(&g_semGsThread);
-    pthread_mutex_unlock(&g_mutexGsThread);
+#ifdef RINGBUF_DEBUG_STACK
+	u32 prevCmd=0;
 #endif
 
 	SysPrintf("Starting GS thread\n");
-	u32 counter = 0;
 
-	while(!gsHasToExit) {
-
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-		if( !CHECK_DUALCORE ) 
-		{
-			if( WaitForMultipleObjects(2, handles, FALSE, INFINITE) == WAIT_OBJECT_0+1 ) 
-			{
-				break; //exit thread and close gs
-			}
-		}
-#else
-        if( !CHECK_DUALCORE ) {
-            sem_wait(&g_semGsThread);
-            if( g_nGsThreadExit ) {
-                GSclose();
-                return 0;
-            }
-		}
-		else if( !(counter++ & 0xffff) ) {
-			if( g_nGsThreadExit ) {
-                GSclose();
-                return 0;
-            }
-		}
-#endif
+	while( !gsHasToExit )
+	{
+		event_wait( g_hGsEvent );
 
 		// note: gsRingPos is intentionally not volatile, because it should only
 		// ever be modified by this thread.
@@ -1595,11 +1675,11 @@ void* GSThreadProc(void* lpParam)
 			switch( tag&0xffff )
 			{
 				case GS_RINGTYPE_RESTART:
-					InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
+					InterlockedExchangePointer(&g_pGSRingPos, GS_RINGBUFFERBASE);
 					
 					// stall for a bit to let the MainThread have time to update the g_pGSWritePos. 
-					EnterCriticalSection( &gsRestartLock );
-					LeaveCriticalSection( &gsRestartLock );
+					mutex_lock( gsRingRestartLock );
+					mutex_unlock( gsRingRestartLock );
 					continue;
 
 				case GS_RINGTYPE_P1:
@@ -1619,33 +1699,36 @@ void* GSThreadProc(void* lpParam)
 					ringposinc += (tag>>16)<<4;
 					break;
 				case GS_RINGTYPE_VSYNC:
-					GSvsync(*(int*)(g_pGSRingPos+4));
+				{
+					GSvsync(*(u32*)(g_pGSRingPos+4));
                     if( PAD1update != NULL ) PAD1update(0);
                     if( PAD2update != NULL ) PAD2update(1);
 
 #				ifdef PCSX2_DEVBUILD
-					//SysPrintf( " Processing VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
-					//InterlockedDecrement( (volatile LONG*)&g_pGSvSyncCount );
+					long syncCount = &g_pGSvSyncCount;
+					//SysPrintf( " Processing VSync : %d \n", syncCount );
 					// vSyncCount should never dip below zero.
-					assert( *(volatile LONG*)&g_pGSvSyncCount >= 0 );
+					assert( syncCount >= 0 );
+					InterlockedDecrement( &g_pGSvSyncCount );
 #				endif
 					break;
+				}
 
 				case GS_RINGTYPE_FRAMESKIP:
 					if( GSsetFrameSkip != NULL )
-						GSsetFrameSkip(*(int*)(g_pGSRingPos+4));
+						GSsetFrameSkip(*(u32*)(g_pGSRingPos+4));
 					break;
 				case GS_RINGTYPE_MEMWRITE8:
-					g_MTGSMem[*(int*)(g_pGSRingPos+4)] = *(u8*)(g_pGSRingPos+8);
+					g_MTGSMem[*(u32*)(g_pGSRingPos+4)] = *(u8*)(g_pGSRingPos+8);
 					break;
 				case GS_RINGTYPE_MEMWRITE16:
-					*(u16*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u16*)(g_pGSRingPos+8);
+					*(u16*)(g_MTGSMem+*(u32*)(g_pGSRingPos+4)) = *(u16*)(g_pGSRingPos+8);
 					break;
 				case GS_RINGTYPE_MEMWRITE32:
-					*(u32*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u32*)(g_pGSRingPos+8);
+					*(u32*)(g_MTGSMem+*(u32*)(g_pGSRingPos+4)) = *(u32*)(g_pGSRingPos+8);
 					break;
 				case GS_RINGTYPE_MEMWRITE64:
-					*(u64*)(g_MTGSMem+*(int*)(g_pGSRingPos+4)) = *(u64*)(g_pGSRingPos+8);
+					*(u64*)(g_MTGSMem+*(u32*)(g_pGSRingPos+4)) = *(u64*)(g_pGSRingPos+8);
 					break;
 
 				case GS_RINGTYPE_VIFFIFO:
@@ -1744,40 +1827,42 @@ void* GSThreadProc(void* lpParam)
                 }
                 case GS_RINGTYPE_RECORD:
                 {
-                    int record = *(int*)(g_pGSRingPos+4);
+                    int record = *(u32*)(g_pGSRingPos+4);
                     if( GSsetupRecording != NULL ) GSsetupRecording(record, NULL);
                     if( SPU2setupRecording != NULL ) SPU2setupRecording(record, NULL);
                     break;
                 }
+
+				case GS_RINGTYPE_RESET:
+					GIF_LOG( "MTGS > Receiving Reset...\n" );
+					if( GSreset != NULL ) GSreset();
+					break;
+
+				case GS_RINGTYPE_SOFTRESET:
+				{
+					int mask = *(u32*)(g_pGSRingPos+4);
+					GIF_LOG( "MTGS > Receiving GIF Soft Reset (mask: %d)\n", mask );
+					if( GSgifSoftReset != NULL ) GSgifSoftReset( mask );
+					break;
+				}
+
 				default:
 
 					SysPrintf("GSThreadProc, bad packet (%x) at g_pGSRingPos: %x, g_pGSWritePos: %x\n", tag, g_pGSRingPos, g_pGSWritePos);
 					assert(0);
 					g_pGSRingPos = g_pGSWritePos;
+#ifdef PCSX2_DEVBUILD
+					InterlockedExchange( &g_pGSvSyncCount, 0 );
+#endif
 					continue;
-					//flushall();
 			}
 
 			InterlockedExchangeAdd( (long*)&g_pGSRingPos, ringposinc );
-
 			assert( g_pGSRingPos <= GS_RINGBUFFEREND );
-#ifdef _WIN32
+
 			InterlockedCompareExchangePointer( (volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE, GS_RINGBUFFEREND );
-#else
-			// fixme - [TODO] - InterlockedCompareExchangePointer needs a linux implementation!
-			if( g_pGSRingPos == GS_RINGBUFFEREND )
-				InterlockedExchangePointer((volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE);
-#endif
 		}
 
-		// some debug/troubleshooting code:
-		// buffer is empty so our vsync must be zero.
-#ifdef PCSX2_DEVBUILD
-		//SysPrintf( "Discharged : %d\n", *(volatile int*)&g_pGSvSyncCount );
-		if( *(volatile LONG*)&g_pGSvSyncCount != 0 )
-			SysPrintf( "MTGS > vSync count mismatch: %d\n", g_pGSvSyncCount );
-		InterlockedExchange( (volatile LONG*)&g_pGSvSyncCount, 0 );
-#endif
 	}
 
 	GSclose();

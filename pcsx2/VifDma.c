@@ -1664,13 +1664,18 @@ static int Vif1TransDirectHL(u32 *data){
 		}
 		//if(splitptr < 4) SysPrintf("Whoopsie\n");
 		if( CHECK_MULTIGS ) {
-			u8* gsmem = GSRingBufCopy((u32*)splittransfer[0], 16, GS_RINGTYPE_P2);
+			u64* gsmem = (u64*)GSRingBufCopy(16, GS_RINGTYPE_P2);
 			if( gsmem != NULL ) {
-				FreezeMMXRegs(1);
-				memcpy_fast(gsmem, (u32*)splittransfer[0], 16);
-				FreezeMMXRegs(0);
+				//FreezeMMXRegs(1);
+				//memcpy_fast(gsmem, (u32*)splittransfer[0], 16);
+				//FreezeMMXRegs(0);
+
+				// copy 16 bytes the fast way:
+				gsmem[0] = ((u64*)splittransfer[0])[0];
+				gsmem[1] = ((u64*)splittransfer[0])[1];
+
 				GSgifTransferDummy(1, (u32*)splittransfer[0], 1);
-				GSRINGBUF_DONECOPY(gsmem, 16);
+				GSRINGBUF_DONECOPY((u8*)gsmem, 16);
 			}
 		}
 		else {
@@ -1708,7 +1713,7 @@ static int Vif1TransDirectHL(u32 *data){
 	
 	
 	if( CHECK_MULTIGS ) {
-		u8* gsmem = GSRingBufCopy(data, ret<<2, GS_RINGTYPE_P2);
+		u8* gsmem = GSRingBufCopy(ret<<2, GS_RINGTYPE_P2);
 		
 		if( gsmem != NULL ) {
 			FreezeMMXRegs(1);
@@ -2311,7 +2316,7 @@ void dmaVIF1()
 			if( CHECK_MULTIGS ) {
 				u8* pTempMem, *pEndMem;
 
-				u8* pMem = GSRingBufCopy(NULL, 0, GS_RINGTYPE_VIFFIFO);
+				u8* pMem = GSRingBufCopy(0, GS_RINGTYPE_VIFFIFO);
 				*(u32*)(pMem-16) = GS_RINGTYPE_VIFFIFO|(vif1ch->qwc<<16); // hack
 				*(u32*)(pMem-12) = vif1ch->madr;
 				*(u32*)(pMem-8) = cpuRegs.cycle;

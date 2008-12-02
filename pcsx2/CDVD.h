@@ -85,8 +85,6 @@ typedef struct {
 //	char Unused[4096];
 } cdvdStruct;
 
-extern cdvdStruct cdvd;
-
 void cdvdReset();
 void cdvdReadTimeRcnt(int mode);
 void cdvdVsync();

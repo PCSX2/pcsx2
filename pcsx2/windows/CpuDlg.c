@@ -102,7 +102,7 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 			CheckDlgButton(hW, IDC_CPU_GSMULTI, !!CHECK_MULTIGS);
-			CheckDlgButton(hW, IDC_CPU_MULTI, !!CHECK_DUALCORE);
+			//CheckDlgButton(hW, IDC_CPU_MULTI, !!CHECK_DUALCORE);
 
 			CheckRadioButton(hW,IDC_CPU_FL_NORMAL, IDC_CPU_FL_NORMAL+3, IDC_CPU_FL_NORMAL+(CHECK_FRAMELIMIT>>10));
 			
@@ -143,7 +143,7 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //#endif
 
 					if( SendDlgItemMessage(hW,IDC_CPU_GSMULTI,BM_GETCHECK,0,0) ) newopts |= PCSX2_GSMULTITHREAD;
-					if( SendDlgItemMessage(hW,IDC_CPU_MULTI,BM_GETCHECK,0,0) ) newopts |= PCSX2_DUALCORE;
+					//if( SendDlgItemMessage(hW,IDC_CPU_MULTI,BM_GETCHECK,0,0) ) newopts |= PCSX2_DUALCORE;
 					if( SendDlgItemMessage(hW,IDC_CPU_FRAMELIMIT,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT;
 
 					if( SendDlgItemMessage(hW,IDC_CPU_FL_NORMAL,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT_NORMAL;

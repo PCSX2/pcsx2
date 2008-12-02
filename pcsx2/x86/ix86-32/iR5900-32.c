@@ -1716,9 +1716,6 @@ void recStep( void ) {
 }
 
 void recExecute( void ) {
-	//SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
-	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);//ABOVE_NORMAL_PRIORITY_CLASS);
-	//SetThreadAffinityMask(GetCurrentThread(), 0);
 	if( Config.Options & PCSX2_EEREC ) Config.Options |= PCSX2_COP2REC;
 
 	for (;;)

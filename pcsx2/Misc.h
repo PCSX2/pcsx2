@@ -51,7 +51,7 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 // <<--- END Path Utilities [PathUtil.c]
 
 #define PCSX2_GSMULTITHREAD 1 // uses multithreaded gs
-#define PCSX2_DUALCORE 2 // speed up for dual cores
+//#define PCSX2_DUALCORE 2 // speed up for dual cores
 #define PCSX2_FRAMELIMIT 4 // limits frames to normal speeds
 #define PCSX2_EEREC 0x10
 #define PCSX2_VU0REC 0x20
@@ -65,7 +65,7 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define PCSX2_FRAMELIMIT_VUSKIP 0xc00
 
 #define CHECK_MULTIGS (Config.Options&PCSX2_GSMULTITHREAD)
-#define CHECK_DUALCORE (Config.Options&PCSX2_DUALCORE)
+//#define CHECK_DUALCORE (Config.Options&PCSX2_DUALCORE)
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
 //------------ SPEED/MISC HACKS!!! ---------------
@@ -308,28 +308,7 @@ static __forceinline void pcsx2_aligned_free(void* pmem)
 #endif
 
 // cross-platform atomic operations
-#if defined (_WIN32)
-/*
-#ifndef __x86_64__ // for some reason x64 doesn't like this
-
-LONG  __cdecl _InterlockedIncrement(LONG volatile *Addend);
-LONG  __cdecl _InterlockedDecrement(LONG volatile *Addend);
-LONG  __cdecl _InterlockedCompareExchange(LPLONG volatile Dest, LONG Exchange, LONG Comp);
-LONG  __cdecl _InterlockedExchange(LPLONG volatile Target, LONG Value);
-PVOID __cdecl _InterlockedExchangePointer(PVOID volatile* Target, PVOID Value);
-
-LONG  __cdecl _InterlockedExchangeAdd(LPLONG volatile Addend, LONG Value);
-LONG  __cdecl _InterlockedAnd(LPLONG volatile Addend, LONG Value);
-#endif
-
-#pragma intrinsic (_InterlockedExchange)
-#define InterlockedExchange _InterlockedExchange
-
-#pragma intrinsic (_InterlockedExchangeAdd)
-#define InterlockedExchangeAdd _InterlockedExchangeAdd
-*/
-#else
-
+#ifndef _WIN32
 typedef void* PVOID;
 
 /*inline unsigned long _Atomic_swap(unsigned long * __p, unsigned long __q) {
@@ -368,19 +347,50 @@ static __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Val
 	return 0; // The return value is never looked at.
 }
 
+static __forceinline long InterlockedIncrement( long* Addend )
+{
+	return InterlockedExchangeAdd( Addend, 1 );
+}
+
+static __forceinline long InterlockedDecrement( long* Addend )
+{
+	return InterlockedExchangeAdd( Addend, -1 );
+}
+
+static __forceinline long InterlockedCompareExchange(volatile long *dest, long exch, long comp)
+{
+	long old;
+
+	__asm__ __volatile__
+	(
+		"lock; cmpxchgl %2, %0"
+		: "=m" (*dest), "=a" (old)
+		: "r" (exch), "m" (*dest), "a" (comp)
+	);
+	
+	return(old);
+}
+
+static __forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest, PVOID exch, long comp)
+{
+	long old;
+
+	// Note: This *should* be 32/64 compatibles since the assembler should pick the opcode
+	// that matches the size of the pointer type, so no need to ifdef it like the std non-compare
+	// exchange.
+
+	__asm__ __volatile__
+	(
+		"lock; cmpxchgl %2, %0"
+		: "=m" (*dest), "=a" (old)
+		: "r" (exch), "m" (*dest), "a" (comp)
+	);
+	
+	return(old);
+}
+
 #endif
 
-//#pragma intrinsic (_InterlockedExchange64)
-//#define InterlockedExchange64 _InterlockedExchange64
-//
-//#pragma intrinsic (_InterlockedExchangeAdd64)
-//#define InterlockedExchangeAdd64 _InterlockedExchangeAdd64
-
-//#ifdef __x86_64__
-//#define InterlockedExchangePointerAdd InterlockedExchangeAdd64
-//#else
-//#define InterlockedExchangePointerAdd InterlockedExchangeAdd
-//#endif
 
 // Timeslice releaser for those many idle loop spots through out PCSX2.
 extern void _TIMESLICE();

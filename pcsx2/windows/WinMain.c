@@ -650,7 +650,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		SysPrintf( "* SPU2 plugin override: \n\t%s\n\n", Config.SPU2 );
 	}
 
-	// [TODO] : Add the other plugins here...
+	// [TODO] : Add the other plugin overrides here...
 
 
 	if (SysInit() == -1) return 1;
@@ -1755,19 +1755,17 @@ int SysInit() {
 	CreateDirectory(MEMCARDS_DIR, NULL);
 	CreateDirectory(SSTATES_DIR, NULL);
 #ifdef EMU_LOG
-	CreateDirectory("logs", NULL);
+	CreateDirectory(LOGS_DIR, NULL);
 
 #ifdef PCSX2_DEVBUILD
 	if( g_TestRun.plogname != NULL )
 		emuLog = fopen(g_TestRun.plogname, "w");
+#endif
+
 	if( emuLog == NULL )
-		emuLog = fopen("logs\\emuLog.txt","w");
-#endif
-
-	if( emuLog != NULL )
 		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
-
 #endif
+
 	if (cpuInit() == -1) return -1;
 
 	while (LoadPlugins() == -1) {

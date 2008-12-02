@@ -430,7 +430,7 @@ int CDVD_findfile(char* fname, struct TocEntry* tocEntry){
 		tocEntryPointer = (struct dirTocEntry*)((char*)tocEntryPointer + tocEntryPointer->length);
 	}
 
-	SysPrintf("CDVD_findfile: found dir, now looking for file\n");
+	RPC_LOG("[RPC:cdvd] findfile: found dir, now looking for file\n");
 
 	tocEntryPointer = (struct dirTocEntry*)toc;
 

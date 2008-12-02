@@ -27,6 +27,13 @@
 #define sif1dma ((DMACh*)&PS2MEM_HW[0xc400])
 #define sif2dma ((DMACh*)&PS2MEM_HW[0xc800])
 
+int eeSifTransfer;
+
+DMACh *sif0ch;
+DMACh *sif1ch;
+DMACh *sif2ch;
+
+
 #define FIFO_SIF0_W 128
 #define FIFO_SIF1_W 128
 
@@ -226,7 +233,7 @@ _inline void SIF0Dma()
 				SIF0write((u32*)PSXM(HW_DMA9_MADR), wTransfer);
 				HW_DMA9_MADR += wTransfer << 2;
 				//HW_DMA9_BCR = (HW_DMA9_BCR & 0xFFFF) | (((HW_DMA9_BCR >> 16) - wTransfer)<<16);
-				psxCycles += (wTransfer / 4) * BIAS;
+				psxCycles += (wTransfer / 4) * BIAS;		// fixme : should be / 16
 				sif0.counter -= wTransfer;
 
 				//notDone = 1;		
@@ -260,7 +267,7 @@ _inline void SIF0Dma()
 
 					Cpu->Clear(sif0dma->madr, readSize*4);
 
-					cycles += readSize * BIAS;
+					cycles += readSize * BIAS;	// fixme : BIAS is factored in below
 					sif0dma->qwc -= readSize;
 					sif0dma->madr += readSize << 4;
 
@@ -422,7 +429,7 @@ _inline void SIF1Dma()
 				SIF1write(data, qwTransfer << 2);
 				
 				sif1dma->madr += qwTransfer << 4;
-				cycles += qwTransfer * BIAS;
+				cycles += qwTransfer * BIAS;		// fixme : BIAS is factored in above
 				sif1dma->qwc -= qwTransfer;
 			}
 		}
@@ -443,7 +450,7 @@ _inline void SIF1Dma()
 
 					SIF1read((u32*)PSXM(HW_DMA10_MADR), readSize);
 					psxCpu->Clear(HW_DMA10_MADR, readSize);
-					psxCycles += readSize / 4;
+					psxCycles += readSize / 4;		// fixme: should be / 16
 					sif1.counter = size-readSize;
 					HW_DMA10_MADR += readSize << 2;
 					//notDone = 1;
@@ -492,56 +499,35 @@ _inline void SIF1Dma()
 }
 
 __forceinline void  sif0Interrupt() {
-	/*if (psxHu32(0x1070) & 8) {
-		PSX_INT(9, 0x800);
-		return 0;
-	}*/
 
 	HW_DMA9_CHCR &= ~0x01000000;
 	psxDmaInterrupt2(2);
 	//hwIntcIrq(INTC_SBUS);
 	psxRegs.interrupt&= ~(1 << 9);
-	//return 1;
 }
 
 __forceinline void  sif1Interrupt() {
-	/*if (psxHu32(0x1070) & 8) {
-		PSX_INT(10, 0x800);
-		return 0;
-	}*/
 
 	HW_DMA10_CHCR &= ~0x01000000; //reset TR flag
 	psxDmaInterrupt2(3);
 	//hwIntcIrq(INTC_SBUS);
 	psxRegs.interrupt&= ~(1 << 10);
-	//return 1;
 }
 
 __forceinline void  EEsif0Interrupt() {
-	/*if (psHu32(DMAC_STAT) & (1<<5)) {
-		CPU_INT(5, 0x800);
-		return 0;
-	}*/
 	sif0dma->chcr &= ~0x100;
 	hwDmacIrq(5);
 	cpuRegs.interrupt &= ~(1 << 5);
 
-	//return 1;
 }
 
 __forceinline void  EEsif1Interrupt() {
-	/*if (psHu32(DMAC_STAT) & (1<<6)) {
-		CPU_INT(6, 0x800);
-		return 0;
-	}*/
 	hwDmacIrq(6);
 	sif1dma->chcr &= ~0x100;
 	cpuRegs.interrupt &= ~(1 << 6);
 
-//	return 1;
 }
 
-// fixme: Unused code
 _inline void dmaSIF0() {
 	SIF_LOG("EE: dmaSIF0 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif0dma->chcr, sif0dma->madr, sif0dma->qwc, sif0dma->tadr);
@@ -566,7 +552,6 @@ _inline void dmaSIF0() {
 	}
 }
 
-// fixme: Unused code
 _inline void dmaSIF1() {
 	SIF_LOG("EE: dmaSIF1 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif1dma->chcr, sif1dma->madr, sif1dma->qwc, sif1dma->tadr);

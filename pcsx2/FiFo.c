@@ -127,7 +127,7 @@ void WriteFIFO(u32 mem, u64 *value) {
 		psHu64(mem+8) = value[1];
 
 		if( CHECK_MULTIGS ) {
-			data = (u64*)GSRingBufCopy(NULL, 16, GS_RINGTYPE_P3);
+			data = (u64*)GSRingBufCopy(16, GS_RINGTYPE_P3);
 
 			data[0] = value[0];
 			data[1] = value[1];

@@ -703,27 +703,32 @@ extern uptr pDsp;
 int LoadGSState(const char *file)
 {
 	int ret;
-	char strfile[255];
 	gzFile f;
 	freezeData fP;
 
 	f = gzopen(file, "rb");
-	if (f == NULL) {
-		
-		sprintf(strfile, SSTATES_DIR "/%s", file);
-		// try prefixing with sstates
-		f = gzopen(strfile, "rb");
-		if( f == NULL ) {
-			SysPrintf("Failed to find gs state\n");
-			return -1;
+	if( f == NULL )
+	{
+		if( !isPathRooted( file ) )
+		{
+			// file not found? try prefixing with sstates folder:
+			char strfile[g_MaxPath];
+			CombinePaths( strfile, SSTATES_DIR, file );
+			f = gzopen(strfile, "rb");
+			file = strfile;
 		}
+	}
 
-		file = strfile;
+	if( f == NULL ) {
+		SysPrintf("Failed to find gs state\n");
+		return -1;
 	}
 
 	SysPrintf("LoadGSState: %s\n", file);
 	
-	GSirqCallback(gsIrq);
+	// Always set gsIrq callback -- GS States are always exclusionary of MTGS mode
+	GSirqCallback( gsIrq );
+
 	ret = GSopen(&pDsp, "PCSX2", 0);
 	if (ret != 0) {
 		SysMessage (_("Error Opening GS Plugin"));

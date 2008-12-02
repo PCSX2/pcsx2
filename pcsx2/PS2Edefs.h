@@ -694,190 +694,190 @@ typedef void (CALLBACK* _FWabout)();
 #ifdef PLUGINfuncs
 
 // GS
-_GSinit            GSinit;
-_GSopen            GSopen;
-_GSclose           GSclose;
-_GSshutdown        GSshutdown;
-_GSvsync           GSvsync;
-_GSgifTransfer1    GSgifTransfer1;
-_GSgifTransfer2    GSgifTransfer2;
-_GSgifTransfer3    GSgifTransfer3;
-_GSgetLastTag      GSgetLastTag;
-_GSgifSoftReset    GSgifSoftReset;
-_GSreadFIFO        GSreadFIFO;
-_GSreadFIFO2       GSreadFIFO2;
+extern _GSinit            GSinit;
+extern _GSopen            GSopen;
+extern _GSclose           GSclose;
+extern _GSshutdown        GSshutdown;
+extern _GSvsync           GSvsync;
+extern _GSgifTransfer1    GSgifTransfer1;
+extern _GSgifTransfer2    GSgifTransfer2;
+extern _GSgifTransfer3    GSgifTransfer3;
+extern _GSgetLastTag      GSgetLastTag;
+extern _GSgifSoftReset    GSgifSoftReset;
+extern _GSreadFIFO        GSreadFIFO;
+extern _GSreadFIFO2       GSreadFIFO2;
 
-_GSkeyEvent        GSkeyEvent;
-_GSchangeSaveState GSchangeSaveState;
-_GSmakeSnapshot	   GSmakeSnapshot;
-_GSmakeSnapshot2   GSmakeSnapshot2;
-_GSirqCallback 	   GSirqCallback;
-_GSprintf      	   GSprintf;
-_GSsetBaseMem 	   GSsetBaseMem;
-_GSsetGameCRC		GSsetGameCRC;
-_GSsetFrameSkip	   GSsetFrameSkip;
-_GSsetupRecording GSsetupRecording;
-_GSreset		   GSreset;
-_GSwriteCSR		   GSwriteCSR;
-_GSgetDriverInfo   GSgetDriverInfo;
+extern _GSkeyEvent        GSkeyEvent;
+extern _GSchangeSaveState GSchangeSaveState;
+extern _GSmakeSnapshot	   GSmakeSnapshot;
+extern _GSmakeSnapshot2   GSmakeSnapshot2;
+extern _GSirqCallback 	   GSirqCallback;
+extern _GSprintf      	   GSprintf;
+extern _GSsetBaseMem 	   GSsetBaseMem;
+extern _GSsetGameCRC		GSsetGameCRC;
+extern _GSsetFrameSkip	   GSsetFrameSkip;
+extern _GSsetupRecording GSsetupRecording;
+extern _GSreset		   GSreset;
+extern _GSwriteCSR		   GSwriteCSR;
+extern _GSgetDriverInfo   GSgetDriverInfo;
 #ifdef _WIN32
-_GSsetWindowInfo   GSsetWindowInfo;
+extern _GSsetWindowInfo   GSsetWindowInfo;
 #endif
-_GSfreeze          GSfreeze;
-_GSconfigure       GSconfigure;
-_GStest            GStest;
-_GSabout           GSabout;
+extern _GSfreeze          GSfreeze;
+extern _GSconfigure       GSconfigure;
+extern _GStest            GStest;
+extern _GSabout           GSabout;
 
 // PAD1
-_PADinit           PAD1init;
-_PADopen           PAD1open;
-_PADclose          PAD1close;
-_PADshutdown       PAD1shutdown;
-_PADkeyEvent       PAD1keyEvent;
-_PADstartPoll      PAD1startPoll;
-_PADpoll           PAD1poll;
-_PADquery          PAD1query;
-_PADupdate         PAD1update;
+extern _PADinit           PAD1init;
+extern _PADopen           PAD1open;
+extern _PADclose          PAD1close;
+extern _PADshutdown       PAD1shutdown;
+extern _PADkeyEvent       PAD1keyEvent;
+extern _PADstartPoll      PAD1startPoll;
+extern _PADpoll           PAD1poll;
+extern _PADquery          PAD1query;
+extern _PADupdate         PAD1update;
 
-_PADgsDriverInfo   PAD1gsDriverInfo;
-_PADconfigure      PAD1configure;
-_PADtest           PAD1test;
-_PADabout          PAD1about;
+extern _PADgsDriverInfo   PAD1gsDriverInfo;
+extern _PADconfigure      PAD1configure;
+extern _PADtest           PAD1test;
+extern _PADabout          PAD1about;
 
 // PAD2
-_PADinit           PAD2init;
-_PADopen           PAD2open;
-_PADclose          PAD2close;
-_PADshutdown       PAD2shutdown;
-_PADkeyEvent       PAD2keyEvent;
-_PADstartPoll      PAD2startPoll;
-_PADpoll           PAD2poll;
-_PADquery          PAD2query;
-_PADupdate         PAD2update;
+extern _PADinit           PAD2init;
+extern _PADopen           PAD2open;
+extern _PADclose          PAD2close;
+extern _PADshutdown       PAD2shutdown;
+extern _PADkeyEvent       PAD2keyEvent;
+extern _PADstartPoll      PAD2startPoll;
+extern _PADpoll           PAD2poll;
+extern _PADquery          PAD2query;
+extern _PADupdate         PAD2update;
 
-_PADgsDriverInfo   PAD2gsDriverInfo;
-_PADconfigure      PAD2configure;
-_PADtest           PAD2test;
-_PADabout          PAD2about;
+extern _PADgsDriverInfo   PAD2gsDriverInfo;
+extern _PADconfigure      PAD2configure;
+extern _PADtest           PAD2test;
+extern _PADabout          PAD2about;
 
 // SIO[2]
-_SIOinit           SIOinit[2][9];
-_SIOopen           SIOopen[2][9];
-_SIOclose          SIOclose[2][9];
-_SIOshutdown       SIOshutdown[2][9];
-_SIOstartPoll      SIOstartPoll[2][9];
-_SIOpoll           SIOpoll[2][9];
-_SIOquery          SIOquery[2][9];
+extern _SIOinit           SIOinit[2][9];
+extern _SIOopen           SIOopen[2][9];
+extern _SIOclose          SIOclose[2][9];
+extern _SIOshutdown       SIOshutdown[2][9];
+extern _SIOstartPoll      SIOstartPoll[2][9];
+extern _SIOpoll           SIOpoll[2][9];
+extern _SIOquery          SIOquery[2][9];
 
-_SIOconfigure      SIOconfigure[2][9];
-_SIOtest           SIOtest[2][9];
-_SIOabout          SIOabout[2][9];
+extern _SIOconfigure      SIOconfigure[2][9];
+extern _SIOtest           SIOtest[2][9];
+extern _SIOabout          SIOabout[2][9];
 
 // SPU2
-_SPU2init          SPU2init;
-_SPU2open          SPU2open;
-_SPU2close         SPU2close;
-_SPU2shutdown      SPU2shutdown;
-_SPU2write         SPU2write;
-_SPU2read          SPU2read;
-_SPU2readDMA4Mem   SPU2readDMA4Mem;
-_SPU2writeDMA4Mem  SPU2writeDMA4Mem;
-_SPU2interruptDMA4 SPU2interruptDMA4;
-_SPU2readDMA7Mem   SPU2readDMA7Mem;
-_SPU2writeDMA7Mem  SPU2writeDMA7Mem;
-_SPU2setDMABaseAddr SPU2setDMABaseAddr;
-_SPU2interruptDMA7 SPU2interruptDMA7;
-_SPU2ReadMemAddr   SPU2ReadMemAddr;
-_SPU2setupRecording SPU2setupRecording;
-_SPU2WriteMemAddr   SPU2WriteMemAddr;
-_SPU2irqCallback   SPU2irqCallback;
+extern _SPU2init          SPU2init;
+extern _SPU2open          SPU2open;
+extern _SPU2close         SPU2close;
+extern _SPU2shutdown      SPU2shutdown;
+extern _SPU2write         SPU2write;
+extern _SPU2read          SPU2read;
+extern _SPU2readDMA4Mem   SPU2readDMA4Mem;
+extern _SPU2writeDMA4Mem  SPU2writeDMA4Mem;
+extern _SPU2interruptDMA4 SPU2interruptDMA4;
+extern _SPU2readDMA7Mem   SPU2readDMA7Mem;
+extern _SPU2writeDMA7Mem  SPU2writeDMA7Mem;
+extern _SPU2setDMABaseAddr SPU2setDMABaseAddr;
+extern _SPU2interruptDMA7 SPU2interruptDMA7;
+extern _SPU2ReadMemAddr   SPU2ReadMemAddr;
+extern _SPU2setupRecording SPU2setupRecording;
+extern _SPU2WriteMemAddr   SPU2WriteMemAddr;
+extern _SPU2irqCallback   SPU2irqCallback;
 
-_SPU2setClockPtr   SPU2setClockPtr;
-_SPU2setTimeStretcher SPU2setTimeStretcher;
+extern _SPU2setClockPtr   SPU2setClockPtr;
+extern _SPU2setTimeStretcher SPU2setTimeStretcher;
 
-_SPU2async         SPU2async;
-_SPU2freeze        SPU2freeze;
-_SPU2configure     SPU2configure;
-_SPU2test          SPU2test;
-_SPU2about         SPU2about;
+extern _SPU2async         SPU2async;
+extern _SPU2freeze        SPU2freeze;
+extern _SPU2configure     SPU2configure;
+extern _SPU2test          SPU2test;
+extern _SPU2about         SPU2about;
 
 // CDVD
-_CDVDinit          CDVDinit;
-_CDVDopen          CDVDopen;
-_CDVDclose         CDVDclose;
-_CDVDshutdown      CDVDshutdown;
-_CDVDreadTrack     CDVDreadTrack;
-_CDVDgetBuffer     CDVDgetBuffer;
-_CDVDreadSubQ      CDVDreadSubQ;
-_CDVDgetTN         CDVDgetTN;
-_CDVDgetTD         CDVDgetTD;
-_CDVDgetTOC        CDVDgetTOC;
-_CDVDgetDiskType   CDVDgetDiskType;
-_CDVDgetTrayStatus CDVDgetTrayStatus;
-_CDVDctrlTrayOpen  CDVDctrlTrayOpen;
-_CDVDctrlTrayClose CDVDctrlTrayClose;
+extern _CDVDinit          CDVDinit;
+extern _CDVDopen          CDVDopen;
+extern _CDVDclose         CDVDclose;
+extern _CDVDshutdown      CDVDshutdown;
+extern _CDVDreadTrack     CDVDreadTrack;
+extern _CDVDgetBuffer     CDVDgetBuffer;
+extern _CDVDreadSubQ      CDVDreadSubQ;
+extern _CDVDgetTN         CDVDgetTN;
+extern _CDVDgetTD         CDVDgetTD;
+extern _CDVDgetTOC        CDVDgetTOC;
+extern _CDVDgetDiskType   CDVDgetDiskType;
+extern _CDVDgetTrayStatus CDVDgetTrayStatus;
+extern _CDVDctrlTrayOpen  CDVDctrlTrayOpen;
+extern _CDVDctrlTrayClose CDVDctrlTrayClose;
 
-_CDVDconfigure     CDVDconfigure;
-_CDVDtest          CDVDtest;
-_CDVDabout         CDVDabout;
-_CDVDnewDiskCB     CDVDnewDiskCB;
+extern _CDVDconfigure     CDVDconfigure;
+extern _CDVDtest          CDVDtest;
+extern _CDVDabout         CDVDabout;
+extern _CDVDnewDiskCB     CDVDnewDiskCB;
 
 // DEV9
-_DEV9init          DEV9init;
-_DEV9open          DEV9open;
-_DEV9close         DEV9close;
-_DEV9shutdown      DEV9shutdown;
-_DEV9read8         DEV9read8;
-_DEV9read16        DEV9read16;
-_DEV9read32        DEV9read32;
-_DEV9write8        DEV9write8;
-_DEV9write16       DEV9write16;
-_DEV9write32       DEV9write32;
-_DEV9readDMA8Mem   DEV9readDMA8Mem;
-_DEV9writeDMA8Mem  DEV9writeDMA8Mem;
-_DEV9irqCallback   DEV9irqCallback;
-_DEV9irqHandler    DEV9irqHandler;
+extern _DEV9init          DEV9init;
+extern _DEV9open          DEV9open;
+extern _DEV9close         DEV9close;
+extern _DEV9shutdown      DEV9shutdown;
+extern _DEV9read8         DEV9read8;
+extern _DEV9read16        DEV9read16;
+extern _DEV9read32        DEV9read32;
+extern _DEV9write8        DEV9write8;
+extern _DEV9write16       DEV9write16;
+extern _DEV9write32       DEV9write32;
+extern _DEV9readDMA8Mem   DEV9readDMA8Mem;
+extern _DEV9writeDMA8Mem  DEV9writeDMA8Mem;
+extern _DEV9irqCallback   DEV9irqCallback;
+extern _DEV9irqHandler    DEV9irqHandler;
 
-_DEV9configure     DEV9configure;
-_DEV9freeze        DEV9freeze;
-_DEV9test          DEV9test;
-_DEV9about         DEV9about;
+extern _DEV9configure     DEV9configure;
+extern _DEV9freeze        DEV9freeze;
+extern _DEV9test          DEV9test;
+extern _DEV9about         DEV9about;
 
 // USB
-_USBinit           USBinit;
-_USBopen           USBopen;
-_USBclose          USBclose;
-_USBshutdown       USBshutdown;
-_USBread8          USBread8;
-_USBread16         USBread16;
-_USBread32         USBread32;
-_USBwrite8         USBwrite8;
-_USBwrite16        USBwrite16;
-_USBwrite32        USBwrite32;
-_USBasync          USBasync;
+extern _USBinit           USBinit;
+extern _USBopen           USBopen;
+extern _USBclose          USBclose;
+extern _USBshutdown       USBshutdown;
+extern _USBread8          USBread8;
+extern _USBread16         USBread16;
+extern _USBread32         USBread32;
+extern _USBwrite8         USBwrite8;
+extern _USBwrite16        USBwrite16;
+extern _USBwrite32        USBwrite32;
+extern _USBasync          USBasync;
 
-_USBirqCallback    USBirqCallback;
-_USBirqHandler     USBirqHandler;
-_USBsetRAM         USBsetRAM;
+extern _USBirqCallback    USBirqCallback;
+extern _USBirqHandler     USBirqHandler;
+extern _USBsetRAM         USBsetRAM;
 
-_USBconfigure      USBconfigure;
-_USBfreeze         USBfreeze;
-_USBtest           USBtest;
-_USBabout          USBabout;
+extern _USBconfigure      USBconfigure;
+extern _USBfreeze         USBfreeze;
+extern _USBtest           USBtest;
+extern _USBabout          USBabout;
 
 // FW
-_FWinit            FWinit;
-_FWopen            FWopen;
-_FWclose           FWclose;
-_FWshutdown        FWshutdown;
-_FWread32          FWread32;
-_FWwrite32         FWwrite32;
-_FWirqCallback     FWirqCallback;
+extern _FWinit            FWinit;
+extern _FWopen            FWopen;
+extern _FWclose           FWclose;
+extern _FWshutdown        FWshutdown;
+extern _FWread32          FWread32;
+extern _FWwrite32         FWwrite32;
+extern _FWirqCallback     FWirqCallback;
 
-_FWconfigure       FWconfigure;
-_FWfreeze          FWfreeze;
-_FWtest            FWtest;
-_FWabout           FWabout;
+extern _FWconfigure       FWconfigure;
+extern _FWfreeze          FWfreeze;
+extern _FWtest            FWtest;
+extern _FWabout           FWabout;
 #endif
 
 #endif /* __PS2EDEFS_H__ */

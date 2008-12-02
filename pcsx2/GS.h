@@ -47,46 +47,40 @@ extern u8 g_RealGSMem[0x2000];
 #define GS_RINGBUFFERSIZE	0x00300000 // 3Mb
 #define GS_RINGBUFFEREND	(u8*)(GS_RINGBUFFERBASE+GS_RINGBUFFERSIZE)
 
-#define GS_RINGTYPE_RESTART 0
-#define GS_RINGTYPE_P1		1
-#define GS_RINGTYPE_P2		2
-#define GS_RINGTYPE_P3		3
-#define GS_RINGTYPE_VSYNC	4
-#define GS_RINGTYPE_VIFFIFO	5 // GSreadFIFO2
-#define GS_RINGTYPE_FRAMESKIP	6
-#define GS_RINGTYPE_MEMWRITE8	7
-#define GS_RINGTYPE_MEMWRITE16	8
-#define GS_RINGTYPE_MEMWRITE32	9
-#define GS_RINGTYPE_MEMWRITE64	10
-#define GS_RINGTYPE_SAVE 11
-#define GS_RINGTYPE_LOAD 12
-#define GS_RINGTYPE_RECORD 13
+enum GS_RINGTYPE
+{
+	GS_RINGTYPE_RESTART = 0
+,	GS_RINGTYPE_P1
+,	GS_RINGTYPE_P2
+,	GS_RINGTYPE_P3
+,	GS_RINGTYPE_VSYNC
+,	GS_RINGTYPE_VIFFIFO // GSreadFIFO2
+,	GS_RINGTYPE_FRAMESKIP
+,	GS_RINGTYPE_MEMWRITE8
+,	GS_RINGTYPE_MEMWRITE16
+,	GS_RINGTYPE_MEMWRITE32
+,	GS_RINGTYPE_MEMWRITE64
+,	GS_RINGTYPE_SAVE
+,	GS_RINGTYPE_LOAD
+,	GS_RINGTYPE_RECORD
+,	GS_RINGTYPE_RESET		// issues a GSreset() command.
+,	GS_RINGTYPE_SOFTRESET	// issues a soft reset for the GIF
+};
 
 // if returns NULL, don't copy (memory is preserved)
-u8* GSRingBufCopy(void* mem, u32 size, u32 type);
+u8* GSRingBufCopy(u32 size, u32 type);
 void GSRingBufSimplePacket(int type, int data0, int data1, int data2);
-
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-
-#define GS_SETEVENT() SetEvent(g_hGsEvent)
-
-#else
-
-#include <pthread.h>
-#include <semaphore.h>
-extern sem_t g_semGsThread;
-#define GS_SETEVENT() sem_post(&g_semGsThread)
-
-#endif
 
 u32 GSgifTransferDummy(int path, u32 *pMem, u32 size);
 
 void gsInit();
+s32 gsOpen();
 void gsShutdown();
 void gsReset();
 
 // mem and size are the ones from GSRingBufCopy
 extern void GSRINGBUF_DONECOPY(const u8 *mem, u32 size);
+extern void GS_SETEVENT();
 extern void gsWaitGS();
 
 // used for resetting GIF fifo
