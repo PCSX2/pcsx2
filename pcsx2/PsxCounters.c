@@ -104,7 +104,8 @@ void psxRcntInit() {
 
 	if (SPU2async != NULL)
 	{
-		psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12));
+		//psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12)); //spu2async hack
+		psxCounters[6].rate = 768*12;
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		psxCounters[6].mode = 0x8;
 	}
@@ -733,7 +734,8 @@ int psxRcntFreeze(gzFile f, int Mode)
 	{
 		// This is needed to make old save states compatible.
 
-		psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12));
+		//psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12)); //spu2async hack
+		psxCounters[6].rate = 768*12;
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		psxCounters[7].rate = PSXCLK/1000;
 		psxCounters[7].CycleT = psxCounters[7].rate;	

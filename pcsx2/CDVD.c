@@ -1225,16 +1225,17 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			if (CHECK_SLOWDVD) {
-				switch (cdvd.Param[9]) {
-					case 0x01: cdvd.Speed =  1; break;	// CD
-					case 0x02: cdvd.Speed =  2; break;	// CD
-					case 0x03: cdvd.Speed =  4; break;	// CD
-					case 0x04: cdvd.Speed = 12; break;	// CD
-					default:   cdvd.Speed = 24; break;	// CD
-				}
-			}
-			else cdvd.Speed = 24; // Fast cd reads; better performance
+			//if (CHECK_SLOWDVD) {
+			//	switch (cdvd.Param[9]) {
+			//		case 0x01: cdvd.Speed =  1; break;	// CD
+			//		case 0x02: cdvd.Speed =  2; break;	// CD
+			//		case 0x03: cdvd.Speed =  4; break;	// CD
+			//		case 0x04: cdvd.Speed = 12; break;	// CD
+			//		default:   cdvd.Speed = 24; break;	// CD
+			//	}
+			//}
+			//else cdvd.Speed = 24; // Fast cd reads; better performance
+			cdvd.Speed = 24;
 			switch (cdvd.Param[10]) {
 				case 2: cdvd.ReadMode = CDVD_MODE_2340; cdvd.BlockSize = 2340; break;
 				case 1: cdvd.ReadMode = CDVD_MODE_2328; cdvd.BlockSize = 2328; break;
@@ -1286,7 +1287,8 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			cdvd.Speed = CHECK_SLOWDVD ? 1 : 4; //Some games need to read slower
+			//cdvd.Speed = CHECK_SLOWDVD ? 1 : 4; //Some games need to read slower
+			cdvd.Speed = 4;
 			cdvd.ReadMode = CDVD_MODE_2048; cdvd.BlockSize = 2064;	// Why oh why was it 2064
 			cdvdReadTimeRcnt(0);
 		

@@ -892,7 +892,7 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     {
         case WM_INITDIALOG:
 			SetWindowText(hDlg, _("Game Specific Fixes"));
-			if(Config.GameFixes & 0x1) CheckDlgButton(hDlg, IDC_GAMEFIX1, TRUE);
+			//if(Config.GameFixes & 0x1) CheckDlgButton(hDlg, IDC_GAMEFIX1, TRUE); //slow dvd
 			if(Config.GameFixes & 0x2) CheckDlgButton(hDlg, IDC_GAMEFIX2, TRUE);
 			if(Config.GameFixes & 0x4) CheckDlgButton(hDlg, IDC_GAMEFIX3, TRUE);
 			if(Config.GameFixes & 0x8) CheckDlgButton(hDlg, IDC_GAMEFIX4, TRUE);
@@ -902,7 +902,7 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             if (LOWORD(wParam) == IDOK)
             {  
 				Config.GameFixes = 0;
-				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX1) ? 0x1 : 0;
+				//Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX1) ? 0x1 : 0; //slow dvd
 				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX2) ? 0x2 : 0;
 				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX3) ? 0x4 : 0;
 				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX4) ? 0x8 : 0;
@@ -924,7 +924,7 @@ static void HacksInit( HWND hDlg )
 {
 	if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
 	if(Config.Hacks & 0x2) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
-	if(Config.Hacks & 0x4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
+	//if(Config.Hacks & 0x4) CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
 	if(Config.Hacks & 0x8) CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
     if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
 	if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
@@ -942,7 +942,7 @@ static void HacksChecked( HWND hDlg )
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
 	/* 0x40 == greyed checkbox (extra overflow checking); 0x2 == checked (disable overflow checking) */
 	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) == 2 ) ? 0x40 : (IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) ? 0x2 : 0);
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;
+	//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SOUNDHACK) ? 0x4 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
@@ -997,7 +997,7 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
-					CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE);
+					//CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE);
 					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
 
 					HacksChecked( hDlg );

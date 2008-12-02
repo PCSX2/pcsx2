@@ -88,8 +88,8 @@ BEGIN
     GROUPBOX        "PCSX2 Gamefixes",IDC_STATIC,6,30,294,112
     CONTROL         "FPU Clamp Hack - Special fix for Tekken 5 and maybe other games.",IDC_GAMEFIX3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,58,253,10
-    CONTROL         "Slow DVD access (fixes Tales of the Abyss)",IDC_GAMEFIX1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,44,252,10
+    CONTROL         "Slow DVD access (fixes Tales of the Abyss) (Not needed at this time)",IDC_GAMEFIX1,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,44,252,10
     CONTROL         "VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!",IDC_GAMEFIX4,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,84,252,10
 END
@@ -1053,7 +1053,7 @@ BEGIN
                     "Button",BS_AUTO3STATE | WS_TABSTOP,15,49,475,10
     CTEXT           "These hacks will affect the speed of PCSX2 but possibly compromise compatibility.",IDC_HACKDESC,7,7,497,8
     CONTROL         "Tighter SPU2 Sync ( Try this if you have stuttering audio ) - a bit slower",IDC_SOUNDHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,230,421,10
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,230,421,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )",IDC_SYNCHACK2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,176,410,10
     CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Even faster, but very unstable. Use at your own risk! )",IDC_SYNCHACK3,
