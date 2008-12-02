@@ -24,8 +24,6 @@
 #define REG_BLOCK %r12
 #define REG_BLOCKd %r12d
 
-.extern EEsCycle
-
 .globl R3000AExecute
 R3000AExecute:  
 
@@ -36,11 +34,6 @@ R3000AExecute:
         push %r14
         push %r15
 
-        //while (EEsCycle > 0) {		
-Execute_CheckCycles:
-        cmp dword ptr [EEsCycle], 0
-		jle Execute_Exit
-		
         // calc PSX_GETBLOCK
         // ((BASEBLOCK*)(recLUT[((u32)(x)) >> 16] + (sizeof(BASEBLOCK)/4)*((x) & 0xffff)))
         mov %eax, dword ptr [psxRegs + PCOFFSET]
@@ -72,9 +65,6 @@ Execute_Recompile:
 Execute_Function:
 		call %rdx
 
-		jmp Execute_CheckCycles
-				
-Execute_Exit:
 		pop %r15
 		pop %r14
 		pop %r13

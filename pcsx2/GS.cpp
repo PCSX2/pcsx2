@@ -1483,7 +1483,7 @@ extern "C" void GSPostVsyncEnd()
 	if( CHECK_MULTIGS ) 
 	{
 #ifdef PCSX2_DEVBUILD
-		InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
+		//InterlockedIncrement( (volatile LONG*)&g_pGSvSyncCount );
 		//SysPrintf( " Sending VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
 #endif
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
@@ -1625,7 +1625,7 @@ void* GSThreadProc(void* lpParam)
 
 #				ifdef PCSX2_DEVBUILD
 					//SysPrintf( " Processing VSync : %d \n", *(volatile LONG*)&g_pGSvSyncCount );
-					InterlockedDecrement( (volatile LONG*)&g_pGSvSyncCount );
+					//InterlockedDecrement( (volatile LONG*)&g_pGSvSyncCount );
 					// vSyncCount should never dip below zero.
 					assert( *(volatile LONG*)&g_pGSvSyncCount >= 0 );
 #				endif
