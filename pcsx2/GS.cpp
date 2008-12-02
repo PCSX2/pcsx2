@@ -32,6 +32,10 @@
 
 using namespace std;
 
+//#define MTGS_LOG SysPrintf
+#define MTGS_LOG 0&&
+
+
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
 
 // Win32 Threading Model
@@ -389,7 +393,7 @@ static void gsSetEventWait()
 	GS_SETEVENT();
 	_TIMESLICE();
 
-	//m_mtgsCopyCommandTally = 0;
+	m_mtgsCopyCommandTally = 0;
 }
 
 // mem and size are the ones returned from GSRingBufCopy
@@ -439,9 +443,7 @@ void GSRINGBUF_DONECOPY(const u8* mem, u32 size)
 	//  8 - roughly 2% slower on HT machines.
 
 	if( ++m_mtgsCopyCommandTally > 16 )
-	{
 		GS_SETEVENT();
-	}
 }
 
 void gsShutdown()
@@ -592,7 +594,7 @@ u8* GSRingBufCopy( u32 size, u32 type )
 void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 {
 	u8* writepos = g_pGSWritePos;
-	u8* future_writepos = writepos+16;
+	const u8* future_writepos = writepos+16;
 
 	assert( future_writepos <= GS_RINGBUFFEREND );
 
@@ -615,6 +617,8 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 
 	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
 	InterlockedExchangePointer(&g_pGSWritePos, future_writepos);
+
+	GS_SETEVENT();
 }
 
 void gsReset()
@@ -630,7 +634,7 @@ void gsReset()
 #ifdef PCSX2_DEVBUILD
 		InterlockedExchange( &g_pGSvSyncCount, 0 );
 #endif
-		GIF_LOG( "MTGS > Sending Reset...\n" );
+		MTGS_LOG( "MTGS > Sending Reset...\n" );
 		GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
 
 #ifdef _DEBUG
@@ -673,7 +677,7 @@ static bool _gsGIFSoftReset( int mask )
 
 	if( CHECK_MULTIGS )
 	{
-		GIF_LOG( "MTGS > Sending GIF Soft Reset (mask: %d)\n", mask );
+		MTGS_LOG( "MTGS > Sending GIF Soft Reset (mask: %d)\n", mask );
 		GSRingBufSimplePacket( GS_RINGTYPE_SOFTRESET, mask, 0, 0 );
 	}
 	else
@@ -721,7 +725,9 @@ void CSRwrite(u32 value)
 		if( !_gsGIFSoftReset( 7 ) )
 		{
 			if( CHECK_MULTIGS )
+			{
 				GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
+			}
 			else
 				GSreset();
 		}
@@ -1619,7 +1625,6 @@ extern "C" void GSPostVsyncEnd()
 		InterlockedIncrement( &g_pGSvSyncCount );
 		//SysPrintf( " Sending VSync : %d \n", g_pGSvSyncCount );
 #endif
-		GS_SETEVENT();
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
 	}
 	else {
@@ -1705,7 +1710,7 @@ GS_THREADPROC
                     if( PAD2update != NULL ) PAD2update(1);
 
 #				ifdef PCSX2_DEVBUILD
-					long syncCount = &g_pGSvSyncCount;
+					long syncCount = g_pGSvSyncCount;
 					//SysPrintf( " Processing VSync : %d \n", syncCount );
 					// vSyncCount should never dip below zero.
 					assert( syncCount >= 0 );
@@ -1718,6 +1723,7 @@ GS_THREADPROC
 					if( GSsetFrameSkip != NULL )
 						GSsetFrameSkip(*(u32*)(g_pGSRingPos+4));
 					break;
+
 				case GS_RINGTYPE_MEMWRITE8:
 					g_MTGSMem[*(u32*)(g_pGSRingPos+4)] = *(u8*)(g_pGSRingPos+8);
 					break;
@@ -1834,14 +1840,14 @@ GS_THREADPROC
                 }
 
 				case GS_RINGTYPE_RESET:
-					GIF_LOG( "MTGS > Receiving Reset...\n" );
+					MTGS_LOG( "MTGS > Receiving Reset...\n" );
 					if( GSreset != NULL ) GSreset();
 					break;
 
 				case GS_RINGTYPE_SOFTRESET:
 				{
 					int mask = *(u32*)(g_pGSRingPos+4);
-					GIF_LOG( "MTGS > Receiving GIF Soft Reset (mask: %d)\n", mask );
+					MTGS_LOG( "MTGS > Receiving GIF Soft Reset (mask: %d)\n", mask );
 					if( GSgifSoftReset != NULL ) GSgifSoftReset( mask );
 					break;
 				}
