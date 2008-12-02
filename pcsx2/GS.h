@@ -54,7 +54,6 @@ enum GS_RINGTYPE
 ,	GS_RINGTYPE_P2
 ,	GS_RINGTYPE_P3
 ,	GS_RINGTYPE_VSYNC
-,	GS_RINGTYPE_VIFFIFO // GSreadFIFO2
 ,	GS_RINGTYPE_FRAMESKIP
 ,	GS_RINGTYPE_MEMWRITE8
 ,	GS_RINGTYPE_MEMWRITE16
@@ -65,6 +64,7 @@ enum GS_RINGTYPE
 ,	GS_RINGTYPE_RECORD
 ,	GS_RINGTYPE_RESET		// issues a GSreset() command.
 ,	GS_RINGTYPE_SOFTRESET	// issues a soft reset for the GIF
+,	GS_RINGTYPE_WRITECSR
 };
 
 // if returns NULL, don't copy (memory is preserved)

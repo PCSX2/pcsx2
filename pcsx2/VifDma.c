@@ -2234,7 +2234,6 @@ __forceinline void vif1Interrupt() {
 	cpuRegs.interrupt &= ~(1 << 1);
 }
 
-extern u32 g_MTGSVifStart, g_MTGSVifCount;
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
 void dmaVIF1()
 {
@@ -2309,76 +2308,54 @@ void dmaVIF1()
 				return;
 			}
             CPU_INT(1, g_vifCycles);
-		} else { // from Memory
+		} else {
 			
-			
-			
-			if( CHECK_MULTIGS ) {
-				u8* pTempMem, *pEndMem;
+			int size;
+			u64* pMem = (u64*)dmaGetAddr(vif1ch->madr);
 
-				u8* pMem = GSRingBufCopy(0, GS_RINGTYPE_VIFFIFO);
-				*(u32*)(pMem-16) = GS_RINGTYPE_VIFFIFO|(vif1ch->qwc<<16); // hack
-				*(u32*)(pMem-12) = vif1ch->madr;
-				*(u32*)(pMem-8) = cpuRegs.cycle;
-			
-				// touch all the pages to make sure they are in memory
-				pTempMem = dmaGetAddr(vif1ch->madr);
-				pEndMem = (u8*)((uptr)(pTempMem + vif1ch->qwc*16 + 0xfff)&~0xfff);
-				pTempMem = (u8*)((uptr)pTempMem&~0xfff);
-				while(pTempMem < pEndMem ) {
-					pTempMem[0]++;
-                    pTempMem[0]--;
-					pTempMem += 0x1000;
-				}
+			// VIF from gsMemory
 
-				GSRINGBUF_DONECOPY(pMem, 0);
-				
-                g_MTGSVifStart = cpuRegs.cycle;
-                g_MTGSVifCount = 4000000; // a little less than 1/60th of a second
-				
-				// wait is, the safest option
-                //gsWaitGS();
-                //SysPrintf("waiting for gs\n");
-			}
-			else {
-
-				int size;
-				u64* pMem = (u64*)dmaGetAddr(vif1ch->madr);
-				if (pMem == NULL) {						//Is ptag empty?
-					SysPrintf("Vif1 Tag BUSERR\n");
-					psHu32(DMAC_STAT)|= 1<<15;          //If yes, set BEIS (BUSERR) in DMAC_STAT register
-					vif1.done = 1;
-					vif1Regs->stat&= ~0x1f000000;
-					vif1ch->qwc = 0;
-					CPU_INT(1, g_vifCycles);
-
-					return;						   //Return -1 as an error has occurred	
-				}
-				FreezeXMMRegs(1);
-				if( GSreadFIFO2 == NULL ) {
-					for (size=vif1ch->qwc; size>0; --size) {
-						if (size > 1) GSreadFIFO((u64*)&PS2MEM_HW[0x5000]);
-						pMem[0] = psHu64(0x5000);
-						pMem[1] = psHu64(0x5008); pMem+= 2;
-					}
-				}
-				else {
-					GSreadFIFO2(pMem, vif1ch->qwc);
-
-					// set incase read
-					psHu64(0x5000) = pMem[2*vif1ch->qwc-2];
-					psHu64(0x5008) = pMem[2*vif1ch->qwc-1];
-				}
-				FreezeXMMRegs(0);
-
-				
-				if(vif1Regs->mskpath3 == 0)vif1Regs->stat&= ~0x1f000000;
-				g_vifCycles += vif1ch->qwc * 2;
-                vif1ch->madr += vif1ch->qwc * 16; // mgs3 scene changes
+			if (pMem == NULL) {						//Is ptag empty?
+				SysPrintf("Vif1 Tag BUSERR\n");
+				psHu32(DMAC_STAT)|= 1<<15;          //If yes, set BEIS (BUSERR) in DMAC_STAT register
+				vif1.done = 1;
+				vif1Regs->stat&= ~0x1f000000;
 				vif1ch->qwc = 0;
 				CPU_INT(1, g_vifCycles);
+
+				return;						   //Return -1 as an error has occurred	
 			}
 
+			// MTGS concerns:  The MTGS is inherently disagreeable with the idea of downloading
+			// stuff from the GS.  The *only* way to handle this case safely is to flush the GS
+			// completely and execute the transfer there-after.
+
+			FreezeXMMRegs(1);
+			if( GSreadFIFO2 == NULL ) {
+				for (size=vif1ch->qwc; size>0; --size) {
+					if (size > 1 ) {
+						gsWaitGS();
+						GSreadFIFO((u64*)&PS2MEM_HW[0x5000]);
+					}
+					pMem[0] = psHu64(0x5000);
+					pMem[1] = psHu64(0x5008); pMem+= 2;
+				}
+			}
+			else {
+				gsWaitGS();
+				GSreadFIFO2(pMem, vif1ch->qwc);
+
+				// set incase read
+				psHu64(0x5000) = pMem[2*vif1ch->qwc-2];
+				psHu64(0x5008) = pMem[2*vif1ch->qwc-1];
+			}
+			FreezeXMMRegs(0);
+
+			if(vif1Regs->mskpath3 == 0)vif1Regs->stat&= ~0x1f000000;
+			g_vifCycles += vif1ch->qwc * 2;
+            vif1ch->madr += vif1ch->qwc * 16; // mgs3 scene changes
+			vif1ch->qwc = 0;
+			CPU_INT(1, g_vifCycles);
 		}
 		
 		vif1.done = 1;

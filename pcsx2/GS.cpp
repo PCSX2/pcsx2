@@ -65,7 +65,7 @@ static void thread_close( thread_t& thread )
 		if( status != STILL_ACTIVE ) break;
 		Sleep( 3 );
 	}
-	CloseHandle( &thread );
+	CloseHandle( thread );
 	thread = NULL;
 }
 
@@ -126,7 +126,7 @@ struct wait_event_t
 	pthread_cond_t cond;
 	pthread_mutex_t mutex;
 
-	wait_event_t() : cond( NULL ), mutex( NULL ) {}
+	wait_event_t() : cond( PTHREAD_COND_INITIALIZER ), mutex( PTHREAD_MUTEX_INITIALIZER ) {}
 };
 
 typedef pthread_mutex_t mutex_t;
@@ -141,9 +141,7 @@ static bool thread_create( thread_t& thread )
 
 static void thread_close( thread_t& thread )
 {
-	if( thread.p == NULL ) return;
 	pthread_join( thread, NULL );
-	thread.p = NULL;
 }
 
 static void event_init( wait_event_t& evt )
@@ -360,17 +358,6 @@ s32 gsOpen()
 	return 0;
 }
 
-// Sleep instead of timeslice.  This function is for use in cases where longer
-// delays are merited.
-__forceinline void _Sleep( int ms )
-{
-#ifdef _WIN32
-	    Sleep(ms);
-#else
-	    usleep(ms * 1000);
-#endif
-}
-
 void GS_SETEVENT()
 {
 	event_set(g_hGsEvent);
@@ -383,7 +370,7 @@ __forceinline void gsWaitGS()
 
 	GS_SETEVENT();
 	while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos )
-		_Sleep(2);
+		_TIMESLICE();
 }
 
 // Sets the gsEvent flag and releases a timeslice.
@@ -618,7 +605,7 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
 	InterlockedExchangePointer(&g_pGSWritePos, future_writepos);
 
-	GS_SETEVENT();
+	//GS_SETEVENT();
 }
 
 void gsReset()
@@ -636,6 +623,7 @@ void gsReset()
 #endif
 		MTGS_LOG( "MTGS > Sending Reset...\n" );
 		GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
+		//GS_SETEVENT();
 
 #ifdef _DEBUG
 		g_mtgsCopyLock = 0;
@@ -704,18 +692,22 @@ void gsGIFReset()
 
 void CSRwrite(u32 value)
 {
-	// [TODO] Ideally GSwriteCSR should be run through the MTGS ringbuffer also, but it doesn't
-	// make much of a difference since the GS plugin only uses it for re-enabling gsInts, which
-	// are handled by Pcsx2's GIFtagTransferDummy function instead of the GA in MTGS mode anyway.
-	// (in other words the gs copy of CSRw is effectively ignored in MTGS mode)
-
 	CSRw |= value & ~0x60;
-	GSwriteCSR(CSRw);
+
+	if( CHECK_MULTIGS )
+	{
+		GSRingBufSimplePacket( GS_RINGTYPE_WRITECSR, CSRw, 0, 0 );
+		GS_SETEVENT();
+	}
+	else
+		GSwriteCSR(CSRw);
 
 	GSCSRr = ((GSCSRr&~value)&0x1f)|(GSCSRr&~0x1f);
-	if( value & 0x100 ) { // FLUSH
+
+	// Our emulated GS has no FIFO...
+	/*if( value & 0x100 ) { // FLUSH
 		//SysPrintf("GS_CSR FLUSH GS fifo: %x (CSRr=%x)\n", value, GSCSRr);
-	}
+	}*/
 
 	if (value & 0x200) { // resetGS
 
@@ -725,20 +717,13 @@ void CSRwrite(u32 value)
 		if( !_gsGIFSoftReset( 7 ) )
 		{
 			if( CHECK_MULTIGS )
-			{
 				GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
-			}
 			else
 				GSreset();
 		}
 
 		GSCSRr = 0x551B400F;   // Set the FINISH bit to 1 - GS is always at a finish state as we don't have a FIFO(saqib)
 		GSIMR = 0x7F00; //This is bits 14-8 thats all that should be 1
-
-		// and this too (fixed megaman ac)
-		//CSRw = (u32)GSCSRr;
-		// Since the line above was commented out, I don't think this was needed anymore (Air)
-		//GSwriteCSR(CSRw);
 	}
 }
 
@@ -778,14 +763,12 @@ void gsWrite16(u32 mem, u16 value) {
 		case 0x12000010: // GS_SMODE1
 			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
 			else Config.PsxType &= ~1;	// NTSC
-
 			UpdateVSyncRate();
 			break;
 			
 		case 0x12000020: // GS_SMODE2
 			if(value & 0x1) Config.PsxType |= 2; // Interlaced
 			else Config.PsxType &= ~2;	// Non-Interlaced
-
 			break;
 			
 		case 0x12001000: // GS_CSR
@@ -816,15 +799,12 @@ void gsWrite32(u32 mem, u32 value)
 		case 0x12000010: // GS_SMODE1
 			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
 			else Config.PsxType &= ~1;	// NTSC
-			*(u32*)PS2GS_BASE(mem) = value;
-			
 			UpdateVSyncRate();
-
 			break;
+
 		case 0x12000020: // GS_SMODE2
 			if(value & 0x1) Config.PsxType |= 2; // Interlaced
 			else Config.PsxType &= ~2;	// Non-Interlaced
-
 			break;
 			
 		case 0x12001000: // GS_CSR
@@ -852,14 +832,13 @@ void gsWrite64(u32 mem, u64 value) {
 			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
 			else Config.PsxType &= ~1;	// NTSC
 			UpdateVSyncRate();
-
 			break;
 
 		case 0x12000020: // GS_SMODE2
 			if(value & 0x1) Config.PsxType |= 2; // Interlaced
 			else Config.PsxType &= ~2;	// Non-Interlaced
-
 			break;
+
 		case 0x12001000: // GS_CSR
 			CSRwrite((u32)value);
 			return;
@@ -878,27 +857,27 @@ void gsWrite64(u32 mem, u64 value) {
 
 u8 gsRead8(u32 mem)
 {
-	GIF_LOG("GS read 8 %8.8lx, at %8.8lx\n", *(u8*)PS2GS_BASE(mem), mem);
+	GIF_LOG("GS read 8 from %8.8lx  value: %8.8lx\n", mem, *(u8*)PS2GS_BASE(mem));
 
 	return *(u8*)PS2GS_BASE(mem);
 }
 
 u16 gsRead16(u32 mem)
 {
-	GIF_LOG("GS read 16 %8.8lx, at %8.8lx\n", *(u16*)PS2GS_BASE(mem), mem);
+	GIF_LOG("GS read 16 from %8.8lx  value: %8.8lx\n", mem, *(u16*)PS2GS_BASE(mem));
 
 	return *(u16*)PS2GS_BASE(mem);
 }
 
 u32 gsRead32(u32 mem) 
 {
-	GIF_LOG("GS read 32 %8.8lx, at %8.8lx\n", *(u32*)PS2GS_BASE(mem), mem);
+	GIF_LOG("GS read 32 from %8.8lx  value: %8.8lx\n", mem, *(u32*)PS2GS_BASE(mem));
 	return *(u32*)PS2GS_BASE(mem);
 }
 
 u64 gsRead64(u32 mem)
 {
-	GIF_LOG("GS read 64 %8.8lx, at %8.8lx\n", *(u32*)PS2GS_BASE(mem), mem);
+	GIF_LOG("GS read 64 from %8.8lx  value: %8.8lx_%8.8lx\n", mem, *(u32*)PS2GS_BASE(mem+4), *(u32*)PS2GS_BASE(mem) );
 	return *(u64*)PS2GS_BASE(mem);
 }
 
@@ -908,7 +887,7 @@ void gsIrq() {
 
 static void GSRegHandlerSIGNAL(u32* data)
 {
-	GIF_LOG("GS SIGNAL data %x_%x CSRw %x\n",data[0], data[1], CSRw);
+	MTGS_LOG("MTGS SIGNAL data %x_%x CSRw %x\n",data[0], data[1], CSRw);
 
 	GSSIGLBLID->SIGID = (GSSIGLBLID->SIGID&~data[1])|(data[0]&data[1]);
 	
@@ -924,7 +903,7 @@ static void GSRegHandlerSIGNAL(u32* data)
 
 static void GSRegHandlerFINISH(u32* data)
 {
-	GIF_LOG("GS FINISH data %x_%x CSRw %x\n",data[0], data[1], CSRw);
+	MTGS_LOG("MTGS FINISH data %x_%x CSRw %x\n",data[0], data[1], CSRw);
 
 	if ((CSRw & 0x2)) 
 		GSCSRr |= 2; // finish
@@ -1626,6 +1605,7 @@ extern "C" void GSPostVsyncEnd()
 		//SysPrintf( " Sending VSync : %d \n", g_pGSvSyncCount );
 #endif
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
+		GS_SETEVENT();
 	}
 	else {
 		GSvsync((*(u32*)(PS2MEM_GS+0x1000)&0x2000));
@@ -1737,53 +1717,6 @@ GS_THREADPROC
 					*(u64*)(g_MTGSMem+*(u32*)(g_pGSRingPos+4)) = *(u64*)(g_pGSRingPos+8);
 					break;
 
-				case GS_RINGTYPE_VIFFIFO:
-				{
-					u64* pMem;
-					assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
-					assert( vif1ch->qwc == (tag>>16) );
-
-					assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
-					pMem = (u64*)dmaGetAddr(vif1ch->madr);
-
-					if (pMem == NULL) {
-						psHu32(DMAC_STAT)|= 1<<15;
-						continue;	// don't increment gsRingPos
-					}
-
-					if( GSreadFIFO2 == NULL ) {
-						int size;
-						for (size=(tag>>16); size>0; size--) {
-							GSreadFIFO((u64*)&PS2MEM_HW[0x5000]);
-							pMem[0] = psHu64(0x5000);
-							pMem[1] = psHu64(0x5008); pMem+= 2;
-						}
-					}
-					else {
-						GSreadFIFO2(pMem, tag>>16); 
-						
-						// set incase read
-						psHu64(0x5000) = pMem[2*(tag>>16)-2];
-						psHu64(0x5008) = pMem[2*(tag>>16)-1];
-					}
-
-					assert( vif1ch->madr == *(u32*)(g_pGSRingPos+4) );
-					assert( vif1ch->qwc == (tag>>16) );
-
-//							tag = (tag>>16) + (cpuRegs.cycle- *(u32*)(g_pGSRingPos+8));
-//							if( tag & 0x80000000 ) tag = 0;
-					vif1ch->madr += vif1ch->qwc * 16;
-					if(vif1Regs->mskpath3 == 0)vif1Regs->stat&= ~0x1f000000;
-
-					// fixme : calling CPU_INT could create a race condition if it runs parallel
-					// with the EE/IOP code also calling CPU_INT.
-
-					CPU_INT(1, 0); // since gs thread always lags real thread
-                    vif1ch->qwc = 0;
-
-					break;
-				}
-
                 case GS_RINGTYPE_SAVE:
                 {
                     gzFile f = *(gzFile*)(g_pGSRingPos+4);
@@ -1851,6 +1784,11 @@ GS_THREADPROC
 					if( GSgifSoftReset != NULL ) GSgifSoftReset( mask );
 					break;
 				}
+
+				case GS_RINGTYPE_WRITECSR:
+					GSwriteCSR( *(u32*)(g_pGSRingPos+4) );
+				break;
+
 
 				default:
 
