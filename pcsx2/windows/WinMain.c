@@ -972,7 +972,7 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					EndDialog(hDlg, FALSE);
 					break;
 
-				case IDBUTTON1: //"compatibility" setting
+				case IDBUTTON1: //"stable" setting
 					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
@@ -981,8 +981,8 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
-					//CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE);
-					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
+					//CheckDlgButton(hDlg, IDC_SOUNDHACK, TRUE); //obsolete
+					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE); //no need to change
 					
 					HacksChecked( hDlg );
 					HacksInit( hDlg );
@@ -997,8 +997,24 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
-					//CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE);
-					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
+					//CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE); //obsolete
+					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE); //no need to change
+
+					HacksChecked( hDlg );
+					HacksInit( hDlg );
+					break;
+				
+				case IDBUTTON3: //"nothing" setting
+					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
+					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
+					CheckDlgButton(hDlg, IDC_DENORMALS, FALSE);
+					CheckDlgButton(hDlg, IDC_VU_FLAGS, FALSE);
+					CheckDlgButton(hDlg, IDC_FPU_FLAGS, FALSE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
+					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
+					//CheckDlgButton(hDlg, IDC_SOUNDHACK, FALSE); //obsolete
+					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE); //no need to change
 
 					HacksChecked( hDlg );
 					HacksInit( hDlg );
