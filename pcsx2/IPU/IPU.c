@@ -32,7 +32,7 @@
 #ifdef USE_IPU_SPEEDHACK
 #	define IPU_TO_INT( val )  ipu1Interrupt()
 #	define IPU_FROM_INT( val )  ipu0Interrupt()
-#	define IPU_FASTCALL
+#	define IPU_FORCEINLINE
 #else
 #	define IPU_TO_INT( val )  CPU_INT( DMAC_TO_IPU, val )
 #	define IPU_FROM_INT( val )  CPU_INT( DMAC_FROM_IPU, val )
@@ -946,7 +946,7 @@ static void ipuSETTH(u32 val) {
 ///////////////////////
 // IPU Worker Thread //
 ///////////////////////
-#define IPU_TO_INTERRUPT(dma) { \
+#define IPU_INTERRUPT(dma) { \
 	hwIntcIrq(INTC_IPU);	\
 }
 
@@ -966,7 +966,7 @@ void IPUCMD_WRITE(u32 val) {
 	switch (ipuRegs->cmd.CMD) {
 		case SCE_IPU_BCLR:
 			ipuBCLR(val);
-			IPU_TO_INTERRUPT(DMAC_TO_IPU);
+			IPU_INTERRUPT(DMAC_TO_IPU);
 			return;
 
 		case SCE_IPU_VDEC:

@@ -44,6 +44,7 @@ private:
 	public:
 		SndBuffer* sndout;
 		IXAudio2SourceVoice* pSourceVoice;
+		CRITICAL_SECTION cs;
 
 	protected:
 		STDMETHOD_(void, OnVoiceProcessingPassStart) () {}
@@ -53,8 +54,10 @@ private:
 		STDMETHOD_(void, OnBufferStart) ( void* ) {}
 		STDMETHOD_(void, OnBufferEnd) ( void* context )
 		{
+			EnterCriticalSection( &cs );
+
 			// All of these checks are necessary because XAudio2 is wonky shizat.
-			if( pSourceVoice == NULL || context == NULL || sndout == NULL ) return;
+			if( pSourceVoice == NULL || context == NULL ) return;
 
 			s16* qb = (s16*)context;
 
@@ -67,6 +70,7 @@ private:
 			buf.pContext=context;
 
 			pSourceVoice->SubmitSourceBuffer( &buf );
+			LeaveCriticalSection( &cs );
 		}
 		STDMETHOD_(void, OnLoopEnd) ( void* ) {}   
 		STDMETHOD_(void, OnVoiceError) (THIS_ void* pBufferContext, HRESULT Error) { };
@@ -121,9 +125,8 @@ public:
 		wfx.nAvgBytesPerSec = SampleRate * wfx.nBlockAlign;
 		wfx.cbSize=0;
 
-		// Egh.. not sure if the initializer for these values should be before
-		// or after CreateSourceVoice.  Some drivers could do evil things to
-		// our structure whn we create the voice.
+		InitializeCriticalSection( &voiceContext.cs );
+		EnterCriticalSection( &voiceContext.cs );
 
 		//
 		// Create an XAudio2 voice to stream this wave
@@ -136,9 +139,8 @@ public:
 			return -1;
 		}
 
-		// See comment above.  Leave this redundant code in to protect against
-		// potentially stupid drivers.
 		voiceContext.pSourceVoice = pSourceVoice;
+		voiceContext.sndout = sb;
 		pSourceVoice->FlushSourceBuffers();
 		pSourceVoice->Start( 0, 0 );
 
@@ -164,33 +166,26 @@ public:
 			buf.pAudioData=(BYTE*)buf.pContext;
 			pSourceVoice->SubmitSourceBuffer( &buf );
 		}
-		voiceContext.sndout = sb;
+		LeaveCriticalSection( &voiceContext.cs );
 
 		return 0;
 	}
 
 	void Close()
 	{
-		//
+		EnterCriticalSection( &voiceContext.cs );
+
 		// Clean up?
-		// Apparently XA2 would just rather we NOT clean up...
-
-		/*if( pSourceVoice != NULL )
-		{
-			//pSourceVoice->FlushSourceBuffers();
-			//pSourceVoice->Stop( 0 );
-			//Sleep(10);	// give the engine some time to flush voices
-			//pSourceVoice->DestroyVoice();
-		}*/
-
-		//Sleep(10);	// give the engine some more time, because I don't trust it.
-
-		//
-		// Cleanup XAudio2
-		//
-
 		// All XAudio2 interfaces are released when the engine is destroyed,
 		// but being tidy never hurt.
+
+		// Actually it can hurt.  As of DXSDK Aug 2008, doing a full cleanup causes
+		// XA2 on Vista to crash.  Even if you copy/paste code directly from Microsoft.
+		// But doing no cleanup at all causes XA2 under XP to crash.  So after much trial
+		// and error we found a happy comprimise as follows:
+
+		if( pSourceVoice != NULL )
+			pSourceVoice->DestroyVoice();
 
 		if( pMasteringVoice != NULL )
 			pMasteringVoice->DestroyVoice();
@@ -202,7 +197,8 @@ public:
 		voiceContext.sndout = NULL;
 		voiceContext.pSourceVoice = NULL;
 		pSourceVoice = NULL;
-
+		LeaveCriticalSection( &voiceContext.cs );
+		DeleteCriticalSection( &voiceContext.cs );
 		CoUninitialize();
 	}
 
