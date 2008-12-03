@@ -126,8 +126,14 @@ struct wait_event_t
 	pthread_cond_t cond;
 	pthread_mutex_t mutex;
 
-	wait_event_t() : cond( PTHREAD_COND_INITIALIZER ), mutex( PTHREAD_MUTEX_INITIALIZER ) {}
-};
+	wait_event_t() 
+	{
+		int err = 0;
+		
+		err = pthread_cond_init(&cond, NULL);
+		err = pthread_mutex_init(&mutex, NULL);
+	}
+ };
 
 typedef pthread_mutex_t mutex_t;
 typedef pthread_t thread_t;

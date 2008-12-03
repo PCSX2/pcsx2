@@ -475,6 +475,7 @@ create_SpeedHacksDlg (void)
   check_Tight_SPU_Sync = gtk_check_button_new_with_mnemonic (_("Tighter SPU2 Sync (Try this if you have stuttering audio) - a bit slower."));
   gtk_widget_show (check_Tight_SPU_Sync);
   gtk_box_pack_start (GTK_BOX (vbox33), check_Tight_SPU_Sync, FALSE, FALSE, 0);
+  gtk_widget_set_sensitive (check_Tight_SPU_Sync, FALSE);
 
   check_ESC_Hack = gtk_check_button_new_with_mnemonic (_("Escape Hack - Use Esc key to fully exit PCSX2."));
   gtk_widget_show (check_ESC_Hack);
@@ -621,9 +622,10 @@ create_GameFixDlg (void)
   gtk_widget_show (check_FPU_Clamp);
   gtk_box_pack_start (GTK_BOX (vbox30), check_FPU_Clamp, FALSE, FALSE, 0);
 
-  check_Slow_DVD = gtk_check_button_new_with_mnemonic (_("Slow DVD access (fixes Tales of the Abyss)"));
+  check_Slow_DVD = gtk_check_button_new_with_mnemonic (_("Slow DVD access (fixes Tales of the Abyss) (Not currently needed)"));
   gtk_widget_show (check_Slow_DVD);
   gtk_box_pack_start (GTK_BOX (vbox30), check_Slow_DVD, FALSE, FALSE, 0);
+  gtk_widget_set_sensitive (check_Slow_DVD, FALSE);
 
   check_VU_Branch = gtk_check_button_new_with_mnemonic (_("VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!"));
   gtk_widget_show (check_VU_Branch);
@@ -3538,7 +3540,6 @@ create_CpuDlg (void)
   GtkWidget *GtkCheckButton_VU1rec;
   GtkWidget *label32;
   GtkWidget *GtkCheckButton_MTGS;
-  GtkWidget *GtkCheckButton_CpuDC;
   GtkWidget *vbox48;
   GtkWidget *frame9;
   GtkWidget *alignment4;
@@ -3654,10 +3655,6 @@ create_CpuDlg (void)
   GtkCheckButton_MTGS = gtk_check_button_new_with_mnemonic (_("Multi threaded GS mode (MTGS)\n (faster on dual core/HT CPUs, requires pcsx2 restart)"));
   gtk_widget_show (GtkCheckButton_MTGS);
   gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_MTGS, FALSE, FALSE, 0);
-
-  GtkCheckButton_CpuDC = gtk_check_button_new_with_mnemonic (_("Dual Core Mode (DC) - Only valid with MTGS. \nKeeps one core busy, sometimes improving FPS. \nNote that this increases the heat your CPU produces, \nso leave it off on Notebooks."));
-  gtk_widget_show (GtkCheckButton_CpuDC);
-  gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_CpuDC, FALSE, FALSE, 0);
 
   vbox48 = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox48);
@@ -3833,7 +3830,6 @@ create_CpuDlg (void)
   GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_VU1rec, "GtkCheckButton_VU1rec");
   GLADE_HOOKUP_OBJECT (CpuDlg, label32, "label32");
   GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_MTGS, "GtkCheckButton_MTGS");
-  GLADE_HOOKUP_OBJECT (CpuDlg, GtkCheckButton_CpuDC, "GtkCheckButton_CpuDC");
   GLADE_HOOKUP_OBJECT (CpuDlg, vbox48, "vbox48");
   GLADE_HOOKUP_OBJECT (CpuDlg, frame9, "frame9");
   GLADE_HOOKUP_OBJECT (CpuDlg, alignment4, "alignment4");

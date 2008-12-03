@@ -1132,6 +1132,7 @@ Enabled (Helps SPS, Slow)</property>
 		      <child>
 			<widget class="GtkCheckButton" id="check_Tight_SPU_Sync">
 			  <property name="visible">True</property>
+			  <property name="sensitive">False</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Tighter SPU2 Sync (Try this if you have stuttering audio) - a bit slower.</property>
 			  <property name="use_underline">True</property>
@@ -1341,8 +1342,9 @@ Enabled (Helps SPS, Slow)</property>
 		  <child>
 		    <widget class="GtkCheckButton" id="check_Slow_DVD">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="can_focus">True</property>
-		      <property name="label" translatable="yes">Slow DVD access (fixes Tales of the Abyss)</property>
+		      <property name="label" translatable="yes">Slow DVD access (fixes Tales of the Abyss) (Not currently needed)</property>
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">True</property>
@@ -7021,28 +7023,6 @@ Version x.x</property>
 		  <property name="can_focus">True</property>
 		  <property name="label" translatable="yes">Multi threaded GS mode (MTGS)
  (faster on dual core/HT CPUs, requires pcsx2 restart)</property>
-		  <property name="use_underline">True</property>
-		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
-		  <property name="active">False</property>
-		  <property name="inconsistent">False</property>
-		  <property name="draw_indicator">True</property>
-		</widget>
-		<packing>
-		  <property name="padding">0</property>
-		  <property name="expand">False</property>
-		  <property name="fill">False</property>
-		</packing>
-	      </child>
-
-	      <child>
-		<widget class="GtkCheckButton" id="GtkCheckButton_CpuDC">
-		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="label" translatable="yes">Dual Core Mode (DC) - Only valid with MTGS. 
-Keeps one core busy, sometimes improving FPS. 
-Note that this increases the heat your CPU produces, 
-so leave it off on Notebooks.</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">True</property>
