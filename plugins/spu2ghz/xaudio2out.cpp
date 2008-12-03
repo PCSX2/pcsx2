@@ -231,7 +231,7 @@ public:
 
 	const char* GetLongName() const
 	{
-		return "XAudio 2 (Experimental)";
+		return "XAudio 2 (Recommended)";
 	}
 
 } XA2;

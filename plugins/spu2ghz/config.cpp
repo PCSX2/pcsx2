@@ -80,11 +80,11 @@ bool EffectsEnabled=false;
 
 // OUTPUT
 int SampleRate=48000;
-int SndOutLatencyMS=140;
+int SndOutLatencyMS=160;
 //int SndOutLatency=1024;
 //int MaxBufferCount=8;
 //int CurBufferCount=MaxBufferCount;
-bool timeStretchEnabled=false;
+bool timeStretchEnabled=true;
 
 u32 OutputModule=0; //OUTPUT_DSOUND;
 
@@ -263,16 +263,16 @@ void ReadSettings()
 	EffectsEnabled = false;		// force disabled for now.
 
 	SampleRate=CfgReadInt("OUTPUT","Sample_Rate",48000);
-	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency", 140);
+	SndOutLatencyMS=CfgReadInt("OUTPUT","Latency", 160);
 
 	//OutputModule = CfgReadInt("OUTPUT","Output_Module", OUTPUT_DSOUND );
 	char omodid[128];
-	CfgReadStr( "OUTPUT", "Output_Module", omodid, 127, DSoundOut->GetIdent() );
+	CfgReadStr( "OUTPUT", "Output_Module", omodid, 127, XAudio2Out->GetIdent() );
 
 	// find the driver index of this module:
 	OutputModule = FindOutputModuleById( omodid );
 
-	VolumeShiftModifier = CfgReadInt( "OUTPUT","Volume_Shift", 0 );
+	VolumeShiftModifier = CfgReadInt( "OUTPUT","Volume_Shift", 1 );
 	LimitMode=CfgReadInt("OUTPUT","Speed_Limit_Mode",0);
 
 	CfgReadStr("DSP PLUGIN","Filename",dspPlugin,255,"");
@@ -285,7 +285,7 @@ void ReadSettings()
 	// Read DSOUNDOUT and WAVEOUT configs:
 	CfgReadStr( "DSOUNDOUT", "Device", Config_DSoundOut.Device, 254, "default" );
 	CfgReadStr( "WAVEOUT", "Device", Config_WaveOut.Device, 254, "default" );
-	Config_DSoundOut.NumBuffers = CfgReadInt( "DSOUNDOUT", "Buffer_Count", 4 );
+	Config_DSoundOut.NumBuffers = CfgReadInt( "DSOUNDOUT", "Buffer_Count", 5 );
 	Config_WaveOut.NumBuffers = CfgReadInt( "WAVEOUT", "Buffer_Count", 4 );
 
 	// Read DSOUND51 config:

@@ -57,8 +57,8 @@ SndOutModule* mods[]=
 	&NullOut,
 	WaveOut,
 	DSoundOut,
-	DSound51Out,
-	ASIOOut,
+	//DSound51Out,
+	//ASIOOut,
 	XAudio2Out,
 	NULL		// signals the end of our list
 };

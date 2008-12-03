@@ -451,7 +451,7 @@ public:
 
 	const char* GetLongName() const
 	{
-		return "DirectSound";
+		return "DirectSound (nice)";
 	}
 
 } DS;
