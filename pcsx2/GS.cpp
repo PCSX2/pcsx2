@@ -153,11 +153,8 @@ static void event_init( wait_event_t& evt )
 
 static void event_destroy( wait_event_t& evt )
 {
-	if( evt.cond == NULL ) return;
 	pthread_cond_destroy( &evt.cond );
 	pthread_mutex_destroy( &evt.mutex );
-	evt.cond = NULL;
-	evt.mutex = NULL;
 }
 
 static void event_set( wait_event_t& evt )
@@ -181,9 +178,7 @@ static void mutex_init( mutex_t& mutex )
 
 static void mutex_destroy( mutex_t& mutex )
 {
-	if( mutex == NULL ) return;
 	pthread_mutex_destroy( &mutex );
-	mutex = NULL;
 }
 
 static void mutex_lock( mutex_t& mutex )
@@ -200,8 +195,6 @@ static void mutex_unlock( mutex_t& mutex )
 
 
 extern "C" {
-
-#define PLUGINtypedefs // for GSgifTransfer1
 
 #include "Common.h"
 #include "zlib.h"
@@ -465,7 +458,6 @@ void gsShutdown()
 		GSclose();
 }
 
-
 u8* GSRingBufCopy( u32 size, u32 type )
 {
 	// Note on volatiles: g_pGSWritePos is not modified by the GS thread,
@@ -591,6 +583,8 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	while( future_writepos == *(volatile PU8*)&g_pGSRingPos )
 		gsSetEventWait();
 
+
+
 #ifdef RINGBUF_DEBUG_STACK
 	mutex_lock( stackLock );
 	ringposStack.push_front( (long)writepos );
@@ -604,8 +598,6 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 
 	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
 	InterlockedExchangePointer(&g_pGSWritePos, future_writepos);
-
-	//GS_SETEVENT();
 }
 
 void gsReset()
@@ -623,7 +615,6 @@ void gsReset()
 #endif
 		MTGS_LOG( "MTGS > Sending Reset...\n" );
 		GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
-		//GS_SETEVENT();
 
 #ifdef _DEBUG
 		g_mtgsCopyLock = 0;
@@ -1801,10 +1792,12 @@ GS_THREADPROC
 					continue;
 			}
 
-			InterlockedExchangeAdd( (long*)&g_pGSRingPos, ringposinc );
-			assert( g_pGSRingPos <= GS_RINGBUFFEREND );
+			const u8* newringpos = g_pGSRingPos + ringposinc;
+			assert( newringpos <= GS_RINGBUFFEREND );
+			if( newringpos == GS_RINGBUFFEREND )
+				newringpos = GS_RINGBUFFERBASE;
 
-			InterlockedCompareExchangePointer( (volatile PVOID*)&g_pGSRingPos, GS_RINGBUFFERBASE, GS_RINGBUFFEREND );
+			InterlockedExchangePointer( &g_pGSRingPos, newringpos );
 		}
 
 	}
