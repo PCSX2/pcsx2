@@ -39,7 +39,7 @@ LRESULT WINAPI AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					  230, 10, 211, 110, hDlg, (HMENU)IDC_STATIC, GetModuleHandle(NULL), NULL);
 			SendMessage(hW, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBMP);
 
-			SetWindowText(hDlg, _("About"));
+			SetWindowText(hDlg, _("About PCSX2 - Playground"));
 
 			Button_SetText(GetDlgItem(hDlg, IDOK), _("OK"));
 			Static_SetText(GetDlgItem(hDlg, IDC_PCSX_ABOUT_AUTHORS), _(LabelAuthors));

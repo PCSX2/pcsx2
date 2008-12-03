@@ -104,7 +104,6 @@ void psxRcntInit() {
 
 	if (SPU2async != NULL)
 	{
-		//psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12)); //spu2async hack
 		psxCounters[6].rate = 768*12;
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		psxCounters[6].mode = 0x8;
@@ -733,8 +732,6 @@ int psxRcntFreeze(gzFile f, int Mode)
 	if( Mode == 0 && (dwCurSaveStateVer <= 0x7a300010) )
 	{
 		// This is needed to make old save states compatible.
-
-		//psxCounters[6].rate = ((Config.Hacks & 0x4) ? 768 : (768*12)); //spu2async hack
 		psxCounters[6].rate = 768*12;
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		psxCounters[7].rate = PSXCLK/1000;
@@ -742,7 +739,6 @@ int psxRcntFreeze(gzFile f, int Mode)
 		
 		// PSXHBLANK is now an arbitrary value, since it can differ based 
 		// on PAL/NTSC and is timed by the EE.
-
 		if(psxCounters[1].mode & IOPCNT_ALT_SOURCE)
 			psxCounters[1].rate = PSXHBLANK;
 

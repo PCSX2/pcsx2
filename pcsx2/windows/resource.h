@@ -541,7 +541,6 @@
 #define IDC_EDIT2                       1256
 #define IDC_BIAS                        1256
 #define IDC_USER_NAME                   1257
-#define IDC_CPU_MULTI                   1258
 #define IDC_CPU_MULTI2                  1259
 #define IDC_CPU_GSMULTI                 1259
 #define IDC_PS2SILVER_RECT              1259
@@ -612,7 +611,6 @@
 #define IDC_ICON1                       1299
 #define IDC_ICON2                       1300
 #define IDC_CHECK1                      1300
-#define IDC_SOUNDHACK                   1300
 #define IDC_EE_CHECK1                   1300
 #define IDC_GAMEFIX1                    1300
 #define IDC_DENORMALS                   1301

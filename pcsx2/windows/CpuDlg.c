@@ -56,7 +56,6 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Static_SetText(GetDlgItem(hW, IDC_CPU_VU0REC), _("VU0rec - enable recompiler for VU0 unit"));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_VU1REC), _("VU1rec - enable recompiler for VU1 unit"));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_GSMULTI), _("Multi threaded GS mode (MTGS)\n(faster on dual core/HT procs, requires pcsx2 restart)"));
-			Static_SetText(GetDlgItem(hW, IDC_CPU_MULTI), _("Dual Core Mode (DC) - Only valid with MTGS. Keeps one core busy, sometimes improving FPS. Note that this increases the heat your CPU produces, so leave it off on Notebooks."));
 			Static_SetText(GetDlgItem(hW, IDC_FRAMELIMIT), _("Frame Limiting (F4 key switches the mode in-game!)"));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_NORMAL), _("Normal - All frames are rendered as fast as possible."));
 			Static_SetText(GetDlgItem(hW, IDC_CPU_FL_LIMIT), _("Limit - Force frames to normal speeds if too fast."));
@@ -102,7 +101,6 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 			CheckDlgButton(hW, IDC_CPU_GSMULTI, !!CHECK_MULTIGS);
-			//CheckDlgButton(hW, IDC_CPU_MULTI, !!CHECK_DUALCORE);
 
 			CheckRadioButton(hW,IDC_CPU_FL_NORMAL, IDC_CPU_FL_NORMAL+3, IDC_CPU_FL_NORMAL+(CHECK_FRAMELIMIT>>10));
 			
@@ -135,15 +133,10 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 					if( SendDlgItemMessage(hW,IDC_CPU_EEREC,BM_GETCHECK,0,0) ) newopts |= PCSX2_EEREC;
 
-//#ifdef PCSX2_DEVBUILD
 					if( SendDlgItemMessage(hW,IDC_CPU_VU0REC,BM_GETCHECK,0,0) ) newopts |= PCSX2_VU0REC;
 					if( SendDlgItemMessage(hW,IDC_CPU_VU1REC,BM_GETCHECK,0,0) ) newopts |= PCSX2_VU1REC;
-//#else  //Why oh why were we forcing this in release to public builds?
-//					newopts |= PCSX2_VU0REC|PCSX2_VU1REC;
-//#endif
 
 					if( SendDlgItemMessage(hW,IDC_CPU_GSMULTI,BM_GETCHECK,0,0) ) newopts |= PCSX2_GSMULTITHREAD;
-					//if( SendDlgItemMessage(hW,IDC_CPU_MULTI,BM_GETCHECK,0,0) ) newopts |= PCSX2_DUALCORE;
 					if( SendDlgItemMessage(hW,IDC_CPU_FRAMELIMIT,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT;
 
 					if( SendDlgItemMessage(hW,IDC_CPU_FL_NORMAL,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT_NORMAL;

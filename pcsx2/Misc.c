@@ -54,19 +54,20 @@ char CdromId[12];
 static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
 
 char *LabelAuthors = { N_(
-	"PCSX2 a PS2 emulator\n\n"
-	"written by:\n"
+	"PCSX2, a PS2 emulator\n\n"
+	"originally written by:\n"
 	"saqib, refraction, zerofrog,\n"
 	"shadow, linuzappz, florin,\n"
 	"nachbrenner, auMatt, loser, \n"
-	"alexey silinov, goldfinger,\n"
+	"alexey silinov, goldfinger\n"
 	"\n"
-	"Webmasters: CKemu, Falcon4ever\n\n"
-	"Playground Dev:\n"
+	"Playground Mod Devs:\n"
 	"Arcum42, drkIIRaziel, Cottonvibes, \n"
 	"Jake.Stine, Rama\n\n"
 	"Playground Testing:\n"
-	"Krakatos\n")
+	"Krakatos\n"
+	"\n"
+	"Webmasters: CKemu, Falcon4ever")
 };
 
 char *LabelGreets = { N_(
@@ -77,7 +78,7 @@ char *LabelGreets = { N_(
 	"Credits: Hiryu && Sjeep for their libcdvd (iso parsing and filesystem driver code)\n"
 	"\n"
 	"Some betatester/support dudes: Belmont, bositman, ChaosCode, CKemu, crushtest,"
-	"falcon4ever, GeneralPlot, jegHegy, parotaku, Prafull, Razorblade, Rudy_X, Seta-san")
+	"Falcon4ever, GeneralPlot, jegHegy, parotaku, Prafull, Razorblade, Rudy_X, Seta-san")
 };
 
 static struct {

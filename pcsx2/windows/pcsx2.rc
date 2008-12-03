@@ -1028,7 +1028,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 ABOUT_DIALOG DIALOGEX 0, 0, 431, 302
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_ACCEPTFILES
-CAPTION "About"
+CAPTION "About PCSX2 - Playground"
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,205,282,50,14
@@ -1051,8 +1051,6 @@ BEGIN
     CONTROL         "Disable VU Overflow Checks - *Checked = Disables overflow checks. ( Speedup! ) *Greyed = Extra overflow checks. ( Helps SPS, Slow! )",IDC_VU_OVERFLOWHACK,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,15,49,475,10
     CTEXT           "These hacks will affect the speed of PCSX2 but possibly compromise compatibility.",IDC_HACKDESC,7,7,497,8
-    CONTROL         "Tighter SPU2 Sync ( Try this if you have stuttering audio ) - a bit slower",IDC_SOUNDHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,230,421,10
     CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )",IDC_SYNCHACK2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,176,410,10
     CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. ( Even faster, but very unstable. Use at your own risk! )",IDC_SYNCHACK3,
@@ -1601,7 +1599,7 @@ IDD_CPUDLG DIALOGEX 0, 0, 563, 321
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "EERec -  EE/IOP recompiler (need MMX/SSE)",IDC_CPU_EEREC,
+    CONTROL         "EERec -  EE/IOP recompiler (need MMX/SSE/SSE2)",IDC_CPU_EEREC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,100,265,18
     CONTROL         "VU0rec - enable recompiler for VU0 unit",IDC_CPU_VU0REC,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,14,127,219,18
@@ -1609,7 +1607,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,14,143,214,18
     CONTROL         "Multi threaded GS mode (MTGS)\n    (faster on dual core/HT procs, requires pcsx2 restart)",IDC_CPU_GSMULTI,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,166,231,30
-    CONTROL         "Dual Core Mode (DC) - OBSOLETE",IDC_CPU_MULTI,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,7,199,232,26
     CONTROL         "Normal - All frames are rendered as fast as possible.",IDC_CPU_FL_NORMAL,
                     "Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_GROUP,309,17,221,17
     CONTROL         "Limit - Force frames to normal speeds if too fast.\n      (You can set a custom FPS limit below.)",IDC_CPU_FL_LIMIT,
