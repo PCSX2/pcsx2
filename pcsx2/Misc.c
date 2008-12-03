@@ -61,12 +61,17 @@ char *LabelAuthors = { N_(
 	"nachbrenner, auMatt, loser, \n"
 	"alexey silinov, goldfinger,\n"
 	"\n"
-	"Webmasters: CKemu, Falcon4ever")
+	"Webmasters: CKemu, Falcon4ever\n\n"
+	"Playground Dev:\n"
+	"Arcum42, drkIIRaziel, Cottonvibes, \n"
+	"Jake.Stine, Rama\n\n"
+	"Playground Testing:\n"
+	"Krakatos\n")
 };
 
 char *LabelGreets = { N_(
-	"Greets to: Bobbi, Keith, CpUMasteR, Nave, Snake785, Raziel\n"
-	"Special thanks to: Sjeep, Dreamtime, F|RES, BGnome, MrBrown, \n"
+	"Greets to: Bobbi, Keith, CpUMasteR, Nave, Snake785\n\n"
+	"Special thanks to: Gigaherz, Gabest, Sjeep, Dreamtime, F|RES, BGnome, MrBrown, \n"
 	"Seta-San, Skarmeth, blackd_wd, _Demo_\n"
 	"\n"
 	"Credits: Hiryu && Sjeep for their libcdvd (iso parsing and filesystem driver code)\n"
