@@ -20,6 +20,15 @@
 #define __IPU_H__
 
 #include "Common.h"
+
+// IPU Speed Hack!
+// By uncommenting the define below, the IPU can get a pretty nice speed boost,
+// of about 10%.  Additionally, the ipuInterrupt handlers in the cpuBranchTest
+// are also be removed, which helps reduce branch test overhead in *all* games.
+
+//#define USE_IPU_SPEEDHACK
+
+
 #ifdef _MSC_VER
 #pragma pack(1)
 #endif

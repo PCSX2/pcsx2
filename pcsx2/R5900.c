@@ -390,8 +390,10 @@ static __forceinline void _cpuTestInterrupts()
 	if( cpuRegs.interrupt & ( 1 | (3 << 3) | (3<<8) | (3<<10)) )
 	{
 		TESTINT(0, vif0Interrupt);
+#ifndef USE_IPU_SPEEDHACK
 		TESTINT(3, ipu0Interrupt);
 		TESTINT(4, ipu1Interrupt);
+#endif
 		TESTINT(8, SPRFROMinterrupt);
 		TESTINT(9, SPRTOinterrupt);
 
