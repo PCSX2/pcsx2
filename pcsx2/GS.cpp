@@ -1672,7 +1672,6 @@ extern "C" void gsSyncLimiterLostTime( s32 deltaTime )
 
 	if( CHECK_MULTIGS )
 	{
-		//const u32* stp = (u32*)&startTime;
 		GSRingBufSimplePacket(
 			GS_RINGTYPE_STARTTIME,
 			deltaTime,
@@ -1714,9 +1713,9 @@ static __forceinline void frameSkip()
 	// Skips a sequence of consecutive frames after a sequence of rendered frames
 
 	// This is the least number of consecutive frames we will render w/o skipping
-	#define noSkipFrames ((Config.CustomConsecutiveFrames>0) ? Config.CustomConsecutiveFrames : 1)
+	const int noSkipFrames = ((Config.CustomConsecutiveFrames>0) ? Config.CustomConsecutiveFrames : 1);
 	// This is the number of consecutive frames we will skip				
-	#define yesSkipFrames ((Config.CustomConsecutiveSkip>0) ? Config.CustomConsecutiveSkip : 1)
+	const int yesSkipFrames = ((Config.CustomConsecutiveSkip>0) ? Config.CustomConsecutiveSkip : 1);
 
 	const u64 iEnd = GetCPUTicks();
 	const s64 uSlowExpectedEnd = m_iSlowStart + m_iSlowTicks;
@@ -1737,7 +1736,11 @@ static __forceinline void frameSkip()
 			// a full frame, or if we're already skipping (in which case we don't care
 			// to avoid errant skips).
 			
-			if( (m_justSkipped && (sSlowDeltaTime > m_iSlowTicks/2)) || 
+			// Note: The MTGS can go out of phase from the EE, which means that the
+			// variance for a "nominal" framerate can range from 0 to m_iSlowTicks.
+			// We also check for that here.
+
+			if( (m_justSkipped && (sSlowDeltaTime > m_iSlowTicks)) || 
 				sSlowDeltaTime > m_iSlowTicks*2 )
 			{
 				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
@@ -1859,11 +1862,12 @@ extern "C" void gsDynamicSkipEnable()
 
 GS_THREADPROC
 {
+	SysPrintf("MTGS > Thread Started, Opening GS Plugin...\n");
 	g_GsExitCode = GSopen((void *)&pDsp, "PCSX2", 1);
 	GSCSRr = 0x551B400F; // 0x55190000
 	event_set( g_hGSDone );
 	if (g_GsExitCode != 0) { return GS_THREAD_INIT_FAIL; }		// error msg will be issued to the user by Plugins.c
-	SysPrintf("     > gsOpen done.\n");
+	SysPrintf("MTGS > GSopen Finished.\n");
 
 #ifdef RINGBUF_DEBUG_STACK
 	u32 prevCmd=0;
