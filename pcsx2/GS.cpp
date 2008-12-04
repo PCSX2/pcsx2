@@ -300,6 +300,9 @@ static int g_mtgsCopyLock = 0;
 
 static s64 m_iSlowTicks=0;
 static u64 m_iSlowStart=0;
+static bool m_justSkipped = false;
+static bool m_StrictSkipping = false;
+
 static void (*s_prevExecuteVU1Block)() = NULL;
 
 extern "C" void DummyExecuteVU1Block(void);
@@ -312,14 +315,21 @@ static void OnModeChanged( u32 framerate, u32 iTicks )
 	if( Config.CustomFrameSkip == 0)
 	{
 		// default: load the frameSkipThreshold with a value roughly 90% of our current framerate
-		frameSkipThreshold = ( framerate * 228 ) / 256;
+		frameSkipThreshold = ( framerate * 242 ) / 256;
 	}
 
 	m_iSlowTicks = ( GetTickFrequency() * 50 ) / frameSkipThreshold;
 
 	// sanity check against users who set a "minimum" frame that's higher
-	// than the maximum framerate:
-	if( m_iSlowTicks < iTicks ) m_iSlowTicks = iTicks;
+	// than the maximum framerate.  Also, if framerates are within 1/3300th
+	// of a second of each other, assume strict skipping (it's too close,
+	// and could cause excessive skipping).
+
+	if( m_iSlowTicks <= (iTicks + ((s64)GetTickFrequency()/3300)) )
+	{
+		m_iSlowTicks = iTicks;
+		m_StrictSkipping = true;
+	}
 }
 
 extern "C" void gsSetVideoRegionType( u32 isPal )
@@ -691,12 +701,19 @@ void gsReset()
 
 		memset(g_path, 0, sizeof(g_path));
 		memset(s_byRegs, 0, sizeof(s_byRegs));
+
+		gsWaitGS();		// so that the vSync reset below won't explode.
 	}
 	else
 	{
 		SysPrintf("GIF reset\n");
 	}
-	
+
+	OnModeChanged(
+		(Config.PsxType & 1) ? FRAMERATE_PAL : FRAMERATE_NTSC,
+		UpdateVSyncRate() 
+	);
+
 #ifndef PCSX2_VIRTUAL_MEM
 	memset(g_RealGSMem, 0, 0x2000);
 #endif
@@ -1646,7 +1663,32 @@ void gifMFIFOInterrupt()
 	cpuRegs.interrupt &= ~(1 << 11);
 }
 
-//extern "C" long iFrameLimitEnable;		// used to enable/disable the EE framelimiter.
+extern "C" void gsSyncLimiterStartTime( u64 startTime )
+{
+	// This sync issue applies only to configs that are trying to maintain
+	// a perfect "specific" framerate (where both min and max fps are the same)
+	// any other config will eventually equalize out.
+
+	if( !m_StrictSkipping ) return;
+
+	//SysPrintf("LostTime on the EE!\n");
+
+	if( CHECK_MULTIGS )
+	{
+		const u32* stp = (u32*)&startTime;
+		GSRingBufSimplePacket(
+			GS_RINGTYPE_STARTTIME,
+			stp[0],
+			stp[1],
+			0
+		);
+	}
+	else
+	{
+		m_iSlowStart = startTime;
+		//m_justSkipped = false;
+	}
+}
 
 // FrameSkipper - Measures delta time between calls and issues frameskips
 // it the time is too long.  Also regulates the status of the EE's framelimiter.
@@ -1667,7 +1709,6 @@ static __forceinline void frameSkip()
 {
 	static u8 FramesToRender = 0;
 	static u8 FramesToSkip = 0;
-	static bool justSkipped = false;
 
 	if( CHECK_FRAMELIMIT != PCSX2_FRAMELIMIT_SKIP && 
 		CHECK_FRAMELIMIT != PCSX2_FRAMELIMIT_VUSKIP ) return;
@@ -1691,19 +1732,19 @@ static __forceinline void frameSkip()
 		// -- Standard operation section --
 		// Means neither skipping frames nor force-rendering consecutive frames.
 
-		if( sSlowDeltaTime > 0 )
+		if( sSlowDeltaTime > 0 ) 
 		{
-			// The game is running below the minimum framerate, so use the SlowExpectedEnd.
+			// The game is running below the minimum framerate.
 			// But don't start skipping yet!  That would be too sensitive.
 			// So the skipping code is only engaged if the SlowDeltaTime falls behind by
 			// a full frame, or if we're already skipping (in which case we don't care
 			// to avoid errant skips).
 			
-			if( justSkipped || sSlowDeltaTime > m_iSlowTicks*2 )
+			if( (m_justSkipped && (sSlowDeltaTime > m_iSlowTicks/2)) || 
+				sSlowDeltaTime > m_iSlowTicks*2 )
 			{
-				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( sSlowDeltaTime / m_iSlowTicks ) );
+				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
 				
-				//InterlockedExchange( &iFrameLimitEnable, 0 );
 				GSsetFrameSkip(1);
 
 				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
@@ -1715,12 +1756,15 @@ static __forceinline void frameSkip()
 		}
 		else
 		{
-			// Running at or above full speed, so reset the StartTime
+			// Running at or above full speed, so reset the StartTime since the Limiter
+			// will muck things up.  (special case: if skip and limit fps are equal then
+			// we don't reset times since it would cause desyncing.  We let the EE regulate
+			// it via calls to gsSyncLimiterStartTime).
 
-			//InterlockedExchange( &iFrameLimitEnable, 1 );
-			m_iSlowStart = iEnd;
+			if( !m_StrictSkipping )
+				m_iSlowStart = iEnd;
 		}
-		justSkipped = false;
+		m_justSkipped = false;
 		return;
 	}
 	else if( FramesToSkip > 0 )
@@ -1745,7 +1789,7 @@ static __forceinline void frameSkip()
 				m_iSlowStart = iEnd - m_iSlowTicks;
 			}
 
-			justSkipped = true;
+			m_justSkipped = true;
 			if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
 				InterlockedExchangePointer( &Cpu->ExecuteVU1Block, s_prevExecuteVU1Block );
 		}
@@ -1757,18 +1801,16 @@ static __forceinline void frameSkip()
 
 	// -- Consecutive frames section --
 	// Force-render consecutive frames without skipping.
-	// re-enable the frame limiter of the EE if frames render fast.
 
 	FramesToRender--;
 
 	if( sSlowDeltaTime < 0 )
 	{
-		//InterlockedExchange( &iFrameLimitEnable, 1 );
 		m_iSlowStart = iEnd;
 	}
 }
 
-extern "C" void GSPostVsyncEnd()
+extern "C" void gsPostVsyncEnd()
 {
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
 
@@ -1796,7 +1838,6 @@ extern "C" void GSPostVsyncEnd()
 static void _resetFrameskip()
 {
 	InterlockedExchangePointer( &Cpu->ExecuteVU1Block, s_prevExecuteVU1Block );
-	//InterlockedExchange( &iFrameLimitEnable, 1 );
 	GSsetFrameSkip( 0 );
 }
 
@@ -1989,6 +2030,11 @@ GS_THREADPROC
 
 				case GS_RINGTYPE_MODECHANGE:
 					OnModeChanged( *(u32*)(g_pGSRingPos+4), *(u32*)(g_pGSRingPos+8) );
+				break;
+
+				case GS_RINGTYPE_STARTTIME:
+					m_iSlowStart = *(u64*)(g_pGSRingPos+4);
+					//m_justSkipped = false;
 				break;
 
 				default:

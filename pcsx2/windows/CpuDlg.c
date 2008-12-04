@@ -167,6 +167,8 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					GetDlgItemText(hW, IDC_CUSTOM_CONSECUTIVE_SKIP, cConsecutiveSkip, 20);
 					Config.CustomConsecutiveSkip = atoi(cConsecutiveSkip);
 
+					// [TODO]: This needs to inform the GS too, but it doesn't matter for now
+					// since the CPU is reset regardless.
 					UpdateVSyncRate();
 					SaveConfig();
 

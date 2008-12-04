@@ -236,8 +236,6 @@ u32 UpdateVSyncRate()
 	}
 
 	m_iStart = GetCPUTicks();
-	//iFrameLimitEnable = 1;
-
 	cpuRcntSet();
 
 	return (u32)m_iTicks;
@@ -340,11 +338,6 @@ static __forceinline void frameLimit()
 
 	if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_NORMAL ) return;
 	if( Config.CustomFps >= 999 ) return;	// means the user would rather just have framelimiting turned off...
-	/*if( !iFrameLimitEnable )		// Frameskipper disabled the limiter
-	{
-		m_iStart = GetCPUTicks();
-		return;
-	}*/
 
 	uExpectedEnd = m_iStart + m_iTicks;
 	iEnd = GetCPUTicks();
@@ -355,9 +348,15 @@ static __forceinline void frameLimit()
 	// excessive amounts of "fast forward" syndrome which would occur if we
 	// tried to catch up too much.
 	
-	if( (sDeltaTime>>3) > m_iTicks )
+	if( sDeltaTime > m_iTicks*8 )
 	{
-		m_iStart = iEnd;
+		m_iStart = iEnd - m_iTicks;
+
+		// Let the GS Skipper know we lost time.
+		// Keeps the GS skipper from trying to catch up to a framerate
+		// that the limiter already gave up on.
+
+		gsSyncLimiterStartTime( m_iStart );
 		return;
 	}
 
@@ -372,14 +371,6 @@ static __forceinline void frameLimit()
 	{
 		_TIMESLICE();
 		iEnd = GetCPUTicks();
-
-		/*if( !(*(volatile long*)&iFrameLimitEnable) )
-		{
-			// Frameskipper turned us off
-			m_iStart = iEnd;
-			break;
-		}*/
-
 		sDeltaTime = iEnd - uExpectedEnd;
 	}
 }
@@ -398,13 +389,13 @@ static __forceinline void VSyncStart(u32 sCycle) // VSync Start
 	if (Config.Patch) applypatch(1); // Apply patches (ToDo: clean up patch code)
 }
 
-extern void GSPostVsyncEnd();
+extern void gsPostVsyncEnd();
 
 static __forceinline void VSyncEnd(u32 sCycle) // VSync End
 {
 	iFrame++;
 
-	GSPostVsyncEnd();
+	gsPostVsyncEnd();
 
 	hwIntcIrq(3);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End
