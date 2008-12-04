@@ -1646,7 +1646,7 @@ void gifMFIFOInterrupt()
 	cpuRegs.interrupt &= ~(1 << 11);
 }
 
-extern "C" long iFrameLimitEnable;		// used to enable/disable the EE framelimiter.
+//extern "C" long iFrameLimitEnable;		// used to enable/disable the EE framelimiter.
 
 // FrameSkipper - Measures delta time between calls and issues frameskips
 // it the time is too long.  Also regulates the status of the EE's framelimiter.
@@ -1703,7 +1703,7 @@ static __forceinline void frameSkip()
 			{
 				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( sSlowDeltaTime / m_iSlowTicks ) );
 				
-				InterlockedExchange( &iFrameLimitEnable, 0 );
+				//InterlockedExchange( &iFrameLimitEnable, 0 );
 				GSsetFrameSkip(1);
 
 				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
@@ -1717,7 +1717,7 @@ static __forceinline void frameSkip()
 		{
 			// Running at or above full speed, so reset the StartTime
 
-			InterlockedExchange( &iFrameLimitEnable, 1 );
+			//InterlockedExchange( &iFrameLimitEnable, 1 );
 			m_iSlowStart = iEnd;
 		}
 		justSkipped = false;
@@ -1763,7 +1763,7 @@ static __forceinline void frameSkip()
 
 	if( sSlowDeltaTime < 0 )
 	{
-		InterlockedExchange( &iFrameLimitEnable, 1 );
+		//InterlockedExchange( &iFrameLimitEnable, 1 );
 		m_iSlowStart = iEnd;
 	}
 }
@@ -1796,7 +1796,7 @@ extern "C" void GSPostVsyncEnd()
 static void _resetFrameskip()
 {
 	InterlockedExchangePointer( &Cpu->ExecuteVU1Block, s_prevExecuteVU1Block );
-	InterlockedExchange( &iFrameLimitEnable, 1 );
+	//InterlockedExchange( &iFrameLimitEnable, 1 );
 	GSsetFrameSkip( 0 );
 }
 

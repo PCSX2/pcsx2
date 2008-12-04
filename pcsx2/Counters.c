@@ -115,7 +115,7 @@ void rcntInit() {
 // debug code, used for stats
 int g_nCounters[4];
 static int iFrame = 0;	
-long iFrameLimitEnable = 1;
+//long iFrameLimitEnable = 1;
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -236,7 +236,7 @@ u32 UpdateVSyncRate()
 	}
 
 	m_iStart = GetCPUTicks();
-	iFrameLimitEnable = 1;
+	//iFrameLimitEnable = 1;
 
 	cpuRcntSet();
 
@@ -340,11 +340,11 @@ static __forceinline void frameLimit()
 
 	if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_NORMAL ) return;
 	if( Config.CustomFps >= 999 ) return;	// means the user would rather just have framelimiting turned off...
-	if( !iFrameLimitEnable )		// Frameskipper disabled the limiter
+	/*if( !iFrameLimitEnable )		// Frameskipper disabled the limiter
 	{
 		m_iStart = GetCPUTicks();
 		return;
-	}
+	}*/
 
 	uExpectedEnd = m_iStart + m_iTicks;
 	iEnd = GetCPUTicks();
@@ -373,12 +373,12 @@ static __forceinline void frameLimit()
 		_TIMESLICE();
 		iEnd = GetCPUTicks();
 
-		if( !(*(volatile long*)&iFrameLimitEnable) )
+		/*if( !(*(volatile long*)&iFrameLimitEnable) )
 		{
 			// Frameskipper turned us off
 			m_iStart = iEnd;
 			break;
-		}
+		}*/
 
 		sDeltaTime = iEnd - uExpectedEnd;
 	}
