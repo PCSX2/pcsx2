@@ -321,7 +321,6 @@ create_SpeedHacksDlg (void)
   GtkWidget *frame14;
   GtkWidget *alignment9;
   GtkWidget *vbox33;
-  GtkWidget *check_Tight_SPU_Sync;
   GtkWidget *check_ESC_Hack;
   GtkWidget *label47;
   GtkWidget *dialog_action_area3;
@@ -472,11 +471,6 @@ create_SpeedHacksDlg (void)
   gtk_widget_show (vbox33);
   gtk_container_add (GTK_CONTAINER (alignment9), vbox33);
 
-  check_Tight_SPU_Sync = gtk_check_button_new_with_mnemonic (_("Tighter SPU2 Sync (Try this if you have stuttering audio) - a bit slower."));
-  gtk_widget_show (check_Tight_SPU_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox33), check_Tight_SPU_Sync, FALSE, FALSE, 0);
-  gtk_widget_set_sensitive (check_Tight_SPU_Sync, FALSE);
-
   check_ESC_Hack = gtk_check_button_new_with_mnemonic (_("Escape Hack - Use Esc key to fully exit PCSX2."));
   gtk_widget_show (check_ESC_Hack);
   gtk_box_pack_start (GTK_BOX (vbox33), check_ESC_Hack, FALSE, FALSE, 0);
@@ -563,7 +557,6 @@ create_SpeedHacksDlg (void)
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame14, "frame14");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment9, "alignment9");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox33, "vbox33");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Tight_SPU_Sync, "check_Tight_SPU_Sync");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_ESC_Hack, "check_ESC_Hack");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label47, "label47");
   GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_action_area3, "dialog_action_area3");
@@ -2455,13 +2448,11 @@ create_AboutDlg (void)
 {
   GtkWidget *AboutDlg;
   GtkWidget *vbox2;
-  GtkWidget *hbox1;
   GtkWidget *vbox4;
   GtkWidget *GtkAbout_LabelVersion;
   GtkWidget *frame1;
   GtkWidget *vbox6;
   GtkWidget *GtkAbout_LabelAuthors;
-  GtkWidget *pixmap1;
   GtkWidget *frame2;
   GtkWidget *vbox5;
   GtkWidget *GtkAbout_LabelGreets;
@@ -2476,13 +2467,9 @@ create_AboutDlg (void)
   gtk_widget_show (vbox2);
   gtk_container_add (GTK_CONTAINER (AboutDlg), vbox2);
 
-  hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox1);
-  gtk_box_pack_start (GTK_BOX (vbox2), hbox1, TRUE, TRUE, 0);
-
-  vbox4 = gtk_vbox_new (TRUE, 0);
+  vbox4 = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox4);
-  gtk_box_pack_start (GTK_BOX (hbox1), vbox4, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox2), vbox4, TRUE, TRUE, 0);
 
   GtkAbout_LabelVersion = gtk_label_new (_("PCSX2\n\nVersion x.x"));
   gtk_widget_show (GtkAbout_LabelVersion);
@@ -2503,10 +2490,7 @@ create_AboutDlg (void)
   gtk_widget_show (GtkAbout_LabelAuthors);
   gtk_box_pack_start (GTK_BOX (vbox6), GtkAbout_LabelAuthors, FALSE, FALSE, 0);
   gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelAuthors), GTK_JUSTIFY_CENTER);
-
-  pixmap1 = create_pixmap (AboutDlg, "pcsxAbout.xpm");
-  gtk_widget_show (pixmap1);
-  gtk_box_pack_start (GTK_BOX (hbox1), pixmap1, TRUE, TRUE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (GtkAbout_LabelAuthors), TRUE);
 
   frame2 = gtk_frame_new (NULL);
   gtk_widget_show (frame2);
@@ -2520,12 +2504,13 @@ create_AboutDlg (void)
 
   GtkAbout_LabelGreets = gtk_label_new (_("greets to..."));
   gtk_widget_show (GtkAbout_LabelGreets);
-  gtk_box_pack_start (GTK_BOX (vbox5), GtkAbout_LabelGreets, TRUE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox5), GtkAbout_LabelGreets, FALSE, FALSE, 0);
   gtk_label_set_justify (GTK_LABEL (GtkAbout_LabelGreets), GTK_JUSTIFY_CENTER);
+  gtk_label_set_line_wrap (GTK_LABEL (GtkAbout_LabelGreets), TRUE);
 
   hbuttonbox1 = gtk_hbutton_box_new ();
   gtk_widget_show (hbuttonbox1);
-  gtk_box_pack_start (GTK_BOX (vbox2), hbuttonbox1, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox2), hbuttonbox1, FALSE, FALSE, 0);
   gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox1), GTK_BUTTONBOX_EDGE);
 
   GtkButton_Ok = gtk_button_new_from_stock ("gtk-ok");
@@ -2540,13 +2525,11 @@ create_AboutDlg (void)
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (AboutDlg, AboutDlg, "AboutDlg");
   GLADE_HOOKUP_OBJECT (AboutDlg, vbox2, "vbox2");
-  GLADE_HOOKUP_OBJECT (AboutDlg, hbox1, "hbox1");
   GLADE_HOOKUP_OBJECT (AboutDlg, vbox4, "vbox4");
   GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelVersion, "GtkAbout_LabelVersion");
   GLADE_HOOKUP_OBJECT (AboutDlg, frame1, "frame1");
   GLADE_HOOKUP_OBJECT (AboutDlg, vbox6, "vbox6");
   GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelAuthors, "GtkAbout_LabelAuthors");
-  GLADE_HOOKUP_OBJECT (AboutDlg, pixmap1, "pixmap1");
   GLADE_HOOKUP_OBJECT (AboutDlg, frame2, "frame2");
   GLADE_HOOKUP_OBJECT (AboutDlg, vbox5, "vbox5");
   GLADE_HOOKUP_OBJECT (AboutDlg, GtkAbout_LabelGreets, "GtkAbout_LabelGreets");
@@ -2868,7 +2851,7 @@ create_MainWindow (void)
   GtkMenuItem_Help_menu = gtk_menu_new ();
   gtk_menu_item_set_submenu (GTK_MENU_ITEM (GtkMenuItem_Help), GtkMenuItem_Help_menu);
 
-  GtkMenuItem_About = gtk_menu_item_new_with_mnemonic (_("&About..."));
+  GtkMenuItem_About = gtk_menu_item_new_with_mnemonic (_("About PCSX2 - Playground..."));
   gtk_widget_show (GtkMenuItem_About);
   gtk_container_add (GTK_CONTAINER (GtkMenuItem_Help_menu), GtkMenuItem_About);
 
@@ -3626,7 +3609,7 @@ create_CpuDlg (void)
   gtk_frame_set_label_widget (GTK_FRAME (frame8), label35);
   gtk_label_set_use_markup (GTK_LABEL (label35), TRUE);
 
-  GtkCheckButton_EERec = gtk_check_button_new_with_mnemonic (_("EERec - EE/IOP recompiler"));
+  GtkCheckButton_EERec = gtk_check_button_new_with_mnemonic (_("EERec - EE/IOP recompiler (Need MMX/SSE/SSE2)"));
   gtk_widget_show (GtkCheckButton_EERec);
   gtk_box_pack_start (GTK_BOX (vbox47), GtkCheckButton_EERec, FALSE, FALSE, 0);
 

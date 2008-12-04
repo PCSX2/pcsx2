@@ -33,9 +33,9 @@ void StartGui() {
 	MainWindow = create_MainWindow();
 	
 	if (SVN_REV != 0)
-		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV" Watermoose");
+		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV" Playground");
 	else
-		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Watermoose");
+		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" Playground");
 
 	// status bar
 	pStatusBar = gtk_statusbar_new ();
@@ -435,8 +435,6 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 		newopts |= PCSX2_VU1REC;
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_MTGS"))))
 		newopts |= PCSX2_GSMULTITHREAD;
-	//if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_CpuDC"))))
-	//	newopts |= PCSX2_DUALCORE;
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitNormal"))))
 		newopts |= PCSX2_FRAMELIMIT_NORMAL;
 	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitLimit"))))
@@ -483,7 +481,6 @@ void OnConf_Cpu(GtkMenuItem *menuitem, gpointer user_data)
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU0rec")), !!CHECK_VU0REC);
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_VU1rec")), !!CHECK_VU1REC);
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_MTGS")), !!CHECK_MULTIGS);
-	//gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_CpuDC")), !!CHECK_DUALCORE);
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitNormal")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_NORMAL);
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitLimit")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_LIMIT);
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkRadioButton_LimitFS")), CHECK_FRAMELIMIT==PCSX2_FRAMELIMIT_SKIP);
@@ -687,11 +684,9 @@ void on_Speed_Hacks(GtkMenuItem *menuitem, gpointer user_data)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), index);
 	
         set_checked(SpeedHacksDlg, "check_EE_Double_Sync", (Config.Hacks & FLAG_EE_2_SYNC));
-	set_checked(SpeedHacksDlg, "check_Tight_SPU_Sync", (Config.Hacks & FLAG_TIGHT_SPU_SYNC));
 	set_checked(SpeedHacksDlg, "check_Disable_Underflow", (Config.Hacks & FLAG_NO_UNDERFLOW));
 	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", (Config.Hacks & FLAG_IOP_2_SYNC));
 	set_checked(SpeedHacksDlg, "check_Triple_Sync",(Config.Hacks & FLAG_TRIPLE_SYNC));
-        //set_checked(SpeedHacksDlg, "check_EE_Fast_Branches", (Config.Hacks & FLAG_FAST_BRANCHES)); 
         set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", (Config.Hacks & FLAG_NO_VU_FLAGS));
 	set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", (Config.Hacks & FLAG_NO_FPU_FLAGS));
 	set_checked(SpeedHacksDlg, "check_ESC_Hack", (Config.Hacks & FLAG_ESC));
@@ -721,7 +716,6 @@ void on_Speed_Hack_Normal(GtkButton *button, gpointer user_data)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 1);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 1);
 	
-	set_checked(SpeedHacksDlg, "check_Tight_SPU_Sync", FALSE);
 	set_checked(SpeedHacksDlg, "check_Disable_Underflow", FALSE);
 	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", FALSE);
 	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
@@ -736,7 +730,6 @@ void on_Speed_Hack_Speed(GtkButton *button, gpointer user_data)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 0);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 0);
 	
-	set_checked(SpeedHacksDlg, "check_Tight_SPU_Sync", FALSE);
 	set_checked(SpeedHacksDlg, "check_Disable_Underflow", TRUE);
 	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", TRUE);
 	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
@@ -763,7 +756,6 @@ void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 			break;
 	}
 	
-	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Tight_SPU_Sync") ? FLAG_TIGHT_SPU_SYNC : 0;	
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_Underflow") ? FLAG_NO_UNDERFLOW : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_IOP_Double_Sync") ? FLAG_IOP_2_SYNC : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Triple_Sync") ? FLAG_TRIPLE_SYNC : 0;  
