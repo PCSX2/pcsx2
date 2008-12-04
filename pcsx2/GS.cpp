@@ -308,14 +308,14 @@ static void OnModeChanged( u32 framerate, u32 iTicks )
 {
 	m_iSlowStart = GetCPUTicks();
 
-	u32 frameSkipThreshold = Config.CustomFrameSkip*100;
+	u32 frameSkipThreshold = Config.CustomFrameSkip*50;
 	if( Config.CustomFrameSkip == 0)
 	{
 		// default: load the frameSkipThreshold with a value roughly 90% of our current framerate
 		frameSkipThreshold = ( framerate * 228 ) / 256;
 	}
 
-	m_iSlowTicks = ( GetTickFrequency() * 100 ) / frameSkipThreshold;
+	m_iSlowTicks = ( GetTickFrequency() * 50 ) / frameSkipThreshold;
 
 	// sanity check against users who set a "minimum" frame that's higher
 	// than the maximum framerate:

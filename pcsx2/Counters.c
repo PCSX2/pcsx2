@@ -231,7 +231,7 @@ u32 UpdateVSyncRate()
 		if( m_iTicks != ticks )
 		{
 			m_iTicks = ticks;
-			SysPrintf( limiterMsg, vSyncInfo.Framerate/100, vSyncInfo.Framerate%100 );
+			SysPrintf( limiterMsg, vSyncInfo.Framerate/50, vSyncInfo.Framerate%50 );
 		}
 	}
 

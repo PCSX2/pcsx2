@@ -238,8 +238,6 @@ void OnOK(HWND hW) {
 
 	EndDialog(hW, TRUE);
 
-	SaveConfig();
-
 	// Apply winConfig settings:
 	#define ApplyPluginPath( name ) strcpy( Config.name, winConfig.name )
 	ApplyPluginPath( Bios );
@@ -252,6 +250,7 @@ void OnOK(HWND hW) {
 	ApplyPluginPath( USB );
 	ApplyPluginPath( FW );
 
+	SaveConfig();
 	needReset = 1;
 }
 
