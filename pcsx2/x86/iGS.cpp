@@ -163,7 +163,7 @@ void gsConstWrite32(u32 mem, int mmreg) {
 		case 0x12000020: // GS_SMODE2
 			// SMODE1 and SMODE2 fall back on the gsWrite library.
 			iFlushCall(0);
-			_callFunctionArg2((uptr)gsWrite16, MEM_CONSTTAG, mmreg, mem, 0 );
+			_callFunctionArg2((uptr)gsWrite32, MEM_CONSTTAG, mmreg, mem, 0 );
 			break;
 
 		case 0x12001000: // GS_CSR
@@ -194,8 +194,9 @@ void gsConstWrite64(u32 mem, int mmreg)
 		case 0x12000010: // GS_SMODE1
 		case 0x12000020: // GS_SMODE2
 			// SMODE1 and SMODE2 fall back on the gsWrite library.
+			// the low 32 bit dword is all the SMODE regs care about.
 			iFlushCall(0);
-			_callFunctionArg2((uptr)gsWrite16, MEM_CONSTTAG, mmreg, mem, 0 );
+			_callFunctionArg2((uptr)gsWrite32, MEM_CONSTTAG, mmreg, mem, 0 );
 			break;
 
 		case 0x12001000: // GS_CSR
@@ -233,8 +234,9 @@ void gsConstWrite128(u32 mem, int mmreg)
 		case 0x12000010: // GS_SMODE1
 		case 0x12000020: // GS_SMODE2
 			// SMODE1 and SMODE2 fall back on the gsWrite library.
+			// the low 32 bit dword is all the SMODE regs care about.
 			iFlushCall(0);
-			_callFunctionArg2((uptr)gsWrite16, MEM_CONSTTAG, mmreg, mem, 0 );
+			_callFunctionArg2((uptr)gsWrite32, MEM_CONSTTAG, mmreg, mem, 0 );
 			break;
 
 		case 0x12001000: // GS_CSR
