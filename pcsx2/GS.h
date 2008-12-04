@@ -81,7 +81,8 @@ void gsShutdown();
 void gsReset();
 void gsSetVideoRegionType( u32 isPal );
 void gsResetFrameSkip();
-void gsSyncLimiterStartTime( u64 startTime );
+void gsSyncLimiterLostTime( s32 deltaTime );
+void gsDynamicSkipEnable();
 
 // mem and size are the ones from GSRingBufCopy
 extern void GSRINGBUF_DONECOPY(const u8 *mem, u32 size);

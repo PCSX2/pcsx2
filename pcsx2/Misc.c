@@ -881,22 +881,23 @@ void ProcessFKeys(int fkey, int shift)
 		case 4:
 		{
 			const char* limitMsg;
+			u32 newOptions;
 #ifdef PCSX2_NORECBUILD
             SysPrintf("frame skipping only valid for recompiler build\n");
 #else
 			// cycle
             if( shift ) {
                 // previous
-                Config.Options = (Config.Options&~PCSX2_FRAMELIMIT_MASK)|(((Config.Options&PCSX2_FRAMELIMIT_MASK)+PCSX2_FRAMELIMIT_VUSKIP)&PCSX2_FRAMELIMIT_MASK);
+                newOptions = (Config.Options&~PCSX2_FRAMELIMIT_MASK)|(((Config.Options&PCSX2_FRAMELIMIT_MASK)+PCSX2_FRAMELIMIT_VUSKIP)&PCSX2_FRAMELIMIT_MASK);
             }
             else {
                 // next
-                Config.Options = (Config.Options&~PCSX2_FRAMELIMIT_MASK)|(((Config.Options&PCSX2_FRAMELIMIT_MASK)+PCSX2_FRAMELIMIT_LIMIT)&PCSX2_FRAMELIMIT_MASK);
+                newOptions = (Config.Options&~PCSX2_FRAMELIMIT_MASK)|(((Config.Options&PCSX2_FRAMELIMIT_MASK)+PCSX2_FRAMELIMIT_LIMIT)&PCSX2_FRAMELIMIT_MASK);
             }
 
 			gsResetFrameSkip();
 
-			switch(CHECK_FRAMELIMIT) {
+			switch(newOptions & PCSX2_FRAMELIMIT_MASK) {
 				case PCSX2_FRAMELIMIT_NORMAL:
 					limitMsg = "None/Normal";
 					break;
@@ -907,17 +908,21 @@ void ProcessFKeys(int fkey, int shift)
 				case PCSX2_FRAMELIMIT_VUSKIP:
 					if( GSsetFrameSkip == NULL )
 					{
-						Config.Options &= ~PCSX2_FRAMELIMIT_MASK;
+						newOptions &= ~PCSX2_FRAMELIMIT_MASK;
 						SysPrintf("Notice: GS Plugin does not support frameskipping.\n");
 						limitMsg = "None/Normal";
 					}
 					else
 					{
-						limitMsg = (CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_SKIP) ? "Skip" : "VUSkip";
+						// When enabling Skipping we have to make sure Skipper (GS) and Limiter (EE)
+						// are properly synchronized.
+						gsDynamicSkipEnable();
+						limitMsg = ((newOptions & PCSX2_FRAMELIMIT_MASK) == PCSX2_FRAMELIMIT_SKIP) ? "Skip" : "VUSkip";
 					}
 
 					break;
 			}
+			InterlockedExchange( &Config.Options, newOptions );
 
 			SysPrintf("Frame Limit Mode Changed: %s\n", limitMsg );
 

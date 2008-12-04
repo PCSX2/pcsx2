@@ -1660,7 +1660,7 @@ void gifMFIFOInterrupt()
 	cpuRegs.interrupt &= ~(1 << 11);
 }
 
-extern "C" void gsSyncLimiterStartTime( u64 startTime )
+extern "C" void gsSyncLimiterLostTime( s32 deltaTime )
 {
 	// This sync issue applies only to configs that are trying to maintain
 	// a perfect "specific" framerate (where both min and max fps are the same)
@@ -1672,17 +1672,17 @@ extern "C" void gsSyncLimiterStartTime( u64 startTime )
 
 	if( CHECK_MULTIGS )
 	{
-		const u32* stp = (u32*)&startTime;
+		//const u32* stp = (u32*)&startTime;
 		GSRingBufSimplePacket(
 			GS_RINGTYPE_STARTTIME,
-			stp[0],
-			stp[1],
+			deltaTime,
+			0,
 			0
 		);
 	}
 	else
 	{
-		m_iSlowStart = startTime;
+		m_iSlowStart += deltaTime;
 		//m_justSkipped = false;
 	}
 }
@@ -1847,6 +1847,15 @@ extern "C" void gsResetFrameSkip()
 		_resetFrameskip();
 }
 
+extern "C" void frameLimitReset();
+extern "C" void gsDynamicSkipEnable()
+{
+	if( !m_StrictSkipping ) return;
+
+	gsWaitGS();
+	m_iSlowStart = GetCPUTicks();	
+	frameLimitReset();
+}
 
 GS_THREADPROC
 {
@@ -2030,7 +2039,7 @@ GS_THREADPROC
 				break;
 
 				case GS_RINGTYPE_STARTTIME:
-					m_iSlowStart = *(u64*)(g_pGSRingPos+4);
+					m_iSlowStart += *(u32*)(g_pGSRingPos+4);
 					//m_justSkipped = false;
 				break;
 

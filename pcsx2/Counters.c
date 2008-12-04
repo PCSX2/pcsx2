@@ -115,7 +115,6 @@ void rcntInit() {
 // debug code, used for stats
 int g_nCounters[4];
 static int iFrame = 0;	
-//long iFrameLimitEnable = 1;
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -327,6 +326,11 @@ void vSyncDebugStuff() {
 #endif
 }
 
+void frameLimitReset()
+{
+	m_iStart = GetCPUTicks();
+}
+
 // Framelimiter - Measures the delta time between calls and stalls until a
 // certain amount of time passes if such time hasn't passed yet.
 // See the GS FrameSkip function for details on why this is here and not in the GS.
@@ -356,7 +360,7 @@ static __forceinline void frameLimit()
 		// Keeps the GS skipper from trying to catch up to a framerate
 		// that the limiter already gave up on.
 
-		gsSyncLimiterStartTime( m_iStart );
+		gsSyncLimiterLostTime( (s32)(m_iStart - uExpectedEnd) );
 		return;
 	}
 
