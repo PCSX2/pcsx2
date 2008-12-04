@@ -89,93 +89,17 @@ void gsConstWrite8(u32 mem, int mmreg)
 	}
 }
 
-void recSetSMODE1()
-{
-	iFlushCall(0);
-	AND32ItoR(EAX, 0x6000);
-	CMP32ItoR(EAX, 0x6000);
-	j8Ptr[5] = JNE8(0);
-
-	// PAL
-	OR32ItoM( (uptr)&Config.PsxType, 1);
-	j8Ptr[6] = JMP8(0);
-
-	x86SetJ8( j8Ptr[5] );
-
-	// NTSC
-	AND32ItoM( (uptr)&Config.PsxType, ~1 );
-
-	x86SetJ8( j8Ptr[6] );
-	CALLFunc((uptr)UpdateVSyncRate);
-}
-
-void recSetSMODE2()
-{
-	TEST32ItoR(EAX, 1);
-	j8Ptr[5] = JZ8(0);
-
-	// Interlaced
-	OR32ItoM( (uptr)&Config.PsxType, 2);
-	j8Ptr[6] = JMP8(0);
-
-	x86SetJ8( j8Ptr[5] );
-
-	// Non-Interlaced
-	AND32ItoM( (uptr)&Config.PsxType, ~2 );
-
-	x86SetJ8( j8Ptr[6] );
-}
-
 void gsConstWrite16(u32 mem, int mmreg)
 {	
 	switch (mem&~3) {
+
 		case 0x12000010: // GS_SMODE1
-			assert( !(mem&3));
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem16( (uptr)PS2GS_BASE(mem), mmreg );
-
-			if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE1();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-				_callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE16, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-                                  
-			}
-
-			break;
-			
 		case 0x12000020: // GS_SMODE2
-			assert( !(mem&3));
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem16( (uptr)PS2GS_BASE(mem), mmreg );
-
-            if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE2();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-				_callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE16, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-			}
-
+			// SMODE1 and SMODE2 fall back on the gsWrite library.
+			iFlushCall(0);
+			_callFunctionArg2((uptr)gsWrite16, MEM_CONSTTAG, mmreg, mem, 0 );
 			break;
-			
+
 		case 0x12001000: // GS_CSR
 
 			assert( !(mem&2) );
@@ -187,7 +111,7 @@ void gsConstWrite16(u32 mem, int mmreg)
 			AND32ItoR(ECX, ~(0xffff<<(mem&2)*8));
 			OR32ItoR(EAX, ECX);
 			_callFunctionArg1((uptr)CSRwrite, EAX|MEM_X86TAG, 0);
-			break;
+			return;		// don't write to GSMEM
 
 		default:
 			_eeWriteConstMem16( (uptr)PS2GS_BASE(mem), mmreg );
@@ -236,49 +160,12 @@ void gsConstWrite32(u32 mem, int mmreg) {
 	switch (mem) {
 
 		case 0x12000010: // GS_SMODE1
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem32( (uptr)PS2GS_BASE(mem), mmreg );
-
-            if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE1();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-				_callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE32, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-			}
-
-			break;
-
 		case 0x12000020: // GS_SMODE2
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem32( (uptr)PS2GS_BASE(mem), mmreg );
-
-            if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE2();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-				_callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE32, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-			}
-
+			// SMODE1 and SMODE2 fall back on the gsWrite library.
+			iFlushCall(0);
+			_callFunctionArg2((uptr)gsWrite16, MEM_CONSTTAG, mmreg, mem, 0 );
 			break;
-			
+
 		case 0x12001000: // GS_CSR
 			iFlushCall(0);
             _callFunctionArg1((uptr)CSRwrite, mmreg, 0);
@@ -305,47 +192,10 @@ void gsConstWrite64(u32 mem, int mmreg)
 {
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem64((uptr)PS2GS_BASE(mem), mmreg);
-
-            if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE1();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-				_callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE32, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-			}
-
-			break;
-
 		case 0x12000020: // GS_SMODE2
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem64((uptr)PS2GS_BASE(mem), mmreg);
-
-            if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE2();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-				_callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE32, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-			}
-
+			// SMODE1 and SMODE2 fall back on the gsWrite library.
+			iFlushCall(0);
+			_callFunctionArg2((uptr)gsWrite16, MEM_CONSTTAG, mmreg, mem, 0 );
 			break;
 
 		case 0x12001000: // GS_CSR
@@ -381,47 +231,10 @@ void gsConstWrite128(u32 mem, int mmreg)
 {
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem128( (uptr)PS2GS_BASE(mem), mmreg);
-
-            if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE1();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-				_callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE32, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-			}
-
-			break;
-
 		case 0x12000020: // GS_SMODE2
-			_eeMoveMMREGtoR(EAX, mmreg);
-			_eeWriteConstMem128( (uptr)PS2GS_BASE(mem), mmreg);
-
-            if( CHECK_MULTIGS )
-                _callPushArg(MEM_X86TAG|EAX, 0, X86ARG3);
-
-			recSetSMODE2();
-
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-                _callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE32, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 12);
-#endif
-			}
-
+			// SMODE1 and SMODE2 fall back on the gsWrite library.
+			iFlushCall(0);
+			_callFunctionArg2((uptr)gsWrite16, MEM_CONSTTAG, mmreg, mem, 0 );
 			break;
 
 		case 0x12001000: // GS_CSR

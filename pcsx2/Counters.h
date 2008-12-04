@@ -94,6 +94,6 @@ u32	 rcntRcount(int index);
 u32	 rcntCycle(int index);
 int  rcntFreeze(gzFile f, int Mode);
 
-void UpdateVSyncRate();
+u32 UpdateVSyncRate();
 
 #endif /* __COUNTERS_H__ */

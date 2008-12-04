@@ -391,6 +391,9 @@ static __forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest
 
 #endif
 
+extern void InitCPUTicks();
+extern u64 GetTickFrequency();
+extern u64 GetCPUTicks();
 
 // Timeslice releaser for those many idle loop spots through out PCSX2.
 extern void _TIMESLICE();

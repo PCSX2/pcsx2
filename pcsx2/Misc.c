@@ -827,7 +827,6 @@ int StatesC = 0;
 extern void iDumpRegisters(u32 startpc, u32 temp);
 extern void recExecuteVU0Block(void);
 extern void recExecuteVU1Block(void);
-extern void DummyExecuteVU1Block(void);
 extern char strgametitle[256];
 
 char* mystrlwr( char* string )
@@ -895,22 +894,16 @@ void ProcessFKeys(int fkey, int shift)
                 Config.Options = (Config.Options&~PCSX2_FRAMELIMIT_MASK)|(((Config.Options&PCSX2_FRAMELIMIT_MASK)+PCSX2_FRAMELIMIT_LIMIT)&PCSX2_FRAMELIMIT_MASK);
             }
 
+			gsResetFrameSkip();
+
 			switch(CHECK_FRAMELIMIT) {
 				case PCSX2_FRAMELIMIT_NORMAL:
-					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
-					else GSsetFrameSkip(0);
-					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 					limitMsg = "None/Normal";
 					break;
 				case PCSX2_FRAMELIMIT_LIMIT:
-					if( CHECK_MULTIGS ) GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
-					else GSsetFrameSkip(0);
-					Cpu->ExecuteVU1Block = recExecuteVU1Block;
-					//Quality option, turn off timestretching on the SPU2 plugin
 					limitMsg = "Limit";
 					break;
 				case PCSX2_FRAMELIMIT_SKIP:
-					Cpu->ExecuteVU1Block = recExecuteVU1Block;
 				case PCSX2_FRAMELIMIT_VUSKIP:
 					if( GSsetFrameSkip == NULL )
 					{
@@ -1076,6 +1069,41 @@ void injectIRX(char *filename){
 	memcpy(rd[i].fileName, name, strlen(name));
 	rd[i].fileSize=filesize;
 	rd[i].extInfoSize=0;
+}
+
+// [TODO] I'd like to move the following functions to their own module eventually.
+// It might even be a good idea to just go ahead and move them into Win32/Linux
+// specific files since they're all #ifdef'd that way anyways.
+
+static LARGE_INTEGER lfreq;
+
+void InitCPUTicks()
+{
+#ifdef _WIN32
+    QueryPerformanceFrequency(&lfreq);
+#endif
+}
+
+u64 GetTickFrequency()
+{
+#ifdef _WIN32
+	return lfreq.QuadPart;
+#else
+    return 1000000;		// unix measures in microseconds
+#endif
+}
+
+u64 GetCPUTicks()
+{
+#ifdef _WIN32
+    LARGE_INTEGER count;
+    QueryPerformanceCounter(&count);
+    return count.QuadPart;
+#else
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return ((u64)t.tv_sec*GetTickFrequency())+t.tv_usec;
+#endif
 }
 
 __forceinline void _TIMESLICE()

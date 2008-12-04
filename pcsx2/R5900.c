@@ -626,7 +626,9 @@ void cpuExecuteBios()
 			break;
 	}
 
-	UpdateVSyncRate();
+	// Set the video mode to user's default request:
+	gsSetVideoRegionType( Config.PsxType & 1 );
+
 	SysPrintf("* PCSX2 *: ExecuteBios\n");
 
 	bExecBIOS = TRUE;

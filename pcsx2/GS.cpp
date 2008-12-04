@@ -32,9 +32,11 @@
 
 using namespace std;
 
-//#define MTGS_LOG SysPrintf
+#ifdef DEBUG
+#define MTGS_LOG SysPrintf
+#else
 #define MTGS_LOG 0&&
-
+#endif
 
 #if defined(_WIN32) && !defined(WIN32_PTHREADS)
 
@@ -294,6 +296,59 @@ CRITICAL_SECTION stackLock;
 static int g_mtgsCopyLock = 0;
 #endif
 
+// FrameSkipping Stuff
+
+static s64 m_iSlowTicks=0;
+static u64 m_iSlowStart=0;
+static void (*s_prevExecuteVU1Block)() = NULL;
+
+extern "C" void DummyExecuteVU1Block(void);
+
+static void OnModeChanged( u32 framerate, u32 iTicks )
+{
+	m_iSlowStart = GetCPUTicks();
+
+	u32 frameSkipThreshold = Config.CustomFrameSkip*100;
+	if( Config.CustomFrameSkip == 0)
+	{
+		// default: load the frameSkipThreshold with a value roughly 90% of our current framerate
+		frameSkipThreshold = ( framerate * 228 ) / 256;
+	}
+
+	m_iSlowTicks = ( GetTickFrequency() * 100 ) / frameSkipThreshold;
+
+	// sanity check against users who set a "minimum" frame that's higher
+	// than the maximum framerate:
+	if( m_iSlowTicks < iTicks ) m_iSlowTicks = iTicks;
+}
+
+extern "C" void gsSetVideoRegionType( u32 isPal )
+{
+	u32 framerate;
+	
+	if( isPal )
+	{
+		if( Config.PsxType & 1 ) return;
+		SysPrintf( "PAL Display Mode Initialized.\n" );
+		Config.PsxType |= 1;
+		framerate = FRAMERATE_PAL;
+	}
+	else
+	{
+		if( !(Config.PsxType & 1 ) ) return;
+		SysPrintf( "NTSC Display Mode Initialized.\n" );
+		Config.PsxType &= ~1;
+		framerate = FRAMERATE_NTSC;
+	}
+
+	u32 newTickrate = UpdateVSyncRate();
+	if( CHECK_MULTIGS )
+		GSRingBufSimplePacket( GS_RINGTYPE_MODECHANGE, framerate, newTickrate, 0 );
+	else
+		OnModeChanged( framerate, newTickrate );
+}
+
+
 // Initializes MultiGS ringbuffer and registers.
 // (does nothing for single threaded GS)
 void gsInit()
@@ -318,11 +373,19 @@ void gsInit()
         if( GSsetBaseMem != NULL )
 			GSsetBaseMem(g_MTGSMem);
 	}
+
+	assert(Cpu != NULL && Cpu->ExecuteVU1Block != NULL );
+	s_prevExecuteVU1Block = Cpu->ExecuteVU1Block;
 }
 
 // Opens the gsRingbuffer thread.
 s32 gsOpen()
 {
+	OnModeChanged(
+		(Config.PsxType & 1) ? FRAMERATE_PAL : FRAMERATE_NTSC,
+		UpdateVSyncRate() 
+	);
+
 	if( !CHECK_MULTIGS )
 		return GSopen((void *)&pDsp, "PCSX2", 0);
 
@@ -750,17 +813,13 @@ void gsWrite8(u32 mem, u8 value) {
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx\n", mem, value);
 }
 
-extern void UpdateVSyncRate();
-
 void gsWrite16(u32 mem, u16 value) {
 	
 	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx\n", mem, value);
 
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
-			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
-			else Config.PsxType &= ~1;	// NTSC
-			UpdateVSyncRate();
+			gsSetVideoRegionType( (value & 0x6000) == 0x6000 );
 			break;
 			
 		case 0x12000020: // GS_SMODE2
@@ -794,10 +853,8 @@ void gsWrite32(u32 mem, u32 value)
 
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
-			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
-			else Config.PsxType &= ~1;	// NTSC
-			UpdateVSyncRate();
-			break;
+			gsSetVideoRegionType( (value & 0x6000) == 0x6000 );
+		break;
 
 		case 0x12000020: // GS_SMODE2
 			if(value & 0x1) Config.PsxType |= 2; // Interlaced
@@ -826,9 +883,7 @@ void gsWrite64(u32 mem, u64 value) {
 
 	switch (mem) {
 		case 0x12000010: // GS_SMODE1
-			if((value & 0x6000) == 0x6000) Config.PsxType |= 1; // PAL
-			else Config.PsxType &= ~1;	// NTSC
-			UpdateVSyncRate();
+			gsSetVideoRegionType( (value & 0x6000) == 0x6000 );
 			break;
 
 		case 0x12000020: // GS_SMODE2
@@ -1591,6 +1646,128 @@ void gifMFIFOInterrupt()
 	cpuRegs.interrupt &= ~(1 << 11);
 }
 
+extern "C" long iFrameLimitEnable;		// used to enable/disable the EE framelimiter.
+
+// FrameSkipper - Measures delta time between calls and issues frameskips
+// it the time is too long.  Also regulates the status of the EE's framelimiter.
+
+// This function does not regulate frame limiting, meaning it does no stalling.
+// Stalling functions are performed by the EE: If the MTGS were throtted and not
+// the EE, the EE would fill the ringbuffer while the MTGS regulated frames -- 
+// fine for most situations but could result in literally dozens of frames queued
+// up in the ringbuffer durimg some game menu screens; which in turn would result
+// in a half-second lag of keystroke actions becoming visible to the user (bad!).
+
+// Alternative: Instead of this, I could have everything regulated here, and then
+// put a framecount limit on the MTGS ringbuffer.  But that seems no less complicated
+// and would also mean that aforementioned menus would still be laggy by whatever
+// frame count threshold.  This method is more responsive.
+
+static __forceinline void frameSkip()
+{
+	static u8 FramesToRender = 0;
+	static u8 FramesToSkip = 0;
+	static bool justSkipped = false;
+
+	if( CHECK_FRAMELIMIT != PCSX2_FRAMELIMIT_SKIP && 
+		CHECK_FRAMELIMIT != PCSX2_FRAMELIMIT_VUSKIP ) return;
+
+	// FrameSkip and VU-Skip Magic!
+	// Skips a sequence of consecutive frames after a sequence of rendered frames
+
+	// This is the least number of consecutive frames we will render w/o skipping
+	#define noSkipFrames ((Config.CustomConsecutiveFrames>0) ? Config.CustomConsecutiveFrames : 1)
+	// This is the number of consecutive frames we will skip				
+	#define yesSkipFrames ((Config.CustomConsecutiveSkip>0) ? Config.CustomConsecutiveSkip : 1)
+
+	const u64 iEnd = GetCPUTicks();
+	const s64 uSlowExpectedEnd = m_iSlowStart + m_iSlowTicks;
+	const s64 sSlowDeltaTime = iEnd - uSlowExpectedEnd;
+
+	m_iSlowStart = uSlowExpectedEnd;
+
+	if( FramesToRender == 0 )
+	{
+		// -- Standard operation section --
+		// Means neither skipping frames nor force-rendering consecutive frames.
+
+		if( sSlowDeltaTime > 0 )
+		{
+			// The game is running below the minimum framerate, so use the SlowExpectedEnd.
+			// But don't start skipping yet!  That would be too sensitive.
+			// So the skipping code is only engaged if the SlowDeltaTime falls behind by
+			// a full frame, or if we're already skipping (in which case we don't care
+			// to avoid errant skips).
+			
+			if( justSkipped || sSlowDeltaTime > m_iSlowTicks*2 )
+			{
+				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( sSlowDeltaTime / m_iSlowTicks ) );
+				
+				InterlockedExchange( &iFrameLimitEnable, 0 );
+				GSsetFrameSkip(1);
+
+				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
+					InterlockedExchangePointer( &Cpu->ExecuteVU1Block, DummyExecuteVU1Block );
+
+				FramesToRender = noSkipFrames+1;
+				FramesToSkip = yesSkipFrames;
+			}
+		}
+		else
+		{
+			// Running at or above full speed, so reset the StartTime
+
+			InterlockedExchange( &iFrameLimitEnable, 1 );
+			m_iSlowStart = iEnd;
+		}
+		justSkipped = false;
+		return;
+	}
+	else if( FramesToSkip > 0 )
+	{
+		// -- Frames-a-Skippin' Section --
+
+		FramesToSkip--;
+
+		if( FramesToSkip == 0 )
+		{
+			// Skipped our last frame, so restore non-skip behavior
+
+			GSsetFrameSkip(0);
+
+			// Note: If we lag behind by 250ms then it's time to give up on the idea
+			// of catching up.  Force the game to slow down by resetting iStart to
+			// something closer to iEnd.
+
+			if( sSlowDeltaTime > (m_iSlowTicks + ((s64)GetTickFrequency() / 4)) )
+			{
+				//SysPrintf( "Frameskip couldn't skip enough -- had to lose some time!\n" );
+				m_iSlowStart = iEnd - m_iSlowTicks;
+			}
+
+			justSkipped = true;
+			if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
+				InterlockedExchangePointer( &Cpu->ExecuteVU1Block, s_prevExecuteVU1Block );
+		}
+		else
+			return;
+	}
+
+	//SysPrintf( "Consecutive Frames -- Lateness: %d\n", (int)( sSlowDeltaTime / m_iSlowTicks ) );
+
+	// -- Consecutive frames section --
+	// Force-render consecutive frames without skipping.
+	// re-enable the frame limiter of the EE if frames render fast.
+
+	FramesToRender--;
+
+	if( sSlowDeltaTime < 0 )
+	{
+		InterlockedExchange( &iFrameLimitEnable, 1 );
+		m_iSlowStart = iEnd;
+	}
+}
+
 extern "C" void GSPostVsyncEnd()
 {
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
@@ -1604,13 +1781,34 @@ extern "C" void GSPostVsyncEnd()
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
 		GS_SETEVENT();
 	}
-	else {
+	else
+	{
 		GSvsync((*(u32*)(PS2MEM_GS+0x1000)&0x2000));
-        // update here on single thread mode *OBSOLETE*
-        if( PAD1update != NULL ) PAD1update(0);
-        if( PAD2update != NULL ) PAD2update(1);
+
+		// update here on single thread mode *OBSOLETE*
+		if( PAD1update != NULL ) PAD1update(0);
+		if( PAD2update != NULL ) PAD2update(1);
+
+		frameSkip();
 	}
 }
+
+static void _resetFrameskip()
+{
+	InterlockedExchangePointer( &Cpu->ExecuteVU1Block, s_prevExecuteVU1Block );
+	InterlockedExchange( &iFrameLimitEnable, 1 );
+	GSsetFrameSkip( 0 );
+}
+
+// Disables the GS Frameskip at runtime without any racy mess...
+extern "C" void gsResetFrameSkip()
+{
+	if( CHECK_MULTIGS )
+		GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+	else
+		_resetFrameskip();
+}
+
 
 GS_THREADPROC
 {
@@ -1623,8 +1821,6 @@ GS_THREADPROC
 #ifdef RINGBUF_DEBUG_STACK
 	u32 prevCmd=0;
 #endif
-
-	SysPrintf("Starting GS thread\n");
 
 	while( !gsHasToExit )
 	{
@@ -1683,6 +1879,9 @@ GS_THREADPROC
 				case GS_RINGTYPE_VSYNC:
 				{
 					GSvsync(*(u32*)(g_pGSRingPos+4));
+
+					frameSkip();
+
                     if( PAD1update != NULL ) PAD1update(0);
                     if( PAD2update != NULL ) PAD2update(1);
 
@@ -1697,8 +1896,10 @@ GS_THREADPROC
 				}
 
 				case GS_RINGTYPE_FRAMESKIP:
-					if( GSsetFrameSkip != NULL )
-						GSsetFrameSkip(*(u32*)(g_pGSRingPos+4));
+					_resetFrameskip();
+
+					//if( GSsetFrameSkip != NULL )
+					//	GSsetFrameSkip(*(u32*)(g_pGSRingPos+4));
 					break;
 
 				case GS_RINGTYPE_MEMWRITE8:
@@ -1786,6 +1987,9 @@ GS_THREADPROC
 					GSwriteCSR( *(u32*)(g_pGSRingPos+4) );
 				break;
 
+				case GS_RINGTYPE_MODECHANGE:
+					OnModeChanged( *(u32*)(g_pGSRingPos+4), *(u32*)(g_pGSRingPos+8) );
+				break;
 
 				default:
 

@@ -65,6 +65,7 @@ enum GS_RINGTYPE
 ,	GS_RINGTYPE_RESET		// issues a GSreset() command.
 ,	GS_RINGTYPE_SOFTRESET	// issues a soft reset for the GIF
 ,	GS_RINGTYPE_WRITECSR
+,	GS_RINGTYPE_MODECHANGE	// for issued mode changes.
 };
 
 // if returns NULL, don't copy (memory is preserved)
@@ -77,6 +78,8 @@ void gsInit();
 s32 gsOpen();
 void gsShutdown();
 void gsReset();
+void gsSetVideoRegionType( u32 isPal );
+void gsResetFrameSkip();
 
 // mem and size are the ones from GSRingBufCopy
 extern void GSRINGBUF_DONECOPY(const u8 *mem, u32 size);

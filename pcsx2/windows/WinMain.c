@@ -652,7 +652,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// [TODO] : Add the other plugin overrides here...
 
-
+	InitCPUTicks();
 	if (SysInit() == -1) return 1;
 
 #ifdef PCSX2_DEVBUILD
