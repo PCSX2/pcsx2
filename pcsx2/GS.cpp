@@ -698,11 +698,8 @@ void gsReset()
 #ifdef _DEBUG
 		g_mtgsCopyLock = 0;
 #endif
-
 		memset(g_path, 0, sizeof(g_path));
 		memset(s_byRegs, 0, sizeof(s_byRegs));
-
-		gsWaitGS();		// so that the vSync reset below won't explode.
 	}
 	else
 	{
@@ -1758,8 +1755,8 @@ static __forceinline void frameSkip()
 		{
 			// Running at or above full speed, so reset the StartTime since the Limiter
 			// will muck things up.  (special case: if skip and limit fps are equal then
-			// we don't reset times since it would cause desyncing.  We let the EE regulate
-			// it via calls to gsSyncLimiterStartTime).
+			// we don't reset starttime since it would cause desyncing.  We let the EE
+			// regulate it via calls to gsSyncLimiterStartTime).
 
 			if( !m_StrictSkipping )
 				m_iSlowStart = iEnd;
