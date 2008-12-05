@@ -54,12 +54,12 @@ GS_THREADPROC;	// forward declaration of the gs threadproc
 static bool thread_create( thread_t& thread )
 {
 	thread = CreateThread(NULL, 0, GSThreadProc, NULL, 0, NULL);
-	return thread != NULL;
+	return thread != INVALID_HANDLE_VALUE;
 }
 
 static void thread_close( thread_t& thread )
 {
-	if( thread == NULL ) return;
+	if( thread == INVALID_HANDLE_VALUE ) return;
 	while( true )
 	{
 		DWORD status;
@@ -68,7 +68,7 @@ static void thread_close( thread_t& thread )
 		Sleep( 3 );
 	}
 	CloseHandle( thread );
-	thread = NULL;
+	thread = INVALID_HANDLE_VALUE;
 }
 
 static void event_init( wait_event_t& evt )
@@ -771,7 +771,6 @@ void CSRwrite(u32 value)
 	if( CHECK_MULTIGS )
 	{
 		GSRingBufSimplePacket( GS_RINGTYPE_WRITECSR, CSRw, 0, 0 );
-		GS_SETEVENT();
 	}
 	else
 		GSwriteCSR(CSRw);
