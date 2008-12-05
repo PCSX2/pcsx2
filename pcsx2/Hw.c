@@ -1160,7 +1160,7 @@ __forceinline void  intcInterrupt() {
 }
 
 // fixme: dead/unused code?
-void  dmacTestInterrupt() {
+/*void  dmacTestInterrupt() {
     cpuRegs.interrupt &= ~(1 << 31);
 	if ((cpuRegs.CP0.n.Status.val & 0x800) != 0x800) return;
 
@@ -1168,7 +1168,7 @@ void  dmacTestInterrupt() {
 		 psHu16(0xe010) & 0x8000) == 0) return;
 
 	if((psHu32(DMAC_CTRL) & 0x1) == 0) return;
-}
+}*/
 
 __forceinline void  dmacInterrupt()
 {

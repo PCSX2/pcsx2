@@ -16,6 +16,12 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+// Important Note to Future Developers:
+//   None of the COP0 instructions are really critical performance items,
+//   so don't waste time converting any more them into recompiled code
+//   unless it can make them nicely compact.  Calling the C versions will
+//   suffice.
+
 #if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
 #include "Common.h"
@@ -48,8 +54,6 @@ REC_SYS(EI);
 #else
 
 ////////////////////////////////////////////////////
-//REC_SYS(MTC0);
-////////////////////////////////////////////////////
 REC_SYS(BC0F);
 ////////////////////////////////////////////////////
 REC_SYS(BC0T);
@@ -65,12 +69,6 @@ REC_SYS(TLBWI);
 REC_SYS(TLBWR);
 ////////////////////////////////////////////////////
 REC_SYS(TLBP);
-////////////////////////////////////////////////////
-REC_SYS(ERET);
-////////////////////////////////////////////////////
-REC_SYS(DI);
-////////////////////////////////////////////////////
-REC_SYS(EI);
 
 ////////////////////////////////////////////////////
 extern u32 s_iLastCOP0Cycle;
@@ -329,6 +327,47 @@ void recMTC0()
 	}
 }
 
+void recERET()
+{
+	// Must branch immediately after ERET!
+	branch = 2;
+	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
+	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
+	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
+	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
+	iFlushCall(FLUSH_EVERYTHING);
+	CALLFunc( (uptr)ERET );
+}
+
+void recEI()
+{
+	// Must branch immediately after enabling ints!
+	branch = 2;
+
+	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
+	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
+	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
+	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
+
+	iFlushCall(FLUSH_EVERYTHING);
+	CALLFunc( (uptr)EI );
+}
+
+void recDI()
+{
+	// No need to branch after disabling interrupts...
+
+	//branch = 2;
+	//MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
+	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
+	//MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
+	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
+
+	iFlushCall(FLUSH_EVERYTHING);
+	CALLFunc( (uptr)DI );
+}
+
+
 /*void rec(COP0) {
 }
 
@@ -354,11 +393,7 @@ void rec(TLBWR) {
 }
 
 void rec(TLBP) {
-}
-
-void rec(ERET) {
-}
-*/
+}*/
 
 #endif
 

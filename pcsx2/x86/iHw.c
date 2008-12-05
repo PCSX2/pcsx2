@@ -455,36 +455,38 @@ void hwConstRead128(u32 mem, int xmmreg) {
 }
 
 // when writing imm
-#define recDmaExecI8(name, num) { \
-	MOV8ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]); \
-	if( g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0] & 1 ) { \
-		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1); \
-		j8Ptr[6] = JZ8(0); \
-		CALLFunc((uptr)dma##name); \
-		x86SetJ8( j8Ptr[6] ); \
-	} \
-} \
+static void recDmaExecI8(void (*name)(), u32 mem, int mmreg)
+{
+	MOV8ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]);
+	if( g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0] & 1 ) {
+		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1);
+		j8Ptr[6] = JZ8(0);
+		CALLFunc((uptr)name);
+		x86SetJ8( j8Ptr[6] );
+	}
+}
 
-#define recDmaExec8(name, num) { \
-	iFlushCall(0); \
-	if( IS_EECONSTREG(mmreg) ) { \
-		recDmaExecI8(name, num); \
-	} \
-	else { \
-		_eeMoveMMREGtoR(EAX, mmreg); \
-		_eeWriteConstMem8((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg); \
-		\
-		TEST8ItoR(EAX, 1); \
-		j8Ptr[5] = JZ8(0); \
-		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1); \
-		j8Ptr[6] = JZ8(0); \
-		\
-		CALLFunc((uptr)dma##name); \
-		\
-		x86SetJ8( j8Ptr[5] ); \
-		x86SetJ8( j8Ptr[6] ); \
-	} \
-} \
+static void recDmaExec8(void (*name)(), u32 mem, int mmreg)
+{
+	iFlushCall(0);
+	if( IS_EECONSTREG(mmreg) ) {
+		recDmaExecI8(name, mem, mmreg);
+	}
+	else {
+		_eeMoveMMREGtoR(EAX, mmreg);
+		_eeWriteConstMem8((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg);
+
+		TEST8ItoR(EAX, 1);
+		j8Ptr[5] = JZ8(0);
+		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1);
+		j8Ptr[6] = JZ8(0);
+
+		CALLFunc((uptr)name);
+
+		x86SetJ8( j8Ptr[5] );
+		x86SetJ8( j8Ptr[6] );
+	}
+}
 
 static void PrintDebug(u8 value)
 {
@@ -536,51 +538,51 @@ void hwConstWrite8(u32 mem, int mmreg)
 		CONSTWRITE_TIMERS(8)
 
 		case 0x1000f180:
-			_recPushReg(mmreg); \
+			_recPushReg(mmreg);
 			iFlushCall(0);
 			CALLFunc((uptr)PrintDebug);
 			ADD32ItoR(ESP, 4);
 			break;
 
 		case 0x10008001: // dma0 - vif0
-			recDmaExec8(VIF0, 0);
+			recDmaExec8(dmaVIF0, mem, mmreg);
 			break;
 
 		case 0x10009001: // dma1 - vif1
-			recDmaExec8(VIF1, 1);
+			recDmaExec8(dmaVIF1, mem, mmreg);
 			break;
 
 		case 0x1000a001: // dma2 - gif
-			recDmaExec8(GIF, 2);
+			recDmaExec8(dmaGIF, mem, mmreg);
 			break;
 
 		case 0x1000b001: // dma3 - fromIPU
-			recDmaExec8(IPU0, 3);
+			recDmaExec8(dmaIPU0, mem, mmreg);
 			break;
 
 		case 0x1000b401: // dma4 - toIPU
-			recDmaExec8(IPU1, 4);
+			recDmaExec8(dmaIPU1, mem, mmreg);
 			break;
 
 		case 0x1000c001: // dma5 - sif0
 			//if (value == 0) psxSu32(0x30) = 0x40000;
-			recDmaExec8(SIF0, 5);
+			recDmaExec8(dmaSIF0, mem, mmreg);
 			break;
 
 		case 0x1000c401: // dma6 - sif1
-			recDmaExec8(SIF1, 6);
+			recDmaExec8(dmaSIF1, mem, mmreg);
 			break;
 
 		case 0x1000c801: // dma7 - sif2
-			recDmaExec8(SIF2, 7);
+			recDmaExec8(dmaSIF2, mem, mmreg);
 			break;
 
 		case 0x1000d001: // dma8 - fromSPR
-			recDmaExec8(SPR0, 8);
+			recDmaExec8(dmaSPR0, mem, mmreg);
 			break;
 
 		case 0x1000d401: // dma9 - toSPR
-			recDmaExec8(SPR1, 9);
+			recDmaExec8(dmaSPR1, mem, mmreg);
 			break;
 
 		case 0x1000f592: // DMAC_ENABLEW
@@ -636,79 +638,81 @@ void hwConstWrite8(u32 mem, int mmreg)
 	}
 }
 
-#define recDmaExecI16(name, num) { \
-	MOV16ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]); \
-	if( g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0] & 0x100 ) { \
-		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1); \
-		j8Ptr[6] = JZ8(0); \
-		CALLFunc((uptr)dma##name); \
-		x86SetJ8( j8Ptr[6] ); \
-	} \
-} \
+static void recDmaExecI16( void (*name)(), u32 mem, int mmreg )
+{
+	MOV16ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]);
+	if( g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0] & 0x100 ) {
+		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1);
+		j8Ptr[6] = JZ8(0);
+		CALLFunc((uptr)name);
+		x86SetJ8( j8Ptr[6] );
+	}
+}
 
-#define recDmaExec16(name, num) { \
-	iFlushCall(0); \
-	if( IS_EECONSTREG(mmreg) ) { \
-		recDmaExecI16(name, num); \
-	} \
-	else { \
-		_eeMoveMMREGtoR(EAX, mmreg); \
-		_eeWriteConstMem16((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg); \
-		\
-		TEST16ItoR(EAX, 0x100); \
-		j8Ptr[5] = JZ8(0); \
-		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1); \
-		j8Ptr[6] = JZ8(0); \
-		\
-		CALLFunc((uptr)dma##name); \
-		\
-		x86SetJ8( j8Ptr[5] ); \
-		x86SetJ8( j8Ptr[6] ); \
-	} \
-} \
+static void recDmaExec16(void (*name)(), u32 mem, int mmreg)
+{
+	iFlushCall(0);
+	if( IS_EECONSTREG(mmreg) ) {
+		recDmaExecI16(name, mem, mmreg);
+	}
+	else {
+		_eeMoveMMREGtoR(EAX, mmreg);
+		_eeWriteConstMem16((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg);
+
+		TEST16ItoR(EAX, 0x100);
+		j8Ptr[5] = JZ8(0);
+		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1);
+		j8Ptr[6] = JZ8(0);
+
+		CALLFunc((uptr)name);
+
+		x86SetJ8( j8Ptr[5] );
+		x86SetJ8( j8Ptr[6] );
+	}
+}
 
 void hwConstWrite16(u32 mem, int mmreg)
 {
 	switch(mem) {
 		CONSTWRITE_TIMERS(16)
 		case 0x10008000: // dma0 - vif0
-			recDmaExec16(VIF0, 0);
+			recDmaExec16(dmaVIF0, mem, mmreg);
 			break;
 
 		case 0x10009000: // dma1 - vif1 - chcr
-			recDmaExec16(VIF1, 1);
+			recDmaExec16(dmaVIF1, mem, mmreg);
 			break;
 
 		case 0x1000a000: // dma2 - gif
-			recDmaExec16(GIF, 2);
+			recDmaExec16(dmaGIF, mem, mmreg);
 			break;
 		case 0x1000b000: // dma3 - fromIPU
-			recDmaExec16(IPU0, 3);
+			recDmaExec16(dmaIPU0, mem, mmreg);
 			break;
 		case 0x1000b400: // dma4 - toIPU
-			recDmaExec16(IPU1, 4);
+			recDmaExec16(dmaIPU1, mem, mmreg);
 			break;
 		case 0x1000c000: // dma5 - sif0
 			//if (value == 0) psxSu32(0x30) = 0x40000;
-			recDmaExec16(SIF0, 5);
+			recDmaExec16(dmaSIF0, mem, mmreg);
 			break;
 		case 0x1000c002:
 			//?
 			break;
 		case 0x1000c400: // dma6 - sif1
-			recDmaExec16(SIF1, 6);
+			recDmaExec16(dmaSIF1, mem, mmreg);
 			break;
 		case 0x1000c800: // dma7 - sif2
-			recDmaExec16(SIF2, 7);
+			recDmaExec16(dmaSIF2, mem, mmreg);
 			break;
 		case 0x1000c802:
 			//?
 			break;
 		case 0x1000d000: // dma8 - fromSPR
-			recDmaExec16(SPR0, 8);
+			recDmaExec16(dmaSPR0, mem, mmreg);
 			break;
 		case 0x1000d400: // dma9 - toSPR
-			recDmaExec16(SPR1, 9);
+			recDmaExec16(dmaSPR1, mem, mmreg);
 			break;
 		case 0x1000f592: // DMAC_ENABLEW
 			_eeWriteConstMem16((uptr)&PS2MEM_HW[0xf522], mmreg);
@@ -781,57 +785,59 @@ void hwConstWrite16(u32 mem, int mmreg)
 }
 
 // when writing an Imm
-#define recDmaExecI(name, num) { \
-	u32 c = g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]; \
-    /* Keep the old tag if in chain mode and hw doesnt set it*/ \
-    if( (c & 0xc) == 0x4 && (c&0xffff0000) == 0 ) { \
-        MOV16ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], c); \
-    } \
-	else MOV32ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], c); \
-	if( c & 0x100 ) { \
-		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1); \
-		j8Ptr[6] = JZ8(0); \
-		CALLFunc((uptr)dma##name); \
-		x86SetJ8( j8Ptr[6] ); \
-	} \
-} \
 
-#define recDmaExec(name, num) { \
-	iFlushCall(0); \
-	if( IS_EECONSTREG(mmreg) ) { \
-		recDmaExecI(name, num); \
-	} \
-	else { \
-		_eeMoveMMREGtoR(EAX, mmreg); \
-        TEST32ItoR(EAX, 0xffff0000); \
-        j8Ptr[6] = JNZ8(0); \
-        MOV32RtoR(ECX, EAX); \
-        AND32ItoR(ECX, 0xc); \
-        CMP32ItoR(ECX, 4); \
-        j8Ptr[7] = JNE8(0); \
-        if( IS_XMMREG(mmreg) || IS_MMXREG(mmreg) ) { \
-			MOV16RtoM((uptr)&PS2MEM_HW[(mem) & 0xffff], EAX); \
-		} \
-		else { \
-			_eeWriteConstMem16((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg); \
-		} \
-        j8Ptr[8] = JMP8(0); \
-        x86SetJ8(j8Ptr[6]); \
-        x86SetJ8(j8Ptr[7]); \
-        _eeWriteConstMem32((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg); \
-        x86SetJ8(j8Ptr[8]); \
-        \
-        TEST16ItoR(EAX, 0x100); \
-		j8Ptr[5] = JZ8(0); \
-		TEST32ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1); \
-		j8Ptr[6] = JZ8(0); \
-		\
-		CALLFunc((uptr)dma##name); \
-		\
-		x86SetJ8( j8Ptr[5] ); \
-		x86SetJ8( j8Ptr[6] ); \
-	} \
-} \
+static void recDmaExecI( void (*name)(), u32 mem, int mmreg )
+{
+	u32 c = g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0];
+    /* Keep the old tag if in chain mode and hw doesnt set it*/
+    if( (c & 0xc) == 0x4 && (c&0xffff0000) == 0 ) {
+        MOV16ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], c);
+    }
+	else MOV32ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], c);
+	if( c & 0x100 ) {
+		TEST8ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1);
+		j8Ptr[6] = JZ8(0);
+		CALLFunc((uptr)name);
+		x86SetJ8( j8Ptr[6] );
+	}
+}
+
+static void recDmaExec( void (*name)(), u32 mem, int mmreg )
+{
+	iFlushCall(0);
+	if( IS_EECONSTREG(mmreg) ) {
+		recDmaExecI(name, mem, mmreg);
+	}
+	else {
+		_eeMoveMMREGtoR(EAX, mmreg);
+        TEST32ItoR(EAX, 0xffff0000);
+        j8Ptr[6] = JNZ8(0);
+        MOV32RtoR(ECX, EAX);
+        AND32ItoR(ECX, 0xc);
+        CMP32ItoR(ECX, 4);
+        j8Ptr[7] = JNE8(0);
+        if( IS_XMMREG(mmreg) || IS_MMXREG(mmreg) ) {
+			MOV16RtoM((uptr)&PS2MEM_HW[(mem) & 0xffff], EAX);
+		}
+		else {
+			_eeWriteConstMem16((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg);
+		}
+        j8Ptr[8] = JMP8(0);
+        x86SetJ8(j8Ptr[6]);
+        x86SetJ8(j8Ptr[7]);
+        _eeWriteConstMem32((uptr)&PS2MEM_HW[(mem) & 0xffff], mmreg);
+        x86SetJ8(j8Ptr[8]);
+
+        TEST16ItoR(EAX, 0x100);
+		j8Ptr[5] = JZ8(0);
+		TEST32ItoM((uptr)&PS2MEM_HW[DMAC_CTRL&0xffff], 1);
+		j8Ptr[6] = JZ8(0);
+
+		CALLFunc((uptr)name);
+		x86SetJ8( j8Ptr[5] );
+		x86SetJ8( j8Ptr[6] );
+	}
+}
 
 #define CONSTWRITE_CALLTIMER32(name, index, bit) { \
 	_recPushReg(mmreg); \
@@ -925,42 +931,42 @@ void hwConstWrite32(u32 mem, int mmreg)
 			return;
 
 		case 0x10008000: // dma0 - vif0
-			recDmaExec(VIF0, 0);
+			recDmaExec(dmaVIF0, mem, mmreg);
 			break;
 
 		case 0x10009000: // dma1 - vif1 - chcr
-			recDmaExec(VIF1, 1);
+			recDmaExec(dmaVIF1, mem, mmreg);
 			break;
 
 		case 0x1000a000: // dma2 - gif
-			recDmaExec(GIF, 2);
+			recDmaExec(dmaGIF, mem, mmreg);
 			break;
 
 		case 0x1000b000: // dma3 - fromIPU
-			recDmaExec(IPU0, 3);
+			recDmaExec(dmaIPU0, mem, mmreg);
 			break;
 		case 0x1000b400: // dma4 - toIPU
-			recDmaExec(IPU1, 4);
+			recDmaExec(dmaIPU1, mem, mmreg);
 			break;
 		case 0x1000c000: // dma5 - sif0
 			//if (value == 0) psxSu32(0x30) = 0x40000;
-			recDmaExec(SIF0, 5);
+			recDmaExec(dmaSIF0, mem, mmreg);
 			break;
 
 		case 0x1000c400: // dma6 - sif1
-			recDmaExec(SIF1, 6);
+			recDmaExec(dmaSIF1, mem, mmreg);
 			break;
 
 		case 0x1000c800: // dma7 - sif2
-			recDmaExec(SIF2, 7);
+			recDmaExec(dmaSIF2, mem, mmreg);
 			break;
 
 		case 0x1000d000: // dma8 - fromSPR
-			recDmaExec(SPR0, 8);
+			recDmaExec(dmaSPR0, mem, mmreg);
 			break;
 
 		case 0x1000d400: // dma9 - toSPR
-			recDmaExec(SPR1, 9);
+			recDmaExec(dmaSPR1, mem, mmreg);
 			break;
 
 		case 0x1000e010: // DMAC_STAT
@@ -972,12 +978,7 @@ void hwConstWrite32(u32 mem, int mmreg)
 
 			SHR32ItoR(EAX, 16);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
-			
-			// cpuRegs.CP0.n.Status.val is checked by cpuTestDMACInts.
-			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			//AND32ItoR(EAX, 0x10807);
-			//CMP32ItoR(EAX, 0x10801);
-			//j8Ptr[5] = JNE8(0);
+
 			CALLFunc((uptr)cpuTestDMACInts);
 
 			//x86SetJ8( j8Ptr[5] );
@@ -985,29 +986,14 @@ void hwConstWrite32(u32 mem, int mmreg)
 
 		case 0x1000f000: // INTC_STAT
 			_eeWriteConstMem32OP((uptr)&PS2MEM_HW[0xf000], mmreg, 2);
-			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
-			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			//AND32ItoR(EAX, 0x10407);
-			//CMP32ItoR(EAX, 0x10401);
-			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestINTCInts);
-
-			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f010: // INTC_MASK
 			_eeMoveMMREGtoR(EAX, mmreg);
 			iFlushCall(0);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xf010], EAX);
-			
-			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
-			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			//AND32ItoR(EAX, 0x10407);
-			//CMP32ItoR(EAX, 0x10401);
-			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestINTCInts);
-
-			//x86SetJ8( j8Ptr[5] );
 			break;
 
         case 0x1000f130:
@@ -1174,7 +1160,7 @@ void hwConstWrite64(u32 mem, int mmreg)
 			return;
 
 		case 0x1000a000: // dma2 - gif
-			recDmaExec(GIF, 2);
+			recDmaExec(dmaGIF, mem, mmreg);
 			break;
 
 		case 0x1000e010: // DMAC_STAT

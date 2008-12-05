@@ -134,8 +134,7 @@ void MTC0() {
 }
 
 int CPCOND0() {
-	if(((psHu16(DMAC_STAT) & psHu16(DMAC_PCR)) & 0x3ff) == (psHu16(DMAC_PCR) & 0x3ff)) return 1;
-	else return 0;
+	return (((psHu16(DMAC_STAT) & psHu16(DMAC_PCR)) & 0x3ff) == (psHu16(DMAC_PCR) & 0x3ff));
 }
 
 //#define CPCOND0	1
@@ -147,10 +146,12 @@ int CPCOND0() {
 
 void BC0F() {
 	BC0(== 0);
+	COP0_LOG( "COP0 > BC0F\n" );
 }
 
 void BC0T() {
 	BC0(== 1);
+	COP0_LOG( "COP0 > BC0T\n" );
 }
 
 #define BC0L(cond) \
@@ -160,10 +161,12 @@ void BC0T() {
 
 void BC0FL() {
 	BC0L(== 0);
+	COP0_LOG( "COP0 > BC0FL\n" );
 }
 
 void BC0TL() {
 	BC0L(== 1);
+	COP0_LOG( "COP0 > BCOTL\n" );
 }
 
 void TLBR() {
@@ -176,7 +179,7 @@ void TLBR() {
 //	if( !bExecBIOS )
 //		__Log("TLBR %d\n", cpuRegs.CP0.n.Index&0x1f);
 
-	SysPrintf("COP0_TLBR\n");
+	COP0_LOG("COP0 > TLBR\n");
 	cpuRegs.CP0.n.PageMask = tlb[i].PageMask;
 	cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi&~(tlb[i].PageMask|0x1f00);
 	cpuRegs.CP0.n.EntryLo0 = (tlb[i].EntryLo0&~1)|((tlb[i].EntryHi>>12)&1);
@@ -218,6 +221,8 @@ void ClearTLB(int i) {
 void WriteTLB(int i) {
 	u32 mask, addr;
 	u32 saddr, eaddr;
+
+	COP0_LOG( "COP0 > WriteTLB" );
 
 	tlb[i].PageMask = cpuRegs.CP0.n.PageMask;
 	tlb[i].EntryHi = cpuRegs.CP0.n.EntryHi;
@@ -340,7 +345,7 @@ void DI() {
 	if (cpuRegs.CP0.n.Status.b._EDI || cpuRegs.CP0.n.Status.b.EXL ||
 		cpuRegs.CP0.n.Status.b.ERL || (cpuRegs.CP0.n.Status.b.KSU == 0)) {
 		cpuRegs.CP0.n.Status.b.EIE = 0;
-		UpdateCP0Status();
+		//UpdateCP0Status();		// ints are disabled so checking for them is kinda silly...
 	}
 }
 

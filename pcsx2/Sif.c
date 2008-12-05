@@ -516,13 +516,13 @@ __forceinline void  sif1Interrupt() {
 
 __forceinline void  EEsif0Interrupt() {
 	sif0dma->chcr &= ~0x100;
-	hwDmacIrq(5);
+	hwDmacIrq(DMAC_SIF0);
 	cpuRegs.interrupt &= ~(1 << 5);
 
 }
 
 __forceinline void  EEsif1Interrupt() {
-	hwDmacIrq(6);
+	hwDmacIrq(DMAC_SIF1);
 	sif1dma->chcr &= ~0x100;
 	cpuRegs.interrupt &= ~(1 << 6);
 
@@ -578,7 +578,6 @@ _inline void dmaSIF1() {
 	
 }
 
-// fixme: Unused code
 _inline void dmaSIF2() {
 	SIF_LOG("dmaSIF2 chcr = %lx, madr = %lx, qwc  = %lx\n",
 			sif2dma->chcr, sif2dma->madr, sif2dma->qwc);

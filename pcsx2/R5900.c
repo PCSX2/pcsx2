@@ -414,6 +414,11 @@ static __forceinline void _cpuTestTIMR()
 	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
 	s_iLastCOP0Cycle = cpuRegs.cycle;
 
+	// fixme: this looks like a hack to make up for the fact that the TIMR
+	// doesn't yet have a proper mecahnism for setting itself up on a nextBranchCycle.
+	// A proper fix would schedule the TIMR to trigger at a specific cycle anytime
+	// the Count or Compare registers are modified.
+
 	if ( (cpuRegs.CP0.n.Status.val & 0x8000) &&
 		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 ) {
 		SysPrintf("timr intr: %x, %x\n", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
@@ -440,7 +445,7 @@ static __forceinline void _cpuTestPERF()
 
 // Maximum wait between branches.  Lower values provide a tighter synchronization between
 // the EE and the IOP, but incur more execution overhead.
-#define EE_WAIT_CYCLE 512		// 2048 is still unstable due to COP0
+#define EE_WAIT_CYCLE 1024		// 2048 is probably stable now, but starting low first
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
@@ -463,9 +468,9 @@ static __forceinline void _cpuBranchTest_Shared()
 	if( cpuTestCycle( nextsCounter, nextCounter ) )
 	{
 		rcntUpdate();
+		_cpuTestPERF();
 	}
 
-	_cpuTestPERF();
 	_cpuTestTIMR();
 
 	//#ifdef CPU_LOG
@@ -496,7 +501,7 @@ static __forceinline void _cpuBranchTest_Shared()
 	if( iopBranchAction )
 	{
 		//if( EEsCycle < -500 )
-		//	SysPrintf( " IOP ahead by: %d\n", -EEsCycle );
+		//	SysPrintf( " IOP ahead by: %d cycles\n", -EEsCycle );
 
 		psxCpu->ExecuteBlock();
 	}
