@@ -357,6 +357,7 @@ static __forceinline long InterlockedDecrement( long* Addend )
 	return InterlockedExchangeAdd( Addend, -1 );
 }
 
+#if 0 // These don't work, but are also never called.l
 static __forceinline long InterlockedCompareExchange(volatile long *dest, long exch, long comp)
 {
 	long old;
@@ -388,7 +389,7 @@ static __forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest
 	
 	return(old);
 }
-
+#endif
 #endif
 
 extern void InitCPUTicks();
