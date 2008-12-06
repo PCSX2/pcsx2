@@ -517,7 +517,7 @@ void gsShutdown()
 		SysPrintf("Closing gs thread\n");
 		GS_SETEVENT();
 
-		thread_close( g_hVuGsThread );
+		if (g_hVuGsThread != NULL) thread_close( g_hVuGsThread );
 		event_destroy( g_hGsEvent );
 		mutex_destroy( gsRingRestartLock );
 
