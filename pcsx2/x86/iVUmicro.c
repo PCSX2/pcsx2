@@ -5655,10 +5655,14 @@ void recVUMI_XGKICK( VURegs *VU, int info )
 #endif
 	}
 	else {
-		FreezeMMXRegs(1);
+		// GSgifTransfer1 is recompiled, but freezeRegs() are not;
+		// so if we need to freeze the regs we need to recompile it :p
+		// since there were no-problems with the not-working code before, 
+		// I'm guessing freezeregs aren't even needed.
+		//FreezeMMXRegs(1);
 		//FreezeXMMRegs(1);
 		CALLFunc((uptr)GSgifTransfer1);
-		FreezeMMXRegs(0);
+		//FreezeMMXRegs(0);
 		//FreezeXMMRegs(0);
 	}
 }
