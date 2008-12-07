@@ -5047,7 +5047,8 @@ Version x.x</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
   <property name="urgency_hint">False</property>
-  <signal name="destroy" handler="OnDestroy"/>
+  <signal name="destroy" handler="OnDestroy" last_modification_time="Sun, 07 Dec 2008 01:35:21 GMT"/>
+  <signal name="delete_event" handler="OnDelete" last_modification_time="Sun, 07 Dec 2008 01:42:37 GMT"/>
 
   <child>
     <widget class="GtkVBox" id="vbox1">

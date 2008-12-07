@@ -241,6 +241,11 @@ void
 OnDestroy                              (GtkObject       *object,
                                         gpointer         user_data);
 
+gboolean
+OnDelete                               (GtkWidget       *widget,
+                                        GdkEvent        *event,
+                                        gpointer         user_data);
+
 void
 OnFile_RunCD                           (GtkMenuItem     *menuitem,
                                         gpointer         user_data);

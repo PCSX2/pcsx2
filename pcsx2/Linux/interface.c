@@ -2866,6 +2866,9 @@ create_MainWindow (void)
   g_signal_connect ((gpointer) MainWindow, "destroy",
                     G_CALLBACK (OnDestroy),
                     NULL);
+  g_signal_connect ((gpointer) MainWindow, "delete_event",
+                    G_CALLBACK (OnDelete),
+                    NULL);
   g_signal_connect ((gpointer) run_cd1, "activate",
                     G_CALLBACK (OnFile_RunCD),
                     NULL);

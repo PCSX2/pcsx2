@@ -90,13 +90,14 @@ void FixCPUState(void)
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 }
 
-void OnDestroy(GtkObject *object, gpointer user_data) {
-	if (!destroy) OnFile_Exit(NULL, user_data);
+void OnDestroy(GtkObject *object, gpointer user_data) {}
+	
+gboolean OnDelete(GtkWidget       *widget, GdkEvent *event, gpointer user_data)
+{
+	 pcsx2_exit();
 }
-
 int Pcsx2Configure() {
-	if (!UseGui) 
-		return 0;
+	if (!UseGui) return 0;
 	
 	configuringplug = TRUE;
 	MainWindow = NULL;
@@ -108,9 +109,7 @@ int Pcsx2Configure() {
 
 void OnLanguage(GtkMenuItem *menuitem, gpointer user_data) {
 	ChangeLanguage(langs[(int)(uptr)user_data].lang);
-	destroy = TRUE;
 	gtk_widget_destroy(MainWindow);
-	destroy = FALSE;
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
 	StartGui();
@@ -118,18 +117,14 @@ void OnLanguage(GtkMenuItem *menuitem, gpointer user_data) {
 
 void SignalExit(int sig) {
 	ClosePlugins();
-	OnFile_Exit(NULL, 0);
+	pcsx2_exit();
 }
 
 void RunExecute(int run)
 {
-    if (needReset == TRUE) {
-		SysReset();
-	}
+	if (needReset == TRUE) SysReset();
 
-	destroy= TRUE;
 	gtk_widget_destroy(MainWindow);
-	destroy=FALSE;
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
 
@@ -137,6 +132,7 @@ void RunExecute(int run)
 		RunGui(); 
 		return;
 	}
+	
 	signal(SIGINT, SignalExit);
 	signal(SIGPIPE, SignalExit);
 	
@@ -155,8 +151,7 @@ void RunExecute(int run)
 	}
 
 	// this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
-	if( GSsetGameCRC != NULL )
-		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
+	if( GSsetGameCRC != NULL ) GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
 		
 	if (run) Cpu->Execute();
 }
@@ -202,8 +197,8 @@ void OnFile_LoadElf(GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_widget_show(FileSel);
 	gdk_window_raise(FileSel->window);
 }
-
-void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data) {
+void pcsx2_exit()
+{
 	DIR *dir;
 	struct dirent *ent;
 	void *Handle;
@@ -237,11 +232,15 @@ void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data) {
 		exit(0);
 	}
 }
+void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data) 
+{
+	pcsx2_exit();
+}
 
 void OnEmu_Run(GtkMenuItem *menuitem, gpointer user_data)
 {
-	if(needReset == TRUE)
-		RunExe = 1;
+	if(needReset == TRUE) RunExe = 1;
+	
 	efile = 0;
 	RunExecute(1);
 }
@@ -517,23 +516,11 @@ void OnLogging_Ok(GtkButton *button, gpointer user_data) {
 	char str[32];
 	int i, ret;
 	
-	for (i=0; i<17; i++) {
-		sprintf(str, "Log%d", i);
-		Btn = lookup_widget(LogDlg, str);
-		ret = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(Btn));
-		if (ret) varLog|= 1<<i;
-		else varLog&=~(1<<i);
-	}
-
-	for (i=20; i<29; i++) {
-		sprintf(str, "Log%d", i);
-		Btn = lookup_widget(LogDlg, str);
-		ret = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(Btn));
-		if (ret) varLog|= 1<<i;
-		else varLog&=~(1<<i);
-	}
-
-	for (i=30; i<32; i++) {
+	
+	for (i=0; i<32; i++) {
+		if (((i > 16) && (i < 20)) || (i == 29))
+			continue;
+		
 		sprintf(str, "Log%d", i);
 		Btn = lookup_widget(LogDlg, str);
 		ret = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(Btn));
@@ -558,19 +545,12 @@ void OnDebug_Logging(GtkMenuItem *menuitem, gpointer user_data) {
 	int i;
 
 	LogDlg = create_Logging();
-	for (i=0; i<17; i++) {
-		sprintf(str, "Log%d", i);
-		Btn = lookup_widget(LogDlg, str);
-		gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), varLog & (1<<i));
-	}
- 
-	for (i=20; i<29; i++) {
-		sprintf(str, "Log%d", i);
-		Btn = lookup_widget(LogDlg, str);
-		gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), varLog & (1<<i));
-	}
-
-	for (i=30; i<32; i++) {
+	
+	
+	for (i=0; i<32; i++) {
+		if (((i > 16) && (i < 20)) || (i == 29))
+			continue;
+		
 		sprintf(str, "Log%d", i);
 		Btn = lookup_widget(LogDlg, str);
 		gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), varLog & (1<<i));

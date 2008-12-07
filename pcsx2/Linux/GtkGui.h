@@ -37,7 +37,6 @@ extern "C" {
 
 bool applychanges = FALSE;
 bool configuringplug = FALSE;
-bool destroy = FALSE;
 bool UseGui = TRUE;
 bool needReset = TRUE;
 bool RunExe = FALSE;
@@ -59,6 +58,7 @@ void OnHelp_Help();
 void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data);
 
 void StartGui();
+void pcsx2_exit();
 GtkWidget *MainWindow;
 GtkWidget *pStatusBar = NULL, *Status_Box;
 GtkWidget *CmdLine;	//2002-09-28 (Florin)
