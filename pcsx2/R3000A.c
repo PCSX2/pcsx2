@@ -223,7 +223,7 @@ static __forceinline void _psxTestInterrupts()
 {
 	PSX_TESTINT(9, sif0Interrupt, 1);	// SIF0
 	PSX_TESTINT(10, sif1Interrupt, 1);	// SIF1
-	//PSX_TESTINT(16, sioInterrupt, 0);
+	PSX_TESTINT(16, sioInterrupt, 0);
 	PSX_TESTINT(19, cdvdReadInterrupt, 1);
 
 	// Profile-guided Optimization (sorta)
