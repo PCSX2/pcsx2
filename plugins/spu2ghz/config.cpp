@@ -272,7 +272,7 @@ void ReadSettings()
 	// find the driver index of this module:
 	OutputModule = FindOutputModuleById( omodid );
 
-	VolumeShiftModifier = CfgReadInt( "OUTPUT","Volume_Shift", 1 );
+	VolumeShiftModifier = CfgReadInt( "OUTPUT","Volume_Shift", 0 );
 	LimitMode=CfgReadInt("OUTPUT","Speed_Limit_Mode",0);
 
 	CfgReadStr("DSP PLUGIN","Filename",dspPlugin,255,"");

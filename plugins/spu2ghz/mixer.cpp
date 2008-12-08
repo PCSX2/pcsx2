@@ -516,6 +516,10 @@ void LowPass(s32& VL, s32& VR)
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
+static __forceinline s32 ApplyVolume(s32 data, s32 volume)
+{
+	return (volume * data) >> 7; // >> 6 is more correct, but causes a few overflows
+}
 
 static void __forceinline UpdatePitch( V_Voice& vc )
 {
@@ -1007,11 +1011,6 @@ double rfactor=1;
 double cfactor=1;
 double diff=0;
 
-static __forceinline s32 ApplyVolume(s32 data, s32 volume)
-{
-	return (volume * data) >> 6;
-}
-
 // writes a signed value to the SPU2 ram
 // Performs no cache invalidation -- use only for dynamic memory ranges
 // of the SPU2 (between 0x0000 and SPU2_DYN_MEMLINE)
@@ -1060,7 +1059,6 @@ static __forceinline void MixVoice( V_Core& thiscore, V_Voice& vc, s32& VValL, s
 
 		VValL=ApplyVolume(Value,(vc.VolumeL.Value));
 		VValR=ApplyVolume(Value,(vc.VolumeR.Value));
-
 	}
 
 	if (voice==1)      spu2M_WriteFast( 0x400 + (core<<12) + OutPos, (s16)Value );

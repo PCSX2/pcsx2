@@ -237,27 +237,44 @@ __inline void __fastcall spu2M_Write( u32 addr, u16 value )
 	spu2M_Write( addr, (s16)value );
 }
 
+void AssignVolume(V_Volume& vol, s16 value)
+{
+	vol.Reg_VOL = value;
+	if (value & 0x8000) {  // +Lin/-Lin/+Exp/-Exp
+		vol.Mode=(value & 0xF000)>>12;
+		vol.Increment=(value & 0x3F);
+	}
+	else {
+		vol.Mode=0;
+		vol.Increment=0;
+ 
+		value<<=1;
+		vol.Value=value;
+ 
+	}
+}
 
 void CoreReset(int c)
 {
+#define DEFAULT_VOICE_VOLUME 0x3FFE
 	int v=0;
-
+ 
 	ConLog(" * SPU2: Initializing core %d structures... ",c);
-
+ 
 	memset(Cores+c,0,sizeof(Cores[c]));
-
+ 
 	Cores[c].Regs.STATX=0;
 	Cores[c].Regs.ATTR=0;
-	Cores[c].ExtL=0x3FFF;
-	Cores[c].ExtR=0x3FFF;
-	Cores[c].InpL=0x3FFF;
-	Cores[c].InpR=0x3FFF;
-	Cores[c].FxL=0x0000;
-	Cores[c].FxR=0x0000;
-	Cores[c].MasterL.Reg_VOL=0x3FFF;
-	Cores[c].MasterL.Value=0x3FFF;
-	Cores[c].MasterR.Reg_VOL=0x3FFF;
-	Cores[c].MasterR.Value=0x3FFF;
+	Cores[c].ExtL=0x7FFF;
+	Cores[c].ExtR=0x7FFF;
+	Cores[c].InpL=0x7FFF;
+	Cores[c].InpR=0x7FFF;
+	Cores[c].FxL=0x6FFE;
+	Cores[c].FxR=0x6FFE;
+	Cores[c].MasterL.Reg_VOL=0x3FFE;
+	Cores[c].MasterL.Value=0x7FFD;
+	Cores[c].MasterR.Reg_VOL=0x3FFE;
+	Cores[c].MasterR.Value=0x7FFD;
 	Cores[c].ExtWetR=1;
 	Cores[c].ExtWetL=1;
 	Cores[c].ExtDryR=1;
@@ -266,8 +283,8 @@ void CoreReset(int c)
 	Cores[c].InpWetL=1;
 	Cores[c].InpDryR=1;
 	Cores[c].InpDryL=1;
-	Cores[c].SndWetR=0;
-	Cores[c].SndWetL=0;
+	Cores[c].SndWetR=1;
+	Cores[c].SndWetL=1;
 	Cores[c].SndDryR=1;
 	Cores[c].SndDryL=1;
 	Cores[c].Regs.MMIX = 0xFFCF;
@@ -280,12 +297,10 @@ void CoreReset(int c)
 	Cores[c].FxEnable=0;
 	Cores[c].IRQA=0xFFFF0;
 	Cores[c].IRQEnable=1;
-
+ 
 	for (v=0;v<24;v++) {
-		Cores[c].Voices[v].VolumeL.Reg_VOL=0x3FFF;
-		Cores[c].Voices[v].VolumeL.Value=0x3FFF;
-		Cores[c].Voices[v].VolumeR.Reg_VOL=0x3FFF;
-		Cores[c].Voices[v].VolumeR.Value=0x3FFF;
+		AssignVolume(Cores[c].Voices[v].VolumeL,DEFAULT_VOICE_VOLUME);
+		AssignVolume(Cores[c].Voices[v].VolumeR,DEFAULT_VOICE_VOLUME);
 		Cores[c].Voices[v].ADSR.Value=0;
 		Cores[c].Voices[v].ADSR.Phase=0;
 		Cores[c].Voices[v].Pitch=0x3FFF;
@@ -296,16 +311,13 @@ void CoreReset(int c)
 		Cores[c].Voices[v].NextA=2800;
 		Cores[c].Voices[v].StartA=2800;
 		Cores[c].Voices[v].LoopStartA=2800;
-		Cores[c].Voices[v].SBuffer=pcm_cache_data;
-		#ifndef PUBLIC
-		DebugCores[c].Voices[v].lastSetStartA=2800;
-		#endif
+		//Cores[c].Voices[v].lastSetStartA=2800; fixme: this is part of debug now
 	}
 	Cores[c].DMAICounter=0;
 	Cores[c].AdmaInProgress=0;
-
+ 
 	Cores[c].Regs.STATX=0x80;
-
+ 
 	ConLog("done.\n");
 }
 
