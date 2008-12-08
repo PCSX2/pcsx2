@@ -23,7 +23,7 @@
 // SndOut.
 static const int SndOutPacketSize = 1024;
 
-static const int SndOutVolumeShiftBase = 14;
+static const int SndOutVolumeShiftBase = 8;
 extern int SndOutVolumeShift;
 
 #define pcmlog

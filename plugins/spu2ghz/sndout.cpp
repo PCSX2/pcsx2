@@ -202,7 +202,7 @@ public:
 				// up audio playback.
 				cTempo += cTempo * 0.12f;
 				eTempo += eTempo * 0.40f;
-				if( eTempo > 7.5f ) eTempo = 5.0f;
+				if( eTempo > 7.5f ) eTempo = 7.5f;
 				pSoundTouch->setTempo( eTempo );
 
 				// Throw out just a little bit (two packets worth) to help
@@ -728,6 +728,11 @@ s32 SndWrite(s32 ValL, s32 ValR)
 		bool progress = false;
 
 		// data prediction helps keep the tempo adjustments more accurate.
+		// The timestretcher returns packets in belated "clump" form.
+		// Meaning that most of the time we'll get nothing back, and then
+		// suddenly we'll get several chunks back at once.  Thus we use
+		// data prediction to make the timestretcher more responsive.
+
 		sndBuffer->PredictDataWrite( (int)( sndTempProgress / eTempo ) );
 		for(int i=0;i<sndTempProgress;i++) { ((float*)sndTempBuffer)[i] = sndTempBuffer[i]/2147483648.0f; }
 
@@ -735,12 +740,6 @@ s32 SndWrite(s32 ValL, s32 ValR)
 
 		while( ( sndTempProgress = pSoundTouch->receiveSamples((float*)sndTempBuffer, sndTempProgress>>1)<<1 ) != 0 )
 		{
-			// The timestretcher returns packets in belated "clump" form.
-			// Meaning that most of the time we'll get nothing back, and then
-			// suddenly we'll get several chunks back at once.  That's
-			// why we only update the tempo below after a set of blocks has been
-			// released (otherwise the tempo rates will be skewed by backlogged data)
-			
 			// [Air] [TODO] : Implement an SSE downsampler to int.
 			for(int i=0;i<sndTempProgress;i++)
 			{
@@ -752,10 +751,9 @@ s32 SndWrite(s32 ValL, s32 ValR)
 
 		UpdateTempoChange();
 
-		if( progress )
+		if( MsgOverruns() )
 		{
-
-			if( MsgOverruns() )
+			if( progress )
 			{
 				if( ++ts_stats_logcounter > 300 )
 				{
