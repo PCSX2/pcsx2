@@ -335,7 +335,7 @@ void recERET()
 	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
 	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
 	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
-	iFlushCall(FLUSH_EVERYTHING);
+	iFlushCall(FLUSH_NOCONST);
 	CALLFunc( (uptr)ERET );
 }
 
@@ -349,7 +349,7 @@ void recEI()
 	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
 	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
 
-	iFlushCall(FLUSH_EVERYTHING);
+	iFlushCall(FLUSH_NOCONST);
 	CALLFunc( (uptr)EI );
 }
 
@@ -363,7 +363,7 @@ void recDI()
 	//MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
 	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
 
-	iFlushCall(FLUSH_EVERYTHING);
+	iFlushCall(0);
 	CALLFunc( (uptr)DI );
 }
 

@@ -468,7 +468,11 @@ static void recDmaExecI8(void (*name)(), u32 mem, int mmreg)
 
 static void recDmaExec8(void (*name)(), u32 mem, int mmreg)
 {
-	iFlushCall(0);
+	// Flushcall Note : DMA transfers are almost always "involved" operations 
+	// that use memcpys and/or threading.  Freeing all XMM and MMX regs is the
+	// best option.
+
+	iFlushCall(FLUSH_NOCONST);
 	if( IS_EECONSTREG(mmreg) ) {
 		recDmaExecI8(name, mem, mmreg);
 	}
@@ -501,36 +505,45 @@ static void PrintDebug(u8 value)
 	}
 }
 
-#define CONSTWRITE_CALLTIMER(name, index, bit) { \
-	if( !IS_EECONSTREG(mmreg) ) { \
-		if( bit == 8 ) MOVZX32R8toR(mmreg&0xf, mmreg&0xf); \
-		else if( bit == 16 ) MOVZX32R16toR(mmreg&0xf, mmreg&0xf); \
-	} \
-	_recPushReg(mmreg); \
-	iFlushCall(0); \
-	PUSH32I(index); \
-	CALLFunc((uptr)name); \
-	ADD32ItoR(ESP, 8); \
-} \
+// fixme: this would be more optimal as a C++ template (with bit as the template parameter)
+static __forceinline void ConstWrite_ExecTimer( void (*name)(), u8 index, u8 bit, int mmreg)
+{
+	if( bit != 32 )
+	{
+		if( !IS_EECONSTREG(mmreg) )
+		{
+			if( bit == 8 ) MOVZX32R8toR(mmreg&0xf, mmreg&0xf);
+			else if( bit == 16 ) MOVZX32R16toR(mmreg&0xf, mmreg&0xf);
+		}
+	}
+
+	// FlushCall Note : All counter functions are short and sweet, full flush not needed.
+
+	_recPushReg(mmreg);
+	iFlushCall(0);
+	PUSH32I(index);
+	CALLFunc((uptr)name);
+	ADD32ItoR(ESP, 8);
+}
 
 #define CONSTWRITE_TIMERS(bit) \
-	case 0x10000000: CONSTWRITE_CALLTIMER(rcntWcount, 0, bit); break; \
-	case 0x10000010: CONSTWRITE_CALLTIMER(rcntWmode, 0, bit); break; \
-	case 0x10000020: CONSTWRITE_CALLTIMER(rcntWtarget, 0, bit); break; \
-	case 0x10000030: CONSTWRITE_CALLTIMER(rcntWhold, 0, bit); break; \
+	case 0x10000000: ConstWrite_ExecTimer(rcntWcount, 0, bit, mmreg); break; \
+	case 0x10000010: ConstWrite_ExecTimer(rcntWmode, 0, bit, mmreg); break; \
+	case 0x10000020: ConstWrite_ExecTimer(rcntWtarget, 0, bit, mmreg); break; \
+	case 0x10000030: ConstWrite_ExecTimer(rcntWhold, 0, bit, mmreg); break; \
 	\
-	case 0x10000800: CONSTWRITE_CALLTIMER(rcntWcount, 1, bit); break; \
-	case 0x10000810: CONSTWRITE_CALLTIMER(rcntWmode, 1, bit); break; \
-	case 0x10000820: CONSTWRITE_CALLTIMER(rcntWtarget, 1, bit); break; \
-	case 0x10000830: CONSTWRITE_CALLTIMER(rcntWhold, 1, bit); break; \
+	case 0x10000800: ConstWrite_ExecTimer(rcntWcount, 1, bit, mmreg); break; \
+	case 0x10000810: ConstWrite_ExecTimer(rcntWmode, 1, bit, mmreg); break; \
+	case 0x10000820: ConstWrite_ExecTimer(rcntWtarget, 1, bit, mmreg); break; \
+	case 0x10000830: ConstWrite_ExecTimer(rcntWhold, 1, bit, mmreg); break; \
 	\
-	case 0x10001000: CONSTWRITE_CALLTIMER(rcntWcount, 2, bit); break; \
-	case 0x10001010: CONSTWRITE_CALLTIMER(rcntWmode, 2, bit); break; \
-	case 0x10001020: CONSTWRITE_CALLTIMER(rcntWtarget, 2, bit); break; \
+	case 0x10001000: ConstWrite_ExecTimer(rcntWcount, 2, bit, mmreg); break; \
+	case 0x10001010: ConstWrite_ExecTimer(rcntWmode, 2, bit, mmreg); break; \
+	case 0x10001020: ConstWrite_ExecTimer(rcntWtarget, 2, bit, mmreg); break; \
 	\
-	case 0x10001800: CONSTWRITE_CALLTIMER(rcntWcount, 3, bit); break; \
-	case 0x10001810: CONSTWRITE_CALLTIMER(rcntWmode, 3, bit); break; \
-	case 0x10001820: CONSTWRITE_CALLTIMER(rcntWtarget, 3, bit); break; \
+	case 0x10001800: ConstWrite_ExecTimer(rcntWcount, 3, bit, mmreg); break; \
+	case 0x10001810: ConstWrite_ExecTimer(rcntWmode, 3, bit, mmreg); break; \
+	case 0x10001820: ConstWrite_ExecTimer(rcntWtarget, 3, bit, mmreg); break; \
 
 void hwConstWrite8(u32 mem, int mmreg)
 {
@@ -638,6 +651,11 @@ void hwConstWrite8(u32 mem, int mmreg)
 	}
 }
 
+// Flushcall Note : DMA transfers are almost always "involved" operations 
+// that use memcpys and/or threading.  Freeing all XMM and MMX regs is the
+// best option (removes the need for FreezeXMMRegs()).  But register
+// allocation is such a mess right now that we can't do it (yet).
+
 static void recDmaExecI16( void (*name)(), u32 mem, int mmreg )
 {
 	MOV16ItoM((uptr)&PS2MEM_HW[(mem) & 0xffff], g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]);
@@ -652,6 +670,7 @@ static void recDmaExecI16( void (*name)(), u32 mem, int mmreg )
 static void recDmaExec16(void (*name)(), u32 mem, int mmreg)
 {
 	iFlushCall(0);
+
 	if( IS_EECONSTREG(mmreg) ) {
 		recDmaExecI16(name, mem, mmreg);
 	}
@@ -674,7 +693,9 @@ static void recDmaExec16(void (*name)(), u32 mem, int mmreg)
 void hwConstWrite16(u32 mem, int mmreg)
 {
 	switch(mem) {
+
 		CONSTWRITE_TIMERS(16)
+
 		case 0x10008000: // dma0 - vif0
 			recDmaExec16(dmaVIF0, mem, mmreg);
 			break;
@@ -804,11 +825,19 @@ static void recDmaExecI( void (*name)(), u32 mem, int mmreg )
 
 static void recDmaExec( void (*name)(), u32 mem, int mmreg )
 {
+
 	iFlushCall(0);
+
 	if( IS_EECONSTREG(mmreg) ) {
 		recDmaExecI(name, mem, mmreg);
 	}
 	else {
+
+		// fixme: This is a lot of code to be injecting into the recompiler
+		// for every DMA transfer.  It might actually be more efficient to
+		// set this up as a C function call instead (depends on how often
+		// the register is written without actually starting a DMA xfer).
+
 		_eeMoveMMREGtoR(EAX, mmreg);
         TEST32ItoR(EAX, 0xffff0000);
         j8Ptr[6] = JNZ8(0);
@@ -839,13 +868,6 @@ static void recDmaExec( void (*name)(), u32 mem, int mmreg )
 	}
 }
 
-#define CONSTWRITE_CALLTIMER32(name, index, bit) { \
-	_recPushReg(mmreg); \
-	iFlushCall(0); \
-	PUSH32I(index); \
-	CALLFunc((uptr)name); \
-	ADD32ItoR(ESP, 8); \
-} \
 
 void hwConstWrite32(u32 mem, int mmreg)
 {
@@ -874,23 +896,8 @@ void hwConstWrite32(u32 mem, int mmreg)
 	}
 
 	switch (mem) {
-		case 0x10000000: CONSTWRITE_CALLTIMER32(rcntWcount, 0, bit); break;
-		case 0x10000010: CONSTWRITE_CALLTIMER32(rcntWmode, 0, bit); break;
-		case 0x10000020: CONSTWRITE_CALLTIMER32(rcntWtarget, 0, bit); break;
-		case 0x10000030: CONSTWRITE_CALLTIMER32(rcntWhold, 0, bit); break;
-		
-		case 0x10000800: CONSTWRITE_CALLTIMER32(rcntWcount, 1, bit); break;
-		case 0x10000810: CONSTWRITE_CALLTIMER32(rcntWmode, 1, bit); break;
-		case 0x10000820: CONSTWRITE_CALLTIMER32(rcntWtarget, 1, bit); break;
-		case 0x10000830: CONSTWRITE_CALLTIMER32(rcntWhold, 1, bit); break;
-		
-		case 0x10001000: CONSTWRITE_CALLTIMER32(rcntWcount, 2, bit); break;
-		case 0x10001010: CONSTWRITE_CALLTIMER32(rcntWmode, 2, bit); break;
-		case 0x10001020: CONSTWRITE_CALLTIMER32(rcntWtarget, 2, bit); break;
-		
-		case 0x10001800: CONSTWRITE_CALLTIMER32(rcntWcount, 3, bit); break;
-		case 0x10001810: CONSTWRITE_CALLTIMER32(rcntWmode, 3, bit); break;
-		case 0x10001820: CONSTWRITE_CALLTIMER32(rcntWtarget, 3, bit); break;
+
+		CONSTWRITE_TIMERS(32)
 
 		case GIF_CTRL:
 
@@ -980,8 +987,6 @@ void hwConstWrite32(u32 mem, int mmreg)
 			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
 
 			CALLFunc((uptr)cpuTestDMACInts);
-
-			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f000: // INTC_STAT
@@ -1173,15 +1178,7 @@ void hwConstWrite64(u32 mem, int mmreg)
 
 			SHR32ItoR(EAX, 16);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
-			
-			// cpuRegs.CP0.n.Status.val is checked by cpuTestDMACInts.
-			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			//AND32ItoR(EAX, 0x10807);
-			//CMP32ItoR(EAX, 0x10801);
-			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestDMACInts);
-
-			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f590: // DMAC_ENABLEW
@@ -1191,14 +1188,7 @@ void hwConstWrite64(u32 mem, int mmreg)
 
 		case 0x1000f000: // INTC_STAT
 			_eeWriteConstMem32OP((uptr)&PS2MEM_HW[mem&0xffff], mmreg, 2);
-			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
-			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			//AND32ItoR(EAX, 0x10407);
-			//CMP32ItoR(EAX, 0x10401);
-			//j8Ptr[5] = JNE8(0);
 			CALLFunc((uptr)cpuTestINTCInts);
-
-			//x86SetJ8( j8Ptr[5] );
 			break;
 
 		case 0x1000f010: // INTC_MASK
@@ -1207,16 +1197,7 @@ void hwConstWrite64(u32 mem, int mmreg)
 
 			iFlushCall(0);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xf010], EAX);
-			
-			// note: cpuRegs.CP0.n.Status.val conditional is done by cpuTestINTCInts.
-			//MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.n.Status.val);
-			//AND32ItoR(EAX, 0x10407);
-			//CMP32ItoR(EAX, 0x10401);
-			//j8Ptr[5] = JNE8(0);
-			CALLFunc((uptr)cpuTestINTCInts);
-
-			//x86SetJ8( j8Ptr[5] );
-			
+			CALLFunc((uptr)cpuTestINTCInts);			
 			break;
 
 		case 0x1000f130:

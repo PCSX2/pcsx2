@@ -113,7 +113,7 @@ void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr
 
 // when using mmx/xmm regs, use; 0 is load
 // freezes no matter the state
-void FreezeXMMRegs_(int save);
+extern void FreezeXMMRegs_(int save);
 
 void _flushCachedRegs();
 void _flushConstRegs();
@@ -224,6 +224,18 @@ int _getNumXMMwrite();
 #define FLUSH_FREE_TEMPX86 64 // flush and free temporary x86 regs
 #define FLUSH_FREE_ALLX86 128 // free all x86 regs
 #define FLUSH_FREE_VU0 0x100  // free all vu0 related regs
+
+// Flushing vs. Freeing, as understood by Air (I could be wrong still....)
+
+// "Freeing" registers means that the contents of the registers are flushed to memory.
+// This is good for any sort of C code function that plans to modify the actual
+// registers.  When the Recs resume, they'll reload the registers with values saved
+// as needed.  (similar to a "FreezeXMMRegs")
+
+// "Flushing" means that in addition to the standard free (which is actually a flush)
+// the register allocations are additionally wiped.  This should only be necessary if 
+// the code being called is going to modify register allocations -- ie, be doing
+// some kind of recompiling of its own.
 
 #define FLUSH_EVERYTHING 0xfff
 // no freeing, used when callee won't destroy mmx/xmm regs
@@ -404,7 +416,7 @@ void _recMove128MtoM(u32 to, u32 from);
 #define FPU_STATE 0
 #define MMX_STATE 1
 
-void FreezeMMXRegs_(int save);
+extern void FreezeMMXRegs_(int save);
 void SetFPUstate();
 
 // max is 0x7f, when 0x80 is set, need to flush reg

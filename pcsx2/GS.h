@@ -86,7 +86,6 @@ void gsDynamicSkipEnable();
 
 // mem and size are the ones from GSRingBufCopy
 extern void GSRINGBUF_DONECOPY(const u8 *mem, u32 size);
-extern void GS_SETEVENT();
 extern void gsWaitGS();
 
 // used for resetting GIF fifo

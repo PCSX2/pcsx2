@@ -768,16 +768,17 @@ void _freeMMXregs()
 	}
 }
 
-void FreezeMMXRegs_(int save)
+__forceinline void FreezeMMXRegs_(int save)
 {
 	assert( g_EEFreezeRegs );
 
 	if( save ) {
-		if( g_globalMMXSaved ){
+		g_globalMMXSaved++;
+		if( g_globalMMXSaved>1 )
+		{
 			//SysPrintf("MMX Already Saved!\n");
 			return;
-			}
-		g_globalMMXSaved = 1;
+		}
 
 #ifdef _MSC_VER
 		__asm {
@@ -807,11 +808,14 @@ void FreezeMMXRegs_(int save)
 
 	}
 	else {
-		if( !g_globalMMXSaved ){
+		if( g_globalMMXSaved==0 )
+		{
 			//SysPrintf("MMX Not Saved!\n");
 			return;
-			}
-		g_globalMMXSaved = 0;
+		}
+		g_globalMMXSaved--;
+
+		if( g_globalMMXSaved > 0 ) return;
 
 #ifdef _MSC_VER
 		__asm {

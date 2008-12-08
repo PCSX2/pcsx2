@@ -2283,7 +2283,7 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	if( newpc != 0xffffffff )
 	{
 		CMP32ItoM((uptr)&cpuRegs.pc, newpc);
-		JNE32((u32)DispatcherReg - ( (u32)x86Ptr + 6 ));
+		JNE32((uptr)DispatcherReg - ( (uptr)x86Ptr + 6 ));
 	}
 
 	x86SetJ8( j8Ptr[0] );
@@ -2315,7 +2315,7 @@ void recSYSCALL( void ) {
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
-	JMP32((u32)DispatcherReg - ( (u32)x86Ptr + 5 ));
+	JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;
 }
@@ -2329,7 +2329,7 @@ void recBREAK( void ) {
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((u32)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
+	ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
 	RET();
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;
@@ -2365,16 +2365,16 @@ void recMFSA( void )
 
 	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
 	if( mmreg >= 0 ) {
-		SSE_MOVLPS_M64_to_XMM(mmreg, (u32)&cpuRegs.sa);
+		SSE_MOVLPS_M64_to_XMM(mmreg, (uptr)&cpuRegs.sa);
 	}
 	else if( (mmreg = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) >= 0 ) {
-		MOVDMtoMMX(mmreg, (u32)&cpuRegs.sa);
+		MOVDMtoMMX(mmreg, (uptr)&cpuRegs.sa);
 		SetMMXstate();
 	}
 	else {
 		MOV32MtoR(EAX, (u32)&cpuRegs.sa);
 		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM((u32)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
+		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
 		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
 	}
 }
@@ -2388,15 +2388,15 @@ void recMTSA( void )
 		int mmreg;
 		
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-			SSE_MOVSS_XMM_to_M32((u32)&cpuRegs.sa, mmreg);
+			SSE_MOVSS_XMM_to_M32((uptr)&cpuRegs.sa, mmreg);
 		}
 		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-			MOVDMMXtoM((u32)&cpuRegs.sa, mmreg);
+			MOVDMMXtoM((uptr)&cpuRegs.sa, mmreg);
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (u32)&cpuRegs.GPR.r[_Rs_].UL[0]);
-			MOV32RtoM((u32)&cpuRegs.sa, EAX);
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[_Rs_].UL[0]);
+			MOV32RtoM((uptr)&cpuRegs.sa, EAX);
 		}
 	}
 }
@@ -2411,7 +2411,7 @@ void recMTSAB( void )
 		AND32ItoR(EAX, 0xF);
 		XOR32ItoR(EAX, _Imm_&0xf);
 		SHL32ItoR(EAX, 3);
-		MOV32RtoM((u32)&cpuRegs.sa, EAX);
+		MOV32RtoM((uptr)&cpuRegs.sa, EAX);
 	}
 }
 
@@ -2425,7 +2425,7 @@ void recMTSAH( void )
 		AND32ItoR(EAX, 0x7);
 		XOR32ItoR(EAX, _Imm_&0x7);
 		SHL32ItoR(EAX, 4);
-		MOV32RtoM((u32)&cpuRegs.sa, EAX);
+		MOV32RtoM((uptr)&cpuRegs.sa, EAX);
 	}
 }
 
@@ -2496,7 +2496,7 @@ void recompileNextInstruction(int delayslot)
 //				return;
 //			}
 			
-			JMP32((u32)pblock->pFnptr - ((u32)x86Ptr + 5));
+			JMP32((uptr)pblock->pFnptr - ((uptr)x86Ptr + 5));
 			branch = 3;
 			return;
 		}
@@ -2895,7 +2895,7 @@ void recRecompile( u32 startpc )
 	MOV32ItoM((uptr)&g_lastpc, pc);
 	CALLFunc((uptr)printfn);
 
-//	CMP32MtoR(EBP, (u32)&s_uSaveEBP);
+//	CMP32MtoR(EBP, (uptr)&s_uSaveEBP);
 //	j8Ptr[0] = JE8(0);
 //	CALLFunc((uptr)badespfn);
 //	x86SetJ8(j8Ptr[0]);
@@ -3151,7 +3151,7 @@ StartRecomp:
 //	s_startcount = 0;
 //	if( pc+32 < s_nEndBlock ) {
 //		// only blocks with more than 8 insts
-//		//PUSH32I((u32)&lbase);
+//		//PUSH32I((uptr)&lbase);
 //		//CALLFunc((uptr)QueryPerformanceCounter);
 //		lbase.QuadPart = GetCPUTick();
 //		s_startcount = 1;
@@ -3217,7 +3217,7 @@ StartRecomp:
 		iBranchTest(0xffffffff, 1);	
 		if( bExecBIOS ) CheckForBIOSEnd();
 
-		JMP32((u32)DispatcherReg - ( (u32)x86Ptr + 5 ));
+		JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
 	}
 	else {
 		assert( branch != 3 );
@@ -3229,7 +3229,7 @@ StartRecomp:
 			assert( pc == s_nEndBlock );
 			iFlushCall(FLUSH_EVERYTHING);
 			MOV32ItoM((uptr)&cpuRegs.pc, pc);
-			JMP32((u32)pblock->pFnptr - ((u32)x86Ptr + 5));
+			JMP32((uptr)pblock->pFnptr - ((uptr)x86Ptr + 5));
 			branch = 3;
 		}
 		else if( !branch ) {

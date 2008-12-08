@@ -224,7 +224,7 @@ int IsBIOS(char *filename, char *description);
 #define FreezeMMXRegs(save)
 #define FreezeXMMRegs(save)
 #else
-void FreezeXMMRegs_(int save);
+extern void FreezeXMMRegs_(int save);
 extern u32 g_EEFreezeRegs;
 #define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
 
@@ -237,18 +237,6 @@ void FreezeMMXRegs_(int save);
 
 #endif
 
-// define a PCS2 specific memcpy and make sure it is used all in real-time code
-#if _MSC_VER >= 1400 // vs2005+ uses xmm/mmx in memcpy
-__forceinline void memcpy_pcsx2(void* dest, const void* src, size_t n)
-{
-    //FreezeMMXRegs(1); // mmx not used
-    FreezeXMMRegs(1);
-    memcpy(dest, src, n);
-    // have to be unfrozen by parent call!
-}
-#else
-#define memcpy_pcsx2 memcpy
-#endif
 
 #ifdef PCSX2_NORECBUILD
 #define memcpy_fast memcpy

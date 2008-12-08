@@ -214,14 +214,10 @@ __forceinline void vif1FLUSH() {
 	_cycles = VU1.cycle;
 
 	if( VU0.VI[REG_VPU_STAT].UL & 0x100 ) {
-		//FreezeXMMRegs(1);
 		do {
 			Cpu->ExecuteVU1Block();
 		} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 
-//		FreezeXMMRegs(0);
-//		FreezeMMXRegs(0);
-		//FreezeXMMRegs(0);
 		g_vifCycles+= (VU1.cycle - _cycles)*BIAS;
 	}
 }

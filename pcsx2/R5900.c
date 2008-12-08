@@ -513,7 +513,7 @@ static __forceinline void _cpuBranchTest_Shared()
 	// Apply the hsync counter's nextCycle
 	cpuSetNextBranch( counters[4].sCycle, counters[4].CycleT );
 
-	// Apply other counter nextCycles
+	// Apply vsync and other counter nextCycles
 	cpuSetNextBranch( nextsCounter, nextCounter );
 }
 
@@ -522,11 +522,12 @@ static __forceinline void _cpuBranchTest_Shared()
 extern u8 g_globalXMMSaved;
 X86_32CODE(extern u8 g_globalMMXSaved;)
 #endif
-#endif
 
 void cpuBranchTest()
 {
-#ifndef PCSX2_NORECBUILD
+	// cpuBranchTest should be called from the recompiler only.
+	assert( Cpu == &recCpu );
+
 #ifdef PCSX2_DEVBUILD
     // dont' remove this check unless doing an official release
     if( g_globalXMMSaved X86_32CODE(|| g_globalMMXSaved) )
@@ -534,7 +535,6 @@ void cpuBranchTest()
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
 #endif
 	g_EEFreezeRegs = 0;
-#endif
 
 	// Perform counters, ints, and IOP updates:
 	_cpuBranchTest_Shared();
@@ -543,18 +543,15 @@ void cpuBranchTest()
 
 	if (VU0.VI[REG_VPU_STAT].UL & 0x1)
 	{
-		FreezeXMMRegs(1);
+		// We're in a BranchTest.  All dynarec registers are flushed
+		// so there is no need to freeze registers here.
 		Cpu->ExecuteVU0Block();
-		FreezeXMMRegs(0);
 	}
 
-#ifndef PCSX2_NORECBUILD
-#ifdef PCSX2_DEVBUILD
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
-#endif
 	g_EEFreezeRegs = 1;
-#endif
 }
+#endif
 
 __forceinline void CPU_INT( u32 n, s32 ecycle)
 {

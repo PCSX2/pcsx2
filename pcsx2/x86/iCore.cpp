@@ -839,7 +839,6 @@ void _deleteFPtoXMMreg(int reg, int flush)
 
 void _freeXMMreg(int xmmreg) 
 {
-	VURegs *VU = xmmregs[xmmreg].VU ? &VU1 : &VU0;
 	assert( xmmreg < XMMREGS );
 
 	if (!xmmregs[xmmreg].inuse) return;
@@ -847,6 +846,8 @@ void _freeXMMreg(int xmmreg)
 	if (xmmregs[xmmreg].mode & MODE_WRITE) {
 	switch (xmmregs[xmmreg].type) {
 		case XMMTYPE_VFREG:
+		{
+			const VURegs *VU = xmmregs[xmmreg].VU ? &VU1 : &VU0;
 			if( xmmregs[xmmreg].mode & MODE_VUXYZ ) 
 			{
 				if( xmmregs[xmmreg].mode & MODE_VUZ ) 
@@ -882,9 +883,12 @@ void _freeXMMreg(int xmmreg)
 			{
 				SSE_MOVAPS_XMM_to_M128(VU_VFx_ADDR(xmmregs[xmmreg].reg), xmmreg);
 			}
+		}
 		break;
 		
 		case XMMTYPE_ACC:
+		{
+			const VURegs *VU = xmmregs[xmmreg].VU ? &VU1 : &VU0;
 			if( xmmregs[xmmreg].mode & MODE_VUXYZ ) 
 			{
 				if( xmmregs[xmmreg].mode & MODE_VUZ ) 
@@ -921,7 +925,8 @@ void _freeXMMreg(int xmmreg)
 			{
 				SSE_MOVAPS_XMM_to_M128(VU_ACCx_ADDR, xmmreg);
 			}
-			break;
+		}
+		break;
 		
 		case XMMTYPE_GPRREG:
 			assert( xmmregs[xmmreg].reg != 0 );
@@ -1039,17 +1044,17 @@ void _freeXMMregs()
 
 #if !defined(_MSC_VER) || !defined(__x86_64__)
 
-void FreezeXMMRegs_(int save)
+__forceinline void FreezeXMMRegs_(int save)
 {
 	assert( g_EEFreezeRegs );
 
 	if( save ) {
-		if( g_globalXMMSaved ){
+		g_globalXMMSaved++;
+		if( g_globalXMMSaved > 1 ){
 			//SysPrintf("XMM Already saved\n");
 			return;
-			}
+		}
 
-		g_globalXMMSaved = 1;
 
 #ifdef _MSC_VER
         __asm {
@@ -1088,13 +1093,14 @@ void FreezeXMMRegs_(int save)
 #endif // _MSC_VER
 	}
 	else {
-		if( !g_globalXMMSaved ){
+		if( g_globalXMMSaved==0 )
+		{
 			//SysPrintf("XMM Regs not saved!\n");
 			return;
-			}
+		}
 
-        // TODO: really need to backup all regs?
-		g_globalXMMSaved = 0;
+		g_globalXMMSaved--;
+		if( g_globalXMMSaved > 0 ) return;
 
 #ifdef _MSC_VER
         __asm {

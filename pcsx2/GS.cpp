@@ -440,17 +440,27 @@ __forceinline void gsWaitGS()
 {
 	if( !CHECK_MULTIGS ) return;
 
+	// Freeze registers because some kernel code likes to destroy them
+	FreezeXMMRegs(1); 
+	FreezeMMXRegs(1);
 	GS_SETEVENT();
 	while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos )
 		_TIMESLICE();
+	FreezeXMMRegs(0);
+	FreezeMMXRegs(0);
 }
 
 // Sets the gsEvent flag and releases a timeslice.
 // For use in loops that wait on the GS thread to do certain things.
 static void gsSetEventWait()
 {
+	// Freeze registers because some kernel code likes to destroy them
+	FreezeXMMRegs(1); 
+	FreezeMMXRegs(1);
 	GS_SETEVENT();
 	_TIMESLICE();
+	FreezeXMMRegs(0); 
+	FreezeMMXRegs(0);
 
 	m_mtgsCopyCommandTally = 0;
 }
