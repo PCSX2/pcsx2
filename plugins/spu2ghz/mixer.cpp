@@ -813,10 +813,12 @@ static void __forceinline __fastcall ReadInputPV(V_Core& thiscore, s32& ValL,s32
 	#endif
 
 	// Apply volumes:
-	ValL *= thiscore.InpL;
-	ValR *= thiscore.InpR;
-	ValL >>= 1;
-	ValR >>= 1;
+	ValL = ApplyVolume( ValL, thiscore.InpL );
+	ValR = ApplyVolume( ValR, thiscore.InpR );
+	
+	// These make XS2 intro too quiet.
+	//ValL >>= 1;
+	//ValR >>= 1;
 
 }
 
@@ -1206,12 +1208,6 @@ void __fastcall Mix()
 	Peak0 = max(Peak0,max(ExtL,ExtR));
 	Peak1 = max(Peak1,max(OutL,OutR));
 #endif
-
-	// [Air] : Removed MulDiv here in favor of a more direct approach
-	//   within the SndOut driver (which ends up having to apply its own
-	//   master volume divisors anyway).
-	//ExtL=MulDiv(OutL,VolumeMultiplier,1<<6);
-	//ExtR=MulDiv(OutR,VolumeMultiplier,1<<6);
 
 	// Update spdif (called each sample)
 	if(PlayMode&4)
