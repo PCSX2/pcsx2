@@ -200,9 +200,7 @@ void _vu1Exec(VURegs* VU) {
 	int discard=0;
 
 	if(VU1.VI[REG_TPC].UL >= VU1.maxmicro){
-#ifdef CPU_LOG
-		SysPrintf("VU1 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-#endif
+		CPU_LOG("VU1 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
 		VU0.VI[REG_VPU_STAT].UL&= ~0x100;
 		VU->cycle++;
 		return;
@@ -326,11 +324,11 @@ void vu1Exec(VURegs* VU) {
 	} 
 	VU->cycle++;
 #ifdef CPU_LOG
-	if (VU->VI[0].UL != 0) SysPrintf("VI[0] != 0!!!!\n");
-	if (VU->VF[0].f.x != 0.0f) SysPrintf("VF[0].x != 0.0!!!!\n");
-	if (VU->VF[0].f.y != 0.0f) SysPrintf("VF[0].y != 0.0!!!!\n");
-	if (VU->VF[0].f.z != 0.0f) SysPrintf("VF[0].z != 0.0!!!!\n");
-	if (VU->VF[0].f.w != 1.0f) SysPrintf("VF[0].w != 1.0!!!!\n");
+	if (VU->VI[0].UL != 0) CPU_LOG("VI[0] != 0!!!!\n");
+	if (VU->VF[0].f.x != 0.0f) CPU_LOG("VF[0].x != 0.0!!!!\n");
+	if (VU->VF[0].f.y != 0.0f) CPU_LOG("VF[0].y != 0.0!!!!\n");
+	if (VU->VF[0].f.z != 0.0f) CPU_LOG("VF[0].z != 0.0!!!!\n");
+	if (VU->VF[0].f.w != 1.0f) CPU_LOG("VF[0].w != 1.0!!!!\n");
 #endif
 }
 

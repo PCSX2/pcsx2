@@ -228,7 +228,6 @@ void psxDma11(u32 madr, u32 bcr, u32 chcr) {
 				return;
 			}
 		}
-		
 	}
 
 	HW_DMA11_MADR = madr;
@@ -243,16 +242,14 @@ void psxDMA11Interrupt()
 }
 
 void psxDma12(u32 madr, u32 bcr, u32 chcr) {
-	int size = bcr;
-	PSXDMA_LOG("*** DMA 12 - SIO2 out *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
-
+	int size = ((bcr >> 16) * (bcr & 0xFFFF)) * 4;
+	PSXDMA_LOG("*** DMA 12 - SIO2 out *** %lx addr = %lx size = %lx\n", chcr, madr, size);
 
 	if (chcr != 0x41000200) return;
 
 	sio2.recvIndex = 0; // Set To start;    saqib
 
-	bcr = ((bcr >> 16) * (bcr & 0xFFFF)) * 4;	// 8 bits
-
+	bcr = size;
 	while (bcr > 0) {
 		PSXMu8(madr) = sio2_fifoOut();
 		bcr--; madr++;

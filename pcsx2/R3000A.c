@@ -100,14 +100,14 @@ void psxException(u32 code, u32 bd) {
 	psxRegs.CP0.n.Cause &= ~0x7f;
 	psxRegs.CP0.n.Cause |= code;
 
-#ifdef PSXCPU_LOG
-	if (bd) { PSXCPU_LOG("bd set\n"); }
-#endif
 	// Set the EPC & PC
-	if (bd) {
+	if (bd)
+	{
+		PSXCPU_LOG("bd set\n");
 		psxRegs.CP0.n.Cause|= 0x80000000;
 		psxRegs.CP0.n.EPC = (psxRegs.pc - 4);
-	} else
+	}
+	else
 		psxRegs.CP0.n.EPC = (psxRegs.pc);
 
 	if (psxRegs.CP0.n.Status & 0x400000)
@@ -128,21 +128,22 @@ void psxException(u32 code, u32 bd) {
 		u32 call = psxRegs.GPR.n.t1 & 0xff;
 		switch (psxRegs.pc & 0x1fffff) {
 			case 0xa0:
-#ifdef PSXBIOS_LOG
-				if (call != 0x28 && call != 0xe) {
-					PSXBIOS_LOG("Bios call a0: %s (%x) %x,%x,%x,%x\n", biosA0n[call], call, psxRegs.GPR.n.a0, psxRegs.GPR.n.a1, psxRegs.GPR.n.a2, psxRegs.GPR.n.a3); }
-#endif
+
+				if (call != 0x28 && call != 0xe)
+					PSXBIOS_LOG("Bios call a0: %s (%x) %x,%x,%x,%x\n", biosA0n[call], call, psxRegs.GPR.n.a0, psxRegs.GPR.n.a1, psxRegs.GPR.n.a2, psxRegs.GPR.n.a3);
+
 				if (biosA0[call])
 			   		biosA0[call]();
 				break;
+
 			case 0xb0:
-#ifdef PSXBIOS_LOG
-				if (call != 0x17 && call != 0xb) {
-					PSXBIOS_LOG("Bios call b0: %s (%x) %x,%x,%x,%x\n", biosB0n[call], call, psxRegs.GPR.n.a0, psxRegs.GPR.n.a1, psxRegs.GPR.n.a2, psxRegs.GPR.n.a3); }
-#endif
+				if (call != 0x17 && call != 0xb)
+					PSXBIOS_LOG("Bios call b0: %s (%x) %x,%x,%x,%x\n", biosB0n[call], call, psxRegs.GPR.n.a0, psxRegs.GPR.n.a1, psxRegs.GPR.n.a2, psxRegs.GPR.n.a3);
+
 				if (biosB0[call])
 			   		biosB0[call]();
 				break;
+
 			case 0xc0:
 				PSXBIOS_LOG("Bios call c0: %s (%x) %x,%x,%x,%x\n", biosC0n[call], call, psxRegs.GPR.n.a0, psxRegs.GPR.n.a1, psxRegs.GPR.n.a2, psxRegs.GPR.n.a3);
 			
@@ -181,6 +182,14 @@ __forceinline int psxTestCycle( u32 startCycle, s32 delta )
 
 __forceinline void PSX_INT( int n, s32 ecycle )
 {
+	// Generally speaking games shouldn't throw ints that haven't been cleared yet.
+	// It's usually indicative os something amiss in our emulation, so uncomment this
+	// code to help trap those sort of things.
+
+	// Exception: IRQ16 - SIO - it drops ints like crazy when handling PAD stuff.
+	//if( /*n!=16 &&*/ psxRegs.interrupt & (1<<n) )
+	//	SysPrintf( "***** IOP > Twice-thrown int on IRQ %d\n", n );
+
 	psxRegs.interrupt |= 1 << n;
 
 	psxRegs.sCycle[n] = psxRegs.cycle;
@@ -214,7 +223,7 @@ static __forceinline void _psxTestInterrupts()
 {
 	PSX_TESTINT(9, sif0Interrupt, 1);	// SIF0
 	PSX_TESTINT(10, sif1Interrupt, 1);	// SIF1
-	PSX_TESTINT(16, sioInterrupt, 0);
+	//PSX_TESTINT(16, sioInterrupt, 0);
 	PSX_TESTINT(19, cdvdReadInterrupt, 1);
 
 	// Profile-guided Optimization (sorta)

@@ -890,6 +890,8 @@ int cdvdReadSector() {
 __forceinline void cdvdReadInterrupt() {
 
 	//SysPrintf("cdvdReadInterrupt %x %x %x %x %x\n", cpuRegs.interrupt, cdvd.Readed, cdvd.Reading, cdvd.nSectors, (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) *4);
+	psxRegs.interrupt &= ~(1<<19);
+
 	cdvd.Ready   = 0x00;
 	if (cdvd.Readed == 0) {
 		cdvd.RetryCntP = 0;
@@ -932,7 +934,6 @@ __forceinline void cdvdReadInterrupt() {
 		HW_DMA3_CHCR &= ~0x01000000;
 		psxDmaInterrupt(3);
 		cdvd.Ready   = 0x4e;
-		psxRegs.interrupt&= ~(1 << 19);
 		return;
 	}
 
