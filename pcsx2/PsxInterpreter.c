@@ -27,7 +27,7 @@ static int branch = 0;
 static int branch2 = 0;
 static u32 branchPC;
 
-static void doBranch(tar);	// forward declared prototype
+static void doBranch(s32 tar);	// forward declared prototype
 
 // Subsets
 extern void (*psxBSC[64])();
@@ -736,7 +736,7 @@ static __forceinline void execI() {
 }
 
 
-static void doBranch(tar) {
+static void doBranch(s32 tar) {
 	branch2 = branch = 1;
 	branchPC = tar;
 	execI();

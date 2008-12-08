@@ -43,47 +43,76 @@ __inline void vuUpdateDI(VURegs * VU) {
 //	VU->statusflag|= (Flag_D | (VU0.VI[REG_STATUS_FLAG].US[0] >> 5)) << 11;
 }
 
-#define VU_MAC_UPDATE(name, shift) \
-u32 name(VURegs * VU, float f) { \
-	u32 v = *(u32*)&f; \
-	int exp = (v >> 23) & 0xff; \
-	u32 s = v & 0x80000000; \
-	\
-	if (s) VU->macflag |= 0x0010<<shift;  \
-	else VU->macflag &= ~(0x0010<<shift); \
-	\
-	if( f == 0 ) { \
-		VU->macflag = (VU->macflag & ~(0x1100<<shift)) | (0x0001<<shift); \
-		return v; \
-	} \
-	\
-	switch(exp) { \
-		case 0: \
-			VU->macflag = (VU->macflag&~(0x1000<<shift)) | (0x0101<<shift);  \
-			return s; \
-		case 255: \
-			VU->macflag = (VU->macflag&~(0x0100<<shift)) | (0x1000<<shift);  \
-			return s|0x7f7fffff; /* max allowed */ \
-		default: \
-			VU->macflag = (VU->macflag & ~(0x1101<<shift)); \
-			return v; \
-	} \
-} \
+__forceinline u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f)
+{
+	u32 v = *(u32*)&f; 
+	int exp = (v >> 23) & 0xff; 
+	u32 s = v & 0x80000000; 
+	
+	if (s) 
+		VU->macflag |= 0x0010<<shift;  
+	else 
+		VU->macflag &= ~(0x0010<<shift); 
+	
+	if( f == 0 ) 
+	{ 
+		VU->macflag = (VU->macflag & ~(0x1100<<shift)) | (0x0001<<shift); 
+		return v; 
+	} 
+	
+	switch(exp) 
+	{ 
+		case 0: 
+			VU->macflag = (VU->macflag&~(0x1000<<shift)) | (0x0101<<shift);  
+			return s; 
+		case 255: 
+			VU->macflag = (VU->macflag&~(0x0100<<shift)) | (0x1000<<shift);  
+			return s|0x7f7fffff; /* max allowed */ 
+		default: 
+			VU->macflag = (VU->macflag & ~(0x1101<<shift)); 
+			return v; 
+	} 
+} 
 
-VU_MAC_UPDATE(VU_MACx_UPDATE, 3);
-VU_MAC_UPDATE(VU_MACy_UPDATE, 2);
-VU_MAC_UPDATE(VU_MACz_UPDATE, 1);
-VU_MAC_UPDATE(VU_MACw_UPDATE, 0);
+__forceinline u32 VU_MACx_UPDATE(VURegs * VU, float x)
+{
+	return VU_MAC_UPDATE(3, VU, x);
+}
 
-#define VU_MAC_CLEAR(name, shift) \
-void name(VURegs * VU) { \
-	VU->macflag&= ~(0x1111<<shift); \
-} \
+__forceinline u32 VU_MACy_UPDATE(VURegs * VU, float y)
+{
+	return VU_MAC_UPDATE(2, VU, y);
+}
 
-VU_MAC_CLEAR(VU_MACx_CLEAR, 3);
-VU_MAC_CLEAR(VU_MACy_CLEAR, 2);
-VU_MAC_CLEAR(VU_MACz_CLEAR, 1);
-VU_MAC_CLEAR(VU_MACw_CLEAR, 0);
+__forceinline u32 VU_MACz_UPDATE(VURegs * VU, float z)
+{
+	return VU_MAC_UPDATE(1, VU, z);
+}
+
+__forceinline u32 VU_MACw_UPDATE(VURegs * VU, float w)
+{
+	return VU_MAC_UPDATE(0, VU, w);
+}
+
+__forceinline void VU_MACx_CLEAR(VURegs * VU)
+{
+	VU->macflag&= ~(0x1111<<3);
+}
+
+__forceinline void VU_MACy_CLEAR(VURegs * VU)
+{
+	VU->macflag&= ~(0x1111<<2);
+}
+
+__forceinline void VU_MACz_CLEAR(VURegs * VU)
+{
+	VU->macflag&= ~(0x1111<<1);
+}
+
+__forceinline void VU_MACw_CLEAR(VURegs * VU)
+{
+	VU->macflag&= ~(0x1111<<0);
+}
 
 void VU_STAT_UPDATE(VURegs * VU) {
 	int newflag = 0 ;

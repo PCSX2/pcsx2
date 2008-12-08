@@ -24,31 +24,16 @@
 #include "PsxCommon.h"
 #include "Mdec.h"
 
-#define FIXED
-
-#define CONST_BITS  8
-#define PASS1_BITS  2
-
-#define FIX_1_082392200  (277)
-#define FIX_1_414213562  (362)
-#define FIX_1_847759065  (473)
-#define FIX_2_613125930  (669)
-
-#define MULTIPLY(var,const)  (DESCALE((var) * (const), CONST_BITS))
-
-#define DEQUANTIZE(coef,quantval)  (coef)
-
-#define DESCALE(x,n)  ((x)>>(n))
-#define	RANGE(n)	(n)
-
-#define	DCTSIZE	8
-#define	DCTSIZE2	64
+int iq_y[DCTSIZE2],iq_uv[DCTSIZE2];
 
 static void idct1(int *block)
 {
-	int val = RANGE(DESCALE(block[0], PASS1_BITS+3));
-	int i;
-	for(i=0;i<DCTSIZE2;i++) block[i]=val;
+	int i, val;
+	
+	val = RANGE(DESCALE(block[0], PASS1_BITS+3));
+	
+	for(i=0;i<DCTSIZE2;i++) 
+		block[i]=val;
 }
 
 void idct(int *block,int k)
@@ -162,21 +147,6 @@ void idct(int *block,int k)
   }
 }
 
-unsigned short* rl2blk(int *blk,unsigned short *mdec_rl);
-void iqtab_init(int *iqtab,unsigned char *iq_y);
-void round_init(void);
-void yuv2rgb24(int *blk,unsigned char *image);
-void yuv2rgb15(int *blk,unsigned short *image);
-
-struct {
-	unsigned long command;
-	unsigned long status;
-	unsigned short *rl;
-	int rlsize;
-} mdec;
-
-int iq_y[DCTSIZE2],iq_uv[DCTSIZE2];
-
 void mdecInit(void) {
 	mdec.rl = (u16*)&psxM[0x100000];
 	mdec.command = 0;
@@ -209,13 +179,6 @@ u32 mdecRead0(void) {
 	return mdec.command;
 }
 
-// mdec status:
-#define MDEC_BUSY	0x20000000
-#define MDEC_DREQ	0x18000000
-#define MDEC_FIFO	0xc0000000
-#define MDEC_RGB24	0x02000000
-#define MDEC_STP	0x00800000
-
 u32 mdecRead1(void) {
 #ifdef CDR_LOG
 	CDR_LOG("mdec1 read %lx\n", mdec.status);
@@ -233,17 +196,13 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr) {
 
 	size = (bcr>>16)*(bcr&0xffff);
 
-	if (cmd==0x60000000) {
-	} else
 	if (cmd==0x40000001) {
 		u8 *p = (u8*)PSXM(adr);
 		iqtab_init(iq_y,p);
 		iqtab_init(iq_uv,p+64);
-	} else
-	if ((cmd&0xf5ff0000)==0x30000000) {
+	} 
+	else if ((cmd&0xf5ff0000)==0x30000000) {
 		mdec.rl = (u16*)PSXM(adr);
-	}
-	else {
 	}
 
 	HW_DMA0_CHCR &= ~0x01000000;
@@ -260,7 +219,7 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	if (chcr!=0x01000200) return;
 
 	size = (bcr>>16)*(bcr&0xffff);
-    image = (u16*)PSXM(adr);
+	image = (u16*)PSXM(adr);
 	if (mdec.command&0x08000000) {
 		for (;size>0;size-=(16*16)/2,image+=(16*16)) {
 			mdec.rl = rl2blk(blk,mdec.rl);
@@ -276,10 +235,6 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr) {
 	HW_DMA1_CHCR &= ~0x01000000;
 	psxDmaInterrupt(1);
 }
-
-
-#define	RUNOF(a)	((a)>>10)
-#define	VALOF(a)	(((int)(a)<<(32-10))>>(32-10))
 
 static int zscan[DCTSIZE2] = {
 	0 ,1 ,8 ,16,9 ,2 ,3 ,10,
@@ -305,8 +260,6 @@ static int aanscales[DCTSIZE2] = {
 
 void iqtab_init(int *iqtab,unsigned char *iq_y)
 {
-#define CONST_BITS14 14
-#define	IFAST_SCALE_BITS 2
 	int i;
 
 	for(i=0;i<DCTSIZE2;i++) {
@@ -314,7 +267,6 @@ void iqtab_init(int *iqtab,unsigned char *iq_y)
 	}
 }
 
-#define	NOP	0xfe00
 unsigned short* rl2blk(int *blk,unsigned short *mdec_rl) {
 	int i,k,q_scale,rl;
 	int *iqtab;
@@ -335,54 +287,12 @@ unsigned short* rl2blk(int *blk,unsigned short *mdec_rl) {
 			if (k > 63) break;
 			blk[zscan[k]] = (VALOF(rl) * iqtab[k] * q_scale) / 8; // / 16;
 		}
-//		blk[0] = (blk[0] * iq_t[0] * 8) / 16;
-//		for(int j=1;j<64;j++)
-//			blk[j] = blk[j] * iq_t[j] * q_scale;
-
-		// idct
+		
 		idct(blk,k+1);
-
 		blk+=DCTSIZE2;
 	}
 	return mdec_rl;
 }
-
-#ifdef FIXED
-#define	MULR(a)		((((int)0x0000059B) * (a)) >> 10)
-#define	MULG(a)		((((int)0xFFFFFEA1) * (a)) >> 10)
-#define	MULG2(a)	((((int)0xFFFFFD25) * (a)) >> 10)
-#define	MULB(a)		((((int)0x00000716) * (a)) >> 10)
-#else
-#define	MULR(a)		((int)((float)1.40200 * (a)))
-#define	MULG(a)		((int)((float)-0.3437 * (a)))
-#define	MULG2(a)	((int)((float)-0.7143 * (a)))
-#define	MULB(a)		((int)((float)1.77200 * (a)))
-#endif
-
-#define	MAKERGB15(r,g,b)	( (((r)>>3)<<10)|(((g)>>3)<<5)|((b)>>3) )
-#define	ROUND(c)	roundtbl[((c)+128+256)]//&0x3ff]
-/*#define ROUND(c)	round(c+128)
-int round(int r) {
-	if (r<0) return 0;
-	if (r>255) return 255;
-	return r;
-}*/
-
-#define RGB15(n, Y) \
-	image[n] = MAKERGB15(ROUND(Y + R),ROUND(Y + G),ROUND(Y + B));
-
-#define RGB15BW(n, Y) \
-	image[n] = MAKERGB15(ROUND(Y),ROUND(Y),ROUND(Y));
-
-#define RGB24(n, Y) \
-	image[n+2] = ROUND(Y + R); \
-	image[n+1] = ROUND(Y + G); \
-	image[n+0] = ROUND(Y + B);
-
-#define RGB24BW(n, Y) \
-	image[n+2] = ROUND(Y); \
-	image[n+1] = ROUND(Y); \
-	image[n+0] = ROUND(Y);
 
 unsigned char roundtbl[256*3];
 

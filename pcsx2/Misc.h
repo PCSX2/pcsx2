@@ -249,7 +249,7 @@ void * memcpy_amd_(void *dest, const void *src, size_t n);
 //#define memcpy_fast memcpy //Dont use normal memcpy, it has sse in 2k5!
 #else
 // for now disable linux fast memcpy
-#define memcpy_fast memcpy_pcsx2
+#define memcpy_fast memcpy
 #endif
 
 #endif
@@ -345,17 +345,24 @@ static __forceinline long InterlockedDecrement( long* Addend )
 	return InterlockedExchangeAdd( Addend, -1 );
 }
 
-#if 0 // These don't work, but are also never called.
 static __forceinline long InterlockedCompareExchange(volatile long *dest, long exch, long comp)
 {
 	long old;
 
+#ifdef __x86_64__
+	  __asm__ __volatile__ 
+	(
+		"lock; cmpxchgq %q2, %1"
+		: "=a" (old), "=m" (*dest)
+		: "r" (exch), "m" (*dest), "0" (comp)); 
+#else
 	__asm__ __volatile__
 	(
 		"lock; cmpxchgl %2, %0"
 		: "=m" (*dest), "=a" (old)
 		: "r" (exch), "m" (*dest), "a" (comp)
 	);
+#endif
 	
 	return(old);
 }
@@ -368,16 +375,23 @@ static __forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest
 	// that matches the size of the pointer type, so no need to ifdef it like the std non-compare
 	// exchange.
 
+#ifdef __x86_64__
+	__asm__ __volatile__
+	( 
+		"lock; cmpxchgq %q2, %1"
+		: "=a" (old), "=m" (*dest)
+		: "r" (exch), "m" (*dest), "0" (comp)
+	);
+#else
 	__asm__ __volatile__
 	(
 		"lock; cmpxchgl %2, %0"
 		: "=m" (*dest), "=a" (old)
 		: "r" (exch), "m" (*dest), "a" (comp)
 	);
-	
+#endif
 	return(old);
 }
-#endif
 #endif
 
 extern void InitCPUTicks();

@@ -25,6 +25,16 @@
 
 #include "VU.h"
 
+extern __forceinline u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f);
+extern __forceinline u32  VU_MACx_UPDATE(VURegs * VU, float x);
+extern __forceinline u32  VU_MACy_UPDATE(VURegs * VU, float y);
+extern __forceinline u32  VU_MACz_UPDATE(VURegs * VU, float z);
+extern __forceinline u32  VU_MACw_UPDATE(VURegs * VU, float w);
+extern __forceinline void VU_MACx_CLEAR(VURegs * VU);
+extern __forceinline void VU_MACy_CLEAR(VURegs * VU);
+extern __forceinline void VU_MACz_CLEAR(VURegs * VU);
+extern __forceinline void VU_MACw_CLEAR(VURegs * VU);
+
 #define float_to_int4(x)	(s32)((float)x * (1.0f / 0.0625f))
 #define float_to_int12(x)	(s32)((float)x * (1.0f / 0.000244140625f))
 #define float_to_int15(x)	(s32)((float)x * (1.0f / 0.000030517578125))

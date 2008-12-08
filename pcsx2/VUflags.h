@@ -22,14 +22,15 @@
 #include "VU.h"
 
 void vuUpdateDI(VURegs * VU);
-u32  VU_MACx_UPDATE(VURegs * VU, float x);
-u32  VU_MACy_UPDATE(VURegs * VU, float y);
-u32  VU_MACz_UPDATE(VURegs * VU, float z);
-u32  VU_MACw_UPDATE(VURegs * VU, float w);
-void VU_MACx_CLEAR(VURegs * VU);
-void VU_MACy_CLEAR(VURegs * VU);
-void VU_MACz_CLEAR(VURegs * VU);
-void VU_MACw_CLEAR(VURegs * VU);
+__forceinline u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f);
+__forceinline u32  VU_MACx_UPDATE(VURegs * VU, float x);
+__forceinline u32  VU_MACy_UPDATE(VURegs * VU, float y);
+__forceinline u32  VU_MACz_UPDATE(VURegs * VU, float z);
+__forceinline u32  VU_MACw_UPDATE(VURegs * VU, float w);
+__forceinline void VU_MACx_CLEAR(VURegs * VU);
+__forceinline void VU_MACy_CLEAR(VURegs * VU);
+__forceinline void VU_MACz_CLEAR(VURegs * VU);
+__forceinline void VU_MACw_CLEAR(VURegs * VU);
 void VU_STAT_UPDATE(VURegs * VU);
 
 

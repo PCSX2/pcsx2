@@ -129,7 +129,7 @@ void QMTC2() {
 	}
 	if (_Fs_ == 0) return;
 	VU0.VF[_Fs_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0];
-    VU0.VF[_Fs_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
+	VU0.VF[_Fs_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
 }
 
 void CFC2() { 
@@ -175,9 +175,7 @@ void CTC2() {
 		case REG_CMSAR1: // REG_CMSAR1
 			if (!(VU0.VI[REG_VPU_STAT].UL & 0x100) ) {
 				VU1.VI[REG_TPC].UL = cpuRegs.GPR.r[_Rt_].US[0];
-				//FreezeXMMRegs(1);
 				vu1ExecMicro(VU1.VI[REG_TPC].UL);	// Execute VU1 Micro SubRoutine
-				//FreezeXMMRegs(0);
 			}
 			break;
 		default:
@@ -189,8 +187,17 @@ void CTC2() {
 //---------------------------------------------------------------------------------------
 
 
-#define SYNCMSFLAGS() VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag; VU0.VI[REG_MAC_FLAG].UL = VU0.macflag;
-#define SYNCFDIV() VU0.VI[REG_Q].UL = VU0.q.UL; VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag;
+__forceinline void SYNCMSFLAGS() 
+{
+	VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag; 
+	VU0.VI[REG_MAC_FLAG].UL = VU0.macflag;
+}
+
+__forceinline void SYNCFDIV() 
+{
+	VU0.VI[REG_Q].UL = VU0.q.UL; 
+	VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag;
+}
 
 void VABS()  { VU0.code = cpuRegs.code; _vuABS(&VU0); }
 void VADD()  { VU0.code = cpuRegs.code; _vuADD(&VU0); SYNCMSFLAGS(); }
@@ -331,25 +338,49 @@ void VFCSET()  { VU0.code = cpuRegs.code; _vuFCSET(&VU0); }
 void VFCGET()  { VU0.code = cpuRegs.code; _vuFCGET(&VU0); }
 void VXITOP()  { VU0.code = cpuRegs.code; _vuXITOP(&VU0); }
 
-#define CP2COND (/*(VU0.VI[REG_VPU_STAT].US[0] & 1) | */((VU0.VI[REG_VPU_STAT].US[0] >> 8) & 1))
+#define CP2COND (((VU0.VI[REG_VPU_STAT].US[0] >> 8) & 1))
 
-#define BC2(cond) \
-	if (CP2COND cond) { \
-		SysPrintf("VU0 Macro Branch \n"); \
-		intDoBranch(_BranchTarget_); \
+void BC2F()
+{ 
+	if (CP2COND == 0) 
+	{ 
+		SysPrintf("VU0 Macro Branch \n"); 
+		intDoBranch(_BranchTarget_); 
 	}
+}
+void BC2T() 
+{ 
+	if (CP2COND == 1) 
+	{ 
+		SysPrintf("VU0 Macro Branch \n"); 
+		intDoBranch(_BranchTarget_); 
+	}
+}
 
-void BC2F() { BC2(== 0);}
-void BC2T() { BC2(== 1);}
-
-#define BC2L(cond) \
-	if (CP2COND cond) { \
-		SysPrintf("VU0 Macro Branch \n"); \
-		intDoBranch(_BranchTarget_); \
-	} else cpuRegs.pc+= 4;
-
-void BC2FL() { BC2L(== 0);}
-void BC2TL() { BC2L(== 1);}
+void BC2FL()
+{ 
+	if (CP2COND == 0) 
+	{ 
+		SysPrintf("VU0 Macro Branch \n"); 
+		intDoBranch(_BranchTarget_); 
+	}
+	else 
+	{
+		cpuRegs.pc+= 4;
+	}
+}
+void BC2TL() 
+{ 
+	if (CP2COND == 1) 
+	{ 
+		SysPrintf("VU0 Macro Branch \n"); 
+		intDoBranch(_BranchTarget_); 
+	}
+	else 
+	{
+		cpuRegs.pc+= 4;
+	}
+}
 
 void vu0Finish()
 {
@@ -373,29 +404,11 @@ void vu0Finish()
 }
 
 void VCALLMS() {
-	//FreezeXMMRegs(1);
-	
 	vu0Finish();
 	vu0ExecMicro(((cpuRegs.code >> 6) & 0x7FFF) * 8);
-	//FreezeXMMRegs(0);
 }     
 
 void VCALLMSR() {
-	//FreezeXMMRegs(1);
 	vu0Finish();
 	vu0ExecMicro(VU0.VI[REG_CMSAR0].US[0] * 8);
-	//FreezeXMMRegs(0);
 }  
-
-#ifndef _MSC_VER
-
-/*u32* GET_VU_MEM(VURegs* VU, u32 addr)
-{
-	if( VU == g_pVU1 ) return (u32*)(VU1.Mem+(addr&0x3fff));
-	
-	if( addr >= 0x4200 ) return &VU1.VI[(addr>>2)&0x1f].UL;
-	
-	return (u32*)(VU0.Mem+(addr&0x0fff));	
-}*/
-
-#endif

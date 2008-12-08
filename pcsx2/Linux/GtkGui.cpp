@@ -17,6 +17,7 @@
  */
 
 #include "GtkGui.h"
+
 void On_Dialog_Cancelled(GtkButton* button, gpointer user_data) {
 	gtk_widget_destroy((GtkWidget*)gtk_widget_get_toplevel ((GtkWidget*)button));
 	gtk_widget_set_sensitive(MainWindow, TRUE);
@@ -95,6 +96,7 @@ void OnDestroy(GtkObject *object, gpointer user_data) {}
 gboolean OnDelete(GtkWidget       *widget, GdkEvent *event, gpointer user_data)
 {
 	 pcsx2_exit();
+	return (FALSE);
 }
 int Pcsx2Configure() {
 	if (!UseGui) return 0;
