@@ -256,7 +256,7 @@ void AssignVolume(V_Volume& vol, s16 value)
 
 void CoreReset(int c)
 {
-#define DEFAULT_VOICE_VOLUME 0x3FFE
+#define DEFAULT_VOICE_VOLUME 0x3FFF
 	int v=0;
  
 	ConLog(" * SPU2: Initializing core %d structures... ",c);
@@ -265,16 +265,16 @@ void CoreReset(int c)
  
 	Cores[c].Regs.STATX=0;
 	Cores[c].Regs.ATTR=0;
-	Cores[c].ExtL=0x7FFF;
-	Cores[c].ExtR=0x7FFF;
-	Cores[c].InpL=0x7FFF;
-	Cores[c].InpR=0x7FFF;
-	Cores[c].FxL=0x6FFE;
-	Cores[c].FxR=0x6FFE;
-	Cores[c].MasterL.Reg_VOL=0x3FFE;
-	Cores[c].MasterL.Value=0x7FFD;
-	Cores[c].MasterR.Reg_VOL=0x3FFE;
-	Cores[c].MasterR.Value=0x7FFD;
+	Cores[c].ExtL=0x3FFF;
+	Cores[c].ExtR=0x3FFF;
+	Cores[c].InpL=0x3FFF;
+	Cores[c].InpR=0x3FFF;
+	Cores[c].FxL=0x7FFF;
+	Cores[c].FxR=0x7FFF;
+	Cores[c].MasterL.Reg_VOL=0x3FFF;
+	Cores[c].MasterL.Value=0x7FFF;
+	Cores[c].MasterR.Reg_VOL=0x3FFF;
+	Cores[c].MasterR.Value=0x7FFF;
 	Cores[c].ExtWetR=1;
 	Cores[c].ExtWetL=1;
 	Cores[c].ExtDryR=1;
