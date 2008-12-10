@@ -925,8 +925,6 @@ void recCVT_S_xmm(int info)
 
 FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED|XMMINFO_READS);
 
-static u32 s_signbit = 0x80000000;
-
 void recCVT_W() 
 {
 	int regs;
@@ -934,48 +932,28 @@ void recCVT_W()
 	regs	= _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
 	if( regs >= 0 ) 
-	{
-		int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-		_freeXMMreg(t0reg);
-		
-		SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&s_signbit);
+	{		
 		SSE_CVTTSS2SI_XMM_to_R32(EAX, regs);
-		SSE_MOVSS_XMM_to_M32((uptr)&fpuRegs.fpr[ _Fs_ ], regs);
+		SSE_MOVMSKPS_XMM_to_R32(EDX,regs);	//extract the signs
+		AND32ItoR(EDX,1);					//keep only LSB
 	}
 	else 
 	{
 		SSE_CVTTSS2SI_M32_to_R32(EAX, (uptr)&fpuRegs.fpr[ _Fs_ ]);
+		MOV32MtoR(EDX, (uptr)&fpuRegs.fpr[ _Fs_ ]);	
+		SHR32ItoR(EDX,31);	//mov sign to lsb
 	}
-	
+
+	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
 	_deleteFPtoXMMreg(_Fd_, 2);
 
-	MOV32MtoR(ECX, (uptr)&fpuRegs.fpr[ _Fs_ ]);
-	AND32ItoR(ECX, 0x7f800000);
-	CMP32ItoR(ECX, 0x4E800000);
-	j8Ptr[0] = JLE8(0);
+	ADD32ItoR(EDX,0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
 
-	// need to detect if reg is positive
-	/*if( regs >= 0 ) {
-		SSE_UCOMISS_XMM_to_XMM(regs, t0reg);
-		j8Ptr[2] = JB8(0);
-	}
-	else {*/
-	TEST32ItoM((uptr)&fpuRegs.fpr[ _Fs_ ], 0x80000000);
-	j8Ptr[2] = JNZ8(0);
-	//}
+	CMP32ItoR(EAX,0x80000000);	//If the result is indefinitive 
+	CMOVE32RtoR(EAX,EDX);		//Saturate it
 
-	MOV32ItoM((uptr)&fpuRegs.fpr[_Fd_], 0x7fffffff);
-	j8Ptr[1] = JMP8(0);
-
-	x86SetJ8( j8Ptr[2] );
-	MOV32ItoM((uptr)&fpuRegs.fpr[_Fd_], 0x80000000);
-	j8Ptr[1] = JMP8(0);
-
-	x86SetJ8( j8Ptr[0] );
-		
+	//Write the result
 	MOV32RtoM((uptr)&fpuRegs.fpr[_Fd_], EAX);
-
-	x86SetJ8( j8Ptr[1] );
 }
 //------------------------------------------------------------------
 

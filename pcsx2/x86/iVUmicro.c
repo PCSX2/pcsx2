@@ -3538,17 +3538,59 @@ void recVUMI_NOP( VURegs *VU, int info )
 {
 }
 
+static const PCSX2_ALIGNED16(int rec_const_0x8000000[4]) = { 0x80000000, 0x80000000, 0x80000000, 0x80000000 };
+
+//Saturates for FTOI
+//NOT Tested yet, it needs 2 temp regs and i have no idea how to use pcsx2's sse reg alloc functions :p
+//rec_s can be the same as rec_tmp1
+void recVUMI_FTOI_Saturate(int rec_s,int rec_t,int rec_tmp1,int rec_tmp2)
+{
+	assert(rec_s!=rec_t);
+	assert(rec_tmp1!=rec_t);
+	assert(rec_tmp2!=rec_t);
+	assert(rec_tmp1!=rec_tmp2);
+
+	//Duplicate the xor'd sign bit to the whole value
+	//FFFF FFFF for positive,  0 for negative
+	if (rec_tmp1!=rec_s)
+		SSE_MOVAPS_M128_to_XMM(rec_tmp1,rec_s);
+	SSE2_PXOR_M128_to_XMM(rec_tmp1,(uptr)&const_clip[4]);
+	SSE2_PSRAW_I8_to_XMM(rec_tmp1,31);
+
+	//Create mask: 0 where !=8000 0000
+	SSE_MOVAPS_M128_to_XMM(rec_tmp2,(uptr)&const_clip[4]);
+	SSE2_PCMPEQD_M128_to_XMM(rec_tmp2,rec_t);
+
+	//AND the mask w/ the edit values
+	SSE_ANDPS_M128_to_XMM(rec_tmp1,rec_tmp2);
+
+	//if v==8000 0000 && positive -> 8000 0000 + FFFF FFFF -> 7FFF FFFF
+	//if v==8000 0000 && negative -> 8000 0000 + 0 -> 8000 0000
+	//if v!=8000 0000 -> v+0 (masked from the and)
+
+	//Add the values as needed
+	SSE2_PADDD_XMM_to_XMM(rec_t,rec_tmp1);
+}
+
+static const PCSX2_ALIGNED16(float rec_float_max_values[4]) = { 0x7FFFFF80, 0x7FFFFF80, 0x7FFFFF80, 0x7FFFFF80 };
+
 void recVUMI_FTOI0(VURegs *VU, int info)
 {	
 	if ( _Ft_ == 0 ) return; 
 
 	if (_X_Y_Z_W != 0xf) {
-		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP,EEREC_S);
+		SSE_MINPS_M128_to_XMM(EEREC_TEMP,(uptr)&rec_float_max_values[0]);		//this is partialy wrong, will return 0x7FFFFF80 instead of 0x7FFFFFFF on saturate
+		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
-		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_S);
-	}	
+		if (EEREC_T != EEREC_S) 
+			SSE_MOVAPS_XMM_to_XMM(EEREC_T,EEREC_S);
+
+		SSE_MINPS_M128_to_XMM(EEREC_T,(uptr)&rec_float_max_values[0]);		//this is partialy wrong, will return 0x7FFFFF80 instead of 0x7FFFFFFF on saturate
+		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T); 
+	}
 }
 
 void recVUMI_FTOIX(VURegs *VU, int addr, int info)
@@ -3558,6 +3600,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 	if (_X_Y_Z_W != 0xf) {
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
+		SSE_MINPS_M128_to_XMM(EEREC_TEMP,(uptr)&rec_float_max_values[0]);		//this is partialy wrong, will return 0x7FFFFF80 instead of 0x7FFFFFFF on saturate
 		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
@@ -3565,6 +3608,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 	else {
 		if (EEREC_T != EEREC_S) SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
+		SSE_MINPS_M128_to_XMM(EEREC_T,(uptr)&rec_float_max_values[0]);		//this is partialy wrong, will return 0x7FFFFF80 instead of 0x7FFFFFFF on saturate
 		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
 	}
 }
