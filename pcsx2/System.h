@@ -20,7 +20,7 @@
 #define __SYSTEM_H__
 
 int  SysInit();							// Init mem and plugins
-void SysReset();						// Resets mem
+int  SysReset();						// Resets mem
 void SysPrintf(const char *fmt, ...);			// Printf used by bios syscalls
 void SysMessage(const char *fmt, ...);		// Message used to print msg to users
 void SysUpdate();						// Called on VBlank (to update i.e. pads)

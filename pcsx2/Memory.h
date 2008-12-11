@@ -163,7 +163,7 @@ extern uptr *memLUTWU;
 #define PSMu64(mem)	(*(u64*)PSM(mem))
 
 int  memInit();
-void memReset();
+int  memReset();		// returns FALSE on error
 void memSetKernelMode();
 void memSetSupervisorMode();
 void memSetUserMode();

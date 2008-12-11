@@ -2980,7 +2980,7 @@ void loadBiosRom(char *ext, u8 *dest) {
 	SysPrintf("**************\n\n\n");
 }
 
-void memReset() {
+int memReset() {
 	struct stat buf;
 	char Bios[g_MaxPath];
 	FILE *fp;
@@ -2998,7 +2998,7 @@ void memReset() {
 
 	if (stat(Bios, &buf) == -1) {	
 		SysMessage(_("Unable to load bios: '%s', PCSX2 can't run without that"), Bios);
-		return;
+		return 0;
 	}
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -3048,6 +3048,7 @@ void memReset() {
 #endif
 
 #endif
+	return 1;
 }
 
 void memSetKernelMode() {

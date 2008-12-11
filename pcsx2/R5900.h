@@ -225,7 +225,7 @@ extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 #endif
 
 int  cpuInit();
-void cpuReset();
+int  cpuReset();
 void cpuShutdown();
 void cpuException(u32 code, u32 bd);
 void cpuTlbMissR(u32 addr, u32 bd);

@@ -111,11 +111,11 @@ int cpuInit()
 	return ret;
 }
 
-void cpuReset()
+int cpuReset()
 {
 	Cpu->Reset();
 
-	memReset();
+	if( !memReset() ) return 0;
 
 	memset(&cpuRegs, 0, sizeof(cpuRegs));
 	memset(&fpuRegs, 0, sizeof(fpuRegs));
@@ -139,6 +139,8 @@ void cpuReset()
     vif1Reset();
 	rcntInit();
 	psxReset();
+
+	return 1;
 }
 
 void cpuShutdown()

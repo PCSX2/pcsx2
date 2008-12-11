@@ -42,7 +42,7 @@
 
 // --->> Path Utilities [PathUtil.c]
 
-#define g_MaxPath 512
+#define g_MaxPath 255			// 255 is safer with antiquitated Win32 ASCII APIs.
 extern int g_Error_PathTooLong;
 
 int isPathRooted( const char* path );

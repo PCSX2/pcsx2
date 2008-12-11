@@ -118,7 +118,7 @@ void RunExecute(int run) {
     nDisableSC = 1;
 
 	if (needReset == 1) {
-		SysReset();
+		if( !SysReset() ) return;
 	}
 
     if( UseGui )
@@ -1034,9 +1034,24 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			if (Config.sseMXCSR & 0x8000)	CheckDlgButton(hDlg, IDC_EE_CHECK1, TRUE);
 			if (Config.sseVUMXCSR & 0x8000) CheckDlgButton(hDlg, IDC_VU_CHECK1, TRUE);
 
-			if (Config.sseMXCSR & 0x0040)	CheckDlgButton(hDlg, IDC_EE_CHECK2, TRUE);
-			if (Config.sseVUMXCSR & 0x0040) CheckDlgButton(hDlg, IDC_VU_CHECK2, TRUE);
-            
+			if( !cpucaps.hasStreamingSIMD2Extensions )
+			{
+				// SSE1 cpus do not support Denormals Are Zero flag.
+
+				Config.sseMXCSR &= ~0x0040;
+				Config.sseVUMXCSR &= ~0x0040;
+
+				EnableWindow( GetDlgItem( hDlg, IDC_EE_CHECK2 ), FALSE );
+				EnableWindow( GetDlgItem( hDlg, IDC_VU_CHECK2 ), FALSE );
+				CheckDlgButton( hDlg, IDC_EE_CHECK2, FALSE );
+				CheckDlgButton( hDlg, IDC_VU_CHECK2, FALSE );
+			}
+			else
+			{
+				if (Config.sseMXCSR & 0x0040)	CheckDlgButton(hDlg, IDC_EE_CHECK2, TRUE);
+				if (Config.sseVUMXCSR & 0x0040) CheckDlgButton(hDlg, IDC_VU_CHECK2, TRUE);
+			}
+
 			return TRUE;
 
         case WM_COMMAND:
@@ -1078,6 +1093,14 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 					Config.sseMXCSR = DEFAULT_sseMXCSR;
 					Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+
+					if( !cpucaps.hasStreamingSIMD2Extensions )
+					{
+						// SSE1 cpus do not support Denormals Are Zero flag.
+
+						Config.sseMXCSR &= ~0x0040;
+						Config.sseVUMXCSR &= ~0x0040;
+					}
 
 					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ( (Config.sseMXCSR & 0x6000) >> 13));
 					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( (Config.sseVUMXCSR & 0x6000) >> 13));
@@ -1774,11 +1797,12 @@ int SysInit() {
 	return 0;
 }
 
-void SysReset() {
-	if (sinit == 0) return;
+int SysReset() {
+	if (sinit == 0) return 1;
 	StatusSet(_("Resetting..."));
-	cpuReset();
+	if( !cpuReset() ) return 0;
 	StatusSet(_("Ready"));
+	return 1;
 }
 
 
