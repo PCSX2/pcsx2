@@ -124,13 +124,16 @@ void SignalExit(int sig) {
 
 void RunExecute(int run)
 {
-	if (needReset == TRUE) SysReset();
+	if (needReset == TRUE) 
+		if (!SysReset()) 
+			return;
 
 	gtk_widget_destroy(MainWindow);
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
 
-	if (OpenPlugins(NULL) == -1) {
+	if (OpenPlugins(NULL) == -1) 
+	{
 		RunGui(); 
 		return;
 	}
@@ -139,12 +142,10 @@ void RunExecute(int run)
 	signal(SIGPIPE, SignalExit);
 	
 	FixCPUState();
-	if (needReset == TRUE) { 
-		
-		if( RunExe == 0 )
-			cpuExecuteBios();
-		if(!efile)
-			efile=GetPS2ElfName(elfname);
+	if (needReset == TRUE) 
+	{ 
+		if ( RunExe == 0 ) cpuExecuteBios();
+		if (!efile) efile=GetPS2ElfName(elfname);
 		loadElfFile(elfname);
 
 		RunExe = 0;
@@ -768,6 +769,14 @@ void setAdvancedOptions()
 	LinuxsseMXCSR = Config.sseMXCSR;
 	LinuxsseVUMXCSR = Config.sseVUMXCSR;
 	
+	if( !cpucaps.hasStreamingSIMD2Extensions )
+	{
+		// SSE1 cpus do not support Denormals Are Zero flag.
+
+		LinuxsseMXCSR &= ~FLAG_DENORMAL_ZERO;
+		LinuxsseVUMXCSR &= ~FLAG_DENORMAL_ZERO;
+	}
+			
 	switch((Config.sseMXCSR & 0x6000) >> 13)
 	{
 		case 0:

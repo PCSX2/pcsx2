@@ -31,6 +31,8 @@ TESTRUNARGS g_TestRun;
 
 GtkWidget *MsgDlg;
 
+static int sinit=0;
+
 int main(int argc, char *argv[]) {
 	char *file = NULL;
 	char elfname[g_MaxPath];
@@ -380,7 +382,10 @@ void SysMessage(const char *fmt, ...) {
 	gtk_main();
 }
 
-int SysInit() {
+int SysInit() 
+{
+	sinit=0;
+	
 	mkdir(SSTATES_DIR, 0755);
 	mkdir(MEMCARDS_DIR, 0755);
 
@@ -406,21 +411,28 @@ int SysInit() {
 			exit(1);
 	}
 
+	sinit = 1;
 	return 0;
 }
 
-void SysReset() {
-	cpuReset();
+int SysReset() {
+	if (sinit == 0) return 1;
+	// Resetting
+	if( !cpuReset() ) return 0;
+	return 1;
 }
 
 void SysClose() {
+	if (sinit == 0) return;
 	cpuShutdown();
 	ReleasePlugins();
 
-	if (emuLog != NULL) {
+	if (emuLog != NULL) 
+	{
         fclose(emuLog);
         emuLog = NULL;
-    }
+	}
+	sinit=0;
 }
 
 void SysPrintf(const char *fmt, ...) {

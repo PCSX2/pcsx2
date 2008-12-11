@@ -743,7 +743,7 @@ static bool _gsGIFSoftReset( int mask )
 
 	if( GSgifSoftReset == NULL )
 	{
-		SysPrintf( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!" );
+		SysPrintf( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!\n" );
 		return false;
 	}
 
