@@ -3676,23 +3676,105 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 
 void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 {
+	int t1reg, t2reg; // Temp XMM regs
+
 	if ( _Ft_ == 0 ) return; 
+
+	//SysPrintf("recVUMI_FTOIX()\n");
 
 	if (_X_Y_Z_W != 0xf) {
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
-		//SSE_MINPS_M128_to_XMM(EEREC_TEMP,(uptr)&rec_float_max_values[0]);		//this is partialy wrong, will return 0x7FFFFF80 instead of 0x7FFFFFFF on saturate
 		vuFloat( info, EEREC_TEMP, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
 		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+
+		t1reg = _vuGetTempXMMreg(info);
+
+		if( t1reg >= 0 ) { // If theres a temp XMM reg available
+			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) ); t2reg++)
+				; // Find unused reg (For second temp reg)
+			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
+			
+			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
+			
+			SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp1); // Restore XMM reg
+			_freeXMMreg(t1reg); // Free temp reg
+		}
+		else { // No temp reg available
+			for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
+				; // Find unused reg (For first temp reg)
+			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+
+			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
+				; // Find unused reg (For second temp reg)
+			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp2, t2reg); // Backup t2reg XMM reg
+			
+			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
+			
+			SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
+			SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp2); // Restore t2reg XMM reg
+		}
 
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
-		if (EEREC_T != EEREC_S) SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
-		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
-		//SSE_MINPS_M128_to_XMM(EEREC_T,(uptr)&rec_float_max_values[0]);		//this is partialy wrong, will return 0x7FFFFF80 instead of 0x7FFFFFFF on saturate
-		vuFloat( info, EEREC_T, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
-		SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
+		if (EEREC_T != EEREC_S) {
+			SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
+			SSE_MULPS_M128_to_XMM(EEREC_T, addr);
+			vuFloat( info, EEREC_T, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
+			SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_T, EEREC_T);
+
+			t1reg = _vuGetTempXMMreg(info);
+
+			if( t1reg >= 0 ) { // If theres a temp XMM reg available
+				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
+				_freeXMMreg(t1reg); // Free temp reg
+			}
+			else { // No temp reg available
+				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
+					; // Find unused reg
+				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+
+				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
+
+				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
+			}
+		}
+		else {
+			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
+			vuFloat( info, EEREC_TEMP, 0xf ); // Clamp Infs and NaNs to pos/neg fmax (NaNs always to positive fmax)
+			SSE2_CVTTPS2DQ_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+			
+			t1reg = _vuGetTempXMMreg(info);
+
+			if( t1reg >= 0 ) { // If theres a temp XMM reg available
+				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) ); t2reg++)
+					; // Find unused reg (For second temp reg)
+				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
+				
+				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
+				
+				SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp1); // Restore XMM reg
+				_freeXMMreg(t1reg); // Free temp reg
+			}
+			else { // No temp reg available
+				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
+					; // Find unused reg (For first temp reg)
+				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
+
+				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
+					; // Find unused reg (For second temp reg)
+				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp2, t2reg); // Backup t2reg XMM reg
+				
+				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
+				
+				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
+				SSE_MOVAPS_M128_to_XMM(t2reg, (uptr)FTIO_Temp2); // Restore t2reg XMM reg
+			}
+
+			SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_TEMP);
+		}
 	}
 }
 
