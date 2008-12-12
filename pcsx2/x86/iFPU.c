@@ -749,15 +749,32 @@ void recBC1TL( void ) {
 void recC_EQ_xmm(int info)
 {
 	int tempReg;
+	int t0reg;
+
+	//SysPrintf("recC_EQ_xmm()\n");
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S: 
 			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
-			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
+			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			if (t0reg >= 0) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				SSE_UCOMISS_XMM_to_XMM(EEREC_S, t0reg); 
+				_freeXMMreg(t0reg);
+			}
+			else SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
 			break;
 		case PROCESS_EE_T: 
 			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
-			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]); 
+			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			if (t0reg >= 0) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				SSE_UCOMISS_XMM_to_XMM(t0reg, EEREC_T); 
+				_freeXMMreg(t0reg);
+			}
+			else SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T): 
 			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
@@ -801,32 +818,53 @@ void recC_F()
 
 void recC_LE_xmm(int info )
 {
-	int tempReg;
+	int tempReg; //tempX86reg
+	int t0reg; //tempXMMreg
+
+	//SysPrintf("recC_LE_xmm()\n");
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S: 
 			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
-			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
+			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			if (t0reg >= 0) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				SSE_UCOMISS_XMM_to_XMM(EEREC_S, t0reg); 
+				_freeXMMreg(t0reg);
+			}
+			else SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
 			break;
 		case PROCESS_EE_T: 
 			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
-			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
-			j8Ptr[0] = JAE8(0);
-				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
-				j8Ptr[1] = JMP8(0);
-			x86SetJ8(j8Ptr[0]);
-				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
-			x86SetJ8(j8Ptr[1]);
-			return;
+			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			if (t0reg >= 0) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				SSE_UCOMISS_XMM_to_XMM(t0reg, EEREC_T); 
+				_freeXMMreg(t0reg);
+			}
+			else {
+				SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
+
+				j8Ptr[0] = JAE8(0);
+					AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+					j8Ptr[1] = JMP8(0);
+				x86SetJ8(j8Ptr[0]);
+					OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+				x86SetJ8(j8Ptr[1]);
+				return;
+			}
+			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
 			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
 			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
 			break;
-		default:
+		default: // Untested and incorrect, but this case is never reached AFAIK (cottonvibes)
 			SysPrintf("recC_LE_xmm: Default\n");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+			if (tempReg < 0) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
 			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
 			CMP32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Ft_]); 
 			
@@ -837,7 +875,7 @@ void recC_LE_xmm(int info )
 				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
 			x86SetJ8(j8Ptr[1]);
 
-			_freeX86reg(tempReg);
+			if (tempReg >= 0) _freeX86reg(tempReg);
 			return;
 	}
 
@@ -855,22 +893,43 @@ FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS|XMMINFO_READT);
 void recC_LT_xmm(int info)
 {
 	int tempReg;
+	int t0reg;
 
+	//SysPrintf("recC_LT_xmm()\n");
+	
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
-			SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
+			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			if (t0reg >= 0) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				SSE_UCOMISS_XMM_to_XMM(EEREC_S, t0reg); 
+				_freeXMMreg(t0reg);
+			}
+			else SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]);
 			break;
 		case PROCESS_EE_T:
 			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
-			SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
-			j8Ptr[0] = JA8(0);
-				AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
-				j8Ptr[1] = JMP8(0);
-			x86SetJ8(j8Ptr[0]);
-				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
-			x86SetJ8(j8Ptr[1]);
-			return;
+			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			if (t0reg >= 0) {
+				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]); 
+				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				SSE_UCOMISS_XMM_to_XMM(t0reg, EEREC_T); 
+				_freeXMMreg(t0reg);
+			}
+			else {
+				SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
+				
+				j8Ptr[0] = JA8(0);
+					AND32ItoM( (uptr)&fpuRegs.fprc[31], ~FPUflagC );
+					j8Ptr[1] = JMP8(0);
+				x86SetJ8(j8Ptr[0]);
+					OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
+				x86SetJ8(j8Ptr[1]);
+				return;
+			}
+			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
 			// Makes NaNs and +Infinity be +maximum; -Infinity stays 
 			// the same, but this is okay for a Compare operation.
