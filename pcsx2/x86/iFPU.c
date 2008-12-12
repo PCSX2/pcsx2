@@ -784,7 +784,7 @@ void recC_EQ_xmm(int info)
 		default: 
 			SysPrintf("recC_EQ_xmm: Default\n");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+			if (tempReg <= 0) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
 			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
 			CMP32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Ft_]); 
 
@@ -795,7 +795,7 @@ void recC_EQ_xmm(int info)
 				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
 			x86SetJ8(j8Ptr[1]);
 
-			_freeX86reg(tempReg);
+			if (tempReg >= 0) _freeX86reg(tempReg);
 			return;
 	}
 
@@ -941,7 +941,7 @@ void recC_LT_xmm(int info)
 		default:
 			SysPrintf("recC_LT_xmm: Default\n");
 			tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-			if (tempReg == -1) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
+			if (tempReg <= 0) {SysPrintf("FPU: DIV Allocation Error!\n"); tempReg = EAX;}
 			MOV32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Fs_]);
 			CMP32MtoR(tempReg, (uptr)&fpuRegs.fpr[_Ft_]); 
 			
@@ -952,7 +952,7 @@ void recC_LT_xmm(int info)
 				OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagC);
 			x86SetJ8(j8Ptr[1]);
 
-			_freeX86reg(tempReg);
+			if (tempReg >= 0) _freeX86reg(tempReg);
 			return;
 	}
 
