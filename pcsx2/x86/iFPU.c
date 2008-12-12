@@ -992,24 +992,25 @@ void recCVT_W()
 
 	if( regs >= 0 ) 
 	{		
+		if (CHECK_FPU_EXTRA_OVERFLOW) ClampValues(regs);
 		SSE_CVTTSS2SI_XMM_to_R32(EAX, regs);
-		SSE_MOVMSKPS_XMM_to_R32(EDX,regs);	//extract the signs
+		SSE_MOVMSKPS_XMM_to_R32(EDX, regs);	//extract the signs
 		AND32ItoR(EDX,1);					//keep only LSB
 	}
 	else 
 	{
 		SSE_CVTTSS2SI_M32_to_R32(EAX, (uptr)&fpuRegs.fpr[ _Fs_ ]);
 		MOV32MtoR(EDX, (uptr)&fpuRegs.fpr[ _Fs_ ]);	
-		SHR32ItoR(EDX,31);	//mov sign to lsb
+		SHR32ItoR(EDX, 31);	//mov sign to lsb
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
 	_deleteFPtoXMMreg(_Fd_, 2);
 
-	ADD32ItoR(EDX,0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
+	ADD32ItoR(EDX, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
 
-	CMP32ItoR(EAX,0x80000000);	//If the result is indefinitive 
-	CMOVE32RtoR(EAX,EDX);		//Saturate it
+	CMP32ItoR(EAX, 0x80000000);	//If the result is indefinitive 
+	CMOVE32RtoR(EAX, EDX);		//Saturate it
 
 	//Write the result
 	MOV32RtoM((uptr)&fpuRegs.fpr[_Fd_], EAX);
