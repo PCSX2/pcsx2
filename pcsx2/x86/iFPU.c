@@ -84,6 +84,10 @@ static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xf
 static u32 fpucw = 0x007f;
 static u32 fpucws = 0;
 
+static u32 chop	   = 0x0000FFC0;
+static u32 nearest = 0x00009FC0; //might use the global one later
+
+
 void recCOP1_BC1()
 {
 	recCP1BC1[_Rt_]();
@@ -641,7 +645,9 @@ int recCommutativeOp(int info, int regd, int op)
 void recADD_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
+	SSE_LDMXCSR ((uptr)&chop);
     ClampValues2(recCommutativeOp(info, EEREC_D, 0));
+	SSE_LDMXCSR ((uptr)&nearest);
 	//REC_FPUOP(ADD_S);
 }
 
@@ -1513,7 +1519,9 @@ FPURECOMPILE_CONSTCODE(MSUBA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|X
 void recMUL_S_xmm(int info)
 {			
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_D, 1)); 
+	SSE_LDMXCSR ((uptr)&chop);
+    ClampValues(recCommutativeOp(info, EEREC_D, 1));
+	SSE_LDMXCSR ((uptr)&nearest);
 }
 
 FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -1521,7 +1529,9 @@ FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 void recMULA_S_xmm(int info) 
 { 
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
+	SSE_LDMXCSR ((uptr)&chop);
 	ClampValues(recCommutativeOp(info, EEREC_ACC, 1));
+	SSE_LDMXCSR ((uptr)&nearest);
 }
 
 FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
@@ -1607,7 +1617,9 @@ void recSUBop(int info, int regd)
 
 void recSUB_S_xmm(int info)
 {
+	SSE_LDMXCSR ((uptr)&chop);
 	recSUBop(info, EEREC_D);
+	SSE_LDMXCSR ((uptr)&nearest);
 }
 
 FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);

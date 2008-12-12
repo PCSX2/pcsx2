@@ -695,6 +695,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\PathUtils.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\System.h"
 				>
 			</File>
