@@ -198,7 +198,7 @@ extern TESTRUNARGS g_TestRun;
 extern void __Log(const char *fmt, ...);
 extern u16 logProtocol;
 extern u8  logSource;
-#define PCSX2_VERSION "0.9.5"
+#define PCSX2_VERSION "Playground (beta)"
 
 // C++ code for sqrtf
 void InitFPUOps();

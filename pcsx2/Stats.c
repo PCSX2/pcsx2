@@ -45,7 +45,7 @@ void statsClose() {
 	f = fopen(LOGS_DIR "/stats.txt", "w");
 #endif
 	if (!f) { SysPrintf("Can't open stats.txt\n"); return; }
-	fprintf(f, "-- PCSX2 v%s statics--\n\n", PCSX2_VERSION);
+	fprintf(f, "-- PCSX2 %s statics--\n\n", PCSX2_VERSION);
 	fprintf(f, "Ran for %d seconds\n", t);
 	fprintf(f, "Total VSyncs: %d (%s)\n", stats.vsyncCount, Config.PsxType ? "PAL" : "NTSC");
 #ifndef __x86_64__

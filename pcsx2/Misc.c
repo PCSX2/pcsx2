@@ -425,7 +425,7 @@ void __Log(const char *fmt, ...) {
 // STATES
 
 #define STATE_VERSION "STv6"
-const char Pcsx2Header[32] = STATE_VERSION " PCSX2 v" PCSX2_VERSION;
+const char Pcsx2Header[32] = STATE_VERSION " PCSX2 " PCSX2_VERSION;
 
 #define _PS2Esave(type) \
 	if (type##freeze(FREEZE_SIZE, &fP) == -1) { \

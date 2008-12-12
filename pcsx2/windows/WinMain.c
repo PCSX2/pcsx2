@@ -1607,13 +1607,13 @@ void CreateMainWindow(int nCmdShow) {
 #ifdef PCSX2_VIRTUAL_MEM
 		const char* pvm = "VM";
 #else
-		const char* pvm = "non VM";
+		const char* pvm = "TLB";
 #endif
 
 #ifdef PCSX2_DEVBUILD
-		sprintf(buf, _("PCSX2 %s Playground - %s Compile Date - %s %s"), PCSX2_VERSION, pvm, COMPILEDATE, COMPILER);
+		sprintf(buf, _("PCSX2 %s - %s Compile Date - %s %s"), PCSX2_VERSION, pvm, COMPILEDATE, COMPILER);
 #else
-		sprintf(buf, _("PCSX2 %s Playground - %s"), PCSX2_VERSION, pvm);
+		sprintf(buf, _("PCSX2 %s - %s"), PCSX2_VERSION, pvm);
 #endif
 	}
 

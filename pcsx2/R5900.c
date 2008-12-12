@@ -49,7 +49,7 @@ int cpuInit()
 {
 	int ret;
 
-	SysPrintf("PCSX2 v" PCSX2_VERSION " save ver: %x\n", dwSaveVersion);
+	SysPrintf("PCSX2 " PCSX2_VERSION " save ver: %x\n", dwSaveVersion);
     SysPrintf("EE pc offset: 0x%x, PSX pc offset: 0x%x\n", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
 
 	InitFPUOps();
@@ -660,7 +660,7 @@ void cpuExecuteBios()
 	if( CHECK_EEREC ) Cpu->Reset();
 
 	SysPrintf("* PCSX2 *: ExecuteBios Complete\n");
-	GSprintf(5, "PCSX2 v" PCSX2_VERSION "\nExecuteBios Complete\n");
+	GSprintf(5, "PCSX2 " PCSX2_VERSION "\nExecuteBios Complete\n");
 }
 
 void cpuRestartCPU()
