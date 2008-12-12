@@ -22,14 +22,22 @@ else
     [Define to be the subversion revision number])
 fi
 
+AC_ARG_ENABLE(customcflags, AC_HELP_STRING([--enable-customcflags], [Use custom CFLAGS]),
+customcflags=$enableval,customcflags=no)
+
+if test "x$customcflags" == xno
+then
 CFLAGS=
 CPPFLAGS=
 CXXFLAGS=
 CCASFLAGS=
+else
+DEBUG_FLAGS=" -O0 "
+fi
 
 WARNING_FLAGS="-Wall -Wno-format -Wno-unused-value"
-NORMAL_FLAGS=" -pipe -O3 -fomit-frame-pointer ${WARNING_FLAGS}"
-DEBUG_FLAGS=" -g -O0 ${WARNING_FLAGS}"
+NORMAL_FLAGS=" -pipe -O3 -fomit-frame-pointer"
+DEBUG_FLAGS+="${WARNING_FLAGS} "
 
 dnl Check for debug build
 AC_MSG_CHECKING(debug build)
@@ -38,9 +46,9 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [debug build]),
 if test "x$debug" == xyes
 then
  AC_DEFINE(_DEBUG,1,[_DEBUG])
- CFLAGS+=" ${DEBUG_FLAGS}"
+ CFLAGS+=" ${DEBUG_FLAGS} "
  CXXFLAGS+=" ${DEBUG_FLAGS} -fpermissive -Xlinker -zmuldefs "
- CCASFLAGS+="-D_DEBUG ${DEBUG_FLAGS}"
+ CCASFLAGS+=" -D_DEBUG ${DEBUG_FLAGS} "
  MYOBJDIR="Debug"
 else
  AC_DEFINE(NDEBUG,1,[NDEBUG])
@@ -132,6 +140,13 @@ then
 AC_CHECK_HEADER([libintl.h], [AC_DEFINE(ENABLE_NLS,1,[__x86_64__])])
 fi
 
+AC_ARG_ENABLE(local-inis, AC_HELP_STRING([--enable-local-inis], [Enable local plugin inis]),
+localinis=$enableval, localinis=no)
+if test "x$localinis" == xyes
+then
+AC_DEFINE(LOCAL_PLUGIN_INIS)
+fi
+
 AC_OUTPUT([
  Makefile
  DebugTools/Makefile
@@ -154,4 +169,6 @@ echo "  Debug build?	       $debug"
 echo "  Dev build?	           $devbuild"
 echo "  Force sse3?	           $sse3"
 echo "  Recompilers enabled?   $recbuild"
-echo "  nls support?	       $nls"
+echo " nls support?   $nls"
+echo " local plugin inis? $localinis"
+echo " custom cflags? $customcflags"
