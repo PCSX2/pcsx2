@@ -26,17 +26,20 @@ static void FindComboText(GtkWidget *combo, char plist[255][255], GList *list, c
 }
 
 	
-static void GetComboText(GtkWidget *combo, char plist[255][255], char *conf)
+static bool GetComboText(GtkWidget *combo, char plist[255][255], char *conf)
 {
 	int i; 
 	
 	char *tmp = (char*)gtk_combo_box_get_active_text(GTK_COMBO_BOX(combo)); 
+	
+	if (tmp == NULL) return FALSE;
 	for (i=2;i<255;i+=2) { 
 		if (!strcmp(tmp, plist[i-1])) { 
 			strcpy(conf, plist[i-2]); 
 			break; 
 		} 
 	} 
+	return TRUE;
 }
 
 static void ConfPlugin(PluginConf confs, char* plugin, const char* name)
@@ -203,15 +206,26 @@ void SetActiveComboItem(GtkComboBox *widget,char plist[255][255], GList *list, c
 }
 
 void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
-	GetComboText(GSConfS.Combo, GSConfS.plist, Config.GS);
-	GetComboText(PAD1ConfS.Combo, PAD1ConfS.plist, Config.PAD1);
-	GetComboText(PAD2ConfS.Combo, PAD2ConfS.plist, Config.PAD2);
-	GetComboText(SPU2ConfS.Combo, SPU2ConfS.plist, Config.SPU2);
-	GetComboText(CDVDConfS.Combo, CDVDConfS.plist, Config.CDVD);
-	GetComboText(DEV9ConfS.Combo, DEV9ConfS.plist, Config.DEV9);
-	GetComboText(USBConfS.Combo,  USBConfS.plist,  Config.USB);
-	GetComboText(FWConfS.Combo,   FWConfS.plist,   Config.FW);
-	GetComboText(BiosConfS.Combo, BiosConfS.plist, Config.Bios);
+	applychanges = TRUE;
+	
+	if (!GetComboText(GSConfS.Combo, GSConfS.plist, Config.GS))
+		applychanges = FALSE;
+	if (!GetComboText(PAD1ConfS.Combo, PAD1ConfS.plist, Config.PAD1))
+		applychanges = FALSE;
+	if (!GetComboText(PAD2ConfS.Combo, PAD2ConfS.plist, Config.PAD2))
+		applychanges = FALSE;
+	if (!GetComboText(SPU2ConfS.Combo, SPU2ConfS.plist, Config.SPU2))
+		applychanges = FALSE;
+	if (!GetComboText(CDVDConfS.Combo, CDVDConfS.plist, Config.CDVD))
+		applychanges = FALSE;
+	if (!GetComboText(DEV9ConfS.Combo, DEV9ConfS.plist, Config.DEV9))
+		applychanges = FALSE;
+	if (!GetComboText(USBConfS.Combo,  USBConfS.plist,  Config.USB))
+		applychanges = FALSE;
+	if (!GetComboText(FWConfS.Combo,   FWConfS.plist,   Config.FW))
+		applychanges = FALSE;
+	if (!GetComboText(BiosConfS.Combo, BiosConfS.plist, Config.Bios))
+		applychanges = FALSE;
 
 	SaveConfig();
 
@@ -224,7 +238,6 @@ void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
 	gtk_widget_destroy(ConfDlg);
 	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
-	applychanges = TRUE;
 }
 
 void OnConfConf_GsConf(GtkButton *button, gpointer user_data) {

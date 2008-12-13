@@ -408,7 +408,10 @@ int SysInit()
 	
 	while (LoadPlugins() == -1) {
 		if (Pcsx2Configure() == FALSE)
+		{
+			SysMessage("Configuration failed. Exiting.");
 			exit(1);
+		}
 	}
 
 	sinit = 1;
