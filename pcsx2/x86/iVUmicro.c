@@ -3789,9 +3789,9 @@ void recVUMI_ITOF0( VURegs *VU, int info )
 	if (_X_Y_Z_W != 0xf) {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 
+		vuFloat( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
-		vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
 	}
 	else {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
@@ -3807,9 +3807,9 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
+		vuFloat( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
-		vuFloat2(EEREC_T, EEREC_TEMP, _X_Y_Z_W); // Clamp infinities
 	} else {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
