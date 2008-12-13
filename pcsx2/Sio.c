@@ -34,7 +34,17 @@ FILE * MemoryCard1, * MemoryCard2;
 const unsigned char cardh[4] = { 0xFF, 0xFF, 0x5a, 0x5d };
 // Memory Card Specs : Sector size etc.
 struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 0x52, 0x5A};
-#define SIO_INT() PSX_INT(16, PSXCLK/250000); /*270;*/
+
+// SIO Inline'd IRQs : Calls the SIO interrupt handlers directly instead of
+// feeding them through the IOP's branch test. (see SIO.H for details)
+
+#ifdef SIO_INLINE_IRQS
+#define SIO_INT() sioInterrupt()
+#define SIO_FORCEINLINE
+#else
+#define SIO_INT() PSX_INT(16, PSXCLK/250000);
+#define SIO_FORCEINLINE __forceinline
+#endif
 
 void _ReadMcd(char *data, u32 adr, int size) {
 	ReadMcd(sio.CtrlReg&0x2000?2:1, data, adr, size);
@@ -348,7 +358,7 @@ void SIO_CommandWrite(u8 value,int way) {
 					_SaveMcd(sio.buf, (512+16)*sio.sector+256, 256);
 					_SaveMcd(sio.buf, (512+16)*sio.sector+512, 16);
 					sio.buf[2]='+';
-				*/	sio.buf[3]=sio.terminator;
+					sio.buf[3]=sio.terminator;*/
 					//sio.buf[sio.bufcount] = sio.terminator;
 				MEMCARDS_LOG("MC(%d) INTERNAL ERASE command 0x%02X\n", ((sio.CtrlReg&0x2000)>>13)+1, value);
 				}
@@ -497,7 +507,7 @@ void sioWriteCtrl16(unsigned short value) {
 	}
 }
 
-__forceinline void  sioInterrupt() {
+void  sioInterrupt() {
 	PAD_LOG("Sio Interrupt\n");
 	sio.StatReg|= IRQ;
 	psxHu32(0x1070)|=0x80;

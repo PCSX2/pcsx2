@@ -20,6 +20,24 @@
 #ifndef _SIO_H_
 #define _SIO_H_
 
+// SIO IRQ Timings...
+// Scheduling ints into the future is a purist approach to emulation, and
+// is mostly cosmetic since the emulator itself performs all actions instantly
+// (as far as the emulated CPU is concerned).  In some cases this can actually
+// cause more sync problems than it supposedly solves, due to accumulated
+// delays incurred by the recompiler's low cycle update rate and also Pcsx2
+// failing to properly handle pre-emptive DMA/IRQs or cpu exceptions.
+
+// The SIO is one of these cases, where-by many games seem to be a lot happier
+// if the SIO handles its IRQs instantly instead of scheduling them.
+// Uncomment the line below for SIO instant-IRQ mode.  It improves responsiveness 
+// considerably, fixes PAD latency problems in some games, and may even reduce the
+// chance of saves getting corrupted (untested).  But it lacks the purist touch,
+// so it's not enabled by default.
+
+//#define SIO_INLINE_IRQS
+
+
 typedef struct {
 	u16 StatReg;
 	u16 ModeReg;

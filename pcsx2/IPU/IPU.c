@@ -27,15 +27,22 @@
 #include "iR5900.h"
 #include "coroutine.h"
 
-// IPU Speedhack : Calls the IPU interrupt handlers directly instead of feeding
-// them through the EE's branch test.  Not tested extensively yet.
-#ifdef USE_IPU_SPEEDHACK
-#	define IPU_TO_INT( val )  ipu1Interrupt()
-#	define IPU_FROM_INT( val )  ipu0Interrupt()
+// Zero cycle IRQ schedules aren't really good, but the IPU uses them.
+// Better to throw the IRQ inline:
+
+#define IPU_INT0_FROM()  ipu0Interrupt()
+//#define IPU_INT0_FROM()  CPU_INT( DMAC_FROM_IPU, 0 )
+
+// IPU Inline'd IRQs : Calls the IPU interrupt handlers directly instead of
+// feeding them through the EE's branch test. (see IPU.H for details)
+
+#ifdef IPU_INLINE_IRQS
+#	define IPU_INT_TO( cycles )  ipu1Interrupt()
+#	define IPU_INT_FROM( cycles )  ipu0Interrupt()
 #	define IPU_FORCEINLINE
 #else
-#	define IPU_TO_INT( val )  CPU_INT( DMAC_TO_IPU, val )
-#	define IPU_FROM_INT( val )  CPU_INT( DMAC_FROM_IPU, val )
+#	define IPU_INT_TO( cycles )  CPU_INT( DMAC_TO_IPU, cycles )
+#	define IPU_INT_FROM( cycles )  CPU_INT( DMAC_FROM_IPU, cycles )
 #	define IPU_FORCEINLINE __forceinline
 #endif
 
@@ -1028,7 +1035,7 @@ void IPUCMD_WRITE(u32 val) {
 			
 			if( ipuCSC(ipuRegs->cmd.DATA) ) {
 				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) 
-					IPU_FROM_INT(0);
+					IPU_INT0_FROM();
 				return;
 			}
 
@@ -1048,7 +1055,7 @@ void IPUCMD_WRITE(u32 val) {
 			if( ipuIDEC(val) ) {
 				// idec done, ipu0 done too
 				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) 
-					IPU_FROM_INT(0);
+					IPU_INT0_FROM();
 				return;
 			}
 
@@ -1062,7 +1069,7 @@ void IPUCMD_WRITE(u32 val) {
 		case SCE_IPU_BDEC:
 			if( ipuBDEC(val)) {
 				if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) 
-					IPU_FROM_INT(0);
+					IPU_INT0_FROM();
 				if (ipuRegs->ctrl.SCD || ipuRegs->ctrl.ECD)
 					hwIntcIrq(INTC_IPU);
 
@@ -1135,7 +1142,7 @@ void IPUWorker()
 			}
 
 			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100)) 
-				IPU_FROM_INT(0);
+				IPU_INT0_FROM();
 			break;		
 		case SCE_IPU_PACK:
 			if( !ipuPACK(ipuRegs->cmd.DATA) )
@@ -1160,7 +1167,7 @@ void IPUWorker()
 			ipuCurCmd = 0xffffffff;
 			// CHECK!: IPU0dma remains when IDEC is done, so we need to clear it
 			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100))
-                IPU_FROM_INT(0);
+                IPU_INT0_FROM();
 
 			s_routine = NULL;
 			break;
@@ -1177,7 +1184,7 @@ void IPUWorker()
 			ipuRegs->cmd.BUSY = 0;
 			ipuCurCmd = 0xffffffff;
 			if(ipu0dma->qwc > 0 && (ipu0dma->chcr & 0x100))
-				IPU_FROM_INT(0);
+				IPU_INT0_FROM();
 			s_routine = NULL;
 			if (ipuRegs->ctrl.SCD || ipuRegs->ctrl.ECD)
 				hwIntcIrq(INTC_IPU);
@@ -1642,7 +1649,7 @@ int IPU1dma()
 		if ((ipu1dma->chcr & 0x80) && (g_nDMATransfer&IPU_DMA_DOTIE1)) {			 //Check TIE bit of CHCR and IRQ bit of tag
 			SysPrintf("IPU1 TIE\n");
 
-			IPU_TO_INT(totalqwc*BIAS);
+			IPU_INT_TO(totalqwc*BIAS);
 			g_nDMATransfer &= ~(IPU_DMA_ACTV1|IPU_DMA_DOTIE1);
 			g_nDMATransfer |= IPU_DMA_TIE1;
 			return totalqwc;
@@ -1651,7 +1658,7 @@ int IPU1dma()
 		g_nDMATransfer &= ~(IPU_DMA_ACTV1|IPU_DMA_DOTIE1);
 
 		if( (ipu1dma->chcr&0xc) == 0 ) {
-			IPU_TO_INT(totalqwc*BIAS);
+			IPU_INT_TO(totalqwc*BIAS);
 			return totalqwc;
 		}
 		else {
@@ -1667,7 +1674,7 @@ int IPU1dma()
 
 				ipu1dma->chcr = (ipu1dma->chcr & 0xFFFF) | ( (*ptag) & 0xFFFF0000 );
 				IPU_LOG("IPU dmaIrq Set\n"); 
-				IPU_TO_INT(totalqwc*BIAS);
+				IPU_INT_TO(totalqwc*BIAS);
 				g_nDMATransfer |= IPU_DMA_TIE1;
 				return totalqwc;
 			}
@@ -1676,12 +1683,12 @@ int IPU1dma()
 			{
 			case 0x00000000:
 				ipu1dma->tadr += 16;
-				IPU_TO_INT((1+totalqwc)*BIAS);
+				IPU_INT_TO((1+totalqwc)*BIAS);
 				return totalqwc;
 
 			case 0x70000000:
 				ipu1dma->tadr = ipu1dma->madr;
-				IPU_TO_INT((1+totalqwc)*BIAS);
+				IPU_INT_TO((1+totalqwc)*BIAS);
 				return totalqwc;
 			}
 		}
@@ -1698,7 +1705,7 @@ int IPU1dma()
 		IPU_LOG("dmaIPU1 Normal size=%d, addr=%lx, fifosize=%x\n",
 			ipu1dma->qwc, ipu1dma->madr, 8 - g_BP.IFC);
 		IPU1chain();
-		IPU_TO_INT((ipu1cycles+totalqwc)*BIAS);
+		IPU_INT_TO((ipu1cycles+totalqwc)*BIAS);
 		return totalqwc;
 	}
 	else 
@@ -1780,33 +1787,29 @@ int IPU1dma()
 					ipu1dma->chcr = (ipu1dma->chcr & 0xFFFF) | ( (*ptag) & 0xFFFF0000 );
 				}
 
-				IPU_TO_INT(ipu1cycles+totalqwc*BIAS);
+				IPU_INT_TO(ipu1cycles+totalqwc*BIAS);
 				g_nDMATransfer |= IPU_DMA_TIE1;
 				return totalqwc;
 			}
-		//}
 
-			if(ipu1dma->qwc == 0){
-		switch( ptag[0]&0x70000000 )
+		if(ipu1dma->qwc == 0)
 		{
-		case 0x00000000:
-			ipu1dma->tadr += 16;
-			IPU_TO_INT((ipu1cycles+totalqwc)*BIAS);
-			return totalqwc;
-
-		case 0x70000000:
-			ipu1dma->tadr = ipu1dma->madr;
-			IPU_TO_INT((ipu1cycles+totalqwc)*BIAS);
-			return totalqwc;
-		}
+			switch( ptag[0]&0x70000000 )
+			{
+				case 0x00000000:
+					ipu1dma->tadr += 16;
+				break;
+				
+				case 0x70000000:
+					ipu1dma->tadr = ipu1dma->madr;
+				break;
 			}
+		}
 	}
 
-	IPU_TO_INT((ipu1cycles+totalqwc)*BIAS);
+	IPU_INT_TO((ipu1cycles+totalqwc)*BIAS);
 	return totalqwc;
 }
-
-
 
 
 int FIFOfrom_write(u32 *value,int size)
@@ -1910,7 +1913,7 @@ int IPU0dma()
 					break;
 			}
 		}
-		IPU_FROM_INT(readsize*BIAS);
+		IPU_INT_FROM( readsize*BIAS );
 	}
 
 	return readsize;
@@ -1932,7 +1935,7 @@ void dmaIPU1() // toIPU
 
 extern void GIFdma();
 
-IPU_FORCEINLINE void ipu0Interrupt() {
+void ipu0Interrupt() {
 	IPU_LOG("ipu0Interrupt: %x\n", cpuRegs.cycle);
 
 	if( g_nDMATransfer & IPU_DMA_FIREINT0 ) {

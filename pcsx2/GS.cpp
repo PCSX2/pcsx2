@@ -432,16 +432,20 @@ s32 gsOpen()
 
 void GS_SETEVENT()
 {
+	// Win32 Kernel calls can corrupt the XMM/MMX registers.
+	// Callers should always make sure those registers are frozen:
+	assert( !g_EEFreezeRegs || (g_globalXMMSaved > 0) );
+
 	event_set(g_hGsEvent);
 	m_mtgsCopyCommandTally = 0;
 }
 
-__forceinline void gsWaitGS()
+void gsWaitGS()
 {
 	if( !CHECK_MULTIGS ) return;
 
 	// Freeze registers because some kernel code likes to destroy them
-	FreezeXMMRegs(1); 
+	FreezeXMMRegs(1);
 	FreezeMMXRegs(1);
 	GS_SETEVENT();
 	while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos )
@@ -511,8 +515,13 @@ void GSRINGBUF_DONECOPY(const u8* mem, u32 size)
 	//  24 - very slow on HT machines (+5% drop in fps)
 	//  8 - roughly 2% slower on HT machines.
 
+	FreezeXMMRegs(1); 
+	FreezeMMXRegs(1);
 	if( ++m_mtgsCopyCommandTally > 16 )
 		GS_SETEVENT();
+	FreezeXMMRegs(0); 
+	FreezeMMXRegs(0);
+
 }
 
 void gsShutdown()
@@ -1830,6 +1839,9 @@ extern "C" void gsPostVsyncEnd()
 		//SysPrintf( " Sending VSync : %d \n", g_pGSvSyncCount );
 #endif
 		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
+
+		// No need to freeze MMX/XMM registers here since this
+		// code is always called from the context of a BranchTest.
 		GS_SETEVENT();
 	}
 	else

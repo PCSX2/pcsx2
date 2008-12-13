@@ -672,11 +672,26 @@ void cdvdReset()
 
 }
 
+// CDVD Timing Notes...
+// As of recent IOP sync fixes, CDVD timings seem to be fairly unimportant
+// to compatibility now.  Tests have shown that setting CDVD read speeds to
+// insanely low values (equating to unrealistically fast DVDdrive speeds)
+// don't break any games, nor do higher/lower speeds cause/fix IPU sync
+// problems anymore either.  Games do tend to issue a lot of CDVD BREAKs
+// when the CDVD latency is very low, which are something the emulator can
+// safely ignore anyway.
+
+// Notable Exception : DigitalDevilSaga PAL, in which certain movies do not
+// play unless the CDVD read speed is *insanely* high (several thousand 
+// cycles per block).  This probably has nothing to do with the CDVD though,
+// and is likely caused by some other emulation problem that just happens
+// to be "masked over" by slowing down the CDVD.
+
 #define PSX_CD_READSPEED (PSXCLK / 153600) // 1 Byte Time @ x1 (150KB = cd x 1)
-#define PSX_DVD_READSPEED (PSXCLK /1382400) // normal is 1 Byte Time @ x1 (1350KB = dvd x 1)
+#define PSX_DVD_READSPEED (PSXCLK / 1382400) // normal is 1 Byte Time @ x1 (1350KB = dvd x 1)
 
 void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
-{	
+{
 	if (cdvd.Sector == 16) //DVD TOC
 		cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader
 	else

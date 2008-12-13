@@ -32,7 +32,7 @@ u32 g_psxHasConstReg, g_psxFlushedConstReg;
 // Controls when branch tests are performed.
 u32 g_psxNextBranchCycle = 0;
 
-// This value is used when the IOP execution is broken to return contorl to the EE.
+// This value is used when the IOP execution is broken to return control to the EE.
 // (which happens when the IOP throws EE-bound interrupts).  It holds the value of
 // psxCycleEE (which is set to zero to facilitate the code break), so that the unrun
 // cycles can be accounted for later.
@@ -42,6 +42,9 @@ s32 psxBreak = 0;
 // control is returned to the EE.
 s32 psxCycleEE = -1;
 
+// Used to signal to the EE when important actions that need IOP-attention have
+// happened (hsyncs, vsyncs, IOP exceptions, etc).  IOP runs code whenever this
+// is true, even if it's already running ahead a bit.
 int iopBranchAction = 0;
 
 

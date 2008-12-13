@@ -21,12 +21,20 @@
 
 #include "Common.h"
 
-// IPU Speed Hack!
-// By uncommenting the define below, the IPU can get a pretty nice speed boost,
-// of about 10%.  Additionally, the ipuInterrupt handlers in the cpuBranchTest
-// are also be removed, which helps reduce branch test overhead in *all* games.
+// IPU_INLINE_IRQS
+// Scheduling ints into the future is a purist approach to emulation, and
+// is mostly cosmetic since the emulator itself performs all actions instantly
+// (as far as the emulated CPU is concerned).  In some cases this can actually
+// cause more sync problems than it supposedly solves, due to accumulated
+// delays incurred by the recompiler's low cycle update rate and also Pcsx2
+// failing to properly handle pre-emptive DMA/IRQs or cpu exceptions.
 
-//#define USE_IPU_SPEEDHACK
+// Uncomment the following line to enable inline IRQs for the IPU.  Tests show
+// that it doesn't have any effect on compatibility or audio/video sync, and it
+// speeds up movie playback by some 6-8%. But it lacks the purist touch, so it's
+// not enabled by default.
+
+//#define IPU_INLINE_IRQS
 
 
 #ifdef _MSC_VER
