@@ -146,4 +146,10 @@ void __Log(const char *fmt, ...);
 #define MEMCARDS_LOG 0&&
 #endif
 
+#ifdef VIFUNPACKDEBUG
+#define VIFUNPACK_LOG VIF_LOG
+#else
+#define VIFUNPACK_LOG 0&&
+#endif
+
 #endif /* __DEBUG_H__ */

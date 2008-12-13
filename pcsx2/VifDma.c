@@ -28,6 +28,13 @@
 
 #include <assert.h>
 
+#ifdef _MSC_VER
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#endif
+
+//#define VIFUNPACKDEBUG //enable unpack debugging output 
+
 #define gif ((DMACh*)&PS2MEM_HW[0xA000])
 
 // Extern variables
@@ -235,8 +242,6 @@ void DummyExecuteVU1Block(void)
     VU1.vifRegs->stat &= ~4; // also reset the bit (grandia 3 works)
 }
 
-//#define VIFUNPACKDEBUG //enable unpack debugging output 
-
 static void ProcessMemSkip(int size, unsigned int unpackType, const unsigned int VIFdmanum){
 	const VIFUnpackFuncTable *unpack;
 	vifStruct *vif;
@@ -258,81 +263,55 @@ static void ProcessMemSkip(int size, unsigned int unpackType, const unsigned int
 	switch(unpackType){
 		case 0x0:
 			vif->tag.addr += size*4;
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing S-32 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing S-32 skip, size = %d\n", size);
 			break;
 		case 0x1:
 			vif->tag.addr += size*8;
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing S-16 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing S-16 skip, size = %d\n", size);
 			break;
 		case 0x2:
 			vif->tag.addr += size*16;
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing S-8 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing S-8 skip, size = %d\n", size);
 			break;
 		case 0x4:
 			vif->tag.addr += size + ((size / unpack->gsize) * 8);
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V2-32 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V2-32 skip, size = %d\n", size);
 			break;
 		case 0x5:
 			vif->tag.addr += (size * 2) + ((size / unpack->gsize) * 8);
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V2-16 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V2-16 skip, size = %d\n", size);
 			break;
 		case 0x6:
 			vif->tag.addr += (size * 4) + ((size / unpack->gsize) * 8);
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V2-8 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V2-8 skip, size = %d\n", size);
 			break;
 		case 0x8:
 			vif->tag.addr += size + ((size / unpack->gsize) * 4);
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V3-32 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V3-32 skip, size = %d\n", size);
 			break;
 		case 0x9:
 			vif->tag.addr += (size * 2) + ((size / unpack->gsize) * 4);
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V3-16 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V3-16 skip, size = %d\n", size);
 			break;
 		case 0xA:
 			vif->tag.addr += (size * 4) + ((size / unpack->gsize) * 4);
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V3-8 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V3-8 skip, size = %d\n", size);
 			break;
 		case 0xC:
 			vif->tag.addr += size;
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V4-32 skip, size = %d, CL = %d, WL = %d\n", size, vif1Regs->cycle.cl, vif1Regs->cycle.wl);
-#endif
+			VIFUNPACK_LOG("Processing V4-32 skip, size = %d, CL = %d, WL = %d\n", size, vif1Regs->cycle.cl, vif1Regs->cycle.wl);
 			break;
 		case 0xD:
 			vif->tag.addr += size * 2;
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V4-16 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V4-16 skip, size = %d\n", size);
 			break;
 		case 0xE:
 			vif->tag.addr += size * 4;
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V4-8 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V4-8 skip, size = %d\n", size);
 			break;
 		case 0xF:
 			vif->tag.addr +=  size * 8;
-#ifdef VIFUNPACKDEBUG
-			SysPrintf("Processing V4-5 skip, size = %d\n", size);
-#endif
+			VIFUNPACK_LOG("Processing V4-5 skip, size = %d\n", size);
 			break;		
 		default:
 			SysPrintf("Invalid unpack type %x\n", unpackType);
@@ -347,13 +326,6 @@ static void ProcessMemSkip(int size, unsigned int unpackType, const unsigned int
 			vif->tag.addr += 16 - unpack->gsize;
 		}
 }
-
-#ifdef _MSC_VER
-//#define __MMX__
-//#define __SSE__
-#include <xmmintrin.h>
-#include <emmintrin.h>
-#endif
 
 //u32 unpacktotal = 0;
 
@@ -427,15 +399,11 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 	/*if (v->size != size) {
 		SysPrintf("*PCSX2*: v->size = %d, size = %d mode = %x\n", v->size, size, unpackType);
 	}*/
-#ifdef VIFUNPACKDEBUG
 	if (size == 0) {
-		SysPrintf("*PCSX2*: Unpack %x with size 0!! v->size = %d cl = %d, wl = %d, mode %d mask %x\n", v->cmd, v->size, vifRegs->cycle.cl, vifRegs->cycle.wl, vifRegs->mode, vifRegs->mask);
+		VIFUNPACK_LOG("*PCSX2*: Unpack %x with size 0!! v->size = %d cl = %d, wl = %d, mode %d mask %x\n", v->cmd, v->size, vifRegs->cycle.cl, vifRegs->cycle.wl, vifRegs->mode, vifRegs->mask);
 		//return;
 	}
-#endif
     
-	
-
 #ifdef _MSC_VER
 	_mm_prefetch((char*)data+128, _MM_HINT_NTA);
 #endif
@@ -454,18 +422,19 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 #endif
     if( _vifRegs->offset > 0) {
         int destinc, unpacksize;
-#ifdef VIFUNPACKDEBUG
-        SysPrintf("aligning packet size = %d offset %d addr %x\n", size, vifRegs->offset, vif->tag.addr);
-#endif
-        // SSE doesn't handle such small data
-		if (v->size != (size>>2))ProcessMemSkip(size, unpackType, VIFdmanum);
+	    
+        VIFUNPACK_LOG("aligning packet size = %d offset %d addr %x\n", size, vifRegs->offset, vif->tag.addr);
+  
+	    // SSE doesn't handle such small data
+	if (v->size != (size>>2))ProcessMemSkip(size, unpackType, VIFdmanum);
 
         if(vifRegs->offset < (u32)ft->qsize){
 			if(((u32)size/(u32)ft->dsize) < ((u32)ft->qsize - vifRegs->offset)){
 				SysPrintf("wasnt enough left size/dsize = %x left to write %x\n", (size/ft->dsize), (ft->qsize - vifRegs->offset));
 			}
             unpacksize = min(((u32)size/(u32)ft->dsize), ((u32)ft->qsize - vifRegs->offset));
-        } else {
+        } 
+	else {
             unpacksize = 0;
             SysPrintf("Unpack align offset = 0\n");
         }
@@ -491,9 +460,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
             dest += destinc;
             //vif->tag.addr += destinc << 2;
         }
-#ifdef VIFUNPACKDEBUG
-        SysPrintf("aligning packet done size = %d offset %d addr %x\n", size, vifRegs->offset, vif->tag.addr);
-#endif
+        VIFUNPACK_LOG("aligning packet done size = %d offset %d addr %x\n", size, vifRegs->offset, vif->tag.addr);
         //}
         //skipmeminc += (((vifRegs->cycle.cl - vifRegs->cycle.wl)<<2)*4) * skipped;
     } else if (v->size != (size>>2))ProcessMemSkip(size, unpackType, VIFdmanum);
@@ -702,9 +669,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 			// SSE doesn't handle such small data
 			//ft = &VIFfuncTable[ unpackType ];
 			//func = vif->usn ? ft->funcU : ft->funcS;
-	#ifdef VIFUNPACKDEBUG
-			SysPrintf("end with size %x dsize = %x unpacktype %x\n", size, ft->dsize, unpackType);
-	#endif
+			VIFUNPACK_LOG("end with size %x dsize = %x unpacktype %x\n", size, ft->dsize, unpackType);
 			//while (size >= ft->dsize) {
 					/* unpack one qword */
 					func(dest, (u32*)cdata, size / ft->dsize);
@@ -712,9 +677,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 					//dest += 1;
 					size = 0;
 			//}
-	#ifdef VIFUNPACKDEBUG
-			SysPrintf("leftover done, size %d, vifnum %d, addr %x\n", size, vifRegs->num, vif->tag.addr);
-	#endif
+			VIFUNPACK_LOG("leftover done, size %d, vifnum %d, addr %x\n", size, vifRegs->num, vif->tag.addr);
 		}
 		
 	}
@@ -723,9 +686,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 		
 		//ft = &VIFfuncTable[ unpackType ];
 		//func = vif->usn ? ft->funcU : ft->funcS;
-#ifdef VIFUNPACKDEBUG
-		SysPrintf("filling write %d cl %d, wl %d mask %x mode %x unpacktype %x\n", vifRegs->num, vifRegs->cycle.cl, vifRegs->cycle.wl, vifRegs->mask, vifRegs->mode, unpackType);
-#endif
+		VIFUNPACK_LOG("filling write %d cl %d, wl %d mask %x mode %x unpacktype %x\n", vifRegs->num, vifRegs->cycle.cl, vifRegs->cycle.wl, vifRegs->mask, vifRegs->mode, unpackType);
 		while (size >= ft->gsize || vifRegs->num > 0) {
 			if (vif->cl == vifRegs->cycle.wl) {
 				vif->cl = 0;
