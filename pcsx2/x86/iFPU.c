@@ -49,6 +49,8 @@
 #define FPUflagSO	0X00000010
 #define FPUflagSU	0X00000008
 
+#define FPU_ADD_SUB_HACK 1 // Add/Sub opcodes produce more ps2-like results if set to 1
+
 extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
 
@@ -518,10 +520,36 @@ REC_FPUFUNC(RSQRT_S);
 //------------------------------------------------------------------
 // Clamp Functions (Converts NaN's and Infinities to Normal Numbers)
 //------------------------------------------------------------------
-void fpuFloat(int regd) { 
+void fpuFloat(int regd) {  // +/-NaN -> +fMax, +Inf -> +fMax, -Inf -> -fMax
 	if (CHECK_FPU_OVERFLOW && !CHECK_FPUCLAMPHACK) { // Tekken 5 doesn't like clamping infinities.
 		SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]); // MIN() must be before MAX()! So that NaN's become +Maximum
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
+	}
+}
+
+PCSX2_ALIGNED16(u64 FPU_FLOAT_TEMP[2]);
+void fpuFloat2(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
+	if (CHECK_FPU_OVERFLOW && !CHECK_FPUCLAMPHACK) { // Tekken 5 doesn't like clamping infinities.
+		int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+		if (t1reg >= 0) {
+			SSE_MOVSS_XMM_to_XMM(t1reg, regd);
+			SSE_ANDPS_XMM_to_XMM(t1reg, (uptr)&s_neg[0]);
+			SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
+			SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
+			SSE_ORPS_XMM_to_XMM(regd, t1reg);
+			_freeXMMreg(t1reg);
+		}
+		else {
+			SysPrintf("fpuFloat2() allocation error\n"); 
+			t1reg = (regd == 0) ? 1 : 0; // get a temp reg thats not regd
+			SSE_MOVAPS_XMM_to_M128( (uptr)&FPU_FLOAT_TEMP[0], t1reg ); // backup data in t1reg to a temp address
+			SSE_MOVSS_XMM_to_XMM(t1reg, regd);
+			SSE_ANDPS_XMM_to_XMM(t1reg, (uptr)&s_neg[0]);
+			SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
+			SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
+			SSE_ORPS_XMM_to_XMM(regd, t1reg);
+			SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)&FPU_FLOAT_TEMP[0] ); // restore t1reg data
+		}
 	}
 }
 
@@ -571,13 +599,137 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 
 
 //------------------------------------------------------------------
+// FPU_ADD_SUB (Used to mimic PS2's FPU add/sub behavior)
+//------------------------------------------------------------------
+// Compliant IEEE FPU uses, in computations, uses additional "guard" bits to the right of the mantissa
+// but EE-FPU doesn't. Substraction (and addition of positive and negative) may shift the mantissa left,
+// causing those bits to appear in the result; this function masks out the bits of the mantissa that will
+// get shifted right to the guard bits to ensure that the guard bits are empty.
+// The difference of the exponents = the amount that the smaller operand will be shifted right by.
+// Modification - the PS2 uses a single guard bit? (Coded by Nneeve)
+//------------------------------------------------------------------
+void FPU_ADD_SUB(int regd, int regt, int issub)
+{
+	static u32 PCSX2_ALIGNED16(roundmode_temp[4]) = { 0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+	int tempecx = _allocX86reg(ECX, X86TYPE_TEMP, 0, 0); //receives regd
+	int temp2 = _allocX86reg(-1, X86TYPE_TEMP, 0, 0); //receives regt
+	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt 
+	int roundmodeFlag = 0;
+ 
+	if (tempecx != ECX)	{ SysPrintf("FPU: ADD/SUB Allocation Error!\n"); tempecx = ECX;}
+	if (temp2 == -1)	{ SysPrintf("FPU: ADD/SUB Allocation Error!\n"); temp2 = EAX;}
+	if (xmmtemp == -1)	{ SysPrintf("FPU: ADD/SUB Allocation Error!\n"); xmmtemp = XMM0;}
+ 
+	if ((g_sseMXCSR & 0x00006000) != 0x00006000) { // Set roundmode to chop if it isn't already
+		roundmode_temp[0] = (g_sseMXCSR & 0xFFFF9FFF) | 0x00006000; // Set new roundmode
+		roundmode_temp[1] = g_sseMXCSR; // Backup old Roundmode
+		SSE_LDMXCSR ((uptr)&roundmode_temp[0]); // Recompile Roundmode Change
+		roundmodeFlag = 1;
+	}
+
+	SSE2_MOVD_XMM_to_R(tempecx, regd); 
+	SSE2_MOVD_XMM_to_R(temp2, regt);
+ 
+	//mask the exponents
+	SHR32ItoR(tempecx, 23); 
+	SHR32ItoR(temp2, 23);
+	AND32ItoR(tempecx, 0xff);
+	AND32ItoR(temp2, 0xff); 
+ 
+	SUB32RtoR(tempecx, temp2); //tempecx = exponent difference
+	CMP32ItoR(tempecx, 25);
+	j8Ptr[0] = JGE8(0);
+	CMP32ItoR(tempecx, 0);
+	j8Ptr[1] = JG8(0);
+	j8Ptr[2] = JE8(0);
+	CMP32ItoR(tempecx, -25);
+	j8Ptr[3] = JLE8(0);
+ 
+	//diff = -24 .. -1 , expd < expt
+	NEG32R(tempecx); 
+	DEC32R(tempecx);
+	MOV32ItoR(temp2, 0xffffffff); 
+	SHL32CLtoR(temp2); //temp2 = 0xffffffff << tempecx
+	SSE2_MOVD_R_to_XMM(xmmtemp, temp2);
+	SSE_ANDPS_XMM_to_XMM(regd, xmmtemp); 
+	if (issub)
+		SSE_SUBSS_XMM_to_XMM(regd, regt);
+	else
+		SSE_ADDSS_XMM_to_XMM(regd, regt);
+	j8Ptr[4] = JMP8(0);
+ 
+	x86SetJ8(j8Ptr[0]);
+	//diff = 25 .. 255 , expt < expd
+	SSE_MOVAPS_XMM_to_XMM(xmmtemp, regt);
+	SSE_ANDPS_M128_to_XMM(xmmtemp, (uptr)s_neg);
+	if (issub)
+		SSE_SUBSS_XMM_to_XMM(regd, xmmtemp);
+	else
+		SSE_ADDSS_XMM_to_XMM(regd, xmmtemp);
+	j8Ptr[5] = JMP8(0);
+ 
+	x86SetJ8(j8Ptr[1]);
+	//diff = 1 .. 24, expt < expd
+	DEC32R(tempecx);
+	MOV32ItoR(temp2, 0xffffffff);
+	SHL32CLtoR(temp2); //temp2 = 0xffffffff << tempecx
+	SSE2_MOVD_R_to_XMM(xmmtemp, temp2);
+	SSE_ANDPS_XMM_to_XMM(xmmtemp, regt);
+	if (issub)
+		SSE_SUBSS_XMM_to_XMM(regd, xmmtemp);
+	else
+		SSE_ADDSS_XMM_to_XMM(regd, xmmtemp);
+	j8Ptr[6] = JMP8(0);
+ 
+	x86SetJ8(j8Ptr[3]);
+	//diff = -255 .. -25, expd < expt
+	SSE_ANDPS_M128_to_XMM(regd, (uptr)s_neg); 
+	if (issub)
+		SSE_SUBSS_XMM_to_XMM(regd, regt);
+	else
+		SSE_ADDSS_XMM_to_XMM(regd, regt);
+	j8Ptr[7] = JMP8(0);
+ 
+	x86SetJ8(j8Ptr[2]);
+	//diff == 0
+	if (issub)
+		SSE_SUBSS_XMM_to_XMM(regd, regt);
+	else
+		SSE_ADDSS_XMM_to_XMM(regd, regt);
+ 
+	x86SetJ8(j8Ptr[4]);
+	x86SetJ8(j8Ptr[5]);
+	x86SetJ8(j8Ptr[6]);
+	x86SetJ8(j8Ptr[7]);
+
+	if (roundmodeFlag == 1) { // Set roundmode back if it was changed
+		SSE_LDMXCSR ((uptr)&roundmode_temp[1]);
+	}
+
+	_freeXMMreg(xmmtemp);
+	_freeX86reg(temp2);
+	_freeX86reg(tempecx);
+}
+
+void FPU_ADD(int regd, int regt) {
+	if (FPU_ADD_SUB_HACK) FPU_ADD_SUB(regd, regt, 0);
+	else SSE_ADDSS_XMM_to_XMM(regd, regt);
+}
+ 
+void FPU_SUB(int regd, int regt) {
+	if (FPU_ADD_SUB_HACK) FPU_ADD_SUB(regd, regt, 1);
+	else SSE_SUBSS_XMM_to_XMM(regd, regt);
+}
+
+
+//------------------------------------------------------------------
 // CommutativeOp XMM (used for ADD, MUL, MAX, and MIN opcodes)
 //------------------------------------------------------------------
 static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
-	SSE_ADDSS_XMM_to_XMM, SSE_MULSS_XMM_to_XMM, SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM };
+	FPU_ADD, SSE_MULSS_XMM_to_XMM, SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM };
 
-static void (*recComOpM32_to_XMM[] )(x86SSERegType, uptr) = {
-	SSE_ADDSS_M32_to_XMM, SSE_MULSS_M32_to_XMM, SSE_MAXSS_M32_to_XMM, SSE_MINSS_M32_to_XMM };
+//static void (*recComOpM32_to_XMM[] )(x86SSERegType, uptr) = {
+//	SSE_ADDSS_M32_to_XMM, SSE_MULSS_M32_to_XMM, SSE_MAXSS_M32_to_XMM, SSE_MINSS_M32_to_XMM };
 
 int recCommutativeOp(int info, int regd, int op) 
 {
@@ -1552,7 +1704,7 @@ FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
 void recSUBhelper(int regd, int regt)
 {
 	if (CHECK_FPU_EXTRA_OVERFLOW /*&& !CHECK_FPUCLAMPHACK*/) { fpuFloat(regd); fpuFloat(regt); }
-	SSE_SUBSS_XMM_to_XMM(regd, regt);
+	FPU_SUB(regd, regt);
 }
 
 void recSUBop(int info, int regd)
