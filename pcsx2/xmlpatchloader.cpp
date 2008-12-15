@@ -21,31 +21,17 @@
 #include <string>
 
 using namespace std;
-extern "C" int g_ZeroGSOptions;
 
 #include "tinyxml/tinyxml.h"
 
-extern "C" {
-#	include "PS2Etypes.h"
-#	include "Patch.h"
-
-#	ifdef _WIN32
-#   include<windows.h>
-	struct AppData {
-		HWND hWnd;           // Main window handle
-		HINSTANCE hInstance; // Application instance
-		HMENU hMenu;         // Main window menu
-		HANDLE hConsole;
-	} extern gApp;
-#	endif
+#include "PS2Etypes.h"
+#include "Patch.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
-	void SysPrintf(char *fmt, ...);
-	int LoadPatch(char *patchfile);
-}
+extern void SysPrintf(const char *fmt, ...);
 
 #if !defined(_WIN32) && !defined(__MINGW32__)
 #ifndef strnicmp

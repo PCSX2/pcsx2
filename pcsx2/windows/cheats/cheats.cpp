@@ -24,14 +24,12 @@
 
 #include "PS2Etypes.h"
 
-extern "C" {
 #include "windows/resource.h"
 #include "PS2Edefs.h"
 #include "Memory.h"
 
 #include "cheats.h"
 #include "../../patch.h"
-}
 
 class result
 {
@@ -77,7 +75,7 @@ char tv[100];
 u8 *mptr[2]={PS2MEM_BASE,PS2MEM_PSX};
 #else
 char *mptr[2];
-extern "C" extern s8 *psxM;
+extern s8 *psxM;
 #endif
 
 int  msize[2]={0x02000000,0x00200000};

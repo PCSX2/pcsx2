@@ -105,9 +105,9 @@ char* CALLBACK PS2EgetLibName(void);
 #define KEYPRESS	1
 #define KEYRELEASE	2
 
-typedef struct {
+typedef struct _keyEvent {
 	u32 key;
-	u32 event;
+	u32 evt;
 } keyEvent;
 
 // for 64bit compilers
@@ -121,7 +121,7 @@ typedef char __keyEvent_Size__[(sizeof(keyEvent) == 8)?1:-1];
 
 typedef int (CALLBACK * SIOchangeSlotCB)(int slot);
 
-typedef struct {
+typedef struct _cdvdSubQ {
 	u8 ctrl:4;		// control and mode bits
 	u8 mode:4;		// control and mode bits
 	u8 trackNum;	// current track number (1 to 99)
@@ -135,12 +135,12 @@ typedef struct {
 	u8 discF;		// current frame offset from first track (BCD encoded)
 } cdvdSubQ;
 
-typedef struct { // NOT bcd coded
+typedef struct _cdvdTD { // NOT bcd coded
 	u32 lsn;
 	u8 type;
 } cdvdTD;
 
-typedef struct {
+typedef struct _cdvdTN {
 	u8 strack;	//number of the first track (usually 1)
 	u8 etrack;	//number of the last track
 } cdvdTN;
@@ -192,17 +192,21 @@ typedef int  (*USBhandler)(void);
 #define FREEZE_SAVE			1
 #define FREEZE_SIZE			2
 
-typedef struct {
+typedef struct _GSdriverInfo {
 	char name[8];
 	void *common;
 } GSdriverInfo;
 
 #ifdef _WIN32
-typedef struct { // unsupported values must be set to zero
+typedef struct _winInfo { // unsupported values must be set to zero
 	HWND hWnd;
 	HMENU hMenu;
 	HWND hStatusWnd;
 } winInfo;
+#endif
+
+#ifdef _cplusplus
+extern "C" {
 #endif
 
 /* GS plugin API */
@@ -878,6 +882,10 @@ extern _FWconfigure       FWconfigure;
 extern _FWfreeze          FWfreeze;
 extern _FWtest            FWtest;
 extern _FWabout           FWabout;
+#endif
+
+#ifdef _cplusplus
+}	// End extern "C"
 #endif
 
 #endif /* __PS2EDEFS_H__ */

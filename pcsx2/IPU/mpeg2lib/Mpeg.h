@@ -82,7 +82,7 @@ struct macroblock_rgb16{
 	struct rgb16	c[16][16];
 };
 
-struct decoder_s {
+struct decoder_t {
     /* first, state that carries information from one macroblock to the */
     /* next inside a slice, and is never used outside of mpeg2_slice() */
 
@@ -159,8 +159,6 @@ struct decoder_s {
 
     int mpeg1;
 };
-
-typedef struct decoder_s decoder_t;
 
 #define IDEC	0
 #define BDEC	1

@@ -61,11 +61,11 @@ x86IntRegType g_x86non8bitregs[3] = { RBP, RSI, RDI };
 
 #endif // __x86_64__
 
-s8  *x86Ptr;
+u8  *x86Ptr;
 u8  *j8Ptr[32];
 u32 *j32Ptr[32];
 
-extern void SysPrintf(char *fmt, ...);
+extern void SysPrintf(const char *fmt, ...);
 
 _inline void WriteRmOffset(x86IntRegType to, s32 offset)
 {
@@ -170,7 +170,7 @@ __forceinline u8* J8Rel( int cc, int to )
 {
 	write8( cc );
 	write8( to );
-	return x86Ptr - 1;
+	return (u8*)(x86Ptr - 1);
 }
 
 __forceinline u16* J16Rel( int cc, u32 to )
@@ -207,7 +207,7 @@ _inline void CMOV32MtoR( int cc, int to, uptr from )
 }
 
 ////////////////////////////////////////////////////
-_inline void x86SetPtr( s8* ptr ) 
+_inline void x86SetPtr( u8* ptr ) 
 {
 	x86Ptr = ptr;
 }
@@ -220,7 +220,7 @@ _inline void x86Shutdown( void )
 ////////////////////////////////////////////////////
 _inline void x86SetJ8( u8* j8 )
 {
-	u32 jump = ( x86Ptr - (s8*)j8 ) - 1;
+	u32 jump = ( x86Ptr - j8 ) - 1;
 
 	if ( jump > 0x7f ) {
 		assert(0);
@@ -231,7 +231,7 @@ _inline void x86SetJ8( u8* j8 )
 
 _inline void x86SetJ8A( u8* j8 )
 {
-	u32 jump = ( x86Ptr - (s8*)j8 ) - 1;
+	u32 jump = ( x86Ptr - j8 ) - 1;
 
 	if ( jump > 0x7f ) {
 		assert(0);
@@ -253,7 +253,7 @@ _inline void x86SetJ8A( u8* j8 )
 _inline void x86SetJ16( u16 *j16 )
 {
 	// doesn't work
-	u32 jump = ( x86Ptr - (s8*)j16 ) - 2;
+	u32 jump = ( x86Ptr - (u8*)j16 ) - 2;
 
 	if ( jump > 0x7fff ) {
 		assert(0);
@@ -273,7 +273,7 @@ _inline void x86SetJ16A( u16 *j16 )
 ////////////////////////////////////////////////////
 _inline void x86SetJ32( u32* j32 ) 
 {
-	*j32 = ( x86Ptr - (s8*)j32 ) - 4;
+	*j32 = ( x86Ptr - (u8*)j32 ) - 4;
 }
 
 _inline void x86SetJ32A( u32* j32 )
@@ -286,7 +286,7 @@ _inline void x86SetJ32A( u32* j32 )
 _inline void x86Align( int bytes ) 
 {
 	// fordward align
-	x86Ptr = (s8*)( ( (uptr)x86Ptr + bytes - 1) & ~( bytes - 1 ) );
+	x86Ptr = (u8*)( ( (uptr)x86Ptr + bytes - 1) & ~( bytes - 1 ) );
 }
 
 /********************/
@@ -2590,7 +2590,7 @@ _inline void NEG16R( x86IntRegType from )
 ////////////////////////////////////
 
 __forceinline u8* JMP( uptr to ) {
-	uptr jump = ( x86Ptr - (s8*)to ) - 1;
+	uptr jump = ( x86Ptr - (u8*)to ) - 1;
 
 	if ( jump > 0x7f ) {
 		assert( to <= 0xffffffff );

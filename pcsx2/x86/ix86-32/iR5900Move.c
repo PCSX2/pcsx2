@@ -62,7 +62,7 @@ REC_FUNC(MOVN);
 *********************************************************/
 
 //// LUI
-void recLUI(int info)
+void recLUI()
 {
 	int mmreg;
 	if(!_Rt_) return;
@@ -433,7 +433,7 @@ void recMOVZtemp_const()
 	}
 }
 
-static PCSX2_ALIGNED16(s_zero[4]) = {0,0,0xffffffff, 0xffffffff};
+//static PCSX2_ALIGNED16(u32 s_zero[4]) = {0,0,0xffffffff, 0xffffffff};
 
 void recMOVZtemp_consts(int info)
 {

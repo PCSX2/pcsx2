@@ -21,6 +21,8 @@
 
 #include "PsxCommon.h"
 
+sio2Struct sio2;
+
 /*
 w [8268]=0x3bc		sio2_start/sio2man
 r [8270]		padman_start/padman

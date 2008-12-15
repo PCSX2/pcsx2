@@ -22,14 +22,14 @@
 // fixme: sCycle, Cycle, and otarget are unused
 // Can't remove them without making a new savestate version though.
 
-typedef struct {
+struct psxCounter {
 	u64 count, target;
     u32 mode;
 	u32 rate, interrupt, otarget;
 	u32 sCycle, Cycle;
 	u32 sCycleT;
 	s32 CycleT;
-} psxCounter;
+};
 
 extern psxCounter psxCounters[8];
 extern s32 psxNextCounter;

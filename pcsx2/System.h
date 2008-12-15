@@ -35,7 +35,7 @@ void SysMunmap(uptr base, u32 size);
 
 #ifdef PCSX2_VIRTUAL_MEM
 
-typedef struct _PSMEMORYBLOCK
+struct PSMEMORYBLOCK
 {
 #ifdef _WIN32
     int NumberPages;
@@ -46,7 +46,7 @@ typedef struct _PSMEMORYBLOCK
     char* pname; // given name
     int size; // size of allocated region
 #endif
-} PSMEMORYBLOCK;
+};
 
 int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock);
 void SysPhysicalFree(PSMEMORYBLOCK* pblock);

@@ -30,6 +30,7 @@
 #endif
 
 FILE * MemoryCard1, * MemoryCard2;
+_sio sio;
 
 const unsigned char cardh[4] = { 0xFF, 0xFF, 0x5a, 0x5d };
 // Memory Card Specs : Sector size etc.
@@ -46,20 +47,20 @@ struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 0x52, 0x5A};
 #define SIO_FORCEINLINE __forceinline
 #endif
 
-void _ReadMcd(char *data, u32 adr, int size) {
+static void _ReadMcd(u8 *data, u32 adr, int size) {
 	ReadMcd(sio.CtrlReg&0x2000?2:1, data, adr, size);
 }
 
-void _SaveMcd(char *data, u32 adr, int size) {
+static void _SaveMcd(const u8 *data, u32 adr, int size) {
 	SaveMcd(sio.CtrlReg&0x2000?2:1, data, adr, size);
 }
 
-void _EraseMCDBlock(u32 adr) {
+static void _EraseMCDBlock(u32 adr) {
 	EraseMcd(sio.CtrlReg&0x2000?2:1, adr);
 }
 
-unsigned char sio_xor(unsigned char *buf, unsigned int length){
-	register unsigned char i, x;
+u8 sio_xor(u8 *buf, unsigned int length){
+	u8 i, x;
 
 	for (x=0, i=0; i<length; i++)	x ^= buf[i];
 	return x & 0xFF;
@@ -85,8 +86,8 @@ void psxSIOShutdown()
 	if(MemoryCard2) fclose(MemoryCard2);
 }
 
-unsigned char sioRead8() {
-	unsigned char ret = 0xFF;
+u8 sioRead8() {
+	u8 ret = 0xFF;
 
 	if (sio.StatReg & RX_RDY) {
 		ret = sio.buf[sio.parp];
@@ -566,7 +567,7 @@ void SeekMcd(FILE *f, u32 adr) {
 		fseek(f, adr, SEEK_SET);
 }
 
-void ReadMcd(int mcd, char *data, u32 adr, int size) {
+void ReadMcd(int mcd, u8 *data, u32 adr, int size) {
 	if(mcd == 1)
 	{
 		if (MemoryCard1 == NULL) {
@@ -587,7 +588,7 @@ void ReadMcd(int mcd, char *data, u32 adr, int size) {
 	}
 }
 
-void SaveMcd(int mcd, char *data, u32 adr, int size) {
+void SaveMcd(int mcd, const u8 *data, u32 adr, int size) {
 	if(mcd == 1)
 	{
 		SeekMcd(MemoryCard1, adr);

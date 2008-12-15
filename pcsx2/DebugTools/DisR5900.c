@@ -24,8 +24,7 @@
 #include "R5900.h"
 #include "VU.h"
 
-long jumpMode;
-char ostr[1024];
+static char ostr[1024];
 
 // Names of registers
 char *disRNameGPR[] = {
@@ -162,10 +161,10 @@ typedef char* (*TdisR5900F)DisFInterface;
 #define dCode()		sprintf(ostr, "%s %8.8x,", ostr, (code >> 6) & 0xffffff)
 #define dSaR()		sprintf(ostr, "%s %8.8x,", ostr, cpuRegs.sa)
 
-typedef struct {
+struct sSymbol {
 	u32 addr;
 	char name[32];
-} sSymbol;
+};
 
 static sSymbol *dSyms = NULL;
 static int nSyms = 0;

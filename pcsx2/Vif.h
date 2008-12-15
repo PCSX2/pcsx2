@@ -19,12 +19,12 @@
 #ifndef __VIF_H__
 #define __VIF_H__
 
-typedef struct {
+struct vifCycle {
 	u8 cl, wl;
 	u8 pad[2];
-} vifCycle;
+};
 
-typedef struct {
+struct VIFregisters {
 	u32 stat;
 	u32 pad0[3];
 	u32 fbrst;
@@ -75,7 +75,16 @@ typedef struct {
 	u32 pad23[3];
 	u32 offset;    // internal UNPACK offset
 	u32 addr;
-} VIFregisters;
+};
+
+extern "C"
+{
+	// these use cdecl for Asm code references.
+	extern VIFregisters *_vifRegs;
+	extern u32* _vifMaskRegs;
+	extern u32* _vifRow;
+	extern u32* _vifCol;
+}
 
 #define vif0Regs ((VIFregisters*)&PS2MEM_HW[0x3800])
 #define vif1Regs ((VIFregisters*)&PS2MEM_HW[0x3c00])

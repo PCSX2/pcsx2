@@ -38,6 +38,8 @@ HWND debughWnd;
 unsigned long DebuggerIOPPC=0;
 HWND hIOPDlg;//IOP debugger
 
+breakpoints bkpt_regv[NUM_BREAKPOINTS];
+
 
 void RefreshDebugAll()//refresh disasm and register window
 {
@@ -163,7 +165,7 @@ BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						opcode_addr=temp;
 						MakeDebugOpcode();											
                         OpcodePrintTable[(cpuRegs.code) >> 26](tmp);
-						if (HasBreakpoint(temp))
+						if (HasBreakpoint())
 						{
 								sprintf(buf, "*%08X %08X: %s", temp, cpuRegs.code, tmp);
 						}

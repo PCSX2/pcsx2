@@ -1990,7 +1990,7 @@ void recStore_call(int bit, int gprreg, u32 offset)
 		else if( bit == 64 ) {
 			if( !(g_cpuFlushedConstReg&(1<<gprreg)) ) {
 				// write to a temp loc, trick
-				u32* ptr = (u32*)recAllocStackMem(8, 4);
+				u32* ptr = recAllocStackMem(8, 4);
 				ptr[0] = g_cpuConstRegs[gprreg].UL[0];
 				ptr[1] = g_cpuConstRegs[gprreg].UL[1];
 				MOV32ItoR(EAX, (u32)ptr);
@@ -3465,7 +3465,7 @@ void recLQC2( void )
 		dohw = recSetMemLocation(_Rs_, _Imm_, mmregs, 2, 0);
 
 		if( _Ft_ ) {
-			s8* rawreadptr = x86Ptr;
+			u8* rawreadptr = x86Ptr;
 
 			if( mmreg >= 0 ) {
 				SSEX_MOVDQARmtoROffset(mmreg, ECX, PS2MEM_BASE_+s_nAddMemOffset);
@@ -3531,7 +3531,7 @@ void recLQC2_co( void )
 	else
 #endif
 	{
-		s8* rawreadptr;
+		u8* rawreadptr;
 		int dohw;
 		int mmregs = _eePrepareReg(_Rs_);
 
@@ -3594,7 +3594,7 @@ void recSQC2( void )
 	else
 #endif
 	{
-		s8* rawreadptr;
+		u8* rawreadptr;
 		int dohw, mmregs;
 		
 		if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -3681,7 +3681,7 @@ void recSQC2_co( void )
 	else
 #endif
 	{
-		s8* rawreadptr;
+		u8* rawreadptr;
 		int dohw;
 		int mmregs = _eePrepareReg(_Rs_);
 

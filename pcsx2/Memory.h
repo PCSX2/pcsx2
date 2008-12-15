@@ -31,10 +31,10 @@
 #ifdef PCSX2_VIRTUAL_MEM
 
 #ifdef _WIN32
-typedef struct _PSMEMORYMAP
+struct PSMEMORYMAP
 {
 	uptr* aPFNs, *aVFNs;
-} PSMEMORYMAP;
+};
 #endif
 
 #define TRANSFORM_ADDR(memaddr) ( ((u32)(memaddr)>=0x40000000) ? ((memaddr)&~0xa0000000) : (memaddr) )

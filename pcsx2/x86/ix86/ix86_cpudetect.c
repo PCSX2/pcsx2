@@ -27,11 +27,13 @@
 
 #if defined (_MSC_VER) && _MSC_VER >= 1400
 
-   void __cpuid(int* CPUInfo, int InfoType);
-   unsigned __int64 __rdtsc();
-
-   #pragma intrinsic(__cpuid)
-   #pragma intrinsic(__rdtsc)
+	extern "C"
+	{
+		void __cpuid(int* CPUInfo, int InfoType);
+		unsigned __int64 __rdtsc();
+#		pragma intrinsic(__cpuid)
+#		pragma intrinsic(__rdtsc)
+	}
 
 #endif
 
@@ -48,7 +50,7 @@ extern s32 iCpuId( u32 cmd, u32 *regs )
 
 #if defined (_MSC_VER) && _MSC_VER >= 1400
 
-   __cpuid( regs, cmd );
+   __cpuid( (int*)regs, cmd );
 
    return 0;
 

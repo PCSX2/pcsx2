@@ -507,7 +507,7 @@ EERECOMPILE_CODE0(BNEL, XMMINFO_READS|XMMINFO_READT);
 //}
 
 ////////////////////////////////////////////////////
-void recBLTZAL(int info) 
+void recBLTZAL() 
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 

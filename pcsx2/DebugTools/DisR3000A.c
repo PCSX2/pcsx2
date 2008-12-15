@@ -18,7 +18,7 @@
 
 #include "Debug.h"
 
-char ostr[256];
+static char ostr[1024];
 
 // Names of registers
 static char *disRNameGPR[] = {

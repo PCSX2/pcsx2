@@ -132,7 +132,7 @@ void _eeOnWriteReg(int reg, int signext);
 void _deleteEEreg(int reg, int flush);
 
 // allocates memory on the instruction size and returns the pointer
-void* recAllocStackMem(int size, int align);
+u32* recAllocStackMem(int size, int align);
 
 //////////////////////////////////////
 // Templates for code recompilation //

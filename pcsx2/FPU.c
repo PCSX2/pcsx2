@@ -16,7 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <math.h>
+#include <cmath>
 #include "Common.h"
 #include "R5900.h"
 #include "InterTables.h"
@@ -355,10 +355,10 @@ void RSQRT_S() {
 	}
 	else if ( _FtValUl_ & 0x80000000 ) { // Ft is negative
 		_ContVal_ |= FPUflagI | FPUflagSI;
-		temp.f = fpusqrtf( fpufabsf( fpuDouble( _FtValUl_ ) ) );
+		temp.f = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
 		_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( temp.UL );
 	}
-	else { _FdValf_ = fpuDouble( _FsValUl_ ) / fpusqrtf( fpuDouble( _FtValUl_ ) ); } // Ft is positive and not zero
+	else { _FdValf_ = fpuDouble( _FsValUl_ ) / sqrt( fpuDouble( _FtValUl_ ) ); } // Ft is positive and not zero
 
 	checkOverflow( _FdValUl_, 0, 1 );
 	checkUnderflow( _FdValUl_, 0, 1 );
@@ -368,9 +368,9 @@ void SQRT_S() {
 	if ( ( _FtValUl_ & 0xFF800000 ) == 0x80000000 ) { _FdValUl_ = 0x80000000; } // If Ft = -0
 	else if ( _FtValUl_ & 0x80000000 ) { // If Ft is Negative
 		_ContVal_ |= FPUflagI | FPUflagSI;
-		_FdValf_ = fpusqrtf( fpufabsf( fpuDouble( _FtValUl_ ) ) );
+		_FdValf_ = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
 	}
-	else { _FdValf_ = fpusqrtf( fpuDouble( _FtValUl_ ) ); } // If Ft is Positive
+	else { _FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); } // If Ft is Positive
 	clearFPUFlags( FPUflagD );
 }
 

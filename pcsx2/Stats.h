@@ -21,7 +21,7 @@
 
 #include <time.h>
 
-typedef struct {
+struct Stats {
 	time_t vsyncTime;
 	u32 vsyncCount;
 	u32 eeCycles;
@@ -33,7 +33,8 @@ typedef struct {
 	u32 framecount;
 	u32 vu1count;
 	u32 vif1count;
-} Stats;
+};
+
 Stats stats;
 
 void statsOpen();

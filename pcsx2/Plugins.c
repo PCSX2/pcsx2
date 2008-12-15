@@ -214,6 +214,11 @@ _FWfreeze          FWfreeze;
 _FWtest            FWtest;
 _FWabout           FWabout;
 
+
+DEV9handler dev9Handler;
+USBhandler usbHandler;
+
+
 #define CheckErr(func) \
     err = SysLibError(); \
     if (err != NULL) { SysMessage (_("%s: Error loading %s: %s"), filename, func, err); return -1; }
@@ -708,7 +713,7 @@ extern void spu2DMA4Irq();
 extern void spu2DMA7Irq();
 extern void spu2Irq();
 
-typedef struct _PluginOpenStatusFlags
+struct PluginOpenStatusFlags
 {
 	u8	GS : 1
 	,	CDVD : 1
@@ -719,7 +724,7 @@ typedef struct _PluginOpenStatusFlags
 	,	PAD2 : 1
 	,	FW : 1;
 
-} PluginOpenStatusFlags;
+};
 
 static PluginOpenStatusFlags OpenStatus;
 

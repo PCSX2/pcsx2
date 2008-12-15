@@ -31,12 +31,13 @@ void psxDma10(u32 madr, u32 bcr, u32 chcr);
 int  psxDma4Interrupt();
 int  psxDma7Interrupt();
 void  dev9Interrupt();
-DEV9handler dev9Handler;
 void dev9Irq(int cycles);
 void  usbInterrupt();
-USBhandler usbHandler;
 void usbIrq(int cycles);
 void fwIrq();
 void spu2Irq();
+
+extern DEV9handler dev9Handler;
+extern USBhandler usbHandler;
 
 #endif /* __PSXDMA_H__ */

@@ -21,7 +21,7 @@
 #include "VUmicro.h"
 #include "deci2.h"
 
-typedef struct tag_DECI2_DBGP_HEADER{
+struct DECI2_DBGP_HEADER{
     DECI2_HEADER	h;		//+00
 	u16				id;		//+08
 	u8				type,	//+0A
@@ -29,9 +29,9 @@ typedef struct tag_DECI2_DBGP_HEADER{
 					result,	//+0C
 					count;	//+0D
 	u16				_pad;	//+0E
-} DECI2_DBGP_HEADER;		//=10
+};		//=10
 
-typedef struct tag_DECI2_DBGP_CONF{
+struct DECI2_DBGP_CONF{
 	u32	major_ver,			//+00
 		minor_ver,			//+04
 		target_id,			//+08
@@ -49,7 +49,7 @@ typedef struct tag_DECI2_DBGP_CONF{
 		run_stop_state,		//+38
 		hdbg_area_addr,		//+3C
 		hdbg_area_size;		//+40
-} DECI2_DBGP_CONF;			//=44
+};			//=44
 
 DECI2_DBGP_CONF
 cpu={3, 0, PROTO_EDBGP, 0, 0x41F, 1, 7, 32, 32, 1, 0xFF, 0xFF, 0x1F, 0x400, 2, 0x80020c70, 0x100},
@@ -59,39 +59,39 @@ iop={3, 0, PROTO_IDBGP, 0, 0x00F, 1, 5, 62, 32, 1, 0x00, 0x00, 0x07, 0x200, 1, 0
 //iop={3, 0, PROTO_IDBGP, 0, 0x00F, 1, 5, 62, 0, 1, 0x00, 0x00, 0x07, 0x200, 0, 0x00006940, 0x100};
 
 #pragma pack(2)
-typedef struct tag_DECI2_DBGP_EREG{
+struct DECI2_DBGP_EREG{
 	u8	kind,				//+00
 		number;				//+01
 	u16	_pad;				//+02
 	u64	value[2];			//+04
-} DECI2_DBGP_EREG;			//=14
+};			//=14
 
-typedef struct tag_DECI2_DBGP_IREG{
+struct DECI2_DBGP_IREG{
 	u8	kind,				//+00
 		number;				//+01
 	u16	_pad;				//+02
 	u32	value;				//+04
-} DECI2_DBGP_IREG;			//=08
+};			//=08
 
-typedef struct tag_DECI2_DBGP_MEM{
+struct DECI2_DBGP_MEM{
 	u8	space,				//+00
 		align;				//+01
 	u16	_pad;				//+02
 	u32	address;			//+04
 	u32	length;				//+08
-} DECI2_DBGP_MEM;			//=0C
+};			//=0C
 
-typedef struct tag_DECI2_DBGP_RUN{
+struct DECI2_DBGP_RUN{
 	u32	entry,				//+00
 		gp,					//+04
 		_pad,				//+08
 		_pad1,				//+0C
 		argc;				//+10
 	u32	argv[0];			//+14
-} DECI2_DBGP_RUN;			//=14
+};			//=14
 #pragma pack()
 
-void D2_DBGP(char *inbuffer, char *outbuffer, char *message, char *eepc, char *ioppc, char *eecy, char *iopcy){
+void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char *ioppc, char *eecy, char *iopcy){
 	DECI2_DBGP_HEADER	*in=(DECI2_DBGP_HEADER*)inbuffer,
 						*out=(DECI2_DBGP_HEADER*)outbuffer;
 	u8	*data=(u8*)in+sizeof(DECI2_DBGP_HEADER);
@@ -410,5 +410,5 @@ void sendBREAK(u8 source, u16 id, u8 code, u8 result, u8 count){
 	tmp.result		=result;
 	tmp.count		=count;
 	tmp._pad		=0;
-	writeData((char*)&tmp);
+	writeData((u8*)&tmp);
 }

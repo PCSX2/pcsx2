@@ -21,14 +21,14 @@
 
 // fixme: Cycle and sCycleT members are unused.
 //	      But they can't be removed without making a new savestate version.
-typedef struct {
+struct Counter {
 	u32 count, mode, target, hold;
 	u32 rate, interrupt;
 	u32 Cycle;
 	u32 sCycle;					// start cycle of timer
 	s32 CycleT;
 	u32 sCycleT;		// delta values should be signed.
-} Counter;
+};
 
 //------------------------------------------------------------------
 // SPEED HACKS!!! (1 is normal) (They have inverse affects, only set 1 at a time)

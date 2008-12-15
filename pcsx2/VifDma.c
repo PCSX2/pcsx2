@@ -38,14 +38,21 @@
 #define gif ((DMACh*)&PS2MEM_HW[0xA000])
 
 // Extern variables
-extern VIFregisters *_vifRegs;
-extern vifStruct *_vif;
-extern u32* _vifMaskRegs;
+extern "C"
+{
+	// Need cdecl on these for ASM references.
+	extern VIFregisters *_vifRegs;
+	extern u32* _vifMaskRegs;
+	extern u32* _vifRow;
+	extern u32* _vifCol;
+}
+
 extern PCSX2_ALIGNED16_DECL(u32 g_vifRow0[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_vifCol0[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_vifRow1[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_vifCol1[4]);
-extern u32* _vifRow, *_vifCol;
+
+extern vifStruct *_vif;
 
 vifStruct vif0, vif1;
 
@@ -58,12 +65,6 @@ static const unsigned int VIF0intc = 4;
 static const unsigned int VIF1intc = 5;
 static const unsigned int VIF0dmanum = 0;
 static const unsigned int VIF1dmanum = 1;
-
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-extern HANDLE g_hGsEvent;
-#else
-extern pthread_cond_t g_condGsEvent;
-#endif
 
 int g_vifCycles = 0;
 int path3hack = 0;
@@ -79,7 +80,7 @@ extern void (*Vif0CMDTLB[75])();
 extern int (*Vif1TransTLB[128])(u32 *data);
 extern int (*Vif0TransTLB[128])(u32 *data);
 
-typedef struct {
+struct VIFUnpackFuncTable {
 	UNPACKFUNCTYPE       funcU;
 	UNPACKFUNCTYPE       funcS;
 
@@ -88,7 +89,7 @@ typedef struct {
 	int gsize; // size of data in bytes used for each write cycle
 	int qsize; // used for unpack parts, num of vectors that 
 			   // will be decompressed from data for 1 cycle
-} VIFUnpackFuncTable;
+};
 
 /* block size; data size; group size; qword size; */
 #define _UNPACK_TABLE32(name, bsize, dsize, gsize, qsize) \
@@ -125,21 +126,23 @@ static const VIFUnpackFuncTable VIFfuncTable[16] = {
 
 #if !defined(PCSX2_NORECBUILD)
 
-typedef struct {
+struct VIFSSEUnpackTable {
 	// regular 0, 1, 2; mask 0, 1, 2
 	UNPACKPARTFUNCTYPESSE       funcU[9], funcS[9];
-} VIFSSEUnpackTable;
+};
 
 #define DECL_UNPACK_TABLE_SSE(name, sign) \
-extern int UNPACK_SkippingWrite_##name##_##sign##_Regular_0(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_Regular_1(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_Regular_2(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_Mask_0(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_Mask_1(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_Mask_2(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_WriteMask_0(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_WriteMask_1(u32* dest, u32* data, int dmasize); \
-extern int UNPACK_SkippingWrite_##name##_##sign##_WriteMask_2(u32* dest, u32* data, int dmasize); \
+extern "C" { \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_Regular_0(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_Regular_1(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_Regular_2(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_Mask_0(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_Mask_1(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_Mask_2(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_WriteMask_0(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_WriteMask_1(u32* dest, u32* data, int dmasize); \
+	extern int UNPACK_SkippingWrite_##name##_##sign##_WriteMask_2(u32* dest, u32* data, int dmasize); \
+}
 
 #define _UNPACK_TABLE_SSE(name, sign) \
 	UNPACK_SkippingWrite_##name##_##sign##_Regular_0, \
@@ -340,7 +343,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 	u8 *cdata = (u8*)data;
 	//u64 basetick = GetCPUTick();
 #ifdef _DEBUG
-	int memsize;
+	u32 memsize;
 #endif
 
 #ifdef _MSC_VER
@@ -468,7 +471,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 	if (vifRegs->cycle.cl >= vifRegs->cycle.wl) { // skipping write
 
 #ifdef _DEBUG
-		static s_count=0;
+		static int s_count=0;
 #endif
 		//u32* olddest = dest;
 		
@@ -1621,18 +1624,17 @@ static int Vif1TransDirectHL(u32 *data){
 		}
 		//if(splitptr < 4) SysPrintf("Whoopsie\n");
 		if( CHECK_MULTIGS ) {
-			u64* gsmem = (u64*)GSRingBufCopy(16, GS_RINGTYPE_P2);
-			if( gsmem != NULL ) {
-				//FreezeMMXRegs(1);
-				//memcpy_fast(gsmem, (u32*)splittransfer[0], 16);
-				//FreezeMMXRegs(0);
-
+			u8* gsmem = GSRingBufCopy(16, GS_RINGTYPE_P2);
+			if( gsmem != NULL )
+			{
 				// copy 16 bytes the fast way:
-				gsmem[0] = ((u64*)splittransfer[0])[0];
-				gsmem[1] = ((u64*)splittransfer[0])[1];
+				const u64* src = (u64*)splittransfer[0];
+				u64* dst = (u64*)gsmem;
+				dst[0] = src[0];
+				dst[1] = src[1];
 
+				GSRINGBUF_DONECOPY(gsmem, 16);
 				GSgifTransferDummy(1, (u32*)splittransfer[0], 1);
-				GSRINGBUF_DONECOPY((u8*)gsmem, 16);
 			}
 		}
 		else {
@@ -1667,7 +1669,7 @@ static int Vif1TransDirectHL(u32 *data){
 		vif1.cmd = 0;
     }
 
-	
+	//TODO: ret is guaranteed to be qword aligned ?
 	
 	if( CHECK_MULTIGS ) {
 		u8* gsmem = GSRingBufCopy(ret<<2, GS_RINGTYPE_P2);

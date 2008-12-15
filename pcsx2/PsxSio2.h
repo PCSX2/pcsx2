@@ -49,7 +49,7 @@ struct SIO2_packet {
     unsigned int dmacCount2;
 };
 
-typedef struct {
+struct sio2Struct {
 	struct SIO2_packet packet;
 	u32 ctrl;
 	u32 intr;
@@ -60,9 +60,9 @@ typedef struct {
 	int cmdlength;	//length of a command sent to a port
 					//is less_equal than the dma send size
 	u8 buf[BUFSIZE];
-} sio2Struct;
+};
 
-sio2Struct sio2;
+extern sio2Struct sio2;
 
 void sio2Reset();
 

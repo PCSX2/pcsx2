@@ -22,8 +22,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define PLUGINtypedefs // for GSgifTransfer1
-
 #include "Common.h"
 #include "GS.h"
 #include "InterTables.h"
@@ -43,71 +41,6 @@
 #ifdef _WIN32
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)
-#endif
-
-extern _GSgifTransfer1    GSgifTransfer1;
-
-#ifdef PCSX2_DEVBUILD
-
-// These would make more sense in GS.cpp, but then the legacy "C" files
-// (like this one!) wouldn't be able to access them (C++ name mangling)
-
-__forceinline void GSGIFTRANSFER1(u32 *pMem, u32 addr) { 
-	if( g_SaveGSStream == 2) { 
-		u32 type = GSRUN_TRANS1; 
-		u32 size = (0x4000-(addr))/16; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &size, 4);
-		gzwrite(g_fGSSave, ((u8*)pMem)+(addr), size*16); 
-	} 
-	GSgifTransfer1(pMem, addr); 
-}
-
-__forceinline void GSGIFTRANSFER2(u32 *pMem, u32 size) { 
-	if( g_SaveGSStream == 2) { 
-		u32 type = GSRUN_TRANS2; 
-		u32 _size = size; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &_size, 4); 
-		gzwrite(g_fGSSave, pMem, _size*16); 
-	} 
-	GSgifTransfer2(pMem, size); 
-}
-
-__forceinline void GSGIFTRANSFER3(u32 *pMem, u32 size) { 
-	if( g_SaveGSStream == 2 ) { 
-		u32 type = GSRUN_TRANS3; 
-		u32 _size = size; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &_size, 4); 
-		gzwrite(g_fGSSave, pMem, _size*16); 
-	} 
-	GSgifTransfer3(pMem, size); 
-}
-
-__forceinline void GSVSYNC(void) { 
-	if( g_SaveGSStream == 2 ) { 
-		u32 type = GSRUN_VSYNC; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-	} 
-} 
-
-#else
-
-__forceinline void GSGIFTRANSFER1(u32 *pMem, u32 addr) { 
-	GSgifTransfer1(pMem, addr); 
-}
-
-__forceinline void GSGIFTRANSFER2(u32 *pMem, u32 size) { 
-	GSgifTransfer2(pMem, size); 
-}
-
-__forceinline void GSGIFTRANSFER3(u32 *pMem, u32 size) { 
-	GSgifTransfer3(pMem, size); 
-}
-
-__forceinline void GSVSYNC(void) { 
-} 
 #endif
 
 int g_VuNanHandling = 0; // for now enable all the time

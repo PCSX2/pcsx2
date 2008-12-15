@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 
-typedef struct {
+struct R5900cpu {
 	int  (*Init)();
 	void (*Reset)();
 	void (*Step)();
@@ -35,14 +35,14 @@ typedef struct {
 	void (*ClearVU0)(u32 Addr, u32 Size);
 	void (*ClearVU1)(u32 Addr, u32 Size);
 	void (*Shutdown)();
-} R5900cpu;
+};
 
 extern R5900cpu *Cpu;
 extern R5900cpu intCpu;
 extern R5900cpu recCpu;
 extern u32 bExecBIOS;
 
-typedef union {   // Declare union type GPR register
+union GPR_reg {   // Declare union type GPR register
 	u64 UD[2];      //128 bits
 	s64 SD[2];
 	u32 UL[4];
@@ -51,9 +51,9 @@ typedef union {   // Declare union type GPR register
 	s16 SS[8];
 	u8  UC[16];
 	s8  SC[16];
-} GPR_reg;
+};
 
-typedef union {
+union GPRregs {
 	struct {
 		GPR_reg r0, at, v0, v1, a0, a1, a2, a3,
 				t0, t1, t2, t3, t4, t5, t6, t7,
@@ -61,16 +61,16 @@ typedef union {
 				t8, t9, k0, k1, gp, sp, s8, ra;
 	} n;
 	GPR_reg r[32];
-} GPRregs;
+};
 
-typedef union {
+union PERFregs {
 	struct {
 		u32 pccr, pcr0, pcr1, pad;
 	} n;
 	u32 r[4];
-} PERFregs;
+};
 
-typedef union {
+union CP0regs {
 	struct {
 		u32	Index,    Random,    EntryLo0,  EntryLo1,
 			Context,  PageMask,  Wired,     Reserved0,
@@ -103,9 +103,9 @@ typedef union {
 			TagLo,    TagHi,     ErrorEPC,  DESAVE;
 	} n;
 	u32 r[32];
-} CP0regs;
+};
 
-typedef struct {
+struct cpuRegisters {
     GPRregs GPR;		// GPR regs
 	// NOTE: don't change order since recompiler uses it
 	GPR_reg HI;
@@ -123,7 +123,7 @@ typedef struct {
 	int branch;
 	int opmode;			// operating mode
 	u32 tempcycles;	
-} cpuRegisters;
+};
 
 extern s32 EEsCycle;
 extern u32 EEoCycle;
@@ -157,21 +157,21 @@ typedef union {
 extern PCSX2_ALIGNED16_DECL(GPR_reg64 g_cpuConstRegs[32]);
 extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 
-typedef union {
+union FPRreg {
 	float f;
 	u32 UL;
-} FPRreg;
+};
 
-typedef struct {
+struct fpuRegisters {
 	FPRreg fpr[32];		// 32bit floating point registers
 	u32 fprc[32];		// 32bit floating point control registers
 	FPRreg ACC;			// 32 bit accumulator 
-} fpuRegisters;
+};
 
 extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
 
 
-typedef struct {
+struct tlbs {
 	u32 PageMask,EntryHi;
 	u32 EntryLo0,EntryLo1;
 	u32 Mask, nMask;
@@ -180,7 +180,7 @@ typedef struct {
 	u32 VPN2;
 	u32 PFN0;
 	u32 PFN1;
-} tlbs;
+};
 
 extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 

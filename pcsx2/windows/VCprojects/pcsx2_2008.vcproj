@@ -52,6 +52,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -64,7 +65,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\bin\pcsx2.exe"
+				OutputFile="$(SolutionDir)\bin\pcsx2.exe"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -122,6 +123,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -135,7 +137,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\..\bin\pcsx2d.exe"
+				OutputFile="$(SolutionDir)\bin\pcsx2d.exe"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -193,6 +195,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -206,7 +209,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="..\..\..\bin\pcsx2td.exe"
+				OutputFile="$(SolutionDir)\bin\pcsx2td.exe"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -286,7 +289,7 @@
 				ProgramDataBaseFileName=".\ReleaseTLB/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				CompileAs="0"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -299,7 +302,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\bin\pcsx2t.exe"
+				OutputFile="$(SolutionDir)\bin\pcsx2t.exe"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -361,6 +364,7 @@
 				EnableFiberSafeOptimizations="true"
 				PreprocessorDefinitions="NDEBUG"
 				EnableEnhancedInstructionSet="0"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -373,7 +377,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\bin\pcsx2r.exe"
+				OutputFile="$(SolutionDir)\bin\pcsx2r.exe"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
@@ -466,130 +470,26 @@
 				RelativePath="..\WinMain.c"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="cpu"
-			>
-			<File
-				RelativePath="..\..\Cache.c"
+			<Filter
+				Name="Debugger"
 				>
-			</File>
-			<File
-				RelativePath="..\..\Cache.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\COP0.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\EEregs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\FPU.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\FPU2.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Interpreter.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\InterTables.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\InterTables.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\MMI.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\R5900.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\R5900.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Vif.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Vif.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VifDma.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VifDma.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="memory"
-			>
-			<File
-				RelativePath="..\..\Memory.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Memory.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Hw"
-			>
-			<File
-				RelativePath="..\..\FiFo.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Hw.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Hw.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\SPR.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\SPR.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Debugger"
-			>
-			<File
-				RelativePath=".\..\Debugger.c"
-				>
-			</File>
-			<File
-				RelativePath=".\..\Debugger.h"
-				>
-			</File>
-			<File
-				RelativePath=".\..\DebugMemory.c"
-				>
-			</File>
-			<File
-				RelativePath=".\..\Debugreg.c"
-				>
-			</File>
+				<File
+					RelativePath=".\..\Debugger.c"
+					>
+				</File>
+				<File
+					RelativePath=".\..\Debugger.h"
+					>
+				</File>
+				<File
+					RelativePath=".\..\DebugMemory.c"
+					>
+				</File>
+				<File
+					RelativePath=".\..\Debugreg.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Elf"
@@ -600,26 +500,6 @@
 			</File>
 			<File
 				RelativePath="..\..\Elfheader.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="GS"
-			>
-			<File
-				RelativePath="..\..\GS.cpp"
-				>
-				<FileConfiguration
-					Name="Release (to Public)|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AssemblerOutput="4"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\GS.h"
 				>
 			</File>
 		</Filter>
@@ -644,60 +524,12 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Debug"
-			>
-			<File
-				RelativePath="..\..\DebugTools\cpuopsDebug.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\cpuopsDebug.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\Debug.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisASM.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisR3000A.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisR3000asm.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisR5900.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisR5900asm.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisVU0Micro.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisVU1Micro.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisVUmicro.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\DebugTools\DisVUops.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Misc"
 			>
+			<File
+				RelativePath="..\..\x86\fast_routines.cpp"
+				>
+			</File>
 			<File
 				RelativePath="..\..\Misc.c"
 				>
@@ -772,243 +604,6 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="Counters"
-			>
-			<File
-				RelativePath="..\..\Counters.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						RuntimeLibrary="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release (to Public)|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						RuntimeLibrary="0"
-						AssemblerOutput="4"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\Counters.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="VU"
-			>
-			<File
-				RelativePath="..\..\VU.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VU0.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VU0.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VU0micro.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VU1micro.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VUflags.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VUflags.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VUmicro.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VUops.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\VUops.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Sif"
-			>
-			<File
-				RelativePath="..\..\Sif.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Sif.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Sifcmd.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Iop"
-			>
-			<File
-				RelativePath="..\..\CdRom.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\CdRom.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\CDVD.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\CDVD.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxBios.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxBios.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxBios2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxCommon.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxCounters.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxCounters.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxDma.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxDma.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxHw.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxHw.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxInterpreter.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxMem.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxMem.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxSio2.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PsxSio2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\R3000A.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\R3000A.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Sio.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Sio.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="IPU"
-			>
-			<File
-				RelativePath="..\..\IPU\coroutine.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\IPU\coroutine.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Ipu\idct_mmx.obj"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Ipu\IPU.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Ipu\IPU.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Ipu\yuv2rgb.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Ipu\yuv2rgb.h"
-				>
-			</File>
-			<Filter
-				Name="mpeg2lib"
-				>
-				<File
-					RelativePath="..\..\Ipu\mpeg2lib\Idct.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Ipu\mpeg2lib\Mpeg.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Ipu\mpeg2lib\Mpeg.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Ipu\mpeg2lib\Vlc.h"
-					>
-				</File>
-			</Filter>
-		</Filter>
-		<Filter
 			Name="Docs"
 			>
 			<File
@@ -1021,26 +616,6 @@
 			</File>
 			<File
 				RelativePath="..\..\Docs\ToDo.txt"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="ISO"
-			>
-			<File
-				RelativePath="..\..\CDVDiso.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\CDVDiso.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\CDVDisodrv.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\CDVDisodrv.h"
 				>
 			</File>
 		</Filter>
@@ -1101,45 +676,17 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="x86"
+			Name="zlib"
 			>
 			<File
-				RelativePath="..\..\x86\ix86-32\aVif_proc-32.asm"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\fast_routines.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iCOP2.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iCore.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iCore.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iCP0.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iCP0.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iFPU.c"
+				RelativePath="..\..\zlib\adler32.c"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AssemblerOutput="0"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1147,7 +694,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AssemblerOutput="0"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1155,7 +702,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AssemblerOutput="0"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1163,7 +710,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AssemblerOutput="0"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1171,221 +718,97 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AssemblerOutput="0"
+						CompileAs="1"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\x86\iFPU.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iGS.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iHw.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iMMI.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iMMI.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iPsxHw.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iPsxMem.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR3000A.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR3000A.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR3000Atables.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900Arit.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900AritImm.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900Branch.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900Jump.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900LoadStore.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900Move.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900MultDiv.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iR5900Shift.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\ir5900tables.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVif.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVU0micro.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVU0micro.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVU1micro.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVU1micro.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVUmicro.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVUmicro.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVUops.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVUzerorec.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\iVUzerorec.h"
-				>
-			</File>
-			<Filter
-				Name="ix86"
-				>
-				<File
-					RelativePath="..\..\x86\ix86\ix86.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86\ix86.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86\ix86_3dnow.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86\ix86_cpudetect.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86\ix86_fpu.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86\ix86_mmx.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86\ix86_sse.c"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="ix86-32"
-				>
-				<File
-					RelativePath="..\..\x86\ix86-32\iCore-32.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900-32.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900Arit.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900AritImm.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900Branch.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900Jump.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900LoadStore.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900Move.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900MultDiv.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\x86\ix86-32\iR5900Shift.c"
-					>
-				</File>
-			</Filter>
-		</Filter>
-		<Filter
-			Name="zlib"
-			>
-			<File
-				RelativePath="..\..\zlib\adler32.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\zlib\compress.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\crc32.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\crc32.h"
@@ -1394,6 +817,46 @@
 			<File
 				RelativePath="..\..\zlib\deflate.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\deflate.h"
@@ -1402,14 +865,134 @@
 			<File
 				RelativePath="..\..\zlib\gzio.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\infback.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\inffast.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\inffast.h"
@@ -1422,6 +1005,46 @@
 			<File
 				RelativePath="..\..\zlib\inflate.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\inflate.h"
@@ -1430,6 +1053,46 @@
 			<File
 				RelativePath="..\..\zlib\inftrees.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\inftrees.h"
@@ -1438,6 +1101,46 @@
 			<File
 				RelativePath="..\..\zlib\trees.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\trees.h"
@@ -1446,6 +1149,46 @@
 			<File
 				RelativePath="..\..\zlib\uncompr.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\zconf.h"
@@ -1458,9 +1201,754 @@
 			<File
 				RelativePath="..\..\zlib\zutil.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release TLB|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (to Public)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\zlib\zutil.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Ps2"
+			>
+			<Filter
+				Name="EE"
+				>
+				<File
+					RelativePath="..\..\Cache.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Cache.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\COP0.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Counters.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							RuntimeLibrary="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (to Public)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							RuntimeLibrary="0"
+							AssemblerOutput="4"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\Counters.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\EEregs.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\FPU.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Interpreter.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\InterTables.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\InterTables.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\MMI.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R5900.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R5900.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Vif.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Vif.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VifDma.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VifDma.h"
+					>
+				</File>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\ix86-32\aVif_proc-32.asm"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iCOP2.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iCore.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iCore.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iCP0.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iCP0.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iFPU.c"
+						>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AssemblerOutput="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AssemblerOutput="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug TLB|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AssemblerOutput="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release TLB|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AssemblerOutput="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release (to Public)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AssemblerOutput="0"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\x86\iFPU.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iMMI.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iMMI.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900Arit.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900AritImm.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900Branch.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900Jump.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900LoadStore.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900Move.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900MultDiv.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900Shift.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\ir5900tables.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVif.cpp"
+						>
+					</File>
+					<Filter
+						Name="ix86-32"
+						>
+						<File
+							RelativePath="..\..\x86\ix86-32\iCore-32.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900-32.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900Arit.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900AritImm.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900Branch.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900Jump.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900LoadStore.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900Move.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900MultDiv.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\x86\ix86-32\iR5900Shift.c"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Hw"
+					>
+					<File
+						RelativePath="..\..\FiFo.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Hw.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Hw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\SPR.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\SPR.h"
+						>
+					</File>
+					<Filter
+						Name="Dynarec"
+						>
+						<File
+							RelativePath="..\..\x86\iHw.c"
+							>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Iop"
+				>
+				<File
+					RelativePath="..\..\CdRom.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\CdRom.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\CDVD.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\CDVD.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxBios.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxBios.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxBios2.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxCommon.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxCounters.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxCounters.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxDma.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxDma.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxHw.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxHw.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxInterpreter.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxMem.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxMem.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxSio2.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxSio2.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R3000A.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R3000A.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Sio.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Sio.h"
+					>
+				</File>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\iPsxHw.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iPsxMem.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR3000A.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR3000A.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR3000Atables.cpp"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="IPU"
+				>
+				<File
+					RelativePath="..\..\IPU\coroutine.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\IPU\coroutine.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Ipu\idct_mmx.obj"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Ipu\IPU.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Ipu\IPU.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Ipu\yuv2rgb.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Ipu\yuv2rgb.h"
+					>
+				</File>
+				<Filter
+					Name="mpeg2lib"
+					>
+					<File
+						RelativePath="..\..\Ipu\mpeg2lib\Idct.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Ipu\mpeg2lib\Vlc.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="memory"
+				>
+				<File
+					RelativePath="..\..\Memory.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Memory.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="GS"
+				>
+				<File
+					RelativePath="..\..\GS.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\GS.h"
+					>
+				</File>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\iGS.cpp"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="VU"
+				>
+				<File
+					RelativePath="..\..\VU.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VU0.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VU0.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VU0micro.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VU1micro.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VUflags.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VUflags.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VUmicro.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VUops.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VUops.h"
+					>
+				</File>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\iVU0micro.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVU0micro.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVU1micro.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVU1micro.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVUmicro.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVUmicro.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVUops.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVUzerorec.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVUzerorec.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Sif"
+				>
+				<File
+					RelativePath="..\..\Sif.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Sif.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Sifcmd.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Debug"
+				>
+				<File
+					RelativePath="..\..\DebugTools\cpuopsDebug.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\cpuopsDebug.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\Debug.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisASM.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisR3000A.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisR3000asm.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisR5900.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisR5900asm.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisVU0Micro.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisVU1Micro.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisVUmicro.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\DebugTools\DisVUops.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="ISO"
+			>
+			<File
+				RelativePath="..\..\CDVDiso.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\CDVDiso.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\CDVDisodrv.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\CDVDisodrv.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="DynarecEmitter"
+			>
+			<File
+				RelativePath="..\..\x86\ix86\ix86.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\x86\ix86\ix86.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\x86\ix86\ix86_3dnow.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\x86\ix86\ix86_cpudetect.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\x86\ix86\ix86_fpu.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\x86\ix86\ix86_mmx.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\x86\ix86\ix86_sse.c"
 				>
 			</File>
 		</Filter>

@@ -27,7 +27,6 @@
 #pragma warning(disable:4761)
 #endif
 
-extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -68,8 +67,6 @@ u32 s_psxrecblocks[] = {0};
 void psxRecRecompile(u32 startpc);
 
 uptr *psxRecLUT;
-}
-
 
 #define PSX_NUMBLOCKS (1<<12)
 #define MAPBASE			0x48000000
@@ -80,12 +77,12 @@ uptr *psxRecLUT;
 // R3000A statics
 int psxreclog = 0;
 
-static s8 *recMem;	// the recompiled blocks will be here
+static u8 *recMem;	// the recompiled blocks will be here
 static BASEBLOCK *recRAM;	// and the ptr to the blocks here
 static BASEBLOCK *recROM;	// and here
 static BASEBLOCK *recROM1;	// also here
 static BASEBLOCKEX *recBlocks = NULL;
-static s8 *recPtr;
+static u8 *recPtr;
 u32 psxpc;			// recompiler psxpc
 int psxbranch;		// set for branch
 static EEINST* s_pInstCache = NULL;
@@ -117,9 +114,7 @@ extern void (*rpsxBSC_co[64])();
 void rpsxpropBSC(EEINST* prev, EEINST* pinst);
 
 #ifdef _DEBUG
-extern "C" {
 u32 psxdump = 0;
-}
 #else
 #define psxdump 0
 #endif
@@ -145,7 +140,7 @@ BASEBLOCKEX* PSX_GETBLOCKEX(BASEBLOCK* p)
 
 ////////////////////////////////////////////////////
 #ifdef _DEBUG
-static void iDumpBlock( int startpc, s8 * ptr )
+static void iIopDumpBlock( int startpc, u8 * ptr )
 {
 	FILE *f;
 	char filename[ g_MaxPath ];
@@ -443,7 +438,7 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	PSX_DEL_CONST(_Rd_);
 }
 
-extern "C" void zeroEx();
+void zeroEx();
 
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
@@ -538,7 +533,7 @@ static int recInit() {
 	// can't have upper 4 bits nonzero!
 	startaddr = 0x0f000000;
 	while(!(startaddr & 0xf0000000)) {
-		recMem = (s8*)SysMmap(startaddr, RECMEM_SIZE);
+		recMem = (u8*)SysMmap(startaddr, RECMEM_SIZE);
 		if( (uptr)recMem & 0xf0000000 ) {
 			SysMunmap((uptr)recMem, RECMEM_SIZE); recMem = NULL;
 			startaddr += 0x00100000;
@@ -679,7 +674,7 @@ static __forceinline void R3000AExecute()
 }
 
 #else
-extern "C" void R3000AExecute();
+void R3000AExecute();
 #endif
 
 extern u32 g_psxNextBranchCycle;
@@ -840,17 +835,9 @@ recomp:
 
 #else // _MSC_VER
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-    
 void psxDispatcher();
 void psxDispatcherClear();
 void psxDispatcherReg();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // _MSC_VER
 
@@ -898,7 +885,7 @@ void psxRecClearMem(BASEBLOCK* p)
 	assert( p->pFnptr != 0 );
 	assert( p->startpc );
 
-	x86Ptr = (s8*)p->pFnptr;
+	x86Ptr = (u8*)p->pFnptr;
 
 	// there is a small problem: mem can be ored with 0xa<<28 or 0x8<<28, and don't know which
 	MOV32ItoR(EDX, p->startpc);
@@ -909,7 +896,7 @@ void psxRecClearMem(BASEBLOCK* p)
     PUSH32I((uptr)x86Ptr);
 #endif
 	JMP32((uptr)psxDispatcherClear - ( (uptr)x86Ptr + 5 ));
-	assert( x86Ptr == (s8*)p->pFnptr + IOP_MIN_BLOCK_BYTES );
+	assert( x86Ptr == (u8*)p->pFnptr + IOP_MIN_BLOCK_BYTES );
 
 	pstart = PSX_GETBLOCK(p->startpc);
 	pexblock = PSX_GETBLOCKEX(pstart);
@@ -1072,7 +1059,7 @@ void rpsxSYSCALL()
 	//if (!psxbranch) psxbranch = 2;
 }
 
-extern "C" void psxBREAK();
+void psxBREAK();
 void rpsxBREAK()
 {
 	MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
@@ -1133,7 +1120,7 @@ void psxRecompileNextInstruction(int delayslot)
 		else {
 
 			if( !(delayslot && pblock->startpc == psxpc) ) {
-				s8* oldX86 = x86Ptr;
+				u8* oldX86 = x86Ptr;
 				//__Log("clear block %x\n", pblock->startpc);
 				psxRecClearMem(pblock);
 				x86Ptr = oldX86;
@@ -1206,7 +1193,6 @@ static void recExecuteBlock()
 
 #include "PsxHw.h"
 
-extern "C"
 void iDumpPsxRegisters(u32 startpc, u32 temp)
 {
 	int i;
@@ -1460,12 +1446,12 @@ StartRecomp:
 	// dump code
 	for(i = 0; i < ARRAYSIZE(s_psxrecblocks); ++i) {
 		if( startpc == s_psxrecblocks[i] ) {
-			iDumpBlock(startpc, recPtr);
+			iIopDumpBlock(startpc, recPtr);
 		}
 	}
 
 	if( (psxdump & 1) )
-		iDumpBlock(startpc, recPtr);
+		iIopDumpBlock(startpc, recPtr);
 #endif
 	
 	g_pCurInstInfo = s_pInstCache;
@@ -1475,7 +1461,7 @@ StartRecomp:
 
 #ifdef _DEBUG
 	if( (psxdump & 1) )
-		iDumpBlock(startpc, recPtr);
+		iIopDumpBlock(startpc, recPtr);
 #endif
 
 	assert( (psxpc-startpc)>>2 <= 0xffff );
@@ -1533,7 +1519,7 @@ StartRecomp:
 		}
 	}
 
-	assert( x86Ptr >= (s8*)s_pCurBlock->pFnptr + IOP_MIN_BLOCK_BYTES );
+	assert( x86Ptr >= (u8*)s_pCurBlock->pFnptr + IOP_MIN_BLOCK_BYTES );
 	assert( x86Ptr < recMem+RECMEM_SIZE );
 
 	recPtr = x86Ptr;

@@ -90,7 +90,7 @@ char *sCmdName[0x100]= {
 };
 
 // NVM (eeprom) layout info
-typedef struct {
+struct NVMLayout {
 	u32 biosVer;	// bios version that this eeprom layout is for
 	s32 config0;	// offset of 1st config block
 	s32 config1;	// offset of 2nd config block
@@ -100,7 +100,7 @@ typedef struct {
 	s32 modelNum;	// offset of ps2 model number (eg "SCPH-70002")
 	s32	regparams;	// offset of RegionParams for PStwo
 	s32 mac;		// offset of the value written to 0xFFFE0188 and 0xFFFE018C on PStwo
-} NVMLayout;
+};
 
 #define NVM_FORMAT_MAX	2
 NVMLayout nvmlayouts[NVM_FORMAT_MAX] =

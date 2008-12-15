@@ -30,14 +30,12 @@ using namespace std;
 #include "PS2Etypes.h"
 
 
-extern "C" {
 #include "windows/resource.h"
 #include "PS2Edefs.h"
 #include "Memory.h"
 #include "Elfheader.h"
 #include "cheats.h"
 #include "../../patch.h"
-}
 
 HWND hWndBrowser;
 
@@ -356,10 +354,10 @@ u8 DecryptGS2v3(u32* address, u32* value, u8 ctrl)
 
 }
 
-typedef struct
+struct Cheat
 {
 	unsigned int address, value;
-}Cheat;
+};
 
 int ParseCheats(char *cur, std::vector<Cheat> &Cheats, HWND hWnd)
 {

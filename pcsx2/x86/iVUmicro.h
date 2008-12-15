@@ -71,7 +71,7 @@ void _recvuAddLowerStalls(VURegs * VU, _VURegsNum *VUregsn);
 #define VUOP_WRITE 4
 
 // save on mem
-typedef struct {
+struct _vuopinfo {
 	int cycle;
 	int cycles;
 	u8 statusflag;
@@ -81,7 +81,7 @@ typedef struct {
 	u8 q;
 	u8 p;
 	u16 pqinst; // bit of instruction specifying index (srec only)
-} _vuopinfo;
+};
 extern _vuopinfo *cinfo;
 
 void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs);

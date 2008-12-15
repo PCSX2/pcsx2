@@ -120,7 +120,7 @@ PSMEMORYBLOCK s_psM = {0}, s_psHw = {0}, s_psS = {0}, s_psxM = {0}, s_psVuMem = 
 
 #ifdef _WIN32 // windows implementation of vm
 
-PSMEMORYMAP initMemoryMap(ULONG_PTR* aPFNs, ULONG_PTR* aVFNs)
+static PSMEMORYMAP initMemoryMap(uptr* aPFNs, uptr* aVFNs)
 {
 	PSMEMORYMAP m;
 	m.aPFNs = aPFNs;

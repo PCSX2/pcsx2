@@ -34,9 +34,9 @@ void SaveConfig();
 
 extern int needReset;
 
-AppData gApp;
-HWND hStatusWnd;
-PcsxConfig winConfig;		// local storage of the configuration options.
+extern AppData gApp;
+extern HWND hStatusWnd;
+extern PcsxConfig winConfig;		// local storage of the configuration options.
 
 LRESULT WINAPI MainWndProc(HWND, UINT, WPARAM, LPARAM);
 void CreateMainWindow(int nCmdShow);

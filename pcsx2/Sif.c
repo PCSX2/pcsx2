@@ -37,7 +37,7 @@ DMACh *sif2ch;
 #define FIFO_SIF0_W 128
 #define FIFO_SIF1_W 128
 
-typedef struct {
+struct _sif0{
 	u32 fifoData[FIFO_SIF0_W];	
 	int fifoReadPos;
 	int fifoWritePos;
@@ -47,9 +47,9 @@ typedef struct {
 	int tagMode;
 	int counter;
 	struct sifData sifData;
-} _sif0;
+};
 
-typedef struct {
+struct _sif1 {
 	u32 fifoData[FIFO_SIF1_W];
 	int fifoReadPos;
 	int fifoWritePos;
@@ -58,7 +58,7 @@ typedef struct {
 	int end;
 	int tagMode;
 	int counter;
-} _sif1;
+};
 
 _sif0 sif0;
 _sif1 sif1;

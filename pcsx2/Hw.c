@@ -91,8 +91,8 @@ u8  hwRead8(u32 mem)
 
 		SPR_LOG("Hardware read 8bit at %lx, ret %lx\n", mem, psHu8(mem));
 
-	switch (mem) {
-		default:
+//	switch (mem) {
+//		default:
 			if ((mem & 0xffffff0f) == 0x1000f200) {
 				if(mem == 0x1000f260) ret = 0;
 				else if(mem == 0x1000F240) {
@@ -109,8 +109,8 @@ u8  hwRead8(u32 mem)
 			}
 			else ret = 0;
 			HW_LOG("Unknown Hardware Read 8 at %x\n",mem);
-			break;
-	}
+//			break;
+//	}
 
 	return ret;
 }
@@ -318,15 +318,15 @@ u64 hwRead64(u32 mem) {
 		return ipuRead64(mem);
 	}
 
-	switch (mem) {
-		default:
+//	switch (mem) {
+//		default:
 		if (mem < 0x10010000) {
 			ret = psHu64(mem);
 		}
 		else ret = 0;
 		HW_LOG("Unknown Hardware Read 64 at %x\n",mem);
-		break;
-	}
+//		break;
+//	}
 
 	return ret;
 }

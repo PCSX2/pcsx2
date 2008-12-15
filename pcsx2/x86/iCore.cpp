@@ -23,8 +23,6 @@
 #include <assert.h>
 #include <malloc.h>
 
-extern "C" {
-
 #include "PS2Etypes.h"
 
 #if defined(_WIN32)
@@ -61,8 +59,6 @@ PCSX2_ALIGNED16(u64 g_globalXMMData[2*XMMREGS]);
 
 // X86 caching
 _x86regs x86regs[X86REGS], s_saveX86regs[X86REGS];
-
-} // end extern "C"
 
 #include <vector>
 using namespace std;
@@ -1329,7 +1325,7 @@ EEINSTWRITEBACK* _recCheckWriteBack(int cycle)
 	return NULL;
 }
 
-extern "C" void cpudetectSSE3(void* pfnCallSSE3)
+void cpudetectSSE3(void* pfnCallSSE3)
 {
 	cpucaps.hasStreamingSIMD3Extensions = 1;
 
@@ -1351,7 +1347,7 @@ extern "C" void cpudetectSSE3(void* pfnCallSSE3)
 #endif
 }
 
-extern "C" void cpudetectSSE4(void* pfnCallSSE4)
+void cpudetectSSE4(void* pfnCallSSE4)
 {
 return;
 	cpucaps.hasStreamingSIMD4Extensions = 1;

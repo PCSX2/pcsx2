@@ -123,7 +123,7 @@ static int iFrame = 0;
 static s64 m_iTicks=0;
 static u64 m_iStart=0;
 
-typedef struct
+struct vSyncTimingInfo
 {
 	u32 Framerate;			// frames per second * 100 (so 2500 for PAL and 2997 for NTSC)
 	u32 Render;				// time from vblank end to vblank start (cycles)
@@ -133,7 +133,7 @@ typedef struct
 	u32 hRender;			// time from hblank end to hblank start (cycles)
 	u32 hBlank;				// time from hblank start to hblank end (cycles)
 	u32 hScanlinesPerFrame;	// number of scanlines per frame (525/625 for NTSC/PAL)
-} vSyncTimingInfo;
+};
 
 
 static vSyncTimingInfo vSyncInfo;

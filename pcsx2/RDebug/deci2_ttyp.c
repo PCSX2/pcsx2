@@ -19,11 +19,11 @@
 #include "Common.h"
 #include "deci2.h"
 
-typedef struct tag_DECI2_TTYP_HEADER{
+struct DECI2_TTYP_HEADER{
 	DECI2_HEADER	h;		//+00
 	u32		flushreq;	//+08
 	u8		data[0];	//+0C
-} DECI2_TTYP_HEADER;			//=0C
+};			//=0C
 
 void sendTTYP(u16 protocol, u8 source, char *data){
 	static char tmp[2048];

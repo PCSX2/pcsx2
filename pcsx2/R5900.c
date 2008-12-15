@@ -52,8 +52,6 @@ int cpuInit()
 	SysPrintf("PCSX2 " PCSX2_VERSION " save ver: %x\n", dwSaveVersion);
     SysPrintf("EE pc offset: 0x%x, PSX pc offset: 0x%x\n", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
 
-	InitFPUOps();
-
 	cpuRegs.constzero = 0;
 #ifdef PCSX2_NORECBUILD
 	Cpu = &intCpu;

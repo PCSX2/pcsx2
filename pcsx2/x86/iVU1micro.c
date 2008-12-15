@@ -107,7 +107,7 @@ void recResetVU1( void ) {
 	branch = 0;
 }
 
-static void iDumpBlock()
+static void iVU1DumpBlock()
 {
 	FILE *f;
 	char filename[ g_MaxPath ];

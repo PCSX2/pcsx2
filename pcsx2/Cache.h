@@ -21,22 +21,23 @@
 
 #include "Common.h"
 
-typedef struct __u8bit_128 {
-		u8	_8[16];
-		
-}_u8bit_128;
+struct _u8bit_128 {
+	u8	_8[16];
 
-typedef struct _u128v2 {
+};
+
+struct u128 {
 	_u8bit_128 b8;
 
-}u128;
+};
 
-typedef struct {
+struct _cacheS {
 	u32 tag[2];
 	u128 data[2][4];
-} _cacheS;
+};
 
-_cacheS pCache[64];
+extern _cacheS pCache[64];
+
 void writeCache8(u32 mem, u8 value);
 void writeCache16(u32 mem, u16 value);
 void writeCache32(u32 mem, u32 value);

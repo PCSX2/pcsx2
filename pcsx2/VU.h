@@ -79,22 +79,22 @@ typedef union {
 #define VUFLAG_BREAKONMFLAG		0x00000001
 #define VUFLAG_MFLAGSET			0x00000002
 
-typedef struct {
+struct fdivPipe {
 	int enable;
 	REG_VI reg;
 	u32 sCycle;
 	u32 Cycle;
 	u32 statusflag;
-} fdivPipe;
+};
 
-typedef struct {
+struct efuPipe {
 	int enable;
 	REG_VI reg;
 	u32 sCycle;
 	u32 Cycle;
-} efuPipe;
+};
 
-typedef struct {
+struct fmacPipe {
 	int enable;
 	int reg;
 	int xyzw;
@@ -103,9 +103,9 @@ typedef struct {
 	u32 macflag;
 	u32 statusflag;
 	u32 clipflag;
-} fmacPipe;
+};
 
-typedef struct _VURegs {
+struct VURegs {
 	VECTOR	VF[32];
 	REG_VI	VI[32];
 	VECTOR ACC;
@@ -119,7 +119,7 @@ typedef struct _VURegs {
 	u32 cycle;
 	u32 flags;
 
-	void (*vuExec)(struct _VURegs*);
+	void (*vuExec)(VURegs*);
 	VIFregisters *vifRegs;
 
 	u8 *Mem;
@@ -137,7 +137,7 @@ typedef struct _VURegs {
 	fdivPipe fdiv;
 	efuPipe efu;
 
-} VURegs;
+};
 
 #define VUPIPE_NONE		0
 #define VUPIPE_FMAC		1
@@ -150,7 +150,7 @@ typedef struct _VURegs {
 #define VUREG_READ		0x1
 #define VUREG_WRITE		0x2
 
-typedef struct {
+struct _VURegsNum {
 	u8 pipe; // if 0xff, COP2
 	u8 VFwrite;
 	u8 VFwxyzw;
@@ -161,7 +161,7 @@ typedef struct {
 	u32 VIwrite;
 	u32 VIread;
 	int cycles;
-} _VURegsNum;
+};
 
 extern VURegs* g_pVU1;
 extern PCSX2_ALIGNED16_DECL(VURegs VU0);

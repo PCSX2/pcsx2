@@ -30,16 +30,13 @@ extern BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 extern BOOL APIENTRY MemoryProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 extern void RefreshDebugger(void);
 
-unsigned long opcode_addr;
+extern unsigned long opcode_addr;
 
-typedef struct
+struct breakpoints
 {
     int type;
     unsigned long value;
-} breakpoints;
-
-breakpoints bkpt_regv[NUM_BREAKPOINTS];
-
+};
 
 
 LRESULT CALLBACK R5900reg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);

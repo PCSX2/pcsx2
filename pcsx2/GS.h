@@ -24,11 +24,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct
+struct GSRegSIGBLID
 {
 	u32 SIGID;
 	u32 LBLID;
-} GSRegSIGBLID;
+};
 
 #define GSPATH3FIX
 
@@ -90,6 +90,7 @@ extern void gsWaitGS();
 
 // used for resetting GIF fifo
 void gsGIFReset();
+void gsCSRwrite(u32 value);
 
 void gsWrite8(u32 mem, u8 value);
 void gsConstWrite8(u32 mem, int mmreg);

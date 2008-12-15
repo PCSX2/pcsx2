@@ -72,7 +72,6 @@ MEMCPY_AMD.CPP
 //#include <stddef.h>
 
 // Inline assembly syntax for use with Visual C++
-extern "C" {
 
 #include "PS2Etypes.h"
 
@@ -85,18 +84,17 @@ extern "C" {
 #if defined(_MSC_VER) && !defined(__x86_64__)
 
 #ifdef _DEBUG
-extern char g_globalMMXLocked, g_globalMMXSaved;
+extern u8 g_globalMMXSaved;
 
 void checkregs()
 {
-	assert( !g_globalMMXLocked || g_globalMMXSaved );
+	assert( g_globalMMXSaved );
 }
 #endif
 
 void * memcpy_amd_(void *dest, const void *src, size_t n)
 {
 	
-
 #ifdef _DEBUG
 	__asm call checkregs
 #endif
@@ -590,7 +588,5 @@ End:
 }
 
 #endif
-
-}
 
 #endif // PCSX2_NORECBUILD

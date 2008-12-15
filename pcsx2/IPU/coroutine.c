@@ -23,7 +23,7 @@
 #include "PS2Etypes.h"
 #include "coroutine.h"
 
-typedef struct s_coroutine {
+struct coroutine {
 	void* pcalladdr;
 	void *pcurstack;
 #ifdef __x86_64__
@@ -42,7 +42,7 @@ typedef struct s_coroutine {
 	//struct s_coroutine *caller;
 	//struct s_coroutine *restarget;
 	
-} coroutine;
+};
 
 #define CO_STK_ALIGN 256
 #define CO_STK_COROSIZE ((sizeof(coroutine) + CO_STK_ALIGN - 1) & ~(CO_STK_ALIGN - 1))
@@ -66,7 +66,7 @@ coroutine_t so_create(void (*func)(void *), void *data, void *stack, int size)
 		alloc = size;
 	}
     endstack = (char*)stack + size - 64;
-	co = stack;
+	co = (coroutine*)stack;
 	stack = (char *) stack + CO_STK_COROSIZE;
     *(void**)endstack = NULL;
     *(void**)((char*)endstack+sizeof(void*)) = data;

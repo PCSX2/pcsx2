@@ -30,13 +30,13 @@
 #define CONVERT_BOTTOM_FIELD 2
 #define CONVERT_BOTH_FIELDS 3
 
-typedef struct convert_init_s {
+struct convert_init_t {
     void * id;
     int id_size;
     int buf_size[3];
     void (* start) (void * id, u8 * dest, int flags);
     void (* copy) (void * id, u8 * Y, u8 * Cr, u8 * Cb, unsigned int v_offset);
-} convert_init_t;
+};
 
 typedef void convert_t (int width, int height, u32 accel, void * arg,
 			convert_init_t * result);

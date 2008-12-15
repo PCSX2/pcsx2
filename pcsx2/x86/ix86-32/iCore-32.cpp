@@ -20,8 +20,6 @@
 #include <assert.h>
 #include <malloc.h>
 
-extern "C" {
-
 #include "PS2Etypes.h"
 
 #if defined(_WIN32)
@@ -43,18 +41,12 @@ u16 g_mmxAllocCounter = 0;
 // use FreezeMMXRegs, FreezeXMMRegs
 u8 g_globalMMXSaved = 0;
 
-#ifdef _DEBUG
-char g_globalMMXLocked = 0;
-#endif
-
 PCSX2_ALIGNED16(u64 g_globalMMXData[8]);
 
 // X86 caching
 extern _x86regs x86regs[X86REGS];
 int g_x86checknext;
 extern u16 g_x86AllocCounter;
-
-} // end extern "C"
 
 #include <vector>
 using namespace std;

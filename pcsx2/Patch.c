@@ -392,7 +392,7 @@ void patchFunc_patch( char * cmd, char * param )
 
 	pText = strtok( NULL, "," );
 	inifile_trim( pText );
-	patch[ patchnumber ].cpu = PatchTableExecute( pText, NULL, cpuCore );
+	patch[ patchnumber ].cpu = (patch_cpu_type)PatchTableExecute( pText, NULL, cpuCore );
 	if ( patch[ patchnumber ].cpu == 0 ) 
 	{
 		SysPrintf( "Unrecognized patch '%s'\n", pText );
@@ -405,7 +405,7 @@ void patchFunc_patch( char * cmd, char * param )
 
 	pText = strtok( NULL, "," );
 	inifile_trim( pText );
-	patch[ patchnumber ].type = PatchTableExecute( pText, NULL, dataType );
+	patch[ patchnumber ].type = (patch_data_type)PatchTableExecute( pText, NULL, dataType );
 	if ( patch[ patchnumber ].type == 0 ) 
 	{
 		SysPrintf( "Unrecognized patch '%s'\n", pText );
@@ -558,9 +558,9 @@ int AddPatch(int Mode, int Place, int Address, int Size, u64 data)
 	else 
 		patch[patchnumber].placetopatch = Mode;
 	
-	patch[patchnumber].cpu = Place;
+	patch[patchnumber].cpu = (patch_cpu_type)Place;
 	patch[patchnumber].addr=Address;
-	patch[patchnumber].type=Size;
+	patch[patchnumber].type=(patch_data_type)Size;
 	patch[patchnumber].data = data;
 	return patchnumber++;
 }

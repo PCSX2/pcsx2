@@ -74,7 +74,7 @@ int  vu0Init()
 
 	// since vuregisters are mapped in vumem0, go to diff addr, but mapping to same physical addr
     VirtualFree((void*)0x11000000, 0x10000, MEM_RELEASE); // free just in case
-	VU0.Mem = VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
+	VU0.Mem = (u8*)VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
 
 	if( VU0.Mem != (void*)0x11000000 ) {
 		SysPrintf("Failed to alloc vu0mem 0x11000000 %d\n", GetLastError());

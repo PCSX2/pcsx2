@@ -22,20 +22,12 @@
 #include <math.h>
 #include <string.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "Common.h"
 #include "ix86/ix86.h"
 #include "Vif.h"
 #include "VUmicro.h"
 
 #include <assert.h>
-
-extern VIFregisters *_vifRegs;
-extern u32* _vifMaskRegs;
-extern u32* _vifRow, _vifCol;
 
 // sse2 highly optimized vif (~200 separate functions are built) zerofrog(@gmail.com)
 extern u32 g_vif1Masks[48], g_vif0Masks[48];
@@ -67,7 +59,8 @@ static PCSX2_ALIGNED16(u32 s_maskarr[16][4]) = {
 };
 
 extern u8 s_maskwrite[256];
-PCSX2_ALIGNED16(u32 s_TempDecompress[4]) = {0};
+
+extern "C" PCSX2_ALIGNED16(u32 s_TempDecompress[4]) = {0};
 
 #if defined(_MSC_VER) // gcc functions can be found in iVif.S
 
@@ -149,10 +142,6 @@ void SetNewMask(u32* vif1masks, u32* hasmask, u32 mask, u32 oldmask)
 	FreezeXMMRegs(0);
 }
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif // PCSX2_NORECBUILD

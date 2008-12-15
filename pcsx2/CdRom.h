@@ -23,7 +23,8 @@
 #include "Decode_XA.h"
 #include "PS2Edefs.h"
 
-typedef struct {
+struct cdrStruct
+{
 	u8 OCUP;
 	u8 Reg1Mode;
 	u8 Reg2;
@@ -69,9 +70,9 @@ typedef struct {
 	unsigned long eCycle;
 
 	char Unused[4087];
-} cdrStruct;
+};
 
-cdrStruct cdr;
+extern cdrStruct cdr;
 
 s32  MSFtoLSN(u8 *Time);
 void LSNtoMSF(u8 *Time, s32 lsn);

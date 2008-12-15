@@ -145,7 +145,7 @@ void WriteFIFO(u32 mem, u64 *value) {
 		IPU_LOG("WriteFIFO IPU_in[%d] <- %8.8X_%8.8X_%8.8X_%8.8X\n", (mem - 0x10007010)/8, ((u32*)value)[3], ((u32*)value)[2], ((u32*)value)[1], ((u32*)value)[0]);
 
 		//commiting every 16 bytes
-		while( FIFOto_write((void*)value, 1) == 0 ) {
+		while( FIFOto_write((u32*)value, 1) == 0 ) {
 			SysPrintf("IPU sleeping\n");
 			_TIMESLICE();
 		}

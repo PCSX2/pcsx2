@@ -122,8 +122,11 @@ u8 PCT[]={'r', 'I', 'P', 'B', 'D', '-', '-', '-'};
 decoder_t g_decoder;						//static, only to place it in bss
 decoder_t tempdec;
 
-extern u8 mpeg2_scan_norm[64];
-extern u8 mpeg2_scan_alt[64];
+extern "C"
+{
+	extern u8 mpeg2_scan_norm[64];
+	extern u8 mpeg2_scan_alt[64];
+}
 
 PCSX2_ALIGNED16(u8 _readbits[80]);	//local buffer (ring buffer)
 u8* readbits = _readbits; // always can decrement by one 1qw

@@ -107,12 +107,12 @@ int CreateSocket(HWND hDlg, int port){
 	return TRUE;
 }
 
-int readData(char *buffer){
+int readData(u8 *buffer){
 	int r, count=0;
 	u8	*p=buffer;
 
 	memset(buffer, 0, BUFFERSIZE);
-	while (((count+= r = recv(remote, p, BUFFERSIZE, 0))!=INVALID_SOCKET) &&
+	while (((count+= r = recv(remote, (char*)p, BUFFERSIZE, 0))!=INVALID_SOCKET) &&
 		(count<*(u16*)buffer))
 			p+=r;
 	
@@ -122,12 +122,12 @@ int readData(char *buffer){
 	return count;
 }
 
-int writeData(char *result){
+int writeData(const u8 *result){
 	int r;/*, i;
 	static char l[300], p[10];
 	DECI2_HEADER *header=(DECI2_HEADER*)result;
 */
-	r = send(remote, result, *(u16*)result, 0);
+	r = send(remote, (const char*)result, *(u16*)result, 0);
 	if (r==SOCKET_ERROR)
         return 0;
 /*
@@ -144,11 +144,11 @@ int writeData(char *result){
 
 DWORD WINAPI ServingFunction(LPVOID lpParam){
 	static u8	buffer[BUFFERSIZE],				//a big buffer
-				result[BUFFERSIZE],				//a big buffer
-				eepc[9], ioppc[9], eecy[15], iopcy[15];
+				result[BUFFERSIZE];				//a big buffer
+	static TCHAR eepc[9], ioppc[9], eecy[15], iopcy[15];
 	SOCKADDR_IN saClient;
 	HWND hDlg=(HWND)lpParam;
-	DWORD		size=sizeof(struct sockaddr);
+	int		size=sizeof(struct sockaddr);
 	int exit=FALSE;
 	
 	if ((remote = accept(serversocket, (struct sockaddr*)&saClient, &size))==INVALID_SOCKET){

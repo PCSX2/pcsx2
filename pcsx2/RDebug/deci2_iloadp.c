@@ -21,16 +21,16 @@
 #include "PsxBios2.h"
 #include "deci2.h"
 
-typedef struct tag_DECI2_ILOADP_HEADER{
+struct DECI2_ILOADP_HEADER{
 	DECI2_HEADER	h;			//+00
 	u8				code,		//+08	cmd
 					action,		//+09
 					result,		//+0A
 					stamp;		//+0B
 	u32				moduleId;	//+0C
-} DECI2_ILOADP_HEADER;			//=10
+};			//=10
 
-typedef struct tag_DECI2_ILOADP_INFO{
+struct DECI2_ILOADP_INFO{
 	u16		version,		//+00
 			flags;			//+02
 	u32		module_address,	//+04
@@ -38,7 +38,7 @@ typedef struct tag_DECI2_ILOADP_INFO{
 			data_size,		//+0C
 			bss_size,		//+10
 			_pad[3];		//+14
-} DECI2_ILOADP_INFO;
+};
 
 void writeInfo(DECI2_ILOADP_INFO *info,
 			   u16 version, u16 flags, u32 module_address,
@@ -52,7 +52,7 @@ void writeInfo(DECI2_ILOADP_INFO *info,
 	info->_pad[0]=info->_pad[1]=info->_pad[2]=0;
 }
 
-void D2_ILOADP(char *inbuffer, char *outbuffer, char *message){
+void D2_ILOADP(const u8 *inbuffer, u8 *outbuffer, char *message){
 	DECI2_ILOADP_HEADER	*in=(DECI2_ILOADP_HEADER*)inbuffer,
 				*out=(DECI2_ILOADP_HEADER*)outbuffer;
 	u8	*data=(u8*)in+sizeof(DECI2_ILOADP_HEADER);
@@ -87,9 +87,9 @@ void D2_ILOADP(char *inbuffer, char *outbuffer, char *message){
 						writeInfo((DECI2_ILOADP_INFO*)data,
 							iii->version, iii->flags, iii->vaddr, iii->text_size, iii->data_size, iii->bss_size);
 						data+=sizeof(DECI2_ILOADP_INFO);
-						strcpy(data, PSXM(iii->name));
-						data+=strlen(PSXM(iii->name))+4;
-						data=(char*)((int)data & 0xFFFFFFFC);
+						strcpy((char*)data, (char*)PSXM(iii->name));
+						data+=strlen((char*)PSXM(iii->name))+4;
+						data=(u8*)((int)data & 0xFFFFFFFC);
 						break;
 					
 			}

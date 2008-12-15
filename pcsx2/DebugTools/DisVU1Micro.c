@@ -23,7 +23,7 @@
 #include "Debug.h"
 #include "VUmicro.h"
 
-char ostr[1024];
+static char ostr[1024];
 
 // Type deffinition of our functions
 #define DisFInterface  (u32 code, u32 pc)

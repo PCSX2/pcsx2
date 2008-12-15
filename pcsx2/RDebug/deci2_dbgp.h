@@ -22,7 +22,7 @@
 #include "Common.h"
 #include "deci2.h"
 
-void D2_DBGP(char *inbuffer, char *outbuffer, char *message, char *eepc, char *ioppc, char *eecy, char *iopcy);
+void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char *ioppc, char *eecy, char *iopcy);
 void sendBREAK(u8 source, u16 id, u8 code, u8 result, u8 count);
 
 #endif//__DECI2DBGP_H__

@@ -38,7 +38,7 @@
 //#define SIO_INLINE_IRQS
 
 
-typedef struct {
+struct _sio {
 	u16 StatReg;
 	u16 ModeReg;
 	u16 CtrlReg;
@@ -60,8 +60,9 @@ typedef struct {
 	u32 sector;
 	u32 k;
 	u32 count;
-} _sio;
-_sio sio;
+};
+
+extern _sio sio;
 
 #define MCD_SIZE	(1024 *  8  * 16)
 #define MC2_SIZE	(1024 * 528 * 16)
@@ -87,12 +88,10 @@ _sio sio;
 #define RTS			0x0020
 #define SIO_RESET	0x0040
 
-int Mcd1Size, Mcd2Size;
-
 int  sioInit();
 void sioShutdown();
 void psxSIOShutdown();
-unsigned char sioRead8();
+u8 sioRead8();
 void sioWrite8(unsigned char value);
 void sioWriteCtrl16(unsigned short value);
 extern void sioInterrupt();
@@ -100,19 +99,19 @@ int  sioFreeze(gzFile f, int Mode);
 void InitializeSIO(u8 value);
 
 FILE *LoadMcd(int mcd);
-void ReadMcd(int mcd, char *data, u32 adr, int size);
-void SaveMcd(int mcd, char *data, u32 adr, int size);
+void ReadMcd(int mcd, u8 *data, u32 adr, int size);
+void SaveMcd(int mcd, const u8 *data, u32 adr, int size);
 void EraseMcd(int mcd, u32 adr);
 void CreateMcd(char *mcd);
 
-typedef struct {
+struct McdBlock {
 	char Title[48];
 	char ID[14];
 	char Name[16];
 	int IconCount;
-	short Icon[16*16*3];
-	unsigned char Flags;
-} McdBlock;
+	u16 Icon[16*16*3];
+	u8 Flags;
+};
 
 #ifdef _MSC_VER
 #pragma pack(1)

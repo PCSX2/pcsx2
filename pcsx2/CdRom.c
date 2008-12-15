@@ -70,6 +70,7 @@ char *CmdName[0x100]= {
 	"CdlReset",   NULL,           "CDlReadToc", NULL
 };
 
+cdrStruct cdr;
 long LoadCdBios;
 int cdOpenCase;
 

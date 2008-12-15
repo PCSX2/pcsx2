@@ -32,7 +32,6 @@
 
 using namespace std;
 
-extern "C" {
 #include "zlib.h"
 #include "Elfheader.h"
 #include "Misc.h"
@@ -53,10 +52,6 @@ extern "C" {
 	
 extern u32 CSRw;
 
-}
-
-void CSRwrite(u32 value);
-
 #ifdef PCSX2_VIRTUAL_MEM
 #define PS2GS_BASE(mem) ((PS2MEM_BASE+0x12000000)+(mem&0x13ff))
 #else
@@ -74,7 +69,7 @@ void gsConstWrite8(u32 mem, int mmreg)
 			AND32ItoR(EAX, 0xff<<(mem&3)*8);
 			AND32ItoR(ECX, ~(0xff<<(mem&3)*8));
 			OR32ItoR(EAX, ECX);
-			_callFunctionArg1((uptr)CSRwrite, EAX|MEM_X86TAG, 0);
+			_callFunctionArg1((uptr)gsCSRwrite, EAX|MEM_X86TAG, 0);
 			break;
 		default:
 			_eeWriteConstMem8( (uptr)PS2GS_BASE(mem), mmreg );
@@ -110,8 +105,8 @@ void gsConstWrite16(u32 mem, int mmreg)
 			AND32ItoR(EAX, 0xffff<<(mem&2)*8);
 			AND32ItoR(ECX, ~(0xffff<<(mem&2)*8));
 			OR32ItoR(EAX, ECX);
-			_callFunctionArg1((uptr)CSRwrite, EAX|MEM_X86TAG, 0);
-			return;		// don't write to GSMEM
+			_callFunctionArg1((uptr)gsCSRwrite, EAX|MEM_X86TAG, 0);
+			break;
 
 		default:
 			_eeWriteConstMem16( (uptr)PS2GS_BASE(mem), mmreg );
@@ -168,7 +163,7 @@ void gsConstWrite32(u32 mem, int mmreg) {
 
 		case 0x12001000: // GS_CSR
 			iFlushCall(0);
-            _callFunctionArg1((uptr)CSRwrite, mmreg, 0);
+            _callFunctionArg1((uptr)gsCSRwrite, mmreg, 0);
 			break;
 
 		case 0x12001010: // GS_IMR
@@ -201,7 +196,7 @@ void gsConstWrite64(u32 mem, int mmreg)
 
 		case 0x12001000: // GS_CSR
 			iFlushCall(0);
-            _callFunctionArg1((uptr)CSRwrite, mmreg, 0);
+            _callFunctionArg1((uptr)gsCSRwrite, mmreg, 0);
 			break;
 
 		case 0x12001010: // GS_IMR
@@ -241,7 +236,7 @@ void gsConstWrite128(u32 mem, int mmreg)
 
 		case 0x12001000: // GS_CSR
 			iFlushCall(0);
-            _callFunctionArg1((uptr)CSRwrite, mmreg, 0);
+            _callFunctionArg1((uptr)gsCSRwrite, mmreg, 0);
 			break;
 
 		case 0x12001010: // GS_IMR

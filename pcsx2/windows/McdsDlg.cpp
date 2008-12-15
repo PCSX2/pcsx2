@@ -24,13 +24,11 @@
 #include "libintlmsc.h"
 #define _(String) dgettext (PACKAGE, String)
 
-extern "C"{
 #include "PS2Edefs.h"
 #include "resource.h"
 #include "Misc.h"
 #include "System.h"
 #include "McdsDlg.h"
-}
 
 #include <vector>
 using namespace std;

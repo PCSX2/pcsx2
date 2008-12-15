@@ -913,9 +913,10 @@ extern u8* g_pIPU0Pointer;
 
 #if defined(_MSC_VER)
 #pragma pack(push, 1)
+#else
+__attribute__((packed))
 #endif
-
-typedef struct _TGA_HEADER
+struct TGA_HEADER
 {
     u8  identsize;          // size of ID field that follows 18 u8 header (0 usually)
     u8  colourmaptype;      // type of colour map 0=none, 1=has palette
@@ -933,12 +934,10 @@ typedef struct _TGA_HEADER
     u8  descriptor;         // image descriptor bits (vh flip bits)
     
     // pixel data follows header
-    
-#if defined(_MSC_VER)
-} TGA_HEADER;
+};
+
+#ifdef _MSC_VER
 #pragma pack(pop)
-#else
-} TGA_HEADER __attribute__((packed));
 #endif
 
 void SaveTGA(const char* filename, int width, int height, void* pdata)

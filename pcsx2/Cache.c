@@ -23,6 +23,8 @@
 #include "Common.h"
 #include "Cache.h"
 
+_cacheS pCache[64];
+
 #ifndef PCSX2_VIRTUAL_MEM
 /*_cacheS pCache[64];*/
 int getFreeCache(u32 mem, int mode, int * way) {

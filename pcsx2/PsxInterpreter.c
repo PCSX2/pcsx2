@@ -40,11 +40,11 @@ extern void (*psxCP2BSC[32])();
 extern void bios_write();
 extern void bios_printf();
 
-typedef struct {
-    char name[8];
-    char names[64][32];
+struct irxlib {
+    char name[16];
+    char names[64][64];
     int maxn;
-} irxlib;
+};
 
 #define IRXLIBS 14
 irxlib irxlibs[32] = {

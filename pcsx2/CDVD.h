@@ -21,7 +21,7 @@
 
 #include "PsxCommon.h"
 
-typedef struct {
+struct cdvdRTC {
 	u8 status;
 	u8 second;
 	u8 minute;
@@ -30,9 +30,9 @@ typedef struct {
 	u8 day;
 	u8 month;
 	u8 year;
-} cdvdRTC;
+};
 
-typedef struct {
+struct cdvdStruct {
 	u8 nCommand;
 	u8 Ready;
 	u8 Error;
@@ -83,7 +83,7 @@ typedef struct {
 	u8	mg_kbit[16];//last BIT key 'seen'
 	u8	mg_kcon[16];//last content key 'seen'
 //	char Unused[4096];
-} cdvdStruct;
+};
 
 void cdvdReset();
 void cdvdReadTimeRcnt(int mode);

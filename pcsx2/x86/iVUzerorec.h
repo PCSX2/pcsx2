@@ -21,10 +21,6 @@
 #ifndef VU1_SUPER_RECOMPILER
 #define VU1_SUPER_RECOMPILER
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void SuperVUInit(int vuindex); // if vuindex is -1, inits the global VU resources
 void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
 void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
@@ -41,9 +37,5 @@ u32 SuperVUGetVIAddr(int reg, int read);
 
 // if p == 0, flush q else flush p; if wait is != 0, waits for p/q
 void SuperVUFlush(int p, int wait);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

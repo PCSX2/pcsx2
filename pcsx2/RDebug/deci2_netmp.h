@@ -22,6 +22,6 @@
 #include "Common.h"
 #include "deci2.h"
 
-void D2_NETMP(char *inbuffer, char *outbuffer, char *message);
+void D2_NETMP(const u8 *inbuffer, u8 *outbuffer, char *message);
 
 #endif//__DECI2NETMP_H__

@@ -66,13 +66,13 @@ uptr *recLUT;
 
 #define EE_NUMBLOCKS (1<<15)
 
-static char *recMem = NULL;			// the recompiled blocks will be here
-static char* recStack = NULL;			// stack mem
+static u8 *recMem = NULL;			// the recompiled blocks will be here
+static u8* recStack = NULL;			// stack mem
 static BASEBLOCK *recRAM = NULL;		// and the ptr to the blocks here
 static BASEBLOCK *recROM = NULL;		// and here
 static BASEBLOCK *recROM1 = NULL;		// also here
 static BASEBLOCKEX *recBlocks = NULL;
-static char *recPtr = NULL, *recStackPtr = NULL;
+static u8* recPtr = NULL, *recStackPtr = NULL;
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
@@ -137,7 +137,7 @@ BASEBLOCKEX* PC_GETBLOCKEX(BASEBLOCK* p)
 }
 
 ////////////////////////////////////////////////////
-void iDumpBlock( int startpc, s8 * ptr )
+static void iDumpBlock( int startpc, u8 * ptr )
 {
 	FILE *f;
 	char filename[ g_MaxPath ];
@@ -333,7 +333,7 @@ u32* _eeGetConstReg(int reg)
 	// if written in the future, don't flush
 	if( _recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, reg) ) {
 		u32* ptempmem;
-		ptempmem = (u32*)recAllocStackMem(8, 4);
+		ptempmem = recAllocStackMem(8, 4);
 		ptempmem[0] = g_cpuConstRegs[ reg ].UL[0];
 		ptempmem[1] = g_cpuConstRegs[ reg ].UL[1];
 		return ptempmem;
@@ -456,12 +456,12 @@ void _flushConstRegs()
 	}
 }
 
-void* recAllocStackMem(int size, int align)
+u32* recAllocStackMem(int size, int align)
 {
 	// write to a temp loc, trick
 	if( (u32)recStackPtr % align ) recStackPtr += align - ((u32)recStackPtr%align);
 	recStackPtr += size;
-	return recStackPtr-size;
+	return (u32*)(recStackPtr-size);
 }
 
 ////////////////////
@@ -1488,14 +1488,14 @@ int recInit( void )
 	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
 
     // can't have upper 4 bits nonzero!
-	recMem = (char*)SysMmap(0x0d000000, REC_CACHEMEM);
+	recMem = (u8*)SysMmap(0x0d000000, REC_CACHEMEM);
 	
 	// 32 alignment necessary
 	recRAM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x02000000 , 4*sizeof(BASEBLOCK));
 	recROM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00400000 , 4*sizeof(BASEBLOCK));
 	recROM1= (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00040000 , 4*sizeof(BASEBLOCK));
 	recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*EE_NUMBLOCKS, 16);
-	recStack = (char*)malloc( RECSTACK_SIZE );
+	recStack = (u8*)malloc( RECSTACK_SIZE );
 
 	s_nInstCacheSize = 128;
 	s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
@@ -2021,13 +2021,13 @@ void recClearMem(BASEBLOCK* p)
 	assert( p->pFnptr != 0 );
 	assert( p->startpc );
 
-	x86Ptr = (s8*)p->pFnptr;
+	x86Ptr = (u8*)p->pFnptr;
 
 	// there is a small problem: mem can be ored with 0xa<<28 or 0x8<<28, and don't know which
 	MOV32ItoR(EDX, p->startpc);
 	PUSH32I((u32)x86Ptr); // will be replaced by JMP32
 	JMP32((u32)DispatcherClear - ( (u32)x86Ptr + 5 ));
-	assert( x86Ptr == (s8*)p->pFnptr + EE_MIN_BLOCK_BYTES );
+	assert( x86Ptr == (u8*)p->pFnptr + EE_MIN_BLOCK_BYTES );
 
 	pstart = PC_GETBLOCK(p->startpc);
 	pexblock = PC_GETBLOCKEX(pstart);
@@ -2512,7 +2512,7 @@ void recompileNextInstruction(int delayslot)
 		else {
 
 			if( !(delayslot && pblock->startpc == pc) ) {
-				s8* oldX86 = x86Ptr;
+				u8* oldX86 = x86Ptr;
 				//__Log("clear block %x\n", pblock->startpc);
 				recClearMem(pblock);
 				x86Ptr = oldX86;
@@ -3251,7 +3251,7 @@ StartRecomp:
 		}
 	}
 
-	assert( x86Ptr >= (s8*)s_pCurBlock->pFnptr + EE_MIN_BLOCK_BYTES );
+	assert( x86Ptr >= (u8*)s_pCurBlock->pFnptr + EE_MIN_BLOCK_BYTES );
 	assert( x86Ptr < recMem+REC_CACHEMEM );
 	assert( recStackPtr < recStack+RECSTACK_SIZE );
 	assert( x86FpuState == 0 );

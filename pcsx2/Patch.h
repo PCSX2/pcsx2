@@ -54,23 +54,36 @@ enum patch_data_type {
 //
 typedef void (*PATCHTABLEFUNC)( char * text1, char * text2 );
 
-typedef struct
+struct PatchTextTable
 {
 	char *text;
 	int code;
 	PATCHTABLEFUNC func;
-} PatchTextTable;
+};
 	
-typedef struct
+struct IniPatch
 {
 	int enabled;
 	int group;
-	enum patch_data_type type;
-	enum patch_cpu_type cpu;
+	patch_data_type type;
+	patch_cpu_type cpu;
 	int placetopatch;
 	u32 addr;
 	u64 data;
-} IniPatch;
+};
+
+#ifdef _WIN32
+#include<windows.h>
+struct AppData
+{
+	HWND hWnd;           // Main window handle
+	HINSTANCE hInstance; // Application instance
+	HMENU hMenu;         // Main window menu
+	HANDLE hConsole;
+};
+
+extern AppData gApp;
+#endif
 
 //
 // Function prototypes
@@ -118,11 +131,13 @@ extern void SetVUNanMode(int mode);
 extern int path3hack;
 extern int g_FFXHack;
 //extern int g_VUGameFixes;
+extern int g_ZeroGSOptions;
 extern u32 g_sseMXCSR;
 extern u32 g_sseVUMXCSR;
-void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR);
 
+void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR);
 void SetRoundMode(u32 ee, u32 vu);
+int LoadPatch(char *patchfile);
 
 #endif /* __PATCH_H__ */
 

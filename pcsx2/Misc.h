@@ -96,7 +96,7 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define CHECK_VU0REC (Config.Options&PCSX2_VU0REC)
 #define CHECK_VU1REC (Config.Options&PCSX2_VU1REC)
 
-typedef struct {
+struct PcsxConfig {
 	char Bios[g_MaxPath];
 	char GS[g_MaxPath];
 	char PAD1[g_MaxPath];
@@ -126,7 +126,7 @@ typedef struct {
 	int CustomConsecutiveSkip;
 	u32 sseMXCSR;
 	u32 sseVUMXCSR;
-} PcsxConfig;
+};
 
 extern PcsxConfig Config;
 extern u32 BiosVersion;
@@ -393,6 +393,41 @@ static __forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest
 	return(old);
 }
 #endif
+
+// define some overloads for InterlockedExchanges, for commonly used types.
+static void AtomicExchange( u32& Target, u32 value )
+{
+	InterlockedExchange( (volatile LONG*)&Target, value );
+}
+
+static void AtomicIncrement( u32& Target )
+{
+	InterlockedIncrement( (volatile LONG*)&Target );
+}
+
+static void AtomicDecrement( u32& Target )
+{
+	InterlockedDecrement( (volatile LONG*)&Target );
+}
+
+static void AtomicExchange( s32& Target, s32 value )
+{
+	InterlockedExchange( (volatile LONG*)&Target, value );
+}
+
+static void AtomicIncrement( s32& Target )
+{
+	InterlockedIncrement( (volatile LONG*)&Target );
+}
+
+static void AtomicDecrement( s32& Target )
+{
+	InterlockedDecrement( (volatile LONG*)&Target );
+}
+
+// No fancy templating or overloading can save us from having to use C-style dereferences here.
+#define AtomicExchangePointer( target, value ) \
+	InterlockedExchangePointer( reinterpret_cast<PVOID volatile*>(&target), reinterpret_cast<uptr>(value) )
 
 extern void InitCPUTicks();
 extern u64 GetTickFrequency();

@@ -34,7 +34,7 @@ struct dir_toc_data{
 	unsigned int current_sector;
 	unsigned int current_sector_offset;
 	unsigned int inc_dirs;
-	unsigned char extension_list[128+1];
+	char extension_list[128+1];
 };
 
 //static u8 cdVolDescriptor[2048];
@@ -246,13 +246,13 @@ int CDVD_GetVolumeDescriptor(void){
 //		CdSync(0x00);
 
 		// If this is still a volume Descriptor
-		if (strncmp(localVolDesc.volID, "CD001", 5) == 0)
+		if (strncmp((char*)localVolDesc.volID, "CD001", 5) == 0)
 		{
 			if ((localVolDesc.filesystemType == 1) ||
 				(localVolDesc.filesystemType == 2))
 			{
 				FreezeMMXRegs(1);
-				memcpy_fast(&CDVolDesc, &localVolDesc, sizeof(struct cdVolDesc));
+				memcpy_fast(&CDVolDesc, &localVolDesc, sizeof(cdVolDesc));
 				FreezeMMXRegs(0);
 			}
 		}

@@ -556,7 +556,7 @@ int LoadState(const char *file) {
 	int i;
 	u32 dud;		// for loading unused vars.
 #ifdef PCSX2_VIRTUAL_MEM
-	u32 OldProtect;
+	DWORD OldProtect;
 #endif
 
 #ifdef _DEBUG
@@ -776,10 +776,10 @@ int CheckState(const char *file) {
 }
 
 
-typedef struct {
+struct LangDef {
 	char id[8];
 	char name[64];
-} LangDef;
+};
 
 LangDef sLangs[] = {
 	{ "ar_AR", N_("Arabic") },
@@ -922,7 +922,7 @@ void ProcessFKeys(int fkey, int shift)
 
 					break;
 			}
-			InterlockedExchange( &Config.Options, newOptions );
+			AtomicExchange( Config.Options, newOptions );
 
 			SysPrintf("Frame Limit Mode Changed: %s\n", limitMsg );
 

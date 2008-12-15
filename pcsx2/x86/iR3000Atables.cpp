@@ -19,7 +19,6 @@
 // stop compiling if NORECBUILD build (only for Visual Studio)
 #if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
-extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -53,7 +52,6 @@ extern void psxSWR();
 
 extern int g_psxWriteOk;
 extern u32 g_psxMaxRecMem;
-}
 
 // R3000A instruction implementation
 #define REC_FUNC(f) \
@@ -1286,7 +1284,7 @@ void rpsxJALR()
 static void* s_pbranchjmp;
 static u32 s_do32 = 0;
 
-#define JUMPVALID(pjmp) (( x86Ptr - (s8*)pjmp ) <= 0x80)
+#define JUMPVALID(pjmp) (( x86Ptr - (u8*)pjmp ) <= 0x80)
 
 void rpsxSetBranchEQ(int info, int process)
 {
@@ -1333,7 +1331,7 @@ void rpsxBEQ_process(int info, int process)
 	else
 	{
 		_psxFlushAllUnused();
-		s8* prevx86 = x86Ptr;
+		u8* prevx86 = x86Ptr;
 		s_do32 = 0;
 		psxSaveBranchState();
 
@@ -1397,7 +1395,7 @@ void rpsxBNE_process(int info, int process)
 	}
 
 	_psxFlushAllUnused();
-	s8* prevx86 = x86Ptr;
+	u8* prevx86 = x86Ptr;
 	s_do32 = 0;
 	rpsxSetBranchEQ(info, process);
 
@@ -1451,7 +1449,7 @@ void rpsxBLTZ()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	s8* prevx86 = x86Ptr;
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JL8(0);
 
 	psxSaveBranchState();
@@ -1498,7 +1496,7 @@ void rpsxBGEZ()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	s8* prevx86 = x86Ptr;
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JGE8(0);
 
 	psxSaveBranchState();
@@ -1552,7 +1550,7 @@ void rpsxBLTZAL()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	s8* prevx86 = x86Ptr;
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JL8(0);
 
 	psxSaveBranchState();
@@ -1605,7 +1603,7 @@ void rpsxBGEZAL()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	s8* prevx86 = x86Ptr;
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JGE8(0);
 
 	MOV32ItoM((uptr)&psxRegs.GPR.r[31], psxpc+4);
@@ -1659,7 +1657,7 @@ void rpsxBLEZ()
 	_clearNeededX86regs();
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	s8* prevx86 = x86Ptr;
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JLE8(0);
 
 	psxSaveBranchState();
@@ -1707,7 +1705,7 @@ void rpsxBGTZ()
 	_clearNeededX86regs();
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	s8* prevx86 = x86Ptr;
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JG8(0);
 
 	psxSaveBranchState();

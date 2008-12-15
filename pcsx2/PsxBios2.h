@@ -39,7 +39,7 @@
 #ifndef __PSX_BIOS_H__
 #define __PSX_BIOS_H__
 
-typedef struct {
+struct irxImageInfo {
 	u32	next,		//+00
 		name;		//+04
 	u16	version,	//+08
@@ -54,13 +54,13 @@ typedef struct {
 		bss_size,	//+24
 		_pad28,		//+28
 		_pad2C;		//+2C
-} irxImageInfo;		//=30
+};		//=30
 
-typedef struct {
+struct _sifServer {
 	int active;
 	u32 server;
 	u32 fhandler;
-} _sifServer;
+};
 
 #define SIF_SERVERS 32
 
@@ -71,16 +71,16 @@ _sifServer sifServer[SIF_SERVERS];
 #define IRX_MODULES 64
 #define IRX_FUNCS 256 
 
-typedef struct {
+struct irxFunc {
 	u32 num;
 	u32 entry;
-} irxFunc;
+};
 
-typedef struct {
+struct irxModule {
 	int active;
 	u32 name[2];
 	irxFunc funcs[IRX_FUNCS];
-} irxModule;
+};
 
 irxModule irxMod[IRX_MODULES];
 

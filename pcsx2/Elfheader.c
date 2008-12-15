@@ -28,9 +28,13 @@
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
+#ifdef _WIN32
+AppData gApp;
+#endif
+
 u32 ElfCRC;
 
-typedef struct {
+struct ELF_HEADER {
 	u8	e_ident[16];	//0x7f,"ELF"  (ELF file identifier)
 	u16	e_type;		 //ELF type: 0=NONE, 1=REL, 2=EXEC, 3=SHARED, 4=CORE
 	u16	e_machine;      //Processor: 8=MIPS R3000
@@ -45,9 +49,9 @@ typedef struct {
 	u16	e_shentsize;    //Section headers entry size
 	u16	e_shnum;        //Number of section headers
 	u16	e_shstrndx;     //Section header stringtable index	
-} ELF_HEADER;
+};
 
-typedef struct {
+struct ELF_PHR {
 	u32 p_type;         //see notes1
 	u32 p_offset;       //Offset from file start to program segment.
 	u32 p_vaddr;        //Virtual address of the segment
@@ -56,7 +60,7 @@ typedef struct {
 	u32 p_memsz;        //Number of bytes in the memory image of the segment
 	u32 p_flags;        //Flags for segment
 	u32 p_align;        //Alignment. The address of 0x08 and 0x0C must fit this alignment. 0=no alignment
-} ELF_PHR;
+};
 
 /*
 notes1
@@ -70,7 +74,7 @@ notes1
 6=The array element must specify location and size of the program header table.
 */
 
-typedef struct {
+struct ELF_SHR {
 	u32	sh_name;        //No. to the index of the Section header stringtable index
 	u32	sh_type;        //See notes2
 	u32	sh_flags;       //see notes3
@@ -81,7 +85,8 @@ typedef struct {
 	u32	sh_info;        //Info
 	u32	sh_addralign;   //Alignment. The adress of 0x0C must fit this alignment. 0=no alignment.
 	u32	sh_entsize;     //Fixed size entries.
-} ELF_SHR;
+};
+
 /*
 notes 2
 -------
@@ -111,21 +116,21 @@ Section Flags:  (1 bit, you may combine them like 3 = alloc & write permission)
 0xf0000000=Mask bits processor-specific
 */
 
-typedef struct {
+struct Elf32_Sym {
 	u32	st_name;
 	u32	st_value;
 	u32	st_size;
 	u8	st_info;
 	u8	st_other;
 	u16	st_shndx;
-} Elf32_Sym;
+};
 
 #define ELF32_ST_TYPE(i) ((i)&0xf)
 
-typedef struct {
+struct Elf32_Rel {
 	u32	r_offset;
 	u32	r_info;
-} Elf32_Rel;
+};
 
 //unfinished!!!!
 
@@ -498,9 +503,6 @@ BOOL loadSectionHeaders( char * Exepath )
 
 	return TRUE;
 }
-
-extern int LoadPatch(char *patchfile);
-extern void LoadGameSpecificSettings();
 
 int loadElfFile(char *filename) {
 	char str[256],str2[256];

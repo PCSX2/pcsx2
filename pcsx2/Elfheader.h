@@ -22,8 +22,10 @@
 //2002-09-20 (Florin)
 extern char args[256];		//to be filled by GUI
 extern unsigned int args_ptr;
+
 //-------------------
 int loadElfFile(char *filename);
+void LoadGameSpecificSettings();
 
 extern u32 ElfCRC;
 

@@ -63,7 +63,7 @@ void ConstWriteFIFO(u32 mem);
 // --- DMA ---
 //
 
-typedef struct tagDMACh{
+struct DMACh {
 	u32 chcr;
 	u32 null0[3];
 	u32 madr;
@@ -77,7 +77,7 @@ typedef struct tagDMACh{
 	u32 asr1;
 	u32 null5[11];
 	u32 sadr;
-} DMACh;
+};
 
 // HW defines
 

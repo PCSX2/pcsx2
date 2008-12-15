@@ -75,41 +75,41 @@ do {					\
 /* take num bits from the high part of bit_buf and sign extend them */
 #define SBITS(bit_buf,num) (((s32)(bit_buf)) >> (32 - (num)))
 
-typedef struct {
+struct MBtab {
     u8 modes;
     u8 len;
-} MBtab;
+};
 
-typedef struct {
+struct MVtab {
     u8 delta;
     u8 len;
-} MVtab;
+};
 
-typedef struct {
+struct DMVtab {
     s8 dmv;
     u8 len;
-} DMVtab;
+};
 
-typedef struct {
+struct CBPtab {
     u8 cbp;
     u8 len;
-} CBPtab;
+};
 
-typedef struct {
+struct DCtab {
     u8 size;
     u8 len;
-} DCtab;
+};
 
-typedef struct {
+struct DCTtab {
     u8 run;
     u8 level;
     u8 len;
-} DCTtab;
+};
 
-typedef struct {
+struct MBAtab {
     u8 mba;
     u8 len;
-} MBAtab;
+};
 
 
 #define INTRA MACROBLOCK_INTRA

@@ -65,14 +65,17 @@ static unsigned int langsMax;
 // user's conf file accidentally.
 PcsxConfig winConfig;		// local storage of the configuration options.
 
+HWND hStatusWnd;
+
 extern int g_SaveGSStream;
 
 int needReset = 1;
 int RunExe = 0;
 
-typedef struct {
-	char lang[256];
-} _langs;
+struct _langs {
+	TCHAR lang[256];
+};
+
 _langs *langs = NULL;
 
 static int UseGui = 1;
@@ -111,7 +114,6 @@ void strcatz(char *dst, char *src) {
 BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);//forward def
 //-------------------
 
-extern int g_ZeroGSOptions;
 void RunExecute(int run) {
 	SetThreadPriority(GetCurrentThread(), Config.ThPriority);
 	SetPriorityClass(GetCurrentProcess(), Config.ThPriority == THREAD_PRIORITY_HIGHEST ? ABOVE_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS);
@@ -342,7 +344,7 @@ static const char* phelpmsg =
     "\n";
 
 /// This code is courtesy of http://alter.org.ua/en/docs/win/args/
-static PTCHAR* _CommandLineToArgv( PTCHAR CmdLine, int* _argc )
+static PTCHAR* _CommandLineToArgv( const TCHAR *CmdLine, int* _argc )
 {
     PTCHAR* argv;
     PTCHAR  _argv;
@@ -425,7 +427,7 @@ static PTCHAR* _CommandLineToArgv( PTCHAR CmdLine, int* _argc )
 // returns 1 if the user requested help (show help and exit)
 // returns zero on success.
 // returns -1 on failure (bad command line argument)
-static int ParseCommandLine( int tokenCount, const TCHAR** tokens )
+static int ParseCommandLine( int tokenCount, TCHAR *const *const tokens )
 {
 	int tidx = 0;
 	g_TestRun.efile = 0;
@@ -513,8 +515,6 @@ static int ParseCommandLine( int tokenCount, const TCHAR** tokens )
 	return 0;
 }
 
-extern void LoadPatch(char *crc);
-
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -564,9 +564,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	{
 		int argc;
-		TCHAR** argv;
+		TCHAR *const *const argv = _CommandLineToArgv( lpCmdLine, &argc );
 
-		argv = _CommandLineToArgv( lpCmdLine, &argc );
 		if( argv == NULL )
 		{
 			SysMessage( "A fatal error occured while attempting to parse the command line.\n" );
@@ -583,7 +582,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			return 0;
 		}
 
-		switch( LoadConfig( &winConfig ) )
+		switch( LoadConfig() )
 		{
 			case 0:	break;	// everything worked!
 			case 1:	
@@ -747,13 +746,13 @@ void CALLBACK KeyEvent(keyEvent* ev)
 {
 	
 	if (ev == NULL) return;
-	if (ev->event == KEYRELEASE) {
+	if (ev->evt == KEYRELEASE) {
 		switch (ev->key) {
 		case VK_SHIFT: shiftkey = 0; break;
 		}
 		GSkeyEvent(ev); return;
 	}
-	if (ev->event != KEYPRESS)
+	if (ev->evt != KEYPRESS)
         return;
 
     //some pad plugins don't give a key released event for shift, so this is needed
@@ -842,7 +841,7 @@ BOOL APIENTRY LogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 					 Log = 1;
 				else Log = 0;
 
-				SaveConfig( &winConfig );              
+				SaveConfig();              
 
                 EndDialog(hDlg, TRUE);
             } 
@@ -1152,7 +1151,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
    	        HDC hdc = BeginPaint(gApp.hWnd, &ps);
 
    	        HDC hdcMem = CreateCompatibleDC(hdc);
-   	        HBITMAP hbmOld = SelectObject(hdcMem, hbitmap_background);
+   	        HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbitmap_background);
 
    	        GetObject(hbitmap_background, sizeof(bm), &bm);
 //			BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
@@ -2284,7 +2283,7 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 	pblock->NumberPages = (size+s_dwPageSize-1)/s_dwPageSize;
 	PFNArraySize = pblock->NumberPages * sizeof (ULONG_PTR);
 
-	pblock->aPFNs = (ULONG_PTR *) HeapAlloc (GetProcessHeap (), 0, PFNArraySize);
+	pblock->aPFNs = (uptr*)HeapAlloc (GetProcessHeap (), 0, PFNArraySize);
 
 	if (pblock->aPFNs == NULL) {
 		SysPrintf("Failed to allocate on heap.\n");
@@ -2293,7 +2292,7 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 
 	// Allocate the physical memory.
 	NumberOfPagesInitial = pblock->NumberPages;
-	bResult = AllocateUserPhysicalPages( GetCurrentProcess(), &pblock->NumberPages, pblock->aPFNs );
+	bResult = AllocateUserPhysicalPages( GetCurrentProcess(), (PULONG_PTR)&pblock->NumberPages, (PULONG_PTR)pblock->aPFNs );
 
 	if( bResult != TRUE ) 
 	{
@@ -2307,7 +2306,7 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 		goto eCleanupAndExit;
 	}
 
-	pblock->aVFNs = (ULONG_PTR*)HeapAlloc(GetProcessHeap(), 0, PFNArraySize);
+	pblock->aVFNs = (uptr*)HeapAlloc(GetProcessHeap(), 0, PFNArraySize);
 
 	return 0;
 
@@ -2321,7 +2320,7 @@ void SysPhysicalFree(PSMEMORYBLOCK* pblock)
 	assert( pblock != NULL );
 
 	// Free the physical pages.
-	FreeUserPhysicalPages( GetCurrentProcess(), &pblock->NumberPages, pblock->aPFNs );
+	FreeUserPhysicalPages( GetCurrentProcess(), (PULONG_PTR)&pblock->NumberPages, (PULONG_PTR)pblock->aPFNs );
 
 	if( pblock->aPFNs != NULL ) HeapFree(GetProcessHeap(), 0, pblock->aPFNs);
 	if( pblock->aVFNs != NULL ) HeapFree(GetProcessHeap(), 0, pblock->aVFNs);
@@ -2341,10 +2340,10 @@ int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
 	}
 
 	// Map the physical memory into the window.  
-	bResult = MapUserPhysicalPages( base, pblock->NumberPages, pblock->aPFNs );
+	bResult = MapUserPhysicalPages( base, (ULONG_PTR)pblock->NumberPages, (PULONG_PTR)pblock->aPFNs );
 
 	for(i = 0; i < pblock->NumberPages; ++i)
-		pblock->aVFNs[i] = (ULONG_PTR)base + 0x1000*i;
+		pblock->aVFNs[i] = (uptr)base + 0x1000*i;
 
 	if( bResult != TRUE ) 
 	{
@@ -2374,7 +2373,7 @@ void SysVirtualFree(void* lpMemReserved, u32 size)
 
 int SysMapUserPhysicalPages(void* Addr, uptr NumPages, uptr* pfn, int pageoffset)
 {
-	BOOL bResult = MapUserPhysicalPages(Addr, NumPages, pfn+pageoffset);
+	BOOL bResult = MapUserPhysicalPages(Addr, NumPages, (PULONG_PTR)(pfn+pageoffset));
 
 #ifdef _DEBUG
 	//if( !bResult )

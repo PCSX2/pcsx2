@@ -619,7 +619,7 @@ void PADDSB() {
 		_PADDSB(i); 
 }
 
-__forceinline void  _PSUBSB(n)
+static __forceinline void _PSUBSB( u8 n )
 {
 	s16 sTemp16;
 	sTemp16 = (s16)cpuRegs.GPR.r[_Rs_].SC[n] - (s16)cpuRegs.GPR.r[_Rt_].SC[n]; 
@@ -752,7 +752,7 @@ void PCEQW() {
 	_PCEQW(0); _PCEQW(1); _PCEQW(2); _PCEQW(3);
 }
 
-__forceinline void _PMINW(n)
+static __forceinline void _PMINW( u8 n )
 {
 	if (cpuRegs.GPR.r[_Rs_].SL[n] < cpuRegs.GPR.r[_Rt_].SL[n])
 		cpuRegs.GPR.r[_Rd_].SL[n] = cpuRegs.GPR.r[_Rs_].SL[n];
@@ -785,7 +785,7 @@ void PABSH() {
 	_PABSH(4); _PABSH(5); _PABSH(6); _PABSH(7);
 }
 
-__forceinline void  _PCEQH(n)
+static __forceinline void  _PCEQH( u8 n )
 {
 	if (cpuRegs.GPR.r[_Rs_].US[n] == cpuRegs.GPR.r[_Rt_].US[n]) 
 		cpuRegs.GPR.r[_Rd_].US[n] = 0xFFFF;
@@ -800,7 +800,7 @@ void PCEQH() {
 	_PCEQH(4); _PCEQH(5); _PCEQH(6); _PCEQH(7);
 }
 
-__forceinline void  _PMINH(n)
+static __forceinline void  _PMINH( u8 n )
 {
 	if (cpuRegs.GPR.r[_Rs_].SS[n] < cpuRegs.GPR.r[_Rt_].SS[n])
 		cpuRegs.GPR.r[_Rd_].US[n] = cpuRegs.GPR.r[_Rs_].US[n];

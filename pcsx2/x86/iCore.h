@@ -34,17 +34,17 @@
 #define BLOCKTYPE_STARTPC	4		// startpc offset
 #define BLOCKTYPE_DELAYSLOT	1		// if bit set, delay slot
 
-typedef struct _BASEBLOCK
+struct BASEBLOCK
 {
 	u32 pFnptr : 28;
 	u32 uType : 4;
 	u32 startpc;
-} BASEBLOCK;
+};
 
 C_ASSERT( sizeof(BASEBLOCK) == 8 );
 
 // extra block info (only valid for start of fn)
-typedef struct _BASEBLOCKEX
+struct BASEBLOCKEX
 {
 	u16 size; // size in dwords	
 	u16 dummy;
@@ -55,7 +55,7 @@ typedef struct _BASEBLOCKEX
 	LARGE_INTEGER ltime; // regs it assumes to have set already
 #endif
 
-} BASEBLOCKEX;
+};
 
 #define GET_BLOCKTYPE(b) ((b)->Type)
 #define PC_GETBLOCK_(x, reclut) ((BASEBLOCK*)(reclut[((u32)(x)) >> 16] + (sizeof(BASEBLOCK)/4)*((x) & 0xffff)))
@@ -79,7 +79,7 @@ typedef struct _BASEBLOCKEX
 
 #define X86_ISVI(type) ((type&~X86TYPE_VU1) == X86TYPE_VI)
 
-typedef struct {
+struct _x86regs {
 	u8 inuse;
 	u8 reg; // value of 0 - not used
 	u8 mode;
@@ -87,7 +87,7 @@ typedef struct {
 	u8 type; // X86TYPE_
 	u16 counter;
 	u32 extra; // extra info assoc with the reg
-} _x86regs;
+};
 
 extern _x86regs x86regs[X86REGS], s_saveX86regs[X86REGS];
 
@@ -178,7 +178,7 @@ void _flushConstReg(int reg);
 #define XMMGPR_HI	32
 #define XMMFPU_ACC	32
 
-typedef struct {
+struct _xmmregs {
 	u8 inuse;
 	u8 reg;
 	u8 type;
@@ -186,7 +186,7 @@ typedef struct {
 	u8 needed;
 	u8 VU; // 0 = VU0, 1 = VU1
 	u16 counter;
-} _xmmregs;
+};
 
 void _initXMMregs();
 int  _getFreeXMMreg();
@@ -308,7 +308,7 @@ int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy); // returns tr
 #define EEINSTINFO_MMX		EEINST_MMX
 #define EEINSTINFO_XMM		EEINST_XMM
 
-typedef struct _EEINST
+struct EEINST
 {
 	u8 regs[34]; // includes HI/LO (HI=32, LO=33)
 	u8 fpuregs[33]; // ACC=32
@@ -323,7 +323,7 @@ typedef struct _EEINST
 	_VURegsNum vuregs;
 
 	u8 numpeeps; // number of peephole optimizations
-} EEINST;
+};
 
 extern EEINST* g_pCurInstInfo; // info for the cur instruction
 void _recClearInst(EEINST* pinst);
@@ -353,12 +353,12 @@ void _recFillRegister(EEINST* pinst, int type, int reg, int write);
 #define EEINST_ISSIGNEXT(reg) (g_cpuPrevRegHasSignExt&(1<<(reg)))
 
 // writeback inst (used for cop2)
-typedef struct _EEINSTWRITEBACK
+struct EEINSTWRITEBACK
 {
 	int cycle;
 	u32 viwrite; // mask of written viregs (REG_STATUS_FLAG and REG_MAC_FLAG are treated the same)
 	EEINST* parent;
-} EEINSTWRITEBACK;
+};
 
 void _recClearWritebacks();
 void _recAddWriteBack(int cycle, u32 viwrite, EEINST* parent);
@@ -433,13 +433,13 @@ void SetFPUstate();
 #define MMX_IS32BITS(x) (((x)>=MMX_FPU&&(x)<MMX_COP0+32)||(x)==MMX_FPUACC)
 #define MMX_ISGPR(x) ((x) >= MMX_GPR && (x) < MMX_GPR+34)
 
-typedef struct {
+struct _mmxregs {
 	u8 inuse;
 	u8 reg; // value of 0 - not used
 	u8 mode;
 	u8 needed;
 	u16 counter;
-} _mmxregs;
+};
 
 void _initMMXregs();
 int  _getFreeMMXreg();
@@ -477,10 +477,6 @@ int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
 extern u8 g_globalMMXSaved;
 extern _mmxregs mmxregs[MMXREGS], s_saveMMXregs[MMXREGS];
 extern u16 x86FpuState, iCWstate;
-
-#ifdef _DEBUG
-extern char g_globalMMXLocked;
-#endif
 
 #else
 

@@ -16,17 +16,13 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#define PLUGINtypedefs // for GSgifTransfer1
-
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include "Common.h"
 #include "VUmicro.h"
 #include "VUflags.h"
 #include "VUops.h"
 #include "GS.h"
-
-extern _GSgifTransfer1    GSgifTransfer1;
 
 //Lower/Upper instructions can use that..
 #define _Ft_ ((VU->code >> 16) & 0x1F)  // The rt part of the instruction register 
@@ -346,10 +342,10 @@ float vuDouble(u32 f)
 void _vuABS(VURegs * VU) {
 	if (_Ft_ == 0) return;
 
-	if (_X){ VU->VF[_Ft_].f.x = fpufabsf(vuDouble(VU->VF[_Fs_].i.x)); }
-	if (_Y){ VU->VF[_Ft_].f.y = fpufabsf(vuDouble(VU->VF[_Fs_].i.y)); }
-	if (_Z){ VU->VF[_Ft_].f.z = fpufabsf(vuDouble(VU->VF[_Fs_].i.z)); }
-	if (_W){ VU->VF[_Ft_].f.w = fpufabsf(vuDouble(VU->VF[_Fs_].i.w)); }
+	if (_X){ VU->VF[_Ft_].f.x = fabs(vuDouble(VU->VF[_Fs_].i.x)); }
+	if (_Y){ VU->VF[_Ft_].f.y = fabs(vuDouble(VU->VF[_Fs_].i.y)); }
+	if (_Z){ VU->VF[_Ft_].f.z = fabs(vuDouble(VU->VF[_Fs_].i.z)); }
+	if (_W){ VU->VF[_Ft_].f.w = fabs(vuDouble(VU->VF[_Fs_].i.w)); }
 }/*Reworked from define to function. asadr*/
 
 
@@ -1408,7 +1404,7 @@ void _vuITOF15(VURegs * VU) {
 
 /* Different type of clipping by presaving w. asadr */
 void _vuCLIP(VURegs * VU) { 
-	float value = fpufabsf(vuDouble(VU->VF[_Ft_].i.w));
+	float value = fabs(vuDouble(VU->VF[_Ft_].i.w));
 
 	VU->clipflag <<= 6; 
     if ( vuDouble(VU->VF[_Fs_].i.x) > +value ) VU->clipflag|= 0x01;
@@ -1461,7 +1457,7 @@ void _vuSQRT(VURegs * VU) {
 
 	if (ft < 0.0 )
 		VU->statusflag |= 0x10;
-	VU->q.F = fpusqrtf(fpufabsf(ft));
+	VU->q.F = sqrt(fabs(ft));
 	VU->q.F = vuDouble(VU->q.UL);
 } //last update 15/01/06 zerofrog
 
@@ -1503,7 +1499,7 @@ void _vuRSQRT(VURegs * VU) {
 			VU->statusflag |= 0x10;
 		}
 
-		temp = fpusqrtf(fpufabsf(ft)); 
+		temp = sqrt(fabs(ft)); 
 		VU->q.F = fs / temp;
 		VU->q.F = vuDouble(VU->q.UL);
 	} 
@@ -1976,7 +1972,7 @@ void _vuERSADD(VURegs * VU) {
 void _vuELENG(VURegs * VU) { 
 	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z); 
 	if(p >= 0){ 
-		p = fpusqrtf(p); 
+		p = sqrt(p); 
 	} 
 	VU->p.F = p;
 }
@@ -1985,7 +1981,7 @@ void _vuELENG(VURegs * VU) {
 void _vuERLENG(VURegs * VU) { 
 	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z); 
 	if (p >= 0) {
-		p = fpusqrtf(p);
+		p = sqrt(p);
 		if (p != 0) { 
 			p = 1.0f / p; 
 		} 
@@ -1997,7 +1993,7 @@ void _vuERLENG(VURegs * VU) {
 void _vuEATANxy(VURegs * VU) { 
 	float p = 0;
 	if(vuDouble(VU->VF[_Fs_].i.x) != 0) { 
-		p = fpuatan2f(vuDouble(VU->VF[_Fs_].i.y), vuDouble(VU->VF[_Fs_].i.x)); 
+		p = atan2(vuDouble(VU->VF[_Fs_].i.y), vuDouble(VU->VF[_Fs_].i.x)); 
 	} 
 	VU->p.F = p;
 }
@@ -2006,7 +2002,7 @@ void _vuEATANxy(VURegs * VU) {
 void _vuEATANxz(VURegs * VU) { 
 	float p = 0;
 	if(vuDouble(VU->VF[_Fs_].i.x) != 0) { 
-		p = fpuatan2f(vuDouble(VU->VF[_Fs_].i.z), vuDouble(VU->VF[_Fs_].i.x)); 
+		p = atan2(vuDouble(VU->VF[_Fs_].i.z), vuDouble(VU->VF[_Fs_].i.x)); 
 	} 
 	VU->p.F = p;
 }
@@ -2029,7 +2025,7 @@ void _vuERCPR(VURegs * VU) {
 void _vuESQRT(VURegs * VU) { 
 	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
 	if (p >= 0){
-		p = fpusqrtf(p); 
+		p = sqrt(p); 
 	}
 	VU->p.F = p;
 }
@@ -2038,7 +2034,7 @@ void _vuESQRT(VURegs * VU) {
 void _vuERSQRT(VURegs * VU) {
 	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
 	if (p >= 0) {
-		p = fpusqrtf(p);
+		p = sqrt(p);
 		if (p) {
 			p = 1.0f / p; 
 		}
@@ -2047,17 +2043,17 @@ void _vuERSQRT(VURegs * VU) {
 }
 
 void _vuESIN(VURegs * VU) { 
-	float p = fpusinf(vuDouble(VU->VF[_Fs_].UL[_Fsf_])); 
+	float p = sin(vuDouble(VU->VF[_Fs_].UL[_Fsf_])); 
 	VU->p.F = p;
 }
 
 void _vuEATAN(VURegs * VU) { 
-	float p = fpuatanf(vuDouble(VU->VF[_Fs_].UL[_Fsf_])); 
+	float p = atan(vuDouble(VU->VF[_Fs_].UL[_Fsf_])); 
 	VU->p.F = p;
 }
 
 void _vuEEXP(VURegs * VU) { 
-	float p = fpuexpf(-(vuDouble(VU->VF[_Fs_].UL[_Fsf_]))); 
+	float p = exp(-(vuDouble(VU->VF[_Fs_].UL[_Fsf_]))); 
 	VU->p.F = p;
 }
 

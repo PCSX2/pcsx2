@@ -26,10 +26,6 @@
 #ifndef __IX86_H__
 #define __IX86_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "PS2Etypes.h"       // Basic types header
 
 #ifdef __x86_64__
@@ -140,19 +136,19 @@ typedef int x86MMXRegType;
 
 typedef int x86SSERegType;
 
-typedef enum
+enum XMMSSEType
 {
 	XMMT_INT = 0, // integer (sse2 only)
 	XMMT_FPS = 1, // floating point
 	//XMMT_FPD = 3, // double
-} XMMSSEType;
+};
 
 extern XMMSSEType g_xmmtypes[XMMREGS];
 
 extern void cpudetectInit( void );//this is all that needs to be called and will fill up the below structs
 
 //cpu capabilities structure
-typedef struct {
+struct CAPABILITIES {
    u32 hasFloatingPointUnit;
    u32 hasVirtual8086ModeEnhancements;
    u32 hasDebuggingExtensions;
@@ -188,11 +184,11 @@ typedef struct {
    u32 hasAMD64BitArchitecture;
    u32 has3DNOWInstructionExtensionsExt;
    u32 has3DNOWInstructionExtensions;
-} CAPABILITIES;
+};
 
 extern CAPABILITIES cpucaps;
 
-typedef struct {
+struct CPUINFO{
    
    u32 x86Family;	   // Processor Family
    u32 x86Model;	   // Processor Model
@@ -206,11 +202,11 @@ typedef struct {
    s8  x86Type[20];   //cpu type in char format //the cpu type (in %s)
    s8  x86Fam[50];    // family in char format //the original cpu name string (in %s)
    u32 cpuspeed;      // speed of cpu //this will give cpu speed (in %d)
-} CPUINFO;
+};
 
 extern CPUINFO cpuinfo;
 
-extern s8  *x86Ptr;
+extern u8  *x86Ptr;
 extern u8  *j8Ptr[32];
 extern u32 *j32Ptr[32];
 
@@ -245,7 +241,7 @@ extern __forceinline void write32( u32 val );
 extern void write64( u64 val );
 
 
-extern void x86SetPtr( s8 *ptr );
+extern void x86SetPtr( u8 *ptr );
 extern void x86Shutdown( void );
 
 extern void x86SetJ8( u8 *j8 );
@@ -1788,7 +1784,7 @@ extern void SSE2EMU_MOVD_R_to_XMM( x86SSERegType to, x86IntRegType from );
 #endif
 
 __forceinline void write8(u8 val )  {  
-	*(u8*)x86Ptr = (u8)val; 
+	*x86Ptr = (u8)val; 
 	x86Ptr++; 
 } 
 
@@ -1813,9 +1809,5 @@ __forceinline void write32(u32 val )
 	*(u32*)x86Ptr = val; 
 	x86Ptr += 4; 
 } 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // __IX86_H__

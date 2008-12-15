@@ -19,23 +19,23 @@
 #include "Common.h"
 #include "deci2.h"
 
-typedef struct tag_DECI2_NETMP_HEADER{
+struct DECI2_NETMP_HEADER{
 	DECI2_HEADER	h;		//+00
 	u8				code,	//+08
 					result;	//+09
-} DECI2_NETMP_HEADER;		//=0A
+};		//=0A
 
-typedef struct tag_DECI2_NETMP_CONNECT{
+struct DECI2_NETMP_CONNECT{
 	u8				priority,	//+00
 					_pad;		//+01
 	u16				protocol;	//+02
-} DECI2_NETMP_CONNECT;			//=04
+};			//=04
 
 char				d2_message[100];
 int					d2_count=1;
 DECI2_NETMP_CONNECT	d2_connect[50]={0xFF, 0, 0x400};
 
-void D2_NETMP(char *inbuffer, char *outbuffer, char *message){
+void D2_NETMP(const u8 *inbuffer, u8 *outbuffer, char *message){
 	DECI2_NETMP_HEADER	*in=(DECI2_NETMP_HEADER*)inbuffer,
 						*out=(DECI2_NETMP_HEADER*)outbuffer;
 	u8	*data=(u8*)in+sizeof(DECI2_NETMP_HEADER);
@@ -96,7 +96,7 @@ void D2_NETMP(char *inbuffer, char *outbuffer, char *message){
 			break;
 		case 4://[OK]
 			sprintf(line, "code=MESSAGE %s", data);//null terminated by the memset with 0 call
-			strcpy(d2_message, data);
+			strcpy(d2_message, (char*)data);
 			writeData(outbuffer);
 			break;
 		case 6://[ok]
@@ -122,7 +122,7 @@ void D2_NETMP(char *inbuffer, char *outbuffer, char *message){
 		case 10:
 			sprintf(line, "code=VERSION %s", data);
 			data=(u8*)out+sizeof(DECI2_NETMP_HEADER);
-			strcpy(data, "0.2.0");data+=strlen("0.2.0");//emu version;)
+			strcpy((char*)data, "0.2.0");data+=strlen("0.2.0");//emu version;)
 			out->h.length=data-(u8*)out;
 			writeData(outbuffer);
 			break;

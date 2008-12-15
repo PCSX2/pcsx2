@@ -29,14 +29,14 @@
 #include "yuv2rgb.h"
 
 //#include "convert_internal.h" //START
-typedef struct {
+struct convert_rgb_t {
     u8 * rgb_ptr;
     int width;
     int uv_stride, uv_stride_frame;
     int rgb_stride, rgb_stride_frame;
     void (* yuv2rgb) (u8 *, u8 *, u8 *, u8 *,
 		      void *, void *, int);
-} convert_rgb_t;
+};
 
 typedef void yuv2rgb_copy (void * id, u8 * const * src,
 			   unsigned int v_offset);

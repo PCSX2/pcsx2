@@ -90,13 +90,13 @@ struct cdVolDesc
 	u32		secDirTableLBA;	// LBA of Secondary Dir Table	//+94
 	u32		reserved8;										//+98
 	struct rootDirTocHeader	rootToc;
-	u8		volSetName[128];
-	u8		publisherName[128];
-	u8		preparerName[128];
-	u8		applicationName[128];
-	u8		copyrightFileName[37];
-	u8		abstractFileName[37];
-	u8		bibliographyFileName[37];
+	s8		volSetName[128];
+	s8		publisherName[128];
+	s8		preparerName[128];
+	s8		applicationName[128];
+	s8		copyrightFileName[37];
+	s8		abstractFileName[37];
+	s8		bibliographyFileName[37];
 	struct	asciiDate	creationDate;
 	struct	asciiDate	modificationDate;
 	struct	asciiDate	effectiveDate;
@@ -134,7 +134,7 @@ struct dirTocEntry
 	unsigned char	fileProperties;
 	unsigned char	reserved2[6];
 	unsigned char	filenameLength;
-	unsigned char	filename[128];
+	char			filename[128];
 #if defined(_MSC_VER)
 };
 #else

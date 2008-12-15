@@ -121,18 +121,18 @@ typedef union {
 //
 // Bitfield Structure
 //
-typedef struct {
+struct tIPU_BP {
 	u32 BP;		// Bit stream point
 	u16 IFC;	// Input FIFO counter
 	u8 FP;		// FIFO point
 	u8 bufferhasnew;
-} tIPU_BP;
+};
 
 #ifdef _WIN32
 #pragma pack()
 #endif
 
-typedef struct {
+struct tIPU_CMD_IDEC {
 	u32 FB  : 6;	
 	u32 UN2 :10;
 	u32 QSC : 5;	
@@ -142,9 +142,9 @@ typedef struct {
 	u32 DTE : 1;	
 	u32 OFM : 1;	
 	u32 cmd : 4;	
-} tIPU_CMD_IDEC;
+};
 
-typedef struct {
+struct tIPU_CMD_BDEC {
 	u32 FB  : 6;	
 	u32 UN2 :10;
 	u32 QSC : 5;	
@@ -153,15 +153,15 @@ typedef struct {
 	u32 DCR : 1;	
 	u32 MBI : 1;	
 	u32 cmd : 4;	
-} tIPU_CMD_BDEC;
+};
 
-typedef struct {
+struct tIPU_CMD_CSC {
 	u32 MBC :11;
 	u32 UN2 :15;
 	u32 DTE : 1;	
 	u32 OFM : 1;	
 	u32 cmd : 4;
-} tIPU_CMD_CSC;
+};
 
 #define SCE_IPU_BCLR	0x0
 #define SCE_IPU_IDEC	0x1
@@ -174,7 +174,7 @@ typedef struct {
 #define SCE_IPU_PACK	0x8
 #define SCE_IPU_SETTH	0x9
 
-typedef struct {
+struct IPUregisters {
   tIPU_CMD  cmd;
   u32 dummy0[2];
   tIPU_CTRL ctrl;
@@ -184,7 +184,7 @@ typedef struct {
   u32		top;
   u32		topbusy;
   u32 dummy3[2];
-} IPUregisters, *PIPUregisters;
+};
 
 #define ipuRegs ((IPUregisters*)(PS2MEM_HW+0x2000))
 

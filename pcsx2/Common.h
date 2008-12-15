@@ -23,7 +23,7 @@
 #define __LINUX__
 #endif
 
-#include <zlib.h>
+#include <zlib.h>		// fixme: is zlib.h stuff used by that many modules that it should be here in common?
 #include <string.h>
 
 #include "PS2Etypes.h"
@@ -34,16 +34,8 @@
 
 #if defined(_WIN32)
 
-#include <windows.h>
+#include <windows.h>	// fixme: windows.h should be included to windows gui modules only.
 
-typedef struct {
-	HWND hWnd;           // Main window handle
-	HINSTANCE hInstance; // Application instance
-	HMENU hMenu;         // Main window menu
-	HANDLE hConsole;
-} AppData;
-
-extern AppData gApp;
 #define pthread_mutex__unlock pthread_mutex_unlock
 
 #define strnicmp _strnicmp
@@ -75,14 +67,6 @@ extern AppData gApp;
 #define _aligned_malloc(x,y) __mingw_aligned_malloc(x,y)
 #define _aligned_free(x) __mingw_aligned_free(x)
 #define pthread_mutex__unlock pthread_mutex_unlock
-
-#define fpusqrtf sqrtf
-#define fpufabsf fabsf
-#define fpusinf sinf
-#define fpucosf cosf
-#define fpuexpf expf
-#define fpuatanf atanf
-#define fpuatan2f atan2f
 
 #else
 
@@ -120,7 +104,7 @@ extern AppData gApp;
 
 #endif
 
-typedef struct _TESTRUNARGS
+struct TESTRUNARGS
 {
 	u8 enabled;
 	u8 jpgcapture;
@@ -137,7 +121,7 @@ typedef struct _TESTRUNARGS
 	const char* plogname;
 	const char* pgsdll, *pcdvddll, *pspudll;
 
-} TESTRUNARGS;
+};
 
 extern TESTRUNARGS g_TestRun;
 
@@ -180,11 +164,9 @@ extern TESTRUNARGS g_TestRun;
 #include "Memory.h"
 #include "Elfheader.h"
 #include "Hw.h"
-//#include "GS.h"
 #include "Vif.h"
 #include "SPR.h"
 #include "Sif.h"
-#include "PS2Edefs.h"
 #include "Misc.h"
 #include "Counters.h"
 #include "IPU/IPU.h"
@@ -200,31 +182,8 @@ extern u16 logProtocol;
 extern u8  logSource;
 #define PCSX2_VERSION "Playground (beta)"
 
-// C++ code for sqrtf
-void InitFPUOps();
-extern float (*fpusqrtf)(float fval);
-extern float (*fpufabsf)(float fval);
-extern float (*fpusinf)(float fval);
-extern float (*fpucosf)(float fval);
-extern float (*fpuexpf)(float fval);
-extern float (*fpuatanf)(float fval);
-extern float (*fpuatan2f)(float fvalx, float fvaly);
-
-// Added Feb 16, 2006 by efp
 #ifdef __LINUX__
 #include <errno.h> // EBUSY
-#endif /* __LINUX__ */
-
-#define DESTROY_MUTEX(mutex) { \
-	int err = pthread_mutex_destroy(&mutex); \
-	if( err == EBUSY ) \
-		SysPrintf("cannot destroy"#mutex"\n"); \
-} \
-
-#define DESTROY_COND(cond) { \
-	int err = pthread_cond_destroy(&cond); \
-	if( err == EBUSY ) \
-		SysPrintf("cannot destroy"#cond"\n"); \
-} \
+#endif
 
 #endif /* __COMMON_H__ */

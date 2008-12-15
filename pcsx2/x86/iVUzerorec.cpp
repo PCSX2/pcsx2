@@ -27,15 +27,6 @@
 #include <malloc.h>
 #include <assert.h>
 
-#include "PS2Etypes.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-#define PLUGINtypedefs // for GSgifTransfer1
-
 #if defined(_WIN32)
 #include <windows.h>
 #else
@@ -43,18 +34,11 @@ extern "C" {
 #include <sys/types.h>
 #endif
 
-#include "PS2Edefs.h"
-#include "zlib.h"
-#include "Misc.h"
-#include "System.h"
-#include "R5900.h"
-#include "Vif.h"
-#include "VU.h"
+#include "Common.h"
 
-#include "Memory.h"
-#include "Hw.h"
 #include "GS.h"
-
+#include "R5900.h"
+#include "VU.h"
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
@@ -67,12 +51,6 @@ extern void iDumpVU1Registers();
 
 extern char* disVU1MicroUF(u32 code, u32 pc);
 extern char* disVU1MicroLF(u32 code, u32 pc);
-
-extern _GSgifTransfer1 GSgifTransfer1;
-
-#ifdef __cplusplus
-}
-#endif
 
 #include <vector>
 #include <list>
@@ -117,7 +95,7 @@ static const u32 PWaitTimes[] = { 53, 43, 28, 23, 17, 11, 10 };
 static u32 s_vuInfo; // info passed into rec insts
 
 static const u32 s_MemSize[2] = {VU0_MEMSIZE, VU1_MEMSIZE};
-static s8* s_recVUMem = NULL, *s_recVUPtr = NULL;
+static u8* s_recVUMem = NULL, *s_recVUPtr = NULL;
 
 // tables
 extern void (*recSVU_UPPER_OPCODE[64])();
@@ -330,8 +308,8 @@ static u32 s_UnconditionalDelay = 0; // 1 if there are two sequential branches a
 static u32 g_nLastBlockExecuted = 0;
 
 // Global functions
-extern "C" void* SuperVUGetProgram(u32 startpc, int vuindex);
-extern "C" void SuperVUCleanupProgram(u32 startpc, int vuindex);
+void* SuperVUGetProgram(u32 startpc, int vuindex);
+void SuperVUCleanupProgram(u32 startpc, int vuindex);
 static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex);
 static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const VUPIPELINES& pipes);
 static void SuperVUInitLiveness(VuBaseBlock* pblock);
@@ -345,14 +323,14 @@ void SuperVUFreeXMMregs(u32* livevars);
 
 static u32* SuperVUStaticAlloc(u32 size);
 static void SuperVURecompile();
-extern "C" void SuperVUEndProgram();
+void SuperVUEndProgram();
 
 // allocate VU resources
 void SuperVUInit(int vuindex)
 {
 	if( vuindex < 0 ) {
         // upper 4 bits cannot be nonzero!
-		s_recVUMem = (s8*)SysMmap(0x0c000000, VU_EXESIZE);
+		s_recVUMem = (u8*)SysMmap(0x0c000000, VU_EXESIZE);
         if( (uptr)s_recVUMem > 0x80000000 )
             SysPrintf("bad SuperVU alloc %x\n", s_recVUMem);
 		memset(s_recVUMem, 0xcd, VU_EXESIZE);
@@ -469,9 +447,7 @@ static u32 s_WriteToReadQ = 0;
 static u32 s_VIBranchDelay = 0; //Value of register to use in a vi branch delayed situation
 
 
-extern "C" {
 u32 s_TotalVUCycles; // total cycles since start of program execution
-}
 
 int SuperVUGetLiveness(int vfreg)
 {
@@ -657,10 +633,8 @@ void SuperVUDumpBlock(list<VuBaseBlock*>& blocks, int vuindex)
 	fclose( f );
 }
 
-extern "C" {
 LARGE_INTEGER svubase, svufinal;
 static u64 svutime;
-}
 
 // uncomment to count svu exec time
 //#define SUPERVU_COUNT
@@ -1950,7 +1924,7 @@ void VuBaseBlock::AssignVFRegs()
 		if( i == XMMREGS ) return; // nothing changed
 	}
 
-	s8* oldX86 = x86Ptr;
+	u8* oldX86 = x86Ptr;
 
 	FORIT(itinst, insts) {
 
@@ -2372,7 +2346,6 @@ static void SuperVUAssignRegs()
 // Recompilation
 //////////////////
 
-extern "C" {
 // cycles in which the last Q,P regs were finished (written to VU->VI[])
 // the write occurs before the instruction is executed at that cycle
 // compare with s_TotalVUCycles
@@ -2385,8 +2358,6 @@ uptr s_vu1esp, s_callstack;//, s_vu1esp
 uptr s_vu1ebp, s_vuebx, s_vuedi, s_vu1esi;
 #endif
 
-}
-
 static int s_recWriteQ, s_recWriteP; // wait times during recompilation
 static int s_needFlush; // first bit - Q, second bit - P, third bit - Q has been written, fourth bit - P has been written
 
@@ -2394,7 +2365,7 @@ static int s_needFlush; // first bit - Q, second bit - P, third bit - Q has been
 static int s_JumpX86;
 static int s_ScheduleXGKICK = 0, s_XGKICKReg = -1;
 
-extern "C" u32 g_sseVUMXCSR, g_sseMXCSR;
+extern u32 g_sseVUMXCSR, g_sseMXCSR;
 
 void recSVUMI_XGKICK_( VURegs *VU );
 
@@ -2607,22 +2578,20 @@ static void SuperVURecompile()
 // debug
 
 #ifdef _DEBUG
-extern "C" u32 s_vucount;
+extern u32 s_vucount;
 
 static u32 g_vu1lastrec = 0, skipparent = -1;
 static u32 s_svulast = 0, s_vufnheader;
 static u32 badaddrs[][2] = {0,0xffff};
 #endif
-extern "C" {
 
 #ifndef __x86_64__
 u32 s_saveecx, s_saveedx, s_saveebx, s_saveesi, s_saveedi, s_saveebp;
 #endif
 
 u32 g_curdebugvu;
-}
 				
-//extern "C" float vuDouble(u32 f);
+//float vuDouble(u32 f);
 
 #if defined(_MSC_VER) && !defined(__x86_64__)
 __declspec(naked) static void svudispfn()
@@ -2638,9 +2607,9 @@ __declspec(naked) static void svudispfn()
 	}
 #else
 
-extern "C" void svudispfn();
+void svudispfn();
 
-extern "C" void svudispfntemp()
+void svudispfntemp()
 {
 #endif
 
