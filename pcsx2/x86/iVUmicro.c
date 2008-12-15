@@ -3589,7 +3589,7 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 		t1reg = _vuGetTempXMMreg(info);
 
 		if( t1reg >= 0 ) { // If theres a temp XMM reg available
-			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) ); t2reg++)
+			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg) ); t2reg++)
 				; // Find unused reg (For second temp reg)
 			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
 			
@@ -3633,7 +3633,7 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
-
+				
 				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
 			}
 		}
@@ -3645,7 +3645,7 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 			t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) { // If theres a temp XMM reg available
-				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) ); t2reg++)
+				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg)); t2reg++)
 					; // Find unused reg (For second temp reg)
 				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
 				
@@ -3691,7 +3691,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 		t1reg = _vuGetTempXMMreg(info);
 
 		if( t1reg >= 0 ) { // If theres a temp XMM reg available
-			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) ); t2reg++)
+			for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP)  || (t2reg == t1reg)); t2reg++)
 				; // Find unused reg (For second temp reg)
 			SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
 			
@@ -3736,7 +3736,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t1reg); // Backup t1reg XMM reg
 
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
-
+				
 				SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)FTIO_Temp1); // Restore t1reg XMM reg
 			}
 		}
@@ -3749,7 +3749,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 			t1reg = _vuGetTempXMMreg(info);
 
 			if( t1reg >= 0 ) { // If theres a temp XMM reg available
-				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) ); t2reg++)
+				for (t2reg = 0; ( (t2reg == EEREC_S) || (t2reg == EEREC_T) || (t2reg == EEREC_TEMP) || (t2reg == t1reg)); t2reg++)
 					; // Find unused reg (For second temp reg)
 				SSE_MOVAPS_XMM_to_M128((uptr)FTIO_Temp1, t2reg); // Backup XMM reg
 				

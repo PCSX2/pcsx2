@@ -49,7 +49,11 @@
 #define FPUflagSO	0X00000010
 #define FPUflagSU	0X00000008
 
+#ifndef __x86_64__
 #define FPU_ADD_SUB_HACK 1 // Add/Sub opcodes produce more ps2-like results if set to 1
+#else
+#define FPU_ADD_SUB_HACK 0 // DEC32R doesn't work on 64 bits
+#endif
 
 extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);

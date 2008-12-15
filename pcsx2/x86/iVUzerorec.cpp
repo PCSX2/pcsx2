@@ -131,6 +131,8 @@ extern void (*recSVU_LOWER_OPCODE[128])();
 #define INST_MAC_WRITE		0x0100
 #define INST_Q_WRITE		0x0200
 #define INST_CACHE_VI       0x0400 // write old vi value to s_VIBranchDelay
+
+// Let's tempt fate by defining two different constants with almost identical names
 #define INST_DUMMY_			0x8000
 #define INST_DUMMY			0x83c0
 
