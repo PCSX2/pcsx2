@@ -537,7 +537,7 @@ void fpuFloat2(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf 
 		int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 		if (t1reg >= 0) {
 			SSE_MOVSS_XMM_to_XMM(t1reg, regd);
-			SSE_ANDPS_XMM_to_XMM(t1reg, (uptr)&s_neg[0]);
+			SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&s_neg[0]);
 			SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
 			SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
 			SSE_ORPS_XMM_to_XMM(regd, t1reg);
@@ -548,7 +548,7 @@ void fpuFloat2(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf 
 			t1reg = (regd == 0) ? 1 : 0; // get a temp reg thats not regd
 			SSE_MOVAPS_XMM_to_M128( (uptr)&FPU_FLOAT_TEMP[0], t1reg ); // backup data in t1reg to a temp address
 			SSE_MOVSS_XMM_to_XMM(t1reg, regd);
-			SSE_ANDPS_XMM_to_XMM(t1reg, (uptr)&s_neg[0]);
+			SSE_ANDPS_M128_to_XMM(t1reg, (uptr)&s_neg[0]);
 			SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
 			SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
 			SSE_ORPS_XMM_to_XMM(regd, t1reg);
