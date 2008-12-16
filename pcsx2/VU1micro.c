@@ -146,11 +146,9 @@ void vu1ExecMicro(u32 addr)
 	if(VU0.VI[REG_VPU_STAT].UL & 0x100) {
 		SysPrintf("Previous Microprogram still running on VU1\n");
 
-		if( VU0.VI[REG_VPU_STAT].UL & 0x100 ) {
-			do {
-				Cpu->ExecuteVU1Block();
-			} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
-		}
+		do {
+			Cpu->ExecuteVU1Block();
+		} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 	}
 	VUM_LOG("vu1ExecMicro %x\n", addr);
 	VUM_LOG("vu1ExecMicro %x (count=%d)\n", addr, count++);
@@ -161,14 +159,19 @@ void vu1ExecMicro(u32 addr)
 	if (addr != -1) VU1.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU1);
 
-	
 	//do {
 	FreezeXMMRegs(1);
 		Cpu->ExecuteVU1Block();
 	FreezeXMMRegs(0);
 	//} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 	// rec can call vu1ExecMicro
-	
+
+	// VU1 isn't handled by branch tests right now, so this isn't needed.
+	// although maybe it should be?  VU1 is updated in the intBranchTest, but not the
+	// recompiler one.  Why?  No clue. (air)
+
+	//if( VU1.VI[REG_VPU_STAT].UL & 0x1 )
+	//	cpuSetNextBranchDelta( 256 );
 }
 
 void _vu1ExecUpper(VURegs* VU, u32 *ptr) {

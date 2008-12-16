@@ -549,6 +549,11 @@ void cpuBranchTest()
 		// We're in a BranchTest.  All dynarec registers are flushed
 		// so there is no need to freeze registers here.
 		Cpu->ExecuteVU0Block();
+
+		// This might be needed to keep the EE and VU0 in sync.
+		// A better fix will require hefty changes to the VU recs. -_-
+		if(VU0.VI[REG_VPU_STAT].UL & 0x1)
+			cpuSetNextBranchDelta( 768 );
 	}
 
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );

@@ -206,13 +206,16 @@ void vu0ExecMicro(u32 addr) {
 	VU0.VI[REG_VPU_STAT].UL|= 0x1;
 	VU0.VI[REG_VPU_STAT].UL&= ~0xAE;
 
-	cpuSetNextBranchDelta( 64 );
-
 	if (addr != -1) VU0.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU0);
 	FreezeXMMRegs(1);
 	Cpu->ExecuteVU0Block();
 	FreezeXMMRegs(0);
+
+	// If the VU0 program didn't finish then we'll want to finish it up
+	// pretty soon.  This fixes vmhacks in some games (Naruto Ultimate Ninja 2)
+	if(VU0.VI[REG_VPU_STAT].UL & 0x1)
+		cpuSetNextBranchDelta( 128 );
 }
 
 void _vu0ExecUpper(VURegs* VU, u32 *ptr) {

@@ -406,9 +406,9 @@ void vu0Finish()
 void VCALLMS() {
 	vu0Finish();
 	vu0ExecMicro(((cpuRegs.code >> 6) & 0x7FFF) * 8);
-}     
+}
 
 void VCALLMSR() {
 	vu0Finish();
 	vu0ExecMicro(VU0.VI[REG_CMSAR0].US[0] * 8);
-}  
+}

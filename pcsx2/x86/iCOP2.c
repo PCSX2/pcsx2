@@ -55,18 +55,20 @@ _vuopinfo g_cop2info = {0, 0, 1, 1, 1, 0, 0};
 #define _Ftf_ ((cpuRegs.code >> 23) & 0x03)
 #define _Cc_ (cpuRegs.code & 0x03)
 
-#define REC_COP2_FUNC(f, delreg) \
-	void f(); \
-	void rec##f() { \
-	SysPrintf("cop2 "#f" called\n"); \
-	X86_32CODE(SetFPUstate()); \
-	MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code); \
-	MOV32ItoM((uptr)&cpuRegs.pc, pc); \
-	iFlushCall(FLUSH_NOCONST); \
-	CALLFunc((uptr)f); \
-	_freeX86regs(); \
-	branch = 2; \
+void recCop2BranchCall( void (*func)() )
+{
+	X86_32CODE(SetFPUstate());
+	recBranchCall( func );
+	_freeX86regs();
 }
+
+#define REC_COP2_FUNC( f ) \
+	void f(); \
+	void rec##f() \
+	{ \
+		SysPrintf("Warning > cop2 "#f" called\n"); \
+		recCop2BranchCall( f ); \
+	}
 
 #define INTERPRETATE_COP2_FUNC(f) \
 void recV##f() { \
@@ -250,9 +252,6 @@ static void recCFC2()
 
 static void recCTC2()
 {
-#ifdef __x86_64__
-	int mmreg;
-#endif
 	if (cpuRegs.code & 1) {
 		#ifdef __x86_64__
 		iFlushCall(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86);
@@ -289,49 +288,37 @@ static void recCTC2()
 				
 				assert( _checkX86reg(X86TYPE_VI, REG_VPU_STAT, 0) < 0 &&
 					    _checkX86reg(X86TYPE_VI, REG_TPC, 0) < 0 );
-				
-				// Execute VU1 Micro SubRoutine
-				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 1);
-				_callFunctionArg1((uptr)vu1ExecMicro, MEM_CONSTTAG, g_cpuConstRegs[_Rt_].UL[0]&0xffff);
-				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 0);
 #else
 				iFlushCall(FLUSH_NOCONST);// since CALLFunc
-				
 				assert( _checkX86reg(X86TYPE_VI, REG_VPU_STAT, 0) < 0 &&
 					    _checkX86reg(X86TYPE_VI, REG_TPC, 0) < 0 );
-				
+#endif
 				// Execute VU1 Micro SubRoutine
 				_callFunctionArg1((uptr)vu1ExecMicro, MEM_CONSTTAG, g_cpuConstRegs[_Rt_].UL[0]&0xffff);
-#endif
 				break;
 			default:
+			{
 				if( _Fs_ < 16 )
 					assert( (g_cpuConstRegs[_Rt_].UL[0]&0xffff0000)==0);
-#ifdef __x86_64__
-				mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE);
-				
-				if( mmreg >= 0 ) MOV32ItoR(mmreg, g_cpuConstRegs[_Rt_].UL[0]);
-				
-				// a lot of games have vu0 spinning on some integer
-				// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
-				iFlushCall(FLUSH_FREE_TEMPX86|FLUSH_FREE_VU0);
-				
-				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 1);
-				CALLFunc((uptr)Cpu->ExecuteVU0Block);
-				_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 0);
-#else
-				MOV32ItoM((uptr)&VU0.VI[_Fs_].UL,g_cpuConstRegs[_Rt_].UL[0]);
-				
-				// fixme: this code should issue a BranchTest instead of calling the VU0Block directly.
-				// It would be a lot safter and would get rid of the 64 bit mess above too.
 
 				// a lot of games have vu0 spinning on some integer
 				// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
+
+#ifdef __x86_64__
+				int mmreg = _checkX86reg(X86TYPE_VI, _Fs_, MODE_WRITE);
+				if( mmreg >= 0 ) MOV32ItoR(mmreg, g_cpuConstRegs[_Rt_].UL[0]);
+				iFlushCall(FLUSH_FREE_TEMPX86|FLUSH_FREE_VU0);
+#else
+				MOV32ItoM((uptr)&VU0.VI[_Fs_].UL,g_cpuConstRegs[_Rt_].UL[0]);
 				iFlushCall(FLUSH_NOCONST);
-				CALLFunc((uptr)Cpu->ExecuteVU0Block);
-				//SysPrintf( "Recompiler Warning > Unstable VU0 opcode used." );
 #endif
+				CALLFunc((uptr)Cpu->ExecuteVU0Block);
+
+				// fixme: if the VU0 stat&1 is still enabled, then we should probably set a cpuBranchTest
+				// for 128 cycles from now.  It would be the safest thing to do to make sure the VU0
+				// responds in a timely matter to the game's register write.
 				break;
+			}
 		}
 	}
 	else 
@@ -613,10 +600,10 @@ void _cop2AnalyzeOp(EEINST* pinst, int dostalls)
 //////////////////////////////////////////////////////////////////////////
 //    BC2: Instructions 
 //////////////////////////////////////////////////////////////////////////
-REC_COP2_FUNC(BC2F, 0);
-REC_COP2_FUNC(BC2T, 0);
-REC_COP2_FUNC(BC2FL, 0);
-REC_COP2_FUNC(BC2TL, 0);
+REC_COP2_FUNC(BC2F);
+REC_COP2_FUNC(BC2T);
+REC_COP2_FUNC(BC2FL);
+REC_COP2_FUNC(BC2TL);
 
 //////////////////////////////////////////////////////////////////////////
 //    Special1 instructions 
