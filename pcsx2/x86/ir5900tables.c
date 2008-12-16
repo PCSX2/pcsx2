@@ -488,7 +488,7 @@ void rpropBSC(EEINST* prev, EEINST* pinst)
 		case 24: // daddi
 		case 25: // daddiu
 			rpropSetWrite(_Rt_, EEINST_LIVE1);
-			rpropSetRead(_Rs_, EEINST_LIVE1 | (_Rs_!=0 && EEINST_MMX));
+			rpropSetRead(_Rs_, EEINST_LIVE1 | (_Rs_!=0?EEINST_MMX:0)); // This looks like what ZeroFrog wanted; ToDo: Needs checking! (cottonvibes)
 			break;
 
 		case 8: // addi
