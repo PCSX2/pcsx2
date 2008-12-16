@@ -22,9 +22,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-extern "C" {
+//extern "C" {
 #include "Linux.h"
-}
+//}
 
 	FILE *pref_file;
 	char *data;

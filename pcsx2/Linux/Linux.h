@@ -44,10 +44,6 @@
 #include <gtk/gtkdialog.h>
 #include <glib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-	
 #include "Paths.h"
 #include "Common.h"
 
@@ -77,9 +73,6 @@ extern void ChangeLanguage(char *lang);
 extern void StartGui();
 extern void RunGui();
 extern int Pcsx2Configure();
-#ifdef __cplusplus
-}
-#endif
 
 extern GtkWidget *CpuDlg;
 

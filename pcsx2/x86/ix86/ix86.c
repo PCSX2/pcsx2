@@ -31,6 +31,8 @@
 #include <assert.h>
 #include "ix86.h"
 
+XMMSSEType g_xmmtypes[XMMREGS] = { XMMT_INT };
+
 #define SWAP(x, y) { *(u32*)&y ^= *(u32*)&x; *(u32*)&x ^= *(u32*)&y; *(u32*)&y ^= *(u32*)&x; }
 
 #ifdef __x86_64__

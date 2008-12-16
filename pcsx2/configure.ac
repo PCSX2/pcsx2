@@ -1,7 +1,7 @@
 AC_INIT(pcsx2,0.9.5,zerofrog@gmail.com)
 AM_INIT_AUTOMAKE(pcsx2,0.9.5)
 
-AC_PROG_CC([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
+AC_PROG_CC([g++ gcc cl KCC CC cxx cc++ xlC aCC c++])
 AC_PROG_CXX([g++ gcc cl KCC CC cxx cc++ xlC aCC c++])
 AC_PROG_CPP([g++ gcc cl KCC CC cxx cc++ xlC aCC c++])
 
@@ -47,7 +47,7 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [debug build]),
 if test "x$debug" == xyes
 then
  AC_DEFINE(_DEBUG,1,[_DEBUG])
- CFLAGS+=" ${DEBUG_FLAGS} "
+ CFLAGS+=" ${DEBUG_FLAGS}  -fpermissive -Xlinker -zmuldefs "
  CXXFLAGS+=" ${DEBUG_FLAGS} -fpermissive -Xlinker -zmuldefs "
  CCASFLAGS+=" -D_DEBUG ${DEBUG_FLAGS} "
  MYOBJDIR="Debug"

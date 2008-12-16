@@ -26,7 +26,7 @@ PCSX2_ALIGNED16(unsigned int p2[4]);
 PCSX2_ALIGNED16(float f[4]);
 
 
-XMMSSEType g_xmmtypes[XMMREGS] = { XMMT_INT };
+//XMMSSEType g_xmmtypes[XMMREGS] = { XMMT_INT };
 
 /********************/
 /* SSE instructions */

@@ -28,12 +28,12 @@ extern "C" {
 #include "callbacks.h"
 #include "interface.h"
 	
-#include "R3000A.h"
-#include "PsxMem.h"
-	
 #ifdef __cplusplus
 }
 #endif
+#include "R3000A.h"
+#include "PsxMem.h"
+	
 
 GtkWidget *ListDV;
 GtkListStore *ListDVModel;

@@ -30,6 +30,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include "RDebug/deci2.h"
+#else
+#include <sys/time.h>
 #endif
 
 #include "VU.h"
@@ -151,7 +153,7 @@ void GetRPCVersion(char *ioprp, char *rpcver){
 
 u32 GetBiosVersion() {
 	unsigned int fileOffset=0;
-	char *ROMVER;
+	s8 *ROMVER;
 	char vermaj[8];
 	char vermin[8];
 	struct romdir *rd;
@@ -169,8 +171,8 @@ u32 GetBiosVersion() {
 		if (strcmp(rd->fileName, "ROMVER") == 0){	// found romver
 			ROMVER = &psRs8(fileOffset);
 
-			strncpy(vermaj, ROMVER+ 0, 2); vermaj[2] = 0;
-			strncpy(vermin, ROMVER+ 2, 2); vermin[2] = 0;
+			strncpy(vermaj, (char *)(ROMVER+ 0), 2); vermaj[2] = 0;
+			strncpy(vermin, (char *)(ROMVER+ 2), 2); vermin[2] = 0;
 			version = strtol(vermaj, (char**)NULL, 0) << 8;
 			version|= strtol(vermin, (char**)NULL, 0);
 

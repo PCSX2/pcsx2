@@ -271,7 +271,7 @@ void KeyEvent(keyEvent* ev) {
 	
 	if( GSkeyEvent != NULL ) GSkeyEvent(ev);
 
-	if (ev->event == KEYPRESS)
+	if (ev->evt == KEYPRESS)
 	{
 		if (SHIFT_EVT(ev->key)) 
 			shift = 1;
@@ -315,7 +315,7 @@ void KeyEvent(keyEvent* ev) {
 				break;
 		}
 	}
-	else if (ev->event == KEYRELEASE)
+	else if (ev->evt == KEYRELEASE)
 	{
 		if (SHIFT_EVT(ev->key)) 
 			shift = 0;

@@ -312,9 +312,7 @@ void psxMemWrite32(u32 mem, u32 value)
 						//PSXMEM_LOG("writectrl: write ok\n");
 						break;
 					default:
-#ifdef PSXMEM_LOG
 						PSXMEM_LOG("unk %8.8lx = %x\n", mem, value);
-#endif
 						break;
 				}
 			}
@@ -363,10 +361,10 @@ int psxMemInit()
 	memset(psxMemRLUT, 0, 0x10000 * sizeof(uptr));
 	memset(psxMemWLUT, 0, 0x10000 * sizeof(uptr));
 
-	psxM = (char*)SysMmap(PS2MEM_PSX_, 0x00200000);
-	psxP = (char*)SysMmap(PS2MEM_BASE_+0x1f000000, 0x00010000);
-	psxH = (char*)SysMmap(PS2MEM_BASE_+0x1f800000, 0x00010000);
-	psxS = (char*)SysMmap(PS2MEM_BASE_+0x1d000000, 0x00010000);
+	psxM = (s8*)SysMmap(PS2MEM_PSX_, 0x00200000);
+	psxP = (s8*)SysMmap(PS2MEM_BASE_+0x1f000000, 0x00010000);
+	psxH = (s8*)SysMmap(PS2MEM_BASE_+0x1f800000, 0x00010000);
+	psxS = (s8*)SysMmap(PS2MEM_BASE_+0x1d000000, 0x00010000);
 
     assert( (uptr)psxM <= 0xffffffff && (uptr)psxP <= 0xffffffff && (uptr)psxH <= 0xffffffff && (uptr)psxS <= 0xffffffff);
 

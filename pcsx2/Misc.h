@@ -337,12 +337,12 @@ static __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Val
 	return 0; // The return value is never looked at.
 }
 
-static __forceinline long InterlockedIncrement( long* Addend )
+static __forceinline long InterlockedIncrement( volatile long* Addend )
 {
 	return InterlockedExchangeAdd( Addend, 1 );
 }
 
-static __forceinline long InterlockedDecrement( long* Addend )
+static __forceinline long InterlockedDecrement( volatile long* Addend )
 {
 	return InterlockedExchangeAdd( Addend, -1 );
 }

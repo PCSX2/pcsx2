@@ -163,7 +163,7 @@ struct TocEntry
 	u32 fileSize;
 	u8	fileProperties;
 	u8	padding1[3];
-	s8	filename[128+1];
+	char	filename[128+1];
 	u8	date[7];
 #if defined(_WIN32)
 };
