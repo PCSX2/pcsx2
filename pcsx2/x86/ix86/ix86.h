@@ -1756,26 +1756,6 @@ extern void PFMAXRtoR( x86IntRegType to, x86IntRegType from );
 extern void PFMINMtoR( x86IntRegType to, uptr from );
 extern void PFMINRtoR( x86IntRegType to, x86IntRegType from );
 
-extern void SSE2EMU_MOVSD_XMM_to_XMM( x86SSERegType to, x86SSERegType from);
-extern void SSE2EMU_MOVQ_M64_to_XMM( x86SSERegType to, uptr from);
-extern void SSE2EMU_MOVQ_XMM_to_XMM( x86SSERegType to, x86SSERegType from);
-extern void SSE2EMU_MOVD_RmOffset_to_XMM( x86SSERegType to, x86IntRegType from, int offset );
-extern void SSE2EMU_MOVD_XMM_to_RmOffset(x86IntRegType to, x86SSERegType from, int offset );
-
-#ifndef __x86_64__
-extern void SSE2EMU_MOVDQ2Q_XMM_to_MM( x86MMXRegType to, x86SSERegType from);
-extern void SSE2EMU_MOVQ2DQ_MM_to_XMM( x86SSERegType to, x86MMXRegType from);
-#endif
-
-/* SSE2 emulated functions for SSE CPU's by kekko*/
-
-extern void SSE2EMU_PSHUFD_XMM_to_XMM( x86SSERegType to, x86SSERegType from, u8 imm8 );
-extern void SSE2EMU_MOVD_XMM_to_R( x86IntRegType to, x86SSERegType from );
-extern void SSE2EMU_CVTPS2DQ_XMM_to_XMM( x86SSERegType to, x86SSERegType from );
-extern void SSE2EMU_CVTDQ2PS_M128_to_XMM( x86SSERegType to, uptr from );
-extern void SSE2EMU_MOVD_XMM_to_M32( u32 to, x86SSERegType from );
-extern void SSE2EMU_MOVD_R_to_XMM( x86SSERegType to, x86IntRegType from );
-
 ////////////////////////////////////////////////////
 #ifdef _DEBUG
 #define WRITECHECK() CheckX86Ptr()

@@ -76,7 +76,7 @@ static u8* recPtr = NULL, *recStackPtr = NULL;
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
-u32 g_EEFreezeRegs = 0; // if set, should freeze the regs
+bool g_EEFreezeRegs = false; // if set, should freeze the regs
 
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
@@ -1673,7 +1673,7 @@ static void execute( void )
 	}
 
 	assert( pblock->pFnptr != 0 );
-	g_EEFreezeRegs = 1;
+	g_EEFreezeRegs = true;
 
 	// skip the POPs
 
@@ -1717,7 +1717,7 @@ static void execute( void )
 
 #endif
 
-	g_EEFreezeRegs = 0;
+	g_EEFreezeRegs = false;
 }
 
 void recStep( void ) {

@@ -291,9 +291,6 @@ protected:
 	template< int low, int hi >
 	void rpropSetLOHI( int write1, int read1, int read2, int mask );
 
-	template< int mask >
-	void rpropSetFPURead( int reg );
-
 	template< int live >
 	void rpropSetFPUWrite0( int reg, int mask );
 

@@ -534,7 +534,10 @@ void cpuBranchTest()
         SysPrintf("frozen regs have not been restored!!!\n");
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
 #endif
-	g_EEFreezeRegs = 0;
+
+	// Don't need to freeze any regs during a BranchTest.
+	// Everything has been flushed already.
+	g_EEFreezeRegs = false;
 
 	// Perform counters, ints, and IOP updates:
 	_cpuBranchTest_Shared();
@@ -549,7 +552,7 @@ void cpuBranchTest()
 	}
 
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
-	g_EEFreezeRegs = 1;
+	g_EEFreezeRegs = true;
 }
 #endif
 
@@ -685,7 +688,7 @@ void cpuRestartCPU()
 void IntcpuBranchTest()
 {
 #ifndef PCSX2_NORECBUILD
-	g_EEFreezeRegs = 0;
+	g_EEFreezeRegs = false;
 #endif
 
 	// Perform counters, ints, and IOP updates:
@@ -699,6 +702,6 @@ void IntcpuBranchTest()
 	}
 
 #ifndef PCSX2_NORECBUILD
-	g_EEFreezeRegs = 1;
+	g_EEFreezeRegs = true;
 #endif
 }

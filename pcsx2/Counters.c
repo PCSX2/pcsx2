@@ -532,32 +532,30 @@ __forceinline void rcntUpdate()
 	
 	for (i=0; i<=3; i++) {
 		
-		// We want to count gated counters (except the hblank which excluded below)
+		// We want to count gated counters (except the hblank which exclude below, and are
+		// counted by the hblank timer instead)
+
 		//if ( gates & (1<<i) ) continue;
 		
 		if (!(counters[i].mode & 0x80)) continue;
-		
-			if((counters[i].mode & 0x3) != 0x3) {		// don't count hblank sources
-			
+
+		if((counters[i].mode & 0x3) != 0x3)	// don't count hblank sources
+		{
 			s32 change = cpuRegs.cycle - counters[i].sCycleT;
-			if( change > 0 ) {
-				counters[i].count += change / counters[i].rate;
-				change -= (change / counters[i].rate) * counters[i].rate;
-				counters[i].sCycleT = cpuRegs.cycle - change;
-			}
+			if( change < 0 ) change = 0;	// sanity check!
+
+			counters[i].count += change / counters[i].rate;
+			change -= (change / counters[i].rate) * counters[i].rate;
+			counters[i].sCycleT = cpuRegs.cycle - change;
+
+			// Check Counter Targets and Overflows:
+			_cpuTestTarget( i );
+			_cpuTestOverflow( i );
 		} 
 		else counters[i].sCycleT = cpuRegs.cycle;
 	}
 
-	// Check Counter Targets and Overflows:
 	
-	for (i=0; i<=3; i++)
-	{
-		if (!(counters[i].mode & 0x80)) continue; // Stopped
-
-		_cpuTestTarget( i );
-		_cpuTestOverflow( i );
-	}
 	cpuRcntSet();
 }
 
@@ -634,7 +632,11 @@ void rcntStartGate(unsigned int mode, u32 sCycle) {
 	for (i=0; i <=3; i++) { //Gates for counters
 
 		if ((mode == 0) && ((counters[i].mode & 0x83) == 0x83))
+		{
 			counters[i].count += HBLANK_COUNTER_SPEED; //Update counters using the hblank as the clock
+			_cpuTestTarget( i );
+			_cpuTestOverflow( i );
+		}
 		if (!(gates & (1<<i))) continue;
 		if ((counters[i].mode & 0x8) != mode) continue;
 

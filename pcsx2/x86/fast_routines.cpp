@@ -82,7 +82,7 @@ extern u8 g_globalMMXSaved;
 
 void checkregs()
 {
-	assert( g_globalMMXSaved );
+	if( g_EEFreezeRegs ) assert( g_globalMMXSaved );
 }
 #endif
 

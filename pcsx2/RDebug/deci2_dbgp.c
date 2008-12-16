@@ -87,18 +87,19 @@ struct DECI2_DBGP_RUN{
 		_pad,				//+08
 		_pad1,				//+0C
 		argc;				//+10
-	u32	argv[0];			//+14
-};			//=14
+	//u32	argv;				//+14
+};			//=18
 #pragma pack()
 
 void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char *ioppc, char *eecy, char *iopcy){
-	DECI2_DBGP_HEADER	*in=(DECI2_DBGP_HEADER*)inbuffer,
-						*out=(DECI2_DBGP_HEADER*)outbuffer;
-	u8	*data=(u8*)in+sizeof(DECI2_DBGP_HEADER);
-	DECI2_DBGP_EREG		*eregs=(DECI2_DBGP_EREG*)((u8*)out+sizeof(DECI2_DBGP_HEADER));
-	DECI2_DBGP_IREG		*iregs=(DECI2_DBGP_IREG*)((u8*)out+sizeof(DECI2_DBGP_HEADER));
-	DECI2_DBGP_MEM		*mem  =(DECI2_DBGP_MEM*) ((u8*)out+sizeof(DECI2_DBGP_HEADER));
-	DECI2_DBGP_RUN		*run  =(DECI2_DBGP_RUN*) ((u8*)in+sizeof(DECI2_DBGP_HEADER));
+	const DECI2_DBGP_HEADER	*in=(DECI2_DBGP_HEADER*)inbuffer;
+	DECI2_DBGP_HEADER* out=(DECI2_DBGP_HEADER*)outbuffer;
+
+	DECI2_DBGP_EREG		*eregs=(DECI2_DBGP_EREG*)&out[1];
+	DECI2_DBGP_IREG		*iregs=(DECI2_DBGP_IREG*)&out[1];
+	DECI2_DBGP_MEM		*mem  =(DECI2_DBGP_MEM*) &out[1];
+	const DECI2_DBGP_RUN*run  =(DECI2_DBGP_RUN*) &in[1];
+
 	static char line[1024];
 	int i, s;
 	
@@ -110,14 +111,14 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 	switch(in->type){
 		case 0x00://ok
 			sprintf(line, "%s/GETCONF",	in->id==0?"CPU":in->id==1?"VU0":"VU1");
-			data=(u8*)out+sizeof(DECI2_DBGP_HEADER);
+
 			if (in->h.destination=='I'){
-				memcpy(data, &iop, sizeof(DECI2_DBGP_CONF));
+				memcpy(&out[1], &iop, sizeof(DECI2_DBGP_CONF));
 			}else
 				switch(in->id){
-				case 0:memcpy(data, &cpu, sizeof(DECI2_DBGP_CONF));break;
-				case 1:memcpy(data, &vu0, sizeof(DECI2_DBGP_CONF));break;
-				case 2:memcpy(data, &vu1, sizeof(DECI2_DBGP_CONF));break;
+				case 0:memcpy(&out[1], &cpu, sizeof(DECI2_DBGP_CONF));break;
+				case 1:memcpy(&out[1], &vu0, sizeof(DECI2_DBGP_CONF));break;
+				case 2:memcpy(&out[1], &vu1, sizeof(DECI2_DBGP_CONF));break;
 				}
 			break;
 		case 0x02://ok
@@ -223,10 +224,12 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 					}				
 			break;
 		case 0x08://ok
+		{
 			sprintf(line, "%s/RDMEM %08X/%X",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", mem->address, mem->length);
-			data=(u8*)out+	//kids: don't try this at home! :D
+			u8* data =(u8*)out+	//kids: don't try this at home! :D
 				((sizeof(DECI2_DBGP_HEADER)+sizeof(DECI2_DBGP_MEM)+(1 << mem->align) - 1) & (0xFFFFFFFF << mem->align));
+
 			if ((mem->address & ((1 << mem->align)-1)) ||
 				(mem->length  & ((1 << mem->align)-1))){
 				out->result=1;
@@ -242,6 +245,7 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 					break;
 				}
 			else
+			{
 				switch(mem->space){
 				case 0:
 					if ((mem->address & 0xF0000000) == 0x70000000)
@@ -267,12 +271,16 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 						memcpy(data, &VU1.Micro[mem->address & 0x3FFF], mem->length);
 					break;
 				}
+			}
 			out->h.length=mem->length+data-(u8*)out;
 			break;
+		}
+
 		case 0x0a://ok
+		{
 			sprintf(line, "%s/WRMEM %08X/%X",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", mem->address, mem->length);
-			data=(u8*)in+	//kids: don't try this at home! :D
+			const u8* data=(u8*)in+	//kids: don't try this at home! :D
 				((sizeof(DECI2_DBGP_HEADER)+sizeof(DECI2_DBGP_MEM)+(1 << mem->align) - 1) & (0xFFFFFFFF << mem->align));
 			if (mem->length==4 && *(int*)data==0x0000000D)
 				strcat(line, " BREAKPOINT");
@@ -318,14 +326,16 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				}
 			out->h.length=sizeof(DECI2_DBGP_HEADER)+sizeof(DECI2_DBGP_MEM);
 			break;
+		}
 		case 0x10://ok
+		{
 			sprintf(line, "%s/GETBRKPT count=%d",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", in->count);
-			data=(u8*)out+sizeof(DECI2_DBGP_HEADER);
-			if (in->h.destination=='I')	memcpy(data, ibrk, out->count=ibrk_count);
-			else						memcpy(data, ebrk, out->count=ebrk_count);
+			if (in->h.destination=='I')	memcpy(&out[1], ibrk, out->count=ibrk_count);
+			else						memcpy(&out[1], ebrk, out->count=ebrk_count);
 			out->h.length=sizeof(DECI2_DBGP_HEADER)+out->count*sizeof(DECI2_DBGP_BRK);
 			break;
+		}
 		case 0x12://ok [does not break on iop brkpts]
 			sprintf(line, "%s/PUTBRKPT count=%d",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", in->count);
@@ -335,8 +345,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				strcat(line, "TOO MANY");
 				break;
 			}
-			if (in->h.destination=='I')	memcpy(ibrk, data, ibrk_count=in->count);
-			else						memcpy(ebrk, data, ebrk_count=in->count);
+			if (in->h.destination=='I')	memcpy(ibrk, &out[1], ibrk_count=in->count);
+			else						memcpy(ebrk, &out[1], ebrk_count=in->count);
 			out->count=0;
 			break;
 		case 0x14://ok, [w/o iop]
@@ -368,14 +378,16 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 			}
 			break;
 		case 0x18://ok [without argc/argv stuff]
+		{
 			sprintf(line, "%s/RUN code=%d count=%d entry=0x%08X gp=0x%08X argc=%d",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", in->code, in->count,
 				run->entry, run->gp, run->argc);
 			cpuRegs.CP0.n.EPC=cpuRegs.pc=run->entry;
 			cpuRegs.GPR.n.gp.UL[0]=run->gp;
 //			threads_array[0].argc = run->argc;
-			for (i=0, s=0; i<(int)run->argc; i++)	s+=run->argv[i];
-			memcpy(PSM(0), &run->argv[run->argc], s);
+			u32* argv = (u32*)&run[1];
+			for (i=0, s=0; i<(int)run->argc; i++, argv++)	s+=argv[i];
+			memcpy(PSM(0), argv, s);
 //			threads_array[0].argstring = 0;
 			InterlockedExchange(&runStatus, STOP);
 			Sleep(1000);//first get the run thread to Wait state
@@ -386,6 +398,7 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 #endif
 			out->h.length=sizeof(DECI2_DBGP_HEADER);
 			break;
+		}
 		default:
 			sprintf(line, "type=0x%02X code=%d count=%d [unknown]", in->type, in->code, in->count);
 	}

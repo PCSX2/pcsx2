@@ -227,7 +227,7 @@ int IsBIOS(char *filename, char *description);
 #define FreezeXMMRegs(save)
 #else
 extern void FreezeXMMRegs_(int save);
-extern u32 g_EEFreezeRegs;
+extern bool g_EEFreezeRegs;
 #define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
 
 #ifndef __x86_64__

@@ -250,7 +250,7 @@ void intExecuteVU1Block();
 void JumpCheckSym(u32 addr, u32 pc);
 void JumpCheckSymRet(u32 addr);
 
-extern u32 g_EEFreezeRegs;
+extern bool g_EEFreezeRegs;
 
 //exception code
 #define EXC_CODE(x)     ((x)<<2)
