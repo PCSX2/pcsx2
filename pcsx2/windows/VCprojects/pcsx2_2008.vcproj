@@ -1460,6 +1460,14 @@
 					<File
 						RelativePath="..\..\x86\ir5900tables.c"
 						>
+						<FileConfiguration
+							Name="Release (to Public)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AssemblerOutput="4"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\x86\iVif.cpp"
