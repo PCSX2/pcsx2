@@ -80,8 +80,8 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
 #define CHECK_UNDERFLOW (!(Config.Hacks & 0x8))
 //#define CHECK_DENORMALS ((Config.Hacks & 0x400) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs and flush to zero is enabled as well
-#define CHECK_VU_EXTRA_FLAGS (!(Config.Hacks & 0x100)) // Sets correct flags in the VU recs
-#define CHECK_FPU_EXTRA_FLAGS (!(Config.Hacks & 0x200)) // Sets correct flags in the FPU recs
+#define CHECK_VU_EXTRA_FLAGS 0 // Always disabled now, doesn't seem to affect games positively. // (!(Config.Hacks & 0x100)) // Sets correct flags in the VU recs
+#define CHECK_FPU_EXTRA_FLAGS 0 // Always disabled now, doesn't seem to affect games positively. // (!(Config.Hacks & 0x200)) // Sets correct flags in the FPU recs
 #define CHECK_ESCAPE_HACK (Config.Hacks & 0x400)
 //------------ SPECIAL GAME FIXES!!! ---------------
 //#define CHECK_SLOWDVD (Config.GameFixes & 0x1) // Slow DVD access times, for games that are strict about them (Tales of the Abyss)

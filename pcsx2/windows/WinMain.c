@@ -927,8 +927,8 @@ static void HacksInit( HWND hDlg )
     if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
 	if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
 	if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);
-	if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
-	if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
+	//if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
+	//if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
 	if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
 	if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
 	if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);
@@ -943,8 +943,8 @@ static void HacksChecked( HWND hDlg )
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;
+	//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;
+	//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;
 	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
 	/* 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)*/
 	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0);
@@ -973,8 +973,6 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
-					CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
-					CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
@@ -988,8 +986,6 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
-					CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
-					CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
@@ -1003,8 +999,6 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_DENORMALS, FALSE);
-					CheckDlgButton(hDlg, IDC_VU_FLAGS, FALSE);
-					CheckDlgButton(hDlg, IDC_FPU_FLAGS, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
 					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
