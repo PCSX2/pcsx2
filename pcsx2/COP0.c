@@ -222,8 +222,6 @@ void WriteTLB(int i) {
 	u32 mask, addr;
 	u32 saddr, eaddr;
 
-	COP0_LOG( "COP0 > WriteTLB" );
-
 	tlb[i].PageMask = cpuRegs.CP0.n.PageMask;
 	tlb[i].EntryHi = cpuRegs.CP0.n.EntryHi;
 	tlb[i].EntryLo0 = cpuRegs.CP0.n.EntryLo0;

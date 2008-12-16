@@ -64,6 +64,8 @@ extern u16 x86FpuState;
 extern u16 iCWstate;
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 
+void recBranchCall( void (*func)() );
+
 #define REC_FUNC_INLINE( f, delreg ) \
 	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
 	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \

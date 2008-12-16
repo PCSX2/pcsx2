@@ -35,7 +35,7 @@
 // chance of saves getting corrupted (untested).  But it lacks the purist touch,
 // so it's not enabled by default.
 
-#define SIO_INLINE_IRQS
+//#define SIO_INLINE_IRQS
 
 
 struct _sio {

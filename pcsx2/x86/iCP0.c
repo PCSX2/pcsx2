@@ -329,28 +329,14 @@ void recMTC0()
 
 void recERET()
 {
-	// Must branch immediately after ERET!
-	branch = 2;
-	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
-	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
-	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
-	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
-	iFlushCall(FLUSH_NOCONST);
-	CALLFunc( (uptr)ERET );
+	recBranchCall( ERET );
 }
 
 void recEI()
 {
-	// Must branch immediately after enabling ints!
-	branch = 2;
-
-	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
-	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
-	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
-	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
-
-	iFlushCall(FLUSH_NOCONST);
-	CALLFunc( (uptr)EI );
+	// must branch after enabling interrupts, so that anything
+	// pending gets triggered properly.
+	recBranchCall( EI );
 }
 
 void recDI()

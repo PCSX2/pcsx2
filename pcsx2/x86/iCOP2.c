@@ -322,11 +322,14 @@ static void recCTC2()
 #else
 				MOV32ItoM((uptr)&VU0.VI[_Fs_].UL,g_cpuConstRegs[_Rt_].UL[0]);
 				
+				// fixme: this code should issue a BranchTest instead of calling the VU0Block directly.
+				// It would be a lot safter and would get rid of the 64 bit mess above too.
+
 				// a lot of games have vu0 spinning on some integer
 				// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
 				iFlushCall(FLUSH_NOCONST);
-				
 				CALLFunc((uptr)Cpu->ExecuteVU0Block);
+				//SysPrintf( "Recompiler Warning > Unstable VU0 opcode used." );
 #endif
 				break;
 		}

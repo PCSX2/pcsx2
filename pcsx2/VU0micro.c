@@ -205,6 +205,9 @@ void vu0ExecMicro(u32 addr) {
 	}
 	VU0.VI[REG_VPU_STAT].UL|= 0x1;
 	VU0.VI[REG_VPU_STAT].UL&= ~0xAE;
+
+	cpuSetNextBranchDelta( 64 );
+
 	if (addr != -1) VU0.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU0);
 	FreezeXMMRegs(1);

@@ -91,6 +91,25 @@ static void recMMI( void )
 }
 
 
+// Use this to call into interpreter functions that require an immediate branchtest
+// to be done afterward (anything that throws an exception or enables interrupts, etc).
+void recBranchCall( void (*func)() )
+{
+	// In order to make sure a branch test is performed, the nextBranchCycle is set
+	// to the current cpu cycle.
+
+	branch = 2;
+	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
+	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
+	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
+
+	// Might as well flush everything -- it'll all get flushed when the
+	// recompiler inserts the branchtest anyway.
+	iFlushCall(FLUSH_EVERYTHING);
+	CALLFunc( (uptr)func );
+}
+
 /**********************************************************
 *    UNHANDLED YET OPCODES
 *
@@ -103,29 +122,29 @@ static void recMMI( void )
 ////////////////////////////////////////////////////
 //REC_SYS(MTSA);
 ////////////////////////////////////////////////////
-REC_SYS(TGE);
+//REC_SYS(TGE);
 ////////////////////////////////////////////////////
-REC_SYS(TGEU);
+//REC_SYS(TGEU);
 ////////////////////////////////////////////////////
-REC_SYS(TLT);
+//REC_SYS(TLT);
 ////////////////////////////////////////////////////
-REC_SYS(TLTU);
+//REC_SYS(TLTU);
 ////////////////////////////////////////////////////
-REC_SYS(TEQ);
+//REC_SYS(TEQ);
 ////////////////////////////////////////////////////
-REC_SYS(TNE);
+//REC_SYS(TNE);
 ////////////////////////////////////////////////////
-REC_SYS(TGEI);
+//REC_SYS(TGEI);
 ////////////////////////////////////////////////////
-REC_SYS(TGEIU);
+//REC_SYS(TGEIU);
 ////////////////////////////////////////////////////
-REC_SYS(TLTI);
+//REC_SYS(TLTI);
 ////////////////////////////////////////////////////
-REC_SYS(TLTIU);
+//REC_SYS(TLTIU);
 ////////////////////////////////////////////////////
-REC_SYS(TEQI);
+//REC_SYS(TEQI);
 ////////////////////////////////////////////////////
-REC_SYS(TNEI);
+//REC_SYS(TNEI);
 ////////////////////////////////////////////////////
 //REC_SYS(MTSAB);
 ////////////////////////////////////////////////////
@@ -133,56 +152,66 @@ REC_SYS(TNEI);
 ////////////////////////////////////////////////////
 REC_SYS(CACHE);
 
-/*
 void recTGE( void ) 
 {
+	recBranchCall( TGE );
 }
 
 void recTGEU( void ) 
 {
+	recBranchCall( TGEU );
 }
 
 void recTLT( void ) 
 {
+	recBranchCall( TLT );
 }
 
 void recTLTU( void ) 
 {
+	recBranchCall( TLTU );
 }
 
 void recTEQ( void ) 
 {
+	recBranchCall( TEQ );
 }
 
 void recTNE( void ) 
 {
+	recBranchCall( TNE );
 }
 
 void recTGEI( void )
 {
+	recBranchCall( TGEI );
 }
 
 void recTGEIU( void ) 
 {
+	recBranchCall( TGEIU );
 }
 
 void recTLTI( void ) 
 {
+	recBranchCall( TLTI );
 }
 
 void recTLTIU( void ) 
 {
+	recBranchCall( TLTIU );
 }
 
 void recTEQI( void ) 
 {
+	recBranchCall( TEQI );
 }
 
 void recTNEI( void ) 
 {
+	recBranchCall( TNEI );
 }
 
-*/
 
 /////////////////////////////////
 // Foward-Prob Function Tables //

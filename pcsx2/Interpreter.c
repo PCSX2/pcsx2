@@ -830,36 +830,42 @@ void TGE() {
     if (cpuRegs.GPR.r[_Rs_].SD[0]>= cpuRegs.GPR.r[_Rt_].SD[0]) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: TGE\n" );
 }
 
 void TGEU() {
 	if (cpuRegs.GPR.r[_Rs_].UD[0]>= cpuRegs.GPR.r[_Rt_].UD[0]) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: TGEU\n" );
 }
 
 void TLT() {
 	if (cpuRegs.GPR.r[_Rs_].SD[0] < cpuRegs.GPR.r[_Rt_].SD[0]) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: TLT\n" );
 }
 
 void TLTU() {
 	if (cpuRegs.GPR.r[_Rs_].UD[0] < cpuRegs.GPR.r[_Rt_].UD[0]) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: TLTU\n" );
 }
 
 void TEQ() {
 	if (cpuRegs.GPR.r[_Rs_].SD[0] == cpuRegs.GPR.r[_Rt_].SD[0]) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: TEQ\n" );
 }
 
 void TNE() {
 	if (cpuRegs.GPR.r[_Rs_].SD[0] != cpuRegs.GPR.r[_Rt_].SD[0]) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: TNE\n" );
 }
 
 /*********************************************************
@@ -872,36 +878,42 @@ void TGEI() {
 	if (cpuRegs.GPR.r[_Rs_].SD[0] >= _Imm_) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: Immediate\n" );
 }
 
 void TGEIU() {
 	if (cpuRegs.GPR.r[_Rs_].UD[0] >= _ImmU_) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: Immediate\n" );
 }
 
 void TLTI() {
 	if(cpuRegs.GPR.r[_Rs_].SD[0] < _Imm_) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: Immediate\n" );
 }
 
 void TLTIU() {
 	if (cpuRegs.GPR.r[_Rs_].UD[0] < _ImmU_) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: Immediate\n" );
 }
 
 void TEQI() {
 	if (cpuRegs.GPR.r[_Rs_].SD[0] == _Imm_) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: Immediate\n" );
 }
 
 void TNEI() {
 	if (cpuRegs.GPR.r[_Rs_].SD[0] != _Imm_) {
 		cpuException(EXC_CODE_Tr, cpuRegs.branch);
 	}
+	//SysPrintf( "TrapInstruction: Immediate\n" );
 }
 
 /*********************************************************
