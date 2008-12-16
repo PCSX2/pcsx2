@@ -24,11 +24,14 @@ using namespace std;
 
 #include "tinyxml/tinyxml.h"
 
-#include "PS2Etypes.h"
 #include "Patch.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
 #endif
 
 extern void SysPrintf(const char *fmt, ...);

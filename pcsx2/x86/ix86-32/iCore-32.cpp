@@ -20,12 +20,11 @@
 #include <assert.h>
 #include <malloc.h>
 
-#include "PS2Etypes.h"
-
 #if defined(_WIN32)
 #include <windows.h>
 #endif
 
+#include "PS2Etypes.h"
 #include "System.h"
 #include "R5900.h"
 #include "Vif.h"

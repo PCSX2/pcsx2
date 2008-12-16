@@ -22,7 +22,7 @@
 // stop compiling if NORECBUILD build (only for Visual Studio)
 #if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)
 #endif
@@ -33,8 +33,6 @@
 #include <assert.h>
 #include <malloc.h>
 
-#include "PS2Etypes.h"
-
 #if defined(_WIN32)
 #include <windows.h>
 #else
@@ -42,21 +40,12 @@
 #include <sys/types.h>
 #endif
 
-#include "System.h"
-#include "zlib.h"
-#include "Memory.h"
-#include "Misc.h"
-#include "Vif.h"
+#include "PsxCommon.h"
 #include "VU.h"
 
-#include "R3000A.h"
-#include "PsxMem.h"
-
 #include "ix86/ix86.h"
-
 #include "iCore.h"
 #include "iR3000A.h"
-#include "PsxCounters.h"
 
 u32 g_psxMaxRecMem = 0;
 extern char *disRNameGPR[];

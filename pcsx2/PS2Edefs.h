@@ -53,7 +53,7 @@
 #ifdef __LINUX__
 #define CALLBACK
 #else
-#include <windows.h>
+#define CALLBACK    __stdcall
 #endif
 
 
@@ -197,7 +197,7 @@ typedef struct _GSdriverInfo {
 	void *common;
 } GSdriverInfo;
 
-#ifdef _WIN32
+#ifdef _WINDOWS_
 typedef struct _winInfo { // unsupported values must be set to zero
 	HWND hWnd;
 	HMENU hMenu;
@@ -538,7 +538,7 @@ typedef int (CALLBACK* _GSsetupRecording)(int, void*);
 typedef void (CALLBACK* _GSreset)();
 typedef void (CALLBACK* _GSwriteCSR)(u32 value);
 typedef void (CALLBACK* _GSgetDriverInfo)(GSdriverInfo *info);
-#ifdef _WIN32
+#ifdef _WINDOWS_
 typedef s32  (CALLBACK* _GSsetWindowInfo)(winInfo *info);
 #endif
 typedef void (CALLBACK* _GSmakeSnapshot)(const char *path);
@@ -724,7 +724,7 @@ extern _GSsetupRecording GSsetupRecording;
 extern _GSreset		   GSreset;
 extern _GSwriteCSR		   GSwriteCSR;
 extern _GSgetDriverInfo   GSgetDriverInfo;
-#ifdef _WIN32
+#ifdef _WINDOWS_
 extern _GSsetWindowInfo   GSsetWindowInfo;
 #endif
 extern _GSfreeze          GSfreeze;

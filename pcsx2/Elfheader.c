@@ -29,6 +29,7 @@
 #endif
 
 #ifdef _WIN32
+#include <windows.h>
 AppData gApp;
 #endif
 

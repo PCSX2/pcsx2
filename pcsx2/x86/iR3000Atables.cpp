@@ -25,23 +25,10 @@
 #include <assert.h>
 #include <malloc.h>
 
-#include "PS2Etypes.h"
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-
-#include "System.h"
-#include "Memory.h"
-#include "Misc.h"
-#include "Vif.h"
+#include "PsxCommon.h"
 #include "VU.h"
 
-#include "R3000A.h"
-#include "PsxMem.h"
-
 #include "ix86/ix86.h"
-
 #include "iCore.h"
 #include "iR3000A.h"
 
@@ -1855,7 +1842,7 @@ void (*rpsxBSC_co[64] )() = {
 		pinst->regs[reg] |= EEINST_LASTUSE; \
 	prev->regs[reg] |= EEINST_LIVE0|EEINST_USED; \
 	pinst->regs[reg] |= EEINST_USED; \
-	_recFillRegister(pinst, XMMTYPE_GPRREG, reg, 0); \
+	_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 0); \
 } \
 
 #define rpsxpropSetWrite(reg) { \
@@ -1864,7 +1851,7 @@ void (*rpsxBSC_co[64] )() = {
 		pinst->regs[reg] |= EEINST_LASTUSE; \
 	pinst->regs[reg] |= EEINST_USED; \
 	prev->regs[reg] |= EEINST_USED; \
-	_recFillRegister(pinst, XMMTYPE_GPRREG, reg, 1); \
+	_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 1); \
 }
 
 void rpsxpropBSC(EEINST* prev, EEINST* pinst);

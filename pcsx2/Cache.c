@@ -53,7 +53,7 @@ int getFreeCache(u32 mem, int mode, int * way) {
 	
 	if(pCache[i].tag[number] & 0x60)	// Valid Dirty
 	{
-		t = (char *)(taddr[number]); // fixme - this should probably be cast to (u8*)
+		t = (u8*)(taddr[number]);
 		out = (u8*)(t + (mem & 0xFC0));
 		((u64*)out)[0] = ((u64*)pCache[i].data[number][0].b8._8)[0];
 		((u64*)out)[1] = ((u64*)pCache[i].data[number][0].b8._8)[1];

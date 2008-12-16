@@ -23,11 +23,11 @@
 #include <assert.h>
 #include <malloc.h>
 
-#include "PS2Etypes.h"
-
 #if defined(_WIN32)
 #include <windows.h>
 #endif
+
+#include "PS2Etypes.h"
 
 #include "System.h"
 #include "R5900.h"
@@ -1278,24 +1278,24 @@ u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg)
 	return 0;
 }
 
-void _recFillRegister(EEINST* pinst, int type, int reg, int write)
+void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 {
 	u32 i = 0;
 	if (write ) {
-		for(i = 0; i < ARRAYSIZE(pinst->writeType); ++i) {
-			if( pinst->writeType[i] == XMMTYPE_TEMP ) {
-				pinst->writeType[i] = type;
-				pinst->writeReg[i] = reg;
+		for(i = 0; i < ARRAYSIZE(pinst.writeType); ++i) {
+			if( pinst.writeType[i] == XMMTYPE_TEMP ) {
+				pinst.writeType[i] = type;
+				pinst.writeReg[i] = reg;
 				return;
 			}
 		}
 		assert(0);
 	}
 	else {
-		for(i = 0; i < ARRAYSIZE(pinst->readType); ++i) {
-			if( pinst->readType[i] == XMMTYPE_TEMP ) {
-				pinst->readType[i] = type;
-				pinst->readReg[i] = reg;
+		for(i = 0; i < ARRAYSIZE(pinst.readType); ++i) {
+			if( pinst.readType[i] == XMMTYPE_TEMP ) {
+				pinst.readType[i] = type;
+				pinst.readReg[i] = reg;
 				return;
 			}
 		}

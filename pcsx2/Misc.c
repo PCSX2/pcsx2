@@ -23,12 +23,12 @@
 #include <sys/stat.h>
 #include <ctype.h>
 
-#include "Plugins.h"
 #include "Common.h"
 #include "PsxCommon.h"
 #include "CDVDisodrv.h"
 #include "VUmicro.h"
 #ifdef _WIN32
+#include <windows.h>
 #include "RDebug/deci2.h"
 #endif
 

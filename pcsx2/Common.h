@@ -23,6 +23,10 @@
 #define __LINUX__
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <zlib.h>		// fixme: is zlib.h stuff used by that many modules that it should be here in common?
 #include <string.h>
 
@@ -32,11 +36,7 @@
 #define DONT_USE_GETTEXT
 #endif
 
-#if defined(_WIN32)
-
-#include <windows.h>	// fixme: windows.h should be included to windows gui modules only.
-
-#define pthread_mutex__unlock pthread_mutex_unlock
+#if defined(_MSC_VER)
 
 #define strnicmp _strnicmp
 #define stricmp _stricmp

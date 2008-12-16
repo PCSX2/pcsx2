@@ -332,7 +332,7 @@ void _recClearInst(EEINST* pinst);
 u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 // returns the number of insts + 1 until used (0 if not used)
 u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
-void _recFillRegister(EEINST* pinst, int type, int reg, int write);
+void _recFillRegister(EEINST& pinst, int type, int reg, int write);
 
 #define EEINST_ISLIVE64(reg) (g_pCurInstInfo->regs[reg] & (EEINST_LIVE0|EEINST_LIVE1))
 #define EEINST_ISLIVEXMM(reg) (g_pCurInstInfo->regs[reg] & (EEINST_LIVE0|EEINST_LIVE1|EEINST_LIVE2))

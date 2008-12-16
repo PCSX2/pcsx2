@@ -87,7 +87,6 @@ static u32 s_nNextBlock = 0; // next free block in recBlocks
 
 extern void (*recBSC[64])();
 extern void (*recBSC_co[64])();
-void rpropBSC(EEINST* prev, EEINST* pinst);
 
 // save states for branches
 static u16 s_savex86FpuState, s_saveiCWstate;
@@ -3013,7 +3012,9 @@ StartRecomp:
 		for(i = s_nEndBlock; i > startpc; i -= 4 ) {
 			cpuRegs.code = *(int *)PSM(i-4);
 			pcur[-1] = pcur[0];
-			rpropBSC(pcur-1, pcur);
+
+			BSCPropagate bsc( pcur[-1], pcur[0] );
+			bsc.rprop();
 			pcur--;
 		}
 	}

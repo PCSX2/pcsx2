@@ -1216,13 +1216,13 @@ int hwMFIFOWrite(u32 addr, u8 *data, u32 size) {
 		int s2 = size - s1;
 
 		/* it does, so first copy 's1' bytes from 'data' to 'addr' */
-		dst = PSM(addr);
+		dst = (u8*)PSM(addr);
 		if (dst == NULL) return -1;
 		Cpu->Clear(addr, s1/4);
 		memcpy_fast(dst, data, s1);
 
 		/* and second copy 's2' bytes from '&data[s1]' to 'maddr' */
-		dst = PSM(psHu32(DMAC_RBOR));
+		dst = (u8*)PSM(psHu32(DMAC_RBOR));
 		if (dst == NULL) return -1;
 		Cpu->Clear(psHu32(DMAC_RBOR), s2/4);
 		memcpy_fast(dst, &data[s1], s2);
@@ -1230,7 +1230,7 @@ int hwMFIFOWrite(u32 addr, u8 *data, u32 size) {
 		//u32 * tempptr, * tempptr2;
 
 		/* it doesn't, so just copy 'size' bytes from 'data' to 'addr' */
-		dst = PSM(addr);
+		dst = (u8*)PSM(addr);
 		if (dst == NULL) return -1;
 		Cpu->Clear(addr, size/4);
 		memcpy_fast(dst, data, size);

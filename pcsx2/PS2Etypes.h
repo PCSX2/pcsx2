@@ -26,10 +26,6 @@
 #define __LINUX__
 #endif
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(x) (sizeof(x)/sizeof((x)[0]))
 #endif

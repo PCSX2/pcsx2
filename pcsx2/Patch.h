@@ -18,6 +18,12 @@
 #ifndef __PATCH_H__
 #define __PATCH_H__
 
+#ifdef _WIN32
+#include<windows.h>
+#endif
+
+#include "PS2Etypes.h"
+
 //
 // Defines
 //
@@ -72,8 +78,7 @@ struct IniPatch
 	u64 data;
 };
 
-#ifdef _WIN32
-#include<windows.h>
+#ifdef _WINDOWS_
 struct AppData
 {
 	HWND hWnd;           // Main window handle

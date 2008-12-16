@@ -18,17 +18,21 @@
 
 // rewritten by zerofrog to add multithreading/gs caching to GS and VU1
 
-#include "PS2Etypes.h"
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-
 #include <assert.h>
 #include <vector>
 #include <list>
 #include <cstring> 
 #include <cstdlib>
+
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
+#include "Common.h"
+#include "zlib.h"
+#include "VU.h"
+#include "GS.h"
+#include "iR5900.h"
 
 using namespace std;
 
@@ -200,16 +204,6 @@ static void mutex_unlock( mutex_t& mutex )
 }
 
 #endif
-
-
-#include "Common.h"
-#include "zlib.h"
-#include "VU.h"
-
-//#include "ix86/ix86.h"
-#include "iR5900.h"
-
-#include "GS.h"
 
 static wait_event_t g_hGsEvent; // set when path3 is ready to be processed
 static wait_event_t g_hGSDone;  // used to regulate thread startup and gsInit

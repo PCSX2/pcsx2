@@ -19,34 +19,22 @@
 // stop compiling if NORECBUILD build (only for Visual Studio)
 #if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
-#include "PS2Etypes.h"
-
 #if defined(_WIN32)
 #include <windows.h>
 #endif
 
 #include <assert.h>
-
 #include <vector>
 #include <list>
 
 using namespace std;
 
-#include "zlib.h"
-#include "Elfheader.h"
-#include "Misc.h"
-#include "System.h"
-#include "R5900.h"
-#include "Vif.h"
+#include "Common.h"
 #include "VU.h"
-#include "VifDma.h"
-#include "Memory.h"
-#include "Hw.h"
 
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
-#include "Counters.h"
 #include "GS.h"
 #include "DebugTools/Debug.h"
 	

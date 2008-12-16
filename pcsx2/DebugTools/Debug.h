@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <zlib.h>
 
-#include "PS2Edefs.h"
 #include "Misc.h"
 
 extern FILE *emuLog;

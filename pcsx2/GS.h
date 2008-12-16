@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "zlib.h"
+
 struct GSRegSIGBLID
 {
 	u32 SIGID;

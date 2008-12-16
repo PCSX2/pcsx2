@@ -23,11 +23,13 @@
 #include <malloc.h>
 #include <assert.h>
 
-#include "PS2Etypes.h"
-
 #ifndef _WIN32
 #include <unistd.h>
+#else
+#include <windows.h>
 #endif
+
+#include "PS2Etypes.h"
 
 // compile-time assert
 #ifndef C_ASSERT

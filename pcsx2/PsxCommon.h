@@ -18,11 +18,11 @@
 #ifndef __PSXCOMMON_H__
 #define __PSXCOMMON_H__
 
-#include "PS2Etypes.h"
-
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+#include "PS2Etypes.h"
 
 #include <assert.h>
 

@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "PS2Etypes.h"
 #include "Debug.h"
 #include "R5900.h"
 #include "DisASM.h"
