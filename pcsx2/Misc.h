@@ -84,7 +84,7 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define CHECK_FPU_EXTRA_FLAGS 0 // Always disabled now, doesn't seem to affect games positively. // (!(Config.Hacks & 0x200)) // Sets correct flags in the FPU recs
 #define CHECK_ESCAPE_HACK (Config.Hacks & 0x400)
 //------------ SPECIAL GAME FIXES!!! ---------------
-//#define CHECK_SLOWDVD (Config.GameFixes & 0x1) // Slow DVD access times, for games that are strict about them (Tales of the Abyss)
+#define CHECK_SLOWDVD (Config.GameFixes & 0x1) // Slow DVD access times, for games that are strict about them (Tales of the Abyss)
 #define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
 #define CHECK_VUCLIPHACK (Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
 #define CHECK_VUBRANCHHACK (Config.GameFixes & 0x8) // Special Fix for Magna Carta (note: Breaks Crash Bandicoot)

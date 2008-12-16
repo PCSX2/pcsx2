@@ -697,6 +697,13 @@ void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
 	else
 		cdvdReadTime = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
 	
+	if (CHECK_SLOWDVD) {	//fixes Tales of the Abyss crashing
+		cdvdReadTime*=3;	//Tota battles don't crash
+		if (cdvd.Sector > 2000000) {	//Tota worldmap doesn't crash
+			//SysPrintf("Sector = %d \n", cdvd.Sector);
+			cdvdReadTime = 100000;
+		}
+	}
 	//SysPrintf("cdvdReadTime = %d \n", cdvdReadTime);
 }
 
@@ -774,8 +781,7 @@ void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
 //	//calculate seek delay
 //	cdvdReadTime += sector_difference / 14;
 // 
-//	SysPrintf("CDVD Cnt Time = %d  \n", cdvdReadTime);
-//	SysPrintf("CDVD Debug: Sector difference: %d\n", sector_difference);
+//	SysPrintf("CDVD Cnt Time = %d  Sector difference: %d \n", cdvdReadTime, sector_difference);
 //	last_sector = start_sector;
 //}
 
@@ -1243,16 +1249,6 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			//if (CHECK_SLOWDVD) {
-			//	switch (cdvd.Param[9]) {
-			//		case 0x01: cdvd.Speed =  1; break;	// CD
-			//		case 0x02: cdvd.Speed =  2; break;	// CD
-			//		case 0x03: cdvd.Speed =  4; break;	// CD
-			//		case 0x04: cdvd.Speed = 12; break;	// CD
-			//		default:   cdvd.Speed = 24; break;	// CD
-			//	}
-			//}
-			//else cdvd.Speed = 24; // Fast cd reads; better performance
 			cdvd.Speed = 24;
 			switch (cdvd.Param[10]) {
 				case 2: cdvd.ReadMode = CDVD_MODE_2340; cdvd.BlockSize = 2340; break;
@@ -1305,7 +1301,6 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			//cdvd.Speed = CHECK_SLOWDVD ? 1 : 4; //Some games need to read slower
 			cdvd.Speed = 4;
 			cdvd.ReadMode = CDVD_MODE_2048; cdvd.BlockSize = 2064;	// Why oh why was it 2064
 			cdvdReadTimeRcnt(0);
