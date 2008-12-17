@@ -40,6 +40,20 @@
 #define CP0_RECOMPILE
 #define CP2_RECOMPILE
 
+// Cycle penalties for particuarly slow instructions.
+static const int InstCycles_Mult = 1*4;
+static const int InstCycles_Div = 12*4;
+static const int InstCycles_FPU_Sqrt = 3*4;
+static const int InstCycles_MMI_Mult = 2*4;
+static const int InstCycles_MMI_Div = 20*4;
+
+// Setting Loads to 1 or higher breaks Disgaea 2 FMV audio syncs.
+static const int InstCycles_Peephole_Store = 7;		// 1.75 cycle penalty
+static const int InstCycles_Peephole_Load = 1;		// 0.25 cycle penalty
+static const int InstCycles_Store = 7;				// 1.75 cycle penalty
+static const int InstCycles_Load = 1;				// 0.25 cycle penalty
+
+
 #define EE_CONST_PROP // rec2 - enables constant propagation (faster)
 //#define EE_FPU_REGCACHING 1 // Not used anymore, its always on!
 
@@ -63,6 +77,7 @@ extern u32 target;		         // branch target
 extern u16 x86FpuState;
 extern u16 iCWstate;
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
+extern u32 g_eeCyclePenalty;
 
 void recBranchCall( void (*func)() );
 
@@ -146,13 +161,27 @@ typedef void (*R5900FNPTR_INFO)(int info);
 void rec##fn(void) \
 { \
 	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
-} \
+}
+
+#define EERECOMPILE_CODE0_PENALTY(fn, xmminfo, cycles) \
+void rec##fn(void) \
+{ \
+	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
+	g_eeCyclePenalty = (cycles); \
+}
+
+#define EERECOMPILE_CODE0_PENALTY(fn, xmminfo, cycles) \
+void rec##fn(void) \
+{ \
+	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
+	g_eeCyclePenalty = (cycles); \
+}
 
 #define EERECOMPILE_CODEX(codename, fn) \
 void rec##fn(void) \
 { \
 	codename(rec##fn##_const, rec##fn##_); \
-} \
+}
 
 //
 // MMX/XMM caching helpers
@@ -233,19 +262,18 @@ void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode
 		return; \
 	}  \
 
-#ifdef __x86_64__
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
 void rec##fn(void) \
 { \
 	eeFPURecompileCode(rec##fn##_xmm, fn, xmminfo); \
 }
-#else
-#define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
+
+#define FPURECOMPILE_CONSTCODE_PENALTY(fn, xmminfo, cycles) \
 void rec##fn(void) \
 { \
 	eeFPURecompileCode(rec##fn##_xmm, fn, xmminfo); \
+	g_eeCyclePenalty = (cycles); \
 }
-#endif
 
 // rd = rs op rt (all regs need to be in xmm)
 int eeRecompileCodeXMM(int xmminfo);

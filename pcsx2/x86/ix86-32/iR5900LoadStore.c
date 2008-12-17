@@ -630,18 +630,18 @@ void recLoad32_co(u32 bit, u32 sign)
 	}
 }
 
-void recLB( void ) { recLoad32(8, _Imm_, 1); }
-void recLB_co( void ) { recLoad32_co(8, 1); }
-void recLBU( void ) { recLoad32(8, _Imm_, 0); }
-void recLBU_co( void ) { recLoad32_co(8, 0); }
-void recLH( void ) { recLoad32(16, _Imm_, 1); }
-void recLH_co( void ) { recLoad32_co(16, 1); }
-void recLHU( void ) { recLoad32(16, _Imm_, 0); }
-void recLHU_co( void ) { recLoad32_co(16, 0); }
-void recLW( void ) { recLoad32(32, _Imm_, 1); }
-void recLW_co( void ) { recLoad32_co(32, 1); }
-void recLWU( void ) { recLoad32(32, _Imm_, 0); }
-void recLWU_co( void ) { recLoad32_co(32, 0); }
+void recLB( void ) { recLoad32(8, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLB_co( void ) { recLoad32_co(8, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLBU( void ) { recLoad32(8, _Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
+void recLBU_co( void ) { recLoad32_co(8, 0); g_eeCyclePenalty = InstCycles_Load; }
+void recLH( void ) { recLoad32(16, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLH_co( void ) { recLoad32_co(16, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLHU( void ) { recLoad32(16, _Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
+void recLHU_co( void ) { recLoad32_co(16, 0); g_eeCyclePenalty = InstCycles_Load; }
+void recLW( void ) { recLoad32(32, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLW_co( void ) { recLoad32_co(32, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLWU( void ) { recLoad32(32, _Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
+void recLWU_co( void ) { recLoad32_co(32, 0); g_eeCyclePenalty = InstCycles_Load; }
 
 ////////////////////////////////////////////////////
 
@@ -650,6 +650,8 @@ void recLWL_co(void) { recLoad32(32, _Imm_-3, 1); }
 
 void recLWL( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Load;
+
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
@@ -734,6 +736,7 @@ void recLWR_co(void) { recLoad32(32, _Imm_, 1); }
 
 void recLWR( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Load;
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
@@ -931,7 +934,7 @@ void recLoad64(u32 imm, int align)
 	if( _Rt_ ) _eeOnWriteReg(_Rt_, 0);
 }
 
-void recLD(void) { recLoad64(_Imm_, 1); }
+void recLD(void) { recLoad64(_Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
 
 void recLD_co( void )
 {
@@ -1191,11 +1194,15 @@ void recLD_coX( int num )
 }
 
 ////////////////////////////////////////////////////
-void recLDL_co(void) {
-	recLoad64(_Imm_-7, 0); }
+void recLDL_co(void)
+{
+	g_eeCyclePenalty = InstCycles_Load;
+	recLoad64(_Imm_-7, 0);
+}
 
 void recLDL( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Load;
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -1217,10 +1224,11 @@ void recLDL( void )
 }
 
 ////////////////////////////////////////////////////
-void recLDR_co(void) { recLoad64(_Imm_, 0); }
+void recLDR_co(void) { recLoad64(_Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
 
 void recLDR( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Load;
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -1244,6 +1252,8 @@ void recLDR( void )
 ////////////////////////////////////////////////////
 void recLQ( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Load;
+
 	int mmreg = -1;
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
@@ -1373,6 +1383,8 @@ void recLQ( void )
 
 void recLQ_co( void )
 {
+	g_eeCyclePenalty = InstCycles_Load;
+
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
@@ -2412,18 +2424,20 @@ void recStore_co(int bit, int align)
 	_clearNeededXMMregs(); // needed since allocing
 }
 
-void recSB( void ) { recStore(8, _Imm_, 1); }
-void recSB_co( void ) { recStore_co(8, 1); }
-void recSH( void ) { recStore(16, _Imm_, 1); }
-void recSH_co( void ) { recStore_co(16, 1); }
-void recSW( void ) { recStore(32, _Imm_, 1); }
-void recSW_co( void ) { recStore_co(32, 1); }
+void recSB( void ) { recStore(8, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSB_co( void ) { recStore_co(8, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSH( void ) { recStore(16, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSH_co( void ) { recStore_co(16, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSW( void ) { recStore(32, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSW_co( void ) { recStore_co(32, 1); g_eeCyclePenalty = InstCycles_Store; }
 
 ////////////////////////////////////////////////////
-void recSWL_co(void) { recStore(32, _Imm_-3, 0); }
+void recSWL_co(void) { recStore(32, _Imm_-3, 0); g_eeCyclePenalty = InstCycles_Store; }
 
 void recSWL( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Store;
+
 #ifdef REC_SLOWWRITE
 	_flushConstReg(_Rs_);
 #else
@@ -2511,10 +2525,12 @@ void recSWL( void )
 }
 
 ////////////////////////////////////////////////////
-void recSWR_co(void) { recStore(32, _Imm_, 0); }
+void recSWR_co(void) { recStore(32, _Imm_, 0); g_eeCyclePenalty = InstCycles_Store; }
 
 void recSWR( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Store;
+
 #ifdef REC_SLOWWRITE
 	_flushConstReg(_Rs_);
 #else
@@ -2720,10 +2736,12 @@ void recSD_coX(int num, int align)
 }
 
 ////////////////////////////////////////////////////
-void recSDL_co(void) { recStore(64, _Imm_-7, 0); }
+void recSDL_co(void) { recStore(64, _Imm_-7, 0); g_eeCyclePenalty = InstCycles_Store; }
 
 void recSDL( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Store;
+
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -2744,10 +2762,12 @@ void recSDL( void )
 }
 
 ////////////////////////////////////////////////////
-void recSDR_co(void) { recStore(64, _Imm_, 0); }
+void recSDR_co(void) { recStore(64, _Imm_, 0); g_eeCyclePenalty = InstCycles_Store; }
 
 void recSDR( void ) 
 {
+	g_eeCyclePenalty = InstCycles_Store;
+
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -2768,8 +2788,8 @@ void recSDR( void )
 }
 
 ////////////////////////////////////////////////////
-void recSQ( void ) { recStore(128, _Imm_, 1); }
-void recSQ_co( void ) {	recStore_co(128, 1); }
+void recSQ( void ) { recStore(128, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSQ_co( void ) {	recStore_co(128, 1); g_eeCyclePenalty = InstCycles_Store; }
 
 // coissues more than 2 SQs
 void recSQ_coX(int num) 

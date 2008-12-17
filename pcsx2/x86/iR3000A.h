@@ -20,6 +20,16 @@
 
 extern void __Log(const char *fmt, ...);
 
+// Cycle penalties for particuarly slow instructions.
+static const int psxInstCycles_Mult = 8;
+static const int psxInstCycles_Div = 60;
+
+// Currently unused (iop mod incomplete)
+static const int psxInstCycles_Peephole_Store = 0;
+static const int psxInstCycles_Store = 0;
+static const int psxInstCycles_Load = 0;
+
+
 // to be consistent with EE
 #define PSX_HI XMMGPR_HI
 #define PSX_LO XMMGPR_LO
@@ -43,6 +53,7 @@ void PSX_CHECK_SAVE_REG(int reg);
 
 extern u32 psxpc;			// recompiler pc
 extern int psxbranch;		// set for branch
+extern u32 g_iopCyclePenalty;
 
 void psxSaveBranchState();
 void psxLoadBranchState();
@@ -64,28 +75,35 @@ void psxRecClearMem(BASEBLOCK* p);
 void rpsx##fn(void) \
 { \
 	psxRecompileCodeConst0(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_); \
-} \
+}
 
 // rt = rs op imm16
 #define PSXRECOMPILE_CONSTCODE1(fn) \
 void rpsx##fn(void) \
 { \
 	psxRecompileCodeConst1(rpsx##fn##_const, rpsx##fn##_); \
-} \
+}
 
 // rd = rt op sa
 #define PSXRECOMPILE_CONSTCODE2(fn) \
 void rpsx##fn(void) \
 { \
 	psxRecompileCodeConst2(rpsx##fn##_const, rpsx##fn##_); \
-} \
+}
 
 // [lo,hi] = rt op rs
 #define PSXRECOMPILE_CONSTCODE3(fn, LOHI) \
 void rpsx##fn(void) \
 { \
 	psxRecompileCodeConst3(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_, LOHI); \
-} \
+}
+
+#define PSXRECOMPILE_CONSTCODE3_PENALTY(fn, LOHI, cycles) \
+void rpsx##fn(void) \
+{ \
+	psxRecompileCodeConst3(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_, LOHI); \
+	g_iopCyclePenalty = cycles; \
+}
 
 // rd = rs op rt
 void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, R3000AFNPTR_INFO consttcode, R3000AFNPTR_INFO noconstcode);

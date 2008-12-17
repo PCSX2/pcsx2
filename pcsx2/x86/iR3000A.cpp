@@ -74,6 +74,8 @@ static BASEBLOCKEX *recBlocks = NULL;
 static u8 *recPtr;
 u32 psxpc;			// recompiler psxpc
 int psxbranch;		// set for branch
+u32 g_iopCyclePenalty;
+
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
@@ -1154,7 +1156,9 @@ void psxRecompileNextInstruction(int delayslot)
 	}
 	else {
 	 	assert( !(g_pCurInstInfo->info & EEINSTINFO_NOREC) );
+		g_iopCyclePenalty = 0;
 		rpsxBSC[ psxRegs.code >> 26 ]();
+		s_psxBlockCycles += g_iopCyclePenalty;
 	}
 
 	if( !delayslot ) {

@@ -2222,6 +2222,8 @@ void recPSRLVW()
 ////////////////////////////////////////////////////
 void recPMSUBW()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
@@ -2262,6 +2264,7 @@ void recPMSUBW()
 ////////////////////////////////////////////////////
 void recPMULTW()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
@@ -2270,6 +2273,7 @@ void recPMULTW()
 ////////////////////////////////////////////////////
 void recPDIVW()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Div;
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	REC_FUNC_INLINE( PDIVW, _Rd_ );
@@ -2278,6 +2282,7 @@ void recPDIVW()
 ////////////////////////////////////////////////////
 void recPDIVBW()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Div;
 	REC_FUNC_INLINE( PDIVBW, _Rd_ ); //--
 }
 
@@ -2286,6 +2291,8 @@ PCSX2_ALIGNED16(int s_mask[4]) = {~0, 0, ~0, 0};
 
 void recPHMADH()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _Rd_ ? EEREC_D : _allocTempXMMreg(XMMT_INT, -1);
 
@@ -2345,6 +2352,8 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPMSUBH()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -2388,6 +2397,8 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPHMSBH()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -2542,6 +2553,8 @@ CPU_SSE_XMMCACHE_END
 
 void recPMULTH( void )
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -2794,6 +2807,8 @@ CPU_SSE_XMMCACHE_END
 
 void recPMADDH( void ) 
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -2978,6 +2993,8 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPMULTUW()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	EEINST_SETSIGNEXT(_Rs_);
@@ -3011,6 +3028,8 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPMADDUW()
 {
+	g_eeCyclePenalty = InstCycles_MMI_Mult;
+
 CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED|XMMINFO_WRITELO|XMMINFO_WRITEHI|XMMINFO_READLO|XMMINFO_READHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	EEINST_SETSIGNEXT(_Rs_);
@@ -3049,7 +3068,11 @@ CPU_SSE_XMMCACHE_END
 
 ////////////////////////////////////////////////////
 //do EEINST_SETSIGNEXT
-REC_FUNC( PDIVUW, _Rd_ );
+void recPDIVUW()
+{
+	g_eeCyclePenalty = InstCycles_MMI_Div;
+	REC_FUNC_INLINE( PDIVUW, _Rd_ );
+}
 
 ////////////////////////////////////////////////////
 void recPEXCW()

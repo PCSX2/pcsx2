@@ -95,6 +95,8 @@ static u32 s_saveConstGPRreg = 0, s_saveHasConstReg = 0, s_saveFlushedConstReg =
 static EEINST* s_psaveInstInfo = NULL;
 
 u32 s_nBlockCycles = 0; // cycles of current block recompiling
+u32 g_eeCyclePenalty;	// cycle penalty of the current recompiled instruction
+
 static u32 s_savenBlockCycles = 0;
 
 void recCOP2RecompileInst();
@@ -2250,19 +2252,36 @@ void iFlushCall(int flushtype)
 //	}
 //}
 
-//static void cleanup()
-//{
-//	assert( !g_globalMMXSaved );
-//	assert( !g_globalXMMSaved );
-//}
 
-//fixme : this is all a huge hack, we base the counter advancements on the average an opcode should take (wtf?)
-//		  If that wasn't bad enough we have default values like 9/8 which will get cast to int later
-//		  (yeah, that means all sync code couldn't have worked to beginn with)
-//		  So for now these are new settings that work. I would've set 1 for default but that seemed too low
-//		  (rama)
+static u32 eeScaleBlockCycles()
+{
+	// Note: s_nBlockCycles is 2 bit fixed point.  Divide by 4 when done!
 
-#define EECYCLE_MULT (CHECK_EESYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : (1.2))
+	// Let's not scale blocks under 5-ish cycles.  This fixes countless "problems"
+	// caused by sync hacks and such, since games seem to care a lot more about
+	// these small blocks having accurate cycle counts.
+
+	if( s_nBlockCycles <= 5*4  || !CHECK_EESYNC_HACK ) return s_nBlockCycles / 4;
+
+	u32 scalar = CHECK_EE_IOP_EXTRA ? 14 : 9;	// 3.5 and 2.25 scales
+
+	if( s_nBlockCycles <= 10*4 )
+	{
+		// Mid-size blocks should get a mid-sized scale:
+		// (using an additional 2 bits fixed point math here)
+
+		scalar = CHECK_EE_IOP_EXTRA ? 9 : 7;	// 2.25 and 1.75 scales
+	}
+	else if( s_nBlockCycles >= 22*4 )
+	{
+		// larger blocks get a smaller scalar as well, to help keep
+		// them from becoming "too fat" and delaying branch tests.
+		scalar = CHECK_EE_IOP_EXTRA ? 10 : 7;	// 2.5 and 1.75 scales
+	}
+
+	s_nBlockCycles *= scalar;
+	return s_nBlockCycles / (4*4);
+}
 
 static void iBranchTest(u32 newpc, u32 cpuBranch)
 {
@@ -2278,7 +2297,7 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 #endif
 
 	MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
-	ADD32ItoR(ECX, s_nBlockCycles*EECYCLE_MULT);
+	ADD32ItoR(ECX, eeScaleBlockCycles());
 	MOV32RtoM((uptr)&cpuRegs.cycle, ECX); // update cycles
 	SUB32MtoR(ECX, (uptr)&g_nextBranchCycle);
 
@@ -2322,7 +2341,7 @@ void recSYSCALL( void ) {
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
+	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
 	JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;
@@ -2337,7 +2356,7 @@ void recBREAK( void ) {
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
+	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
 	RET();
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;
@@ -2532,7 +2551,7 @@ void recompileNextInstruction(int delayslot)
 #endif
 
 	cpuRegs.code = *(int *)s_pCode;
-	s_nBlockCycles++;
+	s_nBlockCycles+=4;
 	pc += 4;
 	
 //#ifdef _DEBUG
@@ -2589,26 +2608,33 @@ void recompileNextInstruction(int delayslot)
 
 #ifdef PCSX2_VIRTUAL_MEM
 		if( g_pCurInstInfo->numpeeps > 1 ) {
+			g_eeCyclePenalty = InstCycles_Store;
 			switch(cpuRegs.code>>26) {
-				case 30: recLQ_coX(g_pCurInstInfo->numpeeps); break;
+				case 30: recLQ_coX(g_pCurInstInfo->numpeeps); g_eeCyclePenalty = InstCycles_Load; break;
 				case 31: recSQ_coX(g_pCurInstInfo->numpeeps); break;
-				case 49: recLWC1_coX(g_pCurInstInfo->numpeeps); break;
+				case 49: recLWC1_coX(g_pCurInstInfo->numpeeps); g_eeCyclePenalty = InstCycles_Load; break;
 				case 57: recSWC1_coX(g_pCurInstInfo->numpeeps); break;
-				case 55: recLD_coX(g_pCurInstInfo->numpeeps); break;
+				case 55: recLD_coX(g_pCurInstInfo->numpeeps); g_eeCyclePenalty = InstCycles_Load; break;
 				case 63: recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
 				default:
 					assert(0);
 			}
-
 			pc += g_pCurInstInfo->numpeeps*4;
-			s_nBlockCycles += g_pCurInstInfo->numpeeps;
+			s_nBlockCycles += g_pCurInstInfo->numpeeps * (g_eeCyclePenalty+4);
 			g_pCurInstInfo += g_pCurInstInfo->numpeeps;
 		}
 		else {
+			g_eeCyclePenalty = 0;
 			recBSC_co[cpuRegs.code>>26]();
 			pc += 4;
-			s_nBlockCycles++;
 			g_pCurInstInfo++;
+
+			// ugh!  we're actually writing two instructions as one load/store opt here,
+			// so we need to factor the cycle penalty*2, and add 1 for the actual instruction
+			// base cycle counter.  We don't add 2 becuase s_nBlockCycles was already
+			// incremeneted above.
+
+			s_nBlockCycles += (g_eeCyclePenalty*2) + 4;
 		}
 #else
 		assert(0);
@@ -2639,7 +2665,9 @@ void recompileNextInstruction(int delayslot)
 					return;
 			}
 		}
+		g_eeCyclePenalty = 0;
 		recBSC[ cpuRegs.code >> 26 ]();
+		s_nBlockCycles += g_eeCyclePenalty;
 	}
 
 	if( !delayslot ) {
@@ -3237,7 +3265,7 @@ StartRecomp:
 	else {
 		assert( branch != 3 );
 		if( branch ) assert( !willbranch3 );
-		else ADD32ItoM((int)&cpuRegs.cycle, s_nBlockCycles*EECYCLE_MULT);
+		else ADD32ItoM((int)&cpuRegs.cycle, eeScaleBlockCycles() );
 
 		if( willbranch3 ) {
 			BASEBLOCK* pblock = PC_GETBLOCK(s_nEndBlock);

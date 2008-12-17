@@ -469,7 +469,7 @@ void rpsxMULT_consts(int info) { rpsxMULTsuperconst(info, _Rt_, g_psxConstRegs[_
 void rpsxMULT_constt(int info) { rpsxMULTsuperconst(info, _Rs_, g_psxConstRegs[_Rt_], 1); }
 void rpsxMULT_(int info) { rpsxMULTsuper(info, 1); }
 
-PSXRECOMPILE_CONSTCODE3(MULT, 1);
+PSXRECOMPILE_CONSTCODE3_PENALTY(MULT, 1, psxInstCycles_Mult);
 
 //// MULTU
 void rpsxMULTU_const()
@@ -484,7 +484,7 @@ void rpsxMULTU_consts(int info) { rpsxMULTsuperconst(info, _Rt_, g_psxConstRegs[
 void rpsxMULTU_constt(int info) { rpsxMULTsuperconst(info, _Rs_, g_psxConstRegs[_Rt_], 0); }
 void rpsxMULTU_(int info) { rpsxMULTsuper(info, 0); }
 
-PSXRECOMPILE_CONSTCODE3(MULTU, 1);
+PSXRECOMPILE_CONSTCODE3_PENALTY(MULTU, 1, psxInstCycles_Mult);
 
 //// DIV
 void rpsxDIV_const()
@@ -582,7 +582,7 @@ void rpsxDIV_consts(int info) { rpsxDIVsuperconsts(info, 1); }
 void rpsxDIV_constt(int info) { rpsxDIVsuperconstt(info, 1); }
 void rpsxDIV_(int info) { rpsxDIVsuper(info, 1); }
 
-PSXRECOMPILE_CONSTCODE3(DIV, 1);
+PSXRECOMPILE_CONSTCODE3_PENALTY(DIV, 1, psxInstCycles_Div);
 
 //// DIVU
 void rpsxDIVU_const()
@@ -601,7 +601,7 @@ void rpsxDIVU_consts(int info) { rpsxDIVsuperconsts(info, 0); }
 void rpsxDIVU_constt(int info) { rpsxDIVsuperconstt(info, 0); }
 void rpsxDIVU_(int info) { rpsxDIVsuper(info, 0); }
 
-PSXRECOMPILE_CONSTCODE3(DIVU, 1);
+PSXRECOMPILE_CONSTCODE3_PENALTY(DIVU, 1, psxInstCycles_Div);
 
 //// LoadStores
 #ifdef PCSX2_VIRTUAL_MEM
