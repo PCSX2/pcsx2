@@ -2255,24 +2255,24 @@ void iFlushCall(int flushtype)
 
 static u32 eeScaleBlockCycles()
 {
-	// Note: s_nBlockCycles is 2 bit fixed point.  Divide by 4 when done!
+	// Note: s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
 
 	// Let's not scale blocks under 5-ish cycles.  This fixes countless "problems"
 	// caused by sync hacks and such, since games seem to care a lot more about
 	// these small blocks having accurate cycle counts.
 
-	if( s_nBlockCycles <= 5*4  || !CHECK_EESYNC_HACK ) return s_nBlockCycles / 4;
+	if( s_nBlockCycles <= (5<<3)  || !CHECK_EESYNC_HACK ) return s_nBlockCycles >> 3;
 
-	u32 scalar = CHECK_EE_IOP_EXTRA ? 14 : 9;	// 3.5 and 2.25 scales
+	u32 scalar = CHECK_EE_IOP_EXTRA ? 14 : 9;	// 3.5 and 2.25 scales (4 bit fixed)
 
-	if( s_nBlockCycles <= 10*4 )
+	if( s_nBlockCycles <= (10<<3) )
 	{
 		// Mid-size blocks should get a mid-sized scale:
 		// (using an additional 2 bits fixed point math here)
 
 		scalar = CHECK_EE_IOP_EXTRA ? 9 : 7;	// 2.25 and 1.75 scales
 	}
-	else if( s_nBlockCycles >= 22*4 )
+	else if( s_nBlockCycles >= (22<<3) )
 	{
 		// larger blocks get a smaller scalar as well, to help keep
 		// them from becoming "too fat" and delaying branch tests.
@@ -2280,7 +2280,7 @@ static u32 eeScaleBlockCycles()
 	}
 
 	s_nBlockCycles *= scalar;
-	return s_nBlockCycles / (4*4);
+	return s_nBlockCycles >> (3+2);
 }
 
 static void iBranchTest(u32 newpc, u32 cpuBranch)
@@ -2551,7 +2551,7 @@ void recompileNextInstruction(int delayslot)
 #endif
 
 	cpuRegs.code = *(int *)s_pCode;
-	s_nBlockCycles+=4;
+	s_nBlockCycles += InstCycles_Default;
 	pc += 4;
 	
 //#ifdef _DEBUG
@@ -2620,7 +2620,7 @@ void recompileNextInstruction(int delayslot)
 					assert(0);
 			}
 			pc += g_pCurInstInfo->numpeeps*4;
-			s_nBlockCycles += g_pCurInstInfo->numpeeps * (g_eeCyclePenalty+4);
+			s_nBlockCycles += g_pCurInstInfo->numpeeps * (g_eeCyclePenalty+InstCycles_Default);
 			g_pCurInstInfo += g_pCurInstInfo->numpeeps;
 		}
 		else {
@@ -2631,10 +2631,10 @@ void recompileNextInstruction(int delayslot)
 
 			// ugh!  we're actually writing two instructions as one load/store opt here,
 			// so we need to factor the cycle penalty*2, and add 1 for the actual instruction
-			// base cycle counter.  We don't add 2 becuase s_nBlockCycles was already
-			// incremeneted above.
+			// base cycle counter.  And to confuse further, the blockcycle count was already
+			// updated above, for the current instruction.
 
-			s_nBlockCycles += (g_eeCyclePenalty*2) + 4;
+			s_nBlockCycles += (g_eeCyclePenalty*2) + InstCycles_Default;
 		}
 #else
 		assert(0);

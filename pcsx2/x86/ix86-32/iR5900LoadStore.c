@@ -646,7 +646,7 @@ void recLWU_co( void ) { recLoad32_co(32, 0); g_eeCyclePenalty = InstCycles_Load
 ////////////////////////////////////////////////////
 
 // paired with LWR
-void recLWL_co(void) { recLoad32(32, _Imm_-3, 1); }
+void recLWL_co(void) { recLoad32(32, _Imm_-3, 1); g_eeCyclePenalty = InstCycles_Load; }
 
 void recLWL( void ) 
 {
@@ -732,7 +732,7 @@ void recLWL( void )
 ////////////////////////////////////////////////////
 
 // paired with LWL
-void recLWR_co(void) { recLoad32(32, _Imm_, 1); }
+void recLWR_co(void) { recLoad32(32, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
 
 void recLWR( void ) 
 {
@@ -2618,8 +2618,8 @@ void recSWR( void )
 	}
 }
 
-void recSD( void ) { recStore(64, _Imm_, 1); }
-void recSD_co( void ) { recStore_co(64, 1); }
+void recSD( void ) { recStore(64, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSD_co( void ) { recStore_co(64, 1); g_eeCyclePenalty = InstCycles_Store; }
 
 // coissues more than 2 SDs
 void recSD_coX(int num, int align) 

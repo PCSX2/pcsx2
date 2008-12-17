@@ -40,19 +40,49 @@
 #define CP0_RECOMPILE
 #define CP2_RECOMPILE
 
+// We're working on new hopefully better cycle ratios, but they're still a WIP.
+// And yes this whole thing is an ugly hack.  I'll clean it up once we have
+// a better idea how exactly the cycle ratios will work best.
+
+//#define EXPERIMENTAL_CYCLE_TIMINGS
+
+#ifdef EXPERIMENTAL_CYCLE_TIMINGS
+
+// Number of cycles for basic instructions (add/sub, etc).
+// On the EE these normally run in less than 1 cycle thanks to
+// the superscalar nature of the CPU.
+static const int InstCycles_Default = 7;			// 0.75 cycles for base instructions.
+static const int _ic_basemod = 4 - InstCycles_Default;	// don't change me unless you're changing the fixed point accuracy of cycle counting.
+
 // Cycle penalties for particuarly slow instructions.
-static const int InstCycles_Mult = 1*4;
-static const int InstCycles_Div = 12*4;
-static const int InstCycles_FPU_Sqrt = 3*4;
-static const int InstCycles_MMI_Mult = 2*4;
-static const int InstCycles_MMI_Div = 20*4;
+static const int InstCycles_Mult = _ic_basemod + 2*8;
+static const int InstCycles_Div = _ic_basemod + 13*8;
+static const int InstCycles_FPU_Sqrt = _ic_basemod + 4*8;
+static const int InstCycles_MMI_Mult = _ic_basemod + 4*8;
+static const int InstCycles_MMI_Div = _ic_basemod + 22*8;
 
-// Setting Loads to 1 or higher breaks Disgaea 2 FMV audio syncs.
-static const int InstCycles_Peephole_Store = 7;		// 1.75 cycle penalty
-static const int InstCycles_Peephole_Load = 1;		// 0.25 cycle penalty
-static const int InstCycles_Store = 7;				// 1.75 cycle penalty
-static const int InstCycles_Load = 1;				// 0.25 cycle penalty
+static const int InstCycles_Peephole_Store = _ic_basemod + 22;
+static const int InstCycles_Peephole_Load = _ic_basemod + 7;
+static const int InstCycles_Store = _ic_basemod + 22;
+static const int InstCycles_Load = _ic_basemod + 7;
 
+#else
+
+static const int InstCycles_Default = 8;
+static const int _ic_basemod = 8 - InstCycles_Default;	// don't change me unless you're changing the fixed point accuracy of cycle counting.
+
+static const int InstCycles_Mult = _ic_basemod + 1*8;
+static const int InstCycles_Div = _ic_basemod + 13*8;
+static const int InstCycles_FPU_Sqrt = _ic_basemod + 3*8;
+static const int InstCycles_MMI_Mult = _ic_basemod + 2*8;
+static const int InstCycles_MMI_Div = _ic_basemod + 22*8;
+
+static const int InstCycles_Peephole_Store = _ic_basemod + 14;
+static const int InstCycles_Peephole_Load = _ic_basemod + 2;
+static const int InstCycles_Store = _ic_basemod + 14;
+static const int InstCycles_Load = _ic_basemod + 2;
+
+#endif
 
 #define EE_CONST_PROP // rec2 - enables constant propagation (faster)
 //#define EE_FPU_REGCACHING 1 // Not used anymore, its always on!
