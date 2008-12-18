@@ -43,10 +43,8 @@
 #pragma warning(disable:4761)
 #endif
 
-int g_VuNanHandling = 0; // for now enable all the time
-
+int g_VuNanHandling = 0;
 int vucycle;
-int vucycleold;
 _vuopinfo *cinfo = NULL;
 
 //Lower/Upper instructions can use that..
@@ -94,7 +92,6 @@ static const PCSX2_ALIGNED16(float recMult_int_to_float12[4]) = { 0.000244140625
 static const PCSX2_ALIGNED16(float recMult_int_to_float15[4]) = { 0.000030517578125, 0.000030517578125, 0.000030517578125, 0.000030517578125 };
 static s32 bpc;
 _VURegsNum* g_VUregs = NULL;
-u8 g_MACFlagTransform[256] = {0}; // used to flip xyzw bits
 
 static const PCSX2_ALIGNED16(int SSEmovMask[ 16 ][ 4 ]) =
 {
@@ -201,18 +198,12 @@ void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw)
 {
 	xyzw &= 0xf;
 
-	if(dest != src && xyzw != 0)
-	{
-		if(cpucaps.hasStreamingSIMD4Extensions)
-		{
+	if(dest != src && xyzw != 0) {
+		if(cpucaps.hasStreamingSIMD4Extensions) {
 			xyzw = ((xyzw & 1) << 3) | ((xyzw & 2) << 1) | ((xyzw & 4) >> 1) | ((xyzw & 8) >> 3); 
-
 			SSE4_BLENDPS_XMM_to_XMM(dest, src, xyzw);
 		}
-		else
-		{
-			s_VuMerge[xyzw](dest, src); 
-		}
+		else s_VuMerge[xyzw](dest, src); 
 	}
 }
 
@@ -222,51 +213,12 @@ void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw)
 
 void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw)
 {
-	// don't use pshufd
-	if( dstreg == srcreg || !cpucaps.hasStreamingSIMD3Extensions) {
-		if( dstreg != srcreg ) SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg);
-		switch (xyzw) {
-			case 0: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x00); break;
-			case 1: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x55); break;
-			case 2: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xaa); break;
-			case 3: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xff); break;
-		}
-	}
-	else {
-/*
-		switch (xyzw) {
-			case 0:
-				SSE3_MOVSLDUP_XMM_to_XMM(dstreg, srcreg);
-				SSE_MOVLHPS_XMM_to_XMM(dstreg, dstreg);
-				break;
-			case 1:
-				SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg);
-				SSE_MOVLHPS_XMM_to_XMM(dstreg, dstreg);
-				break;
-			case 2:
-				SSE3_MOVSLDUP_XMM_to_XMM(dstreg, srcreg);
-				SSE_MOVHLPS_XMM_to_XMM(dstreg, dstreg);
-				break;
-			case 3:
-				SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg);
-				SSE_MOVHLPS_XMM_to_XMM(dstreg, dstreg);
-				break;
-		}
-*/
-		switch (xyzw) {
-			case 0:
-				SSE2_PSHUFD_XMM_to_XMM(dstreg, srcreg, 0x00);
-				break;
-			case 1:
-				SSE2_PSHUFD_XMM_to_XMM(dstreg, srcreg, 0x55);
-				break;
-			case 2:
-				SSE2_PSHUFD_XMM_to_XMM(dstreg, srcreg, 0xaa);
-				break;
-			case 3:
-				SSE2_PSHUFD_XMM_to_XMM(dstreg, srcreg, 0xff);
-				break;
-		}
+	if( dstreg != srcreg ) SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg);
+	switch (xyzw) {
+		case 0: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x00); break;
+		case 1: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x55); break;
+		case 2: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xaa); break;
+		case 3: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xff); break;
 	}
 }
 
@@ -980,30 +932,6 @@ int _vuGetTempXMMreg(int info)
 	return t1reg;
 }
 
-// gets a temp reg that is not regd
-int _vuGetTempXMMreg2(int info, int regd)
-{
-	int t1reg = -1;
-
-	if( _hasFreeXMMreg() ) {
-		t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-
-		if( t1reg == regd ) {
-			if( _hasFreeXMMreg() ) {
-				int t = _allocTempXMMreg(XMMT_FPS, -1);
-				_freeXMMreg(t1reg);
-				t1reg = t;
-			}
-			else {
-				_freeXMMreg(t1reg);
-				t1reg = -1;
-			}
-		}
-	}
-	
-	return t1reg;
-}
-
 PCSX2_ALIGNED16(u32 g_minvals[4]) = {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
 PCSX2_ALIGNED16(u32 g_maxvals[4]) = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
@@ -1029,72 +957,10 @@ void SetVUNanMode(int mode)
         SysPrintf("enabling vunan mode");
 }
 
-void CheckForOverflowSS_(int fdreg, int t0reg)
-{
-	assert( t0reg != fdreg );
-    SSE_XORPS_XMM_to_XMM(t0reg, t0reg);
-    SSE_CMPORDSS_XMM_to_XMM(t0reg, fdreg);
-    if( g_VuNanHandling )
-        SSE_ORPS_M128_to_XMM(t0reg, (uptr)s_overflowmask);
-    SSE_ANDPS_XMM_to_XMM(fdreg, t0reg);
-
-//	SSE_MOVSS_M32_to_XMM(t0reg, (u32)s_expmask);
-//	SSE_ANDPS_XMM_to_XMM(t0reg, fdreg);
-//	SSE_CMPNESS_M32_to_XMM(t0reg, (u32)s_expmask);
-//	SSE_ANDPS_XMM_to_XMM(fdreg, t0reg);
-}
-
-void CheckForOverflow_(int fdreg, int t0reg, int keepxyzw)
-{
-//	SSE_MAXPS_M128_to_XMM(fdreg, (u32)g_minvals);
-//	SSE_MINPS_M128_to_XMM(fdreg, (u32)g_maxvals);
-
-    SSE_XORPS_XMM_to_XMM(t0reg, t0reg);
-    SSE_CMPORDPS_XMM_to_XMM(t0reg, fdreg);
-
-    /*if( g_VuNanHandling )
-        SSE_ORPS_M128_to_XMM(t0reg, (uptr)s_overflowmask);*/
-
-    // for partial masks, sometimes regs can be integers
-    if( keepxyzw != 15 )
-	    SSE_ORPS_M128_to_XMM(t0reg, (uptr)&SSEmovMask[15-keepxyzw][0]);
-    SSE_ANDPS_XMM_to_XMM(fdreg, t0reg);
-
-	//SSE_MOVAPS_M128_to_XMM(t0reg, (uptr)s_expmask);
-	//SSE_ANDPS_XMM_to_XMM(t0reg, fdreg);
-	//SSE_CMPNEPS_M128_to_XMM(t0reg, (u32)s_expmask);
-	////SSE_ORPS_M128_to_XMM(t0reg, (u32)g_minvals);
-	//SSE_ANDPS_XMM_to_XMM(fdreg, t0reg);
-}
-
 static PCSX2_ALIGNED16(u32 tempRegX[]) = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
-//static const char* logPOverflow = "VU OVERFLOW!: Changing to +Fmax!!!!!!!!!!!!\n";
-//static const char* logNOverflow = "VU OVERFLOW!: Changing to -Fmax!!!!!!!!!!!!\n";
-// Outputs to the console when overflow has occured.
-void testWhenOverflow(int info, int regd, int t0reg) {
-	/*int x86temp = ALLOCTEMPX86(MODE_8BITREG);
-	SSE_XORPS_XMM_to_XMM(t0reg, t0reg);
-	SSE_CMPUNORDPS_XMM_to_XMM(t0reg, regd);
-	SSE_MOVMSKPS_XMM_to_R32(x86temp, t0reg);
-	TEST8RtoR(x86temp, x86temp);
-	{
-		u8* nooverflow = JE8(0);
-		SSE_MOVMSKPS_XMM_to_R32(x86temp, regd);
-		TEST8RtoR(x86temp, x86temp);
-		{
-			u8* positiv = JE8(0);
-			u8* printlog;
-			PUSH32I((u32)logNOverflow);
-			printlog = JMP8(0);
-			x86SetJ8(positiv);
-			PUSH32I((u32)logPOverflow);
-			x86SetJ8(printlog);
-			CALLFunc((uptr)SysPrintf);
-		}
-		x86SetJ8(nooverflow);
-	}
-	_freeX86reg(x86temp);*/
-	SSE_MOVAPS_XMM_to_M128((uptr)tempRegX, regd);
+
+// Called by testWhenOverflow() function
+void testPrintOverflow() {
 	tempRegX[0] &= 0xff800000;
 	tempRegX[1] &= 0xff800000;
 	tempRegX[2] &= 0xff800000;
@@ -1103,6 +969,11 @@ void testWhenOverflow(int info, int regd, int t0reg) {
 		SysPrintf( "VU OVERFLOW!: Changing to +Fmax!!!!!!!!!!!!\n" );
 	if ( (tempRegX[0] == 0xff800000) || (tempRegX[1] == 0xff800000) || (tempRegX[2] == 0xff800000) || (tempRegX[3] == 0xff800000) )
 		SysPrintf( "VU OVERFLOW!: Changing to -Fmax!!!!!!!!!!!!\n" );
+}
+// Outputs to the console when overflow has occured.
+void testWhenOverflow(int info, int regd, int t0reg) {
+	SSE_MOVAPS_XMM_to_M128((uptr)tempRegX, regd);
+	CALLFunc((uptr)testPrintOverflow);
 }
 
 void vFloat0(int regd, int regTemp) { } //0000
@@ -1290,7 +1161,7 @@ void vuFloatExtra( int regd, int XYZW) {
 void vuFloat( int info, int regd, int XYZW) {
 	if( CHECK_OVERFLOW ) {
 		/*if ( (XYZW != 0) && (XYZW != 8) && (XYZW != 0xF) ) {
-			int t1reg = _vuGetTempXMMreg2(info, regd);
+			int t1reg = _vuGetTempXMMreg(info);
 			if (t1reg >= 0) {
 				vuFloat2( regd, t1reg, XYZW );
 				_freeXMMreg( t1reg );
@@ -1336,22 +1207,6 @@ void CheckForOverflow(VURegs *VU, int info, int regd)
 	else
 		vuFloat( info, regd, _X_Y_Z_W);
 }
-
-// if unordered replaces with 0x7f7fffff
-void ClampUnordered(int regd, int t0reg, int dosign)
-{
-	SSE_XORPS_XMM_to_XMM(t0reg, t0reg);
-	SSE_CMPORDPS_XMM_to_XMM(t0reg, regd);
-	SSE_ORPS_M128_to_XMM(t0reg, (uptr)&const_clip[4]);
-	SSE_ANDPS_XMM_to_XMM(regd, t0reg);
-	SSE_ANDNPS_M128_to_XMM(t0reg, (uptr)g_maxvals);
-	SSE_ORPS_XMM_to_XMM(regd, t0reg);
-}
-
-//__declspec(naked) void temp()
-//{
-//    __asm ret
-//}
 
 static const PCSX2_ALIGNED16(u32 VU_Underflow_Mask1[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
 static const PCSX2_ALIGNED16(u32 VU_Underflow_Mask2[4])		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};

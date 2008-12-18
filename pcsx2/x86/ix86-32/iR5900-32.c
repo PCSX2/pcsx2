@@ -1439,8 +1439,6 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 #undef _Fd_
 
 ////////////////////////////////////////////////////
-extern u8 g_MACFlagTransform[256]; // for vus
-
 u32 g_sseMXCSR = DEFAULT_sseMXCSR; 
 u32 g_sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
@@ -1587,10 +1585,6 @@ int recInit( void )
 	x86FpuState = FPU_STATE;
 
 	SuperVUInit(-1);
-
-	for(i = 0; i < 256; ++i) {       //x0-xF       //0x-Fx
-		g_MACFlagTransform[i] = macarr[i>>4]|(macarr[i&15]<<4);
-	}
 
 	//SysMessage("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);

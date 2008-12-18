@@ -97,7 +97,6 @@ extern _VURegsNum* g_VUregs;
 #define VUREC_INFO eeVURecompileCode(VU, g_VUregs)
 
 extern int vucycle;
-extern int vucycleold;
 
 
 /*****************************************
