@@ -53,7 +53,14 @@ extern char* disR3000Fasm(u32 code, u32 pc);
 
 u32 s_psxrecblocks[] = {0};
 
+//Using assembly code from an external file.
+#ifdef __LINUX__
+extern "C" {
+#endif
 void psxRecRecompile(u32 startpc);
+#ifdef __LINUX__
+}
+#endif
 
 uptr *psxRecLUT;
 
@@ -825,10 +832,16 @@ recomp:
 }
 
 #else // _MSC_VER
-
+// Linux uses an assembly version of these routines.
+#ifdef __LINUX__
+extern "C" {
+#endif
 void psxDispatcher();
 void psxDispatcherClear();
 void psxDispatcherReg();
+#ifdef __LINUX__
+}
+#endif
 
 #endif // _MSC_VER
 

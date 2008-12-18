@@ -25,7 +25,16 @@ void SuperVUInit(int vuindex); // if vuindex is -1, inits the global VU resource
 void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
 void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
 
+//Using assembly code from an external file.
+#ifdef __LINUX__
+extern "C" {
+#endif
 void SuperVUExecuteProgram(u32 startpc, int vuindex);
+void SuperVUEndProgram();
+void svudispfntemp();
+#ifdef __LINUX__
+}
+#endif
 void SuperVUClear(u32 startpc, u32 size, int vuindex);
 
 u64 SuperVUGetRecTimes(int clear);

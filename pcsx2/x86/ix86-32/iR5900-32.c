@@ -124,9 +124,14 @@ char *txt2 = "M32 = %x\n";
 
 void _cop2AnalyzeOp(EEINST* pinst, int dostalls); // reccop2.c
 static void iBranchTest(u32 newpc, u32 cpuBranch);
-void recRecompile( u32 startpc );
 void recCOP22( void );
-
+#ifdef __LINUX__
+extern "C" {
+#endif
+void recRecompile( u32 startpc );
+#ifdef __LINUX__
+}
+#endif
 BASEBLOCKEX* PC_GETBLOCKEX(BASEBLOCK* p)
 {
 //	BASEBLOCKEX* pex = *(BASEBLOCKEX**)(p+1);
@@ -1931,10 +1936,16 @@ __declspec(naked) void _StopPerfCounter()
 #endif // PCSX2_DEVBUILD
 
 #else // _MSC_VER
-
+// Linux uses an assembly version of these routines.
+#ifdef __LINUX__
+extern "C" {
+#endif
 extern void Dispatcher();
 extern void DispatcherClear();
 extern void DispatcherReg();
+#ifdef __LINUX__
+}
+#endif
 extern void _StartPerfCounter();
 extern void _StopPerfCounter();
 

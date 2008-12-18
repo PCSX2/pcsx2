@@ -69,7 +69,7 @@ u32 *j32Ptr[32];
 
 extern void SysPrintf(const char *fmt, ...);
 
-_inline void WriteRmOffset(x86IntRegType to, s32 offset)
+__forceinline void WriteRmOffset(x86IntRegType to, s32 offset)
 {
 	if( (to&7) == ESP ) {
 		if( offset == 0 ) {
@@ -102,7 +102,7 @@ _inline void WriteRmOffset(x86IntRegType to, s32 offset)
 	}
 }
 
-_inline void WriteRmOffsetFrom(x86IntRegType to, x86IntRegType from, int offset)
+__forceinline void WriteRmOffsetFrom(x86IntRegType to, x86IntRegType from, int offset)
 {
 	if ((from&7) == ESP) {
 		if( offset == 0 ) {
@@ -136,11 +136,11 @@ _inline void WriteRmOffsetFrom(x86IntRegType to, x86IntRegType from, int offset)
 }
 
 // This function is just for rec debugging purposes
-_inline void CheckX86Ptr( void )
+__forceinline void CheckX86Ptr( void )
 {
 }
 
-_inline void write64( u64 val )
+__forceinline void write64( u64 val )
 { 
 #ifdef _DEBUG
 	CheckX86Ptr( );
@@ -150,17 +150,17 @@ _inline void write64( u64 val )
 	x86Ptr += 8; 
 }
 
-_inline void ModRM( s32 mod, s32 reg, s32 rm )
+__forceinline void ModRM( s32 mod, s32 reg, s32 rm )
 {	
 	write8( ( mod << 6 ) | ( (reg & 7) << 3 ) | ( rm & 7 ) );
 }
 
-_inline void SibSB( s32 ss, s32 index, s32 base )
+__forceinline void SibSB( s32 ss, s32 index, s32 base )
 {
 	write8( ( ss << 6 ) | ( (index & 7) << 3 ) | ( base & 7 ) );
 }
 
-_inline void SET8R( int cc, int to )
+__forceinline void SET8R( int cc, int to )
 {
 	RexB(0, to);
 	write8( 0x0F );
@@ -191,7 +191,7 @@ __forceinline u32* J32Rel( int cc, u32 to )
 	return (u32*)( x86Ptr - 4 );
 }
 
-_inline void CMOV32RtoR( int cc, int to, int from )
+__forceinline void CMOV32RtoR( int cc, int to, int from )
 {
 	RexRB(0,to, from);
 	write8( 0x0F );
@@ -199,7 +199,7 @@ _inline void CMOV32RtoR( int cc, int to, int from )
 	ModRM( 3, to, from );
 }
 
-_inline void CMOV32MtoR( int cc, int to, uptr from )
+__forceinline void CMOV32MtoR( int cc, int to, uptr from )
 {
 	RexR(0, to);
 	write8( 0x0F );
@@ -209,18 +209,18 @@ _inline void CMOV32MtoR( int cc, int to, uptr from )
 }
 
 ////////////////////////////////////////////////////
-_inline void x86SetPtr( u8* ptr ) 
+__forceinline void x86SetPtr( u8* ptr ) 
 {
 	x86Ptr = ptr;
 }
 
 ////////////////////////////////////////////////////
-_inline void x86Shutdown( void )
+__forceinline void x86Shutdown( void )
 {
 }
 
 ////////////////////////////////////////////////////
-_inline void x86SetJ8( u8* j8 )
+__forceinline void x86SetJ8( u8* j8 )
 {
 	u32 jump = ( x86Ptr - j8 ) - 1;
 
@@ -231,7 +231,7 @@ _inline void x86SetJ8( u8* j8 )
 	*j8 = (u8)jump;
 }
 
-_inline void x86SetJ8A( u8* j8 )
+__forceinline void x86SetJ8A( u8* j8 )
 {
 	u32 jump = ( x86Ptr - j8 ) - 1;
 
@@ -252,7 +252,7 @@ _inline void x86SetJ8A( u8* j8 )
 	*j8 = (u8)jump;
 }
 
-_inline void x86SetJ16( u16 *j16 )
+__forceinline void x86SetJ16( u16 *j16 )
 {
 	// doesn't work
 	u32 jump = ( x86Ptr - (u8*)j16 ) - 2;
@@ -264,7 +264,7 @@ _inline void x86SetJ16( u16 *j16 )
 	*j16 = (u16)jump;
 }
 
-_inline void x86SetJ16A( u16 *j16 )
+__forceinline void x86SetJ16A( u16 *j16 )
 {
 	if( ((uptr)x86Ptr&0xf) > 4 ) {
 		while((uptr)x86Ptr&0xf) *x86Ptr++ = 0x90;
@@ -273,19 +273,19 @@ _inline void x86SetJ16A( u16 *j16 )
 }
 
 ////////////////////////////////////////////////////
-_inline void x86SetJ32( u32* j32 ) 
+__forceinline void x86SetJ32( u32* j32 ) 
 {
 	*j32 = ( x86Ptr - (u8*)j32 ) - 4;
 }
 
-_inline void x86SetJ32A( u32* j32 )
+__forceinline void x86SetJ32A( u32* j32 )
 {
 	while((uptr)x86Ptr&0xf) *x86Ptr++ = 0x90;
 	x86SetJ32(j32);
 }
 
 ////////////////////////////////////////////////////
-_inline void x86Align( int bytes ) 
+__forceinline void x86Align( int bytes ) 
 {
 	// fordward align
 	x86Ptr = (u8*)( ( (uptr)x86Ptr + bytes - 1) & ~( bytes - 1 ) );
@@ -295,12 +295,12 @@ _inline void x86Align( int bytes )
 /* IX86 intructions */
 /********************/
 
-_inline void STC( void )
+__forceinline void STC( void )
 {
 	write8( 0xF9 );
 }
 
-_inline void CLC( void )
+__forceinline void CLC( void )
 {
 	write8( 0xF8 );
 }
@@ -310,7 +310,7 @@ _inline void CLC( void )
 ////////////////////////////////////
 
 /* mov r64 to r64 */
-_inline void MOV64RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOV64RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1, from, to);
 	write8( 0x89 );
@@ -318,7 +318,7 @@ _inline void MOV64RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* mov r64 to m64 */
-_inline void MOV64RtoM( uptr to, x86IntRegType from ) 
+__forceinline void MOV64RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(1, from);
 	write8( 0x89 );
@@ -327,7 +327,7 @@ _inline void MOV64RtoM( uptr to, x86IntRegType from )
 }
 
 /* mov m64 to r64 */
-_inline void MOV64MtoR( x86IntRegType to, uptr from ) 
+__forceinline void MOV64MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(1, to);
 	write8( 0x8B );
@@ -336,7 +336,7 @@ _inline void MOV64MtoR( x86IntRegType to, uptr from )
 }
 
 /* mov imm32 to m64 */
-_inline void MOV64I32toM(uptr to, u32 from ) 
+__forceinline void MOV64I32toM(uptr to, u32 from ) 
 {
 	Rex(1, 0, 0, 0);
 	write8( 0xC7 );
@@ -346,7 +346,7 @@ _inline void MOV64I32toM(uptr to, u32 from )
 }
 
 // mov imm64 to r64
-_inline void MOV64ItoR( x86IntRegType to, u64 from)
+__forceinline void MOV64ItoR( x86IntRegType to, u64 from)
 {
 	RexB(1, to);
 	write8( 0xB8 | (to & 0x7) ); 
@@ -354,7 +354,7 @@ _inline void MOV64ItoR( x86IntRegType to, u64 from)
 }
 
 /* mov imm32 to r64 */
-_inline void MOV64I32toR( x86IntRegType to, s32 from ) 
+__forceinline void MOV64I32toR( x86IntRegType to, s32 from ) 
 {
 	RexB(1, to);
 	write8( 0xC7 ); 
@@ -363,7 +363,7 @@ _inline void MOV64I32toR( x86IntRegType to, s32 from )
 }
 
 // mov imm64 to [r64+off]
-_inline void MOV64ItoRmOffset( x86IntRegType to, u32 from, int offset)
+__forceinline void MOV64ItoRmOffset( x86IntRegType to, u32 from, int offset)
 {
 	RexB(1,to);
 	write8( 0xC7 );
@@ -372,7 +372,7 @@ _inline void MOV64ItoRmOffset( x86IntRegType to, u32 from, int offset)
 }
 
 // mov [r64+offset] to r64
-_inline void MOV64RmOffsettoR( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOV64RmOffsettoR( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(1, to, from);
 	write8( 0x8B );
@@ -380,7 +380,7 @@ _inline void MOV64RmOffsettoR( x86IntRegType to, x86IntRegType from, int offset 
 }
 
 /* mov [r64][r64*scale] to r64 */
-_inline void MOV64RmStoR( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
+__forceinline void MOV64RmStoR( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
 	RexRXB(1, to, from2, from);
 	write8( 0x8B );
 	ModRM( 0, to, 0x4 );
@@ -388,7 +388,7 @@ _inline void MOV64RmStoR( x86IntRegType to, x86IntRegType from, x86IntRegType fr
 }
 
 /* mov r64 to [r64+offset] */
-_inline void MOV64RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOV64RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(1,from,to);
 	write8( 0x89 );
@@ -396,7 +396,7 @@ _inline void MOV64RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset 
 }
 
 /* mov r64 to [r64][r64*scale] */
-_inline void MOV64RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
+__forceinline void MOV64RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
 	RexRXB(1, to, from2, from);
 	write8( 0x89 );
 	ModRM( 0, to, 0x4 );
@@ -405,7 +405,7 @@ _inline void MOV64RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType fr
 
 
 /* mov r32 to r32 */
-_inline void MOV32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOV32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0, from, to);
 	write8( 0x89 );
@@ -422,7 +422,7 @@ void MOV32RtoM( uptr to, x86IntRegType from )
 }
 
 /* mov m32 to r32 */
-_inline void MOV32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void MOV32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0, to);
 	write8( 0x8B );
@@ -431,20 +431,20 @@ _inline void MOV32MtoR( x86IntRegType to, uptr from )
 }
 
 /* mov [r32] to r32 */
-_inline void MOV32RmtoR( x86IntRegType to, x86IntRegType from ) {
+__forceinline void MOV32RmtoR( x86IntRegType to, x86IntRegType from ) {
 	RexRB(0, to, from);
 	write8(0x8B);
 	WriteRmOffsetFrom(to, from, 0);
 }
 
-_inline void MOV32RmtoROffset( x86IntRegType to, x86IntRegType from, int offset ) {
+__forceinline void MOV32RmtoROffset( x86IntRegType to, x86IntRegType from, int offset ) {
 	RexRB(0, to, from);
 	write8( 0x8B );
 	WriteRmOffsetFrom(to, from, offset);
 }
 
 /* mov [r32+r32*scale] to r32 */
-_inline void MOV32RmStoR( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
+__forceinline void MOV32RmStoR( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
 	RexRXB(0,to,from2,from);
 	write8( 0x8B );
 	ModRM( 0, to, 0x4 );
@@ -452,7 +452,7 @@ _inline void MOV32RmStoR( x86IntRegType to, x86IntRegType from, x86IntRegType fr
 }
 
 // mov r32 to [r32<<scale+from2]
-_inline void MOV32RmSOffsettoR( x86IntRegType to, x86IntRegType from1, int from2, int scale )
+__forceinline void MOV32RmSOffsettoR( x86IntRegType to, x86IntRegType from1, int from2, int scale )
 {
 	RexRXB(0,to,from1,0);
 	write8( 0x8B );
@@ -462,7 +462,7 @@ _inline void MOV32RmSOffsettoR( x86IntRegType to, x86IntRegType from1, int from2
 }
 
 /* mov r32 to [r32] */
-_inline void MOV32RtoRm( x86IntRegType to, x86IntRegType from ) {
+__forceinline void MOV32RtoRm( x86IntRegType to, x86IntRegType from ) {
 	RexRB(0, from, to);
 	if ((to&7) == ESP) {
 		write8( 0x89 );
@@ -475,7 +475,7 @@ _inline void MOV32RtoRm( x86IntRegType to, x86IntRegType from ) {
 }
 
 /* mov r32 to [r32][r32*scale] */
-_inline void MOV32RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
+__forceinline void MOV32RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
 	RexRXB(0, to, from2, from);
 	write8( 0x89 );
 	ModRM( 0, to, 0x4 );
@@ -483,7 +483,7 @@ _inline void MOV32RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType fr
 }
 
 /* mov imm32 to r32 */
-_inline void MOV32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void MOV32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0, to);
 	write8( 0xB8 | (to & 0x7) ); 
@@ -491,7 +491,7 @@ _inline void MOV32ItoR( x86IntRegType to, u32 from )
 }
 
 /* mov imm32 to m32 */
-_inline void MOV32ItoM(uptr to, u32 from ) 
+__forceinline void MOV32ItoM(uptr to, u32 from ) 
 {
 	write8( 0xC7 );
 	ModRM( 0, 0, DISP32 );
@@ -500,7 +500,7 @@ _inline void MOV32ItoM(uptr to, u32 from )
 }
 
 // mov imm32 to [r32+off]
-_inline void MOV32ItoRmOffset( x86IntRegType to, u32 from, int offset)
+__forceinline void MOV32ItoRmOffset( x86IntRegType to, u32 from, int offset)
 {
 	RexB(0,to);
 	write8( 0xC7 );
@@ -509,7 +509,7 @@ _inline void MOV32ItoRmOffset( x86IntRegType to, u32 from, int offset)
 }
 
 // mov r32 to [r32+off]
-_inline void MOV32RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
+__forceinline void MOV32RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
 {
 	RexRB(0,from,to);
 	write8( 0x89 );
@@ -517,7 +517,7 @@ _inline void MOV32RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
 }
 
 /* mov r16 to m16 */
-_inline void MOV16RtoM(uptr to, x86IntRegType from ) 
+__forceinline void MOV16RtoM(uptr to, x86IntRegType from ) 
 {
 	write8( 0x66 );
 	RexR(0,from);
@@ -527,7 +527,7 @@ _inline void MOV16RtoM(uptr to, x86IntRegType from )
 }
 
 /* mov m16 to r16 */
-_inline void MOV16MtoR( x86IntRegType to, uptr from ) 
+__forceinline void MOV16MtoR( x86IntRegType to, uptr from ) 
 {
 	write8( 0x66 );
 	RexR(0,to);
@@ -536,7 +536,7 @@ _inline void MOV16MtoR( x86IntRegType to, uptr from )
 	write32( MEMADDR(from, 4) ); 
 }
 
-_inline void MOV16RmtoR( x86IntRegType to, x86IntRegType from) 
+__forceinline void MOV16RmtoR( x86IntRegType to, x86IntRegType from) 
 {
 	write8( 0x66 );
 	RexRB(0,to,from);
@@ -544,7 +544,7 @@ _inline void MOV16RmtoR( x86IntRegType to, x86IntRegType from)
 	WriteRmOffsetFrom(to, from, 0);
 }
 
-_inline void MOV16RmtoROffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOV16RmtoROffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	write8( 0x66 );
 	RexRB(0,to,from);
@@ -552,7 +552,7 @@ _inline void MOV16RmtoROffset( x86IntRegType to, x86IntRegType from, int offset 
 	WriteRmOffsetFrom(to, from, offset);
 }
 
-_inline void MOV16RmSOffsettoR( x86IntRegType to, x86IntRegType from1, u32 from2, int scale )
+__forceinline void MOV16RmSOffsettoR( x86IntRegType to, x86IntRegType from1, u32 from2, int scale )
 {
 	write8(0x66);
 	RexRXB(0,to,from1,0);
@@ -562,7 +562,7 @@ _inline void MOV16RmSOffsettoR( x86IntRegType to, x86IntRegType from1, u32 from2
 	write32(from2);
 }
 
-_inline void MOV16RtoRm(x86IntRegType to, x86IntRegType from)
+__forceinline void MOV16RtoRm(x86IntRegType to, x86IntRegType from)
 {
 	write8( 0x66 );
 	RexRB(0,from,to);
@@ -571,7 +571,7 @@ _inline void MOV16RtoRm(x86IntRegType to, x86IntRegType from)
 }
 
 /* mov imm16 to m16 */
-_inline void MOV16ItoM( uptr to, u16 from ) 
+__forceinline void MOV16ItoM( uptr to, u16 from ) 
 {
 	write8( 0x66 );
 	write8( 0xC7 );
@@ -581,7 +581,7 @@ _inline void MOV16ItoM( uptr to, u16 from )
 }
 
 /* mov r16 to [r32][r32*scale] */
-_inline void MOV16RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
+__forceinline void MOV16RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType from2, int scale) {
 	write8( 0x66 );
 	RexRXB(0,to,from2,from);
 	write8( 0x89 );
@@ -589,7 +589,7 @@ _inline void MOV16RtoRmS( x86IntRegType to, x86IntRegType from, x86IntRegType fr
 	SibSB(scale, from2, from );
 }
 
-_inline void MOV16ItoR( x86IntRegType to, u16 from )
+__forceinline void MOV16ItoR( x86IntRegType to, u16 from )
 {
 	RexB(0, to);
 	write16( 0xB866 | ((to & 0x7)<<8) ); 
@@ -597,7 +597,7 @@ _inline void MOV16ItoR( x86IntRegType to, u16 from )
 }
 
 // mov imm16 to [r16+off]
-_inline void MOV16ItoRmOffset( x86IntRegType to, u16 from, u32 offset)
+__forceinline void MOV16ItoRmOffset( x86IntRegType to, u16 from, u32 offset)
 {
 	write8(0x66);
 	RexB(0,to);
@@ -607,7 +607,7 @@ _inline void MOV16ItoRmOffset( x86IntRegType to, u16 from, u32 offset)
 }
 
 // mov r16 to [r16+off]
-_inline void MOV16RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
+__forceinline void MOV16RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
 {
 	write8(0x66);
 	RexRB(0,from,to);
@@ -616,7 +616,7 @@ _inline void MOV16RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
 }
 
 /* mov r8 to m8 */
-_inline void MOV8RtoM( uptr to, x86IntRegType from ) 
+__forceinline void MOV8RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(0,from);
 	write8( 0x88 );
@@ -625,7 +625,7 @@ _inline void MOV8RtoM( uptr to, x86IntRegType from )
 }
 
 /* mov m8 to r8 */
-_inline void MOV8MtoR( x86IntRegType to, uptr from ) 
+__forceinline void MOV8MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x8A );
@@ -634,21 +634,21 @@ _inline void MOV8MtoR( x86IntRegType to, uptr from )
 }
 
 /* mov [r32] to r8 */
-_inline void MOV8RmtoR(x86IntRegType to, x86IntRegType from)
+__forceinline void MOV8RmtoR(x86IntRegType to, x86IntRegType from)
 {
 	RexRB(0,to,from);
 	write8( 0x8A );
 	WriteRmOffsetFrom(to, from, 0);
 }
 
-_inline void MOV8RmtoROffset(x86IntRegType to, x86IntRegType from, int offset)
+__forceinline void MOV8RmtoROffset(x86IntRegType to, x86IntRegType from, int offset)
 {
 	RexRB(0,to,from);
 	write8( 0x8A );
 	WriteRmOffsetFrom(to, from, offset);
 }
 
-_inline void MOV8RmSOffsettoR( x86IntRegType to, x86IntRegType from1, u32 from2, int scale )
+__forceinline void MOV8RmSOffsettoR( x86IntRegType to, x86IntRegType from1, u32 from2, int scale )
 {
 	RexRXB(0,to,from1,0);
 	write8( 0x8A );
@@ -657,7 +657,7 @@ _inline void MOV8RmSOffsettoR( x86IntRegType to, x86IntRegType from1, u32 from2,
 	write32(from2);
 }
 
-_inline void MOV8RtoRm(x86IntRegType to, x86IntRegType from)
+__forceinline void MOV8RtoRm(x86IntRegType to, x86IntRegType from)
 {
 	RexRB(0,from,to);
 	write8( 0x88 );
@@ -665,7 +665,7 @@ _inline void MOV8RtoRm(x86IntRegType to, x86IntRegType from)
 }
 
 /* mov imm8 to m8 */
-_inline void MOV8ItoM( uptr to, u8 from ) 
+__forceinline void MOV8ItoM( uptr to, u8 from ) 
 {
 	write8( 0xC6 );
 	ModRM( 0, 0, DISP32 );
@@ -674,7 +674,7 @@ _inline void MOV8ItoM( uptr to, u8 from )
 }
 
 // mov imm8 to r8
-_inline void MOV8ItoR( x86IntRegType to, u8 from )
+__forceinline void MOV8ItoR( x86IntRegType to, u8 from )
 {
 	RexB(0, to);
 	write8( 0xB0 | (to & 0x7) ); 
@@ -682,7 +682,7 @@ _inline void MOV8ItoR( x86IntRegType to, u8 from )
 }
 
 // mov imm8 to [r8+off]
-_inline void MOV8ItoRmOffset( x86IntRegType to, u8 from, int offset)
+__forceinline void MOV8ItoRmOffset( x86IntRegType to, u8 from, int offset)
 {
 	assert( to != ESP );
 	RexB(0,to);
@@ -692,7 +692,7 @@ _inline void MOV8ItoRmOffset( x86IntRegType to, u8 from, int offset)
 }
 
 // mov r8 to [r8+off]
-_inline void MOV8RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
+__forceinline void MOV8RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
 {
 	assert( to != ESP );
 	RexRB(0,from,to);
@@ -701,21 +701,21 @@ _inline void MOV8RtoRmOffset( x86IntRegType to, x86IntRegType from, int offset)
 }
 
 /* movsx r8 to r32 */
-_inline void MOVSX32R8toR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOVSX32R8toR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,to,from);
 	write16( 0xBE0F ); 
 	ModRM( 3, to, from ); 
 }
 
-_inline void MOVSX32Rm8toR( x86IntRegType to, x86IntRegType from )
+__forceinline void MOVSX32Rm8toR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(0,to,from);
 	write16( 0xBE0F ); 
 	ModRM( 0, to, from ); 
 }
 
-_inline void MOVSX32Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOVSX32Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(0,to,from);
 	write16( 0xBE0F ); 
@@ -723,7 +723,7 @@ _inline void MOVSX32Rm8toROffset( x86IntRegType to, x86IntRegType from, int offs
 }
 
 /* movsx m8 to r32 */
-_inline void MOVSX32M8toR( x86IntRegType to, u32 from ) 
+__forceinline void MOVSX32M8toR( x86IntRegType to, u32 from ) 
 {
 	RexR(0,to);
 	write16( 0xBE0F ); 
@@ -732,21 +732,21 @@ _inline void MOVSX32M8toR( x86IntRegType to, u32 from )
 }
 
 /* movsx r16 to r32 */
-_inline void MOVSX32R16toR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOVSX32R16toR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,to,from);
 	write16( 0xBF0F ); 
 	ModRM( 3, to, from ); 
 }
 
-_inline void MOVSX32Rm16toR( x86IntRegType to, x86IntRegType from )
+__forceinline void MOVSX32Rm16toR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(0,to,from);
 	write16( 0xBF0F ); 
 	ModRM( 0, to, from ); 
 }
 
-_inline void MOVSX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOVSX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(0,to,from);
 	write16( 0xBF0F );
@@ -754,7 +754,7 @@ _inline void MOVSX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int off
 }
 
 /* movsx m16 to r32 */
-_inline void MOVSX32M16toR( x86IntRegType to, u32 from ) 
+__forceinline void MOVSX32M16toR( x86IntRegType to, u32 from ) 
 {
 	RexR(0,to);
 	write16( 0xBF0F ); 
@@ -763,21 +763,21 @@ _inline void MOVSX32M16toR( x86IntRegType to, u32 from )
 }
 
 /* movzx r8 to r32 */
-_inline void MOVZX32R8toR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOVZX32R8toR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,to,from);
 	write16( 0xB60F ); 
 	ModRM( 3, to, from ); 
 }
 
-_inline void MOVZX32Rm8toR( x86IntRegType to, x86IntRegType from )
+__forceinline void MOVZX32Rm8toR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(0,to,from);
 	write16( 0xB60F ); 
 	ModRM( 0, to, from );
 }
 
-_inline void MOVZX32Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOVZX32Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(0,to,from);
 	write16( 0xB60F );
@@ -785,7 +785,7 @@ _inline void MOVZX32Rm8toROffset( x86IntRegType to, x86IntRegType from, int offs
 }
 
 /* movzx m8 to r32 */
-_inline void MOVZX32M8toR( x86IntRegType to, u32 from ) 
+__forceinline void MOVZX32M8toR( x86IntRegType to, u32 from ) 
 {
 	RexR(0,to);
 	write16( 0xB60F ); 
@@ -794,21 +794,21 @@ _inline void MOVZX32M8toR( x86IntRegType to, u32 from )
 }
 
 /* movzx r16 to r32 */
-_inline void MOVZX32R16toR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOVZX32R16toR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,to,from);
 	write16( 0xB70F ); 
 	ModRM( 3, to, from ); 
 }
 
-_inline void MOVZX32Rm16toR( x86IntRegType to, x86IntRegType from )
+__forceinline void MOVZX32Rm16toR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(0,to,from);
 	write16( 0xB70F ); 
 	ModRM( 0, to, from ); 
 }
 
-_inline void MOVZX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOVZX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(0,to,from);
 	write16( 0xB70F );
@@ -816,7 +816,7 @@ _inline void MOVZX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int off
 }
 
 /* movzx m16 to r32 */
-_inline void MOVZX32M16toR( x86IntRegType to, u32 from ) 
+__forceinline void MOVZX32M16toR( x86IntRegType to, u32 from ) 
 {
 	RexR(0,to);
 	write16( 0xB70F ); 
@@ -827,21 +827,21 @@ _inline void MOVZX32M16toR( x86IntRegType to, u32 from )
 #ifdef __x86_64__
 
 /* movzx r8 to r64 */
-_inline void MOVZX64R8toR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOVZX64R8toR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1,to,from);
 	write16( 0xB60F ); 
 	ModRM( 3, to, from ); 
 }
 
-_inline void MOVZX64Rm8toR( x86IntRegType to, x86IntRegType from )
+__forceinline void MOVZX64Rm8toR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(1,to,from);
 	write16( 0xB60F ); 
 	ModRM( 0, to, from );
 }
 
-_inline void MOVZX64Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOVZX64Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(1,to,from);
 	write16( 0xB60F );
@@ -849,7 +849,7 @@ _inline void MOVZX64Rm8toROffset( x86IntRegType to, x86IntRegType from, int offs
 }
 
 /* movzx m8 to r64 */
-_inline void MOVZX64M8toR( x86IntRegType to, u32 from ) 
+__forceinline void MOVZX64M8toR( x86IntRegType to, u32 from ) 
 {
 	RexR(1,to);
 	write16( 0xB60F ); 
@@ -858,21 +858,21 @@ _inline void MOVZX64M8toR( x86IntRegType to, u32 from )
 }
 
 /* movzx r16 to r64 */
-_inline void MOVZX64R16toR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void MOVZX64R16toR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1,to,from);
 	write16( 0xB70F ); 
 	ModRM( 3, to, from ); 
 }
 
-_inline void MOVZX64Rm16toR( x86IntRegType to, x86IntRegType from )
+__forceinline void MOVZX64Rm16toR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(1,to,from);
 	write16( 0xB70F ); 
 	ModRM( 0, to, from ); 
 }
 
-_inline void MOVZX64Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset )
+__forceinline void MOVZX64Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset )
 {
 	RexRB(1,to,from);
 	write16( 0xB70F );
@@ -880,7 +880,7 @@ _inline void MOVZX64Rm16toROffset( x86IntRegType to, x86IntRegType from, int off
 }
 
 /* movzx m16 to r64 */
-_inline void MOVZX64M16toR( x86IntRegType to, u32 from ) 
+__forceinline void MOVZX64M16toR( x86IntRegType to, u32 from ) 
 {
 	RexR(1,to);
 	write16( 0xB70F ); 
@@ -890,193 +890,193 @@ _inline void MOVZX64M16toR( x86IntRegType to, u32 from )
 #endif
 
 /* cmovbe r32 to r32 */
-_inline void CMOVBE32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVBE32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x46, to, from );
 }
 
 /* cmovbe m32 to r32*/
-_inline void CMOVBE32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVBE32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x46, to, from );
 }
 
 /* cmovb r32 to r32 */
-_inline void CMOVB32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVB32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x42, to, from );
 }
 
 /* cmovb m32 to r32*/
-_inline void CMOVB32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVB32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x42, to, from );
 }
 
 /* cmovae r32 to r32 */
-_inline void CMOVAE32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVAE32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x43, to, from );
 }
 
 /* cmovae m32 to r32*/
-_inline void CMOVAE32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVAE32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x43, to, from );
 }
 
 /* cmova r32 to r32 */
-_inline void CMOVA32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVA32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x47, to, from );
 }
 
 /* cmova m32 to r32*/
-_inline void CMOVA32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVA32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x47, to, from );
 }
 
 /* cmovo r32 to r32 */
-_inline void CMOVO32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVO32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x40, to, from );
 }
 
 /* cmovo m32 to r32 */
-_inline void CMOVO32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVO32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x40, to, from );
 }
 
 /* cmovp r32 to r32 */
-_inline void CMOVP32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVP32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x4A, to, from );
 }
 
 /* cmovp m32 to r32 */
-_inline void CMOVP32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVP32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x4A, to, from );
 }
 
 /* cmovs r32 to r32 */
-_inline void CMOVS32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVS32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x48, to, from );
 }
 
 /* cmovs m32 to r32 */
-_inline void CMOVS32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVS32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x48, to, from );
 }
 
 /* cmovno r32 to r32 */
-_inline void CMOVNO32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVNO32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x41, to, from );
 }
 
 /* cmovno m32 to r32 */
-_inline void CMOVNO32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVNO32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x41, to, from );
 }
 
 /* cmovnp r32 to r32 */
-_inline void CMOVNP32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVNP32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x4B, to, from );
 }
 
 /* cmovnp m32 to r32 */
-_inline void CMOVNP32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVNP32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x4B, to, from );
 }
 
 /* cmovns r32 to r32 */
-_inline void CMOVNS32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVNS32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x49, to, from );
 }
 
 /* cmovns m32 to r32 */
-_inline void CMOVNS32MtoR( x86IntRegType to, uptr from )
+__forceinline void CMOVNS32MtoR( x86IntRegType to, uptr from )
 {
 	CMOV32MtoR( 0x49, to, from );
 }
 
 /* cmovne r32 to r32 */
-_inline void CMOVNE32RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMOVNE32RtoR( x86IntRegType to, x86IntRegType from )
 {
 	CMOV32RtoR( 0x45, to, from );
 }
 
 /* cmovne m32 to r32*/
-_inline void CMOVNE32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMOVNE32MtoR( x86IntRegType to, uptr from ) 
 {
 	CMOV32MtoR( 0x45, to, from );
 }
 
 /* cmove r32 to r32*/
-_inline void CMOVE32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void CMOVE32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	CMOV32RtoR( 0x44, to, from );
 }
 
 /* cmove m32 to r32*/
-_inline void CMOVE32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMOVE32MtoR( x86IntRegType to, uptr from ) 
 {
 	CMOV32MtoR( 0x44, to, from );
 }
 
 /* cmovg r32 to r32*/
-_inline void CMOVG32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void CMOVG32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	CMOV32RtoR( 0x4F, to, from );
 }
 
 /* cmovg m32 to r32*/
-_inline void CMOVG32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMOVG32MtoR( x86IntRegType to, uptr from ) 
 {
 	CMOV32MtoR( 0x4F, to, from );
 }
 
 /* cmovge r32 to r32*/
-_inline void CMOVGE32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void CMOVGE32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	CMOV32RtoR( 0x4D, to, from );
 }
 
 /* cmovge m32 to r32*/
-_inline void CMOVGE32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMOVGE32MtoR( x86IntRegType to, uptr from ) 
 {
 	CMOV32MtoR( 0x4D, to, from );
 }
 
 /* cmovl r32 to r32*/
-_inline void CMOVL32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void CMOVL32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	CMOV32RtoR( 0x4C, to, from );
 }
 
 /* cmovl m32 to r32*/
-_inline void CMOVL32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMOVL32MtoR( x86IntRegType to, uptr from ) 
 {
 	CMOV32MtoR( 0x4C, to, from );
 }
 
 /* cmovle r32 to r32*/
-_inline void CMOVLE32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void CMOVLE32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	CMOV32RtoR( 0x4E, to, from );
 }
 
 /* cmovle m32 to r32*/
-_inline void CMOVLE32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMOVLE32MtoR( x86IntRegType to, uptr from ) 
 {
 	CMOV32MtoR( 0x4E, to, from );
 }
@@ -1099,7 +1099,7 @@ void ADD64ItoR( x86IntRegType to, u32 from )
 }
 
 /* add m64 to r64 */
-_inline void ADD64MtoR( x86IntRegType to, uptr from ) 
+__forceinline void ADD64MtoR( x86IntRegType to, uptr from ) 
 {
 	Rex(1, to >> 3, 0, 0);
 	write8( 0x03 ); 
@@ -1108,7 +1108,7 @@ _inline void ADD64MtoR( x86IntRegType to, uptr from )
 }
 
 /* add r64 to r64 */
-_inline void ADD64RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void ADD64RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1, from, to);
 	write8( 0x01 ); 
@@ -1116,7 +1116,7 @@ _inline void ADD64RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* add imm32 to r32 */
-_inline void ADD32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void ADD32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0, to);
 	if(from < 0x80)
@@ -1139,7 +1139,7 @@ _inline void ADD32ItoR( x86IntRegType to, u32 from )
 }
 
 /* add imm32 to m32 */
-_inline void ADD32ItoM( uptr to, u32 from ) 
+__forceinline void ADD32ItoM( uptr to, u32 from ) 
 { 
 	/*if(from < 0x80) // crashes games in 64bit build; TODO: figure out why.
 	{
@@ -1158,7 +1158,7 @@ _inline void ADD32ItoM( uptr to, u32 from )
 }
 
 // add imm32 to [r32+off]
-_inline void ADD32ItoRmOffset( x86IntRegType to, u32 from, s32 offset)
+__forceinline void ADD32ItoRmOffset( x86IntRegType to, u32 from, s32 offset)
 {
 	RexB(0,to);
 	if(from < 0x80)
@@ -1176,7 +1176,7 @@ _inline void ADD32ItoRmOffset( x86IntRegType to, u32 from, s32 offset)
 }
 
 /* add r32 to r32 */
-_inline void ADD32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void ADD32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0, from, to);
 	write8( 0x01 ); 
@@ -1184,7 +1184,7 @@ _inline void ADD32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* add r32 to m32 */
-_inline void ADD32RtoM(uptr to, x86IntRegType from ) 
+__forceinline void ADD32RtoM(uptr to, x86IntRegType from ) 
 {
 	RexR(0,from);
 	write8( 0x01 ); 
@@ -1193,7 +1193,7 @@ _inline void ADD32RtoM(uptr to, x86IntRegType from )
 }
 
 /* add m32 to r32 */
-_inline void ADD32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void ADD32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x03 ); 
@@ -1202,7 +1202,7 @@ _inline void ADD32MtoR( x86IntRegType to, uptr from )
 }
 
 // add r16 to r16 
-_inline void ADD16RtoR( x86IntRegType to , x86IntRegType from )
+__forceinline void ADD16RtoR( x86IntRegType to , x86IntRegType from )
 {
 	write8(0x66);
 	RexRB(0,to,from);
@@ -1211,7 +1211,7 @@ _inline void ADD16RtoR( x86IntRegType to , x86IntRegType from )
 }
 
 /* add imm16 to r16 */
-_inline void ADD16ItoR( x86IntRegType to, u16 from ) 
+__forceinline void ADD16ItoR( x86IntRegType to, u16 from ) 
 {
 	write8( 0x66 );
 	RexB(0,to);
@@ -1236,7 +1236,7 @@ _inline void ADD16ItoR( x86IntRegType to, u16 from )
 }
 
 /* add imm16 to m16 */
-_inline void ADD16ItoM( uptr to, u16 from ) 
+__forceinline void ADD16ItoM( uptr to, u16 from ) 
 {
 	write8( 0x66 );
 	if(from < 0x80)
@@ -1256,7 +1256,7 @@ _inline void ADD16ItoM( uptr to, u16 from )
 }
 
 /* add r16 to m16 */
-_inline void ADD16RtoM(uptr to, x86IntRegType from ) 
+__forceinline void ADD16RtoM(uptr to, x86IntRegType from ) 
 {
 	write8( 0x66 );
 	RexR(0,from);
@@ -1266,7 +1266,7 @@ _inline void ADD16RtoM(uptr to, x86IntRegType from )
 }
 
 /* add m16 to r16 */
-_inline void ADD16MtoR( x86IntRegType to, uptr from ) 
+__forceinline void ADD16MtoR( x86IntRegType to, uptr from ) 
 {
 	write8( 0x66 );
 	RexR(0,to);
@@ -1276,7 +1276,7 @@ _inline void ADD16MtoR( x86IntRegType to, uptr from )
 }
 
 // add m8 to r8
-_inline void ADD8MtoR( x86IntRegType to, uptr from )
+__forceinline void ADD8MtoR( x86IntRegType to, uptr from )
 {
 	RexR(0,to);
 	write8( 0x02 ); 
@@ -1285,7 +1285,7 @@ _inline void ADD8MtoR( x86IntRegType to, uptr from )
 }
 
 /* adc imm32 to r32 */
-_inline void ADC32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void ADC32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0,to);
 	if ( to == EAX ) {
@@ -1299,7 +1299,7 @@ _inline void ADC32ItoR( x86IntRegType to, u32 from )
 }
 
 /* adc imm32 to m32 */
-_inline void ADC32ItoM( uptr to, u32 from ) 
+__forceinline void ADC32ItoM( uptr to, u32 from ) 
 {
 	write8( 0x81 ); 
 	ModRM( 0, 2, DISP32 );
@@ -1308,7 +1308,7 @@ _inline void ADC32ItoM( uptr to, u32 from )
 }
 
 /* adc r32 to r32 */
-_inline void ADC32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void ADC32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,from,to);
 	write8( 0x11 ); 
@@ -1316,7 +1316,7 @@ _inline void ADC32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* adc m32 to r32 */
-_inline void ADC32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void ADC32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x13 ); 
@@ -1325,7 +1325,7 @@ _inline void ADC32MtoR( x86IntRegType to, uptr from )
 }
 
 // adc r32 to m32 
-_inline void ADC32RtoM( uptr to, x86IntRegType from )
+__forceinline void ADC32RtoM( uptr to, x86IntRegType from )
 {
 	RexR(0,from);
 	write8( 0x11 ); 
@@ -1334,14 +1334,14 @@ _inline void ADC32RtoM( uptr to, x86IntRegType from )
 }
 
 /* inc r32 */
-_inline void INC32R( x86IntRegType to ) 
+__forceinline void INC32R( x86IntRegType to ) 
 {
 	X86_64ASSERT();
 	write8( 0x40 + to );
 }
 
 /* inc m32 */
-_inline void INC32M( u32 to ) 
+__forceinline void INC32M( u32 to ) 
 {
 	write8( 0xFF );
 	ModRM( 0, 0, DISP32 );
@@ -1349,7 +1349,7 @@ _inline void INC32M( u32 to )
 }
 
 /* inc r16 */
-_inline void INC16R( x86IntRegType to ) 
+__forceinline void INC16R( x86IntRegType to ) 
 {
 	X86_64ASSERT();
 	write8( 0x66 );
@@ -1357,7 +1357,7 @@ _inline void INC16R( x86IntRegType to )
 }
 
 /* inc m16 */
-_inline void INC16M( u32 to ) 
+__forceinline void INC16M( u32 to ) 
 {
 	write8( 0x66 );
 	write8( 0xFF );
@@ -1367,7 +1367,7 @@ _inline void INC16M( u32 to )
 
 
 /* sub imm32 to r64 */
-_inline void SUB64ItoR( x86IntRegType to, u32 from ) 
+__forceinline void SUB64ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(1, to);
 	if ( to == EAX ) {
@@ -1381,7 +1381,7 @@ _inline void SUB64ItoR( x86IntRegType to, u32 from )
 }
 
 /* sub r64 to r64 */
-_inline void SUB64RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void SUB64RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1, from, to);
 	write8( 0x29 ); 
@@ -1389,7 +1389,7 @@ _inline void SUB64RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* sub m64 to r64 */
-_inline void SUB64MtoR( x86IntRegType to, uptr from ) 
+__forceinline void SUB64MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(1, to);
 	write8( 0x2B ); 
@@ -1398,7 +1398,7 @@ _inline void SUB64MtoR( x86IntRegType to, uptr from )
 }
 
 /* sub imm32 to r32 */
-_inline void SUB32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void SUB32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0,to);
 	if ( to == EAX ) {
@@ -1412,7 +1412,7 @@ _inline void SUB32ItoR( x86IntRegType to, u32 from )
 }
 
 /* sub imm32 to m32 */
-_inline void SUB32ItoM( uptr to, u32 from ) 
+__forceinline void SUB32ItoM( uptr to, u32 from ) 
 {
 	write8( 0x81 ); 
 	ModRM( 0, 5, DISP32 );
@@ -1421,7 +1421,7 @@ _inline void SUB32ItoM( uptr to, u32 from )
 }
 
 /* sub r32 to r32 */
-_inline void SUB32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void SUB32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0, from, to);
 	write8( 0x29 ); 
@@ -1429,7 +1429,7 @@ _inline void SUB32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* sub m32 to r32 */
-_inline void SUB32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void SUB32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x2B ); 
@@ -1438,7 +1438,7 @@ _inline void SUB32MtoR( x86IntRegType to, uptr from )
 }
 
 // sub r32 to m32 
-_inline void SUB32RtoM( uptr to, x86IntRegType from )
+__forceinline void SUB32RtoM( uptr to, x86IntRegType from )
 {
 	RexR(0,from);
 	write8( 0x29 ); 
@@ -1447,7 +1447,7 @@ _inline void SUB32RtoM( uptr to, x86IntRegType from )
 }
 
 // sub r16 to r16 
-_inline void SUB16RtoR( x86IntRegType to, u16 from )
+__forceinline void SUB16RtoR( x86IntRegType to, u16 from )
 {
 	write8(0x66);
 	RexRB(0,to,from);
@@ -1456,7 +1456,7 @@ _inline void SUB16RtoR( x86IntRegType to, u16 from )
 }
 
 /* sub imm16 to r16 */
-_inline void SUB16ItoR( x86IntRegType to, u16 from ) {
+__forceinline void SUB16ItoR( x86IntRegType to, u16 from ) {
 	write8( 0x66 );
 	RexB(0,to);
 	if ( to == EAX ) {
@@ -1469,7 +1469,7 @@ _inline void SUB16ItoR( x86IntRegType to, u16 from ) {
 }
 
 /* sub imm16 to m16 */
-_inline void SUB16ItoM( uptr to, u16 from ) {
+__forceinline void SUB16ItoM( uptr to, u16 from ) {
 	write8( 0x66 ); 
 	write8( 0x81 ); 
 	ModRM( 0, 5, DISP32 );
@@ -1478,7 +1478,7 @@ _inline void SUB16ItoM( uptr to, u16 from ) {
 }
 
 /* sub m16 to r16 */
-_inline void SUB16MtoR( x86IntRegType to, uptr from ) {
+__forceinline void SUB16MtoR( x86IntRegType to, uptr from ) {
 	write8( 0x66 ); 
 	RexR(0,to);
 	write8( 0x2B ); 
@@ -1487,14 +1487,14 @@ _inline void SUB16MtoR( x86IntRegType to, uptr from ) {
 }
 
 /* sbb r64 to r64 */
-_inline void SBB64RtoR( x86IntRegType to, x86IntRegType from ) {
+__forceinline void SBB64RtoR( x86IntRegType to, x86IntRegType from ) {
 	RexRB(1, from,to);
 	write8( 0x19 ); 
 	ModRM( 3, from, to );
 }
 
 /* sbb imm32 to r32 */
-_inline void SBB32ItoR( x86IntRegType to, u32 from ) {
+__forceinline void SBB32ItoR( x86IntRegType to, u32 from ) {
 	RexB(0,to);
 	if ( to == EAX ) {
 		write8( 0x1D );
@@ -1507,7 +1507,7 @@ _inline void SBB32ItoR( x86IntRegType to, u32 from ) {
 }
 
 /* sbb imm32 to m32 */
-_inline void SBB32ItoM( uptr to, u32 from ) {
+__forceinline void SBB32ItoM( uptr to, u32 from ) {
 	write8( 0x81 );
 	ModRM( 0, 3, DISP32 );
 	write32( MEMADDR(to, 8) );
@@ -1515,7 +1515,7 @@ _inline void SBB32ItoM( uptr to, u32 from ) {
 }
 
 /* sbb r32 to r32 */
-_inline void SBB32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void SBB32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,from,to);
 	write8( 0x19 ); 
@@ -1523,7 +1523,7 @@ _inline void SBB32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* sbb m32 to r32 */
-_inline void SBB32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void SBB32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x1B ); 
@@ -1532,7 +1532,7 @@ _inline void SBB32MtoR( x86IntRegType to, uptr from )
 }
 
 /* sbb r32 to m32 */
-_inline void SBB32RtoM( uptr to, x86IntRegType from ) 
+__forceinline void SBB32RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(0,from);
 	write8( 0x19 ); 
@@ -1541,14 +1541,14 @@ _inline void SBB32RtoM( uptr to, x86IntRegType from )
 }
 
 /* dec r32 */
-_inline void DEC32R( x86IntRegType to ) 
+__forceinline void DEC32R( x86IntRegType to ) 
 {
 	X86_64ASSERT();
 	write8( 0x48 + to );
 }
 
 /* dec m32 */
-_inline void DEC32M( u32 to ) 
+__forceinline void DEC32M( u32 to ) 
 {
 	write8( 0xFF );
 	ModRM( 0, 1, DISP32 );
@@ -1556,7 +1556,7 @@ _inline void DEC32M( u32 to )
 }
 
 /* dec r16 */
-_inline void DEC16R( x86IntRegType to ) 
+__forceinline void DEC16R( x86IntRegType to ) 
 {
 	X86_64ASSERT();
 	write8( 0x66 );
@@ -1564,7 +1564,7 @@ _inline void DEC16R( x86IntRegType to )
 }
 
 /* dec m16 */
-_inline void DEC16M( u32 to ) 
+__forceinline void DEC16M( u32 to ) 
 {
 	write8( 0x66 );
 	write8( 0xFF );
@@ -1573,7 +1573,7 @@ _inline void DEC16M( u32 to )
 }
 
 /* mul eax by r32 to edx:eax */
-_inline void MUL32R( x86IntRegType from ) 
+__forceinline void MUL32R( x86IntRegType from ) 
 {
 	RexB(0,from);
 	write8( 0xF7 ); 
@@ -1581,7 +1581,7 @@ _inline void MUL32R( x86IntRegType from )
 }
 
 /* imul eax by r32 to edx:eax */
-_inline void IMUL32R( x86IntRegType from ) 
+__forceinline void IMUL32R( x86IntRegType from ) 
 {
 	RexB(0,from);
 	write8( 0xF7 ); 
@@ -1589,7 +1589,7 @@ _inline void IMUL32R( x86IntRegType from )
 }
 
 /* mul eax by m32 to edx:eax */
-_inline void MUL32M( u32 from ) 
+__forceinline void MUL32M( u32 from ) 
 {
 	write8( 0xF7 ); 
 	ModRM( 0, 4, DISP32 );
@@ -1597,7 +1597,7 @@ _inline void MUL32M( u32 from )
 }
 
 /* imul eax by m32 to edx:eax */
-_inline void IMUL32M( u32 from ) 
+__forceinline void IMUL32M( u32 from ) 
 {
 	write8( 0xF7 ); 
 	ModRM( 0, 5, DISP32 );
@@ -1605,7 +1605,7 @@ _inline void IMUL32M( u32 from )
 }
 
 /* imul r32 by r32 to r32 */
-_inline void IMUL32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void IMUL32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,to,from);
 	write16( 0xAF0F ); 
@@ -1613,7 +1613,7 @@ _inline void IMUL32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* div eax by r32 to edx:eax */
-_inline void DIV32R( x86IntRegType from ) 
+__forceinline void DIV32R( x86IntRegType from ) 
 {
 	RexB(0,from);
 	write8( 0xF7 ); 
@@ -1621,7 +1621,7 @@ _inline void DIV32R( x86IntRegType from )
 }
 
 /* idiv eax by r32 to edx:eax */
-_inline void IDIV32R( x86IntRegType from ) 
+__forceinline void IDIV32R( x86IntRegType from ) 
 {
 	RexB(0,from);
 	write8( 0xF7 ); 
@@ -1629,7 +1629,7 @@ _inline void IDIV32R( x86IntRegType from )
 }
 
 /* div eax by m32 to edx:eax */
-_inline void DIV32M( u32 from ) 
+__forceinline void DIV32M( u32 from ) 
 {
 	write8( 0xF7 ); 
 	ModRM( 0, 6, DISP32 );
@@ -1637,7 +1637,7 @@ _inline void DIV32M( u32 from )
 }
 
 /* idiv eax by m32 to edx:eax */
-_inline void IDIV32M( u32 from ) 
+__forceinline void IDIV32M( u32 from ) 
 {
 	write8( 0xF7 ); 
 	ModRM( 0, 7, DISP32 );
@@ -1649,7 +1649,7 @@ _inline void IDIV32M( u32 from )
 ////////////////////////////////////
 
 /* shl imm8 to r64 */
-_inline void SHL64ItoR( x86IntRegType to, u8 from ) 
+__forceinline void SHL64ItoR( x86IntRegType to, u8 from ) 
 {
 	RexB(1, to);
 	if ( from == 1 )
@@ -1664,7 +1664,7 @@ _inline void SHL64ItoR( x86IntRegType to, u8 from )
 }
 
 /* shl cl to r64 */
-_inline void SHL64CLtoR( x86IntRegType to ) 
+__forceinline void SHL64CLtoR( x86IntRegType to ) 
 {
 	RexB(1, to);
 	write8( 0xD3 ); 
@@ -1672,7 +1672,7 @@ _inline void SHL64CLtoR( x86IntRegType to )
 }
 
 /* shr imm8 to r64 */
-_inline void SHR64ItoR( x86IntRegType to, u8 from ) 
+__forceinline void SHR64ItoR( x86IntRegType to, u8 from ) 
 {
 	RexB(1,to);
 	if ( from == 1 ) {
@@ -1686,7 +1686,7 @@ _inline void SHR64ItoR( x86IntRegType to, u8 from )
 }
 
 /* shr cl to r64 */
-_inline void SHR64CLtoR( x86IntRegType to ) 
+__forceinline void SHR64CLtoR( x86IntRegType to ) 
 {
 	RexB(1, to);
 	write8( 0xD3 ); 
@@ -1694,7 +1694,7 @@ _inline void SHR64CLtoR( x86IntRegType to )
 }
 
 /* shl imm8 to r32 */
-_inline void SHL32ItoR( x86IntRegType to, u8 from ) 
+__forceinline void SHL32ItoR( x86IntRegType to, u8 from ) 
 {
 	RexB(0, to);
 	if ( from == 1 )
@@ -1709,7 +1709,7 @@ _inline void SHL32ItoR( x86IntRegType to, u8 from )
 }
 
 /* shl imm8 to m32 */
-_inline void SHL32ItoM( uptr to, u8 from ) 
+__forceinline void SHL32ItoM( uptr to, u8 from ) 
 {
 	if ( from == 1 )
 	{
@@ -1727,7 +1727,7 @@ _inline void SHL32ItoM( uptr to, u8 from )
 }
 
 /* shl cl to r32 */
-_inline void SHL32CLtoR( x86IntRegType to ) 
+__forceinline void SHL32CLtoR( x86IntRegType to ) 
 {
 	RexB(0,to);
 	write8( 0xD3 ); 
@@ -1735,7 +1735,7 @@ _inline void SHL32CLtoR( x86IntRegType to )
 }
 
 // shl imm8 to r16
-_inline void SHL16ItoR( x86IntRegType to, u8 from )
+__forceinline void SHL16ItoR( x86IntRegType to, u8 from )
 {
 	write8(0x66);
 	RexB(0,to);
@@ -1751,7 +1751,7 @@ _inline void SHL16ItoR( x86IntRegType to, u8 from )
 }
 
 // shl imm8 to r8
-_inline void SHL8ItoR( x86IntRegType to, u8 from )
+__forceinline void SHL8ItoR( x86IntRegType to, u8 from )
 {
 	RexB(0,to);
 	if ( from == 1 )
@@ -1766,7 +1766,7 @@ _inline void SHL8ItoR( x86IntRegType to, u8 from )
 }
 
 /* shr imm8 to r32 */
-_inline void SHR32ItoR( x86IntRegType to, u8 from ) {
+__forceinline void SHR32ItoR( x86IntRegType to, u8 from ) {
 	RexB(0,to);
 	if ( from == 1 )
 	{
@@ -1782,7 +1782,7 @@ _inline void SHR32ItoR( x86IntRegType to, u8 from ) {
 }
 
 /* shr imm8 to m32 */
-_inline void SHR32ItoM( uptr to, u8 from ) 
+__forceinline void SHR32ItoM( uptr to, u8 from ) 
 {
 	if ( from == 1 )
 	{
@@ -1800,7 +1800,7 @@ _inline void SHR32ItoM( uptr to, u8 from )
 }
 
 /* shr cl to r32 */
-_inline void SHR32CLtoR( x86IntRegType to ) 
+__forceinline void SHR32CLtoR( x86IntRegType to ) 
 {
 	RexB(0,to);
 	write8( 0xD3 ); 
@@ -1808,7 +1808,7 @@ _inline void SHR32CLtoR( x86IntRegType to )
 }
 
 // shr imm8 to r16
-_inline void SHR16ItoR( x86IntRegType to, u8 from )
+__forceinline void SHR16ItoR( x86IntRegType to, u8 from )
 {
 	RexB(0,to);
 	if ( from == 1 )
@@ -1825,7 +1825,7 @@ _inline void SHR16ItoR( x86IntRegType to, u8 from )
 }
 
 // shr imm8 to r8
-_inline void SHR8ItoR( x86IntRegType to, u8 from )
+__forceinline void SHR8ItoR( x86IntRegType to, u8 from )
 {
 	RexB(0,to);
 	if ( from == 1 )
@@ -1842,7 +1842,7 @@ _inline void SHR8ItoR( x86IntRegType to, u8 from )
 }
 
 /* sar imm8 to r64 */
-_inline void SAR64ItoR( x86IntRegType to, u8 from ) 
+__forceinline void SAR64ItoR( x86IntRegType to, u8 from ) 
 {
 	RexB(1,to);
 	if ( from == 1 )
@@ -1857,7 +1857,7 @@ _inline void SAR64ItoR( x86IntRegType to, u8 from )
 }
 
 /* sar cl to r64 */
-_inline void SAR64CLtoR( x86IntRegType to ) 
+__forceinline void SAR64CLtoR( x86IntRegType to ) 
 {
 	RexB(1, to);
 	write8( 0xD3 ); 
@@ -1865,7 +1865,7 @@ _inline void SAR64CLtoR( x86IntRegType to )
 }
 
 /* sar imm8 to r32 */
-_inline void SAR32ItoR( x86IntRegType to, u8 from ) 
+__forceinline void SAR32ItoR( x86IntRegType to, u8 from ) 
 {
 	RexB(0,to);
 	if ( from == 1 )
@@ -1880,7 +1880,7 @@ _inline void SAR32ItoR( x86IntRegType to, u8 from )
 }
 
 /* sar imm8 to m32 */
-_inline void SAR32ItoM( uptr to, u8 from )
+__forceinline void SAR32ItoM( uptr to, u8 from )
 {
 	write8( 0xC1 ); 
 	ModRM( 0, 7, DISP32 );
@@ -1889,7 +1889,7 @@ _inline void SAR32ItoM( uptr to, u8 from )
 }
 
 /* sar cl to r32 */
-_inline void SAR32CLtoR( x86IntRegType to ) 
+__forceinline void SAR32CLtoR( x86IntRegType to ) 
 {
 	RexB(0,to);
 	write8( 0xD3 ); 
@@ -1897,7 +1897,7 @@ _inline void SAR32CLtoR( x86IntRegType to )
 }
 
 // sar imm8 to r16
-_inline void SAR16ItoR( x86IntRegType to, u8 from )
+__forceinline void SAR16ItoR( x86IntRegType to, u8 from )
 {
 	write8(0x66);
 	RexB(0,to);
@@ -1912,7 +1912,7 @@ _inline void SAR16ItoR( x86IntRegType to, u8 from )
 	write8( from ); 
 }
 
-_inline void ROR32ItoR( x86IntRegType to,u8 from )
+__forceinline void ROR32ItoR( x86IntRegType to,u8 from )
 {
 	RexB(0,to);
 	if ( from == 1 ) {
@@ -1927,7 +1927,7 @@ _inline void ROR32ItoR( x86IntRegType to,u8 from )
 	}
 }
 
-_inline void RCR32ItoR( x86IntRegType to, u8 from ) 
+__forceinline void RCR32ItoR( x86IntRegType to, u8 from ) 
 {
 	RexB(0,to);
 	if ( from == 1 ) {
@@ -1942,7 +1942,7 @@ _inline void RCR32ItoR( x86IntRegType to, u8 from )
 	}
 }
 
-_inline void RCR32ItoM( uptr to, u8 from ) 
+__forceinline void RCR32ItoM( uptr to, u8 from ) 
 {
 	RexB(0,to);
 	if ( from == 1 ) {
@@ -1960,7 +1960,7 @@ _inline void RCR32ItoM( uptr to, u8 from )
 }
 
 // shld imm8 to r32
-_inline void SHLD32ItoR( x86IntRegType to, x86IntRegType from, u8 shift )
+__forceinline void SHLD32ItoR( x86IntRegType to, x86IntRegType from, u8 shift )
 {
 	RexRB(0,from,to);
 	write8( 0x0F );
@@ -1970,7 +1970,7 @@ _inline void SHLD32ItoR( x86IntRegType to, x86IntRegType from, u8 shift )
 }
 
 // shrd imm8 to r32
-_inline void SHRD32ItoR( x86IntRegType to, x86IntRegType from, u8 shift )
+__forceinline void SHRD32ItoR( x86IntRegType to, x86IntRegType from, u8 shift )
 {
 	RexRB(0,from,to);
 	write8( 0x0F );
@@ -1984,7 +1984,7 @@ _inline void SHRD32ItoR( x86IntRegType to, x86IntRegType from, u8 shift )
 ////////////////////////////////////
 
 /* or imm32 to r32 */
-_inline void OR64ItoR( x86IntRegType to, u32 from ) 
+__forceinline void OR64ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(1, to);
 	if ( to == EAX ) {
@@ -1997,7 +1997,7 @@ _inline void OR64ItoR( x86IntRegType to, u32 from )
 }
 
 /* or m64 to r64 */
-_inline void OR64MtoR( x86IntRegType to, uptr from ) 
+__forceinline void OR64MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(1, to);
 	write8( 0x0B ); 
@@ -2006,7 +2006,7 @@ _inline void OR64MtoR( x86IntRegType to, uptr from )
 }
 
 /* or r64 to r64 */
-_inline void OR64RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void OR64RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1, from, to);
 	write8( 0x09 ); 
@@ -2014,7 +2014,7 @@ _inline void OR64RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 // or r32 to m64
-_inline void OR64RtoM(uptr to, x86IntRegType from ) 
+__forceinline void OR64RtoM(uptr to, x86IntRegType from ) 
 {
 	RexR(1,from);
 	write8( 0x09 ); 
@@ -2023,7 +2023,7 @@ _inline void OR64RtoM(uptr to, x86IntRegType from )
 }
 
 /* or imm32 to r32 */
-_inline void OR32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void OR32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0,to);
 	if ( to == EAX ) {
@@ -2037,7 +2037,7 @@ _inline void OR32ItoR( x86IntRegType to, u32 from )
 }
 
 /* or imm32 to m32 */
-_inline void OR32ItoM(uptr to, u32 from ) 
+__forceinline void OR32ItoM(uptr to, u32 from ) 
 {
 	write8( 0x81 ); 
 	ModRM( 0, 1, DISP32 );
@@ -2046,7 +2046,7 @@ _inline void OR32ItoM(uptr to, u32 from )
 }
 
 /* or r32 to r32 */
-_inline void OR32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void OR32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,from,to);
 	write8( 0x09 ); 
@@ -2054,7 +2054,7 @@ _inline void OR32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* or r32 to m32 */
-_inline void OR32RtoM(uptr to, x86IntRegType from ) 
+__forceinline void OR32RtoM(uptr to, x86IntRegType from ) 
 {
 	RexR(0,from);
 	write8( 0x09 ); 
@@ -2063,7 +2063,7 @@ _inline void OR32RtoM(uptr to, x86IntRegType from )
 }
 
 /* or m32 to r32 */
-_inline void OR32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void OR32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x0B ); 
@@ -2072,7 +2072,7 @@ _inline void OR32MtoR( x86IntRegType to, uptr from )
 }
 
 // or r16 to r16
-_inline void OR16RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void OR16RtoR( x86IntRegType to, x86IntRegType from )
 {
 	write8(0x66);
 	RexRB(0,from,to);
@@ -2081,7 +2081,7 @@ _inline void OR16RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 // or imm16 to r16
-_inline void OR16ItoR( x86IntRegType to, u16 from )
+__forceinline void OR16ItoR( x86IntRegType to, u16 from )
 {
 	write8(0x66);
 	RexB(0,to);
@@ -2096,7 +2096,7 @@ _inline void OR16ItoR( x86IntRegType to, u16 from )
 }
 
 // or imm16 to m316
-_inline void OR16ItoM( uptr to, u16 from )
+__forceinline void OR16ItoM( uptr to, u16 from )
 {
 	write8(0x66);
 	write8( 0x81 ); 
@@ -2106,7 +2106,7 @@ _inline void OR16ItoM( uptr to, u16 from )
 }
 
 /* or m16 to r16 */
-_inline void OR16MtoR( x86IntRegType to, uptr from ) 
+__forceinline void OR16MtoR( x86IntRegType to, uptr from ) 
 {
 	write8(0x66);
 	RexR(0,to);
@@ -2116,7 +2116,7 @@ _inline void OR16MtoR( x86IntRegType to, uptr from )
 }
 
 // or r16 to m16 
-_inline void OR16RtoM( uptr to, x86IntRegType from )
+__forceinline void OR16RtoM( uptr to, x86IntRegType from )
 {
 	write8(0x66);
 	RexR(0,from);
@@ -2126,7 +2126,7 @@ _inline void OR16RtoM( uptr to, x86IntRegType from )
 }
 
 // or r8 to r8
-_inline void OR8RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void OR8RtoR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(0,from,to);
 	write8( 0x08 ); 
@@ -2134,7 +2134,7 @@ _inline void OR8RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 // or r8 to m8
-_inline void OR8RtoM( uptr to, x86IntRegType from )
+__forceinline void OR8RtoM( uptr to, x86IntRegType from )
 {
 	RexR(0,from);
 	write8( 0x08 ); 
@@ -2143,7 +2143,7 @@ _inline void OR8RtoM( uptr to, x86IntRegType from )
 }
 
 // or imm8 to m8
-_inline void OR8ItoM( uptr to, u8 from )
+__forceinline void OR8ItoM( uptr to, u8 from )
 {
 	write8( 0x80 ); 
 	ModRM( 0, 1, DISP32 );
@@ -2152,7 +2152,7 @@ _inline void OR8ItoM( uptr to, u8 from )
 }
 
 // or m8 to r8
-_inline void OR8MtoR( x86IntRegType to, uptr from )
+__forceinline void OR8MtoR( x86IntRegType to, uptr from )
 {
 	RexR(0,to);
 	write8( 0x0A ); 
@@ -2161,7 +2161,7 @@ _inline void OR8MtoR( x86IntRegType to, uptr from )
 }
 
 /* xor imm32 to r64 */
-_inline void XOR64ItoR( x86IntRegType to, u32 from ) 
+__forceinline void XOR64ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(1,to);
 	if ( to == EAX ) {
@@ -2174,7 +2174,7 @@ _inline void XOR64ItoR( x86IntRegType to, u32 from )
 }
 
 /* xor r64 to r64 */
-_inline void XOR64RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void XOR64RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1, from, to);
 	write8( 0x31 ); 
@@ -2182,7 +2182,7 @@ _inline void XOR64RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* xor m64 to r64 */
-_inline void XOR64MtoR( x86IntRegType to, uptr from ) 
+__forceinline void XOR64MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(1, to);
 	write8( 0x33 ); 
@@ -2191,7 +2191,7 @@ _inline void XOR64MtoR( x86IntRegType to, uptr from )
 }
 
 /* xor r64 to m64 */
-_inline void XOR64RtoM( uptr to, x86IntRegType from ) 
+__forceinline void XOR64RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(1,from);
 	write8( 0x31 ); 
@@ -2200,7 +2200,7 @@ _inline void XOR64RtoM( uptr to, x86IntRegType from )
 }
 
 /* xor imm32 to r32 */
-_inline void XOR32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void XOR32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0,to);
 	if ( to == EAX ) {
@@ -2214,7 +2214,7 @@ _inline void XOR32ItoR( x86IntRegType to, u32 from )
 }
 
 /* xor imm32 to m32 */
-_inline void XOR32ItoM( uptr to, u32 from ) 
+__forceinline void XOR32ItoM( uptr to, u32 from ) 
 {
 	write8( 0x81 ); 
 	ModRM( 0, 6, DISP32 );
@@ -2223,7 +2223,7 @@ _inline void XOR32ItoM( uptr to, u32 from )
 }
 
 /* xor r32 to r32 */
-_inline void XOR32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void XOR32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,from,to);
 	write8( 0x31 ); 
@@ -2231,7 +2231,7 @@ _inline void XOR32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* xor r16 to r16 */
-_inline void XOR16RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void XOR16RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	write8( 0x66 );
 	RexRB(0,from,to);
@@ -2240,7 +2240,7 @@ _inline void XOR16RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* xor r32 to m32 */
-_inline void XOR32RtoM( uptr to, x86IntRegType from ) 
+__forceinline void XOR32RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(0,from);
 	write8( 0x31 ); 
@@ -2249,7 +2249,7 @@ _inline void XOR32RtoM( uptr to, x86IntRegType from )
 }
 
 /* xor m32 to r32 */
-_inline void XOR32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void XOR32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x33 ); 
@@ -2258,7 +2258,7 @@ _inline void XOR32MtoR( x86IntRegType to, uptr from )
 }
 
 // xor imm16 to r16
-_inline void XOR16ItoR( x86IntRegType to, u16 from )
+__forceinline void XOR16ItoR( x86IntRegType to, u16 from )
 {
 	write8(0x66);
 	RexB(0,to);
@@ -2273,7 +2273,7 @@ _inline void XOR16ItoR( x86IntRegType to, u16 from )
 }
 
 // xor r16 to m16
-_inline void XOR16RtoM( uptr to, x86IntRegType from )
+__forceinline void XOR16RtoM( uptr to, x86IntRegType from )
 {
 	write8(0x66);
 	RexR(0,from);
@@ -2283,7 +2283,7 @@ _inline void XOR16RtoM( uptr to, x86IntRegType from )
 }
 
 /* and imm32 to r64 */
-_inline void AND64I32toR( x86IntRegType to, u32 from ) 
+__forceinline void AND64I32toR( x86IntRegType to, u32 from ) 
 {
 	RexB(1, to);
 	if ( to == EAX ) {
@@ -2296,7 +2296,7 @@ _inline void AND64I32toR( x86IntRegType to, u32 from )
 }
 
 /* and m64 to r64 */
-_inline void AND64MtoR( x86IntRegType to, uptr from ) 
+__forceinline void AND64MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(1, to);
 	write8( 0x23 ); 
@@ -2305,7 +2305,7 @@ _inline void AND64MtoR( x86IntRegType to, uptr from )
 }
 
 /* and r64 to m64 */
-_inline void AND64RtoM( uptr to, x86IntRegType from ) 
+__forceinline void AND64RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(1, from);
 	write8( 0x21 ); 
@@ -2314,7 +2314,7 @@ _inline void AND64RtoM( uptr to, x86IntRegType from )
 }
 
 /* and r64 to r64 */
-_inline void AND64RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void AND64RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(1, from, to);
 	write8( 0x21 ); 
@@ -2322,7 +2322,7 @@ _inline void AND64RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* and imm32 to m64 */
-_inline void AND64I32toM( uptr to, u32 from ) 
+__forceinline void AND64I32toM( uptr to, u32 from ) 
 {
 	Rex(1,0,0,0);
 	write8( 0x81 ); 
@@ -2332,7 +2332,7 @@ _inline void AND64I32toM( uptr to, u32 from )
 }
 
 /* and imm32 to r32 */
-_inline void AND32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void AND32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0,to);
 	if(from < 0x80)
@@ -2352,7 +2352,7 @@ _inline void AND32ItoR( x86IntRegType to, u32 from )
 }
 
 /* and sign ext imm8 to r32 */
-_inline void AND32I8toR( x86IntRegType to, u8 from ) 
+__forceinline void AND32I8toR( x86IntRegType to, u8 from ) 
 {
 	RexB(0,to);
 	write8( 0x83 ); 
@@ -2361,7 +2361,7 @@ _inline void AND32I8toR( x86IntRegType to, u8 from )
 }
 
 /* and imm32 to m32 */
-_inline void AND32ItoM( uptr to, u32 from ) 
+__forceinline void AND32ItoM( uptr to, u32 from ) 
 {
 	if(from < 0x80)
 	{
@@ -2378,7 +2378,7 @@ _inline void AND32ItoM( uptr to, u32 from )
 
 
 /* and sign ext imm8 to m32 */
-_inline void AND32I8toM( uptr to, u8 from ) 
+__forceinline void AND32I8toM( uptr to, u8 from ) 
 {
 	write8( 0x83 ); 
 	ModRM( 0, 0x4, DISP32 );
@@ -2387,7 +2387,7 @@ _inline void AND32I8toM( uptr to, u8 from )
 }
 
 /* and r32 to r32 */
-_inline void AND32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void AND32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,from,to);
 	write8( 0x21 ); 
@@ -2395,7 +2395,7 @@ _inline void AND32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* and r32 to m32 */
-_inline void AND32RtoM( uptr to, x86IntRegType from ) 
+__forceinline void AND32RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(0,from);
 	write8( 0x21 ); 
@@ -2404,7 +2404,7 @@ _inline void AND32RtoM( uptr to, x86IntRegType from )
 }
 
 /* and m32 to r32 */
-_inline void AND32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void AND32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x23 ); 
@@ -2413,7 +2413,7 @@ _inline void AND32MtoR( x86IntRegType to, uptr from )
 }
 
 // and r16 to r16
-_inline void AND16RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void AND16RtoR( x86IntRegType to, x86IntRegType from )
 {
 	write8(0x66);
 	RexRB(0,to,from);
@@ -2422,7 +2422,7 @@ _inline void AND16RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* and imm16 to r16 */
-_inline void AND16ItoR( x86IntRegType to, u16 from ) 
+__forceinline void AND16ItoR( x86IntRegType to, u16 from ) 
 {
 	write8(0x66);
 	RexB(0,to);
@@ -2444,7 +2444,7 @@ _inline void AND16ItoR( x86IntRegType to, u16 from )
 }
 
 /* and imm16 to m16 */
-_inline void AND16ItoM( uptr to, u16 from ) 
+__forceinline void AND16ItoM( uptr to, u16 from ) 
 {
 	write8(0x66);
 	if ( from < 0x80 ) {
@@ -2464,7 +2464,7 @@ _inline void AND16ItoM( uptr to, u16 from )
 }
 
 /* and r16 to m16 */
-_inline void AND16RtoM( uptr to, x86IntRegType from ) 
+__forceinline void AND16RtoM( uptr to, x86IntRegType from ) 
 {
 	write8( 0x66 );
 	RexR(0,from);
@@ -2474,7 +2474,7 @@ _inline void AND16RtoM( uptr to, x86IntRegType from )
 }
 
 /* and m16 to r16 */
-_inline void AND16MtoR( x86IntRegType to, uptr from ) 
+__forceinline void AND16MtoR( x86IntRegType to, uptr from ) 
 {
 	write8( 0x66 );
 	RexR(0,to);
@@ -2484,7 +2484,7 @@ _inline void AND16MtoR( x86IntRegType to, uptr from )
 }
 
 /* and imm8 to r8 */
-_inline void AND8ItoR( x86IntRegType to, u8 from ) 
+__forceinline void AND8ItoR( x86IntRegType to, u8 from ) 
 {
 	RexB(0,to);
 	if ( to == EAX ) {
@@ -2497,7 +2497,7 @@ _inline void AND8ItoR( x86IntRegType to, u8 from )
 }
 
 /* and imm8 to m8 */
-_inline void AND8ItoM( uptr to, u8 from ) 
+__forceinline void AND8ItoM( uptr to, u8 from ) 
 {
 	write8( 0x80 ); 
 	ModRM( 0, 0x4, DISP32 );
@@ -2506,7 +2506,7 @@ _inline void AND8ItoM( uptr to, u8 from )
 }
 
 // and r8 to r8
-_inline void AND8RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void AND8RtoR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(0,to,from);
 	write8( 0x22 ); 
@@ -2514,7 +2514,7 @@ _inline void AND8RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* and r8 to m8 */
-_inline void AND8RtoM( uptr to, x86IntRegType from ) 
+__forceinline void AND8RtoM( uptr to, x86IntRegType from ) 
 {
 	RexR(0,from);
 	write8( 0x20 ); 
@@ -2523,7 +2523,7 @@ _inline void AND8RtoM( uptr to, x86IntRegType from )
 }
 
 /* and m8 to r8 */
-_inline void AND8MtoR( x86IntRegType to, uptr from ) 
+__forceinline void AND8MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x22 ); 
@@ -2532,7 +2532,7 @@ _inline void AND8MtoR( x86IntRegType to, uptr from )
 }
 
 /* not r64 */
-_inline void NOT64R( x86IntRegType from ) 
+__forceinline void NOT64R( x86IntRegType from ) 
 {
 	RexB(1, from);
 	write8( 0xF7 ); 
@@ -2540,7 +2540,7 @@ _inline void NOT64R( x86IntRegType from )
 }
 
 /* not r32 */
-_inline void NOT32R( x86IntRegType from ) 
+__forceinline void NOT32R( x86IntRegType from ) 
 {
 	RexB(0,from);
 	write8( 0xF7 ); 
@@ -2548,7 +2548,7 @@ _inline void NOT32R( x86IntRegType from )
 }
 
 // not m32 
-_inline void NOT32M( u32 from )
+__forceinline void NOT32M( u32 from )
 {
 	write8( 0xF7 ); 
 	ModRM( 0, 2, DISP32 );
@@ -2556,7 +2556,7 @@ _inline void NOT32M( u32 from )
 }
 
 /* neg r64 */
-_inline void NEG64R( x86IntRegType from ) 
+__forceinline void NEG64R( x86IntRegType from ) 
 {
 	RexB(1, from);
 	write8( 0xF7 ); 
@@ -2564,14 +2564,14 @@ _inline void NEG64R( x86IntRegType from )
 }
 
 /* neg r32 */
-_inline void NEG32R( x86IntRegType from ) 
+__forceinline void NEG32R( x86IntRegType from ) 
 {
 	RexB(0,from);
 	write8( 0xF7 ); 
 	ModRM( 3, 3, from );
 }
 
-_inline void NEG32M( u32 from )
+__forceinline void NEG32M( u32 from )
 {
 	write8( 0xF7 ); 
 	ModRM( 0, 3, DISP32 );
@@ -2579,7 +2579,7 @@ _inline void NEG32M( u32 from )
 }
 
 /* neg r16 */
-_inline void NEG16R( x86IntRegType from ) 
+__forceinline void NEG16R( x86IntRegType from ) 
 {
 	write8( 0x66 ); 
 	RexB(0,from);
@@ -2620,7 +2620,7 @@ __forceinline u32* JMP32( uptr to )
 }
 
 /* jmp r32/r64 */
-_inline void JMPR( x86IntRegType to ) 
+__forceinline void JMPR( x86IntRegType to ) 
 {
 	RexB(0, to);
 	write8( 0xFF ); 
@@ -2628,7 +2628,7 @@ _inline void JMPR( x86IntRegType to )
 }
 
 // jmp m32 
-_inline void JMP32M( uptr to )
+__forceinline void JMP32M( uptr to )
 {
 	write8( 0xFF ); 
 	ModRM( 0, 4, DISP32 );
@@ -2873,7 +2873,7 @@ __forceinline u32*  JS32( u32 to )
 
 
 /* call func */
-_inline void CALLFunc( uptr func ) 
+__forceinline void CALLFunc( uptr func ) 
 {
 	func -= ( (uptr)x86Ptr + 5 );
 	assert( (sptr)func <= 0x7fffffff && (sptr)func >= -0x7fffffff );
@@ -2881,21 +2881,21 @@ _inline void CALLFunc( uptr func )
 }
 
 /* call rel32 */
-_inline void CALL32( u32 to )
+__forceinline void CALL32( u32 to )
 {
 	write8( 0xE8 ); 
 	write32( to ); 
 }
 
 /* call r32 */
-_inline void CALL32R( x86IntRegType to ) 
+__forceinline void CALL32R( x86IntRegType to ) 
 {
 	write8( 0xFF );
 	ModRM( 3, 2, to );
 }
 
 /* call r64 */
-_inline void CALL64R( x86IntRegType to ) 
+__forceinline void CALL64R( x86IntRegType to ) 
 {
 	RexB(0, to);
 	write8( 0xFF );
@@ -2903,7 +2903,7 @@ _inline void CALL64R( x86IntRegType to )
 }
 
 /* call m32 */
-_inline void CALL32M( u32 to ) 
+__forceinline void CALL32M( u32 to ) 
 {
 	write8( 0xFF );
 	ModRM( 0, 2, DISP32 );
@@ -2915,7 +2915,7 @@ _inline void CALL32M( u32 to )
 ////////////////////////////////////
 
 /* cmp imm32 to r64 */
-_inline void CMP64I32toR( x86IntRegType to, u32 from ) 
+__forceinline void CMP64I32toR( x86IntRegType to, u32 from ) 
 {
 	RexB(1, to);
 	if ( to == EAX ) {
@@ -2929,7 +2929,7 @@ _inline void CMP64I32toR( x86IntRegType to, u32 from )
 }
 
 /* cmp m64 to r64 */
-_inline void CMP64MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMP64MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(1, to);
 	write8( 0x3B );
@@ -2938,7 +2938,7 @@ _inline void CMP64MtoR( x86IntRegType to, uptr from )
 }
 
 // cmp r64 to r64 
-_inline void CMP64RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void CMP64RtoR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(1,from,to);
 	write8( 0x39 );
@@ -2946,7 +2946,7 @@ _inline void CMP64RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* cmp imm32 to r32 */
-_inline void CMP32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void CMP32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0,to);
 	if ( to == EAX ) {
@@ -2960,7 +2960,7 @@ _inline void CMP32ItoR( x86IntRegType to, u32 from )
 }
 
 /* cmp imm32 to m32 */
-_inline void CMP32ItoM( uptr to, u32 from ) 
+__forceinline void CMP32ItoM( uptr to, u32 from ) 
 {
 	write8( 0x81 ); 
 	ModRM( 0, 7, DISP32 );
@@ -2969,7 +2969,7 @@ _inline void CMP32ItoM( uptr to, u32 from )
 }
 
 /* cmp r32 to r32 */
-_inline void CMP32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void CMP32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,from,to);
 	write8( 0x39 );
@@ -2977,7 +2977,7 @@ _inline void CMP32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* cmp m32 to r32 */
-_inline void CMP32MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMP32MtoR( x86IntRegType to, uptr from ) 
 {
 	RexR(0,to);
 	write8( 0x3B );
@@ -2986,7 +2986,7 @@ _inline void CMP32MtoR( x86IntRegType to, uptr from )
 }
 
 // cmp imm8 to [r32]
-_inline void CMP32I8toRm( x86IntRegType to, u8 from)
+__forceinline void CMP32I8toRm( x86IntRegType to, u8 from)
 {
 	RexB(0,to);
 	write8( 0x83 );
@@ -2995,7 +2995,7 @@ _inline void CMP32I8toRm( x86IntRegType to, u8 from)
 }
 
 // cmp imm32 to [r32+off]
-_inline void CMP32I8toRmOffset8( x86IntRegType to, u8 from, u8 off)
+__forceinline void CMP32I8toRmOffset8( x86IntRegType to, u8 from, u8 off)
 {
 	RexB(0,to);
 	write8( 0x83 );
@@ -3005,7 +3005,7 @@ _inline void CMP32I8toRmOffset8( x86IntRegType to, u8 from, u8 off)
 }
 
 // cmp imm8 to [r32]
-_inline void CMP32I8toM( uptr to, u8 from)
+__forceinline void CMP32I8toM( uptr to, u8 from)
 {
 	write8( 0x83 );
 	ModRM( 0, 7, DISP32 );
@@ -3014,7 +3014,7 @@ _inline void CMP32I8toM( uptr to, u8 from)
 }
 
 /* cmp imm16 to r16 */
-_inline void CMP16ItoR( x86IntRegType to, u16 from ) 
+__forceinline void CMP16ItoR( x86IntRegType to, u16 from ) 
 {
 	write8( 0x66 ); 
 	RexB(0,to);
@@ -3031,7 +3031,7 @@ _inline void CMP16ItoR( x86IntRegType to, u16 from )
 }
 
 /* cmp imm16 to m16 */
-_inline void CMP16ItoM( uptr to, u16 from ) 
+__forceinline void CMP16ItoM( uptr to, u16 from ) 
 {
 	write8( 0x66 ); 
 	write8( 0x81 ); 
@@ -3041,7 +3041,7 @@ _inline void CMP16ItoM( uptr to, u16 from )
 }
 
 /* cmp r16 to r16 */
-_inline void CMP16RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void CMP16RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	write8( 0x66 ); 
 	RexRB(0,from,to);
@@ -3050,7 +3050,7 @@ _inline void CMP16RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 /* cmp m16 to r16 */
-_inline void CMP16MtoR( x86IntRegType to, uptr from ) 
+__forceinline void CMP16MtoR( x86IntRegType to, uptr from ) 
 {
 	write8( 0x66 ); 
 	RexR(0,to);
@@ -3060,7 +3060,7 @@ _inline void CMP16MtoR( x86IntRegType to, uptr from )
 }
 
 // cmp imm8 to r8
-_inline void CMP8ItoR( x86IntRegType to, u8 from )
+__forceinline void CMP8ItoR( x86IntRegType to, u8 from )
 {
 	RexB(0,to);
 	if ( to == EAX )
@@ -3076,7 +3076,7 @@ _inline void CMP8ItoR( x86IntRegType to, u8 from )
 }
 
 // cmp m8 to r8
-_inline void CMP8MtoR( x86IntRegType to, uptr from )
+__forceinline void CMP8MtoR( x86IntRegType to, uptr from )
 {
 	RexR(0,to);
 	write8( 0x3A );
@@ -3085,7 +3085,7 @@ _inline void CMP8MtoR( x86IntRegType to, uptr from )
 }
 
 /* test imm32 to r32 */
-_inline void TEST32ItoR( x86IntRegType to, u32 from ) 
+__forceinline void TEST32ItoR( x86IntRegType to, u32 from ) 
 {
 	RexB(0,to);
 	if ( to == EAX )
@@ -3100,7 +3100,7 @@ _inline void TEST32ItoR( x86IntRegType to, u32 from )
 	write32( from ); 
 }
 
-_inline void TEST32ItoM( uptr to, u32 from )
+__forceinline void TEST32ItoM( uptr to, u32 from )
 {
 	write8( 0xF7 );
 	ModRM( 0, 0, DISP32 );
@@ -3109,7 +3109,7 @@ _inline void TEST32ItoM( uptr to, u32 from )
 }
 
 /* test r32 to r32 */
-_inline void TEST32RtoR( x86IntRegType to, x86IntRegType from ) 
+__forceinline void TEST32RtoR( x86IntRegType to, x86IntRegType from ) 
 {
 	RexRB(0,from,to);
 	write8( 0x85 );
@@ -3117,7 +3117,7 @@ _inline void TEST32RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 // test imm32 to [r32]
-_inline void TEST32ItoRm( x86IntRegType to, u32 from )
+__forceinline void TEST32ItoRm( x86IntRegType to, u32 from )
 {
 	RexB(0,to);
 	write8( 0xF7 );
@@ -3126,7 +3126,7 @@ _inline void TEST32ItoRm( x86IntRegType to, u32 from )
 }
 
 // test imm16 to r16
-_inline void TEST16ItoR( x86IntRegType to, u16 from )
+__forceinline void TEST16ItoR( x86IntRegType to, u16 from )
 {
 	write8(0x66);
 	RexB(0,to);
@@ -3143,7 +3143,7 @@ _inline void TEST16ItoR( x86IntRegType to, u16 from )
 }
 
 // test r16 to r16
-_inline void TEST16RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void TEST16RtoR( x86IntRegType to, x86IntRegType from )
 {
 	write8(0x66);
 	RexRB(0,from,to);
@@ -3152,7 +3152,7 @@ _inline void TEST16RtoR( x86IntRegType to, x86IntRegType from )
 }
 
 // test r8 to r8
-_inline void TEST8RtoR( x86IntRegType to, x86IntRegType from )
+__forceinline void TEST8RtoR( x86IntRegType to, x86IntRegType from )
 {
 	RexRB(0, from, to);
 	write8( 0x84 );
@@ -3161,7 +3161,7 @@ _inline void TEST8RtoR( x86IntRegType to, x86IntRegType from )
 
 
 // test imm8 to r8
-_inline void TEST8ItoR( x86IntRegType to, u8 from )
+__forceinline void TEST8ItoR( x86IntRegType to, u8 from )
 {
 	RexB(0,to);
 	if ( to == EAX )
@@ -3177,7 +3177,7 @@ _inline void TEST8ItoR( x86IntRegType to, u8 from )
 }
 
 // test imm8 to r8
-_inline void TEST8ItoM( uptr to, u8 from )
+__forceinline void TEST8ItoM( uptr to, u8 from )
 {
 	write8( 0xF6 );
 	ModRM( 0, 0, DISP32 );
@@ -3186,36 +3186,36 @@ _inline void TEST8ItoM( uptr to, u8 from )
 }
 
 /* sets r8 */
-_inline void SETS8R( x86IntRegType to ) 
+__forceinline void SETS8R( x86IntRegType to ) 
 { 
 	SET8R( 0x98, to ); 
 }
 
 /* setl r8 */
-_inline void SETL8R( x86IntRegType to ) 
+__forceinline void SETL8R( x86IntRegType to ) 
 { 
 	SET8R( 0x9C, to ); 
 }
 
 // setge r8 
-_inline void SETGE8R( x86IntRegType to ) { SET8R(0x9d, to); }
+__forceinline void SETGE8R( x86IntRegType to ) { SET8R(0x9d, to); }
 // setg r8 
-_inline void SETG8R( x86IntRegType to ) { SET8R(0x9f, to); }
+__forceinline void SETG8R( x86IntRegType to ) { SET8R(0x9f, to); }
 // seta r8 
-_inline void SETA8R( x86IntRegType to ) { SET8R(0x97, to); }
+__forceinline void SETA8R( x86IntRegType to ) { SET8R(0x97, to); }
 // setae r8 
-_inline void SETAE8R( x86IntRegType to ) { SET8R(0x99, to); }
+__forceinline void SETAE8R( x86IntRegType to ) { SET8R(0x99, to); }
 /* setb r8 */
-_inline void SETB8R( x86IntRegType to ) { SET8R( 0x92, to ); }
+__forceinline void SETB8R( x86IntRegType to ) { SET8R( 0x92, to ); }
 /* setb r8 */
-_inline void SETNZ8R( x86IntRegType to )  { SET8R( 0x95, to ); }
+__forceinline void SETNZ8R( x86IntRegType to )  { SET8R( 0x95, to ); }
 // setz r8 
-_inline void SETZ8R( x86IntRegType to ) { SET8R(0x94, to); }
+__forceinline void SETZ8R( x86IntRegType to ) { SET8R(0x94, to); }
 // sete r8 
-_inline void SETE8R( x86IntRegType to ) { SET8R(0x94, to); }
+__forceinline void SETE8R( x86IntRegType to ) { SET8R(0x94, to); }
 
 /* push imm32 */
-_inline void PUSH32I( u32 from ) 
+__forceinline void PUSH32I( u32 from ) 
 {
 	X86_64ASSERT();
 	write8( 0x68 ); 
@@ -3251,10 +3251,10 @@ void POPR(x86IntRegType from) { POP64R(from); }
 #else
 
 /* push r32 */
-_inline void PUSH32R( x86IntRegType from )  { write8( 0x50 | from ); }
+__forceinline void PUSH32R( x86IntRegType from )  { write8( 0x50 | from ); }
 
 /* push m32 */
-_inline void PUSH32M( u32 from ) 
+__forceinline void PUSH32M( u32 from ) 
 {
 	write8( 0xFF );
 	ModRM( 0, 6, DISP32 );
@@ -3262,74 +3262,74 @@ _inline void PUSH32M( u32 from )
 }
 
 /* pop r32 */
-_inline void POP32R( x86IntRegType from ) { write8( 0x58 | from ); }
+__forceinline void POP32R( x86IntRegType from ) { write8( 0x58 | from ); }
 
 /* pushad */
-_inline void PUSHA32( void ) { write8( 0x60 ); }
+__forceinline void PUSHA32( void ) { write8( 0x60 ); }
 
 /* popad */
-_inline void POPA32( void ) { write8( 0x61 ); }
+__forceinline void POPA32( void ) { write8( 0x61 ); }
 
-_inline void PUSHR(x86IntRegType from) { PUSH32R(from); }
-_inline void POPR(x86IntRegType from) { POP32R(from); }
+__forceinline void PUSHR(x86IntRegType from) { PUSH32R(from); }
+__forceinline void POPR(x86IntRegType from) { POP32R(from); }
 
 #endif
 
 
 /* pushfd */
-_inline void PUSHFD( void ) { write8( 0x9C ); }
+__forceinline void PUSHFD( void ) { write8( 0x9C ); }
 /* popfd */
-_inline void POPFD( void ) { write8( 0x9D ); }
+__forceinline void POPFD( void ) { write8( 0x9D ); }
 
-_inline void RET( void ) { write8( 0xC3 ); }
-_inline void RET2( void ) { write16( 0xc3f3 ); }
+__forceinline void RET( void ) { write8( 0xC3 ); }
+__forceinline void RET2( void ) { write16( 0xc3f3 ); }
 
-_inline void CBW( void ) { write16( 0x9866 );  }
-_inline void CWD( void )  { write8( 0x98 ); }
-_inline void CDQ( void ) { write8( 0x99 ); }
-_inline void CWDE() { write8(0x98); }
+__forceinline void CBW( void ) { write16( 0x9866 );  }
+__forceinline void CWD( void )  { write8( 0x98 ); }
+__forceinline void CDQ( void ) { write8( 0x99 ); }
+__forceinline void CWDE() { write8(0x98); }
 
 #ifdef __x86_64__
 void CDQE( void ) { RexR(1,0); write8( 0x98 ); }
 #endif
 
-_inline void LAHF() { write8(0x9f); }
-_inline void SAHF() { write8(0x9e); }
+__forceinline void LAHF() { write8(0x9f); }
+__forceinline void SAHF() { write8(0x9e); }
 
-_inline void BT32ItoR( x86IntRegType to, u8 from ) 
+__forceinline void BT32ItoR( x86IntRegType to, u8 from ) 
 {
 	write16( 0xBA0F );
 	ModRM(3, 4, to);
 	write8( from );
 }
 
-_inline void BTR32ItoR( x86IntRegType to, u8 from ) 
+__forceinline void BTR32ItoR( x86IntRegType to, u8 from ) 
 {
 	write16( 0xBA0F );
 	ModRM(3, 6, to);
 	write8( from );
 }
 
-_inline void BSRRtoR(x86IntRegType to, x86IntRegType from)
+__forceinline void BSRRtoR(x86IntRegType to, x86IntRegType from)
 {
 	write16( 0xBD0F );
 	ModRM( 3, from, to );
 }
 
-_inline void BSWAP32R( x86IntRegType to ) 
+__forceinline void BSWAP32R( x86IntRegType to ) 
 {
 	write8( 0x0F );
 	write8( 0xC8 + to );
 }
 
 // to = from + offset
-_inline void LEA16RtoR(x86IntRegType to, x86IntRegType from, u16 offset)
+__forceinline void LEA16RtoR(x86IntRegType to, x86IntRegType from, u16 offset)
 {
 	write8(0x66);
 	LEA32RtoR(to, from, offset);
 }
 
-_inline void LEA32RtoR(x86IntRegType to, x86IntRegType from, u32 offset)
+__forceinline void LEA32RtoR(x86IntRegType to, x86IntRegType from, u32 offset)
 {
 	RexRB(0,to,from);
 	write8(0x8d);
@@ -3366,13 +3366,13 @@ _inline void LEA32RtoR(x86IntRegType to, x86IntRegType from, u32 offset)
 }
 
 // to = from0 + from1
-_inline void LEA16RRtoR(x86IntRegType to, x86IntRegType from0, x86IntRegType from1)
+__forceinline void LEA16RRtoR(x86IntRegType to, x86IntRegType from0, x86IntRegType from1)
 {
 	write8(0x66);
 	LEA32RRtoR(to, from0, from1);
 }
 
-_inline void LEA32RRtoR(x86IntRegType to, x86IntRegType from0, x86IntRegType from1)
+__forceinline void LEA32RRtoR(x86IntRegType to, x86IntRegType from0, x86IntRegType from1)
 { 
 	RexRXB(0, to, from0, from1);
 	write8(0x8d);
@@ -3389,13 +3389,13 @@ _inline void LEA32RRtoR(x86IntRegType to, x86IntRegType from0, x86IntRegType fro
 }
 
 // to = from << scale (max is 3)
-_inline void LEA16RStoR(x86IntRegType to, x86IntRegType from, u32 scale)
+__forceinline void LEA16RStoR(x86IntRegType to, x86IntRegType from, u32 scale)
 {
 	write8(0x66);
 	LEA32RStoR(to, from, scale);
 }
 
-_inline void LEA32RStoR(x86IntRegType to, x86IntRegType from, u32 scale)
+__forceinline void LEA32RStoR(x86IntRegType to, x86IntRegType from, u32 scale)
 {
 	if( to == from ) {
 		SHL32ItoR(to, scale);

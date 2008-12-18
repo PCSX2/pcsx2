@@ -300,7 +300,7 @@ void JumpCheckSymRet(u32 addr) {
 	}*/
 }
 
-__inline void _cpuTestMissingINTC() {
+__forceinline void _cpuTestMissingINTC() {
 	if (cpuRegs.CP0.n.Status.val & 0x400 &&
 		psHu32(INTC_STAT) & psHu32(INTC_MASK)) {
 		if ((cpuRegs.interrupt & (1 << 30)) == 0) {
@@ -309,7 +309,7 @@ __inline void _cpuTestMissingINTC() {
 	}
 }
 
-__inline void _cpuTestMissingDMAC() {
+__forceinline void _cpuTestMissingDMAC() {
 	if (cpuRegs.CP0.n.Status.val & 0x800 &&
 		(psHu16(0xe012) & psHu16(0xe010) || 
 		 psHu16(0xe010) & 0x8000)) {

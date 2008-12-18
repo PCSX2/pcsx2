@@ -308,8 +308,14 @@ static u32 s_UnconditionalDelay = 0; // 1 if there are two sequential branches a
 static u32 g_nLastBlockExecuted = 0;
 
 // Global functions
+#ifdef __LINUX__
+extern "C" {
+#endif
 void* SuperVUGetProgram(u32 startpc, int vuindex);
 void SuperVUCleanupProgram(u32 startpc, int vuindex);
+#ifdef __LINUX__
+}
+#endif
 static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex);
 static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const VUPIPELINES& pipes);
 static void SuperVUInitLiveness(VuBaseBlock* pblock);
@@ -323,7 +329,6 @@ void SuperVUFreeXMMregs(u32* livevars);
 
 static u32* SuperVUStaticAlloc(u32 size);
 static void SuperVURecompile();
-void SuperVUEndProgram();
 
 // allocate VU resources
 void SuperVUInit(int vuindex)
@@ -712,10 +717,10 @@ bool VuFunctionHeader::IsSame(void* pmem)
 		//if( checksum[0] != it->checksum[0] || checksum[1] != it->checksum[1] )
 		//	return false;
         // memcmp_mmx doesn't work on x86-64 machines
-#ifdef __x86_64__
-        if( memcmp((u8*)pmem+it->start, it->pmem, it->size) )
+#if defined(_MSC_VER) && !defined(__x86_64__)
+	if( memcmp_mmx((u8*)pmem+it->start, it->pmem, it->size) )
 #else
-		if( memcmp_mmx((u8*)pmem+it->start, it->pmem, it->size) )
+        if( memcmp((u8*)pmem+it->start, it->pmem, it->size) )
 #endif
 			return false;
 	}

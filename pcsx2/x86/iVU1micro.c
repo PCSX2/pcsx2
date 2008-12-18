@@ -82,6 +82,12 @@ u32 vu1reccountold = -1;
 #define VU1_ACCz_ADDR (uptr)&VU1.ACC.UL[2]
 #define VU1_ACCw_ADDR (uptr)&VU1.ACC.UL[3]
 
+extern void SuperVUInit(int vuindex);
+extern void SuperVUDestroy(int vuindex);
+extern void SuperVUReset(int vuindex);
+extern void SuperVUExecuteProgram(u32 startpc, int vuindex);
+extern void SuperVUClear(u32 startpc, u32 size, int vuindex);
+
 void recVU1Init()
 {
 	SuperVUInit(1);

@@ -27,7 +27,7 @@
 void sprInit() {
 }
 
-//__inline static void SPR0transfer(u32 *data, int size) {
+//__forceinline static void SPR0transfer(u32 *data, int size) {
 ///*	while (size > 0) {
 //		SPR_LOG("SPR1transfer: %x\n", *data);
 //		data++; size--;

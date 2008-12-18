@@ -20,7 +20,8 @@
  *  Modified by Florin for PCSX2 emu
  *  Fixed CdRead by linuzappz
  */
-
+#include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 
 #include "CDVDiso.h"
@@ -80,7 +81,7 @@ void _splitpath2(const char *constpath, char *dir, char *fname){
 }
 
 // Used in findfile
-int tolower(int c);
+//int tolower(int c);
 int strcasecmp(const char *s1, const char *s2){
   while (*s1 != '\0' && tolower(*s1) == tolower(*s2))
     {

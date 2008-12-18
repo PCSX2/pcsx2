@@ -166,7 +166,7 @@ static __forceinline void SIF1read(u32 *to, int words)
 	SIF_LOG("  SIF1 - %d = %d (pos=%d)\n", words, sif1.fifoSize, sif1.fifoReadPos);
 }
 
-_inline void SIF0Dma()
+__forceinline void SIF0Dma()
 {
 	u32 *ptag;
 	int notDone = 1;
@@ -327,7 +327,7 @@ _inline void SIF0Dma()
 	}while(notDone);
 }
 
-_inline void SIF1Dma()
+__forceinline void SIF1Dma()
 {
 	int id;
 	u32 *ptag;
@@ -528,7 +528,7 @@ __forceinline void  EEsif1Interrupt() {
 
 }
 
-_inline void dmaSIF0() {
+__forceinline void dmaSIF0() {
 	SIF_LOG("EE: dmaSIF0 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif0dma->chcr, sif0dma->madr, sif0dma->qwc, sif0dma->tadr);
 
@@ -552,7 +552,7 @@ _inline void dmaSIF0() {
 	}
 }
 
-_inline void dmaSIF1() {
+__forceinline void dmaSIF1() {
 	SIF_LOG("EE: dmaSIF1 chcr = %lx, madr = %lx, qwc  = %lx, tadr = %lx\n",
 			sif1dma->chcr, sif1dma->madr, sif1dma->qwc, sif1dma->tadr);
 
@@ -578,7 +578,7 @@ _inline void dmaSIF1() {
 	
 }
 
-_inline void dmaSIF2() {
+__forceinline void dmaSIF2() {
 	SIF_LOG("dmaSIF2 chcr = %lx, madr = %lx, qwc  = %lx\n",
 			sif2dma->chcr, sif2dma->madr, sif2dma->qwc);
 
