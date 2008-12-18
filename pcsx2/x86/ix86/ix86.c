@@ -3395,7 +3395,8 @@ __forceinline void LEA16RStoR(x86IntRegType to, x86IntRegType from, u32 scale)
 	LEA32RStoR(to, from, scale);
 }
 
-__forceinline void LEA32RStoR(x86IntRegType to, x86IntRegType from, u32 scale)
+// Don't inline recursive functions
+void LEA32RStoR(x86IntRegType to, x86IntRegType from, u32 scale)
 {
 	if( to == from ) {
 		SHL32ItoR(to, scale);

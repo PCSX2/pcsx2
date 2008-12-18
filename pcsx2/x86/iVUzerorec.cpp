@@ -2611,8 +2611,13 @@ __declspec(naked) static void svudispfn()
 		mov s_saveebp, ebp
 	}
 #else
-
+#ifdef __LINUX__
+extern "C" {
+#endif
 void svudispfn();
+#ifdef __LINUX__
+}
+#endif
 
 void svudispfntemp()
 {
