@@ -612,7 +612,6 @@
 #define IDC_ICON2                       1300
 #define IDC_CHECK1                      1300
 #define IDC_EE_CHECK1                   1300
-#define IDC_GAMEFIX1                    1300
 #define IDC_DENORMALS                   1301
 #define IDC_EE_CHECK2                   1301
 #define IDC_GAMEFIX2                    1301

@@ -68,7 +68,7 @@ static const int InstCycles_Load = _ic_basemod + 7;
 
 #else
 
-static const int InstCycles_Default = 8;
+static const int InstCycles_Default = 9;
 static const int _ic_basemod = 8 - InstCycles_Default;	// don't change me unless you're changing the fixed point accuracy of cycle counting.
 
 static const int InstCycles_Mult = _ic_basemod + 1*8;
@@ -77,10 +77,10 @@ static const int InstCycles_FPU_Sqrt = _ic_basemod + 3*8;
 static const int InstCycles_MMI_Mult = _ic_basemod + 2*8;
 static const int InstCycles_MMI_Div = _ic_basemod + 22*8;
 
-static const int InstCycles_Peephole_Store = _ic_basemod + 14;
-static const int InstCycles_Peephole_Load = _ic_basemod + 2;
-static const int InstCycles_Store = _ic_basemod + 14;
-static const int InstCycles_Load = _ic_basemod + 2;
+static const int InstCycles_Peephole_Store = _ic_basemod + 10; //_ic_basemod + 12 for snes emu
+static const int InstCycles_Peephole_Load = _ic_basemod + 2;   //_ic_basemod + 4 for snes emu
+static const int InstCycles_Store = _ic_basemod + 10;		   //_ic_basemod + 12 for snes emu
+static const int InstCycles_Load = _ic_basemod + 2;			   //_ic_basemod + 4 for snes emu
 
 #endif
 

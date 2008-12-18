@@ -696,14 +696,7 @@ void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
 		cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader
 	else
 		cdvdReadTime = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
-	
-	if (CHECK_SLOWDVD) {	//fixes Tales of the Abyss crashing
-		cdvdReadTime*=3;	//Tota battles don't crash
-		if (cdvd.Sector > 2000000) {	//Tota worldmap doesn't crash
-			//SysPrintf("Sector = %d \n", cdvd.Sector);
-			cdvdReadTime = 100000;
-		}
-	}
+
 	//SysPrintf("cdvdReadTime = %d \n", cdvdReadTime);
 }
 
@@ -920,8 +913,8 @@ __forceinline void cdvdReadInterrupt() {
 		cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
 		cdvd.Readed = 1;
 		cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
-
-		CDVDREAD_INT(cdvdReadTime);
+		//SysPrintf("SEEK!\n");
+		CDVDREAD_INT(cdvdReadTime*32);
 		return;
 	}
 
