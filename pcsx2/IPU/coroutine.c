@@ -53,7 +53,7 @@ coroutine* g_pCurrentRoutine;
 coroutine_t so_create(void (*func)(void *), void *data, void *stack, int size)
 {
     void* endstack;
-    int alloc = 0, r = CO_STK_COROSIZE;
+    int alloc = 0; // r = CO_STK_COROSIZE;
 	coroutine *co;
 
     if ((size &= ~(sizeof(long) - 1)) < CO_MIN_SIZE)

@@ -175,7 +175,7 @@ struct TocEntry
 #pragma pack()
 #endif
 
-int CDVD_findfile(char* fname, struct TocEntry* tocEntry);
+int CDVD_findfile(const char* fname, struct TocEntry* tocEntry);
 /*
 int CdBreak(void);
 int CdCallback( void (*func)() );

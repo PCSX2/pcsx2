@@ -62,7 +62,7 @@ extern u8 s_maskwrite[256];
 
 extern "C" PCSX2_ALIGNED16(u32 s_TempDecompress[4]) = {0};
 
-#if defined(_MSC_VER) // gcc functions can be found in iVif.S
+#if defined(_MSC_VER)
 
 #include <xmmintrin.h>
 #include <emmintrin.h>

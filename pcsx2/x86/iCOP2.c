@@ -368,8 +368,8 @@ static void recCTC2()
 			// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
 			iFlushCall(FLUSH_FREE_VU0|FLUSH_FREE_TEMPX86);
 			
-			_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 1); // fixme - are these two calls neccessary?
-			_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 0); 
+			//_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 1); // fixme - are these two calls neccessary?
+			//_callFunctionArg1((uptr)FreezeXMMRegs_, MEM_CONSTTAG, 0); 
 #else
 			_eeMoveGPRtoM((uptr)&VU0.VI[_Fs_].UL,_Rt_);
 			

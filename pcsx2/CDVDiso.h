@@ -25,7 +25,7 @@
 
 #include "CDVDlib.h"
 
-int CDVD_findfile(char* fname, struct TocEntry* tocEntry);
+int CDVD_findfile(const char* fname, struct TocEntry* tocEntry);
 int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_dirs);
 int CDVD_GetDir_RPC_get_entries(struct TocEntry tocEntry[], int req_entries);
 

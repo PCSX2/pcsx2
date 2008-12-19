@@ -343,31 +343,28 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 	u8 *cdata = (u8*)data;
 	//u64 basetick = GetCPUTick();
 #ifdef _DEBUG
-	u32 memsize;
+	u32 memsize = VIFdmanum ? 0x4000 : 0x1000;
 #endif
 
 #ifdef _MSC_VER
 	_mm_prefetch((char*)data, _MM_HINT_NTA);
 #endif
 
-	if (VIFdmanum == 0) {
+	if (VIFdmanum == 0) 
+	{
 		VU = &VU0;
 		vif = &vif0;
 		vifRegs = vif0Regs;
-#ifdef _DEBUG
-		memsize = 0x1000;
-#endif
-		assert( v->addr < 0x1000 );
+		assert( v->addr < memsize );
 		//v->addr &= 0xfff;
-	} else {
+	} 
+	else 
+	{
 
 		VU = &VU1;
 		vif = &vif1;
 		vifRegs = vif1Regs;
-#ifdef _DEBUG
-		memsize = 0x4000;
-#endif
-		assert( v->addr < 0x4000 );
+		assert( v->addr < memsize );
 		//v->addr &= 0x3fff;
 
 		if( Cpu->ExecuteVU1Block == DummyExecuteVU1Block ) {
@@ -412,7 +409,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 #endif
 	_vifRegs = (VIFregisters*)vifRegs;
 	_vifMaskRegs = VIFdmanum ? g_vif1Masks : g_vif0Masks;
-    _vif = vif;
+	_vif = vif;
 	_vifRow = VIFdmanum ? g_vifRow1 : g_vifRow0;
 	ft = &VIFfuncTable[ unpackType ];
 	func = _vif->usn ? ft->funcU : ft->funcS;
@@ -1697,7 +1694,6 @@ static int Vif1TransDirectHL(u32 *data){
 
 
 static int Vif1TransUnpack(u32 *data){
-	
 	FreezeXMMRegs(1);
 
 	if (vif1.vifpacketsize < vif1.tag.size) {

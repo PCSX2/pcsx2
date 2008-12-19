@@ -117,10 +117,10 @@ LARGE_INTEGER lbase = {0}, lfinal = {0};
 //static u32 s_startcount = 0;
 //#endif
 
-char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
-char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %x : EDI = %x\n";
-char *txt1 = "REG[%d] = %x_%x\n";
-char *txt2 = "M32 = %x\n";
+const char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
+const char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %x : EDI = %x\n";
+const char *txt1 = "REG[%d] = %x_%x\n";
+const char *txt2 = "M32 = %x\n";
 
 void _cop2AnalyzeOp(EEINST* pinst, int dostalls); // reccop2.c
 static void iBranchTest(u32 newpc, u32 cpuBranch);

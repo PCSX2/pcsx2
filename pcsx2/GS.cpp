@@ -1412,10 +1412,12 @@ void GIFdma()
 				}
 			}
 		}
-
+		// When MTGS is enabled, Gifchain calls WRITERING_DMA, which calls GSRINGBUF_DONECOPY, which freezes 
+		// the registers inside of the FreezeXMMRegs calls here and in the other two below..
+		// I'm not really sure that is intentional. --arcum42
 		FreezeXMMRegs(1); 
 		FreezeMMXRegs(1);
-		GIFchain(); 
+		GIFchain(); 		
 		FreezeXMMRegs(0); // Theres a comment below that says not to unfreeze the xmm regs, so not sure about this.
 		FreezeMMXRegs(0);
 

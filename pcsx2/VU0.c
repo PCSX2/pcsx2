@@ -102,7 +102,7 @@ void _vu0WaitMicro() {
 		Cpu->ExecuteVU0Block();
         // knockout kings 2002 loops here
         if( VU0.cycle-startcycle > 0x1000 ) {
-            SysPrintf("VU0 wait stall (email zero if gfx are bad)\n");
+            SysPrintf("VU0 wait stall.\n"); // (email zero if gfx are bad)
             break;
         }
 	} while ((VU0.VI[REG_VPU_STAT].UL & 0x1) && (VU0.flags & VUFLAG_MFLAGSET) == 0);

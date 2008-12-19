@@ -50,6 +50,7 @@ typedef unsigned __int64 u64;
 #else
 
 #ifdef __LINUX__
+
 #ifdef HAVE_STDINT_H
 #include "stdint.h"
 
@@ -79,14 +80,16 @@ typedef unsigned int u32;
 typedef unsigned long long u64;
 #endif
 
-
+#define LONG long
 typedef union _LARGE_INTEGER
 {
 	long long QuadPart;
 } LARGE_INTEGER;
-#define _inline __inline__ __attribute__((unused))
+
 #define __fastcall __attribute__((fastcall))
-#define LONG long
+#define __unused __attribute__((unused))
+#define _inline __inline__ __attribute__((unused))
+#define __forceinline __attribute__((always_inline,unused))
 #endif
 
 #if defined(__MINGW32__)
@@ -97,9 +100,6 @@ typedef union _LARGE_INTEGER
 
 #define PCSX2_ALIGNED16_DECL(x) x
 
-#ifndef __forceinline
-#define __forceinline __attribute__((always_inline,unused))
-#endif
 
 #endif // _MSC_VER
 

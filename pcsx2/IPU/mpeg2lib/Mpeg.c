@@ -913,8 +913,6 @@ extern u8* g_pIPU0Pointer;
 
 #if defined(_MSC_VER)
 #pragma pack(push, 1)
-#else
-__attribute__((packed))
 #endif
 struct TGA_HEADER
 {
@@ -961,7 +959,7 @@ void SaveTGA(const char* filename, int width, int height, void* pdata)
     fwrite(pdata, width*height*4, 1, f);
     fclose(f);
 }
-static int s_index = 0, s_frame = 0;
+static int s_index = 0; //, s_frame = 0;
 
 void SaveRGB32(u8* ptr)
 {

@@ -42,6 +42,10 @@
 #define X86_32CODE(x) x
 #endif
 
+#ifndef __LINUX__
+#define __unused
+#endif
+
 // --->> Path Utilities [PathUtil.c]
 
 #define g_MaxPath 255			// 255 is safer with antiquitated Win32 ASCII APIs.
@@ -396,32 +400,35 @@ static __forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest
 #endif
 
 // define some overloads for InterlockedExchanges, for commonly used types.
-static void AtomicExchange( u32& Target, u32 value )
+
+// Note: _unused is there simply to get rid of a few Linux compiler warnings while
+// debugging, as any compiler warnings in Misc.h get repeated x100 or so.
+__unused static void AtomicExchange( u32& Target, u32 value )
 {
 	InterlockedExchange( (volatile LONG*)&Target, value );
 }
 
-static void AtomicIncrement( u32& Target )
+__unused static void AtomicIncrement( u32& Target )
 {
 	InterlockedIncrement( (volatile LONG*)&Target );
 }
 
-static void AtomicDecrement( u32& Target )
+__unused static void AtomicDecrement( u32& Target )
 {
 	InterlockedDecrement( (volatile LONG*)&Target );
 }
 
-static void AtomicExchange( s32& Target, s32 value )
+__unused static void AtomicExchange( s32& Target, s32 value )
 {
 	InterlockedExchange( (volatile LONG*)&Target, value );
 }
 
-static void AtomicIncrement( s32& Target )
+__unused static void AtomicIncrement( s32& Target )
 {
 	InterlockedIncrement( (volatile LONG*)&Target );
 }
 
-static void AtomicDecrement( s32& Target )
+__unused static void AtomicDecrement( s32& Target )
 {
 	InterlockedDecrement( (volatile LONG*)&Target );
 }

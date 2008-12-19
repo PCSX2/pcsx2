@@ -2937,7 +2937,7 @@ void memWrite128(u32 mem, u64 *value) {
 
 #endif // PCSX2_VIRTUAL_MEM
 
-void loadBiosRom(char *ext, u8 *dest) {
+void loadBiosRom(const char *ext, u8 *dest) {
 	struct stat buf;
 	char Bios1[g_MaxPath];
 	char Bios[g_MaxPath];

@@ -1129,7 +1129,7 @@ int psxHw4ConstRead8(u32 x86reg, u32 add, u32 sign) {
 		case 0x1f402039: CONSTREAD8_CALL((uptr)cdvdRead39); return 1;
 		case 0x1f40203A: CONSTREAD8_CALL((uptr)cdvdRead3A); return 1;
 		default:
-			SysPrintf("*Unkwnown 8bit read at address %lx\n", add);
+			SysPrintf("*Unknown 8bit read at address %lx\n", add);
 			XOR32RtoR(x86reg, x86reg);
 			return 0;
 	}

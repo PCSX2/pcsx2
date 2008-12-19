@@ -273,7 +273,7 @@ int CDVD_GetVolumeDescriptor(void){
 	return TRUE;
 }
 
-int CDVD_findfile(char* fname, struct TocEntry* tocEntry){
+int CDVD_findfile(const char* fname, struct TocEntry* tocEntry){
 	static char filename[128+1];
 	static char pathname[1024+1];
 	static char toc[2048];

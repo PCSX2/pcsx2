@@ -489,17 +489,6 @@ void mfifoVIF1transfer(int qwc) {
 	}
 
 	 if(vif1ch->qwc == 0){
-			/*if(vif1ch->tadr == spr0->madr) {
-		
-	#ifdef PCSX2_DEVBUILD
-				SysPrintf("vif mfifo tadr==madr but qwc = %d\n", vifqwc);	
-	#endif	
-				FreezeMMXRegs(0);
-				FreezeXMMRegs(0);
-				//hwDmacIrq(14);
-				return;
-			}*/
-			
 			ptag = (u32*)dmaGetAddr(vif1ch->tadr);
 
 			if (vif1ch->chcr & 0x40) {

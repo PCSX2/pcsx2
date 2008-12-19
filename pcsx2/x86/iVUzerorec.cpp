@@ -3200,7 +3200,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 				s_ClipRead = (uptr)&VU->VI[REG_CLIP_FLAG];
 			else {
 				s_ClipRead = s_pCurBlock->GetInstIterAtPc(nParentPc)->pClipWrite;
-				if (s_ClipRead == NULL) SysPrintf("super ClipRead allocation error! \n");
+				if (s_ClipRead == 0) SysPrintf("super ClipRead allocation error! \n");
 			}
 		}
 
@@ -3216,7 +3216,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
                     if( pparentinst != NULL ) { //&& pparentinst->pStatusWrite != NULL ) {
 
                         // might not have processed it yet, so reserve a mem loc
-                        if( pparentinst->pStatusWrite == NULL ) {
+                        if( pparentinst->pStatusWrite == 0 ) {
                             pparentinst->pStatusWrite = (uptr)SuperVUStaticAlloc(4);
                             //MOV32ItoM(pparentinst->pStatusWrite, 0);
                         }
@@ -3237,7 +3237,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 //                            else
 //                                MOV32MtoR(EAX, (uptr)&VU->VI[REG_STATUS_FLAG]);
 //                            s_StatusRead = tempstatus;
-                            if( s_StatusRead == NULL )
+                            if( s_StatusRead == 0 )
                                 s_StatusRead = (uptr)&VU->VI[REG_STATUS_FLAG];
 
                             CMP32ItoM((uptr)&g_nLastBlockExecuted, nParentCheckForExecution);
@@ -3262,7 +3262,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
                 }
 				else {
 					s_StatusRead = s_pCurBlock->GetInstIterAtPc(nParentPc)->pStatusWrite;
-					if (s_StatusRead == NULL) SysPrintf("super StatusRead allocation error! \n");
+					if (s_StatusRead == 0) SysPrintf("super StatusRead allocation error! \n");
 //                    if( pc >= (u32)s_pCurBlock->endpc-8 ) {
 //                        // towards the end, so variable might be leaded to another block (silent hill 4)
 //                        uptr tempstatus = (uptr)SuperVUStaticAlloc(4);
@@ -3283,7 +3283,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
                         // towards the end, so variable might be leaked to another block (silent hill 4)
                         
                         // might not have processed it yet, so reserve a mem loc
-                        if( pparentinst->pMACWrite == NULL ) {
+                        if( pparentinst->pMACWrite == 0 ) {
                             pparentinst->pMACWrite = (uptr)SuperVUStaticAlloc(4);
                             //MOV32ItoM(pparentinst->pMACWrite, 0);
                         }
@@ -3304,7 +3304,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 //                                MOV32MtoR(EAX, (uptr)&VU->VI[REG_MAC_FLAG]);
 //                            s_MACRead = tempmac;
 
-                            if( s_MACRead == NULL )
+                            if( s_MACRead == 0 )
                                 s_MACRead = (uptr)&VU->VI[REG_MAC_FLAG];
 
                             CMP32ItoM((uptr)&g_nLastBlockExecuted, nParentCheckForExecution);
@@ -3345,9 +3345,9 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 		}
         else if( pparentinst != NULL) {
             // make sure to reset the mac and status flags! (katamari)
-            if( pparentinst->pStatusWrite != NULL )
+            if( pparentinst->pStatusWrite)
                 MOV32ItoM(pparentinst->pStatusWrite, 0);
-            if( pparentinst->pMACWrite != NULL )
+            if( pparentinst->pMACWrite)
                 MOV32ItoM(pparentinst->pMACWrite, 0);
         }
 
@@ -3398,7 +3398,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 		}
 	}
 
-	if( pClipWrite == NULL && ((regs[0].VIwrite|regs[1].VIwrite) & (1<<REG_CLIP_FLAG)) ) {
+	if( (pClipWrite == 0) && ((regs[0].VIwrite|regs[1].VIwrite) & (1<<REG_CLIP_FLAG)) ) {
 		pClipWrite = (uptr)SuperVUStaticAlloc(4);
         //MOV32ItoM(pClipWrite, 0);
     }

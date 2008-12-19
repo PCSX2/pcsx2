@@ -23,9 +23,9 @@
 // stop compiling if NORECBUILD build (only for Visual Studio)
 #if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
-#include "ix86/ix86.h"
 #include "Common.h"
 #include "InterTables.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 #include "iMMI.h"
 

@@ -824,7 +824,7 @@ void recMADDU()
 
 void recMADD1()
 {
-	SysPrintf("MADD1 email zero if abnormal behavior\n");
+	//SysPrintf("MADD1 email zero if abnormal behavior\n");
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
@@ -835,7 +835,7 @@ void recMADD1()
 
 void recMADDU1()
 {
-	SysPrintf("MADDU1 email zero if abnormal behavior\n");
+	//SysPrintf("MADDU1 email zero if abnormal behavior\n");
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);

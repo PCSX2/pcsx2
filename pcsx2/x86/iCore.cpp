@@ -1042,6 +1042,7 @@ void _freeXMMregs()
 
 __forceinline void FreezeXMMRegs_(int save)
 {
+	//SysPrintf("FreezeXMMRegs_(%d); [%d]\n", save, g_globalXMMSaved);
 	assert( g_EEFreezeRegs );
 
 	if( save ) {

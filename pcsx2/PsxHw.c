@@ -98,7 +98,7 @@ u8 psxHwRead8(u32 add) {
 
 		default:
 			hard = psxHu8(add); 
-			PSXHW_LOG("*Unkwnown 8bit read at address %lx\n", add);
+			PSXHW_LOG("*Unknown 8bit read at address %lx\n", add);
 			return hard;
 	}
 	
@@ -253,7 +253,7 @@ u16 psxHwRead16(u32 add) {
             	hard = SPU2read(add);
 			} else {
 				hard = psxHu16(add); 
-				PSXHW_LOG("*Unkwnown 16bit read at address %lx\n", add);
+				PSXHW_LOG("*Unknown 16bit read at address %lx\n", add);
 			}
             return hard;
 	}
@@ -1330,8 +1330,8 @@ u8 psxHw4Read8(u32 add) {
 		default:
 			// note: use SysPrintF to notify console since this is a potentially serious
 			// emulation problem:
-			//PSXHW_LOG("*Unkwnown 8bit read at address %lx\n", add);
-			SysPrintf("*Unkwnown 8bit read at address %lx\n", add);
+			//PSXHW_LOG("*Unknown 8bit read at address %lx\n", add);
+			SysPrintf("*Unknown 8bit read at address %lx\n", add);
 			return 0;
 	}
 	
@@ -1341,6 +1341,7 @@ u8 psxHw4Read8(u32 add) {
 }
 
 void psxHw4Write8(u32 add, u8 value) {
+	
 	switch (add) {
 		case 0x1f402004: cdvdWrite04(value); return;
 		case 0x1f402005: cdvdWrite05(value); return;
@@ -1352,6 +1353,7 @@ void psxHw4Write8(u32 add, u8 value) {
 		case 0x1f402014: cdvdWrite14(value); return;
 		case 0x1f402016:
 			cdvdWrite16(value);
+			//fixme - are these supposed to be here?
 			FreezeMMXRegs(0);
 			FreezeXMMRegs(0);
 			return;

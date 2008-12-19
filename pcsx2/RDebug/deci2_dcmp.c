@@ -44,8 +44,8 @@ void D2_DCMP(const u8 *inbuffer, u8 *outbuffer, char *message){
 						*out=(DECI2_DCMP_HEADER*)outbuffer;
 	u8	*data=(u8*)in+sizeof(DECI2_DCMP_HEADER);
     
-	DECI2_DCMP_CONNECT	*connect=(DECI2_DCMP_CONNECT*)data;
-	DECI2_DCMP_ECHO		*echo	=(DECI2_DCMP_ECHO*)data;
+	//DECI2_DCMP_CONNECT	*connect=(DECI2_DCMP_CONNECT*)data;
+	//DECI2_DCMP_ECHO		*echo	=(DECI2_DCMP_ECHO*)data;
 
 	memcpy(outbuffer, inbuffer, 128*1024);//BUFFERSIZE
 	out->h.length=sizeof(DECI2_DCMP_HEADER);

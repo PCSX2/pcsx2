@@ -152,13 +152,13 @@ void recMFC0( void )
 		else EEINST_RESETHASLIVE1(_Rt_);
 
 #ifdef PCSX2_DEVBUILD
-		SysPrintf("MFC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x\n", 
+		COP0_LOG("MFC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x\n", 
 				cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);
 #endif
 		return;
 	}
 	else if( _Rd_ == 24){
-		SysPrintf("MFC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
+		COP0_LOG("MFC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
         return;
 	}
 	_eeOnWriteReg(_Rt_, 1);
@@ -249,7 +249,7 @@ void recMTC0()
 				MOV32ItoM((uptr)&cpuRegs.CP0.r[9], g_cpuConstRegs[_Rt_].UL[0]);
 				break;
 			case 25:
-				SysPrintf("MTC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x\n", 
+				COP0_LOG("MTC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x\n", 
 				cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);
 				switch(_Imm_ & 0x3F){
 					case 0:
@@ -274,7 +274,7 @@ void recMTC0()
 				}
 				break;
 			case 24: 
-				SysPrintf("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
+				COP0_LOG("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
 				break;
 			default:
 				MOV32ItoM((uptr)&cpuRegs.CP0.r[_Rd_], g_cpuConstRegs[_Rt_].UL[0]);
@@ -294,7 +294,7 @@ void recMTC0()
 				MOV32RtoM((uptr)&s_iLastCOP0Cycle, ECX);
 				break;
 			case 25:
-				SysPrintf("MTC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x\n", 
+				COP0_LOG("MTC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x\n", 
 				cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);
 				switch(_Imm_ & 0x3F){
 					case 0:
@@ -318,7 +318,7 @@ void recMTC0()
 				}
 				break;
 			case 24: 
-				SysPrintf("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
+				COP0_LOG("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
 				break;
 			default:
 				_eeMoveGPRtoM((uptr)&cpuRegs.CP0.r[_Rd_], _Rt_);
