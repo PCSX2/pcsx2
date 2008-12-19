@@ -202,11 +202,12 @@ void _vu1Exec(VURegs* VU) {
 	int vireg;
 	int discard=0;
 
-	if(VU1.VI[REG_TPC].UL >= VU1.maxmicro){
+	if(VU->VI[REG_TPC].UL >= VU->maxmicro){
 		CPU_LOG("VU1 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-		VU0.VI[REG_VPU_STAT].UL&= ~0x100;
+		VU->VI[REG_TPC].UL &= 0x3FFF;
+		/*VU0.VI[REG_VPU_STAT].UL&= ~0x100;
 		VU->cycle++;
-		return;
+		return;*/
 	}
 	ptr = (u32*)&VU->Micro[VU->VI[REG_TPC].UL]; 
 	VU->VI[REG_TPC].UL+=8; 		
@@ -318,13 +319,7 @@ void _vu1Exec(VURegs* VU) {
 }
 
 void vu1Exec(VURegs* VU) {
-	if (VU->VI[REG_TPC].UL >= VU->maxmicro) { 
-		SysPrintf("VU1 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-
-		VU0.VI[REG_VPU_STAT].UL&= ~0x100; 
-	} else { 
-		_vu1Exec(VU);
-	} 
+	_vu1Exec(VU);
 	VU->cycle++;
 #ifdef CPU_LOG
 	if (VU->VI[0].UL != 0) CPU_LOG("VI[0] != 0!!!!\n");

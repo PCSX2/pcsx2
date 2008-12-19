@@ -48,9 +48,6 @@
 
 #define VU ((VURegs*)&VU1)
 
-u32 vu1recpcold = -1;
-u32 vu1reccountold = -1;
-
 //Lower/Upper instructions can use that..
 #define _Ft_ ((VU1.code >> 16) & 0x1F)  // The rt part of the instruction register 
 #define _Fs_ ((VU1.code >> 11) & 0x1F)  // The rd part of the instruction register 
@@ -104,7 +101,6 @@ void recResetVU1( void ) {
 		SuperVUReset(1);
 	}
 
-	vu1recpcold = 0;
 #ifndef __x86_64__
 	x86FpuState = FPU_STATE;
 #endif
@@ -143,8 +139,6 @@ static void iVU1DumpBlock()
 	fclose( f );
 }
 
-u32 g_VUProgramId = 0;
-
 #ifdef _DEBUG
 static u32 vuprogcount = 0;
 extern u32 vudump;
@@ -154,10 +148,7 @@ void recExecuteVU1Block(void)
 {
 #ifdef _DEBUG
 	vuprogcount++;
-
-	if( vudump & 8 ) {
-		__Log("start vu1: %x %x\n", VU1.VI[ REG_TPC ].UL, vuprogcount);
-	}
+	if( vudump & 8 ) __Log("start vu1: %x %x\n", VU1.VI[ REG_TPC ].UL, vuprogcount);
 #endif
 
 	if((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0){
@@ -168,34 +159,19 @@ void recExecuteVU1Block(void)
 	if (CHECK_VU1REC)
 	{
 		if (VU1.VI[REG_TPC].UL >= VU1.maxmicro) { 
-#ifdef CPU_LOG
-			SysPrintf("VU1 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-#endif
-			VU0.VI[REG_VPU_STAT].UL&= ~0x100;
-			VU->cycle++;
-			return;
+			SysPrintf("VU1 memory overflow!!: %x\n", VU1.VI[REG_TPC].UL);
+			/*VU0.VI[REG_VPU_STAT].UL&= ~0x100;
+			VU1.cycle++;
+			return;*/
 		}
 
 		assert( (VU1.VI[ REG_TPC ].UL&7) == 0 );
 
-		//__Log("prog: %x %x %x\n", vuprogcount, *(int*)0x1883a740, *(int*)0x18fe5fe0);
-		//for(i = 1; i < 32; ++i) __Log("vf%d: %x %x %x %x, vi: %x\n", i, VU0.VF[i].UL[3], VU0.VF[i].UL[2], VU0.VF[i].UL[1], VU0.VF[i].UL[0], VU0.VI[i].UL);
-
-		//if( VU1.VI[ REG_TPC ].UL == 0x670 ) {
-//		__Log("VU: %x %x\n", VU1.VI[ REG_TPC ].UL, vuprogcount);
-//		iDumpVU1Registers();
-//		vudump |= 8;
-
 		FreezeXMMRegs(1);
-		// while loop needed since not always will return finished
-		do {
-			SuperVUExecuteProgram(VU1.VI[ REG_TPC ].UL, 1);
-		}
-		while( VU0.VI[ REG_VPU_STAT ].UL&0x100 );
+		do { // while loop needed since not always will return finished
+			SuperVUExecuteProgram(VU1.VI[ REG_TPC ].UL & 0x3fff, 1);
+		} while( VU0.VI[ REG_VPU_STAT ].UL&0x100 );
 		FreezeXMMRegs(0);
-
-//		__Log("eVU: %x\n", VU1.VI[ REG_TPC ].UL);
-//		iDumpVU1Registers();
 	}
 	else {
 #ifdef _DEBUG
@@ -204,18 +180,15 @@ void recExecuteVU1Block(void)
 			iDumpVU1Registers();
 		}
 #endif
-
-		while(VU0.VI[ REG_VPU_STAT ].UL&0x100)
+		while (VU0.VI[ REG_VPU_STAT ].UL&0x100) {
 			intExecuteVU1Block();
+		}
 	}
 }
 
 void recClearVU1( u32 Addr, u32 Size ) {
 	assert( (Addr&7) == 0 );
-
-	if( CHECK_VU1REC ) {
-		SuperVUClear(Addr, Size*4, 1);
-	}
+	if( CHECK_VU1REC ) SuperVUClear(Addr, Size*4, 1);
 }
 
 #endif

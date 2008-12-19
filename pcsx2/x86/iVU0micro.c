@@ -43,35 +43,17 @@
 #endif
 
 static VURegs * const VU = (VURegs*)&VU0;
-
-//u32 vu0time = 0;
-//static LARGE_INTEGER vu0base, vu0final;
-
 #ifdef _DEBUG
 extern u32 vudump;
 #endif
 
-//static u32 vuprogcount = 0;
-
-void recExecuteVU0Block( void ) // fixme - are all these comments at all useful, or can they be removed?
+void recExecuteVU0Block( void )
 {
-	//SysPrintf("executeVU0 %x\n", VU0.VI[ REG_TPC ].UL);
-	//QueryPerformanceCounter(&vu0base);
-
-//	assert( VU0.VI[REG_VPU_STAT].UL & 1 );
-	if((VU0.VI[REG_VPU_STAT].UL & 1) == 0){
+	if((VU0.VI[REG_VPU_STAT].UL & 1) == 0) {
 		//SysPrintf("Execute block VU0, VU0 not busy\n");
 		return;
 	}
 #ifdef _DEBUG
-	//vuprogcount++;
-
-//	__Log("VU: %x %x\n", VU0.VI[ REG_TPC ].UL, vuprogcount);
-//	iDumpVU0Registers();
-
-	//vudump |= 0x10;
-	//vudump |= 0x80;
-
 	if( (vudump&0x80) && !CHECK_VU0REC ) {
 		__Log("tVU: %x\n", VU0.VI[ REG_TPC ].UL);
 		iDumpVU0Registers();
@@ -81,18 +63,11 @@ void recExecuteVU0Block( void ) // fixme - are all these comments at all useful,
 	//while( (VU0.VI[ REG_VPU_STAT ].UL&1) ) {
 		if( CHECK_VU0REC) {		
 			FreezeXMMRegs(1);
-			SuperVUExecuteProgram(VU0.VI[ REG_TPC ].UL&0xfff, 0);
+			SuperVUExecuteProgram(VU0.VI[ REG_TPC ].UL & 0xfff, 0);
 			FreezeXMMRegs(0);
 		}
-		else {
-			intExecuteVU0Block();
-		}
+		else intExecuteVU0Block();
 	//}
-
-//	__Log("eVU: %x %x\n", VU0.VI[ REG_TPC ].UL, vuprogcount);
-//	iDumpVU0Registers();
-//	QueryPerformanceCounter(&vu0final);
-//	vu0time += (u32)(vu0final.QuadPart-vu0final.QuadPart);
 }
 
 void recClearVU0( u32 Addr, u32 Size )
