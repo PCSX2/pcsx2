@@ -49,13 +49,13 @@ unsigned long opcode_addr;
 #define DECODE_C2BC         ((cpuRegs.code >> 16) & 0x03)   
 */
 /*************************CPUS REGISTERS**************************/
-char *GPR_REG[32] = {
+const char *GPR_REG[32] = {
     "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
     "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
     "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
     "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"
 };
-char *COP0_REG[32] ={
+const char *COP0_REG[32] ={
 	"Index","Random","EntryLo0","EntryLo1","Context","PageMask",
 	"Wired","C0r7","BadVaddr","Count","EntryHi","Compare","Status",
 	"Cause","EPC","PRId","Config","C0r17","C0r18","C0r19","C0r20",
@@ -63,14 +63,14 @@ char *COP0_REG[32] ={
 	"TagHi","ErrorPC","C0r31"
 };
 //floating point cop1 Floating point reg
-char *COP1_REG_FP[32] ={
+const char *COP1_REG_FP[32] ={
  	"f00","f01","f02","f03","f04","f05","f06","f07",
 	"f08","f09","f10","f11","f12","f13","f14","f15",
 	"f16","f17","f18","f19","f20","f21","f21","f23",
 	"f24","f25","f26","f27","f28","f29","f30","f31"
 };
 //floating point cop1 control registers
-char *COP1_REG_FCR[32] ={
+const char *COP1_REG_FCR[32] ={
  	"fcr00","fcr01","fcr02","fcr03","fcr04","fcr05","fcr06","fcr07",
 	"fcr08","fcr09","fcr10","fcr11","fcr12","fcr13","fcr14","fcr15",
 	"fcr16","fcr17","fcr18","fcr19","fcr20","fcr21","fcr21","fcr23",
@@ -78,7 +78,7 @@ char *COP1_REG_FCR[32] ={
 };
 
 //floating point cop2 reg
-char *COP2_REG_FP[32] ={
+const char *COP2_REG_FP[32] ={
 	"vf00","vf01","vf02","vf03","vf04","vf05","vf06","vf07",
 	"vf08","vf09","vf10","vf11","vf12","vf13","vf14","vf15",
 	"vf16","vf17","vf18","vf19","vf20","vf21","vf21","vf23",
@@ -86,16 +86,12 @@ char *COP2_REG_FP[32] ={
 };
 //cop2 control registers
 
-char *COP2_REG_CTL[32] ={
+const char *COP2_REG_CTL[32] ={
 	"vi00","vi01","vi02","vi03","vi04","vi05","vi06","vi07",
 	"vi08","vi09","vi10","vi11","vi12","vi13","vi14","vi15",
 	"Status","MACflag","ClipFlag","c2c19","R","I","Q","c2c23",
 	"c2c24","c2c25","TPC","CMSAR0","FBRST","VPU-STAT","c2c30","CMSAR1"
 };
-
-
-
-
 
 //****************************************************************
 void P_SpecialOpcode(char *buf);

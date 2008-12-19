@@ -21,20 +21,20 @@
 static char ostr[1024];
 
 // Names of registers
-static char *disRNameGPR[] = {
+static const char *disRNameGPR[] = {
 	"r0", "at", "v0", "v1", "a0", "a1","a2", "a3",
 	"t0", "t1", "t2", "t3", "t4", "t5","t6", "t7",
 	"s0", "s1", "s2", "s3", "s4", "s5","s6", "s7",
 	"t8", "t9", "k0", "k1", "gp", "sp","fp", "ra"};
 
-static char *disRNameCP0[] = {
+static const char *disRNameCP0[] = {
 	"Index"     , "Random"    , "EntryLo0", "EntryLo1", "Context" , "PageMask"  , "Wired"     , "*Check me*",
 	"BadVAddr"  , "Count"     , "EntryHi" , "Compare" , "Status"  , "Cause"     , "ExceptPC"  , "PRevID"    ,
 	"Config"    , "LLAddr"    , "WatchLo" , "WatchHi" , "XContext", "*RES*"     , "*RES*"     , "*RES*"     ,
 	"*RES*"     , "*RES* "    , "PErr"    , "CacheErr", "TagLo"   , "TagHi"     , "ErrorEPC"  , "*RES*"     };
 
 
-// Type deffinition of our functions
+// Type definition of our functions
 
 typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 

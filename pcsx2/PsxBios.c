@@ -24,7 +24,7 @@
 
 #include "PsxCommon.h"
 
-char *biosA0n[256] = {
+const char *biosA0n[256] = {
 // 0x00
 	"open",		"lseek",	"read",		"write",
 	"close",	"ioctl",	"exit",		"sys_a0_07",
@@ -85,7 +85,7 @@ char *biosA0n[256] = {
 	"?? sub_function",
 };
 
-char *biosB0n[256] = {
+const char *biosB0n[256] = {
 // 0x00
 	"SysMalloc",		"sys_b0_01",	"sys_b0_02",	"sys_b0_03",
 	"sys_b0_04",		"sys_b0_05",	"sys_b0_06",	"DeliverEvent",
@@ -118,7 +118,7 @@ char *biosB0n[256] = {
 	"_card_status",		"_card_wait",
 };
 
-char *biosC0n[256] = {
+const char *biosC0n[256] = {
 // 0x00
 	"InitRCnt",			  "InitException",		"SysEnqIntRP",		"SysDeqIntRP",
 	"get_free_EvCB_slot", "get_free_TCB_slot",	"ExceptionHandler",	"InstallExeptionHandler",

@@ -618,7 +618,6 @@ create_GameFixDlg (void)
   check_Slow_DVD = gtk_check_button_new_with_mnemonic (_("Slow DVD access (fixes Tales of the Abyss) (Not currently needed)"));
   gtk_widget_show (check_Slow_DVD);
   gtk_box_pack_start (GTK_BOX (vbox30), check_Slow_DVD, FALSE, FALSE, 0);
-  gtk_widget_set_sensitive (check_Slow_DVD, FALSE);
 
   check_VU_Branch = gtk_check_button_new_with_mnemonic (_("VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!"));
   gtk_widget_show (check_VU_Branch);

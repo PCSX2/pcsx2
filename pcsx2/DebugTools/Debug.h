@@ -43,9 +43,9 @@ char* disVU1MicroLF(u32 code, u32 pc);
 
 char* disR3000AF(u32 code, u32 pc);
 
-extern char *CP2VFnames[];
-extern char *disRNameCP2f[];
-extern char *disRNameCP2i[];
+extern const char *CP2VFnames[];
+extern const char *disRNameCP2f[];
+extern const char *disRNameCP2i[];
 
 //that way is slower but you now not need to compile every time ;P
 #ifdef PCSX2_DEVBUILD

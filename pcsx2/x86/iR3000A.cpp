@@ -48,7 +48,7 @@
 #include "iR3000A.h"
 
 u32 g_psxMaxRecMem = 0;
-extern char *disRNameGPR[];
+extern const char *disRNameGPR[];
 extern char* disR3000Fasm(u32 code, u32 pc);
 
 u32 s_psxrecblocks[] = {0};

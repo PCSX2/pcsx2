@@ -149,7 +149,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	char filename[ g_MaxPath ];
 	u32 i, j;
 	EEINST* pcur;
-	extern char *disRNameGPR[];
+	extern const char *disRNameGPR[];
 	u8 used[34];
 	u8 fpuused[33];
 	int numused, count, fpunumused;
@@ -2737,7 +2737,7 @@ void iDumpRegisters(u32 startpc, u32 temp)
 	int i;
 	char* pstr;// = temp ? "t" : "";
 	const u32 dmacs[] = {0x8000, 0x9000, 0xa000, 0xb000, 0xb400, 0xc000, 0xc400, 0xc800, 0xd000, 0xd400 };
-	extern char *disRNameGPR[];
+	extern const char *disRNameGPR[];
     char* psymb;
 	
 	if (temp)

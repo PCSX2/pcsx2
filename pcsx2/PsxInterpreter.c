@@ -187,7 +187,7 @@ irxlib irxlibs[32] = {
 #define Ra2 ((char*)PSXM(psxRegs.GPR.n.a2))
 #define Ra3 ((char*)PSXM(psxRegs.GPR.n.a3))
 
-char* intrname[]={
+const char* intrname[]={
 "INT_VBLANK",   "INT_GM",       "INT_CDROM",   "INT_DMA",	//00
 "INT_RTC0",     "INT_RTC1",     "INT_RTC2",    "INT_SIO0",	//04
 "INT_SIO1",     "INT_SPU",      "INT_PIO",     "INT_EVBLANK",	//08

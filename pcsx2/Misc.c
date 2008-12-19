@@ -55,7 +55,7 @@ u32 BiosVersion;
 char CdromId[12];
 static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
 
-char *LabelAuthors = { N_(
+const char *LabelAuthors = { N_(
 	"PCSX2, a PS2 emulator\n\n"
 	"originally written by:\n"
 	"saqib, refraction, zerofrog,\n"
@@ -72,7 +72,7 @@ char *LabelAuthors = { N_(
 	"Webmasters: CKemu, Falcon4ever")
 };
 
-char *LabelGreets = { N_(
+const char *LabelGreets = { N_(
 	"Greets to: Bobbi, Keith, CpUMasteR, Nave, Snake785\n\n"
 	"Special thanks to: Gigaherz, Gabest, Sjeep, Dreamtime, F|RES, BGnome, MrBrown, \n"
 	"Seta-San, Skarmeth, blackd_wd, _Demo_\n"
@@ -84,7 +84,7 @@ char *LabelGreets = { N_(
 };
 
 static struct {
-	char	*name;
+	const char	*name;
 	u32		size;
 } ioprps[]={
 	{"IOPRP14",    43845},
@@ -142,7 +142,7 @@ void GetRPCVersion(char *ioprp, char *rpcver){
 			if (te.fileSize==ioprps[i].size)
 				break;
 			if (ioprps[i].size>0)
-				p=ioprps[i].name;
+				p=(char *)ioprps[i].name;
 	}
 	// fixme - Is p really supposed to be set in the middle of an if statement?
 	if (p && (p=strstr(p, "IOPRP")+strlen("IOPRP"))){

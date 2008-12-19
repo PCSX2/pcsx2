@@ -36,16 +36,16 @@ static cdvdStruct cdvd;
 static int cdCaseopen;
 
 
-char *mg_zones[8] = {"Japan", "USA", "Europe", "Oceania", "Asia", "Russia", "China", "Mexico"};
+const char *mg_zones[8] = {"Japan", "USA", "Europe", "Oceania", "Asia", "Russia", "China", "Mexico"};
 
-char *nCmdName[0x100]= {
+const char *nCmdName[0x100]= {
 	"CdSync", "CdNop", "CdStandby", "CdStop",
 	"CdPause", "CdSeek", "CdRead", "CdReadCDDA",
 	"CdReadDVDV", "CdGetToc", "", "NCMD_B",
 	"CdReadKey", "", "sceCdReadXCDDA", "sceCdChgSpdlCtrl",
 };
 
-char *sCmdName[0x100]= {
+const char *sCmdName[0x100]= {
 	"", "sceCdGetDiscType", "sceCdReadSubQ", "subcommands",//sceCdGetMecaconVersion, read/write console id, read renewal date
 	"", "sceCdTrayState", "sceCdTrayCtrl", "",
 	"sceCdReadClock", "sceCdWriteClock", "sceCdReadNVM", "sceCdWriteNVM",

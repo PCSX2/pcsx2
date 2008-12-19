@@ -110,7 +110,7 @@ typedef char* (*TdisR5900F)DisFInterface;
 #define _Ftf_ ((code >> 23) & 0x03)
 
 /*********************************************************
-* Unknow instruction (would generate an exception)       *
+* Unknown instruction (would generate an exception)       *
 * Format:  ?                                             *
 *********************************************************/
 extern char* disNULL DisFInterface;

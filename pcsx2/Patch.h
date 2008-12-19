@@ -62,7 +62,7 @@ typedef void (*PATCHTABLEFUNC)( char * text1, char * text2 );
 
 struct PatchTextTable
 {
-	char *text;
+	const char *text;
 	int code;
 	PATCHTABLEFUNC func;
 };

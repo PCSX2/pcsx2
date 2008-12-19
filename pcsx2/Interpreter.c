@@ -27,7 +27,7 @@
 
 extern u32 maxrecmem;
 
-char *bios[256]={
+const char *bios[256]={
 //0x00
 	"RFU000_FullReset", "ResetEE",				"SetGsCrt",				"RFU003",
 	"Exit",				"RFU005",				"LoadExecPS2",			"ExecPS2",

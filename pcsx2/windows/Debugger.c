@@ -622,7 +622,7 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 }
 
 /* this lives in interpreter.c */
-extern char* bios[];
+extern const char* bios[];
 
 void RefreshDebugger(void)
 {

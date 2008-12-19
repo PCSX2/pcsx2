@@ -59,7 +59,7 @@
 #define ASYNC			254
 /* don't set 255, it's reserved */
 
-char *CmdName[0x100]= {
+const char *CmdName[0x100]= {
 	"CdlSync",    "CdlNop",       "CdlSetloc",  "CdlPlay",
 	"CdlForward", "CdlBackward",  "CdlReadN",   "CdlStandby",
 	"CdlStop",    "CdlPause",     "CdlInit",    "CdlMute",

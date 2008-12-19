@@ -143,8 +143,8 @@ int LoadCdrom();
 int CheckCdrom();
 int GetPS2ElfName(char*);
 
-extern char *LabelAuthors;
-extern char *LabelGreets;
+extern const char *LabelAuthors;
+extern const char *LabelGreets;
 int SaveState(const char *file);
 int LoadState(const char *file);
 int CheckState(const char *file);

@@ -27,45 +27,45 @@
 static char ostr[1024];
 
 // Names of registers
-char *disRNameGPR[] = {
+const char *disRNameGPR[] = {
 	"r0", "at", "v0", "v1", "a0", "a1","a2", "a3",
 	"t0", "t1", "t2", "t3", "t4", "t5","t6", "t7",
 	"s0", "s1", "s2", "s3", "s4", "s5","s6", "s7",
 	"t8", "t9", "k0", "k1", "gp", "sp","fp", "ra", "hi", "lo"}; // lo,hi used in rec
 
-char *disRNameCP0[] = {
+const char *disRNameCP0[] = {
 	"Index"     , "Random"    , "EntryLo0" , "EntryLo1", "Context" , "PageMask"  , "Wired"     , "*RES*",
 	"BadVAddr"  , "Count"     , "EntryHi"  , "Compare" , "Status"  , "Cause"     , "ExceptPC"  , "PRevID",
 	"Config"    , "LLAddr"    , "WatchLo"  , "WatchHi" , "*RES*"   , "*RES*"     , "*RES*"     , "Debug",
 	"DEPC"      , "PerfCnt"   , "ErrCtl"   , "CacheErr", "TagLo"   , "TagHi"     , "ErrorEPC"  , "DESAVE"};
 
-char *disRNameCP1[] = {
+const char *disRNameCP1[] = {
 	"FPR0" , "FPR1" , "FPR2" , "FPR3" , "FPR4" , "FPR5" , "FPR6" , "FPR7",
 	"FPR8" , "FPR9" , "FPR10", "FPR11", "FPR12", "FPR13", "FPR14", "FPR15",
 	"FPR16", "FPR17", "FPR18", "FPR19", "FPR20", "FPR21", "FPR22", "FPR23",
 	"FPR24", "FPR25", "FPR26", "FPR27", "FPR28", "FPR29", "FPR30", "FPR31"};
 
-char *disRNameCP1c[] = {
+const char *disRNameCP1c[] = {
 	"FRevID", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
 	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
 	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
 	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "FStatus"};
 
-char *disRNameCP2f[] = {
+const char *disRNameCP2f[] = {
 	"VF00", "VF01", "VF02", "VF03", "VF04", "VF05", "VF06", "VF07",
 	"VF08", "VF09", "VF10", "VF11", "VF12", "VF13", "VF14", "VF15",
 	"VF16", "VF17", "VF18", "VF19", "VF20", "VF21", "VF22", "VF23",
 	"VF24", "VF25", "VF26", "VF27", "VF28", "VF29", "VF30", "VF31"};
 
-char *disRNameCP2i[] = {
+const char *disRNameCP2i[] = {
 	"VI00",   "VI01",  "VI02", "VI03",   "VI04",  "VI05",     "VI06",  "VI07",
 	"VI08",   "VI09",  "VI10", "VI11",   "VI12",  "VI13",     "VI14",  "VI15",
 	"Status", "MAC",   "Clip", "*RES*",  "R",     "I",        "Q",     "*RES*",
 	"*RES*",  "*RES*", "TPC",  "CMSAR0", "FBRST", "VPU-STAT", "*RES*", "CMSAR1"};
 
-char *CP2VFnames[] = { "x", "y", "z", "w" };
+const char *CP2VFnames[] = { "x", "y", "z", "w" };
 
-// Type deffinition of our functions
+// Type definition of our functions
 #define DisFInterface  (u32 code, u32 pc)
 #define DisFInterfaceT (u32, u32)
 #define DisFInterfaceN (code, pc)

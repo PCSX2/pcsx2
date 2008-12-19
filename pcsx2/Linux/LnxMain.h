@@ -23,7 +23,7 @@
 
 char* g_pRunGSState = NULL;
 
-char* phelpmsg = 
+const char* phelpmsg = 
 	"\tpcsx2 [options] [file]\n\n"
 	"-cfg [file] {configuration file}\n"
 	"-efile [efile] {0 - reset, 1 - runcd (default), 2 - loadelf}\n"

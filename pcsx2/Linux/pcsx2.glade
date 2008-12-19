@@ -919,6 +919,7 @@ Enabled (Helps SPS, Slow)</property>
 		      <child>
 			<widget class="GtkCheckButton" id="check_Disable_VU_Flags">
 			  <property name="visible">True</property>
+			  <property name="sensitive">False</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Disable Extra VU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )</property>
 			  <property name="use_underline">True</property>
@@ -938,6 +939,7 @@ Enabled (Helps SPS, Slow)</property>
 		      <child>
 			<widget class="GtkCheckButton" id="check_Disable_FPU_Flags">
 			  <property name="visible">True</property>
+			  <property name="sensitive">False</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Disable Extra FPU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )</property>
 			  <property name="use_underline">True</property>
@@ -1305,26 +1307,6 @@ Enabled (Helps SPS, Slow)</property>
 		      <property name="visible">True</property>
 		      <property name="can_focus">True</property>
 		      <property name="label" translatable="yes">FPU Clamp Hack - Special fix for Tekken 5 and maybe other games.</property>
-		      <property name="use_underline">True</property>
-		      <property name="relief">GTK_RELIEF_NORMAL</property>
-		      <property name="focus_on_click">True</property>
-		      <property name="active">False</property>
-		      <property name="inconsistent">False</property>
-		      <property name="draw_indicator">True</property>
-		    </widget>
-		    <packing>
-		      <property name="padding">0</property>
-		      <property name="expand">False</property>
-		      <property name="fill">False</property>
-		    </packing>
-		  </child>
-
-		  <child>
-		    <widget class="GtkCheckButton" id="check_Slow_DVD">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="can_focus">True</property>
-		      <property name="label" translatable="yes">Slow DVD access (fixes Tales of the Abyss) (Not currently needed)</property>
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">True</property>
