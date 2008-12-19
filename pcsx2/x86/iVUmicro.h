@@ -85,19 +85,42 @@ struct _vuopinfo {
 extern _vuopinfo *cinfo;
 
 void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs);
-
-// allocates all the necessary regs and returns the indices
-int eeVURecompileCode(VURegs *VU, _VURegsNum* regs);
-
+int eeVURecompileCode(VURegs *VU, _VURegsNum* regs); // allocates all the necessary regs and returns the indices
 void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr); // used for MTGS in XGKICK
 
 extern _VURegsNum* g_VUregs;
+extern int vucycle;
+typedef void (*vFloat)(int regd, int regTemp);
+extern vFloat vFloats1[16];
+extern vFloat vFloats2[16];
+extern PCSX2_ALIGNED16(float s_fones[8]);
+extern PCSX2_ALIGNED16(u32 s_mask[4]);
+extern PCSX2_ALIGNED16(u32 s_expmask[4]);
+extern PCSX2_ALIGNED16(u32 g_minvals[4]);
+extern PCSX2_ALIGNED16(u32 g_maxvals[4]);
+extern PCSX2_ALIGNED16(u32 const_clip[8]);
+
+u32 GetVIAddr(VURegs * VU, int reg, int read, int info);
+int _vuGetTempXMMreg(int info);
+void vuFloat(int info, int regd, int XYZW);
+void vuFloat2(int regd, int regTemp, int XYZW);
+void vuFloat3(uptr x86ptr);
+void _vuFlipRegSS(VURegs * VU, int reg);
+void _vuMoveSS(VURegs * VU, int dstreg, int srcreg);
+void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw);
+void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw);
+void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw);
+#define VU_MERGE_REGS(dest, src) { \
+	VU_MERGE_REGS_CUSTOM(dest, src, _X_Y_Z_W); \
+}
+
+// use for allocating vi regs
+#define ALLOCTEMPX86(mode) _allocX86reg(-1, X86TYPE_TEMP, 0, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
+#define ALLOCVI(vi, mode) _allocX86reg(-1, X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), vi, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
+#define ADD_VI_NEEDED(vi) _addNeededX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), vi);
 
 #define SWAP(x, y) *(u32*)&y ^= *(u32*)&x ^= *(u32*)&y ^= *(u32*)&x;
 #define VUREC_INFO eeVURecompileCode(VU, g_VUregs)
-
-extern int vucycle;
-
 
 /*****************************************
    VU Micromode Upper instructions

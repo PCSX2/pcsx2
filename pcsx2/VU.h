@@ -28,7 +28,7 @@
 #define REG_R			20
 #define REG_I			21
 #define REG_Q			22
-#define REG_P           23 //only exists in micromode 
+#define REG_P           23 // only exists in micromode 
 #define REG_VF0_FLAG	24 // dummy flag that indicates VF0 is read (nothing to do with VI[24])
 #define REG_TPC			26
 #define REG_CMSAR0		27

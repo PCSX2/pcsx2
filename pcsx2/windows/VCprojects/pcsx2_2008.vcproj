@@ -1818,11 +1818,19 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\iVUmicro.c"
+						RelativePath="..\..\x86\iVUmicro.cpp"
 						>
 					</File>
 					<File
 						RelativePath="..\..\x86\iVUmicro.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVUmicroLower.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVUmicroUpper.cpp"
 						>
 					</File>
 					<File

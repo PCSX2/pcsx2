@@ -2287,7 +2287,7 @@ void recPDIVBW()
 }
 
 ////////////////////////////////////////////////////
-PCSX2_ALIGNED16(int s_mask[4]) = {~0, 0, ~0, 0};
+PCSX2_ALIGNED16(int s_mask1[4]) = {~0, 0, ~0, 0};
 
 void recPHMADH()
 {
@@ -2339,8 +2339,8 @@ CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMI
 
 	SSE2_PSHUFD_XMM_to_XMM(EEREC_HI, EEREC_LO, 0xf5);
 
-	SSE2_PAND_M128_to_XMM(EEREC_LO, (uptr)s_mask);
-	SSE2_PAND_M128_to_XMM(EEREC_HI, (uptr)s_mask);
+	SSE2_PAND_M128_to_XMM(EEREC_LO, (uptr)s_mask1);
+	SSE2_PAND_M128_to_XMM(EEREC_HI, (uptr)s_mask1);
 
 	if( !_Rd_ ) _freeXMMreg(t0reg);
 
