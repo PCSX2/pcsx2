@@ -22,6 +22,7 @@ echo "Checking plugins out from official Pcsx2 svn..."
 mkdir "temp"
 
 if [ -d "temp" ]
+then
 cd "temp"
 svn checkout http://pcsx2.googlecode.com/svn/trunk/plugins ./
 
