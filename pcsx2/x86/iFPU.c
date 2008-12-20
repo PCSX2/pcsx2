@@ -744,35 +744,35 @@ int recCommutativeOp(int info, int regd, int op)
 		case PROCESS_EE_S:
 			if (regd == EEREC_S) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-				if (CHECK_FPU_EXTRA_OVERFLOW && /*!CHECK_FPUCLAMPHACK &&*/ (op < 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
+				if (CHECK_FPU_EXTRA_OVERFLOW  /*&& !CHECK_FPUCLAMPHACK */ || (op >= 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				recComOpXMM_to_XMM[op](regd, t0reg);
 			}
 			else {
 				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Ft_]);
-				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
 				recComOpXMM_to_XMM[op](regd, EEREC_S);
 			}
 			break;
 		case PROCESS_EE_T:
 			if (regd == EEREC_T) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]);
-				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				recComOpXMM_to_XMM[op](regd, t0reg);
 			}
 			else {
 				SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
-				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
 			if (regd == EEREC_T) {
-				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
 				recComOpXMM_to_XMM[op](regd, EEREC_S);
 			}
 			else {
 				if (regd != EEREC_S) SSE_MOVSS_XMM_to_XMM(regd, EEREC_S);
-				if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
@@ -780,7 +780,7 @@ int recCommutativeOp(int info, int regd, int op)
 			SysPrintf("FPU: recCommutativeOp case 4\n");
 			SSE_MOVSS_M32_to_XMM(regd, (uptr)&fpuRegs.fpr[_Fs_]);
 			SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]);
-			if (CHECK_FPU_EXTRA_OVERFLOW && (op < 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
+			if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
 			recComOpXMM_to_XMM[op](regd, t0reg);
 			break;
 	}

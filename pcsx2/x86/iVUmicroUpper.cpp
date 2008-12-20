@@ -2564,6 +2564,9 @@ void recVUMI_CLIP(VURegs *VU, int info)
 
 	//if ( (x86temp1 == 0) || (x86temp2 == 0) ) SysPrintf("VU CLIP Allocation Error: EAX being allocated! \n");
 
+	_freeXMMreg(t1reg); // These should have been freed at allocation in eeVURecompileCode()
+	_freeXMMreg(t2reg); // but if they've been used since then, then free them. (just doing this incase :p (cottonvibes))
+
 	if( _Ft_ == 0 ) {
 		SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&s_fones[0]); // all 1s
 		SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)&s_fones[4]);
@@ -2600,9 +2603,6 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	// God of War needs this additional move, but it breaks Rockstar games; ideally this hack shouldn't be needed, i think its a clipflag allocation bug in iVUzerorec.cpp
 	if ( ( CHECK_VUCLIPHACK ) || ( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) ) 
 		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
-
-	_freeXMMreg(t1reg);
-	_freeXMMreg(t2reg);
 
 	_freeX86reg(x86temp1);
 	_freeX86reg(x86temp2);
