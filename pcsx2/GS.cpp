@@ -410,18 +410,9 @@ void gsSetVideoRegionType( u32 isPal )
 // (does nothing for single threaded GS)
 void gsInit()
 {
-	if( CHECK_MULTIGS ) {
-
-#ifdef _WIN32
-        g_pGSRingPos = GS_RINGBUFFERBASE;//(u8*)VirtualAlloc(GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-#else
-        // setup linux vm
-        g_pGSRingPos = (u8*)SysMmap((uptr)GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE);
-#endif
-        if( g_pGSRingPos != GS_RINGBUFFERBASE ) {
-			SysMessage("Cannot alloc GS ring buffer\n");
-			exit(0);
-		}
+	if( CHECK_MULTIGS ) 
+	{
+        g_pGSRingPos = GS_RINGBUFFERBASE;
 
 		memcpy(g_MTGSMem, PS2MEM_GS, sizeof(g_MTGSMem));
 

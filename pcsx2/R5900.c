@@ -554,7 +554,9 @@ void cpuBranchTest()
 			cpuSetNextBranchDelta( 768 );
 	}
 
+#ifdef PCSX2_DEVBUILD
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
+#endif
 	g_EEFreezeRegs = true;
 }
 #endif

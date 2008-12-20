@@ -32,13 +32,13 @@ CPPFLAGS=
 CXXFLAGS=
 CCASFLAGS=
 else
-DEBUG_FLAGS=" -O0 "
+DEBUG_FLAGS=" -O0 -g "
 fi
 
 WARNING_FLAGS="-Wall -Wno-format -Wno-unused-value"
 #Pcsx2 now crashes if --fomit-frame-pointer is enabled and MTGS is off 
 NORMAL_FLAGS=" -pipe -O3 -fno-omit-frame-pointer -msse "
-DEBUG_FLAGS+=" -msse ${WARNING_FLAGS} "
+DEBUG_FLAGS+=" -g -msse ${WARNING_FLAGS} "
 
 dnl Check for debug build
 AC_MSG_CHECKING(debug build)

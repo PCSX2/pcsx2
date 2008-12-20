@@ -28,6 +28,10 @@
 #include "DisASM.h"
 #include "InterTables.h"
 
+#ifdef __LINUX__
+#include <cstdarg>
+#endif
+
 unsigned long opcode_addr;
 
 using namespace std;
