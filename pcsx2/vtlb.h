@@ -37,7 +37,7 @@ vtlbHandler vtlb_RegisterHandler(	vltbMemR8FP* r8,vltbMemR16FP* r16,vltbMemR32FP
 
 void vtlb_MapHandler(vtlbHandler handler,u32 start,u32 size);
 void vtlb_MapBlock(void* base,u32 start,u32 size,u32 blocksize=0);
-void* vtlb_GetPhyPtr(u32 paddr);
+extern void* vtlb_GetPhyPtr(u32 paddr);
 //void vtlb_Mirror(u32 new_region,u32 start,u32 size); // -> not working yet :(
 
 //virtual mappings

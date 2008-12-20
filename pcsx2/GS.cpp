@@ -213,7 +213,7 @@ static mutex_t gsRingRestartLock = {0};
 static volatile bool gsHasToExit = false;
 static volatile int g_GsExitCode = 0;
 
-static int m_mtgsCopyCommandTally = 0;
+static int mtgs_CopyCommandTally = 0;
 
 int g_FFXHack=0;
 
@@ -315,11 +315,57 @@ struct GIFTAG
 	u32 flg : 2;
 	u32 nreg : 4;
 	u32 regs[2];
-	u32 curreg;
 };
 
-static GIFTAG g_path[3];
-static PCSX2_ALIGNED16(u8 s_byRegs[3][16]);
+struct GIFPath
+{
+	GIFTAG tag; 
+	UINT32 nreg;
+	UINT32 _pad[3];
+	u8 regs[16];
+
+	// unpack the registers
+	// registers are stored as a sequence of 4 bit values in the
+	// upper 64 bits of the GIFTAG.  That sucks for us, so we unpack
+	// them into an 8 bit array.
+	__forceinline void PrepRegs()
+	{
+		if( tag.nreg == 0 )
+		{
+			u32 tempreg = tag.regs[0];
+			for(u32 i=0; i<16; ++i, tempreg >>= 4)
+			{
+				if( i == 8 ) tempreg = tag.regs[1];
+				assert( (tempreg&0xf) < 0x64 );
+				regs[i] = tempreg & 0xf;
+			}
+		}
+		else
+		{
+			u32 tempreg = tag.regs[0];
+			for(u32 i=0; i<tag.nreg; ++i, tempreg >>= 4)
+			{
+				assert( (tempreg&0xf) < 0x64 );
+				regs[i] = tempreg & 0xf;
+			}
+		}
+	}
+
+	void SetTag(const void* mem)
+	{
+		tag = *((GIFTAG*)mem);
+		nreg = 0;
+
+		PrepRegs();
+	}
+
+	DWORD GetReg() 
+	{
+		return regs[nreg]; // (DWORD)GET_GIF_REG(tag, nreg);
+	}
+};
+
+static PCSX2_ALIGNED16(GIFPath g_path[3]);
 
 // g_pGSRingPos == g_pGSWritePos => fifo is empty
 static u8* g_pGSRingPos = NULL; // cur pos ring is at
@@ -349,10 +395,6 @@ static s64 m_iSlowTicks=0;
 static u64 m_iSlowStart=0;
 static bool m_justSkipped = false;
 static bool m_StrictSkipping = false;
-
-static void (*s_prevExecuteVU1Block)() = NULL;
-
-void DummyExecuteVU1Block(void);
 
 static void OnModeChanged( u32 framerate, u32 iTicks )
 {
@@ -421,9 +463,6 @@ void gsInit()
         if( GSsetBaseMem != NULL )
 			GSsetBaseMem(g_MTGSMem);
 	}
-
-	assert(Cpu != NULL && Cpu->ExecuteVU1Block != NULL );
-	s_prevExecuteVU1Block = Cpu->ExecuteVU1Block;
 }
 
 // Opens the gsRingbuffer thread.
@@ -439,8 +478,6 @@ s32 gsOpen()
 
 	// MultiGS Procedure From Here Out...
 
-	SysPrintf("gsInit [Multithreaded GS]\n");
-
     gsHasToExit = false;
 	event_init( g_hGsEvent );
 	event_init( g_hGSDone );
@@ -452,7 +489,7 @@ s32 gsOpen()
 
 	if( !thread_create( g_hVuGsThread ) )
 	{
-		SysPrintf("     > MTGS Thread creation failure!\n");
+		SysPrintf("MTGS > Thread creation failure!\n");
 		return -1;
 	}
 
@@ -475,7 +512,7 @@ void GS_SETEVENT()
 	assert( !g_EEFreezeRegs || (g_globalXMMSaved > 0) );
 
 	event_set(g_hGsEvent);
-	m_mtgsCopyCommandTally = 0;
+	mtgs_CopyCommandTally = 0;
 }
 
 void gsWaitGS()
@@ -504,7 +541,7 @@ static void gsSetEventWait()
 	FreezeXMMRegs(0); 
 	FreezeMMXRegs(0);
 
-	m_mtgsCopyCommandTally = 0;
+	mtgs_CopyCommandTally = 0;
 }
 
 // mem and size are the ones returned from GSRingBufCopy
@@ -553,13 +590,14 @@ void GSRINGBUF_DONECOPY(const u8* mem, u32 size)
 	//  24 - very slow on HT machines (+5% drop in fps)
 	//  8 - roughly 2% slower on HT machines.
 
-	FreezeXMMRegs(1); 
-	FreezeMMXRegs(1);
-	if( ++m_mtgsCopyCommandTally > 16 )
+	if( ++mtgs_CopyCommandTally > 16 )
+	{
+		FreezeXMMRegs(1); 
+		FreezeMMXRegs(1);
 		GS_SETEVENT();
-	FreezeXMMRegs(0); 
-	FreezeMMXRegs(0);
-
+		FreezeXMMRegs(0); 
+		FreezeMMXRegs(0);
+	}
 }
 
 void gsShutdown()
@@ -571,7 +609,7 @@ void gsShutdown()
 		// (they might be 1 byte under some compilers).
 		gsHasToExit = true;
 
-		SysPrintf("Closing gs thread\n");
+		SysPrintf("MTGS > Closing GS thread...\n");
 		GS_SETEVENT();
 
 		if (g_hVuGsThread != NULL) thread_close( g_hVuGsThread );
@@ -582,13 +620,6 @@ void gsShutdown()
 		mutex_destroy( stackLock );
 #endif
 		gsHasToExit = false;
-
-#ifdef _WIN32
-		VirtualFree(GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE, MEM_DECOMMIT|MEM_RELEASE);
-#else
-        SysMunmap((uptr)GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE);
-#endif
-
 	}
 	else
 		GSclose();
@@ -803,6 +834,33 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	AtomicExchangePointer( g_pGSWritePos, future_writepos );
 }
 
+void GSRingBufSimplePacket64(int type, u32 data0, u64 data1 )
+{
+	u8* writepos = g_pGSWritePos;
+	const u8* future_writepos = writepos+16;
+
+	assert( future_writepos <= GS_RINGBUFFEREND );
+
+    if( future_writepos == GS_RINGBUFFEREND )
+        future_writepos = GS_RINGBUFFERBASE;
+
+	while( future_writepos == *(volatile PU8*)&g_pGSRingPos )
+		gsSetEventWait();
+
+#ifdef RINGBUF_DEBUG_STACK
+	mutex_lock( stackLock );
+	ringposStack.push_front( (long)writepos );
+	mutex_unlock( stackLock );
+#endif
+
+	*(u32*)writepos = type;
+	*(u32*)(writepos+4) = data0;
+	*(u64*)(writepos+8) = data1;
+
+	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
+	AtomicExchangePointer( g_pGSWritePos, future_writepos );
+}
+
 void gsReset()
 {
 	if( CHECK_MULTIGS )
@@ -818,16 +876,21 @@ void gsReset()
 #endif
 		MTGS_LOG( "MTGS > Sending Reset...\n" );
 		GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
+		GSRingBufSimplePacket( GS_RINGTYPE_FRAMESKIP, 0, 0, 0 );
 
 #ifdef _DEBUG
 		g_mtgsCopyLock = 0;
 #endif
+		// I think this would be a good idea (air)
+		//Path3transfer = 0;
 		memset(g_path, 0, sizeof(g_path));
-		memset(s_byRegs, 0, sizeof(s_byRegs));
+		//memset(s_byRegs, 0, sizeof(s_byRegs));
 	}
 	else
 	{
 		SysPrintf("GIF reset\n");
+		GSreset();
+		GSsetFrameSkip(0);
 	}
 
 	OnModeChanged(
@@ -850,9 +913,9 @@ static bool _gsGIFSoftReset( int mask )
 {
 	if( CHECK_MULTIGS )
 	{
-		if(mask & 1) memset(&g_path[0], 0, sizeof(GIFTAG));
-		if(mask & 2) memset(&g_path[1], 0, sizeof(GIFTAG));
-		if(mask & 4) memset(&g_path[2], 0, sizeof(GIFTAG));
+		if(mask & 1) memset(&g_path[0], 0, sizeof(g_path[0]));
+		if(mask & 2) memset(&g_path[1], 0, sizeof(g_path[1]));
+		if(mask & 4) memset(&g_path[2], 0, sizeof(g_path[2]));
 	}
 
 	if( GSgifSoftReset == NULL )
@@ -1074,7 +1137,7 @@ void gsIrq() {
 	hwIntcIrq(0);
 }
 
-static void GSRegHandlerSIGNAL(u32* data)
+static void GSRegHandlerSIGNAL(const u32* data)
 {
 	MTGS_LOG("MTGS SIGNAL data %x_%x CSRw %x\n",data[0], data[1], CSRw);
 
@@ -1090,7 +1153,7 @@ static void GSRegHandlerSIGNAL(u32* data)
 	
 }
 
-static void GSRegHandlerFINISH(u32* data)
+static void GSRegHandlerFINISH(const u32* data)
 {
 	MTGS_LOG("MTGS FINISH data %x_%x CSRw %x\n",data[0], data[1], CSRw);
 
@@ -1102,188 +1165,196 @@ static void GSRegHandlerFINISH(u32* data)
 	
 }
 
-static void GSRegHandlerLABEL(u32* data)
+static void GSRegHandlerLABEL(const u32* data)
 {
 	GSSIGLBLID->LBLID = (GSSIGLBLID->LBLID&~data[1])|(data[0]&data[1]);
 }
 
-typedef void (*GIFRegHandler)(u32* data);
+typedef void (*GIFRegHandler)(const u32* data);
 static GIFRegHandler s_GSHandlers[3] = { GSRegHandlerSIGNAL, GSRegHandlerFINISH, GSRegHandlerLABEL };
 
-/*midnight madness cares because the tag is 5 dwords*/ \
-static __forceinline void TagPathTransfer( const GIFTAG* ptag, GIFTAG *path )
+enum GIF_FLG
 {
-	const u64* psrc = (const u64*)ptag;
-	u64* pdst = (u64*)path;
-	pdst[0] = psrc[0];
-	pdst[1] = psrc[1];
-	//pdst[2] = psrc[2];
-	//pdst[3] = psrc[3];
-}
+	GIF_FLG_PACKED	= 0,
+	GIF_FLG_REGLIST	= 1,
+	GIF_FLG_IMAGE	= 2,
+	GIF_FLG_IMAGE2	= 3
+};
 
+enum GIF_REG
+{
+	GIF_REG_PRIM	= 0x00,
+	GIF_REG_RGBA	= 0x01,
+	GIF_REG_STQ		= 0x02,
+	GIF_REG_UV		= 0x03,
+	GIF_REG_XYZF2	= 0x04,
+	GIF_REG_XYZ2	= 0x05,
+	GIF_REG_TEX0_1	= 0x06,
+	GIF_REG_TEX0_2	= 0x07,
+	GIF_REG_CLAMP_1	= 0x08,
+	GIF_REG_CLAMP_2	= 0x09,
+	GIF_REG_FOG		= 0x0a,
+	GIF_REG_XYZF3	= 0x0c,
+	GIF_REG_XYZ3	= 0x0d,
+	GIF_REG_A_D		= 0x0e,
+	GIF_REG_NOP		= 0x0f,
+};
 
 // simulates a GIF tag
-u32 GSgifTransferDummy(int path, u32 *pMem, u32 size)
+u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 {
-	int nreg = 0, i, nloop;
-	u32 curreg = 0;
-	u32 tempreg;
-	GIFTAG* ptag = &g_path[path];
-
-	if( path == 0 ) {
-		nloop = 0;
-	}
-	else {
-		nloop = ptag->nloop;
-		curreg = ptag->curreg;
-		nreg = ptag->nreg == 0 ? 16 : ptag->nreg;
-	}
+	GIFPath& path = g_path[pathidx];
 
 	while(size > 0)
 	{
-		if(nloop == 0) 
-		{
-			ptag = (GIFTAG*)pMem;
-			nreg = ptag->nreg == 0 ? 16 : ptag->nreg;
+		bool eop = false;
 
-			pMem+= 4;
+		if(path.tag.nloop == 0)
+		{
+			path.SetTag( pMem );
+
+			pMem += sizeof(GIFTAG);
 			size--;
 
-			if( path == 2 && ptag->eop) Path3transfer = 0; //fixes SRS and others
+			if(pathidx == 2 && path.tag.eop)
+				Path3transfer = 0;
 
-			if( path == 0 ) 
-			{ 				
-				// if too much data for VU1, just ignore
-				if((ptag->nloop * nreg) > (size * (ptag->flg == 1 ? 2 : 1))) {
-					g_path[path].nloop = 0;
-					return ++size; // have to increment or else the GS plugin will process this packet
+			if(path.tag.pre)
+			{
+				assert(path.tag.flg != GIF_FLG_IMAGE); // kingdom hearts, ffxii, tales of abyss
+
+				if((path.tag.flg & 2) == 0)
+				{
+					// Primitive handler... Nothing for the Dummy to do here.
+
+					//GIFReg r;
+					//r.i64 = path.tag.PRIM;
+					//(this->*m_fpGIFRegHandlers[GIF_A_D_REG_PRIM])(&r);
 				}
 			}
 
-			if (ptag->nloop == 0 ) {
-				if (path == 0 ) {
-					if ((!ptag->eop) && (g_FFXHack))
-						continue;
-					else
-						return size;
-				}
-
-				g_path[path].nloop = 0;
-
-				// motogp graphics show
-				if (!ptag->eop )
+			if(path.tag.eop)
+			{
+				eop = true;
+			}
+			else if(path.tag.nloop == 0)
+			{
+				if(pathidx == 0 && g_FFXHack)
+				{
 					continue;
-				else
-					return size;
-			}
+				}
 
-			tempreg = ptag->regs[0];
-			for(i = 0; i < nreg; ++i, tempreg >>= 4) {
-				if( i == 8 ) tempreg = ptag->regs[1];
-				s_byRegs[path][i] = tempreg&0xf;
+				eop = true;
 			}
-
-			nloop = ptag->nloop;
-			curreg = 0;
 		}
 
-		switch(ptag->flg)
+		if(path.tag.nloop > 0)
 		{
-			case 0: // PACKED
+			switch(path.tag.flg)
 			{
-				for(; size > 0; size--, pMem += 4)
+			case GIF_FLG_PACKED:
+
+				while(size > 0)
 				{
-					if( s_byRegs[path][curreg] == 0xe  && (pMem[2]&0xff) >= 0x60 ) {
-						if( (pMem[2]&0xff) < 0x63 )
-							s_GSHandlers[pMem[2]&0x3](pMem);
+					if( path.GetReg() == 0xe )
+					{
+						const int handler = pMem[8];
+						if(handler >= 0x60 && handler < 0x63)
+							s_GSHandlers[handler&0x3]((const u32*)pMem);
 					}
+					size--;
+					pMem += 16; // 128 bits! //sizeof(GIFPackedReg);
 
-					curreg++;
-					if (nreg == curreg) {
-						curreg = 0;
-						if( nloop-- <= 1 ) {
-							size--;
-							pMem += 4;
+					if((++path.nreg & 0xf) == path.tag.nreg) 
+					{
+						path.nreg = 0; 
+						path.tag.nloop--;
+
+						if(path.tag.nloop == 0)
+						{
 							break;
 						}
 					}
 				}
 
-				if( nloop > 0 ) {
-					assert(size == 0);
-					TagPathTransfer( ptag, &g_path[path] );
-					g_path[path].nloop = nloop;
-					g_path[path].curreg = curreg;
-					return 0;
-				}
 				break;
-			}
-			case 1: // REGLIST
-			{
+
+			case GIF_FLG_REGLIST:
+
 				size *= 2;
-	
-				tempreg = ptag->regs[0];
-				for(i = 0; i < nreg; ++i, tempreg >>= 4) {
-					if( i == 8 ) tempreg = ptag->regs[1];
-					assert( (tempreg&0xf) < 0x64 );
-					s_byRegs[path][i] = tempreg&0xf;
-				}
 
-				for(; size > 0; pMem+= 2, size--) {
-					if( s_byRegs[path][curreg] >= 0x60 && s_byRegs[path][curreg] < 0x63 )
-						s_GSHandlers[s_byRegs[path][curreg]&3](pMem);
+				while(size > 0)
+				{
+					const int handler = path.GetReg();
+					if(handler >= 0x60 && handler < 0x63)
+						s_GSHandlers[handler&0x3]((const u32*)pMem);
 
-					curreg++;
-					if (nreg == curreg) {
-						curreg = 0;
-						if( nloop-- <= 1 ) {
-							size--;
-							pMem += 2;
+					size--;
+					pMem += 8; //sizeof(GIFReg); -- 64 bits!
+
+					if((++path.nreg & 0xf) == path.tag.nreg) 
+					{
+						path.nreg = 0; 
+						path.tag.nloop--;
+
+						if(path.tag.nloop == 0)
+						{
 							break;
 						}
 					}
 				}
+			
+				if(size & 1) pMem += 8; //sizeof(GIFReg);
 
-				if( size & 1 ) pMem += 2;
 				size /= 2;
 
-				if( nloop > 0 ) {
-					assert(size == 0);
-					TagPathTransfer( ptag, &g_path[path] );
-					g_path[path].nloop = nloop;
-					g_path[path].curreg = curreg;
-					return 0;
+				break;
+
+			case GIF_FLG_IMAGE2: // hmmm
+
+				assert(0);
+
+				path.tag.nloop = 0;
+
+				break;
+
+			case GIF_FLG_IMAGE:
+				{
+					int len = (int)min(size, path.tag.nloop);
+
+					//ASSERT(!(len&3));
+
+					pMem += len * 16;
+					path.tag.nloop -= len;
+					size -= len;
 				}
 
 				break;
-			}
-			case 2: // GIF_IMAGE (FROM_VFRAM)
-			case 3:
-			{
-				// simulate
-				if( (int)size < nloop ) {
-					TagPathTransfer( ptag, &g_path[path] );
-					g_path[path].nloop = nloop-size;
-					return 0;
-				}
-				else {
-					pMem += nloop*4;
-					size -= nloop;
-					nloop = 0;
-				}
-				break;
+
+
+			jNO_DEFAULT;
+
 			}
 		}
-		
-		if( path == 0 && ptag->eop ) {
-			g_path[0].nloop = 0;
-			return size;
+
+		if(eop && ((int)size <= 0 || pathidx == 0))
+		{
+			break;
 		}
 	}
-	
-	g_path[path] = *ptag;
-	g_path[path].curreg = curreg;
-	g_path[path].nloop = nloop;
+
+	// FIXME: dq8, pcsx2 error probably
+
+	if(pathidx == 0)
+	{
+		if(!path.tag.eop && path.tag.nloop > 0)
+		{
+			path.tag.nloop = 0;
+
+			SysPrintf( "path1 hack!" );
+		}
+	}
+
 	return size;
 }
 static int gspath3done=0;
@@ -1329,8 +1400,11 @@ static u64 s_gstag=0; // used for querying the last tag
 static void WRITERING_DMA(u32 *pMem, u32 qwc)
 { 
 	psHu32(GIF_STAT) |= 0xE00;         
-	Path3transfer = 1; 
-	if( CHECK_MULTIGS)
+
+	// Path3 transfer will be set to zero by the GIFhandler.
+	Path3transfer = 1;
+
+	if( CHECK_MULTIGS )
 	{ 
 		int sizetoread = (qwc)<<4; 
 		u8* pgsmem = GSRingBufCopy(sizetoread, GS_RINGTYPE_P3); 
@@ -1348,7 +1422,7 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 		}
 		else memcpy_raz_(pgsmem, pMem, sizetoread); 
 		
-		GSgifTransferDummy(2, pMem, qwc); 
+		GSgifTransferDummy(2, (u8*)pMem, qwc); 
 		GSRINGBUF_DONECOPY(pgsmem, sizetoread);
 	} 
 	else 
@@ -1357,10 +1431,8 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
         if( GSgetLastTag != NULL )
 		{ 
             GSgetLastTag(&s_gstag); 
-            if( (s_gstag) == 1 )
-			{
+            if( s_gstag == 1 )
                 Path3transfer = 0; /* fixes SRS and others */ 
-            } 
         } 
 	} 
 } 
@@ -1476,7 +1548,7 @@ void GIFdma()
 		// I'm not really sure that is intentional. --arcum42
 		FreezeXMMRegs(1); 
 		FreezeMMXRegs(1);
-		GIFchain(); 		
+		GIFchain(); 
 		FreezeXMMRegs(0); // Theres a comment below that says not to unfreeze the xmm regs, so not sure about this.
 		FreezeMMXRegs(0);
 
@@ -1825,7 +1897,7 @@ void gsSyncLimiterLostTime( s32 deltaTime )
 // and would also mean that aforementioned menus would still be laggy by whatever
 // frame count threshold.  This method is more responsive.
 
-static __forceinline void frameSkip()
+static __forceinline void frameSkip( bool forceskip )
 {
 	static u8 FramesToRender = 0;
 	static u8 FramesToSkip = 0;
@@ -1847,6 +1919,30 @@ static __forceinline void frameSkip()
 
 	m_iSlowStart = uSlowExpectedEnd;
 
+	if( forceskip )
+	{
+		if( !FramesToSkip )
+		{
+			SysPrintf( "- Skipping some VUs!\n" );
+
+			GSsetFrameSkip( 1 );
+			FramesToRender = noSkipFrames;
+			FramesToSkip = 1;	// just set to 1
+
+			// We're already skipping, so FramesToSkip==1 will just restore the gsFrameSkip
+			// setting and reset our delta times as needed.
+		}
+		return;
+	}
+	
+	// if we've already given the EE a skipcount assignment then don't do anything more.
+	// Otherwise we could start compounding the issue and skips would be too long.
+	if( g_vu1SkipCount > 0 )
+	{
+		SysPrintf("- Already Assigned a Skipcount.. %d\n", g_vu1SkipCount );
+		return;
+	}
+
 	if( FramesToRender == 0 )
 	{
 		// -- Standard operation section --
@@ -1865,17 +1961,22 @@ static __forceinline void frameSkip()
 			// We also check for that here.
 
 			if( (m_justSkipped && (sSlowDeltaTime > m_iSlowTicks)) || 
-				sSlowDeltaTime > m_iSlowTicks*2 )
+				(sSlowDeltaTime > m_iSlowTicks*2) )
 			{
-				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
+				SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
 				
-				GSsetFrameSkip(1);
-
 				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
-					AtomicExchangePointer( Cpu->ExecuteVU1Block, DummyExecuteVU1Block );
-
-				FramesToRender = noSkipFrames+1;
-				FramesToSkip = yesSkipFrames;
+				{
+					// For best results we have to wait for the EE to
+					// tell us when to skip, so that VU skips are synched with GS skips.
+					AtomicExchangeAdd( g_vu1SkipCount, yesSkipFrames+1 );
+				}
+				else
+				{
+					GSsetFrameSkip(1);
+					FramesToRender = noSkipFrames+1;
+					FramesToSkip = yesSkipFrames;
+				}
 			}
 		}
 		else
@@ -1914,8 +2015,6 @@ static __forceinline void frameSkip()
 			}
 
 			m_justSkipped = true;
-			if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP ) 
-				AtomicExchangePointer( Cpu->ExecuteVU1Block, s_prevExecuteVU1Block );
 		}
 		else
 			return;
@@ -1934,7 +2033,8 @@ static __forceinline void frameSkip()
 	}
 }
 
-void gsPostVsyncEnd()
+// updategs - if FALSE the gs will skip the frame.
+void gsPostVsyncEnd( bool updategs )
 {
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
 
@@ -1944,7 +2044,7 @@ void gsPostVsyncEnd()
 		AtomicIncrement( g_pGSvSyncCount );
 		//SysPrintf( " Sending VSync : %d \n", g_pGSvSyncCount );
 #endif
-		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), 0, 0);
+		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), updategs, 0);
 
 		// No need to freeze MMX/XMM registers here since this
 		// code is always called from the context of a BranchTest.
@@ -1958,13 +2058,13 @@ void gsPostVsyncEnd()
 		if( PAD1update != NULL ) PAD1update(0);
 		if( PAD2update != NULL ) PAD2update(1);
 
-		frameSkip();
+		frameSkip( !updategs );
 	}
 }
 
 static void _resetFrameskip()
 {
-	AtomicExchangePointer( Cpu->ExecuteVU1Block, s_prevExecuteVU1Block );
+	g_vu1SkipCount = 0;		// set to 0 so that EE will re-enable the VU at the next vblank.
 	GSsetFrameSkip( 0 );
 }
 
@@ -2058,7 +2158,7 @@ GS_THREADPROC
 				{
 					GSvsync(*(u32*)(g_pGSRingPos+4));
 
-					frameSkip();
+					frameSkip( !( *(u32*)(g_pGSRingPos+8) ) );
 
                     if( PAD1update != NULL ) PAD1update(0);
                     if( PAD2update != NULL ) PAD2update(1);
@@ -2199,12 +2299,25 @@ GS_THREADPROC
 	return 0;
 }
 
-int gsFreeze(gzFile f, int Mode) {
-
+int gsFreeze(gzFile f, int Mode)
+{
 	gzfreeze(PS2MEM_GS, 0x2000);
 	gzfreeze(&CSRw, sizeof(CSRw));
-	gzfreeze(g_path, sizeof(g_path));
-	gzfreeze(s_byRegs, sizeof(s_byRegs));
+
+	for(int i=0; i<3; i++ )
+	{
+		gzfreeze( &g_path[i].tag, sizeof( g_path[i].tag ) );
+
+		// Earlier versions had an extra u32 in the tag struct:
+
+		//if( Mode == 0 && g_SaveVersion <= 0x7a300010 )
+		{
+			u32 dummy; gzread( f, &dummy, sizeof( dummy ) );
+		}
+	}
+
+	for(int i=0; i<3; i++ )
+		gzfreeze( &g_path[i].regs, sizeof( g_path[i].regs ) );
 
 	return 0;
 }

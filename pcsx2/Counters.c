@@ -37,6 +37,13 @@ Counter counters[6];
 u32 nextsCounter;	// records the cpuRegs.cycle value of the last call to rcntUpdate()
 s32 nextCounter;	// delta from nextsCounter, in cycles, until the next rcntUpdate() 
 
+// VUSkip Locals and Globals
+
+u32 g_vu1SkipCount;	// number of frames to disable/skip VU1
+static void (*s_prevExecuteVU1Block)() = NULL;	// old VU1 block (either Int or Rec)
+
+extern void DummyExecuteVU1Block(void);
+
 void rcntReset(int index) {
 	counters[index].count = 0;
 	counters[index].sCycleT = cpuRegs.cycle;
@@ -237,6 +244,11 @@ u32 UpdateVSyncRate()
 	m_iStart = GetCPUTicks();
 	cpuRcntSet();
 
+	// Initialize VU Skip Stuff...
+	assert(Cpu != NULL && Cpu->ExecuteVU1Block != NULL );
+	s_prevExecuteVU1Block = Cpu->ExecuteVU1Block;
+	g_vu1SkipCount = 0;
+
 	return (u32)m_iTicks;
 }
 
@@ -393,18 +405,26 @@ static __forceinline void VSyncStart(u32 sCycle) // VSync Start
 	if (Config.Patch) applypatch(1); // Apply patches (ToDo: clean up patch code)
 }
 
-extern void gsPostVsyncEnd();
-
 static __forceinline void VSyncEnd(u32 sCycle) // VSync End
 {
 	iFrame++;
 
-	gsPostVsyncEnd();
+	if( g_vu1SkipCount > 0 )
+	{
+		gsPostVsyncEnd( false );
+		AtomicDecrement( g_vu1SkipCount );
+		Cpu->ExecuteVU1Block = DummyExecuteVU1Block;
+	}
+	else
+	{
+		gsPostVsyncEnd( true );
+		Cpu->ExecuteVU1Block = s_prevExecuteVU1Block;
+	}
 
 	hwIntcIrq(3);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End
 	if (gates) rcntEndGate(0x8, sCycle); // Counters End Gate Code
-	frameLimit(); // limit FPS (also handles frameskip and VUskip)
+	frameLimit(); // limit FPS
 }
 
 //#define VSYNC_DEBUG		// Uncomment this to enable some vSync Timer debugging features.

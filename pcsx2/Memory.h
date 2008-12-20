@@ -66,22 +66,62 @@ struct PSMEMORYMAP
 
 #define PSM(mem)	(PS2MEM_BASE + TRANSFORM_ADDR(mem))
 
-int  memRead8(u32 mem, u8  *out);
-int  memRead8RS(u32 mem, u64 *out);
-int  memRead8RU(u32 mem, u64 *out);
-int  memRead16(u32 mem, u16 *out);
-int  memRead16RS(u32 mem, u64 *out);
-int  memRead16RU(u32 mem, u64 *out);
-int  memRead32(u32 mem, u32 *out);
-int  memRead32RS(u32 mem, u64 *out);
-int  memRead32RU(u32 mem, u64 *out);
-int  memRead64(u32 mem, u64 *out);
-int  memRead128(u32 mem, u64 *out);
-void memWrite8 (u32 mem, u8  value);
-void memWrite16(u32 mem, u16 value);
-void memWrite32(u32 mem, u32 value);
-void memWrite64(u32 mem, const u64 *value);
-void memWrite128(u32 mem, const u64 *value);
+int __fastcall memRead8(u32 mem, u8  *out);
+int __fastcall memRead8RS(u32 mem, u64 *out);
+int __fastcall memRead8RU(u32 mem, u64 *out);
+int __fastcall memRead16(u32 mem, u16 *out);
+int __fastcall memRead16RS(u32 mem, u64 *out);
+int __fastcall memRead16RU(u32 mem, u64 *out);
+int __fastcall memRead32(u32 mem, u32 *out);
+int __fastcall memRead32RS(u32 mem, u64 *out);
+int __fastcall memRead32RU(u32 mem, u64 *out);
+int __fastcall memRead64(u32 mem, u64 *out);
+int __fastcall memRead128(u32 mem, u64 *out);
+void __fastcall memWrite8 (u32 mem, u8  value);
+void __fastcall memWrite16(u32 mem, u16 value);
+void __fastcall memWrite32(u32 mem, u32 value);
+void __fastcall memWrite64(u32 mem, const u64 *value);
+void __fastcall memWrite128(u32 mem, const u64 *value);
+
+// recMemConstRead8, recMemConstRead16, recMemConstRead32 return 1 if a call was made, 0 otherwise
+u8 recMemRead8();
+u16 recMemRead16();
+u32 recMemRead32();
+void recMemRead64(u64 *out);
+void recMemRead128(u64 *out);
+
+void recMemWrite8();
+void recMemWrite16();
+void recMemWrite32();
+void recMemWrite64();
+void recMemWrite128();
+
+void _eeReadConstMem8(int mmreg, u32 mem, int sign);
+void _eeReadConstMem16(int mmreg, u32 mem, int sign);
+void _eeReadConstMem32(int mmreg, u32 mem);
+void _eeReadConstMem128(int mmreg, u32 mem);
+void _eeWriteConstMem8(u32 mem, int mmreg);
+void _eeWriteConstMem16(u32 mem, int mmreg);
+void _eeWriteConstMem32(u32 mem, int mmreg);
+void _eeWriteConstMem64(u32 mem, int mmreg);
+void _eeWriteConstMem128(u32 mem, int mmreg);
+void _eeMoveMMREGtoR(int to, int mmreg);
+
+// extra ops
+void _eeWriteConstMem16OP(u32 mem, int mmreg, int op);
+void _eeWriteConstMem32OP(u32 mem, int mmreg, int op);
+
+int recMemConstRead8(u32 x86reg, u32 mem, u32 sign);
+int recMemConstRead16(u32 x86reg, u32 mem, u32 sign);
+int recMemConstRead32(u32 x86reg, u32 mem);
+void recMemConstRead64(u32 mem, int mmreg);
+void recMemConstRead128(u32 mem, int xmmreg);
+
+int recMemConstWrite8(u32 mem, int mmreg);
+int recMemConstWrite16(u32 mem, int mmreg);
+int recMemConstWrite32(u32 mem, int mmreg);
+int recMemConstWrite64(u32 mem, int mmreg);
+int recMemConstWrite128(u32 mem, int xmmreg);
 
 #else
 
@@ -181,20 +221,6 @@ void memSetPageAddr(u32 vaddr, u32 paddr);
 void memClearPageAddr(u32 vaddr);
 void memShutdown();
 
-// recMemConstRead8, recMemConstRead16, recMemConstRead32 return 1 if a call was made, 0 otherwise
-u8 recMemRead8();
-u16 recMemRead16();
-u32 recMemRead32();
-void recMemRead64(u64 *out);
-void recMemRead128(u64 *out);
-
-// returns 1 if mem should be cleared
-void recMemWrite8();
-void recMemWrite16();
-void recMemWrite32();
-void recMemWrite64();
-void recMemWrite128();
-
 #ifdef _WIN32 
 int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps);
 #endif
@@ -255,39 +281,6 @@ void __fastcall _memWrite128(u32 mem, u64 *value);
 #define recMemConstWrite32 0&&
 #define recMemConstWrite64 0&&
 #define recMemConstWrite128 0&&
-
-#else	// PCSX2_VIRTUAL_MEM
-
-// VM only functions
-
-void _eeReadConstMem8(int mmreg, u32 mem, int sign);
-void _eeReadConstMem16(int mmreg, u32 mem, int sign);
-void _eeReadConstMem32(int mmreg, u32 mem);
-void _eeReadConstMem128(int mmreg, u32 mem);
-void _eeWriteConstMem8(u32 mem, int mmreg);
-void _eeWriteConstMem16(u32 mem, int mmreg);
-void _eeWriteConstMem32(u32 mem, int mmreg);
-void _eeWriteConstMem64(u32 mem, int mmreg);
-void _eeWriteConstMem128(u32 mem, int mmreg);
-void _eeMoveMMREGtoR(int to, int mmreg);
-
-// extra ops
-void _eeWriteConstMem16OP(u32 mem, int mmreg, int op);
-void _eeWriteConstMem32OP(u32 mem, int mmreg, int op);
-
-int recMemConstRead8(u32 x86reg, u32 mem, u32 sign);
-int recMemConstRead16(u32 x86reg, u32 mem, u32 sign);
-int recMemConstRead32(u32 x86reg, u32 mem);
-void recMemConstRead64(u32 mem, int mmreg);
-void recMemConstRead128(u32 mem, int xmmreg);
-
-int recMemConstWrite8(u32 mem, int mmreg);
-int recMemConstWrite16(u32 mem, int mmreg);
-int recMemConstWrite32(u32 mem, int mmreg);
-int recMemConstWrite64(u32 mem, int mmreg);
-int recMemConstWrite128(u32 mem, int xmmreg);
-
-
 #endif
 
 #endif

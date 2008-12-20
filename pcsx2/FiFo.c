@@ -131,7 +131,7 @@ void WriteFIFO(u32 mem, const u64 *value) {
 
 			data[0] = value[0];
 			data[1] = value[1];
-			GSgifTransferDummy(2, (u32*)data, 1);
+			GSgifTransferDummy(2, (u8*)data, 1);
 			GSRINGBUF_DONECOPY((u8*)data, 16);
 		}
 		else {

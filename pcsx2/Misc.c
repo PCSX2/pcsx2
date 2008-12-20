@@ -571,8 +571,16 @@ int LoadState(const char *file) {
 	if( dwCurSaveStateVer != g_SaveVersion ) {
 
 #ifdef PCSX2_VIRTUAL_MEM
+		if( dwCurSaveStateVer >= 0x8b400000 )
+		{
+		gzclose(f);
+		SysPrintf(
+			"Savestate load aborted:\n"
+			"  VM edition cannot safely load savestates created by the VTLB edition.\n" );
+		return 0;
+		}
 		// pcsx2 vm supports opening these formats
-		if( dwCurSaveStateVer != 0x7a30000d && dwCurSaveStateVer != 0x7a30000e  && dwCurSaveStateVer != 0x7a30000f) {
+		if( dwCurSaveStateVer < 0x7a30000d) {
 			gzclose(f);
 			SysPrintf("Unsupported savestate version: %x.\n", dwCurSaveStateVer );
 			return 0;
@@ -581,7 +589,7 @@ int LoadState(const char *file) {
 		gzclose(f);
 		SysPrintf(
 			"Savestate load aborted:\n"
-			"  vTlb edition cannot safely load savestates created by the VM edition.\n" );
+			"  VTLB edition cannot safely load savestates created by the VM edition.\n" );
 		return 0;
 #endif
 	}

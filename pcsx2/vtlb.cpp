@@ -26,15 +26,15 @@
 
 #define verify(x) {if (!(x)) { (*(u8*)0)=3; }}
 
-const u32 VTLB_PAGE_BITS =12;
-const u32 VTLB_PAGE_MASK=(4095);
-const u32 VTLB_PAGE_SIZE=(4096);
+static const uint VTLB_PAGE_BITS =12;
+static const uint VTLB_PAGE_MASK=(4095);
+static const uint VTLB_PAGE_SIZE=(4096);
 
-const u32 VTLB_PMAP_ITEMS=(0x20000000/VTLB_PAGE_SIZE);
-const u32 VTLB_PMAP_SZ=0x20000000;
-const u32 VTLB_VMAP_ITEMS=(0x100000000ULL/VTLB_PAGE_SIZE);
-s32 pmap[VTLB_PMAP_ITEMS];	//512KB
-s32 vmap[VTLB_VMAP_ITEMS];   //4MB
+static const uint VTLB_PMAP_ITEMS=(0x20000000/VTLB_PAGE_SIZE);
+static const uint VTLB_PMAP_SZ=0x20000000;
+static const uint VTLB_VMAP_ITEMS=(0x100000000ULL/VTLB_PAGE_SIZE);
+static s32 pmap[VTLB_PMAP_ITEMS];	//512KB
+static s32 vmap[VTLB_VMAP_ITEMS];   //4MB
 
 //5 -> one for each size
 //2 -> read/write
@@ -204,7 +204,7 @@ void __fastcall vtlb_memWrite128(u32 mem, const u64 *value)
 	MemOp_w1<128,u64>(mem,value);
 }
 
-int vtlb_Miss(u32 addr,u32 mode)
+static __forceinline int vtlb_Miss(u32 addr,u32 mode)
 {
 	SysPrintf("vtlb miss : addr 0x%X, mode %d\n",addr,mode);
 	verify(false);
@@ -215,7 +215,7 @@ int vtlb_Miss(u32 addr,u32 mode)
 	
 	return -1;
 }
-int vtlb_BusError(u32 addr,u32 mode)
+static __forceinline int vtlb_BusError(u32 addr,u32 mode)
 {
 	SysPrintf("vtlb bus error : addr 0x%X, mode %d\n",addr,mode);
 	verify(false);
@@ -303,7 +303,7 @@ void vtlb_MapHandler(vtlbHandler handler,u32 start,u32 size)
 	verify(0==(size&VTLB_PAGE_MASK) && size>0);
 	s32 value=handler|0x80000000;
 
-	while(size)
+	while(size>0)
 	{
 		pmap[start>>VTLB_PAGE_BITS]=value;
 
@@ -322,7 +322,7 @@ void vtlb_MapBlock(void* base,u32 start,u32 size,u32 blocksize)
 	verify(0==(blocksize&VTLB_PAGE_MASK) && blocksize>0);
 	verify(0==(size%blocksize));
 
-	while(size)
+	while(size>0)
 	{
 		u32 blocksz=blocksize;
 		s32 ptr=baseint;
@@ -344,7 +344,7 @@ void vtlb_Mirror(u32 new_region,u32 start,u32 size)
 	verify(0==(start&VTLB_PAGE_MASK));
 	verify(0==(size&VTLB_PAGE_MASK) && size>0);
 
-	while(size)
+	while(size>0)
 	{
 		pmap[start>>VTLB_PAGE_BITS]=pmap[new_region>>VTLB_PAGE_BITS];
 
@@ -354,7 +354,7 @@ void vtlb_Mirror(u32 new_region,u32 start,u32 size)
 	}	
 }
 
-void* vtlb_GetPhyPtr(u32 paddr)
+__forceinline void* vtlb_GetPhyPtr(u32 paddr)
 {
 	if (paddr>=VTLB_PMAP_SZ || pmap[paddr>>VTLB_PAGE_BITS]<0)
 		return 0;
@@ -372,7 +372,6 @@ void vtlb_VMap(u32 vaddr,u32 paddr,u32 sz)
 
 	while(sz>0)
 	{
-		
 		s32 pme;
 		if (paddr>=VTLB_PMAP_SZ)
 		{

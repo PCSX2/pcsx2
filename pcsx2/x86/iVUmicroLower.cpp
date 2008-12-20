@@ -2393,7 +2393,7 @@ void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 	static int scount = 0;
 	++scount;
 
-	size = GSgifTransferDummy(0, data, (0x4000-(addr&0x3fff))>>4);
+	size = GSgifTransferDummy(0, (u8*)data, (0x4000-(addr&0x3fff))>>4);
 
 	size = 0x4000-(size<<4)-(addr&0x3fff);
     assert( size >= 0 );

@@ -3798,7 +3798,7 @@ void SetFastMemory(int bSetFast)
 	// nothing
 }
 
-void vtlb_DynGenOp(bool Read,u32 sz)
+static __forceinline void vtlb_DynGenOp(bool Read,u32 sz)
 {
 	int reg=-1;
 

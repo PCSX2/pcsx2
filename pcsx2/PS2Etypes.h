@@ -30,6 +30,36 @@
 #define ARRAYSIZE(x) (sizeof(x)/sizeof((x)[0]))
 #endif
 
+// jASSUME - give hints to the optimizer
+//  This is primarily useful for the default case switch optimizer, which enables VC to
+//  generate more compact switches.
+
+#ifdef NDEBUG
+#	define jBREAKPOINT() ((void) 0)
+#	ifdef _MSC_VER
+#		define jASSUME(exp) (__assume(exp))
+#	else
+#		define jASSUME(exp) ((void) sizeof(exp))
+#	endif
+#else
+#	if defined(_MSC_VER)
+#		define jBREAKPOINT() do { __asm int 3 } while(0)
+#	else
+#		define jBREAKPOINT() ((void) *(volatile char *) 0)
+#	endif
+#	define jASSUME(exp) if(exp) ; else jBREAKPOINT()
+#endif
+
+// disable the default case in a switch
+#define jNO_DEFAULT \
+{ \
+	break; \
+	\
+default: \
+	jASSUME(0); \
+	break; \
+}
+
 
 // Basic types
 #if defined(_MSC_VER)
@@ -43,6 +73,8 @@ typedef unsigned __int8  u8;
 typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
+
+typedef unsigned int uint;
 
 #define PCSX2_ALIGNED(alig,x) __declspec(align(alig)) x
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
@@ -79,7 +111,10 @@ typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
+
 #endif
+
+typedef unsigned int uint;
 
 #define LONG long
 typedef union _LARGE_INTEGER

@@ -1631,7 +1631,7 @@ static int Vif1TransDirectHL(u32 *data){
 				dst[1] = src[1];
 
 				GSRINGBUF_DONECOPY(gsmem, 16);
-				GSgifTransferDummy(1, (u32*)splittransfer[0], 1);
+				GSgifTransferDummy(1, (u8*)splittransfer[0], 1);
 			}
 		}
 		else {
@@ -1675,7 +1675,7 @@ static int Vif1TransDirectHL(u32 *data){
 			//unaligned copy.VIF handling is -very- messy, so i'l use this code til i fix it :)
 			memcpy_raz_u(gsmem,data,ret<<2);
 			GSRINGBUF_DONECOPY(gsmem, ret<<2);
-			GSgifTransferDummy(1, data, ret>>2);
+			GSgifTransferDummy(1, (u8*)data, ret>>2);
 		}
 	}
 	else {

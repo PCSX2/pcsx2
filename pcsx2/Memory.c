@@ -1739,7 +1739,7 @@ int recMemConstWrite128(u32 mem, int mmreg)
 	}
 }
 
-int  memRead8 (u32 mem, u8  *out)  {
+int  __fastcall memRead8 (u32 mem, u8  *out)  {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1765,7 +1765,7 @@ int  memRead8 (u32 mem, u8  *out)  {
 	return -1;
 }
 
-int  memRead8RS (u32 mem, u64 *out)
+int  __fastcall memRead8RS (u32 mem, u64 *out)
 {	
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1788,7 +1788,7 @@ int  memRead8RS (u32 mem, u64 *out)
 	return -1;
 }
 
-int  memRead8RU (u32 mem, u64 *out)
+int __fastcall memRead8RU (u32 mem, u64 *out)
 {
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1811,7 +1811,7 @@ int  memRead8RU (u32 mem, u64 *out)
 	return -1;
 }
 
-int  memRead16(u32 mem, u16 *out)  {
+int __fastcall memRead16(u32 mem, u16 *out)  {
 	
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1838,7 +1838,7 @@ int  memRead16(u32 mem, u16 *out)  {
 	return -1;
 }
 
-int  memRead16RS(u32 mem, u64 *out)  {
+int __fastcall memRead16RS(u32 mem, u64 *out)  {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1865,7 +1865,7 @@ int  memRead16RS(u32 mem, u64 *out)  {
 	return -1;
 }
 
-int  memRead16RU(u32 mem, u64 *out)  {
+int __fastcall memRead16RU(u32 mem, u64 *out)  {
 	
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1892,7 +1892,7 @@ int  memRead16RU(u32 mem, u64 *out)  {
 	return -1;
 }
 
-int memRead32(u32 mem, u32 *out)  {
+int __fastcall memRead32(u32 mem, u32 *out)  {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1915,7 +1915,7 @@ int memRead32(u32 mem, u32 *out)  {
 	return -1;
 }
 
-int memRead32RS(u32 mem, u64 *out)
+int __fastcall memRead32RS(u32 mem, u64 *out)
 {
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1938,7 +1938,7 @@ int memRead32RS(u32 mem, u64 *out)
 	return -1;
 }
 
-int memRead32RU(u32 mem, u64 *out)
+int __fastcall memRead32RU(u32 mem, u64 *out)
 {
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -1961,7 +1961,7 @@ int memRead32RU(u32 mem, u64 *out)
 	return -1;
 }
 
-int memRead64(u32 mem, u64 *out)  {
+int __fastcall memRead64(u32 mem, u64 *out)  {
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
 		case 0x10000000: *out = hwRead64(mem); return 0;
@@ -1978,7 +1978,7 @@ int memRead64(u32 mem, u64 *out)  {
 	return -1;
 }
 
-int memRead128(u32 mem, u64 *out)  {
+int __fastcall memRead128(u32 mem, u64 *out)  {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -2002,7 +2002,7 @@ int memRead128(u32 mem, u64 *out)  {
 	return -1;
 }
 
-void memWrite8 (u32 mem, u8  value)   {
+void __fastcall memWrite8 (u32 mem, u8  value)   {
 	
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -2027,7 +2027,7 @@ void memWrite8 (u32 mem, u8  value)   {
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
-void memWrite16(u32 mem, u16 value)   {
+void __fastcall memWrite16(u32 mem, u16 value)   {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -2052,7 +2052,7 @@ void memWrite16(u32 mem, u16 value)   {
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
-void memWrite32(u32 mem, u32 value)
+void __fastcall memWrite32(u32 mem, u32 value)
 {
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -2078,7 +2078,7 @@ void memWrite32(u32 mem, u32 value)
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
-void memWrite64(u32 mem, const u64* value)   {
+void __fastcall memWrite64(u32 mem, const u64* value)   {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -2098,7 +2098,7 @@ void memWrite64(u32 mem, const u64* value)   {
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
-void memWrite128(u32 mem, const u64 *value) {
+void __fastcall memWrite128(u32 mem, const u64 *value) {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -2436,8 +2436,8 @@ void __fastcall _ext_memWrite128(u32 mem, const u64 *value)
 template<int vunum>
 int __fastcall vuMicroRead8(u32 addr,mem8_t* data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	*data=vu->Micro[addr];
 	return 0;
@@ -2445,8 +2445,8 @@ int __fastcall vuMicroRead8(u32 addr,mem8_t* data)
 template<int vunum>
 int __fastcall vuMicroRead16(u32 addr,mem16_t* data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	*data=*(u16*)&vu->Micro[addr];
 	return 0;
@@ -2454,8 +2454,8 @@ int __fastcall vuMicroRead16(u32 addr,mem16_t* data)
 template<int vunum>
 int __fastcall vuMicroRead32(u32 addr,mem32_t* data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	*data=*(u32*)&vu->Micro[addr];
 	return 0;
@@ -2463,8 +2463,8 @@ int __fastcall vuMicroRead32(u32 addr,mem32_t* data)
 template<int vunum>
 int __fastcall vuMicroRead64(u32 addr,mem64_t* data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	*data=*(u64*)&vu->Micro[addr];
 	return 0;
@@ -2472,8 +2472,8 @@ int __fastcall vuMicroRead64(u32 addr,mem64_t* data)
 template<int vunum>
 int __fastcall vuMicroRead128(u32 addr,mem128_t* data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	data[0]=*(u64*)&vu->Micro[addr];
 	data[1]=*(u64*)&vu->Micro[addr+8];
@@ -2482,8 +2482,8 @@ int __fastcall vuMicroRead128(u32 addr,mem128_t* data)
 template<int vunum>
 void __fastcall vuMicroWrite8(u32 addr,mem8_t data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	if (vu->Micro[addr]!=data)
 	{
@@ -2498,8 +2498,8 @@ void __fastcall vuMicroWrite8(u32 addr,mem8_t data)
 template<int vunum>
 void __fastcall vuMicroWrite16(u32 addr,mem16_t data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	if (*(u16*)&vu->Micro[addr]!=data)
 	{
@@ -2514,8 +2514,8 @@ void __fastcall vuMicroWrite16(u32 addr,mem16_t data)
 template<int vunum>
 void __fastcall vuMicroWrite32(u32 addr,mem32_t data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	if (*(u32*)&vu->Micro[addr]!=data)
 	{
@@ -2530,8 +2530,8 @@ void __fastcall vuMicroWrite32(u32 addr,mem32_t data)
 template<int vunum>
 void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;;
 
 	if (*(u64*)&vu->Micro[addr]!=data[0])
 	{
@@ -2546,8 +2546,8 @@ void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 template<int vunum>
 void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 {
-	addr&=vunum==0?0xfff:0x3fff;
-	VURegs* vu=vunum==0?&VU0:&VU1;
+	addr&=(vunum==0)?0xfff:0x3fff;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	if (*(u64*)&vu->Micro[addr]!=data[0] || *(u64*)&vu->Micro[addr+8]!=data[1])
 	{

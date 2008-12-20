@@ -76,8 +76,9 @@ enum GS_RINGTYPE
 // if returns NULL, don't copy (memory is preserved)
 u8* GSRingBufCopy(u32 size, u32 type);
 void GSRingBufSimplePacket(int type, int data0, int data1, int data2);
+void GSRingBufSimplePacket64(int type, u32 data0, u64 data1 );
 
-u32 GSgifTransferDummy(int path, u32 *pMem, u32 size);
+u32 GSgifTransferDummy(int path, const u8 *pMem, u32 size);
 
 void gsInit();
 s32 gsOpen();
@@ -87,6 +88,7 @@ void gsSetVideoRegionType( u32 isPal );
 void gsResetFrameSkip();
 void gsSyncLimiterLostTime( s32 deltaTime );
 void gsDynamicSkipEnable();
+void gsPostVsyncEnd( bool updategs );
 
 // mem and size are the ones from GSRingBufCopy
 extern void GSRINGBUF_DONECOPY(const u8 *mem, u32 size);
@@ -97,31 +99,25 @@ void gsGIFReset();
 void gsCSRwrite(u32 value);
 
 void gsWrite8(u32 mem, u8 value);
-void gsConstWrite8(u32 mem, int mmreg);
-
 void gsWrite16(u32 mem, u16 value);
-void gsConstWrite16(u32 mem, int mmreg);
-
 void gsWrite32(u32 mem, u32 value);
-void gsConstWrite32(u32 mem, int mmreg);
-
 void gsWrite64(u32 mem, u64 value);
-void gsConstWrite64(u32 mem, int mmreg);
 
-void  gsConstWrite128(u32 mem, int mmreg);
+void gsConstWrite8(u32 mem, int mmreg);
+void gsConstWrite16(u32 mem, int mmreg);
+void gsConstWrite32(u32 mem, int mmreg);
+void gsConstWrite64(u32 mem, int mmreg);
+void gsConstWrite128(u32 mem, int mmreg);
 
 u8   gsRead8(u32 mem);
-int gsConstRead8(u32 x86reg, u32 mem, u32 sign);
-
 u16  gsRead16(u32 mem);
-int gsConstRead16(u32 x86reg, u32 mem, u32 sign);
-
 u32  gsRead32(u32 mem);
-int gsConstRead32(u32 x86reg, u32 mem);
-
 u64  gsRead64(u32 mem);
-void  gsConstRead64(u32 mem, int mmreg);
 
+int gsConstRead8(u32 x86reg, u32 mem, u32 sign);
+int gsConstRead16(u32 x86reg, u32 mem, u32 sign);
+int gsConstRead32(u32 x86reg, u32 mem);
+void  gsConstRead64(u32 mem, int mmreg);
 void  gsConstRead128(u32 mem, int xmmreg);
 
 void gsIrq();
@@ -132,6 +128,8 @@ void mfifoGIFtransfer(int qwc);
 int  gsFreeze(gzFile f, int Mode);
 int _GIFchain();
 void  gifMFIFOInterrupt();
+
+extern u32 g_vu1SkipCount;
 
 // GS Playback
 #define GSRUN_TRANS1 1
