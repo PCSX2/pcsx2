@@ -19,6 +19,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef __LINUX__
+#include <cstdarg>
+#endif
+
 #include "Debug.h"
 #include "R5900.h"
 #include "DisASM.h"

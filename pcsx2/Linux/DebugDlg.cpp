@@ -22,6 +22,8 @@ void UpdateDebugger() {
 
 	char *str;
 	int i;
+	std::string output;
+	
 	DebugAdj->value = (gfloat)dPC/4;
 	gtk_list_store_clear(ListDVModel);
 
@@ -40,7 +42,12 @@ void UpdateDebugger() {
 			str = nullAddr; 
 			}
 		else 
-			str = disR5900Fasm(*mem, pc);
+		{
+			std::string output;
+			
+			disR5900Fasm(output, *mem, pc);
+			output.copy( str, 256 );
+		}
 		gtk_list_store_append(ListDVModel, &iter);
 		gtk_list_store_set(ListDVModel, &iter, 0, str, -1);
 
@@ -176,7 +183,12 @@ void OnDumpC_Ok(GtkButton *button, gpointer user_data) {
 			str = nullAddr; 
 		}
 		else 
-			str = disR5900Fasm(*mem, addrf);
+		{
+			std::string output;
+			
+			disR5900Fasm(output, *mem, addrf);
+			output.copy( str, 256 );
+		}
 
 		fprintf(f, "%s\n", str);
 		addrf+= 4;

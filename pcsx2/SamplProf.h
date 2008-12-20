@@ -6,7 +6,7 @@
 // The profiler does not have a Linux version yet.
 // So for now we turn it into duds for non-Win32 platforms.
 
-#if !defined( _DEBUG ) || !defined( WIN32 )
+#if !defined( _DEBUG ) && defined( WIN32 )
 
 void ProfilerInit();
 void ProfilerTerm();
@@ -16,14 +16,13 @@ void ProfilerRegisterSource(const char* Name,void* function);
 
 #else
 
-// Disables the profiler in Debug builds.
+// Disables the profiler in Debug & Linux builds.
 // Profiling info in debug builds isn't much use anyway and the console
 // popups are annoying when you're trying to trace debug logs and stuff.
 
 #define ProfilerInit()
 #define ProfilerTerm()
 #define ProfilerSetEnabled 0&&
-#define ProfilerRegisterSource 0&&
 #define ProfilerRegisterSource 0&&
 
 #endif

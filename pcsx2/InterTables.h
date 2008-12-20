@@ -22,15 +22,15 @@
 
 #include "PS2Etypes.h"
 
-#include "iR5900AritImm.h"
-#include "iR5900Arit.h"
-#include "iR5900MultDiv.h"
-#include "iR5900Shift.h"
-#include "iR5900Branch.h"
-#include "iR5900Jump.h"
-#include "iR5900LoadStore.h"
-#include "iR5900Move.h"
-#include "iMMI.h"
+#include "x86/iR5900AritImm.h"
+#include "x86/iR5900Arit.h"
+#include "x86/iR5900MultDiv.h"
+#include "x86/iR5900Shift.h"
+#include "x86/iR5900Branch.h"
+#include "x86/iR5900Jump.h"
+#include "x86/iR5900LoadStore.h"
+#include "x86/iR5900Move.h"
+#include "x86/iMMI.h"
 
 namespace EE { namespace Dynarec { namespace OpcodeImpl
 {
