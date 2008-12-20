@@ -66,6 +66,23 @@ struct PSMEMORYMAP
 
 #define PSM(mem)	(PS2MEM_BASE + TRANSFORM_ADDR(mem))
 
+int  memRead8(u32 mem, u8  *out);
+int  memRead8RS(u32 mem, u64 *out);
+int  memRead8RU(u32 mem, u64 *out);
+int  memRead16(u32 mem, u16 *out);
+int  memRead16RS(u32 mem, u64 *out);
+int  memRead16RU(u32 mem, u64 *out);
+int  memRead32(u32 mem, u32 *out);
+int  memRead32RS(u32 mem, u64 *out);
+int  memRead32RU(u32 mem, u64 *out);
+int  memRead64(u32 mem, u64 *out);
+int  memRead128(u32 mem, u64 *out);
+void memWrite8 (u32 mem, u8  value);
+void memWrite16(u32 mem, u16 value);
+void memWrite32(u32 mem, u32 value);
+void memWrite64(u32 mem, const u64 *value);
+void memWrite128(u32 mem, const u64 *value);
+
 #else
 
 extern u8  *psM; //32mb Main Ram
@@ -87,15 +104,8 @@ extern u8 g_RealGSMem[0x2000];
 #define PS2MEM_GS	g_RealGSMem
 
 //#define _PSM(mem)	(memLUTR[(mem) >> 12] == 0 ? NULL : (void*)(memLUTR[(mem) >> 12] + ((mem) & 0xfff)))
-#define PSM(mem)	((void*)(memLUTR[(mem) >> 12] + ((mem) & 0xfff)))
+#define PSM(mem)	(vtlb_GetPhyPtr(mem&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
 #define FREE(ptr) _aligned_free(ptr)
-
-extern uptr *memLUTR;
-extern uptr *memLUTW;
-extern uptr *memLUTRK;
-extern uptr *memLUTWK;
-extern uptr *memLUTRU;
-extern uptr *memLUTWU;
 
 #endif
 
@@ -171,23 +181,6 @@ void memSetPageAddr(u32 vaddr, u32 paddr);
 void memClearPageAddr(u32 vaddr);
 void memShutdown();
 
-int  memRead8(u32 mem, u8  *out);
-int  memRead8RS(u32 mem, u64 *out);
-int  memRead8RU(u32 mem, u64 *out);
-int  memRead16(u32 mem, u16 *out);
-int  memRead16RS(u32 mem, u64 *out);
-int  memRead16RU(u32 mem, u64 *out);
-int  memRead32(u32 mem, u32 *out);
-int  memRead32RS(u32 mem, u64 *out);
-int  memRead32RU(u32 mem, u64 *out);
-int  memRead64(u32 mem, u64 *out);
-int  memRead128(u32 mem, u64 *out);
-void memWrite8 (u32 mem, u8  value);
-void memWrite16(u32 mem, u16 value);
-void memWrite32(u32 mem, u32 value);
-void memWrite64(u32 mem, u64 value);
-void memWrite128(u32 mem, u64 *value);
-
 // recMemConstRead8, recMemConstRead16, recMemConstRead32 return 1 if a call was made, 0 otherwise
 u8 recMemRead8();
 u16 recMemRead16();
@@ -202,8 +195,68 @@ void recMemWrite32();
 void recMemWrite64();
 void recMemWrite128();
 
+int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps);
+
+#ifndef PCSX2_VIRTUAL_MEM
+#include "vtlb.h"
+
+int mmap_GetRamPageInfo(void* ptr);
+void mmap_MarkCountedRamPage(void* ptr,u32 vaddr);
+void mmap_ResetBlockTracking();
+
+int  __fastcall _memRead8(u32 mem, u8  *out);
+int  __fastcall _memRead16(u32 mem, u16 *out);
+int  __fastcall _memRead32(u32 mem, u32 *out);
+int  __fastcall _memRead64(u32 mem, u64 *out);
+int  __fastcall _memRead128(u32 mem, u64 *out);
+void __fastcall _memWrite8 (u32 mem, u8  value);
+void __fastcall _memWrite16(u32 mem, u16 value);
+void __fastcall _memWrite32(u32 mem, u32 value);
+void __fastcall _memWrite64(u32 mem, u64 value);
+void __fastcall _memWrite128(u32 mem, u64 *value);
+
+#define memRead8 vtlb_memRead8
+#define memRead16 vtlb_memRead16
+#define memRead32 vtlb_memRead32
+#define memRead64 vtlb_memRead64
+#define memRead128 vtlb_memRead128
+
+#define memWrite8 vtlb_memWrite8
+#define memWrite16 vtlb_memWrite16
+#define memWrite32 vtlb_memWrite32
+#define memWrite64 vtlb_memWrite64
+#define memWrite128 vtlb_memWrite128
+
+#define _eeReadConstMem8 0&&
+#define _eeReadConstMem16 0&&
+#define _eeReadConstMem32 0&&
+#define _eeReadConstMem128 0&&
+#define _eeWriteConstMem8 0&&
+#define _eeWriteConstMem16 0&&
+#define _eeWriteConstMem32 0&&
+#define _eeWriteConstMem64 0&&
+#define _eeWriteConstMem128 0&&
+#define _eeMoveMMREGtoR 0&&
+
+// extra ops
+#define _eeWriteConstMem16OP 0&&
+#define _eeWriteConstMem32OP 0&&
+
+#define recMemConstRead8 0&&
+#define recMemConstRead16 0&&
+#define recMemConstRead32 0&&
+#define recMemConstRead64 0&&
+#define recMemConstRead128 0&&
+
+#define recMemConstWrite8 0&&
+#define recMemConstWrite16 0&&
+#define recMemConstWrite32 0&&
+#define recMemConstWrite64 0&&
+#define recMemConstWrite128 0&&
+
+#else	// PCSX2_VIRTUAL_MEM
+
 // VM only functions
-#ifdef PCSX2_VIRTUAL_MEM
 
 void _eeReadConstMem8(int mmreg, u32 mem, int sign);
 void _eeReadConstMem16(int mmreg, u32 mem, int sign);
@@ -232,36 +285,6 @@ int recMemConstWrite32(u32 mem, int mmreg);
 int recMemConstWrite64(u32 mem, int mmreg);
 int recMemConstWrite128(u32 mem, int xmmreg);
 
-extern int SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS* eps);
-
-#else
-
-#define _eeReadConstMem8 0&&
-#define _eeReadConstMem16 0&&
-#define _eeReadConstMem32 0&&
-#define _eeReadConstMem128 0&&
-#define _eeWriteConstMem8 0&&
-#define _eeWriteConstMem16 0&&
-#define _eeWriteConstMem32 0&&
-#define _eeWriteConstMem64 0&&
-#define _eeWriteConstMem128 0&&
-#define _eeMoveMMREGtoR 0&&
-
-// extra ops
-#define _eeWriteConstMem16OP 0&&
-#define _eeWriteConstMem32OP 0&&
-
-#define recMemConstRead8 0&&
-#define recMemConstRead16 0&&
-#define recMemConstRead32 0&&
-#define recMemConstRead64 0&&
-#define recMemConstRead128 0&&
-
-#define recMemConstWrite8 0&&
-#define recMemConstWrite16 0&&
-#define recMemConstWrite32 0&&
-#define recMemConstWrite64 0&&
-#define recMemConstWrite128 0&&
 
 #endif
 

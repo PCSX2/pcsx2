@@ -85,10 +85,310 @@ void checkregs()
 	if( g_EEFreezeRegs ) assert( g_globalMMXSaved );
 }
 #endif
+__declspec(align(16)) u8 _xmm_backup[16*2];
+//this one checks for alligments too ...
+__declspec(naked) void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes)
+{
+	__asm
+	{
+		test edx,0xf;
+		jz memcpy_raz_;
+	}
+	//THIS CODE IS COPY PASTED FROM memcpy_raz_
+	
+	#define MOVSRC movups
+	__asm
+	{
+		//Reads before reads, to avoid stalls
+		mov eax,[esp+4];
+		//Make sure to save xmm0, it must be preserved ...
+		movaps [_xmm_backup+0x00],xmm0;
 
+		//if >=128 bytes use 128 byte unrolled loop
+		//i use cmp ..,127 + jna because 127 is encodable using the simm8 form
+		cmp eax,127;
+		jna _loop_1;
+
+		//unrolled version also toiches xmm1, save it :)
+		movaps [_xmm_backup+0x10],xmm1;
+
+		//since this is a common branch target it could be good to align it -- no idea if it has any effect :p
+		align 16
+
+		//128 byte unrolled loop
+_loop_8:
+
+		MOVSRC xmm0,[edx+0x00];	//read first to avoid read-after-write stalls
+		MOVSRC xmm1,[edx+0x10];
+		sub edx,-128;			//edx won't be used for a while, so update it here. sub/-128 for simm8 encoding
+		movaps [ecx+0x00],xmm0; //then write :p
+		movaps [ecx+0x10],xmm1;
+		sub ecx,-128;			//ecx won't be used for a while, so update it here. sub/-128 for simm8 encoding
+
+		MOVSRC xmm0,[edx+0x20-128];
+		MOVSRC xmm1,[edx+0x30-128];
+		add eax,-128;			//eax won't be used for a while, so update it here. add/-128 for simm8 encoding
+		movaps [ecx+0x20-128],xmm0;
+		movaps [ecx+0x30-128],xmm1;
+
+		MOVSRC xmm0,[edx+0x40-128];
+		MOVSRC xmm1,[edx+0x50-128];
+		movaps [ecx+0x40-128],xmm0;
+		movaps [ecx+0x50-128],xmm1;
+
+		MOVSRC xmm0,[edx+0x60-128];
+		MOVSRC xmm1,[edx+0x70-128];
+		movaps [ecx+0x60-128],xmm0;
+		movaps [ecx+0x70-128],xmm1;
+
+		//127~ja, 127 is encodable as simm8 :)
+		cmp eax,127;
+		ja _loop_8;
+		
+		//restore xmm1 :)
+		movaps xmm1,[_xmm_backup+0x10];
+
+		//direct copy for 0~7 qwords
+		//in order to avoid the inc/dec of all 3 registers
+		//i use negative relative addressing from the top of the buffers
+		//[top-current index]
+
+_loop_1:
+		//prepare the regs for 'negative relative addressing'
+		add edx,eax;
+		add ecx,eax;
+		neg eax;
+		jz cleanup;	//exit if nothing to do
+
+_loop_1_inner:
+		MOVSRC xmm0,[edx+eax];
+		movaps [ecx+eax],xmm0;
+		
+		add eax,16;		//while the offset is still negative we have data to copy
+		js _loop_1_inner;
+
+		//done !
+cleanup:
+		//restore xmm and exit ~)
+		movaps xmm0,[_xmm_backup+0x00];
+		ret 4;
+	}
+	#undef MOVSRC
+}
+//Custom memcpy, only for 16 byte aligned stuff (used for mtgs)
+//These functions are optimised for medium-small transfer sizes (<2048, >=128).No prefetching is used since the reads are linear
+//and the cache logic can predict em :)
+//this implementation use forward copy, in 128 byte blocks, and then does the remaining in 16 byte blocks :)
+//MOVSRC = opcode used to read.I use the same code for the unaligned version, with a different define :)
+#define MOVSRC movaps
+__declspec(naked) void __fastcall memcpy_raz_(void *dest, const void *src, size_t bytes)
+{
+	__asm
+	{
+		//Reads before reads, to avoid stalls
+		mov eax,[esp+4];
+		//Make sure to save xmm0, it must be preserved ...
+		movaps [_xmm_backup+0x00],xmm0;
+
+		//if >=128 bytes use 128 byte unrolled loop
+		//i use cmp ..,127 + jna because 127 is encodable using the simm8 form
+		cmp eax,127;
+		jna _loop_1;
+
+		//unrolled version also toiches xmm1, save it :)
+		movaps [_xmm_backup+0x10],xmm1;
+
+		//since this is a common branch target it could be good to align it -- no idea if it has any effect :p
+		align 16
+
+		//128 byte unrolled loop
+_loop_8:
+
+		MOVSRC xmm0,[edx+0x00];	//read first to avoid read-after-write stalls
+		MOVSRC xmm1,[edx+0x10];
+		sub edx,-128;			//edx won't be used for a while, so update it here. sub/-128 for simm8 encoding
+		movaps [ecx+0x00],xmm0; //then write :p
+		movaps [ecx+0x10],xmm1;
+		sub ecx,-128;			//ecx won't be used for a while, so update it here. sub/-128 for simm8 encoding
+
+		MOVSRC xmm0,[edx+0x20-128];
+		MOVSRC xmm1,[edx+0x30-128];
+		add eax,-128;			//eax won't be used for a while, so update it here. add/-128 for simm8 encoding
+		movaps [ecx+0x20-128],xmm0;
+		movaps [ecx+0x30-128],xmm1;
+
+		MOVSRC xmm0,[edx+0x40-128];
+		MOVSRC xmm1,[edx+0x50-128];
+		movaps [ecx+0x40-128],xmm0;
+		movaps [ecx+0x50-128],xmm1;
+
+		MOVSRC xmm0,[edx+0x60-128];
+		MOVSRC xmm1,[edx+0x70-128];
+		movaps [ecx+0x60-128],xmm0;
+		movaps [ecx+0x70-128],xmm1;
+
+		//127~ja, 127 is encodable as simm8 :)
+		cmp eax,127;
+		ja _loop_8;
+		
+		//restore xmm1 :)
+		movaps xmm1,[_xmm_backup+0x10];
+
+		//direct copy for 0~7 qwords
+		//in order to avoid the inc/dec of all 3 registers
+		//i use negative relative addressing from the top of the buffers
+		//[top-current index]
+
+_loop_1:
+		//prepare the regs for 'negative relative addressing'
+		add edx,eax;
+		add ecx,eax;
+		neg eax;
+		jz cleanup;	//exit if nothing to do
+
+_loop_1_inner:
+		MOVSRC xmm0,[edx+eax];
+		movaps [ecx+eax],xmm0;
+		
+		add eax,16;		//while the offset is still negative we have data to copy
+		js _loop_1_inner;
+
+		//done !
+cleanup:
+		//restore xmm and exit ~)
+		movaps xmm0,[_xmm_backup+0x00];
+		ret 4;
+	}
+}
+#undef MOVSRC
+//these are not used, but are here for reference.Check memcpy_raz_ for comments on the implementation ... 
+//First implementation, uses backward copy, 128/16 blocks
+__declspec(naked) void __fastcall memcpy_raz_0(void *dest, const void *src, size_t bytes)
+{
+	__asm
+	{
+		mov eax,[esp+4];
+
+		movaps [_xmm_backup+0x00],xmm0;
+		movaps [_xmm_backup+0x10],xmm1;
+
+		
+		sub eax,16;
+		js retnow;
+
+		
+		cmp eax,(127-16);
+		jna _loop_1;
+
+		align 16
+_loop_8:
+
+		sub eax,16*8;
+		movaps xmm0,[edx+eax+0x80];
+		movaps xmm1,[edx+eax+0x70];
+		movaps [ecx+eax+0x80],xmm0;
+		movaps [ecx+eax+0x70],xmm1;
+
+		movaps xmm0,[edx+eax+0x60];
+		movaps xmm1,[edx+eax+0x50];
+		movaps [ecx+eax+0x60],xmm0;
+		movaps [ecx+eax+0x50],xmm1;
+
+		movaps xmm0,[edx+eax+0x40];
+		movaps xmm1,[edx+eax+0x30];
+		movaps [ecx+eax+0x40],xmm0;
+		movaps [ecx+eax+0x30],xmm1;
+
+		movaps xmm0,[edx+eax+0x20];
+		movaps xmm1,[edx+eax+0x10];
+		movaps [ecx+eax+0x20],xmm0;
+		movaps [ecx+eax+0x10],xmm1;
+
+		js retnow_restore;
+
+		cmp eax,(127-16);
+		ja _loop_8;
+
+_loop_1:
+		movaps xmm0,[edx+eax];
+		movaps [ecx+eax],xmm0;
+		
+		sub eax,16;
+		jns _loop_1;
+
+retnow_restore:
+		movaps xmm0,[_xmm_backup+0x00];
+		movaps xmm1,[_xmm_backup+0x10];
+retnow:
+		ret 4;
+	}
+}
+//a more optimised version of the above, used as a base for the forward version
+__declspec(naked) void __fastcall memcpy_raz_2(void *dest, const void *src, size_t bytes)
+{
+	__asm
+	{
+		mov eax,[esp+4];
+		movaps [_xmm_backup+0x00],xmm0;
+
+		sub eax,16;
+		js retnow;
+
+		
+		cmp eax,(127-16);
+		jna _loop_1;
+
+		movaps [_xmm_backup+0x10],xmm1;
+
+		align 16
+
+_loop_8:
+		//eax= 'remaining' bytes
+		//<128 bytes 
+		movaps xmm0,[edx+eax+0x80-0x80];
+		movaps xmm1,[edx+eax+0x70-0x80];
+		sub eax,16*8;
+		movaps [ecx+eax+0x80],xmm0;
+		movaps [ecx+eax+0x70],xmm1;
+
+		movaps xmm0,[edx+eax+0x60];
+		movaps xmm1,[edx+eax+0x50];
+		movaps [ecx+eax+0x60],xmm0;
+		movaps [ecx+eax+0x50],xmm1;
+
+		movaps xmm0,[edx+eax+0x40];
+		movaps xmm1,[edx+eax+0x30];
+		movaps [ecx+eax+0x40],xmm0;
+		movaps [ecx+eax+0x30],xmm1;
+
+		movaps xmm0,[edx+eax+0x20];
+		movaps xmm1,[edx+eax+0x10];
+		movaps [ecx+eax+0x20],xmm0;
+		movaps [ecx+eax+0x10],xmm1;
+		cmp eax,(127-16);
+		jg _loop_8;
+		
+		movaps xmm1,[_xmm_backup+0x10];
+		
+		test eax,eax;
+		js retnow_restore;
+
+
+_loop_1:
+		sub eax,16;
+		movaps xmm0,[edx+eax+0x10];
+		movaps [ecx+eax+0x10],xmm0;
+		
+		jns _loop_1;
+
+retnow_restore:
+		movaps xmm0,[_xmm_backup+0x00];
+retnow:
+		ret 4;
+	}
+}
 void * memcpy_amd_(void *dest, const void *src, size_t n)
 {
-	
 #ifdef _DEBUG
 	__asm call checkregs
 #endif

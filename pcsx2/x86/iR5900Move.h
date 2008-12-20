@@ -19,15 +19,15 @@
 #ifndef __IR5900MOVE_H__
 #define __IR5900MOVE_H__
 
-#include "Common.h"
-#include "InterTables.h"
-
-void recLUI( void );
-void recMFLO( void );
-void recMFHI( void );
-void recMTLO( void );
-void recMTHI( void );
-void recMOVN( void );
-void recMOVZ( void );
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recLUI( void );
+	void recMFLO( void );
+	void recMFHI( void );
+	void recMTLO( void );
+	void recMTHI( void );
+	void recMOVN( void );
+	void recMOVZ( void );
+} } }
 
 #endif

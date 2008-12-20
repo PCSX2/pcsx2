@@ -20,12 +20,19 @@
 #include <commctrl.h>
 #include <windowsx.h>
 #include <stdio.h>
+#include <string>
+
 #include "resource.h"
+#include "InterTables.h"
 #include "Debugger.h"
 #include "Common.h"
 #include "win32.h"
 #include "PsxMem.h"
 #include "R3000A.h"
+
+#ifdef _MSC_VER
+#pragma warning(disable:4996) //ignore the stricmp deprecated warning
+#endif
 
 extern void (*IOP_DEBUG_BSC[64])(char *buf);
 extern void UpdateR5900op();
@@ -155,24 +162,22 @@ BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
+					std::string output;
+
 					fprintf(fp,"----------------------------------\n");
 					fprintf(fp,"EE DISASM TEXT DOCUMENT BY PCSX2  \n");
 					fprintf(fp,"----------------------------------\n");
 					for (temp = start_pc; temp <= end_pc; temp += 4)
 					{
-				
-						
 						opcode_addr=temp;
-						MakeDebugOpcode();											
-                        OpcodePrintTable[(cpuRegs.code) >> 26](tmp);
-						if (HasBreakpoint())
-						{
-								sprintf(buf, "*%08X %08X: %s", temp, cpuRegs.code, tmp);
-						}
-						else
-						{
-								sprintf(buf, "%08X %08X: %s", temp, cpuRegs.code, tmp);
-						}
+						MakeDebugOpcode();
+
+						output.assign( HasBreakpoint() ? "*" : "" );
+						sprintf(buf, "%08X %08X: %s", temp, cpuRegs.code, tmp);
+						output.append( buf );
+
+						EE::OpcodeTables::Standard[_Opcode_].decode( output );
+
 
 						fprintf(fp, "%s\n", buf);
 					}
@@ -636,25 +641,24 @@ void RefreshDebugger(void)
 
     for (t = DebuggerPC, cnt = 0; t < (DebuggerPC + 0x00000074); t += 0x00000004, cnt++)
     {
-		char syscall_str[128];
+		char syscall_str[256];
 		// Make the opcode.
 		u32 *mem = (u32*)PSM(t);
-		char *str;
 		if (mem == NULL) {
-			char nullAddr[256];
-			sprintf(nullAddr, "%8.8lx 00000000: NULL MEMORY", t); str = nullAddr;
+			sprintf(syscall_str, "%8.8lx 00000000: NULL MEMORY", t);
 		} else {
 			/* special procesing for syscall. This should probably be moved into the disR5900Fasm() call in the future. */
 			if (0x0c == *mem && 0x24030000 == (*(mem-1) & 0xFFFFFF00)){
 				/* it's a syscall preceeded by a li v1,$data instruction. */
 				u8 bios_call = *(mem-1) & 0xFF;
 				sprintf(syscall_str, "%08X:\tsyscall\t%s", t, bios[bios_call]);
-				str = syscall_str;
 			} else {
-				str = disR5900Fasm(*mem, t);
+				std::string str;
+				disR5900Fasm(str, *mem, t);
+				str.copy( syscall_str, 256 );
 			}
 		}
-        SendMessage(hWnd_debugdisasm, LB_ADDSTRING, 0, (LPARAM)str);
+        SendMessage(hWnd_debugdisasm, LB_ADDSTRING, 0, (LPARAM)syscall_str );
 	}
 }
 

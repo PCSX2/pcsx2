@@ -19,12 +19,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
+
+using namespace std;
 
 #include "Debug.h"
 #include "R5900.h"
 #include "VU.h"
 
-static char ostr[1024];
+//static char ostr[1024];
 
 // Names of registers
 const char *disRNameGPR[] = {
@@ -66,17 +69,19 @@ const char *disRNameCP2i[] = {
 const char *CP2VFnames[] = { "x", "y", "z", "w" };
 
 // Type definition of our functions
-#define DisFInterface  (u32 code, u32 pc)
-#define DisFInterfaceT (u32, u32)
-#define DisFInterfaceN (code, pc)
+#define DisFInterface  (string& output, u32 code, u32 pc)
+#define DisFInterfaceT (string&, u32, u32)
+#define DisFInterfaceN (output, code, pc)
 
-typedef char* (*TdisR5900F)DisFInterface;
+typedef void (*TdisR5900F)DisFInterface;
 
 // These macros are used to assemble the disassembler functions
 #define MakeDisF(fn, b) \
-	char* fn DisFInterface { \
+	void fn DisFInterface { \
+		char ostr[128]; \
 		sprintf (ostr, "%8.8x %8.8x:", pc, code); \
-		b; /*ostr[(strlen(ostr) - 1)] = 0;*/ return ostr; \
+		output.append( ostr ); \
+		b; \
 	}
 
 #undef _Target_
@@ -128,38 +133,38 @@ typedef char* (*TdisR5900F)DisFInterface;
 #define _Fsf_ ((code >> 21) & 0x03)
 #define _Ftf_ ((code >> 23) & 0x03)
 
-#define dName(i)	sprintf(ostr, "%s %-7s,", ostr, i)
-#define dGPR128(i)	sprintf(ostr, "%s %8.8x_%8.8x_%8.8x_%8.8x (%s),", ostr, cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
-#define dGPR64(i)	sprintf(ostr, "%s %8.8x_%8.8x (%s),", ostr, cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
-#define dGPR64U(i)	sprintf(ostr, "%s %8.8x_%8.8x (%s),", ostr, cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], disRNameGPR[i])
-#define dGPR32(i)	sprintf(ostr, "%s %8.8x (%s),", ostr, cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
+#define dName(i)	strAppend(output, "%-7s,", i);
+#define dGPR128(i)	strAppend(output, "%8.8x_%8.8x_%8.8x_%8.8x (%s),", cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
+#define dGPR64(i)	strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i]) 
+#define dGPR64U(i)	strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], disRNameGPR[i])
+#define dGPR32(i)	strAppend(output, "%8.8x (%s),", cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
 
-#define dCP032(i)	sprintf(ostr, "%s %8.8x (%s),", ostr, cpuRegs.CP0.r[i], disRNameCP0[i])
+#define dCP032(i)	strAppend(output, "%8.8x (%s),", cpuRegs.CP0.r[i], disRNameCP0[i])
 
-#define dCP132(i)	sprintf(ostr, "%s %f (%s),", ostr, fpuRegs.fpr[i].f, disRNameCP1[i])
-#define dCP1c32(i)	sprintf(ostr, "%s %8.8x (%s),", ostr, fpuRegs.fprc[i], disRNameCP1c[i])
-#define dCP1acc()	sprintf(ostr, "%s %f (ACC),", ostr, fpuRegs.ACC.f)
+#define dCP132(i)	strAppend(output, "%f (%s),", fpuRegs.fpr[i].f, disRNameCP1[i])
+#define dCP1c32(i)	strAppend(output, "%8.8x (%s),", fpuRegs.fprc[i], disRNameCP1c[i])
+#define dCP1acc()	strAppend(output, "%f (ACC),", fpuRegs.ACC.f)
 
-#define dCP2128f(i)		sprintf(ostr, "%s w=%f z=%f y=%f x=%f (%s),", ostr, VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, disRNameCP2f[i])
-#define dCP232x(i)		sprintf(ostr, "%s x=%f (%s),", ostr, VU0.VF[i].f.x, disRNameCP2f[i])
-#define dCP232y(i)		sprintf(ostr, "%s y=%f (%s),", ostr, VU0.VF[i].f.y, disRNameCP2f[i])
-#define dCP232z(i)		sprintf(ostr, "%s z=%f (%s),", ostr, VU0.VF[i].f.z, disRNameCP2f[i])
-#define dCP232w(i)		sprintf(ostr, "%s w=%f (%s),", ostr, VU0.VF[i].f.w, disRNameCP2f[i])
-#define dCP2ACCf()		sprintf(ostr, "%s w=%f z=%f y=%f x=%f (ACC),", ostr, VU0.ACC.f.w, VU0.ACC.f.z, VU0.ACC.f.y, VU0.ACC.f.x)
-#define dCP232i(i)		sprintf(ostr, "%s %8.8x (%s),", ostr, VU0.VI[i].UL, disRNameCP2i[i])
-#define dCP232iF(i)		sprintf(ostr, "%s %f (%s),", ostr, VU0.VI[i].F, disRNameCP2i[i])
-#define dCP232f(i, j)	sprintf(ostr, "%s Q %s=%f (%s),", ostr, CP2VFnames[j], VU0.VF[i].F[j], disRNameCP2f[i])
+#define dCP2128f(i)		strAppend(output, "w=%f z=%f y=%f x=%f (%s),", VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, disRNameCP2f[i])
+#define dCP232x(i)		strAppend(output, "x=%f (%s),", VU0.VF[i].f.x, disRNameCP2f[i])
+#define dCP232y(i)		strAppend(output, "y=%f (%s),", VU0.VF[i].f.y, disRNameCP2f[i])
+#define dCP232z(i)		strAppend(output, "z=%f (%s),", VU0.VF[i].f.z, disRNameCP2f[i])
+#define dCP232w(i)		strAppend(output, "w=%f (%s),", VU0.VF[i].f.w, disRNameCP2f[i])
+#define dCP2ACCf()		strAppend(output, "w=%f z=%f y=%f x=%f (ACC),", VU0.ACC.f.w, VU0.ACC.f.z, VU0.ACC.f.y, VU0.ACC.f.x)
+#define dCP232i(i)		strAppend(output, "%8.8x (%s),", VU0.VI[i].UL, disRNameCP2i[i])
+#define dCP232iF(i)		strAppend(output, "%f (%s),", VU0.VI[i].F, disRNameCP2i[i])
+#define dCP232f(i, j)	strAppend(output, "Q %s=%f (%s),", CP2VFnames[j], VU0.VF[i].F[j], disRNameCP2f[i])
 
-#define dHI64()		sprintf(ostr, "%s %8.8x_%8.8x (%s),", ostr, cpuRegs.HI.UL[1], cpuRegs.HI.UL[0], "hi")
-#define dLO64()		sprintf(ostr, "%s %8.8x_%8.8x (%s),", ostr, cpuRegs.LO.UL[1], cpuRegs.LO.UL[0], "lo")
-#define dImm()		sprintf(ostr, "%s %4.4x (%d),", ostr, _Im_, _Im_)
-#define dTarget()	sprintf(ostr, "%s %8.8x,", ostr, _Target_)
-#define dSa()		sprintf(ostr, "%s %2.2x (%d),", ostr, _Sa_, _Sa_)
-#define dSa32()		sprintf(ostr, "%s %2.2x (%d),", ostr, _Sa_+32, _Sa_+32)
-#define dOfB()		sprintf(ostr, "%s %4.4x (%8.8x (%s)),", ostr, _Im_, cpuRegs.GPR.r[_Rs_].UL[0], disRNameGPR[_Rs_])
-#define dOffset()	sprintf(ostr, "%s %8.8x,", ostr, _Branch_)
-#define dCode()		sprintf(ostr, "%s %8.8x,", ostr, (code >> 6) & 0xffffff)
-#define dSaR()		sprintf(ostr, "%s %8.8x,", ostr, cpuRegs.sa)
+#define dHI64()		strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.HI.UL[1], cpuRegs.HI.UL[0], "hi")
+#define dLO64()		strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.LO.UL[1], cpuRegs.LO.UL[0], "lo")
+#define dImm()		strAppend(output, "%4.4x (%d),", _Im_, _Im_)
+#define dTarget()	strAppend(output, "%8.8x,", _Target_)
+#define dSa()		strAppend(output, "%2.2x (%d),", _Sa_, _Sa_)
+#define dSa32()		strAppend(output, "%2.2x (%d),", _Sa_+32, _Sa_+32)
+#define dOfB()		strAppend(output, "%4.4x (%8.8x (%s)),", _Im_, cpuRegs.GPR.r[_Rs_].UL[0], disRNameGPR[_Rs_])
+#define dOffset()	strAppend(output, "%8.8x,", _Branch_)
+#define dCode()		strAppend(output, "%8.8x,", (code >> 6) & 0xffffff)
+#define dSaR()		strAppend(output, "%8.8x,", cpuRegs.sa)
 
 struct sSymbol {
 	u32 addr;
@@ -167,10 +172,20 @@ struct sSymbol {
 };
 
 static sSymbol *dSyms = NULL;
+static int nSymAlloc = 0;
 static int nSyms = 0;
 
-void disR5900AddSym(u32 addr, char *name) {
-	dSyms = (sSymbol*)realloc(dSyms, sizeof(sSymbol) * (nSyms+1));
+void disR5900AddSym(u32 addr, const char *name) {
+
+	assert( strlen(name) < 32 );
+
+	if( nSyms+1 >= nSymAlloc )
+	{
+		// Realloc by threshold block sizes.
+		nSymAlloc += 64 + (nSyms / 4);
+		dSyms = (sSymbol*)realloc(dSyms, sizeof(sSymbol) * (nSymAlloc));
+	}
+
 	if (dSyms == NULL) return;
 	dSyms[nSyms].addr = addr;
 	strncpy(dSyms[nSyms].name, name, 32);
@@ -179,10 +194,11 @@ void disR5900AddSym(u32 addr, char *name) {
 
 void disR5900FreeSyms() {
 	if (dSyms != NULL) { free(dSyms); dSyms = NULL; }
+	nSymAlloc = 0;
 	nSyms = 0;
 }
 
-char *disR5900GetSym(u32 addr) {
+const char *disR5900GetSym(u32 addr) {
 	int i;
 
 	if (dSyms == NULL) return NULL;
@@ -192,7 +208,7 @@ char *disR5900GetSym(u32 addr) {
 	return NULL;
 }
 
-char *disR5900GetUpperSym(u32 addr) {
+const char *disR5900GetUpperSym(u32 addr) {
 	u32 laddr;
 	int i, j=-1;
 
@@ -207,10 +223,14 @@ char *disR5900GetUpperSym(u32 addr) {
 	return dSyms[j].name;
 }
 
-#define dFindSym(i) { \
-	char *str = disR5900GetSym(i); \
-	if (str != NULL) sprintf(ostr, "%s %s", ostr, str); \
+void dFindSym( string& output, u32 addr )
+{
+	const char* label = disR5900GetSym( addr );
+	if( label != NULL )
+		output.append( label );
 }
+
+#define dAppendSym(addr) dFindSym( output, addr )
 
 /*********************************************************
 * Arithmetic with immediate operand                      *
@@ -249,15 +269,15 @@ MakeDisF(disSLTU,		dName("SLTU");  dGPR64(_Rd_); dGPR64(_Rs_); dGPR64(_Rt_);)
 * Jump to target                                         *
 * Format:  OP target                                     *
 *********************************************************/
-MakeDisF(disJ,			dName("J");   dTarget(); dFindSym(_Target_);)
-MakeDisF(disJAL,		dName("JAL"); dTarget(); dGPR32(31); dFindSym(_Target_);)
+MakeDisF(disJ,			dName("J");   dTarget(); dAppendSym(_Target_);)
+MakeDisF(disJAL,		dName("JAL"); dTarget(); dGPR32(31); dAppendSym(_Target_);)
 
 /*********************************************************
 * Register jump                                          *
 * Format:  OP rs, rd                                     *
 *********************************************************/
-MakeDisF(disJR,			dName("JR");   dGPR32(_Rs_); dFindSym(cpuRegs.GPR.r[_Rs_].UL[0]);)
-MakeDisF(disJALR,		dName("JALR"); dGPR32(_Rs_); dGPR32(_Rd_); dFindSym(cpuRegs.GPR.r[_Rs_].UL[0]);)
+MakeDisF(disJR,			dName("JR");   dGPR32(_Rs_); dAppendSym(cpuRegs.GPR.r[_Rs_].UL[0]);)
+MakeDisF(disJALR,		dName("JALR"); dGPR32(_Rs_); dGPR32(_Rd_); dAppendSym(cpuRegs.GPR.r[_Rs_].UL[0]);)
 
 /*********************************************************
 * Register mult/div & Register trap logic                *
@@ -770,10 +790,10 @@ MakeDisF(disTEQI,	    dName("TEQI");  dGPR64(_Rs_); dImm();)
 MakeDisF(disTNEI,	    dName("TNEI");  dGPR64(_Rs_); dImm();)
 
 /*********************************************************
-* Unknow instruction (would generate an exception)       *
+* Unknown instruction (would generate an exception)      *
 * Format:  ?                                             *
 *********************************************************/
-MakeDisF(disNULL,		dName("*** Bad OP ***");)
+static MakeDisF(disNULL,		dName("*** Bad OP ***");)
 
 TdisR5900F disR5900_MMI0[] = { // Subset of disMMI0
     disPADDW,  disPSUBW,  disPCGTW,  disPMAXW,
@@ -991,3 +1011,12 @@ TdisR5900F disR5900[] = {
 
 MakeDisF(disR5900F,		disR5900[code >> 26] DisFInterfaceN)
 
+// returns a string representation of the cpuRegs current instruction.
+// The return value of this method is *not* thread safe!
+const char* DisR5900CurrentState::getString()
+{
+	disR5900F( result, cpuRegs.code, cpuRegs.pc );
+	return result.c_str();
+}
+
+DisR5900CurrentState disR5900Current;

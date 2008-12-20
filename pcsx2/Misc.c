@@ -39,12 +39,11 @@
 #include "iVUzerorec.h"
 
 #include "GS.h"
-
+#include "COP0.h"
 #include "Cache.h"
 
 #include "Paths.h"
 
-u32 dwSaveVersion = 0x7a300010;
 u32 dwCurSaveStateVer = 0;
 extern u32 s_iLastCOP0Cycle;
 extern u32 s_iLastPERFCycle[2];
@@ -397,7 +396,7 @@ int connected=0;
 void __Log(const char *fmt, ...) {
 #ifdef EMU_LOG 
 	va_list list;
-	static char tmp[2024];	//hm, should be enough
+	char tmp[2024];	//hm, should be enough
 
 	va_start(list, fmt);
 #ifdef _WIN32
@@ -475,7 +474,7 @@ int SaveState(const char *file) {
 	f = gzopen(file, "wb");
 	if (f == NULL) return -1;
 
-	gzwrite(f, &dwSaveVersion, 4);
+	gzwrite(f, &g_SaveVersion, 4);
 
 	gzwrite(f, PS2MEM_BASE, 0x02000000);         // 32 MB main memory   
 	gzwrite(f, PS2MEM_ROM, 0x00400000);         // 4 mb rom memory
@@ -488,19 +487,17 @@ int SaveState(const char *file) {
 	gzwrite(f, (void*)&psxRegs, sizeof(psxRegs));   // iop regs]
 	gzwrite(f, (void*)&fpuRegs, sizeof(fpuRegs));   // fpu regs
 	gzwrite(f, (void*)&tlb, sizeof(tlb));           // tlbs
+
 	gzwrite(f, &EEsCycle, sizeof(EEsCycle));
 	gzwrite(f, &EEoCycle, sizeof(EEoCycle));
 	gzwrite(f, &psxRegs.cycle, sizeof(u32));		// used to be IOPoCycle.  This retains compatibility.
 	gzwrite(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
 	gzwrite(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
-	// [TODO] These following two lines to be addedlater in a new savestate version.
-	//gzwrite(f, &psxNextsCounter, sizeof(psxNextsCounter));
-	//gzwrite(f, &psxNextsCounter, sizeof(psxNextsCounter));
+
 	gzwrite(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));
 	gzwrite(f, s_iLastPERFCycle, sizeof(u32)*2);
 	gzwrite(f, &g_psxWriteOk, sizeof(g_psxWriteOk));
 
-	//gzwrite(f, (void*)&ipuRegs, sizeof(IPUregisters));   // ipu regs
 	//hope didn't forgot any cpu....
 
 	rcntFreeze(f, 1);
@@ -571,20 +568,28 @@ int LoadState(const char *file) {
 	
 	gzread(f, &dwCurSaveStateVer, 4);
 
-	if( dwCurSaveStateVer != dwSaveVersion ) {
+	if( dwCurSaveStateVer != g_SaveVersion ) {
 
-        // pcsx2 supports opening these formats
+#ifdef PCSX2_VIRTUAL_MEM
+		// pcsx2 vm supports opening these formats
 		if( dwCurSaveStateVer != 0x7a30000d && dwCurSaveStateVer != 0x7a30000e  && dwCurSaveStateVer != 0x7a30000f) {
 			gzclose(f);
-			SysPrintf("State to load is a different version from current.\n");
+			SysPrintf("Unsupported savestate version: %x.\n", dwCurSaveStateVer );
 			return 0;
 		}
+#else
+		gzclose(f);
+		SysPrintf(
+			"Savestate load aborted:\n"
+			"  vTlb edition cannot safely load savestates created by the VM edition.\n" );
+		return 0;
+#endif
 	}
 
 	// stop and reset the system first
 	gsWaitGS();
 
-	for (i=0; i<48; i++) ClearTLB(i);
+	for (i=0; i<48; i++) UnmapTLB(i);
 
 	Cpu->Reset();
 #ifndef PCSX2_NORECBUILD
@@ -627,9 +632,7 @@ int LoadState(const char *file) {
 	gzread(f, &dud, sizeof(u32));			// was IOPoCycle
 	gzread(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
 	gzread(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
-	// [TODO] these following 2 lines to be added later in a new savestate version
-	//gzread(f, &psxNextsCounter, sizeof(psxNextsCounter));
-	//gzread(f, &psxNextCounter, sizeof(psxNextsCounter));
+
 	gzread(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));
 	if( dwCurSaveStateVer >= 0x7a30000e ) {
 		gzread(f, s_iLastPERFCycle, sizeof(u32)*2);
@@ -684,7 +687,7 @@ int LoadState(const char *file) {
 
 	//dumplog |= 4;
 	WriteCP0Status(cpuRegs.CP0.n.Status.val);
-	for (i=0; i<48; i++) WriteTLB(i);
+	for (i=0; i<48; i++) MapTLB(i);
 
 	return 0;
 }

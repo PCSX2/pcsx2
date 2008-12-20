@@ -43,6 +43,7 @@
 #include "iR5900.h"
 
 #include "iVUzerorec.h"
+#include "SamplProf.h"
 
 // temporary externs
 extern u32 vudump;
@@ -338,6 +339,7 @@ void SuperVUInit(int vuindex)
 		s_recVUMem = (u8*)SysMmap(0x0c000000, VU_EXESIZE);
         if( (uptr)s_recVUMem > 0x80000000 )
             SysPrintf("bad SuperVU alloc %x\n", s_recVUMem);
+		ProfilerRegisterSource("VURec",s_recVUMem, VU_EXESIZE);
 		memset(s_recVUMem, 0xcd, VU_EXESIZE);
 		s_recVUPtr = s_recVUMem;
 		recVUStack = new u8[SUPERVU_STACKSIZE * 4];

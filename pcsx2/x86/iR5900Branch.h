@@ -19,29 +19,29 @@
 #ifndef __IR5900BRANCH_H__
 #define __IR5900BRANCH_H__
 
-#include "Common.h"
-#include "InterTables.h"
-
 /*********************************************************
 * Shift arithmetic with constant shift                   *
 * Format:  OP rd, rt, sa                                 *
 *********************************************************/
 
-void recBEQ( void );
-void recBEQL( void );
-void recBNE( void );
-void recBNEL( void );
-void recBLTZ( void );
-void recBLTZL( void );
-void recBLTZAL( void );
-void recBLTZALL( void );
-void recBGTZ( void );
-void recBGTZL( void );
-void recBLEZ( void );
-void recBLEZL( void );
-void recBGEZ( void );
-void recBGEZL( void );
-void recBGEZAL( void );
-void recBGEZALL( void );
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recBEQ( void );
+	void recBEQL( void );
+	void recBNE( void );
+	void recBNEL( void );
+	void recBLTZ( void );
+	void recBLTZL( void );
+	void recBLTZAL( void );
+	void recBLTZALL( void );
+	void recBGTZ( void );
+	void recBGTZL( void );
+	void recBLEZ( void );
+	void recBLEZL( void );
+	void recBGEZ( void );
+	void recBGEZL( void );
+	void recBGEZAL( void );
+	void recBGEZALL( void );
+} } }
 
 #endif

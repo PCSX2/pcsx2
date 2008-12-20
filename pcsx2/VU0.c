@@ -27,6 +27,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
+
 #include "Common.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
@@ -50,11 +52,6 @@
 
 PCSX2_ALIGNED16(VURegs VU0);
 
-void COP2() {
-	VU0_LOG("%s\n", disR5900Fasm(cpuRegs.code, cpuRegs.pc));
-	Int_COP2PrintTable[_Rs_]();
-}
-
 void COP2_BC2() { Int_COP2BC2PrintTable[_Rt_]();}
 void COP2_SPECIAL() { Int_COP2SPECIAL1PrintTable[_Funct_]();}
 
@@ -67,23 +64,28 @@ void COP2_Unknown()
 	CPU_LOG("Unknown COP2 opcode called\n");
 }
 
-void LQC2() {
-	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)cpuRegs.code;
-	if (_Ft_) {
-		memRead128(addr,   &VU0.VF[_Ft_].UD[0]);
-	} else {
-		u64 val[2];
- 		memRead128(addr,   val);
+namespace EE{ namespace Interpreter{ namespace OpcodeImpl
+{
+	void LQC2() {
+		u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)cpuRegs.code;
+		if (_Ft_) {
+			memRead128(addr,   &VU0.VF[_Ft_].UD[0]);
+		} else {
+			u64 val[2];
+ 			memRead128(addr,   val);
+		}
 	}
-}
 
-// Asadr.Changed
-void SQC2() {
-    u32 addr = _Imm_ + cpuRegs.GPR.r[_Rs_].UL[0];
-    memWrite64(addr,  VU0.VF[_Ft_].UD[0]); 
-    memWrite64(addr+8,VU0.VF[_Ft_].UD[1]); 
-}
-
+	// Asadr.Changed
+	//TODO: check this
+	// HUH why ? doesn;t make any sense ...
+	void SQC2() {
+		u32 addr = _Imm_ + cpuRegs.GPR.r[_Rs_].UL[0];
+		//memWrite64(addr,  VU0.VF[_Ft_].UD[0]); 
+		//memWrite64(addr+8,VU0.VF[_Ft_].UD[1]); 
+		memWrite128(addr,  &VU0.VF[_Ft_].UD[0]); 
+	}
+}}}
 
 //****************************************************************************
 void _vu0WaitMicro() {

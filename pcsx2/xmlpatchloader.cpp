@@ -174,7 +174,7 @@ int LoadGroup(TiXmlNode *group,int gParent)
 	// only valid for recompilers
 	TiXmlNode *fastmemory=group->FirstChild("FASTMEMORY");
 	if(fastmemory!=NULL)
-		SetFastMemory(1);
+		EE::Dynarec::SetFastMemory(1);
 #endif
 
     TiXmlNode *zerogs=group->FirstChild("ZEROGS");
@@ -324,11 +324,11 @@ int LoadGroup(TiXmlNode *group,int gParent)
 		
 		if(strcmp(place,"EE")==0)
 		{
-			patch[patchnumber].cpu= EE;
+			patch[patchnumber].cpu= CPU_EE;
 		} else
 		if(strcmp(place,"IOP")==0)
 		{
-			patch[patchnumber].cpu= IOP;
+			patch[patchnumber].cpu= CPU_IOP;
 		} else
 		{
 			SysPrintf("XML Patch Loader: ERROR: Invalid place attribute.\n");

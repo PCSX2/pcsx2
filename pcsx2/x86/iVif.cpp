@@ -17,7 +17,7 @@
  */
 
 // stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
+#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD) && defined(PCSX2_VIRTUAL_MEM))
 
 #include <math.h>
 #include <string.h>

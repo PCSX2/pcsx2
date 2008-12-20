@@ -113,7 +113,8 @@ typedef char* (*TdisR5900F)DisFInterface;
 * Unknown instruction (would generate an exception)       *
 * Format:  ?                                             *
 *********************************************************/
-extern char* disNULL DisFInterface;
+//extern char* disNULL DisFInterface;
+static MakeDisF(disNULL,		dName("*** Bad OP ***");)
 
 #include "DisVUmicro.h"
 #include "DisVUops.h"

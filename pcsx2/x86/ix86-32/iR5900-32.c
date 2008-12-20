@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <malloc.h>
 #include <sys/stat.h>
+#include <string>
 
 #include "Common.h"
 #include "Memory.h"
@@ -52,6 +53,9 @@
 #include "VUmicro.h"
 
 #include "iVUzerorec.h"
+
+#include "vtlb.h"
+#include "SamplProf.h"
 
 #ifdef _WIN32
 #pragma warning(disable:4244)
@@ -81,12 +85,10 @@ bool g_EEFreezeRegs = false; // if set, should freeze the regs
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
 static BASEBLOCK* s_pDispatchBlock = NULL;
-static u32 s_nEndBlock = 0; // what pc the current block ends
+static u32 s_nEndBlock = 0; // what pc the current block ends	
+static u32 s_nHasDelay = 0;
 
 static u32 s_nNextBlock = 0; // next free block in recBlocks
-
-extern void (*recBSC[64])();
-extern void (*recBSC_co[64])();
 
 // save states for branches
 static u16 s_savex86FpuState, s_saveiCWstate;
@@ -95,13 +97,13 @@ static u32 s_saveConstGPRreg = 0, s_saveHasConstReg = 0, s_saveFlushedConstReg =
 static EEINST* s_psaveInstInfo = NULL;
 
 u32 s_nBlockCycles = 0; // cycles of current block recompiling
-u32 g_eeCyclePenalty;	// cycle penalty of the current recompiled instruction
 
 static u32 s_savenBlockCycles = 0;
 
 void recCOP2RecompileInst();
 int recCOP2AnalyzeBlock(u32 startpc, u32 endpc);
 void recCOP2EndBlock(void);
+u8* dyna_block_discard_recmem=0;
 
 #ifdef _DEBUG
 u32 dumplog = 0;
@@ -117,10 +119,10 @@ LARGE_INTEGER lbase = {0}, lfinal = {0};
 //static u32 s_startcount = 0;
 //#endif
 
-const char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
-const char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %x : EDI = %x\n";
-const char *txt1 = "REG[%d] = %x_%x\n";
-const char *txt2 = "M32 = %x\n";
+static const char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
+static const char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %x : EDI = %x\n";
+static const char *txt1 = "REG[%d] = %x_%x\n";
+static const char *txt2 = "M32 = %x\n";
 
 void _cop2AnalyzeOp(EEINST* pinst, int dostalls); // reccop2.c
 static void iBranchTest(u32 newpc, u32 cpuBranch);
@@ -173,10 +175,13 @@ static void iDumpBlock( int startpc, u8 * ptr )
 
 	f = fopen( filename, "w" );
 
+	std::string output;
+
     if( disR5900GetSym(startpc) != NULL )
         fprintf(f, "%s\n", disR5900GetSym(startpc));
 	for ( i = startpc; i < s_nEndBlock; i += 4 ) {
-		fprintf( f, "%s\n", disR5900Fasm( PSMu32( i ), i ) );
+		disR5900Fasm( output, PSMu32( i ), i );
+		fprintf( f, output.c_str() );
 	}
 
 	// write the instruction info
@@ -1482,6 +1487,7 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 }
 
 #define REC_CACHEMEM 0x01000000
+void __fastcall dyna_block_discard(u32 start,u32 sz);
 
 int recInit( void ) 
 {
@@ -1492,8 +1498,8 @@ int recInit( void )
 	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
 
     // can't have upper 4 bits nonzero!
-	recMem = (u8*)SysMmap(0x0d000000, REC_CACHEMEM);
-	
+	recMem = (u8*)SysMmap(0x0d000000, REC_CACHEMEM+0x1000);   // +0x1000 ? vtlb check.
+	ProfilerRegisterSource("EERec",recMem, REC_CACHEMEM+0x1000);
 	// 32 alignment necessary
 	recRAM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x02000000 , 4*sizeof(BASEBLOCK));
 	recROM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00400000 , 4*sizeof(BASEBLOCK));
@@ -1535,6 +1541,12 @@ int recInit( void )
 	
 	memset(recMem, 0xcd, REC_CACHEMEM);
 	memset(recStack, 0, RECSTACK_SIZE);
+
+	x86SetPtr(recMem+REC_CACHEMEM);
+	dyna_block_discard_recmem=(u8*)x86Ptr;
+	
+	
+	JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
 
 	// SSE3 detection, manually create the code
 	x86SetPtr(recMem);
@@ -1611,6 +1623,9 @@ static void recReset( void ) {
 	memset( recBlocks, 0, sizeof(BASEBLOCKEX)*EE_NUMBLOCKS );
 	if( s_pInstCache ) memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
 	ResetBaseBlockEx(0);
+#ifndef PCSX2_VIRTUAL_MEM
+	mmap_ResetBlockTracking();
+#endif
 
 #ifdef _MSC_VER
 	__asm emms;
@@ -1973,24 +1988,6 @@ void StopPerfCounter()
 #endif
 
 ////////////////////////////////////////////////////
-void recClear64(BASEBLOCK* p)
-{
-	int left = 4 - ((u32)p % 16)/sizeof(BASEBLOCK);
-	recClearMem(p);
-
-	if( left > 1 && *(u32*)(p+1) ) recClearMem(p+1);
-}
-
-void recClear128(BASEBLOCK* p)
-{
-	int left = 4 - ((u32)p % 32)/sizeof(BASEBLOCK);
-	recClearMem(p);
-
-	if( left > 1 && *(u32*)(p+1) ) recClearMem(p+1);
-	if( left > 2 && *(u32*)(p+2) ) recClearMem(p+2);
-	if( left > 3 && *(u32*)(p+3) ) recClearMem(p+3);
-}
-
 void recClear( u32 Addr, u32 Size )
 {
 	u32 i;
@@ -2268,20 +2265,20 @@ static u32 eeScaleBlockCycles()
 
 	if( s_nBlockCycles <= (5<<3)  || !CHECK_EESYNC_HACK ) return s_nBlockCycles >> 3;
 
-	u32 scalar = CHECK_EE_IOP_EXTRA ? 14 : 9;	// 3.5 and 2.25 scales (4 bit fixed)
+	u32 scalar = CHECK_EE_IOP_EXTRA ? 16 : 10;	// 4.0 and 2.25 scales (4 bit fixed)
 
 	if( s_nBlockCycles <= (10<<3) )
 	{
 		// Mid-size blocks should get a mid-sized scale:
 		// (using an additional 2 bits fixed point math here)
 
-		scalar = CHECK_EE_IOP_EXTRA ? 9 : 7;	// 2.25 and 1.75 scales
+		scalar = CHECK_EE_IOP_EXTRA ? 10 : 7;	// 2.50 and 1.75 scales
 	}
 	else if( s_nBlockCycles >= (22<<3) )
 	{
 		// larger blocks get a smaller scalar as well, to help keep
 		// them from becoming "too fat" and delaying branch tests.
-		scalar = CHECK_EE_IOP_EXTRA ? 10 : 7;	// 2.5 and 1.75 scales
+		scalar = CHECK_EE_IOP_EXTRA ? 11 : 8;	// 2.5 and 2.0 scales
 	}
 
 	s_nBlockCycles *= scalar;
@@ -2321,6 +2318,8 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	x86SetJ8( j8Ptr[0] );
 }
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
 
 ////////////////////////////////////////////////////
 #ifndef CP2_RECOMPILE
@@ -2331,7 +2330,7 @@ REC_SYS(COP2);
 
 void recCOP2( void )
 { 
-	CPU_LOG( "Recompiling COP2:%s\n", disR5900Fasm( cpuRegs.code, cpuRegs.pc ) );
+	CPU_LOG( "Recompiling COP2:%s\n", disR5900Current.getString() );
 	recCOP22( );
 }
 
@@ -2342,7 +2341,7 @@ void recSYSCALL( void ) {
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_NODESTROY);
-	CALLFunc( (uptr)SYSCALL );
+	CALLFunc( (uptr)Interpreter::OpcodeImpl::SYSCALL );
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -2357,7 +2356,7 @@ void recBREAK( void ) {
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (uptr)BREAK );
+	CALLFunc( (uptr)EE::Interpreter::OpcodeImpl::BREAK );
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -2461,6 +2460,8 @@ void recMTSAH( void )
 	}
 }
 
+}}}		// end Namespace EE::Dynarec::OpcodeImpl
+
 static void checkcodefn()
 {
 	int pctemp;
@@ -2556,7 +2557,6 @@ void recompileNextInstruction(int delayslot)
 #endif
 
 	cpuRegs.code = *(int *)s_pCode;
-	s_nBlockCycles += InstCycles_Default;
 	pc += 4;
 	
 //#ifdef _DEBUG
@@ -2608,38 +2608,32 @@ void recompileNextInstruction(int delayslot)
 		}
 	}
 
+	const EE::OPCODE& opcode = EE::GetCurrentInstruction();
+
 	// peephole optimizations
 	if( g_pCurInstInfo->info & EEINSTINFO_COREC ) {
 
 #ifdef PCSX2_VIRTUAL_MEM
 		if( g_pCurInstInfo->numpeeps > 1 ) {
-			g_eeCyclePenalty = InstCycles_Store;
-			switch(cpuRegs.code>>26) {
-				case 30: recLQ_coX(g_pCurInstInfo->numpeeps); g_eeCyclePenalty = InstCycles_Load; break;
-				case 31: recSQ_coX(g_pCurInstInfo->numpeeps); break;
-				case 49: recLWC1_coX(g_pCurInstInfo->numpeeps); g_eeCyclePenalty = InstCycles_Load; break;
-				case 57: recSWC1_coX(g_pCurInstInfo->numpeeps); break;
-				case 55: recLD_coX(g_pCurInstInfo->numpeeps); g_eeCyclePenalty = InstCycles_Load; break;
-				case 63: recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
+			switch(_Opcode_) {
+				case 30: EE::Dynarec::OpcodeImpl::recLQ_coX(g_pCurInstInfo->numpeeps); break;
+				case 31: EE::Dynarec::OpcodeImpl::recSQ_coX(g_pCurInstInfo->numpeeps); break;
+				case 49: EE::Dynarec::OpcodeImpl::recLWC1_coX(g_pCurInstInfo->numpeeps); break;
+				case 57: EE::Dynarec::OpcodeImpl::recSWC1_coX(g_pCurInstInfo->numpeeps); break;
+				case 55: EE::Dynarec::OpcodeImpl::recLD_coX(g_pCurInstInfo->numpeeps); break;
+				case 63: EE::Dynarec::OpcodeImpl::recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
 				default:
 					assert(0);
 			}
 			pc += g_pCurInstInfo->numpeeps*4;
-			s_nBlockCycles += g_pCurInstInfo->numpeeps * (g_eeCyclePenalty+InstCycles_Default);
+			s_nBlockCycles += (g_pCurInstInfo->numpeeps+1) * opcode.cycles;
 			g_pCurInstInfo += g_pCurInstInfo->numpeeps;
 		}
 		else {
-			g_eeCyclePenalty = 0;
-			recBSC_co[cpuRegs.code>>26]();
+			EE::Dynarec::recBSC_co[_Opcode_]();
 			pc += 4;
 			g_pCurInstInfo++;
-
-			// ugh!  we're actually writing two instructions as one load/store opt here,
-			// so we need to factor the cycle penalty*2, and add 1 for the actual instruction
-			// base cycle counter.  And to confuse further, the blockcycle count was already
-			// updated above, for the current instruction.
-
-			s_nBlockCycles += (g_eeCyclePenalty*2) + InstCycles_Default;
+			s_nBlockCycles += opcode.cycles*2;
 		}
 #else
 		assert(0);
@@ -2650,7 +2644,7 @@ void recompileNextInstruction(int delayslot)
 
 		// if this instruction is a jump or a branch, exit right away
 		if( delayslot ) {
-			switch(cpuRegs.code>>26) {
+			switch(_Opcode_) {
 				case 1:
 					switch(_Rt_) {
 						case 0: case 1: case 2: case 3: case 0x10: case 0x11: case 0x12: case 0x13:
@@ -2670,9 +2664,8 @@ void recompileNextInstruction(int delayslot)
 					return;
 			}
 		}
-		g_eeCyclePenalty = 0;
-		recBSC[ cpuRegs.code >> 26 ]();
-		s_nBlockCycles += g_eeCyclePenalty;
+		opcode.recompile();
+		s_nBlockCycles += opcode.cycles;
 	}
 
 	if( !delayslot ) {
@@ -2735,10 +2728,10 @@ extern int rdram_sdevid;
 void iDumpRegisters(u32 startpc, u32 temp)
 {
 	int i;
-	char* pstr;// = temp ? "t" : "";
+	const char* pstr;// = temp ? "t" : "";
 	const u32 dmacs[] = {0x8000, 0x9000, 0xa000, 0xb000, 0xb400, 0xc000, 0xc400, 0xc800, 0xd000, 0xd400 };
 	extern const char *disRNameGPR[];
-    char* psymb;
+    const char* psymb;
 	
 	if (temp)
 		pstr = "t";
@@ -2816,6 +2809,12 @@ void badespfn() {
 
 #define OPTIMIZE_COP2 0//CHECK_VU0REC
 
+void __fastcall dyna_block_discard(u32 start,u32 sz)
+{
+	SysPrintf("dyna_block_discard %08X , count %d\n",start,sz);
+	Cpu->Clear(start,sz);
+	return;
+}
 void recRecompile( u32 startpc )
 {
 	u32 i = 0;
@@ -2950,6 +2949,7 @@ void recRecompile( u32 startpc )
 	// go until the next branch
 	i = startpc;
 	s_nEndBlock = 0xffffffff;
+	s_nHasDelay = 0;
 	
 	while(1) {
 		BASEBLOCK* pblock = PC_GETBLOCK(i);
@@ -2962,7 +2962,7 @@ void recRecompile( u32 startpc )
 				break;
 			}
 		}
-
+		//HUH ? PSM ? whut ? THIS IS VIRTUAL ACCESS GOD DAMMIT
 		cpuRegs.code = *(int *)PSM(i);
 
 		switch(cpuRegs.code >> 26) {
@@ -2970,6 +2970,7 @@ void recRecompile( u32 startpc )
 
 				if( _Funct_ == 8 || _Funct_ == 9 ) { // JR, JALR
 					s_nEndBlock = i + 8;
+					s_nHasDelay = 1;
 					goto StartRecomp;
 				}
 
@@ -2978,6 +2979,8 @@ void recRecompile( u32 startpc )
 				
 				if( _Rt_ < 4 || (_Rt_ >= 16 && _Rt_ < 20) ) {
 					// branches
+					if( _Rt_ == 2 || _Rt_ == 3 || _Rt_ == 18 || _Rt_ == 19 ) s_nHasDelay = 1;
+					else s_nHasDelay = 2;
 
 					branchTo = _Imm_ * 4 + i + 4;
 					if( branchTo > startpc && branchTo < i ) s_nEndBlock = branchTo;
@@ -2990,12 +2993,16 @@ void recRecompile( u32 startpc )
 
 			case 2: // J
 			case 3: // JAL
+				s_nHasDelay = 1;
 				s_nEndBlock = i + 8;
 				goto StartRecomp;
 
 			// branches
 			case 4: case 5: case 6: case 7: 
 			case 20: case 21: case 22: case 23:
+
+				if( (cpuRegs.code >> 26) >= 20 ) s_nHasDelay = 1;
+				else s_nHasDelay = 2;
 
 				branchTo = _Imm_ * 4 + i + 4;
 				if( branchTo > startpc && branchTo < i ) s_nEndBlock = branchTo;
@@ -3017,6 +3024,8 @@ void recRecompile( u32 startpc )
 				if( _Rs_ == 8 ) {
 					// BC1F, BC1T, BC1FL, BC1TL
 					// BC2F, BC2T, BC2FL, BC2TL
+					if( _Rt_ >= 2 ) s_nHasDelay = 1;
+					else s_nHasDelay = 2;
 
 					branchTo = _Imm_ * 4 + i + 4;
 					if( branchTo > startpc && branchTo < i ) s_nEndBlock = branchTo;
@@ -3092,7 +3101,7 @@ StartRecomp:
 			if( i < s_nEndBlock-4 && recompileCodeSafe(i) ) {
 				u32 curcode = cpuRegs.code;
 				u32 nextcode = *(u32*)PSM(i+4);
-				if( _eeIsLoadStoreCoIssue(curcode, nextcode) && recBSC_co[curcode>>26] != NULL ) {
+				if( _eeIsLoadStoreCoIssue(curcode, nextcode) && EE::Dynarec::recBSC_co[curcode>>26] != NULL ) {
 
 					// rs has to be the same, and cannot be just written
 					if( ((curcode >> 21) & 0x1F) == ((nextcode >> 21) & 0x1F) && !_eeLoadWritesRs(curcode) ) {
@@ -3216,6 +3225,60 @@ StartRecomp:
 
 	if( (dumplog & 1) ) //|| usecop2 )
 		iDumpBlock(startpc, recPtr);
+#endif
+
+	u32 sz=(s_nEndBlock-startpc)>>2;
+#ifdef lulz
+	/*
+		Block checking (ADDED BY RAZ-TEMP)
+	*/
+	
+	MOV32ItoR(ECX,startpc);
+	MOV32ItoR(EDX,sz);
+
+#endif
+
+	u32 inpage_offs=startpc&0xFFF;
+	u32 inpage_ptr=startpc;
+	u32 inpage_sz=sz*4;
+
+	MOV32ItoR(ECX,startpc);
+	MOV32ItoR(EDX,sz);
+
+#ifndef PCSX2_VIRTUAL_MEM
+	while(inpage_sz)
+	{
+		int PageType=mmap_GetRamPageInfo((u32*)PSM(inpage_ptr));
+		u32 pgsz=min(0x1000-inpage_offs,inpage_sz);
+
+		if(PageType!=-1)
+		{
+			if (PageType==0)
+			{
+				//MOV32ItoR(EAX,*pageVer);
+				//CMP32MtoR(EAX,(uptr)pageVer);
+				//JNE32(((u32)dyna_block_discard_recmem)- ( (u32)x86Ptr + 6 ));
+
+				mmap_MarkCountedRamPage(PSM(inpage_ptr),inpage_ptr&~0xFFF);
+			}
+			else
+			{
+				u32 lpc=inpage_ptr;
+				u32 stg=pgsz;
+				while(stg>0)
+				{
+					CMP32ItoM((uptr)PSM(lpc),*(u32*)PSM(lpc));
+					JNE32(((u32)dyna_block_discard_recmem)- ( (u32)x86Ptr + 6 ));
+					stg-=4;
+					lpc+=4;
+				}
+				SysPrintf("Manual block @ %08X : %08X %d %d %d %d\n",startpc,inpage_ptr,pgsz,0x1000-inpage_offs,inpage_sz,sz*4);
+			}
+		}
+		inpage_ptr+=pgsz;
+		inpage_sz-=pgsz;
+		inpage_offs=inpage_ptr&0xFFF;
+	}
 #endif
 
 	// finally recompile //

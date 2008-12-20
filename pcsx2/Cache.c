@@ -25,8 +25,10 @@
 
 _cacheS pCache[64];
 
-#ifndef PCSX2_VIRTUAL_MEM
-/*_cacheS pCache[64];*/
+namespace EE { namespace Interpreter { namespace OpcodeImpl
+{
+
+#ifdef PCSX2_CACHE_EMU_MEM
 int getFreeCache(u32 mem, int mode, int * way) {
 	u8 * out;
 	u32 paddr;
@@ -387,3 +389,5 @@ void CACHE() {
 }
 
 #endif
+
+}}} // end namespace EE::Interpeter::OpcodeImpl

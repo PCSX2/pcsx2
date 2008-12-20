@@ -47,6 +47,8 @@
 #include "iCore.h"
 #include "iR3000A.h"
 
+#include "SamplProf.h"
+
 u32 g_psxMaxRecMem = 0;
 extern const char *disRNameGPR[];
 extern char* disR3000Fasm(u32 code, u32 pc);
@@ -539,7 +541,7 @@ static int recInit() {
 		}
 		else break;
 	}
-
+	ProfilerRegisterSource("IOPRec",recMem, RECMEM_SIZE);
 	if( recMem == NULL ) {
 		SysPrintf("R3000A bad rec memory allocation\n");
 		return 1;
@@ -1162,10 +1164,6 @@ void psxRecompileNextInstruction(int delayslot)
 	// peephole optimizations
 	if( g_pCurInstInfo->info & EEINSTINFO_COREC ) {
 		assert(0);
-//		recBSC_co[cpuRegs.code>>26]();
-//		psxpc += 4;
-//		s_psxBlockCycles++;
-//		g_pCurInstInfo++;
 	}
 	else {
 	 	assert( !(g_pCurInstInfo->info & EEINSTINFO_NOREC) );

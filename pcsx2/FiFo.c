@@ -90,7 +90,7 @@ extern HANDLE g_hGsEvent;
 extern pthread_cond_t g_condGsEvent;
 #endif
 
-void WriteFIFO(u32 mem, u64 *value) {
+void WriteFIFO(u32 mem, const u64 *value) {
 	int ret;
 
 	if ((mem >= 0x10004000) && (mem < 0x10005000)) {

@@ -22,6 +22,7 @@
 void WriteCP0Status(u32 value);
 void UpdateCP0Status();
 void WriteTLB(int i);
-void ClearTLB(int i);
+void UnmapTLB(int i);
+void MapTLB(int i);
 
 #endif /* __COP0_H__ */

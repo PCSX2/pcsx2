@@ -25,8 +25,6 @@
 
 #include <float.h>
 
-extern u32 maxrecmem;
-
 const char *bios[256]={
 //0x00
 	"RFU000_FullReset", "ResetEE",				"SetGsCrt",				"RFU003",
@@ -76,25 +74,40 @@ const char *bios[256]={
 	"Deci2Call",						"PSMode",				"MachineType",					"GetMemorySize", 
 };
 
-extern  void (*LT_OpcodePrintTable[64])();
 int branch2 = 0;
 static u32 branchPC;
 
 // These macros are used to assemble the repassembler functions
 
-#ifdef CPU_LOG
-#define debugI() \
-	if (Log) { CPU_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc)); } \
+#ifdef PCSX2_DEVBUILD
+static void debugI()
+{
+	//if (Log) { CPU_LOG("%s\n", disR5900Current.getString()); }
  	if (cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1]) SysPrintf("R0 is not zero!!!!\n");
+}
 #else
-#define debugI()
+static void debugI() {}
 #endif
 
-static __forceinline void execI() {
+static u32 cpuBlockCycles = 0;		// 3 bit fixed point version of cycle count
 
-	cpuRegs.cycle++;
-	//cpuRegs.CP0.n.Count++; /*count every cycles.*/
+namespace EE
+{
+	const OPCODE& GetCurrentInstruction()
+	{
+		const EE::OPCODE* opcode = &EE::OpcodeTables::Standard[_Opcode_];
 
+		while( opcode->getsubclass != NULL )
+			opcode = &opcode->getsubclass();
+
+		return *opcode;
+	}
+}
+
+static std::string disOut;
+
+static __forceinline void execI()
+{
 #ifdef _DEBUG
     if (memRead32(cpuRegs.pc, &cpuRegs.code) == -1) return;
 	debugI();
@@ -102,8 +115,17 @@ static __forceinline void execI() {
     cpuRegs.code = *(u32 *)PSM(cpuRegs.pc);
 #endif
 
-	cpuRegs.pc+= 4;
-	Int_OpcodePrintTable[cpuRegs.code >> 26]();
+	const EE::OPCODE& opcode = EE::GetCurrentInstruction();
+
+	/*disOut.assign( "\n" );
+	opcode.decode( disOut );
+	SysPrintf( disOut.c_str() );*/
+
+	cpuBlockCycles += opcode.cycles;
+	//cpuRegs.cycle++;
+	cpuRegs.pc += 4;
+
+	opcode.interpret();
 }
 
 static void doBranch(u32 tar) {
@@ -113,6 +135,8 @@ static void doBranch(u32 tar) {
 	cpuRegs.branch = 0;
 	cpuRegs.pc = branchPC;
 
+	cpuRegs.cycle += cpuBlockCycles >> 3;
+	cpuBlockCycles &= (1<<3)-1;
 	IntcpuBranchTest();
 }
 
@@ -125,11 +149,68 @@ void intSetBranch() {
 	branch2 = 1;
 }
 
-void SPECIAL() {Int_SpecialPrintTable[_Funct_]();}
-void REGIMM()  {Int_REGIMMPrintTable[_Rt_]();    }
+//****************************************************************
+// Used to manage FPU Opcodes
+//****************************************************************
+
+void COP1_BC1() {
+	Int_COP1BC1PrintTable[_Rt_]();
+}
+
+void COP1_S() {
+	Int_COP1SPrintTable[_Funct_]();
+}
+
+void COP1_W() {
+	Int_COP1WPrintTable[_Funct_]();
+}
+
+void COP1_Unknown() {
+	FPU_LOG("Unknown FPU opcode called\n");
+}
 
 
-void UnknownOpcode() {
+namespace EE { namespace Opcodes
+{
+
+const OPCODE& Class_SPECIAL() { return EE::OpcodeTables::Special[_Funct_]; }
+const OPCODE& Class_REGIMM()  { return EE::OpcodeTables::RegImm[_Rt_]; }
+
+const OPCODE& Class_MMI()  { return EE::OpcodeTables::MMI[_Funct_]; }
+const OPCODE& Class_MMI0() { return EE::OpcodeTables::MMI0[_Sa_]; }
+const OPCODE& Class_MMI1() { return EE::OpcodeTables::MMI1[_Sa_]; }
+const OPCODE& Class_MMI2() { return EE::OpcodeTables::MMI2[_Sa_]; }
+const OPCODE& Class_MMI3() { return EE::OpcodeTables::MMI3[_Sa_]; }
+
+//const OPCODE& Class_COP0() { return EE::OpcodeTables::COP1[_Rs_]; }
+//const OPCODE& Class_COP1() { return EE::OpcodeTables::COP1[_Rs_]; }
+//const OPCODE& Class_COP2() { return EE::OpcodeTables::COP2[_Rs_]; }
+
+} }
+
+namespace EE { namespace Interpreter { namespace OpcodeImpl
+{
+void COP0()
+{
+	Int_COP0PrintTable[_Rs_]();
+}
+
+void COP1()
+{
+	FPU_LOG("%s\n", disR5900Current.getString() );
+	Int_COP1PrintTable[_Rs_]();
+}
+
+void COP2()
+{
+	std::string disOut;
+	disR5900Fasm(disOut, cpuRegs.code, cpuRegs.pc);
+
+	VU0_LOG("%s\n", disOut.c_str());
+	Int_COP2PrintTable[_Rs_]();
+}
+
+void Unknown() {
 	CPU_LOG("%8.8lx: Unknown opcode called\n", cpuRegs.pc);
 }
 
@@ -385,11 +466,11 @@ void LB() {
 	u32 addr;
 
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-	if (_Rt_) {
-		memRead8RS(addr, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	} else {
-		u64 dummy;
-		memRead8RS(addr, &dummy);
+	u8 temp;
+	const u32 rt=_Rt_;
+	if ((0==memRead8(addr, &temp)) && (rt!=0))
+	{
+		cpuRegs.GPR.r[rt].UD[0]=(s8)temp;
 	}
 }
 
@@ -397,11 +478,11 @@ void LBU() {
 	u32 addr;
 
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-	if (_Rt_) {
-		memRead8RU(addr, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	} else {
-		u64 dummy;
-		memRead8RU(addr, &dummy);
+	u8 temp;
+	const u32 rt=_Rt_;
+	if ((0==memRead8(addr, &temp)) && (rt!=0))
+	{
+		cpuRegs.GPR.r[rt].UD[0]=temp;
 	}
 }
 
@@ -409,11 +490,11 @@ void LH() {
 	u32 addr;
 
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-	if (_Rt_) {
-		memRead16RS(addr, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	} else {
-		u64 dummy;
-		memRead16RS(addr, &dummy);
+	u16 temp;
+	const u32 rt=_Rt_;
+	if ((0==memRead16(addr, &temp)) && (rt!=0))
+	{
+		cpuRegs.GPR.r[rt].UD[0]=(s16)temp;
 	}
 }
 
@@ -421,35 +502,38 @@ void LHU() {
 	u32 addr;
 
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-	if (_Rt_) {
-		memRead16RU(addr, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	} else {
-		u64 dummy;
-		memRead16RU(addr, &dummy);
+	u16 temp;
+	const u32 rt=_Rt_;
+	if ((0==memRead16(addr, &temp)) && (rt!=0))
+	{
+		cpuRegs.GPR.r[rt].UD[0]=temp;
 	}
 }
+
 
 void LW() {
 	u32 addr;
 
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-	if (_Rt_) {
-		memRead32RS(addr, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	} else {
-		u64 dummy;
-		memRead32RS(addr, &dummy);
+
+	u32 temp;
+	const u32 rt=_Rt_;
+	if ((0==memRead32(addr, &temp)) && (rt!=0))
+	{
+		cpuRegs.GPR.r[rt].UD[0]=(s32)temp;
 	}
 }
 
 void LWU() { 
 	u32 addr;
-
+	
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-	if (_Rt_) {
-		memRead32RU(addr, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	} else {
-		u64 dummy;
-		memRead32RU(addr, &dummy);
+
+	u32 temp;
+	const u32 rt=_Rt_;
+	if ((0==memRead32(addr, &temp)) && (rt!=0))
+	{
+		cpuRegs.GPR.r[rt].UD[0]=temp;
 	}
 }
 
@@ -625,7 +709,7 @@ void SD() {
 	u32 addr;
 
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-    memWrite64(addr,cpuRegs.GPR.r[_Rt_].UD[0]); 
+    memWrite64(addr,&cpuRegs.GPR.r[_Rt_].UD[0]); 
 }
 
 u64 SDL_MASK[8] = { 0xffffffffffffff00LL, 0xffffffffffff0000LL, 0xffffffffff000000LL, 0xffffffff00000000LL, 
@@ -638,9 +722,9 @@ void SDL() {
 	u64 mem;
 
 	if (memRead64(addr & ~7, &mem) == -1) return;
-
-	memWrite64(addr & ~7,  (cpuRegs.GPR.r[_Rt_].UD[0] >> SDL_SHIFT[shift]) |
-		      ( mem & SDL_MASK[shift]) );
+	mem =(cpuRegs.GPR.r[_Rt_].UD[0] >> SDL_SHIFT[shift]) |
+		      ( mem & SDL_MASK[shift]);
+	memWrite64(addr & ~7, &mem);
 }
 
 u64 SDR_MASK[8] = { 0x0000000000000000LL, 0x00000000000000ffLL, 0x000000000000ffffLL, 0x0000000000ffffffLL,
@@ -653,9 +737,9 @@ void SDR() {
 	u64 mem;
 
 	if (memRead64(addr & ~7, &mem) == -1) return;
-
-	memWrite64(addr & ~7,  (cpuRegs.GPR.r[_Rt_].UD[0] << SDR_SHIFT[shift]) |
-		      ( mem & SDR_MASK[shift]) );
+	mem=(cpuRegs.GPR.r[_Rt_].UD[0] << SDR_SHIFT[shift]) |
+		      ( mem & SDR_MASK[shift]);
+	memWrite64(addr & ~7, &mem );
 }
 
 void SQ() {
@@ -929,7 +1013,7 @@ void MTSAH() {
     cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 4;
 }
 
-
+} } }	// end EE::Interpreter::OpcodeImpl namespace
 
 ///////////////////////////////////////////
 

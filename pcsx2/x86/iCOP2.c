@@ -58,7 +58,7 @@ _vuopinfo g_cop2info = {0, 0, 1, 1, 1, 0, 0};
 void recCop2BranchCall( void (*func)() )
 {
 	X86_32CODE(SetFPUstate());
-	recBranchCall( func );
+	EE::Dynarec::recBranchCall( func );
 	_freeX86regs();
 }
 

@@ -29,6 +29,9 @@
 #include "iR5900.h"
 #include "iMMI.h"
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
 #ifndef MMI_RECOMPILE
 
 REC_FUNC( PLZCW, _Rd_ );
@@ -255,7 +258,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI)
 			_deleteEEreg(XMMGPR_LO, 1);
 			_deleteEEreg(XMMGPR_HI, 1);
 			iFlushCall(FLUSH_CACHED_REGS); // since calling CALLFunc
-			CALLFunc( (uptr)PMFHL );
+			CALLFunc( (uptr)Interpreter::OpcodeImpl::PMFHL );
 			break;
 
 		case 0x03: // LH
@@ -566,7 +569,7 @@ void recPLZCW( void )
 
 void recMMI0( void )
 {
-	recMMI0t[ _Sa_ ]( );
+	EE::OpcodeTables::MMI0[ _Sa_ ].recompile( );
 }
 
 #endif
@@ -575,7 +578,7 @@ void recMMI0( void )
 
 void recMMI1( void )
 {
-	recMMI1t[ _Sa_ ]( );
+	EE::OpcodeTables::MMI1[ _Sa_ ].recompile( );
 }
 
 #endif
@@ -584,7 +587,7 @@ void recMMI1( void )
 
 void recMMI2( void )
 {
-	recMMI2t[ _Sa_ ]( );
+	EE::OpcodeTables::MMI2[ _Sa_ ].recompile( );
 }
 
 #endif
@@ -593,7 +596,7 @@ void recMMI2( void )
 
 void recMMI3( void )
 {
-	recMMI3t[ _Sa_ ]( );
+	EE::OpcodeTables::MMI3[ _Sa_ ].recompile( );
 }
 
 #endif
@@ -1045,7 +1048,7 @@ void recPADDSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)PADDSW ); 
+	CALLFunc( (uptr)Interpreter::OpcodeImpl::PADDSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1136,7 +1139,7 @@ void recPSUBSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)PSUBSW ); 
+	CALLFunc( (uptr)Interpreter::OpcodeImpl::PSUBSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1564,7 +1567,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)PABSW ); 
+	CALLFunc( (uptr)Interpreter::OpcodeImpl::PABSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1588,7 +1591,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)PABSW );
+	CALLFunc( (uptr)Interpreter::OpcodeImpl::PABSW );
 }
 
 ////////////////////////////////////////////////////
@@ -2222,8 +2225,6 @@ void recPSRLVW()
 ////////////////////////////////////////////////////
 void recPMSUBW()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
@@ -2264,7 +2265,6 @@ void recPMSUBW()
 ////////////////////////////////////////////////////
 void recPMULTW()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
@@ -2273,7 +2273,6 @@ void recPMULTW()
 ////////////////////////////////////////////////////
 void recPDIVW()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Div;
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	REC_FUNC_INLINE( PDIVW, _Rd_ );
@@ -2282,7 +2281,6 @@ void recPDIVW()
 ////////////////////////////////////////////////////
 void recPDIVBW()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Div;
 	REC_FUNC_INLINE( PDIVBW, _Rd_ ); //--
 }
 
@@ -2291,8 +2289,6 @@ PCSX2_ALIGNED16(int s_mask1[4]) = {~0, 0, ~0, 0};
 
 void recPHMADH()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _Rd_ ? EEREC_D : _allocTempXMMreg(XMMT_INT, -1);
 
@@ -2352,8 +2348,6 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPMSUBH()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -2397,8 +2391,6 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPHMSBH()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -2553,8 +2545,6 @@ CPU_SSE_XMMCACHE_END
 
 void recPMULTH( void )
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -2807,8 +2797,6 @@ CPU_SSE_XMMCACHE_END
 
 void recPMADDH( void ) 
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -2933,7 +2921,17 @@ REC_FUNC( PEXCH, _Rd_);
 #else
 
 ////////////////////////////////////////////////////
-REC_FUNC( PSRAVW, _Rd_ ); 
+//REC_FUNC( PSRAVW, _Rd_ ); 
+
+void recPSRAVW( void )
+{
+   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
+   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
+   iFlushCall(FLUSH_EVERYTHING);
+   if( _Rd_ > 0 ) _deleteEEreg(_Rd_, 0);
+   CALLFunc( (uptr)Interpreter::OpcodeImpl::PSRAVW );
+}
+
 
 ////////////////////////////////////////////////////
 PCSX2_ALIGNED16(u32 s_tempPINTEH[4]) = {0x0000ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff };
@@ -2993,8 +2991,6 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPMULTUW()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	EEINST_SETSIGNEXT(_Rs_);
@@ -3028,8 +3024,6 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPMADDUW()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Mult;
-
 CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED|XMMINFO_WRITELO|XMMINFO_WRITEHI|XMMINFO_READLO|XMMINFO_READHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	EEINST_SETSIGNEXT(_Rs_);
@@ -3070,7 +3064,6 @@ CPU_SSE_XMMCACHE_END
 //do EEINST_SETSIGNEXT
 void recPDIVUW()
 {
-	g_eeCyclePenalty = InstCycles_MMI_Div;
 	REC_FUNC_INLINE( PDIVUW, _Rd_ );
 }
 
@@ -3337,6 +3330,8 @@ CPU_SSE_XMMCACHE_END
 	//POP32R( EBX );
 }
 
-#endif
+#endif	// else MMI3_RECOMPILE
+
+} } }
 
 #endif // PCSX2_NORECBUILD

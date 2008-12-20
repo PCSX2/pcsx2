@@ -34,6 +34,10 @@
 #pragma warning(disable:4761)
 #endif
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
+
 /*********************************************************
 * Register arithmetic                                    *
 * Format:  OP rd, rs, rt                                 *
@@ -1992,5 +1996,7 @@ void recSLTU( void )
 }
 
 #endif
+
+} } }
 
 #endif // PCSX2_NORECBUILD

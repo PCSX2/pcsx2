@@ -66,6 +66,7 @@ BIOS
 #include "PsxHw.h"
 #include "VUmicro.h"
 #include "GS.h"
+#include "vtlb.h"
 
 #ifdef ENABLECACHE
 #include "Cache.h"
@@ -89,7 +90,7 @@ u16 ba0R16(u32 mem) {
 #ifdef PCSX2_VIRTUAL_MEM
 	if (mem == 0x1a000006) {
 #else
-	if (mem == 0xba000006) {
+	if (mem == 0x1a000006) {
 #endif
 		static int ba6;
 		ba6++;
@@ -326,7 +327,7 @@ void memShutdown()
 	} \
 } \
 
-int SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS* eps)
+int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
 	struct _EXCEPTION_RECORD* ExceptionRecord = eps->ExceptionRecord;
 	struct _CONTEXT* ContextRecord = eps->ContextRecord;
@@ -1905,9 +1906,7 @@ int memRead32(u32 mem, u32 *out)  {
 			return 0;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -1930,9 +1929,7 @@ int memRead32RS(u32 mem, u64 *out)
 			return 0;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -1955,9 +1952,7 @@ int memRead32RU(u32 mem, u64 *out)
 			return 0;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -1974,9 +1969,7 @@ int memRead64(u32 mem, u64 *out)  {
 			return 0;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -2000,9 +1993,7 @@ int memRead128(u32 mem, u64 *out)  {
 			return 0;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -2084,15 +2075,15 @@ void memWrite32(u32 mem, u32 value)
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
-void memWrite64(u32 mem, u64 value)   {
+void memWrite64(u32 mem, const u64* value)   {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
-		case 0x10000000: hwWrite64(mem, value); return;
-		case 0x12000000: gsWrite64(mem, value); return;
+		case 0x10000000: hwWrite64(mem, *value); return;
+		case 0x12000000: gsWrite64(mem, *value); return;
 
 		default:
-			*(u64*)(PS2MEM_BASE+mem) = value;
+			*(u64*)(PS2MEM_BASE+mem) = *value;
 
 			if (CHECK_EEREC) {
 				REC_CLEARM(mem);
@@ -2100,11 +2091,11 @@ void memWrite64(u32 mem, u64 value)   {
 			}
 			return;
 	}
-	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)(value>>32), (u32)value);
+	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)((*value)>>32), (u32)value);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
-void memWrite128(u32 mem, u64 *value) {
+void memWrite128(u32 mem, const u64 *value) {
 
 	mem = TRANSFORM_ADDR(mem);
 	switch( (mem&~0xffff) ) {
@@ -2131,6 +2122,9 @@ void memWrite128(u32 mem, u64 *value) {
 }
 
 #else
+u32 psMPWC[(0x02000000/32)>>12];
+#include <vector>
+std::vector<u32> psMPWVA[0x02000000>>12];
 
 u8  *psM; //32mb Main Ram
 u8  *psR; //4mb rom area
@@ -2138,13 +2132,6 @@ u8  *psR1; //256kb rom1 area (actually 196kb, but can't mask this)
 u8  *psR2; // 0x00080000
 u8  *psER; // 0x001C0000
 u8  *psS; //0.015 mb, scratch pad
-
-uptr *memLUTR;
-uptr *memLUTW;
-uptr *memLUTRK;
-uptr *memLUTWK;
-uptr *memLUTRU;
-uptr *memLUTWU;
 
 #define CHECK_MEM(mem) //MyMemCheck(mem)
 
@@ -2157,418 +2144,139 @@ void MyMemCheck(u32 mem)
 /////////////////////////////
 // REGULAR MEM START 
 /////////////////////////////
+vtlbHandler tlb_fallback_0;
+vtlbHandler tlb_fallback_1;
+vtlbHandler tlb_fallback_2;
+vtlbHandler tlb_fallback_3;
+vtlbHandler tlb_fallback_4;
+vtlbHandler tlb_fallback_5;
+vtlbHandler tlb_fallback_6;
+vtlbHandler tlb_fallback_7;
+vtlbHandler tlb_fallback_8;
 
-void memMapMem(u32 base) {
-	int i;
+vtlbHandler vu0_micro_mem;
+vtlbHandler vu1_micro_mem;
 
-	for (i=0; i<0x02000; i++) memLUTRK[i + 0x00000 + base] = (uptr)&psM[i << 12];
-	for (i=0; i<0x00400; i++) memLUTRK[i + 0x1fc00 + base] = (uptr)&psR[i << 12];
-	for (i=0; i<0x00040; i++) memLUTRK[i + 0x1e000 + base] = (uptr)&psR1[i << 12];
-	for (i=0; i<0x00080; i++) memLUTRK[i + 0x1e400 + base] = (uptr)&psR2[i << 12];
-	for (i=0; i<0x001C0; i++) memLUTRK[i + 0x1e040 + base] = (uptr)&psER[i << 12];
-	for (i=0; i<0x00800; i++) memLUTRK[i + 0x1c000 + base] = (uptr)&psxM[(i & 0x1ff) << 12];
-	for (i=0; i<0x00004; i++) memLUTRK[i + 0x11000 + base] = (uptr)VU0.Micro;
-	for (i=0; i<0x00004; i++) memLUTRK[i + 0x11004 + base] = (uptr)VU0.Mem;
-	for (i=0; i<0x00004; i++) memLUTRK[i + 0x11008 + base] = (uptr)&VU1.Micro[i << 12];
-	for (i=0; i<0x00004; i++) memLUTRK[i + 0x1100c + base] = (uptr)&VU1.Mem[i << 12];
-
-	for (i=0; i<0x02000; i++) memLUTWK[i + 0x00000 + base] = (uptr)&psM[i << 12];
-	for (i=0; i<0x00400; i++) memLUTWK[i + 0x1fc00 + base] = (uptr)&psR[i << 12];
-	for (i=0; i<0x00040; i++) memLUTWK[i + 0x1e000 + base] = (uptr)&psR1[i << 12];
-	for (i=0; i<0x00080; i++) memLUTWK[i + 0x1e400 + base] = (uptr)&psR2[i << 12];
-	for (i=0; i<0x001C0; i++) memLUTWK[i + 0x1e040 + base] = (uptr)&psER[i << 12];
-	for (i=0; i<0x00800; i++) memLUTWK[i + 0x1c000 + base] = (uptr)&psxM[(i & 0x1ff) << 12];
-	for (i=0; i<0x00004; i++) memLUTWK[i + 0x11000 + base] = (uptr)VU0.Micro;
-	for (i=0; i<0x00004; i++) memLUTWK[i + 0x11004 + base] = (uptr)VU0.Mem;
-	for (i=0; i<0x00004; i++) memLUTWK[i + 0x11008 + base] = (uptr)&VU1.Micro[i << 12];
-	for (i=0; i<0x00004; i++) memLUTWK[i + 0x1100c + base] = (uptr)&VU1.Mem[i << 12];
-
-	assert( ((uptr)VU0.Mem&15)==0 && ((uptr)VU0.Micro&15)==0);
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x10000 + base] = 1; // hwm
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x1f800 + base] = 2; // psh
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x1f400 + base] = 3; // psh4
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x18000 + base] = 4; // b80
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x1a000 + base] = 5; // ba0
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x12000 + base] = 6; // gsm
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x14000 + base] = 7; // dev9
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x1f900 + base] = 8; // spu2
-	for (i=0; i<0x00010; i++) memLUTRK[i + 0x1f000 + base] = 8; // spu2 (not sure)
-
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x10000 + base] = 1; // hwm
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x1f800 + base] = 2; // psh
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x1f400 + base] = 3; // psh4
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x1a000 + base] = 5; // ba0
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x12000 + base] = 6; // gsm
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x14000 + base] = 7; // dev9
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x1f900 + base] = 8; // spu2
-	for (i=0; i<0x00010; i++) memLUTWK[i + 0x1f000 + base] = 8; // spu2 (not sure)
-}
-
-void memMapKernelMem() {
-	memMapMem(0xa0000);
-	memMapMem(0x80000);
-	memMapMem(0x00000);
-}
-
-void memMapSupervisorMem() {
-}
-
-void memMapUserMem() {
-}
-
-int memInit() {
-	int i;
-
-	psR  = (u8*)_aligned_malloc(0x00400010, 16);
-	psR1 = (u8*)_aligned_malloc(0x00080010, 16);
-	psR2 = (u8*)_aligned_malloc(0x00080010, 16);
+void memMapPhy()
+{
+	//Main mem
+	vtlb_MapBlock(psM,0x00000000,0x02000000);//mirrored on first 256 mb ?
 	
-	if (psxInit() == -1)
-		return -1;
+	//Rom
+	vtlb_MapBlock(psR,0x1fc00000,0x00400000);//Writable ?
+	//Rom 1
+	vtlb_MapBlock(psR1,0x1e000000,0x00040000);//Writable ?
+	//Rom 2 ?
+	vtlb_MapBlock(psR2,0x1e400000,0x00080000);//Writable ?
+	//EEProm ?
+	vtlb_MapBlock(psER,0x1e040000,0x001C0000);//Writable ?
 
-	memLUTRK = (uptr*)_aligned_malloc(0x100000 * sizeof(uptr), 16);
-	memLUTWK = (uptr*)_aligned_malloc(0x100000 * sizeof(uptr), 16);
-	memLUTRU = (uptr*)_aligned_malloc(0x100000 * sizeof(uptr), 16);
-	memLUTWU = (uptr*)_aligned_malloc(0x100000 * sizeof(uptr), 16);
+	//IOP mem
+	vtlb_MapBlock(psxM,0x1c000000,0x00800000);
 
-	psM  = (u8*)_aligned_malloc(0x02000010, 16);
-	psER = (u8*)_aligned_malloc(0x001C0010, 16);
-	psS  = (u8*)_aligned_malloc(0x00004010, 16);
-	if (memLUTRK == NULL || memLUTWK == NULL ||
-		memLUTRU == NULL || memLUTWU == NULL || 
-		psM  == NULL || psR  == NULL || psR1 == NULL || 
-		psR2 == NULL || psER == NULL || psS == NULL) {
-		SysMessage(_("Error allocating memory")); return -1;
-	}
+	//VU0:Micro
+	//vtlb_MapBlock(VU0.Micro,0x11000000,0x00004000,0x1000);
+	vtlb_MapHandler(vu0_micro_mem,0x11000000,0x00004000);
+	//VU0:Mem
+	vtlb_MapBlock(VU0.Mem,0x11004000,0x00004000,0x1000);
+	//VU1:Micro
+	//vtlb_MapBlock(VU1.Micro,0x11008000,0x00004000);
+	vtlb_MapHandler(vu1_micro_mem,0x11008000,0x00004000);
+	//VU1:Mem
+	vtlb_MapBlock(VU1.Mem,0x1100c000,0x00004000);
 
-	memset(memLUTRK, 0, 0x100000 * 4);
-	memset(memLUTWK, 0, 0x100000 * 4);
-	memset(memLUTRU, 0, 0x100000 * 4);
-	memset(memLUTWU, 0, 0x100000 * 4);
-
-	memset(psM,  0, 0x02000010);
-	memset(psR,  0, 0x00400010);
-	memset(psR1, 0, 0x00080010);
-	memset(psR2, 0, 0x00080010);
-	memset(psER, 0, 0x001C0010);
-	memset(psS,  0, 0x00004010);
-
-	for (i=0x00000; i<0x00004; i++) memLUTRK[i + 0x70000] = (uptr)&psS[i << 12];
-	for (i=0x00000; i<0x00004; i++) memLUTWK[i + 0x70000] = (uptr)&psS[i << 12];
-
-	for (i=0x00000; i<0x00004; i++) memLUTRU[i + 0x70000] = (uptr)&psS[i << 12];
-	for (i=0x00000; i<0x00004; i++) memLUTWU[i + 0x70000] = (uptr)&psS[i << 12];
-
-
-	memMapKernelMem();
-	memMapSupervisorMem();
-	memMapUserMem();
-
-	memSetKernelMode();
-
-#ifdef ENABLECACHE
-	memset(pCache,0,sizeof(_cacheS)*64);
-#endif
-
-	return 0;
+	//These fallback to mem* stuff ...
+	vtlb_MapHandler(tlb_fallback_1,0x10000000,0x10000);
+	vtlb_MapHandler(tlb_fallback_6,0x12000000,0x10000);
+	vtlb_MapHandler(tlb_fallback_7,0x14000000,0x10000);
+	vtlb_MapHandler(tlb_fallback_4,0x18000000,0x10000);
+	vtlb_MapHandler(tlb_fallback_5,0x1a000000,0x10000);
+	vtlb_MapHandler(tlb_fallback_8,0x1f000000,0x10000);
+	vtlb_MapHandler(tlb_fallback_3,0x1f400000,0x10000);
+	vtlb_MapHandler(tlb_fallback_2,0x1f800000,0x10000);
+	vtlb_MapHandler(tlb_fallback_8,0x1f900000,0x10000);
 }
 
-void memShutdown() {
-	FREE(psM);
-	FREE(psR);
-	FREE(psR1);
-	FREE(psR2);
-	FREE(psER);
-	FREE(psS);
-	FREE(memLUTRK);
-	FREE(memLUTWK);
-	FREE(memLUTRU);
-	FREE(memLUTWU);
+//Why is this required ?
+void memMapKernelMem()
+{
+	//lower 512 mb: direct map
+	//vtlb_VMap(0x00000000,0x00000000,0x20000000);
+	//0x8* mirror
+	vtlb_VMap(0x80000000,0x00000000,0x20000000);
+	//0xa* mirror
+	vtlb_VMap(0xA0000000,0x00000000,0x20000000);
 }
 
-void memSetPageAddr(u32 vaddr, u32 paddr) {
-//	SysPrintf("memSetPageAddr: %8.8x -> %8.8x\n", vaddr, paddr);
-
-	memLUTRU[vaddr >> 12] = memLUTRK[paddr >> 12];
-	memLUTWU[vaddr >> 12] = memLUTWK[paddr >> 12];
-
-	memLUTRK[vaddr >> 12] = memLUTRK[paddr >> 12];
-	memLUTWK[vaddr >> 12] = memLUTWK[paddr >> 12];
+//what do do with these ?
+void memMapSupervisorMem() 
+{
 }
 
-void memClearPageAddr(u32 vaddr) {
-//	SysPrintf("memClearPageAddr: %8.8x\n", vaddr);
-
-	if ((vaddr & 0xffffc000) == 0x70000000) return;
-	memLUTRU[vaddr >> 12] = 0;
-	memLUTWU[vaddr >> 12] = 0;
-
-#ifdef FULLTLB
-	memLUTRK[vaddr >> 12] = 0;
-	memLUTWK[vaddr >> 12] = 0;
-#endif
+void memMapUserMem() 
+{
 }
 
-int  memRead8 (u32 mem, u8  *out)  {
-	char *p;
+template<int p>
+int __fastcall _ext_memRead8 (u32 mem, u8  *out)  {
 
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			u8 *tmp = readCache(mem);
-			*out = *(u8 *)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(u8 *)(p + (mem & 0xfff));
-		return 0;
-	}
-
-	switch ((int)(uptr)p) {
+	switch (p) 
+	{
 		case 1: // hwm
-			*out = hwRead8(mem & ~0xa0000000); return 0;
+			*out = hwRead8(mem); return 0;
 		case 2: // psh
-			*out = psxHwRead8(mem & ~0xa0000000); return 0;
+			*out = psxHwRead8(mem); return 0;
 		case 3: // psh4
-			*out = psxHw4Read8(mem & ~0xa0000000); return 0;
+			*out = psxHw4Read8(mem); return 0;
 		case 6: // gsm
-			*out = gsRead8(mem & ~0xa0000000); return 0;
+			*out = gsRead8(mem); return 0;
 		case 7: // dev9
 			*out = DEV9read8(mem & ~0xa4000000);
 			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, *out);
 			return 0;
 	}
-	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-	cpuTlbMissR(mem, cpuRegs.branch);
-	return -1;
-}
 
-int  memRead8RS (u32 mem, u64 *out)  {
-	char *p;
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			char *tmp = (char*)readCache(mem);
-			*out = *(s8 *)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(s8 *)(p + (mem & 0xfff));
-		return 0;
-	}
-
-	switch ((int)(uptr)p) {
-		case 1: // hwm
-			*out = (s8)hwRead8(mem & ~0xa0000000); return 0;
-		case 2: // psh
-			*out = (s8)psxHwRead8(mem & ~0xa0000000); return 0;
-		case 3: // psh4
-			*out = (s8)psxHw4Read8(mem & ~0xa0000000); return 0;
-		case 6: // gsm
-			*out = (s8)gsRead8(mem & ~0xa0000000); return 0;
-		case 7: // dev9
-			*out = (s8)DEV9read8(mem & ~0xa4000000);
-			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, *out);
-			return 0;
-	}
 	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
 }
-
-int  memRead8RU (u32 mem, u64 *out)  {
-	char *p;
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			char *tmp = (char*)readCache(mem);
-			*out = *(u8 *)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(u8 *)(p + (mem & 0xfff));
-		return 0;
-	}
-
-	switch ((int)(uptr)p) {
+template<int p>
+int __fastcall _ext_memRead16(u32 mem, u16 *out)  {
+	switch (p) {
 		case 1: // hwm
-			*out = (u8)hwRead8(mem & ~0xa0000000); return 0;
+			*out = hwRead16(mem); return 0;
 		case 2: // psh
-			*out = (u8)psxHwRead8(mem & ~0xa0000000); return 0;
-		case 3: // psh4
-			*out = (u8)psxHw4Read8(mem & ~0xa0000000); return 0;
-		case 6: // gsm
-			*out = (u8)gsRead8(mem & ~0xa0000000); return 0;
-		case 7: // dev9
-			*out = (u8)DEV9read8(mem & ~0xa4000000);
-			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, *out);
-			return 0;
-	}
-	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
-	cpuTlbMissR(mem, cpuRegs.branch);
-	return -1;
-}
-
-int  memRead16(u32 mem, u16 *out)  {
-	char *p;
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			u8 *tmp = readCache(mem);
-			*out = *(u16 *)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(u16*)(p + (mem & 0xfff));
-		return 0;
-	}
-
-	switch ((int)(uptr)p) {
-		case 1: // hwm
-			*out = hwRead16(mem & ~0xa0000000); return 0;
-		case 2: // psh
-			*out = psxHwRead16(mem & ~0xa0000000); return 0;
+			*out = psxHwRead16(mem); return 0;
 		case 4: // b80
 			MEM_LOG("b800000 Memory read16 address %x\n", mem);
 			*out = 0; return 0;
 		case 5: // ba0
 			*out = ba0R16(mem); return 0;
 		case 6: // gsm
-			*out = gsRead16(mem & ~0xa0000000); return 0;
+			*out = gsRead16(mem); return 0;
 		case 7: // dev9
 			*out = DEV9read16(mem & ~0xa4000000);
 			SysPrintf("DEV9 read16 %8.8lx: %4.4lx\n", mem & ~0xa4000000, *out);
 			return 0;
 		case 8: // spu2
-			*out = SPU2read(mem & ~0xa0000000); return 0;
+			*out = SPU2read(mem); return 0;
 	}
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
 }
-
-int  memRead16RS(u32 mem, u64 *out)  {
-	char *p;
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			char *tmp = (char*)readCache(mem);
-			*out = *(s16*)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(s16*)(p + (mem & 0xfff));
-		return 0;
-	}
-
+template<int p>
+int __fastcall _ext_memRead32(u32 mem, u32 *out) 
+{
 	switch ((int)(uptr)p) {
 		case 1: // hwm
-			*out = (s16)hwRead16(mem & ~0xa0000000); return 0;
+			*out = hwRead32(mem); return 0;
 		case 2: // psh
-			*out = (s16)psxHwRead16(mem & ~0xa0000000); return 0;
-		case 4: // b80
-			MEM_LOG("b800000 Memory read16 address %x\n", mem);
-			*out = 0; return 0;
-		case 5: // ba0
-			*out = (s16)ba0R16(mem); return 0;
+			*out = psxHwRead32(mem); return 0;
 		case 6: // gsm
-			*out = (s16)gsRead16(mem & ~0xa0000000); return 0;
-		case 7: // dev9
-			*out = (s16)DEV9read16(mem & ~0xa4000000);
-			SysPrintf("DEV9 read16 %8.8lx: %4.4lx\n", mem & ~0xa4000000, *out);
-			return 0;
-		case 8: // spu2
-			*out = (s16)SPU2read(mem & ~0xa0000000); return 0;
-	}
-	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-	cpuTlbMissR(mem, cpuRegs.branch);
-	return -1;
-}
-
-int  memRead16RU(u32 mem, u64 *out)  {
-	char *p;
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			char *tmp = (char*)readCache(mem);
-			*out = *(u16*)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(u16*)(p + (mem & 0xfff));
-		return 0;
-	}
-
-	switch ((int)(uptr)p) {
-		case 1: // hwm
-			*out = (u16)hwRead16(mem & ~0xa0000000); return 0;
-		case 2: // psh
-			*out = (u16)psxHwRead16(mem & ~0xa0000000); return 0;
-		case 4: // b80
-			MEM_LOG("b800000 Memory read16 address %x\n", mem);
-			*out = 0; return 0;
-		case 5: // ba0
-			*out = (u16)ba0R16(mem); return 0;
-		case 6: // gsm
-			*out = (u16)gsRead16(mem & ~0xa0000000); return 0;
-		case 7: // dev9
-			*out = (u16)DEV9read16(mem & ~0xa4000000);
-			SysPrintf("DEV9 read16 %8.8lx: %4.4lx\n", mem & ~0xa4000000, *out);
-			return 0;
-		case 8: // spu2
-			*out = (u16)SPU2read(mem & ~0xa0000000); return 0;
-	}
-	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
-	cpuTlbMissR(mem, cpuRegs.branch);
-	return -1;
-}
-
-int memRead32(u32 mem, u32 *out)  {
-	char *p;
-
-    CHECK_MEM(mem);
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			u8 *tmp = readCache(mem);
-			*out = *(u32 *)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(u32*)(p + (mem & 0xfff));
-		return 0;
-	}
-	assert( (int)(uptr)p < 8 );
-
-	switch ((int)(uptr)p) {
-		case 1: // hwm
-			*out = hwRead32(mem & ~0xa0000000); return 0;
-		case 2: // psh
-			*out = psxHwRead32(mem & ~0xa0000000); return 0;
-		case 6: // gsm
-			*out = gsRead32(mem & ~0xa0000000); return 0;
+			*out = gsRead32(mem); return 0;
 		case 7: // dev9
 			*out = DEV9read32(mem & ~0xa4000000);
 			SysPrintf("DEV9 read32 %8.8lx: %8.8lx\n", mem & ~0xa4000000, *out);
@@ -2582,269 +2290,104 @@ int memRead32(u32 mem, u32 *out)  {
 
 	return -1;
 }
-
-int  memRead32RS(u32 mem, u64 *out)  {
-	char *p;
-
-    CHECK_MEM(mem);
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			char *tmp = (char*)readCache(mem);
-			*out = *(s32*)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(s32*)(p + (mem & 0xfff));
-		return 0;
-	}
-
+template<int p>
+int __fastcall _ext_memRead64(u32 mem, u64 *out)
+{
 	switch ((int)(uptr)p) {
 		case 1: // hwm
-			*out = (s32)hwRead32(mem & ~0xa0000000); return 0;
-		case 2: // psh
-			*out = (s32)psxHwRead32(mem & ~0xa0000000); return 0;
+			*out = hwRead64(mem); return 0;
 		case 6: // gsm
-			*out = (s32)gsRead32(mem & ~0xa0000000); return 0;
-		case 7: // dev9
-			*out = (s32)DEV9read32(mem & ~0xa4000000);
-			SysPrintf("DEV9 read32 %8.8lx: %8.8lx\n", mem & ~0xa4000000, *out);
-			return 0;
+			*out = gsRead64(mem); return 0;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
-	cpuTlbMissR(mem, cpuRegs.branch);
-
-	return -1;
-}
-
-int  memRead32RU(u32 mem, u64 *out)  {
-	char *p;
-
-    CHECK_MEM(mem);
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			char *tmp = (char*)readCache(mem);
-			*out = *(u32*)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(u32*)(p + (mem & 0xfff));
-		return 0;
-	}
-
-	switch ((int)(uptr)p) {
-		case 1: // hwm
-			*out = (u32)hwRead32(mem & ~0xa0000000); return 0;
-		case 2: // psh
-			*out = (u32)psxHwRead32(mem & ~0xa0000000); return 0;
-		case 6: // gsm
-			*out = (u32)gsRead32(mem & ~0xa0000000); return 0;
-		case 7: // dev9
-			*out = (u32)DEV9read32(mem & ~0xa4000000);
-			SysPrintf("DEV9 read32 %8.8lx: %8.8lx\n", mem & ~0xa4000000, *out);
-			return 0;
-	}
-
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
-	cpuTlbMissR(mem, cpuRegs.branch);
-
-	return -1;
-}
-
-int  memRead64(u32 mem, u64 *out)  {
-	char *p;
-
-    CHECK_MEM(mem);
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			u8 *tmp = readCache(mem);
-			*out = *(u64*)(tmp+(mem&0xf));
-			return 0;
-		}
-#endif
-		*out = *(u64*)(p + (mem & 0xfff));
-		return 0;
-	}
-
-	switch ((int)(uptr)p) {
-		case 1: // hwm
-			*out = hwRead64(mem & ~0xa0000000); return 0;
-		case 6: // gsm
-			*out = gsRead64(mem & ~0xa0000000); return 0;
-	}
+#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read64  from address %8.8x\n", mem);
+#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
+
 	return -1;
 }
 
-int  memRead128(u32 mem, u64 *out)  {
-	char *p;
-
-    CHECK_MEM(mem);
-
-	p = (char *)(memLUTR[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-				if ((mem & 0x20000000) == 0 &&
-			(cpuRegs.CP0.r[16] & 0x10000) && !(cpuRegs.CP0.n.Status.val & 0x4)) {
-			u64 *tmp = (u64*)readCache(mem);
-			out[0] = tmp[0];
-			out[1] = tmp[1];
-			return 0;
-		}
-#endif
-		p+= mem & 0xfff;
-		out[0] = ((u64*)p)[0];
-		out[1] = ((u64*)p)[1];
-		return 0;
-	}
+template<int p>
+int __fastcall _ext_memRead128(u32 mem, u64 *out)
+{
 
 	switch ((int)(uptr)p) {
 		case 1: // hwm
 			hwRead128(mem & ~0xa0000000, out); return 0;
 		case 6: // gsm
-			out[0] = gsRead64((mem  ) & ~0xa0000000);
-			out[1] = gsRead64((mem+8) & ~0xa0000000); return 0;
+			out[0] = gsRead64((mem  ));
+			out[1] = gsRead64((mem+8)); return 0;
 	}
+
+#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read128 from address %8.8x\n", mem);
+#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
+
 	return -1;
 }
 
-#define CHECK_VUMEM(size) { \
-    if( mem >= 0x11000000 && mem < 0x11004000 ) \
-        Cpu->ClearVU0(mem&0x3ff8, size); \
-    else if( mem >= 0x11008000 && mem < 0x1100c000 ) \
-        Cpu->ClearVU1(mem&0x3ff8, size); \
-}
-		
-void memWrite8 (u32 mem, u8  value)   {
-	char *p;
-
-	p = (char *)(memLUTW[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-		if ((mem & 0x20000000) == 0 && (cpuRegs.CP0.r[16] & 0x10000)) {
-			writeCache8(mem, value);
-			return;
-		}
-#endif
-
-        *(u8 *)(p + (mem & 0xfff)) = value;
-		if (CHECK_EEREC) {
-            CHECK_VUMEM(1);
-			REC_CLEARM(mem&(~3));
-//			PSXREC_CLEARM(mem & 0x1ffffc);
-		}
-		return;
-	}
+template<int p>
+void __fastcall _ext_memWrite8 (u32 mem, u8  value)
+{
 
 	switch ((int)(uptr)p) {
 		case 1: // hwm
-			hwWrite8(mem & ~0xa0000000, value);
+			hwWrite8(mem, value);
 			return;
 		case 2: // psh
-			psxHwWrite8(mem & ~0xa0000000, value); return;
+			psxHwWrite8(mem, value); return;
 		case 3: // psh4
-			psxHw4Write8(mem & ~0xa0000000, value); return;
+			psxHw4Write8(mem, value); return;
 		case 6: // gsm
-			gsWrite8(mem & ~0xa0000000, value); return;
+			gsWrite8(mem, value); return;
 		case 7: // dev9
 			DEV9write8(mem & ~0xa4000000, value);
 			SysPrintf("DEV9 write8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, value);
 			return;
 	}
+
+#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write8   to  address %x with data %2.2x\n", mem, value);
+#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
-
-void memWrite16(u32 mem, u16 value) {
-	char *p;
-
-	p = (char *)(memLUTW[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-		if ((mem & 0x20000000) == 0 && (cpuRegs.CP0.r[16] & 0x10000)) {
-			writeCache16(mem, value);
-			return;
-		}
-#endif
-		*(u16*)(p + (mem & 0xfff)) = value;
-		if (CHECK_EEREC) {
-            CHECK_VUMEM(1);
-			REC_CLEARM(mem&~1);
-			//PSXREC_CLEARM(mem & 0x1ffffe);
-		}
-		return;
-	}
-
+template<int p>
+void __fastcall _ext_memWrite16(u32 mem, u16 value)
+{
 	switch ((int)(uptr)p) {
 		case 1: // hwm
-			hwWrite16(mem & ~0xa0000000, value);
+			hwWrite16(mem, value);
 			return;
 		case 2: // psh
-			psxHwWrite16(mem & ~0xa0000000, value); return;
+			psxHwWrite16(mem, value); return;
 		case 5: // ba0
 			MEM_LOG("ba00000 Memory write16 to  address %x with data %x\n", mem, value);
 			return;
 		case 6: // gsm
-			gsWrite16(mem & ~0xa0000000, value); return;
+			gsWrite16(mem, value); return;
 		case 7: // dev9
 			DEV9write16(mem & ~0xa4000000, value);
 			SysPrintf("DEV9 write16 %8.8lx: %4.4lx\n", mem & ~0xa4000000, value);
 			return;
 		case 8: // spu2
-			SPU2write(mem & ~0xa0000000, value); return;
+			SPU2write(mem, value); return;
 	}
 	MEM_LOG("Unknown Memory write16  to  address %x with data %4.4x\n", mem, value);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
-
-void memWrite32(u32 mem, u32 value)
+template<int p>
+void __fastcall _ext_memWrite32(u32 mem, u32 value)
 {
-	char *p;
-	p = (char *)(memLUTW[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-		if ((mem & 0x20000000) == 0 && (cpuRegs.CP0.r[16] & 0x10000)) 
-		{
-			writeCache32(mem, value);
-			return;
-		}
-#endif
-		*(u32*)(p + (mem & 0xfff)) = value;
-		if (CHECK_EEREC) {
-            CHECK_VUMEM(1);
-			REC_CLEARM(mem);
-//			PSXREC_CLEARM(mem & 0x1fffff);
-		}
-		return;
-	}
-
 	switch ((int)(uptr)p) {
 		case 1: // hwm
-			hwWrite32(mem & ~0xa0000000, value);
+			hwWrite32(mem, value);
 			return;
 		case 2: // psh
-			psxHwWrite32(mem & ~0xa0000000, value); return;
+			psxHwWrite32(mem, value); return;
 		case 6: // gsm
-			gsWrite32(mem & ~0xa0000000, value); return;
+			gsWrite32(mem, value); return;
 		case 7: // dev9
 			DEV9write32(mem & ~0xa4000000, value);
 			SysPrintf("DEV9 write32 %8.8lx: %8.8lx\n", mem & ~0xa4000000, value);
@@ -2853,75 +2396,26 @@ void memWrite32(u32 mem, u32 value)
 	MEM_LOG("Unknown Memory write32  to  address %x with data %8.8x\n", mem, value);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
+template<int p>
+void __fastcall _ext_memWrite64(u32 mem, const u64* value)
+{
 
-void memWrite64(u32 mem, u64 value)   {
-	char *p;
-
-	p = (char *)(memLUTW[mem >> 12]);
-	if ((uptr)p > 0x10) {
-	#ifdef ENABLECACHE
-		if ((mem & 0x20000000) == 0 && (cpuRegs.CP0.r[16] & 0x10000)) {
-			writeCache64(mem, value);
-			return;
-		}
-	#endif
-	/*		__asm __volatile (
-				"movq %1, %%mm0\n"
-				"movq %%mm0, %0\n"
-				"emms\n"
-				: "=m"(*(u64*)(p + (mem & 0xfff))) : "m"(value)
-			);*/
-		*(u64*)(p + (mem & 0xfff)) = value;
-		if (CHECK_EEREC) {
-            CHECK_VUMEM(2);
-			REC_CLEARM(mem);
-			REC_CLEARM(mem+4);
-		}
-		return;
-	}
-
-
-	switch ((int)(uptr)p) {
+	switch (p) {
 		case 1: // hwm
-			hwWrite64(mem & ~0xa0000000, value);
+			hwWrite64(mem & ~0xa0000000, *value);
 			return;
 		case 6: // gsm
-			gsWrite64(mem & ~0xa0000000, value); return;
+			gsWrite64(mem & ~0xa0000000, *value); return;
 	}
-	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)(value>>32), (u32)value);
+
+	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)(*value>>32), (u32)*value);
+
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
-
-void memWrite128(u32 mem, u64 *value) {
-	char *p;
-
-	p = (char *)(memLUTW[mem >> 12]);
-	if ((uptr)p > 0x10) {
-#ifdef ENABLECACHE
-		if ((mem & 0x20000000) == 0 && (cpuRegs.CP0.r[16] & 0x10000)) {
-			writeCache128(mem, value);
-				return;
-		}
-#endif
-		p+= mem & 0xfff;
-		((u64*)p)[0] = value[0];
-		((u64*)p)[1] = value[1];
-		if (CHECK_EEREC) {
-            CHECK_VUMEM(4);
-			REC_CLEARM(mem);
-			REC_CLEARM(mem+4);
-			REC_CLEARM(mem+8);
-			REC_CLEARM(mem+12);
-
-/*			PSXREC_CLEARM((mem)    & 0x1fffff);
-			PSXREC_CLEARM((mem+4)  & 0x1fffff);
-			PSXREC_CLEARM((mem+8)  & 0x1fffff);
-			PSXREC_CLEARM((mem+12) & 0x1fffff);*/
-		}
-		return;
-	}
-
-	switch ((int)(uptr)p) {
+template<int p>
+void __fastcall _ext_memWrite128(u32 mem, const u64 *value)
+{
+	switch (p) {
 		case 1: // hwm
 			hwWrite128(mem & ~0xa0000000, value);
 			return;
@@ -2930,11 +2424,227 @@ void memWrite128(u32 mem, u64 *value) {
 			gsWrite64(mem,   value[0]);
 			gsWrite64(mem+8, value[1]); return;
 	}
+
 	MEM_LOG("Unknown Memory write128 to  address %x with data %8.8x_%8.8x_%8.8x_%8.8x\n", mem, ((u32*)value)[3], ((u32*)value)[2], ((u32*)value)[1], ((u32*)value)[0]);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
+#define vtlb_RegisterHandlerTempl1(nam,t) vtlb_RegisterHandler(nam##Read8<t>,nam##Read16<t>,nam##Read32<t>,nam##Read64<t>,nam##Read128<t>, \
+															   nam##Write8<t>,nam##Write16<t>,nam##Write32<t>,nam##Write64<t>,nam##Write128<t>);
+template<int vunum>
+int __fastcall vuMicroRead8(u32 addr,mem8_t* data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
 
+	*data=vu->Micro[addr];
+	return 0;
+}
+template<int vunum>
+int __fastcall vuMicroRead16(u32 addr,mem16_t* data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	*data=*(u16*)&vu->Micro[addr];
+	return 0;
+}
+template<int vunum>
+int __fastcall vuMicroRead32(u32 addr,mem32_t* data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	*data=*(u32*)&vu->Micro[addr];
+	return 0;
+}
+template<int vunum>
+int __fastcall vuMicroRead64(u32 addr,mem64_t* data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	*data=*(u64*)&vu->Micro[addr];
+	return 0;
+}
+template<int vunum>
+int __fastcall vuMicroRead128(u32 addr,mem128_t* data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	data[0]=*(u64*)&vu->Micro[addr];
+	data[1]=*(u64*)&vu->Micro[addr+8];
+	return 0;
+}
+template<int vunum>
+void __fastcall vuMicroWrite8(u32 addr,mem8_t data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	if (vu->Micro[addr]!=data)
+	{
+		vu->Micro[addr]=data;
+
+		if (vunum==0)
+			Cpu->ClearVU0(addr&(~7),1);
+		else
+			Cpu->ClearVU1(addr&(~7),1);
+	}
+}
+template<int vunum>
+void __fastcall vuMicroWrite16(u32 addr,mem16_t data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	if (*(u16*)&vu->Micro[addr]!=data)
+	{
+		*(u16*)&vu->Micro[addr]=data;
+
+		if (vunum==0)
+			Cpu->ClearVU0(addr&(~7),1);
+		else
+			Cpu->ClearVU1(addr&(~7),1);
+	}
+}
+template<int vunum>
+void __fastcall vuMicroWrite32(u32 addr,mem32_t data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	if (*(u32*)&vu->Micro[addr]!=data)
+	{
+		*(u32*)&vu->Micro[addr]=data;
+
+		if (vunum==0)
+			Cpu->ClearVU0(addr&(~7),1);
+		else
+			Cpu->ClearVU1(addr&(~7),1);
+	}
+}
+template<int vunum>
+void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;;
+
+	if (*(u64*)&vu->Micro[addr]!=data[0])
+	{
+		*(u64*)&vu->Micro[addr]=data[0];
+
+		if (vunum==0)
+			Cpu->ClearVU0(addr,1);
+		else
+			Cpu->ClearVU1(addr,1);
+	}
+}
+template<int vunum>
+void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
+{
+	addr&=vunum==0?0xfff:0x3fff;
+	VURegs* vu=vunum==0?&VU0:&VU1;
+
+	if (*(u64*)&vu->Micro[addr]!=data[0] || *(u64*)&vu->Micro[addr+8]!=data[1])
+	{
+		*(u64*)&vu->Micro[addr]=data[0];
+		*(u64*)&vu->Micro[addr+8]=data[1];
+
+		if (vunum==0)
+			Cpu->ClearVU0(addr,2);
+		else
+			Cpu->ClearVU1(addr,2);
+	}
+}
+int memInit() 
+{
+	if (!vtlb_Init())
+		return -1;
+
+	tlb_fallback_0=vtlb_RegisterHandlerTempl1(_ext_mem,0);
+	tlb_fallback_1=vtlb_RegisterHandlerTempl1(_ext_mem,1);
+	tlb_fallback_2=vtlb_RegisterHandlerTempl1(_ext_mem,2);
+	tlb_fallback_3=vtlb_RegisterHandlerTempl1(_ext_mem,3);
+	tlb_fallback_4=vtlb_RegisterHandlerTempl1(_ext_mem,4);
+	tlb_fallback_5=vtlb_RegisterHandlerTempl1(_ext_mem,5);
+	tlb_fallback_6=vtlb_RegisterHandlerTempl1(_ext_mem,6);
+	tlb_fallback_7=vtlb_RegisterHandlerTempl1(_ext_mem,7);
+	tlb_fallback_8=vtlb_RegisterHandlerTempl1(_ext_mem,8);
+
+	vu0_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,0);
+	vu1_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,1);
+
+	psR  = (u8*)_aligned_malloc(0x00400010, 16);
+	psR1 = (u8*)_aligned_malloc(0x00080010, 16);
+	psR2 = (u8*)_aligned_malloc(0x00080010, 16);
+	
+	if (psxInit() == -1)
+		return -1;
+	
+	psM  = (u8*)_aligned_malloc(0x02001000, 4096);
+	psER = (u8*)_aligned_malloc(0x001C0010, 16);
+	psS  = (u8*)_aligned_malloc(0x00004010, 16);
+	if (psM  == NULL || psR  == NULL || psR1 == NULL || 
+		psR2 == NULL || psER == NULL || psS == NULL) {
+		SysMessage(_("Error allocating memory")); return -1;
+	}
+
+	memset(psM,  0, 0x02000000);
+	memset(psR,  0, 0x00400010);
+	memset(psR1, 0, 0x00080010);
+	memset(psR2, 0, 0x00080010);
+	memset(psER, 0, 0x001C0010);
+	memset(psS,  0, 0x00004010);
+
+	memMapPhy();
+
+	memMapKernelMem();
+	memMapSupervisorMem();
+	memMapUserMem();
+
+	memSetKernelMode();
+
+
+#ifdef ENABLECACHE
+	memset(pCache,0,sizeof(_cacheS)*64);
+#endif
+
+	return 0;
+}
+
+void memShutdown() 
+{
+	FREE(psM);
+	FREE(psR);
+	FREE(psR1);
+	FREE(psR2);
+	FREE(psER);
+	FREE(psS);
+
+	vtlb_Term();
+}
+
+void memSetPageAddr(u32 vaddr, u32 paddr) 
+{
+	//SysPrintf("memSetPageAddr: %8.8x -> %8.8x\n", vaddr, paddr);
+
+	vtlb_VMap(vaddr,paddr,0x1000);
+
+}
+
+void memClearPageAddr(u32 vaddr) 
+{
+	//SysPrintf("memClearPageAddr: %8.8x\n", vaddr);
+
+	vtlb_VMapUnmap(vaddr,0x1000); // -> whut ?
+
+#ifdef FULLTLB
+	memLUTRK[vaddr >> 12] = 0;
+	memLUTWK[vaddr >> 12] = 0;
+#endif
+}
 #endif // PCSX2_VIRTUAL_MEM
 
 void loadBiosRom(const char *ext, u8 *dest) {
@@ -3027,7 +2737,11 @@ int memReset() {
 
 	//injectIRX("host.irx");	//not fully tested; still buggy
 
-	// reset memLUT
+#ifndef PCSX2_VIRTUAL_MEM
+	// reset memLUT (?)
+	vtlb_VMap(0x00000000,0x00000000,0x20000000);
+	vtlb_VMapUnmap(0x20000000,0x60000000);
+#endif
 
 	loadBiosRom("rom1", PS2MEM_ROM1);
 	loadBiosRom("rom2", PS2MEM_ROM2);
@@ -3052,10 +2766,7 @@ int memReset() {
 }
 
 void memSetKernelMode() {
-#ifndef PCSX2_VIRTUAL_MEM
-	memLUTR = memLUTRK;
-	memLUTW = memLUTWK;
-#endif
+	//Do something here
 	MemMode = 0;
 }
 
@@ -3063,13 +2774,73 @@ void memSetSupervisorMode() {
 }
 
 void memSetUserMode() {
-#ifdef FULLTLB
-#ifndef PCSX2_VIRTUAL_MEM
-	memLUTR = memLUTRU;
-	memLUTW = memLUTWU;
-#endif
-	MemMode = 2;
-#endif
+
 }
 
+#ifndef PCSX2_VIRTUAL_MEM
 
+int mmap_GetRamPageInfo(void* ptr)
+{
+	u32 offset=((u8*)ptr-psM);
+	if (offset>=0x02000000)
+		return -1; //not in ram, no tracking done ...
+	offset>>=12;
+	return (psMPWC[(offset/32)]&(1<<(offset&31)))?1:0;
+}
+void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
+{
+	DWORD old;
+	VirtualProtect(ptr,1,PAGE_READONLY,&old);
+	
+	u32 offset=((u8*)ptr-psM);
+	offset>>=12;
+
+	for (u32 i=0;i<psMPWVA[offset].size();i++)
+	{
+		if (psMPWVA[offset][i]==vaddr)
+			return;
+	}
+	psMPWVA[offset].push_back(vaddr);
+}
+void mmap_ResetBlockTracking()
+{
+	SysPrintf("vtlb/mmap: Block Tracking reseted ..\n");
+	memset(psMPWC,0,sizeof(psMPWC));
+	for(u32 i=0;i<(0x02000000>>12);i++)
+	{
+		psMPWVA[i].clear();
+	}
+	DWORD old;
+	VirtualProtect(psM,0x02000000,PAGE_READWRITE,&old);
+}
+int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
+{
+	struct _EXCEPTION_RECORD* ExceptionRecord = eps->ExceptionRecord;
+	struct _CONTEXT* ContextRecord = eps->ContextRecord;
+	
+	if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+	{
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	// get bad virtual address
+	u32 offset = (u8*)eps->ExceptionRecord->ExceptionInformation[1]-psM;
+
+	if (offset>=0x02000000)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	DWORD old;
+	VirtualProtect(&psM[offset],1,PAGE_READWRITE,&old);
+
+	offset>>=12;
+	psMPWC[(offset/32)]|=(1<<(offset&31));
+
+	for (u32 i=0;i<psMPWVA[offset].size();i++)
+	{
+		Cpu->Clear(psMPWVA[offset][i],0x1000);
+	}
+	psMPWVA[offset].clear();
+
+	return EXCEPTION_CONTINUE_EXECUTION;
+}
+#endif

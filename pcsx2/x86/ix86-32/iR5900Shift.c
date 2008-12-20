@@ -34,6 +34,9 @@
 #pragma warning(disable:4761)
 #endif
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
 /*********************************************************
 * Shift arithmetic with constant shift                   *
 * Format:  OP rd, rt, sa                                 *
@@ -1350,5 +1353,7 @@ void recDSRAV( void )
 	SetMMXstate();
 }
 #endif
+
+} } }
 
 #endif // PCSX2_NORECBUILD

@@ -55,7 +55,7 @@ extern void CPU_INT( u32 n, s32 ecycle );
 void ReadFIFO(u32 mem, u64 *out);
 void ConstReadFIFO(u32 mem);
 
-void WriteFIFO(u32 mem, u64 *value);
+void WriteFIFO(u32 mem, const u64 *value);
 void ConstWriteFIFO(u32 mem);
 
 
@@ -354,12 +354,12 @@ static __forceinline void *dmaGetAddr(u32 addr) {
 		return (void*)&psS[addr & 0x3ff0];
 	}
 
-	ptr = (u8*)memLUTR[addr >> 12];
+	ptr = (u8*)vtlb_GetPhyPtr(addr&0x1FFFFFF0);
 	if (ptr == NULL) {
 		SysPrintf("*PCSX2*: DMA error: %8.8x\n", addr);
 		return NULL;
 	}
-	return (void*)(ptr + (addr & 0xff0));
+	return ptr;
 }
 
 #endif
@@ -397,7 +397,7 @@ void hwConstWrite32(u32 mem, int mmreg);
 void hwWrite64(u32 mem, u64 value);
 void hwConstWrite64(u32 mem, int mmreg);
 
-void hwWrite128(u32 mem, u64 *value);
+void hwWrite128(u32 mem, const u64 *value);
 void hwConstWrite128(u32 mem, int xmmreg);
 
 void hwIntcIrq(int n);
@@ -408,6 +408,10 @@ int  hwMFIFOWrite(u32 addr, u8 *data, u32 size);
 
 int  hwDmacSrcChainWithStack(DMACh *dma, int id);
 int  hwDmacSrcChain(DMACh *dma, int id);
+
+#ifdef PCSX2_VIRTUAL_MEM
+void iMemRead32Check();
+#endif
 
 extern void  intcInterrupt();
 extern void  dmacInterrupt();

@@ -170,8 +170,8 @@ struct fpuRegisters {
 
 extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
 
-
-struct tlbs {
+struct tlbs
+{
 	u32 PageMask,EntryHi;
 	u32 EntryLo0,EntryLo1;
 	u32 Mask, nMask;
@@ -180,6 +180,9 @@ struct tlbs {
 	u32 VPN2;
 	u32 PFN0;
 	u32 PFN1;
+#ifndef PCSX2_VIRTUAL_MEM
+	u32 S;
+#endif
 };
 
 extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
@@ -198,7 +201,7 @@ extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 #define _i8(x) (s8)x
 #define _u8(x) (u8)x
 
-/**** R3000A Instruction Macros ****/
+/**** R5900 Instruction Macros ****/
 #define _PC_       cpuRegs.pc       // The next PC to be executed
 
 #define _Funct_  ((cpuRegs.code      ) & 0x3F)  // The funct part of the instruction register 
@@ -213,9 +216,7 @@ extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 #define _ImmU_	(cpuRegs.code&0xffff) // zero-extended immediate
 #define _ImmSB_	(cpuRegs.code&0x8000) // gets the sign-bit of the immediate value
 
-
-//#define _JumpTarget_     ((_Target_ * 4) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
-//#define _BranchTarget_  ((s16)_Im_ * 4 + _PC_)                 // Calculates the target during a branch instruction
+#define _Opcode_ (cpuRegs.code >> 26 )
 
 #define _JumpTarget_     ((_Target_ << 2) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
 #define _BranchTarget_  (((s32)(s16)_Im_ * 4) + _PC_)                 // Calculates the target during a branch instruction

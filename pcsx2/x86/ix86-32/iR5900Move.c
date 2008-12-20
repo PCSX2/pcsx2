@@ -34,6 +34,9 @@
 #pragma warning(disable:4761)
 #endif
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
 /*********************************************************
 * Shift arithmetic with constant shift                   *
 * Format:  OP rd, rt, sa                                 *
@@ -819,5 +822,7 @@ REC_FUNC( MTHI1, 0 );
 REC_FUNC( MTLO1, 0 );
 
 #endif
+
+} } }
 
 #endif // PCSX2_NORECBUILD

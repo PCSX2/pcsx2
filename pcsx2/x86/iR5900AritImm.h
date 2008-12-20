@@ -19,23 +19,22 @@
 #ifndef __IR5900ARITIMM_H__
 #define __IR5900ARITIMM_H__
 
-#include "Common.h"
-#include "InterTables.h"
-
 /*********************************************************
 * Arithmetic with immediate operand                      *
 * Format:  OP rt, rs, immediate                          *
 *********************************************************/
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recADDI( void );
+	void recADDIU( void );
+	void recDADDI( void );
+	void recDADDIU( void );
+	void recANDI( void );
+	void recORI( void );
+	void recXORI( void );
 
-void recADDI( void );
-void recADDIU( void );
-void recDADDI( void );
-void recDADDIU( void );
-void recANDI( void );
-void recORI( void );
-void recXORI( void );
-
-void recSLTI( void );
-void recSLTIU( void );
+	void recSLTI( void );
+	void recSLTIU( void );
+} } }
 
 #endif

@@ -1096,6 +1096,7 @@ __forceinline void FreezeXMMRegs_(int save)
 			return;
 		}
 
+        // TODO: really need to backup all regs?
 		g_globalXMMSaved--;
 		if( g_globalXMMSaved > 0 ) return;
 

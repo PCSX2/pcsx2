@@ -22,11 +22,7 @@
 
 #define NUM_BREAKPOINTS     8
 
-extern void (*OpcodePrintTable[64])(char *buf);
-
 extern BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-
-
 extern BOOL APIENTRY MemoryProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 extern void RefreshDebugger(void);
 

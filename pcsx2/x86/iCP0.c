@@ -329,14 +329,14 @@ void recMTC0()
 
 void recERET()
 {
-	recBranchCall( ERET );
+	EE::Dynarec::recBranchCall( ERET );
 }
 
 void recEI()
 {
 	// must branch after enabling interrupts, so that anything
 	// pending gets triggered properly.
-	recBranchCall( EI );
+	EE::Dynarec::recBranchCall( EI );
 }
 
 void recDI()

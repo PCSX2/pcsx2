@@ -52,6 +52,7 @@
 #include "cheats/cheats.h"
 
 #include "Paths.h"
+#include "SamplProf.h"
 
 #define COMPILEDATE         __DATE__
 
@@ -542,11 +543,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		MessageBox(NULL, str, "SysError", MB_OK);
 		return -1;
 	}
+#endif
 
 	__try 
 	{
-
-#endif
 
 	gApp.hInstance = hInstance;
 	gApp.hMenu = NULL;
@@ -654,6 +654,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	InitCPUTicks();
 	if (SysInit() == -1) return 1;
 
+	ProfilerInit();
+
 #ifdef PCSX2_DEVBUILD
     if( g_TestRun.enabled || g_TestRun.ptitle != NULL ) {
 		// run without ui
@@ -697,16 +699,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	RunGui();
 
-#ifdef PCSX2_VIRTUAL_MEM
-
 	}
 	__except(SysPageFaultExceptionFilter(GetExceptionInformation()))
 	{
 	}
 
+	#ifdef PCSX2_VIRTUAL_MEM
+
 	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
 #endif
-
+	ProfilerTerm();
 	return 0;
 }
 
@@ -1598,7 +1600,7 @@ void CreateMainWindow(int nCmdShow) {
 #ifdef PCSX2_VIRTUAL_MEM
 		const char* pvm = "VM";
 #else
-		const char* pvm = "TLB";
+		const char* pvm = "VTLB";
 #endif
 
 #ifdef PCSX2_DEVBUILD

@@ -1672,11 +1672,10 @@ static int Vif1TransDirectHL(u32 *data){
 		u8* gsmem = GSRingBufCopy(ret<<2, GS_RINGTYPE_P2);
 		
 		if( gsmem != NULL ) {
-			FreezeMMXRegs(1);
-			memcpy_fast(gsmem, data, ret<<2);
-			FreezeMMXRegs(0);
-			GSgifTransferDummy(1, data, ret>>2);
+			//unaligned copy.VIF handling is -very- messy, so i'l use this code til i fix it :)
+			memcpy_raz_u(gsmem,data,ret<<2);
 			GSRINGBUF_DONECOPY(gsmem, ret<<2);
+			GSgifTransferDummy(1, data, ret>>2);
 		}
 	}
 	else {

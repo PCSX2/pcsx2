@@ -144,30 +144,6 @@
       intDoBranch( _BranchTarget_ );            \
    } else cpuRegs.pc += 4;
 
-//****************************************************************
-// Used to manage FPU Opcodes
-//****************************************************************
-
-void COP1() {
-	FPU_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc));
-	Int_COP1PrintTable[_Rs_]();
-}
-
-void COP1_BC1() {
-	Int_COP1BC1PrintTable[_Rt_]();
-}
-
-void COP1_S() {
-	Int_COP1SPrintTable[_Funct_]();
-}
-
-void COP1_W() {
-	Int_COP1WPrintTable[_Funct_]();
-}
-
-void COP1_Unknown() {
-	FPU_LOG("Unknown FPU opcode called\n");
-}
 
 //****************************************************************
 // FPU Opcodes
@@ -265,13 +241,6 @@ void DIV_S() {
 	_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( _FtValUl_ );
 	checkOverflow( _FdValUl_, 0, 1);
 	checkUnderflow( _FdValUl_, 0, 1 );
-}
-
-void LWC1() {
-	u32 addr;
-	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
-	if (addr & 0x00000003) { SysPrintf( "FPU (LWC1 Opcode): Invalid Memory Address\n" ); return; }  // Should signal an exception?
-	memRead32(addr, &fpuRegs.fpr[_Rt_].UL);
 }
 
 /*	The Instruction Set manual has an overly complicated way of
@@ -386,9 +355,19 @@ void SUBA_S() {
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU, 1 );
 } 
 
-void SWC1() {
-	u32 addr;
-	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
-	if (addr & 0x00000003) { SysPrintf( "FPU (SWC1 Opcode): Invalid Memory Address\n" ); return; }  // Should signal an exception?
-	memWrite32(addr,  fpuRegs.fpr[_Rt_].UL); 
-}
+namespace EE { namespace Interpreter{ namespace OpcodeImpl
+{
+	void LWC1() {
+		u32 addr;
+		addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
+		if (addr & 0x00000003) { SysPrintf( "FPU (LWC1 Opcode): Invalid Memory Address\n" ); return; }  // Should signal an exception?
+		memRead32(addr, &fpuRegs.fpr[_Rt_].UL);
+	}
+
+	void SWC1() {
+		u32 addr;
+		addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
+		if (addr & 0x00000003) { SysPrintf( "FPU (SWC1 Opcode): Invalid Memory Address\n" ); return; }  // Should signal an exception?
+		memWrite32(addr,  fpuRegs.fpr[_Rt_].UL); 
+	}
+}}}

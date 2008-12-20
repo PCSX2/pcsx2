@@ -44,6 +44,7 @@ typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
 
+#define PCSX2_ALIGNED(alig,x) __declspec(align(alig)) x
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
 #define PCSX2_ALIGNED16_DECL(x) __declspec(align(16)) x
 

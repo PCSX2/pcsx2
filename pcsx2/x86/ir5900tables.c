@@ -44,28 +44,207 @@
 #include "iCP0.h"
 
 ////////////////////////////////////////////////////
-static void recNULL( void ) 
+void recNULL( void )
 {
 	SysPrintf("EE: Unimplemented op %x\n", cpuRegs.code);
 }
 
-////////////////////////////////////////////////////
-static void recREGIMM( void ) 
+namespace EE { namespace Dynarec
 {
-	recREG[ _Rt_ ]( );
-}
+	// Use this to call into interpreter functions that require an immediate branchtest
+	// to be done afterward (anything that throws an exception or enables interrupts, etc).
+	void recBranchCall( void (*func)() )
+	{
+		// In order to make sure a branch test is performed, the nextBranchCycle is set
+		// to the current cpu cycle.
 
-////////////////////////////////////////////////////
-static void recSPECIAL( void )
-{
-	recSPC[ _Funct_ ]( );
-}
+		branch = 2;
+		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+		MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
+		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
+		MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
 
-////////////////////////////////////////////////////
-static void recCOP0( void )
+		// Might as well flush everything -- it'll all get flushed when the
+		// recompiler inserts the branchtest anyway.
+		iFlushCall(FLUSH_EVERYTHING);
+		CALLFunc( (uptr)func );
+	}
+	
+namespace OpcodeImpl
 {
-	recCP0[ _Rs_ ]( );
-}
+	////////////////////////////////////////////////////
+	void recUnknown()
+	{
+		// TODO : Unknown ops should throw an exception.
+		SysPrintf("EE: Unrecognized op %x\n", cpuRegs.code);
+	}
+
+	void recMMI_Unknown()
+	{
+		// TODO : Unknown ops should throw an exception.
+		SysPrintf("EE: Unrecognized MMI op %x\n", cpuRegs.code);
+	}
+
+	////////////////////////////////////////////////////
+	void recREGIMM( void ) 
+	{
+		EE::OpcodeTables::RegImm[ _Rt_ ].recompile();
+	}
+
+	////////////////////////////////////////////////////
+	void recSPECIAL( void )
+	{
+		EE::OpcodeTables::Special[ _Funct_ ].recompile( );
+	}
+
+	////////////////////////////////////////////////////
+	void recCOP0( void )
+	{
+		recCP0[ _Rs_ ]( );
+	}
+
+	////////////////////////////////////////////////////
+	void recCOP1( void )
+	{
+		recCP1[ _Rs_ ]( );
+	}
+
+	////////////////////////////////////////////////////
+	void recMMI( void ) 
+	{
+		EE::OpcodeTables::MMI[ _Funct_ ].recompile( );
+	}
+
+	/**********************************************************
+	*    UNHANDLED YET OPCODES
+	*
+	**********************************************************/
+
+	////////////////////////////////////////////////////
+	//REC_SYS(PREF);
+	////////////////////////////////////////////////////
+	//REC_SYS(MFSA);
+	////////////////////////////////////////////////////
+	//REC_SYS(MTSA);
+	////////////////////////////////////////////////////
+	//REC_SYS(TGE);
+	////////////////////////////////////////////////////
+	//REC_SYS(TGEU);
+	////////////////////////////////////////////////////
+	//REC_SYS(TLT);
+	////////////////////////////////////////////////////
+	//REC_SYS(TLTU);
+	////////////////////////////////////////////////////
+	//REC_SYS(TEQ);
+	////////////////////////////////////////////////////
+	//REC_SYS(TNE);
+	////////////////////////////////////////////////////
+	//REC_SYS(TGEI);
+	////////////////////////////////////////////////////
+	//REC_SYS(TGEIU);
+	////////////////////////////////////////////////////
+	//REC_SYS(TLTI);
+	////////////////////////////////////////////////////
+	//REC_SYS(TLTIU);
+	////////////////////////////////////////////////////
+	//REC_SYS(TEQI);
+	////////////////////////////////////////////////////
+	//REC_SYS(TNEI);
+	////////////////////////////////////////////////////
+	//REC_SYS(MTSAB);
+	////////////////////////////////////////////////////
+	//REC_SYS(MTSAH);
+	////////////////////////////////////////////////////
+	//REC_SYS(CACHE);
+
+	void recCACHE()
+	{
+	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
+	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
+	   iFlushCall(FLUSH_EVERYTHING);
+	   CALLFunc( (uptr)Interpreter::OpcodeImpl::CACHE );
+	   branch = 2;
+	}
+
+	void recTGE( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TGE );
+	}
+
+	void recTGEU( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TGEU );
+	}
+
+	void recTLT( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TLT );
+	}
+
+	void recTLTU( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TLTU );
+	}
+
+	void recTEQ( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TEQ );
+	}
+
+	void recTNE( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TNE );
+	}
+
+	void recTGEI( void )
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TGEI );
+	}
+
+	void recTGEIU( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TGEIU );
+	}
+
+	void recTLTI( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TLTI );
+	}
+
+	void recTLTIU( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TLTIU );
+	}
+
+	void recTEQI( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TEQI );
+	}
+
+	void recTNEI( void ) 
+	{
+		recBranchCall( Interpreter::OpcodeImpl::TNEI );
+	}
+
+}	// End OpcodeImpl
+
+	using namespace OpcodeImpl;
+
+	#ifdef PCSX2_VIRTUAL_MEM
+	// coissued insts
+	void (*recBSC_co[64] )() = {
+		recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
+		recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
+		recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
+		recNULL,    recNULL,     recLDL_co,  recLDR_co,   recNULL, recNULL, recLQ_co,    recSQ_co,
+		recLB_co,   recLH_co,    recLWL_co,  recLW_co,    recLBU_co,  recLHU_co,  recLWR_co,   recLWU_co,
+		recSB_co,   recSH_co,    recSWL_co,  recSW_co,    recSDL_co,  recSDR_co,  recSWR_co,   recNULL,
+		recNULL,    recLWC1_co,  recNULL, recNULL,  recNULL, recNULL, recLQC2_co,  recLD_co,
+		recNULL,    recSWC1_co,  recNULL, recNULL,  recNULL, recNULL, recSQC2_co,  recSD_co
+	};
+	#endif
+
+} }		// End namespace EE::Dynarec
 
 ////////////////////////////////////////////////////
 static void recCOP0BC0( void )
@@ -79,195 +258,9 @@ static void recCOP0C0( void )
 	recCP0C0[ _Funct_ ]( );
 }
 
-////////////////////////////////////////////////////
-static void recCOP1( void ) {
-	recCP1[ _Rs_ ]( );
-}
-
-////////////////////////////////////////////////////
-static void recMMI( void ) 
-{
-	recMMIt[ _Funct_ ]( );
-}
-
-
-// Use this to call into interpreter functions that require an immediate branchtest
-// to be done afterward (anything that throws an exception or enables interrupts, etc).
-void recBranchCall( void (*func)() )
-{
-	// In order to make sure a branch test is performed, the nextBranchCycle is set
-	// to the current cpu cycle.
-
-	branch = 2;
-	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
-	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
-
-	// Might as well flush everything -- it'll all get flushed when the
-	// recompiler inserts the branchtest anyway.
-	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (uptr)func );
-}
-
-/**********************************************************
-*    UNHANDLED YET OPCODES
-*
-**********************************************************/
-
-////////////////////////////////////////////////////
-//REC_SYS(PREF);
-////////////////////////////////////////////////////
-//REC_SYS(MFSA);
-////////////////////////////////////////////////////
-//REC_SYS(MTSA);
-////////////////////////////////////////////////////
-//REC_SYS(TGE);
-////////////////////////////////////////////////////
-//REC_SYS(TGEU);
-////////////////////////////////////////////////////
-//REC_SYS(TLT);
-////////////////////////////////////////////////////
-//REC_SYS(TLTU);
-////////////////////////////////////////////////////
-//REC_SYS(TEQ);
-////////////////////////////////////////////////////
-//REC_SYS(TNE);
-////////////////////////////////////////////////////
-//REC_SYS(TGEI);
-////////////////////////////////////////////////////
-//REC_SYS(TGEIU);
-////////////////////////////////////////////////////
-//REC_SYS(TLTI);
-////////////////////////////////////////////////////
-//REC_SYS(TLTIU);
-////////////////////////////////////////////////////
-//REC_SYS(TEQI);
-////////////////////////////////////////////////////
-//REC_SYS(TNEI);
-////////////////////////////////////////////////////
-//REC_SYS(MTSAB);
-////////////////////////////////////////////////////
-//REC_SYS(MTSAH);
-////////////////////////////////////////////////////
-REC_SYS(CACHE);
-
-void recTGE( void ) 
-{
-	recBranchCall( TGE );
-}
-
-void recTGEU( void ) 
-{
-	recBranchCall( TGEU );
-}
-
-void recTLT( void ) 
-{
-	recBranchCall( TLT );
-}
-
-void recTLTU( void ) 
-{
-	recBranchCall( TLTU );
-}
-
-void recTEQ( void ) 
-{
-	recBranchCall( TEQ );
-}
-
-void recTNE( void ) 
-{
-	recBranchCall( TNE );
-}
-
-void recTGEI( void )
-{
-	recBranchCall( TGEI );
-}
-
-void recTGEIU( void ) 
-{
-	recBranchCall( TGEIU );
-}
-
-void recTLTI( void ) 
-{
-	recBranchCall( TLTI );
-}
-
-void recTLTIU( void ) 
-{
-	recBranchCall( TLTIU );
-}
-
-void recTEQI( void ) 
-{
-	recBranchCall( TEQI );
-}
-
-void recTNEI( void ) 
-{
-	recBranchCall( TNEI );
-}
-
-
 /////////////////////////////////
 // Foward-Prob Function Tables //
 /////////////////////////////////
-extern void recCOP2( void );
-extern void recSYSCALL( void );
-extern void recBREAK( void );
-extern void recPREF( void );
-extern void recSYNC( void );
-extern void recMFSA( void );
-extern void recMTSA( void );
-extern void recMTSAB( void );
-extern void recMTSAH( void );
-
-void (*recBSC[64] )() = {
-    recSPECIAL, recREGIMM, recJ,    recJAL,   recBEQ,  recBNE,  recBLEZ,  recBGTZ,
-    recADDI,    recADDIU,  recSLTI, recSLTIU, recANDI, recORI,  recXORI,  recLUI,
-    recCOP0,    recCOP1,   recCOP2, recNULL,  recBEQL, recBNEL, recBLEZL, recBGTZL,
-    recDADDI,   recDADDIU, recLDL,  recLDR,   recMMI,  recNULL, recLQ,    recSQ,
-    recLB,      recLH,     recLWL,  recLW,    recLBU,  recLHU,  recLWR,   recLWU,
-    recSB,      recSH,     recSWL,  recSW,    recSDL,  recSDR,  recSWR,   recCACHE,
-    recNULL,    recLWC1,   recNULL, recPREF,  recNULL, recNULL, recLQC2,  recLD,
-    recNULL,    recSWC1,   recNULL, recNULL,  recNULL, recNULL, recSQC2,  recSD
-};
-
-#ifdef PCSX2_VIRTUAL_MEM
-// coissued insts
-void (*recBSC_co[64] )() = {
-    recNULL,	recNULL,   recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
-    recNULL,	recNULL,   recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
-    recNULL,	recNULL,   recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
-    recNULL,    recNULL,   recLDL_co,  recLDR_co,   recNULL, recNULL, recLQ_co,    recSQ_co,
-    recLB_co,      recLH_co,     recLWL_co,  recLW_co,    recLBU_co,  recLHU_co,  recLWR_co,   recLWU_co,
-    recSB_co,      recSH_co,     recSWL_co,  recSW_co,    recSDL_co,  recSDR_co,  recSWR_co,   recNULL,
-    recNULL,    recLWC1_co,   recNULL, recNULL,  recNULL, recNULL, recLQC2_co,  recLD_co,
-    recNULL,    recSWC1_co,   recNULL, recNULL,  recNULL, recNULL, recSQC2_co,  recSD_co
-};
-#endif
-
-void (*recSPC[64] )() = {
-    recSLL,  recNULL,  recSRL,  recSRA,  recSLLV,    recNULL,  recSRLV,   recSRAV,
-    recJR,   recJALR,  recMOVZ, recMOVN, recSYSCALL, recBREAK, recNULL,   recSYNC,
-    recMFHI, recMTHI,  recMFLO, recMTLO, recDSLLV,   recNULL,  recDSRLV,  recDSRAV,
-    recMULT, recMULTU, recDIV,  recDIVU, recNULL,    recNULL,  recNULL,   recNULL,
-    recADD,  recADDU,  recSUB,  recSUBU, recAND,     recOR,    recXOR,    recNOR,
-    recMFSA, recMTSA,  recSLT,  recSLTU, recDADD,    recDADDU, recDSUB,   recDSUBU,
-    recTGE,  recTGEU,  recTLT,  recTLTU, recTEQ,     recNULL,  recTNE,    recNULL,
-    recDSLL, recNULL,  recDSRL, recDSRA, recDSLL32,  recNULL,  recDSRL32, recDSRA32
-};
-
-void (*recREG[32] )() = {
-    recBLTZ,   recBGEZ,   recBLTZL,   recBGEZL,   recNULL, recNULL, recNULL, recNULL,
-    recTGEI,   recTGEIU,  recTLTI,    recTLTIU,   recTEQI, recNULL, recTNEI, recNULL,
-    recBLTZAL, recBGEZAL, recBLTZALL, recBGEZALL, recNULL, recNULL, recNULL, recNULL,
-    recMTSAB,  recMTSAH,  recNULL,    recNULL,    recNULL, recNULL, recNULL, recNULL,
-};
 
 void (*recCP0[32] )() = {
     recMFC0,    recNULL, recNULL, recNULL, recMTC0, recNULL, recNULL, recNULL,
@@ -328,61 +321,6 @@ void (*recCP1W[64] )() = {
 	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
 	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
 	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,
-};
-
-void (*recMMIt[64] )() = {
-	recMADD,  recMADDU,  recNULL,  recNULL,  recPLZCW, recNULL, recNULL,  recNULL,
-    recMMI0,  recMMI2,   recNULL,  recNULL,  recNULL,  recNULL, recNULL,  recNULL,
-    recMFHI1, recMTHI1,  recMFLO1, recMTLO1, recNULL,  recNULL, recNULL,  recNULL,
-    recMULT1, recMULTU1, recDIV1,  recDIVU1, recNULL,  recNULL, recNULL,  recNULL,
-    recMADD1, recMADDU1, recNULL,  recNULL,  recNULL,  recNULL, recNULL,  recNULL,
-    recMMI1 , recMMI3,   recNULL,  recNULL,  recNULL,  recNULL, recNULL,  recNULL,
-    recPMFHL, recPMTHL,  recNULL,  recNULL,  recPSLLH, recNULL, recPSRLH, recPSRAH,
-    recNULL,  recNULL,   recNULL,  recNULL,  recPSLLW, recNULL, recPSRLW, recPSRAW,
-};
-
-void (*recMMI0t[32] )() = { 
-	recPADDW,  recPSUBW,  recPCGTW,  recPMAXW,       
-	recPADDH,  recPSUBH,  recPCGTH,  recPMAXH,        
-	recPADDB,  recPSUBB,  recPCGTB,  recNULL,
-	recNULL,   recNULL,   recNULL,   recNULL,
-	recPADDSW, recPSUBSW, recPEXTLW, recPPACW,        
-	recPADDSH, recPSUBSH, recPEXTLH, recPPACH,        
-	recPADDSB, recPSUBSB, recPEXTLB, recPPACB,        
-	recNULL,   recNULL,   recPEXT5,  recPPAC5,
-};
-
-void (*recMMI1t[32] )() = { 
-	recNULL,   recPABSW,  recPCEQW,  recPMINW, 
-	recPADSBH, recPABSH,  recPCEQH,  recPMINH, 
-	recNULL,   recNULL,   recPCEQB,  recNULL, 
-	recNULL,   recNULL,   recNULL,   recNULL, 
-	recPADDUW, recPSUBUW, recPEXTUW, recNULL,  
-	recPADDUH, recPSUBUH, recPEXTUH, recNULL, 
-	recPADDUB, recPSUBUB, recPEXTUB, recQFSRV, 
-	recNULL,   recNULL,   recNULL,   recNULL, 
-};
-
-void (*recMMI2t[32] )() = { 
-	recPMADDW, recNULL,   recPSLLVW, recPSRLVW, 
-	recPMSUBW, recNULL,   recNULL,   recNULL,
-	recPMFHI,  recPMFLO,  recPINTH,  recNULL,
-	recPMULTW, recPDIVW,  recPCPYLD, recNULL,
-	recPMADDH, recPHMADH, recPAND,   recPXOR, 
-	recPMSUBH, recPHMSBH, recNULL,   recNULL, 
-	recNULL,   recNULL,   recPEXEH,  recPREVH, 
-	recPMULTH, recPDIVBW, recPEXEW,  recPROT3W, 
-};
-
-void (*recMMI3t[32] )() = { 
-	recPMADDUW, recNULL,   recNULL,   recPSRAVW, 
-	recNULL,    recNULL,   recNULL,   recNULL,
-	recPMTHI,   recPMTLO,  recPINTEH, recNULL,
-	recPMULTUW, recPDIVUW, recPCPYUD, recNULL,
-	recNULL,    recNULL,   recPOR,    recPNOR,  
-	recNULL,    recNULL,   recNULL,   recNULL,
-	recNULL,    recNULL,   recPEXCH,  recPCPYH, 
-	recNULL,    recNULL,   recPEXCW,  recNULL,
 };
 
 ////////////////////////////////////////////////

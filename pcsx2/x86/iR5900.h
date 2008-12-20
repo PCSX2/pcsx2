@@ -40,50 +40,6 @@
 #define CP0_RECOMPILE
 #define CP2_RECOMPILE
 
-// We're working on new hopefully better cycle ratios, but they're still a WIP.
-// And yes this whole thing is an ugly hack.  I'll clean it up once we have
-// a better idea how exactly the cycle ratios will work best.
-
-//#define EXPERIMENTAL_CYCLE_TIMINGS
-
-#ifdef EXPERIMENTAL_CYCLE_TIMINGS
-
-// Number of cycles for basic instructions (add/sub, etc).
-// On the EE these normally run in less than 1 cycle thanks to
-// the superscalar nature of the CPU.
-static const int InstCycles_Default = 7;			// 0.75 cycles for base instructions.
-static const int _ic_basemod = 4 - InstCycles_Default;	// don't change me unless you're changing the fixed point accuracy of cycle counting.
-
-// Cycle penalties for particuarly slow instructions.
-static const int InstCycles_Mult = _ic_basemod + 2*8;
-static const int InstCycles_Div = _ic_basemod + 13*8;
-static const int InstCycles_FPU_Sqrt = _ic_basemod + 4*8;
-static const int InstCycles_MMI_Mult = _ic_basemod + 4*8;
-static const int InstCycles_MMI_Div = _ic_basemod + 22*8;
-
-static const int InstCycles_Peephole_Store = _ic_basemod + 22;
-static const int InstCycles_Peephole_Load = _ic_basemod + 7;
-static const int InstCycles_Store = _ic_basemod + 22;
-static const int InstCycles_Load = _ic_basemod + 7;
-
-#else
-
-static const int InstCycles_Default = 9;
-static const int _ic_basemod = 8 - InstCycles_Default;	// don't change me unless you're changing the fixed point accuracy of cycle counting.
-
-static const int InstCycles_Mult = _ic_basemod + 1*8;
-static const int InstCycles_Div = _ic_basemod + 13*8;
-static const int InstCycles_FPU_Sqrt = _ic_basemod + 3*8;
-static const int InstCycles_MMI_Mult = _ic_basemod + 2*8;
-static const int InstCycles_MMI_Div = _ic_basemod + 22*8;
-
-static const int InstCycles_Peephole_Store = _ic_basemod + 10; //_ic_basemod + 12 for snes emu
-static const int InstCycles_Peephole_Load = _ic_basemod + 2;   //_ic_basemod + 4 for snes emu
-static const int InstCycles_Store = _ic_basemod + 10;		   //_ic_basemod + 12 for snes emu
-static const int InstCycles_Load = _ic_basemod + 2;			   //_ic_basemod + 4 for snes emu
-
-#endif
-
 #define EE_CONST_PROP // rec2 - enables constant propagation (faster)
 //#define EE_FPU_REGCACHING 1 // Not used anymore, its always on!
 
@@ -101,22 +57,20 @@ extern u32 pc;
 extern int branch;
 extern uptr* recLUT;
 
+extern u32 maxrecmem;
 extern u32 pc;			         // recompiler pc
 extern int branch;		         // set for branch
 extern u32 target;		         // branch target
 extern u16 x86FpuState;
 extern u16 iCWstate;
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
-extern u32 g_eeCyclePenalty;
-
-void recBranchCall( void (*func)() );
 
 #define REC_FUNC_INLINE( f, delreg ) \
 	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
 	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	iFlushCall(FLUSH_EVERYTHING); \
 	if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	CALLFunc( (uptr)f ); 
+	CALLFunc( (uptr)EE::Interpreter::OpcodeImpl::f ); 
 
 #define REC_FUNC( f, delreg ) \
    void f( void ); \
@@ -126,7 +80,7 @@ void recBranchCall( void (*func)() );
 	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
 	   if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	   CALLFunc( (uptr)f ); \
+	   CALLFunc( (uptr)Interpreter::OpcodeImpl::f ); \
    }
 
 #define REC_SYS( f ) \
@@ -152,9 +106,6 @@ void iFlushCall(int flushtype);
 void SaveCW();
 void LoadCW();
 
-extern void (*recBSC[64])();
-extern void (*recSPC[64])();
-extern void (*recREG[32])();
 extern void (*recCP0[32])();
 extern void (*recCP0BC0[32])();
 extern void (*recCP0C0[64])();
@@ -162,11 +113,13 @@ extern void (*recCP1[32])();
 extern void (*recCP1BC1[32])();
 extern void (*recCP1S[64])();
 extern void (*recCP1W[64])();
-extern void (*recMMIt[64])();
-extern void (*recMMI0t[32])();
-extern void (*recMMI1t[32])();
-extern void (*recMMI2t[32])();
-extern void (*recMMI3t[32])();
+
+namespace EE { namespace Dynarec {
+
+	extern void (*recBSC_co[64])();
+	void recBranchCall( void (*func)() );
+
+} }
 
 u32* _eeGetConstReg(int reg); // gets a memory pointer to the constant reg
 
@@ -191,20 +144,6 @@ typedef void (*R5900FNPTR_INFO)(int info);
 void rec##fn(void) \
 { \
 	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
-}
-
-#define EERECOMPILE_CODE0_PENALTY(fn, xmminfo, cycles) \
-void rec##fn(void) \
-{ \
-	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
-	g_eeCyclePenalty = (cycles); \
-}
-
-#define EERECOMPILE_CODE0_PENALTY(fn, xmminfo, cycles) \
-void rec##fn(void) \
-{ \
-	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
-	g_eeCyclePenalty = (cycles); \
 }
 
 #define EERECOMPILE_CODEX(codename, fn) \
@@ -298,13 +237,6 @@ void rec##fn(void) \
 	eeFPURecompileCode(rec##fn##_xmm, fn, xmminfo); \
 }
 
-#define FPURECOMPILE_CONSTCODE_PENALTY(fn, xmminfo, cycles) \
-void rec##fn(void) \
-{ \
-	eeFPURecompileCode(rec##fn##_xmm, fn, xmminfo); \
-	g_eeCyclePenalty = (cycles); \
-}
-
 // rd = rs op rt (all regs need to be in xmm)
 int eeRecompileCodeXMM(int xmminfo);
 void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo);
@@ -355,5 +287,14 @@ protected:
 	void rpropSetFPUWrite0( int reg, int mask );
 
 };
+
+// perf counters
+#ifdef PCSX2_DEVBUILD
+extern void StartPerfCounter();
+extern void StopPerfCounter();
+#else
+#define StartPerfCounter()
+#define StopPerfCounter()
+#endif
 
 #endif // __IR5900_H__

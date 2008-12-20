@@ -35,6 +35,9 @@
 #pragma warning(disable:4761)
 #endif
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
 /*********************************************************
 * Jump to target                                         *
 * Format:  OP target                                     *
@@ -132,5 +135,7 @@ void recJALR( void )
 }
 
 #endif
+
+} } }
 
 #endif // PCSX2_NORECBUILD

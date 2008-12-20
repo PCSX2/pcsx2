@@ -1118,7 +1118,7 @@ void hwWrite64(u32 mem, u64 value) {
 	}
 }
 
-void hwWrite128(u32 mem, u64 *value) {
+void hwWrite128(u32 mem, const u64 *value) {
 	if (mem >= 0x10004000 && mem < 0x10008000) {
 		WriteFIFO(mem, value); return;
 	}

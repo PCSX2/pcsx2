@@ -43,13 +43,11 @@ s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
 
-extern u32 dwSaveVersion;
-
 int cpuInit()
 {
 	int ret;
 
-	SysPrintf("PCSX2 " PCSX2_VERSION " save ver: %x\n", dwSaveVersion);
+	SysPrintf("PCSX2 " PCSX2_VERSION " save ver: %x\n", g_SaveVersion);
     SysPrintf("EE pc offset: 0x%x, PSX pc offset: 0x%x\n", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
 
 	cpuRegs.constzero = 0;
@@ -220,7 +218,7 @@ void cpuException(u32 code, u32 bd) {
 }
 
 void cpuTlbMiss(u32 addr, u32 bd, u32 excode) {
-    SysPrintf("cpuTlbMiss %x, %x, addr: %x, status=%x, code=%x\n", cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
+	SysPrintf("cpuTlbMiss pc:%x, cycl:%x, addr: %x, status=%x, code=%x\n", cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
 	if (bd) {
 		SysPrintf("branch delay!!\n");
 	}

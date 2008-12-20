@@ -287,7 +287,8 @@ u32 CSRw;
 extern uptr pDsp;
 typedef u8* PU8;
 
-PCSX2_ALIGNED16(u8 g_MTGSMem[0x2000]); // mtgs has to have its own memory
+PCSX2_ALIGNED( 4096, u8 GS_RINGBUFF_STOREAGE[GS_RINGBUFFERSIZE] );
+PCSX2_ALIGNED16( u8 g_MTGSMem[0x2000] ); // mtgs has to have its own memory
 
 #ifdef PCSX2_VIRTUAL_MEM
 #define gif ((DMACh*)&PS2MEM_HW[0xA000])
@@ -412,7 +413,7 @@ void gsInit()
 	if( CHECK_MULTIGS ) {
 
 #ifdef _WIN32
-        g_pGSRingPos = (u8*)VirtualAlloc(GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+        g_pGSRingPos = GS_RINGBUFFERBASE;//(u8*)VirtualAlloc(GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 #else
         // setup linux vm
         g_pGSRingPos = (u8*)SysMmap((uptr)GS_RINGBUFFERBASE, GS_RINGBUFFERSIZE);
@@ -602,8 +603,63 @@ void gsShutdown()
 		GSclose();
 }
 
+#ifdef PCSX2_GSRING_TX_STATS
+u32 ringtx_s=0;
+u32 ringtx_s_ulg=0;
+u32 ringtx_s_min=0xFFFFFFFF;
+u32 ringtx_s_max=0;
+u32 ringtx_c=0;
+u32 ringtx_inf[32][32];
+u32 ringtx_inf_s[32];
+#include <intrin.h>
+#endif
+
+u32 GSRingBufCopySz;
 u8* GSRingBufCopy( u32 size, u32 type )
 {
+#ifdef PCSX2_GSRING_TX_STATS
+	ringtx_s+=size;
+	ringtx_s_ulg+=size&0x7F;
+	ringtx_s_min=min(ringtx_s_min,size);
+	ringtx_s_max=max(ringtx_s_max,size);
+	ringtx_c++;
+	unsigned long tx_sz;
+	if (_BitScanReverse(&tx_sz,size))
+	{
+		unsigned long tx_algn;
+		_BitScanForward(&tx_algn,size);
+		ringtx_inf[tx_sz][tx_algn]++;
+		ringtx_inf_s[tx_sz]+=size;
+	}
+	if (ringtx_s>=128*1024*1024)
+	{
+		SysPrintf("GSRingBufCopy:128MB in %d tx -> b/tx: AVG = %.2f , max = %d, min = %d\n",ringtx_c,ringtx_s/(float)ringtx_c,ringtx_s_max,ringtx_s_min);
+		for (int i=0;i<32;i++)
+		{
+			u32 total_bucket=0;
+			u32 bucket_subitems=0;
+			for (int j=0;j<32;j++)
+			{
+				if (ringtx_inf[i][j])
+				{
+					total_bucket+=ringtx_inf[i][j];
+					bucket_subitems++;
+					SysPrintf("GSRingBufCopy :tx [%d,%d] algn %d : count= %d [%.2f%%]\n",1<<i,(1<<(i+1))-16,1<<j,ringtx_inf[i][j],ringtx_inf[i][j]/(float)ringtx_c*100);
+					ringtx_inf[i][j]=0;
+				}
+			}
+			if (total_bucket)
+				SysPrintf("GSRingBufCopy :tx [%d,%d] total : count= %d [%.2f%%] [%.2f%%]\n",1<<i,(1<<(i+1))-16,total_bucket,total_bucket/(float)ringtx_c*100,ringtx_inf_s[i]/(float)ringtx_s*100);
+			ringtx_inf_s[i]=0;
+		}
+		SysPrintf("GSRingBufCopy :tx ulg count =%d [%.2f%%]\n",ringtx_s_ulg,ringtx_s_ulg/(float)ringtx_s*100);
+		ringtx_s_ulg=0;
+		ringtx_c=0;
+		ringtx_s=0;
+		ringtx_s_min=0xFFFFFFFF;
+		ringtx_s_max=0;
+	}
+#endif
 	// Note on volatiles: g_pGSWritePos is not modified by the GS thread,
 	// so there's no need to use volatile reads here.  We still have to use
 	// interlocked exchanges when we modify it, however, since the GS thread
@@ -711,6 +767,18 @@ u8* GSRingBufCopy( u32 size, u32 type )
 #endif
 
 	*(u32*)writepos = type | (((size-16)>>4)<<16);
+	#ifdef PCSX2_GSRING_SAMPLING_STATS
+	if (GSRingBufCopySz)
+		return writepos+16;
+
+	__asm 
+	{ 
+		mov GSRingBufCopySz,offset __GSRingBufCopyEnd; 
+		sub GSRingBufCopySz,offset GSRingBufCopy;
+__GSRingBufCopyEnd:
+	}
+	ProfilerRegisterSource("pcsx2:GSRingBufCopy",&GSRingBufCopy,GSRingBufCopySz);
+#endif
 	return writepos+16;
 }
 
@@ -1285,9 +1353,9 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 			{ 
 				pendmem = (pendmem&~0xfff)-16; 
 			} 
-			memcpy_fast(pgsmem, pMem, pendmem-(u32)gif->madr+16);
+			memcpy_raz_(pgsmem, pMem, pendmem-(u32)gif->madr+16);
 		}
-		else memcpy_fast(pgsmem, pMem, sizetoread); 
+		else memcpy_raz_(pgsmem, pMem, sizetoread); 
 		
 		GSgifTransferDummy(2, pMem, qwc); 
 		GSRINGBUF_DONECOPY(pgsmem, sizetoread);

@@ -710,7 +710,8 @@ u64 psxRcntCycles(int index)
 extern u32 dwCurSaveStateVer;
 int psxRcntFreeze(gzFile f, int Mode)
 {
-    if( Mode == 0 && (dwCurSaveStateVer < 0x7a300010) )
+#ifdef PCSX2_VIRTUAL_MEM
+	if( Mode == 0 && (dwCurSaveStateVer < 0x7a300010) )
 	{
 		// --- Reading Mode, Old Version ---
 		// struct used to be 32bit count and target
@@ -751,6 +752,12 @@ int psxRcntFreeze(gzFile f, int Mode)
 		psxNextCounter = 0;
 		psxNextsCounter = psxRegs.cycle;
 	}
+#else
+
+    gzfreezel(psxCounters);
+	gzfreeze(&psxNextCounter, sizeof(psxNextCounter));
+	gzfreeze(&psxNextsCounter, sizeof(psxNextsCounter));
+#endif
 
 	return 0;
 }

@@ -137,24 +137,38 @@ extern PcsxConfig Config;
 extern u32 BiosVersion;
 extern char CdromId[12];
 
-#define gzfreeze(ptr, size) \
-	if (Mode == 1) gzwrite(f, ptr, size); \
-	else if (Mode == 0) gzread(f, ptr, size);
-
-#define gzfreezel(ptr) gzfreeze(ptr, sizeof(ptr))
-
 int LoadCdrom();
 int CheckCdrom();
 int GetPS2ElfName(char*);
 
 extern const char *LabelAuthors;
 extern const char *LabelGreets;
+
+// --->> Savestate stuff [PathUtil.c]
+
+// Savestate Versioning!
+//  If you make changes to the savestate version, please increment the value below.
+
+#ifdef PCSX2_VIRTUAL_MEM
+static const u32 g_SaveVersion = 0x7a300010;
+#else
+static const u32 g_SaveVersion = 0x8b400000;
+#endif
+
 int SaveState(const char *file);
 int LoadState(const char *file);
 int CheckState(const char *file);
 
 int SaveGSState(const char *file);
 int LoadGSState(const char *file);
+
+#define gzfreeze(ptr, size) \
+	if (Mode == 1) gzwrite(f, ptr, size); \
+	else if (Mode == 0) gzread(f, ptr, size);
+
+#define gzfreezel(ptr) gzfreeze(ptr, sizeof(ptr))
+
+// <<--- End Savestate Stuff
 
 char *ParseLang(char *id);
 void ProcessFKeys(int fkey, int shift); // processes fkey related commands value 1-12
@@ -249,6 +263,8 @@ void FreezeMMXRegs_(int save);
 
 #if defined(_WIN32) && !defined(__x86_64__)
 // faster memcpy
+void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes);
+void __fastcall memcpy_raz_(void *dest, const void *src, size_t qwc);
 void * memcpy_amd_(void *dest, const void *src, size_t n);
 #define memcpy_fast memcpy_amd_
 //#define memcpy_fast memcpy //Dont use normal memcpy, it has sse in 2k5!
@@ -295,9 +311,6 @@ static __forceinline void pcsx2_aligned_free(void* pmem)
 #define _aligned_malloc pcsx2_aligned_malloc
 #define _aligned_free pcsx2_aligned_free
 
-// This might work, too; I'll have to test the two, and see if it makes a difference.
-//#define _aligned_malloc(size,align) memalign(align, size)
-//#define _aligned_free free
 #endif
 
 // cross-platform atomic operations

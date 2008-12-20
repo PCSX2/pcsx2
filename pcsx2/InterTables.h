@@ -18,14 +18,62 @@
 #ifndef INTERTABLES_H
 #define INTERTABLES_H
 
-extern  void (*Int_OpcodePrintTable[64])();
-extern  void (*Int_SpecialPrintTable[64])();
-extern  void (*Int_REGIMMPrintTable[32])();
-extern  void (*Int_MMIPrintTable[64])();
-extern  void (*Int_MMI0PrintTable[32])();
-extern  void (*Int_MMI1PrintTable[32])();
-extern  void (*Int_MMI2PrintTable[32])();
-extern  void (*Int_MMI3PrintTable[32])();
+#include <string>
+
+#include "PS2ETypes.h"
+
+#include "iR5900AritImm.h"
+#include "iR5900Arit.h"
+#include "iR5900MultDiv.h"
+#include "iR5900Shift.h"
+#include "iR5900Branch.h"
+#include "iR5900Jump.h"
+#include "iR5900LoadStore.h"
+#include "iR5900Move.h"
+#include "iMMI.h"
+
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recUnknown();
+	void recMMI_Unknown();
+	void recREGIMM() ;
+	void recSPECIAL();
+	void recCOP0();
+	void recCOP1();
+	void recCOP2();
+	void recMMI();
+	void recMMI0();
+	void recMMI1();
+	void recMMI2();
+	void recMMI3();
+
+	void recCACHE();
+	void recPREF();
+	void recSYSCALL();
+	void recBREAK();
+	void recSYNC();
+
+	void recMFSA();
+	void recMTSA();
+	void recMTSAB();
+	void recMTSAH();
+
+	void recTGE();
+	void recTGEU();
+	void recTLT();
+	void recTLTU();
+	void recTEQ();
+	void recTNE();
+	void recTGEI();
+	void recTGEIU(); 
+	void recTLTI();
+	void recTLTIU();
+	void recTEQI();
+	void recTNEI();
+
+} } }
+
+// TODO : Move these into the EE::OpcodesTable namespace
 extern  void (*Int_COP0PrintTable[32])();
 extern  void (*Int_COP0BC0PrintTable[32])();
 extern  void (*Int_COP0C0PrintTable[64])();
@@ -38,18 +86,6 @@ extern  void (*Int_COP2BC2PrintTable[32])();
 extern  void (*Int_COP2SPECIAL1PrintTable[64])();
 extern  void (*Int_COP2SPECIAL2PrintTable[128])();
 
-void SPECIAL();
-void REGIMM();
-void UnknownOpcode();
-void COP0();
-void COP1();
-void COP2();
-void MMI_Unknown();
-void MMI();
-void MMI0();
-void MMI1();
-void MMI2();
-void MMI3();
 void COP0_Unknown();
 void COP0_BC0();
 void COP0_Func(); 
@@ -62,240 +98,602 @@ void COP2_SPECIAL();
 void COP2_Unknown();
 void COP2_SPECIAL2();
 
+namespace EE
+{
+
+	// Encapsulates information about every opcode on the Emotion Engine and
+	// it's many co-processors.
+	struct OPCODE
+	{
+		// Textual name of the instruction.
+		const char Name[12];
+
+		// Number of cycles this instruction normally uses.
+		u8 cycles;
+
+		const OPCODE& (*getsubclass)();
+
+		// Process the instruction using the interpreter.
+		// The action is performed immediately on the EE's cpu state.
+		void (*interpret)();
+
+	#ifndef PCSX2_NORECBUILD
+		// Generate recompiled code for this instruction, injected into
+		// the current EErec block state.
+		void (*recompile)();
+	#endif
+
+		// Generates a string representation of the instruction and it's parameters,
+		// and pastes it into the given output parameter.
+		void (*decode)( std::string& output );
+	};
+
+	// Returns the current real instruction, as per the current cpuRegs settings.
+	const OPCODE& GetCurrentInstruction();
+
+	// Generates an entry for the given opcode name.
+	// Assumes the default function naming schemes for interpreter and recompiler  functions.
+#ifdef PCSX2_NORECBUILD
+#	define MakeOpcode( name, cycles ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			NULL, \
+			EE::Interpreter::OpcodeImpl::name, \
+			EE::Debug::OpcodePrint::name \
+		}
+
+#	define MakeOpcodeClass( name ) \
+		static const OPCODE name = { \
+			#name, \
+			0, \
+			EE::Opcodes::Class_##name, \
+			NULL, \
+			NULL \
+		}
+#else
+#	define MakeOpcode( name, cycles ) \
+		static const OPCODE name = { \
+			#name, \
+			Cycles_##cycles, \
+			NULL, \
+			EE::Interpreter::OpcodeImpl::name, \
+			EE::Dynarec::OpcodeImpl::rec##name, \
+			EE::Debug::OpcodePrint::name \
+		}
+
+#	define MakeOpcodeClass( name ) \
+		static const OPCODE name = { \
+			#name, \
+			0, \
+			EE::Opcodes::Class_##name, \
+			NULL, \
+			NULL, \
+			NULL \
+		}
+#endif
+
+	namespace OpcodeTables
+	{
+		extern const OPCODE Standard[64];
+		extern const OPCODE Special[64];
+		extern const OPCODE RegImm[32];
+		extern const OPCODE MMI[64];
+		extern const OPCODE MMI0[32];
+		extern const OPCODE MMI1[32];
+		extern const OPCODE MMI2[32];
+		extern const OPCODE MMI3[32];
+	}
+
+	namespace Opcodes
+	{
+		const OPCODE& Class_SPECIAL();
+		const OPCODE& Class_REGIMM();
+		const OPCODE& Class_MMI();
+		const OPCODE& Class_MMI0();
+		const OPCODE& Class_MMI1();
+		const OPCODE& Class_MMI2();
+		const OPCODE& Class_MMI3();
+	}
+
+	namespace Debug
+	{
+		namespace OpcodePrint
+		{
+//****************************************************************
+			void Unknown( std::string& output );
+			void COP0( std::string& output );
+			void COP1( std::string& output );
+			void COP2( std::string& output );
+			void MMI_Unknown( std::string& output );
+
 // **********************Standard Opcodes**************************
-void J();
-void JAL();
-void BEQ();
-void BNE();
-void BLEZ();
-void BGTZ();
-void ADDI();
-void ADDIU();
-void SLTI();
-void SLTIU();
-void ANDI();
-void ORI();
-void XORI();
-void LUI();
-void BEQL();
-void BNEL();
-void BLEZL();
-void BGTZL();
-void DADDI();
-void DADDIU();
-void LDL();
-void LDR();
-void LB();
-void LH();
-void LWL();
-void LW();
-void LBU();
-void LHU();
-void LWR();
-void LWU();
-void SB();
-void SH();
-void SWL();
-void SW();
-void SDL();
-void SDR();
-void SWR();
-void CACHE();
-void LWC1();
-void PREF();
-void LQC2();
-void LD();
-void SQC2();
-void SD();
-void LQ();
-void SQ();
-void SWC1();
+			void J( std::string& output );
+			void JAL( std::string& output );
+			void BEQ( std::string& output );
+			void BNE( std::string& output );
+			void BLEZ( std::string& output );
+			void BGTZ( std::string& output );
+			void ADDI( std::string& output );
+			void ADDIU( std::string& output );
+			void SLTI( std::string& output );
+			void SLTIU( std::string& output );
+			void ANDI( std::string& output );
+			void ORI( std::string& output );
+			void XORI( std::string& output );
+			void LUI( std::string& output );
+			void BEQL( std::string& output );
+			void BNEL( std::string& output );
+			void BLEZL( std::string& output );
+			void BGTZL( std::string& output );
+			void DADDI( std::string& output );
+			void DADDIU( std::string& output );
+			void LDL( std::string& output );
+			void LDR( std::string& output );
+			void LB( std::string& output );
+			void LH( std::string& output );
+			void LWL( std::string& output );
+			void LW( std::string& output );
+			void LBU( std::string& output );
+			void LHU( std::string& output );
+			void LWR( std::string& output );
+			void LWU( std::string& output );
+			void SB( std::string& output );
+			void SH( std::string& output );
+			void SWL( std::string& output );
+			void SW( std::string& output );
+			void SDL( std::string& output );
+			void SDR( std::string& output );
+			void SWR( std::string& output );
+			void CACHE( std::string& output );
+			void LWC1( std::string& output );
+			void PREF( std::string& output );
+			void LQC2( std::string& output );
+			void LD( std::string& output );
+			void SQC2( std::string& output );
+			void SD( std::string& output );
+			void LQ( std::string& output );
+			void SQ( std::string& output );
+			void SWC1( std::string& output );
+//***************end of standard opcodes*************************
+//***************SPECIAL OPCODES**********************************
+			void SLL( std::string& output );
+			void SRL( std::string& output );
+			void SRA( std::string& output );
+			void SLLV( std::string& output );
+			void SRLV( std::string& output );
+			void SRAV( std::string& output );
+			void JR( std::string& output );
+			void JALR( std::string& output );
+			void SYSCALL( std::string& output );
+			void BREAK( std::string& output );
+			void SYNC( std::string& output );
+			void MFHI( std::string& output );
+			void MTHI( std::string& output );
+			void MFLO( std::string& output );
+			void MTLO( std::string& output );
+			void DSLLV( std::string& output );
+			void DSRLV( std::string& output );
+			void DSRAV( std::string& output );
+			void MULT( std::string& output );
+			void MULTU( std::string& output );
+			void DIV( std::string& output );
+			void DIVU( std::string& output );
+			void ADD( std::string& output );
+			void ADDU( std::string& output );
+			void SUB( std::string& output );
+			void SUBU( std::string& output );
+			void AND( std::string& output );
+			void OR( std::string& output );
+			void XOR( std::string& output );
+			void NOR( std::string& output );
+			void SLT( std::string& output );
+			void SLTU( std::string& output );
+			void DADD( std::string& output );
+			void DADDU( std::string& output );
+			void DSUB( std::string& output );
+			void DSUBU( std::string& output );
+			void TGE( std::string& output );
+			void TGEU( std::string& output );
+			void TLT( std::string& output );
+			void TLTU( std::string& output );
+			void TEQ( std::string& output );
+			void TNE( std::string& output );
+			void DSLL( std::string& output );
+			void DSRL( std::string& output );
+			void DSRA( std::string& output );
+			void DSLL32( std::string& output );
+			void DSRL32( std::string& output );
+			void DSRA32( std::string& output );
+			void MOVZ( std::string& output );
+			void MOVN( std::string& output );
+			void MFSA( std::string& output );
+			void MTSA( std::string& output );
+//******************END OF SPECIAL OPCODES**************************
+
+//******************REGIMM OPCODES**********************************
+			void BLTZ( std::string& output );
+			void BGEZ( std::string& output );
+			void BLTZL( std::string& output );
+			void BGEZL( std::string& output );
+			void TGEI( std::string& output );
+			void TGEIU( std::string& output );
+			void TLTI( std::string& output );
+			void TLTIU( std::string& output );
+			void TEQI( std::string& output );
+			void TNEI( std::string& output );
+			void BLTZAL( std::string& output );
+			void BGEZAL( std::string& output );
+			void BLTZALL( std::string& output );
+			void BGEZALL( std::string& output );
+			void MTSAB( std::string& output );
+			void MTSAH( std::string& output );
+//*****************END OF REGIMM OPCODES*****************************
+//*****************MMI OPCODES*********************************
+			void MADD( std::string& output );
+			void MADDU( std::string& output );
+			void PLZCW( std::string& output );
+			void MADD1( std::string& output );
+			void MADDU1( std::string& output );
+			void MFHI1( std::string& output );
+			void MTHI1( std::string& output );
+			void MFLO1( std::string& output );
+			void MTLO1( std::string& output );
+			void MULT1( std::string& output );
+			void MULTU1( std::string& output );
+			void DIV1( std::string& output );
+			void DIVU1( std::string& output );
+			void PMFHL( std::string& output );
+			void PMTHL( std::string& output );
+			void PSLLH( std::string& output );
+			void PSRLH( std::string& output );
+			void PSRAH( std::string& output );
+			void PSLLW( std::string& output );
+			void PSRLW( std::string& output );
+			void PSRAW( std::string& output );
+//*****************END OF MMI OPCODES**************************
+//*************************MMI0 OPCODES************************
+			void PADDW( std::string& output );  
+			void PSUBW( std::string& output );  
+			void PCGTW( std::string& output );  
+			void PMAXW( std::string& output ); 
+			void PADDH( std::string& output );  
+			void PSUBH( std::string& output );  
+			void PCGTH( std::string& output );  
+			void PMAXH( std::string& output ); 
+			void PADDB( std::string& output );  
+			void PSUBB( std::string& output );  
+			void PCGTB( std::string& output );
+			void PADDSW( std::string& output ); 
+			void PSUBSW( std::string& output ); 
+			void PEXTLW( std::string& output );  
+			void PPACW( std::string& output ); 
+			void PADDSH( std::string& output );
+			void PSUBSH( std::string& output );
+			void PEXTLH( std::string& output ); 
+			void PPACH( std::string& output );
+			void PADDSB( std::string& output );
+			void PSUBSB( std::string& output );
+			void PEXTLB( std::string& output ); 
+			void PPACB( std::string& output );
+			void PEXT5( std::string& output ); 
+			void PPAC5( std::string& output );
+//***END OF MMI0 OPCODES******************************************
+//**********MMI1 OPCODES**************************************
+			void PABSW( std::string& output );
+			void PCEQW( std::string& output );
+			void PMINW( std::string& output ); 
+			void PADSBH( std::string& output );
+			void PABSH( std::string& output );
+			void PCEQH( std::string& output );
+			void PMINH( std::string& output );  
+			void PCEQB( std::string& output ); 
+			void PADDUW( std::string& output );
+			void PSUBUW( std::string& output ); 
+			void PEXTUW( std::string& output );  
+			void PADDUH( std::string& output );
+			void PSUBUH( std::string& output ); 
+			void PEXTUH( std::string& output ); 
+			void PADDUB( std::string& output );
+			void PSUBUB( std::string& output );
+			void PEXTUB( std::string& output );
+			void QFSRV( std::string& output ); 
+//********END OF MMI1 OPCODES***********************************
+//*********MMI2 OPCODES***************************************
+			void PMADDW( std::string& output );
+			void PSLLVW( std::string& output );
+			void PSRLVW( std::string& output ); 
+			void PMSUBW( std::string& output );
+			void PMFHI( std::string& output );
+			void PMFLO( std::string& output );
+			void PINTH( std::string& output );
+			void PMULTW( std::string& output );
+			void PDIVW( std::string& output );
+			void PCPYLD( std::string& output );
+			void PMADDH( std::string& output );
+			void PHMADH( std::string& output );
+			void PAND( std::string& output );
+			void PXOR( std::string& output ); 
+			void PMSUBH( std::string& output );
+			void PHMSBH( std::string& output );
+			void PEXEH( std::string& output );
+			void PREVH( std::string& output ); 
+			void PMULTH( std::string& output );
+			void PDIVBW( std::string& output );
+			void PEXEW( std::string& output );
+			void PROT3W( std::string& output );
+//*****END OF MMI2 OPCODES***********************************
+//*************************MMI3 OPCODES************************
+			void PMADDUW( std::string& output );
+			void PSRAVW( std::string& output ); 
+			void PMTHI( std::string& output );
+			void PMTLO( std::string& output );
+			void PINTEH( std::string& output ); 
+			void PMULTUW( std::string& output );
+			void PDIVUW( std::string& output );
+			void PCPYUD( std::string& output ); 
+			void POR( std::string& output );
+			void PNOR( std::string& output );  
+			void PEXCH( std::string& output );
+			void PCPYH( std::string& output ); 
+			void PEXCW( std::string& output );
+//**********************END OF MMI3 OPCODES******************** 
+		}
+	}
+
+	namespace Interpreter
+	{
+		namespace OpcodeImpl
+		{
+			void COP0();
+			void COP1();
+			void COP2();
+
+			void Unknown();
+			void MMI_Unknown();
+
+// **********************Standard Opcodes**************************
+			void J();
+			void JAL();
+			void BEQ();
+			void BNE();
+			void BLEZ();
+			void BGTZ();
+			void ADDI();
+			void ADDIU();
+			void SLTI();
+			void SLTIU();
+			void ANDI();
+			void ORI();
+			void XORI();
+			void LUI();
+			void BEQL();
+			void BNEL();
+			void BLEZL();
+			void BGTZL();
+			void DADDI();
+			void DADDIU();
+			void LDL();
+			void LDR();
+			void LB();
+			void LH();
+			void LWL();
+			void LW();
+			void LBU();
+			void LHU();
+			void LWR();
+			void LWU();
+			void SB();
+			void SH();
+			void SWL();
+			void SW();
+			void SDL();
+			void SDR();
+			void SWR();
+			void CACHE();
+			void LWC1();
+			void PREF();
+			void LQC2();
+			void LD();
+			void SQC2();
+			void SD();
+			void LQ();
+			void SQ();
+			void SWC1();
 //***************end of standard opcodes*************************
 
 
 //***************SPECIAL OPCODES**********************************
-void SLL();
-void SRL();
-void SRA();
-void SLLV();
-void SRLV();
-void SRAV();
-void JR();
-void JALR();
-void SYSCALL();
-void BREAK();
-void SYNC();
-void MFHI();
-void MTHI();
-void MFLO();
-void MTLO();
-void DSLLV();
-void DSRLV();
-void DSRAV();
-void MULT();
-void MULTU();
-void DIV();
-void DIVU();
-void ADD();
-void ADDU();
-void SUB();
-void SUBU();
-void AND();
-void OR();
-void XOR();
-void NOR();
-void SLT();
-void SLTU();
-void DADD();
-void DADDU();
-void DSUB();
-void DSUBU();
-void TGE();
-void TGEU();
-void TLT();
-void TLTU();
-void TEQ();
-void TNE();
-void DSLL();
-void DSRL();
-void DSRA();
-void DSLL32();
-void DSRL32();
-void DSRA32();
-void MOVZ();
-void MOVN();
-void MFSA();
-void MTSA();
+			void SLL();
+			void SRL();
+			void SRA();
+			void SLLV();
+			void SRLV();
+			void SRAV();
+			void JR();
+			void JALR();
+			void SYSCALL();
+			void BREAK();
+			void SYNC();
+			void MFHI();
+			void MTHI();
+			void MFLO();
+			void MTLO();
+			void DSLLV();
+			void DSRLV();
+			void DSRAV();
+			void MULT();
+			void MULTU();
+			void DIV();
+			void DIVU();
+			void ADD();
+			void ADDU();
+			void SUB();
+			void SUBU();
+			void AND();
+			void OR();
+			void XOR();
+			void NOR();
+			void SLT();
+			void SLTU();
+			void DADD();
+			void DADDU();
+			void DSUB();
+			void DSUBU();
+			void TGE();
+			void TGEU();
+			void TLT();
+			void TLTU();
+			void TEQ();
+			void TNE();
+			void DSLL();
+			void DSRL();
+			void DSRA();
+			void DSLL32();
+			void DSRL32();
+			void DSRA32();
+			void MOVZ();
+			void MOVN();
+			void MFSA();
+			void MTSA();
 //******************END OF SPECIAL OPCODES**************************
 
 //******************REGIMM OPCODES**********************************
-void BLTZ();
-void BGEZ();
-void BLTZL();
-void BGEZL();
-void TGEI();
-void TGEIU();
-void TLTI();
-void TLTIU();
-void TEQI();
-void TNEI();
-void BLTZAL();
-void BGEZAL();
-void BLTZALL();
-void BGEZALL();
-void MTSAB();
-void MTSAH();
+			void BLTZ();
+			void BGEZ();
+			void BLTZL();
+			void BGEZL();
+			void TGEI();
+			void TGEIU();
+			void TLTI();
+			void TLTIU();
+			void TEQI();
+			void TNEI();
+			void BLTZAL();
+			void BGEZAL();
+			void BLTZALL();
+			void BGEZALL();
+			void MTSAB();
+			void MTSAH();
 //*****************END OF REGIMM OPCODES*****************************
-//*****************MMI OPCODES*********************************
-void MADD();
-void MADDU();
-void PLZCW();
-void MADD1();
-void MADDU1();
-void MFHI1();
-void MTHI1();
-void MFLO1();
-void MTLO1();
-void MULT1();
-void MULTU1();
-void DIV1();
-void DIVU1();
-void PMFHL();
-void PMTHL();
-void PSLLH();
-void PSRLH();
-void PSRAH();
-void PSLLW();
-void PSRLW();
-void PSRAW();
-//*****************END OF MMI OPCODES**************************
-//*************************MMI0 OPCODES************************
 
-void PADDW();  
-void PSUBW();  
-void PCGTW();  
-void PMAXW(); 
-void PADDH();  
-void PSUBH();  
-void PCGTH();  
-void PMAXH(); 
-void PADDB();  
-void PSUBB();  
-void PCGTB();
-void PADDSW(); 
-void PSUBSW(); 
-void PEXTLW();  
-void PPACW(); 
-void PADDSH();
-void PSUBSH();
-void PEXTLH(); 
-void PPACH();
-void PADDSB();
-void PSUBSB();
-void PEXTLB(); 
-void PPACB();
-void PEXT5(); 
-void PPAC5();
+//*****************MMI OPCODES*********************************
+			void MADD();
+			void MADDU();
+			void PLZCW();
+			void MADD1();
+			void MADDU1();
+			void MFHI1();
+			void MTHI1();
+			void MFLO1();
+			void MTLO1();
+			void MULT1();
+			void MULTU1();
+			void DIV1();
+			void DIVU1();
+			void PMFHL();
+			void PMTHL();
+			void PSLLH();
+			void PSRLH();
+			void PSRAH();
+			void PSLLW();
+			void PSRLW();
+			void PSRAW();
+//*****************END OF MMI OPCODES**************************
+
+//*************************MMI0 OPCODES************************
+			void PADDW();  
+			void PSUBW();  
+			void PCGTW();  
+			void PMAXW(); 
+			void PADDH();  
+			void PSUBH();  
+			void PCGTH();  
+			void PMAXH(); 
+			void PADDB();  
+			void PSUBB();  
+			void PCGTB();
+			void PADDSW(); 
+			void PSUBSW(); 
+			void PEXTLW();  
+			void PPACW(); 
+			void PADDSH();
+			void PSUBSH();
+			void PEXTLH(); 
+			void PPACH();
+			void PADDSB();
+			void PSUBSB();
+			void PEXTLB(); 
+			void PPACB();
+			void PEXT5(); 
+			void PPAC5();
 //***END OF MMI0 OPCODES******************************************
+
 //**********MMI1 OPCODES**************************************
-void PABSW();
-void PCEQW();
-void PMINW(); 
-void PADSBH();
-void PABSH();
-void PCEQH();
-void PMINH();  
-void PCEQB(); 
-void PADDUW();
-void PSUBUW(); 
-void PEXTUW();  
-void PADDUH();
-void PSUBUH(); 
-void PEXTUH(); 
-void PADDUB();
-void PSUBUB();
-void PEXTUB();
-void QFSRV(); 
+			void PABSW();
+			void PCEQW();
+			void PMINW(); 
+			void PADSBH();
+			void PABSH();
+			void PCEQH();
+			void PMINH();  
+			void PCEQB(); 
+			void PADDUW();
+			void PSUBUW(); 
+			void PEXTUW();  
+			void PADDUH();
+			void PSUBUH(); 
+			void PEXTUH(); 
+			void PADDUB();
+			void PSUBUB();
+			void PEXTUB();
+			void QFSRV(); 
 //********END OF MMI1 OPCODES***********************************
+
 //*********MMI2 OPCODES***************************************
-void PMADDW();
-void PSLLVW();
-void PSRLVW(); 
-void PMSUBW();
-void PMFHI();
-void PMFLO();
-void PINTH();
-void PMULTW();
-void PDIVW();
-void PCPYLD();
-void PMADDH();
-void PHMADH();
-void PAND();
-void PXOR(); 
-void PMSUBH();
-void PHMSBH();
-void PEXEH();
-void PREVH(); 
-void PMULTH();
-void PDIVBW();
-void PEXEW();
-void PROT3W();
+			void PMADDW();
+			void PSLLVW();
+			void PSRLVW(); 
+			void PMSUBW();
+			void PMFHI();
+			void PMFLO();
+			void PINTH();
+			void PMULTW();
+			void PDIVW();
+			void PCPYLD();
+			void PMADDH();
+			void PHMADH();
+			void PAND();
+			void PXOR(); 
+			void PMSUBH();
+			void PHMSBH();
+			void PEXEH();
+			void PREVH(); 
+			void PMULTH();
+			void PDIVBW();
+			void PEXEW();
+			void PROT3W();
 //*****END OF MMI2 OPCODES***********************************
+
 //*************************MMI3 OPCODES************************
-void PMADDUW();
-void PSRAVW(); 
-void PMTHI();
-void PMTLO();
-void PINTEH(); 
-void PMULTUW();
-void PDIVUW();
-void PCPYUD(); 
-void POR();
-void PNOR();  
-void PEXCH();
-void PCPYH(); 
-void PEXCW();
+			void PMADDUW();
+			void PSRAVW(); 
+			void PMTHI();
+			void PMTLO();
+			void PINTEH(); 
+			void PMULTUW();
+			void PDIVUW();
+			void PCPYUD(); 
+			void POR();
+			void PNOR();  
+			void PEXCH();
+			void PCPYH(); 
+			void PEXCW();
 //**********************END OF MMI3 OPCODES******************** 
+		}
+	}	// end namespace Interpreter
+}	// End namespace EE
+
 //****************************************************************************
 //** COP0                                                                   **
 //****************************************************************************

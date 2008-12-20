@@ -19,29 +19,29 @@
 #ifndef __IR5900SHIFT_H__
 #define __IR5900SHIFT_H__
 
-#include "Common.h"
-#include "InterTables.h"
-
 /*********************************************************
 * Shift arithmetic with constant shift                   *
 * Format:  OP rd, rt, sa                                 *
 *********************************************************/
 
-void recSLL( void );
-void recSRL( void );
-void recSRA( void );
-void recDSLL( void );
-void recDSRL( void );
-void recDSRA( void );
-void recDSLL32( void );
-void recDSRL32( void );
-void recDSRA32( void );
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recSLL( void );
+	void recSRL( void );
+	void recSRA( void );
+	void recDSLL( void );
+	void recDSRL( void );
+	void recDSRA( void );
+	void recDSLL32( void );
+	void recDSRL32( void );
+	void recDSRA32( void );
 
-void recSLLV( void );
-void recSRLV( void );
-void recSRAV( void );
-void recDSLLV( void );
-void recDSRLV( void );
-void recDSRAV( void );
+	void recSLLV( void );
+	void recSRLV( void );
+	void recSRAV( void );
+	void recDSLLV( void );
+	void recDSRLV( void );
+	void recDSRAV( void );
+} } }
 
 #endif

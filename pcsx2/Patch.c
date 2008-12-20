@@ -128,7 +128,7 @@ void _applypatch(int place, IniPatch *p) {
 	if (p->enabled == 0) return;
 	
 	switch (p->cpu) {
-		case EE:
+		case CPU_EE:
 			switch (p->type) {
 				case BYTE_T: 
 					memWrite8(p->addr, (u8)p->data);
@@ -140,7 +140,7 @@ void _applypatch(int place, IniPatch *p) {
 					memWrite32(p->addr, (u32)p->data);
 					break;
 				case DOUBLE_T:
-					memWrite64(p->addr, p->data);
+					memWrite64(p->addr, &p->data);
 					break;
 				case EXTENDED_T:
 						if (SkipCount > 0){
@@ -327,7 +327,7 @@ void _applypatch(int place, IniPatch *p) {
 			}
 		}
 		break;
-	case IOP: { 
+	case CPU_IOP: { 
 		switch (p->type) {
 			case BYTE_T:
 				psxMemWrite8(p->addr, (u8)p->data);
@@ -579,7 +579,7 @@ void patchFunc_fastmemory( char * cmd, char * param )
 {
 #ifndef PCSX2_NORECBUILD
 	// only valid for recompilers
-	SetFastMemory(1);
+	EE::Dynarec::SetFastMemory(1);
 #endif
 }
 

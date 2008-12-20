@@ -883,7 +883,7 @@ void psxHwWrite32(u32 add, u32 value) {
 
 		case 0x1f801078: 
 			PSXHW_LOG("ICTRL 32bit write %lx\n", value);
-			psxHu32(0x1078) = value;
+			psxHu32(0x1078) = value;//1;	//According to pSXAuthor this allways becomes 1 on write, but MHPB won't boot if value is not writen ;p
 			return;
 
 		//SSBus registers

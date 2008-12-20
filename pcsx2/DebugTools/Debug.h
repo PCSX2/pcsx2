@@ -22,19 +22,23 @@
 
 #include <stdio.h>
 #include <zlib.h>
+#include <string>
 
 #include "Misc.h"
 
 extern FILE *emuLog;
 
-char* disR5900F(u32 code, u32 pc);
-char* disR5900Fasm(u32 code, u32 pc);
+void disR5900F( std::string& output, u32 code, u32 pc);
+void disR5900Fasm( std::string& output, u32 code, u32 pc);
 char* disR3000Fasm(u32 code, u32 pc);
 
-void  disR5900AddSym(u32 addr, char *name);
-char* disR5900GetSym(u32 addr);
-char* disR5900GetUpperSym(u32 addr);
+void  disR5900AddSym(u32 addr, const char *name);
+const char* disR5900GetSym(u32 addr);
+const char* disR5900GetUpperSym(u32 addr);
 void  disR5900FreeSyms();
+void dFindSym( std::string& output, u32 addr );
+
+void strAppend( std::string& output, const char *fmt, ... );
 
 char* disVU0MicroUF(u32 code, u32 pc);
 char* disVU0MicroLF(u32 code, u32 pc);
@@ -46,6 +50,19 @@ char* disR3000AF(u32 code, u32 pc);
 extern const char *CP2VFnames[];
 extern const char *disRNameCP2f[];
 extern const char *disRNameCP2i[];
+
+// A helper class for getting a quick and efficient string representation of the
+// R5900's current instruction.  This class is *not* thread safe!
+class DisR5900CurrentState
+{
+protected:
+	std::string result;
+
+public:
+	const char* getString();
+};
+
+extern DisR5900CurrentState disR5900Current;
 
 //that way is slower but you now not need to compile every time ;P
 #ifdef PCSX2_DEVBUILD

@@ -19,17 +19,17 @@
 #ifndef __IR5900MULTDIV_H__
 #define __IR5900MULTDIV_H__
 
-#include "Common.h"
-#include "InterTables.h"
-
 /*********************************************************
 * Register mult/div & Register trap logic                *
 * Format:  OP rs, rt                                     *
 *********************************************************/
 
-void recMULT( void );
-void recMULTU( void );
-void recDIV( void );
-void recDIVU( void );
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recMULT( void );
+	void recMULTU( void );
+	void recDIV( void );
+	void recDIVU( void );
+} } }
 
 #endif

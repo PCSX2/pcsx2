@@ -33,6 +33,18 @@
 #pragma warning(disable:4761)
 #endif
 
+#ifdef ARITHMETICIMM_RECOMPILE
+extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
+extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
+extern void LogicalOp32RtoM(u32 to, x86IntRegType from, int op);
+extern void LogicalOp32MtoR(x86IntRegType to, u32 from, int op);
+extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
+extern void LogicalOp32ItoM(u32 to, u32 from, int op);
+#endif
+
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
 /*********************************************************
 * Arithmetic with immediate operand                      *
 * Format:  OP rt, rs, immediate                          *
@@ -337,13 +349,6 @@ void recANDI_const()
 	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & (u64)_ImmU_; // Zero-extended Immediate
 }
 
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-extern void LogicalOp32RtoM(u32 to, x86IntRegType from, int op);
-extern void LogicalOp32MtoR(x86IntRegType to, u32 from, int op);
-extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
-extern void LogicalOp32ItoM(u32 to, u32 from, int op);
-
 void recLogicalOpI(int info, int op)
 {
 	if( info & PROCESS_EE_MMX ) {
@@ -646,5 +651,7 @@ void recXORI( void )
 }
 
 #endif
+
+} } }
 
 #endif // PCSX2_NORECBUILD

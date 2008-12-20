@@ -17,36 +17,16 @@
  */
 
 #include <stdlib.h>
+
 #include "Common.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
 #include "InterTables.h"
 
+namespace EE { namespace Interpreter{ namespace OpcodeImpl
+{
 
-void MMI() {
-	MMI_LOG("%s\n", disR5900F(cpuRegs.code, cpuRegs.pc));
-	Int_MMIPrintTable[_Funct_]();
-}
-
-void MMI0() {
-	Int_MMI0PrintTable[_Sa_]();
-}
-
-void MMI1() {
-	Int_MMI1PrintTable[_Sa_]();
-}
-
-void MMI2() {
-	Int_MMI2PrintTable[_Sa_]();
-}
-
-void MMI3() {
-	Int_MMI3PrintTable[_Sa_]();
-}
-
-void MMI_Unknown() {
-	SysPrintf ("Unknown MMI opcode called\n");
-}
+void MMI_Unknown() { SysPrintf ("Unknown MMI opcode called\n"); }
 
 //*****************MMI OPCODES*********************************
 
@@ -1564,3 +1544,4 @@ void PEXCW() {
 // obs:
 // QFSRV not verified
 
+}}} // end namespace EE::Interpreter::OpcodeImpl

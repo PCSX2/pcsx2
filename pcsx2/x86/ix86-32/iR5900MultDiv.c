@@ -33,6 +33,9 @@
 #pragma warning(disable:4761)
 #endif
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
 /*********************************************************
 * Register mult/div & Register trap logic                *
 * Format:  OP rs, rt                                     *
@@ -424,7 +427,7 @@ void recMULT_constt(int info)
 }
 
 // don't set XMMINFO_WRITED|XMMINFO_WRITELO|XMMINFO_WRITEHI
-EERECOMPILE_CODE0_PENALTY(MULT, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0), InstCycles_Mult );
+EERECOMPILE_CODE0(MULT, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0) );
 
 //// MULTU
 void recMULTU_const()
@@ -537,7 +540,7 @@ void recMULTU_constt(int info)
 }
 
 // don't specify XMMINFO_WRITELO or XMMINFO_WRITEHI, that is taken care of
-EERECOMPILE_CODE0_PENALTY(MULTU, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0), InstCycles_Mult);
+EERECOMPILE_CODE0(MULTU, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0));
 
 ////////////////////////////////////////////////////
 void recMULT1_const()
@@ -571,7 +574,7 @@ void recMULT1_constt(int info)
 	else recMULTUsuper(info, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0_PENALTY(MULT1, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0), InstCycles_Mult );
+EERECOMPILE_CODE0(MULT1, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0) );
 
 ////////////////////////////////////////////////////
 void recMULTU1_const()
@@ -596,7 +599,7 @@ void recMULTU1_constt(int info)
 	recMULTUsuper(info, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0_PENALTY(MULTU1, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0), InstCycles_Mult);
+EERECOMPILE_CODE0(MULTU1, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0));
 
 //// DIV
 void recDIV_const()
@@ -661,7 +664,7 @@ void recDIV_constt(int info)
 	recDIVsuper(info, 1, 0, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0_PENALTY(DIV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI, InstCycles_Div);
+EERECOMPILE_CODE0(DIV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI);
 
 //// DIVU
 void recDIVU_const()
@@ -689,7 +692,7 @@ void recDIVU_constt(int info)
 	recDIVsuper(info, 0, 0, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0_PENALTY(DIVU, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI, InstCycles_Div);
+EERECOMPILE_CODE0(DIVU, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI);
 
 void recDIV1_const()
 {
@@ -716,7 +719,7 @@ void recDIV1_constt(int info)
 	recDIVsuper(info, 1, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0_PENALTY(DIV1, XMMINFO_READS|XMMINFO_READT, InstCycles_Div);
+EERECOMPILE_CODE0(DIV1, XMMINFO_READS|XMMINFO_READT);
 
 void recDIVU1_const()
 {
@@ -743,7 +746,7 @@ void recDIVU1_constt(int info)
 	recDIVsuper(info, 0, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0_PENALTY(DIVU1, XMMINFO_READS|XMMINFO_READT, InstCycles_Div);
+EERECOMPILE_CODE0(DIVU1, XMMINFO_READS|XMMINFO_READT);
 
 //do EEINST_SETSIGNEXT
 REC_FUNC( MADD, _Rd_ );
@@ -954,5 +957,7 @@ REC_FUNC( MADD1, _Rd_ );
 REC_FUNC( MADDU1, _Rd_ );
 
 #endif
+
+} } }
 
 #endif // PCSX2_NORECBUILD

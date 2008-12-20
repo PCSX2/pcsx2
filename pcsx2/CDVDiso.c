@@ -100,7 +100,7 @@ void TocEntryCopy(struct TocEntry* tocEntry, struct dirTocEntry* internalTocEntr
 	tocEntry->fileSize = internalTocEntry->fileSize;
 	tocEntry->fileLBA = internalTocEntry->fileLBA;
 	tocEntry->fileProperties = internalTocEntry->fileProperties;
-	memcpy(tocEntry->date, internalTocEntry->dateStamp, 7);
+	memcpy(tocEntry->date, internalTocEntry->dateStamp, 7); //TODO: Buffer read overrun, dateStamp is 6 bytes
 
 	if (CDVolDesc.filesystemType == 2){
 		// This is a Joliet Filesystem, so use Unicode to ISO string copy

@@ -1284,7 +1284,7 @@ void recDIV_S_xmm(int info)
 	_freeXMMreg(t0reg);
 }
 
-FPURECOMPILE_CONSTCODE_PENALTY(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT,InstCycles_FPU_Sqrt);
+FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1670,7 +1670,7 @@ void recMUL_S_xmm(int info)
     ClampValues(recCommutativeOp(info, EEREC_D, 1)); 
 }
 
-FPURECOMPILE_CONSTCODE_PENALTY(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT,InstCycles_FPU_Sqrt/2);
+FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recMULA_S_xmm(int info) 
 { 
@@ -1811,7 +1811,7 @@ void recSQRT_S_xmm(int info)
 	_freeX86reg(tempReg);
 }
 
-FPURECOMPILE_CONSTCODE_PENALTY(SQRT_S, XMMINFO_WRITED|XMMINFO_READT, InstCycles_FPU_Sqrt);
+FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1916,7 +1916,7 @@ void recRSQRT_S_xmm(int info)
 	_freeXMMreg(t0reg);
 }
 
-FPURECOMPILE_CONSTCODE_PENALTY(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT,InstCycles_FPU_Sqrt*2);
+FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 #endif // FPU_RECOMPILE
 

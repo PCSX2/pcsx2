@@ -43,9 +43,10 @@
 
 enum patch_cpu_type {
 	NO_CPU,
-	EE,
-	IOP
+	CPU_EE,
+	CPU_IOP
 };
+
 enum patch_data_type {
 	NO_TYPE,
 	BYTE_T,
@@ -128,7 +129,10 @@ void resetpatch( void );
 
 int AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 
-void SetFastMemory(int); // iR5900LoadStore.c
+namespace EE { namespace Dynarec {
+	void SetFastMemory(int); // iR5900LoadStore.c
+} }
+
 void SetVUNanMemory(int); // iVUmicro.c
 
 extern void SetVUNanMode(int mode);

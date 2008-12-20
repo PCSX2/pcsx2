@@ -36,6 +36,9 @@
 #pragma warning(disable:4761)
 #endif
 
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+
 /*********************************************************
 * Register branch logic                                  *
 * Format:  OP rs, rt, offset                             *
@@ -570,7 +573,7 @@ void recBGEZAL( void )
 	    MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	    MOV32ItoM( (int)&cpuRegs.pc, pc );
 	    iFlushCall(FLUSH_EVERYTHING);
-	    CALLFunc( (int)BGEZAL );
+		CALLFunc( (int)Interpreter::OpcodeImpl::BGEZAL );
 	    branch = 2; 
     }
 }
@@ -583,7 +586,7 @@ void recBLTZALL( void )
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (int)BLTZALL );
+	CALLFunc( (int)Interpreter::OpcodeImpl::BLTZALL );
 	branch = 2; 
 }
 
@@ -595,7 +598,7 @@ void recBGEZALL( void )
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (int)BGEZALL );
+	CALLFunc( (int)Interpreter::OpcodeImpl::BGEZALL );
 	branch = 2; 
 }
 
@@ -1147,8 +1150,8 @@ void recBGTZL( void )
 	SetBranchImm(pc);
 }
 
-
-
 #endif
+
+} } }
 
 #endif // PCSX2_NORECBUILD

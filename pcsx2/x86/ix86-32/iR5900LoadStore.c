@@ -32,6 +32,14 @@
 #pragma warning(disable:4761)
 #endif
 
+namespace EE { namespace Dynarec {
+
+	// Implemented at the bottom of the module:
+	void SetFastMemory(int bSetFast);
+
+namespace OpcodeImpl
+{
+
 /*********************************************************
 * Load and store for GPR                                 *
 * Format:  OP rt, offset(base)                           *
@@ -64,12 +72,9 @@ REC_FUNC(SWC1);
 REC_FUNC(LQC2);
 REC_FUNC(SQC2);
 
-void SetFastMemory(int bSetFast) {}
-
 #else
 
 PCSX2_ALIGNED16(u64 retValues[2]);
-extern u32 maxrecmem;
 static u32 s_bCachingMem = 0;
 static u32 s_nAddMemOffset = 0;
 static u32 s_tempaddr = 0;
@@ -97,18 +102,7 @@ void _eeOnLoadWrite(int reg)
 
 #ifdef PCSX2_VIRTUAL_MEM
 
-extern void iMemRead32Check();
-
 #define _Imm_co_ (*(s16*)PSM(pc))
-
-// perf counters
-#ifdef PCSX2_DEVBUILD
-extern void StartPerfCounter();
-extern void StopPerfCounter();
-#else
-#define StartPerfCounter()
-#define StopPerfCounter()
-#endif
 
 ////////////////////////////////////////////////////
 //#define REC_SLOWREAD
@@ -196,22 +190,6 @@ static u16 g_MemMasks16[16] ={0x0000, 0x8001, 0x0002, 0x0003,
 							  0x0001, 0x0005, 0x0001, 0x0005,
 							  0x0005, 0x8005, 0x0005, 0x8005,
 							  0x0001, 0x0001, 0x0001, 0x0005 };
-
-static int s_bFastMemory = 0;
-void SetFastMemory(int bSetFast)
-{
-	s_bFastMemory  = bSetFast;
-	if( bSetFast) {
-		g_MemMasks0[0] = 0x00f0; g_MemMasks0[1] = 0x80f1; g_MemMasks0[2] = 0x00f0; g_MemMasks0[3] = 0x00f1;
-		g_MemMasks8[0] = 0x0080; g_MemMasks8[1] = 0x8081; g_MemMasks8[2] = 0x0080; g_MemMasks8[3] = 0x0081;
-		g_MemMasks16[0] = 0x0000; g_MemMasks16[1] = 0x8001; g_MemMasks16[2] = 0x0000; g_MemMasks16[3] = 0x0001;
-	}
-	else {
-		g_MemMasks0[0] = 0x00f0; g_MemMasks0[1] = 0x80f1; g_MemMasks0[2] = 0x00f2; g_MemMasks0[3] = 0x00f3;
-		g_MemMasks8[0] = 0x0080; g_MemMasks8[1] = 0x8081; g_MemMasks8[2] = 0x0082; g_MemMasks8[3] = 0x0083;
-		g_MemMasks16[0] = 0x0000; g_MemMasks16[1] = 0x8001; g_MemMasks16[2] = 0x0002; g_MemMasks16[3] = 0x0003;
-	}
-}
 
 void assertmem()
 {
@@ -630,28 +608,26 @@ void recLoad32_co(u32 bit, u32 sign)
 	}
 }
 
-void recLB( void ) { recLoad32(8, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
-void recLB_co( void ) { recLoad32_co(8, 1); g_eeCyclePenalty = InstCycles_Load; }
-void recLBU( void ) { recLoad32(8, _Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
-void recLBU_co( void ) { recLoad32_co(8, 0); g_eeCyclePenalty = InstCycles_Load; }
-void recLH( void ) { recLoad32(16, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
-void recLH_co( void ) { recLoad32_co(16, 1); g_eeCyclePenalty = InstCycles_Load; }
-void recLHU( void ) { recLoad32(16, _Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
-void recLHU_co( void ) { recLoad32_co(16, 0); g_eeCyclePenalty = InstCycles_Load; }
-void recLW( void ) { recLoad32(32, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
-void recLW_co( void ) { recLoad32_co(32, 1); g_eeCyclePenalty = InstCycles_Load; }
-void recLWU( void ) { recLoad32(32, _Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
-void recLWU_co( void ) { recLoad32_co(32, 0); g_eeCyclePenalty = InstCycles_Load; }
+void recLB( void ) { recLoad32(8, _Imm_, 1); }
+void recLB_co( void ) { recLoad32_co(8, 1); }
+void recLBU( void ) { recLoad32(8, _Imm_, 0); }
+void recLBU_co( void ) { recLoad32_co(8, 0); }
+void recLH( void ) { recLoad32(16, _Imm_, 1); }
+void recLH_co( void ) { recLoad32_co(16, 1); }
+void recLHU( void ) { recLoad32(16, _Imm_, 0); }
+void recLHU_co( void ) { recLoad32_co(16, 0); }
+void recLW( void ) { recLoad32(32, _Imm_, 1); }
+void recLW_co( void ) { recLoad32_co(32, 1); }
+void recLWU( void ) { recLoad32(32, _Imm_, 0); }
+void recLWU_co( void ) { recLoad32_co(32, 0); }
 
 ////////////////////////////////////////////////////
 
 // paired with LWR
-void recLWL_co(void) { recLoad32(32, _Imm_-3, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLWL_co(void) { recLoad32(32, _Imm_-3, 1); }
 
 void recLWL( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Load;
-
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
@@ -732,11 +708,10 @@ void recLWL( void )
 ////////////////////////////////////////////////////
 
 // paired with LWL
-void recLWR_co(void) { recLoad32(32, _Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLWR_co(void) { recLoad32(32, _Imm_, 1); }
 
 void recLWR( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Load;
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
@@ -934,7 +909,7 @@ void recLoad64(u32 imm, int align)
 	if( _Rt_ ) _eeOnWriteReg(_Rt_, 0);
 }
 
-void recLD(void) { recLoad64(_Imm_, 1); g_eeCyclePenalty = InstCycles_Load; }
+void recLD(void) { recLoad64(_Imm_, 1); }
 
 void recLD_co( void )
 {
@@ -1196,13 +1171,11 @@ void recLD_coX( int num )
 ////////////////////////////////////////////////////
 void recLDL_co(void)
 {
-	g_eeCyclePenalty = InstCycles_Load;
 	recLoad64(_Imm_-7, 0);
 }
 
 void recLDL( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Load;
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -1220,15 +1193,14 @@ void recLDL( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)LDL );
+	CALLFunc( (int)Interpreter::OpcodeImpl::LDL );
 }
 
 ////////////////////////////////////////////////////
-void recLDR_co(void) { recLoad64(_Imm_, 0); g_eeCyclePenalty = InstCycles_Load; }
+void recLDR_co(void) { recLoad64(_Imm_, 0); }
 
 void recLDR( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Load;
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -1246,14 +1218,12 @@ void recLDR( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)LDR );
+	CALLFunc( (int)Interpreter::OpcodeImpl::LDR );
 }
 
 ////////////////////////////////////////////////////
 void recLQ( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Load;
-
 	int mmreg = -1;
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
@@ -1383,8 +1353,6 @@ void recLQ( void )
 
 void recLQ_co( void )
 {
-	g_eeCyclePenalty = InstCycles_Load;
-
 #ifdef REC_SLOWREAD
 	_flushConstReg(_Rs_);
 #else
@@ -1597,8 +1565,23 @@ void recLQ_coX(int num)
 }
 
 ////////////////////////////////////////////////////
-extern void recClear64(BASEBLOCK* p);
-extern void recClear128(BASEBLOCK* p);
+static void recClear64(BASEBLOCK* p)
+{
+	int left = 4 - ((u32)p % 16)/sizeof(BASEBLOCK);
+	recClearMem(p);
+
+	if( left > 1 && *(u32*)(p+1) ) recClearMem(p+1);
+}
+
+static void recClear128(BASEBLOCK* p)
+{
+	int left = 4 - ((u32)p % 32)/sizeof(BASEBLOCK);
+	recClearMem(p);
+
+	if( left > 1 && *(u32*)(p+1) ) recClearMem(p+1);
+	if( left > 2 && *(u32*)(p+2) ) recClearMem(p+2);
+	if( left > 3 && *(u32*)(p+3) ) recClearMem(p+3);
+}
 
 // check if clearing executable code, size is in dwords
 void recMemConstClear(u32 mem, u32 size)
@@ -2424,20 +2407,18 @@ void recStore_co(int bit, int align)
 	_clearNeededXMMregs(); // needed since allocing
 }
 
-void recSB( void ) { recStore(8, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
-void recSB_co( void ) { recStore_co(8, 1); g_eeCyclePenalty = InstCycles_Store; }
-void recSH( void ) { recStore(16, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
-void recSH_co( void ) { recStore_co(16, 1); g_eeCyclePenalty = InstCycles_Store; }
-void recSW( void ) { recStore(32, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
-void recSW_co( void ) { recStore_co(32, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSB( void ) { recStore(8, _Imm_, 1); }
+void recSB_co( void ) { recStore_co(8, 1); }
+void recSH( void ) { recStore(16, _Imm_, 1); }
+void recSH_co( void ) { recStore_co(16, 1); }
+void recSW( void ) { recStore(32, _Imm_, 1); }
+void recSW_co( void ) { recStore_co(32, 1); }
 
 ////////////////////////////////////////////////////
-void recSWL_co(void) { recStore(32, _Imm_-3, 0); g_eeCyclePenalty = InstCycles_Store; }
+void recSWL_co(void) { recStore(32, _Imm_-3, 0); }
 
 void recSWL( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Store;
-
 #ifdef REC_SLOWWRITE
 	_flushConstReg(_Rs_);
 #else
@@ -2525,12 +2506,10 @@ void recSWL( void )
 }
 
 ////////////////////////////////////////////////////
-void recSWR_co(void) { recStore(32, _Imm_, 0); g_eeCyclePenalty = InstCycles_Store; }
+void recSWR_co(void) { recStore(32, _Imm_, 0); }
 
 void recSWR( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Store;
-
 #ifdef REC_SLOWWRITE
 	_flushConstReg(_Rs_);
 #else
@@ -2618,8 +2597,8 @@ void recSWR( void )
 	}
 }
 
-void recSD( void ) { recStore(64, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
-void recSD_co( void ) { recStore_co(64, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSD( void ) { recStore(64, _Imm_, 1); }
+void recSD_co( void ) { recStore_co(64, 1); }
 
 // coissues more than 2 SDs
 void recSD_coX(int num, int align) 
@@ -2736,12 +2715,10 @@ void recSD_coX(int num, int align)
 }
 
 ////////////////////////////////////////////////////
-void recSDL_co(void) { recStore(64, _Imm_-7, 0); g_eeCyclePenalty = InstCycles_Store; }
+void recSDL_co(void) { recStore(64, _Imm_-7, 0); }
 
 void recSDL( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Store;
-
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -2758,16 +2735,14 @@ void recSDL( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)SDL );   
+	CALLFunc( (int)Interpreter::OpcodeImpl::SDL );
 }
 
 ////////////////////////////////////////////////////
-void recSDR_co(void) { recStore(64, _Imm_, 0); g_eeCyclePenalty = InstCycles_Store; }
+void recSDR_co(void) { recStore(64, _Imm_, 0); }
 
 void recSDR( void ) 
 {
-	g_eeCyclePenalty = InstCycles_Store;
-
 	iFlushCall(FLUSH_NOCONST);
 
 	if( GPR_IS_CONST1( _Rs_ ) ) {
@@ -2784,12 +2759,12 @@ void recSDR( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)SDR );
+	CALLFunc( (int)Interpreter::OpcodeImpl::SDR );
 }
 
 ////////////////////////////////////////////////////
-void recSQ( void ) { recStore(128, _Imm_, 1); g_eeCyclePenalty = InstCycles_Store; }
-void recSQ_co( void ) {	recStore_co(128, 1); g_eeCyclePenalty = InstCycles_Store; }
+void recSQ( void ) { recStore(128, _Imm_, 1); }
+void recSQ_co( void ) {	recStore_co(128, 1); }
 
 // coissues more than 2 SQs
 void recSQ_coX(int num) 
@@ -3814,6 +3789,8 @@ void recSQC2_co( void )
 
 #else
 
+using namespace Interpreter::OpcodeImpl;
+
 PCSX2_ALIGNED16(u32 dummyValue[4]);
 
 void SetFastMemory(int bSetFast)
@@ -3821,9 +3798,112 @@ void SetFastMemory(int bSetFast)
 	// nothing
 }
 
+void vtlb_DynGenOp(bool Read,u32 sz)
+{
+	int reg=-1;
+
+	if (sz==64 && _hasFreeMMXreg())
+	{
+		reg=_allocMMXreg(-1, MMX_TEMP, 0);
+	}
+	else if (sz==128 && _hasFreeXMMreg())
+	{
+		reg=_allocTempXMMreg(XMMT_FPS,-1);
+	}
+
+	if (Read)
+		vtlb_DynGenRead(sz,reg);
+	else
+		vtlb_DynGenWrite(sz,reg);
+
+	if (reg!=-1)
+	{
+		if (sz==128)
+			_freeXMMreg(reg);
+		else
+			_freeMMXreg(reg);
+	}
+}
+
+void recLoad(u32 sz,bool sx)
+{
+	//no int 3? i love to get my hands dirty ;p - Raz
+	//write8(0xCC);
+
+	_deleteEEreg(_Rs_, 1);
+	_eeOnLoadWrite(_Rt_);
+	if (sz>=64)
+	{
+		EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension -> what does this really do ?
+	}
+	_deleteEEreg(_Rt_, 0);
+
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	if ( _Imm_ != 0 )
+	{
+		ADD32ItoR( ECX, _Imm_ );
+	}
+	
+	if (sz==128)
+	{
+		AND32I8toR(ECX,0xF0);
+	}
+
+	if ( _Rt_  && sz>=64)
+	{
+		MOV32ItoR(EDX, (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+	}
+	else
+	{
+		MOV32ItoR(EDX, (int)&dummyValue[0] );
+	}
+
+	vtlb_DynGenOp(true,sz);
+
+	/*
+	if (sz==8)
+		CALLFunc( (int)memRead8 );
+	else if (sz==16)
+		CALLFunc( (int)memRead16 );
+	else if (sz==32)
+		CALLFunc( (int)memRead32 );
+	else if (sz==64)
+		CALLFunc( (int)memRead64 );
+	else if (sz==128)
+		CALLFunc( (int)memRead128 );
+	*/
+
+	if ( _Rt_ && sz<64) 
+	{
+		MOV32MtoR( EAX, (int)&dummyValue[0] ); //ewww, lame ! movsx /zx has r/m forms too ...
+		if (sz==8)
+		{
+			if (sx) 
+				MOVSX32R8toR( EAX, EAX );
+			else
+				MOVZX32R8toR( EAX, EAX );
+		}
+		else if (sz==16)
+		{
+			if (sx) 
+				MOVSX32R16toR( EAX, EAX );
+			else
+				MOVZX32R16toR( EAX, EAX );
+		}
+		if (sx)
+			CDQ( );
+		else
+			XOR32RtoR(EDX,EDX);
+
+		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+	}
+}
 ////////////////////////////////////////////////////
 void recLB( void ) 
 {
+	recLoad(8,true);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 	_deleteEEreg(_Rt_, 0);
@@ -3850,11 +3930,14 @@ void recLB( void )
 		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
 		x86SetJ8( linkEnd );
 	}
+	*/
 }
 
 ////////////////////////////////////////////////////
 void recLBU( void ) 
 {
+	recLoad(8,false);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 	_deleteEEreg(_Rt_, 0);
@@ -3880,11 +3963,14 @@ void recLBU( void )
 		MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
 		x86SetJ8( linkEnd );
 	}
+	*/
 }
 
 ////////////////////////////////////////////////////
 void recLH( void ) 
 {
+	recLoad(16,true);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 	_deleteEEreg(_Rt_, 0);
@@ -3911,11 +3997,14 @@ void recLH( void )
 		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
 		x86SetJ8( linkEnd );
 	}
+	*/
 }
 
 ////////////////////////////////////////////////////
 void recLHU( void )
 {
+	recLoad(16,false);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 	_deleteEEreg(_Rt_, 0);
@@ -3939,12 +4028,14 @@ void recLHU( void )
 		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
 		MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
 		x86SetJ8( linkEnd );
-	}
+	}*/
 }
 
 ////////////////////////////////////////////////////
 void recLW( void ) 
 {
+	recLoad(32,true);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 	_deleteEEreg(_Rt_, 0);
@@ -3971,12 +4062,14 @@ void recLW( void )
 		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
 		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
 		x86SetJ8( linkEnd );
-	}
+	}*/
 }
 
 ////////////////////////////////////////////////////
 void recLWU( void ) 
 {
+	recLoad(32,false);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 	_deleteEEreg(_Rt_, 0);
@@ -4001,6 +4094,7 @@ void recLWU( void )
 		MOV32ItoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
 		x86SetJ8( linkEnd );
 	}
+	*/
 }
 
 ////////////////////////////////////////////////////
@@ -4028,6 +4122,8 @@ extern void MOV64RmtoR( x86IntRegType to, x86IntRegType from );
 
 void recLD( void )
 {
+	recLoad(64,false);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
     EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension
@@ -4050,6 +4146,7 @@ void recLD( void )
 	PUSH32R( EAX );
 	CALLFunc( (int)memRead64 );
 	ADD32ItoR( ESP, 8 );
+	*/
 }
 
 ////////////////////////////////////////////////////
@@ -4079,6 +4176,8 @@ void recLDR( void )
 ////////////////////////////////////////////////////
 void recLQ( void ) 
 {
+	recLoad(128,false);
+/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
     EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension
@@ -4102,12 +4201,59 @@ void recLQ( void )
 	PUSH32R( EAX );
 	CALLFunc( (int)memRead128 );
 	ADD32ItoR( ESP, 8 );
-   
+   */
 }
+void recStore(u32 sz)
+{
+	//no int 3? i love to get my hands dirty ;p - Raz
+	//write8(0xCC);
 
+	_deleteEEreg(_Rs_, 1);
+	_deleteEEreg(_Rt_, 1);
+	
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	if ( _Imm_ != 0 )
+	{
+		ADD32ItoR( ECX, _Imm_);
+	}
+	if (sz==128)
+	{
+		AND32I8toR(ECX,0xF0);
+	}
+
+	if (sz<64)
+	{
+		if (_Rt_)
+			MOV32MtoR(EDX,(int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
+		else
+			XOR32RtoR(EDX,EDX);
+	}
+	else if (sz==128 || sz==64)
+	{
+		MOV32ItoR(EDX,(int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
+	}
+	
+	
+	vtlb_DynGenOp(false,sz);
+
+	/*
+	if (sz==8)
+		CALLFunc( (int)memWrite8 );
+	else if (sz==16)
+		CALLFunc( (int)memWrite16 );
+	else if (sz==32)
+		CALLFunc( (int)memWrite32 );
+	else if (sz==64)
+		CALLFunc( (int)memWrite64 );
+	else if (sz==128)
+		CALLFunc( (int)memWrite128 );
+	*/
+}
 ////////////////////////////////////////////////////
 void recSB( void )
 {
+	recStore(8);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
@@ -4118,12 +4264,15 @@ void recSB( void )
 	PUSH32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	PUSH32R( EAX );
 	CALLFunc( (int)memWrite8 );
-	ADD32ItoR( ESP, 8 );   
+	ADD32ItoR( ESP, 8 ); 
+	*/  
 }
 
 ////////////////////////////////////////////////////
 void recSH( void ) 
 {
+	recStore(16);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 
@@ -4136,11 +4285,14 @@ void recSH( void )
 	PUSH32R( EAX );
 	CALLFunc( (int)memWrite16 );
 	ADD32ItoR( ESP, 8 );   
+	*/
 }
 
 ////////////////////////////////////////////////////
 void recSW( void ) 
 {
+	recStore(32);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 
@@ -4154,6 +4306,7 @@ void recSW( void )
 	PUSH32R( EAX );
 	CALLFunc( (int)memWrite32 );
 	ADD32ItoR( ESP, 8 );
+	*/
 }
 
 ////////////////////////////////////////////////////
@@ -4179,6 +4332,8 @@ void recSWR( void )
 ////////////////////////////////////////////////////
 void recSD( void ) 
 {
+	recStore(64);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
@@ -4192,6 +4347,7 @@ void recSD( void )
 	PUSH32R( EAX );
 	CALLFunc( (int)memWrite64 );
 	ADD32ItoR( ESP, 12 );   
+	*/
 }
 
 ////////////////////////////////////////////////////
@@ -4217,6 +4373,8 @@ void recSDR( void )
 ////////////////////////////////////////////////////
 void recSQ( void ) 
 {
+	recStore(128);
+	/*
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
@@ -4229,7 +4387,7 @@ void recSQ( void )
 	PUSH32I( (int)&cpuRegs.GPR.r[ _Rt_ ].UD[ 0 ] );
 	PUSH32R( EAX );
 	CALLFunc( (int)memWrite128 );
-	ADD32ItoR( ESP, 8 );
+	ADD32ItoR( ESP, 8 );*/
 }
 
 /*********************************************************
@@ -4243,16 +4401,15 @@ void recLWC1( void )
 	_deleteEEreg(_Rs_, 1);
 	_deleteFPtoXMMreg(_Rt_, 2);
 
-	MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )	
 	{
-		ADD32ItoR( EAX, _Imm_ );
+		ADD32ItoR( ECX, _Imm_ );
 	}
 
-	PUSH32I( (int)&fpuRegs.fpr[ _Rt_ ].UL );
-	PUSH32R( EAX );
-	CALLFunc( (int)memRead32 );
-	ADD32ItoR( ESP, 8 );
+	MOV32ItoR(EDX, (int)&fpuRegs.fpr[ _Rt_ ].UL ); //no 0 for fpu ?
+	//CALLFunc( (int)memRead32 );
+	vtlb_DynGenOp(true,32);
 }
 
 ////////////////////////////////////////////////////
@@ -4261,16 +4418,15 @@ void recSWC1( void )
 	_deleteEEreg(_Rs_, 1);
 	_deleteFPtoXMMreg(_Rt_, 0);
 
-	MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )	
 	{
-		ADD32ItoR( EAX, _Imm_ );
+		ADD32ItoR( ECX, _Imm_ );
 	}
 
-	PUSH32M( (int)&fpuRegs.fpr[ _Rt_ ].UL );
-	PUSH32R( EAX );
-	CALLFunc( (int)memWrite32 );
-	ADD32ItoR( ESP, 8 );
+	MOV32MtoR(EDX, (int)&fpuRegs.fpr[ _Rt_ ].UL );
+	//CALLFunc( (int)memWrite32 );
+	vtlb_DynGenOp(false,32);
 }
 
 ////////////////////////////////////////////////////
@@ -4284,23 +4440,22 @@ void recLQC2( void )
 	_deleteEEreg(_Rs_, 1);
 	_deleteVFtoXMMreg(_Ft_, 0, 2);
 
-	MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )
 	{
-		ADD32ItoR( EAX, _Imm_);
+		ADD32ItoR( ECX, _Imm_);
 	}
 
 	if ( _Rt_ )
 	{
-		PUSH32I( (int)&VU0.VF[_Ft_].UD[0] );
+		MOV32ItoR(EDX, (int)&VU0.VF[_Ft_].UD[0] );
 	}
 	else
 	{
-		PUSH32I( (int)&dummyValue[0] );
+		MOV32ItoR(EDX, (int)&dummyValue[0] );
 	}
-	PUSH32R( EAX );
-	CALLFunc( (int)memRead128 );
-	ADD32ItoR( ESP, 8 );   
+	//CALLFunc( (int)memRead128 );
+	vtlb_DynGenOp(true,128);
 }
 
 ////////////////////////////////////////////////////
@@ -4309,20 +4464,51 @@ void recSQC2( void )
 	_deleteEEreg(_Rs_, 1);
 	_deleteVFtoXMMreg(_Ft_, 0, 0);
 
-	MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )
 	{
-		ADD32ItoR( EAX, _Imm_ );
+		ADD32ItoR( ECX, _Imm_ );
 	}
 
-	PUSH32I( (int)&VU0.VF[_Ft_].UD[0] );
-	PUSH32R( EAX );
-	CALLFunc( (int)memWrite128 );
-	ADD32ItoR( ESP, 8 );
+	MOV32ItoR(EDX, (int)&VU0.VF[_Ft_].UD[0] );
+	//CALLFunc( (int)memWrite128 );
+	vtlb_DynGenOp(false,128);
 }
 
 #endif
 
 #endif
+
+}	// end namespace OpcodeImpl
+
+#ifdef PCSX2_VIRTUAL_MEM
+	using namespace OpcodeImpl;
+
+#ifndef LOADSTORE_RECOMPILE
+	void SetFastMemory(int bSetFast) {}
+#else
+	static int s_bFastMemory = 0;
+	void SetFastMemory(int bSetFast)
+	{
+		s_bFastMemory  = bSetFast;
+		if( bSetFast ) {
+			g_MemMasks0[0] = 0x00f0; g_MemMasks0[1] = 0x80f1; g_MemMasks0[2] = 0x00f0; g_MemMasks0[3] = 0x00f1;
+			g_MemMasks8[0] = 0x0080; g_MemMasks8[1] = 0x8081; g_MemMasks8[2] = 0x0080; g_MemMasks8[3] = 0x0081;
+			g_MemMasks16[0] = 0x0000; g_MemMasks16[1] = 0x8001; g_MemMasks16[2] = 0x0000; g_MemMasks16[3] = 0x0001;
+		}
+		else {
+			g_MemMasks0[0] = 0x00f0; g_MemMasks0[1] = 0x80f1; g_MemMasks0[2] = 0x00f2; g_MemMasks0[3] = 0x00f3;
+			g_MemMasks8[0] = 0x0080; g_MemMasks8[1] = 0x8081; g_MemMasks8[2] = 0x0082; g_MemMasks8[3] = 0x0083;
+			g_MemMasks16[0] = 0x0000; g_MemMasks16[1] = 0x8001; g_MemMasks16[2] = 0x0002; g_MemMasks16[3] = 0x0003;
+		}
+	}
+#endif
+
+#else	// VTLB version
+
+	void SetFastMemory(int bSetFast) {}
+
+#endif
+} }
 
 #endif // PCSX2_NORECBUILD

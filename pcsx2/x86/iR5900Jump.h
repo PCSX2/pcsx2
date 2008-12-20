@@ -19,17 +19,17 @@
 #ifndef __IR5900JUMP_H__
 #define __IR5900JUMP_H__
 
-#include "Common.h"
-#include "InterTables.h"
-
 /*********************************************************
 * Jump to target                                         *
 * Format:  OP target                                     *
 *********************************************************/
 
-void recJ( void );
-void recJAL( void );
-void recJR( void );
-void recJALR( void );
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recJ( void );
+	void recJAL( void );
+	void recJR( void );
+	void recJALR( void );
+} } }
 
 #endif

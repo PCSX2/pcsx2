@@ -19,27 +19,26 @@
 #ifndef __IR5900ARIT_H__
 #define __IR5900ARIT_H__
 
-#include "Common.h"
-#include "InterTables.h"
-
 /*********************************************************
 * Register arithmetic                                    *
 * Format:  OP rd, rs, rt                                 *
 *********************************************************/
 
-void recADD( void );
-void recADDU( void );
-void recDADD( void );
-void recDADDU( void );
-void recSUB( void );
-void recSUBU( void );
-void recDSUB( void );
-void recDSUBU( void );
-void recAND( void );
-void recOR( void );
-void recXOR( void );
-void recNOR( void );
-void recSLT( void );
-void recSLTU( void );
-
+namespace EE { namespace Dynarec { namespace OpcodeImpl
+{
+	void recADD( void );
+	void recADDU( void );
+	void recDADD( void );
+	void recDADDU( void );
+	void recSUB( void );
+	void recSUBU( void );
+	void recDSUB( void );
+	void recDSUBU( void );
+	void recAND( void );
+	void recOR( void );
+	void recXOR( void );
+	void recNOR( void );
+	void recSLT( void );
+	void recSLTU( void );
+} } }
 #endif
