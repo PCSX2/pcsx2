@@ -423,6 +423,11 @@ __unused static void AtomicExchange( u32& Target, u32 value )
 	InterlockedExchange( (volatile LONG*)&Target, value );
 }
 
+__unused static void AtomicExchangeAdd( u32& Target, u32 value )
+{
+	InterlockedExchangeAdd( (volatile LONG*)&Target, value );
+}
+
 __unused static void AtomicIncrement( u32& Target )
 {
 	InterlockedIncrement( (volatile LONG*)&Target );
@@ -436,6 +441,11 @@ __unused static void AtomicDecrement( u32& Target )
 __unused static void AtomicExchange( s32& Target, s32 value )
 {
 	InterlockedExchange( (volatile LONG*)&Target, value );
+}
+
+__unused static void AtomicExchangeAdd( s32& Target, u32 value )
+{
+	InterlockedExchangeAdd( (volatile LONG*)&Target, value );
 }
 
 __unused static void AtomicIncrement( s32& Target )

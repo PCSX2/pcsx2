@@ -32,7 +32,7 @@ const u32 VTLB_PAGE_SIZE=(4096);
 
 const u32 VTLB_PMAP_ITEMS=(0x20000000/VTLB_PAGE_SIZE);
 const u32 VTLB_PMAP_SZ=0x20000000;
-const u32 VTLB_VMAP_ITEMS=(0x100000000/VTLB_PAGE_SIZE);
+const u32 VTLB_VMAP_ITEMS=(0x100000000ULL/VTLB_PAGE_SIZE);
 s32 pmap[VTLB_PMAP_ITEMS];	//512KB
 s32 vmap[VTLB_VMAP_ITEMS];   //4MB
 
@@ -48,70 +48,7 @@ vtlbHandler UnmappedVirtHandler1;
 vtlbHandler UnmappedPhyHandler0;
 vtlbHandler UnmappedPhyHandler1;
 
-template<int typ,bool Write>
-struct TemplateHelper
-{
-};
-template<>
-struct TemplateHelper<8,false>
-{
-	static const int sidx=0;
-	typedef vltbMemR8FP HandlerType;
-};
-template<>
-struct TemplateHelper<8,true>
-{
-	static const int sidx=0;
-	typedef vltbMemW8FP HandlerType;
-};
-template<>
-struct TemplateHelper<16,false>
-{
-	static const int sidx=1;
-	typedef vltbMemR16FP HandlerType;
-};
-template<>
-struct TemplateHelper<16,true>
-{
-	static const int sidx=1;
-	typedef vltbMemW16FP HandlerType;
-};
-template<>
-struct TemplateHelper<32,false>
-{
-	static const int sidx=2;
-	typedef vltbMemR32FP HandlerType;
-};
-template<>
-struct TemplateHelper<32,true>
-{
-	static const int sidx=2;
-	typedef vltbMemW32FP HandlerType;
-};
-template<>
-struct TemplateHelper<64,false>
-{
-	static const int sidx=3;
-	typedef vltbMemR64FP HandlerType;
-};
-template<>
-struct TemplateHelper<64,true>
-{
-	static const int sidx=3;
-	typedef vltbMemW64FP HandlerType;
-};
-template<>
-struct TemplateHelper<128,false>
-{
-	static const int sidx=4;
-	typedef vltbMemR128FP HandlerType;
-};
-template<>
-struct TemplateHelper<128,true>
-{
-	static const int sidx=4;
-	typedef vltbMemW128FP HandlerType;
-};
+
 	/*
 	__asm
 	{
@@ -136,11 +73,14 @@ callfunction:
 		//edx = data ptr
 		jmp [readfunctions8-0x800000+eax];
 	}*/
+
+
 template<int DataSize,typename DataType>
-__forceinline int __fastcall MemOp_r(u32 addr,DataType* data)
+__forceinline int __fastcall MemOp_r(u32 addr, DataType* data)
 {
 	u32 vmv=vmap[addr>>VTLB_PAGE_BITS];
 	s32 ppf=addr+vmv;
+
 	if (!(ppf<0))
 	{
 		data[0]=*reinterpret_cast<DataType*>(ppf);
@@ -154,11 +94,24 @@ __forceinline int __fastcall MemOp_r(u32 addr,DataType* data)
 		u32 hand=(u8)vmv;
 		u32 paddr=ppf-hand+0x80000000;
 		//SysPrintf("Translted 0x%08X to 0x%08X\n",addr,paddr);
-		return reinterpret_cast<TemplateHelper<DataSize,false>::HandlerType*>(RWFT[TemplateHelper<DataSize,false>::sidx][0][hand])(paddr,data);
+		//return reinterpret_cast<TemplateHelper<DataSize,false>::HandlerType*>(RWFT[TemplateHelper<DataSize,false>::sidx][0][hand])(paddr,data);
+
+		switch( DataSize )
+		{
+			case 8: return ((vltbMemRFP*)RWFT[0][0][hand])(paddr, data);
+			case 16: return ((vltbMemRFP*)RWFT[1][0][hand])(paddr, data);
+			case 32: return ((vltbMemRFP*)RWFT[2][0][hand])(paddr, data);
+			case 64: return ((vltbMemRFP*)RWFT[3][0][hand])(paddr, data);
+			case 128: return ((vltbMemRFP*)RWFT[4][0][hand])(paddr, data);
+
+			jNO_DEFAULT;
+		}
 	}
 }
+
+
 template<int DataSize,typename DataType>
-__forceinline void __fastcall MemOp_w0(u32 addr,DataType data)
+__forceinline void __fastcall MemOp_w0(u32 addr, DataType data)
 {
 	u32 vmv=vmap[addr>>VTLB_PAGE_BITS];
 	s32 ppf=addr+vmv;
@@ -172,7 +125,15 @@ __forceinline void __fastcall MemOp_w0(u32 addr,DataType data)
 		u32 hand=(u8)vmv;
 		u32 paddr=ppf-hand+0x80000000;
 		//SysPrintf("Translted 0x%08X to 0x%08X\n",addr,paddr);
-		reinterpret_cast<TemplateHelper<DataSize,true>::HandlerType*>(RWFT[TemplateHelper<DataSize,true>::sidx][1][hand])(paddr,data);
+
+		switch( DataSize )
+		{
+			case 8: return ((vltbMemW8FP*)RWFT[0][1][hand])(paddr, (u8)data);
+			case 16: return ((vltbMemW16FP*)RWFT[1][1][hand])(paddr, (u16)data);
+			case 32: return ((vltbMemW32FP*)RWFT[2][1][hand])(paddr, (u32)data);
+
+			jNO_DEFAULT;
+		}
 	}
 }
 template<int DataSize,typename DataType>
@@ -193,7 +154,13 @@ __forceinline void __fastcall MemOp_w1(u32 addr,const DataType* data)
 		u32 hand=(u8)vmv;
 		u32 paddr=ppf-hand+0x80000000;
 		//SysPrintf("Translted 0x%08X to 0x%08X\n",addr,paddr);
-		reinterpret_cast<TemplateHelper<DataSize,true>::HandlerType*>(RWFT[TemplateHelper<DataSize,true>::sidx][1][hand])(paddr,data);
+		switch( DataSize )
+		{
+			case 64: return ((vltbMemW64FP*)RWFT[3][1][hand])(paddr, data);
+			case 128: return ((vltbMemW128FP*)RWFT[4][1][hand])(paddr, data);
+
+			jNO_DEFAULT;
+		}
 	}
 }
 int __fastcall vtlb_memRead8(u32 mem, u8  *out)

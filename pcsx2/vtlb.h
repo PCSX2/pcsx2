@@ -11,6 +11,9 @@
 #define mem64_t u64
 #define mem128_t u64
 
+// unsafe version needed to avoid template hell on gcc. :/
+typedef  int __fastcall vltbMemRFP(u32 addr,void* data);
+
 typedef  int __fastcall vltbMemR8FP(u32 addr,mem8_t* data);
 typedef  int __fastcall vltbMemR16FP(u32 addr,mem16_t* data);
 typedef  int __fastcall vltbMemR32FP(u32 addr,mem32_t* data);

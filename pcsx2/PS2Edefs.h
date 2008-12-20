@@ -68,6 +68,37 @@
 #define COMMONdefs
 #endif
 
+// jASSUME - give hints to the optimizer
+//  This is primarily useful for the default case switch optimizer, which enables VC to
+//  generate more compact switches.
+
+#ifdef NDEBUG
+#	define jBREAKPOINT() ((void) 0)
+#	ifdef _MSC_VER
+#		define jASSUME(exp) (__assume(exp))
+#	else
+#		define jASSUME(exp) ((void) sizeof(exp))
+#	endif
+#else
+#	if defined(_MSC_VER)
+#		define jBREAKPOINT() do { __asm int 3 } while(0)
+#	else
+#		define jBREAKPOINT() ((void) *(volatile char *) 0)
+#	endif
+#	define jASSUME(exp) if(exp) ; else jBREAKPOINT()
+#endif
+
+// disable the default case in a switch
+#define jNO_DEFAULT \
+{ \
+	break; \
+	\
+default: \
+	jASSUME(0); \
+	break; \
+}
+
+
 // PS2EgetLibType returns (may be OR'd)
 #define PS2E_LT_GS   0x01
 #define PS2E_LT_PAD  0x02		// -=[ OBSOLETE ]=-
