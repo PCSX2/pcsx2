@@ -1545,7 +1545,6 @@ int recInit( void )
 	x86SetPtr(recMem+REC_CACHEMEM);
 	dyna_block_discard_recmem=(u8*)x86Ptr;
 	
-	
 	JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
 
 	// SSE3 detection, manually create the code
@@ -1726,7 +1725,9 @@ static void execute( void )
 #ifdef _MSC_VER
 	pfn = ((R5900FNPTR)pblock->pFnptr);
 	// use call instead of pfn()
+	__asm push ebp; // FIXME: need to preserve ebp or else the bios crashes, should find where ebp is getting corrupted instead.
 	__asm call pfn;
+	__asm pop ebp;	// restore ebp for the reason above
 #else
     ((R5900FNPTR)pblock->pFnptr)();
 #endif
@@ -2811,8 +2812,10 @@ void badespfn() {
 
 void __fastcall dyna_block_discard(u32 start,u32 sz)
 {
+	__asm push ebp;
 	SysPrintf("dyna_block_discard %08X , count %d\n",start,sz);
 	Cpu->Clear(start,sz);
+	__asm pop ebp;
 	return;
 }
 void recRecompile( u32 startpc )
@@ -3268,7 +3271,9 @@ StartRecomp:
 				while(stg>0)
 				{
 					CMP32ItoM((uptr)PSM(lpc),*(u32*)PSM(lpc));
-					JNE32(((u32)dyna_block_discard_recmem)- ( (u32)x86Ptr + 6 ));
+					JNE32(((u32)&dyna_block_discard)- ( (u32)x86Ptr + 6 ));
+					//JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
+
 					stg-=4;
 					lpc+=4;
 				}
