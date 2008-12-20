@@ -920,7 +920,12 @@ static bool _gsGIFSoftReset( int mask )
 
 	if( GSgifSoftReset == NULL )
 	{
-		SysPrintf( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!\n" );
+		static bool warned = false;
+		if( !warned )
+		{
+			SysPrintf( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!\n" );
+			warned = true;
+		}
 		return false;
 	}
 
@@ -1350,8 +1355,7 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 		if(!path.tag.eop && path.tag.nloop > 0)
 		{
 			path.tag.nloop = 0;
-
-			SysPrintf( "path1 hack!" );
+			SysPrintf( "path1 hack! " );
 		}
 	}
 
@@ -1923,7 +1927,7 @@ static __forceinline void frameSkip( bool forceskip )
 	{
 		if( !FramesToSkip )
 		{
-			SysPrintf( "- Skipping some VUs!\n" );
+			//SysPrintf( "- Skipping some VUs!\n" );
 
 			GSsetFrameSkip( 1 );
 			FramesToRender = noSkipFrames;
@@ -1939,7 +1943,7 @@ static __forceinline void frameSkip( bool forceskip )
 	// Otherwise we could start compounding the issue and skips would be too long.
 	if( g_vu1SkipCount > 0 )
 	{
-		SysPrintf("- Already Assigned a Skipcount.. %d\n", g_vu1SkipCount );
+		//SysPrintf("- Already Assigned a Skipcount.. %d\n", g_vu1SkipCount );
 		return;
 	}
 
@@ -1963,7 +1967,7 @@ static __forceinline void frameSkip( bool forceskip )
 			if( (m_justSkipped && (sSlowDeltaTime > m_iSlowTicks)) || 
 				(sSlowDeltaTime > m_iSlowTicks*2) )
 			{
-				SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
+				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
 				
 				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
 				{
