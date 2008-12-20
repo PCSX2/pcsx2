@@ -110,7 +110,7 @@ NVMLayout nvmlayouts[NVM_FORMAT_MAX] =
 };
 
 
-unsigned long cdvdReadTime=0;
+static uint cdvdReadTime=0;
 
 #define CDVDREAD_INT(eCycle) PSX_INT(19, eCycle)
 
@@ -625,6 +625,25 @@ s32 cdvdReadDvdDualInfo(s32* dualType, u32* layer1Start)
 
 #include <time.h>
 
+#define PSX_CD_READSPEED (PSXCLK / 153600) // 1 Byte Time @ x1 (150KB = cd x 1)
+#define PSX_DVD_READSPEED (PSXCLK / 1382400) // normal is 1 Byte Time @ x1 (1350KB = dvd x 1)
+
+enum CDVD_MODE_TYPE
+{
+	MODE_DVDROM,
+	MODE_CDROM
+};
+
+static void cdvdReadTimeRcnt(CDVD_MODE_TYPE mode) // Mode 0 is DVD, Mode 1 is CD
+{
+	if (cdvd.Sector == 16) //DVD TOC
+		cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader
+	else
+		cdvdReadTime = ( ((mode==MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
+
+	//SysPrintf("cdvdReadTime = %d \n", cdvdReadTime);
+}
+
 void cdvdReset()
 {
 #ifdef _WIN32
@@ -644,7 +663,7 @@ void cdvdReset()
 	cdCaseopen = 0;
 	cdvd.Speed = 4;
 	cdvd.BlockSize = 2064;
-	cdvdReadTimeRcnt(0);
+	cdvdReadTimeRcnt(MODE_DVDROM);
 
     // any random valid date will do
     cdvd.RTC.hour = 1;
@@ -670,34 +689,6 @@ void cdvdReset()
 #endif
 #endif
 
-}
-
-// CDVD Timing Notes...
-// As of recent IOP sync fixes, CDVD timings seem to be fairly unimportant
-// to compatibility now.  Tests have shown that setting CDVD read speeds to
-// insanely low values (equating to unrealistically fast DVDdrive speeds)
-// don't break any games, nor do higher/lower speeds cause/fix IPU sync
-// problems anymore either.  Games do tend to issue a lot of CDVD BREAKs
-// when the CDVD latency is very low, which are something the emulator can
-// safely ignore anyway.
-
-// Notable Exception : DigitalDevilSaga PAL, in which certain movies do not
-// play unless the CDVD read speed is *insanely* high (several thousand 
-// cycles per block).  This probably has nothing to do with the CDVD though,
-// and is likely caused by some other emulation problem that just happens
-// to be "masked over" by slowing down the CDVD.
-
-#define PSX_CD_READSPEED (PSXCLK / 153600) // 1 Byte Time @ x1 (150KB = cd x 1)
-#define PSX_DVD_READSPEED (PSXCLK / 1382400) // normal is 1 Byte Time @ x1 (1350KB = dvd x 1)
-
-void cdvdReadTimeRcnt(int mode) // Mode 0 is DVD, Mode 1 is CD
-{
-	if (cdvd.Sector == 16) //DVD TOC
-		cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader
-	else
-		cdvdReadTime = ( (mode ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
-
-	//SysPrintf("cdvdReadTime = %d \n", cdvdReadTime);
 }
 
 //void cdvdReadTimeRcnt(int mode){	// Mode 0 is DVD, Mode 1 is CD
@@ -913,7 +904,6 @@ __forceinline void cdvdReadInterrupt() {
 		cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
 		cdvd.Readed = 1;
 		cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
-		//SysPrintf("SEEK!\n");
 		CDVDREAD_INT(cdvdReadTime*32);
 		return;
 	}
@@ -1248,9 +1238,8 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 				case 1: cdvd.ReadMode = CDVD_MODE_2328; cdvd.BlockSize = 2328; break;
 				case 0: default: cdvd.ReadMode = CDVD_MODE_2048; cdvd.BlockSize = 2048; break;
 			}
-			/*if(cdvd.Speed > 4) cdvdReadTimeRcnt(1); // why are we reading a cd as a dvd!???
-			else cdvdReadTimeRcnt(0);*/
-			cdvdReadTimeRcnt(1);
+
+			cdvdReadTimeRcnt(MODE_CDROM);
 
 			CDR_LOG(  "CdRead: %d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)\n", cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 			//SysPrintf("CdRead: Reading Sector %d(%d Blocks of Size %d) at Speed=%dx\n", cdvd.Sector, cdvd.nSectors,cdvd.BlockSize,cdvd.Speed);
@@ -1280,7 +1269,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 				case 2:
 				case 0: cdvd.ReadMode = CDVD_MODE_2352; cdvd.BlockSize = 2352; break;
 			}
-			cdvdReadTimeRcnt(1);
+			cdvdReadTimeRcnt(MODE_CDROM);
 			//SysPrintf("CdAudioRead: Reading Sector %d(%d Blocks of Size %d) at Speed=%dx\n", cdvd.Sector, cdvd.nSectors,cdvd.BlockSize,cdvd.Speed);
 
 			cdvd.Readed = 0;
@@ -1295,8 +1284,9 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			else cdvd.RetryCnt = cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
 			cdvd.Speed = 4;
-			cdvd.ReadMode = CDVD_MODE_2048; cdvd.BlockSize = 2064;	// Why oh why was it 2064
-			cdvdReadTimeRcnt(0);
+			cdvd.ReadMode = CDVD_MODE_2048;
+			cdvd.BlockSize = 2064;	// Why oh why was it 2064
+			cdvdReadTimeRcnt(MODE_DVDROM);
 		
 			CDR_LOG(  "DvdRead: %d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)\n", cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 

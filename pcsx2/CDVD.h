@@ -86,7 +86,6 @@ struct cdvdStruct {
 };
 
 void cdvdReset();
-void cdvdReadTimeRcnt(int mode);
 void cdvdVsync();
 int  cdvdInterrupt();
 int  cdvdFreeze(gzFile f, int Mode);

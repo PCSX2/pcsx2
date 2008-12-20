@@ -2316,7 +2316,7 @@ int gsFreeze(gzFile f, int Mode)
 
 		//if( Mode == 0 && g_SaveVersion <= 0x7a300010 )
 		{
-			u32 dummy; gzread( f, &dummy, sizeof( dummy ) );
+			u32 dummy=g_path[i].nreg; gzfreeze( &dummy, sizeof( dummy ) );
 		}
 	}
 

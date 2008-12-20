@@ -1817,7 +1817,8 @@ int concolors[] = {
 	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
 };
 
-void SysPrintf(const char *fmt, ...) {
+void SysPrintf(const char *fmt, ...)
+{
 	va_list list;
 	char msg[512];
 	char *ptr;
@@ -1831,12 +1832,10 @@ void SysPrintf(const char *fmt, ...) {
 	va_end(list);
 
     if (Config.PsxOut == 0) {
-#ifdef EMU_LOG
 #ifndef LOG_STDOUT
         if (emuLog != NULL && !(varLog & 0x80000000)) {
             fprintf(emuLog, "%s", msg);
         }
-#endif
 #endif
         return;
     }
@@ -1846,12 +1845,10 @@ void SysPrintf(const char *fmt, ...) {
 		if (ptr[j] == '\033') {
 			ptr[j] = 0;
 			WriteConsole(gApp.hConsole, ptr, (DWORD)strlen(ptr), &tmp, 0);
-#ifdef EMU_LOG
 #ifndef LOG_STDOUT
 			if (emuLog != NULL && !(varLog & 0x80000000)) {
 				fprintf(emuLog, "%s", ptr);
 			}
-#endif
 #endif
 
 			if (ptr[j+2] == '0') {
@@ -1866,16 +1863,15 @@ void SysPrintf(const char *fmt, ...) {
 		}
 	}
 
-#ifdef EMU_LOG
 #ifndef LOG_STDOUT
 	if (emuLog != NULL && !(varLog & 0x80000000))
 		fprintf(emuLog, "%s", ptr);
 #endif
-#endif
 	WriteConsole(gApp.hConsole, ptr, (DWORD)strlen(ptr), &tmp, 0);
 }
 
-void SysMessage(const char *fmt, ...) {
+void SysMessage(const char *fmt, ...)
+{
 	va_list list;
 	char tmp[512];
 
