@@ -13,7 +13,7 @@ ix86-32/iR5900LoadStore.c  ix86-32/iR5900MultDiv.c ix86-32/iCore-32.cpp ix86-32/
 endif
 
 libx86recomp_a_SOURCES = iCOP2.c  iCP0.c  iFPU.c  iHw.c  iMMI.c  iPsxHw.c  iPsxMem.c  \
-ir5900tables.c  iVU0micro.c  iVU1micro.c  iVUmicro.c \
+ir5900tables.c  iVU0micro.c  iVU1micro.c  iVUmicro.cpp iVUmicroUpper.cpp iVUmicroLower.cpp \
 iCore.cpp  iGS.cpp  iR3000A.cpp  iR3000Atables.cpp  iVif.cpp  iVUzerorec.cpp \
 fast_routines.S aR3000A.S aVUzerorec.S aVif.S $(archfiles)
 
