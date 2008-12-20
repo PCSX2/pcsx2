@@ -1061,19 +1061,19 @@ void vuFloat2(int regd, int regTemp, int XYZW) {
 	}
 }
 
-// Clamps infinities to max/min non-infinity number
+// Clamps +/-infs to +/-fMax, and +/-NaNs to +/-fMax
 void vuFloat3(uptr x86ptr)
 {
 	u8* pjmp;
 
 	if( CHECK_OVERFLOW ) {
 		CMP32ItoM(x86ptr, 0x7f800000 );
-		pjmp = JNZ8(0);
+		pjmp = JL8(0); // Signed Comparison
 			MOV32ItoM(x86ptr, 0x7f7fffff );
 		x86SetJ8(pjmp);
 
 		CMP32ItoM(x86ptr, 0xff800000 );
-		pjmp = JNZ8(0);
+		pjmp = JB8(0); // Unsigned Comparison
 			MOV32ItoM(x86ptr, 0xff7fffff );
 		x86SetJ8(pjmp);
 	}
