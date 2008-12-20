@@ -94,8 +94,10 @@ typedef union _LARGE_INTEGER
 #endif
 
 #if defined(__MINGW32__)
+#define PCSX2_ALIGNED(alig,x) __declspec(align(alig)) x
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
 #else
+#define PCSX2_ALIGNED(alig,x) x __attribute((aligned(alig)))
 #define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
 #endif
 

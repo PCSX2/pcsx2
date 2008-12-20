@@ -2812,10 +2812,18 @@ void badespfn() {
 
 void __fastcall dyna_block_discard(u32 start,u32 sz)
 {
+#ifdef _MSC_VER
 	__asm push ebp;
+#else
+	__asm__("push %ebp\n");
+#endif
 	SysPrintf("dyna_block_discard %08X , count %d\n",start,sz);
 	Cpu->Clear(start,sz);
+#ifdef _MSC_VER
 	__asm pop ebp;
+#else
+	__asm__("pop %ebp\n");
+#endif
 	return;
 }
 void recRecompile( u32 startpc )

@@ -37,8 +37,8 @@ fi
 
 WARNING_FLAGS="-Wall -Wno-format -Wno-unused-value"
 #Pcsx2 now crashes if --fomit-frame-pointer is enabled and MTGS is off 
-NORMAL_FLAGS=" -pipe -O3 -fno-omit-frame-pointer"
-DEBUG_FLAGS+="${WARNING_FLAGS} "
+NORMAL_FLAGS=" -pipe -O3 -fno-omit-frame-pointer -msse "
+DEBUG_FLAGS+=" -msse ${WARNING_FLAGS} "
 
 dnl Check for debug build
 AC_MSG_CHECKING(debug build)

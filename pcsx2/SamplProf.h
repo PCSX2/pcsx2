@@ -1,7 +1,7 @@
 #ifndef _SAMPLPROF_H_
 #define _SAMPLPROF_H_
 
-#include "common.h"
+#include "Common.h"
 
 // The profiler does not have a Linux version yet.
 // So for now we turn it into duds for non-Win32 platforms.

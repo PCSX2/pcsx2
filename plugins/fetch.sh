@@ -1,6 +1,6 @@
 #!/bin/sh
 # Convenience script for obtaining plugins,
-# Use at your own risk. Assumes that it is being run in the plugin directory.
+# Use at your own risk. Assumes that it is being run in the plugins directory.
 
 #Running this script should do the following:
 #1) Check to see if the 6 needed plugin folders exist in the current directory.

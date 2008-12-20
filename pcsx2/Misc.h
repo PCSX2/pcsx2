@@ -271,6 +271,8 @@ void * memcpy_amd_(void *dest, const void *src, size_t n);
 #else
 // for now disable linux fast memcpy
 #define memcpy_fast memcpy
+#define memcpy_raz_ memcpy
+#define memcpy_raz_u memcpy
 #endif
 
 #endif

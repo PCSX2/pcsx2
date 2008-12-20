@@ -53,6 +53,11 @@ extern void iDumpVU1Registers();
 extern char* disVU1MicroUF(u32 code, u32 pc);
 extern char* disVU1MicroLF(u32 code, u32 pc);
 
+#ifdef __LINUX__
+#undef max
+#undef min
+#endif
+
 #include <vector>
 #include <list>
 #include <map>

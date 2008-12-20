@@ -53,6 +53,9 @@ BIOS
 #include <malloc.h>
 #include <sys/stat.h>
 
+#ifndef PCSX2_VIRTUAL_MEM
+#include <vector>
+#endif
 #include "Common.h"
 
 #ifdef PCSX2_NORECBUILD
@@ -74,6 +77,9 @@ BIOS
 
 #include <assert.h>
 
+#ifdef __LINUX__
+#include <sys/mman.h>
+#endif
 extern u32 maxrecmem;
 extern int rdram_devices, rdram_sdevid;
 
@@ -87,11 +93,8 @@ int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
 u16 ba0R16(u32 mem) {
 	//MEM_LOG("ba00000 Memory read16 address %x\n", mem);
 
-#ifdef PCSX2_VIRTUAL_MEM
+	
 	if (mem == 0x1a000006) {
-#else
-	if (mem == 0x1a000006) {
-#endif
 		static int ba6;
 		ba6++;
 		if (ba6 == 3) ba6 = 0;
@@ -2121,9 +2124,8 @@ void memWrite128(u32 mem, const u64 *value) {
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 
-#else
+#else //VIRTUAL_MEM
 u32 psMPWC[(0x02000000/32)>>12];
-#include <vector>
 std::vector<u32> psMPWVA[0x02000000>>12];
 
 u8  *psM; //32mb Main Ram
@@ -2720,10 +2722,10 @@ int memReset() {
 	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READWRITE, &OldProtect);
 	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READWRITE, &OldProtect);
 #else
-    mprotect(PS2EMEM_ROM, 0x00400000, PROT_READ|PROT_WRITE);
-    mprotect(PS2EMEM_ROM1, 0x00400000, PROT_READ|PROT_WRITE);
-    mprotect(PS2EMEM_ROM2, 0x00800000, PROT_READ|PROT_WRITE);
-    mprotect(PS2EMEM_EROM, 0x001C0000, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_ROM, 0x00400000, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_ROM1, 0x00400000, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_ROM2, 0x00800000, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_EROM, 0x001C0000, PROT_READ|PROT_WRITE);
 #endif
 
 #endif
@@ -2755,10 +2757,10 @@ int memReset() {
 	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READONLY, &OldProtect);
 	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READONLY, &OldProtect);
 #else
-    mprotect(PS2EMEM_ROM, 0x00400000, PROT_READ);
-    mprotect(PS2EMEM_ROM1, 0x00400000, PROT_READ);
-    mprotect(PS2EMEM_ROM2, 0x00800000, PROT_READ);
-    mprotect(PS2EMEM_EROM, 0x001C0000, PROT_READ);
+	mprotect(PS2EMEM_ROM, 0x00400000, PROT_READ);
+	mprotect(PS2EMEM_ROM1, 0x00400000, PROT_READ);
+	mprotect(PS2EMEM_ROM2, 0x00800000, PROT_READ);
+	mprotect(PS2EMEM_EROM, 0x001C0000, PROT_READ);
 #endif
 
 #endif
@@ -2778,7 +2780,6 @@ void memSetUserMode() {
 }
 
 #ifndef PCSX2_VIRTUAL_MEM
-
 int mmap_GetRamPageInfo(void* ptr)
 {
 	u32 offset=((u8*)ptr-psM);
@@ -2789,8 +2790,12 @@ int mmap_GetRamPageInfo(void* ptr)
 }
 void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 {
+#ifdef _WIN32
 	DWORD old;
 	VirtualProtect(ptr,1,PAGE_READONLY,&old);
+#else
+	mprotect(ptr, 1, PROT_READ);
+#endif
 	
 	u32 offset=((u8*)ptr-psM);
 	offset>>=12;
@@ -2810,9 +2815,15 @@ void mmap_ResetBlockTracking()
 	{
 		psMPWVA[i].clear();
 	}
+#ifdef _WIN32
 	DWORD old;
 	VirtualProtect(psM,0x02000000,PAGE_READWRITE,&old);
+#else
+	mprotect(psM,0x02000000, PROT_READ|PROT_WRITE);
+#endif
 }
+
+#ifdef _WIN32
 int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
 	struct _EXCEPTION_RECORD* ExceptionRecord = eps->ExceptionRecord;
@@ -2843,4 +2854,5 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 
 	return EXCEPTION_CONTINUE_EXECUTION;
 }
+#endif
 #endif

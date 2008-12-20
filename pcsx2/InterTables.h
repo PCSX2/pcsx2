@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "PS2ETypes.h"
+#include "PS2Etypes.h"
 
 #include "iR5900AritImm.h"
 #include "iR5900Arit.h"

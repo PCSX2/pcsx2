@@ -195,7 +195,9 @@ void recMemWrite32();
 void recMemWrite64();
 void recMemWrite128();
 
+#ifdef _WIN32 
 int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps);
+#endif
 
 #ifndef PCSX2_VIRTUAL_MEM
 #include "vtlb.h"

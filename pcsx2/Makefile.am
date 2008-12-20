@@ -17,7 +17,7 @@ COP0.c        Hw.h           Plugins.h       PsxInterpreter.c  SPR.h     VUops.h
 COP0.h        Interpreter.c  PS2Edefs.h      PsxMem.c          System.h \
 Counters.c    InterTables.c  PS2Etypes.h     PsxMem.h          Vif.c \
 Counters.h    InterTables.h  PsxBios2.h      PsxSio2.c         VifDma.c \
-Decode_XA.c   Mdec.c         PsxBios.c       PsxSio2.h         VifDma.h Cache.c \
+Decode_XA.c   Mdec.c         PsxBios.c       PsxSio2.h         VifDma.h Cache.c vtlb.cpp\
 xmlpatchloader.cpp
 
 if RECBUILD

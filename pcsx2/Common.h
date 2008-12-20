@@ -74,9 +74,9 @@
 #include <stdlib.h> // posix_memalign()
 
 // Definitions added Feb 16, 2006 by efp
-//#ifndef __declspec
-//#define __declspec(x)
-//#endif
+#ifndef __declspec
+#define __declspec(x)
+#endif
 
 #endif
 
