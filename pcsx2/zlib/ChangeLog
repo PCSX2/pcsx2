@@ -1,6 +1,139 @@
 
                 ChangeLog file for zlib
 
+Changes in 1.2.3 (18 July 2005)
+- Apply security vulnerability fixes to contrib/infback9 as well
+- Clean up some text files (carriage returns, trailing space)
+- Update testzlib, vstudio, masmx64, and masmx86 in contrib [Vollant]
+
+Changes in 1.2.2.4 (11 July 2005)
+- Add inflatePrime() function for starting inflation at bit boundary
+- Avoid some Visual C warnings in deflate.c
+- Avoid more silly Visual C warnings in inflate.c and inftrees.c for 64-bit
+  compile
+- Fix some spelling errors in comments [Betts]
+- Correct inflateInit2() error return documentation in zlib.h
+- Added zran.c example of compressed data random access to examples
+  directory, shows use of inflatePrime()
+- Fix cast for assignments to strm->state in inflate.c and infback.c
+- Fix zlibCompileFlags() in zutil.c to use 1L for long shifts [Oberhumer]
+- Move declarations of gf2 functions to right place in crc32.c [Oberhumer]
+- Add cast in trees.c t avoid a warning [Oberhumer]
+- Avoid some warnings in fitblk.c, gun.c, gzjoin.c in examples [Oberhumer]
+- Update make_vms.com [Zinser]
+- Initialize state->write in inflateReset() since copied in inflate_fast()
+- Be more strict on incomplete code sets in inflate_table() and increase
+  ENOUGH and MAXD -- this repairs a possible security vulnerability for
+  invalid inflate input.  Thanks to Tavis Ormandy and Markus Oberhumer for
+  discovering the vulnerability and providing test cases.
+- Add ia64 support to configure for HP-UX [Smith]
+- Add error return to gzread() for format or i/o error [Levin]
+- Use malloc.h for OS/2 [Necasek]
+
+Changes in 1.2.2.3 (27 May 2005)
+- Replace 1U constants in inflate.c and inftrees.c for 64-bit compile
+- Typecast fread() return values in gzio.c [Vollant]
+- Remove trailing space in minigzip.c outmode (VC++ can't deal with it)
+- Fix crc check bug in gzread() after gzungetc() [Heiner]
+- Add the deflateTune() function to adjust internal compression parameters
+- Add a fast gzip decompressor, gun.c, to examples (use of inflateBack)
+- Remove an incorrect assertion in examples/zpipe.c
+- Add C++ wrapper in infback9.h [Donais]
+- Fix bug in inflateCopy() when decoding fixed codes
+- Note in zlib.h how much deflateSetDictionary() actually uses
+- Remove USE_DICT_HEAD in deflate.c (would mess up inflate if used)
+- Add _WIN32_WCE to define WIN32 in zconf.in.h [Spencer]
+- Don't include stderr.h or errno.h for _WIN32_WCE in zutil.h [Spencer]
+- Add gzdirect() function to indicate transparent reads
+- Update contrib/minizip [Vollant]
+- Fix compilation of deflate.c when both ASMV and FASTEST [Oberhumer]
+- Add casts in crc32.c to avoid warnings [Oberhumer]
+- Add contrib/masmx64 [Vollant]
+- Update contrib/asm586, asm686, masmx86, testzlib, vstudio [Vollant]
+
+Changes in 1.2.2.2 (30 December 2004)
+- Replace structure assignments in deflate.c and inflate.c with zmemcpy to
+  avoid implicit memcpy calls (portability for no-library compilation)
+- Increase sprintf() buffer size in gzdopen() to allow for large numbers
+- Add INFLATE_STRICT to check distances against zlib header
+- Improve WinCE errno handling and comments [Chang]
+- Remove comment about no gzip header processing in FAQ
+- Add Z_FIXED strategy option to deflateInit2() to force fixed trees
+- Add updated make_vms.com [Coghlan], update README
+- Create a new "examples" directory, move gzappend.c there, add zpipe.c,
+  fitblk.c, gzlog.[ch], gzjoin.c, and zlib_how.html.
+- Add FAQ entry and comments in deflate.c on uninitialized memory access
+- Add Solaris 9 make options in configure [Gilbert]
+- Allow strerror() usage in gzio.c for STDC
+- Fix DecompressBuf in contrib/delphi/ZLib.pas [ManChesTer]
+- Update contrib/masmx86/inffas32.asm and gvmat32.asm [Vollant]
+- Use z_off_t for adler32_combine() and crc32_combine() lengths
+- Make adler32() much faster for small len
+- Use OS_CODE in deflate() default gzip header
+
+Changes in 1.2.2.1 (31 October 2004)
+- Allow inflateSetDictionary() call for raw inflate
+- Fix inflate header crc check bug for file names and comments
+- Add deflateSetHeader() and gz_header structure for custom gzip headers
+- Add inflateGetheader() to retrieve gzip headers
+- Add crc32_combine() and adler32_combine() functions
+- Add alloc_func, free_func, in_func, out_func to Z_PREFIX list
+- Use zstreamp consistently in zlib.h (inflate_back functions)
+- Remove GUNZIP condition from definition of inflate_mode in inflate.h
+  and in contrib/inflate86/inffast.S [Truta, Anderson]
+- Add support for AMD64 in contrib/inflate86/inffas86.c [Anderson]
+- Update projects/README.projects and projects/visualc6 [Truta]
+- Update win32/DLL_FAQ.txt [Truta]
+- Avoid warning under NO_GZCOMPRESS in gzio.c; fix typo [Truta]
+- Deprecate Z_ASCII; use Z_TEXT instead [Truta]
+- Use a new algorithm for setting strm->data_type in trees.c [Truta]
+- Do not define an exit() prototype in zutil.c unless DEBUG defined
+- Remove prototype of exit() from zutil.c, example.c, minigzip.c [Truta]
+- Add comment in zlib.h for Z_NO_FLUSH parameter to deflate()
+- Fix Darwin build version identification [Peterson]
+
+Changes in 1.2.2 (3 October 2004)
+- Update zlib.h comments on gzip in-memory processing
+- Set adler to 1 in inflateReset() to support Java test suite [Walles]
+- Add contrib/dotzlib [Ravn]
+- Update win32/DLL_FAQ.txt [Truta]
+- Update contrib/minizip [Vollant]
+- Move contrib/visual-basic.txt to old/ [Truta]
+- Fix assembler builds in projects/visualc6/ [Truta]
+
+Changes in 1.2.1.2 (9 September 2004)
+- Update INDEX file
+- Fix trees.c to update strm->data_type (no one ever noticed!)
+- Fix bug in error case in inflate.c, infback.c, and infback9.c [Brown]
+- Add "volatile" to crc table flag declaration (for DYNAMIC_CRC_TABLE)
+- Add limited multitasking protection to DYNAMIC_CRC_TABLE
+- Add NO_vsnprintf for VMS in zutil.h [Mozilla]
+- Don't declare strerror() under VMS [Mozilla]
+- Add comment to DYNAMIC_CRC_TABLE to use get_crc_table() to initialize
+- Update contrib/ada [Anisimkov]
+- Update contrib/minizip [Vollant]
+- Fix configure to not hardcode directories for Darwin [Peterson]
+- Fix gzio.c to not return error on empty files [Brown]
+- Fix indentation; update version in contrib/delphi/ZLib.pas and
+  contrib/pascal/zlibpas.pas [Truta]
+- Update mkasm.bat in contrib/masmx86 [Truta]
+- Update contrib/untgz [Truta]
+- Add projects/README.projects [Truta]
+- Add project for MS Visual C++ 6.0 in projects/visualc6 [Cadieux, Truta]
+- Update win32/DLL_FAQ.txt [Truta]
+- Update list of Z_PREFIX symbols in zconf.h [Randers-Pehrson, Truta]
+- Remove an unnecessary assignment to curr in inftrees.c [Truta]
+- Add OS/2 to exe builds in configure [Poltorak]
+- Remove err dummy parameter in zlib.h [Kientzle]
+
+Changes in 1.2.1.1 (9 January 2004)
+- Update email address in README
+- Several FAQ updates
+- Fix a big fat bug in inftrees.c that prevented decoding valid
+  dynamic blocks with only literals and no distance codes --
+  Thanks to "Hot Emu" for the bug report and sample file
+- Add a note to puff.c on no distance codes case.
+
 Changes in 1.2.1 (17 November 2003)
 - Remove a tab in contrib/gzappend/gzappend.c
 - Update some interfaces in contrib for new zlib functions
@@ -407,7 +540,7 @@ Changes in 1.0.7 (20 Jan 1998)
 Changes in 1.0.6 (19 Jan 1998)
 - add functions gzprintf, gzputc, gzgetc, gztell, gzeof, gzseek, gzrewind and
   gzsetparams (thanks to Roland Giersig and Kevin Ruland for some of this code)
-- Fix a deflate bug occuring only with compression level 0 (thanks to
+- Fix a deflate bug occurring only with compression level 0 (thanks to
   Andy Buckler for finding this one).
 - In minigzip, pass transparently also the first byte for .Z files.
 - return Z_BUF_ERROR instead of Z_OK if output buffer full in uncompress()
@@ -466,7 +599,7 @@ Changes in 1.0.6 (19 Jan 1998)
 - use _fdopen instead of fdopen for MSC >= 6.0 (Thomas Fanslau)
 - added makelcc.bat for lcc-win32 (Tom St Denis)
 - in Makefile.dj2, use copy and del instead of install and rm (Frank Donahoe)
-- Avoid expanded $Id: ChangeLog,v 1.1 2006/01/12 17:26:07 shadowpcsx2 Exp $. Use "rcs -kb" or "cvs admin -kb" to avoid Id expansion.
+- Avoid expanded $Id$. Use "rcs -kb" or "cvs admin -kb" to avoid Id expansion.
 - check for unistd.h in configure (for off_t)
 - remove useless check parameter in inflate_blocks_free
 - avoid useless assignment of s->check to itself in inflate_blocks_new

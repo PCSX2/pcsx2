@@ -1,17 +1,17 @@
 /* gzio.c -- IO on .gz files
- * Copyright (C) 1995-2003 Jean-loup Gailly.
+ * Copyright (C) 1995-2005 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
  *
  * Compile this file with -DNO_GZCOMPRESS to avoid the compression code.
  */
 
-/* @(#) $Id: gzio.c,v 1.1 2006/01/12 17:26:07 shadowpcsx2 Exp $ */
+/* @(#) $Id$ */
 
 #include <stdio.h>
 
 #include "zutil.h"
 
-#ifdef NO_DEFLATE       /* for compatiblity with old definition */
+#ifdef NO_DEFLATE       /* for compatibility with old definition */
 #  define NO_GZCOMPRESS
 #endif
 
@@ -96,7 +96,7 @@ local gzFile gz_open (path, mode, fd)
     int  fd;
 {
     int err;
-    int level = Z_DEFAULT_COMPRESSION; /* compression level */
+    int level = Z_BEST_SPEED; /* compression level */
     int strategy = Z_DEFAULT_STRATEGY; /* compression strategy */
     char *p = (char*)mode;
     gz_stream *s;
@@ -220,7 +220,7 @@ gzFile ZEXPORT gzdopen (fd, mode)
     int fd;
     const char *mode;
 {
-    char name[20];
+    char name[46];      /* allow for up to 128-bit integers */
 
     if (fd < 0) return (gzFile)Z_NULL;
     sprintf(name, "<fd:%d>", fd); /* for debugging */
@@ -264,7 +264,7 @@ local int get_byte(s)
     if (s->z_eof) return EOF;
     if (s->stream.avail_in == 0) {
         errno = 0;
-        s->stream.avail_in = fread(s->inbuf, 1, Z_BUFSIZE, s->file);
+        s->stream.avail_in = (uInt)fread(s->inbuf, 1, Z_BUFSIZE, s->file);
         if (s->stream.avail_in == 0) {
             s->z_eof = 1;
             if (ferror(s->file)) s->z_err = Z_ERRNO;
@@ -300,7 +300,7 @@ local void check_header(s)
     if (len < 2) {
         if (len) s->inbuf[0] = s->stream.next_in[0];
         errno = 0;
-        len = fread(s->inbuf + len, 1, Z_BUFSIZE >> len, s->file);
+        len = (uInt)fread(s->inbuf + len, 1, Z_BUFSIZE >> len, s->file);
         if (len == 0 && ferror(s->file)) s->z_err = Z_ERRNO;
         s->stream.avail_in += len;
         s->stream.next_in = s->inbuf;
@@ -415,6 +415,7 @@ int ZEXPORT gzread (file, buf, len)
         s->stream.avail_out--;
         s->back = EOF;
         s->out++;
+        start++;
         if (s->last) {
             s->z_err = Z_STREAM_END;
             return 1;
@@ -436,8 +437,8 @@ int ZEXPORT gzread (file, buf, len)
                 s->stream.avail_in  -= n;
             }
             if (s->stream.avail_out > 0) {
-                s->stream.avail_out -= fread(next_out, 1, s->stream.avail_out,
-                                             s->file);
+                s->stream.avail_out -=
+                    (uInt)fread(next_out, 1, s->stream.avail_out, s->file);
             }
             len -= s->stream.avail_out;
             s->in  += len;
@@ -448,7 +449,7 @@ int ZEXPORT gzread (file, buf, len)
         if (s->stream.avail_in == 0 && !s->z_eof) {
 
             errno = 0;
-            s->stream.avail_in = fread(s->inbuf, 1, Z_BUFSIZE, s->file);
+            s->stream.avail_in = (uInt)fread(s->inbuf, 1, Z_BUFSIZE, s->file);
             if (s->stream.avail_in == 0) {
                 s->z_eof = 1;
                 if (ferror(s->file)) {
@@ -488,6 +489,9 @@ int ZEXPORT gzread (file, buf, len)
     }
     s->crc = crc32(s->crc, start, (uInt)(s->stream.next_out - start));
 
+    if (len == s->stream.avail_out &&
+        (s->z_err == Z_DATA_ERROR || s->z_err == Z_ERRNO))
+        return -1;
     return (int)(len - s->stream.avail_out);
 }
 
@@ -899,6 +903,18 @@ int ZEXPORT gzeof (file)
 }
 
 /* ===========================================================================
+     Returns 1 if reading and doing so transparently, otherwise zero.
+*/
+int ZEXPORT gzdirect (file)
+    gzFile file;
+{
+    gz_stream *s = (gz_stream*)file;
+
+    if (s == NULL || s->mode != 'r') return 0;
+    return s->transparent;
+}
+
+/* ===========================================================================
    Outputs a long in LSB order to the given file
 */
 local void putLong (file, x)
@@ -937,7 +953,6 @@ local uLong getLong (s)
 int ZEXPORT gzclose (file)
     gzFile file;
 {
-    int err;
     gz_stream *s = (gz_stream*)file;
 
     if (s == NULL) return Z_STREAM_ERROR;
@@ -946,8 +961,8 @@ int ZEXPORT gzclose (file)
 #ifdef NO_GZCOMPRESS
         return Z_STREAM_ERROR;
 #else
-        err = do_flush (file, Z_FINISH);
-        if (err != Z_OK) return destroy((gz_stream*)file);
+        if (do_flush (file, Z_FINISH) != Z_OK)
+            return destroy((gz_stream*)file);
 
         putLong (s->file, s->crc);
         putLong (s->file, (uLong)(s->in & 0xffffffff));
@@ -956,10 +971,16 @@ int ZEXPORT gzclose (file)
     return destroy((gz_stream*)file);
 }
 
+#ifdef STDC
+#  define zstrerror(errnum) strerror(errnum)
+#else
+#  define zstrerror(errnum) ""
+#endif
+
 /* ===========================================================================
-     Returns the error message for the last error which occured on the
+     Returns the error message for the last error which occurred on the
    given compressed file. errnum is set to zlib error number. If an
-   error occured in the file system and not in the compression library,
+   error occurred in the file system and not in the compression library,
    errnum is set to Z_ERRNO and the application may consult errno
    to get the exact error code.
 */

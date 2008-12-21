@@ -1,5 +1,5 @@
 /* inflate.h -- internal inflate state definition
- * Copyright (C) 1995-2003 Mark Adler
+ * Copyright (C) 1995-2004 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -19,7 +19,6 @@
 /* Possible inflate modes between inflate() calls */
 typedef enum {
     HEAD,       /* i: waiting for magic header */
-#ifdef GUNZIP
     FLAGS,      /* i: waiting for method and flags (gzip) */
     TIME,       /* i: waiting for modification time (gzip) */
     OS,         /* i: waiting for extra flags and operating system (gzip) */
@@ -28,7 +27,6 @@ typedef enum {
     NAME,       /* i: waiting for end of file name (gzip) */
     COMMENT,    /* i: waiting for end of comment (gzip) */
     HCRC,       /* i: waiting for header crc (gzip) */
-#endif
     DICTID,     /* i: waiting for dictionary check value */
     DICT,       /* waiting for inflateSetDictionary() call */
         TYPE,       /* i: waiting for type bits, including last-flag bit */
@@ -45,9 +43,7 @@ typedef enum {
             MATCH,      /* o: waiting for output space to copy string */
             LIT,        /* o: waiting for output space to write literal */
     CHECK,      /* i: waiting for 32-bit check value */
-#ifdef GUNZIP
     LENGTH,     /* i: waiting for 32-bit length (gzip) */
-#endif
     DONE,       /* finished check, done -- remain here until reset */
     BAD,        /* got a data error -- remain here until reset */
     MEM,        /* got an inflate() memory error -- remain here until reset */
@@ -84,8 +80,10 @@ struct inflate_state {
     int wrap;                   /* bit 0 true for zlib, bit 1 true for gzip */
     int havedict;               /* true if dictionary provided */
     int flags;                  /* gzip header method and flags (0 if zlib) */
+    unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
     unsigned long check;        /* protected copy of check value */
     unsigned long total;        /* protected copy of output count */
+    gz_headerp head;            /* where to save gzip header information */
         /* sliding window */
     unsigned wbits;             /* log base 2 of requested window size */
     unsigned wsize;             /* window size or zero if not using window */

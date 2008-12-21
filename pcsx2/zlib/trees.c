@@ -1,5 +1,5 @@
 /* trees.c -- output deflated data using Huffman coding
- * Copyright (C) 1995-2003 Jean-loup Gailly
+ * Copyright (C) 1995-2005 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -29,7 +29,7 @@
  *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
 
-/* @(#) $Id: trees.c,v 1.1 2006/01/12 17:26:08 shadowpcsx2 Exp $ */
+/* @(#) $Id$ */
 
 /* #define GEN_TREES_H */
 
@@ -555,7 +555,7 @@ local void gen_bitlen(s, desc)
         while (n != 0) {
             m = s->heap[--h];
             if (m > max_code) continue;
-            if (tree[m].Len != (unsigned) bits) {
+            if ((unsigned) tree[m].Len != (unsigned) bits) {
                 Trace((stderr,"code %d bits %d->%d\n", m, tree[m].Len, bits));
                 s->opt_len += ((long)bits - (long)tree[m].Len)
                               *(long)tree[m].Freq;
@@ -930,8 +930,9 @@ void _tr_flush_block(s, buf, stored_len, eof)
     /* Build the Huffman trees unless a stored block is forced */
     if (s->level > 0) {
 
-         /* Check if the file is ascii or binary */
-        if (s->data_type == Z_UNKNOWN) set_data_type(s);
+        /* Check if the file is binary or text */
+        if (stored_len > 0 && s->strm->data_type == Z_UNKNOWN)
+            set_data_type(s);
 
         /* Construct the literal and distance trees */
         build_tree(s, (tree_desc *)(&(s->l_desc)));
@@ -982,7 +983,7 @@ void _tr_flush_block(s, buf, stored_len, eof)
 #ifdef FORCE_STATIC
     } else if (static_lenb >= 0) { /* force static trees */
 #else
-    } else if (static_lenb == opt_lenb) {
+    } else if (s->strategy == Z_FIXED || static_lenb == opt_lenb) {
 #endif
         send_bits(s, (STATIC_TREES<<1)+eof, 3);
         compress_block(s, (ct_data *)static_ltree, (ct_data *)static_dtree);
@@ -1117,21 +1118,24 @@ local void compress_block(s, ltree, dtree)
 }
 
 /* ===========================================================================
- * Set the data type to ASCII or BINARY, using a crude approximation:
- * binary if more than 20% of the bytes are <= 6 or >= 128, ascii otherwise.
- * IN assertion: the fields freq of dyn_ltree are set and the total of all
- * frequencies does not exceed 64K (to fit in an int on 16 bit machines).
+ * Set the data type to BINARY or TEXT, using a crude approximation:
+ * set it to Z_TEXT if all symbols are either printable characters (33 to 255)
+ * or white spaces (9 to 13, or 32); or set it to Z_BINARY otherwise.
+ * IN assertion: the fields Freq of dyn_ltree are set.
  */
 local void set_data_type(s)
     deflate_state *s;
 {
-    int n = 0;
-    unsigned ascii_freq = 0;
-    unsigned bin_freq = 0;
-    while (n < 7)        bin_freq += s->dyn_ltree[n++].Freq;
-    while (n < 128)    ascii_freq += s->dyn_ltree[n++].Freq;
-    while (n < LITERALS) bin_freq += s->dyn_ltree[n++].Freq;
-    s->data_type = (Byte)(bin_freq > (ascii_freq >> 2) ? Z_BINARY : Z_ASCII);
+    int n;
+
+    for (n = 0; n < 9; n++)
+        if (s->dyn_ltree[n].Freq != 0)
+            break;
+    if (n == 9)
+        for (n = 14; n < 32; n++)
+            if (s->dyn_ltree[n].Freq != 0)
+                break;
+    s->strm->data_type = (n == 32) ? Z_TEXT : Z_BINARY;
 }
 
 /* ===========================================================================

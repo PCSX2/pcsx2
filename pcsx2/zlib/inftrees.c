@@ -1,5 +1,5 @@
 /* inftrees.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-2003 Mark Adler
+ * Copyright (C) 1995-2005 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -9,7 +9,7 @@
 #define MAXBITS 15
 
 const char inflate_copyright[] =
-   " inflate 1.2.1 Copyright 1995-2003 Mark Adler ";
+   " inflate 1.2.3 Copyright 1995-2005 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -62,7 +62,7 @@ unsigned short FAR *work;
         35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
     static const unsigned short lext[31] = { /* Length codes 257..285 extra */
         16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18,
-        19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 76, 66};
+        19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 201, 196};
     static const unsigned short dbase[32] = { /* Distance codes 0..29 base */
         1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
         257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
@@ -114,7 +114,15 @@ unsigned short FAR *work;
     for (max = MAXBITS; max >= 1; max--)
         if (count[max] != 0) break;
     if (root > max) root = max;
-    if (max == 0) return -1;            /* no codes! */
+    if (max == 0) {                     /* no symbols to code at all */
+        this.op = (unsigned char)64;    /* invalid code marker */
+        this.bits = (unsigned char)1;
+        this.val = (unsigned short)0;
+        *(*table)++ = this;             /* make a table to force an error */
+        *(*table)++ = this;
+        *bits = 1;
+        return 0;     /* no symbols, but wait for decoding to report error */
+    }
     for (min = 1; min <= MAXBITS; min++)
         if (count[min] != 0) break;
     if (root < min) root = min;
@@ -126,7 +134,7 @@ unsigned short FAR *work;
         left -= count[len];
         if (left < 0) return -1;        /* over-subscribed */
     }
-    if (left > 0 && (type == CODES || (codes - count[0] != 1)))
+    if (left > 0 && (type == CODES || max != 1))
         return -1;                      /* incomplete set */
 
     /* generate offsets into symbol table for each length for sorting */
@@ -224,6 +232,7 @@ unsigned short FAR *work;
         /* replicate for those indices with low len bits equal to huff */
         incr = 1U << (len - drop);
         fill = 1U << curr;
+        min = fill;                 /* save offset to next table */
         do {
             fill -= incr;
             next[(huff >> drop) + fill] = this;
@@ -254,7 +263,7 @@ unsigned short FAR *work;
                 drop = root;
 
             /* increment past last table */
-            next += 1U << curr;
+            next += min;            /* here min is 1 << curr */
 
             /* determine length of next table */
             curr = len - drop;
@@ -295,7 +304,6 @@ unsigned short FAR *work;
             drop = 0;
             len = root;
             next = *table;
-            curr = root;
             this.bits = (unsigned char)len;
         }
 

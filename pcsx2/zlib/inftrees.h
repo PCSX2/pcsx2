@@ -1,5 +1,5 @@
 /* inftrees.h -- header to use inftrees.c
- * Copyright (C) 1995-2003 Mark Adler
+ * Copyright (C) 1995-2005 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -36,12 +36,12 @@ typedef struct {
  */
 
 /* Maximum size of dynamic tree.  The maximum found in a long but non-
-   exhaustive search was 1004 code structures (850 for length/literals
-   and 154 for distances, the latter actually the result of an
+   exhaustive search was 1444 code structures (852 for length/literals
+   and 592 for distances, the latter actually the result of an
    exhaustive search).  The true maximum is not known, but the value
    below is more than safe. */
-#define ENOUGH 1440
-#define MAXD 154
+#define ENOUGH 2048
+#define MAXD 592
 
 /* Type of code to build for inftable() */
 typedef enum {

@@ -1,6 +1,6 @@
 ZLIB DATA COMPRESSION LIBRARY
 
-zlib 1.2.1 is a general purpose data compression library.  All the code is
+zlib 1.2.3 is a general purpose data compression library.  All the code is
 thread safe.  The data format used by the zlib library is described by RFCs
 (Request for Comments) 1950 to 1952 in the files
 http://www.ietf.org/rfc/rfc1950.txt (zlib format), rfc1951.txt (deflate format)
@@ -16,9 +16,8 @@ minigzip.c.
 
 To compile all files and run the test program, follow the instructions given at
 the top of Makefile. In short "make test; make install" should work for most
-machines. For Unix: "./configure; make test; make install" For MSDOS, use one
-of the special makefiles such as Makefile.msc. For VMS, use Make_vms.com or
-descrip.mms.
+machines. For Unix: "./configure; make test; make install". For MSDOS, use one
+of the special makefiles such as Makefile.msc. For VMS, use make_vms.com.
 
 Questions about zlib should be sent to <zlib@gzip.org>, or to Gilles Vollant
 <info@winimage.com> for the Windows DLL version. The zlib home page is
@@ -34,7 +33,7 @@ Mark Nelson <markn@ieee.org> wrote an article about zlib for the Jan. 1997
 issue of  Dr. Dobb's Journal; a copy of the article is available in
 http://dogma.net/markn/articles/zlibtool/zlibtool.htm
 
-The changes made in version 1.2.1 are documented in the file ChangeLog.
+The changes made in version 1.2.3 are documented in the file ChangeLog.
 
 Unsupported third party contributions are provided in directory "contrib".
 
@@ -46,7 +45,7 @@ A Perl interface to zlib written by Paul Marquess <pmqs@cpan.org> is in the
 CPAN (Comprehensive Perl Archive Network) sites
 http://www.cpan.org/modules/by-module/Compress/
 
-A Python interface to zlib written by A.M. Kuchling <amk@magnet.com> is
+A Python interface to zlib written by A.M. Kuchling <amk@amk.ca> is
 available in Python 1.5 and later versions, see
 http://www.python.org/doc/lib/module-zlib.html
 
@@ -93,7 +92,7 @@ Acknowledgments:
 
 Copyright notice:
 
- (C) 1995-2003 Jean-loup Gailly and Mark Adler
+ (C) 1995-2004 Jean-loup Gailly and Mark Adler
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
