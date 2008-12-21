@@ -1901,13 +1901,21 @@ void *SysLoadLibrary(const char *lib) {
 
 void *SysLoadSym(void *lib, const char *sym) {
 	void *tmp = GetProcAddress((HINSTANCE)lib, sym);
-	if (tmp == NULL) errval = 1;
+	if (tmp == NULL) errval = GetLastError();
 	else errval = 0;
 	return tmp;
 }
 
 char *SysLibError() {
-	if (errval) { errval = 0; return _(err); }
+	if (GetLastError()) 
+	{ 
+		static char perr[4096];
+
+		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,NULL,GetLastError(),NULL,perr,4095,NULL);
+
+		errval = 0;
+		return _(perr); 
+	}
 	return NULL;
 }
 

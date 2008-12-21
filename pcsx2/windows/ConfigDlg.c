@@ -64,7 +64,7 @@ BOOL OnConfigureDialog(HWND hW) {
 		if (Find==INVALID_HANDLE_VALUE) break;
 		CombinePaths( tmpStr, Config.PluginsDir, FindData.cFileName );
 		Lib = LoadLibrary(tmpStr);
-		if (Lib == NULL) { SysPrintf("%s: %d\n", tmpStr, GetLastError()); continue; }
+		if (Lib == NULL) { SysPrintf("%s: %s\n", tmpStr, SysLibError()); continue; }
 
 		PS2E_GetLibType = (_PS2EgetLibType) GetProcAddress((HMODULE)Lib,"PS2EgetLibType");
 		PS2E_GetLibName = (_PS2EgetLibName) GetProcAddress((HMODULE)Lib,"PS2EgetLibName");

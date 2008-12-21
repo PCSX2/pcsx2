@@ -218,27 +218,46 @@ _FWabout           FWabout;
 DEV9handler dev9Handler;
 USBhandler usbHandler;
 
+#define Sfy(x) #x
+#define Strfy(x) Sfy(x)
+#define MapSymbolVarType(var,type,name) var = (type)SysLoadSym(drv,Strfy(name))
+#define MapSymbolVar(var,name) MapSymbolVarType(var,_##name,name)
+#define MapSymbolVar_Fallback(var,name,fallback) if((MapSymbolVar(var,name))==NULL) var = fallback
+#define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) { char* errString = SysLibError(); SysMessage (_("%s: Error loading %s: %s"), filename, __FUNCTION__, errString); return -1; } 
 
-#define CheckErr(func) \
-    err = SysLibError(); \
-    if (err != NULL) { SysMessage (_("%s: Error loading %s: %s"), filename, func, err); return -1; }
+#define MapSymbol(name) MapSymbolVar(name,name)
+#define MapSymbol_Fallback(name,fallback) MapSymbolVar_Fallback(name,name,fallback)
+#define MapSymbol_Error(name) MapSymbolVar_Error(name,name)
 
-#define LoadSym(dest, src, name, checkerr) \
-    dest = (src) SysLoadSym(drv, name); if (checkerr == 1) CheckErr(name); \
-    if (checkerr == 2) { err = SysLibError(); if (err != NULL) errval = 1; }
+// for pad1/2
+#define MapSymbolPAD(var,sym,name) MapSymbolVar(var##name,sym##name)
+#define MapSymbolPAD_Fallback(var,sym,name) if((MapSymbolVarType(var##name,_##sym##name,var##name))==NULL) var##name = var##_##name
+#define MapSymbolPAD_Error(var,sym,name) MapSymbolVar_Error(var##name,sym##name)
 
-#define TestPS2Esyms(type) { \
-	_PS2EgetLibVersion2 PS2EgetLibVersion2; \
-	SysLoadSym(drv, "PS2EgetLibType"); CheckErr("PS2EgetLibType"); \
-	PS2EgetLibVersion2 = (_PS2EgetLibVersion2) SysLoadSym(drv, "PS2EgetLibVersion2"); CheckErr("PS2EgetLibVersion2"); \
-	SysLoadSym(drv, "PS2EgetLibName"); CheckErr("PS2EgetLibName"); \
-	if( ((PS2EgetLibVersion2(PS2E_LT_##type) >> 16)&0xff) != PS2E_##type##_VERSION) { \
-		SysMessage (_("Can't load '%s', wrong PS2E version (%x != %x)"), filename, (PS2EgetLibVersion2(PS2E_LT_##type) >> 16)&0xff, PS2E_##type##_VERSION); return -1; \
-	} \
+#define TestPS2Esyms(type) if(_TestPS2Esyms(drv,PS2E_LT_##type,PS2E_##type##_VERSION,filename) < 0) return -1;
+
+int _TestPS2Esyms(void* drv, int type, int expected_version, char* filename)
+{
+	_PS2EgetLibType PS2EgetLibType;
+	_PS2EgetLibVersion2 PS2EgetLibVersion2;
+	_PS2EgetLibName PS2EgetLibName;
+
+	MapSymbol_Error(PS2EgetLibType);
+	MapSymbol_Error(PS2EgetLibVersion2);
+	MapSymbol_Error(PS2EgetLibName);
+
+	int actual_version = ((PS2EgetLibVersion2(type) >> 16)&0xff);
+
+	if( actual_version != expected_version) {
+		SysMessage (_("Can't load '%s', wrong PS2E version (%x != %x)"), filename, actual_version, expected_version);
+		return -1;
+	}
+
+	return 0;
 }
 
-static char *err;
-static int errval;
+//static char *err;
+//static int errval;
 
 void *GSplugin;
 
@@ -255,21 +274,11 @@ void CALLBACK GS_printf(int timeout, char *fmt, ...) {
 
 s32  CALLBACK GS_freeze(int mode, freezeData *data) { data->size = 0; return 0; }
 void CALLBACK GS_keyEvent(keyEvent *ev) {}
-void CALLBACK GS_makeSnapshot(char *path) {}
+void CALLBACK GS_makeSnapshot(const char *path) {}
 void CALLBACK GS_irqCallback(void (*callback)()) {}
 void CALLBACK GS_configure() {}
 void CALLBACK GS_about() {}
-long CALLBACK GS_test() { return 0; }
-
-#define LoadGSsym1(dest, name) \
-	LoadSym(GS##dest, _GS##dest, name, 1);
-
-#define LoadGSsym0(dest, name) \
-	LoadSym(GS##dest, _GS##dest, name, 0); \
-	if (GS##dest == NULL) GS##dest = (_GS##dest) GS_##dest;
-
-#define LoadGSsymN(dest, name) \
-	LoadSym(GS##dest, _GS##dest, name, 0);
+s32  CALLBACK GS_test() { return 0; }
 
 int LoadGSplugin(char *filename) {
 	void *drv;
@@ -278,41 +287,41 @@ int LoadGSplugin(char *filename) {
 	if (GSplugin == NULL) { SysMessage (_("Could Not Load GS Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = GSplugin;
 	TestPS2Esyms(GS);
-	LoadGSsym1(init,         "GSinit");
-	LoadGSsym1(shutdown,     "GSshutdown");
-	LoadGSsym1(open,         "GSopen");
-	LoadGSsym1(close,        "GSclose");
-	LoadGSsym1(gifTransfer1, "GSgifTransfer1");
-	LoadGSsym1(gifTransfer2, "GSgifTransfer2");
-	LoadGSsym1(gifTransfer3, "GSgifTransfer3");
-	LoadGSsym1(readFIFO,     "GSreadFIFO");
-    LoadGSsymN(getLastTag,   "GSgetLastTag");
-	LoadGSsymN(readFIFO2,    "GSreadFIFO2"); // optional
-	LoadGSsym1(vsync,        "GSvsync");
+	MapSymbol_Error(GSinit);
+	MapSymbol_Error(GSshutdown);
+	MapSymbol_Error(GSopen);
+	MapSymbol_Error(GSclose);
+	MapSymbol_Error(GSgifTransfer1);
+	MapSymbol_Error(GSgifTransfer2);
+	MapSymbol_Error(GSgifTransfer3);
+	MapSymbol_Error(GSreadFIFO);
+    MapSymbol(GSgetLastTag);
+	MapSymbol(GSreadFIFO2); // optional
+	MapSymbol_Error(GSvsync);
 
-	LoadGSsym0(keyEvent,     "GSkeyEvent");
-	LoadGSsymN(changeSaveState, "GSchangeSaveState");
-	LoadGSsymN(gifSoftReset, "GSgifSoftReset");
-	LoadGSsym0(makeSnapshot, "GSmakeSnapshot");
-	LoadGSsym0(irqCallback,  "GSirqCallback");
-	LoadGSsym0(printf,       "GSprintf");
-	LoadGSsym1(setBaseMem,	"GSsetBaseMem");
-	LoadGSsymN(setGameCRC,	"GSsetGameCRC");
-	LoadGSsym1(reset,       "GSreset");
-	LoadGSsym1(writeCSR,       "GSwriteCSR");
-	LoadGSsymN(makeSnapshot2,"GSmakeSnapshot2");
-	LoadGSsymN(getDriverInfo,"GSgetDriverInfo");
+	MapSymbol_Fallback(GSkeyEvent,GS_keyEvent);
+	MapSymbol(GSchangeSaveState);
+	MapSymbol(GSgifSoftReset);
+	MapSymbol_Fallback(GSmakeSnapshot,GS_makeSnapshot);
+	MapSymbol_Fallback(GSirqCallback,GS_irqCallback);
+	MapSymbol_Fallback(GSprintf,GS_printf);
+	MapSymbol_Error(GSsetBaseMem);
+	MapSymbol(GSsetGameCRC);
+	MapSymbol_Error(GSreset);
+	MapSymbol_Error(GSwriteCSR);
+	MapSymbol(GSmakeSnapshot2);
+	MapSymbol(GSgetDriverInfo);
 
-	LoadGSsymN(setFrameSkip, "GSsetFrameSkip");
-    LoadGSsymN(setupRecording, "GSsetupRecording");
+	MapSymbol(GSsetFrameSkip);
+    MapSymbol(GSsetupRecording);
 
 #ifdef _WIN32
-	LoadGSsymN(setWindowInfo,"GSsetWindowInfo");
+	MapSymbol(GSsetWindowInfo);
 #endif
-	LoadGSsym0(freeze,       "GSfreeze");
-	LoadGSsym0(configure,    "GSconfigure");
-	LoadGSsym0(about,        "GSabout");
-	LoadGSsym0(test,         "GStest");
+	MapSymbol_Fallback(GSfreeze,GS_freeze);
+	MapSymbol_Fallback(GSconfigure,GS_configure);
+	MapSymbol_Fallback(GSabout,GS_about);
+	MapSymbol_Fallback(GStest,GS_test);
 
 	return 0;
 }
@@ -321,17 +330,7 @@ void *PAD1plugin;
 
 void CALLBACK PAD1_configure() {}
 void CALLBACK PAD1_about() {}
-long CALLBACK PAD1_test() { return 0; }
-
-#define LoadPAD1sym1(dest, name) \
-	LoadSym(PAD1##dest, _PAD##dest, name, 1);
-
-#define LoadPAD1sym0(dest, name) \
-	LoadSym(PAD1##dest, _PAD##dest, name, 0); \
-	if (PAD1##dest == NULL) PAD1##dest = (_PAD##dest) PAD1_##dest;
-
-#define LoadPAD1symN(dest, name) \
-	LoadSym(PAD1##dest, _PAD##dest, name, 0);
+s32  CALLBACK PAD1_test() { return 0; }
 
 int LoadPAD1plugin(char *filename) {
 	void *drv;
@@ -340,20 +339,20 @@ int LoadPAD1plugin(char *filename) {
 	if (PAD1plugin == NULL) { SysMessage (_("Could Not Load PAD1 Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = PAD1plugin;
 	TestPS2Esyms(PAD);
-	LoadPAD1sym1(init,         "PADinit");
-	LoadPAD1sym1(shutdown,     "PADshutdown");
-	LoadPAD1sym1(open,         "PADopen");
-	LoadPAD1sym1(close,        "PADclose");
-	LoadPAD1sym1(keyEvent,     "PADkeyEvent");
-	LoadPAD1sym1(startPoll,    "PADstartPoll");
-	LoadPAD1sym1(poll,         "PADpoll");
-	LoadPAD1sym1(query,        "PADquery");
-    LoadPAD1symN(update,       "PADupdate");
+	MapSymbolPAD_Error(PAD1,PAD,init);
+	MapSymbolPAD_Error(PAD1,PAD,shutdown);
+	MapSymbolPAD_Error(PAD1,PAD,open);
+	MapSymbolPAD_Error(PAD1,PAD,close);
+	MapSymbolPAD_Error(PAD1,PAD,keyEvent);
+	MapSymbolPAD_Error(PAD1,PAD,startPoll);
+	MapSymbolPAD_Error(PAD1,PAD,poll);
+	MapSymbolPAD_Error(PAD1,PAD,query);
+    MapSymbolPAD(PAD1,PAD,update);
 
-	LoadPAD1symN(gsDriverInfo, "PADgsDriverInfo");
-	LoadPAD1sym0(configure,    "PADconfigure");
-	LoadPAD1sym0(about,        "PADabout");
-	LoadPAD1sym0(test,         "PADtest");
+	MapSymbolPAD(PAD1,PAD,gsDriverInfo);
+	MapSymbolPAD_Fallback(PAD1,PAD,configure);
+	MapSymbolPAD_Fallback(PAD1,PAD,about);
+	MapSymbolPAD_Fallback(PAD1,PAD,test);
 
 	return 0;
 }
@@ -362,17 +361,7 @@ void *PAD2plugin;
 
 void CALLBACK PAD2_configure() {}
 void CALLBACK PAD2_about() {}
-long CALLBACK PAD2_test() { return 0; }
-
-#define LoadPAD2sym1(dest, name) \
-	LoadSym(PAD2##dest, _PAD##dest, name, 1);
-
-#define LoadPAD2sym0(dest, name) \
-	LoadSym(PAD2##dest, _PAD##dest, name, 0); \
-	if (PAD2##dest == NULL) PAD2##dest = (_PAD##dest) PAD2_##dest;
-
-#define LoadPAD2symN(dest, name) \
-	LoadSym(PAD2##dest, _PAD##dest, name, 0);
+s32  CALLBACK PAD2_test() { return 0; }
 
 int LoadPAD2plugin(char *filename) {
 	void *drv;
@@ -381,20 +370,20 @@ int LoadPAD2plugin(char *filename) {
 	if (PAD2plugin == NULL) { SysMessage (_("Could Not Load PAD2 Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = PAD2plugin;
 	TestPS2Esyms(PAD);
-	LoadPAD2sym1(init,         "PADinit");
-	LoadPAD2sym1(shutdown,     "PADshutdown");
-	LoadPAD2sym1(open,         "PADopen");
-	LoadPAD2sym1(close,        "PADclose");
-	LoadPAD2sym1(keyEvent,     "PADkeyEvent");
-	LoadPAD2sym1(startPoll,    "PADstartPoll");
-	LoadPAD2sym1(poll,         "PADpoll");
-	LoadPAD2sym1(query,        "PADquery");
-    LoadPAD2symN(update,       "PADupdate");
+	MapSymbolPAD_Error(PAD2,PAD,init);
+	MapSymbolPAD_Error(PAD2,PAD,shutdown);
+	MapSymbolPAD_Error(PAD2,PAD,open);
+	MapSymbolPAD_Error(PAD2,PAD,close);
+	MapSymbolPAD_Error(PAD2,PAD,keyEvent);
+	MapSymbolPAD_Error(PAD2,PAD,startPoll);
+	MapSymbolPAD_Error(PAD2,PAD,poll);
+	MapSymbolPAD_Error(PAD2,PAD,query);
+    MapSymbolPAD(PAD2,PAD,update);
 
-	LoadPAD2symN(gsDriverInfo, "PADgsDriverInfo");
-	LoadPAD2sym0(configure,    "PADconfigure");
-	LoadPAD2sym0(about,        "PADabout");
-	LoadPAD2sym0(test,         "PADtest");
+	MapSymbolPAD(PAD2,PAD,gsDriverInfo);
+	MapSymbolPAD_Fallback(PAD2,PAD,configure);
+	MapSymbolPAD_Fallback(PAD2,PAD,about);
+	MapSymbolPAD_Fallback(PAD2,PAD,test);
 
 	return 0;
 }
@@ -406,16 +395,6 @@ void CALLBACK SPU2_configure() {}
 void CALLBACK SPU2_about() {}
 s32  CALLBACK SPU2_test() { return 0; }
 
-#define LoadSPU2sym1(dest, name) \
-	LoadSym(SPU2##dest, _SPU2##dest, name, 1);
-
-#define LoadSPU2sym0(dest, name) \
-	LoadSym(SPU2##dest, _SPU2##dest, name, 0); \
-	if (SPU2##dest == NULL) SPU2##dest = (_SPU2##dest) SPU2_##dest;
-
-#define LoadSPU2symN(dest, name) \
-	LoadSym(SPU2##dest, _SPU2##dest, name, 0);
-
 int LoadSPU2plugin(char *filename) {
 	void *drv;
 
@@ -423,32 +402,32 @@ int LoadSPU2plugin(char *filename) {
 	if (SPU2plugin == NULL) { SysMessage (_("Could Not Load SPU2 Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = SPU2plugin;
 	TestPS2Esyms(SPU2);
-	LoadSPU2sym1(init,         "SPU2init");
-	LoadSPU2sym1(shutdown,     "SPU2shutdown");
-	LoadSPU2sym1(open,         "SPU2open");
-	LoadSPU2sym1(close,        "SPU2close");
-	LoadSPU2sym1(write,        "SPU2write");
-	LoadSPU2sym1(read,         "SPU2read");
-    LoadSPU2sym1(readDMA4Mem,  "SPU2readDMA4Mem");     
-    LoadSPU2sym1(writeDMA4Mem, "SPU2writeDMA4Mem");   
-	LoadSPU2sym1(interruptDMA4,"SPU2interruptDMA4");
-    LoadSPU2sym1(readDMA7Mem,  "SPU2readDMA7Mem");     
-    LoadSPU2sym1(writeDMA7Mem, "SPU2writeDMA7Mem");  
-	LoadSPU2sym1(interruptDMA7,"SPU2interruptDMA7");
-    LoadSPU2symN(setDMABaseAddr, "SPU2setDMABaseAddr");
-	LoadSPU2sym1(ReadMemAddr,  "SPU2ReadMemAddr");
-	LoadSPU2sym1(WriteMemAddr,  "SPU2WriteMemAddr");
-	LoadSPU2sym1(irqCallback,  "SPU2irqCallback");
+	MapSymbol_Error(SPU2init);
+	MapSymbol_Error(SPU2shutdown);
+	MapSymbol_Error(SPU2open);
+	MapSymbol_Error(SPU2close);
+	MapSymbol_Error(SPU2write);
+	MapSymbol_Error(SPU2read);
+    MapSymbol_Error(SPU2readDMA4Mem);     
+    MapSymbol_Error(SPU2writeDMA4Mem);   
+	MapSymbol_Error(SPU2interruptDMA4);
+    MapSymbol_Error(SPU2readDMA7Mem);     
+    MapSymbol_Error(SPU2writeDMA7Mem);  
+	MapSymbol_Error(SPU2interruptDMA7);
+    MapSymbol(SPU2setDMABaseAddr);
+	MapSymbol_Error(SPU2ReadMemAddr);
+	MapSymbol_Error(SPU2WriteMemAddr);
+	MapSymbol_Error(SPU2irqCallback);
 
-    LoadSPU2symN(setClockPtr, "SPU2setClockPtr");
+    MapSymbol(SPU2setClockPtr);
 
-	LoadSPU2symN(setupRecording, "SPU2setupRecording");
+	MapSymbol(SPU2setupRecording);
 
-	LoadSPU2sym0(freeze,       "SPU2freeze");
-	LoadSPU2sym0(configure,    "SPU2configure");
-	LoadSPU2sym0(about,        "SPU2about");
-	LoadSPU2sym0(test,         "SPU2test");
-	LoadSPU2symN(async,        "SPU2async");
+	MapSymbol_Fallback(SPU2freeze,SPU2_freeze);
+	MapSymbol_Fallback(SPU2configure,SPU2_configure);
+	MapSymbol_Fallback(SPU2about,SPU2_about);
+	MapSymbol_Fallback(SPU2test,SPU2_test);
+	MapSymbol(SPU2async);
 
 	return 0;
 }
@@ -457,17 +436,7 @@ void *CDVDplugin;
 
 void CALLBACK CDVD_configure() {}
 void CALLBACK CDVD_about() {}
-long CALLBACK CDVD_test() { return 0; }
-
-#define LoadCDVDsym1(dest, name) \
-	LoadSym(CDVD##dest, _CDVD##dest, name, 1);
-
-#define LoadCDVDsym0(dest, name) \
-	LoadSym(CDVD##dest, _CDVD##dest, name, 0); \
-	if (CDVD##dest == NULL) CDVD##dest = (_CDVD##dest) CDVD_##dest;
-
-#define LoadCDVDsymN(dest, name) \
-	LoadSym(CDVD##dest, _CDVD##dest, name, 0); \
+s32  CALLBACK CDVD_test() { return 0; }
 
 int LoadCDVDplugin(char *filename) {
 	void *drv;
@@ -476,25 +445,25 @@ int LoadCDVDplugin(char *filename) {
 	if (CDVDplugin == NULL) { SysMessage (_("Could Not Load CDVD Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = CDVDplugin;
 	TestPS2Esyms(CDVD);
-	LoadCDVDsym1(init,          "CDVDinit");
-	LoadCDVDsym1(shutdown,      "CDVDshutdown");
-	LoadCDVDsym1(open,          "CDVDopen");
-	LoadCDVDsym1(close,         "CDVDclose");
-	LoadCDVDsym1(readTrack,     "CDVDreadTrack");
-	LoadCDVDsym1(getBuffer,     "CDVDgetBuffer");
-	LoadCDVDsym1(readSubQ,      "CDVDreadSubQ");
-	LoadCDVDsym1(getTN,         "CDVDgetTN");
-	LoadCDVDsym1(getTD,         "CDVDgetTD");
-	LoadCDVDsym1(getTOC,        "CDVDgetTOC");
-	LoadCDVDsym1(getDiskType,   "CDVDgetDiskType");
-	LoadCDVDsym1(getTrayStatus, "CDVDgetTrayStatus");
-	LoadCDVDsym1(ctrlTrayOpen,  "CDVDctrlTrayOpen");
-	LoadCDVDsym1(ctrlTrayClose, "CDVDctrlTrayClose");
+	MapSymbol_Error(CDVDinit);
+	MapSymbol_Error(CDVDshutdown);
+	MapSymbol_Error(CDVDopen);
+	MapSymbol_Error(CDVDclose);
+	MapSymbol_Error(CDVDreadTrack);
+	MapSymbol_Error(CDVDgetBuffer);
+	MapSymbol_Error(CDVDreadSubQ);
+	MapSymbol_Error(CDVDgetTN);
+	MapSymbol_Error(CDVDgetTD);
+	MapSymbol_Error(CDVDgetTOC);
+	MapSymbol_Error(CDVDgetDiskType);
+	MapSymbol_Error(CDVDgetTrayStatus);
+	MapSymbol_Error(CDVDctrlTrayOpen);
+	MapSymbol_Error(CDVDctrlTrayClose);
 
-	LoadCDVDsym0(configure,     "CDVDconfigure");
-	LoadCDVDsym0(about,         "CDVDabout");
-	LoadCDVDsym0(test,          "CDVDtest");
-	LoadCDVDsymN(newDiskCB,     "CDVDnewDiskCB");
+	MapSymbol_Fallback(CDVDconfigure,CDVD_configure);
+	MapSymbol_Fallback(CDVDabout,CDVD_about);
+	MapSymbol_Fallback(CDVDtest,CDVD_test);
+	MapSymbol(CDVDnewDiskCB);
 
 	return 0;
 }
@@ -504,14 +473,7 @@ void *DEV9plugin;
 s32  CALLBACK DEV9_freeze(int mode, freezeData *data) { data->size = 0; return 0; }
 void CALLBACK DEV9_configure() {}
 void CALLBACK DEV9_about() {}
-long CALLBACK DEV9_test() { return 0; }
-
-#define LoadDEV9sym1(dest, name) \
-	LoadSym(DEV9##dest, _DEV9##dest, name, 1);
-
-#define LoadDEV9sym0(dest, name) \
-	LoadSym(DEV9##dest, _DEV9##dest, name, 0); \
-	if (DEV9##dest == NULL) DEV9##dest = (_DEV9##dest) DEV9_##dest;
+s32  CALLBACK DEV9_test() { return 0; }
 
 int LoadDEV9plugin(char *filename) {
 	void *drv;
@@ -520,25 +482,25 @@ int LoadDEV9plugin(char *filename) {
 	if (DEV9plugin == NULL) { SysMessage (_("Could Not Load DEV9 Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = DEV9plugin;
 	TestPS2Esyms(DEV9);
-	LoadDEV9sym1(init,          "DEV9init");
-	LoadDEV9sym1(shutdown,      "DEV9shutdown");
-	LoadDEV9sym1(open,          "DEV9open");
-	LoadDEV9sym1(close,         "DEV9close");
-	LoadDEV9sym1(read8,         "DEV9read8");
-	LoadDEV9sym1(read16,        "DEV9read16");
-	LoadDEV9sym1(read32,        "DEV9read32");
-	LoadDEV9sym1(write8,        "DEV9write8");
-	LoadDEV9sym1(write16,       "DEV9write16");
-	LoadDEV9sym1(write32,       "DEV9write32");
-	LoadDEV9sym1(readDMA8Mem,   "DEV9readDMA8Mem");
-	LoadDEV9sym1(writeDMA8Mem,  "DEV9writeDMA8Mem");
-	LoadDEV9sym1(irqCallback,   "DEV9irqCallback");
-	LoadDEV9sym1(irqHandler,    "DEV9irqHandler");
+	MapSymbol_Error(DEV9init);
+	MapSymbol_Error(DEV9shutdown);
+	MapSymbol_Error(DEV9open);
+	MapSymbol_Error(DEV9close);
+	MapSymbol_Error(DEV9read8);
+	MapSymbol_Error(DEV9read16);
+	MapSymbol_Error(DEV9read32);
+	MapSymbol_Error(DEV9write8);
+	MapSymbol_Error(DEV9write16);
+	MapSymbol_Error(DEV9write32);
+	MapSymbol_Error(DEV9readDMA8Mem);
+	MapSymbol_Error(DEV9writeDMA8Mem);
+	MapSymbol_Error(DEV9irqCallback);
+	MapSymbol_Error(DEV9irqHandler);
 
-	LoadDEV9sym0(freeze,        "DEV9freeze");
-	LoadDEV9sym0(configure,     "DEV9configure");
-	LoadDEV9sym0(about,         "DEV9about");
-	LoadDEV9sym0(test,          "DEV9test");
+	MapSymbol_Fallback(DEV9freeze,DEV9_freeze);
+	MapSymbol_Fallback(DEV9configure,DEV9_configure);
+	MapSymbol_Fallback(DEV9about,DEV9_about);
+	MapSymbol_Fallback(DEV9test,DEV9_test);
 
 	return 0;
 }
@@ -548,17 +510,7 @@ void *USBplugin;
 s32  CALLBACK USB_freeze(int mode, freezeData *data) { data->size = 0; return 0; }
 void CALLBACK USB_configure() {}
 void CALLBACK USB_about() {}
-long CALLBACK USB_test() { return 0; }
-
-#define LoadUSBsym1(dest, name) \
-	LoadSym(USB##dest, _USB##dest, name, 1);
-
-#define LoadUSBsym0(dest, name) \
-	LoadSym(USB##dest, _USB##dest, name, 0); \
-	if (USB##dest == NULL) USB##dest = (_USB##dest) USB_##dest;
-
-#define LoadUSBsymX(dest, name) \
-	LoadSym(USB##dest, _USB##dest, name, 0); \
+s32 CALLBACK USB_test() { return 0; }
 
 int LoadUSBplugin(char *filename) {
 	void *drv;
@@ -567,26 +519,26 @@ int LoadUSBplugin(char *filename) {
 	if (USBplugin == NULL) { SysMessage (_("Could Not Load USB Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = USBplugin;
 	TestPS2Esyms(USB);
-	LoadUSBsym1(init,          "USBinit");
-	LoadUSBsym1(shutdown,      "USBshutdown");
-	LoadUSBsym1(open,          "USBopen");
-	LoadUSBsym1(close,         "USBclose");
-	LoadUSBsym1(read8,         "USBread8");
-	LoadUSBsym1(read16,        "USBread16");
-	LoadUSBsym1(read32,        "USBread32");
-	LoadUSBsym1(write8,        "USBwrite8");
-	LoadUSBsym1(write16,       "USBwrite16");
-	LoadUSBsym1(write32,       "USBwrite32");
-	LoadUSBsym1(irqCallback,   "USBirqCallback");
-	LoadUSBsym1(irqHandler,    "USBirqHandler");
-	LoadUSBsym1(setRAM,        "USBsetRAM");
+	MapSymbol_Error(USBinit);
+	MapSymbol_Error(USBshutdown);
+	MapSymbol_Error(USBopen);
+	MapSymbol_Error(USBclose);
+	MapSymbol_Error(USBread8);
+	MapSymbol_Error(USBread16);
+	MapSymbol_Error(USBread32);
+	MapSymbol_Error(USBwrite8);
+	MapSymbol_Error(USBwrite16);
+	MapSymbol_Error(USBwrite32);
+	MapSymbol_Error(USBirqCallback);
+	MapSymbol_Error(USBirqHandler);
+	MapSymbol_Error(USBsetRAM);
 	
-	LoadUSBsymX(async,         "USBasync");
+	MapSymbol(USBasync);
 
-	LoadUSBsym0(freeze,        "USBfreeze");
-	LoadUSBsym0(configure,     "USBconfigure");
-	LoadUSBsym0(about,         "USBabout");
-	LoadUSBsym0(test,          "USBtest");
+	MapSymbol_Fallback(USBfreeze,USB_freeze);
+	MapSymbol_Fallback(USBconfigure,USB_configure);
+	MapSymbol_Fallback(USBabout,USB_about);
+	MapSymbol_Fallback(USBtest,USB_test);
 
 	return 0;
 }
@@ -595,14 +547,7 @@ void *FWplugin;
 s32  CALLBACK FW_freeze(int mode, freezeData *data) { data->size = 0; return 0; }
 void CALLBACK FW_configure() {}
 void CALLBACK FW_about() {}
-long CALLBACK FW_test() { return 0; }
-
-#define LoadFWsym1(dest, name) \
-	LoadSym(FW##dest, _FW##dest, name, 1);
-
-#define LoadFWsym0(dest, name) \
-	LoadSym(FW##dest, _FW##dest, name, 0); \
-	if (FW##dest == NULL) FW##dest = (_FW##dest) FW_##dest;
+s32 CALLBACK FW_test() { return 0; }
 
 int LoadFWplugin(char *filename) {
 	void *drv;
@@ -611,18 +556,18 @@ int LoadFWplugin(char *filename) {
 	if (FWplugin == NULL) { SysMessage (_("Could Not Load FW Plugin '%s': %s"), filename, SysLibError()); return -1; }
 	drv = FWplugin;
 	TestPS2Esyms(FW);
-	LoadFWsym1(init,          "FWinit");
-	LoadFWsym1(shutdown,      "FWshutdown");
-	LoadFWsym1(open,          "FWopen");
-	LoadFWsym1(close,         "FWclose");
-	LoadFWsym1(read32,        "FWread32");
-	LoadFWsym1(write32,       "FWwrite32");
-	LoadFWsym1(irqCallback,   "FWirqCallback");
+	MapSymbol_Error(FWinit);
+	MapSymbol_Error(FWshutdown);
+	MapSymbol_Error(FWopen);
+	MapSymbol_Error(FWclose);
+	MapSymbol_Error(FWread32);
+	MapSymbol_Error(FWwrite32);
+	MapSymbol_Error(FWirqCallback);
 
-	LoadFWsym0(freeze,        "FWfreeze");
-	LoadFWsym0(configure,     "FWconfigure");
-	LoadFWsym0(about,         "FWabout");
-	LoadFWsym0(test,          "FWtest");
+	MapSymbol_Fallback(FWfreeze,FW_freeze);
+	MapSymbol_Fallback(FWconfigure,FW_configure);
+	MapSymbol_Fallback(FWabout,FW_about);
+	MapSymbol_Fallback(FWtest,FW_test);
 
 	return 0;
 }
