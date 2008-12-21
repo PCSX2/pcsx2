@@ -102,10 +102,10 @@ int LoadConfig()
     strcpy(Conf->Mcd1, szValue);
 	GetPrivateProfileString("Interface", "Mcd2", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->Mcd2, szValue); 
-	Conf->CustomFps				=	GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
+	Conf->CustomFps					=	GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
 	Conf->CustomFrameSkip			=	GetPrivateProfileInt("Interface", "CustomFrameskip", 0, szIniFile);
 	Conf->CustomConsecutiveFrames	=	GetPrivateProfileInt("Interface", "CustomConsecutiveFrames", 0, szIniFile);
-	Conf->CustomConsecutiveSkip	=	GetPrivateProfileInt("Interface", "CustomConsecutiveSkip", 0, szIniFile);
+	Conf->CustomConsecutiveSkip		=	GetPrivateProfileInt("Interface", "CustomConsecutiveSkip", 0, szIniFile);
     //plugins
 	GetPrivateProfileString("Plugins", "GS", NULL, szValue, g_MaxPath, szIniFile);
     strcpy(Conf->GS, szValue); 
@@ -138,6 +138,11 @@ int LoadConfig()
 		g_sseVUMXCSR = Conf->sseVUMXCSR;
 	}
 	else Config.sseVUMXCSR = g_sseVUMXCSR;
+
+	GetPrivateProfileString("Cpu Options", "eeOptions", NULL, szValue, 20, szIniFile);
+	Conf->eeOptions = strtoul(szValue, NULL, 0);
+	GetPrivateProfileString("Cpu Options", "vuOptions", NULL, szValue, 20, szIniFile);
+	Conf->vuOptions = strtoul(szValue, NULL, 0);
 
 	//Misc
 	GetPrivateProfileString("Misc", "Patch", NULL, szValue, 20, szIniFile);
@@ -237,6 +242,10 @@ void SaveConfig()
     WritePrivateProfileString("Cpu Options","sseMXCSR",szValue,szIniFile);
 	sprintf(szValue,"%u",Conf->sseVUMXCSR);
     WritePrivateProfileString("Cpu Options","sseVUMXCSR",szValue,szIniFile);
+	sprintf(szValue,"%u",Conf->eeOptions);
+    WritePrivateProfileString("Cpu Options","eeOptions",szValue,szIniFile);
+	sprintf(szValue,"%u",Conf->vuOptions);
+    WritePrivateProfileString("Cpu Options","vuOptions",szValue,szIniFile);
 
 	//Misc
     sprintf(szValue,"%u",Conf->Patch);

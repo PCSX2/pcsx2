@@ -105,6 +105,8 @@ int _vuGetTempXMMreg(int info);
 void vuFloat(int info, int regd, int XYZW);
 void vuFloat2(int regd, int regTemp, int XYZW);
 void vuFloat3(uptr x86ptr);
+void vuFloat4(int regd, int regTemp, int XYZW);
+void vuFloat5(int regd, int regTemp, int XYZW);
 void _vuFlipRegSS(VURegs * VU, int reg);
 void _vuMoveSS(VURegs * VU, int dstreg, int srcreg);
 void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw);

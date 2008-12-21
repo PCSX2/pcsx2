@@ -75,26 +75,28 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
 //------------ SPEED/MISC HACKS!!! ---------------
-#define CHECK_OVERFLOW (!(Config.Hacks & 0x2))
-#define CHECK_EXTRA_OVERFLOW (Config.Hacks & 0x40) // If enabled, Operands are checked for infinities before being used in the VU recs
-#define CHECK_FPU_OVERFLOW (!(Config.Hacks & 0x800))
-#define CHECK_FPU_EXTRA_OVERFLOW (Config.Hacks & 0x1000) // If enabled, Operands are checked for infinities before being used in the FPU recs
-#define CHECK_EESYNC_HACK (Config.Hacks & 0x1)
-#define CHECK_IOPSYNC_HACK (Config.Hacks & 0x10)
-#define CHECK_EE_IOP_EXTRA (Config.Hacks & 0x20)
-#define CHECK_UNDERFLOW (!(Config.Hacks & 0x8))
-//#define CHECK_DENORMALS ((Config.Hacks & 0x400) ? 0xffc0 : 0x7f80) //If enabled, Denormals are Zero for the recs and flush to zero is enabled as well
-#define CHECK_VU_EXTRA_FLAGS 0 // Always disabled now, doesn't seem to affect games positively. // (!(Config.Hacks & 0x100)) // Sets correct flags in the VU recs
-#define CHECK_FPU_EXTRA_FLAGS 0 // Always disabled now, doesn't seem to affect games positively. // (!(Config.Hacks & 0x200)) // Sets correct flags in the FPU recs
-#define CHECK_ESCAPE_HACK (Config.Hacks & 0x400)
+#define CHECK_EESYNC_HACK	(Config.Hacks & 0x1)
+#define CHECK_IOPSYNC_HACK	(Config.Hacks & 0x10)
+#define CHECK_EE_IOP_EXTRA	(Config.Hacks & 0x20)
+#define CHECK_ESCAPE_HACK	(Config.Hacks & 0x400)
 //------------ SPECIAL GAME FIXES!!! ---------------
-#define CHECK_FPUCLAMPHACK (Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
-#define CHECK_VUCLIPHACK (Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
-#define CHECK_VUBRANCHHACK (Config.GameFixes & 0x8) // Special Fix for Magna Carta (note: Breaks Crash Bandicoot)
-
+#define CHECK_FPUCLAMPHACK	(Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
+#define CHECK_VUCLIPHACK	(Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
+#define CHECK_VUBRANCHHACK	(Config.GameFixes & 0x8) // Special Fix for Magna Carta (note: Breaks Crash Bandicoot)
+//------------ Advanced Options!!! ---------------
+#define CHECK_VU_OVERFLOW		(Config.vuOptions & 0x1)
+#define CHECK_VU_EXTRA_OVERFLOW	(Config.vuOptions & 0x2) // If enabled, Operands are checked for infinities before being used in the VU recs
+#define CHECK_VU_SIGN_OVERFLOW	(Config.vuOptions & 0x4)
+#define CHECK_VU_UNDERFLOW		(Config.vuOptions & 0x8)
+#define CHECK_VU_EXTRA_FLAGS 0	// Always disabled now, doesn't seem to affect games positively. // Sets correct flags in the VU recs
+#define CHECK_FPU_OVERFLOW			(Config.eeOptions & 0x1)
+#define CHECK_FPU_EXTRA_OVERFLOW	(Config.eeOptions & 0x2) // If enabled, Operands are checked for infinities before being used in the FPU recs
+#define CHECK_FPU_EXTRA_FLAGS 0	// Always disabled now, doesn't seem to affect games positively. // Sets correct flags in the FPU recs
+#define DEFAULT_eeOptions	0x01
+#define DEFAULT_vuOptions	0x01
 //------------ DEFAULT sseMXCSR VALUES!!! ---------------
-#define DEFAULT_sseMXCSR 0x9fc0 //disable all exception, round to 0, flush to 0
-#define DEFAULT_sseVUMXCSR 0x7f80 //disable all exception
+#define DEFAULT_sseMXCSR	0x9fc0 //disable all exception, round to 0, flush to 0
+#define DEFAULT_sseVUMXCSR	0x7f80 //disable all exception
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
 
@@ -131,6 +133,8 @@ struct PcsxConfig {
 	int CustomConsecutiveSkip;
 	u32 sseMXCSR;
 	u32 sseVUMXCSR;
+	u32 eeOptions;
+	u32 vuOptions;
 };
 
 extern PcsxConfig Config;

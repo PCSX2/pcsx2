@@ -595,6 +595,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				Config.Options = PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC;
 				Config.sseMXCSR = DEFAULT_sseMXCSR;
 				Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+				Config.eeOptions = DEFAULT_eeOptions;
+				Config.vuOptions = DEFAULT_vuOptions;
 
 				SysMessage(_("Pcsx2 needs to be configured"));
 				Pcsx2Configure(NULL);
@@ -868,20 +870,18 @@ BOOL APIENTRY AdvancedProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
             if (LOWORD(wParam) == IDOK) {
 				//Config.Options &= ~PCSX2_REGCACHING;
 				//Config.Options |= IsDlgButtonChecked(hDlg, IDC_REGCACHING) ? PCSX2_REGCACHING : 0;
-			
 				SaveConfig();              
-
                 EndDialog(hDlg, TRUE);
-            } else
-            if (LOWORD(wParam) == IDCANCEL) {
+            } 
+			else if (LOWORD(wParam) == IDCANCEL) {
                 EndDialog(hDlg, FALSE);
-            } else
-            if (LOWORD(wParam) == IDC_ADVRESET) {
+            }
+			else if (LOWORD(wParam) == IDC_ADVRESET) {
 				CheckDlgButton(hDlg, IDC_REGCACHING, FALSE);
 				CheckDlgButton(hDlg, IDC_SAFECOUNTERS, FALSE);
 				CheckDlgButton(hDlg, IDC_SPU2HACK, FALSE);
-            } else
-            return TRUE;
+            } 
+			else return TRUE;
     }
 
     return FALSE;
@@ -889,25 +889,20 @@ BOOL APIENTRY AdvancedProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 
 BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message)
-    {
+    switch (message) {
         case WM_INITDIALOG:
-			SetWindowText(hDlg, _("Game Specific Fixes"));
 			if(Config.GameFixes & 0x2) CheckDlgButton(hDlg, IDC_GAMEFIX2, TRUE);
 			if(Config.GameFixes & 0x4) CheckDlgButton(hDlg, IDC_GAMEFIX3, TRUE);
 			if(Config.GameFixes & 0x8) CheckDlgButton(hDlg, IDC_GAMEFIX4, TRUE);
             return TRUE;
 
         case WM_COMMAND:
-            if (LOWORD(wParam) == IDOK)
-            {  
+            if (LOWORD(wParam) == IDOK) {  
 				Config.GameFixes = 0;
 				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX2) ? 0x2 : 0;
 				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX3) ? 0x4 : 0;
 				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX4) ? 0x8 : 0;
-
 				SaveConfig();
-
 				EndDialog(hDlg, TRUE);
             } 
 			else if (LOWORD(wParam) == IDCANCEL) {
@@ -919,93 +914,30 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-static void HacksInit( HWND hDlg )
-{
-	if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
-	if(Config.Hacks & 0x2) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
-	if(Config.Hacks & 0x8) CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
-    if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
-	if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
-	if(Config.Hacks & 0x40) CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, 2);
-	//if(Config.Hacks & 0x100) CheckDlgButton(hDlg, IDC_VU_FLAGS, TRUE);
-	//if(Config.Hacks & 0x200) CheckDlgButton(hDlg, IDC_FPU_FLAGS, TRUE);
-	if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
-	if(Config.Hacks & 0x800) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
-	if(Config.Hacks & 0x1000) CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, 2);
-}
-
-static void HacksChecked( HWND hDlg )
-{
-	Config.Hacks = 0;
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
-	/* 0x40 == greyed checkbox (extra overflow checking); 0x2 == checked (disable overflow checking) */
-	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) == 2 ) ? 0x40 : (IsDlgButtonChecked(hDlg, IDC_VU_OVERFLOWHACK) ? 0x2 : 0);
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_DENORMALS) ? 0x8 : 0;
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
-	//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_VU_FLAGS) ? 0x100 : 0;
-	//Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_FPU_FLAGS) ? 0x200 : 0;
-	Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
-	/* 0x1000 == greyed checkbox (extra overflow checking); 0x800 == checked (disable overflow checking)*/
-	Config.Hacks |= ( IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) == 2 ) ? 0x1000 : (IsDlgButtonChecked(hDlg, IDC_FPU_OVERFLOWHACK) ? 0x800 : 0);
-}
-
 BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
         case WM_INITDIALOG:
-			HacksInit( hDlg );
+			if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
+			if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
+			if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
+			if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
 			return TRUE;
 
         case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDOK:
-					HacksChecked( hDlg );
+					Config.Hacks = 0;
+					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
+					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
+					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
+					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
 					SaveConfig(); 
 					EndDialog(hDlg, TRUE);
 					break;
 
 				case IDCANCEL:
 					EndDialog(hDlg, FALSE);
-					break;
-
-				case IDBUTTON1: //"stable" setting
-					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
-					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
-					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
-					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE); //no need to change
-					
-					HacksChecked( hDlg );
-					HacksInit( hDlg );
-					break;
-
-				case IDBUTTON2: //"speed" setting
-					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, TRUE);
-					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, TRUE);
-					CheckDlgButton(hDlg, IDC_DENORMALS, TRUE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
-					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE); //no need to change
-
-					HacksChecked( hDlg );
-					HacksInit( hDlg );
-					break;
-				
-				case IDBUTTON3: //"nothing" setting
-					CheckDlgButton(hDlg, IDC_VU_OVERFLOWHACK, FALSE);
-					CheckDlgButton(hDlg, IDC_FPU_OVERFLOWHACK, FALSE);
-					CheckDlgButton(hDlg, IDC_DENORMALS, FALSE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK, FALSE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK2, FALSE);
-					CheckDlgButton(hDlg, IDC_SYNCHACK3, FALSE);
-					//CheckDlgButton(hDlg, IDC_ESCHACK, TRUE); //no need to change
-
-					HacksChecked( hDlg );
-					HacksInit( hDlg );
 					break;
 
 				default: return TRUE;
@@ -1020,27 +952,28 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
     switch (message)
     {
         case WM_INITDIALOG:
-			SetWindowText(hDlg, _("Advanced Options"));
-			CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ( (Config.sseMXCSR & 0x6000) >> 13));
-			CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( (Config.sseVUMXCSR & 0x6000) >> 13));
+			CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ((Config.sseMXCSR & 0x6000) >> 13));
+			CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ((Config.sseVUMXCSR & 0x6000) >> 13));
+			CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + (Config.eeOptions & 0x3));
 
+			if		(Config.vuOptions & 0x4)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 3);
+			else if (Config.vuOptions & 0x2)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 2);
+			else if (Config.vuOptions & 0x1)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 1);
+			else								CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 0);
+					
 			if (Config.sseMXCSR & 0x8000)	CheckDlgButton(hDlg, IDC_EE_CHECK1, TRUE);
 			if (Config.sseVUMXCSR & 0x8000) CheckDlgButton(hDlg, IDC_VU_CHECK1, TRUE);
 
-			if( !cpucaps.hasStreamingSIMD2Extensions )
-			{
+			if( !cpucaps.hasStreamingSIMD2Extensions ) {	
 				// SSE1 cpus do not support Denormals Are Zero flag.
-
 				Config.sseMXCSR &= ~0x0040;
 				Config.sseVUMXCSR &= ~0x0040;
-
 				EnableWindow( GetDlgItem( hDlg, IDC_EE_CHECK2 ), FALSE );
 				EnableWindow( GetDlgItem( hDlg, IDC_VU_CHECK2 ), FALSE );
 				CheckDlgButton( hDlg, IDC_EE_CHECK2, FALSE );
 				CheckDlgButton( hDlg, IDC_VU_CHECK2, FALSE );
 			}
-			else
-			{
+			else {
 				if (Config.sseMXCSR & 0x0040)	CheckDlgButton(hDlg, IDC_EE_CHECK2, TRUE);
 				if (Config.sseVUMXCSR & 0x0040) CheckDlgButton(hDlg, IDC_VU_CHECK2, TRUE);
 			}
@@ -1052,24 +985,35 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			{
 				case IDOK:
 
-					Config.sseMXCSR &= 0x1fbf;
-					Config.sseVUMXCSR &= 0x1fbf;
+					Config.sseMXCSR		&= 0x1fbf;
+					Config.sseVUMXCSR	&= 0x1fbf;
+					Config.eeOptions	 = 0x0000;
+					Config.vuOptions	 = 0x0000;
 
 					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE0) ? 0x0000 : 0; // Round Nearest
 					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE1) ? 0x2000 : 0; // Round Negative
 					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE2) ? 0x4000 : 0; // Round Postive
 					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE3) ? 0x6000 : 0; // Round Zero / Chop
 
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE0) ? 0x0000 : 0;
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE1) ? 0x2000 : 0;
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE2) ? 0x4000 : 0;
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE3) ? 0x6000 : 0;
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE0) ? 0x0000 : 0; // Round Nearest
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE1) ? 0x2000 : 0; // Round Negative
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE2) ? 0x4000 : 0; // Round Postive
+					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE3) ? 0x6000 : 0; // Round Zero / Chop
 
-					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK1) ? 0x8000 : 0;
-					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK1) ? 0x8000 : 0;
+					Config.eeOptions |= IsDlgButtonChecked(hDlg, IDC_EE_CLAMPMODE0) ? 0x0 : 0;
+					Config.eeOptions |= IsDlgButtonChecked(hDlg, IDC_EE_CLAMPMODE1) ? 0x1 : 0;
+					Config.eeOptions |= IsDlgButtonChecked(hDlg, IDC_EE_CLAMPMODE2) ? 0x3 : 0;
 
-					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK2) ? 0x0040 : 0;
-					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK2) ? 0x0040 : 0;
+					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE0) ? 0x0 : 0;
+					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE1) ? 0x1 : 0;
+					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE2) ? 0x3 : 0;
+					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE3) ? 0x7 : 0;
+
+					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK1) ? 0x8000 : 0; // FtZ
+					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK1) ? 0x8000 : 0; // FtZ
+
+					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK2) ? 0x0040 : 0; // DaZ
+					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK2) ? 0x0040 : 0; // DaZ
 					
 					SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 					SaveConfig();
@@ -1084,19 +1028,25 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 				case IDDEFAULT:
 
-					Config.sseMXCSR = DEFAULT_sseMXCSR;
-					Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+					Config.sseMXCSR		= DEFAULT_sseMXCSR;
+					Config.sseVUMXCSR	= DEFAULT_sseVUMXCSR;
+					Config.eeOptions	= DEFAULT_eeOptions;
+					Config.vuOptions	= DEFAULT_vuOptions;
 
-					if( !cpucaps.hasStreamingSIMD2Extensions )
-					{
-						// SSE1 cpus do not support Denormals Are Zero flag.
-
+					// SSE1 cpus do not support Denormals Are Zero flag.
+					if( !cpucaps.hasStreamingSIMD2Extensions ) {
 						Config.sseMXCSR &= ~0x0040;
 						Config.sseVUMXCSR &= ~0x0040;
 					}
 
-					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ( (Config.sseMXCSR & 0x6000) >> 13));
-					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( (Config.sseVUMXCSR & 0x6000) >> 13));
+					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ((Config.sseMXCSR & 0x6000) >> 13));
+					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ((Config.sseVUMXCSR & 0x6000) >> 13));
+					CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + (Config.eeOptions & 0x3));
+					
+					if		(Config.vuOptions & 0x4)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 3);
+					else if (Config.vuOptions & 0x2)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 2);
+					else if (Config.vuOptions & 0x1)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 1);
+					else								CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 0);
 
 					CheckDlgButton(hDlg, IDC_EE_CHECK1, (Config.sseMXCSR & 0x8000) ? TRUE : FALSE);
 					CheckDlgButton(hDlg, IDC_VU_CHECK1, (Config.sseVUMXCSR & 0x8000) ? TRUE : FALSE);
@@ -1119,6 +1069,21 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 				case IDC_VU_ROUNDMODE3:
 
 					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( LOWORD(wParam) % IDC_VU_ROUNDMODE0 )  );
+					break;
+
+				case IDC_EE_CLAMPMODE0:
+				case IDC_EE_CLAMPMODE1:
+				case IDC_EE_CLAMPMODE2:
+
+					CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + ( LOWORD(wParam) % IDC_EE_CLAMPMODE0 )  );
+					break;
+
+				case IDC_VU_CLAMPMODE0:
+				case IDC_VU_CLAMPMODE1:
+				case IDC_VU_CLAMPMODE2:
+				case IDC_VU_CLAMPMODE3:
+
+					CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + ( LOWORD(wParam) % IDC_VU_CLAMPMODE0 )  );
 					break;
 			}
 
