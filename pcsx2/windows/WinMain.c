@@ -954,7 +954,7 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
         case WM_INITDIALOG:
 			CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ((Config.sseMXCSR & 0x6000) >> 13));
 			CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ((Config.sseVUMXCSR & 0x6000) >> 13));
-			CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + (Config.eeOptions & 0x3));
+			CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + ((Config.eeOptions & 0x2) ? 2 : (Config.eeOptions & 0x1)));
 
 			if		(Config.vuOptions & 0x4)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 3);
 			else if (Config.vuOptions & 0x2)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 2);
@@ -1041,7 +1041,7 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ((Config.sseMXCSR & 0x6000) >> 13));
 					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ((Config.sseVUMXCSR & 0x6000) >> 13));
-					CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + (Config.eeOptions & 0x3));
+					CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + ((Config.eeOptions & 0x2) ? 2 : (Config.eeOptions & 0x1)));
 					
 					if		(Config.vuOptions & 0x4)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 3);
 					else if (Config.vuOptions & 0x2)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 2);
