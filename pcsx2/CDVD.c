@@ -904,7 +904,7 @@ __forceinline void cdvdReadInterrupt() {
 		cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
 		cdvd.Readed = 1;
 		cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
-		CDVDREAD_INT(cdvdReadTime*32);
+		CDVDREAD_INT(cdvdReadTime*24);
 		return;
 	}
 
