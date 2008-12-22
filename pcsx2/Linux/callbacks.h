@@ -14,18 +14,6 @@ On_Dialog_Cancelled                    (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-on_Speed_Hack_Compatability            (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-on_Speed_Hack_Speed                    (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-on_Speed_Hack_Normal                   (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 on_Speed_Hack_OK                       (GtkButton       *button,
                                         gpointer         user_data);
 

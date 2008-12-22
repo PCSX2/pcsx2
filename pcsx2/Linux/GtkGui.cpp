@@ -86,8 +86,8 @@ void RunGui() {
 
 void FixCPUState(void)
 {
-	Config.sseMXCSR = LinuxsseMXCSR;
-	Config.sseVUMXCSR = LinuxsseVUMXCSR;
+	//Config.sseMXCSR = LinuxsseMXCSR;
+	//Config.sseVUMXCSR = LinuxsseVUMXCSR;
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 }
 
@@ -559,7 +559,7 @@ void OnDebug_Logging(GtkMenuItem *menuitem, gpointer user_data) {
 		gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), varLog & (1<<i));
 	}
 
-	Btn = lookup_widget(LogDlg, "Log");
+	//Btn = lookup_widget(LogDlg, "Log");
 	//gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), Log);
 
 	gtk_widget_show_all(LogDlg);
@@ -625,7 +625,6 @@ void on_Game_Fixes(GtkMenuItem *menuitem, gpointer user_data)
 {
 	GameFixDlg = create_GameFixDlg();
 	
-        set_checked(GameFixDlg, "check_Slow_DVD", (Config.GameFixes & FLAG_SLOW_DVD));
 	set_checked(GameFixDlg, "check_VU_Clip", (Config.GameFixes & FLAG_VU_CLIP));
 	set_checked(GameFixDlg, "check_FPU_Clamp", (Config.GameFixes & FLAG_FPU_CLAMP));
 	set_checked(GameFixDlg, "check_VU_Branch", (Config.GameFixes & FLAG_VU_BRANCH));
@@ -639,7 +638,6 @@ void on_Game_Fix_OK(GtkButton *button, gpointer user_data)
 {
 	
 	Config.GameFixes = 0;
-	Config.GameFixes |= is_checked(GameFixDlg, "check_Slow_DVD") ? FLAG_SLOW_DVD : 0;
 	Config.GameFixes |= is_checked(GameFixDlg, "check_VU_Clip") ? FLAG_VU_CLIP : 0;
 	Config.GameFixes |= is_checked(GameFixDlg, "check_FPU_Clamp") ? FLAG_FPU_CLAMP : 0;
 	Config.GameFixes |= is_checked(GameFixDlg, "check_VU_Branch") ? FLAG_VU_BRANCH : 0;
@@ -655,108 +653,24 @@ void on_Speed_Hacks(GtkMenuItem *menuitem, gpointer user_data)
 	int index;
 	SpeedHacksDlg = create_SpeedHacksDlg();
 	
-	index = 1; //Default to normal
-	if get_flag(Config.Hacks, FLAG_VU_EXTRA_OVERFLOW) index = 2;
-	if  get_flag(Config.Hacks, FLAG_VU_NO_OVERFLOW) index = 0;
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), index);
-	
-	index = 1; //Default to normal
-	if get_flag(Config.Hacks, FLAG_FPU_EXTRA_OVERFLOW) index = 2;
-	if get_flag(Config.Hacks, FLAG_FPU_NO_OVERFLOW) index = 0;
-
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), index);
-	
         set_checked(SpeedHacksDlg, "check_EE_Double_Sync", (Config.Hacks & FLAG_EE_2_SYNC));
-	set_checked(SpeedHacksDlg, "check_Disable_Underflow", (Config.Hacks & FLAG_NO_UNDERFLOW));
 	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", (Config.Hacks & FLAG_IOP_2_SYNC));
 	set_checked(SpeedHacksDlg, "check_Triple_Sync",(Config.Hacks & FLAG_TRIPLE_SYNC));
-        //set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", (Config.Hacks & FLAG_NO_VU_FLAGS));
-	//set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", (Config.Hacks & FLAG_NO_FPU_FLAGS));
 	set_checked(SpeedHacksDlg, "check_ESC_Hack", (Config.Hacks & FLAG_ESC));
 	
 	gtk_widget_show_all(SpeedHacksDlg);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	gtk_main();
-	}
-void on_Speed_Hack_Compatability(GtkButton *button, gpointer user_data)
-{
-        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", FALSE);
-       
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 2);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 2);
-	
-	set_checked(SpeedHacksDlg, "check_Disable_Underflow", TRUE);
-	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", FALSE);
-	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
-        //set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", TRUE);
-	//set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", TRUE);
-	
 }
-void on_Speed_Hack_Normal(GtkButton *button, gpointer user_data)
-{
-        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", FALSE);
-       
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 1);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 1);
 	
-	set_checked(SpeedHacksDlg, "check_Disable_Underflow", FALSE);
-	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", FALSE);
-	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
-       //set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", FALSE);
-	//set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", FALSE);
-	
-}
-void on_Speed_Hack_Speed(GtkButton *button, gpointer user_data)
-{
-        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", TRUE);
-        
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")), 0);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")), 0);
-	
-	set_checked(SpeedHacksDlg, "check_Disable_Underflow", TRUE);
-	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", TRUE);
-	set_checked(SpeedHacksDlg, "check_Triple_Sync", FALSE);
-        //set_checked(SpeedHacksDlg, "check_Disable_VU_Flags", TRUE);
-	//set_checked(SpeedHacksDlg, "check_Disable_FPU_Flags", TRUE);
-	
-}
-
 void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 {
 	Config.Hacks = 0;
 
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_EE_Double_Sync") ? FLAG_EE_2_SYNC : 0;  
-	
-	switch (gtk_combo_box_get_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboVUOverflow")))) {
-		case 0: //Disabled
-			set_flag(Config.Hacks, FLAG_VU_NO_OVERFLOW, TRUE);
-			break;
-		case 1: //Normal
-			// Not having either flag set to true is normal
-			break;
-		case 2: //Extra
-			set_flag(Config.Hacks, FLAG_VU_EXTRA_OVERFLOW, TRUE);
-			break;
-	}
-	
-	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_Underflow") ? FLAG_NO_UNDERFLOW : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_IOP_Double_Sync") ? FLAG_IOP_2_SYNC : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Triple_Sync") ? FLAG_TRIPLE_SYNC : 0;  
-	//Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_VU_Flags") ? FLAG_NO_VU_FLAGS : 0;  
-	//Config.Hacks |= is_checked(SpeedHacksDlg, "check_Disable_FPU_Flags")? FLAG_NO_FPU_FLAGS : 0;  
 	Config.Hacks |= is_checked(SpeedHacksDlg, "check_ESC_Hack") ? FLAG_ESC : 0;  
-	
-	switch (gtk_combo_box_get_active(GTK_COMBO_BOX(lookup_widget(SpeedHacksDlg, "ComboFPUOverflow")))) {
-		case 0: //Disabled
-			set_flag(Config.Hacks, FLAG_FPU_NO_OVERFLOW, TRUE);
-			break;
-		case 1: //Normal
-			// Not having either flag set to true is normal
-			break;
-		case 2: //Extra
-			set_flag(Config.Hacks, FLAG_FPU_EXTRA_OVERFLOW, TRUE);
-			break;
-	}
 	
 	SaveConfig();
 
@@ -764,19 +678,20 @@ void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
+
 void setAdvancedOptions()
 {
-	LinuxsseMXCSR = Config.sseMXCSR;
-	LinuxsseVUMXCSR = Config.sseVUMXCSR;
-	
 	if( !cpucaps.hasStreamingSIMD2Extensions )
 	{
 		// SSE1 cpus do not support Denormals Are Zero flag.
 
-		LinuxsseMXCSR &= ~FLAG_DENORMAL_ZERO;
-		LinuxsseVUMXCSR &= ~FLAG_DENORMAL_ZERO;
+		Config.sseMXCSR &= ~FLAG_DENORMAL_ZERO;
+		Config.sseVUMXCSR &= ~FLAG_DENORMAL_ZERO;
 	}
-			
+	
+	//print_flags("sseMXCSR", Config.sseMXCSR, NULL);
+	//print_flags("sseVUMXCSR", Config.sseVUMXCSR, NULL);
+	
 	switch((Config.sseMXCSR & 0x6000) >> 13)
 	{
 		case 0:
@@ -809,6 +724,35 @@ void setAdvancedOptions()
 			break;
 	}
 	
+	
+	switch(Config.eeOptions)
+	{
+		case FLAG_EE_CLAMP_NONE:
+			set_checked(AdvDlg, "radio_EE_Clamp_None", TRUE);
+			break;
+		case FLAG_EE_CLAMP_NORMAL:
+			set_checked(AdvDlg, "radio_EE_Clamp_Normal",TRUE);
+			break;
+		case FLAG_EE_CLAMP_EXTRA_PRESERVE:
+			set_checked(AdvDlg, "radio_EE_Clamp_Extra_Preserve", TRUE);
+			break;
+	}
+	
+	switch(Config.vuOptions)
+	{
+		case FLAG_VU_CLAMP_NONE:
+			set_checked(AdvDlg, "radio_VU_Clamp_None", TRUE);
+			break;
+		case FLAG_VU_CLAMP_NORMAL:
+			set_checked(AdvDlg, "radio_VU_Clamp_Normal",TRUE);
+			break;
+		case FLAG_VU_CLAMP_EXTRA:
+			set_checked(AdvDlg, "radio_VU_Clamp_Extra", TRUE);
+			break;
+		case FLAG_VU_CLAMP_EXTRA_PRESERVE:
+			set_checked(AdvDlg, "radio_VU_Clamp_Extra_Preserve", TRUE);
+			break;
+	}
 	set_checked(AdvDlg, "check_EE_Flush_Zero", (Config.sseMXCSR & FLAG_FLUSH_ZERO) ? TRUE : FALSE);
 	set_checked(AdvDlg, "check_EE_Denormal_Zero", (Config.sseMXCSR & FLAG_DENORMAL_ZERO) ? TRUE : FALSE);
 	
@@ -828,40 +772,46 @@ void on_Advanced(GtkMenuItem *menuitem, gpointer user_data)
 
 void on_Advanced_Defaults(GtkButton *button, gpointer user_data)
 {
-	LinuxsseMXCSR = DEFAULT_sseMXCSR;
-	LinuxsseVUMXCSR = DEFAULT_sseVUMXCSR;
+	Config.sseMXCSR = DEFAULT_sseMXCSR;
+	Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
+	Config.eeOptions = DEFAULT_eeOptions;
+	Config.vuOptions = DEFAULT_vuOptions;
 	
 	setAdvancedOptions();
       }
 
 void on_Advanced_OK(GtkButton *button, gpointer user_data) 
 {
-	LinuxsseMXCSR &= 0x1fbf;
-	LinuxsseVUMXCSR &= 0x1fbf;
+	Config.sseMXCSR &= 0x1fbf;
+	Config.sseVUMXCSR &= 0x1fbf;
+	Config.eeOptions = 0;
+	Config.vuOptions = 0;
 	
-	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Near") ? FLAG_ROUND_NEAR : 0; 
-	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
-	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
-	LinuxsseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
-
-	LinuxsseMXCSR = Config.sseMXCSR;
-	LinuxsseVUMXCSR = Config.sseVUMXCSR;
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Near") ? FLAG_ROUND_NEAR : 0; 
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
+	Config.sseMXCSR |= is_checked(AdvDlg, "radio_EE_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
 	
-	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Near") ? FLAG_ROUND_NEAR : 0; 
-	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
-	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
-	LinuxsseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
+	Config.sseMXCSR |= is_checked(AdvDlg, "check_EE_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	Config.sseMXCSR |= is_checked(AdvDlg, "check_EE_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
 	
-	LinuxsseMXCSR |= is_checked(AdvDlg, "check_EE_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
-	LinuxsseVUMXCSR |= is_checked(AdvDlg, "check_VU_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Near") ? FLAG_ROUND_NEAR : 0; 
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Negative") ? FLAG_ROUND_NEGATIVE : 0;
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Positive") ? FLAG_ROUND_POSITIVE : 0; 
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "radio_VU_Round_Zero") ? FLAG_ROUND_ZERO : 0; 
 	
-	LinuxsseMXCSR |= is_checked(AdvDlg, "check_EE_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
-	LinuxsseVUMXCSR |= is_checked(AdvDlg, "check_VU_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "check_VU_Denormal_Zero") ? FLAG_DENORMAL_ZERO : 0;
+	Config.sseVUMXCSR |= is_checked(AdvDlg, "check_VU_Flush_Zero") ? FLAG_FLUSH_ZERO : 0;
 	
-	Config.sseMXCSR = LinuxsseMXCSR;
-	Config.sseVUMXCSR = LinuxsseVUMXCSR;
+	Config.eeOptions |= is_checked(AdvDlg, "radio_EE_Clamp_None") ? FLAG_EE_CLAMP_NONE : 0; 
+	Config.eeOptions |= is_checked(AdvDlg, "radio_EE_Clamp_Normal") ? FLAG_EE_CLAMP_NORMAL : 0;
+	Config.eeOptions |= is_checked(AdvDlg, "radio_EE_Clamp_Extra_Preserve") ? FLAG_EE_CLAMP_EXTRA_PRESERVE : 0; 
 	
-	//SysPrintf("Advanced: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+	Config.vuOptions |= is_checked(AdvDlg, "radio_VU_Clamp_None") ? FLAG_VU_CLAMP_NONE : 0; 
+	Config.vuOptions |= is_checked(AdvDlg, "radio_VU_Clamp_Normal") ? FLAG_VU_CLAMP_NORMAL : 0;
+	Config.vuOptions |= is_checked(AdvDlg, "radio_VU_Clamp_Extra") ? FLAG_VU_CLAMP_EXTRA : 0; 
+	Config.vuOptions |= is_checked(AdvDlg, "radio_VU_Clamp_Extra_Preserve") ? FLAG_VU_CLAMP_EXTRA_PRESERVE : 0; 
+	
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 	SaveConfig();
 	

@@ -15,12 +15,12 @@ export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --prefix `pwd`"
 #Debug / Devbuild version
 #export PCSX2OPTIONS="--enable-debug --enable-devbuild --enable-sse3 --prefix `pwd`"
 
-
+option=$@
 export PCSX2PLUGINS="`pwd`/bin/plugins"
 curdir=`pwd`
 
 cd ${curdir}/plugins
-sh build.sh $@
+sh build.sh $option
 
 if [ $? -ne 0 ]
 then
@@ -29,7 +29,7 @@ exit 1
 fi
 
 cd ${curdir}/pcsx2
-sh build.sh $@
+sh build.sh $option
 
 if [ $? -ne 0 ]
 then

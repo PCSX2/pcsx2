@@ -303,7 +303,7 @@ void OnDebug_Go(GtkButton *button, gpointer user_data) {
 
 void OnDebug_Log(GtkButton *button, gpointer user_data) {
 #ifdef PCSX2_DEVBUILD
-	Log = 1 - Log;
+	//Log = 1 - Log;
 #endif
 }
 

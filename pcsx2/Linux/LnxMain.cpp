@@ -167,14 +167,14 @@ int main(int argc, char *argv[]) {
 	
 	if( Config.PsxOut ) {
 		// output the help commands
-		SysPrintf("\tF1 - save state\n");
-		SysPrintf("\t(Shift +) F2 - cycle states\n");
-		SysPrintf("\tF3 - load state\n");
+		SysPrintf("\tF1 - save state");
+		SysPrintf("\t(Shift +) F2 - cycle states");
+		SysPrintf("\tF3 - load state");
 
 #ifdef PCSX2_DEVBUILD
-		SysPrintf("\tF10 - dump performance counters\n");
-		SysPrintf("\tF11 - save GS state\n");
-		SysPrintf("\tF12 - dump hardware registers\n");
+		SysPrintf("\tF10 - dump performance counters");
+		SysPrintf("\tF11 - save GS state");
+		SysPrintf("\tF12 - dump hardware registers");
 #endif
 	}
 

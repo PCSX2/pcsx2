@@ -61,8 +61,8 @@ extern int g_SaveGSStream;
 extern int g_ZeroGSOptions;
 
 // Nasty, currently neccessary hack	
-extern u32 LinuxsseMXCSR;
-extern u32 LinuxsseVUMXCSR;
+//extern u32 LinuxsseMXCSR;
+//extern u32 LinuxsseVUMXCSR;
 extern void FixCPUState(void);
 	
 /* LnxMain */
@@ -123,9 +123,26 @@ int Config_hacks_backup;
 #define set_checked(main_widget,widget_name, state) gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)), state)
 
 #define set_flag(v, flag, value) if (value == TRUE) v |= flag; else v &= flag;
-#define get_flag(v,flag) (v & flag)
+#define get_flag(v,flag) ((v & (1 << flag)) != 0)
 
-#define FLAG_SLOW_DVD 0x1
+static __forceinline void print_flags(char *name, u32 num, char *flag_names[16])
+{
+	int i;
+	
+	SysPrintf("%s:", name);
+	
+	if (flag_names != NULL)
+	{
+		for(i=0; i<=15; i++)
+			SysPrintf("%s %x: %x", flag_names[i], (1<<i), get_flag(num, i));
+	}
+	else 
+	{
+		for(i=0; i<=15; i++)
+			SysPrintf("%x: %x", (1<<i), get_flag(num, i));
+	}
+} 
+
 #define FLAG_VU_CLIP 0x2
 #define FLAG_FPU_CLAMP 0x4
 #define FLAG_VU_BRANCH 0x8
@@ -137,13 +154,8 @@ int Config_hacks_backup;
 #define FLAG_FPU_EXTRA_OVERFLOW 0x1000
 	
 #define FLAG_EE_2_SYNC 0x1
-#define FLAG_TIGHT_SPU_SYNC 0x4
-#define FLAG_NO_UNDERFLOW 0x8
 #define FLAG_IOP_2_SYNC 0x10
 #define FLAG_TRIPLE_SYNC 0x20
-#define FLAG_FAST_BRANCHES 0x80
-#define FLAG_NO_VU_FLAGS 0x100
-#define FLAG_NO_FPU_FLAGS 0x200
 #define FLAG_ESC 0x400
 
 #define FLAG_ROUND_NEAR 0x0000
@@ -153,5 +165,14 @@ int Config_hacks_backup;
 
 #define FLAG_FLUSH_ZERO 0x8000
 #define FLAG_DENORMAL_ZERO 0x0040
+
+#define FLAG_VU_CLAMP_NONE 0x0
+#define FLAG_VU_CLAMP_NORMAL 0x1
+#define FLAG_VU_CLAMP_EXTRA 0x3
+#define FLAG_VU_CLAMP_EXTRA_PRESERVE 0x7
+
+#define FLAG_EE_CLAMP_NONE 0x0
+#define FLAG_EE_CLAMP_NORMAL 0x1
+#define FLAG_EE_CLAMP_EXTRA_PRESERVE 0x3
 
 #endif /* __LINUX_H__ */

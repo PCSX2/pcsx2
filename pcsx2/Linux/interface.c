@@ -31,37 +31,72 @@ create_AdvDlg (void)
 {
   GtkWidget *AdvDlg;
   GtkWidget *dialog_vbox4;
-  GtkWidget *hbox21;
-  GtkWidget *frame15;
-  GtkWidget *alignment10;
-  GtkWidget *vbox36;
-  GtkWidget *frame17;
-  GtkWidget *alignment12;
-  GtkWidget *vbox38;
+  GtkWidget *hbox33;
+  GtkWidget *vbox52;
+  GtkWidget *frame24;
+  GtkWidget *alignment19;
+  GtkWidget *vbox53;
+  GtkWidget *frame26;
+  GtkWidget *alignment21;
+  GtkWidget *hbox35;
   GtkWidget *radio_EE_Round_Near;
   GSList *radio_EE_Round_Near_group = NULL;
   GtkWidget *radio_EE_Round_Negative;
   GtkWidget *radio_EE_Round_Positive;
   GtkWidget *radio_EE_Round_Zero;
-  GtkWidget *label50;
+  GtkWidget *label72;
+  GtkWidget *frame27;
+  GtkWidget *alignment22;
+  GtkWidget *hbox37;
+  GtkWidget *radio_EE_Clamp_None;
+  GSList *radio_EE_Clamp_None_group = NULL;
+  GtkWidget *radio_EE_Clamp_Normal;
+  GtkWidget *radio_EE_Clamp_Extra_Preserve;
+  GtkWidget *label73;
+  GtkWidget *hbox34;
   GtkWidget *check_EE_Flush_Zero;
   GtkWidget *check_EE_Denormal_Zero;
-  GtkWidget *label48;
-  GtkWidget *frame16;
-  GtkWidget *alignment11;
-  GtkWidget *vbox37;
-  GtkWidget *frame18;
-  GtkWidget *alignment13;
-  GtkWidget *vbox39;
+  GtkWidget *label70;
+  GtkWidget *frame25;
+  GtkWidget *alignment20;
+  GtkWidget *vbox54;
+  GtkWidget *frame28;
+  GtkWidget *alignment23;
+  GtkWidget *hbox36;
   GtkWidget *radio_VU_Round_Near;
   GSList *radio_VU_Round_Near_group = NULL;
   GtkWidget *radio_VU_Round_Negative;
   GtkWidget *radio_VU_Round_Positive;
   GtkWidget *radio_VU_Round_Zero;
-  GtkWidget *label51;
+  GtkWidget *label74;
+  GtkWidget *frame29;
+  GtkWidget *alignment24;
+  GtkWidget *hbox38;
+  GtkWidget *radio_VU_Clamp_None;
+  GSList *radio_VU_Clamp_None_group = NULL;
+  GtkWidget *radio_VU_Clamp_Normal;
+  GtkWidget *radio_VU_Clamp_Extra;
+  GtkWidget *radio_VU_Clamp_Extra_Preserve;
+  GtkWidget *label75;
+  GtkWidget *table7;
   GtkWidget *check_VU_Flush_Zero;
   GtkWidget *check_VU_Denormal_Zero;
-  GtkWidget *label49;
+  GtkWidget *Check_Set_OU_Flags;
+  GtkWidget *check_Emulate_DaZ;
+  GtkWidget *label71;
+  GtkWidget *vbox51;
+  GtkWidget *frame30;
+  GtkWidget *alignment25;
+  GtkWidget *label81;
+  GtkWidget *label78;
+  GtkWidget *frame31;
+  GtkWidget *alignment26;
+  GtkWidget *label84;
+  GtkWidget *label79;
+  GtkWidget *frame32;
+  GtkWidget *alignment27;
+  GtkWidget *label83;
+  GtkWidget *label80;
   GtkWidget *dialog_action_area4;
   GtkWidget *AdvDefaultBtn;
   GtkWidget *button79;
@@ -74,149 +109,323 @@ create_AdvDlg (void)
   dialog_vbox4 = GTK_DIALOG (AdvDlg)->vbox;
   gtk_widget_show (dialog_vbox4);
 
-  hbox21 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox21);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox4), hbox21, TRUE, TRUE, 0);
+  hbox33 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox33);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox4), hbox33, TRUE, TRUE, 0);
 
-  frame15 = gtk_frame_new (NULL);
-  gtk_widget_show (frame15);
-  gtk_box_pack_start (GTK_BOX (hbox21), frame15, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame15), GTK_SHADOW_NONE);
+  vbox52 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox52);
+  gtk_box_pack_start (GTK_BOX (hbox33), vbox52, TRUE, TRUE, 0);
 
-  alignment10 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment10);
-  gtk_container_add (GTK_CONTAINER (frame15), alignment10);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment10), 0, 0, 12, 0);
+  frame24 = gtk_frame_new (NULL);
+  gtk_widget_show (frame24);
+  gtk_box_pack_start (GTK_BOX (vbox52), frame24, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame24), GTK_SHADOW_NONE);
 
-  vbox36 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox36);
-  gtk_container_add (GTK_CONTAINER (alignment10), vbox36);
+  alignment19 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment19);
+  gtk_container_add (GTK_CONTAINER (frame24), alignment19);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment19), 0, 0, 12, 0);
 
-  frame17 = gtk_frame_new (NULL);
-  gtk_widget_show (frame17);
-  gtk_box_pack_start (GTK_BOX (vbox36), frame17, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame17), GTK_SHADOW_NONE);
+  vbox53 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox53);
+  gtk_container_add (GTK_CONTAINER (alignment19), vbox53);
 
-  alignment12 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment12);
-  gtk_container_add (GTK_CONTAINER (frame17), alignment12);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment12), 0, 0, 12, 0);
+  frame26 = gtk_frame_new (NULL);
+  gtk_widget_show (frame26);
+  gtk_box_pack_start (GTK_BOX (vbox53), frame26, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame26), GTK_SHADOW_NONE);
 
-  vbox38 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox38);
-  gtk_container_add (GTK_CONTAINER (alignment12), vbox38);
+  alignment21 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment21);
+  gtk_container_add (GTK_CONTAINER (frame26), alignment21);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment21), 0, 0, 12, 0);
+
+  hbox35 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox35);
+  gtk_container_add (GTK_CONTAINER (alignment21), hbox35);
 
   radio_EE_Round_Near = gtk_radio_button_new_with_mnemonic (NULL, _("Nearest"));
   gtk_widget_show (radio_EE_Round_Near);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Near, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox35), radio_EE_Round_Near, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Near), radio_EE_Round_Near_group);
   radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Near));
 
   radio_EE_Round_Negative = gtk_radio_button_new_with_mnemonic (NULL, _("Negative"));
   gtk_widget_show (radio_EE_Round_Negative);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Negative, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox35), radio_EE_Round_Negative, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Negative), radio_EE_Round_Near_group);
   radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Negative));
 
   radio_EE_Round_Positive = gtk_radio_button_new_with_mnemonic (NULL, _("Positive"));
   gtk_widget_show (radio_EE_Round_Positive);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Positive, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox35), radio_EE_Round_Positive, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Positive), radio_EE_Round_Near_group);
   radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Positive));
 
-  radio_EE_Round_Zero = gtk_radio_button_new_with_mnemonic (NULL, _("Zero"));
+  radio_EE_Round_Zero = gtk_radio_button_new_with_mnemonic (NULL, _("Chop/Zero"));
   gtk_widget_show (radio_EE_Round_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox38), radio_EE_Round_Zero, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox35), radio_EE_Round_Zero, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Round_Zero), radio_EE_Round_Near_group);
   radio_EE_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Round_Zero));
 
-  label50 = gtk_label_new (_("<b>Roundmode</b>"));
-  gtk_widget_show (label50);
-  gtk_frame_set_label_widget (GTK_FRAME (frame17), label50);
-  gtk_label_set_use_markup (GTK_LABEL (label50), TRUE);
+  label72 = gtk_label_new (_("<b>Round Mode</b>"));
+  gtk_widget_show (label72);
+  gtk_frame_set_label_widget (GTK_FRAME (frame26), label72);
+  gtk_label_set_use_markup (GTK_LABEL (label72), TRUE);
+
+  frame27 = gtk_frame_new (NULL);
+  gtk_widget_show (frame27);
+  gtk_box_pack_start (GTK_BOX (vbox53), frame27, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame27), GTK_SHADOW_NONE);
+
+  alignment22 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment22);
+  gtk_container_add (GTK_CONTAINER (frame27), alignment22);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment22), 0, 0, 12, 0);
+
+  hbox37 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox37);
+  gtk_container_add (GTK_CONTAINER (alignment22), hbox37);
+
+  radio_EE_Clamp_None = gtk_radio_button_new_with_mnemonic (NULL, _("None"));
+  gtk_widget_show (radio_EE_Clamp_None);
+  gtk_box_pack_start (GTK_BOX (hbox37), radio_EE_Clamp_None, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Clamp_None), radio_EE_Clamp_None_group);
+  radio_EE_Clamp_None_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Clamp_None));
+
+  radio_EE_Clamp_Normal = gtk_radio_button_new_with_mnemonic (NULL, _("Normal"));
+  gtk_widget_show (radio_EE_Clamp_Normal);
+  gtk_box_pack_start (GTK_BOX (hbox37), radio_EE_Clamp_Normal, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Clamp_Normal), radio_EE_Clamp_None_group);
+  radio_EE_Clamp_None_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Clamp_Normal));
+
+  radio_EE_Clamp_Extra_Preserve = gtk_radio_button_new_with_mnemonic (NULL, _("Extra + Preserve Sign"));
+  gtk_widget_show (radio_EE_Clamp_Extra_Preserve);
+  gtk_box_pack_start (GTK_BOX (hbox37), radio_EE_Clamp_Extra_Preserve, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_EE_Clamp_Extra_Preserve), radio_EE_Clamp_None_group);
+  radio_EE_Clamp_None_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_EE_Clamp_Extra_Preserve));
+
+  label73 = gtk_label_new (_("<b>Clamp Mode</b>"));
+  gtk_widget_show (label73);
+  gtk_frame_set_label_widget (GTK_FRAME (frame27), label73);
+  gtk_label_set_use_markup (GTK_LABEL (label73), TRUE);
+
+  hbox34 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox34);
+  gtk_box_pack_start (GTK_BOX (vbox53), hbox34, TRUE, TRUE, 0);
 
   check_EE_Flush_Zero = gtk_check_button_new_with_mnemonic (_("Flush to Zero"));
   gtk_widget_show (check_EE_Flush_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox36), check_EE_Flush_Zero, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox34), check_EE_Flush_Zero, FALSE, FALSE, 0);
 
   check_EE_Denormal_Zero = gtk_check_button_new_with_mnemonic (_("Denormals are Zero"));
   gtk_widget_show (check_EE_Denormal_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox36), check_EE_Denormal_Zero, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox34), check_EE_Denormal_Zero, FALSE, FALSE, 0);
 
-  label48 = gtk_label_new (_("<b>EE Recs Options</b>"));
-  gtk_widget_show (label48);
-  gtk_frame_set_label_widget (GTK_FRAME (frame15), label48);
-  gtk_label_set_use_markup (GTK_LABEL (label48), TRUE);
+  label70 = gtk_label_new (_("<b>EE Recs Options</b>"));
+  gtk_widget_show (label70);
+  gtk_frame_set_label_widget (GTK_FRAME (frame24), label70);
+  gtk_label_set_use_markup (GTK_LABEL (label70), TRUE);
 
-  frame16 = gtk_frame_new (NULL);
-  gtk_widget_show (frame16);
-  gtk_box_pack_start (GTK_BOX (hbox21), frame16, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame16), GTK_SHADOW_NONE);
+  frame25 = gtk_frame_new (NULL);
+  gtk_widget_show (frame25);
+  gtk_box_pack_start (GTK_BOX (vbox52), frame25, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame25), GTK_SHADOW_NONE);
 
-  alignment11 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment11);
-  gtk_container_add (GTK_CONTAINER (frame16), alignment11);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment11), 0, 0, 12, 0);
+  alignment20 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment20);
+  gtk_container_add (GTK_CONTAINER (frame25), alignment20);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment20), 0, 0, 12, 0);
 
-  vbox37 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox37);
-  gtk_container_add (GTK_CONTAINER (alignment11), vbox37);
+  vbox54 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox54);
+  gtk_container_add (GTK_CONTAINER (alignment20), vbox54);
 
-  frame18 = gtk_frame_new (NULL);
-  gtk_widget_show (frame18);
-  gtk_box_pack_start (GTK_BOX (vbox37), frame18, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame18), GTK_SHADOW_NONE);
+  frame28 = gtk_frame_new (NULL);
+  gtk_widget_show (frame28);
+  gtk_box_pack_start (GTK_BOX (vbox54), frame28, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame28), GTK_SHADOW_NONE);
 
-  alignment13 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment13);
-  gtk_container_add (GTK_CONTAINER (frame18), alignment13);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment13), 0, 0, 12, 0);
+  alignment23 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment23);
+  gtk_container_add (GTK_CONTAINER (frame28), alignment23);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment23), 0, 0, 12, 0);
 
-  vbox39 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox39);
-  gtk_container_add (GTK_CONTAINER (alignment13), vbox39);
+  hbox36 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox36);
+  gtk_container_add (GTK_CONTAINER (alignment23), hbox36);
 
   radio_VU_Round_Near = gtk_radio_button_new_with_mnemonic (NULL, _("Nearest"));
   gtk_widget_show (radio_VU_Round_Near);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Near, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox36), radio_VU_Round_Near, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Near), radio_VU_Round_Near_group);
   radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Near));
 
   radio_VU_Round_Negative = gtk_radio_button_new_with_mnemonic (NULL, _("Negative"));
   gtk_widget_show (radio_VU_Round_Negative);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Negative, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox36), radio_VU_Round_Negative, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Negative), radio_VU_Round_Near_group);
   radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Negative));
 
   radio_VU_Round_Positive = gtk_radio_button_new_with_mnemonic (NULL, _("Positive"));
   gtk_widget_show (radio_VU_Round_Positive);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Positive, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox36), radio_VU_Round_Positive, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Positive), radio_VU_Round_Near_group);
   radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Positive));
 
   radio_VU_Round_Zero = gtk_radio_button_new_with_mnemonic (NULL, _("Zero"));
   gtk_widget_show (radio_VU_Round_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox39), radio_VU_Round_Zero, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox36), radio_VU_Round_Zero, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Round_Zero), radio_VU_Round_Near_group);
   radio_VU_Round_Near_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Round_Zero));
 
-  label51 = gtk_label_new (_("<b>Roundmode</b>"));
-  gtk_widget_show (label51);
-  gtk_frame_set_label_widget (GTK_FRAME (frame18), label51);
-  gtk_label_set_use_markup (GTK_LABEL (label51), TRUE);
+  label74 = gtk_label_new (_("<b>Round Mode</b>"));
+  gtk_widget_show (label74);
+  gtk_frame_set_label_widget (GTK_FRAME (frame28), label74);
+  gtk_label_set_use_markup (GTK_LABEL (label74), TRUE);
+
+  frame29 = gtk_frame_new (NULL);
+  gtk_widget_show (frame29);
+  gtk_box_pack_start (GTK_BOX (vbox54), frame29, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame29), GTK_SHADOW_NONE);
+
+  alignment24 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment24);
+  gtk_container_add (GTK_CONTAINER (frame29), alignment24);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment24), 0, 0, 12, 0);
+
+  hbox38 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox38);
+  gtk_container_add (GTK_CONTAINER (alignment24), hbox38);
+
+  radio_VU_Clamp_None = gtk_radio_button_new_with_mnemonic (NULL, _("None"));
+  gtk_widget_show (radio_VU_Clamp_None);
+  gtk_box_pack_start (GTK_BOX (hbox38), radio_VU_Clamp_None, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Clamp_None), radio_VU_Clamp_None_group);
+  radio_VU_Clamp_None_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Clamp_None));
+
+  radio_VU_Clamp_Normal = gtk_radio_button_new_with_mnemonic (NULL, _("Normal"));
+  gtk_widget_show (radio_VU_Clamp_Normal);
+  gtk_box_pack_start (GTK_BOX (hbox38), radio_VU_Clamp_Normal, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Clamp_Normal), radio_VU_Clamp_None_group);
+  radio_VU_Clamp_None_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Clamp_Normal));
+
+  radio_VU_Clamp_Extra = gtk_radio_button_new_with_mnemonic (NULL, _("Extra"));
+  gtk_widget_show (radio_VU_Clamp_Extra);
+  gtk_box_pack_start (GTK_BOX (hbox38), radio_VU_Clamp_Extra, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Clamp_Extra), radio_VU_Clamp_None_group);
+  radio_VU_Clamp_None_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Clamp_Extra));
+
+  radio_VU_Clamp_Extra_Preserve = gtk_radio_button_new_with_mnemonic (NULL, _("Extra + Preserve Sign"));
+  gtk_widget_show (radio_VU_Clamp_Extra_Preserve);
+  gtk_box_pack_start (GTK_BOX (hbox38), radio_VU_Clamp_Extra_Preserve, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radio_VU_Clamp_Extra_Preserve), radio_VU_Clamp_None_group);
+  radio_VU_Clamp_None_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_VU_Clamp_Extra_Preserve));
+
+  label75 = gtk_label_new (_("<b>Clamp Mode</b>"));
+  gtk_widget_show (label75);
+  gtk_frame_set_label_widget (GTK_FRAME (frame29), label75);
+  gtk_label_set_use_markup (GTK_LABEL (label75), TRUE);
+
+  table7 = gtk_table_new (2, 2, FALSE);
+  gtk_widget_show (table7);
+  gtk_box_pack_start (GTK_BOX (vbox54), table7, TRUE, TRUE, 0);
 
   check_VU_Flush_Zero = gtk_check_button_new_with_mnemonic (_("Flush to Zero"));
   gtk_widget_show (check_VU_Flush_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox37), check_VU_Flush_Zero, FALSE, FALSE, 0);
+  gtk_table_attach (GTK_TABLE (table7), check_VU_Flush_Zero, 0, 1, 0, 1,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
   check_VU_Denormal_Zero = gtk_check_button_new_with_mnemonic (_("Denormals are Zero"));
   gtk_widget_show (check_VU_Denormal_Zero);
-  gtk_box_pack_start (GTK_BOX (vbox37), check_VU_Denormal_Zero, FALSE, FALSE, 0);
+  gtk_table_attach (GTK_TABLE (table7), check_VU_Denormal_Zero, 1, 2, 0, 1,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
-  label49 = gtk_label_new (_("<b>VU Recs Options</b>"));
-  gtk_widget_show (label49);
-  gtk_frame_set_label_widget (GTK_FRAME (frame16), label49);
-  gtk_label_set_use_markup (GTK_LABEL (label49), TRUE);
+  Check_Set_OU_Flags = gtk_check_button_new_with_mnemonic (_("Set O & U Flags"));
+  gtk_widget_show (Check_Set_OU_Flags);
+  gtk_table_attach (GTK_TABLE (table7), Check_Set_OU_Flags, 0, 1, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_widget_set_sensitive (Check_Set_OU_Flags, FALSE);
+
+  check_Emulate_DaZ = gtk_check_button_new_with_mnemonic (_("Software Emulate DaZ"));
+  gtk_widget_show (check_Emulate_DaZ);
+  gtk_table_attach (GTK_TABLE (table7), check_Emulate_DaZ, 1, 2, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_widget_set_sensitive (check_Emulate_DaZ, FALSE);
+
+  label71 = gtk_label_new (_("<b>VU Recs Options</b>"));
+  gtk_widget_show (label71);
+  gtk_frame_set_label_widget (GTK_FRAME (frame25), label71);
+  gtk_label_set_use_markup (GTK_LABEL (label71), TRUE);
+
+  vbox51 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox51);
+  gtk_box_pack_start (GTK_BOX (hbox33), vbox51, TRUE, TRUE, 0);
+
+  frame30 = gtk_frame_new (NULL);
+  gtk_widget_show (frame30);
+  gtk_box_pack_start (GTK_BOX (vbox51), frame30, FALSE, FALSE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame30), GTK_SHADOW_NONE);
+
+  alignment25 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment25);
+  gtk_container_add (GTK_CONTAINER (frame30), alignment25);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment25), 0, 0, 12, 0);
+
+  label81 = gtk_label_new (_("These options specify how your CPU rounds floating point values.\n\nTry changing the roundmode for EE if your game hangs, it could make it work again."));
+  gtk_widget_show (label81);
+  gtk_container_add (GTK_CONTAINER (alignment25), label81);
+  gtk_label_set_line_wrap (GTK_LABEL (label81), TRUE);
+
+  label78 = gtk_label_new (_("<b>Round Mode</b>"));
+  gtk_widget_show (label78);
+  gtk_frame_set_label_widget (GTK_FRAME (frame30), label78);
+  gtk_label_set_use_markup (GTK_LABEL (label78), TRUE);
+
+  frame31 = gtk_frame_new (NULL);
+  gtk_widget_show (frame31);
+  gtk_box_pack_start (GTK_BOX (vbox51), frame31, FALSE, FALSE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame31), GTK_SHADOW_NONE);
+
+  alignment26 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment26);
+  gtk_container_add (GTK_CONTAINER (frame31), alignment26);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment26), 0, 0, 12, 0);
+
+  label84 = gtk_label_new (_("These options specify how PCSX2's recompilers will clamp Infinities and NaN (Not a Number) values in the opcode instructions.\n\nNone - No clamping. (Fastest Mode)\nNormal - Clamps the result.\nExtra - Clamps the operands, the result, and anywhere in between.\nExtra + Preserve Sign - Same as \"\"Extra\"\", except preserves NaN's sign when clamping the operands. (Slowest Mode)"));
+  gtk_widget_show (label84);
+  gtk_container_add (GTK_CONTAINER (alignment26), label84);
+  gtk_label_set_line_wrap (GTK_LABEL (label84), TRUE);
+
+  label79 = gtk_label_new (_("<b>Clamp Mode</b>"));
+  gtk_widget_show (label79);
+  gtk_frame_set_label_widget (GTK_FRAME (frame31), label79);
+  gtk_label_set_use_markup (GTK_LABEL (label79), TRUE);
+
+  frame32 = gtk_frame_new (NULL);
+  gtk_widget_show (frame32);
+  gtk_box_pack_start (GTK_BOX (vbox51), frame32, FALSE, FALSE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame32), GTK_SHADOW_NONE);
+
+  alignment27 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment27);
+  gtk_container_add (GTK_CONTAINER (frame32), alignment27);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment27), 0, 0, 12, 0);
+
+  label83 = gtk_label_new (_("Flush to Zero - Your CPU makes Floating Point Underflows become Zero, so it does less work. (Speed Up)\n\nDenormals are Zero - Your CPU makes Floating Point Denormals become Zero, so it does less work. (Speed Up)"));
+  gtk_widget_show (label83);
+  gtk_container_add (GTK_CONTAINER (alignment27), label83);
+  gtk_label_set_line_wrap (GTK_LABEL (label83), TRUE);
+
+  label80 = gtk_label_new (_("<b>Other Options</b>"));
+  gtk_widget_show (label80);
+  gtk_frame_set_label_widget (GTK_FRAME (frame32), label80);
+  gtk_label_set_use_markup (GTK_LABEL (label80), TRUE);
 
   dialog_action_area4 = GTK_DIALOG (AdvDlg)->action_area;
   gtk_widget_show (dialog_action_area4);
@@ -250,35 +459,68 @@ create_AdvDlg (void)
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, AdvDlg, "AdvDlg");
   GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, dialog_vbox4, "dialog_vbox4");
-  GLADE_HOOKUP_OBJECT (AdvDlg, hbox21, "hbox21");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame15, "frame15");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment10, "alignment10");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox36, "vbox36");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame17, "frame17");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment12, "alignment12");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox38, "vbox38");
+  GLADE_HOOKUP_OBJECT (AdvDlg, hbox33, "hbox33");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox52, "vbox52");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame24, "frame24");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment19, "alignment19");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox53, "vbox53");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame26, "frame26");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment21, "alignment21");
+  GLADE_HOOKUP_OBJECT (AdvDlg, hbox35, "hbox35");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Near, "radio_EE_Round_Near");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Negative, "radio_EE_Round_Negative");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Positive, "radio_EE_Round_Positive");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Round_Zero, "radio_EE_Round_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label50, "label50");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label72, "label72");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame27, "frame27");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment22, "alignment22");
+  GLADE_HOOKUP_OBJECT (AdvDlg, hbox37, "hbox37");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Clamp_None, "radio_EE_Clamp_None");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Clamp_Normal, "radio_EE_Clamp_Normal");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_EE_Clamp_Extra_Preserve, "radio_EE_Clamp_Extra_Preserve");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label73, "label73");
+  GLADE_HOOKUP_OBJECT (AdvDlg, hbox34, "hbox34");
   GLADE_HOOKUP_OBJECT (AdvDlg, check_EE_Flush_Zero, "check_EE_Flush_Zero");
   GLADE_HOOKUP_OBJECT (AdvDlg, check_EE_Denormal_Zero, "check_EE_Denormal_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label48, "label48");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame16, "frame16");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment11, "alignment11");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox37, "vbox37");
-  GLADE_HOOKUP_OBJECT (AdvDlg, frame18, "frame18");
-  GLADE_HOOKUP_OBJECT (AdvDlg, alignment13, "alignment13");
-  GLADE_HOOKUP_OBJECT (AdvDlg, vbox39, "vbox39");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label70, "label70");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame25, "frame25");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment20, "alignment20");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox54, "vbox54");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame28, "frame28");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment23, "alignment23");
+  GLADE_HOOKUP_OBJECT (AdvDlg, hbox36, "hbox36");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Near, "radio_VU_Round_Near");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Negative, "radio_VU_Round_Negative");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Positive, "radio_VU_Round_Positive");
   GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Round_Zero, "radio_VU_Round_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label51, "label51");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label74, "label74");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame29, "frame29");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment24, "alignment24");
+  GLADE_HOOKUP_OBJECT (AdvDlg, hbox38, "hbox38");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Clamp_None, "radio_VU_Clamp_None");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Clamp_Normal, "radio_VU_Clamp_Normal");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Clamp_Extra, "radio_VU_Clamp_Extra");
+  GLADE_HOOKUP_OBJECT (AdvDlg, radio_VU_Clamp_Extra_Preserve, "radio_VU_Clamp_Extra_Preserve");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label75, "label75");
+  GLADE_HOOKUP_OBJECT (AdvDlg, table7, "table7");
   GLADE_HOOKUP_OBJECT (AdvDlg, check_VU_Flush_Zero, "check_VU_Flush_Zero");
   GLADE_HOOKUP_OBJECT (AdvDlg, check_VU_Denormal_Zero, "check_VU_Denormal_Zero");
-  GLADE_HOOKUP_OBJECT (AdvDlg, label49, "label49");
+  GLADE_HOOKUP_OBJECT (AdvDlg, Check_Set_OU_Flags, "Check_Set_OU_Flags");
+  GLADE_HOOKUP_OBJECT (AdvDlg, check_Emulate_DaZ, "check_Emulate_DaZ");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label71, "label71");
+  GLADE_HOOKUP_OBJECT (AdvDlg, vbox51, "vbox51");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame30, "frame30");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment25, "alignment25");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label81, "label81");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label78, "label78");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame31, "frame31");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment26, "alignment26");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label84, "label84");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label79, "label79");
+  GLADE_HOOKUP_OBJECT (AdvDlg, frame32, "frame32");
+  GLADE_HOOKUP_OBJECT (AdvDlg, alignment27, "alignment27");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label83, "label83");
+  GLADE_HOOKUP_OBJECT (AdvDlg, label80, "label80");
   GLADE_HOOKUP_OBJECT_NO_REF (AdvDlg, dialog_action_area4, "dialog_action_area4");
   GLADE_HOOKUP_OBJECT (AdvDlg, AdvDefaultBtn, "AdvDefaultBtn");
   GLADE_HOOKUP_OBJECT (AdvDlg, button79, "button79");
@@ -294,23 +536,6 @@ create_SpeedHacksDlg (void)
   GtkWidget *dialog_vbox3;
   GtkWidget *vbox31;
   GtkWidget *label43;
-  GtkWidget *frame11;
-  GtkWidget *alignment6;
-  GtkWidget *vbox32;
-  GtkWidget *hbox22;
-  GtkWidget *ComboVUOverflow;
-  GtkWidget *label52;
-  GtkWidget *hbox23;
-  GtkWidget *ComboFPUOverflow;
-  GtkWidget *label53;
-  GtkWidget *check_Disable_Underflow;
-  GtkWidget *label44;
-  GtkWidget *frame12;
-  GtkWidget *alignment7;
-  GtkWidget *vbox35;
-  GtkWidget *check_Disable_VU_Flags;
-  GtkWidget *check_Disable_FPU_Flags;
-  GtkWidget *label45;
   GtkWidget *frame13;
   GtkWidget *alignment8;
   GtkWidget *vbox34;
@@ -324,9 +549,6 @@ create_SpeedHacksDlg (void)
   GtkWidget *check_ESC_Hack;
   GtkWidget *label47;
   GtkWidget *dialog_action_area3;
-  GtkWidget *button73;
-  GtkWidget *button74;
-  GtkWidget *button75;
   GtkWidget *button99;
   GtkWidget *button98;
 
@@ -346,86 +568,6 @@ create_SpeedHacksDlg (void)
   gtk_box_pack_start (GTK_BOX (vbox31), label43, FALSE, FALSE, 0);
   gtk_label_set_justify (GTK_LABEL (label43), GTK_JUSTIFY_CENTER);
 
-  frame11 = gtk_frame_new (NULL);
-  gtk_widget_show (frame11);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame11, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame11), GTK_SHADOW_NONE);
-
-  alignment6 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment6);
-  gtk_container_add (GTK_CONTAINER (frame11), alignment6);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment6), 0, 0, 12, 0);
-
-  vbox32 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox32);
-  gtk_container_add (GTK_CONTAINER (alignment6), vbox32);
-
-  hbox22 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox22);
-  gtk_box_pack_start (GTK_BOX (vbox32), hbox22, FALSE, FALSE, 0);
-
-  ComboVUOverflow = gtk_combo_box_new_text ();
-  gtk_widget_show (ComboVUOverflow);
-  gtk_box_pack_start (GTK_BOX (hbox22), ComboVUOverflow, FALSE, TRUE, 0);
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Disabled (Speedup!)"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Normal"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboVUOverflow), _("Enabled (Helps SPS, Slow)"));
-
-  label52 = gtk_label_new (_("VU Overflow Checks"));
-  gtk_widget_show (label52);
-  gtk_box_pack_start (GTK_BOX (hbox22), label52, FALSE, FALSE, 0);
-
-  hbox23 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox23);
-  gtk_box_pack_start (GTK_BOX (vbox32), hbox23, FALSE, FALSE, 0);
-
-  ComboFPUOverflow = gtk_combo_box_new_text ();
-  gtk_widget_show (ComboFPUOverflow);
-  gtk_box_pack_start (GTK_BOX (hbox23), ComboFPUOverflow, FALSE, TRUE, 0);
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Disabled (Speedup!)"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Normal"));
-  gtk_combo_box_append_text (GTK_COMBO_BOX (ComboFPUOverflow), _("Enabled (Helps SPS, Slow)"));
-
-  label53 = gtk_label_new (_("FPU Overflow Checks"));
-  gtk_widget_show (label53);
-  gtk_box_pack_start (GTK_BOX (hbox23), label53, FALSE, FALSE, 0);
-
-  check_Disable_Underflow = gtk_check_button_new_with_mnemonic (_("Disable Underflow Checks -  *Checked = Disables underflow checks. ( Speedup! )"));
-  gtk_widget_show (check_Disable_Underflow);
-  gtk_box_pack_start (GTK_BOX (vbox32), check_Disable_Underflow, FALSE, FALSE, 0);
-
-  label44 = gtk_label_new (_("<b>Overflow and Underflow</b>"));
-  gtk_widget_show (label44);
-  gtk_frame_set_label_widget (GTK_FRAME (frame11), label44);
-  gtk_label_set_use_markup (GTK_LABEL (label44), TRUE);
-
-  frame12 = gtk_frame_new (NULL);
-  gtk_widget_show (frame12);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame12, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame12), GTK_SHADOW_NONE);
-
-  alignment7 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment7);
-  gtk_container_add (GTK_CONTAINER (frame12), alignment7);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment7), 0, 0, 12, 0);
-
-  vbox35 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox35);
-  gtk_container_add (GTK_CONTAINER (alignment7), vbox35);
-
-  check_Disable_VU_Flags = gtk_check_button_new_with_mnemonic (_("Disable Extra VU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )"));
-  gtk_widget_show (check_Disable_VU_Flags);
-  gtk_box_pack_start (GTK_BOX (vbox35), check_Disable_VU_Flags, FALSE, FALSE, 0);
-
-  check_Disable_FPU_Flags = gtk_check_button_new_with_mnemonic (_("Disable Extra FPU Flags - When checked, PCSX2 doesn't set some flags that are rarely used by games. ( Speedup! )"));
-  gtk_widget_show (check_Disable_FPU_Flags);
-  gtk_box_pack_start (GTK_BOX (vbox35), check_Disable_FPU_Flags, FALSE, FALSE, 0);
-
-  label45 = gtk_label_new (_("<b>Flag Settings</b>"));
-  gtk_widget_show (label45);
-  gtk_frame_set_label_widget (GTK_FRAME (frame12), label45);
-  gtk_label_set_use_markup (GTK_LABEL (label45), TRUE);
-
   frame13 = gtk_frame_new (NULL);
   gtk_widget_show (frame13);
   gtk_box_pack_start (GTK_BOX (vbox31), frame13, TRUE, TRUE, 0);
@@ -440,15 +582,15 @@ create_SpeedHacksDlg (void)
   gtk_widget_show (vbox34);
   gtk_container_add (GTK_CONTAINER (alignment8), vbox34);
 
-  check_EE_Double_Sync = gtk_check_button_new_with_mnemonic (_("EE Sync Hack (x2) - Doubles the cycle rate of the EE. ( Big Speedup in most games! )"));
+  check_EE_Double_Sync = gtk_check_button_new_with_mnemonic (_("EE Sync Hack (x2) - Doubles the cycle rate of the EE."));
   gtk_widget_show (check_EE_Double_Sync);
   gtk_box_pack_start (GTK_BOX (vbox34), check_EE_Double_Sync, FALSE, FALSE, 0);
 
-  check_IOP_Double_Sync = gtk_check_button_new_with_mnemonic (_("IOP Sync Hack (x2) - Doubles the cycle rate of the IOP. ( Speedup but breaks some games. )"));
+  check_IOP_Double_Sync = gtk_check_button_new_with_mnemonic (_("IOP Sync Hack (x2) - Doubles the cycle rate of the IOP"));
   gtk_widget_show (check_IOP_Double_Sync);
   gtk_box_pack_start (GTK_BOX (vbox34), check_IOP_Double_Sync, FALSE, FALSE, 0);
 
-  check_Triple_Sync = gtk_check_button_new_with_mnemonic (_("EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. (Even faster, but very unstable. Use at your own risk!)"));
+  check_Triple_Sync = gtk_check_button_new_with_mnemonic (_("EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. "));
   gtk_widget_show (check_Triple_Sync);
   gtk_box_pack_start (GTK_BOX (vbox34), check_Triple_Sync, FALSE, FALSE, 0);
 
@@ -484,21 +626,6 @@ create_SpeedHacksDlg (void)
   gtk_widget_show (dialog_action_area3);
   gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area3), GTK_BUTTONBOX_END);
 
-  button73 = gtk_button_new_with_mnemonic (_("Compatability"));
-  gtk_widget_show (button73);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button73, 0);
-  GTK_WIDGET_SET_FLAGS (button73, GTK_CAN_DEFAULT);
-
-  button74 = gtk_button_new_with_mnemonic (_("Speed"));
-  gtk_widget_show (button74);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button74, 0);
-  GTK_WIDGET_SET_FLAGS (button74, GTK_CAN_DEFAULT);
-
-  button75 = gtk_button_new_with_mnemonic (_("Normal"));
-  gtk_widget_show (button75);
-  gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button75, 0);
-  GTK_WIDGET_SET_FLAGS (button75, GTK_CAN_DEFAULT);
-
   button99 = gtk_button_new_from_stock ("gtk-ok");
   gtk_widget_show (button99);
   gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button99, GTK_RESPONSE_OK);
@@ -509,15 +636,6 @@ create_SpeedHacksDlg (void)
   gtk_dialog_add_action_widget (GTK_DIALOG (SpeedHacksDlg), button98, GTK_RESPONSE_CANCEL);
   GTK_WIDGET_SET_FLAGS (button98, GTK_CAN_DEFAULT);
 
-  g_signal_connect ((gpointer) button73, "clicked",
-                    G_CALLBACK (on_Speed_Hack_Compatability),
-                    NULL);
-  g_signal_connect ((gpointer) button74, "clicked",
-                    G_CALLBACK (on_Speed_Hack_Speed),
-                    NULL);
-  g_signal_connect ((gpointer) button75, "clicked",
-                    G_CALLBACK (on_Speed_Hack_Normal),
-                    NULL);
   g_signal_connect ((gpointer) button99, "clicked",
                     G_CALLBACK (on_Speed_Hack_OK),
                     NULL);
@@ -530,23 +648,6 @@ create_SpeedHacksDlg (void)
   GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_vbox3, "dialog_vbox3");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox31, "vbox31");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label43, "label43");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame11, "frame11");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment6, "alignment6");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox32, "vbox32");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hbox22, "hbox22");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, ComboVUOverflow, "ComboVUOverflow");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label52, "label52");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hbox23, "hbox23");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, ComboFPUOverflow, "ComboFPUOverflow");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label53, "label53");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_Underflow, "check_Disable_Underflow");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label44, "label44");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame12, "frame12");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment7, "alignment7");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox35, "vbox35");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_VU_Flags, "check_Disable_VU_Flags");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Disable_FPU_Flags, "check_Disable_FPU_Flags");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label45, "label45");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame13, "frame13");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment8, "alignment8");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox34, "vbox34");
@@ -560,9 +661,6 @@ create_SpeedHacksDlg (void)
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_ESC_Hack, "check_ESC_Hack");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label47, "label47");
   GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_action_area3, "dialog_action_area3");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button73, "button73");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button74, "button74");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button75, "button75");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button99, "button99");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button98, "button98");
 
@@ -579,7 +677,6 @@ create_GameFixDlg (void)
   GtkWidget *vbox30;
   GtkWidget *check_VU_Clip;
   GtkWidget *check_FPU_Clamp;
-  GtkWidget *check_Slow_DVD;
   GtkWidget *check_VU_Branch;
   GtkWidget *label42;
   GtkWidget *dialog_action_area1;
@@ -614,10 +711,6 @@ create_GameFixDlg (void)
   check_FPU_Clamp = gtk_check_button_new_with_mnemonic (_("FPU Clamp Hack - Special fix for Tekken 5 and maybe other games."));
   gtk_widget_show (check_FPU_Clamp);
   gtk_box_pack_start (GTK_BOX (vbox30), check_FPU_Clamp, FALSE, FALSE, 0);
-
-  check_Slow_DVD = gtk_check_button_new_with_mnemonic (_("Slow DVD access (fixes Tales of the Abyss) (Not currently needed)"));
-  gtk_widget_show (check_Slow_DVD);
-  gtk_box_pack_start (GTK_BOX (vbox30), check_Slow_DVD, FALSE, FALSE, 0);
 
   check_VU_Branch = gtk_check_button_new_with_mnemonic (_("VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!"));
   gtk_widget_show (check_VU_Branch);
@@ -657,7 +750,6 @@ create_GameFixDlg (void)
   GLADE_HOOKUP_OBJECT (GameFixDlg, vbox30, "vbox30");
   GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Clip, "check_VU_Clip");
   GLADE_HOOKUP_OBJECT (GameFixDlg, check_FPU_Clamp, "check_FPU_Clamp");
-  GLADE_HOOKUP_OBJECT (GameFixDlg, check_Slow_DVD, "check_Slow_DVD");
   GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Branch, "check_VU_Branch");
   GLADE_HOOKUP_OBJECT (GameFixDlg, label42, "label42");
   GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, dialog_action_area1, "dialog_action_area1");
@@ -867,7 +959,6 @@ create_Logging (void)
   GtkWidget *frame4;
   GtkWidget *table3;
   GtkWidget *Log30;
-  GtkWidget *Log;
   GtkWidget *Log31;
   GtkWidget *Log16;
   GtkWidget *Log14;
@@ -932,12 +1023,6 @@ create_Logging (void)
   Log30 = gtk_check_button_new_with_mnemonic (_("SYMs Log"));
   gtk_widget_show (Log30);
   gtk_table_attach (GTK_TABLE (table3), Log30, 2, 3, 6, 7,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log = gtk_check_button_new_with_mnemonic (_("Log"));
-  gtk_widget_show (Log);
-  gtk_table_attach (GTK_TABLE (table3), Log, 2, 3, 7, 8,
                     (GtkAttachOptions) (0),
                     (GtkAttachOptions) (0), 0, 0);
 
@@ -1152,7 +1237,6 @@ create_Logging (void)
   GLADE_HOOKUP_OBJECT (Logging, frame4, "frame4");
   GLADE_HOOKUP_OBJECT (Logging, table3, "table3");
   GLADE_HOOKUP_OBJECT (Logging, Log30, "Log30");
-  GLADE_HOOKUP_OBJECT (Logging, Log, "Log");
   GLADE_HOOKUP_OBJECT (Logging, Log31, "Log31");
   GLADE_HOOKUP_OBJECT (Logging, Log16, "Log16");
   GLADE_HOOKUP_OBJECT (Logging, Log14, "Log14");

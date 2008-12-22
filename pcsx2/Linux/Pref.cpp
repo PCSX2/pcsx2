@@ -29,9 +29,6 @@
 	FILE *pref_file;
 	char *data;
 
-	u32 LinuxsseMXCSR = DEFAULT_sseMXCSR;
-	u32 LinuxsseVUMXCSR = DEFAULT_sseVUMXCSR;
-
 static void SetValue( const char *name, char *var)
 {
 	fprintf (pref_file,"%s = %s\n", name, var);
@@ -103,10 +100,6 @@ int LoadConfig() {
 #endif
 	GetValuel("Options", Config.Options);
 	GetValuel("Hacks",        Config.Hacks);
-	
-	// Remove Fast Branches hack for now:
-	Config.Hacks &= ~0x80;
-		
 	GetValuel("Fixes",        Config.GameFixes);
 	
 	GetValuel("CustomFps",      Config.CustomFps);
@@ -114,13 +107,11 @@ int LoadConfig() {
 	GetValuel("CustomConsecutiveFrames",      Config.CustomConsecutiveFrames);
 	GetValuel("CustomConsecutiveSkip",      Config.CustomConsecutiveSkip);
 
-	// Note - Must get these values last.
-	GetValuel("sseMXCSR",        LinuxsseMXCSR);
-	GetValuel("sseVUMXCSR",    LinuxsseVUMXCSR);
-	
-	Config.sseMXCSR = LinuxsseMXCSR;
-	Config.sseVUMXCSR = LinuxsseVUMXCSR;
-	
+	// Note - order is currently important.
+	GetValuel("sseMXCSR",        Config.sseMXCSR);
+	GetValuel("sseVUMXCSR",    Config.sseVUMXCSR);
+	GetValuel("eeOptions",        Config.eeOptions);
+	GetValuel("vuOptions",   	    Config.vuOptions);
 	
 	free(data);
 
@@ -178,11 +169,12 @@ void SaveConfig() {
 
 	SetValuel("sseMXCSR",        Config.sseMXCSR);
 	SetValuel("sseVUMXCSR",        Config.sseVUMXCSR);
+	SetValuel("eeOptions",        Config.eeOptions);
+	SetValuel("vuOptions",   	    Config.vuOptions);
 	
 #ifdef PCSX2_DEVBUILD
 	SetValuel("varLog", varLog);
 #endif
-
 
 	fclose(pref_file);
 

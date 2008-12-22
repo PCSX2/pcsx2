@@ -494,7 +494,7 @@ void FindPlugins() {
 				ComboAddPlugin(name, &GSConfS, version, ent);
 			}
             else
-                SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
+                SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
 		}
 		if (type & PS2E_LT_PAD) {
 			_PADquery query;
@@ -506,37 +506,37 @@ void FindPlugins() {
 					ComboAddPlugin(name, &PAD1ConfS, version, ent);
 				if (query() & 0x2)
 					ComboAddPlugin(name, &PAD2ConfS, version, ent);
-			} else SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
+			} else SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
 		}
 		if (type & PS2E_LT_SPU2) {
 			version = PS2EgetLibVersion2(PS2E_LT_SPU2);
 			if (((version >> 16)&0xff) == PS2E_SPU2_VERSION) {
 				ComboAddPlugin(name, &SPU2ConfS, version, ent);
-			} else SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
+			} else SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
 		}
 		if (type & PS2E_LT_CDVD) {
 			version = PS2EgetLibVersion2(PS2E_LT_CDVD);
 			if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) {
 				ComboAddPlugin(name, &CDVDConfS, version, ent);
-			} else SysPrintf("Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
+			} else SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
 		}
 		if (type & PS2E_LT_DEV9) {
 			version = PS2EgetLibVersion2(PS2E_LT_DEV9);
 			if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) {
 				ComboAddPlugin(name, &DEV9ConfS, version, ent);
-			} else SysPrintf("DEV9Plugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
+			} else SysPrintf("DEV9Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
 		}
 		if (type & PS2E_LT_USB) {
 			version = PS2EgetLibVersion2(PS2E_LT_USB);
 			if (((version >> 16)&0xff) == PS2E_USB_VERSION) {
 				ComboAddPlugin(name, &USBConfS, version, ent);
-			} else SysPrintf("USBPlugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
+			} else SysPrintf("USBPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
 		}
 		if (type & PS2E_LT_FW) {
 			version = PS2EgetLibVersion2(PS2E_LT_FW);
 			if (((version >> 16)&0xff) == PS2E_FW_VERSION) {
 				ComboAddPlugin(name, &FWConfS, version, ent);
-			} else SysPrintf("FWPlugin %s: Version %x != %x\n", plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
+			} else SysPrintf("FWPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
 		}
 	}
 	closedir(dir);
