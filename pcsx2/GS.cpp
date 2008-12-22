@@ -214,6 +214,7 @@ static volatile bool gsHasToExit = false;
 static volatile int g_GsExitCode = 0;
 
 static int mtgs_CopyCommandTally = 0;
+static bool m_gsOpened = false;
 
 int g_FFXHack=0;
 
@@ -468,13 +469,18 @@ void gsInit()
 // Opens the gsRingbuffer thread.
 s32 gsOpen()
 {
+	if( m_gsOpened ) return 0;
+
 	OnModeChanged(
 		(Config.PsxType & 1) ? FRAMERATE_PAL : FRAMERATE_NTSC,
 		UpdateVSyncRate() 
 	);
 
 	if( !CHECK_MULTIGS )
-		return GSopen((void *)&pDsp, "PCSX2", 0);
+	{
+		m_gsOpened = !GSopen((void *)&pDsp, "PCSX2", 0);
+		return !m_gsOpened;
+	}
 
 	// MultiGS Procedure From Here Out...
 
@@ -502,6 +508,7 @@ s32 gsOpen()
 	if( g_GsExitCode != 0 )	// means the thread failed to init the GS plugin
 		return -1;
 
+	m_gsOpened = true;
 	return 0;
 }
 
@@ -863,6 +870,9 @@ void GSRingBufSimplePacket64(int type, u32 data0, u64 data1 )
 
 void gsReset()
 {
+	// Sanity check in case the plugin hasn't been initialized...
+	if( !m_gsOpened ) return;
+
 	if( CHECK_MULTIGS )
 	{
 		// MTGS Reset process:
@@ -884,7 +894,6 @@ void gsReset()
 		// I think this would be a good idea (air)
 		//Path3transfer = 0;
 		memset(g_path, 0, sizeof(g_path));
-		//memset(s_byRegs, 0, sizeof(s_byRegs));
 	}
 	else
 	{

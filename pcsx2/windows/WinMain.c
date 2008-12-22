@@ -629,8 +629,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// [TODO] : Add the other plugin overrides here...
 
+#ifndef _DEBUG
 	if( Config.Profiler )
 		ProfilerInit();
+#endif
 
 	InitCPUTicks();
 	if (SysInit() == -1) return 1;
