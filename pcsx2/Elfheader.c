@@ -30,7 +30,6 @@
 
 #ifdef _WIN32
 #include <windows.h>
-AppData gApp;
 #endif
 
 u32 ElfCRC;
@@ -562,10 +561,10 @@ int loadElfFile(char *filename) {
    // Applying patches
     if (Config.Patch) {
 		sprintf(str, "%8.8x", crc);
-#ifdef _WIN32
+
 		sprintf(str2,"No patch found.Game will run normally. [CRC=%8.8x]",crc);//if patches found it will overwritten :p
-		if (gApp.hConsole) SetConsoleTitle(str2);
-#endif
+		Console::SetTitle( str2 );
+
 		if(LoadPatch(str)!=0)
 		{
 			SysPrintf("XML Loader returned an error. Trying to load a pnach...\n");

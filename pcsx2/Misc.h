@@ -46,6 +46,35 @@
 #define __unused
 #endif
 
+// --->> GNU GetText / NLS
+
+#ifdef ENABLE_NLS
+
+#ifdef __MSCW32__
+#include "libintlmsc.h"
+#else
+#include <locale.h>
+#include <libintl.h>
+#endif
+
+#undef _
+#define _(String) dgettext (PACKAGE, String)
+#ifdef gettext_noop
+#  define N_(String) gettext_noop (String)
+#else
+#  define N_(String) (String)
+#endif
+
+#else
+
+#define _(msgid) msgid
+#define N_(msgid) msgid
+
+#endif
+
+// <<--- End GNU GetText / NLS 
+
+
 // --->> Path Utilities [PathUtil.c]
 
 #define g_MaxPath 255			// 255 is safer with antiquitated Win32 ASCII APIs.
@@ -288,12 +317,10 @@ void memxor_mmx(void* dst, const void* src1, int cmpsize);
 #pragma pack()
 #endif
 
-void __Log(const char *fmt, ...);
-void injectIRX(char *filename);
+void injectIRX(const char *filename);
 
+// aligned_malloc: Implement/declare linux equivalents here!
 #if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
-
-// declare linux equivalents
 static  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 {
     assert( align < 0x10000 );
@@ -319,159 +346,38 @@ static __forceinline void pcsx2_aligned_free(void* pmem)
 
 #endif
 
-// cross-platform atomic operations
+// InterlockedExchange: Declare linux/GCC equivalents here
+// (implementations are in ThreadTools.cpp)
 #ifndef _WIN32
-typedef void* PVOID;
-
-/*inline unsigned long _Atomic_swap(unsigned long * __p, unsigned long __q) {
- #       if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64))
-             return test_and_set(__p, __q);
- #       else
-             return __test_and_set(__p, (unsigned long)__q);
- #       endif
- }*/
-static __forceinline void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
-{
-#ifdef __x86_64__
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%rax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-#else
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-#endif
-}
-
-static __forceinline long InterlockedExchange(long volatile* Target, long Value)
-{
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-	return 0; // The only function that even looks at this is a debugging function
-}
-
-static __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
-{
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xadd [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory" );
-	return 0; // The return value is never looked at.
-}
-
-static __forceinline long InterlockedIncrement( volatile long* Addend )
-{
-	return InterlockedExchangeAdd( Addend, 1 );
-}
-
-static __forceinline long InterlockedDecrement( volatile long* Addend )
-{
-	return InterlockedExchangeAdd( Addend, -1 );
-}
-
-static __forceinline long InterlockedCompareExchange(volatile long *dest, long exch, long comp)
-{
-	long old;
-
-#ifdef __x86_64__
-	  __asm__ __volatile__ 
-	(
-		"lock; cmpxchgq %q2, %1"
-		: "=a" (old), "=m" (*dest)
-		: "r" (exch), "m" (*dest), "0" (comp)); 
-#else
-	__asm__ __volatile__
-	(
-		"lock; cmpxchgl %2, %0"
-		: "=m" (*dest), "=a" (old)
-		: "r" (exch), "m" (*dest), "a" (comp)
-	);
-#endif
-	
-	return(old);
-}
-
-static __forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest, PVOID exch, long comp)
-{
-	long old;
-
-	// Note: This *should* be 32/64 compatibles since the assembler should pick the opcode
-	// that matches the size of the pointer type, so no need to ifdef it like the std non-compare
-	// exchange.
-
-#ifdef __x86_64__
-	__asm__ __volatile__
-	( 
-		"lock; cmpxchgq %q2, %1"
-		: "=a" (old), "=m" (*dest)
-		: "r" (exch), "m" (*dest), "0" (comp)
-	);
-#else
-	__asm__ __volatile__
-	(
-		"lock; cmpxchgl %2, %0"
-		: "=m" (*dest), "=a" (old)
-		: "r" (exch), "m" (*dest), "a" (comp)
-	);
-#endif
-	return(old);
-}
+extern void InterlockedExchangePointer(PVOID volatile* Target, void* Value);
+extern long InterlockedExchange(long volatile* Target, long Value);
+extern long InterlockedExchangeAdd(long volatile* Addend, long Value);
+extern long InterlockedIncrement( volatile long* Addend );
+extern long InterlockedDecrement( volatile long* Addend );
+extern long InterlockedCompareExchange(volatile long *dest, long exch, long comp);
+extern long InterlockedCompareExchangePointer(PVOID volatile *dest, PVOID exch, long comp);
 #endif
 
-// define some overloads for InterlockedExchanges, for commonly used types.
-
-// Note: _unused is there simply to get rid of a few Linux compiler warnings while
-// debugging, as any compiler warnings in Misc.h get repeated x100 or so.
-__unused static void AtomicExchange( u32& Target, u32 value )
-{
-	InterlockedExchange( (volatile LONG*)&Target, value );
-}
-
-__unused static void AtomicExchangeAdd( u32& Target, u32 value )
-{
-	InterlockedExchangeAdd( (volatile LONG*)&Target, value );
-}
-
-__unused static void AtomicIncrement( u32& Target )
-{
-	InterlockedIncrement( (volatile LONG*)&Target );
-}
-
-__unused static void AtomicDecrement( u32& Target )
-{
-	InterlockedDecrement( (volatile LONG*)&Target );
-}
-
-__unused static void AtomicExchange( s32& Target, s32 value )
-{
-	InterlockedExchange( (volatile LONG*)&Target, value );
-}
-
-__unused static void AtomicExchangeAdd( s32& Target, u32 value )
-{
-	InterlockedExchangeAdd( (volatile LONG*)&Target, value );
-}
-
-__unused static void AtomicIncrement( s32& Target )
-{
-	InterlockedIncrement( (volatile LONG*)&Target );
-}
-
-__unused static void AtomicDecrement( s32& Target )
-{
-	InterlockedDecrement( (volatile LONG*)&Target );
-}
+extern void AtomicExchange( u32& Target, u32 value );
+extern void AtomicExchangeAdd( u32& Target, u32 value );
+extern void AtomicIncrement( u32& Target );
+extern void AtomicDecrement( u32& Target );
+extern void AtomicExchange( s32& Target, s32 value );
+extern void AtomicExchangeAdd( s32& Target, u32 value );
+extern void AtomicIncrement( s32& Target );
+extern void AtomicDecrement( s32& Target );
 
 // No fancy templating or overloading can save us from having to use C-style dereferences here.
 #define AtomicExchangePointer( target, value ) \
 	InterlockedExchangePointer( reinterpret_cast<PVOID volatile*>(&target), reinterpret_cast<uptr>(value) )
 
+// Timeslice releaser for those many idle loop spots through out PCSX2.
+extern void _TIMESLICE();
+
 extern void InitCPUTicks();
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();
 
-// Timeslice releaser for those many idle loop spots through out PCSX2.
-extern void _TIMESLICE();
 
 #endif /* __MISC_H__ */
 

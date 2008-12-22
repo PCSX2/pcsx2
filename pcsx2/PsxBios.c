@@ -179,7 +179,7 @@ void bios_write() { // 0x35/0x03
 		char *ptr = Ra1;
 
 		while (a2 > 0) {
-			SysPrintf(COLOR_RED "%c" COLOR_RESET, *ptr++); a2--;
+			SysPrintf("%c", *ptr++); a2--;
 		}
 		pc0 = ra; return;
     }
@@ -252,7 +252,7 @@ _start:
 
 	memcpy((char*)PSXM(sp), save, 4*4);
 
-	SysPrintf(COLOR_RED "%s" COLOR_RESET, tmp);
+	SysPrintf( "%s", tmp);
 
 	pc0 = ra;
 }

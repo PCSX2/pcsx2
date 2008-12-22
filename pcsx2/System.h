@@ -21,17 +21,84 @@
 
 int  SysInit();							// Init mem and plugins
 int  SysReset();						// Resets mem
-void SysPrintf(const char *fmt, ...);			// Printf used by bios syscalls
-void SysMessage(const char *fmt, ...);		// Message used to print msg to users
 void SysUpdate();						// Called on VBlank (to update i.e. pads)
 void SysRunGui();						// Returns to the Gui
 void SysClose();						// Close mem and plugins
-void *SysLoadLibrary(const char *lib);		// Loads Library
+void *SysLoadLibrary(const char *lib);	// Loads Library
 void *SysLoadSym(void *lib, const char *sym);	// Loads Symbol from Library
-char *SysLibError();					// Gets previous error loading sysbols
+const char *SysLibError();				// Gets previous error loading sysbols
 void SysCloseLibrary(void *lib);		// Closes Library
+
+// Causes a pop-up to appear with the specified message.  Use this to issue
+// critical or fatal messages to the user.
+void SysMessage(const char *fmt, ...);
+
+// Maps a block of memory for use as a recompiled code buffer.
+// The allocated block has code execution privliges.
+// Returns NULL on allocation failure.
 void *SysMmap(uptr base, u32 size);
+
+// Unamps a block allocated by SysMmap
 void SysMunmap(uptr base, u32 size);
+
+// Writes text to the console.
+// *DEPRECIATED* Use Console namespace methods instead.
+void SysPrintf(const char *fmt, ...);	// *DEPRECIATED* 
+
+
+// Console Namespace -- Replacements for SysPrintf.
+// SysPrintf is depreciated -- We should phase these in over time.
+namespace Console
+{
+	extern void Open();
+	extern void Close();
+	extern void SetTitle( const char* title );
+
+	// The following Write functions return bool so that we can use macros to exclude
+	// them from different buildypes.  The return values are always zero.
+
+	extern bool __fastcall WriteLn();
+	extern bool __fastcall Write( const char* fmt );
+	extern bool __fastcall WriteLn( const char* fmt );
+	extern bool Format( const char* fmt, ... );
+	extern bool FormatLn( const char* fmt, ... );
+}
+
+//////////////////////////////////////////////////////////////
+// Macros for ifdef'ing out specific lines of code.
+
+#ifdef PCSX2_DEVBUILD
+
+#	define DEVCODE(x) (x)
+#	define DevCon Console
+#	define PUBCODE 0&&
+
+static const bool IsDevBuild = true;
+
+#else
+
+#	define DEVCODE(x) 0&&(x)
+#	define DevCon 0&&Console
+#	define PUBCODE(x) (x)
+
+static const bool IsDevBuild = false;
+
+#endif
+
+#ifdef _DEBUG
+
+static const bool IsDebugBuild = true;
+
+#	define DBGCODE(x) (x)
+#	define DbgCon 0&&Console
+
+#else
+
+#	define DBGCODE(x) 0&&
+#	define DbgCon 0&&Console
+
+static const bool IsDebugBuild = false;
+#endif
 
 #ifdef PCSX2_VIRTUAL_MEM
 

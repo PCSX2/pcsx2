@@ -25,6 +25,7 @@ using namespace std;
 #include "tinyxml/tinyxml.h"
 
 #include "Patch.h"
+#include "System.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
@@ -113,16 +114,8 @@ int LoadPatch(char *crc)
 		return result;
 	}
 
-#ifdef _WIN32
-	if (gApp.hConsole) 
-	{
-		if(title)
-			SetConsoleTitle(title);
-		else
-			SetConsoleTitle("<No Title>");
-	}
-		
-#endif
+	Console::SetTitle(
+		((title==NULL) || (strlen(title)==0)) ? "<No Title>" : title );
 
 	return 0;
 }
@@ -130,7 +123,6 @@ int LoadPatch(char *crc)
 
 int LoadGroup(TiXmlNode *group,int gParent)
 {
-
 	TiXmlElement *groupelement = group->ToElement();
 
 	const char *gtitle=groupelement->Attribute("title");

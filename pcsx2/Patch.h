@@ -79,18 +79,6 @@ struct IniPatch
 	u64 data;
 };
 
-#ifdef _WINDOWS_
-struct AppData
-{
-	HWND hWnd;           // Main window handle
-	HINSTANCE hInstance; // Application instance
-	HMENU hMenu;         // Main window menu
-	HANDLE hConsole;
-};
-
-extern AppData gApp;
-#endif
-
 //
 // Function prototypes
 //

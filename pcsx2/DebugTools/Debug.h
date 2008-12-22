@@ -69,57 +69,79 @@ extern DisR5900CurrentState disR5900Current;
 
 extern int Log;
 extern u32 varLog;
-extern u16 logProtocol;
-extern u8  logSource;
 
-void __Log(const char *fmt, ...);
+void SourceLog( u16 protocol, u8 source, u32 cpuPc, u32 cpuCycle, const char *fmt, ...);
+void __Log( const char* fmt, ... );
 
-//memcars has the same number as PAD_LOG
-#define MEMCARDS_LOG if (varLog & 0x02000000) {logProtocol=7; logSource='I';} if (varLog & 0x02000000) __Log
+extern void SrcLog_CPU( const char* fmt, ... );
+extern void SrcLog_COP0( const char* fmt, ... );
+extern void SrcLog_FPU( const char* fmt, ... );
+extern void SrcLog_MMI( const char* fmt, ... );
 
-#define CPU_LOG  if (varLog & 0x00000001) {logProtocol=1; logSource='E';} if (varLog & 0x00000001) __Log
-#define MEM_LOG  if (varLog & 0x00000002) {logProtocol=6; logSource='E';} if (varLog & 0x00000002) __Log("%8.8lx: ", cpuRegs.pc); if (varLog & 0x00000002) __Log
-#define HW_LOG   if (varLog & 0x00000004) {logProtocol=6; logSource='E';} if (varLog & 0x00000004) __Log("%8.8lx: ", cpuRegs.pc); if (varLog & 0x00000004) __Log
-#define DMA_LOG  if (varLog & 0x00000008) {logProtocol=5; logSource='E';} if (varLog & 0x00000008) __Log
-#define BIOS_LOG if (varLog & 0x00000010) {logProtocol=0; logSource='E';} if (varLog & 0x00000010) __Log("%8.8lx: ", cpuRegs.pc); if (varLog & 0x00000010) __Log
-#define ELF_LOG  if (varLog & 0x00000020) {logProtocol=7; logSource='E';} if (varLog & 0x00000020) __Log
-#define FPU_LOG  if (varLog & 0x00000040) {logProtocol=1; logSource='E';} if (varLog & 0x00000040) __Log
-#define MMI_LOG  if (varLog & 0x00000080) {logProtocol=1; logSource='E';} if (varLog & 0x00000080) __Log
-#define VU0_LOG  if (varLog & 0x00000100) {logProtocol=2; logSource='E';} if (varLog & 0x00000100) __Log
-#define COP0_LOG if (varLog & 0x00000200) {logProtocol=1; logSource='E';} if (varLog & 0x00000200) __Log
-#define VIF_LOG  if (varLog & 0x00000400) {logProtocol=3; logSource='E';} if (varLog & 0x00000400) __Log
-#define SPR_LOG  if (varLog & 0x00000800) {logProtocol=7; logSource='E';} if (varLog & 0x00000800) __Log
-#define GIF_LOG  if (varLog & 0x00001000) {logProtocol=4; logSource='E';} if (varLog & 0x00001000) __Log
-#define SIF_LOG  if (varLog & 0x00002000) {logProtocol=9; logSource='E';} if (varLog & 0x00002000) __Log
-#define IPU_LOG  if (varLog & 0x00004000) {logProtocol=8; logSource='E';} if (varLog & 0x00004000) __Log
-#define VUM_LOG  if (varLog & 0x00008000) {logProtocol=2; logSource='E';} if (varLog & 0x00008000) __Log
-#define RPC_LOG  if (varLog & 0x00010000) {logProtocol=9; logSource='E';} if (varLog & 0x00010000) __Log
+extern void SrcLog_MEM( const char* fmt, ... );
+extern void SrcLog_HW( const char* fmt, ... );
+extern void SrcLog_DMA( const char* fmt, ... );
+extern void SrcLog_BIOS( const char* fmt, ... );
+extern void SrcLog_ELF( const char* fmt, ... );
+extern void SrcLog_VU0( const char* fmt, ... );
 
-#define PSXCPU_LOG  if (varLog & 0x00100000) {logProtocol=1; logSource='I';} if (varLog & 0x00100000) __Log
-#define PSXMEM_LOG  if (varLog & 0x00200000) {logProtocol=6; logSource='I';} if (varLog & 0x00200000) __Log("%8.8lx : ", psxRegs.pc); if (varLog & 0x00200000) __Log
-#define PSXHW_LOG   if (varLog & 0x00400000) {logProtocol=2; logSource='I';} if (varLog & 0x00400000) __Log("%8.8lx : ", psxRegs.pc); if (varLog & 0x00400000) __Log
-#define PSXBIOS_LOG if (varLog & 0x00800000) {logProtocol=0; logSource='I';} if (varLog & 0x00800000) __Log("%8.8lx : ", psxRegs.pc); if (varLog & 0x00800000) __Log
-#define PSXDMA_LOG  if (varLog & 0x01000000) {logProtocol=5; logSource='I';} if (varLog & 0x01000000) __Log
+extern void SrcLog_VIF( const char* fmt, ... );
+extern void SrcLog_SPR( const char* fmt, ... );
+extern void SrcLog_GIF( const char* fmt, ... );
+extern void SrcLog_SIF( const char* fmt, ... );
+extern void SrcLog_IPU( const char* fmt, ... );
+extern void SrcLog_VUM( const char* fmt, ... );
+extern void SrcLog_RPC( const char* fmt, ... );
+extern void SrcLog_EECNT( const char* fmt, ... );
 
-#define PAD_LOG  if (varLog & 0x02000000) {logProtocol=7; logSource='I';} if (varLog & 0x02000000) __Log
-#define GTE_LOG  if (varLog & 0x04000000) {logProtocol=3; logSource='I';} if (varLog & 0x04000000) __Log
-#define CDR_LOG  if (varLog & 0x08000000) {logProtocol=8; logSource='I';} if (varLog & 0x08000000) __Log("%8.8lx %8.8lx: ", psxRegs.pc, psxRegs.cycle); if (varLog & 0x08000000) __Log
-#define GPU_LOG  if (varLog & 0x10000000) {logProtocol=4; logSource='I';} if (varLog & 0x10000000) __Log
-#define PSXCNT_LOG  if (varLog & 0x20000000) {logProtocol=0; logSource='I';} if (varLog & 0x20000000) __Log("%8.8lx %8.8lx: ", psxRegs.pc, psxRegs.cycle); if (varLog & 0x20000000) __Log
-#define EECNT_LOG  if (varLog & 0x40000000) {logProtocol=0; logSource='I';} if (varLog & 0x40000000) __Log("%8.8lx %8.8lx: ", cpuRegs.pc, cpuRegs.cycle); if (varLog & 0x40000000) __Log
+extern void SrcLog_PSXCPU( const char* fmt, ... );
+extern void SrcLog_PSXMEM( const char* fmt, ... );
+extern void SrcLog_PSXHW( const char* fmt, ... );
+extern void SrcLog_PSXBIOS( const char* fmt, ... );
+extern void SrcLog_PSXDMA( const char* fmt, ... );
+extern void SrcLog_PSXCNT( const char* fmt, ... );
+
+extern void SrcLog_MEMCARDS( const char* fmt, ... );
+extern void SrcLog_PAD( const char* fmt, ... );
+extern void SrcLog_GTE( const char* fmt, ... );
+extern void SrcLog_CDR( const char* fmt, ... );
+extern void SrcLog_GPU( const char* fmt, ... );
+
+#define CPU_LOG  if (varLog & 0x00000001) SrcLog_CPU
+#define MEM_LOG  if (varLog & 0x00000002) SrcLog_MEM
+#define HW_LOG   if (varLog & 0x00000004) SrcLog_HW
+#define DMA_LOG  if (varLog & 0x00000008) SrcLog_DMA
+#define BIOS_LOG if (varLog & 0x00000010) SrcLog_BIOS
+#define ELF_LOG  if (varLog & 0x00000020) SrcLog_ELF
+#define FPU_LOG  if (varLog & 0x00000040) SrcLog_FPU
+#define MMI_LOG  if (varLog & 0x00000080) SrcLog_MMI
+#define VU0_LOG  if (varLog & 0x00000100) SrcLog_VU0
+#define COP0_LOG if (varLog & 0x00000200) SrcLog_COP0
+#define VIF_LOG  if (varLog & 0x00000400) SrcLog_VIF
+#define SPR_LOG  if (varLog & 0x00000800) SrcLog_SPR
+#define GIF_LOG  if (varLog & 0x00001000) SrcLog_GIF
+#define SIF_LOG  if (varLog & 0x00002000) SrcLog_SIF
+#define IPU_LOG  if (varLog & 0x00004000) SrcLog_IPU
+#define VUM_LOG  if (varLog & 0x00008000) SrcLog_VUM
+#define RPC_LOG  if (varLog & 0x00010000) SrcLog_RPC
+#define EECNT_LOG  if (varLog & 0x40000000) SrcLog_EECNT
+
+#define PSXCPU_LOG  if (varLog & 0x00100000) SrcLog_PSXCPU
+#define PSXMEM_LOG  if (varLog & 0x00200000) SrcLog_PSXMEM
+#define PSXHW_LOG   if (varLog & 0x00400000) SrcLog_PSXHW
+#define PSXBIOS_LOG if (varLog & 0x00800000) SrcLog_PSXBIOS
+#define PSXDMA_LOG  if (varLog & 0x01000000) SrcLog_PSXDMA
+#define PSXCNT_LOG  if (varLog & 0x20000000) SrcLog_PSXCNT
+
+//memcard has the same number as PAD_LOG for now
+#define MEMCARDS_LOG if (varLog & 0x02000000) SrcLog_MEMCARDS
+#define PAD_LOG  if (varLog & 0x02000000) SrcLog_PAD
+#define GTE_LOG  if (varLog & 0x04000000) SrcLog_GTE
+#define CDR_LOG  if (varLog & 0x08000000) SrcLog_CDR
+#define GPU_LOG  if (varLog & 0x10000000) SrcLog_GPU
 
 // fixme - currently we don't log cache
 #define CACHE_LOG 0&&
-
-#if defined (CPU_LOG)   || defined(MEM_LOG)   || defined(HW_LOG)     || defined(DMA_LOG)  || \
-	defined(BIOS_LOG)   || defined(ELF_LOG)   || defined(FPU_LOG)    || defined(MMI_LOG)  || \
-	defined(VU0_LOG)    || defined(COP0_LOG)  || defined(VIF_LOG)    || defined(SPR_LOG)  || \
-	defined(GIF_LOG)    || defined(SIF_LOG)   || defined(IPU_LOG)    || defined(VUM_log)  || \
-	defined(PSXCPU_LOG) || defined(PSXMEM_LOG)|| defined(IOPBIOS_LOG)|| defined(IOPHW_LOG)|| \
-	defined(PAD_LOG)    || defined(GTE_LOG)   || defined(CDR_LOG)    || defined(GPU_LOG)  || \
-	defined(MEMCARDS_LOG)|| defined(PSXCNT_LOG) || defined(EECNT_LOG)
-#define EMU_LOG __Log
-#endif
 
 #else // PCSX2_DEVBUILD
 

@@ -413,7 +413,7 @@ void hwWrite8(u32 mem, u8 value) {
 		case 0x1000f180:
 			if (value == '\n') {
 				sio_buffer[sio_count] = 0;
-				SysPrintf(COLOR_GREEN "%s\n" COLOR_RESET, sio_buffer);
+				SysPrintf("%s\n", sio_buffer);
 				sio_count = 0;
 			} else {
 				if (sio_count < 1023) {

@@ -167,6 +167,8 @@ void  cdrInterrupt() {
 	int i;
 	u8 Irq = cdr.Irq;
 
+	psxRegs.interrupt&= ~(1 << 17);
+
 	if (cdr.Stat) {
 		CDR_INT(0x800);
 		return;
@@ -457,10 +459,8 @@ void  cdrInterrupt() {
 			break;
 
 		case READ_ACK:
-			if (!cdr.Reading) {
-				psxRegs.interrupt&= ~(1 << 17);
+			if (!cdr.Reading)
 				return;
-				}
 
 			SetResultSize(1);
 			cdr.StatP|= 0x2;
@@ -485,7 +485,6 @@ void  cdrInterrupt() {
 			break;
 
 		case 0xff:
-			psxRegs.interrupt&= ~(1 << 17);
 			return;
 
 		default:
@@ -496,16 +495,15 @@ void  cdrInterrupt() {
 	if (cdr.Stat != NoIntr && cdr.Reg2 != 0x18) psxHu32(0x1070)|=0x4;
 
 	CDR_LOG("Cdr Interrupt %x\n", Irq);
-	psxRegs.interrupt&= ~(1 << 17);
 }
 
 void  cdrReadInterrupt() {
 	u8 *buf;
 
-	if (!cdr.Reading) {
-		psxRegs.interrupt&= ~(1 << 18);
+	psxRegs.interrupt&= ~(1 << 18);
+
+	if (!cdr.Reading)
 		return;
-		}
 
 	if (cdr.Stat) {
 		CDREAD_INT(0x800);
@@ -868,11 +866,13 @@ void cdrWrite2(u8 rt) {
 		}
 	} 
 	else 
+	{
 		if (!(cdr.Ctrl & 0x1) && cdr.ParamP < 8) {
 			cdr.Param[cdr.ParamP++] = rt;
 			cdr.ParamC++;
 		}
 	}
+}
 
 u8 cdrRead3(void) {
 	if (cdr.Stat) {
@@ -949,17 +949,6 @@ void cdrReset() {
 	cdr.CurTrack=1;
 	cdr.File=1; cdr.Channel=1;
 	cdReadTime = (PSXCLK / 1757) * BIAS; 
-	//DVD is 4x (PSXCLK / 75) CD is 24x on the PS2, so that would mean CD = (PSXCLK / 450)
-	// 75/4 = 18.75 x 24 = 450  remember its faster than the PS1 ;)  Refraction
-	
-	// with the timing set to 60 Gran Turismo works
-	// anybody knows why it doesn't with 75?
-	// 75 is the correct cdrom timing
-//	if (Config.CdTiming)
-//		 cdReadTime = (PSXCLK / 60) / BIAS;
-	// this seems to be the most compatible
-	// let's leave like this until we know why
-	// 75 is buggy with some games
 }
 
 int cdrFreeze(gzFile f, int Mode) {

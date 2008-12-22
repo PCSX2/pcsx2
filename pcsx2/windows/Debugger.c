@@ -559,11 +559,11 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 					return TRUE;					
 					}
 
+				#ifdef PCSX2_DEVBUILD
                 case IDC_DEBUG_LOG:
-#ifdef PCSX2_DEVBUILD
 					Log = 1 - Log;
-#endif
                     return TRUE;
+				#endif
 
                 case IDC_DEBUG_RESETTOPC:
                     DebuggerPC = 0;

@@ -496,7 +496,7 @@ static void PrintDebug(u8 value)
 {
 	if (value == '\n') {
 		sio_buffer[sio_count] = 0;
-		SysPrintf(COLOR_GREEN "%s\n" COLOR_RESET, sio_buffer);
+		SysPrintf("%s\n", sio_buffer);
 		sio_count = 0;
 	} else {
 		if (sio_count < 1023) {

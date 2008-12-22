@@ -2728,6 +2728,10 @@ extern int rdram_sdevid;
 
 void iDumpRegisters(u32 startpc, u32 temp)
 {
+// [TODO] fixme : thie code is broken and has no labels.  Needs a rewrite to be useful.
+
+#if 0
+
 	int i;
 	const char* pstr;// = temp ? "t" : "";
 	const u32 dmacs[] = {0x8000, 0x9000, 0xa000, 0xb000, 0xb400, 0xc000, 0xc400, 0xc800, 0xd000, 0xd400 };
@@ -2776,6 +2780,7 @@ void iDumpRegisters(u32 startpc, u32 temp)
 	__Log("dmac %x %x %x %x\n", psHu32(DMAC_CTRL), psHu32(DMAC_STAT), psHu32(DMAC_RBSR), psHu32(DMAC_RBOR));
 	__Log("intc %x %x\n", psHu32(INTC_STAT), psHu32(INTC_MASK));
 	__Log("sif: %x %x %x %x %x\n", psHu32(0xf200), psHu32(0xf220), psHu32(0xf230), psHu32(0xf240), psHu32(0xf260));
+#endif
 }
 
 extern u32 psxdump;
@@ -3279,13 +3284,14 @@ StartRecomp:
 				while(stg>0)
 				{
 					CMP32ItoM((uptr)PSM(lpc),*(u32*)PSM(lpc));
+					// fixme: was dyna_block_discard_recmem .. but umm.. why?
 					JNE32(((u32)&dyna_block_discard)- ( (u32)x86Ptr + 6 ));
-					//JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
 
 					stg-=4;
 					lpc+=4;
 				}
-				SysPrintf("Manual block @ %08X : %08X %d %d %d %d\n",startpc,inpage_ptr,pgsz,0x1000-inpage_offs,inpage_sz,sz*4);
+				DbgCon::FormatLn("Manual block @ %08X : %08X %d %d %d %d",
+					startpc,inpage_ptr,pgsz,0x1000-inpage_offs,inpage_sz,sz*4);
 			}
 		}
 		inpage_ptr+=pgsz;

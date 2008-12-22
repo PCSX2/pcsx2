@@ -1,6 +1,8 @@
 
 #ifndef _DEBUG
 
+#include <windows.h>
+
 #include "SamplProf.h"
 #include <vector>
 #include <string>
@@ -102,29 +104,33 @@ struct Module
 	}
 };
 
-vector<Module> ProfModules;
 typedef map<string,Module> MapType;
 
-MapType ProfUnknownHash;
+static vector<Module> ProfModules;
+static MapType ProfUnknownHash;
 
-HANDLE hEmuThread;
-HANDLE hProfThread;
+static HANDLE hEmuThread;
+static HANDLE hProfThread;
+
+static CRITICAL_SECTION ProfModulesLock;
+
+static volatile bool ProfRunning=false;
 
 void ProfilerRegisterSource(const char* Name,void* buff,u32 sz)
 {
-	ProfilerTerm();
+	EnterCriticalSection( &ProfModulesLock );
 	Module tmp(Name,buff,sz);
 	ProfModules.push_back(tmp);
-	ProfilerInit();
+	LeaveCriticalSection( &ProfModulesLock );
 }
+
 void ProfilerRegisterSource(const char* Name,void* function)
 {
-	ProfilerTerm();
+	EnterCriticalSection( &ProfModulesLock );
 	Module tmp(Name,function);
 	ProfModules.push_back(tmp);
-	ProfilerInit();
+	LeaveCriticalSection( &ProfModulesLock );
 }
-volatile bool ProfRunning=false;
 
 int __stdcall ProfilerThread(void* nada)
 {
@@ -134,9 +140,9 @@ int __stdcall ProfilerThread(void* nada)
 	while(ProfRunning)
 	{
 _loopstart:
-		Sleep(10);
+		Sleep(7);
 
-		if (tick_count>300)
+		if (tick_count>400)
 		{
 			string rv="|";
 			u32 subtotal=0;
@@ -172,15 +178,19 @@ _loopstart:
 		CONTEXT ctx;
 		ctx.ContextFlags= CONTEXT_FULL;
 		GetThreadContext(hEmuThread,&ctx);
-		for (size_t i=0;i<ProfModules.size();i++)
+
+		EnterCriticalSection( &ProfModulesLock );
+		size_t i;
+		for(i=0;i<ProfModules.size();i++)
+			if (ProfModules[i].Inside(ctx.Eip)) break;
+
+		if( i < ProfModules.size() )
 		{
-			
-			if (ProfModules[i].Inside(ctx.Eip))
-			{
-				ProfModules[i].ticks++;
-				goto _loopstart;	//and thats why structured programming sucks
-			}	
+			ProfModules[i].ticks++;
+			LeaveCriticalSection( &ProfModulesLock );
+			continue;
 		}
+		LeaveCriticalSection( &ProfModulesLock );
 
 		char modulename[512];
 
@@ -201,9 +211,7 @@ _loopstart:
 		Module tmp(sz==0?modulenam.c_str():0,(void*)ctx.Eip);
 		tmp.ticks++;
 
-
 		ProfUnknownHash.insert(MapType::value_type(modulenam, tmp));
-
 	}
 
 	return -1;
@@ -213,6 +221,8 @@ void ProfilerInit()
 {
 	if (ProfRunning)
 		return;
+
+	//Console::Write( "Profiler Thread Initializing..." );
 	ProfRunning=true;
 	DuplicateHandle(GetCurrentProcess(), 
 		GetCurrentThread(), 
@@ -221,11 +231,17 @@ void ProfilerInit()
 		0,
 		FALSE,
 		DUPLICATE_SAME_ACCESS);
+
+	InitializeCriticalSection( &ProfModulesLock );
+
 	hProfThread=CreateThread(0,0,(LPTHREAD_START_ROUTINE)ProfilerThread,0,0,0);
 	SetThreadPriority(hProfThread,THREAD_PRIORITY_HIGHEST);
+	//Console::WriteLn( " Done!" );
 }
+
 void ProfilerTerm()
 {
+	//Console::Write( "Profiler Terminating..." );
 	if (!ProfRunning)
 		return;
 	ProfRunning=false;
@@ -233,6 +249,8 @@ void ProfilerTerm()
 	WaitForSingleObject(hProfThread,INFINITE);
 	CloseHandle(hProfThread);
 	CloseHandle(hEmuThread);
+	DeleteCriticalSection( &ProfModulesLock );
+	//Console::WriteLn( " Done!" );
 }
 
 void ProfilerSetEnabled(bool Enabled)

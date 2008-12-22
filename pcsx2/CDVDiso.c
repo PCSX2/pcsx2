@@ -291,9 +291,7 @@ int CDVD_findfile(const char* fname, struct TocEntry* tocEntry){
 
 	struct dirTocEntry* tocEntryPointer;
 
-#ifdef DEBUG
-	SysPrintf("CDVD_findfile called\n");
-#endif
+	DbgCon::WriteLn("CDVD_findfile called");
 
 	//make sure we have good cdReadMode
 	cdReadMode.trycount = 0;

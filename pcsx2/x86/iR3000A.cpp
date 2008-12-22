@@ -541,11 +541,12 @@ static int recInit() {
 		}
 		else break;
 	}
-	ProfilerRegisterSource("IOPRec",recMem, RECMEM_SIZE);
 	if( recMem == NULL ) {
 		SysPrintf("R3000A bad rec memory allocation\n");
 		return 1;
 	}
+
+	ProfilerRegisterSource("IOPRec",recMem, RECMEM_SIZE);
 
 	psxRecLUT = (uptr*) malloc(0x010000 * sizeof(uptr));
 	memset(psxRecLUT, 0, 0x010000 * sizeof(uptr));
@@ -1199,13 +1200,16 @@ static void recExecuteBlock()
 
 void iDumpPsxRegisters(u32 startpc, u32 temp)
 {
+// [TODO] fixme : thie code is broken and has no labels.  Needs a rewrite to be useful.
+
+#if 0
 	int i;
 	const char* pstr = temp ? "t" : "";
 
     __Log("%spsxreg: %x %x ra:%x k0: %x %x\n", pstr, startpc, psxRegs.cycle, psxRegs.GPR.n.ra, psxRegs.GPR.n.k0, *(int*)PSXM(0x13c128));
     for(i = 0; i < 34; i+=2) __Log("%spsx%s: %x %x\n", pstr, disRNameGPR[i], psxRegs.GPR.r[i], psxRegs.GPR.r[i+1]);
 	__Log("%scycle: %x %x %x; counters %x %x\n", pstr, psxRegs.cycle, g_psxNextBranchCycle, EEsCycle, 
-		(uptr)psxNextsCounter, (uptr)psxNextCounter);
+		psxNextsCounter, psxNextCounter);
 
 	__Log("psxdma%d c%x b%x m%x t%x\n", 2, HW_DMA2_CHCR, HW_DMA2_BCR, HW_DMA2_MADR, HW_DMA2_TADR);
 	__Log("psxdma%d c%x b%x m%x\n", 3, HW_DMA3_CHCR, HW_DMA3_BCR, HW_DMA3_MADR);
@@ -1217,10 +1221,9 @@ void iDumpPsxRegisters(u32 startpc, u32 temp)
 	__Log("psxdma%d c%x b%x m%x\n", 10, HW_DMA10_CHCR, HW_DMA10_BCR, HW_DMA10_MADR);
     __Log("psxdma%d c%x b%x m%x\n", 11, HW_DMA11_CHCR, HW_DMA11_BCR, HW_DMA11_MADR);
 	__Log("psxdma%d c%x b%x m%x\n", 12, HW_DMA12_CHCR, HW_DMA12_BCR, HW_DMA12_MADR);
-	for(i = 0; i < 7; ++i) __Log("%scounter%d: mode %x count %I64x rate %x scycle %x target %I64x\n", pstr, i, psxCounters[i].mode, psxCounters[i].count, psxCounters[i].rate, psxCounters[i].sCycleT, psxCounters[i].target);
-//	for(i = 0; i < 32; ++i) {
-//		__Log("int%d: %x %x\n", i, psxRegs.sCycle[i], psxRegs.eCycle[i]);
-//	}
+	for(i = 0; i < 7; ++i)
+		__Log("%scounter%d: mode %x count %I64x rate %x scycle %x target %I64x\n", pstr, i, psxCounters[i].mode, psxCounters[i].count, psxCounters[i].rate, psxCounters[i].sCycleT, psxCounters[i].target);
+#endif
 }
 
 void iDumpPsxRegisters(u32 startpc);

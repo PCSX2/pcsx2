@@ -223,7 +223,7 @@ USBhandler usbHandler;
 #define MapSymbolVarType(var,type,name) var = (type)SysLoadSym(drv,Strfy(name))
 #define MapSymbolVar(var,name) MapSymbolVarType(var,_##name,name)
 #define MapSymbolVar_Fallback(var,name,fallback) if((MapSymbolVar(var,name))==NULL) var = fallback
-#define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) { char* errString = SysLibError(); SysMessage (_("%s: Error loading %s: %s"), filename, __FUNCTION__, errString); return -1; } 
+#define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) { const char* errString = SysLibError(); SysMessage (_("%s: Error loading %s: %s"), filename, __FUNCTION__, errString); return -1; } 
 
 #define MapSymbol(name) MapSymbolVar(name,name)
 #define MapSymbol_Fallback(name,fallback) MapSymbolVar_Fallback(name,name,fallback)
@@ -236,7 +236,7 @@ USBhandler usbHandler;
 
 #define TestPS2Esyms(type) if(_TestPS2Esyms(drv,PS2E_LT_##type,PS2E_##type##_VERSION,filename) < 0) return -1;
 
-int _TestPS2Esyms(void* drv, int type, int expected_version, char* filename)
+int _TestPS2Esyms(void* drv, int type, int expected_version, const char* filename)
 {
 	_PS2EgetLibType PS2EgetLibType;
 	_PS2EgetLibVersion2 PS2EgetLibVersion2;
@@ -256,7 +256,7 @@ int _TestPS2Esyms(void* drv, int type, int expected_version, char* filename)
 	return 0;
 }
 
-//static char *err;
+//static const char *err;
 //static int errval;
 
 void *GSplugin;

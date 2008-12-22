@@ -16,10 +16,17 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#include "RDebug/deci2.h"
+#else
+#include <sys/time.h>
+#endif
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstring>
 #include <sys/stat.h>
 #include <ctype.h>
 
@@ -27,12 +34,6 @@
 #include "PsxCommon.h"
 #include "CDVDisodrv.h"
 #include "VUmicro.h"
-#ifdef _WIN32
-#include <windows.h>
-#include "RDebug/deci2.h"
-#else
-#include <sys/time.h>
-#endif
 
 #include "VU.h"
 #include "iCore.h"
@@ -378,49 +379,6 @@ int GetPS2ElfName(char *name){
 	}
 
 	return 2;
-}
-
-FILE *emuLog;
-
-#ifdef PCSX2_DEVBUILD
-int Log;
-u32 varLog;
-#endif
-
-u16 logProtocol;
-u8  logSource;
-int connected=0;
-
-#define SYNC_LOGGING
-
-void __Log(const char *fmt, ...) {
-#ifdef EMU_LOG 
-	va_list list;
-	char tmp[2024];	//hm, should be enough
-
-	va_start(list, fmt);
-#ifdef _WIN32
-	if (connected && logProtocol>=0 && logProtocol<0x10){
-		vsprintf(tmp, fmt, list);
-		sendTTYP(logProtocol, logSource, tmp);
-	}//else	//!!!!! is disabled, so the text goes to ttyp AND log
-#endif
-	{
-#ifndef LOG_STDOUT
-		if (varLog & 0x80000000) {
-			vsprintf(tmp, fmt, list);
-			SysPrintf(tmp);
-		} else if( emuLog != NULL ) {
-			vfprintf(emuLog, fmt, list);
-			fflush( emuLog );
-		}
-#else	//i assume that this will not be used (Florin)
-		vsprintf(tmp, fmt, list);
-		SysPrintf(tmp);
-#endif
-	}
-	va_end(list);
-#endif
 }
 
 // STATES
@@ -1023,7 +981,7 @@ void ProcessFKeys(int fkey, int shift)
     }
 }
 
-void injectIRX(char *filename){
+void injectIRX(const char *filename){
 	struct stat buf;
 	char path[260], name[260], *p, *q;
 	struct romdir *rd;
@@ -1121,14 +1079,5 @@ u64 GetCPUTicks()
     struct timeval t;
     gettimeofday(&t, NULL);
     return ((u64)t.tv_sec*GetTickFrequency())+t.tv_usec;
-#endif
-}
-
-__forceinline void _TIMESLICE()
-{
-#ifdef _WIN32
-	    Sleep(0);
-#else
-	    usleep(500);
 #endif
 }

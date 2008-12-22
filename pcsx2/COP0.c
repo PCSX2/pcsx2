@@ -22,7 +22,6 @@
 #include "R5900.h"
 #include "InterTables.h"
 
-//extern BOOL bExecBIOS;
 
 void COP0_BC0() {
 	COP0_LOG("%s\n", disR5900Current.getString());
@@ -172,9 +171,6 @@ void TLBR() {
 
 	int i = cpuRegs.CP0.n.Index&0x1f;
 
-//	if( !bExecBIOS )
-//		__Log("TLBR %d\n", cpuRegs.CP0.n.Index&0x1f);
-
 	COP0_LOG("COP0 > TLBR\n");
 	cpuRegs.CP0.n.PageMask = tlb[i].PageMask;
 	cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi&~(tlb[i].PageMask|0x1f00);
@@ -230,7 +226,9 @@ void MapTLB(int i)
 	u32 saddr, eaddr;
 
 #ifndef PCSX2_VIRTUAL_MEM
-	SysPrintf("MAP TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X\n",i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
+	DevCon::FormatLn("MAP TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X",
+		i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
+
 	if (tlb[i].S)
 	{
 		SysPrintf("OMG SPRAM MAPPING %08X %08X\n",tlb[i].VPN2,tlb[i].Mask);
@@ -294,9 +292,6 @@ void TLBWI() {
 			cpuRegs.CP0.n.Index,    cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);*/
 
-//	if( !bExecBIOS )
-//		__Log("TLBWI %d\n", j);
-
 	UnmapTLB(j);
 	WriteTLB(j);
 }
@@ -330,9 +325,6 @@ void TLBP() {
 		} s;
 		u32 u;
 	} EntryHi32;
-
-//	if( !bExecBIOS )
-//		__Log("TLBP %x\n", cpuRegs.CP0.n.EntryHi);
 
 	EntryHi32.u=cpuRegs.CP0.n.EntryHi;
 

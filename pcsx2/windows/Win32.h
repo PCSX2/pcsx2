@@ -20,6 +20,7 @@
 #define __WIN32_H__
 
 #include <tchar.h>
+#include "Misc.h"
 
 // --->>  Ini Configuration [ini.c]
 
@@ -31,6 +32,14 @@ void SaveConfig();
 
 // <<--- END Ini Configuration [ini.c]
 
+struct AppData
+{
+	HWND hWnd;           // Main window handle
+	HINSTANCE hInstance; // Application instance
+	HMENU hMenu;         // Main window menu
+};
+
+extern AppData gApp;
 
 extern int needReset;
 
@@ -49,8 +58,6 @@ void InitLanguages();
 char *GetLanguageNext();
 void CloseLanguages();
 void ChangeLanguage(char *lang);
-void OpenConsole();
-void CloseConsole();
 #define StatusSet(text) SendMessage(hStatusWnd, SB_SETTEXT, 0, (LPARAM)text);
 
 //patch browser window

@@ -2650,7 +2650,7 @@ void svudispfntemp()
 			{
                 //static int curesp;
                 //__asm mov curesp, esp
-				__Log("tVU: %x %x %x\n", s_svulast, s_vucount, s_vufnheader);
+				Console::FormatLn("tVU: %x %x %x", s_svulast, s_vucount, s_vufnheader);
 				if( g_curdebugvu ) iDumpVU1Registers();
 				else iDumpVU0Registers();
 				s_vucount++;
@@ -4050,25 +4050,6 @@ void vu1xgkick(u32* pMem, u32 addr)
 	assert( addr < 0x4000 );
 #ifdef SUPERVU_COUNT
 	StopSVUCounter();
-#endif
-
-#ifdef _DEBUG
-	static int scount = 0;
-    //static int curesp;
-    //__asm mov curesp, esp;
-	scount++;
-
-//    if( scount > 1500 ) {
-//        __Log("xgkick 0x%x (%d)\n", addr, scount);
-//        iDumpVU1Registers();
-//        for(int i = 0; i < 0x400; ++i) {
-//            __Log("%x: %x %x %x %x\n", i, *(int*)(VU1.Mem+16*i), *(int*)(VU1.Mem+16*i+4), *(int*)(VU1.Mem+16*i+8), *(int*)(VU1.Mem+16*i+12));
-//        }
-//    }
-
-	if( vudump & 8 ) {
-		__Log("xgkick 0x%x (%d)\n", addr, scount);
-	}
 #endif
 
 	GSGIFTRANSFER1(pMem, addr);

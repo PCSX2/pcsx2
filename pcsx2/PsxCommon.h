@@ -32,7 +32,7 @@
 extern long LoadCdBios;
 extern int cdOpenCase;
 
-#define PSXCLK	36864000	/* 36.864 Mhz */
+#define PSXCLK	(36864000ULL)	/* 36.864 Mhz */
 
 #include "Plugins.h"
 #include "R3000A.h"

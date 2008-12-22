@@ -441,49 +441,15 @@ void SysClose() {
 void SysPrintf(const char *fmt, ...) {
 	va_list list;
 	char msg[512];
-	char* ptr;
-	int len, i, j, s;
 
-	va_start(list, fmt);
-	vsprintf(msg, fmt, list);
+	va_start(list,fmt);
+	_vsnprintf(msg,511,fmt,list);
+	msg[511] = '\0';
 	va_end(list);
 
-	if (Config.PsxOut == 0) {
-#ifdef EMU_LOG
-#ifndef LOG_STDOUT
-		if (emuLog != NULL && !(varLog & 0x80000000)) {
-			fprintf(emuLog, "%s", msg);
-		}
-#endif
-#endif
-		return;
-	}
-
-	printf("%s", msg);
-
-#ifdef EMU_LOG
-#ifndef LOG_STDOUT
-	if (emuLog != NULL && !(varLog & 0x80000000)) {
-		ptr = msg; len = strlen(msg);
-		for (i=0, j=0; i<len; i++, j++) {
-			if (ptr[j] == '\033') {
-				ptr[j] = 0;
-				fprintf(emuLog, "%s", ptr);
-				if (ptr[j+2] == '0') {
-					s = 4;
-				} else {
-					s = 5;
-				}
-			ptr+= j+s;
-			j = 0;
-			}
-		}
-        
-        fprintf(emuLog, "%s", ptr);
-	}
-#endif
-#endif
+	Console::Write( msg );
 }
+
 void *SysLoadLibrary(const char *lib) {
 	return dlopen(lib, RTLD_NOW);
 }

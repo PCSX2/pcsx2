@@ -207,7 +207,9 @@ const char* intrname[]={
 "INT_MAX"							//40
 };
 
-void zeroEx() {
+void zeroEx()
+{
+#ifdef PCSX2_DEVBUILD
 	u32 pc;
 	u32 code;
 	char *lib;
@@ -236,14 +238,12 @@ void zeroEx() {
 		}
 	}
 
-#ifdef PCSX2_DEVBUILD
 	{char libz[9]; memcpy(libz, lib, 8); libz[8]=0;
 	PSXBIOS_LOG("%s: %s (%x)"
 		" (%x, %x, %x, %x)"	//comment this line to disable param showing
 		, libz, fname == NULL ? "unknown" : fname, code,
 		psxRegs.GPR.n.a0, psxRegs.GPR.n.a1, psxRegs.GPR.n.a2, psxRegs.GPR.n.a3);
 	}
-#endif
 
 //	Log=0;
 //	if (!strcmp(lib, "intrman") && code == 0x11) Log=1;
@@ -271,40 +271,38 @@ void zeroEx() {
 	}
 
 	if (!strncmp(lib, "loadcore", 8) && code == 6) {
-		SysPrintf("loadcore RegisterLibraryEntries (%x): %8.8s\n", psxRegs.pc, PSXM(psxRegs.GPR.n.a0+12));
+		DevCon::FormatLn("loadcore RegisterLibraryEntries (%x): %8.8s", psxRegs.pc, PSXM(psxRegs.GPR.n.a0+12));
 	}
 
 	if (!strncmp(lib, "intrman", 7) && code == 4) {
-		SysPrintf("intrman RegisterIntrHandler (%x): intr %s, handler %x\n", psxRegs.pc, intrname[psxRegs.GPR.n.a0], psxRegs.GPR.n.a2);
+		DevCon::FormatLn("intrman RegisterIntrHandler (%x): intr %s, handler %x", psxRegs.pc, intrname[psxRegs.GPR.n.a0], psxRegs.GPR.n.a2);
 	}
 
 	if (!strncmp(lib, "sifcmd", 6) && code == 17) {
-		SysPrintf("sifcmd sceSifRegisterRpc (%x): rpc_id %x\n", psxRegs.pc, psxRegs.GPR.n.a1);
+		DevCon::FormatLn("sifcmd sceSifRegisterRpc (%x): rpc_id %x", psxRegs.pc, psxRegs.GPR.n.a1);
 	}
 
-#ifdef PCSX2_DEVBUILD
-	if (!strncmp(lib, "sysclib", 8)) {
-		switch (code) {
+	if (!strncmp(lib, "sysclib", 8))
+	{
+		switch (code)
+		{
 			case 0x16: // strcmp
-				if (varLog & 0x00800000) EMU_LOG(" \"%s\": \"%s\"", Ra0, Ra1);
+				PSXBIOS_LOG(" \"%s\": \"%s\"", Ra0, Ra1);
 				break;
 
 			case 0x1e: // strncpy
-				if (varLog & 0x00800000) EMU_LOG(" \"%s\"", Ra1);
+				PSXBIOS_LOG(" \"%s\"", Ra1);
 				break;
 		}
 	}
-#endif
-
-#ifdef PCSX2_DEVBUILD
-	if (varLog & 0x00800000) EMU_LOG("\n");
-#endif
 
 /*	psxRegs.pc = branchPC;
 	pc = psxRegs.GPR.n.ra;
 	while (psxRegs.pc != pc) psxCpu->ExecuteBlock();
 
 	PSXBIOS_LOG("%s: %s (%x) END\n", lib, fname == NULL ? "unknown" : fname, code);*/
+#endif
+
 }
 /*/==========================================CALL LOG
 char* getName(char *file, u32 addr){

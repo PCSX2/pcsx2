@@ -27,7 +27,7 @@
 #include <windows.h>
 #endif
 
-#include <zlib.h>		// fixme: is zlib.h stuff used by that many modules that it should be here in common?
+#include <zlib.h>
 #include <string.h>
 
 #include "PS2Etypes.h"
@@ -80,30 +80,6 @@
 
 #endif
 
-#ifdef ENABLE_NLS
-
-#ifdef __MSCW32__
-#include "libintlmsc.h"
-#else
-#include <locale.h>
-#include <libintl.h>
-#endif
-
-#undef _
-#define _(String) dgettext (PACKAGE, String)
-#ifdef gettext_noop
-#  define N_(String) gettext_noop (String)
-#else
-#  define N_(String) (String)
-#endif
-
-#else
-
-#define _(msgid) msgid
-#define N_(msgid) msgid
-
-#endif
-
 struct TESTRUNARGS
 {
 	u8 enabled;
@@ -145,18 +121,9 @@ extern TESTRUNARGS g_TestRun;
 #define PSXPIXEL        ((int)(PSXCLK / 13500000))
 #define PSXSOUNDCLK		((int)(48000))
 
-#define COLOR_BLACK		"\033[30m"
-#define COLOR_RED		"\033[31m"
-#define COLOR_GREEN		"\033[32m"
-#define COLOR_YELLOW	"\033[33m"
-#define COLOR_BLUE		"\033[34m"
-#define COLOR_MAGENTA	"\033[35m"
-#define COLOR_CYAN		"\033[36m"
-#define COLOR_WHITE		"\033[37m"
-#define COLOR_RESET		"\033[0m"
-
 #include <pthread.h> // sync functions
 
+#include "Misc.h"
 #include "Plugins.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
@@ -167,7 +134,6 @@ extern TESTRUNARGS g_TestRun;
 #include "Vif.h"
 #include "SPR.h"
 #include "Sif.h"
-#include "Misc.h"
 #include "Counters.h"
 #include "IPU/IPU.h"
 #include "Patch.h"
@@ -177,9 +143,6 @@ extern TESTRUNARGS g_TestRun;
 #include "x86/ix86/ix86.h"
 #endif
 
-extern void __Log(const char *fmt, ...);
-extern u16 logProtocol;
-extern u8  logSource;
 #define PCSX2_VERSION "Playground (beta)"
 
 #ifdef __LINUX__

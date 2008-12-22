@@ -67,6 +67,7 @@ static unsigned int langsMax;
 PcsxConfig winConfig;		// local storage of the configuration options.
 
 HWND hStatusWnd;
+AppData gApp;
 
 extern int g_SaveGSStream;
 
@@ -82,30 +83,6 @@ _langs *langs = NULL;
 static int UseGui = 1;
 static int nDisableSC = 0; // screensaver
 
-void OpenConsole() {
-	COORD csize;
-	CONSOLE_SCREEN_BUFFER_INFO csbiInfo; 
-	SMALL_RECT srect;
-
-	if (gApp.hConsole) return;
-	AllocConsole();
-	SetConsoleTitle(_("Ps2 Output"));
-	csize.X = 100;
-	csize.Y = 2048;
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), csize);
-
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbiInfo);
-	srect = csbiInfo.srWindow;
-	srect.Right = srect.Left + 99;
-	srect.Bottom = srect.Top + 64;
-	SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE), TRUE, &srect);
-	gApp.hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-}
-
-void CloseConsole() {
-	if (gApp.hConsole == NULL) return;
-	FreeConsole(); gApp.hConsole = NULL;
-}
 void strcatz(char *dst, char *src) {
 	int len = strlen(dst) + 1;
 	strcpy(dst + len, src);
@@ -456,9 +433,9 @@ static int ParseCommandLine( int tokenCount, TCHAR *const *const tokens )
 			UseGui = 0;
 		}
 #ifdef PCSX2_DEVBUILD
-        else if( CmdSwitchIs( "jpg" ) ) {
-			g_TestRun.jpgcapture = 1;
-		}
+			else if( CmdSwitchIs( "jpg" ) ) {
+				g_TestRun.jpgcapture = 1;
+			}
 #endif
 		else
 		{
@@ -551,7 +528,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	gApp.hInstance = hInstance;
 	gApp.hMenu = NULL;
 	gApp.hWnd = NULL;
-	gApp.hConsole = NULL;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, "Langs\\");
@@ -625,10 +601,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if( winConfig.PsxOut )
 	{
-		OpenConsole();
+		Console::Open();
 
 		if( lpCmdLine == NULL || *lpCmdLine == 0 )
-			SysPrintf("-help to see arguments\n");
+			Console::WriteLn("-help to see arguments");
 	}
 
 	// Load the command line overrides for plugins:
@@ -638,25 +614,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if( g_TestRun.pgsdll )
 	{
 		_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
-		SysPrintf( "* GS plugin override: \n\t%s\n\n", Config.GS );
+		Console::FormatLn( "* GS plugin override: \n\t%s\n", Config.GS );
 	}
 	if( g_TestRun.pcdvddll )
 	{
 		_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
-		SysPrintf( "* CDVD plugin override: \n\t%s\n\n", Config.CDVD );
+		Console::FormatLn( "* CDVD plugin override: \n\t%s\n", Config.CDVD );
 	}
 	if( g_TestRun.pspudll )
 	{
 		_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
-		SysPrintf( "* SPU2 plugin override: \n\t%s\n\n", Config.SPU2 );
+		Console::FormatLn( "* SPU2 plugin override: \n\t%s\n", Config.SPU2 );
 	}
 
 	// [TODO] : Add the other plugin overrides here...
 
+	ProfilerInit();
 	InitCPUTicks();
 	if (SysInit() == -1) return 1;
-
-	ProfilerInit();
 
 #ifdef PCSX2_DEVBUILD
     if( g_TestRun.enabled || g_TestRun.ptitle != NULL ) {
@@ -682,15 +657,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if( Config.PsxOut )
 	{
 	    // output the help commands
-	    SysPrintf("\tF1 - save state\n");
-	    SysPrintf("\t(Shift +) F2 - cycle states\n");
-	    SysPrintf("\tF3 - load state\n");
+		Console::WriteLn("\tF1 - save state");
+	    Console::WriteLn("\t(Shift +) F2 - cycle states");
+	    Console::WriteLn("\tF3 - load state");
 
-#ifdef PCSX2_DEVBUILD
-	    SysPrintf("\tF10 - dump performance counters\n");
-	    SysPrintf("\tF11 - save GS state\n");
-	    SysPrintf("\tF12 - dump hardware registers\n");
-#endif
+	    DevCon::WriteLn("\tF10 - dump performance counters");
+	    DevCon::WriteLn("\tF11 - save GS state");
+	    DevCon::WriteLn("\tF12 - dump hardware registers");
     }
 
 	LoadPatch("default");
@@ -1331,14 +1304,14 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				if(Config.PsxOut)
 				{
                    CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_UNCHECKED);
-				   CloseConsole();
+				   Console::Close();
 				   Config.PsxOut=0;
 				   SaveConfig();
 				}
 				else
 				{
                    CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
-				   OpenConsole();
+				   Console::Open();
 				   Config.PsxOut=1;
 				   SaveConfig();
 				}
@@ -1385,7 +1358,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
         
 		case WM_QUIT:
-			if (Config.PsxOut) CloseConsole();
+			if (Config.PsxOut) Console::Close();
 			exit(0);
 			break;
 
@@ -1475,9 +1448,6 @@ void CreateMainMenu() {
 	ADDMENUITEM(0,_("E&xecute"), ID_RUN_EXECUTE);
 
 	ADDSUBMENU(0,_("&Config"));
-//#ifdef PCSX2_DEVBUILD
-//	ADDMENUITEM(0,_("&Advanced"), ID_CONFIG_ADVANCED);
-//#endif
 	ADDMENUITEM(0,_("Advanced"), ID_ADVANCED_OPTIONS);
 	ADDMENUITEM(0,_("Speed &Hacks"), ID_HACKS);
 	ADDMENUITEM(0,_("Gamefixes"), ID_GAMEFIXES);
@@ -1525,9 +1495,8 @@ void CreateMainMenu() {
 	ADDMENUITEM(0,_("&Compatibility List..."), ID_HELP_HELP);
 	ADDMENUITEM(0,_("&About..."), ID_HELP_ABOUT);
 
-#ifndef PCSX2_DEVBUILD
-	EnableMenuItem(GetSubMenu(gApp.hMenu, 4), ID_DEBUG_LOGGING, MF_GRAYED);
-#endif
+	if( !IsDevBuild )
+		EnableMenuItem(GetSubMenu(gApp.hMenu, 4), ID_DEBUG_LOGGING, MF_GRAYED);
 }
 
 void CreateMainWindow(int nCmdShow) {
@@ -1730,17 +1699,15 @@ static int sinit=0;
 int SysInit() {
 	CreateDirectory(MEMCARDS_DIR, NULL);
 	CreateDirectory(SSTATES_DIR, NULL);
-#ifdef EMU_LOG
+
 	CreateDirectory(LOGS_DIR, NULL);
 
-#ifdef PCSX2_DEVBUILD
-	if( g_TestRun.plogname != NULL )
+
+	if( IsDevBuild && g_TestRun.plogname != NULL )
 		emuLog = fopen(g_TestRun.plogname, "w");
-#endif
 
 	if( emuLog == NULL )
 		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
-#endif
 
 	if (cpuInit() == -1) return -1;
 
@@ -1786,53 +1753,13 @@ void SysPrintf(const char *fmt, ...)
 {
 	va_list list;
 	char msg[512];
-	char *ptr;
-	DWORD tmp;
-	int len, s;
-	int i, j;
 
 	va_start(list,fmt);
-	_vsnprintf(msg,511,fmt,list);
+	vsnprintf(msg,511,fmt,list);
 	msg[511] = '\0';
 	va_end(list);
 
-    if (Config.PsxOut == 0) {
-#ifndef LOG_STDOUT
-        if (emuLog != NULL && !(varLog & 0x80000000)) {
-            fprintf(emuLog, "%s", msg);
-        }
-#endif
-        return;
-    }
-
-	ptr = msg; len = strlen(msg);
-	for (i=0, j=0; i<len; i++, j++) {
-		if (ptr[j] == '\033') {
-			ptr[j] = 0;
-			WriteConsole(gApp.hConsole, ptr, (DWORD)strlen(ptr), &tmp, 0);
-#ifndef LOG_STDOUT
-			if (emuLog != NULL && !(varLog & 0x80000000)) {
-				fprintf(emuLog, "%s", ptr);
-			}
-#endif
-
-			if (ptr[j+2] == '0') {
-				SetConsoleTextAttribute(gApp.hConsole, 7);
-				s = 4;
-			} else {
-				SetConsoleTextAttribute(gApp.hConsole, 7);
-				s = 5;
-			}
-			ptr+= j+s;
-			j = 0;
-		}
-	}
-
-#ifndef LOG_STDOUT
-	if (emuLog != NULL && !(varLog & 0x80000000))
-		fprintf(emuLog, "%s", ptr);
-#endif
-	WriteConsole(gApp.hConsole, ptr, (DWORD)strlen(ptr), &tmp, 0);
+	Console::Write( msg );
 }
 
 void SysMessage(const char *fmt, ...)
@@ -1857,7 +1784,7 @@ void SysRunGui() {
 	RunGui();
 }
 
-static char *err = N_("Error Loading Symbol");
+static const char *err = N_("Error Loading Symbol");
 static int errval;
 
 void *SysLoadLibrary(const char *lib) {
@@ -1871,7 +1798,7 @@ void *SysLoadSym(void *lib, const char *sym) {
 	return tmp;
 }
 
-char *SysLibError() {
+const char *SysLibError() {
 	if (GetLastError()) 
 	{ 
 		static char perr[4096];
@@ -2120,8 +2047,8 @@ BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable)
 								& Token);
 
 	if( Result != TRUE ) {
-	SysPrintf( "Cannot open process token.\n" );
-	return FALSE;
+		Console::WriteLn( "VirtualMemory Error > Cannot open process token." );
+		return FALSE;
 	}
 
 	// Enable or disable?
@@ -2129,11 +2056,11 @@ BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable)
 	Info.Count = 1;
 	if( bEnable ) 
 	{
-	Info.Privilege[0].Attributes = SE_PRIVILEGE_ENABLED;
+		Info.Privilege[0].Attributes = SE_PRIVILEGE_ENABLED;
 	} 
 	else 
 	{
-	Info.Privilege[0].Attributes = SE_PRIVILEGE_REMOVED;
+		Info.Privilege[0].Attributes = SE_PRIVILEGE_REMOVED;
 	}
 
 	// Get the LUID.
@@ -2143,8 +2070,8 @@ BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable)
 
 	if( Result != TRUE ) 
 	{
-	SysPrintf( "Cannot get privilege value for %s.\n", SE_LOCK_MEMORY_NAME );
-	return FALSE;
+		Console::FormatLn( "VirtualMemory Error > Cannot get privilege value for %s.", SE_LOCK_MEMORY_NAME );
+		return FALSE;
 	}
 
 	// Adjust the privilege.
@@ -2156,7 +2083,7 @@ BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable)
 	// Check the result.
 	if( Result != TRUE ) 
 	{
-		SysPrintf ("Cannot adjust token privileges, error %u.\n", GetLastError() );
+		Console::FormatLn( "VirtualMemory Error > Cannot adjust token privileges, error %u.", GetLastError() );
 		return FALSE;
 	} 
 	else 
@@ -2298,7 +2225,7 @@ int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
 	LPVOID lpMemReserved = VirtualAlloc( base, size, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE );
 	if( lpMemReserved == NULL || base != lpMemReserved )
 	{
-		SysPrintf("Cannot reserve memory at 0x%8.8x(%x), error: %d.\n", base, lpMemReserved, GetLastError());
+		Console::FormatLn("VirtualMemory Error %d > Cannot reserve memory at 0x%8.8x(%x).", base, lpMemReserved, GetLastError());
 		goto eCleanupAndExit;
 	}
 
@@ -2310,7 +2237,7 @@ int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
 
 	if( bResult != TRUE ) 
 	{
-		SysPrintf("MapUserPhysicalPages failed to map, error %u.\n", GetLastError() );
+		Console::FormatLn("VirtualMemory Error %u > MapUserPhysicalPages failed to map.", GetLastError() );
 		goto eCleanupAndExit;
 	}
 
@@ -2326,7 +2253,7 @@ void SysVirtualFree(void* lpMemReserved, u32 size)
 	// unmap   
 	if( MapUserPhysicalPages( lpMemReserved, (size+s_dwPageSize-1)/s_dwPageSize, NULL ) != TRUE ) 
 	{
-		SysPrintf("MapUserPhysicalPages failed to unmap, error %u.\n", GetLastError() );
+		Console::FormatLn("MapUserPhysicalPages failed to unmap, error %u.", GetLastError() );
 		return;
 	}
 
