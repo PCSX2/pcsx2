@@ -67,7 +67,6 @@ extern DisR5900CurrentState disR5900Current;
 //that way is slower but you now not need to compile every time ;P
 #ifdef PCSX2_DEVBUILD
 
-extern int Log;
 extern u32 varLog;
 
 void SourceLog( u16 protocol, u8 source, u32 cpuPc, u32 cpuCycle, const char *fmt, ...);
@@ -146,7 +145,6 @@ extern void SrcLog_GPU( const char* fmt, ... );
 #else // PCSX2_DEVBUILD
 
 #define varLog 0
-#define Log 0
 
 #define CPU_LOG  0&&
 #define MEM_LOG  0&&

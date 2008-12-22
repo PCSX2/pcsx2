@@ -18,7 +18,6 @@
 FILE *emuLog;
 
 #ifdef PCSX2_DEVBUILD
-int Log;
 u32 varLog;
 
 // these used by the depreciated _old_Log only

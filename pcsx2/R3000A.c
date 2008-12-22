@@ -58,10 +58,6 @@ int psxInit()
 	psxBreak = 0;
 	psxCycleEE = -1;
 
-#ifdef PCSX2_DEVBUILD
-	Log=0;
-#endif
-
 	if (psxMemInit() == -1) return -1;
 
 	return psxCpu->Init();

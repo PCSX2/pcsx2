@@ -82,7 +82,7 @@ static u32 branchPC;
 #ifdef PCSX2_DEVBUILD
 static void debugI()
 {
-	//if (Log) { CPU_LOG("%s\n", disR5900Current.getString()); }
+	//CPU_LOG("%s\n", disR5900Current.getString());
  	if (cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1]) SysPrintf("R0 is not zero!!!!\n");
 }
 #else

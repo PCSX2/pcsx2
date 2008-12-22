@@ -629,7 +629,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// [TODO] : Add the other plugin overrides here...
 
-	ProfilerInit();
+	if( Config.Profiler )
+		ProfilerInit();
+
 	InitCPUTicks();
 	if (SysInit() == -1) return 1;
 
@@ -683,6 +685,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
 #endif
+
+	// Don't check Config.Profiler here -- the Profiler will know if it's running or not.
 	ProfilerTerm();
 	return 0;
 }
@@ -801,8 +805,7 @@ BOOL APIENTRY LogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
         case WM_INITDIALOG:
 			for (i=0; i<32; i++)
 				if (varLog & (1<<i))
-					CheckDlgButton(hDlg, IDC_LOG+i, TRUE);
-			if (Log) CheckDlgButton(hDlg, IDC_LOGS, TRUE);
+					CheckDlgButton(hDlg, IDC_CPULOG+i, TRUE);
 
             return TRUE;
 
@@ -810,13 +813,10 @@ BOOL APIENTRY LogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 
             if (LOWORD(wParam) == IDOK) {
 				for (i=0; i<32; i++) {
-	 			    int ret = Button_GetCheck(GetDlgItem(hDlg, IDC_LOG+i));
+	 			    int ret = Button_GetCheck(GetDlgItem(hDlg, IDC_CPULOG+i));
 					if (ret) varLog|= 1<<i;
 					else varLog&=~(1<<i);
 				}
-	 			if (Button_GetCheck(GetDlgItem(hDlg, IDC_LOGS)))
-					 Log = 1;
-				else Log = 0;
 
 				SaveConfig();              
 
@@ -831,18 +831,13 @@ BOOL APIENTRY LogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 #endif
 
 BOOL APIENTRY AdvancedProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
-	//char str[256];
 
     switch (message) {
         case WM_INITDIALOG:
-			//CheckDlgButton(hDlg, IDC_REGCACHING, CHECK_REGCACHING ? TRUE : FALSE);
-			//if (Config.SafeCnts) CheckDlgButton(hDlg, IDC_SAFECOUNTERS, TRUE);
             return TRUE;
 
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK) {
-				//Config.Options &= ~PCSX2_REGCACHING;
-				//Config.Options |= IsDlgButtonChecked(hDlg, IDC_REGCACHING) ? PCSX2_REGCACHING : 0;
 				SaveConfig();              
                 EndDialog(hDlg, TRUE);
             } 
@@ -1299,36 +1294,46 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_UNCHECKED);
                 CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_UNCHECKED);
                 return TRUE;
+
 			case ID_CONSOLE:
+				Config.PsxOut = !Config.PsxOut;
 				if(Config.PsxOut)
 				{
                    CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_UNCHECKED);
 				   Console::Close();
-				   Config.PsxOut=0;
-				   SaveConfig();
 				}
 				else
 				{
                    CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
 				   Console::Open();
-				   Config.PsxOut=1;
-				   SaveConfig();
 				}
+				SaveConfig();
 				return TRUE;
+
 			case ID_PATCHES:
-				if(Config.Patch)
+				Config.Patch = !Config.Patch;
+				CheckMenuItem(gApp.hMenu,ID_PATCHES,Config.Patch ? MF_CHECKED : MF_UNCHECKED);
+
+				SaveConfig();
+				return TRUE;
+
+#ifndef _DEBUG
+			case ID_PROFILER:
+				Config.Profiler = !Config.Profiler;
+				if( Config.Profiler )
 				{
-                  CheckMenuItem(gApp.hMenu,ID_PATCHES,MF_UNCHECKED);
-				  Config.Patch=0;
-				  SaveConfig();
+					CheckMenuItem(gApp.hMenu,ID_PROFILER,MF_CHECKED);
+					ProfilerInit();
 				}
 				else
 				{
-                  CheckMenuItem(gApp.hMenu,ID_PATCHES,MF_CHECKED);
-				  Config.Patch=1;
-				  SaveConfig();
+					CheckMenuItem(gApp.hMenu,ID_PROFILER,MF_UNCHECKED);
+					ProfilerTerm();
 				}
-                return TRUE;
+				SaveConfig();
+				return TRUE;
+#endif
+
 			default:
 				if (LOWORD(wParam) >= ID_LANGS && LOWORD(wParam) <= (ID_LANGS + langsMax)) {
 					AccBreak = 1;
@@ -1483,8 +1488,11 @@ void CreateMainMenu() {
 #endif
 
 	ADDSUBMENU(0, _("&Misc"));
-	//ADDMENUITEM(0,_("Enable &Profiler"), ID_PROFILER);
-	ADDSEPARATOR(0);
+	if( !IsDebugBuild )
+	{
+		ADDMENUITEM(0,_("Enable &Profiler"), ID_PROFILER);
+		ADDSEPARATOR(0);
+	}
 	ADDMENUITEM(0,_("Enable &Patches"), ID_PATCHES);
 	ADDMENUITEM(0,_("Enable &Console"), ID_CONSOLE); 
 	ADDSEPARATOR(0);
@@ -1558,8 +1566,9 @@ void CreateMainWindow(int nCmdShow) {
     if(Config.ThPriority==THREAD_PRIORITY_NORMAL) CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_CHECKED);
 	if(Config.ThPriority==THREAD_PRIORITY_HIGHEST) CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_CHECKED);
 	if(Config.ThPriority==THREAD_PRIORITY_LOWEST)  CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_CHECKED);
-	if(Config.PsxOut) CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
-	if(Config.Patch)  CheckMenuItem(gApp.hMenu,ID_PATCHES,MF_CHECKED);
+	if(Config.PsxOut)	CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
+	if(Config.Patch)	CheckMenuItem(gApp.hMenu,ID_PATCHES,MF_CHECKED);
+	if(Config.Profiler)	CheckMenuItem(gApp.hMenu,ID_PROFILER,MF_CHECKED);
 	hStatusWnd = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", hWnd, 100);
     sprintf(buf, "PCSX2 %s", PCSX2_VERSION);
 	StatusSet(buf);
@@ -2254,7 +2263,7 @@ void SysVirtualFree(void* lpMemReserved, u32 size)
 	// unmap   
 	if( MapUserPhysicalPages( lpMemReserved, (size+s_dwPageSize-1)/s_dwPageSize, NULL ) != TRUE ) 
 	{
-		Console::FormatLn("MapUserPhysicalPages failed to unmap, error %u.", GetLastError() );
+		Console::FormatLn("VirtualMemory Error %u > MapUserPhysicalPages failed to unmap", GetLastError() );
 		return;
 	}
 

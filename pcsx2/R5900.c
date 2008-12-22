@@ -100,10 +100,6 @@ int cpuInit()
 	if (memInit() == -1) return -1;
 #endif
 
-#ifdef PCSX2_DEVBUILD
-	Log = 0;
-#endif
-
 	return ret;
 }
 

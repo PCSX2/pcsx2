@@ -1242,9 +1242,9 @@ void (*PREFIX##_LOWER_OPCODE[128])(_VURegsNum *VUregsn) = { \
 #ifdef VUM_LOG
 
 #define IdebugUPPER(VU) \
-	if (Log) { VUM_LOG("%s\n", dis##VU##MicroUF(VU.code, VU.VI[REG_TPC].UL)); }
+	VUM_LOG("%s\n", dis##VU##MicroUF(VU.code, VU.VI[REG_TPC].UL));
 #define IdebugLOWER(VU) \
-	if (Log) { VUM_LOG("%s\n", dis##VU##MicroLF(VU.code, VU.VI[REG_TPC].UL)); }
+	VUM_LOG("%s\n", dis##VU##MicroLF(VU.code, VU.VI[REG_TPC].UL));
 
 #else
 

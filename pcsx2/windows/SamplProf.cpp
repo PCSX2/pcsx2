@@ -118,18 +118,22 @@ static volatile bool ProfRunning=false;
 
 void ProfilerRegisterSource(const char* Name,void* buff,u32 sz)
 {
-	EnterCriticalSection( &ProfModulesLock );
+	if( ProfRunning )
+		EnterCriticalSection( &ProfModulesLock );
 	Module tmp(Name,buff,sz);
 	ProfModules.push_back(tmp);
-	LeaveCriticalSection( &ProfModulesLock );
+	if( ProfRunning )
+		LeaveCriticalSection( &ProfModulesLock );
 }
 
 void ProfilerRegisterSource(const char* Name,void* function)
 {
-	EnterCriticalSection( &ProfModulesLock );
+	if( ProfRunning )
+		EnterCriticalSection( &ProfModulesLock );
 	Module tmp(Name,function);
 	ProfModules.push_back(tmp);
-	LeaveCriticalSection( &ProfModulesLock );
+	if( ProfRunning )
+		LeaveCriticalSection( &ProfModulesLock );
 }
 
 int __stdcall ProfilerThread(void* nada)
@@ -139,8 +143,7 @@ int __stdcall ProfilerThread(void* nada)
 
 	while(ProfRunning)
 	{
-_loopstart:
-		Sleep(7);
+		Sleep(6);
 
 		if (tick_count>400)
 		{
@@ -205,7 +208,7 @@ _loopstart:
 		if (iter!=ProfUnknownHash.end())
 		{
 			iter->second.ticks++;
-			goto _loopstart;
+			continue;
 		}
 
 		Module tmp(sz==0?modulenam.c_str():0,(void*)ctx.Eip);

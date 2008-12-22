@@ -148,7 +148,10 @@ struct PcsxConfig {
 	char BiosDir[g_MaxPath];
 	char Lang[g_MaxPath];
 	u32 Options; // PCSX2_X options
-	int PsxOut;
+
+	bool PsxOut;
+	bool Profiler;
+
 	int PsxType;
 	int Cdda;
 	int Mdec;

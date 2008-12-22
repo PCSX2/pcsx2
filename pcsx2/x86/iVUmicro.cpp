@@ -114,7 +114,7 @@ void _recvuFMACflush(VURegs * VU) {
 		if (VU->fmac[i].enable == 0) continue;
 
 		if ((vucycle - VU->fmac[i].sCycle) >= VU->fmac[i].Cycle) {
-//			if (Log) { VUM_LOG("flushing FMAC pipe[%d]\n", i); }
+//			VUM_LOG("flushing FMAC pipe[%d]\n", i);
 			VU->fmac[i].enable = 0;
 		}
 	}
@@ -196,7 +196,7 @@ void _recvuFMACAdd(VURegs * VU, int reg, int xyzw) {
 	}
 
 	if (i==8) SysPrintf("*PCSX2*: error , out of fmacs\n");
-//	if (Log) { VUM_LOG("adding FMAC pipe[%d]; reg %d\n", i, reg); }
+//	VUM_LOG("adding FMAC pipe[%d]; reg %d\n", i, reg);
 	
 	VU->fmac[i].enable = 1;
 	VU->fmac[i].sCycle = vucycle;

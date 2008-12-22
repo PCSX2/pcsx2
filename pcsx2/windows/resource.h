@@ -705,6 +705,7 @@
 #define ID_SPU2HACK                     40061
 #define ID_VSYNCRATE                    40062
 #define ID_HELP_HELP                    40063
+#define ID_PROFILER                     40066
 #define ID_CHEAT_FINDER_SHOW            40100
 #define ID_CHEAT_BROWSER_SHOW           40101
 #define ID_HACKS                        40102
@@ -719,6 +720,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1309
-#define _APS_NEXT_SYMED_VALUE           102
+#define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

@@ -63,7 +63,7 @@ namespace Console
 
 	__forceinline bool __fastcall WriteLn()
 	{
-		if (Config.PsxOut != 0)
+		if (hConsole != NULL)
 		{
 			DWORD tmp;
 			WriteConsole(hConsole, "\r\n", 2, &tmp, 0);
@@ -80,7 +80,7 @@ namespace Console
 
 	__forceinline bool __fastcall Write( const char* fmt )
 	{
-		if (Config.PsxOut != 0)
+		if (hConsole != NULL)
 		{
 			DWORD tmp;
 			WriteConsole(hConsole, fmt, (DWORD)strlen(fmt), &tmp, 0);
