@@ -352,6 +352,7 @@ static __forceinline void pcsx2_aligned_free(void* pmem)
 // InterlockedExchange: Declare linux/GCC equivalents here
 // (implementations are in ThreadTools.cpp)
 #ifndef _WIN32
+typedef void* PVOID;
 extern void InterlockedExchangePointer(PVOID volatile* Target, void* Value);
 extern long InterlockedExchange(long volatile* Target, long Value);
 extern long InterlockedExchangeAdd(long volatile* Addend, long Value);

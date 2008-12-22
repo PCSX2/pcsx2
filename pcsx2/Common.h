@@ -123,7 +123,6 @@ extern TESTRUNARGS g_TestRun;
 
 #include <pthread.h> // sync functions
 
-#include "Misc.h"
 #include "Plugins.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
@@ -134,6 +133,8 @@ extern TESTRUNARGS g_TestRun;
 #include "Vif.h"
 #include "SPR.h"
 #include "Sif.h"
+// Moving this before one of the other includes causes compilation issues. 
+#include "Misc.h"
 #include "Counters.h"
 #include "IPU/IPU.h"
 #include "Patch.h"

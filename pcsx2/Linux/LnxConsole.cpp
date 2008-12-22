@@ -17,11 +17,12 @@
  */
 
 #include "Misc.h"
-#include "Debug.h"
+#include "../DebugTools/Debug.h"
 #include "System.h"
+#include "Linux.h"
 
 // Linux Note : The Linux Console is pretty simple.  It just dumps to the stdio!
-// (no console open/clode/title stuff tho, so those functions are dummies)
+// (no console open/close/title stuff tho, so those functions are dummies)
 namespace Console
 {
 	void SetTitle( const char* title )
@@ -75,7 +76,7 @@ namespace Console
 		char msg[2048];
 
 		va_start(list,fmt);
-		vsprintf(msg,2047,fmt,list);
+		vsnprintf(msg,2047,fmt,list);
 		msg[2047] = '\0';
 		va_end(list);
 
@@ -89,7 +90,7 @@ namespace Console
 		char msg[2048];
 
 		va_start(list,fmt);
-		_vsnprintf(msg,2046,fmt,list);	// 2046 to leave room for the newline
+		vsnprintf(msg,2046,fmt,list);	// 2046 to leave room for the newline
 		va_end(list);
 
 		strcat( msg, "\n" );		// yeah, that newline!

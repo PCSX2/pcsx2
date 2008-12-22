@@ -443,7 +443,7 @@ void SysPrintf(const char *fmt, ...) {
 	char msg[512];
 
 	va_start(list,fmt);
-	_vsnprintf(msg,511,fmt,list);
+	vsnprintf(msg,511,fmt,list);
 	msg[511] = '\0';
 	va_end(list);
 
@@ -458,7 +458,7 @@ void *SysLoadSym(void *lib, const char *sym) {
 	return dlsym(lib, sym);
 }
 
-char *SysLibError() {
+const char *SysLibError() {
 	return dlerror();
 }
 

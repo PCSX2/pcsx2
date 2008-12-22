@@ -321,8 +321,8 @@ struct GIFTAG
 struct GIFPath
 {
 	GIFTAG tag; 
-	UINT32 nreg;
-	UINT32 _pad[3];
+	u32 nreg;
+	u32 _pad[3];
 	u8 regs[16];
 
 	// unpack the registers
@@ -360,7 +360,7 @@ struct GIFPath
 		PrepRegs();
 	}
 
-	DWORD GetReg() 
+	u32 GetReg() 
 	{
 		return regs[nreg]; // (DWORD)GET_GIF_REG(tag, nreg);
 	}
