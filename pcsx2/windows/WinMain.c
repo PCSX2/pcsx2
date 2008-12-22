@@ -851,7 +851,6 @@ BOOL APIENTRY AdvancedProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
             }
 			else if (LOWORD(wParam) == IDC_ADVRESET) {
 				CheckDlgButton(hDlg, IDC_REGCACHING, FALSE);
-				CheckDlgButton(hDlg, IDC_SAFECOUNTERS, FALSE);
 				CheckDlgButton(hDlg, IDC_SPU2HACK, FALSE);
             } 
 			else return TRUE;
@@ -1484,6 +1483,8 @@ void CreateMainMenu() {
 #endif
 
 	ADDSUBMENU(0, _("&Misc"));
+	//ADDMENUITEM(0,_("Enable &Profiler"), ID_PROFILER);
+	ADDSEPARATOR(0);
 	ADDMENUITEM(0,_("Enable &Patches"), ID_PATCHES);
 	ADDMENUITEM(0,_("Enable &Console"), ID_CONSOLE); 
 	ADDSEPARATOR(0);

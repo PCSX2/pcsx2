@@ -47,6 +47,9 @@ u32 vudump = 0;
 
 void iDumpVU1Registers()
 {
+	// fixme: This code is outdated, broken, and lacks printed labels.
+	// Needs heavy mods to be useful.
+#if 0
 	int i;
 //	static int icount = 0;
 //	__Log("%x\n", icount);
@@ -60,6 +63,7 @@ void iDumpVU1Registers()
 		else __Log("%x\n", (i==REG_STATUS_FLAG||i==REG_MAC_FLAG||i==REG_CLIP_FLAG)?0:VU1.VI[i].UL);
 	}
 	__Log("vfACC: %f %f %f %f\n", VU1.ACC.F[3], VU1.ACC.F[2], VU1.ACC.F[1], VU1.ACC.F[0]);
+#endif
 }
 
 int vu1Init()

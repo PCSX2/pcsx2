@@ -45,6 +45,9 @@ extern PSMEMORYMAP *memLUT;
 
 void iDumpVU0Registers()
 {
+	// fixme: This code is outdated, broken, and lacks printed labels.
+	// Needs heavy mods to be useful.
+#if 0
 	int i;
 	
 	for(i = 1; i < 32; ++i) {
@@ -57,6 +60,7 @@ void iDumpVU0Registers()
 		else __Log("%x\n", VU0.VI[i].UL);
 	}
 	__Log("vfACC: %f %f %f %f\n", VU0.ACC.F[3], VU0.ACC.F[2], VU0.ACC.F[1], VU0.ACC.F[0]);
+#endif
 }
 
 int  vu0Init()

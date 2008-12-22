@@ -366,10 +366,8 @@ void patchFunc_comment( char * text1, char * text2 )
 void patchFunc_gametitle( char * text1, char * text2 )
 {
 	SysPrintf( "gametitle: %s \n", text2 );
-#ifdef _WIN32
 	sprintf(strgametitle,"%s",text2);
 	Console::SetTitle(strgametitle);
-#endif
 }
 
 void patchFunc_patch( char * cmd, char * param )

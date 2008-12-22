@@ -513,7 +513,6 @@ BOOL CALLBACK FinderProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				case IDC_RESET:
 					ENABLE_CONTROL(IDC_EE,		true);
 					ENABLE_CONTROL(IDC_IOP,		true);
-					ENABLE_CONTROL(IDC_LRESULTS,true);
 					ENABLE_CONTROL(IDC_STATUS,	true);
 					ENABLE_CONTROL(IDC_UNSIGNED,true);
 					ENABLE_CONTROL(IDC_8B,		true);
@@ -535,7 +534,6 @@ BOOL CALLBACK FinderProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if(FirstSearch) {
 						ENABLE_CONTROL(IDC_EE,		false);
 						ENABLE_CONTROL(IDC_IOP,		false);
-						ENABLE_CONTROL(IDC_LRESULTS,false);
 						ENABLE_CONTROL(IDC_STATUS,	false);
 						ENABLE_CONTROL(IDC_UNSIGNED,false);
 						ENABLE_CONTROL(IDC_8B,		false);
