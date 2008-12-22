@@ -951,331 +951,6 @@ create_CmdLine (void)
 }
 
 GtkWidget*
-create_Logging (void)
-{
-  GtkWidget *Logging;
-  GtkWidget *vbox23;
-  GtkWidget *hbox15;
-  GtkWidget *frame4;
-  GtkWidget *table3;
-  GtkWidget *Log30;
-  GtkWidget *Log31;
-  GtkWidget *Log16;
-  GtkWidget *Log14;
-  GtkWidget *Log15;
-  GtkWidget *Log13;
-  GtkWidget *Log12;
-  GtkWidget *Log11;
-  GtkWidget *Log10;
-  GtkWidget *Log9;
-  GtkWidget *Log8;
-  GtkWidget *Log7;
-  GtkWidget *Log6;
-  GtkWidget *Log5;
-  GtkWidget *Log4;
-  GtkWidget *Log3;
-  GtkWidget *Log2;
-  GtkWidget *Log1;
-  GtkWidget *Log0;
-  GtkWidget *label33;
-  GtkWidget *frame5;
-  GtkWidget *table4;
-  GtkWidget *Log28;
-  GtkWidget *Log20;
-  GtkWidget *Log21;
-  GtkWidget *Log22;
-  GtkWidget *Log23;
-  GtkWidget *Log24;
-  GtkWidget *Log25;
-  GtkWidget *Log26;
-  GtkWidget *Log27;
-  GtkWidget *label34;
-  GtkWidget *hbuttonbox19;
-  GtkWidget *button66;
-  GtkWidget *button67;
-
-  Logging = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_container_set_border_width (GTK_CONTAINER (Logging), 5);
-  gtk_window_set_title (GTK_WINDOW (Logging), _("Logging"));
-
-  vbox23 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_show (vbox23);
-  gtk_container_add (GTK_CONTAINER (Logging), vbox23);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox23), 5);
-
-  hbox15 = gtk_hbox_new (FALSE, 5);
-  gtk_widget_show (hbox15);
-  gtk_box_pack_start (GTK_BOX (vbox23), hbox15, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox15), 5);
-
-  frame4 = gtk_frame_new (NULL);
-  gtk_widget_show (frame4);
-  gtk_box_pack_start (GTK_BOX (hbox15), frame4, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame4), 5);
-
-  table3 = gtk_table_new (8, 3, FALSE);
-  gtk_widget_show (table3);
-  gtk_container_add (GTK_CONTAINER (frame4), table3);
-  gtk_container_set_border_width (GTK_CONTAINER (table3), 5);
-  gtk_table_set_row_spacings (GTK_TABLE (table3), 5);
-  gtk_table_set_col_spacings (GTK_TABLE (table3), 5);
-
-  Log30 = gtk_check_button_new_with_mnemonic (_("SYMs Log"));
-  gtk_widget_show (Log30);
-  gtk_table_attach (GTK_TABLE (table3), Log30, 2, 3, 6, 7,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log31 = gtk_check_button_new_with_mnemonic (_("Log to STDOUT"));
-  gtk_widget_show (Log31);
-  gtk_table_attach (GTK_TABLE (table3), Log31, 2, 3, 5, 6,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log16 = gtk_check_button_new_with_mnemonic (_("RPC Log"));
-  gtk_widget_show (Log16);
-  gtk_table_attach (GTK_TABLE (table3), Log16, 2, 3, 0, 1,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log14 = gtk_check_button_new_with_mnemonic (_("IPU Log"));
-  gtk_widget_show (Log14);
-  gtk_table_attach (GTK_TABLE (table3), Log14, 1, 2, 6, 7,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log15 = gtk_check_button_new_with_mnemonic (_("VU Micro Log"));
-  gtk_widget_show (Log15);
-  gtk_table_attach (GTK_TABLE (table3), Log15, 1, 2, 7, 8,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log13 = gtk_check_button_new_with_mnemonic (_("Sif Log"));
-  gtk_widget_show (Log13);
-  gtk_table_attach (GTK_TABLE (table3), Log13, 1, 2, 5, 6,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log12 = gtk_check_button_new_with_mnemonic (_("GIF Log"));
-  gtk_widget_show (Log12);
-  gtk_table_attach (GTK_TABLE (table3), Log12, 1, 2, 4, 5,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log11 = gtk_check_button_new_with_mnemonic (_("SPR Log"));
-  gtk_widget_show (Log11);
-  gtk_table_attach (GTK_TABLE (table3), Log11, 1, 2, 3, 4,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log10 = gtk_check_button_new_with_mnemonic (_("Vif Log"));
-  gtk_widget_show (Log10);
-  gtk_table_attach (GTK_TABLE (table3), Log10, 1, 2, 2, 3,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log9 = gtk_check_button_new_with_mnemonic (_("Cop0 Log"));
-  gtk_widget_show (Log9);
-  gtk_table_attach (GTK_TABLE (table3), Log9, 1, 2, 1, 2,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log8 = gtk_check_button_new_with_mnemonic (_("VU0 Log"));
-  gtk_widget_show (Log8);
-  gtk_table_attach (GTK_TABLE (table3), Log8, 1, 2, 0, 1,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log7 = gtk_check_button_new_with_mnemonic (_("MMI Log"));
-  gtk_widget_show (Log7);
-  gtk_table_attach (GTK_TABLE (table3), Log7, 0, 1, 7, 8,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log6 = gtk_check_button_new_with_mnemonic (_("Fpu Log"));
-  gtk_widget_show (Log6);
-  gtk_table_attach (GTK_TABLE (table3), Log6, 0, 1, 6, 7,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log5 = gtk_check_button_new_with_mnemonic (_("Elf Log"));
-  gtk_widget_show (Log5);
-  gtk_table_attach (GTK_TABLE (table3), Log5, 0, 1, 5, 6,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log4 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
-  gtk_widget_show (Log4);
-  gtk_table_attach (GTK_TABLE (table3), Log4, 0, 1, 4, 5,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log3 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
-  gtk_widget_show (Log3);
-  gtk_table_attach (GTK_TABLE (table3), Log3, 0, 1, 3, 4,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log2 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
-  gtk_widget_show (Log2);
-  gtk_table_attach (GTK_TABLE (table3), Log2, 0, 1, 2, 3,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log1 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
-  gtk_widget_show (Log1);
-  gtk_table_attach (GTK_TABLE (table3), Log1, 0, 1, 1, 2,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log0 = gtk_check_button_new_with_mnemonic (_("Cpu Log"));
-  gtk_widget_show (Log0);
-  gtk_table_attach (GTK_TABLE (table3), Log0, 0, 1, 0, 1,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  label33 = gtk_label_new (_("EE Logs"));
-  gtk_widget_show (label33);
-  gtk_frame_set_label_widget (GTK_FRAME (frame4), label33);
-
-  frame5 = gtk_frame_new (NULL);
-  gtk_widget_show (frame5);
-  gtk_box_pack_start (GTK_BOX (hbox15), frame5, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame5), 5);
-
-  table4 = gtk_table_new (8, 2, FALSE);
-  gtk_widget_show (table4);
-  gtk_container_add (GTK_CONTAINER (frame5), table4);
-  gtk_container_set_border_width (GTK_CONTAINER (table4), 5);
-  gtk_table_set_row_spacings (GTK_TABLE (table4), 5);
-  gtk_table_set_col_spacings (GTK_TABLE (table4), 5);
-
-  Log28 = gtk_check_button_new_with_mnemonic (_("GPU Log"));
-  gtk_widget_show (Log28);
-  gtk_table_attach (GTK_TABLE (table4), Log28, 1, 2, 0, 1,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log20 = gtk_check_button_new_with_mnemonic (_("IOP Log"));
-  gtk_widget_show (Log20);
-  gtk_table_attach (GTK_TABLE (table4), Log20, 0, 1, 0, 1,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log21 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
-  gtk_widget_show (Log21);
-  gtk_table_attach (GTK_TABLE (table4), Log21, 0, 1, 1, 2,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log22 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
-  gtk_widget_show (Log22);
-  gtk_table_attach (GTK_TABLE (table4), Log22, 0, 1, 2, 3,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log23 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
-  gtk_widget_show (Log23);
-  gtk_table_attach (GTK_TABLE (table4), Log23, 0, 1, 3, 4,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log24 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
-  gtk_widget_show (Log24);
-  gtk_table_attach (GTK_TABLE (table4), Log24, 0, 1, 4, 5,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log25 = gtk_check_button_new_with_mnemonic (_("Pad Log"));
-  gtk_widget_show (Log25);
-  gtk_table_attach (GTK_TABLE (table4), Log25, 0, 1, 5, 6,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log26 = gtk_check_button_new_with_mnemonic (_("Gte Log"));
-  gtk_widget_show (Log26);
-  gtk_table_attach (GTK_TABLE (table4), Log26, 0, 1, 6, 7,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  Log27 = gtk_check_button_new_with_mnemonic (_("Cdr Log"));
-  gtk_widget_show (Log27);
-  gtk_table_attach (GTK_TABLE (table4), Log27, 0, 1, 7, 8,
-                    (GtkAttachOptions) (0),
-                    (GtkAttachOptions) (0), 0, 0);
-
-  label34 = gtk_label_new (_("IOP Logs"));
-  gtk_widget_show (label34);
-  gtk_frame_set_label_widget (GTK_FRAME (frame5), label34);
-
-  hbuttonbox19 = gtk_hbutton_box_new ();
-  gtk_widget_show (hbuttonbox19);
-  gtk_box_pack_start (GTK_BOX (vbox23), hbuttonbox19, TRUE, TRUE, 0);
-  gtk_box_set_spacing (GTK_BOX (hbuttonbox19), 30);
-
-  button66 = gtk_button_new_from_stock ("gtk-ok");
-  gtk_widget_show (button66);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox19), button66);
-  GTK_WIDGET_SET_FLAGS (button66, GTK_CAN_DEFAULT);
-
-  button67 = gtk_button_new_from_stock ("gtk-cancel");
-  gtk_widget_show (button67);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox19), button67);
-  GTK_WIDGET_SET_FLAGS (button67, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) button66, "clicked",
-                    G_CALLBACK (OnLogging_Ok),
-                    NULL);
-  g_signal_connect ((gpointer) button67, "clicked",
-                    G_CALLBACK (On_Dialog_Cancelled),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (Logging, Logging, "Logging");
-  GLADE_HOOKUP_OBJECT (Logging, vbox23, "vbox23");
-  GLADE_HOOKUP_OBJECT (Logging, hbox15, "hbox15");
-  GLADE_HOOKUP_OBJECT (Logging, frame4, "frame4");
-  GLADE_HOOKUP_OBJECT (Logging, table3, "table3");
-  GLADE_HOOKUP_OBJECT (Logging, Log30, "Log30");
-  GLADE_HOOKUP_OBJECT (Logging, Log31, "Log31");
-  GLADE_HOOKUP_OBJECT (Logging, Log16, "Log16");
-  GLADE_HOOKUP_OBJECT (Logging, Log14, "Log14");
-  GLADE_HOOKUP_OBJECT (Logging, Log15, "Log15");
-  GLADE_HOOKUP_OBJECT (Logging, Log13, "Log13");
-  GLADE_HOOKUP_OBJECT (Logging, Log12, "Log12");
-  GLADE_HOOKUP_OBJECT (Logging, Log11, "Log11");
-  GLADE_HOOKUP_OBJECT (Logging, Log10, "Log10");
-  GLADE_HOOKUP_OBJECT (Logging, Log9, "Log9");
-  GLADE_HOOKUP_OBJECT (Logging, Log8, "Log8");
-  GLADE_HOOKUP_OBJECT (Logging, Log7, "Log7");
-  GLADE_HOOKUP_OBJECT (Logging, Log6, "Log6");
-  GLADE_HOOKUP_OBJECT (Logging, Log5, "Log5");
-  GLADE_HOOKUP_OBJECT (Logging, Log4, "Log4");
-  GLADE_HOOKUP_OBJECT (Logging, Log3, "Log3");
-  GLADE_HOOKUP_OBJECT (Logging, Log2, "Log2");
-  GLADE_HOOKUP_OBJECT (Logging, Log1, "Log1");
-  GLADE_HOOKUP_OBJECT (Logging, Log0, "Log0");
-  GLADE_HOOKUP_OBJECT (Logging, label33, "label33");
-  GLADE_HOOKUP_OBJECT (Logging, frame5, "frame5");
-  GLADE_HOOKUP_OBJECT (Logging, table4, "table4");
-  GLADE_HOOKUP_OBJECT (Logging, Log28, "Log28");
-  GLADE_HOOKUP_OBJECT (Logging, Log20, "Log20");
-  GLADE_HOOKUP_OBJECT (Logging, Log21, "Log21");
-  GLADE_HOOKUP_OBJECT (Logging, Log22, "Log22");
-  GLADE_HOOKUP_OBJECT (Logging, Log23, "Log23");
-  GLADE_HOOKUP_OBJECT (Logging, Log24, "Log24");
-  GLADE_HOOKUP_OBJECT (Logging, Log25, "Log25");
-  GLADE_HOOKUP_OBJECT (Logging, Log26, "Log26");
-  GLADE_HOOKUP_OBJECT (Logging, Log27, "Log27");
-  GLADE_HOOKUP_OBJECT (Logging, label34, "label34");
-  GLADE_HOOKUP_OBJECT (Logging, hbuttonbox19, "hbuttonbox19");
-  GLADE_HOOKUP_OBJECT (Logging, button66, "button66");
-  GLADE_HOOKUP_OBJECT (Logging, button67, "button67");
-
-  return Logging;
-}
-
-GtkWidget*
 create_DumpRDlg (void)
 {
   GtkWidget *DumpRDlg;
@@ -3932,5 +3607,321 @@ create_CpuDlg (void)
   GLADE_HOOKUP_OBJECT (CpuDlg, button97, "button97");
 
   return CpuDlg;
+}
+
+GtkWidget*
+create_Logging (void)
+{
+  GtkWidget *Logging;
+  GtkWidget *dialog_vbox6;
+  GtkWidget *scrolledwindow4;
+  GtkWidget *viewport2;
+  GtkWidget *vbox55;
+  GtkWidget *frame33;
+  GtkWidget *alignment28;
+  GtkWidget *vbox56;
+  GtkWidget *Log0;
+  GtkWidget *Log1;
+  GtkWidget *Log2;
+  GtkWidget *Log3;
+  GtkWidget *Log4;
+  GtkWidget *Log5;
+  GtkWidget *Log6;
+  GtkWidget *Log7;
+  GtkWidget *Log8;
+  GtkWidget *Log9;
+  GtkWidget *Log10;
+  GtkWidget *Log11;
+  GtkWidget *Log12;
+  GtkWidget *Log13;
+  GtkWidget *Log14;
+  GtkWidget *Log15;
+  GtkWidget *Log16;
+  GtkWidget *label85;
+  GtkWidget *frame34;
+  GtkWidget *alignment29;
+  GtkWidget *vbox57;
+  GtkWidget *Log20;
+  GtkWidget *Log21;
+  GtkWidget *Log22;
+  GtkWidget *Log23;
+  GtkWidget *Log24;
+  GtkWidget *Log25;
+  GtkWidget *Log26;
+  GtkWidget *Log27;
+  GtkWidget *Log28;
+  GtkWidget *label86;
+  GtkWidget *frame35;
+  GtkWidget *alignment30;
+  GtkWidget *vbox58;
+  GtkWidget *Log31;
+  GtkWidget *Log30;
+  GtkWidget *label87;
+  GtkWidget *dialog_action_area6;
+  GtkWidget *Logging_Ok;
+  GtkWidget *Logging2Cancel;
+
+  Logging = gtk_dialog_new ();
+  gtk_window_set_title (GTK_WINDOW (Logging), _("Logging"));
+  gtk_window_set_default_size (GTK_WINDOW (Logging), 200, 450);
+  gtk_window_set_type_hint (GTK_WINDOW (Logging), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+  dialog_vbox6 = GTK_DIALOG (Logging)->vbox;
+  gtk_widget_show (dialog_vbox6);
+
+  scrolledwindow4 = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_show (scrolledwindow4);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox6), scrolledwindow4, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow4), GTK_SHADOW_IN);
+
+  viewport2 = gtk_viewport_new (NULL, NULL);
+  gtk_widget_show (viewport2);
+  gtk_container_add (GTK_CONTAINER (scrolledwindow4), viewport2);
+
+  vbox55 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox55);
+  gtk_container_add (GTK_CONTAINER (viewport2), vbox55);
+
+  frame33 = gtk_frame_new (NULL);
+  gtk_widget_show (frame33);
+  gtk_box_pack_start (GTK_BOX (vbox55), frame33, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame33), GTK_SHADOW_NONE);
+
+  alignment28 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment28);
+  gtk_container_add (GTK_CONTAINER (frame33), alignment28);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment28), 0, 0, 12, 0);
+
+  vbox56 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox56);
+  gtk_container_add (GTK_CONTAINER (alignment28), vbox56);
+
+  Log0 = gtk_check_button_new_with_mnemonic (_("Cpu Log"));
+  gtk_widget_show (Log0);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log0, FALSE, FALSE, 0);
+
+  Log1 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
+  gtk_widget_show (Log1);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log1, FALSE, FALSE, 0);
+
+  Log2 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
+  gtk_widget_show (Log2);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log2, FALSE, FALSE, 0);
+
+  Log3 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
+  gtk_widget_show (Log3);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log3, FALSE, FALSE, 0);
+
+  Log4 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
+  gtk_widget_show (Log4);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log4, FALSE, FALSE, 0);
+
+  Log5 = gtk_check_button_new_with_mnemonic (_("Elf Log"));
+  gtk_widget_show (Log5);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log5, FALSE, FALSE, 0);
+
+  Log6 = gtk_check_button_new_with_mnemonic (_("Fpu Log"));
+  gtk_widget_show (Log6);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log6, FALSE, FALSE, 0);
+
+  Log7 = gtk_check_button_new_with_mnemonic (_("MMI Log"));
+  gtk_widget_show (Log7);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log7, FALSE, FALSE, 0);
+
+  Log8 = gtk_check_button_new_with_mnemonic (_("VU0 Log"));
+  gtk_widget_show (Log8);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log8, FALSE, FALSE, 0);
+
+  Log9 = gtk_check_button_new_with_mnemonic (_("Cop0 Log"));
+  gtk_widget_show (Log9);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log9, FALSE, FALSE, 0);
+
+  Log10 = gtk_check_button_new_with_mnemonic (_("Vif Log"));
+  gtk_widget_show (Log10);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log10, FALSE, FALSE, 0);
+
+  Log11 = gtk_check_button_new_with_mnemonic (_("SPR Log"));
+  gtk_widget_show (Log11);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log11, FALSE, FALSE, 0);
+
+  Log12 = gtk_check_button_new_with_mnemonic (_("GIF Log"));
+  gtk_widget_show (Log12);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log12, FALSE, FALSE, 0);
+
+  Log13 = gtk_check_button_new_with_mnemonic (_("Sif Log"));
+  gtk_widget_show (Log13);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log13, FALSE, FALSE, 0);
+
+  Log14 = gtk_check_button_new_with_mnemonic (_("IPU Log"));
+  gtk_widget_show (Log14);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log14, FALSE, FALSE, 0);
+
+  Log15 = gtk_check_button_new_with_mnemonic (_("VU Micro Log"));
+  gtk_widget_show (Log15);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log15, FALSE, FALSE, 0);
+
+  Log16 = gtk_check_button_new_with_mnemonic (_("RPC Log"));
+  gtk_widget_show (Log16);
+  gtk_box_pack_start (GTK_BOX (vbox56), Log16, FALSE, FALSE, 0);
+
+  label85 = gtk_label_new (_("<b>EE Logs</b>"));
+  gtk_widget_show (label85);
+  gtk_frame_set_label_widget (GTK_FRAME (frame33), label85);
+  gtk_label_set_use_markup (GTK_LABEL (label85), TRUE);
+
+  frame34 = gtk_frame_new (NULL);
+  gtk_widget_show (frame34);
+  gtk_box_pack_start (GTK_BOX (vbox55), frame34, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame34), GTK_SHADOW_NONE);
+
+  alignment29 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment29);
+  gtk_container_add (GTK_CONTAINER (frame34), alignment29);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment29), 0, 0, 12, 0);
+
+  vbox57 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox57);
+  gtk_container_add (GTK_CONTAINER (alignment29), vbox57);
+
+  Log20 = gtk_check_button_new_with_mnemonic (_("IOP Log"));
+  gtk_widget_show (Log20);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log20, FALSE, FALSE, 0);
+
+  Log21 = gtk_check_button_new_with_mnemonic (_("Mem Log"));
+  gtk_widget_show (Log21);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log21, FALSE, FALSE, 0);
+
+  Log22 = gtk_check_button_new_with_mnemonic (_("Hw Log"));
+  gtk_widget_show (Log22);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log22, FALSE, FALSE, 0);
+
+  Log23 = gtk_check_button_new_with_mnemonic (_("Bios Log"));
+  gtk_widget_show (Log23);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log23, FALSE, FALSE, 0);
+
+  Log24 = gtk_check_button_new_with_mnemonic (_("Dma Log"));
+  gtk_widget_show (Log24);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log24, FALSE, FALSE, 0);
+
+  Log25 = gtk_check_button_new_with_mnemonic (_("Pad Log"));
+  gtk_widget_show (Log25);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log25, FALSE, FALSE, 0);
+
+  Log26 = gtk_check_button_new_with_mnemonic (_("Gte Log"));
+  gtk_widget_show (Log26);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log26, FALSE, FALSE, 0);
+
+  Log27 = gtk_check_button_new_with_mnemonic (_("Cdr Log"));
+  gtk_widget_show (Log27);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log27, FALSE, FALSE, 0);
+
+  Log28 = gtk_check_button_new_with_mnemonic (_("GPU Log"));
+  gtk_widget_show (Log28);
+  gtk_box_pack_start (GTK_BOX (vbox57), Log28, FALSE, FALSE, 0);
+
+  label86 = gtk_label_new (_("<b>IOP Logs</b>"));
+  gtk_widget_show (label86);
+  gtk_frame_set_label_widget (GTK_FRAME (frame34), label86);
+  gtk_label_set_use_markup (GTK_LABEL (label86), TRUE);
+
+  frame35 = gtk_frame_new (NULL);
+  gtk_widget_show (frame35);
+  gtk_box_pack_start (GTK_BOX (vbox55), frame35, TRUE, TRUE, 0);
+  gtk_frame_set_shadow_type (GTK_FRAME (frame35), GTK_SHADOW_NONE);
+
+  alignment30 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment30);
+  gtk_container_add (GTK_CONTAINER (frame35), alignment30);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment30), 0, 0, 12, 0);
+
+  vbox58 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox58);
+  gtk_container_add (GTK_CONTAINER (alignment30), vbox58);
+
+  Log31 = gtk_check_button_new_with_mnemonic (_("Log to STDOUT"));
+  gtk_widget_show (Log31);
+  gtk_box_pack_start (GTK_BOX (vbox58), Log31, FALSE, FALSE, 0);
+
+  Log30 = gtk_check_button_new_with_mnemonic (_("SYMs Log"));
+  gtk_widget_show (Log30);
+  gtk_box_pack_start (GTK_BOX (vbox58), Log30, FALSE, FALSE, 0);
+
+  label87 = gtk_label_new (_("<b>Misc</b>"));
+  gtk_widget_show (label87);
+  gtk_frame_set_label_widget (GTK_FRAME (frame35), label87);
+  gtk_label_set_use_markup (GTK_LABEL (label87), TRUE);
+
+  dialog_action_area6 = GTK_DIALOG (Logging)->action_area;
+  gtk_widget_show (dialog_action_area6);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area6), GTK_BUTTONBOX_END);
+
+  Logging_Ok = gtk_button_new_from_stock ("gtk-ok");
+  gtk_widget_show (Logging_Ok);
+  gtk_dialog_add_action_widget (GTK_DIALOG (Logging), Logging_Ok, GTK_RESPONSE_OK);
+  GTK_WIDGET_SET_FLAGS (Logging_Ok, GTK_CAN_DEFAULT);
+
+  Logging2Cancel = gtk_button_new_from_stock ("gtk-cancel");
+  gtk_widget_show (Logging2Cancel);
+  gtk_dialog_add_action_widget (GTK_DIALOG (Logging), Logging2Cancel, GTK_RESPONSE_CANCEL);
+  GTK_WIDGET_SET_FLAGS (Logging2Cancel, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) Logging_Ok, "clicked",
+                    G_CALLBACK (OnLogging_Ok),
+                    NULL);
+  g_signal_connect ((gpointer) Logging2Cancel, "clicked",
+                    G_CALLBACK (On_Dialog_Cancelled),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (Logging, Logging, "Logging");
+  GLADE_HOOKUP_OBJECT_NO_REF (Logging, dialog_vbox6, "dialog_vbox6");
+  GLADE_HOOKUP_OBJECT (Logging, scrolledwindow4, "scrolledwindow4");
+  GLADE_HOOKUP_OBJECT (Logging, viewport2, "viewport2");
+  GLADE_HOOKUP_OBJECT (Logging, vbox55, "vbox55");
+  GLADE_HOOKUP_OBJECT (Logging, frame33, "frame33");
+  GLADE_HOOKUP_OBJECT (Logging, alignment28, "alignment28");
+  GLADE_HOOKUP_OBJECT (Logging, vbox56, "vbox56");
+  GLADE_HOOKUP_OBJECT (Logging, Log0, "Log0");
+  GLADE_HOOKUP_OBJECT (Logging, Log1, "Log1");
+  GLADE_HOOKUP_OBJECT (Logging, Log2, "Log2");
+  GLADE_HOOKUP_OBJECT (Logging, Log3, "Log3");
+  GLADE_HOOKUP_OBJECT (Logging, Log4, "Log4");
+  GLADE_HOOKUP_OBJECT (Logging, Log5, "Log5");
+  GLADE_HOOKUP_OBJECT (Logging, Log6, "Log6");
+  GLADE_HOOKUP_OBJECT (Logging, Log7, "Log7");
+  GLADE_HOOKUP_OBJECT (Logging, Log8, "Log8");
+  GLADE_HOOKUP_OBJECT (Logging, Log9, "Log9");
+  GLADE_HOOKUP_OBJECT (Logging, Log10, "Log10");
+  GLADE_HOOKUP_OBJECT (Logging, Log11, "Log11");
+  GLADE_HOOKUP_OBJECT (Logging, Log12, "Log12");
+  GLADE_HOOKUP_OBJECT (Logging, Log13, "Log13");
+  GLADE_HOOKUP_OBJECT (Logging, Log14, "Log14");
+  GLADE_HOOKUP_OBJECT (Logging, Log15, "Log15");
+  GLADE_HOOKUP_OBJECT (Logging, Log16, "Log16");
+  GLADE_HOOKUP_OBJECT (Logging, label85, "label85");
+  GLADE_HOOKUP_OBJECT (Logging, frame34, "frame34");
+  GLADE_HOOKUP_OBJECT (Logging, alignment29, "alignment29");
+  GLADE_HOOKUP_OBJECT (Logging, vbox57, "vbox57");
+  GLADE_HOOKUP_OBJECT (Logging, Log20, "Log20");
+  GLADE_HOOKUP_OBJECT (Logging, Log21, "Log21");
+  GLADE_HOOKUP_OBJECT (Logging, Log22, "Log22");
+  GLADE_HOOKUP_OBJECT (Logging, Log23, "Log23");
+  GLADE_HOOKUP_OBJECT (Logging, Log24, "Log24");
+  GLADE_HOOKUP_OBJECT (Logging, Log25, "Log25");
+  GLADE_HOOKUP_OBJECT (Logging, Log26, "Log26");
+  GLADE_HOOKUP_OBJECT (Logging, Log27, "Log27");
+  GLADE_HOOKUP_OBJECT (Logging, Log28, "Log28");
+  GLADE_HOOKUP_OBJECT (Logging, label86, "label86");
+  GLADE_HOOKUP_OBJECT (Logging, frame35, "frame35");
+  GLADE_HOOKUP_OBJECT (Logging, alignment30, "alignment30");
+  GLADE_HOOKUP_OBJECT (Logging, vbox58, "vbox58");
+  GLADE_HOOKUP_OBJECT (Logging, Log31, "Log31");
+  GLADE_HOOKUP_OBJECT (Logging, Log30, "Log30");
+  GLADE_HOOKUP_OBJECT (Logging, label87, "label87");
+  GLADE_HOOKUP_OBJECT_NO_REF (Logging, dialog_action_area6, "dialog_action_area6");
+  GLADE_HOOKUP_OBJECT (Logging, Logging_Ok, "Logging_Ok");
+  GLADE_HOOKUP_OBJECT (Logging, Logging2Cancel, "Logging2Cancel");
+
+  return Logging;
 }
 

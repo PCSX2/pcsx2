@@ -143,6 +143,36 @@ static __forceinline void print_flags(char *name, u32 num, char *flag_names[16])
 	}
 } 
 
+char ee_log_names[17][32] = {
+	"Cpu Log",
+	"Mem Log",
+	"HW Log",
+	"Dma Log",
+	"Bios Log",
+	"Elf Log",
+	"Fpu Log",
+	"MMI Log",
+	"VU0 Log",
+	"Cop0 Log",
+	"Vif Log",
+	"SPR Log",
+	"GIF Log",
+	"Sif Log",
+	"IPU Log",
+	"VU Micro Log",
+	"RPC Log" };
+	
+char iop_log_names[9][32] = {
+	"IOP Log",
+	"Mem Log",
+	"HW Log",
+	"Bios Log",
+	"Dma Log",
+	"Pad Log",
+	"Gte Log",
+	"Cdr Log",
+	"GPU Log" };
+	
 #define FLAG_VU_CLIP 0x2
 #define FLAG_FPU_CLAMP 0x4
 #define FLAG_VU_BRANCH 0x8

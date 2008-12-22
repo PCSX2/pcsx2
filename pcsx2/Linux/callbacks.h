@@ -30,10 +30,6 @@ OnArguments_Ok                         (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-OnLogging_Ok                           (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 OnDumpR_Ok                             (GtkButton       *button,
                                         gpointer         user_data);
 
@@ -384,4 +380,8 @@ OnHelp_About                           (GtkMenuItem     *menuitem,
 
 void
 OnCpu_Ok                               (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+OnLogging_Ok                           (GtkButton       *button,
                                         gpointer         user_data);
