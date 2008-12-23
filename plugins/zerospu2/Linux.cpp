@@ -15,6 +15,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+ 
+ // Modified by arcum42@gmail.com
+ 
 #include "zerospu2.h"
 
 #include <assert.h>
@@ -25,110 +28,124 @@
 #include <sys/soundcard.h>
 #include <unistd.h>
 
+#include <gtk/gtk.h>
+
+extern "C" {
+#include "interface.h"
+#include "support.h"
+#include "callbacks.h"
+}
+
+#define is_checked(main_widget, widget_name) (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)))) 
+#define set_checked(main_widget,widget_name, state) gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)), state)
+
+GtkWidget *MsgDlg, *ConfDlg;
+
 #ifdef ZEROSPU2_OSS
 
 static int oss_audio_fd = -1;
 extern int errno;
+
 
 #define OSS_MODE_STEREO	1
 
 // use OSS for sound
 int SetupSound()
 {
-    int pspeed=48000;
-    int pstereo;
-    int format;
-    int fragsize = 0;
-    int myfrag;
-    int oss_speed, oss_stereo;
+	int pspeed=48000;
+	int pstereo;
+	int format;
+	int fragsize = 0;
+	int myfrag;
+	int oss_speed, oss_stereo;
     
-    pstereo=OSS_MODE_STEREO;
+	pstereo=OSS_MODE_STEREO;
     
-    oss_speed = pspeed;
-    oss_stereo = pstereo;
+	oss_speed = pspeed;
+	oss_stereo = pstereo;
     
-    if((oss_audio_fd=open("/dev/dsp",O_WRONLY,0))==-1) {
-        printf("Sound device not available!\n");
-        return -1;
-    }
+	if((oss_audio_fd=open("/dev/dsp",O_WRONLY,0))==-1) {
+		printf("Sound device not available!\n");
+		return -1;
+	}
     
-    if(ioctl(oss_audio_fd,SNDCTL_DSP_RESET,0)==-1) {
-        printf("Sound reset failed\n");
-        return -1;
-    }
+	if(ioctl(oss_audio_fd,SNDCTL_DSP_RESET,0)==-1) {
+		printf("Sound reset failed\n");
+		return -1;
+	}
     
-    // we use 64 fragments with 1024 bytes each
-    fragsize=10;
-    myfrag=(63<<16)|fragsize;
+	// we use 64 fragments with 1024 bytes each
+	fragsize=10;
+	myfrag=(63<<16)|fragsize;
     
-    if(ioctl(oss_audio_fd,SNDCTL_DSP_SETFRAGMENT,&myfrag)==-1) {
-        printf("Sound set fragment failed!\n");
-        return -1;        
-    }
+	if(ioctl(oss_audio_fd,SNDCTL_DSP_SETFRAGMENT,&myfrag)==-1) {
+		printf("Sound set fragment failed!\n");
+		return -1;        
+	}
     
-    format = AFMT_S16_LE;
+	format = AFMT_S16_LE;
     
-    if(ioctl(oss_audio_fd,SNDCTL_DSP_SETFMT,&format) == -1) {
-        printf("Sound format not supported!\n");
-        return -1;
-    }
+	if(ioctl(oss_audio_fd,SNDCTL_DSP_SETFMT,&format) == -1) {
+		printf("Sound format not supported!\n");
+		return -1;
+	}
     
-    if(format!=AFMT_S16_LE) {
-        printf("Sound format not supported!\n");
-        return -1;
-    }
+	if(format!=AFMT_S16_LE) {
+		printf("Sound format not supported!\n");
+		return -1;
+	}
     
-    if(ioctl(oss_audio_fd,SNDCTL_DSP_STEREO,&oss_stereo)==-1) {
-        printf("Stereo mode not supported!\n");
-        return -1;
-    }
+	if(ioctl(oss_audio_fd,SNDCTL_DSP_STEREO,&oss_stereo)==-1) {
+		printf("Stereo mode not supported!\n");
+		return -1;
+	}
     
-    if(ioctl(oss_audio_fd,SNDCTL_DSP_SPEED,&oss_speed)==-1) {
-        printf("Sound frequency not supported\n");
-        return -1;
-    }
+	if(ioctl(oss_audio_fd,SNDCTL_DSP_SPEED,&oss_speed)==-1) {
+		printf("Sound frequency not supported\n");
+		return -1;
+	}
     
-    if(oss_speed!=pspeed) {
-        printf("Sound frequency not supported\n");
-        return -1;
-    }
+	if(oss_speed!=pspeed) {
+		printf("Sound frequency not supported\n");
+		return -1;
+	}
 
-    return 0;
+	return 0;
 }
 
 // REMOVE SOUND
 void RemoveSound()
 {
-    if(oss_audio_fd != -1 ) {
-        close(oss_audio_fd);
-        oss_audio_fd = -1;
-    }
+	if(oss_audio_fd != -1 ) {
+		close(oss_audio_fd);
+		oss_audio_fd = -1;
+	}
 }
 
 #define SOUNDSIZE 76800
 int SoundGetBytesBuffered()
 {
-    audio_buf_info info;
-    unsigned long l;
+	audio_buf_info info;
+	unsigned long l;
     
-    if(oss_audio_fd == -1)
-        return SOUNDSIZE;
-    if(ioctl(oss_audio_fd,SNDCTL_DSP_GETOSPACE,&info)==-1)
-        return 0;
-    else {
+	if(oss_audio_fd == -1)
+		return SOUNDSIZE;
+	if(ioctl(oss_audio_fd,SNDCTL_DSP_GETOSPACE,&info)==-1)
+		return 0;
+	else {
         // can we write in at least the half of fragments?
-        if(info.fragments<(info.fragstotal>>1))
-            return SOUNDSIZE;
-    }
+		if(info.fragments<(info.fragstotal>>1))
+			return SOUNDSIZE;
+	}
 
-    return 0;
+	return 0;
 }
 
 // FEED SOUND DATA
 void SoundFeedVoiceData(unsigned char* pSound,long lBytes)
 {
-    if(oss_audio_fd == -1) return;
-    write(oss_audio_fd,pSound,lBytes);
+	if(oss_audio_fd == -1) return;
+	write(oss_audio_fd,pSound,lBytes);
 }
 
 #else
@@ -152,122 +169,119 @@ static snd_pcm_uframes_t buffer_size;
 
 int SetupSound(void)
 {
-    snd_pcm_hw_params_t *hwparams;
-    snd_pcm_sw_params_t *swparams;
-    snd_pcm_status_t *status;
-    unsigned int pspeed;
-    int pchannels;
-    snd_pcm_format_t format;
-    unsigned int buffer_time, period_time;
-    int err;
+	snd_pcm_hw_params_t *hwparams;
+	snd_pcm_sw_params_t *swparams;
+	snd_pcm_status_t *status;
+	unsigned int pspeed;
+	int pchannels;
+	snd_pcm_format_t format;
+	unsigned int buffer_time, period_time;
+	int err;
     
-    pchannels=2;
+	pchannels=2;
     
-    pspeed=48000;
-    format=SND_PCM_FORMAT_S16_LE;
-    buffer_time=SOUNDSIZE;
-    period_time=buffer_time/4;
+	pspeed=48000;
+	format=SND_PCM_FORMAT_S16_LE;
+	buffer_time=SOUNDSIZE;
+	period_time=buffer_time/4;
     
-    if((err=snd_pcm_open(&handle, "default", 
-                         SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))<0) {
-        printf("Audio open error: %s\n", snd_strerror(err));
-        return -1;
-    }
+    if((err=snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))<0) {
+		printf("Audio open error: %s\n", snd_strerror(err));
+		return -1;
+	}
     
-    if((err=snd_pcm_nonblock(handle, 0))<0) {
-        printf("Can't set blocking moded: %s\n", snd_strerror(err));
-        return -1;
-    }
+	if((err=snd_pcm_nonblock(handle, 0))<0) {
+		printf("Can't set blocking moded: %s\n", snd_strerror(err));
+		return -1;
+	}
     
-    snd_pcm_hw_params_alloca(&hwparams);
-    snd_pcm_sw_params_alloca(&swparams);
-    if((err=snd_pcm_hw_params_any(handle, hwparams))<0) {
-        printf("Broken configuration for this PCM: %s\n", snd_strerror(err));
-        return -1;
-    }
+	snd_pcm_hw_params_alloca(&hwparams);
+	snd_pcm_sw_params_alloca(&swparams);
+	if((err=snd_pcm_hw_params_any(handle, hwparams))<0) {
+		printf("Broken configuration for this PCM: %s\n", snd_strerror(err));
+		return -1;
+	}
     
-    if((err=snd_pcm_hw_params_set_access(handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED))<0) {
-        printf("Access type not available: %s\n", snd_strerror(err));
-        return -1;
-    }
+	if((err=snd_pcm_hw_params_set_access(handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED))<0) {
+		printf("Access type not available: %s\n", snd_strerror(err));
+		return -1;
+	}
 
-    if((err=snd_pcm_hw_params_set_format(handle, hwparams, format))<0) {
-        printf("Sample format not available: %s\n", snd_strerror(err));
-        return -1;
-    }
+	if((err=snd_pcm_hw_params_set_format(handle, hwparams, format))<0) {
+		printf("Sample format not available: %s\n", snd_strerror(err));
+		return -1;
+	}
     
-    if((err=snd_pcm_hw_params_set_channels(handle, hwparams, pchannels))<0) {
-        printf("Channels count not available: %s\n", snd_strerror(err));
-        return -1;
-    }
+	if((err=snd_pcm_hw_params_set_channels(handle, hwparams, pchannels))<0) {
+		printf("Channels count not available: %s\n", snd_strerror(err));
+		return -1;
+	}
     
-    if((err=snd_pcm_hw_params_set_rate_near(handle, hwparams, &pspeed, 0))<0) {
-        printf("Rate not available: %s\n", snd_strerror(err));
-        return -1;
-    }
+	if((err=snd_pcm_hw_params_set_rate_near(handle, hwparams, &pspeed, 0))<0) {
+		printf("Rate not available: %s\n", snd_strerror(err));
+		return -1;
+	}
     
     if((err=snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, 0))<0) {
         printf("Buffer time error: %s\n", snd_strerror(err));
         return -1;
     }
     
-    if((err=snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, 0))<0) {
-        printf("Period time error: %s\n", snd_strerror(err));
-        return -1;
+	if((err=snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, 0))<0) {
+		printf("Period time error: %s\n", snd_strerror(err));
+		return -1;
     }
 
-    if((err=snd_pcm_hw_params(handle, hwparams))<0) {
-        printf("Unable to install hw params: %s\n", snd_strerror(err));
-        return -1;
+	if((err=snd_pcm_hw_params(handle, hwparams))<0) {
+		printf("Unable to install hw params: %s\n", snd_strerror(err));
+		return -1;
     }
     
-    snd_pcm_status_alloca(&status);
-    if((err=snd_pcm_status(handle, status))<0) {
-        printf("Unable to get status: %s\n", snd_strerror(err));
-        return -1;
-    }
+	snd_pcm_status_alloca(&status);
+	if((err=snd_pcm_status(handle, status))<0) {
+		printf("Unable to get status: %s\n", snd_strerror(err));
+		return -1;
+	}
     
-    buffer_size=snd_pcm_status_get_avail(status);
+	buffer_size=snd_pcm_status_get_avail(status);
 
-    return 0;
+	return 0;
 }
 
 void RemoveSound()
 {
-    if(handle != NULL) {
-        snd_pcm_drop(handle);
-        snd_pcm_close(handle);
-        handle = NULL;
-    }
+	if(handle != NULL) {
+		snd_pcm_drop(handle);
+		snd_pcm_close(handle);
+		handle = NULL;
+	}
 }
 
 int SoundGetBytesBuffered()
 {
-    int l;
+	int l;
     
-    if(handle == NULL)                                 // failed to open?
-        return SOUNDSIZE;
-    l = snd_pcm_avail_update(handle);
-    if(l<0) return 0;
-    if(l<buffer_size/2)                                 // can we write in at least the half of fragments?
-        l=SOUNDSIZE;                                   // -> no? wait
-    else l=0;                                           // -> else go on
+	if(handle == NULL)                                 // failed to open?
+		return SOUNDSIZE;
+	l = snd_pcm_avail_update(handle);
+	if(l<0) return 0;
+	if(l<buffer_size/2)                                 // can we write in at least the half of fragments?
+		l=SOUNDSIZE;                                   // -> no? wait
+	else l=0;                                           // -> else go on
     
-    return l;
+	return l;
 }
 
 void SoundFeedVoiceData(unsigned char* pSound,long lBytes)
 {
-    if(handle == NULL) return;
+	if(handle == NULL) return;
     
-    if(snd_pcm_state(handle) == SND_PCM_STATE_XRUN)
-        snd_pcm_prepare(handle);
-    snd_pcm_writei(handle,pSound, lBytes/4);
+	if(snd_pcm_state(handle) == SND_PCM_STATE_XRUN)
+		snd_pcm_prepare(handle);
+	snd_pcm_writei(handle,pSound, lBytes/4);
 }
 
 #endif
-
-GtkWidget *MsgDlg;
 
 void OnMsg_Ok() {
 	gtk_widget_destroy(MsgDlg);
@@ -316,7 +330,43 @@ void SysMessage(char *fmt, ...) {
 }
 
 void CALLBACK SPU2configure() {
-	SysMessage("Nothing to Configure");
+	ConfDlg = create_Config();
+	LoadConfig();
+	set_checked(ConfDlg, "timescalingbutton", (conf.options & OPTION_TIMESTRETCH));
+	set_checked(ConfDlg, "realtimebutton", (conf.options & OPTION_REALTIME));
+	set_checked(ConfDlg, "recordingbutton", (conf.options & OPTION_RECORDING));
+	set_checked(ConfDlg, "mutebutton", (conf.options & OPTION_MUTE));
+	set_checked(ConfDlg, "loggingbutton", (conf.Log));
+	
+	gtk_widget_show_all(ConfDlg);
+	gtk_main();
+}
+
+
+void on_Conf_Ok (GtkButton *button, gpointer user_data)
+{
+	conf.options = 0;
+	
+	if (is_checked(ConfDlg, "realtimebutton"))
+		conf.options |= OPTION_REALTIME;
+	if (is_checked(ConfDlg, "timescalingbutton"))
+		conf.options |= OPTION_TIMESTRETCH;
+	if (is_checked(ConfDlg, "recordingbutton"))
+		conf.options |= OPTION_RECORDING;
+	if (is_checked(ConfDlg, "mutebutton"))
+		conf.options |= OPTION_MUTE;
+	conf.Log = is_checked(ConfDlg, "loggingbutton");
+	SaveConfig();
+	gtk_widget_destroy(ConfDlg);
+	gtk_main_quit();
+}
+
+
+void on_Conf_Cancel (GtkButton *button, gpointer user_data)
+{
+	gtk_widget_destroy(ConfDlg);
+	gtk_main_quit();
+
 }
 
 extern char* libraryName;
@@ -327,36 +377,36 @@ void CALLBACK SPU2about() {
 }
 
 void SaveConfig() {
-    FILE *f;
-    char cfg[255];
+	FILE *f;
+	char cfg[255];
 
-    strcpy(cfg, s_strIniPath.c_str());
-    f = fopen(cfg,"w");
-    if (f == NULL) {
-        printf("Failed to open %s\n", s_strIniPath.c_str());
-        return;
-    }
-    fprintf(f, "log = %d\n", conf.Log);
-    fprintf(f, "options = %d\n", conf.options);
-    fclose(f);
+	strcpy(cfg, s_strIniPath.c_str());
+	f = fopen(cfg,"w");
+	if (f == NULL) {
+		printf("Failed to open %s\n", s_strIniPath.c_str());
+		return;
+	}
+	fprintf(f, "log = %d\n", conf.Log);
+	fprintf(f, "options = %d\n", conf.options);
+	fclose(f);
 }
 
 void LoadConfig() {
-    FILE *f;
-    char cfg[255];
+	FILE *f;
+	char cfg[255];
 
-    memset(&conf, 0, sizeof(conf));
+	memset(&conf, 0, sizeof(conf));
 
-    strcpy(cfg, s_strIniPath.c_str());
-    f = fopen(cfg, "r");
-    if (f == NULL) {
-        printf("Failed to open %s\n", s_strIniPath.c_str());
-        conf.Log = 0;//default value
-        conf.options = 0;//OPTION_TIMESTRETCH;
-        SaveConfig();//save and return
-        return;
-    }
+	strcpy(cfg, s_strIniPath.c_str());
+	f = fopen(cfg, "r");
+	if (f == NULL) {
+		printf("Failed to open %s\n", s_strIniPath.c_str());
+		conf.Log = 0;//default value
+		conf.options = 0;//OPTION_TIMESTRETCH;
+		SaveConfig();//save and return
+		return;
+	}
 	fscanf(f, "log = %d\n", &conf.Log);
-    fscanf(f, "options = %d\n", &conf.options);
-    fclose(f);
+	fscanf(f, "options = %d\n", &conf.options);
+	fclose(f);
 }
