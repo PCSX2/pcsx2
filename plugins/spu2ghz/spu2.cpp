@@ -1744,7 +1744,7 @@ typedef struct
 
 static int getFreezeSize()
 {
-	if( disableFreezes ) return 7;	// length of the string id "invalid"
+	if( disableFreezes ) return 8;	// length of the string id "invalid" (plus a zero!)
 
 	int size = sizeof(SPU2freezeData);
 
@@ -1956,10 +1956,6 @@ void VoiceStart(int core,int vc)
 		Cores[core].Voices[vc].Prev1=0;
 		Cores[core].Voices[vc].Prev2=0;
 
-		// [Air]: Don't wipe interpolation values on VoiceStart.
-		//   There should be less popping/clicking if we just interpolate from the
-		//   old sample into the new sample.
-
 		Cores[core].Voices[vc].PV1=Cores[core].Voices[vc].PV2=0;
 		Cores[core].Voices[vc].PV3=Cores[core].Voices[vc].PV4=0;
 
@@ -1990,12 +1986,6 @@ void VoiceStop(int core,int vc)
 {
 	Cores[core].Voices[vc].ADSR.Value=0;
 	Cores[core].Voices[vc].ADSR.Phase=0;
-
-	// [Air]: Wipe the interpolation values here, since stopped voices
-	//   are essentially silence (and any new voices shold thusly interpolate up from
-	//   such silence)
-	//Cores[core].Voices[vc].PV1=Cores[core].Voices[vc].PV2=0;
-	//Cores[core].Voices[vc].PV3=Cores[core].Voices[vc].PV4=0;
 
 	//Cores[core].Regs.ENDX|=(1<<vc);
 }
