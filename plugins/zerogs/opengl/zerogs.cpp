@@ -4863,7 +4863,10 @@ void ZeroGS::SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0,
         v.y = (float)fh;
         v.z = 1.0f / (float)fw;
         v.w = 1.0f / (float)fh;
-        cgGLSetParameter4fv(pfragment->fRealTexDims, v);
+	if (pfragment->fRealTexDims)
+	        cgGLSetParameter4fv(pfragment->fRealTexDims, v);
+	else
+		cgGLSetParameter4fv(cgGetNamedParameter(pfragment->prog,"g_fRealTexDims"),v);	
     }
 
     if( m_Blocks[tex0.psm].bpp == 0 ) {

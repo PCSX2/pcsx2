@@ -49,6 +49,9 @@ extern HWND GShwnd;
 #include <sys/stat.h>
 #include <sys/types.h>
 
+extern u32 THR_KeyEvent; // value for passing out key events beetwen threads
+extern bool THR_bShift;
+
 #define __inline inline
 
 #if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)

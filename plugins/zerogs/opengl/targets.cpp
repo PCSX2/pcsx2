@@ -828,26 +828,29 @@ bool ZeroGS::CDepthTarget::Create(const frameInfo& frame)
 
 void ZeroGS::CDepthTarget::Destroy()
 {
-    ResetRenderTarget(1);
-    glFramebufferRenderbufferEXT( GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0 );
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0 );
-    GL_REPORT_ERRORD();
-    
-    CRenderTarget::Destroy();
-
-    if( pstencil != 0 ) {
-
-        if( pstencil != pdepth )
-            glDeleteRenderbuffersEXT( 1, &pstencil );
-        pstencil = 0;
-    }
-    if( pdepth != 0 ) {
-        glDeleteRenderbuffersEXT( 1, &pdepth );
-        pdepth = 0;
-    }
-
-    GL_REPORT_ERRORD();
+	if ( status ) { // In this case Framebuffer extension is off-use and lead to segfault
+		ResetRenderTarget(1);
+		glFramebufferRenderbufferEXT( GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0 );
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0 );
+		GL_REPORT_ERRORD();
+	
+		if( pstencil != 0 ) {
+        		if( pstencil != pdepth )
+				glDeleteRenderbuffersEXT( 1, &pstencil );
+	        	pstencil = 0;
+		}
+		
+		if( pdepth != 0 ) {
+		        glDeleteRenderbuffersEXT( 1, &pdepth );
+        		pdepth = 0;
+		}
+		GL_REPORT_ERRORD();
+	}
+	
+	CRenderTarget::Destroy();
+	
 }
+
 
 extern int g_nDepthUsed; // > 0 if depth is used
 

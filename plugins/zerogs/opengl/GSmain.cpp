@@ -123,6 +123,8 @@ void SysMessage(char *fmt, ...) {
 #else
 
 GLWindow GLWin;
+u32 THR_KeyEvent = 0; // Value for key event processing between threads 
+bool THR_bShift = false;
 
 #endif
 
@@ -251,7 +253,7 @@ void CALLBACK GSreset() {
     gs.q = 1;
 }
 
-void CALLBACK GSgifSoftReset(int mask)
+void CALLBACK GSgifSoftReset(u32 mask)
 {
     if( mask & 1 ) memset(&gs.path1, 0, sizeof(gs.path1));
     if( mask & 2 ) memset(&gs.path2, 0, sizeof(gs.path2));
@@ -644,41 +646,36 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread)
 
 void ProcessMessages()
 {
-    XEvent event;
-//    KeySym key;
-//    vector<XEvent> keyevents;
+	
+	XEvent event;
+	// check resizing
+	while(XCheckTypedEvent(GLWin.dpy, ConfigureNotify, &event)) {
+		if ((event.xconfigure.width != GLWin.width) || (event.xconfigure.height != GLWin.height)) {
+			ZeroGS::ChangeWindowSize(event.xconfigure.width, event.xconfigure.height);
+			GLWin.width = event.xconfigure.width;
+			GLWin.height = event.xconfigure.height;
+		}
+	}
 
-    // check resizing
-    while(XCheckTypedEvent(GLWin.dpy, ConfigureNotify, &event)) {
-        if ((event.xconfigure.width != GLWin.width) || (event.xconfigure.height != GLWin.height)) {
-            ZeroGS::ChangeWindowSize(event.xconfigure.width, event.xconfigure.height);
-            GLWin.width = event.xconfigure.width;
-            GLWin.height = event.xconfigure.height;
-        }
-    }
-
-//    while (XPending(GLWin.dpy) > 0) {
-//        XNextEvent(GLWin.dpy, &event);
-//        keyevents.push_back(event);
-//
-//        switch (event.type) {
-//        case ConfigureNotify:
-//            if ((event.xconfigure.width != GLWin.width) || 
-//                (event.xconfigure.height != GLWin.height))
-//                {
-//                    ZeroGS::ChangeWindowSize(event.xconfigure.width, event.xconfigure.height);
-//                    GLWin.width = event.xconfigure.width;
-//                    GLWin.height = event.xconfigure.height;
-//                }
-//            break;
-//        default:
-//            break;
-//        }
-//    }
-//
-//    // push back all the key events for the PAD plugins, etc
-//    for(vector<XEvent>::iterator it = keyevents.begin(); it != keyevents.end(); ++it)
-//        XPutBackEvent(GLWin.dpy, &(*it));
+	if ( THR_KeyEvent ) { // This values was passed from GSKeyEvents witch could be in another thread
+		int my_KeyEvent = THR_KeyEvent;
+		bool my_bShift = THR_bShift;
+		THR_KeyEvent = 0;
+		switch ( my_KeyEvent ) {
+		       	case XK_F5:
+			 	OnKeyboardF5(my_bShift);
+				break;
+        		case XK_F6:
+            			OnKeyboardF6(my_bShift);
+				break;
+			case XK_F7:
+            			OnKeyboardF7(my_bShift);
+				break;	
+			case XK_F9:
+            			OnKeyboardF9(my_bShift);
+				break;		
+		}
+	}  
 }
 
 #endif // linux
@@ -1067,6 +1064,7 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
             break;
         }
         case 3: // GIF_IMAGE (FROM_VFRAM)
+	case 4: // Used in the DirectX version, so we'll use it here too.
         {
             if(gs.imageTransfer >= 0 && gs.imageTransfer <= 1)
             {

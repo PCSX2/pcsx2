@@ -49,48 +49,44 @@ extern void OnKeyboardF9(int);
 
 void CALLBACK GSkeyEvent(keyEvent *ev)
 {
-    static bool bShift = false;
-    static bool bAlt = false;
+	//static bool bShift = false;
+	static bool bAlt = false;
     
-    switch(ev->event) {
-    case KEYPRESS:
-        switch(ev->key) {
-        case XK_F5:
-            OnKeyboardF5(bShift);
-            break;
-        case XK_F6:
-            OnKeyboardF6(bShift);
-            break;
-        case XK_F7:
-            OnKeyboardF7(bShift);
-            break;
-        case XK_F9:
-            OnKeyboardF9(bShift);
-            break;
-        case XK_Escape:
-            break;
-        case XK_Shift_L:
-        case XK_Shift_R:
-            bShift = true;
-            break;
-        case XK_Alt_L:
-        case XK_Alt_R:
-            bAlt = true;
-            break;
-        }
-        break;
-    case KEYRELEASE:
-        switch(ev->key) {
-        case XK_Shift_L:
-        case XK_Shift_R:
-            bShift = false;
-            break;
-        case XK_Alt_L:
-        case XK_Alt_R:
-            bAlt = false;
-            break;
-        }
-    }
+	switch(ev->event) {
+		case KEYPRESS:
+			switch(ev->key) {
+				case XK_F5:
+				case XK_F6:
+				case XK_F7:
+				case XK_F9:
+					THR_KeyEvent = ev->key ;
+					break;
+				case XK_Escape:
+					break;
+				case XK_Shift_L:
+				case XK_Shift_R:
+					//bShift = true;
+					THR_bShift = true;
+					break;
+				case XK_Alt_L:
+				case XK_Alt_R:
+					bAlt = true;
+					break;
+				}
+			break;
+		case KEYRELEASE:
+			switch(ev->key) {
+				case XK_Shift_L:
+				case XK_Shift_R:
+					//bShift = false;
+					THR_bShift = false;
+					break;
+				case XK_Alt_L:
+				case XK_Alt_R:
+					bAlt = false;
+					break;
+			}
+	}
 }
 
 GtkWidget *Conf;
