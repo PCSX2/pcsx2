@@ -20,9 +20,6 @@
 // Recompiled completely rewritten to add block level recompilation/reg-caching/
 // liveness analysis/constant propagation Apr06 (zerofrog@gmail.com)
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -3417,5 +3414,3 @@ R5900cpu recCpu = {
 	recClearVU1,
 	recShutdown
 };
-
-#endif // PCSX2_NORECBUILD

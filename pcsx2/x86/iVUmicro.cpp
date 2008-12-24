@@ -16,9 +16,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -1291,5 +1288,3 @@ void SetVUNanMode(int mode)
     g_VuNanHandling = mode;
     if ( mode ) SysPrintf("enabling vunan mode");
 }
-
-#endif // PCSX2_NORECBUILD

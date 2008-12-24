@@ -161,13 +161,10 @@ int LoadGroup(TiXmlNode *group,int gParent)
 
 	int gIndex=groups.size()-1;
 
-
-#ifndef PCSX2_NORECBUILD
 	// only valid for recompilers
 	TiXmlNode *fastmemory=group->FirstChild("FASTMEMORY");
 	if(fastmemory!=NULL)
 		EE::Dynarec::SetFastMemory(1);
-#endif
 
     TiXmlNode *zerogs=group->FirstChild("ZEROGS");
 	if(zerogs!=NULL)

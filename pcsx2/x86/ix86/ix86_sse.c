@@ -15,8 +15,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
 #include <assert.h>
 #include "ix86.h"
@@ -1325,5 +1323,3 @@ __forceinline void SSEX_MOVHLPS_XMM_to_XMM( x86SSERegType to, x86SSERegType from
 		SSE_MOVHLPS_XMM_to_XMM(to, from);
 	}
 }
-
-#endif

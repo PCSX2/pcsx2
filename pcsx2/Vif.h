@@ -96,11 +96,7 @@ int  VIF0transfer(u32 *data, int size, int istag);
 int  VIF1transfer(u32 *data, int size, int istag);
 void  vifMFIFOInterrupt();
 
-#ifndef PCSX2_NORECBUILD
 void SetNewMask(u32* vif1masks, u32* hasmask, u32 mask, u32 oldmask);
-#else
-#define SetNewMask 0&&
-#endif
 
 #define XMM_R0			xmm0
 #define XMM_R1			xmm1

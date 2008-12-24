@@ -558,10 +558,8 @@ int LoadState(const char *file) {
 	for (i=0; i<48; i++) UnmapTLB(i);
 
 	Cpu->Reset();
-#ifndef PCSX2_NORECBUILD
 	recResetVU0();
 	recResetVU1();
-#endif
 	psxCpu->Reset();
 
 	SysPrintf("Loading memory\n");
@@ -853,9 +851,6 @@ void ProcessFKeys(int fkey, int shift)
 		{
 			const char* limitMsg;
 			u32 newOptions;
-#ifdef PCSX2_NORECBUILD
-            SysPrintf("frame skipping only valid for recompiler build\n");
-#else
 			// cycle
             if( shift ) {
                 // previous
@@ -900,7 +895,6 @@ void ProcessFKeys(int fkey, int shift)
 			// [Air]: Do we really want to save runtime changes to frameskipping?
 			//SaveConfig();
 		}
-#endif
 			break;
 		// note: VK_F5-VK_F7 are reserved for GS
 		case 8:
@@ -910,9 +904,6 @@ void ProcessFKeys(int fkey, int shift)
 #ifdef PCSX2_DEVBUILD
 		case 10:
 		{
-#ifdef PCSX2_NORECBUILD
-            SysPrintf("Block performances times only valid for recompiler builds\n");
-#else
 			int num;
 			FILE* f;
 			BASEBLOCKEX** ppblocks = GetAllBaseBlocks(&num, 0);
@@ -928,7 +919,6 @@ void ProcessFKeys(int fkey, int shift)
 			}
 			fclose(f);
 			SysPrintf("perflog.txt written\n");
-#endif
 			break;
 		}
 		
@@ -961,10 +951,8 @@ void ProcessFKeys(int fkey, int shift)
 		case 12:
             if( shift ) {
 #ifdef PCSX2_DEVBUILD
-#ifndef PCSX2_NORECBUILD
 			    iDumpRegisters(cpuRegs.pc, 0);
 			    SysPrintf("hardware registers dumped EE:%x, IOP:%x\n", cpuRegs.pc, psxRegs.pc);
-#endif
 #endif
             }
             else {

@@ -51,12 +51,8 @@ int cpuInit()
     SysPrintf("EE pc offset: 0x%x, PSX pc offset: 0x%x\n", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
 
 	cpuRegs.constzero = 0;
-#ifdef PCSX2_NORECBUILD
-	Cpu = &intCpu;
-#else
 	cpudetectInit();
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
-#endif
 
 	ret = Cpu->Init();
 	if (ret == -1 && CHECK_EEREC) {
@@ -511,7 +507,6 @@ static __forceinline void _cpuBranchTest_Shared()
 	cpuSetNextBranch( nextsCounter, nextCounter );
 }
 
-#ifndef PCSX2_NORECBUILD
 #ifdef PCSX2_DEVBUILD
 extern u8 g_globalXMMSaved;
 X86_32CODE(extern u8 g_globalMMXSaved;)
@@ -555,7 +550,6 @@ void cpuBranchTest()
 #endif
 	g_EEFreezeRegs = true;
 }
-#endif
 
 __forceinline void CPU_INT( u32 n, s32 ecycle)
 {
@@ -667,11 +661,7 @@ void cpuExecuteBios()
 
 void cpuRestartCPU()
 {
-#ifdef PCSX2_NORECBUILD
-	Cpu = &intCpu;
-#else
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
-#endif
 
 	// restart vus
 	if (Cpu->Init() == -1) {
@@ -688,9 +678,7 @@ void cpuRestartCPU()
 // for interpreter only
 void IntcpuBranchTest()
 {
-#ifndef PCSX2_NORECBUILD
 	g_EEFreezeRegs = false;
-#endif
 
 	// Perform counters, ints, and IOP updates:
 	_cpuBranchTest_Shared();
@@ -711,7 +699,5 @@ void IntcpuBranchTest()
 		Cpu->ExecuteVU1Block();
 	}
 
-#ifndef PCSX2_NORECBUILD
 	g_EEFreezeRegs = true;
-#endif
 }

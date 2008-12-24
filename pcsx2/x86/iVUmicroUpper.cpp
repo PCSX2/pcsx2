@@ -16,9 +16,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -2607,5 +2604,3 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	_freeX86reg(x86temp1);
 	_freeX86reg(x86temp2);
 }
-
-#endif // PCSX2_NORECBUILD

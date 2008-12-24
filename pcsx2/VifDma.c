@@ -123,9 +123,6 @@ static const VIFUnpackFuncTable VIFfuncTable[16] = {
 	_UNPACK_TABLE32(V4_5, 6, 2, 2, 4)		// 0xF - V4-5
 };
 
-
-#if !defined(PCSX2_NORECBUILD)
-
 struct VIFSSEUnpackTable {
 	// regular 0, 1, 2; mask 0, 1, 2
 	UNPACKPARTFUNCTYPESSE       funcU[9], funcS[9];
@@ -205,8 +202,6 @@ static const VIFSSEUnpackTable VIFfuncTableSSE[16] = {
 	{ _UNPACK_TABLE_SSE(V4_8, u), _UNPACK_TABLE_SSE(V4_8, s) },
 	{ _UNPACK_TABLE_SSE(V4_5, u), _UNPACK_TABLE_SSE(V4_5, u) },
 };
-
-#endif
 
 
 __forceinline void vif0FLUSH() {
@@ -503,8 +498,6 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
             
         }
 
-#if !defined(PCSX2_NORECBUILD)
-
 		if( size >= ft->gsize && !(v->addr&0xf)) {
 			const UNPACKPARTFUNCTYPESSE* pfn;
 			int writemask;
@@ -588,7 +581,6 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 			//((LARGE_INTEGER*)g_nCounters)->QuadPart += lfinal.QuadPart - lbase.QuadPart;
 		}
 		else
-#endif // !PCSX2_NORECBUILD
 		{
 
 			if(unpackType == 0xC && vifRegs->cycle.cl == vifRegs->cycle.wl) { //No use when SSE is available

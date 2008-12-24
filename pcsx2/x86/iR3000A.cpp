@@ -19,8 +19,6 @@
 // recompiler reworked to add dynamic linking Jan06
 // and added reg caching, const propagation, block analysis Jun06
 // zerofrog(@gmail.com)
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244)
@@ -1570,5 +1568,3 @@ R3000Acpu psxRec = {
 	recClear,
 	recShutdown
 };
-
-#endif // PCSX2_NORECBUILD

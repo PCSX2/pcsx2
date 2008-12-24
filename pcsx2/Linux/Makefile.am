@@ -8,14 +8,9 @@ pcsx2_SOURCES = Pref.cpp  interface.c  ConfigDlg.cpp DebugDlg.cpp GtkGui.cpp  Ln
 pcsx2_LDFLAGS =
 
 pcsx2_DEPENDENCIES = ../libpcsx2.a ../IPU/libIPU.a ../IPU/mpeg2lib/libmpeg2IPU.a ../RDebug/libRDebug.a ../tinyxml/libtinyxml.a
+pcsx2_DEPENDENCIES += ../x86/libx86recomp.a ../x86/ix86/libix86.a
+pcsx2_DEPENDENCIES += ../DebugTools/libDebugTools.a
 
 pcsx2_LDADD = ../libpcsx2.a ../IPU/libIPU.a ../IPU/mpeg2lib/libmpeg2IPU.a ../RDebug/libRDebug.a ../tinyxml/libtinyxml.a
-
-
-if RECBUILD
 pcsx2_LDADD += ../x86/libx86recomp.a ../x86/ix86/libix86.a
-pcsx2_DEPENDENCIES += ../x86/libx86recomp.a ../x86/ix86/libix86.a
-endif
-
-pcsx2_DEPENDENCIES += ../DebugTools/libDebugTools.a
 pcsx2_LDADD += ../DebugTools/libDebugTools.a

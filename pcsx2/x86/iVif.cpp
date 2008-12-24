@@ -16,9 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD) && defined(PCSX2_VIRTUAL_MEM))
-
 #include <math.h>
 #include <string.h>
 
@@ -143,5 +140,3 @@ void SetNewMask(u32* vif1masks, u32* hasmask, u32 mask, u32 oldmask)
 }
 
 #endif
-
-#endif // PCSX2_NORECBUILD

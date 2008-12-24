@@ -16,9 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -892,5 +889,3 @@ void recCOP2_SPECIAL2()
 	int opc=(cpuRegs.code & 0x3) | ((cpuRegs.code >> 4) & 0x7c);
 	recCOP2SPECIAL2t[opc]();
 }
-
-#endif

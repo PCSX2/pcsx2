@@ -30,7 +30,6 @@
  Austin, TX 78741
  3dsdk.support@amd.com
 ******************************************************************************/
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
 #include <assert.h>
 
@@ -886,5 +885,3 @@ End:
 }
 
 #endif
-
-#endif // PCSX2_NORECBUILD

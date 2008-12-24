@@ -20,10 +20,4 @@ Counters.h    InterTables.h  PsxBios2.h      PsxSio2.c         VifDma.c \
 Decode_XA.c   Mdec.c         PsxBios.c       PsxSio2.h         VifDma.h Cache.c vtlb.cpp\
 xmlpatchloader.cpp ThreadTools.cpp SourceLog.cpp
 
-if RECBUILD
-recdir = x86
-else
-recdir=
-endif
-
-SUBDIRS = $(recdir) . DebugTools IPU RDebug tinyxml Linux
+SUBDIRS = x86 . DebugTools IPU RDebug tinyxml Linux

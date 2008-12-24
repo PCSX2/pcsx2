@@ -91,11 +91,7 @@ int vu1Init()
 	VU1.vuExec   = vu1Exec;
 	VU1.vifRegs  = vif1Regs;
 
-#ifndef PCSX2_NORECBUILD
-	if( CHECK_VU1REC ) {
-		recVU1Init();
-	}
-#endif
+	if( CHECK_VU1REC ) recVU1Init();
 
 	vu1Reset();
 
@@ -103,11 +99,7 @@ int vu1Init()
 }
 
 void vu1Shutdown() {
-#ifndef PCSX2_NORECBUILD
-	if( CHECK_VU1REC ) {
-		recVU1Shutdown();
-	}
-#endif
+	if( CHECK_VU1REC ) recVU1Shutdown();
 }
 
 void vu1ResetRegs()
@@ -129,9 +121,7 @@ void vu1Reset() {
 	memset(VU1.Mem, 0, 16*1024);
 	memset(VU1.Micro, 0, 16*1024);
 
-#ifndef PCSX2_NORECBUILD
 	recResetVU1();
-#endif
 }
 
 void vu1Freeze(gzFile f, int Mode) {

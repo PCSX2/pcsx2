@@ -275,10 +275,6 @@ u32 GetBiosVersion();
 int IsBIOS(char *filename, char *description);
 
 // check to see if needs freezing
-#ifdef PCSX2_NORECBUILD
-#define FreezeMMXRegs(save)
-#define FreezeXMMRegs(save)
-#else
 extern void FreezeXMMRegs_(int save);
 extern bool g_EEFreezeRegs;
 #define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
@@ -289,13 +285,6 @@ void FreezeMMXRegs_(int save);
 #else
 #define FreezeMMXRegs(save)
 #endif
-
-#endif
-
-
-#ifdef PCSX2_NORECBUILD
-#define memcpy_fast memcpy
-#else
 
 #if defined(_WIN32) && !defined(__x86_64__)
 // faster memcpy
@@ -311,7 +300,6 @@ void * memcpy_amd_(void *dest, const void *src, size_t n);
 #define memcpy_raz_u memcpy
 #endif
 
-#endif
 
 u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
 void memxor_mmx(void* dst, const void* src1, int cmpsize);

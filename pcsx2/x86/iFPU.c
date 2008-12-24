@@ -16,9 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include "Common.h"
 #include "InterTables.h"
 #include "ix86/ix86.h"
@@ -1919,5 +1916,3 @@ void recRSQRT_S_xmm(int info)
 FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 #endif // FPU_RECOMPILE
-
-#endif // PCSX2_NORECBUILD

@@ -117,11 +117,9 @@ namespace EE
 		// The action is performed immediately on the EE's cpu state.
 		void (*interpret)();
 
-	#ifndef PCSX2_NORECBUILD
 		// Generate recompiled code for this instruction, injected into
 		// the current EErec block state.
 		void (*recompile)();
-	#endif
 
 		// Generates a string representation of the instruction and it's parameters,
 		// and pastes it into the given output parameter.
@@ -133,25 +131,6 @@ namespace EE
 
 	// Generates an entry for the given opcode name.
 	// Assumes the default function naming schemes for interpreter and recompiler  functions.
-#ifdef PCSX2_NORECBUILD
-#	define MakeOpcode( name, cycles ) \
-		static const OPCODE name = { \
-			#name, \
-			cycles, \
-			NULL, \
-			EE::Interpreter::OpcodeImpl::name, \
-			EE::Debug::OpcodePrint::name \
-		}
-
-#	define MakeOpcodeClass( name ) \
-		static const OPCODE name = { \
-			#name, \
-			0, \
-			EE::Opcodes::Class_##name, \
-			NULL, \
-			NULL \
-		}
-#else
 #	define MakeOpcode( name, cycles ) \
 		static const OPCODE name = { \
 			#name, \
@@ -171,7 +150,6 @@ namespace EE
 			NULL, \
 			NULL \
 		}
-#endif
 
 	namespace OpcodeTables
 	{

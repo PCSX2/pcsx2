@@ -16,9 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -301,5 +298,3 @@ void gsConstRead128(u32 mem, int xmmreg)
 	GIF_LOG("GS read 128 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
 	_eeReadConstMem128( xmmreg, (uptr)PS2GS_BASE(mem));
 }
-
-#endif // PCSX2_NORECBUILD

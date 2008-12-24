@@ -16,9 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include <stdio.h>
 #include <string.h>
 
@@ -1157,6 +1154,4 @@ void psxHw4ConstWrite8(u32 add, int mmreg) {
 			return;
 	}
 }
-
-#endif // PCSX2_NORECBUILD
 

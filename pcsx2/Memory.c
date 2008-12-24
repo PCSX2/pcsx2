@@ -58,11 +58,7 @@ BIOS
 #endif
 #include "Common.h"
 
-#ifdef PCSX2_NORECBUILD
-#define REC_CLEARM(mem)
-#else
 #include "iR5900.h"
-#endif
 
 #include "PsxMem.h"
 #include "R3000A.h"

@@ -20,8 +20,6 @@
 *   cached MMI opcodes                                   *
 *                                                        *
 *********************************************************/
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
 
 #include "Common.h"
 #include "InterTables.h"
@@ -3333,5 +3331,3 @@ CPU_SSE_XMMCACHE_END
 #endif	// else MMI3_RECOMPILE
 
 } } }
-
-#endif // PCSX2_NORECBUILD

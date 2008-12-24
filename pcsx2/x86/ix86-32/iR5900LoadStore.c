@@ -16,9 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -4510,5 +4507,3 @@ void recSQC2( void )
 
 #endif
 } }
-
-#endif // PCSX2_NORECBUILD

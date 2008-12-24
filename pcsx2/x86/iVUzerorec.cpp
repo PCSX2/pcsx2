@@ -18,9 +18,6 @@
 
 // Super VU recompiler - author: zerofrog(@gmail.com)
 
-// stop compiling if NORECBUILD build (only for Visual Studio)
-#if !(defined(_MSC_VER) && defined(PCSX2_NORECBUILD))
-
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
@@ -4551,5 +4548,3 @@ void recSVUunknown( void )
 { 
 	SysPrintf("Unknown SVU micromode opcode called\n"); 
 }
-
-#endif // PCX2_NORECBUILD

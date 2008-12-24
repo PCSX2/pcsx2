@@ -575,19 +575,15 @@ void patchFunc_xkickdelay( char * cmd, char * param )
 
 void patchFunc_fastmemory( char * cmd, char * param )
 {
-#ifndef PCSX2_NORECBUILD
 	// only valid for recompilers
 	EE::Dynarec::SetFastMemory(1);
-#endif
 }
 
 
 void patchFunc_vunanmode( char * cmd, char * param )
 {
-#ifndef PCSX2_NORECBUILD
 	// only valid for recompilers
 	 SetVUNanMode(param != NULL ? atoi(param) : 1);
-#endif
 }
 
 void patchFunc_path3hack( char * cmd, char * param )
@@ -651,7 +647,5 @@ void SetRoundMode(u32 ee, u32 vu)
 	// don't set a state for interpreter only
 	//SysMessage("SetRoundMode: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 
-#ifndef PCSX2_NORECBUILD
 	SetCPUState( (Config.sseMXCSR & 0x9fff) | ee, (Config.sseVUMXCSR & 0x9fff) | vu);
-#endif
 }

@@ -90,17 +90,6 @@ then
 fi
 AC_MSG_RESULT(sse4)
 
-dnl Check for recompilation
-AC_MSG_CHECKING(for using platform dependent recompilers)
-AC_ARG_ENABLE(recbuild, AC_HELP_STRING([--disable-recbuild], [Disable all architecture dependent recompilers]),
- recbuild=$enableval,recbuild=yes)
-if test "x$recbuild" == xno
-then
- AC_DEFINE(PCSX2_NORECBUILD,1,[PCSX2_NORECBUILD])
-fi
-AC_MSG_RESULT($recbuild)
-AM_CONDITIONAL(RECBUILD, test x$recbuild = xyes)
-
 dnl Check for 64bit CPU
 AC_MSG_CHECKING(for a x86-64 CPU)
 AC_TRY_RUN([
@@ -169,7 +158,6 @@ echo "  x86-64 build?	       $cpu64"
 echo "  Debug build?	       $debug"
 echo "  Dev build?	           $devbuild"
 echo "  Force sse3?	           $sse3"
-echo "  Recompilers enabled?   $recbuild"
 echo " nls support?   $nls"
 echo " local plugin inis? $localinis"
 echo " custom cflags? $customcflags"

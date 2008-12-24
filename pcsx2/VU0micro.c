@@ -117,11 +117,7 @@ int  vu0Init()
 	VU0.vuExec = vu0Exec;
 	VU0.vifRegs = vif0Regs;
 
-#ifndef PCSX2_NORECBUILD
-	if( CHECK_VU0REC ) {
-		SuperVUInit(0);
-	}
-#endif
+	if( CHECK_VU0REC ) SuperVUInit(0);
 
 	vu0Reset();
 
@@ -130,11 +126,7 @@ int  vu0Init()
 
 void vu0Shutdown()
 {
-#ifndef PCSX2_NORECBUILD
-	if( CHECK_VU0REC ) {
-		SuperVUDestroy(0);
-	}
-#endif
+	if( CHECK_VU0REC ) SuperVUDestroy(0);
 
 #ifdef PCSX2_VIRTUAL_MEM
 	if( !SysMapUserPhysicalPages(VU0.Mem, 16, NULL, 0) )
@@ -177,11 +169,7 @@ void vu0Reset()
 
 void recResetVU0( void )
 {
-#ifndef PCSX2_NORECBUILD
-	if( CHECK_VU0REC ) {
-		SuperVUReset(0);
-	}
-#endif
+	if( CHECK_VU0REC ) SuperVUReset(0);
 }
 
 void vu0Freeze(gzFile f, int Mode) {
