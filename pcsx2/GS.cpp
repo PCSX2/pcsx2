@@ -909,7 +909,7 @@ void gsReset()
 	}
 	else
 	{
-		SysPrintf("GIF reset\n");
+		Console::Notice( "GIF reset");
 		GSreset();
 		GSsetFrameSkip(0);
 	}

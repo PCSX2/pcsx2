@@ -624,6 +624,8 @@ int InitPlugins() {
 
 void ShutdownPlugins()
 {
+	ClosePlugins();
+
 	// GS is a special case: It needs closed first usually.
 	// (the GS isn't closed during emulation pauses)
 	if( OpenStatus.GS )
@@ -631,8 +633,6 @@ void ShutdownPlugins()
 		gsClose();
 		OpenStatus.GS = false;
 	}
-
-	ClosePlugins();
 
 	GSshutdown();
 	PAD1shutdown();
@@ -690,7 +690,8 @@ int OpenPlugins(const char* pTitleFilename) {
 	GSdriverInfo info;
 	int ret;
 
-	if (!loadp) return -1;
+	if ( !loadp )
+		throw Exception::InvalidOperation( "OpenPlugins cannot be called while the plugin state is uninitialized." );
 
 #ifndef _WIN32
     // change dir so that CDVD can find its config file
@@ -862,4 +863,18 @@ void ReleasePlugins()
 	SysCloseLibrary(USBplugin);  USBplugin = NULL;
 	SysCloseLibrary(FWplugin);   FWplugin = NULL;
 	loadp = false;
+}
+
+void PluginsResetGS()
+{
+	if( OpenStatus.GS )
+	{
+		gsClose();
+		OpenStatus.GS = false;
+	}
+
+	GSshutdown();
+
+	int ret = GSinit();
+	if (ret != 0) { SysMessage (_("GSinit error: %d"), ret);  }
 }

@@ -1163,6 +1163,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			case ID_FILE_RUNCD:
 				safe_free( g_RecoveryState );
+				ResetPlugins();
 				RunExecute( NULL );
 			return FALSE;
 

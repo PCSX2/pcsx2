@@ -3,8 +3,10 @@
 #include <commctrl.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <direct.h>
 #include <sys/stat.h>
 #include <string.h>
+
 #include "zlib/zlib.h"
 
 
@@ -43,7 +45,14 @@ int _GetFile(char *out) {
 
     ofn.lStructSize			= sizeof(OPENFILENAME);
     ofn.hwndOwner			= GetActiveWindow();
-    ofn.lpstrFilter			= "Supported Formats\0*.bin;*.iso;*.img;*.nrg;*.mdf;*.Z;*.Z2;*.BZ2;*.dump\0Cd Iso Format (*.bin;*.iso;*.img;*.nrg;*.mdf)\0*.bin;*.iso;*.img;*.nrg;*.mdf\0Compressed Z Iso Format (*.Z;*.Z2)\0*.Z;*.Z2\0Compressed BZ Iso Format (*.BZ2)\0*.BZ2\0Block Dumps (*.dump)\0*.dump\0All Files\0*.*\0";
+    ofn.lpstrFilter			=
+		"Supported Formats\0*.bin;*.iso;*.img;*.nrg;*.mdf;*.Z;*.Z2;*.BZ2;*.dump\0"
+		"Cd Iso Format (*.bin;*.iso;*.img;*.nrg;*.mdf)\0"
+		"*.bin;*.iso;*.img;*.nrg;*.mdf\0"
+		"Compressed Z Iso Format (*.Z;*.Z2)\0"
+		"*.Z;*.Z2\0Compressed BZ Iso Format (*.BZ2)\0"
+		"*.BZ2\0Block Dumps (*.dump)\0*.dump\0All Files\0*.*\0";
+
 	ofn.lpstrCustomFilter	= NULL;
     ofn.nMaxCustFilter		= 0;
     ofn.nFilterIndex		= 1;
@@ -54,9 +63,10 @@ int _GetFile(char *out) {
     ofn.nMaxFileTitle		= MAXFILENAME;
     ofn.lpstrTitle			= NULL;
     ofn.lpstrDefExt			= NULL;
-    ofn.Flags				= OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
+    ofn.Flags				= OFN_HIDEREADONLY;
 
-	if (GetOpenFileName ((LPOPENFILENAME)&ofn)) {
+	if(GetOpenFileName ((LPOPENFILENAME)&ofn))
+	{
 		strcpy(out, szFileName);
 		return 1;
 	}
@@ -64,9 +74,40 @@ int _GetFile(char *out) {
 	return 0;
 }
 
-void CfgOpenFile() {
+int _OpenFile( int saveConf ) {
+
+	int retval = 0;
+
+	// for saving the pcsx2 current working directory;
+	char* cwd_pcsx2 = _getcwd( NULL, MAXFILENAME );
+
+	if( IsoCWD[0] != 0 )
+		_chdir( IsoCWD );
+
 	if (_GetFile(IsoFile) == 1)
-		SaveConf();
+	{
+		// Save the user's new cwd:
+		if( _getcwd( IsoCWD, MAXFILENAME ) == NULL )
+			IsoCWD[0] = 0;
+
+		if( saveConf )
+			SaveConf();
+
+		retval = 1;
+	}
+
+	// Restore Pcsx2's path.
+	if( cwd_pcsx2 != NULL )
+	{
+		_chdir( cwd_pcsx2 );
+		free( cwd_pcsx2 );
+		cwd_pcsx2 = NULL;
+	}
+	return retval;
+}
+
+void CfgOpenFile() {
+	_OpenFile( TRUE );
 }
 
 void UpdZmode() {
@@ -242,7 +283,7 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDC_SELECTISO:
-					if (_GetFile(IsoFile) == 1)
+					if( _OpenFile(FALSE) == 1 )
 						Edit_SetText(hIsoFile, IsoFile);
 					return TRUE;
 
@@ -261,6 +302,7 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				case IDCANCEL:
 					EndDialog(hW, TRUE);
 					return TRUE;
+
 				case IDOK:
 					Edit_GetText(hIsoFile, IsoFile, 256);
 					BlockDump = Button_GetCheck(hBlockDump);
@@ -288,8 +330,8 @@ BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDOK:
-					EndDialog(hW, FALSE);
-					return TRUE;
+					EndDialog(hW, TRUE);
+					return FALSE;
 			}
 	}
 	return FALSE;

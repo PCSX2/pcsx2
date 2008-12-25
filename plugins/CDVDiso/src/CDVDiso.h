@@ -103,6 +103,7 @@ extern _cdIso cdIso[8];
 #define MSF2SECT(m,s,f)	(((m)*60+(s)-2)*75+(f))
 
 extern char IsoFile[256];
+extern char IsoCWD[256];
 extern char CdDev[256];
 
 extern int BlockDump;

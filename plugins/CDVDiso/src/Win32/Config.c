@@ -23,6 +23,7 @@ void SaveConf() {
 	RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\PS2Eplugin\\CDVD\\CDVDiso", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &myKey, &myDisp);
 
 	SetKeyV("IsoFile", IsoFile, sizeof(IsoFile), REG_BINARY);
+	SetKeyV("CurrentWorkingFolder", IsoCWD, sizeof(IsoCWD), REG_BINARY);
 	SetKeyVdw("BlockDump", &BlockDump);
 
 	RegCloseKey(myKey);
@@ -39,6 +40,7 @@ void LoadConf() {
 	}
 
 	GetKeyV("IsoFile", IsoFile, sizeof(IsoFile), REG_BINARY);
+	GetKeyV("CurrentWorkingFolder", IsoCWD, sizeof(IsoCWD), REG_BINARY);
 	GetKeyVdw("BlockDump", &BlockDump);
 
 	RegCloseKey(myKey);

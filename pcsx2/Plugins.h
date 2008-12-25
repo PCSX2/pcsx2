@@ -38,4 +38,6 @@ void ClosePlugins();
 // take effect.  Use a manual set oc alls to ReleasePlugins and LoadPlugins for that.
 void ResetPlugins();
 
+void PluginsResetGS();
+
 #endif /* __PLUGINS_H__ */

@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "CDVDiso.h"
 #include "Config.h"
@@ -14,6 +15,7 @@
 #endif
 
 char IsoFile[256];
+char IsoCWD[256];
 char CdDev[256];
 
 _cdIso cdIso[8];

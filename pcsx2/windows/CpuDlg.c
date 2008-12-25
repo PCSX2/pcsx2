@@ -150,8 +150,12 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 						if( (Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD) )
 						{
-							// gotta shut down *all* the plugins.
-							ResetPlugins();
+							// Need the MTGS setting to take effect, so close out the plugins:
+							PluginsResetGS();
+							if( CHECK_MULTIGS )
+								Console::Notice( "MTGS mode disabled.\n\tEnjoy the fruits of single-threaded simpicity." );
+							else
+								Console::Notice( "MTGS mode enabled.\n\tWelcome to multi-threaded awesomeness." );
 						}
 						Config.Options = newopts;
 					}

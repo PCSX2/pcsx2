@@ -84,31 +84,29 @@ u8  hwRead8(u32 mem)
 {
 	u8 ret;
 
-#ifdef PCSX2_DEVBUILD
 	if( mem >= 0x10000000 && mem < 0x10008000 )
-		SysPrintf("hwRead8 to %x\n", mem);
-#endif
+		DevCon::Notice("hwRead8 to %x", mem);
 
-		SPR_LOG("Hardware read 8bit at %lx, ret %lx\n", mem, psHu8(mem));
+	SPR_LOG("Hardware read 8bit at %lx, ret %lx\n", mem, psHu8(mem));
 
 //	switch (mem) {
 //		default:
-			if ((mem & 0xffffff0f) == 0x1000f200) {
-				if(mem == 0x1000f260) ret = 0;
-				else if(mem == 0x1000F240) {
-					ret = psHu32(mem);
-					//psHu32(mem) &= ~0x4000;
-				}
-				else ret = psHu32(mem);
-				return (u8)ret;
-			}
-	
-			if (mem < 0x10010000)
-			{
-				ret = psHu8(mem);
-			}
-			else ret = 0;
-			HW_LOG("Unknown Hardware Read 8 at %x\n",mem);
+	if ((mem & 0xffffff0f) == 0x1000f200) {
+		if(mem == 0x1000f260) ret = 0;
+		else if(mem == 0x1000F240) {
+			ret = psHu32(mem);
+			//psHu32(mem) &= ~0x4000;
+		}
+		else ret = psHu32(mem);
+		return (u8)ret;
+	}
+
+	if (mem < 0x10010000)
+	{
+		ret = psHu8(mem);
+	}
+	else ret = 0;
+	HW_LOG("Unknown Hardware Read 8 at %x\n",mem);
 //			break;
 //	}
 
@@ -119,11 +117,10 @@ u16 hwRead16(u32 mem)
 {
 	u16 ret;
 
-#ifdef PCSX2_DEVBUILD
 	if( mem >= 0x10002000 && mem < 0x10008000 )
-		SysPrintf("hwRead16 to %x\n", mem);
-#endif
-		SPR_LOG("Hardware read 16bit at %lx, ret %lx\n", mem, psHu16(mem));
+		Console::Notice("hwRead16 to %x", mem);
+
+	SPR_LOG("Hardware read 16bit at %lx, ret %lx\n", mem, psHu16(mem));
 
 	switch (mem) {
 		case 0x10000000: ret = (u16)rcntRcount(0); break;
