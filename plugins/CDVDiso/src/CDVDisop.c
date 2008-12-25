@@ -13,6 +13,24 @@
 #define MAX_PATH 255
 #endif
 
+char IsoFile[256];
+char CdDev[256];
+
+_cdIso cdIso[8];
+u8 *pbuffer;
+int cdblocksize;
+int cdblockofs;
+int cdoffset;
+int cdtype;
+int cdblocks;
+
+int Zmode; // 1 Z - 2 bz2
+int fmode;						// 0 - file / 1 - Zfile
+char *Ztable;
+
+int BlockDump;
+isoFile *fdump;
+isoFile *iso;
 
 FILE *cdvdLog = NULL;
 
@@ -251,7 +269,7 @@ EXPORT_C(s32) CDVDgetTOC(void* toc) {
 
         if( layer1start != -2 && iso->blocks >= 0x300000 ) {
             int off = iso->blockofs;
-            char* tempbuffer;
+            u8* tempbuffer;
 
             // dual sided
             tocBuff[ 0] = 0x24;
@@ -271,7 +289,7 @@ EXPORT_C(s32) CDVDgetTOC(void* toc) {
             // search for it
             if( layer1start == -1 ) {
                 printf("CDVD: searching for layer1...");
-                tempbuffer = (char*)malloc(CD_FRAMESIZE_RAW * 10);
+                tempbuffer = (u8*)malloc(CD_FRAMESIZE_RAW * 10);
                 for(layer1start = (iso->blocks/2-0x10)&~0xf; layer1start < 0x200010; layer1start += 16) {
                     isoReadBlock(iso, tempbuffer, layer1start);
                     // CD001

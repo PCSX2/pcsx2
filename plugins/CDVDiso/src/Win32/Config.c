@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-#include "CDVDiso.h"
+#include "../CDVDiso.h"
 
 #define GetKeyV(name, var, s, t) \
 	size = s; type = t; \

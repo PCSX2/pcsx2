@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <string.h>
-#include <zlib.h>
+#include "zlib/zlib.h"
 
 
 #include "Config.h"

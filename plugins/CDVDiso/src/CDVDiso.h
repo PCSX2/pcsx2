@@ -17,18 +17,29 @@
  */
 
 
-#ifdef __MSCW32__
+#ifdef _MSC_VER
 #pragma warning(disable:4018)
 #endif
 
-//#define CDVDdefs
 #include "PS2Edefs.h"
 #include "libiso.h"
 
-#ifndef __LINUX__
+#ifdef __cplusplus
+
+#ifdef _MSC_VER
+#define EXPORT_C(type) extern "C" __declspec(dllexport) type CALLBACK
+#else
+#define EXPORT_C(type) extern "C" type
+#endif
+
+#else
+
+#ifdef _MSC_VER
 #define EXPORT_C(type) __declspec(dllexport) type __stdcall
 #else
 #define EXPORT_C(type) type
+#endif
+
 #endif
 
 EXPORT_C(u32)   PS2EgetLibType();
@@ -68,25 +79,20 @@ void __Log(char *fmt, ...);
 
 #define VERBOSE 1
 
-char IsoFile[256];
 #define DEV_DEF		""
-char CdDev[256];
 #define CDDEV_DEF	"/dev/cdrom"
-int BlockDump;
-isoFile *fdump;
-
-isoFile *iso;
 
 typedef struct {
 	int slsn;
 	int elsn;
-#ifdef __WIN32__
+#ifdef _WINDOWS_
 	HANDLE handle;
 #else
 	FILE *handle;
 #endif
 } _cdIso;
-_cdIso cdIso[8];
+
+extern _cdIso cdIso[8];
 
 #define CD_FRAMESIZE_RAW	2352
 #define DATA_SIZE	(CD_FRAMESIZE_RAW-12)
@@ -96,17 +102,24 @@ _cdIso cdIso[8];
 
 #define MSF2SECT(m,s,f)	(((m)*60+(s)-2)*75+(f))
 
-extern unsigned char cdbuffer[];
-unsigned char *pbuffer;
-int cdblocksize;
-int cdblockofs;
-int cdoffset;
-int cdtype;
-int cdblocks;
+extern char IsoFile[256];
+extern char CdDev[256];
 
-int Zmode; // 1 Z - 2 bz2
-int fmode;						// 0 - file / 1 - Zfile
-char *Ztable;
+extern int BlockDump;
+extern isoFile *fdump;
+extern isoFile *iso;
+
+extern u8 cdbuffer[];
+extern u8 *pbuffer;
+extern int cdblocksize;
+extern int cdblockofs;
+extern int cdoffset;
+extern int cdtype;
+extern int cdblocks;
+
+extern int Zmode; // 1 Z - 2 bz2
+extern int fmode;						// 0 - file / 1 - Zfile
+extern char *Ztable;
 
 extern char *methods[];
 

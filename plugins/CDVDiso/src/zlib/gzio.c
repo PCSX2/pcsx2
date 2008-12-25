@@ -96,7 +96,7 @@ local gzFile gz_open (path, mode, fd)
     int  fd;
 {
     int err;
-    int level = Z_DEFAULT_COMPRESSION; /* compression level */
+    int level = Z_BEST_COMPRESSION; /* compression level */
     int strategy = Z_DEFAULT_STRATEGY; /* compression strategy */
     char *p = (char*)mode;
     gz_stream *s;

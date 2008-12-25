@@ -1,7 +1,7 @@
 #ifndef __LIBISO_H__
 #define __LIBISO_H__
 
-#ifdef __MSCW32__
+#ifdef _MSC_VER
 #pragma warning(disable:4018)
 #endif
 
@@ -43,7 +43,7 @@ typedef struct {
 	int  dtablesize;
 	_multih multih[8];
 	int  buflsn;
-	char *buffer;
+	u8 *buffer;
 } isoFile;
 
 
@@ -51,8 +51,8 @@ isoFile *isoOpen(const char *filename);
 isoFile *isoCreate(const char *filename, int mode);
 int  isoSetFormat(isoFile *iso, int blockofs, int blocksize, int blocks);
 int  isoDetect(isoFile *iso);
-int  isoReadBlock(isoFile *iso, char *dst, int lsn);
-int  isoWriteBlock(isoFile *iso, char *src, int lsn);
+int  isoReadBlock(isoFile *iso, u8 *dst, int lsn);
+int  isoWriteBlock(isoFile *iso, u8 *src, int lsn);
 void isoClose(isoFile *iso);
 
 void *_openfile(const char *filename, int flags);
