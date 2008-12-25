@@ -1516,7 +1516,7 @@ void ipu_vq(struct macroblock_rgb16 *rgb16, u8* indx4){
 	SysPrintf("IPU: VQ not implemented");
 }
 
-void ipu_copy(struct macroblock_8 *mb8, struct macroblock_16 *mb16){
+void ipu_copy(struct macroblock_8 *mb8, struct macroblock_16 *mb16) {
 	unsigned char	*s=(unsigned char*)mb8;
 	signed short	*d=(signed short*)mb16;
 	int i;
@@ -1749,7 +1749,7 @@ int IPU1dma()
 					break;
 
 				default:
-					SysPrintf("IPU ERROR: different transfer mode!, Please report to PCSX2 Team\n");
+					Console::Error("IPU ERROR: different transfer mode!, Please report to PCSX2 Team\n");
 					break;
 			}
 

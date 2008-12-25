@@ -27,6 +27,19 @@
 	CALLFunc((uptr)VU##MI_##f); \
 }
 
+#define REC_VUOPs(VU, f) { \
+	_freeXMMregs(); \
+	X86_32CODE(_freeMMXregs(); SetFPUstate();) \
+	if (VU==&VU1) {  \
+		MOV32ItoM((uptr)&VU1.code, (u32)VU1.code); \
+		CALLFunc((uptr)VU1MI_##f); \
+	}  \
+	else {  \
+		MOV32ItoM((uptr)&VU0.code, (u32)VU0.code); \
+		CALLFunc((uptr)VU0MI_##f); \
+	}  \
+}
+
 #define REC_VUOPFLAGS(VU, f) { \
 	_freeXMMregs(/*&VU*/); \
 	X86_32CODE(_freeMMXregs(); SetFPUstate();) \

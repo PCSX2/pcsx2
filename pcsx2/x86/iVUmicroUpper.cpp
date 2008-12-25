@@ -103,22 +103,22 @@ static const PCSX2_ALIGNED16(int SSEmovMask[ 16 ][ 4 ]) =
 
 static const PCSX2_ALIGNED16(u32 const_abs_table[16][4]) = 
 {
-   { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff },
-   { 0xffffffff, 0xffffffff, 0xffffffff, 0x7fffffff },
-   { 0xffffffff, 0xffffffff, 0x7fffffff, 0xffffffff },
-   { 0xffffffff, 0xffffffff, 0x7fffffff, 0x7fffffff },
-   { 0xffffffff, 0x7fffffff, 0xffffffff, 0xffffffff },
-   { 0xffffffff, 0x7fffffff, 0xffffffff, 0x7fffffff },
-   { 0xffffffff, 0x7fffffff, 0x7fffffff, 0xffffffff },
-   { 0xffffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff },
-   { 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff },
-   { 0x7fffffff, 0xffffffff, 0xffffffff, 0x7fffffff },
-   { 0x7fffffff, 0xffffffff, 0x7fffffff, 0xffffffff },
-   { 0x7fffffff, 0xffffffff, 0x7fffffff, 0x7fffffff },
-   { 0x7fffffff, 0x7fffffff, 0xffffffff, 0xffffffff },
-   { 0x7fffffff, 0x7fffffff, 0xffffffff, 0x7fffffff },
-   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0xffffffff },
-   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff },
+   { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff }, //0000
+   { 0xffffffff, 0xffffffff, 0xffffffff, 0x7fffffff }, //0001
+   { 0xffffffff, 0xffffffff, 0x7fffffff, 0xffffffff }, //0010
+   { 0xffffffff, 0xffffffff, 0x7fffffff, 0x7fffffff }, //0011
+   { 0xffffffff, 0x7fffffff, 0xffffffff, 0xffffffff }, //0100
+   { 0xffffffff, 0x7fffffff, 0xffffffff, 0x7fffffff }, //0101
+   { 0xffffffff, 0x7fffffff, 0x7fffffff, 0xffffffff }, //0110
+   { 0xffffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //0111
+   { 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff }, //1000
+   { 0x7fffffff, 0xffffffff, 0xffffffff, 0x7fffffff }, //1001
+   { 0x7fffffff, 0xffffffff, 0x7fffffff, 0xffffffff }, //1010
+   { 0x7fffffff, 0xffffffff, 0x7fffffff, 0x7fffffff }, //1011
+   { 0x7fffffff, 0x7fffffff, 0xffffffff, 0xffffffff }, //1100
+   { 0x7fffffff, 0x7fffffff, 0xffffffff, 0x7fffffff }, //1101
+   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0xffffffff }, //1110
+   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //1111
 };
 
 static const PCSX2_ALIGNED16(float recMult_float_to_int4[4])	= { 16.0, 16.0, 16.0, 16.0 };
@@ -236,7 +236,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
 		if (CHECK_VU_UNDERFLOW) {  // Sets underflow/denormals to zero
 			SSE_ANDNPS_XMM_to_XMM(t1reg, reg); // t1reg = !t1reg & reg (t1reg = denormals are positive zero)
-			VU_MERGE_REGS_CUSTOM(t1reg, reg, (15 - flipMask[_X_Y_Z_W])); // Send t1reg the vectors that shouldn't be modified (since reg was flipped, we need a mask to get the unmodified vectors)
+			VU_MERGE_REGS_SAFE(t1reg, reg, (15 - flipMask[_X_Y_Z_W])); // Send t1reg the vectors that shouldn't be modified (since reg was flipped, we need a mask to get the unmodified vectors)
 			// Now we have Denormals are Positive Zero in t1reg; the next two lines take Signed Zero into account
 			SSE_ANDPS_M128_to_XMM(reg, (uptr)&VU_Signed_Zero_Mask[ 0 ]); // Only keep the sign bit for each vector
 			SSE_ORPS_XMM_to_XMM(reg, t1reg); // Denormals are Signed Zero, and unmodified vectors stay the same!
@@ -305,40 +305,45 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 //------------------------------------------------------------------
 // *VU Upper Instructions!*
+//
+// Note: * = Checked for errors by cottonvibes
 //------------------------------------------------------------------
 
 
 //------------------------------------------------------------------
-// ABS
+// ABS*
 //------------------------------------------------------------------
-void recVUMI_ABS(VURegs *VU, int info)
+void recVUMI_ABS(VURegs *VU, int info) 
 {
-	if ( _Ft_ == 0 ) return;
+	//SysPrintf("recVUMI_ABS()\n");
+	if ( (_Ft_ == 0) || (_X_Y_Z_W == 0) ) return;
 
-	if (_X_Y_Z_W != 0xf) { // here we use a temp reg because not all xyzw are being modified
+	if ((_X_Y_Z_W == 0x8) || (_X_Y_Z_W == 0xf)) {
+		VU_MERGE_REGS(EEREC_T, EEREC_S);
+		SSE_ANDPS_M128_to_XMM(EEREC_T, (uptr)&const_abs_table[ _X_Y_Z_W ][ 0 ] );
+	}
+	else { // Use a temp reg because VU_MERGE_REGS() modifies source reg!
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_abs_table[ _X_Y_Z_W ][ 0 ] );
-
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
-	} 
-	else { // all xyzw are being modified, so no need to use temp reg
-		if( EEREC_T != EEREC_S ) SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
-		SSE_ANDPS_M128_to_XMM(EEREC_T, (uptr)&const_abs_table[ _X_Y_Z_W ][ 0 ] );	
 	}
 }
 //------------------------------------------------------------------
 
 
 //------------------------------------------------------------------
-// ADD
+// ADD*, ADD_iq, ADD_xyzw*
 //------------------------------------------------------------------
 PCSX2_ALIGNED16(float s_two[4]) = {0,0,0,2};
 void recVUMI_ADD(VURegs *VU, int info)
 {
-	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
+	//SysPrintf("recVUMI_ADD()\n");
+	if ( _X_Y_Z_W == 0 ) goto flagUpdate;
+	if ( !_Fd_ ) info = (info & ~PROCESS_EE_SET_D(0xf)) | PROCESS_EE_SET_D(EEREC_TEMP);
 
-	if( _Fs_ == 0 && _Ft_ == 0 ) { // if adding VF00 with VF00, then the result is always 0,0,0,2
-		if( _X_Y_Z_W != 0xf ) {
+	if ( _Fs_ == 0 && _Ft_ == 0 ) { // if adding VF00 with VF00, then the result is always 0,0,0,2
+		if ( _X_Y_Z_W == 0x8 ) SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)s_two);
+		else if ( _X_Y_Z_W != 0xf ) {
 			SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)s_two);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
@@ -346,8 +351,8 @@ void recVUMI_ADD(VURegs *VU, int info)
 	}
 	else {
 		if (CHECK_VU_EXTRA_OVERFLOW) {
-			vuFloat( info, EEREC_S, _X_Y_Z_W);
-			vuFloat( info, EEREC_T, _X_Y_Z_W);
+			vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W); 
+			vuFloat5( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
 		}
 		if( _X_Y_Z_W == 8 ) { // If only adding x, then we can do a Scalar Add
 			if (EEREC_D == EEREC_S) SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_T);
@@ -360,7 +365,6 @@ void recVUMI_ADD(VURegs *VU, int info)
 		else if (_X_Y_Z_W != 0xf) { // If xyzw != 1111, then we have to use a temp reg
 			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
-
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else { // All xyzw being modified (xyzw == 1111)
@@ -372,7 +376,7 @@ void recVUMI_ADD(VURegs *VU, int info)
 			}
 		}
 	}
-
+flagUpdate:
 	recUpdateFlags(VU, EEREC_D, info);
 }
 
@@ -433,30 +437,31 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 			}
 		}
 	}
+
 	recUpdateFlags(VU, EEREC_D, info);
 }
 
 void recVUMI_ADD_xyzw(VURegs *VU, int xyzw, int info)
 {
+	//SysPrintf("recVUMI_ADD_xyzw()\n");
+	if ( _X_Y_Z_W == 0 ) goto flagUpdate;
+	if ( !_Fd_ ) info = (info & ~PROCESS_EE_SET_D(0xf)) | PROCESS_EE_SET_D(EEREC_TEMP);
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-		vuFloat5( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
+		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+		if (_Ft_) vuFloat5( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
 	}
-	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 
-	if( _Ft_ == 0 && xyzw < 3 ) {
-		// just move
-		if( _X_Y_Z_W != 0xf ) {
+	if ( _Ft_ == 0 && xyzw < 3 ) { // just move since adding zero
+		if ( _X_Y_Z_W == 0x8 ) { VU_MERGE_REGS(EEREC_D, EEREC_S); }
+		else if ( _X_Y_Z_W != 0xf ) {
 			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
-		else if( EEREC_D != EEREC_S ) SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
+		else if ( EEREC_D != EEREC_S ) SSE_MOVAPS_XMM_to_XMM(EEREC_D, EEREC_S);
 	}
-	else if( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP) ) {
-		if( xyzw == 0 ) {
-			if( EEREC_D == EEREC_T ) {
-				SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_S);
-			}
+	else if ( _X_Y_Z_W == 8 && (EEREC_D != EEREC_TEMP) ) {
+		if ( xyzw == 0 ) {
+			if ( EEREC_D == EEREC_T ) SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_S);
 			else {
 				if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
 				SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_T);
@@ -464,38 +469,27 @@ void recVUMI_ADD_xyzw(VURegs *VU, int xyzw, int info)
 		}
 		else {
 			_unpackVFSS_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-			if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if ( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
 			SSE_ADDSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
 		}
 	}
-	else if( _Fs_ == 0 && !_W ) { // ToDo: Check this! (cottonvibes)
-		// just move
+	else if( _Fs_ == 0 && !_W ) { // just move
 		_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-
-//        SSE_MOVAPS_XMM_to_M128((u32)s_tempmem, EEREC_TEMP);
-//        SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)const_clip);
-//        SSE_CMPNLTPS_M128_to_XMM(EEREC_TEMP, (u32)s_FloatMinMax);
-//        SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (u32)s_tempmem);
-
 		VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 	}
 	else {
-		if( _X_Y_Z_W != 0xf || EEREC_D == EEREC_S || EEREC_D == EEREC_TEMP)
+		if ( _X_Y_Z_W != 0xf ) {
 			_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
-		
-		if (_X_Y_Z_W != 0xf) {
 			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		} 
 		else {
-			if( EEREC_D == EEREC_TEMP ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
-			else if( EEREC_D == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
-			else {
-				_unpackVF_xyzw(EEREC_D, EEREC_T, xyzw);
-				SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
-			}
+			if( EEREC_D == EEREC_TEMP )	  { _unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw); SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S); }
+			else if( EEREC_D == EEREC_S ) { _unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw); SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP); }
+			else { _unpackVF_xyzw(EEREC_D, EEREC_T, xyzw); SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S); }
 		}
 	}
+flagUpdate:
 	recUpdateFlags(VU, EEREC_D, info);
 }
 
@@ -2502,7 +2496,6 @@ void recVUMI_ITOF0( VURegs *VU, int info )
 
 	if (_X_Y_Z_W != 0xf) {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-
 		vuFloat( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
@@ -2519,12 +2512,12 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 
 	if (_X_Y_Z_W != 0xf) {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
 		vuFloat( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 		xmmregs[EEREC_T].mode |= MODE_WRITE;
-	} else {
+	} 
+	else {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_T, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_T, addr);
 		vuFloat2(EEREC_T, EEREC_TEMP, 15); // Clamp infinities

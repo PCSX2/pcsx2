@@ -835,11 +835,10 @@ void recVUMI_LQI(VURegs *VU, int info)
 
 
 //------------------------------------------------------------------
-// _saveEAX()
+// _saveEAX()	ToDo: Needs Checking/Fixing! (cottonvibes)
 //------------------------------------------------------------------
 void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 {
-	int t1reg;
 	assert( offset < 0x80000000 );
 
 	if( _Fs_ == 0 ) {
@@ -996,90 +995,51 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 				}
 			}
 			break;
-		default:
-			//SysPrintf("SAVEEAX Default %d\n", _X_Y_Z_W);
+		default: // ToDo: Needs checking! (cottonvibes)
+			SysPrintf("SAVEEAX Default %d\n", _X_Y_Z_W);
 			// EEREC_D is a temp reg
 			// find the first nonwrite reg
+/*			
 			t1reg = _vuGetTempXMMreg(info);
-
 			if( t1reg < 0 ) {
 				for(t1reg = 0; t1reg < XMMREGS; ++t1reg) {
 					if( xmmregs[t1reg].inuse && !(xmmregs[t1reg].mode&MODE_WRITE) ) break;
 				}
-
 				if( t1reg == XMMREGS ) t1reg = -1;
-				else {
-					if( t1reg != EEREC_S ) _allocTempXMMreg(XMMT_FPS, t1reg);
-				}
+				else if( t1reg != EEREC_S ) _allocTempXMMreg(XMMT_FPS, t1reg);
 			}
+*/
+			// do it with one reg
+			//SSE_MOVAPS_XMM_to_M128((uptr)&VU->VF[_Fs_], EEREC_S);
 
-			if( t1reg >= 0 ) {
-				// found a temp reg
-				if( VU == &VU1 ) {
-					if( x86reg >= 0 ) SSE_MOVAPSRmtoROffset(EEREC_TEMP, x86reg, offset);
-					else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
-				}
-				else {
-					if( x86reg >= 0 ) SSE_MOVUPSRmtoROffset(EEREC_TEMP, x86reg, offset);
-					else {
-						if( offset & 15 ) SSE_MOVUPS_M128_to_XMM(EEREC_TEMP, offset);
-						else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
-					}
-				}
-				
-				if( t1reg != EEREC_S ) SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_S);
-
-				VU_MERGE_REGS(EEREC_TEMP, t1reg);
-
-				if( VU == &VU1 ) {
-					if( x86reg >= 0 ) SSE_MOVAPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
-					else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
-				}
-				else {
-					if( x86reg >= 0 ) SSE_MOVUPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
-					else SSE_MOVUPS_XMM_to_M128(offset, EEREC_TEMP);
-				}
-
-				if( t1reg != EEREC_S ) _freeXMMreg(t1reg);
-				else {
-					// read back the data
-					SSE_MOVAPS_M128_to_XMM(EEREC_S, (uptr)&VU->VF[_Fs_]);
-				}
+			if( VU == &VU1 ) {
+				if( x86reg >= 0 ) SSE_MOVAPSRmtoROffset(EEREC_TEMP, x86reg, offset);
+				else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
 			}
 			else {
-				// do it with one reg
-				SSE_MOVAPS_XMM_to_M128((uptr)&VU->VF[_Fs_], EEREC_S);
-
-				if( VU == &VU1 ) {
-					if( x86reg >= 0 ) SSE_MOVAPSRmtoROffset(EEREC_TEMP, x86reg, offset);
+				if( x86reg >= 0 ) SSE_MOVUPSRmtoROffset(EEREC_TEMP, x86reg, offset);
+				else {
+					if( offset & 15 ) SSE_MOVUPS_M128_to_XMM(EEREC_TEMP, offset);
 					else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
 				}
-				else {
-					if( x86reg >= 0 ) SSE_MOVUPSRmtoROffset(EEREC_TEMP, x86reg, offset);
-					else {
-						if( offset & 15 ) SSE_MOVUPS_M128_to_XMM(EEREC_TEMP, offset);
-						else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
-					}
-				}
-
-				VU_MERGE_REGS(EEREC_TEMP, EEREC_S);
-
-				if( VU == &VU1 ) {
-					if( x86reg >= 0 ) SSE_MOVAPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
-					else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
-				}
-				else {
-					if( x86reg >= 0 ) SSE_MOVUPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
-					else {
-						if( offset & 15 ) SSE_MOVUPS_XMM_to_M128(offset, EEREC_TEMP);
-						else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
-					}
-				}
-
-				// read back the data
-				SSE_MOVAPS_M128_to_XMM(EEREC_S, (uptr)&VU->VF[_Fs_]);
 			}
 
+			VU_MERGE_REGS_SAFE(EEREC_TEMP, EEREC_S, _X_Y_Z_W);
+
+			if( VU == &VU1 ) {
+				if( x86reg >= 0 ) SSE_MOVAPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
+				else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
+			}
+			else {
+				if( x86reg >= 0 ) SSE_MOVUPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
+				else {
+					if( offset & 15 ) SSE_MOVUPS_XMM_to_M128(offset, EEREC_TEMP);
+					else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
+				}
+			}
+
+			// read back the data
+			//SSE_MOVAPS_M128_to_XMM(EEREC_S, (uptr)&VU->VF[_Fs_]);
 			break;
 	}
 }
@@ -1094,9 +1054,7 @@ void recVUMI_SQ(VURegs *VU, int info)
 	s16 imm;
  
 	imm = ( VU->code & 0x400) ? ( VU->code & 0x3ff) | 0xfc00 : ( VU->code & 0x3ff); 
-	if ( _Ft_ == 0 ) {
-		_saveEAX(VU, -1, (uptr)GET_VU_MEM(VU, (int)imm * 16), info);
-	}
+	if ( _Ft_ == 0 ) _saveEAX(VU, -1, (uptr)GET_VU_MEM(VU, (int)imm * 16), info);
 	else {
 		int ftreg = ALLOCVI(_Ft_, MODE_READ);
 		_saveEAX(VU, recVUTransformAddr(ftreg, VU, _Ft_, imm), (uptr)VU->Mem, info);
@@ -1110,9 +1068,8 @@ void recVUMI_SQ(VURegs *VU, int info)
 //------------------------------------------------------------------
 void recVUMI_SQD(VURegs *VU, int info)
 {
-	if (_Ft_ == 0) {
-		_saveEAX(VU, -1, (uptr)VU->Mem, info);
-	} else {
+	if (_Ft_ == 0) _saveEAX(VU, -1, (uptr)VU->Mem, info);
+	else {
 		int ftreg = ALLOCVI(_Ft_, MODE_READ|MODE_WRITE);
 		SUB16ItoR( ftreg, 1 );
 		_saveEAX(VU, recVUTransformAddr(ftreg, VU, _Ft_, 0), (uptr)VU->Mem, info);
@@ -1126,9 +1083,8 @@ void recVUMI_SQD(VURegs *VU, int info)
 //------------------------------------------------------------------
 void recVUMI_SQI(VURegs *VU, int info)
 {
-	if (_Ft_ == 0) {
-		_saveEAX(VU, -1, (uptr)VU->Mem, info);
-	} else {
+	if (_Ft_ == 0) _saveEAX(VU, -1, (uptr)VU->Mem, info);
+	else {
 		int ftreg = ALLOCVI(_Ft_, MODE_READ|MODE_WRITE);
 		_saveEAX(VU, recVUTransformAddr(ftreg, VU, _Ft_, 0), (uptr)VU->Mem, info);
 

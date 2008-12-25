@@ -724,26 +724,17 @@ void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw)
 
 void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw)
 {
-	if( cpucaps.hasStreamingSIMD4Extensions ) {
-		switch (xyzw) {
-			case 0: if( dstreg != srcreg ) { 
-					SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(0, 0, 0));}	break;
-			case 1: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(1, 0, 0));		break;
-			case 2: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(2, 0, 0));		break;
-			case 3: SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(3, 0, 0));		break;
-		}
-	}
-	else {
-		switch (xyzw) {
-			case 0: if( dstreg != srcreg ) SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); break;
-			case 1: if( cpucaps.hasStreamingSIMD3Extensions ) SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg);
-					else { if( dstreg != srcreg ) SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x55); }
-					break;
-			case 2: SSE_MOVHLPS_XMM_to_XMM(dstreg, srcreg); break;
-			case 3: if( cpucaps.hasStreamingSIMD3Extensions && dstreg != srcreg ) { SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg); SSE_MOVHLPS_XMM_to_XMM(dstreg, dstreg); }
-					else { if( dstreg != srcreg ) SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xff); }
-					break;
-		}
+	switch (xyzw) {
+		case 0: if( dstreg != srcreg ) SSE_MOVSS_XMM_to_XMM(dstreg, srcreg); break;
+		case 1: if ( cpucaps.hasStreamingSIMD4Extensions ) SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(1, 0, 0));	
+				else if ( cpucaps.hasStreamingSIMD3Extensions ) SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg);
+				else { if( dstreg != srcreg ) { SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); } SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x55); }
+				break;
+		case 2: SSE_MOVHLPS_XMM_to_XMM(dstreg, srcreg); break;
+		case 3: if ( cpucaps.hasStreamingSIMD4Extensions ) SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(3, 0, 0));
+				else if ( cpucaps.hasStreamingSIMD3Extensions && dstreg != srcreg ) { SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg); SSE_MOVHLPS_XMM_to_XMM(dstreg, dstreg); }
+				else { if( dstreg != srcreg ) { SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); } SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xff); }
+				break;
 	}
 }
 
@@ -765,64 +756,167 @@ void _vuMoveSS(VURegs * VU, int dstreg, int srcreg)
 }
 
 // 1 - src, 0 - dest				   wzyx
-void VU_MERGE0(int dest, int src) { // 0000
+void VU_MERGE0(int dest, int src) { // 0000s
 }
 void VU_MERGE1(int dest, int src) { // 1000
 	SSE_MOVHLPS_XMM_to_XMM(src, dest);
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0xc4);
 }
+void VU_MERGE1b(int dest, int src) { // 1000s
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+}
 void VU_MERGE2(int dest, int src) { // 0100
 	SSE_MOVHLPS_XMM_to_XMM(src, dest);
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0x64);
 }
-void VU_MERGE3(int dest, int src) { // 1100
+void VU_MERGE2b(int dest, int src) { // 0100s
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
+}
+void VU_MERGE3(int dest, int src) { // 1100s
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0xe4);
 }
-void VU_MERGE4(int dest, int src) { // 0010s
+void VU_MERGE4(int dest, int src) { // 0010
 	SSE_MOVSS_XMM_to_XMM(src, dest);
 	SSE_SHUFPS_XMM_to_XMM(src, dest, 0xe4);
 	SSE_MOVAPS_XMM_to_XMM(dest, src);
+}
+void VU_MERGE4b(int dest, int src) { // 0010s
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
 }
 void VU_MERGE5(int dest, int src) { // 1010
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0xd8);
 	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xd8);
 }
+void VU_MERGE5b(int dest, int src) { // 1010s
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+}
 void VU_MERGE6(int dest, int src) { // 0110
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0x9c);
 	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x78);
 }
-void VU_MERGE7(int dest, int src) { // 1110s
+void VU_MERGE6b(int dest, int src) { // 0110s
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+}
+void VU_MERGE7(int dest, int src) { // 1110
 	SSE_MOVSS_XMM_to_XMM(src, dest);
 	SSE_MOVAPS_XMM_to_XMM(dest, src);
 }
-void VU_MERGE8(int dest, int src) { // 0001
+void VU_MERGE7b(int dest, int src) { // 1110s
+	SSE_SHUFPS_XMM_to_XMM(dest, src, 0xe4);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+}
+void VU_MERGE8(int dest, int src) { // 0001s
 	SSE_MOVSS_XMM_to_XMM(dest, src);
 }
 void VU_MERGE9(int dest, int src) { // 1001
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0xc9);
 	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xd2);
 }
+void VU_MERGE9b(int dest, int src) { // 1001s
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+}
 void VU_MERGE10(int dest, int src) { // 0101
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0x8d);
 	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x72);
 }
-void VU_MERGE11(int dest, int src) { // 1101
+void VU_MERGE10b(int dest, int src) { // 0101s
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
+}
+void VU_MERGE11(int dest, int src) { // 1101s
 	SSE_MOVSS_XMM_to_XMM(dest, src);
 	SSE_SHUFPS_XMM_to_XMM(dest, src, 0xe4);
 }
-void VU_MERGE12(int dest, int src) { // 0011s
+void VU_MERGE12(int dest, int src) { // 0011
 	SSE_SHUFPS_XMM_to_XMM(src, dest, 0xe4);
 	SSE_MOVAPS_XMM_to_XMM(dest, src);
 }
-void VU_MERGE13(int dest, int src) { // 1011s
+void VU_MERGE12b(int dest, int src) { // 0011
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+}
+void VU_MERGE13(int dest, int src) { // 1011
 	SSE_MOVHLPS_XMM_to_XMM(dest, src);
 	SSE_SHUFPS_XMM_to_XMM(src, dest, 0x64);
 	SSE_MOVAPS_XMM_to_XMM(dest, src);
 }
-void VU_MERGE14(int dest, int src) { // 0111s
+void VU_MERGE13b(int dest, int src) { // 1011s
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0x27);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+}
+void VU_MERGE14(int dest, int src) { // 0111
 	SSE_MOVHLPS_XMM_to_XMM(dest, src);
 	SSE_SHUFPS_XMM_to_XMM(src, dest, 0xc4);
 	SSE_MOVAPS_XMM_to_XMM(dest, src);
+}
+void VU_MERGE14b(int dest, int src) { // 0111s
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xE1);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
+	SSE_MOVSS_XMM_to_XMM(dest, src);
+	SSE_SHUFPS_XMM_to_XMM(src, src, 0xC6);
+	SSE_SHUFPS_XMM_to_XMM(dest, dest, 0xC6);
 }
 void VU_MERGE15(int dest, int src) { // 1111s
 	SSE_MOVAPS_XMM_to_XMM(dest, src);
@@ -836,16 +930,32 @@ static VUMERGEFN s_VuMerge[16] = {
 	VU_MERGE8, VU_MERGE9, VU_MERGE10, VU_MERGE11,
 	VU_MERGE12, VU_MERGE13, VU_MERGE14, VU_MERGE15 };
 
-void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw)
-{
-	xyzw &= 0xf;
+static VUMERGEFN s_VuMerge2[16] = {
+	VU_MERGE0, VU_MERGE1b, VU_MERGE2b, VU_MERGE3,
+	VU_MERGE4b, VU_MERGE5b, VU_MERGE6b, VU_MERGE7b,
+	VU_MERGE8, VU_MERGE9b, VU_MERGE10b, VU_MERGE11,
+	VU_MERGE12b, VU_MERGE13b, VU_MERGE14b, VU_MERGE15 };
 
-	if(dest != src && xyzw != 0) {
-		if(cpucaps.hasStreamingSIMD4Extensions) {
+// Modifies the Source Reg!
+void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw) {
+	xyzw &= 0xf;
+	if ( (dest != src) && (xyzw != 0) ) {
+		if ( cpucaps.hasStreamingSIMD4Extensions && (xyzw != 0x8) && (xyzw != 0xf) ) {
 			xyzw = ((xyzw & 1) << 3) | ((xyzw & 2) << 1) | ((xyzw & 4) >> 1) | ((xyzw & 8) >> 3); 
 			SSE4_BLENDPS_XMM_to_XMM(dest, src, xyzw);
 		}
 		else s_VuMerge[xyzw](dest, src); 
+	}
+}
+// Doesn't Modify the Source Reg! (ToDo: s_VuMerge2() has room for optimization)
+void VU_MERGE_REGS_SAFE(int dest, int src, int xyzw) {
+	xyzw &= 0xf;
+	if ( (dest != src) && (xyzw != 0) ) {
+		if ( cpucaps.hasStreamingSIMD4Extensions && (xyzw != 0x8) && (xyzw != 0xf) ) {
+			xyzw = ((xyzw & 1) << 3) | ((xyzw & 2) << 1) | ((xyzw & 4) >> 1) | ((xyzw & 8) >> 3); 
+			SSE4_BLENDPS_XMM_to_XMM(dest, src, xyzw);
+		}
+		else s_VuMerge2[xyzw](dest, src); 
 	}
 }
 //------------------------------------------------------------------

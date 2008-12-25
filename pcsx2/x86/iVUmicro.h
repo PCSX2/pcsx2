@@ -112,6 +112,7 @@ void _vuMoveSS(VURegs * VU, int dstreg, int srcreg);
 void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw);
 void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw);
 void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw);
+void VU_MERGE_REGS_SAFE(int dest, int src, int xyzw);
 #define VU_MERGE_REGS(dest, src) { \
 	VU_MERGE_REGS_CUSTOM(dest, src, _X_Y_Z_W); \
 }
