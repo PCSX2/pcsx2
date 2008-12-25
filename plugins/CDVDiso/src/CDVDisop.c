@@ -13,7 +13,12 @@
 #define MAX_PATH 255
 #endif
 
+
 FILE *cdvdLog = NULL;
+
+// This var is used to detect resume-style behavior of the Pcsx2 emulator,
+// and skip prompting the user for a new CD when it's likely they want to run the existing one.
+static char cdvdCurrentIso[MAX_PATH];	
 
 char *methods[] = {
 	".Z  - compress faster",
@@ -22,14 +27,14 @@ char *methods[] = {
 };
 
 #ifdef _DEBUG
-char *LibName = "Linuzappz Iso CDVD (Debug) ";
+char *LibName = "Linuz/PP Iso CDVD (Debug) ";
 #else
-char *LibName = "Linuzappz Iso CDVD ";
+char *LibName = "Linuz/PP Iso CDVD ";
 #endif
 
 const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 7;
+const unsigned char build = 8;
 
 unsigned char cdbuffer[CD_FRAMESIZE_RAW * 10] = {0};
 
@@ -51,15 +56,16 @@ void lba_to_msf(s32 lba, u8* m, u8* s, u8* f) {
 #define btoi(b)		((b)/16*10 + (b)%16)		/* BCD to u_char */
 #define itob(i)		((i)/10*16 + (i)%10)		/* u_char to BCD */
 
-char* CALLBACK PS2EgetLibName() {
+
+EXPORT_C(char*) PS2EgetLibName() {
 	return LibName;
 }
 
-u32 CALLBACK PS2EgetLibType() {
+EXPORT_C(u32) PS2EgetLibType() {
 	return PS2E_LT_CDVD;
 }
 
-u32 CALLBACK PS2EgetLibVersion2(u32 type) {
+EXPORT_C(u32) PS2EgetLibVersion2(u32 type) {
 	return (version << 16) | (revision << 8) | build;
 }
 
@@ -79,7 +85,7 @@ void __Log(char *fmt, ...) {
 #endif
 
 
-s32 CALLBACK CDVDinit() {
+EXPORT_C(s32) CDVDinit() {
 #ifdef _DEBUG
 	cdvdLog = fopen("logs/cdvdLog.txt", "w");
 	if (cdvdLog == NULL) {
@@ -91,21 +97,26 @@ s32 CALLBACK CDVDinit() {
 	setvbuf(cdvdLog, NULL,  _IONBF, 0);
 	CDVD_LOG("CDVDinit\n");
 #endif
+
+	cdvdCurrentIso[0] = 0;
 	memset(cdIso, 0, sizeof(cdIso));
 	return 0;
 }
 
-void CALLBACK CDVDshutdown() {
+EXPORT_C(void) CDVDshutdown() {
+	cdvdCurrentIso[0] = 0;
 #ifdef CDVD_LOG
 	if( cdvdLog != NULL )
         fclose(cdvdLog);
 #endif
 }
 
-s32 CALLBACK CDVDopen(const char* pTitle) {
+EXPORT_C(s32) CDVDopen(const char* pTitle) {
 	LoadConf();
 
     if( pTitle != NULL ) strcpy(IsoFile, pTitle);
+
+	if( *IsoFile == 0 ) strcpy( IsoFile, cdvdCurrentIso );
 
 	if (*IsoFile == 0) {
 		char temp[256];
@@ -173,14 +184,17 @@ s32 CALLBACK CDVDopen(const char* pTitle) {
 	return 0;
 }
 
-void CALLBACK CDVDclose() {
+EXPORT_C(void) CDVDclose() {
+
+	strcpy( cdvdCurrentIso, IsoFile );
+
 	isoClose(iso);
 	if (fdump != NULL) {
 		isoClose(fdump);
 	}
 }
 
-s32  CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ* subq) {
+EXPORT_C(s32) CDVDreadSubQ(u32 lsn, cdvdSubQ* subq) {
 	// fake it
 	u8 min, sec, frm;
 	subq->ctrl		= 4;
@@ -202,14 +216,14 @@ s32  CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ* subq) {
 	return 0;
 }
 
-s32 CALLBACK CDVDgetTN(cdvdTN *Buffer) {
+EXPORT_C(s32) CDVDgetTN(cdvdTN *Buffer) {
 	Buffer->strack = 1;
 	Buffer->etrack = 1;
 
 	return 0;
 }
 
-s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer) {
+EXPORT_C(s32) CDVDgetTD(u8 Track, cdvdTD *Buffer) {
 	if (Track == 0) {
 		Buffer->lsn = iso->blocks;
 	} else {
@@ -221,7 +235,7 @@ s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer) {
 }
 
 static int layer1start = -1;
-s32  CALLBACK CDVDgetTOC(void* toc) {
+EXPORT_C(s32) CDVDgetTOC(void* toc) {
 	u8 type = CDVDgetDiskType();
 	u8* tocBuff = (u8*)toc;
 	
@@ -359,7 +373,7 @@ s32  CALLBACK CDVDgetTOC(void* toc) {
 	return 0;
 }
 
-s32 CALLBACK CDVDreadTrack(u32 lsn, int mode) {
+EXPORT_C(s32) CDVDreadTrack(u32 lsn, int mode) {
 	int _lsn = lsn;
 
     //__Log("CDVDreadTrack: %x %x\n", lsn, mode);
@@ -385,27 +399,27 @@ s32 CALLBACK CDVDreadTrack(u32 lsn, int mode) {
 	return 0;
 }
 
-u8* CALLBACK CDVDgetBuffer() {
+EXPORT_C(u8*) CDVDgetBuffer() {
 	return pbuffer;
 }
 
-s32  CALLBACK CDVDgetDiskType() {
+EXPORT_C(s32) CDVDgetDiskType() {
 	return cdtype;
 }
 
-s32  CALLBACK CDVDgetTrayStatus() {
+EXPORT_C(s32) CDVDgetTrayStatus() {
 	return CDVD_TRAY_CLOSE;
 }
 
-s32  CALLBACK CDVDctrlTrayOpen() {
+EXPORT_C(s32) CDVDctrlTrayOpen() {
 	return 0;
 }
-s32  CALLBACK CDVDctrlTrayClose() {
+EXPORT_C(s32) CDVDctrlTrayClose() {
 	return 0;
 }
 
 
-s32 CALLBACK CDVDtest() {
+EXPORT_C(s32) CDVDtest() {
 	if (*IsoFile == 0)
 		return 0;
 

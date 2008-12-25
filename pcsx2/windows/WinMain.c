@@ -792,7 +792,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void RunGui() {
     MSG msg;
 
-	SetFocus( gApp.hWnd );
     for (;;) {
 		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
@@ -805,8 +804,6 @@ void RunGui() {
 
 void RunGuiAndReturn() {
     MSG msg;
-
-	SetFocus( gApp.hWnd );
 
 	m_ReturnToGame = false;
     while( !m_ReturnToGame ) {
@@ -933,6 +930,7 @@ void CALLBACK KeyEvent(keyEvent* ev)
 				// Let's give the user a RunGui!
 
 				g_GameInProgress = false;
+				CreateMainWindow( SW_SHOWNORMAL );
 				RunGui();	// ah the beauty of perpetual stack recursion! (air)
 			}
 		break;
@@ -1360,7 +1358,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					AccBreak = true;
 					DestroyWindow(gApp.hWnd);
 					ChangeLanguage(langs[LOWORD(wParam) - ID_LANGS].lang);
-					CreateMainWindow(SW_NORMAL);
+					CreateMainWindow(SW_SHOWNORMAL);
 					return TRUE;
 				}
 			}
@@ -1599,7 +1597,7 @@ void CreateMainWindow(int nCmdShow) {
 	h+= rect.bottom - rect.top;
 	GetMenuItemRect(hWnd, gApp.hMenu, 0, &rect);
 	h+= rect.bottom - rect.top;
-	MoveWindow(hWnd, 20, 20, w, h, TRUE);
+	MoveWindow(hWnd, 40, 50, w, h, TRUE);
 
 	DestroyWindow(hStatusWnd);
 	hStatusWnd = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", hWnd, 100);

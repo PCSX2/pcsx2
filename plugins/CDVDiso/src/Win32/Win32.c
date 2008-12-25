@@ -273,7 +273,7 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-void CALLBACK CDVDconfigure() {
+EXPORT_C(void) CDVDconfigure() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_CONFIG),
               GetActiveWindow(),  
@@ -295,7 +295,7 @@ BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return FALSE;
 }
 
-void CALLBACK CDVDabout() {
+EXPORT_C(void) CDVDabout() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_ABOUT),
               GetActiveWindow(),  

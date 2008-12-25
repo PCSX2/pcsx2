@@ -199,7 +199,7 @@ typedef struct _winInfo { // unsupported values must be set to zero
 } winInfo;
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -878,7 +878,7 @@ extern _FWtest            FWtest;
 extern _FWabout           FWabout;
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }	// End extern "C"
 #endif
 

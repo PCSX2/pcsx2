@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1253"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="CDVDiso"
 	ProjectGUID="{BB27CC2C-28D1-4438-A0DF-3E120D01EDEC}"
 	RootNamespace="CDVDiso"
@@ -23,12 +23,14 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)\bin\plugins"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
+			EnableManagedIncrementalBuild="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -58,16 +60,22 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..;..\ZLIB;..\bzip2;."
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__MSCW32__;CDVDiso_EXPORTS;_CRT_SECURE_NO_DEPRECATE;__WIN32__;_LARGEFILE_SOURCE;_FILE_OFFSET_BITS=64;ASMV;ASMINF"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__MSCW32__;_CRT_SECURE_NO_DEPRECATE;__WIN32__;_LARGEFILE_SOURCE;_FILE_OFFSET_BITS=64"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				StructMemberAlignment="5"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release/CDVDiso.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
+				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -85,13 +93,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib ..\zlib\inffas32.obj ..\zlib\gvmat32.obj"
-				OutputFile=".\Release/CDVDiso.dll"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib"
+				OutputFile="$(OutDir)\CDVDiso.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
-				ModuleDefinitionFile=".\CDVDiso.def"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Release/CDVDiso.pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/CDVDiso.lib"
@@ -122,7 +133,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\bin\plugins"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -157,16 +168,19 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..;..\ZLIB;..\bzip2;."
-				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,_USRDLL,__MSCW32__,CDVDiso_EXPORTS,_CRT_SECURE_NO_DEPRECATE,__WIN32__,_LARGEFILE_SOURCE,_FILE_OFFSET_BITS=64,ASMV,ASMINF"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;__MSCW32__;CDVDiso_EXPORTS;_CRT_SECURE_NO_DEPRECATE;__WIN32__;_LARGEFILE_SOURCE;_FILE_OFFSET_BITS=64"
 				StringPooling="true"
-				RuntimeLibrary="0"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				StructMemberAlignment="5"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Debug\CDVDiso.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
+				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -185,14 +199,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib ..\zlib\inffas32.obj ..\zlib\gvmat32.obj"
-				OutputFile=".\Debug\CDVDisod.dll"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib"
+				OutputFile="$(OutDir)\CDVDiso-debug.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				GenerateManifest="false"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
-				ModuleDefinitionFile=".\CDVDiso.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Release/CDVDiso.pdb"
+				OptimizeReferences="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary=".\Debug/CDVDisod.lib"
@@ -407,6 +422,14 @@
 			<File
 				RelativePath="..\zlib\gvmat32c.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\gzio.c"

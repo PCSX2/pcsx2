@@ -223,7 +223,7 @@ USBhandler usbHandler;
 #define MapSymbolVarType(var,type,name) var = (type)SysLoadSym(drv,Strfy(name))
 #define MapSymbolVar(var,name) MapSymbolVarType(var,_##name,name)
 #define MapSymbolVar_Fallback(var,name,fallback) if((MapSymbolVar(var,name))==NULL) var = fallback
-#define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) { const char* errString = SysLibError(); SysMessage (_("%s: Error loading %s: %s"), filename, __FUNCTION__, errString); return -1; } 
+#define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) { const char* errString = SysLibError(); SysMessage (_("%s: Error loading %s: %s"), filename, #name, errString); return -1; } 
 
 #define MapSymbol(name) MapSymbolVar(name,name)
 #define MapSymbol_Fallback(name,fallback) MapSymbolVar_Fallback(name,name,fallback)
@@ -705,14 +705,17 @@ int OpenPlugins(const char* pTitleFilename) {
     }
 #endif
 
-	//first we need the data
-	if (CDVDnewDiskCB) CDVDnewDiskCB(cdvdNewDiskCB);
+	if( !OpenStatus.CDVD )
+	{
+		//first we need the data
+		if (CDVDnewDiskCB) CDVDnewDiskCB(cdvdNewDiskCB);
 
-    ret = CDVDopen(pTitleFilename);
+		ret = CDVDopen(pTitleFilename);
 
-	if (ret != 0) { SysMessage (_("Error Opening CDVD Plugin")); goto OpenError; }
-	OpenStatus.CDVD = 1;
-	cdvdNewDiskCB();
+		if (ret != 0) { SysMessage (_("Error Opening CDVD Plugin")); goto OpenError; }
+		OpenStatus.CDVD = true;
+		cdvdNewDiskCB();
+	}
 
 	//video
 	// Only bind the gsIrq if we're not running the MTGS.
@@ -723,53 +726,73 @@ int OpenPlugins(const char* pTitleFilename) {
 	if( !OpenStatus.GS ) {
 		ret = gsOpen();
 		if (ret != 0) { SysMessage (_("Error Opening GS Plugin")); goto OpenError; }
-		OpenStatus.GS = 1;
+		OpenStatus.GS = true;
+
+		//then the user input
+		if (GSgetDriverInfo) {
+			GSgetDriverInfo(&info);
+			if (PAD1gsDriverInfo) PAD1gsDriverInfo(&info);
+			if (PAD2gsDriverInfo) PAD2gsDriverInfo(&info);
+		}
 	}
 
-	//then the user input
-	if (GSgetDriverInfo) {
-		GSgetDriverInfo(&info);
-		if (PAD1gsDriverInfo) PAD1gsDriverInfo(&info);
-		if (PAD2gsDriverInfo) PAD2gsDriverInfo(&info);
+	if( !OpenStatus.PAD1 )
+	{
+		ret = PAD1open((void *)&pDsp);
+		if (ret != 0) { SysMessage (_("Error Opening PAD1 Plugin")); goto OpenError; }
+		OpenStatus.PAD1 = true;
 	}
-	ret = PAD1open((void *)&pDsp);
-	if (ret != 0) { SysMessage (_("Error Opening PAD1 Plugin")); goto OpenError; }
-	OpenStatus.PAD1 = 1;
-	ret = PAD2open((void *)&pDsp);
-	if (ret != 0) { SysMessage (_("Error Opening PAD2 Plugin")); goto OpenError; }
-	OpenStatus.PAD2 = 1;
+
+	if( !OpenStatus.PAD2 )
+	{
+		ret = PAD2open((void *)&pDsp);
+		if (ret != 0) { SysMessage (_("Error Opening PAD2 Plugin")); goto OpenError; }
+		OpenStatus.PAD2 = true;
+	}
 
 	//the sound
 
-	SPU2irqCallback(spu2Irq,spu2DMA4Irq,spu2DMA7Irq);
-    if( SPU2setDMABaseAddr != NULL )
-        SPU2setDMABaseAddr((uptr)PSXM(0));
+	if( !OpenStatus.SPU2 )
+	{
+		SPU2irqCallback(spu2Irq,spu2DMA4Irq,spu2DMA7Irq);
+		if( SPU2setDMABaseAddr != NULL )
+			SPU2setDMABaseAddr((uptr)PSXM(0));
 
-	if(SPU2setClockPtr != NULL)
-		SPU2setClockPtr(&psxRegs.cycle);
+		if(SPU2setClockPtr != NULL)
+			SPU2setClockPtr(&psxRegs.cycle);
 
-	ret = SPU2open((void*)&pDsp);
-	if (ret != 0) { SysMessage (_("Error Opening SPU2 Plugin")); goto OpenError; }
-	OpenStatus.SPU2 = 1;
+		ret = SPU2open((void*)&pDsp);
+		if (ret != 0) { SysMessage (_("Error Opening SPU2 Plugin")); goto OpenError; }
+		OpenStatus.SPU2 = true;
+	}
 
 	//and last the dev9
-	DEV9irqCallback(dev9Irq);
-	dev9Handler = DEV9irqHandler();
-	ret = DEV9open(&(psxRegs.pc)); //((void *)&pDsp);
-	if (ret != 0) { SysMessage (_("Error Opening DEV9 Plugin")); goto OpenError; }
-	OpenStatus.DEV9 = 1;
+	if( !OpenStatus.DEV9 )
+	{
+		DEV9irqCallback(dev9Irq);
+		dev9Handler = DEV9irqHandler();
+		ret = DEV9open(&(psxRegs.pc)); //((void *)&pDsp);
+		if (ret != 0) { SysMessage (_("Error Opening DEV9 Plugin")); goto OpenError; }
+		OpenStatus.DEV9 = true;
+	}
 
-	USBirqCallback(usbIrq);
-	usbHandler = USBirqHandler();
-	USBsetRAM(psxM);
-	ret = USBopen((void *)&pDsp);
-	if (ret != 0) { SysMessage (_("Error Opening USB Plugin")); goto OpenError; }
-	OpenStatus.USB = 1;
+	if( !OpenStatus.USB )
+	{
+		USBirqCallback(usbIrq);
+		usbHandler = USBirqHandler();
+		USBsetRAM(psxM);
+		ret = USBopen((void *)&pDsp);
+		if (ret != 0) { SysMessage (_("Error Opening USB Plugin")); goto OpenError; }
+		OpenStatus.USB = true;
+	}
 
-	FWirqCallback(fwIrq);
-	ret = FWopen((void *)&pDsp);
-	if (ret != 0) { SysMessage (_("Error Opening FW Plugin")); goto OpenError; }
-	OpenStatus.FW = 1;
+	if( !OpenStatus.FW )
+	{
+		FWirqCallback(fwIrq);
+		ret = FWopen((void *)&pDsp);
+		if (ret != 0) { SysMessage (_("Error Opening FW Plugin")); goto OpenError; }
+		OpenStatus.FW = true;
+	}
 
 #ifdef __LINUX__
     chdir(file);
