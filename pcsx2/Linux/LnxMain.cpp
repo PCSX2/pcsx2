@@ -418,11 +418,36 @@ int SysInit()
 	return 0;
 }
 
-int SysReset() {
-	if (sinit == 0) return 1;
-	// Resetting
-	if( !cpuReset() ) return 0;
-	return 1;
+void SysRestorableReset()
+{
+	// already reset? and saved?
+	if( !g_GameInProgress ) return;
+	if( g_RecoveryState != NULL ) return;
+
+	try
+	{
+		g_RecoveryState = new MemoryAlloc();
+		memSavingState( *g_RecoveryState ).FreezeAll();
+		cpuShutdown();
+		g_GameInProgress = false;
+	}
+	catch( std::runtime_error& ex )
+	{
+		SysMessage(
+			"Pcsx2 gamestate recovery failed. Some options may have been reverted to protect your game's state.\n"
+			"Error: %s", ex.what() );
+		safe_delete( g_RecoveryState );
+	}
+}
+
+void SysReset()
+{
+	if (!sinit) return;
+
+	g_GameInProgress = false;
+	safe_free( g_RecoveryState );
+
+	ResetPlugins();
 }
 
 void SysClose() {

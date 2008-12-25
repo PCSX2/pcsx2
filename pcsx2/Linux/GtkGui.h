@@ -41,6 +41,13 @@ bool UseGui = TRUE;
 bool needReset = TRUE;
 bool RunExe = FALSE;
 
+MemoryAlloc* g_RecoveryState = NULL;
+bool g_GameInProgress = false;	// Set TRUE if a game is actively running.
+
+static bool AccBreak = false;
+static bool m_ReturnToGame = false;		// set to exit the RunGui message pump
+
+
 int efile = 0;
 char elfname[g_MaxPath];
 int Slots[5] = { -1, -1, -1, -1, -1 };

@@ -100,7 +100,7 @@ namespace Console
 	{
 		char msg[2048];
 
-		vsnprintf(msg,2045,fmt,list);
+		vsnprintf(msg,2045,fmt,args);
 		msg[2044] = '\0';
 		strcat( msg, "\n" );
 		SetColor( color );
@@ -110,7 +110,17 @@ namespace Console
 		if( emuLog != NULL )
 			fflush( emuLog );		// manual flush to accompany manual newline
 	}
-
+	
+	// Writes a line of colored text to the console, with automatic newline appendage.
+	bool MsgLn( Colors color, const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_MsgLn( Color_White, fmt, list );
+		va_end(list);
+		return false;
+	}
+	
 	bool Msg( Colors color, const char* fmt, ... )
 	{
 		va_list list;

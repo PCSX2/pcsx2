@@ -137,8 +137,7 @@ void RunExecute(int run)
 	// cross platform gui?)  - Air
 
 	if (needReset == TRUE) 
-		if (!SysReset()) 
-			return;
+		SysReset();
 
 	gtk_widget_destroy(MainWindow);
 	gtk_main_quit();
@@ -283,7 +282,7 @@ void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
 	}
  }
 
-void UpdateMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
+/*void UpdateMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 	char str[g_MaxPath];
 	int i = 0;
 
@@ -291,7 +290,7 @@ void UpdateMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 		sprintf(str, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, i);
 		Slots[i] = CheckState(str);
 	}
-}
+}*/
 
 void States_Load(const char* file, int num = -1 )
 {
@@ -358,7 +357,7 @@ void States_Load(int num) {
 	States_Load( Text, num );
 }
 
-void States_Save( const char* file, int num = -1 );
+void States_Save( const char* file, int num = -1 )
 {
 	try
 	{
@@ -500,9 +499,9 @@ void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data) {
 void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	u32 newopts = 0;
 
-	Cpu->Shutdown();
-	vu0Shutdown();
-	vu1Shutdown();
+	//Cpu->Shutdown();
+	//vu0Shutdown();
+	//vu1Shutdown();
 	
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(CpuDlg, "GtkCheckButton_EERec"))))
 		newopts |= PCSX2_EEREC;
@@ -528,19 +527,22 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 		
 	if (newopts & PCSX2_EEREC ) newopts |= PCSX2_COP2REC;
 	
-	Config.Options = newopts;
-	
-	UpdateVSyncRate();
+	if (Config.Options != newopts)
+	{
+		SysRestorableReset();
+
+		if( (Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD) )
+		{
+			// gotta shut down *all* the plugins.
+			ResetPlugins();
+		}
+		Config.Options = newopts;
+	}
+	else
+		UpdateVSyncRate();
+
 	SaveConfig();
 	
-	if ((Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD))
-	{
-		cpuShutdown();
-		ResetPlugins();
-	}
-
-	cpuReset();		// cpuReset will call cpuInit() automatically if needed.
-
 	gtk_widget_destroy(CpuDlg);
 	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();

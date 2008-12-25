@@ -20,6 +20,7 @@
 #define _SAVESTATE_H_
 
 #include <zlib.h>
+#include "PS2Edefs.h"
 
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.
@@ -62,7 +63,7 @@ public:
 	}
 
 	// Loads or saves a plugin.  Plugin name is for console logging purposes.
-	virtual void FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )=0;
+	virtual void FreezePlugin( const char* name,s32(CALLBACK* freezer)(int mode, freezeData *data) )=0; 
 
 	// Loads or saves a memory block.
 	virtual void FreezeMem( void* data, int size )=0;
@@ -118,8 +119,7 @@ class gzSavingState : public gzBaseStateInfo
 public:
 	virtual ~gzSavingState() {}
 	gzSavingState( const char* filename ) ;
-
-	void FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) );
+	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	void FreezeMem( void* data, int size );
 	bool IsSaving() const { return true; }
 };
@@ -130,7 +130,7 @@ public:
 	virtual ~gzLoadingState();
 	gzLoadingState( const char* filename ); 
 
-	void FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) );
+	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	void FreezeMem( void* data, int size );
 	bool IsSaving() const { return false; }
 	bool Finished() const { return !!gzeof( m_file ); }
@@ -158,7 +158,8 @@ protected:
 public:
 	virtual ~memSavingState() { }
 	memSavingState( MemoryAlloc& save_to );
-	void FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) );
+	
+	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	// Saving of state data to a memory buffer
 	void FreezeMem( void* data, int size );
 	bool IsSaving() const { return true; }
@@ -169,7 +170,8 @@ class memLoadingState : public memBaseStateInfo
 public:
 	virtual ~memLoadingState();
 	memLoadingState(MemoryAlloc& load_from );
-	void FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) );
+
+	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	// Loading of state data from a memory buffer...
 	void FreezeMem( void* data, int size );
 	bool IsSaving() const { return false; }

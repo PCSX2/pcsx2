@@ -19,6 +19,7 @@
 #ifndef _PCSX2_EXCEPTIONS_H_
 #define _PCSX2_EXCEPTIONS_H_
 
+#include <stdexcept>
 #include <string>
 
 namespace Exception

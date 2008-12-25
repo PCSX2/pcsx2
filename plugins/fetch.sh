@@ -57,6 +57,13 @@ rm -rf ./pad/zeropad
 cp -r zeropad ./pad/
 fi
 
+if [ -d CDVDiso ]
+then
+echo "Importing local copy of CDVDiso.."
+rm -rf ./cdvd/CDVDiso
+cp -r CDVDiso ./cdvd/
+fi
+
 if [ -d CDVDlinuz ]
 then
 echo "Importing local copy of CDVDlinuz.."
