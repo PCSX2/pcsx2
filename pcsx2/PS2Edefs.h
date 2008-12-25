@@ -50,12 +50,6 @@
 
 #include "PS2Etypes.h"
 
-#ifdef __LINUX__
-#define CALLBACK
-#else
-#define CALLBACK    __stdcall
-#endif
-
 
 /* common defines */
 #ifndef C_ASSERT

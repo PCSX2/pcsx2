@@ -338,17 +338,13 @@ void SuperVUInit(int vuindex)
 {
 	if( vuindex < 0 ) {
 
-		// upper 4 bits cannot be nonzero!
-		uptr baseaddr = 0x0c000000;
-		while( baseaddr < 0x7a000000 && ( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) ) )
-		{
-			s_recVUMem = (u8*)SysMmap( baseaddr, VU_EXESIZE);
-			baseaddr += 0x100000;
-		}
+		// upper 4 bits cannot be nonzero!  <-- double negatives are bad english
+		// .. and how comes we only check for the uppermost bit (sign bit)... ?
+		s_recVUMem = (u8*)SysMmap( 0x0c000000, VU_EXESIZE);
 
 		if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
 		{
-			Console::Error( "Error > SuperVU failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
+			Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
 			throw std::bad_alloc();
 		}
 

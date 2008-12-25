@@ -130,11 +130,10 @@ void vu0Shutdown()
 
 #ifdef PCSX2_VIRTUAL_MEM
 	if( !SysMapUserPhysicalPages(VU0.Mem, 16, NULL, 0) )
-		SysPrintf("err releasing vu0 mem %d\n", GetLastError());
+		Console::Error("Error releasing vu0 memory %d\n", GetLastError());
 
-	// note: this function *always* fails!  (in XP at least)
 	if( VirtualFree(VU0.Mem, 0, MEM_RELEASE) == 0 )
-		SysPrintf("err freeing vu0 %d\n", GetLastError());
+		Console::Error("Error freeing vu0 memory %d\n", GetLastError());
 #else
 	safe_aligned_free(VU0.Mem);
 	safe_aligned_free(VU0.Micro);

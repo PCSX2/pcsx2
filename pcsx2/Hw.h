@@ -341,9 +341,6 @@ static __forceinline u8* dmaGetAddr(u32 mem)
 
 #else
 
-extern u8  *psS; //0.015 mb, scratch pad
-extern uptr *memLUTR;
-
 
 static __forceinline void *dmaGetAddr(u32 addr) {
 	u8 *ptr;
@@ -356,7 +353,7 @@ static __forceinline void *dmaGetAddr(u32 addr) {
 
 	ptr = (u8*)vtlb_GetPhyPtr(addr&0x1FFFFFF0);
 	if (ptr == NULL) {
-		SysPrintf("*PCSX2*: DMA error: %8.8x\n", addr);
+		Console::Error("*PCSX2*: DMA error: %8.8x", addr);
 		return NULL;
 	}
 	return ptr;

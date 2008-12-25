@@ -30,6 +30,13 @@
 #define ARRAYSIZE(x) (sizeof(x)/sizeof((x)[0]))
 #endif
 
+#ifdef __LINUX__
+#define CALLBACK
+#else
+#define CALLBACK    __stdcall
+#endif
+
+
 // jASSUME - give hints to the optimizer
 //  This is primarily useful for the default case switch optimizer, which enables VC to
 //  generate more compact switches.

@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "Misc.h"
 #include "PsxCommon.h"
 #include "Mdec.h"
 
@@ -405,10 +406,10 @@ void yuv2rgb24(int *blk,unsigned char *image) {
 	}
 }
 
-int mdecFreeze(gzFile f, int Mode) {
-	gzfreeze(&mdec, sizeof(mdec));
-	gzfreezel(iq_y);
-	gzfreezel(iq_uv);
+int SaveState::mdecFreeze() {
+	Freeze(mdec);
+	Freeze(iq_y);
+	Freeze(iq_uv);
 	
 	return 0;
 

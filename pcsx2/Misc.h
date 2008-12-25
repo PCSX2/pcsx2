@@ -87,7 +87,6 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 // <<--- END Path Utilities [PathUtil.c]
 
 #define PCSX2_GSMULTITHREAD 1 // uses multithreaded gs
-//#define PCSX2_DUALCORE 2 // speed up for dual cores
 #define PCSX2_FRAMELIMIT 4 // limits frames to normal speeds
 #define PCSX2_EEREC 0x10
 #define PCSX2_VU0REC 0x20
@@ -101,7 +100,6 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define PCSX2_FRAMELIMIT_VUSKIP 0xc00
 
 #define CHECK_MULTIGS (Config.Options&PCSX2_GSMULTITHREAD)
-//#define CHECK_DUALCORE (Config.Options&PCSX2_DUALCORE)
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
 //------------ SPEED/MISC HACKS!!! ---------------

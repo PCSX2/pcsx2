@@ -806,6 +806,8 @@ void RunGui() {
 void RunGuiAndReturn() {
     MSG msg;
 
+	SetFocus( gApp.hWnd );
+
 	m_ReturnToGame = false;
     while( !m_ReturnToGame ) {
 		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
