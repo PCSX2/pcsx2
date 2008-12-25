@@ -321,7 +321,7 @@ struct GIFTAG
 struct GIFPath
 {
 	GIFTAG tag; 
-	u32 nreg;
+	u32 curreg;
 	u32 _pad[3];
 	u8 regs[16];
 
@@ -355,14 +355,14 @@ struct GIFPath
 	void SetTag(const void* mem)
 	{
 		tag = *((GIFTAG*)mem);
-		nreg = 0;
+		curreg = 0;
 
 		PrepRegs();
 	}
 
 	u32 GetReg() 
 	{
-		return regs[nreg]; // (DWORD)GET_GIF_REG(tag, nreg);
+		return regs[curreg];
 	}
 };
 
@@ -944,7 +944,7 @@ static bool _gsGIFSoftReset( int mask )
 		static bool warned = false;
 		if( !warned )
 		{
-			SysPrintf( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!\n" );
+			Console::Notice( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!" );
 			warned = true;
 		}
 		return false;
@@ -1245,6 +1245,21 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 			if(pathidx == 2 && path.tag.eop)
 				Path3transfer = 0;
 
+			if( pathidx == 0 ) 
+			{                        
+				// hack: if too much data for VU1, just ignore.
+
+				// The GIF is evil : if nreg is 0, it's really 16.  Otherwise it's the value in nreg.
+				const int numregs = ((path.tag.nreg-1)&15)+1;
+
+				if((path.tag.nloop * numregs) > (size * ((path.tag.flg == 1) ? 2 : 1)))
+				{
+					path.tag.nloop = 0;
+					return ++size;
+				}
+			}
+
+
 			if(path.tag.pre)
 			{
 				assert(path.tag.flg != GIF_FLG_IMAGE); // kingdom hearts, ffxii, tales of abyss
@@ -1292,9 +1307,9 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 					size--;
 					pMem += 16; // 128 bits! //sizeof(GIFPackedReg);
 
-					if((++path.nreg & 0xf) == path.tag.nreg) 
+					if((++path.curreg & 0xf) == path.tag.nreg) 
 					{
-						path.nreg = 0; 
+						path.curreg = 0; 
 						path.tag.nloop--;
 
 						if(path.tag.nloop == 0)
@@ -1317,9 +1332,9 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 					size--;
 					pMem += 8; //sizeof(GIFReg); -- 64 bits!
 
-					if((++path.nreg & 0xf) == path.tag.nreg) 
+					if((++path.curreg & 0xf) == path.tag.nreg) 
 					{
-						path.nreg = 0; 
+						path.curreg = 0; 
 						path.tag.nloop--;
 
 						if(path.tag.nloop == 0)
@@ -1370,12 +1385,13 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 		if(!path.tag.eop && path.tag.nloop > 0)
 		{
 			path.tag.nloop = 0;
-			Console::Write( "path1 hack! " );
+			DevCon::Write( "path1 hack! " );
 		}
 	}
 
 	return size;
 }
+
 static int gspath3done=0;
 int gscycles = 0;
 
@@ -2290,8 +2306,7 @@ void SaveState::gsFreeze()
 
 		// Earlier versions had an extra u32 in the tag struct:
 
-		u32 dummy=g_path[i].nreg;
-		Freeze( dummy );
+		Freeze( g_path[i].curreg );
 	}
 
 	for(int i=0; i<3; i++ )

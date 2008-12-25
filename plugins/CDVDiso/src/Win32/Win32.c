@@ -58,7 +58,7 @@ int _GetFile(char *out) {
     ofn.nFilterIndex		= 1;
     ofn.lpstrFile			= szFileName;
     ofn.nMaxFile			= MAXFILENAME;
-    ofn.lpstrInitialDir		= NULL;
+	ofn.lpstrInitialDir		= ( IsoCWD[0] == 0 ) ? NULL : IsoCWD;
     ofn.lpstrFileTitle		= szFileTitle;
     ofn.nMaxFileTitle		= MAXFILENAME;
     ofn.lpstrTitle			= NULL;
