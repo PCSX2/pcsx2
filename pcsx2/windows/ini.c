@@ -19,12 +19,11 @@
 15-09-2004 : file rewriten for work with inis (shadow)
 */
 
-#include <windows.h>
+#include "win32.h"
 #include <windowsx.h>
 #include <stdio.h>
 
 #include "Common.h"
-#include "win32.h"
 #include "Paths.h"
 
 #include <sys/stat.h>

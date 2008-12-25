@@ -225,8 +225,8 @@ extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 
 #endif
 
-int  cpuInit();
-int  cpuReset();
+bool cpuInit();
+bool cpuReset();
 void cpuShutdown();
 void cpuException(u32 code, u32 bd);
 void cpuTlbMissR(u32 addr, u32 bd);
@@ -238,7 +238,6 @@ extern void cpuTestINTCInts();
 extern void cpuTestDMACInts();
 extern void cpuTestTIMRInts();
 void cpuExecuteBios();
-void cpuRestartCPU();
 
 u32  VirtualToPhysicalR(u32 addr);
 u32  VirtualToPhysicalW(u32 addr);

@@ -268,9 +268,7 @@ void psxDMA12Interrupt()
 	psxRegs.interrupt&= ~(1 << 12);
 }
 
-int  sio2Freeze(gzFile f, int Mode) {
-	gzfreeze(&sio2, sizeof(sio2));
-
-	return 0;
+void SaveState::sio2Freeze() {
+	Freeze(sio2);
 }
 

@@ -25,7 +25,6 @@
 int  vu0Init();
 void vu0Reset();
 void vu0ResetRegs();
-void vu0Freeze(gzFile f, int Mode);
 void vu0Shutdown();
 
 void recResetVU0( void );

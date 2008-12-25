@@ -273,14 +273,3 @@ void psxExecuteBios() {
 */
 }
 
-void psxRestartCPU()
-{
-	psxCpu->Shutdown();
-	psxCpu = CHECK_EEREC ? &psxRec : &psxInt;
-
-	if (psxCpu->Init() == -1) {
-		SysClose();
-		exit(1);
-	}
-	psxCpu->Reset();
-}

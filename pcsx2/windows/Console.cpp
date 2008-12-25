@@ -26,6 +26,18 @@ namespace Console
 {
 	static HANDLE hConsole = NULL;
 
+	static const int tbl_color_codes[] = 
+	{
+		0					// black
+	,	FOREGROUND_RED | FOREGROUND_INTENSITY
+	,	FOREGROUND_GREEN | FOREGROUND_INTENSITY
+	,	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY
+	,	FOREGROUND_BLUE | FOREGROUND_INTENSITY
+	,	FOREGROUND_RED | FOREGROUND_BLUE
+	,	FOREGROUND_GREEN | FOREGROUND_BLUE
+	,	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY
+	};
+
 	void SetTitle( const char* title )
 	{
 		if( !hConsole || title==NULL ) return;
@@ -61,6 +73,19 @@ namespace Console
 		hConsole = NULL;
 	}
 
+	__forceinline void __fastcall SetColor( Colors color )
+	{
+		SetConsoleTextAttribute( hConsole, tbl_color_codes[color] );
+	}
+
+	__forceinline void ClearColor()
+	{
+		SetConsoleTextAttribute( hConsole,
+			FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE );
+	}
+
+
+	// Writes a newline to the console.
 	__forceinline bool __fastcall WriteLn()
 	{
 		if (hConsole != NULL)
@@ -78,6 +103,8 @@ namespace Console
 		return false;
 	}
 
+	// Writes an unformatted string of text to the console (fast!)
+	// No newline is appended.
 	__forceinline bool __fastcall Write( const char* fmt )
 	{
 		if (hConsole != NULL)
@@ -93,6 +120,8 @@ namespace Console
 		return false;
 	}
 	
+	// Writes an unformatted string of text to the console (fast!)
+	// A newline is automatically appended.
 	__forceinline bool __fastcall WriteLn( const char* fmt )
 	{
 		Write( fmt );
@@ -100,13 +129,39 @@ namespace Console
 		return false;
 	}
 
-	bool Format( const char* fmt, ... )
+	// Writes a formatted message to the console, with appended newline.
+	static __forceinline void __fastcall _MsgLn( Colors color, const char* fmt, va_list args )
+	{
+		char msg[2048];
+
+		vsprintf_s(msg,2045,fmt,args);
+		strcat( msg, "\r\n" );
+		SetColor( color );
+		Write( msg );
+		ClearColor();
+
+		if( emuLog != NULL )
+			fflush( emuLog );		// manual flush to accompany manual newline
+	}
+
+	// Writes a line of colored text to the console, with automatic newline appendage.
+	bool MsgLn( Colors color, const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_MsgLn( Color_White, fmt, list );
+		va_end(list);
+		return false;
+	}
+
+	// writes a formatted message to the console (no newline and no color)
+	bool Msg( const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
 
 		va_start(list,fmt);
-		_vsnprintf(msg,2047,fmt,list);
+		vsprintf_s(msg,fmt,list);
 		msg[2047] = '\0';
 		va_end(list);
 
@@ -114,19 +169,60 @@ namespace Console
 		return false;
 	}
 
-	bool FormatLn( const char* fmt, ... )
+	// writes a formatted message to the console (no newline and no color)
+	bool Msg( Colors color, const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
 
 		va_start(list,fmt);
-		_vsnprintf(msg,2045,fmt,list);
+		vsprintf_s(msg,fmt,list);
+		msg[2047] = '\0';
+		va_end(list);
+
+		SetColor( color );
+		Write( msg );
+		ClearColor();
+		return false;
+	}
+
+	// Writes a formatted message to the console, with appended newline.
+	// (no coloring)
+	bool MsgLn( const char* fmt, ... )
+	{
+		va_list list;
+		char msg[2048];
+
+		va_start(list,fmt);
+		vsprintf_s(msg,2045,fmt,list);
 		va_end(list);
 
 		strcat( msg, "\r\n" );
 		Write( msg );
 		if( emuLog != NULL )
 			fflush( emuLog );		// manual flush to accomany manual newline
+		return false;
+	}
+
+	// Displays a message in the console with red emphasis.
+	// Newline is automatically appended.
+	bool Error( const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_MsgLn( Color_Red, fmt, list );
+		va_end(list);
+		return false;
+	}
+
+	// Displays a message in the console with yellow emphasis.
+	// Newline is automatically appended.
+	bool Notice( const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_MsgLn( Color_Yellow, fmt, list );
+		va_end(list);
 		return false;
 	}
 }

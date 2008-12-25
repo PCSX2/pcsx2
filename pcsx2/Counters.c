@@ -237,7 +237,7 @@ u32 UpdateVSyncRate()
 		if( m_iTicks != ticks )
 		{
 			m_iTicks = ticks;
-			SysPrintf( limiterMsg, vSyncInfo.Framerate/50, vSyncInfo.Framerate%50 );
+			SysPrintf( limiterMsg, vSyncInfo.Framerate/50, (vSyncInfo.Framerate*2)%100 );
 		}
 	}
 
@@ -299,27 +299,27 @@ void vSyncDebugStuff() {
 			freezeData fP;
 
 			g_SaveGSStream = 2;
-			gsFreeze(g_fGSSave, 1);
+			g_fGSSave->gsFreeze();
 			
 			if (GSfreeze(FREEZE_SIZE, &fP) == -1) {
-				gzclose(g_fGSSave);
+				safe_delete( g_fGSSave );
 				g_SaveGSStream = 0;
 			}
 			else {
 				fP.data = (s8*)malloc(fP.size);
 				if (fP.data == NULL) {
-					gzclose(g_fGSSave);
+					safe_delete( g_fGSSave );
 					g_SaveGSStream = 0;
 				}
 				else {
 					if (GSfreeze(FREEZE_SAVE, &fP) == -1) {
-						gzclose(g_fGSSave);
+						safe_delete( g_fGSSave );
 						g_SaveGSStream = 0;
 					}
 					else {
-						gzwrite(g_fGSSave, &fP.size, sizeof(fP.size));
+						g_fGSSave->Freeze( fP.size );
 						if (fP.size) {
-							gzwrite(g_fGSSave, fP.data, fP.size);
+							g_fGSSave->FreezeMem( fP.data, fP.size );
 							free(fP.data);
 						}
 					}
@@ -329,10 +329,9 @@ void vSyncDebugStuff() {
 		else if( g_SaveGSStream == 2 ) {
 			
 			if( --g_nLeftGSFrames <= 0 ) {
-				gzclose(g_fGSSave);
-				g_fGSSave = NULL;
+				safe_delete( g_fGSSave );
 				g_SaveGSStream = 0;
-				SysPrintf("Done saving GS stream\n");
+				Console::WriteLn("Done saving GS stream");
 			}
 		}
 #endif
@@ -767,13 +766,13 @@ u32 rcntCycle(int index) {
 		return counters[index].count;
 }
 
-int rcntFreeze(gzFile f, int Mode) {
+void SaveState::rcntFreeze()
+{
+	Freeze(counters);
+	Freeze(nextCounter);
+	Freeze(nextsCounter);
 
-	gzfreezel(counters);
-	gzfreeze(&nextCounter, sizeof(nextCounter));
-	gzfreeze(&nextsCounter, sizeof(nextsCounter));
-
-	if( Mode == 0 )
+	if( !IsSaving() )
 	{
 #ifdef PCSX2_VIRTUAL_MEM
 		// Sanity check for loading older savestates:
@@ -788,10 +787,8 @@ int rcntFreeze(gzFile f, int Mode) {
 		// make sure the gate flags are set based on the counter modes...
 		for( int i=0; i<4; i++ )
 			_rcntSetGate( i );
-	}
 
-	iopBranchAction = 1;	// probably not needed but won't hurt anything either.
-	
-	return 0;
+		iopBranchAction = 1;	// probably not needed but won't hurt anything either.
+	}
 }
 

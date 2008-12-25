@@ -51,7 +51,6 @@ u32 LastType = 0;
 
 int g_ZeroGSOptions=0;
 int patchnumber;
-extern int RunExe;
 
 char strgametitle[256]= {0};
 
@@ -383,10 +382,7 @@ void patchFunc_patch( char * cmd, char * param )
 	pText = strtok( param, "," );
 	pText = param;
 
-	if(RunExe == 1) 
-		patch[ patchnumber ].placetopatch = 1;
-	else 
-		patch[ patchnumber ].placetopatch = strtol( pText, (char **)NULL, 0 );
+	patch[ patchnumber ].placetopatch = strtol( pText, (char **)NULL, 0 );
 
 	pText = strtok( NULL, "," );
 	inifile_trim( pText );
@@ -551,10 +547,7 @@ int AddPatch(int Mode, int Place, int Address, int Size, u64 data)
 		return -1;
 	}
 
-	if(RunExe == 1) 
-		patch[patchnumber].placetopatch = 1;
-	else 
-		patch[patchnumber].placetopatch = Mode;
+	patch[patchnumber].placetopatch = Mode;
 	
 	patch[patchnumber].cpu = (patch_cpu_type)Place;
 	patch[patchnumber].addr=Address;

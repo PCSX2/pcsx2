@@ -16,11 +16,17 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __WIN32_H__
-#define __WIN32_H__
+#ifndef _PCSX2_WIN32_H__
+#define _PCSX2_WIN32_H__
 
+#define WINVER 0x0501
+#define _WIN32_WINNT 0x0501
+
+#include <windows.h>
 #include <tchar.h>
+
 #include "Misc.h"
+#include "resource.h"
 
 // --->>  Ini Configuration [ini.c]
 
@@ -40,29 +46,27 @@ struct AppData
 };
 
 extern AppData gApp;
-
-extern int needReset;
-
-extern AppData gApp;
 extern HWND hStatusWnd;
 extern PcsxConfig winConfig;		// local storage of the configuration options.
+extern bool g_GameInProgress;
 
 LRESULT WINAPI MainWndProc(HWND, UINT, WPARAM, LPARAM);
 void CreateMainWindow(int nCmdShow);
 void RunGui();
 
-BOOL Open_File_Proc(char *filename);
 BOOL Pcsx2Configure(HWND hWnd);
-void RunExecute(int run);
 void InitLanguages();
 char *GetLanguageNext();
 void CloseLanguages();
 void ChangeLanguage(char *lang);
-#define StatusSet(text) SendMessage(hStatusWnd, SB_SETTEXT, 0, (LPARAM)text);
+#define StatusSet(text) SendMessage(hStatusWnd, SB_SETTEXT, 0, (LPARAM)(text));
 
-//patch browser window
+void SysRestorableReset();
+
 BOOL CALLBACK PatchBDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
-//cpu dialog window
 BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK AdvancedOptionsProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+
 #endif
 

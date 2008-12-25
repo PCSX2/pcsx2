@@ -73,12 +73,12 @@ uptr *psxRecLUT;
 // R3000A statics
 int psxreclog = 0;
 
-static u8 *recMem;	// the recompiled blocks will be here
-static BASEBLOCK *recRAM;	// and the ptr to the blocks here
-static BASEBLOCK *recROM;	// and here
-static BASEBLOCK *recROM1;	// also here
+static u8 *recMem = NULL;	// the recompiled blocks will be here
+static BASEBLOCK *recRAM = NULL;	// and the ptr to the blocks here
+static BASEBLOCK *recROM = NULL;	// and here
+static BASEBLOCK *recROM1 = NULL;	// also here
 static BASEBLOCKEX *recBlocks = NULL;
-static u8 *recPtr;
+static u8 *recPtr = NULL;
 u32 psxpc;			// recompiler psxpc
 int psxbranch;		// set for branch
 u32 g_iopCyclePenalty;
@@ -529,37 +529,53 @@ static int recInit() {
 	uptr startaddr;
 
 	// can't have upper 4 bits nonzero!
+	// ... we can't? (air)
+
 	startaddr = 0x0f000000;
-	while(!(startaddr & 0xf0000000)) {
+	if( recMem == NULL )
+	//while(!(startaddr & 0xf0000000)) {
 		recMem = (u8*)SysMmap(startaddr, RECMEM_SIZE);
-		if( (uptr)recMem & 0xf0000000 ) {
-			SysMunmap((uptr)recMem, RECMEM_SIZE); recMem = NULL;
+		/*if( (uptr)recMem & 0xf0000000 ) {
+			SysMunmap(recMem, RECMEM_SIZE); recMem = NULL;
 			startaddr += 0x00100000;
 			continue;
 		}
-		else break;
-	}
+		else break;*/
+	//}
+	
 	if( recMem == NULL ) {
-		SysPrintf("R3000A bad rec memory allocation\n");
+		Console::Error( "Error > R3000A failed to allocate recompiler memory." );
 		return 1;
 	}
 
-	ProfilerRegisterSource("IOPRec",recMem, RECMEM_SIZE);
+	if( psxRecLUT == NULL )
+		psxRecLUT = (uptr*) malloc(0x010000 * sizeof(uptr));
 
-	psxRecLUT = (uptr*) malloc(0x010000 * sizeof(uptr));
-	memset(psxRecLUT, 0, 0x010000 * sizeof(uptr));
+	if( recRAM == NULL )
+		recRAM = (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x200000, 16);
+	if( recROM == NULL )
+		recROM = (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x400000, 16);
+	if( recROM1 == NULL )
+		recROM1= (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x040000, 16);
+	if( recBlocks == NULL )
+		recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*PSX_NUMBLOCKS, 16);
 
-	recRAM = (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x200000, 16);
-	recROM = (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x400000, 16);
-	recROM1= (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x040000, 16);
-	recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*PSX_NUMBLOCKS, 16);
-	if (recRAM == NULL || recROM == NULL || recROM1 == NULL ||
-		recMem == NULL || psxRecLUT == NULL) {
-		SysMessage("Error allocating memory"); return -1;
+	if( s_pInstCache == NULL )
+	{
+		s_nInstCacheSize = 128;
+		s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
 	}
 
-	s_nInstCacheSize = 128;
-	s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
+	if( recRAM == NULL || recROM == NULL || recROM1 == NULL ||
+		psxRecLUT == NULL || recBlocks == NULL || s_pInstCache == NULL )
+	{
+		SysMessage( _("Error allocating memory") ); return -1;
+	}
+
+	// No errors!  Proceed with initialization...
+
+	memset(psxRecLUT, 0, 0x010000 * sizeof(uptr));
+	ProfilerRegisterSource("IOPRec",recMem, RECMEM_SIZE);
 
 	for (i=0; i<0x80; i++) psxRecLUT[i + 0x0000] = (uptr)&recRAM[(i & 0x1f) << 14];
 	for (i=0; i<0x80; i++) psxRecLUT[i + 0x8000] = (uptr)&recRAM[(i & 0x1f) << 14];
@@ -578,11 +594,9 @@ static int recInit() {
 	return 0;
 }
 
-static void recReset() {
-
-#ifdef PCSX2_DEVBUILD
-	SysPrintf("IOP Recompiler data reset\n");
-#endif
+static void recReset()
+{
+	DevCon::WriteLn("IOP Recompiler data reset");
 
 	memset(recRAM, 0, sizeof(BASEBLOCK)/4*0x200000);
 	memset(recROM, 0, sizeof(BASEBLOCK)/4*0x400000);
@@ -597,15 +611,17 @@ static void recReset() {
 	psxbranch = 0;
 }
 
-static void recShutdown() {
-	if (recMem == NULL) return;
-	free(psxRecLUT);
-	SysMunmap((uptr)recMem, RECMEM_SIZE);
-	_aligned_free(recRAM);
-	_aligned_free(recROM);
-	_aligned_free(recROM1);
-	_aligned_free( recBlocks ); recBlocks = NULL;
-	free( s_pInstCache ); s_pInstCache = NULL; s_nInstCacheSize = 0;
+static void recShutdown()
+{
+	SafeSysMunmap(recMem, RECMEM_SIZE);
+	safe_free(psxRecLUT);
+	safe_aligned_free(recRAM);
+	safe_aligned_free(recROM);
+	safe_aligned_free(recROM1);
+	safe_aligned_free( recBlocks );
+
+	safe_free( s_pInstCache );
+	s_nInstCacheSize = 0;
 
 	x86Shutdown();
 }

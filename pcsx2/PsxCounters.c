@@ -707,11 +707,10 @@ u64 psxRcntCycles(int index)
 	return (u64)(psxCounters[index].count + (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate));
 }
 
-extern u32 dwCurSaveStateVer;
-int psxRcntFreeze(gzFile f, int Mode)
+void SaveState::psxRcntFreeze()
 {
 #ifdef PCSX2_VIRTUAL_MEM
-	if( Mode == 0 && (dwCurSaveStateVer < 0x7a300010) )
+	if( IsLoading() && (m_version < 0x7a300010) )
 	{
 		// --- Reading Mode, Old Version ---
 		// struct used to be 32bit count and target
@@ -719,18 +718,18 @@ int psxRcntFreeze(gzFile f, int Mode)
 		u32 val;
 		for(i = 0; i < ARRAYSIZE(psxCounters); ++i)
 		{
-			gzfreeze(&val,4); psxCounters[i].count = val;
-			gzfreeze(&val,4); psxCounters[i].mode = val;
-			gzfreeze(&val,4); psxCounters[i].target = val;
-			gzfreeze((u8*)&psxCounters[i].rate, sizeof(psxCounters[i])-20);
+			Freeze(val); psxCounters[i].count = val;
+			Freeze(val); psxCounters[i].mode = val;
+			Freeze(val); psxCounters[i].target = val;
+			FreezeMem((u8*)&psxCounters[i].rate, sizeof(psxCounters[i])-20);
 		}
 	}
     else
 	{
-	    gzfreezel(psxCounters);
+	    Freeze(psxCounters);
 	}
 
-	if( Mode == 0 && (dwCurSaveStateVer <= 0x7a300010) )
+	if( IsLoading() && (m_version <= 0x7a300010) )
 	{
 		// This is needed to make old save states compatible.
 		psxCounters[6].rate = 768*12;
@@ -754,10 +753,10 @@ int psxRcntFreeze(gzFile f, int Mode)
 	}
 #else
 
-    gzfreezel(psxCounters);
-	gzfreeze(&psxNextCounter, sizeof(psxNextCounter));
-	gzfreeze(&psxNextsCounter, sizeof(psxNextsCounter));
-#endif
+	// vTLB's new savestate version! :D
 
-	return 0;
+    Freeze(psxCounters);
+	Freeze(psxNextCounter);
+	Freeze(psxNextsCounter);
+#endif
 }

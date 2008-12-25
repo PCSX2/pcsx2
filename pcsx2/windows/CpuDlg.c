@@ -16,17 +16,14 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <windows.h>
+#include "Win32.h"
 #include <windowsx.h>
-#include <commctrl.h>
 #include <stdio.h>
 
 #include "Common.h"
 #include "VUmicro.h"
 #include "PsxCommon.h"
 #include "plugins.h"
-#include "resource.h"
-#include "Win32.h"
 
 #include "ix86/ix86.h"
 
@@ -69,8 +66,6 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL5), _("Consecutive Frames to skip:\n(See Note 3)"));
 			Static_SetText(GetDlgItem(hW, IDC_FRAMESKIP_LABEL6), _("*Note 3: Will skip this number of frames before\n  rendering the next sequence of frames. (0=default)\n (e.g. If set to 2, will skip 2 consecutive frames whenever its time\n  to skip.)"));
 
-			
-
 			Button_SetText(GetDlgItem(hW, IDOK), _("OK"));
 			Button_SetText(GetDlgItem(hW, IDCANCEL), _("Cancel"));
 
@@ -88,17 +83,8 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetDlgItemText(hW, IDC_FEATURESINPUT, features);
 
 			CheckDlgButton(hW, IDC_CPU_EEREC, !!CHECK_EEREC);
-
-//#ifdef PCSX2_DEVBUILD
 			CheckDlgButton(hW, IDC_CPU_VU0REC, !!CHECK_VU0REC);
 			CheckDlgButton(hW, IDC_CPU_VU1REC, !!CHECK_VU1REC);
-//#else
-//			// don't show
-//			ShowWindow(GetDlgItem(hW, IDC_CPU_VUGROUP), SW_HIDE);
-//			ShowWindow(GetDlgItem(hW, IDC_CPU_VU0REC), SW_HIDE);
-//			ShowWindow(GetDlgItem(hW, IDC_CPU_VU1REC), SW_HIDE);
-//#endif
-
 
 			CheckDlgButton(hW, IDC_CPU_GSMULTI, !!CHECK_MULTIGS);
 
@@ -116,19 +102,18 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			sprintf(cConsecutiveSkip,"%d",Config.CustomConsecutiveSkip);
 			SetDlgItemText(hW, IDC_CUSTOM_CONSECUTIVE_SKIP, cConsecutiveSkip);
 
+			//EnableWindow( GetDlgItem( hW, IDC_CPU_GSMULTI ), !g_GameInProgress );
+
 			return TRUE;
 
 		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
+			switch(LOWORD(wParam))
+			{
 				case IDCANCEL:
 					EndDialog(hW, FALSE);
-					return TRUE;
+				return FALSE;
 
 				case IDOK:
-                    Cpu->Shutdown();
-					vu0Shutdown();
-					vu1Shutdown();
-                    
 					newopts = 0;
 
 					if( SendDlgItemMessage(hW,IDC_CPU_EEREC,BM_GETCHECK,0,0) ) newopts |= PCSX2_EEREC;
@@ -143,16 +128,7 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					else if( SendDlgItemMessage(hW,IDC_CPU_FL_SKIP,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT_SKIP;
 					else if( SendDlgItemMessage(hW,IDC_CPU_FL_SKIPVU,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT_VUSKIP;
 
-					if( (Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD) ) {
-						Config.Options = newopts;
-						SaveConfig();
-						MessageBox(NULL, "Restart Pcsx2", "Query", MB_OK);
-						exit(0);
-					}
-
 					if( newopts & PCSX2_EEREC ) newopts |= PCSX2_COP2REC;
-
-					Config.Options = newopts;
 
 					GetDlgItemText(hW, IDC_CUSTOMFPS, cfps, 20);
 					Config.CustomFps = atoi(cfps);
@@ -166,15 +142,27 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					GetDlgItemText(hW, IDC_CUSTOM_CONSECUTIVE_SKIP, cConsecutiveSkip, 20);
 					Config.CustomConsecutiveSkip = atoi(cConsecutiveSkip);
 
-					// [TODO]: This needs to inform the GS too, but it doesn't matter for now
-					// since the CPU is reset regardless.
-					UpdateVSyncRate();
+					EndDialog(hW, TRUE);
+
+					if( Config.Options != newopts )
+					{
+						SysRestorableReset();
+
+						if( (Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD) )
+						{
+							// gotta shut down *all* the plugins.
+							ResetPlugins();
+						}
+						Config.Options = newopts;
+					}
+					else
+						UpdateVSyncRate();
+
 					SaveConfig();
 
-					cpuRestartCPU();
-					EndDialog(hW, TRUE);
-					return TRUE;
+				return FALSE;
 			}
+		return TRUE;
 	}
 	return FALSE;
 }

@@ -21,10 +21,26 @@
 #include "System.h"
 #include "Linux.h"
 
+
+#define COLOR_RESET		"\033[0m"
+
+
 // Linux Note : The Linux Console is pretty simple.  It just dumps to the stdio!
 // (no console open/close/title stuff tho, so those functions are dummies)
 namespace Console
 {
+	static const char* tbl_color_codes[] = 
+	{
+		"\033[30m"		// black
+	,	"\033[31m"		// red
+	,	"\033[32m"		// green
+	,	"\033[33m"		// yellow
+	,	"\033[34m"		// blue
+	,	"\033[35m"		// magenta
+	,	"\033[36m"		// cyan
+	,	"\033[37m"		// white!
+	};
+
 	void SetTitle( const char* title )
 	{
 	}
@@ -63,6 +79,16 @@ namespace Console
 		return false;
 	}
 	
+	void __fastcall SetColor( Colors color )
+	{
+		Write( tbl_color_codes[color] );
+	}
+
+	void ClearColor()
+	{
+		Write( COLOR_RESET );
+	}
+
 	__forceinline bool __fastcall WriteLn( const char* fmt )
 	{
 		Write( fmt );
@@ -70,7 +96,38 @@ namespace Console
 		return false;
 	}
 
-	bool Format( const char* fmt, ... )
+	static __forceinline void __fastcall _MsgLn( Colors color, const char* fmt, va_list args )
+	{
+		char msg[2048];
+
+		vsnprintf(msg,2045,fmt,list);
+		msg[2044] = '\0';
+		strcat( msg, "\n" );
+		SetColor( color );
+		Write( msg );
+		ClearColor();
+
+		if( emuLog != NULL )
+			fflush( emuLog );		// manual flush to accompany manual newline
+	}
+
+	bool Msg( Colors color, const char* fmt, ... )
+	{
+		va_list list;
+		char msg[2048];
+
+		va_start(list,fmt);
+		vsnprintf(msg,2047,fmt,list);
+		msg[2047] = '\0';
+		va_end(list);
+
+		SetColor( color );
+		Write( msg );
+		ClearColor();
+		return false;
+	}
+
+	bool Msg( const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -84,7 +141,7 @@ namespace Console
 		return false;
 	}
 
-	bool FormatLn( const char* fmt, ... )
+	bool MsgLn( const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -97,6 +154,28 @@ namespace Console
 		Write( msg );
 		if( emuLog != NULL )
 			fflush( emuLog );		// manual flush to accomany manual newline
+		return false;
+	}
+
+	// Displays a message in the console with red emphasis.
+	// Newline is automatically appended.
+	bool Error( const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_MsgLn( Color_Red, fmt, list );
+		va_end(list);
+		return false;
+	}
+
+	// Displays a message in the console with yellow emphasis.
+	// Newline is automatically appended.
+	bool Notice( const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_MsgLn( Color_Yellow, fmt, list );
+		va_end(list);
 		return false;
 	}
 }

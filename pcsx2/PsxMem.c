@@ -429,12 +429,13 @@ void psxMemReset() {
 
 void psxMemShutdown()
 {
-	SysMunmap((uptr)psxM, 0x00200000); psxM = NULL;
-	SysMunmap((uptr)psxP, 0x00010000); psxP = NULL;
-	SysMunmap((uptr)psxH, 0x00010000); psxH = NULL;
-    SysMunmap((uptr)psxS, 0x00010000); psxS = NULL;
-	_aligned_free(psxMemRLUT);
-	_aligned_free(psxMemWLUT);
+	SafeSysMunmap(psxM, 0x00200000);
+	SafeSysMunmap(psxP, 0x00010000);
+	SafeSysMunmap(psxH, 0x00010000);
+    SafeSysMunmap(psxS, 0x00010000);
+
+	safe_aligned_free(psxMemRLUT);
+	safe_aligned_free(psxMemWLUT);
 }
 
 u8 psxMemRead8(u32 mem) {

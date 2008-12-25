@@ -1438,12 +1438,10 @@ void vif0Reset() {
 	//FreezeMMXRegs(0);
 }
 
-int vif0Freeze(gzFile f, int Mode) {
-	gzfreeze(&vif0, sizeof(vif0));
-	if (Mode == 0)
+void SaveState::vif0Freeze() {
+	Freeze(vif0);
+	if( IsLoading() )
 		SetNewMask(g_vif0Masks, g_vif0HasMask3, vif0Regs->mask, ~vif0Regs->mask);
-
-	return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2452,10 +2450,8 @@ void vif1Reset() {
 	FreezeMMXRegs(0);*/
 }
 
-int vif1Freeze(gzFile f, int Mode) {
-	gzfreeze(&vif1, sizeof(vif1));
-	if (Mode == 0)
+void SaveState::vif1Freeze() {
+	Freeze(vif1);
+	if( IsLoading() )
 		SetNewMask(g_vif1Masks, g_vif1HasMask3, vif1Regs->mask, ~vif1Regs->mask);
-
-	return 0;
 }

@@ -16,8 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <windows.h>
-#include <commctrl.h>
+#include "win32.h"
 #include <windowsx.h>
 #include <stdio.h>
 #include <string>
@@ -26,7 +25,6 @@
 #include "InterTables.h"
 #include "Debugger.h"
 #include "Common.h"
-#include "win32.h"
 #include "PsxMem.h"
 #include "R3000A.h"
 

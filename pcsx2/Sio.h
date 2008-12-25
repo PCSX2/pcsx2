@@ -95,7 +95,6 @@ u8 sioRead8();
 void sioWrite8(unsigned char value);
 void sioWriteCtrl16(unsigned short value);
 extern void sioInterrupt();
-int  sioFreeze(gzFile f, int Mode);
 void InitializeSIO(u8 value);
 
 FILE *LoadMcd(int mcd);

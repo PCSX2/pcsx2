@@ -195,7 +195,7 @@ int ipuInit();
 void ipuReset();
 void ipuShutdown();
 int  ipuFreeze(gzFile f, int Mode);
-BOOL ipuCanFreeze();
+bool ipuCanFreeze();
 
 u32 ipuRead32(u32 mem);
 int ipuConstRead32(u32 x86reg, u32 mem);

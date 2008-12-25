@@ -23,10 +23,19 @@
 #define PLUGINfuncs
 #include "PS2Edefs.h"
 
+// Loads plugins as specified in the Config global.
 int  LoadPlugins();
+
+// Unloads all plugin DLLs.  To change plugins, call ReleasePlugins followed by
+// changes to Config.Plugins filenames, and then call LoadPlugins.
 void ReleasePlugins();
+
 int  OpenPlugins(const char* pTitleFilename);
 void ClosePlugins();
+
+// Completely shuts down all plugins and re-initializes them. (clean slate)
+// Plugins are not unloaded, so changes to Config.Plugins values will not
+// take effect.  Use a manual set oc alls to ReleasePlugins and LoadPlugins for that.
 void ResetPlugins();
 
 #endif /* __PLUGINS_H__ */

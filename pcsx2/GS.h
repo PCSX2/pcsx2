@@ -76,13 +76,13 @@ enum GS_RINGTYPE
 // if returns NULL, don't copy (memory is preserved)
 u8* GSRingBufCopy(u32 size, u32 type);
 void GSRingBufSimplePacket(int type, int data0, int data1, int data2);
-void GSRingBufSimplePacket64(int type, u32 data0, u64 data1 );
+void GSRingBufPointerPacket(int type, u32 data0, void* data1 );
 
 u32 GSgifTransferDummy(int path, const u8 *pMem, u32 size);
 
 void gsInit();
 s32 gsOpen();
-void gsShutdown();
+void gsClose();
 void gsReset();
 void gsSetVideoRegionType( u32 isPal );
 void gsResetFrameSkip();
@@ -125,7 +125,6 @@ extern void gsInterrupt();
 void dmaGIF();
 void GIFdma();
 void mfifoGIFtransfer(int qwc);
-int  gsFreeze(gzFile f, int Mode);
 int _GIFchain();
 void  gifMFIFOInterrupt();
 
@@ -141,11 +140,11 @@ extern u32 g_vu1SkipCount;
 
 extern int g_SaveGSStream;
 extern int g_nLeftGSFrames;
-extern gzFile g_fGSSave;
+extern gzSavingState* g_fGSSave;
 
 #endif
 
-void RunGSState(gzFile f);
+void RunGSState(gzLoadingState& f);
 
 extern void GSGIFTRANSFER1(u32 *pMem, u32 addr); 
 extern void GSGIFTRANSFER2(u32 *pMem, u32 addr); 

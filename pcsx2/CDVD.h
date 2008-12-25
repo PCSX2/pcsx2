@@ -88,7 +88,6 @@ struct cdvdStruct {
 void cdvdReset();
 void cdvdVsync();
 int  cdvdInterrupt();
-int  cdvdFreeze(gzFile f, int Mode);
 extern void  cdvdReadInterrupt();
 void cdvdNewDiskCB();
 u8   cdvdRead04(void);

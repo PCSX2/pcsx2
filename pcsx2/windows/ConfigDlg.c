@@ -16,7 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <windows.h>
+#include "Win32.h"
+
 #include <windowsx.h>
 #include <shlobj.h>
 #include <stdio.h>
@@ -24,7 +25,6 @@
 #include "common.h"
 #include "plugins.h"
 #include "resource.h"
-#include "Win32.h"
 
 #define ComboAddPlugin(hw, str) { \
 	sprintf(tmpStr, "%s %d.%d.%d", PS2E_GetLibName(), (version>>8)&0xff, version&0xff, (version>>24)&0xff); \
@@ -251,7 +251,7 @@ void OnOK(HWND hW) {
 	ApplyPluginPath( FW );
 
 	SaveConfig();
-	needReset = 1;
+	SysRestorableReset();
 }
 
 

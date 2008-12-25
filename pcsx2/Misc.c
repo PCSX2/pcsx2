@@ -45,11 +45,6 @@
 
 #include "Paths.h"
 
-u32 dwCurSaveStateVer = 0;
-extern u32 s_iLastCOP0Cycle;
-extern u32 s_iLastPERFCycle[2];
-extern int g_psxWriteOk;
-
 PcsxConfig Config;
 u32 BiosVersion;
 char CdromId[12];
@@ -318,7 +313,7 @@ int GetPS2ElfName(char *name){
 
 	// check if the file exists
 	if (CDVD_findfile("SYSTEM.CNF;1", &tocEntry) != TRUE){
-		SysPrintf("SYSTEM.CNF not found\n");
+		Console::Error("Boot Error > SYSTEM.CNF not found");
 		return 0;//could not find; not a PS/PS2 cdvd
 	}
 	
@@ -327,16 +322,12 @@ int GetPS2ElfName(char *name){
 	CDVDFS_close(f);
 	
 	buffer[tocEntry.fileSize]='\0';
-//     SysPrintf(                                                                                                           
-//             "---------------------SYSTEM.CNF---------------------\n"                                                     
-//             "%s"                                                                                                         
-//             "----------------------------------------------------\n", buffer);  
 	
 	pos=strstr(buffer, "BOOT2");
 	if (pos==NULL){
 		pos=strstr(buffer, "BOOT");
 		if (pos==NULL) {
-			SysPrintf("This is not a PS2 game!\n");
+			Console::Error("Boot Error > This is not a PS2 game!");
 			return 0;
 		}
 		return 1;
@@ -359,7 +350,7 @@ int GetPS2ElfName(char *name){
 	if (fp) {
 		u32 addr;
 
-		SysPrintf("Loading System.map\n", fp);
+		Console::WriteLn("Loading System.map...");
 		while (!feof(fp)) {
 			fseek(fp, 8, SEEK_CUR);
 			buffer[0] = '0'; buffer[1] = 'x';
@@ -381,369 +372,77 @@ int GetPS2ElfName(char *name){
 	return 2;
 }
 
-// STATES
-
-#define STATE_VERSION "STv6"
-const char Pcsx2Header[32] = STATE_VERSION " PCSX2 " PCSX2_VERSION;
-
-#define _PS2Esave(type) \
-	if (type##freeze(FREEZE_SIZE, &fP) == -1) { \
-		gzclose(f); \
-		return -1; \
-	} \
-	fP.data = (s8*)malloc(fP.size); \
-	if (fP.data == NULL) return -1; \
- \
-	if (type##freeze(FREEZE_SAVE, &fP) == -1) { \
-		gzclose(f); \
-		return -1; \
-	} \
- \
-	gzwrite(f, &fP.size, sizeof(fP.size)); \
-	if (fP.size) { \
-		gzwrite(f, fP.data, fP.size); \
-		free(fP.data); \
-	}
-
-#define _PS2Eload(type) \
-	gzread(f, &fP.size, sizeof(fP.size)); \
-	if (fP.size) { \
-		fP.data = (s8*)malloc(fP.size); \
-		if (fP.data == NULL) return -1; \
-		gzread(f, fP.data, fP.size); \
-	} \
-	if (type##freeze(FREEZE_LOAD, &fP) == -1) { \
-		/* skip */ \
-		/*if (fP.size) free(fP.data); \
-		gzclose(f); \
-		return -1;*/ \
-	} \
-	if (fP.size) free(fP.data);
-
-
-int SaveState(const char *file) {
-
-	gzFile f;
-	freezeData fP;
-
-	gsWaitGS();
-
-	SysPrintf("SaveState: %s\n", file);
-	f = gzopen(file, "wb");
-	if (f == NULL) return -1;
-
-	gzwrite(f, &g_SaveVersion, 4);
-
-	gzwrite(f, PS2MEM_BASE, 0x02000000);         // 32 MB main memory   
-	gzwrite(f, PS2MEM_ROM, 0x00400000);         // 4 mb rom memory
-	gzwrite(f, PS2MEM_ROM1,0x00040000);         // 256kb rom1 memory
-	gzwrite(f, PS2MEM_SCRATCH, 0x00004000);         // scratch pad 
-
-	gzwrite(f, PS2MEM_HW, 0x00010000);         // hardware memory
-
-	gzwrite(f, (void*)&cpuRegs, sizeof(cpuRegs));   // cpu regs + COP0
-	gzwrite(f, (void*)&psxRegs, sizeof(psxRegs));   // iop regs]
-	gzwrite(f, (void*)&fpuRegs, sizeof(fpuRegs));   // fpu regs
-	gzwrite(f, (void*)&tlb, sizeof(tlb));           // tlbs
-
-	gzwrite(f, &EEsCycle, sizeof(EEsCycle));
-	gzwrite(f, &EEoCycle, sizeof(EEoCycle));
-	gzwrite(f, &psxRegs.cycle, sizeof(u32));		// used to be IOPoCycle.  This retains compatibility.
-	gzwrite(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
-	gzwrite(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
-
-	gzwrite(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));
-	gzwrite(f, s_iLastPERFCycle, sizeof(u32)*2);
-	gzwrite(f, &g_psxWriteOk, sizeof(g_psxWriteOk));
-
-	//hope didn't forgot any cpu....
-
-	rcntFreeze(f, 1);
-	gsFreeze(f, 1);
-	vu0Freeze(f, 1);
-	vu1Freeze(f, 1);
-	vif0Freeze(f, 1);
-	vif1Freeze(f, 1);
-	sifFreeze(f, 1);
-	ipuFreeze(f, 1);
-
-	// iop now
-	gzwrite(f, psxM, 0x00200000);        // 2 MB main memory
-	//gzwrite(f, psxP, 0x00010000);        // pralell memory
-	gzwrite(f, psxH, 0x00010000);        // hardware memory
-	//gzwrite(f, psxS, 0x00010000);        // sif memory	
-
-	sioFreeze(f, 1);
-	cdrFreeze(f, 1);
-	cdvdFreeze(f, 1);
-	psxRcntFreeze(f, 1);
-	//mdecFreeze(f, 1);
-	sio2Freeze(f, 1);
-
-	SysPrintf("Saving GS\n");
-    if( CHECK_MULTIGS ) {
-        // have to call in thread, otherwise weird stuff will start happening
-        u64 uf = (uptr)f;
-        GSRingBufSimplePacket(GS_RINGTYPE_SAVE, (u32)(uf&0xffffffff), (u32)(uf>>32), 0);
-        gsWaitGS();
-    }
-    else {
-        _PS2Esave(GS);
-    }
-	SysPrintf("Saving SPU2\n");
-	_PS2Esave(SPU2);
-	SysPrintf("Saving DEV9\n");
-	_PS2Esave(DEV9);
-	SysPrintf("Saving USB\n");
-	_PS2Esave(USB);
-	SysPrintf("Saving ok\n");
-
-	gzclose(f);
-
-	return 0;
-}
-
 extern u32 dumplog;
-u32 s_vucount=0;
-
-int LoadState(const char *file) {
-
-	gzFile f;
-	freezeData fP;
-	int i;
-	u32 dud;		// for loading unused vars.
-#ifdef PCSX2_VIRTUAL_MEM
-	DWORD OldProtect;
-#endif
-
-#ifdef _DEBUG
-	s_vucount = 0;
-#endif
-
-	SysPrintf("LoadState: %s\n", file);
-	f = gzopen(file, "rb");
-	if (f == NULL) return -1;
-	
-	gzread(f, &dwCurSaveStateVer, 4);
-
-	if( dwCurSaveStateVer != g_SaveVersion ) {
-
-#ifdef PCSX2_VIRTUAL_MEM
-		if( dwCurSaveStateVer >= 0x8b400000 )
-		{
-		gzclose(f);
-		SysPrintf(
-			"Savestate load aborted:\n"
-			"  VM edition cannot safely load savestates created by the VTLB edition.\n" );
-		return 0;
-		}
-		// pcsx2 vm supports opening these formats
-		if( dwCurSaveStateVer < 0x7a30000d) {
-			gzclose(f);
-			SysPrintf("Unsupported savestate version: %x.\n", dwCurSaveStateVer );
-			return 0;
-		}
-#else
-		gzclose(f);
-		SysPrintf(
-			"Savestate load aborted:\n"
-			"  VTLB edition cannot safely load savestates created by the VM edition.\n" );
-		return 0;
-#endif
-	}
-
-	// stop and reset the system first
-	gsWaitGS();
-
-	for (i=0; i<48; i++) UnmapTLB(i);
-
-	Cpu->Reset();
-	recResetVU0();
-	recResetVU1();
-	psxCpu->Reset();
-
-	SysPrintf("Loading memory\n");
-
-#ifdef PCSX2_VIRTUAL_MEM
-	// make sure can write
-	VirtualProtect(PS2MEM_ROM, 0x00400000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_ROM1, 0x00040000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READWRITE, &OldProtect);
-#endif
-
-	gzread(f, PS2MEM_BASE, 0x02000000);         // 32 MB main memory   
-	gzread(f, PS2MEM_ROM, 0x00400000);         // 4 mb rom memory
-	gzread(f, PS2MEM_ROM1,0x00040000);         // 256kb rom1 memory
-	gzread(f, PS2MEM_SCRATCH, 0x00004000);         // scratch pad 
-
-#ifdef PCSX2_VIRTUAL_MEM
-	VirtualProtect(PS2MEM_ROM, 0x00400000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_ROM1, 0x00040000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READONLY, &OldProtect);
-#endif
-
-	gzread(f, PS2MEM_HW, 0x00010000);         // hardware memory
-
-	SysPrintf("Loading structs\n");
-	gzread(f, (void*)&cpuRegs, sizeof(cpuRegs));   // cpu regs + COP0
-	gzread(f, (void*)&psxRegs, sizeof(psxRegs));   // iop regs
-	gzread(f, (void*)&fpuRegs, sizeof(fpuRegs));   // fpu regs
-	gzread(f, (void*)&tlb, sizeof(tlb));           // tlbs
-	gzread(f, &EEsCycle, sizeof(EEsCycle));
-	gzread(f, &EEoCycle, sizeof(EEoCycle));
-	gzread(f, &dud, sizeof(u32));			// was IOPoCycle
-	gzread(f, &g_nextBranchCycle, sizeof(g_nextBranchCycle));
-	gzread(f, &g_psxNextBranchCycle, sizeof(g_psxNextBranchCycle));
-
-	gzread(f, &s_iLastCOP0Cycle, sizeof(s_iLastCOP0Cycle));
-	if( dwCurSaveStateVer >= 0x7a30000e ) {
-		gzread(f, s_iLastPERFCycle, sizeof(u32)*2);
-	}
-	gzread(f, &g_psxWriteOk, sizeof(g_psxWriteOk));
-
-	rcntFreeze(f, 0);
-	gsFreeze(f, 0);
-	vu0Freeze(f, 0);
-	vu1Freeze(f, 0);
-	vif0Freeze(f, 0);
-	vif1Freeze(f, 0);
-	sifFreeze(f, 0);
-	ipuFreeze(f, 0);
-
-	// iop now
-	SysPrintf("Loading iop mem\n");
-	gzread(f, psxM, 0x00200000);        // 2 MB main memory
-	//gzread(f, psxP, 0x00010000);        // pralell memory
-	gzread(f, psxH, 0x00010000);        // hardware memory
-	//gzread(f, psxS, 0x00010000);        // sif memory	
-
-	SysPrintf("Loading iop stuff\n");
-	sioFreeze(f, 0);
-	cdrFreeze(f, 0);
-	cdvdFreeze(f, 0);
-	psxRcntFreeze(f, 0);
-	//mdecFreeze(f, 0);
-	sio2Freeze(f, 0);
-
-	SysPrintf("Loading GS\n");
-    if( CHECK_MULTIGS ) {
-        // have to call in thread, otherwise weird stuff will start happening
-        u64 uf = (uptr)f;
-        GSRingBufSimplePacket(GS_RINGTYPE_LOAD, (u32)(uf&0xffffffff), (u32)(uf>>32), 0);
-        gsWaitGS();
-    }
-    else {
-        _PS2Eload(GS);
-    }
-	SysPrintf("Loading SPU2\n");
-	_PS2Eload(SPU2);
-	SysPrintf("Loading DEV9\n");
-	_PS2Eload(DEV9);
-	SysPrintf("Loading USB\n");
-	_PS2Eload(USB);
-
-	SysPrintf("Loading ok\n");
-
-	gzclose(f);
-    memset(pCache,0,sizeof(_cacheS)*64);
-
-	//dumplog |= 4;
-	WriteCP0Status(cpuRegs.CP0.n.Status.val);
-	for (i=0; i<48; i++) MapTLB(i);
-
-	return 0;
-}
 
 #ifdef PCSX2_DEVBUILD
 
-int SaveGSState(const char *file)
+void SaveGSState(const char *file)
 {
-	if( g_SaveGSStream ) return -1;
+	if( g_SaveGSStream ) return;
 
-	SysPrintf("SaveGSState: %s\n", file);
-	g_fGSSave = gzopen(file, "wb");
-	if (g_fGSSave == NULL) return -1;
+	Console::Write( "SaveGSState: " ); Console::WriteLn( file );
+	g_fGSSave = new gzSavingState( file );
 	
 	g_SaveGSStream = 1;
 	g_nLeftGSFrames = 2;
 
-	gzwrite(g_fGSSave, &g_nLeftGSFrames, sizeof(g_nLeftGSFrames));
-
-	return 0;
+	g_fGSSave->Freeze( g_nLeftGSFrames );
 }
 
 extern uptr pDsp;
-int LoadGSState(const char *file)
+void LoadGSState(const char *file)
 {
 	int ret;
-	gzFile f;
-	freezeData fP;
+	gzLoadingState* f;
 
-	f = gzopen(file, "rb");
-	if( f == NULL )
+	Console::Write( "LoadGSState: " );
+
+	try
 	{
+		f = new gzLoadingState( file );
+		Console::WriteLn( file );
+	}
+	catch( Exception::FileNotFound& )
+	{
+		// file not found? try prefixing with sstates folder:
 		if( !isPathRooted( file ) )
 		{
-			// file not found? try prefixing with sstates folder:
 			char strfile[g_MaxPath];
 			CombinePaths( strfile, SSTATES_DIR, file );
-			f = gzopen(strfile, "rb");
-			file = strfile;
+			f = new gzLoadingState( file );
+			Console::WriteLn( strfile );
+
+			// If this load attempt fails, then let the exception bubble up to
+			// the caller to deal with...
 		}
 	}
 
-	if( f == NULL ) {
-		SysPrintf("Failed to find gs state\n");
-		return -1;
-	}
-
-	SysPrintf("LoadGSState: %s\n", file);
-	
 	// Always set gsIrq callback -- GS States are always exclusionary of MTGS mode
 	GSirqCallback( gsIrq );
 
 	ret = GSopen(&pDsp, "PCSX2", 0);
-	if (ret != 0) {
-		SysMessage (_("Error Opening GS Plugin"));
-		return -1;
+	if (ret != 0)
+	{
+		delete f;
+		throw Exception::PluginFailure( "GS", "Error opening" );
 	}
 
 	ret = PAD1open((void *)&pDsp);
 
-	gzread(f, &g_nLeftGSFrames, sizeof(g_nLeftGSFrames));
+	f->Freeze(g_nLeftGSFrames);
+	f->gsFreeze();
 
-	gsFreeze(f, 0);
-	_PS2Eload(GS);
+	f->FreezePlugin( "GS", GSfreeze );
 
-	RunGSState(f);
-	gzclose(f);
+	RunGSState( *f );
+
+	delete( f );
 
 	GSclose();
 	PAD1close();
-
-	return 0;
 }
 
 #endif
-
-int CheckState(const char *file) {
-	gzFile f;
-	char header[32];
-
-	f = gzopen(file, "rb");
-	if (f == NULL) return -1;
-
-	gzread(f, header, 32);
-
-	gzclose(f);
-
-	if (strncmp(STATE_VERSION " PCSX2", header, 10)) return -1;
-
-	return 0;
-}
-
 
 struct LangDef {
 	char id[8];
@@ -805,13 +504,6 @@ char* mystrlwr( char* string )
     return string;
 }
 
-static void GetSaveStateFilename( char* dest )
-{
-	char elfcrcText[72];
-	sprintf( elfcrcText, "%8.8X.%3.3d", ElfCRC, StatesC );
-	CombinePaths( dest, SSTATES_DIR, elfcrcText );
-}
-
 static void GetGSStateFilename( char* dest )
 {
 	char gsText[72];
@@ -821,31 +513,76 @@ static void GetGSStateFilename( char* dest )
 
 void ProcessFKeys(int fkey, int shift)
 {
-	int ret;
     char Text[g_MaxPath];
 
     assert(fkey >= 1 && fkey <= 12 );
 
     switch(fkey) {
         case 1:
-			GetSaveStateFilename(Text);
-			ret = SaveState(Text);
+			try
+			{
+				SaveState::GetFilename( Text, StatesC );
+				gzSavingState(Text).FreezeAll();
+			}
+			catch( std::exception& ex )
+			{
+				// 99% of the time this is a file permission error and the
+				// cpu state is intact so just display a passive msg to console.
+
+				Console::Error( _( "Error > Could not save state to slot %d" ), StatesC );
+				Console::Error( ex.what() );
+			}
 			break;
+
 		case 2:
 			if( shift )
-				StatesC = (StatesC+NUM_STATES-1)%NUM_STATES;
+				StatesC = (StatesC+NUM_STATES-1) % NUM_STATES;
 			else
-				StatesC = (StatesC+1)%NUM_STATES;
-			SysPrintf("*PCSX2*: Selected State %ld\n", StatesC);
+				StatesC = (StatesC+1) % NUM_STATES;
+
+			Console::Notice( _( " > Selected savestate slot %d" ), StatesC+1);
+
 			if( GSchangeSaveState != NULL ) {
-				GetSaveStateFilename(Text);
+				SaveState::GetFilename(Text, StatesC);
 				GSchangeSaveState(StatesC, Text);
 			}
 			break;
+
 		case 3:	
-			GetSaveStateFilename(Text);
-			ret = LoadState(Text);
-			break;	
+			try
+			{
+				SaveState::GetFilename( Text, StatesC );
+				gzLoadingState joe(Text);	// throws exception on version mismatch
+				cpuReset();
+				joe.FreezeAll();
+			}
+			catch( Exception::UnsupportedStateVersion& )
+			{
+				// At this point the cpu hasn't been reset, so we can return
+				// control to the user safely...
+			}
+			catch( Exception::FileNotFound& )
+			{
+				Console::Notice( _("Saveslot %d cannot be loaded; slot does not exist (file not found)"), StatesC );
+			}
+			catch( std::runtime_error& ex )
+			{
+				// This is the bad one.  Chances are the cpu has been reset, so emulation has
+				// to be aborted.  Sorry user!  We'll give you some info for your trouble:
+
+				Console::Error( _("An error occured while trying to load saveslot %d"), StatesC );
+				Console::Error( ex.what() );
+				SysMessage(
+					"Pcsx2 encountered an error while trying to load the savestate\n"
+					"and emulation had to be aborted." );
+
+				cpuShutdown();
+				ClosePlugins();
+
+				throw Exception::CpuStateShutdown(
+					"Saveslot load failed; PS2 emulated state had to be shut down." );	// let the GUI handle the error "gracefully"
+			}
+			break;
 
 		case 4:
 		{
@@ -875,7 +612,7 @@ void ProcessFKeys(int fkey, int shift)
 					if( GSsetFrameSkip == NULL )
 					{
 						newOptions &= ~PCSX2_FRAMELIMIT_MASK;
-						SysPrintf("Notice: GS Plugin does not support frameskipping.\n");
+						Console::Notice("Notice: GS Plugin does not support frameskipping.");
 						limitMsg = "None/Normal";
 					}
 					else
@@ -890,7 +627,7 @@ void ProcessFKeys(int fkey, int shift)
 			}
 			AtomicExchange( Config.Options, newOptions );
 
-			SysPrintf("Frame Limit Mode Changed: %s\n", limitMsg );
+			Console::Notice("Frame Limit Mode Changed: %s", limitMsg );
 
 			// [Air]: Do we really want to save runtime changes to frameskipping?
 			//SaveConfig();
@@ -924,7 +661,7 @@ void ProcessFKeys(int fkey, int shift)
 		
 		case 11:
 			if( CHECK_MULTIGS ) {
-				SysPrintf("Cannot make gsstates in MTGS mode\n");
+				Console::Notice( "Cannot make gsstates in MTGS mode" );
 			}
 			else {
 				if( strgametitle[0] != 0 ) {
@@ -952,7 +689,7 @@ void ProcessFKeys(int fkey, int shift)
             if( shift ) {
 #ifdef PCSX2_DEVBUILD
 			    iDumpRegisters(cpuRegs.pc, 0);
-			    SysPrintf("hardware registers dumped EE:%x, IOP:%x\n", cpuRegs.pc, psxRegs.pc);
+				Console::Notice("hardware registers dumped EE:%x, IOP:%x\n", cpuRegs.pc, psxRegs.pc);
 #endif
             }
             else {
@@ -1034,6 +771,37 @@ void injectIRX(const char *filename){
 	rd[i].fileSize=filesize;
 	rd[i].extInfoSize=0;
 }
+
+MemoryAlloc::MemoryAlloc() : 
+  m_ptr( NULL )
+, m_alloc( 0 )
+, ChunkSize( DefaultChunkSize )
+{
+}
+
+MemoryAlloc::MemoryAlloc( int initialSize ) : 
+  m_ptr( (u8*)malloc( initialSize ) )
+, m_alloc( initialSize )
+, ChunkSize( DefaultChunkSize )
+{
+	if( m_ptr == NULL )
+		throw std::bad_alloc();
+}
+
+MemoryAlloc::~MemoryAlloc()
+{
+	safe_free( m_ptr );
+}
+
+void MemoryAlloc::MakeRoomFor( int blockSize )
+{
+	if( blockSize > m_alloc )
+	{
+		m_alloc += blockSize + ChunkSize;
+		m_ptr = (u8*)realloc( m_ptr, m_alloc );
+	}
+}
+
 
 // [TODO] I'd like to move the following functions to their own module eventually.
 // It might even be a good idea to just go ahead and move them into Win32/Linux

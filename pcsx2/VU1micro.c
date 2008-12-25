@@ -124,13 +124,13 @@ void vu1Reset() {
 	recResetVU1();
 }
 
-void vu1Freeze(gzFile f, int Mode) {
-	gzfreeze(&VU1.ACC, sizeof(VECTOR));
-	gzfreeze(&VU1.code, sizeof(u32));
-	gzfreeze(VU1.Mem,   16*1024);
-	gzfreeze(VU1.Micro, 16*1024);
-	gzfreeze(VU1.VF, 32*sizeof(VECTOR));
-	gzfreeze(VU1.VI, 32*sizeof(REG_VI));
+void SaveState::vu1Freeze() {
+	Freeze(VU1.ACC);
+	Freeze(VU1.code);
+	FreezeMem(VU1.Mem,   16*1024);
+	FreezeMem(VU1.Micro, 16*1024);
+	FreezeMem(VU1.VF, 32*sizeof(VECTOR));
+	FreezeMem(VU1.VI, 32*sizeof(REG_VI));
 }
 
 static int count;

@@ -124,6 +124,18 @@ void SignalExit(int sig) {
 
 void RunExecute(int run)
 {
+	// (air notes:)
+	// If you want to use the new to-memory savestate feature, take a look at the new
+	// RunExecute in WinMain.c, and secondly the CpuDlg.c or AdvancedDlg.cpp.  The
+	// objects used are MemoryAlloc, memLoadingState, and memSavingState.
+
+	// It's important to make sure to reset the CPU and the plugins correctly, which is
+	// where the new RunExecute comes into play.  It can be kind of tricky knowing
+	// when to call cpuExecuteBios and loadElfFile, and with what parameters.
+
+	// (or, as an alternative maybe we should switch to wxWidgets and have a unified
+	// cross platform gui?)  - Air
+
 	if (needReset == TRUE) 
 		if (!SysReset()) 
 			return;
@@ -281,31 +293,102 @@ void UpdateMenuSlots(GtkMenuItem *menuitem, gpointer user_data) {
 	}
 }
 
-void States_Load(int num) {
-	char Text[g_MaxPath];
-	int ret;
-
+void States_Load(const char* file, int num = -1 )
+{
 	efile = 2;
-	RunExecute(0);
+	try
+	{
+		// when we init joe it'll throw an UnsupportedStateVersion.
+		// So reset the cpu afterward so that trying to load a bum save
+		// doesn't fry the current emulation state.
+		gzLoadingState joe( file );
 
-	sprintf (Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, num);
-	ret = LoadState(Text);
+		// Make sure the cpu and plugins are ready to be state-ified!
+		cpuReset();
+		OpenPlugins( NULL );
+
+		joe.FreezeAll();
+	}
+	catch( Exception::UnsupportedStateVersion& )
+	{
+		if( num != -1 )
+			SysMessage( _( "Savestate slot %d is an unsupported version." ), num);
+		else
+			SysMessage( _( "%s : This is an unsupported savestate version." ), file);
+
+		// At this point the cpu hasn't been reset, so we can return
+		// control to the user safely...
+
+		return;
+	}
+	catch( std::exception& ex )
+	{
+		if( num != -1 )
+			Console::Error( _("Error occured while trying to load savestate slot %d"), num);
+		else
+			Console::Error( _("Error occured while trying to load savestate file: %d"), file);
+
+		Console::Error( ex.what() );
+
+		// The emulation state is ruined.  Might as well give them a popup and start the gui.
+
+		SysMessage( _( 
+			"An error occured while trying to load the savestate data.\n"
+			"Pcsx2 emulation state has been reset."
+		) );
+
+		cpuShutdown();
+		return;
+	}
 
 	Cpu->Execute();
 }
 
+void States_Load(int num) {
+	char Text[g_MaxPath];
+
+	SaveState::GetFilename( Text, num );
+
+	struct stat buf;
+	if( stat(Text, &buf ) == -1 )
+	{
+		Console::Notice( "Saveslot %d is empty.", num );
+		return;
+	}
+	States_Load( Text, num );
+}
+
+void States_Save( const char* file, int num = -1 );
+{
+	try
+	{
+		gzSavingState(file).FreezeAll();
+		if( num != -1 )
+			Console::Notice( _( "State saved to slot %d" ), num );
+		else
+			Console::Notice( _( "State saved to file: %s" ), file );
+	}
+	catch( std::exception& ex )
+	{
+		if( num != -1 )
+			SysMessage( _("An error occured while trying to save to slot %d"), num );
+		else
+			SysMessage( _("An error occured while trying to save to file: %s"), file );
+
+		Console::Error( _( "Save state request failed with the following error:" ) );
+		Console::Error( ex.what() );
+	}
+
+	// Do you really want the game ro resume after saving from the menu?
+	// I found it annoying and removed it from the Win32 side (air)
+    RunExecute(1);
+}
+
 void States_Save(int num) {
 	char Text[g_MaxPath];
-	int ret;
 
-	sprintf (Text, SSTATES_DIR "/%8.8X.%3.3d", ElfCRC, num);
-	ret = SaveState(Text);
-	if (ret == 0)
-		sprintf(Text, _("*PCSX2*: Saving State %d"), num+1);
-	else 
-		sprintf(Text, _("*PCSX2*: Error Saving State %d"), num+1);
-
-    RunExecute(1);
+	SaveState::GetFilename( Text, num );
+	States_Save( Text, num );
 }
 
 void OnStates_Load1(GtkMenuItem *menuitem, gpointer user_data) { States_Load(0); } 
@@ -323,12 +406,7 @@ void OnLoadOther_Ok(GtkButton* button, gpointer user_data) {
 	strcpy(str, File);
 	gtk_widget_destroy(FileSel);
 
-	efile = 2;
-	RunExecute(0);
-
-	ret = LoadState(str);
-
-	Cpu->Execute();
+	States_Load( str );
 }
 
 void OnLoadOther_Cancel(GtkButton* button, gpointer user_data) {
@@ -367,11 +445,8 @@ void OnSaveOther_Ok(GtkButton* button, gpointer user_data) {
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
 	strcpy(str, File);
 	gtk_widget_destroy(FileSel);
-	RunExecute(0);
 
-	ret = SaveState(str);
-
-	Cpu->Execute();
+	States_Save( str );
 }
 
 void OnSaveOther_Cancel(GtkButton* button, gpointer user_data) {
@@ -451,13 +526,6 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	Config.CustomConsecutiveFrames = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesBeforeSkipping")));
 	Config.CustomConsecutiveSkip = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesToSkip")));
 		
-	if ((Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD)) {
-		Config.Options = newopts;
-		SaveConfig();
-		SysMessage("Restart Pcsx2");
-		exit(0);
-	}
-	
 	if (newopts & PCSX2_EEREC ) newopts |= PCSX2_COP2REC;
 	
 	Config.Options = newopts;
@@ -465,8 +533,14 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	UpdateVSyncRate();
 	SaveConfig();
 	
-	cpuRestartCPU();
-	
+	if ((Config.Options&PCSX2_GSMULTITHREAD) ^ (newopts&PCSX2_GSMULTITHREAD))
+	{
+		cpuShutdown();
+		ResetPlugins();
+	}
+
+	cpuReset();		// cpuReset will call cpuInit() automatically if needed.
+
 	gtk_widget_destroy(CpuDlg);
 	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();

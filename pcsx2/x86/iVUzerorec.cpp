@@ -337,10 +337,21 @@ static void SuperVURecompile();
 void SuperVUInit(int vuindex)
 {
 	if( vuindex < 0 ) {
-        // upper 4 bits cannot be nonzero!
-		s_recVUMem = (u8*)SysMmap(0x0c000000, VU_EXESIZE);
-        if( (uptr)s_recVUMem > 0x80000000 )
-            SysPrintf("bad SuperVU alloc %x\n", s_recVUMem);
+
+		// upper 4 bits cannot be nonzero!
+		uptr baseaddr = 0x0c000000;
+		while( baseaddr < 0x7a000000 && ( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) ) )
+		{
+			s_recVUMem = (u8*)SysMmap( baseaddr, VU_EXESIZE);
+			baseaddr += 0x100000;
+		}
+
+		if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
+		{
+			Console::Error( "Error > SuperVU failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
+			throw std::bad_alloc();
+		}
+
 		ProfilerRegisterSource("VURec",s_recVUMem, VU_EXESIZE);
 		memset(s_recVUMem, 0xcd, VU_EXESIZE);
 		s_recVUPtr = s_recVUMem;
@@ -361,20 +372,19 @@ void SuperVUDestroy(int vuindex)
 	if( vuindex < 0 ) {
 		SuperVUDestroy(0);
 		SuperVUDestroy(1);
-		SysMunmap((uptr)s_recVUMem, VU_EXESIZE);
-		s_recVUPtr = NULL;
-		delete[] recVUStack; recVUStack = NULL;
+		SafeSysMunmap(s_recVUMem, VU_EXESIZE);
+		safe_delete_array( recVUStack );
 	}
 	else {
-		delete[] recVUHeaders[vuindex]; recVUHeaders[vuindex] = NULL;
-		delete[] recVUBlocks[vuindex]; recVUBlocks[vuindex] = NULL;
+		safe_delete_array( recVUHeaders[vuindex] );
+		safe_delete_array( recVUBlocks[vuindex] );
 
 		if( s_plistCachedHeaders[vuindex] != NULL ) {
 			for(u32 j = 0; j < s_MemSize[vuindex]/8; ++j) {
 				FORIT(it, s_plistCachedHeaders[vuindex][j]) delete *it;
 				s_plistCachedHeaders[vuindex][j].clear();
 			}
-			delete[] s_plistCachedHeaders[vuindex]; s_plistCachedHeaders[vuindex] = NULL;
+			safe_delete_array( s_plistCachedHeaders[vuindex] );
 		}
 
 		FORIT(it, s_listVUHeaders[vuindex]) delete *it;
@@ -2587,7 +2597,7 @@ static void SuperVURecompile()
 // debug
 
 #ifdef _DEBUG
-extern u32 s_vucount;
+u32 s_vucount=0;
 
 static u32 g_vu1lastrec = 0, skipparent = -1;
 static u32 s_svulast = 0, s_vufnheader;
@@ -2647,7 +2657,7 @@ void svudispfntemp()
 			{
                 //static int curesp;
                 //__asm mov curesp, esp
-				Console::FormatLn("tVU: %x %x %x", s_svulast, s_vucount, s_vufnheader);
+				Console::MsgLn("tVU: %x %x %x", s_svulast, s_vucount, s_vufnheader);
 				if( g_curdebugvu ) iDumpVU1Registers();
 				else iDumpVU0Registers();
 				s_vucount++;

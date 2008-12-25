@@ -571,7 +571,23 @@ int LoadFWplugin(char *filename) {
 
 	return 0;
 }
-static int loadp=0;
+
+struct PluginOpenStatusFlags
+{
+	u8	GS : 1
+	,	CDVD : 1
+	,	DEV9 : 1
+	,	USB : 1
+	,	SPU2 : 1
+	,	PAD1 : 1
+	,	PAD2 : 1
+	,	FW : 1;
+
+};
+
+static PluginOpenStatusFlags OpenStatus = {0};
+
+static bool loadp=false;
 
 int InitPlugins() {
 	int ret;
@@ -606,7 +622,18 @@ int InitPlugins() {
 	return 0;
 }
 
-void ShutdownPlugins() {
+void ShutdownPlugins()
+{
+	// GS is a special case: It needs closed first usually.
+	// (the GS isn't closed during emulation pauses)
+	if( OpenStatus.GS )
+	{
+		gsClose();
+		OpenStatus.GS = false;
+	}
+
+	ClosePlugins();
+
 	GSshutdown();
 	PAD1shutdown();
 	PAD2shutdown();
@@ -618,9 +645,10 @@ void ShutdownPlugins() {
 }
 
 int LoadPlugins() {
+
+	if( loadp ) return 0;
 	char Plugin[g_MaxPath];
 
-	
 	CombinePaths( Plugin, Config.PluginsDir, Config.GS );
 	if (LoadGSplugin(Plugin) == -1) return -1;
 
@@ -648,7 +676,7 @@ int LoadPlugins() {
 	if( g_Error_PathTooLong ) return -1;
 	if (InitPlugins() == -1) return -1;
 
-	loadp=1;
+	loadp=true;
 
 	return 0;
 }
@@ -658,26 +686,11 @@ extern void spu2DMA4Irq();
 extern void spu2DMA7Irq();
 extern void spu2Irq();
 
-struct PluginOpenStatusFlags
-{
-	u8	GS : 1
-	,	CDVD : 1
-	,	DEV9 : 1
-	,	USB : 1
-	,	SPU2 : 1
-	,	PAD1 : 1
-	,	PAD2 : 1
-	,	FW : 1;
-
-};
-
-static PluginOpenStatusFlags OpenStatus;
-
 int OpenPlugins(const char* pTitleFilename) {
 	GSdriverInfo info;
 	int ret;
 
-	if (loadp == 0) return -1;
+	if (!loadp) return -1;
 
 #ifndef _WIN32
     // change dir so that CDVD can find its config file
@@ -776,13 +789,16 @@ OpenError:
 #define CLOSE_PLUGIN( name ) \
 	if( OpenStatus.name ) { \
 		name##close(); \
-		OpenStatus.name = 0; \
+		OpenStatus.name = false; \
 	}
 
 
 void ClosePlugins()
 {
 	// GS plugin is special and is not closed during emulation pauses.
+	// (that's because the GS is the most complicated plugin and to close it would
+	// require we save the GS state -- plus, Gsdx doesn't really support being
+	// closed)
 
 	if( OpenStatus.GS )
 		gsWaitGS();
@@ -796,15 +812,17 @@ void ClosePlugins()
 	CLOSE_PLUGIN( PAD2 );
 }
 
-void ResetPlugins() {
+void ResetPlugins()
+{
 	gsWaitGS();
 
 	ShutdownPlugins();
 	InitPlugins();
 }
 
-void ReleasePlugins() {
-	if (loadp == 0) return;
+void ReleasePlugins()
+{
+	if (!loadp) return;
 
 	if (GSplugin   == NULL || PAD1plugin == NULL || PAD2plugin == NULL ||
 		SPU2plugin == NULL || CDVDplugin == NULL || DEV9plugin == NULL ||
@@ -820,5 +838,5 @@ void ReleasePlugins() {
 	SysCloseLibrary(DEV9plugin); DEV9plugin = NULL;
 	SysCloseLibrary(USBplugin);  USBplugin = NULL;
 	SysCloseLibrary(FWplugin);   FWplugin = NULL;
-	loadp=0;
+	loadp = false;
 }

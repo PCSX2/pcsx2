@@ -224,15 +224,15 @@ static s32 g_pGSvSyncCount = 0;
 // GS Playback
 int g_SaveGSStream = 0; // save GS stream; 1 - prepare, 2 - save
 int g_nLeftGSFrames = 0; // when saving, number of frames left
-gzFile g_fGSSave;
+gzSavingState* g_fGSSave;
 
 void GSGIFTRANSFER1(u32 *pMem, u32 addr) { 
 	if( g_SaveGSStream == 2) { 
 		u32 type = GSRUN_TRANS1; 
-		u32 size = (0x4000-(addr))/16; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &size, 4);
-		gzwrite(g_fGSSave, ((u8*)pMem)+(addr), size*16); 
+		u32 size = (0x4000-(addr))/16;
+		g_fGSSave->Freeze( type );
+		g_fGSSave->Freeze( size );
+		g_fGSSave->FreezeMem( ((u8*)pMem)+(addr), size*16 );
 	} 
 	GSgifTransfer1(pMem, addr); 
 }
@@ -241,9 +241,9 @@ void GSGIFTRANSFER2(u32 *pMem, u32 size) {
 	if( g_SaveGSStream == 2) { 
 		u32 type = GSRUN_TRANS2; 
 		u32 _size = size; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &_size, 4); 
-		gzwrite(g_fGSSave, pMem, _size*16); 
+		g_fGSSave->Freeze( type );
+		g_fGSSave->Freeze( size );
+		g_fGSSave->FreezeMem( pMem, _size*16 );
 	} 
 	GSgifTransfer2(pMem, size); 
 }
@@ -252,9 +252,9 @@ void GSGIFTRANSFER3(u32 *pMem, u32 size) {
 	if( g_SaveGSStream == 2 ) { 
 		u32 type = GSRUN_TRANS3; 
 		u32 _size = size; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
-		gzwrite(g_fGSSave, &_size, 4); 
-		gzwrite(g_fGSSave, pMem, _size*16); 
+		g_fGSSave->Freeze( type );
+		g_fGSSave->Freeze( size );
+		g_fGSSave->FreezeMem( pMem, _size*16 );
 	} 
 	GSgifTransfer3(pMem, size); 
 }
@@ -262,7 +262,7 @@ void GSGIFTRANSFER3(u32 *pMem, u32 size) {
 __forceinline void GSVSYNC(void) { 
 	if( g_SaveGSStream == 2 ) { 
 		u32 type = GSRUN_VSYNC; 
-		gzwrite(g_fGSSave, &type, sizeof(type)); 
+		g_fGSSave->Freeze( type ); 
 	} 
 }
 #else
@@ -450,9 +450,21 @@ void gsSetVideoRegionType( u32 isPal )
 
 
 // Initializes MultiGS ringbuffer and registers.
-// (does nothing for single threaded GS)
+// Make sure framelimiter options are in sync with the plugin's capabilities.
 void gsInit()
 {
+	switch(CHECK_FRAMELIMIT)
+	{
+		case PCSX2_FRAMELIMIT_SKIP:
+		case PCSX2_FRAMELIMIT_VUSKIP:
+			if( GSsetFrameSkip == NULL )
+			{
+				Config.Options &= ~PCSX2_FRAMELIMIT_MASK;
+				Console::WriteLn("Notice: Disabling frameskip -- GS plugin does not support it.");
+			}
+		break;
+	}
+
 	if( CHECK_MULTIGS ) 
 	{
         g_pGSRingPos = GS_RINGBUFFERBASE;
@@ -607,7 +619,7 @@ void GSRINGBUF_DONECOPY(const u8* mem, u32 size)
 	}
 }
 
-void gsShutdown()
+void gsClose()
 {
 	if( CHECK_MULTIGS ) {
 
@@ -616,7 +628,7 @@ void gsShutdown()
 		// (they might be 1 byte under some compilers).
 		gsHasToExit = true;
 
-		SysPrintf("MTGS > Closing GS thread...\n");
+		Console::WriteLn( "MTGS > Closing GS thread..." );
 		GS_SETEVENT();
 
 		if (g_hVuGsThread != NULL) thread_close( g_hVuGsThread );
@@ -630,6 +642,8 @@ void gsShutdown()
 	}
 	else
 		GSclose();
+
+	m_gsOpened = false;
 }
 
 #ifdef PCSX2_GSRING_TX_STATS
@@ -824,8 +838,6 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	while( future_writepos == *(volatile PU8*)&g_pGSRingPos )
 		gsSetEventWait();
 
-
-
 #ifdef RINGBUF_DEBUG_STACK
 	mutex_lock( stackLock );
 	ringposStack.push_front( (uptr)writepos );
@@ -841,7 +853,7 @@ void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
 	AtomicExchangePointer( g_pGSWritePos, future_writepos );
 }
 
-void GSRingBufSimplePacket64(int type, u32 data0, u64 data1 )
+void GSRingBufPointerPacket(int type, u32 data0, void* data1 )
 {
 	u8* writepos = g_pGSWritePos;
 	const u8* future_writepos = writepos+16;
@@ -862,7 +874,7 @@ void GSRingBufSimplePacket64(int type, u32 data0, u64 data1 )
 
 	*(u32*)writepos = type;
 	*(u32*)(writepos+4) = data0;
-	*(u64*)(writepos+8) = data1;
+	*(uptr*)(writepos+8) = (uptr)data1;
 
 	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
 	AtomicExchangePointer( g_pGSWritePos, future_writepos );
@@ -1254,9 +1266,7 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 			else if(path.tag.nloop == 0)
 			{
 				if(pathidx == 0 && g_FFXHack)
-				{
 					continue;
-				}
 
 				eop = true;
 			}
@@ -1270,6 +1280,9 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 
 				while(size > 0)
 				{
+					// Register 0xe is a NOP. 
+					// Why were we treating it as a handler?
+
 					if( path.GetReg() == 0xe )
 					{
 						const int handler = pMem[8];
@@ -1285,13 +1298,11 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 						path.tag.nloop--;
 
 						if(path.tag.nloop == 0)
-						{
 							break;
-						}
 					}
 				}
 
-				break;
+			break;
 
 			case GIF_FLG_REGLIST:
 
@@ -1319,32 +1330,27 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 				}
 			
 				if(size & 1) pMem += 8; //sizeof(GIFReg);
-
 				size /= 2;
 
-				break;
+			break;
 
 			case GIF_FLG_IMAGE2: // hmmm
-
 				assert(0);
-
 				path.tag.nloop = 0;
 
-				break;
+			break;
 
 			case GIF_FLG_IMAGE:
-				{
-					int len = (int)min(size, path.tag.nloop);
+			{
+				int len = (int)min(size, path.tag.nloop);
 
-					//ASSERT(!(len&3));
+				//ASSERT(!(len&3));
 
-					pMem += len * 16;
-					path.tag.nloop -= len;
-					size -= len;
-				}
-
-				break;
-
+				pMem += len * 16;
+				path.tag.nloop -= len;
+				size -= len;
+			}
+			break;
 
 			jNO_DEFAULT;
 
@@ -1364,7 +1370,7 @@ u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
 		if(!path.tag.eop && path.tag.nloop > 0)
 		{
 			path.tag.nloop = 0;
-			SysPrintf( "path1 hack! " );
+			Console::Write( "path1 hack! " );
 		}
 	}
 
@@ -2207,52 +2213,13 @@ GS_THREADPROC
 					break;
 
                 case GS_RINGTYPE_SAVE:
-                {
-                    gzFile f = *(gzFile*)(g_pGSRingPos+4);
-                    freezeData fP;
-
-                    if (GSfreeze(FREEZE_SIZE, &fP) == -1) {
-                        gzclose(f);
-                        break;
-                    }
-                    fP.data = (s8*)malloc(fP.size);
-                    if (fP.data == NULL) {
-                        break;
-                    }
-                    
-                    if (GSfreeze(FREEZE_SAVE, &fP) == -1) {
-                        gzclose(f);
-                        break;
-                    }
-                    
-                    gzwrite(f, &fP.size, sizeof(fP.size));
-                    if (fP.size) {
-                        gzwrite(f, fP.data, fP.size);
-                        free(fP.data);
-                    }
-                    break;
-                }
                 case GS_RINGTYPE_LOAD:
                 {
-                    gzFile f = *(gzFile*)(g_pGSRingPos+4);
-                    freezeData fP;
-
-                    gzread(f, &fP.size, sizeof(fP.size));
-                    if (fP.size) {
-                        fP.data = (s8*)malloc(fP.size);
-                        if (fP.data == NULL)
-                            break;
-
-                        gzread(f, fP.data, fP.size);
-                    }
-                    if (GSfreeze(FREEZE_LOAD, &fP) == -1) {
-                        // failed
-                    }
-                    if (fP.size)
-                        free(fP.data);
-
+                    SaveState* f = (SaveState*)(*(uptr*)(g_pGSRingPos+8));
+					f->FreezePlugin( "GS", GSfreeze );
                     break;
                 }
+
                 case GS_RINGTYPE_RECORD:
                 {
                     int record = *(u32*)(g_pGSRingPos+4);
@@ -2312,25 +2279,23 @@ GS_THREADPROC
 	return 0;
 }
 
-int gsFreeze(gzFile f, int Mode)
+void SaveState::gsFreeze()
 {
-	gzfreeze(PS2MEM_GS, 0x2000);
-	gzfreeze(&CSRw, sizeof(CSRw));
+	FreezeMem(PS2MEM_GS, 0x2000);
+	Freeze(CSRw);
 
 	for(int i=0; i<3; i++ )
 	{
-		gzfreeze( &g_path[i].tag, sizeof( g_path[i].tag ) );
+		Freeze( g_path[i].tag );
 
 		// Earlier versions had an extra u32 in the tag struct:
 
 		u32 dummy=g_path[i].nreg;
-		gzfreeze( &dummy, sizeof( dummy ) );
+		Freeze( dummy );
 	}
 
 	for(int i=0; i<3; i++ )
-		gzfreeze( &g_path[i].regs, sizeof( g_path[i].regs ) );
-
-	return 0;
+		Freeze( g_path[i].regs );
 }
 
 #ifdef PCSX2_DEVBUILD
@@ -2342,16 +2307,17 @@ struct GSStatePacket
 };
 
 // runs the GS
-void RunGSState(gzFile f)
+void RunGSState( gzLoadingState& f )
 {
 	u32 newfield;
 	list< GSStatePacket > packets;
 
-	while(!gzeof(f)) {
+	while( !f.Finished() )
+	{
 		int type, size;
-		gzread(f, &type, sizeof(type));
+		f.Freeze( type );
 
-		if( type != GSRUN_VSYNC ) gzread(f, &size, 4);
+		if( type != GSRUN_VSYNC ) f.Freeze( size );
 
 		packets.push_back(GSStatePacket());
 		GSStatePacket& p = packets.back();
@@ -2360,7 +2326,7 @@ void RunGSState(gzFile f)
 
 		if( type != GSRUN_VSYNC ) {
 			p.mem.resize(size*16);
-			gzread(f, &p.mem[0], size*16);
+			f.FreezeMem( &p.mem[0], size*16 );
 		}
 	}
 
@@ -2393,8 +2359,8 @@ void RunGSState(gzFile f)
 				if( g_SaveGSStream != 3 )
 					return;
 				break;
-			default:
-				assert(0);
+
+			jNO_DEFAULT
 		}
 
 		++it;

@@ -833,7 +833,7 @@ int __Deci2Call(int call, u32 *addr) {
 			return 1;
 
 		case 0x10://kputs
-			SysPrintf("%s", PSM(*addr));
+			Console::Msg( Color_Cyan, "%s", PSM(*addr));
 			return 1;
 	}
 
@@ -850,7 +850,7 @@ void SYSCALL() {
 		else call = cpuRegs.GPR.n.v1.UC[0];
 		BIOS_LOG("Bios call: %s (%x)\n", bios[call], call);
 		if (call == 0x7c && cpuRegs.GPR.n.a0.UL[0] == 0x10) {
-			SysPrintf("%s", PSM(PSMu32(cpuRegs.GPR.n.a1.UL[0])));
+			Console::Msg( Color_Cyan, "%s", PSM(PSMu32(cpuRegs.GPR.n.a1.UL[0])));
 		} else
 		//if (call == 0x7c) SysPrintf("Deci2Call: %x\n", cpuRegs.GPR.n.a0.UL[0]);
 		if (call == 0x7c) __Deci2Call(cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));

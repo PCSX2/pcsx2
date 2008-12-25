@@ -161,11 +161,11 @@ unsigned int args_ptr;		//a big value; in fact, it is an address
 //+08+4*argc the program name(first param)						   <--
 //+08+4*argc+strlen(argv[0]+1) the rest of params; i.e. a copy of 'args'
 //                                         see above 'char args[256];'
-unsigned int parseCommandLine( char *filename )
+static uint parseCommandLine( const char *filename )
 {
 	if ( ( args_ptr != 0xFFFFFFFF ) && ( args_ptr > 264 ) )
    {	// 4 + 4 + 256
-		char * p;
+		const char * p;
 		int  argc, 
            i;
 
@@ -245,7 +245,7 @@ unsigned int parseCommandLine( char *filename )
 }
 //---------------
 
-int readFile( char *Exepath, char *ptr, u32 offset, int size ) {
+static int readFile( const char *Exepath, char *ptr, u32 offset, int size ) {
 	FILE *f;
 	int fi;
 
@@ -269,7 +269,7 @@ int readFile( char *Exepath, char *ptr, u32 offset, int size ) {
 	return size;
 }
 
-int loadHeaders( char *Exepath ) {
+static int loadHeaders( const char *Exepath ) {
 	elfHeader = (ELF_HEADER*)elfdata;
 
 	if ( ( elfHeader->e_shentsize != sizeof(ELF_SHR) ) && ( elfHeader->e_shnum > 0 ) ) {
@@ -340,7 +340,7 @@ int loadHeaders( char *Exepath ) {
 }
 
 
-BOOL loadProgramHeaders( char *Exepath ) 
+static BOOL loadProgramHeaders( const char *Exepath ) 
 {
 	int i;
 
@@ -388,7 +388,7 @@ BOOL loadProgramHeaders( char *Exepath )
 				break;
 		}
 		
-      ELF_LOG("\n");
+		ELF_LOG("\n");
 		ELF_LOG("offset:    %08x\n",(int)elfProgH[i].p_offset);
 		ELF_LOG("vaddr:     %08x\n",(int)elfProgH[i].p_vaddr);
 		ELF_LOG("paddr:     %08x\n",elfProgH[i].p_paddr);
@@ -404,7 +404,7 @@ BOOL loadProgramHeaders( char *Exepath )
 }
 
 
-BOOL loadSectionHeaders( char * Exepath ) 
+static BOOL loadSectionHeaders( const char * Exepath ) 
 {
 	int i;
 	int i_st = -1;
@@ -504,12 +504,18 @@ BOOL loadSectionHeaders( char * Exepath )
 	return TRUE;
 }
 
-int loadElfFile(char *filename) {
+int loadElfFile(const char *filename) {
 	char str[256],str2[256];
 	u32 crc;
 	u32 i;
 
-	SysPrintf("loadElfFile: %s\n", filename);
+	if( filename == NULL || filename[0] == 0 )
+	{
+		Console::Notice( "Running the PS2 BIOS...", filename );
+		return -1;
+	}
+
+	Console::MsgLn("loadElfFile: %s", filename);
 	if (strnicmp( filename, "cdrom0:", strlen( "cdrom0:" ) ) &&
 		strnicmp( filename, "cdrom1:", strlen( "cdrom1:" ) ) ) {
 		if ( stat( filename, &sbuf ) != 0 )
@@ -522,7 +528,7 @@ int loadElfFile(char *filename) {
 		elfsize = toc.fileSize;
 	}
 
-	SysPrintf("loadElfFile: %d\n", elfsize);
+	Console::MsgLn( Color_Green, "loadElfFile: %d", elfsize);
 	elfdata = (u8*)malloc(elfsize);
 	if (elfdata == NULL) return -1;
 	readFile(filename, (char*)elfdata, 0, elfsize);
@@ -556,21 +562,21 @@ int loadElfFile(char *filename) {
 	}
 	ElfCRC = crc;
 
-	SysPrintf("loadElfFile: %s; CRC = %8.8X\n", filename, crc);
+	Console::MsgLn( Color_Green, "loadElfFile: %s; CRC = %8.8X\n", filename, crc);
 
    // Applying patches
     if (Config.Patch) {
 		sprintf(str, "%8.8x", crc);
 
-		sprintf(str2,"No patch found.Game will run normally. [CRC=%8.8x]",crc);//if patches found it will overwritten :p
+		sprintf(str2,"No patch found. Game will run normally. [CRC=%8.8x]",crc);//if patches found it will overwritten :p
 		Console::SetTitle( str2 );
 
 		if(LoadPatch(str)!=0)
 		{
-			SysPrintf("XML Loader returned an error. Trying to load a pnach...\n");
+			Console::WriteLn("XML Loader returned an error. Trying to load a pnach...");
 			inifile_read(str);
 		}
-		else SysPrintf("XML Loading success. Will not load from pnach...\n");
+		else Console::WriteLn("XML Loading success. Will not load from pnach...");
 		applypatch( 0 );
 	}
 

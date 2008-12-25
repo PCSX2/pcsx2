@@ -23,10 +23,9 @@
 * no interaction with emulation code
 ***************************/
 
-#include <windows.h>
+#include "win32.h"
 #include <windowsx.h>
 #include "Common.h"
-#include "win32.h"
 #include "resource.h"
 
 /*

@@ -29,6 +29,7 @@ typedef  void __fastcall vltbMemW128FP(u32 addr,const mem128_t* data);
 typedef u32 vtlbHandler;
 
 bool vtlb_Init();
+void vtlb_Reset();
 void vtlb_Term();
 
 //physical stuff

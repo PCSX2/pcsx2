@@ -1749,7 +1749,6 @@ extern void PFRCPIT2RtoR( x86IntRegType to, x86IntRegType from );
 extern void PFRSQRTRtoR( x86IntRegType to, x86IntRegType from );
 extern void PFRSQIT1RtoR( x86IntRegType to, x86IntRegType from );
 extern void PF2IDMtoR( x86IntRegType to, uptr from );
-extern void PF2IDRtoR( x86IntRegType to, x86IntRegType from );
 extern void PI2FDMtoR( x86IntRegType to, uptr from );
 extern void PI2FDRtoR( x86IntRegType to, x86IntRegType from );
 extern void PFMAXMtoR( x86IntRegType to, uptr from );

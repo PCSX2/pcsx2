@@ -19,8 +19,10 @@
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
+#include "Exceptions.h"
+
 int  SysInit();							// Init mem and plugins
-int  SysReset();						// Resets mem
+void SysReset();						// Resets the various PS2 cpus, sub-systems, and recompilers.
 void SysUpdate();						// Called on VBlank (to update i.e. pads)
 void SysRunGui();						// Returns to the Gui
 void SysClose();						// Close mem and plugins
@@ -46,57 +48,173 @@ void SysMunmap(uptr base, u32 size);
 void SysPrintf(const char *fmt, ...);	// *DEPRECIATED* 
 
 
+static __forceinline void SysMunmap( void* base, u32 size )
+{
+	SysMunmap( (uptr)base, size );
+}
+
 // Console Namespace -- Replacements for SysPrintf.
 // SysPrintf is depreciated -- We should phase these in over time.
 namespace Console
 {
+	enum Colors
+	{
+		Color_Black = 0,
+		Color_Red,
+		Color_Green,
+		Color_Yellow,
+		Color_Blue,
+		Color_Magenta,
+		Color_Cyan,
+		Color_White
+	};
+
 	extern void Open();
 	extern void Close();
 	extern void SetTitle( const char* title );
 
+	// Changes the active console color.
+	// This color will be unset by calls to colored text methods
+	// such as ErrorMsg and Notice.
+	extern void __fastcall SetColor( Colors color );
+
+	// Restores the console color to default (usually low-intensity white on Win32)
+	extern void ClearColor();
+
 	// The following Write functions return bool so that we can use macros to exclude
 	// them from different buildypes.  The return values are always zero.
 
+	// Writes a newline to the console.
 	extern bool __fastcall WriteLn();
+
+	// Writes an unformatted string of text to the console (fast!)
+	// No newline is appended.
 	extern bool __fastcall Write( const char* fmt );
+
+	// Writes an unformatted string of text to the console (fast!)
+	// A newline is automatically appended.
 	extern bool __fastcall WriteLn( const char* fmt );
-	extern bool Format( const char* fmt, ... );
-	extern bool FormatLn( const char* fmt, ... );
+
+	// Writes a line of colored text to the console, with automatic newline appendage.
+	// The console color is reset to default when the operation is complete.
+	extern bool MsgLn( Colors color, const char* fmt, ... );
+
+	// Writes a line of colored text to the console (no newline).
+	// The console color is reset to default when the operation is complete.
+	extern bool Msg( Colors color, const char* fmt, ... );
+
+	// Writes a formatted message to the console (no newline)
+	extern bool Msg( const char* fmt, ... );
+
+	// Writes a formatted message to the console, with appended newline.
+	extern bool MsgLn( const char* fmt, ... );
+
+	// Displays a message in the console with red emphasis.
+	// Newline is automatically appended.
+	extern bool Error( const char* fmt, ... );
+
+	// Displays a message in the console with yellow emphasis.
+	// Newline is automatically appended.
+	extern bool Notice( const char* fmt, ... );
 }
+
+using Console::Color_Red;
+using Console::Color_Green;
+using Console::Color_Blue;
+using Console::Color_Magenta;
+using Console::Color_Cyan;
+using Console::Color_Yellow;
+using Console::Color_White;
+
+//////////////////////////////////////////////////////////////////
+// Class for allocating a resizable memory block.
+
+class MemoryAlloc
+{
+public:
+	static const int DefaultChunkSize = 0x1000;
+
+protected:
+	u8* m_ptr;
+	int m_alloc;	// size of the allocation of memory
+
+public: 
+	int ChunkSize;
+
+public:
+	virtual ~MemoryAlloc();
+	MemoryAlloc( int initalSize );
+	MemoryAlloc();
+
+	int GetSize() const { return m_alloc; }
+
+	// Gets the pointer to the beginning of the memory allocation.
+	// Returns null if no memory has been allocated to this handle.
+	void *GetPtr() { return m_ptr; }
+	const void *GetPtr() const { return m_ptr; }
+
+	void MakeRoomFor( int blockSize );
+
+};
+
+//////////////////////////////////////////////////////////////
+// Safe deallocation macros -- always check pointer validity (non-null)
+// and set pointer to null on deallocation.
+
+#define safe_delete( ptr ) \
+	if( ptr != NULL ) { \
+		delete ptr; \
+		ptr = NULL; \
+	}
+
+#define safe_delete_array( ptr ) \
+	if( ptr != NULL ) { \
+		delete[] ptr; \
+		ptr = NULL; \
+	}
+
+#define safe_free( ptr ) \
+	if( ptr != NULL ) { \
+		free( ptr ); \
+		ptr = NULL; \
+	}
+
+#define safe_aligned_free( ptr ) \
+	if( ptr != NULL ) { \
+		_aligned_free( ptr ); \
+		ptr = NULL; \
+	}
+
+#define SafeSysMunmap( ptr, size ) \
+	if( ptr != NULL ) { \
+		SysMunmap( (uptr)ptr, size ); \
+		ptr = NULL; \
+	}
+
 
 //////////////////////////////////////////////////////////////
 // Macros for ifdef'ing out specific lines of code.
 
 #ifdef PCSX2_DEVBUILD
 
-#	define DEVCODE(x) (x)
 #	define DevCon Console
-#	define PUBCODE 0&&
-
 static const bool IsDevBuild = true;
 
 #else
 
-#	define DEVCODE(x) 0&&(x)
 #	define DevCon 0&&Console
-#	define PUBCODE(x) (x)
-
 static const bool IsDevBuild = false;
 
 #endif
 
 #ifdef _DEBUG
 
-static const bool IsDebugBuild = true;
-
-#	define DBGCODE(x) (x)
 #	define DbgCon 0&&Console
+static const bool IsDebugBuild = true;
 
 #else
 
-#	define DBGCODE(x) 0&&
 #	define DbgCon 0&&Console
-
 static const bool IsDebugBuild = false;
 #endif
 

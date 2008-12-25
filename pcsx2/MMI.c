@@ -26,7 +26,7 @@
 namespace EE { namespace Interpreter{ namespace OpcodeImpl
 {
 
-void MMI_Unknown() { SysPrintf ("Unknown MMI opcode called\n"); }
+void MMI_Unknown() { Console::Notice("Unknown MMI opcode called"); }
 
 //*****************MMI OPCODES*********************************
 

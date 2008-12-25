@@ -75,8 +75,8 @@ void CDVDFS_init(){
 //						CDVDFS_open
 //	called by 80000001 fileio_open for devices: "cdrom:", "cdrom0:"
 //////////////////////////////////////////////////////////////////////
-int CDVDFS_open(char *name, int mode){
-	register int j;
+int CDVDFS_open(const char *name, int mode){
+	int j;
 	static struct TocEntry tocEntry;
 
 	// check if the file exists

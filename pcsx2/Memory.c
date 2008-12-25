@@ -104,19 +104,37 @@ u16 ba0R16(u32 mem) {
 /////////////////////////////
 #ifdef PCSX2_VIRTUAL_MEM
 
+class vm_alloc_failed_exception : public std::runtime_error
+{
+public:
+	void* requested_addr;
+	int requested_size;
+	void* returned_addr;
+
+	explicit vm_alloc_failed_exception( void* reqadr, uint reqsize, void* retadr ) :
+	  std::runtime_error( "virtual memory allocation failure." )
+	, requested_addr( reqadr )
+	, requested_size( reqsize )
+	, returned_addr( retadr )
+	{}
+};
+
 PSMEMORYBLOCK s_psM = {0}, s_psHw = {0}, s_psS = {0}, s_psxM = {0}, s_psVuMem = {0};
 
-#define PHYSICAL_ALLOC(ptr, size, block) { \
-	if(SysPhysicalAlloc(size, &block) == -1 ) \
-		goto eCleanupAndExit; \
-	if(SysVirtualPhyAlloc((void*)ptr, size, &block) == -1) \
-		goto eCleanupAndExit; \
-} \
+static void PHYSICAL_ALLOC( void* ptr, uint size, PSMEMORYBLOCK& block)
+{
+	if(SysPhysicalAlloc(size, &block) == -1 )
+		throw vm_alloc_failed_exception( ptr, size, NULL );
+	if(SysVirtualPhyAlloc(ptr, size, &block) == -1)
+		throw vm_alloc_failed_exception( ptr, size, NULL );
+}
 
-#define PHYSICAL_FREE(ptr, size, block) { \
-	SysVirtualFree(ptr, size); \
-	SysPhysicalFree(&block); \
-} \
+static void PHYSICAL_FREE( void* ptr, uint size, PSMEMORYBLOCK& block)
+{
+	SysVirtualFree(ptr, size);
+	SysPhysicalFree(&block);
+}
+
 
 #ifdef _WIN32 // windows implementation of vm
 
@@ -136,19 +154,19 @@ static PSMEMORYMAP initMemoryMap(uptr* aPFNs, uptr* aVFNs)
 // virtual memory blocks
 PSMEMORYMAP *memLUT = NULL;
 
-#define VIRTUAL_ALLOC(base, size, Protection) { \
-	LPVOID lpMemReserved = VirtualAlloc( base, size, MEM_RESERVE|MEM_COMMIT, Protection ); \
-	if( lpMemReserved == NULL || base != lpMemReserved ) \
-	{ \
-		SysPrintf("Cannot reserve memory at 0x%8.8x(%x), error: %d.\n", base, lpMemReserved, GetLastError()); \
-		goto eCleanupAndExit; \
-	} \
-} \
+static void VIRTUAL_ALLOC( void* base, uint size, uint Protection)
+{
+	LPVOID lpMemReserved = VirtualAlloc( base, size, MEM_RESERVE|MEM_COMMIT, Protection );
+	if( base != lpMemReserved )
+		throw vm_alloc_failed_exception( base, size, lpMemReserved );
+}
 
-#define VIRTUAL_FREE(ptr, size) { \
-	VirtualFree(ptr, size, MEM_DECOMMIT); \
-	VirtualFree(ptr, 0, MEM_RELEASE); \
-} \
+static void ReserveExtraMem( void* base, uint size )
+{
+	void* pExtraMem = VirtualAlloc(base, size, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
+	if( pExtraMem != base )
+		throw vm_alloc_failed_exception( base, size, pExtraMem);
+}
 
 int memInit() {
 
@@ -158,72 +176,81 @@ int memInit() {
 	// release the previous reserved mem
 	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
 
-	// allocate all virtual memory
-	PHYSICAL_ALLOC(PS2MEM_BASE, 0x02000000, s_psM);
-	VIRTUAL_ALLOC(PS2MEM_ROM, 0x00400000, PAGE_READONLY);
-	VIRTUAL_ALLOC(PS2MEM_ROM1, 0x00040000, PAGE_READONLY);
-	VIRTUAL_ALLOC(PS2MEM_ROM2, 0x00080000, PAGE_READONLY);
-	VIRTUAL_ALLOC(PS2MEM_EROM, 0x001C0000, PAGE_READONLY);
-	PHYSICAL_ALLOC(PS2MEM_SCRATCH, 0x00010000, s_psS);
-	PHYSICAL_ALLOC(PS2MEM_HW, 0x00010000, s_psHw);
-	PHYSICAL_ALLOC(PS2MEM_PSX, 0x00200000, s_psxM);
-	PHYSICAL_ALLOC(PS2MEM_VU0MICRO, 0x00010000, s_psVuMem);
+	try
+	{
+		// allocate all virtual memory
+		PHYSICAL_ALLOC(PS2MEM_BASE, 0x02000000, s_psM);
+		VIRTUAL_ALLOC(PS2MEM_ROM, 0x00400000, PAGE_READONLY);
+		VIRTUAL_ALLOC(PS2MEM_ROM1, 0x00040000, PAGE_READONLY);
+		VIRTUAL_ALLOC(PS2MEM_ROM2, 0x00080000, PAGE_READONLY);
+		VIRTUAL_ALLOC(PS2MEM_EROM, 0x001C0000, PAGE_READONLY);
+		PHYSICAL_ALLOC(PS2MEM_SCRATCH, 0x00010000, s_psS);
+		PHYSICAL_ALLOC(PS2MEM_HW, 0x00010000, s_psHw);
+		PHYSICAL_ALLOC(PS2MEM_PSX, 0x00200000, s_psxM);
+		PHYSICAL_ALLOC(PS2MEM_VU0MICRO, 0x00010000, s_psVuMem);
 
-	VIRTUAL_ALLOC(PS2MEM_PSXHW, 0x00010000, PAGE_READWRITE);
-	//VIRTUAL_ALLOC(PS2MEM_PSXHW2, 0x00010000, PAGE_READWRITE);
-	VIRTUAL_ALLOC(PS2MEM_PSXHW4, 0x00010000, PAGE_NOACCESS);
-	VIRTUAL_ALLOC(PS2MEM_GS, 0x00002000, PAGE_READWRITE);
-	VIRTUAL_ALLOC(PS2MEM_DEV9, 0x00010000, PAGE_NOACCESS);
-	VIRTUAL_ALLOC(PS2MEM_SPU2, 0x00010000, PAGE_NOACCESS);
-	VIRTUAL_ALLOC(PS2MEM_SPU2_, 0x00010000, PAGE_NOACCESS);
+		VIRTUAL_ALLOC(PS2MEM_PSXHW, 0x00010000, PAGE_READWRITE);
+		//VIRTUAL_ALLOC(PS2MEM_PSXHW2, 0x00010000, PAGE_READWRITE);
+		VIRTUAL_ALLOC(PS2MEM_PSXHW4, 0x00010000, PAGE_NOACCESS);
+		VIRTUAL_ALLOC(PS2MEM_GS, 0x00002000, PAGE_READWRITE);
+		VIRTUAL_ALLOC(PS2MEM_DEV9, 0x00010000, PAGE_NOACCESS);
+		VIRTUAL_ALLOC(PS2MEM_SPU2, 0x00010000, PAGE_NOACCESS);
+		VIRTUAL_ALLOC(PS2MEM_SPU2_, 0x00010000, PAGE_NOACCESS);
 
-	VIRTUAL_ALLOC(PS2MEM_B80, 0x00010000, PAGE_READWRITE);
-	VIRTUAL_ALLOC(PS2MEM_BA0, 0x00010000, PAGE_READWRITE);
+		VIRTUAL_ALLOC(PS2MEM_B80, 0x00010000, PAGE_READWRITE);
+		VIRTUAL_ALLOC(PS2MEM_BA0, 0x00010000, PAGE_READWRITE);
 
-	// reserve the left over 224Mb, don't map
-	pExtraMem = VirtualAlloc(PS2MEM_BASE+0x02000000, 0x0e000000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
-	if( pExtraMem != PS2MEM_BASE+0x02000000 )
-		goto eCleanupAndExit;
+		// reserve the left over 224Mb, don't map
+		ReserveExtraMem( PS2MEM_BASE+0x02000000, 0x0e000000 );
 
-	// reserve left over psx mem
-	pExtraMem = VirtualAlloc(PS2MEM_PSX+0x00200000, 0x00600000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
-	if( pExtraMem != PS2MEM_PSX+0x00200000 )
-		goto eCleanupAndExit;
+		// reserve left over psx mem
+		ReserveExtraMem( PS2MEM_PSX+0x00200000, 0x00600000 );
 
-	// reserve gs mem
-	pExtraMem = VirtualAlloc(PS2MEM_BASE+0x20000000, 0x10000000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
-	if( pExtraMem != PS2MEM_BASE+0x20000000 )
-		goto eCleanupAndExit;
-	
-	// special addrs mmap
-	VIRTUAL_ALLOC(PS2MEM_BASE+0x5fff0000, 0x10000, PAGE_READWRITE);
+		// reserve gs mem
+		ReserveExtraMem( PS2MEM_BASE+0x20000000, 0x10000000 );
+		
+		// special addrs mmap
+		VIRTUAL_ALLOC(PS2MEM_BASE+0x5fff0000, 0x10000, PAGE_READWRITE);
 
-	// alloc virtual mappings
-	memLUT = (PSMEMORYMAP*)_aligned_malloc(0x100000 * sizeof(PSMEMORYMAP), 16);
-	memset(memLUT, 0, sizeof(PSMEMORYMAP)*0x100000);
-	for (i=0; i<0x02000; i++) memLUT[i + 0x00000] = initMemoryMap(&s_psM.aPFNs[i], &s_psM.aVFNs[i]);
-	for (i=2; i<0x00010; i++) memLUT[i + 0x10000] = initMemoryMap(&s_psHw.aPFNs[i], &s_psHw.aVFNs[i]);
-	for (i=0; i<0x00800; i++) memLUT[i + 0x1c000] = initMemoryMap(&s_psxM.aPFNs[(i & 0x1ff)], &s_psxM.aVFNs[(i & 0x1ff)]);
-	for (i=0; i<0x00004; i++) memLUT[i + 0x11000] = initMemoryMap(&s_psVuMem.aPFNs[0], &s_psVuMem.aVFNs[0]);
-	for (i=0; i<0x00004; i++) memLUT[i + 0x11004] = initMemoryMap(&s_psVuMem.aPFNs[1], &s_psVuMem.aVFNs[1]);
-	for (i=0; i<0x00004; i++) memLUT[i + 0x11008] = initMemoryMap(&s_psVuMem.aPFNs[4+i], &s_psVuMem.aVFNs[4+i]);
-	for (i=0; i<0x00004; i++) memLUT[i + 0x1100c] = initMemoryMap(&s_psVuMem.aPFNs[8+i], &s_psVuMem.aVFNs[8+i]);
+		// alloc virtual mappings
+		memLUT = (PSMEMORYMAP*)_aligned_malloc(0x100000 * sizeof(PSMEMORYMAP), 16);
+		if( memLUT == NULL )
+			throw std::bad_alloc();
 
-	for (i=0; i<0x00004; i++) memLUT[i + 0x50000] = initMemoryMap(&s_psS.aPFNs[i], &s_psS.aVFNs[i]);
+		memset(memLUT, 0, sizeof(PSMEMORYMAP)*0x100000);
+		for (i=0; i<0x02000; i++) memLUT[i + 0x00000] = initMemoryMap(&s_psM.aPFNs[i], &s_psM.aVFNs[i]);
+		for (i=2; i<0x00010; i++) memLUT[i + 0x10000] = initMemoryMap(&s_psHw.aPFNs[i], &s_psHw.aVFNs[i]);
+		for (i=0; i<0x00800; i++) memLUT[i + 0x1c000] = initMemoryMap(&s_psxM.aPFNs[(i & 0x1ff)], &s_psxM.aVFNs[(i & 0x1ff)]);
+		for (i=0; i<0x00004; i++) memLUT[i + 0x11000] = initMemoryMap(&s_psVuMem.aPFNs[0], &s_psVuMem.aVFNs[0]);
+		for (i=0; i<0x00004; i++) memLUT[i + 0x11004] = initMemoryMap(&s_psVuMem.aPFNs[1], &s_psVuMem.aVFNs[1]);
+		for (i=0; i<0x00004; i++) memLUT[i + 0x11008] = initMemoryMap(&s_psVuMem.aPFNs[4+i], &s_psVuMem.aVFNs[4+i]);
+		for (i=0; i<0x00004; i++) memLUT[i + 0x1100c] = initMemoryMap(&s_psVuMem.aPFNs[8+i], &s_psVuMem.aVFNs[8+i]);
 
-	// map to other modes
-	memcpy(memLUT+0x80000, memLUT, 0x20000*sizeof(PSMEMORYMAP));
-	memcpy(memLUT+0xa0000, memLUT, 0x20000*sizeof(PSMEMORYMAP));
+		for (i=0; i<0x00004; i++) memLUT[i + 0x50000] = initMemoryMap(&s_psS.aPFNs[i], &s_psS.aVFNs[i]);
 
-	if (psxInit() == -1)
-		goto eCleanupAndExit;
+		// map to other modes
+		memcpy(memLUT+0x80000, memLUT, 0x20000*sizeof(PSMEMORYMAP));
+		memcpy(memLUT+0xa0000, memLUT, 0x20000*sizeof(PSMEMORYMAP));
 
-	return 0;
+		if(psxInit() == -1)
+			throw std::bad_alloc( "IOP memory allocations failed" );
 
-eCleanupAndExit:
-	if( pExtraMem != NULL )
-		VirtualFree(pExtraMem, 0x0e000000, MEM_RELEASE);
-	memShutdown();
+		return 0;
+	}
+	catch( vm_alloc_failed_exception& ex )
+	{
+		Console::Error( "Virtual Memory Error > Cannot reserve %dk memory block at 0x%8.8x",
+			ex.requested_size / 1024, ex.requested_addr );
+
+		Console::Error( "\tError code: %d  \tReturned address: 0x%8.8x",
+			GetLastError(), ex.returned_addr);
+
+		memShutdown();
+	}
+	catch( std::exception& )
+	{
+		memShutdown();
+	}
 	return -1;
 }
 
@@ -234,31 +261,34 @@ void memShutdown()
 	VirtualFree(PS2MEM_BASE+0x20000000, 0, MEM_RELEASE);
 
 	PHYSICAL_FREE(PS2MEM_BASE, 0x02000000, s_psM);
-	VIRTUAL_FREE(PS2MEM_ROM, 0x00400000);
-	VIRTUAL_FREE(PS2MEM_ROM1, 0x00080000);
-	VIRTUAL_FREE(PS2MEM_ROM2, 0x00080000);
-	VIRTUAL_FREE(PS2MEM_EROM, 0x001C0000);
+	SysMunmap(PS2MEM_ROM, 0x00400000);
+	SysMunmap(PS2MEM_ROM1, 0x00080000);
+	SysMunmap(PS2MEM_ROM2, 0x00080000);
+	SysMunmap(PS2MEM_EROM, 0x001C0000);
 	PHYSICAL_FREE(PS2MEM_SCRATCH, 0x00010000, s_psS);
 	PHYSICAL_FREE(PS2MEM_HW, 0x00010000, s_psHw);
 	PHYSICAL_FREE(PS2MEM_PSX, 0x00200000, s_psxM);
 	PHYSICAL_FREE(PS2MEM_VU0MICRO, 0x00010000, s_psVuMem);
 
-	VIRTUAL_FREE(PS2MEM_VU0MICRO, 0x00010000); // allocate for all VUs
+	SysMunmap(PS2MEM_VU0MICRO, 0x00010000); // allocate for all VUs
 
-	VIRTUAL_FREE(PS2MEM_PSXHW, 0x00010000);
-	//VIRTUAL_FREE(PS2MEM_PSXHW2, 0x00010000);
-	VIRTUAL_FREE(PS2MEM_PSXHW4, 0x00010000);
-	VIRTUAL_FREE(PS2MEM_GS, 0x00010000);
-	VIRTUAL_FREE(PS2MEM_DEV9, 0x00010000);
-	VIRTUAL_FREE(PS2MEM_SPU2, 0x00010000);
-	VIRTUAL_FREE(PS2MEM_SPU2_, 0x00010000);
+	SysMunmap(PS2MEM_PSXHW, 0x00010000);
+	//SysMunmap(PS2MEM_PSXHW2, 0x00010000);
+	SysMunmap(PS2MEM_PSXHW4, 0x00010000);
+	SysMunmap(PS2MEM_GS, 0x00010000);
+	SysMunmap(PS2MEM_DEV9, 0x00010000);
+	SysMunmap(PS2MEM_SPU2, 0x00010000);
+	SysMunmap(PS2MEM_SPU2_, 0x00010000);
 
-	VIRTUAL_FREE(PS2MEM_B80, 0x00010000);
-	VIRTUAL_FREE(PS2MEM_BA0, 0x00010000);
+	SysMunmap(PS2MEM_B80, 0x00010000);
+	SysMunmap(PS2MEM_BA0, 0x00010000);
+
+	// Special Addrs.. ?
+	SysMunmap(PS2MEM_BASE+0x5fff0000, 0x10000);
 
 	VirtualFree(PS2MEM_VU0MICRO, 0, MEM_RELEASE);
 
-	_aligned_free(memLUT); memLUT = NULL;
+	safe_aligned_free( memLUT );
 
 	// reserve mem
 	VirtualAlloc(PS2MEM_BASE, 0x40000000, MEM_RESERVE, PAGE_NOACCESS);
@@ -386,7 +416,7 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 			if( SysMapUserPhysicalPages((void*)curvaddr, 1, pmap->aPFNs, 0) )
 				return EXCEPTION_CONTINUE_EXECUTION;
 
-			SysPrintf("Fatal error, virtual page 0x%x cannot be found %d (p:%x,v:%x)\n",
+			Console::Error("Virtual Memory Error > page 0x%x cannot be found %d (p:%x,v:%x)\n",
 				addr-(u32)PS2MEM_BASE, GetLastError(), pmap->aPFNs[0], curvaddr);
 		}
 	}
@@ -2438,6 +2468,7 @@ int __fastcall vuMicroRead8(u32 addr,mem8_t* data)
 	*data=vu->Micro[addr];
 	return 0;
 }
+
 template<int vunum>
 int __fastcall vuMicroRead16(u32 addr,mem16_t* data)
 {
@@ -2447,6 +2478,7 @@ int __fastcall vuMicroRead16(u32 addr,mem16_t* data)
 	*data=*(u16*)&vu->Micro[addr];
 	return 0;
 }
+
 template<int vunum>
 int __fastcall vuMicroRead32(u32 addr,mem32_t* data)
 {
@@ -2456,6 +2488,7 @@ int __fastcall vuMicroRead32(u32 addr,mem32_t* data)
 	*data=*(u32*)&vu->Micro[addr];
 	return 0;
 }
+
 template<int vunum>
 int __fastcall vuMicroRead64(u32 addr,mem64_t* data)
 {
@@ -2465,6 +2498,7 @@ int __fastcall vuMicroRead64(u32 addr,mem64_t* data)
 	*data=*(u64*)&vu->Micro[addr];
 	return 0;
 }
+
 template<int vunum>
 int __fastcall vuMicroRead128(u32 addr,mem128_t* data)
 {
@@ -2475,6 +2509,7 @@ int __fastcall vuMicroRead128(u32 addr,mem128_t* data)
 	data[1]=*(u64*)&vu->Micro[addr+8];
 	return 0;
 }
+
 template<int vunum>
 void __fastcall vuMicroWrite8(u32 addr,mem8_t data)
 {
@@ -2491,6 +2526,7 @@ void __fastcall vuMicroWrite8(u32 addr,mem8_t data)
 			Cpu->ClearVU1(addr&(~7),1);
 	}
 }
+
 template<int vunum>
 void __fastcall vuMicroWrite16(u32 addr,mem16_t data)
 {
@@ -2507,6 +2543,7 @@ void __fastcall vuMicroWrite16(u32 addr,mem16_t data)
 			Cpu->ClearVU1(addr&(~7),1);
 	}
 }
+
 template<int vunum>
 void __fastcall vuMicroWrite32(u32 addr,mem32_t data)
 {
@@ -2523,6 +2560,7 @@ void __fastcall vuMicroWrite32(u32 addr,mem32_t data)
 			Cpu->ClearVU1(addr&(~7),1);
 	}
 }
+
 template<int vunum>
 void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 {
@@ -2539,6 +2577,7 @@ void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 			Cpu->ClearVU1(addr,1);
 	}
 }
+
 template<int vunum>
 void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 {
@@ -2556,6 +2595,7 @@ void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 			Cpu->ClearVU1(addr,2);
 	}
 }
+
 int memInit() 
 {
 	if (!vtlb_Init())
@@ -2698,6 +2738,7 @@ int memReset() {
 	memset(PS2MEM_BASE, 0, 0x02000000);
 	memset(PS2MEM_SCRATCH, 0, 0x00004000);
 #else
+	vtlb_Reset();
 	memset(psM, 0, 0x02000000);
 	memset(psS, 0, 0x00004000);
 #endif
@@ -2705,7 +2746,7 @@ int memReset() {
 	CombinePaths( Bios, Config.BiosDir, Config.Bios );
 
 	if (stat(Bios, &buf) == -1) {	
-		SysMessage(_("Unable to load bios: '%s', PCSX2 can't run without that"), Bios);
+		Console::Error(_("Unable to load bios: '%s', PCSX2 can't run without that"), Bios);
 		return 0;
 	}
 
@@ -2731,7 +2772,7 @@ int memReset() {
 	fclose(fp);
 
 	BiosVersion = GetBiosVersion();
-	SysPrintf("Bios Version %d.%d\n", BiosVersion >> 8, BiosVersion & 0xff);
+	Console::Notice("Bios Version %d.%d\n", BiosVersion >> 8, BiosVersion & 0xff);
 
 	//injectIRX("host.irx");	//not fully tested; still buggy
 
@@ -2784,6 +2825,7 @@ int mmap_GetRamPageInfo(void* ptr)
 	offset>>=12;
 	return (psMPWC[(offset/32)]&(1<<(offset&31)))?1:0;
 }
+
 void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 {
 #ifdef _WIN32
@@ -2805,7 +2847,7 @@ void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 }
 void mmap_ResetBlockTracking()
 {
-	SysPrintf("vtlb/mmap: Block Tracking reseted ..\n");
+	Console::WriteLn("vtlb/mmap: Block Tracking reseted ..");
 	memset(psMPWC,0,sizeof(psMPWC));
 	for(u32 i=0;i<(0x02000000>>12);i++)
 	{
@@ -2822,16 +2864,16 @@ void mmap_ResetBlockTracking()
 #ifdef _WIN32
 int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
-	struct _EXCEPTION_RECORD* ExceptionRecord = eps->ExceptionRecord;
-	struct _CONTEXT* ContextRecord = eps->ContextRecord;
+	const _EXCEPTION_RECORD& ExceptionRecord = *eps->ExceptionRecord;
+	//const _CONTEXT& ContextRecord = *eps->ContextRecord;
 	
-	if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+	if (ExceptionRecord.ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
 	{
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
 	// get bad virtual address
-	u32 offset = (u8*)eps->ExceptionRecord->ExceptionInformation[1]-psM;
+	u32 offset = (u8*)ExceptionRecord.ExceptionInformation[1]-psM;
 
 	if (offset>=0x02000000)
 		return EXCEPTION_CONTINUE_SEARCH;

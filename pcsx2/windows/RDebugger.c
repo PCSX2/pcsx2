@@ -17,8 +17,7 @@
  */
 
 
-#include <winsock2.h>
-#include <windows.h>
+#include "win32.h"
 #include <commctrl.h>
 #include <windowsx.h>
 #include "resource.h"
@@ -26,7 +25,6 @@
 #include "RDebugger.h"
 #include "Common.h"
 #include "PsxCommon.h"
-#include "win32.h"
 #include "../rdebug/deci2.h"
 
 u32		port=8510;

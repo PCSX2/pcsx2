@@ -89,6 +89,5 @@ void cdrWrite0(u8 rt);
 void cdrWrite1(u8 rt);
 void cdrWrite2(u8 rt);
 void cdrWrite3(u8 rt);
-int  cdrFreeze(gzFile f, int Mode);
 
 #endif /* __CDROM_H__ */

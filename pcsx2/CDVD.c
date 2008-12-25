@@ -583,7 +583,6 @@ s32 cdvdGetTrayStatus()
 }
 // Note: Is tray status being kept as a var here somewhere?
 //   cdvdNewDiskCB() can update it's status as well...
-extern int needReset;
 
 // Modified by (efp) - 16/01/2006
 s32 cdvdGetDiskType() {
@@ -596,9 +595,11 @@ s32 cdvdGetDiskType() {
 	//   or just throw it out. CDVDgetDiskType() sets type to "NODISC" anyway.
 
 	cdvd.Type = CDVDgetDiskType();
-	if (cdvd.Type == CDVD_TYPE_PS2CD && needReset == 1) {
+	if (cdvd.Type == CDVD_TYPE_PS2CD) // && needReset == 1)
+	{
 		char str[g_MaxPath];
-		if (GetPS2ElfName(str) == 1) {
+		if (GetPS2ElfName(str) == 1)
+		{
 			cdvd.Type = CDVD_TYPE_PSCD;
 		} // ENDIF- Does the SYSTEM.CNF file only say "BOOT="? PS1 CD then.
 	} // ENDIF- Is the type listed as a PS2 CD?
@@ -717,16 +718,14 @@ void cdvdReset()
 
 }
 
-int  cdvdFreeze(gzFile f, int Mode)
+void SaveState::cdvdFreeze()
 {
-	gzfreeze(&cdvd, sizeof(cdvd));
-	if (Mode == FREEZE_LOAD) {
-		if (cdvd.Reading) {
-			cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
-		}
-	}
+	Freeze(cdvd);
 
-	return 0;
+	// Make sure the Cdvd plugin has the expected track loaded into the buffer.
+
+	if( IsLoading() && cdvd.Reading)
+		cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
 }
 
 int  cdvdInterrupt() {

@@ -89,7 +89,7 @@ struct TESTRUNARGS
 	int numimages;
 	int curimage;
 	u32 autopad; // mask for auto buttons
-	int efile;
+	bool efile;
 	int snapdone;
 
 	const char* ptitle;

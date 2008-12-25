@@ -93,7 +93,5 @@ void vif1Write32(u32 mem, u32 value);
 
 void vif0Reset();
 void vif1Reset();
-int  vif0Freeze(gzFile f, int Mode);
-int  vif1Freeze(gzFile f, int Mode);
 
 #endif

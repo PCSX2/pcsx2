@@ -252,23 +252,18 @@ _start:
 
 	memcpy((char*)PSXM(sp), save, 4*4);
 
-	SysPrintf( "%s", tmp);
+	Console::Msg( Color_Cyan, "%s", tmp);
 
 	pc0 = ra;
 }
 
 void bios_putchar () { // 3d
-    char tmp[12];
-
-    sprintf (tmp,"%c",(char)a0);
-    SysPrintf(tmp);
-
+    Console::Msg( Color_Cyan, "%c", a0 );
     pc0 = ra;
 }
 
 void bios_puts () { // 3e/3f
-    SysPrintf(Ra0);
-
+    Console::Msg( Color_Cyan, Ra0 );
     pc0 = ra;
 }
 

@@ -214,7 +214,7 @@ void cpudetectInit( void )
    u32 x86_64_8BITBRANDID;
    u32 x86_64_12BITBRANDID; 
    int num;
-   char str[50];	
+   char str[50];
 	
    memset( cpuinfo.x86ID, 0, sizeof( cpuinfo.x86ID ) );
    cpuinfo.x86Family = 0;

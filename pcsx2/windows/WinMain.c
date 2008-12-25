@@ -16,13 +16,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#define WINVER 0x0500
+#include "win32.h"
 
-#if _WIN32_WINNT < 0x0501
-#define _WIN32_WINNT 0x0501
-#endif
-
-#include <windows.h>
+#include <winnt.h>
 #include <windowsx.h>
 #include <commctrl.h>
 #include <stdio.h>
@@ -37,8 +33,6 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
-#include "win32.h"
-#include "resource.h"
 #include "debugger.h"
 #include "rdebugger.h"
 #include "AboutDlg.h"
@@ -56,10 +50,11 @@
 
 #define COMPILEDATE         __DATE__
 
-static int efile;
-static char filename[g_MaxPath];
-static int AccBreak = 0;
+static bool AccBreak = false;
 static unsigned int langsMax;
+static bool m_ReturnToGame = false;		// set to exit the RunGui message pump
+
+bool g_GameInProgress = false;	// Set TRUE if a game is actively running.
 
 // This instance is not modified by command line overrides so
 // that command line plugins and stuff won't be saved into the
@@ -70,9 +65,6 @@ HWND hStatusWnd;
 AppData gApp;
 
 extern int g_SaveGSStream;
-
-int needReset = 1;
-int RunExe = 0;
 
 struct _langs {
 	TCHAR lang[256];
@@ -88,54 +80,94 @@ void strcatz(char *dst, char *src) {
 	strcpy(dst + len, src);
 }
 
+static MemoryAlloc* g_RecoveryState = NULL;
+
 //2002-09-20 (Florin)
 BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);//forward def
 //-------------------
 
-void RunExecute(int run) {
+void ExecuteCpu()
+{
+	// This tells the WM_DELETE handler of our GUI that we don't want the
+	// system and plugins shut down, thanks...
+	if( UseGui )
+        AccBreak = true;
+
+	// ... and destroy the window.  Ugly thing.
+	DestroyWindow(gApp.hWnd);
+	gApp.hWnd = NULL;
+
+	g_GameInProgress = true;
+	Cpu->Execute();
+	g_GameInProgress = false;
+}
+
+// Runs and ELF image directly (ISO or ELF program or BIN)
+// Used by Run::FromCD and such
+void RunExecute( const char* elf_file )
+{
 	SetThreadPriority(GetCurrentThread(), Config.ThPriority);
 	SetPriorityClass(GetCurrentProcess(), Config.ThPriority == THREAD_PRIORITY_HIGHEST ? ABOVE_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS);
     nDisableSC = 1;
 
-	if (needReset == 1) {
-		if( !SysReset() ) return;
-	}
+	g_GameInProgress = false;
 
-    if( UseGui )
-        AccBreak = 1;
+	if( !cpuReset() )
+		throw std::runtime_error( "Cpu failed to initialize." );
 
-	DestroyWindow(gApp.hWnd);
-	gApp.hWnd = NULL;
-
-	if (OpenPlugins(g_TestRun.ptitle) == -1) {
-		CreateMainWindow(SW_SHOWNORMAL);
+	if (OpenPlugins(g_TestRun.ptitle) == -1)
 		return;
+
+	if( elf_file == NULL || elf_file[0] == 0)
+	{
+		if(g_RecoveryState != NULL)
+		{
+			try
+			{
+				memLoadingState( *g_RecoveryState ).FreezeAll();
+			}
+			catch( std::runtime_error& ex )
+			{
+				SysMessage(
+					"Gamestate recovery failed.  Your game progress will be lost (sorry!)\n"
+					"\nError: %s\n", ex.what() );
+
+				// Take the user back to the GUI...
+				safe_delete( g_RecoveryState );
+				ClosePlugins();
+				return;
+			}
+			safe_delete( g_RecoveryState );
+		}
+		else
+		{
+			// Not recovering a state, so need to execute the bios and load the ELF information.
+
+			// Note: if the elf_file is null we use the CDVD elf file.
+			// But if the elf_file is an empty string then we boot the bios instead.
+
+			cpuExecuteBios();
+			char ename[g_MaxPath];
+			GetPS2ElfName(ename);
+			loadElfFile( (elf_file == NULL) ? ename : "");
+		}
+	}
+	else
+	{
+		// Custom ELF specified (not using CDVD).
+		// Run the BIOS and load the ELF.
+
+		cpuExecuteBios();
+		loadElfFile( elf_file );
 	}
 
-	if (needReset == 1) {
-		if(RunExe == 0) cpuExecuteBios();
-		if(!efile) efile=GetPS2ElfName(filename);
-		loadElfFile(filename);
-		
-		RunExe = 0;
-		efile=0;
-		needReset = 0;
-	}
+	// this needs to be called for every new game!
+	// (note: sometimes launching games through bios will give a crc of 0)
 
-	// this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
 	if( GSsetGameCRC != NULL )
 		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
 
-	if (run)
-	{
-		// This makes sure the Windows Kernel is using high resolution
-		// timeslices for Sleep calls.
-		// (may not make much difference on most desktops but
-		//  can improve performance a lot on laptops).
-		timeBeginPeriod( 1 );
-		Cpu->Execute();
-		timeEndPeriod( 1 );
-	}
+	ExecuteCpu();
 }
 
 int Slots[5] = { -1, -1, -1, -1, -1 };
@@ -151,7 +183,9 @@ void ResetMenuSlots() {
 	}
 }
 
-void UpdateMenuSlots() {
+// fixme - this looks like the beginnings of a dynamic "list of valid saveslots"
+// feature.  Too bad it's never called and CheckState was old/dead code.
+/*void UpdateMenuSlots() {
 	char str[g_MaxPath];
 	int i;
 
@@ -159,43 +193,112 @@ void UpdateMenuSlots() {
 		sprintf_s (str, g_MaxPath, "sstates\\%8.8X.%3.3d", ElfCRC, i);
 		Slots[i] = CheckState(str);
 	}
+}*/
+
+static void States_Load( const char* file, int num=-1 )
+{
+	struct stat buf;
+	if( stat(file, &buf ) == -1 )
+	{
+		Console::Notice( "Saveslot %d is empty.", num );
+		return;
+	}
+
+	try
+	{
+		char Text[128];
+		gzLoadingState joe( file );		// this'll throw an UnsupportedStateVersion.
+
+		// Make sure the cpu and plugins are ready to be state-ified!
+		cpuReset();
+		OpenPlugins( NULL );
+
+		joe.FreezeAll();
+
+		if( num != -1 )
+			sprintf (Text, _("*PCSX2*: Loaded State %d"), num);
+		else
+			sprintf (Text, _("*PCSX2*: Loaded State %s"), file);
+
+		StatusSet( Text );
+	}
+	catch( Exception::UnsupportedStateVersion& )
+	{
+		if( num != -1 )
+			SysMessage( _( "Savestate slot %d is an unsupported version." ), num);
+		else
+			SysMessage( _( "%s : This is an unsupported savestate version." ), file);
+
+		// At this point the cpu hasn't been reset, so we can return
+		// control to the user safely...
+
+		return;
+	}
+	catch( std::exception& ex )
+	{
+		if( num != -1 )
+			Console::Error( _("Error occured while trying to load savestate slot %d"), num);
+		else
+			Console::Error( _("Error occured while trying to load savestate file: %d"), file);
+
+		Console::Error( ex.what() );
+
+		// The emulation state is ruined.  Might as well give them a popup and start the gui.
+
+		SysMessage( _( 
+			"An error occured while trying to load the savestate data.\n"
+			"Pcsx2 emulation state has been reset."
+		) );
+
+		cpuShutdown();
+		return;
+	}
+
+	// Start emulating!
+	ExecuteCpu();
 }
 
-void States_Load(int num) {
+static void States_Save( const char* file, int num=-1 )
+{
+	try
+	{
+		char Text[128];
+		gzSavingState(file).FreezeAll();
+		if( num != -1 )
+			sprintf( Text, _( "State saved to slot %d" ), num );
+		else
+			sprintf( Text, _( "State saved to file: %s" ), file );
+
+		StatusSet( Text );
+	}
+	catch( std::exception& ex )
+	{
+		if( num != -1 )
+			SysMessage( _("An error occured while trying to save to slot %d"), num );
+		else
+			SysMessage( _("An error occured while trying to save to file: %s"), file );
+
+		Console::Error( _( "Save state request failed with the following error:" ) );
+		Console::Error( ex.what() );
+	}
+}
+
+static void States_Load(int num)
+{
 	char Text[g_MaxPath];
-	int ret;
-
-	efile = 0;
-	RunExecute(0);
-
-	sprintf_s(Text, g_MaxPath, "sstates\\%8.8X.%3.3d", ElfCRC, num);
-	ret = LoadState(Text);
-	if (ret == 0)
-		sprintf (Text, _("*PCSX2*: Loaded State %d"), num+1);
-	else
-		sprintf (Text, _("*PCSX2*: Error Loading State %d"), num+1);
-	StatusSet(Text);
-
-	Cpu->Execute();
+	SaveState::GetFilename( Text, num );
+	States_Load( Text, num );
 }
 
-void States_Save(int num) {
-	char Text[256];
-	int ret;
-
-
-	sprintf (Text, "sstates\\%8.8X.%3.3d", ElfCRC, num); 
-	ret = SaveState(Text);
-	if (ret == 0)
-		sprintf(Text, _("*PCSX2*: Saving State %d"), num+1);
-	else
-		sprintf(Text, _("*PCSX2*: Error Saving State %d"), num+1);
-	StatusSet(Text);
-
-	RunExecute(1);
+static void States_Save(int num)
+{
+	char Text[g_MaxPath];
+	SaveState::GetFilename( Text, num );
+	States_Save( Text, num );
 }
 
-void OnStates_LoadOther() {
+void OnStates_LoadOther()
+{
 	OPENFILENAME ofn;
 	char szFileName[g_MaxPath];
 	char szFileTitle[g_MaxPath];
@@ -222,29 +325,9 @@ void OnStates_LoadOther() {
     ofn.lpstrDefExt			= "EXE";
     ofn.Flags				= OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
 
-	if (GetOpenFileName ((LPOPENFILENAME)&ofn)) {
-		char Text[g_MaxPath];
-		int ret;
-
-		efile = 2;
-		RunExecute(0);
-
-		ret = LoadState(szFileName);
-
-		if (ret == 0)
-			 sprintf_s(Text, g_MaxPath, _("*PCSX2*: Saving State %s"), szFileName);
-		else sprintf_s(Text, g_MaxPath, _("*PCSX2*: Error Saving State %s"), szFileName);
-		StatusSet(Text);
-
-		Cpu->Execute();
-	}
+	if (GetOpenFileName ((LPOPENFILENAME)&ofn)) 
+		States_Load( szFileName );
 } 
-
-void OnStates_Save1() { States_Save(0); } 
-void OnStates_Save2() { States_Save(1); } 
-void OnStates_Save3() { States_Save(2); } 
-void OnStates_Save4() { States_Save(3); } 
-void OnStates_Save5() { States_Save(4); } 
 
 const char* g_pRunGSState = NULL;
 
@@ -275,18 +358,8 @@ void OnStates_SaveOther() {
     ofn.lpstrDefExt			= "EXE";
     ofn.Flags				= OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
 
-	if (GetOpenFileName ((LPOPENFILENAME)&ofn)) {
-		char Text[g_MaxPath];
-		int ret;
-
-		ret = SaveState(szFileName);
-		if (ret == 0)
-			 sprintf_s(Text, g_MaxPath, _("*PCSX2*: Loaded State %s"), szFileName);
-		else sprintf_s(Text, g_MaxPath, _("*PCSX2*: Error Loading State %s"), szFileName);
-		StatusSet(Text);
-
-		RunExecute(1);
-	}
+	if (GetOpenFileName ((LPOPENFILENAME)&ofn))
+		States_Save( szFileName );
 }
 
 
@@ -452,7 +525,7 @@ static int ParseCommandLine( int tokenCount, TCHAR *const *const tokens )
 			}
 
 			else if( CmdSwitchIs( "efile" ) ) {
-				g_TestRun.efile = atoi( param );
+				g_TestRun.efile = !!atoi( param );
 			}
 			else if( CmdSwitchIs( "loadgs" ) ) {
 				g_pRunGSState = param;
@@ -491,6 +564,23 @@ static int ParseCommandLine( int tokenCount, TCHAR *const *const tokens )
 		}
 	}
 	return 0;
+}
+
+static void WinClose()
+{
+	// Don't check Config.Profiler here -- the Profiler will know if it's running or not.
+	ProfilerTerm();
+	timeEndPeriod( 1 );
+
+	SysClose();
+	ReleasePlugins();
+	Console::Close();
+
+#ifdef PCSX2_VIRTUAL_MEM
+	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
+#endif
+
+	exit(0);
 }
 
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
@@ -603,8 +693,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		Console::Open();
 
-		if( lpCmdLine == NULL || *lpCmdLine == 0 )
-			Console::WriteLn("-help to see arguments");
+		//if( lpCmdLine == NULL || *lpCmdLine == 0 )
+		//	Console::WriteLn("-help to see arguments");
 	}
 
 	// Load the command line overrides for plugins:
@@ -614,17 +704,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if( g_TestRun.pgsdll )
 	{
 		_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
-		Console::FormatLn( "* GS plugin override: \n\t%s\n", Config.GS );
+		Console::Notice( "* GS plugin override: \n\t%s\n", Config.GS );
 	}
 	if( g_TestRun.pcdvddll )
 	{
 		_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
-		Console::FormatLn( "* CDVD plugin override: \n\t%s\n", Config.CDVD );
+		Console::Notice( "* CDVD plugin override: \n\t%s\n", Config.CDVD );
 	}
 	if( g_TestRun.pspudll )
 	{
 		_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
-		Console::FormatLn( "* SPU2 plugin override: \n\t%s\n", Config.SPU2 );
+		Console::Notice( "* SPU2 plugin override: \n\t%s\n", Config.SPU2 );
 	}
 
 	// [TODO] : Add the other plugin overrides here...
@@ -634,6 +724,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ProfilerInit();
 #endif
 
+	// This makes sure the Windows Kernel is using high resolution
+	// timeslices for Sleep calls.
+	// (may not make much difference on most desktops but can improve performance
+	//  a lot on laptops).
+	timeBeginPeriod( 1 );
+
 	InitCPUTicks();
 	if (SysInit() == -1) return 1;
 
@@ -641,17 +737,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if( g_TestRun.enabled || g_TestRun.ptitle != NULL ) {
 		// run without ui
         UseGui = 0;
-		_snprintf(filename, sizeof(filename), "%s", g_TestRun.ptitle);
-		needReset = 1;
-		efile = g_TestRun.efile;
-		RunExecute(1);
-		SysClose();
+		SysReset();
+		RunExecute( g_TestRun.efile ? g_TestRun.ptitle : NULL );
+		WinClose();
 		return 0; // success!
 	}
 
 	if( g_pRunGSState ) {
 		LoadGSState(g_pRunGSState);
-		SysClose();
+		WinClose();
 		return 0;
 	}
 #endif
@@ -661,21 +755,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if( Config.PsxOut )
 	{
 	    // output the help commands
-		Console::WriteLn("\tF1 - save state");
-	    Console::WriteLn("\t(Shift +) F2 - cycle states");
-	    Console::WriteLn("\tF3 - load state");
+		Console::SetColor( Console::Color_White );
 
-	    DevCon::WriteLn("\tF10 - dump performance counters");
-	    DevCon::WriteLn("\tF11 - save GS state");
-	    DevCon::WriteLn("\tF12 - dump hardware registers");
+		Console::WriteLn( "Hotkeys:" );
+
+		Console::WriteLn(
+			"\tF1  - save state\n"
+			"\t(Shift +) F2 - cycle states\n"
+			"\tF3  - load state"
+		);
+
+	    DevCon::WriteLn(
+			"\tF10 - dump performance counters\n"
+			"\tF11 - save GS state\n"
+			"\tF12 - dump hardware registers"
+		);
+		Console::ClearColor();
     }
 
 	LoadPatch("default");
-
-//    needReset = 1;
-//	efile = 0;
-//	RunExecute(1);
-
 	RunGui();
 
 	}
@@ -683,19 +781,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 	}
 
-	#ifdef PCSX2_VIRTUAL_MEM
+	// Note : Because of how the GUI and recompiler function, this area of
+	// the code is effectively unreachable.  Program termination is handled
+	// by a call to WinClose instead. (above)
 
-	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
-#endif
-
-	// Don't check Config.Profiler here -- the Profiler will know if it's running or not.
-	ProfilerTerm();
 	return 0;
 }
+
 
 void RunGui() {
     MSG msg;
 
+	SetFocus( gApp.hWnd );
     for (;;) {
 		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
@@ -706,13 +803,10 @@ void RunGui() {
 	}
 }
 
-static int m_ReturnToGame = 0;		// set to 1 to exit the RunGui message pump
-static int m_GameInProgress = 0;	// if set to 1, Run->Execute will return instead of starting a new cpu->Execute session.
-
 void RunGuiAndReturn() {
     MSG msg;
 
-	m_ReturnToGame = 0;
+	m_ReturnToGame = false;
     while( !m_ReturnToGame ) {
 		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
@@ -721,13 +815,91 @@ void RunGuiAndReturn() {
 
 		Sleep(10);
 	}
+
+	// re-init plugins before returning execution:
+
+	OpenPlugins( NULL );
+	AccBreak = true;
+	DestroyWindow(gApp.hWnd);
 }
 
+BOOL Open_File_Proc( std::string& outstr )
+{
+	OPENFILENAME ofn;
+	char szFileName[ g_MaxPath ];
+	char szFileTitle[ g_MaxPath ];
+	char * filter = "ELF Files (*.ELF)\0*.ELF\0ALL Files (*.*)\0*.*\0";
+
+	memset( &szFileName, 0, sizeof( szFileName ) );
+	memset( &szFileTitle, 0, sizeof( szFileTitle ) );
+
+	ofn.lStructSize			= sizeof( OPENFILENAME );
+	ofn.hwndOwner			= gApp.hWnd;
+	ofn.lpstrFilter			= filter;
+	ofn.lpstrCustomFilter   = NULL;
+	ofn.nMaxCustFilter		= 0;
+	ofn.nFilterIndex		= 1;
+	ofn.lpstrFile			= szFileName;
+	ofn.nMaxFile			= g_MaxPath;
+	ofn.lpstrInitialDir		= NULL;
+	ofn.lpstrFileTitle		= szFileTitle;
+	ofn.nMaxFileTitle		= g_MaxPath;
+	ofn.lpstrTitle			= NULL;
+	ofn.lpstrDefExt			= "ELF";
+	ofn.Flags				= OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
+	 
+	if (GetOpenFileName(&ofn)) {
+		struct stat buf;
+
+		if (stat(szFileName, &buf) != 0) {
+			return FALSE;
+		}
+
+		outstr.assign( szFileName );
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+//2002-09-20 (Florin)
+BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+        case WM_INITDIALOG:
+			SetWindowText(hDlg, _("Program arguments"));
+
+			Button_SetText(GetDlgItem(hDlg, IDOK), _("OK"));
+			Button_SetText(GetDlgItem(hDlg, IDCANCEL), _("Cancel"));
+			Static_SetText(GetDlgItem(hDlg, IDC_TEXT), _("Fill in the command line arguments for opened program:"));
+			Static_SetText(GetDlgItem(hDlg, IDC_TIP), _("Tip: If you don't know what to write\nleave it blank"));
+
+            SetDlgItemText(hDlg, IDC_CMDLINE, args);
+            return TRUE;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == IDOK)
+            {
+				char tmp[256];
+
+				GetDlgItemText(hDlg, IDC_CMDLINE, tmp, 256);
+
+				strcpy_s(args, 256, tmp);
+                
+                EndDialog(hDlg, TRUE);
+            } else if (LOWORD(wParam) == IDCANCEL) {
+                EndDialog(hDlg, TRUE);
+            }
+            return TRUE;
+    }
+
+    return FALSE;
+}
 
 static int shiftkey = 0;
 void CALLBACK KeyEvent(keyEvent* ev)
 {
-	
 	if (ev == NULL) return;
 	if (ev->evt == KEYRELEASE) {
 		switch (ev->key) {
@@ -745,18 +917,24 @@ void CALLBACK KeyEvent(keyEvent* ev)
     
 	switch (ev->key) {
 		case VK_SHIFT: shiftkey = 1; break;
-		case VK_F1: ProcessFKeys(1, shiftkey); break;
-		case VK_F2: ProcessFKeys(2, shiftkey); break;
-        case VK_F3: ProcessFKeys(3, shiftkey); break;
-        case VK_F4: ProcessFKeys(4, shiftkey); break;
-        case VK_F5: ProcessFKeys(5, shiftkey); break;
-        case VK_F6: ProcessFKeys(6, shiftkey); break;
-        case VK_F7: ProcessFKeys(7, shiftkey); break;
-        case VK_F8: ProcessFKeys(8, shiftkey); break;
-        case VK_F9: ProcessFKeys(9, shiftkey); break;
-        case VK_F10: ProcessFKeys(10, shiftkey); break;
-        case VK_F11: ProcessFKeys(11, shiftkey); break;
-        case VK_F12: ProcessFKeys(12, shiftkey); break;
+
+		case VK_F1: case VK_F2:  case VK_F3:  case VK_F4:
+		case VK_F5: case VK_F6:  case VK_F7:  case VK_F8:
+		case VK_F9: case VK_F10: case VK_F11: case VK_F12:
+			try
+			{
+				ProcessFKeys(ev->key-VK_F1 + 1, shiftkey);
+			}
+			catch( Exception::CpuStateShutdown& )
+			{
+				// Woops!  Something was unrecoverable.  Bummer.
+				// Let's give the user a RunGui!
+
+				g_GameInProgress = false;
+				RunGui();	// ah the beauty of perpetual stack recursion! (air)
+			}
+		break;
+
 		/*case VK_NUMPAD0:
 			Config.Hacks ^= 2;
 			if (Config.Hacks & 2) {SysPrintf( "Overflow Check OFF\n" );} else {SysPrintf( "Overflow Check ON\n" );}
@@ -773,23 +951,19 @@ void CALLBACK KeyEvent(keyEvent* ev)
 
 			if (CHECK_ESCAPE_HACK) {
 				PostMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
-				ClosePlugins();
-				//SysClose();
-				exit(0);
+				WinClose();
 			}
 			else {
 				ClosePlugins();
 
 				if( !UseGui ) {
 					// not using GUI and user just quit, so exit
-					exit(0);
+					WinClose();
 				}
 
 				CreateMainWindow(SW_SHOWNORMAL);
-				m_GameInProgress = 1;
 				nDisableSC = 0;
 				RunGuiAndReturn();
-				m_GameInProgress = 0;
 			}
 			break;
 
@@ -823,6 +997,7 @@ BOOL APIENTRY LogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 				SaveConfig();              
 
                 EndDialog(hDlg, TRUE);
+				return FALSE;
             } 
             return TRUE;
     }
@@ -832,30 +1007,6 @@ BOOL APIENTRY LogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 
 #endif
 
-BOOL APIENTRY AdvancedProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
-
-    switch (message) {
-        case WM_INITDIALOG:
-            return TRUE;
-
-        case WM_COMMAND:
-            if (LOWORD(wParam) == IDOK) {
-				SaveConfig();              
-                EndDialog(hDlg, TRUE);
-            } 
-			else if (LOWORD(wParam) == IDCANCEL) {
-                EndDialog(hDlg, FALSE);
-            }
-			else if (LOWORD(wParam) == IDC_ADVRESET) {
-				CheckDlgButton(hDlg, IDC_REGCACHING, FALSE);
-				CheckDlgButton(hDlg, IDC_SPU2HACK, FALSE);
-            } 
-			else return TRUE;
-    }
-
-    return FALSE;
-}
-
 BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
@@ -863,21 +1014,31 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			if(Config.GameFixes & 0x2) CheckDlgButton(hDlg, IDC_GAMEFIX2, TRUE);
 			if(Config.GameFixes & 0x4) CheckDlgButton(hDlg, IDC_GAMEFIX3, TRUE);
 			if(Config.GameFixes & 0x8) CheckDlgButton(hDlg, IDC_GAMEFIX4, TRUE);
-            return TRUE;
+		return TRUE;
 
         case WM_COMMAND:
-            if (LOWORD(wParam) == IDOK) {  
-				Config.GameFixes = 0;
-				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX2) ? 0x2 : 0;
-				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX3) ? 0x4 : 0;
-				Config.GameFixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX4) ? 0x8 : 0;
-				SaveConfig();
+            if (LOWORD(wParam) == IDOK)
+			{
+				uint newfixes = 0;
+				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX2) ? 0x2 : 0;
+				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX3) ? 0x4 : 0;
+				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX4) ? 0x8 : 0;
+				
 				EndDialog(hDlg, TRUE);
+
+				if( newfixes != Config.GameFixes )
+				{
+					Config.GameFixes = newfixes;
+					SysRestorableReset();
+					SaveConfig();
+				}
+				return FALSE;
             } 
 			else if (LOWORD(wParam) == IDCANCEL) {
                 EndDialog(hDlg, TRUE);
+				return FALSE;
             }
-            return TRUE;
+		return TRUE;
     }
 
     return FALSE;
@@ -894,169 +1055,32 @@ BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
         case WM_COMMAND:
-			switch (LOWORD(wParam)) {
+			switch (LOWORD(wParam))
+			{
 				case IDOK:
-					Config.Hacks = 0;
-					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
-					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
-					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
-					Config.Hacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
-					SaveConfig(); 
+				{
+					uint newhacks = 0;
+					newhacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
+					newhacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
+					newhacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
+					newhacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
+
 					EndDialog(hDlg, TRUE);
-					break;
+
+					if( newhacks != Config.Hacks )
+					{
+						SysRestorableReset();
+						Config.Hacks = newhacks;
+						SaveConfig();
+					}
+				}
+				return FALSE;
 
 				case IDCANCEL:
 					EndDialog(hDlg, FALSE);
-					break;
-
-				default: return TRUE;
+				return FALSE;
 			}
-    }
-
-    return FALSE;
-}
-
-BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-        case WM_INITDIALOG:
-			CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ((Config.sseMXCSR & 0x6000) >> 13));
-			CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ((Config.sseVUMXCSR & 0x6000) >> 13));
-			CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + ((Config.eeOptions & 0x2) ? 2 : (Config.eeOptions & 0x1)));
-
-			if		(Config.vuOptions & 0x4)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 3);
-			else if (Config.vuOptions & 0x2)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 2);
-			else if (Config.vuOptions & 0x1)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 1);
-			else								CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 0);
-					
-			if (Config.sseMXCSR & 0x8000)	CheckDlgButton(hDlg, IDC_EE_CHECK1, TRUE);
-			if (Config.sseVUMXCSR & 0x8000) CheckDlgButton(hDlg, IDC_VU_CHECK1, TRUE);
-
-			if( !cpucaps.hasStreamingSIMD2Extensions ) {	
-				// SSE1 cpus do not support Denormals Are Zero flag.
-				Config.sseMXCSR &= ~0x0040;
-				Config.sseVUMXCSR &= ~0x0040;
-				EnableWindow( GetDlgItem( hDlg, IDC_EE_CHECK2 ), FALSE );
-				EnableWindow( GetDlgItem( hDlg, IDC_VU_CHECK2 ), FALSE );
-				CheckDlgButton( hDlg, IDC_EE_CHECK2, FALSE );
-				CheckDlgButton( hDlg, IDC_VU_CHECK2, FALSE );
-			}
-			else {
-				if (Config.sseMXCSR & 0x0040)	CheckDlgButton(hDlg, IDC_EE_CHECK2, TRUE);
-				if (Config.sseVUMXCSR & 0x0040) CheckDlgButton(hDlg, IDC_VU_CHECK2, TRUE);
-			}
-
-			return TRUE;
-
-        case WM_COMMAND:
-            switch (LOWORD(wParam))
-			{
-				case IDOK:
-
-					Config.sseMXCSR		&= 0x1fbf;
-					Config.sseVUMXCSR	&= 0x1fbf;
-					Config.eeOptions	 = 0x0000;
-					Config.vuOptions	 = 0x0000;
-
-					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE0) ? 0x0000 : 0; // Round Nearest
-					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE1) ? 0x2000 : 0; // Round Negative
-					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE2) ? 0x4000 : 0; // Round Postive
-					Config.sseMXCSR |= IsDlgButtonChecked(hDlg, IDC_EE_ROUNDMODE3) ? 0x6000 : 0; // Round Zero / Chop
-
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE0) ? 0x0000 : 0; // Round Nearest
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE1) ? 0x2000 : 0; // Round Negative
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE2) ? 0x4000 : 0; // Round Postive
-					Config.sseVUMXCSR |= IsDlgButtonChecked(hDlg, IDC_VU_ROUNDMODE3) ? 0x6000 : 0; // Round Zero / Chop
-
-					Config.eeOptions |= IsDlgButtonChecked(hDlg, IDC_EE_CLAMPMODE0) ? 0x0 : 0;
-					Config.eeOptions |= IsDlgButtonChecked(hDlg, IDC_EE_CLAMPMODE1) ? 0x1 : 0;
-					Config.eeOptions |= IsDlgButtonChecked(hDlg, IDC_EE_CLAMPMODE2) ? 0x3 : 0;
-
-					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE0) ? 0x0 : 0;
-					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE1) ? 0x1 : 0;
-					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE2) ? 0x3 : 0;
-					Config.vuOptions |= IsDlgButtonChecked(hDlg, IDC_VU_CLAMPMODE3) ? 0x7 : 0;
-
-					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK1) ? 0x8000 : 0; // FtZ
-					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK1) ? 0x8000 : 0; // FtZ
-
-					Config.sseMXCSR		|= IsDlgButtonChecked(hDlg, IDC_EE_CHECK2) ? 0x0040 : 0; // DaZ
-					Config.sseVUMXCSR	|= IsDlgButtonChecked(hDlg, IDC_VU_CHECK2) ? 0x0040 : 0; // DaZ
-					
-					SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
-					SaveConfig();
-
-					EndDialog(hDlg, TRUE);
-					break;
-
-				case IDCANCEL:
-					
-					EndDialog(hDlg, TRUE);
-					break;
-
-				case IDDEFAULT:
-
-					Config.sseMXCSR		= DEFAULT_sseMXCSR;
-					Config.sseVUMXCSR	= DEFAULT_sseVUMXCSR;
-					Config.eeOptions	= DEFAULT_eeOptions;
-					Config.vuOptions	= DEFAULT_vuOptions;
-
-					// SSE1 cpus do not support Denormals Are Zero flag.
-					if( !cpucaps.hasStreamingSIMD2Extensions ) {
-						Config.sseMXCSR &= ~0x0040;
-						Config.sseVUMXCSR &= ~0x0040;
-					}
-
-					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ((Config.sseMXCSR & 0x6000) >> 13));
-					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ((Config.sseVUMXCSR & 0x6000) >> 13));
-					CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + ((Config.eeOptions & 0x2) ? 2 : (Config.eeOptions & 0x1)));
-					
-					if		(Config.vuOptions & 0x4)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 3);
-					else if (Config.vuOptions & 0x2)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 2);
-					else if (Config.vuOptions & 0x1)	CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 1);
-					else								CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + 0);
-
-					CheckDlgButton(hDlg, IDC_EE_CHECK1, (Config.sseMXCSR & 0x8000) ? TRUE : FALSE);
-					CheckDlgButton(hDlg, IDC_VU_CHECK1, (Config.sseVUMXCSR & 0x8000) ? TRUE : FALSE);
-
-					CheckDlgButton(hDlg, IDC_EE_CHECK2, (Config.sseMXCSR & 0x0040) ? TRUE : FALSE);
-					CheckDlgButton(hDlg, IDC_VU_CHECK2, (Config.sseVUMXCSR & 0x0040) ? TRUE : FALSE);
-					break;
-					
-				case IDC_EE_ROUNDMODE0:
-				case IDC_EE_ROUNDMODE1:
-				case IDC_EE_ROUNDMODE2:
-				case IDC_EE_ROUNDMODE3:
-
-					CheckRadioButton(hDlg, IDC_EE_ROUNDMODE0, IDC_EE_ROUNDMODE3, IDC_EE_ROUNDMODE0 + ( LOWORD(wParam) % IDC_EE_ROUNDMODE0 )  );
-					break;
-
-				case IDC_VU_ROUNDMODE0:
-				case IDC_VU_ROUNDMODE1:
-				case IDC_VU_ROUNDMODE2:
-				case IDC_VU_ROUNDMODE3:
-
-					CheckRadioButton(hDlg, IDC_VU_ROUNDMODE0, IDC_VU_ROUNDMODE3, IDC_VU_ROUNDMODE0 + ( LOWORD(wParam) % IDC_VU_ROUNDMODE0 )  );
-					break;
-
-				case IDC_EE_CLAMPMODE0:
-				case IDC_EE_CLAMPMODE1:
-				case IDC_EE_CLAMPMODE2:
-
-					CheckRadioButton(hDlg, IDC_EE_CLAMPMODE0, IDC_EE_CLAMPMODE2, IDC_EE_CLAMPMODE0 + ( LOWORD(wParam) % IDC_EE_CLAMPMODE0 )  );
-					break;
-
-				case IDC_VU_CLAMPMODE0:
-				case IDC_VU_CLAMPMODE1:
-				case IDC_VU_CLAMPMODE2:
-				case IDC_VU_CLAMPMODE3:
-
-					CheckRadioButton(hDlg, IDC_VU_CLAMPMODE0, IDC_VU_CLAMPMODE3, IDC_VU_CLAMPMODE0 + ( LOWORD(wParam) % IDC_VU_CLAMPMODE0 )  );
-					break;
-			}
-
-			return TRUE;
+		return TRUE;
     }
 
     return FALSE;
@@ -1064,34 +1088,34 @@ BOOL APIENTRY AdvancedOptionsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 HBITMAP hbitmap_background;//the background image
 
-LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	int remoteDebugBios=0;
-
-	switch (msg) {
+LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
         case WM_CREATE:
 	        return TRUE;
 
 		case WM_PAINT:
-	    {
+		{
 			BITMAP bm;
 			PAINTSTRUCT ps;
 
-   	        HDC hdc = BeginPaint(gApp.hWnd, &ps);
+			HDC hdc = BeginPaint(gApp.hWnd, &ps);
 
-   	        HDC hdcMem = CreateCompatibleDC(hdc);
-   	        HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbitmap_background);
+			HDC hdcMem = CreateCompatibleDC(hdc);
+			HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hbitmap_background);
 
-   	        GetObject(hbitmap_background, sizeof(bm), &bm);
-//			BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
+			GetObject(hbitmap_background, sizeof(bm), &bm);
+		//			BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
 			BitBlt(hdc, ps.rcPaint.left, ps.rcPaint.top,
 						ps.rcPaint.right-ps.rcPaint.left+1,
 						ps.rcPaint.bottom-ps.rcPaint.top+1,
 						hdcMem, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
 
-            SelectObject(hdcMem, hbmOld);
-            DeleteDC(hdcMem);
-            EndPaint(gApp.hWnd, &ps);
-    	 }
+			SelectObject(hdcMem, hbmOld);
+			DeleteDC(hdcMem);
+			EndPaint(gApp.hWnd, &ps);
+		 }
 		 return TRUE;
 
 		case WM_COMMAND:
@@ -1099,83 +1123,71 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			{
 			case ID_GAMEFIXES:
 				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_GAMEFIXES), hWnd, (DLGPROC)GameFixes);
-				 return TRUE;
+				 return FALSE;
 
 			case ID_HACKS:
 				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_HACKS), hWnd, (DLGPROC)HacksProc);
-				 return TRUE;
+				 return FALSE;
 
 			case ID_ADVANCED_OPTIONS:
 				 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_ADVANCED_OPTIONS), hWnd, (DLGPROC)AdvancedOptionsProc);
-				 return TRUE;
+				 return FALSE;
 
 			case ID_CHEAT_FINDER_SHOW:
 				ShowFinder(pInstance,hWnd);
-				return TRUE;
+				return FALSE;
 
 			case ID_CHEAT_BROWSER_SHOW:
 				ShowCheats(pInstance,hWnd);
-				return TRUE;
+				return FALSE;
 
 			case ID_FILE_EXIT:
-				SysClose();
-				PostQuitMessage(0);
-				exit(0);
-				return TRUE;
+				DestroyWindow( hWnd );
+				// WM_DESTROY will do the shutdown work for us.
+				return FALSE;
 
 			case ID_FILEOPEN:
-				if (Open_File_Proc(filename) == FALSE) return TRUE;
-
-				needReset = 1;
-				efile = 1;
-				RunExecute(1);
-				return TRUE;
+			{
+				std::string outstr;
+				if( Open_File_Proc( outstr ) )
+					RunExecute( outstr.c_str() );
+			}
+			return FALSE;
 
 			case ID_RUN_EXECUTE:
-				if(needReset == 1)
-				{
-					RunExe = 1;
-					m_ReturnToGame = 0;
-					m_GameInProgress = 0;
-				}
-				else if( m_GameInProgress )
+				if( g_GameInProgress )
 					m_ReturnToGame = 1;
-
-				efile = 0;
-				RunExecute( !m_ReturnToGame );
-				
-				return TRUE;
+				else
+					RunExecute( "" );	// boots bios if no savestate is to be recovered
+			return FALSE;
 
 			case ID_FILE_RUNCD:
-				needReset = 1;
-				efile = 0;
-				RunExecute(1);
-                
-				return TRUE;
+				safe_free( g_RecoveryState );
+				RunExecute( NULL );
+			return FALSE;
 
 			case ID_RUN_RESET:
-				ResetPlugins();
-				needReset = 1;
-				efile = 0;
-				return TRUE;
+				safe_free( g_RecoveryState );
+				SysReset();
+			return FALSE;
 
 			//2002-09-20 (Florin)
 			case ID_RUN_CMDLINE:
 				DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_CMDLINE), hWnd, (DLGPROC)CmdlineProc);
-				return TRUE;
+				return FALSE;
 			//-------------------
            	case ID_PATCHBROWSER:
                 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_PATCHBROWSER), hWnd, (DLGPROC)PatchBDlgProc);
-				return TRUE;
+				return FALSE;
 			case ID_CONFIG_CONFIGURE:
 				Pcsx2Configure(hWnd);
 				ReleasePlugins();
 				LoadPlugins();
-				return TRUE;
+				return FALSE;
 
 			case ID_CONFIG_GRAPHICS:
 				if (GSconfigure) GSconfigure();
-				return TRUE;
+				return FALSE;
          
 
 			case ID_CONFIG_CONTROLLERS:
@@ -1183,119 +1195,124 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				if (PAD2configure) {
 					if (strcmp(Config.PAD1, Config.PAD2))PAD2configure();
 				}
-				return TRUE;
+				return FALSE;
 
 			case ID_CONFIG_SOUND:
 				if (SPU2configure) SPU2configure();
-				return TRUE;
+				return FALSE;
 
 			case ID_CONFIG_CDVDROM:
 				if (CDVDconfigure) CDVDconfigure();
-				return TRUE;
+				return FALSE;
 
 			case ID_CONFIG_DEV9:
 				if (DEV9configure) DEV9configure();
-				return TRUE;
+				return FALSE;
 
 			case ID_CONFIG_USB:
 				if (USBconfigure) USBconfigure();
-				return TRUE;
+				return FALSE;
   
 			case ID_CONFIG_FW:
 				if (FWconfigure) FWconfigure();
-				return TRUE;
+				return FALSE;
 
-			 case ID_FILE_STATES_LOAD_SLOT1: States_Load(0); return TRUE;
-			 case ID_FILE_STATES_LOAD_SLOT2: States_Load(1); return TRUE;
-			 case ID_FILE_STATES_LOAD_SLOT3: States_Load(2); return TRUE;
-			 case ID_FILE_STATES_LOAD_SLOT4: States_Load(3); return TRUE;
-			 case ID_FILE_STATES_LOAD_SLOT5: States_Load(4); return TRUE;
-			 case ID_FILE_STATES_LOAD_OTHER: OnStates_LoadOther(); return TRUE;
+			case ID_FILE_STATES_LOAD_SLOT1: 
+			case ID_FILE_STATES_LOAD_SLOT2: 
+			case ID_FILE_STATES_LOAD_SLOT3: 
+			case ID_FILE_STATES_LOAD_SLOT4: 
+			case ID_FILE_STATES_LOAD_SLOT5:
+				States_Load(LOWORD(wParam) - ID_FILE_STATES_LOAD_SLOT1);
+			return FALSE;
 
-			 case ID_FILE_STATES_SAVE_SLOT1: States_Save(0); return TRUE;
-			 case ID_FILE_STATES_SAVE_SLOT2: States_Save(1); return TRUE;
-			 case ID_FILE_STATES_SAVE_SLOT3: States_Save(2); return TRUE;
-			 case ID_FILE_STATES_SAVE_SLOT4: States_Save(3); return TRUE;
-			 case ID_FILE_STATES_SAVE_SLOT5: States_Save(4); return TRUE;
-			 case ID_FILE_STATES_SAVE_OTHER: OnStates_SaveOther(); return TRUE;
+			case ID_FILE_STATES_LOAD_OTHER:
+				OnStates_LoadOther();
+			return FALSE;
+
+			case ID_FILE_STATES_SAVE_SLOT1: 
+			case ID_FILE_STATES_SAVE_SLOT2: 
+			case ID_FILE_STATES_SAVE_SLOT3: 
+			case ID_FILE_STATES_SAVE_SLOT4: 
+			case ID_FILE_STATES_SAVE_SLOT5: 
+				States_Load(LOWORD(wParam) - ID_FILE_STATES_SAVE_SLOT1);
+			return FALSE;
+
+			case ID_FILE_STATES_SAVE_OTHER:
+				OnStates_SaveOther();
+			return FALSE;
 
 			case ID_CONFIG_CPU:
                 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_CPUDLG), hWnd, (DLGPROC)CpuDlgProc);
-				return TRUE;
-
-			case ID_CONFIG_ADVANCED:
-                DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_ADVANCED), hWnd, (DLGPROC)AdvancedProc);
-				return TRUE;
+				return FALSE;
 
 #ifdef PCSX2_DEVBUILD
 			case ID_DEBUG_ENTERDEBUGGER:
-				RunExecute(0);
                 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_DEBUG), NULL, (DLGPROC)DebuggerProc);
-                
-				CreateMainWindow(SW_SHOWNORMAL);
-				RunGui();
-                return TRUE;
+                return FALSE;
 
 			case ID_DEBUG_REMOTEDEBUGGING:
 				//read debugging params
 				if (Config.Options & PCSX2_EEREC){
 					MessageBox(hWnd, _("Nah, you have to be in\nInterpreter Mode to debug"), 0, 0);
-					return FALSE;
-				} else {
+				} else 
+				{
+					int remoteDebugBios=0;
 					remoteDebugBios=DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_RDEBUGPARAMS), NULL, (DLGPROC)RemoteDebuggerParamsProc);
-					if (remoteDebugBios){
-						RunExecute(0);
+					if (remoteDebugBios)
+					{
+						cpuReset();
+						cpuExecuteBios();
 
 						DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_RDEBUG), NULL, (DLGPROC)RemoteDebuggerProc);
 						CreateMainWindow(SW_SHOWNORMAL);
 						RunGui();
 					}
 				}
-                return TRUE;
+                return FALSE;
 
 			case ID_DEBUG_MEMORY_DUMP:
 			    DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_MEMORY), hWnd, (DLGPROC)MemoryProc);
-				return TRUE;
+				return FALSE;
 
 			case ID_DEBUG_LOGGING:
 			    DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_LOGGING), hWnd, (DLGPROC)LogProc);
-				return TRUE;
+				return FALSE;
 #endif
 
 			case ID_HELP_ABOUT:
 				DialogBox(gApp.hInstance, MAKEINTRESOURCE(ABOUT_DIALOG), hWnd, (DLGPROC)AboutDlgProc);
-				return TRUE;
+				return FALSE;
 
 			case ID_HELP_HELP:
 				//system("help\\index.html");
 				system("compat_list\\compat_list.html");
-				return TRUE;
+				return FALSE;
 
 			case ID_CONFIG_MEMCARDS:
 				DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_MCDCONF), hWnd, (DLGPROC)ConfigureMcdsDlgProc);
 				SaveConfig();
-				return TRUE;
+				return FALSE;
 			case ID_PROCESSLOW: 
                Config.ThPriority = THREAD_PRIORITY_LOWEST;
                 SaveConfig();
 				CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_CHECKED);
                 CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_UNCHECKED);
                 CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_UNCHECKED);
-                return TRUE;
+                return FALSE;
 			case ID_PROCESSNORMAL:
                 Config.ThPriority = THREAD_PRIORITY_NORMAL;
                 SaveConfig();
 				CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_CHECKED);
                 CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_UNCHECKED);
                 CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_UNCHECKED);
-                return TRUE;
+                return FALSE;
 			case ID_PROCESSHIGH:
                 Config.ThPriority = THREAD_PRIORITY_HIGHEST;
                 SaveConfig();
 				CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_CHECKED);
                 CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_UNCHECKED);
                 CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_UNCHECKED);
-                return TRUE;
+                return FALSE;
 
 			case ID_CONSOLE:
 				Config.PsxOut = !Config.PsxOut;
@@ -1310,14 +1327,14 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				   Console::Open();
 				}
 				SaveConfig();
-				return TRUE;
+				return FALSE;
 
 			case ID_PATCHES:
 				Config.Patch = !Config.Patch;
 				CheckMenuItem(gApp.hMenu,ID_PATCHES,Config.Patch ? MF_CHECKED : MF_UNCHECKED);
 
 				SaveConfig();
-				return TRUE;
+				return FALSE;
 
 #ifndef _DEBUG
 			case ID_PROFILER:
@@ -1333,46 +1350,44 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					ProfilerTerm();
 				}
 				SaveConfig();
-				return TRUE;
+				return FALSE;
 #endif
 
 			default:
 				if (LOWORD(wParam) >= ID_LANGS && LOWORD(wParam) <= (ID_LANGS + langsMax)) {
-					AccBreak = 1;
+					AccBreak = true;
 					DestroyWindow(gApp.hWnd);
 					ChangeLanguage(langs[LOWORD(wParam) - ID_LANGS].lang);
 					CreateMainWindow(SW_NORMAL);
 					return TRUE;
 				}
 			}
-			break;
+			return TRUE;
+
 		case WM_DESTROY:
-			if (!AccBreak) {
-				SysClose();
-                DeleteObject(hbitmap_background);
-				PostQuitMessage(0);
-				exit(0);
-			} else AccBreak = 0;
-		    return TRUE;
+			if (!AccBreak)
+			{
+				// [TODO] : Check if a game is active in the emulator and ask the user
+				// before closing!
+				DeleteObject(hbitmap_background);
+				WinClose();
+
+			} else AccBreak = false;
+		return FALSE;
 
         case WM_SYSCOMMAND:
             if( nDisableSC && (wParam== SC_SCREENSAVE || wParam == SC_MONITORPOWER) ) {
                return FALSE;
             }
-            else
-                return DefWindowProc(hWnd, msg, wParam, lParam);
-            break;
+		break;
         
 		case WM_QUIT:
-			if (Config.PsxOut) Console::Close();
-			exit(0);
-			break;
-
-		default:
-			return DefWindowProc(hWnd, msg, wParam, lParam);
+			if (Config.PsxOut)
+				Console::Close();
+		return TRUE;
 	}
 
-	return FALSE;
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 #define _ADDSUBMENU(menu, menun, string) \
@@ -1431,17 +1446,17 @@ void CreateMainMenu() {
 	ADDSUBMENUS(1, 3, _("&Save"));
 	ADDSUBMENUS(1, 2, _("&Load"));
 	ADDMENUITEM(2, _("&Other..."), ID_FILE_STATES_LOAD_OTHER);
-	ADDMENUITEM(2, _("Slot &5"), ID_FILE_STATES_LOAD_SLOT5);
-	ADDMENUITEM(2, _("Slot &4"), ID_FILE_STATES_LOAD_SLOT4);
-	ADDMENUITEM(2, _("Slot &3"), ID_FILE_STATES_LOAD_SLOT3);
-	ADDMENUITEM(2, _("Slot &2"), ID_FILE_STATES_LOAD_SLOT2);
-	ADDMENUITEM(2, _("Slot &1"), ID_FILE_STATES_LOAD_SLOT1);
+	ADDMENUITEM(2, _("Slot &4"), ID_FILE_STATES_LOAD_SLOT5);
+	ADDMENUITEM(2, _("Slot &3"), ID_FILE_STATES_LOAD_SLOT4);
+	ADDMENUITEM(2, _("Slot &2"), ID_FILE_STATES_LOAD_SLOT3);
+	ADDMENUITEM(2, _("Slot &1"), ID_FILE_STATES_LOAD_SLOT2);
+	ADDMENUITEM(2, _("Slot &0"), ID_FILE_STATES_LOAD_SLOT1);
 	ADDMENUITEM(3, _("&Other..."), ID_FILE_STATES_SAVE_OTHER);
-	ADDMENUITEM(3, _("Slot &5"), ID_FILE_STATES_SAVE_SLOT5);
-	ADDMENUITEM(3, _("Slot &4"), ID_FILE_STATES_SAVE_SLOT4);
-	ADDMENUITEM(3, _("Slot &3"), ID_FILE_STATES_SAVE_SLOT3);
-	ADDMENUITEM(3, _("Slot &2"), ID_FILE_STATES_SAVE_SLOT2);
-	ADDMENUITEM(3, _("Slot &1"), ID_FILE_STATES_SAVE_SLOT1);
+	ADDMENUITEM(3, _("Slot &4"), ID_FILE_STATES_SAVE_SLOT5);
+	ADDMENUITEM(3, _("Slot &3"), ID_FILE_STATES_SAVE_SLOT4);
+	ADDMENUITEM(3, _("Slot &2"), ID_FILE_STATES_SAVE_SLOT3);
+	ADDMENUITEM(3, _("Slot &1"), ID_FILE_STATES_SAVE_SLOT2);
+	ADDMENUITEM(3, _("Slot &0"), ID_FILE_STATES_SAVE_SLOT1);
 
     ADDSUBMENU(0, _("&Run"));
 
@@ -1555,10 +1570,12 @@ void CreateMainWindow(int nCmdShow) {
 #endif
 	}
 
-	hWnd = CreateWindow("PCSX2 Main",
-						buf, WS_OVERLAPPED | WS_SYSMENU,
-						20, 20, 320, 240, NULL, NULL,
-						gApp.hInstance, NULL);
+	hWnd = CreateWindow(
+		"PCSX2 Main",
+		buf, WS_OVERLAPPED | WS_SYSMENU,
+		20, 20, 320, 240, NULL, NULL,
+		gApp.hInstance, NULL
+	);
 
 	gApp.hWnd = hWnd;
     ResetMenuSlots();
@@ -1590,77 +1607,6 @@ void CreateMainWindow(int nCmdShow) {
 	SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
 }
 
-BOOL Open_File_Proc(char * filename) {
-	OPENFILENAME ofn;
-	char szFileName[ g_MaxPath ];
-	char szFileTitle[ g_MaxPath ];
-	char * filter = "ELF Files (*.ELF)\0*.ELF\0ALL Files (*.*)\0*.*\0";
-
-	memset( &szFileName, 0, sizeof( szFileName ) );
-	memset( &szFileTitle, 0, sizeof( szFileTitle ) );
-
-	ofn.lStructSize			= sizeof( OPENFILENAME );
-	ofn.hwndOwner			= gApp.hWnd;
-	ofn.lpstrFilter			= filter;
-	ofn.lpstrCustomFilter   = NULL;
-	ofn.nMaxCustFilter		= 0;
-	ofn.nFilterIndex		= 1;
-	ofn.lpstrFile			= szFileName;
-	ofn.nMaxFile			= g_MaxPath;
-	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrFileTitle		= szFileTitle;
-	ofn.nMaxFileTitle		= g_MaxPath;
-	ofn.lpstrTitle			= NULL;
-	ofn.lpstrDefExt			= "ELF";
-	ofn.Flags				= OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
-	 
-	if (GetOpenFileName(&ofn)) {
-		struct stat buf;
-
-		if (stat(szFileName, &buf) != 0) {
-			return FALSE;
-		}
-
-		strcpy(filename, szFileName);
-		return TRUE;             
-	}
-
-	return FALSE;
-}
-//2002-09-20 (Florin)
-BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-        case WM_INITDIALOG:
-			SetWindowText(hDlg, _("Program arguments"));
-
-			Button_SetText(GetDlgItem(hDlg, IDOK), _("OK"));
-			Button_SetText(GetDlgItem(hDlg, IDCANCEL), _("Cancel"));
-			Static_SetText(GetDlgItem(hDlg, IDC_TEXT), _("Fill in the command line arguments for opened program:"));
-			Static_SetText(GetDlgItem(hDlg, IDC_TIP), _("Tip: If you don't know what to write\nleave it blank"));
-
-            SetDlgItemText(hDlg, IDC_CMDLINE, args);
-            return TRUE;
-
-        case WM_COMMAND:
-            if (LOWORD(wParam) == IDOK)
-            {
-				char tmp[256];
-
-				GetDlgItemText(hDlg, IDC_CMDLINE, tmp, 256);
-
-				strcpy_s(args, 256, tmp);
-                
-                EndDialog(hDlg, TRUE);
-            } else if (LOWORD(wParam) == IDCANCEL) {
-                EndDialog(hDlg, TRUE);
-            }
-            return TRUE;
-    }
-
-    return FALSE;
-}
 
 WIN32_FIND_DATA lFindData;
 HANDLE lFind;
@@ -1699,67 +1645,87 @@ void CloseLanguages() {
 }
 
 void ChangeLanguage(char *lang) {
-	strcpy(Config.Lang, lang);
+	strcpy_s(Config.Lang, lang);
 	SaveConfig();
 	LoadConfig();
 }
 
 //-------------------
 
-static int sinit=0;
+static bool sinit=false;
 
-int SysInit() {
+int SysInit()
+{
+	if( sinit )
+		SysClose();
+
 	CreateDirectory(MEMCARDS_DIR, NULL);
 	CreateDirectory(SSTATES_DIR, NULL);
-
 	CreateDirectory(LOGS_DIR, NULL);
 
-
-	if( IsDevBuild && g_TestRun.plogname != NULL )
+	if( IsDevBuild && emuLog == NULL && g_TestRun.plogname != NULL )
 		emuLog = fopen(g_TestRun.plogname, "w");
 
 	if( emuLog == NULL )
 		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
 
-	if (cpuInit() == -1) return -1;
+	if( !cpuInit() ) return -1;
 
 	while (LoadPlugins() == -1) {
 		if (Pcsx2Configure(NULL) == FALSE) {
-			exit(1);
+			exit(1);		// user cancelled.
 		}
 	}
 
-	sinit=1;
+	sinit = true;
 
 	return 0;
 }
 
-int SysReset() {
-	if (sinit == 0) return 1;
+void SysRestorableReset()
+{
+	// already reset? and saved?
+	if( !g_GameInProgress ) return;
+	if( g_RecoveryState != NULL ) return;
+
+	try
+	{
+		g_RecoveryState = new MemoryAlloc();
+		memSavingState( *g_RecoveryState ).FreezeAll();
+		cpuShutdown();
+		g_GameInProgress = false;
+	}
+	catch( std::runtime_error& ex )
+	{
+		SysMessage(
+			"Pcsx2 gamestate recovery failed. Some options may have been reverted to protect your game's state.\n"
+			"Error: %s", ex.what() );
+		safe_delete( g_RecoveryState );
+	}
+}
+
+void SysReset()
+{
+	if (!sinit) return;
+
 	StatusSet(_("Resetting..."));
-	if( !cpuReset() ) return 0;
+
+	g_GameInProgress = false;
+	safe_free( g_RecoveryState );
+
+	ResetPlugins();
+
 	StatusSet(_("Ready"));
-	return 1;
 }
 
-
+// completely shuts down the emulator's cpu state, and unloads all plugins from memory.
 void SysClose() {
-	if (sinit == 0) return;
+	if (!sinit) return;
 	cpuShutdown();
+	ClosePlugins();
 	ReleasePlugins();
-	sinit=0;
+	sinit=false;
 }
-
-int concolors[] = {
-	0,
-	FOREGROUND_RED,
-	FOREGROUND_GREEN,
-	FOREGROUND_GREEN | FOREGROUND_RED,
-	FOREGROUND_BLUE,
-	FOREGROUND_RED | FOREGROUND_BLUE,
-	FOREGROUND_RED | FOREGROUND_GREEN,
-	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
-};
 
 void SysPrintf(const char *fmt, ...)
 {
@@ -1767,7 +1733,7 @@ void SysPrintf(const char *fmt, ...)
 	char msg[512];
 
 	va_start(list,fmt);
-	vsnprintf(msg,511,fmt,list);
+	vsprintf_s(msg,fmt,list);
 	msg[511] = '\0';
 	va_end(list);
 
@@ -1780,7 +1746,7 @@ void SysMessage(const char *fmt, ...)
 	char tmp[512];
 
 	va_start(list,fmt);
-	_vsnprintf(tmp,511,fmt,list);
+	vsprintf_s(tmp,fmt,list);
 	tmp[511] = '\0';
 	va_end(list);
 	MessageBox(0, tmp, _("Pcsx2 Msg"), 0);
@@ -1830,8 +1796,8 @@ void SysCloseLibrary(void *lib) {
 void *SysMmap(uptr base, u32 size) {
 	void *mem;
 
-	mem = VirtualAlloc((void*)base, size, MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	mem = VirtualAlloc((void*)mem,  size, MEM_COMMIT , PAGE_EXECUTE_READWRITE);
+	mem = VirtualAlloc((void*)base, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+	//mem = VirtualAlloc((void*)mem,  size, MEM_COMMIT , PAGE_EXECUTE_READWRITE);
 	return mem;
 }
 
@@ -1839,452 +1805,3 @@ void SysMunmap(uptr base, u32 size) {
 	VirtualFree((void*)base, size, MEM_DECOMMIT);
 	VirtualFree((void*)base, 0, MEM_RELEASE);
 }
-
-#ifdef PCSX2_VIRTUAL_MEM
-
-// virtual memory/privileges
-#include "ntsecapi.h"
-
-static wchar_t s_szUserName[255];
-
-LRESULT WINAPI UserNameProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	switch(uMsg) {
-		case WM_INITDIALOG:
-			SetWindowPos(hDlg, HWND_TOPMOST, 200, 100, 0, 0, SWP_NOSIZE);
-			return TRUE;
-
-		case WM_COMMAND:
-			switch(wParam) {
-				case IDOK:
-				{
-					wchar_t str[255];
-					GetWindowTextW(GetDlgItem(hDlg, IDC_USER_NAME), str, 255);
-					swprintf(s_szUserName, 255, L"%S", str);
-					EndDialog(hDlg, TRUE );
-					return TRUE;
-				}
-
-				case IDCANCEL:
-					EndDialog(hDlg, FALSE );
-					return TRUE;
-			}
-			break;
-	}
-	return FALSE;
-}
-
-BOOL InitLsaString(
-  PLSA_UNICODE_STRING pLsaString,
-  LPCWSTR pwszString
-)
-{
-  DWORD dwLen = 0;
-
-  if (NULL == pLsaString)
-      return FALSE;
-
-  if (NULL != pwszString) 
-  {
-      dwLen = wcslen(pwszString);
-      if (dwLen > 0x7ffe)   // String is too large
-          return FALSE;
-  }
-
-  // Store the string.
-  pLsaString->Buffer = (WCHAR *)pwszString;
-  pLsaString->Length =  (USHORT)dwLen * sizeof(WCHAR);
-  pLsaString->MaximumLength= (USHORT)(dwLen+1) * sizeof(WCHAR);
-
-  return TRUE;
-}
-
-PLSA_TRANSLATED_SID2 GetSIDInformation (LPWSTR AccountName,LSA_HANDLE PolicyHandle)
-{
-  LSA_UNICODE_STRING lucName;
-  PLSA_TRANSLATED_SID2 ltsTranslatedSID;
-  PLSA_REFERENCED_DOMAIN_LIST lrdlDomainList;
-  //LSA_TRUST_INFORMATION myDomain;
-  NTSTATUS ntsResult;
-  PWCHAR DomainString = NULL;
-
-  // Initialize an LSA_UNICODE_STRING with the name.
-  if (!InitLsaString(&lucName, AccountName))
-  {
-         wprintf(L"Failed InitLsaString\n");
-         return NULL;
-  }
-
-  ntsResult = LsaLookupNames2(
-     PolicyHandle,     // handle to a Policy object
-	 0,
-     1,                // number of names to look up
-     &lucName,         // pointer to an array of names
-     &lrdlDomainList,  // receives domain information
-     &ltsTranslatedSID // receives relative SIDs
-  );
-  if (0 != ntsResult) 
-  {
-    wprintf(L"Failed LsaLookupNames - %lu \n",
-      LsaNtStatusToWinError(ntsResult));
-    return NULL;
-  }
-
-  // Get the domain the account resides in.
-//  myDomain = lrdlDomainList->Domains[ltsTranslatedSID->DomainIndex];
-//  DomainString = (PWCHAR) LocalAlloc(LPTR, myDomain.Name.Length + 1);
-//  wcsncpy(DomainString, myDomain.Name.Buffer, myDomain.Name.Length);
-
-  // Display the relative Id. 
-//  wprintf(L"Relative Id is %lu in domain %ws.\n",
-//    ltsTranslatedSID->RelativeId,
-//    DomainString);
-
-  LsaFreeMemory(lrdlDomainList);
-
-  return ltsTranslatedSID;
-}
-
-BOOL AddPrivileges(PSID AccountSID, LSA_HANDLE PolicyHandle, BOOL bAdd)
-{
-  LSA_UNICODE_STRING lucPrivilege;
-  NTSTATUS ntsResult;
-
-  // Create an LSA_UNICODE_STRING for the privilege name(s).
-  if (!InitLsaString(&lucPrivilege, L"SeLockMemoryPrivilege"))
-  {
-         wprintf(L"Failed InitLsaString\n");
-         return FALSE;
-  }
-
-  if( bAdd ) {
-    ntsResult = LsaAddAccountRights(
-        PolicyHandle,  // An open policy handle.
-        AccountSID,    // The target SID.
-        &lucPrivilege, // The privilege(s).
-        1              // Number of privileges.
-    );
-  }
-  else {
-      ntsResult = LsaRemoveAccountRights(
-        PolicyHandle,  // An open policy handle.
-        AccountSID,    // The target SID
-        FALSE,
-        &lucPrivilege, // The privilege(s).
-        1              // Number of privileges.
-    );
-  }
-      
-  if (ntsResult == 0) 
-  {
-    wprintf(L"Privilege added.\n");
-  }
-  else
-  {
-	  int err = LsaNtStatusToWinError(ntsResult);
-	  char str[255];
-		_snprintf(str, 255, "Privilege was not added - %lu \n", LsaNtStatusToWinError(ntsResult));
-		MessageBox(NULL, str, "Privilege error", MB_OK);
-	return FALSE;
-  }
-
-  return TRUE;
-} 
-
-#define TARGET_SYSTEM_NAME L"mysystem"
-LSA_HANDLE GetPolicyHandle()
-{
-  LSA_OBJECT_ATTRIBUTES ObjectAttributes;
-  WCHAR SystemName[] = TARGET_SYSTEM_NAME;
-  USHORT SystemNameLength;
-  LSA_UNICODE_STRING lusSystemName;
-  NTSTATUS ntsResult;
-  LSA_HANDLE lsahPolicyHandle;
-
-  // Object attributes are reserved, so initialize to zeroes.
-  ZeroMemory(&ObjectAttributes, sizeof(ObjectAttributes));
-
-  //Initialize an LSA_UNICODE_STRING to the server name.
-  SystemNameLength = wcslen(SystemName);
-  lusSystemName.Buffer = SystemName;
-  lusSystemName.Length = SystemNameLength * sizeof(WCHAR);
-  lusSystemName.MaximumLength = (SystemNameLength+1) * sizeof(WCHAR);
-
-  // Get a handle to the Policy object.
-  ntsResult = LsaOpenPolicy(
-        NULL,    //Name of the target system.
-        &ObjectAttributes, //Object attributes.
-        POLICY_ALL_ACCESS, //Desired access permissions.
-        &lsahPolicyHandle  //Receives the policy handle.
-    );
-
-  if (ntsResult != 0)
-  {
-    // An error occurred. Display it as a win32 error code.
-    wprintf(L"OpenPolicy returned %lu\n",
-      LsaNtStatusToWinError(ntsResult));
-    return NULL;
-  } 
-  return lsahPolicyHandle;
-}
-
-
-/*****************************************************************
-   LoggedSetLockPagesPrivilege: a function to obtain, if possible, or
-   release the privilege of locking physical pages.
-
-   Inputs:
-
-       HANDLE hProcess: Handle for the process for which the
-       privilege is needed
-
-       BOOL bEnable: Enable (TRUE) or disable?
-
-   Return value: TRUE indicates success, FALSE failure.
-
-*****************************************************************/
-BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable)
-{
-	struct {
-	u32 Count;
-	LUID_AND_ATTRIBUTES Privilege [1];
-	} Info;
-
-	HANDLE Token;
-	BOOL Result;
-
-	// Open the token.
-
-	Result = OpenProcessToken ( hProcess,
-								TOKEN_ADJUST_PRIVILEGES,
-								& Token);
-
-	if( Result != TRUE ) {
-		Console::WriteLn( "VirtualMemory Error > Cannot open process token." );
-		return FALSE;
-	}
-
-	// Enable or disable?
-
-	Info.Count = 1;
-	if( bEnable ) 
-	{
-		Info.Privilege[0].Attributes = SE_PRIVILEGE_ENABLED;
-	} 
-	else 
-	{
-		Info.Privilege[0].Attributes = SE_PRIVILEGE_REMOVED;
-	}
-
-	// Get the LUID.
-	Result = LookupPrivilegeValue ( NULL,
-									SE_LOCK_MEMORY_NAME,
-									&(Info.Privilege[0].Luid));
-
-	if( Result != TRUE ) 
-	{
-		Console::FormatLn( "VirtualMemory Error > Cannot get privilege value for %s.", SE_LOCK_MEMORY_NAME );
-		return FALSE;
-	}
-
-	// Adjust the privilege.
-
-	Result = AdjustTokenPrivileges ( Token, FALSE,
-									(PTOKEN_PRIVILEGES) &Info,
-									0, NULL, NULL);
-
-	// Check the result.
-	if( Result != TRUE ) 
-	{
-		Console::FormatLn( "VirtualMemory Error > Cannot adjust token privileges, error %u.", GetLastError() );
-		return FALSE;
-	} 
-	else 
-	{
-		if( GetLastError() != ERROR_SUCCESS ) 
-		{
-
-			BOOL bSuc = FALSE;
-			LSA_HANDLE policy;
-			PLSA_TRANSLATED_SID2 ltsTranslatedSID;
-
-//			if( !DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_USERNAME), gApp.hWnd, (DLGPROC)UserNameProc) )
-//				return FALSE;
-            DWORD len = sizeof(s_szUserName);
-            GetUserNameW(s_szUserName, &len);
-
-			policy = GetPolicyHandle();
-
-			if( policy != NULL ) {
-
-				ltsTranslatedSID = GetSIDInformation(s_szUserName, policy);
-
-				if( ltsTranslatedSID != NULL ) {
-					bSuc = AddPrivileges(ltsTranslatedSID->Sid, policy, bEnable);
-					LsaFreeMemory(ltsTranslatedSID);
-				}
-
-				LsaClose(policy);
-			}
-
-			if( bSuc ) {
-				// Get the LUID.
-				LookupPrivilegeValue ( NULL, SE_LOCK_MEMORY_NAME, &(Info.Privilege[0].Luid));
-
-				bSuc = AdjustTokenPrivileges ( Token, FALSE, (PTOKEN_PRIVILEGES) &Info, 0, NULL, NULL);
-			}
-
-			if( bSuc ) {
-				if( MessageBox(NULL, "PCSX2 just changed your SE_LOCK_MEMORY privilege in order to gain access to physical memory.\n"
-								"Log off/on and run pcsx2 again. Do you want to log off?\n",
-								"Privilege changed query", MB_YESNO) == IDYES ) {
-					ExitWindows(EWX_LOGOFF, 0);
-				}
-			}
-			else {
-				MessageBox(NULL, "Failed adding SE_LOCK_MEMORY privilege, please check the local policy.\n"
-					"Go to security settings->Local Policies->User Rights. There should be a \"Lock pages in memory\".\n"
-					"Add your user to that and log off/on. This enables pcsx2 to run at real-time by allocating physical memory.\n"
-					"Also can try Control Panel->Local Security Policy->... (this does not work on Windows XP Home)\n"
-					"(zerofrog)\n", "Virtual Memory Access Denied", MB_OK);
-				return FALSE;
-			}
-		}
-	}
-
-	CloseHandle( Token );
-
-	return TRUE;
-}
-
-static u32 s_dwPageSize = 0;
-int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
-{
-//#ifdef WIN32_FILE_MAPPING
-//	assert(0);
-//#endif
-	ULONG_PTR NumberOfPagesInitial; // initial number of pages requested
-	int PFNArraySize;               // memory to request for PFN array
-	BOOL bResult;
-
-	assert( pblock != NULL );
-	memset(pblock, 0, sizeof(PSMEMORYBLOCK));
-
-	if( s_dwPageSize == 0 ) {
-		SYSTEM_INFO sSysInfo;           // useful system information
-		GetSystemInfo(&sSysInfo);  // fill the system information structure
-		s_dwPageSize = sSysInfo.dwPageSize;
-
-		if( s_dwPageSize != 0x1000 ) {
-			SysMessage("Error! OS page size must be 4Kb!\n"
-				"If for some reason the OS cannot have 4Kb pages, then run the TLB build.");
-			return -1;
-		}
-	}
-
-	// Calculate the number of pages of memory to request.
-	pblock->NumberPages = (size+s_dwPageSize-1)/s_dwPageSize;
-	PFNArraySize = pblock->NumberPages * sizeof (ULONG_PTR);
-
-	pblock->aPFNs = (uptr*)HeapAlloc (GetProcessHeap (), 0, PFNArraySize);
-
-	if (pblock->aPFNs == NULL) {
-		SysPrintf("Failed to allocate on heap.\n");
-		goto eCleanupAndExit;
-	}
-
-	// Allocate the physical memory.
-	NumberOfPagesInitial = pblock->NumberPages;
-	bResult = AllocateUserPhysicalPages( GetCurrentProcess(), (PULONG_PTR)&pblock->NumberPages, (PULONG_PTR)pblock->aPFNs );
-
-	if( bResult != TRUE ) 
-	{
-		SysPrintf("Cannot allocate physical pages, error %u.\n", GetLastError() );
-		goto eCleanupAndExit;
-	}
-
-	if( NumberOfPagesInitial != pblock->NumberPages ) 
-	{
-		SysPrintf("Allocated only %p of %p pages.\n", pblock->NumberPages, NumberOfPagesInitial );
-		goto eCleanupAndExit;
-	}
-
-	pblock->aVFNs = (uptr*)HeapAlloc(GetProcessHeap(), 0, PFNArraySize);
-
-	return 0;
-
-eCleanupAndExit:
-	SysPhysicalFree(pblock);
-	return -1;
-}
-
-void SysPhysicalFree(PSMEMORYBLOCK* pblock)
-{
-	assert( pblock != NULL );
-
-	// Free the physical pages.
-	FreeUserPhysicalPages( GetCurrentProcess(), (PULONG_PTR)&pblock->NumberPages, (PULONG_PTR)pblock->aPFNs );
-
-	if( pblock->aPFNs != NULL ) HeapFree(GetProcessHeap(), 0, pblock->aPFNs);
-	if( pblock->aVFNs != NULL ) HeapFree(GetProcessHeap(), 0, pblock->aVFNs);
-	memset(pblock, 0, sizeof(PSMEMORYBLOCK));
-}
-
-int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
-{
-	BOOL bResult;
-	int i;
-
-	LPVOID lpMemReserved = VirtualAlloc( base, size, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE );
-	if( lpMemReserved == NULL || base != lpMemReserved )
-	{
-		Console::FormatLn("VirtualMemory Error %d > Cannot reserve memory at 0x%8.8x(%x).", base, lpMemReserved, GetLastError());
-		goto eCleanupAndExit;
-	}
-
-	// Map the physical memory into the window.  
-	bResult = MapUserPhysicalPages( base, (ULONG_PTR)pblock->NumberPages, (PULONG_PTR)pblock->aPFNs );
-
-	for(i = 0; i < pblock->NumberPages; ++i)
-		pblock->aVFNs[i] = (uptr)base + 0x1000*i;
-
-	if( bResult != TRUE ) 
-	{
-		Console::FormatLn("VirtualMemory Error %u > MapUserPhysicalPages failed to map.", GetLastError() );
-		goto eCleanupAndExit;
-	}
-
-	return 0;
-
-eCleanupAndExit:
-	SysVirtualFree(base, size);
-	return -1;
-}
-
-void SysVirtualFree(void* lpMemReserved, u32 size)
-{
-	// unmap   
-	if( MapUserPhysicalPages( lpMemReserved, (size+s_dwPageSize-1)/s_dwPageSize, NULL ) != TRUE ) 
-	{
-		Console::FormatLn("VirtualMemory Error %u > MapUserPhysicalPages failed to unmap", GetLastError() );
-		return;
-	}
-
-	// Free virtual memory.
-	VirtualFree( lpMemReserved, 0, MEM_RELEASE );
-}
-
-int SysMapUserPhysicalPages(void* Addr, uptr NumPages, uptr* pfn, int pageoffset)
-{
-	BOOL bResult = MapUserPhysicalPages(Addr, NumPages, (PULONG_PTR)(pfn+pageoffset));
-
-#ifdef _DEBUG
-	//if( !bResult )
-		//__Log("Failed to map user pages: 0x%x:0x%x, error = %d\n", Addr, NumPages, GetLastError());
-#endif
-
-	return bResult;
-}
-
-#else
-
-#endif

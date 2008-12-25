@@ -94,7 +94,6 @@ void psxDma12(u32 madr, u32 bcr, u32 chcr);
 
 void psxDMA11Interrupt();
 void psxDMA12Interrupt();
-int  sio2Freeze(gzFile f, int Mode);
 
 #endif /* __PSXSIO2_H__ */
 

@@ -60,7 +60,7 @@
 #endif
 
 u32 maxrecmem = 0;
-uptr *recLUT;
+uptr *recLUT = NULL;
 
 #define X86
 #define RECSTACK_SIZE 0x00010000
@@ -1491,26 +1491,50 @@ int recInit( void )
 	int i;
 	const u8 macarr[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
 
-	recLUT = (uptr*) _aligned_malloc( 0x010000 * sizeof(uptr), 16 );
-	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
+	if( recLUT == NULL )
+		recLUT = (uptr*) _aligned_malloc( 0x010000 * sizeof(uptr), 16 );
 
     // can't have upper 4 bits nonzero!
-	recMem = (u8*)SysMmap(0x0d000000, REC_CACHEMEM+0x1000);   // +0x1000 ? vtlb check.
-	ProfilerRegisterSource("EERec",recMem, REC_CACHEMEM+0x1000);
+	// ... then why don't we care to check if they are or not? (air)
+
+	if( recMem == NULL )
+		recMem = (u8*)SysMmap(0x0d000000, REC_CACHEMEM+0x1000);
+
+	if( recMem == NULL ) {
+		Console::Error("Error > R5900-32 failed to allocate recompiler memory.");
+		return 1;
+	}
+
 	// 32 alignment necessary
-	recRAM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x02000000 , 4*sizeof(BASEBLOCK));
-	recROM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00400000 , 4*sizeof(BASEBLOCK));
-	recROM1= (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00040000 , 4*sizeof(BASEBLOCK));
-	recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*EE_NUMBLOCKS, 16);
-	recStack = (u8*)malloc( RECSTACK_SIZE );
+	if( recRAM == NULL )
+		recRAM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x02000000 , 4*sizeof(BASEBLOCK));
+	if( recROM == NULL )
+		recROM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00400000 , 4*sizeof(BASEBLOCK));
+	if( recROM1 == NULL )
+		recROM1 = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00040000 , 4*sizeof(BASEBLOCK));
+	if( recBlocks == NULL )
+		recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*EE_NUMBLOCKS, 16);
+	if( recStack == NULL )
+		recStack = (u8*)malloc( RECSTACK_SIZE );
 
-	s_nInstCacheSize = 128;
-	s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
+	if( s_pInstCache == NULL )
+	{
+		s_nInstCacheSize = 128;
+		s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
+	}
 
-	if ( recBlocks == NULL || recRAM == NULL || recROM == NULL || recROM1 == NULL || recMem == NULL || recLUT == NULL )  {
+	if( recBlocks == NULL || recRAM == NULL || recROM == NULL ||
+		recROM1 == NULL || recMem == NULL || recLUT == NULL ||
+		recStack == NULL || s_pInstCache == NULL )
+	{
 		SysMessage( _( "Error allocating memory" ) ); 
 		return -1;
 	}
+
+	// No errors.. Proceed with initialization:
+
+	ProfilerRegisterSource("EERec",recMem, REC_CACHEMEM+0x1000);
+	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
 
 	for ( i = 0x0000; i < 0x0200; i++ )
 	{
@@ -1607,9 +1631,8 @@ int recInit( void )
 
 ////////////////////////////////////////////////////
 static void recReset( void ) {
-#ifdef PCSX2_DEVBUILD
-	SysPrintf("EE Recompiler data reset\n");
-#endif
+
+	DevCon::WriteLn( "EE Recompiler data reset" );
 
 	s_nNextBlock = 0;
 	maxrecmem = 0;
@@ -1644,21 +1667,20 @@ static void recReset( void ) {
 
 void recShutdown( void )
 {
-	if ( recMem == NULL ) {
-		return;
-	}
+	SafeSysMunmap(recMem, REC_CACHEMEM);
 
-	_aligned_free( recLUT );
-	SysMunmap((uptr)recMem, REC_CACHEMEM); recMem = NULL;
-	_aligned_free( recRAM ); recRAM = NULL;
-	_aligned_free( recROM ); recROM = NULL;
-	_aligned_free( recROM1 ); recROM1 = NULL;
-	_aligned_free( recBlocks ); recBlocks = NULL;
-	free( s_pInstCache ); s_pInstCache = NULL; s_nInstCacheSize = 0;
+	safe_aligned_free( recLUT );
+	safe_aligned_free( recRAM );
+	safe_aligned_free( recROM );
+	safe_aligned_free( recROM1 );
+	safe_aligned_free( recBlocks );
+
+	safe_free( s_pInstCache );
+	s_nInstCacheSize = 0;
 
 	SuperVUDestroy(-1);
 
-	x86Shutdown( );
+	x86Shutdown();
 }
 
 void recEnableVU0micro(int enable) {
@@ -3287,7 +3309,7 @@ StartRecomp:
 					stg-=4;
 					lpc+=4;
 				}
-				DbgCon::FormatLn("Manual block @ %08X : %08X %d %d %d %d",
+				DbgCon::MsgLn("Manual block @ %08X : %08X %d %d %d %d",
 					startpc,inpage_ptr,pgsz,0x1000-inpage_offs,inpage_sz,sz*4);
 			}
 		}

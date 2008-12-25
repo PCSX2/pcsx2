@@ -30,6 +30,7 @@
 #endif
 
 #include "PS2Etypes.h"
+#include "System.h"
 
 // compile-time assert
 #ifndef C_ASSERT
@@ -180,29 +181,10 @@ int GetPS2ElfName(char*);
 extern const char *LabelAuthors;
 extern const char *LabelGreets;
 
-// --->> Savestate stuff [PathUtil.c]
+#include "SaveState.h"
 
-// Savestate Versioning!
-//  If you make changes to the savestate version, please increment the value below.
-
-#ifdef PCSX2_VIRTUAL_MEM
-static const u32 g_SaveVersion = 0x7a300010;
-#else
-static const u32 g_SaveVersion = 0x8b400000;
-#endif
-
-int SaveState(const char *file);
-int LoadState(const char *file);
-int CheckState(const char *file);
-
-int SaveGSState(const char *file);
-int LoadGSState(const char *file);
-
-#define gzfreeze(ptr, size) \
-	if (Mode == 1) gzwrite(f, ptr, size); \
-	else if (Mode == 0) gzread(f, ptr, size);
-
-#define gzfreezel(ptr) gzfreeze(ptr, sizeof(ptr))
+void SaveGSState(const char *file);
+void LoadGSState(const char *file);
 
 // <<--- End Savestate Stuff
 

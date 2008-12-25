@@ -52,6 +52,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				SmallerTypeCheck="false"
 				CompileAs="2"
 			/>
 			<Tool
@@ -123,6 +124,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				MinimalRebuild="true"
+				SmallerTypeCheck="false"
+				EnableFunctionLevelLinking="true"
 				CompileAs="2"
 			/>
 			<Tool
@@ -195,6 +199,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				MinimalRebuild="true"
+				ExceptionHandling="1"
+				SmallerTypeCheck="false"
+				EnableFunctionLevelLinking="true"
 				CompileAs="2"
 			/>
 			<Tool
@@ -279,6 +287,7 @@
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,__MSCW32__,__WIN32__,__i386__,ENABLE_NLS,PACKAGE=\&quot;pcsx2\&quot;;PCSX2_DEVBUILD;_CRT_SECURE_NO_DEPRECATE;TIXML_USE_STL"
 				StringPooling="true"
 				ExceptionHandling="1"
+				SmallerTypeCheck="false"
 				RuntimeLibrary="0"
 				StructMemberAlignment="5"
 				BufferSecurityCheck="false"
@@ -363,6 +372,7 @@
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
 				PreprocessorDefinitions="NDEBUG"
+				SmallerTypeCheck="false"
 				EnableEnhancedInstructionSet="0"
 				CompileAs="2"
 			/>
@@ -441,6 +451,7 @@
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
 				PreprocessorDefinitions="NDEBUG"
+				SmallerTypeCheck="false"
 				EnableEnhancedInstructionSet="0"
 				CompileAs="2"
 			/>
@@ -497,6 +508,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\AdvancedDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Cdrom02.ico"
 				>
 			</File>
@@ -550,6 +565,10 @@
 			</File>
 			<File
 				RelativePath="..\WinMain.c"
+				>
+			</File>
+			<File
+				RelativePath="..\WinVM.cpp"
 				>
 			</File>
 			<Filter
@@ -609,6 +628,10 @@
 			Name="Misc"
 			>
 			<File
+				RelativePath="..\..\Exceptions.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\x86\fast_routines.cpp"
 				>
 			</File>
@@ -638,6 +661,14 @@
 			</File>
 			<File
 				RelativePath="..\..\SamplProf.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SaveState.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SaveState.h"
 				>
 			</File>
 			<File

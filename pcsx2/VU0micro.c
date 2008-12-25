@@ -81,7 +81,7 @@ int  vu0Init()
 	VU0.Mem = (u8*)VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
 
 	if( VU0.Mem != (void*)0x11000000 ) {
-		SysPrintf("Failed to alloc vu0mem 0x11000000 %d\n", GetLastError());
+		Console::MsgLn("Failed to alloc vu0mem 0x11000000 %d", GetLastError());
 		return -1;
 	}
 
@@ -131,11 +131,13 @@ void vu0Shutdown()
 #ifdef PCSX2_VIRTUAL_MEM
 	if( !SysMapUserPhysicalPages(VU0.Mem, 16, NULL, 0) )
 		SysPrintf("err releasing vu0 mem %d\n", GetLastError());
+
+	// note: this function *always* fails!  (in XP at least)
 	if( VirtualFree(VU0.Mem, 0, MEM_RELEASE) == 0 )
 		SysPrintf("err freeing vu0 %d\n", GetLastError());
 #else
-	_aligned_free(VU0.Mem);
-	_aligned_free(VU0.Micro);
+	safe_aligned_free(VU0.Mem);
+	safe_aligned_free(VU0.Micro);
 #endif
 
 	VU0.Mem = NULL;
@@ -172,13 +174,13 @@ void recResetVU0( void )
 	if( CHECK_VU0REC ) SuperVUReset(0);
 }
 
-void vu0Freeze(gzFile f, int Mode) {
-	gzfreeze(&VU0.ACC, sizeof(VECTOR));
-	gzfreeze(&VU0.code, sizeof(u32));
-	gzfreeze(VU0.Mem,   4*1024);
-	gzfreeze(VU0.Micro, 4*1024);
-	gzfreeze(VU0.VF, 32*sizeof(VECTOR));
-	gzfreeze(VU0.VI, 32*sizeof(REG_VI));
+void SaveState::vu0Freeze() {
+	Freeze(VU0.ACC);
+	Freeze(VU0.code);
+	FreezeMem(VU0.Mem,   4*1024);
+	FreezeMem(VU0.Micro, 4*1024);
+	FreezeMem(VU0.VF, 32*sizeof(VECTOR));
+	FreezeMem(VU0.VI, 32*sizeof(REG_VI));
 }
 
 

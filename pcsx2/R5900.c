@@ -43,23 +43,36 @@ s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
 
-int cpuInit()
+static bool cpuIsInitialized = false;
+
+#ifdef _DEBUG
+extern u32 s_vucount;
+#endif
+
+bool cpuInit()
 {
+	if( cpuIsInitialized ) return true;
+
+	cpuIsInitialized = true;
 	int ret;
 
-	SysPrintf("PCSX2 " PCSX2_VERSION " save ver: %x\n", g_SaveVersion);
-    SysPrintf("EE pc offset: 0x%x, PSX pc offset: 0x%x\n", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
+	Console::Notice("PCSX2 " PCSX2_VERSION " save ver: %x", g_SaveVersion);
+    Console::Notice("EE pc offset: 0x%x, PSX pc offset: 0x%x", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
 
 	cpuRegs.constzero = 0;
 	cpudetectInit();
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 
+	Console::SetColor( Console::Color_White );
 	ret = Cpu->Init();
+	Console::ClearColor();
+
 	if (ret == -1 && CHECK_EEREC) {
-		SysMessage(_("Error initializing Recompiler, switching to Interpreter"));
+		Console::WriteLn(_("Error initializing Recompiler, switching to Interpreter"));
 		Config.Options &= ~(PCSX2_EEREC|PCSX2_VU1REC|PCSX2_VU0REC);
 		Cpu = &intCpu;
 		ret = Cpu->Init();
+		if( ret == -1 ) return false;
 	}
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -77,7 +90,7 @@ int cpuInit()
 			memset(&si, 0, sizeof(si));
 
 			if( !CreateProcess(strexe, "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir, &si, &pi)) {
-				_snprintf(strdir, ARRAYSIZE(strexe), "Failed to launch %s\n", strexe);
+				_snprintf(strdir, ARRAYSIZE(strdir), "Failed to launch %s\n", strexe);
 				MessageBox(NULL, strdir, "Failure", MB_OK);
 			}
 			else {
@@ -86,24 +99,33 @@ int cpuInit()
 			}
 		}
 
-		return -1;
+		return false;
 	}
 #endif
-	if (hwInit() == -1) return -1;
-	if (vu0Init() == -1) return -1;
-	if (vu1Init() == -1) return -1;
+	if (hwInit() == -1) return false;
+	if (vu0Init() == -1) return false;
+	if (vu1Init() == -1) return false;
 #ifndef PCSX2_VIRTUAL_MEM
-	if (memInit() == -1) return -1;
+	if (memInit() == -1) return false;
 #endif
 
-	return ret;
+	return true;
 }
 
-int cpuReset()
+bool cpuReset()
 {
+	if( cpuIsInitialized )
+	{
+		for( int i=0; i<48; i++ )
+			UnmapTLB(i);
+	}
+
+	gsWaitGS();		// GS better be done before we reset the EE..
+
+	cpuInit();
 	Cpu->Reset();
 
-	if( !memReset() ) return 0;
+	if( !memReset() ) return false;
 
 	memset(&cpuRegs, 0, sizeof(cpuRegs));
 	memset(&fpuRegs, 0, sizeof(fpuRegs));
@@ -128,12 +150,22 @@ int cpuReset()
 	rcntInit();
 	psxReset();
 
-	return 1;
+#ifdef _DEBUG
+	s_vucount = 0;
+#endif
+
+	return true;
 }
 
 void cpuShutdown()
 {
-	gsShutdown();	// shut down the GS first because it's running a thread.
+	if( !cpuIsInitialized ) return;
+
+	gsWaitGS();
+	//gsShutdown();	// shut down the GS first because it's running a thread.
+
+	for( int i=0; i<48; i++ )
+		UnmapTLB(i);
 
 	hwShutdown();
 //	biosShutdown();
@@ -144,6 +176,8 @@ void cpuShutdown()
 	disR5900FreeSyms();
 
 	Cpu->Shutdown();
+
+	cpuIsInitialized = false;
 }
 
 void cpuException(u32 code, u32 bd) {
@@ -159,7 +193,7 @@ void cpuException(u32 code, u32 bd) {
 		if (cpuRegs.CP0.n.Status.b.EXL == 0) {
 			cpuRegs.CP0.n.Status.b.EXL = 1;
 			if (bd) {
-				SysPrintf("branch delay!!\n");
+				Console::Notice("branch delay!!");
 				cpuRegs.CP0.n.EPC = cpuRegs.pc - 4;
 				cpuRegs.CP0.n.Cause |= 0x80000000;
 			} else {
@@ -176,20 +210,20 @@ void cpuException(u32 code, u32 bd) {
 			cpuRegs.pc = 0xBFC00200 + offset;
 		}
 	} else { //Error Level 2
-		SysPrintf("FIX ME: Level 2 cpuException\n");
+		Console::Error("FIX ME: Level 2 cpuException");
 		if((code & 0x38000) <= 0x8000 ) { //Reset / NMI
 			cpuRegs.pc = 0xBFC00000;
-			SysPrintf("Reset request\n");
+			Console::Notice("Reset request");
 			UpdateCP0Status();
 			return;
 		} else if((code & 0x38000) == 0x10000) offset = 0x80; //Performance Counter
 		else if((code & 0x38000) == 0x18000)  offset = 0x100; //Debug
-		else SysPrintf("Unknown Level 2 Exception!! Cause %x\n", code);
+		else Console::Error("Unknown Level 2 Exception!! Cause %x", code);
 
 		if (cpuRegs.CP0.n.Status.b.EXL == 0) {
 			cpuRegs.CP0.n.Status.b.EXL = 1;
 			if (bd) {
-				SysPrintf("branch delay!!\n");
+				Console::Notice("branch delay!!");
 				cpuRegs.CP0.n.EPC = cpuRegs.pc - 4;
 				cpuRegs.CP0.n.Cause |= 0x80000000;
 			} else {
@@ -198,7 +232,7 @@ void cpuException(u32 code, u32 bd) {
 			}
 		} else {
 			offset = 0x180; //Overrride the cause		
-			SysPrintf("cpuException: Status.EXL = 1 cause %x\n", code);
+			Console::Notice("cpuException: Status.EXL = 1 cause %x", code);
 		}
 		if (cpuRegs.CP0.n.Status.b.DEV == 0) {
 			cpuRegs.pc = 0x80000000 + offset;
@@ -614,22 +648,10 @@ void cpuExecuteBios()
 	if( CHECK_EEREC ) Config.Options |= PCSX2_COP2REC;
 	else Config.Options &= ~PCSX2_COP2REC;
 
-	// remove frame skipping if GS doesn't support it
-	switch(CHECK_FRAMELIMIT) {
-		case PCSX2_FRAMELIMIT_SKIP:
-		case PCSX2_FRAMELIMIT_VUSKIP:
-			if( GSsetFrameSkip == NULL )
-			{
-				Config.Options &= ~PCSX2_FRAMELIMIT_MASK;
-				SysPrintf("Notice: Disabling frameskip -- GS plugin does not support it.\n");
-			}
-			break;
-	}
-
 	// Set the video mode to user's default request:
 	gsSetVideoRegionType( Config.PsxType & 1 );
 
-	SysPrintf("* PCSX2 *: ExecuteBios\n");
+	Console::Notice( "* PCSX2 *: ExecuteBios" );
 
 	bExecBIOS = TRUE;
 	while (cpuRegs.pc != 0x00200008 &&
@@ -655,24 +677,8 @@ void cpuExecuteBios()
 //	REC_CLEARM(cpuRegs.pc);
 	if( CHECK_EEREC ) Cpu->Reset();
 
-	SysPrintf("* PCSX2 *: ExecuteBios Complete\n");
+	Console::Notice("* PCSX2 *: ExecuteBios Complete");
 	GSprintf(5, "PCSX2 " PCSX2_VERSION "\nExecuteBios Complete\n");
-}
-
-void cpuRestartCPU()
-{
-	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
-
-	// restart vus
-	if (Cpu->Init() == -1) {
-		SysClose();
-		exit(1);
-	}
-
-	vu0Init();
-	vu1Init();
-	Cpu->Reset();
-	psxRestartCPU();
 }
 
 // for interpreter only

@@ -455,6 +455,8 @@ bool vtlb_Init()
 												vtlbUnmappedPWrite64<0x80000000>,vtlbUnmappedPWrite128<0x80000000>);
 	DefaultPhyHandler=vtlb_RegisterHandler(0,0,0,0,0,0,0,0,0,0);
 
+	//done !
+
 	//Setup the initial mappings
 	vtlb_MapHandler(DefaultPhyHandler,0,VTLB_PMAP_SZ);	
 	
@@ -462,9 +464,15 @@ bool vtlb_Init()
 	vtlb_VMapUnmap(0,(VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE);
 	//yeah i know, its stupid .. but this code has to be here for now ;p
 	vtlb_VMapUnmap((VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE,VTLB_PAGE_SIZE);
-	//done !
+
 	return true;
 }
+
+void vtlb_Reset()
+{
+	for(int i=0; i<48; i++) UnmapTLB(i);
+}
+
 void vtlb_Term()
 {
 	//nothing to do for now

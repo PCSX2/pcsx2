@@ -211,7 +211,6 @@ void psxShutdown();
 void psxException(u32 code, u32 step);
 void psxBranchTest();
 void psxExecuteBios();
-void psxRestartCPU();
 
 extern s32 psxNextCounter;
 extern u32 psxNextsCounter;

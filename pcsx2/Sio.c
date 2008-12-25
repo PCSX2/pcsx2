@@ -515,22 +515,21 @@ void  sioInterrupt() {
 	psxRegs.interrupt&= ~(1 << 16);
 }
 
-extern u32 dwCurSaveStateVer;
-int sioFreeze(gzFile f, int Mode) {
+void SaveState::sioFreeze() {
 
-    int savesize = sizeof(sio);
-    if( Mode == 0 && dwCurSaveStateVer == 0x7a30000e )
-        savesize -= 4;
-    sio.count = 0;
-    gzfreeze(&sio, savesize);
+	// eh, not supported anymore.. :)
+	//if( Mode == 0 && dwCurSaveStateVer == 0x7a30000e )
+    //    savesize -= 4;
 
-	return 0;
+	if( IsLoading() )
+		sio.count = 0;
+    Freeze( sio );
 }
 
 
 /*******************************************************************
  *******************************************************************
- ***************   MEMORY CARD SPECIFIC FUNTIONS  ******************
+ ***************   MEMORY CARD SPECIFIC FUNCTIONS  *****************
  *******************************************************************
  *******************************************************************/
 FILE *LoadMcd(int mcd) {

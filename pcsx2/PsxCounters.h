@@ -51,7 +51,6 @@ void psxRcntWtarget32(int index, u32 value);
 u16  psxRcntRcount16(int index);
 u32  psxRcntRcount32(int index);
 u64  psxRcntCycles(int index);
-int  psxRcntFreeze(gzFile f, int Mode);
 
 void psxVBlankStart();
 void psxVBlankEnd();

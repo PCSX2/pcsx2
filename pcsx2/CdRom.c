@@ -951,15 +951,15 @@ void cdrReset() {
 	cdReadTime = (PSXCLK / 1757) * BIAS; 
 }
 
-int cdrFreeze(gzFile f, int Mode) {
-	int tmp;
+void SaveState::cdrFreeze() {
+	Freeze(cdr);
 
-	gzfreeze(&cdr, sizeof(cdr));
+	// Alrighty!  This code ised to, for some reason, recalculate the pTransfer value
+	// even though it's being saved as part of the cdr struct.  Probably a backwards
+	// compat fix with an earlier save version.
 
-	if (Mode == 1) tmp = (int)(cdr.pTransfer - cdr.Transfer);
-	gzfreeze(&tmp, 4);
-	if (Mode == 0) cdr.pTransfer = cdr.Transfer + tmp;
-
-	return 0;
+	int tmp; // = (int)(cdr.pTransfer - cdr.Transfer);
+	Freeze(tmp);
+	//if (Mode == 0) cdr.pTransfer = cdr.Transfer + tmp;
 }
 

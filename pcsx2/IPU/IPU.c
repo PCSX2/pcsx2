@@ -170,69 +170,67 @@ void ipuShutdown()
 {
 }
 
-int  ipuFreeze(gzFile f, int Mode) {
+// fixme - ipuFreeze looks fairly broken. Should probably take a closer look at some point.
+
+void SaveState::ipuFreeze() {
 	IPUProcessInterrupt();
 
-	gzfreeze(ipuRegs, sizeof(IPUregisters));
-	gzfreeze(&g_nDMATransfer, sizeof(g_nDMATransfer));
-	gzfreeze(&FIreadpos, sizeof(FIreadpos));
-	gzfreeze(&FIwritepos, sizeof(FIwritepos));
-	gzfreeze(fifo_input, sizeof(fifo_input));	
-	gzfreeze(&FOreadpos, sizeof(FOreadpos));
-	gzfreeze(&FOwritepos, sizeof(FOwritepos));
-	gzfreeze(fifo_output, sizeof(fifo_output));
-	gzfreeze(&g_BP, sizeof(g_BP));
-	gzfreeze(niq, sizeof(niq));
-	gzfreeze(iq, sizeof(niq));
-	gzfreeze(vqclut, sizeof(vqclut));
-	gzfreeze(s_thresh, sizeof(s_thresh));
-	gzfreeze(&coded_block_pattern, sizeof(coded_block_pattern));
-	gzfreeze(&g_decoder, sizeof(g_decoder));
-	gzfreeze(mpeg2_scan_norm, sizeof(mpeg2_scan_norm));
-	gzfreeze(mpeg2_scan_alt, sizeof(mpeg2_scan_alt));
-	gzfreeze(g_nCmdPos, sizeof(g_nCmdPos));
-	gzfreeze(&g_nCmdIndex, sizeof(g_nCmdIndex));
-	gzfreeze(&ipuCurCmd, sizeof(ipuCurCmd));
+	FreezeMem(ipuRegs, sizeof(IPUregisters));
+	Freeze(g_nDMATransfer);
+	Freeze(FIreadpos);
+	Freeze(FIwritepos);
+	Freeze(fifo_input);
+	Freeze(FOreadpos);
+	Freeze(FOwritepos);
+	Freeze(fifo_output);
+	Freeze(g_BP);
+	Freeze(niq);
+	Freeze(iq);
+	Freeze(vqclut);
+	Freeze(s_thresh);
+	Freeze(coded_block_pattern);
+	Freeze(g_decoder);
+	Freeze(mpeg2_scan_norm);
+	Freeze(mpeg2_scan_alt);
+	Freeze(g_nCmdPos);
+	Freeze(g_nCmdIndex);
+	Freeze(ipuCurCmd);
 	
-	gzfreeze(_readbits, sizeof(_readbits));
+	Freeze(_readbits);
 
-	if( Mode == 0 ) {
-		int temp = readbits-_readbits;
-		gzfreeze(&temp, sizeof(temp));
-	}
-	else {
-		int temp;
-		gzfreeze(&temp, sizeof(temp));
+	int temp = readbits-_readbits;
+	Freeze(temp);
+
+	if( IsLoading() )
+	{
 		readbits = _readbits;
+
+		//other stuff
+		g_decoder.intra_quantizer_matrix		=(u8*)iq;
+		g_decoder.non_intra_quantizer_matrix	=(u8*)niq;
+		g_decoder.picture_structure = FRAME_PICTURE;	//default: progressive...my guess:P
+		g_decoder.mb8	=&mb8;
+		g_decoder.mb16=&mb16;
+		g_decoder.rgb32=&rgb32;
+		g_decoder.rgb16=&rgb16;
+		g_decoder.stride=16;
+
+		if (!mpeg2_inited){
+			mpeg2_idct_init();
+			convert=convert_rgb (CONVERT_RGB, 32);
+			convert(16, 16, 0, NULL, &convert_init);
+			memset(mb8.Y,0,sizeof(mb8.Y));
+			memset(mb8.Cb,0,sizeof(mb8.Cb));
+			memset(mb8.Cr,0,sizeof(mb8.Cr));
+			memset(mb16.Y,0,sizeof(mb16.Y));
+			memset(mb16.Cb,0,sizeof(mb16.Cb));
+			memset(mb16.Cr,0,sizeof(mb16.Cr));
+			mpeg2_inited=1;
+		}
 	}
-
-	//other stuff
-	g_decoder.intra_quantizer_matrix		=(u8*)iq;
-	g_decoder.non_intra_quantizer_matrix	=(u8*)niq;
-	g_decoder.picture_structure = FRAME_PICTURE;	//default: progressive...my guess:P
-	g_decoder.mb8	=&mb8;
-	g_decoder.mb16=&mb16;
-	g_decoder.rgb32=&rgb32;
-	g_decoder.rgb16=&rgb16;
-	g_decoder.stride=16;
-
-	if (!mpeg2_inited){
-        mpeg2_idct_init();
-		convert=convert_rgb (CONVERT_RGB, 32);
-		convert(16, 16, 0, NULL, &convert_init);
-		memset(mb8.Y,0,sizeof(mb8.Y));
-		memset(mb8.Cb,0,sizeof(mb8.Cb));
-		memset(mb8.Cr,0,sizeof(mb8.Cr));
-		memset(mb16.Y,0,sizeof(mb16.Y));
-		memset(mb16.Cb,0,sizeof(mb16.Cb));
-		memset(mb16.Cr,0,sizeof(mb16.Cr));
-		mpeg2_inited=1;
-	}
-
-	return 0;
 }
 
-BOOL ipuCanFreeze()
+bool ipuCanFreeze()
 {
 	return ipuCurCmd == 0xffffffff;
 }

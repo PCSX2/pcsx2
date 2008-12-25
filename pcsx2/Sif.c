@@ -588,8 +588,7 @@ __forceinline void dmaSIF2() {
 }
 
 
-int  sifFreeze(gzFile f, int Mode) {
-	gzfreeze(&sif0, sizeof(sif0));
-	gzfreeze(&sif1, sizeof(sif1));
-	return 0;
+void SaveState::sifFreeze() {
+	Freeze(sif0);
+	Freeze(sif1);
 }
