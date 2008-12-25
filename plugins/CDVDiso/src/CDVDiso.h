@@ -25,7 +25,11 @@
 #include "PS2Edefs.h"
 #include "libiso.h"
 
+#ifndef __LINUX__
 #define EXPORT_C(type) __declspec(dllexport) type __stdcall
+#else
+#define EXPORT_C(type) type
+#endif
 
 EXPORT_C(u32)   PS2EgetLibType();
 EXPORT_C(u32)   PS2EgetLibVersion2(u32 type);

@@ -20,7 +20,11 @@
 #define _SAVESTATE_H_
 
 #include <zlib.h>
+
+// This shouldn't break Win compiles, but it does.
+#ifdef __LINUX__
 #include "PS2Edefs.h"
+#endif
 
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.
