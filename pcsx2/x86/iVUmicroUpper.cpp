@@ -332,7 +332,7 @@ void recVUMI_ABS(VURegs *VU, int info)
 
 
 //------------------------------------------------------------------
-// ADD*, ADD_iq, ADD_xyzw*
+// ADD*, ADD_iq*, ADD_xyzw*
 //------------------------------------------------------------------
 PCSX2_ALIGNED16(float s_two[4]) = {0,0,0,2};
 void recVUMI_ADD(VURegs *VU, int info)
@@ -382,31 +382,30 @@ flagUpdate:
 
 void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 {
+	//SysPrintf("recVUMI_ADD_iq()\n");
+	if ( _X_Y_Z_W == 0 ) goto flagUpdate;
+	if ( !_Fd_ ) info = (info & ~PROCESS_EE_SET_D(0xf)) | PROCESS_EE_SET_D(EEREC_TEMP);
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
 	}
-	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 
-	if( _XYZW_SS ) {
-		if( EEREC_D == EEREC_TEMP ) {
+	if ( _XYZW_SS ) {
+		if ( EEREC_D == EEREC_TEMP ) {
 			_vuFlipRegSS(VU, EEREC_S);
 			SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
 			SSE_ADDSS_M32_to_XMM(EEREC_D, addr);
 			_vuFlipRegSS(VU, EEREC_S);
-
-			// have to flip over EEREC_D if computing flags!
-			//if( (info & PROCESS_VU_UPDATEFLAGS) )
-				_vuFlipRegSS(VU, EEREC_D);
+			_vuFlipRegSS(VU, EEREC_D); // have to flip over EEREC_D for computing flags!
 		}
-		else if( EEREC_D == EEREC_S ) {
+		else if ( EEREC_D == EEREC_S ) {
 			_vuFlipRegSS(VU, EEREC_D);
 			SSE_ADDSS_M32_to_XMM(EEREC_D, addr);
 			_vuFlipRegSS(VU, EEREC_D);
 		}
 		else {
-			if( _X ) {
-				if( EEREC_D != EEREC_S ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
+			if ( _X ) {
+				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_S);
 				SSE_ADDSS_M32_to_XMM(EEREC_D, addr);
 			}
 			else {
@@ -418,7 +417,7 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 		}
 	}
 	else {
-		if( _X_Y_Z_W != 0xf || EEREC_D == EEREC_S || EEREC_D == EEREC_TEMP) {
+		if ( (_X_Y_Z_W != 0xf) || (EEREC_D == EEREC_S) || (EEREC_D == EEREC_TEMP) ) {
 			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr); 
 			SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
 		}
@@ -428,8 +427,8 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		} 
 		else {
-			if( EEREC_D == EEREC_TEMP ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
-			else if( EEREC_D == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
+			if ( EEREC_D == EEREC_TEMP ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
+			else if ( EEREC_D == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
 			else {
 				SSE_MOVSS_M32_to_XMM(EEREC_D, addr); 
 				SSE_SHUFPS_XMM_to_XMM(EEREC_D, EEREC_D, 0x00);
@@ -437,7 +436,7 @@ void recVUMI_ADD_iq(VURegs *VU, uptr addr, int info)
 			}
 		}
 	}
-
+flagUpdate:
 	recUpdateFlags(VU, EEREC_D, info);
 }
 
@@ -503,18 +502,20 @@ void recVUMI_ADDw(VURegs *VU, int info) { recVUMI_ADD_xyzw(VU, 3, info); }
 
 
 //------------------------------------------------------------------
-// ADDA
+// ADDA*, ADDA_iq*, ADDA_xyzw*
 //------------------------------------------------------------------
 void recVUMI_ADDA(VURegs *VU, int info)
 {
+	//SysPrintf("recVUMI_ADDA()\n");
+	if ( _X_Y_Z_W == 0 ) goto flagUpdate;
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-		vuFloat5( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
-		vuFloat5( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W);
+		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+		if (_Ft_) vuFloat5( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
 	}
+
 	if( _X_Y_Z_W == 8 ) {
-		if (EEREC_ACC == EEREC_S) SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
-		else if (EEREC_ACC == EEREC_T) SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
+		if (EEREC_ACC == EEREC_S) SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);	// Can this case happen? (cottonvibes)
+		else if (EEREC_ACC == EEREC_T) SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_S); // Can this case happen?
 		else {
 			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
 			SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
@@ -527,22 +528,24 @@ void recVUMI_ADDA(VURegs *VU, int info)
 		VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 	}
 	else {
-		if( EEREC_ACC == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_T);
-		else if( EEREC_ACC == EEREC_T ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
+		if( EEREC_ACC == EEREC_S ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_T); // Can this case happen?
+		else if( EEREC_ACC == EEREC_T ) SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_S); // Can this case happen?
 		else {
 			SSE_MOVAPS_XMM_to_XMM(EEREC_ACC, EEREC_S);
 			SSE_ADDPS_XMM_to_XMM(EEREC_ACC, EEREC_T);
 		}
 	}
+flagUpdate:
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_ADDA_iq(VURegs *VU, uptr addr, int info)
 {
+	//SysPrintf("recVUMI_ADDA_iq()\n");
+	if ( _X_Y_Z_W == 0 ) goto flagUpdate;
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-		vuFloat5( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W);
+		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
 	}
 
 	if( _XYZW_SS ) {
@@ -584,18 +587,21 @@ void recVUMI_ADDA_iq(VURegs *VU, uptr addr, int info)
 			}
 		}
 	}
+flagUpdate:
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
 {
+	//SysPrintf("recVUMI_ADDA_xyzw()\n");
+	if ( _X_Y_Z_W == 0 ) goto flagUpdate;
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
-		vuFloat5( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
-		vuFloat5( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W);
+		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
+		if (_Ft_) vuFloat5( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
 	}
 
 	if( _X_Y_Z_W == 8 ) {
+		assert( EEREC_ACC != EEREC_T );
 		if( xyzw == 0 ) {
 			SSE_MOVSS_XMM_to_XMM(EEREC_ACC, EEREC_S);
 			SSE_ADDSS_XMM_to_XMM(EEREC_ACC, EEREC_T);
@@ -617,7 +623,6 @@ void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
 
 		if (_X_Y_Z_W != 0xf) {
 			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-
 			VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 		} 
 		else {
@@ -628,6 +633,7 @@ void recVUMI_ADDA_xyzw(VURegs *VU, int xyzw, int info)
 			}
 		}
 	}
+flagUpdate:
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
