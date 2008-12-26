@@ -2,21 +2,30 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2", "pcsx2\windows\VCprojects\pcsx2_2008.vcproj", "{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{26511268-2902-4997-8421-ECD7055F9E28} = {26511268-2902-4997-8421-ECD7055F9E28}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthreads", "pcsx2\windows\VCprojects\pthreads_2008.vcproj", "{26511268-2902-4997-8421-ECD7055F9E28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug vm|Win32 = Debug vm|Win32
 		Debug vtlb|Win32 = Debug vtlb|Win32
+		Debug|Win32 = Debug|Win32
 		Release vm (dev)|Win32 = Release vm (dev)|Win32
 		Release vm (nondev) [public]|Win32 = Release vm (nondev) [public]|Win32
 		Release vtlb (dev)|Win32 = Release vtlb (dev)|Win32
 		Release vtlb (nondev) [public]|Win32 = Release vtlb (nondev) [public]|Win32
+		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vm|Win32.ActiveCfg = Debug vm|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vm|Win32.Build.0 = Debug vm|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vtlb|Win32.ActiveCfg = Debug vtlb|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vtlb|Win32.Build.0 = Debug vtlb|Win32
+		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug|Win32.ActiveCfg = Debug vtlb|Win32
+		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug|Win32.Build.0 = Debug vtlb|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vm (dev)|Win32.ActiveCfg = Release vm (dev)|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vm (dev)|Win32.Build.0 = Release vm (dev)|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vm (nondev) [public]|Win32.ActiveCfg = Release vm (nondev)|Win32
@@ -25,6 +34,24 @@ Global
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vtlb (dev)|Win32.Build.0 = Release vtlb (dev)|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vtlb (nondev) [public]|Win32.ActiveCfg = Release vtlb (nondev)|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vtlb (nondev) [public]|Win32.Build.0 = Release vtlb (nondev)|Win32
+		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release|Win32.ActiveCfg = Release vtlb (nondev)|Win32
+		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release|Win32.Build.0 = Release vtlb (nondev)|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vm|Win32.ActiveCfg = Debug|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vm|Win32.Build.0 = Debug|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vtlb|Win32.ActiveCfg = Debug|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vtlb|Win32.Build.0 = Debug|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Debug|Win32.ActiveCfg = Debug|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Debug|Win32.Build.0 = Debug|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vm (dev)|Win32.ActiveCfg = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vm (dev)|Win32.Build.0 = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vm (nondev) [public]|Win32.ActiveCfg = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vm (nondev) [public]|Win32.Build.0 = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vtlb (dev)|Win32.ActiveCfg = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vtlb (dev)|Win32.Build.0 = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vtlb (nondev) [public]|Win32.ActiveCfg = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release vtlb (nondev) [public]|Win32.Build.0 = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release|Win32.ActiveCfg = Release|Win32
+		{26511268-2902-4997-8421-ECD7055F9E28}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -16,6 +16,10 @@
  *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
 #include "Misc.h"
 
 ////////////////////////////////////////////////////////////
@@ -158,7 +162,6 @@ __forceinline void AtomicDecrement( s32& Target )
 {
 	InterlockedDecrement( (volatile LONG*)&Target );
 }
-
 
 __forceinline void _TIMESLICE()
 {

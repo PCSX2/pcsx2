@@ -20,6 +20,7 @@
 #define __SYSTEM_H__
 
 #include "Exceptions.h"
+#include "Paths.h"
 
 int  SysInit();							// Init mem and plugins
 void SysReset();						// Resets the various PS2 cpus, sub-systems, and recompilers.

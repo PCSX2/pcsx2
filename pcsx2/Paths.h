@@ -1,5 +1,5 @@
-#ifndef PATCHES_H_INCLUDED
-#define PATCHES_H_INCLUDED
+#ifndef _PCSX2_PATHS_H_
+#define _PCSX2_PATHS_H_
 
 #define CONFIG_DIR "inis"
 
@@ -15,4 +15,4 @@
 
 #define LOGS_DIR "logs"
 
-#endif//PATCHES_H_INCLUDED
+#endif

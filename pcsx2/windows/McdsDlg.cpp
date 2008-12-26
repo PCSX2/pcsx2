@@ -1544,12 +1544,13 @@ void Open_Mcd_Proc(HWND hW, int mcd) {
     ofn.nFilterIndex		= 1;
     ofn.lpstrFile			= szFileName;
     ofn.nMaxFile			= 256;
-    ofn.lpstrInitialDir		= "memcards";
+    ofn.lpstrInitialDir		= MEMCARDS_DIR;
     ofn.lpstrFileTitle		= szFileTitle;
     ofn.nMaxFileTitle		= 256;
     ofn.lpstrTitle			= NULL;
     ofn.lpstrDefExt			= "MC2";
-    ofn.Flags				= OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
+    ofn.Flags				=
+		OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_EXPLORER;
 
 	if (GetOpenFileName ((LPOPENFILENAME)&ofn)) {
 		Edit_SetText(GetDlgItem(hW,mcd == 1 ? IDC_MCD1 : IDC_MCD2), szFileName);
@@ -1579,12 +1580,14 @@ void SaveFileDialog(HWND hW, int MC, char *dir, char *name) {
     ofn.nFilterIndex		= 1;
     ofn.lpstrFile			= szFileName;
     ofn.nMaxFile			= 256;
-    ofn.lpstrInitialDir		= "memcards";
+    ofn.lpstrInitialDir		= MEMCARDS_DIR;
     ofn.lpstrFileTitle		= szFileTitle;
     ofn.nMaxFileTitle		= 256;
     ofn.lpstrTitle			= NULL;
     ofn.lpstrDefExt			= "MC2";
-    ofn.Flags				= OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT | OFN_EXTENSIONDIFFERENT;
+    ofn.Flags				=
+		OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT |
+		OFN_EXTENSIONDIFFERENT | OFN_EXPLORER;
 
 	if (GetSaveFileName ((LPOPENFILENAME)&ofn))
 	{
@@ -1597,9 +1600,9 @@ void SaveFileDialog(HWND hW, int MC, char *dir, char *name) {
 
 		if(d != NULL)
 		{
-				FILE *fp = fopen(ofn.lpstrFile, "wb");
-				fwrite(d->File, d->Lenght, 1, fp);
-				fclose(fp);
+			FILE *fp = fopen(ofn.lpstrFile, "wb");
+			fwrite(d->File, d->Lenght, 1, fp);
+			fclose(fp);
 		}
 	}
 }

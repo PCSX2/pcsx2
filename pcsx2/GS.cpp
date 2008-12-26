@@ -16,20 +16,13 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// rewritten by zerofrog to add multithreading/gs caching to GS and VU1
-
 #include <assert.h>
 #include <vector>
 #include <list>
 #include <cstring> 
 #include <cstdlib>
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-
 #include "Common.h"
-#include "zlib.h"
 #include "VU.h"
 #include "GS.h"
 #include "iR5900.h"

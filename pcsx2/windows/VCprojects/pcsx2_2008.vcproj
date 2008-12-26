@@ -20,6 +20,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release vm (dev)|Win32"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops;.\vsprops\virtualmem.vsprops;.\vsprops\devbuild.vsprops"
 			UseOfMFC="0"
@@ -53,6 +54,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				SmallerTypeCheck="false"
+				BufferSecurityCheck="true"
 				CompileAs="2"
 			/>
 			<Tool
@@ -66,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\pcsx2-vm.exe"
+				OutputFile="&quot;$(SolutionDir)\bin\pcsx2-vm.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -93,6 +95,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug vm|Win32"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\debug.vsprops;.\vsprops\virtualmem.vsprops;.\vsprops\devbuild.vsprops"
 			UseOfMFC="0"
@@ -141,7 +144,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="$(SolutionDir)\bin\pcsx2d-vm.exe"
+				OutputFile="&quot;$(SolutionDir)\bin\pcsx2d-vm.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -168,6 +171,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug vtlb|Win32"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\debug.vsprops;.\vsprops\devbuild.vsprops"
 			UseOfMFC="0"
@@ -217,7 +221,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="$(SolutionDir)\bin\pcsx2d-vtlb.exe"
+				OutputFile="&quot;$(SolutionDir)\bin\pcsx2d-vtlb.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -244,6 +248,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release vtlb (dev)|Win32"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops;.\vsprops\devbuild.vsprops"
 			UseOfMFC="0"
@@ -277,7 +282,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
@@ -290,12 +295,9 @@
 				SmallerTypeCheck="false"
 				RuntimeLibrary="0"
 				StructMemberAlignment="5"
-				BufferSecurityCheck="false"
+				BufferSecurityCheck="true"
 				EnableFunctionLevelLinking="false"
 				PrecompiledHeaderFile=".\ReleaseTLB/pcsx2.pch"
-				AssemblerListingLocation=".\ReleaseTLB/"
-				ObjectFile=".\ReleaseTLB/"
-				ProgramDataBaseFileName=".\ReleaseTLB/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="2"
@@ -311,7 +313,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\pcsx2-vtlb.exe"
+				OutputFile="&quot;$(SolutionDir)\bin\pcsx2-vtlb.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -338,6 +340,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release vm (nondev)|Win32"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops;.\vsprops\virtualmem.vsprops"
 			UseOfMFC="0"
@@ -387,7 +390,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\pcsx2r-vm.exe"
+				OutputFile="&quot;$(SolutionDir)\bin\pcsx2r-vm.exe&quot;"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
@@ -450,8 +453,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				SmallerTypeCheck="false"
+				BufferSecurityCheck="true"
 				EnableEnhancedInstructionSet="0"
 				CompileAs="2"
 			/>
@@ -466,7 +470,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\pcsx2r-vtlb.exe"
+				OutputFile="&quot;$(SolutionDir)\bin\pcsx2r-vtlb.exe&quot;"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
@@ -500,7 +504,7 @@
 			Name="GUI"
 			>
 			<File
-				RelativePath="..\AboutDlg.c"
+				RelativePath="..\AboutDlg.cpp"
 				>
 			</File>
 			<File
@@ -512,11 +516,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Cdrom02.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\ConfigDlg.c"
+				RelativePath="..\ConfigDlg.cpp"
 				>
 			</File>
 			<File
@@ -524,11 +524,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CpuDlg.c"
+				RelativePath="..\CpuDlg.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ini.c"
+				RelativePath="..\ini.cpp"
 				>
 			</File>
 			<File
@@ -540,15 +540,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PatchBrowser.c"
+				RelativePath="..\PatchBrowser.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\pcsx2.rc"
-				>
-			</File>
-			<File
-				RelativePath="..\RDebugger.c"
+				RelativePath="..\RDebugger.cpp"
 				>
 			</File>
 			<File
@@ -556,15 +552,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\resource.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Win32.h"
 				>
 			</File>
 			<File
-				RelativePath="..\WinMain.c"
+				RelativePath="..\WinMain.cpp"
 				>
 			</File>
 			<File
@@ -575,7 +567,7 @@
 				Name="Debugger"
 				>
 				<File
-					RelativePath=".\..\Debugger.c"
+					RelativePath=".\..\Debugger.cpp"
 					>
 				</File>
 				<File
@@ -583,11 +575,27 @@
 					>
 				</File>
 				<File
-					RelativePath=".\..\DebugMemory.c"
+					RelativePath=".\..\DebugMemory.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\..\Debugreg.c"
+					RelativePath=".\..\Debugreg.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Resources"
+				>
+				<File
+					RelativePath="..\Cdrom02.ico"
+					>
+				</File>
+				<File
+					RelativePath="..\pcsx2.rc"
+					>
+				</File>
+				<File
+					RelativePath="..\resource.h"
 					>
 				</File>
 			</Filter>
@@ -596,7 +604,7 @@
 			Name="Elf"
 			>
 			<File
-				RelativePath="..\..\Elfheader.c"
+				RelativePath="..\..\Elfheader.cpp"
 				>
 			</File>
 			<File
@@ -608,7 +616,7 @@
 			Name="Plugin system"
 			>
 			<File
-				RelativePath="..\..\Plugins.c"
+				RelativePath="..\..\Plugins.cpp"
 				>
 			</File>
 			<File
@@ -636,7 +644,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Misc.c"
+				RelativePath="..\..\Misc.cpp"
 				>
 			</File>
 			<File
@@ -644,7 +652,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Patch.c"
+				RelativePath="..\..\Patch.cpp"
 				>
 			</File>
 			<File
@@ -652,7 +660,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\PathUtils.c"
+				RelativePath="..\..\PathUtils.cpp"
 				>
 			</File>
 			<File
@@ -752,7 +760,7 @@
 			Name="rdebug"
 			>
 			<File
-				RelativePath="..\..\rdebug\deci2.c"
+				RelativePath="..\..\rdebug\deci2.cpp"
 				>
 			</File>
 			<File
@@ -760,7 +768,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\rdebug\deci2_dbgp.c"
+				RelativePath="..\..\rdebug\deci2_dbgp.cpp"
 				>
 			</File>
 			<File
@@ -768,7 +776,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\rdebug\deci2_dcmp.c"
+				RelativePath="..\..\rdebug\deci2_dcmp.cpp"
 				>
 			</File>
 			<File
@@ -780,7 +788,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\rdebug\deci2_iloadp.c"
+				RelativePath="..\..\rdebug\deci2_iloadp.cpp"
 				>
 			</File>
 			<File
@@ -788,7 +796,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\rdebug\deci2_netmp.c"
+				RelativePath="..\..\rdebug\deci2_netmp.cpp"
 				>
 			</File>
 			<File
@@ -796,7 +804,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\rdebug\deci2_ttyp.c"
+				RelativePath="..\..\rdebug\deci2_ttyp.cpp"
 				>
 			</File>
 			<File
@@ -1487,7 +1495,7 @@
 				Name="EE"
 				>
 				<File
-					RelativePath="..\..\Cache.c"
+					RelativePath="..\..\Cache.cpp"
 					>
 				</File>
 				<File
@@ -1495,11 +1503,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\COP0.c"
+					RelativePath="..\..\COP0.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Counters.c"
+					RelativePath="..\..\Counters.cpp"
 					>
 					<FileConfiguration
 						Name="Release vm (dev)|Win32"
@@ -1537,15 +1545,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\FPU.c"
+					RelativePath="..\..\FPU.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\Interpreter.c"
+					RelativePath="..\..\Interpreter.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\InterTables.c"
+					RelativePath="..\..\InterTables.cpp"
 					>
 				</File>
 				<File
@@ -1553,11 +1561,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\MMI.c"
+					RelativePath="..\..\MMI.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\R5900.c"
+					RelativePath="..\..\R5900.cpp"
 					>
 				</File>
 				<File
@@ -1565,7 +1573,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Vif.c"
+					RelativePath="..\..\Vif.cpp"
 					>
 				</File>
 				<File
@@ -1573,7 +1581,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\VifDma.c"
+					RelativePath="..\..\VifDma.cpp"
 					>
 				</File>
 				<File
@@ -1588,7 +1596,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\iCOP2.c"
+						RelativePath="..\..\x86\iCOP2.cpp"
 						>
 					</File>
 					<File
@@ -1600,7 +1608,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\iCP0.c"
+						RelativePath="..\..\x86\iCP0.cpp"
 						>
 					</File>
 					<File
@@ -1608,7 +1616,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\iFPU.c"
+						RelativePath="..\..\x86\iFPU.cpp"
 						>
 						<FileConfiguration
 							Name="Release vm (dev)|Win32"
@@ -1664,7 +1672,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\iMMI.c"
+						RelativePath="..\..\x86\iMMI.cpp"
 						>
 					</File>
 					<File
@@ -1708,7 +1716,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\ir5900tables.c"
+						RelativePath="..\..\x86\ir5900tables.cpp"
 						>
 						<FileConfiguration
 							Name="Release vm (nondev)|Win32"
@@ -1739,39 +1747,39 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900-32.c"
+							RelativePath="..\..\x86\ix86-32\iR5900-32.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900Arit.c"
+							RelativePath="..\..\x86\ix86-32\iR5900Arit.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900AritImm.c"
+							RelativePath="..\..\x86\ix86-32\iR5900AritImm.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900Branch.c"
+							RelativePath="..\..\x86\ix86-32\iR5900Branch.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900Jump.c"
+							RelativePath="..\..\x86\ix86-32\iR5900Jump.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900LoadStore.c"
+							RelativePath="..\..\x86\ix86-32\iR5900LoadStore.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900Move.c"
+							RelativePath="..\..\x86\ix86-32\iR5900Move.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900MultDiv.c"
+							RelativePath="..\..\x86\ix86-32\iR5900MultDiv.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\ix86-32\iR5900Shift.c"
+							RelativePath="..\..\x86\ix86-32\iR5900Shift.cpp"
 							>
 						</File>
 					</Filter>
@@ -1780,11 +1788,11 @@
 					Name="Hw"
 					>
 					<File
-						RelativePath="..\..\FiFo.c"
+						RelativePath="..\..\FiFo.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Hw.c"
+						RelativePath="..\..\Hw.cpp"
 						>
 					</File>
 					<File
@@ -1792,7 +1800,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\SPR.c"
+						RelativePath="..\..\SPR.cpp"
 						>
 					</File>
 					<File
@@ -1803,7 +1811,7 @@
 						Name="Dynarec"
 						>
 						<File
-							RelativePath="..\..\x86\iHw.c"
+							RelativePath="..\..\x86\iHw.cpp"
 							>
 						</File>
 					</Filter>
@@ -1813,7 +1821,7 @@
 				Name="Iop"
 				>
 				<File
-					RelativePath="..\..\CdRom.c"
+					RelativePath="..\..\CdRom.cpp"
 					>
 				</File>
 				<File
@@ -1821,7 +1829,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\CDVD.c"
+					RelativePath="..\..\CDVD.cpp"
 					>
 				</File>
 				<File
@@ -1829,7 +1837,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxBios.c"
+					RelativePath="..\..\PsxBios.cpp"
 					>
 				</File>
 				<File
@@ -1845,7 +1853,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxCounters.c"
+					RelativePath="..\..\PsxCounters.cpp"
 					>
 				</File>
 				<File
@@ -1853,7 +1861,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxDma.c"
+					RelativePath="..\..\PsxDma.cpp"
 					>
 				</File>
 				<File
@@ -1861,7 +1869,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxHw.c"
+					RelativePath="..\..\PsxHw.cpp"
 					>
 				</File>
 				<File
@@ -1869,11 +1877,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxInterpreter.c"
+					RelativePath="..\..\PsxInterpreter.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxMem.c"
+					RelativePath="..\..\PsxMem.cpp"
 					>
 				</File>
 				<File
@@ -1881,7 +1889,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxSio2.c"
+					RelativePath="..\..\PsxSio2.cpp"
 					>
 				</File>
 				<File
@@ -1889,7 +1897,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\R3000A.c"
+					RelativePath="..\..\R3000A.cpp"
 					>
 				</File>
 				<File
@@ -1897,7 +1905,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Sio.c"
+					RelativePath="..\..\Sio.cpp"
 					>
 				</File>
 				<File
@@ -1908,11 +1916,11 @@
 					Name="Dynarec"
 					>
 					<File
-						RelativePath="..\..\x86\iPsxHw.c"
+						RelativePath="..\..\x86\iPsxHw.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\iPsxMem.c"
+						RelativePath="..\..\x86\iPsxMem.cpp"
 						>
 					</File>
 					<File
@@ -1933,7 +1941,7 @@
 				Name="IPU"
 				>
 				<File
-					RelativePath="..\..\IPU\coroutine.c"
+					RelativePath="..\..\IPU\coroutine.cpp"
 					>
 				</File>
 				<File
@@ -1945,7 +1953,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Ipu\IPU.c"
+					RelativePath="..\..\Ipu\IPU.cpp"
 					>
 				</File>
 				<File
@@ -1953,7 +1961,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Ipu\yuv2rgb.c"
+					RelativePath="..\..\Ipu\yuv2rgb.cpp"
 					>
 				</File>
 				<File
@@ -1964,11 +1972,11 @@
 					Name="mpeg2lib"
 					>
 					<File
-						RelativePath="..\..\Ipu\mpeg2lib\Idct.c"
+						RelativePath="..\..\Ipu\mpeg2lib\Idct.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.c"
+						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.cpp"
 						>
 					</File>
 					<File
@@ -1985,7 +1993,7 @@
 				Name="memory"
 				>
 				<File
-					RelativePath="..\..\Memory.c"
+					RelativePath="..\..\Memory.cpp"
 					>
 				</File>
 				<File
@@ -2002,6 +2010,10 @@
 				</File>
 				<File
 					RelativePath="..\..\GS.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\MTGS.cpp"
 					>
 				</File>
 				<Filter
@@ -2021,7 +2033,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\VU0.c"
+					RelativePath="..\..\VU0.cpp"
 					>
 				</File>
 				<File
@@ -2029,15 +2041,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\VU0micro.c"
+					RelativePath="..\..\VU0micro.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\VU1micro.c"
+					RelativePath="..\..\VU1micro.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\VUflags.c"
+					RelativePath="..\..\VUflags.cpp"
 					>
 				</File>
 				<File
@@ -2049,7 +2061,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\VUops.c"
+					RelativePath="..\..\VUops.cpp"
 					>
 				</File>
 				<File
@@ -2060,7 +2072,7 @@
 					Name="Dynarec"
 					>
 					<File
-						RelativePath="..\..\x86\iVU0micro.c"
+						RelativePath="..\..\x86\iVU0micro.cpp"
 						>
 					</File>
 					<File
@@ -2068,7 +2080,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\x86\iVU1micro.c"
+						RelativePath="..\..\x86\iVU1micro.cpp"
 						>
 					</File>
 					<File
@@ -2109,7 +2121,7 @@
 				Name="Sif"
 				>
 				<File
-					RelativePath="..\..\Sif.c"
+					RelativePath="..\..\Sif.cpp"
 					>
 				</File>
 				<File
@@ -2125,7 +2137,7 @@
 				Name="Debug"
 				>
 				<File
-					RelativePath="..\..\DebugTools\cpuopsDebug.c"
+					RelativePath="..\..\DebugTools\cpuopsDebug.cpp"
 					>
 				</File>
 				<File
@@ -2141,27 +2153,27 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\DebugTools\DisR3000A.c"
+					RelativePath="..\..\DebugTools\DisR3000A.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\DebugTools\DisR3000asm.c"
+					RelativePath="..\..\DebugTools\DisR3000asm.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\DebugTools\DisR5900.c"
+					RelativePath="..\..\DebugTools\DisR5900.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\DebugTools\DisR5900asm.c"
+					RelativePath="..\..\DebugTools\DisR5900asm.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\DebugTools\DisVU0Micro.c"
+					RelativePath="..\..\DebugTools\DisVU0Micro.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\DebugTools\DisVU1Micro.c"
+					RelativePath="..\..\DebugTools\DisVU1Micro.cpp"
 					>
 				</File>
 				<File
@@ -2178,7 +2190,7 @@
 			Name="ISO"
 			>
 			<File
-				RelativePath="..\..\CDVDiso.c"
+				RelativePath="..\..\CDVDiso.cpp"
 				>
 			</File>
 			<File
@@ -2186,7 +2198,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\CDVDisodrv.c"
+				RelativePath="..\..\CDVDisodrv.cpp"
 				>
 			</File>
 			<File
@@ -2198,7 +2210,7 @@
 			Name="DynarecEmitter"
 			>
 			<File
-				RelativePath="..\..\x86\ix86\ix86.c"
+				RelativePath="..\..\x86\ix86\ix86.cpp"
 				>
 			</File>
 			<File
@@ -2206,23 +2218,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_3dnow.c"
+				RelativePath="..\..\x86\ix86\ix86_3dnow.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_cpudetect.c"
+				RelativePath="..\..\x86\ix86\ix86_cpudetect.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_fpu.c"
+				RelativePath="..\..\x86\ix86\ix86_fpu.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_mmx.c"
+				RelativePath="..\..\x86\ix86\ix86_mmx.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_sse.c"
+				RelativePath="..\..\x86\ix86\ix86_sse.cpp"
 				>
 			</File>
 		</Filter>
@@ -2243,7 +2255,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\Stats.c"
+			RelativePath="..\..\Stats.cpp"
 			>
 		</File>
 		<File
