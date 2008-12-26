@@ -38,9 +38,9 @@
 #define NSPACKETS 24
 
 #ifdef _DEBUG
-char *libraryName      = "ZeroSPU2 (Debug)";
+char *libraryName      = "ZeroSPU2/PP (Debug)";
 #else
-char *libraryName      = "ZeroSPU2 ";
+char *libraryName      = "ZeroSPU2/PP ";
 #endif
 
 FILE *spu2Log;
@@ -109,22 +109,22 @@ int SPUCycles = 0, SPUWorkerCycles = 0;
 int SPUStartCycle[2];
 int SPUTargetCycle[2];
 
-//#ifdef _DEBUG
 int g_logsound=0;
-//FILE* g_fLogSound=NULL;
-//#endif
 
 int ADMAS4Write();
 int ADMAS7Write();
 
 void InitADSR();
 
-void (*irqCallbackSPU2)()=0;                  // func of main emu, called on spu irq
-void (*irqCallbackDMA4)()=0;                  // func of main emu, called on spu irq
-void (*irqCallbackDMA7)()=0;                  // func of main emu, called on spu irq
+// functions of main emu, called on spu irq
+void (*irqCallbackSPU2)()=0;
+void (*irqCallbackDMA4)()=0;
+void (*irqCallbackDMA7)()=0;
+
 uptr g_pDMABaseAddr=0;
 
-const int f[5][2] = {   {    0,  0  },
+const int f[5][2] = {   
+			{    0,  0  },
                         {   60,  0  },
                         {  115, -52 },
                         {   98, -55 },
@@ -179,8 +179,6 @@ void __Log(char *fmt, ...) {
 	va_start(list, fmt);
 	vfprintf(spu2Log, fmt, list);
 	va_end(list);
-
-    //fprintf(spu2Log, "c0: %x %x, c1: %x %x\n", C0_SPUADDR, C0_IRQA, C1_SPUADDR, C1_IRQA);
 }
 
 s32 CALLBACK SPU2init()
@@ -263,8 +261,6 @@ s32 CALLBACK SPU2open(void *pDsp) {
     //conf.Log = 1;
 
     g_bPlaySound = !(conf.options&OPTION_MUTE);
-//    if( conf.options & OPTION_REALTIME )
-//        SPUWorkerCycles = timeGetTime();
 
     if( g_bPlaySound && SetupSound() != 0 ) {
         SysMessage("ZeroSPU2: Failed to initialize sound");
@@ -366,24 +362,10 @@ void CALLBACK SPU2async(u32 cycle)
 	}
 
     if( g_nSpuInit ) {
-
-//        if( (conf.options & OPTION_REALTIME) ) {
-//            u32 iter = 0;
-//            while(SPUWorkerCycles < timeGetTime()) {
-//                SPU2Worker();
-//                SPUWorkerCycles++;
-//                if( iter++ > 1 )
-//                    break;
-//                //if( SPUTargetCycle[0] >= CYCLES_PER_MS ) SPUTargetCycle[0] -= CYCLES_PER_MS;
-//                //if( SPUTargetCycle[1] >= CYCLES_PER_MS ) SPUTargetCycle[1] -= CYCLES_PER_MS;
-//            }
-//        }
-//        else {
             while( SPUCycles-SPUWorkerCycles > 0 && CYCLES_PER_MS < SPUCycles-SPUWorkerCycles ) {
                 SPU2Worker();
                 SPUWorkerCycles += CYCLES_PER_MS;
             }
-//        }
     }
     else SPUWorkerCycles = SPUCycles;
 }
@@ -401,7 +383,8 @@ void InitADSR()                                    // INIT ADSR
         if(r<0x3FFFFFFF)
         {
             r+=rs;
-            rd++;if(rd==5) {rd=1;rs*=2;}
+            rd++;
+	    if(rd==5) {rd=1;rs*=2;}
         }
         if(r>0x3FFFFFFF) r=0x3FFFFFFF;
 
@@ -489,6 +472,7 @@ int MixADSR(VOICE_PROCESSED* pvoice)                             // MIX ADSR
         {
             switch((pvoice->ADSRX.EnvelopeVol>>28)&0x7)
             {
+	    // Note: Simplify
             case 0: pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.DecayRate^0x1F))-0x18+0 + 32]; break;
             case 1: pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.DecayRate^0x1F))-0x18+4 + 32]; break;
             case 2: pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.DecayRate^0x1F))-0x18+6 + 32]; break;
@@ -499,11 +483,10 @@ int MixADSR(VOICE_PROCESSED* pvoice)                             // MIX ADSR
             case 7: pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.DecayRate^0x1F))-0x18+12+ 32]; break;
             }
 
-            if(pvoice->ADSRX.EnvelopeVol<0) pvoice->ADSRX.EnvelopeVol=0;
+            if(pvoice->ADSRX.EnvelopeVol<0) 
+		    pvoice->ADSRX.EnvelopeVol=0;
             if(((pvoice->ADSRX.EnvelopeVol>>27)&0xF) <= pvoice->ADSRX.SustainLevel)
-            {
                 pvoice->ADSRX.State=2;
-            }
 
             pvoice->ADSRX.lVolume=pvoice->ADSRX.EnvelopeVol>>21;
             return pvoice->ADSRX.lVolume;
@@ -536,6 +519,7 @@ int MixADSR(VOICE_PROCESSED* pvoice)                             // MIX ADSR
                 {
                     switch((pvoice->ADSRX.EnvelopeVol>>28)&0x7)
                     {
+		    // Note: Simplify
                     case 0: pvoice->ADSRX.EnvelopeVol-=RateTable[((pvoice->ADSRX.SustainRate^0x7F))-0x1B +0 + 32];break;
                     case 1: pvoice->ADSRX.EnvelopeVol-=RateTable[((pvoice->ADSRX.SustainRate^0x7F))-0x1B +4 + 32];break;
                     case 2: pvoice->ADSRX.EnvelopeVol-=RateTable[((pvoice->ADSRX.SustainRate^0x7F))-0x1B +6 + 32];break;
@@ -570,7 +554,6 @@ void SPU2Worker()
     u8* start;
     unsigned int nSample;
     int ch,predict_nr,shift_factor,flags,d,s;
-    //int bIRQReturn=0;
 
     // assume s_buffers are zeroed out
     if( dwNewChannel2[0] || dwNewChannel2[1] )
@@ -645,19 +628,7 @@ void SPU2Worker()
 
                         pChannel->SB[nSample++]=fa;
                     }
-
-//                    if(pChannel->GetCtrl()->irq)         // some callback and irq active?
-//                    {
-//                        // if irq address reached or irq on looping addr, when stop/loop flag is set 
-//                        u8* pirq = (u8*)pSpuIrq[ch>=24];
-//                        if( (pirq > start-16  && pirq <= start)
-//                            || ((flags&1) && (pirq >  pChannel->pLoop-16 && pirq <= pChannel->pLoop)))
-//                        {
-//                            IRQINFO |= 4<<(int)(ch>=24);
-//                            SPU2_LOG("SPU2Worker:interrupt\n");
-//                            irqCallbackSPU2();
-//                        }
-//                    }
+		    
                     // irq occurs no matter what core access the address
                     for(int core = 0; core < 2; ++core) {
                         if(((SPU_CONTROL_*)(spu2regs+0x400*core+REG_C0_CTRL))->irq)         // some callback and irq active?
@@ -682,7 +653,7 @@ void SPU2Worker()
                     {
                         // We play this block out first...
                         dwEndChannel2[ch/24]|=(1<<(ch%24));
-                        //if(!(flags&2))                          // 1+2: do loop... otherwise: stop
+			    
                         if(flags!=3 || pChannel->pLoop==NULL)
                         {                                      // and checking if pLoop is set avoids crashes, yeah
                             start = (u8*)-1;
@@ -692,23 +663,12 @@ void SPU2Worker()
                         else
                         {
                             start = pChannel->pLoop;
-//                            if(conf.options&OPTION_FFXHACK)
-//                                start += 16;
                         }
                     }
 
                     pChannel->pCurr=start;                    // store values for next cycle
                     pChannel->s_1=s_1;
                     pChannel->s_2=s_2;
-
-//                            if(bIRQReturn)                            // special return for "spu irq - wait for cpu action"
-//                            {
-//                                bIRQReturn=0;
-//                                DWORD dwWatchTime=GetTickCount()+1500;
-//
-//                                while(iSpuAsyncWait && !bEndThread && GetTickCount()<dwWatchTime)
-//                                    Sleep(1);
-//                            }
                 }
 
                 fa=pChannel->SB[pChannel->iSBPos++];        // get sample data
@@ -758,9 +718,6 @@ ENDX:
 		    {
 			    if(ADMAS4Write())
 			    {
-				    //if( Adma4.AmountLeft == 0 )
-                    //spu2Ru16(REG_C0_SPUSTAT)&=~0x80;
-					//printf("ADMA4 end spu cycle %x\n", SPUCycles);
 					if(interrupt & 0x2){
 						interrupt &= ~0x2;
 						printf("Stopping double interrupt DMA4\n");
@@ -768,31 +725,25 @@ ENDX:
                     irqCallbackDMA4();
 					
 			    }
-                //else {
-                    Adma4.Enabled = 2;
-//                    if( Adma4.AmountLeft > 0 )
-//                        MemAddr[0] += 1024;
-               // }
 		    }
         	
             if(Adma4.Index == 512) {
                 if( Adma4.Enabled == 2 ) {
-//                    if( Adma4.AmountLeft == 0 )
-//                        MemAddr[0] += 1024;
                     Adma4.Enabled = 0;
                 }
 			    Adma4.Index = 0;
             }
 	    }
 
-        //LogRawSound(s_buffers, 4, &s_buffers[0][1], 4, NSSIZE);
     }
 
-    if( (spu2Ru16(REG_C1_MMIX) & 0xF0) && (spu2Ru16(REG_C1_ADMAS) & 0x2) /*&& !(spu2Ru16(REG_C1_CTRL) & 0x30)*/) {
+    if( (spu2Ru16(REG_C1_MMIX) & 0xF0) && (spu2Ru16(REG_C1_ADMAS) & 0x2)) {
 
         for(int ns=0;ns<NSSIZE;ns++) { 
-            if((spu2Ru16(REG_C1_MMIX) & 0x80)) s_buffers[ns][0] += (((short*)spu2mem)[0x2400+Adma7.Index]*(int)spu2Ru16(REG_C1_BVOLL))>>16;
-            if((spu2Ru16(REG_C1_MMIX) & 0x40)) s_buffers[ns][1] += (((short*)spu2mem)[0x2600+Adma7.Index]*(int)spu2Ru16(REG_C1_BVOLR))>>16;
+            if((spu2Ru16(REG_C1_MMIX) & 0x80)) 
+		    s_buffers[ns][0] += (((short*)spu2mem)[0x2400+Adma7.Index]*(int)spu2Ru16(REG_C1_BVOLL))>>16;
+            if((spu2Ru16(REG_C1_MMIX) & 0x40)) 
+		    s_buffers[ns][1] += (((short*)spu2mem)[0x2600+Adma7.Index]*(int)spu2Ru16(REG_C1_BVOLR))>>16;
 
 		    Adma7.Index +=1;
             MemAddr[1] += 4;
@@ -801,8 +752,6 @@ ENDX:
 		    {
 			    if(ADMAS7Write())
 			    {
-				   // spu2Ru16(REG_C1_SPUSTAT)&=~0x80;
-					//printf("ADMA7 end spu cycle %x\n", SPUCycles);
 					if(interrupt & 0x4){
 						interrupt &= ~0x4;
 						printf("Stopping double interrupt DMA7\n");
@@ -810,10 +759,7 @@ ENDX:
 				    irqCallbackDMA7();
 					
 			    }
-                //else {
                     Adma7.Enabled = 2;
-                    //MemAddr[1] += 1024;
-               // }
 		    }
 
             if(Adma7.Index == 512) {
@@ -857,11 +803,9 @@ ENDX:
             }
 
             if( s_nQueuedBuffers >= ARRAYSIZE(s_pAudioBuffers)-1 ) {
+		//ZeroSPU2: dropping packets! game too fast
                 s_nDropPacket += NSFRAMES;
                 s_GlobalTimeStamp = GetMicroTime();
-//#ifdef _DEBUG
-                //printf("ZeroSPU2: dropping packets! game too fast\n");
-//#endif
             }
             else {
                 // submit to final mixer
@@ -887,7 +831,6 @@ ENDX:
                     s_GlobalTimeStamp = newtime;
                     s_pAudioBuffers[s_nCurBuffer].timestamp = timeGetTime();
                     s_pAudioBuffers[s_nCurBuffer].avgtime = s_nTotalDuration/ARRAYSIZE(s_nDurations);
-                    //fprintf(spu2Log, "%d %d\n", duration, s_pAudioBuffers[s_nCurBuffer].avgtime);
                 }
 
                 s_pAudioBuffers[s_nCurBuffer].len = 4*NSSIZE*NSFRAMES;
@@ -911,7 +854,6 @@ void ResampleLinear(s16* pStereoSamples, int oldsamples, s16* pNewSamples, int n
         int old = io / newsamples;
         int rem = io - old * newsamples;
 
-        // newsamp = [old] * (1-rem/newsamp) + [old+1] * (rem/newsamp)
         old *= 2;
         int newsampL = pStereoSamples[old] * (newsamples - rem) + pStereoSamples[old+2] * rem;
         int newsampR = pStereoSamples[old+1] * (newsamples - rem) + pStereoSamples[old+3] * rem;
@@ -935,23 +877,22 @@ void* SPU2ThreadProc(void* lpParam)
 
         if( !(conf.options&OPTION_REALTIME) ) {
             while(s_nQueuedBuffers< 3 && !s_bThreadExit) {
-                //printf("sleeping!!!!\n");
+                //Sleeping
                 Sleep(1);
                 if( s_bThreadExit )
                     return NULL;
             }
 
             while( SoundGetBytesBuffered() > 72000 ) {
-                //printf("bytes buffered\n");
+                //Bytes buffered
                 Sleep(1);
 
-                if( s_bThreadExit )
-                    return NULL;
+                if( s_bThreadExit ) return NULL;
             }
         }
         else {
             while(s_nQueuedBuffers< 1 && !s_bThreadExit) {
-                //printf("sleeping!!!!\n");
+                //Sleeping
                 Sleep(1);
             }
         }
@@ -981,12 +922,7 @@ void* SPU2ThreadProc(void* lpParam)
 
             NewSamples = min(NewSamples, NSFRAMES*NSSIZE*3);
 
-            //ResampleTimeStretch((s16*)s_pAudioBuffers[nReadBuf].pbuf, s_pAudioBuffers[nReadBuf].len/4, s_ThreadBuffer, NewSamples);
-
             int oldsamples = s_pAudioBuffers[nReadBuf].len/4;
-
-            /*if( NewSamples < oldsamples/2 )
-                NewSamples = oldsamples/2;*/
 
             if( (nReadBuf&3)==0 ) { // wow, this if statement makes the whole difference
                 pSoundTouch->setTempoChange(100.0f*(float)oldsamples/(float)NewSamples - 100.0f);
@@ -999,17 +935,10 @@ void* SPU2ThreadProc(void* lpParam)
             do
             {
                 nOutSamples = pSoundTouch->receiveSamples(s_ThreadBuffer, NSSIZE*NSFRAMES*5);
-                if( nOutSamples > 0 ) {
-                    //LogRawSound(s_ThreadBuffer, 4, s_ThreadBuffer+1, 4, nOutSamples);
-                    //printf("%d %d\n", timeGetTime(), nOutSamples);
-                    SoundFeedVoiceData((u8*)s_ThreadBuffer, nOutSamples*4);
-                    //g_packetcount += nOutSamples;
-                }
+                if( nOutSamples > 0 ) SoundFeedVoiceData((u8*)s_ThreadBuffer, nOutSamples*4);
             } while (nOutSamples != 0);
 
-            
-            //printf("ave: %d %d, played: %d, queued: %d, delay: %d, proc: %d\n", NewSamples, s_pAudioBuffers[nReadBuf].avgtime, SoundGetBytesBuffered(), s_nQueuedBuffers, ps2delay, GetMicroTime()-starttime);
-        }
+          }
         else {
             SoundFeedVoiceData(s_pAudioBuffers[nReadBuf].pbuf, s_pAudioBuffers[nReadBuf].len);
         }
@@ -1036,7 +965,6 @@ void CALLBACK SPU2readDMA4Mem(u16 *pMem, int size)
     {
         *pMem++ = *(u16*)(spu2mem+spuaddr);
         if((spu2Rs16(REG_C0_CTRL)&0x40) && C0_IRQA == spuaddr){
-            //spu2Ru16(SPDIF_OUT) |= 0x4;
             C0_SPUADDR_SET(spuaddr);
             IRQINFO |= 4;
             SPU2_LOG("SPU2readDMA4Mem:interrupt\n");
@@ -1069,7 +997,6 @@ void CALLBACK SPU2readDMA7Mem(u16* pMem, int size)
     {
         *pMem++ = *(u16*)(spu2mem+spuaddr);
         if((spu2Rs16(REG_C1_CTRL)&0x40) && C1_IRQA == spuaddr ){
-           //spu2Ru16(SPDIF_OUT) |= 0x8;
            C1_SPUADDR_SET(spuaddr);
            IRQINFO |= 8;
            SPU2_LOG("SPU2readDMA7Mem:interrupt\n");
@@ -1118,13 +1045,11 @@ int ADMAS4Write()
     memcpy((short*)(spu2mem + spuaddr + 0x2200),(short*)Adma4.MemAddr,512);
     Adma4.MemAddr += 256;
 	if( (spu2Ru16(REG_C0_CTRL)&0x40) && ((spuaddr + 0x2400) <= C0_IRQA &&  (spuaddr + 0x2400 + 256) >= C0_IRQA)){
-        //spu2Ru16(SPDIF_OUT) |= 0x4;
         IRQINFO |= 4;
         printf("ADMA 4 Mem access:interrupt\n");
         irqCallbackSPU2();
     }
 	if( (spu2Ru16(REG_C0_CTRL)&0x40) && ((spuaddr + 0x2600) <= C0_IRQA &&  (spuaddr + 0x2600 + 256) >= C0_IRQA)){
-        //spu2Ru16(SPDIF_OUT) |= 0x4;
         IRQINFO |= 4;
         printf("ADMA 4 Mem access:interrupt\n");
         irqCallbackSPU2();
@@ -1161,13 +1086,11 @@ int ADMAS7Write()
     memcpy((short*)(spu2mem + spuaddr + 0x2600),(short*)Adma7.MemAddr,512);
     Adma7.MemAddr += 256;
 	if( (spu2Ru16(REG_C1_CTRL)&0x40) && ((spuaddr + 0x2400) <= C1_IRQA &&  (spuaddr + 0x2400 + 256) >= C1_IRQA)){
-        //spu2Ru16(SPDIF_OUT) |= 0x4;
         IRQINFO |= 8;
        printf("ADMA 7 Mem access:interrupt\n");
         irqCallbackSPU2();
     }
 	if( (spu2Ru16(REG_C1_CTRL)&0x40) && ((spuaddr + 0x2600) <= C1_IRQA &&  (spuaddr + 0x2600 + 256) >= C1_IRQA)){
-        //spu2Ru16(SPDIF_OUT) |= 0x4;
         IRQINFO |= 8;
        printf("ADMA 7 Mem access:interrupt\n");
         irqCallbackSPU2();
@@ -1191,18 +1114,10 @@ void CALLBACK SPU2writeDMA4Mem(u16* pMem, int size)
 
     if((spu2Ru16(REG_C0_ADMAS) & 0x1) && (spu2Ru16(REG_C0_CTRL) & 0x30) == 0 && size)
     {
-//        u16* ptempmem = pMem;
-//        for(int i = 0; i < size/512; ++i) {
-//            LogRawSound(ptempmem, 2, ptempmem+256, 2, 256);
-//            ptempmem += 512;
-//        }
-    
-		//printf("ADMA4 size %x\n", size);
         // if still active, don't destroy adma4
         if( !Adma4.Enabled )
             Adma4.Index = 0;
 
-        //memset(&Adma4,0,sizeof(ADMA));
         Adma4.MemAddr = pMem;
         Adma4.AmountLeft = size;
 		SPUTargetCycle[0] = size;
@@ -1211,13 +1126,9 @@ void CALLBACK SPU2writeDMA4Mem(u16* pMem, int size)
             C0_SPUADDR_SET(0);
 			if(ADMAS4Write()){
 				SPUStartCycle[0] = SPUCycles;
-			   // SPUTargetCycle[0] = 512;//512*48000;
-				//spu2Ru16(REG_C0_SPUSTAT)&=~0x80;
 				interrupt |= (1<<1);
 			}
         }
-
-		//if(interrupt & 0x2) printf("start ADMA4 interrupt target cycle %x start cycle %x spu cycle %x\n", SPUTargetCycle[0], SPUStartCycle[0], SPUCycles);
         Adma4.Enabled = 1;
         return;
     }
@@ -1228,7 +1139,6 @@ void CALLBACK SPU2writeDMA4Mem(u16* pMem, int size)
     C0_SPUADDR_SET(spuaddr);
     
     if( (spu2Ru16(REG_C0_CTRL)&0x40) && (spuaddr < C0_IRQA && C0_IRQA <= spuaddr+0x20)){
-        //spu2Ru16(SPDIF_OUT) |= 0x4;
         IRQINFO |= 4;
         SPU2_LOG("SPU2writeDMA4Mem:interrupt\n");
         irqCallbackSPU2();
@@ -1252,30 +1162,20 @@ void CALLBACK SPU2writeDMA7Mem(u16* pMem, int size)
 
     if((spu2Ru16(REG_C1_ADMAS) & 0x2) && (spu2Ru16(REG_C1_CTRL) & 0x30) == 0 && size)
     {
-//        u16* ptempmem = pMem;
-//        for(int i = 0; i < size/512; ++i) {
-//            LogRawSound(ptempmem, 2, ptempmem+256, 2, 256);
-//            ptempmem += 512;
-//        }
-
-		//printf("ADMA7 size %x\n", size);
         if( !Adma7.Enabled )
             Adma7.Index = 0;
-
-        //memset(&Adma7,0,sizeof(ADMA));
-        Adma7.MemAddr = pMem;
-        Adma7.AmountLeft = size;
-		SPUTargetCycle[1] = size;
-		spu2Ru16(REG_C1_SPUSTAT)&=~0x80;
+	
+            Adma7.MemAddr = pMem;
+            Adma7.AmountLeft = size;
+	    SPUTargetCycle[1] = size;
+	    spu2Ru16(REG_C1_SPUSTAT)&=~0x80;
         if( !Adma7.Enabled || Adma7.Index > 384 ) {
             C1_SPUADDR_SET(0);
 			if(ADMAS7Write()){
 				SPUStartCycle[1] = SPUCycles;
-			   // SPUTargetCycle[0] = 512;//512*48000;
 				interrupt |= (1<<2);
 			}
         }
-		//if(interrupt & 0x4) printf("start ADMA7 interrupt target cycle %x start cycle %x spu cycle %x\n", SPUTargetCycle[1], SPUStartCycle[1], SPUCycles);
         Adma7.Enabled = 1;
 
         return;
@@ -1292,7 +1192,6 @@ void CALLBACK SPU2writeDMA7Mem(u16* pMem, int size)
     C1_SPUADDR_SET(spuaddr);
     
     if( (spu2Ru16(REG_C1_CTRL)&0x40) && (spuaddr < C1_IRQA && C1_IRQA <= spuaddr+0x20)){
-        //spu2Ru16(SPDIF_OUT) |= 0x8;
         IRQINFO |= 8;
         SPU2_LOG("SPU2writeDMA7Mem:interrupt\n");
         irqCallbackSPU2();
@@ -1311,22 +1210,14 @@ void CALLBACK SPU2writeDMA7Mem(u16* pMem, int size)
 void CALLBACK SPU2interruptDMA4()
 {
 	SPU2_LOG("SPU2 interruptDMA4\n");
-
-//	spu2Rs16(REG_C0_CTRL)&= ~0x30;
-//	spu2Rs16(REG__1B0) = 0;
-//	spu2Rs16(SPU2_STATX_WRDY_M)|= 0x80;
-    spu2Rs16(REG_C0_CTRL)&=~0x30;
+	spu2Rs16(REG_C0_CTRL)&=~0x30;
 	spu2Ru16(REG_C0_SPUSTAT)|=0x80;
 }
 
 void CALLBACK SPU2interruptDMA7()
 {
 	SPU2_LOG("SPU2 interruptDMA7\n");
-
-//	spu2Rs16(REG_C1_CTRL)&= ~0x30;
-//	//spu2Rs16(REG__5B0) = 0;
-//	spu2Rs16(SPU2_STATX_DREQ)|= 0x80;
-    spu2Rs16(REG_C1_CTRL)&=~0x30;
+	spu2Rs16(REG_C1_CTRL)&=~0x30;
 	spu2Ru16(REG_C1_SPUSTAT)|=0x80;
 }
 
@@ -1376,12 +1267,16 @@ void VolumeOn(int start,int end,unsigned short val,int iRight)  // VOLUME ON PSX
     for(ch=start;ch<end;ch++,val>>=1) {                    // loop channels
         if(val&1) {                                           // -> reverb on/off
             
-            if(iRight) voices[ch].bVolumeR=1;
-            else       voices[ch].bVolumeL=1;
+            if(iRight) 
+		    voices[ch].bVolumeR=1;
+            else       
+		    voices[ch].bVolumeL=1;
         }
         else {
-            if(iRight) voices[ch].bVolumeR=0;
-            else       voices[ch].bVolumeL=0;
+            if(iRight) 
+		    voices[ch].bVolumeR=0;
+            else       
+		    voices[ch].bVolumeL=0;
         }
     }
 }
@@ -1500,7 +1395,6 @@ void CALLBACK SPU2write(u32 mem, u16 value)
             spu2mem[spuaddr] = value;
             spuaddr++;
             if( (spu2Ru16(REG_C0_CTRL)&0x40) && C0_IRQA == spuaddr){
-                //spu2Ru16(SPDIF_OUT) |= 0x4;
                 IRQINFO |= 4;
                 SPU2_LOG("SPU2write:C0_CPUDATA interrupt\n");
                 irqCallbackSPU2();
@@ -1516,7 +1410,6 @@ void CALLBACK SPU2write(u32 mem, u16 value)
             spu2mem[spuaddr] = value;
             spuaddr++;
             if( (spu2Ru16(REG_C1_CTRL)&0x40) && C1_IRQA == spuaddr){
-                //spu2Ru16(SPDIF_OUT) |= 0x8;
                 IRQINFO |= 8;
                 SPU2_LOG("SPU2write:C1_CPUDATA interrupt\n");
                 irqCallbackSPU2();
@@ -1553,6 +1446,8 @@ void CALLBACK SPU2write(u32 mem, u16 value)
             if( !(value & 0x40) )
                 IRQINFO &= ~0x8;
             break;
+	
+	// Could probably simplify
         case REG_C0_SPUON1: SoundOn(0,16,value); break;
         case REG_C0_SPUON2: SoundOn(16,24,value); break;
         case REG_C1_SPUON1: SoundOn(24,40,value); break;
@@ -1601,8 +1496,6 @@ u16  CALLBACK SPU2read(u32 mem)
                 
         switch(r&0x0f) {
             case 10:
-//                if( pvoice->bNew ) return 1;
-//                if( pvoice->ADSRX.lVolume && !pvoice->ADSRX.EnvelopeVol ) return 1;
                 return (unsigned short)(pvoice->ADSRX.EnvelopeVol>>16);
         }
     }
@@ -1621,6 +1514,7 @@ u16  CALLBACK SPU2read(u32 mem)
         rx-=(ch%24)*12;
         VOICE_PROCESSED* pvoice = &voices[ch];
 
+	// Note - can we generalize this?
         switch(rx) {
             case 0x1C0:
                 ret = ((((uptr)pvoice->pStart-(uptr)spu2mem)>>17)&0x3F);
@@ -1671,7 +1565,6 @@ u16  CALLBACK SPU2read(u32 mem)
 
         case REG_IRQINFO: 
             ret = IRQINFO;
-            //IRQINFO = 0; // clear once done
             break;
 
         default:
@@ -1857,7 +1750,7 @@ void VOICE_PROCESSED::FModChangeFrequency(int ns)
     iFMod[ns]=0;
 }
 
-// noise handler... just produces some noise data
+// fixme - noise handler... just produces some noise data
 // surely wrong... and no noise frequency (spuCtrl&0x3f00) will be used...
 // and sometimes the noise will be used as fmod modulation... pfff
 int VOICE_PROCESSED::iGetNoiseVal()
@@ -1977,12 +1870,6 @@ void LogPacketSound(void* packet, int memsize)
 
 void LogRawSound(void* pleft, int leftstride, void* pright, int rightstride, int numsamples)
 {
-//#ifdef _DEBUG
-//    if( g_fLogSound == NULL ) {
-//        g_fLogSound = fopen("rawsndbuf.pcm", "wb");
-//        if( g_fLogSound == NULL )
-//            return;
-//    }
     if( g_pWavRecord == NULL ) {
         g_pWavRecord = new WavOutFile(RECORD_FILENAME, 48000, 16, 2);
     }
@@ -2001,9 +1888,6 @@ void LogRawSound(void* pleft, int leftstride, void* pright, int rightstride, int
     }
 
     g_pWavRecord->write(&tempbuf[0], numsamples*2);
-
-    //fwrite(&tempbuf[0], 4*numsamples, 1, g_fLogSound);
-//#endif
 }
 
 int CALLBACK SPU2setupRecording(int start, void* pData)
@@ -2082,7 +1966,6 @@ s32  CALLBACK SPU2freeze(int mode, freezeData *data)
             voices[i].pCurr = (u8*)((uptr)spud->voices[i].pCurr+(uptr)spu2mem);
         }
 
-        //conf.Log = 1;
         s_GlobalTimeStamp = 0;
         g_startcount=0xffffffff;
         for(int i = 0; i < ARRAYSIZE(s_nDurations); ++i) {
@@ -2114,11 +1997,8 @@ s32  CALLBACK SPU2freeze(int mode, freezeData *data)
         spud->Adma7MemAddr = (u32)((uptr)Adma7.MemAddr - g_pDMABaseAddr);
 
         spud->SPUCycles = SPUCycles;
-
-//        if( conf.options & OPTION_REALTIME )
-//            SPUWorkerCycles = SPUCycles;
-//        else
         spud->SPUWorkerCycles = SPUWorkerCycles;
+	
         memcpy(spud->SPUStartCycle, SPUStartCycle, sizeof(SPUStartCycle));
         memcpy(spud->SPUTargetCycle, SPUTargetCycle, sizeof(SPUTargetCycle));
 
@@ -2143,9 +2023,6 @@ s32  CALLBACK SPU2freeze(int mode, freezeData *data)
     else if (mode == FREEZE_SIZE) {
 		data->size = sizeof(SPU2freezeData);
 	}
-
-//    if( conf.options & OPTION_REALTIME )
-//        SPUWorkerCycles = timeGetTime();
         
 	return 0;
 }
