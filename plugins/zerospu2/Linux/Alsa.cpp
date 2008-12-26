@@ -34,18 +34,12 @@ int AlsaSetupSound()
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
 	snd_pcm_status_t *status;
-	unsigned int pspeed;
-	int pchannels;
-	snd_pcm_format_t format;
-	unsigned int buffer_time, period_time;
+	unsigned int pspeed = 48000;
+	int pchannels = 2;
+	snd_pcm_format_t format = SND_PCM_FORMAT_S16_LE;
+	unsigned int buffer_time = SOUNDSIZE;
+	unsigned int period_time= buffer_time / 4;
 	int err;
-    
-	pchannels=2;
-    
-	pspeed = 48000;
-	format = SND_PCM_FORMAT_S16_LE;
-	buffer_time = SOUNDSIZE;
-	period_time = buffer_time / 4;
 	
 	err = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	if(err < 0) {
