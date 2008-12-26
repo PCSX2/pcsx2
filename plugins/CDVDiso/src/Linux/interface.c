@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -17,6 +18,13 @@
 #include "callbacks.h"
 #include "interface.h"
 #include "support.h"
+
+#define GLADE_HOOKUP_OBJECT(component,widget,name) \
+  g_object_set_data_full (G_OBJECT (component), name, \
+    gtk_widget_ref (widget), (GDestroyNotify) gtk_widget_unref)
+
+#define GLADE_HOOKUP_OBJECT_NO_REF(component,widget,name) \
+  g_object_set_data (G_OBJECT (component), name, widget)
 
 GtkWidget*
 create_Config (void)
@@ -32,6 +40,7 @@ create_Config (void)
   GtkWidget *hbox4;
   GtkWidget *label2;
   GtkWidget *GtkCombo_Method;
+  GList *GtkCombo_Method_items = NULL;
   GtkWidget *combo_entry1;
   GtkWidget *hbuttonbox2;
   GtkWidget *GtkButton_Compress;
@@ -47,206 +56,164 @@ create_Config (void)
   GtkWidget *button2;
 
   Config = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_object_set_data (GTK_OBJECT (Config), "Config", Config);
   gtk_container_set_border_width (GTK_CONTAINER (Config), 5);
-  gtk_window_set_title (GTK_WINDOW (Config), "CDVD Config Dialog");
-  gtk_window_set_position (GTK_WINDOW (Config), GTK_WIN_POS_CENTER);
+  gtk_window_set_title (GTK_WINDOW (Config), _("CDVD Config Dialog"));
 
   vbox1 = gtk_vbox_new (FALSE, 5);
-  gtk_widget_ref (vbox1);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (vbox1);
   gtk_container_add (GTK_CONTAINER (Config), vbox1);
   gtk_container_set_border_width (GTK_CONTAINER (vbox1), 5);
 
   hbox1 = gtk_hbox_new (FALSE, 10);
-  gtk_widget_ref (hbox1);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox1, TRUE, TRUE, 0);
 
   GtkEntry_Iso = gtk_entry_new ();
-  gtk_widget_ref (GtkEntry_Iso);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkEntry_Iso", GtkEntry_Iso,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (GtkEntry_Iso);
   gtk_box_pack_start (GTK_BOX (hbox1), GtkEntry_Iso, TRUE, TRUE, 0);
 
-  button5 = gtk_button_new_with_label ("Select Iso");
-  gtk_widget_ref (button5);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "button5", button5,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  button5 = gtk_button_new_with_mnemonic (_("Select Iso"));
   gtk_widget_show (button5);
   gtk_box_pack_start (GTK_BOX (hbox1), button5, FALSE, FALSE, 0);
 
   hbox2 = gtk_hbox_new (FALSE, 10);
-  gtk_widget_ref (hbox2);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "hbox2", hbox2,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hbox2);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox2, FALSE, FALSE, 0);
 
   GtkProgressBar_Progress = gtk_progress_bar_new ();
-  gtk_widget_ref (GtkProgressBar_Progress);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkProgressBar_Progress", GtkProgressBar_Progress,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (GtkProgressBar_Progress);
   gtk_box_pack_start (GTK_BOX (hbox2), GtkProgressBar_Progress, TRUE, FALSE, 0);
 
-  button6 = gtk_button_new_with_label ("Stop");
-  gtk_widget_ref (button6);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "button6", button6,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  button6 = gtk_button_new_with_mnemonic (_("Stop"));
   gtk_widget_show (button6);
   gtk_box_pack_end (GTK_BOX (hbox2), button6, FALSE, FALSE, 0);
-  gtk_widget_set_usize (button6, 61, -2);
 
   hbox4 = gtk_hbox_new (FALSE, 5);
-  gtk_widget_ref (hbox4);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "hbox4", hbox4,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hbox4);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox4, TRUE, TRUE, 0);
 
-  label2 = gtk_label_new ("Compression Method:");
-  gtk_widget_ref (label2);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "label2", label2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  label2 = gtk_label_new (_("Compression Method:"));
   gtk_widget_show (label2);
   gtk_box_pack_start (GTK_BOX (hbox4), label2, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label2), GTK_JUSTIFY_CENTER);
 
   GtkCombo_Method = gtk_combo_new ();
-  gtk_widget_ref (GtkCombo_Method);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkCombo_Method", GtkCombo_Method,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  g_object_set_data (G_OBJECT (GTK_COMBO (GtkCombo_Method)->popwin),
+                     "GladeParentKey", GtkCombo_Method);
   gtk_widget_show (GtkCombo_Method);
   gtk_box_pack_start (GTK_BOX (hbox4), GtkCombo_Method, TRUE, FALSE, 0);
+  GtkCombo_Method_items = g_list_append (GtkCombo_Method_items, (gpointer) "");
+  gtk_combo_set_popdown_strings (GTK_COMBO (GtkCombo_Method), GtkCombo_Method_items);
+  g_list_free (GtkCombo_Method_items);
 
   combo_entry1 = GTK_COMBO (GtkCombo_Method)->entry;
-  gtk_widget_ref (combo_entry1);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "combo_entry1", combo_entry1,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (combo_entry1);
 
   hbuttonbox2 = gtk_hbutton_box_new ();
-  gtk_widget_ref (hbuttonbox2);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "hbuttonbox2", hbuttonbox2,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hbuttonbox2);
   gtk_box_pack_start (GTK_BOX (vbox1), hbuttonbox2, TRUE, TRUE, 0);
-  gtk_button_box_set_spacing (GTK_BUTTON_BOX (hbuttonbox2), 0);
 
-  GtkButton_Compress = gtk_button_new_with_label ("Compress Iso");
-  gtk_widget_ref (GtkButton_Compress);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkButton_Compress", GtkButton_Compress,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  GtkButton_Compress = gtk_button_new_with_mnemonic (_("Compress Iso"));
   gtk_widget_show (GtkButton_Compress);
   gtk_container_add (GTK_CONTAINER (hbuttonbox2), GtkButton_Compress);
   GTK_WIDGET_SET_FLAGS (GtkButton_Compress, GTK_CAN_DEFAULT);
 
-  GtkButton_Decompress = gtk_button_new_with_label ("Decompress Iso");
-  gtk_widget_ref (GtkButton_Decompress);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkButton_Decompress", GtkButton_Decompress,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  GtkButton_Decompress = gtk_button_new_with_mnemonic (_("Decompress Iso"));
   gtk_widget_show (GtkButton_Decompress);
   gtk_container_add (GTK_CONTAINER (hbuttonbox2), GtkButton_Decompress);
   GTK_WIDGET_SET_FLAGS (GtkButton_Decompress, GTK_CAN_DEFAULT);
 
   hbox3 = gtk_hbox_new (FALSE, 5);
-  gtk_widget_ref (hbox3);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "hbox3", hbox3,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hbox3);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox3, FALSE, FALSE, 0);
 
-  label1 = gtk_label_new ("Cdrom Device: ");
-  gtk_widget_ref (label1);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "label1", label1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  label1 = gtk_label_new (_("Cdrom Device: "));
   gtk_widget_show (label1);
   gtk_box_pack_start (GTK_BOX (hbox3), label1, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label1), GTK_JUSTIFY_CENTER);
 
   GtkEntry_CdDev = gtk_entry_new ();
-  gtk_widget_ref (GtkEntry_CdDev);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkEntry_CdDev", GtkEntry_CdDev,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (GtkEntry_CdDev);
   gtk_box_pack_start (GTK_BOX (hbox3), GtkEntry_CdDev, TRUE, TRUE, 0);
 
   hbuttonbox3 = gtk_hbutton_box_new ();
-  gtk_widget_ref (hbuttonbox3);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "hbuttonbox3", hbuttonbox3,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hbuttonbox3);
   gtk_box_pack_start (GTK_BOX (vbox1), hbuttonbox3, TRUE, TRUE, 0);
-  gtk_button_box_set_spacing (GTK_BUTTON_BOX (hbuttonbox3), 0);
 
-  GtkButton_Create = gtk_button_new_with_label ("Create Iso");
-  gtk_widget_ref (GtkButton_Create);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkButton_Create", GtkButton_Create,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  GtkButton_Create = gtk_button_new_with_mnemonic (_("Create Iso"));
   gtk_widget_show (GtkButton_Create);
   gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_Create);
   GTK_WIDGET_SET_FLAGS (GtkButton_Create, GTK_CAN_DEFAULT);
 
-  GtkButton_CreateZ = gtk_button_new_with_label ("Create Compressed Iso");
-  gtk_widget_ref (GtkButton_CreateZ);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "GtkButton_CreateZ", GtkButton_CreateZ,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  GtkButton_CreateZ = gtk_button_new_with_mnemonic (_("Create Compressed Iso"));
   gtk_widget_show (GtkButton_CreateZ);
   gtk_container_add (GTK_CONTAINER (hbuttonbox3), GtkButton_CreateZ);
   GTK_WIDGET_SET_FLAGS (GtkButton_CreateZ, GTK_CAN_DEFAULT);
 
   hbuttonbox1 = gtk_hbutton_box_new ();
-  gtk_widget_ref (hbuttonbox1);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "hbuttonbox1", hbuttonbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hbuttonbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbuttonbox1, TRUE, TRUE, 0);
-  gtk_button_box_set_spacing (GTK_BUTTON_BOX (hbuttonbox1), 0);
 
-  button1 = gtk_button_new_with_label ("Ok");
-  gtk_widget_ref (button1);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "button1", button1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  button1 = gtk_button_new_from_stock ("gtk-ok");
   gtk_widget_show (button1);
   gtk_container_add (GTK_CONTAINER (hbuttonbox1), button1);
   GTK_WIDGET_SET_FLAGS (button1, GTK_CAN_DEFAULT);
 
-  button2 = gtk_button_new_with_label ("Cancel");
-  gtk_widget_ref (button2);
-  gtk_object_set_data_full (GTK_OBJECT (Config), "button2", button2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+  button2 = gtk_button_new_from_stock ("gtk-cancel");
   gtk_widget_show (button2);
   gtk_container_add (GTK_CONTAINER (hbuttonbox1), button2);
   GTK_WIDGET_SET_FLAGS (button2, GTK_CAN_DEFAULT);
 
-  gtk_signal_connect (GTK_OBJECT (button5), "clicked",
-                      GTK_SIGNAL_FUNC (OnFileSel),
-                      NULL);
-  gtk_signal_connect (GTK_OBJECT (button6), "clicked",
-                      GTK_SIGNAL_FUNC (OnStop),
-                      NULL);
-  gtk_signal_connect (GTK_OBJECT (GtkButton_Compress), "clicked",
-                      GTK_SIGNAL_FUNC (OnCompress),
-                      NULL);
-  gtk_signal_connect (GTK_OBJECT (GtkButton_Decompress), "clicked",
-                      GTK_SIGNAL_FUNC (OnDecompress),
-                      NULL);
-  gtk_signal_connect (GTK_OBJECT (GtkButton_Create), "clicked",
-                      GTK_SIGNAL_FUNC (OnCreate),
-                      NULL);
-  gtk_signal_connect (GTK_OBJECT (GtkButton_CreateZ), "clicked",
-                      GTK_SIGNAL_FUNC (OnCreateZ),
-                      NULL);
-  gtk_signal_connect (GTK_OBJECT (button1), "clicked",
-                      GTK_SIGNAL_FUNC (OnOk),
-                      NULL);
-  gtk_signal_connect (GTK_OBJECT (button2), "clicked",
-                      GTK_SIGNAL_FUNC (OnCancel),
-                      NULL);
+  g_signal_connect ((gpointer) button5, "clicked",
+                    G_CALLBACK (OnFileSel),
+                    NULL);
+  g_signal_connect ((gpointer) button6, "clicked",
+                    G_CALLBACK (OnStop),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_Compress, "clicked",
+                    G_CALLBACK (OnCompress),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_Decompress, "clicked",
+                    G_CALLBACK (OnDecompress),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_Create, "clicked",
+                    G_CALLBACK (OnCreate),
+                    NULL);
+  g_signal_connect ((gpointer) GtkButton_CreateZ, "clicked",
+                    G_CALLBACK (OnCreateZ),
+                    NULL);
+  g_signal_connect ((gpointer) button1, "clicked",
+                    G_CALLBACK (OnOk),
+                    NULL);
+  g_signal_connect ((gpointer) button2, "clicked",
+                    G_CALLBACK (OnCancel),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (Config, Config, "Config");
+  GLADE_HOOKUP_OBJECT (Config, vbox1, "vbox1");
+  GLADE_HOOKUP_OBJECT (Config, hbox1, "hbox1");
+  GLADE_HOOKUP_OBJECT (Config, GtkEntry_Iso, "GtkEntry_Iso");
+  GLADE_HOOKUP_OBJECT (Config, button5, "button5");
+  GLADE_HOOKUP_OBJECT (Config, hbox2, "hbox2");
+  GLADE_HOOKUP_OBJECT (Config, GtkProgressBar_Progress, "GtkProgressBar_Progress");
+  GLADE_HOOKUP_OBJECT (Config, button6, "button6");
+  GLADE_HOOKUP_OBJECT (Config, hbox4, "hbox4");
+  GLADE_HOOKUP_OBJECT (Config, label2, "label2");
+  GLADE_HOOKUP_OBJECT (Config, GtkCombo_Method, "GtkCombo_Method");
+  GLADE_HOOKUP_OBJECT (Config, combo_entry1, "combo_entry1");
+  GLADE_HOOKUP_OBJECT (Config, hbuttonbox2, "hbuttonbox2");
+  GLADE_HOOKUP_OBJECT (Config, GtkButton_Compress, "GtkButton_Compress");
+  GLADE_HOOKUP_OBJECT (Config, GtkButton_Decompress, "GtkButton_Decompress");
+  GLADE_HOOKUP_OBJECT (Config, hbox3, "hbox3");
+  GLADE_HOOKUP_OBJECT (Config, label1, "label1");
+  GLADE_HOOKUP_OBJECT (Config, GtkEntry_CdDev, "GtkEntry_CdDev");
+  GLADE_HOOKUP_OBJECT (Config, hbuttonbox3, "hbuttonbox3");
+  GLADE_HOOKUP_OBJECT (Config, GtkButton_Create, "GtkButton_Create");
+  GLADE_HOOKUP_OBJECT (Config, GtkButton_CreateZ, "GtkButton_CreateZ");
+  GLADE_HOOKUP_OBJECT (Config, hbuttonbox1, "hbuttonbox1");
+  GLADE_HOOKUP_OBJECT (Config, button1, "button1");
+  GLADE_HOOKUP_OBJECT (Config, button2, "button2");
 
   return Config;
 }

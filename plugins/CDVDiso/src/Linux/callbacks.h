@@ -10,27 +10,7 @@ OnStop                                 (GtkButton       *button,
                                         gpointer         user_data);
 
 void
-OnCreate                               (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
 OnCompress                             (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnConfig_Ok                            (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnConfig_Cancel                        (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnOk                                   (GtkButton       *button,
-                                        gpointer         user_data);
-
-void
-OnCancel                               (GtkButton       *button,
                                         gpointer         user_data);
 
 void
@@ -43,4 +23,12 @@ OnCreate                               (GtkButton       *button,
 
 void
 OnCreateZ                              (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+OnOk                                   (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+OnCancel                               (GtkButton       *button,
                                         gpointer         user_data);
