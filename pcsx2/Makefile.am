@@ -3,21 +3,21 @@ INCLUDES = -I@srcdir@/x86/
 noinst_LIBRARIES = libpcsx2.a
 
 libpcsx2_a_SOURCES = \
-CdRom.c       Decode_XA.h    Mdec.h          PsxBios.h         R3000A.c  Vif.h \
-CdRom.h       EEregs.h       PsxCommon.h       R3000A.h  VU0.c \
-CDVD.c        Elfheader.c    Memory.c        PsxCounters.c     R5900.c   VU0.h \
-CDVD.h        Elfheader.h    Memory.h        PsxCounters.h     R5900.h   VU0micro.c \
-CDVDiso.c     FiFo.c         Misc.c          PsxDma.c          Sif.c     VU1micro.c \
-CDVDisodrv.c  FPU2.cpp       PsxDma.h          Sifcmd.h  VUflags.c \
-CDVDisodrv.h  FPU.c          MMI.c           Sif.h     VUflags.h \
-CDVDiso.h     GS.cpp         PathUtils.c 	Patch.c         Sio.c     VU.h \
-CDVDlib.h     GS.h           Patch.h         PsxHw.c           Sio.h     VUmicro.h \
-Common.h      Hw.c           Plugins.c       PsxHw.h           SPR.c     VUops.c \
-COP0.c        Hw.h           Plugins.h       PsxInterpreter.c  SPR.h     VUops.h \
-COP0.h        Interpreter.c  PS2Edefs.h      PsxMem.c          System.h \
-Counters.c    InterTables.c  PS2Etypes.h     PsxMem.h          Vif.c \
-Counters.h    InterTables.h  PsxBios2.h      PsxSio2.c         VifDma.c \
-Decode_XA.c         PsxBios.c       PsxSio2.h         VifDma.h Cache.c vtlb.cpp\
+CdRom.cpp       Decode_XA.h    Mdec.h          PsxBios.h         R3000A.cpp  Vif.h \
+CdRom.h       EEregs.h       PsxCommon.h       R3000A.h  VU0.cpp \
+CDVD.cpp        Elfheader.cpp    Memory.cpp        PsxCounters.cpp     R5900.cpp   VU0.h \
+CDVD.h        Elfheader.h    Memory.h        PsxCounters.h     R5900.h   VU0micro.cpp \
+CDVDiso.cpp     FiFo.cpp         Misc.cpp          PsxDma.cpp          Sif.cpp     VU1micro.cpp \
+CDVDisodrv.cpp  FPU2.cpp       PsxDma.h          Sifcmd.h  VUflags.cpp \
+CDVDisodrv.h  FPU.cpp          MMI.cpp           Sif.h     VUflags.h \
+CDVDiso.h     GS.cpp         PathUtils.cpp 	Patch.cpp         Sio.cpp     VU.h \
+CDVDlib.h     GS.h           Patch.h         PsxHw.cpp           Sio.h     VUmicro.h \
+Common.h      Hw.cpp           Plugins.cpp       PsxHw.h           SPR.cpp     VUops.cpp \
+COP0.cpp        Hw.h           Plugins.h       PsxInterpreter.cpp  SPR.h     VUops.h \
+COP0.h        Interpreter.cpp  PS2Edefs.h      PsxMem.cpp          System.h \
+Counters.cpp    InterTables.cpp  PS2Etypes.h     PsxMem.h          Vif.cpp \
+Counters.h    InterTables.h  PsxBios2.h      PsxSio2.cpp         VifDma.cpp \
+Decode_XA.cpp         PsxBios.cpp       PsxSio2.h         VifDma.h Cache.cpp vtlb.cpp \
 xmlpatchloader.cpp ThreadTools.cpp SourceLog.cpp SaveState.cpp
 
 SUBDIRS = x86 . DebugTools IPU RDebug tinyxml Linux

@@ -1,7 +1,7 @@
 INCLUDES = -I@srcdir@/../ -I@srcdir@/../x86
 noinst_LIBRARIES = libIPU.a
 
-libIPU_a_SOURCES = IPU.c yuv2rgb.c coroutine.c acoroutine.S
+libIPU_a_SOURCES = IPU.c yuv2rgb.cpp coroutine.cpp acoroutine.S
 
 SUBDIRS = mpeg2lib
 

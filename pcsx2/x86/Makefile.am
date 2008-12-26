@@ -3,17 +3,17 @@ noinst_LIBRARIES = libx86recomp.a
 
 # have to add the sources instead of making a library since the linking is complicated
 if X86_64
-archfiles = ix86-64/iR5900-64.c   ix86-64/iR5900AritImm-64.c  ix86-64/iR5900Jump-64.c \
-ix86-64/iR5900Move-64.c ix86-64/iR5900Shift-64.c ix86-64/iR5900Arit-64.c  ix86-64/iR5900Branch-64.c \
-ix86-64/iR5900LoadStore-64.c  ix86-64/iR5900MultDiv-64.c ix86-64/iCore-64.cpp ix86-64/aR5900-64.S
+archfiles = ix86-64/iR5900-64.cpp   ix86-64/iR5900AritImm-64.cpp  ix86-64/iR5900Jump-64.cpp \
+ix86-64/iR5900Move-64.cpp ix86-64/iR5900Shift-64.cpp ix86-64/iR5900Arit-64.cpp  ix86-64/iR5900Branch-64.cpp \
+ix86-64/iR5900LoadStore-64.cpp  ix86-64/iR5900MultDiv-64.cpp ix86-64/iCore-64.cpp ix86-64/aR5900-64.S
 else
-archfiles = ix86-32/iR5900-32.c   ix86-32/iR5900AritImm.c  ix86-32/iR5900Jump.c \
-ix86-32/iR5900Move.c ix86-32/iR5900Shift.c ix86-32/iR5900Arit.c  ix86-32/iR5900Branch.c \
-ix86-32/iR5900LoadStore.c  ix86-32/iR5900MultDiv.c ix86-32/iCore-32.cpp ix86-32/aR5900-32.S
+archfiles = ix86-32/iR5900-32.cpp   ix86-32/iR5900AritImm.cpp  ix86-32/iR5900Jump.cpp \
+ix86-32/iR5900Move.cpp ix86-32/iR5900Shift.cpp ix86-32/iR5900Arit.cpp  ix86-32/iR5900Branch.cpp \
+ix86-32/iR5900LoadStore.cpp  ix86-32/iR5900MultDiv.cpp ix86-32/iCore-32.cpp ix86-32/aR5900-32.S
 endif
 
-libx86recomp_a_SOURCES = iCOP2.c  iCP0.c  iFPU.c  iHw.c  iMMI.c  iPsxHw.c  iPsxMem.c  \
-ir5900tables.c  iVU0micro.c  iVU1micro.c  iVUmicro.cpp iVUmicroUpper.cpp iVUmicroLower.cpp \
+libx86recomp_a_SOURCES = iCOP2.cpp  iCP0.cpp  iFPU.cpp  iHw.cpp  iMMI.cpp  iPsxHw.cpp  iPsxMem.cpp  \
+ir5900tables.cpp  iVU0micro.cpp  iVU1micro.cpp  iVUmicro.cpp iVUmicroUpper.cpp iVUmicroLower.cpp \
 iCore.cpp  iGS.cpp  iR3000A.cpp  iR3000Atables.cpp  iVif.cpp  iVUzerorec.cpp \
 fast_routines.S aR3000A.S aVUzerorec.S aVif.S $(archfiles)
 
