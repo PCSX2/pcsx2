@@ -26,6 +26,6 @@ libZeroSPU2_LDFLAGS= @SHARED_LDFLAGS@
 libZeroSPU2_LDFLAGS+=-Wl,-soname,@ZEROSPU2_SONAME@
 libZeroSPU2_LDADD=$(libZeroSPU2_a_OBJECTS) SoundTouch/libSoundTouch.a
 
-libZeroSPU2_a_SOURCES = zerospu2.cpp interface.c Linux.cpp support.c
+libZeroSPU2_a_SOURCES = zerospu2.cpp Linux/interface.c Linux/Linux.cpp Linux/support.c
 
 SUBDIRS = SoundTouch
