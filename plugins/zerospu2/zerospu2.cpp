@@ -397,29 +397,18 @@ int MixADSR(VOICE_PROCESSED* pvoice)							 // MIX ADSR
 	
 	if (pvoice->bStop)								  // should be stopped:
 	{
-		if (pvoice->bIgnoreLoop == 0)
-		{
-			pvoice->ADSRX.EnvelopeVol=0;
-			pvoice->bOn=false;
-			pvoice->pStart= (u8*)(spu2mem+pvoice->iStartAddr);
-			pvoice->pLoop= (u8*)(spu2mem+pvoice->iStartAddr);
-			pvoice->pCurr= (u8*)(spu2mem+pvoice->iStartAddr);
-			pvoice->bStop=true;
-			pvoice->bIgnoreLoop=false;
-			return 0;
-		}
-		
 		if (pvoice->ADSRX.ReleaseModeExp) // do release
 		{
 			s32 temp = ((pvoice->ADSRX.EnvelopeVol>>28)&0x7);
-			pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.ReleaseRate^0x1F))-0x18 + rateadd[temp] + 32];
+			pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.ReleaseRate^0x1F)) - 0x18 + rateadd[temp] + 32];
 		}
 		else
 		{
-			pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.ReleaseRate^0x1F))-0x0C + 32];
+			pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.ReleaseRate^0x1F)) - 0x0C + 32];
 		}
 
-		if (pvoice->ADSRX.EnvelopeVol<0) 
+		// bIgnoreLoop sets EnvelopeVol to 0 anyways, so we can use one if statement rather then two.
+		if ((pvoice->ADSRX.EnvelopeVol<0) || (pvoice->bIgnoreLoop == 0)) 
 		{
 			pvoice->ADSRX.EnvelopeVol=0;
 			pvoice->bOn=false;
@@ -438,8 +427,11 @@ int MixADSR(VOICE_PROCESSED* pvoice)							 // MIX ADSR
 	}
 	else												  // not stopped yet?
 	{
-		if (pvoice->ADSRX.State==0)					   // -> attack
+		s32 temp = ((pvoice->ADSRX.EnvelopeVol>>28)&0x7);
+		
+		switch (pvoice->ADSRX.State) 
 		{
+		case 0:				   // -> attack
 			if (pvoice->ADSRX.AttackModeExp)
 			{
 				if (pvoice->ADSRX.EnvelopeVol<0x60000000) 
@@ -457,69 +449,47 @@ int MixADSR(VOICE_PROCESSED* pvoice)							 // MIX ADSR
 				pvoice->ADSRX.EnvelopeVol=0x7FFFFFFF;
 				pvoice->ADSRX.State=1;
 			}
-
-			pvoice->ADSRX.lVolume=pvoice->ADSRX.EnvelopeVol>>21;
-			return pvoice->ADSRX.lVolume;
-		}
-		//--------------------------------------------------//
-		if (pvoice->ADSRX.State==1)					   // -> decay
-		{
-			s32 temp = ((pvoice->ADSRX.EnvelopeVol>>28)&0x7);
+			break;
 			
-			pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.ReleaseRate^0x1F))-0x18 + rateadd[temp] + 32];
+		case 1:				   // -> decay
+			pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.DecayRate^0x1F)) - 0x18+ rateadd[temp] + 32];
 
-			if (pvoice->ADSRX.EnvelopeVol<0) 
-				pvoice->ADSRX.EnvelopeVol=0;
+			if (pvoice->ADSRX.EnvelopeVol<0) pvoice->ADSRX.EnvelopeVol=0;
+		
 			if (((pvoice->ADSRX.EnvelopeVol>>27)&0xF) <= pvoice->ADSRX.SustainLevel)
 				pvoice->ADSRX.State=2;
-
-			pvoice->ADSRX.lVolume=pvoice->ADSRX.EnvelopeVol>>21;
-			return pvoice->ADSRX.lVolume;
-		}
-		//--------------------------------------------------//
-		if (pvoice->ADSRX.State==2)					   // -> sustain
-		{
+			break;
+			
+		case 2:				    // -> sustain
 			if (pvoice->ADSRX.SustainIncrease)
 			{
-				if (pvoice->ADSRX.SustainModeExp)
-				{
-					if (pvoice->ADSRX.EnvelopeVol<0x60000000) 
-						pvoice->ADSRX.EnvelopeVol+=RateTable[(pvoice->ADSRX.SustainRate^0x7F)-0x10 + 32];
-					else
-						pvoice->ADSRX.EnvelopeVol+=RateTable[(pvoice->ADSRX.SustainRate^0x7F)-0x18 + 32];
-				}
+				if ((pvoice->ADSRX.SustainModeExp) && (pvoice->ADSRX.EnvelopeVol>=0x60000000))
+						pvoice->ADSRX.EnvelopeVol+=RateTable[(pvoice->ADSRX.SustainRate^0x7F) - 0x18 + 32];
 				else
-				{
-					pvoice->ADSRX.EnvelopeVol+=RateTable[(pvoice->ADSRX.SustainRate^0x7F)-0x10 + 32];
-				}
+						pvoice->ADSRX.EnvelopeVol+=RateTable[(pvoice->ADSRX.SustainRate^0x7F) - 0x10 + 32];
 
-				if (pvoice->ADSRX.EnvelopeVol<0) 
-				{
-					pvoice->ADSRX.EnvelopeVol=0x7FFFFFFF;
-				}
+				if (pvoice->ADSRX.EnvelopeVol<0) pvoice->ADSRX.EnvelopeVol=0x7FFFFFFF;
 			}
 			else
 			{
 				if (pvoice->ADSRX.SustainModeExp)
-				{
-					s32 temp = ((pvoice->ADSRX.EnvelopeVol>>28)&0x7);
-					
-					pvoice->ADSRX.EnvelopeVol-=RateTable[(4*(pvoice->ADSRX.ReleaseRate^0x1F))-0x18 + rateadd[temp] + 32];
-				}
+					pvoice->ADSRX.EnvelopeVol-=RateTable[((pvoice->ADSRX.SustainRate^0x7F)) - 0x1B +rateadd[temp] + 32];
 				else
-				{
-					pvoice->ADSRX.EnvelopeVol-=RateTable[((pvoice->ADSRX.SustainRate^0x7F))-0x0F + 32];
-				}
+					pvoice->ADSRX.EnvelopeVol-=RateTable[((pvoice->ADSRX.SustainRate^0x7F)) - 0x0F + 32];
 
-				if (pvoice->ADSRX.EnvelopeVol<0) 
-				{
-					pvoice->ADSRX.EnvelopeVol=0;
-				}
+				if (pvoice->ADSRX.EnvelopeVol<0) pvoice->ADSRX.EnvelopeVol=0;
 			}
-			pvoice->ADSRX.lVolume=pvoice->ADSRX.EnvelopeVol>>21;
-			return pvoice->ADSRX.lVolume;
+			break;
+			
+		default:
+			// This should never happen.
+			return 0;
 		}
+		
+		pvoice->ADSRX.lVolume=pvoice->ADSRX.EnvelopeVol>>21;
+		return pvoice->ADSRX.lVolume;
 	}
+	
 	return 0;
 }
 
@@ -1662,19 +1632,18 @@ void VOICE_PROCESSED::SetVolume(int iProcessRight)
 
 	if (vol&0x8000) // sweep not working
 	{
-		short sInc=1;									   // -> sweep up?
+		short sInc=1;							// -> sweep up?
 		
-		if (vol&0x2000) sInc=-1;							 // -> or down?
-		if (vol&0x1000) vol^=0xffff;						 // -> mmm... phase inverted? have to investigate this
+		if (vol&0x2000) sInc=-1;					// -> or down?
+		if (vol&0x1000) vol^=0xffff;				// -> mmm... phase inverted? have to investigate this
 		
-		vol=((vol&0x7f)+1)/2;							   // -> sweep: 0..127 -> 0..64
-		vol+=vol/(2*sInc);								  // -> HACK: we don't sweep right now, so we just raise/lower the volume by the half!
+		vol=((vol&0x7f)+1)/2;					// -> sweep: 0..127 -> 0..64
+		vol+=vol/(2*sInc);						 // -> HACK: we don't sweep right now, so we just raise/lower the volume by the half!
 		vol*=128;
 	}
-	else												  // no sweep:
+	else								         // no sweep:
 	{
-		if (vol&0x4000)									  // -> mmm... phase inverted? have to investigate this
-		vol=0x3fff-(vol&0x3fff);
+		if (vol&0x4000) vol=0x3fff-(vol&0x3fff);		 // -> mmm... phase inverted? have to investigate this
 	}
 
 	if ( iProcessRight )
