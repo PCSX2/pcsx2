@@ -567,7 +567,7 @@ void recVUMI_MOVE( VURegs *VU, int info )
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
-	else if ( EEREC_T != EEREC_S ) SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
+	else SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
 }
 //------------------------------------------------------------------
 
@@ -638,7 +638,7 @@ void recVUMI_MR32( VURegs *VU, int info )
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
 	}
 	else {
-		if( EEREC_T != EEREC_S ) SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
+		SSE_MOVAPS_XMM_to_XMM(EEREC_T, EEREC_S);
 		SSE_SHUFPS_XMM_to_XMM(EEREC_T, EEREC_T, 0x39);
 	}
 }

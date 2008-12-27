@@ -713,7 +713,7 @@ int _vuGetTempXMMreg(int info)
 //------------------------------------------------------------------
 void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw)
 {
-	if( dstreg != srcreg ) SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg);
+	SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg);
 	switch (xyzw) {
 		case 0: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x00); break;
 		case 1: SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x55); break;
@@ -725,15 +725,15 @@ void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw)
 void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw)
 {
 	switch (xyzw) {
-		case 0: if( dstreg != srcreg ) SSE_MOVSS_XMM_to_XMM(dstreg, srcreg); break;
+		case 0: SSE_MOVSS_XMM_to_XMM(dstreg, srcreg); break;
 		case 1: if ( cpucaps.hasStreamingSIMD4Extensions ) SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(1, 0, 0));	
 				else if ( cpucaps.hasStreamingSIMD3Extensions ) SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg);
-				else { if( dstreg != srcreg ) { SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); } SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x55); }
+				else { SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0x55); }
 				break;
 		case 2: SSE_MOVHLPS_XMM_to_XMM(dstreg, srcreg); break;
 		case 3: if ( cpucaps.hasStreamingSIMD4Extensions ) SSE4_INSERTPS_XMM_to_XMM(dstreg, srcreg, _MM_MK_INSERTPS_NDX(3, 0, 0));
 				else if ( cpucaps.hasStreamingSIMD3Extensions && dstreg != srcreg ) { SSE3_MOVSHDUP_XMM_to_XMM(dstreg, srcreg); SSE_MOVHLPS_XMM_to_XMM(dstreg, dstreg); }
-				else { if( dstreg != srcreg ) { SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); } SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xff); }
+				else { SSE_MOVAPS_XMM_to_XMM(dstreg, srcreg); SSE_SHUFPS_XMM_to_XMM(dstreg, dstreg, 0xff); }
 				break;
 	}
 }
