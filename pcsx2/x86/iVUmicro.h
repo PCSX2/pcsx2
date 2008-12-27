@@ -108,6 +108,7 @@ void vuFloat3(uptr x86ptr);
 void vuFloat4(int regd, int regTemp, int XYZW);
 void vuFloat5(int regd, int regTemp, int XYZW);
 void _vuFlipRegSS(VURegs * VU, int reg);
+void _vuFlipRegSS_xyzw(int reg, int xyzw);
 void _vuMoveSS(VURegs * VU, int dstreg, int srcreg);
 void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw);
 void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw);

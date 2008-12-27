@@ -746,6 +746,15 @@ void _vuFlipRegSS(VURegs * VU, int reg)
 	else if( _W ) SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x27);
 }
 
+void _vuFlipRegSS_xyzw(int reg, int xyzw)
+{
+	switch ( xyzw ) {
+		case 1: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0xe1);
+		case 2: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0xc6);
+		case 3: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x27);
+	}
+}
+
 void _vuMoveSS(VURegs * VU, int dstreg, int srcreg)
 {
 	assert( _XYZW_SS );
