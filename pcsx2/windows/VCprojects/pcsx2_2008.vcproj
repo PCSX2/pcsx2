@@ -2834,7 +2834,31 @@
 				RelativePath="..\..\x86\ix86\ix86.cpp"
 				>
 				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2850,7 +2874,31 @@
 				RelativePath="..\..\x86\ix86\ix86_3dnow.cpp"
 				>
 				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2898,7 +2946,31 @@
 				RelativePath="..\..\x86\ix86\ix86_fpu.cpp"
 				>
 				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2910,7 +2982,31 @@
 				RelativePath="..\..\x86\ix86\ix86_mmx.cpp"
 				>
 				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2922,7 +3018,31 @@
 				RelativePath="..\..\x86\ix86\ix86_sse.cpp"
 				>
 				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
