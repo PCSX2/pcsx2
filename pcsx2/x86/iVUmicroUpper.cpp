@@ -647,7 +647,7 @@ void recVUMI_ADDAw(VURegs *VU, int info) { recVUMI_ADDA_xyzw(VU, 3, info); }
 
 
 //------------------------------------------------------------------
-// SUB*, SUB_iq, SUB_xyzw*
+// SUB*, SUB_iq*, SUB_xyzw*
 //------------------------------------------------------------------
 void recVUMI_SUB(VURegs *VU, int info)
 {
@@ -781,8 +781,6 @@ flagUpdate:
 	recUpdateFlags(VU, EEREC_D, info);
 }
 
-static const PCSX2_ALIGNED16(u32 s_unaryminus[4]) = {0x80000000, 0, 0, 0};
-
 void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 {
 	//SysPrintf("recVUMI_SUB_xyzw()\n");
@@ -859,10 +857,12 @@ void recVUMI_SUBw(VURegs *VU, int info) { recVUMI_SUB_xyzw(VU, 3, info); }
 
 
 //------------------------------------------------------------------
-// SUBA
+// SUBA*, SUBA_iq, SUBA_xyzw
 //------------------------------------------------------------------
 void recVUMI_SUBA(VURegs *VU, int info)
 {
+	//SysPrintf("recVUMI_SUBA()\n");
+	if ( _X_Y_Z_W == 0 ) goto flagUpdate;
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
 		if (_Ft_) vuFloat5( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
@@ -902,6 +902,7 @@ void recVUMI_SUBA(VURegs *VU, int info)
 			SSE_SUBPS_XMM_to_XMM(EEREC_ACC, EEREC_T);
 		}
 	}
+flagUpdate:
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
@@ -1023,8 +1024,8 @@ void recVUMI_MUL_toD(VURegs *VU, int regd, int info)
 {
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		//using vuFloat instead of vuFloat2 incase regd == EEREC_TEMP
-		vuFloat( info, EEREC_S, _X_Y_Z_W);
-		vuFloat( info, EEREC_T, _X_Y_Z_W);
+		if (_Fs_) vuFloat( info, EEREC_S, _X_Y_Z_W);
+		if (_Ft_) vuFloat( info, EEREC_T, _X_Y_Z_W);
 	}
 
 	if (_X_Y_Z_W == 1 && (_Ft_ == 0 || _Fs_==0) ) { // W
@@ -1064,7 +1065,7 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 {
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		vuFloat( info, EEREC_S, _X_Y_Z_W);
+		if (_Fs_) vuFloat( info, EEREC_S, _X_Y_Z_W);
 	}
 
 	if( _XYZW_SS ) {
@@ -1117,7 +1118,7 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		vuFloat( info, EEREC_T, ( 1 << (3 - xyzw) ) );
+		if (_Ft_) vuFloat( info, EEREC_T, ( 1 << (3 - xyzw) ) );
 	}
 	// This is needed for alot of games
 	vFloats1[_X_Y_Z_W]( EEREC_S, EEREC_S ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
