@@ -1053,11 +1053,27 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Docs\Readme.txt"
+				RelativePath="..\..\Docs\devblog.txt"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Docs\ToDo.txt"
+				RelativePath="..\..\Docs\License.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Docs\PS2Edefs.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Docs\readme 0.9.4.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Docs\readme Playground.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Docs\RemoteDebugging.txt"
 				>
 			</File>
 		</Filter>
