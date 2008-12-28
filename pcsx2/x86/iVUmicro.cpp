@@ -747,9 +747,9 @@ void _vuFlipRegSS(VURegs * VU, int reg)
 void _vuFlipRegSS_xyzw(int reg, int xyzw)
 {
 	switch ( xyzw ) {
-		case 1: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0xe1);
-		case 2: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0xc6);
-		case 3: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x27);
+		case 1: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0xe1); break;
+		case 2: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0xc6); break;
+		case 3: SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x27); break;
 	}
 }
 
