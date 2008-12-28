@@ -2722,13 +2722,15 @@ void loadBiosRom(const char *ext, u8 *dest) {
 		fclose(fp);
 		return;
 	}
-	SysPrintf("\n\n\n");
-	SysPrintf("**************\n");
-	SysPrintf("%s NOT FOUND\n", ext);
-	SysPrintf("**************\n\n\n");
+
+	Console::Error( "\n\n\n"
+		"**************\n"
+		"%s NOT FOUND\n"
+		"**************\n\n\n", ext
+	);
 }
 
-int memReset() {
+void memReset() {
 	struct stat buf;
 	char Bios[g_MaxPath];
 	FILE *fp;
@@ -2745,9 +2747,11 @@ int memReset() {
 
 	CombinePaths( Bios, Config.BiosDir, Config.Bios );
 
-	if (stat(Bios, &buf) == -1) {	
+	if (stat(Bios, &buf) == -1)
+	{
 		Console::Error(_("Unable to load bios: '%s', PCSX2 can't run without that"), Bios);
-		return 0;
+		throw Exception::FileNotFound( Bios,
+			"The specified Bios file was not found.  A bios is required for Pcsx2 to run.\n\nFile not found" );
 	}
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -2772,7 +2776,7 @@ int memReset() {
 	fclose(fp);
 
 	BiosVersion = GetBiosVersion();
-	Console::Notice("Bios Version %d.%d\n", BiosVersion >> 8, BiosVersion & 0xff);
+	Console::MsgLn("Bios Version %d.%d", BiosVersion >> 8, BiosVersion & 0xff);
 
 	//injectIRX("host.irx");	//not fully tested; still buggy
 
@@ -2801,7 +2805,6 @@ int memReset() {
 #endif
 
 #endif
-	return 1;
 }
 
 void memSetKernelMode() {

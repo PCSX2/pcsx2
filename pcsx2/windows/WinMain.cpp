@@ -48,6 +48,8 @@
 #include "Paths.h"
 #include "SamplProf.h"
 
+#include "implement.h"		// pthreads defines for startup/shutdown
+
 #define COMPILEDATE         __DATE__
 
 static bool AccBreak = false;
@@ -112,8 +114,14 @@ void RunExecute( const char* elf_file )
 
 	g_GameInProgress = false;
 
-	if( !cpuReset() )
-		throw std::runtime_error( "Cpu failed to initialize." );
+	try
+	{
+		cpuReset();
+	}
+	catch( std::exception& ex )
+	{
+		SysMessage( ex.what() );
+	}
 
 	if (OpenPlugins(g_TestRun.ptitle) == -1)
 		return;
@@ -568,13 +576,16 @@ static int ParseCommandLine( int tokenCount, TCHAR *const *const tokens )
 
 static void WinClose()
 {
+	SysClose();
+
 	// Don't check Config.Profiler here -- the Profiler will know if it's running or not.
 	ProfilerTerm();
 	timeEndPeriod( 1 );
 
-	SysClose();
 	ReleasePlugins();
 	Console::Close();
+
+	pthread_win32_process_detach_np();
 
 #ifdef PCSX2_VIRTUAL_MEM
 	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
@@ -595,7 +606,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	InitCommonControls();
 	pInstance=hInstance;
-	FirstShow=true;
+	FirstShow=true;			// this is used by cheats.cpp to search for stuff (broken?)
+
+	pthread_win32_process_attach_np();
 
 #ifdef PCSX2_VIRTUAL_MEM
 
@@ -728,10 +741,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// timeslices for Sleep calls.
 	// (may not make much difference on most desktops but can improve performance
 	//  a lot on laptops).
-	timeBeginPeriod( 1 );
 
+	timeBeginPeriod( 1 );
 	InitCPUTicks();
-	if (SysInit() == -1) return 1;
+	
+	if( !SysInit() )
+		WinClose();
 
 #ifdef PCSX2_DEVBUILD
     if( g_TestRun.enabled || g_TestRun.ptitle != NULL ) {
@@ -1235,7 +1250,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			case ID_FILE_STATES_SAVE_SLOT3: 
 			case ID_FILE_STATES_SAVE_SLOT4: 
 			case ID_FILE_STATES_SAVE_SLOT5: 
-				States_Load(LOWORD(wParam) - ID_FILE_STATES_SAVE_SLOT1);
+				States_Save(LOWORD(wParam) - ID_FILE_STATES_SAVE_SLOT1);
 			return FALSE;
 
 			case ID_FILE_STATES_SAVE_OTHER:
@@ -1319,13 +1334,13 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Config.PsxOut = !Config.PsxOut;
 				if(Config.PsxOut)
 				{
-                   CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_UNCHECKED);
-				   Console::Close();
+                   CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
+				   Console::Open();
 				}
 				else
 				{
-                   CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
-				   Console::Open();
+                   CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_UNCHECKED);
+				   Console::Close();
 				}
 				SaveConfig();
 				return FALSE;
@@ -1598,7 +1613,7 @@ void CreateMainWindow(int nCmdShow) {
 	h+= rect.bottom - rect.top;
 	GetMenuItemRect(hWnd, gApp.hMenu, 0, &rect);
 	h+= rect.bottom - rect.top;
-	MoveWindow(hWnd, 40, 50, w, h, TRUE);
+	MoveWindow(hWnd, 60, 60, w, h, TRUE);
 
 	DestroyWindow(hStatusWnd);
 	hStatusWnd = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", hWnd, 100);
@@ -1606,6 +1621,7 @@ void CreateMainWindow(int nCmdShow) {
 	StatusSet(buf);
 	ShowWindow(hWnd, nCmdShow);
 	SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
+	SetForegroundWindow( hWnd );
 }
 
 
@@ -1655,7 +1671,7 @@ void ChangeLanguage(char *lang) {
 
 static bool sinit=false;
 
-int SysInit()
+bool SysInit()
 {
 	if( sinit )
 		SysClose();
@@ -1670,17 +1686,19 @@ int SysInit()
 	if( emuLog == NULL )
 		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
 
-	if( !cpuInit() ) return -1;
+	SysDetect();
 
 	while (LoadPlugins() == -1) {
 		if (Pcsx2Configure(NULL) == FALSE) {
-			exit(1);		// user cancelled.
+			return false;		// user cancelled.
 		}
 	}
 
-	sinit = true;
+	if( !cpuInit() )
+		return false;
 
-	return 0;
+	sinit = true;
+	return true;
 }
 
 void SysRestorableReset()

@@ -24,6 +24,8 @@
 #include "GS.h"
 #include "VU.h"
 
+using namespace Threading;
+
 u64 profile_starttick = 0;
 u64 profile_totalticks = 0;
 
@@ -252,7 +254,6 @@ u32 UpdateVSyncRate()
 	return (u32)m_iTicks;
 }
 
-extern u32 CSRw;
 extern u64 SuperVUGetRecTimes(int clear);
 extern u32 vu0time;
 
@@ -384,7 +385,7 @@ static __forceinline void frameLimit()
 
 	while( sDeltaTime < 0 )
 	{
-		_TIMESLICE();
+		Timeslice();
 		iEnd = GetCPUTicks();
 		sDeltaTime = iEnd - uExpectedEnd;
 	}

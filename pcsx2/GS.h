@@ -23,15 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "Common.h"
-
+#include "Threading.h"
 #include "zlib.h"
-
-struct GSRegSIGBLID
-{
-	u32 SIGID;
-	u32 LBLID;
-};
 
 #define GSPATH3FIX
 
@@ -40,17 +35,93 @@ struct GSRegSIGBLID
 #define GSIMR *((u32*)(PS2MEM_GS+0x1010))
 #define GSSIGLBLID ((GSRegSIGBLID*)(PS2MEM_GS+0x1080))
 #else
-extern u8 g_RealGSMem[0x2000];
+PCSX2_ALIGNED16( extern u8 g_RealGSMem[0x2000] );
 #define GSCSRr *((u64*)(g_RealGSMem+0x1000))
 #define GSIMR *((u32*)(g_RealGSMem+0x1010))
 #define GSSIGLBLID ((GSRegSIGBLID*)(g_RealGSMem+0x1080))
 #endif
 
-#define GS_RINGBUFFERBASE	GS_RINGBUFF_STOREAGE
-#define GS_RINGBUFFERSIZE	0x00300000 // 3Mb
-#define GS_RINGBUFFEREND	(u8*)(GS_RINGBUFFERBASE+GS_RINGBUFFERSIZE)
+/////////////////////////////////////////////////////////////////////////////
+// MTGS GIFtag Parser - Declaration
+//
+// The MTGS needs a dummy "GS plugin" for processing SIGNAL, FINISH, and LABEL
+// commands.  These commands trigger gsIRQs, which need to be handled accurately
+// in synch with the EE (which can be running several frames ahead of the MTGS)
+//
+// Yeah, it's a lot of work, but the performance gains are huge, even on HT cpus.
 
-__declspec(align(4096)) extern u8 GS_RINGBUFF_STOREAGE[GS_RINGBUFFERSIZE];
+struct GSRegSIGBLID
+{
+	u32 SIGID;
+	u32 LBLID;
+};
+
+enum GIF_FLG
+{
+	GIF_FLG_PACKED	= 0,
+	GIF_FLG_REGLIST	= 1,
+	GIF_FLG_IMAGE	= 2,
+	GIF_FLG_IMAGE2	= 3
+};
+
+enum GIF_REG
+{
+	GIF_REG_PRIM	= 0x00,
+	GIF_REG_RGBA	= 0x01,
+	GIF_REG_STQ		= 0x02,
+	GIF_REG_UV		= 0x03,
+	GIF_REG_XYZF2	= 0x04,
+	GIF_REG_XYZ2	= 0x05,
+	GIF_REG_TEX0_1	= 0x06,
+	GIF_REG_TEX0_2	= 0x07,
+	GIF_REG_CLAMP_1	= 0x08,
+	GIF_REG_CLAMP_2	= 0x09,
+	GIF_REG_FOG		= 0x0a,
+	GIF_REG_XYZF3	= 0x0c,
+	GIF_REG_XYZ3	= 0x0d,
+	GIF_REG_A_D		= 0x0e,
+	GIF_REG_NOP		= 0x0f,
+};
+
+struct GIFTAG
+{
+	u32 nloop : 15;
+	u32 eop : 1;
+	u32 dummy0 : 16;
+	u32 dummy1 : 14;
+	u32 pre : 1;
+	u32 prim : 11;
+	u32 flg : 2;
+	u32 nreg : 4;
+	u32 regs[2];
+};
+
+struct GIFPath
+{
+	GIFTAG tag; 
+	u32 curreg;
+	u32 _pad[3];
+	u8 regs[16];
+
+	__forceinline void PrepRegs();
+	void SetTag(const void* mem);
+	u32 GetReg();
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+// MTGS Threaded Class Declaration
+
+#define MTGS_RINGBUFFERSIZE	0x00300000 // 3Mb
+
+enum GIF_PATH
+{
+	GIF_PATH_1 = 0,
+	GIF_PATH_2,
+	GIF_PATH_3,
+};
+
+
 enum GS_RINGTYPE
 {
 	GS_RINGTYPE_RESTART = 0
@@ -73,26 +144,112 @@ enum GS_RINGTYPE
 ,	GS_RINGTYPE_STARTTIME	// special case for min==max fps frameskip settings
 };
 
-// if returns NULL, don't copy (memory is preserved)
-u8* GSRingBufCopy(u32 size, u32 type);
-void GSRingBufSimplePacket(int type, int data0, int data1, int data2);
-void GSRingBufPointerPacket(int type, u32 data0, void* data1 );
 
-u32 GSgifTransferDummy(int path, const u8 *pMem, u32 size);
+class mtgsThreadObject : public Threading::Thread
+{
+	friend class SaveState;
 
-void gsInit();
-s32 gsOpen();
-void gsClose();
-void gsReset();
-void gsSetVideoRegionType( u32 isPal );
-void gsResetFrameSkip();
-void gsSyncLimiterLostTime( s32 deltaTime );
-void gsDynamicSkipEnable();
-void gsPostVsyncEnd( bool updategs );
+protected:
+	// note: when g_pGSRingPos == g_pGSWritePos, the fifo is empty
+	const u8* m_RingPos;		// cur pos gs is reading from
+	u8* m_WritePos;				// cur pos ee thread is writing to
+	const u8* const m_RingBufferEnd;	// pointer to the end of the ringbuffer (used to detect buffer wraps)
 
-// mem and size are the ones from GSRingBufCopy
-extern void GSRINGBUF_DONECOPY(const u8 *mem, u32 size);
-extern void gsWaitGS();
+	Threading::WaitEvent m_wait_InitDone;	// used to regulate thread startup and gsInit
+	Threading::MutexLock m_lock_RingRestart;
+
+	// Used to delay the sending of events.  Performance is better if the ringbuffer
+	// has more than one command in it when the thread is kicked.
+	int m_CopyCommandTally;
+
+	// These vars maintain instance data for sending Data Packets.
+	// Only one data packet can be constructed and uploaded at a time.
+
+	uint m_packet_size;		// size of the packet (data only, ie. not including the 16 byte command!)
+	u8* m_packet_data;		// pointer to the data location in the ringbuffer.
+
+#ifdef RINGBUF_DEBUG_STACK
+	MutexLock m_lock_Stack;
+#endif
+
+	// the MTGS "dummy" GIFtag info!
+	PCSX2_ALIGNED16( GIFPath m_path[3] );
+
+	// mtgs needs its own memory space separate from the PS2.  The PS2 memory is in
+	// synch with the EE while this stays in sync with the GS (ie, it lags behind)
+	PCSX2_ALIGNED16( u8 m_gsMem[0x2000] );
+
+	PCSX2_ALIGNED( 4096, u8 m_RingBuffer[MTGS_RINGBUFFERSIZE] );
+
+public:
+	mtgsThreadObject();
+	virtual ~mtgsThreadObject();
+
+	void Reset();
+	void GIFSoftReset( int mask );
+
+	// Waits for the GS to empty out the entire ring buffer contents.
+	// Used primarily for plugin startup/shutdown.
+	void WaitGS();
+
+	int PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 size );
+	int	PrepDataPacket( GIF_PATH pathidx, const u32* srcdata, u32 size );
+	int	PrepDataPacket( GIF_PATH pathidx, const u64* srcdata, u32 size );
+	void SendDataPacket();
+
+	void SendSimplePacket( GS_RINGTYPE type, int data0, int data1, int data2 );
+	void SendPointerPacket( GS_RINGTYPE type, u32 data0, void* data1 );
+
+	u8* GetDataPacketPtr() const;
+	void Freeze( SaveState& state );
+	void SetEvent();
+
+	uptr FnPtr_SimplePacket() const
+	{
+		__asm mov eax, SendSimplePacket
+		//return (uptr)&SendSimplePacket;
+	}
+protected:
+	// Sets the gsEvent flag and releases a timeslice.
+	// For use in loops that wait on the GS thread to do certain things.
+	void SetEventWait();
+
+	// Processes a GIFtag & packet, and throws out some gsIRQs as needed.
+	// Used to keep interrupts in sync with the EE, while the GS itself
+	// runs potentially several frames behind.
+	u32 _gifTransferDummy( GIF_PATH pathidx, const u8 *pMem, u32 size );
+
+	// Used internally by SendSimplePacket type functions
+	void _PrepForSimplePacket();
+	void _FinishSimplePacket();
+
+	int Callback();
+};
+
+extern mtgsThreadObject* mtgsThread;
+
+void mtgsWaitGS();
+bool mtgsOpen();
+void mtgsRingBufSimplePacket( s32 command, u32 data0, u32 data1, u32 data2 );
+
+/////////////////////////////////////////////////////////////////////////////
+// Generalized GS Functions and Stuff
+
+extern void gsInit();
+extern s32 gsOpen();
+extern void gsClose();
+extern void gsReset();
+extern void gsSetVideoRegionType( u32 isPal );
+extern void gsResetFrameSkip();
+extern void gsSyncLimiterLostTime( s32 deltaTime );
+extern void gsDynamicSkipEnable();
+extern void gsPostVsyncEnd( bool updategs );
+extern void gsFrameSkip( bool forceskip );
+
+// Some functions shared by both the GS and MTGS
+extern void _gs_ResetFrameskip();
+extern void _gs_ChangeTimings( u32 framerate, u32 iTicks );
+
 
 // used for resetting GIF fifo
 void gsGIFReset();
@@ -129,6 +286,8 @@ int _GIFchain();
 void  gifMFIFOInterrupt();
 
 extern u32 g_vu1SkipCount;
+extern u32 CSRw;
+extern u64 m_iSlowStart;
 
 // GS Playback
 #define GSRUN_TRANS1 1

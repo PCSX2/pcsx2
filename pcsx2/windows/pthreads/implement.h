@@ -510,16 +510,23 @@ struct ThreadKeyAssoc
 #define PTW32_MIN(a,b)  ((a)>(b)?(b):(a))
 
 
+#if 0
 /* Declared in global.c */
 extern PTW32_INTERLOCKED_LONG (WINAPI *
 			       ptw32_interlocked_compare_exchange)
   (PTW32_INTERLOCKED_LPLONG, PTW32_INTERLOCKED_LONG, PTW32_INTERLOCKED_LONG);
+#endif
 
 /* Declared in pthread_cancel.c */
 extern DWORD (*ptw32_register_cancelation) (PAPCFUNC, HANDLE, DWORD);
 
 /* Thread Reuse stack bottom marker. Must not be NULL or any valid pointer to memory. */
 #define PTW32_THREAD_REUSE_EMPTY ((ptw32_thread_t *) 1)
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif				/* __cplusplus */
 
 extern int ptw32_processInitialized;
 extern ptw32_thread_t * ptw32_threadReuseTop;
@@ -548,10 +555,6 @@ extern CRITICAL_SECTION ptw32_spinlock_test_init_lock;
 extern int pthread_count;
 #endif
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif				/* __cplusplus */
 
 /*
  * =====================
@@ -568,12 +571,12 @@ extern "C"
   int ptw32_rwlock_check_need_init (pthread_rwlock_t * rwlock);
 
   PTW32_INTERLOCKED_LONG WINAPI
-    ptw32_InterlockedCompareExchange (PTW32_INTERLOCKED_LPLONG location,
+    ptw32_InterlockedCompareExchange (volatile PTW32_INTERLOCKED_LPLONG location,
 				      PTW32_INTERLOCKED_LONG value,
 				      PTW32_INTERLOCKED_LONG comparand);
 
   LONG WINAPI
-    ptw32_InterlockedExchange (LPLONG location,
+    ptw32_InterlockedExchange (volatile PTW32_INTERLOCKED_LPLONG location,
 			       LONG value);
 
   DWORD
@@ -669,12 +672,13 @@ extern "C"
  * Defaults. Could be overridden when building the inlined version of the dll.
  * See ptw32_InterlockedCompareExchange.c
  */
+// Default to inlining the pthreads versions... (air)
 #ifndef PTW32_INTERLOCKED_COMPARE_EXCHANGE
-#define PTW32_INTERLOCKED_COMPARE_EXCHANGE ptw32_interlocked_compare_exchange
+#define PTW32_INTERLOCKED_COMPARE_EXCHANGE ptw32_InterlockedCompareExchange
 #endif
 
 #ifndef PTW32_INTERLOCKED_EXCHANGE
-#define PTW32_INTERLOCKED_EXCHANGE InterlockedExchange
+#define PTW32_INTERLOCKED_EXCHANGE ptw32_InterlockedExchange
 #endif
 
 

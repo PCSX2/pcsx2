@@ -213,7 +213,7 @@ extern u8 g_RealGSMem[0x2000];
 #define PSMu64(mem)	(*(u64*)PSM(mem))
 
 int  memInit();
-int  memReset();		// returns FALSE on error
+void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.
 void memSetKernelMode();
 void memSetSupervisorMode();
 void memSetUserMode();

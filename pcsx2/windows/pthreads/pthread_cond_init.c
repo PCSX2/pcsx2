@@ -76,6 +76,11 @@ pthread_cond_init (pthread_cond_t * cond, const pthread_condattr_t * attr)
       return EINVAL;
     }
 
+#ifdef PTW32_STATIC_LIB
+  // This allos for C++ static initializers to function without crashes. (air)
+  pthread_win32_process_attach_np();
+#endif
+
   if ((attr != NULL && *attr != NULL) &&
       ((*attr)->pshared == PTHREAD_PROCESS_SHARED))
     {

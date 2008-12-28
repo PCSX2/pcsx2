@@ -51,7 +51,7 @@
 
 #ifdef ENABLE_NLS
 
-#ifdef __MSCW32__
+#ifdef _WIN32
 #include "libintlmsc.h"
 #else
 #include <locale.h>
@@ -71,7 +71,7 @@
 #define _(msgid) msgid
 #define N_(msgid) msgid
 
-#endif
+#endif		// ENABLE_NLS
 
 // <<--- End GNU GetText / NLS 
 
@@ -171,6 +171,7 @@ struct PcsxConfig {
 extern PcsxConfig Config;
 extern u32 BiosVersion;
 extern char CdromId[12];
+extern uptr pDsp;		// what the hell is this unused piece of crap passed to every plugin for? (air)
 
 int LoadCdrom();
 int CheckCdrom();
@@ -183,8 +184,6 @@ extern const char *LabelGreets;
 
 void SaveGSState(const char *file);
 void LoadGSState(const char *file);
-
-// <<--- End Savestate Stuff
 
 char *ParseLang(char *id);
 void ProcessFKeys(int fkey, int shift); // processes fkey related commands value 1-12
@@ -260,24 +259,24 @@ extern bool g_EEFreezeRegs;
 #define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
 
 #ifndef __x86_64__
-void FreezeMMXRegs_(int save);
+	void FreezeMMXRegs_(int save);
 #define FreezeMMXRegs(save) if( g_EEFreezeRegs ) { FreezeMMXRegs_(save); }
 #else
-#define FreezeMMXRegs(save)
+#	define FreezeMMXRegs(save)
 #endif
 
 #if defined(_WIN32) && !defined(__x86_64__)
-// faster memcpy
-void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes);
-void __fastcall memcpy_raz_(void *dest, const void *src, size_t qwc);
-void * memcpy_amd_(void *dest, const void *src, size_t n);
+	// faster memcpy
+	void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes);
+	void __fastcall memcpy_raz_(void *dest, const void *src, size_t qwc);
+	void * memcpy_amd_(void *dest, const void *src, size_t n);
 #define memcpy_fast memcpy_amd_
-//#define memcpy_fast memcpy //Dont use normal memcpy, it has sse in 2k5!
+	//#define memcpy_fast memcpy //Dont use normal memcpy, it has sse in 2k5!
 #else
-// for now disable linux fast memcpy
-#define memcpy_fast memcpy
-#define memcpy_raz_ memcpy
-#define memcpy_raz_u memcpy
+	// for now disable linux fast memcpy
+	#define memcpy_fast memcpy
+	#define memcpy_raz_ memcpy
+	#define memcpy_raz_u memcpy
 #endif
 
 
@@ -292,9 +291,10 @@ void injectIRX(const char *filename);
 
 // aligned_malloc: Implement/declare linux equivalents here!
 #if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
+
 static  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 {
-    assert( align < 0x10000 );
+	assert( align < 0x10000 );
 	char* p = (char*)malloc(size+align);
 	int off = 2+align - ((int)(uptr)(p+2) % align);
 
@@ -306,45 +306,16 @@ static  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 
 static __forceinline void pcsx2_aligned_free(void* pmem)
 {
-    if( pmem != NULL ) {
-        char* p = (char*)pmem;
-        free(p - (int)*(u16*)(p-2));
-    }
+	if( pmem != NULL ) {
+		char* p = (char*)pmem;
+		free(p - (int)*(u16*)(p-2));
+	}
 }
 
 #define _aligned_malloc pcsx2_aligned_malloc
 #define _aligned_free pcsx2_aligned_free
 
 #endif
-
-// InterlockedExchange: Declare linux/GCC equivalents here
-// (implementations are in ThreadTools.cpp)
-#ifndef _WIN32
-typedef void* PVOID;
-extern void InterlockedExchangePointer(PVOID volatile* Target, void* Value);
-extern long InterlockedExchange(long volatile* Target, long Value);
-extern long InterlockedExchangeAdd(long volatile* Addend, long Value);
-extern long InterlockedIncrement( volatile long* Addend );
-extern long InterlockedDecrement( volatile long* Addend );
-extern long InterlockedCompareExchange(volatile long *dest, long exch, long comp);
-extern long InterlockedCompareExchangePointer(PVOID volatile *dest, PVOID exch, long comp);
-#endif
-
-extern void AtomicExchange( u32& Target, u32 value );
-extern void AtomicExchangeAdd( u32& Target, u32 value );
-extern void AtomicIncrement( u32& Target );
-extern void AtomicDecrement( u32& Target );
-extern void AtomicExchange( s32& Target, s32 value );
-extern void AtomicExchangeAdd( s32& Target, u32 value );
-extern void AtomicIncrement( s32& Target );
-extern void AtomicDecrement( s32& Target );
-
-// No fancy templating or overloading can save us from having to use C-style dereferences here.
-#define AtomicExchangePointer( target, value ) \
-	InterlockedExchangePointer( reinterpret_cast<PVOID volatile*>(&target), reinterpret_cast<uptr>(value) )
-
-// Timeslice releaser for those many idle loop spots through out PCSX2.
-extern void _TIMESLICE();
 
 extern void InitCPUTicks();
 extern u64 GetTickFrequency();

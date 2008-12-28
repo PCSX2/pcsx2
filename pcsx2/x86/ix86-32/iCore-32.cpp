@@ -847,7 +847,7 @@ void SetFPUstate() {
 	}
 }
 
-void _callPushArg(u32 arg, uptr argmem, x86IntRegType X86ARG)
+__forceinline void _callPushArg(u32 arg, uptr argmem)
 {
     if( IS_X86REG(arg) ) PUSH32R(arg&0xff);
     else if( IS_CONSTREG(arg) ) PUSH32I(argmem);
@@ -877,26 +877,26 @@ void _callPushArg(u32 arg, uptr argmem, x86IntRegType X86ARG)
     }
 }
 
-void _callFunctionArg1(uptr fn, u32 arg1, uptr arg1mem)
+__forceinline void _callFunctionArg1(uptr fn, u32 arg1, uptr arg1mem)
 {
-    _callPushArg(arg1, arg1mem, -1);
+    _callPushArg(arg1, arg1mem);
     CALLFunc((uptr)fn);
     ADD32ItoR(ESP, 4);
 }
 
-void _callFunctionArg2(uptr fn, u32 arg1, u32 arg2, uptr arg1mem, uptr arg2mem)
+__forceinline void _callFunctionArg2(uptr fn, u32 arg1, u32 arg2, uptr arg1mem, uptr arg2mem)
 {
-    _callPushArg(arg2, arg2mem, -1);
-    _callPushArg(arg1, arg1mem, -1);
+    _callPushArg(arg2, arg2mem);
+    _callPushArg(arg1, arg1mem);
     CALLFunc((uptr)fn);
     ADD32ItoR(ESP, 8);
 }
 
-void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr arg2mem, uptr arg3mem)
+__forceinline void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr arg2mem, uptr arg3mem)
 {
-    _callPushArg(arg3, arg3mem, -1);
-    _callPushArg(arg2, arg2mem, -1);
-    _callPushArg(arg1, arg1mem, -1);
+    _callPushArg(arg3, arg3mem);
+    _callPushArg(arg2, arg2mem);
+    _callPushArg(arg1, arg1mem);
     CALLFunc((uptr)fn);
     ADD32ItoR(ESP, 12);
 }

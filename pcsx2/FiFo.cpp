@@ -120,21 +120,22 @@ void WriteFIFO(u32 mem, const u64 *value) {
 		assert(ret == 0 ); // vif stall code not implemented
 	}
 	else if ((mem >= 0x10006000) && (mem < 0x10007000)) {
-		u64* data;
 		GIF_LOG("WriteFIFO GIF 0x%08X\n", mem);
 
 		psHu64(mem  ) = value[0];
 		psHu64(mem+8) = value[1];
 
-		if( CHECK_MULTIGS ) {
-			data = (u64*)GSRingBufCopy(16, GS_RINGTYPE_P3);
-
+		if( mtgsThread != NULL )
+		{
+			const uint count = mtgsThread->PrepDataPacket( GIF_PATH_3, value, 16 );
+			jASSUME( count == 16 );
+			u64* data = (u64*)mtgsThread->GetDataPacketPtr();
 			data[0] = value[0];
 			data[1] = value[1];
-			GSgifTransferDummy(2, (u8*)data, 1);
-			GSRINGBUF_DONECOPY((u8*)data, 16);
+			mtgsThread->SendDataPacket();
 		}
-		else {
+		else
+		{
 			FreezeXMMRegs(1);
 			GSGIFTRANSFER3((u32*)value, 1);
 			FreezeXMMRegs(0);
@@ -146,11 +147,11 @@ void WriteFIFO(u32 mem, const u64 *value) {
 
 		//commiting every 16 bytes
 		while( FIFOto_write((u32*)value, 1) == 0 ) {
-			SysPrintf("IPU sleeping\n");
-			_TIMESLICE();
+			Console::WriteLn("IPU sleeping");
+			Threading::Timeslice();
 		}
 	} else {
-		SysPrintf("WriteFIFO Unknown %x\n", mem);
+		Console::Notice("WriteFIFO Unknown %x", mem);
 	}
 }
 

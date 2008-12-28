@@ -101,6 +101,9 @@ protected:
 	void psxRcntFreeze();
 	void sio2Freeze();
 
+	// called by gsFreeze automatically.
+	void mtgsFreeze();
+
 };
 
 /////////////////////////////////////////////////////////////////////////////////

@@ -2333,34 +2333,30 @@ void recVUMI_XTOP( VURegs *VU, int info )
 //------------------------------------------------------------------
 // VU1XGKICK_MTGSTransfer() - Called by ivuZerorec.cpp
 //------------------------------------------------------------------
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-extern HANDLE g_hGsEvent;
-#else
-extern pthread_cond_t g_condGsEvent;
-#endif
-
 void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 {
 	u32 size;
-    u8* pmem;
-	u32* data = (u32*)((u8*)pMem + (addr&0x3fff));
+    u32* data = (u32*)((u8*)pMem + (addr&0x3fff));
 
-	static int scount = 0;
-	++scount;
+	// fixme: The gifTagDummy function in the MTGS (called by PrepDataPacket) has a
+	// hack that aborts the packet if it goes past the end of VU1 memory.
+	// Chances are this should be a "loops around memory" situation, and the packet
+	// should be continued starting at addr zero (0).
 
-	size = GSgifTransferDummy(0, (u8*)data, (0x4000-(addr&0x3fff))>>4);
-
-	size = 0x4000-(size<<4)-(addr&0x3fff);
-    assert( size >= 0 );
+	size = mtgsThread->PrepDataPacket( GIF_PATH_1, data, (0x4000-(addr&0x3fff)));
+	//size = 0x4000-(size<<4)-(addr&0x3fff);
+    jASSUME( size > 0 );
 	
-    if( size > 0 ) {
-	    pmem = GSRingBufCopy(size, GS_RINGTYPE_P1);
-	    assert( pmem != NULL );
-		FreezeMMXRegs(1);
-	    memcpy_fast(pmem, (u8*)pMem+addr, size);
-		FreezeMMXRegs(0);
-	    
-	    GSRINGBUF_DONECOPY(pmem, size);
+    //if( size > 0 )
+	{
+		u8* pmem = mtgsThread->GetDataPacketPtr();
+		//FreezeMMXRegs(1);
+	    //memcpy_fast(pmem, (u8*)pMem+addr, size);
+		//FreezeMMXRegs(0);
+
+		// we can use the faster memcpy_raz_ here (src/dest are garaunteed to be aligned)
+		memcpy_raz_(pmem, (u8*)pMem+addr, size);
+		mtgsThread->SendDataPacket();
 	}
 }
 //------------------------------------------------------------------
@@ -2378,10 +2374,10 @@ void recVUMI_XGKICK( VURegs *VU, int info )
 
     iFlushCall(FLUSH_NOCONST);
         
-	_callPushArg(MEM_X86TAG, fsreg, X86ARG2);
-	_callPushArg(MEM_CONSTTAG, (uptr)VU->Mem, X86ARG1);
+	_callPushArg(MEM_X86TAG, fsreg);
+	_callPushArg(MEM_CONSTTAG, (uptr)VU->Mem);
 
-	if( CHECK_MULTIGS ) {
+	if( mtgsThread != NULL ) {
 		CALLFunc((uptr)VU1XGKICK_MTGSTransfer);
 #ifndef __x86_64__
 		ADD32ItoR(ESP, 8);

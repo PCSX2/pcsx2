@@ -54,6 +54,7 @@ int ptw32_features = 0;
 
 BOOL ptw32_smp_system = PTW32_TRUE;  /* Safer if assumed true initially. */
 
+#if 0
 /* 
  * Function pointer to InterlockedCompareExchange if it exists, otherwise
  * it will be set at runtime to a substitute local version with the same
@@ -64,6 +65,7 @@ PTW32_INTERLOCKED_LONG
 						 PTW32_INTERLOCKED_LONG,
 						 PTW32_INTERLOCKED_LONG) =
   NULL;
+#endif
 
 /* 
  * Function pointer to QueueUserAPCEx if it exists, otherwise

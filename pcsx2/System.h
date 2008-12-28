@@ -19,10 +19,13 @@
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
+#include "PS2Etypes.h"
+
 #include "Exceptions.h"
 #include "Paths.h"
 
-int  SysInit();							// Init mem and plugins
+void SysDetect();						// Detects cpu type and fills cpuInfo structs.
+bool SysInit();							// Init logfiles, directories, plugins, and other OS-specific junk
 void SysReset();						// Resets the various PS2 cpus, sub-systems, and recompilers.
 void SysUpdate();						// Called on VBlank (to update i.e. pads)
 void SysRunGui();						// Returns to the Gui

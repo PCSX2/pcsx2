@@ -27,6 +27,10 @@
 #include "GS.h"
 #include "iR5900.h"
 
+#include "Threading.h"
+
+using namespace Threading;
+
 using namespace std;
 
 #ifdef DEBUG
@@ -35,184 +39,11 @@ using namespace std;
 #define MTGS_LOG 0&&
 #endif
 
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-
-// Win32 Threading Model
-
-#define GS_THREADPROC static DWORD WINAPI GSThreadProc(LPVOID lpParam)
-#define GS_THREAD_INIT_FAIL (DWORD)-1
-
-typedef HANDLE wait_event_t;
-typedef CRITICAL_SECTION mutex_t;
-typedef HANDLE thread_t;
-
-GS_THREADPROC;	// forward declaration of the gs threadproc
-
-static bool thread_create( thread_t& thread )
-{
-	thread = CreateThread(NULL, 0, GSThreadProc, NULL, 0, NULL);
-	return thread != INVALID_HANDLE_VALUE;
-}
-
-static void thread_close( thread_t& thread )
-{
-	if( thread == INVALID_HANDLE_VALUE ) return;
-	while( true )
-	{
-		DWORD status;
-		GetExitCodeThread( thread, &status );
-		if( status != STILL_ACTIVE ) break;
-		Sleep( 3 );
-	}
-	CloseHandle( thread );
-	thread = INVALID_HANDLE_VALUE;
-}
-
-static void event_init( wait_event_t& evt )
-{
-	evt = CreateEvent(NULL, FALSE, FALSE, NULL);
-}
-
-static void event_destroy( wait_event_t& evt )
-{
-	if( evt == NULL ) return;
-	CloseHandle( evt );
-	evt = NULL;
-}
-
-static void event_set( wait_event_t& evt )
-{
-	SetEvent( evt );
-}
-
-static void event_wait( wait_event_t& evt )
-{
-	WaitForSingleObject( evt, INFINITE );
-}
-
-static void mutex_init( mutex_t& mutex )
-{
-	InitializeCriticalSection( &mutex );
-}
-
-static void mutex_destroy( mutex_t& mutex )
-{
-	if( mutex.LockSemaphore == NULL ) return;
-	DeleteCriticalSection( &mutex );
-	mutex.LockSemaphore = NULL;
-}
-
-static void mutex_lock( mutex_t& mutex )
-{
-	EnterCriticalSection( &mutex );
-}
-
-static void mutex_unlock( mutex_t& mutex )
-{
-	LeaveCriticalSection( &mutex );
-}
-
-#else
-
-#include <pthread.h>
-
-// PThreads Model
-#define GS_THREADPROC static void* GSThreadProc(void* idp)
-#define GS_THREAD_INIT_FAIL NULL
-
-struct wait_event_t
-{
-	pthread_cond_t cond;
-	pthread_mutex_t mutex;
-
-	wait_event_t() 
-	{
-		int err = 0;
-		
-		err = pthread_cond_init(&cond, NULL);
-		err = pthread_mutex_init(&mutex, NULL);
-	}
- };
-
-typedef pthread_mutex_t mutex_t;
-typedef pthread_t thread_t;
-
-GS_THREADPROC;	// forward declaration of the gs threadproc
-
-static bool thread_create( thread_t& thread )
-{
-	return pthread_create( &thread, NULL, GSThreadProc, NULL ) == 0;
-}
-
-static void thread_close( thread_t& thread )
-{
-	pthread_join( thread, NULL );
-}
-
-static void event_init( wait_event_t& evt )
-{
-	// init the pthread event and buddy mutex to default settings.
-	pthread_cond_init( &evt.cond, NULL );
-	pthread_mutex_init( &evt.mutex, NULL );
-}
-
-static void event_destroy( wait_event_t& evt )
-{
-	pthread_cond_destroy( &evt.cond );
-	pthread_mutex_destroy( &evt.mutex );
-}
-
-static void event_set( wait_event_t& evt )
-{
-	pthread_mutex_lock( &evt.mutex );
-	pthread_cond_signal( &evt.cond );
-	pthread_mutex_unlock( &evt.mutex );
-}
-
-static void event_wait( wait_event_t& evt )
-{
-	pthread_mutex_lock( &evt.mutex );
-	pthread_cond_wait( &evt.cond, &evt.mutex );
-	pthread_mutex_unlock( &evt.mutex );
-}
-
-static void mutex_init( mutex_t& mutex )
-{
-	pthread_mutex_init( &mutex, NULL );
-}
-
-static void mutex_destroy( mutex_t& mutex )
-{
-	pthread_mutex_destroy( &mutex );
-}
-
-static void mutex_lock( mutex_t& mutex )
-{
-	pthread_mutex_lock( &mutex );
-}
-
-static void mutex_unlock( mutex_t& mutex )
-{
-	pthread_mutex_unlock( &mutex );
-}
-
-#endif
-
-static wait_event_t g_hGsEvent; // set when path3 is ready to be processed
-static wait_event_t g_hGSDone;  // used to regulate thread startup and gsInit
-static thread_t g_hVuGsThread;
-static mutex_t gsRingRestartLock = {0};
-
-static volatile bool gsHasToExit = false;
-static volatile int g_GsExitCode = 0;
-
-static int mtgs_CopyCommandTally = 0;
 static bool m_gsOpened = false;
 
 int g_FFXHack=0;
 
 #ifdef PCSX2_DEVBUILD
-static s32 g_pGSvSyncCount = 0;
 
 // GS Playback
 int g_SaveGSStream = 0; // save GS stream; 1 - prepare, 2 - save
@@ -278,12 +109,6 @@ __forceinline void GSVSYNC(void) {
 
 u32 CSRw;
 
-extern uptr pDsp;
-typedef u8* PU8;
-
-PCSX2_ALIGNED( 4096, u8 GS_RINGBUFF_STOREAGE[GS_RINGBUFFERSIZE] );
-PCSX2_ALIGNED16( u8 g_MTGSMem[0x2000] ); // mtgs has to have its own memory
-
 #ifdef PCSX2_VIRTUAL_MEM
 #define gif ((DMACh*)&PS2MEM_HW[0xA000])
 #else
@@ -293,104 +118,21 @@ PCSX2_ALIGNED16( u8 g_MTGSMem[0x2000] ); // mtgs has to have its own memory
 #ifdef PCSX2_VIRTUAL_MEM
 #define PS2GS_BASE(mem) ((PS2MEM_BASE+0x12000000)+(mem&0x13ff))
 #else
-u8 g_RealGSMem[0x2000];
+PCSX2_ALIGNED16( u8 g_RealGSMem[0x2000] );
 #define PS2GS_BASE(mem) (g_RealGSMem+(mem&0x13ff))
 #endif
 
-// dummy GS for processing SIGNAL, FINISH, and LABEL commands
-struct GIFTAG
-{
-	u32 nloop : 15;
-	u32 eop : 1;
-	u32 dummy0 : 16;
-	u32 dummy1 : 14;
-	u32 pre : 1;
-	u32 prim : 11;
-	u32 flg : 2;
-	u32 nreg : 4;
-	u32 regs[2];
-};
-
-struct GIFPath
-{
-	GIFTAG tag; 
-	u32 curreg;
-	u32 _pad[3];
-	u8 regs[16];
-
-	// unpack the registers
-	// registers are stored as a sequence of 4 bit values in the
-	// upper 64 bits of the GIFTAG.  That sucks for us, so we unpack
-	// them into an 8 bit array.
-	__forceinline void PrepRegs()
-	{
-		if( tag.nreg == 0 )
-		{
-			u32 tempreg = tag.regs[0];
-			for(u32 i=0; i<16; ++i, tempreg >>= 4)
-			{
-				if( i == 8 ) tempreg = tag.regs[1];
-				assert( (tempreg&0xf) < 0x64 );
-				regs[i] = tempreg & 0xf;
-			}
-		}
-		else
-		{
-			u32 tempreg = tag.regs[0];
-			for(u32 i=0; i<tag.nreg; ++i, tempreg >>= 4)
-			{
-				assert( (tempreg&0xf) < 0x64 );
-				regs[i] = tempreg & 0xf;
-			}
-		}
-	}
-
-	void SetTag(const void* mem)
-	{
-		tag = *((GIFTAG*)mem);
-		curreg = 0;
-
-		PrepRegs();
-	}
-
-	u32 GetReg() 
-	{
-		return regs[curreg];
-	}
-};
-
-static PCSX2_ALIGNED16(GIFPath g_path[3]);
-
-// g_pGSRingPos == g_pGSWritePos => fifo is empty
-static u8* g_pGSRingPos = NULL; // cur pos ring is at
-static u8* g_pGSWritePos = NULL; // cur pos ee thread is at
-
-extern int g_nCounters[];
-
-// Uncomment this to enable the MTGS debug stack, which tracks to ensure reads
-// and writes stay synchronized.  Warning: the debug stack is VERY slow.
-//#define RINGBUF_DEBUG_STACK
-#ifdef RINGBUF_DEBUG_STACK
-#include <list>
-std::list<uptr> ringposStack;
-mutex_t stackLock;
-#endif
-
-#ifdef _DEBUG
-// debug variable used to check for bad code bits where copies are started
-// but never closed, or closed without having been started.  (GSRingBufCopy calls
-// should always be followed by acall to GSRINGBUF_DONECOPY)
-static int g_mtgsCopyLock = 0;
-#endif
+extern int m_nCounters[];
 
 // FrameSkipping Stuff
+// Yuck, iSlowStart is needed by the MTGS, so can't make it static yet.
 
+u64 m_iSlowStart=0;
 static s64 m_iSlowTicks=0;
-static u64 m_iSlowStart=0;
 static bool m_justSkipped = false;
 static bool m_StrictSkipping = false;
 
-static void OnModeChanged( u32 framerate, u32 iTicks )
+void _gs_ChangeTimings( u32 framerate, u32 iTicks )
 {
 	m_iSlowStart = GetCPUTicks();
 
@@ -415,6 +157,14 @@ static void OnModeChanged( u32 framerate, u32 iTicks )
 	}
 }
 
+static void gsOnModeChanged(  u32 framerate, u32 newTickrate )
+{
+	if( mtgsThread != NULL )
+		mtgsThread->SendSimplePacket( GS_RINGTYPE_MODECHANGE, framerate, newTickrate, 0 );
+	else
+		_gs_ChangeTimings( framerate, newTickrate );
+}
+
 void gsSetVideoRegionType( u32 isPal )
 {
 	u32 framerate;
@@ -422,23 +172,19 @@ void gsSetVideoRegionType( u32 isPal )
 	if( isPal )
 	{
 		if( Config.PsxType & 1 ) return;
-		SysPrintf( "PAL Display Mode Initialized.\n" );
+		Console::WriteLn( "PAL Display Mode Initialized." );
 		Config.PsxType |= 1;
 		framerate = FRAMERATE_PAL;
 	}
 	else
 	{
 		if( !(Config.PsxType & 1 ) ) return;
-		SysPrintf( "NTSC Display Mode Initialized.\n" );
+		Console::WriteLn( "NTSC Display Mode Initialized." );
 		Config.PsxType &= ~1;
 		framerate = FRAMERATE_NTSC;
 	}
 
 	u32 newTickrate = UpdateVSyncRate();
-	if( CHECK_MULTIGS )
-		GSRingBufSimplePacket( GS_RINGTYPE_MODECHANGE, framerate, newTickrate, 0 );
-	else
-		OnModeChanged( framerate, newTickrate );
 }
 
 
@@ -457,18 +203,6 @@ void gsInit()
 			}
 		break;
 	}
-
-	if( CHECK_MULTIGS ) 
-	{
-        g_pGSRingPos = GS_RINGBUFFERBASE;
-
-		memcpy(g_MTGSMem, PS2MEM_GS, sizeof(g_MTGSMem));
-
-		g_pGSWritePos = GS_RINGBUFFERBASE;
-
-        if( GSsetBaseMem != NULL )
-			GSsetBaseMem(g_MTGSMem);
-	}
 }
 
 // Opens the gsRingbuffer thread.
@@ -476,162 +210,45 @@ s32 gsOpen()
 {
 	if( m_gsOpened ) return 0;
 
-	OnModeChanged(
-		(Config.PsxType & 1) ? FRAMERATE_PAL : FRAMERATE_NTSC,
-		UpdateVSyncRate() 
-	);
+	// mtgs overrides these as necessary...
+	GSsetBaseMem( PS2MEM_GS );
+	GSirqCallback( gsIrq );
 
-	if( !CHECK_MULTIGS )
+	//video
+	// Only bind the gsIrq if we're not running the MTGS.
+	// The MTGS simulates its own gsIrq in order to maintain proper sync.
+
+	m_gsOpened = mtgsOpen();
+	if( !m_gsOpened )
 	{
+		// MTGS failed to init or is disabled.  Try the GS instead!
+		// ... and set the memptr again just in case (for switching between GS/MTGS on the fly)
+
 		m_gsOpened = !GSopen((void *)&pDsp, "PCSX2", 0);
-		return !m_gsOpened;
 	}
 
-	// MultiGS Procedure From Here Out...
-
-    gsHasToExit = false;
-	event_init( g_hGsEvent );
-	event_init( g_hGSDone );
-	mutex_init( gsRingRestartLock );
-
-#	ifdef RINGBUF_DEBUG_STACK
-	mutex_init( stackLock );
-#	endif
-
-	if( !thread_create( g_hVuGsThread ) )
+	if( m_gsOpened )
 	{
-		SysPrintf("MTGS > Thread creation failure!\n");
-		return -1;
+		gsOnModeChanged(
+			(Config.PsxType & 1) ? FRAMERATE_PAL : FRAMERATE_NTSC,
+			UpdateVSyncRate()
+		);
 	}
-
-	// Wait for the thread to finish initialization (it runs GSinit, which can take
-	// some time since it's creating a new window and all), and then check for errors.
-
-	event_wait( g_hGSDone );
-	event_destroy( g_hGSDone );
-
-	if( g_GsExitCode != 0 )	// means the thread failed to init the GS plugin
-		return -1;
-
-	m_gsOpened = true;
-	return 0;
-}
-
-void GS_SETEVENT()
-{
-	// Win32 Kernel calls can corrupt the XMM/MMX registers.
-	// Callers should always make sure those registers are frozen:
-	assert( !g_EEFreezeRegs || (g_globalXMMSaved > 0) );
-
-	event_set(g_hGsEvent);
-	mtgs_CopyCommandTally = 0;
-}
-
-void gsWaitGS()
-{
-	if( !CHECK_MULTIGS ) return;
-
-	// Freeze registers because some kernel code likes to destroy them
-	FreezeXMMRegs(1);
-	FreezeMMXRegs(1);
-	GS_SETEVENT();
-	while( *(volatile PU8*)&g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos )
-		_TIMESLICE();
-	FreezeXMMRegs(0);
-	FreezeMMXRegs(0);
-}
-
-// Sets the gsEvent flag and releases a timeslice.
-// For use in loops that wait on the GS thread to do certain things.
-static void gsSetEventWait()
-{
-	// Freeze registers because some kernel code likes to destroy them
-	FreezeXMMRegs(1); 
-	FreezeMMXRegs(1);
-	GS_SETEVENT();
-	_TIMESLICE();
-	FreezeXMMRegs(0); 
-	FreezeMMXRegs(0);
-
-	mtgs_CopyCommandTally = 0;
-}
-
-// mem and size are the ones returned from GSRingBufCopy
-void GSRINGBUF_DONECOPY(const u8* mem, u32 size)
-{
-	const u8* temp = mem + size; 
-
-	// make sure a previous copy block has been started somewhere.
-	assert( (--g_mtgsCopyLock) == 0 );
-
-	assert( temp <= GS_RINGBUFFEREND);
-	if( temp == GS_RINGBUFFEREND )
-	{
-		temp = GS_RINGBUFFERBASE; 
-	}
-#ifdef _DEBUG
-	else
-	{
-		const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
-		if( readpos != g_pGSWritePos )
-		{
-			// The writepos should never leapfrog the readpos
-			// since that indicates a bad write.
-			if( mem < readpos )
-				assert( temp < readpos );
-		}
-
-		// Updating the writepos should never make it equal the readpos, since
-		// that would stop the buffer prematurely (and indicates bad code in the
-		// ringbuffer manager)
-		assert( readpos != temp );
-	}
-#endif
-
-	AtomicExchangePointer( g_pGSWritePos, temp );
-
-	// if enough copies have queued up then go ahead and initiate the GS thread..
-	
-	// Optimization notes:  16 was the best value I found so far.  Ideally there
-	// should be a secondary check for data size, since large transfers should
-	// be counted as multple commands for instance.  But I'm weary of adding too
-	// much clutter to the overhead of this function.  In any case, 16 should be
-	// a pretty decent all-weather value for the majority of games. (Air)
-
-	// tested values:
-	//  24 - very slow on HT machines (+5% drop in fps)
-	//  8 - roughly 2% slower on HT machines.
-
-	if( ++mtgs_CopyCommandTally > 16 )
-	{
-		FreezeXMMRegs(1); 
-		FreezeMMXRegs(1);
-		GS_SETEVENT();
-		FreezeXMMRegs(0); 
-		FreezeMMXRegs(0);
-	}
+	return !m_gsOpened;
 }
 
 void gsClose()
 {
-	if( CHECK_MULTIGS ) {
+	if( !m_gsOpened ) return;
 
-        // not necessary to use interlocked here, since we'll send an event signal
-		// anyway. Additionally, interlocked isn't safe on booleans
-		// (they might be 1 byte under some compilers).
-		gsHasToExit = true;
+	// Throw an assert if our multigs setting and mtgsThread status
+	// aren't synched.  It shouldn't break the code anyway but it's a
+	// bad coding habit that we should catch and fix early.
+	assert( !!CHECK_MULTIGS == (mtgsThread != NULL ) );
 
-		Console::WriteLn( "MTGS > Closing GS thread..." );
-		GS_SETEVENT();
-
-		if (g_hVuGsThread != NULL) thread_close( g_hVuGsThread );
-		event_destroy( g_hGsEvent );
-		mutex_destroy( gsRingRestartLock );
-
-#ifdef RINGBUF_DEBUG_STACK
-		mutex_destroy( stackLock );
-#endif
-		gsHasToExit = false;
+	if( mtgsThread != NULL )
+	{
+		safe_delete( mtgsThread );
 	}
 	else
 		GSclose();
@@ -639,267 +256,13 @@ void gsClose()
 	m_gsOpened = false;
 }
 
-#ifdef PCSX2_GSRING_TX_STATS
-u32 ringtx_s=0;
-u32 ringtx_s_ulg=0;
-u32 ringtx_s_min=0xFFFFFFFF;
-u32 ringtx_s_max=0;
-u32 ringtx_c=0;
-u32 ringtx_inf[32][32];
-u32 ringtx_inf_s[32];
-#include <intrin.h>
-#endif
-
-u32 GSRingBufCopySz;
-u8* GSRingBufCopy( u32 size, u32 type )
-{
-#ifdef PCSX2_GSRING_TX_STATS
-	ringtx_s+=size;
-	ringtx_s_ulg+=size&0x7F;
-	ringtx_s_min=min(ringtx_s_min,size);
-	ringtx_s_max=max(ringtx_s_max,size);
-	ringtx_c++;
-	unsigned long tx_sz;
-	if (_BitScanReverse(&tx_sz,size))
-	{
-		unsigned long tx_algn;
-		_BitScanForward(&tx_algn,size);
-		ringtx_inf[tx_sz][tx_algn]++;
-		ringtx_inf_s[tx_sz]+=size;
-	}
-	if (ringtx_s>=128*1024*1024)
-	{
-		SysPrintf("GSRingBufCopy:128MB in %d tx -> b/tx: AVG = %.2f , max = %d, min = %d\n",ringtx_c,ringtx_s/(float)ringtx_c,ringtx_s_max,ringtx_s_min);
-		for (int i=0;i<32;i++)
-		{
-			u32 total_bucket=0;
-			u32 bucket_subitems=0;
-			for (int j=0;j<32;j++)
-			{
-				if (ringtx_inf[i][j])
-				{
-					total_bucket+=ringtx_inf[i][j];
-					bucket_subitems++;
-					SysPrintf("GSRingBufCopy :tx [%d,%d] algn %d : count= %d [%.2f%%]\n",1<<i,(1<<(i+1))-16,1<<j,ringtx_inf[i][j],ringtx_inf[i][j]/(float)ringtx_c*100);
-					ringtx_inf[i][j]=0;
-				}
-			}
-			if (total_bucket)
-				SysPrintf("GSRingBufCopy :tx [%d,%d] total : count= %d [%.2f%%] [%.2f%%]\n",1<<i,(1<<(i+1))-16,total_bucket,total_bucket/(float)ringtx_c*100,ringtx_inf_s[i]/(float)ringtx_s*100);
-			ringtx_inf_s[i]=0;
-		}
-		SysPrintf("GSRingBufCopy :tx ulg count =%d [%.2f%%]\n",ringtx_s_ulg,ringtx_s_ulg/(float)ringtx_s*100);
-		ringtx_s_ulg=0;
-		ringtx_c=0;
-		ringtx_s=0;
-		ringtx_s_min=0xFFFFFFFF;
-		ringtx_s_max=0;
-	}
-#endif
-	// Note on volatiles: g_pGSWritePos is not modified by the GS thread,
-	// so there's no need to use volatile reads here.  We still have to use
-	// interlocked exchanges when we modify it, however, since the GS thread
-	// is reading it.
-
-	u8* writepos = g_pGSWritePos;
-	
-	// Checks if a previous copy was started without an accompaying call to GSRINGBUF_DONECOPY
-	assert( (++g_mtgsCopyLock) == 1 );
-
-	assert( size < GS_RINGBUFFERSIZE );
-	assert( writepos < GS_RINGBUFFEREND );
-	assert( ((uptr)writepos & 15) == 0 );
-	assert( (size&15) == 0);
-
-	size += 16;
-
-	if( writepos + size < GS_RINGBUFFEREND )
-	{
-		// generic gs wait/stall.
-		// Waits until the readpos is outside the scope of the write area.
-		while( true )
-		{
-			// two conditionals in the following while() loop, so precache
-			// the readpos for more efficient behavior:
-			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
-
-			// if the writepos is past the readpos then we're safe:
-			if( writepos >= readpos ) break;
-			
-			// writepos is behind the readpos, so do a second check to see if the
-			// readpos is out past the end of the future write pos:
-			if( writepos+size < readpos ) break;
-
-			gsSetEventWait();
-		}
-	}
-	else if( writepos + size > GS_RINGBUFFEREND )
-	{
-		// If the incoming packet doesn't fit, then start over from
-		// the start of the ring buffer (it's a lot easier than trying
-		// to wrap the packet around the end of the buffer).
-
-		// We have to be careful not to leapfrog our read-position.  If it's 
-		// greater than the current write position then we need to stall
-		// until it loops around to the beginning of the buffer
-
-		while( true )
-		{
-			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
-
-			// is the buffer empty?
-			if( readpos == writepos ) break;
-
-			// Also: Wait for the readpos to go past the start of the buffer
-			// Otherwise it'll stop dead in its tracks when we set the new write
-			// position below (bad!)
-			if( readpos < writepos && readpos != GS_RINGBUFFERBASE ) break;
-
-			gsSetEventWait();
-		}
-
-		mutex_lock( gsRingRestartLock );
-		GSRingBufSimplePacket( GS_RINGTYPE_RESTART, 0, 0, 0 );
-		writepos = GS_RINGBUFFERBASE;
-		AtomicExchangePointer( g_pGSWritePos, writepos );
-		mutex_unlock( gsRingRestartLock );
-
-		// stall until the read position is past the end of our incoming block,
-		// or until it reaches the current write position (signals an empty buffer).
-		while( true )
-		{
-			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
-
-			if( readpos == g_pGSWritePos ) break;
-			if( writepos+size < readpos ) break;
-
-			gsSetEventWait();
-		}
-	}
-    else	// always true - if( writepos + size == GS_RINGBUFFEREND )
-	{
-		// Yay.  Perfect fit.  What are the odds?
-
-		//SysPrintf( "MTGS > Perfect Fit!\n");
-		while( true )
-		{
-			const u8* readpos = *(volatile PU8*)&g_pGSRingPos;
-
-			// is the buffer empty?  Don't wait...
-			if( readpos == writepos ) break;
-
-			// Copy is ready so long as readpos is less than writepos and *not*
-			// equal to the base of the ringbuffer (otherwise the buffer will stop)
-			if( readpos < writepos && readpos != GS_RINGBUFFERBASE ) break;
-
-			gsSetEventWait();
-		}
-    }
-
-#ifdef RINGBUF_DEBUG_STACK
-	mutex_lock( stackLock );
-	ringposStack.push_front( (uptr)writepos );
-	mutex_unlock( stackLock );
-#endif
-
-	*(u32*)writepos = type | (((size-16)>>4)<<16);
-	#ifdef PCSX2_GSRING_SAMPLING_STATS
-	if (GSRingBufCopySz)
-		return writepos+16;
-
-	__asm 
-	{ 
-		mov GSRingBufCopySz,offset __GSRingBufCopyEnd; 
-		sub GSRingBufCopySz,offset GSRingBufCopy;
-__GSRingBufCopyEnd:
-	}
-	ProfilerRegisterSource("pcsx2:GSRingBufCopy",&GSRingBufCopy,GSRingBufCopySz);
-#endif
-	return writepos+16;
-}
-
-void GSRingBufSimplePacket(int type, int data0, int data1, int data2)
-{
-	u8* writepos = g_pGSWritePos;
-	const u8* future_writepos = writepos+16;
-
-	assert( future_writepos <= GS_RINGBUFFEREND );
-
-    if( future_writepos == GS_RINGBUFFEREND )
-        future_writepos = GS_RINGBUFFERBASE;
-
-	while( future_writepos == *(volatile PU8*)&g_pGSRingPos )
-		gsSetEventWait();
-
-#ifdef RINGBUF_DEBUG_STACK
-	mutex_lock( stackLock );
-	ringposStack.push_front( (uptr)writepos );
-	mutex_unlock( stackLock );
-#endif
-
-	*(u32*)writepos = type;
-	*(u32*)(writepos+4) = data0;
-	*(u32*)(writepos+8) = data1;
-	*(u32*)(writepos+12) = data2;
-
-	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
-	AtomicExchangePointer( g_pGSWritePos, future_writepos );
-}
-
-void GSRingBufPointerPacket(int type, u32 data0, void* data1 )
-{
-	u8* writepos = g_pGSWritePos;
-	const u8* future_writepos = writepos+16;
-
-	assert( future_writepos <= GS_RINGBUFFEREND );
-
-    if( future_writepos == GS_RINGBUFFEREND )
-        future_writepos = GS_RINGBUFFERBASE;
-
-	while( future_writepos == *(volatile PU8*)&g_pGSRingPos )
-		gsSetEventWait();
-
-#ifdef RINGBUF_DEBUG_STACK
-	mutex_lock( stackLock );
-	ringposStack.push_front( (long)writepos );
-	mutex_unlock( stackLock );
-#endif
-
-	*(u32*)writepos = type;
-	*(u32*)(writepos+4) = data0;
-	*(uptr*)(writepos+8) = (uptr)data1;
-
-	assert( future_writepos != *(volatile PU8*)&g_pGSRingPos );
-	AtomicExchangePointer( g_pGSWritePos, future_writepos );
-}
-
 void gsReset()
 {
 	// Sanity check in case the plugin hasn't been initialized...
 	if( !m_gsOpened ) return;
 
-	if( CHECK_MULTIGS )
-	{
-		// MTGS Reset process:
-		//  * clear the ringbuffer.
-		//  * Signal a reset.
-		//  * clear the path and byRegs structs (used by GIFtagDummy)
-
-		AtomicExchangePointer( g_pGSRingPos, g_pGSWritePos );
-#ifdef PCSX2_DEVBUILD
-		AtomicExchange( g_pGSvSyncCount, 0 );
-#endif
-		MTGS_LOG( "MTGS > Sending Reset...\n" );
-		GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
-		GSRingBufSimplePacket( GS_RINGTYPE_FRAMESKIP, 0, 0, 0 );
-
-#ifdef _DEBUG
-		g_mtgsCopyLock = 0;
-#endif
-		// I think this would be a good idea (air)
-		//Path3transfer = 0;
-		memset(g_path, 0, sizeof(g_path));
-	}
+	if( mtgsThread != NULL )
+		mtgsThread->Reset();
 	else
 	{
 		Console::Notice( "GIF reset");
@@ -907,14 +270,16 @@ void gsReset()
 		GSsetFrameSkip(0);
 	}
 
-	OnModeChanged(
+	gsOnModeChanged(
 		(Config.PsxType & 1) ? FRAMERATE_PAL : FRAMERATE_NTSC,
 		UpdateVSyncRate() 
 	);
 
 #ifndef PCSX2_VIRTUAL_MEM
-	memset(g_RealGSMem, 0, 0x2000);
+	memset(g_RealGSMem, 0, sizeof( g_RealGSMem ));
 #endif
+
+	Path3transfer = 0;
 
 	GSCSRr = 0x551B400F;   // Set the FINISH bit to 1 for now
 	GSIMR = 0x7f00;
@@ -925,13 +290,6 @@ void gsReset()
 
 static bool _gsGIFSoftReset( int mask )
 {
-	if( CHECK_MULTIGS )
-	{
-		if(mask & 1) memset(&g_path[0], 0, sizeof(g_path[0]));
-		if(mask & 2) memset(&g_path[1], 0, sizeof(g_path[1]));
-		if(mask & 4) memset(&g_path[2], 0, sizeof(g_path[2]));
-	}
-
 	if( GSgifSoftReset == NULL )
 	{
 		static bool warned = false;
@@ -943,11 +301,8 @@ static bool _gsGIFSoftReset( int mask )
 		return false;
 	}
 
-	if( CHECK_MULTIGS )
-	{
-		MTGS_LOG( "MTGS > Sending GIF Soft Reset (mask: %d)\n", mask );
-		GSRingBufSimplePacket( GS_RINGTYPE_SOFTRESET, mask, 0, 0 );
-	}
+	if( mtgsThread != NULL )
+		mtgsThread->GIFSoftReset( mask );
 	else
 		GSgifSoftReset( mask );
 
@@ -957,7 +312,8 @@ static bool _gsGIFSoftReset( int mask )
 void gsGIFReset()
 {
 #ifndef PCSX2_VIRTUAL_MEM
-	memset(g_RealGSMem, 0, 0x2000);
+	// fixme - should this be here? (air)
+	memset(g_RealGSMem, 0, sizeof( g_RealGSMem ));
 #endif
 
 	// perform a soft reset (but do not do a full reset if the soft reset API is unavailable)
@@ -974,10 +330,8 @@ void gsCSRwrite(u32 value)
 {
 	CSRw |= value & ~0x60;
 
-	if( CHECK_MULTIGS )
-	{
-		GSRingBufSimplePacket( GS_RINGTYPE_WRITECSR, CSRw, 0, 0 );
-	}
+	if( mtgsThread != NULL )
+		mtgsThread->SendSimplePacket( GS_RINGTYPE_WRITECSR, CSRw, 0, 0 );
 	else
 		GSwriteCSR(CSRw);
 
@@ -995,8 +349,8 @@ void gsCSRwrite(u32 value)
 
 		if( !_gsGIFSoftReset( 7 ) )
 		{
-			if( CHECK_MULTIGS )
-				GSRingBufSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
+			if( mtgsThread != NULL )
+				mtgsThread->SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
 			else
 				GSreset();
 		}
@@ -1025,9 +379,8 @@ void gsWrite8(u32 mem, u8 value) {
 		default:
 			*PS2GS_BASE(mem) = value;
 
-			if( CHECK_MULTIGS ) {
-				GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE8, mem&0x13ff, value, 0);
-			}
+			if( mtgsThread != NULL )
+				mtgsThread->SendSimplePacket(GS_RINGTYPE_MEMWRITE8, mem&0x13ff, value, 0);
 	}
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx\n", mem, value);
 }
@@ -1060,9 +413,8 @@ void gsWrite16(u32 mem, u16 value) {
 
 	*(u16*)PS2GS_BASE(mem) = value;
 
-	if( CHECK_MULTIGS ) {
-		GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
-	}
+	if( mtgsThread != NULL )
+		mtgsThread->SendSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
 }
 
 void gsWrite32(u32 mem, u32 value)
@@ -1091,9 +443,8 @@ void gsWrite32(u32 mem, u32 value)
 
 	*(u32*)PS2GS_BASE(mem) = value;
 
-	if( CHECK_MULTIGS ) {
-		GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
-	}
+	if( mtgsThread != NULL )
+		mtgsThread->SendSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
 }
 
 void gsWrite64(u32 mem, u64 value) {
@@ -1121,22 +472,19 @@ void gsWrite64(u32 mem, u64 value) {
 
 	*(u64*)PS2GS_BASE(mem) = value;
 
-	if( CHECK_MULTIGS ) {
-		GSRingBufSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, (u32)(value>>32));
-	}
+	if( mtgsThread != NULL )
+		mtgsThread->SendSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, (u32)(value>>32));
 }
 
 u8 gsRead8(u32 mem)
 {
 	GIF_LOG("GS read 8 from %8.8lx  value: %8.8lx\n", mem, *(u8*)PS2GS_BASE(mem));
-
 	return *(u8*)PS2GS_BASE(mem);
 }
 
 u16 gsRead16(u32 mem)
 {
 	GIF_LOG("GS read 16 from %8.8lx  value: %8.8lx\n", mem, *(u16*)PS2GS_BASE(mem));
-
 	return *(u16*)PS2GS_BASE(mem);
 }
 
@@ -1154,235 +502,6 @@ u64 gsRead64(u32 mem)
 
 void gsIrq() {
 	hwIntcIrq(0);
-}
-
-static void GSRegHandlerSIGNAL(const u32* data)
-{
-	MTGS_LOG("MTGS SIGNAL data %x_%x CSRw %x\n",data[0], data[1], CSRw);
-
-	GSSIGLBLID->SIGID = (GSSIGLBLID->SIGID&~data[1])|(data[0]&data[1]);
-	
-	if ((CSRw & 0x1)) 
-		GSCSRr |= 1; // signal
-		
-	
-	if (!(GSIMR&0x100) ) 
-		gsIrq();
-
-	
-}
-
-static void GSRegHandlerFINISH(const u32* data)
-{
-	MTGS_LOG("MTGS FINISH data %x_%x CSRw %x\n",data[0], data[1], CSRw);
-
-	if ((CSRw & 0x2)) 
-		GSCSRr |= 2; // finish
-		
-	if (!(GSIMR&0x200) )
-		gsIrq();
-	
-}
-
-static void GSRegHandlerLABEL(const u32* data)
-{
-	GSSIGLBLID->LBLID = (GSSIGLBLID->LBLID&~data[1])|(data[0]&data[1]);
-}
-
-typedef void (*GIFRegHandler)(const u32* data);
-static GIFRegHandler s_GSHandlers[3] = { GSRegHandlerSIGNAL, GSRegHandlerFINISH, GSRegHandlerLABEL };
-
-enum GIF_FLG
-{
-	GIF_FLG_PACKED	= 0,
-	GIF_FLG_REGLIST	= 1,
-	GIF_FLG_IMAGE	= 2,
-	GIF_FLG_IMAGE2	= 3
-};
-
-enum GIF_REG
-{
-	GIF_REG_PRIM	= 0x00,
-	GIF_REG_RGBA	= 0x01,
-	GIF_REG_STQ		= 0x02,
-	GIF_REG_UV		= 0x03,
-	GIF_REG_XYZF2	= 0x04,
-	GIF_REG_XYZ2	= 0x05,
-	GIF_REG_TEX0_1	= 0x06,
-	GIF_REG_TEX0_2	= 0x07,
-	GIF_REG_CLAMP_1	= 0x08,
-	GIF_REG_CLAMP_2	= 0x09,
-	GIF_REG_FOG		= 0x0a,
-	GIF_REG_XYZF3	= 0x0c,
-	GIF_REG_XYZ3	= 0x0d,
-	GIF_REG_A_D		= 0x0e,
-	GIF_REG_NOP		= 0x0f,
-};
-
-// simulates a GIF tag
-u32 GSgifTransferDummy(int pathidx, const u8 *pMem, u32 size)
-{
-	GIFPath& path = g_path[pathidx];
-
-	while(size > 0)
-	{
-		bool eop = false;
-
-		if(path.tag.nloop == 0)
-		{
-			path.SetTag( pMem );
-
-			pMem += sizeof(GIFTAG);
-			size--;
-
-			if(pathidx == 2 && path.tag.eop)
-				Path3transfer = 0;
-
-			if( pathidx == 0 ) 
-			{                        
-				// hack: if too much data for VU1, just ignore.
-
-				// The GIF is evil : if nreg is 0, it's really 16.  Otherwise it's the value in nreg.
-				const int numregs = ((path.tag.nreg-1)&15)+1;
-
-				if((path.tag.nloop * numregs) > (size * ((path.tag.flg == 1) ? 2 : 1)))
-				{
-					path.tag.nloop = 0;
-					return ++size;
-				}
-			}
-
-
-			if(path.tag.pre)
-			{
-				assert(path.tag.flg != GIF_FLG_IMAGE); // kingdom hearts, ffxii, tales of abyss
-
-				if((path.tag.flg & 2) == 0)
-				{
-					// Primitive handler... Nothing for the Dummy to do here.
-
-					//GIFReg r;
-					//r.i64 = path.tag.PRIM;
-					//(this->*m_fpGIFRegHandlers[GIF_A_D_REG_PRIM])(&r);
-				}
-			}
-
-			if(path.tag.eop)
-			{
-				eop = true;
-			}
-			else if(path.tag.nloop == 0)
-			{
-				if(pathidx == 0 && g_FFXHack)
-					continue;
-
-				eop = true;
-			}
-		}
-
-		if(path.tag.nloop > 0)
-		{
-			switch(path.tag.flg)
-			{
-			case GIF_FLG_PACKED:
-
-				while(size > 0)
-				{
-					// Register 0xe is a NOP. 
-					// Why were we treating it as a handler?
-
-					if( path.GetReg() == 0xe )
-					{
-						const int handler = pMem[8];
-						if(handler >= 0x60 && handler < 0x63)
-							s_GSHandlers[handler&0x3]((const u32*)pMem);
-					}
-					size--;
-					pMem += 16; // 128 bits! //sizeof(GIFPackedReg);
-
-					if((++path.curreg & 0xf) == path.tag.nreg) 
-					{
-						path.curreg = 0; 
-						path.tag.nloop--;
-
-						if(path.tag.nloop == 0)
-							break;
-					}
-				}
-
-			break;
-
-			case GIF_FLG_REGLIST:
-
-				size *= 2;
-
-				while(size > 0)
-				{
-					const int handler = path.GetReg();
-					if(handler >= 0x60 && handler < 0x63)
-						s_GSHandlers[handler&0x3]((const u32*)pMem);
-
-					size--;
-					pMem += 8; //sizeof(GIFReg); -- 64 bits!
-
-					if((++path.curreg & 0xf) == path.tag.nreg) 
-					{
-						path.curreg = 0; 
-						path.tag.nloop--;
-
-						if(path.tag.nloop == 0)
-						{
-							break;
-						}
-					}
-				}
-			
-				if(size & 1) pMem += 8; //sizeof(GIFReg);
-				size /= 2;
-
-			break;
-
-			case GIF_FLG_IMAGE2: // hmmm
-				assert(0);
-				path.tag.nloop = 0;
-
-			break;
-
-			case GIF_FLG_IMAGE:
-			{
-				int len = (int)min(size, path.tag.nloop);
-
-				//ASSERT(!(len&3));
-
-				pMem += len * 16;
-				path.tag.nloop -= len;
-				size -= len;
-			}
-			break;
-
-			jNO_DEFAULT;
-
-			}
-		}
-
-		if(eop && ((int)size <= 0 || pathidx == 0))
-		{
-			break;
-		}
-	}
-
-	// FIXME: dq8, pcsx2 error probably
-
-	if(pathidx == 0)
-	{
-		if(!path.tag.eop && path.tag.nloop > 0)
-		{
-			path.tag.nloop = 0;
-			DevCon::Write( "path1 hack! " );
-		}
-	}
-
-	return size;
 }
 
 static int gspath3done=0;
@@ -1429,16 +548,25 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 { 
 	psHu32(GIF_STAT) |= 0xE00;         
 
-	// Path3 transfer will be set to zero by the GIFhandler.
+	// Path3 transfer will be set to zero by the GIFtag handler.
 	Path3transfer = 1;
 
-	if( CHECK_MULTIGS )
+	if( mtgsThread != NULL )
 	{ 
 		int sizetoread = (qwc)<<4; 
-		u8* pgsmem = GSRingBufCopy(sizetoread, GS_RINGTYPE_P3); 
-		u32 pendmem = (u32)gif->madr + sizetoread; 
+		sizetoread = mtgsThread->PrepDataPacket( GIF_PATH_3, pMem, sizetoread );
+		u8* pgsmem = mtgsThread->GetDataPacketPtr();
 
-		/* check if page of endmem is valid (dark cloud2) */ 
+		/* check if page of endmem is valid (dark cloud2) */
+		// fixme: this hack makes no sense, because the giftagDummy will
+		// process the full length of bytes regardess of how much we copy.
+		// So you'd think if we're truncating the copy to prevent DEPs, we 
+		// should truncate the gif packet size too.. (air)
+
+		// fixed? PrepDataPacket now returns the actual size of the packet.
+		// VIF handles scratchpad wrapping also, so this code shouldn't be needed anymore.
+
+		/*u32 pendmem = (u32)gif->madr + sizetoread; 
 		if( dmaGetAddr(pendmem-16) == NULL )
 		{ 
 			pendmem = ((pendmem-16)&~0xfff)-16; 
@@ -1448,14 +576,14 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 			} 
 			memcpy_raz_(pgsmem, pMem, pendmem-(u32)gif->madr+16);
 		}
-		else memcpy_raz_(pgsmem, pMem, sizetoread); 
+		else*/
+		memcpy_raz_(pgsmem, pMem, sizetoread); 
 		
-		GSgifTransferDummy(2, (u8*)pMem, qwc); 
-		GSRINGBUF_DONECOPY(pgsmem, sizetoread);
+		mtgsThread->SendDataPacket();
 	} 
 	else 
 	{ 
-		GSGIFTRANSFER3(pMem, qwc); 
+		GSGIFTRANSFER3(pMem, qwc);
         if( GSgetLastTag != NULL )
 		{ 
             GSgetLastTag(&s_gstag); 
@@ -1708,7 +836,10 @@ static __forceinline int mfifoGIFrbTransfer() {
 	/* Check if the transfer should wrap around the ring buffer */
 	if ((gif->madr+mfifoqwc*16) > (psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR)+16)) {
 		int s1 = ((psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR)+16) - gif->madr) >> 4;
-		
+
+		// fixme - I don't think these should use WRITERING_DMA, since our source
+		// isn't the DmaGetAddr(gif->madr) address that WRITERING_DMA expects.
+
 		/* it does, so first copy 's1' bytes from 'addr' to 'data' */
 		src = (u32*)PSM(gif->madr);
 		if (src == NULL) return -1;
@@ -1894,9 +1025,9 @@ void gsSyncLimiterLostTime( s32 deltaTime )
 
 	//SysPrintf("LostTime on the EE!\n");
 
-	if( CHECK_MULTIGS )
+	if( mtgsThread != NULL )
 	{
-		GSRingBufSimplePacket(
+		mtgsThread->SendSimplePacket(
 			GS_RINGTYPE_STARTTIME,
 			deltaTime,
 			0,
@@ -1925,7 +1056,7 @@ void gsSyncLimiterLostTime( s32 deltaTime )
 // and would also mean that aforementioned menus would still be laggy by whatever
 // frame count threshold.  This method is more responsive.
 
-static __forceinline void frameSkip( bool forceskip )
+__forceinline void gsFrameSkip( bool forceskip )
 {
 	static u8 FramesToRender = 0;
 	static u8 FramesToSkip = 0;
@@ -2066,17 +1197,14 @@ void gsPostVsyncEnd( bool updategs )
 {
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
 
-	if( CHECK_MULTIGS ) 
+	if( mtgsThread != NULL ) 
 	{
-#ifdef PCSX2_DEVBUILD
-		AtomicIncrement( g_pGSvSyncCount );
-		//SysPrintf( " Sending VSync : %d \n", g_pGSvSyncCount );
-#endif
-		GSRingBufSimplePacket(GS_RINGTYPE_VSYNC, (*(u32*)(PS2MEM_GS+0x1000)&0x2000), updategs, 0);
+		mtgsThread->SendSimplePacket( GS_RINGTYPE_VSYNC,
+			(*(u32*)(PS2MEM_GS+0x1000)&0x2000), updategs, 0);
 
 		// No need to freeze MMX/XMM registers here since this
 		// code is always called from the context of a BranchTest.
-		GS_SETEVENT();
+		mtgsThread->SetEvent();
 	}
 	else
 	{
@@ -2086,11 +1214,11 @@ void gsPostVsyncEnd( bool updategs )
 		if( PAD1update != NULL ) PAD1update(0);
 		if( PAD2update != NULL ) PAD2update(1);
 
-		frameSkip( !updategs );
+		gsFrameSkip( !updategs );
 	}
 }
 
-static void _resetFrameskip()
+void _gs_ResetFrameskip()
 {
 	g_vu1SkipCount = 0;		// set to 0 so that EE will re-enable the VU at the next vblank.
 	GSsetFrameSkip( 0 );
@@ -2099,10 +1227,10 @@ static void _resetFrameskip()
 // Disables the GS Frameskip at runtime without any racy mess...
 void gsResetFrameSkip()
 {
-	if( CHECK_MULTIGS )
-		GSRingBufSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+	if( mtgsThread != NULL )
+		mtgsThread->SendSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
 	else
-		_resetFrameskip();
+		_gs_ResetFrameskip();
 }
 
 void frameLimitReset();		// defined in Counters.c
@@ -2110,200 +1238,16 @@ void gsDynamicSkipEnable()
 {
 	if( !m_StrictSkipping ) return;
 
-	gsWaitGS();
+	mtgsWaitGS();
 	m_iSlowStart = GetCPUTicks();	
 	frameLimitReset();
-}
-
-GS_THREADPROC
-{
-	SysPrintf("MTGS > Thread Started, Opening GS Plugin...\n");
-	g_GsExitCode = GSopen((void *)&pDsp, "PCSX2", 1);
-	GSCSRr = 0x551B400F; // 0x55190000
-	event_set( g_hGSDone );
-	if (g_GsExitCode != 0) { return GS_THREAD_INIT_FAIL; }		// error msg will be issued to the user by Plugins.c
-	SysPrintf("MTGS > GSopen Finished.\n");
-
-#ifdef RINGBUF_DEBUG_STACK
-	u32 prevCmd=0;
-#endif
-
-	while( !gsHasToExit )
-	{
-		event_wait( g_hGsEvent );
-
-		// note: gsRingPos is intentionally not volatile, because it should only
-		// ever be modified by this thread.
-		while( g_pGSRingPos != *(volatile PU8*)&g_pGSWritePos)
-		{
-			assert( g_pGSRingPos < GS_RINGBUFFEREND );
-
-			u32 tag = *(u32*)g_pGSRingPos;
-			u32 ringposinc = 16;
-
-#ifdef RINGBUF_DEBUG_STACK
-			// pop a ringpos off the stack.  It should match this one!
-
-			EnterCriticalSection( &stackLock );
-			uptr stackpos = ringposStack.back();
-			if( stackpos != (uptr)g_pGSRingPos )
-			{
-				SysPrintf( "MTGS Ringbuffer Critical Failure ---> %x to %x (prevCmd: %x)\n", stackpos, (long)g_pGSRingPos, prevCmd );
-			}
-			assert( stackpos == (long)g_pGSRingPos );
-			prevCmd = tag;
-			ringposStack.pop_back();
-			LeaveCriticalSection( &stackLock );
-#endif
-
-			switch( tag&0xffff )
-			{
-				case GS_RINGTYPE_RESTART:
-					AtomicExchangePointer(g_pGSRingPos, GS_RINGBUFFERBASE);
-					
-					// stall for a bit to let the MainThread have time to update the g_pGSWritePos. 
-					mutex_lock( gsRingRestartLock );
-					mutex_unlock( gsRingRestartLock );
-					continue;
-
-				case GS_RINGTYPE_P1:
-                {
-                    int qsize = (tag>>16);
-                    // make sure that tag>>16 is the MAX size readable
-					GSgifTransfer1((u32*)(g_pGSRingPos+16) - 0x1000 + 4*qsize, 0x4000-qsize*16);
-					ringposinc += qsize<<4;
-					break;
-                }
-				case GS_RINGTYPE_P2:
-					GSgifTransfer2((u32*)(g_pGSRingPos+16), tag>>16);
-					ringposinc += (tag>>16)<<4;
-					break;
-				case GS_RINGTYPE_P3:
-					GSgifTransfer3((u32*)(g_pGSRingPos+16), tag>>16);
-					ringposinc += (tag>>16)<<4;
-					break;
-				case GS_RINGTYPE_VSYNC:
-				{
-					GSvsync(*(u32*)(g_pGSRingPos+4));
-
-					frameSkip( !( *(u32*)(g_pGSRingPos+8) ) );
-
-                    if( PAD1update != NULL ) PAD1update(0);
-                    if( PAD2update != NULL ) PAD2update(1);
-
-#				ifdef PCSX2_DEVBUILD
-					long syncCount = g_pGSvSyncCount;
-					//SysPrintf( " Processing VSync : %d \n", syncCount );
-					// vSyncCount should never dip below zero.
-					assert( syncCount >= 0 );
-					AtomicDecrement( g_pGSvSyncCount );
-#				endif
-					break;
-				}
-
-				case GS_RINGTYPE_FRAMESKIP:
-					_resetFrameskip();
-
-					//if( GSsetFrameSkip != NULL )
-					//	GSsetFrameSkip(*(u32*)(g_pGSRingPos+4));
-					break;
-
-				case GS_RINGTYPE_MEMWRITE8:
-					g_MTGSMem[*(u32*)(g_pGSRingPos+4)] = *(u8*)(g_pGSRingPos+8);
-					break;
-				case GS_RINGTYPE_MEMWRITE16:
-					*(u16*)(g_MTGSMem+*(u32*)(g_pGSRingPos+4)) = *(u16*)(g_pGSRingPos+8);
-					break;
-				case GS_RINGTYPE_MEMWRITE32:
-					*(u32*)(g_MTGSMem+*(u32*)(g_pGSRingPos+4)) = *(u32*)(g_pGSRingPos+8);
-					break;
-				case GS_RINGTYPE_MEMWRITE64:
-					*(u64*)(g_MTGSMem+*(u32*)(g_pGSRingPos+4)) = *(u64*)(g_pGSRingPos+8);
-					break;
-
-                case GS_RINGTYPE_SAVE:
-                case GS_RINGTYPE_LOAD:
-                {
-                    SaveState* f = (SaveState*)(*(uptr*)(g_pGSRingPos+8));
-					f->FreezePlugin( "GS", GSfreeze );
-                    break;
-                }
-
-                case GS_RINGTYPE_RECORD:
-                {
-                    int record = *(u32*)(g_pGSRingPos+4);
-                    if( GSsetupRecording != NULL ) GSsetupRecording(record, NULL);
-                    if( SPU2setupRecording != NULL ) SPU2setupRecording(record, NULL);
-                    break;
-                }
-
-				case GS_RINGTYPE_RESET:
-					MTGS_LOG( "MTGS > Receiving Reset...\n" );
-					if( GSreset != NULL ) GSreset();
-					break;
-
-				case GS_RINGTYPE_SOFTRESET:
-				{
-					int mask = *(u32*)(g_pGSRingPos+4);
-					MTGS_LOG( "MTGS > Receiving GIF Soft Reset (mask: %d)\n", mask );
-					if( GSgifSoftReset != NULL ) GSgifSoftReset( mask );
-					break;
-				}
-
-				case GS_RINGTYPE_WRITECSR:
-					GSwriteCSR( *(u32*)(g_pGSRingPos+4) );
-				break;
-
-				case GS_RINGTYPE_MODECHANGE:
-					OnModeChanged( *(u32*)(g_pGSRingPos+4), *(u32*)(g_pGSRingPos+8) );
-				break;
-
-				case GS_RINGTYPE_STARTTIME:
-					m_iSlowStart += *(u32*)(g_pGSRingPos+4);
-					//m_justSkipped = false;
-				break;
-
-				default:
-
-					SysPrintf("GSThreadProc, bad packet (%x) at g_pGSRingPos: %x, g_pGSWritePos: %x\n", tag, g_pGSRingPos, g_pGSWritePos);
-					assert(0);
-					g_pGSRingPos = g_pGSWritePos;
-#ifdef PCSX2_DEVBUILD
-					AtomicExchange( g_pGSvSyncCount, 0 );
-#endif
-					continue;
-			}
-
-			const u8* newringpos = g_pGSRingPos + ringposinc;
-			assert( newringpos <= GS_RINGBUFFEREND );
-			if( newringpos == GS_RINGBUFFEREND )
-				newringpos = GS_RINGBUFFERBASE;
-
-			AtomicExchangePointer( g_pGSRingPos, newringpos );
-		}
-
-	}
-
-	GSclose();
-	return 0;
 }
 
 void SaveState::gsFreeze()
 {
 	FreezeMem(PS2MEM_GS, 0x2000);
 	Freeze(CSRw);
-
-	for(int i=0; i<3; i++ )
-	{
-		Freeze( g_path[i].tag );
-
-		// Earlier versions had an extra u32 in the tag struct:
-
-		Freeze( g_path[i].curreg );
-	}
-
-	for(int i=0; i<3; i++ )
-		Freeze( g_path[i].regs );
+	mtgsFreeze();
 }
 
 #ifdef PCSX2_DEVBUILD

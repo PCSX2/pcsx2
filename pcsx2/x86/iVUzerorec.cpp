@@ -4095,7 +4095,7 @@ void recSVUMI_XGKICK_( VURegs *VU )
 
 	//CALLFunc((u32)countfn);
 
-	if( CHECK_MULTIGS ) {
+	if( mtgsThread != NULL ) {
 		CALLFunc((uptr)VU1XGKICK_MTGSTransfer);
 #ifndef __x86_64__
 		ADD32ItoR(ESP, 8);

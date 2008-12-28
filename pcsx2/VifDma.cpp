@@ -1610,21 +1610,20 @@ static int Vif1TransDirectHL(u32 *data){
 			}
 		}
 		//if(splitptr < 4) SysPrintf("Whoopsie\n");
-		if( CHECK_MULTIGS ) {
-			u8* gsmem = GSRingBufCopy(16, GS_RINGTYPE_P2);
-			if( gsmem != NULL )
-			{
-				// copy 16 bytes the fast way:
-				const u64* src = (u64*)splittransfer[0];
-				u64* dst = (u64*)gsmem;
-				dst[0] = src[0];
-				dst[1] = src[1];
+		if( mtgsThread != NULL )
+		{
+			// copy 16 bytes the fast way:
+			const u64* src = (u64*)splittransfer[0];
+			const uint count = mtgsThread->PrepDataPacket( GIF_PATH_2, src, 16);
+			jASSUME( count == 16 );
+			u64* dst = (u64*)mtgsThread->GetDataPacketPtr();
+			dst[0] = src[0];
+			dst[1] = src[1];
 
-				GSRINGBUF_DONECOPY(gsmem, 16);
-				GSgifTransferDummy(1, (u8*)splittransfer[0], 1);
-			}
+			mtgsThread->SendDataPacket();
 		}
-		else {
+		else
+		{
 			FreezeXMMRegs(1);
 			FreezeMMXRegs(1);
 			GSGIFTRANSFER2((u32*)splittransfer[0], 1);
@@ -1658,15 +1657,12 @@ static int Vif1TransDirectHL(u32 *data){
 
 	//TODO: ret is guaranteed to be qword aligned ?
 	
-	if( CHECK_MULTIGS ) {
-		u8* gsmem = GSRingBufCopy(ret<<2, GS_RINGTYPE_P2);
-		
-		if( gsmem != NULL ) {
-			//unaligned copy.VIF handling is -very- messy, so i'l use this code til i fix it :)
-			memcpy_raz_u(gsmem,data,ret<<2);
-			GSRINGBUF_DONECOPY(gsmem, ret<<2);
-			GSgifTransferDummy(1, (u8*)data, ret>>2);
-		}
+	if( mtgsThread != NULL )
+	{
+		//unaligned copy.VIF handling is -very- messy, so i'l use this code til i fix it :)
+		const uint count = mtgsThread->PrepDataPacket( GIF_PATH_2, data, ret<<2 );
+		memcpy_raz_u( mtgsThread->GetDataPacketPtr(), data, count );
+		mtgsThread->SendDataPacket();
 	}
 	else {
 		
@@ -1676,8 +1672,7 @@ static int Vif1TransDirectHL(u32 *data){
 		FreezeMMXRegs(0);
 		FreezeXMMRegs(0);
 	}
-	
-	
+
 	return ret;
 }
 
@@ -1685,26 +1680,29 @@ static int Vif1TransDirectHL(u32 *data){
 static int Vif1TransUnpack(u32 *data){
 	FreezeXMMRegs(1);
 
-	if (vif1.vifpacketsize < vif1.tag.size) {
-			/* size is less that the total size, transfer is 
-			   'in pieces' */
-			VIFunpack(data, &vif1.tag, vif1.vifpacketsize, VIF1dmanum);
-		//	g_vifCycles+= size >> 1;
-			//vif1.tag.addr += size << 2;
-			vif1.tag.size -= vif1.vifpacketsize; 
-			FreezeXMMRegs(0);
-			return vif1.vifpacketsize;
-		} else {
-			int ret;
-			/* we got all the data, transfer it fully */
-			VIFunpack(data, &vif1.tag, vif1.tag.size, VIF1dmanum);
-			//g_vifCycles+= vif1.tag.size >> 1;
-			ret = vif1.tag.size;
-			vif1.tag.size = 0;
-			vif1.cmd = 0;
-			FreezeXMMRegs(0);
-			return ret;
-		}
+	if (vif1.vifpacketsize < vif1.tag.size)
+	{
+		/* size is less that the total size, transfer is 
+		   'in pieces' */
+		VIFunpack(data, &vif1.tag, vif1.vifpacketsize, VIF1dmanum);
+	//	g_vifCycles+= size >> 1;
+		//vif1.tag.addr += size << 2;
+		vif1.tag.size -= vif1.vifpacketsize; 
+		FreezeXMMRegs(0);
+		return vif1.vifpacketsize;
+	}
+	else
+	{
+		int ret;
+		/* we got all the data, transfer it fully */
+		VIFunpack(data, &vif1.tag, vif1.tag.size, VIF1dmanum);
+		//g_vifCycles+= vif1.tag.size >> 1;
+		ret = vif1.tag.size;
+		vif1.tag.size = 0;
+		vif1.cmd = 0;
+		FreezeXMMRegs(0);
+		return ret;
+	}
 	
 }
 
@@ -2278,7 +2276,7 @@ void dmaVIF1()
 			if( GSreadFIFO2 == NULL ) {
 				for (size=vif1ch->qwc; size>0; --size) {
 					if (size > 1 ) {
-						gsWaitGS();
+						mtgsWaitGS();
 						GSreadFIFO((u64*)&PS2MEM_HW[0x5000]);
 					}
 					pMem[0] = psHu64(0x5000);
@@ -2286,7 +2284,7 @@ void dmaVIF1()
 				}
 			}
 			else {
-				gsWaitGS();
+				mtgsWaitGS();
 				GSreadFIFO2(pMem, vif1ch->qwc);
 
 				// set incase read

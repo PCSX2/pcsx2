@@ -54,6 +54,8 @@ pthread_win32_process_attach_np ()
   DWORD_PTR vProcessCPUs;
   DWORD_PTR vSystemCPUs;
 
+  if( ptw32_processInitialized ) return TRUE;
+
   result = ptw32_processInitialize ();
 
 #ifdef _UWIN
@@ -91,6 +93,8 @@ pthread_win32_process_attach_np ()
 
 #endif
 
+#if 0
+
 #ifdef WINCE
 
   /*
@@ -107,6 +111,7 @@ pthread_win32_process_attach_np ()
 
 #endif
 
+// We're only using pthreads' inline version of InterlockedExchange
   ptw32_interlocked_compare_exchange =
     (PTW32_INTERLOCKED_LONG (WINAPI *)
      (PTW32_INTERLOCKED_LPLONG, PTW32_INTERLOCKED_LONG,
@@ -143,6 +148,8 @@ pthread_win32_process_attach_np ()
     {
       ptw32_features |= PTW32_SYSTEM_INTERLOCKED_COMPARE_EXCHANGE;
     }
+
+#endif
 
   /*
    * Load QUSEREX.DLL and try to get address of QueueUserAPCEx

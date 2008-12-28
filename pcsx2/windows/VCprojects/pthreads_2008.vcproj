@@ -115,7 +115,7 @@
 				FavorSizeOrSpeed="1"
 				EnableFiberSafeOptimizations="true"
 				AdditionalIncludeDirectories="&quot;$(InputDir)&quot;"
-				PreprocessorDefinitions="PTW32_STATIC_LIB;WIN32;NDEBUG;_LIB"
+				PreprocessorDefinitions="PTW32_STATIC_LIB;PTW32_BUILD_INLINED;WIN32;NDEBUG;_LIB"
 				StringPooling="true"
 				MinimalRebuild="true"
 				ExceptionHandling="0"

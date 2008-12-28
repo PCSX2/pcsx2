@@ -127,12 +127,10 @@ void SaveState::FreezeAll()
 	psxRcntFreeze();
 	sio2Freeze();
 
-    if( CHECK_MULTIGS ) {
+    if( mtgsThread != NULL ) {
         // have to call in thread, otherwise weird stuff will start happening
-        GSRingBufPointerPacket(
-			IsSaving() ? GS_RINGTYPE_SAVE : GS_RINGTYPE_LOAD, 0, this
-		);
-        gsWaitGS();
+        mtgsThread->SendPointerPacket( GS_RINGTYPE_SAVE, 0, this );
+        mtgsWaitGS();
     }
     else {
         FreezePlugin( "GS", GSfreeze );
@@ -219,6 +217,8 @@ void gzSavingState::FreezeMem( void* data, int size )
 void gzLoadingState::FreezeMem( void* data, int size )
 {
 	gzread( m_file, data, size );
+	if( gzeof( m_file ) )
+		throw Exception::BadSavedState( m_filename );
 }
 
 void gzSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )

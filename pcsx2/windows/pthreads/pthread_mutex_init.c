@@ -49,6 +49,11 @@ pthread_mutex_init (pthread_mutex_t * mutex, const pthread_mutexattr_t * attr)
       return EINVAL;
     }
 
+#ifdef PTW32_STATIC_LIB
+  // This allos for C++ static initializers to function without crashes. (air)
+  pthread_win32_process_attach_np();
+#endif
+
   if (attr != NULL
       && *attr != NULL && (*attr)->pshared == PTHREAD_PROCESS_SHARED)
     {

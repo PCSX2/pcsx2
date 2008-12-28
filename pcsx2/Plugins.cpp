@@ -592,17 +592,6 @@ static bool loadp=false;
 int InitPlugins() {
 	int ret;
 
-	if( GSsetBaseMem ) {
-
-		if( CHECK_MULTIGS ) {
-			extern u8 g_MTGSMem[];
-			GSsetBaseMem(g_MTGSMem);
-		}
-		else {
-			GSsetBaseMem(PS2MEM_GS);
-		}
-	}
-
 	ret = GSinit();
 	if (ret != 0) { SysMessage (_("GSinit error: %d"), ret); return -1; }
 	ret = PAD1init(1);
@@ -718,11 +707,6 @@ int OpenPlugins(const char* pTitleFilename) {
 		cdvdNewDiskCB();
 	}
 
-	//video
-	// Only bind the gsIrq if we're not running the MTGS.
-	// The MTGS simulates its own gsIrq in order to maintain proper sync.
-	GSirqCallback( CHECK_MULTIGS ? NULL : gsIrq );
-
 	// GS isn't closed during emu pauses, so only open it once per instance.
 	if( !OpenStatus.GS ) {
 		ret = gsOpen();
@@ -825,7 +809,7 @@ void ClosePlugins()
 	// closed)
 
 	if( OpenStatus.GS )
-		gsWaitGS();
+		mtgsWaitGS();
 
 	CLOSE_PLUGIN( CDVD );
 	CLOSE_PLUGIN( DEV9 );
@@ -838,7 +822,7 @@ void ClosePlugins()
 
 void ResetPlugins()
 {
-	gsWaitGS();
+	mtgsWaitGS();
 
 	ShutdownPlugins();
 	InitPlugins();

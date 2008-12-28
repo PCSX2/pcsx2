@@ -1017,9 +1017,8 @@ void MTSAH() {
 
 ///////////////////////////////////////////
 
-int intInit() {
+void intInit() {
 	 //detect cpu for use the optimaze asm code
-	return 0;
 }
 
 void intReset() {

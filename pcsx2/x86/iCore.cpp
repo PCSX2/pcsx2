@@ -1325,51 +1325,6 @@ EEINSTWRITEBACK* _recCheckWriteBack(int cycle)
 	return NULL;
 }
 
-void cpudetectSSE3(void* pfnCallSSE3)
-{
-	cpucaps.hasStreamingSIMD3Extensions = 1;
-
-#ifdef _MSC_VER
-	__try {
-        ((void (*)())pfnCallSSE3)();
-	}
-	__except(EXCEPTION_EXECUTE_HANDLER) {
-		cpucaps.hasStreamingSIMD3Extensions = 0;
-	}
-#else // linux
-
-#ifdef PCSX2_FORCESSE3
-    cpucaps.hasStreamingSIMD3Extensions = 1;
-#else
-    // exception handling doesn't work, so disable for x86 builds of linux
-    cpucaps.hasStreamingSIMD3Extensions = 0;
-#endif
-#endif
-}
-
-void cpudetectSSE4(void* pfnCallSSE4)
-{
-return;
-	cpucaps.hasStreamingSIMD4Extensions = 1;
-
-#ifdef _MSC_VER
-	__try {
-        ((void (*)())pfnCallSSE4)();
-	}
-	__except(EXCEPTION_EXECUTE_HANDLER) {
-		cpucaps.hasStreamingSIMD4Extensions = 0;
-	}
-#else // linux
-
-#ifdef PCSX2_FORCESSE4
-    cpucaps.hasStreamingSIMD4Extensions = 1;
-#else
-    // exception handling doesn't work, so disable for x86 builds of linux
-    cpucaps.hasStreamingSIMD4Extensions = 0;
-#endif
-#endif
-}
-
 struct BASEBLOCKS
 {
 	// 0 - ee, 1 - iop

@@ -54,25 +54,29 @@ bool cpuInit()
 	if( cpuIsInitialized ) return true;
 
 	cpuIsInitialized = true;
-	int ret;
-
-	Console::Notice("PCSX2 " PCSX2_VERSION " save ver: %x", g_SaveVersion);
-    Console::Notice("EE pc offset: 0x%x, PSX pc offset: 0x%x", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
-
 	cpuRegs.constzero = 0;
-	cpudetectInit();
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 
-	Console::SetColor( Console::Color_White );
-	ret = Cpu->Init();
-	Console::ClearColor();
+	try
+	{
+		Cpu->Init();
+	}
+	catch( std::exception& ex )
+	{
+		Console::Error( "Error > %s", ex.what() );
 
-	if (ret == -1 && CHECK_EEREC) {
-		Console::WriteLn(_("Error initializing Recompiler, switching to Interpreter"));
-		Config.Options &= ~(PCSX2_EEREC|PCSX2_VU1REC|PCSX2_VU0REC);
-		Cpu = &intCpu;
-		ret = Cpu->Init();
-		if( ret == -1 ) return false;
+		if( Cpu == &recCpu )
+		{
+			Console::Error( _("\t... attempting to initialize the Interpreter (slow!)") );
+			Config.Options &= ~(PCSX2_EEREC|PCSX2_VU1REC|PCSX2_VU0REC);
+			Cpu = &intCpu;
+			Cpu->Init();
+
+			// if the interpreter fails, let the exception bubble to the surface.
+			// fixme: this would probably be better if all exceptions pasesed to
+			// the caller, and it was the caller's duty to clear the EEREC flag and
+			// re-run the init process.  But for now this is how it works.
+		}
 	}
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -112,7 +116,7 @@ bool cpuInit()
 	return true;
 }
 
-bool cpuReset()
+void cpuReset()
 {
 	if( cpuIsInitialized )
 	{
@@ -120,12 +124,12 @@ bool cpuReset()
 			UnmapTLB(i);
 	}
 
-	gsWaitGS();		// GS better be done before we reset the EE..
+	mtgsWaitGS();		// GS better be done before we reset the EE, just in case.
 
 	cpuInit();
 	Cpu->Reset();
 
-	if( !memReset() ) return false;
+	memReset();
 
 	memset(&cpuRegs, 0, sizeof(cpuRegs));
 	memset(&fpuRegs, 0, sizeof(fpuRegs));
@@ -153,15 +157,13 @@ bool cpuReset()
 #ifdef _DEBUG
 	s_vucount = 0;
 #endif
-
-	return true;
 }
 
 void cpuShutdown()
 {
 	if( !cpuIsInitialized ) return;
 
-	gsWaitGS();
+	mtgsWaitGS();
 	//gsShutdown();	// shut down the GS first because it's running a thread.
 
 	for( int i=0; i<48; i++ )

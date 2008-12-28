@@ -46,8 +46,8 @@
  * We now use this version wherever possible so we can inline it.
  */
 
-PTW32_INTERLOCKED_LONG WINAPI
-ptw32_InterlockedCompareExchange (PTW32_INTERLOCKED_LPLONG location,
+INLINE PTW32_INTERLOCKED_LONG WINAPI
+ptw32_InterlockedCompareExchange (volatile PTW32_INTERLOCKED_LPLONG location,
 				  PTW32_INTERLOCKED_LONG value,
 				  PTW32_INTERLOCKED_LONG comparand)
 {
@@ -77,29 +77,29 @@ ptw32_InterlockedCompareExchange (PTW32_INTERLOCKED_LPLONG location,
 #define HAVE_INLINABLE_INTERLOCKED_CMPXCHG
     {
       _asm {
-	PUSH         ecx
-	PUSH         edx
+	//PUSH         ecx
+	//PUSH         edx
 	MOV          ecx,dword ptr [location]
 	MOV          edx,dword ptr [value]
 	MOV          eax,dword ptr [comparand]
 	LOCK CMPXCHG dword ptr [ecx],edx
 	MOV          dword ptr [result], eax
-	POP          edx
-	POP          ecx
+	//POP          edx
+	//POP          ecx
       }
     }
   else
     {
       _asm {
-	PUSH         ecx
-	PUSH         edx
+	//PUSH         ecx
+	//PUSH         edx
 	MOV          ecx,dword ptr [location]
 	MOV          edx,dword ptr [value]
 	MOV          eax,dword ptr [comparand]
 	CMPXCHG      dword ptr [ecx],edx
 	MOV          dword ptr [result], eax
-	POP          edx
-	POP          ecx
+	//POP          edx
+	//POP          ecx
       }
     }
 
@@ -158,8 +158,8 @@ ptw32_InterlockedCompareExchange (PTW32_INTERLOCKED_LPLONG location,
  * We now use this version wherever possible so we can inline it.
  */
 
-LONG WINAPI
-ptw32_InterlockedExchange (LPLONG location,
+INLINE LONG WINAPI
+ptw32_InterlockedExchange (volatile PTW32_INTERLOCKED_LPLONG location,
 			   LONG value)
 {
 
@@ -188,12 +188,12 @@ ptw32_InterlockedExchange (LPLONG location,
 
     {
       _asm {
-	PUSH         ecx
+	//PUSH         ecx
 	MOV          ecx,dword ptr [location]
 	MOV          eax,dword ptr [value]
 	XCHG         dword ptr [ecx],eax
 	MOV          dword ptr [result], eax
-        POP          ecx
+        //POP          ecx
       }
     }
   else
@@ -215,16 +215,16 @@ ptw32_InterlockedExchange (LPLONG location,
        * Can we do without the PUSH/POP instructions?
        */
       _asm {
-	PUSH         ecx
-	PUSH         edx
+	//PUSH         ecx
+	//PUSH         edx
 	MOV          ecx,dword ptr [location]
 	MOV          edx,dword ptr [value]
 L1:	MOV          eax,dword ptr [ecx]
 	CMPXCHG      dword ptr [ecx],edx
 	JNZ          L1
 	MOV          dword ptr [result], eax
-	POP          edx
-        POP          ecx
+	//POP          edx
+        //POP          ecx
       }
     }
 

@@ -19,7 +19,7 @@
 #ifndef __VU1OPS_H__
 #define __VU1OPS_H__
 
-#ifdef __MSCW32__
+#ifdef _MSC_VER
 #pragma warning(disable:4244)
 #endif
 

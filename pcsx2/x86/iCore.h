@@ -106,10 +106,11 @@ void _freeX86tempregs();
 u8 _hasFreeX86reg();
 
 // see MEM_X defines for argX format
-void _callPushArg(u32 arg, uptr argmem, x86IntRegType X86ARG); /// X86ARG is ignored for 32bit recs
-void _callFunctionArg1(uptr fn, u32 arg1, uptr arg1mem);
-void _callFunctionArg2(uptr fn, u32 arg1, u32 arg2, uptr arg1mem, uptr arg2mem);
-void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr arg2mem, uptr arg3mem);
+extern void _callPushArg(u32 arg, uptr argmem); /// X86ARG is ignored for 32bit recs
+extern void _callFunctionArg1(uptr fn, u32 arg1, uptr arg1mem);
+extern void _callFunctionArg2(uptr fn, u32 arg1, u32 arg2, uptr arg1mem, uptr arg2mem);
+extern void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr arg2mem, uptr arg3mem);
+
 
 // when using mmx/xmm regs, use; 0 is load
 // freezes no matter the state
@@ -403,8 +404,6 @@ BASEBLOCKEX** GetAllBaseBlocks(int* pnum, int cpu);
 #define MODE_8BITREG	0x80	// when allocating x86regs, use only eax, ecx, edx, and ebx
 
 void SetMMXstate();
-void cpudetectSSE3(void* pfnCallSSE3);
-void cpudetectSSE4(void* pfnCallSSE4);
 
 void _recMove128MtoM(u32 to, u32 from);
 

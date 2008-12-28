@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 struct R5900cpu {
-	int  (*Init)();
+	void (*Init)();				// throws exceptions on failure.
 	void (*Reset)();
 	void (*Step)();
 	void (*Execute)();			/* executes up to a break */
@@ -226,7 +226,7 @@ extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 #endif
 
 bool cpuInit();
-bool cpuReset();
+void cpuReset();		// can throw Exception::FileNotFound.
 void cpuShutdown();
 void cpuException(u32 code, u32 bd);
 void cpuTlbMissR(u32 addr, u32 bd);

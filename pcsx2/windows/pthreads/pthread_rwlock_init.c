@@ -52,6 +52,11 @@ pthread_rwlock_init (pthread_rwlock_t * rwlock,
       return EINVAL;
     }
 
+#ifdef PTW32_STATIC_LIB
+  // This allos for C++ static initializers to function without crashes. (air)
+  pthread_win32_process_attach_np();
+#endif
+
   if (attr != NULL && *attr != NULL)
     {
       result = EINVAL;		/* Not supported */

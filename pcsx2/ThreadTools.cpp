@@ -16,158 +16,143 @@
  *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+#include "Threading.h"
 
-#include "Misc.h"
 
-////////////////////////////////////////////////////////////
-// Cross-platform atomic operations for GCC
-#ifndef _WIN32
-
-typedef void* PVOID;
-
-/*inline unsigned long _Atomic_swap(unsigned long * __p, unsigned long __q) {
- #       if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64))
-             return test_and_set(__p, __q);
- #       else
-             return __test_and_set(__p, (unsigned long)__q);
- #       endif
- }*/
-__forceinline void InterlockedExchangePointer(PVOID volatile* Target, void* Value)
+namespace Threading
 {
-#ifdef __x86_64__
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%rax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-#else
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-#endif
-}
+	Thread::Thread() :
+		m_thread()
+	,	m_returncode( 0 )
+	,	m_terminated( false )
+	,	m_sigterm( 0 )
+	,	m_wait_event()
+	{
+		if( pthread_create( &m_thread, NULL, _internal_callback, this ) != 0 )
+			throw Exception::ThreadCreationError();
+	}
 
-__forceinline long InterlockedExchange(long volatile* Target, long Value)
-{
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xchg [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory" );
-	return 0; // The only function that even looks at this is a debugging function
-}
+	Thread::~Thread()
+	{
+		Close();
+	}
 
-__forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
-{
-	__asm__ __volatile__(".intel_syntax\n"
-						 "lock xadd [%0], %%eax\n"
-						 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory" );
-	return 0; // The return value is never looked at.
-}
+	void Thread::Close()
+	{
+		AtomicExchange( m_sigterm, 1 );
+		m_wait_event.Set();
+		pthread_join( m_thread, NULL );
+	}
 
-__forceinline long InterlockedIncrement( volatile long* Addend )
-{
-	return InterlockedExchangeAdd( Addend, 1 );
-}
+	int Thread::GetReturnCode() const
+	{
+		if( !m_terminated ) 
+			throw std::logic_error( "Thread is still running. No return code is available." );
 
-__forceinline long InterlockedDecrement( volatile long* Addend )
-{
-	return InterlockedExchangeAdd( Addend, -1 );
-}
+		return m_returncode;
+	}
 
-__forceinline long InterlockedCompareExchange(volatile long *dest, long exch, long comp)
-{
-	long old;
+	WaitEvent::WaitEvent() 
+	{
+		int err = 0;
+		
+		err = pthread_cond_init(&cond, NULL);
+		err = pthread_mutex_init(&mutex, NULL);
+	}
 
-#ifdef __x86_64__
-	  __asm__ __volatile__ 
-	(
-		"lock; cmpxchgq %q2, %1"
-		: "=a" (old), "=m" (*dest)
-		: "r" (exch), "m" (*dest), "0" (comp)); 
-#else
-	__asm__ __volatile__
-	(
-		"lock; cmpxchgl %2, %0"
-		: "=m" (*dest), "=a" (old)
-		: "r" (exch), "m" (*dest), "a" (comp)
-	);
-#endif
-	
-	return(old);
-}
+	WaitEvent::~WaitEvent()
+	{
+		pthread_cond_destroy( &cond );
+		pthread_mutex_destroy( &mutex );
+	}
 
-__forceinline long InterlockedCompareExchangePointer(PVOID volatile *dest, PVOID exch, long comp)
-{
-	long old;
+	void WaitEvent::Set()
+	{
+		pthread_mutex_lock( &mutex );
+		pthread_cond_signal( &cond );
+		pthread_mutex_unlock( &mutex );
+	}
 
-#ifdef __x86_64__
-	__asm__ __volatile__
-	( 
-		"lock; cmpxchgq %q2, %1"
-		: "=a" (old), "=m" (*dest)
-		: "r" (exch), "m" (*dest), "0" (comp)
-	);
-#else
-	__asm__ __volatile__
-	(
-		"lock; cmpxchgl %2, %0"
-		: "=m" (*dest), "=a" (old)
-		: "r" (exch), "m" (*dest), "a" (comp)
-	);
-#endif
-	return(old);
-}
-#endif
+	void WaitEvent::Wait()
+	{
+		pthread_mutex_lock( &mutex );
+		pthread_cond_wait( &cond, &mutex );
+		pthread_mutex_unlock( &mutex );
+	}
 
-//////////////////////////////////////////////////////////////////
-// define some overloads for InterlockedExchanges
-// for commonly used types, like u32 and s32.
+	MutexLock::MutexLock()
+	{
+		int err = 0;
+		err = pthread_mutex_init( &mutex, NULL );
+	}
 
-__forceinline void AtomicExchange( u32& Target, u32 value )
-{
-	InterlockedExchange( (volatile LONG*)&Target, value );
-}
+	MutexLock::~MutexLock()
+	{
+		pthread_mutex_destroy( &mutex );
+	}
 
-__forceinline void AtomicExchangeAdd( u32& Target, u32 value )
-{
-	InterlockedExchangeAdd( (volatile LONG*)&Target, value );
-}
+	void MutexLock::Lock()
+	{
+		pthread_mutex_lock( &mutex );
+	}
 
-__forceinline void AtomicIncrement( u32& Target )
-{
-	InterlockedIncrement( (volatile LONG*)&Target );
-}
+	void MutexLock::Unlock()
+	{
+		pthread_mutex_unlock( &mutex );
+	}
 
-__forceinline void AtomicDecrement( u32& Target )
-{
-	InterlockedDecrement( (volatile LONG*)&Target );
-}
+	//////////////////////////////////////////////////////////////////////
+	// define some overloads for InterlockedExchanges
+	// for commonly used types, like u32 and s32.
 
-__forceinline void AtomicExchange( s32& Target, s32 value )
-{
-	InterlockedExchange( (volatile LONG*)&Target, value );
-}
+	__forceinline void AtomicExchange( u32& Target, u32 value )
+	{
+		pcsx2_InterlockedExchange( (volatile long*)&Target, value );
+	}
 
-__forceinline void AtomicExchangeAdd( s32& Target, u32 value )
-{
-	InterlockedExchangeAdd( (volatile LONG*)&Target, value );
-}
+	__forceinline void AtomicExchangeAdd( u32& Target, u32 value )
+	{
+		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, value );
+	}
 
-__forceinline void AtomicIncrement( s32& Target )
-{
-	InterlockedIncrement( (volatile LONG*)&Target );
-}
+	__forceinline void AtomicIncrement( u32& Target )
+	{
+		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, 1 );
+	}
 
-__forceinline void AtomicDecrement( s32& Target )
-{
-	InterlockedDecrement( (volatile LONG*)&Target );
-}
+	__forceinline void AtomicDecrement( u32& Target )
+	{
+		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, -1 );
+	}
 
-__forceinline void _TIMESLICE()
-{
-#ifdef _WIN32
-	    Sleep(0);
-#else
-	    usleep(500);
-#endif
+	__forceinline void AtomicExchange( s32& Target, s32 value )
+	{
+		pcsx2_InterlockedExchange( (volatile long*)&Target, value );
+	}
+
+	__forceinline void AtomicExchangeAdd( s32& Target, u32 value )
+	{
+		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, value );
+	}
+
+	__forceinline void AtomicIncrement( s32& Target )
+	{
+		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, 1 );
+	}
+
+	__forceinline void AtomicDecrement( s32& Target )
+	{
+		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, -1 );
+	}
+
+	__forceinline void _AtomicExchangePointer( const void ** target, const void* value )
+	{
+		pcsx2_InterlockedExchange( (volatile long*)target, (long)value );
+	}
+
+	__forceinline void _AtomicCompareExchangePointer( const void ** target, const void* value, const void* comparand )
+	{
+		pcsx2_InterlockedCompareExchange( (volatile long*)target, (long)value, (long)comparand );
+	}
+
 }

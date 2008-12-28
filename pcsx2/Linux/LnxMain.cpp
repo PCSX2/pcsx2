@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 #endif
 	}
 
-	if (SysInit() == -1) return 1;
+	if (!SysInit()) return 1;
 
 #ifdef PCSX2_DEVBUILD
 	if( g_pRunGSState ) {
@@ -382,14 +382,13 @@ void SysMessage(const char *fmt, ...) {
 	gtk_main();
 }
 
-int SysInit() 
+bool SysInit() 
 {
 	sinit=0;
 	
 	mkdir(SSTATES_DIR, 0755);
 	mkdir(MEMCARDS_DIR, 0755);
 
-#ifdef EMU_LOG
 	mkdir(LOGS_DIR, 0755);
 
 #ifdef PCSX2_DEVBUILD
@@ -401,11 +400,9 @@ int SysInit()
 
 	if( emuLog != NULL )
 		setvbuf(emuLog, NULL, _IONBF, 0);
-#endif
 
-	if(cpuInit() == -1 )
-		return -1;
-	
+	SysDetect();
+
 	while (LoadPlugins() == -1) {
 		if (Pcsx2Configure() == FALSE)
 		{
@@ -414,8 +411,11 @@ int SysInit()
 		}
 	}
 
+	if( !cpuInit() )
+		return false;
+
 	sinit = 1;
-	return 0;
+	return true;
 }
 
 void SysRestorableReset()

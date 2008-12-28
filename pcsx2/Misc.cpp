@@ -625,7 +625,7 @@ void ProcessFKeys(int fkey, int shift)
 
 					break;
 			}
-			AtomicExchange( Config.Options, newOptions );
+			Threading::AtomicExchange( Config.Options, newOptions );
 
 			Console::Notice("Frame Limit Mode Changed: %s", limitMsg );
 
@@ -660,7 +660,7 @@ void ProcessFKeys(int fkey, int shift)
 		}
 		
 		case 11:
-			if( CHECK_MULTIGS ) {
+			if( mtgsThread != NULL ) {
 				Console::Notice( "Cannot make gsstates in MTGS mode" );
 			}
 			else {
@@ -694,8 +694,8 @@ void ProcessFKeys(int fkey, int shift)
             }
             else {
                 g_Pcsx2Recording ^= 1;
-                if( CHECK_MULTIGS ) {
-                    GSRingBufSimplePacket(GS_RINGTYPE_RECORD, g_Pcsx2Recording, 0, 0);
+                if( mtgsThread != NULL ) {
+					mtgsThread->SendSimplePacket(GS_RINGTYPE_RECORD, g_Pcsx2Recording, 0, 0);
                 }
                 else {
                     if( GSsetupRecording != NULL ) GSsetupRecording(g_Pcsx2Recording, NULL);

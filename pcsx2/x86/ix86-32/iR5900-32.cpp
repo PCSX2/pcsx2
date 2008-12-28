@@ -16,10 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-// recompiler reworked to add dynamic linking zerofrog(@gmail.com) Jan06
-// Recompiled completely rewritten to add block level recompilation/reg-caching/
-// liveness analysis/constant propagation Apr06 (zerofrog@gmail.com)
-
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -77,7 +73,9 @@ static u8* recPtr = NULL, *recStackPtr = NULL;
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
-bool g_EEFreezeRegs = false; // if set, should freeze the regs
+// used to disable register freezing during cpuBranchTests (registers
+// are safe then since they've been completely flushed)
+bool g_EEFreezeRegs = false;
 
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
@@ -1486,8 +1484,19 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 #define REC_CACHEMEM 0x01000000
 void __fastcall dyna_block_discard(u32 start,u32 sz);
 
-int recInit( void ) 
+static void recInit() 
 {
+	// Hardware Requirements Check...
+
+	if ( !( cpucaps.hasMultimediaExtensions  ) )
+		throw Exception::HardwareDeficiency( _( "Processor doesn't support MMX" ) );
+
+	if ( !( cpucaps.hasStreamingSIMDExtensions ) )
+		throw Exception::HardwareDeficiency( _( "Processor doesn't support SSE" ) );
+
+	if ( !( cpucaps.hasStreamingSIMD2Extensions ) )
+		throw Exception::HardwareDeficiency( _( "Processor doesn't support SSE2" ) );
+
 	int i;
 	const u8 macarr[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
 
@@ -1500,10 +1509,8 @@ int recInit( void )
 	if( recMem == NULL )
 		recMem = (u8*)SysMmap(0x0d000000, REC_CACHEMEM+0x1000);
 
-	if( recMem == NULL ) {
-		Console::Error("Error > R5900-32 failed to allocate recompiler memory.");
-		return 1;
-	}
+	if( recMem == NULL )
+		throw std::bad_alloc("R5900-32 failed to allocate recompiler memory.");
 
 	// 32 alignment necessary
 	if( recRAM == NULL )
@@ -1527,8 +1534,7 @@ int recInit( void )
 		recROM1 == NULL || recMem == NULL || recLUT == NULL ||
 		recStack == NULL || s_pInstCache == NULL )
 	{
-		SysMessage( _( "Error allocating memory" ) ); 
-		return -1;
+		throw std::bad_alloc( _( "Heap-based memory allocation failed." ) );
 	}
 
 	// No errors.. Proceed with initialization:
@@ -1565,68 +1571,14 @@ int recInit( void )
 
 	x86SetPtr(recMem+REC_CACHEMEM);
 	dyna_block_discard_recmem=(u8*)x86Ptr;
-	
 	JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
 
-	// SSE3 detection, manually create the code
-	x86SetPtr(recMem);
-	SSE3_MOVSLDUP_XMM_to_XMM(XMM0, XMM0);
-	RET();
-
-    cpudetectSSE3(recMem);
-
-	x86SetPtr(recMem);
-	SSE4_DPPS_XMM_to_XMM(XMM0, XMM0, 0);
-	RET();
-
-	cpudetectSSE4(recMem);
-
-	SysPrintf( "x86Init: \n" );
-	SysPrintf( "\tCPU vender name =  %s\n", cpuinfo.x86ID );
-	SysPrintf( "\tFamilyID	=  %x\n", cpuinfo.x86StepID );
-	SysPrintf( "\tx86Family =  %s\n", cpuinfo.x86Fam );
-	SysPrintf( "\tCPU speed =  %d.%03d Ghz\n", cpuinfo.cpuspeed / 1000, cpuinfo.cpuspeed%1000);
-	SysPrintf( "\tx86PType  =  %s\n", cpuinfo.x86Type );
-	SysPrintf( "\tx86Flags  =  %8.8x %8.8x\n", cpuinfo.x86Flags, cpuinfo.x86Flags2 );
-	SysPrintf( "\tx86EFlags =  %8.8x\n", cpuinfo.x86EFlags );
-	SysPrintf( "Features: \n" );
-	SysPrintf( "\t%sDetected MMX\n",    cpucaps.hasMultimediaExtensions     ? "" : "Not " );
-	SysPrintf( "\t%sDetected SSE\n",    cpucaps.hasStreamingSIMDExtensions  ? "" : "Not " );
-	SysPrintf( "\t%sDetected SSE2\n",   cpucaps.hasStreamingSIMD2Extensions ? "" : "Not " );
-	SysPrintf( "\t%sDetected SSE3\n",   cpucaps.hasStreamingSIMD3Extensions ? "" : "Not " );
-	SysPrintf( "\t%sDetected SSE4.1\n",   cpucaps.hasStreamingSIMD4Extensions ? "" : "Not " );
-
-	if ( cpuinfo.x86ID[0] == 'A' ) //AMD cpu
-	{
-		SysPrintf( " Extended AMD Features: \n" );
-		SysPrintf( "\t%sDetected MMX2\n",     cpucaps.hasMultimediaExtensionsExt       ? "" : "Not " );
-		SysPrintf( "\t%sDetected 3DNOW\n",    cpucaps.has3DNOWInstructionExtensions    ? "" : "Not " );
-		SysPrintf( "\t%sDetected 3DNOW2\n",   cpucaps.has3DNOWInstructionExtensionsExt ? "" : "Not " );
-	}
-	if ( !( cpucaps.hasMultimediaExtensions  ) )
-	{
-		SysMessage( _( "Processor doesn't supports MMX, can't run recompiler without that" ) );
-		return -1;
-	}
-	if ( !( cpucaps.hasStreamingSIMDExtensions ) )
-	{
-		SysMessage( _( "Processor doesn't supports SSE, can't run recompiler without that" ) );
-		return -1;
-	}
-	if ( !( cpucaps.hasStreamingSIMD2Extensions ) )
-	{
-		SysMessage( _( "Processor doesn't supports SSE2, can't run recompiler without that" ) );
-		return -1;
-	}
-		
 	x86FpuState = FPU_STATE;
 
 	SuperVUInit(-1);
 
 	//SysMessage("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
-
-	return 0;
 }
 
 ////////////////////////////////////////////////////

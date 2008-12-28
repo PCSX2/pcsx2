@@ -50,6 +50,17 @@ pthread_spin_init (pthread_spinlock_t * lock, int pshared)
       return EINVAL;
     }
 
+#ifdef PTW32_STATIC_LIB
+  // This allos for C++ static initializers to function without crashes. (air)
+  pthread_win32_process_attach_np();
+#endif
+
+// Optimized this so that it doesn't do cpu count checks needlessly. (air)
+#if _POSIX_THREAD_PROCESS_SHARED >= 0
+  /*
+   * Not implemented yet.
+   */
+
   if (0 != ptw32_getprocessors (&cpus))
     {
       cpus = 1;
@@ -63,22 +74,19 @@ pthread_spin_init (pthread_spinlock_t * lock, int pshared)
 	   * Creating spinlock that can be shared between
 	   * processes.
 	   */
-#if _POSIX_THREAD_PROCESS_SHARED >= 0
-
-	  /*
-	   * Not implemented yet.
-	   */
 
 #error ERROR [__FILE__, line __LINE__]: Process shared spin locks are not supported yet.
 
-#else
-
-	  return ENOSYS;
-
-#endif /* _POSIX_THREAD_PROCESS_SHARED */
 
 	}
     }
+
+#else
+
+  if (pshared == PTHREAD_PROCESS_SHARED)
+    return ENOSYS;
+
+#endif /* _POSIX_THREAD_PROCESS_SHARED */
 
   s = (pthread_spinlock_t) calloc (1, sizeof (*s));
 

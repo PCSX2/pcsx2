@@ -53,6 +53,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="true"
 				CompileAs="2"
@@ -127,6 +128,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				PreprocessorDefinitions="WIN32_PTHREADS"
 				MinimalRebuild="true"
 				SmallerTypeCheck="false"
 				EnableFunctionLevelLinking="true"
@@ -145,6 +147,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				OutputFile="&quot;$(SolutionDir)\bin\pcsx2d-vm.exe&quot;"
+				LinkIncremental="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -203,6 +206,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				PreprocessorDefinitions="WIN32_PTHREADS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
 				SmallerTypeCheck="false"
@@ -222,6 +226,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				OutputFile="&quot;$(SolutionDir)\bin\pcsx2d-vtlb.exe&quot;"
+				LinkIncremental="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -289,7 +294,7 @@
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="./;../../;../../IPU;../../ZLIB;../../DebugTools;../../x86;&quot;../../x86/ix86-32&quot;;../libs"
-				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,__MSCW32__,__WIN32__,__i386__,ENABLE_NLS,PACKAGE=\&quot;pcsx2\&quot;;PCSX2_DEVBUILD;_CRT_SECURE_NO_DEPRECATE;TIXML_USE_STL"
+				PreprocessorDefinitions="NDEBUG;WIN32_PTHREADS"
 				StringPooling="true"
 				ExceptionHandling="1"
 				SmallerTypeCheck="false"
@@ -374,7 +379,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				SmallerTypeCheck="false"
 				EnableEnhancedInstructionSet="0"
 				CompileAs="2"
@@ -613,32 +618,8 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Plugin system"
-			>
-			<File
-				RelativePath="..\..\Plugins.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Plugins.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PS2Edefs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PS2Etypes.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Misc"
 			>
-			<File
-				RelativePath="..\..\Exceptions.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\x86\fast_routines.cpp"
 				>
@@ -664,14 +645,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\SamplProf.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\SamplProf.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\SaveState.cpp"
 				>
 			</File>
@@ -681,14 +654,6 @@
 			</File>
 			<File
 				RelativePath="..\..\SourceLog.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\System.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ThreadTools.cpp"
 				>
 			</File>
 			<Filter
@@ -2235,6 +2200,58 @@
 			</File>
 			<File
 				RelativePath="..\..\x86\ix86\ix86_sse.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="System"
+			>
+			<File
+				RelativePath="..\..\Exceptions.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Plugins.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Plugins.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\PS2Edefs.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\PS2Etypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\SamplProf.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SamplProf.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\System.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\System.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Threading.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ThreadTools.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\WinThreads.cpp"
 				>
 			</File>
 		</Filter>

@@ -35,14 +35,67 @@ using namespace std;
 #include "GS.h"
 #include "DebugTools/Debug.h"
 	
-extern u32 CSRw;
-
 #ifdef PCSX2_VIRTUAL_MEM
 #define PS2GS_BASE(mem) ((PS2MEM_BASE+0x12000000)+(mem&0x13ff))
 #else
 extern u8 g_RealGSMem[0x2000];
 #define PS2GS_BASE(mem) (g_RealGSMem+(mem&0x13ff))
 #endif
+
+// __thiscall -- Calling Convention Notes.
+
+// ** MSVC passes the pointer to the object as ECX.  Other parameters are passed normally
+// (_cdecl style).  Stack is cleaned by the callee.
+
+// ** GCC works just like a __cdecl, except the pointer to the object is pushed onto the
+// stack last (passed as the first parameter).  Caller cleans up the stack.
+
+// The GCC code below is untested.  Hope it works. :|  (air)
+
+
+// Used to send 8, 16, and 32 bit values to the MTGS.
+static void __fastcall _rec_mtgs_Send32orSmaller( GS_RINGTYPE ringtype, u32 mem, int mmreg )
+{
+	iFlushCall(0);
+
+	PUSH32I( 0 );
+	_callPushArg( mmreg, 0 );
+    PUSH32I( mem&0x13ff );
+    PUSH32I( ringtype );
+
+#ifdef _MSC_VER
+	MOV32ItoR( ECX, (uptr)mtgsThread );
+	CALLFunc( mtgsThread->FnPtr_SimplePacket() );
+#else	// GCC -->
+	PUSH32I( (uptr)mtgsThread );
+	CALLFunc( mtgsThread->FnPtr_SimplePacket() );
+#ifndef __x86_64__
+	ADD32ItoR( ESP, 20 );
+#endif
+#endif
+}
+
+// Used to send 64 and 128 bit values to the MTGS (called twice for 128's, which
+// is why it doesn't call iFlushCall)
+static void __fastcall _rec_mtgs_Send64( uptr gsbase, u32 mem, int mmreg )
+{
+    PUSH32M( gsbase+4 );
+    PUSH32M( gsbase );
+    PUSH32I( mem&0x13ff );
+    PUSH32I( GS_RINGTYPE_MEMWRITE64 );
+
+#ifdef _MSC_VER
+	MOV32ItoR( ECX, (uptr)mtgsThread );
+	CALLFunc( mtgsThread->FnPtr_SimplePacket() );
+#else	// GCC -->
+	PUSH32I( (uptr)mtgsThread );
+	CALLFunc( mtgsThread->FnPtr_SimplePacket() );
+#ifndef __x86_64__
+	ADD32ItoR( ESP, 20 );
+#endif
+#endif
+
+}
 
 void gsConstWrite8(u32 mem, int mmreg)
 {
@@ -59,12 +112,9 @@ void gsConstWrite8(u32 mem, int mmreg)
 		default:
 			_eeWriteConstMem8( (uptr)PS2GS_BASE(mem), mmreg );
 
-			if( CHECK_MULTIGS ) {
-                iFlushCall(0);
+			if( mtgsThread != NULL )
+				_rec_mtgs_Send32orSmaller( GS_RINGTYPE_MEMWRITE8, mem, mmreg );
 
-                _callFunctionArg3((uptr)GSRingBufSimplePacket, MEM_CONSTTAG, MEM_CONSTTAG, mmreg,
-                                  GS_RINGTYPE_MEMWRITE8, mem&0x13ff, 0);
-			}
 			break;
 	}
 }
@@ -96,11 +146,8 @@ void gsConstWrite16(u32 mem, int mmreg)
 		default:
 			_eeWriteConstMem16( (uptr)PS2GS_BASE(mem), mmreg );
 
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-                _callFunctionArg3((uptr)GSRingBufSimplePacket, MEM_CONSTTAG, MEM_CONSTTAG, mmreg,
-                                  GS_RINGTYPE_MEMWRITE16, mem&0x13ff, 0);
-			}
+			if( mtgsThread != NULL )
+				_rec_mtgs_Send32orSmaller( GS_RINGTYPE_MEMWRITE16, mem, mmreg );
 
 			break;
 	}
@@ -157,12 +204,8 @@ void gsConstWrite32(u32 mem, int mmreg) {
 		default:
 			_eeWriteConstMem32( (uptr)PS2GS_BASE(mem), mmreg );
 
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-				_callFunctionArg3((uptr)GSRingBufSimplePacket, MEM_CONSTTAG, MEM_CONSTTAG, mmreg,
-                                  GS_RINGTYPE_MEMWRITE32, mem&0x13ff, 0);                
-			}
+			if( mtgsThread != NULL )
+				_rec_mtgs_Send32orSmaller( GS_RINGTYPE_MEMWRITE32, mem, mmreg );
 
 			break;
 	}
@@ -191,17 +234,10 @@ void gsConstWrite64(u32 mem, int mmreg)
 		default:
 			_eeWriteConstMem64((uptr)PS2GS_BASE(mem), mmreg);
 
-			if( CHECK_MULTIGS ) {
-				iFlushCall(0);
-
-                _callPushArg(MEM_MEMORYTAG, (uptr)PS2GS_BASE(mem)+4, X86ARG4);
-                _callPushArg(MEM_MEMORYTAG, (uptr)PS2GS_BASE(mem), X86ARG3);
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-                _callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE64, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 16);
-#endif
+			if( mtgsThread != NULL )
+			{
+				iFlushCall( 0 );
+				_rec_mtgs_Send64( (uptr)PS2GS_BASE(mem), mem, mmreg );
 			}
 
 			break;
@@ -232,26 +268,11 @@ void gsConstWrite128(u32 mem, int mmreg)
 		default:
 			_eeWriteConstMem128( (uptr)PS2GS_BASE(mem), mmreg);
 
-			if( CHECK_MULTIGS ) {
+			if( mtgsThread != NULL )
+			{
 				iFlushCall(0);
-
-                _callPushArg(MEM_MEMORYTAG, (uptr)PS2GS_BASE(mem)+4, X86ARG4);
-                _callPushArg(MEM_MEMORYTAG, (uptr)PS2GS_BASE(mem), X86ARG3);
-                _callPushArg(MEM_CONSTTAG, mem&0x13ff, X86ARG2);
-                _callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE64, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 16);
-#endif
-                
-                _callPushArg(MEM_MEMORYTAG, (uptr)PS2GS_BASE(mem)+12, X86ARG4);
-                _callPushArg(MEM_MEMORYTAG, (uptr)PS2GS_BASE(mem)+8, X86ARG3);
-                _callPushArg(MEM_CONSTTAG, (mem&0x13ff)+8, X86ARG2);
-                _callPushArg(MEM_CONSTTAG, GS_RINGTYPE_MEMWRITE64, X86ARG1);
-				CALLFunc((uptr)GSRingBufSimplePacket);
-#ifndef __x86_64__
-				ADD32ItoR(ESP, 16);
-#endif
+				_rec_mtgs_Send64( (uptr)PS2GS_BASE(mem), mem, mmreg );
+				_rec_mtgs_Send64( (uptr)PS2GS_BASE(mem)+8, mem+8, mmreg );
 			}
 
 			break;

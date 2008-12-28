@@ -22,6 +22,43 @@
 #include <stdexcept>
 #include <string>
 
+// This class provides an easy and clean method for ensuring objects are not copyable.
+class NoncopyableObject
+{
+protected:
+	NoncopyableObject() {}
+	~NoncopyableObject() {}
+
+// Programmer's note:
+//   No need to provide implementations for these methods since they should
+//   never be referenced anyway.  No references?  No Linker Errors!  Noncopyable!
+private:
+	// Copy me?  I think not!
+	explicit NoncopyableObject( const NoncopyableObject& );
+	// Assign me?  I think not!
+	const NoncopyableObject& operator=( const NoncopyableObject& );
+};
+
+
+// Base class used to implement type-safe sealed classes.
+// This class should never be used directly.  Use the Sealed
+// macro instead, which ensures all sealed classes derive from a unique BaseSealed
+// (preventing them from accidentally cirumventing sealing by inheriting from
+// multiple sealed classes.
+template < int T >
+class __BaseSealed
+{
+protected:
+	__BaseSealed()
+	{
+	}
+};
+
+// Use this macro/class as a base to seal a class from being derrived from.
+// This macro works by providing a unique base class with a protected constructor
+// for every class that derives from it. 
+#define Sealed private virtual __BaseSealed<__COUNTER__>
+
 namespace Exception
 {
 	// This exception  exception thrown any time an operation is attempted when an object
@@ -32,6 +69,13 @@ namespace Exception
 		virtual ~InvalidOperation() throw() {}
 		explicit InvalidOperation( const std::string& msg="Attempted method call is invalid for the current object or program state." ) :
 			logic_error( msg ) {}
+	};
+
+	class HardwareDeficiency : public std::runtime_error
+	{
+	public:
+		explicit HardwareDeficiency( const std::string& msg="Your machine's hardware is incapable of running Pcsx2.  Sorry dood." ) :
+			runtime_error( msg ) {}
 	};
 
 	// This exception is thrown by the PS2 emulation (R5900, etc) when bad things happen
@@ -76,6 +120,14 @@ namespace Exception
 		explicit PluginFailure( const std::string& plugin, const std::string& msg = "An error occured in the " ) :
 			runtime_error( plugin + msg + " Plugin" )
 		,	plugin_name( plugin ) {}
+	};
+
+	class ThreadCreationError : public std::runtime_error
+	{
+	public:
+		virtual ~ThreadCreationError() throw() {}
+		explicit ThreadCreationError( const std::string& msg="Thread could not be created." ) :
+			runtime_error( msg ) {}
 	};
 
 	/**** BEGIN STREAMING EXCEPTIONS ****/
