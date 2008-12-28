@@ -1,24 +1,13 @@
 
+#include "PrecompiledHeader.h"
+
 #ifndef _DEBUG
 
-#include <windows.h>
-
 #include "SamplProf.h"
-#include <vector>
-#include <string>
 #include <map>
-#include <sstream>
 #include <algorithm>
 
 using namespace std;
-
-template <typename T>
-std::string to_string(const T& value)
-{
-	ostringstream oss;
-	oss << value;
-	return oss.str();
-}
 
 DWORD GetModuleFromPtr(IN void* ptr,OUT LPSTR lpFilename,IN DWORD nSize)
 {

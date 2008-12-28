@@ -16,8 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <string.h>
+#include "PrecompiledHeader.h"
 
 #ifdef __LINUX__
 #include <cstdarg>
@@ -27,10 +26,6 @@
 #include "R5900.h"
 #include "DisASM.h"
 #include "InterTables.h"
-
-#ifdef __LINUX__
-#include <cstdarg>
-#endif
 
 unsigned long opcode_addr;
 

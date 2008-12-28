@@ -153,7 +153,7 @@ typedef struct {
 	u8 pad; 			// Padding data produced by alignment.
 } CdRMode;
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #pragma pack(1)
 #endif
 
@@ -165,13 +165,13 @@ struct TocEntry
 	u8	padding1[3];
 	char	filename[128+1];
 	u8	date[7];
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 };
 #else
 } __attribute__((packed));
 #endif
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #pragma pack()
 #endif
 

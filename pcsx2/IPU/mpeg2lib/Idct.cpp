@@ -22,7 +22,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-//#include <stdlib.h>
+#include "PrecompiledHeader.h"
+
 #include "Common.h"
 
 #define W1 2841 /* 2048*sqrt (2)*cos (1*pi/16) */

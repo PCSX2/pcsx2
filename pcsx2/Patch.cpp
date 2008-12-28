@@ -19,9 +19,7 @@
 //
 // Includes
 //
-#include <stdlib.h>
-#include <string.h>
-
+#include "PrecompiledHeader.h"
 
 #include "PsxCommon.h"
 #include "Paths.h"

@@ -41,23 +41,15 @@ BIOS
 // Rewritten by zerofrog(@gmail.com) to add os virtual memory
 //////////
 
-
-#if _WIN32_WINNT < 0x0500
-#define _WIN32_WINNT 0x0500
-#endif
+#include "PrecompiledHeader.h"
 
 #pragma warning(disable:4799) // No EMMS at end of function
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <sys/stat.h>
 
 #ifndef PCSX2_VIRTUAL_MEM
 #include <vector>
 #endif
-#include "Common.h"
 
+#include "Common.h"
 #include "iR5900.h"
 
 #include "PsxMem.h"

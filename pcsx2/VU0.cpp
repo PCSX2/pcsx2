@@ -24,10 +24,9 @@
  -Bug Fixes!!!
 */
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
+#include "PrecompiledHeader.h"
+
+#include <cmath>
 
 #include "Common.h"
 #include "DebugTools/Debug.h"

@@ -16,12 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
 #include "Win32.h"
 
-#include <windowsx.h>
 #include <shlobj.h>
-#include <stdio.h>
-#include <sys/stat.h>	//2002-09-22 (Florin)
 #include "common.h"
 #include "plugins.h"
 #include "resource.h"

@@ -16,9 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
+#include "PrecompiledHeader.h"
+
 //THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 #include "PsxCommon.h"
 

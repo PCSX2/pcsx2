@@ -16,9 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "Hw.h"
@@ -83,12 +81,6 @@ void ConstReadFIFO(u32 mem)
 {
 	// not done
 }
-
-#if defined(_WIN32) && !defined(WIN32_PTHREADS)
-extern HANDLE g_hGsEvent;
-#else
-extern pthread_cond_t g_condGsEvent;
-#endif
 
 void WriteFIFO(u32 mem, const u64 *value) {
 	int ret;

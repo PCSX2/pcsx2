@@ -19,10 +19,7 @@
 #ifndef _PCSX2_WIN32_H__
 #define _PCSX2_WIN32_H__
 
-#define WINVER 0x0501
-#define _WIN32_WINNT 0x0501
-
-#include <windows.h>
+#include <windowsx.h>
 #include <tchar.h>
 
 #include "Misc.h"
@@ -37,6 +34,15 @@ int  LoadConfig();
 void SaveConfig();
 
 // <<--- END Ini Configuration [ini.c]
+
+// --->>  Patch Browser Stuff (in the event we ever use it
+
+void ListPatches (HWND hW);
+int ReadPatch (HWND hW, char fileName[1024]);
+char * lTrim (char *s);
+BOOL Save_Patch_Proc( char * filename );
+
+// <<--- END Patch Browser
 
 struct AppData
 {

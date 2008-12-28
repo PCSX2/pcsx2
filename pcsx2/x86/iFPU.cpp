@@ -16,6 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include "Common.h"
 #include "InterTables.h"
 #include "ix86/ix86.h"
@@ -23,8 +25,10 @@
 #include "iFPU.h"
 
 // Needed for gcc 4.3, due to header revisions.
-#include "stdio.h"
-#include "stdlib.h" 
+// (really?  that makes no sense... commented out, if they break something
+//  on gcc, re-add them.. if not, delete (air))
+//#include "stdio.h"
+//#include "stdlib.h" 
 //------------------------------------------------------------------
 
 

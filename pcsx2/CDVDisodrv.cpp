@@ -20,7 +20,7 @@
  *  Modified by Florin for PCSX2 emu
  */
 
-#include <string.h>
+#include "PrecompiledHeader.h"
 
 #include "CDVDiso.h"
 #include "CDVDisodrv.h"

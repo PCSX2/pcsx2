@@ -16,21 +16,16 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <assert.h>
-#include <vector>
+#include "PrecompiledHeader.h"
+
 #include <list>
-#include <cstring> 
-#include <cstdlib>
 
 #include "Common.h"
 #include "VU.h"
 #include "GS.h"
 #include "iR5900.h"
 
-#include "Threading.h"
-
 using namespace Threading;
-
 using namespace std;
 
 #ifdef DEBUG

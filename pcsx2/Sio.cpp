@@ -16,13 +16,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
+#include "PrecompiledHeader.h"
 
 #include "PsxCommon.h"
-
 #include "Paths.h"
 
 #ifdef _WIN32

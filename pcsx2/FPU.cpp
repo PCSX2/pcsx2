@@ -16,6 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include <cmath>
 #include "Common.h"
 #include "R5900.h"

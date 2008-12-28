@@ -16,20 +16,13 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>	//2002-09-28 (Florin)
-#include <sys/stat.h>
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "CDVDisodrv.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
-#endif
-
-#ifdef _WIN32
-#include <windows.h>
 #endif
 
 u32 ElfCRC;

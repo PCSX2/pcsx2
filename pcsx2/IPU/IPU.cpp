@@ -16,12 +16,13 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include "Common.h"
 #include "IPU.h"
 #include "mpeg2lib/Mpeg.h"
 #include "yuv2rgb.h"
 
-#include <assert.h>
 #include <time.h>
 
 #include "iR5900.h"

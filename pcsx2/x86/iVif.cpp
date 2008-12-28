@@ -16,15 +16,12 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <math.h>
-#include <string.h>
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "ix86/ix86.h"
 #include "Vif.h"
 #include "VUmicro.h"
-
-#include <assert.h>
 
 // sse2 highly optimized vif (~200 separate functions are built) zerofrog(@gmail.com)
 extern u32 g_vif1Masks[48], g_vif0Masks[48];

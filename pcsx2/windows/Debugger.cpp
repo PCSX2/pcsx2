@@ -16,10 +16,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include "win32.h"
-#include <windowsx.h>
-#include <stdio.h>
-#include <string>
 
 #include "resource.h"
 #include "InterTables.h"

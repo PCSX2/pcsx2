@@ -16,12 +16,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h> 
-#include <stdio.h> 
-#include <string.h>
-#include <stdarg.h>
-#include <ctype.h>
+#include "PrecompiledHeader.h"
 
+#include <ctype.h>
 #include "PsxCommon.h"
 
 const char *biosA0n[256] = {

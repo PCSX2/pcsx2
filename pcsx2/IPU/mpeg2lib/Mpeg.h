@@ -25,7 +25,7 @@
 #ifndef __MPEG_H__
 #define __MPEG_H__
 
-#include "Common.h"
+#include "PS2Etypes.h"
 
 /* macroblock modes */
 #define MACROBLOCK_INTRA 1

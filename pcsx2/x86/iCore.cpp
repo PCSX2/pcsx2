@@ -16,14 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <malloc.h>
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+#include "PrecompiledHeader.h"
 
 #include "PS2Etypes.h"
 

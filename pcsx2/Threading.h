@@ -19,7 +19,7 @@
 #ifndef _THREADING_H_
 #define _THREADING_H_
 
-#include <pthread.h>
+#include <errno.h> // EBUSY
 
 #include "PS2Etypes.h"
 #include "Exceptions.h"

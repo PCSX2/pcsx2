@@ -17,9 +17,7 @@
  */
 
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+#include "PrecompiledHeader.h"
 
 #include "System.h"
 #include "Threading.h"

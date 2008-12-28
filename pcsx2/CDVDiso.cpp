@@ -20,9 +20,9 @@
  *  Modified by Florin for PCSX2 emu
  *  Fixed CdRead by linuzappz
  */
-#include <stdio.h>
+#include "PrecompiledHeader.h"
+
 #include <ctype.h>
-#include <string.h>
 
 #include "CDVDiso.h"
 #include "CDVDisodrv.h"

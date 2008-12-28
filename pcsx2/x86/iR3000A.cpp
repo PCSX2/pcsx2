@@ -25,16 +25,11 @@
 #pragma warning(disable:4761)
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <assert.h>
-#include <malloc.h>
+#include "PrecompiledHeader.h"
 
-#if defined(_WIN32)
-#include <windows.h>
-#else
-#include <sys/stat.h>
+#include <time.h>
+
+#ifndef _WIN32
 #include <sys/types.h>
 #endif
 

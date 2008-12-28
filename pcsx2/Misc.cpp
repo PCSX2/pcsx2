@@ -16,18 +16,14 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #ifdef _WIN32
-#include <windows.h>
 #include "RDebug/deci2.h"
 #else
 #include <sys/time.h>
 #endif
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstdarg>
-#include <cstring>
-#include <sys/stat.h>
 #include <ctype.h>
 
 #include "Common.h"
@@ -797,8 +793,18 @@ void MemoryAlloc::MakeRoomFor( int blockSize )
 {
 	if( blockSize > m_alloc )
 	{
-		m_alloc += blockSize + ChunkSize;
-		m_ptr = (u8*)realloc( m_ptr, m_alloc );
+		const uint newalloc = m_alloc + blockSize + ChunkSize;
+		m_ptr = (u8*)realloc( m_ptr, newalloc );
+		if( m_ptr == NULL )
+		{
+			std::string ex_msg(
+				"Out-of-memory on block re-allocation. "
+				"Old size: " + to_string( m_alloc ) + " bytes, "
+				"New size: " + to_string( newalloc ) + " bytes"
+			);
+
+			throw std::bad_alloc( ex_msg.c_str() );
+		}
 	}
 }
 

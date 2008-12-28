@@ -56,6 +56,9 @@
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PrecompiledHeader.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				CompileAs="2"
 			/>
 			<Tool
@@ -132,6 +135,9 @@
 				MinimalRebuild="true"
 				SmallerTypeCheck="false"
 				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PrecompiledHeader.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				CompileAs="2"
 			/>
 			<Tool
@@ -211,6 +217,9 @@
 				ExceptionHandling="1"
 				SmallerTypeCheck="false"
 				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PrecompiledHeader.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				CompileAs="2"
 			/>
 			<Tool
@@ -302,7 +311,9 @@
 				StructMemberAlignment="5"
 				BufferSecurityCheck="true"
 				EnableFunctionLevelLinking="false"
-				PrecompiledHeaderFile=".\ReleaseTLB/pcsx2.pch"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PrecompiledHeader.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="2"
@@ -623,6 +634,54 @@
 			<File
 				RelativePath="..\..\x86\fast_routines.cpp"
 				>
+				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vm (nondev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (nondev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\Misc.cpp"
@@ -645,6 +704,47 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\PrecompiledHeader.cpp"
+				>
+				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+						PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\PrecompiledHeader.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\SaveState.cpp"
 				>
 			</File>
@@ -662,6 +762,54 @@
 				<File
 					RelativePath="..\..\tinyxml\tinystr.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\tinyxml\tinystr.h"
@@ -670,6 +818,54 @@
 				<File
 					RelativePath="..\..\tinyxml\tinyxml.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\tinyxml\tinyxml.h"
@@ -678,14 +874,158 @@
 				<File
 					RelativePath="..\..\tinyxml\tinyxmlerror.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\tinyxml\tinyxmlparser.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\xmlpatchloader.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
@@ -788,6 +1128,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -796,6 +1137,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -804,6 +1146,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -812,6 +1155,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -820,6 +1164,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -828,6 +1173,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -840,6 +1186,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -848,6 +1195,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -856,6 +1204,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -864,6 +1213,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -872,6 +1222,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -880,6 +1231,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -892,6 +1244,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -900,6 +1253,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -908,6 +1262,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -916,6 +1271,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -924,6 +1280,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -932,13 +1289,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\zlib\crc32.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\zlib\deflate.c"
@@ -948,6 +1302,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -956,6 +1311,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -964,6 +1320,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -972,6 +1329,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -980,6 +1338,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -988,13 +1347,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\zlib\deflate.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\zlib\gzio.c"
@@ -1004,6 +1360,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1012,6 +1369,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1020,6 +1378,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1028,6 +1387,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1036,6 +1396,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1044,6 +1405,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1056,6 +1418,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1064,6 +1427,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1072,6 +1436,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1080,6 +1445,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1088,6 +1454,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1096,6 +1463,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1108,6 +1476,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1116,6 +1485,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1124,6 +1494,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1132,6 +1503,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1140,6 +1512,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1148,17 +1521,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\zlib\inffast.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\zlib\inffixed.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\zlib\inflate.c"
@@ -1168,6 +1534,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1176,6 +1543,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1184,6 +1552,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1192,6 +1561,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1200,6 +1570,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1208,13 +1579,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\zlib\inflate.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\zlib\inftrees.c"
@@ -1224,6 +1592,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1232,6 +1601,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1240,6 +1610,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1248,6 +1619,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1256,6 +1628,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1264,13 +1637,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\zlib\inftrees.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\zlib\trees.c"
@@ -1280,6 +1650,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1288,6 +1659,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1296,6 +1668,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1304,6 +1677,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1312,6 +1686,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1320,13 +1695,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\zlib\trees.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\zlib\uncompr.c"
@@ -1336,6 +1708,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1344,6 +1717,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1352,6 +1726,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1360,6 +1735,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1368,6 +1744,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1376,17 +1753,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\zlib\zconf.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\zlib\zlib.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\zlib\zutil.c"
@@ -1396,6 +1766,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1404,6 +1775,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1412,6 +1784,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1420,6 +1793,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1428,6 +1802,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
@@ -1436,14 +1811,55 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						CompileAs="1"
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="..\..\zlib\zutil.h"
+			<Filter
+				Name="Includes"
 				>
-			</File>
+				<File
+					RelativePath="..\..\zlib\crc32.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\deflate.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\inffast.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\inffixed.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\inflate.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\inftrees.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\trees.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\zconf.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\zlib.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\zlib\zutil.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Ps2"
@@ -1520,6 +1936,54 @@
 				<File
 					RelativePath="..\..\InterTables.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\InterTables.h"
@@ -1908,6 +2372,54 @@
 				<File
 					RelativePath="..\..\IPU\coroutine.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\IPU\coroutine.h"
@@ -1928,6 +2440,54 @@
 				<File
 					RelativePath="..\..\Ipu\yuv2rgb.cpp"
 					>
+					<FileConfiguration
+						Name="Release vm (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (dev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vtlb (nondev)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\Ipu\yuv2rgb.h"
@@ -1939,10 +2499,106 @@
 					<File
 						RelativePath="..\..\Ipu\mpeg2lib\Idct.cpp"
 						>
+						<FileConfiguration
+							Name="Release vm (dev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug vm|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug vtlb|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release vtlb (dev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release vm (nondev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release vtlb (nondev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.cpp"
 						>
+						<FileConfiguration
+							Name="Release vm (dev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="2"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug vm|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="2"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug vtlb|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="2"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release vtlb (dev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="2"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release vm (nondev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release vtlb (nondev)|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.h"
@@ -2177,6 +2833,14 @@
 			<File
 				RelativePath="..\..\x86\ix86\ix86.cpp"
 				>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\x86\ix86\ix86.h"
@@ -2185,22 +2849,86 @@
 			<File
 				RelativePath="..\..\x86\ix86\ix86_3dnow.cpp"
 				>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\x86\ix86\ix86_cpudetect.cpp"
 				>
+				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vm|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\x86\ix86\ix86_fpu.cpp"
 				>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\x86\ix86\ix86_mmx.cpp"
 				>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\x86\ix86\ix86_sse.cpp"
 				>
+				<FileConfiguration
+					Name="Debug vtlb|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter

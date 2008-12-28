@@ -16,11 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <string.h>
-#include <malloc.h>
-#include "Common.h"
-#include "PsxCommon.h"
+#include "PrecompiledHeader.h"
+
 #include "Sif.h"
+#include "PsxCommon.h"
 #include "Sifcmd.h"
 
 #define sif0dma ((DMACh*)&PS2MEM_HW[0xc000])

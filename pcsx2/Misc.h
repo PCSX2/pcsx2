@@ -19,33 +19,9 @@
 #ifndef __MISC_H__
 #define __MISC_H__
 
-#include <stddef.h>
-#include <malloc.h>
-#include <assert.h>
-
-#ifndef _WIN32
-#include <unistd.h>
-#else
-#include <windows.h>
-#endif
-
 #include "PS2Etypes.h"
 #include "System.h"
-
-// compile-time assert
-#ifndef C_ASSERT
-#define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
-#endif
-
-#ifdef __x86_64__
-#define X86_32CODE(x)
-#else
-#define X86_32CODE(x) x
-#endif
-
-#ifndef __LINUX__
-#define __unused
-#endif
+#include "SaveState.h"
 
 // --->> GNU GetText / NLS
 
@@ -180,59 +156,11 @@ int GetPS2ElfName(char*);
 extern const char *LabelAuthors;
 extern const char *LabelGreets;
 
-#include "SaveState.h"
-
 void SaveGSState(const char *file);
 void LoadGSState(const char *file);
 
 char *ParseLang(char *id);
 void ProcessFKeys(int fkey, int shift); // processes fkey related commands value 1-12
-
-#ifdef _WIN32
-
-void ListPatches (HWND hW);
-int ReadPatch (HWND hW, char fileName[1024]);
-char * lTrim (char *s);
-BOOL Save_Patch_Proc( char * filename );
-
-#else
-
-// functions that linux lacks
-#define Sleep(seconds) usleep(1000*(seconds))
-
-#include <sys/timeb.h>
-
-static __forceinline u32 timeGetTime()
-{
-	struct timeb t;
-	ftime(&t);
-	return (u32)(t.time*1000+t.millitm);
-}
-
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
-
-#define BOOL int
-
-#undef TRUE
-#define TRUE  1
-#undef FALSE
-#define FALSE 0
-
-#ifndef strnicmp
-#define strnicmp strncasecmp
-#endif
-
-#ifndef stricmp
-#define stricmp strcasecmp
-#endif
-
-#endif
 
 #define DIRENTRY_SIZE 16
 

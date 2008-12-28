@@ -20,10 +20,6 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
-#include <stdio.h>
-#include <zlib.h>
-#include <string>
-
 #include "Misc.h"
 
 extern FILE *emuLog;

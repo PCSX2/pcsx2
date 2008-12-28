@@ -16,9 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <string.h>
+#include "PrecompiledHeader.h"
+
 #include <time.h>
-#include <math.h>
+#include <cmath>
 #include "Common.h"
 #include "PsxCommon.h"
 #include "GS.h"

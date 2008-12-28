@@ -23,7 +23,6 @@
 #ifndef __CDVDISODRV_H__
 #define __CDVDISODRV_H__
 
-//#include "Common.h"
 #include "CDVDlib.h"
 
 extern CdRMode cdReadMode;

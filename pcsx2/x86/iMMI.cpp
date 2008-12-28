@@ -21,6 +21,8 @@
 *                                                        *
 *********************************************************/
 
+#include "PrecompiledHeader.h"
+
 #include "Common.h"
 #include "InterTables.h"
 #include "ix86/ix86.h"

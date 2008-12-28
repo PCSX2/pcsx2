@@ -16,20 +16,14 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
 #include "win32.h"
 
 #include <winnt.h>
-#include <windowsx.h>
 #include <commctrl.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <sys/stat.h>
 #include <direct.h>
 
 #include <ntsecapi.h>
-
-#include <assert.h>
 
 #include "Common.h"
 #include "PsxCommon.h"
@@ -48,7 +42,7 @@
 #include "Paths.h"
 #include "SamplProf.h"
 
-#include "implement.h"		// pthreads defines for startup/shutdown
+#include "implement.h"		// pthreads-win32 defines for startup/shutdown
 
 #define COMPILEDATE         __DATE__
 

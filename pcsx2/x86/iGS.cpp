@@ -16,15 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-
-#include <assert.h>
-#include <vector>
-#include <list>
-
-using namespace std;
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "VU.h"

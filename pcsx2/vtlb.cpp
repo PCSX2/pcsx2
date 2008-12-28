@@ -13,12 +13,9 @@
 	vtlb/vmap supports mapping to either of these locations, or some other (externaly) specified address.
 */
 
-#ifndef PCSX2_VIRTUAL_MEM
+#include "PrecompiledHeader.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <sys/stat.h>
+#ifndef PCSX2_VIRTUAL_MEM
 
 #include "Common.h"
 #include "vtlb.h"

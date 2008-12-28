@@ -15,16 +15,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-#include <stdio.h>
-#include <windows.h>
-#include <commctrl.h>
-#include <stdlib.h>
 
+#include "PrecompiledHeader.h"
+#include "../Win32.h"
+
+#include <commctrl.h>
 #include <vector>
 
-#include "PS2Etypes.h"
-
-#include "windows/resource.h"
 #include "PS2Edefs.h"
 #include "Memory.h"
 

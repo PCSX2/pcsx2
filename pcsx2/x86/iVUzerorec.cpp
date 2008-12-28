@@ -18,16 +18,11 @@
 
 // Super VU recompiler - author: zerofrog(@gmail.com)
 
-#include <stdlib.h>
-#include <string.h>
-#include <float.h>
-#include <malloc.h>
-#include <assert.h>
+#include "PrecompiledHeader.h"
 
-#if defined(_WIN32)
-#include <windows.h>
-#else
-#include <sys/stat.h>
+#include <float.h>
+
+#ifndef _WIN32
 #include <sys/types.h>
 #endif
 

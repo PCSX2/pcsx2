@@ -16,9 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include "PrecompiledHeader.h"
+
 #include "Common.h"
 #include "InterTables.h"
 #include "ix86/ix86.h"

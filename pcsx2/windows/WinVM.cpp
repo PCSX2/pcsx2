@@ -16,8 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
 #include "win32.h"
-#include <windowsx.h>
 
 
 #ifdef PCSX2_VIRTUAL_MEM

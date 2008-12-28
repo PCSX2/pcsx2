@@ -16,24 +16,19 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <windows.h>
-#include <windowsx.h>
+#include "PrecompiledHeader.h"
+#include "Win32.h"
+
 #include <commctrl.h>
 #include <math.h>
 #include "libintlmsc.h"
-#define _(String) dgettext (PACKAGE, String)
 
-#include "PS2Edefs.h"
-#include "resource.h"
-#include "Misc.h"
+//#include "PS2Edefs.h"
 #include "System.h"
 #include "McdsDlg.h"
 
 #include <vector>
 using namespace std;
-
-
 
 
 u16 SJISTable[0xFFFF];

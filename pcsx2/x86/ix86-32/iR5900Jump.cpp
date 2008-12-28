@@ -18,9 +18,7 @@
 
 // recompiler reworked to add dynamic linking zerofrog(@gmail.com) Jan06
 
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "InterTables.h"

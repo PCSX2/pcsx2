@@ -16,12 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <sys/stat.h>
+#include "PrecompiledHeader.h"
+
 #include <ctype.h>
 #include <time.h>
 

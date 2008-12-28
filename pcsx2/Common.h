@@ -19,65 +19,10 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
-#if defined (__linux__)  // some distributions are lower case
-#define __LINUX__
-#endif
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
-#include <zlib.h>
-#include <string.h>
-
 #include "PS2Etypes.h"
 
 #if defined(__x86_64__)
 #define DONT_USE_GETTEXT
-#endif
-
-#if defined(_MSC_VER)
-
-#define strnicmp _strnicmp
-#define stricmp _stricmp
-
-#elif defined(__MINGW32__)
-
-#include <sys/types.h>
-#include <math.h>
-#define BOOL int
-#include <stdlib.h> // posix_memalign()
-#undef TRUE
-#define TRUE  1
-#undef FALSE
-#define FALSE 0
-
-//#define max(a,b)            (((a) > (b)) ? (a) : (b))
-//#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#define __declspec(x)
-#define __assume(x) ;
-#define strnicmp strncasecmp
-#define stricmp strcasecmp
-#include <winbase.h>
-//#pragma intrinsic (InterlockedAnd)
-// Definitions added Feb 16, 2006 by efp
-//#define __declspec(x)
-#include <malloc.h>
-#define __forceinline inline
-#define _aligned_malloc(x,y) __mingw_aligned_malloc(x,y)
-#define _aligned_free(x) __mingw_aligned_free(x)
-#define pthread_mutex__unlock pthread_mutex_unlock
-
-#else
-
-#include <sys/types.h>
-#include <stdlib.h> // posix_memalign()
-
-// Definitions added Feb 16, 2006 by efp
-#ifndef __declspec
-#define __declspec(x)
-#endif
-
 #endif
 
 struct TESTRUNARGS
@@ -121,8 +66,6 @@ extern TESTRUNARGS g_TestRun;
 #define PSXPIXEL        ((int)(PSXCLK / 13500000))
 #define PSXSOUNDCLK		((int)(48000))
 
-#include <pthread.h> // sync functions
-
 #include "Plugins.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
@@ -145,9 +88,5 @@ extern TESTRUNARGS g_TestRun;
 #endif
 
 #define PCSX2_VERSION "Playground (beta)"
-
-#ifdef __LINUX__
-#include <errno.h> // EBUSY
-#endif
 
 #endif /* __COMMON_H__ */

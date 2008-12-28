@@ -16,17 +16,13 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "InterTables.h"
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
 #include "Common.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"

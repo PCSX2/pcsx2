@@ -16,9 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <malloc.h>
+#include "PrecompiledHeader.h"
 
 #include "PsxCommon.h"
 #include "VU.h"

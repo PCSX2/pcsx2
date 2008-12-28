@@ -18,10 +18,7 @@
 
 // Holds instruction tables for the r5900 recompiler
 
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <malloc.h>
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "Memory.h"

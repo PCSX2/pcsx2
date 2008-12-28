@@ -16,14 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include <vector>
 #include <list>
-#include <cstring> 
-#include <cstdlib>
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
 
 #ifdef PCSX2_GSRING_TX_STATS
 #include <intrin.h>
@@ -35,6 +31,7 @@
 #include "iR5900.h"
 
 using namespace Threading;
+using namespace std;
 
 #ifdef DEBUG
 #define MTGS_LOG SysPrintf

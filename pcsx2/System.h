@@ -20,7 +20,6 @@
 #define __SYSTEM_H__
 
 #include "PS2Etypes.h"
-
 #include "Exceptions.h"
 #include "Paths.h"
 
@@ -55,6 +54,17 @@ void SysPrintf(const char *fmt, ...);	// *DEPRECIATED*
 static __forceinline void SysMunmap( void* base, u32 size )
 {
 	SysMunmap( (uptr)base, size );
+}
+
+// to_string: A utility template for quick and easy inline string type conversion.
+// Use to_string(intval), or to_string(float), etc.  Anything that the STL itself
+// would support should be supported here. :)
+template <typename T>
+std::string to_string(const T& value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
 }
 
 // Console Namespace -- Replacements for SysPrintf.

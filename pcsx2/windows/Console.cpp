@@ -16,11 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <windows.h>
+#include "PrecompiledHeader.h"
 
-#include "Misc.h"
-#include "Debug.h"
 #include "System.h"
+#include "Debug.h"
 
 namespace Console
 {

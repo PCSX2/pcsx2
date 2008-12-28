@@ -16,8 +16,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include "Win32.h"
-#include <windowsx.h>
 
 #include "Common.h"
 #include "ix86/ix86.h"

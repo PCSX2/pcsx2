@@ -17,8 +17,7 @@
  */
 
 
-#include <string.h>
-#include <malloc.h>
+#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "iR5900.h"

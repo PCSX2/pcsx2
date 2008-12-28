@@ -16,18 +16,15 @@
  *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
  
+#include "PrecompiledHeader.h"
+
 #ifdef _WIN32
-#include <windows.h>
 #include "RDebug/deci2.h"
 #else
 #include <sys/time.h>
 #endif
 
-#include <cstdio>
-#include <cstdlib>
 #include <cstdarg>
-#include <cstring>
-#include <sys/stat.h>
 #include <ctype.h>
 
 #include "Common.h"
