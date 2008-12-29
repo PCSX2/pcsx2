@@ -1153,7 +1153,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
                     ((ppprevinst->regs[0].VIwrite & pinst->regs[0].VIread) & 0xffff) == ((ppprevinst->regs[0].VIwrite & pprevinst->regs[0].VIread) & 0xffff) &&
                     !(ppprevinst->regs[0].VIread&((1<<REG_STATUS_FLAG)|(1<<REG_MAC_FLAG)|(1<<REG_CLIP_FLAG)))) {
                 
-                    SysPrintf("supervu: 2 cycle branch delay detected: %x %x\n", pc, s_pFnHeader->startpc);
+						Console::MsgLn("supervu: 2 cycle branch delay detected: %x %x", pc, s_pFnHeader->startpc);
 
                     // ignore if prev instruction is ILW or ILWR (xenosaga 2)
                     lowercode = *(int*)&VU->Micro[pc-24]; 
@@ -1273,7 +1273,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 		// make sure there is always a branch
         // sensible soccer overflows on vu0, so increase the limit...
 		if( (s_vu==1 && i >= 0x799) || (s_vu==0 && i >= 0x201) ) {
-			SysPrintf("VuRec base block doesn't terminate!\n");
+			Console::Error("VuRec base block doesn't terminate!");
             assert(0);
 			break;
 		}
@@ -1442,13 +1442,13 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 
 		switch(vucode>>25) {
 			case 0x24: // jr
-				SysPrintf("svurec bad jr jump!\n");
+				Console::Error("svurec bad jr jump!");
 				assert(0);
 				break;
 
 			case 0x25: // jalr
 			{
-				SysPrintf("svurec bad jalr jump!\n");
+				Console::Error("svurec bad jalr jump!");
 				assert(0);
 				break;
 			}
@@ -1494,8 +1494,8 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 
 				break;
 			}
-			default:
-				assert(0);
+
+			jNO_DEFAULT;
 		}
 	}
 

@@ -98,7 +98,6 @@ PCSX2_ALIGNED16(u32 const_clip[8])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fff
 									   0x80000000, 0x80000000, 0x80000000, 0x80000000};
 //------------------------------------------------------------------
 
-
 //------------------------------------------------------------------
 // VU Pipeline/Test Stalls/Analyzing Functions
 //------------------------------------------------------------------
@@ -451,134 +450,6 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 	}
 
 	_recvuAddUpperStalls(VU, uregs);
-	_recvuTestPipes(VU);
-
-	vucycle++;
-}
-
-// Analyze an op - first pass
-void _vurecAnalyzeOp(VURegs *VU, _vuopinfo *info) {
-	_VURegsNum lregs;
-	_VURegsNum uregs;
-	int *ptr; 
-
-//	SysPrintf("_vurecAnalyzeOp %x; %p\n", pc, info);
-	ptr = (int*)&VU->Micro[pc]; 
-	pc += 8; 
-
-/*	SysPrintf("_vurecAnalyzeOp Upper: %s\n", disVU1MicroUF( ptr[1], pc ) );
-	if ((ptr[1] & 0x80000000) == 0) {
-		SysPrintf("_vurecAnalyzeOp Lower: %s\n", disVU1MicroLF( ptr[0], pc ) );
-	}*/
-	if (ptr[1] & 0x40000000) {
-		branch |= 8; 
-	} 
- 
-	VU->code = ptr[1];
-	if (VU == &VU1) VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
-	else VU0regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
-
-	_recvuTestUpperStalls(VU, &uregs);
-	switch(VU->code & 0x3f) {
-		case 0x10: case 0x11: case 0x12: case 0x13:
-		case 0x14: case 0x15: case 0x16: case 0x17:
-		case 0x1d: case 0x1f:
-		case 0x2b: case 0x2f:
-			break;
-
-		case 0x3c:
-			switch ((VU->code >> 6) & 0x1f) {
-				case 0x4: case 0x5:
-					break;
-				default:
-					info->statusflag|= VUOP_WRITE;
-					info->macflag|= VUOP_WRITE;
-					break;
-			}
-			break;
-		case 0x3d:
-			switch ((VU->code >> 6) & 0x1f) {
-				case 0x4: case 0x5: case 0x7:
-					break;
-				default:
-					info->statusflag|= VUOP_WRITE;
-					info->macflag|= VUOP_WRITE;
-					break;
-			}
-			break;
-		case 0x3e:
-			switch ((VU->code >> 6) & 0x1f) {
-				case 0x4: case 0x5:
-					break;
-				default:
-					info->statusflag|= VUOP_WRITE;
-					info->macflag|= VUOP_WRITE;
-					break;
-			}
-			break;
-		case 0x3f:
-			switch ((VU->code >> 6) & 0x1f) {
-				case 0x4: case 0x5: case 0x7: case 0xb:
-					break;
-				default:
-					info->statusflag|= VUOP_WRITE;
-					info->macflag|= VUOP_WRITE;
-					break;
-			}
-			break;
-
-		default:
-			info->statusflag|= VUOP_WRITE;
-			info->macflag|= VUOP_WRITE;
-			break;
-	}
-
-	if (uregs.VIwrite	& (1 << REG_CLIP_FLAG))	{ info->clipflag |= VUOP_WRITE; }
-	if (uregs.VIread	& (1 << REG_Q))			{ info->q |= VUOP_READ; }
-	if (uregs.VIread	& (1 << REG_P))			{ info->p |= VUOP_READ; assert( VU == &VU1 ); }
-
-	/* check upper flags */ 
-	if (ptr[1] & 0x80000000) info->cycle = vucycle; // I flag 
-	else {
-
-		VU->code = ptr[0]; 
-		if (VU == &VU1) VU1regs_LOWER_OPCODE[VU->code >> 25](&lregs);
-		else VU0regs_LOWER_OPCODE[VU->code >> 25](&lregs);
-
-		_recvuTestLowerStalls(VU, &lregs);
-		info->cycle = vucycle;
-
-		if (lregs.pipe == VUPIPE_BRANCH) {
-			branch |= 1;
-		}
-
-		if (lregs.VIwrite & (1 << REG_Q)) {
-//			SysPrintf("write to Q\n");
-			info->q |= VUOP_WRITE;
-			info->cycles = lregs.cycles;
-		}
-		else if (lregs.pipe == VUPIPE_FDIV) {
-			info->q |= 8|1;
-		}
-
-		if (lregs.VIwrite & (1 << REG_P)) {
-//			SysPrintf("write to P\n");
-			info->p |= VUOP_WRITE;
-			info->cycles = lregs.cycles;
-		}
-		else if (lregs.pipe == VUPIPE_EFU) {
-			assert( VU == &VU1 );
-			info->p |= 8|1;
-		}
-
-		if (lregs.VIread & (1 << REG_CLIP_FLAG))	info->clipflag|= VUOP_READ;
-		if (lregs.VIread & (1 << REG_STATUS_FLAG))	info->statusflag|= VUOP_READ;
-		if (lregs.VIread & (1 << REG_MAC_FLAG))		info->macflag|= VUOP_READ;
-
-		_recvuAddLowerStalls(VU, &lregs);
-	}
-
-	_recvuAddUpperStalls(VU, &uregs);
 	_recvuTestPipes(VU);
 
 	vucycle++;
@@ -1405,3 +1276,4 @@ void SetVUNanMode(int mode)
     g_VuNanHandling = mode;
     if ( mode ) SysPrintf("enabling vunan mode");
 }
+

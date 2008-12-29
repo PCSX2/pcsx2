@@ -145,6 +145,9 @@ void SaveState::FreezeAll()
 		PostLoadPrep();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// gzipped to/from disk state saves implementation
+
 gzBaseStateInfo::gzBaseStateInfo( const char* msg, const char* filename ) :
   SaveState( msg, filename )
 , m_filename( filename )
@@ -271,6 +274,7 @@ void gzLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// uncompressed to/from memory state saves implementation
 
 memBaseStateInfo::memBaseStateInfo( MemoryAlloc& memblock, const char* msg ) :
   SaveState( msg, "Memory" )

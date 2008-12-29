@@ -41,6 +41,8 @@
 
 #include "Paths.h"
 
+using namespace std;
+
 PcsxConfig Config;
 u32 BiosVersion;
 char CdromId[12];
@@ -797,13 +799,13 @@ void MemoryAlloc::MakeRoomFor( int blockSize )
 		m_ptr = (u8*)realloc( m_ptr, newalloc );
 		if( m_ptr == NULL )
 		{
-			std::string ex_msg(
+			string ex_msg(
 				"Out-of-memory on block re-allocation. "
 				"Old size: " + to_string( m_alloc ) + " bytes, "
 				"New size: " + to_string( newalloc ) + " bytes"
 			);
 
-			throw std::bad_alloc( ex_msg.c_str() );
+			throw bad_alloc( ex_msg.c_str() );
 		}
 	}
 }

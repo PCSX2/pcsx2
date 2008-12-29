@@ -23,36 +23,7 @@ void recResetVU0();
 void recExecuteVU0Block( void );
 void recClearVU0( u32 Addr, u32 Size );
 
-extern void (*recVU0_LOWER_OPCODE[128])();
-extern void (*recVU0_UPPER_OPCODE[64])();
-
-extern void (*recVU0_UPPER_FD_00_TABLE[32])();
-extern void (*recVU0_UPPER_FD_01_TABLE[32])();
-extern void (*recVU0_UPPER_FD_10_TABLE[32])();
-extern void (*recVU0_UPPER_FD_11_TABLE[32])();
-
-extern void (*recVU1_LOWER_OPCODE[128])();
-extern void (*recVU1_UPPER_OPCODE[64])();
-
-extern void (*recVU1_UPPER_FD_00_TABLE[32])();
-extern void (*recVU1_UPPER_FD_01_TABLE[32])();
-extern void (*recVU1_UPPER_FD_10_TABLE[32])();
-extern void (*recVU1_UPPER_FD_11_TABLE[32])();
-
-void recVU0_UPPER_FD_00();
-void recVU0_UPPER_FD_01();
-void recVU0_UPPER_FD_10();
-void recVU0_UPPER_FD_11();
-
-void recVU0LowerOP();
-void recVU0LowerOP_T3_00();
-void recVU0LowerOP_T3_01();
-void recVU0LowerOP_T3_10();
-void recVU0LowerOP_T3_11();
-
 void recVU0unknown();
-
-
 
 /*****************************************
    VU0 Micromode Upper instructions

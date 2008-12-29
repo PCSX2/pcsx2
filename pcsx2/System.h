@@ -59,7 +59,7 @@ static __forceinline void SysMunmap( void* base, u32 size )
 // to_string: A utility template for quick and easy inline string type conversion.
 // Use to_string(intval), or to_string(float), etc.  Anything that the STL itself
 // would support should be supported here. :)
-template <typename T>
+template< typename T >
 std::string to_string(const T& value)
 {
 	std::ostringstream oss;

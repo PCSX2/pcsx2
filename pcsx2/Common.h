@@ -67,9 +67,9 @@ extern TESTRUNARGS g_TestRun;
 #define PSXSOUNDCLK		((int)(48000))
 
 #include "Plugins.h"
+#include "System.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
-#include "System.h"
 #include "Memory.h"
 #include "Elfheader.h"
 #include "Hw.h"
