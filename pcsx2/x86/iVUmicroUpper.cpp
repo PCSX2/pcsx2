@@ -338,8 +338,7 @@ void recVUMI_ADD(VURegs *VU, int info)
 	if ( !_Fd_ ) info = (info & ~PROCESS_EE_SET_D(0xf)) | PROCESS_EE_SET_D(EEREC_TEMP);
 
 	if ( _Fs_ == 0 && _Ft_ == 0 ) { // if adding VF00 with VF00, then the result is always 0,0,0,2
-		if ( _X_Y_Z_W == 0x8 ) SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)s_two);
-		else if ( _X_Y_Z_W != 0xf ) {
+		if ( _X_Y_Z_W != 0xf ) {
 			SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)s_two);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}

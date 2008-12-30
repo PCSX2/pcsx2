@@ -50,7 +50,7 @@ void GetConfigFilename( char* dest )
 		// Our current working directory can change, so we use the one we detected
 		// at startup:
 
-		CombinePaths( dest, g_WorkingFolder, CONFIG_DIR "\\pcsx2.ini" );
+		CombinePaths( dest, g_WorkingFolder, CONFIG_DIR "\\pcsx2pg.ini" );
 	}
 }
 
@@ -126,17 +126,13 @@ int LoadConfig()
 	GetPrivateProfileString("Cpu Options", "Options", NULL, szValue, 20, szIniFile);
     Conf.Options= (u32)strtoul(szValue, NULL, 10);
 
-	if ( GetPrivateProfileString("Cpu Options", "sseMXCSR", NULL, szValue, 20, szIniFile) ) {
-		Conf.sseMXCSR = strtoul(szValue, NULL, 0);
-		g_sseMXCSR = Conf.sseMXCSR;
-	}
-	else Config.sseMXCSR = g_sseMXCSR;
+	GetPrivateProfileString("Cpu Options", "sseMXCSR", NULL, szValue, 20, szIniFile);
+	Conf.sseMXCSR = strtoul(szValue, NULL, 0);
+	g_sseMXCSR = Conf.sseMXCSR;
 
-	if ( GetPrivateProfileString("Cpu Options", "sseVUMXCSR", NULL, szValue, 20, szIniFile) ) {
-		Conf.sseVUMXCSR = strtoul(szValue, NULL, 0);
-		g_sseVUMXCSR = Conf.sseVUMXCSR;
-	}
-	else Config.sseVUMXCSR = g_sseVUMXCSR;
+	GetPrivateProfileString("Cpu Options", "sseVUMXCSR", NULL, szValue, 20, szIniFile);
+	Conf.sseVUMXCSR = strtoul(szValue, NULL, 0);
+	g_sseVUMXCSR = Conf.sseVUMXCSR;
 
 	GetPrivateProfileString("Cpu Options", "eeOptions", NULL, szValue, 20, szIniFile);
 	Conf.eeOptions = strtoul(szValue, NULL, 0);

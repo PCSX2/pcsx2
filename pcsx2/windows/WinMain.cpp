@@ -670,6 +670,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
 				Config.eeOptions = DEFAULT_eeOptions;
 				Config.vuOptions = DEFAULT_vuOptions;
+				Config.GameFixes = 0;
+				Config.Hacks = 0;
 
 				SysMessage(_("Pcsx2 needs to be configured"));
 				Pcsx2Configure(NULL);
