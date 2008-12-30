@@ -28,7 +28,6 @@
 #include "R5900.h"
 #include "InterTables.h"
 #include "VUmicro.h"
-#include "iVU0micro.h"
 #include "iVUmicro.h"
 
 
@@ -36,9 +35,6 @@
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)
 #endif
-
-// cycle cycles statusflag macflag clipflag
-_vuopinfo g_cop2info = {0, 0, 1, 1, 1, 0, 0};
 
 #define _Ft_ _Rt_
 #define _Fs_ _Rd_
@@ -57,14 +53,14 @@ void recCop2BranchCall( void (*func)() )
 
 #define REC_COP2_FUNC( f ) \
 	void f(); \
-	void rec##f() \
+	void rec##f(s32 info) \
 	{ \
-		SysPrintf("Warning > cop2 "#f" called\n"); \
+		Console::Notice("Warning > cop2 "#f" called"); \
 		recCop2BranchCall( f ); \
 	}
 
 #define INTERPRETATE_COP2_FUNC(f) \
-void recV##f() { \
+void recV##f(s32 info) { \
 	MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code); \
 	MOV32ItoM((uptr)&cpuRegs.pc, pc); \
 	iFlushCall(FLUSH_EVERYTHING); \
@@ -73,39 +69,30 @@ void recV##f() { \
 }
 
 #define REC_COP2_VU0(f) \
-void recV##f() { \
-	recVU0MI_##f(); \
-	_freeX86regs(); \
+void recV##f( s32 info ) { \
+	recVUMI_##f( &VU0, info ); \
 }
 
 extern u32 dumplog;
 #define REC_COP2_VU0_Q(f) \
-void recV##f() { \
-	recVU0MI_##f(); \
-	_freeX86regs(); \
+void recV##f( s32 info ) { \
+	recVUMI_##f( &VU0, info ); \
 }
 
-void rec_C2UNK()
+void rec_C2UNK( s32 info )
 {
-	SysPrintf("Cop2 bad opcode:%x\n",cpuRegs.code);
+	Console::Error("Cop2 bad opcode: %x",cpuRegs.code);
 }
 
 void _vuRegs_C2UNK(VURegs * VU, _VURegsNum *VUregsn)
 {
-	SysPrintf("Cop2 bad _vuRegs code:%x\n",cpuRegs.code);
+	Console::Error("Cop2 bad _vuRegs code:%x",cpuRegs.code);
 }
 
-void _vuRegsCOP22(VURegs * VU, _VURegsNum *VUregsn);
-
-/*void (*recCOP2t[32])();
-void (*recCOP2_BC2t[32])();
-void (*recCOP2SPECIAL1t[64])();
-void (*recCOP2SPECIAL2t[128])();*/
-
-void recCOP2();
-void recCOP2_SPECIAL();
-void recCOP2_BC2();
-void recCOP2_SPECIAL2();
+void recCOP2(s32 info);
+void recCOP2_SPECIAL(s32 info);
+void recCOP2_BC2(s32 info);
+void recCOP2_SPECIAL2(s32 info);
 
 extern void _vu0WaitMicro();
 
@@ -180,7 +167,7 @@ static void recCFC2()
 }
 #else
     
-static void recCFC2()
+static void recCFC2(s32 info)
 {
 	int mmreg;
 
@@ -243,7 +230,7 @@ static void recCFC2()
 }
 #endif
 
-static void recCTC2()
+static void recCTC2(s32 info)
 {
 	if (cpuRegs.code & 1) {
 		#ifdef __x86_64__
@@ -375,7 +362,7 @@ static void recCTC2()
 	}
 }
 
-static void recQMFC2(void)
+static void recQMFC2(s32 info)
 {
 	int t0reg, fsreg;
 
@@ -435,7 +422,7 @@ static void recQMFC2(void)
 	_clearNeededXMMregs();
 }
 
-static void recQMTC2()
+static void recQMTC2(s32 info)
 {
 	int mmreg;
 
@@ -519,76 +506,8 @@ static void recQMTC2()
 	_clearNeededXMMregs();
 }
 
-void _cop2AnalyzeOp(EEINST* pinst, int dostalls)
-{
-	_vuRegsCOP22(&VU0, &pinst->vuregs);
-	if( !dostalls ) return;
-
-	_recvuTestLowerStalls(&VU0, &pinst->vuregs);
-	
-	switch(VU0.code & 0x3f) {
-		case 0x10: case 0x11: case 0x12: case 0x13:
-		case 0x14: case 0x15: case 0x16: case 0x17:
-		case 0x1d: case 0x1f:
-		case 0x2b: case 0x2f:
-			break;
-
-		case 0x3c:
-			switch ((VU0.code >> 6) & 0x1f) {
-				case 0x4: case 0x5:
-					break;
-				default:
-					pinst->vuregs.VIwrite |= (1<<REG_MAC_FLAG);
-					break;
-			}
-			break;
-		case 0x3d:
-			switch ((VU0.code >> 6) & 0x1f) {
-				case 0x4: case 0x5: case 0x7:
-					break;
-				default:
-					pinst->vuregs.VIwrite |= (1<<REG_MAC_FLAG);
-					break;
-			}
-			break;
-		case 0x3e:
-			switch ((VU0.code >> 6) & 0x1f) {
-				case 0x4: case 0x5:
-					break;
-				default:
-					pinst->vuregs.VIwrite |= (1<<REG_MAC_FLAG);
-					break;
-			}
-			break;
-		case 0x3f:
-			switch ((VU0.code >> 6) & 0x1f) {
-				case 0x4: case 0x5: case 0x7: case 0xb:
-					break;
-				default:
-					pinst->vuregs.VIwrite |= (1<<REG_MAC_FLAG);
-					break;
-			}
-			break;
-
-		default:
-			pinst->vuregs.VIwrite |= (1<<REG_MAC_FLAG);
-			break;
-	}
-
-	if (pinst->vuregs.VIwrite & (1 << REG_CLIP_FLAG)) {
-		_recAddWriteBack(vucycle+4, 1<<REG_CLIP_FLAG, pinst);
-	}
-
-	if (pinst->vuregs.VIwrite & (1 << REG_Q)) {
-		_recAddWriteBack(vucycle+pinst->vuregs.cycles, 1<<REG_Q, pinst);
-	}
-
-	pinst->cycle = vucycle;
-	_recvuAddLowerStalls(&VU0, &pinst->vuregs);
-	_recvuTestPipes(&VU0);
-
-	vucycle++;
-}
+// Removed _cop2AnalyzeOp because it was outdated and unreliable (And currently unused). 
+// A new version should be rebuilt using the SuperVU's AnalyzeOp as a reference. (air)
 
 //////////////////////////////////////////////////////////////////////////
 //    BC2: Instructions 
@@ -733,8 +652,8 @@ REC_COP2_VU0_Q(RSQRT);
 REC_COP2_VU0(MR32);
 REC_COP2_VU0(ABS);
 
-void recVNOP(){}
-void recVWAITQ(){}
+void recVNOP(s32 info){}
+void recVWAITQ(s32 info){}
 INTERPRETATE_COP2_FUNC(CALLMS);
 INTERPRETATE_COP2_FUNC(CALLMSR);
 
@@ -814,21 +733,21 @@ void _vuRegsCOP2_SPECIAL2(VURegs * VU, _VURegsNum *VUregsn)
 }
 
 // recompilation
-void (*recCOP2t[32])() = {
+void (*recCOP2t[32])(s32 info) = {
     rec_C2UNK,		recQMFC2,       recCFC2,        rec_C2UNK,		rec_C2UNK,		recQMTC2,       recCTC2,        rec_C2UNK,
     recCOP2_BC2,    rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,
     recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,
 	recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,recCOP2_SPECIAL,
 };
 
-void (*recCOP2_BC2t[32])() = {
+void (*recCOP2_BC2t[32])(s32 info) = {
     recBC2F,        recBC2T,        recBC2FL,       recBC2TL,       rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,
     rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,
     rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,
     rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,		rec_C2UNK,
 }; 
 
-void (*recCOP2SPECIAL1t[64])() = { 
+void (*recCOP2SPECIAL1t[64])(s32 info) = { 
  recVADDx,       recVADDy,       recVADDz,       recVADDw,       recVSUBx,        recVSUBy,        recVSUBz,        recVSUBw,  
  recVMADDx,      recVMADDy,      recVMADDz,      recVMADDw,      recVMSUBx,       recVMSUBy,       recVMSUBz,       recVMSUBw, 
  recVMAXx,       recVMAXy,       recVMAXz,       recVMAXw,       recVMINIx,       recVMINIy,       recVMINIz,       recVMINIw, 
@@ -839,7 +758,7 @@ void (*recCOP2SPECIAL1t[64])() = {
  recVCALLMS,     recVCALLMSR,    rec_C2UNK,      rec_C2UNK,      recCOP2_SPECIAL2,recCOP2_SPECIAL2,recCOP2_SPECIAL2,recCOP2_SPECIAL2,  
 };
 
-void (*recCOP2SPECIAL2t[128])() = {
+void (*recCOP2SPECIAL2t[128])(s32 info) = {
  recVADDAx      ,recVADDAy      ,recVADDAz      ,recVADDAw      ,recVSUBAx      ,recVSUBAy      ,recVSUBAz      ,recVSUBAw,
  recVMADDAx     ,recVMADDAy     ,recVMADDAz     ,recVMADDAw     ,recVMSUBAx     ,recVMSUBAy     ,recVMSUBAz     ,recVMSUBAw,
  recVITOF0      ,recVITOF4      ,recVITOF12     ,recVITOF15     ,recVFTOI0      ,recVFTOI4      ,recVFTOI12     ,recVFTOI15,
@@ -860,28 +779,31 @@ void (*recCOP2SPECIAL2t[128])() = {
 
 void recCOP22()
 {
-	cinfo = &g_cop2info;
-	g_VUregs = &g_pCurInstInfo->vuregs;
 	VU0.code = cpuRegs.code;
+
+	s32 info = eeVURecompileCode(&VU0, &g_pCurInstInfo->vuregs);
+	
+	info |= PROCESS_VU_COP2;
+	info |= PROCESS_VU_UPDATEFLAGS;
 	g_pCurInstInfo->vuregs.pipe = 0xff; // to notify eeVURecompileCode that COP2
-	recCOP2t[_Rs_]();
-#ifndef __x86_64__
+
+	recCOP2t[_Rs_]( info );
+
 	_freeX86regs();
-#endif
 }
 
-void recCOP2_SPECIAL()
+void recCOP2_SPECIAL(s32 info )
 {
-	recCOP2SPECIAL1t[_Funct_]();
+	recCOP2SPECIAL1t[_Funct_]( info );
 }
 
-void recCOP2_BC2()
+void recCOP2_BC2(s32 info)
 {
-	recCOP2_BC2t[_Rt_]();
+	recCOP2_BC2t[_Rt_](info);
 }
 
-void recCOP2_SPECIAL2()
+void recCOP2_SPECIAL2(s32 info)
 {
 	int opc=(cpuRegs.code & 0x3) | ((cpuRegs.code >> 4) & 0x7c);
-	recCOP2SPECIAL2t[opc]();
+	recCOP2SPECIAL2t[opc](info);
 }

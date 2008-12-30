@@ -30,7 +30,6 @@
 #include "VU.h"
 #include "VUmicro.h"
 #include "iVUmicro.h"
-#include "iVU1micro.h"
 #include "iVUops.h"
 #include "VUops.h"
 

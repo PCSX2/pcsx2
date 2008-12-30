@@ -29,8 +29,6 @@
 #include "VUmicro.h"
 #include "VUflags.h"
 #include "iVUmicro.h"
-#include "iVU0micro.h"
-#include "iVU1micro.h"
 #include "iVUops.h"
 #include "iVUzerorec.h"
 
@@ -86,8 +84,6 @@
 //------------------------------------------------------------------
 int g_VuNanHandling = 0;
 int vucycle;
-_vuopinfo *cinfo = NULL;
-_VURegsNum* g_VUregs = NULL;
 
 PCSX2_ALIGNED16(float s_fones[8])	= {1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
 PCSX2_ALIGNED16(u32 s_mask[4])		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
@@ -521,10 +517,6 @@ int eeVURecompileCode(VURegs *VU, _VURegsNum* regs)
 	}
 
 	_freeXMMreg(vftemp); // don't need it
-
-	if( cinfo->statusflag & 1 ) info |= PROCESS_VU_UPDATEFLAGS;
-	if( cinfo->macflag & 1)		info |= PROCESS_VU_UPDATEFLAGS;
-	if( regs->pipe == 0xff )	info |= PROCESS_VU_COP2;
 
 	return info;
 }

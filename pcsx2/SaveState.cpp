@@ -302,7 +302,8 @@ void memSavingState::FreezeMem( void* data, int size )
 		dest[m_idx] = *src;
 }
 
-memLoadingState::memLoadingState(MemoryAlloc& load_from ) : memBaseStateInfo( load_from, _("Loading state from: ") )
+memLoadingState::memLoadingState(MemoryAlloc& load_from ) : 
+	memBaseStateInfo( load_from, _("Loading state from: ") )
 {
 }
 
@@ -349,14 +350,14 @@ void memLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(in
 	if( fP.size == 0 ) return;
 
 	if( ( fP.size + m_idx ) > m_memory.GetSize() )
+	{
+		assert(0);
 		throw Exception::BadSavedState( "memory" );
+	}
 
 	fP.data = ((s8*)m_memory.GetPtr()) + m_idx;
 	if(freezer(FREEZE_LOAD, &fP) == -1)
 		throw Exception::FreezePluginFailure( name, "loading" );
 
 	m_idx += fP.size;
-
-	if( ( fP.size + m_idx ) > m_memory.GetSize() )
-		throw Exception::BadSavedState( "memory" );
 }

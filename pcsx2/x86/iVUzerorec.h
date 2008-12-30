@@ -21,6 +21,8 @@
 #ifndef VU1_SUPER_RECOMPILER
 #define VU1_SUPER_RECOMPILER
 
+#include "iVUmicro.h"
+
 void SuperVUInit(int vuindex); // if vuindex is -1, inits the global VU resources
 void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
 void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
@@ -37,8 +39,6 @@ void svudispfntemp();
 #endif
 void SuperVUClear(u32 startpc, u32 size, int vuindex);
 
-u64 SuperVUGetRecTimes(int clear);
-
 // read = 0, will write to reg
 // read = 1, will read from reg
 // read = 2, addr of previously written reg (used for status and clip flags)
@@ -46,5 +46,8 @@ u32 SuperVUGetVIAddr(int reg, int read);
 
 // if p == 0, flush q else flush p; if wait is != 0, waits for p/q
 void SuperVUFlush(int p, int wait);
+
+// These are for recCode called from iVUmicroLower:
+
 
 #endif

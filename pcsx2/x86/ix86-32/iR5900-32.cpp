@@ -35,8 +35,6 @@
 #include "iFPU.h"
 #include "iCP0.h"
 #include "iVUmicro.h"
-#include "iVU0micro.h"
-#include "iVU1micro.h"
 #include "VU.h"
 #include "VUmicro.h"
 
@@ -114,7 +112,6 @@ static const char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %
 static const char *txt1 = "REG[%d] = %x_%x\n";
 static const char *txt2 = "M32 = %x\n";
 
-void _cop2AnalyzeOp(EEINST* pinst, int dostalls); // reccop2.c
 static void iBranchTest(u32 newpc, u32 cpuBranch);
 void recCOP22( void );
 #ifdef __LINUX__
@@ -2232,7 +2229,7 @@ static u32 eeScaleBlockCycles()
 
 	if( s_nBlockCycles <= (5<<3)  || !CHECK_EESYNC_HACK ) return s_nBlockCycles >> 3;
 
-	u32 scalar = CHECK_EE_IOP_EXTRA ? 16 : 10;	// 4.0 and 2.25 scales (4 bit fixed)
+	u32 scalar = CHECK_EE_IOP_EXTRA ? 17 : 9;	// 4.25 and 2.25 scales (4 bit fixed)
 
 	if( s_nBlockCycles <= (10<<3) )
 	{
@@ -2632,7 +2629,7 @@ void recompileNextInstruction(int delayslot)
 			}
 		}
 		opcode.recompile();
-		s_nBlockCycles += opcode.cycles;
+		s_nBlockCycles += (opcode.cycles==0) ? 6 : opcode.cycles;
 	}
 
 	if( !delayslot ) {
@@ -3062,20 +3059,17 @@ StartRecomp:
 
 				if( !usecop2 ) {
 					// init
-					if( OPTIMIZE_COP2 ) {
-						memset(VU0.fmac,0,sizeof(VU0.fmac));
-						memset(&VU0.fdiv,0,sizeof(VU0.fdiv));
-						memset(&VU0.efu,0,sizeof(VU0.efu));
-					}
 					vucycle = 0;
 					usecop2 = 1;
 				}
 				
 				VU0.code = cpuRegs.code;
-				_cop2AnalyzeOp(g_pCurInstInfo, OPTIMIZE_COP2);
+				_vuRegsCOP22( &VU0, &g_pCurInstInfo->vuregs );
 				continue;
 			}
 
+			// fixme - This should be based on the cycle count of the current EE
+			// instruction being analyzed.
 			if( usecop2 ) vucycle++;
 
 			// peephole optimizations //
@@ -3170,18 +3164,6 @@ StartRecomp:
 				}
 			}
 #endif // end peephole
-		}
-
-		if( usecop2 ) {
-			// add necessary mac writebacks
-			g_pCurInstInfo = s_pInstCache;
-
-			for(i = startpc; i < s_nEndBlock-4; i += 4) {
-				g_pCurInstInfo++;
-
-				if( g_pCurInstInfo->info & EEINSTINFO_COP2 ) {
-				}
-			}
 		}
 	}
 

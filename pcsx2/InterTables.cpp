@@ -28,30 +28,8 @@ namespace EE
 		// And yes this whole thing is an ugly hack.  I'll clean it up once we have
 		// a better idea how exactly the cycle ratios will work best.
 
-//#define EXPERIMENTAL_CYCLE_TIMINGS
-
-#ifdef EXPERIMENTAL_CYCLE_TIMINGS
-
-		// Number of cycles for basic instructions (add/sub, etc).
-		// On the EE these normally run in less than 1 cycle thanks to
-		// the superscalar nature of the CPU.
-		static const int Cycles_Default = 7;			// 0.75 cycles for base instructions.
-		static const int Cycles_Branch = Cycles_Default;
-
-		// Cycle penalties for particuarly slow instructions.
-		static const int Cycles_Mult = 3*8;
-		static const int Cycles_Div = 14*8;
-		static const int Cycles_FPU_Sqrt = 5*8;
-		static const int Cycles_MMI_Mult = 4*8;
-		static const int Cycles_MMI_Div = 24*8;
-
-		static const int Cycles_Store = 28;
-		static const int Cycles_Load = 12;
-
-#else
-
-		static const int Cycles_Default = 9;
-		static const int Cycles_Branch = Cycles_Default;
+		static const int Cycles_Default = 8;
+		static const int Cycles_Branch = 16;
 
 		static const int Cycles_Mult = 2*8;
 		static const int Cycles_Div = 14*8;
@@ -59,10 +37,8 @@ namespace EE
 		static const int Cycles_MMI_Mult = 3*8;
 		static const int Cycles_MMI_Div = 23*8;
 
-		static const int Cycles_Store = 19;			// 21 for snes emu
-		static const int Cycles_Load = 11;			// 13 for snes emu
-
-#endif
+		static const int Cycles_Store = 23;			// 21 for snes emu
+		static const int Cycles_Load = 14;			// 13 for snes emu
 
 		MakeOpcode( Unknown, Default );
 		MakeOpcode( MMI_Unknown, Default );

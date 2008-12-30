@@ -491,8 +491,6 @@ char *ParseLang(char *id) {
 #define NUM_STATES 10
 int StatesC = 0;
 extern void iDumpRegisters(u32 startpc, u32 temp);
-extern void recExecuteVU0Block(void);
-extern void recExecuteVU1Block(void);
 extern char strgametitle[256];
 
 char* mystrlwr( char* string )
@@ -795,7 +793,7 @@ void MemoryAlloc::MakeRoomFor( int blockSize )
 {
 	if( blockSize > m_alloc )
 	{
-		const uint newalloc = m_alloc + blockSize + ChunkSize;
+		const uint newalloc = blockSize + ChunkSize;
 		m_ptr = (u8*)realloc( m_ptr, newalloc );
 		if( m_ptr == NULL )
 		{
@@ -807,6 +805,7 @@ void MemoryAlloc::MakeRoomFor( int blockSize )
 
 			throw bad_alloc( ex_msg.c_str() );
 		}
+		m_alloc = newalloc;
 	}
 }
 

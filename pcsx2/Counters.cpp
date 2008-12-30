@@ -255,7 +255,6 @@ u32 UpdateVSyncRate()
 	return (u32)m_iTicks;
 }
 
-extern u64 SuperVUGetRecTimes(int clear);
 extern u32 vu0time;
 
 

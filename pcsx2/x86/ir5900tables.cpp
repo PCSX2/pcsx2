@@ -832,7 +832,7 @@ __forceinline void BSCPropagate::rpropCP2()
 
 		default:
 			// vu macro mode insts
-			pinst.info |= 2;
+			pinst.info |= EEINSTINFO_COP2;
 			break;
 	}
 }

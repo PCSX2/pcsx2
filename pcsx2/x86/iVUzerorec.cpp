@@ -96,8 +96,8 @@ static const u32 s_MemSize[2] = {VU0_MEMSIZE, VU1_MEMSIZE};
 static u8* s_recVUMem = NULL, *s_recVUPtr = NULL;
 
 // tables
-extern void (*recSVU_UPPER_OPCODE[64])();
-extern void (*recSVU_LOWER_OPCODE[128])();
+extern void (*recVU_UPPER_OPCODE[64])( VURegs* VU, s32 info );
+extern void (*recVU_LOWER_OPCODE[128])( VURegs* VU, s32 info );
 
 #define INST_Q_READ			0x0001 // flush Q
 #define INST_P_READ			0x0002 // flush P
@@ -2377,7 +2377,7 @@ static int s_ScheduleXGKICK = 0, s_XGKICKReg = -1;
 
 extern u32 g_sseVUMXCSR, g_sseMXCSR;
 
-void recSVUMI_XGKICK_( VURegs *VU );
+void recVUMI_XGKICK_( VURegs *VU );
 
 void SuperVUCleanupProgram(u32 startpc, int vuindex)
 {
@@ -2838,7 +2838,7 @@ void VuBaseBlock::Recompile()
 
 		if( s_ScheduleXGKICK > 0 ) {
 			if( s_ScheduleXGKICK-- == 1 ) {
-				recSVUMI_XGKICK_(VU);
+				recVUMI_XGKICK_(VU);
 			}
 		}
 	}
@@ -3456,7 +3456,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 		if( s_JumpX86 > 0 ) x86regs[s_JumpX86].needed = 1;
 		if( s_ScheduleXGKICK && s_XGKICKReg > 0 ) x86regs[s_XGKICKReg].needed = 1;
 
-		recSVU_UPPER_OPCODE[ VU->code & 0x3f ]();
+		recVU_UPPER_OPCODE[ VU->code & 0x3f ]( VU, s_vuInfo );
 		
 		s_PrevIWrite = (uptr)ptr;
 		_clearNeededXMMregs();
@@ -3612,7 +3612,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 		if( s_JumpX86 > 0 ) x86regs[s_JumpX86].needed = 1;
 		if( s_ScheduleXGKICK && s_XGKICKReg > 0 ) x86regs[s_XGKICKReg].needed = 1;
 
-		recSVU_UPPER_OPCODE[ VU->code & 0x3f ]();
+		recVU_UPPER_OPCODE[ VU->code & 0x3f ]( VU, s_vuInfo );
 		_clearNeededXMMregs();
 		_clearNeededX86regs();
 	
@@ -3689,7 +3689,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 //			x86regs[oldreg].type = X86TYPE_VITEMP;
 //		}
 
-		recSVU_LOWER_OPCODE[ VU->code >> 25 ]();
+		recVU_LOWER_OPCODE[ VU->code >> 25 ]( VU, s_vuInfo );
 
 //		if( pc == s_pCurBlock->endpc-8 && s_CacheVIReg >= 0 ) {
 //			// revert
@@ -3722,7 +3722,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 // Super VU Recompilation Tables //
 ///////////////////////////////////
 
-void recSVUMI_BranchHandle()
+void recVUMI_BranchHandle()
 {
 	int bpc = _recbranchAddr(VU->code); 
 	int curjump = 0;
@@ -3762,7 +3762,7 @@ void recSVUMI_BranchHandle()
 }
 
 // supervu specific insts
-void recSVUMI_IBQ_prep()
+void recVUMI_IBQ_prep()
 {
 	int fsreg, ftreg;
 
@@ -3854,14 +3854,14 @@ void recSVUMI_IBQ_prep()
 	}
 }
 
-void recSVUMI_IBEQ()
+void recVUMI_IBEQ( VURegs* vuu, s32 info )
 {
-	recSVUMI_IBQ_prep();
+	recVUMI_IBQ_prep();
 	j8Ptr[ 0 ] = JNE8( 0 );
-	recSVUMI_BranchHandle();
+	recVUMI_BranchHandle();
 }
 
-void recSVUMI_IBGEZ()
+void recVUMI_IBGEZ( VURegs* vuu, s32 info )
 {
 	int fsreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
@@ -3875,10 +3875,10 @@ void recSVUMI_IBGEZ()
 		j8Ptr[ 0 ] = JL8( 0 );
 	}
 
-	recSVUMI_BranchHandle();
+	recVUMI_BranchHandle();
 }
 
-void recSVUMI_IBGTZ()
+void recVUMI_IBGTZ( VURegs* vuu, s32 info )
 {
 	int fsreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
@@ -3891,10 +3891,10 @@ void recSVUMI_IBGTZ()
 		CMP16ItoM( SuperVUGetVIAddr(_Fs_, 1), 0x0 );
 		j8Ptr[ 0 ] = JLE8( 0 );
 	}
-	recSVUMI_BranchHandle();
+	recVUMI_BranchHandle();
 }
 
-void recSVUMI_IBLEZ()
+void recVUMI_IBLEZ( VURegs* vuu, s32 info )
 {
 	int fsreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
@@ -3907,10 +3907,10 @@ void recSVUMI_IBLEZ()
 		CMP16ItoM( SuperVUGetVIAddr(_Fs_, 1), 0x0 );
 		j8Ptr[ 0 ] = JG8( 0 );
 	}
-	recSVUMI_BranchHandle();
+	recVUMI_BranchHandle();
 }
 
-void recSVUMI_IBLTZ()
+void recVUMI_IBLTZ( VURegs* vuu, s32 info )
 {
 	int fsreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Fs_, MODE_READ);
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
@@ -3923,17 +3923,17 @@ void recSVUMI_IBLTZ()
 		CMP16ItoM( SuperVUGetVIAddr(_Fs_, 1), 0x0 );
 		j8Ptr[ 0 ] = JGE8( 0 );
 	}
-	recSVUMI_BranchHandle();
+	recVUMI_BranchHandle();
 }
 
-void recSVUMI_IBNE()
+void recVUMI_IBNE( VURegs* vuu, s32 info )
 {
-	recSVUMI_IBQ_prep();
+	recVUMI_IBQ_prep();
 	j8Ptr[ 0 ] = JE8( 0 );
-	recSVUMI_BranchHandle();
+	recVUMI_BranchHandle();
 }
 
-void recSVUMI_B()
+void recVUMI_B( VURegs* vuu, s32 info )
 {
 	// supervu will take care of the rest
 	int bpc = _recbranchAddr(VU->code); 
@@ -3955,7 +3955,7 @@ void recSVUMI_B()
 	branch |= 3;
 }
 
-void recSVUMI_BAL()
+void recVUMI_BAL( VURegs* vuu, s32 info )
 {
 	int bpc = _recbranchAddr(VU->code); 
 	if( (s_pCurBlock->type & BLOCKTYPE_HASEOP) || s_vu == 0 || SUPERVU_CHECKCONDITION )
@@ -3981,7 +3981,7 @@ void recSVUMI_BAL()
 	branch |= 3;
 }
 
-void recSVUMI_JR()
+void recVUMI_JR( VURegs* vuu, s32 info )
 {
 	int fsreg = _allocX86reg(-1, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), _Fs_, MODE_READ);
 	LEA32RStoR(EAX, fsreg, 3);
@@ -4001,7 +4001,7 @@ void recSVUMI_JR()
 	branch |= 0x10; // 0x08 is reserved
 }
 
-void recSVUMI_JALR()
+void recVUMI_JALR( VURegs* vuu, s32 info )
 {
 	_addNeededX86reg(X86TYPE_VI|(s_vu?X86TYPE_VU1:0), _Ft_);
 
@@ -4071,7 +4071,7 @@ void vu1xgkick(u32* pMem, u32 addr)
 
 #endif
 
-void recSVUMI_XGKICK_( VURegs *VU )
+void recVUMI_XGKICK_( VURegs *VU )
 {
 	assert( s_XGKICKReg > 0 && x86regs[s_XGKICKReg].inuse && x86regs[s_XGKICKReg].type == X86TYPE_VITEMP);
 
@@ -4110,11 +4110,11 @@ void recSVUMI_XGKICK_( VURegs *VU )
 	s_ScheduleXGKICK = 0;
 }
 
-void recSVUMI_XGKICK( VURegs *VU, int info )
+void recVUMI_XGKICK( VURegs *VU, int info )
 {
 	if( s_ScheduleXGKICK ) {
 		// second xgkick, so launch the first
-		recSVUMI_XGKICK_(VU);
+		recVUMI_XGKICK_(VU);
 	}
 
 	int fsreg = _allocX86reg(X86ARG2, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), _Fs_, MODE_READ);
@@ -4128,7 +4128,7 @@ void recSVUMI_XGKICK( VURegs *VU, int info )
 	s_XGKICKReg = fsreg;
 
     if( !SUPERVU_XGKICKDELAY || pc == s_pCurBlock->endpc ) {
-		recSVUMI_XGKICK_(VU);
+		recVUMI_XGKICK_(VU);
 	}
 	else {
         if( g_VUGameFixes & VUFIX_XGKICKDELAY2 ) 
@@ -4138,414 +4138,224 @@ void recSVUMI_XGKICK( VURegs *VU, int info )
 	}
 }
 
-// upper inst
-void recSVUMI_ABS()   { recVUMI_ABS(VU, s_vuInfo); } 
+void recVU_UPPER_FD_00( VURegs* VU, s32 info );
+void recVU_UPPER_FD_01( VURegs* VU, s32 info );
+void recVU_UPPER_FD_10( VURegs* VU, s32 info );
+void recVU_UPPER_FD_11( VURegs* VU, s32 info );
+void recVULowerOP( VURegs* VU, s32 info );
+void recVULowerOP_T3_00( VURegs* VU, s32 info );
+void recVULowerOP_T3_01( VURegs* VU, s32 info );
+void recVULowerOP_T3_10( VURegs* VU, s32 info );
+void recVULowerOP_T3_11( VURegs* VU, s32 info );
+void recVUunknown( VURegs* VU, s32 info );
 
-void recSVUMI_ADD()  { recVUMI_ADD(VU, s_vuInfo); }
-void recSVUMI_ADDi() { recVUMI_ADDi(VU, s_vuInfo); } 
-void recSVUMI_ADDq() { recVUMI_ADDq(VU, s_vuInfo); } 
-void recSVUMI_ADDx() { recVUMI_ADDx(VU, s_vuInfo); } 
-void recSVUMI_ADDy() { recVUMI_ADDy(VU, s_vuInfo); } 
-void recSVUMI_ADDz() { recVUMI_ADDz(VU, s_vuInfo); } 
-void recSVUMI_ADDw() { recVUMI_ADDw(VU, s_vuInfo); }
+void (*recVU_LOWER_OPCODE[128])( VURegs* VU, s32 info ) = { 
+	recVUMI_LQ    , recVUMI_SQ    , recVUunknown , recVUunknown,  
+	recVUMI_ILW   , recVUMI_ISW   , recVUunknown , recVUunknown,  
+	recVUMI_IADDIU, recVUMI_ISUBIU, recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, 
+	recVUMI_FCEQ  , recVUMI_FCSET , recVUMI_FCAND, recVUMI_FCOR, /* 0x10 */ 
+	recVUMI_FSEQ  , recVUMI_FSSET , recVUMI_FSAND, recVUMI_FSOR, 
+	recVUMI_FMEQ  , recVUunknown  , recVUMI_FMAND, recVUMI_FMOR, 
+	recVUMI_FCGET , recVUunknown  , recVUunknown , recVUunknown, 
+	recVUMI_B     , recVUMI_BAL   , recVUunknown , recVUunknown, /* 0x20 */  
+	recVUMI_JR    , recVUMI_JALR  , recVUunknown , recVUunknown, 
+	recVUMI_IBEQ  , recVUMI_IBNE  , recVUunknown , recVUunknown, 
+	recVUMI_IBLTZ , recVUMI_IBGTZ , recVUMI_IBLEZ, recVUMI_IBGEZ, 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, /* 0x30 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVULowerOP  , recVUunknown  , recVUunknown , recVUunknown, /* 0x40*/  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, /* 0x50 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, /* 0x60 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, /* 0x70 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+}; 
+ 
+void (*recVULowerOP_T3_00_OPCODE[32])(VURegs* VU, s32 info) = { 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUMI_MOVE  , recVUMI_LQI   , recVUMI_DIV  , recVUMI_MTIR,  
+	recVUMI_RNEXT , recVUunknown  , recVUunknown , recVUunknown, /* 0x10 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUMI_MFP   , recVUMI_XTOP , recVUMI_XGKICK,  
+	recVUMI_ESADD , recVUMI_EATANxy, recVUMI_ESQRT, recVUMI_ESIN,  
+}; 
+ 
+void (*recVULowerOP_T3_01_OPCODE[32])(VURegs* VU, s32 info) = { 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUMI_MR32  , recVUMI_SQI   , recVUMI_SQRT , recVUMI_MFIR,  
+	recVUMI_RGET  , recVUunknown  , recVUunknown , recVUunknown, /* 0x10 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUMI_XITOP, recVUunknown,  
+	recVUMI_ERSADD, recVUMI_EATANxz, recVUMI_ERSQRT, recVUMI_EATAN, 
+}; 
+ 
+void (*recVULowerOP_T3_10_OPCODE[32])(VURegs* VU, s32 info) = { 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUMI_LQD   , recVUMI_RSQRT, recVUMI_ILWR,  
+	recVUMI_RINIT , recVUunknown  , recVUunknown , recVUunknown, /* 0x10 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUMI_ELENG , recVUMI_ESUM  , recVUMI_ERCPR, recVUMI_EEXP,  
+}; 
+ 
+void (*recVULowerOP_T3_11_OPCODE[32])(VURegs* VU, s32 info) = { 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUMI_SQD   , recVUMI_WAITQ, recVUMI_ISWR,  
+	recVUMI_RXOR  , recVUunknown  , recVUunknown , recVUunknown, /* 0x10 */ 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUMI_ERLENG, recVUunknown  , recVUMI_WAITP, recVUunknown,  
+}; 
+ 
+void (*recVULowerOP_OPCODE[64])(VURegs* VU, s32 info) = { 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, 
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, /* 0x10 */  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown, /* 0x20 */  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVUMI_IADD  , recVUMI_ISUB  , recVUMI_IADDI, recVUunknown, /* 0x30 */ 
+	recVUMI_IAND  , recVUMI_IOR   , recVUunknown , recVUunknown,  
+	recVUunknown  , recVUunknown  , recVUunknown , recVUunknown,  
+	recVULowerOP_T3_00, recVULowerOP_T3_01, recVULowerOP_T3_10, recVULowerOP_T3_11,  
+}; 
+ 
+void (*recVU_UPPER_OPCODE[64])(VURegs* VU, s32 info) = { 
+	recVUMI_ADDx  , recVUMI_ADDy  , recVUMI_ADDz  , recVUMI_ADDw, 
+	recVUMI_SUBx  , recVUMI_SUBy  , recVUMI_SUBz  , recVUMI_SUBw, 
+	recVUMI_MADDx , recVUMI_MADDy , recVUMI_MADDz , recVUMI_MADDw, 
+	recVUMI_MSUBx , recVUMI_MSUBy , recVUMI_MSUBz , recVUMI_MSUBw, 
+	recVUMI_MAXx  , recVUMI_MAXy  , recVUMI_MAXz  , recVUMI_MAXw,  /* 0x10 */  
+	recVUMI_MINIx , recVUMI_MINIy , recVUMI_MINIz , recVUMI_MINIw, 
+	recVUMI_MULx  , recVUMI_MULy  , recVUMI_MULz  , recVUMI_MULw, 
+	recVUMI_MULq  , recVUMI_MAXi  , recVUMI_MULi  , recVUMI_MINIi, 
+	recVUMI_ADDq  , recVUMI_MADDq , recVUMI_ADDi  , recVUMI_MADDi, /* 0x20 */ 
+	recVUMI_SUBq  , recVUMI_MSUBq , recVUMI_SUBi  , recVUMI_MSUBi, 
+	recVUMI_ADD   , recVUMI_MADD  , recVUMI_MUL   , recVUMI_MAX, 
+	recVUMI_SUB   , recVUMI_MSUB  , recVUMI_OPMSUB, recVUMI_MINI, 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown,  /* 0x30 */ 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown, 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown, 
+	recVU_UPPER_FD_00, recVU_UPPER_FD_01, recVU_UPPER_FD_10, recVU_UPPER_FD_11,  
+}; 
+ 
+void (*recVU_UPPER_FD_00_TABLE[32])(VURegs* VU, s32 info) = { 
+	recVUMI_ADDAx, recVUMI_SUBAx , recVUMI_MADDAx, recVUMI_MSUBAx, 
+	recVUMI_ITOF0, recVUMI_FTOI0, recVUMI_MULAx , recVUMI_MULAq , 
+	recVUMI_ADDAq, recVUMI_SUBAq, recVUMI_ADDA  , recVUMI_SUBA  , 
+	recVUunknown , recVUunknown , recVUunknown  , recVUunknown  , 
+	recVUunknown , recVUunknown , recVUunknown  , recVUunknown  , 
+	recVUunknown , recVUunknown , recVUunknown  , recVUunknown  , 
+	recVUunknown , recVUunknown , recVUunknown  , recVUunknown  , 
+	recVUunknown , recVUunknown , recVUunknown  , recVUunknown  , 
+}; 
+ 
+void (*recVU_UPPER_FD_01_TABLE[32])(VURegs* VU, s32 info) = { 
+	recVUMI_ADDAy , recVUMI_SUBAy  , recVUMI_MADDAy, recVUMI_MSUBAy, 
+	recVUMI_ITOF4 , recVUMI_FTOI4 , recVUMI_MULAy , recVUMI_ABS   , 
+	recVUMI_MADDAq, recVUMI_MSUBAq, recVUMI_MADDA , recVUMI_MSUBA , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+}; 
+ 
+void (*recVU_UPPER_FD_10_TABLE[32])(VURegs* VU, s32 info) = { 
+	recVUMI_ADDAz , recVUMI_SUBAz  , recVUMI_MADDAz, recVUMI_MSUBAz, 
+	recVUMI_ITOF12, recVUMI_FTOI12, recVUMI_MULAz , recVUMI_MULAi , 
+	recVUMI_ADDAi, recVUMI_SUBAi , recVUMI_MULA  , recVUMI_OPMULA, 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+}; 
+ 
+void (*recVU_UPPER_FD_11_TABLE[32])(VURegs* VU, s32 info) = { 
+	recVUMI_ADDAw , recVUMI_SUBAw  , recVUMI_MADDAw, recVUMI_MSUBAw, 
+	recVUMI_ITOF15, recVUMI_FTOI15, recVUMI_MULAw , recVUMI_CLIP  , 
+	recVUMI_MADDAi, recVUMI_MSUBAi, recVUunknown  , recVUMI_NOP   , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+	recVUunknown  , recVUunknown  , recVUunknown  , recVUunknown  , 
+}; 
 
-void recSVUMI_ADDA()  { recVUMI_ADDA(VU, s_vuInfo); } 
-void recSVUMI_ADDAi() { recVUMI_ADDAi(VU, s_vuInfo); } 
-void recSVUMI_ADDAq() { recVUMI_ADDAq(VU, s_vuInfo); } 
-void recSVUMI_ADDAx() { recVUMI_ADDAx(VU, s_vuInfo); } 
-void recSVUMI_ADDAy() { recVUMI_ADDAy(VU, s_vuInfo); } 
-void recSVUMI_ADDAz() { recVUMI_ADDAz(VU, s_vuInfo); } 
-void recSVUMI_ADDAw() { recVUMI_ADDAw(VU, s_vuInfo); } 
-
-void recSVUMI_SUB()  { recVUMI_SUB(VU, s_vuInfo); } 
-void recSVUMI_SUBi() { recVUMI_SUBi(VU, s_vuInfo); } 
-void recSVUMI_SUBq() { recVUMI_SUBq(VU, s_vuInfo); } 
-void recSVUMI_SUBx() { recVUMI_SUBx(VU, s_vuInfo); } 
-void recSVUMI_SUBy() { recVUMI_SUBy(VU, s_vuInfo); } 
-void recSVUMI_SUBz() { recVUMI_SUBz(VU, s_vuInfo); } 
-void recSVUMI_SUBw() { recVUMI_SUBw(VU, s_vuInfo); } 
-
-void recSVUMI_SUBA()  { recVUMI_SUBA(VU, s_vuInfo); } 
-void recSVUMI_SUBAi() { recVUMI_SUBAi(VU, s_vuInfo); } 
-void recSVUMI_SUBAq() { recVUMI_SUBAq(VU, s_vuInfo); } 
-void recSVUMI_SUBAx() { recVUMI_SUBAx(VU, s_vuInfo); } 
-void recSVUMI_SUBAy() { recVUMI_SUBAy(VU, s_vuInfo); } 
-void recSVUMI_SUBAz() { recVUMI_SUBAz(VU, s_vuInfo); } 
-void recSVUMI_SUBAw() { recVUMI_SUBAw(VU, s_vuInfo); } 
-
-void recSVUMI_MUL()  { recVUMI_MUL(VU, s_vuInfo); }
-void recSVUMI_MULi() { recVUMI_MULi(VU, s_vuInfo); } 
-void recSVUMI_MULq() { recVUMI_MULq(VU, s_vuInfo); }
-void recSVUMI_MULx() { recVUMI_MULx(VU, s_vuInfo); } 
-void recSVUMI_MULy() { recVUMI_MULy(VU, s_vuInfo); } 
-void recSVUMI_MULz() { recVUMI_MULz(VU, s_vuInfo); } 
-void recSVUMI_MULw() { recVUMI_MULw(VU, s_vuInfo); }
-
-void recSVUMI_MULA()  { recVUMI_MULA(VU, s_vuInfo); } 
-void recSVUMI_MULAi() { recVUMI_MULAi(VU, s_vuInfo); } 
-void recSVUMI_MULAq() { recVUMI_MULAq(VU, s_vuInfo); } 
-void recSVUMI_MULAx() { recVUMI_MULAx(VU, s_vuInfo); } 
-void recSVUMI_MULAy() { recVUMI_MULAy(VU, s_vuInfo); } 
-void recSVUMI_MULAz() { recVUMI_MULAz(VU, s_vuInfo); } 
-void recSVUMI_MULAw() { recVUMI_MULAw(VU, s_vuInfo); } 
-
-void recSVUMI_MADD()  { recVUMI_MADD(VU, s_vuInfo); } 
-void recSVUMI_MADDi() { recVUMI_MADDi(VU, s_vuInfo); } 
-void recSVUMI_MADDq() { recVUMI_MADDq(VU, s_vuInfo); } 
-void recSVUMI_MADDx() { recVUMI_MADDx(VU, s_vuInfo); } 
-void recSVUMI_MADDy() { recVUMI_MADDy(VU, s_vuInfo); } 
-void recSVUMI_MADDz() { recVUMI_MADDz(VU, s_vuInfo); } 
-void recSVUMI_MADDw() { recVUMI_MADDw(VU, s_vuInfo); } 
-
-void recSVUMI_MADDA()  { recVUMI_MADDA(VU, s_vuInfo); } 
-void recSVUMI_MADDAi() { recVUMI_MADDAi(VU, s_vuInfo); } 
-void recSVUMI_MADDAq() { recVUMI_MADDAq(VU, s_vuInfo); } 
-void recSVUMI_MADDAx() { recVUMI_MADDAx(VU, s_vuInfo); } 
-void recSVUMI_MADDAy() { recVUMI_MADDAy(VU, s_vuInfo); } 
-void recSVUMI_MADDAz() { recVUMI_MADDAz(VU, s_vuInfo); } 
-void recSVUMI_MADDAw() { recVUMI_MADDAw(VU, s_vuInfo); } 
-
-void recSVUMI_MSUB()  { recVUMI_MSUB(VU, s_vuInfo); } 
-void recSVUMI_MSUBi() { recVUMI_MSUBi(VU, s_vuInfo); } 
-void recSVUMI_MSUBq() { recVUMI_MSUBq(VU, s_vuInfo); } 
-void recSVUMI_MSUBx() { recVUMI_MSUBx(VU, s_vuInfo); } 
-void recSVUMI_MSUBy() { recVUMI_MSUBy(VU, s_vuInfo); } 
-void recSVUMI_MSUBz() { recVUMI_MSUBz(VU, s_vuInfo); } 
-void recSVUMI_MSUBw() { recVUMI_MSUBw(VU, s_vuInfo); } 
-
-void recSVUMI_MSUBA()  { recVUMI_MSUBA(VU, s_vuInfo); } 
-void recSVUMI_MSUBAi() { recVUMI_MSUBAi(VU, s_vuInfo); } 
-void recSVUMI_MSUBAq() { recVUMI_MSUBAq(VU, s_vuInfo); } 
-void recSVUMI_MSUBAx() { recVUMI_MSUBAx(VU, s_vuInfo); } 
-void recSVUMI_MSUBAy() { recVUMI_MSUBAy(VU, s_vuInfo); } 
-void recSVUMI_MSUBAz() { recVUMI_MSUBAz(VU, s_vuInfo); } 
-void recSVUMI_MSUBAw() { recVUMI_MSUBAw(VU, s_vuInfo); } 
-
-void recSVUMI_MAX()  { recVUMI_MAX(VU, s_vuInfo); } 
-void recSVUMI_MAXi() { recVUMI_MAXi(VU, s_vuInfo); } 
-void recSVUMI_MAXx() { recVUMI_MAXx(VU, s_vuInfo); } 
-void recSVUMI_MAXy() { recVUMI_MAXy(VU, s_vuInfo); } 
-void recSVUMI_MAXz() { recVUMI_MAXz(VU, s_vuInfo); } 
-void recSVUMI_MAXw() { recVUMI_MAXw(VU, s_vuInfo); } 
-
-void recSVUMI_MINI()  { recVUMI_MINI(VU, s_vuInfo); } 
-void recSVUMI_MINIi() { recVUMI_MINIi(VU, s_vuInfo); } 
-void recSVUMI_MINIx() { recVUMI_MINIx(VU, s_vuInfo); } 
-void recSVUMI_MINIy() { recVUMI_MINIy(VU, s_vuInfo); } 
-void recSVUMI_MINIz() { recVUMI_MINIz(VU, s_vuInfo); } 
-void recSVUMI_MINIw() { recVUMI_MINIw(VU, s_vuInfo); }
-
-void recSVUMI_FTOI0()  { recVUMI_FTOI0(VU, s_vuInfo); }
-void recSVUMI_FTOI4()  { recVUMI_FTOI4(VU, s_vuInfo); } 
-void recSVUMI_FTOI12() { recVUMI_FTOI12(VU, s_vuInfo); } 
-void recSVUMI_FTOI15() { recVUMI_FTOI15(VU, s_vuInfo); } 
-void recSVUMI_ITOF0()  { recVUMI_ITOF0(VU, s_vuInfo); } 
-void recSVUMI_ITOF4()  { recVUMI_ITOF4(VU, s_vuInfo); } 
-void recSVUMI_ITOF12() { recVUMI_ITOF12(VU, s_vuInfo); } 
-void recSVUMI_ITOF15() { recVUMI_ITOF15(VU, s_vuInfo); } 
-
-void recSVUMI_OPMULA() { recVUMI_OPMULA(VU, s_vuInfo); } 
-void recSVUMI_OPMSUB() { recVUMI_OPMSUB(VU, s_vuInfo); } 
-void recSVUMI_NOP()
-{
-    //ffxii text disappearing bug
-    // NOP gets set that it will write the status flag. If it leaves it alone
-    // s_PrevStatusWrite will get replaced with pStatusWrite, which is garbage and stuff breaks
-    /*if( (s_vuInfo & PROCESS_VU_UPDATEFLAGS) )
-		return;*/
-
-    // this is just a hack
-    //s_pCurInst->regs[1].VIwrite &= ~((1<<REG_STATUS_FLAG)|(1<<REG_MAC_FLAG));
+void recVU_UPPER_FD_00( VURegs* VU, s32 info )
+{ 
+	recVU_UPPER_FD_00_TABLE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
+} 
+ 
+void recVU_UPPER_FD_01( VURegs* VU, s32 info )
+{ 
+	recVU_UPPER_FD_01_TABLE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
+} 
+ 
+void recVU_UPPER_FD_10( VURegs* VU, s32 info )
+{ 
+	recVU_UPPER_FD_10_TABLE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
+} 
+ 
+void recVU_UPPER_FD_11( VURegs* VU, s32 info )
+{ 
+	recVU_UPPER_FD_11_TABLE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
+} 
+ 
+void recVULowerOP( VURegs* VU, s32 info )
+{ 
+	recVULowerOP_OPCODE[ VU->code & 0x3f ]( VU, info ); 
+} 
+ 
+void recVULowerOP_T3_00( VURegs* VU, s32 info )
+{ 
+	recVULowerOP_T3_00_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
+} 
+ 
+void recVULowerOP_T3_01( VURegs* VU, s32 info )
+{ 
+	recVULowerOP_T3_01_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
+} 
+ 
+void recVULowerOP_T3_10( VURegs* VU, s32 info )
+{ 
+	recVULowerOP_T3_10_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
+} 
+ 
+void recVULowerOP_T3_11( VURegs* VU, s32 info )
+{ 
+	recVULowerOP_T3_11_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( VU, info ); 
 }
 
-void recSVUMI_CLIP() { recVUMI_CLIP(VU, s_vuInfo); }
-
-// lower inst
-void recSVUMI_MTIR()    { recVUMI_MTIR(VU, s_vuInfo); }
-void recSVUMI_MR32()    { recVUMI_MR32(VU, s_vuInfo); } 
-void recSVUMI_MFIR()    { recVUMI_MFIR(VU, s_vuInfo); }
-void recSVUMI_MOVE()    { recVUMI_MOVE(VU, s_vuInfo); } 
-void recSVUMI_WAITQ()   { recVUMI_WAITQ(VU, s_vuInfo); }
-void recSVUMI_MFP()     { recVUMI_MFP(VU, s_vuInfo); } 
-void recSVUMI_WAITP()   { recVUMI_WAITP(VU, s_vuInfo); }
-
-void recSVUMI_SQRT() { recVUMI_SQRT(VU, s_vuInfo); }
-void recSVUMI_RSQRT() { recVUMI_RSQRT(VU, s_vuInfo); }
-void recSVUMI_DIV() { recVUMI_DIV(VU, s_vuInfo); }
-
-void recSVUMI_ESADD()   { recVUMI_ESADD(VU, s_vuInfo); } 
-void recSVUMI_ERSADD()  { recVUMI_ERSADD(VU, s_vuInfo); } 
-void recSVUMI_ELENG()   { recVUMI_ELENG(VU, s_vuInfo); } 
-void recSVUMI_ERLENG()  { recVUMI_ERLENG(VU, s_vuInfo); } 
-void recSVUMI_EATANxy() { recVUMI_EATANxy(VU, s_vuInfo); } 
-void recSVUMI_EATANxz() { recVUMI_EATANxz(VU, s_vuInfo); } 
-void recSVUMI_ESUM()    { recVUMI_ESUM(VU, s_vuInfo); } 
-void recSVUMI_ERCPR()   { recVUMI_ERCPR(VU, s_vuInfo); } 
-void recSVUMI_ESQRT()   { recVUMI_ESQRT(VU, s_vuInfo); } 
-void recSVUMI_ERSQRT()  { recVUMI_ERSQRT(VU, s_vuInfo); } 
-void recSVUMI_ESIN()    { recVUMI_ESIN(VU, s_vuInfo); } 
-void recSVUMI_EATAN()   { recVUMI_EATAN(VU, s_vuInfo); } 
-void recSVUMI_EEXP()    { recVUMI_EEXP(VU, s_vuInfo); } 
-
-void recSVUMI_XITOP()   { recVUMI_XITOP(VU, s_vuInfo); }
-void recSVUMI_XGKICK()  { recSVUMI_XGKICK(VU, s_vuInfo); }
-void recSVUMI_XTOP()    { recVUMI_XTOP(VU, s_vuInfo); }
-
-void recSVUMI_RINIT()     { recVUMI_RINIT(VU, s_vuInfo); }
-void recSVUMI_RGET()      { recVUMI_RGET(VU, s_vuInfo); }
-void recSVUMI_RNEXT()     { recVUMI_RNEXT(VU, s_vuInfo); }
-void recSVUMI_RXOR()      { recVUMI_RXOR(VU, s_vuInfo); }
-
-void recSVUMI_FSAND()   { recVUMI_FSAND(VU, s_vuInfo); } 
-void recSVUMI_FSEQ()    { recVUMI_FSEQ(VU, s_vuInfo); }
-void recSVUMI_FSOR()    { recVUMI_FSOR(VU, s_vuInfo); }
-void recSVUMI_FSSET()   { recVUMI_FSSET(VU, s_vuInfo); } 
-void recSVUMI_FMEQ()    { recVUMI_FMEQ(VU, s_vuInfo); }
-void recSVUMI_FMOR()    { recVUMI_FMOR(VU, s_vuInfo); }
-void recSVUMI_FCEQ()    { recVUMI_FCEQ(VU, s_vuInfo); }
-void recSVUMI_FCOR()    { recVUMI_FCOR(VU, s_vuInfo); }
-void recSVUMI_FCSET()   { recVUMI_FCSET(VU, s_vuInfo); }
-void recSVUMI_FCGET()   { recVUMI_FCGET(VU, s_vuInfo); }
-void recSVUMI_FCAND()   { recVUMI_FCAND(VU, s_vuInfo); }
-void recSVUMI_FMAND()   { recVUMI_FMAND(VU, s_vuInfo); }
-
-void recSVUMI_LQ()      { recVUMI_LQ(VU, s_vuInfo); } 
-void recSVUMI_LQD()     { recVUMI_LQD(VU, s_vuInfo); } 
-void recSVUMI_LQI()     { recVUMI_LQI(VU, s_vuInfo); } 
-void recSVUMI_SQ()      { recVUMI_SQ(VU, s_vuInfo); }
-void recSVUMI_SQD()     { recVUMI_SQD(VU, s_vuInfo); }
-void recSVUMI_SQI()     { recVUMI_SQI(VU, s_vuInfo); }
-void recSVUMI_ILW()     { recVUMI_ILW(VU, s_vuInfo); }  
-void recSVUMI_ISW()     { recVUMI_ISW(VU, s_vuInfo); }
-void recSVUMI_ILWR()    { recVUMI_ILWR(VU, s_vuInfo); }
-void recSVUMI_ISWR()    { recVUMI_ISWR(VU, s_vuInfo); }
-
-void recSVUMI_IADD()    { recVUMI_IADD(VU, s_vuInfo); }
-void recSVUMI_IADDI()   { recVUMI_IADDI(VU, s_vuInfo); }
-void recSVUMI_IADDIU()  { recVUMI_IADDIU(VU, s_vuInfo); } 
-void recSVUMI_IOR()     { recVUMI_IOR(VU, s_vuInfo); }
-void recSVUMI_ISUB()    { recVUMI_ISUB(VU, s_vuInfo); }
-void recSVUMI_IAND()    { recVUMI_IAND(VU, s_vuInfo); }
-void recSVUMI_ISUBIU()  { recVUMI_ISUBIU(VU, s_vuInfo); } 
-
-void recSVU_UPPER_FD_00( void );
-void recSVU_UPPER_FD_01( void );
-void recSVU_UPPER_FD_10( void );
-void recSVU_UPPER_FD_11( void );
-void recSVULowerOP( void );
-void recSVULowerOP_T3_00( void );
-void recSVULowerOP_T3_01( void );
-void recSVULowerOP_T3_10( void );
-void recSVULowerOP_T3_11( void );
-void recSVUunknown( void );
-
-void (*recSVU_LOWER_OPCODE[128])() = { 
-	recSVUMI_LQ    , recSVUMI_SQ    , recSVUunknown , recSVUunknown,  
-	recSVUMI_ILW   , recSVUMI_ISW   , recSVUunknown , recSVUunknown,  
-	recSVUMI_IADDIU, recSVUMI_ISUBIU, recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, 
-	recSVUMI_FCEQ  , recSVUMI_FCSET , recSVUMI_FCAND, recSVUMI_FCOR, /* 0x10 */ 
-	recSVUMI_FSEQ  , recSVUMI_FSSET , recSVUMI_FSAND, recSVUMI_FSOR, 
-	recSVUMI_FMEQ  , recSVUunknown  , recSVUMI_FMAND, recSVUMI_FMOR, 
-	recSVUMI_FCGET , recSVUunknown  , recSVUunknown , recSVUunknown, 
-	recSVUMI_B     , recSVUMI_BAL   , recSVUunknown , recSVUunknown, /* 0x20 */  
-	recSVUMI_JR    , recSVUMI_JALR  , recSVUunknown , recSVUunknown, 
-	recSVUMI_IBEQ  , recSVUMI_IBNE  , recSVUunknown , recSVUunknown, 
-	recSVUMI_IBLTZ , recSVUMI_IBGTZ , recSVUMI_IBLEZ, recSVUMI_IBGEZ, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x30 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVULowerOP  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x40*/  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x50 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x60 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x70 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-}; 
- 
-void (*recSVULowerOP_T3_00_OPCODE[32])() = { 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUMI_MOVE  , recSVUMI_LQI   , recSVUMI_DIV  , recSVUMI_MTIR,  
-	recSVUMI_RNEXT , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x10 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUMI_MFP   , recSVUMI_XTOP , recSVUMI_XGKICK,  
-	recSVUMI_ESADD , recSVUMI_EATANxy, recSVUMI_ESQRT, recSVUMI_ESIN,  
-}; 
- 
-void (*recSVULowerOP_T3_01_OPCODE[32])() = { 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUMI_MR32  , recSVUMI_SQI   , recSVUMI_SQRT , recSVUMI_MFIR,  
-	recSVUMI_RGET  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x10 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUMI_XITOP, recSVUunknown,  
-	recSVUMI_ERSADD, recSVUMI_EATANxz, recSVUMI_ERSQRT, recSVUMI_EATAN, 
-}; 
- 
-void (*recSVULowerOP_T3_10_OPCODE[32])() = { 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUMI_LQD   , recSVUMI_RSQRT, recSVUMI_ILWR,  
-	recSVUMI_RINIT , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x10 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUMI_ELENG , recSVUMI_ESUM  , recSVUMI_ERCPR, recSVUMI_EEXP,  
-}; 
- 
-void (*recSVULowerOP_T3_11_OPCODE[32])() = { 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUMI_SQD   , recSVUMI_WAITQ, recSVUMI_ISWR,  
-	recSVUMI_RXOR  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x10 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUMI_ERLENG, recSVUunknown  , recSVUMI_WAITP, recSVUunknown,  
-}; 
- 
-void (*recSVULowerOP_OPCODE[64])() = { 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x10 */  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown, /* 0x20 */  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVUMI_IADD  , recSVUMI_ISUB  , recSVUMI_IADDI, recSVUunknown, /* 0x30 */ 
-	recSVUMI_IAND  , recSVUMI_IOR   , recSVUunknown , recSVUunknown,  
-	recSVUunknown  , recSVUunknown  , recSVUunknown , recSVUunknown,  
-	recSVULowerOP_T3_00, recSVULowerOP_T3_01, recSVULowerOP_T3_10, recSVULowerOP_T3_11,  
-}; 
- 
-void (*recSVU_UPPER_OPCODE[64])() = { 
-	recSVUMI_ADDx  , recSVUMI_ADDy  , recSVUMI_ADDz  , recSVUMI_ADDw, 
-	recSVUMI_SUBx  , recSVUMI_SUBy  , recSVUMI_SUBz  , recSVUMI_SUBw, 
-	recSVUMI_MADDx , recSVUMI_MADDy , recSVUMI_MADDz , recSVUMI_MADDw, 
-	recSVUMI_MSUBx , recSVUMI_MSUBy , recSVUMI_MSUBz , recSVUMI_MSUBw, 
-	recSVUMI_MAXx  , recSVUMI_MAXy  , recSVUMI_MAXz  , recSVUMI_MAXw,  /* 0x10 */  
-	recSVUMI_MINIx , recSVUMI_MINIy , recSVUMI_MINIz , recSVUMI_MINIw, 
-	recSVUMI_MULx  , recSVUMI_MULy  , recSVUMI_MULz  , recSVUMI_MULw, 
-	recSVUMI_MULq  , recSVUMI_MAXi  , recSVUMI_MULi  , recSVUMI_MINIi, 
-	recSVUMI_ADDq  , recSVUMI_MADDq , recSVUMI_ADDi  , recSVUMI_MADDi, /* 0x20 */ 
-	recSVUMI_SUBq  , recSVUMI_MSUBq , recSVUMI_SUBi  , recSVUMI_MSUBi, 
-	recSVUMI_ADD   , recSVUMI_MADD  , recSVUMI_MUL   , recSVUMI_MAX, 
-	recSVUMI_SUB   , recSVUMI_MSUB  , recSVUMI_OPMSUB, recSVUMI_MINI, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown,  /* 0x30 */ 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown, 
-	recSVU_UPPER_FD_00, recSVU_UPPER_FD_01, recSVU_UPPER_FD_10, recSVU_UPPER_FD_11,  
-}; 
- 
-void (*recSVU_UPPER_FD_00_TABLE[32])() = { 
-	recSVUMI_ADDAx, recSVUMI_SUBAx , recSVUMI_MADDAx, recSVUMI_MSUBAx, 
-	recSVUMI_ITOF0, recSVUMI_FTOI0, recSVUMI_MULAx , recSVUMI_MULAq , 
-	recSVUMI_ADDAq, recSVUMI_SUBAq, recSVUMI_ADDA  , recSVUMI_SUBA  , 
-	recSVUunknown , recSVUunknown , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown , recSVUunknown , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown , recSVUunknown , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown , recSVUunknown , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown , recSVUunknown , recSVUunknown  , recSVUunknown  , 
-}; 
- 
-void (*recSVU_UPPER_FD_01_TABLE[32])() = { 
-	recSVUMI_ADDAy , recSVUMI_SUBAy  , recSVUMI_MADDAy, recSVUMI_MSUBAy, 
-	recSVUMI_ITOF4 , recSVUMI_FTOI4 , recSVUMI_MULAy , recSVUMI_ABS   , 
-	recSVUMI_MADDAq, recSVUMI_MSUBAq, recSVUMI_MADDA , recSVUMI_MSUBA , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-}; 
- 
-void (*recSVU_UPPER_FD_10_TABLE[32])() = { 
-	recSVUMI_ADDAz , recSVUMI_SUBAz  , recSVUMI_MADDAz, recSVUMI_MSUBAz, 
-	recSVUMI_ITOF12, recSVUMI_FTOI12, recSVUMI_MULAz , recSVUMI_MULAi , 
-	recSVUMI_ADDAi, recSVUMI_SUBAi , recSVUMI_MULA  , recSVUMI_OPMULA, 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-}; 
- 
-void (*recSVU_UPPER_FD_11_TABLE[32])() = { 
-	recSVUMI_ADDAw , recSVUMI_SUBAw  , recSVUMI_MADDAw, recSVUMI_MSUBAw, 
-	recSVUMI_ITOF15, recSVUMI_FTOI15, recSVUMI_MULAw , recSVUMI_CLIP  , 
-	recSVUMI_MADDAi, recSVUMI_MSUBAi, recSVUunknown  , recSVUMI_NOP   , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-	recSVUunknown  , recSVUunknown  , recSVUunknown  , recSVUunknown  , 
-}; 
-
-void recSVU_UPPER_FD_00( void )
-{ 
-	recSVU_UPPER_FD_00_TABLE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-} 
- 
-void recSVU_UPPER_FD_01( void )
-{ 
-	recSVU_UPPER_FD_01_TABLE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-} 
- 
-void recSVU_UPPER_FD_10( void )
-{ 
-	recSVU_UPPER_FD_10_TABLE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-} 
- 
-void recSVU_UPPER_FD_11( void )
-{ 
-	recSVU_UPPER_FD_11_TABLE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-} 
- 
-void recSVULowerOP( void )
-{ 
-	recSVULowerOP_OPCODE[ VU->code & 0x3f ]( ); 
-} 
- 
-void recSVULowerOP_T3_00( void )
-{ 
-	recSVULowerOP_T3_00_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-} 
- 
-void recSVULowerOP_T3_01( void )
-{ 
-	recSVULowerOP_T3_01_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-} 
- 
-void recSVULowerOP_T3_10( void )
-{ 
-	recSVULowerOP_T3_10_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-} 
- 
-void recSVULowerOP_T3_11( void )
-{ 
-	recSVULowerOP_T3_11_OPCODE[ ( VU->code >> 6 ) & 0x1f ]( ); 
-}
-
-void recSVUunknown( void )
+void recVUunknown( VURegs* VU, s32 info )
 { 
 	SysPrintf("Unknown SVU micromode opcode called\n"); 
 }

@@ -29,8 +29,6 @@
 #include "VUmicro.h"
 #include "VUflags.h"
 #include "iVUmicro.h"
-#include "iVU0micro.h"
-#include "iVU1micro.h"
 #include "iVUops.h"
 #include "iVUzerorec.h"
 //------------------------------------------------------------------
