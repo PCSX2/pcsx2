@@ -17,8 +17,9 @@
  */
 
 #include "PrecompiledHeader.h"
-
 #include "Threading.h"
+
+using namespace Threading;
 
 namespace Threading
 {
@@ -105,7 +106,7 @@ namespace Threading
 	//////////////////////////////////////////////////////////////////////
 	// define some overloads for InterlockedExchanges
 	// for commonly used types, like u32 and s32.
-
+	
 	__forceinline void AtomicExchange( u32& Target, u32 value )
 	{
 		pcsx2_InterlockedExchange( (volatile long*)&Target, value );

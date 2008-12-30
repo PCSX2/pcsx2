@@ -19,8 +19,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#include "Common.h"
-#include "PsxCommon.h"
 #include "LnxMain.h"
 
 DIR *dir;

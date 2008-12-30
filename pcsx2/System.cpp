@@ -19,10 +19,10 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
-#include "psxCommon.h"
+#include "PsxCommon.h"
 #include "Threading.h"
 
-#include "ix86/ix86.h"
+#include "x86/ix86/ix86.h"
 
 using namespace std;
 using namespace Console;

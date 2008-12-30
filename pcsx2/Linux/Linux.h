@@ -44,6 +44,7 @@
 #include <gtk/gtkdialog.h>
 #include <glib.h>
 
+#include "PrecompiledHeader.h"
 #include "Paths.h"
 #include "Common.h"
 
@@ -59,10 +60,6 @@ extern bool RunExe;
 extern int efile;
 extern int g_SaveGSStream;
 extern int g_ZeroGSOptions;
-
-// Nasty, currently neccessary hack	
-//extern u32 LinuxsseMXCSR;
-//extern u32 LinuxsseVUMXCSR;
 extern void FixCPUState(void);
 	
 /* LnxMain */
@@ -73,7 +70,6 @@ extern void ChangeLanguage(char *lang);
 extern void StartGui();
 extern void RunGui();
 extern int Pcsx2Configure();
-
 extern GtkWidget *CpuDlg;
 
 /* Config.c */
@@ -85,6 +81,7 @@ extern void init_widgets();
 extern MemoryAlloc* g_RecoveryState;
 extern bool g_GameInProgress;
 extern void SysRestorableReset();
+extern void SysDetect();
 
 typedef struct {
 	char lang[g_MaxPath];

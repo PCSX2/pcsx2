@@ -41,7 +41,9 @@
 // TODO : Add items here that are local to Pcsx2 but stay relatively unchanged for
 // long periods of time.  Right now that includes... well... zlib.  That's about it.
 
+// Well, maybe Ps2Etypes. --arcum42
 #include "zlib.h"
+#include "PS2Etypes.h"
 
 ////////////////////////////////////////////////////////////////////
 // Compiler/OS specific macros and defines -- Begin Section

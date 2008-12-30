@@ -22,6 +22,7 @@
 #include "PS2Etypes.h"
 #include "System.h"
 #include "SaveState.h"
+#include "assert.h"
 
 // --->> GNU GetText / NLS
 

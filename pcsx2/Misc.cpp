@@ -791,6 +791,8 @@ MemoryAlloc::~MemoryAlloc()
 
 void MemoryAlloc::MakeRoomFor( int blockSize )
 {
+	string temp;
+	
 	if( blockSize > m_alloc )
 	{
 		const uint newalloc = blockSize + ChunkSize;
@@ -803,7 +805,9 @@ void MemoryAlloc::MakeRoomFor( int blockSize )
 				"New size: " + to_string( newalloc ) + " bytes"
 			);
 
-			throw bad_alloc( ex_msg.c_str() );
+			temp = ex_msg.c_str();
+			
+			throw bad_alloc((const bad_alloc&)temp);
 		}
 		m_alloc = newalloc;
 	}

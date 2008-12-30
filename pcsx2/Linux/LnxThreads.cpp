@@ -16,9 +16,9 @@
  *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "System.h"
 #include "Threading.h"
-#include "ix86/ix86.h"
+#include "Linux.h"
+#include "../x86/ix86/ix86.h"
 
 // Note: assuming multicore is safer because it forces the interlocked routines to use
 // the LOCK prefix.  The prefix works on single core CPUs fine (but is slow), but not
@@ -35,7 +35,7 @@ namespace Threading
 		const uint numCPU = sysconf( _SC_NPROCESSORS_ONLN );
 		if( numCPU > 0 )
 		{
-			isMultiCore = numCpu > 1;
+			isMultiCore = numCPU > 1;
 			cpuinfo.LogicalCores = numCPU;
 			cpuinfo.PhysicalCores = numCPU / LogicalCoresPerPhysicalCore;
 		}
@@ -103,7 +103,6 @@ __forceinline long pcsx2_InterlockedExchange(volatile long* Target, long Value)
 			"xchgl          %2,%1"
 			:"=r" (result)
 			:"m"  (*Target), "0" (Value));
-		}
 
 	}
 	else
@@ -123,7 +122,6 @@ __forceinline long pcsx2_InterlockedExchange(volatile long* Target, long Value)
 			"jnz            0b"
 			:"=&a" (result)
 			:"m"  (*Target), "r" (Value));
-		}
 
 	}
 	return result;

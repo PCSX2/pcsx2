@@ -23,6 +23,9 @@
 #include "VUmicro.h"
 #include "deci2.h"
 
+#include "Threading.h"
+using namespace Threading;
+
 struct DECI2_DBGP_HEADER{
     DECI2_HEADER	h;		//+00
 	u16				id;		//+08
@@ -357,7 +360,7 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 			if (in->h.destination=='I')
 				;
 			else{
-				out->result = ( InterlockedExchange(&runStatus, STOP)==STOP ? 
+				out->result = ( pcsx2_InterlockedExchange(&runStatus, STOP)==STOP ? 
 					0x20 : 0x21 );
 				out->code=0xFF;
 				Sleep(50);
@@ -370,7 +373,7 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 			if (in->h.destination=='I')
 				;
 			else{
-				InterlockedExchange(&runStatus, STOP);
+				pcsx2_InterlockedExchange(&runStatus, STOP);
 				Sleep(100);//first get the run thread to Wait state
 				runCount=in->count;
 				runCode=in->code;
@@ -391,7 +394,7 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 			for (i=0, s=0; i<(int)run->argc; i++, argv++)	s+=argv[i];
 			memcpy(PSM(0), argv, s);
 //			threads_array[0].argstring = 0;
-			InterlockedExchange(&runStatus, STOP);
+			pcsx2_InterlockedExchange((volatile long*)&runStatus, (u32)STOP);
 			Sleep(1000);//first get the run thread to Wait state
 			runCount=0;
 			runCode=0xFF;

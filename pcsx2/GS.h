@@ -206,7 +206,11 @@ public:
 
 	uptr FnPtr_SimplePacket() const
 	{
+#ifndef __LINUX__
 		__asm mov eax, SendSimplePacket
+#else
+		__asm ("mov %eax, SendSimplePacket");
+#endif
 		//return (uptr)&SendSimplePacket;
 	}
 protected:

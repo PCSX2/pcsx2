@@ -16,11 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "Misc.h"
-#include "../DebugTools/Debug.h"
-#include "System.h"
 #include "Linux.h"
-
 
 #define COLOR_RESET		"\033[0m"
 
