@@ -606,10 +606,7 @@ void OnLogging_Ok(GtkButton *button, gpointer user_data) {
 		if (ret) varLog|= 1<<i;
 		else varLog&=~(1<<i);
 	}
-
-	//Btn = lookup_widget(LogDlg, "Log");
-	//Log = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(Btn));
-
+	
     SaveConfig();
 #endif
 
@@ -634,9 +631,6 @@ void OnDebug_Logging(GtkMenuItem *menuitem, gpointer user_data) {
 		Btn = lookup_widget(LogDlg, str);
 		gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), varLog & (1<<i));
 	}
-
-	//Btn = lookup_widget(LogDlg, "Log");
-	//gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(Btn), Log);
 
 	gtk_widget_show_all(LogDlg);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
@@ -764,9 +758,6 @@ void setAdvancedOptions()
 		Config.sseMXCSR &= ~FLAG_DENORMAL_ZERO;
 		Config.sseVUMXCSR &= ~FLAG_DENORMAL_ZERO;
 	}
-	
-	//print_flags("sseMXCSR", Config.sseMXCSR, NULL);
-	//print_flags("sseVUMXCSR", Config.sseVUMXCSR, NULL);
 	
 	switch((Config.sseMXCSR & 0x6000) >> 13)
 	{

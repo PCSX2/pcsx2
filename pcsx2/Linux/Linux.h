@@ -128,17 +128,17 @@ static __forceinline void print_flags(char *name, u32 num, char *flag_names[16])
 {
 	int i;
 	
-	SysPrintf("%s:", name);
+	DevCon::MsgLn("%s:", name);
 	
 	if (flag_names != NULL)
 	{
 		for(i=0; i<=15; i++)
-			SysPrintf("%s %x: %x", flag_names[i], (1<<i), get_flag(num, i));
+			DevCon::MsgLn("%s %x: %x", flag_names[i], (1<<i), get_flag(num, i));
 	}
 	else 
 	{
 		for(i=0; i<=15; i++)
-			SysPrintf("%x: %x", (1<<i), get_flag(num, i));
+			DevCon::MsgLn("%x: %x", (1<<i), get_flag(num, i));
 	}
 } 
 

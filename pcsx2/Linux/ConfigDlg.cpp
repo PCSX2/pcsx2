@@ -18,11 +18,11 @@
 
 #include "ConfigDlg.h"
 
+using namespace std;
+
 static void FindComboText(GtkWidget *combo, char plist[255][255], GList *list, char *conf)
 {
-	if (strlen(conf) > 0) { 
-		SetActiveComboItem(GTK_COMBO_BOX(combo), plist, list, conf); 
-	}
+	if (strlen(conf) > 0) SetActiveComboItem(GTK_COMBO_BOX(combo), plist, list, conf); 
 }
 
 	
@@ -85,8 +85,7 @@ static void TestPlugin(PluginConf confs, char* plugin, const char* name)
 	if (drv == NULL) return;
 
 	conf = (s32 (* (*)())()) SysLoadSym(drv, name);
-	if (SysLibError() == NULL) 
-		ret = (s32) conf();
+	if (SysLibError() == NULL) ret = (s32) conf();
 	chdir(file); /* change back*/      
 	SysCloseLibrary(drv);
 
@@ -382,12 +381,13 @@ void UpdateConfDlg() {
         ConfCreatePConf("Bios", &BiosConfS, Config.Bios);
 }
 
-void OnConfConf_PluginsPath(GtkButton *button, gpointer user_data) {
+void GetDirectory(GtkWidget *topWindow, const char *message, char *reply)
+{
 	gchar *File;
 	GtkWidget *dialog;
 	gint result;
 	
-	dialog = gtk_file_chooser_dialog_new ("Choose the Plugin Directory:", GTK_WINDOW (ConfDlg), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	dialog = gtk_file_chooser_dialog_new (message, GTK_WINDOW (topWindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
 	result = gtk_dialog_run (GTK_DIALOG (dialog));
 	
 	switch (result)
@@ -395,37 +395,31 @@ void OnConfConf_PluginsPath(GtkButton *button, gpointer user_data) {
 	case (GTK_RESPONSE_OK):
 		File = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (dialog));
 
-		strcpy(Config.PluginsDir, File);
-		if (Config.PluginsDir[strlen(Config.PluginsDir)-1] != '/')
-			strcat(Config.PluginsDir, "/");
+		strcpy(reply, File);
+		if (reply[strlen(reply)-1] != '/')
+			strcat(reply, "/");
 	
 		default:
 		gtk_widget_destroy (dialog);
 	}
+}
+
+void OnConfConf_PluginsPath(GtkButton *button, gpointer user_data) 
+{
+	char *reply;
+	
+	GetDirectory(ConfDlg,"Choose the Plugin Directory:", reply);
+	strcpy(Config.PluginsDir, reply);
 		
 	UpdateConfDlg();
 }
 
-void OnConfConf_BiosPath(GtkButton *button, gpointer user_data) {
-	gchar *File;
-	GtkWidget *dialog;
-	gint result;
+void OnConfConf_BiosPath(GtkButton *button, gpointer user_data) 
+{
+	char *reply;
 	
-	dialog = gtk_file_chooser_dialog_new ("Choose the Bios Directory:", GTK_WINDOW (ConfDlg), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
-	result = gtk_dialog_run (GTK_DIALOG (dialog));
-	
-	switch (result)
-	{
-	case (GTK_RESPONSE_OK):
-		File = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (dialog));
-
-		strcpy(Config.BiosDir, File);
-		if (Config.PluginsDir[strlen(Config.BiosDir)-1] != '/')
-			strcat(Config.BiosDir, "/");
-	
-		default:
-		gtk_widget_destroy (dialog);
-	}
+	GetDirectory(ConfDlg,"Choose the Bios Directory:", reply);
+	strcpy(Config.BiosDir, reply);
 		
 	UpdateConfDlg();
 }
@@ -477,72 +471,91 @@ void FindPlugins() {
 
 		if (strstr(plugin, ".so") == NULL) continue;
 		Handle = dlopen(plugin, RTLD_NOW);
-		if (Handle == NULL) {
-			printf("%s\n", dlerror()); continue;
-		}
+		if (Handle == NULL) Console::Error("%s\n", dlerror()); continue;
 
 		PS2EgetLibType = (_PS2EgetLibType) dlsym(Handle, "PS2EgetLibType");
 		PS2EgetLibName = (_PS2EgetLibName) dlsym(Handle, "PS2EgetLibName");
 		PS2EgetLibVersion2 = (_PS2EgetLibVersion2) dlsym(Handle, "PS2EgetLibVersion2");
 		if ((PS2EgetLibType == NULL) || (PS2EgetLibName == NULL) || (PS2EgetLibVersion2 == NULL))
 			continue;
+		
 		type = PS2EgetLibType();
 
-		if (type & PS2E_LT_GS) {
+		if (type & PS2E_LT_GS) 
+		{
 			version = PS2EgetLibVersion2(PS2E_LT_GS);
-			if (((version >> 16)&0xff) == PS2E_GS_VERSION) {
+			
+			if (((version >> 16)&0xff) == PS2E_GS_VERSION) 
 				ComboAddPlugin(name, &GSConfS, version, ent);
-			}
-            else
-                SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
+			else
+				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
 		}
-		if (type & PS2E_LT_PAD) {
+		if (type & PS2E_LT_PAD) 
+		{
 			_PADquery query;
 
 			query = (_PADquery)dlsym(Handle, "PADquery");
 			version = PS2EgetLibVersion2(PS2E_LT_PAD);
-			if (((version >> 16)&0xff) == PS2E_PAD_VERSION && query) {
-				if (query() & 0x1)
-					ComboAddPlugin(name, &PAD1ConfS, version, ent);
-				if (query() & 0x2)
-					ComboAddPlugin(name, &PAD2ConfS, version, ent);
-			} else SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
+			
+			if (((version >> 16)&0xff) == PS2E_PAD_VERSION && query)
+			{
+				if (query() & 0x1) ComboAddPlugin(name, &PAD1ConfS, version, ent);
+				if (query() & 0x2) ComboAddPlugin(name, &PAD2ConfS, version, ent);
+			}
+			else 
+				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
 		}
-		if (type & PS2E_LT_SPU2) {
+		if (type & PS2E_LT_SPU2) 
+		{
 			version = PS2EgetLibVersion2(PS2E_LT_SPU2);
-			if (((version >> 16)&0xff) == PS2E_SPU2_VERSION) {
+			
+			if (((version >> 16)&0xff) == PS2E_SPU2_VERSION) 
 				ComboAddPlugin(name, &SPU2ConfS, version, ent);
-			} else SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
+			else 
+				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
 		}
-		if (type & PS2E_LT_CDVD) {
+		if (type & PS2E_LT_CDVD) 
+		{
 			version = PS2EgetLibVersion2(PS2E_LT_CDVD);
-			if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) {
+			
+			if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) 
 				ComboAddPlugin(name, &CDVDConfS, version, ent);
-			} else SysPrintf("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
+			else 
+				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
 		}
-		if (type & PS2E_LT_DEV9) {
+		if (type & PS2E_LT_DEV9) 
+		{
 			version = PS2EgetLibVersion2(PS2E_LT_DEV9);
-			if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) {
+			
+			if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) 
 				ComboAddPlugin(name, &DEV9ConfS, version, ent);
-			} else SysPrintf("DEV9Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
+			else
+				Console::Notice("DEV9Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
 		}
-		if (type & PS2E_LT_USB) {
+		if (type & PS2E_LT_USB) 
+		{
 			version = PS2EgetLibVersion2(PS2E_LT_USB);
-			if (((version >> 16)&0xff) == PS2E_USB_VERSION) {
+			
+			if (((version >> 16)&0xff) == PS2E_USB_VERSION) 
 				ComboAddPlugin(name, &USBConfS, version, ent);
-			} else SysPrintf("USBPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
+			else 
+				Console::Notice("USBPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
 		}
-		if (type & PS2E_LT_FW) {
+		if (type & PS2E_LT_FW) 
+		{
 			version = PS2EgetLibVersion2(PS2E_LT_FW);
-			if (((version >> 16)&0xff) == PS2E_FW_VERSION) {
+			
+			if (((version >> 16)&0xff) == PS2E_FW_VERSION) 
 				ComboAddPlugin(name, &FWConfS, version, ent);
-			} else SysPrintf("FWPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
+			else 
+				Console::Notice("FWPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
 		}
 	}
 	closedir(dir);
 
 	dir = opendir(Config.BiosDir);
-	if (dir == NULL) {
+	if (dir == NULL) 
+	{
 		SysMessage(_("Could not open '%s' directory"), Config.BiosDir);
 		return;
 	}
