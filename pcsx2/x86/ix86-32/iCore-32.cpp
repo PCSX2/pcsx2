@@ -240,7 +240,7 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 				else MOV32MtoR(x86reg, _x86GetAddr(type, reg));
 			}
 		}
-}
+	}
 
 	return x86reg;
 }
