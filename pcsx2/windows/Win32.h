@@ -25,6 +25,8 @@
 #include "Misc.h"
 #include "resource.h"
 
+#define COMPILEDATE         __DATE__
+
 // --->>  Ini Configuration [ini.c]
 
 extern char g_WorkingFolder[g_MaxPath];
@@ -51,11 +53,6 @@ struct AppData
 	HMENU hMenu;         // Main window menu
 };
 
-extern AppData gApp;
-extern HWND hStatusWnd;
-extern PcsxConfig winConfig;		// local storage of the configuration options.
-extern bool g_GameInProgress;
-
 LRESULT WINAPI MainWndProc(HWND, UINT, WPARAM, LPARAM);
 void CreateMainWindow(int nCmdShow);
 void RunGui();
@@ -69,10 +66,35 @@ void ChangeLanguage(char *lang);
 
 void SysRestorableReset();
 
+void WinClose();
+void States_Load( const char* file, int num=-1 );
+void States_Save( const char* file, int num=-1 );
+void States_Load(int num);
+void States_Save(int num);
+void OnStates_LoadOther();
+void OnStates_SaveOther();
+int ParseCommandLine( int tokenCount, TCHAR *const *const tokens );
+void RunExecute( const char* elf_file, bool use_bios=false );
+void strcatz(char *dst, char *src);
+
 BOOL CALLBACK PatchBDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK AdvancedOptionsProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+extern AppData gApp;
+extern HWND hStatusWnd;
+extern PcsxConfig winConfig;		// local storage of the configuration options.
+extern bool g_GameInProgress;
+extern bool m_ReturnToGame;		// set to exit the RunGui message pump
+
+extern int UseGui;
+extern int nDisableSC; // screensaver
+extern bool AccBreak;
+extern unsigned int langsMax;
+
+extern MemoryAlloc<u8>* g_RecoveryState;
+extern const char* g_pRunGSState;
+extern int g_SaveGSStream;
 
 #endif
 

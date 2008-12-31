@@ -679,7 +679,7 @@ void cpuExecuteBios()
 	if( CHECK_EEREC ) Cpu->Reset();
 
 	Console::Notice("* PCSX2 *: ExecuteBios Complete");
-	GSprintf(5, "PCSX2 " PCSX2_VERSION "\nExecuteBios Complete\n");
+	//GSprintf(5, "PCSX2 " PCSX2_VERSION "\nExecuteBios Complete\n");
 }
 
 // for interpreter only
