@@ -41,7 +41,7 @@ bool UseGui = TRUE;
 bool needReset = TRUE;
 bool RunExe = FALSE;
 
-MemoryAlloc* g_RecoveryState = NULL;
+ MemoryAlloc<u8>* g_RecoveryState = NULL;
 bool g_GameInProgress = false;	// Set TRUE if a game is actively running.
 
 static bool AccBreak = false;

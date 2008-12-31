@@ -424,7 +424,7 @@ void SysRestorableReset()
 
 	try
 	{
-		g_RecoveryState = new MemoryAlloc();
+		g_RecoveryState = new MemoryAlloc<u8>( "Memory Savestate Recovery" );
 		memSavingState( *g_RecoveryState ).FreezeAll();
 		cpuShutdown();
 		g_GameInProgress = false;

@@ -104,8 +104,7 @@ namespace Threading
 				"xchgl          %2,%1"
 				:"=r" (result)
 				:"m"  (*Target), "0" (Value));
-			}
-
+		}
 		else
 		{
 		  /*
@@ -123,9 +122,8 @@ namespace Threading
 				"jnz            0b"
 				:"=&a" (result)
 				:"m"  (*Target), "r" (Value));
-			}
-
 		}
+		
 		return result;
 	}
 
@@ -136,15 +134,14 @@ namespace Threading
 			__asm__ __volatile__(
 				".intel_syntax\n"
 				 "lock xadd [%0], %%eax\n"
-				 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory"
-			);
+				 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory");
+		}
 		else
 		{
 			__asm__ __volatile__(
 				".intel_syntax\n"
 				 "xadd [%0], %%eax\n"
-				 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory"
-			);
+				 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory");
 		}
 	}
 
@@ -171,8 +168,7 @@ namespace Threading
 											/* else                    */
 											/*   EAX = [location]      */
 				:"=a" (result)
-				:"m"  (*dest), "r" (value), "a" (comp)
-			);
+				:"m"  (*dest), "r" (value), "a" (comp));
 		}
 		
 		return result;
@@ -199,6 +195,6 @@ namespace Threading
 		);
 		return old;
 	}
-
-}
 #endif
+	
+}

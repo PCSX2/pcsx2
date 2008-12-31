@@ -78,7 +78,7 @@ extern void SaveConfig();
 
 /* GtkGui */
 extern void init_widgets();
-extern MemoryAlloc* g_RecoveryState;
+extern MemoryAlloc<u8>* g_RecoveryState;
 extern bool g_GameInProgress;
 extern void SysRestorableReset();
 extern void SysDetect();
