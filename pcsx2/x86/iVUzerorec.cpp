@@ -336,13 +336,20 @@ void SuperVUInit(int vuindex)
 		jASSUME( vuindex < 0 );
 
 		// upper 4 bits cannot be nonzero!  <-- double negatives are bad english
-		// .. and how comes we only check for the uppermost bit (sign bit)... ?
+		// .. and how comes we only check for the uppermost bit (sign bit)... ? (air)
 		s_recVUMem = (u8*)SysMmap( 0x0c000000, VU_EXESIZE);
 
 		if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
 		{
-			Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
-			throw Exception::OutOfMemory( "Could not reserve memory for the SuperVU." );
+			// Allocation failed?  Well then let's just try an operating-system-assigned
+			// location, by specifying NULL as the address "hint."
+
+			s_recVUMem = (u8*)SysMmap( NULL, VU_EXESIZE);
+			if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
+			{
+				Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
+				throw Exception::OutOfMemory( "Could not reserve memory for the SuperVU." );
+			}
 		}
 
 		ProfilerRegisterSource("VURec",s_recVUMem, VU_EXESIZE);

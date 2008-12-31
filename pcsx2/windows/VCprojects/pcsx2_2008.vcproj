@@ -2686,7 +2686,7 @@
 				</Filter>
 			</Filter>
 			<Filter
-				Name="VU"
+				Name="VUmicro"
 				>
 				<File
 					RelativePath="..\..\VU.h"

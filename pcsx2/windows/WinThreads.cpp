@@ -29,7 +29,7 @@
 
 namespace Threading
 {
-	void CountLogicalCores( int LogicalCoresPerPhysicalCore )
+	void CountLogicalCores( int LogicalCoresPerPhysicalCPU, int PhysicalCoresPerPhysicalCPU )
 	{
 		DWORD vProcessCPUs;
 		DWORD vSystemCPUs;
@@ -49,7 +49,7 @@ namespace Threading
 		}
 
 		cpuinfo.LogicalCores = CPUs;
-		cpuinfo.PhysicalCores = CPUs / LogicalCoresPerPhysicalCore;
+		cpuinfo.PhysicalCores = ( CPUs / LogicalCoresPerPhysicalCPU ) * PhysicalCoresPerPhysicalCPU;
 		ptw32_smp_system = ( cpuinfo.LogicalCores > 1 ) ? TRUE : FALSE;
 	}
 
@@ -91,8 +91,6 @@ namespace Threading
 	// Note: assuming multicore is safer because it forces the interlocked routines to use
 	// the LOCK prefix.  The prefix works on single core CPUs fine (but is slow), but not
 	// having the LOCK prefix is very bad indeed.
-
-	static bool isMultiCore = true;		// assume more than one CPU (safer)
 
 	//////////////////////////////////////////////////////////////////////
 	// Win32 versions of InterlockedExchange.

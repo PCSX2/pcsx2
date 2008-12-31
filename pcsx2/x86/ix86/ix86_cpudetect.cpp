@@ -39,7 +39,7 @@ CPUINFO cpuinfo;
 
 #define cpuid(cmd,a,b,c,d) \
   __asm__ __volatile__("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
-		: "=a" (a), "=r" (b), "=c" (c), "=d" (d)  : "0" (cmd))
+		: "=a" (a), "=r" (b), "=c" (c), "=d" (d)  : "0" (cmd), "c" (0))
 
 extern s32 iCpuId( u32 cmd, u32 *regs )
 {
@@ -47,6 +47,10 @@ extern s32 iCpuId( u32 cmd, u32 *regs )
 
 #if defined (_MSC_VER) && _MSC_VER >= 1400
 
+   __asm
+   {
+      xor ecx, ecx; /* ecx should be zero for CPUID(4) */
+   }
    __cpuid( (int*)regs, cmd );
 
    return 0;
@@ -80,6 +84,7 @@ extern s32 iCpuId( u32 cmd, u32 *regs )
    __asm
    {
       mov eax, cmd;
+      xor ecx, ecx; /* ecx should be zero for CPUID(4) */
       cpuid;
       mov edi, [regs]
       mov [edi], eax;
@@ -259,7 +264,8 @@ void cpudetectInit()
    // Hack - prevents reg[2] & reg[3] from being optimized out of existance!
    num = sprintf(str, "\tx86Flags  =  %8.8x %8.8x\n", regs[3], regs[2]);
    
-   u32 LogicalCoresPerPhysicalCore = 0;
+   u32 LogicalCoresPerPhysicalCPU = 0;
+   u32 PhysicalCoresPerPhysicalCPU = 1;
 
    if ( cmds >= 0x00000001 ) 
    {
@@ -269,10 +275,18 @@ void cpudetectInit()
          cpuinfo.x86Model  = (regs[ 0 ] >>  4) & 0xf;
          cpuinfo.x86Family = (regs[ 0 ] >>  8) & 0xf;
          cpuinfo.x86PType  = (regs[ 0 ] >> 12) & 0x3;
-		 LogicalCoresPerPhysicalCore = ( regs[1] >> 16 ) & 0xff;
+		 LogicalCoresPerPhysicalCPU = ( regs[1] >> 16 ) & 0xff;
          x86_64_8BITBRANDID = regs[1] & 0xff;
          cpuinfo.x86Flags  =  regs[ 3 ];
          cpuinfo.x86Flags2 =  regs[ 2 ];
+      }
+   }
+   /* detect multicore for intel cpu */
+   if ((cmds >= 0x00000004) && !strcmp("GenuineIntel",cpuinfo.x86ID))
+   {
+      if ( iCpuId( 0x00000004, regs ) != -1 )
+      {
+         PhysicalCoresPerPhysicalCPU += ( regs[0] >> 26) & 0x3f;
       }
    }
 
@@ -286,6 +300,14 @@ void cpudetectInit()
 			x86_64_12BITBRANDID = regs[1] & 0xfff;
             cpuinfo.x86EFlags = regs[ 3 ];
             
+         }
+      }
+      /* detect multicore for amd cpu */
+      if ((cmds >= 0x80000008) && !strcmp("AuthenticAMD",cpuinfo.x86ID))
+      {
+         if ( iCpuId( 0x80000008, regs ) != -1 )
+         {
+            PhysicalCoresPerPhysicalCPU += ( regs[2] ) & 0xff;
          }
       }
    }
@@ -379,10 +401,10 @@ void cpudetectInit()
 	// --> Core Counting <--
 	// Hopefully this "best guess" method won't break on AMD cpus!
 
-	if( !cpucaps.hasMultiThreading || LogicalCoresPerPhysicalCore == 0 )
-		LogicalCoresPerPhysicalCore = 1;
+	if( !cpucaps.hasMultiThreading || LogicalCoresPerPhysicalCPU == 0 )
+		LogicalCoresPerPhysicalCPU = 1;
 
 	// This will assign values into cpuinfo.LogicalCores and PhysicalCores
-	Threading::CountLogicalCores( LogicalCoresPerPhysicalCore );
+	Threading::CountLogicalCores( LogicalCoresPerPhysicalCPU, PhysicalCoresPerPhysicalCPU );
 }
 

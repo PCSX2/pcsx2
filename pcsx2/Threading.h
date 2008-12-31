@@ -54,7 +54,7 @@ namespace Threading
 
 	// Returns the number of available logical CPUs (cores plus
 	// hyperthreaded cpus)
-	extern void CountLogicalCores( int LogicalCoresPerPhysicalCore );
+	extern void CountLogicalCores( int LogicalCoresPerPhysicalCPU, int PhysicalCoresPerPhysicalCPU );
 
 	// Releases a timeslice to other threads.
 	extern void Timeslice();

@@ -30,14 +30,14 @@ namespace Threading
 {
 	// Note: Apparently this solution is Linux/Solaris only.
 	// FreeBSD/OsX need something far more complicated (apparently)
-	void CountLogicalCores( int LogicalCoresPerPhysicalCore )
+	void CountLogicalCores( int LogicalCoresPerPhysicalCPU, int PhysicalCoresPerPhysicalCPU )
 	{
 		const uint numCPU = sysconf( _SC_NPROCESSORS_ONLN );
 		if( numCPU > 0 )
 		{
 			isMultiCore = numCPU > 1;
 			cpuinfo.LogicalCores = numCPU;
-			cpuinfo.PhysicalCores = numCPU / LogicalCoresPerPhysicalCore;
+			cpuinfo.PhysicalCores = ( numCPU / LogicalCoresPerPhysicalCPU ) * PhysicalCoresPerPhysicalCPU;
 		}
 		else
 		{
