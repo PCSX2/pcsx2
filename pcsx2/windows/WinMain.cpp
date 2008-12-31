@@ -100,7 +100,7 @@ void ExecuteCpu()
 
 // Runs and ELF image directly (ISO or ELF program or BIN)
 // Used by Run::FromCD and such
-void RunExecute( const char* elf_file )
+void RunExecute( const char* elf_file, bool use_bios=false )
 {
 	SetThreadPriority(GetCurrentThread(), Config.ThPriority);
 	SetPriorityClass(GetCurrentProcess(), Config.ThPriority == THREAD_PRIORITY_HIGHEST ? ABOVE_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS);
@@ -120,7 +120,7 @@ void RunExecute( const char* elf_file )
 	if (OpenPlugins(g_TestRun.ptitle) == -1)
 		return;
 
-	if( elf_file == NULL || elf_file[0] == 0)
+	if( elf_file == NULL )
 	{
 		if(g_RecoveryState != NULL)
 		{
@@ -150,8 +150,10 @@ void RunExecute( const char* elf_file )
 
 			cpuExecuteBios();
 			char ename[g_MaxPath];
-			GetPS2ElfName(ename);
-			loadElfFile( (elf_file == NULL) ? ename : "");
+			ename[0] = 0;
+			if( !use_bios )
+				GetPS2ElfName(ename);
+			loadElfFile( ename );
 		}
 	}
 	else
@@ -1166,7 +1168,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				if( g_GameInProgress )
 					m_ReturnToGame = 1;
 				else
-					RunExecute( "" );	// boots bios if no savestate is to be recovered
+					RunExecute( NULL, true );	// boots bios if no savestate is to be recovered
 			return FALSE;
 
 			case ID_FILE_RUNCD:
