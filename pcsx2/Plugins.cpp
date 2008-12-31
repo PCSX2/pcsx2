@@ -230,7 +230,7 @@ USBhandler usbHandler;
 
 // for pad1/2
 #define MapSymbolPAD(var,sym,name) MapSymbolVar(var##name,sym##name)
-#define MapSymbolPAD_Fallback(var,sym,name) if((MapSymbolVarType(var##name,_##sym##name,var##name))==NULL) var##name = var##_##name
+#define MapSymbolPAD_Fallback(var,sym,name) if((MapSymbolVarType(var##name,_##sym##name,sym##name))==NULL) var##name = var##_##name
 #define MapSymbolPAD_Error(var,sym,name) MapSymbolVar_Error(var##name,sym##name)
 
 #define TestPS2Esyms(type) if(_TestPS2Esyms(drv,PS2E_LT_##type,PS2E_##type##_VERSION,filename) < 0) return -1;

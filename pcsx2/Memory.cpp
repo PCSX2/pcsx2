@@ -2735,7 +2735,7 @@ void memReset()
 	memset(PS2MEM_SCRATCH, 0, Ps2MemSize::Scratch);
 #else
 	vtlb_Reset();
-	memset(psM, 0, Ps2MemSize::Rom);
+	memset(psM, 0, Ps2MemSize::Base);
 	memset(psS, 0, Ps2MemSize::Scratch);
 #endif
 

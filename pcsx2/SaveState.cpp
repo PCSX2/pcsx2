@@ -86,7 +86,7 @@ void SaveState::FreezeAll()
 
 	FreezeMem(PS2MEM_BASE, Ps2MemSize::Base);	// 32 MB main memory   
 	FreezeMem(PS2MEM_ROM, Ps2MemSize::Rom);		// 4 mb rom memory
-	FreezeMem(PS2MEM_ROM1, 0x00040000);			// 256kb rom1 memory
+	FreezeMem(PS2MEM_ROM1, Ps2MemSize::Rom1);	// 256kb rom1 memory
 	FreezeMem(PS2MEM_SCRATCH, Ps2MemSize::Scratch);	// scratch pad 
 	FreezeMem(PS2MEM_HW, 0x00010000);			// hardware memory
 

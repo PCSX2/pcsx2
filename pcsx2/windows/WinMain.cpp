@@ -1197,7 +1197,6 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			case ID_CONFIG_GRAPHICS:
 				if (GSconfigure) GSconfigure();
 				return FALSE;
-         
 
 			case ID_CONFIG_CONTROLLERS:
 				if (PAD1configure) PAD1configure();
@@ -1789,7 +1788,7 @@ void *SysLoadSym(void *lib, const char *sym) {
 }
 
 const char *SysLibError() {
-	if (GetLastError()) 
+	if( errval ) 
 	{ 
 		static char perr[4096];
 
