@@ -225,21 +225,20 @@ void psxDma11(u32 madr, u32 bcr, u32 chcr) {
 			madr++;
 			if(sio2.packet.sendSize == BUFSIZE) {
 				HW_DMA11_MADR = madr;
-				PSX_INT(11,(size>>2));	// Interrupts should always occur at the end
+				PSX_INT(IopEvt_Dma11,(size>>2));	// Interrupts should always occur at the end
 				return;
 			}
 		}
 	}
 
 	HW_DMA11_MADR = madr;
-	PSX_INT(11,(size>>2));	// Interrupts should always occur at the end
+	PSX_INT(IopEvt_Dma11,(size>>2));	// Interrupts should always occur at the end
 }
 
 void psxDMA11Interrupt()
 {
 	HW_DMA11_CHCR &= ~0x01000000;
 	psxDmaInterrupt2(4);
-	psxRegs.interrupt&= ~(1 << 11);
 }
 
 void psxDma12(u32 madr, u32 bcr, u32 chcr) {
@@ -257,14 +256,13 @@ void psxDma12(u32 madr, u32 bcr, u32 chcr) {
 		if(sio2.recvIndex == sio2.packet.sendSize) break;
 	}
 	HW_DMA12_MADR = madr;
-	PSX_INT(12,(size>>2));	// Interrupts should always occur at the end
+	PSX_INT(IopEvt_Dma12,(size>>2));	// Interrupts should always occur at the end
 }
 
 void psxDMA12Interrupt()
 {
 	HW_DMA12_CHCR &= ~0x01000000;
 	psxDmaInterrupt2(5);
-	psxRegs.interrupt&= ~(1 << 12);
 }
 
 void SaveState::sio2Freeze() {

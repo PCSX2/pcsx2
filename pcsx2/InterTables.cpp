@@ -28,17 +28,17 @@ namespace EE
 		// And yes this whole thing is an ugly hack.  I'll clean it up once we have
 		// a better idea how exactly the cycle ratios will work best.
 
-		static const int Cycles_Default = 8;
-		static const int Cycles_Branch = 16;
+		static const int Cycles_Default = 9;
+		static const int Cycles_Branch = 12;
 
 		static const int Cycles_Mult = 2*8;
-		static const int Cycles_Div = 14*8;
+		static const int Cycles_Div = 13*8;
 		static const int Cycles_FPU_Sqrt = 4*8;
 		static const int Cycles_MMI_Mult = 3*8;
-		static const int Cycles_MMI_Div = 23*8;
+		static const int Cycles_MMI_Div = 22*8;
 
-		static const int Cycles_Store = 23;			// 21 for snes emu
-		static const int Cycles_Load = 14;			// 13 for snes emu
+		static const int Cycles_Store = 21;			// 21 for snes emu
+		static const int Cycles_Load = 12;			// 13 for snes emu
 
 		MakeOpcode( Unknown, Default );
 		MakeOpcode( MMI_Unknown, Default );

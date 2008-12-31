@@ -711,7 +711,7 @@ u64 psxRcntCycles(int index)
 void SaveState::psxRcntFreeze()
 {
 #ifdef PCSX2_VIRTUAL_MEM
-	if( IsLoading() && (m_version < 0x7a300010) )
+	if( IsLoading() && (GetVersion() < 0x10) )
 	{
 		// --- Reading Mode, Old Version ---
 		// struct used to be 32bit count and target
@@ -728,10 +728,20 @@ void SaveState::psxRcntFreeze()
     else
 	{
 	    Freeze(psxCounters);
+
+		// new in v.11
+		if( GetVersion() > 0x10 )
+		{
+			Freeze(psxNextCounter);
+			Freeze(psxNextsCounter);
+		}
 	}
 
-	if( IsLoading() && (m_version <= 0x7a300010) )
+	if( IsLoading() && (GetVersion() <= 0x10) )
 	{
+		psxNextCounter = 0;
+		psxNextsCounter = psxRegs.cycle;
+
 		// This is needed to make old save states compatible.
 		psxCounters[6].rate = 768*12;
 		psxCounters[6].CycleT = psxCounters[6].rate;
@@ -745,12 +755,6 @@ void SaveState::psxRcntFreeze()
 
 		if(psxCounters[3].mode & IOPCNT_ALT_SOURCE)
 			psxCounters[3].rate = PSXHBLANK;
-
-		// [TODO] save these to the state when we add a new version
-		// For now forcing them to branch immediately will be good enough
-		//  (all counters will be updated and future branches predictaed accurately)
-		psxNextCounter = 0;
-		psxNextsCounter = psxRegs.cycle;
 	}
 #else
 

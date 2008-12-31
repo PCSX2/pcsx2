@@ -177,7 +177,7 @@ __forceinline int psxTestCycle( u32 startCycle, s32 delta )
 	return (int)(psxRegs.cycle - startCycle) >= delta;
 }
 
-__forceinline void PSX_INT( int n, s32 ecycle )
+__forceinline void PSX_INT( IopEventId n, s32 ecycle )
 {
 	// Generally speaking games shouldn't throw ints that haven't been cleared yet.
 	// It's usually indicative os something amiss in our emulation, so uncomment this
@@ -197,20 +197,21 @@ __forceinline void PSX_INT( int n, s32 ecycle )
 	if( psxCycleEE < 0 )
 	{
 		// The EE called this int, so inform it to branch as needed:
-
+		// fixme - this doesn't take into account EE/IOP sync (the IOP may be running
+		// ahead or behind the EE as per the EEsCycles value)
 		s32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
 		cpuSetNextBranchDelta( iopDelta );
 	}
 }
 
-static __forceinline void PSX_TESTINT( u32 n, void (*callback)(), int runIOPcode )
+static __forceinline void IopTestEvent( IopEventId n, void (*callback)() )
 {
 	if( !(psxRegs.interrupt & (1 << n)) ) return;
 
 	if( psxTestCycle( psxRegs.sCycle[n], psxRegs.eCycle[n] ) )
 	{
+		psxRegs.interrupt &= ~(1 << n);
 		callback();
-		//if( runIOPcode ) iopBranchAction = 1;
 	}
 	else
 		psxSetNextBranch( psxRegs.sCycle[n], psxRegs.eCycle[n] );
@@ -218,23 +219,24 @@ static __forceinline void PSX_TESTINT( u32 n, void (*callback)(), int runIOPcode
 
 static __forceinline void _psxTestInterrupts()
 {
-	PSX_TESTINT(9, sif0Interrupt, 1);	// SIF0
-	PSX_TESTINT(10, sif1Interrupt, 1);	// SIF1
-	PSX_TESTINT(16, sioInterrupt, 0);
-	PSX_TESTINT(19, cdvdReadInterrupt, 1);
+	IopTestEvent(IopEvt_SIF0,		sif0Interrupt);	// SIF0
+	IopTestEvent(IopEvt_SIF1,		sif1Interrupt);	// SIF1
+	IopTestEvent(IopEvt_SIO,		sioInterrupt);
+	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
 
 	// Profile-guided Optimization (sorta)
 	// The following ints are rarely called.  Encasing them in a conditional
 	// as follows helps speed up most games.
 
-	if( psxRegs.interrupt & ( (3ul<<11) | (3ul<<20) | (3ul<<17) ) )
+	if( psxRegs.interrupt & ( (1ul<<5) | (3ul<<11) | (3ul<<20) | (3ul<<17) ) )
 	{
-		PSX_TESTINT(11, psxDMA11Interrupt,0);	// SIO2
-		PSX_TESTINT(12, psxDMA12Interrupt,0);	// SIO2
-		PSX_TESTINT(17, cdrInterrupt,0);
-		PSX_TESTINT(18, cdrReadInterrupt,0);
-		PSX_TESTINT(20, dev9Interrupt,1);
-		PSX_TESTINT(21, usbInterrupt,1);
+		IopTestEvent(IopEvt_Cdvd,		cdvdActionInterrupt);
+		IopTestEvent(IopEvt_Dma11,		psxDMA11Interrupt);	// SIO2
+		IopTestEvent(IopEvt_Dma12,		psxDMA12Interrupt);	// SIO2
+		IopTestEvent(IopEvt_Cdrom,		cdrInterrupt);
+		IopTestEvent(IopEvt_CdromRead,	cdrReadInterrupt);
+		IopTestEvent(IopEvt_DEV9,		dev9Interrupt);
+		IopTestEvent(IopEvt_USB,		usbInterrupt);
 	}
 }
 

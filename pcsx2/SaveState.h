@@ -30,9 +30,9 @@
 //  If you make changes to the savestate version, please increment the value below.
 
 #ifdef PCSX2_VIRTUAL_MEM
-static const u32 g_SaveVersion = 0x7a300010;
+static const u32 g_SaveVersion = 0x7a300011;
 #else
-static const u32 g_SaveVersion = 0x8b400000;
+static const u32 g_SaveVersion = 0x8b400001;
 #endif
 
 // This class provides the base API for both loading and saving savestates.
@@ -51,7 +51,16 @@ public:
 	static void GetFilename( char* dest, int slot );
 
 	// Gets the version of savestate that this object is acting on.
-	u32 GetVersion() const { return m_version; }
+	// The version refers to the low 16 bits only (high 16 bits classifies Pcsx2 build types)
+	u32 GetVersion() const
+	{
+#ifdef PCSX2_VIRTUAL_MEM
+		return m_version & 0xffff;
+#else
+		// HACK!  Matches the vTLB build versions with VM
+		return (m_version & 0xffff) + 0x10;
+#endif
+	}
 
 	// Loads or saves the entire emulation state.
 	// Note: The Cpu state must be reset, and plugins *open*, prior to Defrosting
@@ -64,6 +73,14 @@ public:
 	void Freeze( T& data )
 	{
 		FreezeMem( &data, sizeof( T ) );
+	}
+
+	// FreezeLEgacy can be used to load structures short of their full size, which is
+	// useful for loading structures that have had new stuff added since a previous version.
+	template<typename T>
+	void FreezeLegacy( T& data, int sizeOfNewStuff )
+	{
+		FreezeMem( &data, sizeof( T ) - sizeOfNewStuff );
 	}
 
 	// Loads or saves a plugin.  Plugin name is for console logging purposes.
@@ -148,12 +165,12 @@ public:
 class memBaseStateInfo : public SaveState
 {
 protected:
-	MemoryAlloc& m_memory;
+	MemoryAlloc<u8>& m_memory;
 	int m_idx;		// current read/write index of the allocation
 
 public:
 	virtual ~memBaseStateInfo() { }
-	memBaseStateInfo( MemoryAlloc& memblock, const char* msg );
+	memBaseStateInfo( MemoryAlloc<u8>& memblock, const char* msg );
 };
 
 class memSavingState : public memBaseStateInfo
@@ -164,7 +181,7 @@ protected:
 
 public:
 	virtual ~memSavingState() { }
-	memSavingState( MemoryAlloc& save_to );
+	memSavingState( MemoryAlloc<u8>& save_to );
 	
 	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	// Saving of state data to a memory buffer
@@ -176,7 +193,7 @@ class memLoadingState : public memBaseStateInfo
 {
 public:
 	virtual ~memLoadingState();
-	memLoadingState(MemoryAlloc& load_from );
+	memLoadingState(MemoryAlloc<u8>& load_from );
 
 	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	// Loading of state data from a memory buffer...

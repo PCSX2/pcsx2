@@ -331,7 +331,9 @@ static void SuperVURecompile();
 // allocate VU resources
 void SuperVUInit(int vuindex)
 {
-	if( vuindex < 0 ) {
+	if( s_recVUMem == NULL )
+	{
+		jASSUME( vuindex < 0 );
 
 		// upper 4 bits cannot be nonzero!  <-- double negatives are bad english
 		// .. and how comes we only check for the uppermost bit (sign bit)... ?
@@ -340,7 +342,7 @@ void SuperVUInit(int vuindex)
 		if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
 		{
 			Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
-			throw std::bad_alloc();
+			throw Exception::OutOfMemory( "Could not reserve memory for the SuperVU." );
 		}
 
 		ProfilerRegisterSource("VURec",s_recVUMem, VU_EXESIZE);
@@ -348,7 +350,9 @@ void SuperVUInit(int vuindex)
 		s_recVUPtr = s_recVUMem;
 		recVUStack = new u8[SUPERVU_STACKSIZE * 4];
 	}
-	else {
+
+	if( vuindex >= 0 )
+	{
 		recVUHeaders[vuindex] = new VuFunctionHeader* [s_MemSize[vuindex]/8];
 		recVUBlocks[vuindex] = new VuBlockHeader[s_MemSize[vuindex]/8];
 		s_plistCachedHeaders[vuindex] = new list<VuFunctionHeader*>[s_MemSize[vuindex]/8];

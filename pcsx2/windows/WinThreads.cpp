@@ -115,9 +115,10 @@ namespace Threading
 		long result;
 
 		// Use our own implementation...
-		// Preserving ecx/edx shouldn't be necessary here...
+		// Pcsx2 won't use threads unless it's a multicore cpu, so no need to use
+		// the optimized single-core method.
 
-		if( ptw32_smp_system )
+		if( true ) //ptw32_smp_system )
 		{
 			__asm
 			{

@@ -76,7 +76,7 @@ void strcatz(char *dst, char *src) {
 	strcpy(dst + len, src);
 }
 
-static MemoryAlloc* g_RecoveryState = NULL;
+static MemoryAlloc<u8>* g_RecoveryState = NULL;
 
 //2002-09-20 (Florin)
 BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);//forward def
@@ -1705,7 +1705,7 @@ void SysRestorableReset()
 
 	try
 	{
-		g_RecoveryState = new MemoryAlloc();
+		g_RecoveryState = new MemoryAlloc<u8>( "Memory Savestate Recovery" );
 		memSavingState( *g_RecoveryState ).FreezeAll();
 		cpuShutdown();
 		g_GameInProgress = false;

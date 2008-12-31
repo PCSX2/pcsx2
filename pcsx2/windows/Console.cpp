@@ -95,7 +95,7 @@ namespace Console
 
 		if (emuLog != NULL)
 		{
-			fputs("\r\n", emuLog);
+			fputs("\n", emuLog);
 			fflush( emuLog );
 		}
 
@@ -134,7 +134,7 @@ namespace Console
 		char msg[2048];
 
 		vsprintf_s(msg,2045,fmt,args);
-		strcat( msg, "\r\n" );
+		strcat( msg, "\n" );
 		SetColor( color );
 		Write( msg );
 		ClearColor();
@@ -196,7 +196,7 @@ namespace Console
 		vsprintf_s(msg,2045,fmt,list);
 		va_end(list);
 
-		strcat( msg, "\r\n" );
+		strcat( msg, "\n" );
 		Write( msg );
 		if( emuLog != NULL )
 			fflush( emuLog );		// manual flush to accomany manual newline

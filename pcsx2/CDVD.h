@@ -82,12 +82,16 @@ struct cdvdStruct {
 	int mg_datatype;//0-data(encrypted); 1-header
 	u8	mg_kbit[16];//last BIT key 'seen'
 	u8	mg_kcon[16];//last content key 'seen'
-//	char Unused[4096];
+
+	u8  Action;			// the currently scheduled emulated action
+	u32 SeekToSector;	// Holds the destination sector during seek operations.
+	u32 ReadTime;		// Avg. time to read one block of data (in Iop cycles)
+	bool Spinning;		// indicates if the Cdvd is spinning or needs a spinup delay
 };
 
 void cdvdReset();
 void cdvdVsync();
-int  cdvdInterrupt();
+extern void  cdvdActionInterrupt();
 extern void  cdvdReadInterrupt();
 void cdvdNewDiskCB();
 u8   cdvdRead04(void);

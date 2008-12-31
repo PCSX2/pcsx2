@@ -80,122 +80,125 @@ namespace Threading
 		return NULL;
 	}
 
-}
+	/////////////////////////////////////////////////////////////////////////
+	// Cross-platform atomic operations for GCC.
+	// These are much faster than the old versions for single core CPUs.
+	// Note, I've disabled the single core optimization, because pcsx2 shouldn't
+	// ever create threads on single core CPUs anyway.
 
-/////////////////////////////////////////////////////////////////////////
-// Cross-platform atomic operations for GCC.
-// These are much faster than the old versions for single core CPUs.
-
-__forceinline long pcsx2_InterlockedExchange(volatile long* Target, long Value)
-{
-	long result;
-	/*
-	 * The XCHG instruction always locks the bus with or without the
-	 * LOCKED prefix. This makes it significantly slower than CMPXCHG on
-	 * uni-processor machines. The Windows InterlockedExchange function
-	 * is nearly 3 times faster than the XCHG instruction, so this routine
-	 * is not yet very useful for speeding up pthreads.
-	 */
-
-	if( isMultiCore )
+	__forceinline long pcsx2_InterlockedExchange(volatile long* Target, long Value)
 	{
-		__asm__ __volatile__ (
-			"xchgl          %2,%1"
-			:"=r" (result)
-			:"m"  (*Target), "0" (Value));
+		long result;
+		/*
+		 * The XCHG instruction always locks the bus with or without the
+		 * LOCKED prefix. This makes it significantly slower than CMPXCHG on
+		 * uni-processor machines. The Windows InterlockedExchange function
+		 * is nearly 3 times faster than the XCHG instruction, so this routine
+		 * is not yet very useful for speeding up pthreads.
+		 */
 
+
+		if( true ) //isMultiCore )
+		{
+			__asm__ __volatile__ (
+				"xchgl          %2,%1"
+				:"=r" (result)
+				:"m"  (*Target), "0" (Value));
+			}
+
+		else
+		{
+		  /*
+		   * Faster version of XCHG for uni-processor systems because
+		   * it doesn't lock the bus. If an interrupt or context switch
+		   * occurs between the movl and the cmpxchgl then the value in
+		   * 'location' may have changed, in which case we will loop
+		   * back to do the movl again.
+		   */
+
+			__asm__ __volatile__ (
+				"0:\n\t"
+				"movl           %1,%%eax\n\t"
+				"cmpxchgl       %2,%1\n\t"
+				"jnz            0b"
+				:"=&a" (result)
+				:"m"  (*Target), "r" (Value));
+			}
+
+		}
+		return result;
 	}
-	else
+
+	__forceinline long pcsx2_InterlockedExchangeAdd(volatile long* Addend, long Value)
 	{
-      /*
-       * Faster version of XCHG for uni-processor systems because
-       * it doesn't lock the bus. If an interrupt or context switch
-       * occurs between the movl and the cmpxchgl then the value in
-       * 'location' may have changed, in which case we will loop
-       * back to do the movl again.
-	   */
-
-		__asm__ __volatile__ (
-			"0:\n\t"
-			"movl           %1,%%eax\n\t"
-			"cmpxchgl       %2,%1\n\t"
-			"jnz            0b"
-			:"=&a" (result)
-			:"m"  (*Target), "r" (Value));
-
+		if( true ) //isMultiCore )
+		{
+			__asm__ __volatile__(
+				".intel_syntax\n"
+				 "lock xadd [%0], %%eax\n"
+				 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory"
+			);
+		else
+		{
+			__asm__ __volatile__(
+				".intel_syntax\n"
+				 "xadd [%0], %%eax\n"
+				 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory"
+			);
+		}
 	}
-	return result;
-}
 
-__forceinline long pcsx2_InterlockedExchangeAdd(volatile long* Addend, long Value)
-{
-	if( isMultiCore )
+	__forceinline long pcsx2_InterlockedCompareExchange(volatile long *dest, long value, long comp)
 	{
-		__asm__ __volatile__(
-			".intel_syntax\n"
-			 "lock xadd [%0], %%eax\n"
-			 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory"
-		);
-	}
-	else
-	{
-		__asm__ __volatile__(
-			".intel_syntax\n"
-			 "xadd [%0], %%eax\n"
-			 ".att_syntax\n" : : "r"(Addend), "a"(Value) : "memory"
-		);
-	}
-}
+		long result;
 
-__forceinline long pcsx2_InterlockedCompareExchange(volatile long *dest, long value, long comp)
-{
-	long result;
-
-	if( isMultiCore )
-	{
-		__asm__ __volatile__ (
-			"lock\n\t"
-			"cmpxchgl       %2,%1"      /* if (EAX == [location])  */
-										/*   [location] = value    */
-										/* else                    */
-										/*   EAX = [location]      */
-		:"=a" (result)
-		:"m"  (*dest), "r" (value), "a" (comp));
-    }
-	else
-    {
-      __asm__ __volatile__ (
-			"cmpxchgl       %2,%1"      /* if (EAX == [location])  */
-										/*   [location] = value    */
-										/* else                    */
-										/*   EAX = [location]      */
+		if( true ) //isMultiCore )
+		{
+			__asm__ __volatile__ (
+				"lock\n\t"
+				"cmpxchgl       %2,%1"      /* if (EAX == [location])  */
+											/*   [location] = value    */
+											/* else                    */
+											/*   EAX = [location]      */
 			:"=a" (result)
-			:"m"  (*dest), "r" (value), "a" (comp)
-		);
+			:"m"  (*dest), "r" (value), "a" (comp));
+		}
+		else
+		{
+		  __asm__ __volatile__ (
+				"cmpxchgl       %2,%1"      /* if (EAX == [location])  */
+											/*   [location] = value    */
+											/* else                    */
+											/*   EAX = [location]      */
+				:"=a" (result)
+				:"m"  (*dest), "r" (value), "a" (comp)
+			);
+		}
+		
+		return result;
 	}
-	
-	return result;
-}
 
-#ifdef __x86_64__
-__forceinline void pcsx2_InterlockedExchange64(volatile s64* Target, s64 Value)
-{
-	__asm__ __volatile__(
-		".intel_syntax\n"
-		 "lock xchg [%0], %%rax\n"
-		 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory"
-	);
-	return 0;
-}
+	#ifdef __x86_64__
+	__forceinline void pcsx2_InterlockedExchange64(volatile s64* Target, s64 Value)
+	{
+		__asm__ __volatile__(
+			".intel_syntax\n"
+			 "lock xchg [%0], %%rax\n"
+			 ".att_syntax\n" : : "r"(Target), "a"(Value) : "memory"
+		);
+		return 0;
+	}
 
-__forceinline s64 pcsx2_InterlockedCompareExchange64(volatile s64* dest, s64 exch, s64 comp)
-{
-	s64 old;
-	__asm__ __volatile__( 
-		"lock; cmpxchgq %q2, %q1"
-		: "=a" (old)
-		: "r" (exch), "m" (*dest), "a" (comp)
-	);
-	return old;
+	__forceinline s64 pcsx2_InterlockedCompareExchange64(volatile s64* dest, s64 exch, s64 comp)
+	{
+		s64 old;
+		__asm__ __volatile__( 
+			"lock; cmpxchgq %q2, %q1"
+			: "=a" (old)
+			: "r" (exch), "m" (*dest), "a" (comp)
+		);
+		return old;
+	}
+
 }
 #endif

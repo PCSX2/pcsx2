@@ -203,10 +203,13 @@ gzLoadingState::gzLoadingState( const char* filename ) :
 			throw Exception::UnsupportedStateVersion();
 		}
 #else
-		Console::Error(
-			"Savestate load aborted:\n"
-			"\tVTLB edition cannot safely load savestates created by the VM edition." );
-		throw Exception::UnsupportedStateVersion();
+		if( ( m_version >> 16 ) == 0x7a30 )
+		{
+			Console::Error(
+				"Savestate load aborted:\n"
+				"\tVTLB edition cannot safely load savestates created by the VM edition." );
+			throw Exception::UnsupportedStateVersion();
+		}
 #endif
 	}
 }
@@ -239,7 +242,7 @@ void gzSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int 
 
 	fP.data = (s8*)malloc(fP.size);
 	if (fP.data == NULL)
-		throw std::bad_alloc();
+		throw Exception::OutOfMemory();
 
 	if(freezer(FREEZE_SAVE, &fP) == -1)
 		throw Exception::FreezePluginFailure( name, "saving" );
@@ -261,7 +264,7 @@ void gzLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int
 
 	fP.data = (s8*)malloc(fP.size);
 	if (fP.data == NULL)
-		throw std::bad_alloc();
+		throw Exception::OutOfMemory();
 	gzread(m_file, fP.data, fP.size);
 
 	if( gzeof( m_file ) )
@@ -276,14 +279,14 @@ void gzLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int
 //////////////////////////////////////////////////////////////////////////////////
 // uncompressed to/from memory state saves implementation
 
-memBaseStateInfo::memBaseStateInfo( MemoryAlloc& memblock, const char* msg ) :
+memBaseStateInfo::memBaseStateInfo( MemoryAlloc<u8>& memblock, const char* msg ) :
   SaveState( msg, "Memory" )
 , m_memory( memblock )
 , m_idx( 0 )
 {
 }
 
-memSavingState::memSavingState( MemoryAlloc& save_to ) : memBaseStateInfo( save_to, _("Saving state to: ") )
+memSavingState::memSavingState( MemoryAlloc<u8>& save_to ) : memBaseStateInfo( save_to, _("Saving state to: ") )
 {
 	save_to.ChunkSize = ReallocThreshold;
 	save_to.MakeRoomFor( MemoryBaseAllocSize );
@@ -302,7 +305,7 @@ void memSavingState::FreezeMem( void* data, int size )
 		dest[m_idx] = *src;
 }
 
-memLoadingState::memLoadingState(MemoryAlloc& load_from ) : 
+memLoadingState::memLoadingState(MemoryAlloc<u8>& load_from ) : 
 	memBaseStateInfo( load_from, _("Loading state from: ") )
 {
 }
@@ -349,7 +352,7 @@ void memLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(in
 	Freeze( fP.size );
 	if( fP.size == 0 ) return;
 
-	if( ( fP.size + m_idx ) > m_memory.GetSize() )
+	if( ( fP.size + m_idx ) > m_memory.GetSizeInBytes() )
 	{
 		assert(0);
 		throw Exception::BadSavedState( "memory" );

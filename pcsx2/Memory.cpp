@@ -207,7 +207,7 @@ int memInit() {
 		// alloc virtual mappings
 		memLUT = (PSMEMORYMAP*)_aligned_malloc(0x100000 * sizeof(PSMEMORYMAP), 16);
 		if( memLUT == NULL )
-			throw std::bad_alloc();
+			throw Exception::OutOfMemory( "Out of memory when allocating memLUT." );
 
 		memset(memLUT, 0, sizeof(PSMEMORYMAP)*0x100000);
 		for (i=0; i<0x02000; i++) memLUT[i + 0x00000] = initMemoryMap(&s_psM.aPFNs[i], &s_psM.aVFNs[i]);
@@ -225,7 +225,7 @@ int memInit() {
 		memcpy(memLUT+0xa0000, memLUT, 0x20000*sizeof(PSMEMORYMAP));
 
 		if(psxInit() == -1)
-			throw std::bad_alloc( "IOP memory allocations failed" );
+			Exception::OutOfMemory( "IOP memory allocations failed" );
 
 		return 0;
 	}

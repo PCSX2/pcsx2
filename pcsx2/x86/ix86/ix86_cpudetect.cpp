@@ -343,7 +343,7 @@ void cpudetectInit()
 	cpucaps.hasStreamingSIMDExtensions                   = ( cpuinfo.x86Flags >> 25 ) & 1; //sse
 	cpucaps.hasStreamingSIMD2Extensions                  = ( cpuinfo.x86Flags >> 26 ) & 1; //sse2
 	cpucaps.hasSelfSnoop                                 = ( cpuinfo.x86Flags >> 27 ) & 1;
-	cpucaps.hasHyperThreading                            = ( cpuinfo.x86Flags >> 28 ) & 1;
+	cpucaps.hasMultiThreading                            = ( cpuinfo.x86Flags >> 28 ) & 1;
 	cpucaps.hasThermalMonitor                            = ( cpuinfo.x86Flags >> 29 ) & 1;
 	cpucaps.hasIntel64BitArchitecture                    = ( cpuinfo.x86Flags >> 30 ) & 1;
 	//that is only for AMDs
@@ -379,7 +379,7 @@ void cpudetectInit()
 	// --> Core Counting <--
 	// Hopefully this "best guess" method won't break on AMD cpus!
 
-	if( !cpucaps.hasHyperThreading || LogicalCoresPerPhysicalCore == 0 )
+	if( !cpucaps.hasMultiThreading || LogicalCoresPerPhysicalCore == 0 )
 		LogicalCoresPerPhysicalCore = 1;
 
 	// This will assign values into cpuinfo.LogicalCores and PhysicalCores

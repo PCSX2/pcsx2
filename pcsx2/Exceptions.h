@@ -61,6 +61,13 @@ protected:
 
 namespace Exception
 {
+	class OutOfMemory : public std::runtime_error
+	{
+	public:
+		explicit OutOfMemory( const std::string& msg="Out of memory!" ) :
+			runtime_error( msg ) {}
+	};
+
 	// This exception  exception thrown any time an operation is attempted when an object
 	// is in an uninitialized state.
 	class InvalidOperation : public std::logic_error
@@ -175,6 +182,17 @@ namespace Exception
 			const std::string& msg="File not found or permission denied" ) :
 		Stream( objname, msg ) {}
 	};
+
+	// Generic End of Stream exception (sometimes an error, and sometimes just used as a
+	// shortcut for manual feof checks).
+	class EndOfStream : public Stream
+	{
+	public:
+		virtual ~EndOfStream() throw() {}
+		explicit EndOfStream( const std::string& objname=std::string(), const std::string& msg="End of stream was encountered" ) :
+			Stream( objname, msg ) {}
+	};
+
 }
 
 #endif

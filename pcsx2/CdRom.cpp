@@ -88,8 +88,8 @@ unsigned long cdReadTime;// = ((PSXCLK / 75) / BIAS);
 #define btoi(b)		((b)/16*10 + (b)%16)		/* BCD to u_char */
 #define itob(i)		((i)/10*16 + (i)%10)		/* u_char to BCD */
 
-#define CDR_INT(eCycle)    PSX_INT(17, eCycle)
-#define CDREAD_INT(eCycle) PSX_INT(18, eCycle)
+#define CDR_INT(eCycle)    PSX_INT(IopEvt_Cdrom, eCycle)
+#define CDREAD_INT(eCycle) PSX_INT(IopEvt_CdromRead, eCycle)
 
 static __forceinline void StartReading(unsigned long type) {
    	cdr.Reading = type;
@@ -101,7 +101,7 @@ static __forceinline void StartReading(unsigned long type) {
 static __forceinline void StopReading() {
 	if (cdr.Reading) {
 		cdr.Reading = 0;
-		psxRegs.interrupt&=~0x40000;
+		psxRegs.interrupt &= ~(1<<IopEvt_CdromRead);
 	}
 }
 
@@ -165,8 +165,6 @@ void  cdrInterrupt() {
 	cdvdTD trackInfo;
 	int i;
 	u8 Irq = cdr.Irq;
-
-	psxRegs.interrupt&= ~(1 << 17);
 
 	if (cdr.Stat) {
 		CDR_INT(0x800);
@@ -498,8 +496,6 @@ void  cdrInterrupt() {
 
 void  cdrReadInterrupt() {
 	u8 *buf;
-
-	psxRegs.interrupt&= ~(1 << 18);
 
 	if (!cdr.Reading)
 		return;

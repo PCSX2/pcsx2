@@ -194,7 +194,7 @@ __forceinline void SIF0Dma()
 					//HW_DMA9_CHCR &= ~0x01000000; //reset TR flag
 					//psxDmaInterrupt2(2);
 					iopsifbusy[0] = 0;
-					PSX_INT(9, psxCycles);
+					PSX_INT(IopEvt_SIF0, psxCycles);
 					//hwIntcIrq(INTC_SBUS);
 					sif0.sifData.data = 0;
 					notDone = 0;
@@ -465,7 +465,7 @@ __forceinline void SIF1Dma()
 					//HW_DMA10_CHCR &= ~0x01000000; //reset TR flag
 					//psxDmaInterrupt2(3);
 					iopsifbusy[1] = 0;
-					PSX_INT(10, psxCycles);
+					PSX_INT(IopEvt_SIF1, psxCycles);
 					//hwIntcIrq(INTC_SBUS);
 					sif1.tagMode = 0;
 					notDone = 0;
@@ -477,7 +477,7 @@ __forceinline void SIF1Dma()
 					//HW_DMA10_CHCR &= ~0x01000000; //reset TR flag
 					//psxDmaInterrupt2(3);
 					iopsifbusy[1] = 0;
-					PSX_INT(10, psxCycles);
+					PSX_INT(IopEvt_SIF1, psxCycles);
 					//hwIntcIrq(INTC_SBUS);
 					sif1.tagMode = 0;
 					notDone = 0;
@@ -502,7 +502,6 @@ __forceinline void  sif0Interrupt() {
 	HW_DMA9_CHCR &= ~0x01000000;
 	psxDmaInterrupt2(2);
 	//hwIntcIrq(INTC_SBUS);
-	psxRegs.interrupt&= ~(1 << 9);
 }
 
 __forceinline void  sif1Interrupt() {
@@ -510,14 +509,12 @@ __forceinline void  sif1Interrupt() {
 	HW_DMA10_CHCR &= ~0x01000000; //reset TR flag
 	psxDmaInterrupt2(3);
 	//hwIntcIrq(INTC_SBUS);
-	psxRegs.interrupt&= ~(1 << 10);
 }
 
 __forceinline void  EEsif0Interrupt() {
 	sif0dma->chcr &= ~0x100;
 	hwDmacIrq(DMAC_SIF0);
 	cpuRegs.interrupt &= ~(1 << 5);
-
 }
 
 __forceinline void  EEsif1Interrupt() {

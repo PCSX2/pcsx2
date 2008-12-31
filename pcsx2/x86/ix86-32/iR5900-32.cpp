@@ -1503,7 +1503,7 @@ static void recInit()
 
 	// This is ugly, but GCC is asking for a cast.
 	if( recMem == NULL )
-		throw std::bad_alloc((const std::bad_alloc&)"R5900-32 failed to allocate recompiler memory.");
+		throw Exception::OutOfMemory("R5900-32 failed to allocate recompiler memory.");
 
 	// 32 alignment necessary
 	if( recRAM == NULL )
@@ -1527,8 +1527,7 @@ static void recInit()
 		recROM1 == NULL || recMem == NULL || recLUT == NULL ||
 		recStack == NULL || s_pInstCache == NULL )
 	{
-		// This is ugly, but GCC is asking for a cast again.
-		throw std::bad_alloc((const std::bad_alloc&)"Heap-based memory allocation failed." );
+		throw Exception::OutOfMemory("Heap-based memory allocation failed." );
 	}
 
 	// No errors.. Proceed with initialization:

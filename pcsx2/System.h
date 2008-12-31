@@ -140,37 +140,6 @@ using Console::Color_Cyan;
 using Console::Color_Yellow;
 using Console::Color_White;
 
-//////////////////////////////////////////////////////////////////
-// Class for allocating a resizable memory block.
-
-class MemoryAlloc
-{
-public:
-	static const int DefaultChunkSize = 0x1000;
-
-protected:
-	u8* m_ptr;
-	int m_alloc;	// size of the allocation of memory
-
-public: 
-	int ChunkSize;
-
-public:
-	virtual ~MemoryAlloc();
-	MemoryAlloc( int initalSize );
-	MemoryAlloc();
-
-	int GetSize() const { return m_alloc; }
-
-	// Gets the pointer to the beginning of the memory allocation.
-	// Returns null if no memory has been allocated to this handle.
-	void *GetPtr() { return m_ptr; }
-	const void *GetPtr() const { return m_ptr; }
-
-	void MakeRoomFor( int blockSize );
-
-};
-
 //////////////////////////////////////////////////////////////
 // Safe deallocation macros -- always check pointer validity (non-null)
 // and set pointer to null on deallocation.
@@ -204,7 +173,6 @@ public:
 		SysMunmap( (uptr)ptr, size ); \
 		ptr = NULL; \
 	}
-
 
 //////////////////////////////////////////////////////////////
 // Macros for ifdef'ing out specific lines of code.
@@ -259,5 +227,106 @@ int SysMapUserPhysicalPages(void* Addr, uptr NumPages, uptr* pblock, int pageoff
 //BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
 
 #endif
+
+//////////////////////////////////////////////////////////////////
+// Class for allocating a resizable memory block.
+
+template< typename T >
+class MemoryAlloc : public NoncopyableObject
+{
+public:
+	static const int DefaultChunkSize = 0x1000 * sizeof(T);
+
+public: 
+	const std::string Name;		// user-assigned block name
+	int ChunkSize;
+
+protected:
+	T* m_ptr;
+	int m_size;	// size of the allocation of memory
+
+public:
+	virtual ~MemoryAlloc()
+	{
+		safe_free( m_ptr );
+	}
+
+	explicit MemoryAlloc( const std::string& name="Unnamed" ) : 
+	  Name( name )
+	, ChunkSize( DefaultChunkSize )
+	, m_ptr( NULL )
+	, m_size( 0 )
+	{
+	}
+
+	explicit MemoryAlloc( int initialSize, const std::string& name="Unnamed" ) : 
+	  Name( name )
+	, ChunkSize( DefaultChunkSize )
+	, m_ptr( (T*)malloc( initialSize * sizeof(T) ) )
+	, m_size( initialSize )
+	{
+		if( m_ptr == NULL )
+			throw Exception::OutOfMemory();
+	}
+
+	// Returns the size of the memory allocation, as according to the array type.
+	int GetLength() const { return m_size; }
+	// Returns the size of the memory allocation in bytes.
+	int GetSizeInBytes() const { return m_size * sizeof(T); }
+
+	// Ensures that the allocation is large enough to fit data of the
+	// amount requested.  The memory allocation is not resized smaller.
+	void MakeRoomFor( int blockSize )
+	{
+		std::string temp;
+		
+		if( blockSize > m_size )
+		{
+			const uint newalloc = blockSize + ChunkSize;
+			m_ptr = (T*)realloc( m_ptr, newalloc * sizeof(T) );
+			if( m_ptr == NULL )
+			{
+				throw Exception::OutOfMemory(
+					"Out-of-memory on block re-allocation. "
+					"Old size: " + to_string( m_size ) + " bytes, "
+					"New size: " + to_string( newalloc ) + " bytes"
+				);
+			}
+			m_size = newalloc;
+		}
+	}
+
+	// Gets a pointer to the requested allocation index.
+	// DevBuilds : Throws std::out_of_range() if the index is invalid.
+	T *GetPtr( uint idx=0 ) { return _getPtr( idx ); }
+	const T *GetPtr( uint idx=0 ) const { return _getPtr( idx ); }
+
+	// Gets an element of this memory allocation much as if it were an array.
+	// DevBuilds : Throws std::out_of_range() if the index is invalid.
+	T& operator[]( int idx ) { return *_getPtr( (uint)idx ); }
+	const T& operator[]( int idx ) const { return *_getPtr( (uint)idx ); }
+
+	virtual MemoryAlloc<T>& Clone() const
+	{
+		MemoryAlloc<T>* retval = new MemoryAlloc<T>( m_size );
+		memcpy( retval->GetPtr(), m_ptr, sizeof(T) * m_size );
+		return *retval;
+	}
+
+protected:
+	T* _getPtr( uint i ) const
+	{
+		if( i >= (uint)m_size )
+		{
+			throw std::out_of_range(
+				"Index out of bounds on MemoryAlloc: " + Name + 
+				" (index=" + to_string(i) + 
+				", size=" + to_string(m_size) + ")"
+			);
+		}
+		return &m_ptr[i];
+	}
+
+};
 
 #endif /* __SYSTEM_H__ */

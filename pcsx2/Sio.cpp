@@ -39,7 +39,7 @@ struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 0x52, 0x5A};
 #define SIO_INT() sioInterrupt()
 #define SIO_FORCEINLINE
 #else
-#define SIO_INT() PSX_INT(16, PSXCLK/250000);
+#define SIO_INT() PSX_INT(IopEvt_SIO, PSXCLK/250000);
 #define SIO_FORCEINLINE __forceinline
 #endif
 
@@ -497,10 +497,11 @@ void SIODMAWrite(u8 value)
 void sioWriteCtrl16(unsigned short value) {
 	sio.CtrlReg = value & ~RESET_ERR;
 	if (value & RESET_ERR) sio.StatReg &= ~IRQ;
-	if ((sio.CtrlReg & SIO_RESET) || (!sio.CtrlReg)) {
+	if ((sio.CtrlReg & SIO_RESET) || (!sio.CtrlReg))
+	{
 		sio.mtapst = 0; sio.padst = 0; sio.mcdst = 0; sio.parp = 0;
 		sio.StatReg = TX_RDY | TX_EMPTY;
-		psxRegs.interrupt&= ~(1<<16);
+		psxRegs.interrupt &= ~(1<<IopEvt_SIO);
 	}
 }
 
@@ -508,7 +509,6 @@ void  sioInterrupt() {
 	PAD_LOG("Sio Interrupt\n");
 	sio.StatReg|= IRQ;
 	psxHu32(0x1070)|=0x80;
-	psxRegs.interrupt&= ~(1 << 16);
 }
 
 void SaveState::sioFreeze() {

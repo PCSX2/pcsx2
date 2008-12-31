@@ -25,9 +25,9 @@
 
 #include "CDVDlib.h"
 
-int CDVD_findfile(const char* fname, struct TocEntry* tocEntry);
+int CDVD_findfile(const char* fname, TocEntry* tocEntry);
 int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_dirs);
-int CDVD_GetDir_RPC_get_entries(struct TocEntry tocEntry[], int req_entries);
+int CDVD_GetDir_RPC_get_entries(TocEntry tocEntry[], int req_entries);
 
 #if defined(_MSC_VER)
 #pragma pack(1)
@@ -125,16 +125,16 @@ struct dirTableEntry
 struct dirTocEntry
 {
 	short	length;
-	unsigned int	fileLBA;
-	unsigned int	fileLBA_bigend;
-	unsigned int	fileSize;
-	unsigned int	fileSize_bigend;
-	unsigned char	dateStamp[6];
-	unsigned char	reserved1;
-	unsigned char	fileProperties;
-	unsigned char	reserved2[6];
-	unsigned char	filenameLength;
-	char			filename[128];
+	u32 fileLBA;
+	u32 fileLBA_bigend;
+	u32 fileSize;
+	u32 fileSize_bigend;
+	u8	dateStamp[6];
+	u8	reserved1;
+	u8	fileProperties;
+	u8	reserved2[6];
+	u8	filenameLength;
+	s8	filename[128];
 #if defined(_MSC_VER)
 };
 #else

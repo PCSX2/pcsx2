@@ -300,12 +300,10 @@ int CheckCdrom() {
 }
 
 int GetPS2ElfName(char *name){
-	FILE *fp;
-	int		f;
-	char	buffer[g_MaxPath];//if a file is longer...it should be shorter :D
-	char	*pos;
-	static struct TocEntry tocEntry;
-	int i;
+	int f;
+	char buffer[g_MaxPath];//if a file is longer...it should be shorter :D
+	char *pos;
+	TocEntry tocEntry;
 
 	CDVDFS_init();
 
@@ -343,29 +341,34 @@ int GetPS2ElfName(char *name){
 		strncpy(CdromId, name+8, 11); CdromId[11] = 0;
 	}
 	
+#ifdef PCSX2_DEVBUILD
+	FILE *fp;
+	int i;
+
 	// inifile_read(CdromId);
 	fp = fopen("System.map", "r");
-	if (fp) {
-		u32 addr;
+	if( fp == NULL ) return 2;
 
-		Console::WriteLn("Loading System.map...");
-		while (!feof(fp)) {
-			fseek(fp, 8, SEEK_CUR);
-			buffer[0] = '0'; buffer[1] = 'x';
-			for (i=2; i<10; i++) buffer[i] = fgetc(fp); buffer[i] = 0;
-			addr = strtoul(buffer, (char**)NULL, 0);
-			fseek(fp, 3, SEEK_CUR);
-			for (i=0; i<g_MaxPath; i++) {
-				buffer[i] = fgetc(fp);
-				if (buffer[i] == '\n' || buffer[i] == 0) break;
-			}
-			if (buffer[i] == 0) break;
-			buffer[i] = 0;
-	
-			disR5900AddSym(addr, buffer);
+	u32 addr;
+
+	Console::WriteLn("Loading System.map...");
+	while (!feof(fp)) {
+		fseek(fp, 8, SEEK_CUR);
+		buffer[0] = '0'; buffer[1] = 'x';
+		for (i=2; i<10; i++) buffer[i] = fgetc(fp); buffer[i] = 0;
+		addr = strtoul(buffer, (char**)NULL, 0);
+		fseek(fp, 3, SEEK_CUR);
+		for (i=0; i<g_MaxPath; i++) {
+			buffer[i] = fgetc(fp);
+			if (buffer[i] == '\n' || buffer[i] == 0) break;
 		}
-		fclose(fp);
+		if (buffer[i] == 0) break;
+		buffer[i] = 0;
+
+		disR5900AddSym(addr, buffer);
 	}
+	fclose(fp);
+#endif
 
 	return 2;
 }
@@ -536,7 +539,7 @@ void ProcessFKeys(int fkey, int shift)
 			else
 				StatesC = (StatesC+1) % NUM_STATES;
 
-			Console::Notice( _( " > Selected savestate slot %d" ), StatesC+1);
+			Console::Notice( _( " > Selected savestate slot %d" ), StatesC);
 
 			if( GSchangeSaveState != NULL ) {
 				SaveState::GetFilename(Text, StatesC);
@@ -766,51 +769,6 @@ void injectIRX(const char *filename){
 	memcpy(rd[i].fileName, name, strlen(name));
 	rd[i].fileSize=filesize;
 	rd[i].extInfoSize=0;
-}
-
-MemoryAlloc::MemoryAlloc() : 
-  m_ptr( NULL )
-, m_alloc( 0 )
-, ChunkSize( DefaultChunkSize )
-{
-}
-
-MemoryAlloc::MemoryAlloc( int initialSize ) : 
-  m_ptr( (u8*)malloc( initialSize ) )
-, m_alloc( initialSize )
-, ChunkSize( DefaultChunkSize )
-{
-	if( m_ptr == NULL )
-		throw std::bad_alloc();
-}
-
-MemoryAlloc::~MemoryAlloc()
-{
-	safe_free( m_ptr );
-}
-
-void MemoryAlloc::MakeRoomFor( int blockSize )
-{
-	string temp;
-	
-	if( blockSize > m_alloc )
-	{
-		const uint newalloc = blockSize + ChunkSize;
-		m_ptr = (u8*)realloc( m_ptr, newalloc );
-		if( m_ptr == NULL )
-		{
-			string ex_msg(
-				"Out-of-memory on block re-allocation. "
-				"Old size: " + to_string( m_alloc ) + " bytes, "
-				"New size: " + to_string( newalloc ) + " bytes"
-			);
-
-			temp = ex_msg.c_str();
-			
-			throw bad_alloc((const bad_alloc&)temp);
-		}
-		m_alloc = newalloc;
-	}
 }
 
 

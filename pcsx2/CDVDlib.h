@@ -83,29 +83,18 @@
 /*
  * Macros for sceCdGetDiskType()	//comments translated from japanese;)
  */
-#define SCECdIllgalMedia 	0xff
-	/* ILIMEDIA (Illegal Media)
-             A non-PS / non-PS2 Disc. */
-#define SCECdDVDV		0xfe
-	/* DVDV (DVD Video)
-            A non-PS / non-PS2 Disc, but a DVD Video Disc */
-#define SCECdCDDA		0xfd
-	/* CDDA (CD DA)
-            A non-PS / non-PS2 Disc that include a DA track */
-#define SCECdPS2DVD		0x14
-	/* PS2DVD  PS2 consumer DVD. */
-#define SCECdPS2CDDA		0x13
-	/* PS2CDDA PS2 consumer CD that includes a DA track */
-#define SCECdPS2CD		0x12
-	/* PS2CD   PS2 consumer CD that does not include a DA track */
-#define SCECdPSCDDA 		0x11
-	/* PSCDDA  PS CD that includes a DA track */
-#define SCECdPSCD		0x10
-	/* PSCD    PS CD that does not include a DA track */
-#define SCECdDETCT		0x01
-	/* DETCT (Detecting) Disc distinction action */
-#define SCECdNODISC 		0x00
-	/* NODISC (No disc) No disc entered */
+
+#define SCECdIllgalMedia 0xff	// ILIMEDIA (Illegal Media) A non-PS / non-PS2 Disc.
+#define SCECdDVDV		0xfe	// DVDV (DVD Video) A non-PS / non-PS2 Disc, but a DVD Video Disc
+#define SCECdCDDA		0xfd	// CDDA (CD DA) A non-PS / non-PS2 Disc that include a DA track
+#define SCECdPS2DVD		0x14	// PS2DVD  PS2 consumer DVD.
+#define SCECdPS2CDDA	0x13	// PS2CDDA PS2 consumer CD that includes a DA track
+#define SCECdPS2CD		0x12	// PS2CD   PS2 consumer CD that does not include a DA track
+#define SCECdPSCDDA 	0x11	// PSCDDA  PS CD that includes a DA track
+#define SCECdPSCD		0x10	// PSCD    PS CD that does not include a DA track
+#define SCECdDETCT		0x01	// DETCT (Detecting) Disc distinction action
+#define SCECdNODISC 	0x00	// NODISC (No disc) No disc entered
+
 
 /*
  *      Media mode
@@ -176,27 +165,7 @@ struct TocEntry
 #endif
 
 int CDVD_findfile(const char* fname, struct TocEntry* tocEntry);
-/*
-int CdBreak(void);
-int CdCallback( void (*func)() );
-int CdDiskReady(int mode);
-int CdGetDiskType(void);
-int CdGetError(void);
-u32 CdGetReadPos(void);
-int CdGetToc(u8 *toc);
-int CdInit(int init_mode);
-CdlLOCCD *CdIntToPos(int i, CdlLOCCD *p);
-int CdPause(void);
-int CdPosToInt(CdlLOCCD *p);*/
 int CdRead(u32 lsn, u32 sectors, void *buf, CdRMode *mode);
 int DvdRead(u32 lsn, u32 sectors, void *buf, CdRMode *mode);
-/*int CdReadClock(CdCLOCK *rtc);
-int CdSearchFile (CdlFILE *fp, const char *name);
-int CdSeek(u32 lsn);
-int CdStandby(void);
-int CdStatus(void);
-int CdStop(void);
-int CdSync(int mode);
-int CdTrayReq(int mode, u32 *traycnt);
-*/
+
 #endif // _CDVDLIB_H

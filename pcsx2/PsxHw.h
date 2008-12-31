@@ -78,7 +78,25 @@
 #define HW_DMA_PCR2  (psxHu32(0x1570))
 #define HW_DMA_ICR2  (psxHu32(0x1574))
 
-extern void PSX_INT( int n, s32 ecycle);
+enum IopEventId
+{
+	IopEvt_Cdvd = 5		// General Cdvd commands (Seek, Standby, Break, etc)
+,	IopEvt_SIF0 = 9
+,	IopEvt_SIF1 = 10
+,	IopEvt_Dma11 = 11
+,	IopEvt_Dma12 = 12
+,	IopEvt_SIO = 16
+,	IopEvt_Cdrom = 17
+,	IopEvt_CdromRead = 18
+,	IopEvt_CdvdRead = 19
+,	IopEvt_DEV9 = 20
+,	IopEvt_USB = 21
+};
+
+extern void PSX_INT( IopEventId n, s32 ecycle);
+
+extern void psxSetNextBranch( u32 startCycle, s32 delta );
+extern void psxSetNextBranchDelta( s32 delta );
 
 void psxHwReset();
 u8   psxHwRead8 (u32 add);

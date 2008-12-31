@@ -31,6 +31,60 @@
 static cdvdStruct cdvd;
 static int cdCaseopen;
 
+/*
+Interrupts - values are flag bits.
+
+0x00	 No interrupt		  
+0x01	 Data Ready		  
+0x02	 Command Complete 	  
+0x03	 Acknowledge (reserved) 
+0x04	 End of Data Detected   
+0x05	 Error Detected 	  
+0x06	 Drive Not Ready	
+
+In limited experimentation I found that PS2 apps respond actively to use of the
+'Data Ready' flag -- in that they'll almost immediately initiate a DMA transfer
+after receiving an Irq with that as the cause.  But the question is, of course,
+*when* to use it.  Adding it into some locations of CDVD reading only slowed
+games down and broke things.
+
+Using Drive Not Ready also invokes basic error handling from the Iop Bios, but
+without proper emulation of the cdvd status flag it also tends to break things.
+
+*/
+
+enum CdvdIrqId
+{
+	Irq_None = 0
+,	Irq_DataReady = 0
+,	Irq_CommandComplete
+,	Irq_Acknowledge
+,	Irq_EndOfData
+,	Irq_Error
+,	Irq_NotReady
+
+};
+
+/* is cdvd.Status only for NCMDS? (linuzappz) */
+enum cdvdStatus
+{
+	CDVD_STATUS_NONE            = 0x00, // not sure ;)
+	CDVD_STATUS_SEEK_COMPLETE   = 0x0A,
+};
+
+// Cdvd actions tell the emulator how and when to respond to certain requests.
+// Actions are handled by the cdvdInterrupt()
+enum cdvdActions
+{
+	cdvdAction_None = 0
+,	cdvdAction_Seek
+,	cdvdAction_Standby
+,	cdvdAction_Stop
+,	cdvdAction_Break
+,	cdvdAction_Read			// note: not used yet.
+};
+
+//////////////////////////////////////////////////////////////////////////
 // -- Cdvd Block Read Cycle Timings --
 // These timings are based on a median average block read speed.  In theory the read
 // speeds differ based on the location of the sector being read (outer rings have
@@ -43,7 +97,7 @@ static int cdCaseopen;
 // concerned with accurate(ish) seek delays and less concerned with actual block read speeds.
 
 static const uint PSX_CD_READSPEED = 153600;   // 1 Byte Time @ x1 (150KB = cd x 1)
-static const uint PSX_DVD_READSPEED = 1382400 + 100000; // normal is 1 Byte Time @ x1 (1350KB = dvd x 1).
+static const uint PSX_DVD_READSPEED = 1382400 + 256000; // normal is 1 Byte Time @ x1 (1350KB = dvd x 1).
 
 enum CDVD_MODE_TYPE
 {
@@ -53,20 +107,21 @@ enum CDVD_MODE_TYPE
 
 // if a seek is within this many blocks, read instead of seek.
 // I picked 6 as an arbitrary value.  Not sure what the real PS2 uses.
-static const int Cdvd_Contigious_Seek = 6;
-static const uint Cdvd_Avg_SeekCycles = (PSXCLK*110) / 1000;		// average number of cycles per seek (110ms)
+static const int Cdvd_Contigious_Seek = 9;
+static const uint Cdvd_Avg_SeekCycles = (PSXCLK*95) / 1000;		// average number of cycles per seek (95ms)
 
 
-const char *mg_zones[8] = {"Japan", "USA", "Europe", "Oceania", "Asia", "Russia", "China", "Mexico"};
 
-const char *nCmdName[0x100]= {
+static const char *mg_zones[8] = {"Japan", "USA", "Europe", "Oceania", "Asia", "Russia", "China", "Mexico"};
+
+static const char *nCmdName[0x100]= {
 	"CdSync", "CdNop", "CdStandby", "CdStop",
 	"CdPause", "CdSeek", "CdRead", "CdReadCDDA",
 	"CdReadDVDV", "CdGetToc", "", "NCMD_B",
 	"CdReadKey", "", "sceCdReadXCDDA", "sceCdChgSpdlCtrl",
 };
 
-const char *sCmdName[0x100]= {
+static const char *sCmdName[0x100]= {
 	"", "sceCdGetDiscType", "sceCdReadSubQ", "subcommands",//sceCdGetMecaconVersion, read/write console id, read renewal date
 	"", "sceCdTrayState", "sceCdTrayCtrl", "",
 	"sceCdReadClock", "sceCdWriteClock", "sceCdReadNVM", "sceCdWriteNVM",
@@ -130,11 +185,6 @@ NVMLayout nvmlayouts[NVM_FORMAT_MAX] =
 	{0x146,  0x270, 0x2B0, 0x200, 0x1C8, 0x1E0, 0x1B0, 0x180, 0x198},	// eeproms from bios v1.70 and up
 };
 
-
-static uint cdvdReadTime=0;
-
-#define CDVDREAD_INT(eCycle) PSX_INT(19, eCycle)
-
 #define btoi(b)		((b)/16*10 + (b)%16)		/* BCD to u_char */
 #define itob(i)		((i)/10*16 + (i)%10)		/* u_char to BCD */
 
@@ -142,14 +192,31 @@ static uint cdvdReadTime=0;
 	cdvd.ResultC = size; cdvd.ResultP = 0; \
 	cdvd.sDataIn&=~0x40;
 
+#define CDVDREAD_INT(eCycle) PSX_INT(IopEvt_CdvdRead, eCycle)
+static void CDVD_INT(int eCycle)
+{
+	if( eCycle == 0 )
+		cdvdActionInterrupt();
+	else
+		PSX_INT(IopEvt_Cdvd, eCycle);
+}
 
-/* is cdvd.Status only for NCMDS? (linuzappz) */
-enum cdvdStatus {
-	CDVD_STATUS_NONE            = 0x00, // not sure ;)
-	CDVD_STATUS_SEEK_COMPLETE   = 0x0A,
-};
+// Sets the cdvd IRQ and the reason for the IRQ, and signals the IOP for a branch
+// test (which will cause the exception to be handled).
+static void cdvdSetIrq( uint id = (1<<Irq_CommandComplete) )
+{
+	cdvd.PwOff |= id;
+	psxHu32(0x1070)|= 0x4;
+	hwIntcIrq(INTC_SBUS);
+	psxSetNextBranchDelta( 48 );		// don't need to be too prompt -- that would just put unnecessary load on the emu.
+}
 
-static int mg_BIToffset(u8 *buffer);
+static int mg_BIToffset(u8 *buffer){
+	int i, ofs = 0x20; for (i=0; i<*(u16*)&buffer[0x1A]; i++)ofs+=0x10;
+	if (*(u16*)&buffer[0x18] & 1)ofs+=buffer[ofs];
+	if ((*(u16*)&buffer[0x18] & 0xF000)==0)ofs+=8;
+	return ofs + 0x20;
+}
 
 FILE *_cdvdOpenMechaVer() {
 	char *ptr;
@@ -184,6 +251,7 @@ FILE *_cdvdOpenMechaVer() {
 	}
 	return fd;
 }
+
 s32 cdvdGetMechaVer(u8* ver)
 {
 	FILE* fd = _cdvdOpenMechaVer();
@@ -396,7 +464,7 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
 	// get main elf name
 	GetPS2ElfName(str);
     sprintf(exeName, "%c%c%c%c%c%c%c%c%c%c%c",str[8],str[9],str[10],str[11],str[12],str[13],str[14],str[15],str[16],str[17],str[18]);
-	SysPrintf("exeName = %s\n",exeName);
+	DevCon::Notice("exeName = %s",&str[8]);
 	
 	// convert the number characters to a real 32bit number
 	numbers =	((((exeName[5] - '0'))*10000)	+
@@ -451,12 +519,17 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
 		key[15] = 0x01;
 	}
 	
-	SysPrintf("CDVD.KEY = %02X,%02X,%02X,%02X,%02X,%02X,%02X\n",cdvd.Key[0],cdvd.Key[1],cdvd.Key[2],cdvd.Key[3],cdvd.Key[4],cdvd.Key[14],cdvd.Key[15]);
+	Console::MsgLn( "CDVD.KEY = %02X,%02X,%02X,%02X,%02X,%02X,%02X",cdvd.Key[0],cdvd.Key[1],cdvd.Key[2],cdvd.Key[3],cdvd.Key[4],cdvd.Key[14],cdvd.Key[15] );
+
+	// Now's a good time to reload the ELF info...
+	if( ElfCRC == 0 )
+		loadElfCRC( str );
 }
 
-s32 cdvdGetToc(void* toc) {
+s32 cdvdGetToc(void* toc)
+{
 	s32 ret = CDVDgetTOC(toc);
-	if(ret == -1)	ret = 0x80;
+	if(ret == -1) ret = 0x80;
 	return ret;
 /*
 	cdvdTN diskInfo;
@@ -577,18 +650,22 @@ s32 cdvdGetTrayStatus()
 	if (ret == -1)  return(CDVD_TRAY_CLOSE);
 	return(ret);
 }
+
 // Note: Is tray status being kept as a var here somewhere?
 //   cdvdNewDiskCB() can update it's status as well...
 
 // Modified by (efp) - 16/01/2006
-s32 cdvdGetDiskType() {
+__forceinline void cdvdGetDiskType()
+{
 	// defs 0.9.0
-	if(CDVDnewDiskCB)  return(cdvd.Type);
+	if(CDVDnewDiskCB || cdvd.Type != CDVD_TYPE_NODISC)  return;
 
 	// defs.0.8.1
-	if(cdvdGetTrayStatus() == CDVD_TRAY_OPEN)  return(CDVD_TYPE_NODISC);
-	// Note: Hmmm. Need to modify cdvd.Type as well?
-	//   or just throw it out. CDVDgetDiskType() sets type to "NODISC" anyway.
+	if(cdvdGetTrayStatus() == CDVD_TRAY_OPEN)
+	{
+		cdvd.Type = CDVD_TYPE_NODISC;
+		return;
+	}
 
 	cdvd.Type = CDVDgetDiskType();
 	if (cdvd.Type == CDVD_TYPE_PS2CD) // && needReset == 1)
@@ -599,7 +676,6 @@ s32 cdvdGetDiskType() {
 			cdvd.Type = CDVD_TYPE_PSCD;
 		} // ENDIF- Does the SYSTEM.CNF file only say "BOOT="? PS1 CD then.
 	} // ENDIF- Is the type listed as a PS2 CD?
-	return(cdvd.Type);
 } // END cdvdGetDiskType()
 
 
@@ -653,18 +729,6 @@ static uint cdvdBlockReadTime( CDVD_MODE_TYPE mode )
 	return (PSXCLK * cdvd.BlockSize) / (((mode==MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.Speed);
 }
 
-/*static void cdvdReadTimeRcnt(CDVD_MODE_TYPE mode) // Mode 0 is DVD, Mode 1 is CD
-{
-	if (cdvd.Sector == 16) //DVD TOC
-		cdvdReadTime = 30000; //simulates spin-up time, fixes hdloader  // wtf?  just how old is this hack?  goodbye, I say! (air)
-	else
-		cdvdReadTime = ( ((mode==MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.BlockSize ) / cdvd.Speed;
-}*/
-
-// Incurs an extra delay for the first read operation of the Cdvd drive.
-// fixme: this should be part of the cdvd struct and saved as part of the savestate.
-static bool cdvdSpinUp = false;
-
 void cdvdReset()
 {
 #ifdef _WIN32
@@ -678,15 +742,18 @@ void cdvdReset()
     ptlocal = localtime(&traw);
 #endif
 
-	cdvdSpinUp = false;
-
 	memset(&cdvd, 0, sizeof(cdvd));
+
+	cdvd.Type = CDVD_TYPE_NODISC;
+	cdvd.Spinning = false;
+
 	cdvd.sDataIn = 0x40;
 	cdvd.Ready   = 0x4e;
 	cdCaseopen = 0;
 	cdvd.Speed = 4;
 	cdvd.BlockSize = 2064;
-	cdvdReadTime = cdvdBlockReadTime( MODE_DVDROM );
+	cdvd.Action = cdvdAction_None;
+	cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
 
     // any random valid date will do
     cdvd.RTC.hour = 1;
@@ -714,18 +781,37 @@ void cdvdReset()
 
 }
 
+struct Freeze_v10Compat
+{
+	u8  Action;
+	u32 SeekToSector;
+	u32 ReadTime;
+	bool Spinning;
+};
+
 void SaveState::cdvdFreeze()
 {
-	Freeze(cdvd);
+	if( GetVersion() <= 0x10 )
+	{
+		// the old cdvd struct didn't save the last few items.
+		FreezeLegacy( cdvd, sizeof(Freeze_v10Compat) );
+		cdvd.SeekToSector = cdvd.Sector;
+		cdvd.Action = cdvdAction_None;
+		cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
+		cdvd.Spinning = true;
+	}
+	else
+		Freeze( cdvd );
 
-	// Make sure the Cdvd plugin has the expected track loaded into the buffer.
+	if( IsLoading() )
+	{
+		// Make sure the Cdvd plugin has the expected track loaded into the buffer.
+		// If cdvd.Readed is cleared it means we need to load the SeekToSector (ie, a
+		// seek is in progress!)
 
-	if( IsLoading() && cdvd.Reading)
-		cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
-}
-
-int  cdvdInterrupt() {
-	return 1;
+		if( cdvd.Reading )
+			cdvd.RErr = CDVDreadTrack( cdvd.Readed ? cdvd.Sector : cdvd.SeekToSector, cdvd.ReadMode);
+	}
 }
 
 // Modified by (efp) - 16/01/2006
@@ -840,10 +926,44 @@ int cdvdReadSector() {
 }
 
 // inlined due to being referenced in only one place.
+__forceinline void cdvdActionInterrupt()
+{
+	switch( cdvd.Action )
+	{
+		case cdvdAction_Seek:
+		case cdvdAction_Standby:
+			cdvd.Spinning = true;
+			cdvd.Ready  = 0x40;
+			cdvd.Sector = cdvd.SeekToSector;
+			cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
+			cdvdSetIrq();
+		break;
+
+		case cdvdAction_Stop:
+			cdvd.Spinning = false;
+			cdvd.Ready = 0x40;
+			cdvd.Sector = 0;
+			cdvd.Status = 0;
+			cdvdSetIrq();
+		break;
+
+		case cdvdAction_Break:
+			// Make sure the cdvd action state is pretty well cleared:
+			cdvd.Reading = 0;
+			cdvd.Readed = 0;
+			cdvd.Ready  = 0x40;		// should be 0x40 or something else?
+			cdvd.Status = 0;
+			cdvd.RErr = 0;
+			cdvdSetIrq();
+		break;
+	}
+	cdvd.Action = cdvdAction_None;
+}
+
+// inlined due to being referenced in only one place.
 __forceinline void cdvdReadInterrupt() {
 
 	//SysPrintf("cdvdReadInterrupt %x %x %x %x %x\n", cpuRegs.interrupt, cdvd.Readed, cdvd.Reading, cdvd.nSectors, (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) *4);
-	psxRegs.interrupt &= ~(1<<19);
 
 	cdvd.Ready   = 0x00;
 	if (cdvd.Readed == 0)
@@ -854,14 +974,17 @@ __forceinline void cdvdReadInterrupt() {
 		// NOTE: The first CD track was read when the seek was initiated, so no need
 		// to call CDVDReadTrack here.
 
+		cdvd.Spinning = true;
 		cdvd.RetryCntP = 0;
 		cdvd.Reading = 1;
 		cdvd.Readed = 1;
 		cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
+		cdvd.Sector = cdvd.SeekToSector;
 
-		CDR_LOG( "Cdvd Seek Complete > Scheduling block read interrupt at iopcycle=%8.8x.\n", psxRegs.cycle + cdvdReadTime );
+		CDR_LOG( "Cdvd Seek Complete > Scheduling block read interrupt at iopcycle=%8.8x.\n",
+			psxRegs.cycle + cdvd.ReadTime );
 
-		CDVDREAD_INT(cdvdReadTime);
+		CDVDREAD_INT(cdvd.ReadTime);
 		return;
 	}
 
@@ -871,10 +994,10 @@ __forceinline void cdvdReadInterrupt() {
 		} else cdr.pTransfer = NULL;
 		if (cdr.pTransfer == NULL) {
 			cdvd.RetryCntP++;
-			SysPrintf("CDVD READ ERROR, sector=%d\n", cdvd.Sector);
+			Console::Error("CDVD READ ERROR, sector=%d", cdvd.Sector);
 			if (cdvd.RetryCntP <= cdvd.RetryCnt) {
 				cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
-				CDVDREAD_INT(cdvdReadTime);
+				CDVDREAD_INT(cdvd.ReadTime);
 				return;
 			}
 		}
@@ -882,17 +1005,17 @@ __forceinline void cdvdReadInterrupt() {
 	}
 
 	if (cdvdReadSector() == -1) {
-		assert( (int)cdvdReadTime > 0 );
-		CDVDREAD_INT(cdvdReadTime);
+		assert( (int)cdvd.ReadTime > 0 );
+		CDVDREAD_INT(cdvd.ReadTime);
 		return;
 	}
 
 	cdvd.Sector++;
 
-	if (--cdvd.nSectors <= 0) {
-		psxHu32(0x1070)|= 0x4;
-		//SBUS
-		hwIntcIrq(INTC_SBUS);
+	if (--cdvd.nSectors <= 0)
+	{
+		// hmm... should we set a DataReady interrupt here?
+		cdvdSetIrq( /*(1<<Irq_DataReady) |*/ (1<<Irq_CommandComplete));
 		HW_DMA3_CHCR &= ~0x01000000;
 		psxDmaInterrupt(3);
 		cdvd.Ready   = 0x4e;
@@ -902,7 +1025,8 @@ __forceinline void cdvdReadInterrupt() {
 	cdvd.RetryCntP = 0;
 	cdvd.Reading = 1;
 	cdr.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
-	CDVDREAD_INT(cdvdReadTime);
+	CDVDREAD_INT(cdvd.ReadTime);
+
 	return;
 }
 
@@ -1000,10 +1124,11 @@ u8   cdvdRead0E(void) { // CRT FRAME
 	return itob((u8)(cdvd.Sector%75));
 }
 
-u8   cdvdRead0F(void) { // TYPE
-	u8 type = cdvdGetDiskType();
-	CDR_LOG("cdvdRead0F(Disc Type) %x\n", type);
-	return type;
+u8   cdvdRead0F(void)	// TYPE
+{
+	CDR_LOG("cdvdRead0F(Disc Type) %x\n", cdvd.Type);
+	cdvdGetDiskType();
+	return cdvd.Type;
 }
 
 u8   cdvdRead13(void) { // UNKNOWN
@@ -1158,20 +1283,28 @@ u8   cdvdRead3A(void) {	// DEC_SET
 // Fixme: Should the seek set the cdvd.Sector immediately, or only when the
 // seek has finished?  Current implementation is immediate. (the sector is readable
 // by HW registers so it could be important!)
-static void cdvdStartSeek( uint oldsector )
+// Returns the number of IOP cycles until the event completes.
+static uint cdvdStartSeek( uint newsector )
 {
-	uint delta = abs(cdvd.Sector - oldsector);
+	cdvd.SeekToSector = newsector;
+
+	uint delta = abs(cdvd.SeekToSector - cdvd.Sector);
 	uint seektime;
 
-	if( !cdvdSpinUp )
+	cdvd.Ready = 0;
+	cdvd.Reading = 0;
+	cdvd.Readed = 0;
+	cdvd.Status = 0;
+
+	if( !cdvd.Spinning )
 	{
-		cdvdSpinUp = true;
-		CDR_LOG( "CdSpinUp > Simulating CdRom Spinup Time...\n", cdvd.Sector, oldsector, delta );
+		CDR_LOG( "CdSpinUp > Simulating CdRom Spinup Time, and seek to sector %d\n", cdvd.SeekToSector );
 		seektime = PSXCLK / 3;		// 333ms delay
+		cdvd.Spinning = true;
 	}
 	else if( (Cdvd_Contigious_Seek >= 0) && (delta >= Cdvd_Contigious_Seek) )
 	{
-		CDR_LOG( "CdSeek Begin > to sector %d, from %d - delta=%d\n", cdvd.Sector, oldsector, delta );
+		CDR_LOG( "CdSeek Begin > to sector %d, from %d - delta=%d\n", cdvd.SeekToSector, cdvd.Sector, delta );
 		seektime = Cdvd_Avg_SeekCycles;
 	}
 	else
@@ -1179,62 +1312,62 @@ static void cdvdStartSeek( uint oldsector )
 		CDR_LOG( "CdSeek Begin > Contigious block without seek - delta=%d sectors\n", delta );
 		
 		// seektime is the time it takes to read to the destination block:
-		seektime = delta * cdvdBlockReadTime( MODE_CDROM );
+		seektime = delta * cdvd.ReadTime;
+
+		if( delta == 0 )
+		{
+			cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
+			cdvd.Readed = 1;
+			cdvd.RetryCntP = 0;
+		}
 	}
 
-	cdvd.Ready = 0;
-	cdvd.Reading = 0;
-	cdvd.Readed = 0;
-	cdvd.PwOff = 2;//cmdcmplt
-
-	CDVDREAD_INT(seektime);
+	return seektime;
 }
 
 void cdvdWrite04(u8 rt) { // NCOMMAND
 	CDR_LOG("cdvdWrite04: NCMD %s (%x) (ParamP = %x)\n", nCmdName[rt], rt, cdvd.ParamP);
-	
+
 	cdvd.nCommand = rt;
 	cdvd.Status = CDVD_STATUS_NONE;
+	cdvd.PwOff = Irq_None;		// good or bad?
+
 	switch (rt) {
-		case 0x00: // CdNop
+		case 0x00: // CdSync
 		case 0x01: // CdNop_
-			psxHu32(0x1070)|= 0x4;
-			//SBUS
-			hwIntcIrq(INTC_SBUS);
-			break;
+			cdvdSetIrq();
+		break;
 		
-		// from an emulation point of view there is not much need to do anything for these
 		case 0x02: // CdStandby
+
+			// Seek to sector zero.  The cdvdStartSeek function will simulate
+			// spinup times if needed.
+
+			DevCon::Notice( "CdStandby : %d", rt );
+			cdvd.Action = cdvdAction_Standby;
+			cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
+			CDVD_INT( cdvdStartSeek( 0 ) );
+		break;
+
 		case 0x03: // CdStop
+			DevCon::Notice( "CdStop : %d", rt );
+			cdvd.Action = cdvdAction_Stop;
+			CDVD_INT( PSXCLK / 6 );		// 166ms delay?
+		break;
+
+		// from an emulation point of view there is not much need to do anything for this one
 		case 0x04: // CdPause
-			psxHu32(0x1070)|= 0x4;
-			//SBUS
-			hwIntcIrq(INTC_SBUS);
-			break;
+			cdvdSetIrq();
+		break;
 
-		// should we change the sector location here?
 		case 0x05: // CdSeek
-		{
-			int newsector = *(int*)(cdvd.Param+0);
-			uint delta = abs(newsector - cdvd.Sector);
-
-			CDR_LOG( "Cdrom Seek Immed > Sectors: from %d, to %d, delta=%d\n", cdvd.Sector, newsector, delta );
-			cdvd.Sector = newsector;
-
-			// Should the IntcIrq be thrown now?  Or should it be scheduled
-			// for the future when the seek has actually completed?
-
-			psxHu32(0x1070)|= 0x4;
-			//SBUS
-			hwIntcIrq(INTC_SBUS);
-			break;
-		}
+			cdvd.Action = cdvdAction_Seek;
+			cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
+			CDVD_INT( cdvdStartSeek( *(uint*)(cdvd.Param+0) ) );
+		break;
 		
 		case 0x06: // CdRead
-		{
-			int oldSector = cdvd.Sector;
-
-			cdvd.Sector = *(int*)(cdvd.Param+0);
+			cdvd.SeekToSector = *(uint*)(cdvd.Param+0);
 			cdvd.nSectors = *(int*)(cdvd.Param+4);
 			cdvd.RetryCnt = (cdvd.Param[8] == 0) ? 0x100 : cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
@@ -1248,23 +1381,23 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			CDR_LOG( "CdRead > startSector=%d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)\n",
 				cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 
+			cdvd.ReadTime = cdvdBlockReadTime( MODE_CDROM );
+			CDVDREAD_INT( cdvdStartSeek( cdvd.SeekToSector ) );
+
 			// Read-ahead by telling the plugin about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
+			cdvd.RErr = CDVDreadTrack( cdvd.SeekToSector, cdvd.ReadMode );
 
-			cdvd.RErr = CDVDreadTrack( cdvd.Sector, cdvd.ReadMode );
-			cdvdReadTime = cdvdBlockReadTime( MODE_CDROM );
-			cdvdStartSeek( oldSector );
-			
-			break;
-		}
+			// Set the reading block flag.  If a seek is pending then Readed will
+			// take priority in the handler anyway.  If the read is contigeous then
+			// this'll skip the seek delay.
+			cdvd.Reading = 1;
+		break;
 
 		case 0x07: // CdReadCDDA
 		case 0x0E: // CdReadXCDDA
-		{
-			int oldSector = cdvd.Sector;
-
-			cdvd.Sector   = *(int*)(cdvd.Param+0);
+			cdvd.SeekToSector = *(int*)(cdvd.Param+0);
 			cdvd.nSectors = *(int*)(cdvd.Param+4);
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
@@ -1282,27 +1415,25 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 				case 0: cdvd.ReadMode = CDVD_MODE_2352; cdvd.BlockSize = 2352; break;
 			}
 
-			cdvd.Readed = 0;
-			cdvd.PwOff = 2;//cmdcmplt
-
 			CDR_LOG( "CdReadCDDA > startSector=%d, nSectors=%d, RetryCnt=%x, Speed=%xx(%x), ReadMode=%x(%x) (1074=%x)\n",
 				cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
+
+			cdvd.ReadTime = cdvdBlockReadTime( MODE_CDROM );
+			CDVDREAD_INT( cdvdStartSeek( cdvd.SeekToSector ) );
 
 			// Read-ahead by telling the plugin about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
+			cdvd.RErr = CDVDreadTrack( cdvd.SeekToSector, cdvd.ReadMode );
 
-			cdvd.RErr = CDVDreadTrack( cdvd.Sector, cdvd.ReadMode );
-			cdvdReadTime = cdvdBlockReadTime( MODE_CDROM );
-			cdvdStartSeek( oldSector );
-			break;
-		}
+			// Set the reading block flag.  If a seek is pending then Readed will
+			// take priority in the handler anyway.  If the read is contigeous then
+			// this'll skip the seek delay.
+			cdvd.Reading = 1;
+		break;
 
 		case 0x08: // DvdRead
-		{
-			int oldSector = cdvd.Sector;
-
-			cdvd.Sector   = *(int*)(cdvd.Param+0);
+			cdvd.SeekToSector   = *(int*)(cdvd.Param+0);
 			cdvd.nSectors = *(int*)(cdvd.Param+4);
 			if (cdvd.Param[8] == 0) cdvd.RetryCnt = 0x100;
 			else cdvd.RetryCnt = cdvd.Param[8];
@@ -1314,28 +1445,29 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			CDR_LOG( "DvdRead > startSector=%d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)\n",
 				cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 
+			cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
+			CDVDREAD_INT( cdvdStartSeek( cdvd.SeekToSector ) );
+			
 			// Read-ahead by telling the plugin about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
+			cdvd.RErr = CDVDreadTrack( cdvd.SeekToSector, cdvd.ReadMode );
 
-			cdvd.RErr = CDVDreadTrack( cdvd.Sector, cdvd.ReadMode );
-			cdvdReadTime = cdvdBlockReadTime( MODE_DVDROM );
-			cdvdStartSeek( oldSector );
-
-			break;
-		}
+			// Set the reading block flag.  If a seek is pending then Readed will
+			// take priority in the handler anyway.  If the read is contigeous then
+			// this'll skip the seek delay.
+			cdvd.Reading = 1;
+		break;
 
 		case 0x09: // CdGetToc & cdvdman_call19
 			//Param[0] is 0 for CdGetToc and any value for cdvdman_call19
 			//the code below handles only CdGetToc!
 			//if(cdvd.Param[0]==0x01)
 			//{
-			SysPrintf("CDGetToc Param[0]=%d, Param[1]=%d\n",cdvd.Param[0],cdvd.Param[1]);
+			DevCon::MsgLn("CDGetToc Param[0]=%d, Param[1]=%d",cdvd.Param[0],cdvd.Param[1]);
 			//}
-			cdvdGetToc(PSXM(HW_DMA3_MADR));
-			psxHu32(0x1070)|= 0x4;
-			//SBUS
-			hwIntcIrq(INTC_SBUS);
+			cdvdGetToc( PSXM( HW_DMA3_MADR ) );
+			cdvdSetIrq( (1<<Irq_CommandComplete) ); //| (1<<Irq_DataReady) );
 			HW_DMA3_CHCR &= ~0x01000000;
 			psxDmaInterrupt(3);
 			break;
@@ -1345,28 +1477,25 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			u8  arg0 = cdvd.Param[0];
 			u16 arg1 = cdvd.Param[1] | (cdvd.Param[2]<<8);
 			u32 arg2 = cdvd.Param[3] | (cdvd.Param[4]<<8) | (cdvd.Param[5]<<16) | (cdvd.Param[6]<<24);
-			SysPrintf("cdvdReadKey(%d, %d, %d)\n", arg0, arg1, arg2);
+			DevCon::MsgLn("cdvdReadKey(%d, %d, %d)\n", arg0, arg1, arg2);
 			cdvdReadKey(arg0, arg1, arg2, cdvd.Key);
 			cdvd.KeyXor = 0x00;
-			psxHu32(0x1070)|= 0x4;
-			hwIntcIrq(INTC_SBUS);
-			break;
+			cdvdSetIrq();
 		}
+		break;
 
 		case 0x0F: // CdChgSpdlCtrl
-			SysPrintf("sceCdChgSpdlCtrl(%d)\n", cdvd.Param[0]);
-			cdvd.PwOff = 2;//cmdcmplt
-			psxHu32(0x1070)|= 0x4;
-			hwIntcIrq(INTC_SBUS);
-			break;
+			Console::Notice("sceCdChgSpdlCtrl(%d)", cdvd.Param[0]);
+			cdvdSetIrq();
+		break;
 
 		default:
-			SysPrintf("NCMD Unknown %x\n", rt);
-			psxHu32(0x1070)|= 0x4;
-			hwIntcIrq(INTC_SBUS);
-			break;
+			Console::Notice("NCMD Unknown %x", rt);
+			cdvdSetIrq();
+		break;
 	}
-	cdvd.ParamP = 0; cdvd.ParamC = 0;
+	cdvd.ParamP = 0;
+	cdvd.ParamC = 0;
 }
 
 void cdvdWrite05(u8 rt) { // NDATAIN
@@ -1383,31 +1512,33 @@ void cdvdWrite06(u8 rt) { // HOWTO
 	cdvd.HowTo = rt;
 }
 
-void cdvdWrite07(u8 rt) { // BREAK
+void cdvdWrite07(u8 rt)		// BREAK
+{
 	CDR_LOG("cdvdWrite07(Break) %x\n", rt);
 
-	// fixme: Should the CDVD do anything here?  Actual meaning of Break command in
-	// general CDVD terms is to cancel the current program command queue.  This is
-	// mostly to do with running dvd menus and stuff, and I don't think it's relevant
-	// to PS2 emulation.
+	if( cdvd.Action == cdvdAction_Break )
+	{
+		CDR_LOG("\tDouble-break (already active) -- BREAK ignored!");
+		return;
+	}
 
-	// Some games use it:  DigitalDevilSaga during startup and some FMVs.  Not sure
-	// what the purpose is supposed to be.
+	DbgCon::Notice("*PCSX2*: CDVD BREAK %x" , rt);
 
-	//SysPrintf("*PCSX2*: CDVD BREAK %x\n" , rt);
+	// Aborts any one of several CD commands:
+	// Pause, Seek, Read, Status, Standby, and Stop
+
+	psxRegs.interrupt &= ~( (1<<IopEvt_Cdvd) | (1<<IopEvt_CdvdRead) );
+
+	cdvd.Action = cdvdAction_Break;
+	CDVD_INT( 64 );
+
+	// Clear the cdvd status:
+	cdvd.Ready = 0;
+	cdvd.Readed = 0;
+	cdvd.Reading = 0;
+	cdvd.Status = CDVD_STATUS_NONE;
+	cdvd.nCommand = 0;
 }
-
-/*
-Interrupts
-
-0x00	 No interrupt		  
-0x01	 Data Ready		  
-0x02	 Command Complete 	  
-0x03	 Acknowledge (reserved) 
-0x04	 End of Data Detected   
-0x05	 Error Detected 	  
-0x06	 Drive Not Ready	
-*/
 
 void cdvdWrite08(u8 rt) { // INTR_STAT
 	CDR_LOG("cdvdWrite08(IntrReason) = ACK(%x)\n", rt);
@@ -1420,29 +1551,23 @@ void cdvdWrite0A(u8 rt) { // STATUS
 
 void cdvdWrite0F(u8 rt) { // TYPE
 	CDR_LOG("cdvdWrite0F(Type) %x\n", rt);
-SysPrintf("*PCSX2*: CDVD TYPE %x\n", rt);
+	DevCon::MsgLn("*PCSX2*: CDVD TYPE %x\n", rt);
 }
 
 void cdvdWrite14(u8 rt) { // PS1 MODE??
 	u32 cycle = psxRegs.cycle;
 
-	if (rt == 0xFE)	SysPrintf("*PCSX2*: go PS1 mode DISC SPEED = FAST\n");
-	else			SysPrintf("*PCSX2*: go PS1 mode DISC SPEED = %dX\n", rt);
+	if (rt == 0xFE)	Console::Notice("*PCSX2*: go PS1 mode DISC SPEED = FAST\n");
+	else			Console::Notice("*PCSX2*: go PS1 mode DISC SPEED = %dX\n", rt);
 
 	psxReset();
 	psxHu32(0x1f801450) = 0x8;
 	psxHu32(0x1f801078) = 1;
 	psxRegs.cycle = cycle;
-
-	// PS1 DEBUGGING
-//	varLog = 0x09a00000;
-
-#ifdef PCSX2_DEVBUILD
-	varLog|= 0x10000000;// |  0x00400000;// | 0x1fe00000;
-#endif
 }
 
-void cdvdWrite16(u8 rt) { // SCOMMAND
+void cdvdWrite16(u8 rt)		 // SCOMMAND
+{
 //	cdvdTN	diskInfo;
 //	cdvdTD	trackInfo;
 //	int i, lbn, type, min, sec, frm, address;
@@ -2026,11 +2151,4 @@ void cdvdWrite3A(u8 rt) { // DEC-SET
 	CDR_LOG("cdvdWrite3A(DecSet) %x\n", rt);
 	cdvd.decSet = rt;
 	SysPrintf("DecSet Write: %02X\n", cdvd.decSet);
-}
-
-static int mg_BIToffset(u8 *buffer){
-	int i, ofs = 0x20; for (i=0; i<*(u16*)&buffer[0x1A]; i++)ofs+=0x10;
-	if (*(u16*)&buffer[0x18] & 1)ofs+=buffer[ofs];
-	if ((*(u16*)&buffer[0x18] & 0xF000)==0)ofs+=8;
-	return ofs + 0x20;
 }

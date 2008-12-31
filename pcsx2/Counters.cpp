@@ -773,8 +773,16 @@ void SaveState::rcntFreeze()
 	Freeze(nextCounter);
 	Freeze(nextsCounter);
 
-	if( !IsSaving() )
+	// New in version 11 -- save the PAL/NTSC info!
+	if( GetVersion() > 0x10 )
 	{
+		Freeze( Config.PsxType );
+	}
+
+	if( IsLoading() )
+	{
+		UpdateVSyncRate();
+
 #ifdef PCSX2_VIRTUAL_MEM
 		// Sanity check for loading older savestates:
 

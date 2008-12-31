@@ -67,7 +67,7 @@ ptw32_InterlockedCompareExchange (volatile PTW32_INTERLOCKED_LPLONG location,
    * Interlocked routine, which appears to avoid the LOCK prefix on
    * uniprocessor systems. So one DLL works for all systems.
    */
-  if (ptw32_smp_system)
+  if (1) //ptw32_smp_system)
 
 /* *INDENT-OFF* */
 
@@ -177,7 +177,7 @@ ptw32_InterlockedExchange (volatile PTW32_INTERLOCKED_LPLONG location,
    * is nearly 3 times faster than the XCHG instruction, so this routine
    * is not yet very useful for speeding up pthreads.
    */
-  if (ptw32_smp_system)
+  if (1) //ptw32_smp_system)
 
 /* *INDENT-OFF* */
 

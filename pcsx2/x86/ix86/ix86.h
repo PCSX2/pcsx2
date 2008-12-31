@@ -175,7 +175,7 @@ struct CAPABILITIES {
    u32 hasStreamingSIMDExtensions;
    u32 hasStreamingSIMD2Extensions;
    u32 hasSelfSnoop;
-   u32 hasHyperThreading;
+   u32 hasMultiThreading;			// is TRUE for both mutli-core and Hyperthreaded CPUs.
    u32 hasThermalMonitor;
    u32 hasIntel64BitArchitecture;
    u32 hasStreamingSIMD3Extensions;

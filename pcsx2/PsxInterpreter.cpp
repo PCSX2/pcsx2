@@ -313,7 +313,7 @@ char* getName(char *file, u32 addr){
 		name[0]=0;
 	else{
 		while (!feof(f)){
-			fscanf(f, "%08X %s\r\n", &a, name);
+			fscanf(f, "%08X %s\n", &a, name);
 			if (a==addr)break;
 		}
 		fclose(f);
