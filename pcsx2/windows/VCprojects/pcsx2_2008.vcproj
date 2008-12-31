@@ -1903,14 +1903,6 @@
 		<Filter
 			Name="Ps2"
 			>
-			<File
-				RelativePath="..\..\vtlb.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vtlb.h"
-				>
-			</File>
 			<Filter
 				Name="EE"
 				>
@@ -2658,6 +2650,14 @@
 				</File>
 				<File
 					RelativePath="..\..\Memory.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\vtlb.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\vtlb.h"
 					>
 				</File>
 			</Filter>

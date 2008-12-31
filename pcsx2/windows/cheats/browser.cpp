@@ -1091,7 +1091,7 @@ BOOL CALLBACK BrowserProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				case IDC_SKIPMPEG:
 				{
 					u8 *p = PS2MEM_BASE;
-					u8 *d = p + 0x02000000;
+					u8 *d = p + Ps2MemSize::Base;
 					d -= 16;
 					u32 *u;
 

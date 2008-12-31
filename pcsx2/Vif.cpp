@@ -404,7 +404,7 @@ u16 vifqwc = 0;
 static __forceinline int mfifoVIF1rbTransfer() {
 	u32 maddr = psHu32(DMAC_RBOR);
 	u32 ret, msize = psHu32(DMAC_RBOR) + psHu32(DMAC_RBSR) + 16;
-	u16 mfifoqwc = min(vif1ch->qwc, vifqwc);
+	u16 mfifoqwc = std::min(vif1ch->qwc, vifqwc);
 	u32 *src;
 	
 	/* Check if the transfer should wrap around the ring buffer */

@@ -21,7 +21,11 @@
 #include "vtlb.h"
 #include "x86/ix86/ix86.h"
 
+#ifdef PCSX2_DEVBUILD
 #define verify(x) {if (!(x)) { (*(u8*)0)=3; }}
+#else
+#define verify jASSUME
+#endif
 
 static const uint VTLB_PAGE_BITS =12;
 static const uint VTLB_PAGE_MASK=(4095);

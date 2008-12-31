@@ -28,6 +28,8 @@
 #include "iR5900.h"
 #include "coroutine.h"
 
+using namespace std;			// for min / max
+
 // Zero cycle IRQ schedules aren't really good, but the IPU uses them.
 // Better to throw the IRQ inline:
 
@@ -1891,7 +1893,7 @@ int IPU0dma()
 
 	assert((ipu0dma->chcr & 0xC) == 0 );
 	pMem = (u32*)dmaGetAddr(ipu0dma->madr);
- 	readsize = min(ipu0dma->qwc, (int)ipuRegs->ctrl.OFC);
+ 	readsize = min(ipu0dma->qwc, (u16)ipuRegs->ctrl.OFC);
 	FIFOfrom_read(pMem,readsize);
 	ipu0dma->madr += readsize<< 4;
 	ipu0dma->qwc -= readsize; // note: qwc is u16

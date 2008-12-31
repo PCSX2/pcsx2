@@ -25,12 +25,12 @@
 
 #include "VifDma.h" 
 
-#include <assert.h>
-
 #ifdef _MSC_VER
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #endif
+
+using namespace std;			// for min / max
 
 //#define VIFUNPACKDEBUG //enable unpack debugging output 
 
@@ -549,7 +549,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 			size = min(size, (int)vifRegs->num*ft->gsize); //size will always be the same or smaller
 			
 			pfn = vif->usn ? VIFfuncTableSSE[unpackType].funcU: VIFfuncTableSSE[unpackType].funcS;
-			writemask = VIFdmanum ? g_vif1HasMask3[min(vifRegs->cycle.wl,3)] : g_vif0HasMask3[min(vifRegs->cycle.wl,3)];
+			writemask = VIFdmanum ? g_vif1HasMask3[min(vifRegs->cycle.wl,(u8)3)] : g_vif0HasMask3[min(vifRegs->cycle.wl,(u8)3)];
 			writemask = pfn[(((vifRegs->code & 0x10000000)>>28)<<writemask)*3+vifRegs->mode](dest, (u32*)cdata, size);
 
 			if( oldcycle != -1 ) *(u32*)&vifRegs->cycle = oldcycle;

@@ -596,15 +596,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 #ifdef PCSX2_VIRTUAL_MEM
 	LPVOID lpMemReserved;
-#endif
-
-	InitCommonControls();
-	pInstance=hInstance;
-	FirstShow=true;			// this is used by cheats.cpp to search for stuff (broken?)
-
-	pthread_win32_process_attach_np();
-
-#ifdef PCSX2_VIRTUAL_MEM
 
 	if( !SysLoggedSetLockPagesPrivilege( GetCurrentProcess(), TRUE ) )
 		return -1;
@@ -618,6 +609,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return -1;
 	}
 #endif
+
+	InitCommonControls();
+	pInstance=hInstance;
+	FirstShow=true;			// this is used by cheats.cpp to search for stuff (broken?)
+
+	pthread_win32_process_attach_np();
 
 	__try 
 	{

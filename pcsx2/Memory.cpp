@@ -171,11 +171,11 @@ int memInit() {
 	try
 	{
 		// allocate all virtual memory
-		PHYSICAL_ALLOC(PS2MEM_BASE, 0x02000000, s_psM);
-		VIRTUAL_ALLOC(PS2MEM_ROM, 0x00400000, PAGE_READONLY);
-		VIRTUAL_ALLOC(PS2MEM_ROM1, 0x00040000, PAGE_READONLY);
-		VIRTUAL_ALLOC(PS2MEM_ROM2, 0x00080000, PAGE_READONLY);
-		VIRTUAL_ALLOC(PS2MEM_EROM, 0x001C0000, PAGE_READONLY);
+		PHYSICAL_ALLOC(PS2MEM_BASE, Ps2MemSize::Base, s_psM);
+		VIRTUAL_ALLOC(PS2MEM_ROM, Ps2MemSize::Rom, PAGE_READONLY);
+		VIRTUAL_ALLOC(PS2MEM_ROM1, Ps2MemSize::Rom1, PAGE_READONLY);
+		VIRTUAL_ALLOC(PS2MEM_ROM2, Ps2MemSize::Rom2, PAGE_READONLY);
+		VIRTUAL_ALLOC(PS2MEM_EROM, Ps2MemSize::ERom, PAGE_READONLY);
 		PHYSICAL_ALLOC(PS2MEM_SCRATCH, 0x00010000, s_psS);
 		PHYSICAL_ALLOC(PS2MEM_HW, 0x00010000, s_psHw);
 		PHYSICAL_ALLOC(PS2MEM_PSX, 0x00200000, s_psxM);
@@ -193,7 +193,7 @@ int memInit() {
 		VIRTUAL_ALLOC(PS2MEM_BA0, 0x00010000, PAGE_READWRITE);
 
 		// reserve the left over 224Mb, don't map
-		ReserveExtraMem( PS2MEM_BASE+0x02000000, 0x0e000000 );
+		ReserveExtraMem( PS2MEM_BASE+Ps2MemSize::Base, 0x0e000000 );
 
 		// reserve left over psx mem
 		ReserveExtraMem( PS2MEM_PSX+0x00200000, 0x00600000 );
@@ -248,15 +248,15 @@ int memInit() {
 
 void memShutdown()
 {
-	VirtualFree(PS2MEM_BASE+0x02000000, 0, MEM_RELEASE);
+	VirtualFree(PS2MEM_BASE+Ps2MemSize::Base, 0, MEM_RELEASE);
 	VirtualFree(PS2MEM_PSX+0x00200000, 0, MEM_RELEASE);
 	VirtualFree(PS2MEM_BASE+0x20000000, 0, MEM_RELEASE);
 
-	PHYSICAL_FREE(PS2MEM_BASE, 0x02000000, s_psM);
-	SysMunmap(PS2MEM_ROM, 0x00400000);
-	SysMunmap(PS2MEM_ROM1, 0x00080000);
-	SysMunmap(PS2MEM_ROM2, 0x00080000);
-	SysMunmap(PS2MEM_EROM, 0x001C0000);
+	PHYSICAL_FREE(PS2MEM_BASE, Ps2MemSize::Base, s_psM);
+	SysMunmap(PS2MEM_ROM, Ps2MemSize::Rom);
+	SysMunmap(PS2MEM_ROM1, Ps2MemSize::Rom1);
+	SysMunmap(PS2MEM_ROM2, Ps2MemSize::Rom2);
+	SysMunmap(PS2MEM_EROM, Ps2MemSize::ERom);
 	PHYSICAL_FREE(PS2MEM_SCRATCH, 0x00010000, s_psS);
 	PHYSICAL_FREE(PS2MEM_HW, 0x00010000, s_psHw);
 	PHYSICAL_FREE(PS2MEM_PSX, 0x00200000, s_psxM);
@@ -473,11 +473,11 @@ int i;
     munmap(PS2MEM_BASE, 0x40000000);
 
 	// allocate all virtual memory
-	PHYSICAL_ALLOC(PS2MEM_BASE, 0x02000000, s_psM);
-	VIRTUAL_ALLOC(PS2MEM_ROM, 0x00400000, PROT_READ);
-	VIRTUAL_ALLOC(PS2MEM_ROM1, 0x00040000, PROT_READ);
-	VIRTUAL_ALLOC(PS2MEM_ROM2, 0x00080000, PROT_READ);
-	VIRTUAL_ALLOC(PS2MEM_EROM, 0x001C0000, PROT_READ);
+	PHYSICAL_ALLOC(PS2MEM_BASE, Ps2MemSize::Base, s_psM);
+	VIRTUAL_ALLOC(PS2MEM_ROM, Ps2MemSize::Rom, PROT_READ);
+	VIRTUAL_ALLOC(PS2MEM_ROM1, Ps2MemSize::Rom1, PROT_READ);
+	VIRTUAL_ALLOC(PS2MEM_ROM2, Ps2MemSize::Rom2, PROT_READ);
+	VIRTUAL_ALLOC(PS2MEM_EROM, Ps2MemSize::ERom, PROT_READ);
 	PHYSICAL_ALLOC(PS2MEM_SCRATCH, 0x00010000, s_psS);
 	PHYSICAL_ALLOC(PS2MEM_HW, 0x00010000, s_psHw);
 	PHYSICAL_ALLOC(PS2MEM_PSX, 0x00200000, s_psxM);
@@ -526,11 +526,11 @@ void memShutdown()
 	VIRTUAL_FREE(PS2MEM_BASE, 0x40000000);
 	VIRTUAL_FREE(PS2MEM_PSX, 0x00800000);
 
-	PHYSICAL_FREE(PS2MEM_BASE, 0x02000000, s_psM);
-	VIRTUAL_FREE(PS2MEM_ROM, 0x00400000);
-	VIRTUAL_FREE(PS2MEM_ROM1, 0x00080000);
-	VIRTUAL_FREE(PS2MEM_ROM2, 0x00080000);
-	VIRTUAL_FREE(PS2MEM_EROM, 0x001C0000);
+	PHYSICAL_FREE(PS2MEM_BASE, Ps2MemSize::Base, s_psM);
+	VIRTUAL_FREE(PS2MEM_ROM, Ps2MemSize::Rom);
+	VIRTUAL_FREE(PS2MEM_ROM1, Ps2MemSize::Rom1);
+	VIRTUAL_FREE(PS2MEM_ROM2, Ps2MemSize::Rom2);
+	VIRTUAL_FREE(PS2MEM_EROM, Ps2MemSize::ERom);
 	PHYSICAL_FREE(PS2MEM_SCRATCH, 0x00010000, s_psS);
 	PHYSICAL_FREE(PS2MEM_HW, 0x00010000, s_psHw);
 	PHYSICAL_FREE(PS2MEM_PSX, 0x00800000, s_psxM);
@@ -2143,15 +2143,15 @@ void __fastcall memWrite128(u32 mem, const u64 *value) {
 }
 
 #else //VIRTUAL_MEM
-u32 psMPWC[(0x02000000/32)>>12];
-std::vector<u32> psMPWVA[0x02000000>>12];
+u32 psMPWC[(Ps2MemSize::Base/32)>>12];
+std::vector<u32> psMPWVA[Ps2MemSize::Base>>12];
 
-u8  *psM; //32mb Main Ram
-u8  *psR; //4mb rom area
-u8  *psR1; //256kb rom1 area (actually 196kb, but can't mask this)
-u8  *psR2; // 0x00080000
-u8  *psER; // 0x001C0000
-u8  *psS; //0.015 mb, scratch pad
+u8  *psM = NULL; //32mb Main Ram
+u8  *psR = NULL; //4mb rom area
+u8  *psR1 = NULL; //256kb rom1 area (actually 196kb, but can't mask this)
+u8  *psR2 = NULL; // 0x00080000
+u8  *psER = NULL; // 0x001C0000
+u8  *psS = NULL; //0.015 mb, scratch pad
 
 #define CHECK_MEM(mem) //MyMemCheck(mem)
 
@@ -2180,16 +2180,16 @@ vtlbHandler vu1_micro_mem;
 void memMapPhy()
 {
 	//Main mem
-	vtlb_MapBlock(psM,0x00000000,0x02000000);//mirrored on first 256 mb ?
+	vtlb_MapBlock(psM,0x00000000,Ps2MemSize::Base);//mirrored on first 256 mb ?
 	
 	//Rom
-	vtlb_MapBlock(psR,0x1fc00000,0x00400000);//Writable ?
+	vtlb_MapBlock(psR,0x1fc00000,Ps2MemSize::Rom);//Writable ?
 	//Rom 1
-	vtlb_MapBlock(psR1,0x1e000000,0x00040000);//Writable ?
+	vtlb_MapBlock(psR1,0x1e000000,Ps2MemSize::Rom1);//Writable ?
 	//Rom 2 ?
-	vtlb_MapBlock(psR2,0x1e400000,0x00080000);//Writable ?
+	vtlb_MapBlock(psR2,0x1e400000,Ps2MemSize::Rom2);//Writable ?
 	//EEProm ?
-	vtlb_MapBlock(psER,0x1e040000,0x001C0000);//Writable ?
+	vtlb_MapBlock(psER,0x1e040000,Ps2MemSize::ERom);//Writable ?
 
 	//IOP mem
 	vtlb_MapBlock(psxM,0x1c000000,0x00800000);
@@ -2606,27 +2606,27 @@ int memInit()
 	vu0_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,0);
 	vu1_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,1);
 
-	psR  = (u8*)_aligned_malloc(0x00400010, 16);
-	psR1 = (u8*)_aligned_malloc(0x00080010, 16);
-	psR2 = (u8*)_aligned_malloc(0x00080010, 16);
+	psR  = (u8*)_aligned_malloc(Ps2MemSize::Rom, 16);
+	psR1 = (u8*)_aligned_malloc(Ps2MemSize::Rom1, 16);
+	psR2 = (u8*)_aligned_malloc(Ps2MemSize::Rom2, 16);
 	
 	if (psxInit() == -1)
 		return -1;
 	
-	psM  = (u8*)_aligned_malloc(0x02001000, 4096);
-	psER = (u8*)_aligned_malloc(0x001C0010, 16);
-	psS  = (u8*)_aligned_malloc(0x00004010, 16);
+	psM  = (u8*)_aligned_malloc(Ps2MemSize::Base, 4096);
+	psER = (u8*)_aligned_malloc(Ps2MemSize::ERom, 16);
+	psS  = (u8*)_aligned_malloc(Ps2MemSize::Scratch, 16);
 	if (psM  == NULL || psR  == NULL || psR1 == NULL || 
 		psR2 == NULL || psER == NULL || psS == NULL) {
 		SysMessage(_("Error allocating memory")); return -1;
 	}
 
-	memset(psM,  0, 0x02000000);
-	memset(psR,  0, 0x00400010);
-	memset(psR1, 0, 0x00080010);
-	memset(psR2, 0, 0x00080010);
-	memset(psER, 0, 0x001C0010);
-	memset(psS,  0, 0x00004010);
+	memset(psM,  0, Ps2MemSize::Base);
+	memset(psR,  0, Ps2MemSize::Rom);
+	memset(psR1, 0, Ps2MemSize::Rom1);
+	memset(psR2, 0, Ps2MemSize::Rom2);
+	memset(psER, 0, Ps2MemSize::ERom);
+	memset(psS,  0, Ps2MemSize::Scratch);
 
 	memMapPhy();
 
@@ -2646,12 +2646,12 @@ int memInit()
 
 void memShutdown() 
 {
-	FREE(psM);
-	FREE(psR);
-	FREE(psR1);
-	FREE(psR2);
-	FREE(psER);
-	FREE(psS);
+	safe_aligned_free(psM);
+	safe_aligned_free(psR);
+	safe_aligned_free(psR1);
+	safe_aligned_free(psR2);
+	safe_aligned_free(psER);
+	safe_aligned_free(psS);
 
 	vtlb_Term();
 }
@@ -2677,7 +2677,8 @@ void memClearPageAddr(u32 vaddr)
 }
 #endif // PCSX2_VIRTUAL_MEM
 
-void loadBiosRom(const char *ext, u8 *dest) {
+void loadBiosRom( const char *ext, u8 *dest, long maxSize )
+{
 	struct stat buf;
 	char Bios1[g_MaxPath];
 	char Bios[g_MaxPath];
@@ -2702,7 +2703,7 @@ void loadBiosRom(const char *ext, u8 *dest) {
 	strcat(Bios1, ext);
 	if (stat(Bios1, &buf) != -1) {	
 		fp = fopen(Bios1, "rb");
-		fread(dest, 1, buf.st_size, fp);
+		fread(dest, 1, std::min( maxSize, buf.st_size ), fp);
 		fclose(fp);
 		return;
 	}
@@ -2710,7 +2711,7 @@ void loadBiosRom(const char *ext, u8 *dest) {
 	sprintf(Bios1, "%s%s.bin", Config.BiosDir, ext);
 	if (stat(Bios1, &buf) != -1) {	
 		fp = fopen(Bios1, "rb");
-		fread(dest, 1, buf.st_size, fp);
+		fread(dest, 1, std::min( maxSize, buf.st_size ), fp);
 		fclose(fp);
 		return;
 	}
@@ -2722,19 +2723,20 @@ void loadBiosRom(const char *ext, u8 *dest) {
 	);
 }
 
-void memReset() {
+void memReset()
+{
 	struct stat buf;
 	char Bios[g_MaxPath];
 	FILE *fp;
 
 #ifdef PCSX2_VIRTUAL_MEM
 	DWORD OldProtect;
-	memset(PS2MEM_BASE, 0, 0x02000000);
-	memset(PS2MEM_SCRATCH, 0, 0x00004000);
+	memset(PS2MEM_BASE, 0, Ps2MemSize::Base);
+	memset(PS2MEM_SCRATCH, 0, Ps2MemSize::Scratch);
 #else
 	vtlb_Reset();
-	memset(psM, 0, 0x02000000);
-	memset(psS, 0, 0x00004000);
+	memset(psM, 0, Ps2MemSize::Rom);
+	memset(psS, 0, Ps2MemSize::Scratch);
 #endif
 
 	CombinePaths( Bios, Config.BiosDir, Config.Bios );
@@ -2750,15 +2752,15 @@ void memReset() {
 
 #ifdef _WIN32
 	// make sure can write
-	VirtualProtect(PS2MEM_ROM, 0x00400000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_ROM1, 0x00040000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READWRITE, &OldProtect);
+	VirtualProtect(PS2MEM_ROM, Ps2MemSize::Rom, PAGE_READWRITE, &OldProtect);
+	VirtualProtect(PS2MEM_ROM1, Ps2MemSize::Rom1, PAGE_READWRITE, &OldProtect);
+	VirtualProtect(PS2MEM_ROM2, Ps2MemSize::Rom2, PAGE_READWRITE, &OldProtect);
+	VirtualProtect(PS2MEM_EROM, Ps2MemSize::ERom, PAGE_READWRITE, &OldProtect);
 #else
-	mprotect(PS2EMEM_ROM, 0x00400000, PROT_READ|PROT_WRITE);
-	mprotect(PS2EMEM_ROM1, 0x00400000, PROT_READ|PROT_WRITE);
-	mprotect(PS2EMEM_ROM2, 0x00800000, PROT_READ|PROT_WRITE);
-	mprotect(PS2EMEM_EROM, 0x001C0000, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_ROM, Ps2MemSize::Rom, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_ROM1, Ps2MemSize::Rom1, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_ROM2, Ps2MemSize::Rom2, PROT_READ|PROT_WRITE);
+	mprotect(PS2EMEM_EROM, Ps2MemSize::ERom, PROT_READ|PROT_WRITE);
 #endif
 
 #endif
@@ -2778,22 +2780,22 @@ void memReset() {
 	vtlb_VMapUnmap(0x20000000,0x60000000);
 #endif
 
-	loadBiosRom("rom1", PS2MEM_ROM1);
-	loadBiosRom("rom2", PS2MEM_ROM2);
-	loadBiosRom("erom", PS2MEM_EROM);
+	loadBiosRom("rom1", PS2MEM_ROM1, Ps2MemSize::Rom1);
+	loadBiosRom("rom2", PS2MEM_ROM2, Ps2MemSize::Rom2);
+	loadBiosRom("erom", PS2MEM_EROM, Ps2MemSize::ERom);
 
 #ifdef PCSX2_VIRTUAL_MEM
 
 #ifdef _WIN32
-	VirtualProtect(PS2MEM_ROM, 0x00400000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_ROM1, 0x00040000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READONLY, &OldProtect);
+	VirtualProtect(PS2MEM_ROM, Ps2MemSize::Rom, PAGE_READONLY, &OldProtect);
+	VirtualProtect(PS2MEM_ROM1, Ps2MemSize::Rom1, PAGE_READONLY, &OldProtect);
+	VirtualProtect(PS2MEM_ROM2, Ps2MemSize::Rom2, PAGE_READONLY, &OldProtect);
+	VirtualProtect(PS2MEM_EROM, Ps2MemSize::ERom, PAGE_READONLY, &OldProtect);
 #else
-	mprotect(PS2EMEM_ROM, 0x00400000, PROT_READ);
-	mprotect(PS2EMEM_ROM1, 0x00400000, PROT_READ);
-	mprotect(PS2EMEM_ROM2, 0x00800000, PROT_READ);
-	mprotect(PS2EMEM_EROM, 0x001C0000, PROT_READ);
+	mprotect(PS2EMEM_ROM, Ps2MemSize::Rom, PROT_READ);
+	mprotect(PS2EMEM_ROM1, Ps2MemSize::Rom1, PROT_READ);
+	mprotect(PS2EMEM_ROM2, Ps2MemSize::Rom2, PROT_READ);
+	mprotect(PS2EMEM_EROM, Ps2MemSize::ERom, PROT_READ);
 #endif
 
 #endif
@@ -2815,7 +2817,7 @@ void memSetUserMode() {
 int mmap_GetRamPageInfo(void* ptr)
 {
 	u32 offset=((u8*)ptr-psM);
-	if (offset>=0x02000000)
+	if (offset>=Ps2MemSize::Base)
 		return -1; //not in ram, no tracking done ...
 	offset>>=12;
 	return (psMPWC[(offset/32)]&(1<<(offset&31)))?1:0;
@@ -2844,15 +2846,15 @@ void mmap_ResetBlockTracking()
 {
 	Console::WriteLn("vtlb/mmap: Block Tracking reseted ..");
 	memset(psMPWC,0,sizeof(psMPWC));
-	for(u32 i=0;i<(0x02000000>>12);i++)
+	for(u32 i=0;i<(Ps2MemSize::Base>>12);i++)
 	{
 		psMPWVA[i].clear();
 	}
 #ifdef _WIN32
 	DWORD old;
-	VirtualProtect(psM,0x02000000,PAGE_READWRITE,&old);
+	VirtualProtect(psM,Ps2MemSize::Base,PAGE_READWRITE,&old);
 #else
-	mprotect(psM,0x02000000, PROT_READ|PROT_WRITE);
+	mprotect(psM,Ps2MemSize::Base, PROT_READ|PROT_WRITE);
 #endif
 }
 
@@ -2870,7 +2872,7 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 	// get bad virtual address
 	u32 offset = (u8*)ExceptionRecord.ExceptionInformation[1]-psM;
 
-	if (offset>=0x02000000)
+	if (offset>=Ps2MemSize::Base)
 		return EXCEPTION_CONTINUE_SEARCH;
 
 	DWORD old;

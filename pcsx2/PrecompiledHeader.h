@@ -15,12 +15,18 @@
 // Force availability of to WinNT APIs (change to 0x600 to enable XP-specific APIs)
 #	define WINVER 0x0501
 #	define _WIN32_WINNT 0x0501
+
 #	include <windows.h>
+
+// disable Windows versions of min/max -- we'll use the typesafe STL versions instead.
+#undef min
+#undef max
 
 #endif
 
 // Include the STL junk that's actually handy.
 
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -64,8 +70,6 @@
 #	define TRUE  1
 #	define FALSE 0
 
-//#	define max(a,b)            (((a) > (b)) ? (a) : (b))
-//#	define min(a,b)            (((a) < (b)) ? (a) : (b))
 #	define __declspec(x)
 #	define __assume(x) ;
 #	define strnicmp strncasecmp
@@ -101,14 +105,6 @@ static __forceinline u32 timeGetTime()
 	ftime(&t);
 	return (u32)(t.time*1000+t.millitm);
 }
-
-#	ifndef max
-#		define max(a,b)            (((a) > (b)) ? (a) : (b))
-#	endif
-
-#	ifndef min
-#		define min(a,b)            (((a) < (b)) ? (a) : (b))
-#	endif
 
 #	define BOOL int
 

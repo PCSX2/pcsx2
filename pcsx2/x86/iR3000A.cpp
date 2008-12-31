@@ -521,24 +521,31 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 
 static int recInit() {
 	int i;
-	uptr startaddr;
 
 	// can't have upper 4 bits nonzero!
 	// ... we can't? (air)
 
-	startaddr = 0x0f000000;
 	if( recMem == NULL )
-	//while(!(startaddr & 0xf0000000)) {
-		recMem = (u8*)SysMmap(startaddr, RECMEM_SIZE);
-		/*if( (uptr)recMem & 0xf0000000 ) {
-			SysMunmap(recMem, RECMEM_SIZE); recMem = NULL;
-			startaddr += 0x00100000;
-			continue;
+	{
+		recMem = (u8*)SysMmap(0x0f000000, RECMEM_SIZE);
+		if( recMem == NULL || (uptr)recMem > 0xf0000000 )
+		{
+			// Allocation failed, so let's try a generic address...
+			if( recMem != NULL )
+				SysMunmap(recMem, RECMEM_SIZE);
+
+			recMem = (u8*)SysMmap(NULL, RECMEM_SIZE);
+			
+			if( (uptr)recMem > 0xf0000000 )
+			{
+				SysMunmap(recMem, RECMEM_SIZE);		// failed...
+				recMem = NULL;
+			}
 		}
-		else break;*/
-	//}
+	}
 	
-	if( recMem == NULL ) {
+	if( recMem == NULL )
+	{
 		Console::Error( "Error > R3000A failed to allocate recompiler memory." );
 		return 1;
 	}
@@ -570,7 +577,7 @@ static int recInit() {
 	// No errors!  Proceed with initialization...
 
 	memset(psxRecLUT, 0, 0x010000 * sizeof(uptr));
-	ProfilerRegisterSource("IOPRec",recMem, RECMEM_SIZE);
+	ProfilerRegisterSource( "IOPRec", recMem, RECMEM_SIZE );
 
 	for (i=0; i<0x80; i++) psxRecLUT[i + 0x0000] = (uptr)&recRAM[(i & 0x1f) << 14];
 	for (i=0; i<0x80; i++) psxRecLUT[i + 0x8000] = (uptr)&recRAM[(i & 0x1f) << 14];
@@ -608,6 +615,8 @@ static void recReset()
 
 static void recShutdown()
 {
+	ProfilerTerminateSource( "IOPRec" );
+
 	SafeSysMunmap(recMem, RECMEM_SIZE);
 	safe_free(psxRecLUT);
 	safe_aligned_free(recRAM);
@@ -1498,7 +1507,7 @@ StartRecomp:
 	AddBaseBlockEx(s_pCurBlockEx, 1);
 
 	if( !(psxpc&0x10000000) )
-		g_psxMaxRecMem = max( (psxpc&~0xa0000000), g_psxMaxRecMem );
+		g_psxMaxRecMem = std::max( (psxpc&~0xa0000000), g_psxMaxRecMem );
 
 	if( psxbranch == 2 ) {
 		_psxFlushCall(FLUSH_EVERYTHING);

@@ -84,11 +84,11 @@ void SaveState::FreezeAll()
 	if( IsLoading() )
 		PreLoadPrep();
 
-	FreezeMem(PS2MEM_BASE, 0x02000000);         // 32 MB main memory   
-	FreezeMem(PS2MEM_ROM, 0x00400000);         // 4 mb rom memory
-	FreezeMem(PS2MEM_ROM1,0x00040000);         // 256kb rom1 memory
-	FreezeMem(PS2MEM_SCRATCH, 0x00004000);         // scratch pad 
-	FreezeMem(PS2MEM_HW, 0x00010000);         // hardware memory
+	FreezeMem(PS2MEM_BASE, Ps2MemSize::Base);	// 32 MB main memory   
+	FreezeMem(PS2MEM_ROM, Ps2MemSize::Rom);		// 4 mb rom memory
+	FreezeMem(PS2MEM_ROM1, 0x00040000);			// 256kb rom1 memory
+	FreezeMem(PS2MEM_SCRATCH, Ps2MemSize::Scratch);	// scratch pad 
+	FreezeMem(PS2MEM_HW, 0x00010000);			// hardware memory
 
 	Freeze(cpuRegs);   // cpu regs + COP0
 	Freeze(psxRegs);   // iop regs

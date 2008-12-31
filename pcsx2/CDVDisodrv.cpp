@@ -172,7 +172,7 @@ int CDVDFS_read( int fd, char *buffer, int size ){
 	asector = ssector = fd_table[fd].LBA + (fd_table[fd].filePos >> 11);
 	off_sector = (fd_table[fd].filePos & 0x7FF);
 	if (off_sector){
-		ssize   = min(2048 - off_sector, size);
+		ssize   = std::min(2048 - off_sector, size);
 		size   -= ssize;
 		asector++;
 	}

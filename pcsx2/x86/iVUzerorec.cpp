@@ -336,7 +336,6 @@ void SuperVUInit(int vuindex)
 		jASSUME( vuindex < 0 );
 
 		// upper 4 bits cannot be nonzero!  <-- double negatives are bad english
-		// .. and how comes we only check for the uppermost bit (sign bit)... ? (air)
 		s_recVUMem = (u8*)SysMmap( 0x0c000000, VU_EXESIZE);
 
 		if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
@@ -344,15 +343,24 @@ void SuperVUInit(int vuindex)
 			// Allocation failed?  Well then let's just try an operating-system-assigned
 			// location, by specifying NULL as the address "hint."
 
+			if( s_recVUMem != NULL )
+				SysMunmap( s_recVUMem, VU_EXESIZE );
+
 			s_recVUMem = (u8*)SysMmap( NULL, VU_EXESIZE);
-			if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
+			if( (uptr)s_recVUMem > 0x80000000 )
 			{
-				Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
-				throw Exception::OutOfMemory( "Could not reserve memory for the SuperVU." );
+				SysMunmap( s_recVUMem, VU_EXESIZE );		// failed...
+				s_recVUMem = NULL;
 			}
 		}
 
-		ProfilerRegisterSource("VURec",s_recVUMem, VU_EXESIZE);
+		if( s_recVUMem == NULL )
+		{
+			Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
+			throw Exception::OutOfMemory( "Could not reserve memory for the SuperVU." );
+		}
+
+		ProfilerRegisterSource( "VURec", s_recVUMem, VU_EXESIZE);
 		memset(s_recVUMem, 0xcd, VU_EXESIZE);
 		s_recVUPtr = s_recVUMem;
 		recVUStack = new u8[SUPERVU_STACKSIZE * 4];
@@ -374,6 +382,7 @@ void SuperVUDestroy(int vuindex)
 	if( vuindex < 0 ) {
 		SuperVUDestroy(0);
 		SuperVUDestroy(1);
+		ProfilerTerminateSource( "VURec" );
 		SafeSysMunmap(s_recVUMem, VU_EXESIZE);
 		safe_delete_array( recVUStack );
 	}

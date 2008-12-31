@@ -2007,7 +2007,7 @@ void cdvdWrite16(u8 rt)		 // SCOMMAND
 			break;
 
 		case 0x8E: // sceMgReadData
-			SetResultSize(min(16, cdvd.mg_size));
+			SetResultSize( std::min(16, cdvd.mg_size) );
 			FreezeMMXRegs(1);
 			memcpy_fast(cdvd.Result, cdvd.mg_buffer, cdvd.ResultC);
 			cdvd.mg_size -= cdvd.ResultC;

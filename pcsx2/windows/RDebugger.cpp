@@ -360,7 +360,7 @@ LRESULT WINAPI RemoteDebuggerParamsProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 					Edit_GetText(GetDlgItem(hDlg, IDC_PORT), strport, 6);
 					strport[5]=0;
 					port=atol(strport);
-					port=min(port,65535);
+					port=std::min(port,(u32)65535);
 
 					EndDialog(hDlg, (Button_GetCheck(GetDlgItem(hDlg, IDC_DEBUGBIOS))!=0)+1);
 					return TRUE;

@@ -1507,11 +1507,11 @@ static void recInit()
 
 	// 32 alignment necessary
 	if( recRAM == NULL )
-		recRAM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x02000000 , 4*sizeof(BASEBLOCK));
+		recRAM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*Ps2MemSize::Base , 4*sizeof(BASEBLOCK));
 	if( recROM == NULL )
-		recROM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00400000 , 4*sizeof(BASEBLOCK));
+		recROM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*Ps2MemSize::Rom , 4*sizeof(BASEBLOCK));
 	if( recROM1 == NULL )
-		recROM1 = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*0x00040000 , 4*sizeof(BASEBLOCK));
+		recROM1 = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*Ps2MemSize::Rom1 , 4*sizeof(BASEBLOCK));
 	if( recBlocks == NULL )
 		recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*EE_NUMBLOCKS, 16);
 	if( recStack == NULL )
@@ -1532,7 +1532,7 @@ static void recInit()
 
 	// No errors.. Proceed with initialization:
 
-	ProfilerRegisterSource("EERec",recMem, REC_CACHEMEM+0x1000);
+	ProfilerRegisterSource( "EERec", recMem, REC_CACHEMEM+0x1000 );
 	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
 
 	for ( i = 0x0000; i < 0x0200; i++ )
@@ -1581,9 +1581,9 @@ static void recReset( void ) {
 
 	s_nNextBlock = 0;
 	maxrecmem = 0;
-	memset( recRAM,  0, sizeof(BASEBLOCK)/4*0x02000000 );
-	memset( recROM,  0, sizeof(BASEBLOCK)/4*0x00400000 );
-	memset( recROM1, 0, sizeof(BASEBLOCK)/4*0x00040000 );
+	memset( recRAM,  0, sizeof(BASEBLOCK)/4*Ps2MemSize::Base );
+	memset( recROM,  0, sizeof(BASEBLOCK)/4*Ps2MemSize::Rom );
+	memset( recROM1, 0, sizeof(BASEBLOCK)/4*Ps2MemSize::Rom1 );
 	memset( recBlocks, 0, sizeof(BASEBLOCKEX)*EE_NUMBLOCKS );
 	if( s_pInstCache ) memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
 	ResetBaseBlockEx(0);
@@ -1612,6 +1612,8 @@ static void recReset( void ) {
 
 void recShutdown( void )
 {
+	ProfilerTerminateSource( "EERec" );
+
 	SafeSysMunmap(recMem, REC_CACHEMEM);
 
 	safe_aligned_free( recLUT );
@@ -3214,7 +3216,7 @@ StartRecomp:
 	while(inpage_sz)
 	{
 		int PageType=mmap_GetRamPageInfo((u32*)PSM(inpage_ptr));
-		u32 pgsz=min(0x1000-inpage_offs,inpage_sz);
+		u32 pgsz=std::min(0x1000-inpage_offs,inpage_sz);
 
 		if(PageType!=-1)
 		{
@@ -3288,7 +3290,7 @@ StartRecomp:
 	//PC_SETBLOCKEX(s_pCurBlock, s_pCurBlockEx);
 
 	if( !(pc&0x10000000) )
-		maxrecmem = max( (pc&~0xa0000000), maxrecmem );
+		maxrecmem = std::max( (pc&~0xa0000000), maxrecmem );
 
 	if( branch == 2 ) {
 		iFlushCall(FLUSH_EVERYTHING);

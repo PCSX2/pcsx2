@@ -22,6 +22,8 @@
 #include "PsxCommon.h"
 #include "Sifcmd.h"
 
+using namespace std;
+
 #define sif0dma ((DMACh*)&PS2MEM_HW[0xc000])
 #define sif1dma ((DMACh*)&PS2MEM_HW[0xc400])
 #define sif2dma ((DMACh*)&PS2MEM_HW[0xc800])

@@ -362,10 +362,15 @@ int psxMemInit()
 	// fixme: WHY are we allocating VM blocks in TLB builds for
 	// non-executable data blocks!?
 
-	psxM = (s8*)SysMmap(PS2MEM_PSX_, 0x00200000);
-	psxP = (s8*)SysMmap(PS2MEM_BASE_+0x1f000000, 0x00010000);
-	psxH = (s8*)SysMmap(PS2MEM_BASE_+0x1f800000, 0x00010000);
-	psxS = (s8*)SysMmap(PS2MEM_BASE_+0x1d000000, 0x00010000);
+//	psxM = (s8*)SysMmap(PS2MEM_PSX_, 0x00200000);
+//	psxP = (s8*)SysMmap(PS2MEM_BASE_+0x1f000000, 0x00010000);
+//	psxH = (s8*)SysMmap(PS2MEM_BASE_+0x1f800000, 0x00010000);
+//	psxS = (s8*)SysMmap(PS2MEM_BASE_+0x1d000000, 0x00010000);
+
+	psxM = (s8*)SysMmap(NULL, 0x00200000);
+	psxP = (s8*)SysMmap(NULL, 0x00010000);
+	psxH = (s8*)SysMmap(NULL, 0x00010000);
+	psxS = (s8*)SysMmap(NULL, 0x00010000);
 
     assert( (uptr)psxM <= 0xffffffff && (uptr)psxP <= 0xffffffff && (uptr)psxH <= 0xffffffff && (uptr)psxS <= 0xffffffff);
 

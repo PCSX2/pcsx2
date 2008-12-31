@@ -23,14 +23,14 @@ struct Module
 	string name;
 	u32 ticks;
 
-	Module(const char* name,void* ptr)
+	Module(const char* name, const void* ptr)
 	{
 		if (name!=0)
 			this->name=name;
 		FromAddress(ptr,name==0);
 		ticks=0;
 	}
-	Module(const char* name,void* b,u32 s)
+	Module(const char* name, const void* b, u32 s)
 	{
 		this->name=name;
 		FromValues(b,s);
@@ -45,11 +45,12 @@ struct Module
 		return name + ": " + to_string(ticks*100/(float)total_ticks) + " ";
 	}
 	bool Inside(uptr val) { return val>=base && val<=end; }
-	void FromAddress(void* ptr,bool getname)
+	void FromAddress(const void* ptr,bool getname)
 	{
 		char filename[512];
 		char filename2[512];
-		static void* ptr_old=0;
+		static const void* ptr_old=0;
+
 		if (ptr_old==ptr)
 			return;
 		ptr_old=ptr;
@@ -85,7 +86,7 @@ struct Module
 
 		end=base+len-1;
 	}
-	void FromValues(void* b,u32 s)
+	void FromValues(const void* b,u32 s)
 	{
 		base= (uptr)b;
 		len=s;
@@ -98,31 +99,104 @@ typedef map<string,Module> MapType;
 static vector<Module> ProfModules;
 static MapType ProfUnknownHash;
 
-static HANDLE hEmuThread;
-static HANDLE hProfThread;
+static HANDLE hEmuThread = NULL;
+static HANDLE hMtgsThread = NULL;
+static HANDLE hProfThread = NULL;
 
 static CRITICAL_SECTION ProfModulesLock;
 
 static volatile bool ProfRunning=false;
 
-void ProfilerRegisterSource(const char* Name,void* buff,u32 sz)
+static bool _registeredName( const char* name )
+{
+	for( vector<Module>::const_iterator
+		iter = ProfModules.begin(),
+		end = ProfModules.end(); iter<end; ++iter )
+	{
+		if( iter->name.compare( name ) == 0 )
+			return true;
+	}
+	return false;
+}
+
+void ProfilerRegisterSource(const char* Name, const void* buff, u32 sz)
 {
 	if( ProfRunning )
 		EnterCriticalSection( &ProfModulesLock );
-	Module tmp(Name,buff,sz);
-	ProfModules.push_back(tmp);
+
+	if( !_registeredName( Name ) )
+		ProfModules.push_back( Module(Name, buff, sz) );
+
 	if( ProfRunning )
 		LeaveCriticalSection( &ProfModulesLock );
 }
 
-void ProfilerRegisterSource(const char* Name,void* function)
+void ProfilerRegisterSource(const char* Name, const void* function)
 {
 	if( ProfRunning )
 		EnterCriticalSection( &ProfModulesLock );
-	Module tmp(Name,function);
-	ProfModules.push_back(tmp);
+
+	if( !_registeredName( Name ) )
+		ProfModules.push_back( Module(Name,function) );
+
 	if( ProfRunning )
 		LeaveCriticalSection( &ProfModulesLock );
+}
+
+void ProfilerTerminateSource( const char* Name )
+{
+	for( vector<Module>::const_iterator
+		iter = ProfModules.begin(),
+		end = ProfModules.end(); iter<end; ++iter )
+	{
+		if( iter->name.compare( Name ) == 0 )
+		{
+			ProfModules.erase( iter );
+			break;
+		}
+	}
+}
+
+static bool DispatchKnownModules( uint Eip )
+{
+	bool retval = false;
+	EnterCriticalSection( &ProfModulesLock );
+
+	size_t i;
+	for(i=0;i<ProfModules.size();i++)
+		if (ProfModules[i].Inside(Eip)) break;
+
+	if( i < ProfModules.size() )
+	{
+		ProfModules[i].ticks++;
+		retval = true;
+	}
+
+	LeaveCriticalSection( &ProfModulesLock );
+	return retval;
+}
+
+static void MapUnknownSource( uint Eip )
+{
+	char modulename[512];
+	DWORD sz=GetModuleFromPtr((void*)Eip,modulename,512);
+	string modulenam;
+	if (sz==0)
+		modulenam="[Unknown]";
+	else
+		modulenam=modulename;
+
+	map<string,Module>::iterator iter=ProfUnknownHash.find(modulenam);
+	if (iter!=ProfUnknownHash.end())
+	{
+		iter->second.ticks++;
+		return;
+	}
+
+	Module tmp((sz==0) ? modulenam.c_str() : NULL, (void*)Eip);
+	tmp.ticks++;
+
+	ProfUnknownHash.insert(MapType::value_type(modulenam, tmp));
 }
 
 int __stdcall ProfilerThread(void* nada)
@@ -132,9 +206,9 @@ int __stdcall ProfilerThread(void* nada)
 
 	while(ProfRunning)
 	{
-		Sleep(6);
+		Sleep(5);
 
-		if (tick_count>400)
+		if (tick_count>500)
 		{
 			string rv="|";
 			u32 subtotal=0;
@@ -168,42 +242,20 @@ int __stdcall ProfilerThread(void* nada)
 		tick_count++;
 
 		CONTEXT ctx;
-		ctx.ContextFlags= CONTEXT_FULL;
+		ctx.ContextFlags = CONTEXT_FULL;
 		GetThreadContext(hEmuThread,&ctx);
 
-		EnterCriticalSection( &ProfModulesLock );
-		size_t i;
-		for(i=0;i<ProfModules.size();i++)
-			if (ProfModules[i].Inside(ctx.Eip)) break;
-
-		if( i < ProfModules.size() )
+		if( !DispatchKnownModules( ctx.Eip ) )
 		{
-			ProfModules[i].ticks++;
-			LeaveCriticalSection( &ProfModulesLock );
-			continue;
+			MapUnknownSource( ctx.Eip );
 		}
-		LeaveCriticalSection( &ProfModulesLock );
-
-		char modulename[512];
-
-		DWORD sz=GetModuleFromPtr((void*)ctx.Eip,modulename,512);
-		string modulenam;
-		if (sz==0)
-			modulenam="[Unknown]";
-		else
-			modulenam=modulename;
-
-		map<string,Module>::iterator iter=ProfUnknownHash.find(modulenam);
-		if (iter!=ProfUnknownHash.end())
+		
+		if( hMtgsThread != NULL )
 		{
-			iter->second.ticks++;
-			continue;
+			GetThreadContext(hMtgsThread,&ctx);
+			if( DispatchKnownModules( ctx.Eip ) )
+				continue;
 		}
-
-		Module tmp(sz==0?modulenam.c_str():0,(void*)ctx.Eip);
-		tmp.ticks++;
-
-		ProfUnknownHash.insert(MapType::value_type(modulenam, tmp));
 	}
 
 	return -1;
@@ -236,11 +288,22 @@ void ProfilerTerm()
 	//Console::Write( "Profiler Terminating..." );
 	if (!ProfRunning)
 		return;
+
 	ProfRunning=false;
-	ResumeThread(hProfThread);
-	WaitForSingleObject(hProfThread,INFINITE);
-	CloseHandle(hProfThread);
-	CloseHandle(hEmuThread);
+
+	if( hProfThread != NULL )
+	{
+		ResumeThread(hProfThread);
+		WaitForSingleObject(hProfThread,INFINITE);
+		CloseHandle(hProfThread);
+	}
+
+	if( hEmuThread != NULL )
+		CloseHandle( hEmuThread );
+
+	if( hMtgsThread != NULL )
+		CloseHandle( hMtgsThread );
+
 	DeleteCriticalSection( &ProfModulesLock );
 	//Console::WriteLn( " Done!" );
 }
@@ -248,7 +311,10 @@ void ProfilerTerm()
 void ProfilerSetEnabled(bool Enabled)
 {
 	if (!ProfRunning)
-		return;
+	{
+		if( !Enabled ) return;
+		ProfilerInit();
+	}
 
 	if (Enabled)
 		ResumeThread(hProfThread);

@@ -108,7 +108,7 @@ void _SPR0interleave() {
 				spr0->qwc, tqwc, sqwc, spr0->madr, spr0->sadr);
 	
 	while (qwc > 0) {
-		spr0->qwc = min(tqwc, qwc); qwc-= spr0->qwc;
+		spr0->qwc = std::min(tqwc, qwc); qwc-= spr0->qwc;
 		pMem = (u32*)dmaGetAddr(spr0->madr);
 		if ((psHu32(DMAC_CTRL) & 0xC) == 0xC || // GIF MFIFO
 			(psHu32(DMAC_CTRL) & 0xC) == 0x8) { // VIF1 MFIFO
@@ -296,7 +296,7 @@ void _SPR1interleave() {
 				spr1->qwc, tqwc, sqwc, spr1->madr, spr1->sadr);
 
 	while (qwc > 0) {
-		spr1->qwc = min(tqwc, qwc); qwc-= spr1->qwc;
+		spr1->qwc = std::min(tqwc, qwc); qwc-= spr1->qwc;
 		pMem = (u32*)dmaGetAddr(spr1->madr);
 		memcpy_fast(&PS2MEM_SCRATCH[spr1->sadr & 0x3fff], (u8*)pMem, spr1->qwc <<4);
 		spr1->sadr += spr1->qwc * 16;

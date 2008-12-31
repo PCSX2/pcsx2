@@ -23,6 +23,8 @@
 #include "R5900.h"
 #include "InterTables.h"
 
+using namespace std;			// for min / max
+
 // Helper Macros
 //****************************************************************
 

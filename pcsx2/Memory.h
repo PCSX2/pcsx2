@@ -25,10 +25,20 @@
 
 //#define ENABLECACHE
 
-#define PS2MEM_BASE_	0x15000000
-#define PS2MEM_PSX_		(PS2MEM_BASE_+0x1c000000)
+namespace Ps2MemSize
+{
+	static const uint Base	= 0x02000000;		// 32 MB main memory!
+	static const uint Rom	= 0x00400000;		// 4 MB main rom
+	static const uint Rom1	= 0x00040000;		// fixme - TLB allocates 0x00080000 ?
+	static const uint Rom2	= 0x00080000;
+	static const uint ERom	= 0x001C0000;
+	static const uint Scratch = 0x00004000;	// fixme - VM allocates 0x10000 ?
+}
 
 #ifdef PCSX2_VIRTUAL_MEM
+
+#define PS2MEM_BASE_	0x15000000
+#define PS2MEM_PSX_		(PS2MEM_BASE_+0x1c000000)
 
 #ifdef _WIN32
 struct PSMEMORYMAP

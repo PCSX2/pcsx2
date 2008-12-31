@@ -62,7 +62,7 @@ bool FirstSearch;
 
 bool FirstShow;
 
-char olds[0x02000000];
+char olds[Ps2MemSize::Base];
 
 char tn[100];
 char to[100];
