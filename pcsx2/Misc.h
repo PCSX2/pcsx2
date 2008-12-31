@@ -90,7 +90,7 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define CHECK_VUBRANCHHACK	(Config.GameFixes & 0x8) // Special Fix for Magna Carta (note: Breaks Crash Bandicoot)
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW		(Config.vuOptions & 0x1)
-#define CHECK_VU_EXTRA_OVERFLOW	(Config.vuOptions & 0x2) // If enabled, Operands are checked for infinities before being used in the VU recs
+#define CHECK_VU_EXTRA_OVERFLOW	(Config.vuOptions & 0x2) // If enabled, Operands are clamped before being used in the VU recs
 #define CHECK_VU_SIGN_OVERFLOW	(Config.vuOptions & 0x4)
 #define CHECK_VU_UNDERFLOW		(Config.vuOptions & 0x8)
 #define CHECK_VU_EXTRA_FLAGS 0	// Always disabled now, doesn't seem to affect games positively. // Sets correct flags in the VU recs
