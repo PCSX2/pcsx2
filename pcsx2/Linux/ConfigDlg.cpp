@@ -233,7 +233,6 @@ void OnConfConf_Ok(GtkButton *button, gpointer user_data) {
 		LoadPlugins();
 	}
 
-	needReset = TRUE;
 	gtk_widget_destroy(ConfDlg);
 	if (MainWindow) gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();

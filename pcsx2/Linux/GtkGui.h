@@ -38,13 +38,11 @@ extern "C" {
 bool applychanges = FALSE;
 bool configuringplug = FALSE;
 bool UseGui = TRUE;
-bool needReset = TRUE;
-bool RunExe = FALSE;
 
  MemoryAlloc<u8>* g_RecoveryState = NULL;
 bool g_GameInProgress = false;	// Set TRUE if a game is actively running.
 
-static bool AccBreak = false;
+//static bool AccBreak = false;
 static bool m_ReturnToGame = false;		// set to exit the RunGui message pump
 
 
@@ -63,6 +61,7 @@ void OnEmu_Arguments(GtkMenuItem *menuitem, gpointer user_data);
 void OnLanguage(GtkMenuItem *menuitem, gpointer user_data);
 void OnHelp_Help();
 void OnHelp_About(GtkMenuItem *menuitem, gpointer user_data);
+void ExecuteCpu();
 
 void StartGui();
 void pcsx2_exit();

@@ -122,7 +122,22 @@ void SignalExit(int sig) {
 	pcsx2_exit();
 }
 
-void RunExecute(int run)
+void ExecuteCpu()
+{
+	// Destroy the window.  Ugly thing.
+	gtk_widget_destroy(MainWindow);
+	gtk_main_quit();
+	while (gtk_events_pending()) gtk_main_iteration();
+	
+	signal(SIGINT, SignalExit);
+	signal(SIGPIPE, SignalExit);
+
+	g_GameInProgress = true;
+	Cpu->Execute();
+	g_GameInProgress = false;
+}
+
+void RunExecute( const char* elf_file, bool use_bios )
 {
 	// (air notes:)
 	// If you want to use the new to-memory savestate feature, take a look at the new
@@ -136,12 +151,16 @@ void RunExecute(int run)
 	// (or, as an alternative maybe we should switch to wxWidgets and have a unified
 	// cross platform gui?)  - Air
 
-	if (needReset == TRUE) 
-		SysReset();
-
-	gtk_widget_destroy(MainWindow);
-	gtk_main_quit();
-	while (gtk_events_pending()) gtk_main_iteration();
+	try
+		{
+			cpuReset();
+		}
+		
+		catch( std::exception& ex )
+		{
+			SysMessage( ex.what() );
+			return;
+		}
 
 	if (OpenPlugins(NULL) == -1) 
 	{
@@ -149,33 +168,62 @@ void RunExecute(int run)
 		return;
 	}
 	
-	signal(SIGINT, SignalExit);
-	signal(SIGPIPE, SignalExit);
+	if( elf_file == 0 )
+	{
+		if(g_RecoveryState != NULL)
+		{
+			try
+			{
+				memLoadingState( *g_RecoveryState ).FreezeAll();
+			}
+			catch( std::runtime_error& ex )
+			{
+				SysMessage(
+					"Gamestate recovery failed.  Your game progress will be lost (sorry!)\n"
+					"\nError: %s\n", ex.what() );
+
+				// Take the user back to the GUI...
+				safe_delete( g_RecoveryState );
+				ClosePlugins();
+				return;
+			}
+			safe_delete( g_RecoveryState );
+		}
+		else
+		{
+			// Not recovering a state, so need to execute the bios and load the ELF information.
+
+			// Note: if the elf_file is null we use the CDVD elf file.
+			// But if the elf_file is an empty string then we boot the bios instead.
+
+			cpuExecuteBios();
+			char ename[g_MaxPath];
+			ename[0] = 0;
+			if( !use_bios ) GetPS2ElfName(ename);
+			loadElfFile( ename );
+		}
+	}
+	else
+	{
+		// Custom ELF specified (not using CDVD).
+		// Run the BIOS and load the ELF.
+
+		cpuExecuteBios();
+		loadElfFile( elf_file );
+	}
 	
 	FixCPUState();
-	if (needReset == TRUE) 
-	{ 
-		if ( RunExe == 0 ) cpuExecuteBios();
-		if (!efile) efile=GetPS2ElfName(elfname);
-		loadElfFile(elfname);
-
-		RunExe = 0;
-		efile = 0;
-		needReset = FALSE;
-	}
 
 	// this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
 	if( GSsetGameCRC != NULL ) GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
 		
-	if (run) Cpu->Execute();
+	ExecuteCpu();
 }
 
 void OnFile_RunCD(GtkMenuItem *menuitem, gpointer user_data) {
-	needReset = TRUE;
-	efile = 0;
-	
-	FixCPUState();
-	RunExecute(1);
+	safe_free( g_RecoveryState );
+	ResetPlugins();
+	RunExecute( NULL );
 }
 
 void OnRunElf_Ok(GtkButton* button, gpointer user_data) {
@@ -184,11 +232,8 @@ void OnRunElf_Ok(GtkButton* button, gpointer user_data) {
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
 	strcpy(elfname, File);
 	gtk_widget_destroy(FileSel);
-	needReset = TRUE;
-	efile = 1;
 	
-	FixCPUState();
-	RunExecute(1);
+	RunExecute(elfname);
 }
 
 void OnRunElf_Cancel(GtkButton* button, gpointer user_data) {
@@ -253,17 +298,17 @@ void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data)
 
 void OnEmu_Run(GtkMenuItem *menuitem, gpointer user_data)
 {
-	if(needReset == TRUE) RunExe = 1;
-	
-	efile = 0;
-	RunExecute(1);
+	if( g_GameInProgress )
+		m_ReturnToGame = 1;
+	else
+		RunExecute( NULL, true );	// boots bios if no savestate is to be recovered
+
 }
 
 void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
 {
-	ResetPlugins();
-	needReset = TRUE;
-	efile = 0;
+	safe_free( g_RecoveryState );
+	SysReset();
 }
 
  
@@ -377,10 +422,6 @@ void States_Save( const char* file, int num = -1 )
 		Console::Error( _( "Save state request failed with the following error:" ) );
 		Console::Error( ex.what() );
 	}
-
-	// Do you really want the game ro resume after saving from the menu?
-	// I found it annoying and removed it from the Win32 side (air)
-    RunExecute(1);
 }
 
 void States_Save(int num) {
@@ -399,7 +440,6 @@ void OnStates_Load5(GtkMenuItem *menuitem, gpointer user_data) { States_Load(4);
 void OnLoadOther_Ok(GtkButton* button, gpointer user_data) {
 	gchar *File;
 	char str[g_MaxPath];
-	int ret;
 
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
 	strcpy(str, File);
@@ -439,7 +479,6 @@ void OnStates_Save5(GtkMenuItem *menuitem, gpointer user_data) { States_Save(4);
 void OnSaveOther_Ok(GtkButton* button, gpointer user_data) {
 	gchar *File;
 	char str[g_MaxPath];
-	int ret;
 
 	File = (gchar*)gtk_file_selection_get_filename(GTK_FILE_SELECTION(FileSel));
 	strcpy(str, File);
@@ -720,7 +759,6 @@ void on_Game_Fix_OK(GtkButton *button, gpointer user_data)
 
 void on_Speed_Hacks(GtkMenuItem *menuitem, gpointer user_data)
 {
-	int index;
 	SpeedHacksDlg = create_SpeedHacksDlg();
 	
         set_checked(SpeedHacksDlg, "check_EE_Double_Sync", (Config.Hacks & FLAG_EE_2_SYNC));

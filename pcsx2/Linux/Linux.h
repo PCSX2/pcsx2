@@ -54,8 +54,6 @@ extern void vu1Shutdown();
 extern void SaveConfig();
 
 extern bool UseGui;
-extern bool needReset;
-extern bool RunExe;
 	
 extern int efile;
 extern int g_SaveGSStream;
@@ -82,6 +80,7 @@ extern MemoryAlloc<u8>* g_RecoveryState;
 extern bool g_GameInProgress;
 extern void SysRestorableReset();
 extern void SysDetect();
+void RunExecute( const char* elf_file, bool use_bios = false);
 
 typedef struct {
 	char lang[g_MaxPath];

@@ -355,16 +355,12 @@ void OnDebug_Debugger(GtkMenuItem *menuitem, gpointer user_data) {
 	GtkTreeViewColumn *column;
 
 	if (OpenPlugins(NULL) == -1) return;
-	if (needReset) { 
-		SysReset();
-		needReset = FALSE; 
-	}
 
-	if (!efile)
+	/*if (!efile)
 		efile=GetPS2ElfName(elfname);
 	if (efile)
 		loadElfFile(elfname);
-	efile=0;
+	efile=0;*/
 
 	dPC = cpuRegs.pc;
 	
