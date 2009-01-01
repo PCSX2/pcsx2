@@ -78,9 +78,9 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define CHECK_EEREC (Config.Options&PCSX2_EEREC)
 #define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
 //------------ SPEED/MISC HACKS!!! ---------------
-#define CHECK_EESYNC_HACK	(Config.Hacks & 0x1)
-#define CHECK_IOPSYNC_HACK	(Config.Hacks & 0x10)
-#define CHECK_EE_IOP_EXTRA	(Config.Hacks & 0x20)
+#define CHECK_EE_CYCLERATE (Config.Hacks & 0x03)
+#define CHECK_IOP_CYCLERATE (Config.Hacks & (1<<3))
+#define CHECK_WAITCYCLE_HACK (Config.Hacks & (1<<4))
 #define CHECK_ESCAPE_HACK	(Config.Hacks & 0x400)
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_FPUCLAMPHACK	(Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
@@ -105,6 +105,7 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 
 #define CHECK_VU0REC (Config.Options&PCSX2_VU0REC)
 #define CHECK_VU1REC (Config.Options&PCSX2_VU1REC)
+
 
 struct PcsxConfig {
 	char Bios[g_MaxPath];

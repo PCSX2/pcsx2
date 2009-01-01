@@ -191,7 +191,7 @@ static const bool IsDevBuild = false;
 
 #ifdef _DEBUG
 
-#	define DbgCon 0&&Console
+#	define DbgCon Console
 static const bool IsDebugBuild = true;
 
 #else

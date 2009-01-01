@@ -574,10 +574,17 @@
 #define IDC_EE_ROUNDMODE1               1306
 #define IDC_EE_ROUNDMODE2               1307
 #define IDC_EE_ROUNDMODE3               1308
+#define IDC_EESYNC_DEFAULT              1308
 #define IDC_VU_CHECK4                   1309
+#define IDC_EESYNC1                     1309
+#define IDC_EESYNC2                     1310
 #define IDC_VU_ROUNDMODE0               1311
+#define IDC_EESYNC3                     1311
 #define IDC_VU_ROUNDMODE1               1312
+#define IDC_IOPSYNC                     1312
 #define IDC_VU_ROUNDMODE2               1313
+#define IDC_CHECK2                      1313
+#define IDC_WAITCYCLES                  1313
 #define IDC_VU_ROUNDMODE3               1314
 #define IDC_VU_CLAMPMODE0               1315
 #define IDC_VU_CLAMPMODE1               1316
@@ -720,7 +727,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1309
+#define _APS_NEXT_CONTROL_VALUE         1314
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

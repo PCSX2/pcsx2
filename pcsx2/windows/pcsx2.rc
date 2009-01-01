@@ -1053,25 +1053,31 @@ BEGIN
     CONTROL         132,IDC_PS2SILVER_RECT,"Static",SS_BITMAP,2,183,70,74
 END
 
-IDD_HACKS DIALOGEX 0, 0, 279, 170
+IDD_HACKS DIALOGEX 0, 0, 328, 263
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCSX2 Speed Hacks"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,161,149,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,222,149,50,14
-    CONTROL         "EE Sync Hack (x2) - Doubles the cycle rate of the EE.",IDC_SYNCHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,53,246,10
-    CTEXT           "These hacks will affect the speed of PCSX2 but possibly compromise compatibility.",IDC_HACKDESC,7,7,264,8
-    CONTROL         "IOP Sync Hack (x2) - Doubles the cycle rate of the IOP.",IDC_SYNCHACK2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,67,247,10
-    CONTROL         "EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate.",IDC_SYNCHACK3,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,81,251,11
-    CTEXT           "If you have problems, disable all these and try again!",IDC_STATIC,7,22,264,8
-    GROUPBOX        "Sync Hacks",IDC_STATIC,7,41,265,62
-    GROUPBOX        "Miscellaneous",IDC_STATIC,7,107,265,33
+    CONTROL         "Default Cycle Rate",IDC_EESYNC_DEFAULT,"Button",BS_AUTORADIOBUTTON,13,44,87,10
+    CONTROL         "Use x1.5 Cycle Rate",IDC_EESYNC1,"Button",BS_AUTORADIOBUTTON,13,79,87,10
+    CONTROL         "Use x2 Cycle Rate",IDC_EESYNC2,"Button",BS_AUTORADIOBUTTON,13,113,83,10
+    CONTROL         "Use x3 Cycle Rate",IDC_EESYNC3,"Button",BS_AUTORADIOBUTTON,13,147,80,10
+    CONTROL         "Enable IOP x2 Cycle Rate",IDC_IOPSYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,41,98,10
+    CONTROL         "WaitCycles Sync Hack",IDC_WAITCYCLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,82,90,10
     CONTROL         "Escape Hack - Use Esc key to fully exit PCSX2.",IDC_ESCHACK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,121,241,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,234,180,10
+    DEFPUSHBUTTON   "OK",IDOK,217,242,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,271,242,50,14
+    CTEXT           "These hacks will speed up emulation but reduce emulation compatibility or cause visual errors.  If you have problems, disable all these and try again!",IDC_HACKDESC,18,7,286,19
+    GROUPBOX        "EmotionEngine (EE) Sync Hacks",IDC_STATIC,7,31,159,180
+    GROUPBOX        "Miscellaneous",IDC_STATIC,7,220,194,33
+    LTEXT           "Important:  X2 and X3 sync hacks *will* cause choppy/skippy audio on many FMV movies.",IDC_STATIC,13,183,149,25
+    LTEXT           "Bigger speedup, but causes flickering or missing geometry on many games.",IDC_STATIC,25,158,133,19
+    LTEXT           "Big speedup!  Works well with many games.",IDC_STATIC,25,124,125,19
+    LTEXT           "Most compatible option - recommended for everyone with high-end machines.",IDC_STATIC,25,55,129,19
+    LTEXT           "Small speedup and works well with most games.",IDC_STATIC,186,53,134,22
+    LTEXT           "Small speedup. Works well with most games, but may cause certain games to crash or freeze up during bootup or stage changes.",IDC_STATIC,186,94,134,39
+    LTEXT           "Moderate speedup and works well with most games.",IDC_STATIC,25,90,129,19
 END
 
 
@@ -1092,10 +1098,10 @@ BEGIN
     IDD_HACKS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 272
-        VERTGUIDE, 15
+        RIGHTMARGIN, 321
+        VERTGUIDE, 13
         TOPMARGIN, 7
-        BOTTOMMARGIN, 163
+        BOTTOMMARGIN, 256
     END
 END
 #endif    // APSTUDIO_INVOKED

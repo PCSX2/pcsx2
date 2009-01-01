@@ -208,7 +208,7 @@ static void cdvdSetIrq( uint id = (1<<Irq_CommandComplete) )
 	cdvd.PwOff |= id;
 	psxHu32(0x1070)|= 0x4;
 	hwIntcIrq(INTC_SBUS);
-	psxSetNextBranchDelta( 48 );		// don't need to be too prompt -- that would just put unnecessary load on the emu.
+	psxSetNextBranchDelta( 24 );		// don't need to be too prompt -- that would just put unnecessary load on the emu.
 }
 
 static int mg_BIToffset(u8 *buffer){
@@ -951,9 +951,10 @@ __forceinline void cdvdActionInterrupt()
 			// Make sure the cdvd action state is pretty well cleared:
 			cdvd.Reading = 0;
 			cdvd.Readed = 0;
-			cdvd.Ready  = 0x40;		// should be 0x40 or something else?
+			cdvd.Ready  = 0x4e;		// should be 0x40 or something else?
 			cdvd.Status = 0;
 			cdvd.RErr = 0;
+			cdvd.nCommand = 0;
 			cdvdSetIrq();
 		break;
 	}
@@ -1522,11 +1523,9 @@ void cdvdWrite07(u8 rt)		// BREAK
 {
 	CDR_LOG("cdvdWrite07(Break) %x\n", rt);
 
-	if( cdvd.Action == cdvdAction_Break )
-	{
-		CDR_LOG("\tDouble-break (already active) -- BREAK ignored!");
+	// If we're already in a Ready state or already Breaking, then do nothing:
+	if( cdvd.Ready != 0 || cdvd.Action == cdvdAction_Break )
 		return;
-	}
 
 	DbgCon::Notice("*PCSX2*: CDVD BREAK %x" , rt);
 
@@ -1539,11 +1538,10 @@ void cdvdWrite07(u8 rt)		// BREAK
 	CDVD_INT( 64 );
 
 	// Clear the cdvd status:
-	cdvd.Ready = 0;
 	cdvd.Readed = 0;
 	cdvd.Reading = 0;
 	cdvd.Status = CDVD_STATUS_NONE;
-	cdvd.nCommand = 0;
+	//cdvd.nCommand = 0;
 }
 
 void cdvdWrite08(u8 rt) { // INTR_STAT

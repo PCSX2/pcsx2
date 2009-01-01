@@ -39,7 +39,11 @@ struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 0x52, 0x5A};
 #define SIO_INT() sioInterrupt()
 #define SIO_FORCEINLINE
 #else
-#define SIO_INT() PSX_INT(IopEvt_SIO, PSXCLK/250000);
+__forceinline void SIO_INT()
+{
+	if( !(psxRegs.interrupt & (1<<IopEvt_SIO)) )
+		PSX_INT(IopEvt_SIO, 64 ); //PSXCLK/250000);
+}
 #define SIO_FORCEINLINE __forceinline
 #endif
 
@@ -505,7 +509,7 @@ void sioWriteCtrl16(unsigned short value) {
 	}
 }
 
-void  sioInterrupt() {
+void SIO_FORCEINLINE sioInterrupt() {
 	PAD_LOG("Sio Interrupt\n");
 	sio.StatReg|= IRQ;
 	psxHu32(0x1070)|=0x80;

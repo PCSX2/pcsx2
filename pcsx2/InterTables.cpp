@@ -38,7 +38,7 @@ namespace EE
 		static const int Cycles_MMI_Div = 22*8;
 
 		static const int Cycles_Store = 21;			// 21 for snes emu
-		static const int Cycles_Load = 12;			// 13 for snes emu
+		static const int Cycles_Load = 11;			// 13 for snes emu
 
 		MakeOpcode( Unknown, Default );
 		MakeOpcode( MMI_Unknown, Default );

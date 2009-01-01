@@ -551,6 +551,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\HacksDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ini.cpp"
 				>
 			</File>

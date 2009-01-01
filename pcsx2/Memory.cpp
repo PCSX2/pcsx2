@@ -2632,7 +2632,10 @@ int memInit()
 
 		m_psAllMem = (u8*)SysMmap( NULL, m_allMemSize );
 		if( (uptr)m_psAllMem > 0xe0000000 )
+		{
+			SysMunmap( m_psAllMem, m_allMemSize );
 			m_psAllMem = NULL;		// let the os-independent code below handle the error
+		}
 	}
 
 #else

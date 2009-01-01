@@ -43,6 +43,7 @@ u32 EEoCycle;
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
 
 static bool cpuIsInitialized = false;
+static uint eeWaitCycles = 1024;
 
 #ifdef _DEBUG
 extern u32 s_vucount;
@@ -144,6 +145,10 @@ void cpuReset()
 	g_nextBranchCycle = cpuRegs.cycle + 2;
 	EEsCycle = 0;
 	EEoCycle = cpuRegs.cycle;
+	eeWaitCycles = CHECK_WAITCYCLE_HACK ? 3072 : 768;
+
+	if( CHECK_EE_CYCLERATE > 1 )
+		eeWaitCycles += 1024;
 
 	vu0Reset();
     vu1Reset();  
@@ -470,7 +475,8 @@ static __forceinline void _cpuTestPERF()
 
 // Maximum wait between branches.  Lower values provide a tighter synchronization between
 // the EE and the IOP, but incur more execution overhead.
-#define EE_WAIT_CYCLE 1024		// 2048 is probably stable now, but starting low first
+//#define EE_WAIT_CYCLE 3072		// 2048 is probably stable now, but starting low first
+
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
@@ -479,7 +485,7 @@ u32 g_nextBranchCycle = 0;
 // and the recompiler.  (moved here to help alleviate redundant code)
 static __forceinline void _cpuBranchTest_Shared()
 {
-	g_nextBranchCycle = cpuRegs.cycle + EE_WAIT_CYCLE;
+	g_nextBranchCycle = cpuRegs.cycle + eeWaitCycles;
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;
@@ -650,6 +656,7 @@ void cpuExecuteBios()
 	else Config.Options &= ~PCSX2_COP2REC;
 
 	// Set the video mode to user's default request:
+	// (right now we always default to NTSC)
 	gsSetVideoRegionType( Config.PsxType & 1 );
 
 	Console::Notice( "* PCSX2 *: ExecuteBios" );
@@ -676,7 +683,7 @@ void cpuExecuteBios()
 //	REC_CLEARM(0x00200008);
 //	REC_CLEARM(0x00100008);
 //	REC_CLEARM(cpuRegs.pc);
-	if( CHECK_EEREC ) Cpu->Reset();
+	//if( CHECK_EEREC ) Cpu->Reset();
 
 	Console::Notice("* PCSX2 *: ExecuteBios Complete");
 	//GSprintf(5, "PCSX2 " PCSX2_VERSION "\nExecuteBios Complete\n");

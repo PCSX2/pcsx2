@@ -447,8 +447,9 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 #endif
 			// Bios Call: Force the IOP to do a Branch Test ASAP.
 			// Important! This helps prevent game freeze-ups during boot-up and stage loads.
-			MOV32MtoR( EAX, (uptr)&psxRegs.cycle );
-			MOV32RtoM( (uptr)&g_psxNextBranchCycle, EAX );
+			// Note: Fixes to cdvd have removed the need for this code.
+			//MOV32MtoR( EAX, (uptr)&psxRegs.cycle );
+			//MOV32RtoM( (uptr)&g_psxNextBranchCycle, EAX );
 		}
         return;
     }
@@ -1008,7 +1009,7 @@ static u32 psxScaleBlockCycles()
 	/*return s_psxBlockCycles * 
 		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16));*/
 	return s_psxBlockCycles * 
-		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3 : 2) : 1 );
+		(CHECK_IOP_CYCLERATE ? 2 : 1);
 }
 
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)

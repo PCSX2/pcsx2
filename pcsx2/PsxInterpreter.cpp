@@ -352,7 +352,7 @@ void psxADDIU() {															// Rt = Rs + Im
 	if (!_Rt_)
 	{
 		// BIOS Call -- force a branch test (fixes crashes in many games)
-		g_psxNextBranchCycle=psxRegs.cycle;
+		//g_psxNextBranchCycle=psxRegs.cycle;
 		zeroEx();
 		return;
 	}

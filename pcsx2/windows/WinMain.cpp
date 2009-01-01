@@ -353,8 +353,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if( !SysInit() )
 		WinClose();
 
-#ifdef PCSX2_DEVBUILD
-    if( g_TestRun.enabled || g_TestRun.ptitle != NULL ) {
+    if( IsDevBuild && (g_TestRun.enabled || g_TestRun.ptitle != NULL) ) {
 		// run without ui
         UseGui = 0;
 		SysReset();
@@ -363,6 +362,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0; // success!
 	}
 
+#ifdef PCSX2_DEVBUILD
 	if( g_pRunGSState ) {
 		LoadGSState(g_pRunGSState);
 		WinClose();
@@ -562,48 +562,6 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 EndDialog(hDlg, TRUE);
 				return FALSE;
             }
-		return TRUE;
-    }
-
-    return FALSE;
-}
-
-BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message) {
-        case WM_INITDIALOG:
-			if(Config.Hacks & 0x1) CheckDlgButton(hDlg, IDC_SYNCHACK, TRUE);
-			if(Config.Hacks & 0x10) CheckDlgButton(hDlg, IDC_SYNCHACK2, TRUE);
-			if(Config.Hacks & 0x20) CheckDlgButton(hDlg, IDC_SYNCHACK3, TRUE);
-			if(Config.Hacks & 0x400) CheckDlgButton(hDlg, IDC_ESCHACK, TRUE);
-			return TRUE;
-
-        case WM_COMMAND:
-			switch (LOWORD(wParam))
-			{
-				case IDOK:
-				{
-					uint newhacks = 0;
-					newhacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK) ? 0x1 : 0;
-					newhacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK2) ? 0x10 : 0;
-					newhacks |= IsDlgButtonChecked(hDlg, IDC_SYNCHACK3) ? 0x20 : 0;
-					newhacks |= IsDlgButtonChecked(hDlg, IDC_ESCHACK) ? 0x400 : 0;
-
-					EndDialog(hDlg, TRUE);
-
-					if( newhacks != Config.Hacks )
-					{
-						SysRestorableReset();
-						Config.Hacks = newhacks;
-						SaveConfig();
-					}
-				}
-				return FALSE;
-
-				case IDCANCEL:
-					EndDialog(hDlg, FALSE);
-				return FALSE;
-			}
 		return TRUE;
     }
 

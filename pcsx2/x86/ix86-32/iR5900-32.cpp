@@ -2230,25 +2230,43 @@ static u32 eeScaleBlockCycles()
 	// caused by sync hacks and such, since games seem to care a lot more about
 	// these small blocks having accurate cycle counts.
 
-	if( s_nBlockCycles <= (5<<3)  || !CHECK_EESYNC_HACK ) return s_nBlockCycles >> 3;
+	if( s_nBlockCycles <= (5<<3) || (CHECK_EE_CYCLERATE == 0) )
+		return s_nBlockCycles >> 3;
 
-	u32 scalar = CHECK_EE_IOP_EXTRA ? 17 : 9;	// 4.25 and 2.25 scales (4 bit fixed)
+	uint scalarLow, scalarMid, scalarHigh;
 
-	if( s_nBlockCycles <= (10<<3) )
+	// Note: larger blocks get a smaller scalar, to help keep
+	// them from becoming "too fat" and delaying branch tests.
+
+	switch( CHECK_EE_CYCLERATE )
 	{
-		// Mid-size blocks should get a mid-sized scale:
-		// (using an additional 2 bits fixed point math here)
+		case 0:	return s_nBlockCycles >> 3;
 
-		scalar = CHECK_EE_IOP_EXTRA ? 10 : 7;	// 2.50 and 1.75 scales
-	}
-	else if( s_nBlockCycles >= (22<<3) )
-	{
-		// larger blocks get a smaller scalar as well, to help keep
-		// them from becoming "too fat" and delaying branch tests.
-		scalar = CHECK_EE_IOP_EXTRA ? 11 : 8;	// 2.5 and 2.0 scales
+		case 1:		// Sync hack x1.5!
+			scalarLow = 5;
+			scalarMid = 7;
+			scalarHigh = 5;
+		break;
+
+		case 2:		// Sync hack x2
+			scalarLow = 7;
+			scalarMid = 9;
+			scalarHigh = 7;
+		break;
+
+		case 3:		// Sync hack x3
+			scalarLow = 10;
+			scalarMid = 19;
+			scalarHigh = 10;
+		break;
+
+		jNO_DEFAULT
 	}
 
-	s_nBlockCycles *= scalar;
+	s_nBlockCycles *= 
+		(s_nBlockCycles <= (10<<3)) ? scalarLow :
+		((s_nBlockCycles > (21<<3)) ? scalarHigh : scalarMid );
+
 	return s_nBlockCycles >> (3+2);
 }
 
