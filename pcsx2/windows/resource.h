@@ -706,6 +706,7 @@
 #define ID_VSYNCRATE                    40062
 #define ID_HELP_HELP                    40063
 #define ID_PROFILER                     40066
+#define ID_CDVDPRINT                    40067
 #define ID_CHEAT_FINDER_SHOW            40100
 #define ID_CHEAT_BROWSER_SHOW           40101
 #define ID_HACKS                        40102

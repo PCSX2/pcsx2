@@ -90,6 +90,8 @@ int LoadConfig()
     Conf.PsxOut = !!strtoul(szValue, NULL, 10);
 	GetPrivateProfileString("Interface", "Profiler", NULL, szValue, 20, szIniFile);
 	Conf.Profiler = !!strtoul(szValue, NULL, 10);
+	GetPrivateProfileString("Interface", "cdvdPrint", NULL, szValue, 20, szIniFile);
+	Conf.cdvdPrint = !!strtoul(szValue, NULL, 10);	
 	GetPrivateProfileString("Interface", "ThPriority", NULL, szValue, 20, szIniFile);
     Conf.ThPriority = strtoul(szValue, NULL, 10);
 	GetPrivateProfileString("Interface", "PluginsDir", NULL, szValue, g_MaxPath, szIniFile);
@@ -196,6 +198,8 @@ void SaveConfig()
     WritePrivateProfileString("Interface","Ps2Out",szValue,szIniFile);
 	sprintf(szValue,"%u",(int)Conf.Profiler);
     WritePrivateProfileString("Interface","Profiler",szValue,szIniFile);
+	sprintf(szValue,"%u",(int)Conf.cdvdPrint);
+    WritePrivateProfileString("Interface","cdvdPrint",szValue,szIniFile);
     sprintf(szValue,"%u",Conf.ThPriority);
 	WritePrivateProfileString("Interface","ThPriority",szValue,szIniFile);
     sprintf(szValue,"%s",Conf.Mcd1);

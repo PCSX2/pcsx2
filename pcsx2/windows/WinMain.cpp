@@ -847,7 +847,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-                   CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_UNCHECKED);
+                   CheckMenuItem(gApp.hMenu, ID_CONSOLE, MF_UNCHECKED);
 				   Console::Close();
 				}
 				SaveConfig();
@@ -855,7 +855,14 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			case ID_PATCHES:
 				Config.Patch = !Config.Patch;
-				CheckMenuItem(gApp.hMenu,ID_PATCHES,Config.Patch ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(gApp.hMenu, ID_PATCHES, Config.Patch ? MF_CHECKED : MF_UNCHECKED);
+
+				SaveConfig();
+				return FALSE;
+
+			case ID_CDVDPRINT:
+				Config.cdvdPrint = !Config.cdvdPrint;
+				CheckMenuItem(gApp.hMenu, ID_CDVDPRINT, Config.cdvdPrint ? MF_CHECKED : MF_UNCHECKED);
 
 				SaveConfig();
 				return FALSE;
@@ -1055,11 +1062,11 @@ void CreateMainMenu() {
 #endif
 
 	ADDSUBMENU(0, _("&Misc"));
-	if( !IsDebugBuild )
-	{
-		ADDMENUITEM(0,_("Enable &Profiler"), ID_PROFILER);
-		ADDSEPARATOR(0);
-	}
+	ADDMENUITEM(0,_("Print cdvd &Info"), ID_CDVDPRINT);
+	ADDSEPARATOR(0);
+#ifndef _DEBUG
+	ADDMENUITEM(0,_("Enable &Profiler"), ID_PROFILER);
+#endif
 	ADDMENUITEM(0,_("Enable &Patches"), ID_PATCHES);
 	ADDMENUITEM(0,_("Enable &Console"), ID_CONSOLE); 
 	ADDSEPARATOR(0);
@@ -1138,6 +1145,7 @@ void CreateMainWindow(int nCmdShow) {
 	if(Config.PsxOut)	CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
 	if(Config.Patch)	CheckMenuItem(gApp.hMenu,ID_PATCHES,MF_CHECKED);
 	if(Config.Profiler)	CheckMenuItem(gApp.hMenu,ID_PROFILER,MF_CHECKED);
+	if(Config.cdvdPrint)CheckMenuItem(gApp.hMenu,ID_CDVDPRINT,MF_CHECKED);
 	hStatusWnd = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", hWnd, 100);
     sprintf(buf, "PCSX2 %s", PCSX2_VERSION);
 	StatusSet(buf);

@@ -627,11 +627,7 @@ void SuperVUDumpBlock(list<VuBaseBlock*>& blocks, int vuindex)
             //SysPrintf("writing: %x, %x\n", (*itblock)->startpc, (uptr)(*itblock)->pendcode - (uptr)(*itblock)->pcode);
             fwrite( (*itblock)->pcode, 1, (uptr)(*itblock)->pendcode - (uptr)(*itblock)->pcode, fasm );
             fclose( fasm );
-#ifdef __x86_64__
-            sprintf( command, "objdump -D --target=binary --architecture=i386:x86-64 -M intel mydump1 > tempdump");
-#else
             sprintf( command, "objdump -D --target=binary --architecture=i386 -M intel mydump1 > tempdump");
-#endif
             system( command );
             fasm = fopen("tempdump", "r");
             // read all of it and write it to f
@@ -725,7 +721,7 @@ bool VuFunctionHeader::IsSame(void* pmem)
 		//if( checksum[0] != it->checksum[0] || checksum[1] != it->checksum[1] )
 		//	return false;
         // memcmp_mmx doesn't work on x86-64 machines
-#if defined(_MSC_VER) && !defined(__x86_64__)
+#if defined(_MSC_VER)
 	if( memcmp_mmx((u8*)pmem+it->start, it->pmem, it->size) )
 #else
         if( memcmp((u8*)pmem+it->start, it->pmem, it->size) )
@@ -2261,9 +2257,7 @@ int s_writeQ, s_writeP;
 
 // declare the saved registers
 uptr s_vu1esp, s_callstack;//, s_vu1esp
-#ifndef __x86_64__
 uptr s_vu1ebp, s_vuebx, s_vuedi, s_vu1esi;
-#endif
 
 static int s_recWriteQ, s_recWriteP; // wait times during recompilation
 static int s_needFlush; // first bit - Q, second bit - P, third bit - Q has been written, fourth bit - P has been written
@@ -2298,7 +2292,7 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
     //memset(recVUStack, 0, SUPERVU_STACKSIZE * 4);
 }
 
-#if defined(_MSC_VER) && !defined(__x86_64__)
+#if defined(_MSC_VER)
 
 // entry point of all vu programs from emulator calls
 __declspec(naked) void SuperVUExecuteProgram(u32 startpc, int vuindex)
@@ -2492,15 +2486,12 @@ static u32 s_svulast = 0, s_vufnheader;
 static u32 badaddrs[][2] = {0,0xffff};
 #endif
 
-#ifndef __x86_64__
 u32 s_saveecx, s_saveedx, s_saveebx, s_saveesi, s_saveedi, s_saveebp;
-#endif
-
 u32 g_curdebugvu;
 				
 //float vuDouble(u32 f);
 
-#if defined(_MSC_VER) && !defined(__x86_64__)
+#if defined(_MSC_VER)
 __declspec(naked) static void svudispfn()
 {
 	__asm {
@@ -2524,11 +2515,6 @@ void svudispfn();
 void svudispfntemp()
 {
 #endif
-
-//    VU1.VF[7].F[0] = vuDouble(VU1.VF[7].UL[0]);
-//    VU1.VF[7].F[1] = vuDouble(VU1.VF[7].UL[1]);
-//    VU1.VF[7].F[2] = vuDouble(VU1.VF[7].UL[2]);
-//    VU1.VF[7].F[3] = vuDouble(VU1.VF[7].UL[3]);
 
 #ifdef _DEBUG
 	static u32 i;
@@ -2556,7 +2542,7 @@ void svudispfntemp()
 	}
 #endif
 
-#if defined(_MSC_VER) && !defined(__x86_64__)
+#if defined(_MSC_VER)
 	__asm {
 		mov ecx, s_saveecx
 		mov edx, s_saveedx
@@ -2609,7 +2595,6 @@ void SuperVUFreeXMMregs(u32* livevars)
 	//_freeXMMregs();
 }
 
-//void timeout() { SysPrintf("VU0 timeout\n"); }
 void SuperVUTestVU0Condition(u32 incstack)
 {
 	if( s_vu && !SUPERVU_CHECKCONDITION ) return; // vu0 only
@@ -2617,8 +2602,6 @@ void SuperVUTestVU0Condition(u32 incstack)
 	CMP32ItoM((uptr)&s_TotalVUCycles, 512);	// sometimes games spin on vu0, so be careful with this value
 											// woody hangs if too high
 
-#ifndef __x86_64__
-    // x86-64 doesn't use a stack
 	if( incstack ) {
 		u8* ptr = JB8(0);
 
@@ -2628,11 +2611,7 @@ void SuperVUTestVU0Condition(u32 incstack)
 
 		x86SetJ8(ptr);
 	}
-	else
-#endif
-    {
-		JAE32( (uptr)SuperVUEndProgram - ( (uptr)x86Ptr + 6 ) );
-	}
+	else JAE32( (uptr)SuperVUEndProgram - ( (uptr)x86Ptr + 6 ) );
 }
 
 void VuBaseBlock::Recompile()
@@ -2695,12 +2674,7 @@ void VuBaseBlock::Recompile()
 			}
 			x86regs[s_JumpX86].needed = 1; 
 		}
-#ifdef __x86_64__
-        // check X86ARG1
-        if( x86regs[X86ARG1].inuse && x86regs[X86ARG1].type == X86TYPE_FNARG ) {
-            x86regs[X86ARG1].needed = 1;
-        }
-#endif
+
 		if( s_ScheduleXGKICK && s_XGKICKReg > 0 ) {
 			assert( x86regs[s_XGKICKReg].inuse );
 			x86regs[s_XGKICKReg].needed = 1;
@@ -2786,15 +2760,6 @@ void VuBaseBlock::Recompile()
 		// get rid of any writes, otherwise _freeX86regs will write
 		x86regs[s_JumpX86].mode &= ~MODE_WRITE;
 
-#ifdef __x86_64__
-        bool bValidX86Arg = false; // if false, then use _x86GetAddr(X86TYPE_FNARG, reg);
-        if( x86regs[X86ARG1].inuse ) {
-            bValidX86Arg = true;
-            if( x86regs[X86ARG1].type==X86TYPE_FNARG )
-                x86regs[X86ARG1].mode &= ~MODE_WRITE;
-        }
-#endif
-
 		if( branch == 1 ) {
 			if( !x86regs[s_JumpX86].inuse ) {
 				assert( x86regs[s_JumpX86].type == X86TYPE_VUJUMP );
@@ -2876,19 +2841,10 @@ void VuBaseBlock::Recompile()
 				
 				SuperVUTestVU0Condition(8);
 
-#ifdef __x86_64__
-                // check that X86ARG1 is still valid
-                if( !bValidX86Arg )
-                    MOV32MtoR(X86ARG1, _x86GetAddr(X86TYPE_FNARG, 0));
-                MOV32ItoR(X86ARG2, s_vu);
-#endif
 				// already onto stack
 				CALLFunc((uptr)SuperVUGetProgram);
-#ifndef __x86_64__
 				ADD32ItoR(ESP, 8);
-#endif
 				JMPR(EAX);
-
 				break;
 			}
             
@@ -2896,11 +2852,9 @@ void VuBaseBlock::Recompile()
             {
 //                s32 delta = (s32)(VU->code & 0x400 ? 0xfffffc00 | (VU->code & 0x3ff) : VU->code & 0x3ff) << 3;
 //                ADD32ItoRmOffset(ESP, delta, 0);
-#ifndef __x86_64__
-                ADD32ItoR(ESP, 8); // restore
-#endif
-                pChildJumps[0] = (u32*)((uptr)JMP32(0)|0x80000000);
 
+                ADD32ItoR(ESP, 8); // restore
+                pChildJumps[0] = (u32*)((uptr)JMP32(0)|0x80000000);
 				break;
             }
 			case 0:
@@ -3232,16 +3186,6 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
     s_pCurBlock->prevFlagsOutOfBlock = 0;
 
 #ifdef _DEBUG
-//	CMP32ItoM((u32)ptr, ptr[0]);
-//	j8Ptr[0] = JNE8(0);
-//	CMP32ItoM((u32)(ptr+1), ptr[1]);
-//	j8Ptr[1] = JNE8(0);
-//	j8Ptr[2] = JMP8(0);
-//	x86SetJ8( j8Ptr[0] );
-//	x86SetJ8( j8Ptr[1] );
-//    _callFunctionArg3((uptr)checkvucodefn, MEM_CONSTTAG, MEM_CONSTTAG, MEM_CONSTTAG, pc, s_vu, ptr[0]);
-//	x86SetJ8( j8Ptr[ 2 ] );
-
 	MOV32ItoR(EAX, pc);
 #endif
 
@@ -3856,13 +3800,8 @@ void recVUMI_JR( VURegs* vuu, s32 info )
 	if( (s_pCurBlock->type & BLOCKTYPE_HASEOP) || s_vu == 0 ) MOV32RtoM(SuperVUGetVIAddr(REG_TPC, 0), EAX);
 	
 	if( !(s_pCurBlock->type & BLOCKTYPE_HASEOP) ) {
-#ifdef __x86_64__
-        _allocX86reg(X86ARG1, X86TYPE_FNARG, 0, MODE_READ|MODE_WRITE);
-        MOV32RtoR(X86ARG1, EAX);
-#else
 		PUSH32I(s_vu);
 		PUSH32R(EAX);
-#endif
 	}
 	branch |= 0x10; // 0x08 is reserved
 }
@@ -3883,13 +3822,8 @@ void recVUMI_JALR( VURegs* vuu, s32 info )
 	if( (s_pCurBlock->type & BLOCKTYPE_HASEOP) || s_vu == 0 ) MOV32RtoM(SuperVUGetVIAddr(REG_TPC, 0), EAX);
 	
 	if( !(s_pCurBlock->type & BLOCKTYPE_HASEOP) ) {
-#ifdef __x86_64__
-        _allocX86reg(X86ARG1, X86TYPE_FNARG, 0, MODE_READ|MODE_WRITE);
-        MOV32RtoR(X86ARG1, EAX);
-#else
 		PUSH32I(s_vu);
 		PUSH32R(EAX);
-#endif
 	}
 
 	branch |= 4;
@@ -3932,29 +3866,19 @@ void recVUMI_XGKICK_( VURegs *VU )
 	_freeX86regs();
 	_freeXMMregs();
 
-#ifdef __x86_64__
-    if( X86ARG2 != s_XGKICKReg )
-        MOV32RtoR(X86ARG2, s_XGKICKReg);
-    MOV32ItoR(X86ARG1, (uptr)VU->Mem);
-#else
 	PUSH32R(s_XGKICKReg);
 	PUSH32I((uptr)VU->Mem);
-#endif
 
 	//CALLFunc((u32)countfn);
 
 	if( mtgsThread != NULL ) {
 		CALLFunc((uptr)VU1XGKICK_MTGSTransfer);
-#ifndef __x86_64__
 		ADD32ItoR(ESP, 8);
-#endif
 	}
 	else {
 #ifdef PCSX2_DEVBUILD
 		CALLFunc((uptr)vu1xgkick);
-#ifndef __x86_64__
 		ADD32ItoR(ESP, 8);
-#endif
 #else
 		CALLFunc((uptr)GSgifTransfer1);	
 #endif

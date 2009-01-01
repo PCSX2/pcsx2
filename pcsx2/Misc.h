@@ -64,12 +64,10 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 // <<--- END Path Utilities [PathUtil.c]
 
 #define PCSX2_GSMULTITHREAD 1 // uses multithreaded gs
-#define PCSX2_FRAMELIMIT 4 // limits frames to normal speeds
 #define PCSX2_EEREC 0x10
 #define PCSX2_VU0REC 0x20
 #define PCSX2_VU1REC 0x40
 #define PCSX2_COP2REC 0x80
-#define PCSX2_FORCEABS 0x100
 #define PCSX2_FRAMELIMIT_MASK 0xc00
 #define PCSX2_FRAMELIMIT_NORMAL 0x000
 #define PCSX2_FRAMELIMIT_LIMIT 0x400
@@ -126,7 +124,8 @@ struct PcsxConfig {
 	u32 Options; // PCSX2_X options
 
 	bool PsxOut;
-	bool Profiler;
+	bool Profiler; // Displays profiling info to console
+	bool cdvdPrint; // Prints cdvd reads to console 
 
 	int PsxType;
 	int Cdda;
