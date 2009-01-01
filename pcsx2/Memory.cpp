@@ -2588,6 +2588,12 @@ void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 	}
 }
 
+static const uint m_allMemSize = 
+		Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2 + Ps2MemSize::ERom +
+		Ps2MemSize::Base + Ps2MemSize::Scratch;
+;
+static u8* m_psAllMem = NULL;
+
 int memInit() 
 {
 	if (!vtlb_Init())
@@ -2606,27 +2612,51 @@ int memInit()
 	vu0_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,0);
 	vu1_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,1);
 
-	psR  = (u8*)_aligned_malloc(Ps2MemSize::Rom, 16);
-	psR1 = (u8*)_aligned_malloc(Ps2MemSize::Rom1, 16);
-	psR2 = (u8*)_aligned_malloc(Ps2MemSize::Rom2, 16);
-	
-	if (psxInit() == -1)
-		return -1;
-	
-	psM  = (u8*)_aligned_malloc(Ps2MemSize::Base, 4096);
-	psER = (u8*)_aligned_malloc(Ps2MemSize::ERom, 16);
-	psS  = (u8*)_aligned_malloc(Ps2MemSize::Scratch, 16);
-	if (psM  == NULL || psR  == NULL || psR1 == NULL || 
-		psR2 == NULL || psER == NULL || psS == NULL) {
-		SysMessage(_("Error allocating memory")); return -1;
+#ifdef __LINUX__
+
+	// For Linux we need to use the system virtual memory mapper so that we
+	// can coherse an allocation below the 2GB line.
+
+	// just try an arbitrary address first...
+	// maybe there's a better one to pick?
+	if( m_psAllMem == NULL )
+		m_psAllMem = (u8*)SysMmap( 0x24000000, m_allMemSize );
+
+	if( m_psAllMem == NULL || (uptr)m_psAllMem > 0xe0000000 )
+	{
+		// memory allocation *must* have the top bit clear, so let's try again
+		// with NULL (let the OS pick something for us).
+
+		if( m_psAllMem != NULL )
+			SysMunmap( m_psAllMem, m_allMemSize );
+
+		m_psAllMem = (u8*)SysMmap( NULL, m_allMemSize );
+		if( (uptr)m_psAllMem > 0xe0000000 )
+			m_psAllMem = NULL;		// let the os-independent code below handle the error
 	}
 
-	memset(psM,  0, Ps2MemSize::Base);
-	memset(psR,  0, Ps2MemSize::Rom);
-	memset(psR1, 0, Ps2MemSize::Rom1);
-	memset(psR2, 0, Ps2MemSize::Rom2);
-	memset(psER, 0, Ps2MemSize::ERom);
-	memset(psS,  0, Ps2MemSize::Scratch);
+#else
+	if( m_psAllMem == NULL )
+		m_psAllMem = (u8*)_aligned_malloc(m_allMemSize, 4096 );
+#endif
+
+	if( m_psAllMem == NULL) {
+		SysMessage(_("Error allocating memory"));
+		return -1;
+	}
+
+	u8* curpos = m_psAllMem;
+	psM = curpos; curpos += Ps2MemSize::Base;
+	psR = curpos; curpos += Ps2MemSize::Rom; 
+	psR1 = curpos; curpos += Ps2MemSize::Rom1;
+	psR2 = curpos; curpos += Ps2MemSize::Rom2;
+	psER = curpos; curpos += Ps2MemSize::ERom;
+	psS = curpos; //curpos += Ps2MemSize::Scratch;
+
+	memset( m_psAllMem,  0, m_allMemSize );
+
+	if (psxInit() == -1)
+		return -1;
 
 	memMapPhy();
 
@@ -2646,13 +2676,12 @@ int memInit()
 
 void memShutdown() 
 {
-	safe_aligned_free(psM);
-	safe_aligned_free(psR);
-	safe_aligned_free(psR1);
-	safe_aligned_free(psR2);
-	safe_aligned_free(psER);
-	safe_aligned_free(psS);
-
+#ifdef __LINUX__
+	SysMunmap( m_psAllMem, m_allMemSize );
+#else
+	safe_aligned_free(m_psAllMem);
+#endif
+	psM = psR = psR1 = psR2 = psER = psS = NULL;
 	vtlb_Term();
 }
 
