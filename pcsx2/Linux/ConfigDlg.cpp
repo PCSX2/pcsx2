@@ -406,7 +406,7 @@ void GetDirectory(GtkWidget *topWindow, const char *message, char *reply)
 
 void OnConfConf_PluginsPath(GtkButton *button, gpointer user_data) 
 {
-	char *reply;
+	char reply[g_MaxPath];
 	
 	GetDirectory(ConfDlg,"Choose the Plugin Directory:", reply);
 	strcpy(Config.PluginsDir, reply);
@@ -416,7 +416,7 @@ void OnConfConf_PluginsPath(GtkButton *button, gpointer user_data)
 
 void OnConfConf_BiosPath(GtkButton *button, gpointer user_data) 
 {
-	char *reply;
+	char reply[g_MaxPath];
 	
 	GetDirectory(ConfDlg,"Choose the Bios Directory:", reply);
 	strcpy(Config.BiosDir, reply);
@@ -471,7 +471,11 @@ void FindPlugins() {
 
 		if (strstr(plugin, ".so") == NULL) continue;
 		Handle = dlopen(plugin, RTLD_NOW);
-		if (Handle == NULL) Console::Error("%s\n", dlerror()); continue;
+		if (Handle == NULL) 
+		{
+			Console::Error("%s\n", dlerror()); 
+			continue;
+		}
 
 		PS2EgetLibType = (_PS2EgetLibType) dlsym(Handle, "PS2EgetLibType");
 		PS2EgetLibName = (_PS2EgetLibName) dlsym(Handle, "PS2EgetLibName");
