@@ -70,21 +70,21 @@ u32 g_nGenVars = 0, g_nTexVars = 0, g_nAlphaVars = 0, g_nResolve = 0;
 #define VER 97
 const unsigned char version  = PS2E_GS_VERSION;
 unsigned char revision = 0;	// revision and build gives plugin version
-unsigned char build    = VER;
+unsigned char build	= VER;
 unsigned char minor = 1;
 
 #ifdef _DEBUG
-char *libraryName     = "ZeroGS (Debug) ";
+char *libraryName	= "ZeroGS (Debug) ";
 #elif defined(RELEASE_TO_PUBLIC)
 
 #ifdef ZEROGS_SSE2
-char *libraryName     = "ZeroGS KOSMOS";
+char *libraryName	= "ZeroGS KOSMOS";
 #else
-char *libraryName     = "ZeroGS KOSMOS (no SSE2)";
+char *libraryName	= "ZeroGS KOSMOS (no SSE2)";
 #endif
 
 #else
-char *libraryName     = "ZeroGS (Dev) ";
+char *libraryName	= "ZeroGS (Dev) ";
 #endif
 
 static const char* s_aa[5] = { "AA none |", "AA 2x |", "AA 4x |", "AA 8x", "AA 16x" };
@@ -142,7 +142,7 @@ void __Log(char *fmt, ...) {
 void ERROR_LOG(char *fmt, ...) {
 	va_list list;
 
-    printf("ZeroGS: ");
+	printf("ZeroGS: ");
 
 	va_start(list, fmt);
 	vfprintf(gsLog, fmt, list);
@@ -161,16 +161,16 @@ void CALLBACK GSsetGameCRC(int crc, int options)
 {
 	VALIDATE_THRESH = 8;
 	g_GameSettings = conf.gamesettings|options;
-    conf.mrtdepth = !(conf.gamesettings&GAME_DISABLEMRTDEPTH);
+	conf.mrtdepth = !(conf.gamesettings&GAME_DISABLEMRTDEPTH);
 
-    g_GameSettings |= GAME_PATH3HACK;
-    g_LastCRC = crc;
+	g_GameSettings |= GAME_PATH3HACK;
+	g_LastCRC = crc;
 
-    //g_GameSettings |= GAME_PARTIALDEPTH;
+	//g_GameSettings |= GAME_PARTIALDEPTH;
 
-//    g_GameSettings |= GAME_DOPARALLELCTX|GAME_XENOSPECHACK;
-//    VALIDATE_THRESH = 64;
-//    TEXDESTROY_THRESH = 32;
+//	g_GameSettings |= GAME_DOPARALLELCTX|GAME_XENOSPECHACK;
+//	VALIDATE_THRESH = 64;
+//	TEXDESTROY_THRESH = 32;
 
 	switch(crc) {
 		case 0x54A548B4: // crash n burn
@@ -180,12 +180,12 @@ void CALLBACK GSsetGameCRC(int crc, int options)
 			}
 			break;
 
-        case 0xA3D63039: // xenosaga(j)
-        case 0x0E7807B2: // xenosaga(u)
-            g_GameSettings |= GAME_DOPARALLELCTX;
-            VALIDATE_THRESH = 64;
-            TEXDESTROY_THRESH = 32;
-            break;
+		case 0xA3D63039: // xenosaga(j)
+		case 0x0E7807B2: // xenosaga(u)
+			g_GameSettings |= GAME_DOPARALLELCTX;
+			VALIDATE_THRESH = 64;
+			TEXDESTROY_THRESH = 32;
+			break;
 
 		case 0x7D2FE035: // espgaluda (j)
 			VALIDATE_THRESH = 24;
@@ -193,12 +193,12 @@ void CALLBACK GSsetGameCRC(int crc, int options)
 			break;
 	}
 
-    printf("ZeroGS: Set game options: 0x%8.8x\n", g_GameSettings);
+	printf("ZeroGS: Set game options: 0x%8.8x\n", g_GameSettings);
 }
 
 void CALLBACK GSsetFrameSkip(int frameskip)
 {
-    s_frameskipping |= frameskip;
+	s_frameskipping |= frameskip;
 	if( frameskip && g_nFrameRender > 1 ) {
 		
 		for(int i = 0; i < 16; ++i) {
@@ -302,10 +302,10 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	static int nWindowWidth = 0, nWindowHeight = 0;
 
-    switch( msg ) {
-        case WM_DESTROY:
-            PostQuitMessage( 0 );
-            return 0;
+	switch( msg ) {
+		case WM_DESTROY:
+			PostQuitMessage( 0 );
+			return 0;
 
 		case WM_KEYDOWN:
 //			switch(wParam) {
@@ -341,9 +341,9 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		case WM_SETCURSOR:
 			SetCursor(NULL);
 			break;
-    }
+	}
 
-    return DefWindowProc( hWnd, msg, wParam, lParam );
+	return DefWindowProc( hWnd, msg, wParam, lParam );
 }
 
 s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
@@ -360,7 +360,7 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
 
 	assert( GSirq != NULL );
 	LoadConfig();
-    g_GameSettings = 0;
+	g_GameSettings = 0;
 
 	strcpy(GStitle, Title);
 	
@@ -399,7 +399,7 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
 	if( FAILED(ZeroGS::InitDeviceObjects()) )
 		return -1;
 
-    if( conf.bilinear == 2 ) {
+	if( conf.bilinear == 2 ) {
 		ZeroGS::AddMessage("forced bilinear filtering - on", 1000);
 	}
 	else if( conf.bilinear == 1 ) {
@@ -410,13 +410,13 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
 		sprintf(strtitle, "anti-aliasing - %s", s_aa[conf.aa], 1000);
 		ZeroGS::AddMessage(strtitle);
 	}
-    if( conf.options & GSOPTION_WIDESCREEN ) {
-        ZeroGS::AddMessage("16:9 widescreen - on", 1000);
-    }
+	if( conf.options & GSOPTION_WIDESCREEN ) {
+		ZeroGS::AddMessage("16:9 widescreen - on", 1000);
+	}
 
 	// set just in case
-    SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)MsgProc);
-    
+	SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)MsgProc);
+	
 	ShowWindow( GShwnd, SW_SHOWDEFAULT );
 	UpdateWindow( GShwnd );
 	SetFocus(GShwnd);
@@ -470,7 +470,7 @@ void CALLBACK GSchangeSaveState(int newstate, const char* filename)
 void CALLBACK GSmakeSnapshot(char *path)
 {
 	FILE *bmpfile;
-	char filename[256];     
+	char filename[256];	
 	u32 snapshotnr = 0;
 	
 	// increment snapshot value & try to get filename
@@ -535,7 +535,7 @@ void CALLBACK GSvsync(int interlace)
 							}
 							else {
 								conf.bilinear = (conf.bilinear+1)%3;
-                                sprintf(strtitle, "bilinear filtering - %s", pbilinear[conf.bilinear]);
+								sprintf(strtitle, "bilinear filtering - %s", pbilinear[conf.bilinear]);
 							}
 						}
 						else {
@@ -573,7 +573,7 @@ void CALLBACK GSvsync(int interlace)
 							g_bDisplayFPS ^= 1;
 						}
 						else {
-                            conf.options ^= GSOPTION_WIREFRAME;
+							conf.options ^= GSOPTION_WIREFRAME;
 							SETRS(D3DRS_FILLMODE, (conf.options&GSOPTION_WIREFRAME)?D3DFILL_WIREFRAME:D3DFILL_SOLID);
 							sprintf(strtitle, "wireframe rendering - %s", (conf.options&GSOPTION_WIREFRAME)?"on":"off");
 //							conf.options ^= GSOPTION_CAPTUREAVI;
@@ -587,15 +587,15 @@ void CALLBACK GSvsync(int interlace)
 					}
 					else if( msg.wParam == VK_F9 ) {
 
-                        if( (GetKeyState(VK_SHIFT)&0x8000) ) {
-                            conf.options ^= GSOPTION_WIDESCREEN;
-                            sprintf(strtitle, "16:9 widescreen - %s", (conf.options&GSOPTION_WIDESCREEN)?"on":"off");
-                        }
-                        else {
-                            g_GameSettings ^= GAME_PATH3HACK;
-                            sprintf(strtitle, "path3 hack - %s", (g_GameSettings&GAME_PATH3HACK) ? "on" : "off");
-                        }
-                        ZeroGS::AddMessage(strtitle);
+						if( (GetKeyState(VK_SHIFT)&0x8000) ) {
+							conf.options ^= GSOPTION_WIDESCREEN;
+							sprintf(strtitle, "16:9 widescreen - %s", (conf.options&GSOPTION_WIDESCREEN)?"on":"off");
+						}
+						else {
+							g_GameSettings ^= GAME_PATH3HACK;
+							sprintf(strtitle, "path3 hack - %s", (g_GameSettings&GAME_PATH3HACK) ? "on" : "off");
+						}
+						ZeroGS::AddMessage(strtitle);
 					}
 					else if( msg.wParam == VK_ESCAPE ) {
 
@@ -660,7 +660,7 @@ void CALLBACK GSvsync(int interlace)
 
 		_snprintf(strtitle, 512, "%s 0.%d.%d %.1f fps | %s%s%s%s %s (%.1f)", libraryName, build, minor, fFPS,
 			(conf.interlace < 2) ? "interlace | " : "",
-            conf.bilinear ? (conf.bilinear==2?"forced bilinear | ":"bilinear | ") : "",
+			conf.bilinear ? (conf.bilinear==2?"forced bilinear | ":"bilinear | ") : "",
 			conf.aa ? s_aa[conf.aa] : "",
 			(g_GameSettings&GAME_FFXHACK) ? "ffxhack | " : "",
 			g_pShaders[g_nPixelShaderVer], (ppf&0xfffff)/(float)UPDATE_FRAMES);
@@ -707,11 +707,11 @@ void GIFtag(pathInfo *path, u32 *data) {
 
 #ifdef GS_LOG
 //	GS_LOG("GIFtag: %8.8lx_%8.8lx_%8.8lx_%8.8lx: EOP=%d, NLOOP=%x, FLG=%x, NREG=%d, PRE=%d\n",
-//		    data[3], data[2], data[1], data[0],
+//			data[3], data[2], data[1], data[0],
 //			path->tag.eop, path->tag.nloop, tagflg, path->tag.nreg, tagpre);
 #endif
 
-    path->mode = tagflg+1;
+	path->mode = tagflg+1;
 
 	switch (tagflg) {
 		case 0x0:
@@ -759,11 +759,11 @@ static int nPath3Hack = 0;
 
 void CALLBACK GSgetLastTag(u64* ptag)
 {
-//    int mode = s_pLastPath->mode > 0 ? s_pLastPath->mode-1 : 0;
-//    *(u32*)ptag = s_pLastPath->tag.nloop|(s_pLastPath->tag.eop<<15);
-//    *((u32*)ptag+1) = (mode<<26)|(s_pLastPath->regn<<28);
-    *(u32*)ptag = nPath3Hack;
-    nPath3Hack = 0;
+//	int mode = s_pLastPath->mode > 0 ? s_pLastPath->mode-1 : 0;
+//	*(u32*)ptag = s_pLastPath->tag.nloop|(s_pLastPath->tag.eop<<15);
+//	*((u32*)ptag+1) = (mode<<26)|(s_pLastPath->regn<<28);
+	*(u32*)ptag = nPath3Hack;
+	nPath3Hack = 0;
 }
 
 void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
@@ -772,15 +772,15 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 	assert( g_hCurrentThread == GetCurrentThread() );
 #endif
 
-    //s_pLastPath = path;
+	//s_pLastPath = path;
 	//BOOL bAfter0Tag = 0;
 
-//    if( conf.log & 0x20 ) {
-//        __Log("%d: %x:%x\n", (path==&gs.path3)?3:(path==&gs.path2?2:1), pMem, size);
-//        for(int i = 0; i < size; i++) {
-//            __Log("%x %x %x %x\n", pMem[4*i+0], pMem[4*i+1], pMem[4*i+2], pMem[4*i+3]);
-//        }
-//    }
+//	if( conf.log & 0x20 ) {
+//		__Log("%d: %x:%x\n", (path==&gs.path3)?3:(path==&gs.path2?2:1), pMem, size);
+//		for(int i = 0; i < size; i++) {
+//			__Log("%x %x %x %x\n", pMem[4*i+0], pMem[4*i+1], pMem[4*i+2], pMem[4*i+3]);
+//		}
+//	}
 
 	while(size > 0)
 	{
@@ -790,38 +790,38 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 			pMem+= 4;
 			size--;
 
-            if( (g_GameSettings & GAME_PATH3HACK) && path == &gs.path3 && gs.path3.tag.eop )
-                nPath3Hack = 1;
-                
-            if( path == &gs.path1 ) {
+			if( (g_GameSettings & GAME_PATH3HACK) && path == &gs.path3 && gs.path3.tag.eop )
+				nPath3Hack = 1;
+				
+			if( path == &gs.path1 ) {
 
-                // if too much data, just ignore
-                if( path->tag.nloop * (path->tag.nreg / 4) > (int)size * (path->mode==2?2:1)) {
-                    static int lasttime = 0;
-                    if( timeGetTime() - lasttime > 5000 ) {
-                        ERROR_LOG("VU1 too much data, ignore if gfx are fine\n");
-                        lasttime = timeGetTime();
-                    }
-                    path->tag.nloop = 0;
-                    return;
-                }
+				// if too much data, just ignore
+				if( path->tag.nloop * (path->tag.nreg / 4) > (int)size * (path->mode==2?2:1)) {
+					static int lasttime = 0;
+					if( timeGetTime() - lasttime > 5000 ) {
+						ERROR_LOG("VU1 too much data, ignore if gfx are fine\n");
+						lasttime = timeGetTime();
+					}
+					path->tag.nloop = 0;
+					return;
+				}
 
-                if( path->mode == 1 ) {
+				if( path->mode == 1 ) {
 
-                    // check if 0xb is in any reg, if yes, exit (kh2)
-                    for(int i = 0; i < path->tag.nreg; i += 4) {
-                        if( ((path->regs >> i)&0xf) == 11 ) {
-                            static int lasttime = 0;
-                            if( timeGetTime() - lasttime > 5000 ) {
-                                ERROR_LOG("Invalid unpack type\n");
-                                lasttime = timeGetTime();
-                            }
-                            path->tag.nloop = 0;
-                            return;
-                        }
-                    }
-                }
-            }
+					// check if 0xb is in any reg, if yes, exit (kh2)
+					for(int i = 0; i < path->tag.nreg; i += 4) {
+						if( ((path->regs >> i)&0xf) == 11 ) {
+							static int lasttime = 0;
+							if( timeGetTime() - lasttime > 5000 ) {
+								ERROR_LOG("Invalid unpack type\n");
+								lasttime = timeGetTime();
+							}
+							path->tag.nloop = 0;
+							return;
+						}
+					}
+				}
+			}
 
 			if(path->tag.nloop == 0 ) {
 				//bAfter0Tag = 1;
@@ -867,7 +867,7 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 			{
 				int reg = (int)((path->regs >> path->regn) & 0xf);
 
-                g_GIFPackedRegHandlers[reg](pMem);
+				g_GIFPackedRegHandlers[reg](pMem);
 
 				path->regn += 4;
 				if (path->tag.nreg == path->regn) {
@@ -906,7 +906,7 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 			break;
 		}
 		case 3: // GIF_IMAGE (FROM_VFRAM)
-        case 4:
+		case 4:
 		{
 			if(gs.imageTransfer >= 0 && gs.imageTransfer <= 1)
 			{
@@ -973,7 +973,7 @@ void CALLBACK GSgifTransfer3(u32 *pMem, u32 size)
 	//DVProfileFunc _pf("Transf3");
 
 	//assert( ((u32)pMem & 0xf) == 0 );
-    nPath3Hack = 0;
+	nPath3Hack = 0;
 	_GSgifTransfer(&gs.path3, pMem, size);
 }
 
@@ -990,7 +990,7 @@ void CALLBACK GSgifTransfer1(u32 *pMem, u32 addr)
 
 #ifdef _DEBUG
 	PRIM_LOG("count: %d\n", count);
-    count++;
+	count++;
 
 //	for(int i = addr; i < 0x4000; i += 16 ) {
 //	u32* mem = (u32*)((u8*)pMem+i);
@@ -1031,23 +1031,23 @@ void CALLBACK GSreadFIFO2(u64 *pMem, int qwc)
 
 int CALLBACK GSsetupRecording(int start, void* pData)
 {
-    if( start ) {
-        if( conf.options & GSOPTION_CAPTUREAVI )
-            return 1;
-        if( !ZeroGS::StartCapture() )
-            return 0;
-        conf.options |= GSOPTION_CAPTUREAVI;
-        printf("ZeroGS: started recording at zerogs.avi\n");
-    }
-    else {
-        if( !(conf.options & GSOPTION_CAPTUREAVI) )
-            return 1;
-        conf.options &= ~GSOPTION_CAPTUREAVI;
-        ZeroGS::StopCapture();
-        printf("ZeroGS: stopped recording\n");
-    }
+	if( start ) {
+		if( conf.options & GSOPTION_CAPTUREAVI )
+			return 1;
+		if( !ZeroGS::StartCapture() )
+			return 0;
+		conf.options |= GSOPTION_CAPTUREAVI;
+		printf("ZeroGS: started recording at zerogs.avi\n");
+	}
+	else {
+		if( !(conf.options & GSOPTION_CAPTUREAVI) )
+			return 1;
+		conf.options &= ~GSOPTION_CAPTUREAVI;
+		ZeroGS::StopCapture();
+		printf("ZeroGS: stopped recording\n");
+	}
 
-    return 1;
+	return 1;
 }
 
 s32 CALLBACK GSfreeze(int mode, freezeData *data) {
@@ -1068,10 +1068,10 @@ s32 CALLBACK GSfreeze(int mode, freezeData *data) {
 
 extern HINSTANCE hInst;
 void CALLBACK GSconfigure() {
-    DialogBox(hInst,
-              MAKEINTRESOURCE(IDD_CONFIG),
-              GetActiveWindow(),  
-              (DLGPROC)ConfigureDlgProc);
+	DialogBox(hInst,
+				MAKEINTRESOURCE(IDD_CONFIG),
+				GetActiveWindow(),  
+				(DLGPROC)ConfigureDlgProc);
 
 	if( g_nPixelShaderVer == SHADER_20 )
 		conf.bilinear = 0;

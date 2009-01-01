@@ -51,7 +51,7 @@ void CALLBACK GSkeyEvent(keyEvent *ev)
 {
 	//static bool bShift = false;
 	static bool bAlt = false;
-    
+	
 	switch(ev->event) {
 		case KEYPRESS:
 			switch(ev->key) {
@@ -97,7 +97,7 @@ GList *cachesizel;
 GList *codecl;
 GList *filtersl;
 
-void OnConf_Ok(GtkButton       *button, gpointer         user_data)
+void OnConf_Ok(GtkButton	   *button, gpointer		 user_data)
 {
 	GtkWidget *Btn;
 	GtkWidget *treeview;
@@ -114,16 +114,16 @@ void OnConf_Ok(GtkButton       *button, gpointer         user_data)
 	else if( !newinterlace ) conf.interlace = 2; // off
 
 	conf.bilinear = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkBilinear")));
-    // restore
-    if( conf.bilinear && prevbilinearfilter )
-        conf.bilinear = prevbilinearfilter;
+	// restore
+	if( conf.bilinear && prevbilinearfilter )
+		conf.bilinear = prevbilinearfilter;
 
 	//conf.mrtdepth = 1;//IsDlgButtonChecked(hW, IDC_CONFIG_DEPTHWRITE);
 
 	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAANone"))) ) {
 		conf.aa = 0;
 	}
-    else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAA2X"))) ) {
+	else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAA2X"))) ) {
 		conf.aa = 1;
 	}
 	else conf.aa = 2;
@@ -153,22 +153,22 @@ void OnConf_Ok(GtkButton       *button, gpointer         user_data)
 	GSsetGameCRC(0, conf.gamesettings);
 	//---------- done getting advanced options ---------//
 
-    if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize640"))) )
-        conf.options |= GSOPTION_WIN640;
+	if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize640"))) )
+		conf.options |= GSOPTION_WIN640;
 	else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize800"))) )
-        conf.options |= GSOPTION_WIN800;
+		conf.options |= GSOPTION_WIN800;
 	else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize1024"))) )
-        conf.options |= GSOPTION_WIN1024;
+		conf.options |= GSOPTION_WIN1024;
 	else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize1280"))) )
-        conf.options |= GSOPTION_WIN1280;
+		conf.options |= GSOPTION_WIN1280;
 
-    SaveConfig();
+	SaveConfig();
 
 	gtk_widget_destroy(Conf);
 	gtk_main_quit();
 }
 
-void OnConf_Cancel(GtkButton       *button, gpointer         user_data) {
+void OnConf_Cancel(GtkButton	   *button, gpointer		 user_data) {
 	gtk_widget_destroy(Conf);
 	gtk_main_quit();
 }
@@ -185,27 +185,27 @@ void CALLBACK GSconfigure()
 	GtkTreeIter treeiter;
 	GtkTreeViewColumn *treecol;
 
-    if( !(conf.options & GSOPTION_LOADED) )
+	if( !(conf.options & GSOPTION_LOADED) )
 		LoadConfig();
 
 	Conf = create_Config();
-    
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkBilinear")), !!conf.bilinear);
-    //gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkbutton6")), conf.mrtdepth);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAANone")), conf.aa==0);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAA2X")), conf.aa==1);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAA4X")), conf.aa==2);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkWireframe")), (conf.options&GSOPTION_WIREFRAME)?1:0);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkAVI")), (conf.options&GSOPTION_CAPTUREAVI)?1:0);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkbutton6")), (conf.options&GSOPTION_FULLSCREEN)?1:0);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkTGA")), (conf.options&GSOPTION_TGASNAP)?1:0);
+	
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkBilinear")), !!conf.bilinear);
+	//gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkbutton6")), conf.mrtdepth);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAANone")), conf.aa==0);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAA2X")), conf.aa==1);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioAA4X")), conf.aa==2);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkWireframe")), (conf.options&GSOPTION_WIREFRAME)?1:0);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkAVI")), (conf.options&GSOPTION_CAPTUREAVI)?1:0);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkbutton6")), (conf.options&GSOPTION_FULLSCREEN)?1:0);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "checkTGA")), (conf.options&GSOPTION_TGASNAP)?1:0);
 
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize640")), ((conf.options&GSOPTION_WINDIMS)>>4)==0);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize800")), ((conf.options&GSOPTION_WINDIMS)>>4)==1);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize1024")), ((conf.options&GSOPTION_WINDIMS)>>4)==2);
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize1280")), ((conf.options&GSOPTION_WINDIMS)>>4)==3);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize640")), ((conf.options&GSOPTION_WINDIMS)>>4)==0);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize800")), ((conf.options&GSOPTION_WINDIMS)>>4)==1);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize1024")), ((conf.options&GSOPTION_WINDIMS)>>4)==2);
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(lookup_widget(Conf, "radioSize1280")), ((conf.options&GSOPTION_WINDIMS)>>4)==3);
 
-    prevbilinearfilter = conf.bilinear;
+	prevbilinearfilter = conf.bilinear;
 
 	//--------- Let's build a treeview for our advanced options! --------//
 	treeview = lookup_widget(Conf,"treeview1");
@@ -337,7 +337,7 @@ void OnToggle_advopts(GtkCellRendererToggle *cell, gchar *path, gpointer user_da
 
 GtkWidget *About;
 
-void OnAbout_Ok(GtkButton       *button, gpointer         user_data) {
+void OnAbout_Ok(GtkButton	   *button, gpointer		 user_data) {
 	gtk_widget_destroy(About);
 	gtk_main_quit();
 }

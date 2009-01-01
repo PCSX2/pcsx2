@@ -113,9 +113,9 @@ u32 g_columnTable32[8][8] = {
 
 u32 g_columnTable16[8][16] = {
 	{   0,   2,   8,  10,  16,  18,  24,  26, 
-	    1,   3,   9,  11,  17,  19,  25,  27 },
+		1,   3,   9,  11,  17,  19,  25,  27 },
 	{   4,   6,  12,  14,  20,  22,  28,  30, 
-	    5,   7,  13,  15,  21,  23,  29,  31 },
+		5,   7,  13,  15,  21,  23,  29,  31 },
 	{  32,  34,  40,  42,  48,  50,  56,  58,
 	   33,  35,  41,  43,  49,  51,  57,  59 },
 	{  36,  38,  44,  46,  52,  54,  60,  62,
@@ -132,7 +132,7 @@ u32 g_columnTable16[8][16] = {
 
 u32 g_columnTable8[16][16] = {
 	{   0,   4,  16,  20,  32,  36,  48,  52,	// column 0
-	    2,   6,  18,  22,  34,  38,  50,  54 },
+		2,   6,  18,  22,  34,  38,  50,  54 },
 	{   8,  12,  24,  28,  40,  44,  56,  60,
 	   10,  14,  26,  30,  42,  46,  58,  62 },
 	{  33,  37,  49,  53,   1,   5,  17,  21,
@@ -167,9 +167,9 @@ u32 g_columnTable8[16][16] = {
 
 u32 g_columnTable4[16][32] = {
 	{   0,   8,  32,  40,  64,  72,  96, 104,	// column 0
-	    2,  10,  34,  42,  66,  74,  98, 106,
-	    4,  12,  36,  44,  68,  76, 100, 108,
-	    6,  14,  38,  46,  70,  78, 102, 110 },
+		2,  10,  34,  42,  66,  74,  98, 106,
+		4,  12,  36,  44,  68,  76, 100, 108,
+		6,  14,  38,  46,  70,  78, 102, 110 },
 	{  16,  24,  48,  56,  80,  88, 112, 120,
 	   18,  26,  50,  58,  82,  90, 114, 122,
 	   20,  28,  52,  60,  84,  92, 116, 124,
@@ -283,9 +283,9 @@ End: \
 		} \
 	} \
 	for(; i < endY; ++i) { \
-        for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += widthlimit) { \
+		for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += widthlimit) { \
 			/* write as many pixel at one time as possible */ \
-            if( nSize < widthlimit ) goto End; \
+			if( nSize < widthlimit ) goto End; \
 			writePixel##psm##_0(pstart, j%2048, i%2048, pbuf[0], gs.dstbuf.bw); \
 			\
 			if( widthlimit > 1 ) { \
@@ -332,8 +332,8 @@ End: \
 	else { \
 		assert( /*(nSize%widthlimit) == 0 &&*/ widthlimit == 8 ); \
 		for(; i < endY; ++i) { \
-            for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += 3*widthlimit) { \
-                if( nSize < widthlimit ) goto End; \
+			for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += 3*widthlimit) { \
+				if( nSize < widthlimit ) goto End; \
 				/* write as many pixel at one time as possible */ \
 				writePixel##psm##_0(pstart, j%2048, i%2048, *(u32*)(pbuf+0), gs.dstbuf.bw); \
 				writePixel##psm##_0(pstart, (j+1)%2048, i%2048, *(u32*)(pbuf+3), gs.dstbuf.bw); \
@@ -422,20 +422,20 @@ End: \
 #define SwizzleBlock24(dst, src, pitch) { \
 	u8* pnewsrc = src; \
 	u32* pblock = tempblock; \
-    \
+	\
 	for(int by = 0; by < 7; ++by, pblock += 8, pnewsrc += pitch-24) { \
 		for(int bx = 0; bx < 8; ++bx, pnewsrc += 3) { \
-            pblock[bx] = *(u32*)pnewsrc; \
+			pblock[bx] = *(u32*)pnewsrc; \
 		} \
 	} \
-    for(int bx = 0; bx < 7; ++bx, pnewsrc += 3) { \
-        /* might be 1 byte out of bounds of GS memory */ \
-        pblock[bx] = *(u32*)pnewsrc; \
-    } \
-    /* do 3 bytes for the last copy */ \
-    *((u8*)pblock+28) = pnewsrc[0]; \
-    *((u8*)pblock+29) = pnewsrc[1]; \
-    *((u8*)pblock+30) = pnewsrc[2]; \
+	for(int bx = 0; bx < 7; ++bx, pnewsrc += 3) { \
+		/* might be 1 byte out of bounds of GS memory */ \
+		pblock[bx] = *(u32*)pnewsrc; \
+	} \
+	/* do 3 bytes for the last copy */ \
+	*((u8*)pblock+28) = pnewsrc[0]; \
+	*((u8*)pblock+29) = pnewsrc[1]; \
+	*((u8*)pblock+30) = pnewsrc[2]; \
 	SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0x00ffffff); \
 } \
 
@@ -503,13 +503,13 @@ End: \
 #define SwizzleBlock4HLu SwizzleBlock4HL
 
 // ------------------------
-// |              Y       |
+// |			  Y	   |
 // ------------------------
-// |        block     |   |
+// |		block	 |   |
 // |   aligned area   | X |
-// |                  |   |
+// |				  |   |
 // ------------------------
-// |              Y       |
+// |			  Y	   |
 // ------------------------
 #define DEFINE_TRANSFERLOCAL(psm, T, widthlimit, blockbits, blockwidth, blockheight, TransSfx, SwizzleBlock) \
 int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
@@ -517,7 +517,7 @@ int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
 	START_HOSTLOCAL(); \
 	\
 	const T* pbuf = (const T*)pbyMem; \
-    int nLeftOver = (nQWordSize*4*2)%(TRANSMIT_PITCH##TransSfx(2, T)); \
+	int nLeftOver = (nQWordSize*4*2)%(TRANSMIT_PITCH##TransSfx(2, T)); \
 	int nSize = nQWordSize*4*2/TRANSMIT_PITCH##TransSfx(2, T); \
 	nSize = min(nSize, gs.imageWnew * gs.imageHnew); \
 	\
@@ -598,7 +598,7 @@ int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
 	} \
 	\
 	END_HOSTLOCAL(); \
-    return (nSize * TRANSMIT_PITCH##TransSfx(2, T) + nLeftOver)/2; \
+	return (nSize * TRANSMIT_PITCH##TransSfx(2, T) + nLeftOver)/2; \
 } \
 
 DEFINE_TRANSFERLOCAL(32, u32, 2, 32, 8, 8, _, SwizzleBlock32);

@@ -37,89 +37,89 @@ inline dReal* inv4(const dReal* pf, dReal* pfres);
 class Vector
 {
 public:
-    dReal x, y, z, w;
+	dReal x, y, z, w;
 
-    Vector() : x(0), y(0), z(0), w(0) {}
-    Vector(dReal x, dReal y, dReal z) : x(x), y(y), z(z), w(0) {}
-    Vector(dReal x, dReal y, dReal z, dReal w) : x(x), y(y), z(z), w(w) {}
-    Vector(const Vector &vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w) {}
-    Vector(const dReal* pf) { assert(pf != NULL); x = pf[0]; y = pf[1]; z = pf[2]; w = 0; }
+	Vector() : x(0), y(0), z(0), w(0) {}
+	Vector(dReal x, dReal y, dReal z) : x(x), y(y), z(z), w(0) {}
+	Vector(dReal x, dReal y, dReal z, dReal w) : x(x), y(y), z(z), w(w) {}
+	Vector(const Vector &vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w) {}
+	Vector(const dReal* pf) { assert(pf != NULL); x = pf[0]; y = pf[1]; z = pf[2]; w = 0; }
 
-    dReal  operator[](int i) const       { return (&x)[i]; }
-    dReal& operator[](int i)             { return (&x)[i]; }
+	dReal  operator[](int i) const	   { return (&x)[i]; }
+	dReal& operator[](int i)			 { return (&x)[i]; }
 
-    // casting operators
-    operator dReal* () { return &x; }
-    operator const dReal* () const { return (const dReal*)&x; }
+	// casting operators
+	operator dReal* () { return &x; }
+	operator const dReal* () const { return (const dReal*)&x; }
 
-    // SCALAR FUNCTIONS
-    inline dReal dot(const Vector &v) const { return x*v.x + y*v.y + z*v.z + w*v.w; }
-    inline void normalize() { normalize4(&x, &x); }
+	// SCALAR FUNCTIONS
+	inline dReal dot(const Vector &v) const { return x*v.x + y*v.y + z*v.z + w*v.w; }
+	inline void normalize() { normalize4(&x, &x); }
 
-    inline void Set3(const float* pvals) { x = pvals[0]; y = pvals[1]; z = pvals[2]; }
-    inline void Set4(const float* pvals) { x = pvals[0]; y = pvals[1]; z = pvals[2]; w = pvals[3]; }
+	inline void Set3(const float* pvals) { x = pvals[0]; y = pvals[1]; z = pvals[2]; }
+	inline void Set4(const float* pvals) { x = pvals[0]; y = pvals[1]; z = pvals[2]; w = pvals[3]; }
 
-    // 3 dim cross product, w is not touched
-    /// this = this x v
-    inline void Cross(const Vector &v) { cross3(&x, &x, v); }
+	// 3 dim cross product, w is not touched
+	/// this = this x v
+	inline void Cross(const Vector &v) { cross3(&x, &x, v); }
 
-    /// this = u x v
-    inline void Cross(const Vector &u, const Vector &v) { cross3(&x, u, v); }
+	/// this = u x v
+	inline void Cross(const Vector &u, const Vector &v) { cross3(&x, u, v); }
 
-    inline Vector operator-() const { Vector v; v.x = -x; v.y = -y; v.z = -z; v.w = -w; return v; }
-    inline Vector operator+(const Vector &r) const { Vector v; v.x = x+r.x; v.y = y+r.y; v.z = z+r.z; v.w = w+r.w; return v; }
-    inline Vector operator-(const Vector &r) const { Vector v; v.x = x-r.x; v.y = y-r.y; v.z = z-r.z; v.w = w-r.w; return v; }
-    inline Vector operator*(const Vector &r) const { Vector v; v.x = r.x*x; v.y = r.y*y; v.z = r.z*z; v.w = r.w*w; return v; }
-    inline Vector operator*(dReal k) const { Vector v; v.x = k*x; v.y = k*y; v.z = k*z; v.w = k*w; return v; }
+	inline Vector operator-() const { Vector v; v.x = -x; v.y = -y; v.z = -z; v.w = -w; return v; }
+	inline Vector operator+(const Vector &r) const { Vector v; v.x = x+r.x; v.y = y+r.y; v.z = z+r.z; v.w = w+r.w; return v; }
+	inline Vector operator-(const Vector &r) const { Vector v; v.x = x-r.x; v.y = y-r.y; v.z = z-r.z; v.w = w-r.w; return v; }
+	inline Vector operator*(const Vector &r) const { Vector v; v.x = r.x*x; v.y = r.y*y; v.z = r.z*z; v.w = r.w*w; return v; }
+	inline Vector operator*(dReal k) const { Vector v; v.x = k*x; v.y = k*y; v.z = k*z; v.w = k*w; return v; }
 
-    inline Vector& operator += (const Vector& r) { x += r.x; y += r.y; z += r.z; w += r.w; return *this; }
-    inline Vector& operator -= (const Vector& r) { x -= r.x; y -= r.y; z -= r.z; w -= r.w; return *this; }
-    inline Vector& operator *= (const Vector& r) { x *= r.x; y *= r.y; z *= r.z; w *= r.w; return *this; }
-    
-    inline Vector& operator *= (const dReal k) { x *= k; y *= k; z *= k; w *= k; return *this; }
-    inline Vector& operator /= (const dReal _k) { dReal k=1/_k; x *= k; y *= k; z *= k; w *= k; return *this; }
+	inline Vector& operator += (const Vector& r) { x += r.x; y += r.y; z += r.z; w += r.w; return *this; }
+	inline Vector& operator -= (const Vector& r) { x -= r.x; y -= r.y; z -= r.z; w -= r.w; return *this; }
+	inline Vector& operator *= (const Vector& r) { x *= r.x; y *= r.y; z *= r.z; w *= r.w; return *this; }
+	
+	inline Vector& operator *= (const dReal k) { x *= k; y *= k; z *= k; w *= k; return *this; }
+	inline Vector& operator /= (const dReal _k) { dReal k=1/_k; x *= k; y *= k; z *= k; w *= k; return *this; }
 
-    friend Vector operator* (float f, const Vector& v);
-    //friend ostream& operator<<(ostream& O, const Vector& v);
-    //friend istream& operator>>(istream& I, Vector& v);
+	friend Vector operator* (float f, const Vector& v);
+	//friend ostream& operator<<(ostream& O, const Vector& v);
+	//friend istream& operator>>(istream& I, Vector& v);
 };
 
 inline Vector operator* (float f, const Vector& left)
 {
-    Vector v;
-    v.x = f * left.x;
-    v.y = f * left.y;
-    v.z = f * left.z;
-    return v;
+	Vector v;
+	v.x = f * left.x;
+	v.y = f * left.y;
+	v.z = f * left.z;
+	return v;
 }
 
 struct AABB
 {
-    Vector pos, extents;
+	Vector pos, extents;
 };
 
 struct OBB
 {
-    Vector right, up, dir, pos, extents;
+	Vector right, up, dir, pos, extents;
 };
 
 struct TRIANGLE
 {
-    TRIANGLE() {}
-    TRIANGLE(const Vector& v1, const Vector& v2, const Vector& v3) : v1(v1), v2(v2), v3(v3) {}
-    ~TRIANGLE() {}
+	TRIANGLE() {}
+	TRIANGLE(const Vector& v1, const Vector& v2, const Vector& v3) : v1(v1), v2(v2), v3(v3) {}
+	~TRIANGLE() {}
 
-    Vector v1, v2, v3;      //!< the vertices of the triangle
+	Vector v1, v2, v3;	  //!< the vertices of the triangle
 
-    const Vector& operator[](int i) const { return (&v1)[i]; }
-    Vector&       operator[](int i)       { return (&v1)[i]; }
+	const Vector& operator[](int i) const { return (&v1)[i]; }
+	Vector&	   operator[](int i)	   { return (&v1)[i]; }
 
-    /// assumes CCW ordering of vertices 
-    inline Vector ComputeNormal() {
-        Vector normal;
-        cross3(normal, v2-v1, v3-v1);
-        return normal;
-    }
+	/// assumes CCW ordering of vertices 
+	inline Vector ComputeNormal() {
+		Vector normal;
+		cross3(normal, v2-v1, v3-v1);
+		return normal;
+	}
 };
 
 // Routines made for 3D graphics that deal with 3 or 4 dim algebra structures
@@ -624,13 +624,13 @@ inline dReal* cross3(dReal* pfout, const dReal* pf1, const dReal* pf2)
 {
 	assert( pfout != NULL && pf1 != NULL && pf2 != NULL );
 
-    dReal temp[3];
+	dReal temp[3];
 	temp[0] = pf1[1] * pf2[2] - pf1[2] * pf2[1];
 	temp[1] = pf1[2] * pf2[0] - pf1[0] * pf2[2];
 	temp[2] = pf1[0] * pf2[1] - pf1[1] * pf2[0];
 
 	pfout[0] = temp[0]; pfout[1] = temp[1]; pfout[2] = temp[2];
-    return pfout;
+	return pfout;
 }
 
 template <class T> inline void mult(T* pf, T fa, int r)
@@ -724,7 +724,7 @@ inline T* multtrans_to2(T* pf1, R* pf2, int r1, int c1, int r2, S* pfres, bool b
 		}
 
 		pf1 += c1;
-        pfres += r2;
+		pfres += r2;
 	}
 
 	return pfres;

@@ -91,24 +91,24 @@ using namespace std;
 
 // sets the data stream
 #define SET_STREAM() { \
-    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexGPU), (void*)8); \
-    glSecondaryColorPointerEXT(4, GL_UNSIGNED_BYTE, sizeof(VertexGPU), (void*)12); \
-    glTexCoordPointer(3, GL_FLOAT, sizeof(VertexGPU), (void*)16); \
-    glVertexPointer(4, GL_SHORT, sizeof(VertexGPU), (void*)0); \
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexGPU), (void*)8); \
+	glSecondaryColorPointerEXT(4, GL_UNSIGNED_BYTE, sizeof(VertexGPU), (void*)12); \
+	glTexCoordPointer(3, GL_FLOAT, sizeof(VertexGPU), (void*)16); \
+	glVertexPointer(4, GL_SHORT, sizeof(VertexGPU), (void*)0); \
 }
 
 #define SETVERTEXSHADER(prog) { \
-    if( (prog) != g_vsprog ) { \
-        cgGLBindProgram(prog); \
-        g_vsprog = prog; \
-    } \
+	if( (prog) != g_vsprog ) { \
+		cgGLBindProgram(prog); \
+		g_vsprog = prog; \
+	} \
 } \
 
 #define SETPIXELSHADER(prog) { \
-    if( (prog) != g_psprog ) { \
-        cgGLBindProgram(prog); \
-        g_psprog = prog; \
-    } \
+	if( (prog) != g_psprog ) { \
+		cgGLBindProgram(prog); \
+		g_psprog = prog; \
+	} \
 } \
 
 #ifndef ARRAY_SIZE
@@ -125,25 +125,25 @@ extern CGprogram g_vsprog, g_psprog;
 
 struct FRAGMENTSHADER
 {
-    FRAGMENTSHADER() : prog(0), sMemory(0), sFinal(0), sBitwiseANDX(0), sBitwiseANDY(0), sInterlace(0), sCLUT(0), sOneColor(0), sBitBltZ(0),
-        fTexAlpha2(0), fTexOffset(0), fTexDims(0), fTexBlock(0), fClampExts(0), fTexWrapMode(0),
-        fRealTexDims(0), fTestBlack(0), fPageOffset(0), fTexAlpha(0) {}
-    
-    CGprogram prog;
-    CGparameter sMemory, sFinal, sBitwiseANDX, sBitwiseANDY, sCLUT, sInterlace;
-    CGparameter sOneColor, sBitBltZ, sInvTexDims;
-    CGparameter fTexAlpha2, fTexOffset, fTexDims, fTexBlock, fClampExts, fTexWrapMode, fRealTexDims, fTestBlack, fPageOffset, fTexAlpha;
+	FRAGMENTSHADER() : prog(0), sMemory(0), sFinal(0), sBitwiseANDX(0), sBitwiseANDY(0), sInterlace(0), sCLUT(0), sOneColor(0), sBitBltZ(0),
+		fTexAlpha2(0), fTexOffset(0), fTexDims(0), fTexBlock(0), fClampExts(0), fTexWrapMode(0),
+		fRealTexDims(0), fTestBlack(0), fPageOffset(0), fTexAlpha(0) {}
+	
+	CGprogram prog;
+	CGparameter sMemory, sFinal, sBitwiseANDX, sBitwiseANDY, sCLUT, sInterlace;
+	CGparameter sOneColor, sBitBltZ, sInvTexDims;
+	CGparameter fTexAlpha2, fTexOffset, fTexDims, fTexBlock, fClampExts, fTexWrapMode, fRealTexDims, fTestBlack, fPageOffset, fTexAlpha;
 
 #ifdef _DEBUG
-    string filename;
+	string filename;
 #endif
 };
 
 struct VERTEXSHADER
 {
-    VERTEXSHADER() : prog(0), sBitBltPos(0), sBitBltTex(0) {}
-    CGprogram prog;
-    CGparameter sBitBltPos, sBitBltTex, fBitBltTrans;         // vertex shader constants
+	VERTEXSHADER() : prog(0), sBitBltPos(0), sBitBltTex(0) {}
+	CGprogram prog;
+	CGparameter sBitBltPos, sBitBltTex, fBitBltTrans;		 // vertex shader constants
 };
 
 // don't change these values!
@@ -159,8 +159,8 @@ struct VERTEXSHADER
 #define GAME_QUICKRESOLVE1  0x0400
 #define GAME_NOQUICKRESOLVE 0x0800
 #define GAME_NOTARGETCLUT   0x1000 // full 16 bit resolution
-#define GAME_NOSTENCIL      0x2000
-#define GAME_VSSHACKOFF        0x4000 // vertical stripe syndrome
+#define GAME_NOSTENCIL	  0x2000
+#define GAME_VSSHACKOFF		0x4000 // vertical stripe syndrome
 #define GAME_NODEPTHRESOLVE 0x8000
 #define GAME_FULL16BITRES   0x00010000
 #define GAME_RESOLVEPROMOTED 0x00020000
@@ -170,7 +170,7 @@ struct VERTEXSHADER
 #define GAME_32BITTARGS 0x00200000
 #define GAME_PATH3HACK 0x00400000
 #define GAME_DOPARALLELCTX 0x00800000 // tries to parallelize both contexts so that render calls are reduced (xenosaga)
-                                      // makes the game faster, but can be buggy
+									  // makes the game faster, but can be buggy
 #define GAME_XENOSPECHACK 0x01000000 // xenosaga specularity hack (ignore any zmask=1 draws)
 #define GAME_PARTIALPOINTERS 0x02000000 // whenver the texture or render target are small, tries to look for bigger ones to read from
 #define GAME_PARTIALDEPTH 0x04000000 // tries to save depth targets as much as possible across height changes
@@ -187,8 +187,8 @@ namespace ZeroGS {
 	
 	enum RenderFormatType
 	{
-		RFT_byte8 = 0,      // A8R8G8B8
-		RFT_float16 = 1,    // A32R32B32G32
+		RFT_byte8 = 0,	  // A8R8G8B8
+		RFT_float16 = 1,	// A32R32B32G32
 	};
 	
 	// managers render-to-texture targets
@@ -271,9 +271,9 @@ namespace ZeroGS {
 		
 		void SetDepthStencilSurface();
 		
-		u32 pdepth;         // 24 bit, will contain the stencil buffer if possible
-		u32 pstencil;       // if not 0, contains the stencil buffer
-        int icount;         // internal counter
+		u32 pdepth;		 // 24 bit, will contain the stencil buffer if possible
+		u32 pstencil;	   // if not 0, contains the stencil buffer
+		int icount;		 // internal counter
 	};
 	
 	// manages contiguous chunks of memory (width is always 1024)
@@ -374,29 +374,29 @@ namespace ZeroGS {
 	public:
 		void FlushTexData();
 	
-        // notify VB that nVerts need to be written to pbuf
-        inline void NotifyWrite(int nVerts) {
-            assert( pBufferData != NULL && nCount <= nNumVertices && nVerts > 0 );
+		// notify VB that nVerts need to be written to pbuf
+		inline void NotifyWrite(int nVerts) {
+			assert( pBufferData != NULL && nCount <= nNumVertices && nVerts > 0 );
 
-            if( nCount + nVerts > nNumVertices ) {
-                // recreate except with a bigger count
-                VertexGPU* ptemp = (VertexGPU*)_aligned_malloc(sizeof(VertexGPU)*nNumVertices*2, 256);
-                memcpy_amd(ptemp, pBufferData, sizeof(VertexGPU) * nCount);
-                nNumVertices *= 2;
-                assert( nCount + nVerts <= nNumVertices );
-                _aligned_free(pBufferData);
-                pBufferData = ptemp;
-            }
-        }
+			if( nCount + nVerts > nNumVertices ) {
+				// recreate except with a bigger count
+				VertexGPU* ptemp = (VertexGPU*)_aligned_malloc(sizeof(VertexGPU)*nNumVertices*2, 256);
+				memcpy_amd(ptemp, pBufferData, sizeof(VertexGPU) * nCount);
+				nNumVertices *= 2;
+				assert( nCount + nVerts <= nNumVertices );
+				_aligned_free(pBufferData);
+				pBufferData = ptemp;
+			}
+		}
 
-        void Init(int nVerts) {                
-            if( pBufferData == NULL && nVerts > 0 ) {
-                pBufferData = (VertexGPU*)_aligned_malloc(sizeof(VertexGPU)*nVerts, 256);
-                nNumVertices = nVerts;
-            }
+		void Init(int nVerts) {				
+			if( pBufferData == NULL && nVerts > 0 ) {
+				pBufferData = (VertexGPU*)_aligned_malloc(sizeof(VertexGPU)*nVerts, 256);
+				nNumVertices = nVerts;
+			}
 
-            nCount = 0;
-        }
+			nCount = 0;
+		}
 
 		u8 bNeedFrameCheck;
 		u8 bNeedZCheck;
@@ -416,7 +416,7 @@ namespace ZeroGS {
 		int ictx;
 		VertexGPU* pBufferData; // current allocated data
 
-        int nNumVertices;   // size of pBufferData in terms of VertexGPU objects
+		int nNumVertices;   // size of pBufferData in terms of VertexGPU objects
 		int nCount;
 		primInfo curprim;	// the previous prim the current buffers are set to
 		
@@ -432,9 +432,9 @@ namespace ZeroGS {
 		int nNextFrameHeight;
 
 		CMemoryTarget* pmemtarg; // the current mem target set
-        CRenderTarget* prndr;
+		CRenderTarget* prndr;
 		CDepthTarget* pdepth;
-    };
+	};
 
 	// visible members
 	extern DrawFn drawfn[8];	
@@ -442,7 +442,7 @@ namespace ZeroGS {
 	extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height
 
 	void AddMessage(const char* pstr, u32 ms = 5000);
-    void DrawText(const char* pstr, int left, int top, u32 color);
+	void DrawText(const char* pstr, int left, int top, u32 color);
 	void ChangeWindowSize(int nNewWidth, int nNewHeight);
 	void SetChangeDeviceSize(int nNewWidth, int nNewHeight);
 	void ChangeDeviceSize(int nNewWidth, int nNewHeight);
@@ -452,7 +452,7 @@ namespace ZeroGS {
 	void ReloadEffects();
 
 	// Methods //
-    bool IsGLExt( const char* szTargetExtension ); ///< returns true if the the opengl extension is supported
+	bool IsGLExt( const char* szTargetExtension ); ///< returns true if the the opengl extension is supported
 	bool Create(int width, int height);
 	void Destroy(BOOL bD3D);
 
@@ -460,7 +460,7 @@ namespace ZeroGS {
 	void Reset(); // call to destroy video resources
 
 	void GSStateReset();
-    void HandleGLError();
+	void HandleGLError();
 
 	// called on a primitive switch
 	void Prim();
@@ -493,23 +493,23 @@ namespace ZeroGS {
 
 	// switches the render target to the real target, flushes the current render targets and renders the real image
 	void RenderCRTC(int interlace);
-    void ResetRenderTarget(int index);
+	void ResetRenderTarget(int index);
 
 	bool CheckChangeInClut(u32 highdword, u32 psm); // returns true if clut will change after this tex0 op
 
 	// call to load CLUT data (depending on CLD)
 	void texClutWrite(int ctx);
-    RenderFormatType GetRenderFormat();
-    GLenum GetRenderTargetFormat();
+	RenderFormatType GetRenderFormat();
+	GLenum GetRenderTargetFormat();
 
 	int Save(char* pbydata);
 	bool Load(char* pbydata);
 
 	void SaveSnapshot(const char* filename);
-    bool SaveRenderTarget(const char* filename, int width, int height, int jpeg);
-    bool SaveTexture(const char* filename, u32 textarget, u32 tex, int width, int height);
-    bool SaveJPEG(const char* filename, int width, int height, const void* pdata, int quality);
-    bool SaveTGA(const char* filename, int width, int height, void* pdata);
+	bool SaveRenderTarget(const char* filename, int width, int height, int jpeg);
+	bool SaveTexture(const char* filename, u32 textarget, u32 tex, int width, int height);
+	bool SaveJPEG(const char* filename, int width, int height, const void* pdata, int quality);
+	bool SaveTGA(const char* filename, int width, int height, void* pdata);
 
 	// private methods
 	void FlushSysMem(const RECT* prc);

@@ -134,8 +134,8 @@ extern float g_fiGPU_TEXWIDTH;
 #define GAME_QUICKRESOLVE1  0x0400
 #define GAME_NOQUICKRESOLVE 0x0800
 #define GAME_NOTARGETCLUT   0x1000 // full 16 bit resolution
-#define GAME_NOSTENCIL      0x2000
-#define GAME_VSSHACKOFF        0x4000 // vertical stripe syndrome
+#define GAME_NOSTENCIL	  0x2000
+#define GAME_VSSHACKOFF		0x4000 // vertical stripe syndrome
 #define GAME_NODEPTHRESOLVE 0x8000
 #define GAME_FULL16BITRES   0x00010000
 #define GAME_RESOLVEPROMOTED 0x00020000
@@ -145,12 +145,12 @@ extern float g_fiGPU_TEXWIDTH;
 #define GAME_32BITTARGS 0x00200000
 #define GAME_PATH3HACK 0x00400000
 #define GAME_DOPARALLELCTX 0x00800000 // tries to parallelize both contexts so that render calls are reduced (xenosaga)
-                                      // makes the game faster, but can be buggy
+									  // makes the game faster, but can be buggy
 #define GAME_XENOSPECHACK 0x01000000 // xenosaga specularity hack (ignore any zmask=1 draws)
 #define GAME_PARTIALPOINTERS 0x02000000 // whenver the texture or render target are small, tries to look for bigger ones to read from
 #define GAME_PARTIALDEPTH 0x04000000 // tries to save depth targets as much as possible across height changes
 #define GAME_RELAXEDDEPTH 0x08000000 // tries to save depth targets as much as possible across height changes
-                                    
+									
 #define USEALPHABLENDING 1//(!(g_GameSettings&GAME_NOALPHABLEND))
 #define USEALPHATESTING (!(g_GameSettings&GAME_NOALPHATEST))
 
@@ -176,7 +176,7 @@ namespace ZeroGS
 	{
 	public:
 		CRenderTarget();
-        CRenderTarget(const frameInfo& frame, CRenderTarget& r); // virtualized a target
+		CRenderTarget(const frameInfo& frame, CRenderTarget& r); // virtualized a target
 		virtual ~CRenderTarget();
 
 		virtual BOOL Create(const frameInfo& frame);
@@ -195,17 +195,17 @@ namespace ZeroGS
 		virtual void Resolve();
 		virtual void Resolve(int startrange, int endrange); // resolves only in the allowed range
 		virtual void Update(int context, CRenderTarget* pdepth);
-        virtual void ConvertTo32(); // converts a psm==2 target, to a psm==0
-        virtual void ConvertTo16(); // converts a psm==0 target, to a psm==2
+		virtual void ConvertTo32(); // converts a psm==2 target, to a psm==0
+		virtual void ConvertTo16(); // converts a psm==0 target, to a psm==2
 
 		virtual bool IsDepth() { return false; }
 
 		LPD3DSURF psurf, psys;
 		LPD3DTEX ptex;
 
-        int targoffx, targoffy; // the offset from the target that the real fbp starts at (in pixels)
-        int targheight;         // height of ptex
-        CRenderTarget* pmimicparent; // if not NULL, this target is a subtarget of pmimicparent
+		int targoffx, targoffy; // the offset from the target that the real fbp starts at (in pixels)
+		int targheight;		 // height of ptex
+		CRenderTarget* pmimicparent; // if not NULL, this target is a subtarget of pmimicparent
 
 		int fbp, fbw, fbh; // if fbp is negative, virtual target (not mapped to any real addr)
 		int start, end; // in bytes
@@ -230,8 +230,8 @@ namespace ZeroGS
 			TS_NeedUpdate = 2,
 			TS_Virtual = 4, // currently not mapped to memory
 			TS_FeedbackReady = 8, // feedback effect is ready and doesn't need to be updated
-            TS_NeedConvert32 = 16,
-            TS_NeedConvert16 = 32,
+			TS_NeedConvert32 = 16,
+			TS_NeedConvert16 = 32,
 		};
 
 	private:

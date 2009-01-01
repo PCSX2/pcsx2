@@ -94,27 +94,27 @@ void __fastcall GIFRegHandlerLABEL(u32* data);
 //class ExecuteBuffer
 //{
 //public:
-//    virtual void Execute()=0;
+//	virtual void Execute()=0;
 //};
 //
 //class ExecuteBufferXeno : public ExecuteBuffer
 //{
 //public:
-//    ExecuteBufferXeno();
-//    virtual void Execute();
+//	ExecuteBufferXeno();
+//	virtual void Execute();
 //
-//    void SetTex0(u32* data);
-//    void SetTex1(u32* data);
-//    void SetClamp(u32* data);
-//    void SetTri();
+//	void SetTex0(u32* data);
+//	void SetTex1(u32* data);
+//	void SetClamp(u32* data);
+//	void SetTri();
 //
-//    u32 clampdata[2];
-//    u32 tex0data[2];
-//    u32 tex1data[2];
-//    primInfo curprim;
-//    
-//    std::vector<Vertex> vertices;
-//    bool bCanExecute;
+//	u32 clampdata[2];
+//	u32 tex0data[2];
+//	u32 tex1data[2];
+//	primInfo curprim;
+//	
+//	std::vector<Vertex> vertices;
+//	bool bCanExecute;
 //};
 //
 //extern ExecuteBufferXeno g_ebXeno;

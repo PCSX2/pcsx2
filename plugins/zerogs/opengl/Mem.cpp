@@ -245,170 +245,170 @@ static PCSX2_ALIGNED16(u32 tempblock[64]);
 #define DSTPSM gs.dstbuf.psm
 
 #define START_HOSTLOCAL() \
-    assert( gs.imageTransfer == 0 ); \
-    u8* pstart = g_pbyGSMemory + gs.dstbuf.bp*256; \
-    \
-    const u8* pendbuf = (const u8*)pbyMem + nQWordSize*4; \
-    int i = gs.imageY, j = gs.imageX; \
+	assert( gs.imageTransfer == 0 ); \
+	u8* pstart = g_pbyGSMemory + gs.dstbuf.bp*256; \
+	\
+	const u8* pendbuf = (const u8*)pbyMem + nQWordSize*4; \
+	int i = gs.imageY, j = gs.imageX; \
 
 extern BOOL g_bSaveTrans;
 
 #define END_HOSTLOCAL() \
 End: \
-    if( i >= gs.imageEndY ) { \
-        assert( gs.imageTransfer == -1 || i == gs.imageEndY ); \
-        gs.imageTransfer = -1; \
-        /*int start, end; \
-        ZeroGS::GetRectMemAddress(start, end, gs.dstbuf.psm, gs.trxpos.dx, gs.trxpos.dy, gs.imageWnew, gs.imageHnew, gs.dstbuf.bp, gs.dstbuf.bw); \
-        ZeroGS::g_MemTargs.ClearRange(start, end);*/ \
-    } \
-    else { \
-        /* update new params */ \
-        gs.imageY = i; \
-        gs.imageX = j; \
-    } \
+	if( i >= gs.imageEndY ) { \
+		assert( gs.imageTransfer == -1 || i == gs.imageEndY ); \
+		gs.imageTransfer = -1; \
+		/*int start, end; \
+		ZeroGS::GetRectMemAddress(start, end, gs.dstbuf.psm, gs.trxpos.dx, gs.trxpos.dy, gs.imageWnew, gs.imageHnew, gs.dstbuf.bp, gs.dstbuf.bw); \
+		ZeroGS::g_MemTargs.ClearRange(start, end);*/ \
+	} \
+	else { \
+		/* update new params */ \
+		gs.imageY = i; \
+		gs.imageX = j; \
+	} \
 
 // transfers whole rows
 #define TRANSMIT_HOSTLOCAL_Y_(psm, T, widthlimit, endY) { \
-    assert( (nSize%widthlimit) == 0 && widthlimit <= 4 ); \
-    if( (gs.imageEndX-gs.trxpos.dx)%widthlimit ) { \
-        /*GS_LOG("Bad Transmission! %d %d, psm: %d\n", gs.trxpos.dx, gs.imageEndX, DSTPSM);*/ \
-        for(; i < endY; ++i) { \
-            for(; j < gs.imageEndX && nSize > 0; j += 1, nSize -= 1, pbuf += 1) { \
-                /* write as many pixel at one time as possible */ \
-                writePixel##psm##_0(pstart, j%2048, i%2048, pbuf[0], gs.dstbuf.bw); \
-            } \
-        } \
-    } \
-    for(; i < endY; ++i) { \
-        for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += widthlimit) { \
-            /* write as many pixel at one time as possible */ \
-            if( nSize < widthlimit ) goto End; \
-            writePixel##psm##_0(pstart, j%2048, i%2048, pbuf[0], gs.dstbuf.bw); \
-            \
-            if( widthlimit > 1 ) { \
-                writePixel##psm##_0(pstart, (j+1)%2048, i%2048, pbuf[1], gs.dstbuf.bw); \
-                \
-                if( widthlimit > 2 ) { \
-                    writePixel##psm##_0(pstart, (j+2)%2048, i%2048, pbuf[2], gs.dstbuf.bw); \
-                    \
-                    if( widthlimit > 3 ) { \
-                        writePixel##psm##_0(pstart, (j+3)%2048, i%2048, pbuf[3], gs.dstbuf.bw); \
-                    } \
-                } \
-            } \
-        } \
-        \
-        if( j >= gs.imageEndX ) { assert(j == gs.imageEndX); j = gs.trxpos.dx; } \
-        else { assert( gs.imageTransfer == -1 || nSize*sizeof(T)/4 == 0 ); goto End; } \
-    } \
+	assert( (nSize%widthlimit) == 0 && widthlimit <= 4 ); \
+	if( (gs.imageEndX-gs.trxpos.dx)%widthlimit ) { \
+		/*GS_LOG("Bad Transmission! %d %d, psm: %d\n", gs.trxpos.dx, gs.imageEndX, DSTPSM);*/ \
+		for(; i < endY; ++i) { \
+			for(; j < gs.imageEndX && nSize > 0; j += 1, nSize -= 1, pbuf += 1) { \
+				/* write as many pixel at one time as possible */ \
+				writePixel##psm##_0(pstart, j%2048, i%2048, pbuf[0], gs.dstbuf.bw); \
+			} \
+		} \
+	} \
+	for(; i < endY; ++i) { \
+		for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += widthlimit) { \
+			/* write as many pixel at one time as possible */ \
+			if( nSize < widthlimit ) goto End; \
+			writePixel##psm##_0(pstart, j%2048, i%2048, pbuf[0], gs.dstbuf.bw); \
+			\
+			if( widthlimit > 1 ) { \
+				writePixel##psm##_0(pstart, (j+1)%2048, i%2048, pbuf[1], gs.dstbuf.bw); \
+				\
+				if( widthlimit > 2 ) { \
+					writePixel##psm##_0(pstart, (j+2)%2048, i%2048, pbuf[2], gs.dstbuf.bw); \
+					\
+					if( widthlimit > 3 ) { \
+						writePixel##psm##_0(pstart, (j+3)%2048, i%2048, pbuf[3], gs.dstbuf.bw); \
+					} \
+				} \
+			} \
+		} \
+		\
+		if( j >= gs.imageEndX ) { assert(j == gs.imageEndX); j = gs.trxpos.dx; } \
+		else { assert( gs.imageTransfer == -1 || nSize*sizeof(T)/4 == 0 ); goto End; } \
+	} \
 } \
 
 // transmit until endX, don't check size since it has already been prevalidated
 #define TRANSMIT_HOSTLOCAL_X_(psm, T, widthlimit, blockheight, startX) { \
-    for(int tempi = 0; tempi < blockheight; ++tempi) { \
-        for(j = startX; j < gs.imageEndX; j++, pbuf++) { \
-            writePixel##psm##_0(pstart, j%2048, (i+tempi)%2048, pbuf[0], gs.dstbuf.bw); \
-        } \
-        pbuf += pitch-fracX; \
-    } \
+	for(int tempi = 0; tempi < blockheight; ++tempi) { \
+		for(j = startX; j < gs.imageEndX; j++, pbuf++) { \
+			writePixel##psm##_0(pstart, j%2048, (i+tempi)%2048, pbuf[0], gs.dstbuf.bw); \
+		} \
+		pbuf += pitch-fracX; \
+	} \
 } \
 
 // transfers whole rows
 #define TRANSMIT_HOSTLOCAL_Y_24(psm, T, widthlimit, endY) { \
-    if( widthlimit != 8 || ((gs.imageEndX-gs.trxpos.dx)%widthlimit) ) { \
-        /*GS_LOG("Bad Transmission! %d %d, psm: %d\n", gs.trxpos.dx, gs.imageEndX, DSTPSM);*/ \
-        for(; i < endY; ++i) { \
-            for(; j < gs.imageEndX && nSize > 0; j += 1, nSize -= 1, pbuf += 3) { \
-                writePixel##psm##_0(pstart, j%2048, i%2048, *(u32*)(pbuf), gs.dstbuf.bw); \
-            } \
-            \
-            if( j >= gs.imageEndX ) { assert(gs.imageTransfer == -1 || j == gs.imageEndX); j = gs.trxpos.dx; } \
-            else { assert( gs.imageTransfer == -1 || nSize == 0 ); goto End; } \
-        } \
-    } \
-    else { \
-        assert( /*(nSize%widthlimit) == 0 &&*/ widthlimit == 8 ); \
-        for(; i < endY; ++i) { \
-            for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += 3*widthlimit) { \
-                if( nSize < widthlimit ) goto End; \
-                /* write as many pixel at one time as possible */ \
-                writePixel##psm##_0(pstart, j%2048, i%2048, *(u32*)(pbuf+0), gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+1)%2048, i%2048, *(u32*)(pbuf+3), gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+2)%2048, i%2048, *(u32*)(pbuf+6), gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+3)%2048, i%2048, *(u32*)(pbuf+9), gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+4)%2048, i%2048, *(u32*)(pbuf+12), gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+5)%2048, i%2048, *(u32*)(pbuf+15), gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+6)%2048, i%2048, *(u32*)(pbuf+18), gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+7)%2048, i%2048, *(u32*)(pbuf+21), gs.dstbuf.bw); \
-            } \
-            \
-            if( j >= gs.imageEndX ) { assert(gs.imageTransfer == -1 || j == gs.imageEndX); j = gs.trxpos.dx; } \
-            else { \
-                if( nSize < 0 ) { \
-                    /* extracted too much */ \
-                    assert( (nSize%3)==0 && nSize > -24 ); \
-                    j += nSize/3; \
-                    nSize = 0; \
-                } \
-                assert( gs.imageTransfer == -1 || nSize == 0 ); \
-                goto End; \
-            } \
-        } \
-    } \
+	if( widthlimit != 8 || ((gs.imageEndX-gs.trxpos.dx)%widthlimit) ) { \
+		/*GS_LOG("Bad Transmission! %d %d, psm: %d\n", gs.trxpos.dx, gs.imageEndX, DSTPSM);*/ \
+		for(; i < endY; ++i) { \
+			for(; j < gs.imageEndX && nSize > 0; j += 1, nSize -= 1, pbuf += 3) { \
+				writePixel##psm##_0(pstart, j%2048, i%2048, *(u32*)(pbuf), gs.dstbuf.bw); \
+			} \
+			\
+			if( j >= gs.imageEndX ) { assert(gs.imageTransfer == -1 || j == gs.imageEndX); j = gs.trxpos.dx; } \
+			else { assert( gs.imageTransfer == -1 || nSize == 0 ); goto End; } \
+		} \
+	} \
+	else { \
+		assert( /*(nSize%widthlimit) == 0 &&*/ widthlimit == 8 ); \
+		for(; i < endY; ++i) { \
+			for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += 3*widthlimit) { \
+				if( nSize < widthlimit ) goto End; \
+				/* write as many pixel at one time as possible */ \
+				writePixel##psm##_0(pstart, j%2048, i%2048, *(u32*)(pbuf+0), gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+1)%2048, i%2048, *(u32*)(pbuf+3), gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+2)%2048, i%2048, *(u32*)(pbuf+6), gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+3)%2048, i%2048, *(u32*)(pbuf+9), gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+4)%2048, i%2048, *(u32*)(pbuf+12), gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+5)%2048, i%2048, *(u32*)(pbuf+15), gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+6)%2048, i%2048, *(u32*)(pbuf+18), gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+7)%2048, i%2048, *(u32*)(pbuf+21), gs.dstbuf.bw); \
+			} \
+			\
+			if( j >= gs.imageEndX ) { assert(gs.imageTransfer == -1 || j == gs.imageEndX); j = gs.trxpos.dx; } \
+			else { \
+				if( nSize < 0 ) { \
+					/* extracted too much */ \
+					assert( (nSize%3)==0 && nSize > -24 ); \
+					j += nSize/3; \
+					nSize = 0; \
+				} \
+				assert( gs.imageTransfer == -1 || nSize == 0 ); \
+				goto End; \
+			} \
+		} \
+	} \
 } \
 
 // transmit until endX, don't check size since it has already been prevalidated
 #define TRANSMIT_HOSTLOCAL_X_24(psm, T, widthlimit, blockheight, startX) { \
-    for(int tempi = 0; tempi < blockheight; ++tempi) { \
-        for(j = startX; j < gs.imageEndX; j++, pbuf += 3) { \
-            writePixel##psm##_0(pstart, j%2048, (i+tempi)%2048, *(u32*)pbuf, gs.dstbuf.bw); \
-        } \
-        pbuf += 3*(pitch-fracX); \
-    } \
+	for(int tempi = 0; tempi < blockheight; ++tempi) { \
+		for(j = startX; j < gs.imageEndX; j++, pbuf += 3) { \
+			writePixel##psm##_0(pstart, j%2048, (i+tempi)%2048, *(u32*)pbuf, gs.dstbuf.bw); \
+		} \
+		pbuf += 3*(pitch-fracX); \
+	} \
 } \
 
 // meant for 4bit transfers
 #define TRANSMIT_HOSTLOCAL_Y_4(psm, T, widthlimit, endY) { \
-    for(; i < endY; ++i) { \
-        for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit) { \
-            /* write as many pixel at one time as possible */ \
-            writePixel##psm##_0(pstart, j%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
-            writePixel##psm##_0(pstart, (j+1)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
-            pbuf++; \
-            if( widthlimit > 2 ) { \
-                writePixel##psm##_0(pstart, (j+2)%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
-                writePixel##psm##_0(pstart, (j+3)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
-                pbuf++; \
-                \
-                if( widthlimit > 4 ) { \
-                    writePixel##psm##_0(pstart, (j+4)%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
-                    writePixel##psm##_0(pstart, (j+5)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
-                    pbuf++; \
-                    \
-                    if( widthlimit > 6 ) { \
-                        writePixel##psm##_0(pstart, (j+6)%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
-                        writePixel##psm##_0(pstart, (j+7)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
-                        pbuf++; \
-                    } \
-                } \
-            } \
-        } \
-        \
-        if( j >= gs.imageEndX ) { j = gs.trxpos.dx; } \
-        else { assert( gs.imageTransfer == -1 || (nSize/32) == 0 ); goto End; } \
-    } \
+	for(; i < endY; ++i) { \
+		for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit) { \
+			/* write as many pixel at one time as possible */ \
+			writePixel##psm##_0(pstart, j%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
+			writePixel##psm##_0(pstart, (j+1)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
+			pbuf++; \
+			if( widthlimit > 2 ) { \
+				writePixel##psm##_0(pstart, (j+2)%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
+				writePixel##psm##_0(pstart, (j+3)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
+				pbuf++; \
+				\
+				if( widthlimit > 4 ) { \
+					writePixel##psm##_0(pstart, (j+4)%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
+					writePixel##psm##_0(pstart, (j+5)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
+					pbuf++; \
+					\
+					if( widthlimit > 6 ) { \
+						writePixel##psm##_0(pstart, (j+6)%2048, i%2048, *pbuf&0x0f, gs.dstbuf.bw); \
+						writePixel##psm##_0(pstart, (j+7)%2048, i%2048, *pbuf>>4, gs.dstbuf.bw); \
+						pbuf++; \
+					} \
+				} \
+			} \
+		} \
+		\
+		if( j >= gs.imageEndX ) { j = gs.trxpos.dx; } \
+		else { assert( gs.imageTransfer == -1 || (nSize/32) == 0 ); goto End; } \
+	} \
 } \
 
 // transmit until endX, don't check size since it has already been prevalidated
 #define TRANSMIT_HOSTLOCAL_X_4(psm, T, widthlimit, blockheight, startX) { \
-    for(int tempi = 0; tempi < blockheight; ++tempi) { \
-        for(j = startX; j < gs.imageEndX; j+=2, pbuf++) { \
-            writePixel##psm##_0(pstart, j%2048, (i+tempi)%2048, pbuf[0]&0x0f, gs.dstbuf.bw); \
-            writePixel##psm##_0(pstart, (j+1)%2048, (i+tempi)%2048, pbuf[0]>>4, gs.dstbuf.bw); \
-        } \
-        pbuf += (pitch-fracX)/2; \
-    } \
+	for(int tempi = 0; tempi < blockheight; ++tempi) { \
+		for(j = startX; j < gs.imageEndX; j+=2, pbuf++) { \
+			writePixel##psm##_0(pstart, j%2048, (i+tempi)%2048, pbuf[0]&0x0f, gs.dstbuf.bw); \
+			writePixel##psm##_0(pstart, (j+1)%2048, (i+tempi)%2048, pbuf[0]>>4, gs.dstbuf.bw); \
+		} \
+		pbuf += (pitch-fracX)/2; \
+	} \
 } \
 
 // calculate pitch in source buffer
@@ -418,84 +418,84 @@ End: \
 
 // special swizzle macros
 #define SwizzleBlock24(dst, src, pitch) { \
-    u8* pnewsrc = src; \
-    u32* pblock = tempblock; \
-    \
-    for(int by = 0; by < 7; ++by, pblock += 8, pnewsrc += pitch-24) { \
-        for(int bx = 0; bx < 8; ++bx, pnewsrc += 3) { \
-            pblock[bx] = *(u32*)pnewsrc; \
-        } \
-    } \
-    for(int bx = 0; bx < 7; ++bx, pnewsrc += 3) { \
-        /* might be 1 byte out of bounds of GS memory */ \
-        pblock[bx] = *(u32*)pnewsrc; \
-    } \
-    /* do 3 bytes for the last copy */ \
-    *((u8*)pblock+28) = pnewsrc[0]; \
-    *((u8*)pblock+29) = pnewsrc[1]; \
-    *((u8*)pblock+30) = pnewsrc[2]; \
-    SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0x00ffffff); \
+	u8* pnewsrc = src; \
+	u32* pblock = tempblock; \
+	\
+	for(int by = 0; by < 7; ++by, pblock += 8, pnewsrc += pitch-24) { \
+		for(int bx = 0; bx < 8; ++bx, pnewsrc += 3) { \
+			pblock[bx] = *(u32*)pnewsrc; \
+		} \
+	} \
+	for(int bx = 0; bx < 7; ++bx, pnewsrc += 3) { \
+		/* might be 1 byte out of bounds of GS memory */ \
+		pblock[bx] = *(u32*)pnewsrc; \
+	} \
+	/* do 3 bytes for the last copy */ \
+	*((u8*)pblock+28) = pnewsrc[0]; \
+	*((u8*)pblock+29) = pnewsrc[1]; \
+	*((u8*)pblock+30) = pnewsrc[2]; \
+	SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0x00ffffff); \
 } \
 
 #define SwizzleBlock24u SwizzleBlock24
 
 #define SwizzleBlock8H(dst, src, pitch) { \
-    u8* pnewsrc = src; \
-    u32* pblock = tempblock; \
-    \
-    for(int by = 0; by < 8; ++by, pblock += 8, pnewsrc += pitch) { \
-        u32 u = *(u32*)pnewsrc; \
-        pblock[0] = u<<24; \
-        pblock[1] = u<<16; \
-        pblock[2] = u<<8; \
-        pblock[3] = u; \
-        u = *(u32*)(pnewsrc+4); \
-        pblock[4] = u<<24; \
-        pblock[5] = u<<16; \
-        pblock[6] = u<<8; \
-        pblock[7] = u; \
-    } \
-    SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0xff000000); \
+	u8* pnewsrc = src; \
+	u32* pblock = tempblock; \
+	\
+	for(int by = 0; by < 8; ++by, pblock += 8, pnewsrc += pitch) { \
+		u32 u = *(u32*)pnewsrc; \
+		pblock[0] = u<<24; \
+		pblock[1] = u<<16; \
+		pblock[2] = u<<8; \
+		pblock[3] = u; \
+		u = *(u32*)(pnewsrc+4); \
+		pblock[4] = u<<24; \
+		pblock[5] = u<<16; \
+		pblock[6] = u<<8; \
+		pblock[7] = u; \
+	} \
+	SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0xff000000); \
 } \
 
 #define SwizzleBlock8Hu SwizzleBlock8H
 
 #define SwizzleBlock4HH(dst, src, pitch) { \
-    u8* pnewsrc = src; \
-    u32* pblock = tempblock; \
-    \
-    for(int by = 0; by < 8; ++by, pblock += 8, pnewsrc += pitch) { \
-        u32 u = *(u32*)pnewsrc; \
-        pblock[0] = u<<28; \
-        pblock[1] = u<<24; \
-        pblock[2] = u<<20; \
-        pblock[3] = u<<16; \
-        pblock[4] = u<<12; \
-        pblock[5] = u<<8; \
-        pblock[6] = u<<4; \
-        pblock[7] = u; \
-    } \
-    SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0xf0000000); \
+	u8* pnewsrc = src; \
+	u32* pblock = tempblock; \
+	\
+	for(int by = 0; by < 8; ++by, pblock += 8, pnewsrc += pitch) { \
+		u32 u = *(u32*)pnewsrc; \
+		pblock[0] = u<<28; \
+		pblock[1] = u<<24; \
+		pblock[2] = u<<20; \
+		pblock[3] = u<<16; \
+		pblock[4] = u<<12; \
+		pblock[5] = u<<8; \
+		pblock[6] = u<<4; \
+		pblock[7] = u; \
+	} \
+	SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0xf0000000); \
 } \
 
 #define SwizzleBlock4HHu SwizzleBlock4HH
 
 #define SwizzleBlock4HL(dst, src, pitch) { \
-    u8* pnewsrc = src; \
-    u32* pblock = tempblock; \
-    \
-    for(int by = 0; by < 8; ++by, pblock += 8, pnewsrc += pitch) { \
-        u32 u = *(u32*)pnewsrc; \
-        pblock[0] = u<<24; \
-        pblock[1] = u<<20; \
-        pblock[2] = u<<16; \
-        pblock[3] = u<<12; \
-        pblock[4] = u<<8; \
-        pblock[5] = u<<4; \
-        pblock[6] = u; \
-        pblock[7] = u>>4; \
-    } \
-    SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0x0f000000); \
+	u8* pnewsrc = src; \
+	u32* pblock = tempblock; \
+	\
+	for(int by = 0; by < 8; ++by, pblock += 8, pnewsrc += pitch) { \
+		u32 u = *(u32*)pnewsrc; \
+		pblock[0] = u<<24; \
+		pblock[1] = u<<20; \
+		pblock[2] = u<<16; \
+		pblock[3] = u<<12; \
+		pblock[4] = u<<8; \
+		pblock[5] = u<<4; \
+		pblock[6] = u; \
+		pblock[7] = u>>4; \
+	} \
+	SwizzleBlock32((u8*)dst, (u8*)tempblock, 32, 0x0f000000); \
 } \
 
 #define SwizzleBlock4HLu SwizzleBlock4HL
@@ -512,93 +512,93 @@ End: \
 #define DEFINE_TRANSFERLOCAL(psm, T, widthlimit, blockbits, blockwidth, blockheight, TransSfx, SwizzleBlock) \
 int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
 { \
-    START_HOSTLOCAL(); \
-    \
-    const T* pbuf = (const T*)pbyMem; \
-    int nLeftOver = (nQWordSize*4*2)%(TRANSMIT_PITCH##TransSfx(2, T)); \
-    int nSize = nQWordSize*4*2/TRANSMIT_PITCH##TransSfx(2, T); \
-    nSize = min(nSize, gs.imageWnew * gs.imageHnew); \
-    \
-    int pitch, area, fracX; \
-    int endY = ROUND_UPPOW2(i, blockheight); \
-    int alignedY = ROUND_DOWNPOW2(gs.imageEndY, blockheight); \
-    int alignedX = ROUND_DOWNPOW2(gs.imageEndX, blockwidth); \
-    bool bAligned, bCanAlign = MOD_POW2(gs.trxpos.dx, blockwidth) == 0 && (j == gs.trxpos.dx) && (alignedY > endY) && alignedX > gs.trxpos.dx; \
-    \
-    if( (gs.imageEndX-gs.trxpos.dx)%widthlimit ) { \
-        /* hack */ \
-        int testwidth = (int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx); \
-        if( testwidth <= widthlimit && testwidth >= -widthlimit ) { \
-            /* don't transfer */ \
-            /*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/ \
-            gs.imageTransfer = -1; \
-        } \
-        bCanAlign = false; \
-    } \
-    \
-    /* first align on block boundary */ \
-    if( MOD_POW2(i, blockheight) || !bCanAlign ) { \
-        \
-        if( !bCanAlign ) \
-            endY = gs.imageEndY; /* transfer the whole image */ \
-        else \
-            assert( endY < gs.imageEndY); /* part of alignment condition */ \
-        \
-        if( ((gs.imageEndX-gs.trxpos.dx)%widthlimit) || ((gs.imageEndX-j)%widthlimit) ) { \
-            /* transmit with a width of 1 */ \
-            TRANSMIT_HOSTLOCAL_Y##TransSfx(psm, T, (1+(DSTPSM == 0x14)), endY); \
-        } \
-        else { \
-            TRANSMIT_HOSTLOCAL_Y##TransSfx(psm, T, widthlimit, endY); \
-        } \
-        \
-        if( nSize == 0 || i == gs.imageEndY ) \
-            goto End; \
-    } \
-    \
-    assert( MOD_POW2(i, blockheight) == 0 && j == gs.trxpos.dx); \
-    \
-    /* can align! */ \
-    pitch = gs.imageEndX-gs.trxpos.dx; \
-    area = pitch*blockheight; \
-    fracX = gs.imageEndX-alignedX; \
-    \
-    /* on top of checking whether pbuf is alinged, make sure that the width is at least aligned to its limits (due to bugs in pcsx2) */ \
-    bAligned = !((uptr)pbuf & 0xf) && (TRANSMIT_PITCH##TransSfx(pitch, T)&0xf) == 0; \
-    \
-    /* transfer aligning to blocks */ \
-    for(; i < alignedY && nSize >= area; i += blockheight, nSize -= area) { \
-        \
-        if( bAligned || ((DSTPSM==PSMCT24) || (DSTPSM==PSMT8H) || (DSTPSM==PSMT4HH) || (DSTPSM==PSMT4HL)) ) { \
-            for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH##TransSfx(blockwidth, T)/sizeof(T)) { \
-                SwizzleBlock(pstart + getPixelAddress##psm##_0(tempj, i, gs.dstbuf.bw)*blockbits/8, \
-                    (u8*)pbuf, TRANSMIT_PITCH##TransSfx(pitch, T)); \
-            } \
-        } \
-        else { \
-            for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH##TransSfx(blockwidth, T)/sizeof(T)) { \
-                SwizzleBlock##u(pstart + getPixelAddress##psm##_0(tempj, i, gs.dstbuf.bw)*blockbits/8, \
-                    (u8*)pbuf, TRANSMIT_PITCH##TransSfx(pitch, T)); \
-            } \
-        } \
-        \
-        /* transfer the rest */ \
-        if( alignedX < gs.imageEndX ) { \
-            TRANSMIT_HOSTLOCAL_X##TransSfx(psm, T, widthlimit, blockheight, alignedX); \
-            pbuf -= TRANSMIT_PITCH##TransSfx((alignedX-gs.trxpos.dx), T)/sizeof(T); \
-        } \
-        else pbuf += (blockheight-1)*TRANSMIT_PITCH##TransSfx(pitch, T)/sizeof(T); \
-        j = gs.trxpos.dx; \
-    } \
-    \
-    if( TRANSMIT_PITCH##TransSfx(nSize, T)/4 > 0 ) { \
-        TRANSMIT_HOSTLOCAL_Y##TransSfx(psm, T, widthlimit, gs.imageEndY); \
-        /* sometimes wrong sizes are sent (tekken tag) */ \
-        assert( gs.imageTransfer == -1 || TRANSMIT_PITCH##TransSfx(nSize,T)/4 <= 2 ); \
-    } \
-    \
-    END_HOSTLOCAL(); \
-    return (nSize * TRANSMIT_PITCH##TransSfx(2, T) + nLeftOver)/2; \
+	START_HOSTLOCAL(); \
+	\
+	const T* pbuf = (const T*)pbyMem; \
+	int nLeftOver = (nQWordSize*4*2)%(TRANSMIT_PITCH##TransSfx(2, T)); \
+	int nSize = nQWordSize*4*2/TRANSMIT_PITCH##TransSfx(2, T); \
+	nSize = min(nSize, gs.imageWnew * gs.imageHnew); \
+	\
+	int pitch, area, fracX; \
+	int endY = ROUND_UPPOW2(i, blockheight); \
+	int alignedY = ROUND_DOWNPOW2(gs.imageEndY, blockheight); \
+	int alignedX = ROUND_DOWNPOW2(gs.imageEndX, blockwidth); \
+	bool bAligned, bCanAlign = MOD_POW2(gs.trxpos.dx, blockwidth) == 0 && (j == gs.trxpos.dx) && (alignedY > endY) && alignedX > gs.trxpos.dx; \
+	\
+	if( (gs.imageEndX-gs.trxpos.dx)%widthlimit ) { \
+		/* hack */ \
+		int testwidth = (int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx); \
+		if( testwidth <= widthlimit && testwidth >= -widthlimit ) { \
+			/* don't transfer */ \
+			/*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/ \
+			gs.imageTransfer = -1; \
+		} \
+		bCanAlign = false; \
+	} \
+	\
+	/* first align on block boundary */ \
+	if( MOD_POW2(i, blockheight) || !bCanAlign ) { \
+		\
+		if( !bCanAlign ) \
+			endY = gs.imageEndY; /* transfer the whole image */ \
+		else \
+			assert( endY < gs.imageEndY); /* part of alignment condition */ \
+		\
+		if( ((gs.imageEndX-gs.trxpos.dx)%widthlimit) || ((gs.imageEndX-j)%widthlimit) ) { \
+			/* transmit with a width of 1 */ \
+			TRANSMIT_HOSTLOCAL_Y##TransSfx(psm, T, (1+(DSTPSM == 0x14)), endY); \
+		} \
+		else { \
+			TRANSMIT_HOSTLOCAL_Y##TransSfx(psm, T, widthlimit, endY); \
+		} \
+		\
+		if( nSize == 0 || i == gs.imageEndY ) \
+			goto End; \
+	} \
+	\
+	assert( MOD_POW2(i, blockheight) == 0 && j == gs.trxpos.dx); \
+	\
+	/* can align! */ \
+	pitch = gs.imageEndX-gs.trxpos.dx; \
+	area = pitch*blockheight; \
+	fracX = gs.imageEndX-alignedX; \
+	\
+	/* on top of checking whether pbuf is alinged, make sure that the width is at least aligned to its limits (due to bugs in pcsx2) */ \
+	bAligned = !((uptr)pbuf & 0xf) && (TRANSMIT_PITCH##TransSfx(pitch, T)&0xf) == 0; \
+	\
+	/* transfer aligning to blocks */ \
+	for(; i < alignedY && nSize >= area; i += blockheight, nSize -= area) { \
+		\
+		if( bAligned || ((DSTPSM==PSMCT24) || (DSTPSM==PSMT8H) || (DSTPSM==PSMT4HH) || (DSTPSM==PSMT4HL)) ) { \
+			for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH##TransSfx(blockwidth, T)/sizeof(T)) { \
+				SwizzleBlock(pstart + getPixelAddress##psm##_0(tempj, i, gs.dstbuf.bw)*blockbits/8, \
+					(u8*)pbuf, TRANSMIT_PITCH##TransSfx(pitch, T)); \
+			} \
+		} \
+		else { \
+			for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH##TransSfx(blockwidth, T)/sizeof(T)) { \
+				SwizzleBlock##u(pstart + getPixelAddress##psm##_0(tempj, i, gs.dstbuf.bw)*blockbits/8, \
+					(u8*)pbuf, TRANSMIT_PITCH##TransSfx(pitch, T)); \
+			} \
+		} \
+		\
+		/* transfer the rest */ \
+		if( alignedX < gs.imageEndX ) { \
+			TRANSMIT_HOSTLOCAL_X##TransSfx(psm, T, widthlimit, blockheight, alignedX); \
+			pbuf -= TRANSMIT_PITCH##TransSfx((alignedX-gs.trxpos.dx), T)/sizeof(T); \
+		} \
+		else pbuf += (blockheight-1)*TRANSMIT_PITCH##TransSfx(pitch, T)/sizeof(T); \
+		j = gs.trxpos.dx; \
+	} \
+	\
+	if( TRANSMIT_PITCH##TransSfx(nSize, T)/4 > 0 ) { \
+		TRANSMIT_HOSTLOCAL_Y##TransSfx(psm, T, widthlimit, gs.imageEndY); \
+		/* sometimes wrong sizes are sent (tekken tag) */ \
+		assert( gs.imageTransfer == -1 || TRANSMIT_PITCH##TransSfx(nSize,T)/4 <= 2 ); \
+	} \
+	\
+	END_HOSTLOCAL(); \
+	return (nSize * TRANSMIT_PITCH##TransSfx(2, T) + nLeftOver)/2; \
 } \
 
 DEFINE_TRANSFERLOCAL(32, u32, 2, 32, 8, 8, _, SwizzleBlock32);
@@ -623,89 +623,89 @@ DEFINE_TRANSFERLOCAL(4HH, u8, 8, 32, 8, 8, _4, SwizzleBlock4HH);
 //
 //void TransferHostLocal4(const void* pbyMem, u32 nQWordSize)
 //{
-//  START_HOSTLOCAL();
-//  
-//  const T* pbuf = (const T*)pbyMem;
-//  u32 nSize = nQWordSize*16*2/TRANSMIT_PITCH_4(2, T);
-//  nSize = min(nSize, gs.imageWnew * gs.imageHnew);
-//  
-//  int endY = ROUND_UPPOW2(i, blockheight);
-//  int alignedY = ROUND_DOWNPOW2(gs.imageEndY, blockheight);
-//  int alignedX = ROUND_DOWNPOW2(gs.imageEndX, blockwidth);
-//  bool bCanAlign = MOD_POW2(gs.trxpos.dx, blockwidth) == 0 && (j == gs.trxpos.dx) && (alignedY > endY) && alignedX > gs.trxpos.dx;
-//  
-//  if( (gs.imageEndX-gs.trxpos.dx)%widthlimit ) {
-//      /* hack */
-//      if( abs((int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx)) <= widthlimit ) {
-//          /* don't transfer */
-//          /*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/
-//          gs.imageTransfer = -1;
-//      }
-//      bCanAlign = false;
-//  }
-//  
-//  /* first align on block boundary */
-//  if( MOD_POW2(i, blockheight) || !bCanAlign ) {
-//      
-//      if( !bCanAlign )
-//          endY = gs.imageEndY; /* transfer the whole image */
-//      else
-//          assert( endY < gs.imageEndY); /* part of alignment condition */
-//      
-//      if( (DSTPSM == 0x13 || DSTPSM == 0x14) && ((gs.imageEndX-gs.trxpos.dx)%widthlimit) ) {
-//          /* transmit with a width of 1 */
-//          TRANSMIT_HOSTLOCAL_Y_4(4, T, (1+(DSTPSM == 0x14)), endY);
-//      }
-//      else {
-//          TRANSMIT_HOSTLOCAL_Y_4(4, T, widthlimit, endY);
-//      }
-//      
-//      if( nSize == 0 || i == gs.imageEndY )
-//          goto End;
-//  }
-//  
-//  assert( MOD_POW2(i, blockheight) == 0 && j == gs.trxpos.dx);
-//  
-//  /* can align! */
-//  int pitch = gs.imageEndX-gs.trxpos.dx;
-//  u32 area = pitch*blockheight;
-//  int fracX = gs.imageEndX-alignedX;
-//  
-//  /* on top of checking whether pbuf is alinged, make sure that the width is at least aligned to its limits (due to bugs in pcsx2) */
-//  bool bAligned = !((u32)pbuf & 0xf) && (TRANSMIT_PITCH_4(pitch, T)&0xf) == 0;
-//  
-//  /* transfer aligning to blocks */
-//  for(; i < alignedY && nSize >= area; i += blockheight, nSize -= area) {
-//      
-//      if( bAligned || ((DSTPSM==PSMCT24) || (DSTPSM==PSMT8H) || (DSTPSM==PSMT4HH) || (DSTPSM==PSMT4HL)) ) {
-//          for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH_4(blockwidth, T)/sizeof(T)) {
-//              SwizzleBlock4(pstart + getPixelAddress4_0(tempj, i, gs.dstbuf.bw)*blockbits/8,
-//                  (u8*)pbuf, TRANSMIT_PITCH_4(pitch, T));
-//          }
-//      }
-//      else {
-//          for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH_4(blockwidth, T)/sizeof(T)) {
-//              SwizzleBlock4u(pstart + getPixelAddress4_0(tempj, i, gs.dstbuf.bw)*blockbits/8,
-//                  (u8*)pbuf, TRANSMIT_PITCH_4(pitch, T));
-//          }
-//      }
-//      
-//      /* transfer the rest */
-//      if( alignedX < gs.imageEndX ) {
-//          TRANSMIT_HOSTLOCAL_X_4(4, T, widthlimit, blockheight, alignedX);
-//          pbuf -= TRANSMIT_PITCH_4((alignedX-gs.trxpos.dx), T)/sizeof(T);
-//      }
-//      else pbuf += (blockheight-1)*TRANSMIT_PITCH_4(pitch, T)/sizeof(T);
-//      j = 0;
-//  }
-//  
-//  if( TRANSMIT_PITCH_4(nSize, T)/4 > 0 ) {
-//      TRANSMIT_HOSTLOCAL_Y_4(4, T, widthlimit, gs.imageEndY);
-//      /* sometimes wrong sizes are sent (tekken tag) */
-//      assert( gs.imageTransfer == -1 || TRANSMIT_PITCH_4(nSize,T)/4 <= 2 );
-//  }
-//  
-//  END_HOSTLOCAL();
+//	START_HOSTLOCAL();
+//	
+//	const T* pbuf = (const T*)pbyMem;
+//	u32 nSize = nQWordSize*16*2/TRANSMIT_PITCH_4(2, T);
+//	nSize = min(nSize, gs.imageWnew * gs.imageHnew);
+//	
+//	int endY = ROUND_UPPOW2(i, blockheight);
+//	int alignedY = ROUND_DOWNPOW2(gs.imageEndY, blockheight);
+//	int alignedX = ROUND_DOWNPOW2(gs.imageEndX, blockwidth);
+//	bool bCanAlign = MOD_POW2(gs.trxpos.dx, blockwidth) == 0 && (j == gs.trxpos.dx) && (alignedY > endY) && alignedX > gs.trxpos.dx;
+//	
+//	if( (gs.imageEndX-gs.trxpos.dx)%widthlimit ) {
+//		/* hack */
+//		if( abs((int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx)) <= widthlimit ) {
+//			/* don't transfer */
+//			/*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/
+//			gs.imageTransfer = -1;
+//		}
+//		bCanAlign = false;
+//	}
+//	
+//	/* first align on block boundary */
+//	if( MOD_POW2(i, blockheight) || !bCanAlign ) {
+//		
+//		if( !bCanAlign )
+//			endY = gs.imageEndY; /* transfer the whole image */
+//		else
+//			assert( endY < gs.imageEndY); /* part of alignment condition */
+//		
+//		if( (DSTPSM == 0x13 || DSTPSM == 0x14) && ((gs.imageEndX-gs.trxpos.dx)%widthlimit) ) {
+//			/* transmit with a width of 1 */
+//			TRANSMIT_HOSTLOCAL_Y_4(4, T, (1+(DSTPSM == 0x14)), endY);
+//		}
+//		else {
+//			TRANSMIT_HOSTLOCAL_Y_4(4, T, widthlimit, endY);
+//		}
+//		
+//		if( nSize == 0 || i == gs.imageEndY )
+//			goto End;
+//	}
+//	
+//	assert( MOD_POW2(i, blockheight) == 0 && j == gs.trxpos.dx);
+//	
+//	/* can align! */
+//	int pitch = gs.imageEndX-gs.trxpos.dx;
+//	u32 area = pitch*blockheight;
+//	int fracX = gs.imageEndX-alignedX;
+//	
+//	/* on top of checking whether pbuf is alinged, make sure that the width is at least aligned to its limits (due to bugs in pcsx2) */
+//	bool bAligned = !((u32)pbuf & 0xf) && (TRANSMIT_PITCH_4(pitch, T)&0xf) == 0;
+//	
+//	/* transfer aligning to blocks */
+//	for(; i < alignedY && nSize >= area; i += blockheight, nSize -= area) {
+//		
+//		if( bAligned || ((DSTPSM==PSMCT24) || (DSTPSM==PSMT8H) || (DSTPSM==PSMT4HH) || (DSTPSM==PSMT4HL)) ) {
+//			for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH_4(blockwidth, T)/sizeof(T)) {
+//				SwizzleBlock4(pstart + getPixelAddress4_0(tempj, i, gs.dstbuf.bw)*blockbits/8,
+//					(u8*)pbuf, TRANSMIT_PITCH_4(pitch, T));
+//			}
+//		}
+//		else {
+//			for(int tempj = gs.trxpos.dx; tempj < alignedX; tempj += blockwidth, pbuf += TRANSMIT_PITCH_4(blockwidth, T)/sizeof(T)) {
+//				SwizzleBlock4u(pstart + getPixelAddress4_0(tempj, i, gs.dstbuf.bw)*blockbits/8,
+//					(u8*)pbuf, TRANSMIT_PITCH_4(pitch, T));
+//			}
+//		}
+//		
+//		/* transfer the rest */
+//		if( alignedX < gs.imageEndX ) {
+//			TRANSMIT_HOSTLOCAL_X_4(4, T, widthlimit, blockheight, alignedX);
+//			pbuf -= TRANSMIT_PITCH_4((alignedX-gs.trxpos.dx), T)/sizeof(T);
+//		}
+//		else pbuf += (blockheight-1)*TRANSMIT_PITCH_4(pitch, T)/sizeof(T);
+//		j = 0;
+//	}
+//	
+//	if( TRANSMIT_PITCH_4(nSize, T)/4 > 0 ) {
+//		TRANSMIT_HOSTLOCAL_Y_4(4, T, widthlimit, gs.imageEndY);
+//		/* sometimes wrong sizes are sent (tekken tag) */
+//		assert( gs.imageTransfer == -1 || TRANSMIT_PITCH_4(nSize,T)/4 <= 2 );
+//	}
+//	
+//	END_HOSTLOCAL();
 //}
 
 void TransferLocalHost32(void* pbyMem, u32 nQWordSize)
@@ -761,143 +761,143 @@ void TransferLocalHost16SZ(void* pbyMem, u32 nQWordSize)
 }
 
 #define FILL_BLOCK(bw, bh, ox, oy, mult, psm, psmcol) { \
-    b.vTexDims = Vector(BLOCK_TEXWIDTH/(float)(bw), BLOCK_TEXHEIGHT/(float)bh, 0, 0); \
-    b.vTexBlock = Vector((float)bw/BLOCK_TEXWIDTH, (float)bh/BLOCK_TEXHEIGHT, ((float)ox+0.2f)/BLOCK_TEXWIDTH, ((float)oy+0.05f)/BLOCK_TEXHEIGHT); \
-    b.width = bw; \
-    b.height = bh; \
-    b.colwidth = bh / 4; \
-    b.colheight = bw / 8; \
-    b.bpp = 32/mult; \
-    \
-    b.pageTable = &g_pageTable##psm[0][0]; \
-    b.blockTable = &g_blockTable##psm[0][0]; \
-    b.columnTable = &g_columnTable##psmcol[0][0]; \
-    assert( sizeof(g_pageTable##psm) == bw*bh*sizeof(g_pageTable##psm[0][0]) ); \
-    psrcf = (float*)&vBlockData[0] + ox + oy * BLOCK_TEXWIDTH; \
-    psrcw = (u16*)&vBlockData[0] + ox + oy * BLOCK_TEXWIDTH; \
-    for(i = 0; i < bh; ++i) { \
-        for(j = 0; j < bw; ++j) { \
-            /* fill the table */ \
-            u32 u = g_blockTable##psm[(i / b.colheight)][(j / b.colwidth)] * 64 * mult + g_columnTable##psmcol[i%b.colheight][j%b.colwidth]; \
-            b.pageTable[i*bw+j] = u; \
-            if( floatfmt ) { \
-                psrcf[i*BLOCK_TEXWIDTH+j] = (float)(u) / (float)(GPU_TEXWIDTH*mult); \
-            } \
-            else { \
-                psrcw[i*BLOCK_TEXWIDTH+j] = u; \
-            } \
-        } \
-    } \
-    \
-    if( floatfmt ) { \
-        assert( floatfmt ); \
-        psrcv = (Vector*)&vBilinearData[0] + ox + oy * BLOCK_TEXWIDTH; \
-        for(i = 0; i < bh; ++i) { \
-            for(j = 0; j < bw; ++j) { \
-                Vector* pv = &psrcv[i*BLOCK_TEXWIDTH+j]; \
-                pv->x = psrcf[i*BLOCK_TEXWIDTH+j]; \
-                pv->y = psrcf[i*BLOCK_TEXWIDTH+((j+1)%bw)]; \
-                pv->z = psrcf[((i+1)%bh)*BLOCK_TEXWIDTH+j]; \
-                pv->w = psrcf[((i+1)%bh)*BLOCK_TEXWIDTH+((j+1)%bw)]; \
-            } \
-        } \
-    } \
-    b.getPixelAddress = getPixelAddress##psm; \
-    b.getPixelAddress_0 = getPixelAddress##psm##_0; \
-    b.writePixel = writePixel##psm; \
-    b.writePixel_0 = writePixel##psm##_0; \
-    b.readPixel = readPixel##psm; \
-    b.readPixel_0 = readPixel##psm##_0; \
-    b.TransferHostLocal = TransferHostLocal##psm; \
-    b.TransferLocalHost = TransferLocalHost##psm; \
+	b.vTexDims = Vector(BLOCK_TEXWIDTH/(float)(bw), BLOCK_TEXHEIGHT/(float)bh, 0, 0); \
+	b.vTexBlock = Vector((float)bw/BLOCK_TEXWIDTH, (float)bh/BLOCK_TEXHEIGHT, ((float)ox+0.2f)/BLOCK_TEXWIDTH, ((float)oy+0.05f)/BLOCK_TEXHEIGHT); \
+	b.width = bw; \
+	b.height = bh; \
+	b.colwidth = bh / 4; \
+	b.colheight = bw / 8; \
+	b.bpp = 32/mult; \
+	\
+	b.pageTable = &g_pageTable##psm[0][0]; \
+	b.blockTable = &g_blockTable##psm[0][0]; \
+	b.columnTable = &g_columnTable##psmcol[0][0]; \
+	assert( sizeof(g_pageTable##psm) == bw*bh*sizeof(g_pageTable##psm[0][0]) ); \
+	psrcf = (float*)&vBlockData[0] + ox + oy * BLOCK_TEXWIDTH; \
+	psrcw = (u16*)&vBlockData[0] + ox + oy * BLOCK_TEXWIDTH; \
+	for(i = 0; i < bh; ++i) { \
+		for(j = 0; j < bw; ++j) { \
+			/* fill the table */ \
+			u32 u = g_blockTable##psm[(i / b.colheight)][(j / b.colwidth)] * 64 * mult + g_columnTable##psmcol[i%b.colheight][j%b.colwidth]; \
+			b.pageTable[i*bw+j] = u; \
+			if( floatfmt ) { \
+				psrcf[i*BLOCK_TEXWIDTH+j] = (float)(u) / (float)(GPU_TEXWIDTH*mult); \
+			} \
+			else { \
+				psrcw[i*BLOCK_TEXWIDTH+j] = u; \
+			} \
+		} \
+	} \
+	\
+	if( floatfmt ) { \
+		assert( floatfmt ); \
+		psrcv = (Vector*)&vBilinearData[0] + ox + oy * BLOCK_TEXWIDTH; \
+		for(i = 0; i < bh; ++i) { \
+			for(j = 0; j < bw; ++j) { \
+				Vector* pv = &psrcv[i*BLOCK_TEXWIDTH+j]; \
+				pv->x = psrcf[i*BLOCK_TEXWIDTH+j]; \
+				pv->y = psrcf[i*BLOCK_TEXWIDTH+((j+1)%bw)]; \
+				pv->z = psrcf[((i+1)%bh)*BLOCK_TEXWIDTH+j]; \
+				pv->w = psrcf[((i+1)%bh)*BLOCK_TEXWIDTH+((j+1)%bw)]; \
+			} \
+		} \
+	} \
+	b.getPixelAddress = getPixelAddress##psm; \
+	b.getPixelAddress_0 = getPixelAddress##psm##_0; \
+	b.writePixel = writePixel##psm; \
+	b.writePixel_0 = writePixel##psm##_0; \
+	b.readPixel = readPixel##psm; \
+	b.readPixel_0 = readPixel##psm##_0; \
+	b.TransferHostLocal = TransferHostLocal##psm; \
+	b.TransferLocalHost = TransferLocalHost##psm; \
 } \
 
 void BLOCK::FillBlocks(vector<char>& vBlockData, vector<char>& vBilinearData, int floatfmt)
 {
-    vBlockData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * (floatfmt ? 4 : 2));
-    if( floatfmt )
-        vBilinearData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * sizeof(Vector));
+	vBlockData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * (floatfmt ? 4 : 2));
+	if( floatfmt )
+		vBilinearData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * sizeof(Vector));
 
-    int i, j;
-    BLOCK b;
-    float* psrcf = NULL;
-    u16* psrcw = NULL;
-    Vector* psrcv = NULL;
+	int i, j;
+	BLOCK b;
+	float* psrcf = NULL;
+	u16* psrcw = NULL;
+	Vector* psrcv = NULL;
 
-    memset(m_Blocks, 0, sizeof(m_Blocks));
+	memset(m_Blocks, 0, sizeof(m_Blocks));
 
-    // 32
-    FILL_BLOCK(64, 32, 0, 0, 1, 32, 32);
-    m_Blocks[PSMCT32] = b;
+	// 32
+	FILL_BLOCK(64, 32, 0, 0, 1, 32, 32);
+	m_Blocks[PSMCT32] = b;
 
-    // 24 (same as 32 except write/readPixel are different)
-    m_Blocks[PSMCT24] = b;
-    m_Blocks[PSMCT24].writePixel = writePixel24;
-    m_Blocks[PSMCT24].writePixel_0 = writePixel24_0;
-    m_Blocks[PSMCT24].readPixel = readPixel24;
-    m_Blocks[PSMCT24].readPixel_0 = readPixel24_0;
-    m_Blocks[PSMCT24].TransferHostLocal = TransferHostLocal24;
-    m_Blocks[PSMCT24].TransferLocalHost = TransferLocalHost24;
+	// 24 (same as 32 except write/readPixel are different)
+	m_Blocks[PSMCT24] = b;
+	m_Blocks[PSMCT24].writePixel = writePixel24;
+	m_Blocks[PSMCT24].writePixel_0 = writePixel24_0;
+	m_Blocks[PSMCT24].readPixel = readPixel24;
+	m_Blocks[PSMCT24].readPixel_0 = readPixel24_0;
+	m_Blocks[PSMCT24].TransferHostLocal = TransferHostLocal24;
+	m_Blocks[PSMCT24].TransferLocalHost = TransferLocalHost24;
 
-    // 8H (same as 32 except write/readPixel are different)
-    m_Blocks[PSMT8H] = b;
-    m_Blocks[PSMT8H].writePixel = writePixel8H;
-    m_Blocks[PSMT8H].writePixel_0 = writePixel8H_0;
-    m_Blocks[PSMT8H].readPixel = readPixel8H;
-    m_Blocks[PSMT8H].readPixel_0 = readPixel8H_0;
-    m_Blocks[PSMT8H].TransferHostLocal = TransferHostLocal8H;
-    m_Blocks[PSMT8H].TransferLocalHost = TransferLocalHost8H;
+	// 8H (same as 32 except write/readPixel are different)
+	m_Blocks[PSMT8H] = b;
+	m_Blocks[PSMT8H].writePixel = writePixel8H;
+	m_Blocks[PSMT8H].writePixel_0 = writePixel8H_0;
+	m_Blocks[PSMT8H].readPixel = readPixel8H;
+	m_Blocks[PSMT8H].readPixel_0 = readPixel8H_0;
+	m_Blocks[PSMT8H].TransferHostLocal = TransferHostLocal8H;
+	m_Blocks[PSMT8H].TransferLocalHost = TransferLocalHost8H;
 
-    m_Blocks[PSMT4HL] = b;
-    m_Blocks[PSMT4HL].writePixel = writePixel4HL;
-    m_Blocks[PSMT4HL].writePixel_0 = writePixel4HL_0;
-    m_Blocks[PSMT4HL].readPixel = readPixel4HL;
-    m_Blocks[PSMT4HL].readPixel_0 = readPixel4HL_0;
-    m_Blocks[PSMT4HL].TransferHostLocal = TransferHostLocal4HL;
-    m_Blocks[PSMT4HL].TransferLocalHost = TransferLocalHost4HL;
+	m_Blocks[PSMT4HL] = b;
+	m_Blocks[PSMT4HL].writePixel = writePixel4HL;
+	m_Blocks[PSMT4HL].writePixel_0 = writePixel4HL_0;
+	m_Blocks[PSMT4HL].readPixel = readPixel4HL;
+	m_Blocks[PSMT4HL].readPixel_0 = readPixel4HL_0;
+	m_Blocks[PSMT4HL].TransferHostLocal = TransferHostLocal4HL;
+	m_Blocks[PSMT4HL].TransferLocalHost = TransferLocalHost4HL;
 
-    m_Blocks[PSMT4HH] = b;
-    m_Blocks[PSMT4HH].writePixel = writePixel4HH;
-    m_Blocks[PSMT4HH].writePixel_0 = writePixel4HH_0;
-    m_Blocks[PSMT4HH].readPixel = readPixel4HH;
-    m_Blocks[PSMT4HH].readPixel_0 = readPixel4HH_0;
-    m_Blocks[PSMT4HH].TransferHostLocal = TransferHostLocal4HH;
-    m_Blocks[PSMT4HH].TransferLocalHost = TransferLocalHost4HH;
+	m_Blocks[PSMT4HH] = b;
+	m_Blocks[PSMT4HH].writePixel = writePixel4HH;
+	m_Blocks[PSMT4HH].writePixel_0 = writePixel4HH_0;
+	m_Blocks[PSMT4HH].readPixel = readPixel4HH;
+	m_Blocks[PSMT4HH].readPixel_0 = readPixel4HH_0;
+	m_Blocks[PSMT4HH].TransferHostLocal = TransferHostLocal4HH;
+	m_Blocks[PSMT4HH].TransferLocalHost = TransferLocalHost4HH;
 
-    // 32z
-    FILL_BLOCK(64, 32, 64, 0, 1, 32Z, 32);
-    m_Blocks[PSMT32Z] = b;
+	// 32z
+	FILL_BLOCK(64, 32, 64, 0, 1, 32Z, 32);
+	m_Blocks[PSMT32Z] = b;
 
-    // 24Z (same as 32Z except write/readPixel are different)
-    m_Blocks[PSMT24Z] = b;
-    m_Blocks[PSMT24Z].writePixel = writePixel24Z;
-    m_Blocks[PSMT24Z].writePixel_0 = writePixel24Z_0;
-    m_Blocks[PSMT24Z].readPixel = readPixel24Z;
-    m_Blocks[PSMT24Z].readPixel_0 = readPixel24Z_0;
-    m_Blocks[PSMT24Z].TransferHostLocal = TransferHostLocal24Z;
-    m_Blocks[PSMT24Z].TransferLocalHost = TransferLocalHost24Z;
+	// 24Z (same as 32Z except write/readPixel are different)
+	m_Blocks[PSMT24Z] = b;
+	m_Blocks[PSMT24Z].writePixel = writePixel24Z;
+	m_Blocks[PSMT24Z].writePixel_0 = writePixel24Z_0;
+	m_Blocks[PSMT24Z].readPixel = readPixel24Z;
+	m_Blocks[PSMT24Z].readPixel_0 = readPixel24Z_0;
+	m_Blocks[PSMT24Z].TransferHostLocal = TransferHostLocal24Z;
+	m_Blocks[PSMT24Z].TransferLocalHost = TransferLocalHost24Z;
 
-    // 16
-    FILL_BLOCK(64, 64, 0, 32, 2, 16, 16);
-    m_Blocks[PSMCT16] = b;
+	// 16
+	FILL_BLOCK(64, 64, 0, 32, 2, 16, 16);
+	m_Blocks[PSMCT16] = b;
 
-    // 16s
-    FILL_BLOCK(64, 64, 64, 32, 2, 16S, 16);
-    m_Blocks[PSMCT16S] = b;
+	// 16s
+	FILL_BLOCK(64, 64, 64, 32, 2, 16S, 16);
+	m_Blocks[PSMCT16S] = b;
 
-    // 16z
-    FILL_BLOCK(64, 64, 0, 96, 2, 16Z, 16);
-    m_Blocks[PSMT16Z] = b;
+	// 16z
+	FILL_BLOCK(64, 64, 0, 96, 2, 16Z, 16);
+	m_Blocks[PSMT16Z] = b;
 
-    // 16sz
-    FILL_BLOCK(64, 64, 64, 96, 2, 16SZ, 16);
-    m_Blocks[PSMT16SZ] = b;
+	// 16sz
+	FILL_BLOCK(64, 64, 64, 96, 2, 16SZ, 16);
+	m_Blocks[PSMT16SZ] = b;
 
-    // 8
-    FILL_BLOCK(128, 64, 0, 160, 4, 8, 8);
-    m_Blocks[PSMT8] = b;
+	// 8
+	FILL_BLOCK(128, 64, 0, 160, 4, 8, 8);
+	m_Blocks[PSMT8] = b;
 
-    // 4
-    FILL_BLOCK(128, 128, 0, 224, 8, 4, 4);
-    m_Blocks[PSMT4] = b;
+	// 4
+	FILL_BLOCK(128, 128, 0, 224, 8, 4, 4);
+	m_Blocks[PSMT4] = b;
 }

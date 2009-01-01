@@ -59,7 +59,7 @@ extern bool THR_bShift;
 // declare linux equivalents
 extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 {
-    assert( align < 0x10000 );
+	assert( align < 0x10000 );
 	char* p = (char*)malloc(size+align);
 	int off = 2+align - ((int)(uptr)(p+2) % align);
 
@@ -71,10 +71,10 @@ extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 
 extern __forceinline void pcsx2_aligned_free(void* pmem)
 {
-    if( pmem != NULL ) {
-        char* p = (char*)pmem;
-        free(p - (int)*(u16*)(p-2));
-    }
+	if( pmem != NULL ) {
+		char* p = (char*)pmem;
+		free(p - (int)*(u16*)(p-2));
+	}
 }
 
 #define _aligned_malloc pcsx2_aligned_malloc
@@ -82,42 +82,42 @@ extern __forceinline void pcsx2_aligned_free(void* pmem)
 
 #endif
 
-#include <sys/timeb.h>    // ftime(), struct timeb
+#include <sys/timeb.h>	// ftime(), struct timeb
 
 inline unsigned long timeGetTime()
 {
 #ifdef _WIN32
-    _timeb t;
-    _ftime(&t);
+	_timeb t;
+	_ftime(&t);
 #else
-    timeb t;
-    ftime(&t);
+	timeb t;
+	ftime(&t);
 #endif
 
-    return (unsigned long)(t.time*1000+t.millitm);
+	return (unsigned long)(t.time*1000+t.millitm);
 }
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#define max(a,b)			(((a) > (b)) ? (a) : (b))
+#define min(a,b)			(((a) < (b)) ? (a) : (b))
 
 struct RECT
 {
-    int left, top;
-    int right, bottom;
+	int left, top;
+	int right, bottom;
 };
 
 typedef struct {
-    Display *dpy;
-    int screen;
-    Window win;
-    GLXContext ctx;
-    XSetWindowAttributes attr;
-    Bool fs;
-    Bool doubleBuffered;
-    XF86VidModeModeInfo deskMode;
-    int x, y;
-    unsigned int width, height;
-    unsigned int depth;    
+	Display *dpy;
+	int screen;
+	Window win;
+	GLXContext ctx;
+	XSetWindowAttributes attr;
+	Bool fs;
+	Bool doubleBuffered;
+	XF86VidModeModeInfo deskMode;
+	int x, y;
+	unsigned int width, height;
+	unsigned int depth;	
 } GLWindow;
 
 extern GLWindow GLWin;
@@ -147,7 +147,7 @@ using namespace std;
 
 struct Vector_16F
 {
-    u16 x, y, z, w;
+	u16 x, y, z, w;
 };
 
 /////////////////////
@@ -448,10 +448,10 @@ typedef struct {
 	int aa; // antialiasing 0 - off, 1 - 2x, 2 - 4x
 	int bilinear; // set to enable bilinear support
 	u32 options;
-    u32 gamesettings; // default game settings
+	u32 gamesettings; // default game settings
 	int width, height;
 	int winstyle; // window style before full screen 
-    int mrtdepth; // write color in render target
+	int mrtdepth; // write color in render target
 #ifdef GS_LOG
 	u32 log;
 #endif
@@ -468,9 +468,9 @@ struct VertexGPU
 struct Vertex
 {
 	u16 x, y, f, resv0;		// note: xy is 12d3
-    u32 rgba;
-    u32 z;
-    float s, t, q;
+	u32 rgba;
+	u32 z;
+	float s, t, q;
 	u16 u, v;
 };
 
@@ -787,7 +787,7 @@ __forceinline u16 Float16ToALPHA(u16 f) {
 
 #ifndef COLOR_ARGB
 #define COLOR_ARGB(a,r,g,b) \
-    ((u32)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
+	((u32)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #endif
 
 // assumes that positive in [1,2] (then extracts fraction by just looking at the specified bits)

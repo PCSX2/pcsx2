@@ -315,7 +315,7 @@ __forceinline u32  readPixel4(const void* pmem, int x, int y, u32 bp, u32 bw) {
 	u32 addr = getPixelAddress4(x, y, bp, bw);
 	u8 pix = ((const u8*)pmem)[addr/2];
 	if (addr & 0x1)
-	     return pix >> 4;
+		 return pix >> 4;
 	else return pix & 0xf;
 }
 
@@ -451,7 +451,7 @@ __forceinline u32  readPixel4_0(const void* pmem, int x, int y, u32 bw) {
 	u32 addr = getPixelAddress4_0(x, y, bw);
 	u8 pix = ((const u8*)pmem)[addr/2];
 	if (addr & 0x1)
-	     return pix >> 4;
+		 return pix >> 4;
 	else return pix & 0xf;
 }
 

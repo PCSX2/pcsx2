@@ -29,7 +29,7 @@ namespace ZeroGS
 		// gets all targets with a range
 		void GetTargs(int start, int end, list<ZeroGS::CRenderTarget*>& listTargets) const;
 
-        virtual void DestroyChildren(CRenderTarget* ptarg);
+		virtual void DestroyChildren(CRenderTarget* ptarg);
 
 		// resolves all targets within a range
 		__forceinline void Resolve(int start, int end);
@@ -44,7 +44,7 @@ namespace ZeroGS
 				if( ptarg == vb[i].pdepth ) { vb[i].pdepth = NULL; vb[i].bNeedZCheck = 1; }
 			}
 			
-            DestroyChildren(ptarg);
+			DestroyChildren(ptarg);
 			delete ptarg;
 		}
 
@@ -86,13 +86,13 @@ namespace ZeroGS
 
 					u32 dummykey = (it->second->fbw<<16)|it->second->fbh;
 					if( it->second->pmimicparent != NULL && mapDummyTargs.find(dummykey) == mapDummyTargs.end() ) {
-                        DestroyChildren(it->second);
+						DestroyChildren(it->second);
 						mapDummyTargs[dummykey] = it->second;
 					}
-                    else {
-                        DestroyChildren(it->second);
+					else {
+						DestroyChildren(it->second);
 						delete it->second;
-                    }
+					}
 					it = mapTargets.erase(it);
 				}
 				else ++it;
@@ -117,13 +117,13 @@ namespace ZeroGS
 
 					u32 dummykey = (it->second->fbw<<16)|it->second->fbh;
 					if( it->second->pmimicparent != NULL && mapDummyTargs.find(dummykey) == mapDummyTargs.end() ) {
-                        DestroyChildren(it->second);
+						DestroyChildren(it->second);
 						mapDummyTargs[dummykey] = it->second;
 					}
-                    else {
-                        DestroyChildren(it->second);
+					else {
+						DestroyChildren(it->second);
 						delete it->second;
-                    }
+					}
 
 					it = mapTargets.erase(it);
 				}
@@ -152,10 +152,10 @@ namespace ZeroGS
 			else
 				mapTargets[key] = ptarg;
 			
-            if( g_GameSettings & GAME_RESOLVEPROMOTED )
-                ptarg->status = CRenderTarget::TS_Resolved;
-            else
-                ptarg->status = CRenderTarget::TS_NeedUpdate;
+			if( g_GameSettings & GAME_RESOLVEPROMOTED )
+				ptarg->status = CRenderTarget::TS_Resolved;
+			else
+				ptarg->status = CRenderTarget::TS_NeedUpdate;
 			return ptarg;
 		}
 

@@ -9,31 +9,31 @@ using namespace std;
 
 BOOL AVI_Init()
 {
-        /* first let's make sure we are running on 1.1 */
-        WORD wVer = HIWORD(VideoForWindowsVersion());
-        if (wVer < 0x010a){
-             /* oops, we are too old, blow out of here */
-             //MessageBeep(MB_ICONHAND);
-             MessageBox(NULL, "Cant't init AVI File - Video for Windows version is to old", "Error", MB_OK|MB_ICONSTOP);
-             return FALSE;
-        }
+	/* first let's make sure we are running on 1.1 */
+	WORD wVer = HIWORD(VideoForWindowsVersion());
+	if (wVer < 0x010a){
+	     /* oops, we are too old, blow out of here */
+	     //MessageBeep(MB_ICONHAND);
+	     MessageBox(NULL, "Cant't init AVI File - Video for Windows version is to old", "Error", MB_OK|MB_ICONSTOP);
+	     return FALSE;
+	}
 
-        AVIFileInit();
+	AVIFileInit();
 
-        return TRUE;
+	return TRUE;
 }
 
 BOOL AVI_FileOpenWrite(PAVIFILE * pfile, const char *filename)
 {
-        HRESULT hr = AVIFileOpen(pfile,           // returned file pointer
-                       filename,                  // file name
-                       OF_WRITE | OF_CREATE,      // mode to open file with
-                       NULL);                     // use handler determined
-                                                  // from file extension....
-        if (hr != AVIERR_OK)
-                return FALSE;
+	HRESULT hr = AVIFileOpen(pfile,	   // returned file pointer
+		       filename,		  // file name
+		       OF_WRITE | OF_CREATE,      // mode to open file with
+		       NULL);		     // use handler determined
+						  // from file extension....
+	if (hr != AVIERR_OK)
+		return FALSE;
 
-        return TRUE;
+	return TRUE;
 }
 
 DWORD getFOURCC(const char* value)
@@ -58,47 +58,47 @@ DWORD getFOURCC(const char* value)
 // Fill in the header for the video stream....
 // The video stream will run in rate ths of a second....
 BOOL AVI_CreateStream(PAVIFILE pfile, PAVISTREAM * ps, int rate, // sample/second
-                      unsigned long buffersize, int rectwidth, int rectheight,
+		      unsigned long buffersize, int rectwidth, int rectheight,
 					  const char* _compressor)
 {
 		AVISTREAMINFO strhdr;
 		memset(&strhdr, 0, sizeof(strhdr));
-        strhdr.fccType                = streamtypeVIDEO;// stream type
-		strhdr.fccHandler             = getFOURCC(_compressor);
-        //strhdr.fccHandler             = 0; // no compression!
-		//strhdr.fccHandler             = mmioFOURCC('D','I','B',' '); // Uncompressed
-		//strhdr.fccHandler             = mmioFOURCC('C','V','I','D'); // Cinpak
-		//strhdr.fccHandler             = mmioFOURCC('I','V','3','2'); // Intel video 3.2
-		//strhdr.fccHandler             = mmioFOURCC('M','S','V','C'); // Microsoft video 1
-		//strhdr.fccHandler             = mmioFOURCC('I','V','5','0'); // Intel video 5.0
-		//strhdr.dwFlags                = AVISTREAMINFO_DISABLED;
-		//strhdr.dwCaps                 = 
-		//strhdr.wPriority              = 
-		//strhdr.wLanguage              = 
-        strhdr.dwScale                = 1;
-        strhdr.dwRate                 = rate;               // rate fps
-		//strhdr.dwStart                =  
-		//strhdr.dwLength               = 
-		//strhdr.dwInitialFrames        = 
-        strhdr.dwSuggestedBufferSize  = buffersize;
-		strhdr.dwQuality              = -1; // use the default
-		//strhdr.dwSampleSize           = 
-        SetRect(&strhdr.rcFrame, 0, 0,              // rectangle for stream
-            (int) rectwidth,
-            (int) rectheight);
-		//strhdr.dwEditCount            = 
+	strhdr.fccType		= streamtypeVIDEO;// stream type
+		strhdr.fccHandler	     = getFOURCC(_compressor);
+	//strhdr.fccHandler	     = 0; // no compression!
+		//strhdr.fccHandler	     = mmioFOURCC('D','I','B',' '); // Uncompressed
+		//strhdr.fccHandler	     = mmioFOURCC('C','V','I','D'); // Cinpak
+		//strhdr.fccHandler	     = mmioFOURCC('I','V','3','2'); // Intel video 3.2
+		//strhdr.fccHandler	     = mmioFOURCC('M','S','V','C'); // Microsoft video 1
+		//strhdr.fccHandler	     = mmioFOURCC('I','V','5','0'); // Intel video 5.0
+		//strhdr.dwFlags		= AVISTREAMINFO_DISABLED;
+		//strhdr.dwCaps		 = 
+		//strhdr.wPriority	      = 
+		//strhdr.wLanguage	      = 
+	strhdr.dwScale		= 1;
+	strhdr.dwRate		 = rate;	       // rate fps
+		//strhdr.dwStart		=  
+		//strhdr.dwLength	       = 
+		//strhdr.dwInitialFrames	= 
+	strhdr.dwSuggestedBufferSize  = buffersize;
+		strhdr.dwQuality	      = -1; // use the default
+		//strhdr.dwSampleSize	   = 
+	SetRect(&strhdr.rcFrame, 0, 0,	      // rectangle for stream
+	    (int) rectwidth,
+	    (int) rectheight);
+		//strhdr.dwEditCount	    = 
 		//strhdr.dwFormatChangeCount    =
 		//strcpy(strhdr.szName, "Full Frames (Uncompressed)");
 
-        // And create the stream;
-        HRESULT hr = AVIFileCreateStream(pfile,             // file pointer
-                                 ps,                // returned stream pointer
-                                 &strhdr);          // stream header
-        if (hr != AVIERR_OK) {
-                return FALSE;
-        }
+	// And create the stream;
+	HRESULT hr = AVIFileCreateStream(pfile,	     // file pointer
+				 ps,		// returned stream pointer
+				 &strhdr);	  // stream header
+	if (hr != AVIERR_OK) {
+		return FALSE;
+	}
 
-        return TRUE;
+	return TRUE;
 }
 
 string getFOURCCVAsString(DWORD value)
@@ -164,23 +164,23 @@ string dumpAVICOMPRESSOPTIONS(AVICOMPRESSOPTIONS opts)
 BOOL AVI_SetOptions(PAVISTREAM * ps, PAVISTREAM * psCompressed, LPBITMAPINFOHEADER lpbi,
 					const char* _compressor)
 {
-         
-        AVICOMPRESSOPTIONS opts;
-        AVICOMPRESSOPTIONS FAR * aopts[1] = {&opts};
+	 
+	AVICOMPRESSOPTIONS opts;
+	AVICOMPRESSOPTIONS FAR * aopts[1] = {&opts};
 
 		memset(&opts, 0, sizeof(opts));
 		opts.fccType = streamtypeVIDEO;
-		opts.fccHandler             = getFOURCC(_compressor);
+		opts.fccHandler	     = getFOURCC(_compressor);
 		//opts.fccHandler  = 0;
-		//opts.fccHandler            = mmioFOURCC('D','I','B',' '); // Uncompressed
-		//opts.fccHandler             = mmioFOURCC('C','V','I','D'); // Cinpak
-		//opts.fccHandler             = mmioFOURCC('I','V','3','2'); // Intel video 3.2
-		//opts.fccHandler             = mmioFOURCC('M','S','V','C'); // Microsoft video 1
-		//opts.fccHandler             = mmioFOURCC('I','V','5','0'); // Intel video 5.0
+		//opts.fccHandler	    = mmioFOURCC('D','I','B',' '); // Uncompressed
+		//opts.fccHandler	     = mmioFOURCC('C','V','I','D'); // Cinpak
+		//opts.fccHandler	     = mmioFOURCC('I','V','3','2'); // Intel video 3.2
+		//opts.fccHandler	     = mmioFOURCC('M','S','V','C'); // Microsoft video 1
+		//opts.fccHandler	     = mmioFOURCC('I','V','5','0'); // Intel video 5.0
 		//opts.dwKeyFrameEvery = 5;
 		//opts.dwQuality
 		//opts.dwBytesPerSecond
-		//opts.dwFlags                = AVICOMPRESSF_KEYFRAMES;
+		//opts.dwFlags		= AVICOMPRESSF_KEYFRAMES;
 		//opts.lpFormat 
 		//opts.cbFormat
 		//opts.lpParms
@@ -199,52 +199,52 @@ BOOL AVI_SetOptions(PAVISTREAM * ps, PAVISTREAM * psCompressed, LPBITMAPINFOHEAD
 			//MessageBox(NULL, dumpAVICOMPRESSOPTIONS(opts).c_str(), "AVICOMPRESSOPTIONS", MB_OK);
 		}		
 
-        HRESULT hr = AVIMakeCompressedStream(psCompressed, *ps, &opts, NULL);
-        if (hr != AVIERR_OK) {
-                return FALSE;
-        }
+	HRESULT hr = AVIMakeCompressedStream(psCompressed, *ps, &opts, NULL);
+	if (hr != AVIERR_OK) {
+		return FALSE;
+	}
 
-        hr = AVIStreamSetFormat(*psCompressed, 0,
-                               lpbi,                    // stream format
-                               lpbi->biSize             // format size
-                                   + lpbi->biClrUsed * sizeof(RGBQUAD)
-                                   );
-        if (hr != AVIERR_OK) {
-        return FALSE;
-        }
+	hr = AVIStreamSetFormat(*psCompressed, 0,
+			       lpbi,		    // stream format
+			       lpbi->biSize	     // format size
+				   + lpbi->biClrUsed * sizeof(RGBQUAD)
+				   );
+	if (hr != AVIERR_OK) {
+	return FALSE;
+	}
 
-        return TRUE;
+	return TRUE;
 }
 
 BOOL AVI_SetText(PAVIFILE pfile, PAVISTREAM psText, char *szText, int width, int height, int TextHeight)
 {
-        // Fill in the stream header for the text stream....
-        AVISTREAMINFO strhdr;
-        DWORD dwTextFormat;
-        // The text stream is in 60ths of a second....
+	// Fill in the stream header for the text stream....
+	AVISTREAMINFO strhdr;
+	DWORD dwTextFormat;
+	// The text stream is in 60ths of a second....
 
 		memset(&strhdr, 0, sizeof(strhdr));
-        strhdr.fccType                = streamtypeTEXT;
-        strhdr.fccHandler             = mmioFOURCC('D', 'R', 'A', 'W');
-        strhdr.dwScale                = 1;
-        strhdr.dwRate                 = 60;
-        strhdr.dwSuggestedBufferSize  = sizeof(szText);
-        SetRect(&strhdr.rcFrame, 0, (int) height,
-            (int) width, (int) height + TextHeight); // #define TEXT_HEIGHT 20
+	strhdr.fccType		= streamtypeTEXT;
+	strhdr.fccHandler	     = mmioFOURCC('D', 'R', 'A', 'W');
+	strhdr.dwScale		= 1;
+	strhdr.dwRate		 = 60;
+	strhdr.dwSuggestedBufferSize  = sizeof(szText);
+	SetRect(&strhdr.rcFrame, 0, (int) height,
+	    (int) width, (int) height + TextHeight); // #define TEXT_HEIGHT 20
 
-        // ....and create the stream.
-        HRESULT hr = AVIFileCreateStream(pfile, &psText, &strhdr);
-        if (hr != AVIERR_OK) {
-                return FALSE;
-        }
+	// ....and create the stream.
+	HRESULT hr = AVIFileCreateStream(pfile, &psText, &strhdr);
+	if (hr != AVIERR_OK) {
+		return FALSE;
+	}
 
-        dwTextFormat = sizeof(dwTextFormat);
-        hr = AVIStreamSetFormat(psText, 0, &dwTextFormat, sizeof(dwTextFormat));
-        if (hr != AVIERR_OK) {
-                return FALSE;
-        }
+	dwTextFormat = sizeof(dwTextFormat);
+	hr = AVIStreamSetFormat(psText, 0, &dwTextFormat, sizeof(dwTextFormat));
+	if (hr != AVIERR_OK) {
+		return FALSE;
+	}
 
-        return TRUE;
+	return TRUE;
 }
 
 BOOL AVI_AddFrame(PAVISTREAM psCompressed, int time, LPBITMAPINFOHEADER lpbi)
@@ -280,51 +280,51 @@ BOOL AVI_AddFrame(PAVISTREAM psCompressed, int time, LPBITMAPINFOHEADER lpbi)
 
 BOOL AVI_AddText(PAVISTREAM psText, int time, char *szText)
 {
-        int iLen = (int)strlen(szText);
+	int iLen = (int)strlen(szText);
 
-        HRESULT hr = AVIStreamWrite(psText,
-                        time,
-                        1,
-                        szText,
-                        iLen + 1,
-                        AVIIF_KEYFRAME,
-                        NULL,
-                        NULL);
-        if (hr != AVIERR_OK)
-                return FALSE;
+	HRESULT hr = AVIStreamWrite(psText,
+			time,
+			1,
+			szText,
+			iLen + 1,
+			AVIIF_KEYFRAME,
+			NULL,
+			NULL);
+	if (hr != AVIERR_OK)
+		return FALSE;
 
-        return TRUE;
+	return TRUE;
 }
 
 BOOL AVI_CloseStream(PAVISTREAM ps, PAVISTREAM psCompressed, PAVISTREAM psText)
 {
-        if (ps)
-                AVIStreamClose(ps);
+	if (ps)
+		AVIStreamClose(ps);
 
-        if (psCompressed)
-                AVIStreamClose(psCompressed);
+	if (psCompressed)
+		AVIStreamClose(psCompressed);
 
-        if (psText)
-                AVIStreamClose(psText);
+	if (psText)
+		AVIStreamClose(psText);
 
 
 
-        return TRUE;
+	return TRUE;
 }
 
 BOOL AVI_CloseFile(PAVIFILE pfile)
 {
-        if (pfile)
-                AVIFileClose(pfile);
-        
-        return TRUE;
+	if (pfile)
+		AVIFileClose(pfile);
+	
+	return TRUE;
 }
 
 BOOL AVI_Exit()
 {
-        AVIFileExit();
+	AVIFileExit();
 
-        return TRUE;
+	return TRUE;
 }
 
 

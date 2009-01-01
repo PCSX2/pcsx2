@@ -27,51 +27,51 @@
 extern string s_strIniPath;
 
 void SaveConfig() {
-    FILE *f;
-    char cfg[255];
+	FILE *f;
+	char cfg[255];
 
-    strcpy(cfg, s_strIniPath.c_str());
-    f = fopen(cfg,"w");
-    if (f == NULL) {
-        printf("failed to open %s\n", s_strIniPath.c_str());
-        return;
-    }
+	strcpy(cfg, s_strIniPath.c_str());
+	f = fopen(cfg,"w");
+	if (f == NULL) {
+		printf("failed to open %s\n", s_strIniPath.c_str());
+		return;
+	}
 	fprintf(f, "interlace = %x\n", conf.interlace);
 	fprintf(f, "aliasing = %x\n", conf.aa);
 	fprintf(f, "bilinear  = %x\n", conf.bilinear);
 	fprintf(f, "options = %x\n", conf.options);
-    fprintf(f, "gamesettings = %x\n", conf.gamesettings);
-    fclose(f);
+	fprintf(f, "gamesettings = %x\n", conf.gamesettings);
+	fclose(f);
 }
 
 void LoadConfig() {
-    FILE *f;
-    char cfg[255];
+	FILE *f;
+	char cfg[255];
 
-    memset(&conf, 0, sizeof(conf));
+	memset(&conf, 0, sizeof(conf));
 	conf.interlace = 0; // on, mode 1
 	conf.mrtdepth = 1;
-    conf.options = 0;
+	conf.options = 0;
 	conf.bilinear = 1;
-    conf.width = 640;
-    conf.height = 480;
+	conf.width = 640;
+	conf.height = 480;
 
-    strcpy(cfg, s_strIniPath.c_str());
-    f = fopen(cfg, "r");
-    if (f == NULL) {
-        printf("failed to open %s\n", s_strIniPath.c_str());
-        SaveConfig();//save and return
-        return;
-    }
+	strcpy(cfg, s_strIniPath.c_str());
+	f = fopen(cfg, "r");
+	if (f == NULL) {
+		printf("failed to open %s\n", s_strIniPath.c_str());
+		SaveConfig();//save and return
+		return;
+	}
 	fscanf(f, "interlace = %x\n", &conf.interlace);
 	fscanf(f, "aliasing = %x\n", &conf.aa);
 	fscanf(f, "bilinear = %x\n", &conf.bilinear);
 	fscanf(f, "options = %x\n", &conf.options);
-    fscanf(f, "gamesettings = %x\n", &conf.gamesettings);
-    fclose(f);
+	fscanf(f, "gamesettings = %x\n", &conf.gamesettings);
+	fclose(f);
 
-    // filter bad files
-    if( conf.aa < 0 || conf.aa > 2 ) conf.aa = 0;
+	// filter bad files
+	if( conf.aa < 0 || conf.aa > 2 ) conf.aa = 0;
 
 	switch(conf.options&GSOPTION_WINDIMS) {
 		case GSOPTION_WIN640:

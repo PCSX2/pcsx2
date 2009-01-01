@@ -5,7 +5,7 @@
 #define NUM_TYPES 5 // types of texture read modes
 #define NUM_TEXWRAPS 4 // texture wrapping
 
-#define SHADER_REDUCED 1    // equivalent to ps2.0
+#define SHADER_REDUCED 1	// equivalent to ps2.0
 #define SHADER_ACCURATE 2   // for older cards with less accurate math (ps2.x+)
 
 #define NUM_SHADERS (NUM_FILTERS*NUM_TYPES*NUM_TEXWRAPS*32) // # shaders for a given ps
@@ -33,23 +33,23 @@ static CGprogram LoadShaderFromType(const char* srcdir, const char* srcfile, int
 
 	char str[255], strctx[255];
 	sprintf(str, "Texture%s%d_%sPS", fog?"Fog":"", texfilter, g_pTexTypes[type]);
-    sprintf(strctx, "-I%s%s", srcdir, context?"ctx1":"ctx0");
+	sprintf(strctx, "-I%s%s", srcdir, context?"ctx1":"ctx0");
 
 	vector<const char*> macros;
-    macros.push_back(strctx);
+	macros.push_back(strctx);
 #ifdef _DEBUG
-    macros.push_back("-bestprecision");
+	macros.push_back("-bestprecision");
 #endif
-    if( g_pPsTexWrap[texwrap] != NULL ) macros.push_back(g_pPsTexWrap[texwrap]);
+	if( g_pPsTexWrap[texwrap] != NULL ) macros.push_back(g_pPsTexWrap[texwrap]);
 	if( writedepth ) macros.push_back("-DWRITE_DEPTH");
 	if( testaem ) macros.push_back("-DTEST_AEM");
 	if( exactcolor ) macros.push_back("-DEXACT_COLOR");
-    if( ps & SHADER_ACCURATE ) macros.push_back("-DACCURATE_DECOMPRESSION");
+	if( ps & SHADER_ACCURATE ) macros.push_back("-DACCURATE_DECOMPRESSION");
 	macros.push_back(NULL);
 
-    CGprogram prog = cgCreateProgramFromFile(g_cgcontext, CG_SOURCE, srcfile, CG_PROFILE_ARBFP1, str, &macros[0]);
+	CGprogram prog = cgCreateProgramFromFile(g_cgcontext, CG_SOURCE, srcfile, CG_PROFILE_ARBFP1, str, &macros[0]);
 	if( !cgIsProgram(prog) ) {
-	    printf("Failed to load shader %s: \n%s\n", str, cgGetLastListing(g_cgcontext));
+		printf("Failed to load shader %s: \n%s\n", str, cgGetLastListing(g_cgcontext));
 		return NULL;
 	}
 

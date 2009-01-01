@@ -46,8 +46,8 @@ extern HWND GShwnd;
 
 typedef int BOOL;
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#define max(a,b)			(((a) > (b)) ? (a) : (b))
+#define min(a,b)			(((a) < (b)) ? (a) : (b))
 
 #endif
 
@@ -64,7 +64,7 @@ typedef int BOOL;
 
 struct Vector_16F
 {
-    u16 x, y, z, w;
+	u16 x, y, z, w;
 };
 
 
@@ -370,7 +370,7 @@ typedef struct {
 	u8 aa; // antialiasing 0 - off, 1 - 2x, 2 - 4x
 	u8 bilinear; // set to enable bilinear support
 	u32 options;
-    u32 gamesettings; // default game settings
+	u32 gamesettings; // default game settings
 	int width, height;
 	int winstyle; // window style before full screen 
 #ifdef GS_LOG
@@ -716,7 +716,7 @@ __forceinline u16 Float16ToALPHA(u16 f) {
 
 #ifndef COLOR_ARGB
 #define COLOR_ARGB(a,r,g,b) \
-    ((u32)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
+	((u32)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #endif
 
 // assumes that positive in [1,2] (then extracts fraction by just looking at the specified bits)

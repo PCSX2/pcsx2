@@ -107,8 +107,8 @@ void __fastcall GIFPackedRegHandlerUV(u32* data)
 
 #define KICK_VERTEX2() { \
 	if( ++gs.primC >= (int)g_primmult[prim->prim]) { \
-        if( !(g_GameSettings&GAME_XENOSPECHACK) || !ZeroGS::vb[prim->ctxt].zbuf.zmsk ) \
-            (*ZeroGS::drawfn[prim->prim])(); \
+		if( !(g_GameSettings&GAME_XENOSPECHACK) || !ZeroGS::vb[prim->ctxt].zbuf.zmsk ) \
+			(*ZeroGS::drawfn[prim->prim])(); \
 		gs.primC -= g_primsub[prim->prim]; \
 	} \
 } \
@@ -284,7 +284,7 @@ __forceinline void frameWrite(int i, u32 *data)
 {
 	frameInfo& gsfb = ZeroGS::vb[i].gsfb;
 
-	if( (gsfb.fbp == ((data[0]      ) & 0x1ff) * 32) &&
+	if( (gsfb.fbp == ((data[0]	  ) & 0x1ff) * 32) &&
 	(gsfb.fbw == ((data[0] >> 16) & 0x3f) * 64) &&
 	gsfb.psm ==  ((data[0] >> 24) & 0x3f) &&
 		(gsfb.fbm == data[1]) ) {
@@ -294,7 +294,7 @@ __forceinline void frameWrite(int i, u32 *data)
 	ZeroGS::Flush(0);
 	ZeroGS::Flush(1);
 
-	gsfb.fbp = ((data[0]      ) & 0x1ff) * 32;
+	gsfb.fbp = ((data[0]	  ) & 0x1ff) * 32;
 	gsfb.fbw = ((data[0] >> 16) & 0x3f) * 64;
 	gsfb.psm =  (data[0] >> 24) & 0x3f;
 	gsfb.fbm = data[1];
@@ -327,7 +327,7 @@ __forceinline void testWrite(int i, u32 *data)
 	ZeroGS::Flush(i);
 	*(u32*)test = data[0];
 
-//	test.ate   = (data[0]      ) & 0x1;
+//	test.ate   = (data[0]	  ) & 0x1;
 //	test.atst  = (data[0] >>  1) & 0x7;
 //	test.aref  = (data[0] >>  4) & 0xff;
 //	test.afail = (data[0] >> 12) & 0x3;
@@ -349,7 +349,7 @@ __forceinline void clampWrite(int i, u32 *data)
 		ZeroGS::Flush(i);
 		s_uClampData[i] = data[0];
 
-		clamp.wms  = (data[0]      ) & 0x3;
+		clamp.wms  = (data[0]	  ) & 0x3;
 		clamp.wmt  = (data[0] >>  2) & 0x3;
 		clamp.minu = (data[0] >>  4) & 0x3ff;
 		clamp.maxu = (data[0] >> 14) & 0x3ff;
@@ -363,8 +363,8 @@ __forceinline void clampWrite(int i, u32 *data)
 void __fastcall GIFRegHandlerNull(u32* data)
 {
 #ifdef _DEBUG
-    if( (((uptr)&data[2])&0xffff) == 0 )
-        return;
+	if( (((uptr)&data[2])&0xffff) == 0 )
+		return;
 
 	// 0x7f happens on a lot of games
 	if( data[2] != 0x7f && (data[0] || data[1]) ) {
@@ -435,33 +435,33 @@ void __fastcall GIFRegHandlerXYZ2(u32* data)
 
 void __fastcall GIFRegHandlerTEX0_1(u32* data)
 {
-    if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
-        return;
-    }
+	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
+		return;
+	}
 	tex0Write(0, data);
 }
 
 void __fastcall GIFRegHandlerTEX0_2(u32* data)
 {
-    if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk ) {
-        return;
-    }
+	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk ) {
+		return;
+	}
 	tex0Write(1, data);
 }
 
 void __fastcall GIFRegHandlerCLAMP_1(u32* data)
 {
-    if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
-        return;
-    }
+	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
+		return;
+	}
 	clampWrite(0, data);
 }
 
 void __fastcall GIFRegHandlerCLAMP_2(u32* data)
 {
-    if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk ) {
-        return;
-    }
+	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk ) {
+		return;
+	}
 	clampWrite(1, data);
 }
 
@@ -500,36 +500,36 @@ void __fastcall GIFRegHandlerNOP(u32* data)
 
 void tex1Write(int i, u32* data)
 {
-    tex1Info& tex1 = ZeroGS::vb[i].tex1;
+	tex1Info& tex1 = ZeroGS::vb[i].tex1;
 
 	if( conf.bilinear == 1 && (tex1.mmag != ((data[0] >>  5) & 0x1) || tex1.mmin != ((data[0] >>  6) & 0x7)) ) {
 		ZeroGS::Flush(i);
 		ZeroGS::vb[i].bVarsTexSync = FALSE;
 	}
-	tex1.lcm  = (data[0]      ) & 0x1; 
+	tex1.lcm  = (data[0]	  ) & 0x1; 
 	tex1.mxl  = (data[0] >>  2) & 0x7;
 	tex1.mmag = (data[0] >>  5) & 0x1;
 	tex1.mmin = (data[0] >>  6) & 0x7;
 	tex1.mtba = (data[0] >>  9) & 0x1;
-	tex1.l    = (data[0] >> 19) & 0x3;
-	tex1.k    = (data[1] >> 4) & 0xff;
+	tex1.l	= (data[0] >> 19) & 0x3;
+	tex1.k	= (data[1] >> 4) & 0xff;
 }
 
 void __fastcall GIFRegHandlerTEX1_1(u32* data)
 {
-    if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
-        return;
-    }
+	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
+		return;
+	}
 
 	tex1Write(0, data);
 }
 
 void __fastcall GIFRegHandlerTEX1_2(u32* data)
 {
-    if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk )
-        return;
+	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk )
+		return;
 
-    tex1Write(1, data);
+	tex1Write(1, data);
 }
 
 void __fastcall GIFRegHandlerTEX2_1(u32* data)
@@ -587,7 +587,7 @@ void __fastcall GIFRegHandlerTEXCLUT(u32* data)
 		ZeroGS::vb[0].FlushTexData();
 	if( ZeroGS::vb[1].bNeedTexCheck )
 		ZeroGS::vb[1].FlushTexData();
-	gs.clut.cbw = ((data[0]      ) & 0x3f) * 64;
+	gs.clut.cbw = ((data[0]	  ) & 0x3f) * 64;
 	gs.clut.cou = ((data[0] >>  6) & 0x3f) * 16;
 	gs.clut.cov = (data[0] >> 12) & 0x3ff;
 }
@@ -605,7 +605,7 @@ void __fastcall GIFRegHandlerSCANMSK(u32* data)
 void __fastcall GIFRegHandlerMIPTBP1_1(u32* data)
 {
 	miptbpInfo& miptbp0 = ZeroGS::vb[0].miptbp0;
-	miptbp0.tbp[0] = (data[0]      ) & 0x3fff;
+	miptbp0.tbp[0] = (data[0]	  ) & 0x3fff;
 	miptbp0.tbw[0] = (data[0] >> 14) & 0x3f;
 	miptbp0.tbp[1] = ((data[0] >> 20) & 0xfff) | ((data[1] & 0x3) << 12);
 	miptbp0.tbw[1] = (data[1] >>  2) & 0x3f;
@@ -616,7 +616,7 @@ void __fastcall GIFRegHandlerMIPTBP1_1(u32* data)
 void __fastcall GIFRegHandlerMIPTBP1_2(u32* data)
 {
 	miptbpInfo& miptbp0 = ZeroGS::vb[1].miptbp0;
-	miptbp0.tbp[0] = (data[0]      ) & 0x3fff;
+	miptbp0.tbp[0] = (data[0]	  ) & 0x3fff;
 	miptbp0.tbw[0] = (data[0] >> 14) & 0x3f;
 	miptbp0.tbp[1] = ((data[0] >> 20) & 0xfff) | ((data[1] & 0x3) << 12);
 	miptbp0.tbw[1] = (data[1] >>  2) & 0x3f;
@@ -627,7 +627,7 @@ void __fastcall GIFRegHandlerMIPTBP1_2(u32* data)
 void __fastcall GIFRegHandlerMIPTBP2_1(u32* data)
 {
 	miptbpInfo& miptbp1 = ZeroGS::vb[0].miptbp1;
-	miptbp1.tbp[0] = (data[0]      ) & 0x3fff;
+	miptbp1.tbp[0] = (data[0]	  ) & 0x3fff;
 	miptbp1.tbw[0] = (data[0] >> 14) & 0x3f;
 	miptbp1.tbp[1] = ((data[0] >> 20) & 0xfff) | ((data[1] & 0x3) << 12);
 	miptbp1.tbw[1] = (data[1] >>  2) & 0x3f;
@@ -638,7 +638,7 @@ void __fastcall GIFRegHandlerMIPTBP2_1(u32* data)
 void __fastcall GIFRegHandlerMIPTBP2_2(u32* data)
 {
 	miptbpInfo& miptbp1 = ZeroGS::vb[1].miptbp1;
-	miptbp1.tbp[0] = (data[0]      ) & 0x3fff;
+	miptbp1.tbp[0] = (data[0]	  ) & 0x3fff;
 	miptbp1.tbw[0] = (data[0] >> 14) & 0x3f;
 	miptbp1.tbp[1] = ((data[0] >> 20) & 0xfff) | ((data[1] & 0x3) << 12);
 	miptbp1.tbw[1] = (data[1] >>  2) & 0x3f;
@@ -681,9 +681,9 @@ void __fastcall GIFRegHandlerSCISSOR_1(u32* data)
 
 	Rect2 newscissor;
 
-	newscissor.x0 = ((data[0]      ) & 0x7ff) << 3;
+	newscissor.x0 = ((data[0]	  ) & 0x7ff) << 3;
 	newscissor.x1 = ((data[0] >> 16) & 0x7ff) << 3;
-	newscissor.y0 = ((data[1]      ) & 0x7ff) << 3;
+	newscissor.y0 = ((data[1]	  ) & 0x7ff) << 3;
 	newscissor.y1 = ((data[1] >> 16) & 0x7ff) << 3;
 
 	if( newscissor.x1 != scissor.x1 || newscissor.y1 != scissor.y1 || 
@@ -702,9 +702,9 @@ void __fastcall GIFRegHandlerSCISSOR_2(u32* data)
 
 	Rect2 newscissor;
 
-	newscissor.x0 = ((data[0]      ) & 0x7ff) << 3;
+	newscissor.x0 = ((data[0]	  ) & 0x7ff) << 3;
 	newscissor.x1 = ((data[0] >> 16) & 0x7ff) << 3;
-	newscissor.y0 = ((data[1]      ) & 0x7ff) << 3;
+	newscissor.y0 = ((data[1]	  ) & 0x7ff) << 3;
 	newscissor.y1 = ((data[1] >> 16) & 0x7ff) << 3;
 
 	if( newscissor.x1 != scissor.x1 || newscissor.y1 != scissor.y1 || 
@@ -727,10 +727,10 @@ void __fastcall GIFRegHandlerALPHA_1(u32* data)
 	if( *(WORD*)&newalpha != *(WORD*)&ZeroGS::vb[0].alpha ) {
 		ZeroGS::Flush(0);
 
-        if( newalpha.a == 3 ) newalpha.a = 0;
-        if( newalpha.b == 3 ) newalpha.b = 0;
-        if( newalpha.c == 3 ) newalpha.c = 0;
-        if( newalpha.d == 3 ) newalpha.d = 0;
+		if( newalpha.a == 3 ) newalpha.a = 0;
+		if( newalpha.b == 3 ) newalpha.b = 0;
+		if( newalpha.c == 3 ) newalpha.c = 0;
+		if( newalpha.d == 3 ) newalpha.d = 0;
 
 		*(WORD*)&ZeroGS::vb[0].alpha = *(WORD*)&newalpha;
 	}
@@ -745,10 +745,10 @@ void __fastcall GIFRegHandlerALPHA_2(u32* data)
 	if( *(WORD*)&newalpha != *(WORD*)&ZeroGS::vb[1].alpha ) {
 		ZeroGS::Flush(1);
 
-        if( newalpha.a == 3 ) newalpha.a = 0;
-        if( newalpha.b == 3 ) newalpha.b = 0;
-        if( newalpha.c == 3 ) newalpha.c = 0;
-        if( newalpha.d == 3 ) newalpha.d = 0;
+		if( newalpha.a == 3 ) newalpha.a = 0;
+		if( newalpha.b == 3 ) newalpha.b = 0;
+		if( newalpha.c == 3 ) newalpha.c = 0;
+		if( newalpha.d == 3 ) newalpha.d = 0;
 
 		*(WORD*)&ZeroGS::vb[1].alpha = *(WORD*)&newalpha;
 	}
@@ -816,16 +816,16 @@ void __fastcall GIFRegHandlerZBUF_1(u32* data)
 {
 	zbufInfo& zbuf = ZeroGS::vb[0].zbuf;
 
-    int psm = (0x30|((data[0] >> 24) & 0xf));
+	int psm = (0x30|((data[0] >> 24) & 0xf));
 	if( zbuf.zbp == (data[0] & 0x1ff) * 32 && 
 		zbuf.psm == psm &&
 		zbuf.zmsk == (data[1] & 0x1) ) {
 		return;
 	}
 
-    // error detection
-    if( m_Blocks[psm].bpp == 0 )
-        return;
+	// error detection
+	if( m_Blocks[psm].bpp == 0 )
+		return;
 
 	ZeroGS::Flush(0);
 	ZeroGS::Flush(1);
@@ -844,16 +844,16 @@ void __fastcall GIFRegHandlerZBUF_2(u32* data)
 {
 	zbufInfo& zbuf = ZeroGS::vb[1].zbuf;
 
-    int psm = (0x30|((data[0] >> 24) & 0xf));
+	int psm = (0x30|((data[0] >> 24) & 0xf));
 	if( zbuf.zbp == (data[0] & 0x1ff) * 32 && 
 		zbuf.psm == psm &&
 		zbuf.zmsk == (data[1] & 0x1) ) {
 		return;
 	}
 
-    // error detection
-    if( m_Blocks[psm].bpp == 0 )
-        return;
+	// error detection
+	if( m_Blocks[psm].bpp == 0 )
+		return;
 
 	ZeroGS::Flush(0);
 	ZeroGS::Flush(1);
@@ -870,10 +870,10 @@ void __fastcall GIFRegHandlerZBUF_2(u32* data)
 
 void __fastcall GIFRegHandlerBITBLTBUF(u32* data)
 {
-	gs.srcbufnew.bp  = ((data[0]      ) & 0x3fff);// * 64;
+	gs.srcbufnew.bp  = ((data[0]	  ) & 0x3fff);// * 64;
 	gs.srcbufnew.bw  = ((data[0] >> 16) & 0x3f) * 64;
 	gs.srcbufnew.psm =  (data[0] >> 24) & 0x3f;
-	gs.dstbufnew.bp  = ((data[1]      ) & 0x3fff);// * 64;
+	gs.dstbufnew.bp  = ((data[1]	  ) & 0x3fff);// * 64;
 	gs.dstbufnew.bw  = ((data[1] >> 16) & 0x3f) * 64;
 	gs.dstbufnew.psm =  (data[1] >> 24) & 0x3f;
 
@@ -882,9 +882,9 @@ void __fastcall GIFRegHandlerBITBLTBUF(u32* data)
 
 void __fastcall GIFRegHandlerTRXPOS(u32* data)
 {
-	gs.trxposnew.sx  = (data[0]      ) & 0x7ff;
+	gs.trxposnew.sx  = (data[0]	  ) & 0x7ff;
 	gs.trxposnew.sy  = (data[0] >> 16) & 0x7ff;
-	gs.trxposnew.dx  = (data[1]      ) & 0x7ff;
+	gs.trxposnew.dx  = (data[1]	  ) & 0x7ff;
 	gs.trxposnew.dy  = (data[1] >> 16) & 0x7ff;
 	gs.trxposnew.dir = (data[1] >> 27) & 0x3;
 }
@@ -1013,101 +1013,101 @@ void __fastcall GIFRegHandlerLABEL(u32* data)
 //
 //ExecuteBufferXeno::ExecuteBufferXeno()
 //{
-//    clampdata[0] = clampdata[1] = 0;
-//    tex0data[0] = tex0data[1] = 0;
-//    tex1data[0] = tex1data[1] = 0;
-//    bCanExecute = true;
-//    curprim._val = 0;
+//	clampdata[0] = clampdata[1] = 0;
+//	tex0data[0] = tex0data[1] = 0;
+//	tex1data[0] = tex1data[1] = 0;
+//	bCanExecute = true;
+//	curprim._val = 0;
 //}
 //
 //void ExecuteBufferXeno::Execute()
 //{
-//    if( vertices.size() == 0 || !bCanExecute)
-//        return;
+//	if( vertices.size() == 0 || !bCanExecute)
+//		return;
 //
-//    bCanExecute = false;
-//    ZeroGS::Flush(0);
-//    ZeroGS::Flush(1);
+//	bCanExecute = false;
+//	ZeroGS::Flush(0);
+//	ZeroGS::Flush(1);
 //
-//    int oldC = gs.primC;
-//    int ctx = curprim.ctxt;
+//	int oldC = gs.primC;
+//	int ctx = curprim.ctxt;
 //
-//    Vertex oldverts[3];
-//    oldverts[0] = gs.gsvertex[0];
-//    oldverts[1] = gs.gsvertex[1];
-//    oldverts[2] = gs.gsvertex[2];
+//	Vertex oldverts[3];
+//	oldverts[0] = gs.gsvertex[0];
+//	oldverts[1] = gs.gsvertex[1];
+//	oldverts[2] = gs.gsvertex[2];
 //
-//    u32 oldtex0[2];
-//    tex1Info oldtex1 = ZeroGS::vb[ctx].tex1;
-//    clampInfo oldclamp = ZeroGS::vb[ctx].clamp;
-//    oldtex0[0] = ZeroGS::vb[ctx].uNextTex0Data[0];
-//    oldtex0[1] = ZeroGS::vb[ctx].uNextTex0Data[1];
+//	u32 oldtex0[2];
+//	tex1Info oldtex1 = ZeroGS::vb[ctx].tex1;
+//	clampInfo oldclamp = ZeroGS::vb[ctx].clamp;
+//	oldtex0[0] = ZeroGS::vb[ctx].uNextTex0Data[0];
+//	oldtex0[1] = ZeroGS::vb[ctx].uNextTex0Data[1];
 //
-//    int oldmask = ZeroGS::vb[ctx].zbuf.zmsk;
-//    ZeroGS::vb[ctx].zbuf.zmsk = 1;
-//    tex0Write(0, tex0data);
-//    tex1Write(0, tex1data);
-//    clampWrite(0, clampdata);
-//    ZeroGS::vb[ctx].bTexConstsSync = FALSE;
-//    gs.primC = 3;
-//    u32 oldprim = prim->_val;
-//    prim->_val = curprim._val;
-//    for(int i = 0; i < (int)vertices.size(); i += 3) {
-//        gs.gsvertex[0] = vertices[i];
-//        gs.gsvertex[1] = vertices[i+1];
-//        gs.gsvertex[2] = vertices[i+2];
-//        (*ZeroGS::drawfn[4])(); // draw a triangle
-//    }
-//    vertices.resize(0);
+//	int oldmask = ZeroGS::vb[ctx].zbuf.zmsk;
+//	ZeroGS::vb[ctx].zbuf.zmsk = 1;
+//	tex0Write(0, tex0data);
+//	tex1Write(0, tex1data);
+//	clampWrite(0, clampdata);
+//	ZeroGS::vb[ctx].bTexConstsSync = FALSE;
+//	gs.primC = 3;
+//	u32 oldprim = prim->_val;
+//	prim->_val = curprim._val;
+//	for(int i = 0; i < (int)vertices.size(); i += 3) {
+//		gs.gsvertex[0] = vertices[i];
+//		gs.gsvertex[1] = vertices[i+1];
+//		gs.gsvertex[2] = vertices[i+2];
+//		(*ZeroGS::drawfn[4])(); // draw a triangle
+//	}
+//	vertices.resize(0);
 //
-//    ZeroGS::Flush(ctx);
+//	ZeroGS::Flush(ctx);
 //
-//    ZeroGS::vb[ctx].zbuf.zmsk = oldmask;
-//    gs.primC = oldC;
-//    gs.gsvertex[0] = oldverts[0];
-//    gs.gsvertex[1] = oldverts[1];
-//    gs.gsvertex[2] = oldverts[2];
-//    ZeroGS::vb[ctx].clamp = oldclamp;
-//    ZeroGS::vb[ctx].tex1 = oldtex1;
-//    tex0Write(0, oldtex0);
-//    ZeroGS::vb[ctx].bTexConstsSync = FALSE;
-//    prim->_val = oldprim;
-//    bCanExecute = true;
+//	ZeroGS::vb[ctx].zbuf.zmsk = oldmask;
+//	gs.primC = oldC;
+//	gs.gsvertex[0] = oldverts[0];
+//	gs.gsvertex[1] = oldverts[1];
+//	gs.gsvertex[2] = oldverts[2];
+//	ZeroGS::vb[ctx].clamp = oldclamp;
+//	ZeroGS::vb[ctx].tex1 = oldtex1;
+//	tex0Write(0, oldtex0);
+//	ZeroGS::vb[ctx].bTexConstsSync = FALSE;
+//	prim->_val = oldprim;
+//	bCanExecute = true;
 //}
 //
 //void ExecuteBufferXeno::SetTex0(u32* data)
 //{
-//    if( data[0] != tex0data[0] || (data[1]&0x1fffffff) != (tex0data[1]&0x1fffffff) )
-//        Execute();
+//	if( data[0] != tex0data[0] || (data[1]&0x1fffffff) != (tex0data[1]&0x1fffffff) )
+//		Execute();
 //
-//    tex0data[0] = data[0];
-//    tex0data[1] = data[1];
+//	tex0data[0] = data[0];
+//	tex0data[1] = data[1];
 //}
 //
 //void ExecuteBufferXeno::SetTex1(u32* data)
 //{
-//    if( data[0] != tex1data[0] )
-//        Execute();
+//	if( data[0] != tex1data[0] )
+//		Execute();
 //
-//    tex1data[0] = data[0];
-//    tex1data[1] = data[1];
+//	tex1data[0] = data[0];
+//	tex1data[1] = data[1];
 //}
 //
 //void ExecuteBufferXeno::SetClamp(u32* data)
 //{
-//    if( data[0] != clampdata[0] || (data[1]&0xfff) != clampdata[1] )
-//        Execute();
+//	if( data[0] != clampdata[0] || (data[1]&0xfff) != clampdata[1] )
+//		Execute();
 //
-//    clampdata[0] = data[0];
-//    clampdata[1] = data[1]&0xfff;
+//	clampdata[0] = data[0];
+//	clampdata[1] = data[1]&0xfff;
 //}
 //
 //void ExecuteBufferXeno::SetTri()
 //{
-//    if( prim->_val != curprim._val )
-//        Execute();
-//    curprim._val = prim->_val;
-//    vertices.push_back(gs.gsvertex[0]);
-//    vertices.push_back(gs.gsvertex[1]);
-//    vertices.push_back(gs.gsvertex[2]);
+//	if( prim->_val != curprim._val )
+//		Execute();
+//	curprim._val = prim->_val;
+//	vertices.push_back(gs.gsvertex[0]);
+//	vertices.push_back(gs.gsvertex[1]);
+//	vertices.push_back(gs.gsvertex[2]);
 //}
