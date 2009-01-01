@@ -209,9 +209,6 @@ public:
 	void AssignVFRegs();
 	void AssignVIRegs(int parent);
 
-	// returns true if only xyz of the reg has been used so far
-	u32 GetModeXYZW(u32 curpc, int vfreg);
-
 	list<VuInstruction>::iterator GetInstIterAtPc(int instpc);
 	void GetInstsAtPc(int instpc, list<VuInstruction*>& listinsts);
 
@@ -335,7 +332,7 @@ void SuperVUInit(int vuindex)
 	{
 		jASSUME( vuindex < 0 );
 
-		// upper 4 bits cannot be nonzero!  <-- double negatives are bad english
+		// upper 4 bits must be zero!
 		s_recVUMem = (u8*)SysMmap( 0x0c000000, VU_EXESIZE);
 
 		if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
@@ -479,14 +476,6 @@ static u32 s_VIBranchDelay = 0; //Value of register to use in a vi branch delaye
 
 u32 s_TotalVUCycles; // total cycles since start of program execution
 
-int SuperVUGetLiveness(int vfreg)
-{
-	assert( s_pCurInst != NULL );
-	if( vfreg == 32 ) return ((s_pCurInst->livevars[0]&(1<<REG_ACC_FLAG))?1:0)|((s_pCurInst->usedvars[0]&(1<<REG_ACC_FLAG))?2:0);
-	else if( vfreg == 0 ) return ((s_pCurInst->livevars[0]&(1<<REG_VF0_FLAG))?1:0)|((s_pCurInst->usedvars[0]&(1<<REG_VF0_FLAG))?2:0);
-
-	return ((s_pCurInst->livevars[1]&(1<<vfreg))?1:0)|((s_pCurInst->usedvars[1]&(1<<vfreg))?2:0);
-}
 
 u32 SuperVUGetVIAddr(int reg, int read)
 {
@@ -668,12 +657,6 @@ static u64 svutime;
 
 // uncomment to count svu exec time
 //#define SUPERVU_COUNT
-u64 SuperVUGetRecTimes(int clear)
-{
-	u64 temp = svutime;
-	if( clear ) svutime = 0;
-	return temp;
-}
 
 // Private methods
 void* SuperVUGetProgram(u32 startpc, int vuindex)
@@ -1872,65 +1855,6 @@ static void SuperVUEliminateDeadCode()
 	}
 }
 
-// assigns xmm/x86 regs to all instructions, ignore mode field
-// returns true if changed
-bool AlignStartRegsToEndRegs(_xmmregs* startregs, const list<VuBaseBlock*>& parents)
-{
-	list<VuBaseBlock*>::const_iterator itblock, itblock2;
-	int bestscore;
-	_xmmregs bestregs;
-	bool bchanged = false;
-
-	// find the best merge of regs that minimizes writes/reads
-	for(int i = 0; i < XMMREGS; ++i) {
-		
-		bestscore = 1000;
-		memset(&bestregs, 0, sizeof(bestregs));
-
-		FORIT(itblock, parents) {
-			int curscore = 0;
-			if( ((*itblock)->type & BLOCKTYPE_ANALYZED) && (*itblock)->endregs[i].inuse ) {
-				int type = (*itblock)->endregs[i].type;
-				int reg = (*itblock)->endregs[i].reg;
-
-				FORIT(itblock2, parents) {
-					if( (*itblock2)->type & BLOCKTYPE_ANALYZED ) {
-						if( (*itblock2)->endregs[i].inuse ) {
-							if( (*itblock2)->endregs[i].type != type || (*itblock2)->endregs[i].reg != reg ) {
-								curscore += 1;
-							}
-						}
-						else curscore++;
-					}
-				}
-			}
-
-			if( curscore < 1 && curscore < bestscore ) {
-				memcpy(&bestregs, &(*itblock)->endregs[i], sizeof(bestregs));
-				bestscore = curscore;
-			}
-		}
-
-		if( bestscore < 1 ) {
-			if( startregs[i].inuse == bestregs.inuse ) {
-				if( bestregs.inuse && (startregs[i].type != bestregs.type || startregs[i].reg != bestregs.reg) )
-					bchanged = true;
-			}
-			else bchanged = true;
-
-			memcpy(&startregs[i], &bestregs, sizeof(bestregs));
-			FORIT(itblock, parents) memcpy(&(*itblock)->endregs[i], &bestregs, sizeof(bestregs));
-		}
-		else {
-			if( startregs[i].inuse ) bchanged = true;
-			startregs[i].inuse = 0;
-			FORIT(itblock, parents) (*itblock)->endregs[i].inuse = 0;
-		}
-	}
-
-	return bchanged;
-}
-
 void VuBaseBlock::AssignVFRegs()
 {
 	int i;
@@ -2241,56 +2165,9 @@ void VuBaseBlock::AssignVIRegs(int parent)
 	}
 }
 
-u32 VuBaseBlock::GetModeXYZW(u32 curpc, int vfreg)
-{
-	if( vfreg <= 0 ) return false;
-
-	list<VuInstruction>::iterator itinst = insts.begin();
-	advance(itinst, (curpc-startpc)/8);
-
-	u8 mxy = 1;
-	u8 mxyz = 1;
-
-	while(itinst != insts.end()) {
-		for(int i = 0; i < 2; ++i ) {
-			if( itinst->regs[i].VFwrite == vfreg ) {
-				if( itinst->regs[i].VFwxyzw != 0xe ) mxyz = 0;
-				if( itinst->regs[i].VFwxyzw != 0xc ) mxy = 0;
-			}
-			if( itinst->regs[i].VFread0 == vfreg ) {
-				if( itinst->regs[i].VFr0xyzw != 0xe ) mxyz = 0;
-				if( itinst->regs[i].VFr0xyzw != 0xc ) mxy = 0;
-			}
-			if( itinst->regs[i].VFread1 == vfreg ) {
-				if( itinst->regs[i].VFr1xyzw != 0xe ) mxyz = 0;
-				if( itinst->regs[i].VFr1xyzw != 0xc ) mxy = 0;
-			}
-
-			if( !mxy && !mxyz ) return 0;
-		}
-		++itinst;
-	}
-
-	return (mxy?MODE_VUXY:0)|(mxyz?MODE_VUXYZ:0);
-}
-
 static void SuperVUAssignRegs()
 {
 	list<VuBaseBlock*>::iterator itblock, itblock2;
-
-	// assign xyz regs
-//	FORIT(itblock, s_listBlocks) {
-//		(*itblock)->vuxyz = 0;
-//		(*itblock)->vuxy = 0;
-//
-//		for(int i = 0; i < 32; ++i) {
-//			u32 mode = (*itblock)->GetModeXYZW((*itblock)->startpc, i);
-//			if( mode & MODE_VUXYZ ) {
-//				 if( mode & MODE_VUZ ) (*itblock)->vuxyz |= 1<<i;
-//				 else (*itblock)->vuxy |= 1<<i;
-//			}
-//		}
-//	}
 
 	FORIT(itblock, s_listBlocks) (*itblock)->type &= ~BLOCKTYPE_ANALYZED;
 	s_listBlocks.front()->AssignVFRegs();
@@ -2691,32 +2568,6 @@ void svudispfntemp()
 	}
 #endif
 }
-
-// frees an xmmreg depending on the liveness info of the current inst
-//void SuperVUFreeXMMreg(int xmmreg, int xmmtype, int reg)
-//{
-//	if( !xmmregs[xmmreg].inuse ) return;
-//	if( xmmregs[xmmreg].type == xmmtype && xmmregs[xmmreg].reg == reg ) return;
-//
-//	if( s_pNextInst == NULL ) {
-//		// last inst, free
-//		_freeXMMreg(xmmreg);
-//		return;
-//	}
-//
-//	if( xmmregs[xmmreg].type == XMMTYPE_VFREG ) {
-//		if( (s_pCurInst->livevars[1]|s_pNextInst->livevars[1]) & (1<<xmmregs[xmmreg].reg) )
-//			_freeXMMreg(xmmreg);
-//		else
-//			xmmregs[xmmreg].inuse = 0;
-//	}
-//	else if( xmmregs[xmmreg].type == XMMTYPE_ACC ) {
-//		if( (s_pCurInst->livevars[0]|s_pNextInst->livevars[0]) & (1<<REG_ACC_FLAG) )
-//			_freeXMMreg(xmmreg);
-//		else
-//			xmmregs[xmmreg].inuse = 0;
-//	}
-//}
 
 // frees all regs taking into account the livevars
 void SuperVUFreeXMMregs(u32* livevars)
@@ -3157,11 +3008,6 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 
 	return info;
 }
-
-//static void checkvucodefn(u32 curpc, u32 vuindex, u32 oldcode)
-//{
-//	SysPrintf("vu%c code changed (old:%x, new: %x)! %x %x\n", '0'+vuindex, oldcode, s_vu?*(u32*)&VU1.Micro[curpc]:*(u32*)&VU0.Micro[curpc], curpc, cpuRegs.cycle);
-//}
 
 void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 {
@@ -4076,19 +3922,6 @@ void vu1xgkick(u32* pMem, u32 addr)
 	StartSVUCounter();
 #endif
 }
-
-//extern u32 vudump;
-//void countfn()
-//{
-//	static int scount = 0;
-//	scount++;
-//
-//	if( scount > 16 ) {
-//		__Log("xgkick %d\n", scount);
-//		vudump |= 8;
-//	}
-//}
-
 #endif
 
 void recVUMI_XGKICK_( VURegs *VU )
