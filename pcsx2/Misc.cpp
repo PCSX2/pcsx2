@@ -351,7 +351,7 @@ int GetPS2ElfName(char *name){
 
 	u32 addr;
 
-	Console::WriteLn("Loading System.map...");
+	Console::MsgLn("Loading System.map...");
 	while (!feof(fp)) {
 		fseek(fp, 8, SEEK_CUR);
 		buffer[0] = '0'; buffer[1] = 'x';
@@ -381,7 +381,7 @@ void SaveGSState(const char *file)
 {
 	if( g_SaveGSStream ) return;
 
-	Console::Write( "SaveGSState: " ); Console::WriteLn( file );
+	Console::Msg( "SaveGSState: " ); Console::MsgLn( file );
 	g_fGSSave = new gzSavingState( file );
 	
 	g_SaveGSStream = 1;
@@ -396,12 +396,12 @@ void LoadGSState(const char *file)
 	int ret;
 	gzLoadingState* f;
 
-	Console::Write( "LoadGSState: " );
+	Console::Msg( "LoadGSState: " );
 
 	try
 	{
 		f = new gzLoadingState( file );
-		Console::WriteLn( file );
+		Console::MsgLn( file );
 	}
 	catch( Exception::FileNotFound& )
 	{
@@ -411,7 +411,7 @@ void LoadGSState(const char *file)
 			char strfile[g_MaxPath];
 			CombinePaths( strfile, SSTATES_DIR, file );
 			f = new gzLoadingState( file );
-			Console::WriteLn( strfile );
+			Console::MsgLn( strfile );
 
 			// If this load attempt fails, then let the exception bubble up to
 			// the caller to deal with...
@@ -654,7 +654,7 @@ void ProcessFKeys(int fkey, int shift)
 				ppblocks++;
 			}
 			fclose(f);
-			SysPrintf("perflog.txt written\n");
+			Console::Status( "perflog.txt written" );
 			break;
 		}
 		

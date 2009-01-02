@@ -23,9 +23,9 @@
  *		   zerofrog(@gmail.com)
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include "PrecompiledHeader.h"
+#include "System.h"
+
 #include "ix86.h"
 
 #define SWAP(x, y) { *(u32*)&y ^= *(u32*)&x; *(u32*)&x ^= *(u32*)&y; *(u32*)&y ^= *(u32*)&x; }
@@ -192,8 +192,8 @@ __forceinline void x86SetJ8( u8* j8 )
 	u32 jump = ( x86Ptr - j8 ) - 1;
 
 	if ( jump > 0x7f ) {
+		Console::Error( "j8 greater than 0x7f!!" );
 		assert(0);
-		SysPrintf( "j8 greater than 0x7f!!\n" );
 	}
 	*j8 = (u8)jump;
 }
@@ -203,8 +203,8 @@ __forceinline void x86SetJ8A( u8* j8 )
 	u32 jump = ( x86Ptr - j8 ) - 1;
 
 	if ( jump > 0x7f ) {
+		Console::Error( "j8 greater than 0x7f!!" );
 		assert(0);
-		SysPrintf( "j8 greater than 0x7f!!\n" );
 	}
 
 	if( ((uptr)x86Ptr&0xf) > 4 ) {
@@ -225,8 +225,8 @@ __forceinline void x86SetJ16( u16 *j16 )
 	u32 jump = ( x86Ptr - (u8*)j16 ) - 2;
 
 	if ( jump > 0x7fff ) {
+		Console::Error( "j16 greater than 0x7fff!!" );
 		assert(0);
-		SysPrintf( "j16 greater than 0x7fff!!\n" );
 	}
 	*j16 = (u16)jump;
 }

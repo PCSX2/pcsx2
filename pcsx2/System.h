@@ -99,29 +99,33 @@ namespace Console
 	// them from different buildypes.  The return values are always zero.
 
 	// Writes a newline to the console.
-	extern bool __fastcall WriteLn();
+	extern bool __fastcall Newline();
 
 	// Writes an unformatted string of text to the console (fast!)
 	// No newline is appended.
-	extern bool __fastcall Write( const char* fmt );
+	extern bool __fastcall Msg( const char* fmt );
 
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended.
-	extern bool __fastcall WriteLn( const char* fmt );
+	extern bool __fastcall MsgLn( const char* fmt );
+
+	// Writes an unformatted string of text to the console (fast!)
+	// A newline is automatically appended, and the console color reset to default.
+	extern bool __fastcall MsgLn( Colors color, const char* fmt );
 
 	// Writes a line of colored text to the console, with automatic newline appendage.
 	// The console color is reset to default when the operation is complete.
-	extern bool MsgLn( Colors color, const char* fmt, ... );
+	extern bool WriteLn( Colors color, const char* fmt, ... );
 
 	// Writes a line of colored text to the console (no newline).
 	// The console color is reset to default when the operation is complete.
-	extern bool Msg( Colors color, const char* fmt, ... );
+	extern bool Write( Colors color, const char* fmt, ... );
 
 	// Writes a formatted message to the console (no newline)
-	extern bool Msg( const char* fmt, ... );
+	extern bool Write( const char* fmt, ... );
 
 	// Writes a formatted message to the console, with appended newline.
-	extern bool MsgLn( const char* fmt, ... );
+	extern bool WriteLn( const char* fmt, ... );
 
 	// Displays a message in the console with red emphasis.
 	// Newline is automatically appended.
@@ -130,6 +134,10 @@ namespace Console
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
 	extern bool Notice( const char* fmt, ... );
+
+	// Displays a message in the console with yellow emphasis.
+	// Newline is automatically appended.
+	extern bool Status( const char* fmt, ... );
 }
 
 using Console::Color_Red;

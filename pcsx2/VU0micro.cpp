@@ -79,7 +79,7 @@ int  vu0Init()
 	VU0.Mem = (u8*)VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
 
 	if( VU0.Mem != (void*)0x11000000 ) {
-		Console::MsgLn("Failed to alloc vu0mem 0x11000000 %d", GetLastError());
+		Console::WriteLn("Failed to alloc vu0mem 0x11000000 %d", GetLastError());
 		return -1;
 	}
 

@@ -117,7 +117,7 @@ int _getFreeX86reg(int mode)
 		_freeX86reg(tempi);
 		return tempi;
 	}
-	SysPrintf("*PCSX2*: x86 error\n");
+	Console::Error("*PCSX2*: x86 error");
 	assert(0);
 
 	return -1;
@@ -432,7 +432,7 @@ int  _getFreeMMXreg()
 		_freeMMXreg(tempi);
 		return tempi;
 	}
-	SysPrintf("*PCSX2*: mmx error\n");
+	Console::Error("*PCSX2*: mmx error");
 	assert(0);
 
 	return -1;

@@ -38,14 +38,14 @@ BOOL AVI_FileOpenWrite(PAVIFILE * pfile, const char *filename)
 
 DWORD getFOURCC(const char* value)
 {
-	if(stricmp(value, "DIB") == 0)
+	if(_stricmp(value, "DIB") == 0)
 	{
 		return mmioFOURCC(value[0],value[1],value[2],' ');
 	}
-	else if((stricmp(value, "CVID") == 0)
-		 || (stricmp(value, "IV32") == 0)
-		 || (stricmp(value, "MSVC") == 0)
-		 || (stricmp(value, "IV50") == 0))
+	else if((_stricmp(value, "CVID") == 0)
+		 || (_stricmp(value, "IV32") == 0)
+		 || (_stricmp(value, "MSVC") == 0)
+		 || (_stricmp(value, "IV50") == 0))
 	{
 		return mmioFOURCC(value[0],value[1],value[2],value[3]);
 	}

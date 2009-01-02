@@ -207,14 +207,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\PS2Edefs.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PS2Etypes.h"
-				>
-			</File>
-			<File
 				RelativePath=".\resource.h"
 				>
 			</File>

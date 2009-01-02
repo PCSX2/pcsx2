@@ -49,7 +49,7 @@ namespace Console
 	{
 	}
 
-	__forceinline bool __fastcall WriteLn()
+	__forceinline bool __fastcall Newline()
 	{
 		if (Config.PsxOut != 0)
 			puts( "\n" );
@@ -63,7 +63,7 @@ namespace Console
 		return false;
 	}
 
-	__forceinline bool __fastcall Write( const char* fmt )
+	__forceinline bool __fastcall Msg( const char* fmt )
 	{
 		if (Config.PsxOut != 0)
 			puts( fmt );
@@ -77,22 +77,22 @@ namespace Console
 	
 	void __fastcall SetColor( Colors color )
 	{
-		Write( tbl_color_codes[color] );
+		Msg( tbl_color_codes[color] );
 	}
 
 	void ClearColor()
 	{
-		Write( COLOR_RESET );
+		Msg( COLOR_RESET );
 	}
 
-	__forceinline bool __fastcall WriteLn( const char* fmt )
+	__forceinline bool __fastcall MsgLn( const char* fmt )
 	{
-		Write( fmt );
-		WriteLn();
+		Msg( fmt );
+		Newline();
 		return false;
 	}
 
-	static __forceinline void __fastcall _MsgLn( Colors color, const char* fmt, va_list args )
+	static __forceinline void __fastcall _WriteLn( Colors color, const char* fmt, va_list args )
 	{
 		char msg[2048];
 
@@ -100,7 +100,7 @@ namespace Console
 		msg[2044] = '\0';
 		strcat( msg, "\n" );
 		SetColor( color );
-		Write( msg );
+		Msg( msg );
 		ClearColor();
 
 		if( emuLog != NULL )
@@ -108,16 +108,16 @@ namespace Console
 	}
 	
 	// Writes a line of colored text to the console, with automatic newline appendage.
-	bool MsgLn( Colors color, const char* fmt, ... )
+	bool WriteLn( Colors color, const char* fmt, ... )
 	{
 		va_list list;
 		va_start(list,fmt);
-		_MsgLn( Color_White, fmt, list );
+		_WriteLn( Color_White, fmt, list );
 		va_end(list);
 		return false;
 	}
 	
-	bool Msg( Colors color, const char* fmt, ... )
+	bool Write( Colors color, const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -128,12 +128,12 @@ namespace Console
 		va_end(list);
 
 		SetColor( color );
-		Write( msg );
+		Msg( msg );
 		ClearColor();
 		return false;
 	}
 
-	bool Msg( const char* fmt, ... )
+	bool Write( const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -143,11 +143,11 @@ namespace Console
 		msg[2047] = '\0';
 		va_end(list);
 
-		Write( msg );
+		Msg( msg );
 		return false;
 	}
 
-	bool MsgLn( const char* fmt, ... )
+	bool WriteLn( const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -157,7 +157,7 @@ namespace Console
 		va_end(list);
 
 		strcat( msg, "\n" );		// yeah, that newline!
-		Write( msg );
+		Msg( msg );
 		if( emuLog != NULL )
 			fflush( emuLog );		// manual flush to accomany manual newline
 		return false;
@@ -169,7 +169,7 @@ namespace Console
 	{
 		va_list list;
 		va_start(list,fmt);
-		_MsgLn( Color_Red, fmt, list );
+		_WriteLn( Color_Red, fmt, list );
 		va_end(list);
 		return false;
 	}
@@ -180,7 +180,7 @@ namespace Console
 	{
 		va_list list;
 		va_start(list,fmt);
-		_MsgLn( Color_Yellow, fmt, list );
+		_WriteLn( Color_Yellow, fmt, list );
 		va_end(list);
 		return false;
 	}

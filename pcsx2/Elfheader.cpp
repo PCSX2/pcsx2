@@ -487,7 +487,7 @@ struct ElfObject
 
 			SymNames = (char*)data.GetPtr( secthead[ i_dt ].sh_offset );
 			eS = (Elf32_Sym*)data.GetPtr( secthead[ i_st ].sh_offset );
-			Console::MsgLn("found %d symbols", secthead[ i_st ].sh_size / sizeof( Elf32_Sym ));
+			Console::WriteLn("found %d symbols", secthead[ i_st ].sh_size / sizeof( Elf32_Sym ));
 
 			for( uint i = 1; i < ( secthead[ i_st ].sh_size / sizeof( Elf32_Sym ) ); i++ ) {
 				if ( ( eS[ i ].st_value != 0 ) && ( ELF32_ST_TYPE( eS[ i ].st_info ) == 2 ) ) {
@@ -511,11 +511,11 @@ void ElfApplyPatches()
 
 	if(LoadPatch( str ) != 0)
 	{
-		Console::WriteLn("XML Loader returned an error. Trying to load a pnatch...");
+		Console::MsgLn("XML Loader returned an error. Trying to load a pnatch...");
 		inifile_read(str);
 	}
 	else 
-		Console::WriteLn("XML Loading success. Will not load from pnatch...");
+		Console::MsgLn("XML Loading success. Will not load from pnatch...");
 
 	applypatch( 0 );
 }
@@ -529,9 +529,9 @@ void loadElfCRC( const char* filename )
 	if ( CDVD_findfile( filename + strlen( "cdromN:" ), &toc ) == -1 )
 		return;
 
-	DevCon::MsgLn( Color_Green, "loadElfFile: %d bytes", toc.fileSize);
+	DevCon::WriteLn( Color_Green, "loadElfFile: %d bytes", toc.fileSize);
 	ElfCRC = ElfObject( filename, toc.fileSize ).GetCRC();
-	Console::MsgLn( Color_Green, "loadElfFile: %s; CRC = %8.8X\n", filename, ElfCRC);
+	Console::WriteLn( Color_Green, "loadElfFile: %s; CRC = %8.8X\n", filename, ElfCRC);
 
 	ElfApplyPatches();
 	LoadGameSpecificSettings();
@@ -547,7 +547,7 @@ int loadElfFile(const char *filename)
 
 	int elfsize;
 
-	Console::MsgLn("loadElfFile: %s", filename);
+	Console::WriteLn("loadElfFile: %s", filename);
 	if (strnicmp( filename, "cdrom0:", strlen( "cdromN:" ) ) &&
 		strnicmp( filename, "cdrom1:", strlen( "cdromN:" ) ) )
 	{
@@ -567,7 +567,7 @@ int loadElfFile(const char *filename)
 		elfsize = toc.fileSize;
 	}
 
-	Console::MsgLn( Color_Green, "loadElfFile: %d", elfsize);
+	Console::WriteLn( Color_Green, "loadElfFile: %d", elfsize);
 	ElfObject elfobj( filename, elfsize );
 
 	//2002-09-19 (Florin)
@@ -586,12 +586,12 @@ int loadElfFile(const char *filename)
 	for ( uint i = 0; i < 0x100000; i++ ) {
 		if ( strcmp( "rom0:OSDSYS", (char*)PSM( i ) ) == 0 ) {
 			strcpy( (char*)PSM( i ), filename );
-			SysPrintf( "addr %x \"%s\" -> \"%s\"\n", i, "rom0:OSDSYS", filename );
+			Console::WriteLn( Color_Green, "addr %x \"%s\" -> \"%s\"", i, "rom0:OSDSYS", filename );
 		}
 	}
 
 	ElfCRC = elfobj.GetCRC();
-	Console::MsgLn( Color_Green, "loadElfFile: %s; CRC = %8.8X\n", filename, ElfCRC);
+	Console::WriteLn( Color_Green, "loadElfFile: %s; CRC = %8.8X\n", filename, ElfCRC);
 
 	ElfApplyPatches();
 	LoadGameSpecificSettings();

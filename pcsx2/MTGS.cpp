@@ -217,7 +217,7 @@ mtgsThreadObject::mtgsThreadObject() :
 
 mtgsThreadObject::~mtgsThreadObject()
 {
-	Console::WriteLn( "MTGS > Closing GS thread..." );
+	Console::MsgLn( "MTGS > Closing GS thread..." );
 	SetEvent();
 
 	// rest of the cleanup will be handled by the inherited object destructors...
@@ -395,7 +395,7 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 		if(!path.tag.eop && path.tag.nloop > 0)
 		{
 			path.tag.nloop = 0;
-			DevCon::Write( "path1 hack! " );
+			DevCon::Msg( "path1 hack! " );
 		}
 	}
 
@@ -404,12 +404,12 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 
 int mtgsThreadObject::Callback()
 {
-	Console::WriteLn("MTGS > Thread Started, Opening GS Plugin...");
+	Console::MsgLn("MTGS > Thread Started, Opening GS Plugin...");
 	m_returncode = GSopen((void *)&pDsp, "PCSX2", 1);
 	GSCSRr = 0x551B400F; // 0x55190000
 	m_wait_InitDone.Set();
 	if (m_returncode != 0) { return m_returncode; }		// error msg will be issued to the user by Plugins.c
-	Console::WriteLn("MTGS > GSopen Finished.");
+	Console::MsgLn("MTGS > GSopen Finished.");
 
 #ifdef RINGBUF_DEBUG_STACK
 	u32 prevCmd=0;

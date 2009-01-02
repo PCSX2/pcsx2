@@ -143,7 +143,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	u8 fpuused[33];
 	int numused, count, fpunumused;
 
-	SysPrintf( "dump1 %x:%x, %x\n", startpc, pc, cpuRegs.cycle );
+	Console::Status( "dump1 %x:%x, %x\n", startpc, pc, cpuRegs.cycle );
 #ifdef _WIN32
 	CreateDirectory("dumps", NULL);
 	sprintf_s( filename, g_MaxPath, "dumps\\dump%.8X.txt", startpc);
@@ -1577,7 +1577,7 @@ static void recInit()
 ////////////////////////////////////////////////////
 static void recReset( void ) {
 
-	DevCon::WriteLn( "EE Recompiler data reset" );
+	DevCon::MsgLn( "EE Recompiler data reset" );
 
 	s_nNextBlock = 0;
 	maxrecmem = 0;
@@ -2457,7 +2457,7 @@ static void checkcodefn()
     __asm__("movl %%eax, %0" : "=m"(pctemp) );
 #endif
 
-	SysPrintf("code changed! %x\n", pctemp);
+	Console::Error("code changed! %x", pctemp);
 	assert(0);
 }
 
@@ -2526,7 +2526,7 @@ void recompileNextInstruction(int delayslot)
 				recClearMem(pblock);
 				x86Ptr = oldX86;
 				if( delayslot )
-					SysPrintf("delay slot %x\n", pc);
+					Console::Notice("delay slot %x", pc);
 			}
 		}
 	}
@@ -2633,7 +2633,7 @@ void recompileNextInstruction(int delayslot)
 				case 1:
 					switch(_Rt_) {
 						case 0: case 1: case 2: case 3: case 0x10: case 0x11: case 0x12: case 0x13:
-							SysPrintf("branch %x in delay slot!\n", cpuRegs.code);
+							Console::Notice("branch %x in delay slot!", cpuRegs.code);
 							_clearNeededX86regs();
 							_clearNeededMMXregs();
 							_clearNeededXMMregs();
@@ -2642,7 +2642,7 @@ void recompileNextInstruction(int delayslot)
 					break;
 
 				case 2: case 3: case 4: case 5: case 6: case 7: case 0x14: case 0x15: case 0x16: case 0x17:
-					SysPrintf("branch %x in delay slot!\n", cpuRegs.code);
+					Console::Notice("branch %x in delay slot!", cpuRegs.code);
 					_clearNeededX86regs();
 					_clearNeededMMXregs();
 					_clearNeededXMMregs();
@@ -2793,8 +2793,8 @@ static void printfn()
 u32 s_recblocks[] = {0};
 
 void badespfn() {
+	Console::Error("Bad esp!");
 	assert(0);
-	SysPrintf("Bad esp!\n");
 }
 
 #define OPTIMIZE_COP2 0//CHECK_VU0REC
@@ -2806,7 +2806,7 @@ void __fastcall dyna_block_discard(u32 start,u32 sz)
 #else
 	__asm__("push %ebp\n");
 #endif
-	SysPrintf("dyna_block_discard %08X , count %d\n",start,sz);
+	Console::WriteLn("dyna_block_discard %08X , count %d",start,sz);
 	Cpu->Clear(start,sz);
 #ifdef _MSC_VER
 	__asm pop ebp;
@@ -2836,9 +2836,7 @@ void recRecompile( u32 startpc )
 		recReset();
 	}
 	if ( ( (uptr)recStackPtr - (uptr)recStack ) >= RECSTACK_SIZE-0x100 ) {
-#ifdef _DEBUG
-		SysPrintf("stack reset\n");
-#endif
+		DevCon::MsgLn("stack reset");
 		recReset();
 	}
 
@@ -3273,7 +3271,7 @@ StartRecomp:
 					stg-=4;
 					lpc+=4;
 				}
-				DbgCon::MsgLn("Manual block @ %08X : %08X %d %d %d %d",
+				DbgCon::WriteLn("Manual block @ %08X : %08X %d %d %d %d",
 					startpc,inpage_ptr,pgsz,0x1000-inpage_offs,inpage_sz,sz*4);
 			}
 		}

@@ -276,7 +276,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI)
 			}
 			break;
 		default:
-			SysPrintf("PMFHL??\n");
+			Console::Error("PMFHL??  *pcsx2 head esplode!*");
 			assert(0);
 	}
 

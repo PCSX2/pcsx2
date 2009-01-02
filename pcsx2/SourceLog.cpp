@@ -65,7 +65,7 @@ void __Log( const char* fmt, ... )
 
 	if (varLog & 0x80000000)		// log to console enabled?
 	{
-		Console::Write(tmp);
+		Console::Msg(tmp);
 
 	} else if( emuLog != NULL )		// manually write to the logfile.
 	{
@@ -102,7 +102,7 @@ static __forceinline void _vSourceLog( u16 protocol, u8 source, u32 cpuPc, u32 c
 
 	if (varLog & 0x80000000)		// log to console enabled?
 	{
-		Console::WriteLn(tmp);
+		Console::MsgLn(tmp);
 
 	} else if( emuLog != NULL )		// manually write to the logfile.
 	{

@@ -98,8 +98,8 @@ void SysDetect()
 
 	SetColor( Console::Color_White );
 
-	WriteLn( "x86Init:" );
-	MsgLn(
+	MsgLn( "x86Init:" );
+	WriteLn(
 		"\tCPU vendor name =  %s\n"
 		"\tFamilyID  =  %x\n"
 		"\tx86Family =  %s\n"
@@ -115,8 +115,8 @@ void SysDetect()
 			cpuinfo.x86EFlags
 	);
 
-	WriteLn( "Features:" );
-	MsgLn(
+	MsgLn( "Features:" );
+	WriteLn(
 		"\t%sDetected MMX\n"
 		"\t%sDetected SSE\n"
 		"\t%sDetected SSE2\n"
@@ -131,8 +131,8 @@ void SysDetect()
 
 	if ( cpuinfo.x86ID[0] == 'A' ) //AMD cpu
 	{
-		WriteLn( " Extended AMD Features:" );
-		MsgLn(
+		MsgLn( " Extended AMD Features:" );
+		WriteLn(
 			"\t%sDetected MMX2\n"
 			"\t%sDetected 3DNOW\n"
 			"\t%sDetected 3DNOW2\n",

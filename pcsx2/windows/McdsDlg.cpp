@@ -658,9 +658,7 @@ class MemoryCard
 				return 0;
 			}
 
-			#ifdef _DEBUG
-			SysPrintf("IFC: %d\n\n", IFC);
-			#endif
+			DbgCon::WriteLn("IFC: %d", IFC);
 
 			// Read the cluster with the indirect data to the FAT.
 			fseek(fp, 0x420 * IFC, SEEK_SET);

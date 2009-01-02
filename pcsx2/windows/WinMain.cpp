@@ -312,7 +312,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Console::Open();
 
 		//if( lpCmdLine == NULL || *lpCmdLine == 0 )
-		//	Console::WriteLn("-help to see arguments");
+		//	Console::MsgLn("-help to see arguments");
 	}
 
 	// Load the command line overrides for plugins:
@@ -377,15 +377,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	    // output the help commands
 		Console::SetColor( Console::Color_White );
 
-		Console::WriteLn( "Hotkeys:" );
+		Console::MsgLn( "Hotkeys:" );
 
-		Console::WriteLn(
+		Console::MsgLn(
 			"\tF1  - save state\n"
 			"\t(Shift +) F2 - cycle states\n"
 			"\tF3  - load state"
 		);
 
-	    DevCon::WriteLn(
+	    DevCon::MsgLn(
 			"\tF10 - dump performance counters\n"
 			"\tF11 - save GS state\n"
 			"\tF12 - dump hardware registers"

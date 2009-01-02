@@ -208,7 +208,7 @@ static void cdvdSetIrq( uint id = (1<<Irq_CommandComplete) )
 	cdvd.PwOff |= id;
 	psxHu32(0x1070)|= 0x4;
 	hwIntcIrq(INTC_SBUS);
-	psxSetNextBranchDelta( 24 );		// don't need to be too prompt -- that would just put unnecessary load on the emu.
+	psxSetNextBranchDelta( 20 );
 }
 
 static int mg_BIToffset(u8 *buffer){
@@ -519,7 +519,7 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
 		key[15] = 0x01;
 	}
 	
-	Console::MsgLn( "CDVD.KEY = %02X,%02X,%02X,%02X,%02X,%02X,%02X",cdvd.Key[0],cdvd.Key[1],cdvd.Key[2],cdvd.Key[3],cdvd.Key[4],cdvd.Key[14],cdvd.Key[15] );
+	Console::WriteLn( "CDVD.KEY = %02X,%02X,%02X,%02X,%02X,%02X,%02X",cdvd.Key[0],cdvd.Key[1],cdvd.Key[2],cdvd.Key[3],cdvd.Key[4],cdvd.Key[14],cdvd.Key[15] );
 
 	// Now's a good time to reload the ELF info...
 	if( ElfCRC == 0 )
@@ -936,7 +936,6 @@ __forceinline void cdvdActionInterrupt()
 			cdvd.Ready  = 0x40;
 			cdvd.Sector = cdvd.SeekToSector;
 			cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
-			cdvdSetIrq();
 		break;
 
 		case cdvdAction_Stop:
@@ -944,7 +943,6 @@ __forceinline void cdvdActionInterrupt()
 			cdvd.Ready = 0x40;
 			cdvd.Sector = 0;
 			cdvd.Status = 0;
-			cdvdSetIrq();
 		break;
 
 		case cdvdAction_Break:
@@ -955,10 +953,13 @@ __forceinline void cdvdActionInterrupt()
 			cdvd.Status = 0;
 			cdvd.RErr = 0;
 			cdvd.nCommand = 0;
-			cdvdSetIrq();
 		break;
 	}
 	cdvd.Action = cdvdAction_None;
+
+	cdvd.PwOff |= 1<<Irq_CommandComplete;
+	psxHu32(0x1070)|= 0x4;
+	hwIntcIrq(INTC_SBUS);
 }
 
 // inlined due to being referenced in only one place.
@@ -1015,11 +1016,16 @@ __forceinline void cdvdReadInterrupt() {
 
 	if (--cdvd.nSectors <= 0)
 	{
-		// hmm... should we set a DataReady interrupt here?
-		cdvdSetIrq( /*(1<<Irq_DataReady) |*/ (1<<Irq_CommandComplete));
+		cdvd.PwOff |= 1<<Irq_CommandComplete;
+		psxHu32(0x1070)|= 0x4;
+		hwIntcIrq(INTC_SBUS);
+
 		HW_DMA3_CHCR &= ~0x01000000;
 		psxDmaInterrupt(3);
 		cdvd.Ready   = 0x4e;
+
+		// All done! :D
+
 		return;
 	}
 
@@ -1280,10 +1286,6 @@ u8   cdvdRead3A(void) {	// DEC_SET
 }
 
 
-// Initiates a Cdvd seek from the current sector to the assigned SeekSector.
-// Fixme: Should the seek set the cdvd.Sector immediately, or only when the
-// seek has finished?  Current implementation is immediate. (the sector is readable
-// by HW registers so it could be important!)
 // Returns the number of IOP cycles until the event completes.
 static uint cdvdStartSeek( uint newsector )
 {
@@ -1471,7 +1473,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			//the code below handles only CdGetToc!
 			//if(cdvd.Param[0]==0x01)
 			//{
-			DevCon::MsgLn("CDGetToc Param[0]=%d, Param[1]=%d",cdvd.Param[0],cdvd.Param[1]);
+			DevCon::WriteLn("CDGetToc Param[0]=%d, Param[1]=%d",cdvd.Param[0],cdvd.Param[1]);
 			//}
 			cdvdGetToc( PSXM( HW_DMA3_MADR ) );
 			cdvdSetIrq( (1<<Irq_CommandComplete) ); //| (1<<Irq_DataReady) );
@@ -1484,7 +1486,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			u8  arg0 = cdvd.Param[0];
 			u16 arg1 = cdvd.Param[1] | (cdvd.Param[2]<<8);
 			u32 arg2 = cdvd.Param[3] | (cdvd.Param[4]<<8) | (cdvd.Param[5]<<16) | (cdvd.Param[6]<<24);
-			DevCon::MsgLn("cdvdReadKey(%d, %d, %d)\n", arg0, arg1, arg2);
+			DevCon::WriteLn("cdvdReadKey(%d, %d, %d)\n", arg0, arg1, arg2);
 			cdvdReadKey(arg0, arg1, arg2, cdvd.Key);
 			cdvd.KeyXor = 0x00;
 			cdvdSetIrq();
@@ -1555,7 +1557,7 @@ void cdvdWrite0A(u8 rt) { // STATUS
 
 void cdvdWrite0F(u8 rt) { // TYPE
 	CDR_LOG("cdvdWrite0F(Type) %x\n", rt);
-	DevCon::MsgLn("*PCSX2*: CDVD TYPE %x\n", rt);
+	DevCon::WriteLn("*PCSX2*: CDVD TYPE %x\n", rt);
 }
 
 void cdvdWrite14(u8 rt) { // PS1 MODE??

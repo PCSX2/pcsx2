@@ -346,7 +346,7 @@ void applypatch(int place) {
 	int i;
 
 	if (place == 0) {
-		SysPrintf(" patchnumber: %d\n", patchnumber);
+		Console::WriteLn(" patchnumber: %d", patchnumber);
 	}
 
 	for ( i = 0; i < patchnumber; i++ ) {
@@ -356,13 +356,13 @@ void applypatch(int place) {
 
 void patchFunc_comment( char * text1, char * text2 )
 {
-	SysPrintf( "comment: %s \n", text2 );
+	Console::WriteLn( "comment: %s", text2 );
 }
 
 
 void patchFunc_gametitle( char * text1, char * text2 )
 {
-	SysPrintf( "gametitle: %s \n", text2 );
+	Console::WriteLn( "gametitle: %s", text2 );
 	sprintf(strgametitle,"%s",text2);
 	Console::SetTitle(strgametitle);
 }
@@ -373,7 +373,7 @@ void patchFunc_patch( char * cmd, char * param )
 
 	if ( patchnumber >= MAX_PATCH )
 	{
-		SysPrintf( "Patch ERROR: Maximum number of patches reached: %s=%s\n", cmd, param );
+		Console::Error( "Patch ERROR: Maximum number of patches reached: %s=%s", cmd, param );
 		return;
 	}
 
@@ -387,7 +387,7 @@ void patchFunc_patch( char * cmd, char * param )
 	patch[ patchnumber ].cpu = (patch_cpu_type)PatchTableExecute( pText, NULL, cpuCore );
 	if ( patch[ patchnumber ].cpu == 0 ) 
 	{
-		SysPrintf( "Unrecognized patch '%s'\n", pText );
+		Console::Error( "Unrecognized patch '%s'", pText );
 		return;
 	}
 
@@ -400,7 +400,7 @@ void patchFunc_patch( char * cmd, char * param )
 	patch[ patchnumber ].type = (patch_data_type)PatchTableExecute( pText, NULL, dataType );
 	if ( patch[ patchnumber ].type == 0 ) 
 	{
-		SysPrintf( "Unrecognized patch '%s'\n", pText );
+		Console::Error( "Unrecognized patch '%s'", pText );
 		return;
 	}
 	
@@ -522,7 +522,7 @@ void inifile_read( char * name )
 
 	if( !f1 )
 	{
-		 SysPrintf( _( "No patch found.Resuming execution without a patch (this is NOT an error).\n" ));
+		Console::MsgLn( _( "No patch found.Resuming execution without a patch (this is NOT an error)." ));
 		return;
 	}
 
@@ -541,7 +541,7 @@ int AddPatch(int Mode, int Place, int Address, int Size, u64 data)
 
 	if ( patchnumber >= MAX_PATCH )
 	{
-		SysPrintf( "Patch ERROR: Maximum number of patches reached.\n");
+		Console::Error( "Patch ERROR: Maximum number of patches reached.");
 		return -1;
 	}
 

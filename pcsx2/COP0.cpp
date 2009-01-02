@@ -226,7 +226,7 @@ void MapTLB(int i)
 	u32 saddr, eaddr;
 
 #ifndef PCSX2_VIRTUAL_MEM
-	DevCon::MsgLn("MAP TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X",
+	DevCon::WriteLn("MAP TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X",
 		i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
 
 	if (tlb[i].S)

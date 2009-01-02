@@ -40,7 +40,7 @@
 ////////////////////////////////////////////////////
 void recNULL( void )
 {
-	SysPrintf("EE: Unimplemented op %x\n", cpuRegs.code);
+	Console::Error("EE: Unimplemented op %x", cpuRegs.code);
 }
 
 namespace EE { namespace Dynarec
@@ -70,13 +70,13 @@ namespace OpcodeImpl
 	void recUnknown()
 	{
 		// TODO : Unknown ops should throw an exception.
-		SysPrintf("EE: Unrecognized op %x\n", cpuRegs.code);
+		Console::Error("EE: Unrecognized op %x", cpuRegs.code);
 	}
 
 	void recMMI_Unknown()
 	{
 		// TODO : Unknown ops should throw an exception.
-		SysPrintf("EE: Unrecognized MMI op %x\n", cpuRegs.code);
+		Console::Error("EE: Unrecognized MMI op %x", cpuRegs.code);
 	}
 
 	////////////////////////////////////////////////////

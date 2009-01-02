@@ -35,8 +35,6 @@ using namespace std;
 #include <windows.h>
 #endif
 
-extern void SysPrintf(const char *fmt, ...);
-
 #if !defined(_WIN32) && !defined(__MINGW32__)
 #ifndef strnicmp
 #define strnicmp strncasecmp

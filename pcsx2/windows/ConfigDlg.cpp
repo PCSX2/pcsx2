@@ -24,107 +24,147 @@
 #include "plugins.h"
 #include "resource.h"
 
-#define ComboAddPlugin(hw, str) { \
-	sprintf(tmpStr, "%s %d.%d.%d", PS2E_GetLibName(), (version>>8)&0xff, version&0xff, (version>>24)&0xff); \
-	lp = (char *)malloc(strlen(FindData.cFileName)+8); \
-	sprintf(lp, "%s", FindData.cFileName); \
-	i = ComboBox_AddString(hw, tmpStr); \
-	ComboBox_SetItemData(hw, i, lp); \
-	if (_stricmp(str, lp)==0) \
-		ComboBox_SetCurSel(hw, i); \
-}
+struct ComboInitializer
+{
+	HWND hwnd;
 
-BOOL OnConfigureDialog(HWND hW) {
-	WIN32_FIND_DATA FindData;
 	HANDLE Find;
 	HANDLE Lib;
+
+	WIN32_FIND_DATA FindData;
+
 	_PS2EgetLibType     PS2E_GetLibType;
 	_PS2EgetLibName     PS2E_GetLibName;
 	_PS2EgetLibVersion2 PS2E_GetLibVersion2;
-	HWND hWC_GS=GetDlgItem(hW,IDC_LISTGS);
-	HWND hWC_PAD1=GetDlgItem(hW,IDC_LISTPAD1);
-	HWND hWC_PAD2=GetDlgItem(hW,IDC_LISTPAD2);
-	HWND hWC_SPU2=GetDlgItem(hW,IDC_LISTSPU2);
-	HWND hWC_CDVD=GetDlgItem(hW,IDC_LISTCDVD);
-	HWND hWC_DEV9=GetDlgItem(hW,IDC_LISTDEV9);
-	HWND hWC_USB=GetDlgItem(hW,IDC_LISTUSB);
-	HWND hWC_FW=GetDlgItem(hW,IDC_LISTFW); 
-	HWND hWC_BIOS=GetDlgItem(hW,IDC_LISTBIOS);
-	char tmpStr[g_MaxPath];
-	char *lp;
-	int i;
 
-	strcpy(tmpStr, Config.PluginsDir);
-	strcat(tmpStr, "*.dll");
-	Find = FindFirstFile(tmpStr, &FindData);
+	long version;
+	u32 type;
 
-	do {
-		if (Find==INVALID_HANDLE_VALUE) break;
+	ComboInitializer( HWND hwndDlg ) :
+		hwnd( hwndDlg )
+	,	Find( INVALID_HANDLE_VALUE )
+	,	Lib( NULL )
+	,	PS2E_GetLibType( NULL )
+	,	PS2E_GetLibName( NULL )
+	,	PS2E_GetLibVersion2( NULL )
+	{
+		char tmpStr[g_MaxPath];
+		CombinePaths(tmpStr, Config.PluginsDir, "*.dll");
+		Find = FindFirstFile(tmpStr, &FindData);
+	}
+
+	~ComboInitializer()
+	{
+		if (Find!=INVALID_HANDLE_VALUE)
+			FindClose(Find);
+	}
+
+	bool FindNext()
+	{
+		return !!FindNextFile( Find, &FindData );
+	}
+
+	bool LoadNextLibrary()
+	{
+		char tmpStr[g_MaxPath];
 		CombinePaths( tmpStr, Config.PluginsDir, FindData.cFileName );
 		Lib = LoadLibrary(tmpStr);
-		if (Lib == NULL) { SysPrintf("%s: %s\n", tmpStr, SysLibError()); continue; }
+		if (Lib == NULL) { Console::Error("%s: %s", tmpStr, SysLibError()); return false; }
 
 		PS2E_GetLibType = (_PS2EgetLibType) GetProcAddress((HMODULE)Lib,"PS2EgetLibType");
 		PS2E_GetLibName = (_PS2EgetLibName) GetProcAddress((HMODULE)Lib,"PS2EgetLibName");
 		PS2E_GetLibVersion2 = (_PS2EgetLibVersion2) GetProcAddress((HMODULE)Lib,"PS2EgetLibVersion2");
 
-		if (PS2E_GetLibType != NULL && PS2E_GetLibName != NULL && PS2E_GetLibVersion2 != NULL) {
-			u32 version;
-			long type;
+		if( PS2E_GetLibType == NULL || PS2E_GetLibName == NULL || PS2E_GetLibVersion2 == NULL )
+			return false;
 
-			type = PS2E_GetLibType();
-			if (type & PS2E_LT_GS) {
-				version = PS2E_GetLibVersion2(PS2E_LT_GS);
-				if ( ((version >> 16)&0xff) == PS2E_GS_VERSION) {
-					ComboAddPlugin(hWC_GS, winConfig.GS);
-				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, 0xff&(version >> 16), PS2E_GS_VERSION);
-			}
-			if (type & PS2E_LT_PAD) {
-				_PADquery query;
+		type = PS2E_GetLibType();
+		return true;
+	}
 
-				query = (_PADquery)GetProcAddress((HMODULE)Lib, "PADquery");
-				version = PS2E_GetLibVersion2(PS2E_LT_PAD);
-				if (((version >> 16)&0xff) == PS2E_PAD_VERSION && query) {
+	void AddPlugin(HWND hwndCombo, const char* str)
+	{
+		char tmpStr[g_MaxPath];
+		int i;
+
+		sprintf(tmpStr, "%s %d.%d.%d", PS2E_GetLibName(), (version>>8)&0xff, version&0xff, (version>>24)&0xff);
+		char* lp = (char *)malloc(strlen(FindData.cFileName)+8);
+		sprintf(lp, "%s", FindData.cFileName);
+		i = ComboBox_AddString(hwndCombo, tmpStr);
+		ComboBox_SetItemData(hwndCombo, i, lp);
+		if (_stricmp(str, lp)==0)
+			ComboBox_SetCurSel(hwndCombo, i);
+	}
+
+	bool CheckVersion( const char* typeStr, u32 pluginType, long checkver )
+	{
+		if( type & pluginType )
+		{
+			version = PS2E_GetLibVersion2( pluginType );
+			if ( ((version >> 16)&0xff) == checkver )
+				return true;
+
+			Console::Notice("%s Plugin %s:  Version %x != %x", typeStr, FindData.cFileName, 0xff&(version >> 16), checkver);
+		}
+		return false;
+	}
+};
+
+BOOL OnConfigureDialog(HWND hW) {
+	HWND const hWC_GS=GetDlgItem(hW,IDC_LISTGS);
+	HWND const hWC_PAD1=GetDlgItem(hW,IDC_LISTPAD1);
+	HWND const hWC_PAD2=GetDlgItem(hW,IDC_LISTPAD2);
+	HWND const hWC_SPU2=GetDlgItem(hW,IDC_LISTSPU2);
+	HWND const hWC_CDVD=GetDlgItem(hW,IDC_LISTCDVD);
+	HWND const hWC_DEV9=GetDlgItem(hW,IDC_LISTDEV9);
+	HWND const hWC_USB=GetDlgItem(hW,IDC_LISTUSB);
+	HWND const hWC_FW=GetDlgItem(hW,IDC_LISTFW); 
+	HWND const hWC_BIOS=GetDlgItem(hW,IDC_LISTBIOS);
+
+	ComboInitializer tool(hW);
+	if( tool.Find == INVALID_HANDLE_VALUE )		// epic fail?
+		return FALSE;
+
+	do
+	{
+		if( !tool.LoadNextLibrary() ) continue;
+
+		if( tool.CheckVersion( "GS", PS2E_LT_GS, PS2E_GS_VERSION ) )
+			tool.AddPlugin(hWC_GS, winConfig.GS);
+
+		if (tool.type & PS2E_LT_PAD)
+		{
+			_PADquery query;
+
+			query = (_PADquery)GetProcAddress((HMODULE)tool.Lib, "PADquery");
+			if( query != NULL )
+			{
+				if( tool.CheckVersion( "PAD", PS2E_LT_PAD, PS2E_PAD_VERSION ) )
+				{
 					if (query() & 0x1)
-						ComboAddPlugin(hWC_PAD1, winConfig.PAD1);
+						tool.AddPlugin(hWC_PAD1, winConfig.PAD1);
 					if (query() & 0x2)
-						ComboAddPlugin(hWC_PAD2, winConfig.PAD2);
-				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_PAD_VERSION);
-			}
-			if (type & PS2E_LT_SPU2) {
-				version = PS2E_GetLibVersion2(PS2E_LT_SPU2);
-				if ( ((version >> 16)&0xff) == PS2E_SPU2_VERSION) {
-					ComboAddPlugin(hWC_SPU2, winConfig.SPU2);
-				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_SPU2_VERSION);
-			}
-			if (type & PS2E_LT_CDVD) {
-				version = PS2E_GetLibVersion2(PS2E_LT_CDVD);
-				if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) {
-					ComboAddPlugin(hWC_CDVD, winConfig.CDVD);
-				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_CDVD_VERSION);
-			}
-			if (type & PS2E_LT_DEV9) {
-				version = PS2E_GetLibVersion2(PS2E_LT_DEV9);
-				if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) {
-					ComboAddPlugin(hWC_DEV9, winConfig.DEV9);
-				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_DEV9_VERSION);
-			}
-			if (type & PS2E_LT_USB) {
-				version = PS2E_GetLibVersion2(PS2E_LT_USB);
-				if (((version >> 16)&0xff) == PS2E_USB_VERSION) {
-					ComboAddPlugin(hWC_USB, winConfig.USB);
-				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_USB_VERSION);
-			}
-			if (type & PS2E_LT_FW) {
-				version = PS2E_GetLibVersion2(PS2E_LT_FW);
-				if (((version >> 16)&0xff) == PS2E_FW_VERSION) {
-					ComboAddPlugin(hWC_FW, winConfig.FW);
-				} else SysPrintf("Plugin %s: Version %x != %x\n", FindData.cFileName, (version >> 16)&0xff, PS2E_FW_VERSION);
+						tool.AddPlugin(hWC_PAD2, winConfig.PAD2);
+				}
 			}
 		}
-	} while (FindNextFile(Find,&FindData));
 
-	if (Find!=INVALID_HANDLE_VALUE) FindClose(Find);
+		if( tool.CheckVersion( "SPU2", PS2E_LT_SPU2, PS2E_SPU2_VERSION ) )
+			tool.AddPlugin(hWC_SPU2, winConfig.SPU2);
+
+		if( tool.CheckVersion( "CDVD", PS2E_LT_CDVD, PS2E_CDVD_VERSION ) )
+			tool.AddPlugin(hWC_CDVD, winConfig.CDVD);
+
+		if( tool.CheckVersion( "DEV9", PS2E_LT_DEV9, PS2E_DEV9_VERSION ) )
+			tool.AddPlugin(hWC_DEV9, winConfig.DEV9);
+
+		if( tool.CheckVersion( "USB", PS2E_LT_USB, PS2E_USB_VERSION ) )
+			tool.AddPlugin(hWC_USB, winConfig.USB);
+
+		if( tool.CheckVersion( "FW", PS2E_LT_FW, PS2E_FW_VERSION ) )
+			tool.AddPlugin(hWC_FW, winConfig.FW);
+
+	} while( tool.FindNext() );
 
 // BIOS
 
@@ -135,11 +175,20 @@ BOOL OnConfigureDialog(HWND hW) {
 	if (_stricmp(Config.Bios, lp)==0)
 		ComboBox_SetCurSel(hWC_BIOS, i);*/
 
+	HANDLE Find;
+
+	WIN32_FIND_DATA FindData;
+	char tmpStr[g_MaxPath];
+
 	strcpy(tmpStr, Config.BiosDir);
 	strcat(tmpStr, "*");
 	Find=FindFirstFile(tmpStr, &FindData);
 
-	do {
+	do
+	{
+		char* lp;
+		int i;
+
 		char description[50];								//2002-09-22 (Florin)
 		if (Find==INVALID_HANDLE_VALUE) break;
 		if (!strcmp(FindData.cFileName, ".")) continue;

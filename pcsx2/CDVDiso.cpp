@@ -240,7 +240,7 @@ int CDVD_GetVolumeDescriptor(void){
 
 	cdVolDesc localVolDesc;
 
-	DbgCon::WriteLn("CDVD_GetVolumeDescriptor called");
+	DbgCon::MsgLn("CDVD_GetVolumeDescriptor called");
 
 	for (volDescSector = 16; volDescSector<20; volDescSector++)
 	{
@@ -262,14 +262,13 @@ int CDVD_GetVolumeDescriptor(void){
 			break;
 	}
 
-#ifdef DEBUG
 	if (CDVolDesc.filesystemType == 1)
-		SysPrintf("CD FileSystem is ISO9660\n");
+		DbgCon::MsgLn( Color_Green, "CD FileSystem is ISO9660" );
 	else if (CDVolDesc.filesystemType == 2)
-		SysPrintf("CD FileSystem is Joliet\n");
-	else SysPrintf("Could not detect CD FileSystem type\n");
-#endif
-//	CdStop();
+		DbgCon::MsgLn( Color_Green, "CD FileSystem is Joliet");
+	else DbgCon::Notice("Could not detect CD FileSystem type");
+
+	//	CdStop();
 
 	return TRUE;
 }
@@ -291,7 +290,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 
 	dirTocEntry* tocEntryPointer;
 
-	DbgCon::WriteLn("CDVD_findfile called");
+	DbgCon::MsgLn("CDVD_findfile called");
 
 	//make sure we have good cdReadMode
 	cdReadMode.trycount = 0;
@@ -405,7 +404,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 		// If we havent found the directory name we wanted then fail
 		if (found_dir != TRUE)
 		{
-			SysPrintf("CDVD_findfile: could not find dir\n");
+			Console::Notice( "CDVD_findfile: could not find dir" );
 			return -1;
 		}
 
@@ -415,7 +414,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 		// Read the TOC of the found subdirectory
 		if (CdRead(localTocEntry.fileLBA,1,toc,&cdReadMode) != TRUE)
 		{
-			SysPrintf("Couldn't Read from CD !\n");
+			Console::Error("Couldn't Read from CD !");
 			return -1;
 		}
 //		CdSync(0x00);
@@ -460,9 +459,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 				strcpy(tocEntry->filename, localTocEntry.filename);
 				memcpy(tocEntry->date, localTocEntry.date, 7);
 
-#ifdef DEBUG
-				SysPrintf("CDVD_findfile: found file\n");
-#endif
+				DbgCon::MsgLn("CDVD_findfile: found file");
 
 				return TRUE;
 			}
@@ -477,7 +474,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 			dir_lba++;
 
 			if (CdRead(dir_lba,1,toc,&cdReadMode) != TRUE){
-				SysPrintf("Couldn't Read from CD !\n");
+				Console::Error("Couldn't Read from CD !");
 				return -1;
 			}
 //			CdSync(0x00);
@@ -486,9 +483,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 		}
 	}
 
-#ifdef DEBUG
-	SysPrintf("CDVD_findfile: could not find file\n");
-#endif
+	DbgCon::Notice("CDVD_findfile: could not find file");
 
 	return FALSE;
 }

@@ -167,14 +167,14 @@ void gsSetVideoRegionType( u32 isPal )
 	if( isPal )
 	{
 		if( Config.PsxType & 1 ) return;
-		Console::WriteLn( "PAL Display Mode Initialized." );
+		Console::MsgLn( "PAL Display Mode Initialized." );
 		Config.PsxType |= 1;
 		framerate = FRAMERATE_PAL;
 	}
 	else
 	{
 		if( !(Config.PsxType & 1 ) ) return;
-		Console::WriteLn( "NTSC Display Mode Initialized." );
+		Console::MsgLn( "NTSC Display Mode Initialized." );
 		Config.PsxType &= ~1;
 		framerate = FRAMERATE_NTSC;
 	}
@@ -194,7 +194,7 @@ void gsInit()
 			if( GSsetFrameSkip == NULL )
 			{
 				Config.Options &= ~PCSX2_FRAMELIMIT_MASK;
-				Console::WriteLn("Notice: Disabling frameskip -- GS plugin does not support it.");
+				Console::MsgLn("Notice: Disabling frameskip -- GS plugin does not support it.");
 			}
 		break;
 	}

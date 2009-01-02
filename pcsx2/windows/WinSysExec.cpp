@@ -460,11 +460,6 @@ void CALLBACK KeyEvent(keyEvent* ev)
 			}
 		break;
 
-		/*case VK_NUMPAD0:
-			Config.Hacks ^= 2;
-			if (Config.Hacks & 2) {SysPrintf( "Overflow Check OFF\n" );} else {SysPrintf( "Overflow Check ON\n" );}
-			break;*/
-
 		case VK_ESCAPE:
 #ifdef PCSX2_DEVBUILD
 			if( g_SaveGSStream >= 3 ) {
@@ -585,7 +580,7 @@ void SysPrintf(const char *fmt, ...)
 	msg[511] = '\0';
 	va_end(list);
 
-	Console::Write( msg );
+	Console::Msg( msg );
 }
 
 void SysMessage(const char *fmt, ...)

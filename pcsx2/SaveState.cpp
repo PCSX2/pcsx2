@@ -76,7 +76,7 @@ void SaveState::GetFilename( char* dest, int slot )
 SaveState::SaveState( const char* msg, const char* destination ) :
  m_version( g_SaveVersion )
 {
-	Console::MsgLn( "%s %s", msg, destination );
+	Console::WriteLn( "%s %s", msg, destination );
 }
 
 void SaveState::FreezeAll()
@@ -199,7 +199,7 @@ gzLoadingState::gzLoadingState( const char* filename ) :
 		// pcsx2 vm supports opening these formats
 		if( m_version < 0x7a30000d )
 		{
-			Console::MsgLn( "Unsupported or unrecognized savestate version: %x.", m_version );
+			Console::WriteLn( "Unsupported or unrecognized savestate version: %x.", m_version );
 			throw Exception::UnsupportedStateVersion();
 		}
 #else
@@ -231,7 +231,7 @@ void gzLoadingState::FreezeMem( void* data, int size )
 
 void gzSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
-	Console::MsgLn( "\tSaving %s", name );
+	Console::WriteLn( "\tSaving %s", name );
 	freezeData fP = { 0, NULL };
 
 	if (freezer(FREEZE_SIZE, &fP) == -1)
@@ -257,7 +257,7 @@ void gzSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int 
 void gzLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
 	freezeData fP = { 0, NULL };
-	Console::MsgLn( "\tLoading %s", name );
+	Console::WriteLn( "\tLoading %s", name );
 
 	gzread(m_file, &fP.size, sizeof(fP.size));
 	if( fP.size == 0 ) return;
@@ -326,7 +326,7 @@ void memLoadingState::FreezeMem( void* data, int size )
 void memSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
 	freezeData fP = { 0, NULL };
-	Console::MsgLn( "\tSaving %s", name );
+	Console::WriteLn( "\tSaving %s", name );
 
 	if( freezer(FREEZE_SIZE, &fP) == -1 )
 		throw Exception::FreezePluginFailure( name, "saving" );
@@ -347,7 +347,7 @@ void memSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int
 void memLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
 	freezeData fP;
-	Console::MsgLn( "\tLoading %s", name );
+	Console::WriteLn( "\tLoading %s", name );
 
 	Freeze( fP.size );
 	if( fP.size == 0 ) return;

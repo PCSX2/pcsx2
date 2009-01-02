@@ -525,8 +525,6 @@ void recBLTZAL()
 		return;
 	}
 
-	SysPrintf("BLTZAL\n");
-
 	recSetBranchL(1);
 
 	SaveBranchState();
@@ -565,8 +563,6 @@ void recBGEZAL( void )
 		SetBranchImm( branchTo );
 		return;
 	}
-
-	SysPrintf("BLTZAL\n");
 
 	recSetBranchL(0);
 
@@ -818,7 +814,6 @@ void recBLTZAL( void )
 ////////////////////////////////////////////////////
 void recBGEZAL( void ) 
 {
-    SysPrintf("BGEZAL\n");
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
@@ -829,7 +824,6 @@ void recBGEZAL( void )
 ////////////////////////////////////////////////////
 void recBLTZALL( void ) 
 {
-	SysPrintf("BLTZALL\n");
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
@@ -840,7 +834,6 @@ void recBLTZALL( void )
 ////////////////////////////////////////////////////
 void recBGEZALL( void ) 
 {
-	SysPrintf("BGEZALL\n");
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);

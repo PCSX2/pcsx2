@@ -2807,7 +2807,7 @@ void memReset()
 	fclose(fp);
 
 	BiosVersion = GetBiosVersion();
-	Console::MsgLn("Bios Version %d.%d", BiosVersion >> 8, BiosVersion & 0xff);
+	Console::WriteLn("Bios Version %d.%d", BiosVersion >> 8, BiosVersion & 0xff);
 
 	//injectIRX("host.irx");	//not fully tested; still buggy
 
@@ -2881,7 +2881,7 @@ void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 }
 void mmap_ResetBlockTracking()
 {
-	Console::WriteLn("vtlb/mmap: Block Tracking reseted ..");
+	Console::MsgLn("vtlb/mmap: Block Tracking reseted ..");
 	memset(psMPWC,0,sizeof(psMPWC));
 	for(u32 i=0;i<(Ps2MemSize::Base>>12);i++)
 	{

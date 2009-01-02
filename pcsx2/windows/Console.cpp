@@ -85,7 +85,7 @@ namespace Console
 
 
 	// Writes a newline to the console.
-	__forceinline bool __fastcall WriteLn()
+	__forceinline bool __fastcall Newline()
 	{
 		if (hConsole != NULL)
 		{
@@ -104,7 +104,7 @@ namespace Console
 
 	// Writes an unformatted string of text to the console (fast!)
 	// No newline is appended.
-	__forceinline bool __fastcall Write( const char* fmt )
+	__forceinline bool __fastcall Msg( const char* fmt )
 	{
 		if (hConsole != NULL)
 		{
@@ -121,15 +121,26 @@ namespace Console
 	
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended.
-	__forceinline bool __fastcall WriteLn( const char* fmt )
+	__forceinline bool __fastcall MsgLn( const char* fmt )
 	{
 		Write( fmt );
-		WriteLn();
+		Newline();
+		return false;
+	}
+
+	// Writes an unformatted string of text to the console (fast!)
+	// A newline is automatically appended.
+	__forceinline bool __fastcall MsgLn( Colors color, const char* fmt )
+	{
+		SetColor( color );
+		Write( fmt );
+		ClearColor();
+		Newline();
 		return false;
 	}
 
 	// Writes a formatted message to the console, with appended newline.
-	static __forceinline void __fastcall _MsgLn( Colors color, const char* fmt, va_list args )
+	static __forceinline void __fastcall _WriteLn( Colors color, const char* fmt, va_list args )
 	{
 		char msg[2048];
 
@@ -144,17 +155,17 @@ namespace Console
 	}
 
 	// Writes a line of colored text to the console, with automatic newline appendage.
-	bool MsgLn( Colors color, const char* fmt, ... )
+	bool WriteLn( Colors color, const char* fmt, ... )
 	{
 		va_list list;
 		va_start(list,fmt);
-		_MsgLn( Color_White, fmt, list );
+		_WriteLn( color, fmt, list );
 		va_end(list);
 		return false;
 	}
 
 	// writes a formatted message to the console (no newline and no color)
-	bool Msg( const char* fmt, ... )
+	bool Write( const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -164,12 +175,12 @@ namespace Console
 		msg[2047] = '\0';
 		va_end(list);
 
-		Write( msg );
+		Msg( msg );
 		return false;
 	}
 
 	// writes a formatted message to the console (no newline and no color)
-	bool Msg( Colors color, const char* fmt, ... )
+	bool Write( Colors color, const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -180,14 +191,14 @@ namespace Console
 		va_end(list);
 
 		SetColor( color );
-		Write( msg );
+		Msg( msg );
 		ClearColor();
 		return false;
 	}
 
 	// Writes a formatted message to the console, with appended newline.
 	// (no coloring)
-	bool MsgLn( const char* fmt, ... )
+	bool WriteLn( const char* fmt, ... )
 	{
 		va_list list;
 		char msg[2048];
@@ -197,7 +208,7 @@ namespace Console
 		va_end(list);
 
 		strcat( msg, "\n" );
-		Write( msg );
+		Msg( msg );
 		if( emuLog != NULL )
 			fflush( emuLog );		// manual flush to accomany manual newline
 		return false;
@@ -209,7 +220,7 @@ namespace Console
 	{
 		va_list list;
 		va_start(list,fmt);
-		_MsgLn( Color_Red, fmt, list );
+		_WriteLn( Color_Red, fmt, list );
 		va_end(list);
 		return false;
 	}
@@ -220,8 +231,20 @@ namespace Console
 	{
 		va_list list;
 		va_start(list,fmt);
-		_MsgLn( Color_Yellow, fmt, list );
+		_WriteLn( Color_Yellow, fmt, list );
 		va_end(list);
 		return false;
 	}
+
+	// Displays a message in the console with green emphasis.
+	// Newline is automatically appended.
+	bool Status( const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_WriteLn( Color_Green, fmt, list );
+		va_end(list);
+		return false;
+	}
+
 }

@@ -595,7 +595,7 @@ static int recInit() {
 
 static void recReset()
 {
-	DevCon::WriteLn("IOP Recompiler data reset");
+	DevCon::MsgLn("IOP Recompiler data reset");
 
 	memset(recRAM, 0, sizeof(BASEBLOCK)/4*0x200000);
 	memset(recROM, 0, sizeof(BASEBLOCK)/4*0x400000);
@@ -989,10 +989,7 @@ void psxSetBranchImm( u32 imm )
 
 static u32 psxScaleBlockCycles()
 {
-	/*return s_psxBlockCycles * 
-		(CHECK_IOPSYNC_HACK ? (CHECK_EE_IOP_EXTRA ? 3.1875 : 2.125) : (17/16));*/
-	return s_psxBlockCycles * 
-		(CHECK_IOP_CYCLERATE ? 2 : 1);
+	return s_psxBlockCycles * (CHECK_IOP_CYCLERATE ? 2 : 1);
 }
 
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)

@@ -470,7 +470,7 @@ void SysPrintf(const char *fmt, ...) {
 	msg[511] = '\0';
 	va_end(list);
 
-	Console::Write( msg );
+	Console::Msg( msg );
 }
 
 void *SysLoadLibrary(const char *lib) {

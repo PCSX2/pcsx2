@@ -368,7 +368,7 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 	pblock->aPFNs = (uptr*)HeapAlloc (GetProcessHeap (), 0, PFNArraySize);
 
 	if (pblock->aPFNs == NULL) {
-		SysPrintf("Failed to allocate on heap.\n");
+		Console::Error("Failed to allocate on heap.");
 		goto eCleanupAndExit;
 	}
 
@@ -378,13 +378,13 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 
 	if( bResult != TRUE ) 
 	{
-		SysPrintf("Cannot allocate physical pages, error %u.\n", GetLastError() );
+		Console::Error("Virtual Memory Error %u > Cannot allocate physical pages.", GetLastError() );
 		goto eCleanupAndExit;
 	}
 
 	if( NumberOfPagesInitial != pblock->NumberPages ) 
 	{
-		SysPrintf("Allocated only %p of %p pages.\n", pblock->NumberPages, NumberOfPagesInitial );
+		Console::Error("Virtual Memory > Physical allocation failed!\n\tAllocated only %p of %p pages.", pblock->NumberPages, NumberOfPagesInitial );
 		goto eCleanupAndExit;
 	}
 
@@ -417,7 +417,7 @@ int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
 	LPVOID lpMemReserved = VirtualAlloc( base, size, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE );
 	if( lpMemReserved == NULL || base != lpMemReserved )
 	{
-		Console::MsgLn("VirtualMemory Error %d > Cannot reserve memory at 0x%8.8x(%x).", base, lpMemReserved, GetLastError());
+		Console::WriteLn("VirtualMemory Error %d > Cannot reserve memory at 0x%8.8x(%x).", base, lpMemReserved, GetLastError());
 		goto eCleanupAndExit;
 	}
 
@@ -429,7 +429,7 @@ int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
 
 	if( bResult != TRUE ) 
 	{
-		Console::MsgLn("VirtualMemory Error %u > MapUserPhysicalPages failed to map.", GetLastError() );
+		Console::WriteLn("VirtualMemory Error %u > MapUserPhysicalPages failed to map.", GetLastError() );
 		goto eCleanupAndExit;
 	}
 
@@ -445,7 +445,7 @@ void SysVirtualFree(void* lpMemReserved, u32 size)
 	// unmap   
 	if( MapUserPhysicalPages( lpMemReserved, (size+s_dwPageSize-1)/s_dwPageSize, NULL ) != TRUE ) 
 	{
-		Console::MsgLn("VirtualMemory Error %u > MapUserPhysicalPages failed to unmap", GetLastError() );
+		Console::WriteLn("VirtualMemory Error %u > MapUserPhysicalPages failed to unmap", GetLastError() );
 		return;
 	}
 
