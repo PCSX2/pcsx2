@@ -1074,7 +1074,7 @@ BEGIN
     LTEXT           "Important:  X2 and X3 sync hacks *will* cause choppy/skippy audio on many FMV movies.",IDC_STATIC,13,183,149,25
     LTEXT           "Bigger speedup, but causes flickering or missing geometry on many games.",IDC_STATIC,25,158,133,19
     LTEXT           "Big speedup!  Works well with many games.",IDC_STATIC,25,124,125,19
-    LTEXT           "Most compatible option - recommended for everyone with high-end machines.",IDC_STATIC,25,55,129,19
+    LTEXT           "Most compatible option - recommended for everyone with high-end machines.",IDC_STATIC,25,55,136,19
     LTEXT           "Small speedup and works well with most games.",IDC_STATIC,186,53,134,22
     LTEXT           "Small speedup. Works well with most games, but may cause certain games to crash or freeze up during bootup or stage changes.",IDC_STATIC,186,94,134,39
     LTEXT           "Moderate speedup and works well with most games.",IDC_STATIC,25,90,129,19
