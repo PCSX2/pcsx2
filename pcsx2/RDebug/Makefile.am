@@ -1,4 +1,4 @@
-INCLUDES = -I@srcdir@/../
+INCLUDES = -I@srcdir@/../   -I@srcdir@/../../common/
 noinst_LIBRARIES = libRDebug.a
 
 libRDebug_a_SOURCES = \

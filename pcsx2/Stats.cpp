@@ -49,9 +49,7 @@ void statsClose() {
 	fprintf(f, "-- PCSX2 v%s statics--\n\n", PCSX2_VERSION);
 	fprintf(f, "Ran for %d seconds\n", t);
 	fprintf(f, "Total VSyncs: %d (%s)\n", stats.vsyncCount, Config.PsxType ? "PAL" : "NTSC");
-#ifndef __x86_64__
 	fprintf(f, "VSyncs per Seconds: %g\n", (double)stats.vsyncCount / t);
-#endif
 	fprintf(f, "Total EE  Instructions Executed: %lld\n", stats.eeCycles);
 	fprintf(f, "Total IOP Instructions Executed: %lld\n", stats.iopCycles);
 	if (!CHECK_EEREC) fprintf(f, "Interpreter Mode\n");

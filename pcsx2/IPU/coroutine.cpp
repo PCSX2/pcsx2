@@ -26,17 +26,9 @@
 struct coroutine {
 	void* pcalladdr;
 	void *pcurstack;
-#ifdef __x86_64__
-    uptr storerbx, storerbp, r12, r13, r14, r15;
-#ifdef _MSC_VER
-    // msft also has rsi and rdi as non-volatile
-    uptr storersi, storerdi;
-#endif
 
-    void* data;
-#else
     uptr storeebx, storeesi, storeedi, storeebp;
-#endif
+	
     int restore; // if nonzero, restore the registers
     int alloc;
 	//struct s_coroutine *caller;
@@ -68,11 +60,8 @@ coroutine_t so_create(void (*func)(void *), void *data, void *stack, int size)
     endstack = (char*)stack + size - 64;
 	co = (coroutine*)stack;
 	stack = (char *) stack + CO_STK_COROSIZE;
-    *(void**)endstack = NULL;
-    *(void**)((char*)endstack+sizeof(void*)) = data;
-#ifdef __x86_64__
-    co->data = data;
-#endif
+	*(void**)endstack = NULL;
+	*(void**)((char*)endstack+sizeof(void*)) = data;
 	co->alloc = alloc;
 	co->pcalladdr = (void*)func;
     co->pcurstack = endstack;
@@ -88,7 +77,7 @@ void so_delete(coroutine_t coro)
 }
 
 // see acoroutines.S and acoroutines.asm for other asm implementations
-#if defined(_MSC_VER) && !defined(__x86_64__)
+#if defined(_MSC_VER)
 
 __declspec(naked) void so_call(coroutine_t coro)
 {

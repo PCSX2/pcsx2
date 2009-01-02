@@ -384,9 +384,8 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 		if (xmmregs[i].type != XMMTYPE_GPRREG) continue;
 		if (xmmregs[i].reg != gprreg) continue;
 
-#ifndef __x86_64__
 		assert( _checkMMXreg(MMX_GPR|gprreg, mode) == -1 );
-#endif
+
 		g_xmmtypes[i] = XMMT_INT;
 
 		if (!(xmmregs[i].mode & MODE_READ) && (mode & MODE_READ)) 
@@ -447,7 +446,6 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 			
 			if (mode & MODE_READ) _flushConstReg(gprreg);
 
-#ifndef __x86_64__
 			mmxreg = _checkMMXreg(MMX_GPR+gprreg, 0);
 			
 			if (mmxreg >= 0 ) 
@@ -472,35 +470,12 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 				// don't flush
 				mmxregs[mmxreg].inuse = 0;
 			}
-#else
-			mmxreg = _checkX86reg(X86TYPE_GPR, gprreg, 0);
-			
-			if (mmxreg >= 0 ) 
-			{
-				SSE2_MOVQ_R_to_XMM(xmmreg, mmxreg);
-				SSE_MOVHPS_M64_to_XMM(xmmreg, (uptr)&cpuRegs.GPR.r[gprreg].UL[0]);
-
-				// read only, instead of setting to write, just flush to mem
-				if (!(mode & MODE_WRITE) && (x86regs[mmxreg].mode & MODE_WRITE) ) 
-					MOV64RtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], mmxreg);
-
-				x86regs[mmxreg].inuse = 0;
-			}
-#endif
 			else
-			{
 				SSEX_MOVDQA_M128_to_XMM(xmmreg, (uptr)&cpuRegs.GPR.r[gprreg].UL[0]);
-			}
 		}
 	}
 	else 
-	{
-#ifndef __x86_64__
 	_deleteMMXreg(MMX_GPR+gprreg, 0);
-#else
-        _deleteX86reg(X86TYPE_GPR, gprreg, 0);
-#endif
-	}
 
 	return xmmreg;
 }
@@ -1029,8 +1004,6 @@ void _freeXMMregs()
 	}
 }
 
-#if !defined(_MSC_VER) || !defined(__x86_64__)
-
 __forceinline void FreezeXMMRegs_(int save)
 {
 	//SysPrintf("FreezeXMMRegs_(%d); [%d]\n", save, g_globalXMMSaved);
@@ -1066,16 +1039,6 @@ __forceinline void FreezeXMMRegs_(int save)
                 "movaps [%0+0x50], %%xmm5\n"
                 "movaps [%0+0x60], %%xmm6\n"
                 "movaps [%0+0x70], %%xmm7\n"
-#ifdef __x86_64__
-                "movaps [%0+0x80], %%xmm8\n"
-                "movaps [%0+0x90], %%xmm9\n"
-                "movaps [%0+0xa0], %%xmm10\n"
-                "movaps [%0+0xb0], %%xmm11\n"
-                "movaps [%0+0xc0], %%xmm12\n"
-                "movaps [%0+0xd0], %%xmm13\n"
-                "movaps [%0+0xe0], %%xmm14\n"
-                "movaps [%0+0xf0], %%xmm15\n"
-#endif
                 ".att_syntax\n" : : "r"(g_globalXMMData) );
 
 #endif // _MSC_VER
@@ -1113,23 +1076,11 @@ __forceinline void FreezeXMMRegs_(int save)
                 "movaps %%xmm5, [%0+0x50]\n"
                 "movaps %%xmm6, [%0+0x60]\n"
                 "movaps %%xmm7, [%0+0x70]\n"
-#ifdef __x86_64__
-                "movaps %%xmm8, [%0+0x80]\n"
-                "movaps %%xmm9, [%0+0x90]\n"
-                "movaps %%xmm10, [%0+0xa0]\n"
-                "movaps %%xmm11, [%0+0xb0]\n"
-                "movaps %%xmm12, [%0+0xc0]\n"
-                "movaps %%xmm13, [%0+0xd0]\n"
-                "movaps %%xmm14, [%0+0xe0]\n"
-                "movaps %%xmm15, [%0+0xf0]\n"
-#endif
                 ".att_syntax\n" : : "r"(g_globalXMMData) );
 
 #endif // _MSC_VER
 	}
 }
-
-#endif
 
 // PSX 
 void _psxMoveGPRtoR(x86IntRegType to, int fromgpr)
@@ -1297,11 +1248,7 @@ void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 }
 
 void SetMMXstate() {
-#ifdef __x86_64__
-    assert(0);
-#else
 	x86FpuState = MMX_STATE;
-#endif
 }
 
 // Writebacks //

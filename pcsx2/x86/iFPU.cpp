@@ -50,11 +50,7 @@
 #define FPUflagSO	0X00000010
 #define FPUflagSU	0X00000008
 
-#ifndef __x86_64__
 #define FPU_ADD_SUB_HACK 1 // Add/Sub opcodes produce more ps2-like results if set to 1
-#else
-#define FPU_ADD_SUB_HACK 0 // DEC32R doesn't work on 64 bits
-#endif
 
 extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
 extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
@@ -148,17 +144,14 @@ void recCFC1(void)
 	MOV32MtoR( EAX, (uptr)&fpuRegs.fprc[ _Fs_ ] );
 	_deleteEEreg(_Rt_, 0);
 
-	if(EEINST_ISLIVE1(_Rt_)) {
-#ifdef __x86_64__
-        CDQE();
-        MOV64RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], RAX );
-#else
+	if(EEINST_ISLIVE1(_Rt_)) 
+	{
 		CDQ( );
 		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
 		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
-#endif
 	}
-	else {
+	else 
+	{
 		EEINST_RESETHASLIVE1(_Rt_);
 		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
 	}
@@ -180,25 +173,7 @@ void recCTC1( void )
 		{
 			SSEX_MOVD_XMM_to_M32((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
 		}
-#ifdef __x86_64__
-		else 
-		{
-			mmreg = _checkX86reg(X86TYPE_GPR, _Rt_, MODE_READ);
-			
-			if ( mmreg >= 0 ) 
-			{
-				MOV32RtoM((uptr)&fpuRegs.fprc[ _Fs_ ], mmreg);
-			}
-			else 
-			{
-				_deleteGPRtoXMMreg(_Rt_, 1);
-				_deleteX86reg(X86TYPE_GPR, _Rt_, 1);
-			
-				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
-				MOV32RtoM( (uptr)&fpuRegs.fprc[ _Fs_ ], EAX );
-			}
-		}
-#else
+
 		else 
 		{
 			mmreg = _checkMMXreg(MMX_GPR+_Rt_, MODE_READ);
@@ -217,7 +192,6 @@ void recCTC1( void )
 				MOV32RtoM( (uptr)&fpuRegs.fprc[ _Fs_ ], EAX );
 			}
 		}
-#endif
 	}
 }
 //------------------------------------------------------------------
@@ -227,100 +201,6 @@ void recCTC1( void )
 // MFC1
 //------------------------------------------------------------------
 
-#ifdef __x86_64__
-void recMFC1(void) 
-{
-	int regt, regs;
-	if ( ! _Rt_ ) return;
-
-	_eeOnWriteReg(_Rt_, 1);
-
-	regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
-	
-	if( regs >= 0 ) 
-	{
-		_deleteGPRtoXMMreg(_Rt_, 2);
-		regt = _allocCheckGPRtoX86(g_pCurInstInfo, _Rt_, MODE_WRITE);
-		
-		if( regt >= 0 ) 
-		{
-			if(EEINST_ISLIVE1(_Rt_)) 
-			{
-				SSE2_MOVD_XMM_to_R(RAX, regs);
-				
-				// sign extend
-				CDQE();
-				MOV64RtoR(regt, RAX);
-			}
-			else 
-			{
-				SSE2_MOVD_XMM_to_R(regt, regs);
-				EEINST_RESETHASLIVE1(_Rt_);
-			}
-		}
-		else 
-		{
-			if(EEINST_ISLIVE1(_Rt_)) 
-			{
-				_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs, 0);
-			}
-			else 
-			{
-				EEINST_RESETHASLIVE1(_Rt_);
-				SSE_MOVSS_XMM_to_M32((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs);
-			}
-		}
-	}
-	else 
-	{
-		regs = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
-	
-		if( regs >= 0 ) 
-		{
-			if( xmmregs[regs].mode & MODE_WRITE ) 
-			{
-				SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[_Rt_].UL[2], regs);
-			}
-			xmmregs[regs].inuse = 0;
-		}
-		else 
-		{
-			regt = _allocCheckGPRtoX86(g_pCurInstInfo, _Rt_, MODE_WRITE);
-			
-			if( regt >= 0 ) 
-			{
-				if(EEINST_ISLIVE1(_Rt_)) 
-				{
-					MOV32MtoR( RAX, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
-					CDQE();
-					MOV64RtoR(regt, RAX);
-				}
-				else 
-				{
-					MOV32MtoR( regt, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
-					EEINST_RESETHASLIVE1(_Rt_);
-				}
-			}
-			else
-			{
-				_deleteEEreg(_Rt_, 0);
-				MOV32MtoR( EAX, (uptr)&fpuRegs.fpr[ _Fs_ ].UL );
-            
-				if(EEINST_ISLIVE1(_Rt_)) 
-				{
-					CDQE();
-					MOV64RtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], RAX);
-				}
-				else 
-				{
-					EEINST_RESETHASLIVE1(_Rt_);
-					MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-				}
-			}
-		}
-	}
-}
-#else
 void recMFC1(void) 
 {
 	int regt, regs;
@@ -398,7 +278,7 @@ void recMFC1(void)
 		}
 	}
 }
-#endif
+
 //------------------------------------------------------------------
 
 
@@ -436,21 +316,6 @@ void recMTC1(void)
 			}
 		}
 		else 
-		#ifdef __x86_64__
-		{
-			mmreg = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
-
-			if( mmreg >= 0 ) 
-			{
-				SSE_MOVSS_M32_to_XMM(mmreg, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
-			}
-			else 
-			{
-				MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
-				MOV32RtoM((uptr)&fpuRegs.fpr[ _Fs_ ].UL, EAX);
-			}
-		}
-		#else
 		{
 			int mmreg2;
 
@@ -483,7 +348,6 @@ void recMTC1(void)
 				}
 			}
 		}
-		#endif
 	}
 }
 //------------------------------------------------------------------

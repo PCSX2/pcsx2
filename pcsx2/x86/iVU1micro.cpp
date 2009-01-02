@@ -90,16 +90,10 @@ void recVU1Shutdown()
 }
 
 void recResetVU1( void ) {
+	if( CHECK_VU1REC ) SuperVUReset(1);
 
-	if( CHECK_VU1REC ) {
-		SuperVUReset(1);
-	}
-
-#ifndef __x86_64__
 	x86FpuState = FPU_STATE;
-#endif
 	iCWstate = 0;
-
 	branch = 0;
 }
 

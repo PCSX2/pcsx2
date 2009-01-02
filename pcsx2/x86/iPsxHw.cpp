@@ -108,7 +108,6 @@ int psxHwConstRead8(u32 x86reg, u32 add, u32 sign) {
 void psxConstReadCounterMode16(int x86reg, int index, int sign)
 {
 	if( IS_MMXREG(x86reg) ) {
-        X86_64ASSERT();
 		MMXONLY(MOV16MtoR(ECX, (uptr)&psxCounters[index].mode);
 		MOVDMtoMMX(x86reg&0xf, (uptr)&psxCounters[index].mode - 2);)
 	}
@@ -270,7 +269,6 @@ int psxHwConstRead16(u32 x86reg, u32 add, u32 sign) {
 void psxConstReadCounterMode32(int x86reg, int index)
 {
 	if( IS_MMXREG(x86reg) ) {
-        X86_64ASSERT();
 		MMXONLY(MOV16MtoR(ECX, (uptr)&psxCounters[index].mode);
 		MOVDMtoMMX(x86reg&0xf, (uptr)&psxCounters[index].mode);)
 	}

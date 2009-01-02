@@ -1,4 +1,4 @@
-INCLUDES = -I@srcdir@/../ -I@srcdir@/../x86
+INCLUDES = -I@srcdir@/../ -I@srcdir@/../x86   -I@srcdir@/../../common/
 noinst_LIBRARIES = libIPU.a
 
 libIPU_a_SOURCES = IPU.c yuv2rgb.cpp coroutine.cpp acoroutine.S

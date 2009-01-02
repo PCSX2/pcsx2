@@ -71,9 +71,7 @@ BIOS
 extern u32 maxrecmem;
 extern int rdram_devices, rdram_sdevid;
 
-#ifndef __x86_64__
 extern void * memcpy_fast(void *dest, const void *src, size_t n);
-#endif
 
 //#define FULLTLB
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode

@@ -206,11 +206,7 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
     f = fopen( "mydump1", "wb" );
 	fwrite( ptr, 1, (uptr)x86Ptr - (uptr)ptr, f );
 	fclose( f );
-#ifdef __x86_64__
-	sprintf( command, "objdump -D --target=binary --architecture=i386:x86-64 -M intel mydump1 | cat %s - > tempdump", filename );
-#else
 	sprintf( command, "objdump -D --target=binary --architecture=i386 -M intel mydump1 | cat %s - > tempdump", filename );
-#endif
 	system( command );
     sprintf(command, "mv tempdump %s", filename);
     system(command);
@@ -633,7 +629,6 @@ static void recShutdown()
 
 #pragma warning(disable:4731) // frame pointer register 'ebp' modified by inline assembly code
 
-#if !defined(__x86_64__)
 static u32 s_uSaveESP = 0;
 
 static __forceinline void R3000AExecute()
@@ -693,14 +688,10 @@ static __forceinline void R3000AExecute()
 	}
 }
 
-#else
-void R3000AExecute();
-#endif
-
 extern u32 g_psxNextBranchCycle;
 u32 g_psxlastpc = 0;
 
-#if defined(_MSC_VER) && !defined(__x86_64__)
+#if defined(_MSC_VER)
 
 static u32 g_temp;
 
@@ -875,11 +866,7 @@ static void recClear(u32 Addr, u32 Size)
 	}
 }
 
-#ifdef __x86_64__
-#define IOP_MIN_BLOCK_BYTES 16
-#else
 #define IOP_MIN_BLOCK_BYTES 15
-#endif
 
 void rpsxMemConstClear(u32 mem)
 {
@@ -915,12 +902,8 @@ void psxRecClearMem(BASEBLOCK* p)
 
 	// there is a small problem: mem can be ored with 0xa<<28 or 0x8<<28, and don't know which
 	MOV32ItoR(EDX, p->startpc);
-    assert( (uptr)x86Ptr <= 0xffffffff );
-#ifdef __x86_64__
-    MOV32ItoR(R15, (uptr)x86Ptr); // will be replaced by JMP32
-#else
-    PUSH32I((uptr)x86Ptr);
-#endif
+	assert( (uptr)x86Ptr <= 0xffffffff );
+	PUSH32I((uptr)x86Ptr);
 	JMP32((uptr)psxDispatcherClear - ( (uptr)x86Ptr + 5 ));
 	assert( x86Ptr == (u8*)p->pFnptr + IOP_MIN_BLOCK_BYTES );
 
@@ -1050,7 +1033,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 
 static int *s_pCode;
 
-#if !defined(_MSC_VER) || !defined(__x86_64__)
+#if !defined(_MSC_VER)
 static void checkcodefn()
 {
 	int pctemp;
@@ -1286,10 +1269,6 @@ void psxRecRecompile(u32 startpc)
 	u32 branchTo;
 	u32 willbranch3 = 0;
 	u32* ptr;
-
-#ifdef __x86_64__ 
-	FreezeXMMRegs(1); // fixme - check why this is needed on x64 builds
-#endif
 
 #ifdef _DEBUG
 	//psxdump |= 4;
@@ -1575,10 +1554,6 @@ StartRecomp:
 	}
     else
         assert( s_pCurBlock->pFnptr != 0 );
-
-#ifdef __x86_64__ 
-		FreezeXMMRegs(0); // fixme - check why this is needed on x64 builds (rama)
-#endif
 }
 
 R3000Acpu psxRec = {

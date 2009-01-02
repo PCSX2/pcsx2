@@ -30,34 +30,6 @@
 
 #define SWAP(x, y) { *(u32*)&y ^= *(u32*)&x; *(u32*)&x ^= *(u32*)&y; *(u32*)&y ^= *(u32*)&x; }
 
-#ifdef __x86_64__
-
-#ifdef _MSC_VER
-// visual studio calling convention
-x86IntRegType g_x86savedregs[] = { RBX, RBP, RSI, RDI, R12, R13, R14, R15 };
-x86IntRegType g_x86tempregs[] = { R8, R9, R10, R11, RDX, RCX };
-
-// arranged in savedreg -> tempreg order
-x86IntRegType g_x86allregs[14] = { RBX, RBP, RSI, RDI, R12, R13, R14, R15, R8, R9, R10, R11, RDX, RCX };
-
-#else
-// standard calling convention
-
-// registers saved by calling functions (no need to flush them across calls)
-x86IntRegType g_x86savedregs[] = { RBX, RBP, R12, R13, R14, R15 };
-// temp registers that need to be saved across calls
-x86IntRegType g_x86tempregs[] = { RCX, RDX, R8, R9, R10, R11, RSI, RDI };
-
-// arranged in savedreg -> tempreg order
-x86IntRegType g_x86allregs[14] = { RBX, RBP, R12, R13, R14, R15, RCX, RDX, R8, R9, R10, R11, RSI, RDI };
-
-#endif
-
-x86IntRegType g_x868bitregs[11] = { RBX, R12, R13, R14, R15, RCX, RDX, R8, R9, R10, R11 };
-x86IntRegType g_x86non8bitregs[3] = { RBP, RSI, RDI };
-
-#endif // __x86_64__
-
 u8  *x86Ptr;
 u8  *j8Ptr[32];
 u32 *j32Ptr[32];
@@ -819,71 +791,6 @@ __forceinline void MOVZX32M16toR( x86IntRegType to, u32 from )
 	write32( MEMADDR(from, 4) );
 }
 
-#ifdef __x86_64__
-
-/* movzx r8 to r64 */
-__forceinline void MOVZX64R8toR( x86IntRegType to, x86IntRegType from ) 
-{
-	RexRB(1,to,from);
-	write16( 0xB60F ); 
-	ModRM( 3, to, from ); 
-}
-
-__forceinline void MOVZX64Rm8toR( x86IntRegType to, x86IntRegType from )
-{
-	RexRB(1,to,from);
-	write16( 0xB60F ); 
-	ModRM( 0, to, from );
-}
-
-__forceinline void MOVZX64Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset )
-{
-	RexRB(1,to,from);
-	write16( 0xB60F );
-	WriteRmOffsetFrom(to,from,offset);
-}
-
-/* movzx m8 to r64 */
-__forceinline void MOVZX64M8toR( x86IntRegType to, u32 from ) 
-{
-	RexR(1,to);
-	write16( 0xB60F ); 
-	ModRM( 0, to, DISP32 );
-	write32( MEMADDR(from, 4) );
-}
-
-/* movzx r16 to r64 */
-__forceinline void MOVZX64R16toR( x86IntRegType to, x86IntRegType from ) 
-{
-	RexRB(1,to,from);
-	write16( 0xB70F ); 
-	ModRM( 3, to, from ); 
-}
-
-__forceinline void MOVZX64Rm16toR( x86IntRegType to, x86IntRegType from )
-{
-	RexRB(1,to,from);
-	write16( 0xB70F ); 
-	ModRM( 0, to, from ); 
-}
-
-__forceinline void MOVZX64Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset )
-{
-	RexRB(1,to,from);
-	write16( 0xB70F );
-	WriteRmOffsetFrom(to,from,offset);
-}
-
-/* movzx m16 to r64 */
-__forceinline void MOVZX64M16toR( x86IntRegType to, u32 from ) 
-{
-	RexR(1,to);
-	write16( 0xB70F ); 
-	ModRM( 0, to, DISP32 );
-	write32( MEMADDR(from, 4) );
-}
-#endif
-
 /* cmovbe r32 to r32 */
 __forceinline void CMOVBE32RtoR( x86IntRegType to, x86IntRegType from )
 {
@@ -1331,7 +1238,6 @@ __forceinline void ADC32RtoM( uptr to, x86IntRegType from )
 /* inc r32 */
 __forceinline void INC32R( x86IntRegType to ) 
 {
-	X86_64ASSERT();
 	write8( 0x40 + to );
 }
 
@@ -1346,7 +1252,6 @@ __forceinline void INC32M( u32 to )
 /* inc r16 */
 __forceinline void INC16R( x86IntRegType to ) 
 {
-	X86_64ASSERT();
 	write8( 0x66 );
 	write8( 0x40 + to );
 }
@@ -1538,7 +1443,6 @@ __forceinline void SBB32RtoM( uptr to, x86IntRegType from )
 /* dec r32 */
 __forceinline void DEC32R( x86IntRegType to ) 
 {
-	X86_64ASSERT();
 	write8( 0x48 + to );
 }
 
@@ -1553,7 +1457,6 @@ __forceinline void DEC32M( u32 to )
 /* dec r16 */
 __forceinline void DEC16R( x86IntRegType to ) 
 {
-	X86_64ASSERT();
 	write8( 0x66 );
 	write8( 0x48 + to );
 }
@@ -3211,39 +3114,10 @@ __forceinline void SETE8R( x86IntRegType to ) { SET8R(0x94, to); }
 
 /* push imm32 */
 __forceinline void PUSH32I( u32 from ) 
-{
-	X86_64ASSERT();
+{;
 	write8( 0x68 ); 
 	write32( from ); 
 }
-
-#ifdef __x86_64__
-
-/* push r32 */
-void PUSH32R( x86IntRegType from ) 
-{
-	RexB(0,from);
-	write8( 0x51 | from ); 
-}
-
-/* push m32 */
-void PUSH32M( uptr from ) 
-{
-	write8( 0xFF );
-	ModRM( 0, 6, DISP32 );
-	write32( MEMADDR(from, 4) ); 
-}
-
-/* pop r64 */
-void POP64R( x86IntRegType from )  {
-	RexB(0,from);
-	write8( 0x59 | from ); 
-}
-
-void PUSHR(x86IntRegType from) { PUSH32R(from); }
-void POPR(x86IntRegType from) { POP64R(from); }
-
-#else
 
 /* push r32 */
 __forceinline void PUSH32R( x86IntRegType from )  { write8( 0x50 | from ); }
@@ -3268,8 +3142,6 @@ __forceinline void POPA32( void ) { write8( 0x61 ); }
 __forceinline void PUSHR(x86IntRegType from) { PUSH32R(from); }
 __forceinline void POPR(x86IntRegType from) { POP32R(from); }
 
-#endif
-
 
 /* pushfd */
 __forceinline void PUSHFD( void ) { write8( 0x9C ); }
@@ -3283,10 +3155,6 @@ __forceinline void CBW( void ) { write16( 0x9866 );  }
 __forceinline void CWD( void )  { write8( 0x98 ); }
 __forceinline void CDQ( void ) { write8( 0x99 ); }
 __forceinline void CWDE() { write8(0x98); }
-
-#ifdef __x86_64__
-void CDQE( void ) { RexR(1,0); write8( 0x98 ); }
-#endif
 
 __forceinline void LAHF() { write8(0x9f); }
 __forceinline void SAHF() { write8(0x9e); }

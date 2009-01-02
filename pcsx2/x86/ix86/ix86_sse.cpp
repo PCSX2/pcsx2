@@ -278,7 +278,6 @@ __forceinline void SSE2_MOVQ_XMM_to_M64( u32 to, x86SSERegType from )
 	SSERtoM66(0xd60f);
 }
 
-#ifndef __x86_64__
 __forceinline void SSE2_MOVDQ2Q_XMM_to_MM( x86MMXRegType to, x86SSERegType from)
 {
 	write8(0xf2);
@@ -289,7 +288,6 @@ __forceinline void SSE2_MOVQ2DQ_MM_to_XMM( x86SSERegType to, x86MMXRegType from)
 	write8(0xf3);
 	SSERtoR( 0xd60f);
 }
-#endif
 
 //**********************************************************************************/
 //MOVSS: Move Scalar Single-Precision FP  value                                    *
@@ -562,7 +560,6 @@ __forceinline void SSE_MAXPS_XMM_to_XMM( x86SSERegType to, x86SSERegType from ) 
 __forceinline void SSE_MAXSS_M32_to_XMM( x86SSERegType to, uptr from )           { SSE_SS_MtoR( 0x5f0f, 0 ); }
 __forceinline void SSE_MAXSS_XMM_to_XMM( x86SSERegType to, x86SSERegType from ) { SSE_SS_RtoR( 0x5f0f ); }
 
-#ifndef __x86_64__
 /////////////////////////////////////////////////////////////////////////////////////////
 //**********************************************************************************/
 //CVTPI2PS: Packed Signed INT32 to Packed Single  FP Conversion                    *
@@ -576,7 +573,6 @@ __forceinline void SSE_CVTPI2PS_MM_to_XMM( x86SSERegType to, x86MMXRegType from 
 //**********************************************************************************
 __forceinline void SSE_CVTPS2PI_M64_to_MM( x86MMXRegType to, uptr from )        { SSEMtoR( 0x2d0f, 0 ); }
 __forceinline void SSE_CVTPS2PI_XMM_to_MM( x86MMXRegType to, x86SSERegType from )   { SSERtoR( 0x2d0f ); }
-#endif
 
 __forceinline void SSE_CVTTSS2SI_M32_to_R32(x86IntRegType to, uptr from) { write8(0xf3); SSEMtoR(0x2c0f, 0); }
 __forceinline void SSE_CVTTSS2SI_XMM_to_R32(x86IntRegType to, x86SSERegType from)
@@ -624,7 +620,6 @@ __forceinline void SSE_MINPS_XMM_to_XMM( x86SSERegType to, x86SSERegType from ) 
 __forceinline void SSE_MINSS_M32_to_XMM( x86SSERegType to, uptr from )           { SSE_SS_MtoR( 0x5d0f, 0 ); }
 __forceinline void SSE_MINSS_XMM_to_XMM( x86SSERegType to, x86SSERegType from ) { SSE_SS_RtoR( 0x5d0f ); }
 
-#ifndef __x86_64__
 ///////////////////////////////////////////////////////////////////////////////////////////
 //**********************************************************************************/
 //PMAXSW: Packed Signed Integer Word Maximum                                        *
@@ -644,7 +639,6 @@ __forceinline void SSE_PMAXSW_MM_to_MM( x86MMXRegType to, x86MMXRegType from ){ 
 //		SSE2_PMINSW_M128_to_XMM
 //		SSE2_PMINSW_XMM_to_XMM
 __forceinline void SSE_PMINSW_MM_to_MM( x86MMXRegType to, x86MMXRegType from ){ SSERtoR( 0xEA0F ); }
-#endif
 
 //////////////////////////////////////////////////////////////////////////////////////
 //**********************************************************************************/
@@ -830,27 +824,6 @@ __forceinline void SSE2_MOVD_XMM_to_RmOffset( x86IntRegType to, x86SSERegType fr
 	write16( 0x7e0f );
     WriteRmOffsetFrom(from, to, offset);
 }
-
-#ifdef __x86_64__
-__forceinline void SSE2_MOVQ_XMM_to_R( x86IntRegType to, x86SSERegType from )
-{
-    assert( from < XMMREGS);
-    write8( 0x66 );
-	RexRB(1, from, to);
-	write16( 0x7e0f );
-	ModRM( 3, from, to );
-}
-
-__forceinline void SSE2_MOVQ_R_to_XMM( x86SSERegType to, x86IntRegType from )
-{
-    assert( to < XMMREGS);
-    write8(0x66);
-    RexRB(1, to, from);
-	write16( 0x6e0f );
-	ModRM( 3, to, from );
-}
-
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////
 //**********************************************************************************/

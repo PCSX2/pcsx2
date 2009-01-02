@@ -128,12 +128,6 @@ static __forceinline u32 timeGetTime()
 #	define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
 #endif
 
-#ifdef __x86_64__
-#	define X86_32CODE(x)
-#else
-#	define X86_32CODE(x) x
-#endif
-
 #ifndef __LINUX__
 #	define __unused
 #endif

@@ -56,10 +56,6 @@ extern s32 iCpuId( u32 cmd, u32 *regs )
    return 0;
 
 #elif defined (_MSC_VER)
-
-#ifdef __x86_64__
-   assert(0);
-#else // __x86_64__
    __asm
    {
       push ebx;
@@ -95,14 +91,12 @@ extern s32 iCpuId( u32 cmd, u32 *regs )
       pop edi;
       pop ebx;
    }
-#endif // __x86_64__
    return 0;
 
 #else
 
    // GCC Assembly Code -->
 
-#ifndef __x86_64__
    // see if we can use cpuid
    __asm__ __volatile__ (
       "sub $0x18, %%esp\n"
@@ -125,7 +119,6 @@ extern s32 iCpuId( u32 cmd, u32 *regs )
       "1:\n"
       : "=r"(flag) :
    );
-#endif
 
    cpuid(cmd, regs[0], regs[1], regs[2], regs[3]);
    return 0;
@@ -139,7 +132,7 @@ u64 GetCPUTick( void )
 
    return __rdtsc();
 
-#elif defined(_WIN32) && !defined(__x86_64__)
+#elif defined(_WIN32)
 
    __asm rdtsc;
 

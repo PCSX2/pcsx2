@@ -78,7 +78,7 @@ MEMCPY_AMD.CPP
 
 #include "Misc.h"
 
-#if defined(_MSC_VER) && !defined(__x86_64__)
+#if defined(_MSC_VER)
 
 #ifdef _DEBUG
 extern u8 g_globalMMXSaved;

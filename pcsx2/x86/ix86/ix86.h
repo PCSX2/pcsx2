@@ -28,13 +28,8 @@
 
 #include "PS2Etypes.h"       // Basic types header
 
-#ifdef __x86_64__
-#define XMMREGS 16
-#define X86REGS 16
-#else
 #define XMMREGS 8
 #define X86REGS 8
-#endif
 
 #define MMXREGS 8
 
@@ -53,58 +48,10 @@ typedef int x86IntRegType;
 #define EBP 5
 #define ESP 4
 
-#ifdef __x86_64__
-#define RAX 0
-#define RBX 3
-#define RCX 1
-#define RDX 2
-#define RSI 6
-#define RDI 7
-#define RBP 5
-#define RSP 4
-#define R8  8 
-#define R9  9 
-#define R10 10
-#define R11 11
-#define R12 12
-#define R13 13
-#define R14 14
-#define R15 15
-
-#define X86_TEMP RAX // don't allocate anything
-
-#ifdef _MSC_VER
-extern x86IntRegType g_x86savedregs[8];
-extern x86IntRegType g_x86tempregs[6];
-#else
-extern x86IntRegType g_x86savedregs[6];
-extern x86IntRegType g_x86tempregs[8];
-#endif
-
-extern x86IntRegType g_x86allregs[14]; // all registers that can be used by the recs
-extern x86IntRegType g_x868bitregs[11];
-extern x86IntRegType g_x86non8bitregs[3];
-
-#ifdef _MSC_VER
-#define X86ARG1 RCX
-#define X86ARG2 RDX
-#define X86ARG3 R8
-#define X86ARG4 R9
-#else
-#define X86ARG1 RDI
-#define X86ARG2 RSI
-#define X86ARG3 RDX
-#define X86ARG4 RCX
-#endif
-
-#else
-
 #define X86ARG1 EAX
 #define X86ARG2 ECX
 #define X86ARG3 EDX
 #define X86ARG4 EBX
-
-#endif // __x86_64__
 
 #define MM0 0
 #define MM1 1
@@ -215,30 +162,13 @@ extern u8  *x86Ptr;
 extern u8  *j8Ptr[32];
 extern u32 *j32Ptr[32];
 
-
-#ifdef __x86_64__
-#define X86_64ASSERT() assert(0)
-#define MEMADDR(addr, oplen)	((addr) - ((u64)x86Ptr + ((u64)oplen)))
-#else
-#define X86_64ASSERT()
 #define MEMADDR(addr, oplen)	(addr)
-#endif
 
-#ifdef __x86_64__
-#define Rex( w, r, x, b ) write8( 0x40 | ((w) << 3) | ((r) << 2) | ((x) << 1) | (b) );
-#define RexR(w, reg) if( w||(reg)>=8 ) { Rex(w, (reg)>=8, 0, 0); }
-#define RexB(w, base) if( w||(base)>=8 ) { Rex(w, 0, 0, (base)>=8); }
-#define RexRB(w, reg, base) if( w || (reg) >= 8 || (base)>=8 ) { Rex(w, (reg)>=8, 0, (base)>=8); }
-#define RexRXB(w, reg, index, base) if( w||(reg) >= 8 || (index) >= 8 || (base) >= 8 ) { \
-        Rex(w, (reg)>=8, (index)>=8, (base)>=8);                           \
-    }
-#else
 #define Rex(w,r,x,b) assert(0);
 #define RexR(w, reg) if( w||(reg)>=8 ) assert(0);
 #define RexB(w, base) if( w||(base)>=8 ) assert(0);
 #define RexRB(w, reg, base) if( w||(reg) >= 8 || (base)>=8 ) assert(0);
 #define RexRXB(w, reg, index, base) if( w||(reg) >= 8 || (index) >= 8 || (base) >= 8 ) assert(0);
-#endif
 
 extern __forceinline void write8( u8 val );
 extern __forceinline void write16( u16 val );
@@ -402,20 +332,6 @@ extern void MOVZX32Rm16toR( x86IntRegType to, x86IntRegType from );
 extern void MOVZX32Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset );
 // movzx m16 to r32 
 extern void MOVZX32M16toR( x86IntRegType to, u32 from );
-
-#ifdef __x86_64__
-extern void MOVZX64R8toR( x86IntRegType to, x86IntRegType from );
-extern void MOVZX64Rm8toR( x86IntRegType to, x86IntRegType from );
-extern void MOVZX64Rm8toROffset( x86IntRegType to, x86IntRegType from, int offset );
-// movzx m8 to r64
-extern void MOVZX64M8toR( x86IntRegType to, u32 from );
-// movzx r16 to r64 
-extern void MOVZX64R16toR( x86IntRegType to, x86IntRegType from );
-extern void MOVZX64Rm16toR( x86IntRegType to, x86IntRegType from );
-extern void MOVZX64Rm16toROffset( x86IntRegType to, x86IntRegType from, int offset );
-// movzx m16 to r64
-extern void MOVZX64M16toR( x86IntRegType to, u32 from );
-#endif
 
 // cmovbe r32 to r32 
 extern void CMOVBE32RtoR( x86IntRegType to, x86IntRegType from );
@@ -992,14 +908,6 @@ extern void SETE8R( x86IntRegType to );
 // push imm32
 extern void PUSH32I( u32 from );
 
-#ifdef __x86_64__
-// push r64
-void PUSH64R( x86IntRegType from );
-// push m64 
-void PUSH64M( uptr from );
-// pop r32 
-void POP64R( x86IntRegType from );
-#else
 // push r32 
 extern void PUSH32R( x86IntRegType from );
 // push m32 
@@ -1012,7 +920,6 @@ extern void POP32R( x86IntRegType from );
 extern void PUSHA32( void );
 // popad 
 extern void POPA32( void );
-#endif
 
 extern void PUSHR(x86IntRegType from);
 extern void POPR(x86IntRegType from);
@@ -1159,13 +1066,6 @@ extern void FCMOVNU32( x86IntRegType from );
 extern void FCOMP32( u32 from );
 extern void FNSTSWtoAX( void );
 
-// probably a little extreme here, but x86-64 should NOT use MMX
-#ifdef __x86_64__
-
-#define MMXONLY(code)
-
-#else
-
 #define MMXONLY(code) code
 
 //******************
@@ -1309,8 +1209,6 @@ extern void PMOVMSKBMMXtoR(x86IntRegType to, x86MMXRegType from);
 extern void SSE2_MOVDQ2Q_XMM_to_MM( x86MMXRegType to, x86SSERegType from);
 extern void SSE2_MOVQ2DQ_MM_to_XMM( x86SSERegType to, x86MMXRegType from);
 
-#endif // !__x86_64__
-
 //*********************
 // SSE   instructions *
 //*********************
@@ -1413,13 +1311,12 @@ extern void SSE_CMPORDSS_XMM_to_XMM( x86SSERegType to, x86SSERegType from );
 extern void SSE_UCOMISS_M32_to_XMM( x86SSERegType to, uptr from );
 extern void SSE_UCOMISS_XMM_to_XMM( x86SSERegType to, x86SSERegType from );
 
-#ifndef __x86_64__
 extern void SSE_PMAXSW_MM_to_MM( x86MMXRegType to, x86MMXRegType from );
 extern void SSE_PMINSW_MM_to_MM( x86MMXRegType to, x86MMXRegType from );
 extern void SSE_CVTPI2PS_MM_to_XMM( x86SSERegType to, x86MMXRegType from );
 extern void SSE_CVTPS2PI_M64_to_MM( x86MMXRegType to, uptr from );
 extern void SSE_CVTPS2PI_XMM_to_MM( x86MMXRegType to, x86SSERegType from );
-#endif
+
 extern void SSE_CVTPI2PS_M64_to_XMM( x86SSERegType to, uptr from );
 extern void SSE_CVTTSS2SI_M32_to_R32(x86IntRegType to, uptr from);
 extern void SSE_CVTTSS2SI_XMM_to_R32(x86IntRegType to, x86SSERegType from);
@@ -1663,10 +1560,8 @@ extern void SSE2_MOVD_XMM_to_R( x86IntRegType to, x86SSERegType from );
 extern void SSE2_MOVD_XMM_to_Rm( x86IntRegType to, x86SSERegType from );
 extern void SSE2_MOVD_XMM_to_RmOffset( x86IntRegType to, x86SSERegType from, int offset );
 
-#ifdef __x86_64__
 extern void SSE2_MOVQ_XMM_to_R( x86IntRegType to, x86SSERegType from );
 extern void SSE2_MOVQ_R_to_XMM( x86SSERegType to, x86IntRegType from );
-#endif
 
 //**********************************************************************************/
 //POR : SSE Bitwise OR                                                             *
@@ -1766,10 +1661,8 @@ extern void SSE2EMU_MOVQ_XMM_to_XMM( x86SSERegType to, x86SSERegType from);
 extern void SSE2EMU_MOVD_RmOffset_to_XMM( x86SSERegType to, x86IntRegType from, int offset );
 extern void SSE2EMU_MOVD_XMM_to_RmOffset(x86IntRegType to, x86SSERegType from, int offset );
 
-#ifndef __x86_64__
 extern void SSE2EMU_MOVDQ2Q_XMM_to_MM( x86MMXRegType to, x86SSERegType from);
 extern void SSE2EMU_MOVQ2DQ_MM_to_XMM( x86SSERegType to, x86MMXRegType from);
-#endif
 
 /* SSE2 emulated functions for SSE CPU's by kekko*/
 

@@ -550,7 +550,7 @@ static __forceinline void _cpuBranchTest_Shared()
 
 #ifdef PCSX2_DEVBUILD
 extern u8 g_globalXMMSaved;
-X86_32CODE(extern u8 g_globalMMXSaved;)
+extern u8 g_globalMMXSaved;
 #endif
 
 void cpuBranchTest()
@@ -560,9 +560,9 @@ void cpuBranchTest()
 
 #ifdef PCSX2_DEVBUILD
     // dont' remove this check unless doing an official release
-    if( g_globalXMMSaved X86_32CODE(|| g_globalMMXSaved) )
+    if( g_globalXMMSaved || g_globalMMXSaved)
         SysPrintf("frozen regs have not been restored!!!\n");
-	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
+	assert( !g_globalXMMSaved && !g_globalMMXSaved);
 #endif
 
 	// Don't need to freeze any regs during a BranchTest.
@@ -591,7 +591,7 @@ void cpuBranchTest()
 	// bother to return until the program is completely finished.
 
 #ifdef PCSX2_DEVBUILD
-	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
+	assert( !g_globalXMMSaved && !g_globalMMXSaved);
 #endif
 	g_EEFreezeRegs = true;
 }

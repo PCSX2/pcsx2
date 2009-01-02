@@ -112,13 +112,11 @@ void recPLZCW()
 		SSE2_MOVD_XMM_to_R(EAX, regs);
 		regs |= MEM_XMMTAG;
 	}
-#ifndef __x86_64__
 	else if( (regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
 		MOVD32MMXtoR(EAX, regs);
 		SetMMXstate();
 		regs |= MEM_MMXTAG;
 	}
-#endif
 	else {
 		MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
 		regs = 0;
@@ -126,13 +124,10 @@ void recPLZCW()
 
 	if( EEINST_ISLIVE1(_Rd_) )
 		_deleteEEreg(_Rd_, 0);
-#ifndef __x86_64__
 	else {
-		if( (regd = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) < 0 ) {
+		if( (regd = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) < 0 ) 
 			_deleteEEreg(_Rd_, 0);
-		}
 	}
-#endif
 
 	// first word
 	TEST32RtoR(EAX, EAX);
@@ -142,13 +137,11 @@ void recPLZCW()
 	if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
 		MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], 31);
 	}
-#ifndef __x86_64__
 	else {
 		SetMMXstate();
 		PCMPEQDRtoR(regd, regd);
 		PSRLQItoR(regd, 59);
 	}
-#endif
 
 	j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
@@ -166,12 +159,10 @@ void recPLZCW()
 	if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
 		MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], ECX);
 	}
-#ifndef __x86_64__
 	else {
 		SetMMXstate();
 		MOVD32RtoMMX(regd, ECX);
 	}
-#endif
 
 	x86SetJ8(j8Ptr[1]);
 
@@ -182,14 +173,12 @@ void recPLZCW()
 			SSE2_MOVD_XMM_to_R(EAX, regs&0xf);
 			SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0x4e);
 		}
-#ifndef __x86_64__
 		else if( regs >= 0 && (regs & MEM_MMXTAG) ) {
 			PSHUFWRtoR(regs, regs, 0x4e);
 			MOVD32MMXtoR(EAX, regs&0xf);
 			PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
 			SetMMXstate();
 		}
-#endif
 		else MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]);
 
 		TEST32RtoR(EAX, EAX);
@@ -325,15 +314,6 @@ REC_FUNC( MMI3, _Rd_ );
 
 #endif
 
-#ifdef __x86_64__
-
-#define MMX_ALLOC_TEMP1(code)
-#define MMX_ALLOC_TEMP2(code)
-#define MMX_ALLOC_TEMP3(code)
-#define MMX_ALLOC_TEMP4(code)
-
-#else
-
 // MMX helper routines
 #define MMX_ALLOC_TEMP1(code) { \
 		int t0reg; \
@@ -374,8 +354,6 @@ REC_FUNC( MMI3, _Rd_ );
 		_freeMMXreg(t2reg); \
 		_freeMMXreg(t3reg); \
 } \
-
-#endif // __x86_64__
 
 ////////////////////////////////////////////////////
 void recPSRLH( void )

@@ -68,9 +68,7 @@ static const unsigned int VIF1dmanum = 1;
 int g_vifCycles = 0;
 int path3hack = 0;
 
-#ifndef __x86_64__
 extern void * memcpy_fast(void *dest, const void *src, size_t n);
-#endif
 
 typedef void (*UNPACKFUNCTYPE)( u32 *dest, u32 *data, int size );
 typedef int  (*UNPACKPARTFUNCTYPESSE)( u32 *dest, u32 *data, int size );
@@ -513,10 +511,6 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 //			VIFfuncTableSSE[1].funcS[6](dest, (u32*)tempdata, 8);
 
 #ifdef _MSC_VER
-
-#ifdef __x86_64__
-            _vifCol = VIFdmanum ? g_vifCol1 : g_vifCol0;
-#else
 			if( VIFdmanum ) {
 				__asm movaps XMM_ROW, xmmword ptr [g_vifRow1]
 				__asm movaps XMM_COL, xmmword ptr [g_vifCol1]
@@ -525,8 +519,6 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 				__asm movaps XMM_ROW, xmmword ptr [g_vifRow0]
 				__asm movaps XMM_COL, xmmword ptr [g_vifCol0]
 			}
-#endif
-
 #else
 			if( VIFdmanum ) {
 				__asm__(".intel_syntax\n"

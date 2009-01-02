@@ -78,7 +78,7 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if(cpucaps.hasStreamingSIMD4Extensions) strcat(features,",SSE4.1");
 //            if(cpucaps.has3DNOWInstructionExtensions) strcat(features,",3DNOW");
 //            if(cpucaps.has3DNOWInstructionExtensionsExt)strcat(features,",3DNOW+");
-			if(cpucaps.hasAMD64BitArchitecture) strcat(features,",x86-64");
+//			if(cpucaps.hasAMD64BitArchitecture) strcat(features,",x86-64");
             SetDlgItemText(hW, IDC_FEATURESINPUT, features);
 
 			CheckDlgButton(hW, IDC_CPU_EEREC, !!CHECK_EEREC);

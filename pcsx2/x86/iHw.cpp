@@ -195,7 +195,7 @@ int hwConstRead16(u32 x86reg, u32 mem, u32 sign)
 
 #ifdef PCSX2_VIRTUAL_MEM
 //
-//#if defined(_MSC_VER) && !defined(__x86_64__)
+//#if defined(_MSC_VER)
 //__declspec(naked) void recCheckF440()
 //{
 //	__asm {
@@ -428,7 +428,6 @@ void hwConstRead64(u32 mem, int mmreg) {
 
 	if( IS_XMMREG(mmreg) ) SSE_MOVLPS_M64_to_XMM(mmreg&0xff, (uptr)PSM(mem));
 	else {
-        X86_64ASSERT();
         MMXONLY(MOVQMtoR(mmreg, (uptr)PSM(mem));
 		SetMMXstate();)
 	}

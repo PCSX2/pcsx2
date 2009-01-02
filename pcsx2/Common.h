@@ -21,10 +21,6 @@
 
 #include "PS2Etypes.h"
 
-#if defined(__x86_64__)
-#define DONT_USE_GETTEXT
-#endif
-
 struct TESTRUNARGS
 {
 	u8 enabled;
@@ -83,7 +79,7 @@ extern TESTRUNARGS g_TestRun;
 #include "Patch.h"
 #include "COP0.h"
 #include "VifDma.h"
-#if (defined(__i386__) || defined(__x86_64__))
+#if defined(__i386__)
 #include "x86/ix86/ix86.h"
 #endif
 

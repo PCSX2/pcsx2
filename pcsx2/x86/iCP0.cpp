@@ -173,14 +173,11 @@ void recMFC0( void )
 	else {
 		EEINST_RESETHASLIVE1(_Rt_);
 
-#ifndef __x86_64__
 		if( (mmreg = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rt_, MODE_WRITE)) >= 0 ) {
 			MOVDMtoMMX(mmreg, (uptr)&cpuRegs.CP0.r[ _Rd_ ]);
 			SetMMXstate();
 		}
-		else
-#endif
-        if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ)) >= 0) {
+		else if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ)) >= 0) {
 
 			if( EEINST_ISLIVE2(_Rt_) ) {
 				if( xmmregs[mmreg].mode & MODE_WRITE ) {

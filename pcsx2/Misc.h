@@ -184,15 +184,12 @@ int IsBIOS(char *filename, char *description);
 
 // check to see if needs freezing
 extern void FreezeXMMRegs_(int save);
+extern void FreezeMMXRegs_(int save);
 extern bool g_EEFreezeRegs;
 #define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
 
-#ifndef __x86_64__
-	void FreezeMMXRegs_(int save);
 #define FreezeMMXRegs(save) if( g_EEFreezeRegs ) { FreezeMMXRegs_(save); }
-#else
-#	define FreezeMMXRegs(save)
-#endif
+
 
 #if defined(_WIN32) && !defined(__x86_64__)
 	// faster memcpy

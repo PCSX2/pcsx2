@@ -100,11 +100,8 @@ int IPU1dma();
 // Color conversion stuff, the memory layout is a total hack
 // convert_data_buffer is a pointer to the internal rgb struct (the first param in convert_init_t)
 //char convert_data_buffer[sizeof(convert_rgb_t)];
-#ifdef __x86_64__
-char convert_data_buffer[0x24];
-#else
 char convert_data_buffer[0x1C];
-#endif
+
 convert_init_t convert_init={convert_data_buffer, sizeof(convert_data_buffer)};
 convert_t *convert;
 
@@ -303,8 +300,6 @@ u64 ipuRead64(u32 mem)
 	return *(u64*)(((u8*)ipuRegs)+(mem&0xff));
 }
 
-#ifndef __x86_64__
-
 int ipuConstRead32(u32 x86reg, u32 mem)
 {
 	int workingreg, tempreg, tempreg2;
@@ -407,25 +402,6 @@ void ipuConstRead64(u32 mem, int mmreg)
 	}
 }
 
-#else
-
-int ipuConstRead32(u32 x86reg, u32 mem) 
-{
-	// Let's see if this ever gets called
-	printf("ipuConstRead32 called on a 64-bit system!\n"); 
-	assert(0);
-	return 0; //It won't return, but it makes the compiler happy.
-}
-
-void ipuConstRead64(u32 mem, int mmreg)
-{
-	// Let's see if this ever gets called
-	printf("ipuConstRead64 called on a 64-bit system!\n"); 
-	assert(0);
-}
-
-#endif // __x86_64__
-
 void ipuSoftReset()
 {
 	if (!mpeg2_inited){
@@ -506,8 +482,6 @@ void ipuWrite64(u32 mem, u64 value)
 	}
 }
 
-#ifndef __x86_64__
-
 void ipuConstWrite32(u32 mem, int mmreg)
 {
 	iFlushCall(0);
@@ -577,20 +551,6 @@ void ipuConstWrite64(u32 mem, int mmreg)
 			break;
 	}
 }
-
-#else
-
-void ipuConstWrite32(u32 mem, int mmreg)
-{
-	assert(0);
-}
-
-void ipuConstWrite64(u32 mem, int mmreg)
-{
-	assert(0);
-}
-
-#endif
 
 ///////////////////////////////////////////
 // IPU Commands (exec on worker thread only)

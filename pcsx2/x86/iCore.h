@@ -16,19 +16,15 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// NOTE: x86-64 recompiler doesn't support mmx
+// NOTE: x86-64 recompiler didn't support mmx
 #ifndef _PCSX2_CORE_RECOMPILER_
 #define _PCSX2_CORE_RECOMPILER_
 
 #include "ix86/ix86.h"
 #include "iVUmicro.h"
 
-#if defined(__x86_64__) && defined(_MSC_VER)
-// xp64 has stack shadow memory
-#define REC_INC_STACK 48
-#else
+// xp64 had a stack shadow memory
 #define REC_INC_STACK 0
-#endif
 
 // used to keep block information
 #define BLOCKTYPE_STARTPC	4		// startpc offset
@@ -407,7 +403,6 @@ void SetMMXstate();
 
 void _recMove128MtoM(u32 to, u32 from);
 
-#ifndef __x86_64__
 /////////////////////
 // MMX x86-32 only //
 /////////////////////
@@ -476,14 +471,6 @@ int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
 extern u8 g_globalMMXSaved;
 extern _mmxregs mmxregs[MMXREGS], s_saveMMXregs[MMXREGS];
 extern u16 x86FpuState, iCWstate;
-
-#else
-
-void LogicalOp64RtoR(x86IntRegType to, x86IntRegType from, int op);
-void LogicalOp64RtoM(uptr to, x86IntRegType from, int op);
-void LogicalOp64MtoR(x86IntRegType to, uptr from, int op);
-
-#endif // __x86_64__
 
 void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
 void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);

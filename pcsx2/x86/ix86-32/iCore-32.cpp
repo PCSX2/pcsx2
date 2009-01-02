@@ -43,7 +43,6 @@ extern u16 g_x86AllocCounter;
 using namespace std;
 
 // use special x86 register allocation for ia32
-#ifndef __x86_64__
 
 void _initX86regs() {
 	memset(x86regs, 0, sizeof(x86regs));
@@ -346,8 +345,6 @@ void _freeX86regs() {
 		_freeX86reg(i);
 	}
 }
-
-#endif // __x86_64__
 
 // MMX Caching
 _mmxregs mmxregs[8], s_saveMMXregs[8];

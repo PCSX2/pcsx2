@@ -61,9 +61,7 @@ static void __fastcall _rec_mtgs_Send32orSmaller( GS_RINGTYPE ringtype, u32 mem,
 #else	// GCC -->
 	PUSH32I( (uptr)mtgsThread );
 	CALLFunc( mtgsThread->FnPtr_SimplePacket() );
-#ifndef __x86_64__
 	ADD32ItoR( ESP, 20 );
-#endif
 #endif
 }
 
@@ -82,9 +80,7 @@ static void __fastcall _rec_mtgs_Send64( uptr gsbase, u32 mem, int mmreg )
 #else	// GCC -->
 	PUSH32I( (uptr)mtgsThread );
 	CALLFunc( mtgsThread->FnPtr_SimplePacket() );
-#ifndef __x86_64__
 	ADD32ItoR( ESP, 20 );
-#endif
 #endif
 
 }
@@ -154,14 +150,12 @@ void gsConstWriteIMR(int mmreg)
 		AND32ItoM((uptr)PS2GS_BASE(mem), 0x1f00);
 		OR32ItoM((uptr)PS2GS_BASE(mem), 0x6000);
 	}
-#ifndef __x86_64__
 	else if( mmreg & MEM_MMXTAG ) {
 		SetMMXstate();
 		MOVDMMXtoM((uptr)PS2GS_BASE(mem), mmreg&0xf);
 		AND32ItoM((uptr)PS2GS_BASE(mem), 0x1f00);
 		OR32ItoM((uptr)PS2GS_BASE(mem), 0x6000);
 	}
-#endif
 	else if( mmreg & MEM_EECONSTTAG ) {
 		MOV32ItoM( (uptr)PS2GS_BASE(mem), (g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]&0x1f00)|0x6000);
 	}
@@ -297,12 +291,8 @@ void gsConstRead64(u32 mem, int mmreg)
 	GIF_LOG("GS read 64 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
 	if( IS_XMMREG(mmreg) ) SSE_MOVLPS_M64_to_XMM(mmreg&0xff, (uptr)PS2GS_BASE(mem));
 	else {
-#ifndef __x86_64__
 		MOVQMtoR(mmreg, (uptr)PS2GS_BASE(mem));
 		SetMMXstate();
-#else
-        assert(0);
-#endif
 	}
 }
 
