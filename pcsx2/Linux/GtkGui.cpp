@@ -139,6 +139,7 @@ void ExecuteCpu()
 
 void RunExecute( const char* elf_file, bool use_bios )
 {
+	
 	// (air notes:)
 	// If you want to use the new to-memory savestate feature, take a look at the new
 	// RunExecute in WinMain.c, and secondly the CpuDlg.c or AdvancedDlg.cpp.  The
@@ -385,7 +386,7 @@ void States_Load(const char* file, int num = -1 )
 		return;
 	}
 
-	Cpu->Execute();
+	ExecuteCpu();
 }
 
 void States_Load(int num) {

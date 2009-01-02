@@ -23,6 +23,10 @@
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
+#ifdef __LINUX__
+#include <signal.h>
+#endif
+
 //#define ENABLECACHE
 
 namespace Ps2MemSize
@@ -230,6 +234,9 @@ void memSetUserMode();
 void memSetPageAddr(u32 vaddr, u32 paddr);
 void memClearPageAddr(u32 vaddr);
 void memShutdown();
+#ifdef __LINUX__
+void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * );
+#endif
 
 #ifdef _WIN32 
 int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps);

@@ -1329,7 +1329,7 @@ int recInit( void )
     cpudetectSSE3(recMem);
 
 	SysPrintf( "x86Init: \n" );
-	SysPrintf( "\tCPU vender name =  %s\n", cpuinfo.x86ID );
+	SysPrintf( "\tCPU vendor name =  %s\n", cpuinfo.x86ID );
 	SysPrintf( "\tFamilyID	=  %x\n", cpuinfo.x86StepID );
 	SysPrintf( "\tx86Family =  %s\n", cpuinfo.x86Fam );
 	SysPrintf( "\tCPU speed =  %d.%03d Ghz\n", cpuinfo.cpuspeed / 1000, cpuinfo.cpuspeed%1000);

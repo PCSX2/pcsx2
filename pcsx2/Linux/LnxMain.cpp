@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
 	if( GSsetGameCRC != NULL ) 
 		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
 
-	Cpu->Execute();
+	ExecuteCpu();
 
 	return 0;
 }

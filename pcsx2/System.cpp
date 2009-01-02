@@ -100,7 +100,7 @@ void SysDetect()
 
 	WriteLn( "x86Init:" );
 	MsgLn(
-		"\tCPU vender name =  %s\n"
+		"\tCPU vendor name =  %s\n"
 		"\tFamilyID  =  %x\n"
 		"\tx86Family =  %s\n"
 		"\tCPU speed =  %d.%03d Ghz\n"

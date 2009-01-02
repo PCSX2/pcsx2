@@ -466,11 +466,11 @@ uptr *memLUT = NULL;
 
 int memInit()
 {
-int i;
+	int i;
 	LPVOID pExtraMem = NULL;	
 
 	// release the previous reserved mem
-    munmap(PS2MEM_BASE, 0x40000000);
+	munmap(PS2MEM_BASE, 0x40000000);
 
 	// allocate all virtual memory
 	PHYSICAL_ALLOC(PS2MEM_BASE, Ps2MemSize::Base, s_psM);
@@ -2596,8 +2596,15 @@ static u8* m_psAllMem = NULL;
 
 int memInit() 
 {
-	if (!vtlb_Init())
-		return -1;
+#ifdef __LINUX__
+	struct sigaction sa;
+	
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = &SysPageFaultExceptionFilter;
+	sigaction(SIGSEGV, &sa, NULL); 
+#endif
+	if (!vtlb_Init()) return -1;
 
 	tlb_fallback_0=vtlb_RegisterHandlerTempl1(_ext_mem,0);
 	tlb_fallback_1=vtlb_RegisterHandlerTempl1(_ext_mem,1);
@@ -2615,7 +2622,7 @@ int memInit()
 #ifdef __LINUX__
 
 	// For Linux we need to use the system virtual memory mapper so that we
-	// can coherse an allocation below the 2GB line.
+	// can coerce an allocation below the 2GB line.
 
 	// just try an arbitrary address first...
 	// maybe there's a better one to pick?
@@ -2926,8 +2933,9 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 // This is my shot in the dark.  Probably needs some work.  Good luck! (air)
-void SysPageFaultExceptionFilter( int signal, struct __siginfo *info, void * )
+__forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )
 {
+	//Console::Error("SysPageFaultExceptionFilter!");
 	// get bad virtual address
 	u32 offset = (u8*)info->si_addr - psM;
 

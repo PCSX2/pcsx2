@@ -80,7 +80,8 @@ extern MemoryAlloc<u8>* g_RecoveryState;
 extern bool g_GameInProgress;
 extern void SysRestorableReset();
 extern void SysDetect();
-void RunExecute( const char* elf_file, bool use_bios = false);
+extern void RunExecute( const char* elf_file, bool use_bios = false);
+extern void ExecuteCpu();
 
 typedef struct {
 	char lang[g_MaxPath];
