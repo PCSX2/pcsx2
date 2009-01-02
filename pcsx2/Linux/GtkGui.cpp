@@ -762,10 +762,28 @@ void on_Speed_Hacks(GtkMenuItem *menuitem, gpointer user_data)
 {
 	SpeedHacksDlg = create_SpeedHacksDlg();
 	
-        set_checked(SpeedHacksDlg, "check_EE_Double_Sync", (Config.Hacks & FLAG_EE_2_SYNC));
-	set_checked(SpeedHacksDlg, "check_IOP_Double_Sync", (Config.Hacks & FLAG_IOP_2_SYNC));
-	set_checked(SpeedHacksDlg, "check_Triple_Sync",(Config.Hacks & FLAG_TRIPLE_SYNC));
-	set_checked(SpeedHacksDlg, "check_ESC_Hack", (Config.Hacks & FLAG_ESC));
+	switch (CHECK_EE_CYCLERATE)
+	{
+		case 0:
+			set_checked(SpeedHacksDlg, "check_default_cycle_rate", true);
+			break;
+		case 1:
+			set_checked(SpeedHacksDlg, "check_1_5_cycle_rate", true);
+			break;
+		case 2:
+			set_checked(SpeedHacksDlg, "check_2_cycle_rate", true);
+			break;
+		case 3:
+			set_checked(SpeedHacksDlg, "check_3_cycle_rate", true);
+			break;
+		default:
+			set_checked(SpeedHacksDlg, "check_default_cycle_rate", true);
+			break;
+	}
+	
+        set_checked(SpeedHacksDlg, "check_iop_cycle_rate", CHECK_IOP_CYCLERATE);
+	set_checked(SpeedHacksDlg, "check_wait_cycles_sync_hack", CHECK_WAITCYCLE_HACK);
+	set_checked(SpeedHacksDlg, "check_ESC_hack",CHECK_ESCAPE_HACK);
 	
 	gtk_widget_show_all(SpeedHacksDlg);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
@@ -776,10 +794,18 @@ void on_Speed_Hack_OK(GtkButton *button, gpointer user_data)
 {
 	Config.Hacks = 0;
 
-	Config.Hacks |= is_checked(SpeedHacksDlg, "check_EE_Double_Sync") ? FLAG_EE_2_SYNC : 0;  
-	Config.Hacks |= is_checked(SpeedHacksDlg, "check_IOP_Double_Sync") ? FLAG_IOP_2_SYNC : 0;  
-	Config.Hacks |= is_checked(SpeedHacksDlg, "check_Triple_Sync") ? FLAG_TRIPLE_SYNC : 0;  
-	Config.Hacks |= is_checked(SpeedHacksDlg, "check_ESC_Hack") ? FLAG_ESC : 0;  
+	if is_checked(SpeedHacksDlg, "check_default_cycle_rate")
+		Config.Hacks = 0;
+	else if is_checked(SpeedHacksDlg, "check_1_5_cycle_rate")
+		Config.Hacks = 1;
+	else if is_checked(SpeedHacksDlg, "check_2_cycle_rate")
+		Config.Hacks = 2;
+	else if is_checked(SpeedHacksDlg, "check_3_cycle_rate")
+		Config.Hacks = 3;
+		
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_iop_cycle_rate") << 3;  
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_wait_cycles_sync_hack") << 4;  
+	Config.Hacks |= is_checked(SpeedHacksDlg, "check_ESC_hack") << 10;  
 	
 	SaveConfig();
 

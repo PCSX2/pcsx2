@@ -534,20 +534,33 @@ create_SpeedHacksDlg (void)
 {
   GtkWidget *SpeedHacksDlg;
   GtkWidget *dialog_vbox3;
-  GtkWidget *vbox31;
-  GtkWidget *label43;
-  GtkWidget *frame13;
-  GtkWidget *alignment8;
-  GtkWidget *vbox34;
-  GtkWidget *check_EE_Double_Sync;
-  GtkWidget *check_IOP_Double_Sync;
-  GtkWidget *check_Triple_Sync;
-  GtkWidget *label46;
-  GtkWidget *frame14;
-  GtkWidget *alignment9;
-  GtkWidget *vbox33;
-  GtkWidget *check_ESC_Hack;
-  GtkWidget *label47;
+  GtkWidget *vbox59;
+  GtkWidget *label88;
+  GtkWidget *hbox39;
+  GtkWidget *frame37;
+  GtkWidget *alignment32;
+  GtkWidget *vbox61;
+  GtkWidget *check_default_cycle_rate;
+  GSList *check_default_cycle_rate_group = NULL;
+  GtkWidget *label98;
+  GtkWidget *check_1_5_cycle_rate;
+  GtkWidget *label93;
+  GtkWidget *check_2_cycle_rate;
+  GtkWidget *label94;
+  GtkWidget *check_3_cycle_rate;
+  GtkWidget *label95;
+  GtkWidget *hseparator1;
+  GtkWidget *label91;
+  GtkWidget *label90;
+  GtkWidget *vbox60;
+  GtkWidget *check_iop_cycle_rate;
+  GtkWidget *label96;
+  GtkWidget *check_wait_cycles_sync_hack;
+  GtkWidget *label97;
+  GtkWidget *frame36;
+  GtkWidget *alignment31;
+  GtkWidget *check_ESC_hack;
+  GtkWidget *label89;
   GtkWidget *dialog_action_area3;
   GtkWidget *button99;
   GtkWidget *button98;
@@ -559,68 +572,132 @@ create_SpeedHacksDlg (void)
   dialog_vbox3 = GTK_DIALOG (SpeedHacksDlg)->vbox;
   gtk_widget_show (dialog_vbox3);
 
-  vbox31 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox31);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox3), vbox31, TRUE, TRUE, 0);
+  vbox59 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox59);
+  gtk_box_pack_start (GTK_BOX (dialog_vbox3), vbox59, FALSE, FALSE, 0);
 
-  label43 = gtk_label_new (_("These hacks will affect the speed of PCSX2 but possibly compromise compatibility.\nIf you have problems, Disable all of these and try again."));
-  gtk_widget_show (label43);
-  gtk_box_pack_start (GTK_BOX (vbox31), label43, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label43), GTK_JUSTIFY_CENTER);
+  label88 = gtk_label_new (_("These hacks will affect the speed of PCSX2 but possibly compromise compatibility.\nIf you have problems, Disable all of these and try again."));
+  gtk_widget_show (label88);
+  gtk_box_pack_start (GTK_BOX (vbox59), label88, FALSE, FALSE, 0);
 
-  frame13 = gtk_frame_new (NULL);
-  gtk_widget_show (frame13);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame13, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame13), GTK_SHADOW_NONE);
+  hbox39 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox39);
+  gtk_box_pack_start (GTK_BOX (vbox59), hbox39, TRUE, TRUE, 0);
 
-  alignment8 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment8);
-  gtk_container_add (GTK_CONTAINER (frame13), alignment8);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment8), 0, 0, 12, 0);
+  frame37 = gtk_frame_new (NULL);
+  gtk_widget_show (frame37);
+  gtk_box_pack_start (GTK_BOX (hbox39), frame37, TRUE, TRUE, 0);
 
-  vbox34 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox34);
-  gtk_container_add (GTK_CONTAINER (alignment8), vbox34);
+  alignment32 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment32);
+  gtk_container_add (GTK_CONTAINER (frame37), alignment32);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment32), 0, 0, 12, 0);
 
-  check_EE_Double_Sync = gtk_check_button_new_with_mnemonic (_("EE Sync Hack (x2) - Doubles the cycle rate of the EE."));
-  gtk_widget_show (check_EE_Double_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox34), check_EE_Double_Sync, FALSE, FALSE, 0);
+  vbox61 = gtk_vbox_new (FALSE, 2);
+  gtk_widget_show (vbox61);
+  gtk_container_add (GTK_CONTAINER (alignment32), vbox61);
 
-  check_IOP_Double_Sync = gtk_check_button_new_with_mnemonic (_("IOP Sync Hack (x2) - Doubles the cycle rate of the IOP"));
-  gtk_widget_show (check_IOP_Double_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox34), check_IOP_Double_Sync, FALSE, FALSE, 0);
+  check_default_cycle_rate = gtk_radio_button_new_with_mnemonic (NULL, _("Default Cycle Rate"));
+  gtk_widget_show (check_default_cycle_rate);
+  gtk_box_pack_start (GTK_BOX (vbox61), check_default_cycle_rate, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (check_default_cycle_rate), check_default_cycle_rate_group);
+  check_default_cycle_rate_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (check_default_cycle_rate));
 
-  check_Triple_Sync = gtk_check_button_new_with_mnemonic (_("EE/IOP Sync Hack (x3) - Makes EE and IOP hacks triple the cycle rate. "));
-  gtk_widget_show (check_Triple_Sync);
-  gtk_box_pack_start (GTK_BOX (vbox34), check_Triple_Sync, FALSE, FALSE, 0);
+  label98 = gtk_label_new (_("Most compatable option - recommended for everyone with high-end machines."));
+  gtk_widget_show (label98);
+  gtk_box_pack_start (GTK_BOX (vbox61), label98, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label98), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label98), 0.29, 0.5);
 
-  label46 = gtk_label_new (_("<b>Sync Hacks</b>"));
-  gtk_widget_show (label46);
-  gtk_frame_set_label_widget (GTK_FRAME (frame13), label46);
-  gtk_label_set_use_markup (GTK_LABEL (label46), TRUE);
+  check_1_5_cycle_rate = gtk_radio_button_new_with_mnemonic (NULL, _("Use x1.5 Cycle Rate"));
+  gtk_widget_show (check_1_5_cycle_rate);
+  gtk_box_pack_start (GTK_BOX (vbox61), check_1_5_cycle_rate, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (check_1_5_cycle_rate), check_default_cycle_rate_group);
+  check_default_cycle_rate_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (check_1_5_cycle_rate));
 
-  frame14 = gtk_frame_new (NULL);
-  gtk_widget_show (frame14);
-  gtk_box_pack_start (GTK_BOX (vbox31), frame14, TRUE, TRUE, 0);
-  gtk_frame_set_shadow_type (GTK_FRAME (frame14), GTK_SHADOW_NONE);
+  label93 = gtk_label_new (_("Moderate speedup, and works well with most games."));
+  gtk_widget_show (label93);
+  gtk_box_pack_start (GTK_BOX (vbox61), label93, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label93), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label93), 0.29, 0.5);
 
-  alignment9 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_show (alignment9);
-  gtk_container_add (GTK_CONTAINER (frame14), alignment9);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment9), 0, 0, 12, 0);
+  check_2_cycle_rate = gtk_radio_button_new_with_mnemonic (NULL, _("Use x2 Cycle Rate"));
+  gtk_widget_show (check_2_cycle_rate);
+  gtk_box_pack_start (GTK_BOX (vbox61), check_2_cycle_rate, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (check_2_cycle_rate), check_default_cycle_rate_group);
+  check_default_cycle_rate_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (check_2_cycle_rate));
 
-  vbox33 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_show (vbox33);
-  gtk_container_add (GTK_CONTAINER (alignment9), vbox33);
+  label94 = gtk_label_new (_("Big speedup! Works well with many games."));
+  gtk_widget_show (label94);
+  gtk_box_pack_start (GTK_BOX (vbox61), label94, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label94), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label94), 0.36, 0.5);
 
-  check_ESC_Hack = gtk_check_button_new_with_mnemonic (_("Escape Hack - Use Esc key to fully exit PCSX2."));
-  gtk_widget_show (check_ESC_Hack);
-  gtk_box_pack_start (GTK_BOX (vbox33), check_ESC_Hack, FALSE, FALSE, 0);
+  check_3_cycle_rate = gtk_radio_button_new_with_mnemonic (NULL, _("Use x3 Cycle Rate"));
+  gtk_widget_show (check_3_cycle_rate);
+  gtk_box_pack_start (GTK_BOX (vbox61), check_3_cycle_rate, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (check_3_cycle_rate), check_default_cycle_rate_group);
+  check_default_cycle_rate_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (check_3_cycle_rate));
 
-  label47 = gtk_label_new (_("<b>Misc</b>"));
-  gtk_widget_show (label47);
-  gtk_frame_set_label_widget (GTK_FRAME (frame14), label47);
-  gtk_label_set_use_markup (GTK_LABEL (label47), TRUE);
+  label95 = gtk_label_new (_("Big speedup, but causes flickering or missing geometry on many games."));
+  gtk_widget_show (label95);
+  gtk_box_pack_start (GTK_BOX (vbox61), label95, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label95), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label95), 0.24, 0.5);
+
+  hseparator1 = gtk_hseparator_new ();
+  gtk_widget_show (hseparator1);
+  gtk_box_pack_start (GTK_BOX (vbox61), hseparator1, FALSE, FALSE, 0);
+
+  label91 = gtk_label_new (_("Important: X2 & X3 sync hacks *will* cause choppy/skippy audio on many FMV movies."));
+  gtk_widget_show (label91);
+  gtk_box_pack_start (GTK_BOX (vbox61), label91, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label91), TRUE);
+
+  label90 = gtk_label_new (_("<b>frame37</b>"));
+  gtk_widget_show (label90);
+  gtk_frame_set_label_widget (GTK_FRAME (frame37), label90);
+  gtk_label_set_use_markup (GTK_LABEL (label90), TRUE);
+
+  vbox60 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox60);
+  gtk_box_pack_start (GTK_BOX (hbox39), vbox60, FALSE, FALSE, 0);
+
+  check_iop_cycle_rate = gtk_check_button_new_with_mnemonic (_("Enable IOP x2 Cycle Rate"));
+  gtk_widget_show (check_iop_cycle_rate);
+  gtk_box_pack_start (GTK_BOX (vbox60), check_iop_cycle_rate, FALSE, FALSE, 0);
+
+  label96 = gtk_label_new (_("Small speedup, and works well with most games,"));
+  gtk_widget_show (label96);
+  gtk_box_pack_start (GTK_BOX (vbox60), label96, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label96), TRUE);
+
+  check_wait_cycles_sync_hack = gtk_check_button_new_with_mnemonic (_("WaitCycles Sync Hack"));
+  gtk_widget_show (check_wait_cycles_sync_hack);
+  gtk_box_pack_start (GTK_BOX (vbox60), check_wait_cycles_sync_hack, FALSE, FALSE, 0);
+
+  label97 = gtk_label_new (_("Small speedup. Works well with most games, but it may cause certain games to crash, or freeze up during bootup or stage changes."));
+  gtk_widget_show (label97);
+  gtk_box_pack_start (GTK_BOX (vbox60), label97, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap (GTK_LABEL (label97), TRUE);
+
+  frame36 = gtk_frame_new (NULL);
+  gtk_widget_show (frame36);
+  gtk_box_pack_start (GTK_BOX (vbox59), frame36, FALSE, FALSE, 0);
+
+  alignment31 = gtk_alignment_new (0.5, 0.5, 1, 1);
+  gtk_widget_show (alignment31);
+  gtk_container_add (GTK_CONTAINER (frame36), alignment31);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment31), 0, 0, 12, 0);
+
+  check_ESC_hack = gtk_check_button_new_with_mnemonic (_("Escape Hack - Use Esc key to fully exit PCSX2."));
+  gtk_widget_show (check_ESC_hack);
+  gtk_container_add (GTK_CONTAINER (alignment31), check_ESC_hack);
+
+  label89 = gtk_label_new (_("<b>Miscellaneous</b>"));
+  gtk_widget_show (label89);
+  gtk_frame_set_label_widget (GTK_FRAME (frame36), label89);
+  gtk_label_set_use_markup (GTK_LABEL (label89), TRUE);
 
   dialog_action_area3 = GTK_DIALOG (SpeedHacksDlg)->action_area;
   gtk_widget_show (dialog_action_area3);
@@ -646,20 +723,32 @@ create_SpeedHacksDlg (void)
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, SpeedHacksDlg, "SpeedHacksDlg");
   GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_vbox3, "dialog_vbox3");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox31, "vbox31");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label43, "label43");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame13, "frame13");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment8, "alignment8");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox34, "vbox34");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_EE_Double_Sync, "check_EE_Double_Sync");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_IOP_Double_Sync, "check_IOP_Double_Sync");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_Triple_Sync, "check_Triple_Sync");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label46, "label46");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame14, "frame14");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment9, "alignment9");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox33, "vbox33");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_ESC_Hack, "check_ESC_Hack");
-  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label47, "label47");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox59, "vbox59");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label88, "label88");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hbox39, "hbox39");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame37, "frame37");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment32, "alignment32");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox61, "vbox61");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_default_cycle_rate, "check_default_cycle_rate");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label98, "label98");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_1_5_cycle_rate, "check_1_5_cycle_rate");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label93, "label93");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_2_cycle_rate, "check_2_cycle_rate");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label94, "label94");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_3_cycle_rate, "check_3_cycle_rate");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label95, "label95");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, hseparator1, "hseparator1");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label91, "label91");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label90, "label90");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, vbox60, "vbox60");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_iop_cycle_rate, "check_iop_cycle_rate");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label96, "label96");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_wait_cycles_sync_hack, "check_wait_cycles_sync_hack");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label97, "label97");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, frame36, "frame36");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, alignment31, "alignment31");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, check_ESC_hack, "check_ESC_hack");
+  GLADE_HOOKUP_OBJECT (SpeedHacksDlg, label89, "label89");
   GLADE_HOOKUP_OBJECT_NO_REF (SpeedHacksDlg, dialog_action_area3, "dialog_action_area3");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button99, "button99");
   GLADE_HOOKUP_OBJECT (SpeedHacksDlg, button98, "button98");
