@@ -2605,7 +2605,7 @@ void SuperVUTestVU0Condition(u32 incstack)
 	if( incstack ) {
 		u8* ptr = JB8(0);
 
-		if( incstack ) ADD32ItoR(ESP, incstack);
+		ADD32ItoR(ESP, incstack);
 		//CALLFunc((u32)timeout);
 		JMP32( (uptr)SuperVUEndProgram - ( (uptr)x86Ptr + 5 ));
 

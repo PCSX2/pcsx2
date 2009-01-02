@@ -586,6 +586,10 @@ void cpuBranchTest()
 			cpuSetNextBranchDelta( 768 );
 	}
 
+	// Note:  We don't update the VU1 here because it runs it's micro-programs in
+	// one shot always.  That is, when a program is executed the VU1 doesn't even
+	// bother to return until the program is completely finished.
+
 #ifdef PCSX2_DEVBUILD
 	assert( !g_globalXMMSaved X86_32CODE(&& !g_globalMMXSaved) );
 #endif

@@ -2680,7 +2680,7 @@ int memInit()
 void memShutdown() 
 {
 #ifdef __LINUX__
-	SysMunmap( m_psAllMem, m_allMemSize );
+	SafeSysMunmap( m_psAllMem, m_allMemSize );
 #else
 	safe_aligned_free(m_psAllMem);
 #endif
@@ -2920,6 +2920,34 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 	psMPWVA[offset].clear();
 
 	return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+#else
+
+// Linux implementation of SIGSEGV handler.  Bind it using sigaction().
+// This is my shot in the dark.  Probably needs some work.  Good luck! (air)
+void SysPageFaultExceptionFilter( int signal, struct __siginfo *info, void * )
+{
+	// get bad virtual address
+	u32 offset = (u8*)info->si_addr - psM;
+
+	if (offset>=Ps2MemSize::Base)
+	{
+		// Bad mojo!  Completly invalid address.
+		// Instigate a crash or abort emulation or something.
+		assert( false );
+	}
+
+	mprotect(&psM[offset], 1, PROT_READ|PROT_WRITE);
+
+	offset>>=12;
+	psMPWC[(offset/32)]|=(1<<(offset&31));
+
+	for (u32 i=0;i<psMPWVA[offset].size();i++)
+	{
+		Cpu->Clear(psMPWVA[offset][i],0x1000);
+	}
+	psMPWVA[offset].clear();
 }
 #endif
 #endif

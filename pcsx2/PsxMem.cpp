@@ -343,12 +343,15 @@ void* _PSXM(u32 mem)
 }
 #endif
 
-s8 *psxM;
-s8 *psxP;
-s8 *psxH;
-s8 *psxS;
+u8 *psxM;
+u8 *psxP;
+u8 *psxH;
+u8 *psxS;
 uptr *psxMemWLUT;
 uptr *psxMemRLUT;
+
+static u8* m_psxAllMem = NULL;
+static const uint m_psxMemSize = 0x00200000 + 0x00010000 + 0x00010000 + 0x00010000 ;
 
 int psxMemInit()
 {
@@ -359,30 +362,49 @@ int psxMemInit()
 	memset(psxMemRLUT, 0, 0x10000 * sizeof(uptr));
 	memset(psxMemWLUT, 0, 0x10000 * sizeof(uptr));
 
-	// fixme: WHY are we allocating VM blocks in TLB builds for
-	// non-executable data blocks!?
+#ifdef __LINUX__
 
-//	psxM = (s8*)SysMmap(PS2MEM_PSX_, 0x00200000);
-//	psxP = (s8*)SysMmap(PS2MEM_BASE_+0x1f000000, 0x00010000);
-//	psxH = (s8*)SysMmap(PS2MEM_BASE_+0x1f800000, 0x00010000);
-//	psxS = (s8*)SysMmap(PS2MEM_BASE_+0x1d000000, 0x00010000);
+	if( m_psxAllMem == NULL )
+		m_psxAllMem = (u8*)SysMmap( 0x28000000, m_psxMemSize );
 
-	psxM = (s8*)SysMmap(NULL, 0x00200000);
-	psxP = (s8*)SysMmap(NULL, 0x00010000);
-	psxH = (s8*)SysMmap(NULL, 0x00010000);
-	psxS = (s8*)SysMmap(NULL, 0x00010000);
+	if( m_psxAllMem == NULL || (uptr)m_psxAllMem > 0xe0000000 )
+	{
+		// memory allocation *must* have the top bit clear, so let's try again
+		// with NULL (let the OS pick something for us).
 
-    assert( (uptr)psxM <= 0xffffffff && (uptr)psxP <= 0xffffffff && (uptr)psxH <= 0xffffffff && (uptr)psxS <= 0xffffffff);
+		if( m_psxAllMem != NULL )
+			SysMunmap( m_psxAllMem, m_psxMemSize );
 
-	if (psxMemRLUT == NULL || psxMemWLUT == NULL || 
-		psxM == NULL || psxP == NULL || psxH == NULL) {
-		SysMessage(_("Error allocating memory")); return -1;
+		m_psxAllMem = (u8*)SysMmap( NULL, m_psxMemSize );
+		if( (uptr)m_psxAllMem > 0xe0000000 )
+		{
+			if( m_psxAllMem != NULL )
+				SysMunmap( m_psxAllMem, m_psxMemSize );
+
+			m_psxAllMem = NULL;		// let the os-independent code below handle the error
+		}
 	}
 
-	memset(psxM, 0, 0x00200000);
-	memset(psxP, 0, 0x00010000);
-	memset(psxH, 0, 0x00010000);
-	memset(psxS, 0, 0x00010000);
+#else
+	if( m_psxAllMem == NULL )
+		m_psxAllMem = (u8*)_aligned_malloc( m_psxMemSize, 4096 );
+#endif
+
+	if( m_psxAllMem == NULL)
+	{
+		SysMessage(_("Error allocating memory for the IOP processor."));
+		return -1;
+	}
+
+	u8* curpos = m_psxAllMem;
+	psxM = curpos; curpos += 0x00200000;
+	psxP = curpos; curpos += 0x00010000; 
+	psxH = curpos; curpos += 0x00010000;
+	psxS = curpos; curpos += 0x00010000;
+
+	//assert( (uptr)psxM <= 0xffffffff && (uptr)psxP <= 0xffffffff && (uptr)psxH <= 0xffffffff && (uptr)psxS <= 0xffffffff);
+
+	memset( m_psxAllMem, 0, m_psxMemSize );
 
 
 // MemR
@@ -432,10 +454,13 @@ void psxMemReset() {
 
 void psxMemShutdown()
 {
-	SafeSysMunmap(psxM, 0x00200000);
-	SafeSysMunmap(psxP, 0x00010000);
-	SafeSysMunmap(psxH, 0x00010000);
-    SafeSysMunmap(psxS, 0x00010000);
+#ifdef __LINUX__
+	SafeSysMunmap( m_psxAllMem, m_psxMemSize );
+#else
+	safe_aligned_free( m_psxAllMem );
+#endif
+
+	psxM = psxP = psxH = psxS = NULL;
 
 	safe_aligned_free(psxMemRLUT);
 	safe_aligned_free(psxMemWLUT);

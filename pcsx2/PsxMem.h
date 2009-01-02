@@ -31,10 +31,10 @@
 #else
 
 // TLB
-extern s8 *psxM;
-extern s8 *psxP;
-extern s8 *psxH;
-extern s8 *psxS;
+extern u8 *psxM;
+extern u8 *psxP;
+extern u8 *psxH;
+extern u8 *psxS;
 extern uptr *psxMemWLUT;
 extern uptr *psxMemRLUT;
 
