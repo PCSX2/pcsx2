@@ -21,6 +21,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "svnrev.h"
+
 #include "SoundTouch/SoundTouch.h"
 #include "SoundTouch/WavFile.h"
 
@@ -37,11 +39,7 @@
 #define NSFRAMES	16	  // gather at least NSFRAMES of NSSIZE before submitting
 #define NSPACKETS 24
 
-#ifdef _DEBUG
-char *libraryName = "ZeroSPU2/PP (Debug)";
-#else
-char *libraryName = "ZeroSPU2/PP ";
-#endif
+static char libraryName[256];
 
 FILE *spu2Log;
 Config conf;
@@ -135,6 +133,44 @@ u32 RateTable[160];
 // channels and voices
 VOICE_PROCESSED voices[SPU_NUMBER_VOICES+1]; // +1 for modulation
 
+static void InitLibraryName()
+{
+#ifdef PUBLIC
+
+	// Public Release!
+	// Output a simplified string that's just our name:
+
+	strcpy( libraryName, "ZeroSPU2 Playground" );
+
+#elif defined( SVN_REV_UNKNOWN )
+
+	// Unknown revision.
+	// Output a name that includes devbuild status but not
+	// subversion revision tags:
+
+	strcpy( libraryName, "ZeroSPU2 Playground"
+#	ifdef _DEBUG
+		"-Debug"
+#	endif
+		);
+#else
+
+	// Use TortoiseSVN's SubWCRev utility's output
+	// to label the specific revision:
+
+	sprintf_s( libraryName, "ZeroSPU2 PPr%d%s"
+#	ifdef _DEBUG
+		"-Debug"
+#	else
+		"-Dev"
+#	endif
+		,SVN_REV,
+		SVN_MODS ? "m" : ""
+	);
+#endif
+
+}
+
 u32 CALLBACK PS2EgetLibType() 
 {
 	return PS2E_LT_SPU2;
@@ -142,6 +178,7 @@ u32 CALLBACK PS2EgetLibType()
 
 char* CALLBACK PS2EgetLibName() 
 {
+	InitLibraryName();
 	return libraryName;
 }
 

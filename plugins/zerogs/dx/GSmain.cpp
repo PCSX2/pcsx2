@@ -73,6 +73,10 @@ unsigned char revision = 0;	// revision and build gives plugin version
 unsigned char build	= VER;
 unsigned char minor = 1;
 
+// NOTE : ZeroGS is currently very evil and uses the libraryName as a versioning tool in
+// its savestate information.  So putting the revision info into the libraryName isn't
+// going to be a good idea for now. :(
+
 #ifdef _DEBUG
 char *libraryName	= "ZeroGS (Debug) ";
 #elif defined(RELEASE_TO_PUBLIC)

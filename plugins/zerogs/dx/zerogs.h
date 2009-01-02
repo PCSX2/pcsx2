@@ -74,7 +74,9 @@ typedef D3DXMATRIX DXMAT;
 #endif
 
 #define SETRS(state, val)	pd3dDevice->SetRenderState(state, val)
+#ifndef ARRAYSIZE
 #define ARRAYSIZE(x) (sizeof(x) / sizeof((x)[0]))
+#endif
 
 // all textures have this width
 //#define GPU_TEXWIDTH		512

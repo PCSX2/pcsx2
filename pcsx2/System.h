@@ -175,7 +175,7 @@ using Console::Color_White;
 	}
 
 //////////////////////////////////////////////////////////////
-// Macros for ifdef'ing out specific lines of code.
+// Consts for using if() statements instead of uglier #ifdef macros.
 
 #ifdef PCSX2_DEVBUILD
 
@@ -229,7 +229,8 @@ int SysMapUserPhysicalPages(void* Addr, uptr NumPages, uptr* pblock, int pageoff
 #endif
 
 //////////////////////////////////////////////////////////////////
-// Class for allocating a resizable memory block.
+// Handy little class for allocating a resizable memory block, complete with
+// exception-based error handling and automatic cleanup.
 
 template< typename T >
 class MemoryAlloc : public NoncopyableObject

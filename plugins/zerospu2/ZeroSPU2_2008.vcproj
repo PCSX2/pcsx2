@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="ZeroSPU2"
 	ProjectGUID="{7F059854-568D-4E08-9D00-1E78E203E4DC}"
 	RootNamespace="ZeroSPU2"
@@ -18,13 +18,14 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -42,13 +43,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
 				PreprocessorDefinitions="_WIN32;_DEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -63,7 +64,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="dsound.lib winmm.lib"
-				OutputFile="$(OutDir)\$(ProjectName)d.dll"
+				OutputFile="$(OutDir)\$(ProjectName)-dbg.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="ZeroSPU2.def"
@@ -98,7 +99,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
@@ -106,6 +107,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -122,11 +124,18 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
 				PreprocessorDefinitions="_WIN32;NDEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
+				StringPooling="true"
 				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -141,7 +150,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="dsound.lib winmm.lib"
-				LinkIncremental="1"
 				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="ZeroSPU2.def"
 				GenerateDebugInformation="true"

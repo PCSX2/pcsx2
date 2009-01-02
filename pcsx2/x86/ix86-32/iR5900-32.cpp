@@ -3186,6 +3186,20 @@ StartRecomp:
 			}
 #endif // end peephole
 		}
+		// This *is* important because g_pCurInstInfo is checked a bit later on and
+		// if it's not equal to s_pInstCache it handles recompilation differently.
+		// ... but the empty if() conditional inside the for loop is still amusing. >_<
+		if( usecop2 ) {
+			// add necessary mac writebacks
+			g_pCurInstInfo = s_pInstCache;
+
+			for(i = startpc; i < s_nEndBlock-4; i += 4) {
+				g_pCurInstInfo++;
+
+				if( g_pCurInstInfo->info & EEINSTINFO_COP2 ) {
+				}
+			}
+		}
 	}
 
 	// perf counters //

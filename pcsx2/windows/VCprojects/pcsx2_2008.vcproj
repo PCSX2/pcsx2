@@ -20,6 +20,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release vm (dev)|Win32"
+			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops;.\vsprops\virtualmem.vsprops;.\vsprops\devbuild.vsprops"
@@ -53,6 +54,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
@@ -72,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(SolutionDir)\bin\pcsx2-vm.exe&quot;"
+				OutputFile="&quot;$(OutDir)\pcsx2-vm.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -99,6 +101,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug vm|Win32"
+			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\debug.vsprops;.\vsprops\virtualmem.vsprops;.\vsprops\devbuild.vsprops"
@@ -131,6 +134,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="WIN32_PTHREADS"
 				MinimalRebuild="true"
 				SmallerTypeCheck="false"
@@ -152,7 +156,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="&quot;$(SolutionDir)\bin\pcsx2d-vm.exe&quot;"
+				OutputFile="&quot;$(OutDir)\pcsx2d-vm.exe&quot;"
 				LinkIncremental="2"
 			/>
 			<Tool
@@ -180,6 +184,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug vtlb|Win32"
+			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\debug.vsprops;.\vsprops\devbuild.vsprops"
@@ -212,6 +217,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="WIN32_PTHREADS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -234,7 +240,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="&quot;$(SolutionDir)\bin\pcsx2d-vtlb.exe&quot;"
+				OutputFile="&quot;$(OutDir)\pcsx2d-vtlb.exe&quot;"
 				LinkIncremental="2"
 			/>
 			<Tool
@@ -262,6 +268,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release vtlb (dev)|Win32"
+			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops;.\vsprops\devbuild.vsprops"
@@ -302,7 +309,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="./;../../;../../IPU;../../ZLIB;../../DebugTools;../../x86;&quot;../../x86/ix86-32&quot;;../libs"
+				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG;WIN32_PTHREADS"
 				StringPooling="true"
 				ExceptionHandling="1"
@@ -329,7 +336,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(SolutionDir)\bin\pcsx2-vtlb.exe&quot;"
+				OutputFile="&quot;$(OutDir)\pcsx2-vtlb.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -356,6 +363,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release vm (nondev)|Win32"
+			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops;.\vsprops\virtualmem.vsprops"
@@ -390,6 +398,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
+				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
@@ -410,7 +419,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(SolutionDir)\bin\pcsx2r-vm.exe&quot;"
+				OutputFile="&quot;$(OutDir)\pcsx2r-vm.exe&quot;"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
@@ -438,7 +447,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release vtlb (nondev)|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops"
@@ -473,6 +482,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				EnableFiberSafeOptimizations="true"
+				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
@@ -493,7 +503,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(SolutionDir)\bin\pcsx2r-vtlb.exe&quot;"
+				OutputFile="&quot;$(OutDir)\pcsx2r-vtlb.exe&quot;"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
@@ -3239,14 +3249,6 @@
 			</File>
 			<File
 				RelativePath="..\..\Plugins.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PS2Edefs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\PS2Etypes.h"
 				>
 			</File>
 			<File

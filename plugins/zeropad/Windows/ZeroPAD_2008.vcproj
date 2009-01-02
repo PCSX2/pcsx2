@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="ZeroPAD"
 	ProjectGUID="{CDD9DB83-3BD9-4ED8-BB83-399A2F65F022}"
 	RootNamespace="ZeroPAD"
@@ -124,6 +124,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="libs;.."
 				PreprocessorDefinitions="_WIN32;NDEBUG;_WINDOWS;_USRDLL;ZEROPAD_EXPORTS"
 				RuntimeLibrary="2"

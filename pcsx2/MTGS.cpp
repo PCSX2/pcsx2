@@ -195,6 +195,7 @@ mtgsThreadObject::mtgsThreadObject() :
 ,	m_lock_RingRestart()
 
 ,	m_CopyCommandTally( 0 )
+,	m_CopyDataTally( 0 )
 ,	m_packet_size()
 ,	m_packet_data( NULL )
 
@@ -586,6 +587,7 @@ void mtgsThreadObject::SetEvent()
 {
 	m_wait_event.Set();
 	m_CopyCommandTally = 0;
+	m_CopyDataTally = 0;
 }
 
 void mtgsThreadObject::SetEventWait()
@@ -597,8 +599,6 @@ void mtgsThreadObject::SetEventWait()
 	Timeslice();
 	FreezeXMMRegs(0); 
 	FreezeMMXRegs(0);
-
-	m_CopyCommandTally = 0;
 }
 
 u8* mtgsThreadObject::GetDataPacketPtr() const
@@ -651,7 +651,8 @@ void mtgsThreadObject::SendDataPacket()
 	//  24 - very slow on HT machines (+5% drop in fps)
 	//  8 - roughly 2% slower on HT machines.
 
-	if( ++m_CopyCommandTally > 16 )
+	m_CopyDataTally += m_packet_size;
+	if( ( m_CopyDataTally > 0xf0000 ) || ( ++m_CopyCommandTally > 16 ) )
 	{
 		FreezeXMMRegs(1); 
 		FreezeMMXRegs(1);

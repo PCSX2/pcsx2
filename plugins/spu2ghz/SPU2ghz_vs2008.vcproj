@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="SPU2ghz_vs2008"
+	Name="SPU2ghz"
 	ProjectGUID="{5307BBB7-EBB9-4AA4-8CB6-A94EC473C8C4}"
 	RootNamespace="SPU2ghz_vs2005"
 	TargetFrameworkVersion="131072"
@@ -16,8 +16,8 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			Name="Release (dev)|Win32"
+			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -27,7 +27,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
+				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -55,11 +55,12 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				PreprocessorDefinitions="NDEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_VS2005;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
+				PreprocessorDefinitions="NDEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				StructMemberAlignment="5"
 				BufferSecurityCheck="false"
-				EnableFunctionLevelLinking="false"
 				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
@@ -86,13 +87,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(SolutionDir)\bin\SPU2ghz.dll"
+				OutputFile="$(OutDir)\SPU2ghz-dev.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateManifest="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/SPU2ghz.lib"
@@ -124,7 +124,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -133,7 +133,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
+				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -156,10 +156,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_VS2005;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
+				PreprocessorDefinitions="_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				StructMemberAlignment="5"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
@@ -183,12 +185,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
+				OutputFile="$(OutDir)\SPU2ghz-dbg.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				SupportUnloadOfDelayLoadedDLL="false"
@@ -220,8 +221,8 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Public Release|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			Name="Release (nondev) [public]|Win32"
+			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -231,7 +232,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
+				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -259,11 +260,12 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				PreprocessorDefinitions="NDEBUG;PUBLIC;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_VS2005;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
+				PreprocessorDefinitions="NDEBUG;PUBLIC;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				StructMemberAlignment="5"
 				BufferSecurityCheck="false"
-				EnableFunctionLevelLinking="false"
 				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
@@ -290,7 +292,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(SolutionDir)\bin\SPU2ghz.dll"
+				OutputFile="$(OutDir)\SPU2ghz-PP.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
@@ -330,105 +332,8 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug SSE2|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/SPU2ghz.tlb"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_VS2005;_CRT_SECURE_NO_DEPRECATE"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="2"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
-				AssemblerListingLocation="$(IntDir)\"
-				BrowseInformation="1"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="3082"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
-				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\SPU2ghz.def"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				ImportLibrary=".\Debug/SPU2ghz1.lib"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Debug/SPU2ghz.bsc"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -437,7 +342,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)..\common\updateRevision.cmd &quot;$(SolutionDir)..\common\SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)..\common&quot;"
+				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -460,10 +365,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG_FAST;_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_VS2005;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
+				PreprocessorDefinitions="_DEBUG_FAST;_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				StructMemberAlignment="5"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
@@ -487,12 +394,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(SolutionDir)\bin\SPU2ghz-d.dll"
+				OutputFile="$(OutDir)\SPU2ghz-dbg.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				SupportUnloadOfDelayLoadedDLL="false"
@@ -535,7 +441,7 @@
 				RelativePath=".\utf8.cpp"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Release (dev)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -543,7 +449,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Public Release|Win32"
+					Name="Release (nondev) [public]|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -570,7 +476,7 @@
 					RelativePath=".\mixer.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -590,7 +496,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -598,16 +504,6 @@
 							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug SSE2|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -633,7 +529,7 @@
 					RelativePath=".\debug.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -652,22 +548,13 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
 							BrowseInformation="1"
 							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug SSE2|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -688,7 +575,7 @@
 					RelativePath=".\spu2replay.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -696,7 +583,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -712,7 +599,7 @@
 					RelativePath=".\wavedump_wav.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -720,7 +607,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -736,7 +623,7 @@
 					RelativePath=".\sndout.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -755,7 +642,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -763,15 +650,6 @@
 							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug SSE2|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -795,7 +673,7 @@
 						RelativePath=".\asio\asio.cpp"
 						>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Release (dev)|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -803,7 +681,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Public Release|Win32"
+							Name="Release (nondev) [public]|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -819,7 +697,7 @@
 						RelativePath=".\asio\ASIOConvertSamples.cpp"
 						>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Release (dev)|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -827,7 +705,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Public Release|Win32"
+							Name="Release (nondev) [public]|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -843,7 +721,7 @@
 						RelativePath=".\asio\asiodrivers.cpp"
 						>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Release (dev)|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -851,7 +729,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Public Release|Win32"
+							Name="Release (nondev) [public]|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -867,7 +745,7 @@
 						RelativePath=".\asio\asiolist.cpp"
 						>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Release (dev)|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -875,7 +753,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Public Release|Win32"
+							Name="Release (nondev) [public]|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -891,7 +769,7 @@
 						RelativePath=".\asioout.cpp"
 						>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Release (dev)|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -899,7 +777,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Public Release|Win32"
+							Name="Release (nondev) [public]|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -923,7 +801,7 @@
 						RelativePath=".\waveout.cpp"
 						>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Release (dev)|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -942,22 +820,13 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Public Release|Win32"
+							Name="Release (nondev) [public]|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
 								UsePrecompiledHeader="0"
 								BrowseInformation="1"
 								CompileAs="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug SSE2|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -1063,7 +932,7 @@
 					RelativePath=".\dma.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1083,7 +952,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1091,15 +960,6 @@
 							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug SSE2|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1160,7 +1020,7 @@
 					RelativePath=".\spu2.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1179,7 +1039,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1187,15 +1047,6 @@
 							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug SSE2|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1220,7 +1071,7 @@
 					RelativePath=".\config.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Release (dev)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1239,22 +1090,13 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Public Release|Win32"
+						Name="Release (nondev) [public]|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
 							BrowseInformation="1"
 							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug SSE2|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration

@@ -120,7 +120,7 @@ void SysMessage(char *fmt, ...)
 	char tmp[512];
 
 	va_start(list,fmt);
-	vsprintf_s(tmp,512,fmt,list);
+	sprintf_s(tmp,fmt,list);
 	va_end(list);
 	MessageBox(0, tmp, "SPU2ghz Msg", 0);
 }
@@ -154,7 +154,7 @@ static void InitLibraryName()
 	// Use TortoiseSVN's SubWCRev utility's output
 	// to label the specific revision:
 
-	sprintf_s( libraryName, 256, "SPU2ghz PPr %d%s"
+	sprintf_s( libraryName, "SPU2ghz PPr %d%s"
 #	ifdef _DEBUG_FAST
 		"-Debug"
 #	elif defined( _DEBUG )

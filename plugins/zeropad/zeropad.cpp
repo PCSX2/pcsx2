@@ -20,6 +20,7 @@
 #include <stdarg.h>
 
 #include "zeropad.h"
+#include "svnrev.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -28,11 +29,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef _DEBUG
-char *libraryName      = "ZeroPAD (Debug) ";
-#else
-char *libraryName      = "ZeroPAD ";
-#endif
+static char libraryName[256];
 
 PADAnalog g_lanalog[2], g_ranalog[2];
 PADconf conf;
@@ -137,11 +134,50 @@ void _KeyRelease(int pad, u32 key)
 	event.key = key;
 }
 
+static void InitLibraryName()
+{
+#ifdef PUBLIC
+
+	// Public Release!
+	// Output a simplified string that's just our name:
+
+	strcpy( libraryName, "ZeroPAD Playground" );
+
+#elif defined( SVN_REV_UNKNOWN )
+
+	// Unknown revision.
+	// Output a name that includes devbuild status but not
+	// subversion revision tags:
+
+	strcpy( libraryName, "ZeroPAD Playground"
+#	ifdef _DEBUG
+		"-Debug"
+#	endif
+		);
+#else
+
+	// Use TortoiseSVN's SubWCRev utility's output
+	// to label the specific revision:
+
+	sprintf_s( libraryName, "ZeroPAD PPr%d%s"
+#	ifdef _DEBUG
+		"-Debug"
+#	else
+		"-Dev"
+#	endif
+		,SVN_REV,
+		SVN_MODS ? "m" : ""
+	);
+#endif
+
+}
+
 u32 CALLBACK PS2EgetLibType() {
 	return PS2E_LT_PAD;
 }
 
 char* CALLBACK PS2EgetLibName() {
+	InitLibraryName();
 	return libraryName;
 }
 

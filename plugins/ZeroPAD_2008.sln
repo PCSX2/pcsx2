@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroPAD", "ZeroPAD_2008.vcproj", "{CDD9DB83-3BD9-4ED8-BB83-399A2F65F022}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroPAD", "zeropad\Windows\ZeroPAD_2008.vcproj", "{CDD9DB83-3BD9-4ED8-BB83-399A2F65F022}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -161,6 +161,7 @@ protected:
 	// Used to delay the sending of events.  Performance is better if the ringbuffer
 	// has more than one command in it when the thread is kicked.
 	int m_CopyCommandTally;
+	int m_CopyDataTally;
 
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1253"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="zerogsogl_2005"
 	ProjectGUID="{2D4E85B2-F47F-4D65-B091-701E5C031DAC}"
 	RootNamespace="ZeroGS"
@@ -48,7 +48,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
@@ -57,6 +57,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__WIN32__;__MSCW32__;__i386__;_RELEASE;_CRT_SECURE_NO_DEPRECATE;ZEROGS_SSE2"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
 				PrecompiledHeaderFile=".\Release/GSsoftdx.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
@@ -232,15 +233,17 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;zlib\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__WIN32__;__MSCW32__;__i386__;_RELEASE;_CRT_SECURE_NO_DEPRECATE;ZEROGS_SSE2;RELEASE_TO_PUBLIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
 				PrecompiledHeaderFile=""
 				AssemblerListingLocation=".\Release (to Public)/"
 				ObjectFile=".\Release (to Public)/"
