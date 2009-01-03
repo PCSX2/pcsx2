@@ -62,8 +62,7 @@ using namespace std;
 #endif
 
 // SuperVURec optimization options, uncomment only for debugging purposes
-#define SUPERVU_CACHING			// vu programs are saved and queried via CRC (might query the wrong program)
-								// disable when in doubt
+#define SUPERVU_CACHING			// vu programs are saved and queried via memcompare (shod be no reason to disable this)
 #define SUPERVU_WRITEBACKS		// don't flush the writebacks after every block
 #define SUPERVU_X86CACHING		// use x86reg caching (faster)
 #define SUPERVU_VIBRANCHDELAY   // when integers are modified right before a branch that uses the integer,

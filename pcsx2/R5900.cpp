@@ -485,7 +485,7 @@ u32 g_nextBranchCycle = 0;
 // and the recompiler.  (moved here to help alleviate redundant code)
 static __forceinline void _cpuBranchTest_Shared()
 {
-	g_nextBranchCycle = cpuRegs.cycle + eeWaitCycles;
+	g_nextBranchCycle = cpuRegs.cycle + 64; //eeWaitCycles;
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;

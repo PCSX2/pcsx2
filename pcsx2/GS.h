@@ -162,6 +162,7 @@ protected:
 	// has more than one command in it when the thread is kicked.
 	int m_CopyCommandTally;
 	int m_CopyDataTally;
+	volatile u32 m_RingBufferIsBusy;
 
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.

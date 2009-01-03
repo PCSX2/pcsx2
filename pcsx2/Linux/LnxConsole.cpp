@@ -184,5 +184,16 @@ namespace Console
 		va_end(list);
 		return false;
 	}
+
+	// Displays a message in the console with green emphasis.
+	// Newline is automatically appended.
+	bool Status( const char* fmt, ... )
+	{
+		va_list list;
+		va_start(list,fmt);
+		_WriteLn( Color_Yellow, fmt, list );
+		va_end(list);
+		return false;
+	}
 }
 

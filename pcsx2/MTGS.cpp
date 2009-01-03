@@ -21,20 +21,25 @@
 #include <vector>
 #include <list>
 
-#ifdef PCSX2_GSRING_TX_STATS
-#include <intrin.h>
-#endif
-
 #include "Common.h"
 #include "VU.h"
 #include "GS.h"
 #include "iR5900.h"
 
+#include "SamplProf.h"
+
+// Uncomment this to enable profiling of the GS RingBufferCopy function.
+//#define PCSX2_GSRING_SAMPLING_STATS
+
+#ifdef PCSX2_GSRING_TX_STATS
+#include <intrin.h>
+#endif
+
 using namespace Threading;
 using namespace std;
 
 #ifdef DEBUG
-#define MTGS_LOG SysPrintf
+#define MTGS_LOG Console::WriteLn
 #else
 #define MTGS_LOG 0&&
 #endif
@@ -196,6 +201,7 @@ mtgsThreadObject::mtgsThreadObject() :
 
 ,	m_CopyCommandTally( 0 )
 ,	m_CopyDataTally( 0 )
+,	m_RingBufferIsBusy( 0 )
 ,	m_packet_size()
 ,	m_packet_data( NULL )
 
@@ -246,6 +252,21 @@ void mtgsThreadObject::Reset()
 __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u8* pMem, u32 size )
 {
 	GIFPath& path = m_path[pathidx];
+
+#ifdef PCSX2_GSRING_SAMPLING_STATS
+	static uptr profStartPtr = 0;
+	static uptr profEndPtr = 0;
+	if( profStartPtr == 0 )
+	{
+		__asm 
+		{ 
+	__beginfunc:
+			mov profStartPtr, offset __beginfunc;
+			mov profEndPtr, offset __endfunc;
+		}
+		ProfilerRegisterSource( "GSRingBufCopy", (void*)profStartPtr, profEndPtr - profStartPtr );
+	}
+#endif
 
 	while(size > 0)
 	{
@@ -399,6 +420,12 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 		}
 	}
 
+	__asm
+	{
+__endfunc:
+		nop;
+	}
+
 	return size;
 }
 
@@ -418,6 +445,7 @@ int mtgsThreadObject::Callback()
 	while( !m_sigterm )
 	{
 		m_wait_event.Wait();
+		AtomicExchange( m_RingBufferIsBusy, 1 );
 
 		// note: m_RingPos is intentionally not volatile, because it should only
 		// ever be modified by this thread.
@@ -435,7 +463,7 @@ int mtgsThreadObject::Callback()
 			uptr stackpos = ringposStack.back();
 			if( stackpos != (uptr)m_RingPos )
 			{
-				SysPrintf( "MTGS Ringbuffer Critical Failure ---> %x to %x (prevCmd: %x)\n", stackpos, (long)m_RingPos, prevCmd );
+				Console::Error( "MTGS Ringbuffer Critical Failure ---> %x to %x (prevCmd: %x)\n", stackpos, (long)m_RingPos, prevCmd );
 			}
 			assert( stackpos == (long)m_RingPos );
 			prevCmd = tag;
@@ -558,6 +586,7 @@ int mtgsThreadObject::Callback()
 
 			AtomicExchangePointer( m_RingPos, newringpos );
 		}
+		AtomicExchange( m_RingBufferIsBusy, 0 );
 	}
 
 	GSclose();
@@ -595,6 +624,7 @@ void mtgsThreadObject::SetEventWait()
 	// Freeze registers because some kernel code likes to destroy them
 	FreezeXMMRegs(1);
 	FreezeMMXRegs(1);
+	//Console::Notice( "MTGS Stall!  EE waits for nothing! ... except your GPU sometimes." );
 	SetEvent();
 	Timeslice();
 	FreezeXMMRegs(0); 
@@ -639,29 +669,33 @@ void mtgsThreadObject::SendDataPacket()
 
 	AtomicExchangePointer( m_WritePos, temp );
 
-	// if enough copies have queued up then go ahead and initiate the GS thread..
-	
-	// Optimization notes:  16 was the best value I found so far.  Ideally there
-	// should be a secondary check for data size, since large transfers should
-	// be counted as multple commands for instance.  But I'm weary of adding too
-	// much clutter to the overhead of this function.  In any case, 16 should be
-	// a pretty decent all-weather value for the majority of games. (Air)
+	m_packet_data = NULL;
 
+	if( m_RingBufferIsBusy ) return;
+
+	// The ringbuffer is current in a resting state, so if enough copies have
+	// queued up then go ahead and initiate the GS thread..
+	
+	// Optimization notes:  What we're doing here is initiating a "burst" mode on
+	// the thread, which improves its cache hit performance and makes it more friendly
+	// to other threads in Pcsx2 and such.  Primary is the Command Tally, and then a 
+	// secondary data size threshold for games that do lots of texture swizzling.
+	
+	// 16 was the best value I found so far.
 	// tested values:
 	//  24 - very slow on HT machines (+5% drop in fps)
 	//  8 - roughly 2% slower on HT machines.
 
 	m_CopyDataTally += m_packet_size;
-	if( ( m_CopyDataTally > 0xf0000 ) || ( ++m_CopyCommandTally > 16 ) )
+	if( ( m_CopyDataTally > 0x40000 ) || ( ++m_CopyCommandTally > 16 ) )
 	{
 		FreezeXMMRegs(1); 
 		FreezeMMXRegs(1);
+		//Console::Status( "MTGS Kick! DataSize : 0x%5.8x, CommandTally : %d", m_CopyDataTally, m_CopyCommandTally );
 		SetEvent();
 		FreezeXMMRegs(0); 
 		FreezeMMXRegs(0);
 	}
-
-	m_packet_data = NULL;
 }
 
 int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u64* srcdata, u32 size )
@@ -674,10 +708,23 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u32* srcdata, u32 
 	return PrepDataPacket( pathidx, (u8*)srcdata, size );
 }
 
+#ifdef PCSX2_GSRING_TX_STATS
+static u32 ringtx_s=0;
+static u32 ringtx_s_ulg=0;
+static u32 ringtx_s_min=0xFFFFFFFF;
+static u32 ringtx_s_max=0;
+static u32 ringtx_c=0;
+static u32 ringtx_inf[32][32];
+static u32 ringtx_inf_s[32];
+#endif
+
+#ifdef PCSX2_GSRING_SAMPLING_STATS
+static u32 GSRingBufCopySz = 0;
+#endif
+
 // returns the amount of giftag data not processed (in simd128 values).
 // Return value is used by VU1 XGKICK to hack-fix data packets which are too
 // large for VU1 memory.
-
 int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 size )
 {
 #ifdef PCSX2_GSRING_TX_STATS
@@ -696,7 +743,7 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 	}
 	if (ringtx_s>=128*1024*1024)
 	{
-		SysPrintf("GSRingBufCopy:128MB in %d tx -> b/tx: AVG = %.2f , max = %d, min = %d\n",ringtx_c,ringtx_s/(float)ringtx_c,ringtx_s_max,ringtx_s_min);
+		Console::Status("GSRingBufCopy:128MB in %d tx -> b/tx: AVG = %.2f , max = %d, min = %d",ringtx_c,ringtx_s/(float)ringtx_c,ringtx_s_max,ringtx_s_min);
 		for (int i=0;i<32;i++)
 		{
 			u32 total_bucket=0;
@@ -707,15 +754,15 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 				{
 					total_bucket+=ringtx_inf[i][j];
 					bucket_subitems++;
-					SysPrintf("GSRingBufCopy :tx [%d,%d] algn %d : count= %d [%.2f%%]\n",1<<i,(1<<(i+1))-16,1<<j,ringtx_inf[i][j],ringtx_inf[i][j]/(float)ringtx_c*100);
+					Console::Notice("GSRingBufCopy :tx [%d,%d] algn %d : count= %d [%.2f%%]",1<<i,(1<<(i+1))-16,1<<j,ringtx_inf[i][j],ringtx_inf[i][j]/(float)ringtx_c*100);
 					ringtx_inf[i][j]=0;
 				}
 			}
 			if (total_bucket)
-				SysPrintf("GSRingBufCopy :tx [%d,%d] total : count= %d [%.2f%%] [%.2f%%]\n",1<<i,(1<<(i+1))-16,total_bucket,total_bucket/(float)ringtx_c*100,ringtx_inf_s[i]/(float)ringtx_s*100);
+				Console::Notice("GSRingBufCopy :tx [%d,%d] total : count= %d [%.2f%%] [%.2f%%]",1<<i,(1<<(i+1))-16,total_bucket,total_bucket/(float)ringtx_c*100,ringtx_inf_s[i]/(float)ringtx_s*100);
 			ringtx_inf_s[i]=0;
 		}
-		SysPrintf("GSRingBufCopy :tx ulg count =%d [%.2f%%]\n",ringtx_s_ulg,ringtx_s_ulg/(float)ringtx_s*100);
+		Console::Notice("GSRingBufCopy :tx ulg count =%d [%.2f%%]",ringtx_s_ulg,ringtx_s_ulg/(float)ringtx_s*100);
 		ringtx_s_ulg=0;
 		ringtx_c=0;
 		ringtx_s=0;
@@ -845,19 +892,6 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 	*(u32*)m_WritePos = (pathidx+1) | (simd_size<<16);
 	m_packet_data = m_WritePos + 16;
 
-#ifdef PCSX2_GSRING_SAMPLING_STATS
-	if( GSRingBufCopySz == 0)
-	{
-		__asm 
-		{ 
-			mov GSRingBufCopySz,offset __GSRingBufCopyEnd; 
-			sub GSRingBufCopySz,offset GSRingBufCopy;
-	__GSRingBufCopyEnd:
-		}
-		ProfilerRegisterSource("pcsx2:GSRingBufCopy",&GSRingBufCopy,GSRingBufCopySz);
-	}
-#endif
-	
 	return m_packet_size;
 }
 
@@ -939,21 +973,6 @@ bool mtgsOpen()
 }
 
 
-
-#ifdef PCSX2_GSRING_TX_STATS
-u32 ringtx_s=0;
-u32 ringtx_s_ulg=0;
-u32 ringtx_s_min=0xFFFFFFFF;
-u32 ringtx_s_max=0;
-u32 ringtx_c=0;
-u32 ringtx_inf[32][32];
-u32 ringtx_inf_s[32];
-#endif
-
-#ifdef PCSX2_GSRING_SAMPLING_STATS
-u32 GSRingBufCopySz;
-#endif
-
 void mtgsThreadObject::GIFSoftReset( int mask )
 {
 	if(mask & 1) memset(&m_path[0], 0, sizeof(m_path[0]));
@@ -972,6 +991,7 @@ void mtgsThreadObject::Freeze( SaveState& state )
 }
 
 // this function is needed because of recompiled calls from iGS.cpp
+// (currently used in GCC only)
 void mtgsRingBufSimplePacket( s32 command, u32 data0, u32 data1, u32 data2 )
 {
 	mtgsThread->SendSimplePacket( (GS_RINGTYPE)command, data0, data1, data2 );

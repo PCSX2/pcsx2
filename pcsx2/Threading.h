@@ -99,14 +99,14 @@ namespace Threading
 	extern long pcsx2_InterlockedCompareExchange( volatile long* target, long srcval, long comp );
 	extern long pcsx2_InterlockedExchangeAdd( volatile long* target, long addval );
 
-	extern void AtomicExchange( u32& Target, u32 value );
-	extern void AtomicExchangeAdd( u32& Target, u32 value );
-	extern void AtomicIncrement( u32& Target );
-	extern void AtomicDecrement( u32& Target );
-	extern void AtomicExchange( s32& Target, s32 value );
-	extern void AtomicExchangeAdd( s32& Target, u32 value );
-	extern void AtomicIncrement( s32& Target );
-	extern void AtomicDecrement( s32& Target );
+	extern void AtomicExchange( volatile u32& Target, u32 value );
+	extern void AtomicExchangeAdd( volatile u32& Target, u32 value );
+	extern void AtomicIncrement( volatile u32& Target );
+	extern void AtomicDecrement( volatile u32& Target );
+	extern void AtomicExchange( volatile s32& Target, s32 value );
+	extern void AtomicExchangeAdd( volatile s32& Target, u32 value );
+	extern void AtomicIncrement( volatile s32& Target );
+	extern void AtomicDecrement( volatile s32& Target );
 
 	extern void _AtomicExchangePointer( const void ** target, const void* value );
 	extern void _AtomicCompareExchangePointer( const void ** target, const void* value, const void* comparand );

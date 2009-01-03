@@ -107,27 +107,27 @@ namespace Threading
 	// define some overloads for InterlockedExchanges
 	// for commonly used types, like u32 and s32.
 	
-	__forceinline void AtomicExchange( u32& Target, u32 value )
+	__forceinline void AtomicExchange( volatile u32& Target, u32 value )
 	{
 		pcsx2_InterlockedExchange( (volatile long*)&Target, value );
 	}
 
-	__forceinline void AtomicExchangeAdd( u32& Target, u32 value )
+	__forceinline void AtomicExchangeAdd( volatile u32& Target, u32 value )
 	{
 		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, value );
 	}
 
-	__forceinline void AtomicIncrement( u32& Target )
+	__forceinline void AtomicIncrement( volatile u32& Target )
 	{
 		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, 1 );
 	}
 
-	__forceinline void AtomicDecrement( u32& Target )
+	__forceinline void AtomicDecrement( volatile u32& Target )
 	{
 		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, -1 );
 	}
 
-	__forceinline void AtomicExchange( s32& Target, s32 value )
+	__forceinline void AtomicExchange( volatile s32& Target, s32 value )
 	{
 		pcsx2_InterlockedExchange( (volatile long*)&Target, value );
 	}
@@ -137,12 +137,12 @@ namespace Threading
 		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, value );
 	}
 
-	__forceinline void AtomicIncrement( s32& Target )
+	__forceinline void AtomicIncrement( volatile s32& Target )
 	{
 		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, 1 );
 	}
 
-	__forceinline void AtomicDecrement( s32& Target )
+	__forceinline void AtomicDecrement( volatile s32& Target )
 	{
 		pcsx2_InterlockedExchangeAdd( (volatile long*)&Target, -1 );
 	}

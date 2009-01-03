@@ -480,11 +480,14 @@ static void recDmaExec8(void (*name)(), u32 mem, int mmreg)
 	}
 }
 
-static void PrintDebug(u8 value)
+static void __fastcall PrintDebug(u8 value)
 {
+	// Note: This is where the EE's diagonstic messages originate from (like the ones that
+	// start with hash # marks)
+
 	if (value == '\n') {
 		sio_buffer[sio_count] = 0;
-		Console::Write( sio_buffer );
+		Console::MsgLn( Color_Cyan, sio_buffer );
 		sio_count = 0;
 	} else {
 		if (sio_count < 1023) {
@@ -539,10 +542,10 @@ void hwConstWrite8(u32 mem, int mmreg)
 		CONSTWRITE_TIMERS(8)
 
 		case 0x1000f180:
-			_recPushReg(mmreg);
+			// Yay fastcall!
+			_eeMoveMMREGtoR( ECX, mmreg );
 			iFlushCall(0);
 			CALLFunc((uptr)PrintDebug);
-			ADD32ItoR(ESP, 4);
 			break;
 
 		case 0x10008001: // dma0 - vif0
