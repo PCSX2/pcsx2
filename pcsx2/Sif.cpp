@@ -196,10 +196,10 @@ __forceinline void SIF0Dma()
 					//HW_DMA9_CHCR &= ~0x01000000; //reset TR flag
 					//psxDmaInterrupt2(2);
 					iopsifbusy[0] = 0;
-
+					PSX_INT(IopEvt_SIF0, psxCycles);
 					// iop is 1/8th the clock rate of the EE and psxcycles is in words (not quadwords)
 					// So when we're all done, the equation looks like thus:
-					PSX_INT(IopEvt_SIF0, ( ( psxCycles*BIAS ) / 4 ) / 8);
+					//PSX_INT(IopEvt_SIF0, ( ( psxCycles*BIAS ) / 4 ) / 8);
 
 					//hwIntcIrq(INTC_SBUS);
 					sif0.sifData.data = 0;
@@ -238,7 +238,8 @@ __forceinline void SIF0Dma()
 				SIF0write((u32*)PSXM(HW_DMA9_MADR), wTransfer);
 				HW_DMA9_MADR += wTransfer << 2;
 				//HW_DMA9_BCR = (HW_DMA9_BCR & 0xFFFF) | (((HW_DMA9_BCR >> 16) - wTransfer)<<16);
-				psxCycles += wTransfer;
+				psxCycles += (wTransfer / 4) * BIAS;		// fixme : should be / 16
+				//psxCycles += wTransfer;
 				sif0.counter -= wTransfer;
 
 				//notDone = 1;		
@@ -272,7 +273,8 @@ __forceinline void SIF0Dma()
 
 					Cpu->Clear(sif0dma->madr, readSize*4);
 
-					cycles += readSize;
+					cycles += readSize * BIAS;	// fixme : BIAS is factored in below
+					//cycles += readSize;
 					sif0dma->qwc -= readSize;
 					sif0dma->madr += readSize << 4;
 
@@ -435,7 +437,8 @@ __forceinline void SIF1Dma()
 				SIF1write(data, qwTransfer << 2);
 				
 				sif1dma->madr += qwTransfer << 4;
-				cycles += qwTransfer;		// 1 cycle per quadword (BIAS is factored later)
+				cycles += qwTransfer * BIAS;		// fixme : BIAS is factored in above
+				//cycles += qwTransfer;		// 1 cycle per quadword (BIAS is factored later)
 				sif1dma->qwc -= qwTransfer;
 			}
 		}
