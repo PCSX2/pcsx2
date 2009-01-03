@@ -419,13 +419,13 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 			DevCon::Msg( "path1 hack! " );
 		}
 	}
-
+#ifdef PCSX2_GSRING_SAMPLING_STATS
 	__asm
 	{
-__endfunc:
-		nop;
+		__endfunc:
+				nop;
 	}
-
+#endif
 	return size;
 }
 

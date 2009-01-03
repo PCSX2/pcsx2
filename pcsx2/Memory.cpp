@@ -2595,12 +2595,7 @@ static u8* m_psAllMem = NULL;
 int memInit() 
 {
 #ifdef __LINUX__
-	struct sigaction sa;
-	
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_SIGINFO;
-	sa.sa_sigaction = &SysPageFaultExceptionFilter;
-	sigaction(SIGSEGV, &sa, NULL); 
+	InstallLinuxExceptionHandler();
 #endif
 	if (!vtlb_Init()) return -1;
 
@@ -2928,14 +2923,29 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 }
 
 #else
+#include "errno.h"
+
+__forceinline void __fastcall InstallLinuxExceptionHandler()
+{
+	struct sigaction sa;
+	
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = &SysPageFaultExceptionFilter;
+	sigaction(SIGSEGV, &sa, NULL); 
+}
 
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 // This is my shot in the dark.  Probably needs some work.  Good luck! (air)
 __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )
 {
-	//Console::Error("SysPageFaultExceptionFilter!");
+	int err;
+	u32 pagesize = getpagesize();
+
+	//DevCon::Error("SysPageFaultExceptionFilter!");
 	// get bad virtual address
 	u32 offset = (u8*)info->si_addr - psM;
+	uptr pageoffset = ( offset / pagesize ) * pagesize;
 
 	if (offset>=Ps2MemSize::Base)
 	{
@@ -2944,8 +2954,9 @@ __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t
 		assert( false );
 	}
 
-	mprotect(&psM[offset], 1, PROT_READ|PROT_WRITE);
-
+	err = mprotect( &psM[pageoffset], pagesize, PROT_READ | PROT_WRITE );
+	if (err) DevCon::Error("SysPageFaultExceptionFilter: %s", strerror(errno));
+	
 	offset>>=12;
 	psMPWC[(offset/32)]|=(1<<(offset&31));
 

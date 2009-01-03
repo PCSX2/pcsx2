@@ -146,9 +146,14 @@ typedef union _LARGE_INTEGER
 #define PCSX2_ALIGNED16_DECL(x) x
 
 // Define some handy equivalents of MSVC++ specific functions.
-// (I'm assuming this sort of template use works in GCC -
+// (I'm assuming this sort of template use works in GCC -Air
+
+// Yes, if you add the right includes. --arcum42
 #ifdef __cplusplus
 #ifndef _MSC_VER
+#include <stdio.h>
+#include <stdarg.h>
+#include <cstring>
 
 template <size_t Size>
 __forceinline int vsprintf_s(char (&dest)[Size], const char* fmt, va_list args )
@@ -163,7 +168,7 @@ __forceinline int sprintf_s(char (&dest)[Size], const char* fmt, ... )
 {
 	va_list list;
 	va_start( list, dest );
-    int retval = vsprintf_s( dest, fmt, args );
+    int retval = vsprintf_s( dest, fmt, list );
 
 	va_end( list );
 

@@ -92,6 +92,17 @@ namespace Console
 		return false;
 	}
 
+	// Writes an unformatted string of text to the console (fast!)
+	// A newline is automatically appended.
+	__forceinline bool __fastcall MsgLn( Colors color, const char* fmt )
+	{
+		SetColor( color );
+		Write( fmt );
+		ClearColor();
+		Newline();
+		return false;
+	}
+	
 	static __forceinline void __fastcall _WriteLn( Colors color, const char* fmt, va_list args )
 	{
 		char msg[2048];
