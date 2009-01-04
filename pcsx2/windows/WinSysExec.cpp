@@ -586,14 +586,14 @@ void SysPrintf(const char *fmt, ...)
 void SysMessage(const char *fmt, ...) 
 {
 	va_list list;
-	char tmp[512];
+	char msg[512];
 
 	va_start(list,fmt);
 	vsprintf_s(msg,fmt,list);
-	tmp[511] = '\0';
+	msg[511] = '\0';
 	va_end(list);
 
-	Console::Alert(tmp);
+	Console::Alert(msg);
 }
 
 void SysUpdate() {
