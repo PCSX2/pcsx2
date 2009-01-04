@@ -472,15 +472,29 @@ void FindPlugins() {
 		Handle = dlopen(plugin, RTLD_NOW);
 		if (Handle == NULL) 
 		{
-			Console::Error("%s\n", dlerror()); 
+			Console::Error("Can't open %s: %s\n", ent->d_name, dlerror()); 
 			continue;
 		}
 
 		PS2EgetLibType = (_PS2EgetLibType) dlsym(Handle, "PS2EgetLibType");
 		PS2EgetLibName = (_PS2EgetLibName) dlsym(Handle, "PS2EgetLibName");
 		PS2EgetLibVersion2 = (_PS2EgetLibVersion2) dlsym(Handle, "PS2EgetLibVersion2");
-		if ((PS2EgetLibType == NULL) || (PS2EgetLibName == NULL) || (PS2EgetLibVersion2 == NULL))
+		
+		if (PS2EgetLibType == NULL)
+		{
+			Console::Error("PS2EgetLibType==NULL for %s", ent->d_name);
 			continue;
+		}
+		if (PS2EgetLibName == NULL)
+		{
+			Console::Error("PS2EgetLibName==NULL for %s", ent->d_name);
+			continue;
+		}
+		if (PS2EgetLibVersion2 == NULL)
+		{
+			Console::Error("PS2EgetLibVersion2==NULL for %s", ent->d_name);
+			continue;
+		}
 		
 		type = PS2EgetLibType();
 

@@ -26,6 +26,7 @@ extern "C" {
 #include "callbacks.h"
 }
 
+#include "zerospu2.h"
 #include "Linux.h"
 
 // This is a bit ugly. I'll see if I can work out a better way to do this later.
@@ -150,7 +151,7 @@ void on_Conf_Cancel (GtkButton *button, gpointer user_data)
 
 }
 
-extern char* libraryName;
+extern char *libraryName;
 extern string s_strIniPath;
 
 void CALLBACK SPU2about() {

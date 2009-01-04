@@ -15,7 +15,7 @@
 #include "zlib/zlib.h"
 #include "bzip2/bzlib.h"
 
-#include "PS2Etypes.h"
+#include "../../common/PS2Etypes.h"
 #include "CDVDiso.h"
 #include "libiso.h"
 

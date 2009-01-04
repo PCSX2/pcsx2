@@ -87,7 +87,7 @@ typedef unsigned int uint;
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
 #define PCSX2_ALIGNED16_DECL(x) __declspec(align(16)) x
 
-#else
+#else // _MSC_VER
 
 #ifdef __LINUX__
 
@@ -107,7 +107,7 @@ typedef uint64_t u64;
 typedef uintptr_t uptr;
 typedef intptr_t sptr;
 
-#else
+#else // __LINUX__
 
 typedef char s8;
 typedef short s16;
@@ -119,7 +119,7 @@ typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-#endif
+#endif // __LINUX__
 
 typedef unsigned int uint;
 
@@ -145,12 +145,16 @@ typedef union _LARGE_INTEGER
 
 #define PCSX2_ALIGNED16_DECL(x) x
 
-// Define some handy equivalents of MSVC++ specific functions.
-// (I'm assuming this sort of template use works in GCC -Air
+// The various plugins react to C++ in a header that is supposed to be C
+// in much the same way a vampire reacts to the sign of a cross.
+// Even if the file calling it is a C++ file.
+// 
+// And removing the extern "C"'s makes it even worse. --Arcum42
+#if defined(SECURE_SPRINTF)
 
-// Yes, if you add the right includes. --arcum42
+// Define some handy equivalents of MSVC++ specific functions.
 #ifdef __cplusplus
-#ifndef _MSC_VER
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <cstring>
@@ -167,17 +171,16 @@ template <size_t Size>
 __forceinline int sprintf_s(char (&dest)[Size], const char* fmt, ... )
 {
 	va_list list;
+	
 	va_start( list, dest );
-    int retval = vsprintf_s( dest, fmt, list );
-
+	int retval = vsprintf_s( dest, fmt, list );
 	va_end( list );
 
 	return retval;
 }
 
-#endif
-#endif
-
+#endif // __cplusplus
+#endif // SECURE_SPRINTF
 #endif // _MSC_VER
 
 #if !defined(__LINUX__) || !defined(HAVE_STDINT_H)

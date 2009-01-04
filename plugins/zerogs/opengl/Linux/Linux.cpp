@@ -52,7 +52,7 @@ void CALLBACK GSkeyEvent(keyEvent *ev)
 	//static bool bShift = false;
 	static bool bAlt = false;
 	
-	switch(ev->event) {
+	switch(ev->evt) {
 		case KEYPRESS:
 			switch(ev->key) {
 				case XK_F5:

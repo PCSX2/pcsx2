@@ -27,15 +27,22 @@ cd "temp"
 svn checkout http://pcsx2.googlecode.com/svn/trunk/plugins ./
 
 echo "Copying..."
- for i in $PLUGINDIRS; do
-            mv $i ../
+for i in $PLUGINDIRS; do
+		mv $i ../
         done
 cd ..
 rm -rf ./temp/
 fi
-
 fi
 
+# Copy the common directory in each individual subfolder so that 
+# you can compile the plugins both individually *and* from the 
+# normal subdirectories.
+for i in $PLUGINDIRS; do
+		rm -rf $i/common
+		cp -r common/ $i/
+        done
+	
 if [ -d zerogs ]
 then
 echo "Importing local copy of zerogs..."

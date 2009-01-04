@@ -5,6 +5,7 @@ AM_INIT_AUTOMAKE(ZeroGSogl,0.96.2)
 AC_PROG_CC([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
 AC_PROG_CXX([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
 AC_PROG_CPP([gcc g++ cl KCC CC cxx cc++ xlC aCC c++])
+AM_PROG_CC_C_O
 
 AC_PROG_INSTALL
 AC_PROG_RANLIB
@@ -36,13 +37,13 @@ if test "x$debug" == xyes
 then
  AC_DEFINE(_DEBUG,1,[_DEBUG])
  CFLAGS+="-g "
- CPPFLAGS+="-g "
- CXXFLAGS+="-g "
+ CPPFLAGS+="-g -fpermissive "
+ CXXFLAGS+="-g- fpermissive "
 else
  AC_DEFINE(NDEBUG,1,[NDEBUG])
  CFLAGS+="-O3 -fomit-frame-pointer "
- CPPFLAGS+="-O3 -fomit-frame-pointer "
- CXXFLAGS+="-O3 -fomit-frame-pointer "
+ CPPFLAGS+="-O3 -fomit-frame-pointer -fpermissive "
+ CXXFLAGS+="-O3 -fomit-frame-pointer -fpermissive "
 fi
 AC_MSG_RESULT($debug)
 

@@ -27,7 +27,7 @@
 
 extern "C" {
 #define SPU2defs
-#include "PS2Edefs.h"
+#include "../common/PS2Edefs.h"
 }
 
 #ifdef __LINUX__
@@ -79,7 +79,6 @@ inline u64 GetMicroTime()
 using namespace std;
 
 extern FILE *spu2Log;
-
 #ifdef _DEBUG
 #define SPU2_LOG __Log  //debug mode
 #else
@@ -123,7 +122,7 @@ void SoundFeedVoiceData(unsigned char* pSound,long lBytes);
 #include <assert.h>
 
 // declare linux equivalents
-extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
+static  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 {
 	assert( align < 0x10000 );
 	char* p = (char*)malloc(size+align);
@@ -135,7 +134,7 @@ extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 	return p;
 }
 
-extern __forceinline void pcsx2_aligned_free(void* pmem)
+static __forceinline void pcsx2_aligned_free(void* pmem)
 {
 	if( pmem != NULL ) {
 		char* p = (char*)pmem;
@@ -145,7 +144,6 @@ extern __forceinline void pcsx2_aligned_free(void* pmem)
 
 #define _aligned_malloc pcsx2_aligned_malloc
 #define _aligned_free pcsx2_aligned_free
-
 #endif
 
 // Atomic Operations
@@ -162,7 +160,7 @@ extern "C" LONG  __cdecl _InterlockedExchangeAdd(LPLONG volatile Addend, LONG Va
 
 typedef void* PVOID;
 
-__forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
+static __forceinline long InterlockedExchangeAdd(long volatile* Addend, long Value)
 {
 	__asm__ __volatile__(".intel_syntax\n"
 						 "lock xadd [%0], %%eax\n"

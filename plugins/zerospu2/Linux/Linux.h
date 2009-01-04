@@ -18,6 +18,9 @@
  
  // Modified by arcum42@gmail.com
  
+ #ifndef __LINUX_H__
+ #define __LINUX_H__
+ 
 #include <assert.h>
 #include <stdlib.h>
 
@@ -25,8 +28,6 @@
 #include <fcntl.h>
 #include <sys/soundcard.h>
 #include <unistd.h>
-
-#include "zerospu2.h"
 
 // Make it easier to check and set checkmarks in the gui
 #define is_checked(main_widget, widget_name) (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(main_widget, widget_name)))) 
@@ -69,3 +70,4 @@ extern void RemoveSound();
 extern int SoundGetBytesBuffered();
 extern void SoundFeedVoiceData(unsigned char* pSound,long lBytes);
 
+#endif // __LINUX_H__

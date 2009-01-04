@@ -26,7 +26,7 @@
 // need C definitions
 extern "C" {
 #define GSdefs
-#include "PS2Edefs.h"
+#include "../../common/PS2Edefs.h"
 }
 
 #ifdef _WIN32
@@ -35,6 +35,10 @@ extern "C" {
 #include <windowsx.h>
 
 extern HWND GShwnd;
+
+extern "C" u32   CALLBACK PS2EgetLibType(void);
+extern "C" u32   CALLBACK PS2EgetLibVersion2(u32 type);
+extern "C" char* CALLBACK PS2EgetLibName(void);
 
 #else // linux basic definitions
 
@@ -49,15 +53,22 @@ extern HWND GShwnd;
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <assert.h>
+#include <math.h>
+
+#include <vector>
+#include <string>
+using namespace std;
+
+#include "zerogsmath.h"
+
 extern u32 THR_KeyEvent; // value for passing out key events beetwen threads
 extern bool THR_bShift;
-
-#define __inline inline
 
 #if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
 
 // declare linux equivalents
-extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
+static __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 {
 	assert( align < 0x10000 );
 	char* p = (char*)malloc(size+align);
@@ -69,7 +80,7 @@ extern  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
 	return p;
 }
 
-extern __forceinline void pcsx2_aligned_free(void* pmem)
+static __forceinline void pcsx2_aligned_free(void* pmem)
 {
 	if( pmem != NULL ) {
 		char* p = (char*)pmem;
@@ -123,15 +134,6 @@ typedef struct {
 extern GLWindow GLWin;
 
 #endif // linux basic definitions
-
-#include <assert.h>
-#include <math.h>
-
-#include <vector>
-#include <string>
-using namespace std;
-
-#include "zerogsmath.h"
 
 #if defined(_MSC_VER) 
 #define FASTCALL(fn) __fastcall fn
@@ -767,7 +769,7 @@ private:
 
 // converts float16 [0,1] to BYTE [0,255] (assumes value is in range, otherwise will take lower 8bits)
 // f is a u16
-__forceinline u16 Float16ToBYTE(u16 f) {
+static __forceinline u16 Float16ToBYTE(u16 f) {
 	//assert( !(f & 0x8000) );
 	if( f & 0x8000 ) return 0;
 
@@ -775,7 +777,7 @@ __forceinline u16 Float16ToBYTE(u16 f) {
 	return d > 255 ? 255 : d;
 }
 
-__forceinline u16 Float16ToALPHA(u16 f) {
+static __forceinline u16 Float16ToALPHA(u16 f) {
 	//assert( !(f & 0x8000) );
 	if( f & 0x8000 ) return 0;
 
@@ -837,8 +839,8 @@ class DVProfileFunc
 {
 public:
 	u32 dwUserData;
-	__forceinline DVProfileFunc(char* pname) {}
-	__forceinline DVProfileFunc(char* pname, u32 dwUserData) { }
+	static __forceinline DVProfileFunc(char* pname) {}
+	static __forceinline DVProfileFunc(char* pname, u32 dwUserData) { }
 	~DVProfileFunc() {}
 };
 

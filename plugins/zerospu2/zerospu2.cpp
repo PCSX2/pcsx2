@@ -21,7 +21,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
 #include "svnrev.h"
+#endif 
 
 #include "SoundTouch/SoundTouch.h"
 #include "SoundTouch/WavFile.h"
@@ -39,7 +41,7 @@
 #define NSFRAMES	16	  // gather at least NSFRAMES of NSSIZE before submitting
 #define NSPACKETS 24
 
-static char libraryName[256];
+char libraryName[256];
 
 FILE *spu2Log;
 Config conf;
@@ -135,6 +137,7 @@ VOICE_PROCESSED voices[SPU_NUMBER_VOICES+1]; // +1 for modulation
 
 static void InitLibraryName()
 {
+#ifdef _WIN32
 #ifdef PUBLIC
 
 	// Public Release!
@@ -168,6 +171,15 @@ static void InitLibraryName()
 		SVN_MODS ? "m" : ""
 	);
 #endif
+#else
+// I'll hook in svn version code later. --arcum42
+
+	strcpy( libraryName, "ZeroSPU2 Playground"
+#	ifdef _DEBUG
+		"-Debug"
+#	endif
+		);
+#	endif
 
 }
 

@@ -20,16 +20,17 @@
 #include <stdarg.h>
 
 #include "zeropad.h"
-#include "svnrev.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #ifndef _WIN32
 #include <unistd.h>
+#else
+#include "svnrev.h"
 #endif
 
-static char libraryName[256];
+char libraryName[256];
 
 PADAnalog g_lanalog[2], g_ranalog[2];
 PADconf conf;
@@ -115,7 +116,7 @@ void _KeyPress(int pad, u32 key)
         }
     }
 
-	event.event = KEYPRESS;
+	event.evt = KEYPRESS;
 	event.key = key;
 }
 
@@ -130,12 +131,13 @@ void _KeyRelease(int pad, u32 key)
 		}
 	}
 
-	event.event = KEYRELEASE;
+	event.evt = KEYRELEASE;
 	event.key = key;
 }
 
 static void InitLibraryName()
 {
+#ifdef _WIN32
 #ifdef PUBLIC
 
 	// Public Release!
@@ -169,7 +171,15 @@ static void InitLibraryName()
 		SVN_MODS ? "m" : ""
 	);
 #endif
+#else
+// I'll fix up SVN support later. --arcum42
 
+	strcpy( libraryName, "ZeroPAD Playground"
+#	ifdef _DEBUG
+		"-Debug"
+#	endif
+		);
+#endif
 }
 
 u32 CALLBACK PS2EgetLibType() {
@@ -513,6 +523,6 @@ static keyEvent s_event;
 keyEvent* CALLBACK PADkeyEvent()
 {
     s_event = event;
-    event.event = 0;
+    event.evt = 0;
     return &s_event;
 }

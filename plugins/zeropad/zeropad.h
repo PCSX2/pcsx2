@@ -42,10 +42,10 @@ using namespace std;
 
 #define PADdefs
 extern "C" {
-#include "PS2Edefs.h"
+#include "../common/PS2Edefs.h"
 }
 
-extern char *libraryName;
+extern char libraryName[256];
 
 #define FORIT(it, v) for(it = (v).begin(); it != (v).end(); (it)++)
 

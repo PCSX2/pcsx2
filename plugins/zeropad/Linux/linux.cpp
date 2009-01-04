@@ -285,7 +285,7 @@ void CALLBACK PADupdate(int pad)
                 }
             }
             
-            event.event = KEYPRESS;
+            event.evt = KEYPRESS;
             event.key = key;
             break;
         case KeyRelease:
@@ -299,7 +299,7 @@ void CALLBACK PADupdate(int pad)
                 }
             }
             
-            event.event = KEYRELEASE;
+            event.evt = KEYRELEASE;
             event.key = key;
             break;
             
