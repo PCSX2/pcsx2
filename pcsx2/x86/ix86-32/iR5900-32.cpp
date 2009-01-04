@@ -2315,7 +2315,9 @@ REC_SYS(COP2);
 
 void recCOP2( void )
 { 
-	CPU_LOG( "Recompiling COP2:%s\n", disR5900Current.getString() );
+	// This CPU_LOG call triggers a "Source Log Stack Corruption Detected." 
+	// error and crashes pcsx2 if called here. 
+	//CPU_LOG( "Recompiling COP2:%s\n", disR5900Current.getString() );
 	recCOP22( );
 }
 
