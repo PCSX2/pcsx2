@@ -241,7 +241,7 @@ FILE *_cdvdOpenMechaVer() {
 		SysPrintf("MEC File Not Found , Creating Blank File\n");
 		fd = fopen(file, "wb");
 		if (fd == NULL) {
-			SysMessage("_cdvdOpenMechaVer: Error creating %s", file);
+			Console::Alert("_cdvdOpenMechaVer: Error creating %s", file);
 			exit(1);
 		}
 		fputc(0x03, fd);
@@ -285,7 +285,7 @@ FILE *_cdvdOpenNVM() {
 		SysPrintf("NVM File Not Found , Creating Blank File\n");
 		fd = fopen(file, "wb");
 		if (fd == NULL) {
-			SysMessage("_cdvdOpenNVM: Error creating %s", file);
+			Console::Alert("_cdvdOpenNVM: Error creating %s", file);
 			exit(1);
 		}
 		for (i=0; i<1024; i++) fputc(0, fd);

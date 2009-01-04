@@ -59,7 +59,7 @@ void __Log( const char* fmt, ... )
 	assert( length <= 2020 );
 	if( length > 2020 )
 	{
-		SysMessage( "Source Log Stack Corruption Detected.  Program execution may become unstable." );
+		Console::Alert("Source Log Stack Corruption Detected.  Program execution may become unstable.");
 		// fixme: should throw an exception here once we have proper exception handling implemented.
 	}
 
@@ -86,7 +86,7 @@ static __forceinline void _vSourceLog( u16 protocol, u8 source, u32 cpuPc, u32 c
 	assert( length <= 2020 );
 	if( length > 2020 )
 	{
-		SysMessage( "Source Log Stack Corruption Detected.  Program execution may become unstable." );
+		Console::Alert("Source Log Stack Corruption Detected.  Program execution may become unstable.");
 		// fixme: should throw an exception here once we have proper exception handling implemented.
 	}
 

@@ -571,7 +571,7 @@ void ProcessFKeys(int fkey, int shift)
 
 				Console::Error( _("An error occured while trying to load saveslot %d"), StatesC );
 				Console::Error( ex.what() );
-				SysMessage(
+				Console::Alert(
 					"Pcsx2 encountered an error while trying to load the savestate\n"
 					"and emulation had to be aborted." );
 
@@ -750,7 +750,7 @@ void injectIRX(const char *filename){
 	strcat(path, filename);
 
 	if (stat(path, &buf) == -1){
-		SysMessage(_("Unable to hack in %s%s\n"), Config.BiosDir, filename);
+		Console::Alert("Unable to hack in %s%s\n", Config.BiosDir, filename);
 		return;
 	}
 

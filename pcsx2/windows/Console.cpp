@@ -247,4 +247,19 @@ namespace Console
 		return false;
 	}
 
+	// Pops up an alert Dialog Box.
+	// Replacement for SysMessage.
+	bool Alert( const char* fmt, ... )
+	{
+		va_list list;
+		char tmp[512];
+
+		va_start(list,fmt);
+		vsprintf_s(tmp,fmt,list);
+		tmp[511] = '\0';
+		va_end(list);
+		MessageBox(0, tmp, _("Pcsx2 Msg"), 0);
+
+		return false;
+	}
 }

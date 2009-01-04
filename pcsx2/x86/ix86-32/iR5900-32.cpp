@@ -1441,7 +1441,7 @@ u32 g_sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 {
-	//SysMessage("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+	//Console::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	// SSE STATE //
 	// WARNING: do not touch unless you know what you are doing
 
@@ -1570,7 +1570,7 @@ static void recInit()
 
 	SuperVUInit(-1);
 
-	//SysMessage("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+	//Console::Alert("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 }
 

@@ -544,7 +544,8 @@ FILE *LoadMcd(int mcd) {
 		f = fopen(str, "r+b");
 	}
 	if (f == NULL) {
-		SysMessage (_("Failed loading MemCard %s"), str); return NULL;
+		Console::Alert("Failed loading MemCard %s", str); 
+		return NULL;
 	}
 
 	return f;

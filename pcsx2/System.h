@@ -138,6 +138,10 @@ namespace Console
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
 	extern bool Status( const char* fmt, ... );
+	
+	// Pops up an alert Dialog Box.
+	// Replacement for SysMessage.
+	extern bool Alert( const char* fmt, ... );
 }
 
 using Console::Color_Red;

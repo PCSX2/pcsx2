@@ -76,7 +76,8 @@ int vu1Init()
 	VU1.Mem   = (u8*)_aligned_malloc(16*1024, 16);
 	VU1.Micro = (u8*)_aligned_malloc(16*1024, 16);
 	if (VU1.Mem == NULL || VU1.Micro == NULL) {
-		SysMessage(_("Error allocating memory")); return -1;
+		Console::Alert("Error allocating memory"); 
+		return -1;
 	}
 	memset(VU1.Mem, 0,16*1024);
 	memset(VU1.Micro, 0,16*1024);

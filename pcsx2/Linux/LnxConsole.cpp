@@ -206,5 +206,33 @@ namespace Console
 		va_end(list);
 		return false;
 	}
+	
+	bool Alert(const char *fmt, ...)
+	{
+		GtkWidget *dialog;
+		va_list list;
+		char msg[512];
+
+		va_start(list, fmt);
+		vsprintf(msg, fmt, list);
+		va_end(list);
+
+		if (msg[strlen(msg)-1] == '\n')
+			msg[strlen(msg)-1] = 0;
+
+		if (!UseGui) 
+		{ 
+			Error("%s",msg); 
+			return false; 
+		}
+		dialog = gtk_message_dialog_new (GTK_WINDOW(MainWindow),
+                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                  GTK_MESSAGE_ERROR,
+                                  GTK_BUTTONS_OK, msg);
+		gtk_dialog_run (GTK_DIALOG (dialog));
+		gtk_widget_destroy (dialog);
+		
+		return false; 
+	}
 }
 

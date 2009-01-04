@@ -250,7 +250,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		if( argv == NULL )
 		{
-			SysMessage( "A fatal error occured while attempting to parse the command line.\n" );
+			Console::Alert( "A fatal error occured while attempting to parse the command line.\n" );
 			return 2;
 		}
 
@@ -282,7 +282,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				Config.GameFixes = 0;
 				Config.Hacks = 0;
 
-				SysMessage(_("Pcsx2 needs to be configured"));
+				Console::Alert("Pcsx2 needs to be configured");
 				Pcsx2Configure(NULL);
 
 			case -1:		// Error occured.  Quit.

@@ -568,7 +568,8 @@ static int recInit() {
 	if( recRAM == NULL || recROM == NULL || recROM1 == NULL ||
 		psxRecLUT == NULL || recBlocks == NULL || s_pInstCache == NULL )
 	{
-		SysMessage( _("Error allocating memory") ); return -1;
+		Console::Alert("Error allocating memory"); 
+		return -1;
 	}
 
 	// No errors!  Proceed with initialization...

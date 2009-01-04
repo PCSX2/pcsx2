@@ -355,7 +355,7 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 		s_dwPageSize = sSysInfo.dwPageSize;
 
 		if( s_dwPageSize != 0x1000 ) {
-			SysMessage("Error! OS page size must be 4Kb!\n"
+			Console::Alert("Error! OS page size must be 4Kb!\n"
 				"If for some reason the OS cannot have 4Kb pages, then run the TLB build.");
 			return -1;
 		}

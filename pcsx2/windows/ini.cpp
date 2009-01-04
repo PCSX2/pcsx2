@@ -71,7 +71,7 @@ int LoadConfig()
 		if( hasCustomConfig() )
 		{
 			// using custom config, so fail outright:
-			SysMessage( "User-specified configuration file not found:\n %s\nPCSX2 will now exit." );
+			Console::Alert( "User-specified configuration file not found:\n %s\nPCSX2 will now exit." );
 			return -1;
 		}
 

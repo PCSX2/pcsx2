@@ -333,51 +333,15 @@ void OnMsg_Ok() {
 }
 
 void SysMessage(const char *fmt, ...) {
-	GtkWidget *Ok,*Txt;
-	GtkWidget *Box,*Box1;
 	va_list list;
 	char msg[512];
 
-	va_start(list, fmt);
-	vsprintf(msg, fmt, list);
+	va_start(list,fmt);
+	vsnprintf(msg,511,fmt,list);
+	msg[511] = '\0';
 	va_end(list);
 
-	if (msg[strlen(msg)-1] == '\n')
-		msg[strlen(msg)-1] = 0;
-
-	if (!UseGui) { 
-		printf("%s\n",msg); 
-		return; 
-	}
-
-	MsgDlg = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_position(GTK_WINDOW(MsgDlg), GTK_WIN_POS_CENTER);
-	gtk_window_set_title(GTK_WINDOW(MsgDlg), _("PCSX2 Msg"));
-	gtk_container_set_border_width(GTK_CONTAINER(MsgDlg), 5);
-
-	Box = gtk_vbox_new(5, 0);
-	gtk_container_add(GTK_CONTAINER(MsgDlg), Box);
-	gtk_widget_show(Box);
-
-	Txt = gtk_label_new(msg);
-	
-	gtk_box_pack_start(GTK_BOX(Box), Txt, FALSE, FALSE, 5);
-	gtk_widget_show(Txt);
-
-	Box1 = gtk_hbutton_box_new();
-	gtk_box_pack_start(GTK_BOX(Box), Box1, FALSE, FALSE, 0);
-	gtk_widget_show(Box1);
-
-	Ok = gtk_button_new_with_label(_("Ok"));
-	gtk_signal_connect (GTK_OBJECT(Ok), "clicked", GTK_SIGNAL_FUNC(OnMsg_Ok), NULL);
-	gtk_container_add(GTK_CONTAINER(Box1), Ok);
-	GTK_WIDGET_SET_FLAGS(Ok, GTK_CAN_DEFAULT);
-	gtk_widget_show(Ok);
-	gtk_widget_grab_focus(Ok);
-
-	gtk_widget_show(MsgDlg);
-
-	gtk_main();
+	Console::Alert(msg);
 }
 
 bool SysInit() 

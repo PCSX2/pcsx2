@@ -174,7 +174,7 @@ void RunExecute( const char* elf_file, bool use_bios )
 	}
 	catch( std::exception& ex )
 	{
-		SysMessage( ex.what() );
+		Console::Alert( ex.what() );
 		return;
 	}
 
@@ -191,7 +191,7 @@ void RunExecute( const char* elf_file, bool use_bios )
 			}
 			catch( std::runtime_error& ex )
 			{
-				SysMessage(
+				Console::Alert(
 					"Gamestate recovery failed.  Your game progress will be lost (sorry!)\n"
 					"\nError: %s\n", ex.what() );
 
@@ -265,9 +265,9 @@ void States_Load( const char* file, int num )
 	catch( Exception::UnsupportedStateVersion& )
 	{
 		if( num != -1 )
-			SysMessage( _( "Savestate slot %d is an unsupported version." ), num);
+			Console::Alert("Savestate slot %d is an unsupported version.", num);
 		else
-			SysMessage( _( "%s : This is an unsupported savestate version." ), file);
+			Console::Alert("%s : This is an unsupported savestate version.", file);
 
 		// At this point the cpu hasn't been reset, so we can return
 		// control to the user safely...
@@ -285,10 +285,10 @@ void States_Load( const char* file, int num )
 
 		// The emulation state is ruined.  Might as well give them a popup and start the gui.
 
-		SysMessage( _( 
+		Console::Alert( 
 			"An error occured while trying to load the savestate data.\n"
 			"Pcsx2 emulation state has been reset."
-		) );
+		);
 
 		cpuShutdown();
 		return;
@@ -314,9 +314,9 @@ void States_Save( const char* file, int num )
 	catch( std::exception& ex )
 	{
 		if( num != -1 )
-			SysMessage( _("An error occured while trying to save to slot %d"), num );
+			Console::Alert("An error occured while trying to save to slot %d", num );
 		else
-			SysMessage( _("An error occured while trying to save to file: %s"), file );
+			Console::Alert("An error occured while trying to save to file: %s", file );
 
 		Console::Error( _( "Save state request failed with the following error:" ) );
 		Console::Error( ex.what() );
@@ -510,7 +510,7 @@ void SysRestorableReset()
 	}
 	catch( std::runtime_error& ex )
 	{
-		SysMessage(
+		Console::Alert(
 			"Pcsx2 gamestate recovery failed. Some options may have been reverted to protect your game's state.\n"
 			"Error: %s", ex.what() );
 		safe_delete( g_RecoveryState );
@@ -583,16 +583,17 @@ void SysPrintf(const char *fmt, ...)
 	Console::Msg( msg );
 }
 
-void SysMessage(const char *fmt, ...)
+void SysMessage(const char *fmt, ...) 
 {
 	va_list list;
 	char tmp[512];
 
 	va_start(list,fmt);
-	vsprintf_s(tmp,fmt,list);
+	vsprintf_s(msg,fmt,list);
 	tmp[511] = '\0';
 	va_end(list);
-	MessageBox(0, tmp, _("Pcsx2 Msg"), 0);
+
+	Console::Alert(tmp);
 }
 
 void SysUpdate() {

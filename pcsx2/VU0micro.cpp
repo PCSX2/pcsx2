@@ -101,7 +101,8 @@ int  vu0Init()
 //	VU0.VF = (VECTOR*)_aligned_malloc(32*sizeof(VECTOR), 16);
 //	VU0.VI = (REG_VI*)_aligned_malloc(32*sizeof(REG_VI), 16);
 //	if (VU0.VF == NULL || VU0.VI == NULL) {
-//		SysMessage(_("Error allocating memory")); return -1;
+//		Console::Alert("Error allocating memory"); 
+//		return -1;
 //	}
 
 	/* this is kinda tricky, maxmem is set to 0x4400 here,

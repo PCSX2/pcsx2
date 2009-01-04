@@ -2651,7 +2651,7 @@ int memInit()
 #endif
 
 	if( m_psAllMem == NULL) {
-		SysMessage(_("Error allocating memory"));
+		Console::Alert("Error allocating memory");
 		return -1;
 	}
 

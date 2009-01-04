@@ -43,7 +43,8 @@ int hwInit() {
 #ifndef PCSX2_VIRTUAL_MEM
 	psH = (u8*)_aligned_malloc(0x00010000, 16);
 	if (psH == NULL) {
-		SysMessage(_("Error allocating memory")); return -1;
+		Console::Alert("Error allocating memory"); 
+		return -1;
 	}
 #endif
 

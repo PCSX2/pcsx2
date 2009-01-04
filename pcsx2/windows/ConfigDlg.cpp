@@ -401,9 +401,9 @@ static void TestPlugin( HWND hW, int confs, const char* name )
 	SysCloseLibrary(drv);
 
 	if (ret == 0)
-		SysMessage(_("This plugin reports that should work correctly"));
+		Console::Alert("This plugin reports that should work correctly");
 	else
-		SysMessage(_("This plugin reports that should not work correctly"));
+		Console::Alert("This plugin reports that should not work correctly");
 }
 
 void TestGS(HWND hW) {

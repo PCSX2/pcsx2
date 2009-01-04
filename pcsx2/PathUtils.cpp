@@ -94,7 +94,7 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile )
 
 	if( guesslen >= g_MaxPath )
 	{
-		SysMessage(
+		Console::Alert(
 			"Pcsx2 path names are too long.  Please move or reinstall Pcsx2 to\n"
 			"a location on your hard drive that has a shorter total path."
 		);

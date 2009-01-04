@@ -222,7 +222,12 @@ USBhandler usbHandler;
 #define MapSymbolVarType(var,type,name) var = (type)SysLoadSym(drv,Strfy(name))
 #define MapSymbolVar(var,name) MapSymbolVarType(var,_##name,name)
 #define MapSymbolVar_Fallback(var,name,fallback) if((MapSymbolVar(var,name))==NULL) var = fallback
-#define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) { const char* errString = SysLibError(); SysMessage (_("%s: Error loading %s: %s"), filename, #name, errString); return -1; } 
+#define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) \
+{ \
+	const char* errString = SysLibError(); \
+	Console::Alert("%s: Error loading %s: %s", filename, #name, errString); \
+	return -1; \
+} 
 
 #define MapSymbol(name) MapSymbolVar(name,name)
 #define MapSymbol_Fallback(name,fallback) MapSymbolVar_Fallback(name,name,fallback)
@@ -248,7 +253,7 @@ int _TestPS2Esyms(void* drv, int type, int expected_version, const char* filenam
 	int actual_version = ((PS2EgetLibVersion2(type) >> 16)&0xff);
 
 	if( actual_version != expected_version) {
-		SysMessage (_("Can't load '%s', wrong PS2E version (%x != %x)"), filename, actual_version, expected_version);
+		Console::Alert("Can't load '%s', wrong PS2E version (%x != %x)", filename, actual_version, expected_version);
 		return -1;
 	}
 
@@ -283,7 +288,7 @@ int LoadGSplugin(char *filename) {
 	void *drv;
 
 	GSplugin = SysLoadLibrary(filename);
-	if (GSplugin == NULL) { SysMessage (_("Could Not Load GS Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (GSplugin == NULL) { Console::Alert ("Could Not Load GS Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = GSplugin;
 	TestPS2Esyms(GS);
 	MapSymbol_Error(GSinit);
@@ -335,7 +340,7 @@ int LoadPAD1plugin(char *filename) {
 	void *drv;
 
 	PAD1plugin = SysLoadLibrary(filename);
-	if (PAD1plugin == NULL) { SysMessage (_("Could Not Load PAD1 Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (PAD1plugin == NULL) { Console::Alert("Could Not Load PAD1 Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = PAD1plugin;
 	TestPS2Esyms(PAD);
 	MapSymbolPAD_Error(PAD1,PAD,init);
@@ -366,7 +371,7 @@ int LoadPAD2plugin(char *filename) {
 	void *drv;
 
 	PAD2plugin = SysLoadLibrary(filename);
-	if (PAD2plugin == NULL) { SysMessage (_("Could Not Load PAD2 Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (PAD2plugin == NULL) { Console::Alert("Could Not Load PAD2 Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = PAD2plugin;
 	TestPS2Esyms(PAD);
 	MapSymbolPAD_Error(PAD2,PAD,init);
@@ -398,7 +403,7 @@ int LoadSPU2plugin(char *filename) {
 	void *drv;
 
 	SPU2plugin = SysLoadLibrary(filename);
-	if (SPU2plugin == NULL) { SysMessage (_("Could Not Load SPU2 Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (SPU2plugin == NULL) { Console::Alert("Could Not Load SPU2 Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = SPU2plugin;
 	TestPS2Esyms(SPU2);
 	MapSymbol_Error(SPU2init);
@@ -441,7 +446,7 @@ int LoadCDVDplugin(char *filename) {
 	void *drv;
 
 	CDVDplugin = SysLoadLibrary(filename);
-	if (CDVDplugin == NULL) { SysMessage (_("Could Not Load CDVD Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (CDVDplugin == NULL) { Console::Alert("Could Not Load CDVD Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = CDVDplugin;
 	TestPS2Esyms(CDVD);
 	MapSymbol_Error(CDVDinit);
@@ -478,7 +483,7 @@ int LoadDEV9plugin(char *filename) {
 	void *drv;
 
 	DEV9plugin = SysLoadLibrary(filename);
-	if (DEV9plugin == NULL) { SysMessage (_("Could Not Load DEV9 Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (DEV9plugin == NULL) { Console::Alert("Could Not Load DEV9 Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = DEV9plugin;
 	TestPS2Esyms(DEV9);
 	MapSymbol_Error(DEV9init);
@@ -515,7 +520,7 @@ int LoadUSBplugin(char *filename) {
 	void *drv;
 
 	USBplugin = SysLoadLibrary(filename);
-	if (USBplugin == NULL) { SysMessage (_("Could Not Load USB Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (USBplugin == NULL) { Console::Alert("Could Not Load USB Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = USBplugin;
 	TestPS2Esyms(USB);
 	MapSymbol_Error(USBinit);
@@ -552,7 +557,7 @@ int LoadFWplugin(char *filename) {
 	void *drv;
 
 	FWplugin = SysLoadLibrary(filename);
-	if (FWplugin == NULL) { SysMessage (_("Could Not Load FW Plugin '%s': %s"), filename, SysLibError()); return -1; }
+	if (FWplugin == NULL) { Console::Alert("Could Not Load FW Plugin '%s': %s", filename, SysLibError()); return -1; }
 	drv = FWplugin;
 	TestPS2Esyms(FW);
 	MapSymbol_Error(FWinit);
@@ -592,21 +597,21 @@ int InitPlugins() {
 	int ret;
 
 	ret = GSinit();
-	if (ret != 0) { SysMessage (_("GSinit error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("GSinit error: %d", ret); return -1; }
 	ret = PAD1init(1);
-	if (ret != 0) { SysMessage (_("PAD1init error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("PAD1init error: %d", ret); return -1; }
 	ret = PAD2init(2);
-	if (ret != 0) { SysMessage (_("PAD2init error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("PAD2init error: %d", ret); return -1; }
 	ret = SPU2init();
-	if (ret != 0) { SysMessage (_("SPU2init error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("SPU2init error: %d", ret); return -1; }
 	ret = CDVDinit();
-	if (ret != 0) { SysMessage (_("CDVDinit error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("CDVDinit error: %d", ret); return -1; }
 	ret = DEV9init();
-	if (ret != 0) { SysMessage (_("DEV9init error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("DEV9init error: %d", ret); return -1; }
 	ret = USBinit();
-	if (ret != 0) { SysMessage (_("USBinit error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("USBinit error: %d", ret); return -1; }
 	ret = FWinit();
-	if (ret != 0) { SysMessage (_("FWinit error: %d"), ret); return -1; }
+	if (ret != 0) { Console::Alert("FWinit error: %d", ret); return -1; }
 	return 0;
 }
 
@@ -701,7 +706,7 @@ int OpenPlugins(const char* pTitleFilename) {
 
 		ret = CDVDopen(pTitleFilename);
 
-		if (ret != 0) { SysMessage (_("Error Opening CDVD Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening CDVD Plugin"); goto OpenError; }
 		OpenStatus.CDVD = true;
 		cdvdNewDiskCB();
 	}
@@ -709,7 +714,7 @@ int OpenPlugins(const char* pTitleFilename) {
 	// GS isn't closed during emu pauses, so only open it once per instance.
 	if( !OpenStatus.GS ) {
 		ret = gsOpen();
-		if (ret != 0) { SysMessage (_("Error Opening GS Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening GS Plugin"); goto OpenError; }
 		OpenStatus.GS = true;
 
 		//then the user input
@@ -723,14 +728,14 @@ int OpenPlugins(const char* pTitleFilename) {
 	if( !OpenStatus.PAD1 )
 	{
 		ret = PAD1open((void *)&pDsp);
-		if (ret != 0) { SysMessage (_("Error Opening PAD1 Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening PAD1 Plugin"); goto OpenError; }
 		OpenStatus.PAD1 = true;
 	}
 
 	if( !OpenStatus.PAD2 )
 	{
 		ret = PAD2open((void *)&pDsp);
-		if (ret != 0) { SysMessage (_("Error Opening PAD2 Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening PAD2 Plugin"); goto OpenError; }
 		OpenStatus.PAD2 = true;
 	}
 
@@ -746,7 +751,7 @@ int OpenPlugins(const char* pTitleFilename) {
 			SPU2setClockPtr(&psxRegs.cycle);
 
 		ret = SPU2open((void*)&pDsp);
-		if (ret != 0) { SysMessage (_("Error Opening SPU2 Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening SPU2 Plugin"); goto OpenError; }
 		OpenStatus.SPU2 = true;
 	}
 
@@ -756,7 +761,7 @@ int OpenPlugins(const char* pTitleFilename) {
 		DEV9irqCallback(dev9Irq);
 		dev9Handler = DEV9irqHandler();
 		ret = DEV9open(&(psxRegs.pc)); //((void *)&pDsp);
-		if (ret != 0) { SysMessage (_("Error Opening DEV9 Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening DEV9 Plugin"); goto OpenError; }
 		OpenStatus.DEV9 = true;
 	}
 
@@ -766,7 +771,7 @@ int OpenPlugins(const char* pTitleFilename) {
 		usbHandler = USBirqHandler();
 		USBsetRAM(psxM);
 		ret = USBopen((void *)&pDsp);
-		if (ret != 0) { SysMessage (_("Error Opening USB Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening USB Plugin"); goto OpenError; }
 		OpenStatus.USB = true;
 	}
 
@@ -774,7 +779,7 @@ int OpenPlugins(const char* pTitleFilename) {
 	{
 		FWirqCallback(fwIrq);
 		ret = FWopen((void *)&pDsp);
-		if (ret != 0) { SysMessage (_("Error Opening FW Plugin")); goto OpenError; }
+		if (ret != 0) { Console::Alert("Error Opening FW Plugin"); goto OpenError; }
 		OpenStatus.FW = true;
 	}
 
@@ -859,5 +864,5 @@ void PluginsResetGS()
 	GSshutdown();
 
 	int ret = GSinit();
-	if (ret != 0) { SysMessage (_("GSinit error: %d"), ret);  }
+	if (ret != 0) { Console::Alert("GSinit error: %d", ret);  }
 }
