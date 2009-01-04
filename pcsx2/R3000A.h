@@ -214,6 +214,7 @@ void psxExecuteBios();
 
 extern s32 psxNextCounter;
 extern u32 psxNextsCounter;
-extern int iopBranchAction;
+extern bool iopBranchAction;
+extern bool iopEventTestIsActive;
 
 #endif /* __R3000A_H__ */

@@ -117,8 +117,7 @@ void sio2_setCtrl(u32 value){
 	if (sio2.ctrl & 1){	//recv packet
 		//handle data that had been sent
 
-		//trigger interupt for SIO2
-		psxHu32(0x1070)|=0x20000;
+		iopIntcIrq( 17 );
 		//SBUS
 		sio2.recvIndex=0;
 		sio2.ctrl &= ~1;

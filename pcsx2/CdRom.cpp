@@ -489,7 +489,8 @@ void  cdrInterrupt() {
 			break;
 	}
 
-	if (cdr.Stat != NoIntr && cdr.Reg2 != 0x18) psxHu32(0x1070)|=0x4;
+	if (cdr.Stat != NoIntr && cdr.Reg2 != 0x18)
+		psxHu32(0x1070)|= 0x4;
 
 	CDR_LOG("Cdr Interrupt %x\n", Irq);
 }
@@ -554,7 +555,7 @@ void  cdrReadInterrupt() {
 		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
 	}
 
-	psxHu32(0x1070)|=0x4;
+	psxHu32(0x1070)|= 0x4;
 	return;
 }
 
@@ -827,7 +828,8 @@ void cdrWrite1(u8 rt) {
 			CDR_LOG("Unknown Cmd: %x\n", cdr.Cmd);
 			return;
     }
-	if (cdr.Stat != NoIntr) psxHu32(0x1070)|=0x4;
+	if (cdr.Stat != NoIntr)
+		iopIntcIrq( 2 );
 }
 
 u8 cdrRead2(void) {

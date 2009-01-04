@@ -932,8 +932,7 @@ void hwWrite32(u32 mem, u32 value) {
 			psHu16(0xe010)&= ~(value & 0xffff); // clear on 1
 			psHu16(0xe012) ^= (u16)(value >> 16);
 
-			if ((cpuRegs.CP0.n.Status.val & 0x10807) == 0x10801)
-                cpuTestDMACInts();
+			cpuTestDMACInts();
 			break;
 //------------------------------------------------------------------
 		case 0x1000f000: // INTC_STAT
@@ -945,7 +944,6 @@ void hwWrite32(u32 mem, u32 value) {
 		case 0x1000f010: // INTC_MASK
 			HW_LOG("INTC_MASK Write 32bit %x\n", value);
 			psHu32(0xf010) ^= (u16)value;
-
 			cpuTestINTCInts();
 			break;
 //------------------------------------------------------------------			
@@ -984,22 +982,18 @@ void hwWrite32(u32 mem, u32 value) {
 //------------------------------------------------------------------
 		case 0x1000f130:
 		case 0x1000f410:
-#ifdef PCSX2_DEVBUILD
-			HW_LOG("Unknown Hardware write 32 at %x with value %x (%x)\n", mem, value, cpuRegs.CP0.n.Status);
-#endif
+			HW_LOG("Unknown Hardware write 32 at %x with value %x (%x)\n", mem, value, cpuRegs.CP0.n.Status.val);
 			break;
 //------------------------------------------------------------------
 		default:
 #ifndef PCSX2_VIRTUAL_MEM
-		if (mem < 0x10010000)
+			if (mem < 0x10010000)
 #endif
-		{
-			psHu32(mem) = value;
-		}
-#ifdef PCSX2_DEVBUILD
-			HW_LOG("Unknown Hardware write 32 at %x with value %x (%x)\n", mem, value, cpuRegs.CP0.n.Status);
-#endif
-			break;
+			{
+				psHu32(mem) = value;
+			}
+			HW_LOG("Unknown Hardware write 32 at %x with value %x (%x)\n", mem, value, cpuRegs.CP0.n.Status.val);
+		break;
 	}
 }
 
@@ -1021,9 +1015,7 @@ void hwWrite64(u32 mem, u64 value) {
 
 	switch (mem) {
 		case GIF_CTRL:
-#ifdef PCSX2_DEVBUILD
-			SysPrintf("GIF_CTRL write 64\n", value);
-#endif
+			DevCon::Status("GIF_CTRL write 64", value);
 			psHu32(mem) = value & 0x8;
 			if(value & 0x1) {
 				gsGIFReset();
@@ -1038,7 +1030,7 @@ void hwWrite64(u32 mem, u64 value) {
 
 		case GIF_MODE:
 #ifdef GSPATH3FIX
-			SysPrintf("GIFMODE64 %x\n", value);
+			Console::Status("GIFMODE64 %x\n", value);
 #endif
 			psHu64(GIF_MODE) = value;
 			if (value & 0x1) psHu32(GIF_STAT)|= 0x1;
@@ -1055,12 +1047,10 @@ void hwWrite64(u32 mem, u64 value) {
 			DmaExec(dmaGIF, mem, value);
 			break;
 
-#ifdef HW_LOG
 		case 0x1000e000: // DMAC_CTRL
 			HW_LOG("DMAC_CTRL Write 64bit %x\n", value);
 			psHu64(mem) = value;
 			break;
-#endif
 
 		case 0x1000e010: // DMAC_STAT
 			HW_LOG("DMAC_STAT Write 64bit %x\n", value);
@@ -1073,8 +1063,7 @@ void hwWrite64(u32 mem, u64 value) {
 					else psHu16(0xe012)|= 1<<i;
 				}
 			}
-			if ((cpuRegs.CP0.n.Status.val & 0x10807) == 0x10801)
-                cpuTestDMACInts();
+            cpuTestDMACInts();
 			break;
 
 		case 0x1000f590: // DMAC_ENABLEW
@@ -1084,17 +1073,17 @@ void hwWrite64(u32 mem, u64 value) {
 
 		case 0x1000f000: // INTC_STAT
 			HW_LOG("INTC_STAT Write 64bit %x\n", value);
-			psHu32(0xf000)&=~value;	
+			psHu32(INTC_STAT)&=~value;	
 			cpuTestINTCInts();
 			break;
 
 		case 0x1000f010: // INTC_MASK
 			HW_LOG("INTC_MASK Write 32bit %x\n", value);
 			for (i=0; i<16; i++) { // reverse on 1
-                int s = (1<<i);
+                const int s = (1<<i);
 				if (value & s) {
-					if (psHu32(0xf010) & (1<<i)) psHu32(0xf010)&= ~(1<<i);
-					else psHu32(0xf010)|= 1<<i;
+					if (psHu32(INTC_MASK) & s) psHu32(INTC_MASK)&= ~s;
+					else psHu32(INTC_MASK)|= s;
 				}
 			}
 			cpuTestINTCInts();
@@ -1104,12 +1093,11 @@ void hwWrite64(u32 mem, u64 value) {
 		case 0x1000f410:
 		case 0x1000f430:
 			break;
+
 		default:
 			psHu64(mem) = value;
-			
-#ifdef PCSX2_DEVBUILD
-		    HW_LOG("Unknown Hardware write 64 at %x with value %x (status=%x)\n",mem,value, cpuRegs.CP0.n.Status);
-#endif
+
+			HW_LOG("Unknown Hardware write 64 at %x with value %x (status=%x)\n",mem,value, cpuRegs.CP0.n.Status.val);
 			break;
 	}
 }
@@ -1134,9 +1122,7 @@ void hwWrite128(u32 mem, const u64 *value) {
 			psHu64(mem  ) = value[0];
 			psHu64(mem+8) = value[1];
 
-#ifdef PCSX2_DEVBUILD
-		    HW_LOG("Unknown Hardware write 128 at %x with value %x_%x (status=%x)\n", mem, value[1], value[0], cpuRegs.CP0.n.Status);
-#endif
+			HW_LOG("Unknown Hardware write 128 at %x with value %x_%x (status=%x)\n", mem, value[1], value[0], cpuRegs.CP0.n.Status.val);
 			break;
 	}
 }
@@ -1146,7 +1132,7 @@ __forceinline void  intcInterrupt() {
 	if ((cpuRegs.CP0.n.Status.val & 0x400) != 0x400) return;
 
 	if ((psHu32(INTC_STAT)) == 0) {
-		SysPrintf("*PCSX2*: intcInterrupt already cleared\n");
+		DevCon::Notice("*PCSX2*: intcInterrupt already cleared");
         return;
 	}
 	if ((psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0) return;
@@ -1160,24 +1146,13 @@ __forceinline void  intcInterrupt() {
 	cpuException(0x400, cpuRegs.branch);
 }
 
-// fixme: dead/unused code?
-/*void  dmacTestInterrupt() {
-    cpuRegs.interrupt &= ~(1 << 31);
-	if ((cpuRegs.CP0.n.Status.val & 0x800) != 0x800) return;
-
-	if ((psHu16(0xe012) & psHu16(0xe010) || 
-		 psHu16(0xe010) & 0x8000) == 0) return;
-
-	if((psHu32(DMAC_CTRL) & 0x1) == 0) return;
-}*/
-
 __forceinline void  dmacInterrupt()
 {
     cpuRegs.interrupt &= ~(1 << 31);
     if ((cpuRegs.CP0.n.Status.val & 0x10807) != 0x10801) return;
 
-	if ((psHu16(0xe012) & psHu16(0xe010) || 
-		 psHu16(0xe010) & 0x8000) == 0) return;
+	if( ((psHu16(0xe012) & psHu16(0xe010)) == 0 ) && 
+		( psHu16(0xe010) & 0x8000) == 0 ) return;
 
 	if((psHu32(DMAC_CTRL) & 0x1) == 0) return;
 	
@@ -1188,10 +1163,8 @@ __forceinline void  dmacInterrupt()
 }
 
 void hwIntcIrq(int n) {
-	//if( psHu32(INTC_MASK) & (1<<n) ) {
-		psHu32(INTC_STAT)|= 1<<n;
-		cpuTestINTCInts();
-	//}
+	psHu32(INTC_STAT)|= 1<<n;
+	cpuTestINTCInts();
 }
 
 void hwDmacIrq(int n) {

@@ -610,8 +610,21 @@ void psxHwConstWrite16(u32 add, int mmreg) {
 			_eeWriteConstMem16((uptr)&sio.BaudReg, mmreg);
 			return;
 
-		case 0x1f801070: 
-			_eeWriteConstMem16OP((uptr)&psxH[(add) & 0xffff], mmreg, 0);
+		case 0x1f801070:
+			_eeWriteConstMem16OP((uptr)&psxHu32(0x1070), mmreg, 0);		// AND operation
+			return;
+
+		case 0x1f801074:
+			_eeWriteConstMem16((uptr)&psxHu32(0x1074), mmreg);
+			iFlushCall(0);
+			CALLFunc( (uptr)&iopTestIntc );
+			return;
+
+		case 0x1f801078:
+			//According to pSXAuthor this allways becomes 1 on write, but MHPB won't boot if value is not writen ;p
+			_eeWriteConstMem16((uptr)&psxHu32(0x1078), mmreg);
+			iFlushCall(0);
+			CALLFunc( (uptr)&iopTestIntc );
 			return;
 
 		// counters[0]
@@ -807,7 +820,20 @@ void psxHwConstWrite32(u32 add, int mmreg)
 			return;
 
 		case 0x1f801070:
-			_eeWriteConstMem32OP((uptr)&psxH[(add) & 0xffff], mmreg, 0); // and
+			_eeWriteConstMem32OP((uptr)&psxHu32(0x1070), mmreg, 0); // and
+			return;
+
+		case 0x1f801074:
+			_eeWriteConstMem32((uptr)&psxHu32(0x1074), mmreg);
+			iFlushCall(0);
+			CALLFunc( (uptr)&iopTestIntc );
+			return;
+
+		case 0x1f801078:
+			//According to pSXAuthor this allways becomes 1 on write, but MHPB won't boot if value is not writen ;p
+			_eeWriteConstMem32((uptr)&psxHu32(0x1078), mmreg);
+			iFlushCall(0);
+			CALLFunc( (uptr)&iopTestIntc );
 			return;
 
 //		case 0x1f801088:
@@ -1123,7 +1149,7 @@ int psxHw4ConstRead8(u32 x86reg, u32 add, u32 sign) {
 		case 0x1f402039: CONSTREAD8_CALL((uptr)cdvdRead39); return 1;
 		case 0x1f40203A: CONSTREAD8_CALL((uptr)cdvdRead3A); return 1;
 		default:
-			SysPrintf("*Unknown 8bit read at address %lx\n", add);
+			Console::Notice("*Unknown 8bit read at address %lx\n", add);
 			XOR32RtoR(x86reg, x86reg);
 			return 0;
 	}
@@ -1147,7 +1173,7 @@ void psxHw4ConstWrite8(u32 add, int mmreg) {
 		case 0x1f402018: CONSTWRITE_CALL(cdvdWrite18); return;
 		case 0x1f40203A: CONSTWRITE_CALL(cdvdWrite3A); return;
 		default:
-			SysPrintf("*Unknown 8bit write at address %lx\n", add);
+			Console::Notice("*Unknown 8bit write at address %lx\n", add);
 			return;
 	}
 }

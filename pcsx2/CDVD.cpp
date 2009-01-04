@@ -206,7 +206,7 @@ static void CDVD_INT(int eCycle)
 static void cdvdSetIrq( uint id = (1<<Irq_CommandComplete) )
 {
 	cdvd.PwOff |= id;
-	psxHu32(0x1070)|= 0x4;
+	iopIntcIrq( 2 );
 	hwIntcIrq(INTC_SBUS);
 	psxSetNextBranchDelta( 20 );
 }

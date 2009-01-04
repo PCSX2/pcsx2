@@ -497,7 +497,8 @@ static void __fastcall PrintDebug(u8 value)
 }
 
 // fixme: this would be more optimal as a C++ template (with bit as the template parameter)
-static __forceinline void ConstWrite_ExecTimer( uptr func, u8 index, u8 bit, int mmreg)
+template< uint bit >
+static void ConstWrite_ExecTimer( uptr func, u8 index, int mmreg)
 {
 	if( bit != 32 )
 	{
@@ -518,23 +519,23 @@ static __forceinline void ConstWrite_ExecTimer( uptr func, u8 index, u8 bit, int
 }
 
 #define CONSTWRITE_TIMERS(bit) \
-	case 0x10000000: ConstWrite_ExecTimer((uptr)&rcntWcount, 0, bit, mmreg); break; \
-	case 0x10000010: ConstWrite_ExecTimer((uptr)&rcntWmode, 0, bit, mmreg); break; \
-	case 0x10000020: ConstWrite_ExecTimer((uptr)&rcntWtarget, 0, bit, mmreg); break; \
-	case 0x10000030: ConstWrite_ExecTimer((uptr)&rcntWhold, 0, bit, mmreg); break; \
+	case 0x10000000: ConstWrite_ExecTimer<bit>((uptr)&rcntWcount, 0, mmreg); break; \
+	case 0x10000010: ConstWrite_ExecTimer<bit>((uptr)&rcntWmode, 0, mmreg); break; \
+	case 0x10000020: ConstWrite_ExecTimer<bit>((uptr)&rcntWtarget, 0, mmreg); break; \
+	case 0x10000030: ConstWrite_ExecTimer<bit>((uptr)&rcntWhold, 0, mmreg); break; \
 	\
-	case 0x10000800: ConstWrite_ExecTimer((uptr)&rcntWcount, 1, bit, mmreg); break; \
-	case 0x10000810: ConstWrite_ExecTimer((uptr)&rcntWmode, 1, bit, mmreg); break; \
-	case 0x10000820: ConstWrite_ExecTimer((uptr)&rcntWtarget, 1, bit, mmreg); break; \
-	case 0x10000830: ConstWrite_ExecTimer((uptr)&rcntWhold, 1, bit, mmreg); break; \
+	case 0x10000800: ConstWrite_ExecTimer<bit>((uptr)&rcntWcount, 1, mmreg); break; \
+	case 0x10000810: ConstWrite_ExecTimer<bit>((uptr)&rcntWmode, 1, mmreg); break; \
+	case 0x10000820: ConstWrite_ExecTimer<bit>((uptr)&rcntWtarget, 1, mmreg); break; \
+	case 0x10000830: ConstWrite_ExecTimer<bit>((uptr)&rcntWhold, 1, mmreg); break; \
 	\
-	case 0x10001000: ConstWrite_ExecTimer((uptr)&rcntWcount, 2, bit, mmreg); break; \
-	case 0x10001010: ConstWrite_ExecTimer((uptr)&rcntWmode, 2, bit, mmreg); break; \
-	case 0x10001020: ConstWrite_ExecTimer((uptr)&rcntWtarget, 2, bit, mmreg); break; \
+	case 0x10001000: ConstWrite_ExecTimer<bit>((uptr)&rcntWcount, 2, mmreg); break; \
+	case 0x10001010: ConstWrite_ExecTimer<bit>((uptr)&rcntWmode, 2, mmreg); break; \
+	case 0x10001020: ConstWrite_ExecTimer<bit>((uptr)&rcntWtarget, 2, mmreg); break; \
 	\
-	case 0x10001800: ConstWrite_ExecTimer((uptr)&rcntWcount, 3, bit, mmreg); break; \
-	case 0x10001810: ConstWrite_ExecTimer((uptr)&rcntWmode, 3, bit, mmreg); break; \
-	case 0x10001820: ConstWrite_ExecTimer((uptr)&rcntWtarget, 3, bit, mmreg); break; \
+	case 0x10001800: ConstWrite_ExecTimer<bit>((uptr)&rcntWcount, 3, mmreg); break; \
+	case 0x10001810: ConstWrite_ExecTimer<bit>((uptr)&rcntWmode, 3, mmreg); break; \
+	case 0x10001820: ConstWrite_ExecTimer<bit>((uptr)&rcntWtarget, 3, mmreg); break; \
 
 void hwConstWrite8(u32 mem, int mmreg)
 {
@@ -971,11 +972,10 @@ void hwConstWrite32(u32 mem, int mmreg)
 			_eeMoveMMREGtoR(EAX, mmreg);
 			iFlushCall(0);
 			MOV32RtoR(ECX, EAX);
-			NOT32R(ECX);
-			AND16RtoM((uptr)&PS2MEM_HW[0xe010], ECX);
-
 			SHR32ItoR(EAX, 16);
+			NOT32R(ECX);
 			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
+			AND16RtoM((uptr)&PS2MEM_HW[0xe010], ECX);
 
 			CALLFunc((uptr)cpuTestDMACInts);
 			break;
@@ -1164,11 +1164,11 @@ void hwConstWrite64(u32 mem, int mmreg)
 
 			iFlushCall(0);
 			MOV32RtoR(ECX, EAX);
+			SHR32ItoR(EAX, 16);
 			NOT32R(ECX);
+			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
 			AND16RtoM((uptr)&PS2MEM_HW[0xe010], ECX);
 
-			SHR32ItoR(EAX, 16);
-			XOR16RtoM((uptr)&PS2MEM_HW[0xe012], EAX);
 			CALLFunc((uptr)cpuTestDMACInts);
 			break;
 

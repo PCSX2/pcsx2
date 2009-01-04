@@ -37,6 +37,10 @@ void usbIrq(int cycles);
 void fwIrq();
 void spu2Irq();
 
+extern void iopIntcIrq( uint irqType );
+extern void iopTestIntc();
+
+
 extern DEV9handler dev9Handler;
 extern USBhandler usbHandler;
 

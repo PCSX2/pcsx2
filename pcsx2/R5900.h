@@ -127,6 +127,7 @@ struct cpuRegisters {
 
 extern s32 EEsCycle;
 extern u32 EEoCycle;
+extern bool eeEventTestIsActive;
 extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
 
 // used for optimization

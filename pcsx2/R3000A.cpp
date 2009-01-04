@@ -43,8 +43,9 @@ s32 psxCycleEE = -1;
 // Used to signal to the EE when important actions that need IOP-attention have
 // happened (hsyncs, vsyncs, IOP exceptions, etc).  IOP runs code whenever this
 // is true, even if it's already running ahead a bit.
-int iopBranchAction = 0;
+bool iopBranchAction = false;
 
+bool iopEventTestIsActive = false;
 
 PCSX2_ALIGNED16(psxRegisters psxRegs);
 
@@ -245,25 +246,38 @@ void psxBranchTest()
 	if( psxTestCycle( psxNextsCounter, psxNextCounter ) )
 	{
 		psxRcntUpdate();
-		iopBranchAction = 1;
+		iopBranchAction = true;
 	}
 
 	// start the next branch at the next counter event by default
 	// the interrupt code below will assign nearer branches if needed.
 	g_psxNextBranchCycle = psxNextsCounter+psxNextCounter;
 	
-	if (psxRegs.interrupt) _psxTestInterrupts();
-
-	if (psxHu32(0x1078)) {
-		if(psxHu32(0x1070) & psxHu32(0x1074)){
-			if ((psxRegs.CP0.n.Status & 0xFE01) >= 0x401)
-			{
-//				PSXCPU_LOG("Interrupt: %x  %x\n", HWMu32(0x1070), HWMu32(0x1074));
-				psxException(0, 0);
-				iopBranchAction = 1;
-			}
-		}
+	if (psxRegs.interrupt)
+	{
+		iopEventTestIsActive = true;
+		_psxTestInterrupts();
+		iopEventTestIsActive = false;
 	}
+
+	if( psxHu32(0x1078) == 0 ) return;
+	if( (psxHu32(0x1070) & psxHu32(0x1074)) == 0 ) return;
+
+	if ((psxRegs.CP0.n.Status & 0xFE01) >= 0x401)
+	{
+//		PSXCPU_LOG("Interrupt: %x  %x\n", HWMu32(0x1070), HWMu32(0x1074));
+		psxException(0, 0);
+		iopBranchAction = true;
+	}
+}
+
+void iopTestIntc()
+{
+	if( iopEventTestIsActive ) return;
+	if( psxHu32(0x1078) == 0 ) return;
+	if( (psxHu32(0x1070) & psxHu32(0x1074)) == 0 ) return;
+
+	psxSetNextBranchDelta( 4 ); 
 }
 
 void psxExecuteBios() {

@@ -1761,6 +1761,11 @@ void rpsxRFE()
 	SHR32ItoR(ECX, 2);
 	OR32RtoR (EAX, ECX);
 	MOV32RtoM((uptr)&psxRegs.CP0.n.Status, EAX);
+
+	// Test the IOP's INTC status, so that any pending ints get raised.
+
+	_psxFlushCall(0);
+	CALLFunc( (uptr)&iopTestIntc );
 }
 
 // R3000A tables

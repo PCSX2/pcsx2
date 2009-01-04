@@ -704,9 +704,9 @@ void psxHwWrite16(u32 add, u16 value) {
 	if (add >= 0x1f801600 && add < 0x1f801700) {
 		USBwrite16(add, value); return;
 	}
-#ifdef PCSX2_DEVBUILD
-	if((add & 0xf) == 0x9) SysPrintf("16bit write (possible chcr set) %x value %x\n", add, value);
-#endif
+
+	if((add & 0xf) == 0x9) DevCon::WriteLn("16bit write (possible chcr set) %x value %x", add, value);
+
 	switch (add) {
 		case 0x1f801040:
 			sioWrite8((u8)value);
@@ -741,13 +741,23 @@ void psxHwWrite16(u32 add, u16 value) {
 //			if (Config.SpuIrq) psxHu16(0x1070) |= 0x200;
 			psxHu16(0x1070) &= value;
 			return;
-		case 0x1f801074: PSXHW_LOG("IMASK 16bit write %x\n", value);
+
+		case 0x1f801074:
+			PSXHW_LOG("IMASK 16bit write %x\n", value);
 			psxHu16(0x1074) = value;
+			iopTestIntc();
+			return;
+
+		case 0x1f801078:	// see the 32-bit version for notes!
+			PSXHW_LOG("ICTRL 16bit write %x\n", value);
+			psxHu16(0x1078) = value;
+			iopTestIntc();
 			return;
 
 		case 0x1f8010c4:
 			PSXHW_LOG("DMA4 BCR_size 16bit write %lx\n", value);
-			psxHu16(0x10c4) = value; return; // DMA4 bcr_size
+			psxHu16(0x10c4) = value;
+			return; // DMA4 bcr_size
 
 		case 0x1f8010c6:
 			PSXHW_LOG("DMA4 BCR_count 16bit write %lx\n", value);
@@ -868,6 +878,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			psxHu32(add) = value;
 			return; // Ram size
 
+//------------------------------------------------------------------
 		case 0x1f801070: 
 			PSXHW_LOG("IREG 32bit write %lx\n", value);
 //			if (Config.Sio) psxHu32(0x1070) |= 0x80;
@@ -878,13 +889,16 @@ void psxHwWrite32(u32 add, u32 value) {
 		case 0x1f801074:
 			PSXHW_LOG("IMASK 32bit write %lx\n", value);
 			psxHu32(0x1074) = value;
+			iopTestIntc();
 			return;
 
 		case 0x1f801078: 
 			PSXHW_LOG("ICTRL 32bit write %lx\n", value);
-			psxHu32(0x1078) = value;//1;	//According to pSXAuthor this allways becomes 1 on write, but MHPB won't boot if value is not writen ;p
+			psxHu32(0x1078) = value; //1;	//According to pSXAuthor this allways becomes 1 on write, but MHPB won't boot if value is not writen ;p
+			iopTestIntc();
 			return;
 
+//------------------------------------------------------------------
 		//SSBus registers
 		case 0x1f801000:
 			psxHu32(0x1000) = value;
@@ -958,6 +972,8 @@ void psxHwWrite32(u32 add, u32 value) {
 			psxHu32(0x1420) = value;
 			PSXHW_LOG("SSBUS <dev9_delay1> 32bit write %lx\n", value);
 			return;
+
+//------------------------------------------------------------------
 		case 0x1f801080:
 			PSXHW_LOG("DMA0 MADR 32bit write %lx\n", value);
 			HW_DMA0_MADR = value; return; // DMA0 madr
@@ -970,6 +986,7 @@ void psxHwWrite32(u32 add, u32 value) {
 //			DmaExec(0);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f801090:
 			PSXHW_LOG("DMA1 MADR 32bit write %lx\n", value);
 			HW_DMA1_MADR = value; return; // DMA1 madr
@@ -982,6 +999,7 @@ void psxHwWrite32(u32 add, u32 value) {
 //			DmaExec(1);
 			return;
 		
+//------------------------------------------------------------------
 		case 0x1f8010a0:
 			PSXHW_LOG("DMA2 MADR 32bit write %lx\n", value);
 			HW_DMA2_MADR = value; return; // DMA2 madr
@@ -994,6 +1012,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec(2);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f8010b0:
 			PSXHW_LOG("DMA3 MADR 32bit write %lx\n", value);
 			HW_DMA3_MADR = value; return; // DMA3 madr
@@ -1007,6 +1026,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f8010c0:
 			PSXHW_LOG("DMA4 MADR 32bit write %lx\n", value);
 			SPU2WriteMemAddr(0,value);
@@ -1020,6 +1040,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec(4);
 			return;
 
+//------------------------------------------------------------------
 #if 0
 		case 0x1f8010d0: break; //DMA5write_madr();
 		case 0x1f8010d4: break; //DMA5write_bcr();
@@ -1038,6 +1059,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec(6);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f801500:
 			PSXHW_LOG("DMA7 MADR 32bit write %lx\n", value);
 			SPU2WriteMemAddr(1,value);
@@ -1051,6 +1073,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec2(7);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f801510:
 			PSXHW_LOG("DMA8 MADR 32bit write %lx\n", value);
 			HW_DMA8_MADR = value; return; // DMA8 madr
@@ -1063,6 +1086,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec2(8);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f801520:
 			PSXHW_LOG("DMA9 MADR 32bit write %lx\n", value);
 			HW_DMA9_MADR = value; return; // DMA9 madr
@@ -1078,6 +1102,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			PSXHW_LOG("DMA9 TADR 32bit write %lx\n", value);
 			HW_DMA9_TADR = value; return; // DMA9 tadr
 
+//------------------------------------------------------------------
 		case 0x1f801530:
 			PSXHW_LOG("DMA10 MADR 32bit write %lx\n", value);
 			HW_DMA10_MADR = value; return; // DMA10 madr
@@ -1090,6 +1115,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec2(10);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f801540:
 			PSXHW_LOG("DMA11 SIO2in MADR 32bit write %lx\n", value);
 			HW_DMA11_MADR = value; return;
@@ -1103,6 +1129,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec2(11);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f801550:
 			PSXHW_LOG("DMA12 SIO2out MADR 32bit write %lx\n", value);
 			HW_DMA12_MADR = value; return;
@@ -1116,6 +1143,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			DmaExec2(12);
 			return;
 
+//------------------------------------------------------------------
 		case 0x1f801570:
 			psxHu32(0x1570) = value;
 			PSXHW_LOG("DMA PCR2 32bit write %lx\n", value);
@@ -1130,17 +1158,18 @@ void psxHwWrite32(u32 add, u32 value) {
 		{
 			u32 tmp = (~value) & HW_DMA_ICR;
 			HW_DMA_ICR = ((tmp ^ value) & 0xffffff) ^ tmp;
-			return;
 		}
+		return;
 
 		case 0x1f801574:
 			PSXHW_LOG("DMA ICR2 32bit write %lx\n", value);
 		{
 			u32 tmp = (~value) & HW_DMA_ICR2;
 			HW_DMA_ICR2 = ((tmp ^ value) & 0xffffff) ^ tmp;
-			return;
 		}
+		return;
 
+//------------------------------------------------------------------
 /*		case 0x1f801810:
 			PSXHW_LOG("GPU DATA 32bit write %lx\n", value);
 			GPU_writeData(value); return;
@@ -1213,9 +1242,10 @@ void psxHwWrite32(u32 add, u32 value) {
 			PSXCNT_LOG("COUNTER 5 TARGET 32bit write %lx\n", value);
 			psxRcntWtarget32(5, value); return;
 
+//------------------------------------------------------------------
 		case 0x1f8014c0:
 			PSXHW_LOG("RTC_HOLDMODE 32bit write %lx\n", value);
-			SysPrintf("RTC_HOLDMODE 32bit write %lx\n", value);
+			Console::Notice("** RTC_HOLDMODE 32bit write %lx", value);
 			break;
 
 		case 0x1f801450:
@@ -1230,6 +1260,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			psxHu32(0x1450) = /*(*/value/* & (~0x8)) | (psxHu32(0x1450) & 0x8)*/;
 			return;
 
+//------------------------------------------------------------------
 		case 0x1F808200:
 		case 0x1F808204:
 		case 0x1F808208:
@@ -1279,6 +1310,7 @@ void psxHwWrite32(u32 add, u32 value) {
 			PSXHW_LOG("SIO2 write INTR <- %lx\n", value);
 			sio2_setIntr(value);	return;
 
+//------------------------------------------------------------------
 		default:
 			psxHu32(add) = value;
 			PSXHW_LOG("*Unknown 32bit write at address %lx value %lx\n", add, value);
@@ -1350,20 +1382,13 @@ void psxHw4Write8(u32 add, u8 value) {
 		case 0x1f40200A: cdvdWrite0A(value); return;
 		case 0x1f40200F: cdvdWrite0F(value); return;
 		case 0x1f402014: cdvdWrite14(value); return;
-		case 0x1f402016:
-			cdvdWrite16(value);
-			//fixme - are these supposed to be here?
-			FreezeMMXRegs(0);
-			FreezeXMMRegs(0);
-			return;
+		case 0x1f402016: cdvdWrite16(value); return;
 		case 0x1f402017: cdvdWrite17(value); return;
 		case 0x1f402018: cdvdWrite18(value); return;
 		case 0x1f40203A: cdvdWrite3A(value); return;
 		default:
-			// note: use SysPrintF to notify console since this is a potentially serious
-			// emulation problem:
 			//PSXHW_LOG("*Unknown 8bit write at address %lx value %x\n", add, value);
-			SysPrintf("*Unknown 8bit write at address %lx value %x\n", add, value);
+			Console::Notice("*Unknown 8bit write at address %lx value %x", add, value);
 			return;
 	}
 	PSXHW_LOG("*Known 8bit write at address %lx value %x\n", add, value);
@@ -1373,7 +1398,7 @@ void psxDmaInterrupt(int n) {
 	if (HW_DMA_ICR & (1 << (16 + n))) {
 		HW_DMA_ICR|= (1 << (24 + n));
 		psxRegs.CP0.n.Cause |= 1 << (9 + n);
-		psxHu32(0x1070) |= 8;
+		iopIntcIrq( 3 );
 	}
 }
 
@@ -1387,6 +1412,6 @@ void psxDmaInterrupt2(int n) {
 		}*/
 		HW_DMA_ICR2|= (1 << (24 + n));
 		psxRegs.CP0.n.Cause |= 1 << (16 + n);
-		psxHu32(0x1070) |= 8;
+		iopIntcIrq( 3 );
 	}
 }

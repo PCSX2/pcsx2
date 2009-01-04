@@ -722,21 +722,23 @@ void _eeWriteConstMem16(u32 mem, int mmreg)
 	else MOV16RtoM(mem, mmreg);
 }
 
+// op - 0 for AND, 1 for OR
 void _eeWriteConstMem16OP(u32 mem, int mmreg, int op)
 {
 	assert( !IS_XMMREG(mmreg) && !IS_MMXREG(mmreg) );
 	switch(op) {
-		case 0: // and
+		case 0: // AND operation
 			if( IS_EECONSTREG(mmreg) ) AND16ItoM(mem, g_cpuConstRegs[((mmreg>>16)&0x1f)].UL[0]);
 			else if( IS_PSXCONSTREG(mmreg) ) AND16ItoM(mem, g_psxConstRegs[((mmreg>>16)&0x1f)]);
 			else AND16RtoM(mem, mmreg);
 			break;
-		case 1: // and
+		case 1: // OR operation
 			if( IS_EECONSTREG(mmreg) ) OR16ItoM(mem, g_cpuConstRegs[((mmreg>>16)&0x1f)].UL[0]);
 			else if( IS_PSXCONSTREG(mmreg) ) OR16ItoM(mem, g_psxConstRegs[((mmreg>>16)&0x1f)]);
 			else OR16RtoM(mem, mmreg);
 			break;
-		default: assert(0);
+
+		jNO_DEFAULT
 	}
 }
 
@@ -2595,7 +2597,12 @@ static u8* m_psAllMem = NULL;
 int memInit() 
 {
 #ifdef __LINUX__
-	InstallLinuxExceptionHandler();
+	struct sigaction sa;
+	
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = &SysPageFaultExceptionFilter;
+	sigaction(SIGSEGV, &sa, NULL); 
 #endif
 	if (!vtlb_Init()) return -1;
 
@@ -2923,29 +2930,14 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 }
 
 #else
-#include "errno.h"
-
-__forceinline void __fastcall InstallLinuxExceptionHandler()
-{
-	struct sigaction sa;
-	
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_SIGINFO;
-	sa.sa_sigaction = &SysPageFaultExceptionFilter;
-	sigaction(SIGSEGV, &sa, NULL); 
-}
 
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 // This is my shot in the dark.  Probably needs some work.  Good luck! (air)
 __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )
 {
-	int err;
-	u32 pagesize = getpagesize();
-
-	//DevCon::Error("SysPageFaultExceptionFilter!");
+	//Console::Error("SysPageFaultExceptionFilter!");
 	// get bad virtual address
 	u32 offset = (u8*)info->si_addr - psM;
-	uptr pageoffset = ( offset / pagesize ) * pagesize;
 
 	if (offset>=Ps2MemSize::Base)
 	{
@@ -2954,9 +2946,8 @@ __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t
 		assert( false );
 	}
 
-	err = mprotect( &psM[pageoffset], pagesize, PROT_READ | PROT_WRITE );
-	if (err) DevCon::Error("SysPageFaultExceptionFilter: %s", strerror(errno));
-	
+	mprotect(&psM[offset], 1, PROT_READ|PROT_WRITE);
+
 	offset>>=12;
 	psMPWC[(offset/32)]|=(1<<(offset&31));
 

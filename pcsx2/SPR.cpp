@@ -128,7 +128,7 @@ void _SPR0interleave() {
 	CPU_INT(8, cycles);
 }
 
-void _dmaSPR0() {
+static __forceinline void _dmaSPR0() {
 	
 
 	if ((psHu32(DMAC_CTRL) & 0x30) == 0x20) { // STS == fromSPR

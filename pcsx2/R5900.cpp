@@ -45,6 +45,8 @@ u32 bExecBIOS = 0; // set if the BIOS has already been executed
 static bool cpuIsInitialized = false;
 static uint eeWaitCycles = 1024;
 
+bool eeEventTestIsActive = false;
+
 #ifdef _DEBUG
 extern u32 s_vucount;
 #endif
@@ -208,7 +210,7 @@ void cpuException(u32 code, u32 bd) {
 			}
 		} else {
 			offset = 0x180; //Overrride the cause		
-			SysPrintf("cpuException: Status.EXL = 1 cause %x\n", code);
+			Console::Notice("cpuException: Status.EXL = 1 cause %x", code);
 		}
 		if (cpuRegs.CP0.n.Status.b.BEV == 0) {
 			cpuRegs.pc = 0x80000000 + offset;
@@ -216,7 +218,7 @@ void cpuException(u32 code, u32 bd) {
 			cpuRegs.pc = 0xBFC00200 + offset;
 		}
 	} else { //Error Level 2
-		Console::Error("FIX ME: Level 2 cpuException");
+		Console::Error("*PCSX2* FIX ME: Level 2 cpuException");
 		if((code & 0x38000) <= 0x8000 ) { //Reset / NMI
 			cpuRegs.pc = 0xBFC00000;
 			Console::Notice("Reset request");
@@ -430,10 +432,6 @@ static __forceinline void _cpuTestInterrupts()
 		TESTINT(10, vifMFIFOInterrupt);
 		TESTINT(11, gifMFIFOInterrupt);
 	}
-
-	if ((cpuRegs.CP0.n.Status.val & 0x10007) != 0x10001) return;
-	TESTINT(30, intcInterrupt);
-	TESTINT(31, dmacInterrupt);
 }
 
 u32 s_iLastCOP0Cycle = 0;
@@ -450,8 +448,9 @@ static __forceinline void _cpuTestTIMR()
 	// the Count or Compare registers are modified.
 
 	if ( (cpuRegs.CP0.n.Status.val & 0x8000) &&
-		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 ) {
-		SysPrintf("timr intr: %x, %x\n", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
+		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 )
+	{
+		Console::Status("timr intr: %x, %x", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
 		cpuException(0x808000, cpuRegs.branch);
 	}
 }
@@ -473,11 +472,6 @@ static __forceinline void _cpuTestPERF()
 	}
 }
 
-// Maximum wait between branches.  Lower values provide a tighter synchronization between
-// the EE and the IOP, but incur more execution overhead.
-//#define EE_WAIT_CYCLE 3072		// 2048 is probably stable now, but starting low first
-
-
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
 
@@ -485,6 +479,7 @@ u32 g_nextBranchCycle = 0;
 // and the recompiler.  (moved here to help alleviate redundant code)
 static __forceinline void _cpuBranchTest_Shared()
 {
+	eeEventTestIsActive = true;
 	g_nextBranchCycle = cpuRegs.cycle + eeWaitCycles;
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
@@ -503,10 +498,6 @@ static __forceinline void _cpuBranchTest_Shared()
 	}
 
 	_cpuTestTIMR();
-
-	//#ifdef CPU_LOG
-	//	cpuTestMissingHwInts();
-	//#endif
 
 	// ---- Interrupts -------------
 
@@ -537,41 +528,6 @@ static __forceinline void _cpuBranchTest_Shared()
 		psxCpu->ExecuteBlock();
 	}
 
-	// The IOP cound be running ahead/behind of us, so adjust the iop's next branch by its
-	// relative position to the EE (via EEsCycle)
-	cpuSetNextBranchDelta( ((g_psxNextBranchCycle-psxRegs.cycle)*8) - EEsCycle );
-
-	// Apply the hsync counter's nextCycle
-	cpuSetNextBranch( counters[4].sCycle, counters[4].CycleT );
-
-	// Apply vsync and other counter nextCycles
-	cpuSetNextBranch( nextsCounter, nextCounter );
-}
-
-#ifdef PCSX2_DEVBUILD
-extern u8 g_globalXMMSaved;
-extern u8 g_globalMMXSaved;
-#endif
-
-void cpuBranchTest()
-{
-	// cpuBranchTest should be called from the recompiler only.
-	assert( Cpu == &recCpu );
-
-#ifdef PCSX2_DEVBUILD
-    // dont' remove this check unless doing an official release
-    if( g_globalXMMSaved || g_globalMMXSaved)
-        SysPrintf("frozen regs have not been restored!!!\n");
-	assert( !g_globalXMMSaved && !g_globalMMXSaved);
-#endif
-
-	// Don't need to freeze any regs during a BranchTest.
-	// Everything has been flushed already.
-	g_EEFreezeRegs = false;
-
-	// Perform counters, ints, and IOP updates:
-	_cpuBranchTest_Shared();
-
 	// ---- VU0 -------------
 
 	if (VU0.VI[REG_VPU_STAT].UL & 0x1)
@@ -589,6 +545,56 @@ void cpuBranchTest()
 	// Note:  We don't update the VU1 here because it runs it's micro-programs in
 	// one shot always.  That is, when a program is executed the VU1 doesn't even
 	// bother to return until the program is completely finished.
+
+	// ---- Schedule Next Event Test --------------
+
+	// The IOP cound be running ahead/behind of us, so adjust the iop's next branch by its
+	// relative position to the EE (via EEsCycle)
+	cpuSetNextBranchDelta( ((g_psxNextBranchCycle-psxRegs.cycle)*8) - EEsCycle );
+
+	// Apply the hsync counter's nextCycle
+	cpuSetNextBranch( counters[4].sCycle, counters[4].CycleT );
+
+	// Apply vsync and other counter nextCycles
+	cpuSetNextBranch( nextsCounter, nextCounter );
+
+	eeEventTestIsActive = false;
+
+	// ---- INTC / DMAC Exceptions -----------------
+	// Raise the INTC and DMAC interrupts here, which usually throw exceptions.
+	// This should be done last since the IOP and the VU0 can raise several EE
+	// exceptions.
+
+	if ((cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001)
+	{
+		TESTINT(30, intcInterrupt);
+		TESTINT(31, dmacInterrupt);
+	}
+}
+
+#ifdef PCSX2_DEVBUILD
+extern u8 g_globalXMMSaved;
+extern u8 g_globalMMXSaved;
+#endif
+
+void cpuBranchTest()
+{
+	// cpuBranchTest should be called from the recompiler only.
+	assert( Cpu == &recCpu );
+
+#ifdef PCSX2_DEVBUILD
+    // dont' remove this check unless doing an official release
+    if( g_globalXMMSaved || g_globalMMXSaved)
+		DevCon::Error("Pcsx2 Foopah!  Frozen regs have not been restored!!!");
+	assert( !g_globalXMMSaved && !g_globalMMXSaved);
+#endif
+
+	// Don't need to freeze any regs during a BranchTest.
+	// Everything has been flushed already.
+	g_EEFreezeRegs = false;
+
+	// Perform counters, ints, and IOP updates:
+	_cpuBranchTest_Shared();
 
 #ifdef PCSX2_DEVBUILD
 	assert( !g_globalXMMSaved && !g_globalMMXSaved);
@@ -616,28 +622,37 @@ __forceinline void CPU_INT( u32 n, s32 ecycle)
 	cpuSetNextBranchDelta( cpuRegs.eCycle[n] );
 }
 
-__forceinline void cpuTestINTCInts() {
+void cpuTestINTCInts()
+{
+	if( cpuRegs.interrupt & (1 << 30) ) return;
 	if( (cpuRegs.CP0.n.Status.val & 0x10407) != 0x10401 ) return;
 	if( (psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0 ) return;
-	if( cpuRegs.interrupt & (1 << 30) ) return;
 
-	// fixme: The counters code throws INT30's alot, and most of the time they're
-	// "late" already, so firing them immediately instead of after the next branch
-	// (in which case they'll be really late) would be a lot better in theory.
-	// However, setting this to zero for everything breaks games, so if it's done
-	// it needs to be done for counters only.
+	cpuRegs.interrupt|= 1 << 30;
+	cpuRegs.sCycle[30] = cpuRegs.cycle;
+	cpuRegs.eCycle[30] = 0;
 
-	CPU_INT(30,4);
+	// only set the next branch delta if the exception won't be handled for
+	// the current branch...
+	if( !eeEventTestIsActive )
+		cpuSetNextBranchDelta( 4 );
 }
 
 __forceinline void cpuTestDMACInts() {
-	if ((cpuRegs.CP0.n.Status.val & 0x10807) != 0x10801) return;
 	if ( cpuRegs.interrupt & (1 << 31) ) return;
+	if ((cpuRegs.CP0.n.Status.val & 0x10807) != 0x10801) return;
 
 	if ( ( (psHu16(0xe012) & psHu16(0xe010)) == 0) && 
 		 ( (psHu16(0xe010) & 0x8000) == 0) ) return;
 
-	CPU_INT(31, 4);
+	cpuRegs.interrupt|= 1 << 31;
+	cpuRegs.sCycle[31] = cpuRegs.cycle;
+	cpuRegs.eCycle[31] = 0;
+
+	// only set the next branch delta if the exception won't be handled for
+	// the current branch...
+	if( !eeEventTestIsActive )
+		cpuSetNextBranchDelta( 4 );
 }
 
 __forceinline void cpuTestTIMRInts() {
@@ -709,12 +724,6 @@ void IntcpuBranchTest()
 		if(VU0.VI[REG_VPU_STAT].UL & 0x1)
 			cpuSetNextBranchDelta( 768 );
 
-	}
-
-	// fixme: why is this in the interpreter but not in the recompiler? (Air)
-
-	if (VU0.VI[REG_VPU_STAT].UL & 0x100) {
-		Cpu->ExecuteVU1Block();
 	}
 
 	g_EEFreezeRegs = true;

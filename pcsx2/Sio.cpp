@@ -517,10 +517,6 @@ void SIO_FORCEINLINE sioInterrupt() {
 
 void SaveState::sioFreeze() {
 
-	// eh, not supported anymore.. :)
-	//if( Mode == 0 && dwCurSaveStateVer == 0x7a30000e )
-    //    savesize -= 4;
-
 	if( IsLoading() )
 		sio.count = 0;
     Freeze( sio );
