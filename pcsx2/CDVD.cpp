@@ -1322,6 +1322,7 @@ static uint cdvdStartSeek( uint newsector )
 			cdvd.Status = CDVD_STATUS_SEEK_COMPLETE;
 			cdvd.Readed = 1;
 			cdvd.RetryCntP = 0;
+			seektime = cdvd.ReadTime; //can't have seektime of 0 (Atelier Iris Audio works)
 		}
 	}
 
