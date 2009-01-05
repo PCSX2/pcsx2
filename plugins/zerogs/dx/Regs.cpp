@@ -105,24 +105,29 @@ void __fastcall GIFPackedRegHandlerUV(u32* data)
 	gs.vertexregs.v = data[1] & 0x3fff; 
 }
 
-#define KICK_VERTEX2() { \
-	if( ++gs.primC >= (int)g_primmult[prim->prim]) { \
-		if( !(g_GameSettings&GAME_XENOSPECHACK) || !ZeroGS::vb[prim->ctxt].zbuf.zmsk ) \
-			(*ZeroGS::drawfn[prim->prim])(); \
-		gs.primC -= g_primsub[prim->prim]; \
-	} \
-} \
+void __forceinline KICK_VERTEX2() 
+{ 
+	if (++gs.primC >= (int)g_primmult[prim->prim]) 
+	{ 
+		if (!(g_GameSettings&GAME_XENOSPECHACK) || !ZeroGS::vb[prim->ctxt].zbuf.zmsk) 
+			(*ZeroGS::drawfn[prim->prim])(); 
+		gs.primC -= g_primsub[prim->prim]; 
+	} 
+} 
 
-#define KICK_VERTEX3() { \
-	if( ++gs.primC >= (int)g_primmult[prim->prim] ) { \
-		gs.primC -= g_primsub[prim->prim]; \
-		if( prim->prim == 5 ) { \
-			/* tri fans need special processing */ \
-			if( gs.nTriFanVert == gs.primIndex ) \
-				gs.primIndex = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex); \
-		} \
-	} \
-} \
+void __forceinline KICK_VERTEX3() 
+{ 
+	if (++gs.primC >= (int)g_primmult[prim->prim]) 
+	{ 
+		gs.primC -= g_primsub[prim->prim]; 
+		if (prim->prim == 5) 
+		{ 
+			/* tri fans need special processing */ 
+			if (gs.nTriFanVert == gs.primIndex) 
+				gs.primIndex = (gs.primIndex+1)%ARRAY_SIZE(gs.gsvertex); 
+		} 
+	} 
+} 
 
 void __fastcall GIFPackedRegHandlerXYZF2(u32* data)
 {

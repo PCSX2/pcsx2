@@ -26,7 +26,7 @@
 // need C definitions
 extern "C" {
 #define GSdefs
-#include "../../common/PS2Edefs.h"
+#include "PS2Edefs.h"
 }
 
 #ifdef _WIN32
@@ -134,18 +134,6 @@ typedef struct {
 extern GLWindow GLWin;
 
 #endif // linux basic definitions
-
-#if defined(_MSC_VER) 
-#define FASTCALL(fn) __fastcall fn
-#else
-
-#ifdef __x86_64
-#define FASTCALL(fn) fn
-#else
-#define FASTCALL(fn) __attribute__((fastcall)) fn 
-#endif
-
-#endif
 
 struct Vector_16F
 {
@@ -446,14 +434,14 @@ typedef struct {
 #define GSOPTION_LOADED		0x8000
 
 typedef struct {
-	int interlace;
-	int aa; // antialiasing 0 - off, 1 - 2x, 2 - 4x
-	int bilinear; // set to enable bilinear support
+	u8 mrtdepth; // write color in render target
+	u8 interlace;
+	u8 aa; // antialiasing 0 - off, 1 - 2x, 2 - 4x
+	u8 bilinear; // set to enable bilinear support
 	u32 options;
 	u32 gamesettings; // default game settings
 	int width, height;
 	int winstyle; // window style before full screen 
-	int mrtdepth; // write color in render target
 #ifdef GS_LOG
 	u32 log;
 #endif

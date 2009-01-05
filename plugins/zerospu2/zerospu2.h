@@ -27,7 +27,7 @@
 
 extern "C" {
 #define SPU2defs
-#include "../common/PS2Edefs.h"
+#include "PS2Edefs.h"
 }
 
 #ifdef __LINUX__

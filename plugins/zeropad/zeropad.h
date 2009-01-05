@@ -42,7 +42,7 @@ using namespace std;
 
 #define PADdefs
 extern "C" {
-#include "../common/PS2Edefs.h"
+#include "PS2Edefs.h"
 }
 
 extern char libraryName[256];

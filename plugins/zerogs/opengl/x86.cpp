@@ -30,7 +30,7 @@
 
 // swizzling
 
-void FASTCALL(SwizzleBlock32_c(u8* dst, u8* src, int srcpitch, u32 WriteMask))
+void __fastcall SwizzleBlock32_c(u8* dst, u8* src, int srcpitch, u32 WriteMask)
 {
 	u32* d = &g_columnTable32[0][0];
 
@@ -48,7 +48,7 @@ void FASTCALL(SwizzleBlock32_c(u8* dst, u8* src, int srcpitch, u32 WriteMask))
 	}
 }
 
-void FASTCALL(SwizzleBlock16_c(u8* dst, u8* src, int srcpitch))
+void __fastcall SwizzleBlock16_c(u8* dst, u8* src, int srcpitch)
 {
 	u32* d = &g_columnTable16[0][0];
 
@@ -57,7 +57,7 @@ void FASTCALL(SwizzleBlock16_c(u8* dst, u8* src, int srcpitch))
 			((u16*)dst)[d[i]] = ((u16*)src)[i];
 }
 
-void FASTCALL(SwizzleBlock8_c(u8* dst, u8* src, int srcpitch))
+void __fastcall SwizzleBlock8_c(u8* dst, u8* src, int srcpitch)
 {
 	u32* d = &g_columnTable8[0][0];
 
@@ -66,7 +66,7 @@ void FASTCALL(SwizzleBlock8_c(u8* dst, u8* src, int srcpitch))
 			dst[d[i]] = src[i];
 }
 
-void FASTCALL(SwizzleBlock4_c(u8* dst, u8* src, int srcpitch))
+void __fastcall SwizzleBlock4_c(u8* dst, u8* src, int srcpitch)
 {
 	u32* d = &g_columnTable4[0][0];
 
@@ -84,7 +84,7 @@ void FASTCALL(SwizzleBlock4_c(u8* dst, u8* src, int srcpitch))
 
 #define _FrameSwizzleBlock(type, transfer, transfer16, incsrc) \
 /* FrameSwizzleBlock32 */ \
-void FASTCALL(FrameSwizzleBlock32##type##c(u32* dst, u32* src, int srcpitch, u32 WriteMask)) \
+void __fastcall FrameSwizzleBlock32##type##c(u32* dst, u32* src, int srcpitch, u32 WriteMask) \
 { \
 	u32* d = &g_columnTable32[0][0]; \
 	\
@@ -107,7 +107,7 @@ void FASTCALL(FrameSwizzleBlock32##type##c(u32* dst, u32* src, int srcpitch, u32
 } \
 \
 /* FrameSwizzleBlock16 */ \
-void FASTCALL(FrameSwizzleBlock16##type##c(u16* dst, u32* src, int srcpitch, u32 WriteMask)) \
+void __fastcall FrameSwizzleBlock16##type##c(u16* dst, u32* src, int srcpitch, u32 WriteMask) \
 { \
 	u32* d = &g_columnTable16[0][0]; \
 	\
@@ -133,7 +133,7 @@ void FASTCALL(FrameSwizzleBlock16##type##c(u16* dst, u32* src, int srcpitch, u32
 } \
 \
 /* Frame16SwizzleBlock32 */ \
-void FASTCALL(Frame16SwizzleBlock32##type##c(u32* dst, Vector_16F* src, int srcpitch, u32 WriteMask)) \
+void __fastcall Frame16SwizzleBlock32##type##c(u32* dst, Vector_16F* src, int srcpitch, u32 WriteMask) \
 { \
 	u32* d = &g_columnTable32[0][0]; \
 \
@@ -159,7 +159,7 @@ void FASTCALL(Frame16SwizzleBlock32##type##c(u32* dst, Vector_16F* src, int srcp
  } \
 \
 /* Frame16SwizzleBlock32Z */ \
-void FASTCALL(Frame16SwizzleBlock32Z##type##c(u32* dst, Vector_16F* src, int srcpitch, u32 WriteMask)) \
+void __fastcall Frame16SwizzleBlock32Z##type##c(u32* dst, Vector_16F* src, int srcpitch, u32 WriteMask) \
 { \
 	u32* d = &g_columnTable32[0][0]; \
 	if( WriteMask == 0xffffffff ) { /* breaks KH text if not checked */ \
@@ -184,7 +184,7 @@ void FASTCALL(Frame16SwizzleBlock32Z##type##c(u32* dst, Vector_16F* src, int src
  } \
  \
  /* Frame16SwizzleBlock16 */ \
-void FASTCALL(Frame16SwizzleBlock16##type##c(u16* dst, Vector_16F* src, int srcpitch, u32 WriteMask)) \
+void __fastcall Frame16SwizzleBlock16##type##c(u16* dst, Vector_16F* src, int srcpitch, u32 WriteMask) \
 { \
 	u32* d = &g_columnTable16[0][0]; \
 	\
@@ -210,7 +210,7 @@ void FASTCALL(Frame16SwizzleBlock16##type##c(u16* dst, Vector_16F* src, int srcp
  } \
  \
  /* Frame16SwizzleBlock16Z */ \
-void FASTCALL(Frame16SwizzleBlock16Z##type##c(u16* dst, Vector_16F* src, int srcpitch, u32 WriteMask)) \
+void __fastcall Frame16SwizzleBlock16Z##type##c(u16* dst, Vector_16F* src, int srcpitch, u32 WriteMask) \
 { \
 	u32* d = &g_columnTable16[0][0]; \
 	\
@@ -229,7 +229,7 @@ _FrameSwizzleBlock(A4_, (src[2*j]+src[2*j+1]+src[2*j+srcpitch]+src[2*j+srcpitch+
 
 #ifdef ZEROGS_SSE2
 
-//void FASTCALL(WriteCLUT_T16_I8_CSM1_sse2(u32* vm, u32* clut)
+//void __fastcall WriteCLUT_T16_I8_CSM1_sse2(u32* vm, u32* clut)
 //{
 //  __asm {
 //	  mov eax, vm
@@ -294,7 +294,7 @@ _FrameSwizzleBlock(A4_, (src[2*j]+src[2*j+1]+src[2*j+srcpitch]+src[2*j+srcpitch+
 
 #if (defined(_WIN32)||defined(__x86_64__))
 
-extern "C" void FASTCALL(WriteCLUT_T32_I8_CSM1_sse2(u32* vm, u32* clut))
+extern "C" void __fastcall WriteCLUT_T32_I8_CSM1_sse2(u32* vm, u32* clut)
 {
 	__m128i* src = (__m128i*)vm;
 	__m128i* dst = (__m128i*)clut;
@@ -326,7 +326,7 @@ extern "C" void FASTCALL(WriteCLUT_T32_I8_CSM1_sse2(u32* vm, u32* clut))
 	}
 }
 
-extern "C" void FASTCALL(WriteCLUT_T32_I4_CSM1_sse2(u32* vm, u32* clut))
+extern "C" void __fastcall WriteCLUT_T32_I4_CSM1_sse2(u32* vm, u32* clut)
 {
 	__m128i* src = (__m128i*)vm;
 	__m128i* dst = (__m128i*)clut;
@@ -353,7 +353,7 @@ PCSX2_ALIGNED16(int s_clut16mask[8]) = { 0xffff0000, 0xffff0000, 0xffff0000, 0xf
 
 #if !defined(__x86_64__)
 
-extern "C" void FASTCALL(WriteCLUT_T16_I4_CSM1_sse2(u32* vm, u32* clut))
+extern "C" void __fastcall WriteCLUT_T16_I4_CSM1_sse2(u32* vm, u32* clut)
 {
 	__asm {
 		mov eax, vm
@@ -472,7 +472,7 @@ End:
 
 #endif // ZEROGS_SSE2
 
-void FASTCALL(WriteCLUT_T16_I8_CSM1_c(u32* _vm, u32* _clut))
+void __fastcall WriteCLUT_T16_I8_CSM1_c(u32* _vm, u32* _clut)
 {
 	const static u32 map[] = 
 	{
@@ -511,7 +511,7 @@ void FASTCALL(WriteCLUT_T16_I8_CSM1_c(u32* _vm, u32* _clut))
 	}
 }
 
-void FASTCALL(WriteCLUT_T32_I8_CSM1_c(u32* vm, u32* clut))
+void __fastcall WriteCLUT_T32_I8_CSM1_c(u32* vm, u32* clut)
 {
 	u64* src = (u64*)vm;
 	u64* dst = (u64*)clut;
@@ -540,7 +540,7 @@ void FASTCALL(WriteCLUT_T32_I8_CSM1_c(u32* vm, u32* clut))
 	}
 }
 
-void FASTCALL(WriteCLUT_T16_I4_CSM1_c(u32* _vm, u32* _clut))
+void __fastcall WriteCLUT_T16_I4_CSM1_c(u32* _vm, u32* _clut)
 {
 	u16* dst = (u16*)_clut;
 	u16* src = (u16*)_vm;
@@ -555,7 +555,7 @@ void FASTCALL(WriteCLUT_T16_I4_CSM1_c(u32* _vm, u32* _clut))
 	dst[28] = src[28]; dst[30] = src[30];
 }
 
-void FASTCALL(WriteCLUT_T32_I4_CSM1_c(u32* vm, u32* clut))
+void __fastcall WriteCLUT_T32_I4_CSM1_c(u32* vm, u32* clut)
 {
 	u64* src = (u64*)vm;
 	u64* dst = (u64*)clut;

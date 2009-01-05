@@ -21,7 +21,7 @@
 #pragma warning(disable:4018)
 #endif
 
-#include "../../common/PS2Edefs.h"
+#include "PS2Edefs.h"
 #include "libiso.h"
 
 #ifdef __cplusplus

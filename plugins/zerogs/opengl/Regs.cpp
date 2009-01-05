@@ -73,14 +73,14 @@ C_ASSERT(sizeof(g_GIFRegHandlers)/sizeof(g_GIFRegHandlers[0]) == 100 );
 // values for keeping track of changes
 u32 s_uTex1Data[2][2] = {0}, s_uClampData[2] = {0};
 
-void FASTCALL(GIFPackedRegHandlerNull(u32* data))
+void __fastcall GIFPackedRegHandlerNull(u32* data)
 {
 #ifdef _DEBUG
 	printf("Unexpected packed reg handler %8.8lx_%8.8lx %x\n", data[0], data[1], data[2]);
 #endif
 }
 
-void FASTCALL(GIFPackedRegHandlerRGBA(u32* data))
+void __fastcall GIFPackedRegHandlerRGBA(u32* data)
 {
 	gs.rgba = (data[0] & 0xff) | 
 			((data[1] & 0xff) <<  8) |
@@ -90,39 +90,44 @@ void FASTCALL(GIFPackedRegHandlerRGBA(u32* data))
 	gs.vertexregs.q = gs.q;
 }
 
-void FASTCALL(GIFPackedRegHandlerSTQ(u32* data))
+void __fastcall GIFPackedRegHandlerSTQ(u32* data)
 {
 	*(u32*)&gs.vertexregs.s = data[0]&0xffffff00;
 	*(u32*)&gs.vertexregs.t = data[1]&0xffffff00;
 	*(u32*)&gs.q = data[2];
 }
 
-void FASTCALL(GIFPackedRegHandlerUV(u32* data))
+void __fastcall GIFPackedRegHandlerUV(u32* data)
 {
 	gs.vertexregs.u = data[0] & 0x3fff;
 	gs.vertexregs.v = data[1] & 0x3fff; 
 }
 
-#define KICK_VERTEX2() { \
-	if( ++gs.primC >= (int)g_primmult[prim->prim]) { \
-		if( !(g_GameSettings&GAME_XENOSPECHACK) || !ZeroGS::vb[prim->ctxt].zbuf.zmsk ) \
-			(*ZeroGS::drawfn[prim->prim])(); \
-		gs.primC -= g_primsub[prim->prim]; \
-	} \
-} \
+void __forceinline KICK_VERTEX2() 
+{ 
+	if (++gs.primC >= (int)g_primmult[prim->prim]) 
+	{ 
+		if (!(g_GameSettings&GAME_XENOSPECHACK) || !ZeroGS::vb[prim->ctxt].zbuf.zmsk) 
+			(*ZeroGS::drawfn[prim->prim])(); 
+		gs.primC -= g_primsub[prim->prim]; 
+	} 
+} 
 
-#define KICK_VERTEX3() { \
-	if( ++gs.primC >= (int)g_primmult[prim->prim] ) { \
-		gs.primC -= g_primsub[prim->prim]; \
-		if( prim->prim == 5 ) { \
-			/* tri fans need special processing */ \
-			if( gs.nTriFanVert == gs.primIndex ) \
-				gs.primIndex = (gs.primIndex+1)%ARRAY_SIZE(gs.gsvertex); \
-		} \
-	} \
-} \
+void __forceinline KICK_VERTEX3() 
+{ 
+	if (++gs.primC >= (int)g_primmult[prim->prim]) 
+	{ 
+		gs.primC -= g_primsub[prim->prim]; 
+		if (prim->prim == 5) 
+		{ 
+			/* tri fans need special processing */ 
+			if (gs.nTriFanVert == gs.primIndex) 
+				gs.primIndex = (gs.primIndex+1)%ARRAY_SIZE(gs.gsvertex); 
+		} 
+	} 
+} 
 
-void FASTCALL(GIFPackedRegHandlerXYZF2(u32* data))
+void __fastcall GIFPackedRegHandlerXYZF2(u32* data)
 {
 	gs.vertexregs.x = (data[0] >> 0) & 0xffff;
 	gs.vertexregs.y = (data[1] >> 0) & 0xffff;
@@ -139,7 +144,7 @@ void FASTCALL(GIFPackedRegHandlerXYZF2(u32* data))
 	}
 }
 
-void FASTCALL(GIFPackedRegHandlerXYZ2(u32* data))
+void __fastcall GIFPackedRegHandlerXYZ2(u32* data)
 {
 	gs.vertexregs.x = (data[0] >> 0) & 0xffff;
 	gs.vertexregs.y = (data[1] >> 0) & 0xffff;
@@ -155,12 +160,12 @@ void FASTCALL(GIFPackedRegHandlerXYZ2(u32* data))
 	}
 }
 
-void FASTCALL(GIFPackedRegHandlerFOG(u32* data))
+void __fastcall GIFPackedRegHandlerFOG(u32* data)
 {
 	gs.vertexregs.f = (data[3]&0xff0)>>4;
 }
 
-void FASTCALL(GIFPackedRegHandlerA_D(u32* data))
+void __fastcall GIFPackedRegHandlerA_D(u32* data)
 {
 	if((data[2] & 0xff) < 100)
 		g_GIFRegHandlers[data[2] & 0xff](data);
@@ -168,7 +173,7 @@ void FASTCALL(GIFPackedRegHandlerA_D(u32* data))
 		GIFRegHandlerNull(data);
 }
 
-void FASTCALL(GIFPackedRegHandlerNOP(u32* data))
+void __fastcall GIFPackedRegHandlerNOP(u32* data)
 {
 }
 
@@ -358,7 +363,7 @@ __forceinline void clampWrite(int i, u32 *data)
 	}
 }
 
-void FASTCALL(GIFRegHandlerNull(u32* data))
+void __fastcall GIFRegHandlerNull(u32* data)
 {
 #ifdef _DEBUG
 	if( (((uptr)&data[2])&0xffff) == 0 )
@@ -371,7 +376,7 @@ void FASTCALL(GIFRegHandlerNull(u32* data))
 #endif
 }
 
-void FASTCALL(GIFRegHandlerPRIM(u32 *data))
+void __fastcall GIFRegHandlerPRIM(u32 *data)
 {
 	if (data[0] & ~0x3ff) {
 #ifdef WARN_LOG
@@ -389,27 +394,27 @@ void FASTCALL(GIFRegHandlerPRIM(u32 *data))
 	ZeroGS::Prim();
 }
 
-void FASTCALL(GIFRegHandlerRGBAQ(u32* data))
+void __fastcall GIFRegHandlerRGBAQ(u32* data)
 {
 	gs.rgba = data[0];
 	gs.vertexregs.rgba = data[0];
 	*(u32*)&gs.vertexregs.q = data[1];
 }
 
-void FASTCALL(GIFRegHandlerST(u32* data))
+void __fastcall GIFRegHandlerST(u32* data)
 {
 	*(u32*)&gs.vertexregs.s = data[0]&0xffffff00;
 	*(u32*)&gs.vertexregs.t = data[1]&0xffffff00;
 	//*(u32*)&gs.q = data[2];
 }
 
-void FASTCALL(GIFRegHandlerUV(u32* data))
+void __fastcall GIFRegHandlerUV(u32* data)
 {
 	gs.vertexregs.u = (data[0]) & 0x3fff;
 	gs.vertexregs.v = (data[0] >> 16) & 0x3fff;
 }
 
-void FASTCALL(GIFRegHandlerXYZF2(u32* data))
+void __fastcall GIFRegHandlerXYZF2(u32* data)
 {
 	gs.vertexregs.x = (data[0]) & 0xffff;
 	gs.vertexregs.y = (data[0] >> (16)) & 0xffff;
@@ -421,7 +426,7 @@ void FASTCALL(GIFRegHandlerXYZF2(u32* data))
 	KICK_VERTEX2();
 }
 
-void FASTCALL(GIFRegHandlerXYZ2(u32* data))
+void __fastcall GIFRegHandlerXYZ2(u32* data)
 {
 	gs.vertexregs.x = (data[0]) & 0xffff;
 	gs.vertexregs.y = (data[0] >> (16)) & 0xffff;
@@ -432,7 +437,7 @@ void FASTCALL(GIFRegHandlerXYZ2(u32* data))
 	KICK_VERTEX2();
 }
 
-void FASTCALL(GIFRegHandlerTEX0_1(u32* data))
+void __fastcall GIFRegHandlerTEX0_1(u32* data)
 {
 	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
 		return;
@@ -440,7 +445,7 @@ void FASTCALL(GIFRegHandlerTEX0_1(u32* data))
 	tex0Write(0, data);
 }
 
-void FASTCALL(GIFRegHandlerTEX0_2(u32* data))
+void __fastcall GIFRegHandlerTEX0_2(u32* data)
 {
 	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk ) {
 		return;
@@ -448,7 +453,7 @@ void FASTCALL(GIFRegHandlerTEX0_2(u32* data))
 	tex0Write(1, data);
 }
 
-void FASTCALL(GIFRegHandlerCLAMP_1(u32* data))
+void __fastcall GIFRegHandlerCLAMP_1(u32* data)
 {
 	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
 		return;
@@ -456,7 +461,7 @@ void FASTCALL(GIFRegHandlerCLAMP_1(u32* data))
 	clampWrite(0, data);
 }
 
-void FASTCALL(GIFRegHandlerCLAMP_2(u32* data))
+void __fastcall GIFRegHandlerCLAMP_2(u32* data)
 {
 	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk ) {
 		return;
@@ -464,13 +469,13 @@ void FASTCALL(GIFRegHandlerCLAMP_2(u32* data))
 	clampWrite(1, data);
 }
 
-void FASTCALL(GIFRegHandlerFOG(u32* data))
+void __fastcall GIFRegHandlerFOG(u32* data)
 {
 	//gs.gsvertex[gs.primIndex].f = (data[1] >> 24);	// shift to upper bits
 	gs.vertexregs.f = data[1]>>24;
 }
 
-void FASTCALL(GIFRegHandlerXYZF3(u32* data))
+void __fastcall GIFRegHandlerXYZF3(u32* data)
 {
 	gs.vertexregs.x = (data[0]) & 0xffff;
 	gs.vertexregs.y = (data[0] >> (16)) & 0xffff;
@@ -482,7 +487,7 @@ void FASTCALL(GIFRegHandlerXYZF3(u32* data))
 	KICK_VERTEX3();
 }
 
-void FASTCALL(GIFRegHandlerXYZ3(u32* data))
+void __fastcall GIFRegHandlerXYZ3(u32* data)
 {
 	gs.vertexregs.x = (data[0]) & 0xffff;
 	gs.vertexregs.y = (data[0] >> (16)) & 0xffff;
@@ -493,7 +498,7 @@ void FASTCALL(GIFRegHandlerXYZ3(u32* data))
 	KICK_VERTEX3();
 }
 
-void FASTCALL(GIFRegHandlerNOP(u32* data))
+void __fastcall GIFRegHandlerNOP(u32* data)
 {
 }
 
@@ -514,7 +519,7 @@ void tex1Write(int i, u32* data)
 	tex1.k	= (data[1] >> 4) & 0xff;
 }
 
-void FASTCALL(GIFRegHandlerTEX1_1(u32* data))
+void __fastcall GIFRegHandlerTEX1_1(u32* data)
 {
 	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[0].zbuf.zmsk ) {
 		return;
@@ -523,7 +528,7 @@ void FASTCALL(GIFRegHandlerTEX1_1(u32* data))
 	tex1Write(0, data);
 }
 
-void FASTCALL(GIFRegHandlerTEX1_2(u32* data))
+void __fastcall GIFRegHandlerTEX1_2(u32* data)
 {
 	if( (g_GameSettings&GAME_XENOSPECHACK) && ZeroGS::vb[1].zbuf.zmsk )
 		return;
@@ -531,17 +536,17 @@ void FASTCALL(GIFRegHandlerTEX1_2(u32* data))
 	tex1Write(1, data);
 }
 
-void FASTCALL(GIFRegHandlerTEX2_1(u32* data))
+void __fastcall GIFRegHandlerTEX2_1(u32* data)
 {
 	tex2Write(0, data);
 }
 
-void FASTCALL(GIFRegHandlerTEX2_2(u32* data))
+void __fastcall GIFRegHandlerTEX2_2(u32* data)
 {
 	tex2Write(1, data);
 }
 
-void FASTCALL(GIFRegHandlerXYOFFSET_1(u32* data))
+void __fastcall GIFRegHandlerXYOFFSET_1(u32* data)
 {
 	// eliminator low 4 bits for now
 	ZeroGS::vb[0].offset.x = (data[0]) & 0xffff;
@@ -553,7 +558,7 @@ void FASTCALL(GIFRegHandlerXYOFFSET_1(u32* data))
 //  }
 }
 
-void FASTCALL(GIFRegHandlerXYOFFSET_2(u32* data))
+void __fastcall GIFRegHandlerXYOFFSET_2(u32* data)
 {
 	ZeroGS::vb[1].offset.x = (data[0]) & 0xffff;
 	ZeroGS::vb[1].offset.y = (data[1]) & 0xffff;
@@ -564,7 +569,7 @@ void FASTCALL(GIFRegHandlerXYOFFSET_2(u32* data))
 //  }
 }
 
-void FASTCALL(GIFRegHandlerPRMODECONT(u32* data))
+void __fastcall GIFRegHandlerPRMODECONT(u32* data)
 {
 	gs.prac = data[0] & 0x1;
 	prim = &gs._prim[gs.prac];
@@ -572,7 +577,7 @@ void FASTCALL(GIFRegHandlerPRMODECONT(u32* data))
 	ZeroGS::Prim();
 }
 
-void FASTCALL(GIFRegHandlerPRMODE(u32* data))
+void __fastcall GIFRegHandlerPRMODE(u32* data)
 {
 	gs._prim[0]._val = (data[0]>>3)&0xff;
 
@@ -580,7 +585,7 @@ void FASTCALL(GIFRegHandlerPRMODE(u32* data))
 		ZeroGS::Prim();
 }
 
-void FASTCALL(GIFRegHandlerTEXCLUT(u32* data))
+void __fastcall GIFRegHandlerTEXCLUT(u32* data)
 {
 	if( ZeroGS::vb[0].bNeedTexCheck )
 		ZeroGS::vb[0].FlushTexData();
@@ -591,7 +596,7 @@ void FASTCALL(GIFRegHandlerTEXCLUT(u32* data))
 	gs.clut.cov = (data[0] >> 12) & 0x3ff;
 }
 
-void FASTCALL(GIFRegHandlerSCANMSK(u32* data))
+void __fastcall GIFRegHandlerSCANMSK(u32* data)
 {
 //  ZeroGS::Flush(0);
 //  ZeroGS::Flush(1);
@@ -601,7 +606,7 @@ void FASTCALL(GIFRegHandlerSCANMSK(u32* data))
 	gs.smask = data[0] & 0x3;
 }
 
-void FASTCALL(GIFRegHandlerMIPTBP1_1(u32* data))
+void __fastcall GIFRegHandlerMIPTBP1_1(u32* data)
 {
 	miptbpInfo& miptbp0 = ZeroGS::vb[0].miptbp0;
 	miptbp0.tbp[0] = (data[0]	  ) & 0x3fff;
@@ -612,7 +617,7 @@ void FASTCALL(GIFRegHandlerMIPTBP1_1(u32* data))
 	miptbp0.tbw[2] = (data[1] >> 22) & 0x3f;
 }
 
-void FASTCALL(GIFRegHandlerMIPTBP1_2(u32* data))
+void __fastcall GIFRegHandlerMIPTBP1_2(u32* data)
 {
 	miptbpInfo& miptbp0 = ZeroGS::vb[1].miptbp0;
 	miptbp0.tbp[0] = (data[0]	  ) & 0x3fff;
@@ -623,7 +628,7 @@ void FASTCALL(GIFRegHandlerMIPTBP1_2(u32* data))
 	miptbp0.tbw[2] = (data[1] >> 22) & 0x3f;
 }
 
-void FASTCALL(GIFRegHandlerMIPTBP2_1(u32* data))
+void __fastcall GIFRegHandlerMIPTBP2_1(u32* data)
 {
 	miptbpInfo& miptbp1 = ZeroGS::vb[0].miptbp1;
 	miptbp1.tbp[0] = (data[0]	  ) & 0x3fff;
@@ -634,7 +639,7 @@ void FASTCALL(GIFRegHandlerMIPTBP2_1(u32* data))
 	miptbp1.tbw[2] = (data[1] >> 22) & 0x3f;
 }
 
-void FASTCALL(GIFRegHandlerMIPTBP2_2(u32* data))
+void __fastcall GIFRegHandlerMIPTBP2_2(u32* data)
 {
 	miptbpInfo& miptbp1 = ZeroGS::vb[1].miptbp1;
 	miptbp1.tbp[0] = (data[0]	  ) & 0x3fff;
@@ -645,7 +650,7 @@ void FASTCALL(GIFRegHandlerMIPTBP2_2(u32* data))
 	miptbp1.tbw[2] = (data[1] >> 22) & 0x3f;
 }
 
-void FASTCALL(GIFRegHandlerTEXA(u32* data))
+void __fastcall GIFRegHandlerTEXA(u32* data)
 {
 	texaInfo newinfo;
 	newinfo.aem = (data[0] >> 15) & 0x1;
@@ -664,17 +669,17 @@ void FASTCALL(GIFRegHandlerTEXA(u32* data))
 	}
 }
 
-void FASTCALL(GIFRegHandlerFOGCOL(u32* data))
+void __fastcall GIFRegHandlerFOGCOL(u32* data)
 {
 	ZeroGS::SetFogColor(data[0]&0xffffff);
 }
 
-void FASTCALL(GIFRegHandlerTEXFLUSH(u32* data))
+void __fastcall GIFRegHandlerTEXFLUSH(u32* data)
 {
 	ZeroGS::SetTexFlush();
 }
 
-void FASTCALL(GIFRegHandlerSCISSOR_1(u32* data))
+void __fastcall GIFRegHandlerSCISSOR_1(u32* data)
 {
 	Rect2& scissor = ZeroGS::vb[0].scissor;
 
@@ -695,7 +700,7 @@ void FASTCALL(GIFRegHandlerSCISSOR_1(u32* data))
 	}
 }
 
-void FASTCALL(GIFRegHandlerSCISSOR_2(u32* data))
+void __fastcall GIFRegHandlerSCISSOR_2(u32* data)
 {
 	Rect2& scissor = ZeroGS::vb[1].scissor;
 
@@ -717,7 +722,7 @@ void FASTCALL(GIFRegHandlerSCISSOR_2(u32* data))
 	}
 }
 
-void FASTCALL(GIFRegHandlerALPHA_1(u32* data))
+void __fastcall GIFRegHandlerALPHA_1(u32* data)
 {
 	alphaInfo newalpha;
 	newalpha.abcd = *(u8*)data;
@@ -735,7 +740,7 @@ void FASTCALL(GIFRegHandlerALPHA_1(u32* data))
 	}
 }
 
-void FASTCALL(GIFRegHandlerALPHA_2(u32* data))
+void __fastcall GIFRegHandlerALPHA_2(u32* data)
 {
 	alphaInfo newalpha;
 	newalpha.abcd = *(u8*)data;
@@ -753,31 +758,31 @@ void FASTCALL(GIFRegHandlerALPHA_2(u32* data))
 	}
 }
 
-void FASTCALL(GIFRegHandlerDIMX(u32* data))
+void __fastcall GIFRegHandlerDIMX(u32* data)
 {
 }
 
-void FASTCALL(GIFRegHandlerDTHE(u32* data))
+void __fastcall GIFRegHandlerDTHE(u32* data)
 {
 	gs.dthe = data[0] & 0x1;
 }
 
-void FASTCALL(GIFRegHandlerCOLCLAMP(u32* data))
+void __fastcall GIFRegHandlerCOLCLAMP(u32* data)
 {
 	gs.colclamp = data[0] & 0x1;
 }
 
-void FASTCALL(GIFRegHandlerTEST_1(u32* data))
+void __fastcall GIFRegHandlerTEST_1(u32* data)
 {
 	testWrite(0, data);
 }
 
-void FASTCALL(GIFRegHandlerTEST_2(u32* data))
+void __fastcall GIFRegHandlerTEST_2(u32* data)
 {
 	testWrite(1, data);
 }
 
-void FASTCALL(GIFRegHandlerPABE(u32* data))
+void __fastcall GIFRegHandlerPABE(u32* data)
 {
 	//ZeroGS::SetAlphaChanged(0, GPUREG_PABE);
 	//ZeroGS::SetAlphaChanged(1, GPUREG_PABE);
@@ -787,31 +792,31 @@ void FASTCALL(GIFRegHandlerPABE(u32* data))
 	gs.pabe = *data & 0x1;
 }
 
-void FASTCALL(GIFRegHandlerFBA_1(u32* data))
+void __fastcall GIFRegHandlerFBA_1(u32* data)
 {
 	ZeroGS::Flush(0);
 	ZeroGS::Flush(1);
 	ZeroGS::vb[0].fba.fba = *data & 0x1;
 }
 
-void FASTCALL(GIFRegHandlerFBA_2(u32* data))
+void __fastcall GIFRegHandlerFBA_2(u32* data)
 {
 	ZeroGS::Flush(0);
 	ZeroGS::Flush(1);
 	ZeroGS::vb[1].fba.fba = *data & 0x1;
 }
 
-void FASTCALL(GIFRegHandlerFRAME_1(u32* data))
+void __fastcall GIFRegHandlerFRAME_1(u32* data)
 {
 	frameWrite(0, data);
 }
 
-void FASTCALL(GIFRegHandlerFRAME_2(u32* data))
+void __fastcall GIFRegHandlerFRAME_2(u32* data)
 {
 	frameWrite(1, data);
 }
 
-void FASTCALL(GIFRegHandlerZBUF_1(u32* data))
+void __fastcall GIFRegHandlerZBUF_1(u32* data)
 {
 	zbufInfo& zbuf = ZeroGS::vb[0].zbuf;
 
@@ -839,7 +844,7 @@ void FASTCALL(GIFRegHandlerZBUF_1(u32* data))
 	ZeroGS::vb[0].bNeedZCheck = 1;
 }
 
-void FASTCALL(GIFRegHandlerZBUF_2(u32* data))
+void __fastcall GIFRegHandlerZBUF_2(u32* data)
 {
 	zbufInfo& zbuf = ZeroGS::vb[1].zbuf;
 
@@ -867,7 +872,7 @@ void FASTCALL(GIFRegHandlerZBUF_2(u32* data))
 	if( zbuf.psm > 0x31 ) ZeroGS::vb[1].zprimmask = 0xffff;
 }
 
-void FASTCALL(GIFRegHandlerBITBLTBUF(u32* data))
+void __fastcall GIFRegHandlerBITBLTBUF(u32* data)
 {
 	gs.srcbufnew.bp  = ((data[0]	  ) & 0x3fff);// * 64;
 	gs.srcbufnew.bw  = ((data[0] >> 16) & 0x3f) * 64;
@@ -879,7 +884,7 @@ void FASTCALL(GIFRegHandlerBITBLTBUF(u32* data))
 	if (gs.dstbufnew.bw == 0) gs.dstbufnew.bw = 64;
 }
 
-void FASTCALL(GIFRegHandlerTRXPOS(u32* data))
+void __fastcall GIFRegHandlerTRXPOS(u32* data)
 {
 	gs.trxposnew.sx  = (data[0]	  ) & 0x7ff;
 	gs.trxposnew.sy  = (data[0] >> 16) & 0x7ff;
@@ -888,13 +893,13 @@ void FASTCALL(GIFRegHandlerTRXPOS(u32* data))
 	gs.trxposnew.dir = (data[1] >> 27) & 0x3;
 }
 
-void FASTCALL(GIFRegHandlerTRXREG(u32* data))
+void __fastcall GIFRegHandlerTRXREG(u32* data)
 {
 	gs.imageWtemp = data[0]&0xfff;
 	gs.imageHtemp = data[1]&0xfff;
 }
 
-void FASTCALL(GIFRegHandlerTRXDIR(u32* data))
+void __fastcall GIFRegHandlerTRXDIR(u32* data)
 {
 	// terminate any previous transfers
 	switch( gs.imageTransfer ) {
@@ -944,7 +949,7 @@ void FASTCALL(GIFRegHandlerTRXDIR(u32* data))
 }
 
 static u32 oldhw[4];
-void FASTCALL(GIFRegHandlerHWREG(u32* data))
+void __fastcall GIFRegHandlerHWREG(u32* data)
 {   
 	if( gs.imageTransfer == 0 ) {
 		ZeroGS::TransferHostLocal(data, 2);
@@ -959,7 +964,7 @@ void FASTCALL(GIFRegHandlerHWREG(u32* data))
 
 extern int g_GSMultiThreaded;
 
-void FASTCALL(GIFRegHandlerSIGNAL(u32* data))
+void __fastcall GIFRegHandlerSIGNAL(u32* data)
 {
 	if(!g_GSMultiThreaded) {
 		SIGLBLID->SIGID = (SIGLBLID->SIGID&~data[1])|(data[0]&data[1]);
@@ -977,7 +982,7 @@ void FASTCALL(GIFRegHandlerSIGNAL(u32* data))
 	}
 }
 
-void FASTCALL(GIFRegHandlerFINISH(u32* data))
+void __fastcall GIFRegHandlerFINISH(u32* data)
 {
 	if(!g_GSMultiThreaded) {
 
@@ -999,7 +1004,7 @@ void FASTCALL(GIFRegHandlerFINISH(u32* data))
 	}
 }
 
-void FASTCALL(GIFRegHandlerLABEL(u32* data))
+void __fastcall GIFRegHandlerLABEL(u32* data)
 {
 	if(!g_GSMultiThreaded) {
 		SIGLBLID->LBLID = (SIGLBLID->LBLID&~data[1])|(data[0]&data[1]);
