@@ -62,7 +62,7 @@ using namespace std;
 #endif
 
 // SuperVURec optimization options, uncomment only for debugging purposes
-#define SUPERVU_CACHING			// vu programs are saved and queried via memcompare (shod be no reason to disable this)
+#define SUPERVU_CACHING			// vu programs are saved and queried via memcompare (should be no reason to disable this)
 #define SUPERVU_WRITEBACKS		// don't flush the writebacks after every block
 #define SUPERVU_X86CACHING		// use x86reg caching (faster)
 #define SUPERVU_VIBRANCHDELAY   // when integers are modified right before a branch that uses the integer,
@@ -849,7 +849,6 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 
 	// code generation
 	x86SetPtr(s_recVUPtr);
-	_initXMMregs();
 	branch = 0;
 
 	SuperVURecompile();
@@ -2261,7 +2260,6 @@ uptr s_vu1ebp, s_vuebx, s_vuedi, s_vu1esi;
 static int s_recWriteQ, s_recWriteP; // wait times during recompilation
 static int s_needFlush; // first bit - Q, second bit - P, third bit - Q has been written, fourth bit - P has been written
 
-//static u32 s_ssecsr;
 static int s_JumpX86;
 static int s_ScheduleXGKICK = 0, s_XGKICKReg = -1;
 
@@ -2288,7 +2286,12 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
 		VU1.VI[REG_P] = VU1.p; // only VU1
 	}
 
-    //memset(recVUStack, 0, SUPERVU_STACKSIZE * 4);
+	//memset(recVUStack, 0, SUPERVU_STACKSIZE * 4);
+
+	// Clear allocation info to prevent bad data being used in other parts of pcsx2; doing this just incase (cottonvibes)
+	_initXMMregs();
+	_initMMXregs();
+	_initX86regs();
 }
 
 #if defined(_MSC_VER)
