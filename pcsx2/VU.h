@@ -137,6 +137,11 @@ struct VURegs {
 	fdivPipe fdiv;
 	efuPipe efu;
 
+	VURegs() :
+		Mem( NULL )
+	,	Micro( NULL )
+	{
+	}
 };
 
 #define VUPIPE_NONE		0

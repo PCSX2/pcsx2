@@ -139,11 +139,11 @@ void WriteFIFO(u32 mem, const u64 *value) {
 
 		//commiting every 16 bytes
 		while( FIFOto_write((u32*)value, 1) == 0 ) {
-			Console::MsgLn("IPU sleeping");
+			Console::WriteLn("IPU sleeping");
 			Threading::Timeslice();
 		}
 	} else {
-		Console::Notice("WriteFIFO Unknown %x", mem);
+		Console::Notice("WriteFIFO Unknown %x", params mem);
 	}
 }
 

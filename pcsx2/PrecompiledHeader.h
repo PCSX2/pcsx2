@@ -45,11 +45,13 @@
 #include <pthread.h>
 
 // TODO : Add items here that are local to Pcsx2 but stay relatively unchanged for
-// long periods of time.  Right now that includes... well... zlib.  That's about it.
+// long periods of time.
 
-// Well, maybe Ps2Etypes. --arcum42
+using std::string;		// we use it enough, so bring it into the global namespace.
+
 #include "zlib.h"
 #include "PS2Etypes.h"
+#include "StringUtils.h"
 
 ////////////////////////////////////////////////////////////////////
 // Compiler/OS specific macros and defines -- Begin Section

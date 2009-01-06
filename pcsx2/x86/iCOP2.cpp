@@ -81,12 +81,12 @@ void recV##f( s32 info ) { \
 
 void rec_C2UNK( s32 info )
 {
-	Console::Error("Cop2 bad opcode: %x",cpuRegs.code);
+	Console::Error("Cop2 bad opcode: %x", params cpuRegs.code);
 }
 
 void _vuRegs_C2UNK(VURegs * VU, _VURegsNum *VUregsn)
 {
-	Console::Error("Cop2 bad _vuRegs code:%x",cpuRegs.code);
+	Console::Error("Cop2 bad _vuRegs code:%x", params cpuRegs.code);
 }
 
 void recCOP2(s32 info);

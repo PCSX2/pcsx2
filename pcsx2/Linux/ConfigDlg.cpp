@@ -472,7 +472,7 @@ void FindPlugins() {
 		Handle = dlopen(plugin, RTLD_NOW);
 		if (Handle == NULL) 
 		{
-			Console::Error("Can't open %s: %s\n", ent->d_name, dlerror()); 
+			Console::Error("Can't open %s: %s\n"_F, ent->d_name, dlerror()); 
 			continue;
 		}
 
@@ -482,17 +482,17 @@ void FindPlugins() {
 		
 		if (PS2EgetLibType == NULL)
 		{
-			Console::Error("PS2EgetLibType==NULL for %s", ent->d_name);
+			Console::Error("PS2EgetLibType==NULL for %s"_F, ent->d_name);
 			continue;
 		}
 		if (PS2EgetLibName == NULL)
 		{
-			Console::Error("PS2EgetLibName==NULL for %s", ent->d_name);
+			Console::Error("PS2EgetLibName==NULL for %s"_F, ent->d_name);
 			continue;
 		}
 		if (PS2EgetLibVersion2 == NULL)
 		{
-			Console::Error("PS2EgetLibVersion2==NULL for %s", ent->d_name);
+			Console::Error("PS2EgetLibVersion2==NULL for %s"_F, ent->d_name);
 			continue;
 		}
 		
@@ -505,7 +505,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_GS_VERSION) 
 				ComboAddPlugin(name, &GSConfS, version, ent);
 			else
-				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x"F_, plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
 		}
 		if (type & PS2E_LT_PAD) 
 		{
@@ -520,7 +520,7 @@ void FindPlugins() {
 				if (query() & 0x2) ComboAddPlugin(name, &PAD2ConfS, version, ent);
 			}
 			else 
-				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x"_F, plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
 		}
 		if (type & PS2E_LT_SPU2) 
 		{
@@ -529,7 +529,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_SPU2_VERSION) 
 				ComboAddPlugin(name, &SPU2ConfS, version, ent);
 			else 
-				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x"_F, plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
 		}
 		if (type & PS2E_LT_CDVD) 
 		{
@@ -538,7 +538,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) 
 				ComboAddPlugin(name, &CDVDConfS, version, ent);
 			else 
-				Console::Notice("Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x"_F, plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
 		}
 		if (type & PS2E_LT_DEV9) 
 		{
@@ -547,7 +547,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) 
 				ComboAddPlugin(name, &DEV9ConfS, version, ent);
 			else
-				Console::Notice("DEV9Plugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
+				Console::Notice("DEV9Plugin %s: Version %x != %x"_F, plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
 		}
 		if (type & PS2E_LT_USB) 
 		{
@@ -556,7 +556,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_USB_VERSION) 
 				ComboAddPlugin(name, &USBConfS, version, ent);
 			else 
-				Console::Notice("USBPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
+				Console::Notice("USBPlugin %s: Version %x != %x"_F, plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
 		}
 		if (type & PS2E_LT_FW) 
 		{
@@ -565,7 +565,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_FW_VERSION) 
 				ComboAddPlugin(name, &FWConfS, version, ent);
 			else 
-				Console::Notice("FWPlugin %s: Version %x != %x", plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
+				Console::Notice("FWPlugin %s: Version %x != %x"_F, plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
 		}
 	}
 	closedir(dir);

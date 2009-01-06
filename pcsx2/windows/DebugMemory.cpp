@@ -131,7 +131,7 @@ BOOL APIENTRY DumpMemProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				fp = fopen(fname, "wb");
 				if (fp == NULL)
 				{
-					Console::Alert("Can't open file '%s' for writing!\n", fname);
+					Msgbox::Alert("Can't open file '%s' for writing!", params fname);
 				}
 				else
 				{

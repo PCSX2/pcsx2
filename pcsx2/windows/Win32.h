@@ -32,7 +32,7 @@
 extern char g_WorkingFolder[g_MaxPath];
 extern const char* g_CustomConfigFile;
 
-int  LoadConfig();
+bool LoadConfig();
 void SaveConfig();
 
 // <<--- END Ini Configuration [ini.c]
@@ -62,13 +62,12 @@ void InitLanguages();
 char *GetLanguageNext();
 void CloseLanguages();
 void ChangeLanguage(char *lang);
-#define StatusSet(text) SendMessage(hStatusWnd, SB_SETTEXT, 0, (LPARAM)(text));
 
 void SysRestorableReset();
 
 void WinClose();
-void States_Load( const char* file, int num=-1 );
-void States_Save( const char* file, int num=-1 );
+void States_Load( const string& file, int num=-1 );
+void States_Save( const string& file, int num=-1 );
 void States_Load(int num);
 void States_Save(int num);
 void OnStates_LoadOther();
@@ -94,8 +93,14 @@ extern bool AccBreak;
 extern unsigned int langsMax;
 
 extern MemoryAlloc<u8>* g_RecoveryState;
+extern MemoryAlloc<u8>* g_gsRecoveryState;
 extern const char* g_pRunGSState;
 extern int g_SaveGSStream;
+
+
+// sets the contents of the Pcsx2 status bar...
+void StatusBar_Notice( const std::string& text );
+void StatusBar_SetMsg( const std::string& text );
 
 #endif
 

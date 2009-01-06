@@ -40,7 +40,7 @@ extern int sio_count;
 int hwConstRead8(u32 x86reg, u32 mem, u32 sign)
 {
 	if( mem >= 0x10000000 && mem < 0x10008000 )
-		DevCon::WriteLn("hwRead8 to %x", mem);
+		DevCon::WriteLn("hwRead8 to %x", params mem);
 
 	if ((mem & 0xffffff0f) == 0x1000f200) {
 		if(mem == 0x1000f260) {
@@ -81,10 +81,10 @@ static u32 s_regreads[3] = {0x010200000, 0xbfff0000, 0xF0000102};
 int hwConstRead16(u32 x86reg, u32 mem, u32 sign)
 {
 	if( mem >= 0x10002000 && mem < 0x10008000 )
-		DevCon::WriteLn("hwRead16 to %x", mem);
+		DevCon::WriteLn("hwRead16 to %x", params mem);
 
 	if( mem >= 0x10000000 && mem < 0x10002000 )
-		EECNT_LOG("cnt read to %x\n", mem);
+		EECNT_LOG("cnt read to %x\n", params mem);
 
 	switch (mem) {
 		case 0x10000000:
@@ -487,7 +487,7 @@ static void __fastcall PrintDebug(u8 value)
 
 	if (value == '\n') {
 		sio_buffer[sio_count] = 0;
-		Console::MsgLn( Color_Cyan, sio_buffer );
+		Console::WriteLn( Color_Cyan, sio_buffer );
 		sio_count = 0;
 	} else {
 		if (sio_count < 1023) {

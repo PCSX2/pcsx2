@@ -568,7 +568,7 @@ static int recInit() {
 	if( recRAM == NULL || recROM == NULL || recROM1 == NULL ||
 		psxRecLUT == NULL || recBlocks == NULL || s_pInstCache == NULL )
 	{
-		Console::Alert("Error allocating memory"); 
+		Msgbox::Alert("Error allocating memory"); 
 		return -1;
 	}
 
@@ -596,7 +596,7 @@ static int recInit() {
 
 static void recReset()
 {
-	DevCon::MsgLn("IOP Recompiler data reset");
+	DevCon::WriteLn("IOP Recompiler data reset");
 
 	memset(recRAM, 0, sizeof(BASEBLOCK)/4*0x200000);
 	memset(recROM, 0, sizeof(BASEBLOCK)/4*0x400000);

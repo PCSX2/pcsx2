@@ -39,7 +39,7 @@ LRESULT WINAPI UserNameProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				{
 					wchar_t str[255];
 					GetWindowTextW(GetDlgItem(hDlg, IDC_USER_NAME), str, 255);
-					swprintf(s_szUserName, 255, L"%S", str);
+					swprintf(s_szUserName, 255, L"%S", &str);
 					EndDialog(hDlg, TRUE );
 					return TRUE;
 				}
@@ -262,7 +262,7 @@ BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable)
 
 	if( Result != TRUE ) 
 	{
-		Console::Error( "VirtualMemory Error > Cannot get privilege value for %s.", SE_LOCK_MEMORY_NAME );
+		Console::Error( "VirtualMemory Error > Cannot get privilege value for %s.", params SE_LOCK_MEMORY_NAME );
 		return FALSE;
 	}
 
@@ -275,7 +275,7 @@ BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable)
 	// Check the result.
 	if( Result != TRUE ) 
 	{
-		Console::Error( "VirtualMemory Error > Cannot adjust token privileges, error %u.", GetLastError() );
+		Console::Error( "VirtualMemory Error > Cannot adjust token privileges, error %u.", params GetLastError() );
 		return FALSE;
 	} 
 	else 
@@ -355,7 +355,7 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 		s_dwPageSize = sSysInfo.dwPageSize;
 
 		if( s_dwPageSize != 0x1000 ) {
-			Console::Alert("Error! OS page size must be 4Kb!\n"
+			Msgbox::Alert("Error! OS page size must be 4Kb!\n"
 				"If for some reason the OS cannot have 4Kb pages, then run the TLB build.");
 			return -1;
 		}
@@ -378,13 +378,13 @@ int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock)
 
 	if( bResult != TRUE ) 
 	{
-		Console::Error("Virtual Memory Error %u > Cannot allocate physical pages.", GetLastError() );
+		Console::Error("Virtual Memory Error %u > Cannot allocate physical pages.", params GetLastError() );
 		goto eCleanupAndExit;
 	}
 
 	if( NumberOfPagesInitial != pblock->NumberPages ) 
 	{
-		Console::Error("Virtual Memory > Physical allocation failed!\n\tAllocated only %p of %p pages.", pblock->NumberPages, NumberOfPagesInitial );
+		Console::Error("Virtual Memory > Physical allocation failed!\n\tAllocated only %p of %p pages.", params pblock->NumberPages, NumberOfPagesInitial );
 		goto eCleanupAndExit;
 	}
 
@@ -417,7 +417,7 @@ int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
 	LPVOID lpMemReserved = VirtualAlloc( base, size, MEM_RESERVE | MEM_PHYSICAL, PAGE_READWRITE );
 	if( lpMemReserved == NULL || base != lpMemReserved )
 	{
-		Console::WriteLn("VirtualMemory Error %d > Cannot reserve memory at 0x%8.8x(%x).", base, lpMemReserved, GetLastError());
+		Console::WriteLn("VirtualMemory Error %d > Cannot reserve memory at 0x%8.8x(%x).", params base, lpMemReserved, GetLastError());
 		goto eCleanupAndExit;
 	}
 
@@ -429,7 +429,7 @@ int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock)
 
 	if( bResult != TRUE ) 
 	{
-		Console::WriteLn("VirtualMemory Error %u > MapUserPhysicalPages failed to map.", GetLastError() );
+		Console::WriteLn("VirtualMemory Error %u > MapUserPhysicalPages failed to map.", params GetLastError() );
 		goto eCleanupAndExit;
 	}
 
@@ -445,7 +445,7 @@ void SysVirtualFree(void* lpMemReserved, u32 size)
 	// unmap   
 	if( MapUserPhysicalPages( lpMemReserved, (size+s_dwPageSize-1)/s_dwPageSize, NULL ) != TRUE ) 
 	{
-		Console::WriteLn("VirtualMemory Error %u > MapUserPhysicalPages failed to unmap", GetLastError() );
+		Console::WriteLn("VirtualMemory Error %u > MapUserPhysicalPages failed to unmap", params GetLastError() );
 		return;
 	}
 

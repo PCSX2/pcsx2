@@ -43,7 +43,7 @@ int hwInit() {
 #ifndef PCSX2_VIRTUAL_MEM
 	psH = (u8*)_aligned_malloc(0x00010000, 16);
 	if (psH == NULL) {
-		Console::Alert("Error allocating memory"); 
+		Msgbox::Alert("Error allocating memory"); 
 		return -1;
 	}
 #endif
@@ -85,7 +85,7 @@ u8  hwRead8(u32 mem)
 	u8 ret;
 
 	if( mem >= 0x10000000 && mem < 0x10008000 )
-		DevCon::Notice("hwRead8 to %x", mem);
+		DevCon::Notice("hwRead8 to %x", params mem);
 
 	SPR_LOG("Hardware read 8bit at %lx, ret %lx\n", mem, psHu8(mem));
 
@@ -118,7 +118,7 @@ u16 hwRead16(u32 mem)
 	u16 ret;
 
 	if( mem >= 0x10002000 && mem < 0x10008000 )
-		Console::Notice("hwRead16 to %x", mem);
+		Console::Notice("hwRead16 to %x", params mem);
 
 	SPR_LOG("Hardware read 16bit at %lx, ret %lx\n", mem, psHu16(mem));
 
@@ -1016,7 +1016,7 @@ void hwWrite64(u32 mem, u64 value) {
 
 	switch (mem) {
 		case GIF_CTRL:
-			DevCon::Status("GIF_CTRL write 64", value);
+			DevCon::Status("GIF_CTRL write 64", params value);
 			psHu32(mem) = value & 0x8;
 			if(value & 0x1) {
 				gsGIFReset();
@@ -1031,7 +1031,7 @@ void hwWrite64(u32 mem, u64 value) {
 
 		case GIF_MODE:
 #ifdef GSPATH3FIX
-			Console::Status("GIFMODE64 %x\n", value);
+			Console::Status("GIFMODE64 %x\n", params value);
 #endif
 			psHu64(GIF_MODE) = value;
 			if (value & 0x1) psHu32(GIF_STAT)|= 0x1;

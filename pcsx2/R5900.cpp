@@ -65,7 +65,7 @@ bool cpuInit()
 	}
 	catch( std::exception& ex )
 	{
-		Console::Error( "Error > %s", ex.what() );
+		Console::Error( "Error > %s", params ex.what() );
 
 		if( Cpu == &recCpu )
 		{
@@ -83,23 +83,27 @@ bool cpuInit()
 
 #ifdef PCSX2_VIRTUAL_MEM
 	if (memInit() == -1) {
-		PROCESS_INFORMATION pi;
-		STARTUPINFO si;
-		char strdir[g_MaxPath], strexe[g_MaxPath];
-		if( MessageBox(NULL, "Failed to allocate enough physical memory to run pcsx2. Try closing\n"
+		if( MessageBox(NULL,
+			"Failed to allocate enough physical memory to run pcsx2. Try closing\n"
 			"down background programs, restarting windows, or buying more memory.\n\n"
-			"Launch TLB version of pcsx2 (pcsx2t.exe)?", "Memory Allocation Error", MB_YESNO) == IDYES ) {
+			"Launch TLB version of pcsx2 (pcsx2t.exe)?", "Memory Allocation Error", MB_YESNO) == IDYES )
+		{
+			PROCESS_INFORMATION pi;
+			STARTUPINFO si;
 
-			GetCurrentDirectory(ARRAYSIZE(strdir), strdir);
-			//_snprintf(strexe, ARRAYSIZE(strexe), "%s\\pcsx2t.exe", strdir);
-			CombinePaths( strexe, strdir, "pcsx2t.exe" );
+			MemoryAlloc<char> strdir( GetCurrentDirectory( 0, NULL )+2, "VTLB Launcher" );
+			string strexe;
+
+			GetCurrentDirectory(strdir.GetLength(), strdir.GetPtr());
+			Path::Combine( strexe, strdir.GetPtr(), "pcsx2-vtlb.exe" );
 			memset(&si, 0, sizeof(si));
 
-			if( !CreateProcess(strexe, "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir, &si, &pi)) {
-				_snprintf(strdir, ARRAYSIZE(strdir), "Failed to launch %s\n", strexe);
-				MessageBox(NULL, strdir, "Failure", MB_OK);
+			if( !CreateProcess(strexe.c_str(), "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir.GetPtr(), &si, &pi))
+			{
+				MessageBox(NULL, fmt_string( "Failed to launch %S\n", params &strexe ).c_str(), "Failure", MB_OK);
 			}
-			else {
+			else
+			{
 				CloseHandle(pi.hProcess);
 				CloseHandle(pi.hThread);
 			}
@@ -210,7 +214,7 @@ void cpuException(u32 code, u32 bd) {
 			}
 		} else {
 			offset = 0x180; //Overrride the cause		
-			Console::Notice("cpuException: Status.EXL = 1 cause %x", code);
+			Console::Notice("cpuException: Status.EXL = 1 cause %x", params code);
 		}
 		if (cpuRegs.CP0.n.Status.b.BEV == 0) {
 			cpuRegs.pc = 0x80000000 + offset;
@@ -226,7 +230,7 @@ void cpuException(u32 code, u32 bd) {
 			return;
 		} else if((code & 0x38000) == 0x10000) offset = 0x80; //Performance Counter
 		else if((code & 0x38000) == 0x18000)  offset = 0x100; //Debug
-		else Console::Error("Unknown Level 2 Exception!! Cause %x", code);
+		else Console::Error("Unknown Level 2 Exception!! Cause %x", params code);
 
 		if (cpuRegs.CP0.n.Status.b.EXL == 0) {
 			cpuRegs.CP0.n.Status.b.EXL = 1;
@@ -240,7 +244,7 @@ void cpuException(u32 code, u32 bd) {
 			}
 		} else {
 			offset = 0x180; //Overrride the cause		
-			Console::Notice("cpuException: Status.EXL = 1 cause %x", code);
+			Console::Notice("cpuException: Status.EXL = 1 cause %x", params code);
 		}
 		if (cpuRegs.CP0.n.Status.b.DEV == 0) {
 			cpuRegs.pc = 0x80000000 + offset;
@@ -252,9 +256,9 @@ void cpuException(u32 code, u32 bd) {
 }
 
 void cpuTlbMiss(u32 addr, u32 bd, u32 excode) {
-	SysPrintf("cpuTlbMiss pc:%x, cycl:%x, addr: %x, status=%x, code=%x\n", cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
+	Console::Error("cpuTlbMiss pc:%x, cycl:%x, addr: %x, status=%x, code=%x", params cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
 	if (bd) {
-		SysPrintf("branch delay!!\n");
+		Console::Notice("branch delay!!");
 	}
 
     assert(0); // temporary
@@ -450,7 +454,7 @@ static __forceinline void _cpuTestTIMR()
 	if ( (cpuRegs.CP0.n.Status.val & 0x8000) &&
 		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 )
 	{
-		Console::Status("timr intr: %x, %x", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
+		Console::Status("timr intr: %x, %x", params cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
 		cpuException(0x808000, cpuRegs.branch);
 	}
 }

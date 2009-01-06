@@ -392,7 +392,7 @@ int psxMemInit()
 
 	if( m_psxAllMem == NULL)
 	{
-		Console::Alert("Error allocating memory for the IOP processor.");
+		Msgbox::Alert("Error allocating memory for the IOP processor.");
 		return -1;
 	}
 

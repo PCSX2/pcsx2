@@ -346,7 +346,7 @@ void applypatch(int place) {
 	int i;
 
 	if (place == 0) {
-		Console::WriteLn(" patchnumber: %d", patchnumber);
+		Console::WriteLn(" patchnumber: %d", params patchnumber);
 	}
 
 	for ( i = 0; i < patchnumber; i++ ) {
@@ -356,13 +356,13 @@ void applypatch(int place) {
 
 void patchFunc_comment( char * text1, char * text2 )
 {
-	Console::WriteLn( "comment: %s", text2 );
+	Console::WriteLn( "comment: %s", params text2 );
 }
 
 
 void patchFunc_gametitle( char * text1, char * text2 )
 {
-	Console::WriteLn( "gametitle: %s", text2 );
+	Console::WriteLn( "gametitle: %s", params text2 );
 	sprintf(strgametitle,"%s",text2);
 	Console::SetTitle(strgametitle);
 }
@@ -373,7 +373,7 @@ void patchFunc_patch( char * cmd, char * param )
 
 	if ( patchnumber >= MAX_PATCH )
 	{
-		Console::Error( "Patch ERROR: Maximum number of patches reached: %s=%s", cmd, param );
+		Console::Error( "Patch ERROR: Maximum number of patches reached: %s=%s", params cmd, param );
 		return;
 	}
 
@@ -387,7 +387,7 @@ void patchFunc_patch( char * cmd, char * param )
 	patch[ patchnumber ].cpu = (patch_cpu_type)PatchTableExecute( pText, NULL, cpuCore );
 	if ( patch[ patchnumber ].cpu == 0 ) 
 	{
-		Console::Error( "Unrecognized patch '%s'", pText );
+		Console::Error( "Unrecognized patch '%s'", params pText );
 		return;
 	}
 
@@ -400,7 +400,7 @@ void patchFunc_patch( char * cmd, char * param )
 	patch[ patchnumber ].type = (patch_data_type)PatchTableExecute( pText, NULL, dataType );
 	if ( patch[ patchnumber ].type == 0 ) 
 	{
-		Console::Error( "Unrecognized patch '%s'", pText );
+		Console::Error( "Unrecognized patch '%s'", params pText );
 		return;
 	}
 	
@@ -490,7 +490,7 @@ void inisection_process( FILE * f1 )
 
 //this routine is for reading the ini file
 
-void inifile_read( char * name )
+void inifile_read( const char * name )
 {
 	FILE * f1;
 	char buffer[ 1024 ];
@@ -522,7 +522,7 @@ void inifile_read( char * name )
 
 	if( !f1 )
 	{
-		Console::MsgLn( _( "No patch found.Resuming execution without a patch (this is NOT an error)." ));
+		Console::WriteLn( _( "No patch found.Resuming execution without a patch (this is NOT an error)." ));
 		return;
 	}
 
@@ -636,7 +636,7 @@ void patchFunc_zerogs(char* cmd, char* param)
 void SetRoundMode(u32 ee, u32 vu)
 {
 	// don't set a state for interpreter only
-	//Console::Alert("SetRoundMode: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+	//Msgbox::Alert("SetRoundMode: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 
 	SetCPUState( (Config.sseMXCSR & 0x9fff) | ee, (Config.sseVUMXCSR & 0x9fff) | vu);
 }

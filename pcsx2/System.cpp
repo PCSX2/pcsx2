@@ -29,6 +29,10 @@ using namespace Console;
 
 bool sysInitialized = false;
 
+namespace Exception
+{
+	BaseException::~BaseException() {}
+}
 
 // I can't believe I had to make my own version of trim.  C++'s STL is totally whack.
 // And I still had to fix it too.  I found three samples of trim online and *all* three
@@ -86,10 +90,10 @@ void SysDetect()
 	sysInitialized = true;
 
 	Notice("PCSX2 " PCSX2_VERSION " - compiled on " __DATE__ );
-	Notice("Savestate version: %x", g_SaveVersion);
+	Notice("Savestate version: %x", params g_SaveVersion);
 
 	// fixme: what's the point of this line?  Anything? Or just to look "cool"? (air)
-	DevCon::Notice("EE pc offset: 0x%x, IOP pc offset: 0x%x", (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs);
+	DevCon::Notice( "EE pc offset: 0x%x, IOP pc offset: 0x%x", params (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs );
 
 	cpudetectInit();
 
@@ -98,7 +102,7 @@ void SysDetect()
 
 	SetColor( Console::Color_White );
 
-	MsgLn( "x86Init:" );
+	WriteLn( "x86Init:" );
 	WriteLn(
 		"\tCPU vendor name =  %s\n"
 		"\tFamilyID  =  %x\n"
@@ -107,21 +111,21 @@ void SysDetect()
 		"\tCores     =  %d physical [%d logical]\n"
 		"\tx86PType  =  %s\n"
 		"\tx86Flags  =  %8.8x %8.8x\n"
-		"\tx86EFlags =  %8.8x\n",
-		cpuinfo.x86ID, cpuinfo.x86StepID, family.c_str(), 
+		"\tx86EFlags =  %8.8x\n", params
+			cpuinfo.x86ID, cpuinfo.x86StepID, family.c_str(), 
 			cpuinfo.cpuspeed / 1000, cpuinfo.cpuspeed%1000,
 			cpuinfo.PhysicalCores, cpuinfo.LogicalCores,
 			cpuinfo.x86Type, cpuinfo.x86Flags, cpuinfo.x86Flags2,
 			cpuinfo.x86EFlags
 	);
 
-	MsgLn( "Features:" );
+	WriteLn( "Features:" );
 	WriteLn(
 		"\t%sDetected MMX\n"
 		"\t%sDetected SSE\n"
 		"\t%sDetected SSE2\n"
 		"\t%sDetected SSE3\n"
-		"\t%sDetected SSE4.1\n",
+		"\t%sDetected SSE4.1\n", params
 			cpucaps.hasMultimediaExtensions     ? "" : "Not ",
 			cpucaps.hasStreamingSIMDExtensions  ? "" : "Not ",
 			cpucaps.hasStreamingSIMD2Extensions ? "" : "Not ",
@@ -131,11 +135,11 @@ void SysDetect()
 
 	if ( cpuinfo.x86ID[0] == 'A' ) //AMD cpu
 	{
-		MsgLn( " Extended AMD Features:" );
+		WriteLn( " Extended AMD Features:" );
 		WriteLn(
 			"\t%sDetected MMX2\n"
 			"\t%sDetected 3DNOW\n"
-			"\t%sDetected 3DNOW2\n",
+			"\t%sDetected 3DNOW2\n", params
 			cpucaps.hasMultimediaExtensionsExt       ? "" : "Not ",
 			cpucaps.has3DNOWInstructionExtensions    ? "" : "Not ",
 			cpucaps.has3DNOWInstructionExtensionsExt ? "" : "Not "

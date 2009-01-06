@@ -143,7 +143,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	u8 fpuused[33];
 	int numused, count, fpunumused;
 
-	Console::Status( "dump1 %x:%x, %x\n", startpc, pc, cpuRegs.cycle );
+	Console::Status( "dump1 %x:%x, %x", params startpc, pc, cpuRegs.cycle );
 #ifdef _WIN32
 	CreateDirectory("dumps", NULL);
 	sprintf_s( filename, g_MaxPath, "dumps\\dump%.8X.txt", startpc);
@@ -1441,7 +1441,7 @@ u32 g_sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
 {
-	//Console::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	// SSE STATE //
 	// WARNING: do not touch unless you know what you are doing
 
@@ -1499,11 +1499,23 @@ static void recInit()
 	// ... then why don't we care to check if they are or not? (air)
 
 	if( recMem == NULL )
-		recMem = (u8*)SysMmap(0x0d000000, REC_CACHEMEM+0x1000);
+	{
+		const uint cachememsize = REC_CACHEMEM+0x1000;
 
-	// This is ugly, but GCC is asking for a cast.
-	if( recMem == NULL )
-		throw Exception::OutOfMemory("R5900-32 failed to allocate recompiler memory.");
+		// try an arbitrary address first, and if it doesn't work, try NULL.
+		recMem = (u8*)SysMmap(0x0d000000, cachememsize );
+		if( recMem == NULL || ((uptr)recMem > 0x80000000) )
+		{
+			SysMunmap( recMem, cachememsize );
+			recMem = (u8*)SysMmap( NULL, REC_CACHEMEM+0x1000 );
+
+			if( recMem == NULL || ((uptr)recMem > 0x80000000) )
+			{
+				SysMunmap( recMem, cachememsize );
+				throw Exception::OutOfMemory( "R5900-32 failed to allocate recompiler memory." );
+			}
+		}
+	}
 
 	// 32 alignment necessary
 	if( recRAM == NULL )
@@ -1570,14 +1582,14 @@ static void recInit()
 
 	SuperVUInit(-1);
 
-	//Console::Alert("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
+	//Msgbox::Alert("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 }
 
 ////////////////////////////////////////////////////
 static void recReset( void ) {
 
-	DevCon::MsgLn( "EE Recompiler data reset" );
+	DevCon::WriteLn( "EE Recompiler data reset" );
 
 	s_nNextBlock = 0;
 	maxrecmem = 0;
@@ -2459,7 +2471,7 @@ static void checkcodefn()
     __asm__("movl %%eax, %0" : "=m"(pctemp) );
 #endif
 
-	Console::Error("code changed! %x", pctemp);
+	Console::Error("code changed! %x", params pctemp);
 	assert(0);
 }
 
@@ -2528,7 +2540,7 @@ void recompileNextInstruction(int delayslot)
 				recClearMem(pblock);
 				x86Ptr = oldX86;
 				if( delayslot )
-					Console::Notice("delay slot %x", pc);
+					Console::Notice("delay slot %x", params pc);
 			}
 		}
 	}
@@ -2635,7 +2647,7 @@ void recompileNextInstruction(int delayslot)
 				case 1:
 					switch(_Rt_) {
 						case 0: case 1: case 2: case 3: case 0x10: case 0x11: case 0x12: case 0x13:
-							Console::Notice("branch %x in delay slot!", cpuRegs.code);
+							Console::Notice("branch %x in delay slot!", params cpuRegs.code);
 							_clearNeededX86regs();
 							_clearNeededMMXregs();
 							_clearNeededXMMregs();
@@ -2644,7 +2656,7 @@ void recompileNextInstruction(int delayslot)
 					break;
 
 				case 2: case 3: case 4: case 5: case 6: case 7: case 0x14: case 0x15: case 0x16: case 0x17:
-					Console::Notice("branch %x in delay slot!", cpuRegs.code);
+					Console::Notice("branch %x in delay slot!", params cpuRegs.code);
 					_clearNeededX86regs();
 					_clearNeededMMXregs();
 					_clearNeededXMMregs();
@@ -2808,7 +2820,7 @@ void __fastcall dyna_block_discard(u32 start,u32 sz)
 #else
 	__asm__("push %ebp\n");
 #endif
-	Console::WriteLn("dyna_block_discard %08X , count %d",start,sz);
+	Console::WriteLn("dyna_block_discard %08X , count %d", params start,sz);
 	Cpu->Clear(start,sz);
 #ifdef _MSC_VER
 	__asm pop ebp;
@@ -2838,7 +2850,7 @@ void recRecompile( u32 startpc )
 		recReset();
 	}
 	if ( ( (uptr)recStackPtr - (uptr)recStack ) >= RECSTACK_SIZE-0x100 ) {
-		DevCon::MsgLn("stack reset");
+		DevCon::WriteLn("stack reset");
 		recReset();
 	}
 
@@ -3273,7 +3285,7 @@ StartRecomp:
 					stg-=4;
 					lpc+=4;
 				}
-				DbgCon::WriteLn("Manual block @ %08X : %08X %d %d %d %d",
+				DbgCon::WriteLn("Manual block @ %08X : %08X %d %d %d %d", params
 					startpc,inpage_ptr,pgsz,0x1000-inpage_offs,inpage_sz,sz*4);
 			}
 		}

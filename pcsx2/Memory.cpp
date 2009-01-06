@@ -229,10 +229,10 @@ int memInit() {
 	}
 	catch( vm_alloc_failed_exception& ex )
 	{
-		Console::Error( "Virtual Memory Error > Cannot reserve %dk memory block at 0x%8.8x",
+		Console::Error( "Virtual Memory Error > Cannot reserve %dk memory block at 0x%8.8x", params
 			ex.requested_size / 1024, ex.requested_addr );
 
-		Console::Error( "\tError code: %d  \tReturned address: 0x%8.8x",
+		Console::Error( "\tError code: %d  \tReturned address: 0x%8.8x", params
 			GetLastError(), ex.returned_addr);
 
 		memShutdown();
@@ -406,7 +406,7 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 			if( SysMapUserPhysicalPages((void*)curvaddr, 1, pmap->aPFNs, 0) )
 				return EXCEPTION_CONTINUE_EXECUTION;
 
-			Console::Error("Virtual Memory Error > page 0x%x cannot be found %d (p:%x,v:%x)\n",
+			Console::Error("Virtual Memory Error > page 0x%x cannot be found %d (p:%x,v:%x)", params
 				addr-(u32)PS2MEM_BASE, GetLastError(), pmap->aPFNs[0], curvaddr);
 		}
 	}
@@ -2597,12 +2597,7 @@ static u8* m_psAllMem = NULL;
 int memInit() 
 {
 #ifdef __LINUX__
-	struct sigaction sa;
-	
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_SIGINFO;
-	sa.sa_sigaction = &SysPageFaultExceptionFilter;
-	sigaction(SIGSEGV, &sa, NULL); 
+	InstallLinuxExceptionHandler();
 #endif
 	if (!vtlb_Init()) return -1;
 
@@ -2651,7 +2646,7 @@ int memInit()
 #endif
 
 	if( m_psAllMem == NULL) {
-		Console::Alert("Error allocating memory");
+		Msgbox::Alert("Error allocating memory");
 		return -1;
 	}
 
@@ -2716,56 +2711,47 @@ void memClearPageAddr(u32 vaddr)
 }
 #endif // PCSX2_VIRTUAL_MEM
 
+// Attempts to load a BIOS rom file, by trying multiple combinations of base filename
+// and extension.  The bios specified in Config.Bios is used as the base.
 void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 {
-	struct stat buf;
-	char Bios1[g_MaxPath];
-	char Bios[g_MaxPath];
-	FILE *fp;
-	char *ptr;
-	int i;
+	string Bios1;
+	string Bios;
+	long filesize;
 
-	CombinePaths( Bios, Config.BiosDir, Config.Bios );
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 
-	sprintf(Bios1, "%s.%s", Bios, ext);
-	if (stat(Bios1, &buf) != -1) {	
-		fp = fopen(Bios1, "rb");
-		fread(dest, 1, buf.st_size, fp);
-		fclose(fp);
-		return;
+	ssprintf(Bios1, "%S.%s", params &Bios, ext);
+	if( (filesize=Path::isFile( Bios1 ) ) <= 0 )
+	{
+		Path::ReplaceExtension( Bios1, Bios, ext );
+		if( (filesize=Path::isFile( Bios1 ) ) <= 0 )
+		{
+			// And this check is... well I'm not sure whf this check is trying to accomplish! (air)
+			ssprintf( Bios1, "%s%s.bin", params Config.BiosDir, ext );
+			if( (filesize=Path::isFile( Bios1 ) ) <= 0 )
+			{
+				Console::Error( "\n\n\n"
+					"**************\n"
+					"%s NOT FOUND\n"
+					"**************\n\n\n", params ext
+				);
+				return;
+			}
+		}
 	}
 
-	sprintf(Bios1, "%s", Bios);
-	ptr = Bios1; i = strlen(Bios1);
-	while (i > 0) { if (ptr[i] == '.') break; i--; }
-	ptr[i+1] = 0;
-	strcat(Bios1, ext);
-	if (stat(Bios1, &buf) != -1) {	
-		fp = fopen(Bios1, "rb");
-		fread(dest, 1, std::min( maxSize, buf.st_size ), fp);
-		fclose(fp);
-		return;
-	}
+	// if we made it this far, we have a successful file found:
 
-	sprintf(Bios1, "%s%s.bin", Config.BiosDir, ext);
-	if (stat(Bios1, &buf) != -1) {	
-		fp = fopen(Bios1, "rb");
-		fread(dest, 1, std::min( maxSize, buf.st_size ), fp);
-		fclose(fp);
-		return;
-	}
-
-	Console::Error( "\n\n\n"
-		"**************\n"
-		"%s NOT FOUND\n"
-		"**************\n\n\n", ext
-	);
+	FILE *fp = fopen(Bios1.c_str(), "rb");
+	fread(dest, 1, std::min( maxSize, filesize ), fp);
+	fclose(fp);
 }
 
 void memReset()
 {
 	struct stat buf;
-	char Bios[g_MaxPath];
+	string Bios;
 	FILE *fp;
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -2778,11 +2764,12 @@ void memReset()
 	memset(psS, 0, Ps2MemSize::Scratch);
 #endif
 
-	CombinePaths( Bios, Config.BiosDir, Config.Bios );
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 
-	if (stat(Bios, &buf) == -1)
+	long filesize;
+	if( ( filesize = Path::getFileSize( Bios ) ) <= 0 )
 	{
-		Console::Error(_("Unable to load bios: '%s', PCSX2 can't run without that"), Bios);
+		Console::Error(_("Unable to load bios: '%s', PCSX2 can't run without that"), params Bios);
 		throw Exception::FileNotFound( Bios,
 			"The specified Bios file was not found.  A bios is required for Pcsx2 to run.\n\nFile not found" );
 	}
@@ -2804,12 +2791,12 @@ void memReset()
 
 #endif
 
-	fp = fopen(Bios, "rb");
-	fread(PS2MEM_ROM, 1, buf.st_size, fp);
+	fp = fopen(Bios.c_str(), "rb");
+	fread(PS2MEM_ROM, 1, std::min( (long)Ps2MemSize::Rom, filesize ), fp);
 	fclose(fp);
 
 	BiosVersion = GetBiosVersion();
-	Console::WriteLn("Bios Version %d.%d", BiosVersion >> 8, BiosVersion & 0xff);
+	Console::Status("Bios Version %d.%d", params BiosVersion >> 8, BiosVersion & 0xff);
 
 	//injectIRX("host.irx");	//not fully tested; still buggy
 
@@ -2883,7 +2870,7 @@ void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 }
 void mmap_ResetBlockTracking()
 {
-	Console::MsgLn("vtlb/mmap: Block Tracking reseted ..");
+	Console::WriteLn("vtlb/mmap: Block Tracking reseted ..");
 	memset(psMPWC,0,sizeof(psMPWC));
 	for(u32 i=0;i<(Ps2MemSize::Base>>12);i++)
 	{
@@ -2930,14 +2917,29 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 }
 
 #else
+#include "errno.h"
+
+__forceinline void __fastcall InstallLinuxExceptionHandler()
+{
+	struct sigaction sa;
+	
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = &SysPageFaultExceptionFilter;
+	sigaction(SIGSEGV, &sa, NULL); 
+}
 
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 // This is my shot in the dark.  Probably needs some work.  Good luck! (air)
 __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )
 {
-	//Console::Error("SysPageFaultExceptionFilter!");
+	int err;
+	u32 pagesize = getpagesize();
+
+	//DevCon::Error("SysPageFaultExceptionFilter!");
 	// get bad virtual address
 	u32 offset = (u8*)info->si_addr - psM;
+	uptr pageoffset = ( offset / pagesize ) * pagesize;
 
 	if (offset>=Ps2MemSize::Base)
 	{
@@ -2946,8 +2948,9 @@ __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t
 		assert( false );
 	}
 
-	mprotect(&psM[offset], 1, PROT_READ|PROT_WRITE);
-
+	err = mprotect( &psM[pageoffset], pagesize, PROT_READ | PROT_WRITE );
+	if (err) DevCon::Error("SysPageFaultExceptionFilter: %s", strerror(errno));
+	
 	offset>>=12;
 	psMPWC[(offset/32)]|=(1<<(offset&31));
 

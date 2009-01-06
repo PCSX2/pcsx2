@@ -376,7 +376,7 @@ struct ElfObject
 							size = proghead[ i ].p_filesz;
 
 						if( proghead[ i ].p_vaddr != proghead[ i ].p_paddr )
-							Console::Notice( "ElfProgram different load addrs: paddr=0x%8.8x, vaddr=0x%8.8x",
+							Console::Notice( "ElfProgram different load addrs: paddr=0x%8.8x, vaddr=0x%8.8x", params
 								proghead[ i ].p_paddr, proghead[ i ].p_vaddr);
 
 						// used to be paddr
@@ -487,7 +487,7 @@ struct ElfObject
 
 			SymNames = (char*)data.GetPtr( secthead[ i_dt ].sh_offset );
 			eS = (Elf32_Sym*)data.GetPtr( secthead[ i_st ].sh_offset );
-			Console::WriteLn("found %d symbols", secthead[ i_st ].sh_size / sizeof( Elf32_Sym ));
+			Console::WriteLn("found %d symbols", params secthead[ i_st ].sh_size / sizeof( Elf32_Sym ));
 
 			for( uint i = 1; i < ( secthead[ i_st ].sh_size / sizeof( Elf32_Sym ) ); i++ ) {
 				if ( ( eS[ i ].st_value != 0 ) && ( ELF32_ST_TYPE( eS[ i ].st_info ) == 2 ) ) {
@@ -502,52 +502,50 @@ void ElfApplyPatches()
 {
 	if( !Config.Patch ) return;
 
-	char str[256],str2[256];
+	string filename;
+	ssprintf( filename, "%8.8x", params ElfCRC );
 
-	sprintf(str, "%8.8x", ElfCRC);
+	// if patches found the following status msg will be overwritten
+	Console::SetTitle( fmt_string( "Game running without patches. [CRC=%S]", params &filename ) );
 
-	sprintf(str2,"Game running without patches. [CRC=%8.8x]", ElfCRC);//if patches found it will overwritten :p
-	Console::SetTitle( str2 );
-
-	if(LoadPatch( str ) != 0)
+	if(LoadPatch( filename ) != 0)
 	{
-		Console::MsgLn("XML Loader returned an error. Trying to load a pnatch...");
-		inifile_read(str);
+		Console::WriteLn("XML Loader returned an error. Trying to load a pnatch...");
+		inifile_read( filename.c_str() );
 	}
 	else 
-		Console::MsgLn("XML Loading success. Will not load from pnatch...");
+		Console::WriteLn("XML Loading success. Will not load from pnatch...");
 
 	applypatch( 0 );
 }
 
 // Fetches the CRC of the game bound to the CDVD plugin.
-void loadElfCRC( const char* filename )
+u32 loadElfCRC( const char* filename )
 {
 	TocEntry toc;
 
 	CDVDFS_init( );
 	if ( CDVD_findfile( filename + strlen( "cdromN:" ), &toc ) == -1 )
-		return;
+		return 0;
 
-	DevCon::WriteLn( Color_Green, "loadElfFile: %d bytes", toc.fileSize);
-	ElfCRC = ElfObject( filename, toc.fileSize ).GetCRC();
-	Console::WriteLn( Color_Green, "loadElfFile: %s; CRC = %8.8X\n", filename, ElfCRC);
+	DevCon::Status( "loadElfFile: %d bytes", params toc.fileSize );
+	u32 crcval = ElfObject( filename, toc.fileSize ).GetCRC();
+	Console::Status( "loadElfFile: %s; CRC = %8.8X", params filename, crcval );
 
-	ElfApplyPatches();
-	LoadGameSpecificSettings();
+	return crcval;
 }
 
 int loadElfFile(const char *filename)
 {
 	if( filename == NULL || filename[0] == 0 )
 	{
-		Console::Notice( "Running the PS2 BIOS...", filename );
+		Console::Notice( "Running the PS2 BIOS...", params filename );
 		return -1;
 	}
 
 	int elfsize;
 
-	Console::WriteLn("loadElfFile: %s", filename);
+	Console::Status("loadElfFile: %s", params filename);
 	if (strnicmp( filename, "cdrom0:", strlen( "cdromN:" ) ) &&
 		strnicmp( filename, "cdrom1:", strlen( "cdromN:" ) ) )
 	{
@@ -567,7 +565,7 @@ int loadElfFile(const char *filename)
 		elfsize = toc.fileSize;
 	}
 
-	Console::WriteLn( Color_Green, "loadElfFile: %d", elfsize);
+	Console::Status( "loadElfFile: %d", params elfsize);
 	ElfObject elfobj( filename, elfsize );
 
 	//2002-09-19 (Florin)
@@ -586,12 +584,12 @@ int loadElfFile(const char *filename)
 	for ( uint i = 0; i < 0x100000; i++ ) {
 		if ( strcmp( "rom0:OSDSYS", (char*)PSM( i ) ) == 0 ) {
 			strcpy( (char*)PSM( i ), filename );
-			Console::WriteLn( Color_Green, "addr %x \"%s\" -> \"%s\"", i, "rom0:OSDSYS", filename );
+			DevCon::Status( "addr %x \"%s\" -> \"%s\"", params i, "rom0:OSDSYS", filename );
 		}
 	}
 
 	ElfCRC = elfobj.GetCRC();
-	Console::WriteLn( Color_Green, "loadElfFile: %s; CRC = %8.8X\n", filename, ElfCRC);
+	Console::Status( "loadElfFile: %s; CRC = %8.8X\n", params filename, ElfCRC);
 
 	ElfApplyPatches();
 	LoadGameSpecificSettings();

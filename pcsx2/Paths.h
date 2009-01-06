@@ -10,9 +10,10 @@
 #define PATCHES_DIR  "patches"
 
 #define SSTATES_DIR "sstates"
-
 #define LANGS_DIR "Langs"
-
 #define LOGS_DIR "logs"
 
+
+#define DEFAULT_MEMCARD1 "Mcd001.ps2"
+#define DEFAULT_MEMCARD2 "Mcd002.ps2"
 #endif

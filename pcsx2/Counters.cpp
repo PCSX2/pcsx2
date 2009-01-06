@@ -332,7 +332,7 @@ void vSyncDebugStuff() {
 			if( --g_nLeftGSFrames <= 0 ) {
 				safe_delete( g_fGSSave );
 				g_SaveGSStream = 0;
-				Console::MsgLn("Done saving GS stream");
+				Console::WriteLn("Done saving GS stream");
 			}
 		}
 #endif

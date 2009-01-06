@@ -34,10 +34,6 @@ void *SysLoadSym(void *lib, const char *sym);	// Loads Symbol from Library
 const char *SysLibError();				// Gets previous error loading sysbols
 void SysCloseLibrary(void *lib);		// Closes Library
 
-// Causes a pop-up to appear with the specified message.  Use this to issue
-// critical or fatal messages to the user.
-void SysMessage(const char *fmt, ...);
-
 // Maps a block of memory for use as a recompiled code buffer.
 // The allocated block has code execution privliges.
 // Returns NULL on allocation failure.
@@ -56,17 +52,6 @@ static __forceinline void SysMunmap( void* base, u32 size )
 	SysMunmap( (uptr)base, size );
 }
 
-// to_string: A utility template for quick and easy inline string type conversion.
-// Use to_string(intval), or to_string(float), etc.  Anything that the STL itself
-// would support should be supported here. :)
-template< typename T >
-std::string to_string(const T& value)
-{
-	std::ostringstream oss;
-	oss << value;
-	return oss.str();
-}
-
 // Console Namespace -- Replacements for SysPrintf.
 // SysPrintf is depreciated -- We should phase these in over time.
 namespace Console
@@ -83,9 +68,12 @@ namespace Console
 		Color_White
 	};
 
+	// va_args version of WriteLn, mostly for internal use only.
+	extern void __fastcall _WriteLn( Colors color, const std::string& fmt, va_list args );
+
 	extern void Open();
 	extern void Close();
-	extern void SetTitle( const char* title );
+	extern void SetTitle( const std::string& title );
 
 	// Changes the active console color.
 	// This color will be unset by calls to colored text methods
@@ -103,45 +91,61 @@ namespace Console
 
 	// Writes an unformatted string of text to the console (fast!)
 	// No newline is appended.
-	extern bool __fastcall Msg( const char* fmt );
+	extern bool __fastcall Write( const std::string& fmt );
 
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended.
-	extern bool __fastcall MsgLn( const char* fmt );
+	extern bool __fastcall WriteLn( const std::string& fmt );
 
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended, and the console color reset to default.
-	extern bool __fastcall MsgLn( Colors color, const char* fmt );
+	extern bool __fastcall WriteLn( Colors color, const std::string& fmt );
 
 	// Writes a line of colored text to the console, with automatic newline appendage.
 	// The console color is reset to default when the operation is complete.
-	extern bool WriteLn( Colors color, const char* fmt, ... );
+	extern bool WriteLn( Colors color, const std::string& fmt, VARG_PARAM dummy, ... );
 
 	// Writes a line of colored text to the console (no newline).
 	// The console color is reset to default when the operation is complete.
-	extern bool Write( Colors color, const char* fmt, ... );
+	extern bool Write( Colors color, const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool Write( Colors color, const std::string& fmt );
 
 	// Writes a formatted message to the console (no newline)
-	extern bool Write( const char* fmt, ... );
+	extern bool Write( const std::string& fmt, VARG_PARAM dummy, ... );
 
 	// Writes a formatted message to the console, with appended newline.
-	extern bool WriteLn( const char* fmt, ... );
+	extern bool WriteLn( const std::string& fmt, VARG_PARAM dummy, ... );
 
 	// Displays a message in the console with red emphasis.
 	// Newline is automatically appended.
-	extern bool Error( const char* fmt, ... );
+	extern bool Error( const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool Error( const std::string& fmt );
 
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
-	extern bool Notice( const char* fmt, ... );
+	extern bool Notice( const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool Notice( const std::string& fmt );
 
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
-	extern bool Status( const char* fmt, ... );
-	
-	// Pops up an alert Dialog Box.
-	// Replacement for SysMessage.
-	extern bool Alert( const char* fmt, ... );
+	extern bool Status( const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool Status( const std::string& fmt );
+}
+
+// Different types of message boxes that the emulator can employ from the friendly confines
+// of it's blissful unawareness of whatever GUI it runs under. :)  All message boxes exhibit
+// blocking behavior -- they promt the user for action and only return after the user has
+// responded to the prompt.
+namespace Msgbox
+{
+	// Pops up an alert Dialog Box with a singular "OK" button.
+	// Always returns false.  Replacement for SysMessage.
+	extern bool Alert( const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool Alert( const std::string& fmt );
+
+	// Pops up a dialog box with Ok/Cancel buttons.  Returns the result of the inquiry,
+	// true if OK, false if cancel.
+	extern bool OkCancel( const std::string& fmt, VARG_PARAM dummy, ... );
 }
 
 using Console::Color_Red;
@@ -187,29 +191,34 @@ using Console::Color_White;
 	}
 
 //////////////////////////////////////////////////////////////
-// Consts for using if() statements instead of uglier #ifdef macros.
+// Dev / Debug conditionals --
+//   Consts for using if() statements instead of uglier #ifdef macros.
+//   Abbrivated macros for dev/debug only consoles and mesgboxes.
 
 #ifdef PCSX2_DEVBUILD
 
 #	define DevCon Console
-static const bool IsDevBuild = true;
+#	define DevMsg MsgBox
+	static const bool IsDevBuild = true;
 
 #else
 
 #	define DevCon 0&&Console
-static const bool IsDevBuild = false;
+#	define DevMsg 
+	static const bool IsDevBuild = false;
 
 #endif
 
 #ifdef _DEBUG
 
 #	define DbgCon Console
-static const bool IsDebugBuild = true;
+	static const bool IsDebugBuild = true;
 
 #else
 
 #	define DbgCon 0&&Console
-static const bool IsDebugBuild = false;
+	static const bool IsDebugBuild = false;
+
 #endif
 
 #ifdef PCSX2_VIRTUAL_MEM

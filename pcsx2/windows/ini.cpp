@@ -15,9 +15,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-/*
-15-09-2004 : file rewriten for work with inis (shadow)
-*/
 
 #include "PrecompiledHeader.h"
 #include "win32.h"
@@ -25,24 +22,26 @@
 #include "Common.h"
 #include "Paths.h"
 
+static const u32 IniVersion = 100;
+
 const char* g_CustomConfigFile;
 char g_WorkingFolder[g_MaxPath];		// Working folder at application startup
 
 // Returns TRUE if the user has invoked the -cfg command line option.
-BOOLEAN hasCustomConfig()
+static bool hasCustomConfig()
 {
 	return (g_CustomConfigFile != NULL) && (g_CustomConfigFile[0] != 0);
 }
 
 // Returns the FULL (absolute) path and filename of the configuration file.
-void GetConfigFilename( char* dest )
+static void GetConfigFilename( string& dest )
 {
 	if( hasCustomConfig() )
 	{
 		// Load a user-specified configuration.
 		// If the configuration isn't found, fail outright (see below)
 
-		CombinePaths( dest, g_WorkingFolder, g_CustomConfigFile );
+		Path::Combine( dest, g_WorkingFolder, g_CustomConfigFile );
 	}
 	else
 	{
@@ -50,213 +49,298 @@ void GetConfigFilename( char* dest )
 		// Our current working directory can change, so we use the one we detected
 		// at startup:
 
-		CombinePaths( dest, g_WorkingFolder, CONFIG_DIR "\\pcsx2pg.ini" );
+		Path::Combine( dest, g_WorkingFolder, CONFIG_DIR "\\pcsx2pg.ini" );
 	}
 }
 
-int LoadConfig()
+class IniFile
 {
-	FILE *fp;
-	PcsxConfig& Conf = winConfig;
+protected:
+	string m_filename;
+	string m_section;
 
-	char szIniFile[g_MaxPath], szValue[g_MaxPath];
+public:
+	virtual ~IniFile() {}
+	IniFile() : m_filename(), m_section("Misc")
+	{
+		GetConfigFilename( m_filename );
+	}
+
+	void SetCurrentSection( const string& newsection )
+	{
+		m_section = newsection;
+	}
+
+	virtual void Entry( const string& var, string& value, const string& defvalue=string() )=0;
+	virtual void Entry( const string& var, char (&value)[g_MaxPath], const string& defvalue=string() )=0;
+	virtual void Entry( const string& var, int& value, const int defvalue=0 )=0;
+	virtual void Entry( const string& var, uint& value, const uint defvalue=0 )=0;
+	virtual void Entry( const string& var, bool& value, const bool defvalue=0 )=0;
+	virtual void EnumEntry( const string& var, int& value, const char* const* enumArray, const int defvalue=0 )=0;
+
+	void DoConfig( PcsxConfig& Conf )
+	{
+		SetCurrentSection( "Misc" );
+
+		Entry( "Patching", Conf.Patch, true );
+		Entry( "GameFixes", Conf.GameFixes);
+#ifdef PCSX2_DEVBUILD
+		Entry( "DevLogFlags", varLog );
+#endif
+
+		//interface
+		SetCurrentSection( "Interface" );
+		Entry( "Bios", Conf.Bios );
+		Entry( "Language", Conf.Lang );
+		Entry( "PluginsDir", Conf.PluginsDir, DEFAULT_PLUGINS_DIR );
+		Entry( "BiosDir", Conf.BiosDir, DEFAULT_BIOS_DIR );
+		Entry( "CloseGsOnEscape", Conf.closeGSonEsc, true );
+
+		SetCurrentSection( "Console" );
+		Entry( "ConsoleWindow", Conf.PsxOut, true );
+		Entry( "Profiler", Conf.Profiler, false );
+		Entry( "CdvdVerbose", Conf.cdvdPrint, false );
+
+		Entry( "ThreadPriority", Conf.ThPriority, THREAD_PRIORITY_NORMAL );
+		Entry( "Memorycard1", Conf.Mcd1, DEFAULT_MEMCARD1 );
+		Entry( "Memorycard2", Conf.Mcd2, DEFAULT_MEMCARD2 );
+
+		SetCurrentSection( "Framelimiter" );
+		Entry( "CustomFps", Conf.CustomFps );
+		Entry( "FrameskipMode", Conf.CustomFrameSkip );
+		Entry( "ConsecutiveFramesToRender", Conf.CustomConsecutiveFrames );
+		Entry( "ConsecutiveFramesToSkip", Conf.CustomConsecutiveSkip );
+
+		// Plugins are saved from the winConfig struct.
+		// It contains the user config settings and not the
+		// runtime cmdline overrides.
+
+		SetCurrentSection( "Plugins" );
+
+		Entry( "GS", Conf.GS );
+		Entry( "SPU2", Conf.SPU2 );
+		Entry( "CDVD", Conf.CDVD );
+		Entry( "PAD1", Conf.PAD1 );
+		Entry( "PAD2", Conf.PAD2 );
+		Entry( "DEV9", Conf.DEV9 );
+		Entry( "USB", Conf.USB );
+		Entry( "FW", Conf.FW );
+
+		//cpu
+		SetCurrentSection( "Cpu" );
+		Entry( "Options", Conf.Options, PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC );
+		Entry( "sseMXCSR", Conf.sseMXCSR, DEFAULT_sseMXCSR );
+		Entry( "sseVUMXCSR", Conf.sseVUMXCSR, DEFAULT_sseVUMXCSR );
+		Entry( "eeOptions", Conf.eeOptions, DEFAULT_eeOptions );
+		Entry( "vuOptions", Conf.vuOptions, DEFAULT_vuOptions );
+		Entry( "SpeedHacks", Conf.Hacks );
+	}
+};
+
+class IniFileLoader : public IniFile
+{
+protected:
+	MemoryAlloc<char> m_workspace;
+
+public:
+	virtual ~IniFileLoader() {}
+	IniFileLoader() : IniFile(),
+		m_workspace( 4096, "IniFileLoader Workspace" )
+	{
+	}
+
+	void Entry( const string& var, string& value, const string& defvalue=string() )
+	{
+		int retval = GetPrivateProfileString(
+			m_section.c_str(), var.c_str(), defvalue.c_str(), m_workspace.GetPtr(), m_workspace.GetLength(), m_filename.c_str()
+		);
+
+		if( retval >= m_workspace.GetLength() - 2 )
+			Console::Notice( "Loadini Warning > Possible truncated value on key '%S'", params &var );
+		value = m_workspace.GetPtr();
+	}
+
+	void Entry( const string& var, char (&value)[g_MaxPath], const string& defvalue=string() )
+	{
+		int retval = GetPrivateProfileString(
+			m_section.c_str(), var.c_str(), defvalue.c_str(), value, sizeof( value ), m_filename.c_str()
+		);
+
+		if( retval >= sizeof(value) - 2 )
+			Console::Notice( "Loadini Warning > Possible truncated value on key '%S'", params &var );
+	}
+
+	void Entry( const string& var, int& value, const int defvalue=0 )
+	{
+		string retval;
+		Entry( var, retval, to_string( defvalue ) );
+		value = atoi( retval.c_str() );
+	}
+
+	void Entry( const string& var, uint& value, const uint defvalue=0 )
+	{
+		string retval;
+		Entry( var, retval, to_string( defvalue ) );
+		value = atoi( retval.c_str() );
+	}
+
+	void Entry( const string& var, bool& value, const bool defvalue=false )
+	{
+		string retval;
+		Entry( var, retval, defvalue ? "enabled" : "disabled" );
+		value = (retval == "enabled");
+	}
+
+	void EnumEntry( const string& var, int& value, const char* const* enumArray, const int defvalue=0 )
+	{
+		string retval;
+		Entry( var, retval, enumArray[defvalue] );
+
+		int i=0;
+		while( enumArray[i] != NULL && ( retval != enumArray[i] ) ) i++;
+
+		if( enumArray[i] == NULL )
+		{
+			Console::Notice( "Loadini Warning > Unrecognized value '%S' on key '%S'\n\tUsing the default setting of '%s'.",
+				params &retval, &var, enumArray[defvalue] );
+			value = defvalue;
+		}
+		else
+			value = i;
+	}
+
+};
+
+class IniFileSaver : public IniFile
+{
+public:
+	virtual ~IniFileSaver() {}
+	IniFileSaver() : IniFile()
+	{
+		char versionStr[20];
+		_itoa( IniVersion, versionStr, 10 );
+		WritePrivateProfileString( "Misc", "IniVersion", versionStr, m_filename.c_str() );
+	}
+
+	void Entry( const string& var, const string& value, const string& defvalue=string() )
+	{
+		WritePrivateProfileString( m_section.c_str(), var.c_str(), value.c_str(), m_filename.c_str() );
+	}
+
+	void Entry( const string& var, string& value, const string& defvalue=string() )
+	{
+		WritePrivateProfileString( m_section.c_str(), var.c_str(), value.c_str(), m_filename.c_str() );
+	}
+
+	void Entry( const string& var, char (&value)[g_MaxPath], const string& defvalue=string() )
+	{
+		WritePrivateProfileString( m_section.c_str(), var.c_str(), value, m_filename.c_str() );
+	}
+
+	void Entry( const string& var, int& value, const int defvalue=0 )
+	{
+		Entry( var, to_string( value ) );
+	}
+
+	void Entry( const string& var, uint& value, const uint defvalue=0 )
+	{
+		Entry( var, to_string( value ) );
+	}
+
+	void Entry( const string& var, bool& value, const bool defvalue=false )
+	{
+		Entry( var, value ? "enabled" : "disabled" );
+	}
+
+	void EnumEntry( const string& var, int& value, const char* const* enumArray, const int defvalue=0 )
+	{
+		Entry( var, enumArray[value] );
+	}
+};
+
+bool LoadConfig()
+{
+	string szIniFile;
+	bool status  = true;
 
 	GetConfigFilename( szIniFile );
 
-	if( g_Error_PathTooLong ) return -1;
-
-	fp = fopen( szIniFile, "rt" );
-	if( fp == NULL)
+	if( !Path::Exists( szIniFile ) )
 	{
 		if( hasCustomConfig() )
 		{
 			// using custom config, so fail outright:
-			Console::Alert( "User-specified configuration file not found:\n %s\nPCSX2 will now exit." );
-			return -1;
+			throw Exception::FileNotFound(
+				"User-specified configuration file not found:\n\t%s\n\nPCSX2 will now exit."
+			);
 		}
 
 		// standard mode operation.  Create the directory.
-		// Conf File will be created and saved later.
-		CreateDirectory("inis",NULL); 
-		return 1;
+		CreateDirectory( "inis", NULL ); 
+		status = false;		// inform caller that we're not configured.
 	}
-	fclose(fp);
-    //interface
-	GetPrivateProfileString("Interface", "Bios", NULL, szValue, g_MaxPath, szIniFile);
-	strcpy(Conf.Bios, szValue);
-	GetPrivateProfileString("Interface", "Lang", NULL, szValue, g_MaxPath, szIniFile);
-	strcpy(Conf.Lang, szValue);
-	GetPrivateProfileString("Interface", "Ps2Out", NULL, szValue, 20, szIniFile);
-    Conf.PsxOut = !!strtoul(szValue, NULL, 10);
-	GetPrivateProfileString("Interface", "Profiler", NULL, szValue, 20, szIniFile);
-	Conf.Profiler = !!strtoul(szValue, NULL, 10);
-	GetPrivateProfileString("Interface", "cdvdPrint", NULL, szValue, 20, szIniFile);
-	Conf.cdvdPrint = !!strtoul(szValue, NULL, 10);	
-	GetPrivateProfileString("Interface", "ThPriority", NULL, szValue, 20, szIniFile);
-    Conf.ThPriority = strtoul(szValue, NULL, 10);
-	GetPrivateProfileString("Interface", "PluginsDir", NULL, szValue, g_MaxPath, szIniFile);
-	strcpy(Conf.PluginsDir, szValue);
-	GetPrivateProfileString("Interface", "BiosDir", NULL, szValue, g_MaxPath, szIniFile);
-	strcpy(Conf.BiosDir, szValue);
-	GetPrivateProfileString("Interface", "Mcd1", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.Mcd1, szValue);
-	GetPrivateProfileString("Interface", "Mcd2", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.Mcd2, szValue); 
-	Conf.CustomFps					=	GetPrivateProfileInt("Interface", "CustomFps", 0, szIniFile);
-	Conf.CustomFrameSkip			=	GetPrivateProfileInt("Interface", "CustomFrameskip", 0, szIniFile);
-	Conf.CustomConsecutiveFrames	=	GetPrivateProfileInt("Interface", "CustomConsecutiveFrames", 0, szIniFile);
-	Conf.CustomConsecutiveSkip		=	GetPrivateProfileInt("Interface", "CustomConsecutiveSkip", 0, szIniFile);
+	else
+	{
+		// sanity check to make sure the user doesn't have some kind of
+		// crazy ass setup... why not!
 
-	//plugins
-	GetPrivateProfileString("Plugins", "GS", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.GS, szValue); 
-    GetPrivateProfileString("Plugins", "SPU2", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.SPU2, szValue);
-	GetPrivateProfileString("Plugins", "CDVD", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.CDVD, szValue);
-	GetPrivateProfileString("Plugins", "PAD1", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.PAD1, szValue);
-	GetPrivateProfileString("Plugins", "PAD2", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.PAD2, szValue);
-	GetPrivateProfileString("Plugins", "DEV9", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.DEV9, szValue);
-	GetPrivateProfileString("Plugins", "USB", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.USB, szValue);
-	GetPrivateProfileString("Plugins", "FW", NULL, szValue, g_MaxPath, szIniFile);
-    strcpy(Conf.FW, szValue);
-	//cpu
-	GetPrivateProfileString("Cpu Options", "Options", NULL, szValue, 20, szIniFile);
-    Conf.Options= (u32)strtoul(szValue, NULL, 10);
+		if( Path::isDirectory( szIniFile ) )
+			throw Exception::Stream( 
+				"Cannot open or create the Pcsx2 ini file because a directory of\n"
+				"the same name already exists!  Please delete it or reinstall Pcsx2\n"
+				"fresh and try again."
+			);
 
-	GetPrivateProfileString("Cpu Options", "sseMXCSR", NULL, szValue, 20, szIniFile);
-	Conf.sseMXCSR = strtoul(szValue, NULL, 0);
-	g_sseMXCSR = Conf.sseMXCSR;
+		// Ini Version check! ---->
+		// If the user's ini is old, give them a friendly warning that says they should
+		// probably delete it.
 
-	GetPrivateProfileString("Cpu Options", "sseVUMXCSR", NULL, szValue, 20, szIniFile);
-	Conf.sseVUMXCSR = strtoul(szValue, NULL, 0);
-	g_sseVUMXCSR = Conf.sseVUMXCSR;
+		char versionStr[20];
+		u32 version;
 
-	GetPrivateProfileString("Cpu Options", "eeOptions", NULL, szValue, 20, szIniFile);
-	Conf.eeOptions = strtoul(szValue, NULL, 0);
-	GetPrivateProfileString("Cpu Options", "vuOptions", NULL, szValue, 20, szIniFile);
-	Conf.vuOptions = strtoul(szValue, NULL, 0);
+		GetPrivateProfileString( "Misc", "IniVersion", NULL, versionStr, 20, szIniFile.c_str() );
+		version = atoi( versionStr );
+		if( version < IniVersion )
+		{
+			// Warn the user of a version mismatch.
+			Msgbox::Alert(
+				"Configuration versions do not match.  Pcsx2 may be unstable.\n"
+				"If you experience problems, delete the pcsx2-pg.ini file from the ini dir."
+			);
 
-	//Misc
-	GetPrivateProfileString("Misc", "Patch", NULL, szValue, 20, szIniFile);
-    Conf.Patch = !!strtoul(szValue, NULL, 10);
+			// save the new version -- gets rid of the warning on subsequent startups
+			_itoa( IniVersion, versionStr, 10 );
+			WritePrivateProfileString( "Misc", "IniVersion", versionStr, szIniFile.c_str() );
+		}
+	}
 
-#ifdef PCSX2_DEVBUILD
-	GetPrivateProfileString("Misc", "varLog", NULL, szValue, 20, szIniFile);
-    varLog = strtoul(szValue, NULL, 16);
-#endif
-	GetPrivateProfileString("Misc", "Hacks", NULL, szValue, 20, szIniFile);
-    Conf.Hacks = strtoul(szValue, NULL, 0);
-	GetPrivateProfileString("Misc", "GameFixes", NULL, szValue, 20, szIniFile);
-    Conf.GameFixes = strtoul(szValue, NULL, 0);
-
-	// Remove Fast Branches hack for now:
-	Conf.Hacks &= ~0x80;
+	IniFileLoader().DoConfig( Config );
 
 #ifdef ENABLE_NLS
 	{
-		char text[256];
+		string text;
 		extern int _nl_msg_cat_cntr;
-		sprintf_s(text, 256, "LANGUAGE=%s", Conf.Lang);
-		gettext_putenv(text);
+		ssprintf(text, "LANGUAGE=%s", params  Config.Lang);
+		gettext_putenv(text.c_str());
 	}
 #endif
 
-	return 0;
+	return status;
 }
-
-/////////////////////////////////////////////////////////
 
 void SaveConfig()
 {
-	const PcsxConfig& Conf = Config;
-	char szIniFile[g_MaxPath], szValue[g_MaxPath];
+	PcsxConfig tmpConf = Config;
 
-	//GetModuleFileName(GetModuleHandle((LPCSTR)gApp.hInstance), szIniFile, 256);
-	//szTemp = strrchr(szIniFile, '\\');
+	strcpy( tmpConf.GS, winConfig.GS );
+	strcpy( tmpConf.SPU2, winConfig.SPU2 );
+	strcpy( tmpConf.CDVD, winConfig.CDVD );
+	strcpy( tmpConf.PAD1, winConfig.PAD1 );
+	strcpy( tmpConf.PAD2, winConfig.PAD2 );
+	strcpy( tmpConf.DEV9, winConfig.DEV9 );
+	strcpy( tmpConf.USB, winConfig.USB );
+	strcpy( tmpConf.FW, winConfig.FW );
 
-	GetConfigFilename( szIniFile );
-
-	// This should never be true anyway since long pathnames would have in theory
-	// been caught earlier by LoadConfig -- but no harm in being safe.
-	if( g_Error_PathTooLong ) return;
-
-    //interface
-    sprintf(szValue,"%s",Conf.Bios);
-    WritePrivateProfileString("Interface","Bios",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf.Lang);
-    WritePrivateProfileString("Interface","Lang",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf.PluginsDir);
-    WritePrivateProfileString("Interface","PluginsDir",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf.BiosDir);
-    WritePrivateProfileString("Interface","BiosDir",szValue,szIniFile);
-    sprintf(szValue,"%u",(int)Conf.PsxOut);
-    WritePrivateProfileString("Interface","Ps2Out",szValue,szIniFile);
-	sprintf(szValue,"%u",(int)Conf.Profiler);
-    WritePrivateProfileString("Interface","Profiler",szValue,szIniFile);
-	sprintf(szValue,"%u",(int)Conf.cdvdPrint);
-    WritePrivateProfileString("Interface","cdvdPrint",szValue,szIniFile);
-    sprintf(szValue,"%u",Conf.ThPriority);
-	WritePrivateProfileString("Interface","ThPriority",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf.Mcd1);
-    WritePrivateProfileString("Interface","Mcd1",szValue,szIniFile);
-    sprintf(szValue,"%s",Conf.Mcd2);
-    WritePrivateProfileString("Interface","Mcd2",szValue,szIniFile);
-    sprintf(szValue,"%d",Conf.CustomFps);
-	WritePrivateProfileString("Interface", "CustomFps", szValue, szIniFile);
-	sprintf(szValue,"%d",Conf.CustomFrameSkip);
-	WritePrivateProfileString("Interface", "CustomFrameskip", szValue, szIniFile);
-	sprintf(szValue,"%d",Conf.CustomConsecutiveFrames);
-	WritePrivateProfileString("Interface", "CustomConsecutiveFrames", szValue, szIniFile);
-	sprintf(szValue,"%d",Conf.CustomConsecutiveSkip);
-	WritePrivateProfileString("Interface", "CustomConsecutiveSkip", szValue, szIniFile);
-
-	// Plugins are saved from the winConfig struct.
-	// It contains the user config settings and not the
-	// runtime cmdline overrides.
-
-	sprintf(szValue,"%s",winConfig.GS);
-    WritePrivateProfileString("Plugins","GS",szValue,szIniFile);
-	sprintf(szValue,"%s",winConfig.SPU2);
-    WritePrivateProfileString("Plugins","SPU2",szValue,szIniFile);
-    sprintf(szValue,"%s",winConfig.CDVD);
-    WritePrivateProfileString("Plugins","CDVD",szValue,szIniFile);
-    sprintf(szValue,"%s",winConfig.PAD1);
-    WritePrivateProfileString("Plugins","PAD1",szValue,szIniFile);
-    sprintf(szValue,"%s",winConfig.PAD2);
-    WritePrivateProfileString("Plugins","PAD2",szValue,szIniFile);
-    sprintf(szValue,"%s",winConfig.DEV9);
-    WritePrivateProfileString("Plugins","DEV9",szValue,szIniFile);
-    sprintf(szValue,"%s",winConfig.USB);
-    WritePrivateProfileString("Plugins","USB",szValue,szIniFile);
-	sprintf(szValue,"%s",winConfig.FW);
-    WritePrivateProfileString("Plugins","FW",szValue,szIniFile);
-
-	//cpu
-    sprintf(szValue,"%u", Conf.Options);
-    WritePrivateProfileString("Cpu Options","Options",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf.sseMXCSR);
-    WritePrivateProfileString("Cpu Options","sseMXCSR",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf.sseVUMXCSR);
-    WritePrivateProfileString("Cpu Options","sseVUMXCSR",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf.eeOptions);
-    WritePrivateProfileString("Cpu Options","eeOptions",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf.vuOptions);
-    WritePrivateProfileString("Cpu Options","vuOptions",szValue,szIniFile);
-
-	//Misc
-	sprintf(szValue,"%u",(int)Conf.Patch);
-    WritePrivateProfileString("Misc","Patch",szValue,szIniFile);
-	sprintf(szValue,"%x",varLog);
-    WritePrivateProfileString("Misc","varLog",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf.Hacks);
-    WritePrivateProfileString("Misc","Hacks",szValue,szIniFile);
-	sprintf(szValue,"%u",Conf.GameFixes);
-    WritePrivateProfileString("Misc","GameFixes",szValue,szIniFile);
-
+	IniFileSaver().DoConfig( tmpConf );
 }
 

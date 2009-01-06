@@ -1149,7 +1149,7 @@ int psxHw4ConstRead8(u32 x86reg, u32 add, u32 sign) {
 		case 0x1f402039: CONSTREAD8_CALL((uptr)cdvdRead39); return 1;
 		case 0x1f40203A: CONSTREAD8_CALL((uptr)cdvdRead3A); return 1;
 		default:
-			Console::Notice("*Unknown 8bit read at address %lx\n", add);
+			Console::Notice("*Unknown 8bit read at address %lx", params add);
 			XOR32RtoR(x86reg, x86reg);
 			return 0;
 	}
@@ -1173,7 +1173,7 @@ void psxHw4ConstWrite8(u32 add, int mmreg) {
 		case 0x1f402018: CONSTWRITE_CALL(cdvdWrite18); return;
 		case 0x1f40203A: CONSTWRITE_CALL(cdvdWrite3A); return;
 		default:
-			Console::Notice("*Unknown 8bit write at address %lx\n", add);
+			Console::Notice("*Unknown 8bit write at address %lx", params add);
 			return;
 	}
 }

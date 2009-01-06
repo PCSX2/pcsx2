@@ -658,7 +658,7 @@ class MemoryCard
 				return 0;
 			}
 
-			DbgCon::WriteLn("IFC: %d", IFC);
+			DbgCon::WriteLn("IFC: %d", params IFC);
 
 			// Read the cluster with the indirect data to the FAT.
 			fseek(fp, 0x420 * IFC, SEEK_SET);
@@ -1619,8 +1619,8 @@ BOOL CALLBACK ConfigureMcdsDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lPa
 			Static_SetText(GetDlgItem(hW, IDC_FRAMEMCD1), _("Memory Card 1"));
 			Static_SetText(GetDlgItem(hW, IDC_FRAMEMCD2), _("Memory Card 2"));
 
-			if (!strlen(Config.Mcd1)) strcpy(Config.Mcd1, "memcards\\Mcd001.ps2");
-			if (!strlen(Config.Mcd2)) strcpy(Config.Mcd2, "memcards\\Mcd002.ps2");
+			if (!strlen(Config.Mcd1)) strcpy(Config.Mcd1, MEMCARDS_DIR "\\" DEFAULT_MEMCARD1);
+			if (!strlen(Config.Mcd2)) strcpy(Config.Mcd2, MEMCARDS_DIR "\\" DEFAULT_MEMCARD2);
 			Edit_SetText(GetDlgItem(hW,IDC_MCD1), Config.Mcd1);
 			Edit_SetText(GetDlgItem(hW,IDC_MCD2), Config.Mcd2);
 

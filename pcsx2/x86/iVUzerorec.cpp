@@ -352,7 +352,7 @@ void SuperVUInit(int vuindex)
 
 		if( s_recVUMem == NULL )
 		{
-			Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem );
+			Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", params (u32)s_recVUMem );
 			throw Exception::OutOfMemory( "Could not reserve memory for the SuperVU." );
 		}
 
@@ -1150,7 +1150,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
                     ((ppprevinst->regs[0].VIwrite & pinst->regs[0].VIread) & 0xffff) == ((ppprevinst->regs[0].VIwrite & pprevinst->regs[0].VIread) & 0xffff) &&
                     !(ppprevinst->regs[0].VIread&((1<<REG_STATUS_FLAG)|(1<<REG_MAC_FLAG)|(1<<REG_CLIP_FLAG)))) {
                 
-						Console::WriteLn("supervu: 2 cycle branch delay detected: %x %x", pc, s_pFnHeader->startpc);
+						Console::WriteLn("supervu: 2 cycle branch delay detected: %x %x", params pc, s_pFnHeader->startpc);
 
                     // ignore if prev instruction is ILW or ILWR (xenosaga 2)
                     lowercode = *(int*)&VU->Micro[pc-24]; 
@@ -2533,7 +2533,7 @@ void svudispfntemp()
 			{
                 //static int curesp;
                 //__asm mov curesp, esp
-				Console::WriteLn("tVU: %x %x %x", s_svulast, s_vucount, s_vufnheader);
+				//Console::WriteLn("tVU: %x %x %x", s_svulast, s_vucount, s_vufnheader);
 				if( g_curdebugvu ) iDumpVU1Registers();
 				else iDumpVU0Registers();
 				s_vucount++;

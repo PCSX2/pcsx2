@@ -202,9 +202,12 @@ void WinClose()
 
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
 	char *lang;
 	int i;
+
+	CreateDirectory(LOGS_DIR, NULL);
 
 #ifdef PCSX2_VIRTUAL_MEM
 	LPVOID lpMemReserved;
@@ -220,6 +223,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		MessageBox(NULL, str, "SysError", MB_OK);
 		return -1;
 	}
+
 #endif
 
 	InitCommonControls();
@@ -227,9 +231,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	FirstShow=true;			// this is used by cheats.cpp to search for stuff (broken?)
 
 	pthread_win32_process_attach_np();
-
-	__try 
-	{
 
 	gApp.hInstance = hInstance;
 	gApp.hMenu = NULL;
@@ -244,52 +245,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	_getcwd( g_WorkingFolder, g_MaxPath );
 
+	__try
 	{
-		int argc;
-		TCHAR *const *const argv = _CommandLineToArgv( lpCmdLine, &argc );
 
-		if( argv == NULL )
-		{
-			Console::Alert( "A fatal error occured while attempting to parse the command line.\n" );
-			return 2;
-		}
+	int argc;
+	TCHAR *const *const argv = _CommandLineToArgv( lpCmdLine, &argc );
 
-		switch( ParseCommandLine( argc, argv ) )
-		{
-			case 1:		// display help and exit:
-				printf( "%s", phelpmsg );
-				MessageBox( NULL, phelpmsg, "Pcsx2 Help", MB_OK);
+	if( argv == NULL )
+	{
+		Msgbox::Alert( "A fatal error occured while attempting to parse the command line.\n" );
+		return 2;
+	}
 
-			case -1:	// exit...
-			return 0;
-		}
+	switch( ParseCommandLine( argc, argv ) )
+	{
+		case 1:		// display help and exit:
+			printf( "%s", phelpmsg );
+			MessageBox( NULL, phelpmsg, "Pcsx2 Help", MB_OK);
 
-		switch( LoadConfig() )
-		{
-			case 0:	break;	// everything worked!
-			case 1:	
-				// configure some defaults, notify the user, and the quit.
-				memset(&Config, 0, sizeof(Config));
-				//strcpy(Config.Bios, "HLE");
-				strcpy(Config.BiosDir,    "Bios\\");
-				strcpy(Config.PluginsDir, "Plugins\\");
-				Config.Patch = 1;
-				Config.Options = PCSX2_EEREC|PCSX2_VU0REC|PCSX2_VU1REC|PCSX2_COP2REC;
-				Config.sseMXCSR = DEFAULT_sseMXCSR;
-				Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
-				Config.eeOptions = DEFAULT_eeOptions;
-				Config.vuOptions = DEFAULT_vuOptions;
-				Config.GameFixes = 0;
-				Config.Hacks = 0;
+		case -1:	// exit...
+		return 0;
+	}
 
-				Console::Alert("Pcsx2 needs to be configured");
-				Pcsx2Configure(NULL);
-
-			case -1:		// Error occured.  Quit.
-			return 0;
-		}
-
-		if( g_Error_PathTooLong ) return 3;
+	if( !LoadConfig() )
+	{
+		// Prompt the user for a valid configuration before starting the program.
+		Msgbox::Alert( "Pcsx2 needs to be configured." );
+		Pcsx2Configure( NULL );
 	}
 
 	if (Config.Lang[0] == 0) {
@@ -307,32 +289,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	CloseLanguages();
 	langsMax = i;
 
-	if( winConfig.PsxOut )
+	if( Config.PsxOut )
 	{
 		Console::Open();
 
 		//if( lpCmdLine == NULL || *lpCmdLine == 0 )
-		//	Console::MsgLn("-help to see arguments");
+		//	Console::WriteLn("-help to see arguments");
 	}
 
-	// Load the command line overrides for plugins:
+	// Load the command line overrides for plugins.
+	// Back up the user's preferences in winConfig.
 
-	memcpy( &Config, &winConfig, sizeof( PcsxConfig ) );
+	memcpy( &winConfig, &Config, sizeof( PcsxConfig ) );
 
 	if( g_TestRun.pgsdll )
 	{
 		_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
-		Console::Notice( "* GS plugin override: \n\t%s\n", Config.GS );
+		Console::Notice( "* GS plugin override: \n\t%s\n", params Config.GS );
 	}
 	if( g_TestRun.pcdvddll )
 	{
 		_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
-		Console::Notice( "* CDVD plugin override: \n\t%s\n", Config.CDVD );
+		Console::Notice( "* CDVD plugin override: \n\t%s\n", params Config.CDVD );
 	}
 	if( g_TestRun.pspudll )
 	{
 		_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
-		Console::Notice( "* SPU2 plugin override: \n\t%s\n", Config.SPU2 );
+		Console::Notice( "* SPU2 plugin override: \n\t%s\n", params Config.SPU2 );
 	}
 
 	// [TODO] : Add the other plugin overrides here...
@@ -377,15 +360,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	    // output the help commands
 		Console::SetColor( Console::Color_White );
 
-		Console::MsgLn( "Hotkeys:" );
+		Console::WriteLn( "Hotkeys:" );
 
-		Console::MsgLn(
+		Console::WriteLn(
 			"\tF1  - save state\n"
 			"\t(Shift +) F2 - cycle states\n"
 			"\tF3  - load state"
 		);
 
-	    DevCon::MsgLn(
+	    DevCon::WriteLn(
 			"\tF10 - dump performance counters\n"
 			"\tF11 - save GS state\n"
 			"\tF12 - dump hardware registers"
@@ -638,19 +621,21 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			case ID_RUN_EXECUTE:
 				if( g_GameInProgress )
-					m_ReturnToGame = 1;
+				{
+					m_ReturnToGame = true;
+				}
 				else
 					RunExecute( NULL, true );	// boots bios if no savestate is to be recovered
 			return FALSE;
 
 			case ID_FILE_RUNCD:
 				safe_free( g_RecoveryState );
+				safe_free( g_gsRecoveryState );
 				ResetPlugins();
 				RunExecute( NULL );
 			return FALSE;
 
 			case ID_RUN_RESET:
-				safe_free( g_RecoveryState );
 				SysReset();
 			return FALSE;
 
@@ -814,14 +799,18 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			case ID_PATCHES:
 				Config.Patch = !Config.Patch;
 				CheckMenuItem(gApp.hMenu, ID_PATCHES, Config.Patch ? MF_CHECKED : MF_UNCHECKED);
-
 				SaveConfig();
 				return FALSE;
 
 			case ID_CDVDPRINT:
 				Config.cdvdPrint = !Config.cdvdPrint;
 				CheckMenuItem(gApp.hMenu, ID_CDVDPRINT, Config.cdvdPrint ? MF_CHECKED : MF_UNCHECKED);
+				SaveConfig();
+				return FALSE;
 
+			case ID_CLOSEGS:
+				Config.closeGSonEsc = !Config.closeGSonEsc;
+				CheckMenuItem(gApp.hMenu, ID_CLOSEGS, Config.closeGSonEsc ? MF_CHECKED : MF_UNCHECKED);
 				SaveConfig();
 				return FALSE;
 
@@ -1021,6 +1010,7 @@ void CreateMainMenu() {
 
 	ADDSUBMENU(0, _("&Misc"));
 	ADDMENUITEM(0,_("Print cdvd &Info"), ID_CDVDPRINT);
+	ADDMENUITEM(0,_("Close GS Window on Esc"), ID_CLOSEGS);
 	ADDSEPARATOR(0);
 #ifndef _DEBUG
 	ADDMENUITEM(0,_("Enable &Profiler"), ID_PROFILER);
@@ -1088,7 +1078,8 @@ void CreateMainWindow(int nCmdShow) {
 	hWnd = CreateWindow(
 		"PCSX2 Main",
 		buf, WS_OVERLAPPED | WS_SYSMENU,
-		20, 20, 320, 240, NULL, NULL,
+		20, 20, 320, 240,
+		NULL, NULL,
 		gApp.hInstance, NULL
 	);
 
@@ -1104,9 +1095,9 @@ void CreateMainWindow(int nCmdShow) {
 	if(Config.Patch)	CheckMenuItem(gApp.hMenu,ID_PATCHES,MF_CHECKED);
 	if(Config.Profiler)	CheckMenuItem(gApp.hMenu,ID_PROFILER,MF_CHECKED);
 	if(Config.cdvdPrint)CheckMenuItem(gApp.hMenu,ID_CDVDPRINT,MF_CHECKED);
+	if(Config.closeGSonEsc)CheckMenuItem(gApp.hMenu,ID_CLOSEGS,MF_CHECKED);
+
 	hStatusWnd = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", hWnd, 100);
-    sprintf(buf, "PCSX2 %s", PCSX2_VERSION);
-	StatusSet(buf);
 
 	w = bm.bmWidth; h = bm.bmHeight;
 	GetWindowRect(hStatusWnd, &rect);
@@ -1114,14 +1105,16 @@ void CreateMainWindow(int nCmdShow) {
 	GetMenuItemRect(hWnd, gApp.hMenu, 0, &rect);
 	h+= rect.bottom - rect.top;
 	MoveWindow(hWnd, 60, 60, w, h, TRUE);
+	SendMessage( hStatusWnd, WM_SIZE, 0, 0 );
 
-	DestroyWindow(hStatusWnd);
-	hStatusWnd = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", hWnd, 100);
-	sprintf(buf, "F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot", PCSX2_VERSION);
-	StatusSet(buf);
+	StatusBar_SetMsg("F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot");
+
 	ShowWindow(hWnd, nCmdShow);
 	SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
-	SetForegroundWindow( hWnd );
+
+	// If we're coming off the GS plugin then we need to force ourselves to the top:
+	if( g_GameInProgress )
+		SetForegroundWindow( hWnd );
 }
 
 

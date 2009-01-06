@@ -111,7 +111,7 @@ extern u32 LinuxsseVUMXCSR;
 #endif
 
 void applypatch( int place );
-void inifile_read( char * name );
+void inifile_read( const char * name );
 void inifile_command( char * cmd );
 void resetpatch( void );
 
@@ -134,7 +134,7 @@ extern u32 g_sseVUMXCSR;
 
 void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR);
 void SetRoundMode(u32 ee, u32 vu);
-int LoadPatch(char *patchfile);
+int LoadPatch(const std::string& patchfile);
 
 #endif /* __PATCH_H__ */
 

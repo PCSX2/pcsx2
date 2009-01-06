@@ -45,10 +45,11 @@ protected:
 	u32 m_version;		// version of the savestate being loaded.
 
 public:
-	SaveState( const char* msg, const char* destination );
+	SaveState( const char* msg, const string& destination );
 	virtual ~SaveState() { }
 
-	static void GetFilename( char* dest, int slot );
+	static void GetFilename( string& dest, int slot );
+	static string GetFilename( int slot );
 
 	// Gets the version of savestate that this object is acting on.
 	// The version refers to the low 16 bits only (high 16 bits classifies Pcsx2 build types)
@@ -75,7 +76,7 @@ public:
 		FreezeMem( &data, sizeof( T ) );
 	}
 
-	// FreezeLEgacy can be used to load structures short of their full size, which is
+	// FreezeLegacy can be used to load structures short of their full size, which is
 	// useful for loading structures that have had new stuff added since a previous version.
 	template<typename T>
 	void FreezeLegacy( T& data, int sizeOfNewStuff )
@@ -84,7 +85,7 @@ public:
 	}
 
 	// Loads or saves a plugin.  Plugin name is for console logging purposes.
-	virtual void FreezePlugin( const char* name,s32(CALLBACK* freezer)(int mode, freezeData *data) )=0; 
+	virtual void FreezePlugin( const char* name, s32 (CALLBACK* freezer)(int mode, freezeData *data) )=0; 
 
 	// Loads or saves a memory block.
 	virtual void FreezeMem( void* data, int size )=0;
@@ -98,9 +99,14 @@ public:
 	// note: gsFreeze() needs to be public because of the GSState recorder.
 
 public:
-	void gsFreeze();
+	virtual void gsFreeze();
 
 protected:
+
+	// Used internally by constructors to check the cdvd's crc against the CRC of the savestate.
+	// This allows for proper exception handling of changed CDs on-the-fly.
+	void _testCdvdCrc();
+
 
 	// Load/Save functions for the various components of our glorious emulator!
 
@@ -129,11 +135,11 @@ protected:
 class gzBaseStateInfo : public SaveState
 {
 protected:
-	const char* m_filename;
+	const string m_filename;
 	gzFile m_file;		// used for reading/writing disk saves
 
 public:
-	gzBaseStateInfo( const char* msg, const char* filename );
+	gzBaseStateInfo( const char* msg, const string& filename );
 
 	virtual ~gzBaseStateInfo();
 };
@@ -142,7 +148,7 @@ class gzSavingState : public gzBaseStateInfo
 {
 public:
 	virtual ~gzSavingState() {}
-	gzSavingState( const char* filename ) ;
+	gzSavingState( const string& filename ) ;
 	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	void FreezeMem( void* data, int size );
 	bool IsSaving() const { return true; }
@@ -152,7 +158,7 @@ class gzLoadingState : public gzBaseStateInfo
 {
 public:
 	virtual ~gzLoadingState();
-	gzLoadingState( const char* filename ); 
+	gzLoadingState( const string& filename ); 
 
 	void FreezePlugin( const char* name, s32(CALLBACK *freezer)(int mode, freezeData *data) );
 	void FreezeMem( void* data, int size );

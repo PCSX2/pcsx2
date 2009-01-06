@@ -280,7 +280,7 @@ void ProfilerInit()
 
 	hProfThread=CreateThread(0,0,(LPTHREAD_START_ROUTINE)ProfilerThread,0,0,0);
 	SetThreadPriority(hProfThread,THREAD_PRIORITY_HIGHEST);
-	//Console::MsgLn( " Done!" );
+	//Console::WriteLn( " Done!" );
 }
 
 void ProfilerTerm()
@@ -305,7 +305,7 @@ void ProfilerTerm()
 		CloseHandle( hMtgsThread );
 
 	DeleteCriticalSection( &ProfModulesLock );
-	//Console::MsgLn( " Done!" );
+	//Console::WriteLn( " Done!" );
 }
 
 void ProfilerSetEnabled(bool Enabled)

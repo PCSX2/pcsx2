@@ -240,7 +240,7 @@ int CDVD_GetVolumeDescriptor(void){
 
 	cdVolDesc localVolDesc;
 
-	DbgCon::MsgLn("CDVD_GetVolumeDescriptor called");
+	DbgCon::WriteLn("CDVD_GetVolumeDescriptor called");
 
 	for (volDescSector = 16; volDescSector<20; volDescSector++)
 	{
@@ -263,9 +263,9 @@ int CDVD_GetVolumeDescriptor(void){
 	}
 
 	if (CDVolDesc.filesystemType == 1)
-		DbgCon::MsgLn( Color_Green, "CD FileSystem is ISO9660" );
+		DbgCon::WriteLn( Color_Green, "CD FileSystem is ISO9660" );
 	else if (CDVolDesc.filesystemType == 2)
-		DbgCon::MsgLn( Color_Green, "CD FileSystem is Joliet");
+		DbgCon::WriteLn( Color_Green, "CD FileSystem is Joliet");
 	else DbgCon::Notice("Could not detect CD FileSystem type");
 
 	//	CdStop();
@@ -290,7 +290,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 
 	dirTocEntry* tocEntryPointer;
 
-	DbgCon::MsgLn("CDVD_findfile called");
+	DbgCon::WriteLn("CDVD_findfile called");
 
 	//make sure we have good cdReadMode
 	cdReadMode.trycount = 0;
@@ -459,7 +459,7 @@ int CDVD_findfile(const char* fname, TocEntry* tocEntry){
 				strcpy(tocEntry->filename, localTocEntry.filename);
 				memcpy(tocEntry->date, localTocEntry.date, 7);
 
-				DbgCon::MsgLn("CDVD_findfile: found file");
+				DbgCon::WriteLn("CDVD_findfile: found file");
 
 				return TRUE;
 			}

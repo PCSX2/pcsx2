@@ -134,7 +134,7 @@ int writeData(const u8 *result){
 		sprintf(p, "%02X ", result[i]);
 		strcat(l, p);
 	}
-	Console::Alert(l);
+	Msgbox::Alert(l);
 */
 	return r;
 }

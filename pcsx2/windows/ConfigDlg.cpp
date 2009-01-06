@@ -48,9 +48,9 @@ struct ComboInitializer
 	,	PS2E_GetLibName( NULL )
 	,	PS2E_GetLibVersion2( NULL )
 	{
-		char tmpStr[g_MaxPath];
-		CombinePaths(tmpStr, Config.PluginsDir, "*.dll");
-		Find = FindFirstFile(tmpStr, &FindData);
+		string tmpStr;
+		Path::Combine( tmpStr, Config.PluginsDir, "*.dll" );
+		Find = FindFirstFile(tmpStr.c_str(), &FindData);
 	}
 
 	~ComboInitializer()
@@ -66,10 +66,10 @@ struct ComboInitializer
 
 	bool LoadNextLibrary()
 	{
-		char tmpStr[g_MaxPath];
-		CombinePaths( tmpStr, Config.PluginsDir, FindData.cFileName );
-		Lib = LoadLibrary(tmpStr);
-		if (Lib == NULL) { Console::Error("%s: %s", tmpStr, SysLibError()); return false; }
+		string tmpStr;
+		Path::Combine( tmpStr, Config.PluginsDir, FindData.cFileName );
+		Lib = LoadLibrary(tmpStr.c_str());
+		if (Lib == NULL) { Console::Error( "%S: %s", params &tmpStr, SysLibError()); return false; }
 
 		PS2E_GetLibType = (_PS2EgetLibType) GetProcAddress((HMODULE)Lib,"PS2EgetLibType");
 		PS2E_GetLibName = (_PS2EgetLibName) GetProcAddress((HMODULE)Lib,"PS2EgetLibName");
@@ -84,13 +84,13 @@ struct ComboInitializer
 
 	void AddPlugin(HWND hwndCombo, const char* str)
 	{
-		char tmpStr[g_MaxPath];
+		string tmpStr;
 		int i;
 
-		sprintf(tmpStr, "%s %d.%d.%d", PS2E_GetLibName(), (version>>8)&0xff, version&0xff, (version>>24)&0xff);
+		ssprintf(tmpStr, "%s %d.%d.%d", params PS2E_GetLibName(), (version>>8)&0xff, version&0xff, (version>>24)&0xff);
 		char* lp = (char *)malloc(strlen(FindData.cFileName)+8);
 		sprintf(lp, "%s", FindData.cFileName);
-		i = ComboBox_AddString(hwndCombo, tmpStr);
+		i = ComboBox_AddString(hwndCombo, tmpStr.c_str());
 		ComboBox_SetItemData(hwndCombo, i, lp);
 		if (_stricmp(str, lp)==0)
 			ComboBox_SetCurSel(hwndCombo, i);
@@ -104,7 +104,7 @@ struct ComboInitializer
 			if ( ((version >> 16)&0xff) == checkver )
 				return true;
 
-			Console::Notice("%s Plugin %s:  Version %x != %x", typeStr, FindData.cFileName, 0xff&(version >> 16), checkver);
+			Console::Notice("%s Plugin %s:  Version %x != %x", params typeStr, FindData.cFileName, 0xff&(version >> 16), checkver);
 		}
 		return false;
 	}
@@ -307,12 +307,12 @@ static void ConfPlugin( HWND hW, int confs, const char* name )
 	void *drv;
 	void (*conf)();
 	char * pDLL = GetComboSel(hW, confs);
-	char file[g_MaxPath];
+	string file;
 
 	if(pDLL==NULL) return;
-	CombinePaths( file, Config.PluginsDir, pDLL );
+	Path::Combine( file, Config.PluginsDir, pDLL );
 
-	drv = SysLoadLibrary(file);
+	drv = SysLoadLibrary(file.c_str());
 	if (drv == NULL) return;
 
 	conf = (void (*)()) SysLoadSym(drv, name);
@@ -388,12 +388,12 @@ static void TestPlugin( HWND hW, int confs, const char* name )
 	int (*conf)();
 	int ret = 0;
 	char * pDLL = GetComboSel(hW, confs);
-	char file[g_MaxPath];
+	string file;
 
 	if (pDLL== NULL) return;
-	CombinePaths( file, Config.PluginsDir, pDLL );
+	Path::Combine( file, Config.PluginsDir, pDLL );
 
-	drv = SysLoadLibrary(file);
+	drv = SysLoadLibrary(file.c_str());
 	if (drv == NULL) return;
 
 	conf = (int (*)()) SysLoadSym(drv, name);
@@ -401,9 +401,9 @@ static void TestPlugin( HWND hW, int confs, const char* name )
 	SysCloseLibrary(drv);
 
 	if (ret == 0)
-		Console::Alert("This plugin reports that should work correctly");
+		Msgbox::Alert("Success!\nThis plugin reports that should work correctly.");
 	else
-		Console::Alert("This plugin reports that should not work correctly");
+		Msgbox::Alert("Test Failed.\nThis plugin may not work correctly.");
 }
 
 void TestGS(HWND hW) {
@@ -562,10 +562,13 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 
-BOOL Pcsx2Configure(HWND hWnd) {
-    return DialogBox(gApp.hInstance,
-                     MAKEINTRESOURCE(IDD_CONFIG),
-                     hWnd,  
-                     (DLGPROC)ConfigureDlgProc);
+BOOL Pcsx2Configure(HWND hWnd)
+{
+    return DialogBox(
+		gApp.hInstance,
+		MAKEINTRESOURCE(IDD_CONFIG),
+		hWnd,  
+		(DLGPROC)ConfigureDlgProc
+	);
 }
 

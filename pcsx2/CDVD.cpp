@@ -222,14 +222,16 @@ FILE *_cdvdOpenMechaVer() {
 	char *ptr;
 	int i;
 	char file[g_MaxPath];
-	char Bios[g_MaxPath];
+	string Bios;
 	FILE* fd;
 
 	// get the name of the bios file
-	CombinePaths( Bios, Config.BiosDir, Config.Bios );
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 	
 	// use the bios filename to get the name of the mecha ver file
-	strcpy(file, Bios);
+	// [TODO] : Upgrade this to use std::string!
+
+	strcpy(file, Bios.c_str());
 	ptr = file; i = (int)strlen(file);
 	while (i > 0) { if (ptr[i] == '.') break; i--; }
 	ptr[i+1] = '\0';
@@ -241,7 +243,7 @@ FILE *_cdvdOpenMechaVer() {
 		SysPrintf("MEC File Not Found , Creating Blank File\n");
 		fd = fopen(file, "wb");
 		if (fd == NULL) {
-			Console::Alert("_cdvdOpenMechaVer: Error creating %s", file);
+			Msgbox::Alert("_cdvdOpenMechaVer: Error creating %s", params file);
 			exit(1);
 		}
 		fputc(0x03, fd);
@@ -265,15 +267,17 @@ s32 cdvdGetMechaVer(u8* ver)
 FILE *_cdvdOpenNVM() {
 	char *ptr;
 	int i;
-	char Bios[g_MaxPath];
+	string Bios;
 	char file[g_MaxPath];
 	FILE* fd;
 
 	// get the name of the bios file
-	CombinePaths( Bios, Config.BiosDir, Config.Bios );
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 	
 	// use the bios filename to get the name of the nvm file
-	strcpy( file, Bios );
+	// [TODO] : Upgrade this to use std::string!
+
+	strcpy( file, Bios.c_str() );
 	ptr = file; i = (int)strlen(file);
 	while (i > 0) { if (ptr[i] == '.') break; i--; }
 	ptr[i+1] = '\0';
@@ -285,7 +289,7 @@ FILE *_cdvdOpenNVM() {
 		SysPrintf("NVM File Not Found , Creating Blank File\n");
 		fd = fopen(file, "wb");
 		if (fd == NULL) {
-			Console::Alert("_cdvdOpenNVM: Error creating %s", file);
+			Msgbox::Alert("_cdvdOpenNVM: Error creating %s", params file);
 			exit(1);
 		}
 		for (i=0; i<1024; i++) fputc(0, fd);
@@ -464,7 +468,7 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
 	// get main elf name
 	GetPS2ElfName(str);
     sprintf(exeName, "%c%c%c%c%c%c%c%c%c%c%c",str[8],str[9],str[10],str[11],str[12],str[13],str[14],str[15],str[16],str[17],str[18]);
-	DevCon::Notice("exeName = %s",&str[8]);
+	DevCon::Notice("exeName = %s", params &str[8]);
 	
 	// convert the number characters to a real 32bit number
 	numbers =	((((exeName[5] - '0'))*10000)	+
@@ -519,11 +523,16 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
 		key[15] = 0x01;
 	}
 	
-	Console::WriteLn( "CDVD.KEY = %02X,%02X,%02X,%02X,%02X,%02X,%02X",cdvd.Key[0],cdvd.Key[1],cdvd.Key[2],cdvd.Key[3],cdvd.Key[4],cdvd.Key[14],cdvd.Key[15] );
+	Console::WriteLn( "CDVD.KEY = %02X,%02X,%02X,%02X,%02X,%02X,%02X", params
+		cdvd.Key[0],cdvd.Key[1],cdvd.Key[2],cdvd.Key[3],cdvd.Key[4],cdvd.Key[14],cdvd.Key[15] );
 
 	// Now's a good time to reload the ELF info...
 	if( ElfCRC == 0 )
-		loadElfCRC( str );
+	{
+		ElfCRC = loadElfCRC( str );
+		ElfApplyPatches();
+		LoadGameSpecificSettings();
+	}
 }
 
 s32 cdvdGetToc(void* toc)
@@ -823,8 +832,8 @@ void cdvdNewDiskCB()
 		if(GetPS2ElfName(str) == 1) {
 			cdvd.Type = CDVD_TYPE_PSCD;
 		} // ENDIF- Does the SYSTEM.CNF file only say "BOOT="? PS1 CD then.
-	} // ENDIF- Is the type listed as a PS2 CD?
-} // END cdvdNewDiskCB()
+	}
+}
 
 void mechaDecryptBytes(unsigned char* buffer, int size)
 {
@@ -996,7 +1005,7 @@ __forceinline void cdvdReadInterrupt() {
 		} else cdr.pTransfer = NULL;
 		if (cdr.pTransfer == NULL) {
 			cdvd.RetryCntP++;
-			Console::Error("CDVD READ ERROR, sector=%d", cdvd.Sector);
+			Console::Error("CDVD READ ERROR, sector=%d", params cdvd.Sector);
 			if (cdvd.RetryCntP <= cdvd.RetryCnt) {
 				cdvd.RErr = CDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
 				CDVDREAD_INT(cdvd.ReadTime);
@@ -1347,14 +1356,14 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			// Seek to sector zero.  The cdvdStartSeek function will simulate
 			// spinup times if needed.
 
-			DevCon::Notice( "CdStandby : %d", rt );
+			DevCon::Notice( "CdStandby : %d", params rt );
 			cdvd.Action = cdvdAction_Standby;
 			cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
 			CDVD_INT( cdvdStartSeek( 0 ) );
 		break;
 
 		case 0x03: // CdStop
-			DevCon::Notice( "CdStop : %d", rt );
+			DevCon::Notice( "CdStop : %d", params rt );
 			cdvd.Action = cdvdAction_Stop;
 			CDVD_INT( PSXCLK / 6 );		// 166ms delay?
 		break;
@@ -1474,7 +1483,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			//the code below handles only CdGetToc!
 			//if(cdvd.Param[0]==0x01)
 			//{
-			DevCon::WriteLn("CDGetToc Param[0]=%d, Param[1]=%d",cdvd.Param[0],cdvd.Param[1]);
+			DevCon::WriteLn("CDGetToc Param[0]=%d, Param[1]=%d", params cdvd.Param[0],cdvd.Param[1]);
 			//}
 			cdvdGetToc( PSXM( HW_DMA3_MADR ) );
 			cdvdSetIrq( (1<<Irq_CommandComplete) ); //| (1<<Irq_DataReady) );
@@ -1487,7 +1496,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			u8  arg0 = cdvd.Param[0];
 			u16 arg1 = cdvd.Param[1] | (cdvd.Param[2]<<8);
 			u32 arg2 = cdvd.Param[3] | (cdvd.Param[4]<<8) | (cdvd.Param[5]<<16) | (cdvd.Param[6]<<24);
-			DevCon::WriteLn("cdvdReadKey(%d, %d, %d)\n", arg0, arg1, arg2);
+			DevCon::WriteLn("cdvdReadKey(%d, %d, %d)\n", params arg0, arg1, arg2);
 			cdvdReadKey(arg0, arg1, arg2, cdvd.Key);
 			cdvd.KeyXor = 0x00;
 			cdvdSetIrq();
@@ -1495,12 +1504,12 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 		break;
 
 		case 0x0F: // CdChgSpdlCtrl
-			Console::Notice("sceCdChgSpdlCtrl(%d)", cdvd.Param[0]);
+			Console::Notice("sceCdChgSpdlCtrl(%d)", params cdvd.Param[0]);
 			cdvdSetIrq();
 		break;
 
 		default:
-			Console::Notice("NCMD Unknown %x", rt);
+			Console::Notice("NCMD Unknown %x", params rt);
 			cdvdSetIrq();
 		break;
 	}
@@ -1530,7 +1539,7 @@ void cdvdWrite07(u8 rt)		// BREAK
 	if( cdvd.Ready != 0 || cdvd.Action == cdvdAction_Break )
 		return;
 
-	DbgCon::Notice("*PCSX2*: CDVD BREAK %x" , rt);
+	DbgCon::Notice("*PCSX2*: CDVD BREAK %x", params rt);
 
 	// Aborts any one of several CD commands:
 	// Pause, Seek, Read, Status, Standby, and Stop
@@ -1558,14 +1567,14 @@ void cdvdWrite0A(u8 rt) { // STATUS
 
 void cdvdWrite0F(u8 rt) { // TYPE
 	CDR_LOG("cdvdWrite0F(Type) %x\n", rt);
-	DevCon::WriteLn("*PCSX2*: CDVD TYPE %x\n", rt);
+	DevCon::WriteLn("*PCSX2*: CDVD TYPE %x\n", params rt);
 }
 
 void cdvdWrite14(u8 rt) { // PS1 MODE??
 	u32 cycle = psxRegs.cycle;
 
 	if (rt == 0xFE)	Console::Notice("*PCSX2*: go PS1 mode DISC SPEED = FAST\n");
-	else			Console::Notice("*PCSX2*: go PS1 mode DISC SPEED = %dX\n", rt);
+	else			Console::Notice("*PCSX2*: go PS1 mode DISC SPEED = %dX\n", params rt);
 
 	psxReset();
 	psxHu32(0x1f801450) = 0x8;

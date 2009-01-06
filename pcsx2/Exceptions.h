@@ -20,7 +20,6 @@
 #define _PCSX2_EXCEPTIONS_H_
 
 #include <stdexcept>
-#include <string>
 
 // This class provides an easy and clean method for ensuring objects are not copyable.
 class NoncopyableObject
@@ -61,43 +60,78 @@ protected:
 
 namespace Exception
 {
-	class OutOfMemory : public std::runtime_error
+	// std::exception sucks, so I made a replacement.
+	// Note, this class is "abstract" which means you shouldn't use it directly like, ever.
+	// Use Exception::RuntimeError or Exception::LogicError instead.
+	class BaseException
+	{
+	protected:
+		const std::string m_message;		// a "detailed" message of what disasterous thing has occured!
+
+	public:
+		virtual ~BaseException() throw()=0;	// the =0; syntax forces this class into "abstract" mode.
+		explicit BaseException( const std::string& msg="Unhandled exception." ) :
+			m_message( msg )
+		{}
+
+		const std::string& Message() const { return m_message; }
+	};
+
+	class RuntimeError : public BaseException
+	{
+	public:
+		virtual ~RuntimeError() throw() {}
+		explicit RuntimeError( const std::string& msg="An unhandled runtime error has occured, somewhere in the depths of Pcsx2's cluttered brain-matter." ) :
+			BaseException( msg )
+		{}
+	};
+
+	class LogicError : public BaseException
+	{
+	public:
+		virtual ~LogicError() throw() {}
+		explicit LogicError( const std::string& msg="An unhandled logic error has occured." ) :
+			BaseException( msg )
+		{}
+	};
+
+	class OutOfMemory : public RuntimeError
 	{
 	public:
 		explicit OutOfMemory( const std::string& msg="Out of memory!" ) :
-			runtime_error( msg ) {}
+			RuntimeError( msg ) {}
 	};
 
 	// This exception  exception thrown any time an operation is attempted when an object
 	// is in an uninitialized state.
-	class InvalidOperation : public std::logic_error
+	class InvalidOperation : public LogicError
 	{
 	public:
 		virtual ~InvalidOperation() throw() {}
 		explicit InvalidOperation( const std::string& msg="Attempted method call is invalid for the current object or program state." ) :
-			logic_error( msg ) {}
+			LogicError( msg ) {}
 	};
 
-	class HardwareDeficiency : public std::runtime_error
+	class HardwareDeficiency : public RuntimeError
 	{
 	public:
 		explicit HardwareDeficiency( const std::string& msg="Your machine's hardware is incapable of running Pcsx2.  Sorry dood." ) :
-			runtime_error( msg ) {}
+			RuntimeError( msg ) {}
 	};
 
 	// This exception is thrown by the PS2 emulation (R5900, etc) when bad things happen
 	// that force the emulation state to terminate.  The GUI should handle them by returning
 	// the user to the GUI.
-	class CpuStateShutdown : public std::runtime_error
+	class CpuStateShutdown : public RuntimeError
 	{
 	public:
 		virtual ~CpuStateShutdown() throw() {}
 		explicit CpuStateShutdown( const std::string& msg="The PS2 emulated state was shut down unexpectedly." ) :
-			runtime_error( msg ) {}
+			RuntimeError( msg ) {}
 	};
 
 	// Exception thrown by SaveState class when a critical plugin or gzread
-	class FreezePluginFailure : public std::runtime_error
+	class FreezePluginFailure : public RuntimeError
 	{
 	public:
 		std::string plugin_name;		// name of the plugin
@@ -105,43 +139,102 @@ namespace Exception
 
 		virtual ~FreezePluginFailure() throw() {}
 		explicit FreezePluginFailure( const std::string& plugin, const std::string& action ) :
-			runtime_error( plugin + " plugin returned an error while " + action + " the state." )
+			RuntimeError( plugin + " plugin returned an error while " + action + " the state." )
 		,	plugin_name( plugin )
 		,	freeze_action( action ){}
 	};
 
-	class UnsupportedStateVersion : public std::runtime_error
+	// The savestate code throws Recoverable errors when it fails prior to actually modifying
+	// the current emulation state.  Recoverable errors are always thrown from the SaveState
+	// object construction (and never from Freeze methods).
+	class StateLoadError_Recoverable : public RuntimeError
 	{
 	public:
-		virtual ~UnsupportedStateVersion() throw() {}
-		explicit UnsupportedStateVersion( const std::string& msg="Unknown or unsupported savestate version." ) :
-			runtime_error( msg ) {}
+		virtual ~StateLoadError_Recoverable() throw() {}
+		explicit StateLoadError_Recoverable( const std::string& msg="Recoverable error while loading savestate (existing emulation state is still intact)." ) :
+			RuntimeError( msg ) {}
 	};
 
-	class PluginFailure : public std::runtime_error
+	// A recoverable exception thrown when the savestate being loaded isn't supported.
+	class UnsupportedStateVersion : public StateLoadError_Recoverable
+	{
+	public:
+		u32 Version;		// version number of the unsupported state.
+
+	public:
+		virtual ~UnsupportedStateVersion() throw() {}
+		explicit UnsupportedStateVersion( int version ) :
+			StateLoadError_Recoverable( fmt_string( "Unknown or unsupported savestate version: 0x%x", params version ) )
+		{}
+
+		explicit UnsupportedStateVersion( int version, const std::string& msg ) :
+			StateLoadError_Recoverable( msg ) {}
+	};
+
+	// A recoverable exception thrown when the CRC of the savestate does not match the
+	// CRC returned by the Cdvd driver.
+	class StateCrcMismatch : public StateLoadError_Recoverable
+	{
+	public:
+		u32 Crc_Savestate;
+		u32 Crc_Cdvd;
+
+	public:
+		virtual ~StateCrcMismatch() throw() {}
+		explicit StateCrcMismatch( u32 crc_save, u32 crc_cdvd )
+		:	StateLoadError_Recoverable( fmt_string(
+				"Game/CDVD does not match the savestate CRC.\n"
+				"\tCdvd CRC: 0x%X\n\tGame CRC: 0x%X\n", params crc_save, crc_cdvd
+			) )
+		,	Crc_Savestate( crc_save )
+		,	Crc_Cdvd( crc_cdvd )
+		{}
+
+		explicit StateCrcMismatch( u32 crc_save, u32 crc_cdvd, const std::string& msg )
+		:	StateLoadError_Recoverable( msg )
+		,	Crc_Savestate( crc_save )
+		,	Crc_Cdvd( crc_cdvd )
+		{}
+	};
+
+	class PluginFailure : public RuntimeError
 	{
 	public:
 		std::string plugin_name;		// name of the plugin
 
 		virtual ~PluginFailure() throw() {}
 		explicit PluginFailure( const std::string& plugin, const std::string& msg = "An error occured in the " ) :
-			runtime_error( plugin + msg + " Plugin" )
+			RuntimeError( plugin + msg + " Plugin" )
 		,	plugin_name( plugin ) {}
 	};
 
-	class ThreadCreationError : public std::runtime_error
+	class ThreadCreationError : public RuntimeError
 	{
 	public:
 		virtual ~ThreadCreationError() throw() {}
 		explicit ThreadCreationError( const std::string& msg="Thread could not be created." ) :
-			runtime_error( msg ) {}
+			RuntimeError( msg ) {}
 	};
 
-	/**** BEGIN STREAMING EXCEPTIONS ****/
+	// This is a "special" exception that's primarily included for safe functioning in the 
+	// Win32's ASCII API (ie, the non-Unicode one).  Many of the old Win32 APIs don't support
+	// paths over 256 characters.
+	class PathTooLong : public RuntimeError
+	{
+	public:
+		virtual ~PathTooLong() throw() {}
+		explicit PathTooLong( const std::string& msg=
+			"A Pcsx2 pathname was too long for the system.  Please move or reinstall Pcsx2 to\n"
+			"a location on your hard drive that has a shorter path." ) :
+			RuntimeError( msg ) {}
+	};
+
+	///////////////////////////////////////////////////////////////////////
+	//                     BEGIN STREAMING EXCEPTIONS
 
 	// Generic stream error.  Contains the name of the stream and a message.
 	// This exception is usually thrown via derrived classes, except in the (rare) case of a generic / unknown error.
-	class Stream : public std::runtime_error
+	class Stream : public RuntimeError
 	{
 	public:
 		std::string stream_name;		// name of the stream (if applicable)
@@ -150,13 +243,13 @@ namespace Exception
 
 		// copy construct!
 		Stream( const Stream& src ) :
-			std::runtime_error( src.what() )
+			RuntimeError( src.Message() )
 		,	stream_name( src.stream_name ) {}
 
 		explicit Stream(
 			const std::string& objname=std::string(),
 			const std::string& msg="Invalid stream object" ) :
-		  std::runtime_error( msg + ": " + objname )
+		  RuntimeError( msg + ": " + objname )
 		, stream_name( objname ) {}
 	};
 

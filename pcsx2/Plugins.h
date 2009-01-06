@@ -33,6 +33,8 @@ void ReleasePlugins();
 int  OpenPlugins(const char* pTitleFilename);
 void ClosePlugins();
 
+int InitPlugins();
+
 // Completely shuts down all plugins and re-initializes them. (clean slate)
 // Plugins are not unloaded, so changes to Config.Plugins values will not
 // take effect.  Use a manual set oc alls to ReleasePlugins and LoadPlugins for that.

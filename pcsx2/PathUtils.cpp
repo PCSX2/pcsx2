@@ -17,22 +17,51 @@
  */
 
 #include "PrecompiledHeader.h"
-
 #include "Common.h"
 
-// This global set true by path methods when they encounter long paths.
-// If it flags true it means the app isn't stable and should be terminated.
-// (someday this should be replaced with proper C++ exception handling)
-int g_Error_PathTooLong = FALSE;
+namespace Path
+{
 
 #ifdef WIN32
-static const char PathSeparator = '\\';
+static const char Separator = '\\';
 #else
-static const char PathSeparator = '/';
+static const char Separator = '/';
 #endif
 
+bool Exists( const string& path )
+{
+	struct stat sbuf;
+	return stat( path.c_str(), &sbuf ) == 0;
+}
 
-int isPathRooted( const char* path )
+// This function returns false if the path does not exist, or if the path exists and
+// is a file.
+bool isDirectory( const string& path )
+{
+	struct stat sbuf;
+	if( stat( path.c_str(), &sbuf ) == -1 ) return false;
+	return !!(sbuf.st_mode & _S_IFDIR);
+}
+
+// This function returns false if the path does not exist, or if the path exists and
+// is a directory.
+bool isFile( const string& path )
+{
+	struct stat sbuf;
+	if( stat( path.c_str(), &sbuf ) == -1 ) return false;
+	return !!(sbuf.st_mode & _S_IFREG);
+}
+
+// Returns the length of the file.
+// returns -1 if the file is not found.
+int getFileSize( const string& path )
+{
+	struct stat sbuf;
+	if( stat( path.c_str(), &sbuf ) == -1 ) return -1;
+	return sbuf.st_size;
+}
+
+bool isRooted( const string& path )
 {
 	// if the first character is a backslash or period, or the second character
 	// a colon, it's a safe bet we're rooted.
@@ -47,65 +76,60 @@ int isPathRooted( const char* path )
 
 // Concatenates two pathnames together, inserting delimiters (backslash on win32)
 // as needed! Assumes the 'dest' is allocated to at least g_MaxPath length.
-void CombinePaths( char* dest, const char* srcPath, const char* srcFile )
+void Combine( string& dest, const string& srcPath, const string& srcFile )
 {
 	int pathlen, guesslen;
-	char tmp[g_MaxPath];
 
-	if( g_Error_PathTooLong )
-	{
-		// This means a previous call has already failed and given the user
-		// a message.  Pcsx2 will exit as soon as it finds out, so skip
-		// this operation (avoids the redundant message below)
-		// [TODO] : Proper exception handling would resolve this hack!
-
-		return;
-	}
-
-	if( srcFile == NULL || srcFile[0] == 0 )
+	if( srcFile.empty() )
 	{
 		// No source filename?  Return the path unmodified.
-		if( srcPath != NULL ) strcpy( dest, srcPath );
+		dest = srcPath;
 		return;
 	}
 
-	if( isPathRooted( srcFile ) || srcPath == NULL || srcPath[0] == 0 )
+	if( isRooted( srcFile ) || srcPath.empty() )
 	{
 		// No source path?  Or source filename is rooted?
 		// Return the filename unmodified.
-		strcpy( dest, srcFile );
+		dest = srcFile;
 		return;
 	}
 
-	
-	// strip off the srcPath's trialing backslashes (if any)
+	// strip off the srcPath's trailing backslashes (if any)
 	// Note: The win32 build works better if I check for both forward and backslashes.
 	// This might be a problem on Linux builds or maybe it doesn't matter?
-	strcpy( tmp, srcPath );
-	pathlen = strlen( tmp );
-	while( pathlen > 0 && ((tmp[pathlen-1] == '\\') || (tmp[pathlen-1] == '/')) )
-	{
+
+	pathlen = srcPath.length();
+	while( pathlen > 0 && ((srcPath[pathlen-1] == '\\') || (srcPath[pathlen-1] == '/')) )
 		--pathlen;
-		tmp[pathlen] = 0;
-	}
 
 	// Concatenate strings:
-	guesslen = pathlen + strlen(srcFile) + 2;
+	guesslen = pathlen + srcFile.length() + 2;
 
 	if( guesslen >= g_MaxPath )
-	{
-		Console::Alert(
-			"Pcsx2 path names are too long.  Please move or reinstall Pcsx2 to\n"
-			"a location on your hard drive that has a shorter total path."
-		);
-		
-		g_Error_PathTooLong = TRUE;
-		// [TODO]: Here would be a nice place for future C++ exception handling!
-	}
+		throw Exception::PathTooLong();
 
-#ifdef WIN32
-	sprintf_s( dest, g_MaxPath, "%s%c%s", tmp, PathSeparator, srcFile );
-#else
-	sprintf( dest, "%s%c%s", srcPath, PathSeparator, srcFile );
-#endif
+	// Concatenate!
+
+	dest.assign( srcPath.begin(), srcPath.begin()+pathlen );
+	dest += Separator;
+	dest += srcFile;
+}
+
+// Replaces the extension of the file with the one given.
+void ReplaceExtension( string& dest, const string& src, const string& ext )
+{
+	int pos = src.find_last_of( '.' );
+	if( pos == 0 )
+		dest = src;
+	else
+		dest.assign( src.begin(), src.begin()+pos );
+
+	if( !ext.empty() )
+	{
+		dest += '.';
+		dest += ext;
+	}
+}
+
 }

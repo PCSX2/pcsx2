@@ -223,7 +223,7 @@ mtgsThreadObject::mtgsThreadObject() :
 
 mtgsThreadObject::~mtgsThreadObject()
 {
-	Console::MsgLn( "MTGS > Closing GS thread..." );
+	Console::WriteLn( "MTGS > Closing GS thread..." );
 	SetEvent();
 
 	// rest of the cleanup will be handled by the inherited object destructors...
@@ -416,7 +416,7 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 		if(!path.tag.eop && path.tag.nloop > 0)
 		{
 			path.tag.nloop = 0;
-			DevCon::Msg( "path1 hack! " );
+			DevCon::Write( "path1 hack! " );
 		}
 	}
 #ifdef PCSX2_GSRING_SAMPLING_STATS
@@ -431,12 +431,12 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 
 int mtgsThreadObject::Callback()
 {
-	Console::MsgLn("MTGS > Thread Started, Opening GS Plugin...");
+	Console::WriteLn("MTGS > Thread Started, Opening GS Plugin...");
 	m_returncode = GSopen((void *)&pDsp, "PCSX2", 1);
 	GSCSRr = 0x551B400F; // 0x55190000
 	m_wait_InitDone.Set();
 	if (m_returncode != 0) { return m_returncode; }		// error msg will be issued to the user by Plugins.c
-	Console::MsgLn("MTGS > GSopen Finished.");
+	Console::WriteLn("MTGS > GSopen Finished.");
 
 #ifdef RINGBUF_DEBUG_STACK
 	u32 prevCmd=0;
@@ -569,7 +569,7 @@ int mtgsThreadObject::Callback()
 
 #ifdef PCSX2_DEVBUILD
 				default:
-					Console::Error("GSThreadProc, bad packet (%x) at m_RingPos: %x, m_WritePos: %x", tag, m_RingPos, m_WritePos);
+					Console::Error("GSThreadProc, bad packet (%x) at m_RingPos: %x, m_WritePos: %x", params tag, m_RingPos, m_WritePos);
 					assert(0);
 					m_RingPos = m_WritePos;
 					continue;

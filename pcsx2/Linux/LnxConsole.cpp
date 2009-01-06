@@ -37,7 +37,7 @@ namespace Console
 	,	"\033[37m"		// white!
 	};
 
-	void SetTitle( const char* title )
+	void SetTitle( const string& title )
 	{
 	}
 
@@ -51,7 +51,7 @@ namespace Console
 
 	__forceinline bool __fastcall Newline()
 	{
-		if (Config.PsxOut != 0)
+		if (Config.PsxOut)
 			puts( "\n" );
 
 		if (emuLog != NULL)
@@ -63,14 +63,13 @@ namespace Console
 		return false;
 	}
 
-	__forceinline bool __fastcall Msg( const char* fmt )
+	__forceinline bool __fastcall Write( const string& fmt )
 	{
-		if (Config.PsxOut != 0)
-			puts( fmt );
+		if (Config.PsxOut)
+			puts( fmt.c_str() );
 
-		// No flushing here -- only flush after newlines.
 		if (emuLog != NULL)
-			fputs(fmt, emuLog);
+			fputs(fmt.c_str(), emuLog);
 
 		return false;
 	}
@@ -84,145 +83,46 @@ namespace Console
 	{
 		Msg( COLOR_RESET );
 	}
+}
 
-	__forceinline bool __fastcall MsgLn( const char* fmt )
+namespace Msgbox
+{	
+	bool Alert( const string& fmt )
 	{
-		Msg( fmt );
-		Newline();
-		return false;
+		if (!UseGui) 
+		{ 
+			Error( msg ); 
+			return false; 
+		}
+
+		GtkWidget *dialog;
+
+		dialog = gtk_message_dialog_new (GTK_WINDOW(MainWindow),
+                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                  GTK_MESSAGE_ERROR,
+                                  GTK_BUTTONS_OK, fmt);
+		gtk_dialog_run (GTK_DIALOG (dialog));
+		gtk_widget_destroy (dialog);
+		
+		return false; 
 	}
 
-	// Writes an unformatted string of text to the console (fast!)
-	// A newline is automatically appended.
-	__forceinline bool __fastcall MsgLn( Colors color, const char* fmt )
-	{
-		SetColor( color );
-		Write( fmt );
-		ClearColor();
-		Newline();
-		return false;
-	}
-	
-	static __forceinline void __fastcall _WriteLn( Colors color, const char* fmt, va_list args )
-	{
-		char msg[2048];
-
-		vsnprintf(msg,2045,fmt,args);
-		msg[2044] = '\0';
-		strcat( msg, "\n" );
-		SetColor( color );
-		Msg( msg );
-		ClearColor();
-
-		if( emuLog != NULL )
-			fflush( emuLog );		// manual flush to accompany manual newline
-	}
-	
-	// Writes a line of colored text to the console, with automatic newline appendage.
-	bool WriteLn( Colors color, const char* fmt, ... )
-	{
-		va_list list;
-		va_start(list,fmt);
-		_WriteLn( Color_White, fmt, list );
-		va_end(list);
-		return false;
-	}
-	
-	bool Write( Colors color, const char* fmt, ... )
-	{
-		va_list list;
-		char msg[2048];
-
-		va_start(list,fmt);
-		vsnprintf(msg,2047,fmt,list);
-		msg[2047] = '\0';
-		va_end(list);
-
-		SetColor( color );
-		Msg( msg );
-		ClearColor();
-		return false;
-	}
-
-	bool Write( const char* fmt, ... )
-	{
-		va_list list;
-		char msg[2048];
-
-		va_start(list,fmt);
-		vsnprintf(msg,2047,fmt,list);
-		msg[2047] = '\0';
-		va_end(list);
-
-		Msg( msg );
-		return false;
-	}
-
-	bool WriteLn( const char* fmt, ... )
-	{
-		va_list list;
-		char msg[2048];
-
-		va_start(list,fmt);
-		vsnprintf(msg,2046,fmt,list);	// 2046 to leave room for the newline
-		va_end(list);
-
-		strcat( msg, "\n" );		// yeah, that newline!
-		Msg( msg );
-		if( emuLog != NULL )
-			fflush( emuLog );		// manual flush to accomany manual newline
-		return false;
-	}
-
-	// Displays a message in the console with red emphasis.
-	// Newline is automatically appended.
-	bool Error( const char* fmt, ... )
-	{
-		va_list list;
-		va_start(list,fmt);
-		_WriteLn( Color_Red, fmt, list );
-		va_end(list);
-		return false;
-	}
-
-	// Displays a message in the console with yellow emphasis.
-	// Newline is automatically appended.
-	bool Notice( const char* fmt, ... )
-	{
-		va_list list;
-		va_start(list,fmt);
-		_WriteLn( Color_Yellow, fmt, list );
-		va_end(list);
-		return false;
-	}
-
-	// Displays a message in the console with green emphasis.
-	// Newline is automatically appended.
-	bool Status( const char* fmt, ... )
-	{
-		va_list list;
-		va_start(list,fmt);
-		_WriteLn( Color_Yellow, fmt, list );
-		va_end(list);
-		return false;
-	}
-	
-	bool Alert(const char *fmt, ...)
+	bool Alert(const string& fmt, VARG_PARAM dummy, ...)
 	{
 		GtkWidget *dialog;
-		va_list list;
-		char msg[512];
+		string msg;
 
-		va_start(list, fmt);
-		vsprintf(msg, fmt, list);
+		va_list list;
+		va_start(list, dummy);
+		ssprintf(msg, fmt, list);
 		va_end(list);
 
-		if (msg[strlen(msg)-1] == '\n')
-			msg[strlen(msg)-1] = 0;
+		if (msg[msg.length()-1] == '\n')
+			msg[msg.length()-1] = 0;
 
 		if (!UseGui) 
 		{ 
-			Error("%s",msg); 
+			Error( msg ); 
 			return false; 
 		}
 		dialog = gtk_message_dialog_new (GTK_WINDOW(MainWindow),

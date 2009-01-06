@@ -15,10 +15,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
+#include "PrecompiledHeader.h"
 
 using namespace std;
 
@@ -78,10 +75,10 @@ Patch Patch::operator =(const Patch&p)
 vector<Group> groups;
 vector<Patch> patches;
 
-int LoadPatch(char *crc)
+int LoadPatch( const string& crc)
 {
 	char pfile[256];
-	sprintf(pfile,"patches\\%s.xml",crc);
+	sprintf(pfile,"patches\\%S.xml",&crc);
 
 	patchnumber=0;
 

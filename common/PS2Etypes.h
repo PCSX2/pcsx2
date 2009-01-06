@@ -145,42 +145,6 @@ typedef union _LARGE_INTEGER
 
 #define PCSX2_ALIGNED16_DECL(x) x
 
-// The various plugins react to C++ in a header that is supposed to be C
-// in much the same way a vampire reacts to the sign of a cross.
-// Even if the file calling it is a C++ file.
-// 
-// And removing the extern "C"'s makes it even worse. --Arcum42
-#if defined(SECURE_SPRINTF)
-
-// Define some handy equivalents of MSVC++ specific functions.
-#ifdef __cplusplus
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <cstring>
-
-template <size_t Size>
-__forceinline int vsprintf_s(char (&dest)[Size], const char* fmt, va_list args )
-{
-    int retval = vsnprintf( dest, Size, fmt, args );
-	dest[Size-1] = 0;
-	return retval;
-}
-
-template <size_t Size>
-__forceinline int sprintf_s(char (&dest)[Size], const char* fmt, ... )
-{
-	va_list list;
-	
-	va_start( list, dest );
-	int retval = vsprintf_s( dest, fmt, list );
-	va_end( list );
-
-	return retval;
-}
-
-#endif // __cplusplus
-#endif // SECURE_SPRINTF
 #endif // _MSC_VER
 
 #if !defined(__LINUX__) || !defined(HAVE_STDINT_H)

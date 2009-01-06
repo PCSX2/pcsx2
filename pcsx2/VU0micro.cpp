@@ -75,11 +75,12 @@ int  vu0Init()
 	memLUT[0x11003].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11003].aVFNs = &s_psVuMem.aVFNs[0];
 
 	// since vuregisters are mapped in vumem0, go to diff addr, but mapping to same physical addr
-    VirtualFree((void*)0x11000000, 0x10000, MEM_RELEASE); // free just in case
-	VU0.Mem = (u8*)VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
+    //VirtualFree((void*)0x11000000, 0x10000, MEM_RELEASE); // free just in case
+	if( VU0.Mem == NULL )
+		VU0.Mem = (u8*)VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
 
 	if( VU0.Mem != (void*)0x11000000 ) {
-		Console::WriteLn("Failed to alloc vu0mem 0x11000000 %d", GetLastError());
+		Console::WriteLn("Failed to alloc vu0mem 0x11000000 %d", params GetLastError());
 		return -1;
 	}
 
@@ -101,7 +102,7 @@ int  vu0Init()
 //	VU0.VF = (VECTOR*)_aligned_malloc(32*sizeof(VECTOR), 16);
 //	VU0.VI = (REG_VI*)_aligned_malloc(32*sizeof(REG_VI), 16);
 //	if (VU0.VF == NULL || VU0.VI == NULL) {
-//		Console::Alert("Error allocating memory"); 
+//		Msgbox::Alert("Error allocating memory"); 
 //		return -1;
 //	}
 
@@ -129,10 +130,10 @@ void vu0Shutdown()
 
 #ifdef PCSX2_VIRTUAL_MEM
 	if( !SysMapUserPhysicalPages(VU0.Mem, 16, NULL, 0) )
-		Console::Error("Error releasing vu0 memory %d\n", GetLastError());
+		Console::Error("Error releasing vu0 memory %d", params GetLastError());
 
 	if( VirtualFree(VU0.Mem, 0, MEM_RELEASE) == 0 )
-		Console::Error("Error freeing vu0 memory %d\n", GetLastError());
+		Console::Error("Error freeing vu0 memory %d", params GetLastError());
 #else
 	safe_aligned_free(VU0.Mem);
 	safe_aligned_free(VU0.Micro);
@@ -140,8 +141,6 @@ void vu0Shutdown()
 
 	VU0.Mem = NULL;
 	VU0.Micro = NULL;
-//	_aligned_free(VU0.VF); VU0.VF = NULL;
-//	_aligned_free(VU0.VI); VU0.VI = NULL;
 }
 
 void vu0ResetRegs()

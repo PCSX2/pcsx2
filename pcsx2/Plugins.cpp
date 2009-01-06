@@ -18,8 +18,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include <stdarg.h>
-
 #include "Common.h"
 #include "PsxCommon.h"
 #include "GS.h"
@@ -225,7 +223,7 @@ USBhandler usbHandler;
 #define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) \
 { \
 	const char* errString = SysLibError(); \
-	Console::Alert("%s: Error loading %s: %s", filename, #name, errString); \
+	Msgbox::Alert("%s: Error loading %S: %s", params &filename, #name, errString); \
 	return -1; \
 } 
 
@@ -240,7 +238,7 @@ USBhandler usbHandler;
 
 #define TestPS2Esyms(type) if(_TestPS2Esyms(drv,PS2E_LT_##type,PS2E_##type##_VERSION,filename) < 0) return -1;
 
-int _TestPS2Esyms(void* drv, int type, int expected_version, const char* filename)
+int _TestPS2Esyms(void* drv, int type, int expected_version, const string& filename)
 {
 	_PS2EgetLibType PS2EgetLibType;
 	_PS2EgetLibVersion2 PS2EgetLibVersion2;
@@ -253,7 +251,7 @@ int _TestPS2Esyms(void* drv, int type, int expected_version, const char* filenam
 	int actual_version = ((PS2EgetLibVersion2(type) >> 16)&0xff);
 
 	if( actual_version != expected_version) {
-		Console::Alert("Can't load '%s', wrong PS2E version (%x != %x)", filename, actual_version, expected_version);
+		Msgbox::Alert("Can't load '%S', wrong PS2E version (%x != %x)", params &filename, actual_version, expected_version);
 		return -1;
 	}
 
@@ -284,11 +282,12 @@ void CALLBACK GS_configure() {}
 void CALLBACK GS_about() {}
 s32  CALLBACK GS_test() { return 0; }
 
-int LoadGSplugin(char *filename) {
+int LoadGSplugin(const string& filename)
+{
 	void *drv;
 
-	GSplugin = SysLoadLibrary(filename);
-	if (GSplugin == NULL) { Console::Alert ("Could Not Load GS Plugin '%s': %s", filename, SysLibError()); return -1; }
+	GSplugin = SysLoadLibrary(filename.c_str());
+	if (GSplugin == NULL) { Msgbox::Alert ("Could Not Load GS Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = GSplugin;
 	TestPS2Esyms(GS);
 	MapSymbol_Error(GSinit);
@@ -336,11 +335,11 @@ void CALLBACK PAD1_configure() {}
 void CALLBACK PAD1_about() {}
 s32  CALLBACK PAD1_test() { return 0; }
 
-int LoadPAD1plugin(char *filename) {
+int LoadPAD1plugin(const string& filename) {
 	void *drv;
 
-	PAD1plugin = SysLoadLibrary(filename);
-	if (PAD1plugin == NULL) { Console::Alert("Could Not Load PAD1 Plugin '%s': %s", filename, SysLibError()); return -1; }
+	PAD1plugin = SysLoadLibrary(filename.c_str());
+	if (PAD1plugin == NULL) { Msgbox::Alert("Could Not Load PAD1 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = PAD1plugin;
 	TestPS2Esyms(PAD);
 	MapSymbolPAD_Error(PAD1,PAD,init);
@@ -367,11 +366,11 @@ void CALLBACK PAD2_configure() {}
 void CALLBACK PAD2_about() {}
 s32  CALLBACK PAD2_test() { return 0; }
 
-int LoadPAD2plugin(char *filename) {
+int LoadPAD2plugin(const string& filename) {
 	void *drv;
 
-	PAD2plugin = SysLoadLibrary(filename);
-	if (PAD2plugin == NULL) { Console::Alert("Could Not Load PAD2 Plugin '%s': %s", filename, SysLibError()); return -1; }
+	PAD2plugin = SysLoadLibrary(filename.c_str());
+	if (PAD2plugin == NULL) { Msgbox::Alert("Could Not Load PAD2 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = PAD2plugin;
 	TestPS2Esyms(PAD);
 	MapSymbolPAD_Error(PAD2,PAD,init);
@@ -399,11 +398,11 @@ void CALLBACK SPU2_configure() {}
 void CALLBACK SPU2_about() {}
 s32  CALLBACK SPU2_test() { return 0; }
 
-int LoadSPU2plugin(char *filename) {
+int LoadSPU2plugin(const string& filename) {
 	void *drv;
 
-	SPU2plugin = SysLoadLibrary(filename);
-	if (SPU2plugin == NULL) { Console::Alert("Could Not Load SPU2 Plugin '%s': %s", filename, SysLibError()); return -1; }
+	SPU2plugin = SysLoadLibrary(filename.c_str());
+	if (SPU2plugin == NULL) { Msgbox::Alert("Could Not Load SPU2 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = SPU2plugin;
 	TestPS2Esyms(SPU2);
 	MapSymbol_Error(SPU2init);
@@ -442,11 +441,11 @@ void CALLBACK CDVD_configure() {}
 void CALLBACK CDVD_about() {}
 s32  CALLBACK CDVD_test() { return 0; }
 
-int LoadCDVDplugin(char *filename) {
+int LoadCDVDplugin(const string& filename) {
 	void *drv;
 
-	CDVDplugin = SysLoadLibrary(filename);
-	if (CDVDplugin == NULL) { Console::Alert("Could Not Load CDVD Plugin '%s': %s", filename, SysLibError()); return -1; }
+	CDVDplugin = SysLoadLibrary(filename.c_str());
+	if (CDVDplugin == NULL) { Msgbox::Alert("Could Not Load CDVD Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = CDVDplugin;
 	TestPS2Esyms(CDVD);
 	MapSymbol_Error(CDVDinit);
@@ -479,11 +478,11 @@ void CALLBACK DEV9_configure() {}
 void CALLBACK DEV9_about() {}
 s32  CALLBACK DEV9_test() { return 0; }
 
-int LoadDEV9plugin(char *filename) {
+int LoadDEV9plugin(const string& filename) {
 	void *drv;
 
-	DEV9plugin = SysLoadLibrary(filename);
-	if (DEV9plugin == NULL) { Console::Alert("Could Not Load DEV9 Plugin '%s': %s", filename, SysLibError()); return -1; }
+	DEV9plugin = SysLoadLibrary(filename.c_str());
+	if (DEV9plugin == NULL) { Msgbox::Alert("Could Not Load DEV9 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = DEV9plugin;
 	TestPS2Esyms(DEV9);
 	MapSymbol_Error(DEV9init);
@@ -516,11 +515,11 @@ void CALLBACK USB_configure() {}
 void CALLBACK USB_about() {}
 s32 CALLBACK USB_test() { return 0; }
 
-int LoadUSBplugin(char *filename) {
+int LoadUSBplugin(const string& filename) {
 	void *drv;
 
-	USBplugin = SysLoadLibrary(filename);
-	if (USBplugin == NULL) { Console::Alert("Could Not Load USB Plugin '%s': %s", filename, SysLibError()); return -1; }
+	USBplugin = SysLoadLibrary(filename.c_str());
+	if (USBplugin == NULL) { Msgbox::Alert("Could Not Load USB Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = USBplugin;
 	TestPS2Esyms(USB);
 	MapSymbol_Error(USBinit);
@@ -553,11 +552,11 @@ void CALLBACK FW_configure() {}
 void CALLBACK FW_about() {}
 s32 CALLBACK FW_test() { return 0; }
 
-int LoadFWplugin(char *filename) {
+int LoadFWplugin(const string& filename) {
 	void *drv;
 
-	FWplugin = SysLoadLibrary(filename);
-	if (FWplugin == NULL) { Console::Alert("Could Not Load FW Plugin '%s': %s", filename, SysLibError()); return -1; }
+	FWplugin = SysLoadLibrary(filename.c_str());
+	if (FWplugin == NULL) { Msgbox::Alert("Could Not Load FW Plugin '%S': %s", params &filename, SysLibError()); return -1; }
 	drv = FWplugin;
 	TestPS2Esyms(FW);
 	MapSymbol_Error(FWinit);
@@ -597,21 +596,21 @@ int InitPlugins() {
 	int ret;
 
 	ret = GSinit();
-	if (ret != 0) { Console::Alert("GSinit error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("GSinit error: %d", params ret); return -1; }
 	ret = PAD1init(1);
-	if (ret != 0) { Console::Alert("PAD1init error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("PAD1init error: %d", params ret); return -1; }
 	ret = PAD2init(2);
-	if (ret != 0) { Console::Alert("PAD2init error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("PAD2init error: %d", params ret); return -1; }
 	ret = SPU2init();
-	if (ret != 0) { Console::Alert("SPU2init error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("SPU2init error: %d", params ret); return -1; }
 	ret = CDVDinit();
-	if (ret != 0) { Console::Alert("CDVDinit error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("CDVDinit error: %d", params ret); return -1; }
 	ret = DEV9init();
-	if (ret != 0) { Console::Alert("DEV9init error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("DEV9init error: %d", params ret); return -1; }
 	ret = USBinit();
-	if (ret != 0) { Console::Alert("USBinit error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("USBinit error: %d", params ret); return -1; }
 	ret = FWinit();
-	if (ret != 0) { Console::Alert("FWinit error: %d", ret); return -1; }
+	if (ret != 0) { Msgbox::Alert("FWinit error: %d", params ret); return -1; }
 	return 0;
 }
 
@@ -640,33 +639,32 @@ void ShutdownPlugins()
 int LoadPlugins() {
 
 	if( loadp ) return 0;
-	char Plugin[g_MaxPath];
+	string Plugin;
 
-	CombinePaths( Plugin, Config.PluginsDir, Config.GS );
+	Path::Combine( Plugin, Config.PluginsDir, Config.GS );
 	if (LoadGSplugin(Plugin) == -1) return -1;
 
-	CombinePaths( Plugin, Config.PluginsDir, Config.PAD1 );
+	Path::Combine( Plugin, Config.PluginsDir, Config.PAD1 );
 	if (LoadPAD1plugin(Plugin) == -1) return -1;
 
-	CombinePaths( Plugin, Config.PluginsDir, Config.PAD2);
+	Path::Combine( Plugin, Config.PluginsDir, Config.PAD2);
 	if (LoadPAD2plugin(Plugin) == -1) return -1;
 
-	CombinePaths( Plugin, Config.PluginsDir, Config.SPU2);
+	Path::Combine( Plugin, Config.PluginsDir, Config.SPU2);
 	if (LoadSPU2plugin(Plugin) == -1) return -1;
 
-	CombinePaths( Plugin, Config.PluginsDir, Config.CDVD);
+	Path::Combine( Plugin, Config.PluginsDir, Config.CDVD);
 	if (LoadCDVDplugin(Plugin) == -1) return -1;
 
-	CombinePaths( Plugin, Config.PluginsDir, Config.DEV9);
+	Path::Combine( Plugin, Config.PluginsDir, Config.DEV9);
 	if (LoadDEV9plugin(Plugin) == -1) return -1;
 
-	CombinePaths( Plugin, Config.PluginsDir, Config.USB);
+	Path::Combine( Plugin, Config.PluginsDir, Config.USB);
 	if (LoadUSBplugin(Plugin) == -1) return -1;
 
-    CombinePaths( Plugin, Config.PluginsDir, Config.FW);
+    Path::Combine( Plugin, Config.PluginsDir, Config.FW);
 	if (LoadFWplugin(Plugin) == -1) return -1;
 
-	if( g_Error_PathTooLong ) return -1;
 	if (InitPlugins() == -1) return -1;
 
 	loadp=true;
@@ -706,7 +704,7 @@ int OpenPlugins(const char* pTitleFilename) {
 
 		ret = CDVDopen(pTitleFilename);
 
-		if (ret != 0) { Console::Alert("Error Opening CDVD Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening CDVD Plugin"); goto OpenError; }
 		OpenStatus.CDVD = true;
 		cdvdNewDiskCB();
 	}
@@ -714,7 +712,7 @@ int OpenPlugins(const char* pTitleFilename) {
 	// GS isn't closed during emu pauses, so only open it once per instance.
 	if( !OpenStatus.GS ) {
 		ret = gsOpen();
-		if (ret != 0) { Console::Alert("Error Opening GS Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening GS Plugin"); goto OpenError; }
 		OpenStatus.GS = true;
 
 		//then the user input
@@ -728,14 +726,14 @@ int OpenPlugins(const char* pTitleFilename) {
 	if( !OpenStatus.PAD1 )
 	{
 		ret = PAD1open((void *)&pDsp);
-		if (ret != 0) { Console::Alert("Error Opening PAD1 Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening PAD1 Plugin"); goto OpenError; }
 		OpenStatus.PAD1 = true;
 	}
 
 	if( !OpenStatus.PAD2 )
 	{
 		ret = PAD2open((void *)&pDsp);
-		if (ret != 0) { Console::Alert("Error Opening PAD2 Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening PAD2 Plugin"); goto OpenError; }
 		OpenStatus.PAD2 = true;
 	}
 
@@ -751,7 +749,7 @@ int OpenPlugins(const char* pTitleFilename) {
 			SPU2setClockPtr(&psxRegs.cycle);
 
 		ret = SPU2open((void*)&pDsp);
-		if (ret != 0) { Console::Alert("Error Opening SPU2 Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening SPU2 Plugin"); goto OpenError; }
 		OpenStatus.SPU2 = true;
 	}
 
@@ -761,7 +759,7 @@ int OpenPlugins(const char* pTitleFilename) {
 		DEV9irqCallback(dev9Irq);
 		dev9Handler = DEV9irqHandler();
 		ret = DEV9open(&(psxRegs.pc)); //((void *)&pDsp);
-		if (ret != 0) { Console::Alert("Error Opening DEV9 Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening DEV9 Plugin"); goto OpenError; }
 		OpenStatus.DEV9 = true;
 	}
 
@@ -771,7 +769,7 @@ int OpenPlugins(const char* pTitleFilename) {
 		usbHandler = USBirqHandler();
 		USBsetRAM(psxM);
 		ret = USBopen((void *)&pDsp);
-		if (ret != 0) { Console::Alert("Error Opening USB Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening USB Plugin"); goto OpenError; }
 		OpenStatus.USB = true;
 	}
 
@@ -779,7 +777,7 @@ int OpenPlugins(const char* pTitleFilename) {
 	{
 		FWirqCallback(fwIrq);
 		ret = FWopen((void *)&pDsp);
-		if (ret != 0) { Console::Alert("Error Opening FW Plugin"); goto OpenError; }
+		if (ret != 0) { Msgbox::Alert("Error Opening FW Plugin"); goto OpenError; }
 		OpenStatus.FW = true;
 	}
 
@@ -864,5 +862,5 @@ void PluginsResetGS()
 	GSshutdown();
 
 	int ret = GSinit();
-	if (ret != 0) { Console::Alert("GSinit error: %d", ret);  }
+	if (ret != 0) { Msgbox::Alert("GSinit error: %d", params ret);  }
 }

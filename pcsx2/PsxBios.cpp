@@ -249,13 +249,13 @@ _start:
 
 	memcpy((char*)PSXM(sp), save, 4*4);
 
-	Console::Write( Color_Cyan, "%s", tmp);
+	Console::Write( Color_Cyan, "%s", params tmp);
 
 	pc0 = ra;
 }
 
 void bios_putchar () { // 3d
-    Console::Write( Color_Cyan, "%c", a0 );
+    Console::Write( Color_Cyan, "%c", params a0 );
     pc0 = ra;
 }
 

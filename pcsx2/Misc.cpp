@@ -351,7 +351,7 @@ int GetPS2ElfName(char *name){
 
 	u32 addr;
 
-	Console::MsgLn("Loading System.map...");
+	Console::WriteLn("Loading System.map...");
 	while (!feof(fp)) {
 		fseek(fp, 8, SEEK_CUR);
 		buffer[0] = '0'; buffer[1] = 'x';
@@ -377,11 +377,11 @@ extern u32 dumplog;
 
 #ifdef PCSX2_DEVBUILD
 
-void SaveGSState(const char *file)
+void SaveGSState(const string& file)
 {
 	if( g_SaveGSStream ) return;
 
-	Console::Msg( "SaveGSState: " ); Console::MsgLn( file );
+	Console::WriteLn( _("Saving GS State...") + file );
 	g_fGSSave = new gzSavingState( file );
 	
 	g_SaveGSStream = 1;
@@ -391,27 +391,25 @@ void SaveGSState(const char *file)
 }
 
 extern uptr pDsp;
-void LoadGSState(const char *file)
+void LoadGSState(const string& file)
 {
 	int ret;
 	gzLoadingState* f;
 
-	Console::Msg( "LoadGSState: " );
+	Console::Status( "Loading GS State..." );
 
 	try
 	{
 		f = new gzLoadingState( file );
-		Console::MsgLn( file );
 	}
 	catch( Exception::FileNotFound& )
 	{
 		// file not found? try prefixing with sstates folder:
-		if( !isPathRooted( file ) )
+		if( !Path::isRooted( file ) )
 		{
-			char strfile[g_MaxPath];
-			CombinePaths( strfile, SSTATES_DIR, file );
-			f = new gzLoadingState( file );
-			Console::MsgLn( strfile );
+			string strfile;
+			Path::Combine( strfile, SSTATES_DIR, file );
+			f = new gzLoadingState( strfile.c_str() );
 
 			// If this load attempt fails, then let the exception bubble up to
 			// the caller to deal with...
@@ -503,16 +501,16 @@ char* mystrlwr( char* string )
     return string;
 }
 
-static void GetGSStateFilename( char* dest )
+static void GetGSStateFilename( string& dest )
 {
-	char gsText[72];
-	sprintf( gsText, "/%8.8X.%d.gs", ElfCRC, StatesC);
-	CombinePaths( dest, SSTATES_DIR, gsText );
+	string gsText;
+	ssprintf( gsText, "/%8.8X.%d.gs",params ElfCRC, StatesC);
+	Path::Combine( dest, SSTATES_DIR, gsText );
 }
 
 void ProcessFKeys(int fkey, int shift)
 {
-    char Text[g_MaxPath];
+    string Text;
 
     assert(fkey >= 1 && fkey <= 12 );
 
@@ -521,14 +519,14 @@ void ProcessFKeys(int fkey, int shift)
 			try
 			{
 				SaveState::GetFilename( Text, StatesC );
-				gzSavingState(Text).FreezeAll();
+				gzSavingState( Text ).FreezeAll();
 			}
 			catch( std::exception& ex )
 			{
 				// 99% of the time this is a file permission error and the
 				// cpu state is intact so just display a passive msg to console.
 
-				Console::Error( _( "Error > Could not save state to slot %d" ), StatesC );
+				Console::Error( _( "Error > Could not save state to slot %d" ), params StatesC );
 				Console::Error( ex.what() );
 			}
 			break;
@@ -539,11 +537,11 @@ void ProcessFKeys(int fkey, int shift)
 			else
 				StatesC = (StatesC+1) % NUM_STATES;
 
-			Console::Notice( _( " > Selected savestate slot %d" ), StatesC);
+			Console::Notice( _( " > Selected savestate slot %d" ), params StatesC);
 
 			if( GSchangeSaveState != NULL ) {
 				SaveState::GetFilename(Text, StatesC);
-				GSchangeSaveState(StatesC, Text);
+				GSchangeSaveState(StatesC, Text.c_str());
 			}
 			break;
 
@@ -551,27 +549,27 @@ void ProcessFKeys(int fkey, int shift)
 			try
 			{
 				SaveState::GetFilename( Text, StatesC );
-				gzLoadingState joe(Text);	// throws exception on version mismatch
+				gzLoadingState joe( Text );	// throws exception on version mismatch
 				cpuReset();
 				joe.FreezeAll();
 			}
-			catch( Exception::UnsupportedStateVersion& )
+			catch( Exception::StateLoadError_Recoverable& )
 			{
 				// At this point the cpu hasn't been reset, so we can return
-				// control to the user safely...
+				// control to the user safely... (and silently)
 			}
 			catch( Exception::FileNotFound& )
 			{
-				Console::Notice( _("Saveslot %d cannot be loaded; slot does not exist (file not found)"), StatesC );
+				Console::Notice( _("Saveslot %d cannot be loaded; slot does not exist (file not found)"), params StatesC );
 			}
 			catch( std::runtime_error& ex )
 			{
 				// This is the bad one.  Chances are the cpu has been reset, so emulation has
 				// to be aborted.  Sorry user!  We'll give you some info for your trouble:
 
-				Console::Error( _("An error occured while trying to load saveslot %d"), StatesC );
+				Console::Error( _("An error occured while trying to load saveslot %d"), params StatesC );
 				Console::Error( ex.what() );
-				Console::Alert(
+				Msgbox::Alert(
 					"Pcsx2 encountered an error while trying to load the savestate\n"
 					"and emulation had to be aborted." );
 
@@ -626,7 +624,7 @@ void ProcessFKeys(int fkey, int shift)
 			}
 			Threading::AtomicExchange( Config.Options, newOptions );
 
-			Console::Notice("Frame Limit Mode Changed: %s", limitMsg );
+			Console::Notice("Frame Limit Mode Changed: %s", params limitMsg );
 
 			// [Air]: Do we really want to save runtime changes to frameskipping?
 			//SaveConfig();
@@ -666,15 +664,15 @@ void ProcessFKeys(int fkey, int shift)
 				if( strgametitle[0] != 0 ) {
 					// only take the first two words
 					char name[256], *tok;
-					char gsText[256];
+					string gsText;
 
 					tok = strtok(strgametitle, " ");
 					sprintf(name, "%s_", mystrlwr(tok));
 					tok = strtok(NULL, " ");
 					if( tok != NULL ) strcat(name, tok);
 
-					sprintf( gsText, "%s.%d.gs", name, StatesC);
-					CombinePaths( Text, SSTATES_DIR, gsText );
+					ssprintf( gsText, "%s.%d.gs", params name, StatesC);
+					Path::Combine( Text, SSTATES_DIR, gsText );
 				}
 				else
 					GetGSStateFilename( Text );
@@ -688,7 +686,7 @@ void ProcessFKeys(int fkey, int shift)
             if( shift ) {
 #ifdef PCSX2_DEVBUILD
 			    iDumpRegisters(cpuRegs.pc, 0);
-				Console::Notice("hardware registers dumped EE:%x, IOP:%x\n", cpuRegs.pc, psxRegs.pc);
+				Console::Notice("hardware registers dumped EE:%x, IOP:%x\n", params cpuRegs.pc, psxRegs.pc);
 #endif
             }
             else {
@@ -750,7 +748,7 @@ void injectIRX(const char *filename){
 	strcat(path, filename);
 
 	if (stat(path, &buf) == -1){
-		Console::Alert("Unable to hack in %s%s\n", Config.BiosDir, filename);
+		Msgbox::Alert("Unable to hack in %s%s\n", params Config.BiosDir, filename);
 		return;
 	}
 

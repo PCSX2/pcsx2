@@ -341,7 +341,7 @@ void SysMessage(const char *fmt, ...) {
 	msg[511] = '\0';
 	va_end(list);
 
-	Console::Alert(msg);
+	Msgbox::Alert(msg);
 }
 
 bool SysInit() 

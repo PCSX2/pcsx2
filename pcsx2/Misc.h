@@ -56,10 +56,18 @@
 // --->> Path Utilities [PathUtil.c]
 
 #define g_MaxPath 255			// 255 is safer with antiquitated Win32 ASCII APIs.
-extern int g_Error_PathTooLong;
 
-int isPathRooted( const char* path );
-void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
+namespace Path
+{
+	void Combine( string& dest, const string& srcPath, const string& srcFile );
+	bool isRooted( const string& path );
+	bool isDirectory( const string& path );
+	bool isFile( const string& path );
+	bool Exists( const string& path );
+	int getFileSize( const string& path );
+
+	void ReplaceExtension( string& dest, const string& src, const string& ext );
+}
 
 // <<--- END Path Utilities [PathUtil.c]
 
@@ -107,7 +115,8 @@ void CombinePaths( char* dest, const char* srcPath, const char* srcFile );
 #define CHECK_VU1REC (Config.Options&PCSX2_VU1REC)
 
 
-struct PcsxConfig {
+struct PcsxConfig
+{
 	char Bios[g_MaxPath];
 	char GS[g_MaxPath];
 	char PAD1[g_MaxPath];
@@ -122,11 +131,13 @@ struct PcsxConfig {
 	char PluginsDir[g_MaxPath];
 	char BiosDir[g_MaxPath];
 	char Lang[g_MaxPath];
+
 	u32 Options; // PCSX2_X options
 
 	bool PsxOut;
 	bool Profiler; // Displays profiling info to console
 	bool cdvdPrint; // Prints cdvd reads to console 
+	bool closeGSonEsc; // closes the GS (and saves its state) on escape automatically.
 
 	int PsxType;
 	int Cdda;
@@ -157,8 +168,8 @@ int GetPS2ElfName(char*);
 extern const char *LabelAuthors;
 extern const char *LabelGreets;
 
-void SaveGSState(const char *file);
-void LoadGSState(const char *file);
+void SaveGSState(const string& file);
+void LoadGSState(const string& file);
 
 char *ParseLang(char *id);
 void ProcessFKeys(int fkey, int shift); // processes fkey related commands value 1-12

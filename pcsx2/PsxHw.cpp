@@ -705,7 +705,7 @@ void psxHwWrite16(u32 add, u16 value) {
 		USBwrite16(add, value); return;
 	}
 
-	if((add & 0xf) == 0x9) DevCon::WriteLn("16bit write (possible chcr set) %x value %x", add, value);
+	if((add & 0xf) == 0x9) DevCon::WriteLn("16bit write (possible chcr set) %x value %x", params add, value);
 
 	switch (add) {
 		case 0x1f801040:
@@ -1245,7 +1245,7 @@ void psxHwWrite32(u32 add, u32 value) {
 //------------------------------------------------------------------
 		case 0x1f8014c0:
 			PSXHW_LOG("RTC_HOLDMODE 32bit write %lx\n", value);
-			Console::Notice("** RTC_HOLDMODE 32bit write %lx", value);
+			Console::Notice("** RTC_HOLDMODE 32bit write %lx", params value);
 			break;
 
 		case 0x1f801450:
@@ -1388,7 +1388,7 @@ void psxHw4Write8(u32 add, u8 value) {
 		case 0x1f40203A: cdvdWrite3A(value); return;
 		default:
 			//PSXHW_LOG("*Unknown 8bit write at address %lx value %x\n", add, value);
-			Console::Notice("*Unknown 8bit write at address %lx value %x", add, value);
+			Console::Notice("*Unknown 8bit write at address %lx value %x", params add, value);
 			return;
 	}
 	PSXHW_LOG("*Known 8bit write at address %lx value %x\n", add, value);

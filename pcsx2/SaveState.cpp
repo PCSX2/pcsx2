@@ -66,17 +66,24 @@ static void PostLoadPrep()
 	for(int i=0; i<48; i++) MapTLB(i);
 }
 
-void SaveState::GetFilename( char* dest, int slot )
+void SaveState::GetFilename( string& dest, int slot )
 {
-	char elfcrcText[72];
-	sprintf( elfcrcText, "%8.8X.%3.3d", ElfCRC, slot );
-	CombinePaths( dest, SSTATES_DIR, elfcrcText );
+	string elfcrcText;
+	ssprintf( elfcrcText, "%8.8X.%3.3d", params ElfCRC, slot );
+	Path::Combine( dest, SSTATES_DIR, elfcrcText );
 }
 
-SaveState::SaveState( const char* msg, const char* destination ) :
- m_version( g_SaveVersion )
+string SaveState::GetFilename( int slot )
 {
-	Console::WriteLn( "%s %s", msg, destination );
+	string elfcrcText, dest;
+	GetFilename( dest, slot );
+	return dest;
+}
+
+
+SaveState::SaveState( const char* msg, const string& destination ) : m_version( g_SaveVersion )
+{
+	Console::WriteLn( "%s %S", params msg, &destination );
 }
 
 void SaveState::FreezeAll()
@@ -145,10 +152,22 @@ void SaveState::FreezeAll()
 		PostLoadPrep();
 }
 
+// this function is yet incomplete.  Version numbers hare still < 12 so it won't be run.
+// (which is good because it won't work :P)
+void SaveState::_testCdvdCrc()
+{
+	/*if( GetVersion() < 0x0012 ) return;
+
+	u32 thiscrc = ElfCRC;
+	Freeze( thiscrc );
+	if( thiscrc != ElfCRC )
+		throw Exception::StateCrcMismatch( thiscrc, ElfCRC );*/
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // gzipped to/from disk state saves implementation
 
-gzBaseStateInfo::gzBaseStateInfo( const char* msg, const char* filename ) :
+gzBaseStateInfo::gzBaseStateInfo( const char* msg, const string& filename ) :
   SaveState( msg, filename )
 , m_filename( filename )
 , m_file( NULL )
@@ -165,10 +184,10 @@ gzBaseStateInfo::~gzBaseStateInfo()
 }
 
 
-gzSavingState::gzSavingState( const char* filename ) :
+gzSavingState::gzSavingState( const string& filename ) :
   gzBaseStateInfo( _("Saving state to: "), filename )
 {
-	m_file = gzopen(filename, "wb");
+	m_file = gzopen(filename.c_str(), "wb");
 	if( m_file == NULL )
 		throw Exception::FileNotFound();
 
@@ -176,10 +195,10 @@ gzSavingState::gzSavingState( const char* filename ) :
 }
 
 
-gzLoadingState::gzLoadingState( const char* filename ) :
+gzLoadingState::gzLoadingState( const string& filename ) :
   gzBaseStateInfo( _("Loading state from: "), filename )
 {
-	m_file = gzopen(filename, "rb");
+	m_file = gzopen(filename.c_str(), "rb");
 	if( m_file == NULL )
 		throw Exception::FileNotFound();
 
@@ -190,28 +209,23 @@ gzLoadingState::gzLoadingState( const char* filename ) :
 #ifdef PCSX2_VIRTUAL_MEM
 		if( m_version >= 0x8b400000 )
 		{
-			Console::Error(
-				"Savestate load aborted:\n"
-				"\tVM edition cannot safely load savestates created by the VTLB edition."
-			);
-			throw Exception::UnsupportedStateVersion();
+			throw Exception::UnsupportedStateVersion( m_version, "VM edition cannot safely load savestates created by the VTLB edition." );
 		}
 		// pcsx2 vm supports opening these formats
 		if( m_version < 0x7a30000d )
-		{
-			Console::WriteLn( "Unsupported or unrecognized savestate version: %x.", m_version );
-			throw Exception::UnsupportedStateVersion();
-		}
+			throw Exception::UnsupportedStateVersion( m_version );
 #else
 		if( ( m_version >> 16 ) == 0x7a30 )
 		{
 			Console::Error(
 				"Savestate load aborted:\n"
 				"\tVTLB edition cannot safely load savestates created by the VM edition." );
-			throw Exception::UnsupportedStateVersion();
+			throw Exception::UnsupportedStateVersion( m_version );
 		}
 #endif
 	}
+
+	_testCdvdCrc();
 }
 
 gzLoadingState::~gzLoadingState() { }
@@ -231,7 +245,7 @@ void gzLoadingState::FreezeMem( void* data, int size )
 
 void gzSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
-	Console::WriteLn( "\tSaving %s", name );
+	Console::WriteLn( "\tSaving %s", params name );
 	freezeData fP = { 0, NULL };
 
 	if (freezer(FREEZE_SIZE, &fP) == -1)
@@ -257,7 +271,7 @@ void gzSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int 
 void gzLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
 	freezeData fP = { 0, NULL };
-	Console::WriteLn( "\tLoading %s", name );
+	Console::WriteLn( "\tLoading %s", params name );
 
 	gzread(m_file, &fP.size, sizeof(fP.size));
 	if( fP.size == 0 ) return;
@@ -326,7 +340,7 @@ void memLoadingState::FreezeMem( void* data, int size )
 void memSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
 	freezeData fP = { 0, NULL };
-	Console::WriteLn( "\tSaving %s", name );
+	Console::WriteLn( "\tSaving %s", params name );
 
 	if( freezer(FREEZE_SIZE, &fP) == -1 )
 		throw Exception::FreezePluginFailure( name, "saving" );
@@ -347,7 +361,7 @@ void memSavingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int
 void memLoadingState::FreezePlugin( const char* name, s32 (CALLBACK *freezer)(int mode, freezeData *data) )
 {
 	freezeData fP;
-	Console::WriteLn( "\tLoading %s", name );
+	Console::WriteLn( "\tLoading %s", params name );
 
 	Freeze( fP.size );
 	if( fP.size == 0 ) return;

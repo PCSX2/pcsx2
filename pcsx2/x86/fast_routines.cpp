@@ -31,7 +31,7 @@
  3dsdk.support@amd.com
 ******************************************************************************/
 
-#include <assert.h>
+#include "PrecompiledHeader.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4414)
@@ -72,11 +72,9 @@ MEMCPY_AMD.CPP
 // This is faster than using software prefetch.  The technique is great for
 // getting maximum read bandwidth, especially in DDR memory systems.
 
-//#include <stddef.h>
+#include "Misc.h"
 
 // Inline assembly syntax for use with Visual C++
-
-#include "Misc.h"
 
 #if defined(_MSC_VER)
 

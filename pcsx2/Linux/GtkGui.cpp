@@ -369,9 +369,9 @@ void States_Load(const char* file, int num = -1 )
 	catch( std::exception& ex )
 	{
 		if( num != -1 )
-			Console::Error( _("Error occured while trying to load savestate slot %d"), num);
+			Console::Error( _("Error occured while trying to load savestate slot %d")F_, num);
 		else
-			Console::Error( _("Error occured while trying to load savestate file: %d"), file);
+			Console::Error( _("Error occured while trying to load savestate file: %d")F_, file);
 
 		Console::Error( ex.what() );
 
@@ -397,7 +397,7 @@ void States_Load(int num) {
 	struct stat buf;
 	if( stat(Text, &buf ) == -1 )
 	{
-		Console::Notice( "Saveslot %d is empty.", num );
+		Console::Notice( "Saveslot %d is empty."F_, num );
 		return;
 	}
 	States_Load( Text, num );
@@ -409,9 +409,9 @@ void States_Save( const char* file, int num = -1 )
 	{
 		gzSavingState(file).FreezeAll();
 		if( num != -1 )
-			Console::Notice( _( "State saved to slot %d" ), num );
+			Console::Notice( _( "State saved to slot %d" )F_, num );
 		else
-			Console::Notice( _( "State saved to file: %s" ), file );
+			Console::Notice( _( "State saved to file: %s" )F_, file );
 	}
 	catch( std::exception& ex )
 	{
