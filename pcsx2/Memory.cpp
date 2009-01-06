@@ -2750,7 +2750,6 @@ void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 
 void memReset()
 {
-	struct stat buf;
 	string Bios;
 	FILE *fp;
 
@@ -2868,9 +2867,10 @@ void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 	}
 	psMPWVA[offset].push_back(vaddr);
 }
+
 void mmap_ResetBlockTracking()
 {
-	Console::WriteLn("vtlb/mmap: Block Tracking reseted ..");
+	Console::WriteLn("vtlb/mmap: Block Tracking reset...");
 	memset(psMPWC,0,sizeof(psMPWC));
 	for(u32 i=0;i<(Ps2MemSize::Base>>12);i++)
 	{

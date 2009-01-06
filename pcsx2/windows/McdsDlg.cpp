@@ -23,7 +23,6 @@
 #include <math.h>
 #include "libintlmsc.h"
 
-//#include "PS2Edefs.h"
 #include "System.h"
 #include "McdsDlg.h"
 

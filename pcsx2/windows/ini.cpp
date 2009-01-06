@@ -102,8 +102,8 @@ public:
 		Entry( "CdvdVerbose", Conf.cdvdPrint, false );
 
 		Entry( "ThreadPriority", Conf.ThPriority, THREAD_PRIORITY_NORMAL );
-		Entry( "Memorycard1", Conf.Mcd1, DEFAULT_MEMCARD1 );
-		Entry( "Memorycard2", Conf.Mcd2, DEFAULT_MEMCARD2 );
+		Entry( "Memorycard1", Conf.Mcd1, MEMCARDS_DIR "\\" DEFAULT_MEMCARD1 );
+		Entry( "Memorycard2", Conf.Mcd2, MEMCARDS_DIR "\\" DEFAULT_MEMCARD2 );
 
 		SetCurrentSection( "Framelimiter" );
 		Entry( "CustomFps", Conf.CustomFps );
