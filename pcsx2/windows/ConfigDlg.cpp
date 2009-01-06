@@ -178,11 +178,10 @@ BOOL OnConfigureDialog(HWND hW) {
 	HANDLE Find;
 
 	WIN32_FIND_DATA FindData;
-	char tmpStr[g_MaxPath];
+	string tmpStr;
 
-	strcpy(tmpStr, Config.BiosDir);
-	strcat(tmpStr, "*");
-	Find=FindFirstFile(tmpStr, &FindData);
+	Path::Combine( tmpStr, Config.BiosDir, "*" );
+	Find=FindFirstFile(tmpStr.c_str(), &FindData);
 
 	do
 	{

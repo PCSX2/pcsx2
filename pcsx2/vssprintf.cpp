@@ -51,8 +51,8 @@
 
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
 
-static char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
-static char *upper_digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+static const char *upper_digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 #ifdef NEED_STRLEN
 static size_t strnlen(const char *s, size_t count)
@@ -158,85 +158,86 @@ static int skip_atoi(const char **s)
   return i;
 }
 
-static void number(std::string& dest, long num, int base, int size, int precision, int type)
+template<typename T>
+static void number(std::string& dest, T num, int base, int size, int precision, int type)
 {
-  char c, sign, tmp[66];
-  char *dig = digits;
-  int i;
+	char c, sign, tmp[88];
+	const char *dig = digits;
+	int i;
 
-  if (type & LARGE)  dig = upper_digits;
-  if (type & LEFT) type &= ~ZEROPAD;
-  if (base < 2 || base > 36) return;
-  
-  c = (type & ZEROPAD) ? '0' : ' ';
-  sign = 0;
-  if (type & SIGN)
-  {
-    if (num < 0)
-    {
-      sign = '-';
-      num = -num;
-      size--;
-    }
-    else if (type & PLUS)
-    {
-      sign = '+';
-      size--;
-    }
-    else if (type & SPACE)
-    {
-      sign = ' ';
-      size--;
-    }
-  }
+	if (type & LARGE)  dig = upper_digits;
+	if (type & LEFT) type &= ~ZEROPAD;
+	if (base < 2 || base > 36) return;
 
-  if (type & SPECIAL)
-  {
-    if (base == 16)
-      size -= 2;
-    else if (base == 8)
-      size--;
-  }
+	c = (type & ZEROPAD) ? '0' : ' ';
+	sign = 0;
+	if (type & SIGN)
+	{
+		if (num < 0)
+		{
+			sign = '-';
+			num = -num;
+			size--;
+		}
+		else if (type & PLUS)
+		{
+			sign = '+';
+			size--;
+		}
+		else if (type & SPACE)
+		{
+			sign = ' ';
+			size--;
+		}
+	}
 
-  i = 0;
+	if (type & SPECIAL)
+	{
+		if (base == 16)
+			size -= 2;
+		else if (base == 8)
+			size--;
+	}
 
-  if (num == 0)
-    tmp[i++] = '0';
-  else
-  {
-    while (num != 0)
-    {
-      tmp[i++] = dig[((unsigned long) num) % (unsigned) base];
-      num = ((unsigned long) num) / (unsigned) base;
-    }
-  }
+	i = 0;
 
-  if (i > precision) precision = i;
-  size -= precision;
-  if (!(type & (ZEROPAD | LEFT))) while (size-- > 0) dest += ' ';
-  if (sign) dest += sign;
-  
-  if (type & SPECIAL)
-  {
-    if (base == 8)
-      dest += '0';
-    else if (base == 16)
-    {
-      dest += '0';
-      dest += digits[33];
-    }
-  }
+	if (num == 0)
+		tmp[i++] = '0';
+	else
+	{
+		while (num != 0)
+		{
+			tmp[i++] = dig[num % (uint) base];
+			num = num / (uint) base;
+		}
+	}
 
-  if (!(type & LEFT)) while (size-- > 0) dest += c;
-  while (i < precision--) dest += '0';
-  while (i-- > 0) dest += tmp[i];
-  while (size-- > 0) dest += ' ';
+	if (i > precision) precision = i;
+	size -= precision;
+	if (!(type & (ZEROPAD | LEFT))) while (size-- > 0) dest += ' ';
+	if (sign) dest += sign;
+
+	if (type & SPECIAL)
+	{
+		if (base == 8)
+			dest += '0';
+		else if (base == 16)
+		{
+			dest += '0';
+			dest += digits[33];
+		}
+	}
+
+	if (!(type & LEFT)) while (size-- > 0) dest += c;
+	while (i < precision--) dest += '0';
+	while (i-- > 0) dest += tmp[i];
+	while (size-- > 0) dest += ' ';
 }
 
 static void eaddr( std::string& dest, unsigned char *addr, int size, int precision, int type)
 {
   char tmp[24];
-  char *dig = digits;
+  const char *dig = digits;
   int i, len;
 
   if (type & LARGE)  dig = upper_digits;
@@ -502,205 +503,234 @@ static void flt( std::string& dest, double num, int size, int precision, char fm
 
 #endif
 
+// This is a "mostly" direct replacement for vsprintf, that is more secure and easier
+// to use than vsnprintf or vsprintf_s.  See the docs for ssprintf for usage notes.
 void vssprintf(std::string& dest, const std::string& format, va_list args)
 {
-  int len;
-  unsigned long num;
-  int i, base;
+	int len;
+	int i, base;
 
-  int flags;            // Flags to number()
+	int flags;            // Flags to number()
 
-  int field_width;      // Width of output field
-  int precision;        // Min. # of digits for integers; max number of chars for from string
-  int qualifier;        // 'h', 'l', or 'L' for integer fields
+	int field_width;      // Width of output field
+	int precision;        // Min. # of digits for integers; max number of chars for from string
+	int qualifier;        // 'h', 'l', or 'L' for integer fields
 
-  dest.clear();
+	dest.clear();
 
-  for( const char* fmt = format.c_str(); *fmt; fmt++ )
-  {
-    if (*fmt != '%')
-    {
-      dest += *fmt;
-      continue;
-    }
-                  
-    // Process flags
-    flags = 0;
+	for( const char* fmt = format.c_str(); *fmt; fmt++ )
+	{
+		if (*fmt != '%')
+		{
+			dest += *fmt;
+			continue;
+		}
+
+		// Process flags
+		flags = 0;
 repeat:
-    fmt++; // This also skips first '%'
-    switch (*fmt)
-    {
-      case '-': flags |= LEFT; goto repeat;
-      case '+': flags |= PLUS; goto repeat;
-      case ' ': flags |= SPACE; goto repeat;
-      case '#': flags |= SPECIAL; goto repeat;
-      case '0': flags |= ZEROPAD; goto repeat;
-    }
-          
-    // Get field width
-    field_width = -1;
-    if (is_digit(*fmt))
-      field_width = skip_atoi(&fmt);
-    else if (*fmt == '*')
-    {
-      fmt++;
-      field_width = va_arg(args, int);
-      if (field_width < 0)
-      {
-        field_width = -field_width;
-        flags |= LEFT;
-      }
-    }
+		fmt++; // This also skips first '%'
+		switch (*fmt)
+		{
+			case '-': flags |= LEFT; goto repeat;
+			case '+': flags |= PLUS; goto repeat;
+			case ' ': flags |= SPACE; goto repeat;
+			case '#': flags |= SPECIAL; goto repeat;
+			case '0': flags |= ZEROPAD; goto repeat;
+		}
 
-    // Get the precision
-    precision = -1;
-    if (*fmt == '.')
-    {
-      ++fmt;    
-      if (is_digit(*fmt))
-        precision = skip_atoi(&fmt);
-      else if (*fmt == '*')
-      {
-        ++fmt;
-        precision = va_arg(args, int);
-      }
-      if (precision < 0) precision = 0;
-    }
+		// Get field width
+		field_width = -1;
+		if (is_digit(*fmt))
+			field_width = skip_atoi(&fmt);
+		else if (*fmt == '*')
+		{
+			fmt++;
+			field_width = va_arg(args, int);
+			if (field_width < 0)
+			{
+				field_width = -field_width;
+				flags |= LEFT;
+			}
+		}
 
-    // Get the conversion qualifier
-    qualifier = -1;
-    if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L')
-    {
-      qualifier = *fmt;
-      fmt++;
-    }
+		// Get the precision
+		precision = -1;
+		if (*fmt == '.')
+		{
+			++fmt;    
+			if (is_digit(*fmt))
+				precision = skip_atoi(&fmt);
+			else if (*fmt == '*')
+			{
+				++fmt;
+				precision = va_arg(args, int);
+			}
+			if (precision < 0) precision = 0;
+		}
 
-    // Default base
-    base = 10;
+		// Get the conversion qualifier
+		qualifier = -1;
+		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L')
+		{
+			qualifier = *fmt;
+			fmt++;
+		}
 
-    switch (*fmt)
-    {
-      case 'c':
-        if (!(flags & LEFT)) while (--field_width > 0) dest += ' ';
-        dest += (unsigned char) va_arg(args, int);
-        while (--field_width > 0) dest += ' ';
-        continue;
+		// Default base
+		base = 10;
 
-      case 's':
-	  {
-		const char* s = va_arg(args, char *);
-        if (!s) s = "<NULL>";
-		len = strnlen(s, precision);
-		if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
-		for (i = 0; i < len; ++i) dest += *s++;
-		while (len < field_width--) dest += ' ';
-	  }
-      continue;
+		switch (*fmt)
+		{
+			case 'c':
+				if (!(flags & LEFT)) while (--field_width > 0) dest += ' ';
+				dest += (unsigned char) va_arg(args, int);
+				while (--field_width > 0) dest += ' ';
+			continue;
 
-      // let's add support for std:string as a formatted parameter!  (air)
-	  case 'S':
-	  {
-		  std::string* ss = va_arg(args, std::string*);
-		  const char* s = ( ss!=NULL ) ? ss->c_str() : "<NULL>";
-			len = strnlen(s, precision);
-			if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
-			for (i = 0; i < len; ++i) dest += *s++;
-			while (len < field_width--) dest += ' ';
-      }
-	  continue;
+			case 's':
+			{
+				const char* s = va_arg(args, char *);
+				if (!s) s = "<NULL>";
+				len = strnlen(s, precision);
+				if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
+				for (i = 0; i < len; ++i) dest += *s++;
+				while (len < field_width--) dest += ' ';
+			}
+			continue;
 
-	  case 'p':
-      {
-        if (field_width == -1)
-        {
-          field_width = 2 * sizeof(void *);
-          flags |= ZEROPAD;
-        }
-        number(dest, (unsigned long) va_arg(args, void *), 16, field_width, precision, flags);
-	  }
-      continue;
+			// let's add support for std::string as a formatted parameter!  (air)
+			case 'S':
+			{
+				std::string* ss = va_arg(args, std::string*);
+				const char* s = ( ss!=NULL ) ? ss->c_str() : "<NULL>";
+				len = strnlen(s, precision);
+				if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
+				for (i = 0; i < len; ++i) dest += *s++;
+				while (len < field_width--) dest += ' ';
+			}
+			continue;
 
-      case 'n':
-        if (qualifier == 'l')
-        {
-          long *ip = va_arg(args, long *);
-		  *ip = dest.length();
-        }
-        else
-        {
-          int *ip = va_arg(args, int *);
-          *ip = dest.length();
-        }
-        continue;
+			case 'p':
+			{
+				if (field_width == -1)
+				{
+					field_width = 2 * sizeof(void *);
+					flags |= ZEROPAD;
+				}
+				// use sptr as it avoids warnings during template code gen.
+				number( dest, (sptr) va_arg(args, void *), 16, field_width, precision, flags );
+			}
+			continue;
 
-      case 'A':
-        flags |= LARGE;
+			case 'n':
+				if (qualifier == 'l')
+				{
+					long *ip = va_arg(args, long *);
+					*ip = dest.length();
+				}
+				else
+				{
+					int *ip = va_arg(args, int *);
+					*ip = dest.length();
+				}
+			continue;
 
-      case 'a':
-        if (qualifier == 'l')
-          eaddr(dest, va_arg(args, unsigned char *), field_width, precision, flags);
-        else
-          iaddr(dest, va_arg(args, unsigned char *), field_width, precision, flags);
-        continue;
+			//  What the hell is %a?  (air)
+			case 'A':
+				flags |= LARGE;
 
-      // Integer number formats - set up the flags and "break"
-      case 'o':
-        base = 8;
-        break;
+			case 'a':
+				if (qualifier == 'l')
+					eaddr(dest, va_arg(args, unsigned char *), field_width, precision, flags);
+				else
+					iaddr(dest, va_arg(args, unsigned char *), field_width, precision, flags);
+			continue;
 
-      case 'X':
-        flags |= LARGE;
+			// Integer number formats - set up the flags and "break"
+			case 'o':
+				base = 8;
+			break;
 
-      case 'x':
-        base = 16;
-        break;
+			case 'X':
+				flags |= LARGE;
 
-      case 'd':
-      case 'i':
-        flags |= SIGN;
+			case 'x':
+				base = 16;
+			break;
 
-      case 'u':
-        break;
+			case 'd':
+			case 'i':
+				flags |= SIGN;
 
-#ifndef NOFLOAT
+			case 'u':
+			break;
 
-      case 'E':
-      case 'G':
-      case 'e':
-      case 'f':
-      case 'g':
-        flt(dest, va_arg(args, double), field_width, precision, *fmt, flags | SIGN);
-        continue;
+			#ifndef NOFLOAT
 
-#endif
+			case 'E':
+			case 'G':
+			case 'e':
+			case 'f':
+			case 'g':
+				flt(dest, va_arg(args, double), field_width, precision, *fmt, flags | SIGN);
+			continue;
 
-      default:
-        if (*fmt != '%') dest += '%';
-        if (*fmt)
-          dest += *fmt;
-        else
-          --fmt;
-        continue;
-    }
+			#endif
 
-    if (qualifier == 'l')
-      num = va_arg(args, unsigned long);
-    else if (qualifier == 'h')
-    {
-      if (flags & SIGN)
-        num = va_arg(args, short);
-      else
-        num = va_arg(args, unsigned short);
-    }
-    else if (flags & SIGN)
-      num = va_arg(args, int);
-    else
-      num = va_arg(args, unsigned int);
+			default:
+				if (*fmt != '%') dest += '%';
+				if (*fmt)
+					dest += *fmt;
+				else
+					--fmt;
+			continue;
+		}
 
-    number(dest, num, base, field_width, precision, flags);
-  }
+		if (qualifier == 'L')
+		{
+			number(dest, va_arg(args, s64), base, field_width, precision, flags);
+		}
+		else
+		{
+			s32 num;
+			if (qualifier == 'h')
+				num = va_arg(args, s16);
+			else	// 'l' qualifier or no qualifier means 32 bits on all our std target platforms.
+				num = va_arg(args, s32);
+
+			number(dest, num, base, field_width, precision, flags);
+		}
+	}
 }
 
+// This is a "mostly" direct replacement for sprintf, based on std::string.
+// The most notable difference in use is the requirement of a "params" keyword delimiting
+// the format string from the parameters used to fill the string's tokens. It looks
+// like this in practice:
+//
+//   ssprintf( dest, "Yo Joe, %d. In the Hizzou %s.", params intval, strval );
+//
+// In addition to all standard printf formatting tokens, ssprintf also supports a new token
+// for std::string parameters as %S (passed by reference/pointer).  Note that these are
+// passed by pointer so you *must* use the & sign most of the time.  Example:
+//
+//   ssprintf( dest, "Yo Joe, %S.", params &strval );
+//
+// This can be a cavet of sorts since forgetting to use the & will always compile but
+// will cause undefined behavior and odd crashes (much like how the same thing happens
+// when exchanging an intvalu for a c-string normally -- it's just more tricky with
+// strings since we're not used to prefixing sprintf parameters with &s).
+//
+// === 64-bit -- s64 / u64 -- Support ===
+//
+// ssprintf supports u64/s64 via the L qualifier, which can be prefixed to any one of the
+// integer tokens (d, i, x).  This isn't standard, but it's easy and doesn't conflict with
+// anything, and none of the other 64-bit qualifiers aren't really standard anyway.
+// Example:
+//
+//   ssprintf( dest, "Yo Joe, %Ld, %Lx.", params int64, hex64 );
+//
 void ssprintf(std::string& str, const std::string& fmt, VARG_PARAM dummy, ...)
 {
 	dummy_assert();
@@ -711,6 +741,7 @@ void ssprintf(std::string& str, const std::string& fmt, VARG_PARAM dummy, ...)
 	va_end(args);
 }
 
+// See ssprintf for usage details and differences from sprintf formatting.
 std::string fmt_string( const std::string& fmt, VARG_PARAM dummy, ... )
 {
 	dummy_assert();

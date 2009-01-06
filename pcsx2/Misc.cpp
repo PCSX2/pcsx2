@@ -184,19 +184,20 @@ u32 GetBiosVersion() {
 }
 
 //2002-09-22 (Florin)
-int IsBIOS(char *filename, char *description){
-	struct stat buf;
-	char Bios[260], ROMVER[14+1], zone[12+1];
+int IsBIOS(char *filename, char *description)
+{
+	string Bios;
+	char ROMVER[14+1], zone[12+1];
 	FILE *fp;
 	unsigned int fileOffset=0, found=FALSE;
 	struct romdir rd;
 
-	strcpy(Bios, Config.BiosDir);
-	strcat(Bios, filename);
+	Path::Combine( Bios, Config.BiosDir, filename );
 
-	if (stat(Bios, &buf) == -1) return FALSE;	
+	int biosFileSize = Path::getFileSize( Bios );
+	if( biosFileSize <= 0) return FALSE;	
 
-	fp = fopen(Bios, "rb");
+	fp = fopen(Bios.c_str(), "rb");
 	if (fp == NULL) return FALSE;
 
 	while ((ftell(fp)<512*1024) && (fread(&rd, DIRENTRY_SIZE, 1, fp)==1))
@@ -247,11 +248,13 @@ int IsBIOS(char *filename, char *description){
 
 	fclose(fp);
 	
-	if (found) {
+	if (found)
+	{
 		char percent[6];
 
-		if (buf.st_size<(int)fileOffset){
-			sprintf(percent, " %d%%", buf.st_size*100/(int)fileOffset);
+		if ( biosFileSize < (int)fileOffset)
+		{
+			sprintf(percent, " %d%%", biosFileSize*100/(int)fileOffset);
 			strcat(description, percent);//we force users to have correct bioses,
 											//not that lame scph10000 of 513KB ;-)
 		}
@@ -703,9 +706,10 @@ void ProcessFKeys(int fkey, int shift)
     }
 }
 
-void injectIRX(const char *filename){
-	struct stat buf;
-	char path[260], name[260], *p, *q;
+void injectIRX(const char *filename)
+{
+	string path;
+	char name[260], *p, *q;
 	struct romdir *rd;
 	int iROMDIR=-1, iIOPBTCONF=-1, iBLANK=-1, i, filesize;
 	FILE *fp;
@@ -744,10 +748,10 @@ void injectIRX(const char *filename){
 	strcpy(p, name);p[strlen(name)]=0xA;
 
 	//phase 4: find file
-	strcpy(path, Config.BiosDir);
-	strcat(path, filename);
+	Path::Combine( path, Config.BiosDir, filename );
 
-	if (stat(path, &buf) == -1){
+	if( !Path::isFile( path ) )
+	{
 		Msgbox::Alert("Unable to hack in %s%s\n", params Config.BiosDir, filename);
 		return;
 	}
@@ -755,7 +759,7 @@ void injectIRX(const char *filename){
 	//phase 5: add the file to the end of the bios
 	p=(char*)PS2MEM_ROM;for (i=0; rd[i].fileName[0]; i++)p+=(rd[i].fileSize+0xF)&(~0xF);
 
-	fp=fopen(path, "rb");
+	fp=fopen(path.c_str(), "rb");
 	fseek(fp, 0, SEEK_END);
 	filesize=ftell(fp);
 	fseek(fp, 0, SEEK_SET);
