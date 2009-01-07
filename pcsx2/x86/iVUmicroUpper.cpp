@@ -143,8 +143,8 @@ static const PCSX2_ALIGNED16(u32 VU_Neg_Infinity[4])			= {0xff800000, 0xff800000
 PCSX2_ALIGNED16(u64 TEMPXMMData[2]);
 void recUpdateFlags(VURegs * VU, int reg, int info)
 {
-	static u8* pjmp;
-	static u32* pjmp32;
+	static u8 *pjmp, *pjmp2;
+	static u32 *pjmp32;
 	static u32 macaddr, stataddr, prevstataddr;
 	static int x86macflag, x86temp;
 	static int t1reg, t1regBoolean;
@@ -181,8 +181,10 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	}
 
 	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-	XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
-	XOR32RtoR(x86temp, x86temp); //Clear x86temp
+	XOR16RtoR(x86macflag, x86macflag); // Clear Mac Flag
+	MOV16MtoR(x86temp, prevstataddr); // Load the previous status in to x86temp
+	AND16ItoR(x86temp, 0xff0); // Keep Sticky and D/I flags
+
 
 	if (CHECK_VU_EXTRA_FLAGS) {
 		//-------------------------Check for Overflow flags------------------------------
@@ -203,9 +205,9 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 		pjmp = JZ8(0); // Skip if none are
-			OR32ItoR(x86temp, 8); // Set if they are
-			OR32RtoR(x86macflag, EAX);
-			SHL32ItoR(x86macflag, 8); // Shift the Overflow flags left 8
+			OR16ItoR(x86temp, 0x208); // OS, O flags
+			SHL16ItoR(EAX, 12);
+			OR16RtoR(x86macflag, EAX);
 			pjmp32 = JMP32(0); // Skip Underflow Check
 		x86SetJ8(pjmp);
 
@@ -224,9 +226,9 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
-			OR32ItoR(x86temp, 4); // Set if they are
-			OR32RtoR(x86macflag, EAX);
-			SHL32ItoR(x86macflag, 4); // Shift the Overflow and Underflow flags left 4
+			OR16ItoR(x86temp, 0x104); // US, U flags
+			SHL16ItoR(EAX, 8);
+			OR16RtoR(x86macflag, EAX);
 		x86SetJ8(pjmp);
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
@@ -254,13 +256,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
 	pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 2); // Set if they are
-		OR32RtoR(x86macflag, EAX);
-		SHL32ItoR(x86macflag, 4); // Shift the Overflow, Underflow, and Zero flags left 4
-		pjmp32 = JMP32(0); // If negative and not Zero, we can skip the Zero Flag checking
+		OR16ItoR(x86temp, 0x82); // SS, S flags
+		SHL16ItoR(EAX, 4);
+		OR16RtoR(x86macflag, EAX);
+		pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
 	x86SetJ8(pjmp);
-
-	SHL32ItoR(x86macflag, 4); // Shift the Overflow, Underflow, and Zero flags left 4
 
 	//-------------------------Check for Zero flags------------------------------
 	
@@ -271,13 +271,13 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
 	pjmp = JZ8(0); // Skip if none are
-		OR32ItoR(x86temp, 1); // Set if they are
-		OR32RtoR(x86macflag, EAX);
+		OR16ItoR(x86temp, 0x41); // ZS, Z flags
+		OR16RtoR(x86macflag, EAX);
 	x86SetJ8(pjmp);
 
 	//-------------------------Finally: Send the Flags to the Mac Flag Address------------------------------
 
-	x86SetJ32(pjmp32); // If we skipped the Zero Flag Checking, return here
+	x86SetJ8(pjmp2); // If we skipped the Zero Flag Checking, return here
 
 	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip back reg to wzyx
 
@@ -285,13 +285,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	else if (t1regBoolean == 0) _freeXMMreg(t1reg);
 
 	MOV16RtoM(macaddr, x86macflag);
-
-	MOV32MtoR(x86macflag, prevstataddr); // Load the previous status in to x86macflag
-	AND32ItoR(x86macflag, 0xff0); // Keep Sticky and D/I flags
-	OR32RtoR(x86macflag, x86temp);
-	SHL32ItoR(x86temp, 6);
-	OR32RtoR(x86macflag, x86temp);
-	MOV32RtoM(stataddr, x86macflag);
+	MOV16RtoM(stataddr, x86temp);
 
 	_freeX86reg(x86macflag);
 	_freeX86reg(x86temp);
