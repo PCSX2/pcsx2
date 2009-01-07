@@ -278,7 +278,7 @@ void iopTestIntc()
 
 	if( !eeEventTestIsActive )
 	{
-		// An iop int has occured while the EE is running code.
+		// An iop exception has occured while the EE is running code.
 		// Inform the EE to branch so the IOP can handle it promptly:
 
 		cpuSetNextBranchDelta( 16 );

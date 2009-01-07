@@ -629,8 +629,8 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return FALSE;
 
 			case ID_FILE_RUNCD:
-				safe_free( g_RecoveryState );
-				safe_free( g_gsRecoveryState );
+				safe_delete( g_RecoveryState );
+				safe_delete( g_gsRecoveryState );
 				ResetPlugins();
 				RunExecute( NULL );
 			return FALSE;

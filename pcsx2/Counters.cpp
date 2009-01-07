@@ -398,15 +398,7 @@ static __forceinline void VSyncStart(u32 sCycle)
 	if ((CSRw & 0x8)) GSCSRr|= 0x8;
 	if (!(GSIMR&0x800)) gsIrq();
 
-	// HACK : For some inexplicable reason, having the IntcIrq(2) handled during the
-	// current Event Test breaks some games (Grandia 2 at bootup).  I can't fathom why.
-	// To fix I fool the Intc handler into thinking that we're not in an event test, so
-	// that it schedules the handler into the future by 4 cycles. (air)
-
-	//eeEventTestIsActive = false;
 	hwIntcIrq(2);
-	//eeEventTestIsActive = true;
-
 	psxVBlankStart();
 
 	if (gates) rcntStartGate(0x8, sCycle); // Counters Start Gate code
@@ -447,7 +439,7 @@ __forceinline void rcntUpdate_hScanline()
 {
 	if( !cpuTestCycle( counters[4].sCycle, counters[4].CycleT ) ) return;
 
-	iopBranchAction = 1;
+	//iopBranchAction = 1;
 	if (counters[4].mode & MODE_HBLANK) { //HBLANK Start
 		rcntStartGate(0, counters[4].sCycle);
 		psxCheckStartGate16(0);
@@ -479,7 +471,7 @@ __forceinline void rcntUpdate_vSync()
 	s32 diff = (cpuRegs.cycle - counters[5].sCycle);
 	if( diff < counters[5].CycleT ) return;
 
-	iopBranchAction = 1;
+	//iopBranchAction = 1;
 	if (counters[5].mode == MODE_VSYNC)
 	{
 		VSyncEnd(counters[5].sCycle);

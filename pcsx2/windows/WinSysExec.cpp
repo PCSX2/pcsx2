@@ -669,6 +669,7 @@ void CALLBACK KeyEvent(keyEvent* ev)
 				if( Config.closeGSonEsc )
 				{
 					safe_delete( g_gsRecoveryState );
+					safe_delete( g_RecoveryState );
 					g_gsRecoveryState = new MemoryAlloc<u8>();
 					JustGsSavingState eddie;
 					eddie.FreezePlugin( "GS", GSfreeze ) ;
@@ -729,8 +730,8 @@ void SysReset()
 	StatusBar_Notice(_("Resetting..."));
 
 	g_GameInProgress = false;
-	safe_free( g_RecoveryState );
-	safe_free( g_gsRecoveryState );
+	safe_delete( g_RecoveryState );
+	safe_delete( g_gsRecoveryState );
 	ResetPlugins();
 
 	StatusBar_Notice(_("Ready"));
