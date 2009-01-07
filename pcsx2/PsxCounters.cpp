@@ -55,31 +55,36 @@ static void psxRcntReset(int index)
 	psxCounters[index].sCycleT = psxRegs.cycle;
 }
 
-__forceinline static void _rcntSet( int i )
+static void _rcntSet( int cntidx )
 {
-	// thanks to being forceinline'd, this conditional will always be optimized
-	// to a constant by VC (confirmed via disassembler):
-
-	u64 overflowCap = (i>=3) ? 0x100000000ULL : 0x10000;
+	u64 overflowCap = (cntidx>=3) ? 0x100000000ULL : 0x10000;
 	u64 c;
+
+	const psxCounter& counter = psxCounters[cntidx];
 
 	// psxNextCounter is relative to the psxRegs.cycle when rcntUpdate() was last called.
 	// However, the current _rcntSet could be called at any cycle count, so we need to take
 	// that into account.  Adding the difference from that cycle count to the current one
 	// will do the trick!
 
-	if( psxCounters[i].mode & IOPCNT_STOPPED || psxCounters[i].rate == PSXHBLANK) return;
+	if( counter.mode & IOPCNT_STOPPED || counter.rate == PSXHBLANK) return;
 
-	c = (u64)((overflowCap - psxCounters[i].count) * psxCounters[i].rate) - (psxRegs.cycle - psxCounters[i].sCycleT);
+	if( counter.count > overflowCap || counter.count > counter.target )
+	{
+		psxNextCounter = 4;
+		return;
+	}
+
+	c = (u64)((overflowCap - counter.count) * counter.rate) - (psxRegs.cycle - counter.sCycleT);
 	c += psxRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
-	if((u64)c < (u64)psxNextCounter) psxNextCounter = (u32)c;
+	if(c < (u64)psxNextCounter) psxNextCounter = (u32)c;
 
-	//if((psxCounters[i].mode & 0x10) == 0 || psxCounters[i].target > 0xffff) continue;
-	if( psxCounters[i].target & IOPCNT_FUTURE_TARGET ) return;
+	//if((counter.mode & 0x10) == 0 || psxCounters[i].target > 0xffff) continue;
+	if( counter.target & IOPCNT_FUTURE_TARGET ) return;
 
-	c = (u64)((psxCounters[i].target - psxCounters[i].count) * psxCounters[i].rate) - (psxRegs.cycle - psxCounters[i].sCycleT);
+	c = (s64)((counter.target - counter.count) * counter.rate) - (psxRegs.cycle - counter.sCycleT);
 	c += psxRegs.cycle - psxNextsCounter;		// adjust for time passed since last rcntUpdate();
-	if((u64)c < (u64)psxNextCounter) psxNextCounter = (u32)c;
+	if(c < (u64)psxNextCounter) psxNextCounter = (u32)c;
 }
 
 
@@ -441,7 +446,7 @@ void psxRcntWcount16(int index, u32 value)
 	u32 change;
 
 	assert( index < 3 );
-	PSXCNT_LOG("IOP Counter[%d] > writeCount16 = %x\n", index, value);
+	PSXCNT_LOG("IOP Counter[%d] writeCount16 = %x\n", index, value);
 
 	if(psxCounters[index].rate != PSXHBLANK)
 	{
@@ -462,7 +467,7 @@ void psxRcntWcount32(int index, u32 value)
 	u32 change;
 
 	assert( index >= 3 && index < 6 );
-	PSXCNT_LOG("IOP Counter[%d] > writeCount32 = %x\n", index, value);
+	PSXCNT_LOG("IOP Counter[%d] writeCount32 = %x\n", index, value);
 	
 	if(psxCounters[index].rate != PSXHBLANK)
 	{
@@ -480,7 +485,7 @@ void psxRcntWcount32(int index, u32 value)
 
 void psxRcnt0Wmode(u32 value)
 {
-	PSXCNT_LOG("IOP Counter[0] > writeMode = %lx\n", value);
+	PSXCNT_LOG("IOP Counter[0] writeMode = %lx\n", value);
 
 	psxCounters[0].mode = value;
 	psxCounters[0].mode|= 0x0400;
@@ -492,7 +497,7 @@ void psxRcnt0Wmode(u32 value)
 	if(psxCounters[0].mode & IOPCNT_ENABLE_GATE)
 	{
 		// gated counters are added up as per the h/vblank timers.
-		PSXCNT_LOG("IOP Counter[0] > Gate Check set, value = %x\n", value);
+		PSXCNT_LOG("IOP Counter[0] Gate Check set, value = %x\n", value);
 		psxhblankgate |= 1;
 	}
 	else psxhblankgate &= ~1;
@@ -506,7 +511,7 @@ void psxRcnt0Wmode(u32 value)
 
 void psxRcnt1Wmode(u32 value)
 {
-	PSXCNT_LOG("IOP Counter[0] > writeMode = %lx\n", value);
+	PSXCNT_LOG("IOP Counter[0] writeMode = %lx\n", value);
 
 	psxCounters[1].mode = value;
 	psxCounters[1].mode|= 0x0400;
@@ -517,7 +522,7 @@ void psxRcnt1Wmode(u32 value)
 
 	if(psxCounters[1].mode & IOPCNT_ENABLE_GATE)
 	{
-		PSXCNT_LOG("IOP Counter[1] > Gate Check set, value = %x\n", value);
+		PSXCNT_LOG("IOP Counter[1] Gate Check set, value = %x\n", value);
 		psxvblankgate |= 1<<1;
 	}
 	else psxvblankgate &= ~(1<<1);
@@ -530,7 +535,7 @@ void psxRcnt1Wmode(u32 value)
 
 void psxRcnt2Wmode(u32 value)
 {
-	PSXCNT_LOG("IOP Counter[0] > writeMode = %lx\n", value);
+	PSXCNT_LOG("IOP Counter[0] writeMode = %lx\n", value);
 
 	psxCounters[2].mode = value;
 	psxCounters[2].mode|= 0x0400;
@@ -555,7 +560,7 @@ void psxRcnt2Wmode(u32 value)
 
 void psxRcnt3Wmode(u32 value)
 {
-	PSXCNT_LOG("IOP Counter[3] > writeMode = %lx\n", value);
+	PSXCNT_LOG("IOP Counter[3] writeMode = %lx\n", value);
 
 	psxCounters[3].mode = value;
 	psxCounters[3].rate = 1;
@@ -566,7 +571,7 @@ void psxRcnt3Wmode(u32 value)
   
 	if(psxCounters[3].mode & IOPCNT_ENABLE_GATE)
 	{
-		PSXCNT_LOG("IOP Counter[3] > Gate Check set, value = %x\n", value);
+		PSXCNT_LOG("IOP Counter[3] Gate Check set, value = %x\n", value);
 		psxvblankgate |= 1<<3;
 	}
 	else psxvblankgate &= ~(1<<3);
@@ -579,7 +584,7 @@ void psxRcnt3Wmode(u32 value)
 
 void psxRcnt4Wmode(u32 value)
 {
-	PSXCNT_LOG("IOP Counter[4] > writeMode = %lx\n", value);
+	PSXCNT_LOG("IOP Counter[4] writeMode = %lx\n", value);
 
 	psxCounters[4].mode = value;
 	psxCounters[4].mode|= 0x0400;
@@ -606,7 +611,7 @@ void psxRcnt4Wmode(u32 value)
 
 void psxRcnt5Wmode(u32 value)
 {
-	PSXCNT_LOG("IOP Counter[5] > writeMode = %lx\n", value);
+	PSXCNT_LOG("IOP Counter[5] writeMode = %lx\n", value);
 
 	psxCounters[5].mode = value;
 	psxCounters[5].mode|= 0x0400;
@@ -634,7 +639,7 @@ void psxRcnt5Wmode(u32 value)
 void psxRcntWtarget16(int index, u32 value)
 {
 	assert( index < 3 );
-	PSXCNT_LOG("IOP Counter[%d] > writeTarget16 = %lx\n", index, value);
+	PSXCNT_LOG("IOP Counter[%d] writeTarget16 = %lx\n", index, value);
 	psxCounters[index].target = value & 0xffff;
 
 	// protect the target from an early arrival.
@@ -650,7 +655,7 @@ void psxRcntWtarget16(int index, u32 value)
 void psxRcntWtarget32(int index, u32 value)
 {
 	assert( index >= 3 && index < 6);
-	PSXCNT_LOG("IOP Counter[%d] > writeTarget32 = %lx\n", index, value);
+	PSXCNT_LOG("IOP Counter[%d] writeTarget32 = %lx\n", index, value);
 
 	psxCounters[index].target = value;
 
@@ -670,7 +675,7 @@ u16 psxRcntRcount16(int index)
 
 	assert( index < 3 );
 
-	PSXCNT_LOG("IOP Counter[%d] > readCount16 = %lx\n", index, (u16)retval );
+	PSXCNT_LOG("IOP Counter[%d] readCount16 = %lx\n", index, (u16)retval );
 
 	// Don't count HBLANK timers
 	// Don't count stopped gates either.
@@ -680,9 +685,8 @@ u16 psxRcntRcount16(int index)
 	{
 		u32 delta = (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate);
 		retval += delta;
-		PSXCNT_LOG("                > (delta = %lx)\n", delta );
+		PSXCNT_LOG("              (delta = %lx)\n", delta );
 	}
-	PSXCNT_LOG( "\n" );
 
 	return (u16)retval;
 }
@@ -693,14 +697,14 @@ u32 psxRcntRcount32(int index)
 	
 	assert( index >= 3 && index < 6 );
 
-	PSXCNT_LOG("IOP Counter[%d] > readCount32 = %lx\n", index, retval );
+	PSXCNT_LOG("IOP Counter[%d] readCount32 = %lx\n", index, retval );
 
 	if( !( psxCounters[index].mode & IOPCNT_STOPPED ) &&
 		( psxCounters[index].rate != PSXHBLANK ) )
 	{
 		u32 delta = (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate);
 		retval += delta;
-		PSXCNT_LOG("                > (delta = %lx)\n", delta );
+		PSXCNT_LOG("               (delta = %lx)\n", delta );
 	}
 
 	return retval;

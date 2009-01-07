@@ -214,7 +214,7 @@ void cpuException(u32 code, u32 bd) {
 			}
 		} else {
 			offset = 0x180; //Overrride the cause		
-			Console::Notice("cpuException: Status.EXL = 1 cause %x", params code);
+			//Console::Notice("cpuException: Status.EXL = 1 cause %x", params code);
 		}
 		if (cpuRegs.CP0.n.Status.b.BEV == 0) {
 			cpuRegs.pc = 0x80000000 + offset;
@@ -246,6 +246,7 @@ void cpuException(u32 code, u32 bd) {
 			offset = 0x180; //Overrride the cause		
 			Console::Notice("cpuException: Status.EXL = 1 cause %x", params code);
 		}
+
 		if (cpuRegs.CP0.n.Status.b.DEV == 0) {
 			cpuRegs.pc = 0x80000000 + offset;
 		} else {
@@ -476,6 +477,17 @@ static __forceinline void _cpuTestPERF()
 	}
 }
 
+// Checks the COP0.Status for exception enablings.
+// Exception handling for certain modes is *not* currently supported, this function filters
+// them out.  Exceptions while the exception handler is active (EIE), or exceptions of any
+// level other than 0 are ignored here.
+
+static bool cpuIntsEnabled()
+{
+	return cpuRegs.CP0.n.Status.b.EIE && cpuRegs.CP0.n.Status.b.IE && 
+		!cpuRegs.CP0.n.Status.b.EXL && (cpuRegs.CP0.n.Status.b.ERL == 0);
+}
+
 // if cpuRegs.cycle is greater than this cycle, should check cpuBranchTest for updates
 u32 g_nextBranchCycle = 0;
 
@@ -505,8 +517,9 @@ static __forceinline void _cpuBranchTest_Shared()
 	_cpuTestTIMR();
 
 	// ---- Interrupts -------------
+	// Handles all interrupts except 30 and 31, which are handled later.
 
-	if( cpuRegs.interrupt )
+	if( cpuRegs.interrupt & ~(3<<30) )
 		_cpuTestInterrupts();
 
 	// ---- IOP -------------
@@ -517,11 +530,6 @@ static __forceinline void _cpuBranchTest_Shared()
 	//
 	// * The IOP cannot always be run.  If we run IOP code every time through the
 	//   cpuBranchTest, the IOP generally starts to run way ahead of the EE.
-	//
-	// * However! The IOP should be run during certain important events: vsync/hsync
-	//   events and IOP interrupts / exceptions -- even if it's already getting
-	//   a little ahead of the EE.  the iopBranchAction global will flag true if
-	//   something like that happens.
 
 	psxBranchTest();
 
@@ -530,14 +538,19 @@ static __forceinline void _cpuBranchTest_Shared()
 		//if( EEsCycle < -450 )
 		//	Console::WriteLn( " IOP ahead by: %d cycles", params -EEsCycle );
 
+		// Experimental and Probably Unnecessry Logic -->
 		// Check if the EE already has an exception pending, and if so we shouldn't
-		// waste too much time updating the IOP.
+		// waste too much time updating the IOP.  Theory being that the EE and IOP should
+		// run closely in sync during raised exception events.  But in practice it didn't
+		// seem to make much of a difference.
 
 		// Note: The IOP is very good about chaining blocks together so it tends to
-		// run lots of cycles, even with only 32 (4 IOP) cycles specified here.
+		// run lots of cycles, even with only 32 (4 IOP) cycles specified here.  That's
+		// probably why it doesn't improve sync much.
 
-		bool eeExceptPending = 
-			( (cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001 ) &&
+		/*bool eeExceptPending = cpuIntsEnabled() &&
+			//( cpuRegs.CP0.n.Status.b.EIE && cpuRegs.CP0.n.Status.b.IE && (cpuRegs.CP0.n.Status.b.ERL == 0) ) &&
+			//( (cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001 ) &&
 			( (cpuRegs.interrupt & (3<<30)) != 0 );
 
 		if( eeExceptPending )
@@ -549,7 +562,7 @@ static __forceinline void _cpuBranchTest_Shared()
 			EEsCycle -= cyclesRun;
 			//Console::Notice( "IOP Exception-Pending Execution -- EEsCycle: %d", params EEsCycle );
 		}
-		else
+		else*/
 		{
 			EEsCycle = psxCpu->ExecuteBlock( EEsCycle );
 		}
@@ -579,7 +592,9 @@ static __forceinline void _cpuBranchTest_Shared()
 
 	if( EEsCycle > 192 )
 	{
-		// EE's running way ahead of the IOP still, so we should branch quickly.
+		// EE's running way ahead of the IOP still, so we should branch quickly to give the
+		// IOP extra timeslices in short order.
+
 		cpuSetNextBranchDelta( 48 );
 		//Console::Notice( "EE ahead of the IOP -- Rapid Branch!  %d", params EEsCycle );
 	}
@@ -601,7 +616,8 @@ static __forceinline void _cpuBranchTest_Shared()
 	// This should be done last since the IOP and the VU0 can raise several EE
 	// exceptions.
 
-	if ((cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001)
+	//if ((cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001)
+	if( cpuIntsEnabled() )
 	{
 		TESTINT(30, intcInterrupt);
 		TESTINT(31, dmacInterrupt);
@@ -661,7 +677,8 @@ __forceinline void CPU_INT( u32 n, s32 ecycle)
 void cpuTestINTCInts()
 {
 	if( cpuRegs.interrupt & (1 << 30) ) return;
-	if( (cpuRegs.CP0.n.Status.val & 0x10407) != 0x10401 ) return;
+	//if( (cpuRegs.CP0.n.Status.val & 0x10407) != 0x10401 ) return;
+	if( !cpuIntsEnabled() ) return;
 	if( (psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0 ) return;
 
 	cpuRegs.interrupt|= 1 << 30;

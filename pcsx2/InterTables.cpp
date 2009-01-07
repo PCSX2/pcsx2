@@ -37,8 +37,10 @@ namespace EE
 		static const int Cycles_MMI_Mult = 3*8;
 		static const int Cycles_MMI_Div = 22*8;
 
-		static const int Cycles_Store = 21;			// 21 for snes emu
+		static const int Cycles_Store = 20;			// 21 for snes emu
 		static const int Cycles_Load = 11;			// 13 for snes emu
+
+		static const int Cycles_Misc = 7;
 
 		MakeOpcode( Unknown, Default );
 		MakeOpcode( MMI_Unknown, Default );
@@ -59,9 +61,9 @@ namespace EE
 
 		// Misc Junk
 
-		MakeOpcode( COP0, Default );
-		MakeOpcode( COP1, Default );
-		MakeOpcode( COP2, Default );
+		MakeOpcode( COP0, Misc );
+		MakeOpcode( COP1, Misc );
+		MakeOpcode( COP2, Misc );
 
 		MakeOpcode( CACHE, Default );
 		MakeOpcode( PREF, Default );

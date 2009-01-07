@@ -124,21 +124,21 @@ u16 hwRead16(u32 mem)
 
 	switch (mem) {
 		case 0x10000000: ret = (u16)rcntRcount(0); break;
-		case 0x10000010: ret = (u16)counters[0].mode; break;
+		case 0x10000010: ret = (u16)counters[0].modeval; break;
 		case 0x10000020: ret = (u16)counters[0].target; break;
 		case 0x10000030: ret = (u16)counters[0].hold; break;
 
 		case 0x10000800: ret = (u16)rcntRcount(1); break;
-		case 0x10000810: ret = (u16)counters[1].mode; break;
+		case 0x10000810: ret = (u16)counters[1].modeval; break;
 		case 0x10000820: ret = (u16)counters[1].target; break;
 		case 0x10000830: ret = (u16)counters[1].hold; break;
 
 		case 0x10001000: ret = (u16)rcntRcount(2); break;
-		case 0x10001010: ret = (u16)counters[2].mode; break;
+		case 0x10001010: ret = (u16)counters[2].modeval; break;
 		case 0x10001020: ret = (u16)counters[2].target; break;
 
 		case 0x10001800: ret = (u16)rcntRcount(3); break;
-		case 0x10001810: ret = (u16)counters[3].mode; break;
+		case 0x10001810: ret = (u16)counters[3].modeval; break;
 		case 0x10001820: ret = (u16)counters[3].target; break;
 
 		default:
@@ -173,21 +173,21 @@ u32 hwRead32(u32 mem) {
 	// gauntlen uses 0x1001xxxx
 	switch (mem) {
 		case 0x10000000: return (u16)rcntRcount(0);
-		case 0x10000010: return (u16)counters[0].mode;
+		case 0x10000010: return (u16)counters[0].modeval;
 		case 0x10000020: return (u16)counters[0].target;
 		case 0x10000030: return (u16)counters[0].hold;
 
 		case 0x10000800: return (u16)rcntRcount(1);
-		case 0x10000810: return (u16)counters[1].mode;
+		case 0x10000810: return (u16)counters[1].modeval;
 		case 0x10000820: return (u16)counters[1].target;
 		case 0x10000830: return (u16)counters[1].hold;
 
 		case 0x10001000: return (u16)rcntRcount(2);
-		case 0x10001010: return (u16)counters[2].mode;
+		case 0x10001010: return (u16)counters[2].modeval;
 		case 0x10001020: return (u16)counters[2].target;
 
 		case 0x10001800: return (u16)rcntRcount(3);
-		case 0x10001810: return (u16)counters[3].mode;
+		case 0x10001810: return (u16)counters[3].modeval;
 		case 0x10001820: return (u16)counters[3].target;
 
 #ifdef PCSX2_DEVBUILD
@@ -386,25 +386,25 @@ void hwWrite8(u32 mem, u8 value) {
 
 	switch (mem) {
 		case 0x10000000: rcntWcount(0, value); break;
-		case 0x10000010: rcntWmode(0, (counters[0].mode & 0xff00) | value); break;
-		case 0x10000011: rcntWmode(0, (counters[0].mode & 0xff) | value << 8); break;
+		case 0x10000010: rcntWmode(0, (counters[0].modeval & 0xff00) | value); break;
+		case 0x10000011: rcntWmode(0, (counters[0].modeval & 0xff) | value << 8); break;
 		case 0x10000020: rcntWtarget(0, value); break;
 		case 0x10000030: rcntWhold(0, value); break;
 
 		case 0x10000800: rcntWcount(1, value); break;
-		case 0x10000810: rcntWmode(1, (counters[1].mode & 0xff00) | value); break;
-		case 0x10000811: rcntWmode(1, (counters[1].mode & 0xff) | value << 8); break;
+		case 0x10000810: rcntWmode(1, (counters[1].modeval & 0xff00) | value); break;
+		case 0x10000811: rcntWmode(1, (counters[1].modeval & 0xff) | value << 8); break;
 		case 0x10000820: rcntWtarget(1, value); break;
 		case 0x10000830: rcntWhold(1, value); break;
 
 		case 0x10001000: rcntWcount(2, value); break;
-		case 0x10001010: rcntWmode(2, (counters[2].mode & 0xff00) | value); break;
-		case 0x10001011: rcntWmode(2, (counters[2].mode & 0xff) | value << 8); break;
+		case 0x10001010: rcntWmode(2, (counters[2].modeval & 0xff00) | value); break;
+		case 0x10001011: rcntWmode(2, (counters[2].modeval & 0xff) | value << 8); break;
 		case 0x10001020: rcntWtarget(2, value); break;
 
 		case 0x10001800: rcntWcount(3, value); break;
-		case 0x10001810: rcntWmode(3, (counters[3].mode & 0xff00) | value); break;
-		case 0x10001811: rcntWmode(3, (counters[3].mode & 0xff) | value << 8); break;
+		case 0x10001810: rcntWmode(3, (counters[3].modeval & 0xff00) | value); break;
+		case 0x10001811: rcntWmode(3, (counters[3].modeval & 0xff) | value << 8); break;
 		case 0x10001820: rcntWtarget(3, value); break;
 
 		case 0x1000f180:
@@ -939,7 +939,7 @@ void hwWrite32(u32 mem, u32 value) {
 		case 0x1000f000: // INTC_STAT
 			HW_LOG("INTC_STAT Write 32bit %x\n", value);
 			psHu32(0xf000)&=~value;	
-			cpuTestINTCInts();
+			//cpuTestINTCInts();
 			break;
 
 		case 0x1000f010: // INTC_MASK
