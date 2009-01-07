@@ -768,9 +768,10 @@ extern u32 psxdump;
 extern void iDumpPsxRegisters(u32,u32);
 #endif
 
-static void intExecuteBlock() {
+static s32 intExecuteBlock( s32 eeCycles )
+{
 	psxBreak = 0;
-	psxCycleEE = EEsCycle;
+	psxCycleEE = eeCycles;
 
 	while (psxCycleEE > 0){
 		branch2 = 0;
@@ -784,7 +785,7 @@ static void intExecuteBlock() {
 #endif
         }
 	}
-	EEsCycle = psxBreak + psxCycleEE;
+	return psxBreak + psxCycleEE;
 }
 
 static void intClear(u32 Addr, u32 Size) {

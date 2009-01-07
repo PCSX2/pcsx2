@@ -489,7 +489,8 @@ static __forceinline void _cpuBranchTest_Shared()
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;
 
-	iopBranchAction = ( EEsCycle > 0 );
+	if( EEsCycle > 0 )
+		iopBranchAction = true;
 
 	// ---- Counters -------------
 
@@ -526,10 +527,34 @@ static __forceinline void _cpuBranchTest_Shared()
 
 	if( iopBranchAction )
 	{
-		//if( EEsCycle < -500 )
-		//	SysPrintf( " IOP ahead by: %d cycles\n", -EEsCycle );
+		//if( EEsCycle < -450 )
+		//	Console::WriteLn( " IOP ahead by: %d cycles", params -EEsCycle );
 
-		psxCpu->ExecuteBlock();
+		// Check if the EE already has an exception pending, and if so we shouldn't
+		// waste too much time updating the IOP.
+
+		// Note: The IOP is very good about chaining blocks together so it tends to
+		// run lots of cycles, even with only 32 (4 IOP) cycles specified here.
+
+		bool eeExceptPending = 
+			( (cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001 ) &&
+			( (cpuRegs.interrupt & (3<<30)) != 0 );
+
+		if( eeExceptPending )
+		{
+			// ExecuteBlock returns a negative value, so subtract it from the cycle count
+			// specified to get the total cycles processed! :D
+			int cycleCount = std::min( EEsCycle, (s32)(eeWaitCycles>>4) );
+			int cyclesRun = cycleCount - psxCpu->ExecuteBlock( cycleCount );
+			EEsCycle -= cyclesRun;
+			//Console::Notice( "IOP Exception-Pending Execution -- EEsCycle: %d", params EEsCycle );
+		}
+		else
+		{
+			EEsCycle = psxCpu->ExecuteBlock( EEsCycle );
+		}
+
+		iopBranchAction = false;
 	}
 
 	// ---- VU0 -------------
@@ -552,7 +577,14 @@ static __forceinline void _cpuBranchTest_Shared()
 
 	// ---- Schedule Next Event Test --------------
 
-	// The IOP cound be running ahead/behind of us, so adjust the iop's next branch by its
+	if( EEsCycle > 192 )
+	{
+		// EE's running way ahead of the IOP still, so we should branch quickly.
+		cpuSetNextBranchDelta( 48 );
+		//Console::Notice( "EE ahead of the IOP -- Rapid Branch!  %d", params EEsCycle );
+	}
+
+	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
 	cpuSetNextBranchDelta( ((g_psxNextBranchCycle-psxRegs.cycle)*8) - EEsCycle );
 
@@ -640,9 +672,15 @@ void cpuTestINTCInts()
 	// the current branch...
 	if( !eeEventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
+	else if(psxCycleEE > 0)
+	{
+		psxBreak += psxCycleEE;		// record the number of cycles the IOP didn't run.
+		psxCycleEE = 0;
+	}
 }
 
-__forceinline void cpuTestDMACInts() {
+__forceinline void cpuTestDMACInts()
+{
 	if ( cpuRegs.interrupt & (1 << 31) ) return;
 	if ((cpuRegs.CP0.n.Status.val & 0x10807) != 0x10801) return;
 
@@ -657,6 +695,11 @@ __forceinline void cpuTestDMACInts() {
 	// the current branch...
 	if( !eeEventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
+	else if(psxCycleEE > 0)
+	{
+		psxBreak += psxCycleEE;		// record the number of cycles the IOP didn't run.
+		psxCycleEE = 0;
+	}
 }
 
 __forceinline void cpuTestTIMRInts() {

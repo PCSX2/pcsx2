@@ -1004,7 +1004,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	MOV32RtoM((uptr)&psxRegs.cycle, ECX); // update cycles
 	MOV32RtoM((uptr)&psxCycleEE, EAX);
 
-	j8Ptr[2] = JG8( 0 );	// jump if psxCycleEE > blockCycles*8
+	j8Ptr[2] = JG8( 0 );	// jump if psxCycleEE > 0
 
 	if( REC_INC_STACK )
         ADD64ItoR(ESP, REC_INC_STACK);
@@ -1188,12 +1188,12 @@ static void recExecute() {
 	for (;;) R3000AExecute();
 }
 
-static void recExecuteBlock()
+static s32 recExecuteBlock( s32 eeCycles )
 {
 	psxBreak = 0;
-	psxCycleEE = EEsCycle;
+	psxCycleEE = eeCycles;
 	R3000AExecute();
-	EEsCycle = psxBreak + psxCycleEE;
+	return psxBreak + psxCycleEE;
 }
 
 #include "PsxHw.h"

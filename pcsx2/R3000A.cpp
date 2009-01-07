@@ -273,11 +273,23 @@ void psxBranchTest()
 
 void iopTestIntc()
 {
-	if( iopEventTestIsActive ) return;
 	if( psxHu32(0x1078) == 0 ) return;
 	if( (psxHu32(0x1070) & psxHu32(0x1074)) == 0 ) return;
 
-	psxSetNextBranchDelta( 4 ); 
+	if( !eeEventTestIsActive )
+	{
+		// An iop int has occured while the EE is running code.
+		// Inform the EE to branch so the IOP can handle it promptly:
+
+		cpuSetNextBranchDelta( 16 );
+		iopBranchAction = true;
+		//Console::Error( "** IOP Needs an EE EventText, kthx **  %d", params psxCycleEE );
+
+		// Note: No need to set the iop's branch delta here, since the EE
+		// will run an IOP branch test regardless.
+	}
+	else if( !iopEventTestIsActive )
+		psxSetNextBranchDelta( 2 );
 }
 
 void psxExecuteBios() {

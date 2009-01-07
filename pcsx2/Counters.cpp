@@ -395,20 +395,22 @@ static __forceinline void VSyncStart(u32 sCycle)
 {
 	vSyncDebugStuff(); // EE Profiling and Debug code
 
+	if ((CSRw & 0x8)) GSCSRr|= 0x8;
+	if (!(GSIMR&0x800)) gsIrq();
+
 	// HACK : For some inexplicable reason, having the IntcIrq(2) handled during the
 	// current Event Test breaks some games (Grandia 2 at bootup).  I can't fathom why.
 	// To fix I fool the Intc handler into thinking that we're not in an event test, so
 	// that it schedules the handler into the future by 4 cycles. (air)
 
-	eeEventTestIsActive = false;
+	//eeEventTestIsActive = false;
 	hwIntcIrq(2);
-	eeEventTestIsActive = true;
+	//eeEventTestIsActive = true;
 
 	psxVBlankStart();
 
 	if (gates) rcntStartGate(0x8, sCycle); // Counters Start Gate code
 	if (Config.Patch) applypatch(1); // Apply patches (ToDo: clean up patch code)
-
 
 	cpuRegs.eCycle[30] = 8;
 }
@@ -416,12 +418,6 @@ static __forceinline void VSyncStart(u32 sCycle)
 static __forceinline void VSyncEnd(u32 sCycle)
 {
 	iFrame++;
-
-	// I moved the gsIrq trigger to the falling edge, where I've been told it is
-	// more correct. (air)
-
-	if ((CSRw & 0x8)) GSCSRr|= 0x8;
-	if (!(GSIMR&0x800)) gsIrq();
 
 	if( g_vu1SkipCount > 0 )
 	{
