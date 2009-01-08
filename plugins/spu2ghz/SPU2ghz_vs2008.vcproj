@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="SPU2ghz"
+	Name="SPU2ghz-Pg"
 	ProjectGUID="{5307BBB7-EBB9-4AA4-8CB6-A94EC473C8C4}"
 	RootNamespace="SPU2ghz_vs2005"
 	TargetFrameworkVersion="131072"
@@ -87,7 +87,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(OutDir)\SPU2ghz-dev.dll"
+				OutputFile="$(OutDir)\$(ProjectName)-dev.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateManifest="true"
@@ -185,7 +185,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(OutDir)\SPU2ghz-dbg.dll"
+				OutputFile="$(OutDir)\$(ProjectName)-dbg.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
@@ -292,7 +292,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(OutDir)\SPU2ghz-PP.dll"
+				OutputFile="$(OutDir)\$(ProjectName)-PG.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
@@ -394,7 +394,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(OutDir)\SPU2ghz-dbg.dll"
+				OutputFile="$(OutDir)\$(ProjectName)-dbg.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"
@@ -666,134 +666,6 @@
 					RelativePath="sndout.h"
 					>
 				</File>
-				<Filter
-					Name="asio"
-					>
-					<File
-						RelativePath=".\asio\asio.cpp"
-						>
-						<FileConfiguration
-							Name="Release (dev)|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release (nondev) [public]|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\asio\asio.h"
-						>
-					</File>
-					<File
-						RelativePath=".\asio\ASIOConvertSamples.cpp"
-						>
-						<FileConfiguration
-							Name="Release (dev)|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release (nondev) [public]|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\asio\ASIOConvertSamples.h"
-						>
-					</File>
-					<File
-						RelativePath=".\asio\asiodrivers.cpp"
-						>
-						<FileConfiguration
-							Name="Release (dev)|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release (nondev) [public]|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\asio\asiodrivers.h"
-						>
-					</File>
-					<File
-						RelativePath=".\asio\asiolist.cpp"
-						>
-						<FileConfiguration
-							Name="Release (dev)|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release (nondev) [public]|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\asio\asiolist.h"
-						>
-					</File>
-					<File
-						RelativePath=".\asioout.cpp"
-						>
-						<FileConfiguration
-							Name="Release (dev)|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release (nondev) [public]|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\asio\asiosys.h"
-						>
-					</File>
-					<File
-						RelativePath=".\asio\ginclude.h"
-						>
-					</File>
-				</Filter>
 				<Filter
 					Name="waveOut"
 					>

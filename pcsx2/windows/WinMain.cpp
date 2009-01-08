@@ -22,6 +22,9 @@
 // and it's usually user error, but in this case I'm pretty sure I found one.
 // So put your c++ exception code in WinSysExec.cpp.  It's better that way. :D (air)
 
+// Disabled warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
+#pragma warning(disable:4530)
+
 #include "PrecompiledHeader.h"
 #include "win32.h"
 
@@ -49,9 +52,6 @@
 #include "SamplProf.h"
 
 #include "implement.h"		// pthreads-win32 defines for startup/shutdown
-
-// Disabled warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
-#pragma warning(disable:4530)
 
 bool AccBreak = false;
 unsigned int langsMax;

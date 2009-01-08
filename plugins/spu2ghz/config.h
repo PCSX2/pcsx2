@@ -154,22 +154,10 @@ struct CONFIG_DSOUND51
 	}
 };
 
-struct CONFIG_ASIO
-{
-	s8 NumBuffers;
-
-	CONFIG_ASIO() :
-		NumBuffers( 8 )
-	{
-		//memset( Device, 0, sizeof( Device ) );
-	}
-};
-
 
 extern CONFIG_DSOUNDOUT Config_DSoundOut;
 extern CONFIG_DSOUND51 Config_DSound51;
 extern CONFIG_WAVEOUT Config_WaveOut;
-extern CONFIG_ASIO Config_Asio;
 
 
 //////

@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="zerogs"
+	Name="ZeroGS-Pg"
 	ProjectGUID="{5C6B7D28-E73D-4F71-8FC0-17ADA640EBD8}"
 	RootNamespace="ZeroGS"
 	TargetFrameworkVersion="131072"

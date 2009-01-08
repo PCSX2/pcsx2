@@ -154,7 +154,7 @@ static void InitLibraryName()
 	// Use TortoiseSVN's SubWCRev utility's output
 	// to label the specific revision:
 
-	sprintf_s( libraryName, "SPU2ghz PPr %d%s"
+	sprintf_s( libraryName, "SPU2ghz PG r%d%s"
 #	ifdef _DEBUG_FAST
 		"-Debug"
 #	elif defined( _DEBUG )

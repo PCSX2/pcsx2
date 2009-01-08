@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="ZeroSPU2"
+	Name="ZeroSPU2-Pg"
 	ProjectGUID="{7F059854-568D-4E08-9D00-1E78E203E4DC}"
 	RootNamespace="ZeroSPU2"
 	Keyword="Win32Proj"

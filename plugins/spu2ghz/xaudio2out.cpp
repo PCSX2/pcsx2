@@ -66,7 +66,7 @@ private:
 
 			XAUDIO2_BUFFER buf = {0};
 			buf.AudioBytes = BufferSizeBytes;
-			buf.pAudioData=(const BYTE*)context;
+			buf.pAudioData=(BYTE*)context;
 			buf.pContext=context;
 
 			pSourceVoice->SubmitSourceBuffer( &buf );

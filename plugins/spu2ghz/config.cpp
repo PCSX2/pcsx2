@@ -102,7 +102,6 @@ int LimitMode=0;
 CONFIG_DSOUNDOUT Config_DSoundOut;
 CONFIG_DSOUND51 Config_DSound51;
 CONFIG_WAVEOUT Config_WaveOut;
-CONFIG_ASIO Config_Asio;
 
 // MISC
 bool LimiterToggleEnabled=false;
@@ -300,9 +299,6 @@ void ReadSettings()
 	Config_DSound51.AddCLR =CfgReadInt("DSOUND51","Channel_Center_In_LR", 56);
 	Config_DSound51.LowpassLFE = CfgReadInt("DSOUND51","LFE_Lowpass_Frequency", 80);
 
-	// Read ASIOOUT config:
-	CfgReadStr("ASIO","Asio_Driver_Name",AsioDriver,128,"");
-
 	// Sanity Checks
 	// -------------
 
@@ -397,8 +393,6 @@ void WriteSettings()
 	CfgWriteInt("DSOUND51","Channel_Gain_SR", Config_DSound51.GainSR);
 	CfgWriteInt("DSOUND51","Channel_Center_In_LR", Config_DSound51.AddCLR);
 	CfgWriteInt("DSOUND51","LFE_Lowpass_Frequency", Config_DSound51.LowpassLFE);
-
-	CfgWriteStr("ASIO","Asio_Driver_Name",AsioDriver);
 
 	CfgWriteStr("DSP PLUGIN","Filename",dspPlugin);
 	CfgWriteInt("DSP PLUGIN","ModuleNum",dspPluginModule);

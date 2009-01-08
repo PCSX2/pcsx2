@@ -161,7 +161,7 @@ static void InitLibraryName()
 	// Use TortoiseSVN's SubWCRev utility's output
 	// to label the specific revision:
 
-	sprintf_s( libraryName, "ZeroSPU2 PPr%d%s"
+	sprintf_s( libraryName, "ZeroSPU2 PG r%d%s"
 #	ifdef _DEBUG
 		"-Debug"
 #	else

@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="pcsx2"
+	Name="pcsx2pg"
 	ProjectGUID="{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}"
 	RootNamespace="pcsx2"
 	TargetFrameworkVersion="131072"
@@ -74,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(OutDir)\pcsx2-vm.exe&quot;"
+				OutputFile="&quot;$(OutDir)\$(ProjectName)-vm-dev.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -156,7 +156,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="&quot;$(OutDir)\pcsx2d-vm.exe&quot;"
+				OutputFile="&quot;$(OutDir)\$(ProjectName)-vm-dbg.exe&quot;"
 				LinkIncremental="2"
 			/>
 			<Tool
@@ -239,7 +239,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				OutputFile="&quot;$(OutDir)\pcsx2d-vtlb.exe&quot;"
+				OutputFile="&quot;$(OutDir)\$(ProjectName)-vtlb-dbg.exe&quot;"
 				LinkIncremental="2"
 			/>
 			<Tool
@@ -334,7 +334,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(OutDir)\pcsx2-vtlb.exe&quot;"
+				OutputFile="&quot;$(OutDir)\$(ProjectName)-vtlb-dev.exe&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -417,7 +417,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(OutDir)\pcsx2r-vm.exe&quot;"
+				OutputFile="&quot;$(OutDir)\$(ProjectName)-vm.exe&quot;"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
@@ -501,7 +501,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="&quot;$(OutDir)\pcsx2r-vtlb.exe&quot;"
+				OutputFile="&quot;$(OutDir)\$(ProjectName)-vtlb.exe&quot;"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
