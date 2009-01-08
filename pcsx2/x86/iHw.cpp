@@ -287,7 +287,7 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			return 1;
 		case 0x10000010:
 			_eeReadConstMem32(x86reg, (uptr)&counters[0].mode);
-			EECNT_LOG("Counter 0 mode read = %x\n", counters[0].mode);
+			EECNT_LOG("Counter 0 mode read = %x\n", counters[0].modeval);
 			return 0;
 		case 0x10000020:
 			_eeReadConstMem32(x86reg, (uptr)&counters[0].target);
@@ -306,7 +306,7 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			return 1;
 		case 0x10000810:
 			_eeReadConstMem32(x86reg, (uptr)&counters[1].mode);
-			EECNT_LOG("Counter 1 mode read = %x\n", counters[1].mode);
+			EECNT_LOG("Counter 1 mode read = %x\n", counters[1].modeval);
 			return 0;
 		case 0x10000820:
 			_eeReadConstMem32(x86reg, (uptr)&counters[1].target);
@@ -325,7 +325,7 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			return 1;
 		case 0x10001010:
 			_eeReadConstMem32(x86reg, (uptr)&counters[2].mode);
-			EECNT_LOG("Counter 2 mode read = %x\n", counters[2].mode);
+			EECNT_LOG("Counter 2 mode read = %x\n", counters[2].modeval);
 			return 0;
 		case 0x10001020:
 			_eeReadConstMem32(x86reg, (uptr)&counters[2].target);
@@ -346,7 +346,7 @@ int hwConstRead32(u32 x86reg, u32 mem)
 			return 1;
 		case 0x10001810:
 			_eeReadConstMem32(x86reg, (uptr)&counters[3].mode);
-			EECNT_LOG("Counter 3 mode read = %x\n", counters[3].mode);
+			EECNT_LOG("Counter 3 mode read = %x\n", counters[3].modeval);
 			return 0;
 		case 0x10001820:
 			_eeReadConstMem32(x86reg, (uptr)&counters[3].target);

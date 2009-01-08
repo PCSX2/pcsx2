@@ -298,7 +298,7 @@ void RunGuiAndReturn() {
 	if( g_gsRecoveryState != NULL )
 	{
 		memLoadingState eddie( *g_gsRecoveryState );
-		eddie.FreezePlugin( "GS", GSfreeze );
+		eddie.FreezePlugin( "GS", gsSafeFreeze );
 		eddie.gsFreeze();
 
 		safe_delete( g_gsRecoveryState );
@@ -338,7 +338,7 @@ public:
 
 	void FreezePlugin( const char* name, s32 (CALLBACK* freezer)(int mode, freezeData *data) )
 	{
-		if( (freezer == GSfreeze) && (g_gsRecoveryState != NULL) )
+		if( (freezer == gsSafeFreeze) && (g_gsRecoveryState != NULL) )
 		{
 			// Gs data is already in memory, so just copy from src to dest:
 			// length of the GS data is stored as the first u32, so use that to run the copy:
@@ -379,7 +379,7 @@ public:
 
 	void FreezePlugin( const char* name, s32 (CALLBACK* freezer)(int mode, freezeData *data) )
 	{
-		if( (freezer == GSfreeze) && (g_gsRecoveryState != NULL) )
+		if( (freezer == gsSafeFreeze) && (g_gsRecoveryState != NULL) )
 		{
 			// Gs data is already in memory, so just copy from there into the gzip file.
 			// length of the GS data is stored as the first u32, so use that to run the copy:
@@ -672,7 +672,7 @@ void CALLBACK KeyEvent(keyEvent* ev)
 					safe_delete( g_RecoveryState );
 					g_gsRecoveryState = new MemoryAlloc<u8>();
 					JustGsSavingState eddie;
-					eddie.FreezePlugin( "GS", GSfreeze ) ;
+					eddie.FreezePlugin( "GS", gsSafeFreeze ) ;
 					eddie.gsFreeze();
 					PluginsResetGS();
 				}
@@ -702,7 +702,6 @@ void SysRestorableReset()
 
 	try
 	{
-		SetCursor( LoadCursor( gApp.hInstance, IDC_APPSTARTING ) );
 		g_RecoveryState = new MemoryAlloc<u8>( "Memory Savestate Recovery" );
 		RecoveryMemSavingState().FreezeAll();
 		safe_delete( g_gsRecoveryState );

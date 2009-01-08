@@ -526,11 +526,12 @@ int mtgsThreadObject::Callback()
 					*(u64*)(m_gsMem+*(u32*)(m_RingPos+4)) = *(u64*)(m_RingPos+8);
 					break;
 
-				case GS_RINGTYPE_SAVE:
-				case GS_RINGTYPE_LOAD:
+				case GS_RINGTYPE_FREEZE:
 				{
-					SaveState* f = (SaveState*)(*(uptr*)(m_RingPos+8));
-					f->FreezePlugin( "GS", GSfreeze );
+					//SaveState* f = (SaveState*)(*(uptr*)(m_RingPos+8));
+					freezeData* data = (freezeData*)(*(uptr*)(m_RingPos+8));
+					int mode = *(s32*)(m_RingPos+4);
+					GSfreeze( mode, data );
 					break;
 				}
 

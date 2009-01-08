@@ -86,6 +86,25 @@ SaveState::SaveState( const char* msg, const string& destination ) : m_version( 
 	Console::WriteLn( "%s %S", params msg, &destination );
 }
 
+s32 CALLBACK gsSafeFreeze( int mode, freezeData *data )
+{
+	if( mtgsThread != NULL )
+	{
+		if( mode == 2 )
+			return GSfreeze( 2, data );
+
+		// have to call in thread, otherwise weird stuff will start happening
+		mtgsThread->SendPointerPacket( GS_RINGTYPE_FREEZE, mode, data );
+		mtgsWaitGS();
+		return 0;
+	}
+	else
+	{
+		// Single threaded...
+		return GSfreeze( mode, data );
+	}
+}
+
 void SaveState::FreezeAll()
 {
 	if( IsLoading() )
@@ -136,14 +155,7 @@ void SaveState::FreezeAll()
 	psxRcntFreeze();
 	sio2Freeze();
 
-    if( mtgsThread != NULL ) {
-        // have to call in thread, otherwise weird stuff will start happening
-        mtgsThread->SendPointerPacket( GS_RINGTYPE_SAVE, 0, this );
-        mtgsWaitGS();
-    }
-    else {
-        FreezePlugin( "GS", GSfreeze );
-    }
+	FreezePlugin( "GS", gsSafeFreeze );
 	FreezePlugin( "SPU2", SPU2freeze );
 	FreezePlugin( "DEV9", DEV9freeze );
 	FreezePlugin( "USB", USBfreeze );
@@ -298,6 +310,8 @@ memBaseStateInfo::memBaseStateInfo( MemoryAlloc<u8>& memblock, const char* msg )
 , m_memory( memblock )
 , m_idx( 0 )
 {
+	// Always clear the MTGS thread state.
+	mtgsWaitGS();
 }
 
 memSavingState::memSavingState( MemoryAlloc<u8>& save_to ) : memBaseStateInfo( save_to, _("Saving state to: ") )

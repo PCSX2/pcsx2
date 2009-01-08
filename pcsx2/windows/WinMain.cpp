@@ -50,6 +50,9 @@
 
 #include "implement.h"		// pthreads-win32 defines for startup/shutdown
 
+// Disabled warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
+#pragma warning(disable:4530)
+
 bool AccBreak = false;
 unsigned int langsMax;
 

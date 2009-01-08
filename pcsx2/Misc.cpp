@@ -434,7 +434,7 @@ void LoadGSState(const string& file)
 	f->Freeze(g_nLeftGSFrames);
 	f->gsFreeze();
 
-	f->FreezePlugin( "GS", GSfreeze );
+	f->FreezePlugin( "GS", gsSafeFreeze );
 
 	RunGSState( *f );
 
