@@ -1921,8 +1921,6 @@ void ipu0Interrupt() {
 	ipu0dma->chcr &= ~0x100;
 
 	hwDmacIrq(DMAC_FROM_IPU);
-	
-	cpuRegs.interrupt &= ~(1 << 3);
 }
 
 IPU_FORCEINLINE void ipu1Interrupt() {
@@ -1936,9 +1934,7 @@ IPU_FORCEINLINE void ipu1Interrupt() {
 	if( g_nDMATransfer & IPU_DMA_TIE1 ) {
 		g_nDMATransfer &= ~IPU_DMA_TIE1;
 	}else
-	ipu1dma->chcr &= ~0x100;
+		ipu1dma->chcr &= ~0x100;
 	
 	hwDmacIrq(DMAC_TO_IPU);
-	
-	cpuRegs.interrupt &= ~(1 << 4);
 }

@@ -1132,7 +1132,6 @@ void hwWrite128(u32 mem, const u64 *value) {
 }
 
 __forceinline void  intcInterrupt() {
-    cpuRegs.interrupt &= ~(1 << 30);
 	if ((cpuRegs.CP0.n.Status.val & 0x400) != 0x400) return;
 
 	if ((psHu32(INTC_STAT)) == 0) {
@@ -1152,7 +1151,6 @@ __forceinline void  intcInterrupt() {
 
 __forceinline void  dmacInterrupt()
 {
-    cpuRegs.interrupt &= ~(1 << 31);
     if ((cpuRegs.CP0.n.Status.val & 0x10807) != 0x10801) return;
 
 	if( ((psHu16(0xe012) & psHu16(0xe010)) == 0 ) && 

@@ -21,6 +21,15 @@
 
 #include "LnxMain.h"
 
+// these namespace directives globalize the new namespaces and make the code behave basically
+// like it used to (with cpuReset() and other cpu* vars and functions global).
+// Not sure if the Dynarec ones are needed, so ncomment them if you get unresolved external
+// link errors.  Should solve some of them (maybe not all...) - (air)
+
+using namespace R5900;
+//using namespace Dynarec;
+//using namespace Dynarec::R5900;
+
 DIR *dir;
 
 #ifdef PCSX2_DEVBUILD

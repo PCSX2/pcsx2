@@ -509,18 +509,23 @@ __forceinline void gsInterrupt() {
 
 	if((gif->chcr & 0x100) == 0){
 		//SysPrintf("Eh? why are you still interrupting! chcr %x, qwc %x, done = %x\n", gif->chcr, gif->qwc, done);
-		cpuRegs.interrupt &= ~(1 << 2);
 		return;
 	}
 	if(gif->qwc > 0 || gspath3done == 0) {
 		if( !(psHu32(DMAC_CTRL) & 0x1) ) {
-			SysPrintf("gs dma masked\n");
+			Console::Notice("gs dma masked, re-scheduling...");
+			// re-raise the int shortly in the future
+			CPU_INT( 2, 64 );
 			return;
 		}
 
 		GIFdma();
 #ifdef GSPATH3FIX
-		if ((vif1Regs->mskpath3 && (vif1ch->chcr & 0x100)) || (psHu32(GIF_MODE) & 0x1)) cpuRegs.interrupt &= ~(1 << 2);
+		// re-reaise the IRQ as part of the mysterious Path3fix.
+		// fixme - this hack *should* have the gs_irq raised from the VIF, I think.  It would be
+		// more efficient and more correct.  (air)
+		if (!(vif1Regs->mskpath3 && (vif1ch->chcr & 0x100)) || (psHu32(GIF_MODE) & 0x1))
+			CPU_INT( 2, 64 );
 #endif
 		return;
 	}
@@ -536,7 +541,6 @@ __forceinline void gsInterrupt() {
 	psHu32(GIF_STAT)&= ~0x1F000000; // QFC=0
 	hwDmacIrq(DMAC_GIF);
 
-	cpuRegs.interrupt &= ~(1 << 2);
 }
 
 static u64 s_gstag=0; // used for querying the last tag
@@ -986,7 +990,6 @@ void gifMFIFOInterrupt()
 		//SysPrintf("Empty\n");
 			psHu32(GIF_STAT)&= ~0xE00; // OPH=0 | APATH=0
 			hwDmacIrq(14);
-			cpuRegs.interrupt &= ~(1 << 11); 
 			return;
 		}
 		mfifoGIFtransfer(0);
@@ -994,8 +997,7 @@ void gifMFIFOInterrupt()
 	}
 #ifdef PCSX2_DEVBUILD
 	if(gifdone == 0 || gif->qwc > 0) {
-		SysPrintf("gifMFIFO Panic > Shouldnt go here!\n");
-		cpuRegs.interrupt &= ~(1 << 11);
+		Console::Error("gifMFIFO Panic > Shouldnt go here!");
 		return;
 	}
 #endif
@@ -1009,7 +1011,6 @@ void gifMFIFOInterrupt()
 	//psHu32(GIF_MODE)&= ~0x4;
 	psHu32(GIF_STAT)&= ~0xE00; // OPH=0 | APATH=0
 	psHu32(GIF_STAT)&= ~0x1F000000; // QFC=0
-	cpuRegs.interrupt &= ~(1 << 11);
 }
 
 void gsSyncLimiterLostTime( s32 deltaTime )

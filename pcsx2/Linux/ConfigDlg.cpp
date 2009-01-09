@@ -20,6 +20,12 @@
 
 using namespace std;
 
+// these namespace directives globalize the new namespaces and make the code behave basically
+// like it used to (with cpuReset() and other cpu* vars and functions global).
+using namespace R5900;
+using namespace Dynarec;
+using namespace Dynarec::R5900;
+
 static void FindComboText(GtkWidget *combo, char plist[255][255], GList *list, char *conf)
 {
 	if (strlen(conf) > 0) SetActiveComboItem(GTK_COMBO_BOX(combo), plist, list, conf); 

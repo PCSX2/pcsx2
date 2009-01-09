@@ -1205,7 +1205,6 @@ void  vif0Interrupt() {
 			{
 				vif0Regs->stat&= ~0xF000000; // FQC=0
 				vif0ch->chcr &= ~0x100;
-				cpuRegs.interrupt &= ~1;
 				return;
 			}		
 			if(vif0ch->qwc > 0 || vif0.irqoffset > 0){
@@ -1251,7 +1250,6 @@ void  vif0Interrupt() {
 	hwDmacIrq(DMAC_VIF0);
 	vif0Regs->stat&= ~0xF000000; // FQC=0
 
-	cpuRegs.interrupt &= ~1;
 }
 
 //  Vif1 Data Transfer Table
@@ -2162,8 +2160,6 @@ __forceinline void vif1Interrupt() {
 	vif1ch->chcr &= ~0x100;
 	hwDmacIrq(DMAC_VIF1);
 	if(vif1Regs->mskpath3 == 0 || (vif1ch->chcr & 0x1) == 0x1)vif1Regs->stat&= ~0x1F000000; // FQC=0
-
-	cpuRegs.interrupt &= ~(1 << 1);
 }
 
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
