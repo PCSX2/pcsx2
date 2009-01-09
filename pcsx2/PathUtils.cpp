@@ -19,6 +19,16 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 
+#ifdef __LINUX__
+#ifndef _S_IFDIR
+#define _S_IFDIR S_IFDIR
+#endif
+
+#ifndef _S_IFREG
+#define _S_IFREG S_IFREG
+#endif
+#endif
+
 namespace Path
 {
 
@@ -70,7 +80,7 @@ bool isRooted( const string& path )
 #ifdef WIN32
 	return (path[0] == '/') || (path[0] == '\\') || (path[1] == ':');
 #else
-	return (path[0] == PathSeparator);
+	return (path[0] == Separator);
 #endif
 }
 

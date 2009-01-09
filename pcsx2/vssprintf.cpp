@@ -51,6 +51,10 @@
 
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
 
+#ifdef __LINUX__
+#define _CVTBUFSIZE (309+40)
+#endif
+
 static const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
 static const char *upper_digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 

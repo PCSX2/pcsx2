@@ -31,7 +31,7 @@ bool sysInitialized = false;
 
 namespace Exception
 {
-	BaseException::~BaseException() {}
+	BaseException::~BaseException() throw() {}
 }
 
 // I can't believe I had to make my own version of trim.  C++'s STL is totally whack.

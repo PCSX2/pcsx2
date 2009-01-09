@@ -230,6 +230,7 @@ __forceinline void FreezeXMMRegs_(int save)
 }
 
 #ifdef PCSX2_DEVBUILD
+#ifdef _WIN32
 __declspec(naked) void _StartPerfCounter()
 {
 	__asm {
@@ -270,5 +271,5 @@ __declspec(naked) void _StopPerfCounter()
 		ret
 	}
 }
-
+#endif // WIN32
 #endif // PCSX2_DEVBUILD

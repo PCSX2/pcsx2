@@ -2771,7 +2771,7 @@ void memReset()
 	long filesize;
 	if( ( filesize = Path::getFileSize( Bios ) ) <= 0 )
 	{
-		Console::Error(_("Unable to load bios: '%s', PCSX2 can't run without that"), params Bios);
+		Console::Error("Unable to load bios: '%s', PCSX2 can't run without that", params Bios);
 		throw Exception::FileNotFound( Bios,
 			"The specified Bios file was not found.  A bios is required for Pcsx2 to run.\n\nFile not found" );
 	}
@@ -2952,7 +2952,7 @@ __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t
 	}
 
 	err = mprotect( &psM[pageoffset], pagesize, PROT_READ | PROT_WRITE );
-	if (err) DevCon::Error("SysPageFaultExceptionFilter: %s", strerror(errno));
+	if (err) DevCon::Error("SysPageFaultExceptionFilter: %s", params strerror(errno));
 	
 	offset>>=12;
 	psMPWC[(offset/32)]|=(1<<(offset&31));
