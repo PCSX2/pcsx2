@@ -169,8 +169,8 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		t1reg = _vuGetTempXMMreg(info);
 		if (t1reg < 0) {
 			//SysPrintf( "VU ALLOCATION ERROR: Temp reg can't be allocated!!!!\n" );
-			t1reg = (reg == 0) ? (reg + 1) : (reg - 1);
-			SSE_MOVAPS_XMM_to_M128( (uptr)TEMPXMMData, t1reg );
+			t1reg = (reg == 0) ? 1 : 0; // Make t1reg != reg
+			SSE_MOVAPS_XMM_to_M128( (uptr)TEMPXMMData, t1reg ); // Backup data to temp address
 			t1regBoolean = 1;
 		}
 		else t1regBoolean = 0;
@@ -279,10 +279,9 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	x86SetJ8(pjmp2); // If we skipped the Zero Flag Checking, return here
 
-	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip back reg to wzyx
-
-	if (t1regBoolean == 1) SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)TEMPXMMData );
-	else if (t1regBoolean == 0) _freeXMMreg(t1reg);
+	if		(t1regBoolean == 2) SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip back reg to wzyx (have to do this because reg != EEREC_TEMP)
+	else if (t1regBoolean == 1) SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)TEMPXMMData ); // Restore data from temo address
+	else	_freeXMMreg(t1reg); // Free temp reg
 
 	MOV16RtoM(macaddr, x86macflag);
 	MOV16RtoM(stataddr, x86temp);
