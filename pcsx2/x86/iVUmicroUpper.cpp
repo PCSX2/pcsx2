@@ -153,6 +153,8 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	static const int flipMask[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
 	if( !(info & PROCESS_VU_UPDATEFLAGS) ) return;
+	
+	//SysPrintf ("recUpdateFlags  \n");
 
 	macaddr = VU_VI_ADDR(REG_MAC_FLAG, 0);
 	stataddr = VU_VI_ADDR(REG_STATUS_FLAG, 0); // write address
@@ -898,6 +900,7 @@ flagUpdate:
 
 void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 {
+	//SysPrintf ("recVUMI_SUBA_iq  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
 		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
@@ -954,6 +957,7 @@ void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 
 void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
 {
+	//SysPrintf ("recVUMI_SUBA_xyzw  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		if (_Fs_) vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
 		if (_Ft_) vuFloat5( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
@@ -1012,6 +1016,7 @@ void recVUMI_SUBAw(VURegs *VU, int info) { recVUMI_SUBA_xyzw(VU, 3, info); }
 //------------------------------------------------------------------
 void recVUMI_MUL_toD(VURegs *VU, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MUL_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		//using vuFloat instead of vuFloat2 incase regd == EEREC_TEMP
 		if (_Fs_) vuFloat( info, EEREC_S, _X_Y_Z_W);
@@ -1053,6 +1058,7 @@ void recVUMI_MUL_toD(VURegs *VU, int regd, int info)
 
 void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MUL_iq_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
 		if (_Fs_) vuFloat( info, EEREC_S, _X_Y_Z_W);
@@ -1107,6 +1113,7 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 
 void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MUL_xyzw_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		if (_Ft_) vuFloat( info, EEREC_T, ( 1 << (3 - xyzw) ) );
 	}
@@ -1173,6 +1180,7 @@ void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 
 void recVUMI_MUL(VURegs *VU, int info)
 {
+	//SysPrintf ("recVUMI_MUL  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MUL_toD(VU, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1180,6 +1188,7 @@ void recVUMI_MUL(VURegs *VU, int info)
 
 void recVUMI_MUL_iq(VURegs *VU, int addr, int info)
 {
+	//SysPrintf ("recVUMI_MUL_iq  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MUL_iq_toD(VU, addr, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1188,6 +1197,7 @@ void recVUMI_MUL_iq(VURegs *VU, int addr, int info)
 
 void recVUMI_MUL_xyzw(VURegs *VU, int xyzw, int info)
 {
+	//SysPrintf ("recVUMI_MUL_xyzw  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MUL_xyzw_toD(VU, xyzw, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1207,18 +1217,21 @@ void recVUMI_MULw(VURegs *VU, int info) { recVUMI_MUL_xyzw(VU, 3, info); }
 //------------------------------------------------------------------
 void recVUMI_MULA( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MULA  \n");
 	recVUMI_MUL_toD(VU, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MULA_iq(VURegs *VU, int addr, int info)
 {	
+	//SysPrintf ("recVUMI_MULA_iq  \n");
 	recVUMI_MUL_iq_toD(VU, addr, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MULA_xyzw(VURegs *VU, int xyzw, int info)
 {
+	//SysPrintf ("recVUMI_MULA_xyzw  \n");
 	recVUMI_MUL_xyzw_toD(VU, xyzw, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
@@ -1237,6 +1250,7 @@ void recVUMI_MULAw(VURegs *VU, int info) { recVUMI_MULA_xyzw(VU, 3, info); }
 //------------------------------------------------------------------
 void recVUMI_MADD_toD(VURegs *VU, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MADD_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat( info, EEREC_T, _X_Y_Z_W);
@@ -1303,6 +1317,7 @@ void recVUMI_MADD_toD(VURegs *VU, int regd, int info)
 
 void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MADD_iq_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
@@ -1390,6 +1405,7 @@ void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 
 void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MADD_xyzw_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_T, ( 1 << (3 - xyzw) ) );
 		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
@@ -1502,6 +1518,7 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 
 void recVUMI_MADD(VURegs *VU, int info)
 {
+	//SysPrintf ("recVUMI_MADD  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MADD_toD(VU, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1509,6 +1526,7 @@ void recVUMI_MADD(VURegs *VU, int info)
 
 void recVUMI_MADD_iq(VURegs *VU, int addr, int info)
 {
+	//SysPrintf ("recVUMI_MADD_iq  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MADD_iq_toD(VU, addr, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1516,6 +1534,7 @@ void recVUMI_MADD_iq(VURegs *VU, int addr, int info)
 
 void recVUMI_MADD_xyzw(VURegs *VU, int xyzw, int info)
 {
+	//SysPrintf ("recVUMI_MADD_xyzw  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MADD_xyzw_toD(VU, xyzw, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1536,42 +1555,49 @@ void recVUMI_MADDw(VURegs *VU, int info) { recVUMI_MADD_xyzw(VU, 3, info); }
 //------------------------------------------------------------------
 void recVUMI_MADDA( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MADDA  \n");
 	recVUMI_MADD_toD(VU, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MADDAi( VURegs *VU , int info)
 {
+	//SysPrintf ("recVUMI_MADDAi  \n");
 	recVUMI_MADD_iq_toD( VU, VU_VI_ADDR(REG_I, 1), EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MADDAq( VURegs *VU , int info)
 {
+	//SysPrintf ("recVUMI_MADDAq  \n");
 	recVUMI_MADD_iq_toD( VU, VU_REGQ_ADDR, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MADDAx( VURegs *VU , int info)
 {
+	//SysPrintf ("recVUMI_MADDAx  \n");
 	recVUMI_MADD_xyzw_toD(VU, 0, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MADDAy( VURegs *VU , int info)
 {
+	//SysPrintf ("recVUMI_MADDAy  \n");
 	recVUMI_MADD_xyzw_toD(VU, 1, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MADDAz( VURegs *VU , int info)
 {
+	//SysPrintf ("recVUMI_MADDAz  \n");
 	recVUMI_MADD_xyzw_toD(VU, 2, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MADDAw( VURegs *VU , int info)
 {
+	//SysPrintf ("recVUMI_MADDAw  \n");
 	recVUMI_MADD_xyzw_toD(VU, 3, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
@@ -1583,6 +1609,7 @@ void recVUMI_MADDAw( VURegs *VU , int info)
 //------------------------------------------------------------------
 void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MSUB_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat( info, EEREC_T, _X_Y_Z_W);
@@ -1643,6 +1670,7 @@ void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 
 void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 {
+	//SysPrintf ("recVUMI_MSUB_temp_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat( info, EEREC_ACC, _X_Y_Z_W);
@@ -1699,6 +1727,7 @@ void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 
 void recVUMI_MSUB_iq_toD(VURegs *VU, int regd, int addr, int info)
 {
+	//SysPrintf ("recVUMI_MSUB_iq_toD  \n");
 	SSE_MOVSS_M32_to_XMM(EEREC_TEMP, addr); 
 	SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x00);
 	recVUMI_MSUB_temp_toD(VU, regd, info);
@@ -1706,12 +1735,14 @@ void recVUMI_MSUB_iq_toD(VURegs *VU, int regd, int addr, int info)
 
 void recVUMI_MSUB_xyzw_toD(VURegs *VU, int regd, int xyzw, int info)
 {
+	//SysPrintf ("recVUMI_MSUB_xyzw_toD  \n");
 	_unpackVF_xyzw(EEREC_TEMP, EEREC_T, xyzw);
 	recVUMI_MSUB_temp_toD(VU, regd, info);
 }
 
 void recVUMI_MSUB(VURegs *VU, int info)
 {
+	//SysPrintf ("recVUMI_MSUB  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_toD(VU, EEREC_D, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1719,6 +1750,7 @@ void recVUMI_MSUB(VURegs *VU, int info)
 
 void recVUMI_MSUB_iq(VURegs *VU, int addr, int info)
 {
+	//SysPrintf ("recVUMI_MSUB_iq  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_iq_toD(VU, EEREC_D, addr, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1728,6 +1760,7 @@ void recVUMI_MSUBi(VURegs *VU, int info) { recVUMI_MSUB_iq(VU, VU_VI_ADDR(REG_I,
 void recVUMI_MSUBq(VURegs *VU, int info) { recVUMI_MSUB_iq(VU, VU_REGQ_ADDR, info); }
 void recVUMI_MSUBx(VURegs *VU, int info)
 {
+	//SysPrintf ("recVUMI_MSUBx  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 0, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1735,6 +1768,7 @@ void recVUMI_MSUBx(VURegs *VU, int info)
 
 void recVUMI_MSUBy(VURegs *VU, int info)
 {
+	//SysPrintf ("recVUMI_MSUBy  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 1, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1742,6 +1776,7 @@ void recVUMI_MSUBy(VURegs *VU, int info)
 
 void recVUMI_MSUBz(VURegs *VU, int info)
 {
+	//SysPrintf ("recVUMI_MSUBz  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 2, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1749,6 +1784,7 @@ void recVUMI_MSUBz(VURegs *VU, int info)
 
 void recVUMI_MSUBw(VURegs *VU, int info)
 {
+	//SysPrintf ("recVUMI_MSUBw  \n");
 	if( !_Fd_ ) info |= PROCESS_EE_SET_D(EEREC_TEMP);
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_D, 3, info);
 	recUpdateFlags(VU, EEREC_D, info);
@@ -1761,42 +1797,49 @@ void recVUMI_MSUBw(VURegs *VU, int info)
 //------------------------------------------------------------------
 void recVUMI_MSUBA( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MSUBA  \n");
 	recVUMI_MSUB_toD(VU, EEREC_ACC, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MSUBAi( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MSUBAi  \n");
 	recVUMI_MSUB_iq_toD( VU, EEREC_ACC, VU_VI_ADDR(REG_I, 1), info );
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MSUBAq( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MSUBAq  \n");
 	recVUMI_MSUB_iq_toD( VU, EEREC_ACC, VU_REGQ_ADDR, info );
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MSUBAx( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MSUBAx  \n");
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 0, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MSUBAy( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MSUBAy  \n");
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 1, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MSUBAz( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MSUBAz  \n");
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 2, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
 
 void recVUMI_MSUBAw( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_MSUBAw  \n");
 	recVUMI_MSUB_xyzw_toD(VU, EEREC_ACC, 3, info);
 	recUpdateFlags(VU, EEREC_ACC, info);
 }
@@ -1809,6 +1852,8 @@ void recVUMI_MSUBAw( VURegs *VU, int info )
 void recVUMI_MAX(VURegs *VU, int info)
 {	
 	if ( _Fd_ == 0 ) return;
+
+	//SysPrintf ("recVUMI_MAX  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat5( EEREC_S, EEREC_TEMP, _X_Y_Z_W);
 		vuFloat5( EEREC_T, EEREC_TEMP, _X_Y_Z_W);
@@ -1841,6 +1886,8 @@ void recVUMI_MAX(VURegs *VU, int info)
 void recVUMI_MAX_iq(VURegs *VU, uptr addr, int info)
 {	
 	if ( _Fd_ == 0 ) return;
+
+	//SysPrintf ("recVUMI_MAX_iq  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat3(addr);
@@ -1899,6 +1946,8 @@ void recVUMI_MAX_iq(VURegs *VU, uptr addr, int info)
 void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 {	
 	if ( _Fd_ == 0 ) return;
+
+	//SysPrintf ("recVUMI_MAX_xyzw  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat( info, EEREC_T, ( 1 << (3 - xyzw) ) );
@@ -1978,6 +2027,7 @@ void recVUMI_MINI(VURegs *VU, int info)
 {
 	if ( _Fd_ == 0 ) return;
 
+	//SysPrintf ("recVUMI_MINI  \n");
 	if( _X_Y_Z_W == 8 ) {
 		if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat5( EEREC_S, EEREC_TEMP, 8); vuFloat5( EEREC_T, EEREC_TEMP, 8); }
 		if (EEREC_D == EEREC_S) SSE_MINSS_XMM_to_XMM(EEREC_D, EEREC_T);
@@ -2014,6 +2064,8 @@ void recVUMI_MINI(VURegs *VU, int info)
 void recVUMI_MINI_iq(VURegs *VU, uptr addr, int info)
 {
 	if ( _Fd_ == 0 ) return;
+
+	//SysPrintf ("recVUMI_MINI_iq  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat3(addr);
@@ -2072,6 +2124,8 @@ void recVUMI_MINI_iq(VURegs *VU, uptr addr, int info)
 void recVUMI_MINI_xyzw(VURegs *VU, int xyzw, int info)
 {
 	if ( _Fd_ == 0 ) return;
+
+	//SysPrintf ("recVUMI_MINI_xyzw  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat( info, EEREC_S, _X_Y_Z_W);
 		vuFloat( info, EEREC_T, ( 1 << (3 - xyzw) ) );
@@ -2122,6 +2176,7 @@ void recVUMI_MINIw(VURegs *VU, int info) { recVUMI_MINI_xyzw(VU, 3, info); }
 //------------------------------------------------------------------
 void recVUMI_OPMULA( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_OPMULA  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat5( EEREC_S, EEREC_TEMP, 0xE);
 		vuFloat5( EEREC_T, EEREC_TEMP, 0xE);
@@ -2148,6 +2203,7 @@ void recVUMI_OPMULA( VURegs *VU, int info )
 //------------------------------------------------------------------
 void recVUMI_OPMSUB( VURegs *VU, int info )
 {
+	//SysPrintf ("recVUMI_OPMSUB  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat5( EEREC_S, EEREC_TEMP, 0xE);
 		vuFloat5( EEREC_T, EEREC_TEMP, 0xE);
@@ -2177,6 +2233,7 @@ void recVUMI_OPMSUB( VURegs *VU, int info )
 //------------------------------------------------------------------
 void recVUMI_NOP( VURegs *VU, int info ) 
 {
+	//SysPrintf ("recVUMI_NOP  \n");
 }
 //------------------------------------------------------------------
 
@@ -2188,6 +2245,7 @@ static const PCSX2_ALIGNED16(int rec_const_0x8000000[4]) = { 0x80000000, 0x80000
 
 void recVUMI_FTOI_Saturate(int rec_s, int rec_t, int rec_tmp1, int rec_tmp2)
 {
+	//SysPrintf ("recVUMI_FTOI_Saturate  \n");
 	//Duplicate the xor'd sign bit to the whole value
 	//FFFF FFFF for positive,  0 for negative
 	SSE_MOVAPS_XMM_to_XMM(rec_tmp1, rec_s);
@@ -2222,7 +2280,7 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 
 	if ( _Ft_ == 0 ) return; 
 
-	//SysPrintf("recVUMI_FTOI0()\n");
+	//SysPrintf ("recVUMI_FTOI0  \n");
 
 	if (_X_Y_Z_W != 0xf) {
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
@@ -2323,8 +2381,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 
 	if ( _Ft_ == 0 ) return; 
 
-	//SysPrintf("recVUMI_FTOIX()\n");
-
+	//SysPrintf ("recVUMI_FTOIX  \n");
 	if (_X_Y_Z_W != 0xf) {
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
@@ -2434,6 +2491,7 @@ void recVUMI_ITOF0( VURegs *VU, int info )
 {
 	if ( _Ft_ == 0 ) return;
 
+	//SysPrintf ("recVUMI_ITOF0  \n");
 	if (_X_Y_Z_W != 0xf) {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		vuFloat( info, EEREC_TEMP, 15); // Clamp infinities
@@ -2450,6 +2508,7 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 {
 	if ( _Ft_ == 0 ) return; 
 
+	//SysPrintf ("recVUMI_ITOFX  \n");
 	if (_X_Y_Z_W != 0xf) {
 		SSE2_CVTDQ2PS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 		SSE_MULPS_M128_to_XMM(EEREC_TEMP, addr);
@@ -2481,6 +2540,8 @@ void recVUMI_CLIP(VURegs *VU, int info)
 
 	u32 clipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 0);
 	u32 prevclipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 2);
+
+	//SysPrintf ("recVUMI_CLIP  \n");
 
 	if( clipaddr == 0 ) { // battle star has a clip right before fcset
 		SysPrintf("skipping vu clip\n");
