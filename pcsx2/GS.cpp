@@ -567,7 +567,10 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 		// fixed? PrepDataPacket now returns the actual size of the packet.
 		// VIF handles scratchpad wrapping also, so this code shouldn't be needed anymore.
 
-		/*u32 pendmem = (u32)gif->madr + sizetoread; 
+		//vm build still needs this, fixes Fatal Frame init(rama)
+
+#ifdef PCSX2_VIRTUAL_MEM  //only do this for vm build, vtlb is fine 
+		u32 pendmem = (u32)gif->madr + sizetoread; 
 		if( dmaGetAddr(pendmem-16) == NULL )
 		{ 
 			pendmem = ((pendmem-16)&~0xfff)-16; 
@@ -577,7 +580,8 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 			} 
 			memcpy_raz_(pgsmem, pMem, pendmem-(u32)gif->madr+16);
 		}
-		else*/
+		else
+#endif
 		memcpy_raz_(pgsmem, pMem, sizetoread); 
 		
 		mtgsThread->SendDataPacket();
