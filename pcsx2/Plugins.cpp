@@ -22,10 +22,6 @@
 #include "PsxCommon.h"
 #include "GS.h"
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#endif
-
 _GSinit            GSinit;
 _GSopen            GSopen;
 _GSclose           GSclose;

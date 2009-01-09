@@ -30,10 +30,6 @@
 
 #include "iVUzerorec.h"
 
-#ifdef _WIN32
-#pragma warning(disable:4113)
-#endif
-
 #ifdef PCSX2_VIRTUAL_MEM
 extern PSMEMORYBLOCK s_psVuMem;
 extern PSMEMORYMAP *memLUT;

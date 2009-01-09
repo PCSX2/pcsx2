@@ -33,10 +33,6 @@ VURegs* g_pVU1;
 extern PSMEMORYBLOCK s_psVuMem;
 #endif
 
-#ifdef _WIN32
-#pragma warning(disable:4113)
-#endif
-
 #ifdef _DEBUG
 u32 vudump = 0;
 #endif

@@ -47,6 +47,11 @@
 // TODO : Add items here that are local to Pcsx2 but stay relatively unchanged for
 // long periods of time.
 
+#ifdef _WIN32
+// disable warning C4244: '=' : conversion from 'big' to 'small', possible loss of data
+#pragma warning(disable:4244)
+#endif
+
 using std::string;		// we use it enough, so bring it into the global namespace.
 
 #include "zlib.h"

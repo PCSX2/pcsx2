@@ -21,10 +21,6 @@
 #include "PsxCommon.h"
 #include "Paths.h"
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#endif
-
 FILE * MemoryCard1, * MemoryCard2;
 _sio sio;
 

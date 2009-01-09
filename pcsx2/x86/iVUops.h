@@ -16,10 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#endif
-
 #define REC_VUOP(VU, f) { \
 	_freeXMMregs(/*&VU*/); \
 	_freeMMXregs(); \

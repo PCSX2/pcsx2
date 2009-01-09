@@ -30,11 +30,6 @@
 #include "VUmicro.h"
 #include "iVUmicro.h"
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#pragma warning(disable:4761)
-#endif
-
 extern void _vu0WaitMicro();
 
 // Temporary until I can get the VUs namespaced properly.

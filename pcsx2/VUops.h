@@ -19,10 +19,6 @@
 #ifndef __VU1OPS_H__
 #define __VU1OPS_H__
 
-#ifdef _MSC_VER
-#pragma warning(disable:4244)
-#endif
-
 #include "VU.h"
 
 extern __forceinline u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f);

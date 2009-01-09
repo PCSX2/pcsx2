@@ -33,13 +33,6 @@
 #include "iVUops.h"
 #include "VUops.h"
 
-#include "iVUzerorec.h"
-
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#pragma warning(disable:4761)
-#endif
-
 // fixme - having the VUs share the branch/pc values of the R5900 is bad on so many levels... >_< (air)
 
 using ::Dynarec::R5900::pc;

@@ -20,10 +20,6 @@
 // and added reg caching, const propagation, block analysis Jun06
 // zerofrog(@gmail.com)
 
-#ifdef _MSC_VER
-#pragma warning(disable:4244)
-#pragma warning(disable:4761)
-#endif
 
 #include "PrecompiledHeader.h"
 

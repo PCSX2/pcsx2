@@ -23,10 +23,6 @@
 #include "iR5900.h"
 
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#endif
-
 // NOTE: Any modifications to read/write fns should also go into their const counterparts
 
 void psxHwReset() {

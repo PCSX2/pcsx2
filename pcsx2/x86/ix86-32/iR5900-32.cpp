@@ -43,11 +43,6 @@
 #include "vtlb.h"
 #include "SamplProf.h"
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-//#pragma warning(disable:4761)
-#endif
-
 // used to disable register freezing during cpuBranchTests (registers
 // are safe then since they've been completely flushed)
 bool g_EEFreezeRegs = false;
