@@ -181,8 +181,8 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	}
 
 	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-	XOR16RtoR(x86macflag, x86macflag); // Clear Mac Flag
-	MOV16MtoR(x86temp, prevstataddr); // Load the previous status in to x86temp
+	XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
+	MOV32MtoR(x86temp, prevstataddr); // Load the previous status in to x86temp
 	AND16ItoR(x86temp, 0xff0); // Keep Sticky and D/I flags
 
 
@@ -203,11 +203,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
 
-		AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
+		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 		pjmp = JZ8(0); // Skip if none are
 			OR16ItoR(x86temp, 0x208); // OS, O flags
 			SHL16ItoR(EAX, 12);
-			OR16RtoR(x86macflag, EAX);
+			OR32RtoR(x86macflag, EAX);
 			pjmp32 = JMP32(0); // Skip Underflow Check
 		x86SetJ8(pjmp);
 
@@ -224,11 +224,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 		SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
 
-		AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
+		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Has Underflowed" bits from the previous calculation
 		pjmp = JZ8(0); // Skip if none are
 			OR16ItoR(x86temp, 0x104); // US, U flags
 			SHL16ItoR(EAX, 8);
-			OR16RtoR(x86macflag, EAX);
+			OR32RtoR(x86macflag, EAX);
 		x86SetJ8(pjmp);
 
 		//-------------------------Optional Code: Denormals Are Zero------------------------------
@@ -254,11 +254,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the t1reg
 
-	AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
+	AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
 	pjmp = JZ8(0); // Skip if none are
 		OR16ItoR(x86temp, 0x82); // SS, S flags
 		SHL16ItoR(EAX, 4);
-		OR16RtoR(x86macflag, EAX);
+		OR32RtoR(x86macflag, EAX);
 		pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
 	x86SetJ8(pjmp);
 
@@ -269,10 +269,10 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
 
-	AND32ItoR(EAX, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+	AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
 	pjmp = JZ8(0); // Skip if none are
 		OR16ItoR(x86temp, 0x41); // ZS, Z flags
-		OR16RtoR(x86macflag, EAX);
+		OR32RtoR(x86macflag, EAX);
 	x86SetJ8(pjmp);
 
 	//-------------------------Finally: Send the Flags to the Mac Flag Address------------------------------
