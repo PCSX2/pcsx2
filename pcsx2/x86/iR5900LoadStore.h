@@ -23,7 +23,9 @@
 * Format:  OP rt, offset(base)                           *
 *********************************************************/
 
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec { 
+namespace R5900 { 
+namespace OpcodeImpl
 {
 	void recLB( void );
 	void recLBU( void );
@@ -52,7 +54,7 @@ namespace EE { namespace Dynarec { namespace OpcodeImpl
 	void recSQC2( void );
 
 	// coissues
-	#ifdef PCSX2_VIRTUAL_MEM
+#ifdef PCSX2_VIRTUAL_MEM
 	void recLB_co( void );
 	void recLBU_co( void );
 	void recLH_co( void );

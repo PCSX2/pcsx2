@@ -23,7 +23,8 @@
 
 _cacheS pCache[64];
 
-namespace EE { namespace Interpreter { namespace OpcodeImpl
+namespace R5900{
+namespace Interpreter 
 {
 
 #ifdef PCSX2_CACHE_EMU_MEM
@@ -146,6 +147,9 @@ u8 *readCache(u32 mem) {
 
 	return pCache[i].data[number][(mem>>4) & 0x3].b8._8;
 }
+
+namespace OpcodeImpl
+{
 
 extern int Dcache;
 void CACHE() {
@@ -381,11 +385,16 @@ void CACHE() {
 		}
 	}
 }
+}		// end namespace OpcodeImpl
 #else
 
+namespace OpcodeImpl
+{
+
 void CACHE() {
+}
 }
 
 #endif
 
-}}} // end namespace EE::Interpeter::OpcodeImpl
+}}

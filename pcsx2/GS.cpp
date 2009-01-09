@@ -28,6 +28,8 @@
 using namespace Threading;
 using namespace std;
 
+using namespace R5900;
+
 #ifdef DEBUG
 #define MTGS_LOG SysPrintf
 #else
@@ -1228,7 +1230,6 @@ void gsResetFrameSkip()
 		_gs_ResetFrameskip();
 }
 
-void frameLimitReset();		// defined in Counters.c
 void gsDynamicSkipEnable()
 {
 	if( !m_StrictSkipping ) return;

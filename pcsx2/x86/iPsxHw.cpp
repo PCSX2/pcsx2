@@ -21,8 +21,16 @@
 #include "PsxCommon.h"
 #include "iR5900.h"
 
+// iPsxHw uses the R5900 flushcall because this module can be called from both
+// the EE and the IOP -- R5900's iFlushCall is compatible with iPsxFlushcall, but
+// iPsxFlushCall does not flush all the regtypes that iFlushCall does.
+using ::Dynarec::R5900::iFlushCall;
+
 extern int g_pbufi;
 extern s8 g_pbuf[1024];
+
+namespace Dynarec
+{
 
 #define CONSTREAD8_CALL(name) { \
 	iFlushCall(0); \
@@ -1178,3 +1186,4 @@ void psxHw4ConstWrite8(u32 add, int mmreg) {
 	}
 }
 
+}	// end namespace Dynarec

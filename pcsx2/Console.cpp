@@ -23,7 +23,7 @@
 
 using namespace std;
 
-VARG_PARAM va_arg_dummy;
+const VARG_PARAM va_arg_dummy = { 0 };
 
 // Methods of the Console namespace not defined here are to be found in the platform
 // dependent implementations in WinConsole.cpp and LnxConsole.cpp.

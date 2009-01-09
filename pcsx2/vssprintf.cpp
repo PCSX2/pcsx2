@@ -503,12 +503,12 @@ static void flt( std::string& dest, double num, int size, int precision, char fm
 
 #endif
 
+///////////////////////////////////////////////////////////////////////////
 // This is a "mostly" direct replacement for vsprintf, that is more secure and easier
 // to use than vsnprintf or vsprintf_s.  See the docs for ssprintf for usage notes.
-void vssprintf(std::string& dest, const std::string& format, va_list args)
+void vssappendf(std::string& dest, const std::string& format, va_list args)
 {
-	int len;
-	int i, base;
+	int base;
 
 	int flags;            // Flags to number()
 
@@ -516,7 +516,9 @@ void vssprintf(std::string& dest, const std::string& format, va_list args)
 	int precision;        // Min. # of digits for integers; max number of chars for from string
 	int qualifier;        // 'h', 'l', or 'L' for integer fields
 
-	dest.clear();
+	// Optimization: Memory is cheap.  Allocating it on the fly is not.  Allocate more room
+	// than we'll likely need right upfront!
+	dest.reserve( format.length() * 2 );
 
 	for( const char* fmt = format.c_str(); *fmt; fmt++ )
 	{
@@ -571,7 +573,7 @@ repeat:
 
 		// Get the conversion qualifier
 		qualifier = -1;
-		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L')
+		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' )
 		{
 			qualifier = *fmt;
 			fmt++;
@@ -590,24 +592,47 @@ repeat:
 
 			case 's':
 			{
-				const char* s = va_arg(args, char *);
-				if (!s) s = "<NULL>";
-				len = strnlen(s, precision);
-				if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
-				for (i = 0; i < len; ++i) dest += *s++;
-				while (len < field_width--) dest += ' ';
-			}
-			continue;
+				// let's add support for std::string as a formatted parameter!  (air)
+				if( qualifier == 'h' )
+				{
+					static const string nullstring( "<NULL>" );
 
-			// let's add support for std::string as a formatted parameter!  (air)
-			case 'S':
-			{
-				std::string* ss = va_arg(args, std::string*);
-				const char* s = ( ss!=NULL ) ? ss->c_str() : "<NULL>";
-				len = strnlen(s, precision);
-				if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
-				for (i = 0; i < len; ++i) dest += *s++;
-				while (len < field_width--) dest += ' ';
+					const std::string* ss = va_arg(args, std::string*);
+					if( ss == NULL ) ss = &nullstring;
+					int len = ss->length();
+					if( precision < 0 )
+					{
+						// no precision override so just copy the whole string.
+						if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
+						dest += *ss;
+					}
+					else
+					{
+						if( len > precision ) len = precision;
+						if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
+						dest.append( ss->begin(), ss->begin()+len );
+					}
+					while (len < field_width--) dest += ' ';
+				}
+				else
+				{
+					const char* s = va_arg(args, char *);
+					if (!s) s = "<NULL>";
+
+					int len = strlen(s);
+					if( precision < 0 )
+					{
+						if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
+						dest += s;
+					}
+					else
+					{
+						if( len > precision ) len = precision;
+						if (!(flags & LEFT)) while (len < field_width--) dest += ' ';
+						dest.append( s, s+len );
+					}
+					while (len < field_width--) dest += ' ';
+				}
 			}
 			continue;
 
@@ -689,6 +714,7 @@ repeat:
 
 		if (qualifier == 'L')
 		{
+			// 64-bit integer support! (air)
 			number(dest, va_arg(args, s64), base, field_width, precision, flags);
 		}
 		else
@@ -704,6 +730,22 @@ repeat:
 	}
 }
 
+void vssprintf( std::string& dest, const std::string& format, va_list args )
+{
+	dest.clear();
+	vssappendf( dest, format, args );
+}
+
+void ssappendf( std::string& dest, const std::string& format, VARG_PARAM dummy, ...)
+{
+	dummy_assert();
+
+	va_list args;
+	va_start(args, dummy);
+	vssappendf( dest, format, args );
+	va_end(args);
+}
+
 // This is a "mostly" direct replacement for sprintf, based on std::string.
 // The most notable difference in use is the requirement of a "params" keyword delimiting
 // the format string from the parameters used to fill the string's tokens. It looks
@@ -712,10 +754,12 @@ repeat:
 //   ssprintf( dest, "Yo Joe, %d. In the Hizzou %s.", params intval, strval );
 //
 // In addition to all standard printf formatting tokens, ssprintf also supports a new token
-// for std::string parameters as %S (passed by reference/pointer).  Note that these are
-// passed by pointer so you *must* use the & sign most of the time.  Example:
+// for std::string parameters as %hs (passed by reference/pointer).  I opted for %hs (using 'h'
+// as a qualifier) over %S because under MSVC %S acts as a char/widechar conversion.  Note
+// that these are passed by pointer so you *must* use the & operator most of the time.
+// Example:
 //
-//   ssprintf( dest, "Yo Joe, %S.", params &strval );
+//   ssprintf( dest, "Yo Joe, %hs.", params &strval );
 //
 // This can be a cavet of sorts since forgetting to use the & will always compile but
 // will cause undefined behavior and odd crashes (much like how the same thing happens
@@ -754,3 +798,4 @@ std::string fmt_string( const std::string& fmt, VARG_PARAM dummy, ... )
 
 	return retval;
 }
+

@@ -61,6 +61,8 @@ void iDumpVU0Registers()
 #endif
 }
 
+using namespace R5900;
+
 int  vu0Init()
 {
 #ifdef PCSX2_VIRTUAL_MEM
@@ -117,7 +119,7 @@ int  vu0Init()
 	VU0.vuExec = vu0Exec;
 	VU0.vifRegs = vif0Regs;
 
-	if( CHECK_VU0REC ) SuperVUInit(0);
+	if( CHECK_VU0REC ) Dynarec::SuperVUInit(0);
 
 	vu0Reset();
 
@@ -126,7 +128,7 @@ int  vu0Init()
 
 void vu0Shutdown()
 {
-	if( CHECK_VU0REC ) SuperVUDestroy(0);
+	if( CHECK_VU0REC ) Dynarec::SuperVUDestroy(0);
 
 #ifdef PCSX2_VIRTUAL_MEM
 	if( !SysMapUserPhysicalPages(VU0.Mem, 16, NULL, 0) )
@@ -163,12 +165,7 @@ void vu0Reset()
 	memset(VU0.Mem, 0, 4*1024);
 	memset(VU0.Micro, 0, 4*1024);
 
-	recResetVU0();
-}
-
-void recResetVU0( void )
-{
-	if( CHECK_VU0REC ) SuperVUReset(0);
+	if( CHECK_VU0REC ) Dynarec::recResetVU0();
 }
 
 void SaveState::vu0Freeze() {

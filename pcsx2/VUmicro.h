@@ -72,7 +72,6 @@ void recResetVU0( void );
 int  vu1Init();
 void vu1Reset();
 void vu1ResetRegs();
-void recResetVU1( void );
 void vu1Shutdown();
 void vu1ExecMicro(u32 addr);
 void vu1Exec(VURegs* VU);

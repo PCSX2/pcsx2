@@ -49,6 +49,8 @@
 
 #include "VUflags.h"
 
+using namespace R5900;
+
 PCSX2_ALIGNED16(VURegs VU0);
 
 void COP2_BC2() { Int_COP2BC2PrintTable[_Rt_]();}
@@ -63,7 +65,9 @@ void COP2_Unknown()
 	CPU_LOG("Unknown COP2 opcode called\n");
 }
 
-namespace EE{ namespace Interpreter{ namespace OpcodeImpl
+namespace R5900 {
+namespace Interpreter{
+namespace OpcodeImpl
 {
 	void LQC2() {
 		u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)cpuRegs.code;
@@ -339,50 +343,6 @@ void VFCSET()  { VU0.code = cpuRegs.code; _vuFCSET(&VU0); }
 void VFCGET()  { VU0.code = cpuRegs.code; _vuFCGET(&VU0); }
 void VXITOP()  { VU0.code = cpuRegs.code; _vuXITOP(&VU0); }
 
-#define CP2COND (((VU0.VI[REG_VPU_STAT].US[0] >> 8) & 1))
-
-void BC2F()
-{ 
-	if (CP2COND == 0) 
-	{ 
-		SysPrintf("VU0 Macro Branch \n"); 
-		intDoBranch(_BranchTarget_); 
-	}
-}
-void BC2T() 
-{ 
-	if (CP2COND == 1) 
-	{ 
-		SysPrintf("VU0 Macro Branch \n"); 
-		intDoBranch(_BranchTarget_); 
-	}
-}
-
-void BC2FL()
-{ 
-	if (CP2COND == 0) 
-	{ 
-		SysPrintf("VU0 Macro Branch \n"); 
-		intDoBranch(_BranchTarget_); 
-	}
-	else 
-	{
-		cpuRegs.pc+= 4;
-	}
-}
-void BC2TL() 
-{ 
-	if (CP2COND == 1) 
-	{ 
-		SysPrintf("VU0 Macro Branch \n"); 
-		intDoBranch(_BranchTarget_); 
-	}
-	else 
-	{
-		cpuRegs.pc+= 4;
-	}
-}
-
 void vu0Finish()
 {
 	if( (VU0.VI[REG_VPU_STAT].UL & 0x1) ) {
@@ -402,14 +362,4 @@ void vu0Finish()
 #endif
 		}
 	}
-}
-
-void VCALLMS() {
-	vu0Finish();
-	vu0ExecMicro(((cpuRegs.code >> 6) & 0x7FFF) * 8);
-}
-
-void VCALLMSR() {
-	vu0Finish();
-	vu0ExecMicro(VU0.VI[REG_CMSAR0].US[0] * 8);
 }

@@ -19,6 +19,9 @@
 #ifndef __IVUMICRO_H__
 #define __IVUMICRO_H__
 
+namespace Dynarec
+{
+
 #define VU0_MEMSIZE 0x1000
 #define VU1_MEMSIZE 0x4000
 
@@ -278,5 +281,7 @@ void recVUMI_XGKICK(VURegs *vuRegs, int info);
 void recVUMI_XTOP(VURegs *vuRegs, int info);
 void recVUMI_XITOP(VURegs *vuRegs, int info);
 void recVUMI_XTOP( VURegs *VU , int info);
+
+}	// end namespace Dynarec
 
 #endif /* __IVUMICRO_H__ */

@@ -24,7 +24,9 @@
 * Format:  OP rs, rt                                     *
 *********************************************************/
 
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec { 
+namespace R5900 { 
+namespace OpcodeImpl
 {
 	void recMULT( void );
 	void recMULTU( void );

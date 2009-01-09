@@ -23,7 +23,9 @@
 * Arithmetic with immediate operand                      *
 * Format:  OP rt, rs, immediate                          *
 *********************************************************/
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec { 
+namespace R5900 { 
+namespace OpcodeImpl
 {
 	void recADDI( void );
 	void recADDIU( void );

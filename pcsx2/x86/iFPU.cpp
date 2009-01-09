@@ -24,13 +24,50 @@
 #include "iR5900.h"
 #include "iFPU.h"
 
-// Needed for gcc 4.3, due to header revisions.
-// (really?  that makes no sense... commented out, if they break something
-//  on gcc, re-add them.. if not, delete (air))
-//#include "stdio.h"
-//#include "stdlib.h" 
-//------------------------------------------------------------------
+extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
+extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
 
+//------------------------------------------------------------------
+// Misc...
+//------------------------------------------------------------------
+//static u32 _mxcsr = 0x7F80;
+//static u32 _mxcsrs;
+static u32 fpucw = 0x007f;
+static u32 fpucws = 0;
+
+//------------------------------------------------------------------
+namespace Dynarec {
+namespace R5900
+{
+
+void SaveCW(int type) {
+	if (iCWstate & type) return;
+
+	if (type == 2) {
+//		SSE_STMXCSR((uptr)&_mxcsrs);
+//		SSE_LDMXCSR((uptr)&_mxcsr);
+	} else {
+		FNSTCW( (uptr)&fpucws );
+		FLDCW( (uptr)&fpucw );
+	}
+	iCWstate|= type;
+}
+
+void LoadCW() {
+	if (iCWstate == 0) return;
+
+	if (iCWstate & 2) {
+		//SSE_LDMXCSR((uptr)&_mxcsrs);
+	}
+	if (iCWstate & 1) {
+		FLDCW( (uptr)&fpucws );
+	}
+	iCWstate = 0;
+}
+
+//------------------------------------------------------------------
+namespace OpcodeImpl
+{
 
 //------------------------------------------------------------------
 // Helper Macros
@@ -51,9 +88,6 @@
 #define FPUflagSU	0X00000008
 
 #define FPU_ADD_SUB_HACK 1 // Add/Sub opcodes produce more ps2-like results if set to 1
-
-extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
-extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
 
 static u32 PCSX2_ALIGNED16(s_neg[4]) = { 0x80000000, 0xffffffff, 0xffffffff, 0xffffffff };
 static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff };
@@ -77,55 +111,6 @@ static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xf
 	CALLFunc((uptr)f); \
 }
 //------------------------------------------------------------------
-
-
-//------------------------------------------------------------------
-// Misc...
-//------------------------------------------------------------------
-//static u32 _mxcsr = 0x7F80;
-//static u32 _mxcsrs;
-static u32 fpucw = 0x007f;
-static u32 fpucws = 0;
-
-void recCOP1_BC1()
-{
-	recCP1BC1[_Rt_]();
-}
-
-void SaveCW(int type) {
-	if (iCWstate & type) return;
-
-	if (type == 2) {
-//		SSE_STMXCSR((uptr)&_mxcsrs);
-//		SSE_LDMXCSR((uptr)&_mxcsr);
-	} else {
-		FNSTCW( (uptr)&fpucws );
-		FLDCW( (uptr)&fpucw );
-	}
-	iCWstate|= type;
-}
-
-void LoadCW( void ) {
-	if (iCWstate == 0) return;
-
-	if (iCWstate & 2) {
-		//SSE_LDMXCSR((uptr)&_mxcsrs);
-	}
-	if (iCWstate & 1) {
-		FLDCW( (uptr)&fpucws );
-	}
-	iCWstate = 0;
-}
-
-void recCOP1_S( void ) {
-	recCP1S[ _Funct_ ]( );
-}
-
-void recCOP1_W( void ) {
-    recCP1W[ _Funct_ ]( );
-}
-//------------------------------------------------------------------
-
 
 //------------------------------------------------------------------
 // *FPU Opcodes!*
@@ -1776,3 +1761,5 @@ void recRSQRT_S_xmm(int info)
 FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 #endif // FPU_RECOMPILE
+
+}}}

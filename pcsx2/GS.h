@@ -265,22 +265,25 @@ void gsWrite16(u32 mem, u16 value);
 void gsWrite32(u32 mem, u32 value);
 void gsWrite64(u32 mem, u64 value);
 
-void gsConstWrite8(u32 mem, int mmreg);
-void gsConstWrite16(u32 mem, int mmreg);
-void gsConstWrite32(u32 mem, int mmreg);
-void gsConstWrite64(u32 mem, int mmreg);
-void gsConstWrite128(u32 mem, int mmreg);
-
 u8   gsRead8(u32 mem);
 u16  gsRead16(u32 mem);
 u32  gsRead32(u32 mem);
 u64  gsRead64(u32 mem);
 
-int gsConstRead8(u32 x86reg, u32 mem, u32 sign);
-int gsConstRead16(u32 x86reg, u32 mem, u32 sign);
-int gsConstRead32(u32 x86reg, u32 mem);
-void  gsConstRead64(u32 mem, int mmreg);
-void  gsConstRead128(u32 mem, int xmmreg);
+namespace Dynarec
+{
+	void gsConstWrite8(u32 mem, int mmreg);
+	void gsConstWrite16(u32 mem, int mmreg);
+	void gsConstWrite32(u32 mem, int mmreg);
+	void gsConstWrite64(u32 mem, int mmreg);
+	void gsConstWrite128(u32 mem, int mmreg);
+
+	int gsConstRead8(u32 x86reg, u32 mem, u32 sign);
+	int gsConstRead16(u32 x86reg, u32 mem, u32 sign);
+	int gsConstRead32(u32 x86reg, u32 mem);
+	void gsConstRead64(u32 mem, int mmreg);
+	void gsConstRead128(u32 mem, int xmmreg);
+}
 
 void gsIrq();
 extern void gsInterrupt();

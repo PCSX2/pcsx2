@@ -22,6 +22,7 @@
 #include "CDVDisodrv.h"
 
 using namespace std;
+using namespace R5900;
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
@@ -506,7 +507,7 @@ void ElfApplyPatches()
 	ssprintf( filename, "%8.8x", params ElfCRC );
 
 	// if patches found the following status msg will be overwritten
-	Console::SetTitle( fmt_string( "Game running without patches. [CRC=%S]", params &filename ) );
+	Console::SetTitle( fmt_string( "Game running without patches. [CRC=%hs]", params &filename ) );
 
 	if(LoadPatch( filename ) != 0)
 	{

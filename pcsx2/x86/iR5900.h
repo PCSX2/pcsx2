@@ -19,6 +19,7 @@
 #ifndef __IR5900_H__
 #define __IR5900_H__
 
+#include "R5900.h"
 #include "VU.h"
 #include "iCore.h"
 
@@ -41,17 +42,13 @@
 #define CP2_RECOMPILE
 
 #define EE_CONST_PROP // rec2 - enables constant propagation (faster)
-//#define EE_FPU_REGCACHING 1 // Not used anymore, its always on!
+
+namespace Dynarec {
+namespace R5900 {
+
+using namespace ::R5900;		// This makes sure the Dynarec inherits all R5900 globals.
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
-
-void recClearMem(BASEBLOCK* p);
-#define REC_CLEARM(mem) { \
-	if ((mem) < maxrecmem && recLUT[(mem) >> 16]) { \
-		BASEBLOCK* p = PC_GETBLOCK(mem); \
-		if( *(u32*)p ) recClearMem(p); \
-	} \
-} \
 
 extern u32 pc;
 extern int branch;
@@ -61,38 +58,40 @@ extern u32 maxrecmem;
 extern u32 pc;			         // recompiler pc
 extern int branch;		         // set for branch
 extern u32 target;		         // branch target
-extern u16 x86FpuState;
-extern u16 iCWstate;
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
+extern u32 s_saveConstGPRreg;
+extern GPR_reg64 s_ConstGPRreg;
 
 #define REC_FUNC_INLINE( f, delreg ) \
 	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
 	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	iFlushCall(FLUSH_EVERYTHING); \
 	if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	CALLFunc( (uptr)EE::Interpreter::OpcodeImpl::f ); 
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::f ); 
 
 #define REC_FUNC( f, delreg ) \
-   void f( void ); \
    void rec##f( void ) \
    { \
 	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
 	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
 	   if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	   CALLFunc( (uptr)Interpreter::OpcodeImpl::f ); \
+	   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::f ); \
    }
 
 #define REC_SYS( f ) \
-   void f( void ); \
    void rec##f( void ) \
    { \
 	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
 	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
-	   CALLFunc( (uptr)f ); \
+	   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::f ); \
 	   branch = 2; \
    }
+
+// Used to clear recompiled code blocks during memory/dma write operations.
+void recClearMem(BASEBLOCK* p);
+void REC_CLEARM( u32 mem );
 
 // used when processing branches
 void SaveBranchState();
@@ -103,28 +102,18 @@ void SetBranchReg( u32 reg );
 void SetBranchImm( u32 imm );
 
 void iFlushCall(int flushtype);
-void SaveCW();
-void LoadCW();
 
-extern void (*recCP0[32])();
-extern void (*recCP0BC0[32])();
-extern void (*recCP0C0[64])();
-extern void (*recCP1[32])();
-extern void (*recCP1BC1[32])();
-extern void (*recCP1S[64])();
-extern void (*recCP1W[64])();
-
-namespace EE { namespace Dynarec {
-
-	extern void (*recBSC_co[64])();
-	void recBranchCall( void (*func)() );
-
-} }
+extern void (*recBSC_co[64])();
+void recBranchCall( void (*func)() );
 
 u32* _eeGetConstReg(int reg); // gets a memory pointer to the constant reg
 
 void _eeFlushAllUnused();
 void _eeOnWriteReg(int reg, int signext);
+
+// these are defined in iFPU.cpp
+void LoadCW();
+void SaveCW(int type);
 
 // totally deletes from const, xmm, and mmx entries
 // if flush is 1, also flushes to memory
@@ -234,7 +223,7 @@ void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
 void rec##fn(void) \
 { \
-	eeFPURecompileCode(rec##fn##_xmm, fn, xmminfo); \
+	eeFPURecompileCode(rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::fn, xmminfo); \
 }
 
 // rd = rs op rt (all regs need to be in xmm)
@@ -288,13 +277,6 @@ protected:
 
 };
 
-// perf counters
-#ifdef PCSX2_DEVBUILD
-extern void StartPerfCounter();
-extern void StopPerfCounter();
-#else
-#define StartPerfCounter()
-#define StopPerfCounter()
-#endif
+} }
 
 #endif // __IR5900_H__

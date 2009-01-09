@@ -223,7 +223,7 @@ USBhandler usbHandler;
 #define MapSymbolVar_Error(var,name) if((MapSymbolVar(var,name))==NULL) \
 { \
 	const char* errString = SysLibError(); \
-	Msgbox::Alert("%s: Error loading %S: %s", params &filename, #name, errString); \
+	Msgbox::Alert("%s: Error loading %hs: %s", params &filename, #name, errString); \
 	return -1; \
 } 
 
@@ -251,7 +251,7 @@ int _TestPS2Esyms(void* drv, int type, int expected_version, const string& filen
 	int actual_version = ((PS2EgetLibVersion2(type) >> 16)&0xff);
 
 	if( actual_version != expected_version) {
-		Msgbox::Alert("Can't load '%S', wrong PS2E version (%x != %x)", params &filename, actual_version, expected_version);
+		Msgbox::Alert("Can't load '%hs', wrong PS2E version (%x != %x)", params &filename, actual_version, expected_version);
 		return -1;
 	}
 
@@ -287,7 +287,7 @@ int LoadGSplugin(const string& filename)
 	void *drv;
 
 	GSplugin = SysLoadLibrary(filename.c_str());
-	if (GSplugin == NULL) { Msgbox::Alert ("Could Not Load GS Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (GSplugin == NULL) { Msgbox::Alert ("Could Not Load GS Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = GSplugin;
 	TestPS2Esyms(GS);
 	MapSymbol_Error(GSinit);
@@ -339,7 +339,7 @@ int LoadPAD1plugin(const string& filename) {
 	void *drv;
 
 	PAD1plugin = SysLoadLibrary(filename.c_str());
-	if (PAD1plugin == NULL) { Msgbox::Alert("Could Not Load PAD1 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (PAD1plugin == NULL) { Msgbox::Alert("Could Not Load PAD1 Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = PAD1plugin;
 	TestPS2Esyms(PAD);
 	MapSymbolPAD_Error(PAD1,PAD,init);
@@ -370,7 +370,7 @@ int LoadPAD2plugin(const string& filename) {
 	void *drv;
 
 	PAD2plugin = SysLoadLibrary(filename.c_str());
-	if (PAD2plugin == NULL) { Msgbox::Alert("Could Not Load PAD2 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (PAD2plugin == NULL) { Msgbox::Alert("Could Not Load PAD2 Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = PAD2plugin;
 	TestPS2Esyms(PAD);
 	MapSymbolPAD_Error(PAD2,PAD,init);
@@ -402,7 +402,7 @@ int LoadSPU2plugin(const string& filename) {
 	void *drv;
 
 	SPU2plugin = SysLoadLibrary(filename.c_str());
-	if (SPU2plugin == NULL) { Msgbox::Alert("Could Not Load SPU2 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (SPU2plugin == NULL) { Msgbox::Alert("Could Not Load SPU2 Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = SPU2plugin;
 	TestPS2Esyms(SPU2);
 	MapSymbol_Error(SPU2init);
@@ -445,7 +445,7 @@ int LoadCDVDplugin(const string& filename) {
 	void *drv;
 
 	CDVDplugin = SysLoadLibrary(filename.c_str());
-	if (CDVDplugin == NULL) { Msgbox::Alert("Could Not Load CDVD Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (CDVDplugin == NULL) { Msgbox::Alert("Could Not Load CDVD Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = CDVDplugin;
 	TestPS2Esyms(CDVD);
 	MapSymbol_Error(CDVDinit);
@@ -482,7 +482,7 @@ int LoadDEV9plugin(const string& filename) {
 	void *drv;
 
 	DEV9plugin = SysLoadLibrary(filename.c_str());
-	if (DEV9plugin == NULL) { Msgbox::Alert("Could Not Load DEV9 Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (DEV9plugin == NULL) { Msgbox::Alert("Could Not Load DEV9 Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = DEV9plugin;
 	TestPS2Esyms(DEV9);
 	MapSymbol_Error(DEV9init);
@@ -519,7 +519,7 @@ int LoadUSBplugin(const string& filename) {
 	void *drv;
 
 	USBplugin = SysLoadLibrary(filename.c_str());
-	if (USBplugin == NULL) { Msgbox::Alert("Could Not Load USB Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (USBplugin == NULL) { Msgbox::Alert("Could Not Load USB Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = USBplugin;
 	TestPS2Esyms(USB);
 	MapSymbol_Error(USBinit);
@@ -556,7 +556,7 @@ int LoadFWplugin(const string& filename) {
 	void *drv;
 
 	FWplugin = SysLoadLibrary(filename.c_str());
-	if (FWplugin == NULL) { Msgbox::Alert("Could Not Load FW Plugin '%S': %s", params &filename, SysLibError()); return -1; }
+	if (FWplugin == NULL) { Msgbox::Alert("Could Not Load FW Plugin '%hs': %s", params &filename, SysLibError()); return -1; }
 	drv = FWplugin;
 	TestPS2Esyms(FW);
 	MapSymbol_Error(FWinit);

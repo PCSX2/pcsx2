@@ -51,7 +51,6 @@ using namespace std;
 #define volatize(x) (*(u8* volatile*)&(x))		// for writepos
 #define volatize_c(x) (*(u8 * volatile*)&(x))	// for readpos
 
-
 /////////////////////////////////////////////////////////////////////////////
 //   BEGIN  --  MTGS GIFtag Parse Implementation
 //
@@ -209,9 +208,6 @@ mtgsThreadObject::mtgsThreadObject() :
 ,	m_lock_Stack()
 #endif
 {
-	memcpy_raz_( m_gsMem, PS2MEM_GS, sizeof(m_gsMem) );
-	GSsetBaseMem( m_gsMem );
-
 	// Wait for the thread to finish initialization (it runs GSinit, which can take
 	// some time since it's creating a new window and all), and then check for errors.
 
@@ -432,6 +428,10 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 int mtgsThreadObject::Callback()
 {
 	Console::WriteLn("MTGS > Thread Started, Opening GS Plugin...");
+
+	memcpy_raz_( m_gsMem, PS2MEM_GS, sizeof(m_gsMem) );
+	GSsetBaseMem( m_gsMem );
+
 	m_returncode = GSopen((void *)&pDsp, "PCSX2", 1);
 	GSCSRr = 0x551B400F; // 0x55190000
 	m_wait_InitDone.Set();

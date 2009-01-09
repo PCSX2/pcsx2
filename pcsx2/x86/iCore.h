@@ -16,16 +16,18 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// NOTE: x86-64 recompiler didn't support mmx
 #ifndef _PCSX2_CORE_RECOMPILER_
 #define _PCSX2_CORE_RECOMPILER_
 
 #include "ix86/ix86.h"
 #include "iVUmicro.h"
 
-// xp64 had a stack shadow memory
-#define REC_INC_STACK 0
+// Namespace Note : Dyanmic recompiler tools used by EE, IOP, and PS2 hardware.
+// Underneath this namespace thenare Dynarec::R5900, Dynarec::R3000a, etc. for each
+// of the items specific to those CPUs (those are defined in other headers).
 
+namespace Dynarec
+{
 // used to keep block information
 #define BLOCKTYPE_STARTPC	4		// startpc offset
 #define BLOCKTYPE_DELAYSLOT	1		// if bit set, delay slot
@@ -100,21 +102,15 @@ void _flushX86regs();
 void _freeX86regs();
 void _freeX86tempregs();
 u8 _hasFreeX86reg();
+void _flushCachedRegs();
+void _flushConstRegs();
+void _flushConstReg(int reg);
 
 // see MEM_X defines for argX format
 extern void _callPushArg(u32 arg, uptr argmem); /// X86ARG is ignored for 32bit recs
 extern void _callFunctionArg1(uptr fn, u32 arg1, uptr arg1mem);
 extern void _callFunctionArg2(uptr fn, u32 arg1, u32 arg2, uptr arg1mem, uptr arg2mem);
 extern void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr arg2mem, uptr arg3mem);
-
-
-// when using mmx/xmm regs, use; 0 is load
-// freezes no matter the state
-extern void FreezeXMMRegs_(int save);
-
-void _flushCachedRegs();
-void _flushConstRegs();
-void _flushConstReg(int reg);
 
 // return type: 0 - const, 1 - mmx, 2 - xmm
 #define PROCESS_EE_MMX 0x01
@@ -370,6 +366,9 @@ extern u32 g_cpuRegHasSignExt, g_cpuPrevRegHasSignExt;
 extern u8 g_globalXMMSaved;
 extern _xmmregs xmmregs[XMMREGS], s_saveXMMregs[XMMREGS];
 
+extern u16 g_x86AllocCounter;
+extern u16 g_xmmAllocCounter;
+
 #ifdef _DEBUG
 extern char g_globalXMMLocked;
 #endif
@@ -403,14 +402,13 @@ void SetMMXstate();
 
 void _recMove128MtoM(u32 to, u32 from);
 
-/////////////////////
-// MMX x86-32 only //
-/////////////////////
+/////////////////////////////
+//     MMX x86-32 only     //
+/////////////////////////////
 
 #define FPU_STATE 0
 #define MMX_STATE 1
 
-extern void FreezeMMXRegs_(int save);
 void SetFPUstate();
 
 // max is 0x7f, when 0x80 is set, need to flush reg
@@ -468,7 +466,6 @@ void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
 // a negative shift is for sign extension
 int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
 
-extern u8 g_globalMMXSaved;
 extern _mmxregs mmxregs[MMXREGS], s_saveMMXregs[MMXREGS];
 extern u16 x86FpuState, iCWstate;
 
@@ -476,5 +473,14 @@ void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
 void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);
 void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
 void LogicalOp32ItoM(uptr to, u32 from, int op);
+
+#ifdef ARITHMETICIMM_RECOMPILE
+extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
+extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
+#endif
+
+void iDumpRegisters(u32 startpc, u32 temp);
+
+}
 
 #endif

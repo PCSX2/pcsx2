@@ -23,9 +23,11 @@
 
 #include "iVUmicro.h"
 
-void SuperVUInit(int vuindex); // if vuindex is -1, inits the global VU resources
-void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
-void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
+namespace Dynarec
+{
+extern void SuperVUInit(int vuindex); // if vuindex is -1, inits the global VU resources
+extern void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
+extern void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
 
 //Using assembly code from an external file.
 #ifdef __LINUX__
@@ -47,7 +49,6 @@ u32 SuperVUGetVIAddr(int reg, int read);
 // if p == 0, flush q else flush p; if wait is != 0, waits for p/q
 void SuperVUFlush(int p, int wait);
 
-// These are for recCode called from iVUmicroLower:
-
+}
 
 #endif

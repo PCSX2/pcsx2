@@ -82,7 +82,7 @@ public:
 	{
 		SetCurrentSection( "Misc" );
 
-		Entry( "Patching", Conf.Patch, true );
+		Entry( "Patching", Conf.Patch, false );
 		Entry( "GameFixes", Conf.GameFixes);
 #ifdef PCSX2_DEVBUILD
 		Entry( "DevLogFlags", varLog );
@@ -156,7 +156,7 @@ public:
 		);
 
 		if( retval >= m_workspace.GetLength() - 2 )
-			Console::Notice( "Loadini Warning > Possible truncated value on key '%S'", params &var );
+			Console::Notice( "Loadini Warning > Possible truncated value on key '%hs'", params &var );
 		value = m_workspace.GetPtr();
 	}
 
@@ -167,7 +167,7 @@ public:
 		);
 
 		if( retval >= sizeof(value) - 2 )
-			Console::Notice( "Loadini Warning > Possible truncated value on key '%S'", params &var );
+			Console::Notice( "Loadini Warning > Possible truncated value on key '%hs'", params &var );
 	}
 
 	void Entry( const string& var, int& value, const int defvalue=0 )
@@ -201,7 +201,7 @@ public:
 
 		if( enumArray[i] == NULL )
 		{
-			Console::Notice( "Loadini Warning > Unrecognized value '%S' on key '%S'\n\tUsing the default setting of '%s'.",
+			Console::Notice( "Loadini Warning > Unrecognized value '%hs' on key '%hs'\n\tUsing the default setting of '%s'.",
 				params &retval, &var, enumArray[defvalue] );
 			value = defvalue;
 		}

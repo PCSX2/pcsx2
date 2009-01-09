@@ -29,7 +29,9 @@
 #include "iR5900.h"
 #include "iMMI.h"
 
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec {
+namespace R5900 {
+namespace OpcodeImpl
 {
 
 #ifndef MMI_RECOMPILE
@@ -247,7 +249,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI)
 			_deleteEEreg(XMMGPR_LO, 1);
 			_deleteEEreg(XMMGPR_HI, 1);
 			iFlushCall(FLUSH_CACHED_REGS); // since calling CALLFunc
-			CALLFunc( (uptr)Interpreter::OpcodeImpl::PMFHL );
+			CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PMFHL );
 			break;
 
 		case 0x03: // LH
@@ -542,42 +544,6 @@ void recPLZCW( void )
 {
 }
 */  
-
-#ifdef MMI0_RECOMPILE
-
-void recMMI0( void )
-{
-	EE::OpcodeTables::MMI0[ _Sa_ ].recompile( );
-}
-
-#endif
-
-#ifdef MMI1_RECOMPILE
-
-void recMMI1( void )
-{
-	EE::OpcodeTables::MMI1[ _Sa_ ].recompile( );
-}
-
-#endif
-
-#ifdef MMI2_RECOMPILE
-
-void recMMI2( void )
-{
-	EE::OpcodeTables::MMI2[ _Sa_ ].recompile( );
-}
-
-#endif
-
-#ifdef MMI3_RECOMPILE
-
-void recMMI3( void )
-{
-	EE::OpcodeTables::MMI3[ _Sa_ ].recompile( );
-}
-
-#endif
 
 #endif
 
@@ -1026,7 +992,7 @@ void recPADDSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)Interpreter::OpcodeImpl::PADDSW ); 
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PADDSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1117,7 +1083,7 @@ void recPSUBSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)Interpreter::OpcodeImpl::PSUBSW ); 
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PSUBSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1545,7 +1511,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)Interpreter::OpcodeImpl::PABSW ); 
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PABSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1569,7 +1535,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)Interpreter::OpcodeImpl::PABSW );
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PABSW );
 }
 
 ////////////////////////////////////////////////////
@@ -2907,7 +2873,7 @@ void recPSRAVW( void )
    MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
    iFlushCall(FLUSH_EVERYTHING);
    if( _Rd_ > 0 ) _deleteEEreg(_Rd_, 0);
-   CALLFunc( (uptr)Interpreter::OpcodeImpl::PSRAVW );
+   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PSRAVW );
 }
 
 

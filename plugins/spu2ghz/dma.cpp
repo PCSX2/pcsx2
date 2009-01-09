@@ -193,7 +193,7 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 	// Not really important.  Everything should work regardless,
 	// but it could be indicative of an emulation foopah elsewhere.
 
-#ifndef PUBLIC
+#if 0
 	uptr pa = ((uptr)pMem)&7;
 	uptr pm = Cores[core].TSA&0x7;
 

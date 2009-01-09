@@ -28,6 +28,9 @@
 
 #include <assert.h>
 
+using namespace Dynarec;
+using namespace Dynarec::R5900;
+
 #ifndef PCSX2_VIRTUAL_MEM
 u8  *psH; // hw mem
 u16 *psHW;

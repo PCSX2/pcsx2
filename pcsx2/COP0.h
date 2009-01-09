@@ -19,10 +19,13 @@
 #ifndef __COP0_H__
 #define __COP0_H__
 
-void WriteCP0Status(u32 value);
-void UpdateCP0Status();
-void WriteTLB(int i);
-void UnmapTLB(int i);
-void MapTLB(int i);
+namespace R5900
+{
+	void WriteCP0Status(u32 value);
+	void UpdateCP0Status();
+	void WriteTLB(int i);
+	void UnmapTLB(int i);
+	void MapTLB(int i);
+}
 
 #endif /* __COP0_H__ */

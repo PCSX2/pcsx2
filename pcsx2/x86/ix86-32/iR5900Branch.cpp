@@ -26,14 +26,15 @@
 #include "iR5900.h"
 
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#pragma warning(disable:4761)
-#endif
+//#ifdef _WIN32
+//#pragma warning(disable:4244)
+//#pragma warning(disable:4761)
+//#endif
 
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec { 
+namespace R5900 { 
+namespace OpcodeImpl
 {
-
 /*********************************************************
 * Register branch logic                                  *
 * Format:  OP rs, rt, offset                             *

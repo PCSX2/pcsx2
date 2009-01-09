@@ -30,6 +30,8 @@
 #include "Common.h"
 #include "PsxCommon.h"
 
+using namespace R5900;
+
 FILE *emuLog;
 
 #ifdef PCSX2_DEVBUILD

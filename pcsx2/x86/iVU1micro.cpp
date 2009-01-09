@@ -29,7 +29,7 @@
 #include "iCP0.h"
 #include "VU.h"
 #include "VUmicro.h"
-#include "iVUmicro.h"
+#include "iVUzerorec.h"
 #include "iVUops.h"
 #include "VUops.h"
 
@@ -39,6 +39,14 @@
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)
 #endif
+
+// fixme - having the VUs share the branch/pc values of the R5900 is bad on so many levels... >_< (air)
+
+using ::Dynarec::R5900::pc;
+using ::Dynarec::R5900::branch;
+
+namespace Dynarec
+{
 
 #define VU ((VURegs*)&VU1)
 
@@ -73,11 +81,6 @@
 #define VU1_ACCz_ADDR (uptr)&VU1.ACC.UL[2]
 #define VU1_ACCw_ADDR (uptr)&VU1.ACC.UL[3]
 
-extern void SuperVUInit(int vuindex);
-extern void SuperVUDestroy(int vuindex);
-extern void SuperVUReset(int vuindex);
-extern void SuperVUExecuteProgram(u32 startpc, int vuindex);
-extern void SuperVUClear(u32 startpc, u32 size, int vuindex);
 
 void recVU1Init()
 {
@@ -169,7 +172,7 @@ void recExecuteVU1Block(void)
 		}
 #endif
 		while (VU0.VI[ REG_VPU_STAT ].UL&0x100) {
-			intExecuteVU1Block();
+			::R5900::Interpreter::intExecuteVU1Block();
 		}
 	}
 }
@@ -177,4 +180,5 @@ void recExecuteVU1Block(void)
 void recClearVU1( u32 Addr, u32 Size ) {
 	assert( (Addr&7) == 0 );
 	if( CHECK_VU1REC ) SuperVUClear(Addr, Size*4, 1);
+}
 }

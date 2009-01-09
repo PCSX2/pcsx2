@@ -27,12 +27,13 @@
 #include "PsxMem.h"
 #include "R3000A.h"
 
+using namespace R5900;
+
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
 extern void (*IOP_DEBUG_BSC[64])(char *buf);
-extern void UpdateR5900op();
 void RefreshIOPDebugger(void);
 extern int ISR3000A;//for disasm
 HWND hWnd_debugdisasm, hWnd_debugscroll,hWnd_IOP_debugdisasm, hWnd_IOP_debugscroll;
@@ -173,7 +174,7 @@ BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						sprintf(buf, "%08X %08X: %s", temp, cpuRegs.code, tmp);
 						output.append( buf );
 
-						EE::OpcodeTables::Standard[_Opcode_].decode( output );
+						R5900::OpcodeTables::tbl_Standard[_Opcode_].disasm( output );
 
 
 						fprintf(fp, "%s\n", buf);
@@ -580,7 +581,8 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
                     return TRUE;
 
 				case IDC_CPUOP:
-                    UpdateR5900op();
+					// This updated a global opcode counter.
+                    //UpdateR5900op();
 					return TRUE;
 
                 case IDC_DEBUG_BP_EXEC:
@@ -626,9 +628,6 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
     return FALSE;
 }
 
-/* this lives in interpreter.c */
-extern const char* bios[];
-
 void RefreshDebugger(void)
 {
     unsigned long t;
@@ -651,7 +650,7 @@ void RefreshDebugger(void)
 			if (0x0c == *mem && 0x24030000 == (*(mem-1) & 0xFFFFFF00)){
 				/* it's a syscall preceeded by a li v1,$data instruction. */
 				u8 bios_call = *(mem-1) & 0xFF;
-				sprintf(syscall_str, "%08X:\tsyscall\t%s", t, bios[bios_call]);
+				sprintf(syscall_str, "%08X:\tsyscall\t%s", t, R5900::bios[bios_call]);
 			} else {
 				std::string str;
 				disR5900Fasm(str, *mem, t);

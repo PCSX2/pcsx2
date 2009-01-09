@@ -90,7 +90,7 @@ int vu1Init()
 	VU1.vuExec   = vu1Exec;
 	VU1.vifRegs  = vif1Regs;
 
-	if( CHECK_VU1REC ) recVU1Init();
+	if( CHECK_VU1REC ) Dynarec::recVU1Init();
 
 	vu1Reset();
 
@@ -98,7 +98,7 @@ int vu1Init()
 }
 
 void vu1Shutdown() {
-	if( CHECK_VU1REC ) recVU1Shutdown();
+	if( CHECK_VU1REC ) Dynarec::recVU1Shutdown();
 }
 
 void vu1ResetRegs()
@@ -120,7 +120,7 @@ void vu1Reset() {
 	memset(VU1.Mem, 0, 16*1024);
 	memset(VU1.Micro, 0, 16*1024);
 
-	recResetVU1();
+	Dynarec::recResetVU1();
 }
 
 void SaveState::vu1Freeze() {
@@ -140,7 +140,7 @@ void vu1ExecMicro(u32 addr)
 		SysPrintf("Previous Microprogram still running on VU1\n");
 
 		do {
-			Cpu->ExecuteVU1Block();
+			R5900::Cpu->ExecuteVU1Block();
 		} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 	}
 	VUM_LOG("vu1ExecMicro %x\n", addr);
@@ -154,7 +154,7 @@ void vu1ExecMicro(u32 addr)
 
 	//do {
 	FreezeXMMRegs(1);
-		Cpu->ExecuteVU1Block();
+		R5900::Cpu->ExecuteVU1Block();
 	FreezeXMMRegs(0);
 	//} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 	// rec can call vu1ExecMicro

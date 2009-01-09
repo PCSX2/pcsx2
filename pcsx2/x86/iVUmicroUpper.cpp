@@ -33,6 +33,8 @@
 #include "iVUzerorec.h"
 //------------------------------------------------------------------
 
+namespace Dynarec
+{
 
 //------------------------------------------------------------------
 // Helper Macros
@@ -2535,3 +2537,5 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	_freeX86reg(x86temp1);
 	_freeX86reg(x86temp2);
 }
+
+}	// end namespace Dynarec

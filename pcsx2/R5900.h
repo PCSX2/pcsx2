@@ -19,16 +19,21 @@
 #ifndef __R5900_H__
 #define __R5900_H__
 
-#include <stdio.h>
+extern bool g_EEFreezeRegs;
+
+namespace R5900
+{
+	// EE Bios function name tables.
+	extern const char* const bios[256];
 
 struct R5900cpu {
 	void (*Init)();				// throws exceptions on failure.
 	void (*Reset)();
 	void (*Step)();
 	void (*Execute)();			/* executes up to a break */
-	void (*ExecuteBlock)();		/* executes up to a jump */
-	void (*ExecuteVU0Block)();	/* executes up to a jump */
-	void (*ExecuteVU1Block)();	/* executes up to a jump */
+	void (*ExecuteBlock)();
+	void (*ExecuteVU0Block)();
+	void (*ExecuteVU1Block)();
 	void (*EnableVU0micro)(int enable);
 	void (*EnableVU1micro)(int enable);
 	void (*Clear)(u32 Addr, u32 Size);
@@ -36,6 +41,9 @@ struct R5900cpu {
 	void (*ClearVU1)(u32 Addr, u32 Size);
 	void (*Shutdown)();
 };
+
+extern s32 EEsCycle;
+extern u32 EEoCycle;
 
 extern R5900cpu *Cpu;
 extern R5900cpu intCpu;
@@ -77,22 +85,22 @@ union CP0regs {
 			BadVAddr, Count,     EntryHi,   Compare;
 		union {
 			struct {
-				int IE:1;
-				int EXL:1;
-				int ERL:1;
-				int KSU:2;
-				int unused0:3;
-				int IM:8;
-				int EIE:1;
-				int _EDI:1;
-				int CH:1;
-				int unused1:3;
-				int BEV:1;
-				int DEV:1;
-				int unused2:2;
-				int FR:1;
-				int unused3:1;
-				int CU:4;
+				u32 IE:1;
+				u32 EXL:1;
+				u32 ERL:1;
+				u32 KSU:2;
+				u32 unused0:3;
+				u32 IM:8;
+				u32 EIE:1;
+				u32 _EDI:1;
+				u32 CH:1;
+				u32 unused1:3;
+				u32 BEV:1;
+				u32 DEV:1;
+				u32 unused2:2;
+				u32 FR:1;
+				u32 unused3:1;
+				u32 CU:4;
 			} b;
 			u32 val;
 		} Status;
@@ -125,13 +133,8 @@ struct cpuRegisters {
 	u32 tempcycles;	
 };
 
-extern s32 EEsCycle;
-extern u32 EEoCycle;
-extern bool eeEventTestIsActive;
-extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
-
 // used for optimization
-typedef union {
+union GPR_reg64 {
 	u64 UD[1];      //64 bits
 	s64 SD[1];
 	u32 UL[2];
@@ -140,7 +143,7 @@ typedef union {
 	s16 SS[4];
 	u8  UC[8];
 	s8  SC[8];
-} GPR_reg64;
+};
 
 #define GPR_IS_CONST1(reg) ((reg)<32 && (g_cpuHasConstReg&(1<<(reg))))
 #define GPR_IS_CONST2(reg1, reg2) ((g_cpuHasConstReg&(1<<(reg1)))&&(g_cpuHasConstReg&(1<<(reg2))))
@@ -155,9 +158,6 @@ typedef union {
 	if( (reg) < 32 ) g_cpuHasConstReg &= ~(1<<(reg)); \
 }
 
-extern PCSX2_ALIGNED16_DECL(GPR_reg64 g_cpuConstRegs[32]);
-extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
-
 union FPRreg {
 	float f;
 	u32 UL;
@@ -168,8 +168,6 @@ struct fpuRegisters {
 	u32 fprc[32];		// 32bit floating point control registers
 	FPRreg ACC;			// 32 bit accumulator 
 };
-
-extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
 
 struct tlbs
 {
@@ -185,8 +183,6 @@ struct tlbs
 	u32 S;
 #endif
 };
-
-extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 
 #ifndef _PC_
 
@@ -229,29 +225,47 @@ extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 bool cpuInit();
 void cpuReset();		// can throw Exception::FileNotFound.
 void cpuShutdown();
+void cpuExecuteBios();
 void cpuException(u32 code, u32 bd);
 void cpuTlbMissR(u32 addr, u32 bd);
 void cpuTlbMissW(u32 addr, u32 bd);
 void IntcpuBranchTest();
 void cpuBranchTest();
 void cpuTestHwInts();
+
 extern void cpuTestINTCInts();
 extern void cpuTestDMACInts();
 extern void cpuTestTIMRInts();
-void cpuExecuteBios();
 
-u32  VirtualToPhysicalR(u32 addr);
-u32  VirtualToPhysicalW(u32 addr);
+//u32  VirtualToPhysicalR(u32 addr);
+//u32  VirtualToPhysicalW(u32 addr);
 
-void intDoBranch(u32 target);
-void intSetBranch();
-void intExecuteVU0Block();
-void intExecuteVU1Block();
+namespace Interpreter
+{
+	void intDoBranch(u32 target);
+	void intSetBranch();
+	void intExecuteVU0Block();
+	void intExecuteVU1Block();
+}
 
 void JumpCheckSym(u32 addr, u32 pc);
 void JumpCheckSymRet(u32 addr);
 
-extern bool g_EEFreezeRegs;
+extern int cpuSetNextBranch( u32 startCycle, s32 delta );
+extern int cpuSetNextBranchDelta( s32 delta );
+extern int cpuTestCycle( u32 startCycle, s32 delta );
+extern void cpuSetBranch();
+
+extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
+extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
+extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
+extern PCSX2_ALIGNED16_DECL(GPR_reg64 g_cpuConstRegs[32]);
+
+extern u32 g_nextBranchCycle;
+extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
+extern bool EventTestIsActive;
+extern u32 s_iLastCOP0Cycle;
+extern u32 s_iLastPERFCycle[2];
 
 //exception code
 #define EXC_CODE(x)     ((x)<<2)
@@ -278,28 +292,6 @@ extern bool g_EEFreezeRegs;
 #define EXC_TLB_STORE 1
 #define EXC_TLB_LOAD  0
 
-//#define EE_PROFILING //EE Profiling enable
-
-#ifdef EE_PROFILING //EE Profiling code
-
-extern u64 profile_starttick;
-extern u64 profile_totalticks;
-
-#define START_EE_PROFILE() \
-		profile_starttick = GetCPUTick();
-
-#define END_EE_PROFILE() \
-		profile_totalticks += GetCPUTick()-profile_starttick;
-
-#define CLEAR_EE_PROFILE() \
-		profile_totalticks = 0;
-
-#else
-#define START_EE_PROFILE()
-
-#define END_EE_PROFILE()
-
-#define CLEAR_EE_PROFILE()
-#endif
+} // End Namespace R5900
 
 #endif /* __R5900_H__ */

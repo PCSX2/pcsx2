@@ -26,6 +26,8 @@
 #include "Threading.h"
 using namespace Threading;
 
+using namespace R5900;
+
 struct DECI2_DBGP_HEADER{
     DECI2_HEADER	h;		//+00
 	u16				id;		//+08

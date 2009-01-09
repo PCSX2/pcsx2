@@ -30,7 +30,7 @@
 #include "Common.h"
 #include "PsxCommon.h"
 
-using std::string;
+using namespace R5900;
 
 int UseGui = 1;
 int nDisableSC = 0; // screensaver

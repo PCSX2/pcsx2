@@ -82,6 +82,7 @@ static void trim( string& line )
    line.erase( 0, beginning_of_string );
 }
 
+using R5900::cpuRegs;
 
 // This function should be called once during program execution.
 void SysDetect()

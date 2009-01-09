@@ -33,8 +33,8 @@
 
 #include "Paths.h"
 
-extern u32 s_iLastCOP0Cycle;
-extern u32 s_iLastPERFCycle[2];
+using namespace R5900;
+
 extern int g_psxWriteOk;
 
 // STATES
@@ -83,7 +83,7 @@ string SaveState::GetFilename( int slot )
 
 SaveState::SaveState( const char* msg, const string& destination ) : m_version( g_SaveVersion )
 {
-	Console::WriteLn( "%s %S", params msg, &destination );
+	Console::WriteLn( "%s %hs", params msg, &destination );
 }
 
 s32 CALLBACK gsSafeFreeze( int mode, freezeData *data )

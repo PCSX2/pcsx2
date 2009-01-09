@@ -22,6 +22,7 @@
 #include "Common.h"
 #include "resource.h"
 
+using namespace R5900;
 
 unsigned long memory_addr;
 BOOL mem_inupdate = FALSE;

@@ -148,6 +148,10 @@ using namespace std;			// for min / max
       intDoBranch( _BranchTarget_ );            \
    } else cpuRegs.pc += 4;
 
+namespace R5900 {
+namespace Interpreter {
+namespace OpcodeImpl
+{
 
 //****************************************************************
 // FPU Opcodes
@@ -359,19 +363,24 @@ void SUBA_S() {
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU, 1 );
 } 
 
-namespace EE { namespace Interpreter{ namespace OpcodeImpl
-{
-	void LWC1() {
-		u32 addr;
-		addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
-		if (addr & 0x00000003) { SysPrintf( "FPU (LWC1 Opcode): Invalid Memory Address\n" ); return; }  // Should signal an exception?
-		memRead32(addr, &fpuRegs.fpr[_Rt_].UL);
-	}
+/////////////////////////////////////////////////////////////////////
+// COP1 (FPU)  Load/Store Instructions
 
-	void SWC1() {
-		u32 addr;
-		addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
-		if (addr & 0x00000003) { SysPrintf( "FPU (SWC1 Opcode): Invalid Memory Address\n" ); return; }  // Should signal an exception?
-		memWrite32(addr,  fpuRegs.fpr[_Rt_].UL); 
-	}
+// These are actually EE opcodes but since they're related to FPU registers and such they
+// seem more appropriately located here.
+
+void LWC1() {
+	u32 addr;
+	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
+	if (addr & 0x00000003) { Console::Error( "FPU (LWC1 Opcode): Invalid Memory Address" ); return; }  // Should signal an exception?
+	memRead32(addr, &fpuRegs.fpr[_Rt_].UL);
+}
+
+void SWC1() {
+	u32 addr;
+	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s32)(s16)(cpuRegs.code & 0xffff);
+	if (addr & 0x00000003) { Console::Error( "FPU (SWC1 Opcode): Invalid Memory Address" ); return; }  // Should signal an exception?
+	memWrite32(addr,  fpuRegs.fpr[_Rt_].UL); 
+}
+
 }}}

@@ -31,6 +31,8 @@
 #endif
 
 using namespace std;			// for min / max
+using R5900::Cpu;					// for detecting VU1 dummy / frameskip.
+using R5900::cpuRegs;
 
 //#define VIFUNPACKDEBUG //enable unpack debugging output 
 
@@ -205,9 +207,7 @@ __forceinline void vif0FLUSH() {
 	int _cycles;
 	_cycles = VU0.cycle;
 
-	//FreezeXMMRegs(1);
 	vu0Finish();
-	//FreezeXMMRegs(0);
 	g_vifCycles+= (VU0.cycle - _cycles)*BIAS;
 }
 
@@ -2108,7 +2108,6 @@ __forceinline void vif1Interrupt() {
 					vif1Regs->stat&= ~0x1F000000; // FQC=0
 					// One game doesnt like vif stalling at end, cant remember what. Spiderman isnt keen on it tho
 					vif1ch->chcr &= ~0x100;
-					cpuRegs.interrupt &= ~(1 << 1);
 					return;
 				} 
 			//return 0;

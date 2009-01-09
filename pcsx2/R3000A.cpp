@@ -201,7 +201,7 @@ __forceinline void PSX_INT( IopEventId n, s32 ecycle )
 		// fixme - this doesn't take into account EE/IOP sync (the IOP may be running
 		// ahead or behind the EE as per the EEsCycles value)
 		s32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
-		cpuSetNextBranchDelta( iopDelta );
+		R5900::cpuSetNextBranchDelta( iopDelta );
 	}
 }
 
@@ -276,12 +276,12 @@ void iopTestIntc()
 	if( psxHu32(0x1078) == 0 ) return;
 	if( (psxHu32(0x1070) & psxHu32(0x1074)) == 0 ) return;
 
-	if( !eeEventTestIsActive )
+	if( !R5900::EventTestIsActive )
 	{
 		// An iop exception has occured while the EE is running code.
 		// Inform the EE to branch so the IOP can handle it promptly:
 
-		cpuSetNextBranchDelta( 16 );
+		R5900::cpuSetNextBranchDelta( 16 );
 		iopBranchAction = true;
 		//Console::Error( "** IOP Needs an EE EventText, kthx **  %d", params psxCycleEE );
 

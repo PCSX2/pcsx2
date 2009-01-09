@@ -30,6 +30,12 @@
 #include "iR5900.h"
 #include "iCP0.h"
 
+
+namespace Dynarec {
+namespace R5900 {
+namespace OpcodeImpl
+{
+
 /*********************************************************
 *   COP0 opcodes                                         *
 *                                                        *
@@ -71,8 +77,6 @@ REC_SYS(TLBWR);
 REC_SYS(TLBP);
 
 ////////////////////////////////////////////////////
-extern u32 s_iLastCOP0Cycle;
-extern u32 s_iLastPERFCycle[2];
 
 void recMFC0( void )
 {
@@ -326,14 +330,14 @@ void recMTC0()
 
 void recERET()
 {
-	EE::Dynarec::recBranchCall( ERET );
+	recBranchCall( R5900::Interpreter::OpcodeImpl::ERET );
 }
 
 void recEI()
 {
 	// must branch after enabling interrupts, so that anything
 	// pending gets triggered properly.
-	EE::Dynarec::recBranchCall( EI );
+	recBranchCall( R5900::Interpreter::OpcodeImpl::EI );
 }
 
 void recDI()
@@ -347,9 +351,8 @@ void recDI()
 	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
 
 	iFlushCall(0);
-	CALLFunc( (uptr)DI );
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::DI );
 }
-
 
 /*void rec(COP0) {
 }
@@ -377,5 +380,7 @@ void rec(TLBWR) {
 
 void rec(TLBP) {
 }*/
+
+}}}
 
 #endif

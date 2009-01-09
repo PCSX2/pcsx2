@@ -23,21 +23,14 @@
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
-#ifdef _WIN32
-#pragma warning(disable:4244)
-#pragma warning(disable:4761)
-#endif
+//#ifdef _WIN32
+//#pragma warning(disable:4244)
+//#pragma warning(disable:4761)
+//#endif
 
-#ifdef ARITHMETICIMM_RECOMPILE
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-extern void LogicalOp32RtoM(u32 to, x86IntRegType from, int op);
-extern void LogicalOp32MtoR(x86IntRegType to, u32 from, int op);
-extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
-extern void LogicalOp32ItoM(u32 to, u32 from, int op);
-#endif
-
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec { 
+namespace R5900 { 
+namespace OpcodeImpl
 {
 
 /*********************************************************

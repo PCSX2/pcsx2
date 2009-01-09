@@ -26,55 +26,75 @@
 
 #include <float.h>
 
-const char *bios[256]={
-//0x00
-	"RFU000_FullReset", "ResetEE",				"SetGsCrt",				"RFU003",
-	"Exit",				"RFU005",				"LoadExecPS2",			"ExecPS2",
-	"RFU008",			"RFU009",				"AddSbusIntcHandler",	"RemoveSbusIntcHandler", 
-	"Interrupt2Iop",	"SetVTLBRefillHandler", "SetVCommonHandler",	"SetVInterruptHandler", 
-//0x10
-	"AddIntcHandler",	"RemoveIntcHandler",	"AddDmacHandler",		"RemoveDmacHandler",
-	"_EnableIntc",		"_DisableIntc",			"_EnableDmac",			"_DisableDmac",
-	"_SetAlarm",		"_ReleaseAlarm",		"_iEnableIntc",			"_iDisableIntc",
-	"_iEnableDmac",		"_iDisableDmac",		"_iSetAlarm",			"_iReleaseAlarm", 
-//0x20
-	"CreateThread",			"DeleteThread",		"StartThread",			"ExitThread", 
-	"ExitDeleteThread",		"TerminateThread",	"iTerminateThread",		"DisableDispatchThread",
-	"EnableDispatchThread",		"ChangeThreadPriority", "iChangeThreadPriority",	"RotateThreadReadyQueue",
-	"iRotateThreadReadyQueue",	"ReleaseWaitThread",	"iReleaseWaitThread",		"GetThreadId", 
-//0x30
-	"ReferThreadStatus","iReferThreadStatus",	"SleepThread",		"WakeupThread",
-	"_iWakeupThread",   "CancelWakeupThread",	"iCancelWakeupThread",	"SuspendThread",
-	"iSuspendThread",   "ResumeThread",		"iResumeThread",	"JoinThread",
-	"RFU060",	    "RFU061",			"EndOfHeap",		 "RFU063", 
-//0x40
-	"CreateSema",	    "DeleteSema",	"SignalSema",		"iSignalSema", 
-	"WaitSema",	    "PollSema",		"iPollSema",		"ReferSemaStatus", 
-	"iReferSemaStatus", "RFU073",		"SetOsdConfigParam", 	"GetOsdConfigParam",
-	"GetGsHParam",	    "GetGsVParam",	"SetGsHParam",		"SetGsVParam",
-//0x50
-	"RFU080_CreateEventFlag",	"RFU081_DeleteEventFlag", 
-	"RFU082_SetEventFlag",		"RFU083_iSetEventFlag", 
-	"RFU084_ClearEventFlag",	"RFU085_iClearEventFlag", 
-	"RFU086_WaitEventFlag",		"RFU087_PollEventFlag", 
-	"RFU088_iPollEventFlag",	"RFU089_ReferEventFlagStatus", 
-	"RFU090_iReferEventFlagStatus", "RFU091_GetEntryAddress", 
-	"EnableIntcHandler_iEnableIntcHandler", 
-	"DisableIntcHandler_iDisableIntcHandler", 
-	"EnableDmacHandler_iEnableDmacHandler", 
-	"DisableDmacHandler_iDisableDmacHandler", 
-//0x60
-	"KSeg0",				"EnableCache",	"DisableCache",			"GetCop0",
-	"FlushCache",			"RFU101",		"CpuConfig",			"iGetCop0",
-	"iFlushCache",			"RFU105",		"iCpuConfig", 			"sceSifStopDma",
-	"SetCPUTimerHandler",	"SetCPUTimer",	"SetOsdConfigParam2",	"SetOsdConfigParam2",
-//0x70
-	"GsGetIMR_iGsGetIMR",				"GsGetIMR_iGsPutIMR",	"SetPgifHandler", 				"SetVSyncFlag",
-	"RFU116",							"print", 				"sceSifDmaStat_isceSifDmaStat", "sceSifSetDma_isceSifSetDma", 
-	"sceSifSetDChain_isceSifSetDChain", "sceSifSetReg",			"sceSifGetReg",					"ExecOSD", 
-	"Deci2Call",						"PSMode",				"MachineType",					"GetMemorySize", 
-};
+extern void iDumpVU0Registers();
+extern void iDumpVU1Registers();
+extern u32 vudump;
+extern int vu0branch, vu1branch;
 
+namespace R5900
+{
+	const char * const bios[256]=
+	{
+	//0x00
+		"RFU000_FullReset", "ResetEE",				"SetGsCrt",				"RFU003",
+		"Exit",				"RFU005",				"LoadExecPS2",			"ExecPS2",
+		"RFU008",			"RFU009",				"AddSbusIntcHandler",	"RemoveSbusIntcHandler", 
+		"Interrupt2Iop",	"SetVTLBRefillHandler", "SetVCommonHandler",	"SetVInterruptHandler", 
+	//0x10
+		"AddIntcHandler",	"RemoveIntcHandler",	"AddDmacHandler",		"RemoveDmacHandler",
+		"_EnableIntc",		"_DisableIntc",			"_EnableDmac",			"_DisableDmac",
+		"_SetAlarm",		"_ReleaseAlarm",		"_iEnableIntc",			"_iDisableIntc",
+		"_iEnableDmac",		"_iDisableDmac",		"_iSetAlarm",			"_iReleaseAlarm", 
+	//0x20
+		"CreateThread",			"DeleteThread",		"StartThread",			"ExitThread", 
+		"ExitDeleteThread",		"TerminateThread",	"iTerminateThread",		"DisableDispatchThread",
+		"EnableDispatchThread",		"ChangeThreadPriority", "iChangeThreadPriority",	"RotateThreadReadyQueue",
+		"iRotateThreadReadyQueue",	"ReleaseWaitThread",	"iReleaseWaitThread",		"GetThreadId", 
+	//0x30
+		"ReferThreadStatus","iReferThreadStatus",	"SleepThread",		"WakeupThread",
+		"_iWakeupThread",   "CancelWakeupThread",	"iCancelWakeupThread",	"SuspendThread",
+		"iSuspendThread",   "ResumeThread",		"iResumeThread",	"JoinThread",
+		"RFU060",	    "RFU061",			"EndOfHeap",		 "RFU063", 
+	//0x40
+		"CreateSema",	    "DeleteSema",	"SignalSema",		"iSignalSema", 
+		"WaitSema",	    "PollSema",		"iPollSema",		"ReferSemaStatus", 
+		"iReferSemaStatus", "RFU073",		"SetOsdConfigParam", 	"GetOsdConfigParam",
+		"GetGsHParam",	    "GetGsVParam",	"SetGsHParam",		"SetGsVParam",
+	//0x50
+		"RFU080_CreateEventFlag",	"RFU081_DeleteEventFlag", 
+		"RFU082_SetEventFlag",		"RFU083_iSetEventFlag", 
+		"RFU084_ClearEventFlag",	"RFU085_iClearEventFlag", 
+		"RFU086_WaitEventFlag",		"RFU087_PollEventFlag", 
+		"RFU088_iPollEventFlag",	"RFU089_ReferEventFlagStatus", 
+		"RFU090_iReferEventFlagStatus", "RFU091_GetEntryAddress", 
+		"EnableIntcHandler_iEnableIntcHandler", 
+		"DisableIntcHandler_iDisableIntcHandler", 
+		"EnableDmacHandler_iEnableDmacHandler", 
+		"DisableDmacHandler_iDisableDmacHandler", 
+	//0x60
+		"KSeg0",				"EnableCache",	"DisableCache",			"GetCop0",
+		"FlushCache",			"RFU101",		"CpuConfig",			"iGetCop0",
+		"iFlushCache",			"RFU105",		"iCpuConfig", 			"sceSifStopDma",
+		"SetCPUTimerHandler",	"SetCPUTimer",	"SetOsdConfigParam2",	"SetOsdConfigParam2",
+	//0x70
+		"GsGetIMR_iGsGetIMR",				"GsGetIMR_iGsPutIMR",	"SetPgifHandler", 				"SetVSyncFlag",
+		"RFU116",							"print", 				"sceSifDmaStat_isceSifDmaStat", "sceSifSetDma_isceSifSetDma", 
+		"sceSifSetDChain_isceSifSetDChain", "sceSifSetReg",			"sceSifGetReg",					"ExecOSD", 
+		"Deci2Call",						"PSMode",				"MachineType",					"GetMemorySize", 
+	};
+
+	const OPCODE& GetCurrentInstruction()
+	{
+		const OPCODE* opcode = &R5900::OpcodeTables::tbl_Standard[_Opcode_];
+
+		while( opcode->getsubclass != NULL )
+			opcode = &opcode->getsubclass();
+
+		return *opcode;
+	}
+
+namespace Interpreter
+{
 int branch2 = 0;
 static u32 branchPC;
 
@@ -83,27 +103,14 @@ static u32 branchPC;
 #ifdef PCSX2_DEVBUILD
 static void debugI()
 {
-	//CPU_LOG("%s\n", disR5900Current.getString());
- 	if (cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1]) SysPrintf("R0 is not zero!!!!\n");
+	//CPU_LOG("%s\n", disR5900Current.getCString());
+	if (cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1]) Console::Error("R0 is not zero!!!!");
 }
 #else
 static void debugI() {}
 #endif
 
 static u32 cpuBlockCycles = 0;		// 3 bit fixed point version of cycle count
-
-namespace EE
-{
-	const OPCODE& GetCurrentInstruction()
-	{
-		const EE::OPCODE* opcode = &EE::OpcodeTables::Standard[_Opcode_];
-
-		while( opcode->getsubclass != NULL )
-			opcode = &opcode->getsubclass();
-
-		return *opcode;
-	}
-}
 
 static std::string disOut;
 
@@ -116,14 +123,9 @@ static __forceinline void execI()
     cpuRegs.code = *(u32 *)PSM(cpuRegs.pc);
 #endif
 
-	const EE::OPCODE& opcode = EE::GetCurrentInstruction();
-
-	/*disOut.assign( "\n" );
-	opcode.decode( disOut );
-	SysPrintf( disOut.c_str() );*/
+	const OPCODE& opcode = GetCurrentInstruction();
 
 	cpuBlockCycles += opcode.cycles;
-	//cpuRegs.cycle++;
 	cpuRegs.pc += 4;
 
 	opcode.interpret();
@@ -150,58 +152,16 @@ void intSetBranch() {
 	branch2 = 1;
 }
 
-//****************************************************************
-// Used to manage FPU Opcodes
-//****************************************************************
-
-void COP1_BC1() {
-	Int_COP1BC1PrintTable[_Rt_]();
-}
-
-void COP1_S() {
-	Int_COP1SPrintTable[_Funct_]();
-}
-
-void COP1_W() {
-	Int_COP1WPrintTable[_Funct_]();
-}
-
 void COP1_Unknown() {
 	FPU_LOG("Unknown FPU opcode called\n");
 }
 
-
-namespace EE { namespace Opcodes
-{
-
-const OPCODE& Class_SPECIAL() { return EE::OpcodeTables::Special[_Funct_]; }
-const OPCODE& Class_REGIMM()  { return EE::OpcodeTables::RegImm[_Rt_]; }
-
-const OPCODE& Class_MMI()  { return EE::OpcodeTables::MMI[_Funct_]; }
-const OPCODE& Class_MMI0() { return EE::OpcodeTables::MMI0[_Sa_]; }
-const OPCODE& Class_MMI1() { return EE::OpcodeTables::MMI1[_Sa_]; }
-const OPCODE& Class_MMI2() { return EE::OpcodeTables::MMI2[_Sa_]; }
-const OPCODE& Class_MMI3() { return EE::OpcodeTables::MMI3[_Sa_]; }
-
-//const OPCODE& Class_COP0() { return EE::OpcodeTables::COP1[_Rs_]; }
-//const OPCODE& Class_COP1() { return EE::OpcodeTables::COP1[_Rs_]; }
-//const OPCODE& Class_COP2() { return EE::OpcodeTables::COP2[_Rs_]; }
-
-} }
-
-namespace EE { namespace Interpreter { namespace OpcodeImpl
-{
-void COP0()
-{
-	Int_COP0PrintTable[_Rs_]();
+void COP0_Unknown(){
+	CPU_LOG("COP0 Unknown opcode called\n");
 }
 
-void COP1()
+namespace OpcodeImpl
 {
-	FPU_LOG("%s\n", disR5900Current.getString() );
-	Int_COP1PrintTable[_Rs_]();
-}
-
 void COP2()
 {
 	std::string disOut;
@@ -214,6 +174,11 @@ void COP2()
 void Unknown() {
 	CPU_LOG("%8.8lx: Unknown opcode called\n", cpuRegs.pc);
 }
+
+void MMI_Unknown() { Console::Notice("Unknown MMI opcode called"); }
+void COP0_Unknown() { Console::Notice("Unknown COP0 opcode called"); }
+void COP1_Unknown() { Console::Notice("Unknown FPU/COP1 opcode called"); }
+
 
 /*********************************************************
 * Arithmetic with immediate operand                      *
@@ -1014,9 +979,9 @@ void MTSAH() {
     cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 4;
 }
 
-} } }	// end EE::Interpreter::OpcodeImpl namespace
+}	// end namespace R5900::Interpreter::OpcodeImpl
 
-///////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 void intInit() {
 	 //detect cpu for use the optimaze asm code
@@ -1035,12 +1000,6 @@ static void intExecuteBlock() {
 	branch2 = 0;
 	while (!branch2) execI();
 }
-
-
-extern void iDumpVU0Registers();
-extern void iDumpVU1Registers();
-extern u32 vudump;
-extern int vu0branch, vu1branch;
 
 void intExecuteVU0Block() {
 int i;
@@ -1124,6 +1083,10 @@ void intVU1Clear(u32 Addr, u32 Size) {
 void intShutdown() {
 }
 
+}
+
+using namespace Interpreter;
+
 R5900cpu intCpu = {
 	intInit,
 	intReset,
@@ -1140,3 +1103,4 @@ R5900cpu intCpu = {
 	intShutdown
 };
 
+}

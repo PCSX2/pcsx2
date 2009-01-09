@@ -58,6 +58,8 @@ void statsClose() {
 	fclose(f);
 }
 
+using R5900::cpuRegs;
+
 void statsVSync() {
 	static u64 accum = 0, accumvu1 = 0;
 	static u32 frame = 0;

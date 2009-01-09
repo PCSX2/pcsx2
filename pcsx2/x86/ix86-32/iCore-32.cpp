@@ -25,22 +25,19 @@
 #include "iCore.h"
 #include "R3000A.h"
 
+#include <vector>
+
+using namespace std;
+using namespace R5900;
+
+namespace Dynarec
+{
+
 u16 x86FpuState, iCWstate;
 u16 g_mmxAllocCounter = 0;
 
-// used to make sure regs don't get changed while in recompiler
-// use FreezeMMXRegs, FreezeXMMRegs
-u8 g_globalMMXSaved = 0;
-
-PCSX2_ALIGNED16(u64 g_globalMMXData[8]);
-
 // X86 caching
-extern _x86regs x86regs[X86REGS];
 int g_x86checknext;
-extern u16 g_x86AllocCounter;
-
-#include <vector>
-using namespace std;
 
 // use special x86 register allocation for ia32
 
@@ -121,6 +118,63 @@ int _getFreeX86reg(int mode)
 	assert(0);
 
 	return -1;
+}
+
+void _flushCachedRegs()
+{
+	_flushConstRegs();
+	_flushMMXregs();
+	_flushXMMregs();
+}
+
+void _flushConstReg(int reg)
+{
+	if( GPR_IS_CONST1( reg ) && !(g_cpuFlushedConstReg&(1<<reg)) ) {
+		MOV32ItoM((int)&cpuRegs.GPR.r[reg].UL[0], g_cpuConstRegs[reg].UL[0]);
+		MOV32ItoM((int)&cpuRegs.GPR.r[reg].UL[1], g_cpuConstRegs[reg].UL[1]);
+		g_cpuFlushedConstReg |= (1<<reg);
+	}
+}
+
+void _flushConstRegs()
+{
+	int i;
+
+	// flush constants
+
+	// ignore r0
+	for(i = 1; i < 32; ++i) {
+		if( g_cpuHasConstReg & (1<<i) ) {
+			
+			if( !(g_cpuFlushedConstReg&(1<<i)) ) {
+				MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
+				MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+				g_cpuFlushedConstReg |= 1<<i;
+			}
+#if defined(_DEBUG)&&0
+			else {
+				// make sure the const regs are the same
+				u8* ptemp[3];
+				CMP32ItoM((u32)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
+				ptemp[0] = JNE8(0);
+				if( EEINST_ISLIVE1(i) ) {
+					CMP32ItoM((u32)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+					ptemp[1] = JNE8(0);
+				}
+				ptemp[2] = JMP8(0);
+
+				x86SetJ8( ptemp[0] );
+				if( EEINST_ISLIVE1(i) ) x86SetJ8( ptemp[1] );
+				CALLFunc((uptr)checkconstreg);
+
+				x86SetJ8( ptemp[2] );
+			}
+#else
+			if( g_cpuHasConstReg == g_cpuFlushedConstReg )
+				break;
+#endif
+		}
+	}
 }
 
 int _allocX86reg(int x86reg, int type, int reg, int mode)
@@ -748,83 +802,6 @@ void _freeMMXregs()
 	}
 }
 
-__forceinline void FreezeMMXRegs_(int save)
-{
-	assert( g_EEFreezeRegs );
-
-	if( save ) {
-		g_globalMMXSaved++;
-		if( g_globalMMXSaved>1 )
-		{
-			//SysPrintf("MMX Already Saved!\n");
-			return;
-		}
-
-#ifdef _MSC_VER
-		__asm {
-			movntq mmword ptr [g_globalMMXData + 0], mm0
-			movntq mmword ptr [g_globalMMXData + 8], mm1
-			movntq mmword ptr [g_globalMMXData + 16], mm2
-			movntq mmword ptr [g_globalMMXData + 24], mm3
-			movntq mmword ptr [g_globalMMXData + 32], mm4
-			movntq mmword ptr [g_globalMMXData + 40], mm5
-			movntq mmword ptr [g_globalMMXData + 48], mm6
-			movntq mmword ptr [g_globalMMXData + 56], mm7
-			emms
-		}
-#else
-        __asm__(".intel_syntax\n"
-                "movq [%0+0x00], %%mm0\n"
-                "movq [%0+0x08], %%mm1\n"
-                "movq [%0+0x10], %%mm2\n"
-                "movq [%0+0x18], %%mm3\n"
-                "movq [%0+0x20], %%mm4\n"
-                "movq [%0+0x28], %%mm5\n"
-                "movq [%0+0x30], %%mm6\n"
-                "movq [%0+0x38], %%mm7\n"
-                "emms\n"
-                ".att_syntax\n" : : "r"(g_globalMMXData) );
-#endif
-
-	}
-	else {
-		if( g_globalMMXSaved==0 )
-		{
-			//SysPrintf("MMX Not Saved!\n");
-			return;
-		}
-		g_globalMMXSaved--;
-
-		if( g_globalMMXSaved > 0 ) return;
-
-#ifdef _MSC_VER
-		__asm {
-			movq mm0, mmword ptr [g_globalMMXData + 0]
-			movq mm1, mmword ptr [g_globalMMXData + 8]
-			movq mm2, mmword ptr [g_globalMMXData + 16]
-			movq mm3, mmword ptr [g_globalMMXData + 24]
-			movq mm4, mmword ptr [g_globalMMXData + 32]
-			movq mm5, mmword ptr [g_globalMMXData + 40]
-			movq mm6, mmword ptr [g_globalMMXData + 48]
-			movq mm7, mmword ptr [g_globalMMXData + 56]
-			emms
-		}
-#else
-        __asm__(".intel_syntax\n"
-                "movq %%mm0, [%0+0x00]\n"
-                "movq %%mm1, [%0+0x08]\n"
-                "movq %%mm2, [%0+0x10]\n"
-                "movq %%mm3, [%0+0x18]\n"
-                "movq %%mm4, [%0+0x20]\n"
-                "movq %%mm5, [%0+0x28]\n"
-                "movq %%mm6, [%0+0x30]\n"
-                "movq %%mm7, [%0+0x38]\n"
-                "emms\n"
-                ".att_syntax\n" : : "r"(g_globalMMXData) );
-#endif
-	}
-}
-
 void SetFPUstate() {
 	_freeMMXreg(6);
 	_freeMMXreg(7);
@@ -1196,3 +1173,5 @@ void LogicalOp32ItoM(u32 to, u32 from, int op)
 		case 3: OR32ItoM(to, from); break;
 	}
 }
+
+}		// end namespace Dynarec

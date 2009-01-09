@@ -29,7 +29,8 @@ static const int psxInstCycles_Peephole_Store = 0;
 static const int psxInstCycles_Store = 0;
 static const int psxInstCycles_Load = 0;
 
-
+namespace Dynarec
+{
 // to be consistent with EE
 #define PSX_HI XMMGPR_HI
 #define PSX_LO XMMGPR_LO
@@ -113,5 +114,7 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 void psxRecompileCodeConst2(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode);
 // [lo,hi] = rt op rs
 void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, R3000AFNPTR_INFO consttcode, R3000AFNPTR_INFO noconstcode, int LOHI);
+
+}	// end namespace Dynarec
 
 #endif

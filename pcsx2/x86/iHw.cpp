@@ -37,6 +37,9 @@ extern int rdram_sdevid;
 extern char sio_buffer[1024];
 extern int sio_count;
 
+using namespace Dynarec;
+using namespace Dynarec::R5900;
+
 int hwConstRead8(u32 x86reg, u32 mem, u32 sign)
 {
 	if( mem >= 0x10000000 && mem < 0x10008000 )

@@ -28,6 +28,16 @@
 
 #include "Paths.h"
 
+#ifdef _DEBUG
+extern u32 s_vucount;
+#endif
+
+namespace R5900
+{
+
+s32 EEsCycle;		// used to sync the IOP to the EE
+u32 EEoCycle;
+
 static int inter;
 
 PCSX2_ALIGNED16(cpuRegisters cpuRegs);
@@ -38,18 +48,12 @@ PCSX2_ALIGNED16(GPR_reg64 g_cpuConstRegs[32]) = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 R5900cpu *Cpu;
 
-s32 EEsCycle;		// used to sync the IOP to the EE
-u32 EEoCycle;
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
 
 static bool cpuIsInitialized = false;
 static uint eeWaitCycles = 1024;
 
-bool eeEventTestIsActive = false;
-
-#ifdef _DEBUG
-extern u32 s_vucount;
-#endif
+bool EventTestIsActive = false;
 
 bool cpuInit()
 {
@@ -100,7 +104,7 @@ bool cpuInit()
 
 			if( !CreateProcess(strexe.c_str(), "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir.GetPtr(), &si, &pi))
 			{
-				MessageBox(NULL, fmt_string( "Failed to launch %S\n", params &strexe ).c_str(), "Failure", MB_OK);
+				MessageBox(NULL, fmt_string( "Failed to launch %hs\n", params &strexe ).c_str(), "Failure", MB_OK);
 			}
 			else
 			{
@@ -400,12 +404,21 @@ __forceinline void cpuSetBranch()
 	g_nextBranchCycle = cpuRegs.cycle;
 }
 
+void cpuClearInt( uint i )
+{
+	jASSUME( i < 32 );
+	cpuRegs.interrupt &= ~(1 << i);
+}
+
 static __forceinline void TESTINT( u8 n, void (*callback)() )
 {
 	if( !(cpuRegs.interrupt & (1 << n)) ) return;
 
 	if( cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
+	{
+		cpuClearInt( n );
 		callback();
+	}
 	else
 		cpuSetNextBranch( cpuRegs.sCycle[n], cpuRegs.eCycle[n] );
 }
@@ -438,9 +451,6 @@ static __forceinline void _cpuTestInterrupts()
 		TESTINT(11, gifMFIFOInterrupt);
 	}
 }
-
-u32 s_iLastCOP0Cycle = 0;
-u32 s_iLastPERFCycle[2] = {0,0};
 
 static __forceinline void _cpuTestTIMR()
 {
@@ -495,7 +505,7 @@ u32 g_nextBranchCycle = 0;
 // and the recompiler.  (moved here to help alleviate redundant code)
 static __forceinline void _cpuBranchTest_Shared()
 {
-	eeEventTestIsActive = true;
+	EventTestIsActive = true;
 	g_nextBranchCycle = cpuRegs.cycle + eeWaitCycles;
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
@@ -609,7 +619,7 @@ static __forceinline void _cpuBranchTest_Shared()
 	// Apply vsync and other counter nextCycles
 	cpuSetNextBranch( nextsCounter, nextCounter );
 
-	eeEventTestIsActive = false;
+	EventTestIsActive = false;
 
 	// ---- INTC / DMAC Exceptions -----------------
 	// Raise the INTC and DMAC interrupts here, which usually throw exceptions.
@@ -623,11 +633,6 @@ static __forceinline void _cpuBranchTest_Shared()
 		TESTINT(31, dmacInterrupt);
 	}
 }
-
-#ifdef PCSX2_DEVBUILD
-extern u8 g_globalXMMSaved;
-extern u8 g_globalMMXSaved;
-#endif
 
 void cpuBranchTest()
 {
@@ -654,26 +659,6 @@ void cpuBranchTest()
 	g_EEFreezeRegs = true;
 }
 
-__forceinline void CPU_INT( u32 n, s32 ecycle)
-{
-	cpuRegs.interrupt|= 1 << n;
-	cpuRegs.sCycle[n] = cpuRegs.cycle;
-	cpuRegs.eCycle[n] = ecycle;
-
-	// Interrupt is happening soon: make sure both EE and IOP are aware.
-
-	if( ecycle <= 28 && psxCycleEE > 0 )
-	{
-		// If running in the IOP, force it to break immediately into the EE.
-		// the EE's branch test is due to run.
-
-		psxBreak += psxCycleEE;		// record the number of cycles the IOP didn't run.
-		psxCycleEE = 0;
-	}
-
-	cpuSetNextBranchDelta( cpuRegs.eCycle[n] );
-}
-
 void cpuTestINTCInts()
 {
 	if( cpuRegs.interrupt & (1 << 30) ) return;
@@ -687,7 +672,7 @@ void cpuTestINTCInts()
 
 	// only set the next branch delta if the exception won't be handled for
 	// the current branch...
-	if( !eeEventTestIsActive )
+	if( !EventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
 	else if(psxCycleEE > 0)
 	{
@@ -710,7 +695,7 @@ __forceinline void cpuTestDMACInts()
 
 	// only set the next branch delta if the exception won't be handled for
 	// the current branch...
-	if( !eeEventTestIsActive )
+	if( !EventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
 	else if(psxCycleEE > 0)
 	{
@@ -780,15 +765,27 @@ void IntcpuBranchTest()
 	// Perform counters, ints, and IOP updates:
 	_cpuBranchTest_Shared();
 
-	if (VU0.VI[REG_VPU_STAT].UL & 0x1) {
-		Cpu->ExecuteVU0Block();
-
-		// This might be needed to keep the EE and VU0 in sync.
-		// A better fix will require hefty changes to the VU recs. -_-
-		if(VU0.VI[REG_VPU_STAT].UL & 0x1)
-			cpuSetNextBranchDelta( 768 );
-
-	}
-
 	g_EEFreezeRegs = true;
 }
+
+__forceinline void CPU_INT( u32 n, s32 ecycle)
+{
+	cpuRegs.interrupt|= 1 << n;
+	cpuRegs.sCycle[n] = cpuRegs.cycle;
+	cpuRegs.eCycle[n] = ecycle;
+
+	// Interrupt is happening soon: make sure both EE and IOP are aware.
+
+	if( ecycle <= 28 && psxCycleEE > 0 )
+	{
+		// If running in the IOP, force it to break immediately into the EE.
+		// the EE's branch test is due to run.
+
+		psxBreak += psxCycleEE;		// record the number of cycles the IOP didn't run.
+		psxCycleEE = 0;
+	}
+
+	cpuSetNextBranchDelta( cpuRegs.eCycle[n] );
+}
+
+}	// end namespace R5900

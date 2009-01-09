@@ -38,6 +38,10 @@
 #endif
 //------------------------------------------------------------------
 
+namespace Dynarec
+{
+	using ::Dynarec::R5900::pc;
+	using ::Dynarec::R5900::branch;
 
 //------------------------------------------------------------------
 // Helper Macros
@@ -1269,3 +1273,4 @@ void SetVUNanMode(int mode)
     if ( mode ) SysPrintf("enabling vunan mode");
 }
 
+}

@@ -23,10 +23,10 @@
 #include "R5900.h"
 #include "InterTables.h"
 
-namespace EE { namespace Interpreter{ namespace OpcodeImpl
+namespace R5900 {
+namespace Interpreter {
+namespace OpcodeImpl
 {
-
-void MMI_Unknown() { Console::Notice("Unknown MMI opcode called"); }
 
 //*****************MMI OPCODES*********************************
 
@@ -1544,4 +1544,4 @@ void PEXCW() {
 // obs:
 // QFSRV not verified
 
-}}} // end namespace EE::Interpreter::OpcodeImpl
+}}} // end namespace R5900::Interpreter::OpcodeImpl

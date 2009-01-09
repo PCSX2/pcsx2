@@ -19,39 +19,79 @@
 //all tables for R5900 are define here..
 
 #include "InterTables.h"
+#include "R5900.h"
 
-namespace EE
+#include "x86/iR5900AritImm.h"
+#include "x86/iR5900Arit.h"
+#include "x86/iR5900MultDiv.h"
+#include "x86/iR5900Shift.h"
+#include "x86/iR5900Branch.h"
+#include "x86/iR5900Jump.h"
+#include "x86/iR5900LoadStore.h"
+#include "x86/iR5900Move.h"
+#include "x86/iMMI.h"
+#include "x86/iCP0.h"
+#include "x86/iFPU.h"
+
+namespace R5900
 {
 	namespace Opcodes
 	{
+		// Generates an entry for the given opcode name.
+		// Assumes the default function naming schemes for interpreter and recompiler  functions.
+	#	define MakeOpcode( name, cycles ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			NULL, \
+			R5900::Interpreter::OpcodeImpl::name, \
+			Dynarec::R5900::OpcodeImpl::rec##name, \
+			R5900::OpcodeDisasm::name \
+		}
+
+	#	define MakeOpcodeClass( name ) \
+		static const OPCODE name = { \
+			#name, \
+			0, \
+			R5900::Opcodes::Class_##name, \
+			NULL, \
+			NULL, \
+			NULL \
+		}
+
 		// We're working on new hopefully better cycle ratios, but they're still a WIP.
 		// And yes this whole thing is an ugly hack.  I'll clean it up once we have
 		// a better idea how exactly the cycle ratios will work best.
 
-		static const int Cycles_Default = 9;
-		static const int Cycles_Branch = 12;
+		namespace Cycles
+		{
+			static const int Default = 9;
+			static const int Branch = 11;
+			static const int CopDefault = 7;
 
-		static const int Cycles_Mult = 2*8;
-		static const int Cycles_Div = 13*8;
-		static const int Cycles_FPU_Sqrt = 4*8;
-		static const int Cycles_MMI_Mult = 3*8;
-		static const int Cycles_MMI_Div = 22*8;
+			static const int Mult = 2*8;
+			static const int Div = 14*8;
+			static const int MMI_Mult = 3*8;
+			static const int MMI_Div = 22*8;
 
-		static const int Cycles_Store = 20;			// 21 for snes emu
-		static const int Cycles_Load = 11;			// 13 for snes emu
+			static const int FPU_Mult = 12;
 
-		static const int Cycles_Misc = 7;
+			static const int Store = 21;
+			static const int Load = 11;
+		}
+
+		using namespace Cycles;
 
 		MakeOpcode( Unknown, Default );
 		MakeOpcode( MMI_Unknown, Default );
+		MakeOpcode( COP0_Unknown, Default );
+		MakeOpcode( COP1_Unknown, Default );
 
 		// Class Subset Opcodes
 		// (not really opcodes, but rather entire subsets of other opcode classes)
 
 		MakeOpcodeClass( SPECIAL );
 		MakeOpcodeClass( REGIMM );
-		//MakeOpcodeClass( COP0 );
-		//MakeOpcodeClass( COP1 );
 		//MakeOpcodeClass( COP2 );
 		MakeOpcodeClass( MMI );
 		MakeOpcodeClass( MMI0 );
@@ -59,11 +99,12 @@ namespace EE
 		MakeOpcodeClass( MMI1 );
 		MakeOpcodeClass( MMI3 );
 
+		MakeOpcodeClass( COP0 );
+		MakeOpcodeClass( COP1 );
+
 		// Misc Junk
 
-		MakeOpcode( COP0, Misc );
-		MakeOpcode( COP1, Misc );
-		MakeOpcode( COP2, Misc );
+		MakeOpcode( COP2, Default );
 
 		MakeOpcode( CACHE, Default );
 		MakeOpcode( PREF, Default );
@@ -308,25 +349,92 @@ namespace EE
 		MakeOpcode( PCPYH, Default );
 		MakeOpcode( PEXCW, Default );
 
+		//////////////////////////////////////////////////////////
+		// COP0 Instructions
+
+		MakeOpcodeClass( COP0_C0 );
+		MakeOpcodeClass( COP0_BC0 );
+
+		MakeOpcode( MFC0, CopDefault );
+		MakeOpcode( MTC0, CopDefault );
+
+		MakeOpcode( BC0F, Branch );
+		MakeOpcode( BC0T, Branch );
+		MakeOpcode( BC0FL, Branch );
+		MakeOpcode( BC0TL, Branch );
+
+		MakeOpcode( TLBR, CopDefault );
+		MakeOpcode( TLBWI, CopDefault );
+		MakeOpcode( TLBWR, CopDefault );
+		MakeOpcode( TLBP, CopDefault );
+		MakeOpcode( ERET, CopDefault );
+		MakeOpcode( EI, CopDefault );
+		MakeOpcode( DI, CopDefault );
+
+		//////////////////////////////////////////////////////////
+		// COP1 Instructions!
+
+		MakeOpcodeClass( COP1_BC1 );
+		MakeOpcodeClass( COP1_S );
+		MakeOpcodeClass( COP1_W );		// contains CVT_S instruction *only*
+
+		MakeOpcode( MFC1, CopDefault );
+		MakeOpcode( CFC1, CopDefault );
+		MakeOpcode( MTC1, CopDefault );
+		MakeOpcode( CTC1, CopDefault );
+
+		MakeOpcode( BC1F, Branch );
+		MakeOpcode( BC1T, Branch );
+		MakeOpcode( BC1FL, Branch );
+		MakeOpcode( BC1TL, Branch );
+
+		MakeOpcode( ADD_S, CopDefault );
+		MakeOpcode( ADDA_S, CopDefault );
+		MakeOpcode( SUB_S, CopDefault );
+		MakeOpcode( SUBA_S, CopDefault );
+
+		MakeOpcode( ABS_S, CopDefault );
+		MakeOpcode( MOV_S, CopDefault );
+		MakeOpcode( NEG_S, CopDefault );
+		MakeOpcode( MAX_S, CopDefault );
+		MakeOpcode( MIN_S, CopDefault );
+
+		MakeOpcode( MUL_S, FPU_Mult );
+		MakeOpcode( DIV_S, 3*8 );
+		MakeOpcode( SQRT_S, 3*8 );
+		MakeOpcode( RSQRT_S, 4*8 );
+		MakeOpcode( MULA_S, FPU_Mult );
+		MakeOpcode( MADD_S, FPU_Mult );
+		MakeOpcode( MSUB_S, FPU_Mult );
+		MakeOpcode( MADDA_S, FPU_Mult );
+		MakeOpcode( MSUBA_S, FPU_Mult );
+
+		MakeOpcode( C_F, CopDefault );
+		MakeOpcode( C_EQ, CopDefault );
+		MakeOpcode( C_LT, CopDefault );
+		MakeOpcode( C_LE, CopDefault );
+
+		MakeOpcode( CVT_S, CopDefault );
+		MakeOpcode( CVT_W, CopDefault );
 	}
 
 	namespace OpcodeTables
 	{
 		using namespace Opcodes;
 
-		const OPCODE Standard[64] = 
+		const OPCODE tbl_Standard[64] = 
 		{
 			SPECIAL,       REGIMM,        J,             JAL,     BEQ,           BNE,     BLEZ,  BGTZ,
 			ADDI,          ADDIU,         SLTI,          SLTIU,   ANDI,          ORI,     XORI,  LUI,
 			COP0,          COP1,          COP2,          Unknown, BEQL,          BNEL,    BLEZL, BGTZL,
-			DADDI,         DADDIU,        LDL,           LDR,     Opcodes::MMI,  Unknown, LQ,    SQ,
+			DADDI,         DADDIU,        LDL,           LDR,     MMI,           Unknown, LQ,    SQ,
 			LB,            LH,            LWL,           LW,      LBU,           LHU,     LWR,   LWU,
 			SB,            SH,            SWL,           SW,      SDL,           SDR,     SWR,   CACHE,
 			Unknown,       LWC1,          Unknown,       PREF,    Unknown,       Unknown, LQC2,  LD,
 			Unknown,       SWC1,          Unknown,       Unknown, Unknown,       Unknown, SQC2,  SD
 		};
 
-		const OPCODE Special[64] = 
+		static const OPCODE tbl_Special[64] = 
 		{
 			SLL,      Unknown,  SRL,      SRA,      SLLV,    Unknown, SRLV,    SRAV,
 			JR,       JALR,     MOVZ,     MOVN,     SYSCALL, BREAK,   Unknown, SYNC,
@@ -338,26 +446,26 @@ namespace EE
 			DSLL,     Unknown,  DSRL,     DSRA,     DSLL32,  Unknown, DSRL32,  DSRA32
 		};
 
-		const OPCODE RegImm[32] = {
+		static const OPCODE tbl_RegImm[32] = {
 			BLTZ,   BGEZ,   BLTZL,      BGEZL,   Unknown, Unknown, Unknown, Unknown,
 			TGEI,   TGEIU,  TLTI,       TLTIU,   TEQI,    Unknown, TNEI,    Unknown,
 			BLTZAL, BGEZAL, BLTZALL,    BGEZALL, Unknown, Unknown, Unknown, Unknown,
 			MTSAB,  MTSAH , Unknown,    Unknown, Unknown, Unknown, Unknown, Unknown,
 		};
 
-		const OPCODE MMI[64] = 
+		static const OPCODE tbl_MMI[64] = 
 		{
 			MADD,               MADDU,           MMI_Unknown,          MMI_Unknown,          PLZCW,            MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
-			Opcodes::MMI0,      Opcodes::MMI2,   MMI_Unknown,          MMI_Unknown,          MMI_Unknown,      MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
+			MMI0,      MMI2,   MMI_Unknown,          MMI_Unknown,          MMI_Unknown,      MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
 			MFHI1,              MTHI1,           MFLO1,                MTLO1,                MMI_Unknown,      MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
 			MULT1,              MULTU1,          DIV1,                 DIVU1,                MMI_Unknown,      MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
 			MADD1,              MADDU1,          MMI_Unknown,          MMI_Unknown,          MMI_Unknown,      MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
-			Opcodes::MMI1,      Opcodes::MMI3,   MMI_Unknown,          MMI_Unknown,          MMI_Unknown,      MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
+			MMI1,      MMI3,   MMI_Unknown,          MMI_Unknown,          MMI_Unknown,      MMI_Unknown,       MMI_Unknown,          MMI_Unknown,
 			PMFHL,              PMTHL,           MMI_Unknown,          MMI_Unknown,          PSLLH,            MMI_Unknown,       PSRLH,                PSRAH,
 			MMI_Unknown,        MMI_Unknown,     MMI_Unknown,          MMI_Unknown,          PSLLW,            MMI_Unknown,       PSRLW,                PSRAW,
 		};
 
-		const OPCODE MMI0[32] = 
+		static const OPCODE tbl_MMI0[32] = 
 		{ 
 			PADDW,         PSUBW,         PCGTW,          PMAXW,       
 			PADDH,         PSUBH,         PCGTH,          PMAXH,        
@@ -369,7 +477,7 @@ namespace EE
 			MMI_Unknown,   MMI_Unknown,   PEXT5,          PPAC5,        
 		};
 
-		const OPCODE MMI1[32] =
+		static const OPCODE tbl_MMI1[32] =
 		{ 
 			MMI_Unknown,   PABSW,         PCEQW,         PMINW, 
 			PADSBH,        PABSH,         PCEQH,         PMINH, 
@@ -382,7 +490,7 @@ namespace EE
 		};
 
 
-		const OPCODE MMI2[32] = 
+		static const OPCODE tbl_MMI2[32] = 
 		{ 
 			PMADDW,        MMI_Unknown,   PSLLVW,        PSRLVW, 
 			PMSUBW,        MMI_Unknown,   MMI_Unknown,   MMI_Unknown,
@@ -394,7 +502,7 @@ namespace EE
 			PMULTH,        PDIVBW,        PEXEW,         PROT3W, 
 		};
 
-		const OPCODE MMI3[32] = 
+		static const OPCODE tbl_MMI3[32] = 
 		{ 
 			PMADDUW,       MMI_Unknown,   MMI_Unknown,   PSRAVW, 
 			MMI_Unknown,   MMI_Unknown,   MMI_Unknown,   MMI_Unknown,
@@ -406,72 +514,105 @@ namespace EE
 			MMI_Unknown,   MMI_Unknown,   PEXCW,         MMI_Unknown,
 		};
 
-	}	// end namespace EE::OpcodeTables
-}	// end namespace EE
+		static const OPCODE tbl_COP0[32] = 
+		{
+			MFC0,         COP0_Unknown, COP0_Unknown, COP0_Unknown, MTC0,         COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_BC0, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_C0,  COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+		};
 
-void (*Int_COP0PrintTable[32])() = 
-{
-    MFC0,         COP0_Unknown, COP0_Unknown, COP0_Unknown, MTC0,         COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_BC0,     COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Func,    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-};
+		static const OPCODE tbl_COP0_BC0[32] = 
+		{
+			BC0F,         BC0T,         BC0FL,        BC0TL,        COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+		};
 
-void (*Int_COP0BC0PrintTable[32])() = 
-{
-    BC0F,         BC0T,         BC0FL,        BC0TL,        COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-};
+		static const OPCODE tbl_COP0_C0[64] =
+		{
+			COP0_Unknown, TLBR,         TLBWI,        COP0_Unknown, COP0_Unknown, COP0_Unknown, TLBWR,        COP0_Unknown,
+			TLBP,         COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			ERET,         COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
+			EI,           DI,           COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown
+		};
 
-void (*Int_COP0C0PrintTable[64])() = {
-    COP0_Unknown, TLBR,         TLBWI,        COP0_Unknown, COP0_Unknown, COP0_Unknown, TLBWR,        COP0_Unknown,
-    TLBP,         COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    ERET,         COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown,
-    EI,           DI,           COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown, COP0_Unknown
-};
+		static const OPCODE tbl_COP1[32] =
+		{
+			MFC1,         COP1_Unknown, CFC1,         COP1_Unknown, MTC1,         COP1_Unknown, CTC1,         COP1_Unknown,
+			COP1_BC1, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
+			COP1_S,   COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_W, COP1_Unknown, COP1_Unknown, COP1_Unknown,
+			COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
+		};
 
-void (*Int_COP1PrintTable[32])() = {
-    MFC1,         COP1_Unknown, CFC1,         COP1_Unknown, MTC1,         COP1_Unknown, CTC1,         COP1_Unknown,
-    COP1_BC1,     COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
-    COP1_S,       COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_W,       COP1_Unknown, COP1_Unknown, COP1_Unknown,
-    COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
-};
+		static const OPCODE tbl_COP1_BC1[32] =
+		{
+			BC1F,         BC1T,         BC1FL,        BC1TL,        COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
+			COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
+			COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
+			COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
+		};
 
-void (*Int_COP1BC1PrintTable[32])() = {
-    BC1F,         BC1T,         BC1FL,        BC1TL,        COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
-    COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
-    COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
-    COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown, COP1_Unknown,
-};
+		static const OPCODE tbl_COP1_S[64] =
+		{
+			ADD_S,       SUB_S,       MUL_S,       DIV_S,       SQRT_S,      ABS_S,       MOV_S,       NEG_S, 
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,RSQRT_S,     COP1_Unknown,  
+			ADDA_S,      SUBA_S,      MULA_S,      COP1_Unknown,MADD_S,      MSUB_S,      MADDA_S,     MSUBA_S,
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,CVT_W,       COP1_Unknown,COP1_Unknown,COP1_Unknown, 
+			MAX_S,       MIN_S,       COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown, 
+			C_F,         COP1_Unknown,C_EQ,        COP1_Unknown,C_LT,        COP1_Unknown,C_LE,        COP1_Unknown, 
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown, 
+		};
 
-void (*Int_COP1SPrintTable[64])() = {
-ADD_S,       SUB_S,       MUL_S,       DIV_S,       SQRT_S,      ABS_S,       MOV_S,       NEG_S, 
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,RSQRT_S,     COP1_Unknown,  
-ADDA_S,      SUBA_S,      MULA_S,      COP1_Unknown,MADD_S,      MSUB_S,      MADDA_S,     MSUBA_S,
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,CVT_W,       COP1_Unknown,COP1_Unknown,COP1_Unknown, 
-MAX_S,       MIN_S,       COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown, 
-C_F,         COP1_Unknown,C_EQ,        COP1_Unknown,C_LT,        COP1_Unknown,C_LE,        COP1_Unknown, 
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown, 
-};
- 
-void (*Int_COP1WPrintTable[64])() = { 
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   	
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-CVT_S,       COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
-};
+		static const OPCODE tbl_COP1_W[64] = 
+		{
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   	
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+			CVT_S,       COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+			COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,COP1_Unknown,   
+		};
 
+	}	// end namespace R5900::OpcodeTables
+
+	namespace Opcodes
+	{
+		using namespace OpcodeTables;
+
+		const OPCODE& Class_SPECIAL() { return tbl_Special[_Funct_]; }
+		const OPCODE& Class_REGIMM()  { return tbl_RegImm[_Rt_]; }
+
+		const OPCODE& Class_MMI()  { return tbl_MMI[_Funct_]; }
+		const OPCODE& Class_MMI0() { return tbl_MMI0[_Sa_]; }
+		const OPCODE& Class_MMI1() { return tbl_MMI1[_Sa_]; }
+		const OPCODE& Class_MMI2() { return tbl_MMI2[_Sa_]; }
+		const OPCODE& Class_MMI3() { return tbl_MMI3[_Sa_]; }
+
+		const OPCODE& Class_COP0() { return tbl_COP0[_Rs_]; }
+		const OPCODE& Class_COP0_BC0() { return tbl_COP0_BC0[(cpuRegs.code >> 16) & 0x03]; }
+		const OPCODE& Class_COP0_C0() { return tbl_COP0_C0[_Funct_]; }
+
+		const OPCODE& Class_COP1() { return tbl_COP1[_Rs_]; }
+		const OPCODE& Class_COP1_BC1() { return tbl_COP1_BC1[_Rt_]; }
+		const OPCODE& Class_COP1_S() { return tbl_COP1_S[_Funct_]; }
+		const OPCODE& Class_COP1_W() { return tbl_COP1_W[_Funct_]; }
+
+		// These are for future use when the COP2 tables are completed.
+		//const OPCODE& Class_COP2() { return tbl_COP2[_Rs_]; }
+		//const OPCODE& Class_COP2_BC2() { return tbl_COP2_BC2[_Rt_]; }
+		//const OPCODE& Class_COP2_SPECIAL() { return tbl_COP2_SPECIAL[_Funct_]; }
+		//const OPCODE& Class_COP2_SPECIAL2() { return tbl_COP2_SPECIAL2[(cpuRegs.code & 0x3) | ((cpuRegs.code >> 4) & 0x7c)]; }
+	}
+}	// end namespace R5900
 
 void (*Int_COP2PrintTable[32])() = {
     COP2_Unknown, QMFC2,        CFC2,         COP2_Unknown, COP2_Unknown, QMTC2,        CTC2,         COP2_Unknown,

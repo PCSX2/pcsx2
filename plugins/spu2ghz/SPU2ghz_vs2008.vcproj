@@ -292,7 +292,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib dsound.lib"
-				OutputFile="$(OutDir)\$(ProjectName)-PG.dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\SPU2ghz.def"

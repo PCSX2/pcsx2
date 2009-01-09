@@ -30,6 +30,9 @@
 
 using namespace std;			// for min / max
 
+using namespace Dynarec;
+using namespace Dynarec::R5900;
+
 // Zero cycle IRQ schedules aren't really good, but the IPU uses them.
 // Better to throw the IRQ inline:
 

@@ -22,6 +22,8 @@
 #include "SPR.h"
 #include "iR5900.h"
 
+using R5900::Cpu;
+
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
 #define spr1 ((DMACh*)&PS2MEM_HW[0xD400])
 
@@ -223,7 +225,6 @@ void SPRFROMinterrupt()
 {
 	spr0->chcr&= ~0x100;
 	hwDmacIrq(8);
-	cpuRegs.interrupt &= ~(1 << 8);
 }
 
 extern void mfifoGIFtransfer(int);
@@ -394,6 +395,5 @@ void SPRTOinterrupt()
 {
 	spr1->chcr &= ~0x100;
 	hwDmacIrq(9);
-	cpuRegs.interrupt &= ~(1 << 9);
 }
 

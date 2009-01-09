@@ -572,7 +572,6 @@ void mfifoVIF1transfer(int qwc) {
 
 void vifMFIFOInterrupt()
 {
-	
 	if(vif1.irq && vif1.tag.size == 0) {
 			vif1Regs->stat|= VIF1_STAT_INT;
 			hwIntcIrq(5);
@@ -581,7 +580,6 @@ void vifMFIFOInterrupt()
 				{
 					vif1Regs->stat&= ~0x1F000000; // FQC=0
 					vif1ch->chcr &= ~0x100;
-					cpuRegs.interrupt &= ~(1 << 10);
 					return;
 				}		
 		}
@@ -590,7 +588,6 @@ void vifMFIFOInterrupt()
 		if(vifqwc <= 0){
 			//SysPrintf("Empty\n");
 			hwDmacIrq(14);
-			cpuRegs.interrupt &= ~(1 << 10); 
 			return;
 		} 
 		mfifoVIF1transfer(0);
@@ -606,5 +603,4 @@ void vifMFIFOInterrupt()
 	
 	vif1Regs->stat&= ~0x1F000000; // FQC=0
 //	}
-	cpuRegs.interrupt &= ~(1 << 10);
 }

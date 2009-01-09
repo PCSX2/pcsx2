@@ -24,43 +24,52 @@
 
 extern FILE *emuLog;
 
-void disR5900F( std::string& output, u32 code, u32 pc);
-void disR5900Fasm( std::string& output, u32 code, u32 pc);
-char* disR3000Fasm(u32 code, u32 pc);
+extern char* disR3000Fasm(u32 code, u32 pc);
+extern char* disR3000AF(u32 code, u32 pc);
 
-void  disR5900AddSym(u32 addr, const char *name);
-const char* disR5900GetSym(u32 addr);
-const char* disR5900GetUpperSym(u32 addr);
-void  disR5900FreeSyms();
-void dFindSym( std::string& output, u32 addr );
+extern char* disVU0MicroUF(u32 code, u32 pc);
+extern char* disVU0MicroLF(u32 code, u32 pc);
+extern char* disVU1MicroUF(u32 code, u32 pc);
+extern char* disVU1MicroLF(u32 code, u32 pc);
 
-void strAppend( std::string& output, const char *fmt, ... );
+extern const char * const CP2VFnames[];
+extern const char * const disRNameCP2f[];
+extern const char * const disRNameCP2i[];
 
-char* disVU0MicroUF(u32 code, u32 pc);
-char* disVU0MicroLF(u32 code, u32 pc);
-char* disVU1MicroUF(u32 code, u32 pc);
-char* disVU1MicroLF(u32 code, u32 pc);
-
-char* disR3000AF(u32 code, u32 pc);
-
-extern const char *CP2VFnames[];
-extern const char *disRNameCP2f[];
-extern const char *disRNameCP2i[];
-
-// A helper class for getting a quick and efficient string representation of the
-// R5900's current instruction.  This class is *not* thread safe!
-class DisR5900CurrentState
+namespace R5900
 {
-protected:
-	std::string result;
+	// [TODO] : These function names can be de-obfuscated with the help of a little namespace love.
 
-public:
-	const char* getString();
-};
+	void disR5900F( std::string& output, u32 code, u32 pc);
+	void disR5900Fasm( std::string& output, u32 code, u32 pc);
+	void disR5900AddSym(u32 addr, const char *name);
+	const char* disR5900GetSym(u32 addr);
+	const char* disR5900GetUpperSym(u32 addr);
+	void disR5900FreeSyms();
+	void dFindSym( std::string& output, u32 addr );
 
-extern DisR5900CurrentState disR5900Current;
+	extern const char * const disRNameGPR[];
 
-//that way is slower but you now not need to compile every time ;P
+	// A helper class for getting a quick and efficient string representation of the
+	// R5900's current instruction.  This class is *not* thread safe!
+	class DisR5900CurrentState
+	{
+	protected:
+		std::string result;
+
+	public:
+		const std::string& getString();
+		const char* getCString();
+	};
+
+	extern DisR5900CurrentState disR5900Current;
+}
+
+namespace R3000a
+{
+	extern const char * const disRNameGPR[];
+}
+
 #ifdef PCSX2_DEVBUILD
 
 extern u32 varLog;

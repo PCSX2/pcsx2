@@ -37,13 +37,8 @@
 #include "iFPU.h"
 #include "iCP0.h"
 
-////////////////////////////////////////////////////
-void recNULL( void )
-{
-	Console::Error("EE: Unimplemented op %x", params cpuRegs.code);
-}
-
-namespace EE { namespace Dynarec
+namespace Dynarec { 
+namespace R5900
 {
 	// Use this to call into interpreter functions that require an immediate branchtest
 	// to be done afterward (anything that throws an exception or enables interrupts, etc).
@@ -67,6 +62,12 @@ namespace EE { namespace Dynarec
 namespace OpcodeImpl
 {
 	////////////////////////////////////////////////////
+	void recNULL( void )
+	{
+		Console::Error("EE: Unimplemented op %x", params cpuRegs.code);
+	}
+
+	////////////////////////////////////////////////////
 	void recUnknown()
 	{
 		// TODO : Unknown ops should throw an exception.
@@ -79,34 +80,16 @@ namespace OpcodeImpl
 		Console::Error("EE: Unrecognized MMI op %x", params cpuRegs.code);
 	}
 
-	////////////////////////////////////////////////////
-	void recREGIMM( void ) 
+	void recCOP0_Unknown()
 	{
-		EE::OpcodeTables::RegImm[ _Rt_ ].recompile();
+		// TODO : Unknown ops should throw an exception.
+		Console::Error("EE: Unrecognized COP0 op %x", params cpuRegs.code);
 	}
 
-	////////////////////////////////////////////////////
-	void recSPECIAL( void )
+	void recCOP1_Unknown()
 	{
-		EE::OpcodeTables::Special[ _Funct_ ].recompile( );
-	}
-
-	////////////////////////////////////////////////////
-	void recCOP0( void )
-	{
-		recCP0[ _Rs_ ]( );
-	}
-
-	////////////////////////////////////////////////////
-	void recCOP1( void )
-	{
-		recCP1[ _Rs_ ]( );
-	}
-
-	////////////////////////////////////////////////////
-	void recMMI( void ) 
-	{
-		EE::OpcodeTables::MMI[ _Funct_ ].recompile( );
+		// TODO : Unknown ops should throw an exception.
+		Console::Error("EE: Unrecognized FPU/COP1 op %x", params cpuRegs.code);
 	}
 
 	/**********************************************************
@@ -156,68 +139,68 @@ namespace OpcodeImpl
 	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
 	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
 	   iFlushCall(FLUSH_EVERYTHING);
-	   CALLFunc( (uptr)Interpreter::OpcodeImpl::CACHE );
+	   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::CACHE );
 	   branch = 2;
 	}
 
 	void recTGE( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TGE );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TGE );
 	}
 
 	void recTGEU( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TGEU );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEU );
 	}
 
 	void recTLT( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TLT );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TLT );
 	}
 
 	void recTLTU( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TLTU );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTU );
 	}
 
 	void recTEQ( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TEQ );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQ );
 	}
 
 	void recTNE( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TNE );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TNE );
 	}
 
 	void recTGEI( void )
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TGEI );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEI );
 	}
 
 	void recTGEIU( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TGEIU );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEIU );
 	}
 
 	void recTLTI( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TLTI );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTI );
 	}
 
 	void recTLTIU( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TLTIU );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTIU );
 	}
 
 	void recTEQI( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TEQI );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQI );
 	}
 
 	void recTNEI( void ) 
 	{
-		recBranchCall( Interpreter::OpcodeImpl::TNEI );
+		recBranchCall( R5900::Interpreter::OpcodeImpl::TNEI );
 	}
 
 }	// End OpcodeImpl
@@ -238,8 +221,8 @@ namespace OpcodeImpl
 	};
 	#endif
 
-} }		// End namespace EE::Dynarec
 
+/*
 ////////////////////////////////////////////////////
 static void recCOP0BC0( void )
 {
@@ -250,72 +233,7 @@ static void recCOP0BC0( void )
 static void recCOP0C0( void ) 
 {
 	recCP0C0[ _Funct_ ]( );
-}
-
-/////////////////////////////////
-// Foward-Prob Function Tables //
-/////////////////////////////////
-
-void (*recCP0[32] )() = {
-    recMFC0,    recNULL, recNULL, recNULL, recMTC0, recNULL, recNULL, recNULL,
-    recCOP0BC0, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,
-    recCOP0C0,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,
-    recNULL,    recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,
-};
-
-void (*recCP0BC0[32] )() = {
-    recBC0F, recBC0T, recBC0FL, recBC0TL, recNULL, recNULL, recNULL, recNULL,
-    recNULL, recNULL, recNULL,  recNULL,  recNULL, recNULL, recNULL, recNULL,
-    recNULL, recNULL, recNULL,  recNULL,  recNULL, recNULL, recNULL, recNULL,
-    recNULL, recNULL, recNULL,  recNULL,  recNULL, recNULL, recNULL, recNULL,
-};
-
-void (*recCP0C0[64] )() = {
-    recNULL, recTLBR, recTLBWI, recNULL, recNULL, recNULL, recTLBWR, recNULL,
-    recTLBP, recNULL, recNULL,  recNULL, recNULL, recNULL, recNULL,  recNULL,
-    recNULL, recNULL, recNULL,  recNULL, recNULL, recNULL, recNULL,  recNULL,
-    recERET, recNULL, recNULL,  recNULL, recNULL, recNULL, recNULL,  recNULL,
-    recNULL, recNULL, recNULL,  recNULL, recNULL, recNULL, recNULL,  recNULL,
-    recNULL, recNULL, recNULL,  recNULL, recNULL, recNULL, recNULL,  recNULL,
-    recNULL, recNULL, recNULL,  recNULL, recNULL, recNULL, recNULL,  recNULL,
-    recEI,   recDI,   recNULL,  recNULL, recNULL, recNULL, recNULL,  recNULL,
-};
-
-void (*recCP1[32] )() = {
-    recMFC1,     recNULL, recCFC1, recNULL, recMTC1,   recNULL, recCTC1, recNULL,
-    recCOP1_BC1, recNULL, recNULL, recNULL, recNULL,   recNULL, recNULL, recNULL,
-    recCOP1_S,   recNULL, recNULL, recNULL, recCOP1_W, recNULL, recNULL, recNULL,
-    recNULL,     recNULL, recNULL, recNULL, recNULL,   recNULL, recNULL, recNULL,
-};
-
-void (*recCP1BC1[32] )() = {
-    recBC1F, recBC1T, recBC1FL, recBC1TL, recNULL, recNULL, recNULL, recNULL,
-    recNULL, recNULL, recNULL,  recNULL,  recNULL, recNULL, recNULL, recNULL,
-    recNULL, recNULL, recNULL,  recNULL,  recNULL, recNULL, recNULL, recNULL,
-    recNULL, recNULL, recNULL,  recNULL,  recNULL, recNULL, recNULL, recNULL,
-};
-
-void (*recCP1S[64] )() = {
-	recADD_S,  recSUB_S,  recMUL_S,  recDIV_S, recSQRT_S, recABS_S,  recMOV_S,   recNEG_S, 
-	recNULL,   recNULL,   recNULL,   recNULL,  recNULL,   recNULL,   recNULL,    recNULL,   
-	recNULL,   recNULL,   recNULL,   recNULL,  recNULL,   recNULL,   recRSQRT_S, recNULL,  
-	recADDA_S, recSUBA_S, recMULA_S, recNULL,  recMADD_S, recMSUB_S, recMADDA_S, recMSUBA_S,
-	recNULL,   recNULL,   recNULL,   recNULL,  recCVT_W,  recNULL,   recNULL,    recNULL, 
-	recMAX_S,  recMIN_S,  recNULL,   recNULL,  recNULL,   recNULL,   recNULL,    recNULL, 
-	recC_F,    recNULL,   recC_EQ,   recNULL,  recC_LT,   recNULL,   recC_LE,    recNULL, 
-	recNULL,   recNULL,   recNULL,   recNULL,  recNULL,   recNULL,   recNULL,    recNULL, 
-};
- 
-void (*recCP1W[64] )() = { 
-	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   	
-	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
-	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
-	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
-	recCVT_S, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
-	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
-	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,   
-	recNULL,  recNULL, recNULL, recNULL, recNULL, recNULL, recNULL, recNULL,
-};
+}*/
 
 ////////////////////////////////////////////////
 // Back-Prob Function Tables - Gathering Info //
@@ -1280,4 +1198,6 @@ void BSCPropagate::rprop()
 			rpropSetRead(_Rs_, EEINST_LIVE1|(_Rs_!=0?EEINST_MMX:0));
 			break;
 	}
-}
+}	// End namespace OpcodeImpl
+
+} }		// End namespace Dynarec::R5900

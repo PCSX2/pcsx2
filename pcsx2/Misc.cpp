@@ -42,6 +42,8 @@
 #include "Paths.h"
 
 using namespace std;
+using namespace Dynarec;
+using namespace R5900;
 
 PcsxConfig Config;
 u32 BiosVersion;
@@ -376,8 +378,6 @@ int GetPS2ElfName(char *name){
 	return 2;
 }
 
-extern u32 dumplog;
-
 #ifdef PCSX2_DEVBUILD
 
 void SaveGSState(const string& file)
@@ -494,7 +494,7 @@ char *ParseLang(char *id) {
 
 #define NUM_STATES 10
 int StatesC = 0;
-extern void iDumpRegisters(u32 startpc, u32 temp);
+
 extern char strgametitle[256];
 
 char* mystrlwr( char* string )
@@ -553,7 +553,7 @@ void ProcessFKeys(int fkey, int shift)
 			{
 				SaveState::GetFilename( Text, StatesC );
 				gzLoadingState joe( Text );	// throws exception on version mismatch
-				cpuReset();
+				R5900::cpuReset();
 				joe.FreezeAll();
 			}
 			catch( Exception::StateLoadError_Recoverable& )
@@ -576,7 +576,7 @@ void ProcessFKeys(int fkey, int shift)
 					"Pcsx2 encountered an error while trying to load the savestate\n"
 					"and emulation had to be aborted." );
 
-				cpuShutdown();
+				R5900::cpuShutdown();
 				ClosePlugins();
 
 				throw Exception::CpuStateShutdown(
@@ -632,7 +632,8 @@ void ProcessFKeys(int fkey, int shift)
 			// [Air]: Do we really want to save runtime changes to frameskipping?
 			//SaveConfig();
 		}
-			break;
+		break;
+
 		// note: VK_F5-VK_F7 are reserved for GS
 		case 8:
 			GSmakeSnapshot("snap/");
@@ -699,8 +700,8 @@ void ProcessFKeys(int fkey, int shift)
                 }
                 else {
                     if( GSsetupRecording != NULL ) GSsetupRecording(g_Pcsx2Recording, NULL);
-                    if( SPU2setupRecording != NULL ) SPU2setupRecording(g_Pcsx2Recording, NULL);  
                 }
+				if( SPU2setupRecording != NULL ) SPU2setupRecording(g_Pcsx2Recording, NULL);  
             }
 			break;
     }

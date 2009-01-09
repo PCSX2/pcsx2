@@ -100,31 +100,31 @@ extern void psxSetNextBranchDelta( s32 delta );
 
 void psxHwReset();
 u8   psxHwRead8 (u32 add);
-int psxHwConstRead8(u32 x86reg, u32 add, u32 sign);
-
 u16  psxHwRead16(u32 add);
-int psxHwConstRead16(u32 x86reg, u32 add, u32 sign);
-
 u32  psxHwRead32(u32 add);
-int psxHwConstRead32(u32 x86reg, u32 add);
 
 void psxHwWrite8 (u32 add, u8  value);
-void psxHwConstWrite8(u32 add, int mmreg);
-
 void psxHwWrite16(u32 add, u16 value);
-void psxHwConstWrite16(u32 add, int mmreg);
-
 void psxHwWrite32(u32 add, u32 value);
-void psxHwConstWrite32(u32 add, int mmreg);
 
 u8   psxHw4Read8 (u32 add);
-int psxHw4ConstRead8 (u32 x86reg, u32 add, u32 sign);
-
 void psxHw4Write8(u32 add, u8  value);
-void psxHw4ConstWrite8(u32 add, int mmreg);
 
-int  psxHwFreeze(gzFile f, int Mode);
 void psxDmaInterrupt(int n);
 void psxDmaInterrupt2(int n);
+
+int  psxHwFreeze(gzFile f, int Mode);
+
+namespace Dynarec
+{
+	int psxHwConstRead8(u32 x86reg, u32 add, u32 sign);
+	int psxHwConstRead16(u32 x86reg, u32 add, u32 sign);
+	int psxHwConstRead32(u32 x86reg, u32 add);
+	void psxHwConstWrite8(u32 add, int mmreg);
+	void psxHwConstWrite16(u32 add, int mmreg);
+	void psxHwConstWrite32(u32 add, int mmreg);
+	int psxHw4ConstRead8 (u32 x86reg, u32 add, u32 sign);
+	void psxHw4ConstWrite8(u32 add, int mmreg);
+}
 
 #endif /* __PSXHW_H__ */

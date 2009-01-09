@@ -28,10 +28,14 @@
 #include "R3000a.h"
 #include "VUmicro.h"
 
+using namespace R5900;
+
 HINSTANCE m_hInst;
 HWND m_hWnd;
 char text1[256];
 
+// Wow!  This module is a lot of copy-paste!
+// Between this and DisAsm modules, *someone* needs a new Ctrl-V combo on their keyboard. (air)
 
 /*R3000a registers handle */
 static HWND IOPGPR0Handle=NULL;

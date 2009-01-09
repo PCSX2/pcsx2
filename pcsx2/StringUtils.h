@@ -47,11 +47,17 @@ std::string to_string(const T& value)
 // allow us to use the va_list feature on references.
 struct VARG_PARAM
 {
+	// just some value to make the struct length 32bits instead of 8 bits, so that the
+	// compiler generates somewhat more efficient code.
+	uint someval;
 };
 
-extern VARG_PARAM va_arg_dummy;
+extern const VARG_PARAM va_arg_dummy;
 
 extern void ssprintf(std::string& dest, const std::string& fmt, VARG_PARAM dummy, ...);
+extern void ssappendf( std::string& dest, const std::string& format, VARG_PARAM dummy, ...);
 extern void vssprintf(std::string& dest, const std::string& format, va_list args);
+extern void vssappendf(std::string& dest, const std::string& format, va_list args);
+
 extern std::string fmt_string( const std::string& fmt, VARG_PARAM dummy, ... );
 #endif

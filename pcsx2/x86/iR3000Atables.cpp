@@ -32,11 +32,14 @@ extern void psxSWL();
 extern void psxSWR();
 
 extern int g_psxWriteOk;
+
+namespace Dynarec
+{
+
 extern u32 g_psxMaxRecMem;
 
 // R3000A instruction implementation
 #define REC_FUNC(f) \
-void psx##f(); \
 static void rpsx##f() { \
 	MOV32ItoM((uptr)&psxRegs.code, (u32)psxRegs.code); \
 	_psxFlushCall(FLUSH_EVERYTHING); \
@@ -2004,9 +2007,7 @@ void rpsxpropREGIMM(EEINST* prev, EEINST* pinst)
 			rpsxpropSetRead(_Rs_);
 			break;
 
-		default:
-			assert(0);
-			break;
+		jNO_DEFAULT
 	}
 }
 
@@ -2028,7 +2029,9 @@ void rpsxpropCP0(EEINST* prev, EEINST* pinst)
 			break;
 		case 16: // rfe
 			break;
-		default:
-			assert(0);
+
+		jNO_DEFAULT
 	}
+}
+
 }

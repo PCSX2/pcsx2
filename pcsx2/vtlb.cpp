@@ -21,6 +21,8 @@
 #include "vtlb.h"
 #include "x86/ix86/ix86.h"
 
+using namespace R5900;
+
 #ifdef PCSX2_DEVBUILD
 #define verify(x) {if (!(x)) { (*(u8*)0)=3; }}
 #else
@@ -480,7 +482,7 @@ void vtlb_Term()
 }
 
 
-namespace EE { namespace Dynarec
+namespace Dynarec
 {
 
 //ecx = addr
@@ -695,6 +697,6 @@ void vtlb_DynGenWrite(u32 sz,int freereg)
 	x86SetJ8(cont);
 }
 
-} }
+}
 
 #endif		// PCSX2_VIRTUAL_MEM

@@ -37,7 +37,9 @@
 #pragma warning(disable:4761)
 #endif
 
-static VURegs * const VU = (VURegs*)&VU0;
+namespace Dynarec
+{
+
 #ifdef _DEBUG
 extern u32 vudump;
 #endif
@@ -61,7 +63,7 @@ void recExecuteVU0Block( void )
 			SuperVUExecuteProgram(VU0.VI[ REG_TPC ].UL & 0xfff, 0);
 			FreezeXMMRegs(0);
 		}
-		else intExecuteVU0Block();
+		else ::R5900::Interpreter::intExecuteVU0Block();
 	//}
 }
 
@@ -72,3 +74,9 @@ void recClearVU0( u32 Addr, u32 Size )
 	}
 }
 
+void recResetVU0( void )
+{
+	SuperVUReset(0);
+}
+
+}

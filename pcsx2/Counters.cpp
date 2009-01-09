@@ -27,11 +27,19 @@
 
 using namespace Threading;
 
+extern u8 psxhblankgate;
+u32 g_vu1SkipCount;	// number of frames to disable/skip VU1
+
+static void (*s_prevExecuteVU1Block)() = NULL;	// old VU1 block (either Int or Rec)
+extern void DummyExecuteVU1Block(void);
+
+namespace R5900
+{
+
 u64 profile_starttick = 0;
 u64 profile_totalticks = 0;
 
 int gates = 0;
-extern u8 psxhblankgate;
 
 // Counter 4 takes care of scanlines - hSync/hBlanks
 // Counter 5 takes care of vSync/vBlanks
@@ -41,11 +49,6 @@ u32 nextsCounter;	// records the cpuRegs.cycle value of the last call to rcntUpd
 s32 nextCounter;	// delta from nextsCounter, in cycles, until the next rcntUpdate() 
 
 // VUSkip Locals and Globals
-
-u32 g_vu1SkipCount;	// number of frames to disable/skip VU1
-static void (*s_prevExecuteVU1Block)() = NULL;	// old VU1 block (either Int or Rec)
-
-extern void DummyExecuteVU1Block(void);
 
 void rcntReset(int index) {
 	counters[index].count = 0;
@@ -259,12 +262,6 @@ extern u32 vu0time;
 
 
 void vSyncDebugStuff() {
-#ifdef EE_PROFILING
-		if( (iFrame%20) == 0 ) {
-			SysPrintf("Profiled Cycles at %d frames %d\n", iFrame, profile_totalticks);
-			CLEAR_EE_PROFILE();
-        }
-#endif
 
 #ifdef PCSX2_DEVBUILD
 		if( g_TestRun.enabled && g_TestRun.frame > 0 ) {
@@ -832,6 +829,10 @@ u32 rcntCycle(int index)
 		return counters[index].count;
 }
 
+} // End namespace R5900!
+
+using namespace R5900;
+
 void SaveState::rcntFreeze()
 {
 	Freeze(counters);
@@ -865,4 +866,3 @@ void SaveState::rcntFreeze()
 		iopBranchAction = 1;	// probably not needed but won't hurt anything either.
 	}
 }
-

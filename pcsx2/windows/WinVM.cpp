@@ -39,7 +39,7 @@ LRESULT WINAPI UserNameProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				{
 					wchar_t str[255];
 					GetWindowTextW(GetDlgItem(hDlg, IDC_USER_NAME), str, 255);
-					swprintf(s_szUserName, 255, L"%S", &str);
+					swprintf(s_szUserName, 255, L"%hs", &str);
 					EndDialog(hDlg, TRUE );
 					return TRUE;
 				}

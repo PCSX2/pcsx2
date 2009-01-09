@@ -24,8 +24,12 @@
 #ifndef __IMMI_H__
 #define __IMMI_H__
 
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec { 
+namespace R5900 { 
+namespace OpcodeImpl
 {
+	void recMMI_Unknown();
+
 	void recMADD();
 	void recMADDU();
 	void recPLZCW();
@@ -134,5 +138,4 @@ namespace EE { namespace Dynarec { namespace OpcodeImpl
 } } }
 
 #endif
-
 

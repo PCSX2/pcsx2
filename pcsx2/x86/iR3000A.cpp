@@ -42,10 +42,16 @@
 
 #include "SamplProf.h"
 
-u32 g_psxMaxRecMem = 0;
-extern const char *disRNameGPR[];
+using namespace R3000a;
 extern char* disR3000Fasm(u32 code, u32 pc);
 
+extern u32 g_psxNextBranchCycle;
+extern void psxBREAK();
+
+namespace Dynarec
+{
+
+u32 g_psxMaxRecMem = 0;
 u32 s_psxrecblocks[] = {0};
 
 //Using assembly code from an external file.
@@ -689,7 +695,6 @@ static __forceinline void R3000AExecute()
 	}
 }
 
-extern u32 g_psxNextBranchCycle;
 u32 g_psxlastpc = 0;
 
 #if defined(_MSC_VER)
@@ -1006,8 +1011,6 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 
 	j8Ptr[2] = JG8( 0 );	// jump if psxCycleEE > 0
 
-	if( REC_INC_STACK )
-        ADD64ItoR(ESP, REC_INC_STACK);
 	RET2();		// returns control to the EE
 
 	// Continue onward with branching here:
@@ -1066,7 +1069,6 @@ void rpsxSYSCALL()
 	//if (!psxbranch) psxbranch = 2;
 }
 
-void psxBREAK();
 void rpsxBREAK()
 {
 	MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
@@ -1554,6 +1556,9 @@ StartRecomp:
         assert( s_pCurBlock->pFnptr != 0 );
 }
 
+}
+
+using namespace Dynarec;
 R3000Acpu psxRec = {
 	recInit,
 	recReset,

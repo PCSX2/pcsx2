@@ -21,6 +21,10 @@
 #include "PrecompiledHeader.h"
 
 #include <float.h>
+#include <vector>
+#include <list>
+#include <map>
+#include <algorithm>
 
 #ifndef _WIN32
 #include <sys/types.h>
@@ -37,29 +41,23 @@
 #include "iVUzerorec.h"
 #include "SamplProf.h"
 
-// temporary externs
-extern u32 vudump;
-extern void iDumpVU0Registers();
-extern void iDumpVU1Registers();
-
-extern char* disVU1MicroUF(u32 code, u32 pc);
-extern char* disVU1MicroLF(u32 code, u32 pc);
-
-#ifdef __LINUX__
-#undef max
-#undef min
-#endif
-
-#include <vector>
-#include <list>
-#include <map>
-#include <algorithm>
-using namespace std;
-
 #ifdef _WIN32
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)
 #endif
+
+using namespace std;
+
+using namespace R5900;
+using namespace Dynarec::R5900;
+
+namespace Dynarec
+{
+
+// temporary externs
+extern u32 vudump;
+extern void iDumpVU0Registers();
+extern void iDumpVU1Registers();
 
 // SuperVURec optimization options, uncomment only for debugging purposes
 #define SUPERVU_CACHING			// vu programs are saved and queried via memcompare (should be no reason to disable this)
@@ -94,7 +92,7 @@ static u32 s_vuInfo; // info passed into rec insts
 static const u32 s_MemSize[2] = {VU0_MEMSIZE, VU1_MEMSIZE};
 static u8* s_recVUMem = NULL, *s_recVUPtr = NULL;
 
-// tables
+// tables which are defined at the bottom of this massive file.
 extern void (*recVU_UPPER_OPCODE[64])( VURegs* VU, s32 info );
 extern void (*recVU_LOWER_OPCODE[128])( VURegs* VU, s32 info );
 
@@ -2263,8 +2261,6 @@ static int s_needFlush; // first bit - Q, second bit - P, third bit - Q has been
 static int s_JumpX86;
 static int s_ScheduleXGKICK = 0, s_XGKICKReg = -1;
 
-extern u32 g_sseVUMXCSR, g_sseMXCSR;
-
 void recVUMI_XGKICK_( VURegs *VU );
 
 void SuperVUCleanupProgram(u32 startpc, int vuindex)
@@ -4137,4 +4133,6 @@ void recVULowerOP_T3_11( VURegs* VU, s32 info )
 void recVUunknown( VURegs* VU, s32 info )
 { 
 	SysPrintf("Unknown SVU micromode opcode called\n"); 
+}
+
 }

@@ -59,6 +59,9 @@ BIOS
 #include "GS.h"
 #include "vtlb.h"
 
+using namespace Dynarec;
+using namespace Dynarec::R5900;
+
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif
@@ -2721,13 +2724,13 @@ void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 
 	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 
-	ssprintf(Bios1, "%S.%s", params &Bios, ext);
+	ssprintf(Bios1, "%hs.%s", params &Bios, ext);
 	if( (filesize=Path::isFile( Bios1 ) ) <= 0 )
 	{
 		Path::ReplaceExtension( Bios1, Bios, ext );
 		if( (filesize=Path::isFile( Bios1 ) ) <= 0 )
 		{
-			// And this check is... well I'm not sure whf this check is trying to accomplish! (air)
+			// And this check is... well I'm not sure wtf this check is trying to accomplish! (air)
 			ssprintf( Bios1, "%s%s.bin", params Config.BiosDir, ext );
 			if( (filesize=Path::isFile( Bios1 ) ) <= 0 )
 			{

@@ -45,16 +45,49 @@
 
 #ifdef _WIN32
 #pragma warning(disable:4244)
-#pragma warning(disable:4761)
+//#pragma warning(disable:4761)
+#endif
+
+// used to disable register freezing during cpuBranchTests (registers
+// are safe then since they've been completely flushed)
+bool g_EEFreezeRegs = false;
+
+namespace Dynarec
+{
+
+extern void recCOP22( void );
+
+namespace R5900
+{
+
+// I can't find where the Linux recRecompile is defined.  Is it used anymore?
+// If so, namespacing might break it. :/  (air)
+#ifdef __LINUX__
+extern "C" {
+#endif
+void recRecompile( u32 startpc );
+#ifdef __LINUX__
+}
 #endif
 
 u32 maxrecmem = 0;
 uptr *recLUT = NULL;
 
-#define X86
-#define RECSTACK_SIZE 0x00010000
+u32 s_nBlockCycles = 0; // cycles of current block recompiling
+u8* dyna_block_discard_recmem=0;
 
-#define EE_NUMBLOCKS (1<<15)
+u32 pc;			         // recompiler pc
+int branch;		         // set for branch
+
+u32 s_saveConstGPRreg = 0;
+GPR_reg64 s_ConstGPRreg;
+
+////////////////////////////////////////////////////////////////
+// Static Private Variables - R5900 Dynarec
+
+#define X86
+static const int RECSTACK_SIZE = 0x00010000;
+static const int EE_NUMBLOCKS = (1<<15);
 
 static u8 *recMem = NULL;			// the recompiled blocks will be here
 static u8* recStack = NULL;			// stack mem
@@ -66,10 +99,6 @@ static u8* recPtr = NULL, *recStackPtr = NULL;
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
-// used to disable register freezing during cpuBranchTests (registers
-// are safe then since they've been completely flushed)
-bool g_EEFreezeRegs = false;
-
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
 static BASEBLOCK* s_pDispatchBlock = NULL;
@@ -80,47 +109,27 @@ static u32 s_nNextBlock = 0; // next free block in recBlocks
 
 // save states for branches
 static u16 s_savex86FpuState, s_saveiCWstate;
-static GPR_reg64 s_ConstGPRreg;
-static u32 s_saveConstGPRreg = 0, s_saveHasConstReg = 0, s_saveFlushedConstReg = 0, s_saveRegHasLive1 = 0, s_saveRegHasSignExt = 0;
+static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0, s_saveRegHasLive1 = 0, s_saveRegHasSignExt = 0;
 static EEINST* s_psaveInstInfo = NULL;
-
-u32 s_nBlockCycles = 0; // cycles of current block recompiling
 
 static u32 s_savenBlockCycles = 0;
 
-void recCOP2RecompileInst();
-int recCOP2AnalyzeBlock(u32 startpc, u32 endpc);
-void recCOP2EndBlock(void);
-u8* dyna_block_discard_recmem=0;
-
 #ifdef _DEBUG
-u32 dumplog = 0;
+static u32 dumplog = 0;
 #else
 #define dumplog 0
 #endif
 
-u32 pc;			         // recompiler pc
-int branch;		         // set for branch
-
-//#ifdef PCSX2_DEVBUILD
-LARGE_INTEGER lbase = {0}, lfinal = {0};
-//static u32 s_startcount = 0;
-//#endif
-
+#ifdef PCSX2_DEVBUILD
+// and not sure what these might have once been used for... (air)
 static const char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
 static const char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %x : EDI = %x\n";
 static const char *txt1 = "REG[%d] = %x_%x\n";
 static const char *txt2 = "M32 = %x\n";
+#endif
 
 static void iBranchTest(u32 newpc, u32 cpuBranch);
-void recCOP22( void );
-#ifdef __LINUX__
-extern "C" {
-#endif
-void recRecompile( u32 startpc );
-#ifdef __LINUX__
-}
-#endif
+
 BASEBLOCKEX* PC_GETBLOCKEX(BASEBLOCK* p)
 {
 //	BASEBLOCKEX* pex = *(BASEBLOCKEX**)(p+1);
@@ -138,7 +147,6 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	char filename[ g_MaxPath ];
 	u32 i, j;
 	EEINST* pcur;
-	extern const char *disRNameGPR[];
 	u8 used[34];
 	u8 fpuused[33];
 	int numused, count, fpunumused;
@@ -235,7 +243,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	fclose( f );
 }
 
-u8 _eeLoadWritesRs(u32 tempcode)
+static u8 _eeLoadWritesRs(u32 tempcode)
 {
 	switch(tempcode>>26) {
 		case 26: // ldl
@@ -248,7 +256,7 @@ u8 _eeLoadWritesRs(u32 tempcode)
 	return 0;
 }
 
-u8 _eeIsLoadStoreCoIssue(u32 firstcode, u32 secondcode)
+static u8 _eeIsLoadStoreCoIssue(u32 firstcode, u32 secondcode)
 {
 	switch(firstcode>>26) {
 		case 34: // lwl
@@ -287,7 +295,7 @@ u8 _eeIsLoadStoreCoIssue(u32 firstcode, u32 secondcode)
 	return 0;
 }
 
-u8 _eeIsLoadStoreCoX(u32 tempcode)
+static u8 _eeIsLoadStoreCoX(u32 tempcode)
 {
 	switch( tempcode>>26 ) {
 		case 30: case 31: case 49: case 57: case 55: case 63:
@@ -397,63 +405,6 @@ int _flushUnusedConstReg()
 	return 0;
 }
 
-void _flushCachedRegs()
-{
-	_flushConstRegs();
-	_flushMMXregs();
-	_flushXMMregs();
-}
-
-void _flushConstReg(int reg)
-{
-	if( GPR_IS_CONST1( reg ) && !(g_cpuFlushedConstReg&(1<<reg)) ) {
-		MOV32ItoM((int)&cpuRegs.GPR.r[reg].UL[0], g_cpuConstRegs[reg].UL[0]);
-		MOV32ItoM((int)&cpuRegs.GPR.r[reg].UL[1], g_cpuConstRegs[reg].UL[1]);
-		g_cpuFlushedConstReg |= (1<<reg);
-	}
-}
-
-void _flushConstRegs()
-{
-	int i;
-
-	// flush constants
-
-	// ignore r0
-	for(i = 1; i < 32; ++i) {
-		if( g_cpuHasConstReg & (1<<i) ) {
-			
-			if( !(g_cpuFlushedConstReg&(1<<i)) ) {
-				MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
-				MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
-				g_cpuFlushedConstReg |= 1<<i;
-			}
-#if defined(_DEBUG)&&0
-			else {
-				// make sure the const regs are the same
-				u8* ptemp[3];
-				CMP32ItoM((u32)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
-				ptemp[0] = JNE8(0);
-				if( EEINST_ISLIVE1(i) ) {
-					CMP32ItoM((u32)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
-					ptemp[1] = JNE8(0);
-				}
-				ptemp[2] = JMP8(0);
-
-				x86SetJ8( ptemp[0] );
-				if( EEINST_ISLIVE1(i) ) x86SetJ8( ptemp[1] );
-				CALLFunc((uptr)checkconstreg);
-
-				x86SetJ8( ptemp[2] );
-			}
-#else
-			if( g_cpuHasConstReg == g_cpuFlushedConstReg )
-				break;
-#endif
-		}
-	}
-}
-
 u32* recAllocStackMem(int size, int align)
 {
 	// write to a temp loc, trick
@@ -462,1019 +413,9 @@ u32* recAllocStackMem(int size, int align)
 	return (u32*)(recStackPtr-size);
 }
 
-////////////////////
-// Code Templates //
-////////////////////
 
-void CHECK_SAVE_REG(int reg)
-{
-	if( s_saveConstGPRreg == 0xffffffff ) {
-		if( GPR_IS_CONST1(reg) ) {
-			s_saveConstGPRreg = reg;
-			s_ConstGPRreg = g_cpuConstRegs[reg];
-		}
-	}
-	else {
-		assert( s_saveConstGPRreg == 0 || s_saveConstGPRreg == reg );
-	}
-}
-
-void _eeProcessHasLive(int reg, int signext)
-{
-	g_cpuPrevRegHasLive1 = g_cpuRegHasLive1;
-	g_cpuRegHasLive1 |= 1<<reg;
-
-	g_cpuPrevRegHasSignExt = g_cpuRegHasSignExt;
-
-	if( signext ) {
-		EEINST_SETSIGNEXT(reg);
-	}
-	else {
-		EEINST_RESETSIGNEXT(reg);
-	}
-}
-
-void _eeOnWriteReg(int reg, int signext)
-{
-	CHECK_SAVE_REG(reg);
-	GPR_DEL_CONST(reg);
-	_eeProcessHasLive(reg, signext);
-}
-
-void _deleteEEreg(int reg, int flush)
-{
-	if( !reg ) return;
-	if( flush && GPR_IS_CONST1(reg) ) {
-		_flushConstReg(reg);
-		return;
-	}
-	GPR_DEL_CONST(reg);
-	_deleteGPRtoXMMreg(reg, flush ? 0 : 2);
-	_deleteMMXreg(MMX_GPR+reg, flush ? 0 : 2);
-}
-
-// if not mmx, then xmm
-int eeProcessHILO(int reg, int mode, int mmx)
-{
-    int usemmx = mmx && _hasFreeMMXreg();
-	if( (usemmx || _hasFreeXMMreg()) || !(g_pCurInstInfo->regs[reg]&EEINST_LASTUSE) ) {
-		if( usemmx ) return _allocMMXreg(-1, MMX_GPR+reg, mode);
-		return _allocGPRtoXMMreg(-1, reg, mode);
-	}
-
-	return -1;
-}
-
-#define PROCESS_EE_SETMODES(mmreg) ((mmxregs[mmreg].mode&MODE_WRITE)?PROCESS_EE_MODEWRITES:0)
-#define PROCESS_EE_SETMODET(mmreg) ((mmxregs[mmreg].mode&MODE_WRITE)?PROCESS_EE_MODEWRITET:0)
-
-// ignores XMMINFO_READS, XMMINFO_READT, and XMMINFO_READD_LO from xmminfo
-// core of reg caching
-void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode, int xmminfo)
-{
-	int mmreg1, mmreg2, mmreg3, mmtemp, moded;
-
-	if ( ! _Rd_ && (xmminfo&XMMINFO_WRITED) ) return;
-
-	if( xmminfo&XMMINFO_WRITED) {
-		CHECK_SAVE_REG(_Rd_);
-		_eeProcessHasLive(_Rd_, 0);
-		EEINST_RESETSIGNEXT(_Rd_);
-	}
-
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
-		if( xmminfo & XMMINFO_WRITED ) {
-			_deleteMMXreg(MMX_GPR+_Rd_, 2);
-			_deleteGPRtoXMMreg(_Rd_, 2);
-		}
-		if( xmminfo&XMMINFO_WRITED ) GPR_SET_CONST(_Rd_);
-		constcode();
-		return;
-	}
-
-	moded = MODE_WRITE|((xmminfo&XMMINFO_READD)?MODE_READ:0);
-
-	// test if should write mmx
-	if( g_pCurInstInfo->info & EEINST_MMX ) {
-
-		if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) _addNeededMMXreg(MMX_GPR+MMX_LO);
-		if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) _addNeededMMXreg(MMX_GPR+MMX_HI);
-		_addNeededMMXreg(MMX_GPR+_Rs_);
-		_addNeededMMXreg(MMX_GPR+_Rt_);
-
-		if( GPR_IS_CONST1(_Rs_) || GPR_IS_CONST1(_Rt_) ) {
-			int creg = GPR_IS_CONST1(_Rs_) ? _Rs_ : _Rt_;
-			int vreg = creg == _Rs_ ? _Rt_ : _Rs_;
-
-//			if(g_pCurInstInfo->regs[vreg]&EEINST_MMX) {
-//				mmreg1 = _allocMMXreg(-1, MMX_GPR+vreg, MODE_READ);
-//				_addNeededMMXreg(MMX_GPR+vreg);
-//			}
-			mmreg1 = _allocCheckGPRtoMMX(g_pCurInstInfo, vreg, MODE_READ);
-
-			if( mmreg1 >= 0 ) {
-				int info = PROCESS_EE_MMX;
-				
-				if( GPR_IS_CONST1(_Rs_) ) info |= PROCESS_EE_SETMODET(mmreg1);
-				else info |= PROCESS_EE_SETMODES(mmreg1);
-
-				if( xmminfo & XMMINFO_WRITED ) {
-					_addNeededMMXreg(MMX_GPR+_Rd_);
-					mmreg3 = _checkMMXreg(MMX_GPR+_Rd_, moded);
-
-					if( !(xmminfo&XMMINFO_READD) && mmreg3 < 0 && ((g_pCurInstInfo->regs[vreg] & EEINST_LASTUSE) || !EEINST_ISLIVE64(vreg)) ) {
-						if( EEINST_ISLIVE64(vreg) ) {
-							_freeMMXreg(mmreg1);
-							if( GPR_IS_CONST1(_Rs_) ) info &= ~PROCESS_EE_MODEWRITET;
-							else info &= ~PROCESS_EE_MODEWRITES;
-						}
-						_deleteGPRtoXMMreg(_Rd_, 2);
-						mmxregs[mmreg1].inuse = 1;
-						mmxregs[mmreg1].reg = _Rd_;
-						mmxregs[mmreg1].mode = moded;
-						mmreg3 = mmreg1;
-					}
-					else if( mmreg3 < 0 ) mmreg3 = _allocMMXreg(-1, MMX_GPR+_Rd_, moded);
-
-					info |= PROCESS_EE_SET_D(mmreg3);
-				}
-
-				if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
-					mmtemp = eeProcessHILO(MMX_LO, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 1);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_LO(mmtemp);
-				}
-				if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
-					mmtemp = eeProcessHILO(MMX_HI, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 1);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_HI(mmtemp);
-				}
-
-				SetMMXstate();
-				if( creg == _Rs_ ) constscode(info|PROCESS_EE_SET_T(mmreg1));
-				else consttcode(info|PROCESS_EE_SET_S(mmreg1));
-				_clearNeededMMXregs();
-				if( xmminfo & XMMINFO_WRITED ) GPR_DEL_CONST(_Rd_);
-				return;
-			}
-		}
-		else {
-			// no const regs
-			mmreg1 = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rs_, MODE_READ);
-			mmreg2 = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rt_, MODE_READ);
-
-			if( mmreg1 >= 0 || mmreg2 >= 0 ) {
-				int info = PROCESS_EE_MMX;
-
-				// do it all in mmx
-				if( mmreg1 < 0 ) mmreg1 = _allocMMXreg(-1, MMX_GPR+_Rs_, MODE_READ);
-				if( mmreg2 < 0 ) mmreg2 = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_READ);
-
-				info |= PROCESS_EE_SETMODES(mmreg1)|PROCESS_EE_SETMODET(mmreg2);
-
-				// check for last used, if so don't alloc a new MMX reg
-				if( xmminfo & XMMINFO_WRITED ) {
-					_addNeededMMXreg(MMX_GPR+_Rd_);
-					mmreg3 = _checkMMXreg(MMX_GPR+_Rd_, moded);
-
-					if( mmreg3 < 0 ) {
-						if( !(xmminfo&XMMINFO_READD) && ((g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVE64(_Rt_)) ) {
-							if( EEINST_ISLIVE64(_Rt_) ) {
-								_freeMMXreg(mmreg2);
-								info &= ~PROCESS_EE_MODEWRITET;
-							}
-							_deleteGPRtoXMMreg(_Rd_, 2);
-							mmxregs[mmreg2].inuse = 1;
-							mmxregs[mmreg2].reg = _Rd_;
-							mmxregs[mmreg2].mode = moded;
-							mmreg3 = mmreg2;
-						}
-						else if( !(xmminfo&XMMINFO_READD) && ((g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVE64(_Rs_)) ) {
-							if( EEINST_ISLIVE64(_Rs_) ) {
-								_freeMMXreg(mmreg1);
-								info &= ~PROCESS_EE_MODEWRITES;
-							}
-							_deleteGPRtoXMMreg(_Rd_, 2);
-							mmxregs[mmreg1].inuse = 1;
-							mmxregs[mmreg1].reg = _Rd_;
-							mmxregs[mmreg1].mode = moded;
-							mmreg3 = mmreg1;
-						}
-						else mmreg3 = _allocMMXreg(-1, MMX_GPR+_Rd_, moded);
-					}
-
-					info |= PROCESS_EE_SET_D(mmreg3);
-				}
-
-				if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
-					mmtemp = eeProcessHILO(MMX_LO, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 1);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_LO(mmtemp);
-				}
-				if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
-					mmtemp = eeProcessHILO(MMX_HI, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 1);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_HI(mmtemp);
-				}
-
-				SetMMXstate();
-				noconstcode(info|PROCESS_EE_SET_S(mmreg1)|PROCESS_EE_SET_T(mmreg2));
-				_clearNeededMMXregs();
-				if( xmminfo & XMMINFO_WRITED ) GPR_DEL_CONST(_Rd_);
-				return;
-			}
-		}
-
-		_clearNeededMMXregs();
-	}
-
-	// test if should write xmm, mirror to mmx code
-	if( g_pCurInstInfo->info & EEINST_XMM ) {
-
-		if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) _addNeededGPRtoXMMreg(XMMGPR_LO);
-		if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) _addNeededGPRtoXMMreg(XMMGPR_HI);
-		_addNeededGPRtoXMMreg(_Rs_);
-		_addNeededGPRtoXMMreg(_Rt_);
-
-		if( GPR_IS_CONST1(_Rs_) || GPR_IS_CONST1(_Rt_) ) {
-			int creg = GPR_IS_CONST1(_Rs_) ? _Rs_ : _Rt_;
-			int vreg = creg == _Rs_ ? _Rt_ : _Rs_;
-
-//			if(g_pCurInstInfo->regs[vreg]&EEINST_XMM) {
-//				mmreg1 = _allocGPRtoXMMreg(-1, vreg, MODE_READ);
-//				_addNeededGPRtoXMMreg(vreg);
-//			}
-			mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, vreg, MODE_READ);
-
-			if( mmreg1 >= 0 ) {
-				int info = PROCESS_EE_XMM;
-
-				if( GPR_IS_CONST1(_Rs_) ) info |= PROCESS_EE_SETMODET(mmreg1);
-				else info |= PROCESS_EE_SETMODES(mmreg1);
-
-				if( xmminfo & XMMINFO_WRITED ) {
-
-					_addNeededGPRtoXMMreg(_Rd_);
-					mmreg3 = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
-
-					if( !(xmminfo&XMMINFO_READD) && mmreg3 < 0 && ((g_pCurInstInfo->regs[vreg] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(vreg)) ) {
-						_freeXMMreg(mmreg1);
-						if( GPR_IS_CONST1(_Rs_) ) info &= ~PROCESS_EE_MODEWRITET;
-						else info &= ~PROCESS_EE_MODEWRITES;
-						_deleteMMXreg(MMX_GPR+_Rd_, 2);
-						xmmregs[mmreg1].inuse = 1;
-						xmmregs[mmreg1].reg = _Rd_;
-						xmmregs[mmreg1].mode = moded;
-						mmreg3 = mmreg1;
-					}
-					else if( mmreg3 < 0 ) mmreg3 = _allocGPRtoXMMreg(-1, _Rd_, moded);
-
-					info |= PROCESS_EE_SET_D(mmreg3);
-				}
-
-				if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
-					mmtemp = eeProcessHILO(XMMGPR_LO, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 0);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_LO(mmtemp);
-				}
-				if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
-					mmtemp = eeProcessHILO(XMMGPR_HI, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 0);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_HI(mmtemp);
-				}
-
-				if( creg == _Rs_ ) constscode(info|PROCESS_EE_SET_T(mmreg1));
-				else consttcode(info|PROCESS_EE_SET_S(mmreg1));
-				_clearNeededXMMregs();
-				if( xmminfo & XMMINFO_WRITED ) GPR_DEL_CONST(_Rd_);
-				return;
-			}
-		}
-		else {
-			// no const regs
-			mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
-			mmreg2 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
-
-			if( mmreg1 >= 0 || mmreg2 >= 0 ) {
-				int info = PROCESS_EE_XMM;
-
-				// do it all in xmm
-				if( mmreg1 < 0 ) mmreg1 = _allocGPRtoXMMreg(-1, _Rs_, MODE_READ);
-				if( mmreg2 < 0 ) mmreg2 = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
-
-				info |= PROCESS_EE_SETMODES(mmreg1)|PROCESS_EE_SETMODET(mmreg2);
-
-				if( xmminfo & XMMINFO_WRITED ) {
-					// check for last used, if so don't alloc a new XMM reg
-					_addNeededGPRtoXMMreg(_Rd_);
-					mmreg3 = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, moded);
-
-					if( mmreg3 < 0 ) {
-						if( !(xmminfo&XMMINFO_READD) && ((g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_)) ) {
-							_freeXMMreg(mmreg2);
-							info &= ~PROCESS_EE_MODEWRITET;
-							_deleteMMXreg(MMX_GPR+_Rd_, 2);
-							xmmregs[mmreg2].inuse = 1;
-							xmmregs[mmreg2].reg = _Rd_;
-							xmmregs[mmreg2].mode = moded;
-							mmreg3 = mmreg2;
-						}
-						else if( !(xmminfo&XMMINFO_READD) && ((g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_)) ) {
-							_freeXMMreg(mmreg1);
-							info &= ~PROCESS_EE_MODEWRITES;
-							_deleteMMXreg(MMX_GPR+_Rd_, 2);
-							xmmregs[mmreg1].inuse = 1;
-							xmmregs[mmreg1].reg = _Rd_;
-							xmmregs[mmreg1].mode = moded;
-							mmreg3 = mmreg1;
-						}
-						else mmreg3 = _allocGPRtoXMMreg(-1, _Rd_, moded);
-					}
-
-					info |= PROCESS_EE_SET_D(mmreg3);
-				}
-
-				if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
-					mmtemp = eeProcessHILO(XMMGPR_LO, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 0);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_LO(mmtemp);
-				}
-				if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
-					mmtemp = eeProcessHILO(XMMGPR_HI, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0), 0);
-					if( mmtemp >= 0 ) info |= PROCESS_EE_SET_HI(mmtemp);
-				}
-
-				noconstcode(info|PROCESS_EE_SET_S(mmreg1)|PROCESS_EE_SET_T(mmreg2));
-				_clearNeededXMMregs();
-				if( xmminfo & XMMINFO_WRITED ) GPR_DEL_CONST(_Rd_);
-				return;
-			}
-		}
-
-		_clearNeededXMMregs();
-	}
-
-	// regular x86
-	_deleteGPRtoXMMreg(_Rs_, 1);
-	_deleteGPRtoXMMreg(_Rt_, 1);
-	if( xmminfo&XMMINFO_WRITED )
-		_deleteGPRtoXMMreg(_Rd_, (xmminfo&XMMINFO_READD)?0:2);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
-	if( xmminfo&XMMINFO_WRITED )
-		_deleteMMXreg(MMX_GPR+_Rd_, (xmminfo&XMMINFO_READD)?0:2);
-
-	// don't delete, fn will take care of them
-//	if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
-//		_deleteGPRtoXMMreg(XMMGPR_LO, (xmminfo&XMMINFO_READLO)?1:0);
-//		_deleteMMXreg(MMX_GPR+MMX_LO, (xmminfo&XMMINFO_READLO)?1:0);
-//	}
-//	if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
-//		_deleteGPRtoXMMreg(XMMGPR_HI, (xmminfo&XMMINFO_READHI)?1:0);
-//		_deleteMMXreg(MMX_GPR+MMX_HI, (xmminfo&XMMINFO_READHI)?1:0);
-//	}
-
-	if( GPR_IS_CONST1(_Rs_) ) {
-		constscode(0);
-		if( xmminfo&XMMINFO_WRITED ) GPR_DEL_CONST(_Rd_);
-		return;
-	}
-
-	if( GPR_IS_CONST1(_Rt_) ) {
-		consttcode(0);
-		if( xmminfo&XMMINFO_WRITED ) GPR_DEL_CONST(_Rd_);
-		return;
-	}
-
-	noconstcode(0);
-	if( xmminfo&XMMINFO_WRITED ) GPR_DEL_CONST(_Rd_);
-}
-
-// rt = rs op imm16
-void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
-{
-	int mmreg1, mmreg2;
-	if ( ! _Rt_ ) return;
-
-	CHECK_SAVE_REG(_Rt_);
-	_eeProcessHasLive(_Rt_, 0);
-	EEINST_RESETSIGNEXT(_Rt_);
-
-	if( GPR_IS_CONST1(_Rs_) ) {
-		_deleteMMXreg(MMX_GPR+_Rt_, 2);
-		_deleteGPRtoXMMreg(_Rt_, 2);
-		GPR_SET_CONST(_Rt_);
-		constcode();
-		return;
-	}
-
-	// test if should write mmx
-	if( g_pCurInstInfo->info & EEINST_MMX ) {
-
-		// no const regs
-		mmreg1 = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rs_, MODE_READ);
-
-		if( mmreg1 >= 0 ) {
-			int info = PROCESS_EE_MMX|PROCESS_EE_SETMODES(mmreg1);
-
-			// check for last used, if so don't alloc a new MMX reg
-			_addNeededMMXreg(MMX_GPR+_Rt_);
-			mmreg2 = _checkMMXreg(MMX_GPR+_Rt_, MODE_WRITE);
-
-			if( mmreg2 < 0 ) {
-				if( (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVE64(_Rs_) ) {
-					if( EEINST_ISLIVE64(_Rs_) ) {
-						_freeMMXreg(mmreg1);
-						info &= ~PROCESS_EE_MODEWRITES;
-					}
-					_deleteGPRtoXMMreg(_Rt_, 2);
-					mmxregs[mmreg1].inuse = 1;
-					mmxregs[mmreg1].reg = _Rt_;
-					mmxregs[mmreg1].mode = MODE_WRITE|MODE_READ;
-					mmreg2 = mmreg1;
-				}
-				else mmreg2 = _allocMMXreg(-1, MMX_GPR+_Rt_, MODE_WRITE);
-			}
-
-			SetMMXstate();
-			noconstcode(info|PROCESS_EE_SET_S(mmreg1)|PROCESS_EE_SET_T(mmreg2));
-			_clearNeededMMXregs();
-			GPR_DEL_CONST(_Rt_);
-			return;
-		}
-
-		_clearNeededMMXregs();
-	}
-
-	// test if should write xmm, mirror to mmx code
-	if( g_pCurInstInfo->info & EEINST_XMM ) {
-
-		// no const regs
-		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
-
-		if( mmreg1 >= 0 ) {
-			int info = PROCESS_EE_XMM|PROCESS_EE_SETMODES(mmreg1);
-
-			// check for last used, if so don't alloc a new XMM reg
-			_addNeededGPRtoXMMreg(_Rt_);
-			mmreg2 = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_WRITE);
-
-			if( mmreg2 < 0 ) {
-				if( (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_) ) {
-					_freeXMMreg(mmreg1);
-					info &= ~PROCESS_EE_MODEWRITES;
-					_deleteMMXreg(MMX_GPR+_Rt_, 2);
-					xmmregs[mmreg1].inuse = 1;
-					xmmregs[mmreg1].reg = _Rt_;
-					xmmregs[mmreg1].mode = MODE_WRITE|MODE_READ;
-					mmreg2 = mmreg1;
-				}
-				else mmreg2 = _allocGPRtoXMMreg(-1, _Rt_, MODE_WRITE);
-			}
-
-			noconstcode(info|PROCESS_EE_SET_S(mmreg1)|PROCESS_EE_SET_T(mmreg2));
-			_clearNeededXMMregs();
-			GPR_DEL_CONST(_Rt_);
-			return;
-		}
-
-		_clearNeededXMMregs();
-	}
-
-	// regular x86
-	_deleteGPRtoXMMreg(_Rs_, 1);
-	_deleteGPRtoXMMreg(_Rt_, 2);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 2);
-
-	noconstcode(0);
-	GPR_DEL_CONST(_Rt_);
-}
-
-// rd = rt op sa
-void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
-{
-	int mmreg1, mmreg2;
-	if ( ! _Rd_ ) return;
-
-	CHECK_SAVE_REG(_Rd_);
-	_eeProcessHasLive(_Rd_, 0);
-	EEINST_RESETSIGNEXT(_Rd_);
-
-	if( GPR_IS_CONST1(_Rt_) ) {
-		_deleteMMXreg(MMX_GPR+_Rd_, 2);
-		_deleteGPRtoXMMreg(_Rd_, 2);
-		GPR_SET_CONST(_Rd_);
-		constcode();
-		return;
-	}
-
-	// test if should write mmx
-	if( g_pCurInstInfo->info & EEINST_MMX ) {
-
-		// no const regs
-		mmreg1 = _allocCheckGPRtoMMX(g_pCurInstInfo, _Rt_, MODE_READ);
-
-		if( mmreg1 >= 0 ) {
-			int info = PROCESS_EE_MMX|PROCESS_EE_SETMODET(mmreg1);
-
-			// check for last used, if so don't alloc a new MMX reg
-			_addNeededMMXreg(MMX_GPR+_Rd_);
-			mmreg2 = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE);
-
-			if( mmreg2 < 0 ) {
-				if( (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVE64(_Rt_) ) {
-					if( EEINST_ISLIVE64(_Rt_) ) {
-						_freeMMXreg(mmreg1);
-						info &= ~PROCESS_EE_MODEWRITET;
-					}
-					_deleteGPRtoXMMreg(_Rd_, 2);
-					mmxregs[mmreg1].inuse = 1;
-					mmxregs[mmreg1].reg = _Rd_;
-					mmxregs[mmreg1].mode = MODE_WRITE|MODE_READ;
-					mmreg2 = mmreg1;
-				}
-				else mmreg2 = _allocMMXreg(-1, MMX_GPR+_Rd_, MODE_WRITE);
-			}
-
-			SetMMXstate();
-			noconstcode(info|PROCESS_EE_SET_T(mmreg1)|PROCESS_EE_SET_D(mmreg2));
-			_clearNeededMMXregs();
-			GPR_DEL_CONST(_Rd_);
-			return;
-		}
-
-		_clearNeededMMXregs();
-	}
-
-	// test if should write xmm, mirror to mmx code
-	if( g_pCurInstInfo->info & EEINST_XMM ) {
-
-		// no const regs
-		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
-
-		if( mmreg1 >= 0 ) {
-			int info = PROCESS_EE_XMM|PROCESS_EE_SETMODET(mmreg1);
-
-			// check for last used, if so don't alloc a new XMM reg
-			_addNeededGPRtoXMMreg(_Rd_);
-			mmreg2 = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
-
-			if( mmreg2 < 0 ) {
-				if( (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVE64(_Rt_) ) {
-					_freeXMMreg(mmreg1);
-					info &= ~PROCESS_EE_MODEWRITET;
-					_deleteMMXreg(MMX_GPR+_Rd_, 2);
-					xmmregs[mmreg1].inuse = 1;
-					xmmregs[mmreg1].reg = _Rd_;
-					xmmregs[mmreg1].mode = MODE_WRITE|MODE_READ;
-					mmreg2 = mmreg1;
-				}
-				else mmreg2 = _allocGPRtoXMMreg(-1, _Rd_, MODE_WRITE);
-			}
-
-			noconstcode(info|PROCESS_EE_SET_T(mmreg1)|PROCESS_EE_SET_D(mmreg2));
-			_clearNeededXMMregs();
-			GPR_DEL_CONST(_Rd_);
-			return;
-		}
-
-		_clearNeededXMMregs();
-	}
-
-	// regular x86
-	_deleteGPRtoXMMreg(_Rt_, 1);
-	_deleteGPRtoXMMreg(_Rd_, 2);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rd_, 2);
-
-	noconstcode(0);
-	GPR_DEL_CONST(_Rd_);
-}
-
-// rt op rs 
-void eeRecompileCode3(R5900FNPTR constcode, R5900FNPTR_INFO multicode)
-{
-	assert(0);
-	// for now, don't support xmm
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
-
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
-		constcode();
-		return;
-	}
-
-	if( GPR_IS_CONST1(_Rs_) ) {
-		//multicode(PROCESS_EE_CONSTT);
-		return;
-	}
-
-	if( GPR_IS_CONST1(_Rt_) ) {
-		//multicode(PROCESS_EE_CONSTT);
-		return;
-	}
-
-	multicode(0);
-}
-
-// Simple Code Templates //
-
-// rd = rs op rt
-void eeRecompileCodeConst0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode)
-{
-	if ( ! _Rd_ ) return;
-
-	// for now, don't support xmm
-	CHECK_SAVE_REG(_Rd_);
-
-	_deleteGPRtoXMMreg(_Rs_, 1);
-	_deleteGPRtoXMMreg(_Rt_, 1);
-	_deleteGPRtoXMMreg(_Rd_, 0);
-	_deleteMMXreg(MMX_GPR+_Rs_, 1);
-	_deleteMMXreg(MMX_GPR+_Rt_, 1);
-	_deleteMMXreg(MMX_GPR+_Rd_, 0);
-
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
-		GPR_SET_CONST(_Rd_);
-		constcode();
-		return;
-	}
-
-	if( GPR_IS_CONST1(_Rs_) ) {
-		constscode(0);
-		GPR_DEL_CONST(_Rd_);
-		return;
-	}
-
-	if( GPR_IS_CONST1(_Rt_) ) {
-		consttcode(0);
-		GPR_DEL_CONST(_Rd_);
-		return;
-	}
-
-	noconstcode(0);
-	GPR_DEL_CONST(_Rd_);
-}
-
-// rt = rs op imm16
-void eeRecompileCodeConst1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
-{
-    if ( ! _Rt_ )
-        return;
-
-	// for now, don't support xmm
-	CHECK_SAVE_REG(_Rt_);
-
-	_deleteGPRtoXMMreg(_Rs_, 1);
-	_deleteGPRtoXMMreg(_Rt_, 0);
-
-	if( GPR_IS_CONST1(_Rs_) ) {
-		GPR_SET_CONST(_Rt_);
-		constcode();
-		return;
-	}
-
-	noconstcode(0);
-	GPR_DEL_CONST(_Rt_);
-}
-
-// rd = rt op sa
-void eeRecompileCodeConst2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
-{
-	if ( ! _Rd_ ) return;
-
-	// for now, don't support xmm
-	CHECK_SAVE_REG(_Rd_);
-
-	_deleteGPRtoXMMreg(_Rt_, 1);
-	_deleteGPRtoXMMreg(_Rd_, 0);
-
-	if( GPR_IS_CONST1(_Rt_) ) {
-		GPR_SET_CONST(_Rd_);
-		constcode();
-		return;
-	}
-
-	noconstcode(0);
-	GPR_DEL_CONST(_Rd_);
-}
-
-// rd = rt MULT rs  (SPECIAL)
-void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode, int MULT)
-{
-	assert(0);
-	// for now, don't support xmm
-	if( MULT ) {
-		CHECK_SAVE_REG(_Rd_);
-		_deleteGPRtoXMMreg(_Rd_, 0);
-	}
-
-	_deleteGPRtoXMMreg(_Rs_, 1);
-	_deleteGPRtoXMMreg(_Rt_, 1);
-
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
-		if( MULT && _Rd_ ) GPR_SET_CONST(_Rd_);
-		constcode();
-		return;
-	}
-
-	if( GPR_IS_CONST1(_Rs_) ) {
-		//multicode(PROCESS_EE_CONSTS);
-		if( MULT && _Rd_ ) GPR_DEL_CONST(_Rd_);
-		return;
-	}
-
-	if( GPR_IS_CONST1(_Rt_) ) {
-		//multicode(PROCESS_EE_CONSTT);
-		if( MULT && _Rd_ ) GPR_DEL_CONST(_Rd_);
-		return;
-	}
-
-	multicode(0);
-	if( MULT && _Rd_ ) GPR_DEL_CONST(_Rd_);
-}
-
-// EE XMM allocation code
-int eeRecompileCodeXMM(int xmminfo)
-{
-	int info = PROCESS_EE_XMM;
-
-	// save state
-	if( xmminfo & XMMINFO_WRITED ) {
-		CHECK_SAVE_REG(_Rd_);
-		_eeProcessHasLive(_Rd_, 0);
-		EEINST_RESETSIGNEXT(_Rd_);
-	}
-
-	// flush consts
-	if( xmminfo & XMMINFO_READT ) {
-		if( GPR_IS_CONST1( _Rt_ ) && !(g_cpuFlushedConstReg&(1<<_Rt_)) ) {
-			MOV32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], g_cpuConstRegs[_Rt_].UL[0]);
-			MOV32ItoM((int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], g_cpuConstRegs[_Rt_].UL[1]);
-			g_cpuFlushedConstReg |= (1<<_Rt_);
-		}
-	}
-	if( xmminfo & XMMINFO_READS) {
-		if( GPR_IS_CONST1( _Rs_ ) && !(g_cpuFlushedConstReg&(1<<_Rs_)) ) {
-			MOV32ItoM((int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], g_cpuConstRegs[_Rs_].UL[0]);
-			MOV32ItoM((int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], g_cpuConstRegs[_Rs_].UL[1]);
-			g_cpuFlushedConstReg |= (1<<_Rs_);
-		}
-	}
-
-	if( xmminfo & XMMINFO_WRITED ) {
-		GPR_DEL_CONST(_Rd_);
-	}
-
-	// add needed
-	if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
-		_addNeededGPRtoXMMreg(XMMGPR_LO);
-	}
-	if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
-		_addNeededGPRtoXMMreg(XMMGPR_HI);
-	}
-	if( xmminfo & XMMINFO_READS) _addNeededGPRtoXMMreg(_Rs_);
-	if( xmminfo & XMMINFO_READT) _addNeededGPRtoXMMreg(_Rt_);
-	if( xmminfo & XMMINFO_WRITED ) _addNeededGPRtoXMMreg(_Rd_);
-
-	// allocate
-	if( xmminfo & XMMINFO_READS) {
-		int reg = _allocGPRtoXMMreg(-1, _Rs_, MODE_READ);
-		info |= PROCESS_EE_SET_S(reg)|PROCESS_EE_SETMODES(reg);
-	}
-	if( xmminfo & XMMINFO_READT) {
-		int reg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
-		info |= PROCESS_EE_SET_T(reg)|PROCESS_EE_SETMODET(reg);
-	}
-
-	if( xmminfo & XMMINFO_WRITED ) {
-		int readd = MODE_WRITE|((xmminfo&XMMINFO_READD)?((xmminfo&XMMINFO_READD_LO)?(MODE_READ|MODE_READHALF):MODE_READ):0);
-
-		int regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, readd);
-
-		if( regd < 0 ) {
-			if( !(xmminfo&XMMINFO_READD) && (xmminfo & XMMINFO_READT) && (_Rt_ == 0 || (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_)) ) {
-				_freeXMMreg(EEREC_T);
-				_deleteMMXreg(MMX_GPR+_Rd_, 2);
-				xmmregs[EEREC_T].inuse = 1;
-				xmmregs[EEREC_T].reg = _Rd_;
-				xmmregs[EEREC_T].mode = readd;
-				regd = EEREC_T;
-			}
-			else if( !(xmminfo&XMMINFO_READD) && (xmminfo & XMMINFO_READS) && (_Rs_ == 0 || (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_)) ) {
-				_freeXMMreg(EEREC_S);
-				_deleteMMXreg(MMX_GPR+_Rd_, 2);
-				xmmregs[EEREC_S].inuse = 1;
-				xmmregs[EEREC_S].reg = _Rd_;
-				xmmregs[EEREC_S].mode = readd;
-				regd = EEREC_S;
-			}
-			else regd = _allocGPRtoXMMreg(-1, _Rd_, readd);
-		}
-
-		info |= PROCESS_EE_SET_D(regd);
-	}
-	if( xmminfo & (XMMINFO_READLO|XMMINFO_WRITELO) ) {
-		info |= PROCESS_EE_SET_LO(_allocGPRtoXMMreg(-1, XMMGPR_LO, ((xmminfo&XMMINFO_READLO)?MODE_READ:0)|((xmminfo&XMMINFO_WRITELO)?MODE_WRITE:0)));
-		info |= PROCESS_EE_LO;
-	}
-	if( xmminfo & (XMMINFO_READHI|XMMINFO_WRITEHI) ) {
-		info |= PROCESS_EE_SET_HI(_allocGPRtoXMMreg(-1, XMMGPR_HI, ((xmminfo&XMMINFO_READHI)?MODE_READ:0)|((xmminfo&XMMINFO_WRITEHI)?MODE_WRITE:0)));
-		info |= PROCESS_EE_HI;
-	}
-	return info;
-}
-
-// EE COP1(FPU) XMM allocation code
-#define _Ft_ _Rt_
-#define _Fs_ _Rd_
-#define _Fd_ _Sa_
-
-#define PROCESS_EE_SETMODES_XMM(mmreg) ((xmmregs[mmreg].mode&MODE_WRITE)?PROCESS_EE_MODEWRITES:0)
-#define PROCESS_EE_SETMODET_XMM(mmreg) ((xmmregs[mmreg].mode&MODE_WRITE)?PROCESS_EE_MODEWRITET:0)
-
-// rd = rs op rt
-void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo)
-{
-	int mmregs=-1, mmregt=-1, mmregd=-1, mmregacc=-1;
-	int info = PROCESS_EE_XMM;
-
-	if( xmminfo & XMMINFO_READS ) _addNeededFPtoXMMreg(_Fs_);
-	if( xmminfo & XMMINFO_READT ) _addNeededFPtoXMMreg(_Ft_);
-	if( xmminfo & (XMMINFO_WRITED|XMMINFO_READD) ) _addNeededFPtoXMMreg(_Fd_);
-	if( xmminfo & (XMMINFO_WRITEACC|XMMINFO_READACC) ) _addNeededFPACCtoXMMreg();
-
-	if( xmminfo & XMMINFO_READT ) {
-		if( g_pCurInstInfo->fpuregs[_Ft_] & EEINST_LASTUSE ) mmregt = _checkXMMreg(XMMTYPE_FPREG, _Ft_, MODE_READ);
-		else mmregt = _allocFPtoXMMreg(-1, _Ft_, MODE_READ);
-	}
-
-	if( xmminfo & XMMINFO_READS ) {
-		if( ( !(xmminfo & XMMINFO_READT) || (mmregt >= 0) ) && (g_pCurInstInfo->fpuregs[_Fs_] & EEINST_LASTUSE) ) {
-			mmregs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
-		}
-		else mmregs = _allocFPtoXMMreg(-1, _Fs_, MODE_READ);
-	}
-
-	if( mmregs >= 0 ) info |= PROCESS_EE_SETMODES_XMM(mmregs);
-	if( mmregt >= 0 ) info |= PROCESS_EE_SETMODET_XMM(mmregt);
-
-	if( xmminfo & XMMINFO_READD ) {
-		assert( xmminfo & XMMINFO_WRITED );
-		mmregd = _allocFPtoXMMreg(-1, _Fd_, MODE_READ);
-	}
-
-	if( xmminfo & XMMINFO_READACC ) {
-		if( !(xmminfo&XMMINFO_WRITEACC) && (g_pCurInstInfo->fpuregs[_Ft_] & EEINST_LASTUSE) )
-			mmregacc = _checkXMMreg(XMMTYPE_FPACC, 0, MODE_READ);
-		else mmregacc = _allocFPACCtoXMMreg(-1, MODE_READ);
-	}
-
-	if( xmminfo & XMMINFO_WRITEACC ) {
-			
-		// check for last used, if so don't alloc a new XMM reg
-		int readacc = MODE_WRITE|((xmminfo&XMMINFO_READACC)?MODE_READ:0);
-
-		mmregacc = _checkXMMreg(XMMTYPE_FPACC, 0, readacc);
-
-		if( mmregacc < 0 ) {
-			if( (xmminfo&XMMINFO_READT) && mmregt >= 0 && (FPUINST_LASTUSE(_Ft_) || !FPUINST_ISLIVE(_Ft_)) ) {
-				if( FPUINST_ISLIVE(_Ft_) ) {
-					_freeXMMreg(mmregt);
-					info &= ~PROCESS_EE_MODEWRITET;
-				}
-				_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
-				xmmregs[mmregt].inuse = 1;
-				xmmregs[mmregt].reg = 0;
-				xmmregs[mmregt].mode = readacc;
-				xmmregs[mmregt].type = XMMTYPE_FPACC;
-				mmregacc = mmregt;
-			}
-			else if( (xmminfo&XMMINFO_READS) && mmregs >= 0 && (FPUINST_LASTUSE(_Fs_) || !FPUINST_ISLIVE(_Fs_)) ) {
-				if( FPUINST_ISLIVE(_Fs_) ) {
-					_freeXMMreg(mmregs);
-					info &= ~PROCESS_EE_MODEWRITES;
-				}
-				_deleteMMXreg(MMX_FPU+XMMFPU_ACC, 2);
-				xmmregs[mmregs].inuse = 1;
-				xmmregs[mmregs].reg = 0;
-				xmmregs[mmregs].mode = readacc;
-				xmmregs[mmregs].type = XMMTYPE_FPACC;
-				mmregacc = mmregs;
-			}
-			else mmregacc = _allocFPACCtoXMMreg(-1, readacc);
-		}
-
-		xmmregs[mmregacc].mode |= MODE_WRITE;
-	}
-	else if( xmminfo & XMMINFO_WRITED ) {
-		// check for last used, if so don't alloc a new XMM reg
-		int readd = MODE_WRITE|((xmminfo&XMMINFO_READD)?MODE_READ:0);
-		if( xmminfo&XMMINFO_READD ) mmregd = _allocFPtoXMMreg(-1, _Fd_, readd);
-		else mmregd = _checkXMMreg(XMMTYPE_FPREG, _Fd_, readd);
-
-		if( mmregd < 0 ) {
-			if( (xmminfo&XMMINFO_READT) && mmregt >= 0 && (FPUINST_LASTUSE(_Ft_) || !FPUINST_ISLIVE(_Ft_)) ) {
-				if( FPUINST_ISLIVE(_Ft_) ) {
-					_freeXMMreg(mmregt);
-					info &= ~PROCESS_EE_MODEWRITET;
-				}
-				_deleteMMXreg(MMX_FPU+_Fd_, 2);
-				xmmregs[mmregt].inuse = 1;
-				xmmregs[mmregt].reg = _Fd_;
-				xmmregs[mmregt].mode = readd;
-				mmregd = mmregt;
-			}
-			else if( (xmminfo&XMMINFO_READS) && mmregs >= 0 && (FPUINST_LASTUSE(_Fs_) || !FPUINST_ISLIVE(_Fs_)) ) {
-				if( FPUINST_ISLIVE(_Fs_) ) {
-					_freeXMMreg(mmregs);
-					info &= ~PROCESS_EE_MODEWRITES;
-				}
-				_deleteMMXreg(MMX_FPU+_Fd_, 2);
-				xmmregs[mmregs].inuse = 1;
-				xmmregs[mmregs].reg = _Fd_;
-				xmmregs[mmregs].mode = readd;
-				mmregd = mmregs;
-			}
-			else if( (xmminfo&XMMINFO_READACC) && mmregacc >= 0 && (FPUINST_LASTUSE(XMMFPU_ACC) || !FPUINST_ISLIVE(XMMFPU_ACC)) ) {
-				if( FPUINST_ISLIVE(XMMFPU_ACC) )
-					_freeXMMreg(mmregacc);
-				_deleteMMXreg(MMX_FPU+_Fd_, 2);
-				xmmregs[mmregacc].inuse = 1;
-				xmmregs[mmregacc].reg = _Fd_;
-				xmmregs[mmregacc].mode = readd;
-				xmmregs[mmregacc].type = XMMTYPE_FPREG;
-				mmregd = mmregacc;
-			}
-			else mmregd = _allocFPtoXMMreg(-1, _Fd_, readd);
-		}
-	}
-
-	assert( mmregs >= 0 || mmregt >= 0 || mmregd >= 0 || mmregacc >= 0 );
-
-	if( xmminfo & XMMINFO_WRITED ) {
-		assert( mmregd >= 0 );
-		info |= PROCESS_EE_SET_D(mmregd);
-	}
-	if( xmminfo & (XMMINFO_WRITEACC|XMMINFO_READACC) ) {
-		if( mmregacc >= 0 ) info |= PROCESS_EE_SET_ACC(mmregacc)|PROCESS_EE_ACC;
-		else assert( !(xmminfo&XMMINFO_WRITEACC));		
-	}
-
-	if( xmminfo & XMMINFO_READS ) {
-		if( mmregs >= 0 ) info |= PROCESS_EE_SET_S(mmregs)|PROCESS_EE_S;
-	}
-	if( xmminfo & XMMINFO_READT ) {
-		if( mmregt >= 0 ) info |= PROCESS_EE_SET_T(mmregt)|PROCESS_EE_T;
-	}
-		
-	// at least one must be in xmm
-	if( (xmminfo & (XMMINFO_READS|XMMINFO_READT)) == (XMMINFO_READS|XMMINFO_READT) ) {
-		assert( mmregs >= 0 || mmregt >= 0 );
-	}
-
-	xmmcode(info);
-	_clearNeededXMMregs();
-}
-
-#undef _Ft_
-#undef _Fs_
-#undef _Fd_
-
-////////////////////////////////////////////////////
-u32 g_sseMXCSR = DEFAULT_sseMXCSR; 
-u32 g_sseVUMXCSR = DEFAULT_sseVUMXCSR;
-
-void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR)
-{
-	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
-	// SSE STATE //
-	// WARNING: do not touch unless you know what you are doing
-
-	sseMXCSR &= 0xffff; // clear the upper 16 bits since they shouldn't be set
-	sseVUMXCSR &= 0xffff;
-
-	if( !cpucaps.hasStreamingSIMD2Extensions )
-	{
-		// SSE1 cpus do not support Denormals Are Zero flag (throws an exception
-		// if we don't mask them off)
-
-		sseMXCSR &= ~0x0040;
-		sseVUMXCSR &= ~0x0040;
-	}
-
-	g_sseMXCSR = sseMXCSR;
-	g_sseVUMXCSR = sseVUMXCSR;
-	// do NOT set Denormals-Are-Zero flag (charlie and chocfac messes up)
-	// Update 11/05/08 - Doesnt seem to effect it anymore, for the speed boost, its on :p
-	//g_sseMXCSR = 0x9f80; // changing the rounding mode to 0x2000 (near) kills grandia III!
-						// changing the rounding mode to 0x0000 or 0x4000 totally kills gitaroo
-						// so... grandia III wins (you can change individual games with the 'roundmode' patch command)
-
-#ifdef _MSC_VER
-	__asm ldmxcsr g_sseMXCSR; // set the new sse control
-#else
-    __asm__("ldmxcsr %0" : : "m"(g_sseMXCSR) );
-#endif
-	//g_sseVUMXCSR = g_sseMXCSR|0x6000;
-}
-
-#define REC_CACHEMEM 0x01000000
-void __fastcall dyna_block_discard(u32 start,u32 sz);
+static const int REC_CACHEMEM = 0x01000000;
+static void __fastcall dyna_block_discard(u32 start,u32 sz);
 
 static void recInit() 
 {
@@ -1730,11 +671,9 @@ void recExecuteBlock( void ) {
 }
 
 ////////////////////////////////////////////////////
-extern u32 g_nextBranchCycle;
 
-u32 g_lastpc = 0;
-u32 g_EEDispatchTemp;
-u32 s_pCurBlock_ltime;
+static u32 g_lastpc = 0;
+static u32 g_EEDispatchTemp;
 
 #ifdef _MSC_VER
 
@@ -1885,84 +824,12 @@ recomp:
 	}
 }
 
-#ifdef PCSX2_DEVBUILD
-__declspec(naked) void _StartPerfCounter()
-{
-	__asm {
-		push eax
-		push ebx
-		push ecx
-	
-		rdtsc
-		mov dword ptr [offset lbase], eax
-		mov dword ptr [offset lbase + 4], edx
-
-		pop ecx
-		pop ebx
-		pop eax
-		ret
-	}
-}
-
-__declspec(naked) void _StopPerfCounter()
-{
-	__asm {
-		push eax
-		push ebx
-		push ecx
-	
-		rdtsc
-	
-		sub eax, dword ptr [offset lbase]
-		sbb edx, dword ptr [offset lbase + 4]
-		mov ecx, s_pCurBlock_ltime
-		add eax, dword ptr [ecx]
-		adc edx, dword ptr [ecx + 4]
-		mov dword ptr [ecx], eax
-		mov dword ptr [ecx + 4], edx
-		pop ecx
-		pop ebx
-		pop eax
-		ret
-	}
-}
-
-#endif // PCSX2_DEVBUILD
-
 #else // _MSC_VER
 // Linux uses an assembly version of these routines.
-#ifdef __LINUX__
 extern "C" {
-#endif
 extern void Dispatcher();
 extern void DispatcherClear();
 extern void DispatcherReg();
-#ifdef __LINUX__
-}
-#endif
-extern void _StartPerfCounter();
-extern void _StopPerfCounter();
-
-#endif
-
-#ifdef PCSX2_DEVBUILD
-void StartPerfCounter()
-{
-#ifdef PCSX2_DEVBUILD
-//	if( s_startcount ) {
-//		CALLFunc((uptr)_StartPerfCounter);
-//	}
-#endif
-}
-
-void StopPerfCounter()
-{
-#ifdef PCSX2_DEVBUILD
-//	if( s_startcount ) {
-//		MOV32ItoM((uptr)&s_pCurBlock_ltime, (u32)&s_pCurBlockEx->ltime);
-//		CALLFunc((uptr)_StopPerfCounter);
-//	}
-#endif
 }
 #endif
 
@@ -1975,7 +842,7 @@ void recClear( u32 Addr, u32 Size )
 	}
 }
 
-#define EE_MIN_BLOCK_BYTES 15
+static const int EE_MIN_BLOCK_BYTES = 15;
 
 void recClearMem(BASEBLOCK* p)
 {
@@ -2048,6 +915,14 @@ void recClearMem(BASEBLOCK* p)
 	RemoveBaseBlockEx(pexblock, 0);
 	pexblock->size = 0;
 	pexblock->startpc = 0;
+}
+
+void REC_CLEARM( u32 mem )
+{
+	if ((mem) < maxrecmem && recLUT[(mem) >> 16]) {
+		BASEBLOCK* p = PC_GETBLOCK(mem);
+		if( *(u32*)p ) recClearMem(p);
+	}
 }
 
 // check for end of bios
@@ -2284,13 +1159,6 @@ static u32 eeScaleBlockCycles()
 
 static void iBranchTest(u32 newpc, u32 cpuBranch)
 {
-#ifdef PCSX2_DEVBUILD
-//	if( s_startcount ) {
-//		StopPerfCounter();
-//		ADD32ItoM( (u32)&s_pCurBlockEx->visited, 1 );
-//	}
-#endif
-
 #ifdef _DEBUG
 	//CALLFunc((uptr)testfpu);
 #endif
@@ -2315,7 +1183,7 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	x86SetJ8( j8Ptr[0] );
 }
 
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace OpcodeImpl
 {
 
 ////////////////////////////////////////////////////
@@ -2327,9 +1195,7 @@ REC_SYS(COP2);
 
 void recCOP2( void )
 { 
-	// This CPU_LOG call triggers a "Source Log Stack Corruption Detected." 
-	// error and crashes pcsx2 if called here. 
-	//CPU_LOG( "Recompiling COP2:%s\n", disR5900Current.getString() );
+	//CPU_LOG( "Recompiling COP2: %s\n", disR5900Current.getCString() );
 	recCOP22( );
 }
 
@@ -2340,7 +1206,7 @@ void recSYSCALL( void ) {
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_NODESTROY);
-	CALLFunc( (uptr)Interpreter::OpcodeImpl::SYSCALL );
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::SYSCALL );
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -2355,7 +1221,7 @@ void recBREAK( void ) {
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (uptr)EE::Interpreter::OpcodeImpl::BREAK );
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::BREAK );
 
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
@@ -2459,7 +1325,7 @@ void recMTSAH( void )
 	}
 }
 
-}}}		// end Namespace EE::Dynarec::OpcodeImpl
+}		// end Namespace Dynarec::R5900::OpcodeImpl
 
 static void checkcodefn()
 {
@@ -2472,11 +1338,6 @@ static void checkcodefn()
 #endif
 
 	Console::Error("code changed! %x", params pctemp);
-	assert(0);
-}
-
-void checkpchanged(u32 startpc)
-{
 	assert(0);
 }
 
@@ -2574,7 +1435,6 @@ void recompileNextInstruction(int delayslot)
 //		x86SetJ8( j8Ptr[ 0 ] );
 //		x86SetJ8( j8Ptr[ 1 ] );
 //		PUSH32I(s_pCurBlockEx->startpc);
-//		CALLFunc((uptr)checkpchanged);
 //		ADD32ItoR(ESP, 4);
 //		x86SetJ8( j8Ptr[ 2 ] );	
 //	}
@@ -2607,7 +1467,7 @@ void recompileNextInstruction(int delayslot)
 		}
 	}
 
-	const EE::OPCODE& opcode = EE::GetCurrentInstruction();
+	const OPCODE& opcode = GetCurrentInstruction();
 
 	// peephole optimizations
 	if( g_pCurInstInfo->info & EEINSTINFO_COREC ) {
@@ -2615,21 +1475,21 @@ void recompileNextInstruction(int delayslot)
 #ifdef PCSX2_VIRTUAL_MEM
 		if( g_pCurInstInfo->numpeeps > 1 ) {
 			switch(_Opcode_) {
-				case 30: EE::Dynarec::OpcodeImpl::recLQ_coX(g_pCurInstInfo->numpeeps); break;
-				case 31: EE::Dynarec::OpcodeImpl::recSQ_coX(g_pCurInstInfo->numpeeps); break;
-				case 49: EE::Dynarec::OpcodeImpl::recLWC1_coX(g_pCurInstInfo->numpeeps); break;
-				case 57: EE::Dynarec::OpcodeImpl::recSWC1_coX(g_pCurInstInfo->numpeeps); break;
-				case 55: EE::Dynarec::OpcodeImpl::recLD_coX(g_pCurInstInfo->numpeeps); break;
-				case 63: EE::Dynarec::OpcodeImpl::recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
-				default:
-					assert(0);
+				case 30: OpcodeImpl::recLQ_coX(g_pCurInstInfo->numpeeps); break;
+				case 31: OpcodeImpl::recSQ_coX(g_pCurInstInfo->numpeeps); break;
+				case 49: OpcodeImpl::recLWC1_coX(g_pCurInstInfo->numpeeps); break;
+				case 57: OpcodeImpl::recSWC1_coX(g_pCurInstInfo->numpeeps); break;
+				case 55: OpcodeImpl::recLD_coX(g_pCurInstInfo->numpeeps); break;
+				case 63: OpcodeImpl::recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
+
+				jNO_DEFAULT
 			}
 			pc += g_pCurInstInfo->numpeeps*4;
 			s_nBlockCycles += (g_pCurInstInfo->numpeeps+1) * opcode.cycles;
 			g_pCurInstInfo += g_pCurInstInfo->numpeeps;
 		}
 		else {
-			EE::Dynarec::recBSC_co[_Opcode_]();
+			recBSC_co[_Opcode_]();
 			pc += 4;
 			g_pCurInstInfo++;
 			s_nBlockCycles += opcode.cycles*2;
@@ -2712,74 +1572,6 @@ void recompileNextInstruction(int delayslot)
 //	}
 //}
 
-////////////////////////////////////////////////////
-#include "R3000A.h"
-#include "PsxCounters.h"
-#include "PsxMem.h"
-extern tIPU_BP g_BP;
-
-extern u32 psxdump;
-extern void iDumpPsxRegisters(u32 startpc, u32 temp); 
-extern Counter counters[6];
-extern int rdram_devices;	// put 8 for TOOL and 2 for PS2 and PSX
-extern int rdram_sdevid;
-
-void iDumpRegisters(u32 startpc, u32 temp)
-{
-// [TODO] fixme : thie code is broken and has no labels.  Needs a rewrite to be useful.
-
-#if 0
-
-	int i;
-	const char* pstr;// = temp ? "t" : "";
-	const u32 dmacs[] = {0x8000, 0x9000, 0xa000, 0xb000, 0xb400, 0xc000, 0xc400, 0xc800, 0xd000, 0xd400 };
-	extern const char *disRNameGPR[];
-    const char* psymb;
-	
-	if (temp)
-		pstr = "t";
-	else
-		pstr = "";
-	
-    psymb = disR5900GetSym(startpc);
-
-    if( psymb != NULL )
-        __Log("%sreg(%s): %x %x c:%x\n", pstr, psymb, startpc, cpuRegs.interrupt, cpuRegs.cycle);
-    else
-        __Log("%sreg: %x %x c:%x\n", pstr, startpc, cpuRegs.interrupt, cpuRegs.cycle);
-	for(i = 1; i < 32; ++i) __Log("%s: %x_%x_%x_%x\n", disRNameGPR[i], cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0]);
-    //for(i = 0; i < 32; i+=4) __Log("cp%d: %x_%x_%x_%x\n", i, cpuRegs.CP0.r[i], cpuRegs.CP0.r[i+1], cpuRegs.CP0.r[i+2], cpuRegs.CP0.r[i+3]);
-	//for(i = 0; i < 32; ++i) __Log("%sf%d: %f %x\n", pstr, i, fpuRegs.fpr[i].f, fpuRegs.fprc[i]);
-	//for(i = 1; i < 32; ++i) __Log("%svf%d: %f %f %f %f, vi: %x\n", pstr, i, VU0.VF[i].F[3], VU0.VF[i].F[2], VU0.VF[i].F[1], VU0.VF[i].F[0], VU0.VI[i].UL);
-	for(i = 0; i < 32; ++i) __Log("%sf%d: %x %x\n", pstr, i, fpuRegs.fpr[i].UL, fpuRegs.fprc[i]);
-	for(i = 1; i < 32; ++i) __Log("%svf%d: %x %x %x %x, vi: %x\n", pstr, i, VU0.VF[i].UL[3], VU0.VF[i].UL[2], VU0.VF[i].UL[1], VU0.VF[i].UL[0], VU0.VI[i].UL);
-	__Log("%svfACC: %x %x %x %x\n", pstr, VU0.ACC.UL[3], VU0.ACC.UL[2], VU0.ACC.UL[1], VU0.ACC.UL[0]);
-	__Log("%sLO: %x_%x_%x_%x, HI: %x_%x_%x_%x\n", pstr, cpuRegs.LO.UL[3], cpuRegs.LO.UL[2], cpuRegs.LO.UL[1], cpuRegs.LO.UL[0],
-	cpuRegs.HI.UL[3], cpuRegs.HI.UL[2], cpuRegs.HI.UL[1], cpuRegs.HI.UL[0]);
-	__Log("%sCycle: %x %x, Count: %x\n", pstr, cpuRegs.cycle, g_nextBranchCycle, cpuRegs.CP0.n.Count);
-	iDumpPsxRegisters(psxRegs.pc, temp);
-
-    __Log("f410,30,40: %x %x %x, %d %d\n", psHu32(0xf410), psHu32(0xf430), psHu32(0xf440), rdram_sdevid, rdram_devices);
-	__Log("cyc11: %x %x; vu0: %x, vu1: %x\n", cpuRegs.sCycle[1], cpuRegs.eCycle[1], VU0.cycle, VU1.cycle);
-
-	__Log("%scounters: %x %x; psx: %x %x\n", pstr, nextsCounter, nextCounter, psxNextsCounter, psxNextCounter);
-	for(i = 0; i < 4; ++i) {
-		__Log("eetimer%d: count: %x mode: %x target: %x %x; %x %x; %x %x %x %x\n", i,
-			counters[i].count, counters[i].mode, counters[i].target, counters[i].hold, counters[i].rate,
-			counters[i].interrupt, counters[i].Cycle, counters[i].sCycle, counters[i].CycleT, counters[i].sCycleT);
-	}
-	__Log("VIF0_STAT = %x, VIF1_STAT = %x\n", psHu32(0x3800), psHu32(0x3C00));
-	__Log("ipu %x %x %x %x; bp: %x %x %x %x\n", psHu32(0x2000), psHu32(0x2010), psHu32(0x2020), psHu32(0x2030), g_BP.BP, g_BP.bufferhasnew, g_BP.FP, g_BP.IFC);
-	__Log("gif: %x %x %x\n", psHu32(0x3000), psHu32(0x3010), psHu32(0x3020));
-	for(i = 0; i < ARRAYSIZE(dmacs); ++i) {
-		DMACh* p = (DMACh*)(PS2MEM_HW+dmacs[i]);
-		__Log("dma%d c%x m%x q%x t%x s%x\n", i, p->chcr, p->madr, p->qwc, p->tadr, p->sadr);
-	}
-	__Log("dmac %x %x %x %x\n", psHu32(DMAC_CTRL), psHu32(DMAC_STAT), psHu32(DMAC_RBSR), psHu32(DMAC_RBOR));
-	__Log("intc %x %x\n", psHu32(INTC_STAT), psHu32(INTC_MASK));
-	__Log("sif: %x %x %x %x %x\n", psHu32(0xf200), psHu32(0xf220), psHu32(0xf230), psHu32(0xf240), psHu32(0xf260));
-#endif
-}
 
 extern u32 psxdump;
 
@@ -2811,8 +1603,6 @@ void badespfn() {
 	assert(0);
 }
 
-#define OPTIMIZE_COP2 0//CHECK_VU0REC
-
 void __fastcall dyna_block_discard(u32 start,u32 sz)
 {
 #ifdef _MSC_VER
@@ -2829,6 +1619,7 @@ void __fastcall dyna_block_discard(u32 start,u32 sz)
 #endif
 	return;
 }
+
 void recRecompile( u32 startpc )
 {
 	u32 i = 0;
@@ -3110,7 +1901,7 @@ StartRecomp:
 			if( i < s_nEndBlock-4 && recompileCodeSafe(i) ) {
 				u32 curcode = cpuRegs.code;
 				u32 nextcode = *(u32*)PSM(i+4);
-				if( _eeIsLoadStoreCoIssue(curcode, nextcode) && EE::Dynarec::recBSC_co[curcode>>26] != NULL ) {
+				if( _eeIsLoadStoreCoIssue(curcode, nextcode) && recBSC_co[curcode>>26] != NULL ) {
 
 					// rs has to be the same, and cannot be just written
 					if( ((curcode >> 21) & 0x1F) == ((nextcode >> 21) & 0x1F) && !_eeLoadWritesRs(curcode) ) {
@@ -3213,18 +2004,6 @@ StartRecomp:
 			}
 		}
 	}
-
-	// perf counters //
-#ifdef PCSX2_DEVBUILD
-//	s_startcount = 0;
-//	if( pc+32 < s_nEndBlock ) {
-//		// only blocks with more than 8 insts
-//		//PUSH32I((uptr)&lbase);
-//		//CALLFunc((uptr)QueryPerformanceCounter);
-//		lbase.QuadPart = GetCPUTick();
-//		s_startcount = 1;
-//	}
-#endif
 
 #ifdef _DEBUG
 	// dump code
@@ -3397,6 +2176,14 @@ StartRecomp:
 	}
 }
 
+} }	// end namespace Dynarec::R5900
+
+using namespace Dynarec;
+using namespace Dynarec::R5900;
+
+namespace R5900
+{
+
 R5900cpu recCpu = {
 	recInit,
 	recReset,
@@ -3412,3 +2199,5 @@ R5900cpu recCpu = {
 	recClearVU1,
 	recShutdown
 };
+
+}

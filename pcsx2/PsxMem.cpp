@@ -24,7 +24,6 @@
 #include "Hw.h"
 #include "iR3000A.h"
 
-extern u32 g_psxMaxRecMem;
 int g_psxWriteOk=1;
 static u32 writectrl;
 

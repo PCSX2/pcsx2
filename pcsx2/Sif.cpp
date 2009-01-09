@@ -271,7 +271,7 @@ __forceinline void SIF0Dma()
 //                        }
 //                    }
 
-					Cpu->Clear(sif0dma->madr, readSize*4);
+					R5900::Cpu->Clear(sif0dma->madr, readSize*4);
 
 					cycles += readSize * BIAS;	// fixme : BIAS is factored in below
 					//cycles += readSize;
@@ -524,14 +524,11 @@ __forceinline void  sif1Interrupt() {
 __forceinline void  EEsif0Interrupt() {
 	sif0dma->chcr &= ~0x100;
 	hwDmacIrq(DMAC_SIF0);
-	cpuRegs.interrupt &= ~(1 << 5);
 }
 
 __forceinline void  EEsif1Interrupt() {
 	hwDmacIrq(DMAC_SIF1);
 	sif1dma->chcr &= ~0x100;
-	cpuRegs.interrupt &= ~(1 << 6);
-
 }
 
 __forceinline void dmaSIF0() {

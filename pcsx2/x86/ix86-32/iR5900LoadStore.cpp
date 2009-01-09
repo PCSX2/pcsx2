@@ -28,11 +28,12 @@
 #pragma warning(disable:4761)
 #endif
 
-namespace EE { namespace Dynarec {
+namespace Dynarec { 
 
 	// Implemented at the bottom of the module:
 	void SetFastMemory(int bSetFast);
 
+namespace R5900 { 
 namespace OpcodeImpl
 {
 
@@ -1189,7 +1190,7 @@ void recLDL( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)Interpreter::OpcodeImpl::LDL );
+	CALLFunc( (int)R5900::Interpreter::OpcodeImpl::LDL );
 }
 
 ////////////////////////////////////////////////////
@@ -1214,7 +1215,7 @@ void recLDR( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)Interpreter::OpcodeImpl::LDR );
+	CALLFunc( (int)R5900::Interpreter::OpcodeImpl::LDR );
 }
 
 ////////////////////////////////////////////////////
@@ -2105,7 +2106,6 @@ void recStore(int bit, u32 imm, int align)
 	if( GPR_IS_CONST1( _Rs_ ) ) {
 		u32 addr = g_cpuConstRegs[_Rs_].UL[0]+imm;
 		int doclear = 0;
-		StopPerfCounter();
 		switch(bit) {
 			case 8:
 				if( GPR_IS_CONST1(_Rt_) ) doclear = recMemConstWrite8(addr, MEM_EECONSTTAG|(_Rt_<<16));
@@ -2183,8 +2183,6 @@ void recStore(int bit, u32 imm, int align)
 
 				break;
 		}
-
-		StartPerfCounter();
 	}
 	else
 #endif
@@ -2218,9 +2216,7 @@ void recStore(int bit, u32 imm, int align)
 
 			SET_HWLOC_R5900();
 
-			StopPerfCounter();
 			recStore_call(bit, _Rt_, s_nAddMemOffset);
-			StartPerfCounter();
 
 			if( s_bCachingMem & 2 ) x86SetJ32(j32Ptr[5]);
 			else x86SetJ8(j8Ptr[2]);
@@ -2731,7 +2727,7 @@ void recSDL( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)Interpreter::OpcodeImpl::SDL );
+	CALLFunc( (int)R5900::Interpreter::OpcodeImpl::SDL );
 }
 
 ////////////////////////////////////////////////////
@@ -2755,7 +2751,7 @@ void recSDR( void )
 
 	MOV32ItoM( (int)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (int)&cpuRegs.pc, pc );
-	CALLFunc( (int)Interpreter::OpcodeImpl::SDR );
+	CALLFunc( (int)R5900::Interpreter::OpcodeImpl::SDR );
 }
 
 ////////////////////////////////////////////////////
@@ -4475,10 +4471,11 @@ void recSQC2( void )
 
 #endif
 
-}	// end namespace OpcodeImpl
+} }	// end namespace R5900::OpcodeImpl
+
+using namespace R5900::OpcodeImpl;
 
 #ifdef PCSX2_VIRTUAL_MEM
-	using namespace OpcodeImpl;
 
 #ifndef LOADSTORE_RECOMPILE
 	void SetFastMemory(int bSetFast) {}
@@ -4505,4 +4502,4 @@ void recSQC2( void )
 	void SetFastMemory(int bSetFast) {}
 
 #endif
-} }
+}

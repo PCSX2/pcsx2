@@ -22,20 +22,10 @@
 #include "R5900.h"
 #include "InterTables.h"
 
-
-void COP0_BC0() {
-	COP0_LOG("%s\n", disR5900Current.getString());
-    Int_COP0BC0PrintTable[(cpuRegs.code >> 16) & 0x03]();
-}
-
-void COP0_Func() {
-	COP0_LOG("%s\n", disR5900Current.getString());
-    Int_COP0C0PrintTable[_Funct_]();
-}
-
-void COP0_Unknown() {
-	CPU_LOG("COP0 Unknown opcode called\n");
-}
+namespace R5900
+{
+u32 s_iLastCOP0Cycle = 0;
+u32 s_iLastPERFCycle[2] = { 0, 0 };
 
 void UpdateCP0Status() {
 	u32 value = cpuRegs.CP0.n.Status.val;
@@ -54,12 +44,118 @@ void WriteCP0Status(u32 value) {
     UpdateCP0Status();
 }
 
-extern u32 s_iLastCOP0Cycle;
-extern u32 s_iLastPERFCycle[2];
+void MapTLB(int i)
+{
+	u32 mask, addr;
+	u32 saddr, eaddr;
 
+#ifndef PCSX2_VIRTUAL_MEM
+	DevCon::WriteLn("MAP TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X", params
+		i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
+
+	if (tlb[i].S)
+	{
+		SysPrintf("OMG SPRAM MAPPING %08X %08X\n",tlb[i].VPN2,tlb[i].Mask);
+		vtlb_VMapBuffer(tlb[i].VPN2,psS,0x4000);
+	}
+#endif
+	if (tlb[i].VPN2 == 0x70000000) return; //uh uhh right ...
+
+	if (tlb[i].EntryLo0 & 0x2) {
+		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
+		saddr = tlb[i].VPN2 >> 12;
+		eaddr = saddr + tlb[i].Mask + 1;
+
+		for (addr=saddr; addr<eaddr; addr++) {
+			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
+				memSetPageAddr(addr << 12, tlb[i].PFN0 + ((addr - saddr) << 12));
+				Cpu->Clear(addr << 12, 1);
+			}
+		}
+	}
+
+	if (tlb[i].EntryLo1 & 0x2) {
+		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
+		saddr = (tlb[i].VPN2 >> 12) + tlb[i].Mask + 1;
+		eaddr = saddr + tlb[i].Mask + 1;
+
+		for (addr=saddr; addr<eaddr; addr++) {
+			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
+				memSetPageAddr(addr << 12, tlb[i].PFN1 + ((addr - saddr) << 12));
+				Cpu->Clear(addr << 12, 1);
+			}
+		}
+	}
+}
+
+void UnmapTLB(int i)
+{
+	//SysPrintf("Clear TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X\n",i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
+	u32 mask, addr;
+	u32 saddr, eaddr;
+
+#ifndef PCSX2_VIRTUAL_MEM
+	if (tlb[i].S)
+	{
+		vtlb_VMapUnmap(tlb[i].VPN2,0x4000);
+		return;
+	}
+#endif
+
+	if (tlb[i].EntryLo0 & 0x2) 
+	{
+		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
+		saddr = tlb[i].VPN2 >> 12;
+		eaddr = saddr + tlb[i].Mask + 1;
+	//	SysPrintf("Clear TLB: %08x ~ %08x\n",saddr,eaddr-1);
+		for (addr=saddr; addr<eaddr; addr++) {
+			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
+				memClearPageAddr(addr << 12);
+				Cpu->Clear(addr << 12, 1);
+			}
+		}
+	}
+
+	if (tlb[i].EntryLo1 & 0x2) {
+		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
+		saddr = (tlb[i].VPN2 >> 12) + tlb[i].Mask + 1;
+		eaddr = saddr + tlb[i].Mask + 1;
+	//	SysPrintf("Clear TLB: %08x ~ %08x\n",saddr,eaddr-1);
+		for (addr=saddr; addr<eaddr; addr++) {
+			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
+				memClearPageAddr(addr << 12);
+				Cpu->Clear(addr << 12, 1);
+			}
+		}
+	}
+}
+
+void WriteTLB(int i) 
+{
+	tlb[i].PageMask = cpuRegs.CP0.n.PageMask;
+	tlb[i].EntryHi = cpuRegs.CP0.n.EntryHi;
+	tlb[i].EntryLo0 = cpuRegs.CP0.n.EntryLo0;
+	tlb[i].EntryLo1 = cpuRegs.CP0.n.EntryLo1;
+
+	tlb[i].Mask = (cpuRegs.CP0.n.PageMask >> 13) & 0xfff;
+	tlb[i].nMask = (~tlb[i].Mask) & 0xfff;
+	tlb[i].VPN2 = ((cpuRegs.CP0.n.EntryHi >> 13) & (~tlb[i].Mask)) << 13;
+	tlb[i].ASID = cpuRegs.CP0.n.EntryHi & 0xfff;
+	tlb[i].G = cpuRegs.CP0.n.EntryLo0 & cpuRegs.CP0.n.EntryLo1 & 0x1;
+	tlb[i].PFN0 = (((cpuRegs.CP0.n.EntryLo0 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
+	tlb[i].PFN1 = (((cpuRegs.CP0.n.EntryLo1 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
+#ifndef PCSX2_VIRTUAL_MEM
+	tlb[i].S = cpuRegs.CP0.n.EntryLo0&0x80000000;
+#endif
+	MapTLB(i);
+}
+
+namespace Interpreter {
+namespace OpcodeImpl
+{
 void MFC0() {
 	if (!_Rt_) return;
-	if (_Rd_ != 9) { COP0_LOG("%s\n", disR5900Current.getString()); }
+	if (_Rd_ != 9) { COP0_LOG("%s\n", disR5900Current.getCString() ); }
 	
 	//if(bExecBIOS == FALSE && _Rd_ == 25) SysPrintf("MFC0 _Rd_ %x = %x\n", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_) {
@@ -99,7 +195,7 @@ void MFC0() {
 }
 
 void MTC0() {
-	COP0_LOG("%s\n", disR5900Current.getString());
+	COP0_LOG("%s\n", disR5900Current.getCString());
 	//if(bExecBIOS == FALSE && _Rd_ == 25) SysPrintf("MTC0 _Rd_ %x = %x\n", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_) {
 		case 25: 
@@ -176,111 +272,6 @@ void TLBR() {
 	cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi&~(tlb[i].PageMask|0x1f00);
 	cpuRegs.CP0.n.EntryLo0 = (tlb[i].EntryLo0&~1)|((tlb[i].EntryHi>>12)&1);
 	cpuRegs.CP0.n.EntryLo1 =(tlb[i].EntryLo1&~1)|((tlb[i].EntryHi>>12)&1);
-}
-
-void UnmapTLB(int i)
-{
-	//SysPrintf("Clear TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X\n",i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
-	u32 mask, addr;
-	u32 saddr, eaddr;
-
-#ifndef PCSX2_VIRTUAL_MEM
-	if (tlb[i].S)
-	{
-		vtlb_VMapUnmap(tlb[i].VPN2,0x4000);
-		return;
-	}
-#endif
-
-	if (tlb[i].EntryLo0 & 0x2) 
-	{
-		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
-		saddr = tlb[i].VPN2 >> 12;
-		eaddr = saddr + tlb[i].Mask + 1;
-	//	SysPrintf("Clear TLB: %08x ~ %08x\n",saddr,eaddr-1);
-		for (addr=saddr; addr<eaddr; addr++) {
-			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
-				memClearPageAddr(addr << 12);
-				Cpu->Clear(addr << 12, 1);
-			}
-		}
-	}
-
-	if (tlb[i].EntryLo1 & 0x2) {
-		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
-		saddr = (tlb[i].VPN2 >> 12) + tlb[i].Mask + 1;
-		eaddr = saddr + tlb[i].Mask + 1;
-	//	SysPrintf("Clear TLB: %08x ~ %08x\n",saddr,eaddr-1);
-		for (addr=saddr; addr<eaddr; addr++) {
-			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
-				memClearPageAddr(addr << 12);
-				Cpu->Clear(addr << 12, 1);
-			}
-		}
-	}
-}
-
-void MapTLB(int i)
-{
-	u32 mask, addr;
-	u32 saddr, eaddr;
-
-#ifndef PCSX2_VIRTUAL_MEM
-	DevCon::WriteLn("MAP TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X", params
-		i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
-
-	if (tlb[i].S)
-	{
-		SysPrintf("OMG SPRAM MAPPING %08X %08X\n",tlb[i].VPN2,tlb[i].Mask);
-		vtlb_VMapBuffer(tlb[i].VPN2,psS,0x4000);
-	}
-#endif
-	if (tlb[i].VPN2 == 0x70000000) return; //uh uhh right ...
-
-	if (tlb[i].EntryLo0 & 0x2) {
-		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
-		saddr = tlb[i].VPN2 >> 12;
-		eaddr = saddr + tlb[i].Mask + 1;
-
-		for (addr=saddr; addr<eaddr; addr++) {
-			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
-				memSetPageAddr(addr << 12, tlb[i].PFN0 + ((addr - saddr) << 12));
-				Cpu->Clear(addr << 12, 1);
-			}
-		}
-	}
-
-	if (tlb[i].EntryLo1 & 0x2) {
-		mask  = ((~tlb[i].Mask) << 1) & 0xfffff;
-		saddr = (tlb[i].VPN2 >> 12) + tlb[i].Mask + 1;
-		eaddr = saddr + tlb[i].Mask + 1;
-
-		for (addr=saddr; addr<eaddr; addr++) {
-			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
-				memSetPageAddr(addr << 12, tlb[i].PFN1 + ((addr - saddr) << 12));
-				Cpu->Clear(addr << 12, 1);
-			}
-		}
-	}
-}
-void WriteTLB(int i) 
-{
-	tlb[i].PageMask = cpuRegs.CP0.n.PageMask;
-	tlb[i].EntryHi = cpuRegs.CP0.n.EntryHi;
-	tlb[i].EntryLo0 = cpuRegs.CP0.n.EntryLo0;
-	tlb[i].EntryLo1 = cpuRegs.CP0.n.EntryLo1;
-
-	tlb[i].Mask = (cpuRegs.CP0.n.PageMask >> 13) & 0xfff;
-	tlb[i].nMask = (~tlb[i].Mask) & 0xfff;
-	tlb[i].VPN2 = ((cpuRegs.CP0.n.EntryHi >> 13) & (~tlb[i].Mask)) << 13;
-	tlb[i].ASID = cpuRegs.CP0.n.EntryHi & 0xfff;
-	tlb[i].G = cpuRegs.CP0.n.EntryLo0 & cpuRegs.CP0.n.EntryLo1 & 0x1;
-	tlb[i].PFN0 = (((cpuRegs.CP0.n.EntryLo0 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
-	tlb[i].PFN1 = (((cpuRegs.CP0.n.EntryLo1 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
-#ifndef PCSX2_VIRTUAL_MEM
-	tlb[i].S = cpuRegs.CP0.n.EntryLo0&0x80000000;
-#endif
-	MapTLB(i);
 }
 
 void TLBWI() { 
@@ -367,3 +358,4 @@ void EI() {
 	}
 }
 
+} } }	// end namespace R5900::Interpreter::OpcodeImpl

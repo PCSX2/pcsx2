@@ -96,24 +96,26 @@ void psxMemWrite8 (u32 mem, u8 value);
 void psxMemWrite16(u32 mem, u16 value);
 void psxMemWrite32(u32 mem, u32 value);
 
-// x86reg and mmreg are always x86 regs
-void psxRecMemRead8();
-int psxRecMemConstRead8(u32 x86reg, u32 mem, u32 sign);
+namespace Dynarec
+{
+	// x86reg and mmreg are always x86 regs
+	void psxRecMemRead8();
+	int psxRecMemConstRead8(u32 x86reg, u32 mem, u32 sign);
 
-void psxRecMemRead16();
-int psxRecMemConstRead16(u32 x86reg, u32 mem, u32 sign);
+	void psxRecMemRead16();
+	int psxRecMemConstRead16(u32 x86reg, u32 mem, u32 sign);
 
-void psxRecMemRead32();
-int psxRecMemConstRead32(u32 x86reg, u32 mem);
+	void psxRecMemRead32();
+	int psxRecMemConstRead32(u32 x86reg, u32 mem);
 
-void psxRecMemWrite8();
-int psxRecMemConstWrite8(u32 mem, int mmreg);
+	void psxRecMemWrite8();
+	int psxRecMemConstWrite8(u32 mem, int mmreg);
 
-void psxRecMemWrite16();
-int psxRecMemConstWrite16(u32 mem, int mmreg);
+	void psxRecMemWrite16();
+	int psxRecMemConstWrite16(u32 mem, int mmreg);
 
-void psxRecMemWrite32();
-int psxRecMemConstWrite32(u32 mem, int mmreg);
-
+	void psxRecMemWrite32();
+	int psxRecMemConstWrite32(u32 mem, int mmreg);
+}
 
 #endif /* __PSXMEMORY_H__ */

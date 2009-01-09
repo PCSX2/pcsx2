@@ -193,12 +193,20 @@ struct romdir{
 u32 GetBiosVersion();
 int IsBIOS(char *filename, char *description);
 
-// check to see if needs freezing
+extern u32 g_sseVUMXCSR, g_sseMXCSR;
+
+void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR);
+
+// when using mmx/xmm regs, use; 0 is load
+// freezes no matter the state
 extern void FreezeXMMRegs_(int save);
 extern void FreezeMMXRegs_(int save);
 extern bool g_EEFreezeRegs;
-#define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
+extern u8 g_globalMMXSaved;
+extern u8 g_globalXMMSaved;
 
+// these macros check to see if needs freezing
+#define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
 #define FreezeMMXRegs(save) if( g_EEFreezeRegs ) { FreezeMMXRegs_(save); }
 
 

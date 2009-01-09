@@ -159,7 +159,7 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						Config.Options = newopts;
 					}
 					else
-						UpdateVSyncRate();
+						R5900::UpdateVSyncRate();
 
 					SaveConfig();
 

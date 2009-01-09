@@ -23,8 +23,12 @@
 #include "iCore.h"
 #include "iR3000A.h"
 
-extern u32 g_psxMaxRecMem;
 extern int g_psxWriteOk;
+
+namespace Dynarec
+{
+
+extern u32 g_psxMaxRecMem;
 static u32 writectrl;
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -869,3 +873,4 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 }
 
 #endif
+}

@@ -1448,6 +1448,10 @@
 						/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath="..\..\x86\ix86\ix86_tools.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="zlib"
@@ -2301,6 +2305,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\COP2.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Counters.cpp"
 					>
 					<FileConfiguration
@@ -2317,7 +2325,6 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							RuntimeLibrary="0"
-							AssemblerOutput="4"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -2624,36 +2631,8 @@
 							RelativePath="..\..\x86\ix86-32\iR5900Shift.cpp"
 							>
 						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Hw"
-					>
-					<File
-						RelativePath="..\..\FiFo.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Hw.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Hw.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\SPR.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\SPR.h"
-						>
-					</File>
-					<Filter
-						Name="Dynarec"
-						>
 						<File
-							RelativePath="..\..\x86\iHw.cpp"
+							RelativePath="..\..\x86\ix86-32\iR5900Templates.cpp"
 							>
 						</File>
 					</Filter>
@@ -2711,14 +2690,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxHw.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\PsxHw.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\PsxInterpreter.cpp"
 					>
 				</File>
@@ -2757,10 +2728,6 @@
 				<Filter
 					Name="Dynarec"
 					>
-					<File
-						RelativePath="..\..\x86\iPsxHw.cpp"
-						>
-					</File>
 					<File
 						RelativePath="..\..\x86\iPsxMem.cpp"
 						>
@@ -3079,10 +3046,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\VU0.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\VU0micro.cpp"
 					>
 				</File>
@@ -3179,14 +3142,6 @@
 				Name="Debug"
 				>
 				<File
-					RelativePath="..\..\DebugTools\cpuopsDebug.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\DebugTools\cpuopsDebug.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\DebugTools\Debug.h"
 					>
 				</File>
@@ -3226,6 +3181,50 @@
 					RelativePath="..\..\DebugTools\DisVUops.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="Hardware"
+				>
+				<File
+					RelativePath="..\..\FiFo.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Hw.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Hw.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxHw.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\PsxHw.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\SPR.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\SPR.h"
+					>
+				</File>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\iHw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iPsxHw.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

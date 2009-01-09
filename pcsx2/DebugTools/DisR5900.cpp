@@ -24,46 +24,47 @@ using namespace std;
 #include "R5900.h"
 #include "VU.h"
 
-//static char ostr[1024];
-
-// Names of registers
-const char *disRNameGPR[] = {
-	"r0", "at", "v0", "v1", "a0", "a1","a2", "a3",
-	"t0", "t1", "t2", "t3", "t4", "t5","t6", "t7",
-	"s0", "s1", "s2", "s3", "s4", "s5","s6", "s7",
-	"t8", "t9", "k0", "k1", "gp", "sp","fp", "ra", "hi", "lo"}; // lo,hi used in rec
-
-const char *disRNameCP0[] = {
-	"Index"     , "Random"    , "EntryLo0" , "EntryLo1", "Context" , "PageMask"  , "Wired"     , "*RES*",
-	"BadVAddr"  , "Count"     , "EntryHi"  , "Compare" , "Status"  , "Cause"     , "ExceptPC"  , "PRevID",
-	"Config"    , "LLAddr"    , "WatchLo"  , "WatchHi" , "*RES*"   , "*RES*"     , "*RES*"     , "Debug",
-	"DEPC"      , "PerfCnt"   , "ErrCtl"   , "CacheErr", "TagLo"   , "TagHi"     , "ErrorEPC"  , "DESAVE"};
-
-const char *disRNameCP1[] = {
-	"FPR0" , "FPR1" , "FPR2" , "FPR3" , "FPR4" , "FPR5" , "FPR6" , "FPR7",
-	"FPR8" , "FPR9" , "FPR10", "FPR11", "FPR12", "FPR13", "FPR14", "FPR15",
-	"FPR16", "FPR17", "FPR18", "FPR19", "FPR20", "FPR21", "FPR22", "FPR23",
-	"FPR24", "FPR25", "FPR26", "FPR27", "FPR28", "FPR29", "FPR30", "FPR31"};
-
-const char *disRNameCP1c[] = {
-	"FRevID", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
-	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
-	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
-	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "FStatus"};
-
-const char *disRNameCP2f[] = {
+static const char * const disRNameCP2f[] = {
 	"VF00", "VF01", "VF02", "VF03", "VF04", "VF05", "VF06", "VF07",
 	"VF08", "VF09", "VF10", "VF11", "VF12", "VF13", "VF14", "VF15",
 	"VF16", "VF17", "VF18", "VF19", "VF20", "VF21", "VF22", "VF23",
 	"VF24", "VF25", "VF26", "VF27", "VF28", "VF29", "VF30", "VF31"};
 
-const char *disRNameCP2i[] = {
+static const char * const disRNameCP2i[] = {
 	"VI00",   "VI01",  "VI02", "VI03",   "VI04",  "VI05",     "VI06",  "VI07",
 	"VI08",   "VI09",  "VI10", "VI11",   "VI12",  "VI13",     "VI14",  "VI15",
 	"Status", "MAC",   "Clip", "*RES*",  "R",     "I",        "Q",     "*RES*",
 	"*RES*",  "*RES*", "TPC",  "CMSAR0", "FBRST", "VPU-STAT", "*RES*", "CMSAR1"};
 
-const char *CP2VFnames[] = { "x", "y", "z", "w" };
+static const char * const CP2VFnames[] = { "x", "y", "z", "w" };
+
+namespace R5900
+{
+
+// Names of registers
+const char * const disRNameGPR[] = {
+	"r0", "at", "v0", "v1", "a0", "a1","a2", "a3",
+	"t0", "t1", "t2", "t3", "t4", "t5","t6", "t7",
+	"s0", "s1", "s2", "s3", "s4", "s5","s6", "s7",
+	"t8", "t9", "k0", "k1", "gp", "sp","fp", "ra", "hi", "lo"}; // lo,hi used in rec
+
+const char * const disRNameCP0[] = {
+	"Index"     , "Random"    , "EntryLo0" , "EntryLo1", "Context" , "PageMask"  , "Wired"     , "*RES*",
+	"BadVAddr"  , "Count"     , "EntryHi"  , "Compare" , "Status"  , "Cause"     , "ExceptPC"  , "PRevID",
+	"Config"    , "LLAddr"    , "WatchLo"  , "WatchHi" , "*RES*"   , "*RES*"     , "*RES*"     , "Debug",
+	"DEPC"      , "PerfCnt"   , "ErrCtl"   , "CacheErr", "TagLo"   , "TagHi"     , "ErrorEPC"  , "DESAVE"};
+
+static const char * const disRNameCP1[] = {
+	"FPR0" , "FPR1" , "FPR2" , "FPR3" , "FPR4" , "FPR5" , "FPR6" , "FPR7",
+	"FPR8" , "FPR9" , "FPR10", "FPR11", "FPR12", "FPR13", "FPR14", "FPR15",
+	"FPR16", "FPR17", "FPR18", "FPR19", "FPR20", "FPR21", "FPR22", "FPR23",
+	"FPR24", "FPR25", "FPR26", "FPR27", "FPR28", "FPR29", "FPR30", "FPR31"};
+
+static const char * const disRNameCP1c[] = {
+	"FRevID", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
+	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
+	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*",
+	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "FStatus"};
 
 // Type definition of our functions
 #define DisFInterface  (string& output, u32 code, u32 pc)
@@ -130,38 +131,42 @@ typedef void (*TdisR5900F)DisFInterface;
 #define _Fsf_ ((code >> 21) & 0x03)
 #define _Ftf_ ((code >> 23) & 0x03)
 
-#define dName(i)	strAppend(output, "%-7s,", i);
-#define dGPR128(i)	strAppend(output, "%8.8x_%8.8x_%8.8x_%8.8x (%s),", cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
-#define dGPR64(i)	strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i]) 
-#define dGPR64U(i)	strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], disRNameGPR[i])
-#define dGPR32(i)	strAppend(output, "%8.8x (%s),", cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
+// sap!  it stands for string append.  It's not a friendly name but for now it makes
+// the copy-paste marathon of code below more readable!
+#define _sap( str ) ssappendf( output, str, params 
 
-#define dCP032(i)	strAppend(output, "%8.8x (%s),", cpuRegs.CP0.r[i], disRNameCP0[i])
+#define dName(i)	_sap("%-7s,") i);
+#define dGPR128(i)	_sap("%8.8x_%8.8x_%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
+#define dGPR64(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i]) 
+#define dGPR64U(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], disRNameGPR[i])
+#define dGPR32(i)	_sap("%8.8x (%s),") cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
 
-#define dCP132(i)	strAppend(output, "%f (%s),", fpuRegs.fpr[i].f, disRNameCP1[i])
-#define dCP1c32(i)	strAppend(output, "%8.8x (%s),", fpuRegs.fprc[i], disRNameCP1c[i])
-#define dCP1acc()	strAppend(output, "%f (ACC),", fpuRegs.ACC.f)
+#define dCP032(i)	_sap("%8.8x (%s),") cpuRegs.CP0.r[i], disRNameCP0[i])
 
-#define dCP2128f(i)		strAppend(output, "w=%f z=%f y=%f x=%f (%s),", VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, disRNameCP2f[i])
-#define dCP232x(i)		strAppend(output, "x=%f (%s),", VU0.VF[i].f.x, disRNameCP2f[i])
-#define dCP232y(i)		strAppend(output, "y=%f (%s),", VU0.VF[i].f.y, disRNameCP2f[i])
-#define dCP232z(i)		strAppend(output, "z=%f (%s),", VU0.VF[i].f.z, disRNameCP2f[i])
-#define dCP232w(i)		strAppend(output, "w=%f (%s),", VU0.VF[i].f.w, disRNameCP2f[i])
-#define dCP2ACCf()		strAppend(output, "w=%f z=%f y=%f x=%f (ACC),", VU0.ACC.f.w, VU0.ACC.f.z, VU0.ACC.f.y, VU0.ACC.f.x)
-#define dCP232i(i)		strAppend(output, "%8.8x (%s),", VU0.VI[i].UL, disRNameCP2i[i])
-#define dCP232iF(i)		strAppend(output, "%f (%s),", VU0.VI[i].F, disRNameCP2i[i])
-#define dCP232f(i, j)	strAppend(output, "Q %s=%f (%s),", CP2VFnames[j], VU0.VF[i].F[j], disRNameCP2f[i])
+#define dCP132(i)	_sap("%f (%s),") fpuRegs.fpr[i].f, disRNameCP1[i])
+#define dCP1c32(i)	_sap("%8.8x (%s),") fpuRegs.fprc[i], disRNameCP1c[i])
+#define dCP1acc()	_sap("%f (ACC),") fpuRegs.ACC.f)
 
-#define dHI64()		strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.HI.UL[1], cpuRegs.HI.UL[0], "hi")
-#define dLO64()		strAppend(output, "%8.8x_%8.8x (%s),", cpuRegs.LO.UL[1], cpuRegs.LO.UL[0], "lo")
-#define dImm()		strAppend(output, "%4.4x (%d),", _Im_, _Im_)
-#define dTarget()	strAppend(output, "%8.8x,", _Target_)
-#define dSa()		strAppend(output, "%2.2x (%d),", _Sa_, _Sa_)
-#define dSa32()		strAppend(output, "%2.2x (%d),", _Sa_+32, _Sa_+32)
-#define dOfB()		strAppend(output, "%4.4x (%8.8x (%s)),", _Im_, cpuRegs.GPR.r[_Rs_].UL[0], disRNameGPR[_Rs_])
-#define dOffset()	strAppend(output, "%8.8x,", _Branch_)
-#define dCode()		strAppend(output, "%8.8x,", (code >> 6) & 0xffffff)
-#define dSaR()		strAppend(output, "%8.8x,", cpuRegs.sa)
+#define dCP2128f(i)		_sap("w=%f z=%f y=%f x=%f (%s),") VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, disRNameCP2f[i])
+#define dCP232x(i)		_sap("x=%f (%s),") VU0.VF[i].f.x, disRNameCP2f[i])
+#define dCP232y(i)		_sap("y=%f (%s),") VU0.VF[i].f.y, disRNameCP2f[i])
+#define dCP232z(i)		_sap("z=%f (%s),") VU0.VF[i].f.z, disRNameCP2f[i])
+#define dCP232w(i)		_sap("w=%f (%s),") VU0.VF[i].f.w, disRNameCP2f[i])
+#define dCP2ACCf()		_sap("w=%f z=%f y=%f x=%f (ACC),") VU0.ACC.f.w, VU0.ACC.f.z, VU0.ACC.f.y, VU0.ACC.f.x)
+#define dCP232i(i)		_sap("%8.8x (%s),") VU0.VI[i].UL, disRNameCP2i[i])
+#define dCP232iF(i)		_sap("%f (%s),") VU0.VI[i].F, disRNameCP2i[i])
+#define dCP232f(i, j)	_sap("Q %s=%f (%s),") CP2VFnames[j], VU0.VF[i].F[j], disRNameCP2f[i])
+
+#define dHI64()		_sap("%8.8x_%8.8x (%s),") cpuRegs.HI.UL[1], cpuRegs.HI.UL[0], "hi")
+#define dLO64()		_sap("%8.8x_%8.8x (%s),") cpuRegs.LO.UL[1], cpuRegs.LO.UL[0], "lo")
+#define dImm()		_sap("%4.4x (%d),") _Im_, _Im_)
+#define dTarget()	_sap("%8.8x,") _Target_)
+#define dSa()		_sap("%2.2x (%d),") _Sa_, _Sa_)
+#define dSa32()		_sap("%2.2x (%d),") _Sa_+32, _Sa_+32)
+#define dOfB()		_sap("%4.4x (%8.8x (%s)),") _Im_, cpuRegs.GPR.r[_Rs_].UL[0], disRNameGPR[_Rs_])
+#define dOffset()	_sap("%8.8x,") _Branch_)
+#define dCode()		_sap("%8.8x,") (code >> 6) & 0xffffff)
+#define dSaR()		_sap("%8.8x,") cpuRegs.sa)
 
 struct sSymbol {
 	u32 addr;
@@ -1010,10 +1015,20 @@ MakeDisF(disR5900F,		disR5900[code >> 26] DisFInterfaceN)
 
 // returns a string representation of the cpuRegs current instruction.
 // The return value of this method is *not* thread safe!
-const char* DisR5900CurrentState::getString()
+const string& DisR5900CurrentState::getString()
 {
+	result.clear();
+	disR5900F( result, cpuRegs.code, cpuRegs.pc );
+	return result;
+}
+
+const char* DisR5900CurrentState::getCString()
+{
+	result.clear();
 	disR5900F( result, cpuRegs.code, cpuRegs.pc );
 	return result.c_str();
 }
 
 DisR5900CurrentState disR5900Current;
+
+}

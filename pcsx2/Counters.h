@@ -19,6 +19,8 @@
 #ifndef __COUNTERS_H__
 #define __COUNTERS_H__
 
+namespace R5900
+{
 struct EECNT_MODE
 {
 	// 0 - BUSCLK
@@ -127,8 +129,6 @@ struct Counter {
 extern Counter counters[6];
 extern s32 nextCounter;		// delta until the next counter event (must be signed)
 extern u32 nextsCounter;
-extern u32 g_lastVSyncCycle;
-extern u32 g_deltaVSyncCycle;
 
 extern void rcntUpdate_hScanline();
 extern void rcntUpdate_vSync();
@@ -145,5 +145,8 @@ u32	 rcntRcount(int index);
 u32	 rcntCycle(int index);
 
 u32 UpdateVSyncRate();
+void frameLimitReset();
+
+}	// End namespace R5900!
 
 #endif /* __COUNTERS_H__ */

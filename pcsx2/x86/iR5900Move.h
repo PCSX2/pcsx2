@@ -19,7 +19,9 @@
 #ifndef __IR5900MOVE_H__
 #define __IR5900MOVE_H__
 
-namespace EE { namespace Dynarec { namespace OpcodeImpl
+namespace Dynarec { 
+namespace R5900 { 
+namespace OpcodeImpl
 {
 	void recLUI( void );
 	void recMFLO( void );

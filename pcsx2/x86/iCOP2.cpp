@@ -30,11 +30,18 @@
 #include "VUmicro.h"
 #include "iVUmicro.h"
 
-
 #ifdef _WIN32
 #pragma warning(disable:4244)
 #pragma warning(disable:4761)
 #endif
+
+extern void _vu0WaitMicro();
+
+// Temporary until I can get the VUs namespaced properly.
+using namespace Dynarec::R5900;
+
+namespace Dynarec
+{
 
 #define _Ft_ _Rt_
 #define _Fs_ _Rd_
@@ -47,12 +54,11 @@
 void recCop2BranchCall( void (*func)() )
 {
 	SetFPUstate();
-	EE::Dynarec::recBranchCall( func );
+	R5900::recBranchCall( func );
 	_freeX86regs();
 }
 
 #define REC_COP2_FUNC( f ) \
-	void f(); \
 	void rec##f(s32 info) \
 	{ \
 		Console::Notice("Warning > cop2 "#f" called"); \
@@ -73,7 +79,6 @@ void recV##f( s32 info ) { \
 	recVUMI_##f( &VU0, info ); \
 }
 
-extern u32 dumplog;
 #define REC_COP2_VU0_Q(f) \
 void recV##f( s32 info ) { \
 	recVUMI_##f( &VU0, info ); \
@@ -93,8 +98,6 @@ void recCOP2(s32 info);
 void recCOP2_SPECIAL(s32 info);
 void recCOP2_BC2(s32 info);
 void recCOP2_SPECIAL2(s32 info);
-
-extern void _vu0WaitMicro();
     
 static void recCFC2(s32 info)
 {
@@ -679,4 +682,6 @@ void recCOP2_SPECIAL2(s32 info)
 {
 	int opc=(cpuRegs.code & 0x3) | ((cpuRegs.code >> 4) & 0x7c);
 	recCOP2SPECIAL2t[opc](info);
+}
+
 }

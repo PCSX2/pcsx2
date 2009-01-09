@@ -78,7 +78,7 @@ vector<Patch> patches;
 int LoadPatch( const string& crc)
 {
 	char pfile[256];
-	sprintf(pfile,"patches\\%S.xml",&crc);
+	sprintf(pfile,"patches\\%hs.xml",&crc);
 
 	patchnumber=0;
 
@@ -159,7 +159,7 @@ int LoadGroup(TiXmlNode *group,int gParent)
 	// only valid for recompilers
 	TiXmlNode *fastmemory=group->FirstChild("FASTMEMORY");
 	if(fastmemory!=NULL)
-		EE::Dynarec::SetFastMemory(1);
+		Dynarec::SetFastMemory(1);
 
     TiXmlNode *zerogs=group->FirstChild("ZEROGS");
 	if(zerogs!=NULL)

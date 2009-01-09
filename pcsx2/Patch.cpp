@@ -567,14 +567,14 @@ void patchFunc_xkickdelay( char * cmd, char * param )
 void patchFunc_fastmemory( char * cmd, char * param )
 {
 	// only valid for recompilers
-	EE::Dynarec::SetFastMemory(1);
+	Dynarec::SetFastMemory(1);
 }
 
 
 void patchFunc_vunanmode( char * cmd, char * param )
 {
 	// only valid for recompilers
-	 SetVUNanMode(param != NULL ? atoi(param) : 1);
+	Dynarec::SetVUNanMode(param != NULL ? atoi(param) : 1);
 }
 
 void patchFunc_path3hack( char * cmd, char * param )

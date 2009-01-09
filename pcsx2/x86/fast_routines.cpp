@@ -86,6 +86,8 @@ void checkregs()
 	if( g_EEFreezeRegs ) assert( g_globalMMXSaved );
 }
 #endif
+
+
 __declspec(align(16)) u8 _xmm_backup[16*2];
 //this one checks for alligments too ...
 __declspec(naked) void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes)
