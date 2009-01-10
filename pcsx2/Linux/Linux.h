@@ -69,6 +69,7 @@ extern void StartGui();
 extern void RunGui();
 extern int Pcsx2Configure();
 extern GtkWidget *CpuDlg;
+extern void SysMessage(const char *fmt, ...);
 
 /* Config.c */
 extern int LoadConfig();
@@ -124,7 +125,7 @@ int Config_hacks_backup;
 #define set_flag(v, flag, value) if (value == TRUE) v |= flag; else v &= flag;
 #define get_flag(v,flag) ((v & (1 << flag)) != 0)
 
-static __forceinline void print_flags(char *name, u32 num, char *flag_names[16])
+/*static __forceinline void print_flags(char *name, u32 num, char *flag_names[16])
 {
 	int i;
 	
@@ -133,14 +134,14 @@ static __forceinline void print_flags(char *name, u32 num, char *flag_names[16])
 	if (flag_names != NULL)
 	{
 		for(i=0; i<=15; i++)
-			DevCon::WriteLn("%s %x: %x", flag_names[i], (1<<i), get_flag(num, i));
+			DevCon::WriteLn("%s %x: %x", params flag_names[i], (1<<i), get_flag(num, i));
 	}
 	else 
 	{
 		for(i=0; i<=15; i++)
-			DevCon::WriteLn("%x: %x", (1<<i), get_flag(num, i));
+			DevCon::WriteLn("%x: %x", params (1<<i), get_flag(num, i));
 	}
-} 
+} */
 
 char ee_log_names[17][32] = {
 	"Cpu Log",

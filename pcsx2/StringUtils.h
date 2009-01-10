@@ -21,6 +21,7 @@
 
 #include <string>
 #include <cstdarg>
+#include <sstream>
 
 // to_string: A utility template for quick and easy inline string type conversion.
 // Use to_string(intval), or to_string(float), etc.  Anything that the STL itself

@@ -23,12 +23,13 @@
 
 // these namespace directives globalize the new namespaces and make the code behave basically
 // like it used to (with cpuReset() and other cpu* vars and functions global).
-// Not sure if the Dynarec ones are needed, so ncomment them if you get unresolved external
+// Not sure if the Dynarec ones are needed, so uncomment them if you get unresolved external
 // link errors.  Should solve some of them (maybe not all...) - (air)
 
+//  Definitely not all. Most of them are coming from assembly files. :(
+
 using namespace R5900;
-//using namespace Dynarec;
-//using namespace Dynarec::R5900;
+using namespace Dynarec;
 
 DIR *dir;
 
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
 		char* token = argv[i++];
 
 		if( stricmp(token, "-help") == 0 || stricmp(token, "--help") == 0 || stricmp(token, "-h") == 0 ) {
-			//SysMessage(phelpmsg);
+			//Msgbox::Alert("%s", params phelpmsg);
 			return 0;
 		}
 		else if( stricmp(token, "-efile") == 0 ) {
@@ -164,7 +165,7 @@ int main(int argc, char *argv[]) {
 		Config.sseMXCSR = DEFAULT_sseMXCSR;
 		Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
-		SysMessage(_("Pcsx2 needs to be configured"));
+		Msgbox::Alert("Pcsx2 needs to be configured");
 		Pcsx2Configure();
 
 		return 0;
@@ -174,14 +175,14 @@ int main(int argc, char *argv[]) {
 	
 	if( Config.PsxOut ) {
 		// output the help commands
-		SysPrintf("\tF1 - save state");
-		SysPrintf("\t(Shift +) F2 - cycle states");
-		SysPrintf("\tF3 - load state");
+		Console::WriteLn("\tF1 - save state");
+		Console::WriteLn("\t(Shift +) F2 - cycle states");
+		Console::WriteLn("\tF3 - load state");
 
 #ifdef PCSX2_DEVBUILD
-		SysPrintf("\tF10 - dump performance counters");
-		SysPrintf("\tF11 - save GS state");
-		SysPrintf("\tF12 - dump hardware registers");
+		Console::WriteLn("\tF10 - dump performance counters");
+		Console::WriteLn("\tF11 - save GS state");
+		Console::WriteLn("\tF12 - dump hardware registers");
 #endif
 	}
 
@@ -377,7 +378,7 @@ bool SysInit()
 	while (LoadPlugins() == -1) {
 		if (Pcsx2Configure() == FALSE)
 		{
-			SysMessage("Configuration failed. Exiting.");
+			Msgbox::Alert("Configuration failed. Exiting.");
 			exit(1);
 		}
 	}
@@ -404,9 +405,9 @@ void SysRestorableReset()
 	}
 	catch( std::runtime_error& ex )
 	{
-		SysMessage(
+		Msgbox::Alert(
 			"Pcsx2 gamestate recovery failed. Some options may have been reverted to protect your game's state.\n"
-			"Error: %s", ex.what() );
+			"Error: %s", params ex.what() );
 		safe_delete( g_RecoveryState );
 	}
 }
@@ -443,7 +444,7 @@ void SysPrintf(const char *fmt, ...) {
 	msg[511] = '\0';
 	va_end(list);
 
-	Console::Msg( msg );
+	Console::Write( msg );
 }
 
 void *SysLoadLibrary(const char *lib) {

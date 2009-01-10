@@ -18,6 +18,8 @@
 
 #include "GtkGui.h"
 
+using namespace R5900;
+
 void On_Dialog_Cancelled(GtkButton* button, gpointer user_data) {
 	gtk_widget_destroy((GtkWidget*)gtk_widget_get_toplevel ((GtkWidget*)button));
 	gtk_widget_set_sensitive(MainWindow, TRUE);
@@ -159,7 +161,7 @@ void RunExecute( const char* elf_file, bool use_bios )
 		
 		catch( std::exception& ex )
 		{
-			SysMessage( ex.what() );
+			Msgbox::Alert( "%s", params ex.what() );
 			return;
 		}
 
@@ -179,9 +181,9 @@ void RunExecute( const char* elf_file, bool use_bios )
 			}
 			catch( std::runtime_error& ex )
 			{
-				SysMessage(
+				Msgbox::Alert(
 					"Gamestate recovery failed.  Your game progress will be lost (sorry!)\n"
-					"\nError: %s\n", ex.what() );
+					"\nError: %s\n", params ex.what() );
 
 				// Take the user back to the GUI...
 				safe_delete( g_RecoveryState );
@@ -278,7 +280,7 @@ void pcsx2_exit()
 		}
 	}
 
-	printf(_("PCSX2 Quitting\n"));
+	printf("PCSX2 Quitting\n");
 	
 	if (UseGui)
 	{
@@ -338,7 +340,7 @@ void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
 	}
 }*/
 
-void States_Load(const char* file, int num = -1 )
+void States_Load(string file, int num = -1 )
 {
 	efile = 2;
 	try
@@ -357,9 +359,9 @@ void States_Load(const char* file, int num = -1 )
 	catch( Exception::UnsupportedStateVersion& )
 	{
 		if( num != -1 )
-			SysMessage( _( "Savestate slot %d is an unsupported version." ), num);
+			Msgbox::Alert("Savestate slot %d is an unsupported version." , params num);
 		else
-			SysMessage( _( "%s : This is an unsupported savestate version." ), file);
+			Msgbox::Alert( "%s : This is an unsupported savestate version." , params file);
 
 		// At this point the cpu hasn't been reset, so we can return
 		// control to the user safely...
@@ -368,19 +370,19 @@ void States_Load(const char* file, int num = -1 )
 	}
 	catch( std::exception& ex )
 	{
-		if( num != -1 )
-			Console::Error( _("Error occured while trying to load savestate slot %d")F_, num);
+		if (num != -1)
+			Console::Error("Error occured while trying to load savestate slot %d", params num);
 		else
-			Console::Error( _("Error occured while trying to load savestate file: %d")F_, file);
+			Console::Error("Error occured while trying to load savestate file: %d", params file);
 
-		Console::Error( ex.what() );
+		Console::Error( "%s", params ex.what() );
 
 		// The emulation state is ruined.  Might as well give them a popup and start the gui.
 
-		SysMessage( _( 
+		Msgbox::Alert( 
 			"An error occured while trying to load the savestate data.\n"
 			"Pcsx2 emulation state has been reset."
-		) );
+		);
 
 		cpuShutdown();
 		return;
@@ -390,43 +392,43 @@ void States_Load(const char* file, int num = -1 )
 }
 
 void States_Load(int num) {
-	char Text[g_MaxPath];
+	string Text;
 
 	SaveState::GetFilename( Text, num );
 
 	struct stat buf;
-	if( stat(Text, &buf ) == -1 )
+	if( stat(Text.c_str(), &buf ) == -1 )
 	{
-		Console::Notice( "Saveslot %d is empty."F_, num );
+		Console::Notice( "Saveslot %d is empty.", params num );
 		return;
 	}
 	States_Load( Text, num );
 }
 
-void States_Save( const char* file, int num = -1 )
+void States_Save( string file, int num = -1 )
 {
 	try
 	{
 		gzSavingState(file).FreezeAll();
 		if( num != -1 )
-			Console::Notice( _( "State saved to slot %d" )F_, num );
+			Console::Notice("State saved to slot %d", params num );
 		else
-			Console::Notice( _( "State saved to file: %s" )F_, file );
+			Console::Notice( "State saved to file: %s", params file );
 	}
 	catch( std::exception& ex )
 	{
 		if( num != -1 )
-			SysMessage( _("An error occured while trying to save to slot %d"), num );
+			Msgbox::Alert("An error occured while trying to save to slot %d", params num );
 		else
-			SysMessage( _("An error occured while trying to save to file: %s"), file );
+			Msgbox::Alert("An error occured while trying to save to file: %s", params file );
 
-		Console::Error( _( "Save state request failed with the following error:" ) );
-		Console::Error( ex.what() );
+		Console::Error("Save state request failed with the following error:" );
+		Console::Error( "%s", params ex.what() );
 	}
 }
 
 void States_Save(int num) {
-	char Text[g_MaxPath];
+	string Text;
 
 	SaveState::GetFilename( Text, num );
 	States_Save( Text, num );

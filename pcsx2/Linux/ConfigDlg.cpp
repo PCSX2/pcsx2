@@ -23,8 +23,8 @@ using namespace std;
 // these namespace directives globalize the new namespaces and make the code behave basically
 // like it used to (with cpuReset() and other cpu* vars and functions global).
 using namespace R5900;
-using namespace Dynarec;
-using namespace Dynarec::R5900;
+//using namespace Dynarec;
+//using namespace Dynarec::R5900;
 
 static void FindComboText(GtkWidget *combo, char plist[255][255], GList *list, char *conf)
 {
@@ -96,9 +96,9 @@ static void TestPlugin(PluginConf confs, char* plugin, const char* name)
 	SysCloseLibrary(drv);
 
 	if (ret == 0)
-		SysMessage(_("This plugin reports that should work correctly"));
+		Msgbox::Alert("This plugin reports that should work correctly");
 	else
-		SysMessage(_("This plugin reports that should not work correctly"));
+		Msgbox::Alert("This plugin reports that should not work correctly");
 }
 
 void OnConf_Gs(GtkMenuItem *menuitem, gpointer user_data)
@@ -433,7 +433,7 @@ void OnConf_Conf(GtkMenuItem *menuitem, gpointer user_data) {
 	FindPlugins();
 
 	ConfDlg = create_ConfDlg();
-	gtk_window_set_title(GTK_WINDOW(ConfDlg), _("Configuration"));
+	gtk_window_set_title(GTK_WINDOW(ConfDlg), "Configuration");
 
 	UpdateConfDlg();
 
@@ -465,7 +465,7 @@ void FindPlugins() {
 
 	dir = opendir(Config.PluginsDir);
 	if (dir == NULL) {
-		SysMessage(_("Could not open '%s' directory"), Config.PluginsDir);
+		Msgbox::Alert("Could not open '%s' directory", params Config.PluginsDir);
 		return;
 	}
 	while ((ent = readdir(dir)) != NULL) {
@@ -478,7 +478,7 @@ void FindPlugins() {
 		Handle = dlopen(plugin, RTLD_NOW);
 		if (Handle == NULL) 
 		{
-			Console::Error("Can't open %s: %s", params  ent->d_name, dlerror()); 
+			Console::Error("Can't open %s: %s\n", params ent->d_name, dlerror()); 
 			continue;
 		}
 
@@ -488,17 +488,17 @@ void FindPlugins() {
 		
 		if (PS2EgetLibType == NULL)
 		{
-			Console::Error("PS2EgetLibType==NULL for %s", params  ent->d_name);
+			Console::Error("PS2EgetLibType==NULL for %s", params ent->d_name);
 			continue;
 		}
 		if (PS2EgetLibName == NULL)
 		{
-			Console::Error("PS2EgetLibName==NULL for %s", params  ent->d_name);
+			Console::Error("PS2EgetLibName==NULL for %s", params ent->d_name);
 			continue;
 		}
 		if (PS2EgetLibVersion2 == NULL)
 		{
-			Console::Error("PS2EgetLibVersion2==NULL for %s", params  ent->d_name);
+			Console::Error("PS2EgetLibVersion2==NULL for %s", params ent->d_name);
 			continue;
 		}
 		
@@ -511,7 +511,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_GS_VERSION) 
 				ComboAddPlugin(name, &GSConfS, version, ent);
 			else
-				Console::Notice("Plugin %s: Version %x != %x"F_, plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x", params plugin, (version >> 16)&0xff, PS2E_GS_VERSION);
 		}
 		if (type & PS2E_LT_PAD) 
 		{
@@ -526,7 +526,7 @@ void FindPlugins() {
 				if (query() & 0x2) ComboAddPlugin(name, &PAD2ConfS, version, ent);
 			}
 			else 
-				Console::Notice("Plugin %s: Version %x != %x", params  plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x", params plugin, (version >> 16)&0xff, PS2E_PAD_VERSION);
 		}
 		if (type & PS2E_LT_SPU2) 
 		{
@@ -535,7 +535,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_SPU2_VERSION) 
 				ComboAddPlugin(name, &SPU2ConfS, version, ent);
 			else 
-				Console::Notice("Plugin %s: Version %x != %x", params  plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x", params plugin, (version >> 16)&0xff, PS2E_SPU2_VERSION);
 		}
 		if (type & PS2E_LT_CDVD) 
 		{
@@ -544,7 +544,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_CDVD_VERSION) 
 				ComboAddPlugin(name, &CDVDConfS, version, ent);
 			else 
-				Console::Notice("Plugin %s: Version %x != %x", params  plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
+				Console::Notice("Plugin %s: Version %x != %x", params plugin, (version >> 16)&0xff, PS2E_CDVD_VERSION);
 		}
 		if (type & PS2E_LT_DEV9) 
 		{
@@ -553,7 +553,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_DEV9_VERSION) 
 				ComboAddPlugin(name, &DEV9ConfS, version, ent);
 			else
-				Console::Notice("DEV9Plugin %s: Version %x != %x", params  plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
+				Console::Notice("DEV9Plugin %s: Version %x != %x", params plugin, (version >> 16)&0xff, PS2E_DEV9_VERSION);
 		}
 		if (type & PS2E_LT_USB) 
 		{
@@ -562,7 +562,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_USB_VERSION) 
 				ComboAddPlugin(name, &USBConfS, version, ent);
 			else 
-				Console::Notice("USBPlugin %s: Version %x != %x", params  plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
+				Console::Notice("USBPlugin %s: Version %x != %x", params plugin, (version >> 16)&0xff, PS2E_USB_VERSION);
 		}
 		if (type & PS2E_LT_FW) 
 		{
@@ -571,7 +571,7 @@ void FindPlugins() {
 			if (((version >> 16)&0xff) == PS2E_FW_VERSION) 
 				ComboAddPlugin(name, &FWConfS, version, ent);
 			else 
-				Console::Notice("FWPlugin %s: Version %x != %x", params  plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
+				Console::Notice("FWPlugin %s: Version %x != %x", params plugin, (version >> 16)&0xff, PS2E_FW_VERSION);
 		}
 	}
 	closedir(dir);
@@ -579,7 +579,7 @@ void FindPlugins() {
 	dir = opendir(Config.BiosDir);
 	if (dir == NULL) 
 	{
-		SysMessage(_("Could not open '%s' directory"), Config.BiosDir);
+		Msgbox::Alert("Could not open '%s' directory", params Config.BiosDir);
 		return;
 	}
 

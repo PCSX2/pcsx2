@@ -1,4 +1,4 @@
-void/*  Pcsx2 - Pc Ps2 Emulator
+/*  Pcsx2 - Pc Ps2 Emulator
  *  Copyright (C) 2002-2008  Pcsx2 Team
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@ void _format_vstring( string& dest, const char* format, va_list args )
 {
 	int writtenCount;
 	int newSize = strlen(format) * 2;
-	char *buf;
+	char *buf, *out;
 
 	while( true )
 	{
@@ -45,7 +45,7 @@ void _format_vstring( string& dest, const char* format, va_list args )
 	}
 
 	buf[writtenCount] = '\0';
-	out = buf;
+	cout << buf;
 	delete[] buf;
 }
 

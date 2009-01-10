@@ -20,6 +20,7 @@
 #define _PCSX2_EXCEPTIONS_H_
 
 #include <stdexcept>
+#include "StringUtils.h"
 
 // This class provides an easy and clean method for ensuring objects are not copyable.
 class NoncopyableObject

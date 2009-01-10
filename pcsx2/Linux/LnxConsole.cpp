@@ -76,31 +76,32 @@ namespace Console
 	
 	void __fastcall SetColor( Colors color )
 	{
-		Msg( tbl_color_codes[color] );
+		Write( tbl_color_codes[color] );
 	}
 
 	void ClearColor()
 	{
-		Msg( COLOR_RESET );
+		Write( COLOR_RESET );
 	}
 }
 
 namespace Msgbox
 {	
-	bool Alert( const string& fmt )
+	bool Alert (const string& fmt)
 	{
+		GtkWidget *dialog;
+		
 		if (!UseGui) 
 		{ 
-			Error( msg ); 
+			Console::Error( fmt ); 
 			return false; 
 		}
 
-		GtkWidget *dialog;
 
 		dialog = gtk_message_dialog_new (GTK_WINDOW(MainWindow),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_ERROR,
-                                  GTK_BUTTONS_OK, fmt);
+                                  GTK_BUTTONS_OK, fmt.c_str());
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
 		
@@ -111,10 +112,10 @@ namespace Msgbox
 	{
 		GtkWidget *dialog;
 		string msg;
-
 		va_list list;
+		
 		va_start(list, dummy);
-		ssprintf(msg, fmt, list);
+		vssprintf(msg, fmt, list);
 		va_end(list);
 
 		if (msg[msg.length()-1] == '\n')
@@ -122,13 +123,14 @@ namespace Msgbox
 
 		if (!UseGui) 
 		{ 
-			Error( msg ); 
+			Console::Error( msg ); 
 			return false; 
 		}
+		
 		dialog = gtk_message_dialog_new (GTK_WINDOW(MainWindow),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_ERROR,
-                                  GTK_BUTTONS_OK, msg);
+                                  GTK_BUTTONS_OK, msg.c_str());
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
 		
