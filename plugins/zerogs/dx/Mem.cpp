@@ -242,7 +242,7 @@ u32 g_pageTable8[64][128];
 u32 g_pageTable4[128][128];
 
 BLOCK m_Blocks[0x40]; // do so blocks are indexable
-static __declspec(align(16)) u32 tempblock[64];
+static PCSX2_ALIGNED16(u32 tempblock[64]);
 
 #define DSTPSM gs.dstbuf.psm
 
@@ -503,13 +503,13 @@ End: \
 #define SwizzleBlock4HLu SwizzleBlock4HL
 
 // ------------------------
-// |			  Y	   |
+// |              Y       |
 // ------------------------
-// |		block	 |   |
+// |        block     |   |
 // |   aligned area   | X |
-// |				  |   |
+// |                  |   |
 // ------------------------
-// |			  Y	   |
+// |              Y       |
 // ------------------------
 #define DEFINE_TRANSFERLOCAL(psm, T, widthlimit, blockbits, blockwidth, blockheight, TransSfx, SwizzleBlock) \
 int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
@@ -521,16 +521,18 @@ int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
 	int nSize = nQWordSize*4*2/TRANSMIT_PITCH##TransSfx(2, T); \
 	nSize = min(nSize, gs.imageWnew * gs.imageHnew); \
 	\
+	int pitch, area, fracX; \
 	int endY = ROUND_UPPOW2(i, blockheight); \
 	int alignedY = ROUND_DOWNPOW2(gs.imageEndY, blockheight); \
 	int alignedX = ROUND_DOWNPOW2(gs.imageEndX, blockwidth); \
-	bool bCanAlign = MOD_POW2(gs.trxpos.dx, blockwidth) == 0 && (j == gs.trxpos.dx) && (alignedY > endY) && alignedX > gs.trxpos.dx; \
+	bool bAligned, bCanAlign = MOD_POW2(gs.trxpos.dx, blockwidth) == 0 && (j == gs.trxpos.dx) && (alignedY > endY) && alignedX > gs.trxpos.dx; \
 	\
 	if( (gs.imageEndX-gs.trxpos.dx)%widthlimit ) { \
 		/* hack */ \
-		if( abs((int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx)) <= widthlimit ) { \
-			/* don't transfer */ \
-			/*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/ \
+        int testwidth = (int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx); \
+		if ((testwidth <= widthlimit) && (testwidth >= -widthlimit)) { \
+		/* Don't transfer */ \
+		/*DEBUG_LOG("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/ \
 			gs.imageTransfer = -1; \
 		} \
 		bCanAlign = false; \
@@ -559,12 +561,12 @@ int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
 	assert( MOD_POW2(i, blockheight) == 0 && j == gs.trxpos.dx); \
 	\
 	/* can align! */ \
-	int pitch = gs.imageEndX-gs.trxpos.dx; \
-	int area = pitch*blockheight; \
-	int fracX = gs.imageEndX-alignedX; \
+	pitch = gs.imageEndX-gs.trxpos.dx; \
+	area = pitch*blockheight; \
+	fracX = gs.imageEndX-alignedX; \
 	\
 	/* on top of checking whether pbuf is alinged, make sure that the width is at least aligned to its limits (due to bugs in pcsx2) */ \
-	bool bAligned = !((u32)pbuf & 0xf) && (TRANSMIT_PITCH##TransSfx(pitch, T)&0xf) == 0; \
+	bAligned = !((uptr)pbuf & 0xf) && (TRANSMIT_PITCH##TransSfx(pitch, T)&0xf) == 0; \
 	\
 	/* transfer aligning to blocks */ \
 	for(; i < alignedY && nSize >= area; i += blockheight, nSize -= area) { \
@@ -638,7 +640,7 @@ DEFINE_TRANSFERLOCAL(4HH, u8, 8, 32, 8, 8, _4, SwizzleBlock4HH);
 //		/* hack */
 //		if( abs((int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx)) <= widthlimit ) {
 //			/* don't transfer */
-//			/*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/
+//			/*DEBUG_LOG("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/
 //			gs.imageTransfer = -1;
 //		}
 //		bCanAlign = false;

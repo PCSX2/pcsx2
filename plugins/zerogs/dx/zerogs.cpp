@@ -125,7 +125,7 @@ extern int s_frameskipping;
 //	static const char* pnames[4] = {NULL};
 //
 //	if( ptargs[index] == psurf && psurf != NULL )
-//		printf("duplicate targets\n");
+//		DEBUG_LOG("duplicate targets\n");
 //	pd3dDevice->SetRenderTarget(index, psurf);
 //	ptargs[index] = psurf;
 //	counters[index] = counter;
@@ -475,7 +475,7 @@ void ZeroGS::VB::CheckFrame(int tbp)
 
 			maxpos = min(gsfb.fbh, maxpos);
 			maxpos = min(maxmin, maxpos);
-			//? alteir aris crashes without it
+			//? atelier iris crashes without it
 			if( maxpos > 256 )
 				maxpos &= ~0x1f;
 		}
@@ -505,8 +505,7 @@ void ZeroGS::VB::CheckFrame(int tbp)
 		}
 
 		frame = gsfb;
-		if( frame.fbw > 1024 )
-			frame.fbw = 1024;
+		if (frame.fbw > 1024) frame.fbw = 1024;
 
 //		if( fbh > 256 && (fbh % m_Blocks[gsfb.psm].height) <= 2 ) {
 //			// dragon ball z
@@ -600,7 +599,7 @@ void ZeroGS::VB::CheckFrame(int tbp)
 		//CRenderTargetMngr::MAPTARGETS::iterator it = s_RTs.mapTargets.find(key);
 //		if( it != s_RTs.mapTargets.end() ) {
 //#ifdef _DEBUG
-//			printf("zbuf resolve\n");
+//			DEBUG_LOG("zbuf resolve\n");
 //#endif
 //			if( it->second->status & CRenderTarget::TS_Resolved )
 //				it->second->Resolve();
@@ -868,7 +867,7 @@ HRESULT ZeroGS::Create(LONG _width, LONG _height)
 		D3DADAPTER_IDENTIFIER9 id;
 		HRESULT hr = pD3D->GetAdapterIdentifier(i, 0, &id);
 		if( strcmp(id.Description, "NVIDIA NVPerfHUD") == 0 ) {
-			printf("Using %s adapter\n", id.Description);
+			DEBUG_LOG("Using %s adapter\n", id.Description);
 			adapter = i;
 			devtype = D3DDEVTYPE_REF;
 			break;
@@ -1177,7 +1176,7 @@ void ZeroGS::ChangeDeviceSize(int nNewWidth, int nNewHeight)
 
 	int oldwidth = width, oldheight = height;
 	if( FAILED(Create(nNewWidth&~7, nNewHeight&~7)) ) {
-		printf("Failed to recreate, changing to old\n");
+		DEBUG_LOG("Failed to recreate, changing to old\n");
 		if( FAILED(Create(oldwidth, oldheight)) ) {
 			MessageBox(NULL, "failed to create dev, exiting...\n", "Error", MB_OK);
 			exit(0);
@@ -1246,7 +1245,7 @@ void ZeroGS::SetAA(int mode)
 	assert( (header) != NULL && (header)->index == (Index) ); \
 	hr = pd3dDevice->CreateVertexShader((DWORD*)(s_lpShaderResources + (header)->offset), &(ptr)); \
 	if( FAILED(hr) || ptr == NULL ) { \
-		printf("errors 0x%x for %d, failed.. try updating your drivers or dx\n", hr, Index); \
+		DEBUG_LOG("errors 0x%x for %d, failed.. try updating your drivers or dx\n", hr, Index); \
 		return E_FAIL; \
 	} \
 } \
@@ -1256,7 +1255,7 @@ void ZeroGS::SetAA(int mode)
 	header = mapShaderResources[index]; \
 	hr = pd3dDevice->CreatePixelShader((DWORD*)(s_lpShaderResources + (header)->offset), &(ptr)); \
 	if( FAILED(hr) || ptr == NULL ) { \
-		printf("errors 0x%x for %s, failed.. try updating your drivers or dx\n", hr, index); \
+		DEBUG_LOG("errors 0x%x for %s, failed.. try updating your drivers or dx\n", hr, index); \
 		return E_FAIL; \
 	} \
 } \
@@ -1357,7 +1356,7 @@ LPD3DPS ZeroGS::LoadShadeEffect(int type, int texfilter, int fog, int testaem, i
 	index += NUM_SHADERS*g_nPixelShaderVer;
 	assert( mapShaderResources.find(index) != mapShaderResources.end() );
 	SHADERHEADER* header = mapShaderResources[index];
-	if( header == NULL ) printf("%d %d\n", index%NUM_SHADERS, g_nPixelShaderVer);
+	if( header == NULL ) DEBUG_LOG("%d %d\n", index%NUM_SHADERS, g_nPixelShaderVer);
 	assert( header != NULL );
 	HRESULT hr = pd3dDevice->CreatePixelShader((DWORD*)(s_lpShaderResources + header->offset), pps);
 
@@ -1425,7 +1424,7 @@ public:
 	V(D3DXCompileShaderFromFile(EFFECT_NAME"ps2hw.fx", pmacros, pInclude, name, shaderver, ShaderFlagsVS, &pShader, &pError, NULL)); \
 	if( FAILED(hr) ) \
 	{ \
-		printf("Failed to load vs %s: \n%s\n", name, pError->GetBufferPointer()); \
+		DEBUG_LOG("Failed to load vs %s: \n%s\n", name, pError->GetBufferPointer()); \
 		SAFE_RELEASE(pShader); \
 		SAFE_RELEASE(pError); \
 		return hr; \
@@ -1441,7 +1440,7 @@ public:
 	V(D3DXCompileShaderFromFile(EFFECT_NAME"ps2hw.fx", pmacros, pInclude, name, shmodel, ShaderFlagsPS, &pShader, &pError, NULL)); \
 	if( FAILED(hr) ) \
 	{ \
-		printf("Failed to load ps %s: \n%s\n", name, pError->GetBufferPointer()); \
+		DEBUG_LOG("Failed to load ps %s: \n%s\n", name, pError->GetBufferPointer()); \
 		SAFE_RELEASE(pShader); \
 		SAFE_RELEASE(pError); \
 		return hr; \
@@ -1450,7 +1449,7 @@ public:
 	SAFE_RELEASE(pShader); \
 	SAFE_RELEASE(pError); \
 	if( FAILED(hr) || ptr == NULL ) { \
-		printf("errors 0x%x for %s, failed.. try updating your drivers or dx\n", hr, name); \
+		DEBUG_LOG("errors 0x%x for %s, failed.. try updating your drivers or dx\n", hr, name); \
 		return E_FAIL; \
 	} \
 } \
@@ -1566,7 +1565,7 @@ LPD3DPS ZeroGS::LoadShadeEffect(int type, int texfilter, int fog, int testaem, i
 	if( SUCCEEDED(hr) )
 		return *pps;
 
-	printf("Failed to create shader %d,%d,%d,%d\n", type, fog, texfilter, 4*clamp.wms+clamp.wmt);
+	DEBUG_LOG("Failed to create shader %d,%d,%d,%d\n", type, fog, texfilter, 4*clamp.wms+clamp.wmt);
 
 	return NULL;
 }
@@ -1606,7 +1605,7 @@ HRESULT ZeroGS::InitDeviceObjects()
 
 	if( blockfmt == D3DFMT_R32F ) {
 		if( FAILED(hr = pd3dDevice->CreateTexture(BLOCK_TEXWIDTH, BLOCK_TEXHEIGHT, 1, 0, D3DFMT_A32B32G32R32F, D3DPOOL_MANAGED, &ptexBilinearBlocks, NULL)) ) {
-			printf("Failed to create bilinear block texture, fmt = D3DFMT_A32B32G32R32F\n");
+			DEBUG_LOG("Failed to create bilinear block texture, fmt = D3DFMT_A32B32G32R32F\n");
 		}
 	}
 	else ptexBilinearBlocks = NULL;
@@ -1716,7 +1715,7 @@ void ZeroGS::DeleteDeviceObjects()
 	if( s_aviinit ) {
 		StopCapture();
 		STOP_AVI();
-		printf("zerogs.avi stopped");
+		DEBUG_LOG("zerogs.avi stopped");
 		s_aviinit = 0;
 	}
 
@@ -1926,7 +1925,7 @@ void ZeroGS::Flush(int context)
 	// kh2 hack
 //	if( curvb.dwCount == 2 && curvb.curprim.tme == 0 && curvb.curprim.abe == 0 && (curvb.tex0.tbp0 == 0x2a00 || curvb.tex0.tbp0==0x1d00) ) {
 //		// skip
-//		printf("skipping\n");
+//		DEBUG_LOG("skipping\n");
 //		g_SaveFrameNum++;
 //		curvb.dwCount = 0;
 //		return;
@@ -3378,7 +3377,7 @@ void ZeroGS::RenderCRTC(int interlace)
 		pd3dDevice->EndScene();
 		if( pd3dDevice->Present(NULL, NULL, NULL, NULL) == D3DERR_DEVICELOST ) {
 			// device is lost, need to recreate
-			printf("device lost\n");
+			DEBUG_LOG("device lost\n");
 			g_bIsLost = TRUE;
 			Reset();
 			return;
@@ -3462,7 +3461,7 @@ void ZeroGS::RenderCRTC(int interlace)
 		if( total / ARRAYSIZE(s_nResolveCounts) > 3 ) {
 			if( s_nLastResolveReset > (int)(fFPS * 8) ) {
 				// reset
-				printf("ZeroGS: video mem reset\n");
+				DEBUG_LOG("ZeroGS: video mem reset\n");
 				s_nLastResolveReset = 0;
 				memset(s_nResolveCounts, 0, sizeof(s_nResolveCounts));
 
@@ -3495,52 +3494,63 @@ void ZeroGS::RenderCRTC(int interlace)
 // Internal Definitions //
 //////////////////////////
 
-#define MOVZ(p, gsz) p.z = curvb.zprimmask==0xffff?min(0xffff, gsz):gsz;
-#define MOVFOG(p, gsf) p.f = ((s16)(gsf).f<<7)|0x7f;
+__forceinline void MOVZ(VertexGPU *p, u32 gsz, const VB& curvb) 
+{
+	p->z = curvb.zprimmask==0xffff?min((u32)0xffff, gsz):gsz;
+}
 
-#define SET_VERTEX(p, Index) { \
-	int index = Index; \
-	p.x = (((int)gs.gsvertex[index].x - curvb.offset.x)>>1)&0xffff; \
-	p.y = (((int)gs.gsvertex[index].y - curvb.offset.y)>>1)&0xffff; \
-	/*x = ((int)gs.gsvertex[index].x - curvb.offset.x); \
-	y = ((int)gs.gsvertex[index].y - curvb.offset.y); \
-	p.x = (x&0x7fff) | (x < 0 ? 0x8000 : 0); \
-	p.y = (y&0x7fff) | (y < 0 ? 0x8000 : 0);*/ \
-	p.f = ((s16)gs.gsvertex[index].f<<7)|0x7f; \
-	MOVZ(p, gs.gsvertex[index].z); \
-	p.rgba = prim->iip ? gs.gsvertex[index].rgba : gs.rgba; \
-	if( (g_GameSettings & GAME_TEXAHACK) && !(p.rgba&0xffffff) ) \
-		p.rgba = 0; \
-	if( prim->tme ) { \
-		if( prim->fst ) { \
-			p.s = (float)gs.gsvertex[index].u * fiTexWidth[prim->ctxt]; \
-			p.t = (float)gs.gsvertex[index].v * fiTexHeight[prim->ctxt]; \
-			p.q = 1; \
-		} \
-		else { \
-			p.s = gs.gsvertex[index].s; \
-			p.t = gs.gsvertex[index].t; \
-			p.q = gs.gsvertex[index].q; \
-		} \
-	} \
-} \
+__forceinline void MOVFOG(VertexGPU *p, Vertex gsf)
+{
+	p->f = ((s16)(gsf).f<<7)|0x7f;
+}
+
+__forceinline void SET_VERTEX(VertexGPU *p, int Index, const VB& curvb) 
+{ 
+	int index = Index; 
+	
+	p->x = (((int)gs.gsvertex[index].x - curvb.offset.x)>>1)&0xffff;
+	p->y = (((int)gs.gsvertex[index].y - curvb.offset.y)>>1)&0xffff;
+	
+	/*x = ((int)gs.gsvertex[index].x - curvb.offset.x);
+	y = ((int)gs.gsvertex[index].y - curvb.offset.y);
+	p.x = (x&0x7fff) | (x < 0 ? 0x8000 : 0);
+	p.y = (y&0x7fff) | (y < 0 ? 0x8000 : 0);*/
+	
+	p->f = ((s16)gs.gsvertex[index].f<<7)|0x7f;
+	MOVZ(p, gs.gsvertex[index].z, curvb);
+	p->rgba = prim->iip ? gs.gsvertex[index].rgba : gs.rgba;
+	
+	if ((g_GameSettings & GAME_TEXAHACK) && !(p->rgba&0xffffff))
+		p->rgba = 0;
+	if (prim->tme ) 
+	{
+		if( prim->fst ) 
+		{
+			p->s = (float)gs.gsvertex[index].u * fiTexWidth[prim->ctxt];
+			p->t = (float)gs.gsvertex[index].v * fiTexHeight[prim->ctxt];
+			p->q = 1;
+		}
+		else 
+		{
+			p->s = gs.gsvertex[index].s;
+			p->t = gs.gsvertex[index].t;
+			p->q = gs.gsvertex[index].q;
+		}
+	}
+}
 
 #define OUTPUT_VERT(fn, vert, id) { \
 	fn("%c%d(%d): xyzf=(%4d,%4d,0x%x,%3d), rgba=0x%8.8x, stq = (%2.5f,%2.5f,%2.5f)\n", id==0?'*':' ', id, prim->prim, vert.x/8, vert.y/8, vert.z, vert.f/128, \
 		vert.rgba, Clamp(vert.s, -10, 10), Clamp(vert.t, -10, 10), Clamp(vert.q, -10, 10)); \
 } \
 
-//#define OUTPUT_VERT(fn, vert, id) { \
-//	fn("%c%d(%d): xyzf=(%4d,%4d,0x%x,%3d)\n", id==0?'*':' ', id, prim->prim, vert.x/8, vert.y/8, vert.z, vert.f/128); \
-//} \
 
 void ZeroGS::KickPoint()
 {
 	assert( gs.primC >= 1 );
 
 	VB& curvb = vb[prim->ctxt];
-	if( curvb.bNeedTexCheck )
-		curvb.FlushTexData();
+	if (curvb.bNeedTexCheck) curvb.FlushTexData();
 
 	if( !(g_GameSettings&GAME_DOPARALLELCTX) && vb[!prim->ctxt].dwCount > 0 && vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp )
 	{
@@ -3555,7 +3565,7 @@ void ZeroGS::KickPoint()
 	int last = (gs.primIndex+2)%ARRAYSIZE(gs.gsvertex);
 
 	VertexGPU* p = curvb.pbuf+curvb.dwCount;
-	SET_VERTEX(p[0], last);
+	SET_VERTEX(&p[0], last, curvb);
 	curvb.dwCount++;
 
 #ifdef PRIM_LOG
@@ -3584,8 +3594,8 @@ void ZeroGS::KickLine()
 	int last = (gs.primIndex+2)%ARRAYSIZE(gs.gsvertex);
 
 	VertexGPU* p = curvb.pbuf+curvb.dwCount*2;
-	SET_VERTEX(p[0], next);
-	SET_VERTEX(p[1], last);
+	SET_VERTEX(&p[0], next, curvb);
+	SET_VERTEX(&p[1], last, curvb);
 
 	curvb.dwCount++;
 
@@ -3599,8 +3609,7 @@ void ZeroGS::KickTriangle()
 {
 	assert( gs.primC >= 3 );
 	VB& curvb = vb[prim->ctxt];
-	if( curvb.bNeedTexCheck )
-		curvb.FlushTexData();
+	if (curvb.bNeedTexCheck) curvb.FlushTexData();
 
 	if( !(g_GameSettings&GAME_DOPARALLELCTX) && vb[!prim->ctxt].dwCount > 0 && vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp )
 	{
@@ -3613,9 +3622,9 @@ void ZeroGS::KickTriangle()
 
 	curvb.Lock();
 	VertexGPU* p = curvb.pbuf+curvb.dwCount*3;
-	SET_VERTEX(p[0], 0);
-	SET_VERTEX(p[1], 1);
-	SET_VERTEX(p[2], 2);
+	SET_VERTEX(&p[0], 0, curvb);
+	SET_VERTEX(&p[1], 1, curvb);
+	SET_VERTEX(&p[2], 2, curvb);
 
 	curvb.dwCount++;
 
@@ -3630,8 +3639,7 @@ void ZeroGS::KickTriangleFan()
 {
 	assert( gs.primC >= 3 );
 	VB& curvb = vb[prim->ctxt];
-	if( curvb.bNeedTexCheck )
-		curvb.FlushTexData();
+	if (curvb.bNeedTexCheck) curvb.FlushTexData();
 
 	if( !(g_GameSettings&GAME_DOPARALLELCTX) && vb[!prim->ctxt].dwCount > 0 && vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp )
 	{
@@ -3644,9 +3652,9 @@ void ZeroGS::KickTriangleFan()
 
 	curvb.Lock();
 	VertexGPU* p = curvb.pbuf+curvb.dwCount*3;
-	SET_VERTEX(p[0], 0);
-	SET_VERTEX(p[1], 1);
-	SET_VERTEX(p[2], 2);
+	SET_VERTEX(&p[0], 0, curvb);
+	SET_VERTEX(&p[1], 1, curvb);
+	SET_VERTEX(&p[2], 2, curvb);
 
 	curvb.dwCount++;
 
@@ -3659,6 +3667,13 @@ void ZeroGS::KickTriangleFan()
 	OUTPUT_VERT(PRIM_LOG, p[1], 1);
 	OUTPUT_VERT(PRIM_LOG, p[2], 2);
 #endif
+}
+
+__forceinline void SetKickVertex(VertexGPU *p, Vertex v, int next, const VB& curvb) 
+{
+	SET_VERTEX(p, next, curvb); 
+	MOVZ(p, v.z, curvb);	
+	MOVFOG(p, v);
 }
 
 void ZeroGS::KickSprite()
@@ -3674,18 +3689,17 @@ void ZeroGS::KickSprite()
 		Flush(!prim->ctxt);
 	}
 
-	if( curvb.dwCount >= POINT_BUFFERFLUSH/3 )
-		Flush(prim->ctxt);
+	if (curvb.dwCount >= POINT_BUFFERFLUSH/3) Flush(prim->ctxt);
 
 	curvb.Lock();
 	int next = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex);
 	int last = (gs.primIndex+2)%ARRAYSIZE(gs.gsvertex);
 
 	// sprite is too small and AA shows lines (tek4)
-	if( s_AAx ) {
+	if( s_AAx ) 
+	{
 		gs.gsvertex[last].x += 4;
-		if( s_AAy )
-			gs.gsvertex[last].y += 4;
+		if (s_AAy) gs.gsvertex[last].y += 4;
 	}
 
 	// might be bad sprite (KH dialog text)
@@ -3693,23 +3707,20 @@ void ZeroGS::KickSprite()
 	//	return;
 
 	VertexGPU* p = curvb.pbuf+curvb.dwCount*3;
-
-	SET_VERTEX(p[0], next);	MOVZ(p[0], gs.gsvertex[last].z);	MOVFOG(p[0], gs.gsvertex[last]);
-	SET_VERTEX(p[3], next); MOVZ(p[3], gs.gsvertex[last].z);	MOVFOG(p[3], gs.gsvertex[last]);
 	
-	SET_VERTEX(p[1], last); MOVZ(p[1], gs.gsvertex[last].z);	MOVFOG(p[1], gs.gsvertex[last]);
-	SET_VERTEX(p[4], last); MOVZ(p[4], gs.gsvertex[last].z);	MOVFOG(p[4], gs.gsvertex[last]);
+	SetKickVertex(&p[0], gs.gsvertex[last], next, curvb);
+	SetKickVertex(&p[3], gs.gsvertex[last], next, curvb);
+	SetKickVertex(&p[1], gs.gsvertex[last], last, curvb);
+	SetKickVertex(&p[4], gs.gsvertex[last], last, curvb);
 
-	if( g_MaxRenderedHeight < p[0].y )
-		g_MaxRenderedHeight = p[0].y;
-	if( g_MaxRenderedHeight < p[1].y )
-		g_MaxRenderedHeight = p[1].y;
+	if (g_MaxRenderedHeight < p[0].y) g_MaxRenderedHeight = p[0].y;
+	if (g_MaxRenderedHeight < p[1].y) g_MaxRenderedHeight = p[1].y;
 
-	SET_VERTEX(p[2], next); MOVZ(p[2], gs.gsvertex[last].z);	MOVFOG(p[2], gs.gsvertex[last]);
+	SetKickVertex(&p[2], gs.gsvertex[last], next, curvb);
 	p[2].s = p[1].s;
 	p[2].x = p[1].x;
 
-	SET_VERTEX(p[5], last); MOVZ(p[5], gs.gsvertex[last].z);	MOVFOG(p[5], gs.gsvertex[last]);
+	SetKickVertex(&p[5], gs.gsvertex[last], last, curvb);
 	p[5].s = p[0].s;
 	p[5].x = p[0].x;	
 
@@ -4397,7 +4408,7 @@ void ZeroGS::SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0,
 //if( a.fix <= 0x80 ) { \
 //				dwTemp = (a.fix*2)>255?255:(a.fix*2); \
 //				dwTemp = dwTemp|(dwTemp<<8)|(dwTemp<<16)|0x80000000; \
-//				printf("bfactor: %8.8x\n", dwTemp); \
+//				DEBUG_LOG("bfactor: %8.8x\n", dwTemp); \
 //				SETRS(D3DRS_BLENDFACTOR, dwTemp); \
 //			} \
 //			else { \
@@ -4664,12 +4675,13 @@ bool ZeroGS::CheckChangeInClut(u32 highdword, u32 psm)
 	// processing the CLUT after tex0/2 are written
 	switch(cld) {
 		case 0: return false;
-		
+		case 1: break; // Seems to rarely not be 1.
 		// note sure about changing cbp[0,1]
 		case 4: return gs.cbp[0] != cbp;
 		case 5: return gs.cbp[1] != cbp;
 
 		// default: load
+		default: break;
 	}
 
 	int cpsm = (highdword >> 19) & 0xe;
@@ -4775,9 +4787,10 @@ void ZeroGS::texClutWrite(int ctx)
 	// processing the CLUT after tex0/2 are written
 	switch(tex0.cld) {
 		case 0: return;
+		case 1: break; // tex0.cld is usually 1.
 		case 2: gs.cbp[0] = tex0.cbp; break;
 		case 3: gs.cbp[1] = tex0.cbp; break;
-		// note sure about changing cbp[0,1]
+		// not sure about changing cbp[0,1]
 		case 4:
 			if( gs.cbp[0] == tex0.cbp )
 				return;
@@ -4788,75 +4801,97 @@ void ZeroGS::texClutWrite(int ctx)
 				return;
 			gs.cbp[1] = tex0.cbp;
 			break;
+		default:  //DEBUG_LOG("cld isn't 0-5!");
+			break;
 	}
 
 	Flush(!ctx);
 
 	int entries = (tex0.psm&3)==3 ? 256 : 16;
+if (tex0.csm) 
+	{
+		switch (tex0.cpsm)
+		{
+			// 16bit psm
+			// eggomania uses non16bit textures for csm2
+			case PSMCT16:
+			{
+				u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
+				u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
 
-	if( tex0.csm ) {
-		// 16bit psm
-		// eggomania uses non16bit textures for csm2
-		if( tex0.cpsm == PSMCT16 ) {
-			u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
-			u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
-
-			for(int i = 0; i < entries; ++i) {
-				*dst = src[getPixelAddress16_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
-				dst += 2;
-				// check for wrapping
-				if( ((u32)dst & 0x3ff) == 0 )
-					dst = (u16*)(g_pbyGSClut+2);
-			}
-		}
-		else if( tex0.cpsm == PSMCT16S ) {
-
-			u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
-			u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
-
-			for(int i = 0; i < entries; ++i) {
-				*dst = src[getPixelAddress16S_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
-				dst += 2;
-				// check for wrapping
-				if( ((u32)dst & 0x3ff) == 0 )
-					dst = (u16*)(g_pbyGSClut+2);
-			}
-		}
-		else if( tex0.cpsm == PSMCT32 || tex0.cpsm == PSMCT24 ) {
-
-			u32* src = (u32*)g_pbyGSMemory + tex0.cbp*64;
-			u32 *dst = (u32*)(g_pbyGSClut+64*tex0.csa);
-
-			// check if address exceeds src
-			if( src+getPixelAddress32_0(gs.clut.cou+entries-1, gs.clut.cov, gs.clut.cbw) >= (u32*)g_pbyGSMemory + 0x00100000 ) {
-				ERROR_LOG("texClutWrite out of bounds\n");
-			}
-			else {
-				for(int i = 0; i < entries; ++i) {
-					*dst++ = src[getPixelAddress32_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+				for (int i = 0; i < entries; ++i) 
+				{
+					*dst = src[getPixelAddress16_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+					dst += 2;
+					
+					// check for wrapping
+					if (((u32)dst & 0x3ff) == 0) dst = (u16*)(g_pbyGSClut+2);
 				}
+				break;
 			}
-		}
-		else {
+			
+			case PSMCT16S:
+			{
+				u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
+				u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
+
+				for (int i = 0; i < entries; ++i) 
+				{
+					*dst = src[getPixelAddress16S_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+					dst += 2;
+					
+					// check for wrapping
+					if (((u32)dst & 0x3ff) == 0) dst = (u16*)(g_pbyGSClut+2);
+				}
+			break;
+			}
+		
+			case PSMCT32:
+			case PSMCT24:
+			{
+				u32* src = (u32*)g_pbyGSMemory + tex0.cbp*64;
+				u32 *dst = (u32*)(g_pbyGSClut+64*tex0.csa);
+				
+				// check if address exceeds src
+				if( src+getPixelAddress32_0(gs.clut.cou+entries-1, gs.clut.cov, gs.clut.cbw) >= (u32*)g_pbyGSMemory + 0x00100000 ) 
+					ERROR_LOG("texClutWrite out of bounds\n");
+				else 
+					for(int i = 0; i < entries; ++i) 
+					{
+						*dst = src[getPixelAddress32_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+						dst++;
+					}
+			}
+			break;
+			
+			default:
+			{
 #ifndef RELEASE_TO_PUBLIC
-			//printf("unknown cpsm: %x (%x)\n", tex0.cpsm, tex0.psm);
+			//DEBUG_LOG("unknown cpsm: %x (%x)\n", tex0.cpsm, tex0.psm);
 #endif
+				break;
+			}
 		}
 	}
-	else {			
-		if( tex0.cpsm <= 1 ) {
-			if( entries == 16 )
-				WriteCLUT_T32_I4_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
-			else 
-				WriteCLUT_T32_I8_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
-		}
-		else {
-			if( entries == 16 )
-				WriteCLUT_T16_I4_CSM1((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
-			else if(entries == 256) {
-				// sse2 for 256 is more complicated, so use regular
-				WriteCLUT_T16_I8_CSM1_c((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
-			}
+	else 
+	{
+		switch (tex0.cpsm)
+		{
+			case PSMCT24:
+			case PSMCT32:
+				if( entries == 16 )
+					WriteCLUT_T32_I4_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
+				else 
+					WriteCLUT_T32_I8_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
+				break;
+				
+			default:
+				if( entries == 16 )
+					WriteCLUT_T16_I4_CSM1((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
+				else // sse2 for 256 is more complicated, so use regular
+					WriteCLUT_T16_I8_CSM1_c((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
+				break;
+			
 		}
 	}
 }
@@ -4870,12 +4905,15 @@ void ZeroGS::SetTexFlush()
 //	if( PSMT_ISCLUT(vb[1].tex0.psm) )
 //		texClutWrite(1);
 
-	if( !s_bForceTexFlush ) {
-		if( s_ptexCurSet[0] != s_ptexNextSet[0] ) {
+	if( !s_bForceTexFlush ) 
+	{
+		if( s_ptexCurSet[0] != s_ptexNextSet[0] ) 
+		{
 			s_ptexCurSet[0] = s_ptexNextSet[0];
 			pd3dDevice->SetTexture(SAMP_MEMORY0, s_ptexNextSet[0]);
 		}
-		if( s_ptexCurSet[1] != s_ptexNextSet[1] ) {
+		if( s_ptexCurSet[1] != s_ptexNextSet[1] ) 
+		{
 			s_ptexCurSet[1] = s_ptexNextSet[1];
 			pd3dDevice->SetTexture(SAMP_MEMORY1, s_ptexNextSet[1]);
 		}
@@ -5019,7 +5057,7 @@ bool ZeroGS::StartCapture()
 		s_aviinit = 1;
 	}
 	else {
-		printf("ZeroGS: Continuing from previous capture");
+		DEBUG_LOG("ZeroGS: Continuing from previous capture");
 	}
 
 	s_avicapturing = 1;

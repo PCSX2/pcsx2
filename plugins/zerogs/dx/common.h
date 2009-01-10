@@ -338,13 +338,13 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
 #ifdef STATS
 	st_out_bit_counts[st_current_index] += n;
 #endif
-	//	printf("put_bits=%d %x\n", n, value);
+	//	DEBUG_LOG("put_bits=%d %x\n", n, value);
 	assert(n == 32 || value < (1U << n));
 	
 	bit_buf = s->bit_buf;
 	bit_left = s->bit_left;
 
-	//	printf("n=%d value=%x cnt=%d buf=%x\n", n, value, bit_cnt, bit_buf);
+	//	DEBUG_LOG("n=%d value=%x cnt=%d buf=%x\n", n, value, bit_cnt, bit_buf);
 	/* XXX: optimize */
 	if (n < bit_left) {
 		bit_buf = (bit_buf<<n) | value;
@@ -361,7 +361,7 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
 		} else
 #endif
 		*(uint32_t *)s->buf_ptr = be2me_32(bit_buf);
-		//printf("bitbuf = %08x\n", bit_buf);
+		//DEBUG_LOG("bitbuf = %08x\n", bit_buf);
 		s->buf_ptr+=4;
 	bit_left+=32 - n;
 		bit_buf = value;
@@ -403,7 +403,7 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
 	
 	ptr[0] |= be2me_32(value>>(index&31));
 	ptr[1]  = be2me_32(value<<(32-(index&31)));
-//if(n>24) printf("%d %d\n", n, value);
+//if(n>24) DEBUG_LOG("%d %d\n", n, value);
 	index+= n;
 	s->index= index;
 #		endif
@@ -431,7 +431,7 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
 	
 	ptr[0] |= be2me_32(value<<(32-n-(index&7) ));
 	ptr[1] = 0;
-//if(n>24) printf("%d %d\n", n, value);
+//if(n>24) DEBUG_LOG("%d %d\n", n, value);
 	index+= n;
 	s->index= index;
 #		endif
@@ -885,17 +885,17 @@ static inline void print_bin(int bits, int n){
 	int i;
 	
 	for(i=n-1; i>=0; i--){
-		printf("%d", (bits>>i)&1);
+		DEBUG_LOG("%d", (bits>>i)&1);
 	}
 	for(i=n; i<24; i++)
-		printf(" ");
+		DEBUG_LOG(" ");
 }
 
 static inline int get_bits_trace(GetBitContext *s, int n, char *file, char *func, int line){
 	int r= get_bits(s, n);
 	
 	print_bin(r, n);
-	printf("%5d %2d %3d bit @%5d in %s %s:%d\n", r, n, r, get_bits_count(s)-n, file, func, line);
+	DEBUG_LOG("%5d %2d %3d bit @%5d in %s %s:%d\n", r, n, r, get_bits_count(s)-n, file, func, line);
 	return r;
 }
 static inline int get_vlc_trace(GetBitContext *s, VLC_TYPE (*table)[2], int bits, int max_depth, char *file, char *func, int line){
@@ -907,7 +907,7 @@ static inline int get_vlc_trace(GetBitContext *s, VLC_TYPE (*table)[2], int bits
 	
 	print_bin(bits2, len);
 	
-	printf("%5d %2d %3d vlc @%5d in %s %s:%d\n", bits2, len, r, pos, file, func, line);
+	DEBUG_LOG("%5d %2d %3d vlc @%5d in %s %s:%d\n", bits2, len, r, pos, file, func, line);
 	return r;
 }
 static inline int get_xbits_trace(GetBitContext *s, int n, char *file, char *func, int line){
@@ -915,7 +915,7 @@ static inline int get_xbits_trace(GetBitContext *s, int n, char *file, char *fun
 	int r= get_xbits(s, n);
 	
 	print_bin(show, n);
-	printf("%5d %2d %3d xbt @%5d in %s %s:%d\n", show, n, r, get_bits_count(s)-n, file, func, line);
+	DEBUG_LOG("%5d %2d %3d xbt @%5d in %s %s:%d\n", show, n, r, get_bits_count(s)-n, file, func, line);
 	return r;
 }
 

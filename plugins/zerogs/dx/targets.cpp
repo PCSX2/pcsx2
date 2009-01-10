@@ -386,12 +386,12 @@ void ZeroGS::CRenderTarget::Update(int context, ZeroGS::CRenderTarget* pdepth)
 			if( ittarg == s_DepthRTs.mapTargets.end() )
 				nUpdateTarg = 0;
 			else if( ittarg->second == this ) {
-				printf("zerogs: updating self");
+				DEBUG_LOG("zerogs: updating self");
 				nUpdateTarg = 0;
 			}
 		}
 		else if( ittarg->second == this ) {
-			printf("zerogs: updating self");
+			DEBUG_LOG("zerogs: updating self");
 			nUpdateTarg = 0;
 		}
 	}
@@ -500,7 +500,7 @@ void ZeroGS::CRenderTarget::ConvertTo32()
 	V(pd3dDevice->CreateTexture(fbw<<s_AAx, (fbh<<s_AAy)/2, 1, D3DUSAGE_RENDERTARGET, g_RenderFormat, D3DPOOL_DEFAULT, &ptexConv, NULL));
 
 	if( FAILED(hr) ) {
-		printf("Failed to create feedback\n");
+		DEBUG_LOG("Failed to create feedback\n");
 		return;
 	}
 
@@ -696,7 +696,7 @@ void ZeroGS::CRenderTarget::ConvertTo16()
 	V(pd3dDevice->CreateTexture(fbw<<s_AAx, (fbh<<s_AAy)*2, 1, D3DUSAGE_RENDERTARGET, g_RenderFormat, D3DPOOL_DEFAULT, &ptexConv, NULL));
 
 	if( FAILED(hr) ) {
-		printf("Failed to create feedback\n");
+		DEBUG_LOG("Failed to create feedback\n");
 		return;
 	}
 
@@ -901,7 +901,7 @@ void ZeroGS::CRenderTarget::_CreateFeedback()
 		V(pd3dDevice->CreateTexture(fbw<<s_AAx, fbh<<s_AAy, 1, D3DUSAGE_RENDERTARGET, g_RenderFormat, D3DPOOL_DEFAULT, &ptexFeedback, NULL));
 
 		if( FAILED(hr) ) {
-			printf("Failed to create feedback\n");
+			DEBUG_LOG("Failed to create feedback\n");
 			return;
 		}
 
@@ -1069,7 +1069,7 @@ void ZeroGS::CDepthTarget::Update(int context, ZeroGS::CRenderTarget* prndr)
 	if( nUpdateTarg ) {
 		CRenderTargetMngr::MAPTARGETS::iterator ittarg = s_DepthRTs.mapTargets.find(nUpdateTarg);
 		if( ittarg == s_DepthRTs.mapTargets.end() || ittarg->second == this) {
-			printf("zerogs: updating self");
+			DEBUG_LOG("zerogs: updating self");
 			nUpdateTarg = 0;
 		}
 		else pusetarg = ittarg->second;
@@ -2082,7 +2082,7 @@ ZeroGS::CMemoryTarget* ZeroGS::CMemoryTargetMngr::GetMemoryTarget(const tex0Info
 				listClearedTargets.pop_front();
 			else {
 				if( listTargets.size() == 0 ) {
-					printf("Failed to create %dx%x texture\n", GPU_TEXWIDTH*channels*widthmult, (targ->realheight+widthmult-1)/widthmult);
+					DEBUG_LOG("Failed to create %dx%x texture\n", GPU_TEXWIDTH*channels*widthmult, (targ->realheight+widthmult-1)/widthmult);
 					channels = 1;
 				}
 				DestroyOldest();
@@ -2776,7 +2776,7 @@ void TransferHostLocal(const void* pbyMem, u32 nQWordSize)
 			if( (ptarg->status & CRenderTarget::TS_Virtual) )
 				continue;
 
-			//printf("zerogs: resolving to alpha channel\n");
+			//DEBUG_LOG("zerogs: resolving to alpha channel\n");
 			ptarg->Resolve();
 		}
 	}
@@ -2839,7 +2839,7 @@ void TransferHostLocal(const void* pbyMem, u32 nQWordSize)
 //	const T* pbuf = (const T*)pbyMem; \
 //	u32 nSize = nQWordSize*(4/sizeof(T)); \
 //	assert( (nSize%widthlimit) == 0 && widthlimit <= 4 ); \
-//	if( ((gs.imageEndX-gs.trxpos.dx)%widthlimit) ) printf("Bad Transmission! %d %d, psm: %d\n", gs.trxpos.dx, gs.imageEndX, DSTPSM); \
+//	if( ((gs.imageEndX-gs.trxpos.dx)%widthlimit) ) DEBUG_LOG("Bad Transmission! %d %d, psm: %d\n", gs.trxpos.dx, gs.imageEndX, DSTPSM); \
 //	for(; i < gs.imageEndY; ++i) { \
 //		for(; j < gs.imageEndX && nSize > 0; j += widthlimit, nSize -= widthlimit, pbuf += widthlimit) { \
 //			/* write as many pixel at one time as possible */ \
@@ -2907,7 +2907,7 @@ void TransferHostLocal(const void* pbyMem, u32 nQWordSize)
 ////				// hack
 ////				if( abs((int)nQWordSize*8 - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx)) <= 8 ) {
 ////					// don't transfer
-////					printf("bad texture 4: %d %d %d\n", gs.trxpos.dx, gs.imageEndX, nQWordSize);
+////					DEBUG_LOG("bad texture 4: %d %d %d\n", gs.trxpos.dx, gs.imageEndX, nQWordSize);
 ////					gs.imageEndX = gs.trxpos.dx + (gs.imageEndX-gs.trxpos.dx)&~7;
 ////					//i = gs.imageEndY;
 ////					//goto End;

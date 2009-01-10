@@ -38,7 +38,7 @@ static int prevbilinearfilter;
 //static map<string, int> mapConfOpts;
 struct confOptsStruct{
 	int value;
-	char *desc;
+	const char *desc;
 }confOpts;
 static map<string, confOptsStruct> mapConfOpts;
 

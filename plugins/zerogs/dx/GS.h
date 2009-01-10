@@ -70,7 +70,8 @@ struct Vector_16F
 
 /////////////////////
 // define when releasing
-#define ZEROGS_CACHEDCLEAR // much better performance
+// The only code that uses it is commented out!
+//#define ZEROGS_CACHEDCLEAR // much better performance
 //#define RELEASE_TO_PUBLIC
 
 #if !defined(_RELEASE)
@@ -78,6 +79,9 @@ struct Vector_16F
 #else
 #define GS_LOG 0&&
 #endif
+
+#define ERROR_LOG __LogToConsole
+#define DEBUG_LOG printf
 
 #ifdef RELEASE_TO_PUBLIC
 #define WARN_LOG 0&&
@@ -632,8 +636,8 @@ extern GSinternal gs;
 
 extern FILE *gsLog;
 
-void __Log(char *fmt, ...);
-void ERROR_LOG(char *fmt, ...);
+void __Log(const char *fmt, ...);
+void __LogToConsole(const char *fmt, ...);
 
 void LoadConfig();
 void SaveConfig();

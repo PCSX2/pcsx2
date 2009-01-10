@@ -75,9 +75,7 @@ u32 s_uTex1Data[2][2] = {0}, s_uClampData[2] = {0};
 
 void __fastcall GIFPackedRegHandlerNull(u32* data)
 {
-#ifdef _DEBUG
-	printf("Unexpected packed reg handler %8.8lx_%8.8lx %x\n", data[0], data[1], data[2]);
-#endif
+	DEBUG_LOG("Unexpected packed reg handler %8.8lx_%8.8lx %x\n", data[0], data[1], data[2]);
 }
 
 void __fastcall GIFPackedRegHandlerRGBA(u32* data)
@@ -122,7 +120,7 @@ void __forceinline KICK_VERTEX3()
 		{ 
 			/* tri fans need special processing */ 
 			if (gs.nTriFanVert == gs.primIndex) 
-				gs.primIndex = (gs.primIndex+1)%ARRAY_SIZE(gs.gsvertex); 
+				gs.primIndex = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex); 
 		} 
 	} 
 } 
@@ -134,7 +132,7 @@ void __fastcall GIFPackedRegHandlerXYZF2(u32* data)
 	gs.vertexregs.z = (data[2] >> 4) & 0xffffff;
 	gs.vertexregs.f = (data[3] >> 4) & 0xff;
 	gs.gsvertex[gs.primIndex] = gs.vertexregs;
-	gs.primIndex = (gs.primIndex+1)%ARRAY_SIZE(gs.gsvertex);
+	gs.primIndex = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex);
 
 	if( data[3] & 0x8000 ) {
 		KICK_VERTEX3();
@@ -150,7 +148,7 @@ void __fastcall GIFPackedRegHandlerXYZ2(u32* data)
 	gs.vertexregs.y = (data[1] >> 0) & 0xffff;
 	gs.vertexregs.z = data[2];
 	gs.gsvertex[gs.primIndex] = gs.vertexregs;
-	gs.primIndex = (gs.primIndex+1)%ARRAY_SIZE(gs.gsvertex);
+	gs.primIndex = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex);
 
 	if( data[3] & 0x8000 ) {
 		KICK_VERTEX3();
@@ -371,7 +369,7 @@ void __fastcall GIFRegHandlerNull(u32* data)
 
 	// 0x7f happens on a lot of games
 	if( data[2] != 0x7f && (data[0] || data[1]) ) {
-		printf("Unexpected reg handler %x %x %x\n", data[0], data[1], data[2]);
+		DEBUG_LOG("Unexpected reg handler %x %x %x\n", data[0], data[1], data[2]);
 	}
 #endif
 }
@@ -379,9 +377,7 @@ void __fastcall GIFRegHandlerNull(u32* data)
 void __fastcall GIFRegHandlerPRIM(u32 *data)
 {
 	if (data[0] & ~0x3ff) {
-#ifdef WARN_LOG
 		//WARN_LOG("warning: unknown bits in prim %8.8lx_%8.8lx\n", data[1], data[0]);
-#endif
 	}
 
 	gs.nTriFanVert = gs.primIndex;

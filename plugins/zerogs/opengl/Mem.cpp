@@ -530,7 +530,7 @@ int TransferHostLocal##psm(const void* pbyMem, u32 nQWordSize) \
 		int testwidth = (int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx); \
 		if( testwidth <= widthlimit && testwidth >= -widthlimit ) { \
 			/* don't transfer */ \
-			/*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/ \
+			/*DEBUG_LOG("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/ \
 			gs.imageTransfer = -1; \
 		} \
 		bCanAlign = false; \
@@ -638,7 +638,7 @@ DEFINE_TRANSFERLOCAL(4HH, u8, 8, 32, 8, 8, _4, SwizzleBlock4HH);
 //		/* hack */
 //		if( abs((int)nSize - (gs.imageEndY-i)*(gs.imageEndX-gs.trxpos.dx)+(j-gs.trxpos.dx)) <= widthlimit ) {
 //			/* don't transfer */
-//			/*printf("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/
+//			/*DEBUG_LOG("bad texture %s: %d %d %d\n", #psm, gs.trxpos.dx, gs.imageEndX, nQWordSize);*/
 //			gs.imageTransfer = -1;
 //		}
 //		bCanAlign = false;

@@ -399,7 +399,7 @@ namespace ZeroGS
 	void KickSprite();
 	void KickDummy();
 
-	inline void SetContextTarget(int context);
+	__forceinline void SetContextTarget(int context);
 
 	// use to update the state
 	void SetTexVariables(int context, FRAGMENTSHADER* pfragment, int settexint);
@@ -418,7 +418,7 @@ namespace ZeroGS
 
 	void ExtWrite();
 
-	inline u32 CreateInterlaceTex(int width) {
+	__forceinline u32 CreateInterlaceTex(int width) {
 		if( width == s_nInterlaceTexWidth && s_ptexInterlace != 0 ) return s_ptexInterlace;
 
 		SAFE_RELEASE_TEX(s_ptexInterlace);
@@ -490,7 +490,6 @@ static int maxmin = 608;
 void ZeroGS::VB::CheckFrame(int tbp)
 {
 	static int bChanged;
-
 	if( bNeedZCheck ) {
 		PRIM_LOG("zbuf_%d: zbp=0x%x psm=0x%x, zmsk=%d\n", ictx, zbuf.zbp, zbuf.psm, zbuf.zmsk);
 		//zbuf = *zb;
@@ -532,18 +531,17 @@ void ZeroGS::VB::CheckFrame(int tbp)
 			}
 
 			maxpos /= gsfb.fbw;
-			if( gsfb.psm & 2 )
-				maxpos *= 2;
+			if( gsfb.psm & 2 ) maxpos *= 2;;
 
 			maxpos = min(gsfb.fbh, maxpos);
 			maxpos = min(maxmin, maxpos);
-			//? alteir aris crashes without it
-			if( maxpos > 256 )
-				maxpos &= ~0x1f;
+			//? atelier iris crashes without it
+			if( maxpos > 256 ) maxpos &= ~0x1f;
 		}
 		else {
-			prndr = NULL;
-			pdepth = NULL;
+			ERROR_LOG("render target null, ignoring\n");
+			//prndr = NULL;
+			//pdepth = NULL;
 			return;
 		}
 
@@ -566,6 +564,7 @@ void ZeroGS::VB::CheckFrame(int tbp)
 		}
 
 		frame = gsfb;
+//		if (frame.fbw > 1024) frame.fbw = 1024;
 
 //	  if( fbh > 256 && (fbh % m_Blocks[gsfb.psm].height) <= 2 ) {
 //		  // dragon ball z
@@ -582,6 +581,21 @@ void ZeroGS::VB::CheckFrame(int tbp)
 			}
 		}
 
+		// mgs3 hack to get proper resolution, targets after 0x2000 are usually feedback
+		/*if( g_MaxRenderedHeight >= 0xe0 && frame.fbp >= 0x2000 ) {
+			int considerheight = (g_MaxRenderedHeight/8+31)&~31;
+			if( frame.fbh > considerheight )
+				frame.fbh = considerheight;
+			else if( frame.fbh <= 32 )
+				frame.fbh = considerheight;
+			
+			if( frame.fbh == considerheight ) {
+				// stops bad resolves (mgs3)
+				if( !curprim.abe && (!test.ate || test.atst == 0) )
+					s_nResolved |= 0x100;
+			}
+		}*/
+		
 		// ffxii hack to stop resolving
 		if( !(frame.psm&2) || !(g_GameSettings&GAME_FULL16BITRES) ) {
 			if( frame.fbp >= 0x3000 && fbh >= 0x1a0 ) {
@@ -636,15 +650,17 @@ void ZeroGS::VB::CheckFrame(int tbp)
 		tempfb.fbp = zbuf.zbp;
 		tempfb.psm = zbuf.psm;
 		tempfb.fbh = prndr->fbh;
-		if( zbuf.psm == 0x31 ) tempfb.fbm = 0xff000000;
-		else tempfb.fbm = 0;
+		if( zbuf.psm == 0x31 ) 
+			tempfb.fbm = 0xff000000;
+		else 
+			tempfb.fbm = 0;
 
 		// check if there is a target that exactly aligns with zbuf (zbuf can be cleared this way, gunbird 2)
 		//u32 key = zbuf.zbp|(frame.fbw<<16);
 		//CRenderTargetMngr::MAPTARGETS::iterator it = s_RTs.mapTargets.find(key);
 //	  if( it != s_RTs.mapTargets.end() ) {
 //#ifdef _DEBUG
-//		  printf("zbuf resolve\n");
+//		  DEBUG_LOG("zbuf resolve\n");
 //#endif
 //		  if( it->second->status & CRenderTarget::TS_Resolved )
 //			  it->second->Resolve();
@@ -706,17 +722,7 @@ void ZeroGS::VB::CheckFrame(int tbp)
 		}
 	}
 	
-	if( prndr != NULL )
-		SetContextTarget(ictx);
-
-	//if( prndr != NULL && ictx == icurctx) 
-	//else bVarsSetTarg = 0;
-
-//  if( prndr != NULL && bChanged ) {
-//	  if( ictx == icurctx ) SetContextTarget(icurctx);
-//	  else
-//		  bVarsSetTarg = 0;
-//  }
+	if( prndr != NULL ) SetContextTarget(ictx);
 }
 
 void ZeroGS::VB::FlushTexData()
@@ -856,14 +862,12 @@ void HandleCgError(CGcontext ctx, CGerror err, void* appdata)
 {
 	ERROR_LOG("Cg error: %s\n", cgGetErrorString(err));
 	const char* listing = cgGetLastListing(g_cgcontext);
-	if( listing != NULL ) {
-		printf("	last listing: %s\n", listing);
-	}
+	if( listing != NULL ) DEBUG_LOG("	last listing: %s\n", listing);
 //	int loc;
 //	const GLubyte* pstr = glGetString(GL_PROGRAM_ERROR_STRING_ARB);
 //	if( pstr != NULL ) printf("error at: %s\n");
 //	glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &loc);
-//	printf("pos: %d\n", loc);
+//	DEBUG_LOG("pos: %d\n", loc);
 }
 
 #ifndef GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT
@@ -1201,7 +1205,7 @@ bool ZeroGS::Create(int _width, int _height)
 
 	int prevlog = conf.log;
 	conf.log = 1;
-	__Log("Supported OpenGL Extensions:\n%s\n", ptoken);	 // write to the log file
+	GS_LOG("Supported OpenGL Extensions:\n%s\n", ptoken);	 // write to the log file
 	conf.log = prevlog;
 
 	// insert all exts into mapGLExtensions
@@ -2266,7 +2270,7 @@ FRAGMENTSHADER* ZeroGS::LoadShadeEffect(int type, int texfilter, int fog, int te
 		ERROR_LOG("%d %d\n", index, g_nPixelShaderVer);
 	assert( header != NULL );
 
-	//printf("shader:\n%s\n", (char*)(s_lpShaderResources + (header)->offset));
+	//DEBUG_LOG("shader:\n%s\n", (char*)(s_lpShaderResources + (header)->offset));
 	pf->prog = cgCreateProgram(g_cgcontext, CG_OBJECT, (char*)(s_lpShaderResources + (header)->offset), cgfProf, NULL, NULL);
 	if( pf->prog != NULL && cgIsProgram(pf->prog) && cgGetError() == CG_NO_ERROR ) {
 		SetupFragmentProgramParameters(pf, context, type);
@@ -2643,7 +2647,9 @@ void ZeroGS::Flush(int context)
 		if( ptextarg != NULL && !(ptextarg->status&CRenderTarget::TS_NeedUpdate) ) {
 			if( PSMT_ISCLUT(tpsm) && tpsm != PSMT8H ) { // handle 8h cluts
 				// don't support clut targets, read from mem
-				if( s_ClutResolve <= 1 ) { // xenosaga requires 2 resolves
+				// 4hl - kh2 check - from dx version -- arcum42
+				if( tpsm != PSMT4HL && tpsm != PSMT4HH && s_ClutResolve <= 1 ) 
+				{ // xenosaga requires 2 resolves
 					u32 prevcount = curvb.nCount;
 					curvb.nCount = 0;
 					ptextarg->Resolve();
@@ -3522,14 +3528,15 @@ void ZeroGS::RenderCRTC(int interlace)
 {
 	if( g_bIsLost ) return;
 
+// Crashes Final Fantasy X at startup if uncommented. --arcum42
 //#ifdef RELEASE_TO_PUBLIC
-//  if(g_nRealFrame < 80 ) {
-//	  RenderCustom( min(1.0f, 2.0f - (float)g_nRealFrame / 40.0f) );
+//	if(g_nRealFrame < 80 ) {
+//		RenderCustom( min(1.0f, 2.0f - (float)g_nRealFrame / 40.0f) );
 //
 //	  if( g_nRealFrame == 79 )
-//		  SAFE_RELEASE_TEX(ptexLogo);
+//		SAFE_RELEASE_TEX(ptexLogo);
 //	  return;
-//  }
+//	}
 //#endif
 
 	if( conf.mrtdepth && pvs[8] == NULL ) {
@@ -3958,9 +3965,8 @@ void ZeroGS::RenderCRTC(int interlace)
 			DrawText(str, left, top, 0xffc0ffff);
 		}
 
-		if( glGetError() != GL_NO_ERROR ) {
-			printf("glerror before swap!\n");
-		}
+		if (glGetError() != GL_NO_ERROR) DEBUG_LOG("glerror before swap!\n");
+		
 
 #ifdef _WIN32
 		static u32 lastswaptime = 0;
@@ -4093,54 +4099,65 @@ void ZeroGS::RenderCRTC(int interlace)
 // Internal Definitions //
 //////////////////////////
 
-#define MOVZ(p, gsz) p.z = curvb.zprimmask==0xffff?min((u32)0xffff, gsz):gsz;
-#define MOVFOG(p, gsf) p.f = ((s16)(gsf).f<<7)|0x7f;
 
-#define SET_VERTEX(p, Index) { \
-	int index = Index; \
-	p.x = (((int)gs.gsvertex[index].x - curvb.offset.x)>>1)&0xffff; \
-	p.y = (((int)gs.gsvertex[index].y - curvb.offset.y)>>1)&0xffff; \
-	/*x = ((int)gs.gsvertex[index].x - curvb.offset.x); \
-	y = ((int)gs.gsvertex[index].y - curvb.offset.y); \
-	p.x = (x&0x7fff) | (x < 0 ? 0x8000 : 0); \
-	p.y = (y&0x7fff) | (y < 0 ? 0x8000 : 0);*/ \
-	p.f = ((s16)gs.gsvertex[index].f<<7)|0x7f; \
-	MOVZ(p, gs.gsvertex[index].z); \
-	p.rgba = prim->iip ? gs.gsvertex[index].rgba : gs.rgba; \
-	if( (g_GameSettings & GAME_TEXAHACK) && !(p.rgba&0xffffff) ) \
-		p.rgba = 0; \
-	if( prim->tme ) { \
-		if( prim->fst ) { \
-			p.s = (float)gs.gsvertex[index].u * fiTexWidth[prim->ctxt]; \
-			p.t = (float)gs.gsvertex[index].v * fiTexHeight[prim->ctxt]; \
-			p.q = 1; \
-		} \
-		else { \
-			p.s = gs.gsvertex[index].s; \
-			p.t = gs.gsvertex[index].t; \
-			p.q = gs.gsvertex[index].q; \
-		} \
-	} \
-} \
+__forceinline void MOVZ(VertexGPU *p, u32 gsz, const VB& curvb) 
+{
+	p->z = curvb.zprimmask==0xffff?min((u32)0xffff, gsz):gsz;
+}
+
+__forceinline void MOVFOG(VertexGPU *p, Vertex gsf)
+{
+	p->f = ((s16)(gsf).f<<7)|0x7f;
+}
+
+__forceinline void SET_VERTEX(VertexGPU *p, int Index, const VB& curvb) 
+{ 
+	int index = Index; 
+	
+	p->x = (((int)gs.gsvertex[index].x - curvb.offset.x)>>1)&0xffff;
+	p->y = (((int)gs.gsvertex[index].y - curvb.offset.y)>>1)&0xffff;
+	
+	/*x = ((int)gs.gsvertex[index].x - curvb.offset.x);
+	y = ((int)gs.gsvertex[index].y - curvb.offset.y);
+	p.x = (x&0x7fff) | (x < 0 ? 0x8000 : 0);
+	p.y = (y&0x7fff) | (y < 0 ? 0x8000 : 0);*/
+	
+	p->f = ((s16)gs.gsvertex[index].f<<7)|0x7f;
+	MOVZ(p, gs.gsvertex[index].z, curvb);
+	p->rgba = prim->iip ? gs.gsvertex[index].rgba : gs.rgba;
+	
+	if ((g_GameSettings & GAME_TEXAHACK) && !(p->rgba&0xffffff))
+		p->rgba = 0;
+	if (prim->tme ) 
+	{
+		if( prim->fst ) 
+		{
+			p->s = (float)gs.gsvertex[index].u * fiTexWidth[prim->ctxt];
+			p->t = (float)gs.gsvertex[index].v * fiTexHeight[prim->ctxt];
+			p->q = 1;
+		}
+		else 
+		{
+			p->s = gs.gsvertex[index].s;
+			p->t = gs.gsvertex[index].t;
+			p->q = gs.gsvertex[index].q;
+		}
+	}
+}
 
 #define OUTPUT_VERT(fn, vert, id) { \
 	fn("%c%d(%d): xyzf=(%4d,%4d,0x%x,%3d), rgba=0x%8.8x, stq = (%2.5f,%2.5f,%2.5f)\n", id==0?'*':' ', id, prim->prim, vert.x/8, vert.y/8, vert.z, vert.f/128, \
 		vert.rgba, Clamp(vert.s, -10, 10), Clamp(vert.t, -10, 10), Clamp(vert.q, -10, 10)); \
 } \
 
-//#define OUTPUT_VERT(fn, vert, id) { \
-//  fn("%c%d(%d): xyzf=(%4d,%4d,0x%x,%3d)\n", id==0?'*':' ', id, prim->prim, vert.x/8, vert.y/8, vert.z, vert.f/128); \
-//} \
-
 void ZeroGS::KickPoint()
 {
 	assert( gs.primC >= 1 );
 
 	VB& curvb = vb[prim->ctxt];
-	if( curvb.bNeedTexCheck )
-		curvb.FlushTexData();
+	if (curvb.bNeedTexCheck) curvb.FlushTexData();
 
-	if( vb[!prim->ctxt].nCount > 0 && vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp )
+	if ((vb[!prim->ctxt].nCount > 0) && (vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp))
 	{
 		assert( vb[prim->ctxt].nCount == 0 );
 		Flush(!prim->ctxt);
@@ -4151,7 +4168,7 @@ void ZeroGS::KickPoint()
 	int last = (gs.primIndex+2)%ARRAY_SIZE(gs.gsvertex);
 
 	VertexGPU* p = curvb.pBufferData+curvb.nCount;
-	SET_VERTEX(p[0], last);
+	SET_VERTEX(&p[0], last, curvb);
 	curvb.nCount++;
 
 #ifdef PRIM_LOG
@@ -4178,8 +4195,8 @@ void ZeroGS::KickLine()
 	int last = (gs.primIndex+2)%ARRAY_SIZE(gs.gsvertex);
 
 	VertexGPU* p = curvb.pBufferData+curvb.nCount;
-	SET_VERTEX(p[0], next);
-	SET_VERTEX(p[1], last);
+	SET_VERTEX(&p[0], next, curvb);
+	SET_VERTEX(&p[1], last, curvb);
 
 	curvb.nCount += 2;
 
@@ -4193,10 +4210,9 @@ void ZeroGS::KickTriangle()
 {
 	assert( gs.primC >= 3 );
 	VB& curvb = vb[prim->ctxt];
-	if( curvb.bNeedTexCheck )
-		curvb.FlushTexData();
+	if (curvb.bNeedTexCheck) curvb.FlushTexData();
 
-	if( vb[!prim->ctxt].nCount > 0 && vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp )
+	if ((vb[!prim->ctxt].nCount > 0) && (vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp))
 	{
 		assert( vb[prim->ctxt].nCount == 0 );
 		Flush(!prim->ctxt);
@@ -4205,9 +4221,9 @@ void ZeroGS::KickTriangle()
 	curvb.NotifyWrite(3);
 
 	VertexGPU* p = curvb.pBufferData+curvb.nCount;
-	SET_VERTEX(p[0], 0);
-	SET_VERTEX(p[1], 1);
-	SET_VERTEX(p[2], 2);
+	SET_VERTEX(&p[0], 0, curvb);
+	SET_VERTEX(&p[1], 1, curvb);
+	SET_VERTEX(&p[2], 2, curvb);
 
 	curvb.nCount += 3;
 
@@ -4222,10 +4238,9 @@ void ZeroGS::KickTriangleFan()
 {
 	assert( gs.primC >= 3 );
 	VB& curvb = vb[prim->ctxt];
-	if( curvb.bNeedTexCheck )
-		curvb.FlushTexData();
+	if (curvb.bNeedTexCheck) curvb.FlushTexData();
 
-	if( vb[!prim->ctxt].nCount > 0 && vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp )
+	if ((vb[!prim->ctxt].nCount > 0) && (vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp))
 	{
 		assert( vb[prim->ctxt].nCount == 0 );
 		Flush(!prim->ctxt);
@@ -4234,14 +4249,14 @@ void ZeroGS::KickTriangleFan()
 	curvb.NotifyWrite(3);
 
 	VertexGPU* p = curvb.pBufferData+curvb.nCount;
-	SET_VERTEX(p[0], 0);
-	SET_VERTEX(p[1], 1);
-	SET_VERTEX(p[2], 2);
+	SET_VERTEX(&p[0], 0, curvb);
+	SET_VERTEX(&p[1], 1, curvb);
+	SET_VERTEX(&p[2], 2, curvb);
 
 	curvb.nCount += 3;
 
 	// add 1 to skip the first vertex
-	if( gs.primIndex == gs.nTriFanVert )
+	if (gs.primIndex == gs.nTriFanVert)
 		gs.primIndex = (gs.primIndex+1)%ARRAY_SIZE(gs.gsvertex);
 
 #ifdef PRIM_LOG
@@ -4251,14 +4266,21 @@ void ZeroGS::KickTriangleFan()
 #endif
 }
 
+__forceinline void SetKickVertex(VertexGPU *p, Vertex v, int next, const VB& curvb) 
+{
+	SET_VERTEX(p, next, curvb); 
+	MOVZ(p, v.z, curvb);	
+	MOVFOG(p, v);
+}
+
 void ZeroGS::KickSprite()
 {
 	assert( gs.primC >= 2 );
 	VB& curvb = vb[prim->ctxt];
-	if( curvb.bNeedTexCheck )
-		curvb.FlushTexData();
+	
+	if (curvb.bNeedTexCheck) curvb.FlushTexData();
 
-	if( vb[!prim->ctxt].nCount > 0 && vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp )
+	if ((vb[!prim->ctxt].nCount > 0) && (vb[prim->ctxt].gsfb.fbp == vb[!prim->ctxt].gsfb.fbp))
 	{
 		assert( vb[prim->ctxt].nCount == 0 );
 		Flush(!prim->ctxt);
@@ -4270,29 +4292,28 @@ void ZeroGS::KickSprite()
 	int last = (gs.primIndex+2)%ARRAY_SIZE(gs.gsvertex);
 
 	// sprite is too small and AA shows lines (tek4)
-	if( s_AAx ) {
+	if ( s_AAx ) 
+	{
 		gs.gsvertex[last].x += 4;
-		if( s_AAy )
-			gs.gsvertex[last].y += 4;
+		if( s_AAy ) gs.gsvertex[last].y += 4;
 	}
 
 	// might be bad sprite (KH dialog text)
 	//if( gs.gsvertex[next].x == gs.gsvertex[last].x || gs.gsvertex[next].y == gs.gsvertex[last].y )
-	//  return;
+	  //return;
 
 	VertexGPU* p = curvb.pBufferData+curvb.nCount;
-
-	SET_VERTEX(p[0], next); MOVZ(p[0], gs.gsvertex[last].z);	MOVFOG(p[0], gs.gsvertex[last]);
-	SET_VERTEX(p[3], next); MOVZ(p[3], gs.gsvertex[last].z);	MOVFOG(p[3], gs.gsvertex[last]);
 	
-	SET_VERTEX(p[1], last); MOVZ(p[1], gs.gsvertex[last].z);	MOVFOG(p[1], gs.gsvertex[last]);
-	SET_VERTEX(p[4], last); MOVZ(p[4], gs.gsvertex[last].z);	MOVFOG(p[4], gs.gsvertex[last]);
-
-	SET_VERTEX(p[2], next); MOVZ(p[2], gs.gsvertex[last].z);	MOVFOG(p[2], gs.gsvertex[last]);
+	SetKickVertex(&p[0], gs.gsvertex[last], next, curvb);
+	SetKickVertex(&p[3], gs.gsvertex[last], next, curvb);
+	SetKickVertex(&p[1], gs.gsvertex[last], last, curvb);
+	SetKickVertex(&p[4], gs.gsvertex[last], last, curvb);
+	SetKickVertex(&p[2], gs.gsvertex[last], next, curvb);
+	
 	p[2].s = p[1].s;
 	p[2].x = p[1].x;
 
-	SET_VERTEX(p[5], last); MOVZ(p[5], gs.gsvertex[last].z);	MOVFOG(p[5], gs.gsvertex[last]);
+	SetKickVertex(&p[5], gs.gsvertex[last], last, curvb);
 	p[5].s = p[0].s;
 	p[5].x = p[0].x;	
 
@@ -4320,9 +4341,7 @@ __forceinline void ZeroGS::RenderFBA(const VB& curvb, CGparameter sOneColor)
 	glDepthMask(0);
 	glColorMask(0,0,0,0);
 
-	if( s_bWriteDepth ) {
-		ResetRenderTarget(1);
-	}
+	if( s_bWriteDepth ) ResetRenderTarget(1);
 
 	glEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GEQUAL, 1);
@@ -4335,21 +4354,19 @@ __forceinline void ZeroGS::RenderFBA(const VB& curvb, CGparameter sOneColor)
 
 	if( !curvb.test.ate )
 		glDisable(GL_ALPHA_TEST);
-	else {
+	else 
 		glAlphaFunc(g_dwAlphaCmp[curvb.test.atst], b2XAlphaTest ? min(1.0f,curvb.test.aref*(1/127.5f)) : curvb.test.aref*(1/255.0f));
-	}
 
 	// reset (not necessary)
 	GL_COLORMASK(s_dwColorWrite);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-	if( !curvb.zbuf.zmsk ) {
+	if( !curvb.zbuf.zmsk ) 
+	{
 		glDepthMask(1);
 		
 		assert( curvb.pdepth != NULL );
-		if( s_bWriteDepth ) {
-			curvb.pdepth->SetRenderTarget(1);
-		}
+		if( s_bWriteDepth ) curvb.pdepth->SetRenderTarget(1);
 	}
 	GL_ZTEST(curvb.test.zte);
 }
@@ -4358,9 +4375,8 @@ __forceinline void ZeroGS::RenderAlphaTest(const VB& curvb, CGparameter sOneColo
 {
 	if( !g_bUpdateStencil ) return;
 
-	if( curvb.test.ate ) {
+	if( curvb.test.ate )
 		if( curvb.test.afail == 1 ) glDisable(GL_ALPHA_TEST);
-	}
 
 	glDepthMask(0);
 	glColorMask(0,0,0,0);
@@ -4369,9 +4385,7 @@ __forceinline void ZeroGS::RenderAlphaTest(const VB& curvb, CGparameter sOneColo
 	v.x = 1; v.y = 2; v.z = 0; v.w = 0;
 	cgGLSetParameter4fv(sOneColor, v);
 
-	if( s_bWriteDepth ) {
-		ResetRenderTarget(1);
-	}
+	if (s_bWriteDepth) ResetRenderTarget(1);
 
 	// or a 1 to the stencil buffer wherever alpha passes
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
@@ -4379,7 +4393,8 @@ __forceinline void ZeroGS::RenderAlphaTest(const VB& curvb, CGparameter sOneColo
 
 	glEnable(GL_STENCIL_TEST);
 	
-	if( !s_bDestAlphaTest ) {
+	if( !s_bDestAlphaTest ) 
+	{
 		// clear everything
 		s_stencilref = 0;
 		glStencilMask(STENCIL_CLEAR);
@@ -4391,7 +4406,8 @@ __forceinline void ZeroGS::RenderAlphaTest(const VB& curvb, CGparameter sOneColo
 			glEnable(GL_ALPHA_TEST);
 	}
 
-	if( curvb.test.ate && curvb.test.atst>1 && curvb.test.aref > 0x80) {
+	if( curvb.test.ate && curvb.test.atst>1 && curvb.test.aref > 0x80) 
+	{
 		v.x = 1; v.y = 1; v.z = 0; v.w = 0;
 		cgGLSetParameter4fv(sOneColor, v);
 		glAlphaFunc(g_dwAlphaCmp[curvb.test.atst], curvb.test.aref*(1/255.0f));
@@ -4409,13 +4425,12 @@ __forceinline void ZeroGS::RenderAlphaTest(const VB& curvb, CGparameter sOneColo
 	GL_ALPHATEST(0);
 	GL_COLORMASK(s_dwColorWrite);
 
-	if( !curvb.zbuf.zmsk ) {
+	if( !curvb.zbuf.zmsk ) 
+	{
 		glDepthMask(1);
 
 		// set rt next level
-		if( s_bWriteDepth ) {
-			curvb.pdepth->SetRenderTarget(1);
-		}
+		if (s_bWriteDepth) curvb.pdepth->SetRenderTarget(1);
 	}
 }
 
@@ -4448,9 +4463,7 @@ __forceinline void ZeroGS::ProcessStencil(const VB& curvb)
 	glDepthMask(0);
 	glColorMask(0,0,0,0);
 
-	if( s_bWriteDepth ) {
-		ResetRenderTarget(1);
-	}
+	if (s_bWriteDepth) ResetRenderTarget(1);
 
 	GL_ALPHATEST(0);
 
@@ -4542,9 +4555,7 @@ __forceinline void ZeroGS::ProcessFBA(const VB& curvb, CGparameter sOneColor)
 	if( !curvb.zbuf.zmsk ) {
 		glDepthMask(1);
 
-		if( s_bWriteDepth ) {
-			curvb.pdepth->SetRenderTarget(1);
-		}
+		if (s_bWriteDepth) curvb.pdepth->SetRenderTarget(1);
 	}
 	GL_ZTEST(curvb.test.zte);
 }
@@ -4595,45 +4606,38 @@ inline void ZeroGS::SetContextTarget(int context)
 	GL_REPORT_ERRORD();
 	if( curvb.prndr->status & CRenderTarget::TS_NeedUpdate ) {
 
-//	  if( s_bWriteDepth ) {
-//		  if( bSetTarg ) {
+//	  if(bSetTarg s_bWriteDepth ) {
+//		  if( s_bWriteDepth ) {
 //				curvb.pdepth->SetRenderTarget(1);
 //				curvb.pdepth->SetDepthStencilSurface();
 //		  }
+//		  else curvb.pdepth->SetDepthStencilSurface();
 //	  }
-//	  else if( bSetTarg )
-//		  curvb.pdepth->SetDepthStencilSurface();
 
 		curvb.prndr->Update(context, curvb.pdepth);
 	}
 	else { 
 
 		//if( (vb[0].prndr != vb[1].prndr && vb[!context].bVarsSetTarg) || !vb[context].bVarsSetTarg )
-			curvb.prndr->SetRenderTarget(0);
+		curvb.prndr->SetRenderTarget(0);
 		//if( bSetTarg && ((vb[0].pdepth != vb[1].pdepth && vb[!context].bVarsSetTarg) || !vb[context].bVarsSetTarg) ) 
-			curvb.pdepth->SetDepthStencilSurface();
-			if( conf.mrtdepth && ZeroGS::IsWriteDepth() )
-				curvb.pdepth->SetRenderTarget(1);
-
-		if( s_ptexCurSet[0] == curvb.prndr->ptex ) {
-			s_ptexCurSet[0] = 0;
-		}
-		if( s_ptexCurSet[1] == curvb.prndr->ptex ) {
-			s_ptexCurSet[1] = 0;
-		}
+		curvb.pdepth->SetDepthStencilSurface();
+		
+		if (conf.mrtdepth && ZeroGS::IsWriteDepth()) curvb.pdepth->SetRenderTarget(1);
+		
+		if (s_ptexCurSet[0] == curvb.prndr->ptex) s_ptexCurSet[0] = 0;
+		if (s_ptexCurSet[1] == curvb.prndr->ptex) s_ptexCurSet[1] = 0;
 
 		curvb.prndr->SetViewport();
 	}
 
 	curvb.prndr->SetTarget(curvb.frame.fbp, curvb.scissor, context);
 
-	if( (curvb.zbuf.zbp-curvb.pdepth->fbp) != (curvb.frame.fbp - curvb.prndr->fbp) && curvb.test.zte ) {
+	if( (curvb.zbuf.zbp-curvb.pdepth->fbp) != (curvb.frame.fbp - curvb.prndr->fbp) && curvb.test.zte )
 		WARN_LOG("frame and zbuf not aligned\n");
-	}
 
 	curvb.bVarsSetTarg = TRUE;
-	if( vb[!context].prndr != curvb.prndr )
-		vb[!context].bVarsSetTarg = FALSE;
+	if( vb[!context].prndr != curvb.prndr ) vb[!context].bVarsSetTarg = FALSE;
 
 	assert( !(curvb.prndr->status&CRenderTarget::TS_NeedUpdate) );
 	assert( curvb.pdepth == NULL || !(curvb.pdepth->status&CRenderTarget::TS_NeedUpdate) );
@@ -4642,9 +4646,7 @@ inline void ZeroGS::SetContextTarget(int context)
 
 void ZeroGS::SetTexVariables(int context, FRAGMENTSHADER* pfragment, int settexint)
 {
-	if( !vb[context].curprim.tme ) {
-		return;
-	}
+	if (!vb[context].curprim.tme) return;
 
 	DVProfileFunc _pf("SetTexVariables");
 
@@ -4939,45 +4941,48 @@ void ZeroGS::SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0,
 	
 	vb[context].bVarsTexSync = FALSE; 
 }
-
-// assumes texture factor is unused
-#define SET_ALPHA_COLOR_FACTOR(sign) { \
-	switch(a.c) { \
+#define SET_ALPHA_COLOR_FACTOR(sign) \
+{ \
+	switch(a.c) \
+	{ \
 		case 0: \
 			vAlphaBlendColor.y = (sign) ? 2.0f*255.0f/256.0f : -2.0f*255.0f/256.0f; \
 			s_srcalpha = GL_ONE; \
 			s_alphaeq = (sign) ? GL_FUNC_ADD : GL_FUNC_REVERSE_SUBTRACT; \
 			break; \
+			\
 		case 1: \
 			/* if in 24 bit mode, dest alpha should be one */ \
-			switch(vb[icurctx].prndr->psm&0xf) { \
+			switch(vb[icurctx].prndr->psm&0xf) \
+			{ \
 				case 0: \
 					bDestAlphaColor = (a.d!=2)&&((a.a==a.d)||(a.b==a.d)); \
 					break; \
+					\
 				case 1: \
 					/* dest alpha should be one */ \
 					bDestAlphaColor = 2; \
 					break; \
-				/* default: 16bit surface, so returned alpha is ok */ \
+					/* default: 16bit surface, so returned alpha is ok */ \
 			} \
-			break; \
-			\
+		break; \
+		\	
 		case 2: \
 			bNeedBlendFactorInAlpha = 1; /* should disable alpha channel writing */ \
 			vAlphaBlendColor.y = 0; \
 			vAlphaBlendColor.w = (sign) ? (float)a.fix * (2.0f/255.0f) : (float)a.fix * (-2.0f/255.0f); \
 			usec = 0; /* change so that alpha comes from source*/ \
-			break; \
+		break; \
 	} \
 } \
 
 //if( a.fix <= 0x80 ) { \
-//			  dwTemp = (a.fix*2)>255?255:(a.fix*2); \
-//			  dwTemp = dwTemp|(dwTemp<<8)|(dwTemp<<16)|0x80000000; \
-//			  printf("bfactor: %8.8x\n", dwTemp); \
-//			  glBlendColorEXT(dwTemp); \
-//		  } \
-//		  else { \
+// dwTemp = (a.fix*2)>255?255:(a.fix*2); \
+// dwTemp = dwTemp|(dwTemp<<8)|(dwTemp<<16)|0x80000000; \
+// printf("bfactor: %8.8x\n", dwTemp); \
+// glBlendColorEXT(dwTemp); \
+// } \
+// else { \
 
 void ZeroGS::ResetAlphaVariables()
 {
@@ -5003,11 +5008,14 @@ void ZeroGS::SetAlphaVariables(const alphaInfo& a)
 	vAlphaBlendColor = Vector(1,2*255.0f/256.0f,0,0);
 	u32 usec = a.c;
 
-	if( a.a == a.b ) { // just d remains
-		if( a.d == 0 ) {
+	if( a.a == a.b ) 
+	{ // just d remains
+		if( a.d == 0 ) 
+		{
 			alphaenable = false;
 		}
-		else {
+		else 
+		{
 			s_dstrgb = a.d == 1 ? GL_ONE : GL_ZERO;
 			s_srcrgb = GL_ZERO;
 			s_rgbeq = GL_FUNC_ADD;
@@ -5015,30 +5023,34 @@ void ZeroGS::SetAlphaVariables(const alphaInfo& a)
 
 		goto EndSetAlpha;
 	}
-	else if( a.d == 2 ) { // zero
-
-		if( a.a == 2 ) {
+	else if( a.d == 2 ) 
+	{ // zero
+		if( a.a == 2 ) 
+		{
 			// zero all color
 			s_srcrgb = GL_ZERO;
 			s_dstrgb = GL_ZERO;
 			goto EndSetAlpha;
 		}
-		else if( a.b == 2 ) {			   
+		else if( a.b == 2 ) 
+		{
 			//b2XAlphaTest = 1;
-			
+
 			SET_ALPHA_COLOR_FACTOR(1);
 
-			if( bDestAlphaColor == 2 ) {
+			if( bDestAlphaColor == 2 ) 
+			{
 				s_rgbeq = GL_FUNC_ADD;
 				s_srcrgb = a.a == 0 ? GL_ONE : GL_ZERO;
 				s_dstrgb = a.a == 0 ? GL_ZERO : GL_ONE;
 			}
-			else {
+			else 
+			{
 				bAlphaClamping = 2;
 
-				s_rgbeq = GL_FUNC_ADD;  
-				s_srcrgb = a.a == 0 ? blendalpha[usec] : GL_ZERO;
-				s_dstrgb = a.a == 0 ? GL_ZERO : blendalpha[usec];
+			s_rgbeq = GL_FUNC_ADD;
+			s_srcrgb = a.a == 0 ? blendalpha[usec] : GL_ZERO;
+			s_dstrgb = a.a == 0 ? GL_ZERO : blendalpha[usec];
 			}
 
 			goto EndSetAlpha;
@@ -5047,73 +5059,85 @@ void ZeroGS::SetAlphaVariables(const alphaInfo& a)
 		// nothing is zero, so must do some real blending
 		//b2XAlphaTest = 1;
 		bAlphaClamping = 3;
-
+	
 		SET_ALPHA_COLOR_FACTOR(1);
-
+	
 		s_rgbeq = a.a == 0 ? GL_FUNC_SUBTRACT : GL_FUNC_REVERSE_SUBTRACT;
 		s_srcrgb = bDestAlphaColor == 2 ? GL_ONE : blendalpha[usec];
 		s_dstrgb = bDestAlphaColor == 2 ? GL_ONE : blendalpha[usec];
 	}
-	else if( a.a == 2 ) {   // zero
+	else if( a.a == 2 ) 
+	{ // zero
 
 		//b2XAlphaTest = 1;
 		bAlphaClamping = 1; // min testing
 
 		SET_ALPHA_COLOR_FACTOR(1);
 
-		if( a.b == a.d ) {
+		if( a.b == a.d ) 
+		{
 			// can get away with 1-A
 			s_rgbeq = GL_FUNC_ADD;
 			s_srcrgb = (a.b == 0 && bDestAlphaColor != 2) ? blendinvalpha[usec] : GL_ZERO;
 			s_dstrgb = (a.b == 0 || bDestAlphaColor == 2) ? GL_ZERO : blendinvalpha[usec];
 		}
-		else {
+		else 
+		{
 			s_rgbeq = a.b==0 ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_SUBTRACT;
 			s_srcrgb = (a.b == 0 && bDestAlphaColor != 2) ? blendalpha[usec] : GL_ONE;
 			s_dstrgb = (a.b == 0 || bDestAlphaColor == 2 ) ? GL_ONE : blendalpha[usec];
 		}
 	}
-	else if( a.b == 2 ) {
+	else if( a.b == 2 ) 
+	{
 		bAlphaClamping = 2; // max testing
 
 		SET_ALPHA_COLOR_FACTOR(a.a!=a.d);
 
-		if( a.a == a.d ) {
+		if( a.a == a.d ) 
+		{
 			// can get away with 1+A, but need to set alpha to negative
 			s_rgbeq = GL_FUNC_ADD;
 
-			if( bDestAlphaColor == 2 ) {
+			if( bDestAlphaColor == 2 ) 
+			{
 				assert(usec==1);
 
 				// all ones
 				bNeedBlendFactorInAlpha = 1;
 				vAlphaBlendColor.y = 0;
 				vAlphaBlendColor.w = -1;
-				s_srcrgb = a.a == 0 ? GL_ONE_MINUS_SRC_ALPHA : GL_ZERO;
-				s_dstrgb = a.a == 0 ? GL_ZERO : GL_ONE_MINUS_SRC_ALPHA;
+
+				s_srcrgb = (a.a == 0) ? GL_ONE_MINUS_SRC_ALPHA : GL_ZERO;
+				s_dstrgb = (a.a == 0) ? GL_ZERO : GL_ONE_MINUS_SRC_ALPHA;
 			}
-			else {
+			else 
+			{
 				s_srcrgb = a.a == 0 ? blendinvalpha[usec] : GL_ZERO;
 				s_dstrgb = a.a == 0 ? GL_ZERO : blendinvalpha[usec];
 			}
 		}
-		else {
+		else 
+		{
 			//b2XAlphaTest = 1;
 			s_rgbeq = GL_FUNC_ADD;
 			s_srcrgb = (a.a == 0 && bDestAlphaColor != 2) ? blendalpha[usec] : GL_ONE;
 			s_dstrgb = (a.a == 0 || bDestAlphaColor == 2) ? GL_ONE : blendalpha[usec];
 		}
 	}
-	else {
+	else 
+	{
 		// all 3 components are valid!
 		bAlphaClamping = 3; // all testing
 		SET_ALPHA_COLOR_FACTOR(a.a!=a.d);
 
-		if( a.a == a.d ) {
+		if( a.a == a.d ) 
+		{
 			// can get away with 1+A, but need to set alpha to negative
 			s_rgbeq = GL_FUNC_ADD;
-			
-			if( bDestAlphaColor == 2 ) {
+
+			if( bDestAlphaColor == 2 ) 
+			{
 				assert(usec==1);
 
 				// all ones
@@ -5123,16 +5147,19 @@ void ZeroGS::SetAlphaVariables(const alphaInfo& a)
 				s_srcrgb = a.a == 0 ? GL_ONE_MINUS_SRC_ALPHA : GL_SRC_ALPHA;
 				s_dstrgb = a.a == 0 ? GL_SRC_ALPHA : GL_ONE_MINUS_SRC_ALPHA;
 			}
-			else {
+			else 
+			{
 				s_srcrgb = a.a == 0 ? blendinvalpha[usec] : blendalpha[usec];
 				s_dstrgb = a.a == 0 ? blendalpha[usec] : blendinvalpha[usec];
 			}
 		}
-		else {
+		else
+		{
 			assert(a.b == a.d);
 			s_rgbeq = GL_FUNC_ADD;
 
-			if( bDestAlphaColor == 2 ) {
+			if( bDestAlphaColor == 2 ) 
+			{
 				assert(usec==1);
 
 				// all ones
@@ -5142,7 +5169,8 @@ void ZeroGS::SetAlphaVariables(const alphaInfo& a)
 				s_srcrgb = a.a != 0 ? GL_ONE_MINUS_SRC_ALPHA : GL_SRC_ALPHA;
 				s_dstrgb = a.a != 0 ? GL_SRC_ALPHA : GL_ONE_MINUS_SRC_ALPHA;
 			}
-			else {
+			else 
+			{
 				//b2XAlphaTest = 1;
 				s_srcrgb = a.a != 0 ? blendinvalpha[usec] : blendalpha[usec];
 				s_dstrgb = a.a != 0 ? blendalpha[usec] : blendinvalpha[usec];
@@ -5150,12 +5178,15 @@ void ZeroGS::SetAlphaVariables(const alphaInfo& a)
 		}
 	}
 
-EndSetAlpha:
+	EndSetAlpha:
 
 	GL_BLEND_SET();
 	zgsBlendEquationSeparateEXT(s_rgbeq, s_alphaeq);
-	if( alphaenable ) glEnable(GL_BLEND); // always set
-	else glDisable(GL_BLEND);
+
+	if( alphaenable ) 
+		glEnable(GL_BLEND); // always set
+	else 
+		glDisable(GL_BLEND);
 
 	INC_ALPHAVARS();
 }
@@ -5231,16 +5262,17 @@ bool ZeroGS::CheckChangeInClut(u32 highdword, u32 psm)
 {
 	int cld = (highdword >> 29) & 0x7;
 	int cbp = ((highdword >>  5) & 0x3fff);
-
+	
 	// processing the CLUT after tex0/2 are written
 	switch(cld) {
 		case 0: return false;
-			
+		case 1: break; // Seems to rarely not be 1.
 		// note sure about changing cbp[0,1]
 		case 4: return gs.cbp[0] != cbp;
 		case 5: return gs.cbp[1] != cbp;
 
 		// default: load
+		default: break;
 	}
 
 	int cpsm = (highdword >> 19) & 0xe;
@@ -5453,13 +5485,13 @@ void ZeroGS::texClutWrite(int ctx)
 
 	tex0Info& tex0 = vb[ctx].tex0;
 	assert( PSMT_ISCLUT(tex0.psm) );
-
 	// processing the CLUT after tex0/2 are written
 	switch(tex0.cld) {
 		case 0: return;
+		case 1: break; // tex0.cld is usually 1.
 		case 2: gs.cbp[0] = tex0.cbp; break;
 		case 3: gs.cbp[1] = tex0.cbp; break;
-		// note sure about changing cbp[0,1]
+		// not sure about changing cbp[0,1]
 		case 4:
 			if( gs.cbp[0] == tex0.cbp )
 				return;
@@ -5470,69 +5502,98 @@ void ZeroGS::texClutWrite(int ctx)
 				return;
 			gs.cbp[1] = tex0.cbp;
 			break;
+		default:  //DEBUG_LOG("cld isn't 0-5!");
+			break;
 	}
 
 	Flush(!ctx);
 
-	int entries = (tex0.psm&3)==3 ? 256 : 16;
+	int entries = (tex0.psm & 3)==3 ? 256 : 16;
 
-	if( tex0.csm ) {
-		// 16bit psm
-		// eggomania uses non16bit textures for csm2
-		if( tex0.cpsm == PSMCT16 ) {
-			u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
-			u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
+	if (tex0.csm) 
+	{
+		switch (tex0.cpsm)
+		{
+			// 16bit psm
+			// eggomania uses non16bit textures for csm2
+			case PSMCT16:
+			{
+				u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
+				u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
 
-			for(int i = 0; i < entries; ++i) {
-				*dst = src[getPixelAddress16_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
-				dst += 2;
-				// check for wrapping
-				if( ((u32)(uptr)dst & 0x3ff) == 0 )
-					dst = (u16*)(g_pbyGSClut+2);
+				for (int i = 0; i < entries; ++i) 
+				{
+					*dst = src[getPixelAddress16_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+					dst += 2;
+					
+					// check for wrapping
+					if (((u32)(uptr)dst & 0x3ff) == 0) dst = (u16*)(g_pbyGSClut+2);
+				}
+				break;
 			}
-		}
-		else if( tex0.cpsm == PSMCT16S ) {
+			
+			case PSMCT16S:
+			{
+				u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
+				u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
 
-			u16* src = (u16*)g_pbyGSMemory + tex0.cbp*128;
-			u16 *dst = (u16*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0));
-
-			for(int i = 0; i < entries; ++i) {
-				*dst = src[getPixelAddress16S_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
-				dst += 2;
-				// check for wrapping
-				if( ((u32)(uptr)dst & 0x3ff) == 0 )
-					dst = (u16*)(g_pbyGSClut+2);
+				for (int i = 0; i < entries; ++i) 
+				{
+					*dst = src[getPixelAddress16S_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+					dst += 2;
+					
+					// check for wrapping
+					if (((u32)(uptr)dst & 0x3ff) == 0) dst = (u16*)(g_pbyGSClut+2);
+				}
+			break;
 			}
-		}
-		else if( tex0.cpsm == PSMCT32 || tex0.cpsm == PSMCT24 ) {
+		
+			case PSMCT32:
+			case PSMCT24:
+			{
+				u32* src = (u32*)g_pbyGSMemory + tex0.cbp*64;
+				u32 *dst = (u32*)(g_pbyGSClut+64*tex0.csa);
 
-			u32* src = (u32*)g_pbyGSMemory + tex0.cbp*64;
-			u32 *dst = (u32*)(g_pbyGSClut+64*tex0.csa);
-
-			for(int i = 0; i < entries; ++i) {
-				*dst++ = src[getPixelAddress32_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+				// check if address exceeds src
+				if( src+getPixelAddress32_0(gs.clut.cou+entries-1, gs.clut.cov, gs.clut.cbw) >= (u32*)g_pbyGSMemory + 0x00100000 ) 
+					ERROR_LOG("texClutWrite out of bounds\n");
+				else 
+					for(int i = 0; i < entries; ++i) 
+					{
+						*dst = src[getPixelAddress32_0(gs.clut.cou+i, gs.clut.cov, gs.clut.cbw)];
+						dst++;
+					}
+			break;
 			}
-		}
-		else {
+			
+			default:
+			{
 #ifndef RELEASE_TO_PUBLIC
-			//printf("unknown cpsm: %x (%x)\n", tex0.cpsm, tex0.psm);
+			//DEBUG_LOG("unknown cpsm: %x (%x)\n", tex0.cpsm, tex0.psm);
 #endif
+				break;
+			}
 		}
 	}
-	else {		  
-		if( tex0.cpsm <= 1 ) {
-			if( entries == 16 )
-				WriteCLUT_T32_I4_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
-			else 
-				WriteCLUT_T32_I8_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
-		}
-		else {
-			if( entries == 16 )
-				WriteCLUT_T16_I4_CSM1((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
-			else if(entries == 256) {
-				// sse2 for 256 is more complicated, so use regular
-				WriteCLUT_T16_I8_CSM1_c((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
-			}
+	else 
+	{
+		switch (tex0.cpsm)
+		{
+			case PSMCT24:
+			case PSMCT32:
+				if( entries == 16 )
+					WriteCLUT_T32_I4_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
+				else 
+					WriteCLUT_T32_I8_CSM1((u32*)(g_pbyGSMemory + tex0.cbp*256), (u32*)(g_pbyGSClut+64*tex0.csa));
+				break;
+				
+			default:
+				if( entries == 16 )
+					WriteCLUT_T16_I4_CSM1((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
+				else // sse2 for 256 is more complicated, so use regular
+					WriteCLUT_T16_I8_CSM1_c((u32*)(g_pbyGSMemory + 256 * tex0.cbp), (u32*)(g_pbyGSClut+32*(tex0.csa&15)+(tex0.csa>=16?2:0)));
+				break;
+			
 		}
 	}
 }
@@ -5546,13 +5607,10 @@ void ZeroGS::SetTexFlush()
 //	if( PSMT_ISCLUT(vb[1].tex0.psm) )
 //		texClutWrite(1);
 
-	if( !s_bForceTexFlush ) {
-		if( s_ptexCurSet[0] != s_ptexNextSet[0] ) {
-			s_ptexCurSet[0] = s_ptexNextSet[0];
-		}
-		if( s_ptexCurSet[1] != s_ptexNextSet[1] ) {
-			s_ptexCurSet[1] = s_ptexNextSet[1];
-		}
+	if( !s_bForceTexFlush ) 
+	{
+		if (s_ptexCurSet[0] != s_ptexNextSet[0]) s_ptexCurSet[0] = s_ptexNextSet[0];
+		if (s_ptexCurSet[1] != s_ptexNextSet[1]) s_ptexCurSet[1] = s_ptexNextSet[1];
 	}
 }
 

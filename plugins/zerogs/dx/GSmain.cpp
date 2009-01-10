@@ -127,8 +127,7 @@ void SysMessage(char *fmt, ...) {
 
 #endif
 
-#ifdef GS_LOG
-void __Log(char *fmt, ...) {
+void __Log(const char *fmt, ...) {
 	va_list list;
 
 	if (!conf.log) return;
@@ -137,9 +136,8 @@ void __Log(char *fmt, ...) {
 	vfprintf(gsLog, fmt, list);
 	va_end(list);
 }
-#endif
 
-void ERROR_LOG(char *fmt, ...) {
+void __LogToConsole(const char *fmt, ...) {
 	va_list list;
 
 	printf("ZeroGS: ");
@@ -193,7 +191,7 @@ void CALLBACK GSsetGameCRC(int crc, int options)
 			break;
 	}
 
-	printf("ZeroGS: Set game options: 0x%8.8x\n", g_GameSettings);
+	DEBUG_LOG("ZeroGS: Set game options: 0x%8.8x\n", g_GameSettings);
 }
 
 void CALLBACK GSsetFrameSkip(int frameskip)
@@ -256,7 +254,7 @@ void CALLBACK GSreset() {
 	gs.q = 1;
 }
 
-void CALLBACK GSgifSoftReset(int mask)
+void CALLBACK GSgifSoftReset(u32 mask)
 {
 	if( mask & 1 ) memset(&gs.path1, 0, sizeof(gs.path1));
 	if( mask & 2 ) memset(&gs.path2, 0, sizeof(gs.path2));
@@ -283,10 +281,7 @@ s32 CALLBACK GSinit()
 #endif
 
 	GSreset();
-
-#ifdef GS_LOG
 	GS_LOG("GSinit ok\n");
-#endif
 
 	return 0;
 }
@@ -318,7 +313,7 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		case WM_ACTIVATE:
 
 			if( wParam != WA_INACTIVE ) {
-				//printf("restoring device\n");
+				//DEBUG_LOG("restoring device\n");
 				ZeroGS::Restore();
 			}
 
@@ -350,9 +345,7 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
 
 	g_GSMultiThreaded = multithread;
 
-#ifdef GS_LOG
 	GS_LOG("GSopen\n");
-#endif
 
 #ifdef _DEBUG
 	g_hCurrentThread = GetCurrentThread();
@@ -389,12 +382,12 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
 	if( pDsp != NULL )
 		*(int*)pDsp = (int)GShwnd;
 
-	printf("creating zerogs\n");
+	DEBUG_LOG("creating zerogs\n");
 	//if (conf.record) recOpen();
 	if( FAILED(ZeroGS::Create(conf.width, conf.height)) )
 		return -1;
 
-	printf("init zerogs\n");
+	DEBUG_LOG("initialization successful\n");
 
 	if( FAILED(ZeroGS::InitDeviceObjects()) )
 		return -1;
@@ -430,9 +423,7 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
 	luPerfFreq.QuadPart = 1;
 #endif
 
-#ifdef GS_LOG
 	GS_LOG("GSopen ok\n");
-#endif
 
 	gs.path1.mode = 0;
 	gs.path2.mode = 0;
@@ -508,9 +499,7 @@ float fFPS = 0;
 
 void CALLBACK GSvsync(int interlace)
 {
-#ifdef GS_LOG
 	GS_LOG("\nGSvsync\n\n");
-#endif
 
 	static u32 dwTime = timeGetTime();
 	static int nToNextUpdate = 1;
@@ -694,22 +683,21 @@ void CALLBACK GSvsync(int interlace)
 }
 
 void GIFtag(pathInfo *path, u32 *data) {
-
- 	path->tag.nloop = data[0] & 0x7fff;
-	path->tag.eop   = (data[0] >> 15) & 0x1;
-	u32 tagpre   = (data[1] >> 14) & 0x1;
-	u32 tagprim  = (data[1] >> 15) & 0x7ff;
-	u32 tagflg   = (data[1] >> 26) & 0x3;
-	path->tag.nreg  = (data[1] >> 28)<<2;
+	
+	path->tag.nloop	= data[0] & 0x7fff;
+	path->tag.eop	= (data[0] >> 15) & 0x1;
+	u32 tagpre		= (data[1] >> 14) & 0x1;
+	u32 tagprim		= (data[1] >> 15) & 0x7ff;
+	u32 tagflg		= (data[1] >> 26) & 0x3;
+	path->tag.nreg	= (data[1] >> 28)<<2;
+	
 	if (path->tag.nreg == 0) path->tag.nreg = 64;
 
 	gs.q = 1;
 
-#ifdef GS_LOG
 //	GS_LOG("GIFtag: %8.8lx_%8.8lx_%8.8lx_%8.8lx: EOP=%d, NLOOP=%x, FLG=%x, NREG=%d, PRE=%d\n",
 //			data[3], data[2], data[1], data[0],
 //			path->tag.eop, path->tag.nloop, tagflg, path->tag.nreg, tagpre);
-#endif
 
 	path->mode = tagflg+1;
 
@@ -759,9 +747,6 @@ static int nPath3Hack = 0;
 
 void CALLBACK GSgetLastTag(u64* ptag)
 {
-//	int mode = s_pLastPath->mode > 0 ? s_pLastPath->mode-1 : 0;
-//	*(u32*)ptag = s_pLastPath->tag.nloop|(s_pLastPath->tag.eop<<15);
-//	*((u32*)ptag+1) = (mode<<26)|(s_pLastPath->regn<<28);
 	*(u32*)ptag = nPath3Hack;
 	nPath3Hack = 0;
 }
@@ -785,20 +770,23 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 	while(size > 0)
 	{
 		//LOG(_T("Transfer(%08x, %d) START\n"), pMem, size);
-		if(path->tag.nloop == 0) {
+		if (path->tag.nloop == 0) 
+		{
  			GIFtag(path, pMem);
 			pMem+= 4;
 			size--;
 
-			if( (g_GameSettings & GAME_PATH3HACK) && path == &gs.path3 && gs.path3.tag.eop )
+			if ((g_GameSettings & GAME_PATH3HACK) && path == &gs.path3 && gs.path3.tag.eop)
 				nPath3Hack = 1;
 				
-			if( path == &gs.path1 ) {
-
+			if (path == &gs.path1) 
+			{
 				// if too much data, just ignore
-				if( path->tag.nloop * (path->tag.nreg / 4) > (int)size * (path->mode==2?2:1)) {
+				if (path->tag.nloop * (path->tag.nreg / 4) > (int)size * (path->mode==2?2:1)) 
+				{
 					static int lasttime = 0;
-					if( timeGetTime() - lasttime > 5000 ) {
+					if( timeGetTime() - lasttime > 5000 ) 
+					{
 						ERROR_LOG("VU1 too much data, ignore if gfx are fine\n");
 						lasttime = timeGetTime();
 					}
@@ -806,13 +794,16 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 					return;
 				}
 
-				if( path->mode == 1 ) {
-
+				if (path->mode == 1) 
+				{
 					// check if 0xb is in any reg, if yes, exit (kh2)
-					for(int i = 0; i < path->tag.nreg; i += 4) {
-						if( ((path->regs >> i)&0xf) == 11 ) {
+					for(int i = 0; i < path->tag.nreg; i += 4) 
+					{
+						if (((path->regs >> i)&0xf) == 11) 
+						{
 							static int lasttime = 0;
-							if( timeGetTime() - lasttime > 5000 ) {
+							if( timeGetTime() - lasttime > 5000 ) 
+							{
 								ERROR_LOG("Invalid unpack type\n");
 								lasttime = timeGetTime();
 							}
@@ -823,11 +814,13 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 				}
 			}
 
-			if(path->tag.nloop == 0 ) {
-				//bAfter0Tag = 1;
-				if( path == &gs.path1 ) {
+			if(path->tag.nloop == 0 ) 
+			{
+				if( path == &gs.path1 ) 
+				{
 					// ffx hack
-					if( g_GameSettings & GAME_FFXHACK ) {
+					if( g_GameSettings & GAME_FFXHACK ) 
+					{
 						if( path->tag.eop )
 							return;
 						continue;
@@ -836,32 +829,19 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 					return;
 				}
 				
-				if( !path->tag.eop ) {
-					//printf("contuing from eop\n");
+				if( !path->tag.eop ) 
+				{
+					//DEBUG_LOG("continuing from eop\n");
 					continue;
 				}
 				
 				break;
 			}
-//			else {
-//				if( bAfter0Tag ) {
-//					// hack!! if all 0s, then break
-//					if( pMem[-3] == 0 && pMem[-2] == 0 ) {
-//						path->tag.nloop = 0;
-//						return;
-//					}
-//				}
-//			}
 		}
 
   		switch(path->mode) {
 		case 1: // PACKED
 		{
-//			if( path->tag.nreg == 9 && gs.regs == 0x412412412L && gs.primC == 0) {
-//				// draw 3 points
-//			}
-
-			//__Log("%8.8x%8.8x %d\n", ((u32*)&gs.regs)[1], *(u32*)&gs.regs, path->tag.nreg/4);
 			assert( path->tag.nloop > 0 );
 			for(; size > 0; size--, pMem += 4)
 			{
@@ -870,9 +850,11 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 				g_GIFPackedRegHandlers[reg](pMem);
 
 				path->regn += 4;
-				if (path->tag.nreg == path->regn) {
+				if (path->tag.nreg == path->regn) 
+				{
 					path->regn = 0;
-					if( path->tag.nloop-- <= 1 ) {
+					if( path->tag.nloop-- <= 1 ) 
+					{
 						size--;
 						pMem += 4;
 						break;
@@ -883,7 +865,7 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 		}
 		case 2: // REGLIST
 		{
-			//__Log("%8.8x%8.8x %d L\n", ((u32*)&gs.regs)[1], *(u32*)&gs.regs, path->tag.nreg/4);
+			//GS_LOG("%8.8x%8.8x %d L\n", ((u32*)&gs.regs)[1], *(u32*)&gs.regs, path->tag.nreg/4);
 			assert( path->tag.nloop > 0 );
 			size *= 2;
 			for(; size > 0; pMem+= 2, size--)
@@ -891,9 +873,11 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 				int reg = (int)((path->regs >> path->regn) & 0xf);
 				g_GIFRegHandlers[reg](pMem);
 				path->regn += 4;
-				if (path->tag.nreg == path->regn) {
+				if (path->tag.nreg == path->regn) 
+				{
 					path->regn = 0;
-					if( path->tag.nloop-- <= 1 ) {
+					if( path->tag.nloop-- <= 1 ) 
+					{
 						size--;
 						pMem += 2;
 						break;
@@ -912,9 +896,12 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 			{
 				int process = min((int)size, path->tag.nloop);
 
-				if( process > 0 ) {
-					if( gs.imageTransfer ) ZeroGS::TransferLocalHost(pMem, process);
-					else ZeroGS::TransferHostLocal(pMem, process*4);
+				if( process > 0 ) 
+				{
+					if (gs.imageTransfer) 
+						ZeroGS::TransferLocalHost(pMem, process);
+					else 
+						ZeroGS::TransferHostLocal(pMem, process*4);
 
 					path->tag.nloop -= process;
 					pMem += process*4; size -= process;
@@ -923,7 +910,8 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 				}
 				break;
 			}
-			else {
+			else 
+			{
 				// simulate
 				int process = min((int)size, path->tag.nloop);
 				path->tag.nloop -= process;
@@ -933,11 +921,8 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 			break;
 		}	
 		default: // GIF_IMAGE
-			GS_LOG(_T("*** WARNING **** Unexpected GIFTag flag\n"));
+			GS_LOG("*** WARNING **** Unexpected GIFTag flag\n");
 			assert(0);
-//			ZeroGS::TransferLocalHost(pMem, size);
-//			pMem+= size*4; path->tag.nloop-= size;
-//			size = 0; path->mode = 0;
 			path->tag.nloop = 0;
 			break;
 
@@ -950,29 +935,15 @@ void _GSgifTransfer(pathInfo *path, u32 *pMem, u32 size)
 
 void CALLBACK GSgifTransfer2(u32 *pMem, u32 size)
 {
-#ifdef GS_LOG
 	//GS_LOG("GSgifTransfer2 size = %lx (mode %d, gs.path2.tag.nloop = %d)\n", size, gs.path2.mode, gs.path2.tag.nloop);
-#endif
 
-//	if(!g_GSMultiThreaded)
-//		CSR->FINISH = 0;
-	//DVProfileFunc _pf("Transf2");
-
-	//assert( ((u32)pMem & 0xf) == 0 );
 	_GSgifTransfer(&gs.path2, pMem, size);
 }
 
 void CALLBACK GSgifTransfer3(u32 *pMem, u32 size)
 {
-#ifdef GS_LOG
 	//GS_LOG("GSgifTransfer3 size = %lx (mode %d, gs.path3.tag.nloop = %d)\n", size, gs.path3.mode, gs.path3.tag.nloop);
-#endif
 
-//	if(!g_GSMultiThreaded)
-//		CSR->FINISH = 0;
-	//DVProfileFunc _pf("Transf3");
-
-	//assert( ((u32)pMem & 0xf) == 0 );
 	nPath3Hack = 0;
 	_GSgifTransfer(&gs.path3, pMem, size);
 }
@@ -982,20 +953,13 @@ void CALLBACK GSgifTransfer1(u32 *pMem, u32 addr)
 {
 	pathInfo *path = &gs.path1;
 
-#ifdef GS_LOG
 	//GS_LOG("GSgifTransfer1 0x%x (mode %d)\n", addr, path->mode);
-#endif
 
 	addr &= 0x3fff;
 
 #ifdef _DEBUG
 	PRIM_LOG("count: %d\n", count);
 	count++;
-
-//	for(int i = addr; i < 0x4000; i += 16 ) {
-//	u32* mem = (u32*)((u8*)pMem+i);
-//		PRIM_LOG("%x: %x %x %x %x\n", i, mem[0], mem[1], mem[2], mem[3]);
-//	}
 #endif
 
 	gs.path1.tag.nloop = 0;
@@ -1006,25 +970,20 @@ void CALLBACK GSgifTransfer1(u32 *pMem, u32 addr)
 		assert( (addr&0xf) == 0 ); //BUG
 		gs.path1.tag.nloop = 0;
 		ERROR_LOG("Transfer1 - 2\n");
-		//_GSgifTransfer(&gs.path1, (u32*)((u8*)pMem+0x4000-addr), addr/16);
 		return;
 	}
 }
 
 void CALLBACK GSreadFIFO(u64 *pMem)
 {
-#ifdef GS_LOG
 	//GS_LOG("GSreadFIFO\n");
-#endif
 
 	ZeroGS::TransferLocalHost((u32*)pMem, 1);
 }
 
 void CALLBACK GSreadFIFO2(u64 *pMem, int qwc)
 {
-#ifdef GS_LOG
 	//GS_LOG("GSreadFIFO2\n");
-#endif
 
 	ZeroGS::TransferLocalHost((u32*)pMem, qwc);
 }
@@ -1037,14 +996,14 @@ int CALLBACK GSsetupRecording(int start, void* pData)
 		if( !ZeroGS::StartCapture() )
 			return 0;
 		conf.options |= GSOPTION_CAPTUREAVI;
-		printf("ZeroGS: started recording at zerogs.avi\n");
+		DEBUG_LOG("ZeroGS: started recording at zerogs.avi\n");
 	}
 	else {
 		if( !(conf.options & GSOPTION_CAPTUREAVI) )
 			return 1;
 		conf.options &= ~GSOPTION_CAPTUREAVI;
 		ZeroGS::StopCapture();
-		printf("ZeroGS: stopped recording\n");
+		DEBUG_LOG("ZeroGS: stopped recording\n");
 	}
 
 	return 1;
@@ -1053,7 +1012,7 @@ int CALLBACK GSsetupRecording(int start, void* pData)
 s32 CALLBACK GSfreeze(int mode, freezeData *data) {
 	if (mode == FREEZE_LOAD) {
 		if( !ZeroGS::Load(data->data) )
-			printf("GS: Bad load format!");
+			DEBUG_LOG("GS: Bad load format!");
 		g_nRealFrame += 100;
 
 	} else if (mode == FREEZE_SAVE) {
