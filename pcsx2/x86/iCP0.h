@@ -25,11 +25,10 @@
 *********************************************************/
 
 namespace Dynarec { 
-namespace R5900 { 
-namespace OpcodeImpl
+namespace R5900 {
+namespace OpcodeImpl {
+namespace COP0
 {
-	void recCOP0_Unknown();
-
 	void recMFC0( void );
 	void recMTC0( void );
 	void recBC0F( void );
@@ -44,5 +43,5 @@ namespace OpcodeImpl
 	void recDI( void );
 	void recEI( void );
 
-}}}
+}}}}
 #endif

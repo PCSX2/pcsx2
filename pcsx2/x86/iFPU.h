@@ -26,10 +26,9 @@ namespace R5900
 	void SaveCW();
 	void LoadCW();
 
-	namespace OpcodeImpl
+	namespace OpcodeImpl {
+	namespace COP1
 	{
-		void recCOP1_Unknown();
-
 		void recMFC1( void );
 		void recCFC1( void );
 		void recMTC1( void );
@@ -65,7 +64,7 @@ namespace R5900
 		void recBC1T( void );
 		void recBC1FL( void );
 		void recBC1TL( void );
-	}
+	} }
 } }
 
 #endif

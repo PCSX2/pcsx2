@@ -46,13 +46,12 @@ using namespace std;
 using namespace R5900;
 using namespace Dynarec::R5900;
 
-namespace Dynarec
-{
-
 // temporary externs
-extern u32 vudump;
 extern void iDumpVU0Registers();
 extern void iDumpVU1Registers();
+
+namespace Dynarec
+{
 
 // SuperVURec optimization options, uncomment only for debugging purposes
 #define SUPERVU_CACHING			// vu programs are saved and queried via memcompare (should be no reason to disable this)
@@ -107,6 +106,14 @@ extern void (*recVU_LOWER_OPCODE[128])( VURegs* VU, s32 info );
 #define VFFREE_INVALID0     0x80000000 // (vffree[i]&0xf) is invalid
 
 #define FORIT(it, v) for(it = (v).begin(); it != (v).end(); ++(it))
+
+#ifdef _DEBUG
+u32 s_vucount=0;
+
+static u32 g_vu1lastrec = 0, skipparent = -1;
+static u32 s_svulast = 0, s_vufnheader;
+static u32 badaddrs[][2] = {0,0xffff};
+#endif
 
 union VURecRegs
 {
@@ -396,6 +403,10 @@ void SuperVUDestroy(int vuindex)
 void SuperVUReset(int vuindex)
 {
 	list<VuFunctionHeader*>::iterator it;
+
+#ifdef _DEBUG
+	s_vucount = 0;
+#endif
 
 	if( vuindex < 0 ) {
 		SuperVUReset(0);
@@ -2471,13 +2482,6 @@ static void SuperVURecompile()
 
 // debug
 
-#ifdef _DEBUG
-u32 s_vucount=0;
-
-static u32 g_vu1lastrec = 0, skipparent = -1;
-static u32 s_svulast = 0, s_vufnheader;
-static u32 badaddrs[][2] = {0,0xffff};
-#endif
 
 u32 s_saveecx, s_saveedx, s_saveebx, s_saveesi, s_saveedi, s_saveebp;
 u32 g_curdebugvu;

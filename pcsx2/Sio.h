@@ -92,8 +92,8 @@ int  sioInit();
 void sioShutdown();
 void psxSIOShutdown();
 u8 sioRead8();
-void sioWrite8(unsigned char value);
-void sioWriteCtrl16(unsigned short value);
+void sioWrite8(u8 value);
+void sioWriteCtrl16(u16 value);
 extern void sioInterrupt();
 void InitializeSIO(u8 value);
 

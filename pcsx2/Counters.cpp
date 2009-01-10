@@ -36,6 +36,8 @@ extern void DummyExecuteVU1Block(void);
 namespace R5900
 {
 
+static const uint EECNT_FUTURE_TARGET = 0x10000000;
+
 u64 profile_starttick = 0;
 u64 profile_totalticks = 0;
 
@@ -58,20 +60,30 @@ void rcntReset(int index) {
 // Updates the state of the nextCounter value (if needed) to serve
 // any pending events for the given counter.
 // Call this method after any modifications to the state of a counter.
-static __forceinline void _rcntSet( int i )
+static __forceinline void _rcntSet( int cntidx )
 {
 	s32 c;
-	assert( i <= 4 );		// rcntSet isn't valid for h/vsync counters.
-		
+	jASSUME( cntidx <= 4 );		// rcntSet isn't valid for h/vsync counters.
+
+	const Counter& counter = counters[cntidx];
+
 	// Stopped or special hsync gate?
-	if (!counters[i].mode.IsCounting || (counters[i].mode.ClockSource == 0x3) ) return;
+	if (!counter.mode.IsCounting || (counter.mode.ClockSource == 0x3) ) return;
 	
+	// check for special cases where the overflow or target has just passed
+	// (we probably missed it because we're doing/checking other things)
+	if( counter.count > 0x10000 || counter.count > counter.target )
+	{
+		nextCounter = 4;
+		return;
+	}
+
 	// nextCounter is relative to the cpuRegs.cycle when rcntUpdate() was last called.
 	// However, the current _rcntSet could be called at any cycle count, so we need to take
 	// that into account.  Adding the difference from that cycle count to the current one
 	// will do the trick!
 
-	c = ((0x10000 - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
+	c = ((0x10000 - counter.count) * counter.rate) - (cpuRegs.cycle - counter.sCycleT);
 	c += cpuRegs.cycle - nextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < nextCounter) nextCounter = c;
 
@@ -79,8 +91,8 @@ static __forceinline void _rcntSet( int i )
 	// (the overflow is all we care about since it goes first, and then the 
 	// target will be turned on afterward).
 
-	if( counters[i].target & 0x10000000 ) return;
-	c = ((counters[i].target - counters[i].count) * counters[i].rate) - (cpuRegs.cycle - counters[i].sCycleT);
+	if( counter.target & EECNT_FUTURE_TARGET ) return;
+	c = ((counter.target - counter.count) * counter.rate) - (cpuRegs.cycle - counter.sCycleT);
 	c += cpuRegs.cycle - nextsCounter;		// adjust for time passed since last rcntUpdate();
 	if (c < nextCounter) nextCounter = c;
 }
@@ -540,9 +552,9 @@ static __forceinline void __fastcall _cpuTestTarget( int i )
 		if (counters[i].mode.ZeroReturn)
 			counters[i].count -= counters[i].target; // Reset on target
 		else
-			counters[i].target |= 0x10000000;
+			counters[i].target |= EECNT_FUTURE_TARGET;
 	} 
-	else counters[i].target |= 0x10000000;
+	else counters[i].target |= EECNT_FUTURE_TARGET;
 }
 
 static __forceinline void _cpuTestOverflow( int i )
@@ -768,7 +780,7 @@ void rcntWcount(int index, u32 value)
 	// reset the target, and make sure we don't get a premature target.
 	counters[index].target &= 0xffff;
 	if( counters[index].count > counters[index].target )
-		counters[index].target |= 0x10000000;
+		counters[index].target |= EECNT_FUTURE_TARGET;
 
 	// re-calculate the start cycle of the counter based on elapsed time since the last counter update:
 	if(counters[index].mode.IsCounting) {
@@ -796,7 +808,7 @@ void rcntWtarget(int index, u32 value)
 	// overflow first before the target fires:
 
 	if( counters[index].target <= rcntCycle(index) )
-		counters[index].target |= 0x10000000;
+		counters[index].target |= EECNT_FUTURE_TARGET;
 
 	_rcntSet( index );
 }

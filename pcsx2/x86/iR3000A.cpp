@@ -43,6 +43,7 @@ extern char* disR3000Fasm(u32 code, u32 pc);
 
 extern u32 g_psxNextBranchCycle;
 extern void psxBREAK();
+extern void zeroEx();
 
 namespace Dynarec
 {
@@ -428,8 +429,6 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	noconstcode(0);
 	PSX_DEL_CONST(_Rd_);
 }
-
-void zeroEx();
 
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)

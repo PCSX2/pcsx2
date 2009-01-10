@@ -21,12 +21,14 @@
 #include "PsxCommon.h"
 #include "Paths.h"
 
-FILE * MemoryCard1, * MemoryCard2;
 _sio sio;
 
-const unsigned char cardh[4] = { 0xFF, 0xFF, 0x5a, 0x5d };
+static FILE * MemoryCard1, * MemoryCard2;
+
+static const u8 cardh[4] = { 0xFF, 0xFF, 0x5a, 0x5d };
+
 // Memory Card Specs : Sector size etc.
-struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 0x52, 0x5A};
+static const struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 0x52, 0x5A};
 
 // SIO Inline'd IRQs : Calls the SIO interrupt handlers directly instead of
 // feeding them through the IOP's branch test. (see SIO.H for details)
@@ -38,7 +40,7 @@ struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 0x52, 0x5A};
 __forceinline void SIO_INT()
 {
 	if( !(psxRegs.interrupt & (1<<IopEvt_SIO)) )
-		PSX_INT(IopEvt_SIO, 64 ); //PSXCLK/250000);
+		PSX_INT(IopEvt_SIO, PSXCLK/250000);
 }
 #define SIO_FORCEINLINE __forceinline
 #endif
@@ -484,7 +486,7 @@ void InitializeSIO(u8 value)
 	}
 }
 
-void sioWrite8(unsigned char value)
+void sioWrite8(u8 value)
 {
 	SIO_CommandWrite(value,0);
 }
@@ -494,7 +496,7 @@ void SIODMAWrite(u8 value)
 	SIO_CommandWrite(value,1);
 }
 
-void sioWriteCtrl16(unsigned short value) {
+void sioWriteCtrl16(u16 value) {
 	sio.CtrlReg = value & ~RESET_ERR;
 	if (value & RESET_ERR) sio.StatReg &= ~IRQ;
 	if ((sio.CtrlReg & SIO_RESET) || (!sio.CtrlReg))
@@ -511,11 +513,12 @@ void SIO_FORCEINLINE sioInterrupt() {
 	psxHu32(0x1070)|=0x80;
 }
 
-void SaveState::sioFreeze() {
+void SaveState::sioFreeze()
+{
+    Freeze( sio );
 
 	if( IsLoading() )
 		sio.count = 0;
-    Freeze( sio );
 }
 
 

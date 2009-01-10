@@ -777,12 +777,6 @@ static s32 intExecuteBlock( s32 eeCycles )
 		branch2 = 0;
 		while (!branch2) {
 			execI();
-
-#ifdef _DEBUG
-            if( psxdump & 16 ) {
-                iDumpPsxRegisters(psxRegs.pc,1);
-            }
-#endif
         }
 	}
 	return psxBreak + psxCycleEE;

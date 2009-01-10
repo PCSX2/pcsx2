@@ -28,10 +28,6 @@
 
 #include "Paths.h"
 
-#ifdef _DEBUG
-extern u32 s_vucount;
-#endif
-
 namespace R5900
 {
 
@@ -167,10 +163,6 @@ void cpuReset()
     vif1Reset();
 	rcntInit();
 	psxReset();
-
-#ifdef _DEBUG
-	s_vucount = 0;
-#endif
 }
 
 void cpuShutdown()

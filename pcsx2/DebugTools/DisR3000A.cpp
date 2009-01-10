@@ -23,7 +23,7 @@
 static char ostr[1024];
 
 // Names of registers
-namespace IOP
+namespace R3000a
 {
 	const char * const disRNameGPR[] = {
 		"r0", "at", "v0", "v1", "a0", "a1","a2", "a3",
@@ -38,7 +38,7 @@ namespace IOP
 		"*RES*"     , "*RES* "    , "PErr"    , "CacheErr", "TagLo"   , "TagHi"     , "ErrorEPC"  , "*RES*"     };
 }
 
-using namespace IOP;
+using namespace R3000a;
 
 // Type definition of our functions
 

@@ -44,9 +44,39 @@ namespace R5900
 			#name, \
 			cycles, \
 			NULL, \
-			R5900::Interpreter::OpcodeImpl::name, \
-			Dynarec::R5900::OpcodeImpl::rec##name, \
-			R5900::OpcodeDisasm::name \
+			::R5900::Interpreter::OpcodeImpl::name, \
+			::Dynarec::R5900::OpcodeImpl::rec##name, \
+			::R5900::OpcodeDisasm::name \
+		}
+
+#	define MakeOpcodeM( name, cycles ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			NULL, \
+			::R5900::Interpreter::OpcodeImpl::MMI::name, \
+			::Dynarec::R5900::OpcodeImpl::MMI::rec##name, \
+			::R5900::OpcodeDisasm::name \
+		}
+
+#	define MakeOpcode0( name, cycles ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			NULL, \
+			::R5900::Interpreter::OpcodeImpl::COP0::name, \
+			::Dynarec::R5900::OpcodeImpl::COP0::rec##name, \
+			::R5900::OpcodeDisasm::name \
+		}
+
+	#	define MakeOpcode1( name, cycles ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			NULL, \
+			::R5900::Interpreter::OpcodeImpl::COP1::name, \
+			::Dynarec::R5900::OpcodeImpl::COP1::rec##name, \
+			::R5900::OpcodeDisasm::name \
 		}
 
 	#	define MakeOpcodeClass( name ) \
@@ -254,100 +284,100 @@ namespace R5900
 
 		// Multimedia Instructions!
 
-		MakeOpcode( PLZCW, Default );
-		MakeOpcode( PMFHL, Default );
-		MakeOpcode( PMTHL, Default );
-		MakeOpcode( PSLLH, Default );
-		MakeOpcode( PSRLH, Default );
-		MakeOpcode( PSRAH, Default );
-		MakeOpcode( PSLLW, Default );
-		MakeOpcode( PSRLW, Default );
-		MakeOpcode( PSRAW, Default );
+		MakeOpcodeM( PLZCW, Default );
+		MakeOpcodeM( PMFHL, Default );
+		MakeOpcodeM( PMTHL, Default );
+		MakeOpcodeM( PSLLH, Default );
+		MakeOpcodeM( PSRLH, Default );
+		MakeOpcodeM( PSRAH, Default );
+		MakeOpcodeM( PSLLW, Default );
+		MakeOpcodeM( PSRLW, Default );
+		MakeOpcodeM( PSRAW, Default );
 
-		MakeOpcode( PADDW, Default );
-		MakeOpcode( PADDH, Default );
-		MakeOpcode( PADDB, Default );
-		MakeOpcode( PADDSW, Default );
-		MakeOpcode( PADDSH, Default );
-		MakeOpcode( PADDSB, Default );
-		MakeOpcode( PADDUW, Default );
-		MakeOpcode( PADDUH, Default );
-		MakeOpcode( PADDUB, Default );
-		MakeOpcode( PSUBW, Default );
-		MakeOpcode( PSUBH, Default );
-		MakeOpcode( PSUBB, Default );
-		MakeOpcode( PSUBSW, Default );
-		MakeOpcode( PSUBSH, Default );
-		MakeOpcode( PSUBSB, Default );
-		MakeOpcode( PSUBUW, Default );
-		MakeOpcode( PSUBUH, Default );
-		MakeOpcode( PSUBUB, Default );
+		MakeOpcodeM( PADDW, Default );
+		MakeOpcodeM( PADDH, Default );
+		MakeOpcodeM( PADDB, Default );
+		MakeOpcodeM( PADDSW, Default );
+		MakeOpcodeM( PADDSH, Default );
+		MakeOpcodeM( PADDSB, Default );
+		MakeOpcodeM( PADDUW, Default );
+		MakeOpcodeM( PADDUH, Default );
+		MakeOpcodeM( PADDUB, Default );
+		MakeOpcodeM( PSUBW, Default );
+		MakeOpcodeM( PSUBH, Default );
+		MakeOpcodeM( PSUBB, Default );
+		MakeOpcodeM( PSUBSW, Default );
+		MakeOpcodeM( PSUBSH, Default );
+		MakeOpcodeM( PSUBSB, Default );
+		MakeOpcodeM( PSUBUW, Default );
+		MakeOpcodeM( PSUBUH, Default );
+		MakeOpcodeM( PSUBUB, Default );
 
-		MakeOpcode( PCGTW, Default );
-		MakeOpcode( PMAXW, Default );
-		MakeOpcode( PMAXH, Default );
-		MakeOpcode( PCGTH, Default );
-		MakeOpcode( PCGTB, Default );
-		MakeOpcode( PEXTLW, Default );
-		MakeOpcode( PEXTLH, Default );
-		MakeOpcode( PEXTLB, Default );
-		MakeOpcode( PEXT5, Default );
-		MakeOpcode( PPACW, Default );
-		MakeOpcode( PPACH, Default );
-		MakeOpcode( PPACB, Default );
-		MakeOpcode( PPAC5, Default );
+		MakeOpcodeM( PCGTW, Default );
+		MakeOpcodeM( PMAXW, Default );
+		MakeOpcodeM( PMAXH, Default );
+		MakeOpcodeM( PCGTH, Default );
+		MakeOpcodeM( PCGTB, Default );
+		MakeOpcodeM( PEXTLW, Default );
+		MakeOpcodeM( PEXTLH, Default );
+		MakeOpcodeM( PEXTLB, Default );
+		MakeOpcodeM( PEXT5, Default );
+		MakeOpcodeM( PPACW, Default );
+		MakeOpcodeM( PPACH, Default );
+		MakeOpcodeM( PPACB, Default );
+		MakeOpcodeM( PPAC5, Default );
 
-		MakeOpcode( PABSW, Default );
-		MakeOpcode( PABSH, Default );
-		MakeOpcode( PCEQW, Default );
-		MakeOpcode( PMINW, Default );
-		MakeOpcode( PMINH, Default );
-		MakeOpcode( PADSBH, Default );
-		MakeOpcode( PCEQH, Default );
-		MakeOpcode( PCEQB, Default );
-		MakeOpcode( PEXTUW, Default );
-		MakeOpcode( PEXTUH, Default );
-		MakeOpcode( PEXTUB, Default );
-		MakeOpcode( PSLLVW, Default );
-		MakeOpcode( PSRLVW, Default );
+		MakeOpcodeM( PABSW, Default );
+		MakeOpcodeM( PABSH, Default );
+		MakeOpcodeM( PCEQW, Default );
+		MakeOpcodeM( PMINW, Default );
+		MakeOpcodeM( PMINH, Default );
+		MakeOpcodeM( PADSBH, Default );
+		MakeOpcodeM( PCEQH, Default );
+		MakeOpcodeM( PCEQB, Default );
+		MakeOpcodeM( PEXTUW, Default );
+		MakeOpcodeM( PEXTUH, Default );
+		MakeOpcodeM( PEXTUB, Default );
+		MakeOpcodeM( PSLLVW, Default );
+		MakeOpcodeM( PSRLVW, Default );
 
-		MakeOpcode( QFSRV, Default );
+		MakeOpcodeM( QFSRV, Default );
 
-		MakeOpcode( PMADDH, MMI_Mult );
-		MakeOpcode( PHMADH, MMI_Mult );
-		MakeOpcode( PMSUBH, MMI_Mult );
-		MakeOpcode( PHMSBH, MMI_Mult );
-		MakeOpcode( PMULTH, MMI_Mult );
-		MakeOpcode( PMADDW, MMI_Mult );
-		MakeOpcode( PMSUBW, MMI_Mult );
-		MakeOpcode( PMFHI, MMI_Mult );
-		MakeOpcode( PMFLO, MMI_Mult );
-		MakeOpcode( PMULTW, MMI_Mult );
-		MakeOpcode( PMADDUW, MMI_Mult );
-		MakeOpcode( PMULTUW, MMI_Mult );
-		MakeOpcode( PDIVUW, MMI_Div );
-		MakeOpcode( PDIVW, MMI_Div );
-		MakeOpcode( PDIVBW, MMI_Div );
+		MakeOpcodeM( PMADDH, MMI_Mult );
+		MakeOpcodeM( PHMADH, MMI_Mult );
+		MakeOpcodeM( PMSUBH, MMI_Mult );
+		MakeOpcodeM( PHMSBH, MMI_Mult );
+		MakeOpcodeM( PMULTH, MMI_Mult );
+		MakeOpcodeM( PMADDW, MMI_Mult );
+		MakeOpcodeM( PMSUBW, MMI_Mult );
+		MakeOpcodeM( PMFHI, MMI_Mult );
+		MakeOpcodeM( PMFLO, MMI_Mult );
+		MakeOpcodeM( PMULTW, MMI_Mult );
+		MakeOpcodeM( PMADDUW, MMI_Mult );
+		MakeOpcodeM( PMULTUW, MMI_Mult );
+		MakeOpcodeM( PDIVUW, MMI_Div );
+		MakeOpcodeM( PDIVW, MMI_Div );
+		MakeOpcodeM( PDIVBW, MMI_Div );
 
-		MakeOpcode( PINTH, Default );
-		MakeOpcode( PCPYLD, Default );
-		MakeOpcode( PAND, Default );
-		MakeOpcode( PXOR, Default );
-		MakeOpcode( PEXEH, Default );
-		MakeOpcode( PREVH, Default );
-		MakeOpcode( PEXEW, Default );
-		MakeOpcode( PROT3W, Default );
+		MakeOpcodeM( PINTH, Default );
+		MakeOpcodeM( PCPYLD, Default );
+		MakeOpcodeM( PAND, Default );
+		MakeOpcodeM( PXOR, Default );
+		MakeOpcodeM( PEXEH, Default );
+		MakeOpcodeM( PREVH, Default );
+		MakeOpcodeM( PEXEW, Default );
+		MakeOpcodeM( PROT3W, Default );
 
-		MakeOpcode( PSRAVW, Default ); 
-		MakeOpcode( PMTHI, Default );
-		MakeOpcode( PMTLO, Default );
-		MakeOpcode( PINTEH, Default );
-		MakeOpcode( PCPYUD, Default );
-		MakeOpcode( POR, Default );
-		MakeOpcode( PNOR, Default );
-		MakeOpcode( PEXCH, Default );
-		MakeOpcode( PCPYH, Default );
-		MakeOpcode( PEXCW, Default );
+		MakeOpcodeM( PSRAVW, Default ); 
+		MakeOpcodeM( PMTHI, Default );
+		MakeOpcodeM( PMTLO, Default );
+		MakeOpcodeM( PINTEH, Default );
+		MakeOpcodeM( PCPYUD, Default );
+		MakeOpcodeM( POR, Default );
+		MakeOpcodeM( PNOR, Default );
+		MakeOpcodeM( PEXCH, Default );
+		MakeOpcodeM( PCPYH, Default );
+		MakeOpcodeM( PEXCW, Default );
 
 		//////////////////////////////////////////////////////////
 		// COP0 Instructions
@@ -355,21 +385,21 @@ namespace R5900
 		MakeOpcodeClass( COP0_C0 );
 		MakeOpcodeClass( COP0_BC0 );
 
-		MakeOpcode( MFC0, CopDefault );
-		MakeOpcode( MTC0, CopDefault );
+		MakeOpcode0( MFC0, CopDefault );
+		MakeOpcode0( MTC0, CopDefault );
 
-		MakeOpcode( BC0F, Branch );
-		MakeOpcode( BC0T, Branch );
-		MakeOpcode( BC0FL, Branch );
-		MakeOpcode( BC0TL, Branch );
+		MakeOpcode0( BC0F, Branch );
+		MakeOpcode0( BC0T, Branch );
+		MakeOpcode0( BC0FL, Branch );
+		MakeOpcode0( BC0TL, Branch );
 
-		MakeOpcode( TLBR, CopDefault );
-		MakeOpcode( TLBWI, CopDefault );
-		MakeOpcode( TLBWR, CopDefault );
-		MakeOpcode( TLBP, CopDefault );
-		MakeOpcode( ERET, CopDefault );
-		MakeOpcode( EI, CopDefault );
-		MakeOpcode( DI, CopDefault );
+		MakeOpcode0( TLBR, CopDefault );
+		MakeOpcode0( TLBWI, CopDefault );
+		MakeOpcode0( TLBWR, CopDefault );
+		MakeOpcode0( TLBP, CopDefault );
+		MakeOpcode0( ERET, CopDefault );
+		MakeOpcode0( EI, CopDefault );
+		MakeOpcode0( DI, CopDefault );
 
 		//////////////////////////////////////////////////////////
 		// COP1 Instructions!
@@ -378,44 +408,44 @@ namespace R5900
 		MakeOpcodeClass( COP1_S );
 		MakeOpcodeClass( COP1_W );		// contains CVT_S instruction *only*
 
-		MakeOpcode( MFC1, CopDefault );
-		MakeOpcode( CFC1, CopDefault );
-		MakeOpcode( MTC1, CopDefault );
-		MakeOpcode( CTC1, CopDefault );
+		MakeOpcode1( MFC1, CopDefault );
+		MakeOpcode1( CFC1, CopDefault );
+		MakeOpcode1( MTC1, CopDefault );
+		MakeOpcode1( CTC1, CopDefault );
 
-		MakeOpcode( BC1F, Branch );
-		MakeOpcode( BC1T, Branch );
-		MakeOpcode( BC1FL, Branch );
-		MakeOpcode( BC1TL, Branch );
+		MakeOpcode1( BC1F, Branch );
+		MakeOpcode1( BC1T, Branch );
+		MakeOpcode1( BC1FL, Branch );
+		MakeOpcode1( BC1TL, Branch );
 
-		MakeOpcode( ADD_S, CopDefault );
-		MakeOpcode( ADDA_S, CopDefault );
-		MakeOpcode( SUB_S, CopDefault );
-		MakeOpcode( SUBA_S, CopDefault );
+		MakeOpcode1( ADD_S, CopDefault );
+		MakeOpcode1( ADDA_S, CopDefault );
+		MakeOpcode1( SUB_S, CopDefault );
+		MakeOpcode1( SUBA_S, CopDefault );
 
-		MakeOpcode( ABS_S, CopDefault );
-		MakeOpcode( MOV_S, CopDefault );
-		MakeOpcode( NEG_S, CopDefault );
-		MakeOpcode( MAX_S, CopDefault );
-		MakeOpcode( MIN_S, CopDefault );
+		MakeOpcode1( ABS_S, CopDefault );
+		MakeOpcode1( MOV_S, CopDefault );
+		MakeOpcode1( NEG_S, CopDefault );
+		MakeOpcode1( MAX_S, CopDefault );
+		MakeOpcode1( MIN_S, CopDefault );
 
-		MakeOpcode( MUL_S, FPU_Mult );
-		MakeOpcode( DIV_S, 3*8 );
-		MakeOpcode( SQRT_S, 3*8 );
-		MakeOpcode( RSQRT_S, 4*8 );
-		MakeOpcode( MULA_S, FPU_Mult );
-		MakeOpcode( MADD_S, FPU_Mult );
-		MakeOpcode( MSUB_S, FPU_Mult );
-		MakeOpcode( MADDA_S, FPU_Mult );
-		MakeOpcode( MSUBA_S, FPU_Mult );
+		MakeOpcode1( MUL_S, FPU_Mult );
+		MakeOpcode1( DIV_S, 3*8 );
+		MakeOpcode1( SQRT_S, 3*8 );
+		MakeOpcode1( RSQRT_S, 4*8 );
+		MakeOpcode1( MULA_S, FPU_Mult );
+		MakeOpcode1( MADD_S, FPU_Mult );
+		MakeOpcode1( MSUB_S, FPU_Mult );
+		MakeOpcode1( MADDA_S, FPU_Mult );
+		MakeOpcode1( MSUBA_S, FPU_Mult );
 
-		MakeOpcode( C_F, CopDefault );
-		MakeOpcode( C_EQ, CopDefault );
-		MakeOpcode( C_LT, CopDefault );
-		MakeOpcode( C_LE, CopDefault );
+		MakeOpcode1( C_F, CopDefault );
+		MakeOpcode1( C_EQ, CopDefault );
+		MakeOpcode1( C_LT, CopDefault );
+		MakeOpcode1( C_LE, CopDefault );
 
-		MakeOpcode( CVT_S, CopDefault );
-		MakeOpcode( CVT_W, CopDefault );
+		MakeOpcode1( CVT_S, CopDefault );
+		MakeOpcode1( CVT_W, CopDefault );
 	}
 
 	namespace OpcodeTables

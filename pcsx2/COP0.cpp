@@ -151,8 +151,9 @@ void WriteTLB(int i)
 }
 
 namespace Interpreter {
-namespace OpcodeImpl
-{
+namespace OpcodeImpl {
+namespace COP0 {
+
 void MFC0() {
 	if (!_Rt_) return;
 	if (_Rd_ != 9) { COP0_LOG("%s\n", disR5900Current.getCString() ); }
@@ -358,4 +359,4 @@ void EI() {
 	}
 }
 
-} } }	// end namespace R5900::Interpreter::OpcodeImpl
+} } } }	// end namespace R5900::Interpreter::OpcodeImpl

@@ -19,6 +19,8 @@
 #ifndef __IVUMICRO_H__
 #define __IVUMICRO_H__
 
+extern u32 vudump;
+
 namespace Dynarec
 {
 
@@ -35,9 +37,6 @@ void recVU1Shutdown();
 void recResetVU1();
 void recExecuteVU1Block();
 void recClearVU1( u32 Addr, u32 Size );
-
-extern u32 vudump;
-void iDumpVU1Registers();
 
 
 u32 GetVIAddr(VURegs * VU, int reg, int read, int info); // returns the correct VI addr

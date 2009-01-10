@@ -29,9 +29,12 @@
 #include "iR5900.h"
 #include "iMMI.h"
 
+namespace Interp = R5900::Interpreter::OpcodeImpl::MMI;
+
 namespace Dynarec {
 namespace R5900 {
-namespace OpcodeImpl
+namespace OpcodeImpl {
+namespace MMI
 {
 
 #ifndef MMI_RECOMPILE
@@ -249,7 +252,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI)
 			_deleteEEreg(XMMGPR_LO, 1);
 			_deleteEEreg(XMMGPR_HI, 1);
 			iFlushCall(FLUSH_CACHED_REGS); // since calling CALLFunc
-			CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PMFHL );
+			CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PMFHL );
 			break;
 
 		case 0x03: // LH
@@ -284,37 +287,13 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI)
 
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PMFHL, _Rd_ );
+recCall( Interp::PMFHL, _Rd_ );
 }
 
 void recPMTHL()
 {
-	REC_FUNC_INLINE( PMTHL, 0 );
+	recCall( Interp::PMTHL, 0 );
 }
-
-#ifndef MMI0_RECOMPILE
-
-REC_FUNC( MMI0, _Rd_ );
-
-#endif
-
-#ifndef MMI1_RECOMPILE
-
-REC_FUNC( MMI1, _Rd_ );
-
-#endif
-
-#ifndef MMI2_RECOMPILE
-
-REC_FUNC( MMI2, _Rd_ );
-
-#endif
-
-#ifndef MMI3_RECOMPILE
-
-REC_FUNC( MMI3, _Rd_ );
-
-#endif
 
 // MMX helper routines
 #define MMX_ALLOC_TEMP1(code) { \
@@ -624,7 +603,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED)
 	_freeXMMreg(t0reg);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PMAXW, _Rd_ );
+	recCall( Interp::PMAXW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -759,19 +738,19 @@ CPU_SSE2_XMMCACHE_START((_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 	}
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PPACB, _Rd_ );
+	recCall( Interp::PPACB, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
 void recPEXT5()
 {
-	REC_FUNC_INLINE( PEXT5, _Rd_ );
+	recCall( Interp::PEXT5, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
 void recPPAC5()
 {
-	REC_FUNC_INLINE( PPAC5, _Rd_ );
+	recCall( Interp::PPAC5, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -992,7 +971,7 @@ void recPADDSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PADDSW ); 
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PADDSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1083,7 +1062,7 @@ void recPSUBSW( void )
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PSUBSW ); 
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PSUBSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1511,7 +1490,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PABSW ); 
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PABSW ); 
 }
 
 ////////////////////////////////////////////////////
@@ -1535,7 +1514,7 @@ CPU_SSE_XMMCACHE_END
 
 	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PABSW );
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PABSW );
 }
 
 ////////////////////////////////////////////////////
@@ -1577,7 +1556,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED)
 	_freeXMMreg(t0reg);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PMINW, _Rd_ );
+	recCall( Interp::PMINW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -1616,7 +1595,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED)
 
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE(PADSBH, _Rd_);
+	recCall( Interp::PADSBH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -1685,7 +1664,7 @@ CPU_SSE2_XMMCACHE_START((_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WR
 	}
 
 CPU_SSE_XMMCACHE_END
-	REC_FUNC_INLINE( PADDUW, _Rd_ );
+	recCall( Interp::PADDUW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -1702,7 +1681,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED)
 	}
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PSUBUB, _Rd_ );
+	recCall( Interp::PSUBUB, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -1719,13 +1698,13 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED)
 	}
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PSUBUH, _Rd_ );
+	recCall( Interp::PSUBUH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
 void recPSUBUW()
 {
-	REC_FUNC_INLINE( PSUBUW, _Rd_ );
+	recCall( Interp::PSUBUW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -1754,7 +1733,7 @@ CPU_SSE2_XMMCACHE_START((_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 	}
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PEXTUH, _Rd_ );
+	recCall( Interp::PEXTUH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -1817,7 +1796,7 @@ CPU_SSE2_XMMCACHE_START((_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 
 CPU_SSE_XMMCACHE_END*/
 
-	REC_FUNC_INLINE( QFSRV, _Rd_ );
+	recCall( Interp::QFSRV, _Rd_ );
 }
 
 
@@ -2151,19 +2130,19 @@ void recPMADDW()
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
-	REC_FUNC_INLINE( PMADDW, _Rd_ );
+	recCall( Interp::PMADDW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
 void recPSLLVW()
 {
-	REC_FUNC_INLINE( PSLLVW, _Rd_ );
+	recCall( Interp::PSLLVW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
 void recPSRLVW()
 {
-	REC_FUNC_INLINE( PSRLVW, _Rd_ ); 
+	recCall( Interp::PSRLVW, _Rd_ ); 
 }
 
 ////////////////////////////////////////////////////
@@ -2203,7 +2182,7 @@ void recPMSUBW()
 //	_freeXMMreg(t0reg);
 //CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PMSUBW, _Rd_ );
+	recCall( Interp::PMSUBW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -2212,20 +2191,20 @@ void recPMULTW()
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
-	REC_FUNC_INLINE( PMULTW, _Rd_ );
+	recCall( Interp::PMULTW, _Rd_ );
 }
 ////////////////////////////////////////////////////
 void recPDIVW()
 {
 	EEINST_SETSIGNEXT(_Rs_);
 	EEINST_SETSIGNEXT(_Rt_);
-	REC_FUNC_INLINE( PDIVW, _Rd_ );
+	recCall( Interp::PDIVW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
 void recPDIVBW()
 {
-	REC_FUNC_INLINE( PDIVBW, _Rd_ ); //--
+	recCall( Interp::PDIVBW, _Rd_ ); //--
 }
 
 ////////////////////////////////////////////////////
@@ -2286,7 +2265,7 @@ CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMI
 
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PHMADH, _Rd_ );
+	recCall( Interp::PHMADH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -2329,7 +2308,7 @@ CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMI
 
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PMSUBH, _Rd_ );
+	recCall( Interp::PMSUBH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -2369,7 +2348,7 @@ CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMI
 
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PHMSBH, _Rd_ );
+	recCall( Interp::PHMSBH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -2382,7 +2361,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READT|XMMINFO_WRITED)
 	SSE2_PSHUFHW_XMM_to_XMM(EEREC_D, EEREC_D, 0xc6);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PEXEH, _Rd_ );
+	recCall( Interp::PEXEH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -2396,7 +2375,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READT|XMMINFO_WRITED)
 	SSE2_PSHUFHW_XMM_to_XMM(EEREC_D, EEREC_D, 0x1B);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PREVH, _Rd_ );
+	recCall( Interp::PREVH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -2873,7 +2852,7 @@ void recPSRAVW( void )
    MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
    iFlushCall(FLUSH_EVERYTHING);
    if( _Rd_ > 0 ) _deleteEEreg(_Rd_, 0);
-   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::PSRAVW );
+   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::MMI::PSRAVW );
 }
 
 
@@ -2929,7 +2908,7 @@ CPU_SSE2_XMMCACHE_START((_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WR
 	if( t0reg >= 0 ) _freeXMMreg(t0reg);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PINTEH, _Rd_ );
+	recCall( Interp::PINTEH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -2962,7 +2941,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED|XMMINFO_WRITE
 	
 	_freeXMMreg(t0reg);
 CPU_SSE_XMMCACHE_END
-	REC_FUNC_INLINE( PMULTUW, _Rd_ );
+	recCall( Interp::PMULTUW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -3001,14 +2980,14 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED|XMMINFO_WRITE
 	_freeXMMreg(t0reg);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PMADDUW, _Rd_ );
+	recCall( Interp::PMADDUW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
 //do EEINST_SETSIGNEXT
 void recPDIVUW()
 {
-	REC_FUNC_INLINE( PDIVUW, _Rd_ );
+	recCall( Interp::PDIVUW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -3020,7 +2999,7 @@ CPU_SSE_XMMCACHE_START(XMMINFO_READT|XMMINFO_WRITED)
 	SSE2_PSHUFD_XMM_to_XMM(EEREC_D, EEREC_T, 0xd8);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PEXCW, _Rd_ );
+recCall( Interp::PEXCW, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -3033,7 +3012,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_READT|XMMINFO_WRITED)
 	SSE2_PSHUFHW_XMM_to_XMM(EEREC_D, EEREC_D, 0xd8);
 CPU_SSE_XMMCACHE_END
 
-	REC_FUNC_INLINE( PEXCH, _Rd_ );
+	recCall( Interp::PEXCH, _Rd_ );
 }
 
 ////////////////////////////////////////////////////
@@ -3276,4 +3255,4 @@ CPU_SSE_XMMCACHE_END
 
 #endif	// else MMI3_RECOMPILE
 
-} } }
+} } } }

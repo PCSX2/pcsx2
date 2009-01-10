@@ -34,23 +34,12 @@
 
 namespace Dynarec
 {
-
-#ifdef _DEBUG
-extern u32 vudump;
-#endif
-
 void recExecuteVU0Block( void )
 {
 	if((VU0.VI[REG_VPU_STAT].UL & 1) == 0) {
 		//SysPrintf("Execute block VU0, VU0 not busy\n");
 		return;
 	}
-#ifdef _DEBUG
-	if( (vudump&0x80) && !CHECK_VU0REC ) {
-		__Log("tVU: %x\n", VU0.VI[ REG_TPC ].UL);
-		iDumpVU0Registers();
-	}
-#endif
 
 	//while( (VU0.VI[ REG_VPU_STAT ].UL&1) ) {
 		if( CHECK_VU0REC) {		

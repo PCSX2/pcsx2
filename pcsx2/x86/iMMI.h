@@ -26,19 +26,33 @@
 
 namespace Dynarec { 
 namespace R5900 { 
-namespace OpcodeImpl
-{
-	void recMMI_Unknown();
+namespace OpcodeImpl {
 
+	// These are instructions contained the MMI "opcode space" but are not
+	// actually MMI instructions.  They are just specialized versions of standard
+	// instructions that "fit" into the second pipeline of the EE.
+
+	void recMADD1();
+	void recMADDU1();
 	void recMADD();
 	void recMADDU();
+
+	void recMTHI1();
+	void recMTLO1();
+	void recMFHI1();
+	void recMFLO1();
+	void recMULT1();
+	void recMULTU1();
+	void recDIV1();
+	void recDIVU1();
+
+namespace MMI
+{
 	void recPLZCW();
 	void recMMI0();
 	void recMMI1();
 	void recMMI2();
 	void recMMI3();
-	void recMADD1();
-	void recMADDU1();
 	void recPMFHL();
 	void recPMTHL();
 	void recPMAXW();
@@ -91,14 +105,6 @@ namespace OpcodeImpl
 	void recPSRAW();
 	void recPSLLH();
 	void recPSLLW();
-	void recMTHI1();
-	void recMTLO1();
-	void recMFHI1();
-	void recMFLO1();
-	void recMULT1();
-	void recMULTU1();
-	void recDIV1();
-	void recDIVU1();
 	void recPMAXH();
 	void recPCGTB();
 	void recPCGTH();
@@ -135,7 +141,7 @@ namespace OpcodeImpl
 	void recPOR();
 	void recPCPYH();
 
-} } }
+} } } }
 
 #endif
 

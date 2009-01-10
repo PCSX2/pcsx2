@@ -33,26 +33,36 @@ std::string to_string(const T& value)
 	return oss.str();
 }
 
-// when the dummy assert fails, it usually means you forgot to use the params macro.
-
-#ifdef PCSX2_DEVBUILD
-#define params va_arg_dummy,
-#define dummy_assert()  // jASSUME( dummy == &va_arg_dummy );
-#else
-#define params va_arg_dummy,			// use null in release -- faster!
-#define dummy_assert() // jASSUME( dummy == 0 );
-#endif
-
 // dummy structure used to type-guard the dummy parameter that's been inserted to
 // allow us to use the va_list feature on references.
-struct VARG_PARAM
+struct _VARG_PARAM
 {
 	// just some value to make the struct length 32bits instead of 8 bits, so that the
 	// compiler generates somewhat more efficient code.
 	uint someval;
 };
 
-extern const VARG_PARAM va_arg_dummy;
+#ifdef _DEBUG
+
+#define params va_arg_dummy,
+#define varg_assert()  // jASSUME( dummy == &va_arg_dummy );
+// typedef the Va-Arg value to be a value type in debug builds.  The value
+// type requires a little more overhead in terms of code generation, but is always
+// type-safe.  The compiler will generate errors for any forgotten params value.
+typedef _VARG_PARAM VARG_PARAM;
+
+#else
+
+#define params NULL,	// using null is faster / more compact!
+#define varg_assert()	jASSUME( dummy == NULL );
+// typedef the Va-Arg value to be a pointer in release builds.  Pointers
+// generate more compact code by a small margin, but aren't entirely type safe since
+// the compiler won't generate errors if you pass NULL or other values.
+typedef _VARG_PARAM const * VARG_PARAM;
+
+#endif
+
+extern const _VARG_PARAM va_arg_dummy;
 
 extern void ssprintf(std::string& dest, const std::string& fmt, VARG_PARAM dummy, ...);
 extern void ssappendf( std::string& dest, const std::string& format, VARG_PARAM dummy, ...);

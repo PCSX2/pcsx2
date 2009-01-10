@@ -363,7 +363,6 @@ extern u32 g_recWriteback; // used for jumps
 extern u32 g_cpuRegHasLive1, g_cpuPrevRegHasLive1;
 extern u32 g_cpuRegHasSignExt, g_cpuPrevRegHasSignExt;
 
-extern u8 g_globalXMMSaved;
 extern _xmmregs xmmregs[XMMREGS], s_saveXMMregs[XMMREGS];
 
 extern u16 g_x86AllocCounter;

@@ -617,7 +617,7 @@ int  _GIFchain() {
 		//must increment madr and clear qwc, else it loops
 		gif->madr+= gif->qwc*16;
 		gif->qwc = 0;
-		SysPrintf("NULL GIFchain\n");
+		Console::Notice( "Hackfix - NULL GIFchain" );
 		return -1;
 	}
 	WRITERING_DMA(pMem, qwc);

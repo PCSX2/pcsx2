@@ -66,7 +66,8 @@ void LoadCW() {
 }
 
 //------------------------------------------------------------------
-namespace OpcodeImpl
+namespace OpcodeImpl {
+namespace COP1
 {
 
 //------------------------------------------------------------------
@@ -1762,4 +1763,4 @@ FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 #endif // FPU_RECOMPILE
 
-}}}
+} } } }

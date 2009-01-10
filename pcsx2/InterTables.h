@@ -40,6 +40,9 @@ namespace Dynarec
 	namespace OpcodeImpl
 	{
 		void recUnknown();
+		void recMMI_Unknown();
+		void recCOP0_Unknown();
+		void recCOP1_Unknown();
 
 		void recCOP2();
 
@@ -581,7 +584,6 @@ namespace R5900
 //***********************MMI OPCODES*****************************
 		void MADD();
 		void MADDU();
-		void PLZCW();
 		void MADD1();
 		void MADDU1();
 		void MFHI1();
@@ -592,6 +594,9 @@ namespace R5900
 		void MULTU1();
 		void DIV1();
 		void DIVU1();
+
+		namespace MMI {
+		void PLZCW();
 		void PMFHL();
 		void PMTHL();
 		void PSLLH();
@@ -686,8 +691,10 @@ namespace R5900
 		void PEXCH();
 		void PCPYH(); 
 		void PEXCW();
+		}
 //**********************END OF MMI3 OPCODES******************** 
 //*************************COP0 OPCODES************************
+		namespace COP0 {
 		void MFC0();
 		void MTC0();
 		void BC0F();
@@ -701,8 +708,10 @@ namespace R5900
 		void ERET();
 		void DI();
 		void EI();
+		}
 //********************END OF COP0 OPCODES************************
 //************COP1 OPCODES - Floating Point Unit*****************
+		namespace COP1 {
 		void MFC1();
 		void CFC1();
 		void MTC1();
@@ -735,6 +744,7 @@ namespace R5900
 		void C_LT();
 		void C_LE();
 		void CVT_S();
+		}
 	} }		// end namespace R5900::Interpreter::OpcodeImpl::R5900
 }	// End namespace Interpreter
 

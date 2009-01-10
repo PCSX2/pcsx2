@@ -26,9 +26,6 @@
 
 #include <float.h>
 
-extern void iDumpVU0Registers();
-extern void iDumpVU1Registers();
-extern u32 vudump;
 extern int vu0branch, vu1branch;
 
 namespace R5900
@@ -1017,12 +1014,6 @@ int i;
 		prevbranch = vu0branch;
 #endif
 		vu0Exec(&VU0);
-#ifdef _DEBUG
-		if( (vudump&0x80) && prevbranch == 1 ) {
-			__Log("tVU: %x\n", VU0.VI[ REG_TPC ].UL);
-			iDumpVU0Registers();
-		}
-#endif
 	}
 
 	if( i < 0 && (VU0.branch || VU0.ebit) ) {
@@ -1046,12 +1037,6 @@ void intExecuteVU1Block() {
 		prevbranch = vu1branch;
 #endif
 		vu1Exec(&VU1);
-#ifdef _DEBUG
-		if( (vudump&8) && prevbranch == 1 ) {
-			__Log("tVU: %x\n", VU1.VI[ REG_TPC ].UL);
-			iDumpVU1Registers();
-		}
-#endif
 	}
 
 	if( i < 0 && (VU1.branch || VU1.ebit) ) {

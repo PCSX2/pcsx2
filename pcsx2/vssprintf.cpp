@@ -742,7 +742,7 @@ void vssprintf( std::string& dest, const std::string& format, va_list args )
 
 void ssappendf( std::string& dest, const std::string& format, VARG_PARAM dummy, ...)
 {
-	dummy_assert();
+	varg_assert();
 
 	va_list args;
 	va_start(args, dummy);
@@ -781,7 +781,7 @@ void ssappendf( std::string& dest, const std::string& format, VARG_PARAM dummy, 
 //
 void ssprintf(std::string& str, const std::string& fmt, VARG_PARAM dummy, ...)
 {
-	dummy_assert();
+	varg_assert();
 
 	va_list args;
 	va_start(args, dummy);
@@ -792,7 +792,7 @@ void ssprintf(std::string& str, const std::string& fmt, VARG_PARAM dummy, ...)
 // See ssprintf for usage details and differences from sprintf formatting.
 std::string fmt_string( const std::string& fmt, VARG_PARAM dummy, ... )
 {
-	dummy_assert();
+	varg_assert();
 
 	std::string retval;
 	va_list args;

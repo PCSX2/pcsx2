@@ -23,6 +23,8 @@
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
+namespace Interp = R5900::Interpreter::OpcodeImpl;
+
 namespace Dynarec { 
 namespace R5900 { 
 namespace OpcodeImpl
@@ -825,7 +827,7 @@ void recMADD1()
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
 	_deleteEEreg(XMMGPR_LO, 0);
 	_deleteEEreg(XMMGPR_HI, 0);
-	REC_FUNC_INLINE( MADD1, _Rd_ );
+	recCall( Interp::MADD1, _Rd_ );
 }
 
 void recMADDU1()
@@ -836,7 +838,7 @@ void recMADDU1()
 	if( _Rd_ ) EEINST_SETSIGNEXT(_Rd_);
 	_deleteEEreg(XMMGPR_LO, 0);
 	_deleteEEreg(XMMGPR_HI, 0);
-	REC_FUNC_INLINE( MADDU1, _Rd_ );
+	recCall( Interp::MADDU1, _Rd_ );
 }
 
 #else

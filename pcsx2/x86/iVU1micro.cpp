@@ -38,6 +38,10 @@
 using ::Dynarec::R5900::pc;
 using ::Dynarec::R5900::branch;
 
+#ifdef _DEBUG
+extern u32 vudump;
+#endif
+
 namespace Dynarec
 {
 
@@ -125,7 +129,6 @@ static void iVU1DumpBlock()
 
 #ifdef _DEBUG
 static u32 vuprogcount = 0;
-extern u32 vudump;
 #endif
 
 void recExecuteVU1Block(void)
@@ -158,12 +161,6 @@ void recExecuteVU1Block(void)
 		FreezeXMMRegs(0);
 	}
 	else {
-#ifdef _DEBUG
-		if( (vudump&8) ) {
-			__Log("tVU: %x\n", VU1.VI[ REG_TPC ].UL);
-			iDumpVU1Registers();
-		}
-#endif
 		while (VU0.VI[ REG_VPU_STAT ].UL&0x100) {
 			::R5900::Interpreter::intExecuteVU1Block();
 		}

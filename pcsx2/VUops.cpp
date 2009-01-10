@@ -2064,23 +2064,10 @@ void _vuXITOP(VURegs * VU) {
 	VU->VI[_Ft_].US[0] = VU->vifRegs->itop;
 }
 
-//extern u32 vudump;
-//static void countfn()
-//{
-//	static int scount = 0;
-//	scount++;
-//
-//	if( scount > 56 ) {
-//		__Log("xgkick %d\n", scount);
-//		vudump |= 8;
-//	}
-//}
-
 void _vuXGKICK(VURegs * VU)
 {
 	// flush all pipelines first (in the right order)
 	_vuFlushAll(VU);
-	//countfn();
 	GSGIFTRANSFER1((u32*)VU->Mem, (VU->VI[_Fs_].US[0]*16) & 0x3fff);
 }
 

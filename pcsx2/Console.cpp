@@ -23,7 +23,7 @@
 
 using namespace std;
 
-const VARG_PARAM va_arg_dummy = { 0 };
+const _VARG_PARAM va_arg_dummy = { 0 };
 
 // Methods of the Console namespace not defined here are to be found in the platform
 // dependent implementations in WinConsole.cpp and LnxConsole.cpp.
@@ -41,7 +41,7 @@ namespace Console
 		
 	bool Write( const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		string dest;
 
@@ -64,7 +64,7 @@ namespace Console
 
 	bool Write( Colors color, const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		string dest;
 
@@ -79,7 +79,7 @@ namespace Console
 
 	bool WriteLn( const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		string dest;
 
@@ -113,7 +113,7 @@ namespace Console
 	// Writes a line of colored text to the console, with automatic newline appendage.
 	bool WriteLn( Colors color, const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		va_list list;
 		va_start(list,dummy);
@@ -126,7 +126,7 @@ namespace Console
 	// Newline is automatically appended.
 	bool Error( const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		va_list list;
 		va_start(list,dummy);
@@ -139,7 +139,7 @@ namespace Console
 	// Newline is automatically appended.
 	bool Notice( const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		va_list list;
 
@@ -153,7 +153,7 @@ namespace Console
 	// Newline is automatically appended.
 	bool Status( const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		va_list list;
 		va_start(list,dummy);

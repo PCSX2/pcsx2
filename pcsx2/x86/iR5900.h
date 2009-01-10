@@ -62,12 +62,9 @@ extern u32 s_nBlockCycles;		// cycles of current block recompiling
 extern u32 s_saveConstGPRreg;
 extern GPR_reg64 s_ConstGPRreg;
 
-#define REC_FUNC_INLINE( f, delreg ) \
-	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
-	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
-	iFlushCall(FLUSH_EVERYTHING); \
-	if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::f ); 
+#ifndef REC_FUNC_NAMESPACE
+#define REC_FUNC_NAMESPACE
+#endif
 
 #define REC_FUNC( f, delreg ) \
    void rec##f( void ) \
@@ -76,7 +73,7 @@ extern GPR_reg64 s_ConstGPRreg;
 	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
 	   if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
-	   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::f ); \
+	   CALLFunc( (uptr)Interp::f ); \
    }
 
 #define REC_SYS( f ) \
@@ -85,9 +82,10 @@ extern GPR_reg64 s_ConstGPRreg;
 	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
 	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
-	   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::f ); \
+	   CALLFunc( (uptr)Interp::f ); \
 	   branch = 2; \
    }
+
 
 // Used to clear recompiled code blocks during memory/dma write operations.
 void recClearMem(BASEBLOCK* p);
@@ -102,9 +100,10 @@ void SetBranchReg( u32 reg );
 void SetBranchImm( u32 imm );
 
 void iFlushCall(int flushtype);
+void recBranchCall( void (*func)() );
+void recCall( void (*func)(), int delreg );
 
 extern void (*recBSC_co[64])();
-void recBranchCall( void (*func)() );
 
 u32* _eeGetConstReg(int reg); // gets a memory pointer to the constant reg
 
@@ -223,7 +222,7 @@ void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
 void rec##fn(void) \
 { \
-	eeFPURecompileCode(rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::fn, xmminfo); \
+	eeFPURecompileCode(rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
 }
 
 // rd = rs op rt (all regs need to be in xmm)

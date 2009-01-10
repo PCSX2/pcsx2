@@ -150,8 +150,8 @@ using namespace std;			// for min / max
 
 namespace R5900 {
 namespace Interpreter {
-namespace OpcodeImpl
-{
+namespace OpcodeImpl {
+namespace COP1 {
 
 //****************************************************************
 // FPU Opcodes
@@ -363,6 +363,8 @@ void SUBA_S() {
 	checkUnderflow( _FAValUl_, FPUflagU | FPUflagSU, 1 );
 } 
 
+}	// End Namespace COP1
+
 /////////////////////////////////////////////////////////////////////
 // COP1 (FPU)  Load/Store Instructions
 
@@ -383,4 +385,4 @@ void SWC1() {
 	memWrite32(addr,  fpuRegs.fpr[_Rt_].UL); 
 }
 
-}}}
+} } }

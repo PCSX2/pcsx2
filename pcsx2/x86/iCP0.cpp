@@ -30,10 +30,12 @@
 #include "iR5900.h"
 #include "iCP0.h"
 
+namespace Interp = R5900::Interpreter::OpcodeImpl::COP0;
 
 namespace Dynarec {
 namespace R5900 {
-namespace OpcodeImpl
+namespace OpcodeImpl {
+namespace COP0
 {
 
 /*********************************************************
@@ -41,42 +43,24 @@ namespace OpcodeImpl
 *                                                        *
 *********************************************************/
 
+void recBC0F() { recCall( Interp::BC0F, 0 ); }
+void recBC0T() { recCall( Interp::BC0T, 0 ); }
+void recBC0FL() { recCall( Interp::BC0FL, 0 ); }
+void recBC0TL() { recCall( Interp::BC0TL, 0 ); }
+void recTLBR() { recCall( Interp::TLBR, 0 ); }
+void recTLBWI() { recCall( Interp::TLBWI, 0 ); }
+void recTLBWR() { recCall( Interp::TLBWR, 0 ); }
+void recTLBP() { recCall( Interp::TLBP, 0 ); }
+
 #ifndef CP0_RECOMPILE
 
-REC_SYS(MFC0);
-REC_SYS(MTC0);
-REC_SYS(BC0F);
-REC_SYS(BC0T);
-REC_SYS(BC0FL);
-REC_SYS(BC0TL);
-REC_SYS(TLBR);
-REC_SYS(TLBWI);
-REC_SYS(TLBWR);
-REC_SYS(TLBP);
-REC_SYS(ERET);
-REC_SYS(DI);
-REC_SYS(EI);
+void recMFC0() { REC_FUNC_INLINE( COP0::MFC0, 0 ); }
+void recMTC0() { REC_FUNC_INLINE( COP0::MTC0, 0 ); }
+void recERET() { REC_FUNC_INLINE( COP0::ERET, 0 ); }
+void recDI() { REC_FUNC_INLINE( COP0::DI, 0 ); }
+void recEI() { REC_FUNC_INLINE( COP0::EI, 0 ); }
 
 #else
-
-////////////////////////////////////////////////////
-REC_SYS(BC0F);
-////////////////////////////////////////////////////
-REC_SYS(BC0T);
-////////////////////////////////////////////////////
-REC_SYS(BC0FL);
-////////////////////////////////////////////////////
-REC_SYS(BC0TL);
-////////////////////////////////////////////////////
-REC_SYS(TLBR);
-////////////////////////////////////////////////////
-REC_SYS(TLBWI);
-////////////////////////////////////////////////////
-REC_SYS(TLBWR);
-////////////////////////////////////////////////////
-REC_SYS(TLBP);
-
-////////////////////////////////////////////////////
 
 void recMFC0( void )
 {
@@ -330,14 +314,14 @@ void recMTC0()
 
 void recERET()
 {
-	recBranchCall( R5900::Interpreter::OpcodeImpl::ERET );
+	recBranchCall( Interp::ERET );
 }
 
 void recEI()
 {
 	// must branch after enabling interrupts, so that anything
 	// pending gets triggered properly.
-	recBranchCall( R5900::Interpreter::OpcodeImpl::EI );
+	recBranchCall( Interp::EI );
 }
 
 void recDI()
@@ -351,7 +335,7 @@ void recDI()
 	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
 
 	iFlushCall(0);
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::DI );
+	CALLFunc( (uptr)Interp::DI );
 }
 
 /*void rec(COP0) {
@@ -381,6 +365,6 @@ void rec(TLBWR) {
 void rec(TLBP) {
 }*/
 
-}}}
+}}}}
 
 #endif

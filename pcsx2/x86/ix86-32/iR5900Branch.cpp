@@ -25,11 +25,13 @@
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
+namespace Interp = R5900::Interpreter::OpcodeImpl;
 
 namespace Dynarec { 
 namespace R5900 { 
 namespace OpcodeImpl
 {
+
 /*********************************************************
 * Register branch logic                                  *
 * Format:  OP rs, rt, offset                             *

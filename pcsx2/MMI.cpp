@@ -25,30 +25,110 @@
 
 namespace R5900 {
 namespace Interpreter {
-namespace OpcodeImpl
-{
+namespace OpcodeImpl {
+
+	/////////////////////////////////////////////////////////////////
+	// Non-MMI Instructions!
+	//
+	// Several instructions in the MMI opcode class are actually just regular
+	// instructions which have been added to "extend" the R5900's instruction
+	// set.  They're here, because if not here they'd be homeless.
+	//  - The Pcsx2 team, doing their part to fight homelessness
+
+	void MADD() {
+		s64 temp = (s64)((u64)cpuRegs.LO.UL[0] | ((u64)cpuRegs.HI.UL[0] << 32)) +
+				  ((s64)cpuRegs.GPR.r[_Rs_].SL[0] * (s64)cpuRegs.GPR.r[_Rt_].SL[0]);
+
+		cpuRegs.LO.SD[0] = (s32)(temp & 0xffffffff);
+		cpuRegs.HI.SD[0] = (s32)(temp >> 32);
+
+		if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[0];
+	}
+
+	void MADDU() {
+		u64 tempu =	(u64)((u64)cpuRegs.LO.UL[0] | ((u64)cpuRegs.HI.UL[0] << 32)) +
+				   ((u64)cpuRegs.GPR.r[_Rs_].UL[0] * (u64)cpuRegs.GPR.r[_Rt_].UL[0]);
+
+		cpuRegs.LO.SD[0] = (s32)(tempu & 0xffffffff);
+		cpuRegs.HI.SD[0] = (s32)(tempu >> 32);
+
+		if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[0];
+	}
+
+	void MADD1() {
+		s64 temp = (s64)((u64)cpuRegs.LO.UL[2] | ((u64)cpuRegs.HI.UL[2] << 32)) +
+				  ((s64)cpuRegs.GPR.r[_Rs_].SL[0] * (s64)cpuRegs.GPR.r[_Rt_].SL[0]);
+
+		cpuRegs.LO.SD[1] = (s32)(temp & 0xffffffff);
+		cpuRegs.HI.SD[1] = (s32)(temp >> 32);
+
+		if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[1];
+	}
+
+	void MADDU1() {
+		u64 tempu = (u64)((u64)cpuRegs.LO.UL[2] | ((u64)cpuRegs.HI.UL[2] << 32)) +
+				   ((u64)cpuRegs.GPR.r[_Rs_].UL[0] * (u64)cpuRegs.GPR.r[_Rt_].UL[0]);
+
+		cpuRegs.LO.SD[1] = (s32)(tempu & 0xffffffff);
+		cpuRegs.HI.SD[1] = (s32)(tempu >> 32);
+
+		if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[1];
+	}
+
+	void MFHI1() {
+		if (!_Rd_) return;
+		cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.HI.UD[1];
+	}
+
+	void MFLO1() {
+		if (!_Rd_) return;
+		cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.LO.UD[1];
+	}
+
+	void MTHI1() {
+		cpuRegs.HI.UD[1] = cpuRegs.GPR.r[_Rs_].UD[0];
+	}
+
+	void MTLO1() {
+		cpuRegs.LO.UD[1] = cpuRegs.GPR.r[_Rs_].UD[0];
+	}
+
+	void MULT1() {
+		s64 temp = (s64)cpuRegs.GPR.r[_Rs_].SL[0] * (s64)cpuRegs.GPR.r[_Rt_].SL[0];
+
+		cpuRegs.LO.UD[1] = (s64)(s32)(temp & 0xffffffff);
+		cpuRegs.HI.UD[1] = (s64)(s32)(temp >> 32);
+
+		/* Modified a bit . asadr */
+		if (_Rd_) cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.LO.UD[1];
+	}
+
+	void MULTU1() {
+		u64 tempu = (u64)cpuRegs.GPR.r[_Rs_].UL[0] * (u64)cpuRegs.GPR.r[_Rt_].UL[0];
+
+		cpuRegs.LO.UD[1] = (s32)(tempu & 0xffffffff);
+		cpuRegs.HI.UD[1] = (s32)(tempu >> 32);
+
+		if (_Rd_) cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.LO.UD[1];
+	}
+
+	void DIV1() {
+		if (cpuRegs.GPR.r[_Rt_].SL[0] != 0) {
+			cpuRegs.LO.SD[1] = cpuRegs.GPR.r[_Rs_].SL[0] / cpuRegs.GPR.r[_Rt_].SL[0];
+			cpuRegs.HI.SD[1] = cpuRegs.GPR.r[_Rs_].SL[0] % cpuRegs.GPR.r[_Rt_].SL[0];
+		}
+	}
+
+	void DIVU1() {
+		if (cpuRegs.GPR.r[_Rt_].UL[0] != 0) {
+			cpuRegs.LO.UD[1] = cpuRegs.GPR.r[_Rs_].UL[0] / cpuRegs.GPR.r[_Rt_].UL[0];
+			cpuRegs.HI.UD[1] = cpuRegs.GPR.r[_Rs_].UL[0] % cpuRegs.GPR.r[_Rt_].UL[0];
+		}
+	}
+
+namespace MMI {
 
 //*****************MMI OPCODES*********************************
-
-void MADD() {
-	s64 temp = (s64)((u64)cpuRegs.LO.UL[0] | ((u64)cpuRegs.HI.UL[0] << 32)) +
-			  ((s64)cpuRegs.GPR.r[_Rs_].SL[0] * (s64)cpuRegs.GPR.r[_Rt_].SL[0]);
-
-	cpuRegs.LO.SD[0] = (s32)(temp & 0xffffffff);
-	cpuRegs.HI.SD[0] = (s32)(temp >> 32);
-
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[0];
-}
-
-void MADDU() {
-	u64 tempu =	(u64)((u64)cpuRegs.LO.UL[0] | ((u64)cpuRegs.HI.UL[0] << 32)) +
-			   ((u64)cpuRegs.GPR.r[_Rs_].UL[0] * (u64)cpuRegs.GPR.r[_Rt_].UL[0]);
-
-	cpuRegs.LO.SD[0] = (s32)(tempu & 0xffffffff);
-	cpuRegs.HI.SD[0] = (s32)(tempu >> 32);
-
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[0];
-}
 
 __forceinline void _PLZCW(int n) 
 { 
@@ -70,77 +150,6 @@ void PLZCW() {
 
 	_PLZCW (0);
 	_PLZCW (1);
-}
-
-void MADD1() {
-	s64 temp = (s64)((u64)cpuRegs.LO.UL[2] | ((u64)cpuRegs.HI.UL[2] << 32)) +
-			  ((s64)cpuRegs.GPR.r[_Rs_].SL[0] * (s64)cpuRegs.GPR.r[_Rt_].SL[0]);
-
-	cpuRegs.LO.SD[1] = (s32)(temp & 0xffffffff);
-	cpuRegs.HI.SD[1] = (s32)(temp >> 32);
-
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[1];
-}
-
-void MADDU1() {
-	u64 tempu = (u64)((u64)cpuRegs.LO.UL[2] | ((u64)cpuRegs.HI.UL[2] << 32)) +
-			   ((u64)cpuRegs.GPR.r[_Rs_].UL[0] * (u64)cpuRegs.GPR.r[_Rt_].UL[0]);
-
-	cpuRegs.LO.SD[1] = (s32)(tempu & 0xffffffff);
-	cpuRegs.HI.SD[1] = (s32)(tempu >> 32);
-
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[0] = cpuRegs.LO.SD[1];
-}
-
-void MFHI1() {
-	if (!_Rd_) return;
-	cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.HI.UD[1];
-}
-
-void MFLO1() {
-	if (!_Rd_) return;
-	cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.LO.UD[1];
-}
-
-void MTHI1() {
-	cpuRegs.HI.UD[1] = cpuRegs.GPR.r[_Rs_].UD[0];
-}
-
-void MTLO1() {
-	cpuRegs.LO.UD[1] = cpuRegs.GPR.r[_Rs_].UD[0];
-}
-
-void MULT1() {
-	s64 temp = (s64)cpuRegs.GPR.r[_Rs_].SL[0] * (s64)cpuRegs.GPR.r[_Rt_].SL[0];
-
-	cpuRegs.LO.UD[1] = (s64)(s32)(temp & 0xffffffff);
-	cpuRegs.HI.UD[1] = (s64)(s32)(temp >> 32);
-
-	/* Modified a bit . asadr */
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.LO.UD[1];
-}
-
-void MULTU1() {
-	u64 tempu = (u64)cpuRegs.GPR.r[_Rs_].UL[0] * (u64)cpuRegs.GPR.r[_Rt_].UL[0];
-
-	cpuRegs.LO.UD[1] = (s32)(tempu & 0xffffffff);
-	cpuRegs.HI.UD[1] = (s32)(tempu >> 32);
-
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.LO.UD[1];
-}
-
-void DIV1() {
-	if (cpuRegs.GPR.r[_Rt_].SL[0] != 0) {
-		cpuRegs.LO.SD[1] = cpuRegs.GPR.r[_Rs_].SL[0] / cpuRegs.GPR.r[_Rt_].SL[0];
-		cpuRegs.HI.SD[1] = cpuRegs.GPR.r[_Rs_].SL[0] % cpuRegs.GPR.r[_Rt_].SL[0];
-	}
-}
-
-void DIVU1() {
-	if (cpuRegs.GPR.r[_Rt_].UL[0] != 0) {
-		cpuRegs.LO.UD[1] = cpuRegs.GPR.r[_Rs_].UL[0] / cpuRegs.GPR.r[_Rt_].UL[0];
-		cpuRegs.HI.UD[1] = cpuRegs.GPR.r[_Rs_].UL[0] % cpuRegs.GPR.r[_Rt_].UL[0];
-	}
 }
 
 #define PMFHL_CLAMP(dst, src) \
@@ -1544,4 +1553,4 @@ void PEXCW() {
 // obs:
 // QFSRV not verified
 
-}}} // end namespace R5900::Interpreter::OpcodeImpl
+}}} } // end namespace R5900::Interpreter::OpcodeImpl::MMI

@@ -133,7 +133,7 @@ namespace Msgbox
 	// Replacement for SysMessage.
 	bool Alert( const string& fmt, VARG_PARAM dummy, ... )
 	{
-		dummy_assert();
+		varg_assert();
 
 		string dest;
 		va_list list;
