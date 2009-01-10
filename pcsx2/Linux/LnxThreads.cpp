@@ -72,7 +72,7 @@ namespace Threading
 		}
 		catch( std::exception& ex )
 		{
-			Console::Error( "Thread terminated abnormally with error:\n\t%s"_F, ex.what() );
+			Console::Error( "Thread terminated abnormally with error:\n\t%s", params  ex.what() );
 			owner.m_returncode = -1;
 		}
 
