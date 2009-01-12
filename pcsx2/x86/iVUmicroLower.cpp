@@ -683,19 +683,15 @@ int recVUTransformAddr(int x86reg, VURegs* VU, int vireg, int imm)
 		AND32ItoR(EAX, 0x3fff);
 	}
 	else {
-		// if addr >= 4200, reads integers
-		CMP32ItoR(EAX, 0x420);
-		pjmp[0] = JL8(0);
-		AND32ItoR(EAX, 0x1f);
-		SHL32ItoR(EAX, 2);
-		OR32ItoR(EAX, 0x4200);
-		
-		pjmp[1] = JMP8(0);
+		CMP32ItoR(EAX, 0x400);
+		pjmp[0] = JL8(0); // if addr >= 0x4000, reads VU1's VF regs and VI regs
+			AND32ItoR(EAX, 0x43f);
+			pjmp[1] = JMP8(0);
 		x86SetJ8(pjmp[0]);
-		SHL32ItoR(EAX, 4);
-		AND32ItoR(EAX, 0xfff); // can be removed
-
+			AND32ItoR(EAX, 0xfff); // if addr < 0x4000, wrap around every 0xfff
 		x86SetJ8(pjmp[1]);
+
+		SHL32ItoR(EAX, 4); // multiply by 16 (shift left by 4)
 	}
 
 	return EAX;
@@ -1029,7 +1025,6 @@ void recVUMI_SQI(VURegs *VU, int info)
 	else {
 		int ftreg = ALLOCVI(_Ft_, MODE_READ|MODE_WRITE);
 		_saveEAX(VU, recVUTransformAddr(ftreg, VU, _Ft_, 0), (uptr)VU->Mem, info);
-
 		ADD16ItoR( ftreg, 1 );
 	}
 }

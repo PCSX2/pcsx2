@@ -66,14 +66,18 @@ typedef union {
 	s8  SC[16];
 } VECTOR;
 
-typedef union {
-	float F;
-	s32   SL;
-	u32	  UL;
-	s16   SS[2];
-	u16   US[2];
-	s8    SC[4];
-	u8    UC[4];
+typedef struct {
+	union {
+		float F;
+		s32   SL;
+		u32	  UL;
+		s16   SS[2];
+		u16   US[2];
+		s8    SC[4];
+		u8    UC[4];
+	};
+	u32 padding[3]; // needs padding to make them 128bit; VU0 maps VU1's VI regs as 128bits to addr 0x4xx0 in
+					// VU0 mem, with only lower 16 bits valid, and the upper 112bits are hardwired to 0 (cottonvibes)
 } REG_VI;
 
 #define VUFLAG_BREAKONMFLAG		0x00000001
@@ -106,8 +110,8 @@ struct fmacPipe {
 };
 
 struct VURegs {
-	VECTOR	VF[32];
-	REG_VI	VI[32];
+	VECTOR	VF[32]; // VF and VI need to be first in this struct for proper mapping
+	REG_VI	VI[32]; // needs to be 128bit x 32 (cottonvibes)
 	VECTOR ACC;
 	REG_VI q;
 	REG_VI p;
@@ -182,9 +186,9 @@ static __forceinline u32* GET_VU_MEM(VURegs* VU, u32 addr)
 {
 	if( VU == g_pVU1 ) return (u32*)(VU1.Mem+(addr&0x3fff));
 	
-	if( addr >= 0x4200 ) return &VU1.VI[(addr>>2)&0x1f].UL;
+	if( addr >= 0x4000 ) return (u32*)(VU0.Mem+(addr&0x43f0)); // get VF and VI regs (they're mapped to 0x4xx0 in VU0 mem!)
 	
-	return (u32*)(VU0.Mem+(addr&0x0fff));	
+	return (u32*)(VU0.Mem+(addr&0x0fff)); // for addr 0x0000 to 0x4000 just wrap around
 }
 
 
