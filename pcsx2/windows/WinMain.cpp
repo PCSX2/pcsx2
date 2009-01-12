@@ -22,8 +22,6 @@
 // and it's usually user error, but in this case I'm pretty sure I found one.
 // So put your c++ exception code in WinSysExec.cpp.  It's better that way. :D (air)
 
-// Disabled warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
-#pragma warning(disable:4530)
 
 #include "PrecompiledHeader.h"
 #include "win32.h"
@@ -201,6 +199,21 @@ void WinClose()
 	exit(0);
 }
 
+/*class SehException
+{
+public:
+	uint m_code;
+	const _EXCEPTION_POINTERS& m_info;
+
+public:
+	SehException(uint code, const _EXCEPTION_POINTERS& eptr ) : m_code(code), m_info(eptr) { }
+};
+
+void SehTranslatorFunction( uint code, _EXCEPTION_POINTERS* eptr )
+{
+    throw SehException( code, *eptr );
+}*/
+
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -245,9 +258,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	memset(&g_TestRun, 0, sizeof(g_TestRun));
 
 	_getcwd( g_WorkingFolder, g_MaxPath );
-
-	__try
-	{
 
 	int argc;
 	TCHAR *const *const argv = _CommandLineToArgv( lpCmdLine, &argc );
@@ -389,10 +399,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LoadPatch("default");
 	RunGui();
 
-	}
-	__except(SysPageFaultExceptionFilter(GetExceptionInformation()))
+	/*}
+	catch( SehException& ex )
 	{
-	}
+		SysPageFaultExceptionFilter( ex.m_info );
+	}*/
 
 	// Note : Because of how the GUI and recompiler function, this area of
 	// the code is effectively unreachable.  Program termination is handled

@@ -131,8 +131,8 @@ extern s32 nextCounter;		// delta until the next counter event (must be signed)
 extern u32 nextsCounter;
 
 extern void rcntUpdate_hScanline();
-extern void rcntUpdate_vSync();
-extern void rcntUpdate();
+extern bool rcntUpdate_vSync();
+extern bool rcntUpdate();
 
 void rcntInit();
 void rcntStartGate(unsigned int mode, u32 sCycle);

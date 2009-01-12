@@ -146,6 +146,8 @@ void vuMicroMemReset()
 	jASSUME( VU0.Mem != NULL );
 	jASSUME( VU1.Mem != NULL );
 
+	PCSX2_MEM_PROTECT_BEGIN();
+
 	// === VU0 Initialization ===
 	memset(&VU0.ACC, 0, sizeof(VECTOR));
 	memset(VU0.VF, 0, sizeof(VECTOR)*32);
@@ -187,6 +189,8 @@ void vuMicroMemReset()
 //	VU1.VI       = (REG_VI*)(VU0.Mem + 0x4200);
 	VU1.vuExec   = vu1Exec;
 	VU1.vifRegs  = vif1Regs;
+
+	PCSX2_MEM_PROTECT_END();
 }
 
 void SaveState::vuMicroFreeze()

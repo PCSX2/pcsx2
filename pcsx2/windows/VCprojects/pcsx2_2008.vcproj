@@ -56,6 +56,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
+				ExceptionHandling="2"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
 				UsePrecompiledHeader="2"
@@ -137,6 +138,7 @@
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="WIN32_PTHREADS"
 				MinimalRebuild="true"
+				ExceptionHandling="2"
 				SmallerTypeCheck="false"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
@@ -220,6 +222,7 @@
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="WIN32_PTHREADS"
 				MinimalRebuild="true"
+				ExceptionHandling="2"
 				SmallerTypeCheck="false"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
@@ -311,6 +314,7 @@
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG;WIN32_PTHREADS"
 				StringPooling="true"
+				ExceptionHandling="2"
 				SmallerTypeCheck="false"
 				RuntimeLibrary="0"
 				StructMemberAlignment="5"
@@ -398,6 +402,7 @@
 				EnableFiberSafeOptimizations="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
+				ExceptionHandling="2"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
 				EnableEnhancedInstructionSet="0"
@@ -482,6 +487,7 @@
 				EnableFiberSafeOptimizations="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
+				ExceptionHandling="2"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
 				EnableEnhancedInstructionSet="0"
@@ -598,11 +604,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
-						ExceptionHandling="0"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -611,7 +613,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						ExceptionHandling="0"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -620,7 +621,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						ExceptionHandling="0"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -629,11 +629,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
-						ExceptionHandling="0"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -642,11 +638,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
-						ExceptionHandling="0"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -655,11 +647,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
-						ExceptionHandling="0"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -672,10 +660,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -684,10 +669,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -696,10 +678,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
@@ -708,10 +687,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						Optimization="3"
-						FavorSizeOrSpeed="2"
-						OmitFramePointers="false"
-						EnableFiberSafeOptimizations="false"
+						BufferSecurityCheck="false"
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>

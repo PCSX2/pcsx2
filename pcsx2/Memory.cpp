@@ -157,9 +157,8 @@ static void ReserveExtraMem( void* base, uint size )
 		throw vm_alloc_failed_exception( base, size, pExtraMem);
 }
 
-void memAlloc() {
-
-	int i;
+void memAlloc()
+{
 	LPVOID pExtraMem = NULL;	
 
 	// release the previous reserved mem
@@ -411,7 +410,6 @@ OtherException:
 		if( ExceptionRecord->ExceptionInformation[0] ) {
 			//SKIP_WRITE();
 			// shouldn't be writing
-			SysPrintf("Exception: Write\n"); // Naruto Ultimate Ninja 3 crashes right after a write!
 		}
 		else {
 			SysPrintf("vmhack ");
@@ -2607,8 +2605,6 @@ static u8* m_psAllMem = NULL;
 void memAlloc() 
 {
 #ifdef __LINUX__
-	InstallLinuxExceptionHandler();
-
 	// For Linux we need to use the system virtual memory mapper so that we
 	// can coerce an allocation below the 2GB line.
 
@@ -2710,14 +2706,8 @@ void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 void memReset()
 {
 #ifdef PCSX2_VIRTUAL_MEM
-
-	DWORD OldProtect;
-
-	memset(PS2MEM_BASE, 0, Ps2MemSize::Base);
-	memset(PS2MEM_SCRATCH, 0, Ps2MemSize::Scratch);
-	vm_Reset();
-
 #	ifdef _WIN32
+	DWORD OldProtect;
 	// make sure can write
 	VirtualProtect(PS2MEM_ROM, Ps2MemSize::Rom, PAGE_READWRITE, &OldProtect);
 	VirtualProtect(PS2MEM_ROM1, Ps2MemSize::Rom1, PAGE_READWRITE, &OldProtect);
@@ -2730,7 +2720,21 @@ void memReset()
 	mprotect(PS2EMEM_EROM, Ps2MemSize::ERom, PROT_READ|PROT_WRITE);
 #	endif
 
+	memset(PS2MEM_BASE, 0, Ps2MemSize::Base);
+	memset(PS2MEM_SCRATCH, 0, Ps2MemSize::Scratch);
+	vm_Reset();
+
 #else
+
+	// VTLB Protection Preparations.
+
+#	ifdef _WIN32
+	DWORD OldProtect;
+	// make sure can write
+	VirtualProtect(m_psAllMem, m_allMemSize, PAGE_READWRITE, &OldProtect);
+#	else
+	mprotect(m_psAllMem, m_allMemSize, PROT_READ|PROT_WRITE);
+#	endif
 
 	// Note!!  Ideally the vtlb should only be initialized once, and then subsequent
 	// resets of the system hardware would only clear vtlb mappings, but since the

@@ -52,11 +52,20 @@ void SysMunmap(uptr base, u32 size);
 // *DEPRECIATED* Use Console namespace methods instead.
 void SysPrintf(const char *fmt, ...);	// *DEPRECIATED* 
 
-
 static __forceinline void SysMunmap( void* base, u32 size )
 {
 	SysMunmap( (uptr)base, size );
 }
+
+
+#ifdef _MSC_VER
+#	define PCSX2_MEM_PROTECT_BEGIN() __try {
+#	define PCSX2_MEM_PROTECT_END() } __except(SysPageFaultExceptionFilter(GetExceptionInformation())) {}
+#else
+#	define PCSX2_MEM_PROTECT_BEGIN() InstallLinuxExceptionHandler()
+#	define PCSX2_MEM_PROTECT_END() ReleaseLinuxExceptionHandler()
+#endif
+
 
 // Console Namespace -- Replacements for SysPrintf.
 // SysPrintf is depreciated -- We should phase these in over time.

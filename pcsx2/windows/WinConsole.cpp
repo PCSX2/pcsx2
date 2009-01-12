@@ -118,7 +118,6 @@ namespace Console
 
 		return false;
 	}
-
 }
 
 namespace Msgbox

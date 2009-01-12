@@ -639,7 +639,9 @@ static void execute( void )
 	__asm call pfn;
 	__asm pop ebp;	// restore ebp for the reason above
 #else
+	__asm__("push %%ebp\n");
     ((R5900FNPTR)pblock->pFnptr)();
+	__asm__("pop %%ebp\n");
 #endif
 
 #endif
@@ -650,15 +652,41 @@ static void execute( void )
 void recStep( void ) {
 }
 
-void recExecute( void ) {
-	if( Config.Options & PCSX2_EEREC ) Config.Options |= PCSX2_COP2REC;
+static __forceinline bool recEventTest()
+{
+#ifdef PCSX2_DEVBUILD
+    // dont' remove this check unless doing an official release
+    if( g_globalXMMSaved || g_globalMMXSaved)
+		DevCon::Error("Pcsx2 Foopah!  Frozen regs have not been restored!!!");
+	assert( !g_globalXMMSaved && !g_globalMMXSaved);
+#endif
 
-	for (;;)
-		execute();
+	// Perform counters, ints, and IOP updates:
+	bool retval = ::R5900::_cpuBranchTest_Shared();
+
+#ifdef PCSX2_DEVBUILD
+	assert( !g_globalXMMSaved && !g_globalMMXSaved);
+#endif
+	return retval;
 }
 
-void recExecuteBlock( void ) {
-	execute();
+static void recExecute( void )
+{
+	PCSX2_MEM_PROTECT_BEGIN()
+		while( true )
+		{
+			if( recEventTest() ) break;
+			execute();
+		}
+	PCSX2_MEM_PROTECT_END()
+}
+
+static void recExecuteBlock( void )
+{
+	PCSX2_MEM_PROTECT_BEGIN()
+		recEventTest();
+		execute();
+	PCSX2_MEM_PROTECT_END()
 }
 
 ////////////////////////////////////////////////////
@@ -710,8 +738,8 @@ CheckPtr:
 //	}
 	__asm {
 		and eax, 0x0fffffff
-		mov edx, eax
 		pop ecx // x86Ptr to mod
+		mov edx, eax
 		sub edx, ecx
 		sub edx, 4
 		mov dword ptr [ecx], edx
@@ -735,8 +763,8 @@ __declspec(naked,noreturn) void DispatcherClear()
 		// already modded the code, jump to the new place
 		__asm {
 			pop edx
-			add esp, 4 // ignore stack
 			mov eax, s_pDispatchBlock
+			add esp, 4 // ignore stack
 			mov eax, dword ptr [eax]
 			and eax, 0x0fffffff
 			jmp eax
@@ -987,14 +1015,12 @@ void SetBranchReg( u32 reg )
 	iFlushCall(FLUSH_EVERYTHING);
 
 	iBranchTest(0xffffffff, 1);
-	if( bExecBIOS ) CheckForBIOSEnd();
 
 	JMP32((u32)DispatcherReg - ( (u32)x86Ptr + 5 ));
 }
 
 void SetBranchImm( u32 imm )
 {
-	u32* ptr;
 	branch = 1;
 
 	assert( imm );
@@ -1004,10 +1030,9 @@ void SetBranchImm( u32 imm )
 	iFlushCall(FLUSH_EVERYTHING);
 
 	iBranchTest(imm, imm <= pc);
-	if( bExecBIOS ) CheckForBIOSEnd();
 
 	MOV32ItoR(EDX, 0);
-	ptr = (u32*)(x86Ptr-4);
+	u32* ptr = (u32*)(x86Ptr-4);
 	*ptr = (u32)JMP32((u32)Dispatcher - ( (u32)x86Ptr + 5 ));
 }
 
@@ -1161,17 +1186,25 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 
 	// check if should branch
 	j8Ptr[0] = JS8( 0 );
+	RET();
+
+	/*if( newpc != 0xffffffff )
+		JNS32( (uptr)eventTestReg - ( (uptr)x86Ptr + 6 ) );
+	else
+		JNS32( (uptr)eventTest - ( (uptr)x86Ptr + 6 ) );*/
+	
 
 	// has to be in the middle of Save/LoadBranchState
-	CALLFunc( (uptr)cpuBranchTest );
+	/*CALLFunc( (uptr)cpuBranchTest );
 
 	if( newpc != 0xffffffff )
 	{
 		CMP32ItoM((uptr)&cpuRegs.pc, newpc);
 		JNE32((uptr)DispatcherReg - ( (uptr)x86Ptr + 6 ));
-	}
+	}*/
 
 	x86SetJ8( j8Ptr[0] );
+	if( bExecBIOS ) CheckForBIOSEnd();
 }
 
 namespace OpcodeImpl
@@ -2111,7 +2144,6 @@ StartRecomp:
 		iFlushCall(FLUSH_EVERYTHING);
 
 		iBranchTest(0xffffffff, 1);	
-		if( bExecBIOS ) CheckForBIOSEnd();
 
 		JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
 	}

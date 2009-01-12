@@ -497,10 +497,10 @@ __forceinline void rcntUpdate_hScanline()
 	}
 }
 
-__forceinline void rcntUpdate_vSync()
+__forceinline bool rcntUpdate_vSync()
 {
 	s32 diff = (cpuRegs.cycle - counters[5].sCycle);
-	if( diff < counters[5].CycleT ) return;
+	if( diff < counters[5].CycleT ) return false;
 
 	//iopBranchAction = 1;
 	if (counters[5].modeval == MODE_VSYNC)
@@ -510,8 +510,9 @@ __forceinline void rcntUpdate_vSync()
 		counters[5].sCycle += vSyncInfo.Blank;
 		counters[5].CycleT = vSyncInfo.Render;
 		counters[5].modeval = MODE_VRENDER;
-		
-		SysUpdate();  // check for and handle keyevents
+
+		return true;
+//		SysUpdate();  // check for and handle keyevents
 	}
 	else	// VSYNC end / VRENDER begin
 	{
@@ -534,8 +535,8 @@ __forceinline void rcntUpdate_vSync()
 			vblankinc = 0;
 		}
 #		endif
-
 	}
+	return false;
 }
 
 static __forceinline void __fastcall _cpuTestTarget( int i )
@@ -576,15 +577,13 @@ static __forceinline void _cpuTestOverflow( int i )
 // forceinline note: this method is called from two locations, but one
 // of them is the interpreter, which doesn't count. ;)  So might as
 // well forceinline it!
-__forceinline void rcntUpdate()
+__forceinline bool rcntUpdate()
 {
-	int i;
-
-	rcntUpdate_vSync();
+	bool retval = rcntUpdate_vSync();
 
 	// Update counters so that we can perform overflow and target tests.
 	
-	for (i=0; i<=3; i++) {
+	for (int i=0; i<=3; i++) {
 		
 		// We want to count gated counters (except the hblank which exclude below, and are
 		// counted by the hblank timer instead)
@@ -609,8 +608,8 @@ __forceinline void rcntUpdate()
 		else counters[i].sCycleT = cpuRegs.cycle;
 	}
 
-	
 	cpuRcntSet();
+	return retval;
 }
 
 static void _rcntSetGate( int index )

@@ -16,11 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// NOTE : This file was created to separate code that uses C++ exceptions from the
-// WinMain procedure in WinMain.cpp.  Apparently MSVC handles not so well the idea
-// of both __try/__except and try/catch in the same module.  (yup, I ran into a 
-// dreaded compiler bug).
-
 #include "PrecompiledHeader.h"
 #include "win32.h"
 
@@ -197,7 +192,11 @@ void ExecuteCpu()
 	g_GameInProgress = true;
 	if( !m_EmuStateActive )
 	{
-		Cpu->Execute();
+		while( true )
+		{
+			Cpu->Execute();
+			SysUpdate();
+		}
 		g_GameInProgress = false;
 	}
 	else
@@ -214,9 +213,6 @@ void RunExecute( const char* elf_file, bool use_bios )
 
 	g_GameInProgress = false;
 	
-	if (OpenPlugins(g_TestRun.ptitle) == -1)
-		return;
-
 	try
 	{
 		cpuReset();
@@ -227,18 +223,15 @@ void RunExecute( const char* elf_file, bool use_bios )
 		return;
 	}
 
+	if (OpenPlugins(g_TestRun.ptitle) == -1)
+		return;
+
 	if( elf_file == NULL )
 	{
 		if(g_RecoveryState != NULL)
 		{
 			try
 			{
-				/*string Text;
-				SaveState::GetFilename( Text, 9 );
-				gzLoadingState joe( Text );	// throws exception on version mismatch
-				R5900::cpuReset();
-				joe.FreezeAll();*/
-
 				memLoadingState( *g_RecoveryState ).FreezeAll();
 			}
 			catch( std::runtime_error& ex )

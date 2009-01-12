@@ -87,8 +87,8 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetDlgItemText(hW, IDC_FEATURESINPUT, features);
 
 			CheckDlgButton(hW, IDC_CPU_EEREC, !!(Config.Options&PCSX2_EEREC));
-			CheckDlgButton(hW, IDC_CPU_VU0REC, !!(Config.Options&CHECK_VU0REC));
-			CheckDlgButton(hW, IDC_CPU_VU1REC, !!(Config.Options&CHECK_VU1REC));
+			CheckDlgButton(hW, IDC_CPU_VU0REC, !!(Config.Options&PCSX2_VU0REC));
+			CheckDlgButton(hW, IDC_CPU_VU1REC, !!(Config.Options&PCSX2_VU1REC));
 
 			EnableDlgItem( hW, IDC_CPU_EEREC, !g_Session.ForceDisableEErec );
 			EnableDlgItem( hW, IDC_CPU_VU0REC, !g_Session.ForceDisableVU0rec );

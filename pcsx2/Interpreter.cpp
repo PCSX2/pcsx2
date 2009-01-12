@@ -779,7 +779,7 @@ int __Deci2Call(int call, u32 *addr) {
 				else pdeciaddr += (deci2addr[4]+0xc)%16;
 				memcpy(deci2buffer, pdeciaddr, deci2addr[1]-0xc);
 				deci2buffer[deci2addr[1]-0xc>=255?255:deci2addr[1]-0xc]='\0';
-				SysPrintf(deci2buffer);
+				Console::Write( Color_Cyan, deci2buffer );
 			}
 			deci2addr[3] = 0;
 			return 1;

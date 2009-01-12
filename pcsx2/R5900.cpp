@@ -448,7 +448,7 @@ u32 g_nextBranchCycle = 0;
 
 // Shared portion of the branch test, called from both the Interpreter
 // and the recompiler.  (moved here to help alleviate redundant code)
-static __forceinline void _cpuBranchTest_Shared()
+__forceinline bool _cpuBranchTest_Shared()
 {
 	EventTestIsActive = true;
 	g_nextBranchCycle = cpuRegs.cycle + eeWaitCycles;
@@ -460,12 +460,12 @@ static __forceinline void _cpuBranchTest_Shared()
 		iopBranchAction = true;
 
 	// ---- Counters -------------
-
+	bool vsyncEvent = false;
 	rcntUpdate_hScanline();
 
 	if( cpuTestCycle( nextsCounter, nextCounter ) )
 	{
-		rcntUpdate();
+		vsyncEvent = rcntUpdate();
 		_cpuTestPERF();
 	}
 
@@ -577,31 +577,8 @@ static __forceinline void _cpuBranchTest_Shared()
 		TESTINT(30, intcInterrupt);
 		TESTINT(31, dmacInterrupt);
 	}
-}
 
-void cpuBranchTest()
-{
-	// cpuBranchTest should be called from the recompiler only.
-	assert( Cpu == &recCpu );
-
-#ifdef PCSX2_DEVBUILD
-    // dont' remove this check unless doing an official release
-    if( g_globalXMMSaved || g_globalMMXSaved)
-		DevCon::Error("Pcsx2 Foopah!  Frozen regs have not been restored!!!");
-	assert( !g_globalXMMSaved && !g_globalMMXSaved);
-#endif
-
-	// Don't need to freeze any regs during a BranchTest.
-	// Everything has been flushed already.
-	g_EEFreezeRegs = false;
-
-	// Perform counters, ints, and IOP updates:
-	_cpuBranchTest_Shared();
-
-#ifdef PCSX2_DEVBUILD
-	assert( !g_globalXMMSaved && !g_globalMMXSaved);
-#endif
-	g_EEFreezeRegs = true;
+	return vsyncEvent;
 }
 
 void cpuTestINTCInts()
