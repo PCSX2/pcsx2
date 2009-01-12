@@ -19,48 +19,61 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
-#include "InterTables.h"
 #include "ix86/ix86.h"
 #include "iR5900.h"
-#include "iMMI.h"
-#include "iFPU.h"
-#include "iCP0.h"
 #include "VUmicro.h"
-#include "iVUmicro.h"
-#include "iVUops.h"
-#include "VUops.h"
-
 #include "iVUzerorec.h"
 
-namespace Dynarec
-{
-void recExecuteVU0Block( void )
-{
-	if((VU0.VI[REG_VPU_STAT].UL & 1) == 0) {
-		//SysPrintf("Execute block VU0, VU0 not busy\n");
-		return;
+namespace Dynarec {
+
+	static void recAlloc()
+	{
+		SuperVUAlloc(0);
 	}
 
-	//while( (VU0.VI[ REG_VPU_STAT ].UL&1) ) {
-		if( CHECK_VU0REC) {		
-			FreezeXMMRegs(1);
-			SuperVUExecuteProgram(VU0.VI[ REG_TPC ].UL & 0xfff, 0);
-			FreezeXMMRegs(0);
-		}
-		else ::R5900::Interpreter::intExecuteVU0Block();
-	//}
-}
+	static void recReset()
+	{
+		SuperVUReset(0);
 
-void recClearVU0( u32 Addr, u32 Size )
-{
-	if( CHECK_VU0REC ) {
+		// these shouldn't be needed, but shouldn't hurt anythign either.
+		x86FpuState = FPU_STATE;
+		iCWstate = 0;
+	}
+
+	static void recStep()
+	{
+	}
+
+	static void recExecuteBlock()
+	{
+		if((VU0.VI[REG_VPU_STAT].UL & 1) == 0)
+			return;
+
+		FreezeXMMRegs(1);
+		SuperVUExecuteProgram(VU0.VI[ REG_TPC ].UL & 0xfff, 0);
+		FreezeXMMRegs(0);
+	}
+
+	static void recClear(u32 Addr, u32 Size)
+	{
 		SuperVUClear(Addr, Size*4, 0);
 	}
+
+	static void recShutdown()
+	{
+		SuperVUDestroy( 0 );
+	}
 }
 
-void recResetVU0( void )
+using namespace Dynarec;
+
+VUmicroCpu recVU0 = 
 {
-	SuperVUReset(0);
-}
+	recAlloc
+,	recReset
+,	recStep
+,	recExecuteBlock
+,	recClear
+,	recShutdown
+};
 
-}

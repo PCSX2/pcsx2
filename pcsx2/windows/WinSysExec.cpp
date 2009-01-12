@@ -40,7 +40,8 @@ MemoryAlloc<u8>* g_gsRecoveryState = NULL;
 
 
 bool m_ReturnToGame = false;		// set to exit the RunGui message pump
-bool g_GameInProgress = false;	// Set TRUE if a game is actively running.
+bool g_GameInProgress = false;		// Set TRUE if a game is actively running (set to false on reset)
+bool m_EmuStateActive = false;		// Set TRUE when the GUI is running from the context of an emulation EventTest
 
 // This instance is not modified by command line overrides so
 // that command line plugins and stuff won't be saved into the
@@ -194,8 +195,13 @@ void ExecuteCpu()
 	gApp.hWnd = NULL;
 
 	g_GameInProgress = true;
-	Cpu->Execute();
-	g_GameInProgress = false;
+	if( !m_EmuStateActive )
+	{
+		Cpu->Execute();
+		g_GameInProgress = false;
+	}
+	else
+		m_ReturnToGame = true;
 }
 
 // Runs and ELF image directly (ISO or ELF program or BIN)
@@ -208,18 +214,18 @@ void RunExecute( const char* elf_file, bool use_bios )
 
 	g_GameInProgress = false;
 	
+	if (OpenPlugins(g_TestRun.ptitle) == -1)
+		return;
+
 	try
 	{
 		cpuReset();
 	}
-	catch( std::exception& ex )
+	catch( Exception::BaseException& ex )
 	{
-		Msgbox::Alert( ex.what() );
+		Msgbox::Alert( ex.Message() );
 		return;
 	}
-
-	if (OpenPlugins(g_TestRun.ptitle) == -1)
-		return;
 
 	if( elf_file == NULL )
 	{
@@ -227,6 +233,12 @@ void RunExecute( const char* elf_file, bool use_bios )
 		{
 			try
 			{
+				/*string Text;
+				SaveState::GetFilename( Text, 9 );
+				gzLoadingState joe( Text );	// throws exception on version mismatch
+				R5900::cpuReset();
+				joe.FreezeAll();*/
+
 				memLoadingState( *g_RecoveryState ).FreezeAll();
 			}
 			catch( std::runtime_error& ex )
@@ -249,6 +261,7 @@ void RunExecute( const char* elf_file, bool use_bios )
 			// Note: if the elf_file is null we use the CDVD elf file.
 			// But if the elf_file is an empty string then we boot the bios instead.
 
+			m_EmuStateActive = false;		// make sure to start a new emu state when running cpuExecuteBios();
 			cpuExecuteBios();
 			char ename[g_MaxPath];
 			ename[0] = 0;
@@ -262,10 +275,9 @@ void RunExecute( const char* elf_file, bool use_bios )
 		// Custom ELF specified (not using CDVD).
 		// Run the BIOS and load the ELF.
 
-		SetCursor( LoadCursor( gApp.hInstance, IDC_WAIT ) );
+		m_EmuStateActive = false;		// make sure to start a new emu state when running cpuExecuteBios();
 		cpuExecuteBios();
 		loadElfFile( elf_file );
-		SetCursor( LoadCursor( gApp.hInstance, IDC_ARROW ) );
 	}
 
 	// this needs to be called for every new game!
@@ -281,6 +293,8 @@ void RunGuiAndReturn() {
     MSG msg;
 
 	m_ReturnToGame = false;
+	m_EmuStateActive = true;
+
     while( !m_ReturnToGame )
 	{
 		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
@@ -297,8 +311,11 @@ void RunGuiAndReturn() {
 
 	if( g_gsRecoveryState != NULL )
 	{
+		s32 dummylen;
+
 		memLoadingState eddie( *g_gsRecoveryState );
 		eddie.FreezePlugin( "GS", gsSafeFreeze );
+		eddie.Freeze( dummylen );		// reads the length value recorded earlier.
 		eddie.gsFreeze();
 
 		safe_delete( g_gsRecoveryState );
@@ -307,9 +324,13 @@ void RunGuiAndReturn() {
 			GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
 	}
 
-	AccBreak = true;
-	DestroyWindow(gApp.hWnd);
-	gApp.hWnd = NULL;
+	if( gApp.hWnd != NULL )
+	{
+		AccBreak = true;
+		DestroyWindow(gApp.hWnd);
+		gApp.hWnd = NULL;
+
+	}
 }
 
 class RecoveryMemSavingState : public memSavingState, Sealed
@@ -327,9 +348,9 @@ public:
 			// just copy the data from src to dst.
 			// the normal savestate doesn't expect a length prefix for internal structures,
 			// so don't copy that part.
-			u32& pluginlen = *((u32*)g_gsRecoveryState->GetPtr(0));
+			u32& pluginlen = *((u32*)g_gsRecoveryState->GetPtr());
 			u32& gslen = *((u32*)g_gsRecoveryState->GetPtr(pluginlen+4));
-			memcpy( m_memory.GetPtr(m_idx), g_gsRecoveryState->GetPtr(pluginlen+4), gslen );
+			memcpy( m_memory.GetPtr(m_idx), g_gsRecoveryState->GetPtr(pluginlen+8), gslen );
 			m_idx += gslen;
 		}
 		else
@@ -602,8 +623,11 @@ public:
 		int oldmidx = m_idx;
 		m_idx += 4;
 		memSavingState::gsFreeze();
-		s32& len = *((s32*)m_memory.GetPtr( oldmidx ));
-		len = (m_idx - oldmidx)-4;
+		if( IsSaving() )
+		{
+			s32& len = *((s32*)m_memory.GetPtr( oldmidx ));
+			len = (m_idx - oldmidx)-4;
+		}
 	}
 };
 
@@ -641,6 +665,7 @@ void CALLBACK KeyEvent(keyEvent* ev)
 				// Let's give the user a RunGui!
 
 				g_GameInProgress = false;
+				m_EmuStateActive = false;
 				CreateMainWindow( SW_SHOWNORMAL );
 				RunGui();	// ah the beauty of perpetual stack recursion! (air)
 			}
@@ -677,7 +702,7 @@ void CALLBACK KeyEvent(keyEvent* ev)
 					PluginsResetGS();
 				}
 
-				ClosePlugins();
+				//ClosePlugins();
 
 				CreateMainWindow(SW_SHOWNORMAL);
 				nDisableSC = 0;
@@ -705,7 +730,6 @@ void SysRestorableReset()
 		g_RecoveryState = new MemoryAlloc<u8>( "Memory Savestate Recovery" );
 		RecoveryMemSavingState().FreezeAll();
 		safe_delete( g_gsRecoveryState );
-		cpuShutdown();
 		g_GameInProgress = false;
 	}
 	catch( std::runtime_error& ex )
@@ -751,15 +775,10 @@ bool SysInit()
 		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
 
 	SysDetect();
+	if( !SysAllocateMem() )
+		return false;	// critical memory allocation failure;
 
-	while (LoadPlugins() == -1) {
-		if (Pcsx2Configure(NULL) == FALSE) {
-			return false;		// user cancelled.
-		}
-	}
-
-	if( !cpuInit() )
-		return false;
+	SysAllocateDynarecs();
 
 	sinit = true;
 	return true;

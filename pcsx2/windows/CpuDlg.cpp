@@ -26,6 +26,11 @@
 
 #include "ix86/ix86.h"
 
+static void EnableDlgItem( HWND hwndDlg, uint itemidx, bool enabled )
+{
+	EnableWindow( GetDlgItem( hwndDlg, itemidx ), enabled );
+}
+
 BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cpuspeedc[20];
@@ -81,9 +86,13 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //			if(cpucaps.hasAMD64BitArchitecture) strcat(features,",x86-64");
             SetDlgItemText(hW, IDC_FEATURESINPUT, features);
 
-			CheckDlgButton(hW, IDC_CPU_EEREC, !!CHECK_EEREC);
-			CheckDlgButton(hW, IDC_CPU_VU0REC, !!CHECK_VU0REC);
-			CheckDlgButton(hW, IDC_CPU_VU1REC, !!CHECK_VU1REC);
+			CheckDlgButton(hW, IDC_CPU_EEREC, !!(Config.Options&PCSX2_EEREC));
+			CheckDlgButton(hW, IDC_CPU_VU0REC, !!(Config.Options&CHECK_VU0REC));
+			CheckDlgButton(hW, IDC_CPU_VU1REC, !!(Config.Options&CHECK_VU1REC));
+
+			EnableDlgItem( hW, IDC_CPU_EEREC, !g_Session.ForceDisableEErec );
+			EnableDlgItem( hW, IDC_CPU_VU0REC, !g_Session.ForceDisableVU0rec );
+			EnableDlgItem( hW, IDC_CPU_VU1REC, !g_Session.ForceDisableVU1rec );
 
 			CheckDlgButton(hW, IDC_CPU_GSMULTI, !!CHECK_MULTIGS);
 

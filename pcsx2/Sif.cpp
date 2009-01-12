@@ -61,22 +61,26 @@ struct _sif1 {
 	int counter;
 };
 
-_sif0 sif0;
-_sif1 sif1;
+static _sif0 sif0;
+static _sif1 sif1;
 
-int wP0, wP1;
 int eesifbusy[2] = { 0, 0 };
 extern int iopsifbusy[2];
 
-void sifInit() {
+void sifInit()
+{
 	memset(&sif0, 0, sizeof(sif0));
 	memset(&sif1, 0, sizeof(sif1));
+	memset(eesifbusy, 0, sizeof(eesifbusy));
+	memset(iopsifbusy, 0, sizeof(iopsifbusy));
 }
+
 static __forceinline void SIF0write(u32 *from, int words)
 {
 	/*if(FIFO_SIF0_W < (words+sif0.fifoWritePos)) {*/
-		wP0 = min((FIFO_SIF0_W-sif0.fifoWritePos),words);
-		wP1 = words - wP0;
+		
+		const int wP0 = min((FIFO_SIF0_W-sif0.fifoWritePos),words);
+		const int wP1 = words - wP0;
 		
 		memcpy(&sif0.fifoData[sif0.fifoWritePos], from, wP0 << 2);
 		memcpy(&sif0.fifoData[0], &from[wP0], wP1 << 2);
@@ -91,18 +95,14 @@ static __forceinline void SIF0write(u32 *from, int words)
 
 	sif0.fifoSize += words;
 	SIF_LOG("  SIF0 + %d = %d (pos=%d)\n", words, sif0.fifoSize, sif0.fifoWritePos);
-
-/*	if (sif0.fifoSize == FIFO_SIF0_W) {
-		Cpu->ExecuteBlock();
-	}*/
 }
 
 static __forceinline void SIF0read(u32 *to, int words)
 {
 	/*if(FIFO_SIF0_W < (words+sif0.fifoReadPos)) 
 	{*/
-		wP0 = min((FIFO_SIF0_W-sif0.fifoReadPos),words);
-		wP1 = words - wP0;
+		const int wP0 = min((FIFO_SIF0_W-sif0.fifoReadPos),words);
+		const int wP1 = words - wP0;
 
 		memcpy(to, &sif0.fifoData[sif0.fifoReadPos], wP0 << 2);
 		memcpy(&to[wP0], &sif0.fifoData[0], wP1 << 2);
@@ -123,8 +123,8 @@ __forceinline void SIF1write(u32 *from, int words)
 {
 	/*if(FIFO_SIF1_W < (words+sif1.fifoWritePos)) 
 	{*/
-		wP0 = min((FIFO_SIF1_W-sif1.fifoWritePos),words);
-		wP1 = words - wP0;
+		const int wP0 = min((FIFO_SIF1_W-sif1.fifoWritePos),words);
+		const int wP1 = words - wP0;
 
 		memcpy(&sif1.fifoData[sif1.fifoWritePos], from, wP0 << 2);
 		memcpy(&sif1.fifoData[0], &from[wP0], wP1 << 2);
@@ -139,18 +139,14 @@ __forceinline void SIF1write(u32 *from, int words)
 
 	sif1.fifoSize += words;
 	SIF_LOG("  SIF1 + %d = %d (pos=%d)\n", words, sif1.fifoSize, sif1.fifoWritePos);
-
-/*	if (sif1.fifoSize == FIFO_SIF1_W) {
-		psxCpu->ExecuteBlock();
-	}*/
 }
 
 static __forceinline void SIF1read(u32 *to, int words)
 {
 	/*if(FIFO_SIF1_W < (words+sif1.fifoReadPos)) 
 	{*/
-		wP0 = min((FIFO_SIF1_W-sif1.fifoReadPos),words);
-		wP1 = words - wP0;
+		const int wP0 = min((FIFO_SIF1_W-sif1.fifoReadPos),words);
+		const int wP1 = words - wP0;
 
 		memcpy(to, &sif1.fifoData[sif1.fifoReadPos], wP0 << 2);
 		memcpy(&to[wP0], &sif1.fifoData[0], wP1 << 2);
@@ -594,4 +590,19 @@ __forceinline void dmaSIF2() {
 void SaveState::sifFreeze() {
 	Freeze(sif0);
 	Freeze(sif1);
+
+	if( GetVersion() >= 0x0012 )
+	{
+		Freeze(eesifbusy);
+		Freeze(iopsifbusy);
+	}
+	else if( IsLoading() )
+	{
+		// Old savestate, inferior data so...
+		// Take an educated guess on what they should be.  Or well, set to 1 because
+		// it more or less forces them to "kick"
+
+		iopsifbusy[0] = eesifbusy[0] = 1;
+		iopsifbusy[1] = eesifbusy[1] = 1;
+	}
 }

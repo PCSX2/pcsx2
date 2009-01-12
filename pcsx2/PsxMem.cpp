@@ -28,11 +28,9 @@ int g_psxWriteOk=1;
 static u32 writectrl;
 
 #ifdef PCSX2_VIRTUAL_MEM
-
-int psxMemInit()
+void psxMemAlloc()
 {
-	// all mem taken care by memInit
-	return 0;
+	// In VirtualMemory land all mem taken care by memAlloc
 }
 
 void psxMemReset()
@@ -346,20 +344,17 @@ u8 *psxM;
 u8 *psxP;
 u8 *psxH;
 u8 *psxS;
+
 uptr *psxMemWLUT;
-uptr *psxMemRLUT;
+const uptr *psxMemRLUT;
 
 static u8* m_psxAllMem = NULL;
-static const uint m_psxMemSize = 0x00200000 + 0x00010000 + 0x00010000 + 0x00010000 ;
+static const uint m_psxMemSize = Ps2MemSize::IopRam + Ps2MemSize::IopHardware + 0x00010000 + 0x00010000 ;
 
-int psxMemInit()
+void psxMemAlloc()
 {
-	int i;
-
-	psxMemRLUT = (uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
-	psxMemWLUT = (uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
-	memset(psxMemRLUT, 0, 0x10000 * sizeof(uptr));
-	memset(psxMemWLUT, 0, 0x10000 * sizeof(uptr));
+	psxMemWLUT = (uptr*)_aligned_malloc(0x10000 * sizeof(uptr) * 2,16);
+	psxMemRLUT = psxMemWLUT + 0x10000; //(uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
 
 #ifdef __LINUX__
 
@@ -390,65 +385,77 @@ int psxMemInit()
 #endif
 
 	if( m_psxAllMem == NULL)
-	{
-		Msgbox::Alert("Error allocating memory for the IOP processor.");
-		return -1;
-	}
+		throw Exception::OutOfMemory( "psxMemAlloc > failed allocating memory for the IOP processor." );
 
 	u8* curpos = m_psxAllMem;
 	psxM = curpos; curpos += 0x00200000;
 	psxP = curpos; curpos += 0x00010000; 
-	psxH = curpos; curpos += 0x00010000;
-	psxS = curpos; curpos += 0x00010000;
+	psxH = curpos; curpos += Ps2MemSize::IopHardware;
+	psxS = curpos; //curpos += 0x00010000;
 
-	//assert( (uptr)psxM <= 0xffffffff && (uptr)psxP <= 0xffffffff && (uptr)psxH <= 0xffffffff && (uptr)psxS <= 0xffffffff);
-
-	memset( m_psxAllMem, 0, m_psxMemSize );
-
-
-// MemR
-	for (i=0; i<0x0080; i++) psxMemRLUT[i + 0x0000] = (uptr)&psxM[(i & 0x1f) << 16];
-	for (i=0; i<0x0080; i++) psxMemRLUT[i + 0x8000] = (uptr)&psxM[(i & 0x1f) << 16];
-	for (i=0; i<0x0080; i++) psxMemRLUT[i + 0xa000] = (uptr)&psxM[(i & 0x1f) << 16];
-
-	for (i=0; i<0x0001; i++) psxMemRLUT[i + 0x1f00] = (uptr)&psxP[i << 16];
-
-	for (i=0; i<0x0001; i++) psxMemRLUT[i + 0x1f80] = (uptr)&psxH[i << 16];
-	for (i=0; i<0x0001; i++) psxMemRLUT[i + 0xbf80] = (uptr)&psxH[i << 16];
-
-	for (i=0; i<0x0040; i++) psxMemRLUT[i + 0x1fc0] = (uptr)&PS2MEM_ROM[i << 16];
-	for (i=0; i<0x0040; i++) psxMemRLUT[i + 0x9fc0] = (uptr)&PS2MEM_ROM[i << 16];
-	for (i=0; i<0x0040; i++) psxMemRLUT[i + 0xbfc0] = (uptr)&PS2MEM_ROM[i << 16];
-
-	for (i=0; i<0x0004; i++) psxMemRLUT[i + 0x1e00] = (uptr)&PS2MEM_ROM1[i << 16];
-	for (i=0; i<0x0004; i++) psxMemRLUT[i + 0x9e00] = (uptr)&PS2MEM_ROM1[i << 16];
-	for (i=0; i<0x0004; i++) psxMemRLUT[i + 0xbe00] = (uptr)&PS2MEM_ROM1[i << 16];
-
-	for (i=0; i<0x0001; i++) psxMemRLUT[i + 0x1d00] = (uptr)&psxS[i << 16];
-	for (i=0; i<0x0001; i++) psxMemRLUT[i + 0xbd00] = (uptr)&psxS[i << 16];
-
-// MemW
-	for (i=0; i<0x0080; i++) psxMemWLUT[i + 0x0000] = (uptr)&psxM[(i & 0x1f) << 16];
-	for (i=0; i<0x0080; i++) psxMemWLUT[i + 0x8000] = (uptr)&psxM[(i & 0x1f) << 16];
-	for (i=0; i<0x0080; i++) psxMemWLUT[i + 0xa000] = (uptr)&psxM[(i & 0x1f) << 16];
-
-	for (i=0; i<0x0001; i++) psxMemWLUT[i + 0x1f00] = (uptr)&psxP[i << 16];
-
-	for (i=0; i<0x0001; i++) psxMemWLUT[i + 0x1f80] = (uptr)&psxH[i << 16];
-	for (i=0; i<0x0001; i++) psxMemWLUT[i + 0xbf80] = (uptr)&psxH[i << 16];
-
-//	for (i=0; i<0x0008; i++) psxMemWLUT[i + 0xbfc0] = (uptr)&psR[i << 16];
-
-//	for (i=0; i<0x0001; i++) psxMemWLUT[i + 0x1d00] = (uptr)&psxS[i << 16];
-//	for (i=0; i<0x0001; i++) psxMemWLUT[i + 0xbd00] = (uptr)&psxS[i << 16];
-
-	return 0;
 }
 
-void psxMemReset() {
-	memset(psxM, 0, 0x00200000);
-	memset(psxP, 0, 0x00010000);
-	//memset(psxS, 0, 0x00010000);
+// Note!  Resetting the IOP's memory state is dependent on having *all* psx memory allocated,
+// which is performed by MemInit and PsxMemInit()
+void psxMemReset()
+{
+	jASSUME( psxMemWLUT != NULL );
+	jASSUME( m_psxAllMem != NULL );
+
+	DbgCon::Status( "psxMemReset > Resetting core memory!" );
+
+	memset( psxMemWLUT, 0, 0x10000 * sizeof(uptr) * 2 );	// clears both allocations, RLUT and WLUT
+	memset( m_psxAllMem, 0, m_psxMemSize );
+
+	// Trick!  We're accessing RLUT here through WLUT, since it's the non-const pointer.
+	// So the ones with a 1 prefixed (ala 0x18000, etc) are RLUT tables.
+	for (int i=0; i<0x0080; i++)
+	{
+		psxMemWLUT[i + 0x0000] = (uptr)&psxM[(i & 0x1f) << 16];
+		psxMemWLUT[i + 0x8000] = (uptr)&psxM[(i & 0x1f) << 16];
+		psxMemWLUT[i + 0xa000] = (uptr)&psxM[(i & 0x1f) << 16];
+
+		// RLUTs, accessed through WLUT.
+		psxMemWLUT[i + 0x10000] = (uptr)&psxM[(i & 0x1f) << 16];
+		psxMemWLUT[i + 0x18000] = (uptr)&psxM[(i & 0x1f) << 16];
+		psxMemWLUT[i + 0x1a000] = (uptr)&psxM[(i & 0x1f) << 16];
+	}
+
+	// A few single-page allocations...
+	psxMemWLUT[0x11f00] = (uptr)psxP;
+	psxMemWLUT[0x11f80] = (uptr)psxH;
+	psxMemWLUT[0x1bf80] = (uptr)psxH;
+
+	psxMemWLUT[0x1f00] = (uptr)psxP;
+	psxMemWLUT[0x1f80] = (uptr)psxH;
+	psxMemWLUT[0xbf80] = (uptr)psxH;
+
+	// Read-only memory areas, so don't map WLUT for these...
+	for (int i=0; i<0x0040; i++)
+	{
+		psxMemWLUT[i + 0x11fc0] = (uptr)&PS2MEM_ROM[i << 16];
+		psxMemWLUT[i + 0x19fc0] = (uptr)&PS2MEM_ROM[i << 16];
+		psxMemWLUT[i + 0x1bfc0] = (uptr)&PS2MEM_ROM[i << 16];
+	}
+
+	for (int i=0; i<0x0004; i++)
+	{
+		psxMemWLUT[i + 0x11e00] = (uptr)&PS2MEM_ROM1[i << 16];
+		psxMemWLUT[i + 0x19e00] = (uptr)&PS2MEM_ROM1[i << 16];
+		psxMemWLUT[i + 0x1be00] = (uptr)&PS2MEM_ROM1[i << 16];
+	}
+
+	// Scratchpad! (which is read only? (air))
+	psxMemWLUT[0x11d00] = (uptr)psxS;
+	psxMemWLUT[0x1bd00] = (uptr)psxS;
+
+	// why isn't scratchpad read/write? (air)
+	//for (i=0; i<0x0001; i++) psxMemWLUT[i + 0x1d00] = (uptr)&psxS[i << 16];
+	//for (i=0; i<0x0001; i++) psxMemWLUT[i + 0xbd00] = (uptr)&psxS[i << 16];
+
+	// this one looks like an old hack for some special write-only memory area,
+	// but leaving it in for reference (air)
+	//for (i=0; i<0x0008; i++) psxMemWLUT[i + 0xbfc0] = (uptr)&psR[i << 16];
 }
 
 void psxMemShutdown()
@@ -461,12 +468,12 @@ void psxMemShutdown()
 
 	psxM = psxP = psxH = psxS = NULL;
 
-	safe_aligned_free(psxMemRLUT);
 	safe_aligned_free(psxMemWLUT);
+	psxMemRLUT = NULL;
 }
 
 u8 psxMemRead8(u32 mem) {
-	char *p;
+	const u8* p;
 	u32 t;
 
 	t = (mem >> 16) & 0x1fff;
@@ -481,9 +488,9 @@ u8 psxMemRead8(u32 mem) {
 		mem&= 0x1fffffff;
 		return psxHw4Read8(mem);
 	} else {
-		p = (char *)(psxMemRLUT[mem >> 16]);
+		p = (const u8*)(psxMemRLUT[mem >> 16]);
 		if (p != NULL) {
-			return *(u8 *)(p + (mem & 0xffff));
+			return *(const u8 *)(p + (mem & 0xffff));
 		} else {
 			if (t == 0x1000) return DEV9read8(mem & 0x1FFFFFFF);
 			PSXMEM_LOG("err lb %8.8lx\n", mem);
@@ -493,7 +500,7 @@ u8 psxMemRead8(u32 mem) {
 }
 
 u16 psxMemRead16(u32 mem) {
-	char *p;
+	const u8* p;
 	u32 t;
 
 	t = (mem >> 16) & 0x1fff;
@@ -504,7 +511,7 @@ u16 psxMemRead16(u32 mem) {
 		else
 			return psxHwRead16(mem);
 	} else {
-		p = (char *)(psxMemRLUT[mem >> 16]);
+		p = (const u8*)(psxMemRLUT[mem >> 16]);
 		if (p != NULL) {
 			if (t == 0x1d00) {
 				u16 ret;
@@ -529,7 +536,7 @@ u16 psxMemRead16(u32 mem) {
 				SIF_LOG("Sif reg read %x value %x\n", mem, ret);
 				return ret;
 			}
-			return *(u16 *)(p + (mem & 0xffff));
+			return *(const u16 *)(p + (mem & 0xffff));
 		} else {
 			if (t == 0x1F90)
 				return SPU2read(mem & 0x1FFFFFFF);
@@ -541,7 +548,7 @@ u16 psxMemRead16(u32 mem) {
 }
 
 u32 psxMemRead32(u32 mem) {
-	char *p;
+	const u8* p;
 	u32 t;
 	t = (mem >> 16) & 0x1fff;
 	if (t == 0x1f80) {
@@ -552,7 +559,7 @@ u32 psxMemRead32(u32 mem) {
 			return psxHwRead32(mem);
 	} else {
 		//see also Hw.c
-		p = (char *)(psxMemRLUT[mem >> 16]);
+		p = (const u8*)(psxMemRLUT[mem >> 16]);
 		if (p != NULL) {
 			if (t == 0x1d00) {
 				u32 ret;
@@ -583,7 +590,7 @@ u32 psxMemRead32(u32 mem) {
 				SIF_LOG("Sif reg read %x value %x\n", mem, ret);
 				return ret;
 			}
-			return *(u32 *)(p + (mem & 0xffff));
+			return *(const u32 *)(p + (mem & 0xffff));
 		} else {
 			if (t == 0x1000) return DEV9read32(mem & 0x1FFFFFFF);
 			
@@ -755,12 +762,8 @@ void psxMemWrite32(u32 mem, u32 value) {
 				}
 
 				//if (!g_psxWriteOk) psxCpu->Clear(mem&~3, 1);
-#ifdef PSXMEM_LOG
 				if (g_psxWriteOk) { PSXMEM_LOG("err sw %8.8lx = %x\n", mem, value); }
-#endif
 			} else {
-				int i;
-
 				writectrl = value;
 				switch (value) {
 					case 0x800: case 0x804:
@@ -778,9 +781,12 @@ void psxMemWrite32(u32 mem, u32 value) {
 					case 0x1edd8:
 						if (g_psxWriteOk == 1) break;
 						g_psxWriteOk = 1;
-						for (i=0; i<0x0080; i++) psxMemWLUT[i + 0x0000] = (uptr)&psxM[(i & 0x1f) << 16];
-						for (i=0; i<0x0080; i++) psxMemWLUT[i + 0x8000] = (uptr)&psxM[(i & 0x1f) << 16];
-						for (i=0; i<0x0080; i++) psxMemWLUT[i + 0xa000] = (uptr)&psxM[(i & 0x1f) << 16];
+						for (int i=0; i<0x0080; i++)
+						{
+							psxMemWLUT[i + 0x0000] = (uptr)&psxM[(i & 0x1f) << 16];
+							psxMemWLUT[i + 0x8000] = (uptr)&psxM[(i & 0x1f) << 16];
+							psxMemWLUT[i + 0xa000] = (uptr)&psxM[(i & 0x1f) << 16];
+						}
 						//PSXMEM_LOG("writectrl: write ok\n");
 						break;
 					default:

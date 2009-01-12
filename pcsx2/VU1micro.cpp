@@ -16,6 +16,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+// This module contains code shared by both the dynarec and interpreter versions
+// of the VU0 micro.
+
 #include "PrecompiledHeader.h"
 
 #include <cmath>
@@ -60,43 +63,7 @@ void iDumpVU1Registers()
 #endif
 }
 
-int vu1Init()
-{
-	assert( VU0.Mem != NULL );
-	g_pVU1 = (VURegs*)(VU0.Mem + 0x4000);
-
-#ifdef PCSX2_VIRTUAL_MEM
-	VU1.Mem = PS2MEM_VU1MEM;
-	VU1.Micro = PS2MEM_VU1MICRO;
-#else
-	VU1.Mem   = (u8*)_aligned_malloc(16*1024, 16);
-	VU1.Micro = (u8*)_aligned_malloc(16*1024, 16);
-	if (VU1.Mem == NULL || VU1.Micro == NULL) {
-		Msgbox::Alert("Error allocating memory"); 
-		return -1;
-	}
-	memset(VU1.Mem, 0,16*1024);
-	memset(VU1.Micro, 0,16*1024);
-#endif
-
-	VU1.maxmem   = -1;//16*1024-4;
-	VU1.maxmicro = 16*1024-4;
-//	VU1.VF       = (VECTOR*)(VU0.Mem + 0x4000);
-//	VU1.VI       = (REG_VI*)(VU0.Mem + 0x4200);
-	VU1.vuExec   = vu1Exec;
-	VU1.vifRegs  = vif1Regs;
-
-	if( CHECK_VU1REC ) Dynarec::recVU1Init();
-
-	vu1Reset();
-
-	return 0;
-}
-
-void vu1Shutdown() {
-	if( CHECK_VU1REC ) Dynarec::recVU1Shutdown();
-}
-
+// This is called by the COP2 as per the CTC instruction
 void vu1ResetRegs()
 {
 	VU0.VI[REG_VPU_STAT].UL &= ~0xff00; // stop vu1
@@ -104,41 +71,22 @@ void vu1ResetRegs()
 	vif1Regs->stat &= ~4;
 }
 
-void vu1Reset() {
-	memset(&VU1.ACC, 0, sizeof(VECTOR));
-	memset(VU1.VF, 0, sizeof(VECTOR)*32);
-	memset(VU1.VI, 0, sizeof(REG_VI)*32);
-	VU1.VF[0].f.x = 0.0f;
-	VU1.VF[0].f.y = 0.0f;
-	VU1.VF[0].f.z = 0.0f;
-	VU1.VF[0].f.w = 1.0f;
-	VU1.VI[0].UL = 0;
-	memset(VU1.Mem, 0, 16*1024);
-	memset(VU1.Micro, 0, 16*1024);
-
-	Dynarec::recResetVU1();
-}
-
-void SaveState::vu1Freeze() {
-	Freeze(VU1.ACC);
-	Freeze(VU1.code);
-	FreezeMem(VU1.Mem,   16*1024);
-	FreezeMem(VU1.Micro, 16*1024);
-	FreezeMem(VU1.VF, 32*sizeof(VECTOR));
-	FreezeMem(VU1.VI, 32*sizeof(REG_VI));
+void vu1Reset()
+{
+	CpuVU1 = CHECK_VU1REC ? &recVU1 : &intVU1;
+	CpuVU1->Reset();
 }
 
 static int count;
 
 void vu1ExecMicro(u32 addr)
 {
-	if(VU0.VI[REG_VPU_STAT].UL & 0x100) {
-		SysPrintf("Previous Microprogram still running on VU1\n");
-
-		do {
-			R5900::Cpu->ExecuteVU1Block();
-		} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
+	while(VU0.VI[REG_VPU_STAT].UL & 0x100)
+	{
+		VUM_LOG("vu1ExecMicro > Stalling until current microprogram finishes");
+		CpuVU1->ExecuteBlock();
 	}
+
 	VUM_LOG("vu1ExecMicro %x\n", addr);
 	VUM_LOG("vu1ExecMicro %x (count=%d)\n", addr, count++);
 
@@ -148,176 +96,9 @@ void vu1ExecMicro(u32 addr)
 	if (addr != -1) VU1.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU1);
 
-	//do {
-	FreezeXMMRegs(1);
-		R5900::Cpu->ExecuteVU1Block();
-	FreezeXMMRegs(0);
-	//} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
-	// rec can call vu1ExecMicro
-
-	// VU1 isn't handled by branch tests right now, so this isn't needed.
-	// although maybe it should be?  VU1 is updated in the intBranchTest, but not the
-	// recompiler one.  Why?  No clue. (air)
-
-	//if( VU1.VI[REG_VPU_STAT].UL & 0x1 )
-	//	cpuSetNextBranchDelta( 256 );
+	CpuVU1->ExecuteBlock();
 }
 
-void _vu1ExecUpper(VURegs* VU, u32 *ptr) {
-	VU->code = ptr[1]; 
-	IdebugUPPER(VU1);
-	VU1_UPPER_OPCODE[VU->code & 0x3f](); 
-}
-
-void _vu1ExecLower(VURegs* VU, u32 *ptr) {
-	VU->code = ptr[0]; 
-	IdebugLOWER(VU1);
-	VU1_LOWER_OPCODE[VU->code >> 25](); 
-}
-
-extern void _vuFlushAll(VURegs* VU);
-
-int vu1branch = 0;
-
-void _vu1Exec(VURegs* VU) {
-	_VURegsNum lregs;
-	_VURegsNum uregs;
-	VECTOR _VF;
-	VECTOR _VFc;
-	REG_VI _VI;
-	REG_VI _VIc;
-	u32 *ptr;
-	int vfreg;
-	int vireg;
-	int discard=0;
-
-	if(VU->VI[REG_TPC].UL >= VU->maxmicro){
-		CPU_LOG("VU1 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-		VU->VI[REG_TPC].UL &= 0x3FFF;
-		/*VU0.VI[REG_VPU_STAT].UL&= ~0x100;
-		VU->cycle++;
-		return;*/
-	}
-	ptr = (u32*)&VU->Micro[VU->VI[REG_TPC].UL]; 
-	VU->VI[REG_TPC].UL+=8; 		
-
-	if (ptr[1] & 0x40000000) { /* E flag */ 
-		VU->ebit = 2;
-	}
-	if (ptr[1] & 0x10000000) { /* D flag */
-		if (VU0.VI[REG_FBRST].UL & 0x400) {
-			VU0.VI[REG_VPU_STAT].UL|= 0x200;
-			hwIntcIrq(INTC_VU1);
-		}
-	}
-	if (ptr[1] & 0x08000000) { /* T flag */
-		if (VU0.VI[REG_FBRST].UL & 0x800) {
-			VU0.VI[REG_VPU_STAT].UL|= 0x400;
-			hwIntcIrq(INTC_VU1);
-		}
-	}
-
-	VUM_LOG("VU->cycle = %d (flags st=%x;mac=%x;clip=%x,q=%f)\n", VU->cycle, VU->statusflag, VU->macflag, VU->clipflag, VU->q.F);
-
-	VU->code = ptr[1]; 
-	VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
-#ifndef INT_VUSTALLHACK
-	_vuTestUpperStalls(VU, &uregs);
-#endif
-
-	/* check upper flags */ 
-	if (ptr[1] & 0x80000000) { /* I flag */ 
-		_vu1ExecUpper(VU, ptr);
-
-		VU->VI[REG_I].UL = ptr[0];
-	} else {
-		VU->code = ptr[0];
-		VU1regs_LOWER_OPCODE[VU->code >> 25](&lregs);
-#ifndef INT_VUSTALLHACK
-		_vuTestLowerStalls(VU, &lregs);
-#endif
-
-		vu1branch = lregs.pipe == VUPIPE_BRANCH;
-
-		vfreg = 0; vireg = 0;
-		if (uregs.VFwrite) {
-			if (lregs.VFwrite == uregs.VFwrite) {
-//				SysPrintf("*PCSX2*: Warning, VF write to the same reg in both lower/upper cycle\n");
-				discard = 1;
-			}
-			if (lregs.VFread0 == uregs.VFwrite ||
-				lregs.VFread1 == uregs.VFwrite) {
-//				SysPrintf("saving reg %d at pc=%x\n", i, VU->VI[REG_TPC].UL);
-				_VF = VU->VF[uregs.VFwrite];
-				vfreg = uregs.VFwrite;
-			}
-		}
-		if (uregs.VIread & (1 << REG_CLIP_FLAG)) {
-			if (lregs.VIwrite & (1 << REG_CLIP_FLAG)) {
-				SysPrintf("*PCSX2*: Warning, VI write to the same reg in both lower/upper cycle\n");
-				discard = 1;
-			}
-			if (lregs.VIread & (1 << REG_CLIP_FLAG)) {
-				_VI = VU->VI[REG_CLIP_FLAG];
-				vireg = REG_CLIP_FLAG;
-			}
-		}
-
-		_vu1ExecUpper(VU, ptr);
-
-		if (discard == 0) {
-			if (vfreg) {
-				_VFc = VU->VF[vfreg];
-				VU->VF[vfreg] = _VF;
-			}
-			if (vireg) {
-				_VIc = VU->VI[vireg];
-				VU->VI[vireg] = _VI;
-			}
-
-			_vu1ExecLower(VU, ptr);
-
-			if (vfreg) {
-				VU->VF[vfreg] = _VFc;
-			}
-			if (vireg) {
-				VU->VI[vireg] = _VIc;
-			}
-		}
-	}
-	_vuAddUpperStalls(VU, &uregs);
-	_vuAddLowerStalls(VU, &lregs);
-
-	_vuTestPipes(VU);
-
-	if (VU->branch > 0) {
-		if (VU->branch-- == 1) {
-			VU->VI[REG_TPC].UL = VU->branchpc;
-		}
-	}
-
-	if( VU->ebit > 0 ) {
-		if( VU->ebit-- == 1 ) {
-			_vuFlushAll(VU);
-			VU0.VI[REG_VPU_STAT].UL&= ~0x100;
-			vif1Regs->stat&= ~0x4;
-		}
-	}
-}
-
-void vu1Exec(VURegs* VU) {
-	_vu1Exec(VU);
-	VU->cycle++;
-#ifdef CPU_LOG
-	if (VU->VI[0].UL != 0) CPU_LOG("VI[0] != 0!!!!\n");
-	if (VU->VF[0].f.x != 0.0f) CPU_LOG("VF[0].x != 0.0!!!!\n");
-	if (VU->VF[0].f.y != 0.0f) CPU_LOG("VF[0].y != 0.0!!!!\n");
-	if (VU->VF[0].f.z != 0.0f) CPU_LOG("VF[0].z != 0.0!!!!\n");
-	if (VU->VF[0].f.w != 1.0f) CPU_LOG("VF[0].w != 1.0!!!!\n");
-#endif
-}
-
-_vuTables(VU1, VU1);
 _vuRegsTables(VU1, VU1regs);
 
 void VU1unknown() {

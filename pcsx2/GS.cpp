@@ -185,7 +185,6 @@ void gsSetVideoRegionType( u32 isPal )
 }
 
 
-// Initializes MultiGS ringbuffer and registers.
 // Make sure framelimiter options are in sync with the plugin's capabilities.
 void gsInit()
 {
@@ -224,19 +223,20 @@ s32 gsOpen()
 		m_gsOpened = !GSopen((void *)&pDsp, "PCSX2", 0);
 	}
 
-	if( m_gsOpened )
+	/*if( m_gsOpened )
 	{
 		gsOnModeChanged(
 			(Config.PsxType & 1) ? FRAMERATE_PAL : FRAMERATE_NTSC,
 			UpdateVSyncRate()
 		);
-	}
+	}*/
 	return !m_gsOpened;
 }
 
 void gsClose()
 {
 	if( !m_gsOpened ) return;
+	m_gsOpened = false;
 
 	// Throw an assert if our multigs setting and mtgsThread status
 	// aren't synched.  It shouldn't break the code anyway but it's a
@@ -249,8 +249,6 @@ void gsClose()
 	}
 	else
 		GSclose();
-
-	m_gsOpened = false;
 }
 
 void gsReset()

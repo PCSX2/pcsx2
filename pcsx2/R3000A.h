@@ -24,7 +24,7 @@
 extern u32 g_psxNextBranchCycle;
 
 struct R3000Acpu {
-	int  (*Init)();
+	void (*Allocate)();
 	void (*Reset)();
 	void (*Execute)();
 	s32 (*ExecuteBlock)( s32 eeCycles );		// executes the given number of EE cycles.
@@ -205,7 +205,7 @@ extern u32 EEoCycle;
 
 #endif
 
-int  psxInit();
+void psxMemReset();
 void psxReset();
 void psxShutdown();
 void psxException(u32 code, u32 step);

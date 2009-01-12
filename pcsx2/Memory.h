@@ -36,7 +36,11 @@ namespace Ps2MemSize
 	static const uint Rom1	= 0x00040000;		// fixme - TLB allocates 0x00080000 ?
 	static const uint Rom2	= 0x00080000;
 	static const uint ERom	= 0x001C0000;
+	static const uint Hardware = 0x00010000;
 	static const uint Scratch = 0x00004000;	// fixme - VM allocates 0x10000 ?
+
+	static const uint IopRam = 0x200000;	// 2MB main ram on the IOP.
+	static const uint IopHardware = 0x00010000;
 }
 
 #ifdef PCSX2_VIRTUAL_MEM
@@ -226,7 +230,7 @@ extern u8 g_RealGSMem[0x2000];
 #define PSMu32(mem)	(*(u32*)PSM(mem))
 #define PSMu64(mem)	(*(u64*)PSM(mem))
 
-int  memInit();
+void memAlloc();
 void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.
 void memSetKernelMode();
 void memSetSupervisorMode();

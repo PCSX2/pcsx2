@@ -20,12 +20,19 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
+#include "VUmicro.h"
 #include "Threading.h"
+
+#include "iVUzerorec.h"
 
 #include "x86/ix86/ix86.h"
 
 using namespace std;
 using namespace Console;
+using R5900::cpuRegs;
+
+// disable all session overrides by default...
+SessionOverrideFlags g_Session = {false};
 
 bool sysInitialized = false;
 
@@ -34,11 +41,11 @@ namespace Exception
 	BaseException::~BaseException() throw() {}
 }
 
+
 // I can't believe I had to make my own version of trim.  C++'s STL is totally whack.
 // And I still had to fix it too.  I found three samples of trim online and *all* three
 // were buggy.  People really need to learn to code before they start posting trim
 // functions in their blogs.  (air)
-
 static void trim( string& line )
 {
    if ( line.empty() )
@@ -82,7 +89,6 @@ static void trim( string& line )
    line.erase( 0, beginning_of_string );
 }
 
-using R5900::cpuRegs;
 
 // This function should be called once during program execution.
 void SysDetect()
@@ -148,4 +154,147 @@ void SysDetect()
 	}
 
 	Console::ClearColor();
+}
+
+// Allocates memory for all PS2 systems.
+bool SysAllocateMem()
+{
+	// Allocate PS2 system ram space (required by interpreters and recompilers both)
+
+	try
+	{
+		memAlloc();
+		psxMemAlloc();
+		vuMicroMemAlloc();
+	}
+	catch( Exception::OutOfMemory& ex )
+	{
+		// Failures on the core initialization of memory is bad, since it means the emulator is
+		// completely non-functional.  If the failure is in the VM build then we can try running
+		// the VTLB build instead.  If it's the VTLB build then ... ouch.
+
+#ifdef PCSX2_VIRTUAL_MEM
+		Console::Error( ex.Message() );
+		if( MessageBox(NULL,
+			"Failed to allocate enough physical memory to run pcsx2. Try closing\n"
+			"down background programs, restarting windows, or buying more memory.\n\n"
+			"Launch TLB version of pcsx2 (pcsx2t.exe)?", "Memory Allocation Error", MB_YESNO) == IDYES )
+		{
+			PROCESS_INFORMATION pi;
+			STARTUPINFO si;
+
+			MemoryAlloc<char> strdir( GetCurrentDirectory( 0, NULL )+2, "VTLB Launcher" );
+			string strexe;
+
+			GetCurrentDirectory(strdir.GetLength(), strdir.GetPtr());
+			Path::Combine( strexe, strdir.GetPtr(), "pcsx2-vtlb.exe" );
+			memset(&si, 0, sizeof(si));
+
+			if( !CreateProcess(strexe.c_str(), "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir.GetPtr(), &si, &pi))
+			{
+				MessageBox(NULL, fmt_string( "Failed to launch %hs\n", params &strexe ).c_str(), "Failure", MB_OK);
+			}
+			else
+			{
+				CloseHandle(pi.hProcess);
+				CloseHandle(pi.hThread);
+			}
+		}
+#else
+		// VTLB build must fail outright...
+		Msgbox::Alert( "Failed to allocate memory needed to run pcsx2.\n\nError: " + ex.Message() );
+#endif
+		SysShutdownMem();
+
+		return false;
+	}
+
+	return true;
+}
+
+
+// Allocates memory for all recompilers,a nd force-disables any recs that fail to initialize.
+// This should be done asap, since the recompilers tend to demand a lot of system resources, and prefer
+// to have those resources at specific address ranges.  The sooner memory is allocated, the better.
+// Returns FALSE on *critical* failure (GUI should issue a msg and exit).
+void SysAllocateDynarecs()
+{
+	// Attempt to initialize the recompilers.
+	// Most users want to use recs anyway, and if they are using interpreters I don't think the
+	// extra few megs of allocation is going to be an issue.
+
+	try
+	{
+		// R5900 and R3000a must be rec-enabled together for now so if either fails they both fail.
+		R5900::recCpu.Allocate();
+		psxRec.Allocate();
+	}
+	catch( Exception::BaseException& ex )
+	{
+		Msgbox::Alert(
+			"The EE/IOP recompiler failed to initialize with the following error:\n\n" + ex.Message() +
+			"\n\nThe EE/IOP interpreter will be used instead (slow!)."
+		);
+
+		g_Session.ForceDisableEErec = true;
+
+		R5900::recCpu.Shutdown();
+		psxRec.Shutdown();
+	}
+
+	try
+	{
+		recVU0.Allocate();
+	}
+	catch( Exception::BaseException& ex )
+	{
+		Msgbox::Alert(
+			"The VU0 recompiler failed to initialize with the following error:\n\n" + ex.Message() +
+			"\n\nThe VU0 interpreter will be used for this session (may slow down some games)."
+		);
+
+		g_Session.ForceDisableVU0rec = true;
+		recVU0.Shutdown();
+	}
+
+	try
+	{
+		recVU1.Allocate();
+	}
+	catch( Exception::BaseException& ex )
+	{
+		Msgbox::Alert(
+			"The VU1 recompiler failed to initialize with the following error:\n\n" + ex.Message() +
+			"\n\nThe VU1 interpreter will be used for this session (will slow down most games)."
+		);
+
+		g_Session.ForceDisableVU1rec = true;
+		recVU1.Shutdown();
+	}
+
+	// If both VUrecs failed, then make sure the SuperVU is totally closed out:
+	if( !CHECK_VU0REC && !CHECK_VU1REC)
+		Dynarec::SuperVUDestroy( -1 );
+}
+
+// This should be called last thing before Pcsx2 exits.
+void SysShutdownMem()
+{
+	R5900::cpuShutdown();
+
+	vuMicroMemShutdown();
+	psxMemShutdown();
+	memShutdown();
+}
+
+// This should generally be called right before calling SysShutdownMem(), although you can optionally
+// use it in conjunction with SysAllocDynarecs to allocate/free the dynarec resources on the fly (as
+// risky as it might be, since dynarecs could very well fail on the second attempt).
+void SysShutdownDynarecs()
+{
+	// Special SuperVU "complete" terminator.
+	Dynarec::SuperVUDestroy( -1 );
+
+	psxRec.Shutdown();
+	R5900::recCpu.Shutdown();
 }

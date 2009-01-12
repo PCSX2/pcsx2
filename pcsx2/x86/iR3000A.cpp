@@ -517,9 +517,14 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	noconstcode(0);
 }
 
-static int recInit() {
-	int i;
+static u8* m_recBlockAlloc = NULL;
 
+static const uint m_recBlockAllocSize = 
+		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK))
+	+	(PSX_NUMBLOCKS*sizeof(BASEBLOCKEX));	// recBlocks
+
+static void recAlloc()
+{
 	// can't have upper 4 bits nonzero!
 	// ... we can't? (air)
 
@@ -543,22 +548,26 @@ static int recInit() {
 	}
 	
 	if( recMem == NULL )
-	{
-		Console::Error( "Error > R3000A failed to allocate recompiler memory." );
-		return 1;
-	}
+		throw Exception::OutOfMemory( "R3000a Init > failed to allocate memory for the recompiler." );
 
 	if( psxRecLUT == NULL )
 		psxRecLUT = (uptr*) malloc(0x010000 * sizeof(uptr));
 
-	if( recRAM == NULL )
-		recRAM = (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x200000, 16);
-	if( recROM == NULL )
-		recROM = (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x400000, 16);
-	if( recROM1 == NULL )
-		recROM1= (BASEBLOCK*) _aligned_malloc(sizeof(BASEBLOCK)/4*0x040000, 16);
-	if( recBlocks == NULL )
-		recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*PSX_NUMBLOCKS, 16);
+	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
+	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
+	// always 4 bytes long).
+
+	if( m_recBlockAlloc == NULL )
+		m_recBlockAlloc = (u8*)_aligned_malloc( m_recBlockAllocSize, 4096 );
+
+	if( m_recBlockAlloc == NULL )
+		throw Exception::OutOfMemory( "R3000a Init > Failed to allocate memory for baseblock lookup tables." );
+
+	u8* curpos = m_recBlockAlloc;
+	recRAM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::IopRam / 4) * sizeof(BASEBLOCK);
+	recROM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom / 4) * sizeof(BASEBLOCK);
+	recROM1 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom1 / 4) * sizeof(BASEBLOCK);
+	recBlocks = (BASEBLOCKEX*)curpos;	// curpos += sizeof(BASEBLOCKEX)*EE_NUMBLOCKS;
 
 	if( s_pInstCache == NULL )
 	{
@@ -566,45 +575,51 @@ static int recInit() {
 		s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
 	}
 
-	if( recRAM == NULL || recROM == NULL || recROM1 == NULL ||
-		psxRecLUT == NULL || recBlocks == NULL || s_pInstCache == NULL )
-	{
-		Msgbox::Alert("Error allocating memory"); 
-		return -1;
-	}
+	if( s_pInstCache == NULL )
+		throw Exception::OutOfMemory( "R3000a Init > Failed to allocate memory for pInstCache." );
 
-	// No errors!  Proceed with initialization...
-
-	memset(psxRecLUT, 0, 0x010000 * sizeof(uptr));
 	ProfilerRegisterSource( "IOPRec", recMem, RECMEM_SIZE );
-
-	for (i=0; i<0x80; i++) psxRecLUT[i + 0x0000] = (uptr)&recRAM[(i & 0x1f) << 14];
-	for (i=0; i<0x80; i++) psxRecLUT[i + 0x8000] = (uptr)&recRAM[(i & 0x1f) << 14];
-	for (i=0; i<0x80; i++) psxRecLUT[i + 0xa000] = (uptr)&recRAM[(i & 0x1f) << 14];
-
-	for (i=0; i<0x40; i++) psxRecLUT[i + 0x1fc0] = (uptr)&recROM[i << 14];
-	for (i=0; i<0x40; i++) psxRecLUT[i + 0x9fc0] = (uptr)&recROM[i << 14];
-	for (i=0; i<0x40; i++) psxRecLUT[i + 0xbfc0] = (uptr)&recROM[i << 14];
-
-	for (i=0; i<0x40; i++) psxRecLUT[i + 0x1e00] = (uptr)&recROM1[i << 14];
-	for (i=0; i<0x40; i++) psxRecLUT[i + 0x9e00] = (uptr)&recROM1[i << 14];
-	for (i=0; i<0x40; i++) psxRecLUT[i + 0xbe00] = (uptr)&recROM1[i << 14];
-
-	memset(recMem, 0xcd, RECMEM_SIZE);
-
-	return 0;
 }
 
 static void recReset()
 {
-	DevCon::WriteLn("IOP Recompiler data reset");
+	// calling recReset without first calling recInit is bad mojo.
+	jASSUME( psxRecLUT != NULL );
+	jASSUME( recMem != NULL );
+	jASSUME( m_recBlockAlloc != NULL );
 
-	memset(recRAM, 0, sizeof(BASEBLOCK)/4*0x200000);
-	memset(recROM, 0, sizeof(BASEBLOCK)/4*0x400000);
-	memset(recROM1,0, sizeof(BASEBLOCK)/4*0x040000);
+	DbgCon::Status( "iR3000A > Resetting recompiler memory and structures!" );
 
-	memset( recBlocks, 0, sizeof(BASEBLOCKEX)*PSX_NUMBLOCKS );
-	if( s_pInstCache ) memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
+	memset(psxRecLUT, 0, 0x010000 * sizeof(uptr));
+	memset(recMem, 0xcd, RECMEM_SIZE);
+	memset(m_recBlockAlloc, 0, m_recBlockAllocSize);
+
+	// We're only mapping 20 pages here in 4 places.
+	// 0x80 comes from : (Ps2MemSize::IopRam / 0x10000) * 4
+	for (int i=0; i<0x80; i++)
+	{
+		psxRecLUT[i + 0x0000] = (uptr)&recRAM[(i & 0x1f) << 14];
+		psxRecLUT[i + 0x8000] = (uptr)&recRAM[(i & 0x1f) << 14];
+		psxRecLUT[i + 0xa000] = (uptr)&recRAM[(i & 0x1f) << 14];
+	}
+
+	for (int i=0; i<(Ps2MemSize::Rom / 0x10000); i++)
+	{
+		psxRecLUT[i + 0x1fc0] = (uptr)&recROM[i << 14];
+		psxRecLUT[i + 0x9fc0] = (uptr)&recROM[i << 14];
+		psxRecLUT[i + 0xbfc0] = (uptr)&recROM[i << 14];
+	}
+
+	for (int i=0; i<(Ps2MemSize::Rom1 / 0x10000); i++)
+	{
+		psxRecLUT[i + 0x1e00] = (uptr)&recROM1[i << 14];
+		psxRecLUT[i + 0x9e00] = (uptr)&recROM1[i << 14];
+		psxRecLUT[i + 0xbe00] = (uptr)&recROM1[i << 14];
+	}
+
+	if( s_pInstCache )
+		memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
+
 	ResetBaseBlockEx(1);
 	g_psxMaxRecMem = 0;
 
@@ -617,12 +632,9 @@ static void recShutdown()
 	ProfilerTerminateSource( "IOPRec" );
 
 	SafeSysMunmap(recMem, RECMEM_SIZE);
-	safe_free(psxRecLUT);
-	safe_aligned_free(recRAM);
-	safe_aligned_free(recROM);
-	safe_aligned_free(recROM1);
-	safe_aligned_free( recBlocks );
+	safe_aligned_free( m_recBlockAlloc );
 
+	safe_free(psxRecLUT);
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
 
@@ -644,50 +656,47 @@ static __forceinline void R3000AExecute()
 
 	BASEBLOCK* pblock;
 
-	//while (EEsCycle > 0)
-	{
-		pblock = PSX_GETBLOCK(psxRegs.pc);
+	pblock = PSX_GETBLOCK(psxRegs.pc);
 
-		if ( !pblock->pFnptr || (pblock->startpc&PSX_MEMMASK) != (psxRegs.pc&PSX_MEMMASK) ) {
-			psxRecRecompile(psxRegs.pc);
-		}
+	if ( !pblock->pFnptr || (pblock->startpc&PSX_MEMMASK) != (psxRegs.pc&PSX_MEMMASK) ) {
+		psxRecRecompile(psxRegs.pc);
+	}
 
-		assert( pblock->pFnptr != 0 );
+	assert( pblock->pFnptr != 0 );
 
 #ifdef _DEBUG
 
-		fnptr = (u8*)pblock->pFnptr;
+	fnptr = (u8*)pblock->pFnptr;
 
 #ifdef _MSC_VER
 
-        __asm {
-            // save data
-            mov oldesi, esi;
-            mov s_uSaveESP, esp;
-            sub s_uSaveESP, 8;
-            push ebp;
-            
-            call fnptr; // jump into function
-            // restore data
-            pop ebp;
-            mov esi, oldesi;
-        }
+    __asm {
+        // save data
+        mov oldesi, esi;
+        mov s_uSaveESP, esp;
+        sub s_uSaveESP, 8;
+        push ebp;
         
+        call fnptr; // jump into function
+        // restore data
+        pop ebp;
+        mov esi, oldesi;
+    }
+    
 #else // linux
-        
-        __asm__("movl %%esi, %0\n"
-                "movl %%esp, %1\n"
-                "sub $8, %%esp\n"
-                "push %%ebp\n"
-                "call *%2\n"
-                "pop %%ebp\n"
-                "movl %0, %%esi\n" : "=m"(oldesi), "=m"(s_uSaveESP) : "c"(fnptr) : );
+    
+    __asm__("movl %%esi, %0\n"
+            "movl %%esp, %1\n"
+            "sub $8, %%esp\n"
+            "push %%ebp\n"
+            "call *%2\n"
+            "pop %%ebp\n"
+            "movl %0, %%esi\n" : "=m"(oldesi), "=m"(s_uSaveESP) : "c"(fnptr) : );
 #endif // _MSC_VER
-        
+    
 #else
-        ((R3000AFNPTR)pblock->pFnptr)();
+    ((R3000AFNPTR)pblock->pFnptr)();
 #endif
-	}
 }
 
 u32 g_psxlastpc = 0;
@@ -1274,8 +1283,10 @@ void psxRecRecompile(u32 startpc)
 	assert( startpc );
 
 	// if recPtr reached the mem limit reset whole mem
-	if (((uptr)recPtr - (uptr)recMem) >= (RECMEM_SIZE - 0x10000))
+	if (((uptr)recPtr - (uptr)recMem) >= (RECMEM_SIZE - 0x10000)) {
+		DevCon::WriteLn("IOP Recompiler data reset");
 		recReset();
+	}
 
 	s_pCurBlock = PSX_GETBLOCK(startpc);
 	
@@ -1300,7 +1311,7 @@ void psxRecRecompile(u32 startpc)
 		}
 
 		if( s_pCurBlockEx == NULL ) {
-			//SysPrintf("ee reset (blocks)\n");
+			DevCon::WriteLn("IOP Recompiler data reset");
 			recReset();
 			s_nNextBlock = 0;
 			s_pCurBlockEx = recBlocks;
@@ -1555,7 +1566,7 @@ StartRecomp:
 
 using namespace Dynarec;
 R3000Acpu psxRec = {
-	recInit,
+	recAlloc,
 	recReset,
 	recExecute,
 	recExecuteBlock,

@@ -26,6 +26,8 @@
 #include "VUmicro.h"
 #include "GS.h"
 
+#include "iVUzerorec.h"		// for SuperVUReset
+
 #include "Paths.h"
 
 namespace R5900
@@ -51,91 +53,44 @@ static uint eeWaitCycles = 1024;
 
 bool EventTestIsActive = false;
 
-bool cpuInit()
+// A run-once procedure for initializing the emulation state.
+// Can be done anytime after allocating memory, and before calling Cpu->Execute().
+// Multiple calls to this function are automatically ignored.
+/*void cpuInit()
 {
-	if( cpuIsInitialized ) return true;
+	DevCon::WriteLn( "cpuInit > %s", params  cpuIsInitialized ? "Initializing..." : "Skipping (already initialized)" );
+
+	if( cpuIsInitialized ) return;
 
 	cpuIsInitialized = true;
-	cpuRegs.constzero = 0;
-	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 
-	try
-	{
-		Cpu->Init();
-	}
-	catch( std::exception& ex )
-	{
-		Console::Error( "Error > %s", params ex.what() );
-
-		if( Cpu == &recCpu )
-		{
-			Console::Error( _("\t... attempting to initialize the Interpreter (slow!)") );
-			Config.Options &= ~(PCSX2_EEREC|PCSX2_VU1REC|PCSX2_VU0REC);
-			Cpu = &intCpu;
-			Cpu->Init();
-
-			// if the interpreter fails, let the exception bubble to the surface.
-			// fixme: this would probably be better if all exceptions pasesed to
-			// the caller, and it was the caller's duty to clear the EEREC flag and
-			// re-run the init process.  But for now this is how it works.
-		}
-	}
-
-#ifdef PCSX2_VIRTUAL_MEM
-	if (memInit() == -1) {
-		if( MessageBox(NULL,
-			"Failed to allocate enough physical memory to run pcsx2. Try closing\n"
-			"down background programs, restarting windows, or buying more memory.\n\n"
-			"Launch TLB version of pcsx2 (pcsx2t.exe)?", "Memory Allocation Error", MB_YESNO) == IDYES )
-		{
-			PROCESS_INFORMATION pi;
-			STARTUPINFO si;
-
-			MemoryAlloc<char> strdir( GetCurrentDirectory( 0, NULL )+2, "VTLB Launcher" );
-			string strexe;
-
-			GetCurrentDirectory(strdir.GetLength(), strdir.GetPtr());
-			Path::Combine( strexe, strdir.GetPtr(), "pcsx2-vtlb.exe" );
-			memset(&si, 0, sizeof(si));
-
-			if( !CreateProcess(strexe.c_str(), "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir.GetPtr(), &si, &pi))
-			{
-				MessageBox(NULL, fmt_string( "Failed to launch %hs\n", params &strexe ).c_str(), "Failure", MB_OK);
-			}
-			else
-			{
-				CloseHandle(pi.hProcess);
-				CloseHandle(pi.hThread);
-			}
-		}
-
-		return false;
-	}
-#endif
-	if (hwInit() == -1) return false;
-	if (vu0Init() == -1) return false;
-	if (vu1Init() == -1) return false;
-#ifndef PCSX2_VIRTUAL_MEM
-	if (memInit() == -1) return false;
-#endif
-
-	return true;
-}
+	// non memInit() currently since we don't support soft resets.  memory is initialized in full
+	// instead during cpuReset()   [using memReset()]
+	//memInit();
+}*/
 
 void cpuReset()
 {
-	if( cpuIsInitialized )
+	mtgsWaitGS();		// GS better be done processing before we reset the EE, just in case.
+	//cpuInit();			// more just-in-caseness!
+
+	//if( !cpuIsInitialized ) 
 	{
-		for( int i=0; i<48; i++ )
-			UnmapTLB(i);
+		cpuIsInitialized = true;
 	}
 
-	mtgsWaitGS();		// GS better be done before we reset the EE, just in case.
+	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 
-	cpuInit();
-	Cpu->Reset();
+	// safeguard the VUcpu structs.  None of the memReset ops should try to
+	// use them, and this ensures if they do it'll assert/DEP.
+
+	CpuVU0 = CpuVU1 = NULL;
 
 	memReset();
+	psxMemReset();
+	vuMicroMemReset();
+
+	Cpu->Reset();
 
 	memset(&cpuRegs, 0, sizeof(cpuRegs));
 	memset(&fpuRegs, 0, sizeof(fpuRegs));
@@ -148,16 +103,22 @@ void cpuReset()
 	fpuRegs.fprc[0]   = 0x00002e00; // fpu Revision..
 	fpuRegs.fprc[31]  = 0x01000001; // fpu Status/Control
 
-	g_nextBranchCycle = cpuRegs.cycle + 2;
+	g_nextBranchCycle = cpuRegs.cycle + 4;
 	EEsCycle = 0;
 	EEoCycle = cpuRegs.cycle;
 	eeWaitCycles = CHECK_WAITCYCLE_HACK ? 3072 : 768;
 
+	// Cyclerate hacks effectively speed up the rate of event tests, so we can safely boost
+	// the WaitCycles value here for x2 and x3 modes:
 	if( CHECK_EE_CYCLERATE > 1 )
 		eeWaitCycles += 1024;
 
+	// SuperVUreset will do nothing is none of the recs are initialized.
+	Dynarec::SuperVUReset(-1);
+
 	vu0Reset();
-    vu1Reset();  
+	vu1Reset();
+
 	hwReset();
 	vif0Reset();
     vif1Reset();
@@ -167,25 +128,17 @@ void cpuReset()
 
 void cpuShutdown()
 {
-	if( !cpuIsInitialized ) return;
+	//if( !cpuIsInitialized ) return;
+	//cpuIsInitialized = false;
 
 	mtgsWaitGS();
-	//gsShutdown();	// shut down the GS first because it's running a thread.
-
-	for( int i=0; i<48; i++ )
-		UnmapTLB(i);
 
 	hwShutdown();
 //	biosShutdown();
 	psxShutdown();
-	vu0Shutdown();
-	vu1Shutdown();
-	memShutdown();
 	disR5900FreeSyms();
 
-	Cpu->Shutdown();
-
-	cpuIsInitialized = false;
+	//Cpu->Shutdown();
 }
 
 void cpuException(u32 code, u32 bd) {
@@ -578,7 +531,7 @@ static __forceinline void _cpuBranchTest_Shared()
 	{
 		// We're in a BranchTest.  All dynarec registers are flushed
 		// so there is no need to freeze registers here.
-		Cpu->ExecuteVU0Block();
+		CpuVU0->ExecuteBlock();
 
 		// This might be needed to keep the EE and VU0 in sync.
 		// A better fix will require hefty changes to the VU recs. -_-

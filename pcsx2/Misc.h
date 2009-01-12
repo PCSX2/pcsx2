@@ -71,6 +71,26 @@ namespace Path
 
 // <<--- END Path Utilities [PathUtil.c]
 
+// [TODO] : Move the config options mess from Misc.h into "config.h" or someting more sensible.
+
+/////////////////////////////////////////////////////////////////////////
+// Session Configuration Override Flags
+//
+// a handful of flags that can override user configurations for the current application session
+// only.  This allows us to do things like force-disable recompilers if the memory allocations
+// for them fail.
+struct SessionOverrideFlags
+{
+	bool ForceDisableEErec:1;
+	bool ForceDisableVU0rec:1;
+	bool ForceDisableVU1rec:1;
+};
+
+extern SessionOverrideFlags g_Session;
+
+//////////////////////////////////////////////////////////////////////////
+// Pcsx2 User Configuration Options!
+
 #define PCSX2_GSMULTITHREAD 1 // uses multithreaded gs
 #define PCSX2_EEREC 0x10
 #define PCSX2_VU0REC 0x20
@@ -83,8 +103,7 @@ namespace Path
 #define PCSX2_FRAMELIMIT_VUSKIP 0xc00
 
 #define CHECK_MULTIGS (Config.Options&PCSX2_GSMULTITHREAD)
-#define CHECK_EEREC (Config.Options&PCSX2_EEREC)
-#define CHECK_COP2REC (Config.Options&PCSX2_COP2REC) // goes with ee option
+#define CHECK_EEREC (!g_Session.ForceDisableEErec && Config.Options&PCSX2_EEREC)
 //------------ SPEED/MISC HACKS!!! ---------------
 #define CHECK_EE_CYCLERATE (Config.Hacks & 0x03)
 #define CHECK_IOP_CYCLERATE (Config.Hacks & (1<<3))
@@ -111,8 +130,8 @@ namespace Path
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
 
-#define CHECK_VU0REC (Config.Options&PCSX2_VU0REC)
-#define CHECK_VU1REC (Config.Options&PCSX2_VU1REC)
+#define CHECK_VU0REC (!g_Session.ForceDisableVU0rec && Config.Options&PCSX2_VU0REC)
+#define CHECK_VU1REC (!g_Session.ForceDisableVU1rec && (Config.Options&PCSX2_VU1REC))
 
 
 struct PcsxConfig

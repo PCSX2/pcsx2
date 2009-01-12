@@ -951,7 +951,7 @@ void cdrReset() {
 void SaveState::cdrFreeze() {
 	Freeze(cdr);
 
-	// Alrighty!  This code ised to, for some reason, recalculate the pTransfer value
+	// Alrighty!  This code used to, for some reason, recalculate the pTransfer value
 	// even though it's being saved as part of the cdr struct.  Probably a backwards
 	// compat fix with an earlier save version.
 

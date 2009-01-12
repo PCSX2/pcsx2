@@ -61,8 +61,8 @@ static void PostLoadPrep()
 	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READONLY, &OldProtect);
 #endif
 
-	memset(pCache,0,sizeof(_cacheS)*64);
-	WriteCP0Status(cpuRegs.CP0.n.Status.val);
+	memset(pCache,0,sizeof(pCache));
+//	WriteCP0Status(cpuRegs.CP0.n.Status.val);
 	for(int i=0; i<48; i++) MapTLB(i);
 }
 
@@ -114,7 +114,7 @@ void SaveState::FreezeAll()
 	FreezeMem(PS2MEM_ROM, Ps2MemSize::Rom);		// 4 mb rom memory
 	FreezeMem(PS2MEM_ROM1, Ps2MemSize::Rom1);	// 256kb rom1 memory
 	FreezeMem(PS2MEM_SCRATCH, Ps2MemSize::Scratch);	// scratch pad 
-	FreezeMem(PS2MEM_HW, 0x00010000);			// hardware memory
+	FreezeMem(PS2MEM_HW, Ps2MemSize::Hardware);			// hardware memory
 
 	Freeze(cpuRegs);   // cpu regs + COP0
 	Freeze(psxRegs);   // iop regs
@@ -137,16 +137,15 @@ void SaveState::FreezeAll()
 
 	rcntFreeze();
 	gsFreeze();
-	vu0Freeze();
-	vu1Freeze();
+	vuMicroFreeze();
 	vif0Freeze();
 	vif1Freeze();
 	sifFreeze();
 	ipuFreeze();
 
 	// iop now
-	FreezeMem(psxM, 0x00200000);        // 2 MB main memory
-	FreezeMem(psxH, 0x00010000);        // hardware memory
+	FreezeMem(psxM, Ps2MemSize::IopRam);        // 2 MB main memory
+	FreezeMem(psxH, Ps2MemSize::IopHardware); // hardware memory
 	//FreezeMem(psxS, 0x00010000);        // sif memory	
 
 	sioFreeze();
@@ -164,7 +163,7 @@ void SaveState::FreezeAll()
 		PostLoadPrep();
 }
 
-// this function is yet incomplete.  Version numbers hare still < 12 so it won't be run.
+// this function is yet incomplete.  Version numbers hare still < 0x12 so it won't be run.
 // (which is good because it won't work :P)
 void SaveState::_testCdvdCrc()
 {

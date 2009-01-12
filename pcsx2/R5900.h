@@ -27,19 +27,13 @@ namespace R5900
 	extern const char* const bios[256];
 
 struct R5900cpu {
-	void (*Init)();				// throws exceptions on failure.
+	void (*Allocate)();		// throws exceptions on failure.
 	void (*Reset)();
 	void (*Step)();
 	void (*Execute)();			/* executes up to a break */
 	void (*ExecuteBlock)();
-	void (*ExecuteVU0Block)();
-	void (*ExecuteVU1Block)();
-	void (*EnableVU0micro)(int enable);
-	void (*EnableVU1micro)(int enable);
 	void (*Clear)(u32 Addr, u32 Size);
-	void (*ClearVU0)(u32 Addr, u32 Size);
-	void (*ClearVU1)(u32 Addr, u32 Size);
-	void (*Shutdown)();
+	void (*Shutdown)();		// deallocates memory reserved by Allocate
 };
 
 extern s32 EEsCycle;
@@ -222,7 +216,7 @@ struct tlbs
 
 #endif
 
-bool cpuInit();
+void cpuInit();
 void cpuReset();		// can throw Exception::FileNotFound.
 void cpuShutdown();
 void cpuExecuteBios();

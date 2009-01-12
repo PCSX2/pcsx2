@@ -199,13 +199,15 @@ static void recCTC2(s32 info)
 				// a lot of games have vu0 spinning on some integer
 				// then they modify the register and expect vu0 to stop spinning within 10 cycles (donald duck)
 
-				MOV32ItoM((uptr)&VU0.VI[_Fs_].UL,g_cpuConstRegs[_Rt_].UL[0]);
-				iFlushCall(FLUSH_NOCONST);
-				CALLFunc((uptr)Cpu->ExecuteVU0Block);
+				// Use vu0ExecMicro instead because it properly stalls for already-running micro
+				// instructions, and also sets the nextBranchCycle as needed. (air)
 
-				// fixme: if the VU0 stat&1 is still enabled, then we should probably set a cpuBranchTest
-				// for 128 cycles from now.  It would be the safest thing to do to make sure the VU0
-				// responds in a timely matter to the game's register write.
+				MOV32ItoM((uptr)&VU0.VI[_Fs_].UL,g_cpuConstRegs[_Rt_].UL[0]);
+				//PUSH32I( -1 );
+				iFlushCall(FLUSH_NOCONST);
+				CALLFunc((uptr)CpuVU0->ExecuteBlock);
+				//CALLFunc((uptr)vu0ExecMicro);
+				//ADD32ItoR( ESP, 4 );
 				break;
 			}
 		}

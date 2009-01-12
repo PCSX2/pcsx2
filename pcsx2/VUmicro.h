@@ -21,10 +21,37 @@
 
 #include "VU.h"
 
+struct VUmicroCpu
+{
+	void (*Allocate)();		// throws exceptions on failure.
+	void (*Reset)();
+	void (*Step)();
+	void (*ExecuteBlock)();	// VUs should support block-level execution only.
+	void (*Clear)(u32 Addr, u32 Size);
+	void (*Shutdown)();		// deallocates memory reserved by Allocate
+};
+
+extern VUmicroCpu *CpuVU0;
+extern VUmicroCpu intVU0;
+extern VUmicroCpu recVU0;
+
+extern VUmicroCpu *CpuVU1;
+extern VUmicroCpu intVU1;
+extern VUmicroCpu recVU1;
+
+/////////////////////////////////////////////////////////////////
+// These functions initialize memory for both VUs.
+//
+void vuMicroMemAlloc();
+void vuMicroMemShutdown();
+void vuMicroMemReset();
+
+
+/////////////////////////////////////////////////////////////////
+// Everything else does stuff on a per-VU basis.
+//
 void iDumpVU0Registers();
 void iDumpVU1Registers();
-
-//both for VU0 VU1 micromode
 
 extern void (*VU0_LOWER_OPCODE[128])();
 extern void (*VU0_UPPER_OPCODE[64])();
@@ -59,20 +86,16 @@ extern void (*VU1regs_UPPER_FD_10_TABLE[32])(_VURegsNum *VUregsn);
 extern void (*VU1regs_UPPER_FD_11_TABLE[32])(_VURegsNum *VUregsn);
 
 // VU0
-int  vu0Init();
 void vu0Reset();
 void vu0ResetRegs();
-void vu0Shutdown();
 void vu0ExecMicro(u32 addr);
 void vu0Exec(VURegs* VU);
 void vu0Finish();
 void recResetVU0( void );
 
 // VU1
-int  vu1Init();
 void vu1Reset();
 void vu1ResetRegs();
-void vu1Shutdown();
 void vu1ExecMicro(u32 addr);
 void vu1Exec(VURegs* VU);
 

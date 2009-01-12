@@ -25,7 +25,7 @@
 
 namespace Dynarec
 {
-extern void SuperVUInit(int vuindex); // if vuindex is -1, inits the global VU resources
+extern void SuperVUAlloc(int vuindex); // global VU resources aare automatically allocated if necessary.
 extern void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
 extern void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
 

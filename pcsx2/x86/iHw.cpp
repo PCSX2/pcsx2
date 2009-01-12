@@ -27,9 +27,6 @@
 
 #ifndef PCSX2_VIRTUAL_MEM
 extern u8  *psH; // hw mem
-extern u16 *psHW;
-extern u32 *psHL;
-extern u64 *psHD;
 #endif
 
 extern int rdram_devices;	// put 8 for TOOL and 2 for PS2 and PSX

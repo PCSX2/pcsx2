@@ -35,15 +35,10 @@
 #include <ntsecapi.h>
 
 #include "Common.h"
-#include "PsxCommon.h"
 #include "debugger.h"
 #include "rdebugger.h"
 #include "AboutDlg.h"
 #include "McdsDlg.h"
-
-#include "VU.h"
-#include "iCore.h"
-#include "iVUzerorec.h"
 
 #include "Patch.h"
 #include "cheats/cheats.h"
@@ -196,6 +191,9 @@ void WinClose()
 
 	pthread_win32_process_detach_np();
 
+	SysShutdownDynarecs();
+	SysShutdownMem();
+
 #ifdef PCSX2_VIRTUAL_MEM
 	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
 #endif
@@ -277,6 +275,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Pcsx2Configure( NULL );
 	}
 
+	// Important!  Always allocate dynarecs before loading plugins, to give the dynarecs
+	// the best possible chance of claiming ideal memory space!
+
 	if (Config.Lang[0] == 0) {
 		strcpy(Config.Lang, "en_US");
 	}
@@ -299,6 +300,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//if( lpCmdLine == NULL || *lpCmdLine == 0 )
 		//	Console::WriteLn("-help to see arguments");
 	}
+
+	if( !SysInit() )
+		WinClose();
 
 	// Load the command line overrides for plugins.
 	// Back up the user's preferences in winConfig.
@@ -328,6 +332,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ProfilerInit();
 #endif
 
+	while (LoadPlugins() == -1) {
+		if (Pcsx2Configure(NULL) == FALSE) {
+			WinClose();		// user cancelled.
+		}
+	}
+
 	// This makes sure the Windows Kernel is using high resolution
 	// timeslices for Sleep calls.
 	// (may not make much difference on most desktops but can improve performance
@@ -335,9 +345,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	timeBeginPeriod( 1 );
 	InitCPUTicks();
-	
-	if( !SysInit() )
-		WinClose();
 
     if( IsDevBuild && (g_TestRun.enabled || g_TestRun.ptitle != NULL) ) {
 		// run without ui
@@ -372,9 +379,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		);
 
 	    DevCon::WriteLn(
-			"\tF10 - dump performance counters\n"
+			//"\tF10 - dump performance counters\n"
 			"\tF11 - save GS state\n"
-			"\tF12 - dump hardware registers"
+			//"\tF12 - dump hardware registers"
 		);
 		Console::ClearColor();
     }

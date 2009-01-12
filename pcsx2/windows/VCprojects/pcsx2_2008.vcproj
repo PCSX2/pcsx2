@@ -598,6 +598,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
 						ExceptionHandling="0"
 						UsePrecompiledHeader="0"
 					/>
@@ -625,6 +629,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
 						ExceptionHandling="0"
 						UsePrecompiledHeader="0"
 					/>
@@ -634,6 +642,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
 						ExceptionHandling="0"
 						UsePrecompiledHeader="0"
 					/>
@@ -643,6 +655,10 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
 						ExceptionHandling="0"
 						UsePrecompiledHeader="0"
 					/>
@@ -651,6 +667,54 @@
 			<File
 				RelativePath="..\WinSysExec.cpp"
 				>
+				<FileConfiguration
+					Name="Release vm (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (dev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vm (nondev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release vtlb (nondev)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="3"
+						FavorSizeOrSpeed="2"
+						OmitFramePointers="false"
+						EnableFiberSafeOptimizations="false"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\WinVM.cpp"
@@ -3050,7 +3114,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\VU0microInterp.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\VU1micro.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VU1microInterp.cpp"
 					>
 				</File>
 				<File
@@ -3063,6 +3135,10 @@
 				</File>
 				<File
 					RelativePath="..\..\VUmicro.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\VUmicroMem.cpp"
 					>
 				</File>
 				<File

@@ -1194,12 +1194,12 @@ EEINSTWRITEBACK* _recCheckWriteBack(int cycle)
 struct BASEBLOCKS
 {
 	// 0 - ee, 1 - iop
-	inline void Add(BASEBLOCKEX*);
-	inline void Remove(BASEBLOCKEX*);
-	inline int Get(u32 startpc);
-	inline void Reset();
+	void Add(BASEBLOCKEX*);
+	void Remove(BASEBLOCKEX*);
+	int Get(u32 startpc);
+	void Reset();
 
-	inline BASEBLOCKEX** GetAll(int* pnum);
+	BASEBLOCKEX** GetAll(int* pnum);
 
 	vector<BASEBLOCKEX*> blocks;
 };
@@ -1332,7 +1332,7 @@ extern int rdram_sdevid;
 
 void iDumpRegisters(u32 startpc, u32 temp)
 {
-// [TODO] fixme : thie code is broken and has no labels.  Needs a rewrite to be useful.
+// [TODO] fixme : this code is broken and has no labels.  Needs a rewrite to be useful.
 
 #if 0
 

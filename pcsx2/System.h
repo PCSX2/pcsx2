@@ -29,6 +29,12 @@ void SysReset();						// Resets the various PS2 cpus, sub-systems, and recompile
 void SysUpdate();						// Called on VBlank (to update i.e. pads)
 void SysRunGui();						// Returns to the Gui
 void SysClose();						// Close mem and plugins
+
+bool SysAllocateMem();			// allocates memory for all PS2 systems; returns FALSe on critical error.
+void SysAllocateDynarecs();		// allocates memory for all dynarecs, and force-disables any failures.
+void SysShutdownDynarecs();
+void SysShutdownMem();
+
 void *SysLoadLibrary(const char *lib);	// Loads Library
 void *SysLoadSym(void *lib, const char *sym);	// Loads Symbol from Library
 const char *SysLibError();				// Gets previous error loading sysbols

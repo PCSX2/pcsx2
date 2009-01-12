@@ -100,18 +100,18 @@ u32 GIFPath::GetReg()
 	return regs[curreg];
 }
 
-static void _mtgsFreezeGIF( SaveState& state, GIFPath paths[3] )
+static void _mtgsFreezeGIF( SaveState& state, GIFPath (&paths)[3] )
 {
 	for(int i=0; i<3; i++ )
 	{
 		state.Freeze( paths[i].tag );
-
-		// Earlier versions had an extra u32 in the tag struct:
 		state.Freeze( paths[i].curreg );
 	}
 
 	for(int i=0; i<3; i++ )
+	{
 		state.Freeze( paths[i].regs );
+	}
 }
 
 void SaveState::mtgsFreeze()

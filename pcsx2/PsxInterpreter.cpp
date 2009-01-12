@@ -752,8 +752,7 @@ static void doBranch(s32 tar) {
 	psxBranchTest();
 }
 
-static int intInit() {
-	return 0;
+static void intAlloc() {
 }
 
 static void intReset() {
@@ -789,7 +788,7 @@ static void intShutdown() {
 }
 
 R3000Acpu psxInt = {
-	intInit,
+	intAlloc,
 	intReset,
 	intExecute,
 	intExecuteBlock,

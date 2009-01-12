@@ -30,9 +30,9 @@
 //  If you make changes to the savestate version, please increment the value below.
 
 #ifdef PCSX2_VIRTUAL_MEM
-static const u32 g_SaveVersion = 0x7a300011;
+static const u32 g_SaveVersion = 0x7a300012;
 #else
-static const u32 g_SaveVersion = 0x8b400001;
+static const u32 g_SaveVersion = 0x8b400002;
 #endif
 
 // this function is meant to be sued in the place of GSfreeze, and provides a safe layer
@@ -115,8 +115,7 @@ protected:
 	// Load/Save functions for the various components of our glorious emulator!
 
 	void rcntFreeze();
-	void vu0Freeze();
-	void vu1Freeze();
+	void vuMicroFreeze();
 	void vif0Freeze();
 	void vif1Freeze();
 	void sifFreeze();

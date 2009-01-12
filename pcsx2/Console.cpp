@@ -157,7 +157,7 @@ namespace Console
 
 		va_list list;
 		va_start(list,dummy);
-		_WriteLn( Color_Yellow, fmt, list );
+		_WriteLn( Color_Green, fmt, list );
 		va_end(list);
 		return false;
 	}
@@ -182,7 +182,7 @@ namespace Console
 	// Newline is automatically appended.
 	bool Status( const string& fmt )
 	{
-		WriteLn( Color_Yellow, fmt );
+		WriteLn( Color_Green, fmt );
 		return false;
 	}
 

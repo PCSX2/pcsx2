@@ -65,6 +65,33 @@ void COP2_Unknown()
 	CPU_LOG("Unknown COP2 opcode called\n");
 }
 
+//****************************************************************************
+void _vu0WaitMicro() {
+	int startcycle;
+	
+	if ((VU0.VI[REG_VPU_STAT].UL & 0x1) == 0) {
+		return;
+	}
+
+	startcycle = VU0.cycle;
+
+	VU0.flags|= VUFLAG_BREAKONMFLAG;
+	VU0.flags&= ~VUFLAG_MFLAGSET;
+
+	do {
+		CpuVU0->ExecuteBlock();
+        // knockout kings 2002 loops here
+        if( VU0.cycle-startcycle > 0x1000 ) {
+			Console::Notice("VU0 perma-stall, breaking execution..."); // (email zero if gfx are bad)
+            break;
+        }
+	} while ((VU0.VI[REG_VPU_STAT].UL & 0x1) && (VU0.flags & VUFLAG_MFLAGSET) == 0);
+
+	//NEW
+	cpuRegs.cycle += (VU0.cycle-startcycle)*2;
+	VU0.flags&= ~VUFLAG_BREAKONMFLAG;
+}
+
 namespace R5900 {
 namespace Interpreter{
 namespace OpcodeImpl
@@ -89,34 +116,6 @@ namespace OpcodeImpl
 		memWrite128(addr,  &VU0.VF[_Ft_].UD[0]); 
 	}
 }}}
-
-//****************************************************************************
-void _vu0WaitMicro() {
-	int startcycle;
-	
-	if ((VU0.VI[REG_VPU_STAT].UL & 0x1) == 0) {
-		return;
-	}
-	FreezeXMMRegs(1);
-	startcycle = VU0.cycle;
-
-	VU0.flags|= VUFLAG_BREAKONMFLAG;
-	VU0.flags&= ~VUFLAG_MFLAGSET;
-
-	do {
-		Cpu->ExecuteVU0Block();
-        // knockout kings 2002 loops here
-        if( VU0.cycle-startcycle > 0x1000 ) {
-            SysPrintf("VU0 wait stall.\n"); // (email zero if gfx are bad)
-            break;
-        }
-	} while ((VU0.VI[REG_VPU_STAT].UL & 0x1) && (VU0.flags & VUFLAG_MFLAGSET) == 0);
-
-	FreezeXMMRegs(0);
-	//NEW
-	cpuRegs.cycle += (VU0.cycle-startcycle)*2;
-	VU0.flags&= ~VUFLAG_BREAKONMFLAG;
-}
 
 
 void QMFC2() {
@@ -163,14 +162,14 @@ void CTC2() {
 		case REG_FBRST:
 			VU0.VI[REG_FBRST].UL = cpuRegs.GPR.r[_Rt_].UL[0] & 0x0C0C;
 			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x1) { // VU0 Force Break
-				SysPrintf("fixme: VU0 Force Break\n");
+				Console::Error("fixme: VU0 Force Break");
 			}
 			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x2) { // VU0 Reset
 				//SysPrintf("fixme: VU0 Reset\n");
 				vu0ResetRegs();
 			}
 			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x100) { // VU1 Force Break
-				SysPrintf("fixme: VU1 Force Break\n");
+				Console::Error("fixme: VU1 Force Break");
 			}
 			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x200) { // VU1 Reset
 //				SysPrintf("fixme: VU1 Reset\n");
@@ -343,23 +342,22 @@ void VFCSET()  { VU0.code = cpuRegs.code; _vuFCSET(&VU0); }
 void VFCGET()  { VU0.code = cpuRegs.code; _vuFCGET(&VU0); }
 void VXITOP()  { VU0.code = cpuRegs.code; _vuXITOP(&VU0); }
 
+// fixme: Shouldn't anything calling this function be calling vu0WaitMicro instead?
+// Meaning that this function stalls, but doesn't increment the cpuRegs.cycle like
+// you would think it should.
 void vu0Finish()
 {
 	if( (VU0.VI[REG_VPU_STAT].UL & 0x1) ) {
 		int i = 0;
 
-		FreezeXMMRegs(1);
 		while(i++ < 32) {
-			Cpu->ExecuteVU0Block();
+			CpuVU0->ExecuteBlock();
 			if(!(VU0.VI[REG_VPU_STAT].UL & 0x1))
 				break;
 		}
-		FreezeXMMRegs(0);
 		if(VU0.VI[REG_VPU_STAT].UL & 0x1) {
 			VU0.VI[REG_VPU_STAT].UL &= ~1;
-#ifdef PCSX2_DEVBUILD
-			SysPrintf("VU0 stall\n");
-#endif
+			Console::Notice("vu0Finish > stall aborted by force.");
 		}
 	}
 }

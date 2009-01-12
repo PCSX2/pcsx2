@@ -325,12 +325,14 @@ static u32* SuperVUStaticAlloc(u32 size);
 static void SuperVURecompile();
 
 // allocate VU resources
-void SuperVUInit(int vuindex)
+void SuperVUAlloc(int vuindex)
 {
+	// The old -1 crap has been depreciated on this function.  Please
+	// specify either 0 or 1, thanks.
+	jASSUME( vuindex >= 0 );
+
 	if( s_recVUMem == NULL )
 	{
-		jASSUME( vuindex < 0 );
-
 		// upper 4 bits must be zero!
 		s_recVUMem = (u8*)SysMmap( 0x0c000000, VU_EXESIZE);
 
@@ -352,21 +354,27 @@ void SuperVUInit(int vuindex)
 
 		if( s_recVUMem == NULL )
 		{
-			Console::Error( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", params (u32)s_recVUMem );
-			throw Exception::OutOfMemory( "Could not reserve memory for the SuperVU." );
+			throw Exception::OutOfMemory(
+				fmt_string( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", params (u32)s_recVUMem )
+			);
 		}
 
 		ProfilerRegisterSource( "VURec", s_recVUMem, VU_EXESIZE);
-		memset(s_recVUMem, 0xcd, VU_EXESIZE);
-		s_recVUPtr = s_recVUMem;
-		recVUStack = new u8[SUPERVU_STACKSIZE * 4];
+
+		if( recVUStack == NULL )
+			recVUStack = new u8[SUPERVU_STACKSIZE * 4];
 	}
 
 	if( vuindex >= 0 )
 	{
-		recVUHeaders[vuindex] = new VuFunctionHeader* [s_MemSize[vuindex]/8];
-		recVUBlocks[vuindex] = new VuBlockHeader[s_MemSize[vuindex]/8];
-		s_plistCachedHeaders[vuindex] = new list<VuFunctionHeader*>[s_MemSize[vuindex]/8];
+		jASSUME( s_recVUMem != NULL );
+
+		if( recVUHeaders[vuindex] == NULL )
+			recVUHeaders[vuindex] = new VuFunctionHeader* [s_MemSize[vuindex]/8];
+		if( recVUBlocks[vuindex] == NULL )
+			recVUBlocks[vuindex] = new VuBlockHeader[s_MemSize[vuindex]/8];
+		if( s_plistCachedHeaders[vuindex] == NULL )
+			s_plistCachedHeaders[vuindex] = new list<VuFunctionHeader*>[s_MemSize[vuindex]/8];
 	}
 }
 
@@ -375,14 +383,16 @@ void SuperVUDestroy(int vuindex)
 {
 	list<VuFunctionHeader*>::iterator it;
 
-	if( vuindex < 0 ) {
+	if( vuindex < 0 )
+	{
 		SuperVUDestroy(0);
 		SuperVUDestroy(1);
 		ProfilerTerminateSource( "VURec" );
 		SafeSysMunmap(s_recVUMem, VU_EXESIZE);
 		safe_delete_array( recVUStack );
 	}
-	else {
+	else
+	{
 		safe_delete_array( recVUHeaders[vuindex] );
 		safe_delete_array( recVUBlocks[vuindex] );
 
@@ -402,22 +412,27 @@ void SuperVUDestroy(int vuindex)
 // reset VU
 void SuperVUReset(int vuindex)
 {
-	list<VuFunctionHeader*>::iterator it;
-
 #ifdef _DEBUG
 	s_vucount = 0;
 #endif
 
-	if( vuindex < 0 ) {
-		SuperVUReset(0);
-		SuperVUReset(1);
+	if( s_recVUMem == NULL )
+		return;
 
-		//memset(s_recVUMem, 0xcd, VU_EXESIZE);
-		s_recVUPtr = s_recVUMem;
+	//jASSUME( s_recVUMem != NULL );
 
+	if( vuindex < 0 )
+	{
+		DbgCon::Status( "SuperVU reset > Resetting recompiler memory and structures." );
+		memset(s_recVUMem, 0xcd, VU_EXESIZE);
 		memset(recVUStack, 0, SUPERVU_STACKSIZE);
+
+		s_recVUPtr = s_recVUMem;
 	}
-	else {
+	else
+	{
+		DbgCon::Status( "SuperVU reset [%d] > Resetting the recs and junk", params vuindex );
+		list<VuFunctionHeader*>::iterator it;
 		if( recVUHeaders[vuindex] ) memset( recVUHeaders[vuindex], 0, sizeof(VuFunctionHeader*) * (s_MemSize[vuindex]/8) );
 		if( recVUBlocks[vuindex] ) memset( recVUBlocks[vuindex], 0, sizeof(VuBlockHeader) * (s_MemSize[vuindex]/8) );
 		
@@ -802,6 +817,8 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 	if ( ( (uptr)s_recVUPtr - (uptr)s_recVUMem ) >= VU_EXESIZE-0x40000 ) { 
 		//SysPrintf("SuperVU reset mem\n");
 		SuperVUReset(-1); 
+		SuperVUReset(0); 
+		SuperVUReset(1); 
 		if( s_TotalVUCycles > 0 ) {
 			// already executing, so return NULL
 			return NULL;
@@ -1101,7 +1118,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 			break;
 
         if( pc >= s_MemSize[s_vu] ) {
-            SysPrintf("inf vu0 prog %x\n", startpc);
+			Console::Error( "inf vu0 prog %x",params  startpc);
             break;
         }
 	}

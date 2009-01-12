@@ -207,6 +207,9 @@ __forceinline void vif0FLUSH() {
 	int _cycles;
 	_cycles = VU0.cycle;
 
+	// fixme: this code should call _vu0WaitMicro instead?  I'm not sure if
+	// it's purposefully ignoring ee cycles or not (see below for more)
+
 	vu0Finish();
 	g_vifCycles+= (VU0.cycle - _cycles)*BIAS;
 }
@@ -215,9 +218,12 @@ __forceinline void vif1FLUSH() {
 	int _cycles;
 	_cycles = VU1.cycle;
 
+	// fixme: Same as above, is this a "stalling" offense?  I think the cycles should
+	// be added to cpuRegs.cycle instead of g_vifCycles, but not sure (air)
+
 	if( VU0.VI[REG_VPU_STAT].UL & 0x100 ) {
 		do {
-			Cpu->ExecuteVU1Block();
+			CpuVU1->ExecuteBlock();
 		} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 
 		g_vifCycles+= (VU1.cycle - _cycles)*BIAS;
@@ -359,7 +365,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 		assert( v->addr < memsize );
 		//v->addr &= 0x3fff;
 
-		if( Cpu->ExecuteVU1Block == DummyExecuteVU1Block ) {
+		if( CpuVU1->ExecuteBlock == DummyExecuteVU1Block ) {
 			// don't process since the frame is dummy
 			vif->tag.addr += (size / (VIFfuncTable[ vif->cmd & 0xf ].gsize* vifRegs->cycle.wl)) * ((vifRegs->cycle.cl - vifRegs->cycle.wl)*16);
 		//	unpacktotal += GetCPUTick()-basetick;
@@ -821,7 +827,7 @@ static __forceinline void _vif0mpgTransfer(u32 addr, u32 *data, int size) {
 		FreezeMMXRegs(1);
 		memcpy_fast(VU0.Micro + addr, data, size << 2);
 		FreezeMMXRegs(0);
-		Cpu->ClearVU0(addr, size);
+		CpuVU1->Clear(addr, size);
 	}
 }
 
@@ -1499,7 +1505,7 @@ static __forceinline void _vif1mpgTransfer(u32 addr, u32 *data, int size) {
 		FreezeMMXRegs(1);
 		memcpy_fast(VU1.Micro + addr, data, size << 2);
 		FreezeMMXRegs(0);
-		Cpu->ClearVU1(addr, size);
+		CpuVU1->Clear(addr, size);
 	}
 }
 

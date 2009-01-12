@@ -88,7 +88,7 @@ extern _sio sio;
 #define RTS			0x0020
 #define SIO_RESET	0x0040
 
-int  sioInit();
+void sioInit();
 void sioShutdown();
 void psxSIOShutdown();
 u8 sioRead8();

@@ -16,6 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+// This module contains code shared by both the dynarec and interpreter versions
+// of the VU0 micro.
+
+
 #include "PrecompiledHeader.h"
 
 #include <cmath>
@@ -30,10 +34,7 @@
 
 #include "iVUzerorec.h"
 
-#ifdef PCSX2_VIRTUAL_MEM
-extern PSMEMORYBLOCK s_psVuMem;
-extern PSMEMORYMAP *memLUT;
-#endif
+using namespace R5900;
 
 #define VF_VAL(x) ((x==0x80000000)?0:(x))
 
@@ -57,90 +58,7 @@ void iDumpVU0Registers()
 #endif
 }
 
-using namespace R5900;
-
-int  vu0Init()
-{
-#ifdef PCSX2_VIRTUAL_MEM
-	// unmap all vu0 pages
-	SysMapUserPhysicalPages(PS2MEM_VU0MICRO, 16, NULL, 0);
-
-	// mirror 4 times
-	VU0.Micro = PS2MEM_VU0MICRO;
-	memLUT[0x11000].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11000].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11001].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11001].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11002].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11002].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11003].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11003].aVFNs = &s_psVuMem.aVFNs[0];
-
-	// since vuregisters are mapped in vumem0, go to diff addr, but mapping to same physical addr
-    //VirtualFree((void*)0x11000000, 0x10000, MEM_RELEASE); // free just in case
-	if( VU0.Mem == NULL )
-		VU0.Mem = (u8*)VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
-
-	if( VU0.Mem != (void*)0x11000000 ) {
-		Console::WriteLn("Failed to alloc vu0mem 0x11000000 %d", params GetLastError());
-		return -1;
-	}
-
-	memLUT[0x11004].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11004].aVFNs = &s_psVuMem.aVFNs[1];
-	memLUT[0x11005].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11005].aVFNs = &s_psVuMem.aVFNs[1];
-	memLUT[0x11006].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11006].aVFNs = &s_psVuMem.aVFNs[1];
-	memLUT[0x11007].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11007].aVFNs = &s_psVuMem.aVFNs[1];
-
-	// map only registers
-	SysMapUserPhysicalPages(VU0.Mem+0x4000, 1, s_psVuMem.aPFNs, 2);
-#else
-	VU0.Mem = (u8*)_aligned_malloc(0x4000+sizeof(VURegs), 16); // for VU1
-	VU0.Micro = (u8*)_aligned_malloc(4*1024, 16);
-	memset(VU0.Mem, 0, 0x4000+sizeof(VURegs));
-	memset(VU0.Micro, 0, 4*1024);
-#endif
-	
-
-//	VU0.VF = (VECTOR*)_aligned_malloc(32*sizeof(VECTOR), 16);
-//	VU0.VI = (REG_VI*)_aligned_malloc(32*sizeof(REG_VI), 16);
-//	if (VU0.VF == NULL || VU0.VI == NULL) {
-//		Msgbox::Alert("Error allocating memory"); 
-//		return -1;
-//	}
-
-	/* this is kinda tricky, maxmem is set to 0x4400 here,
-	   tho it's not 100% accurate, since the mem goes from
-	   0x0000 - 0x1000 (Mem) and 0x4000 - 0x4400 (VU1 Regs),
-	   i guess it shouldn't be a problem,
-	   at least hope so :) (linuz)
-	*/
-	VU0.maxmem = 0x4400-4;
-	VU0.maxmicro = 4*1024-4;
-	VU0.vuExec = vu0Exec;
-	VU0.vifRegs = vif0Regs;
-
-	if( CHECK_VU0REC ) Dynarec::SuperVUInit(0);
-
-	vu0Reset();
-
-	return 0;
-}
-
-void vu0Shutdown()
-{
-	if( CHECK_VU0REC ) Dynarec::SuperVUDestroy(0);
-
-#ifdef PCSX2_VIRTUAL_MEM
-	if( !SysMapUserPhysicalPages(VU0.Mem, 16, NULL, 0) )
-		Console::Error("Error releasing vu0 memory %d", params GetLastError());
-
-	if( VirtualFree(VU0.Mem, 0, MEM_RELEASE) == 0 )
-		Console::Error("Error freeing vu0 memory %d", params GetLastError());
-#else
-	safe_aligned_free(VU0.Mem);
-	safe_aligned_free(VU0.Micro);
-#endif
-
-	VU0.Mem = NULL;
-	VU0.Micro = NULL;
-}
-
+// This is called by the COP2 as per the CTC instruction
 void vu0ResetRegs()
 {
 	VU0.VI[REG_VPU_STAT].UL &= ~0xff; // stop vu0
@@ -150,29 +68,9 @@ void vu0ResetRegs()
 
 void vu0Reset()
 {
-	memset(&VU0.ACC, 0, sizeof(VECTOR));
-	memset(VU0.VF, 0, sizeof(VECTOR)*32);
-	memset(VU0.VI, 0, sizeof(REG_VI)*32);
-    VU0.VF[0].f.x = 0.0f;
-	VU0.VF[0].f.y = 0.0f;
-	VU0.VF[0].f.z = 0.0f;
-	VU0.VF[0].f.w = 1.0f;
-	VU0.VI[0].UL = 0;
-	memset(VU0.Mem, 0, 4*1024);
-	memset(VU0.Micro, 0, 4*1024);
-
-	if( CHECK_VU0REC ) Dynarec::recResetVU0();
+	CpuVU0 = CHECK_VU0REC ? &recVU0 : &intVU0;
+	CpuVU0->Reset();
 }
-
-void SaveState::vu0Freeze() {
-	Freeze(VU0.ACC);
-	Freeze(VU0.code);
-	FreezeMem(VU0.Mem,   4*1024);
-	FreezeMem(VU0.Micro, 4*1024);
-	FreezeMem(VU0.VF, 32*sizeof(VECTOR));
-	FreezeMem(VU0.VI, 32*sizeof(REG_VI));
-}
-
 
 void VU0MI_XGKICK() {
 }
@@ -184,7 +82,7 @@ void vu0ExecMicro(u32 addr) {
 	VUM_LOG("vu0ExecMicro %x\n", addr);
 	
 	if(VU0.VI[REG_VPU_STAT].UL & 0x1) {
-		SysPrintf("Previous Microprogram still running on VU0\n");
+		DevCon::Notice("vu0ExecMicro > Stalling for previous microprogram to finish");
 		vu0Finish();
 	}
 	VU0.VI[REG_VPU_STAT].UL|= 0x1;
@@ -192,186 +90,13 @@ void vu0ExecMicro(u32 addr) {
 
 	if (addr != -1) VU0.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU0);
-	FreezeXMMRegs(1);
-	Cpu->ExecuteVU0Block();
-	FreezeXMMRegs(0);
+	CpuVU0->ExecuteBlock();
 
 	// If the VU0 program didn't finish then we'll want to finish it up
 	// pretty soon.  This fixes vmhacks in some games (Naruto Ultimate Ninja 2)
 	if(VU0.VI[REG_VPU_STAT].UL & 0x1)
-		cpuSetNextBranchDelta( 128 );
+		cpuSetNextBranchDelta( 192 );		// fixme : ideally this should be higher, like 512 or so.
 }
-
-void _vu0ExecUpper(VURegs* VU, u32 *ptr) {
-	VU->code = ptr[1]; 
-	IdebugUPPER(VU0);
-	VU0_UPPER_OPCODE[VU->code & 0x3f](); 
-}
-
-void _vu0ExecLower(VURegs* VU, u32 *ptr) {
-	VU->code = ptr[0]; 
-	IdebugLOWER(VU0);
-	VU0_LOWER_OPCODE[VU->code >> 25](); 
-}
-
-extern void _vuFlushAll(VURegs* VU);
-int vu0branch = 0;
-void _vu0Exec(VURegs* VU) {
-	_VURegsNum lregs;
-	_VURegsNum uregs;
-	VECTOR _VF;
-	VECTOR _VFc;
-	REG_VI _VI;
-	REG_VI _VIc;
-	u32 *ptr;
-	int vfreg;
-	int vireg;
-	int discard=0;
-
-	if(VU0.VI[REG_TPC].UL >= VU0.maxmicro){
-#ifdef CPU_LOG
-		SysPrintf("VU0 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-#endif
-		VU0.VI[REG_VPU_STAT].UL&= ~0x1;
-		VU->cycle++;
-		return;
-	}
-
-	ptr = (u32*)&VU->Micro[VU->VI[REG_TPC].UL]; 
-	VU->VI[REG_TPC].UL+=8;
-
-	if (ptr[1] & 0x40000000) {
-		VU->ebit = 2;
-	}
-	if (ptr[1] & 0x20000000) { /* M flag */ 
-		VU->flags|= VUFLAG_MFLAGSET;
-//		SysPrintf("fixme: M flag set\n");
-	}
-	if (ptr[1] & 0x10000000) { /* D flag */
-		if (VU0.VI[REG_FBRST].UL & 0x4) {
-			VU0.VI[REG_VPU_STAT].UL|= 0x2;
-			hwIntcIrq(INTC_VU0);
-		}
-	}
-	if (ptr[1] & 0x08000000) { /* T flag */
-		if (VU0.VI[REG_FBRST].UL & 0x8) {
-			VU0.VI[REG_VPU_STAT].UL|= 0x4;
-			hwIntcIrq(INTC_VU0);
-		}
-	}
-
-	VU->code = ptr[1]; 
-	VU0regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
-#ifndef INT_VUSTALLHACK
-	_vuTestUpperStalls(VU, &uregs);
-#endif
-
-	/* check upper flags */ 
-	if (ptr[1] & 0x80000000) { /* I flag */ 
-		_vu0ExecUpper(VU, ptr);
-
-		VU->VI[REG_I].UL = ptr[0]; 
-		memset(&lregs, 0, sizeof(lregs));
-	} else {
-		VU->code = ptr[0];
-		VU0regs_LOWER_OPCODE[VU->code >> 25](&lregs);
-#ifndef INT_VUSTALLHACK
-		_vuTestLowerStalls(VU, &lregs);
-#endif
-
-		vu0branch = lregs.pipe == VUPIPE_BRANCH;
-
-		vfreg = 0; vireg = 0;
-		if (uregs.VFwrite) {
-			if (lregs.VFwrite == uregs.VFwrite) {
-//				SysPrintf("*PCSX2*: Warning, VF write to the same reg in both lower/upper cycle\n");
-				discard = 1;
-			}
-			if (lregs.VFread0 == uregs.VFwrite ||
-				lregs.VFread1 == uregs.VFwrite) {
-//				SysPrintf("saving reg %d at pc=%x\n", i, VU->VI[REG_TPC].UL);
-				_VF = VU->VF[uregs.VFwrite];
-				vfreg = uregs.VFwrite;
-			}
-		}
-		if (uregs.VIread & (1 << REG_CLIP_FLAG)) {
-			if (lregs.VIwrite & (1 << REG_CLIP_FLAG)) {
-				SysPrintf("*PCSX2*: Warning, VI write to the same reg in both lower/upper cycle\n");
-				discard = 1;
-			}
-			if (lregs.VIread & (1 << REG_CLIP_FLAG)) {
-				_VI = VU0.VI[REG_CLIP_FLAG];
-				vireg = REG_CLIP_FLAG;
-			}
-		}
-
-		_vu0ExecUpper(VU, ptr);
-
-		if (discard == 0) {
-			if (vfreg) {
-				_VFc = VU->VF[vfreg];
-				VU->VF[vfreg] = _VF;
-			}
-			if (vireg) {
-				_VIc = VU->VI[vireg];
-				VU->VI[vireg] = _VI;
-			}
-
-			_vu0ExecLower(VU, ptr);
-
-			if (vfreg) {
-				VU->VF[vfreg] = _VFc;
-			}
-			if (vireg) {
-				VU->VI[vireg] = _VIc;
-			}
-		}
-	}
-	_vuAddUpperStalls(VU, &uregs);
-
-	if (!(ptr[1] & 0x80000000))
-		_vuAddLowerStalls(VU, &lregs);
-
-	_vuTestPipes(VU);
-
-	if (VU->branch > 0) {
-		VU->branch--;
-		if (VU->branch == 0) {
-			VU->VI[REG_TPC].UL = VU->branchpc;
-		}
-	}
-
-	if( VU->ebit > 0 ) {
-		if( VU->ebit-- == 1 ) {
-			_vuFlushAll(VU);
-			VU0.VI[REG_VPU_STAT].UL&= ~0x1; /* E flag */ 
-			vif0Regs->stat&= ~0x4;
-		}
-	}
-}
-
-void vu0Exec(VURegs* VU) {
-//	u32 *ptr; 
-
-	if (VU->VI[REG_TPC].UL >= VU->maxmicro) { 
-#ifdef CPU_LOG
-		SysPrintf("VU0 memory overflow!!: %x\n", VU->VI[REG_TPC].UL);
-#endif
-		VU0.VI[REG_VPU_STAT].UL&= ~0x1; 
-	} else { 
-		_vu0Exec(VU);
-	} 
-	VU->cycle++;
-
-	if (VU->VI[0].UL != 0) DbgCon::Error("VI[0] != 0!!!!\n");
-	if (VU->VF[0].f.x != 0.0f) DbgCon::Error("VF[0].x != 0.0!!!!\n");
-	if (VU->VF[0].f.y != 0.0f) DbgCon::Error("VF[0].y != 0.0!!!!\n");
-	if (VU->VF[0].f.z != 0.0f) DbgCon::Error("VF[0].z != 0.0!!!!\n");
-	if (VU->VF[0].f.w != 1.0f) DbgCon::Error("VF[0].w != 1.0!!!!\n");
-}
-
-_vuTables(VU0, VU0);
-_vuRegsTables(VU0, VU0regs);
 
 void VU0unknown() {
 	assert(0);
@@ -385,6 +110,7 @@ void VU0regsunknown(_VURegsNum *VUregsn) {
 	CPU_LOG("Unknown VU micromode opcode called\n"); 
 }  
  
+_vuRegsTables(VU0, VU0regs);
  
  
 /****************************************/ 

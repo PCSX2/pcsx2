@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "SPR.h"
 #include "iR5900.h"
+#include "VUmicro.h"
 
 using R5900::Cpu;
 
@@ -51,16 +52,12 @@ static void TestClearVUs(u32 madr, u32 size)
 {
 	if( madr >= 0x11000000 ) {
 		if( madr < 0x11004000 ) {
-#ifdef _DEBUG
-			SysPrintf("scratch pad clearing vu0\n");
-#endif
-			Cpu->ClearVU0(madr&0xfff, size);
+			DbgCon::Notice("scratch pad clearing vu0");
+			CpuVU0->Clear(madr&0xfff, size);
 		}
 		else if( madr >= 0x11008000 && madr < 0x1100c000 ) {
-#ifdef _DEBUG
-			SysPrintf("scratch pad clearing vu1\n");
-#endif
-			Cpu->ClearVU1(madr&0x3fff, size);
+			DbgCon::Notice("scratch pad clearing vu1\n");
+			CpuVU1->Clear(madr&0x3fff, size);
 		}
 	}
 }

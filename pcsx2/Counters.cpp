@@ -23,7 +23,7 @@
 #include "Common.h"
 #include "PsxCommon.h"
 #include "GS.h"
-#include "VU.h"
+#include "VUmicro.h"
 
 using namespace Threading;
 
@@ -263,8 +263,8 @@ u32 UpdateVSyncRate()
 	cpuRcntSet();
 
 	// Initialize VU Skip Stuff...
-	assert(Cpu != NULL && Cpu->ExecuteVU1Block != NULL );
-	s_prevExecuteVU1Block = Cpu->ExecuteVU1Block;
+	assert(CpuVU1 != NULL && CpuVU1->ExecuteBlock != NULL );
+	s_prevExecuteVU1Block = CpuVU1->ExecuteBlock;
 	g_vu1SkipCount = 0;
 
 	return (u32)m_iTicks;
@@ -442,12 +442,12 @@ static __forceinline void VSyncEnd(u32 sCycle)
 	{
 		gsPostVsyncEnd( false );
 		AtomicDecrement( g_vu1SkipCount );
-		Cpu->ExecuteVU1Block = DummyExecuteVU1Block;
+		CpuVU1->ExecuteBlock = DummyExecuteVU1Block;
 	}
 	else
 	{
 		gsPostVsyncEnd( true );
-		Cpu->ExecuteVU1Block = s_prevExecuteVU1Block;
+		CpuVU1->ExecuteBlock = s_prevExecuteVU1Block;
 	}
 
 	hwIntcIrq(3);  // HW Irq

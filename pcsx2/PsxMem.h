@@ -36,7 +36,7 @@ extern u8 *psxP;
 extern u8 *psxH;
 extern u8 *psxS;
 extern uptr *psxMemWLUT;
-extern uptr *psxMemRLUT;
+extern const uptr *psxMemRLUT;
 
 //#define TLB_DEBUG_MEM
 #ifdef TLB_DEBUG_MEM
@@ -44,7 +44,7 @@ void* PSXM(u32 mem);
 void* _PSXM(u32 mem);
 #else
 #define PSXM(mem) (psxMemRLUT[(mem) >> 16] == 0 ? NULL : (void*)(psxMemRLUT[(mem) >> 16] + ((mem) & 0xffff)))
-#define _PSXM(mem) ((void*)(psxMemRLUT[(mem) >> 16] + ((mem) & 0xffff)))
+#define _PSXM(mem) ((const void*)(psxMemRLUT[(mem) >> 16] + ((mem) & 0xffff)))
 #endif
 
 #define psxSs8(mem)		psxS[(mem) & 0xffff]
@@ -85,7 +85,7 @@ void* _PSXM(u32 mem);
 #define PSXMu16(mem) (*(u16*)_PSXM(mem))
 #define PSXMu32(mem) (*(u32*)_PSXM(mem))
 
-int  psxMemInit();
+void psxMemAlloc();
 void psxMemReset();
 void psxMemShutdown();
 

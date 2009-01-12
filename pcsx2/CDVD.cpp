@@ -867,6 +867,8 @@ int cdvdReadSector() {
 
 	FreezeMMXRegs(1);
 
+	const u32 madr = HW_DMA3_MADR;
+
 	// if raw dvd sector 'fill in the blanks'
 	if (cdvd.BlockSize == 2064) {
 		// get info on dvd type and layer1 start
@@ -892,40 +894,44 @@ int cdvdReadSector() {
 			lsn += 0x30000;
 		} // ENDLONGIF- Assumed the other dualType is 0.
 
-		PSXMu8(HW_DMA3_MADR+0) = 0x20 | layerNum;
-		PSXMu8(HW_DMA3_MADR+1) = (u8)(lsn >> 16);
-		PSXMu8(HW_DMA3_MADR+2) = (u8)(lsn >>  8);
-		PSXMu8(HW_DMA3_MADR+3) = (u8)(lsn      );
+		PSXMu8(madr+0) = 0x20 | layerNum;
+		PSXMu8(madr+1) = (u8)(lsn >> 16);
+		PSXMu8(madr+2) = (u8)(lsn >>  8);
+		PSXMu8(madr+3) = (u8)(lsn      );
 		
 		// sector IED (not calculated at present)
-		PSXMu8(HW_DMA3_MADR+4) = 0;
-		PSXMu8(HW_DMA3_MADR+5) = 0;
+		PSXMu8(madr+4) = 0;
+		PSXMu8(madr+5) = 0;
 		
 		// sector CPR_MAI (not calculated at present)
-		PSXMu8(HW_DMA3_MADR+ 6) = 0;
-		PSXMu8(HW_DMA3_MADR+ 7) = 0;
-		PSXMu8(HW_DMA3_MADR+ 8) = 0;
-		PSXMu8(HW_DMA3_MADR+ 9) = 0;
-		PSXMu8(HW_DMA3_MADR+10) = 0;
-		PSXMu8(HW_DMA3_MADR+11) = 0;
+		PSXMu8(madr+ 6) = 0;
+		PSXMu8(madr+ 7) = 0;
+		PSXMu8(madr+ 8) = 0;
+		PSXMu8(madr+ 9) = 0;
+		PSXMu8(madr+10) = 0;
+		PSXMu8(madr+11) = 0;
 		
 		// normal 2048 bytes of sector data
-		memcpy_fast(PSXM(HW_DMA3_MADR+12), cdr.pTransfer, 2048);
+		memcpy_fast(PSXM(madr+12), cdr.pTransfer, 2048);
 		
 		// 4 bytes of edc (not calculated at present)
-		PSXMu8(HW_DMA3_MADR+2060) = 0;
-		PSXMu8(HW_DMA3_MADR+2061) = 0;
-		PSXMu8(HW_DMA3_MADR+2062) = 0;
-		PSXMu8(HW_DMA3_MADR+2063) = 0;
+		PSXMu8(madr+2060) = 0;
+		PSXMu8(madr+2061) = 0;
+		PSXMu8(madr+2062) = 0;
+		PSXMu8(madr+2063) = 0;
 	} else {
 		// normal read
-		memcpy_fast(PSXM(HW_DMA3_MADR), cdr.pTransfer, cdvd.BlockSize);
+		memcpy_fast((u8*)PSXM(madr), cdr.pTransfer, cdvd.BlockSize);
 	}
 	// decrypt sector's bytes
 	if(cdvd.decSet)
-		mechaDecryptBytes((unsigned char*)PSXM(HW_DMA3_MADR), cdvd.BlockSize);
+		mechaDecryptBytes((u8*)PSXM(madr), cdvd.BlockSize);
 
-//	SysPrintf("sector %x;%x;%x\n", PSXMu8(HW_DMA3_MADR+0), PSXMu8(HW_DMA3_MADR+1), PSXMu8(HW_DMA3_MADR+2));
+	// Added a clear after memory write .. never seemed to be necessary before but *should*
+	// be more correct. (air)
+	psxCpu->Clear( madr, cdvd.BlockSize/4);
+
+//	SysPrintf("sector %x;%x;%x\n", PSXMu8(madr+0), PSXMu8(madr+1), PSXMu8(madr+2));
 
 	HW_DMA3_BCR_H16-= (cdvd.BlockSize / (HW_DMA3_BCR_L16*4));
 	HW_DMA3_MADR+= cdvd.BlockSize;

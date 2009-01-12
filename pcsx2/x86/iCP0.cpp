@@ -35,8 +35,7 @@ namespace Interp = R5900::Interpreter::OpcodeImpl::COP0;
 namespace Dynarec {
 namespace R5900 {
 namespace OpcodeImpl {
-namespace COP0
-{
+namespace COP0 {
 
 /*********************************************************
 *   COP0 opcodes                                         *

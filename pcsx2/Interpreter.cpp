@@ -980,8 +980,8 @@ void MTSAH() {
 
 ////////////////////////////////////////////////////////
 
-void intInit() {
-	 //detect cpu for use the optimaze asm code
+void intAlloc() {
+	 // fixme : detect cpu for use the optimaze asm code
 }
 
 void intReset() {
@@ -998,71 +998,11 @@ static void intExecuteBlock() {
 	while (!branch2) execI();
 }
 
-void intExecuteVU0Block() {
-int i;
-
-#ifdef _DEBUG
-	int prevbranch;
-#endif
-
-	for (i = 128; i--;) {
-		
-		if ((VU0.VI[REG_VPU_STAT].UL & 0x1) == 0)
-			break;
-
-#ifdef _DEBUG
-		prevbranch = vu0branch;
-#endif
-		vu0Exec(&VU0);
-	}
-
-	if( i < 0 && (VU0.branch || VU0.ebit) ) {
-		// execute one more
-		vu0Exec(&VU0);
-	}
-}
-
-void intExecuteVU1Block() {
-
-	int i;
-#ifdef _DEBUG
-	int prevbranch;
-#endif
-
-	for (i = 128; i--;) {
-		if ((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0)
-			break;
-
-#ifdef _DEBUG
-		prevbranch = vu1branch;
-#endif
-		vu1Exec(&VU1);
-	}
-
-	if( i < 0 && (VU1.branch || VU1.ebit) ) {
-		// execute one more
-		vu1Exec(&VU1);
-	}
-}
-
-
-void intEnableVU0micro(int enable) {
-}
-
-void intEnableVU1micro(int enable) {
-}
-
 void intStep() {
 	execI();
 }
 
 void intClear(u32 Addr, u32 Size) {
-}
-
-void intVU0Clear(u32 Addr, u32 Size) {
-}
-
-void intVU1Clear(u32 Addr, u32 Size) {
 }
 
 void intShutdown() {
@@ -1073,18 +1013,12 @@ void intShutdown() {
 using namespace Interpreter;
 
 R5900cpu intCpu = {
-	intInit,
+	intAlloc,
 	intReset,
 	intStep,
 	intExecute,
 	intExecuteBlock,
-	intExecuteVU0Block,
-	intExecuteVU1Block,
-	intEnableVU0micro,
-	intEnableVU1micro,
 	intClear,
-	intVU0Clear,
-	intVU1Clear,
 	intShutdown
 };
 

@@ -565,18 +565,17 @@ void ProcessFKeys(int fkey, int shift)
 			{
 				Console::Notice( _("Saveslot %d cannot be loaded; slot does not exist (file not found)"), params StatesC );
 			}
-			catch( std::runtime_error& ex )
+			catch( Exception::RuntimeError& ex )
 			{
 				// This is the bad one.  Chances are the cpu has been reset, so emulation has
 				// to be aborted.  Sorry user!  We'll give you some info for your trouble:
 
 				Console::Error( _("An error occured while trying to load saveslot %d"), params StatesC );
-				Console::Error( ex.what() );
+				Console::Error( ex.Message() );
 				Msgbox::Alert(
 					"Pcsx2 encountered an error while trying to load the savestate\n"
 					"and emulation had to be aborted." );
 
-				R5900::cpuShutdown();
 				ClosePlugins();
 
 				throw Exception::CpuStateShutdown(

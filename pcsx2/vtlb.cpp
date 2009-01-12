@@ -429,14 +429,15 @@ void vtlb_VMapUnmap(u32 vaddr,u32 sz)
 		sz-=VTLB_PAGE_SIZE;
 	}
 }
-bool vtlb_Init()
+
+void vtlb_Init()
 {
 	//Reset all vars to default values
 	vtlbHandlerCount=0;
 	memset(RWFT,0,sizeof(RWFT));
 
 	//Register default handlers
-	//Unmapped Virt handlers _MUST_ be registed frist.
+	//Unmapped Virt handlers _MUST_ be registed first.
 	//On address translation the top bit cannot be preserved.This is not normaly a problem since
 	//the physical address space can be 'compressed' to just 29 bits.However, to properly handle exceptions
 	//there must be a way to get the full address back.Thats why i use these 2 functions and encode the hi bit directly into em :)
@@ -467,8 +468,6 @@ bool vtlb_Init()
 	vtlb_VMapUnmap(0,(VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE);
 	//yeah i know, its stupid .. but this code has to be here for now ;p
 	vtlb_VMapUnmap((VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE,VTLB_PAGE_SIZE);
-
-	return true;
 }
 
 void vtlb_Reset()

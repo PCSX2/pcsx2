@@ -64,7 +64,8 @@ u8 sio_xor(u8 *buf, unsigned int length){
 	return x & 0xFF;
 }
 
-int sioInit() {
+void sioInit()
+{
 	memset(&sio, 0, sizeof(sio));
 	
 	MemoryCard1 = LoadMcd(1);
@@ -74,8 +75,6 @@ int sioInit() {
 	sio.StatReg = TX_RDY | TX_EMPTY;
 	sio.packetsize = 0;
 	sio.terminator =0x55; // Command terminator 'U'
-
-	return 0;
 }
 
 void psxSIOShutdown()
@@ -517,8 +516,8 @@ void SaveState::sioFreeze()
 {
     Freeze( sio );
 
-	if( IsLoading() )
-		sio.count = 0;
+	//if( IsLoading() )
+	//	sio.count = 0;
 }
 
 

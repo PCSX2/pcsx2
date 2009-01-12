@@ -33,24 +33,13 @@ using namespace Dynarec::R5900;
 
 #ifndef PCSX2_VIRTUAL_MEM
 u8  *psH; // hw mem
-u16 *psHW;
-u32 *psHL;
-u64 *psHD;
 #endif
 
 int rdram_devices = 2;	// put 8 for TOOL and 2 for PS2 and PSX
 int rdram_sdevid = 0;
 
-int hwInit() {
-
-#ifndef PCSX2_VIRTUAL_MEM
-	psH = (u8*)_aligned_malloc(0x00010000, 16);
-	if (psH == NULL) {
-		Msgbox::Alert("Error allocating memory"); 
-		return -1;
-	}
-#endif
-
+void hwInit()
+{
 	gsInit();
 	vif0Init();
 	vif1Init();
@@ -58,27 +47,24 @@ int hwInit() {
 	sifInit();
 	sprInit();
 	ipuInit();
-
-	return 0;
 }
 
 void hwShutdown() {
-#ifndef PCSX2_VIRTUAL_MEM
-	if (psH == NULL) return;
-	_aligned_free(psH); psH = NULL;
-#endif
 	ipuShutdown();
 }
 
 void hwReset()
 {
-	memset(PS2MEM_HW+0x2000, 0, 0x0000e000);
+	hwInit();
+
+	memset(PS2MEM_HW, 0, Ps2MemSize::Hardware);
+	//memset(PS2MEM_HW+0x2000, 0, 0x0000e000);
 
 	psHu32(0xf520) = 0x1201;
 	psHu32(0xf260) = 0x1D000060;
 	// i guess this is kinda a version, it's used by some bioses
 	psHu32(0xf590) = 0x1201;
-	
+
 	gsReset();
 	ipuReset();
 }

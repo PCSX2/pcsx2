@@ -412,7 +412,15 @@ u32* recAllocStackMem(int size, int align)
 static const int REC_CACHEMEM = 0x01000000;
 static void __fastcall dyna_block_discard(u32 start,u32 sz);
 
-static void recInit() 
+// memory allocation handle for the entire BASEBLOCK and stack allocations.
+static u8* m_recBlockAlloc = NULL;
+
+static const uint m_recBlockAllocSize = 
+	(((Ps2MemSize::Base + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK))
++	(EE_NUMBLOCKS*sizeof(BASEBLOCKEX))		// recBlocks
++	RECSTACK_SIZE;		// recStack
+
+static void recAlloc() 
 {
 	// Hardware Requirements Check...
 
@@ -424,9 +432,6 @@ static void recInit()
 
 	if ( !( cpucaps.hasStreamingSIMD2Extensions ) )
 		throw Exception::HardwareDeficiency( _( "Processor doesn't support SSE2" ) );
-
-	int i;
-	const u8 macarr[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
 
 	if( recLUT == NULL )
 		recLUT = (uptr*) _aligned_malloc( 0x010000 * sizeof(uptr), 16 );
@@ -448,22 +453,27 @@ static void recInit()
 			if( recMem == NULL || ((uptr)recMem > 0x80000000) )
 			{
 				SysMunmap( recMem, cachememsize );
-				throw Exception::OutOfMemory( "R5900-32 failed to allocate recompiler memory." );
+				throw Exception::OutOfMemory( "R5900-32 > failed to allocate recompiler memory." );
 			}
 		}
 	}
 
-	// 32 alignment necessary
-	if( recRAM == NULL )
-		recRAM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*Ps2MemSize::Base , 4*sizeof(BASEBLOCK));
-	if( recROM == NULL )
-		recROM = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*Ps2MemSize::Rom , 4*sizeof(BASEBLOCK));
-	if( recROM1 == NULL )
-		recROM1 = (BASEBLOCK*) _aligned_malloc( sizeof(BASEBLOCK)/4*Ps2MemSize::Rom1 , 4*sizeof(BASEBLOCK));
-	if( recBlocks == NULL )
-		recBlocks = (BASEBLOCKEX*) _aligned_malloc( sizeof(BASEBLOCKEX)*EE_NUMBLOCKS, 16);
-	if( recStack == NULL )
-		recStack = (u8*)malloc( RECSTACK_SIZE );
+	// Goal: Allocate BASEBLOCKs for every possible branch target in PS2 memory.
+	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
+	// always 4 bytes long).
+
+	if( m_recBlockAlloc == NULL )
+		m_recBlockAlloc = (u8*) _aligned_malloc( m_recBlockAllocSize, 4096 );
+
+	if( m_recBlockAlloc == NULL )
+		throw Exception::OutOfMemory( "R5900-32 Init > Failed to allocate memory for BASEBLOCK tables." );
+
+	u8* curpos = m_recBlockAlloc;
+	recRAM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Base / 4) * sizeof(BASEBLOCK);
+	recROM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom / 4) * sizeof(BASEBLOCK);
+	recROM1 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom1 / 4) * sizeof(BASEBLOCK);
+	recBlocks = (BASEBLOCKEX*)curpos; curpos += sizeof(BASEBLOCKEX)*EE_NUMBLOCKS;
+	recStack = (u8*)curpos;
 
 	if( s_pInstCache == NULL )
 	{
@@ -471,70 +481,33 @@ static void recInit()
 		s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
 	}
 
-	if( recBlocks == NULL || recRAM == NULL || recROM == NULL ||
-		recROM1 == NULL || recMem == NULL || recLUT == NULL ||
-		recStack == NULL || s_pInstCache == NULL )
-	{
-		throw Exception::OutOfMemory("Heap-based memory allocation failed." );
-	}
+	if( s_pInstCache == NULL )
+		throw Exception::OutOfMemory( "R5900-32 Init > failed to allocate memory for pInstCache." );
 
 	// No errors.. Proceed with initialization:
 
 	ProfilerRegisterSource( "EERec", recMem, REC_CACHEMEM+0x1000 );
-	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
 
-	for ( i = 0x0000; i < 0x0200; i++ )
-	{
-		recLUT[ i + 0x0000 ] = (uptr)&recRAM[ i << 14 ];
-		recLUT[ i + 0x2000 ] = (uptr)&recRAM[ i << 14 ];
-		recLUT[ i + 0x3000 ] = (uptr)&recRAM[ i << 14 ];
-	}
+	// Clear remMem here but not in Reset.  Unfortunately the GUI requires recMem to beintact
+	// in order to "return" execution even after a reset of the emulator.
 
-	for ( i = 0x0000; i < 0x0040; i++ )
-	{
-		recLUT[ i + 0x1fc0 ] = (uptr)&recROM[ i << 14 ];
-		recLUT[ i + 0x9fc0 ] = (uptr)&recROM[ i << 14 ];
-		recLUT[ i + 0xbfc0 ] = (uptr)&recROM[ i << 14 ];
-	}
-
-	for ( i = 0x0000; i < 0x0004; i++ )
-	{
-		recLUT[ i + 0x1e00 ] = (uptr)&recROM1[ i << 14 ];
-		recLUT[ i + 0x9e00 ] = (uptr)&recROM1[ i << 14 ];
-		recLUT[ i + 0xbe00 ] = (uptr)&recROM1[ i << 14 ];
-	}
-
-	memcpy( recLUT + 0x8000, recLUT, 0x2000 * sizeof(uptr) );
-	memcpy( recLUT + 0xa000, recLUT, 0x2000 * sizeof(uptr) );
-	
 	memset(recMem, 0xcd, REC_CACHEMEM);
-	memset(recStack, 0, RECSTACK_SIZE);
-
-	x86SetPtr(recMem+REC_CACHEMEM);
-	dyna_block_discard_recmem=(u8*)x86Ptr;
-	JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
 
 	x86FpuState = FPU_STATE;
-
-	SuperVUInit(-1);
-
-	//Msgbox::Alert("recInit: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
-	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 }
 
 ////////////////////////////////////////////////////
-static void recReset( void ) {
-
-	DevCon::WriteLn( "EE Recompiler data reset" );
+static void recReset( void )
+{
+	DbgCon::Status( "iR5900-32 > Resetting recompiler memory and structures." );
 
 	s_nNextBlock = 0;
 	maxrecmem = 0;
-	memset( recRAM,  0, sizeof(BASEBLOCK)/4*Ps2MemSize::Base );
-	memset( recROM,  0, sizeof(BASEBLOCK)/4*Ps2MemSize::Rom );
-	memset( recROM1, 0, sizeof(BASEBLOCK)/4*Ps2MemSize::Rom1 );
-	memset( recBlocks, 0, sizeof(BASEBLOCKEX)*EE_NUMBLOCKS );
+	memset( m_recBlockAlloc,  0, m_recBlockAllocSize );
 	if( s_pInstCache ) memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
+
 	ResetBaseBlockEx(0);
+
 #ifndef PCSX2_VIRTUAL_MEM
 	mmap_ResetBlockTracking();
 #endif
@@ -545,10 +518,40 @@ static void recReset( void ) {
     __asm__("emms");
 #endif
 
-#ifdef _DEBUG
-	// don't clear since save states won't work
-	//memset(recMem, 0xcd, REC_CACHEMEM);
-#endif
+	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
+
+	for ( int i = 0x0000; i < 0x0200; i++ )
+	{
+		recLUT[ i + 0x0000 ] = (uptr)&recRAM[ i << 14 ];
+		recLUT[ i + 0x2000 ] = (uptr)&recRAM[ i << 14 ];
+		recLUT[ i + 0x3000 ] = (uptr)&recRAM[ i << 14 ];
+	}
+
+	for ( int i = 0x0000; i < 0x0040; i++ )
+	{
+		recLUT[ i + 0x1fc0 ] = (uptr)&recROM[ i << 14 ];
+		recLUT[ i + 0x9fc0 ] = (uptr)&recROM[ i << 14 ];
+		recLUT[ i + 0xbfc0 ] = (uptr)&recROM[ i << 14 ];
+	}
+
+	for ( int i = 0x0000; i < 0x0004; i++ )
+	{
+		recLUT[ i + 0x1e00 ] = (uptr)&recROM1[ i << 14 ];
+		recLUT[ i + 0x9e00 ] = (uptr)&recROM1[ i << 14 ];
+		recLUT[ i + 0xbe00 ] = (uptr)&recROM1[ i << 14 ];
+	}
+
+	memcpy( recLUT + 0x8000, recLUT, 0x2000 * sizeof(uptr) );
+	memcpy( recLUT + 0xa000, recLUT, 0x2000 * sizeof(uptr) );
+	
+	//memset(recStack, 0, RECSTACK_SIZE);
+
+	// This may or may not be needed anymore... 
+	x86SetPtr(recMem+REC_CACHEMEM);
+	dyna_block_discard_recmem=(u8*)x86Ptr;
+	JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
+
+	x86SetPtr(recMem);
 
 	recPtr = recMem;
 	recStackPtr = recStack;
@@ -556,32 +559,25 @@ static void recReset( void ) {
 	iCWstate = 0;
 
 	branch = 0;
+	SetCPUState(Config.sseMXCSR, Config.sseVUMXCSR);
 }
 
-void recShutdown( void )
+static void recShutdown( void )
 {
 	ProfilerTerminateSource( "EERec" );
+	ResetBaseBlockEx(0);
 
-	SafeSysMunmap(recMem, REC_CACHEMEM);
-
+	SafeSysMunmap( recMem, REC_CACHEMEM );
 	safe_aligned_free( recLUT );
-	safe_aligned_free( recRAM );
-	safe_aligned_free( recROM );
-	safe_aligned_free( recROM1 );
-	safe_aligned_free( recBlocks );
+	safe_aligned_free( m_recBlockAlloc );
+	recRAM = recROM = recROM1 = NULL;
+	recBlocks = NULL;
+	recStack = NULL;
 
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
 
-	SuperVUDestroy(-1);
-
 	x86Shutdown();
-}
-
-void recEnableVU0micro(int enable) {
-}
-
-void recEnableVU1micro(int enable) {
 }
 
 #pragma warning(disable:4731) // frame pointer register 'ebp' modified by inline assembly code
@@ -1633,10 +1629,11 @@ void recRecompile( u32 startpc )
 
 	// if recPtr reached the mem limit reset whole mem
 	if ( ( (uptr)recPtr - (uptr)recMem ) >= REC_CACHEMEM-0x40000 || dumplog == 0xffffffff) {
+		DevCon::WriteLn( "EE Recompiler data reset" );
 		recReset();
 	}
 	if ( ( (uptr)recStackPtr - (uptr)recStack ) >= RECSTACK_SIZE-0x100 ) {
-		DevCon::WriteLn("stack reset");
+		DevCon::WriteLn("EE recompiler stack reset");
 		recReset();
 	}
 
@@ -2179,20 +2176,14 @@ using namespace Dynarec::R5900;
 namespace R5900
 {
 
-R5900cpu recCpu = {
-	recInit,
-	recReset,
-	recStep,
-	recExecute,
-	recExecuteBlock,
-	recExecuteVU0Block,
-	recExecuteVU1Block,
-	recEnableVU0micro,
-	recEnableVU1micro,
-	recClear,
-	recClearVU0,
-	recClearVU1,
-	recShutdown
-};
+	R5900cpu recCpu = {
+		recAlloc,
+		recReset,
+		recStep,
+		recExecute,
+		recExecuteBlock,
+		recClear,
+		recShutdown
+	};
 
 }

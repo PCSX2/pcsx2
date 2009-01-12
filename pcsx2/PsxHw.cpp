@@ -24,6 +24,7 @@
 
 
 // NOTE: Any modifications to read/write fns should also go into their const counterparts
+// found in iPsxHw.cpp.
 
 void psxHwReset() {
 /*	if (Config.Sio) psxHu32(0x1070) |= 0x80;

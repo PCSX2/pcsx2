@@ -24,9 +24,6 @@
 
 #ifndef PCSX2_VIRTUAL_MEM
 extern u8  *psH; // hw mem
-extern u16 *psHW;
-extern u32 *psHL;
-extern u64 *psHD;
 #endif
 
 #define psHs8(mem)	(*(s8 *)&PS2MEM_HW[(mem) & 0xffff])
@@ -359,7 +356,7 @@ static __forceinline void *dmaGetAddr(u32 addr) {
 
 #endif
 
-int  hwInit();
+void hwInit();
 void hwReset();
 void hwShutdown();
 

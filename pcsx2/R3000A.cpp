@@ -49,46 +49,30 @@ bool iopEventTestIsActive = false;
 
 PCSX2_ALIGNED16(psxRegisters psxRegs);
 
-int psxInit()
+void psxReset()
 {
 	psxCpu = CHECK_EEREC ? &psxRec : &psxInt;
-
-	g_psxNextBranchCycle = 8;
-	psxBreak = 0;
-	psxCycleEE = -1;
-
-	if (psxMemInit() == -1) return -1;
-
-	return psxCpu->Init();
-}
-
-void psxReset() {
-
 	psxCpu->Reset();
-
-	psxMemReset();
 
 	memset(&psxRegs, 0, sizeof(psxRegs));
 
 	psxRegs.pc = 0xbfc00000; // Start in bootstrap
-
 	psxRegs.CP0.n.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1
 	psxRegs.CP0.n.PRid   = 0x0000001f; // PRevID = Revision ID, same as the IOP R3000A
 
 	psxBreak = 0;
 	psxCycleEE = -1;
-	g_psxNextBranchCycle = psxRegs.cycle + 2;
+	g_psxNextBranchCycle = psxRegs.cycle + 4;
 
 	psxHwReset();
 	psxBiosInit();
-	psxExecuteBios();
+	//psxExecuteBios();
 }
 
 void psxShutdown() {
-	psxMemShutdown();
 	psxBiosShutdown();
 	psxSIOShutdown();
-	psxCpu->Shutdown();
+	//psxCpu->Shutdown();
 }
 
 void psxException(u32 code, u32 bd) {
