@@ -679,8 +679,8 @@ int recVUTransformAddr(int x86reg, VURegs* VU, int vireg, int imm)
 	}
 	
 	if( VU == &VU1 ) {
+		AND32ItoR(EAX, 0x3ff); // wrap around
 		SHL32ItoR(EAX, 4);
-		AND32ItoR(EAX, 0x3fff);
 	}
 	else {
 		CMP32ItoR(EAX, 0x400);
@@ -688,7 +688,7 @@ int recVUTransformAddr(int x86reg, VURegs* VU, int vireg, int imm)
 			AND32ItoR(EAX, 0x43f);
 			pjmp[1] = JMP8(0);
 		x86SetJ8(pjmp[0]);
-			AND32ItoR(EAX, 0xfff); // if addr < 0x4000, wrap around every 0xfff
+			AND32ItoR(EAX, 0xff); // if addr < 0x4000, wrap around
 		x86SetJ8(pjmp[1]);
 
 		SHL32ItoR(EAX, 4); // multiply by 16 (shift left by 4)
