@@ -35,7 +35,7 @@ void psxMemAlloc()
 
 void psxMemReset()
 {
-	memset(psxM, 0, 0x00200000);
+	memzero_air<Ps2MemSize::IopRam>(psxM);
 }
 
 void psxMemShutdown()
@@ -388,7 +388,7 @@ void psxMemAlloc()
 		throw Exception::OutOfMemory( "psxMemAlloc > failed allocating memory for the IOP processor." );
 
 	u8* curpos = m_psxAllMem;
-	psxM = curpos; curpos += 0x00200000;
+	psxM = curpos; curpos += Ps2MemSize::IopRam;
 	psxP = curpos; curpos += 0x00010000; 
 	psxH = curpos; curpos += Ps2MemSize::IopHardware;
 	psxS = curpos; //curpos += 0x00010000;
@@ -404,8 +404,8 @@ void psxMemReset()
 
 	DbgCon::Status( "psxMemReset > Resetting core memory!" );
 
-	memset( psxMemWLUT, 0, 0x10000 * sizeof(uptr) * 2 );	// clears both allocations, RLUT and WLUT
-	memset( m_psxAllMem, 0, m_psxMemSize );
+	memzero_air<0x10000 * sizeof(uptr) * 2>( psxMemWLUT );	// clears both allocations, RLUT and WLUT
+	memzero_air<m_psxMemSize>( m_psxAllMem );
 
 	// Trick!  We're accessing RLUT here through WLUT, since it's the non-const pointer.
 	// So the ones with a 1 prefixed (ala 0x18000, etc) are RLUT tables.
@@ -772,9 +772,15 @@ void psxMemWrite32(u32 mem, u32 value) {
 					case 0x0c4:
 						if (g_psxWriteOk == 0) break;
 						g_psxWriteOk = 0;
-						memset(psxMemWLUT + 0x0000, 0, 0x80 * sizeof(uptr));
-						memset(psxMemWLUT + 0x8000, 0, 0x80 * sizeof(uptr));
-						memset(psxMemWLUT + 0xa000, 0, 0x80 * sizeof(uptr));
+
+						// Performance note: Use a for loop instead of memset/memzero
+						// This generates *much* more efficient code in this particular case (due to few iterations)
+						for (int i=0; i<0x0080; i++)
+						{
+							psxMemWLUT[i + 0x0000] = 0;
+							psxMemWLUT[i + 0x8000] = 0;
+							psxMemWLUT[i + 0xa000] = 0;
+						}
 						//PSXMEM_LOG("writectrl: writenot ok\n");
 						break;
 					case 0x1e988:

@@ -434,7 +434,7 @@ void vtlb_Init()
 {
 	//Reset all vars to default values
 	vtlbHandlerCount=0;
-	memset(RWFT,0,sizeof(RWFT));
+	memzero_obj(RWFT);
 
 	//Register default handlers
 	//Unmapped Virt handlers _MUST_ be registed first.

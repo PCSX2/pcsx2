@@ -147,8 +147,8 @@ void IPUProcessInterrupt()
 // Register accesses (run on EE thread)
 int ipuInit()
 {
-	memset(ipuRegs, 0, sizeof(IPUregisters));
-	memset(&g_BP, 0, sizeof(g_BP));
+	memzero_air<sizeof(IPUregisters)>(ipuRegs);
+	memzero_obj(g_BP);
 
 	//other stuff
 	g_decoder.intra_quantizer_matrix		=(u8*)iq;
@@ -165,7 +165,7 @@ int ipuInit()
 
 void ipuReset()
 {
-	memset(ipuRegs, 0, sizeof(IPUregisters));
+	memzero_air<sizeof(IPUregisters)>(ipuRegs);
 	g_nDMATransfer = 0;
 }
 
@@ -222,12 +222,12 @@ void SaveState::ipuFreeze() {
 			mpeg2_idct_init();
 			convert=convert_rgb (CONVERT_RGB, 32);
 			convert(16, 16, 0, NULL, &convert_init);
-			memset(mb8.Y,0,sizeof(mb8.Y));
-			memset(mb8.Cb,0,sizeof(mb8.Cb));
-			memset(mb8.Cr,0,sizeof(mb8.Cr));
-			memset(mb16.Y,0,sizeof(mb16.Y));
-			memset(mb16.Cb,0,sizeof(mb16.Cb));
-			memset(mb16.Cr,0,sizeof(mb16.Cr));
+			memzero_obj(mb8.Y);
+			memzero_obj(mb8.Cb);
+			memzero_obj(mb8.Cr);
+			memzero_obj(mb16.Y);
+			memzero_obj(mb16.Cb);
+			memzero_obj(mb16.Cr);
 			mpeg2_inited=1;
 		}
 	}
@@ -411,17 +411,17 @@ void ipuSoftReset()
         mpeg2_idct_init();
 		convert=convert_rgb (CONVERT_RGB, 32);
 		convert(16, 16, 0, NULL, &convert_init);
-		memset(mb8.Y,0,sizeof(mb8.Y));
-		memset(mb8.Cb,0,sizeof(mb8.Cb));
-		memset(mb8.Cr,0,sizeof(mb8.Cr));
-		memset(mb16.Y,0,sizeof(mb16.Y));
-		memset(mb16.Cb,0,sizeof(mb16.Cb));
-		memset(mb16.Cr,0,sizeof(mb16.Cr));
+		memzero_obj(mb8.Y);
+		memzero_obj(mb8.Cb);
+		memzero_obj(mb8.Cr);
+		memzero_obj(mb16.Y);
+		memzero_obj(mb16.Cb);
+		memzero_obj(mb16.Cr);
 		mpeg2_inited=1;
 	}
     
     FIFOto_clear();
-	memset(fifo_output,0,sizeof(u32)*32);
+	memzero_obj(fifo_output);
 	FOwritepos = 0;
 	FOreadpos = 0;
 	coded_block_pattern = 0;
@@ -566,7 +566,7 @@ static void ipuBCLR(u32 val) {
 	g_BP.IFC = 0;
 	ipuRegs->ctrl.BUSY = 0;
 	ipuRegs->cmd.BUSY = 0;
-	memset(readbits,0,80);
+	memzero_air<80>(readbits);
 	IPU_LOG("Clear IPU input FIFO. Set Bit offset=0x%X\n", g_BP.BP);
 }
 
@@ -657,8 +657,8 @@ static BOOL ipuBDEC(u32 val)
 	g_decoder.dcr				 =bdec.DCR;
 	g_decoder.macroblock_modes|=bdec.MBI ? MACROBLOCK_INTRA : MACROBLOCK_PATTERN;	
 
-	memset(&mb8, 0, sizeof(struct macroblock_8));
-	memset(&mb16, 0, sizeof(struct macroblock_16));
+	memzero_obj(mb8);
+	memzero_obj(mb16);
 	
 	s_routine = so_create(mpeg2_slice, &s_RoutineDone, s_tempstack, sizeof(s_tempstack));
 	assert( s_routine != NULL );
@@ -1522,7 +1522,7 @@ void ipu_copy(struct macroblock_8 *mb8, struct macroblock_16 *mb16) {
 void FIFOto_clear()
 {
 	//assert( g_BP.IFC == 0 );
-	memset(fifo_input,0,sizeof(fifo_input));
+	memzero_obj(fifo_input);
 	g_BP.IFC = 0;
 	ipuRegs->ctrl.IFC = 0;
 	FIreadpos = 0;

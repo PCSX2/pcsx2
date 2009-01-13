@@ -519,7 +519,7 @@ void  cdrReadInterrupt() {
 
 	if (cdr.RErr == -1) {
 		CDR_LOG(" err\n");
-		memset(cdr.Transfer, 0, 2340);
+		memzero_air<2340>(cdr.Transfer);
 		cdr.Stat = DiskError;
 		cdr.Result[0]|= 0x01;
 		ReadTrack();
@@ -942,7 +942,7 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr) {
 }
 
 void cdrReset() {
-	memset(&cdr, 0, sizeof(cdr));
+	memzero_obj(cdr);
 	cdr.CurTrack=1;
 	cdr.File=1; cdr.Channel=1;
 	cdReadTime = (PSXCLK / 1757) * BIAS; 

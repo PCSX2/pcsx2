@@ -54,7 +54,7 @@ void psxReset()
 	psxCpu = CHECK_EEREC ? &psxRec : &psxInt;
 	psxCpu->Reset();
 
-	memset(&psxRegs, 0, sizeof(psxRegs));
+	memzero_obj(psxRegs);
 
 	psxRegs.pc = 0xbfc00000; // Start in bootstrap
 	psxRegs.CP0.n.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1

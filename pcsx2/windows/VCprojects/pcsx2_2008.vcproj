@@ -801,6 +801,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\memzero.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Misc.cpp"
 				>
 			</File>
@@ -2607,22 +2611,6 @@
 					<File
 						RelativePath="..\..\x86\ir5900tables.cpp"
 						>
-						<FileConfiguration
-							Name="Release vm (nondev)|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AssemblerOutput="4"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release vtlb (nondev)|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								AssemblerOutput="4"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\x86\iVif.cpp"

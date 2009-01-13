@@ -55,7 +55,7 @@ only recv2 & dataout influences padman
 
 void sio2Reset() {
 	SysPrintf("Sio2 init\n");
-	memset(&sio2, 0, sizeof(sio2));
+	memzero_obj(sio2);
 	sio2.packet.recvVal1 = 0x1D100; // Nothing is connected at start
 }
 

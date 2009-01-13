@@ -520,7 +520,7 @@ void vm_Reset()
 {
 	jASSUME( memLUT != NULL );
 
-	memset(memLUT, 0, sizeof(PSMEMORYMAP)*0x100000);
+	memzero_air<sizeof(PSMEMORYMAP)*0x100000>(memLUT);
 	for (int i=0; i<0x02000; i++) memLUT[i + 0x00000] = initMemoryMap(&s_psM.aPFNs[i], &s_psM.aVFNs[i]);
 	for (int i=2; i<0x00010; i++) memLUT[i + 0x10000] = initMemoryMap(&s_psHw.aPFNs[i], &s_psHw.aVFNs[i]);
 	for (int i=0; i<0x00800; i++) memLUT[i + 0x1c000] = initMemoryMap(&s_psxM.aPFNs[(i & 0x1ff)], &s_psxM.aVFNs[(i & 0x1ff)]);
@@ -2720,8 +2720,8 @@ void memReset()
 	mprotect(PS2EMEM_EROM, Ps2MemSize::ERom, PROT_READ|PROT_WRITE);
 #	endif
 
-	memset(PS2MEM_BASE, 0, Ps2MemSize::Base);
-	memset(PS2MEM_SCRATCH, 0, Ps2MemSize::Scratch);
+	memzero_air<Ps2MemSize::Base>(PS2MEM_BASE);
+	memzero_air<Ps2MemSize::Scratch>(PS2MEM_SCRATCH);
 	vm_Reset();
 
 #else
@@ -2741,7 +2741,7 @@ void memReset()
 	// rest of the emu is not really set up to support a "soft" reset of that sort
 	// we opt for the hard/safe version.
 
-	memset( m_psAllMem,  0, m_allMemSize );
+	memzero_air<m_allMemSize>( m_psAllMem );
 #ifdef ENABLECACHE
 	memset(pCache,0,sizeof(_cacheS)*64);
 #endif
@@ -2867,7 +2867,7 @@ void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 void mmap_ResetBlockTracking()
 {
 	Console::WriteLn("vtlb/mmap: Block Tracking reset...");
-	memset(psMPWC,0,sizeof(psMPWC));
+	memzero_obj(psMPWC);
 	for(u32 i=0;i<(Ps2MemSize::Base>>12);i++)
 	{
 		psMPWVA[i].clear();

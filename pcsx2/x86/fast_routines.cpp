@@ -88,7 +88,7 @@ void checkregs()
 #endif
 
 
-__declspec(align(16)) u8 _xmm_backup[16*2];
+__declspec(align(16)) static u8 _xmm_backup[16*2];
 //this one checks for alligments too ...
 __declspec(naked) void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes)
 {
@@ -263,133 +263,13 @@ cleanup:
 		ret 4;
 	}
 }
+
 #undef MOVSRC
-//these are not used, but are here for reference.Check memcpy_raz_ for comments on the implementation ... 
-//First implementation, uses backward copy, 128/16 blocks
-__declspec(naked) void __fastcall memcpy_raz_0(void *dest, const void *src, size_t bytes)
-{
-	__asm
-	{
-		mov eax,[esp+4];
-
-		movaps [_xmm_backup+0x00],xmm0;
-		movaps [_xmm_backup+0x10],xmm1;
-
-		
-		sub eax,16;
-		js retnow;
-
-		
-		cmp eax,(127-16);
-		jna _loop_1;
-
-		align 16
-_loop_8:
-
-		sub eax,16*8;
-		movaps xmm0,[edx+eax+0x80];
-		movaps xmm1,[edx+eax+0x70];
-		movaps [ecx+eax+0x80],xmm0;
-		movaps [ecx+eax+0x70],xmm1;
-
-		movaps xmm0,[edx+eax+0x60];
-		movaps xmm1,[edx+eax+0x50];
-		movaps [ecx+eax+0x60],xmm0;
-		movaps [ecx+eax+0x50],xmm1;
-
-		movaps xmm0,[edx+eax+0x40];
-		movaps xmm1,[edx+eax+0x30];
-		movaps [ecx+eax+0x40],xmm0;
-		movaps [ecx+eax+0x30],xmm1;
-
-		movaps xmm0,[edx+eax+0x20];
-		movaps xmm1,[edx+eax+0x10];
-		movaps [ecx+eax+0x20],xmm0;
-		movaps [ecx+eax+0x10],xmm1;
-
-		js retnow_restore;
-
-		cmp eax,(127-16);
-		ja _loop_8;
-
-_loop_1:
-		movaps xmm0,[edx+eax];
-		movaps [ecx+eax],xmm0;
-		
-		sub eax,16;
-		jns _loop_1;
-
-retnow_restore:
-		movaps xmm0,[_xmm_backup+0x00];
-		movaps xmm1,[_xmm_backup+0x10];
-retnow:
-		ret 4;
-	}
-}
-//a more optimised version of the above, used as a base for the forward version
-__declspec(naked) void __fastcall memcpy_raz_2(void *dest, const void *src, size_t bytes)
-{
-	__asm
-	{
-		mov eax,[esp+4];
-		movaps [_xmm_backup+0x00],xmm0;
-
-		sub eax,16;
-		js retnow;
-
-		
-		cmp eax,(127-16);
-		jna _loop_1;
-
-		movaps [_xmm_backup+0x10],xmm1;
-
-		align 16
-
-_loop_8:
-		//eax= 'remaining' bytes
-		//<128 bytes 
-		movaps xmm0,[edx+eax+0x80-0x80];
-		movaps xmm1,[edx+eax+0x70-0x80];
-		sub eax,16*8;
-		movaps [ecx+eax+0x80],xmm0;
-		movaps [ecx+eax+0x70],xmm1;
-
-		movaps xmm0,[edx+eax+0x60];
-		movaps xmm1,[edx+eax+0x50];
-		movaps [ecx+eax+0x60],xmm0;
-		movaps [ecx+eax+0x50],xmm1;
-
-		movaps xmm0,[edx+eax+0x40];
-		movaps xmm1,[edx+eax+0x30];
-		movaps [ecx+eax+0x40],xmm0;
-		movaps [ecx+eax+0x30],xmm1;
-
-		movaps xmm0,[edx+eax+0x20];
-		movaps xmm1,[edx+eax+0x10];
-		movaps [ecx+eax+0x20],xmm0;
-		movaps [ecx+eax+0x10],xmm1;
-		cmp eax,(127-16);
-		jg _loop_8;
-		
-		movaps xmm1,[_xmm_backup+0x10];
-		
-		test eax,eax;
-		js retnow_restore;
 
 
-_loop_1:
-		sub eax,16;
-		movaps xmm0,[edx+eax+0x10];
-		movaps [ecx+eax+0x10],xmm0;
-		
-		jns _loop_1;
+//////////////////////////////////////////////////////////////////////////
+// Fast memcpy as coded by AMD.
 
-retnow_restore:
-		movaps xmm0,[_xmm_backup+0x00];
-retnow:
-		ret 4;
-	}
-}
 void * memcpy_amd_(void *dest, const void *src, size_t n)
 {
 #ifdef _DEBUG

@@ -1176,15 +1176,15 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 
 	if( bExecBIOS ) CheckForBIOSEnd();
 
-	MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
-	ADD32ItoR(ECX, eeScaleBlockCycles());
+	MOV32MtoR(EAX, (uptr)&cpuRegs.cycle);
+	ADD32ItoR(EAX, eeScaleBlockCycles());
 	if( newpc != 0xffffffff )
 	{
 		MOV32ItoR(EDX, 0);
 		ptr = (u32*)(x86Ptr-4);
 	}
-	MOV32RtoM((uptr)&cpuRegs.cycle, ECX); // update cycles
-	SUB32MtoR(ECX, (uptr)&g_nextBranchCycle);
+	MOV32RtoM((uptr)&cpuRegs.cycle, EAX); // update cycles
+	SUB32MtoR(EAX, (uptr)&g_nextBranchCycle);
 
 	if( newpc != 0xffffffff )
 	{

@@ -164,7 +164,7 @@ struct VuBlockHeader
 class VuInstruction
 {
 public:
-	VuInstruction() { memset(this, 0, sizeof(VuInstruction)); nParentPc = -1; vicached = -1; }
+	VuInstruction() { memzero_air<sizeof(VuInstruction)>(this); nParentPc = -1; vicached = -1; }
 
 	int nParentPc; // used for syncing with flag writes, -1 for no parent
 
@@ -279,9 +279,9 @@ struct VUPIPELINES
 VuBaseBlock::VuBaseBlock()
 {
 	type = 0; endpc = 0; cycles = 0; pcode = NULL; id = 0;
-	memset(pChildJumps, 0, sizeof(pChildJumps));
-	memset(startregs, 0, sizeof(startregs));
-	memset(endregs, 0, sizeof(endregs));
+	memzero_obj(pChildJumps);
+	memzero_obj(startregs);
+	memzero_obj(endregs);
 	allocX86Regs = nStartx86 = nEndx86 = -1;
     prevFlagsOutOfBlock = 0;
 }
@@ -425,13 +425,13 @@ void SuperVUReset(int vuindex)
 	{
 		DbgCon::Status( "SuperVU reset > Resetting recompiler memory and structures." );
 		memset(s_recVUMem, 0xcd, VU_EXESIZE);
-		memset(recVUStack, 0, SUPERVU_STACKSIZE);
+		memzero_air<SUPERVU_STACKSIZE>(recVUStack);
 
 		s_recVUPtr = s_recVUMem;
 	}
 	else
 	{
-		DbgCon::Status( "SuperVU reset [%d] > Resetting the recs and junk", params vuindex );
+		DbgCon::Status( "SuperVU reset [VU%d] > Resetting the recs and junk", params vuindex );
 		list<VuFunctionHeader*>::iterator it;
 		if( recVUHeaders[vuindex] ) memset( recVUHeaders[vuindex], 0, sizeof(VuFunctionHeader*) * (s_MemSize[vuindex]/8) );
 		if( recVUBlocks[vuindex] ) memset( recVUBlocks[vuindex], 0, sizeof(VuBlockHeader) * (s_MemSize[vuindex]/8) );
@@ -838,9 +838,9 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 	// analyze the global graph
 	s_listBlocks.clear();
 	VUPIPELINES pipes;
-	memset(pipes.fmac, 0, sizeof(pipes.fmac));
-	memset(&pipes.fdiv, 0, sizeof(pipes.fdiv));
-	memset(&pipes.efu, 0, sizeof(pipes.efu));
+	memzero_obj(pipes.fmac);
+	memzero_obj(pipes.fdiv);
+	memzero_obj(pipes.efu);
 	SuperVUBuildBlocks(NULL, startpc, pipes);
 
 	// fill parents

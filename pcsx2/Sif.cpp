@@ -69,10 +69,10 @@ extern int iopsifbusy[2];
 
 void sifInit()
 {
-	memset(&sif0, 0, sizeof(sif0));
-	memset(&sif1, 0, sizeof(sif1));
-	memset(eesifbusy, 0, sizeof(eesifbusy));
-	memset(iopsifbusy, 0, sizeof(iopsifbusy));
+	memzero_obj(sif0);
+	memzero_obj(sif1);
+	memzero_obj(eesifbusy);
+	memzero_obj(iopsifbusy);
 }
 
 static __forceinline void SIF0write(u32 *from, int words)

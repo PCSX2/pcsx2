@@ -127,7 +127,7 @@ void SaveState::mtgsFreeze()
 		// circumstances, but most of the time should be perfectly fine.
 
 		GIFPath path[3];
-		memset( &path, 0, sizeof( path ) );
+		memzero_obj( path );
 		_mtgsFreezeGIF( *this, path );
 	}
 }
@@ -238,7 +238,7 @@ void mtgsThreadObject::Reset()
 	SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
 	SendSimplePacket( GS_RINGTYPE_FRAMESKIP, 0, 0, 0 );
 
-	memset(m_path, 0, sizeof(m_path));
+	memzero_obj( m_path );
 }
 
 // Processes a GIFtag & packet, and throws out some gsIRQs as needed.
@@ -976,9 +976,9 @@ bool mtgsOpen()
 
 void mtgsThreadObject::GIFSoftReset( int mask )
 {
-	if(mask & 1) memset(&m_path[0], 0, sizeof(m_path[0]));
-	if(mask & 2) memset(&m_path[1], 0, sizeof(m_path[1]));
-	if(mask & 4) memset(&m_path[2], 0, sizeof(m_path[2]));
+	if(mask & 1) memzero_obj(m_path[0]);
+	if(mask & 2) memzero_obj(m_path[1]);
+	if(mask & 4) memzero_obj(m_path[2]);
 
 	if( GSgifSoftReset == NULL ) return;
 

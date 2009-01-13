@@ -271,7 +271,7 @@ void gsReset()
 	);
 
 #ifndef PCSX2_VIRTUAL_MEM
-	memset(g_RealGSMem, 0, sizeof( g_RealGSMem ));
+	memzero_obj(g_RealGSMem);
 #endif
 
 	Path3transfer = 0;
@@ -308,7 +308,7 @@ void gsGIFReset()
 {
 #ifndef PCSX2_VIRTUAL_MEM
 	// fixme - should this be here? (air)
-	memset(g_RealGSMem, 0, sizeof( g_RealGSMem ));
+	memzero_obj(g_RealGSMem);
 #endif
 
 	// perform a soft reset (but do not do a full reset if the soft reset API is unavailable)

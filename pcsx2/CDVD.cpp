@@ -419,7 +419,7 @@ s32 cdvdReadConfig(u8* config)
 		((cdvd.COffset == 2) && (cdvd.CBlockIndex >= 7))
 		)
 	{
-		memset(config, 0, 16);
+		memzero_air<16>(config);
 		return 0;
 	}
 	
@@ -490,7 +490,7 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
 	key_14  = ((numbers & 0x003E0) >>  2) | 0x04;							// numbers = F8  extra   = 04  unused = 03
 	
 	// clear key values
-	memset(key, 0, 16);
+	memzero_air<16>(key);
 	
 	// store key values
 	key[ 0] = (key_0_3&0x000000FF)>> 0;
@@ -751,7 +751,7 @@ void cdvdReset()
     ptlocal = localtime(&traw);
 #endif
 
-	memset(&cdvd, 0, sizeof(cdvd));
+	memzero_obj(cdvd);
 
 	cdvd.Type = CDVD_TYPE_NODISC;
 	cdvd.Spinning = false;

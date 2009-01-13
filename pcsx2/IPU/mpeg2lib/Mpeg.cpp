@@ -900,7 +900,7 @@ static void slice_intra_DCT (decoder_t * const decoder, const int cc,
 static void slice_non_intra_DCT (decoder_t * const decoder,
 					/*u8*/s16 * const dest, const int stride){
     int last;
-	memset(decoder->DCTblock,0,sizeof(decoder->DCTblock));
+	memzero_obj(decoder->DCTblock);
     if (decoder->mpeg1) last = get_mpeg1_non_intra_block (decoder);
     else last = get_non_intra_block (decoder);
 
@@ -950,7 +950,7 @@ void SaveTGA(const char* filename, int width, int height, void* pdata)
 
     assert( sizeof(TGA_HEADER) == 18 && sizeof(hdr) == 18 );
     
-    memset(&hdr, 0, sizeof(hdr));
+    memzero_obj(hdr);
     hdr.imagetype = 2;
     hdr.bits = 32;
     hdr.width = width;
@@ -1068,8 +1068,8 @@ void mpeg2sliceIDEC(void* pdone)
 				decoder->coded_block_pattern = 0x3F;//all 6 blocks
                 //ipuRegs->ctrl.CBP = 0x3f;
 
-				memset(decoder->mb8,0,sizeof(struct macroblock_8));
-				memset(decoder->rgb32,0,sizeof(struct rgb32));
+				memzero_air<sizeof(macroblock_8)>(decoder->mb8);
+				memzero_air<sizeof(rgb32)>(decoder->rgb32);
 
 				slice_intra_DCT (decoder, 0, (u8*)decoder->mb8->Y, DCT_stride);
 				slice_intra_DCT (decoder, 0, (u8*)decoder->mb8->Y + 8, DCT_stride);
@@ -1208,8 +1208,8 @@ void mpeg2_slice(void* pdone)
 	*(int*)pdone = 0;
 	ipuRegs->ctrl.ECD = 0;
 
-	memset(decoder->mb8,0,sizeof(struct macroblock_8));
-	memset(decoder->mb16,0,sizeof(struct macroblock_16));
+	memzero_air<sizeof(macroblock_8)>(decoder->mb8);
+	memzero_air<sizeof(macroblock_16)>(decoder->mb16);
 
 	bitstream_init (decoder);
 	

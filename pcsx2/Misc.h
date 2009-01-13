@@ -231,9 +231,11 @@ extern u8 g_globalXMMSaved;
 
 #if defined(_WIN32) && !defined(__x86_64__)
 	// faster memcpy
-	void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes);
-	void __fastcall memcpy_raz_(void *dest, const void *src, size_t qwc);
-	void * memcpy_amd_(void *dest, const void *src, size_t n);
+	extern void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes);
+	extern void __fastcall memcpy_raz_(void *dest, const void *src, size_t qwc);
+	extern void * memcpy_amd_(void *dest, const void *src, size_t n);
+#	include "windows/memzero.h"
+
 #define memcpy_fast memcpy_amd_
 	//#define memcpy_fast memcpy //Dont use normal memcpy, it has sse in 2k5!
 #else

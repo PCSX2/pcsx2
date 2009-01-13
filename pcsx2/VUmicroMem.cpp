@@ -149,16 +149,16 @@ void vuMicroMemReset()
 	PCSX2_MEM_PROTECT_BEGIN();
 
 	// === VU0 Initialization ===
-	memset(&VU0.ACC, 0, sizeof(VECTOR));
-	memset(VU0.VF, 0, sizeof(VECTOR)*32);
-	memset(VU0.VI, 0, sizeof(REG_VI)*32);
+	memzero_obj(VU0.ACC);
+	memzero_obj(VU0.VF);
+	memzero_obj(VU0.VI);
     VU0.VF[0].f.x = 0.0f;
 	VU0.VF[0].f.y = 0.0f;
 	VU0.VF[0].f.z = 0.0f;
 	VU0.VF[0].f.w = 1.0f;
 	VU0.VI[0].UL = 0;
-	memset(VU0.Mem, 0, 4*1024);
-	memset(VU0.Micro, 0, 4*1024);
+	memzero_air<4*1024>(VU0.Mem);
+	memzero_air<4*1024>(VU0.Micro);
 
 	/* this is kinda tricky, maxmem is set to 0x4400 here,
 	   tho it's not 100% accurate, since the mem goes from
@@ -172,16 +172,16 @@ void vuMicroMemReset()
 	VU0.vifRegs = vif0Regs;
 
 	// === VU1 Initialization ===
-	memset(&VU1.ACC, 0, sizeof(VECTOR));
-	memset(VU1.VF, 0, sizeof(VECTOR)*32);
-	memset(VU1.VI, 0, sizeof(REG_VI)*32);
+	memzero_obj(VU1.ACC);
+	memzero_obj(VU1.VF);
+	memzero_obj(VU1.VI);
 	VU1.VF[0].f.x = 0.0f;
 	VU1.VF[0].f.y = 0.0f;
 	VU1.VF[0].f.z = 0.0f;
 	VU1.VF[0].f.w = 1.0f;
 	VU1.VI[0].UL = 0;
-	memset(VU1.Mem, 0, 16*1024);
-	memset(VU1.Micro, 0, 16*1024);
+	memzero_air<16*1024>(VU1.Mem);
+	memzero_air<16*1024>(VU1.Micro);
 
 	VU1.maxmem   = -1;//16*1024-4;
 	VU1.maxmicro = 16*1024-4;
