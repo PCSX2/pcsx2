@@ -827,7 +827,7 @@ static __forceinline void _vif0mpgTransfer(u32 addr, u32 *data, int size) {
 		FreezeMMXRegs(1);
 		memcpy_fast(VU0.Micro + addr, data, size << 2);
 		FreezeMMXRegs(0);
-		CpuVU1->Clear(addr, size);
+		CpuVU0->Clear(addr, size);
 	}
 }
 

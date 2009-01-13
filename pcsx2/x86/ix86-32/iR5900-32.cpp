@@ -1196,26 +1196,6 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	}
 
 	RET2();
-
-	// check if should branch
-	//j8Ptr[0] = JS8( 0 );
-
-	/*if( newpc != 0xffffffff )
-		JNS32( (uptr)eventTestReg - ( (uptr)x86Ptr + 6 ) );
-	else
-		JNS32( (uptr)eventTest - ( (uptr)x86Ptr + 6 ) );*/
-	
-
-	// has to be in the middle of Save/LoadBranchState
-	/*CALLFunc( (uptr)cpuBranchTest );
-
-	if( newpc != 0xffffffff )
-	{
-		CMP32ItoM((uptr)&cpuRegs.pc, newpc);
-		JNE32((uptr)DispatcherReg - ( (uptr)x86Ptr + 6 ));
-	}
-
-	x86SetJ8( j8Ptr[0] );*/
 }
 
 namespace OpcodeImpl
