@@ -25,7 +25,7 @@
 #ifndef __MPEG_H__
 #define __MPEG_H__
 
-#include "PS2Etypes.h"
+#include "Common.h"
 
 /* macroblock modes */
 #define MACROBLOCK_INTRA 1
@@ -171,6 +171,7 @@ extern int get_motion_delta (decoder_t * const decoder, const int f_code);
 extern int get_dmv (decoder_t * const decoder);
 
 extern int non_linear_quantizer_scale[]; // JayteeMaster: it is needed in Ipu.c
+extern decoder_t g_decoder;
 
 void ipu_csc(struct macroblock_8 *mb8, struct macroblock_rgb32 *rgb32, int sgn);
 void ipu_dither(struct macroblock_8 *mb8, struct macroblock_rgb16 *rgb16, int dte);

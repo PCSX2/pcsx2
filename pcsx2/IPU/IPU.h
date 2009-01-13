@@ -19,8 +19,6 @@
 #ifndef __IPU_H__
 #define __IPU_H__
 
-#include "Common.h"
-
 // IPU_INLINE_IRQS
 // Scheduling ints into the future is a purist approach to emulation, and
 // is mostly cosmetic since the emulator itself performs all actions instantly
@@ -88,7 +86,7 @@ typedef union {
 //
 // Bitfield Structure
 //
-typedef union {
+union tIPU_CTRL {
 	struct {
 		u32 IFC : 4;	// Input FIFO counter
 		u32 OFC : 4;	// Output FIFO counter
@@ -107,7 +105,7 @@ typedef union {
 		u32 BUSY : 1;	// Busy
 	};
 	u32 _u32;
-} tIPU_CTRL;
+};
 
 #define IPU_BP_BP_M		(0x7f<< 0)
 #define IPU_BP_IFC_M	(0x0f<< 8)
@@ -188,6 +186,13 @@ struct IPUregisters {
 
 #define ipuRegs ((IPUregisters*)(PS2MEM_HW+0x2000))
 
+extern tIPU_BP g_BP;
+extern int coded_block_pattern;
+extern u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
+extern int g_nIPU0Data; // or 0x80000000 whenever transferring
+extern u8* g_pIPU0Pointer;
+
+
 void dmaIPU0();
 void dmaIPU1();
 
@@ -197,18 +202,24 @@ void ipuShutdown();
 int  ipuFreeze(gzFile f, int Mode);
 bool ipuCanFreeze();
 
+void IPUCMD_WRITE(u32 val);
+void ipuSoftReset();
+
+
 u32 ipuRead32(u32 mem);
-int ipuConstRead32(u32 x86reg, u32 mem);
-
 u64 ipuRead64(u32 mem);
-void ipuConstRead64(u32 mem, int mmreg);
-
 void ipuWrite32(u32 mem,u32 value);
-void ipuConstWrite32(u32 mem, int mmreg);
-
 void ipuWrite64(u32 mem,u64 value);
-void ipuConstWrite64(u32 mem, int mmreg);
 
+namespace Dynarec
+{
+	int ipuConstRead32(u32 x86reg, u32 mem);
+	void ipuConstRead64(u32 mem, int mmreg);
+	void ipuConstWrite32(u32 mem, int mmreg);
+	void ipuConstWrite64(u32 mem, int mmreg);
+}
+
+extern void IPUProcessInterrupt();
 extern void ipu0Interrupt();
 extern void ipu1Interrupt();
 
@@ -216,5 +227,12 @@ u8 getBits32(u8 *address, u32 advance);
 u8 getBits16(u8 *address, u32 advance);
 u8 getBits8(u8 *address, u32 advance);
 int getBits(u8 *address, u32 size, u32 advance);
+
+// returns number of qw read
+int FIFOfrom_write(u32 * value, int size);
+void FIFOfrom_read(void *value,int size);
+int FIFOto_read(void *value);
+int FIFOto_write(u32* pMem, int size);
+void FIFOto_clear();
 
 #endif

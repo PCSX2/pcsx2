@@ -32,12 +32,10 @@
 #include "Vlc.h"
 #include "coroutine.h"
 
-extern void (* mpeg2_idct_copy) (s16 * block, u8* dest, int stride);
+extern void (* __fastcall mpeg2_idct_copy) (s16 * block, u8* dest, int stride);
 /* JayteeMaster: changed dest to 16 bit signed */
-extern void (* mpeg2_idct_add) (int last, s16 * block,
+extern void (* __fastcall mpeg2_idct_add) (int last, s16 * block,
 				/*u8*/s16* dest, int stride);
-
-extern int FIFOfrom_write(u32* value, int size);
 
 /* JayteeMaster: remove static attribute */
 /*static */int non_linear_quantizer_scale [] = {
@@ -46,8 +44,6 @@ extern int FIFOfrom_write(u32* value, int size);
     24, 28, 32, 36, 40, 44,  48,  52,
     56, 64, 72, 80, 88, 96, 104, 112
 };
-
-extern tIPU_BP g_BP;
 
 /* Bitstream and buffer needs to be realocated inorder for sucessful
    reading of the old data. Here the old data stored in the 2nd slot
@@ -906,12 +902,6 @@ static void slice_non_intra_DCT (decoder_t * const decoder,
 
     mpeg2_idct_add (last, decoder->DCTblock, dest, stride);
 }
-
-extern int coded_block_pattern;
-extern u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
-extern decoder_t g_decoder;
-extern int g_nIPU0Data; // or 0x80000000 whenever transferring
-extern u8* g_pIPU0Pointer;
 
 #if defined(_MSC_VER)
 #pragma pack(push, 1)

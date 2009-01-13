@@ -22,8 +22,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "PrecompiledHeader.h"
 
 #include "mpeg2lib/Mpeg.h"
 #include "yuv2rgb.h"
@@ -34,16 +33,16 @@ struct convert_rgb_t {
     int width;
     int uv_stride, uv_stride_frame;
     int rgb_stride, rgb_stride_frame;
-    void (* yuv2rgb) (u8 *, u8 *, u8 *, u8 *,
+    void (__fastcall * yuv2rgb) (u8 *, u8 *, u8 *, u8 *,
 		      void *, void *, int);
 };
 
-typedef void yuv2rgb_copy (void * id, u8 * const * src,
+typedef void __fastcall yuv2rgb_copy (void * id, u8 * const * src,
 			   unsigned int v_offset);
 
-yuv2rgb_copy * yuv2rgb_init_mmxext (int bpp, int mode);
-yuv2rgb_copy * yuv2rgb_init_mmx (int bpp, int mode);
-yuv2rgb_copy * yuv2rgb_init_mlib (int bpp, int mode);
+yuv2rgb_copy __fastcall * yuv2rgb_init_mmxext (int bpp, int mode);
+yuv2rgb_copy __fastcall * yuv2rgb_init_mmx (int bpp, int mode);
+yuv2rgb_copy __fastcall * yuv2rgb_init_mlib (int bpp, int mode);
 //#include "convert_internal.h" //END
 
 static u32 matrix_coefficients = 6;
@@ -59,7 +58,7 @@ const s32 Inverse_Table_6_9[8][4] = {
     {117579, 136230, 16907, 35559}  /*7 SMPTE 240M (1987) */
 };
 
-typedef void yuv2rgb_c_internal (u8 *, u8 *, u8 *, u8 *,
+typedef void __fastcall yuv2rgb_c_internal (u8 *, u8 *, u8 *, u8 *,
 				 void *, void *, int);
 
 void * table_rV[256];
@@ -92,7 +91,7 @@ void * table_bU[256];
 	Y = py[2*i+1];							\
 	dst[6*i+3] = b[Y]; dst[6*i+4] = g[Y]; dst[6*i+5] = r[Y];
 
-static void yuv2rgb_c_32 (u8 * py_1, u8 * py_2,
+static void __fastcall yuv2rgb_c_32 (u8 * py_1, u8 * py_2,
 			  u8 * pu, u8 * pv,
 			  void * _dst_1, void * _dst_2, int width)
 {
@@ -131,7 +130,7 @@ static void yuv2rgb_c_32 (u8 * py_1, u8 * py_2,
 }
 
 /* This is very near from the yuv2rgb_c_32 code */
-static void yuv2rgb_c_24_rgb (u8 * py_1, u8 * py_2,
+static void __fastcall yuv2rgb_c_24_rgb (u8 * py_1, u8 * py_2,
 			      u8 * pu, u8 * pv,
 			      void * _dst_1, void * _dst_2, int width)
 {
@@ -170,7 +169,7 @@ static void yuv2rgb_c_24_rgb (u8 * py_1, u8 * py_2,
 }
 
 /* only trivial mods from yuv2rgb_c_24_rgb */
-static void yuv2rgb_c_24_bgr (u8 * py_1, u8 * py_2,
+static void __fastcall yuv2rgb_c_24_bgr (u8 * py_1, u8 * py_2,
 			      u8 * pu, u8 * pv,
 			      void * _dst_1, void * _dst_2, int width)
 {
@@ -210,7 +209,7 @@ static void yuv2rgb_c_24_bgr (u8 * py_1, u8 * py_2,
 
 /* This is exactly the same code as yuv2rgb_c_32 except for the types of */
 /* r, g, b, dst_1, dst_2 */
-static void yuv2rgb_c_16 (u8 * py_1, u8 * py_2,
+static void __fastcall yuv2rgb_c_16 (u8 * py_1, u8 * py_2,
 			  u8 * pu, u8 * pv,
 			  void * _dst_1, void * _dst_2, int width)
 {
@@ -256,7 +255,7 @@ static int div_round (int dividend, int divisor)
 	return -((-dividend + (divisor>>1)) / divisor);
 }
 
-static yuv2rgb_c_internal * yuv2rgb_c_init (int order, int bpp)
+static yuv2rgb_c_internal __fastcall * yuv2rgb_c_init (int order, int bpp)
 {
     int i;
     u8 table_Y[1024];
@@ -369,7 +368,7 @@ static yuv2rgb_c_internal * yuv2rgb_c_init (int order, int bpp)
     return yuv2rgb;
 }
 
-static void convert_yuv2rgb_c (void * _id, u8 * Y, u8 * Cr, u8 * Cb,
+static void __fastcall convert_yuv2rgb_c (void * _id, u8 * Y, u8 * Cr, u8 * Cb,
 			       unsigned int v_offset)
 {
     convert_rgb_t * id = (convert_rgb_t *) _id;
@@ -393,7 +392,7 @@ static void convert_yuv2rgb_c (void * _id, u8 * Y, u8 * Cr, u8 * Cb,
     } while (--loop);
 }
 
-static void convert_start (void * _id, u8 * dest, int flags)
+static void __fastcall convert_start (void * _id, u8 * dest, int flags)
 {
     convert_rgb_t * id = (convert_rgb_t *) _id;
     id->rgb_ptr = dest;
@@ -411,7 +410,7 @@ static void convert_start (void * _id, u8 * dest, int flags)
     }
 }
 
-static void convert_internal (int order, int bpp, int width, int height,
+static void __fastcall convert_internal (int order, int bpp, int width, int height,
 			      u32 accel, void * arg,
 			      convert_init_t * result)
 {
@@ -449,55 +448,55 @@ static void convert_internal (int order, int bpp, int width, int height,
     }
 }
 
-void convert_rgb32 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_rgb32 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_RGB, 32, width, height, accel, arg, result);
 }
 
-void convert_rgb24 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_rgb24 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_RGB, 24, width, height, accel, arg, result);
 }
 
-void convert_rgb16 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_rgb16 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_RGB, 16, width, height, accel, arg, result);
 }
 
-void convert_rgb15 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_rgb15 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_RGB, 15, width, height, accel, arg, result);
 }
 
-void convert_bgr32 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_bgr32 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_BGR, 32, width, height, accel, arg, result);
 }
 
-void convert_bgr24 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_bgr24 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_BGR, 24, width, height, accel, arg, result);
 }
 
-void convert_bgr16 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_bgr16 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_BGR, 16, width, height, accel, arg, result);
 }
 
-void convert_bgr15 (int width, int height, u32 accel, void * arg,
+void __fastcall convert_bgr15 (int width, int height, u32 accel, void * arg,
 		    convert_init_t * result)
 {
     convert_internal (CONVERT_BGR, 15, width, height, accel, arg, result);
 }
 
-convert_t* convert_rgb (int order, int bpp)
+convert_t __fastcall * convert_rgb (int order, int bpp)
 {
     if (order == CONVERT_RGB || order == CONVERT_BGR)
 	switch (bpp) {

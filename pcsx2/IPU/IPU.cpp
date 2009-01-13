@@ -18,20 +18,14 @@
 
 #include "PrecompiledHeader.h"
 
-#include "Common.h"
-#include "IPU.h"
+#include "R5900.h"
+
 #include "mpeg2lib/Mpeg.h"
 #include "yuv2rgb.h"
-
-#include <time.h>
-
-#include "iR5900.h"
 #include "coroutine.h"
 
 using namespace std;			// for min / max
-
-using namespace Dynarec;
-using namespace Dynarec::R5900;
+using R5900::cpuRegs;
 
 // Zero cycle IRQ schedules aren't really good, but the IPU uses them.
 // Better to throw the IRQ inline:
@@ -74,12 +68,6 @@ u8* g_pIPU0Pointer = NULL;
 int g_nCmdPos[2] = {0}, g_nCmdIndex = 0;
 int ipuCurCmd = 0xffffffff;
 
-// returns number of qw read
-int FIFOfrom_write(u32 * value, int size);
-void FIFOfrom_read(void *value,int size);
-int FIFOto_read(void *value);
-int FIFOto_write(u32* pMem, int size);
-void FIFOto_clear();
 
 int FOreadpos = 0, FOwritepos = 0;
 static int FIreadpos = 0, FIwritepos = 0;
@@ -303,108 +291,6 @@ u64 ipuRead64(u32 mem)
 	return *(u64*)(((u8*)ipuRegs)+(mem&0xff));
 }
 
-int ipuConstRead32(u32 x86reg, u32 mem)
-{
-	int workingreg, tempreg, tempreg2;
-	iFlushCall(0);
-	CALLFunc((u32)IPUProcessInterrupt);
-
-//	if( !(x86reg&(MEM_XMMTAG|MEM_MMXTAG)) ) {
-//		if( x86reg == EAX ) {
-//			tempreg =  ECX;
-//			tempreg2 = EDX;
-//		}
-//		else if( x86reg == ECX ) {
-//			tempreg =  EAX;
-//			tempreg2 = EDX;
-//		}
-//		else if( x86reg == EDX ) {
-//			tempreg =  EAX;
-//			tempreg2 = ECX;
-//		}
-//
-//		workingreg = x86reg;
-//	}
-//	else {
-		workingreg = EAX;
-		tempreg =  ECX;
-		tempreg2 = EDX;
-//	}
-
-	switch (mem){
-
-		case 0x10002010: // IPU_CTRL
-	
-			MOV32MtoR(workingreg, (u32)&ipuRegs->ctrl._u32);
-			AND32ItoR(workingreg, ~0x3f0f); // save OFC
-			OR8MtoR(workingreg, (u32)&g_BP.IFC);
-			OR8MtoR(workingreg+4, (u32)&coded_block_pattern); // or ah, mem
-
-//			MOV32MtoR(workingreg, (u32)&ipuRegs->ctrl._u32);
-//			AND32ItoR(workingreg, ~0x3fff);
-//			MOV32MtoR(tempreg, (u32)&g_nIPU0Data);
-//			MOV8MtoR(workingreg, (u32)&g_BP.IFC);
-//
-//			CMP32ItoR(tempreg, 8);
-//			j8Ptr[5] = JLE8(0);
-//			MOV32ItoR(tempreg, 8);
-//			x86SetJ8( j8Ptr[5] );
-//			SHL32ItoR(tempreg, 4);
-//
-//			OR8MtoR(workingreg+4, (u32)&coded_block_pattern); // or ah, mem
-//			OR8RtoR(workingreg, tempreg);
-
-#ifdef _DEBUG
-			MOV32RtoM((u32)&ipuRegs->ctrl._u32, workingreg);
-#endif
-			// NOTE: not updating ipuRegs->ctrl
-//			if( x86reg & MEM_XMMTAG ) SSE2_MOVD_R_to_XMM(x86reg&0xf, workingreg);
-//			else if( x86reg & MEM_MMXTAG ) MOVD32RtoMMX(x86reg&0xf, workingreg);
-			return 1;
-
-		case 0x10002020: // IPU_BP
-
-			assert( (u32)&g_BP.FP + 1 == (u32)&g_BP.bufferhasnew );
-
-			MOVZX32M8toR(workingreg, (u32)&g_BP.BP);
-			MOVZX32M8toR(tempreg, (u32)&g_BP.FP);
-			AND8ItoR(workingreg, 0x7f);
-			ADD8MtoR(tempreg, (u32)&g_BP.bufferhasnew);
-			MOV8MtoR(workingreg+4, (u32)&g_BP.IFC);
-
-			SHL32ItoR(tempreg, 16);
-			OR32RtoR(workingreg, tempreg);
-
-#ifdef _DEBUG
-			MOV32RtoM((u32)&ipuRegs->ipubp, workingreg);
-#endif
-			// NOTE: not updating ipuRegs->ipubp
-//			if( x86reg & MEM_XMMTAG ) SSE2_MOVD_R_to_XMM(x86reg&0xf, workingreg);
-//			else if( x86reg & MEM_MMXTAG ) MOVD32RtoMMX(x86reg&0xf, workingreg);
-
-			return 1;
-
-		default:
-			// ipu repeats every 0x100
-			_eeReadConstMem32(x86reg, (u32)(((u8*)ipuRegs)+(mem&0xff)));
-			return 0;
-	}
-
-	return 0;
-}
-
-void ipuConstRead64(u32 mem, int mmreg)
-{
-	iFlushCall(0);
-	CALLFunc((u32)IPUProcessInterrupt);
-
-	if( IS_XMMREG(mmreg) ) SSE_MOVLPS_M64_to_XMM(mmreg&0xff, (u32)(((u8*)ipuRegs)+(mem&0xff)));
-	else {
-		MOVQMtoR(mmreg, (u32)(((u8*)ipuRegs)+(mem&0xff)));
-		SetMMXstate();
-	}
-}
-
 void ipuSoftReset()
 {
 	if (!mpeg2_inited){
@@ -451,7 +337,7 @@ void ipuWrite32(u32 mem,u32 value)
 		case 0x10002010: // IPU_CTRL
 			ipuRegs->ctrl._u32 = (value&0x47f30000)|(ipuRegs->ctrl._u32&0x8000ffff);
             if( ipuRegs->ctrl.IDP == 3 ) {
-                SysPrintf("IPU Invaild Intra DC Precision, switching to 9 bits\n");
+                SysPrintf("IPU Invalid Intra DC Precision, switching to 9 bits\n");
                 ipuRegs->ctrl.IDP = 1;
             }
             if (ipuRegs->ctrl.RST & 0x1) { // RESET
@@ -485,77 +371,8 @@ void ipuWrite64(u32 mem, u64 value)
 	}
 }
 
-void ipuConstWrite32(u32 mem, int mmreg)
-{
-	iFlushCall(0);
-	if( !(mmreg & (MEM_XMMTAG|MEM_MMXTAG|MEM_EECONSTTAG)) ) PUSH32R(mmreg);
-	CALLFunc((u32)IPUProcessInterrupt);
 
-	switch (mem){
-		case 0x10002000: // IPU_CMD
-			if( (mmreg & (MEM_XMMTAG|MEM_MMXTAG|MEM_EECONSTTAG)) ) _recPushReg(mmreg);
-			CALLFunc((u32)IPUCMD_WRITE);
-			ADD32ItoR(ESP, 4);
-			break;
-		case 0x10002010: // IPU_CTRL
-			if( mmreg & MEM_EECONSTTAG ) {
-				u32 c = g_cpuConstRegs[(mmreg>>16)&0x1f].UL[0]&0x47f30000;
-
-				if( c & 0x40000000 ) {
-					CALLFunc((u32)ipuSoftReset);
-				}
-				else {
-					AND32ItoM((u32)&ipuRegs->ctrl._u32, 0x8000ffff);
-					OR32ItoM((u32)&ipuRegs->ctrl._u32, c);
-				}
-			}
-			else {
-				if( mmreg & MEM_XMMTAG ) SSE2_MOVD_XMM_to_R(EAX, mmreg&0xf);
-				else if( mmreg & MEM_MMXTAG ) MOVD32MMXtoR(EAX, mmreg&0xf);
-				else POP32R(EAX);
-
-				MOV32MtoR(ECX, (u32)&ipuRegs->ctrl._u32);
-				AND32ItoR(EAX, 0x47f30000);
-				AND32ItoR(ECX, 0x8000ffff);
-				OR32RtoR(EAX, ECX);
-				MOV32RtoM((u32)&ipuRegs->ctrl._u32, EAX);
-
-				TEST32ItoR(EAX, 0x40000000);
-				j8Ptr[5] = JZ8(0);
-
-				// reset
-				CALLFunc((u32)ipuSoftReset);
-				
-				x86SetJ8( j8Ptr[5] );
-			}
-
-			break;
-		default:
-			if( !(mmreg & (MEM_XMMTAG|MEM_MMXTAG|MEM_EECONSTTAG)) ) POP32R(mmreg);
-			_eeWriteConstMem32((u32)((u8*)ipuRegs + (mem&0xfff)), mmreg);
-			break;
-	}
-}
-
-void ipuConstWrite64(u32 mem, int mmreg)
-{
-	iFlushCall(0);
-	CALLFunc((u32)IPUProcessInterrupt);
-
-	switch (mem){
-		case 0x10002000:
-			_recPushReg(mmreg);
-			CALLFunc((u32)IPUCMD_WRITE);
-			ADD32ItoR(ESP, 4);
-			break;
-
-		default:
-			_eeWriteConstMem64( (u32)((u8*)ipuRegs + (mem&0xfff)), mmreg);
-			break;
-	}
-}
-
-///////////////////////////////////////////
+//////////////////////////////////////////////////////
 // IPU Commands (exec on worker thread only)
 
 static void ipuBCLR(u32 val) {
@@ -570,12 +387,11 @@ static void ipuBCLR(u32 val) {
 	IPU_LOG("Clear IPU input FIFO. Set Bit offset=0x%X\n", g_BP.BP);
 }
 
-static BOOL ipuIDEC(u32 val)
+static __forceinline BOOL ipuIDEC(u32 val)
 {
 	tIPU_CMD_IDEC idec={0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
 	*(u32*)&idec=val;
-#ifdef IPU_LOG
 						IPU_LOG("IPU IDEC command.\n");
 	if (idec.FB){		IPU_LOG(" Skip %d bits.",idec.FB);}
 						IPU_LOG(" Quantizer step code=0x%X.",idec.QSC);
@@ -587,7 +403,6 @@ static BOOL ipuIDEC(u32 val)
 	if (idec.OFM==0){	IPU_LOG(" Output format is RGB32.");
 	}else{				IPU_LOG(" Output format is RGB16.");}
 						IPU_LOG("\n");
-#endif
 
 	g_BP.BP+= idec.FB;//skip FB bits
 	//from IPU_CTRL
@@ -622,12 +437,11 @@ static int s_bdec=0;
 #define s_bdec 0
 #endif
 
-static BOOL ipuBDEC(u32 val)
+static __forceinline BOOL ipuBDEC(u32 val)
 {
 	tIPU_CMD_BDEC bdec={0, 0, 0, 0, 0, 0, 0, 0};
 	*(u32*)&bdec=val;
 
-#ifdef IPU_LOG
 							IPU_LOG("IPU BDEC(macroblock decode) command %x, num: 0x%x\n",cpuRegs.pc, s_bdec);
 	if (bdec.FB){			IPU_LOG(" Skip 0x%X bits.", bdec.FB);}
 	if (bdec.MBI){			IPU_LOG(" Intra MB.");}
@@ -637,8 +451,6 @@ static BOOL ipuBDEC(u32 val)
 	if (bdec.DT){			IPU_LOG(" Use field DCT.");}
 	else{					IPU_LOG(" Use frame DCT.");}
 							IPU_LOG(" Quantiser step=0x%X\n",bdec.QSC);
-#endif
-
 #ifdef _DEBUG
 	s_bdec++;
 #endif
@@ -668,7 +480,7 @@ static BOOL ipuBDEC(u32 val)
 	return s_RoutineDone;
 }
 
-static BOOL ipuVDEC(u32 val) {
+static BOOL __fastcall ipuVDEC(u32 val) {
 	
 	switch( g_nCmdPos[0] ) {
 		case 0:
@@ -721,9 +533,10 @@ static BOOL ipuVDEC(u32 val) {
 				((val >> 26) & 2 ? "DMV" : "MBT") : (((val >> 26) & 2 ? "MC" : "MBAI")),ipuRegs->ctrl.PCT);
 
 			return TRUE;
+
+		jNO_DEFAULT
 	}
 
-	assert(0);
 	return FALSE;
 }
 
@@ -740,37 +553,33 @@ static BOOL ipuFDEC(u32 val)
 	return TRUE;
 }
 
-static BOOL ipuSETIQ(u32 val)
+static __forceinline BOOL ipuSETIQ(u32 val)
 {
 	int i;
 
  	if ((val >> 27) & 1){
 		g_nCmdPos[0] += getBits((u8*)niq + g_nCmdPos[0], 512-8*g_nCmdPos[0], 1); // 8*8*8
 
-#ifdef IPU_LOG
-		IPU_LOG("Read non-intra quantisation matrix from IPU FIFO.\n");
+		IPU_LOG("Read non-intra quantization matrix from IPU FIFO.\n");
 		for (i=0; i<8; i++){
 			IPU_LOG("%02X %02X %02X %02X %02X %02X %02X %02X\n",
 				niq[i*8+0], niq[i*8+1], niq[i*8+2], niq[i*8+3],
 				niq[i*8+4], niq[i*8+5], niq[i*8+6], niq[i*8+7]);
 		}
-#endif
 	}else{
 		g_nCmdPos[0] += getBits((u8*)iq+8*g_nCmdPos[0], 512-8*g_nCmdPos[0], 1);
-#ifdef IPU_LOG
-		IPU_LOG("Read intra quantisation matrix from IPU FIFO.\n");
+		IPU_LOG("Read intra quantization matrix from IPU FIFO.\n");
 		for (i=0; i<8; i++){
 			IPU_LOG("%02X %02X %02X %02X %02X %02X %02X %02X\n",
 				iq[i*8+0], iq[i*8+1], iq[i*8+2], iq[i*8+3],
 				iq[i*8+4], iq[i*8+5], iq[i*8+6], iq[i*8+7]);
 		}
-#endif
 	}
 
 	return g_nCmdPos[0] == 64;
 }
 
-static BOOL ipuSETVQ(u32 val)
+static __forceinline BOOL ipuSETVQ(u32 val)
 {	
 	g_nCmdPos[0] += getBits((u8*)vqclut+g_nCmdPos[0], 256-8*g_nCmdPos[0], 1); // 16*2*8
 
@@ -804,17 +613,16 @@ static BOOL ipuSETVQ(u32 val)
 }
 
 // IPU Transfers are split into 8Qwords so we need to send ALL the data
-static BOOL ipuCSC(u32 val)
+static BOOL __fastcall ipuCSC(u32 val)
 {
 	tIPU_CMD_CSC csc ={0, 0, 0, 0, 0};
 	*(u32*)&csc=val;
 
-#ifdef IPU_LOG
 	IPU_LOG("IPU CSC(Colorspace conversion from YCbCr) command (%d).\n",csc.MBC);
 	if (csc.OFM){	IPU_LOG("Output format is RGB16. ");}
 	else{			IPU_LOG("Output format is RGB32. ");}
 	if (csc.DTE){	IPU_LOG("Dithering enabled.");	}
-#endif
+
 	//SysPrintf("CSC\n");
 	for (;g_nCmdIndex<(int)csc.MBC; g_nCmdIndex++){
 
@@ -861,13 +669,13 @@ static BOOL ipuPACK(u32 val) {
 	tIPU_CMD_CSC  csc ={0, 0, 0, 0, 0};
  
 	*(u32*)&csc=val;
-#ifdef IPU_LOG
+
 	IPU_LOG("IPU PACK (Colorspace conversion from RGB32) command.\n");
 	if (csc.OFM){	IPU_LOG("Output format is RGB16. ");}
 	else{			IPU_LOG("Output format is INDX4. ");}
 	if (csc.DTE){	IPU_LOG("Dithering enabled.");	}
 	IPU_LOG("Number of macroblocks to be converted: %d\n", csc.MBC);
-#endif
+
 	for (;g_nCmdIndex<(int)csc.MBC; g_nCmdIndex++){
 
 		if( g_nCmdPos[0] < 512 ) {
@@ -1409,9 +1217,8 @@ int getBits(u8 *address, u32 size, u32 advance)
 				case 1: address[0] = readmem[0];
 				case 0:
 					break;
-#ifdef _MSC_VER
-				default: __assume(0);
-#endif
+
+				jNO_DEFAULT
 			}
 
 			address += howmuch;
@@ -1479,7 +1286,7 @@ void ipu_dither(struct macroblock_8 *mb8, struct macroblock_rgb16 *rgb16, int dt
 }
 
 void ipu_vq(struct macroblock_rgb16 *rgb16, u8* indx4){
-	SysPrintf("IPU: VQ not implemented");
+	Console::Error("IPU: VQ not implemented");
 }
 
 void ipu_copy(struct macroblock_8 *mb8, struct macroblock_16 *mb16) {

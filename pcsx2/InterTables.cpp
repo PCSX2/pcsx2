@@ -18,6 +18,7 @@
 
 //all tables for R5900 are define here..
 
+#include "PrecompiledHeader.h"
 #include "InterTables.h"
 #include "R5900.h"
 

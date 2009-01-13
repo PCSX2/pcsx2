@@ -16,7 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <assert.h>
+#include "PrecompiledHeader.h"
 #include "ix86.h"
 
 PCSX2_ALIGNED16(unsigned int p[4]);

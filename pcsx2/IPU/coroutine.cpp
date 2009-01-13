@@ -16,11 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include "PrecompiledHeader.h"
 
-#include "PS2Etypes.h"
 #include "coroutine.h"
 
 struct coroutine {
