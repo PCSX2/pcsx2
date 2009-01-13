@@ -122,6 +122,9 @@ void _deleteEEreg(int reg, int flush);
 // allocates memory on the instruction size and returns the pointer
 u32* recAllocStackMem(int size, int align);
 
+extern void recExecute();		// same as recCpu.Execute(), but faster (can be inline'd)
+
+
 //////////////////////////////////////
 // Templates for code recompilation //
 //////////////////////////////////////

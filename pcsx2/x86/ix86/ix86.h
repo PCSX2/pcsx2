@@ -791,6 +791,12 @@ extern u8*  JNO8( u8 to );
 // jb rel8 
 extern u16*  JB16( u16 to );
 
+
+// jns rel32 
+extern u32* JNS32( u32 to );
+// js rel32 
+extern u32* JS32( u32 to );
+
 // jb rel32 
 extern u32* JB32( u32 to );
 // je rel32 

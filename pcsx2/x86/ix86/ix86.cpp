@@ -2667,6 +2667,7 @@ __forceinline u16* JB16( u16 to )
 	return J16Rel( 0x82, to );
 }
 
+
 // jb rel32 
 __forceinline u32* JB32( u32 to )
 {
@@ -2683,6 +2684,18 @@ __forceinline u32* JE32( u32 to )
 __forceinline u32* JZ32( u32 to ) 
 {
 	return J32Rel( 0x84, to ); 
+}
+
+/* js rel32 */
+__forceinline u32* JS32( u32 to ) 
+{ 
+	return J32Rel( 0x88, to );
+}
+
+/* jns rel32 */
+__forceinline u32* JNS32( u32 to ) 
+{ 
+	return J32Rel( 0x89, to );
 }
 
 /* jg rel32 */
@@ -2763,11 +2776,6 @@ __forceinline u32* JNO32( u32 to )
 	return J32Rel( 0x81, to ); 
 }
 
-// js rel32
-__forceinline u32*  JS32( u32 to )
-{
-	return J32Rel( 0x88, to );
-}
 
 
 /* call func */

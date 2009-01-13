@@ -670,18 +670,18 @@ static __forceinline bool recEventTest()
 	return retval;
 }
 
-static void recExecute( void )
+__forceinline void recExecute()
 {
-	PCSX2_MEM_PROTECT_BEGIN()
-		while( true )
-		{
-			if( recEventTest() ) break;
-			execute();
-		}
-	PCSX2_MEM_PROTECT_END()
+	//PCSX2_MEM_PROTECT_BEGIN()
+	while( true )
+	{
+		if( recEventTest() ) break;
+		execute();
+	}
+	//PCSX2_MEM_PROTECT_END()
 }
 
-static void recExecuteBlock( void )
+static void recExecuteBlock()
 {
 	PCSX2_MEM_PROTECT_BEGIN()
 		recEventTest();
@@ -1015,8 +1015,6 @@ void SetBranchReg( u32 reg )
 	iFlushCall(FLUSH_EVERYTHING);
 
 	iBranchTest(0xffffffff, 1);
-
-	JMP32((u32)DispatcherReg - ( (u32)x86Ptr + 5 ));
 }
 
 void SetBranchImm( u32 imm )
@@ -1030,10 +1028,6 @@ void SetBranchImm( u32 imm )
 	iFlushCall(FLUSH_EVERYTHING);
 
 	iBranchTest(imm, imm <= pc);
-
-	MOV32ItoR(EDX, 0);
-	u32* ptr = (u32*)(x86Ptr-4);
-	*ptr = (u32)JMP32((u32)Dispatcher - ( (u32)x86Ptr + 5 ));
 }
 
 void SaveBranchState()
@@ -1178,15 +1172,33 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 #ifdef _DEBUG
 	//CALLFunc((uptr)testfpu);
 #endif
+	u32* ptr;
+
+	if( bExecBIOS ) CheckForBIOSEnd();
 
 	MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
 	ADD32ItoR(ECX, eeScaleBlockCycles());
+	if( newpc != 0xffffffff )
+	{
+		MOV32ItoR(EDX, 0);
+		ptr = (u32*)(x86Ptr-4);
+	}
 	MOV32RtoM((uptr)&cpuRegs.cycle, ECX); // update cycles
 	SUB32MtoR(ECX, (uptr)&g_nextBranchCycle);
 
+	if( newpc != 0xffffffff )
+	{
+		*ptr = (u32)JS32((u32)Dispatcher - ( (u32)x86Ptr + 6 ));
+	}
+	else
+	{
+		JS32((uptr)DispatcherReg - ( (uptr)x86Ptr + 6 ));
+	}
+
+	RET2();
+
 	// check if should branch
-	j8Ptr[0] = JS8( 0 );
-	RET();
+	//j8Ptr[0] = JS8( 0 );
 
 	/*if( newpc != 0xffffffff )
 		JNS32( (uptr)eventTestReg - ( (uptr)x86Ptr + 6 ) );
@@ -1201,10 +1213,9 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	{
 		CMP32ItoM((uptr)&cpuRegs.pc, newpc);
 		JNE32((uptr)DispatcherReg - ( (uptr)x86Ptr + 6 ));
-	}*/
+	}
 
-	x86SetJ8( j8Ptr[0] );
-	if( bExecBIOS ) CheckForBIOSEnd();
+	x86SetJ8( j8Ptr[0] );*/
 }
 
 namespace OpcodeImpl
@@ -2144,8 +2155,6 @@ StartRecomp:
 		iFlushCall(FLUSH_EVERYTHING);
 
 		iBranchTest(0xffffffff, 1);	
-
-		JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
 	}
 	else {
 		assert( branch != 3 );

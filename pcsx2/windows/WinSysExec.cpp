@@ -25,6 +25,13 @@
 #include "Common.h"
 #include "PsxCommon.h"
 
+#include "iR5900.h"
+
+namespace R5900 { namespace Interpreter
+{
+	extern void intExecute();
+} }
+
 using namespace R5900;
 
 int UseGui = 1;
@@ -174,6 +181,16 @@ void SysPrintf(const char *fmt, ...)
 	Console::Write( msg );
 }
 
+static void __fastcall KeyEvent(keyEvent* ev);
+
+__forceinline void SysUpdate() {
+
+    keyEvent* ev1 = PAD1keyEvent();
+	keyEvent* ev2 = PAD2keyEvent();
+
+	KeyEvent( (ev1 != NULL) ? ev1 : ev2);
+}
+
 void ExecuteCpu()
 {
 	// Make sure any left-over recovery states are cleaned up.
@@ -192,12 +209,30 @@ void ExecuteCpu()
 	g_GameInProgress = true;
 	if( !m_EmuStateActive )
 	{
-		while( true )
+		// Optimization: We hardcode two versions of the EE here -- one for recs and one for ints.
+		// This is because recs are performance critical, and being able to inline them into the
+		// function here helps considerably.
+
+		PCSX2_MEM_PROTECT_BEGIN();
+		if( Cpu == &R5900::recCpu )
 		{
-			Cpu->Execute();
-			SysUpdate();
+			while( true )
+			{
+				Dynarec::R5900::recExecute();
+				SysUpdate();
+			}
+			g_GameInProgress = false;
 		}
-		g_GameInProgress = false;
+		else if( Cpu == &R5900::intCpu )
+		{
+			while( true )
+			{
+				R5900::Interpreter::intExecute();
+				SysUpdate();
+			}
+			g_GameInProgress = false;
+		}
+		PCSX2_MEM_PROTECT_END();
 	}
 	else
 		m_ReturnToGame = true;
@@ -625,7 +660,7 @@ public:
 };
 
 static int shiftkey = 0;
-void CALLBACK KeyEvent(keyEvent* ev)
+static void __fastcall KeyEvent(keyEvent* ev)
 {
 	if (ev == NULL) return;
 	if (ev->evt == KEYRELEASE) {
@@ -786,12 +821,6 @@ void SysClose() {
 	sinit=false;
 }
 
-
-void SysUpdate() {
-
-    KeyEvent(PAD1keyEvent()); //Only need 1 as its used for windows keys only
-	KeyEvent(PAD2keyEvent());
-}
 
 void SysRunGui() {
 	RunGui();
