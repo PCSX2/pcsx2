@@ -654,11 +654,11 @@ void recCOP22()
 {
 	VU0.code = cpuRegs.code;
 
+	g_pCurInstInfo->vuregs.pipe = 0xff; // to notify eeVURecompileCode that COP2
 	s32 info = eeVURecompileCode(&VU0, &g_pCurInstInfo->vuregs);
 	
 	info |= PROCESS_VU_COP2;
 	info |= PROCESS_VU_UPDATEFLAGS;
-	g_pCurInstInfo->vuregs.pipe = 0xff; // to notify eeVURecompileCode that COP2
 
 	recCOP2t[_Rs_]( info );
 
