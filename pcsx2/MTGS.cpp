@@ -896,7 +896,7 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 	return m_packet_size;
 }
 
-__forceinline void mtgsThreadObject::_PrepForSimplePacket()
+__forceinline const u8* mtgsThreadObject::_PrepForSimplePacket()
 {
 #ifdef RINGBUF_DEBUG_STACK
 	m_lock_Stack.Lock();
@@ -907,41 +907,42 @@ __forceinline void mtgsThreadObject::_PrepForSimplePacket()
 	const u8* future_writepos = m_WritePos+16;
 	jASSUME( future_writepos <= m_RingBufferEnd );
 
-    if( future_writepos == m_RingBufferEnd )
+    if( future_writepos >= m_RingBufferEnd )
         future_writepos = m_RingBuffer;
 
 	while( future_writepos == volatize(m_RingPos) )
 		SetEventWait();
+
+	return future_writepos;
 }
 
-__forceinline void mtgsThreadObject::_FinishSimplePacket()
+__forceinline void mtgsThreadObject::_FinishSimplePacket( const u8* future_writepos )
 {
-	const u8* future_writepos = m_WritePos+16;
 	assert( future_writepos != volatize(m_RingPos) );
 	AtomicExchangePointer( m_WritePos, future_writepos );
 }
 
 void mtgsThreadObject::SendSimplePacket( GS_RINGTYPE type, int data0, int data1, int data2 )
 {
-	_PrepForSimplePacket();
+	const u8* const thefuture = _PrepForSimplePacket();
 
 	*(u32*)m_WritePos = type;
 	*(u32*)(m_WritePos+4) = data0;
 	*(u32*)(m_WritePos+8) = data1;
 	*(u32*)(m_WritePos+12) = data2;
 
-	_FinishSimplePacket();	
+	_FinishSimplePacket( thefuture );	
 }
 
 void mtgsThreadObject::SendPointerPacket( GS_RINGTYPE type, u32 data0, void* data1 )
 {
-	_PrepForSimplePacket();
+	const u8* const thefuture = _PrepForSimplePacket();
 
 	*(u32*)m_WritePos = type;
 	*(u32*)(m_WritePos+4) = data0;
 	*(uptr*)(m_WritePos+8) = (uptr)data1;
 
-	_FinishSimplePacket();	
+	_FinishSimplePacket( thefuture );	
 }
 
 // Waits for the GS to empty out the entire ring buffer contents.

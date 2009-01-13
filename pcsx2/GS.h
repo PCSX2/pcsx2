@@ -225,8 +225,8 @@ protected:
 	u32 _gifTransferDummy( GIF_PATH pathidx, const u8 *pMem, u32 size );
 
 	// Used internally by SendSimplePacket type functions
-	void _PrepForSimplePacket();
-	void _FinishSimplePacket();
+	const u8* _PrepForSimplePacket();
+	void _FinishSimplePacket( const u8* future_writepos );
 
 	int Callback();
 };
