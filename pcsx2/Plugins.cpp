@@ -705,7 +705,6 @@ int OpenPlugins(const char* pTitleFilename) {
 		cdvdNewDiskCB();
 	}
 
-	// GS isn't closed during emu pauses, so only open it once per instance.
 	if( !OpenStatus.GS ) {
 		ret = gsOpen();
 		if (ret != 0) { Msgbox::Alert("Error Opening GS Plugin"); goto OpenError; }
@@ -801,7 +800,7 @@ OpenError:
 
 void ClosePlugins()
 {
-	// GS plugin is special and is not closed during emulation pauses.
+	// GS plugin is special and is not always closed during emulation pauses.
 	// (that's because the GS is the most complicated plugin and to close it would
 	// require we save the GS state -- plus, Gsdx doesn't really support being
 	// closed)
@@ -809,13 +808,14 @@ void ClosePlugins()
 	if( OpenStatus.GS )
 		mtgsWaitGS();
 
+	CLOSE_PLUGIN( PAD1 );
+	CLOSE_PLUGIN( PAD2 );
+
 	CLOSE_PLUGIN( CDVD );
 	CLOSE_PLUGIN( DEV9 );
 	CLOSE_PLUGIN( USB );
 	CLOSE_PLUGIN( FW );
 	CLOSE_PLUGIN( SPU2 );
-	CLOSE_PLUGIN( PAD1 );
-	CLOSE_PLUGIN( PAD2 );
 }
 
 void ResetPlugins()
@@ -849,10 +849,18 @@ void ReleasePlugins()
 
 void PluginsResetGS()
 {
+	CLOSE_PLUGIN( PAD1 );
+	CLOSE_PLUGIN( PAD2 );
+
 	if( OpenStatus.GS )
 	{
 		gsClose();
 		OpenStatus.GS = false;
+	}
+
+	if( OpenStatus.PAD1 )
+	{
+		PAD1close();
 	}
 
 	GSshutdown();

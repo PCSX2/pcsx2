@@ -1539,7 +1539,7 @@ void recompileNextInstruction(int delayslot)
 			}
 		}
 		opcode.recompile();
-		s_nBlockCycles += (opcode.cycles==0) ? 6 : opcode.cycles;
+		s_nBlockCycles += opcode.cycles;
 	}
 
 	if( !delayslot ) {
