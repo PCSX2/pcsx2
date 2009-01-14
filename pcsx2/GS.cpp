@@ -164,21 +164,17 @@ static void gsOnModeChanged(  u32 framerate, u32 newTickrate )
 
 void gsSetVideoRegionType( u32 isPal )
 {
-	u32 framerate;
-	
 	if( isPal )
 	{
 		if( Config.PsxType & 1 ) return;
 		Console::WriteLn( "PAL Display Mode Initialized." );
 		Config.PsxType |= 1;
-		framerate = FRAMERATE_PAL;
 	}
 	else
 	{
 		if( !(Config.PsxType & 1 ) ) return;
 		Console::WriteLn( "NTSC Display Mode Initialized." );
 		Config.PsxType &= ~1;
-		framerate = FRAMERATE_NTSC;
 	}
 
 	u32 newTickrate = UpdateVSyncRate();

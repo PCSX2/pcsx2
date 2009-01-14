@@ -328,13 +328,11 @@ void recDI()
 {
 	// No need to branch after disabling interrupts...
 
-	//branch = 2;
-	//MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
-	MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
-	//MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
-	MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
-
 	iFlushCall(0);
+
+	MOV32MtoR( EAX, (uptr)&cpuRegs.cycle );
+	MOV32RtoM( (uptr)&g_nextBranchCycle, EAX );
+
 	CALLFunc( (uptr)Interp::DI );
 }
 

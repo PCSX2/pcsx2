@@ -62,10 +62,6 @@ extern u32 s_nBlockCycles;		// cycles of current block recompiling
 extern u32 s_saveConstGPRreg;
 extern GPR_reg64 s_ConstGPRreg;
 
-#ifndef REC_FUNC_NAMESPACE
-#define REC_FUNC_NAMESPACE
-#endif
-
 #define REC_FUNC( f, delreg ) \
    void rec##f( void ) \
    { \

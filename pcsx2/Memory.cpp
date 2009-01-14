@@ -2323,9 +2323,7 @@ int __fastcall _ext_memRead128(u32 mem, u64 *out)
 			out[1] = gsRead64((mem+8)); return 0;
 	}
 
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read128 from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;
@@ -2351,9 +2349,7 @@ void __fastcall _ext_memWrite8 (u32 mem, u8  value)
 			return;
 	}
 
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory write8   to  address %x with data %2.2x\n", mem, value);
-#endif
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 template<int p>
@@ -2412,7 +2408,6 @@ void __fastcall _ext_memWrite64(u32 mem, const u64* value)
 	}
 
 	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)(*value>>32), (u32)*value);
-
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
 template<int p>
