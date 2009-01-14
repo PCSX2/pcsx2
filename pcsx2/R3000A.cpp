@@ -51,9 +51,6 @@ PCSX2_ALIGNED16(psxRegisters psxRegs);
 
 void psxReset()
 {
-	psxCpu = CHECK_EEREC ? &psxRec : &psxInt;
-	psxCpu->Reset();
-
 	memzero_obj(psxRegs);
 
 	psxRegs.pc = 0xbfc00000; // Start in bootstrap

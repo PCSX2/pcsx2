@@ -24,13 +24,9 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
+#include "VUmicro.h"
 
 #include "iR5900.h"
-
-namespace R5900 { namespace Interpreter
-{
-	extern void intExecute();
-} }
 
 using namespace R5900;
 
@@ -233,12 +229,12 @@ void ExecuteCpu()
 
 	// Optimization: We hardcode two versions of the EE here -- one for recs and one for ints.
 	// This is because recs are performance critical, and being able to inline them into the
-	// function here helps considerably.
+	// function here helps a small bit (not much but every small bit counts!).
 
 	timeBeginPeriod( 1 );
 
 	PCSX2_MEM_PROTECT_BEGIN();
-	if( Cpu == &R5900::recCpu )
+	if( CHECK_EEREC )
 	{
 		while( !g_ReturnToGui )
 		{
@@ -246,11 +242,11 @@ void ExecuteCpu()
 			SysUpdate();
 		}
 	}
-	else if( Cpu == &R5900::intCpu )
+	else
 	{
 		while( !g_ReturnToGui )
 		{
-			R5900::Interpreter::intExecute();
+			Cpu->Execute();
 			SysUpdate();
 		}
 	}
@@ -285,6 +281,8 @@ void RunExecute( const char* elf_file, bool use_bios )
 
 	if (OpenPlugins(g_TestRun.ptitle) == -1)
 		return;
+
+	SysResetExecutionState();
 
 	if( elf_file == NULL )
 	{
@@ -349,8 +347,8 @@ public:
 			// just copy the data from src to dst.
 			// the normal savestate doesn't expect a length prefix for internal structures,
 			// so don't copy that part.
-			u32& pluginlen = *((u32*)g_gsRecoveryState->GetPtr());
-			u32& gslen = *((u32*)g_gsRecoveryState->GetPtr(pluginlen+4));
+			const u32 pluginlen = *((u32*)g_gsRecoveryState->GetPtr());
+			const u32 gslen = *((u32*)g_gsRecoveryState->GetPtr(pluginlen+4));
 			memcpy( m_memory.GetPtr(m_idx), g_gsRecoveryState->GetPtr(pluginlen+8), gslen );
 			m_idx += gslen;
 		}
@@ -364,7 +362,7 @@ public:
 		{
 			// Gs data is already in memory, so just copy from src to dest:
 			// length of the GS data is stored as the first u32, so use that to run the copy:
-			u32& len = *((u32*)g_gsRecoveryState->GetPtr());
+			const u32 len = *((u32*)g_gsRecoveryState->GetPtr());
 			memcpy( m_memory.GetPtr(m_idx), g_gsRecoveryState->GetPtr(), len+4 );
 			m_idx += len+4;
 		}
@@ -748,16 +746,20 @@ void SysReset()
 	// Oops! (air)
 
 	StatusBar_Notice(_("Resetting..."));
+	Console::SetTitle(_("Resetting..."));
 
 	g_EmulationInProgress = false;
 	safe_delete( g_RecoveryState );
 	safe_delete( g_gsRecoveryState );
 	ResetPlugins();
 
+	ElfCRC = 0;
+
 	// Note : No need to call cpuReset() here.  It gets called automatically before the
 	// emulator resumes execution.
 
 	StatusBar_Notice(_("Ready"));
+	Console::SetTitle(_("*PCSX2* Emulation state is reset."));
 }
 
 bool SysInit()

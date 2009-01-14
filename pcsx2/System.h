@@ -33,6 +33,7 @@ bool SysAllocateMem();			// allocates memory for all PS2 systems; returns FALSe 
 void SysAllocateDynarecs();		// allocates memory for all dynarecs, and force-disables any failures.
 void SysShutdownDynarecs();
 void SysShutdownMem();
+void SysResetExecutionState();
 
 void *SysLoadLibrary(const char *lib);	// Loads Library
 void *SysLoadSym(void *lib, const char *sym);	// Loads Symbol from Library

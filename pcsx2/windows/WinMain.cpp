@@ -628,10 +628,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return FALSE;
 
 			case ID_FILE_RUNCD:
-				g_EmulationInProgress = false;
-				safe_delete( g_RecoveryState );
-				safe_delete( g_gsRecoveryState );
-				ResetPlugins();
+				SysReset();
 				RunExecute( NULL );
 			return FALSE;
 
@@ -647,6 +644,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
            	case ID_PATCHBROWSER:
                 DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_PATCHBROWSER), hWnd, (DLGPROC)PatchBDlgProc);
 				return FALSE;
+
 			case ID_CONFIG_CONFIGURE:
 				Pcsx2Configure(hWnd);
 				ReleasePlugins();

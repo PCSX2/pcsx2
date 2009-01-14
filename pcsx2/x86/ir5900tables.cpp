@@ -48,9 +48,9 @@ namespace R5900
 		// to the current cpu cycle.
 
 		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-		MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.cycle );
 		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-		MOV32RtoM( (uptr)&g_nextBranchCycle, ECX );
+		MOV32RtoM( (uptr)&g_nextBranchCycle, EAX );
 
 		// Might as well flush everything -- it'll all get flushed when the
 		// recompiler inserts the branchtest anyway.
@@ -61,14 +61,9 @@ namespace R5900
 
 	void recCall( void (*func)(), int delreg )
 	{
-		// In order to make sure a branch test is performed, the nextBranchCycle is set
-		// to the current cpu cycle.
-
 		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 
-		// Might as well flush everything -- it'll all get flushed when the
-		// recompiler inserts the branchtest anyway.
 		iFlushCall(FLUSH_EVERYTHING);
 		if( delreg > 0 ) _deleteEEreg(delreg, 0);
 		CALLFunc( (uptr)func );

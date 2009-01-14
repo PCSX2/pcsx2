@@ -217,15 +217,15 @@ namespace Dynarec
 
 extern void IPUCMD_WRITE(u32 val);
 extern void ipuSoftReset();
-extern u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
 extern void IPUProcessInterrupt();
 extern void ipu0Interrupt();
 extern void ipu1Interrupt();
 
-u8 getBits32(u8 *address, u32 advance);
-u8 getBits16(u8 *address, u32 advance);
-u8 getBits8(u8 *address, u32 advance);
-int getBits(u8 *address, u32 size, u32 advance);
+extern u16 __fastcall FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
+extern u8 __fastcall getBits32(u8 *address, u32 advance);
+extern u8 __fastcall getBits16(u8 *address, u32 advance);
+extern u8 __fastcall getBits8(u8 *address, u32 advance);
+extern int __fastcall getBits(u8 *address, u32 size, u32 advance);
 
 // returns number of qw read
 int FIFOfrom_write(u32 * value, int size);

@@ -672,13 +672,14 @@ static __forceinline bool recEventTest()
 
 __forceinline void recExecute()
 {
-	//PCSX2_MEM_PROTECT_BEGIN()
+	// Mem protection should be handled by the caller here so that it can be
+	// done in a more optimized fashion.
+
 	while( true )
 	{
 		execute();
 		if( recEventTest() ) break;
 	}
-	//PCSX2_MEM_PROTECT_END()
 }
 
 static void recExecuteBlock()

@@ -34,6 +34,39 @@ extern PSMEMORYMAP *memLUT;
 VUmicroCpu *CpuVU0;
 VUmicroCpu *CpuVU1;
 
+static void DummyExecuteVU1Block(void)
+{
+	VU0.VI[ REG_VPU_STAT ].UL &= ~0x100;
+	VU1.vifRegs->stat &= ~4; // also reset the bit (grandia 3 works)
+}
+
+void vu1MicroEnableSkip()
+{
+	CpuVU1->ExecuteBlock = DummyExecuteVU1Block;
+}
+
+void vu1MicroDisableSkip()
+{
+	CpuVU1->ExecuteBlock = CHECK_VU1REC ? recVU1.ExecuteBlock : intVU1.ExecuteBlock;
+}
+
+bool vu1MicroIsSkipping()
+{
+	return CpuVU1->ExecuteBlock == DummyExecuteVU1Block;
+}
+
+void vuMicroCpuReset()
+{
+	CpuVU1 = CHECK_VU1REC ? &recVU1 : &intVU1;
+	CpuVU0 = CHECK_VU0REC ? &recVU0 : &intVU0;
+	CpuVU0->Reset();
+	CpuVU1->Reset();
+
+	// SuperVUreset will do nothing is none of the recs are initialized.
+	// But it's needed if one or the other is initialized.
+	Dynarec::SuperVUReset(-1);
+}
+
 void vuMicroMemAlloc()
 {
 #ifdef PCSX2_VIRTUAL_MEM
@@ -146,8 +179,6 @@ void vuMicroMemReset()
 	jASSUME( VU0.Mem != NULL );
 	jASSUME( VU1.Mem != NULL );
 
-	PCSX2_MEM_PROTECT_BEGIN();
-
 	// === VU0 Initialization ===
 	memzero_obj(VU0.ACC);
 	memzero_obj(VU0.VF);
@@ -190,7 +221,6 @@ void vuMicroMemReset()
 	VU1.vuExec   = vu1Exec;
 	VU1.vifRegs  = vif1Regs;
 
-	PCSX2_MEM_PROTECT_END();
 }
 
 void SaveState::vuMicroFreeze()

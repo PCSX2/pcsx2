@@ -1742,10 +1742,15 @@ void recQFSRV()
 	//u8* pshift1, *pshift2, *poldptr, *pnewptr;
 
 	if ( ! _Rd_ ) return;
+
 /*
 CPU_SSE2_XMMCACHE_START((_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 
-	if( _Rs_ == 0 ) {
+	if( _Rs_ == 0 )
+	{
+		// Special case using the Zero register as a source.
+		// not Implemented yet.
+
 		MOV32MtoR(EAX, (uptr)&cpuRegs.sa);
 		SHR32ItoR(EAX, 3);
 		
@@ -1762,7 +1767,8 @@ CPU_SSE2_XMMCACHE_START((_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 		MOV8RtoM((uptr)pshift1, EAX);
 		x86Ptr = pnewptr;
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		MOV32MtoR(EAX, (uptr)&cpuRegs.sa);
@@ -1794,7 +1800,8 @@ CPU_SSE2_XMMCACHE_START((_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED)
 		_freeXMMreg(t0reg);
 	}
 
-CPU_SSE_XMMCACHE_END*/
+CPU_SSE_XMMCACHE_END
+*/
 
 	recCall( Interp::QFSRV, _Rd_ );
 }

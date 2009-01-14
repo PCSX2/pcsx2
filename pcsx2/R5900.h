@@ -223,7 +223,6 @@ void cpuExecuteBios();
 void cpuException(u32 code, u32 bd);
 void cpuTlbMissR(u32 addr, u32 bd);
 void cpuTlbMissW(u32 addr, u32 bd);
-void IntcpuBranchTest();
 extern void cpuTestHwInts();
 
 extern bool _cpuBranchTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:
@@ -237,10 +236,14 @@ extern void cpuTestTIMRInts();
 
 namespace Interpreter
 {
-	void intDoBranch(u32 target);
+	bool intEventTest();
 	void intSetBranch();
 	void intExecuteVU0Block();
 	void intExecuteVU1Block();
+
+	// This is a special form of the interpreter's doBranch that is run from various
+	// parts of the Recs (namely COP0's branch codes and stuff).
+	void __fastcall intDoBranch(u32 target);
 }
 
 void JumpCheckSym(u32 addr, u32 pc);

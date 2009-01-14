@@ -136,8 +136,6 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					else if( SendDlgItemMessage(hW,IDC_CPU_FL_SKIP,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT_SKIP;
 					else if( SendDlgItemMessage(hW,IDC_CPU_FL_SKIPVU,BM_GETCHECK,0,0) ) newopts |= PCSX2_FRAMELIMIT_VUSKIP;
 
-					if( newopts & PCSX2_EEREC ) newopts |= PCSX2_COP2REC;
-
 					GetDlgItemText(hW, IDC_CUSTOMFPS, cfps, 20);
 					Config.CustomFps = atoi(cfps);
 

@@ -30,9 +30,6 @@ using namespace Threading;
 extern u8 psxhblankgate;
 u32 g_vu1SkipCount;	// number of frames to disable/skip VU1
 
-static void (*s_prevExecuteVU1Block)() = NULL;	// old VU1 block (either Int or Rec)
-extern void DummyExecuteVU1Block(void);
-
 namespace R5900
 {
 
@@ -263,8 +260,6 @@ u32 UpdateVSyncRate()
 	cpuRcntSet();
 
 	// Initialize VU Skip Stuff...
-	assert(CpuVU1 != NULL && CpuVU1->ExecuteBlock != NULL );
-	s_prevExecuteVU1Block = CpuVU1->ExecuteBlock;
 	g_vu1SkipCount = 0;
 
 	return (u32)m_iTicks;
@@ -402,7 +397,7 @@ static __forceinline void frameLimit()
 
 static __forceinline void VSyncStart(u32 sCycle)
 {
-	EECNT_LOG( "////////  EE COUNTER VSYNC START  \\\\\\\\  (frame: %d)\n", iFrame );
+	EECNT_LOG( "/////////  EE COUNTER VSYNC START  \\\\\\\\\\  (frame: %d)\n", iFrame );
 	vSyncDebugStuff(); // EE Profiling and Debug code
 
 	if ((CSRw & 0x8)) GSCSRr|= 0x8;
@@ -434,7 +429,7 @@ static __forceinline void VSyncStart(u32 sCycle)
 
 static __forceinline void VSyncEnd(u32 sCycle)
 {
-	EECNT_LOG( "////////  EE COUNTER VSYNC END  \\\\\\\\  (frame: %d)\n", iFrame );
+	EECNT_LOG( "/////////  EE COUNTER VSYNC END  \\\\\\\\\\  (frame: %d)\n", iFrame );
 
 	iFrame++;
 
@@ -442,12 +437,12 @@ static __forceinline void VSyncEnd(u32 sCycle)
 	{
 		gsPostVsyncEnd( false );
 		AtomicDecrement( g_vu1SkipCount );
-		CpuVU1->ExecuteBlock = DummyExecuteVU1Block;
+		vu1MicroEnableSkip();
 	}
 	else
 	{
 		gsPostVsyncEnd( true );
-		CpuVU1->ExecuteBlock = s_prevExecuteVU1Block;
+		vu1MicroDisableSkip();
 	}
 
 	hwIntcIrq(3);  // HW Irq

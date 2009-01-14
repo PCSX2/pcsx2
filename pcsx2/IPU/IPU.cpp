@@ -76,7 +76,6 @@ PCSX2_ALIGNED16(u32 fifo_input[32]);
 PCSX2_ALIGNED16(u32 fifo_output[32]);
 
 void ReorderBitstream();
-u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
 
 // the BP doesn't advance and returns -1 if there is no data to be read
 tIPU_BP g_BP;
@@ -1011,7 +1010,7 @@ void ReorderBitstream()
 // If FP is 1, there's 1 qword in buffer. Second qword is only loaded
 // incase there are less than 32bits available in the first qword.
 // \return Number of bits available (clamps at 16 bits)
-u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size)
+u16 __fastcall FillInternalBuffer(u32 * pointer, u32 advance, u32 size)
 {
 	if(g_BP.FP == 0)
 	{
@@ -1050,7 +1049,7 @@ u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size)
 
 // whenever reading fractions of bytes. The low bits always come from the next byte
 // while the high bits come from the current byte
-u8 getBits32(u8 *address, u32 advance)
+u8 __fastcall getBits32(u8 *address, u32 advance)
 {
 	register u32 mask, shift=0;
 	u8* readpos;
@@ -1078,7 +1077,7 @@ u8 getBits32(u8 *address, u32 advance)
 	return 1;
 }
 
-u8 getBits16(u8 *address, u32 advance)
+__forceinline u8 __fastcall getBits16(u8 *address, u32 advance)
 {
 	register u32 mask, shift=0;
 	u8* readpos;
@@ -1108,7 +1107,7 @@ u8 getBits16(u8 *address, u32 advance)
 	return 1;
 }
 
-u8 getBits8(u8 *address, u32 advance)
+u8 __fastcall getBits8(u8 *address, u32 advance)
 {
 	register u32 mask, shift=0;
 	u8* readpos;
@@ -1135,7 +1134,7 @@ u8 getBits8(u8 *address, u32 advance)
 	return 1;
 }
 
-int getBits(u8 *address, u32 size, u32 advance)
+int __fastcall getBits(u8 *address, u32 size, u32 advance)
 {
 	register u32 mask = 0, shift=0, howmuch;
 	u8* oldbits, *oldaddr = address;
@@ -1382,7 +1381,7 @@ int FIFOto_write(u32* pMem, int size)
 	{	\
 		int qwc = ipu1dma->qwc; \
 		pMem = (u32*)dmaGetAddr(ipu1dma->madr); \
-		if (pMem == NULL) { SysPrintf("ipu1dma NULL!\n"); return totalqwc; } \
+		if (pMem == NULL) { Console::Error("ipu1dma NULL!"); return totalqwc; } \
 		qwc = FIFOto_write(pMem, qwc); \
 		ipu1dma->madr += qwc<< 4; \
 		ipu1dma->qwc -= qwc; \

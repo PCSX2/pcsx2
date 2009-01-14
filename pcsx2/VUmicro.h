@@ -46,12 +46,16 @@ void vuMicroMemAlloc();
 void vuMicroMemShutdown();
 void vuMicroMemReset();
 
+// Resets VUs and assigns the cpuVU0 / cpuVU1 pointers as according to 
+// the CHECK_VU0REC / CHECK_VU1REC config options.
+void vuMicroCpuReset();
 
 /////////////////////////////////////////////////////////////////
 // Everything else does stuff on a per-VU basis.
 //
 void iDumpVU0Registers();
 void iDumpVU1Registers();
+
 
 extern void (*VU0_LOWER_OPCODE[128])();
 extern void (*VU0_UPPER_OPCODE[64])();
@@ -86,18 +90,20 @@ extern void (*VU1regs_UPPER_FD_10_TABLE[32])(_VURegsNum *VUregsn);
 extern void (*VU1regs_UPPER_FD_11_TABLE[32])(_VURegsNum *VUregsn);
 
 // VU0
-void vu0Reset();
-void vu0ResetRegs();
-void vu0ExecMicro(u32 addr);
-void vu0Exec(VURegs* VU);
-void vu0Finish();
-void recResetVU0( void );
+extern void vu0ResetRegs();
+extern void vu0ExecMicro(u32 addr);
+extern void vu0Exec(VURegs* VU);
+extern void vu0Finish();
+extern void recResetVU0( void );
 
 // VU1
-void vu1Reset();
-void vu1ResetRegs();
-void vu1ExecMicro(u32 addr);
-void vu1Exec(VURegs* VU);
+extern void vu1ResetRegs();
+extern void vu1ExecMicro(u32 addr);
+extern void vu1Exec(VURegs* VU);
+
+extern void vu1MicroEnableSkip();
+extern void vu1MicroDisableSkip();
+extern bool vu1MicroIsSkipping();
 
 void VU0_UPPER_FD_00();
 void VU0_UPPER_FD_01();

@@ -66,12 +66,6 @@ void vu0ResetRegs()
 	vif0Regs->stat &= ~4;
 }
 
-void vu0Reset()
-{
-	CpuVU0 = CHECK_VU0REC ? &recVU0 : &intVU0;
-	CpuVU0->Reset();
-}
-
 void VU0MI_XGKICK() {
 }
 

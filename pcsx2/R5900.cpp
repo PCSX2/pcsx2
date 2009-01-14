@@ -27,8 +27,6 @@
 #include "GS.h"
 #include "IPU/IPU.h"
 
-#include "iVUzerorec.h"		// for SuperVUReset
-
 #include "Paths.h"
 
 namespace R5900
@@ -45,7 +43,7 @@ PCSX2_ALIGNED16(tlbs tlb[48]);
 PCSX2_ALIGNED16(GPR_reg64 g_cpuConstRegs[32]) = {0};
 
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
-R5900cpu *Cpu;
+R5900cpu *Cpu = NULL;
 
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
 
@@ -80,18 +78,15 @@ void cpuReset()
 		cpuIsInitialized = true;
 	}
 
-	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
-
-	// safeguard the VUcpu structs.  None of the memReset ops should try to
-	// use them, and this ensures if they do it'll assert/DEP.
-
-	CpuVU0 = CpuVU1 = NULL;
+#ifdef PCSX2_VIRTUAL_MEM
+	// VM Builds require the exception handler during memInit/Reset operations and
+	// during the savestate load/save code.
+	PCSX2_MEM_PROTECT_BEGIN();
+#endif
 
 	memReset();
 	psxMemReset();
 	vuMicroMemReset();
-
-	Cpu->Reset();
 
 	memset(&cpuRegs, 0, sizeof(cpuRegs));
 	memset(&fpuRegs, 0, sizeof(fpuRegs));
@@ -114,17 +109,15 @@ void cpuReset()
 	if( CHECK_EE_CYCLERATE > 1 )
 		eeWaitCycles += 1024;
 
-	// SuperVUreset will do nothing is none of the recs are initialized.
-	Dynarec::SuperVUReset(-1);
-
-	vu0Reset();
-	vu1Reset();
-
 	hwReset();
 	vif0Reset();
     vif1Reset();
 	rcntInit();
 	psxReset();
+
+#ifdef PCSX2_VIRTUAL_MEM
+	PCSX2_MEM_PROTECT_END();
+#endif
 }
 
 void cpuShutdown()
@@ -142,7 +135,11 @@ void cpuShutdown()
 	//Cpu->Shutdown();
 }
 
-void cpuException(u32 code, u32 bd) {
+void cpuException(u32 code, u32 bd)
+{
+	cpuRegs.branch = 0;		// Tells the interpreter that an exception occurred during a branch.
+
+
 	u32 offset;
 	cpuRegs.CP0.n.Cause = code & 0xffff;
 
@@ -642,10 +639,6 @@ void cpuTestHwInts() {
 
 void cpuExecuteBios()
 {
-	// filter CPU options
-	if( CHECK_EEREC ) Config.Options |= PCSX2_COP2REC;
-	else Config.Options &= ~PCSX2_COP2REC;
-
 	// Set the video mode to user's default request:
 	// (right now we always default to NTSC)
 	gsSetVideoRegionType( Config.PsxType & 1 );
@@ -678,17 +671,6 @@ void cpuExecuteBios()
 
 	Console::Notice("* PCSX2 *: ExecuteBios Complete");
 	//GSprintf(5, "PCSX2 " PCSX2_VERSION "\nExecuteBios Complete\n");
-}
-
-// for interpreter only
-void IntcpuBranchTest()
-{
-	g_EEFreezeRegs = false;
-
-	// Perform counters, ints, and IOP updates:
-	_cpuBranchTest_Shared();
-
-	g_EEFreezeRegs = true;
 }
 
 __forceinline void CPU_INT( u32 n, s32 ecycle)

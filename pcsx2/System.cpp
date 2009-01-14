@@ -23,7 +23,9 @@
 #include "VUmicro.h"
 #include "Threading.h"
 
-#include "iVUzerorec.h"
+#include "iR5900.h"
+#include "iVUzerorec.h"		// for SuperVUReset
+
 
 #include "x86/ix86/ix86.h"
 
@@ -57,7 +59,7 @@ static void trim( string& line )
    
    bool encountered_characters = false;
    
-   // find the start of chracters in the string
+   // find the start of characters in the string
    while ( (beginning_of_string < string_size) && (!encountered_characters) )
    {
       if ( (line[ beginning_of_string ] != ' ') && (line[ beginning_of_string ] != '\t') )
@@ -297,4 +299,31 @@ void SysShutdownDynarecs()
 
 	psxRec.Shutdown();
 	R5900::recCpu.Shutdown();
+}
+
+// Resets all PS2 cpu execution states, which does not affect that actual PS2 state/condition.
+// This can be called at any time outside the context of a Cpu->Execute() block without
+// bad things happening (recompilers will slow down for a brief moment since rec code blocks
+// are dumped).
+// Use this method to reset the recs when important global pointers like the MTGS are re-assigned.
+void SysResetExecutionState()
+{
+	if( CHECK_EEREC )
+	{
+		R5900::Cpu = &R5900::recCpu;
+		psxCpu = &psxRec;
+	}
+	else
+	{
+		R5900::Cpu = &R5900::intCpu;
+		psxCpu = &psxInt;
+	}
+
+	R5900::Cpu->Reset();
+	psxCpu->Reset();
+
+	// make sure the VU1 doesn't have lingering "skip" enabled.
+	vu1MicroDisableSkip();
+
+	vuMicroCpuReset();
 }

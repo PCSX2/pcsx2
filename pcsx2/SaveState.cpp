@@ -110,6 +110,12 @@ void SaveState::FreezeAll()
 	if( IsLoading() )
 		PreLoadPrep();
 
+#ifdef PCSX2_VIRTUAL_MEM
+	// VM Builds require the exception handler during memInit/Reset operations and
+	// during the savestate load/save code.
+	PCSX2_MEM_PROTECT_BEGIN();
+#endif
+
 	FreezeMem(PS2MEM_BASE, Ps2MemSize::Base);	// 32 MB main memory   
 	FreezeMem(PS2MEM_ROM, Ps2MemSize::Rom);		// 4 mb rom memory
 	FreezeMem(PS2MEM_ROM1, Ps2MemSize::Rom1);	// 256kb rom1 memory
@@ -158,6 +164,10 @@ void SaveState::FreezeAll()
 	FreezePlugin( "SPU2", SPU2freeze );
 	FreezePlugin( "DEV9", DEV9freeze );
 	FreezePlugin( "USB", USBfreeze );
+
+#ifdef PCSX2_VIRTUAL_MEM
+	PCSX2_MEM_PROTECT_END();
+#endif
 
 	if( IsLoading() )
 		PostLoadPrep();

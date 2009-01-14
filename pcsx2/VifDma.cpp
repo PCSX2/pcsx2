@@ -237,12 +237,6 @@ __forceinline static int _limit( int a, int max ) {
    return ( a > max ? max : a );
 }
 
-void DummyExecuteVU1Block(void)
-{
-	VU0.VI[ REG_VPU_STAT ].UL &= ~0x100;
-    VU1.vifRegs->stat &= ~4; // also reset the bit (grandia 3 works)
-}
-
 static void ProcessMemSkip(int size, unsigned int unpackType, const unsigned int VIFdmanum){
 	const VIFUnpackFuncTable *unpack;
 	vifStruct *vif;
@@ -365,7 +359,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 		assert( v->addr < memsize );
 		//v->addr &= 0x3fff;
 
-		if( CpuVU1->ExecuteBlock == DummyExecuteVU1Block ) {
+		if( vu1MicroIsSkipping() ) {
 			// don't process since the frame is dummy
 			vif->tag.addr += (size / (VIFfuncTable[ vif->cmd & 0xf ].gsize* vifRegs->cycle.wl)) * ((vifRegs->cycle.cl - vifRegs->cycle.wl)*16);
 		//	unpacktotal += GetCPUTick()-basetick;

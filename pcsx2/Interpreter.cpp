@@ -92,8 +92,7 @@ namespace R5900
 
 namespace Interpreter
 {
-int branch2 = 0;
-static u32 branchPC;
+static int branch2 = 0;
 
 // These macros are used to assemble the repassembler functions
 
@@ -128,21 +127,40 @@ static __forceinline void execI()
 	opcode.interpret();
 }
 
-static void doBranch(u32 tar) {
-	branch2 = cpuRegs.branch = 1;
-	branchPC = tar;
-	execI();
-	cpuRegs.branch = 0;
-	cpuRegs.pc = branchPC;
+static bool EventRaised = false;
 
-	cpuRegs.cycle += cpuBlockCycles >> 3;
-	cpuBlockCycles &= (1<<3)-1;
-	IntcpuBranchTest();
+static __forceinline void _doBranch_shared(u32 tar)
+{
+	// fixme: first off, cpuRegs.pc is assigned after execI(), which breaks exceptions
+	// that might be thrown by execI().  I need to research how exceptions work again,
+	// and make sure I record the correct PC
+
+	branch2 = cpuRegs.branch = 1;
+	const u32 oldBranchPC = cpuRegs.pc;
+	execI();
+
+	// branch being 0 means an exception was thrown, since only the exception
+	// handler should ever clear it.
+
+	if( cpuRegs.branch != 0 )
+	{
+		cpuRegs.pc = tar;
+		cpuRegs.branch = 0;
+	}
 }
 
-void intDoBranch(u32 target) {
+static void __fastcall doBranch( u32 target )
+{
+	_doBranch_shared( target );
+	cpuRegs.cycle += cpuBlockCycles >> 3;
+	cpuBlockCycles &= (1<<3)-1;
+	EventRaised |= intEventTest();
+}
+
+void __fastcall intDoBranch(u32 target)
+{
 	//SysPrintf("Interpreter Branch \n");
-	doBranch(target);
+	_doBranch_shared( target );
 }
 
 void intSetBranch() {
@@ -361,7 +379,7 @@ void DSRLV(){ if (!_Rd_) return; cpuRegs.GPR.r[_Rd_].UD[0] = (u64)(cpuRegs.GPR.r
 *********************************************************/
 #define RepBranchi32(op) \
 	if (cpuRegs.GPR.r[_Rs_].SD[0] op cpuRegs.GPR.r[_Rt_].SD[0]) doBranch(_BranchTarget_); \
-	else IntcpuBranchTest();
+	else intEventTest();
 
 
 void BEQ() {	RepBranchi32(==) }  // Branch if Rs == Rt
@@ -374,13 +392,13 @@ void BNE() {	RepBranchi32(!=) }  // Branch if Rs != Rt
 #define RepZBranchi32(op) \
 	if(cpuRegs.GPR.r[_Rs_].SD[0] op 0) { \
 		doBranch(_BranchTarget_); \
-	} else IntcpuBranchTest();
+	}
 
 #define RepZBranchLinki32(op) \
 	_SetLink(31); \
 	if(cpuRegs.GPR.r[_Rs_].SD[0] op 0) { \
 		doBranch(_BranchTarget_); \
-	} else IntcpuBranchTest();
+	}
 
 void BGEZ()   { RepZBranchi32(>=) }      // Branch if Rs >= 0
 void BGEZAL() { RepZBranchLinki32(>=) }  // Branch if Rs >= 0 and link
@@ -397,18 +415,18 @@ void BLTZAL() { RepZBranchLinki32(<) }   // Branch if Rs <  0 and link
 #define RepZBranchi32Likely(op) \
 	if(cpuRegs.GPR.r[_Rs_].SD[0] op 0) { \
 		doBranch(_BranchTarget_); \
-	} else { cpuRegs.pc +=4; IntcpuBranchTest(); }
+	} else { cpuRegs.pc +=4; intEventTest(); }
 
 #define RepZBranchLinki32Likely(op) \
 	_SetLink(31); \
 	if(cpuRegs.GPR.r[_Rs_].SD[0] op 0) { \
 		doBranch(_BranchTarget_); \
-	} else { cpuRegs.pc +=4; IntcpuBranchTest(); }
+	} else { cpuRegs.pc +=4; intEventTest(); }
 
 #define RepBranchi32Likely(op) \
 	if(cpuRegs.GPR.r[_Rs_].SD[0] op cpuRegs.GPR.r[_Rt_].SD[0]) { \
 		doBranch(_BranchTarget_); \
-	} else { cpuRegs.pc +=4; IntcpuBranchTest(); }
+	} else { cpuRegs.pc +=4; intEventTest(); }
 
 
 void BEQL()    {  RepBranchi32Likely(==)      }  // Branch if Rs == Rt
@@ -980,29 +998,56 @@ void MTSAH() {
 
 ////////////////////////////////////////////////////////
 
-void intAlloc() {
-	 // fixme : detect cpu for use the optimaze asm code
+void intAlloc()
+{
+	 // fixme : detect cpu for use the optimize asm code
 }
 
-void intReset() {
+void intReset()
+{
 	cpuRegs.branch = 0;
 	branch2 = 0;
 }
 
-void intExecute() {
-	for (;;) execI();
+bool intEventTest()
+{
+	// Perform counters, ints, and IOP updates:
+	return _cpuBranchTest_Shared();
 }
 
-static void intExecuteBlock() {
+void intExecute()
+{
+	g_EEFreezeRegs = false;
+
+	// Mem protection should be handled by the caller here so that it can be
+	// done in a more optimized fashion.
+
+	EventRaised = false;
+
+	while( !EventRaised )
+	{
+		execI();
+	}
+}
+
+static void intExecuteBlock()
+{
+	g_EEFreezeRegs = false;
+
+	PCSX2_MEM_PROTECT_BEGIN()
 	branch2 = 0;
 	while (!branch2) execI();
+	PCSX2_MEM_PROTECT_END()
 }
 
-void intStep() {
+void intStep()
+{
+	g_EEFreezeRegs = false;
 	execI();
 }
 
-void intClear(u32 Addr, u32 Size) {
+void intClear(u32 Addr, u32 Size)
+{
 }
 
 void intShutdown() {

@@ -71,12 +71,6 @@ void vu1ResetRegs()
 	vif1Regs->stat &= ~4;
 }
 
-void vu1Reset()
-{
-	CpuVU1 = CHECK_VU1REC ? &recVU1 : &intVU1;
-	CpuVU1->Reset();
-}
-
 static int count;
 
 void vu1ExecMicro(u32 addr)
