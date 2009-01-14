@@ -615,7 +615,7 @@ void ShutdownPlugins()
 	ClosePlugins();
 
 	// GS is a special case: It needs closed first usually.
-	// (the GS isn't closed during emulation pauses)
+	// (the GS isn't always closed during emulation pauses)
 	if( OpenStatus.GS )
 	{
 		gsClose();

@@ -25,6 +25,7 @@
 #include "R3000A.h"
 #include "VUmicro.h"
 #include "GS.h"
+#include "IPU/IPU.h"
 
 #include "iVUzerorec.h"		// for SuperVUReset
 
@@ -385,7 +386,7 @@ static __forceinline void _cpuTestInterrupts()
 	if( cpuRegs.interrupt & ( 1 | (3 << 3) | (3<<8) | (3<<10)) )
 	{
 		TESTINT(0, vif0Interrupt);
-#ifndef USE_IPU_SPEEDHACK
+#ifndef IPU_INLINE_IRQS
 		TESTINT(3, ipu0Interrupt);
 		TESTINT(4, ipu1Interrupt);
 #endif
@@ -403,7 +404,7 @@ static __forceinline void _cpuTestTIMR()
 	s_iLastCOP0Cycle = cpuRegs.cycle;
 
 	// fixme: this looks like a hack to make up for the fact that the TIMR
-	// doesn't yet have a proper mecahnism for setting itself up on a nextBranchCycle.
+	// doesn't yet have a proper mechanism for setting itself up on a nextBranchCycle.
 	// A proper fix would schedule the TIMR to trigger at a specific cycle anytime
 	// the Count or Compare registers are modified.
 

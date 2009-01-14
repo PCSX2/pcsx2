@@ -28,24 +28,20 @@
 
 #include "PrecompiledHeader.h"
 
+#include "Common.h"
+#include "IPU.h"
 #include "Mpeg.h"
 #include "Vlc.h"
 #include "coroutine.h"
 
-extern void (* __fastcall mpeg2_idct_copy) (s16 * block, u8* dest, int stride);
-/* JayteeMaster: changed dest to 16 bit signed */
-extern void (* __fastcall mpeg2_idct_add) (int last, s16 * block,
-				/*u8*/s16* dest, int stride);
-
-/* JayteeMaster: remove static attribute */
-/*static */int non_linear_quantizer_scale [] = {
+int non_linear_quantizer_scale [] = {
      0,  1,  2,  3,  4,  5,   6,   7,
      8, 10, 12, 14, 16, 18,  20,  22,
     24, 28, 32, 36, 40, 44,  48,  52,
     56, 64, 72, 80, 88, 96, 104, 112
 };
 
-/* Bitstream and buffer needs to be realocated inorder for sucessful
+/* Bitstream and buffer needs to be reallocated in order for successful
    reading of the old data. Here the old data stored in the 2nd slot
    of the internal buffer is copied to 1st slot, and the new data read
    into 1st slot is copied to the 2nd slot. Which will later be copied

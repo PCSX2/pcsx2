@@ -25,6 +25,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
+#include "IPU.h"
 
 #define W1 2841 /* 2048*sqrt (2)*cos (1*pi/16) */
 #define W2 2676 /* 2048*sqrt (2)*cos (2*pi/16) */
@@ -34,10 +35,11 @@
 #define W7 565  /* 2048*sqrt (2)*cos (7*pi/16) */
 #define clp(val,res)	res = (val < 0) ? 0 : ((val > 255) ? 255 : val);
 #define clp2(val,res)	res = (val < -255) ? -255 : ((val > 255) ? 255 : val);
+
 /* idct main entry point  */
-void (* mpeg2_idct_copy) (s16 * block, u8 * dest, int stride);
+void (__fastcall *mpeg2_idct_copy) (s16 * block, u8 * dest, int stride);
 /* JayteeMaster: changed dest to 16 bit signed */
-void (* mpeg2_idct_add) (int last, s16 * block,
+void (__fastcall *mpeg2_idct_add) (int last, s16 * block,
 			 /*u8*/s16 * dest, int stride);
 
 /*
@@ -64,7 +66,7 @@ do {					\
 } while (0)
 #endif
 
-static void idct_row (s16 * const block)
+static __forceinline void idct_row (s16 * const block)
 {
     int d0, d1, d2, d3;
     int a0, a1, a2, a3, b0, b1, b2, b3;
@@ -117,7 +119,7 @@ static void idct_row (s16 * const block)
     block[7] = (a0 - b0) >> 8;
 }
 
-static void idct_col (s16 * const block)
+static __forceinline void idct_col (s16 * const block)
 {
     int d0, d1, d2, d3;
     int a0, a1, a2, a3, b0, b1, b2, b3;
@@ -158,7 +160,7 @@ static void idct_col (s16 * const block)
     block[8*7] = (a0 - b0) >> 17;
 }
 
-static void mpeg2_idct_copy_c (s16 * block, u8 * dest,
+static void __fastcall mpeg2_idct_copy_c (s16 * block, u8 * dest,
 			       const int stride)
 {
     int i;
@@ -186,7 +188,7 @@ static void mpeg2_idct_copy_c (s16 * block, u8 * dest,
 }
 
 /* JayteeMaster: changed dest to 16 bit signed */
-static void mpeg2_idct_add_c (const int last, s16 * block,
+static void __fastcall mpeg2_idct_add_c (const int last, s16 * block,
 			      /*u8*/s16 * dest, const int stride)
 {
     int i;

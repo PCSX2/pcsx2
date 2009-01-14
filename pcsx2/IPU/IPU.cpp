@@ -18,8 +18,9 @@
 
 #include "PrecompiledHeader.h"
 
-#include "R5900.h"
+#include "Common.h"
 
+#include "IPU.h"
 #include "mpeg2lib/Mpeg.h"
 #include "yuv2rgb.h"
 #include "coroutine.h"
@@ -102,10 +103,10 @@ static u8 niq[64],			//non-intraquant matrix
 u16 vqclut[16];			//clut conversion table
 static u8 s_thresh[2];		//thresholds for color conversions
 int coded_block_pattern=0;
-PCSX2_ALIGNED16(struct macroblock_8  mb8);
-PCSX2_ALIGNED16(struct macroblock_16 mb16);
-PCSX2_ALIGNED16(struct macroblock_rgb32 rgb32);
-PCSX2_ALIGNED16(struct macroblock_rgb16 rgb16);
+PCSX2_ALIGNED16(macroblock_8  mb8);
+PCSX2_ALIGNED16(macroblock_16 mb16);
+PCSX2_ALIGNED16(macroblock_rgb32 rgb32);
+PCSX2_ALIGNED16(macroblock_rgb16 rgb16);
 
 u8 indx4[16*16/2];
 u32	mpeg2_inited;		//mpeg2_idct_init() must be called only once
@@ -1240,7 +1241,7 @@ int getBits(u8 *address, u32 size, u32 advance)
 void Skl_YUV_To_RGB32_MMX(u8 *RGB, const int Dst_BpS, const u8 *Y, const u8 *U, const u8 *V,
 	const int Src_BpS, const int Width, const int Height);
 
-void ipu_csc(struct macroblock_8 *mb8, struct macroblock_rgb32 *rgb32, int sgn){
+void __fastcall ipu_csc(macroblock_8 *mb8, macroblock_rgb32 *rgb32, int sgn){
 	int i;
 	u8* p = (u8*)rgb32;
 
@@ -1267,7 +1268,7 @@ void ipu_csc(struct macroblock_8 *mb8, struct macroblock_rgb32 *rgb32, int sgn){
 	}
 }
 
-void ipu_dither2(struct macroblock_rgb32* rgb32, struct macroblock_rgb16 *rgb16, int dte)
+void __fastcall ipu_dither2(const macroblock_rgb32* rgb32, macroblock_rgb16 *rgb16, int dte)
 {
 	int i, j;
 	for(i = 0; i < 16; ++i) {
@@ -1280,18 +1281,18 @@ void ipu_dither2(struct macroblock_rgb32* rgb32, struct macroblock_rgb16 *rgb16,
 	}
 }
 
-void ipu_dither(struct macroblock_8 *mb8, struct macroblock_rgb16 *rgb16, int dte)
+void __fastcall ipu_dither(macroblock_8 *mb8, macroblock_rgb16 *rgb16, int dte)
 {
 	//SysPrintf("IPU: Dither not implemented");
 }
 
-void ipu_vq(struct macroblock_rgb16 *rgb16, u8* indx4){
+void __fastcall ipu_vq(macroblock_rgb16 *rgb16, u8* indx4){
 	Console::Error("IPU: VQ not implemented");
 }
 
-void ipu_copy(struct macroblock_8 *mb8, struct macroblock_16 *mb16) {
-	unsigned char	*s=(unsigned char*)mb8;
-	signed short	*d=(signed short*)mb16;
+void __fastcall ipu_copy(const macroblock_8 *mb8, macroblock_16 *mb16) {
+	const u8	*s=(const u8*)mb8;
+	s16	*d=(s16*)mb16;
 	int i;
 	for (i=0; i< 256; i++)	*d++ = *s++;		//Y  bias	- 16
 	for (i=0; i< 64; i++)	*d++ = *s++;		//Cr bias	- 128

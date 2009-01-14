@@ -47,7 +47,6 @@ namespace R5900
 		// In order to make sure a branch test is performed, the nextBranchCycle is set
 		// to the current cpu cycle.
 
-		branch = 2;
 		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 		MOV32MtoR( ECX, (uptr)&cpuRegs.cycle );
 		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
@@ -57,6 +56,7 @@ namespace R5900
 		// recompiler inserts the branchtest anyway.
 		iFlushCall(FLUSH_EVERYTHING);
 		CALLFunc( (uptr)func );
+		branch = 2;
 	}
 
 	void recCall( void (*func)(), int delreg )

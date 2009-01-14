@@ -75,7 +75,6 @@ extern TESTRUNARGS g_TestRun;
 // Moving this before one of the other includes causes compilation issues. 
 #include "Misc.h"
 #include "Counters.h"
-#include "IPU/IPU.h"
 #include "Patch.h"
 #include "COP0.h"
 #include "VifDma.h"

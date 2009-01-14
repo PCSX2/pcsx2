@@ -25,7 +25,6 @@
 #ifndef __VLC_H__
 #define __VLC_H__
 
-#include "IPU.h"
 #include "coroutine.h"
 
 static u8 data[2];

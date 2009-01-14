@@ -54,6 +54,7 @@ BIOS
 #include "VUmicro.h"
 #include "GS.h"
 #include "vtlb.h"
+#include "ipu/IPU.h"
 
 using namespace Dynarec;
 using namespace Dynarec::R5900;

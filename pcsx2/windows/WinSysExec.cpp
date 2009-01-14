@@ -41,9 +41,8 @@ MemoryAlloc<u8>* g_RecoveryState = NULL;
 MemoryAlloc<u8>* g_gsRecoveryState = NULL;
 
 
-bool m_ReturnToGame = false;		// set to exit the RunGui message pump
-bool g_GameInProgress = false;		// Set TRUE if a game is actively running (set to false on reset)
-bool m_EmuStateActive = false;		// Set TRUE when the GUI is running from the context of an emulation EventTest
+bool g_ReturnToGui = false;			// set to exit the execution of the emulator and return control to the GUI
+bool g_EmulationInProgress = false;		// Set TRUE if a game is actively running (set to false on reset)
 
 // This instance is not modified by command line overrides so
 // that command line plugins and stuff won't be saved into the
@@ -191,51 +190,76 @@ __forceinline void SysUpdate() {
 	KeyEvent( (ev1 != NULL) ? ev1 : ev2);
 }
 
+static void TryRecoverFromGsState()
+{
+	if( g_gsRecoveryState != NULL )
+	{
+		s32 dummylen;
+
+		memLoadingState eddie( *g_gsRecoveryState );
+		eddie.FreezePlugin( "GS", gsSafeFreeze );
+		eddie.Freeze( dummylen );		// reads the length value recorded earlier.
+		eddie.gsFreeze();
+	}
+}
+
 void ExecuteCpu()
 {
 	// Make sure any left-over recovery states are cleaned up.
 	safe_delete( g_RecoveryState );
+
+	// Just in case they weren't initialized earlier (no harm in calling this multiple times)
+	if (OpenPlugins(NULL) == -1) return;
+
+	// this needs to be called for every new game!
+	// (note: sometimes launching games through bios will give a crc of 0)
+
+	if( GSsetGameCRC != NULL )
+		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
+
+	TryRecoverFromGsState();
+
 	safe_delete( g_gsRecoveryState );
 
-	// This tells the WM_DELETE handler of our GUI that we don't want the
-	// system and plugins shut down, thanks...
-	if( UseGui )
-        AccBreak = true;
-
 	// ... and destroy the window.  Ugly thing.
-	DestroyWindow( gApp.hWnd );
-	gApp.hWnd = NULL;
 
-	g_GameInProgress = true;
-	if( !m_EmuStateActive )
+	//DestroyWindow( gApp.hWnd );
+	//gApp.hWnd = NULL;
+
+	ShowWindow( gApp.hWnd, SW_HIDE );
+
+	g_EmulationInProgress = true;
+	g_ReturnToGui = false;
+
+	// Optimization: We hardcode two versions of the EE here -- one for recs and one for ints.
+	// This is because recs are performance critical, and being able to inline them into the
+	// function here helps considerably.
+
+	timeBeginPeriod( 1 );
+
+	PCSX2_MEM_PROTECT_BEGIN();
+	if( Cpu == &R5900::recCpu )
 	{
-		// Optimization: We hardcode two versions of the EE here -- one for recs and one for ints.
-		// This is because recs are performance critical, and being able to inline them into the
-		// function here helps considerably.
-
-		PCSX2_MEM_PROTECT_BEGIN();
-		if( Cpu == &R5900::recCpu )
+		while( !g_ReturnToGui )
 		{
-			while( true )
-			{
-				Dynarec::R5900::recExecute();
-				SysUpdate();
-			}
-			g_GameInProgress = false;
+			Dynarec::R5900::recExecute();
+			SysUpdate();
 		}
-		else if( Cpu == &R5900::intCpu )
-		{
-			while( true )
-			{
-				R5900::Interpreter::intExecute();
-				SysUpdate();
-			}
-			g_GameInProgress = false;
-		}
-		PCSX2_MEM_PROTECT_END();
 	}
-	else
-		m_ReturnToGame = true;
+	else if( Cpu == &R5900::intCpu )
+	{
+		while( !g_ReturnToGui )
+		{
+			R5900::Interpreter::intExecute();
+			SysUpdate();
+		}
+	}
+	PCSX2_MEM_PROTECT_END();
+
+	timeEndPeriod( 1 );
+
+	ShowWindow( gApp.hWnd, SW_SHOW );
+	SetForegroundWindow( gApp.hWnd );
 }
 
 // Runs and ELF image directly (ISO or ELF program or BIN)
@@ -246,8 +270,9 @@ void RunExecute( const char* elf_file, bool use_bios )
 	SetPriorityClass(GetCurrentProcess(), Config.ThPriority == THREAD_PRIORITY_HIGHEST ? ABOVE_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS);
     nDisableSC = 1;
 
-	g_GameInProgress = false;
-	
+	// Issue a cpu reset if the emulation state is invalid or if a recovery state
+	// is waiting to be loaded.
+
 	try
 	{
 		cpuReset();
@@ -280,16 +305,15 @@ void RunExecute( const char* elf_file, bool use_bios )
 				ClosePlugins();
 				return;
 			}
-			safe_delete( g_RecoveryState );
 		}
-		else
+		else if( g_gsRecoveryState == NULL )
 		{
 			// Not recovering a state, so need to execute the bios and load the ELF information.
+			// (note: gsRecoveries are done from ExecuteCpu)
 
-			// Note: if the elf_file is null we use the CDVD elf file.
+			// if the elf_file is null we use the CDVD elf file.
 			// But if the elf_file is an empty string then we boot the bios instead.
 
-			m_EmuStateActive = false;		// make sure to start a new emu state when running cpuExecuteBios();
 			cpuExecuteBios();
 			char ename[g_MaxPath];
 			ename[0] = 0;
@@ -303,62 +327,11 @@ void RunExecute( const char* elf_file, bool use_bios )
 		// Custom ELF specified (not using CDVD).
 		// Run the BIOS and load the ELF.
 
-		m_EmuStateActive = false;		// make sure to start a new emu state when running cpuExecuteBios();
 		cpuExecuteBios();
 		loadElfFile( elf_file );
 	}
 
-	// this needs to be called for every new game!
-	// (note: sometimes launching games through bios will give a crc of 0)
-
-	if( GSsetGameCRC != NULL )
-		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
-
 	ExecuteCpu();
-}
-
-void RunGuiAndReturn() {
-    MSG msg;
-
-	m_ReturnToGame = false;
-	m_EmuStateActive = true;
-
-    while( !m_ReturnToGame )
-	{
-		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		Sleep(10);
-	}
-
-	// re-init plugins before returning execution:
-
-	OpenPlugins( NULL );
-
-	if( g_gsRecoveryState != NULL )
-	{
-		s32 dummylen;
-
-		memLoadingState eddie( *g_gsRecoveryState );
-		eddie.FreezePlugin( "GS", gsSafeFreeze );
-		eddie.Freeze( dummylen );		// reads the length value recorded earlier.
-		eddie.gsFreeze();
-
-		safe_delete( g_gsRecoveryState );
-
-		if( GSsetGameCRC != NULL )
-			GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
-	}
-
-	if( gApp.hWnd != NULL )
-	{
-		AccBreak = true;
-		DestroyWindow(gApp.hWnd);
-		gApp.hWnd = NULL;
-
-	}
 }
 
 class RecoveryMemSavingState : public memSavingState, Sealed
@@ -494,7 +467,7 @@ void States_Load( const string& file, int num )
 			ssprintf( message,
 				"Encountered an error while loading savestate from file: %s.\n", params file );
 
-		if( g_GameInProgress )
+		if( g_EmulationInProgress )
 			message += "Since the savestate load was incomplete, the emulator has been reset.\n";
 
 		message += "\nError: " + ex.Message();
@@ -563,7 +536,7 @@ void States_Save(int num)
 		return;
 	}
 
-	if( !g_GameInProgress )
+	if( !g_EmulationInProgress )
 	{
 		Msgbox::Alert( "You need to start a game first before you can save it's state." );
 		return;
@@ -692,10 +665,8 @@ static void __fastcall KeyEvent(keyEvent* ev)
 				// Woops!  Something was unrecoverable.  Bummer.
 				// Let's give the user a RunGui!
 
-				g_GameInProgress = false;
-				m_EmuStateActive = false;
-				CreateMainWindow( SW_SHOWNORMAL );
-				RunGui();	// ah the beauty of perpetual stack recursion! (air)
+				g_EmulationInProgress = false;
+				g_ReturnToGui = true;
 			}
 		break;
 
@@ -708,9 +679,11 @@ static void __fastcall KeyEvent(keyEvent* ev)
 			}
 #endif
 
-			if (CHECK_ESCAPE_HACK) {
-				PostMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
-				WinClose();
+			g_ReturnToGui = true;
+			if( CHECK_ESCAPE_HACK )
+			{
+				//PostMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
+				DestroyWindow( gApp.hWnd );
 			}
 			else
 			{
@@ -730,11 +703,8 @@ static void __fastcall KeyEvent(keyEvent* ev)
 					PluginsResetGS();
 				}
 
-				//ClosePlugins();
-
-				CreateMainWindow(SW_SHOWNORMAL);
+				ClosePlugins();
 				nDisableSC = 0;
-				RunGuiAndReturn();
 			}
 			break;
 
@@ -750,7 +720,7 @@ static bool sinit=false;
 void SysRestorableReset()
 {
 	// already reset? and saved?
-	if( !g_GameInProgress ) return;
+	if( !g_EmulationInProgress ) return;
 	if( g_RecoveryState != NULL ) return;
 
 	try
@@ -758,7 +728,7 @@ void SysRestorableReset()
 		g_RecoveryState = new MemoryAlloc<u8>( "Memory Savestate Recovery" );
 		RecoveryMemSavingState().FreezeAll();
 		safe_delete( g_gsRecoveryState );
-		g_GameInProgress = false;
+		g_EmulationInProgress = false;
 	}
 	catch( std::runtime_error& ex )
 	{
@@ -767,31 +737,33 @@ void SysRestorableReset()
 			"Error: %s", params ex.what() );
 		safe_delete( g_RecoveryState );
 	}
-	SetCursor( LoadCursor( gApp.hInstance, IDC_ARROW ) );
 }
 
 void SysReset()
 {
 	if (!sinit) return;
 
-	// fixme - this code  sets the sttusbar but never returns control to the window message pump
-	// so the status bar won't recieve the WM_PAINT messages needed to update itself anyway.
+	// fixme - this code  sets the statusbar but never returns control to the window message pump
+	// so the status bar won't receive the WM_PAINT messages needed to update itself anyway.
 	// Oops! (air)
 
 	StatusBar_Notice(_("Resetting..."));
 
-	g_GameInProgress = false;
+	g_EmulationInProgress = false;
 	safe_delete( g_RecoveryState );
 	safe_delete( g_gsRecoveryState );
 	ResetPlugins();
+
+	// Note : No need to call cpuReset() here.  It gets called automatically before the
+	// emulator resumes execution.
 
 	StatusBar_Notice(_("Ready"));
 }
 
 bool SysInit()
 {
-	if( sinit )
-		SysClose();
+	if( sinit ) return true;
+	sinit = true;
 
 	CreateDirectory(MEMCARDS_DIR, NULL);
 	CreateDirectory(SSTATES_DIR, NULL);
@@ -808,7 +780,6 @@ bool SysInit()
 
 	SysAllocateDynarecs();
 
-	sinit = true;
 	return true;
 }
 
@@ -821,10 +792,6 @@ void SysClose() {
 	sinit=false;
 }
 
-
-void SysRunGui() {
-	RunGui();
-}
 
 static const char *err = N_("Error Loading Symbol");
 static int errval;
@@ -861,7 +828,6 @@ void *SysMmap(uptr base, u32 size) {
 	void *mem;
 
 	mem = VirtualAlloc((void*)base, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-	//mem = VirtualAlloc((void*)mem,  size, MEM_COMMIT , PAGE_EXECUTE_READWRITE);
 	return mem;
 }
 

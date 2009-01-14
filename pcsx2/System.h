@@ -24,10 +24,9 @@
 #include "Paths.h"
 
 void SysDetect();						// Detects cpu type and fills cpuInfo structs.
-bool SysInit();							// Init logfiles, directories, plugins, and other OS-specific junk
+bool SysInit();							// Init logfiles, directories, critical memory resources, and other OS-specific one-time
 void SysReset();						// Resets the various PS2 cpus, sub-systems, and recompilers.
 void SysUpdate();						// Called on VBlank (to update i.e. pads)
-void SysRunGui();						// Returns to the Gui
 void SysClose();						// Close mem and plugins
 
 bool SysAllocateMem();			// allocates memory for all PS2 systems; returns FALSe on critical error.
@@ -45,7 +44,7 @@ void SysCloseLibrary(void *lib);		// Closes Library
 // Returns NULL on allocation failure.
 void *SysMmap(uptr base, u32 size);
 
-// Unamps a block allocated by SysMmap
+// Unmaps a block allocated by SysMmap
 void SysMunmap(uptr base, u32 size);
 
 // Writes text to the console.

@@ -25,8 +25,6 @@
 #ifndef __MPEG_H__
 #define __MPEG_H__
 
-#include "Common.h"
-
 /* macroblock modes */
 #define MACROBLOCK_INTRA 1
 #define MACROBLOCK_PATTERN 2
@@ -160,8 +158,13 @@ struct decoder_t {
     int mpeg1;
 };
 
+extern void (__fastcall *mpeg2_idct_copy) (s16 * block, u8* dest, int stride);
+extern void (__fastcall *mpeg2_idct_add) (int last, s16 * block,
+										   /*u8*/s16* dest, int stride);
+
 #define IDEC	0
 #define BDEC	1
+
 void mpeg2sliceIDEC(void* pdone);
 void mpeg2_slice(void* pdone);
 int get_macroblock_address_increment(decoder_t * const decoder);
@@ -170,14 +173,14 @@ int get_macroblock_modes (decoder_t * const decoder);
 extern int get_motion_delta (decoder_t * const decoder, const int f_code);
 extern int get_dmv (decoder_t * const decoder);
 
-extern int non_linear_quantizer_scale[]; // JayteeMaster: it is needed in Ipu.c
+extern int non_linear_quantizer_scale[];
 extern decoder_t g_decoder;
 
-void ipu_csc(struct macroblock_8 *mb8, struct macroblock_rgb32 *rgb32, int sgn);
-void ipu_dither(struct macroblock_8 *mb8, struct macroblock_rgb16 *rgb16, int dte);
-void ipu_dither2(struct macroblock_rgb32* rgb32, struct macroblock_rgb16 *rgb16, int dte);
-void ipu_vq(struct macroblock_rgb16 *rgb16, u8* indx4);
-void ipu_copy(struct macroblock_8 *mb8, struct macroblock_16 *mb16);
+void __fastcall ipu_csc(macroblock_8 *mb8, macroblock_rgb32 *rgb32, int sgn);
+void __fastcall ipu_dither(macroblock_8 *mb8, macroblock_rgb16 *rgb16, int dte);
+void __fastcall ipu_dither2(const macroblock_rgb32* rgb32, macroblock_rgb16 *rgb16, int dte);
+void __fastcall ipu_vq(macroblock_rgb16 *rgb16, u8* indx4);
+void __fastcall ipu_copy(const macroblock_8 *mb8, macroblock_16 *mb16);
 
 int slice (decoder_t * const decoder, u8 * buffer);
 /* idct.c */

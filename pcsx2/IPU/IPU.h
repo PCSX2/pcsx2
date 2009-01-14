@@ -42,7 +42,7 @@
 //
 // Bitfield Structure
 //
-typedef union {
+union tIPU_CMD {
 	struct {
 		u32 OPTION : 28;	// VDEC decoded value
 		u32 CMD : 4;	// last command
@@ -52,7 +52,7 @@ typedef union {
 		u32 DATA;
 		u32 BUSY;
 	};
-} tIPU_CMD;
+};
 
 #define IPU_CTRL_IFC_M		(0x0f<< 0)
 #define IPU_CTRL_OFC_M		(0x0f<< 4)
@@ -188,7 +188,6 @@ struct IPUregisters {
 
 extern tIPU_BP g_BP;
 extern int coded_block_pattern;
-extern u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
 extern int g_nIPU0Data; // or 0x80000000 whenever transferring
 extern u8* g_pIPU0Pointer;
 
@@ -201,9 +200,6 @@ void ipuReset();
 void ipuShutdown();
 int  ipuFreeze(gzFile f, int Mode);
 bool ipuCanFreeze();
-
-void IPUCMD_WRITE(u32 val);
-void ipuSoftReset();
 
 
 u32 ipuRead32(u32 mem);
@@ -219,6 +215,9 @@ namespace Dynarec
 	void ipuConstWrite64(u32 mem, int mmreg);
 }
 
+extern void IPUCMD_WRITE(u32 val);
+extern void ipuSoftReset();
+extern u16 FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
 extern void IPUProcessInterrupt();
 extern void ipu0Interrupt();
 extern void ipu1Interrupt();

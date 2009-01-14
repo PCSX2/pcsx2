@@ -24,6 +24,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "System.h"
 #include "mpeg2lib/Mpeg.h"
 #include "yuv2rgb.h"
 
@@ -104,28 +105,28 @@ static void __fastcall yuv2rgb_c_32 (u8 * py_1, u8 * py_2,
     dst_2 = (u32 *) _dst_2;
 
     do {
-	_RGB (u32, 0);
-	DST (py_1, dst_1, 0);
-	DST (py_2, dst_2, 0);
+		_RGB (u32, 0);
+		DST (py_1, dst_1, 0);
+		DST (py_2, dst_2, 0);
 
-	_RGB (u32, 1);
-	DST (py_2, dst_2, 1);
-	DST (py_1, dst_1, 1);
+		_RGB (u32, 1);
+		DST (py_2, dst_2, 1);
+		DST (py_1, dst_1, 1);
 
-	_RGB (u32, 2);
-	DST (py_1, dst_1, 2);
-	DST (py_2, dst_2, 2);
+		_RGB (u32, 2);
+		DST (py_1, dst_1, 2);
+		DST (py_2, dst_2, 2);
 
-	_RGB (u32, 3);
-	DST (py_2, dst_2, 3);
-	DST (py_1, dst_1, 3);
+		_RGB (u32, 3);
+		DST (py_2, dst_2, 3);
+		DST (py_1, dst_1, 3);
 
-	pu += 4;
-	pv += 4;
-	py_1 += 8;
-	py_2 += 8;
-	dst_1 += 8;
-	dst_2 += 8;
+		pu += 4;
+		pv += 4;
+		py_1 += 8;
+		py_2 += 8;
+		dst_1 += 8;
+		dst_2 += 8;
     } while (--width);
 }
 
@@ -143,28 +144,28 @@ static void __fastcall yuv2rgb_c_24_rgb (u8 * py_1, u8 * py_2,
     dst_2 = (u8 *) _dst_2;
 
     do {
-	_RGB (u8, 0);
-	DSTRGB (py_1, dst_1, 0);
-	DSTRGB (py_2, dst_2, 0);
+		_RGB (u8, 0);
+		DSTRGB (py_1, dst_1, 0);
+		DSTRGB (py_2, dst_2, 0);
 
-	_RGB (u8, 1);
-	DSTRGB (py_2, dst_2, 1);
-	DSTRGB (py_1, dst_1, 1);
+		_RGB (u8, 1);
+		DSTRGB (py_2, dst_2, 1);
+		DSTRGB (py_1, dst_1, 1);
 
-	_RGB (u8, 2);
-	DSTRGB (py_1, dst_1, 2);
-	DSTRGB (py_2, dst_2, 2);
+		_RGB (u8, 2);
+		DSTRGB (py_1, dst_1, 2);
+		DSTRGB (py_2, dst_2, 2);
 
-	_RGB (u8, 3);
-	DSTRGB (py_2, dst_2, 3);
-	DSTRGB (py_1, dst_1, 3);
+		_RGB (u8, 3);
+		DSTRGB (py_2, dst_2, 3);
+		DSTRGB (py_1, dst_1, 3);
 
-	pu += 4;
-	pv += 4;
-	py_1 += 8;
-	py_2 += 8;
-	dst_1 += 24;
-	dst_2 += 24;
+		pu += 4;
+		pv += 4;
+		py_1 += 8;
+		py_2 += 8;
+		dst_1 += 24;
+		dst_2 += 24;
     } while (--width);
 }
 
@@ -182,28 +183,28 @@ static void __fastcall yuv2rgb_c_24_bgr (u8 * py_1, u8 * py_2,
     dst_2 = (u8 *) _dst_2;
 
     do {
-	_RGB (u8, 0);
-	DSTBGR (py_1, dst_1, 0);
-	DSTBGR (py_2, dst_2, 0);
+		_RGB (u8, 0);
+		DSTBGR (py_1, dst_1, 0);
+		DSTBGR (py_2, dst_2, 0);
 
-	_RGB (u8, 1);
-	DSTBGR (py_2, dst_2, 1);
-	DSTBGR (py_1, dst_1, 1);
+		_RGB (u8, 1);
+		DSTBGR (py_2, dst_2, 1);
+		DSTBGR (py_1, dst_1, 1);
 
-	_RGB (u8, 2);
-	DSTBGR (py_1, dst_1, 2);
-	DSTBGR (py_2, dst_2, 2);
+		_RGB (u8, 2);
+		DSTBGR (py_1, dst_1, 2);
+		DSTBGR (py_2, dst_2, 2);
 
-	_RGB (u8, 3);
-	DSTBGR (py_2, dst_2, 3);
-	DSTBGR (py_1, dst_1, 3);
+		_RGB (u8, 3);
+		DSTBGR (py_2, dst_2, 3);
+		DSTBGR (py_1, dst_1, 3);
 
-	pu += 4;
-	pv += 4;
-	py_1 += 8;
-	py_2 += 8;
-	dst_1 += 24;
-	dst_2 += 24;
+		pu += 4;
+		pv += 4;
+		py_1 += 8;
+		py_2 += 8;
+		dst_1 += 24;
+		dst_2 += 24;
     } while (--width);
 }
 
@@ -222,37 +223,37 @@ static void __fastcall yuv2rgb_c_16 (u8 * py_1, u8 * py_2,
     dst_2 = (u16 *) _dst_2;
 
     do {
-	_RGB (u16, 0);
-	DST (py_1, dst_1, 0);
-	DST (py_2, dst_2, 0);
+		_RGB (u16, 0);
+		DST (py_1, dst_1, 0);
+		DST (py_2, dst_2, 0);
 
-	_RGB (u16, 1);
-	DST (py_2, dst_2, 1);
-	DST (py_1, dst_1, 1);
+		_RGB (u16, 1);
+		DST (py_2, dst_2, 1);
+		DST (py_1, dst_1, 1);
 
-	_RGB (u16, 2);
-	DST (py_1, dst_1, 2);
-	DST (py_2, dst_2, 2);
+		_RGB (u16, 2);
+		DST (py_1, dst_1, 2);
+		DST (py_2, dst_2, 2);
 
-	_RGB (u16, 3);
-	DST (py_2, dst_2, 3);
-	DST (py_1, dst_1, 3);
+		_RGB (u16, 3);
+		DST (py_2, dst_2, 3);
+		DST (py_1, dst_1, 3);
 
-	pu += 4;
-	pv += 4;
-	py_1 += 8;
-	py_2 += 8;
-	dst_1 += 8;
-	dst_2 += 8;
+		pu += 4;
+		pv += 4;
+		py_1 += 8;
+		py_2 += 8;
+		dst_1 += 8;
+		dst_2 += 8;
     } while (--width);
 }
 
 static int div_round (int dividend, int divisor)
 {
     if (dividend > 0)
-	return (dividend + (divisor>>1)) / divisor;
+		return (dividend + (divisor>>1)) / divisor;
     else
-	return -((-dividend + (divisor>>1)) / divisor);
+		return -((-dividend + (divisor>>1)) / divisor);
 }
 
 static yuv2rgb_c_internal __fastcall * yuv2rgb_c_init (int order, int bpp)
@@ -273,96 +274,101 @@ static yuv2rgb_c_internal __fastcall * yuv2rgb_c_init (int order, int bpp)
     int cgu = -Inverse_Table_6_9[matrix_coefficients][2];
     int cgv = -Inverse_Table_6_9[matrix_coefficients][3];
 
-    for (i = 0; i < 1024; i++) {
-	int j;
+    for (i = 0; i < 1024; i++)
+	{
+		int j;
 
-	j = (76309 * (i - 384 - 16) + 32768) >> 16;
-	j = (j < 0) ? 0 : ((j > 255) ? 255 : j);
-	table_Y[i] = j;
+		j = (76309 * (i - 384 - 16) + 32768) >> 16;
+		j = (j < 0) ? 0 : ((j > 255) ? 255 : j);
+		table_Y[i] = j;
     }
 
-    switch (bpp) {
+    switch (bpp)
+	{
     case 32:
-	yuv2rgb = yuv2rgb_c_32;
+		yuv2rgb = yuv2rgb_c_32;
 
-	table_32 = (u32 *) malloc ((197 + 2*682 + 256 + 132) *
-					sizeof (u32));
+		table_32 = (u32 *) malloc ((197 + 2*682 + 256 + 132) *
+						sizeof (u32));
 
-	entry_size = sizeof (u32);
-	table_r = table_32 + 197;
-	table_b = table_32 + 197 + 685;
-	table_g = table_32 + 197 + 2*682;
+		entry_size = sizeof (u32);
+		table_r = table_32 + 197;
+		table_b = table_32 + 197 + 685;
+		table_g = table_32 + 197 + 2*682;
 
-	for (i = -197; i < 256+197; i++)
-	    ((u32 *) table_r)[i] =
-		table_Y[i+384] << ((order == CONVERT_RGB) ? 16 : 0);
-	for (i = -132; i < 256+132; i++)
-	    ((u32 *) table_g)[i] = table_Y[i+384] << 8;
-	for (i = -232; i < 256+232; i++)
-	    ((u32 *) table_b)[i] =
-		table_Y[i+384] << ((order == CONVERT_RGB) ? 0 : 16);
+		for (i = -197; i < 256+197; i++)
+			((u32 *) table_r)[i] =
+			table_Y[i+384] << ((order == CONVERT_RGB) ? 16 : 0);
+		for (i = -132; i < 256+132; i++)
+			((u32 *) table_g)[i] = table_Y[i+384] << 8;
+		for (i = -232; i < 256+232; i++)
+			((u32 *) table_b)[i] =
+			table_Y[i+384] << ((order == CONVERT_RGB) ? 0 : 16);
 	break;
 
     case 24:
-	yuv2rgb = (order == CONVERT_RGB) ? yuv2rgb_c_24_rgb : yuv2rgb_c_24_bgr;
+		yuv2rgb = (order == CONVERT_RGB) ? yuv2rgb_c_24_rgb : yuv2rgb_c_24_bgr;
 
-	table_8 = (u8 *) malloc ((256 + 2*232) * sizeof (u8));
+		table_8 = (u8 *) malloc ((256 + 2*232) * sizeof (u8));
 
-	entry_size = sizeof (u8);
-	table_r = table_g = table_b = table_8 + 232;
+		entry_size = sizeof (u8);
+		table_r = table_g = table_b = table_8 + 232;
 
-	for (i = -232; i < 256+232; i++)
-	    ((u8 * )table_b)[i] = table_Y[i+384];
+		for (i = -232; i < 256+232; i++)
+			((u8 * )table_b)[i] = table_Y[i+384];
 	break;
 
     case 15:
     case 16:
-	yuv2rgb = yuv2rgb_c_16;
+		yuv2rgb = yuv2rgb_c_16;
 
-	table_16 = (u16 *) malloc ((197 + 2*682 + 256 + 132) *
-					sizeof (u16));
+		table_16 = (u16 *) malloc ((197 + 2*682 + 256 + 132) *
+						sizeof (u16));
 
-	entry_size = sizeof (u16);
-	table_r = table_16 + 197;
-	table_b = table_16 + 197 + 685;
-	table_g = table_16 + 197 + 2*682;
+		entry_size = sizeof (u16);
+		table_r = table_16 + 197;
+		table_b = table_16 + 197 + 685;
+		table_g = table_16 + 197 + 2*682;
 
-	for (i = -197; i < 256+197; i++) {
-	    int j = table_Y[i+384] >> 3;
+		for (i = -197; i < 256+197; i++) {
+			int j = table_Y[i+384] >> 3;
 
-	    if (order == CONVERT_RGB)
-		j <<= ((bpp==16) ? 11 : 10);
+			if (order == CONVERT_RGB)
+			j <<= ((bpp==16) ? 11 : 10);
 
-	    ((u16 *)table_r)[i] = j;
-	}
-	for (i = -132; i < 256+132; i++) {
-	    int j = table_Y[i+384] >> ((bpp==16) ? 2 : 3);
+			((u16 *)table_r)[i] = j;
+		}
+		for (i = -132; i < 256+132; i++) {
+			int j = table_Y[i+384] >> ((bpp==16) ? 2 : 3);
 
-	    ((u16 *)table_g)[i] = j << 5;
-	}
-	for (i = -232; i < 256+232; i++) {
-	    int j = table_Y[i+384] >> 3;
+			((u16 *)table_g)[i] = j << 5;
+		}
+		for (i = -232; i < 256+232; i++) {
+			int j = table_Y[i+384] >> 3;
 
-	    if (order == CONVERT_RGB)
-		j <<= ((bpp==16) ? 11 : 10);
+			if (order == CONVERT_RGB)
+			j <<= ((bpp==16) ? 11 : 10);
 
-	    ((u16 *)table_b)[i] = j;
-	}
+			((u16 *)table_b)[i] = j;
+		}
 	break;
 
+#ifdef PCSX2_DEVBUILD
     default:
-	fprintf (stderr, "%ibpp not supported by yuv2rgb\n", bpp);
-	exit (1);
-    }
+		DevCon::Error( "IPU Panic!  %ibpp not supported by yuv2rgb", params bpp );
+#else
+		jNO_DEFAULT
+#endif
+	}
 
     for (i = 0; i < 256; i++) {
-	table_rV[i] = (((u8 *)table_r) +
-		       entry_size * div_round (crv * (i-128), 76309));
-	table_gU[i] = (((u8 *)table_g) +
-		       entry_size * div_round (cgu * (i-128), 76309));
-	table_gV[i] = entry_size * div_round (cgv * (i-128), 76309);
-	table_bU[i] = (((u8 *)table_b) +
-		       entry_size * div_round (cbu * (i-128), 76309));
+		table_rV[i] = (((u8 *)table_r) +
+			entry_size * div_round (crv * (i-128), 76309));
+		table_gU[i] = (((u8 *)table_g) +
+			entry_size * div_round (cgu * (i-128), 76309));
+		table_gV[i] = entry_size * div_round (cgv * (i-128), 76309);
+		table_bU[i] = (((u8 *)table_b) +
+			entry_size * div_round (cbu * (i-128), 76309));
     }
 
     return yuv2rgb;
@@ -383,12 +389,12 @@ static void __fastcall convert_yuv2rgb_c (void * _id, u8 * Y, u8 * Cr, u8 * Cb,
 
     loop = 8;
     do {
-	id->yuv2rgb (py, py + (id->uv_stride << 1), pu, pv,
+		id->yuv2rgb (py, py + (id->uv_stride << 1), pu, pv,
 		     dst, dst + id->rgb_stride, id->width);
-	py += id->uv_stride << 2;
-	pu += id->uv_stride;
-	pv += id->uv_stride;
-	dst += 2 * id->rgb_stride;
+		py += id->uv_stride << 2;
+		pu += id->uv_stride;
+		pv += id->uv_stride;
+		dst += 2 * id->rgb_stride;
     } while (--loop);
 }
 
@@ -398,53 +404,52 @@ static void __fastcall convert_start (void * _id, u8 * dest, int flags)
     id->rgb_ptr = dest;
     switch (flags) {
     case CONVERT_BOTTOM_FIELD:
-	id->rgb_ptr += id->rgb_stride_frame;
-	/* break thru */
+		id->rgb_ptr += id->rgb_stride_frame;
+		/* break thru */
     case CONVERT_TOP_FIELD:
-	id->uv_stride = id->uv_stride_frame << 1;
-	id->rgb_stride = id->rgb_stride_frame << 1;
+		id->uv_stride = id->uv_stride_frame << 1;
+		id->rgb_stride = id->rgb_stride_frame << 1;
 	break;
     default:
-	id->uv_stride = id->uv_stride_frame;
-	id->rgb_stride = id->rgb_stride_frame;
+		id->uv_stride = id->uv_stride_frame;
+		id->rgb_stride = id->rgb_stride_frame;
     }
 }
 
 static void __fastcall convert_internal (int order, int bpp, int width, int height,
-			      u32 accel, void * arg,
-			      convert_init_t * result)
+			      u32 accel, void * arg, convert_init_t * result)
 {
     convert_rgb_t * id = (convert_rgb_t *) result->id;
 
     if (!id) {
-	result->id_size = sizeof (convert_rgb_t);
+		result->id_size = sizeof (convert_rgb_t);
     } else {
-	id->width = width;
-	id->uv_stride_frame = width >> 1;
-	id->rgb_stride_frame = ((bpp + 7) >> 3) * width;
+		id->width = width;
+		id->uv_stride_frame = width >> 1;
+		id->rgb_stride_frame = ((bpp + 7) >> 3) * width;
 
-	result->buf_size[0] = id->rgb_stride_frame * height;
-	result->buf_size[1] = result->buf_size[2] = 0;
-	result->start = convert_start;
+		result->buf_size[0] = id->rgb_stride_frame * height;
+		result->buf_size[1] = result->buf_size[2] = 0;
+		result->start = convert_start;
 
-	result->copy = NULL;
-#ifdef ARCH_X86
-	if ((result->copy == NULL) && (accel & MPEG2_ACCEL_X86_MMXEXT)) {
-	    result->copy = yuv2rgb_init_mmxext (order, bpp);
-	}
-	if ((result->copy == NULL) && (accel & MPEG2_ACCEL_X86_MMX)) {
-	    result->copy = yuv2rgb_init_mmx (order, bpp);
-	}
-#endif
-#ifdef LIBVO_MLIB
-	if ((result->copy == NULL) && (accel & MPEG2_ACCEL_MLIB)) {
-	    result->copy = yuv2rgb_init_mlib (order, bpp);
-	}
-#endif
-	if (result->copy == NULL) {
-	    result->copy = convert_yuv2rgb_c;
-	    id->yuv2rgb = yuv2rgb_c_init (order, bpp);
-	}
+		result->copy = NULL;
+	#ifdef ARCH_X86
+		if ((result->copy == NULL) && (accel & MPEG2_ACCEL_X86_MMXEXT)) {
+			result->copy = yuv2rgb_init_mmxext (order, bpp);
+		}
+		if ((result->copy == NULL) && (accel & MPEG2_ACCEL_X86_MMX)) {
+			result->copy = yuv2rgb_init_mmx (order, bpp);
+		}
+	#endif
+	#ifdef LIBVO_MLIB
+		if ((result->copy == NULL) && (accel & MPEG2_ACCEL_MLIB)) {
+			result->copy = yuv2rgb_init_mlib (order, bpp);
+		}
+	#endif
+		if (result->copy == NULL) {
+			result->copy = convert_yuv2rgb_c;
+			id->yuv2rgb = yuv2rgb_c_init (order, bpp);
+		}
     }
 }
 

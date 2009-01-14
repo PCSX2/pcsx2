@@ -40,7 +40,7 @@ static const struct mc_command_0x26_tag mc_command_0x26= {'+', 512, 16, 0x4000, 
 __forceinline void SIO_INT()
 {
 	if( !(psxRegs.interrupt & (1<<IopEvt_SIO)) )
-		PSX_INT(IopEvt_SIO, PSXCLK/250000);
+		PSX_INT(IopEvt_SIO, 64 ); // PSXCLK/250000);
 }
 #define SIO_FORCEINLINE __forceinline
 #endif

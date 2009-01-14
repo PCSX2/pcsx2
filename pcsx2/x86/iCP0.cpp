@@ -42,14 +42,15 @@ namespace COP0 {
 *                                                        *
 *********************************************************/
 
-void recBC0F() { recCall( Interp::BC0F, 0 ); }
-void recBC0T() { recCall( Interp::BC0T, 0 ); }
-void recBC0FL() { recCall( Interp::BC0FL, 0 ); }
-void recBC0TL() { recCall( Interp::BC0TL, 0 ); }
-void recTLBR() { recCall( Interp::TLBR, 0 ); }
-void recTLBWI() { recCall( Interp::TLBWI, 0 ); }
-void recTLBWR() { recCall( Interp::TLBWR, 0 ); }
-void recTLBP() { recCall( Interp::TLBP, 0 ); }
+void recBC0F() { recBranchCall( Interp::BC0F ); }
+void recBC0T() { recBranchCall( Interp::BC0T ); }
+void recBC0FL() { recBranchCall( Interp::BC0FL ); }
+void recBC0TL() { recBranchCall( Interp::BC0TL ); }
+void recTLBR() { recBranchCall( Interp::TLBR ); }
+void recTLBWI() { recBranchCall( Interp::TLBWI ); }
+void recTLBWR() { recBranchCall( Interp::TLBWR ); }
+void recTLBP() { recBranchCall( Interp::TLBP ); }
+
 
 #ifndef CP0_RECOMPILE
 

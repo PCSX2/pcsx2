@@ -19,7 +19,7 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Release vm (dev)|Win32"
+			Name="Devel vm|Win32"
 			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -269,7 +269,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release vtlb (dev)|Win32"
+			Name="Devel vtlb|Win32"
 			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -364,7 +364,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release vm (nondev)|Win32"
+			Name="Release vm|Win32"
 			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -406,7 +406,7 @@
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
 				EnableEnhancedInstructionSet="0"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="PrecompiledHeader.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				CompileAs="2"
@@ -449,7 +449,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release vtlb (nondev)|Win32"
+			Name="Release vtlb|Win32"
 			OutputDirectory="$(SolutionDir)\bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -491,7 +491,7 @@
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
 				EnableEnhancedInstructionSet="0"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="PrecompiledHeader.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				CompileAs="2"
@@ -600,7 +600,7 @@
 				RelativePath="..\WinMain.cpp"
 				>
 				<FileConfiguration
-					Name="Release vm (dev)|Win32"
+					Name="Devel vm|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -608,7 +608,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vtlb (dev)|Win32"
+					Name="Devel vtlb|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -616,7 +616,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vm (nondev)|Win32"
+					Name="Release vm|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -624,7 +624,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vtlb (nondev)|Win32"
+					Name="Release vtlb|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -636,7 +636,7 @@
 				RelativePath="..\WinSysExec.cpp"
 				>
 				<FileConfiguration
-					Name="Release vm (dev)|Win32"
+					Name="Devel vm|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -644,7 +644,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vtlb (dev)|Win32"
+					Name="Devel vtlb|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -652,7 +652,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vm (nondev)|Win32"
+					Name="Release vm|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -660,7 +660,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vtlb (nondev)|Win32"
+					Name="Release vtlb|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -728,7 +728,7 @@
 				RelativePath="..\..\x86\fast_routines.cpp"
 				>
 				<FileConfiguration
-					Name="Release vm (dev)|Win32"
+					Name="Devel vm|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -763,7 +763,7 @@
 				RelativePath="..\..\PrecompiledHeader.cpp"
 				>
 				<FileConfiguration
-					Name="Release vm (dev)|Win32"
+					Name="Devel vm|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -788,7 +788,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vtlb (dev)|Win32"
+					Name="Devel vtlb|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -796,7 +796,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vm (nondev)|Win32"
+					Name="Release vm|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -804,7 +804,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release vtlb (nondev)|Win32"
+					Name="Release vtlb|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -843,7 +843,7 @@
 					RelativePath="..\..\tinyxml\tinystr.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -867,7 +867,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -875,7 +875,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -883,7 +883,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -899,7 +899,7 @@
 					RelativePath="..\..\tinyxml\tinyxml.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -923,7 +923,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -931,7 +931,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -939,7 +939,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -955,7 +955,7 @@
 					RelativePath="..\..\tinyxml\tinyxmlerror.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -979,7 +979,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -987,7 +987,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -995,7 +995,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1007,7 +1007,7 @@
 					RelativePath="..\..\tinyxml\tinyxmlparser.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1031,7 +1031,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1039,7 +1039,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1047,7 +1047,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1059,7 +1059,7 @@
 					RelativePath="..\..\xmlpatchloader.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1083,7 +1083,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1091,7 +1091,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1099,7 +1099,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1131,7 +1131,7 @@
 					RelativePath="..\..\x86\ix86\ix86.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1155,7 +1155,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1163,7 +1163,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1179,7 +1179,7 @@
 					RelativePath="..\..\x86\ix86\ix86_3dnow.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1203,7 +1203,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1211,7 +1211,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1223,7 +1223,7 @@
 					RelativePath="..\..\x86\ix86\ix86_cpudetect.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1247,7 +1247,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1259,7 +1259,7 @@
 					RelativePath="..\..\x86\ix86\ix86_fpu.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1283,7 +1283,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1291,7 +1291,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1303,7 +1303,7 @@
 					RelativePath="..\..\x86\ix86\ix86_mmx.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1327,7 +1327,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1335,7 +1335,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1347,7 +1347,7 @@
 					RelativePath="..\..\x86\ix86\ix86_sse.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1371,7 +1371,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1379,7 +1379,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1399,7 +1399,7 @@
 					RelativePath="..\..\zlib\adler32.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1426,7 +1426,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1435,7 +1435,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1444,7 +1444,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1457,7 +1457,7 @@
 					RelativePath="..\..\zlib\compress.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1484,7 +1484,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1493,7 +1493,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1502,7 +1502,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1515,7 +1515,7 @@
 					RelativePath="..\..\zlib\crc32.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1542,7 +1542,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1551,7 +1551,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1560,7 +1560,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1573,7 +1573,7 @@
 					RelativePath="..\..\zlib\deflate.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1600,7 +1600,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1609,7 +1609,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1618,7 +1618,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1631,7 +1631,7 @@
 					RelativePath="..\..\zlib\gzio.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1658,7 +1658,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1667,7 +1667,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1676,7 +1676,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1689,7 +1689,7 @@
 					RelativePath="..\..\zlib\infback.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1716,7 +1716,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1725,7 +1725,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1734,7 +1734,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1747,7 +1747,7 @@
 					RelativePath="..\..\zlib\inffast.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1774,7 +1774,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1783,7 +1783,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1792,7 +1792,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1805,7 +1805,7 @@
 					RelativePath="..\..\zlib\inflate.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1832,7 +1832,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1841,7 +1841,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1850,7 +1850,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1863,7 +1863,7 @@
 					RelativePath="..\..\zlib\inftrees.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1890,7 +1890,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1899,7 +1899,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1908,7 +1908,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1921,7 +1921,7 @@
 					RelativePath="..\..\zlib\trees.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1948,7 +1948,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1957,7 +1957,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1966,7 +1966,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1979,7 +1979,7 @@
 					RelativePath="..\..\zlib\uncompr.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2006,7 +2006,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2015,7 +2015,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2024,7 +2024,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2037,7 +2037,7 @@
 					RelativePath="..\..\zlib\zutil.c"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2064,7 +2064,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2073,7 +2073,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2082,7 +2082,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2251,7 +2251,7 @@
 					RelativePath="..\..\Counters.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2259,7 +2259,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2267,7 +2267,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2296,7 +2296,7 @@
 					RelativePath="..\..\InterTables.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2366,7 +2366,7 @@
 						RelativePath="..\..\x86\iFPU.cpp"
 						>
 						<FileConfiguration
-							Name="Release vm (dev)|Win32"
+							Name="Devel vm|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -2390,7 +2390,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release vtlb (dev)|Win32"
+							Name="Devel vtlb|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -2398,7 +2398,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release vm (nondev)|Win32"
+							Name="Release vm|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -2406,7 +2406,7 @@
 							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release vtlb (nondev)|Win32"
+							Name="Release vtlb|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -2635,7 +2635,7 @@
 					RelativePath="..\..\IPU\coroutine.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2654,7 +2654,7 @@
 					RelativePath="..\..\Ipu\IPU.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2678,7 +2678,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (dev)|Win32"
+						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2686,7 +2686,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vm (nondev)|Win32"
+						Name="Release vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2694,7 +2694,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release vtlb (nondev)|Win32"
+						Name="Release vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2710,7 +2710,7 @@
 					RelativePath="..\..\Ipu\yuv2rgb.cpp"
 					>
 					<FileConfiguration
-						Name="Release vm (dev)|Win32"
+						Name="Devel vm|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2728,7 +2728,7 @@
 						RelativePath="..\..\Ipu\mpeg2lib\Idct.cpp"
 						>
 						<FileConfiguration
-							Name="Release vm (dev)|Win32"
+							Name="Devel vm|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -2739,7 +2739,7 @@
 						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.cpp"
 						>
 						<FileConfiguration
-							Name="Release vm (dev)|Win32"
+							Name="Devel vm|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"

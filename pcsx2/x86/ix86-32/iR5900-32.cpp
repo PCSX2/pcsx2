@@ -675,8 +675,8 @@ __forceinline void recExecute()
 	//PCSX2_MEM_PROTECT_BEGIN()
 	while( true )
 	{
-		if( recEventTest() ) break;
 		execute();
+		if( recEventTest() ) break;
 	}
 	//PCSX2_MEM_PROTECT_END()
 }

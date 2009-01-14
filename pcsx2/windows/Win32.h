@@ -74,22 +74,22 @@ void OnStates_LoadOther();
 void OnStates_SaveOther();
 int ParseCommandLine( int tokenCount, TCHAR *const *const tokens );
 void RunExecute( const char* elf_file, bool use_bios=false );
+void ExecuteCpu();
 void strcatz(char *dst, char *src);
 
 BOOL CALLBACK PatchBDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK AdvancedOptionsProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam);
-BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 extern AppData gApp;
 extern HWND hStatusWnd;
 extern PcsxConfig winConfig;		// local storage of the configuration options.
-extern bool g_GameInProgress;
-extern bool m_ReturnToGame;		// set to exit the RunGui message pump
+extern bool g_ReturnToGui;			// set to exit the execution of the emulator and return control to the GUI
+extern bool g_EmulationInProgress;	// Set TRUE if a game is actively running (set to false on reset)
 
 extern int UseGui;
 extern int nDisableSC; // screensaver
-extern bool AccBreak;
 extern unsigned int langsMax;
 
 extern MemoryAlloc<u8>* g_RecoveryState;

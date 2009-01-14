@@ -16,13 +16,6 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-// WARNING!  Do not put code in this module that uses try/catch.  MSVC appears to have
-// a compiler bug that generates some seriously bad stackframe management if both
-// types of exception handling are used in the same module.  Compiler bugs are rare,
-// and it's usually user error, but in this case I'm pretty sure I found one.
-// So put your c++ exception code in WinSysExec.cpp.  It's better that way. :D (air)
-
-
 #include "PrecompiledHeader.h"
 #include "win32.h"
 
@@ -46,7 +39,6 @@
 
 #include "implement.h"		// pthreads-win32 defines for startup/shutdown
 
-bool AccBreak = false;
 unsigned int langsMax;
 
 
@@ -182,7 +174,6 @@ void WinClose()
 
 	// Don't check Config.Profiler here -- the Profiler will know if it's running or not.
 	ProfilerTerm();
-	timeEndPeriod( 1 );
 
 	ReleasePlugins();
 	Console::Close();
@@ -195,26 +186,106 @@ void WinClose()
 #ifdef PCSX2_VIRTUAL_MEM
 	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
 #endif
-
-	exit(0);
 }
 
-/*class SehException
-{
-public:
-	uint m_code;
-	const _EXCEPTION_POINTERS& m_info;
-
-public:
-	SehException(uint code, const _EXCEPTION_POINTERS& eptr ) : m_code(code), m_info(eptr) { }
-};
-
-void SehTranslatorFunction( uint code, _EXCEPTION_POINTERS* eptr )
-{
-    throw SehException( code, *eptr );
-}*/
-
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
+
+void WinRun( int nCmdShow )
+{
+	try
+	{
+		SysInit();
+
+		// Load the command line overrides for plugins.
+		// Back up the user's preferences in winConfig.
+
+		memcpy( &winConfig, &Config, sizeof( PcsxConfig ) );
+
+		if( g_TestRun.pgsdll )
+		{
+			_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
+			Console::Notice( "* GS plugin override: \n\t%s\n", params Config.GS );
+		}
+		if( g_TestRun.pcdvddll )
+		{
+			_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
+			Console::Notice( "* CDVD plugin override: \n\t%s\n", params Config.CDVD );
+		}
+		if( g_TestRun.pspudll )
+		{
+			_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
+			Console::Notice( "* SPU2 plugin override: \n\t%s\n", params Config.SPU2 );
+		}
+
+		// [TODO] : Add the other plugin overrides here...
+
+#ifndef _DEBUG
+		if( Config.Profiler )
+			ProfilerInit();
+#endif
+
+		InitCPUTicks();
+
+		while (LoadPlugins() == -1)
+		{
+			if (Pcsx2Configure(NULL) == FALSE) return;
+		}
+
+		if( IsDevBuild && (g_TestRun.enabled || g_TestRun.ptitle != NULL) )
+		{
+			// run without ui
+			UseGui = 0;
+			RunExecute( g_TestRun.efile ? g_TestRun.ptitle : NULL );
+			return;
+		}
+
+#ifdef PCSX2_DEVBUILD
+		if( g_pRunGSState ) {
+			LoadGSState(g_pRunGSState);
+			return;
+		}
+#endif
+
+		CreateMainWindow( nCmdShow );
+
+		if( Config.PsxOut )
+		{
+			// output the help commands
+			Console::SetColor( Console::Color_White );
+
+			Console::WriteLn( "Hotkeys:" );
+
+			Console::WriteLn(
+				"\tF1  - save state\n"
+				"\t(Shift +) F2 - cycle states\n"
+				"\tF3  - load state"
+				);
+
+			DevCon::WriteLn(
+				//"\tF10 - dump performance counters\n"
+				"\tF11 - save GS state\n"
+				//"\tF12 - dump hardware registers"
+				);
+			Console::ClearColor();
+		}
+
+		LoadPatch("default");
+		RunGui();
+	}
+	catch( Exception::BaseException& ex )
+	{
+		Msgbox::Alert(
+			"An unhandled or unrecoverable exception occurred, with the message:\n\n" + ex.Message() +
+			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file." );
+	}
+	catch( std::exception& ex )
+	{
+		Msgbox::Alert(
+			string( "An unhandled or unrecoverable exception occurred, with the message:\n\n" ) + ex.what() +
+			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file." );
+	}
+
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -311,103 +382,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//	Console::WriteLn("-help to see arguments");
 	}
 
-	if( !SysInit() )
-		WinClose();
-
-	// Load the command line overrides for plugins.
-	// Back up the user's preferences in winConfig.
-
-	memcpy( &winConfig, &Config, sizeof( PcsxConfig ) );
-
-	if( g_TestRun.pgsdll )
-	{
-		_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
-		Console::Notice( "* GS plugin override: \n\t%s\n", params Config.GS );
-	}
-	if( g_TestRun.pcdvddll )
-	{
-		_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
-		Console::Notice( "* CDVD plugin override: \n\t%s\n", params Config.CDVD );
-	}
-	if( g_TestRun.pspudll )
-	{
-		_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
-		Console::Notice( "* SPU2 plugin override: \n\t%s\n", params Config.SPU2 );
-	}
-
-	// [TODO] : Add the other plugin overrides here...
-
-#ifndef _DEBUG
-	if( Config.Profiler )
-		ProfilerInit();
-#endif
-
-	while (LoadPlugins() == -1) {
-		if (Pcsx2Configure(NULL) == FALSE) {
-			WinClose();		// user cancelled.
-		}
-	}
-
-	// This makes sure the Windows Kernel is using high resolution
-	// timeslices for Sleep calls.
-	// (may not make much difference on most desktops but can improve performance
-	//  a lot on laptops).
-
-	timeBeginPeriod( 1 );
-	InitCPUTicks();
-
-    if( IsDevBuild && (g_TestRun.enabled || g_TestRun.ptitle != NULL) ) {
-		// run without ui
-        UseGui = 0;
-		SysReset();
-		RunExecute( g_TestRun.efile ? g_TestRun.ptitle : NULL );
-		WinClose();
-		return 0; // success!
-	}
-
-#ifdef PCSX2_DEVBUILD
-	if( g_pRunGSState ) {
-		LoadGSState(g_pRunGSState);
-		WinClose();
-		return 0;
-	}
-#endif
-
-	CreateMainWindow( nCmdShow );
-
-    if( Config.PsxOut )
-	{
-	    // output the help commands
-		Console::SetColor( Console::Color_White );
-
-		Console::WriteLn( "Hotkeys:" );
-
-		Console::WriteLn(
-			"\tF1  - save state\n"
-			"\t(Shift +) F2 - cycle states\n"
-			"\tF3  - load state"
-		);
-
-	    DevCon::WriteLn(
-			//"\tF10 - dump performance counters\n"
-			"\tF11 - save GS state\n"
-			//"\tF12 - dump hardware registers"
-		);
-		Console::ClearColor();
-    }
-
-	LoadPatch("default");
-	RunGui();
-
-	/*}
-	catch( SehException& ex )
-	{
-		SysPageFaultExceptionFilter( ex.m_info );
-	}*/
-
-	// Note : Because of how the GUI and recompiler function, this area of
-	// the code is effectively unreachable.  Program termination is handled
-	// by a call to WinClose instead. (above)
+	WinRun( nCmdShow );
+	WinClose();
 
 	return 0;
 }
@@ -416,8 +392,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void RunGui() {
     MSG msg;
 
-    for (;;) {
-		if(PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
+	while( true )
+	{
+		if( PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0 )
+		{
+			if( msg.message == WM_QUIT ) return;
+
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
@@ -641,15 +621,14 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return FALSE;
 
 			case ID_RUN_EXECUTE:
-				if( g_GameInProgress )
-				{
-					m_ReturnToGame = true;
-				}
+				if( g_EmulationInProgress )
+					ExecuteCpu();
 				else
 					RunExecute( NULL, true );	// boots bios if no savestate is to be recovered
 			return FALSE;
 
 			case ID_FILE_RUNCD:
+				g_EmulationInProgress = false;
 				safe_delete( g_RecoveryState );
 				safe_delete( g_gsRecoveryState );
 				ResetPlugins();
@@ -752,8 +731,8 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						R5900::cpuExecuteBios();
 
 						DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_RDEBUG), NULL, (DLGPROC)RemoteDebuggerProc);
-						CreateMainWindow(SW_SHOWNORMAL);
-						RunGui();
+						//CreateMainWindow(SW_SHOWNORMAL);
+						//RunGui();
 					}
 				}
                 return FALSE;
@@ -854,7 +833,6 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			default:
 				if (LOWORD(wParam) >= ID_LANGS && LOWORD(wParam) <= (ID_LANGS + langsMax)) {
-					AccBreak = true;
 					DestroyWindow(gApp.hWnd);
 					ChangeLanguage(langs[LOWORD(wParam) - ID_LANGS].lang);
 					CreateMainWindow(SW_SHOWNORMAL);
@@ -864,26 +842,23 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
 		case WM_DESTROY:
-			if (!AccBreak)
-			{
-				// [TODO] : Check if a game is active in the emulator and ask the user
-				// before closing!
-				DeleteObject(hbitmap_background);
-				WinClose();
-
-			} else AccBreak = false;
+			DeleteObject(hbitmap_background);
+			PostQuitMessage(0);
+			gApp.hWnd = NULL;
 		return FALSE;
+
+		// Explicit handling of WM_CLOSE.
+		// This is Windows default behavior, but we handle it here sot hat we might add a
+		// user confirmation prompt prior to exit (someday!)
+		case WM_CLOSE:
+			DestroyWindow( hWnd );
+		return TRUE;
 
         case WM_SYSCOMMAND:
             if( nDisableSC && (wParam== SC_SCREENSAVE || wParam == SC_MONITORPOWER) ) {
                return FALSE;
             }
 		break;
-        
-		case WM_QUIT:
-			if (Config.PsxOut)
-				Console::Close();
-		return TRUE;
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -1060,6 +1035,8 @@ void CreateMainWindow(int nCmdShow) {
 	RECT rect;
 	int w, h;
 
+	g_ReturnToGui = true;
+
 #ifdef _MSC_VER
 	sprintf(COMPILER, "(VC%d)", (_MSC_VER+100)/200);//hacky:) works for VC6 & VC.NET
 #elif __BORLANDC__
@@ -1132,10 +1109,6 @@ void CreateMainWindow(int nCmdShow) {
 
 	ShowWindow(hWnd, nCmdShow);
 	SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
-
-	// If we're coming off the GS plugin then we need to force ourselves to the top:
-	if( g_GameInProgress )
-		SetForegroundWindow( hWnd );
 }
 
 
