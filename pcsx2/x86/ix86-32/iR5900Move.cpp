@@ -40,11 +40,13 @@ namespace OpcodeImpl
 *********************************************************/
 #ifndef MOVE_RECOMPILE
 
-REC_FUNC(LUI,_Rt_);
-REC_FUNC(MFLO,0);
-REC_FUNC(MFHI,0);
-REC_FUNC(MTLO,0);
-REC_FUNC(MTHI,0);
+namespace Interp = R5900::Interpreter::OpcodeImpl;
+
+REC_FUNC_DEL(LUI,_Rt_);
+REC_FUNC(MFLO);
+REC_FUNC(MFHI);
+REC_FUNC(MTLO);
+REC_FUNC(MTHI);
 
 REC_FUNC( MFHI1 );
 REC_FUNC( MFLO1 );
@@ -813,10 +815,10 @@ void recMOVN( void )
 
 }
 
-REC_FUNC( MFHI1, 0 );
-REC_FUNC( MFLO1, 0 );
-REC_FUNC( MTHI1, 0 );
-REC_FUNC( MTLO1, 0 );
+REC_FUNC( MFHI1 );
+REC_FUNC( MFLO1 );
+REC_FUNC( MTHI1 );
+REC_FUNC( MTLO1 );
 
 #endif
 

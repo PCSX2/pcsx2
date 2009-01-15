@@ -23,7 +23,7 @@
 #include "VU.h"
 #include "iCore.h"
 
-// these might not work anymore
+// Yay!  These work now! (air)
 #define ARITHMETICIMM_RECOMPILE
 #define ARITHMETIC_RECOMPILE
 #define MULTDIV_RECOMPILE
@@ -62,15 +62,24 @@ extern u32 s_nBlockCycles;		// cycles of current block recompiling
 extern u32 s_saveConstGPRreg;
 extern GPR_reg64 s_ConstGPRreg;
 
-#define REC_FUNC( f, delreg ) \
+#define REC_FUNC( f ) \
    void rec##f( void ) \
    { \
 	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
 	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
 	   iFlushCall(FLUSH_EVERYTHING); \
-	   if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
 	   CALLFunc( (uptr)Interp::f ); \
    }
+
+#define REC_FUNC_DEL( f, delreg ) \
+	void rec##f( void ) \
+{ \
+	MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code ); \
+	MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc ); \
+	iFlushCall(FLUSH_EVERYTHING); \
+	if( (delreg) > 0 ) _deleteEEreg(delreg, 0); \
+	CALLFunc( (uptr)Interp::f ); \
+}
 
 #define REC_SYS( f ) \
    void rec##f( void ) \

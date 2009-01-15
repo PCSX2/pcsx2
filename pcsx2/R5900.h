@@ -254,9 +254,9 @@ extern int cpuSetNextBranchDelta( s32 delta );
 extern int cpuTestCycle( u32 startCycle, s32 delta );
 extern void cpuSetBranch();
 
+extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
 extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
 extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
-extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
 extern PCSX2_ALIGNED16_DECL(GPR_reg64 g_cpuConstRegs[32]);
 
 extern u32 g_nextBranchCycle;

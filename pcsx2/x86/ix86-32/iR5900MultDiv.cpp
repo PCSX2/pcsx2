@@ -743,7 +743,7 @@ void recDIVU1_constt(int info)
 EERECOMPILE_CODE0(DIVU1, XMMINFO_READS|XMMINFO_READT);
 
 //do EEINST_SETSIGNEXT
-REC_FUNC( MADD, _Rd_ );
+REC_FUNC_DEL( MADD, _Rd_ );
 
 static PCSX2_ALIGNED16(u32 s_MaddMask[]) = { 0x80000000, 0, 0x80000000, 0 };
 
@@ -940,15 +940,15 @@ void recDIVU( void )
    
 }
 
-REC_FUNC( MULT1, _Rd_ );
-REC_FUNC( MULTU1, _Rd_ );
-REC_FUNC( DIV1, _Rd_ );
-REC_FUNC( DIVU1, _Rd_ );
+REC_FUNC_DEL( MULT1, _Rd_ );
+REC_FUNC_DEL( MULTU1, _Rd_ );
+REC_FUNC_DEL( DIV1, _Rd_ );
+REC_FUNC_DEL( DIVU1, _Rd_ );
 
-REC_FUNC( MADD, _Rd_ );
-REC_FUNC( MADDU, _Rd_ );
-REC_FUNC( MADD1, _Rd_ );
-REC_FUNC( MADDU1, _Rd_ );
+REC_FUNC_DEL( MADD, _Rd_ );
+REC_FUNC_DEL( MADDU, _Rd_ );
+REC_FUNC_DEL( MADD1, _Rd_ );
+REC_FUNC_DEL( MADDU1, _Rd_ );
 
 #endif
 

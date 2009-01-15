@@ -139,7 +139,6 @@ void cpuException(u32 code, u32 bd)
 {
 	cpuRegs.branch = 0;		// Tells the interpreter that an exception occurred during a branch.
 
-
 	u32 offset;
 	cpuRegs.CP0.n.Cause = code & 0xffff;
 

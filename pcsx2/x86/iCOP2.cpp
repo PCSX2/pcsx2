@@ -650,7 +650,8 @@ void (*recCOP2SPECIAL2t[128])(s32 info) = {
  rec_C2UNK      ,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,
 };
 
-void recCOP22()
+namespace R5900 { namespace OpcodeImpl {
+void recCOP2()
 {
 	VU0.code = cpuRegs.code;
 
@@ -664,6 +665,7 @@ void recCOP22()
 
 	_freeX86regs();
 }
+} }
 
 void recCOP2_SPECIAL(s32 info )
 {

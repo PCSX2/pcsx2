@@ -35,6 +35,8 @@ namespace OpcodeImpl
 *********************************************************/
 #ifndef SHIFT_RECOMPILE
 
+namespace Interp = R5900::Interpreter::OpcodeImpl;
+
 REC_FUNC(SLL);
 REC_FUNC(SRL);
 REC_FUNC(SRA);

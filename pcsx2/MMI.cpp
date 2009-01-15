@@ -980,6 +980,7 @@ void PEXTUB() {
 	cpuRegs.GPR.r[_Rd_].UC[15] = Rs.UC[15];
 }
 
+//int saZero = 0;
 void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 	GPR_reg Rd;
 	if (!_Rd_) return;
@@ -987,7 +988,12 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 	if (cpuRegs.sa == 0) {
 		cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0];
 		cpuRegs.GPR.r[_Rd_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
+		//saZero++;
+		//if( saZero >= 388800 )
+			//Console::WriteLn( "SA Is Zero, Bitch: %d zeros and counting.", params saZero );
 	} else {
+		//Console::WriteLn( "SA Properly Valued at: %d (after %d zeros)", params cpuRegs.sa, saZero );
+		//saZero = 0;
 		if (cpuRegs.sa < 64) {
 			/*
 			cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0] >> cpuRegs.sa;

@@ -36,6 +36,8 @@ namespace OpcodeImpl
 *********************************************************/
 #ifndef JUMP_RECOMPILE
 
+namespace Interp = R5900::Interpreter::OpcodeImpl;
+
 REC_SYS(J);
 REC_SYS(JAL);
 REC_SYS(JR);

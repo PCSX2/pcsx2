@@ -35,6 +35,8 @@ namespace OpcodeImpl
 
 #ifndef ARITHMETICIMM_RECOMPILE
 
+namespace Interp = R5900::Interpreter::OpcodeImpl;
+
 REC_FUNC(ADDI);
 REC_FUNC(ADDIU);
 REC_FUNC(DADDI);

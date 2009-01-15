@@ -47,13 +47,7 @@
 // are safe then since they've been completely flushed)
 bool g_EEFreezeRegs = false;
 
-namespace Dynarec
-{
-
-extern void recCOP22( void );
-
-namespace R5900
-{
+namespace Dynarec { namespace R5900 {
 
 // I can't find where the Linux recRecompile is defined.  Is it used anymore?
 // If so, namespacing might break it. :/  (air)
@@ -583,7 +577,7 @@ static void recShutdown( void )
 #pragma warning(disable:4731) // frame pointer register 'ebp' modified by inline assembly code
 static u32 s_uSaveESP = 0, s_uSaveEBP;
 
-static void execute( void )
+static __forceinline void execute( void )
 {
 #ifdef _DEBUG
 	u8* fnptr;
@@ -651,7 +645,7 @@ static void execute( void )
 void recStep( void ) {
 }
 
-static bool recEventTest()
+static __forceinline bool recEventTest()
 {
 #ifdef PCSX2_DEVBUILD
     // dont' remove this check unless doing an official release
@@ -669,7 +663,7 @@ static bool recEventTest()
 	return retval;
 }
 
-void recExecute()
+__forceinline void recExecute()
 {
 	// Mem protection should be handled by the caller here so that it can be
 	// done in a more optimized fashion.
@@ -1202,21 +1196,6 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 
 namespace OpcodeImpl
 {
-
-////////////////////////////////////////////////////
-#ifndef CP2_RECOMPILE
-
-REC_SYS(COP2);
-
-#else
-
-void recCOP2( void )
-{ 
-	//CPU_LOG( "Recompiling COP2: %s\n", disR5900Current.getCString() );
-	recCOP22( );
-}
-
-#endif
 
 ////////////////////////////////////////////////////
 void recSYSCALL( void ) {

@@ -39,43 +39,19 @@ namespace MMI
 
 #ifndef MMI_RECOMPILE
 
-REC_FUNC( PLZCW, _Rd_ );
+REC_FUNC_DEL( PLZCW, _Rd_ );
 
-#ifndef MMI0_RECOMPILE
+REC_FUNC_DEL( PMFHL, _Rd_ );
+REC_FUNC_DEL( PMTHL, _Rd_ );
 
-REC_FUNC( MMI0, _Rd_ );
+REC_FUNC_DEL( PSRLW, _Rd_ );
+REC_FUNC_DEL( PSRLH, _Rd_ );
 
-#endif
+REC_FUNC_DEL( PSRAH, _Rd_ );
+REC_FUNC_DEL( PSRAW, _Rd_ );
 
-#ifndef MMI1_RECOMPILE
-
-REC_FUNC( MMI1, _Rd_ );
-
-#endif
-
-#ifndef MMI2_RECOMPILE
-
-REC_FUNC( MMI2, _Rd_ );
-
-#endif
-
-#ifndef MMI3_RECOMPILE
-
-REC_FUNC( MMI3, _Rd_ );
-
-#endif
-
-REC_FUNC( PMFHL, _Rd_ );
-REC_FUNC( PMTHL, _Rd_ );
-
-REC_FUNC( PSRLW, _Rd_ );
-REC_FUNC( PSRLH, _Rd_ );
-
-REC_FUNC( PSRAH, _Rd_ );
-REC_FUNC( PSRAW, _Rd_ );
-
-REC_FUNC( PSLLH, _Rd_ );
-REC_FUNC( PSLLW, _Rd_ );
+REC_FUNC_DEL( PSLLH, _Rd_ );
+REC_FUNC_DEL( PSLLW, _Rd_ );
 
 #else
 
@@ -532,35 +508,35 @@ void recPLZCW( void )
 *********************************************************/
 #ifndef MMI0_RECOMPILE
 
-REC_FUNC( PADDB, _Rd_);
-REC_FUNC( PADDH, _Rd_);
-REC_FUNC( PADDW, _Rd_);
-REC_FUNC( PADDSB, _Rd_);
-REC_FUNC( PADDSH, _Rd_);
-REC_FUNC( PADDSW, _Rd_);
-REC_FUNC( PSUBB, _Rd_);
-REC_FUNC( PSUBH, _Rd_);
-REC_FUNC( PSUBW, _Rd_);
-REC_FUNC( PSUBSB, _Rd_);
-REC_FUNC( PSUBSH, _Rd_);
-REC_FUNC( PSUBSW, _Rd_);
+REC_FUNC_DEL( PADDB, _Rd_);
+REC_FUNC_DEL( PADDH, _Rd_);
+REC_FUNC_DEL( PADDW, _Rd_);
+REC_FUNC_DEL( PADDSB, _Rd_);
+REC_FUNC_DEL( PADDSH, _Rd_);
+REC_FUNC_DEL( PADDSW, _Rd_);
+REC_FUNC_DEL( PSUBB, _Rd_);
+REC_FUNC_DEL( PSUBH, _Rd_);
+REC_FUNC_DEL( PSUBW, _Rd_);
+REC_FUNC_DEL( PSUBSB, _Rd_);
+REC_FUNC_DEL( PSUBSH, _Rd_);
+REC_FUNC_DEL( PSUBSW, _Rd_);
 
-REC_FUNC( PMAXW, _Rd_);
-REC_FUNC( PMAXH, _Rd_);        
+REC_FUNC_DEL( PMAXW, _Rd_);
+REC_FUNC_DEL( PMAXH, _Rd_);        
 
-REC_FUNC( PCGTW, _Rd_);
-REC_FUNC( PCGTH, _Rd_);
-REC_FUNC( PCGTB, _Rd_);
+REC_FUNC_DEL( PCGTW, _Rd_);
+REC_FUNC_DEL( PCGTH, _Rd_);
+REC_FUNC_DEL( PCGTB, _Rd_);
 
-REC_FUNC( PEXTLW, _Rd_);
+REC_FUNC_DEL( PEXTLW, _Rd_);
 
-REC_FUNC( PPACW, _Rd_);        
-REC_FUNC( PEXTLH, _Rd_);
-REC_FUNC( PPACH, _Rd_);        
-REC_FUNC( PEXTLB, _Rd_);
-REC_FUNC( PPACB, _Rd_);
-REC_FUNC( PEXT5, _Rd_);
-REC_FUNC( PPAC5, _Rd_);
+REC_FUNC_DEL( PPACW, _Rd_);        
+REC_FUNC_DEL( PEXTLH, _Rd_);
+REC_FUNC_DEL( PPACH, _Rd_);        
+REC_FUNC_DEL( PEXTLB, _Rd_);
+REC_FUNC_DEL( PPACB, _Rd_);
+REC_FUNC_DEL( PEXT5, _Rd_);
+REC_FUNC_DEL( PPAC5, _Rd_);
 
 #else
 
@@ -1441,28 +1417,28 @@ CPU_SSE_XMMCACHE_END
 *********************************************************/
 #ifndef MMI1_RECOMPILE
 
-REC_FUNC( PABSW, _Rd_);
-REC_FUNC( PABSH, _Rd_);
+REC_FUNC_DEL( PABSW, _Rd_);
+REC_FUNC_DEL( PABSH, _Rd_);
 
-REC_FUNC( PMINW, _Rd_); 
-REC_FUNC( PADSBH, _Rd_);
-REC_FUNC( PMINH, _Rd_);
-REC_FUNC( PCEQB, _Rd_);   
-REC_FUNC( PCEQH, _Rd_);
-REC_FUNC( PCEQW, _Rd_);
+REC_FUNC_DEL( PMINW, _Rd_); 
+REC_FUNC_DEL( PADSBH, _Rd_);
+REC_FUNC_DEL( PMINH, _Rd_);
+REC_FUNC_DEL( PCEQB, _Rd_);   
+REC_FUNC_DEL( PCEQH, _Rd_);
+REC_FUNC_DEL( PCEQW, _Rd_);
 
-REC_FUNC( PADDUB, _Rd_);
-REC_FUNC( PADDUH, _Rd_);
-REC_FUNC( PADDUW, _Rd_);
+REC_FUNC_DEL( PADDUB, _Rd_);
+REC_FUNC_DEL( PADDUH, _Rd_);
+REC_FUNC_DEL( PADDUW, _Rd_);
 
-REC_FUNC( PSUBUB, _Rd_);
-REC_FUNC( PSUBUH, _Rd_);
-REC_FUNC( PSUBUW, _Rd_);
+REC_FUNC_DEL( PSUBUB, _Rd_);
+REC_FUNC_DEL( PSUBUH, _Rd_);
+REC_FUNC_DEL( PSUBUW, _Rd_);
 
-REC_FUNC( PEXTUW, _Rd_);   
-REC_FUNC( PEXTUH, _Rd_);
-REC_FUNC( PEXTUB, _Rd_);
-REC_FUNC( QFSRV, _Rd_); 
+REC_FUNC_DEL( PEXTUW, _Rd_);   
+REC_FUNC_DEL( PEXTUH, _Rd_);
+REC_FUNC_DEL( PEXTUB, _Rd_);
+REC_FUNC_DEL( QFSRV, _Rd_); 
 
 #else
 
@@ -2105,29 +2081,29 @@ CPU_SSE_XMMCACHE_END
 *********************************************************/
 #ifndef MMI2_RECOMPILE
 
-REC_FUNC( PMFHI, _Rd_);
-REC_FUNC( PMFLO, _Rd_);
-REC_FUNC( PCPYLD, _Rd_);
-REC_FUNC( PAND, _Rd_);
-REC_FUNC( PXOR, _Rd_); 
+REC_FUNC_DEL( PMFHI, _Rd_);
+REC_FUNC_DEL( PMFLO, _Rd_);
+REC_FUNC_DEL( PCPYLD, _Rd_);
+REC_FUNC_DEL( PAND, _Rd_);
+REC_FUNC_DEL( PXOR, _Rd_); 
 
-REC_FUNC( PMADDW, _Rd_);
-REC_FUNC( PSLLVW, _Rd_);
-REC_FUNC( PSRLVW, _Rd_); 
-REC_FUNC( PMSUBW, _Rd_);
-REC_FUNC( PINTH, _Rd_);
-REC_FUNC( PMULTW, _Rd_);
-REC_FUNC( PDIVW, _Rd_);
-REC_FUNC( PMADDH, _Rd_);
-REC_FUNC( PHMADH, _Rd_);
-REC_FUNC( PMSUBH, _Rd_);
-REC_FUNC( PHMSBH, _Rd_);
-REC_FUNC( PEXEH, _Rd_);
-REC_FUNC( PREVH, _Rd_); 
-REC_FUNC( PMULTH, _Rd_);
-REC_FUNC( PDIVBW, _Rd_);
-REC_FUNC( PEXEW, _Rd_);
-REC_FUNC( PROT3W, _Rd_ ); 
+REC_FUNC_DEL( PMADDW, _Rd_);
+REC_FUNC_DEL( PSLLVW, _Rd_);
+REC_FUNC_DEL( PSRLVW, _Rd_); 
+REC_FUNC_DEL( PMSUBW, _Rd_);
+REC_FUNC_DEL( PINTH, _Rd_);
+REC_FUNC_DEL( PMULTW, _Rd_);
+REC_FUNC_DEL( PDIVW, _Rd_);
+REC_FUNC_DEL( PMADDH, _Rd_);
+REC_FUNC_DEL( PHMADH, _Rd_);
+REC_FUNC_DEL( PMSUBH, _Rd_);
+REC_FUNC_DEL( PHMSBH, _Rd_);
+REC_FUNC_DEL( PEXEH, _Rd_);
+REC_FUNC_DEL( PREVH, _Rd_); 
+REC_FUNC_DEL( PMULTH, _Rd_);
+REC_FUNC_DEL( PDIVBW, _Rd_);
+REC_FUNC_DEL( PEXEW, _Rd_);
+REC_FUNC_DEL( PROT3W, _Rd_ ); 
 
 #else
 
@@ -2834,19 +2810,19 @@ CPU_SSE_XMMCACHE_END
 *********************************************************/
 #ifndef MMI3_RECOMPILE
 
-REC_FUNC( PMADDUW, _Rd_);
-REC_FUNC( PSRAVW, _Rd_); 
-REC_FUNC( PMTHI, _Rd_);
-REC_FUNC( PMTLO, _Rd_);
-REC_FUNC( PINTEH, _Rd_);
-REC_FUNC( PMULTUW, _Rd_);
-REC_FUNC( PDIVUW, _Rd_);
-REC_FUNC( PCPYUD, _Rd_);
-REC_FUNC( POR, _Rd_);
-REC_FUNC( PNOR, _Rd_);  
-REC_FUNC( PCPYH, _Rd_); 
-REC_FUNC( PEXCW, _Rd_);
-REC_FUNC( PEXCH, _Rd_);
+REC_FUNC_DEL( PMADDUW, _Rd_);
+REC_FUNC_DEL( PSRAVW, _Rd_); 
+REC_FUNC_DEL( PMTHI, _Rd_);
+REC_FUNC_DEL( PMTLO, _Rd_);
+REC_FUNC_DEL( PINTEH, _Rd_);
+REC_FUNC_DEL( PMULTUW, _Rd_);
+REC_FUNC_DEL( PDIVUW, _Rd_);
+REC_FUNC_DEL( PCPYUD, _Rd_);
+REC_FUNC_DEL( POR, _Rd_);
+REC_FUNC_DEL( PNOR, _Rd_);  
+REC_FUNC_DEL( PCPYH, _Rd_); 
+REC_FUNC_DEL( PEXCW, _Rd_);
+REC_FUNC_DEL( PEXCH, _Rd_);
 
 #else
 

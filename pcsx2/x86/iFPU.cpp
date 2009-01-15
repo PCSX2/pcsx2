@@ -99,7 +99,7 @@ static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xf
 	MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code); \
 	MOV32ItoM((uptr)&cpuRegs.pc, pc); \
 	iFlushCall(FLUSH_EVERYTHING); \
-	CALLFunc((uptr)f); \
+	CALLFunc((uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
 	branch = 2; \
 }
 
@@ -109,7 +109,7 @@ static u32 PCSX2_ALIGNED16(s_pos[4]) = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xf
 	MOV32ItoM((uptr)&cpuRegs.code, cpuRegs.code); \
 	MOV32ItoM((uptr)&cpuRegs.pc, pc); \
 	iFlushCall(FLUSH_EVERYTHING); \
-	CALLFunc((uptr)f); \
+	CALLFunc((uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
 }
 //------------------------------------------------------------------
 

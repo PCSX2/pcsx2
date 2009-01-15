@@ -38,6 +38,8 @@ namespace OpcodeImpl
 *********************************************************/
 #ifndef LOADSTORE_RECOMPILE
 
+namespace Interp = R5900::Interpreter::OpcodeImpl;
+
 REC_FUNC(LB);
 REC_FUNC(LBU);
 REC_FUNC(LH);

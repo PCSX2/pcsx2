@@ -51,14 +51,35 @@ void recTLBWI() { recBranchCall( Interp::TLBWI ); }
 void recTLBWR() { recBranchCall( Interp::TLBWR ); }
 void recTLBP() { recBranchCall( Interp::TLBP ); }
 
+void recERET()
+{
+	recBranchCall( Interp::ERET );
+}
+
+void recEI()
+{
+	// must branch after enabling interrupts, so that anything
+	// pending gets triggered properly.
+	recBranchCall( Interp::EI );
+}
+
+void recDI()
+{
+	// No need to branch after disabling interrupts...
+
+	iFlushCall(0);
+
+	MOV32MtoR( EAX, (uptr)&cpuRegs.cycle );
+	MOV32RtoM( (uptr)&g_nextBranchCycle, EAX );
+
+	CALLFunc( (uptr)Interp::DI );
+}
+
 
 #ifndef CP0_RECOMPILE
 
-void recMFC0() { REC_FUNC_INLINE( COP0::MFC0, 0 ); }
-void recMTC0() { REC_FUNC_INLINE( COP0::MTC0, 0 ); }
-void recERET() { REC_FUNC_INLINE( COP0::ERET, 0 ); }
-void recDI() { REC_FUNC_INLINE( COP0::DI, 0 ); }
-void recEI() { REC_FUNC_INLINE( COP0::EI, 0 ); }
+REC_FUNC( MFC0 );
+REC_FUNC( MTC0 );
 
 #else
 
@@ -311,30 +332,8 @@ void recMTC0()
 		}
 	}
 }
+#endif
 
-void recERET()
-{
-	recBranchCall( Interp::ERET );
-}
-
-void recEI()
-{
-	// must branch after enabling interrupts, so that anything
-	// pending gets triggered properly.
-	recBranchCall( Interp::EI );
-}
-
-void recDI()
-{
-	// No need to branch after disabling interrupts...
-
-	iFlushCall(0);
-
-	MOV32MtoR( EAX, (uptr)&cpuRegs.cycle );
-	MOV32RtoM( (uptr)&g_nextBranchCycle, EAX );
-
-	CALLFunc( (uptr)Interp::DI );
-}
 
 /*void rec(COP0) {
 }
@@ -364,5 +363,3 @@ void rec(TLBP) {
 }*/
 
 }}}}
-
-#endif
