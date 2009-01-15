@@ -1149,9 +1149,7 @@ void recMemRead64(u64 *out)
 			return;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 }
 
@@ -1196,9 +1194,7 @@ void recMemRead128(u64 *out)  {
 			return;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 }
 
@@ -2286,9 +2282,7 @@ int __fastcall _ext_memRead32(u32 mem, u32 *out)
 			return 0;
 	}
 
-#ifdef PCSX2_DEVBUILD
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status);
-#endif
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 
 	return -1;

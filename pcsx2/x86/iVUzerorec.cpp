@@ -2293,9 +2293,7 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
 	svutime += (u32)(svufinal.QuadPart-svubase.QuadPart);
 #endif
 
-#ifdef _DEBUG
 	assert( s_vu1esp == 0 );
-#endif
 
 	VU = vuindex ? &VU1 : &VU0;
 	VU->cycle += s_TotalVUCycles;
@@ -2877,9 +2875,7 @@ void VuBaseBlock::Recompile()
 				break;
 
 			default:
-#ifdef PCSX2_DEVBUILD
-				SysPrintf("Bad branch %x\n", branch);
-#endif
+				DevCon::Error("Bad branch %x\n", params branch);
 				assert(0);
 				break;
 		}
