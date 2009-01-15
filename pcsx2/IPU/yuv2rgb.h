@@ -52,6 +52,6 @@ convert_t convert_bgr15;
 
 #define CONVERT_RGB 0
 #define CONVERT_BGR 1
-convert_t __fastcall * convert_rgb (int order, int bpp);
+extern convert_t* convert_rgb (int order, int bpp);
 
 #endif /* YUV2RGB_H */

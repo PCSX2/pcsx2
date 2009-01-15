@@ -304,20 +304,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="true"
-				EnableFiberSafeOptimizations="true"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG;WIN32_PTHREADS"
 				StringPooling="true"
 				ExceptionHandling="2"
 				SmallerTypeCheck="false"
-				RuntimeLibrary="0"
-				StructMemberAlignment="5"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
 				UsePrecompiledHeader="2"
@@ -728,10 +719,11 @@
 				RelativePath="..\..\x86\fast_routines.cpp"
 				>
 				<FileConfiguration
-					Name="Devel vm|Win32"
+					Name="Devel vtlb|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1159,7 +1151,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -1251,7 +1243,7 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1390,6 +1382,14 @@
 				<File
 					RelativePath="..\..\x86\ix86\ix86_tools.cpp"
 					>
+					<FileConfiguration
+						Name="Devel vtlb|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
@@ -2295,13 +2295,6 @@
 				<File
 					RelativePath="..\..\InterTables.cpp"
 					>
-					<FileConfiguration
-						Name="Devel vm|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\InterTables.h"
@@ -2634,13 +2627,6 @@
 				<File
 					RelativePath="..\..\IPU\coroutine.cpp"
 					>
-					<FileConfiguration
-						Name="Devel vm|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\IPU\coroutine.h"
@@ -2709,13 +2695,6 @@
 				<File
 					RelativePath="..\..\Ipu\yuv2rgb.cpp"
 					>
-					<FileConfiguration
-						Name="Devel vm|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\Ipu\yuv2rgb.h"
@@ -2727,24 +2706,10 @@
 					<File
 						RelativePath="..\..\Ipu\mpeg2lib\Idct.cpp"
 						>
-						<FileConfiguration
-							Name="Devel vm|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.cpp"
 						>
-						<FileConfiguration
-							Name="Devel vm|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\Ipu\mpeg2lib\Mpeg.h"

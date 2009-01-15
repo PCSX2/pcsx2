@@ -501,7 +501,7 @@ void __fastcall convert_bgr15 (int width, int height, u32 accel, void * arg,
     convert_internal (CONVERT_BGR, 15, width, height, accel, arg, result);
 }
 
-convert_t __fastcall * convert_rgb (int order, int bpp)
+__forceinline convert_t* convert_rgb (int order, int bpp)
 {
     if (order == CONVERT_RGB || order == CONVERT_BGR)
 	switch (bpp) {

@@ -40,7 +40,7 @@ namespace R5900
 {
 	// [TODO] : These function names can be de-obfuscated with the help of a little namespace love.
 
-	void disR5900F( std::string& output, u32 code, u32 pc);
+	void disR5900F( std::string& output, u32 code );
 	void disR5900Fasm( std::string& output, u32 code, u32 pc);
 	void disR5900AddSym(u32 addr, const char *name);
 	const char* disR5900GetSym(u32 addr);

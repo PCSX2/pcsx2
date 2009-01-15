@@ -67,18 +67,16 @@ static const char * const disRNameCP1c[] = {
 	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "FStatus"};
 
 // Type definition of our functions
-#define DisFInterface  (string& output, u32 code, u32 pc)
-#define DisFInterfaceT (string&, u32, u32)
-#define DisFInterfaceN (output, code, pc)
+#define DisFInterface  (string& output, u32 code)
+#define DisFInterfaceT (string&, u32)
+#define DisFInterfaceN (output, code)
 
 typedef void (*TdisR5900F)DisFInterface;
 
 // These macros are used to assemble the disassembler functions
 #define MakeDisF(fn, b) \
 	void fn DisFInterface { \
-		char ostr[128]; \
-		sprintf (ostr, "%8.8x %8.8x:", pc, code); \
-		output.append( ostr ); \
+		ssprintf(output, "(%8.8x) ", params code); \
 		b; \
 	}
 
@@ -124,8 +122,8 @@ typedef void (*TdisR5900F)DisFInterface;
 #define _nSa32_ _rSa32_, disRNameGPR[_Sa_]
 
 #define _I_       _Im_, _Im_
-#define _Target_  ((pc & 0xf0000000) + ((code & 0x03ffffff) * 4))
-#define _Branch_  (pc + 4 + ((short)_Im_ * 4))
+#define _Target_  ((cpuRegs.pc & 0xf0000000) + ((code & 0x03ffffff) * 4))
+#define _Branch_  (cpuRegs.pc + 4 + ((short)_Im_ * 4))
 #define _OfB_     _Im_, _nRs_
 
 #define _Fsf_ ((code >> 21) & 0x03)
@@ -135,7 +133,7 @@ typedef void (*TdisR5900F)DisFInterface;
 // the copy-paste marathon of code below more readable!
 #define _sap( str ) ssappendf( output, str, params 
 
-#define dName(i)	_sap("%-7s,") i);
+#define dName(i)	_sap("%-7s\t") i);
 #define dGPR128(i)	_sap("%8.8x_%8.8x_%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
 #define dGPR64(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i]) 
 #define dGPR64U(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], disRNameGPR[i])
@@ -768,7 +766,7 @@ MakeDisF(disVWAITQ,		dName("VWAITQ");)
 MakeDisF(disSYNC,		dName("SYNC");)  
 MakeDisF(disBREAK,		dName("BREAK");) 
 MakeDisF(disSYSCALL,	dName("SYSCALL"); dCode();)
-MakeDisF(disCACHE,		sprintf(ostr, "%s %-7s, %x,", ostr, "CACHE", _Rt_); dOfB();)
+MakeDisF(disCACHE,		ssappendf(output, "%-7s, %x,", params "CACHE", _Rt_); dOfB();)
 MakeDisF(disPREF,		dName("PREF");) 
 
 MakeDisF(disMFSA,		dName("MFSA"); dGPR64(_Rd_); dSaR();)   
@@ -807,7 +805,10 @@ TdisR5900F disR5900_MMI0[] = { // Subset of disMMI0
     disPADDSB, disPSUBSB, disPEXTLB, disPPACB, 
 	disNULL,   disNULL,   disPEXTS,  disPPACS};
 
-MakeDisF(disMMI0,		disR5900_MMI0[_Sa_] DisFInterfaceN)
+static void disMMI0( string& output, u32 code )
+{
+	disR5900_MMI0[_Sa_]( output, code );
+}
 
 TdisR5900F disR5900_MMI1[] = { // Subset of disMMI1
     disNULL,   disPABSW,  disPCEQW,  disPMINW, 
@@ -819,7 +820,10 @@ TdisR5900F disR5900_MMI1[] = { // Subset of disMMI1
     disPADDUB, disPSUBUB, disPEXTUB, disQFSRV, 
 	disNULL,   disNULL,   disNULL,   disNULL};
 
-MakeDisF(disMMI1,		disR5900_MMI1[_Sa_] DisFInterfaceN)
+static void disMMI1( string& output, u32 code )
+{
+	disR5900_MMI1[_Sa_]( output, code );
+}
 
 TdisR5900F disR5900_MMI2[] = { // Subset of disMMI2
     disPMADDW, disNULL,   disPSLLVW, disPSRLVW, 
@@ -831,7 +835,10 @@ TdisR5900F disR5900_MMI2[] = { // Subset of disMMI2
     disNULL,   disNULL,   disPEXEH,  disPREVH, 
 	disPMULTH, disPDIVBW, disPEXEW,  disPROT3W};
 
-MakeDisF(disMMI2,		disR5900_MMI2[_Sa_] DisFInterfaceN)
+static void disMMI2( string& output, u32 code )
+{
+	disR5900_MMI2[_Sa_]( output, code );
+}
 
 TdisR5900F disR5900_MMI3[] = { // Subset of disMMI3
     disPMADDUW, disNULL,   disNULL,   disPSRAVW, 
@@ -843,7 +850,10 @@ TdisR5900F disR5900_MMI3[] = { // Subset of disMMI3
     disNULL,    disNULL,   disPEXCH,  disPCPYH, 
 	disNULL,    disNULL,   disPEXCW,  disNULL};
 
-MakeDisF(disMMI3,		disR5900_MMI3[_Sa_] DisFInterfaceN)
+static void disMMI3( string& output, u32 code )
+{
+	disR5900_MMI3[_Sa_]( output, code );
+}
 
 TdisR5900F disR5900_MMI[] = { // Subset of disMMI
     disNULL,  disNULL,   disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
@@ -855,7 +865,10 @@ TdisR5900F disR5900_MMI[] = { // Subset of disMMI
     disNULL,  disNULL,   disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
     disNULL,  disNULL,   disNULL, disNULL, disNULL, disNULL, disNULL, disNULL};
 
-MakeDisF(disMMI,		disR5900_MMI[_Funct_] DisFInterfaceN)
+static void disMMI( string& output, u32 code )
+{
+	disR5900_MMI[_Funct_]( output, code );
+}
 
 
 TdisR5900F disR5900_COP0_BC0[] = { //subset of disCOP0 BC
@@ -865,7 +878,10 @@ TdisR5900F disR5900_COP0_BC0[] = { //subset of disCOP0 BC
     disNULL, disNULL, disNULL , disNULL , disNULL, disNULL, disNULL, disNULL,
 };
 
-MakeDisF(disCOP0_BC0,		disR5900_COP0_BC0[_Rt_] DisFInterfaceN)
+static void disCOP0_BC0( string& output, u32 code )
+{
+	disR5900_COP0_BC0[_Rt_]( output, code );
+}
 
 TdisR5900F disR5900_COP0_Func[] = { //subset of disCOP0 Function
     disNULL, disTLBR, disTLBWI, disNULL, disNULL, disNULL, disTLBWR, disNULL,
@@ -877,7 +893,10 @@ TdisR5900F disR5900_COP0_Func[] = { //subset of disCOP0 Function
     disNULL, disNULL, disNULL , disNULL, disNULL, disNULL, disNULL , disNULL,
     disEI  , disDI  , disNULL , disNULL, disNULL, disNULL, disNULL , disNULL
 };
-MakeDisF(disCOP0_Func,		disR5900_COP0_Func[_Funct_] DisFInterfaceN)
+static void disCOP0_Func( string& output, u32 code )
+{
+	disR5900_COP0_Func[_Funct_]( output, code );
+}
 
 TdisR5900F disR5900_COP0[] = { // Subset of disCOP0
     disMFC0,      disNULL, disNULL, disNULL, disMTC0, disNULL, disNULL, disNULL,
@@ -885,7 +904,10 @@ TdisR5900F disR5900_COP0[] = { // Subset of disCOP0
     disCOP0_Func, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
     disNULL,      disNULL, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL};
 
-MakeDisF(disCOP0,		disR5900_COP0[_Rs_] DisFInterfaceN)
+static void disCOP0( string& output, u32 code )
+{
+	disR5900_COP0[_Rs_]( output, code );
+}
 
 TdisR5900F disR5900_COP1_S[] = { //subset of disCOP1 S
     disADDs,  disSUBs,  disMULs,  disDIVs, disSQRTs, disABSs,  disMOVs,   disNEGs,
@@ -898,7 +920,10 @@ TdisR5900F disR5900_COP1_S[] = { //subset of disCOP1 S
     disNULL,  disNULL,  disNULL,  disNULL, disNULL,  disNULL,  disNULL,   disNULL,
 };
 
-MakeDisF(disCOP1_S,		disR5900_COP1_S[_Funct_] DisFInterfaceN)
+static void disCOP1_S( string& output, u32 code )
+{
+	disR5900_COP1_S[_Funct_]( output, code );
+}
 
 TdisR5900F disR5900_COP1_W[] = { //subset of disCOP1 W
     disNULL,  disNULL, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
@@ -911,7 +936,10 @@ TdisR5900F disR5900_COP1_W[] = { //subset of disCOP1 W
     disNULL,  disNULL, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
 };
 
-MakeDisF(disCOP1_W,		disR5900_COP1_W[_Funct_] DisFInterfaceN)
+static void disCOP1_W( string& output, u32 code )
+{
+	disR5900_COP1_W[_Funct_]( output, code );
+}
 
 TdisR5900F disR5900_COP1_BC1[] = { //subset of disCOP1 BC
     disBC1F, disBC1T, disBC1FL, disBC1TL, disNULL, disNULL, disNULL, disNULL,
@@ -920,7 +948,10 @@ TdisR5900F disR5900_COP1_BC1[] = { //subset of disCOP1 BC
     disNULL, disNULL, disNULL , disNULL , disNULL, disNULL, disNULL, disNULL,
 };
 
-MakeDisF(disCOP1_BC1,	disR5900_COP1_BC1[_Rt_] DisFInterfaceN)
+static void disCOP1_BC1( string& output, u32 code )
+{
+	disR5900_COP1_BC1[_Rt_]( output, code );
+}
 
 TdisR5900F disR5900_COP1[] = { // Subset of disCOP1
     disMFC1,     disNULL, disCFC1, disNULL, disMTC1,   disNULL, disCTC1, disNULL,
@@ -928,7 +959,10 @@ TdisR5900F disR5900_COP1[] = { // Subset of disCOP1
     disCOP1_S,   disNULL, disNULL, disNULL, disCOP1_W, disNULL, disNULL, disNULL,
     disNULL,     disNULL, disNULL, disNULL, disNULL,   disNULL, disNULL, disNULL};
 
-MakeDisF(disCOP1,		disR5900_COP1[_Rs_] DisFInterfaceN)
+static void disCOP1( string& output, u32 code )
+{
+	disR5900_COP1[_Rs_]( output, code );
+}
 
 TdisR5900F disR5900_COP2_SPEC2[] = { //subset of disCOP2 SPEC2
     disVADDAx,  disVADDAy,  disVADDAz,  disVADDAw,  disVSUBAx,  disVSUBAy,  disVSUBAz,  disVSUBAw,
@@ -949,7 +983,10 @@ TdisR5900F disR5900_COP2_SPEC2[] = { //subset of disCOP2 SPEC2
     disNULL,    disNULL,    disNULL,    disNULL,    disNULL, disNULL, disNULL, disNULL,
 };
 
-MakeDisF(disCOP2_SPEC2,		disR5900_COP2_SPEC2[(code & 0x3) | ((code >> 4) & 0x7c)] DisFInterfaceN)
+static void disCOP2_SPEC2( string& output, u32 code )
+{
+	disR5900_COP2_SPEC2[(code & 0x3) | ((code >> 4) & 0x7c)]( output, code );
+}
 
 TdisR5900F disR5900_COP2_SPEC1[] = { //subset of disCOP2 SPEC1
     disVADDx,   disVADDy,    disVADDz,  disVADDw,  disVSUBx,        disVSUBy,        disVSUBz,         disVSUBw,
@@ -962,7 +999,10 @@ TdisR5900F disR5900_COP2_SPEC1[] = { //subset of disCOP2 SPEC1
     disVCALLMS, disVCALLMSR, disNULL,   disNULL,   disCOP2_SPEC2,   disCOP2_SPEC2,   disCOP2_SPEC2,    disCOP2_SPEC2,
 };
 
-MakeDisF(disCOP2_SPEC1,		disR5900_COP2_SPEC1[_Funct_] DisFInterfaceN)
+static void disCOP2_SPEC1( string& output, u32 code )
+{
+	disR5900_COP2_SPEC1[_Funct_]( output, code );
+}
 
 TdisR5900F disR5900_COP2_BC2[] = { //subset of disCOP2 BC
     disBC2F, disBC2T, disBC2FL, disBC2TL, disNULL, disNULL, disNULL, disNULL,
@@ -971,7 +1011,10 @@ TdisR5900F disR5900_COP2_BC2[] = { //subset of disCOP2 BC
     disNULL, disNULL, disNULL , disNULL , disNULL, disNULL, disNULL, disNULL,
 };
 
-MakeDisF(disCOP2_BC2,	disR5900_COP2_BC2[_Rt_] DisFInterfaceN)
+static void disCOP2_BC2( string& output, u32 code )
+{
+	disR5900_COP2_BC2[_Rt_]( output, code );
+}
 
 TdisR5900F disR5900_COP2[] = { // Subset of disCOP2
 	disNULL,       disQMFC2,      disCFC2,       disNULL,       disNULL,       disQMTC2,      disCTC2,       disNULL,
@@ -979,7 +1022,10 @@ TdisR5900F disR5900_COP2[] = { // Subset of disCOP2
 	disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1,
 	disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1};
 
-MakeDisF(disCOP2,		disR5900_COP2[_Rs_] DisFInterfaceN)
+static void disCOP2( string& output, u32 code )
+{
+	disR5900_COP2[_Rs_]( output, code );
+}
 
 TdisR5900F disR5900_REGIMM[] = { // Subset of disREGIMM
     disBLTZ,   disBGEZ,   disBLTZL,   disBGEZL,   disNULL, disNULL, disNULL, disNULL,
@@ -987,7 +1033,10 @@ TdisR5900F disR5900_REGIMM[] = { // Subset of disREGIMM
     disBLTZAL, disBGEZAL, disBLTZALL, disBGEZALL, disNULL, disNULL, disNULL, disNULL,
     disMTSAB,  disMTSAH , disNULL,    disNULL,    disNULL, disNULL, disNULL, disNULL};
 
-MakeDisF(disREGIMM,		disR5900_REGIMM[_Rt_] DisFInterfaceN)
+static void disREGIMM( string& output, u32 code )
+{
+	disR5900_REGIMM[_Rt_]( output, code );
+}
 
 TdisR5900F disR5900_SPECIAL[] = {
     disSLL,    disNULL, disSRL,    disSRA,   disSLLV,    disNULL, disSRLV,  disSRAV,
@@ -999,7 +1048,10 @@ TdisR5900F disR5900_SPECIAL[] = {
     disTGE,    disTGEU, disTLT,    disTLTU,  disTEQ,     disNULL, disTNE,   disNULL,
     disDSLL,   disNULL, disDSRL,   disDSRA,  disDSLL32,  disNULL, disDSRL32,disDSRA32 };
 
-MakeDisF(disSPECIAL,	disR5900_SPECIAL[_Funct_] DisFInterfaceN)
+static void disSPECIAL( string& output, u32 code )
+{
+	disR5900_SPECIAL[_Funct_]( output, code );
+}
 
 TdisR5900F disR5900[] = {
     disSPECIAL, disREGIMM, disJ   , disJAL  , disBEQ , disBNE , disBLEZ , disBGTZ ,
@@ -1011,21 +1063,24 @@ TdisR5900F disR5900[] = {
     disNULL   , disLWC1  , disNULL, disPREF , disNULL, disNULL, disLQC2 , disLD   ,
     disNULL   , disSWC1  , disNULL, disNULL  , disNULL, disNULL, disSQC2 , disSD  };
 
-MakeDisF(disR5900F,		disR5900[code >> 26] DisFInterfaceN)
+static void disR5900F( string& output, u32 code )
+{
+	disR5900[code >> 26]( output, code );
+}
 
 // returns a string representation of the cpuRegs current instruction.
 // The return value of this method is *not* thread safe!
 const string& DisR5900CurrentState::getString()
 {
 	result.clear();
-	disR5900F( result, cpuRegs.code, cpuRegs.pc );
+	disR5900F( result, cpuRegs.code );
 	return result;
 }
 
 const char* DisR5900CurrentState::getCString()
 {
 	result.clear();
-	disR5900F( result, cpuRegs.code, cpuRegs.pc );
+	disR5900F( result, cpuRegs.code );
 	return result.c_str();
 }
 

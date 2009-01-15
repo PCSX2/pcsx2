@@ -589,7 +589,7 @@ static void execute( void )
 	u8* fnptr;
 	u32 oldesi;
 #else
-	R5900FNPTR pfn;
+	//R5900FNPTR pfn;
 #endif
 	BASEBLOCK* pblock = PC_GETBLOCK(cpuRegs.pc);
 
@@ -633,10 +633,9 @@ static void execute( void )
 #else
 
 #ifdef _MSC_VER
-	pfn = ((R5900FNPTR)pblock->pFnptr);
-	// use call instead of pfn()
+	//pfn = ((R5900FNPTR)pblock->pFnptr);
 	__asm push ebp; // FIXME: need to preserve ebp or else the bios crashes, should find where ebp is getting corrupted instead.
-	__asm call pfn;
+	((R5900FNPTR)pblock->pFnptr)();
 	__asm pop ebp;	// restore ebp for the reason above
 #else
 	__asm__("push %%ebp\n");
@@ -652,7 +651,7 @@ static void execute( void )
 void recStep( void ) {
 }
 
-static __forceinline bool recEventTest()
+static bool recEventTest()
 {
 #ifdef PCSX2_DEVBUILD
     // dont' remove this check unless doing an official release
@@ -670,14 +669,16 @@ static __forceinline bool recEventTest()
 	return retval;
 }
 
-__forceinline void recExecute()
+void recExecute()
 {
 	// Mem protection should be handled by the caller here so that it can be
 	// done in a more optimized fashion.
 
 	while( true )
 	{
+		//Console::WriteLn( "Begin Block Execution" );
 		execute();
+		//Console::WriteLn( "Cycle > %x", params  cpuRegs.cycle );
 		if( recEventTest() ) break;
 	}
 }

@@ -117,7 +117,6 @@
 				AdditionalIncludeDirectories="&quot;$(InputDir)&quot;"
 				PreprocessorDefinitions="PTW32_STATIC_LIB;PTW32_BUILD_INLINED;WIN32;NDEBUG;_LIB"
 				StringPooling="true"
-				MinimalRebuild="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				StructMemberAlignment="5"

@@ -110,7 +110,7 @@ static u32 cpuBlockCycles = 0;		// 3 bit fixed point version of cycle count
 
 static std::string disOut;
 
-static __forceinline void execI()
+static void execI()
 {
 #ifdef _DEBUG
     if (memRead32(cpuRegs.pc, &cpuRegs.code) == -1) return;
@@ -131,12 +131,7 @@ static bool EventRaised = false;
 
 static __forceinline void _doBranch_shared(u32 tar)
 {
-	// fixme: first off, cpuRegs.pc is assigned after execI(), which breaks exceptions
-	// that might be thrown by execI().  I need to research how exceptions work again,
-	// and make sure I record the correct PC
-
 	branch2 = cpuRegs.branch = 1;
-	const u32 oldBranchPC = cpuRegs.pc;
 	execI();
 
 	// branch being 0 means an exception was thrown, since only the exception
@@ -161,10 +156,17 @@ void __fastcall intDoBranch(u32 target)
 {
 	//SysPrintf("Interpreter Branch \n");
 	_doBranch_shared( target );
+
+	if( Cpu == &intCpu )
+	{
+		cpuRegs.cycle += cpuBlockCycles >> 3;
+		cpuBlockCycles &= (1<<3)-1;
+		EventRaised |= intEventTest();
+	}
 }
 
 void intSetBranch() {
-	branch2 = 1;
+	branch2 = /*cpuRegs.branch =*/ 1;
 }
 
 void COP1_Unknown() {
@@ -179,10 +181,10 @@ namespace OpcodeImpl
 {
 void COP2()
 {
-	std::string disOut;
-	disR5900Fasm(disOut, cpuRegs.code, cpuRegs.pc);
+	//std::string disOut;
+	//disR5900Fasm(disOut, cpuRegs.code, cpuRegs.pc);
 
-	VU0_LOG("%s\n", disOut.c_str());
+	//VU0_LOG("%s\n", disOut.c_str());
 	Int_COP2PrintTable[_Rs_]();
 }
 
