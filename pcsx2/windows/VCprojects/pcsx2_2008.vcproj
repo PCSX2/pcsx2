@@ -1147,14 +1147,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Devel vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release vm|Win32"
 						>
 						<Tool
@@ -1188,14 +1180,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1238,14 +1222,6 @@
 							UsePrecompiledHeader="2"
 						/>
 					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\x86\ix86\ix86_fpu.cpp"
@@ -1268,14 +1244,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel vtlb|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1319,14 +1287,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Devel vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release vm|Win32"
 						>
 						<Tool
@@ -1363,14 +1323,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Devel vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release vm|Win32"
 						>
 						<Tool
@@ -1382,14 +1334,6 @@
 				<File
 					RelativePath="..\..\x86\ix86\ix86_tools.cpp"
 					>
-					<FileConfiguration
-						Name="Devel vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter

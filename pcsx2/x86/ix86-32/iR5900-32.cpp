@@ -575,72 +575,34 @@ static void recShutdown( void )
 }
 
 #pragma warning(disable:4731) // frame pointer register 'ebp' modified by inline assembly code
-static u32 s_uSaveESP = 0, s_uSaveEBP;
 
-static __forceinline void execute( void )
+/*
+static __forceinline __declspec(naked) void execute( void )
 {
-#ifdef _DEBUG
-	u8* fnptr;
-	u32 oldesi;
+#ifdef _MSC_VER
+	__asm pusha;
 #else
-	//R5900FNPTR pfn;
+	__asm__("pusha\n");
 #endif
+
 	BASEBLOCK* pblock = PC_GETBLOCK(cpuRegs.pc);
 
-	if ( !pblock->pFnptr || pblock->startpc != cpuRegs.pc ) {
+	if ( !pblock->pFnptr || pblock->startpc != cpuRegs.pc )
 		recRecompile(cpuRegs.pc);
-	}
 
 	assert( pblock->pFnptr != 0 );
+
 	g_EEFreezeRegs = true;
-
-	// skip the POPs
-
-#ifdef _DEBUG
-	fnptr = (u8*)pblock->pFnptr;
-
-#ifdef _MSC_VER
-	__asm {
-		// save data
-		mov oldesi, esi
-		mov s_uSaveESP, esp
-		sub s_uSaveESP, 8
-		mov s_uSaveEBP, ebp
-		push ebp
-
-		call fnptr // jump into function
-		// restore data
-		pop ebp
-		mov esi, oldesi
-	}
-#else
-
-    __asm__("movl %%esi, %0\n"
-            "movl %%esp, %1\n"
-            "sub $8, %1\n"
-            "push %%ebp\n"
-            "call *%2\n"
-            "pop %%ebp\n"
-            "movl %0, %%esi\n" : "=m"(oldesi), "=m"(s_uSaveESP) : "c"(fnptr) );
-#endif // _MSC_VER
-
-#else
-
-#ifdef _MSC_VER
-	//pfn = ((R5900FNPTR)pblock->pFnptr);
-	__asm push ebp; // FIXME: need to preserve ebp or else the bios crashes, should find where ebp is getting corrupted instead.
 	((R5900FNPTR)pblock->pFnptr)();
-	__asm pop ebp;	// restore ebp for the reason above
-#else
-	__asm__("push %%ebp\n");
-    ((R5900FNPTR)pblock->pFnptr)();
-	__asm__("pop %%ebp\n");
-#endif
 
+#ifdef _MSC_VER
+	__asm popa;
+#else
+	__asm__("popa\n");
 #endif
 
 	g_EEFreezeRegs = false;
-}
+}*/
 
 void recStep( void ) {
 }
@@ -663,28 +625,6 @@ static __forceinline bool recEventTest()
 	return retval;
 }
 
-__forceinline void recExecute()
-{
-	// Mem protection should be handled by the caller here so that it can be
-	// done in a more optimized fashion.
-
-	while( true )
-	{
-		//Console::WriteLn( "Begin Block Execution" );
-		execute();
-		//Console::WriteLn( "Cycle > %x", params  cpuRegs.cycle );
-		if( recEventTest() ) break;
-	}
-}
-
-static void recExecuteBlock()
-{
-	PCSX2_MEM_PROTECT_BEGIN()
-		recEventTest();
-		execute();
-	PCSX2_MEM_PROTECT_END()
-}
-
 ////////////////////////////////////////////////////
 
 static u32 g_lastpc = 0;
@@ -693,7 +633,8 @@ static u32 g_EEDispatchTemp;
 #ifdef _MSC_VER
 
 // jumped to when invalid pc address
-__declspec(naked,noreturn) void Dispatcher()
+// EDX contains the jump addr to modify
+static __declspec(naked,noreturn) void Dispatcher()
 {
 	// EDX contains the jump addr to modify
 	__asm push edx
@@ -702,11 +643,9 @@ __declspec(naked,noreturn) void Dispatcher()
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 	
 	__asm {
-		mov eax, s_pDispatchBlock
-
 		// check if startpc == cpuRegs.pc
+		mov eax, s_pDispatchBlock
 		mov ecx, cpuRegs.pc
-		//and ecx, 0x5fffffff // remove higher bits
 		cmp ecx, dword ptr [eax+BLOCKTYPE_STARTPC]
 		je CheckPtr
 
@@ -724,14 +663,6 @@ CheckPtr:
 	assert( g_EEDispatchTemp );
 #endif
 
-//	__asm {
-//		test eax, 0x40000000 // BLOCKTYPE_NEEDCLEAR
-//		jz Done
-//		// move new pc
-//		and eax, 0x0fffffff
-//		mov ecx, cpuRegs.pc
-//		mov dword ptr [eax+1], ecx
-//	}
 	__asm {
 		and eax, 0x0fffffff
 		pop ecx // x86Ptr to mod
@@ -744,7 +675,9 @@ CheckPtr:
 	}
 }
 
-__declspec(naked,noreturn) void DispatcherClear()
+// edx -  baseblock->startpc
+// stack - x86Ptr
+static __declspec(naked,noreturn) void DispatcherClear()
 {
 	// EDX contains the current pc
 	__asm mov cpuRegs.pc, edx
@@ -753,7 +686,8 @@ __declspec(naked,noreturn) void DispatcherClear()
 	// calc PC_GETBLOCK
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
-	if( s_pDispatchBlock->startpc == cpuRegs.pc ) {
+	if( s_pDispatchBlock->startpc == cpuRegs.pc )
+	{
 		assert( s_pDispatchBlock->pFnptr != 0 );
 
 		// already modded the code, jump to the new place
@@ -787,16 +721,13 @@ __declspec(naked,noreturn) void DispatcherClear()
 }
 
 // called when jumping to variable pc address
-__declspec(naked,noreturn) void DispatcherReg()
+static __declspec(naked,noreturn) void DispatcherReg()
 {
-	__asm {
-		//s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
-		mov edx, cpuRegs.pc
-		mov ecx, edx
-	}
+	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
-	__asm {
-		shr edx, 14
+	__asm
+	{
+		/*shr edx, 14
 		and edx, 0xfffffffc
 		add edx, recLUT
 		mov edx, dword ptr [edx]
@@ -805,15 +736,22 @@ __declspec(naked,noreturn) void DispatcherReg()
 		and eax, 0xfffc
 		// edx += 2*eax
 		shl eax, 1
-		add edx, eax
-		
-		// check if startpc == cpuRegs.pc
-		mov eax, ecx
-		//and eax, 0x5fffffff // remove higher bits
-		cmp eax, dword ptr [edx+BLOCKTYPE_STARTPC]
-		jne recomp
+		add edx, eax*/
 
-		mov eax, dword ptr [edx]
+		// check if startpc == cpuRegs.pc
+		mov eax, s_pDispatchBlock
+		mov ecx, cpuRegs.pc
+		cmp ecx, dword ptr [eax+BLOCKTYPE_STARTPC]
+		je CheckPtrReg
+
+		// recompile
+
+		push cpuRegs.pc // pc
+		call recRecompile
+		add esp, 4 // pop old param
+		mov eax, s_pDispatchBlock
+CheckPtrReg:
+		mov eax, dword ptr [eax]
 	}
 
 #ifdef _DEBUG
@@ -823,20 +761,33 @@ __declspec(naked,noreturn) void DispatcherReg()
 
 	__asm {
 		and eax, 0x0fffffff
-		jmp eax // fnptr
-
-recomp:
-		sub esp, 8
-		mov dword ptr [esp+4], edx
-		mov dword ptr [esp], ecx
-		call recRecompile
-		mov edx, dword ptr [esp+4]
-		add esp, 8
-		
-		mov eax, dword ptr [edx]
-		and eax, 0x0fffffff
-		jmp eax // fnptr
+		jmp eax
 	}
+}
+
+__forceinline void recExecute()
+{
+	do {
+		__asm {
+			pushad
+			call DispatcherReg
+			popad
+		}
+	}
+	while( !recEventTest() );
+}
+
+static void recExecuteBlock()
+{
+	PCSX2_MEM_PROTECT_BEGIN()
+	__asm
+	{
+		pushad
+		call DispatcherReg
+		popad
+	}
+	recEventTest();
+	PCSX2_MEM_PROTECT_END()
 }
 
 #else // _MSC_VER
@@ -1616,7 +1567,7 @@ void __fastcall dyna_block_discard(u32 start,u32 sz)
 	return;
 }
 
-void recRecompile( u32 startpc )
+void recRecompile( const u32 startpc )
 {
 	u32 i = 0;
 	u32 branchTo;
@@ -1679,43 +1630,6 @@ void recRecompile( u32 startpc )
 	recPtr = x86Ptr;
 	s_pCurBlock->pFnptr = (u32)x86Ptr;
 	s_pCurBlock->startpc = startpc;
-
-	// slower
-//	if( startpc == 0x81fc0 ) {
-//		
-//		MOV32MtoR(ECX, (u32)&g_nextBranchCycle);
-//		MOV32RtoM((u32)&cpuRegs.cycle, ECX);
-//		//ADD32ItoR(ECX, 9);
-//		//ADD32ItoM((u32)&cpuRegs.cycle, 512);
-//		CALLFunc((uptr)cpuBranchTest);
-//		CMP32ItoM((u32)&cpuRegs.pc, 0x81fc0);
-//		JE8(s_pCurBlock->pFnptr - (u32)(x86Ptr+2) );
-//		JMP32((u32)DispatcherReg - (u32)(x86Ptr+5));
-//
-//		pc = startpc + 9*4;
-//		assert( (pc-startpc)>>2 <= 0xffff );
-//		s_pCurBlockEx->size = (pc-startpc)>>2;
-//
-//		for(i = 1; i < (u32)s_pCurBlockEx->size-1; ++i) {
-//			s_pCurBlock[i].pFnptr = s_pCurBlock->pFnptr;
-//			s_pCurBlock[i].startpc = s_pCurBlock->startpc;
-//		}
-//
-//		// don't overwrite if delay slot
-//		if( i < (u32)s_pCurBlockEx->size && !(s_pCurBlock[i].uType & BLOCKTYPE_DELAYSLOT) ) {
-//			s_pCurBlock[i].pFnptr = s_pCurBlock->pFnptr;
-//			s_pCurBlock[i].startpc = s_pCurBlock->startpc;
-//		}
-//
-//		// set the block ptr
-//		AddBaseBlockEx(s_pCurBlockEx, 0);
-//
-//		if( !(pc&0x10000000) )
-//			maxrecmem = max( (pc&~0xa0000000), maxrecmem );
-//
-//		recPtr = x86Ptr;
-//		return;
-//	}
 
 	branch = 0;
 

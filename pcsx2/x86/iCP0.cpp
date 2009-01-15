@@ -78,8 +78,8 @@ void recDI()
 
 #ifndef CP0_RECOMPILE
 
-REC_FUNC( MFC0 );
-REC_FUNC( MTC0 );
+REC_SYS( MFC0 );
+REC_SYS( MTC0 );
 
 #else
 
