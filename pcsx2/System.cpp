@@ -322,8 +322,8 @@ void SysResetExecutionState()
 	R5900::Cpu->Reset();
 	psxCpu->Reset();
 
+	vuMicroCpuReset();
+
 	// make sure the VU1 doesn't have lingering "skip" enabled.
 	vu1MicroDisableSkip();
-
-	vuMicroCpuReset();
 }

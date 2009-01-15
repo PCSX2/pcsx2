@@ -57,8 +57,8 @@ bool vu1MicroIsSkipping()
 
 void vuMicroCpuReset()
 {
-	CpuVU1 = CHECK_VU1REC ? &recVU1 : &intVU1;
 	CpuVU0 = CHECK_VU0REC ? &recVU0 : &intVU0;
+	CpuVU1 = CHECK_VU1REC ? &recVU1 : &intVU1;
 	CpuVU0->Reset();
 	CpuVU1->Reset();
 

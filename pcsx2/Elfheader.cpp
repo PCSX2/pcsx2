@@ -501,21 +501,21 @@ struct ElfObject
 
 void ElfApplyPatches()
 {
-	if( !Config.Patch ) return;
-
 	string filename;
 	ssprintf( filename, "%8.8x", params ElfCRC );
 
 	// if patches found the following status msg will be overwritten
-	Console::SetTitle( fmt_string( "Game running without patches. [CRC=%hs]", params &filename ) );
+	Console::SetTitle( fmt_string( "Game running [CRC=%hs]", params &filename ) );
+
+	if( !Config.Patch ) return;
 
 	if(LoadPatch( filename ) != 0)
 	{
-		Console::WriteLn("XML Loader returned an error. Trying to load a pnatch...");
+		Console::WriteLn("XML Loader returned an error. Trying to load a pnach...");
 		inifile_read( filename.c_str() );
 	}
 	else 
-		Console::WriteLn("XML Loading success. Will not load from pnatch...");
+		Console::WriteLn("XML Loading success. Will not load from pnach...");
 
 	applypatch( 0 );
 }
