@@ -272,6 +272,13 @@ __forceinline void CLC( void )
 	write8( 0xF8 );
 }
 
+// NOP 1-byte
+__forceinline void NOP( void )
+{
+	write8(0x90);
+}
+
+
 ////////////////////////////////////
 // mov instructions				/
 ////////////////////////////////////
@@ -1017,6 +1024,13 @@ __forceinline void ADD64RtoR( x86IntRegType to, x86IntRegType from )
 	ModRM( 3, from, to );
 }
 
+/* add imm32 to EAX */
+void ADD32ItoEAX( u32 from )
+{
+	write8( 0x05 );
+	write32( from );
+}
+
 /* add imm32 to r32 */
 __forceinline void ADD32ItoR( x86IntRegType to, u32 from ) 
 {
@@ -1029,14 +1043,14 @@ __forceinline void ADD32ItoR( x86IntRegType to, u32 from )
 	}
 	else
 	{
-		if ( to == EAX) {
-			write8( 0x05 ); 
+		if ( to == EAX ) {
+			ADD32ItoEAX(from);
 		}
 		else {
 			write8( 0x81 ); 
 			ModRM( 3, 0, to );
+			write32( from );
 		}
-		write32( from );
 	}
 }
 

@@ -1713,52 +1713,57 @@ CPU_SSE_XMMCACHE_END
 }
 
 ////////////////////////////////////////////////////
-// 15 bytes
-#define QFSRV_bytes 15
+// Both Macros are 16 bytes so we can use a shift instead of a Mul instruction
+#define QFSRVhelper0() {  \
+	ajmp[0] = JMP32(0);  \
+	x86Ptr += 11;  \
+}
+
 #define QFSRVhelper(shift1, shift2) {  \
 	SSE2_PSRLDQ_I8_to_XMM(EEREC_D, shift1);  \
 	SSE2_PSLLDQ_I8_to_XMM(t0reg, shift2);  \
 	ajmp[shift1] = JMP32(0);  \
+	x86Ptr += 1;  \
 }
 
 void recQFSRV()
 {
-	if ( ! _Rd_ ) return;
+	if ( !_Rd_ ) return;
 	//SysPrintf("recQFSRV()\n");
 
-	CPU_SSE2_XMMCACHE_START( XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED)
+	CPU_SSE2_XMMCACHE_START( XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED )
 
 		u32 *ajmp[16];
 		int i, j;
-		int t0reg	= _allocTempXMMreg(XMMT_INT, -1);
-		int x86temp	= _allocX86reg(EDX, X86TYPE_TEMP, 0, 0); // Use EDX because MUL32R modifies EDX and EAX
+		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		SSE2_MOVDQA_XMM_to_XMM(t0reg, EEREC_S);
 		SSE2_MOVDQA_XMM_to_XMM(EEREC_D, EEREC_T);
 
-		MOV32MtoR(x86temp, (uptr)&cpuRegs.sa);
-		SHR32ItoR(x86temp, 3);
-		AND32I8toR(x86temp, 0xf); // This can possibly be removed but keeping it incase theres garbage in SA (cottonvibes)
-		MOV32ItoR(EAX, QFSRV_bytes);
-		MUL32R(x86temp);
-		ADD32ItoR(EAX, (uptr)x86Ptr + 7); // ADD32 = 5 bytes, JMPR = 2 bytes
+		MOV32MtoR(EAX, (uptr)&cpuRegs.sa);
+		SHL32ItoR(EAX, 1); // Multiply SA bytes by 16 bytes (the amount of bytes in QFSRVhelper() macros)
+		AND32I8toR(EAX, 0xf0); // This can possibly be removed but keeping it incase theres garbage in SA (cottonvibes)
+		ADD32ItoEAX((uptr)x86Ptr + 7); // ADD32 = 5 bytes, JMPR = 2 bytes
 		JMPR(EAX); // Jumps to a QFSRVhelper() case below (a total of 16 different cases)
 	
-		// Cases 0 to 15:
-		for (i = 0, j = 16; i < 16; i++, j--) {
+		// Case 0:
+		QFSRVhelper0();
+
+		// Cases 1 to 15:
+		for (i = 1, j = 15; i < 16; i++, j--) {
 			QFSRVhelper(i, j);
 		}
 
 		// Set jump addresses for the JMP32's in QFSRVhelper()
-		for (i = 0; i < 16; i++) {
+		for (i = 1; i < 16; i++) {
 			x86SetJ32(ajmp[i]);
 		}
 
 		// Concatenate the regs after appropriate shifts have been made
 		SSE2_POR_XMM_to_XMM(EEREC_D, t0reg);
-
+		
+		x86SetJ32(ajmp[0]); // Case 0 jumps to here (to skip the POR)
 		_freeXMMreg(t0reg);
-		_freeX86reg(x86temp);
 
 	CPU_SSE_XMMCACHE_END
 	//recCall( Interp::QFSRV, _Rd_ );

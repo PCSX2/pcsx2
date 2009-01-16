@@ -222,6 +222,7 @@ extern void CMOV32MtoR( int cc, int to, uptr from );
 
 extern void STC( void );
 extern void CLC( void );
+extern void NOP( void );
 
 ////////////////////////////////////
 // mov instructions               //
@@ -419,8 +420,10 @@ extern void ADD64ItoR( x86IntRegType to, u32 from );
 // add m64 to r64 
 extern void ADD64MtoR( x86IntRegType to, uptr from );
 
+// add imm32 to EAX
+extern void ADD32ItoEAX( u32 from );
 // add imm32 to r32 
-extern void ADD32ItoR( x86IntRegType to, u32 from );
+ extern void ADD32ItoR( x86IntRegType to, u32 from );
 // add imm32 to m32 
 extern void ADD32ItoM( uptr to, u32 from );
 // add imm32 to [r32+off]
