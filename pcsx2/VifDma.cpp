@@ -1820,8 +1820,9 @@ static void Vif1CMDNull(){ // invalid opcode
 	// if ME1, then force the vif to interrupt	
 	
      if ((vif1Regs->err & 0x4) == 0) {  //Ignore vifcode and tag mismatch error
-			SysPrintf( "UNKNOWN VifCmd: %x\n", vif1.cmd );
-            vif1Regs->stat |= 1 << 13;
+			//fixme: VifCmd unknown hack, see if more games get here (rama)
+			SysPrintf( "UNKNOWN VifCmd: %x\n If you're not playing Fatal Frame report this please!", vif1.cmd );
+            //vif1Regs->stat |= 1 << 13;
 			vif1.irq++;
      }
 	 vif1.cmd = 0;
