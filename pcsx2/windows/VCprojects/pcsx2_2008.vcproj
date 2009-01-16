@@ -54,6 +54,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
 				ExceptionHandling="2"
@@ -304,6 +305,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG;WIN32_PTHREADS"
 				StringPooling="true"
@@ -390,6 +392,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
 				EnableFiberSafeOptimizations="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
@@ -475,6 +478,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
 				EnableFiberSafeOptimizations="true"
 				AdditionalIncludeDirectories="$(SolutionDir)\common"
 				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS"
