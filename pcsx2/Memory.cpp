@@ -2539,9 +2539,9 @@ void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 		*(u64*)&vu->Micro[addr]=data[0];
 
 		if (vunum==0)
-			CpuVU0->Clear(addr&(~7),1);
+			CpuVU0->Clear(addr,1);
 		else
-			CpuVU1->Clear(addr&(~7),1);
+			CpuVU1->Clear(addr,1);
 	}
 }
 
@@ -2557,9 +2557,9 @@ void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 		*(u64*)&vu->Micro[addr+8]=data[1];
 
 		if (vunum==0)
-			CpuVU0->Clear(addr&(~7),1);
+			CpuVU0->Clear(addr,2);
 		else
-			CpuVU1->Clear(addr&(~7),1);
+			CpuVU1->Clear(addr,2);
 	}
 }
 
