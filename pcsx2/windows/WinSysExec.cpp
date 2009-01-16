@@ -217,10 +217,7 @@ void ExecuteCpu()
 
 	safe_delete( g_gsRecoveryState );
 
-	// ... and destroy the window.  Ugly thing.
-
-	//DestroyWindow( gApp.hWnd );
-	//gApp.hWnd = NULL;
+	// ... and hide the window.  Ugly thing.
 
 	ShowWindow( gApp.hWnd, SW_HIDE );
 
@@ -774,11 +771,13 @@ bool SysInit()
 	if( emuLog == NULL )
 		emuLog = fopen(LOGS_DIR "\\emuLog.txt","w");
 
+	PCSX2_MEM_PROTECT_BEGIN();
 	SysDetect();
 	if( !SysAllocateMem() )
 		return false;	// critical memory allocation failure;
 
 	SysAllocateDynarecs();
+	PCSX2_MEM_PROTECT_END();
 
 	return true;
 }

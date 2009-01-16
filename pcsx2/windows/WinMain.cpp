@@ -190,6 +190,21 @@ void WinClose()
 
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
 
+// Returns TRUE if the test run mode was activaated (game was run and has been exited)
+static bool TestRunMode()
+{
+	if( IsDevBuild && (g_TestRun.enabled || g_TestRun.ptitle != NULL) )
+	{
+		// run without ui
+		UseGui = 0;
+		PCSX2_MEM_PROTECT_BEGIN();
+		RunExecute( g_TestRun.efile ? g_TestRun.ptitle : NULL );
+		PCSX2_MEM_PROTECT_END();
+		return true;
+	}
+	return false;
+}
+
 void WinRun( int nCmdShow )
 {
 	try
@@ -231,13 +246,7 @@ void WinRun( int nCmdShow )
 			if (Pcsx2Configure(NULL) == FALSE) return;
 		}
 
-		if( IsDevBuild && (g_TestRun.enabled || g_TestRun.ptitle != NULL) )
-		{
-			// run without ui
-			UseGui = 0;
-			RunExecute( g_TestRun.efile ? g_TestRun.ptitle : NULL );
-			return;
-		}
+		if( TestRunMode() ) return;
 
 #ifdef PCSX2_DEVBUILD
 		if( g_pRunGSState ) {
@@ -269,7 +278,6 @@ void WinRun( int nCmdShow )
 			Console::ClearColor();
 		}
 
-		LoadPatch("default");
 		RunGui();
 	}
 	catch( Exception::BaseException& ex )
@@ -388,12 +396,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
+static std::string str_Default( "default" );
 
 void RunGui()
 {
     MSG msg;
 
 	PCSX2_MEM_PROTECT_BEGIN();
+
+	LoadPatch(str_Default);
 
 	while( true )
 	{

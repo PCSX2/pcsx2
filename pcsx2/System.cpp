@@ -320,9 +320,6 @@ void SysResetExecutionState()
 		psxCpu = &psxInt;
 	}
 
-#ifdef PCSX2_VIRTUAL_MEM
-	PCSX2_MEM_PROTECT_BEGIN();
-#endif
 	R5900::Cpu->Reset();
 	psxCpu->Reset();
 
@@ -330,8 +327,4 @@ void SysResetExecutionState()
 
 	// make sure the VU1 doesn't have lingering "skip" enabled.
 	vu1MicroDisableSkip();
-
-#ifdef PCSX2_VIRTUAL_MEM
-	PCSX2_MEM_PROTECT_END();
-#endif
 }

@@ -77,10 +77,6 @@ void vuMicroMemAlloc()
 
 	// mirror 4 times
 	VU0.Micro = PS2MEM_VU0MICRO;
-	memLUT[0x11000].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11000].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11001].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11001].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11002].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11002].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11003].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11003].aVFNs = &s_psVuMem.aVFNs[0];
 
 	// since vuregisters are mapped in vumem0, go to diff addr, but mapping to same physical addr
     //VirtualFree((void*)0x11000000, 0x10000, MEM_RELEASE); // free just in case
@@ -178,6 +174,13 @@ void vuMicroMemReset()
 {
 	jASSUME( VU0.Mem != NULL );
 	jASSUME( VU1.Mem != NULL );
+
+/*#ifdef PCSX2_VIRTUAL_MEM
+	memLUT[0x11000].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11000].aVFNs = &s_psVuMem.aVFNs[0];
+	memLUT[0x11001].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11001].aVFNs = &s_psVuMem.aVFNs[0];
+	memLUT[0x11002].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11002].aVFNs = &s_psVuMem.aVFNs[0];
+	memLUT[0x11003].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11003].aVFNs = &s_psVuMem.aVFNs[0];
+#endif*/
 
 	// === VU0 Initialization ===
 	memzero_obj(VU0.ACC);

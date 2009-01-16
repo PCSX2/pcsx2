@@ -32,7 +32,8 @@ static u8 dword[4];
 extern tIPU_BP g_BP;
 extern decoder_t g_decoder;
 extern void ReorderBitstream();
-static void GETWORD(u32 * bit_buf,int bits)
+
+static __forceinline void GETWORD(u32 * bit_buf,int bits)
 {
 	while(!getBits16(data,1))
 	{
@@ -41,7 +42,7 @@ static void GETWORD(u32 * bit_buf,int bits)
 	*bit_buf |= ((data[0] << 8) | data[1]) << (bits);
 }
 
-static void bitstream_init (decoder_t * decoder){
+static __forceinline void bitstream_init (decoder_t * decoder){
     decoder->bitstream_bits = -16;
 
 	while( !getBits32(dword, 1) )

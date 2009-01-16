@@ -130,47 +130,78 @@ struct tIPU_BP {
 #pragma pack()
 #endif
 
-struct tIPU_CMD_IDEC {
-	u32 FB  : 6;	
-	u32 UN2 :10;
-	u32 QSC : 5;	
-	u32 UN1 : 3;	
-	u32 DTD : 1;	
-	u32 SGN : 1;	
-	u32 DTE : 1;	
-	u32 OFM : 1;	
-	u32 cmd : 4;	
+union tIPU_CMD_IDEC
+{
+	struct
+	{
+		u32 FB  : 6;
+		u32 UN2 :10;
+		u32 QSC : 5;
+		u32 UN1 : 3;
+		u32 DTD : 1;
+		u32 SGN : 1;
+		u32 DTE : 1;
+		u32 OFM : 1;
+		u32 cmd : 4;
+	};
+
+	u32 value;
+
+	tIPU_CMD_IDEC( u32 val ) : value( val )
+	{
+	}
 };
 
-struct tIPU_CMD_BDEC {
-	u32 FB  : 6;	
-	u32 UN2 :10;
-	u32 QSC : 5;	
-	u32 UN1 : 4;	
-	u32 DT  : 1;	
-	u32 DCR : 1;	
-	u32 MBI : 1;	
-	u32 cmd : 4;	
+union tIPU_CMD_BDEC
+{
+	struct
+	{
+		u32 FB  : 6;
+		u32 UN2 :10;
+		u32 QSC : 5;
+		u32 UN1 : 4;
+		u32 DT  : 1;
+		u32 DCR : 1;
+		u32 MBI : 1;
+		u32 cmd : 4;
+	};
+	u32 value;
+
+	tIPU_CMD_BDEC( u32 val ) : value( val )
+	{
+	}
 };
 
-struct tIPU_CMD_CSC {
-	u32 MBC :11;
-	u32 UN2 :15;
-	u32 DTE : 1;	
-	u32 OFM : 1;	
-	u32 cmd : 4;
+union tIPU_CMD_CSC
+{
+	struct
+	{
+		u32 MBC :11;
+		u32 UN2 :15;
+		u32 DTE : 1;
+		u32 OFM : 1;
+		u32 cmd : 4;
+	};
+	u32 value;
+
+	tIPU_CMD_CSC( u32 val ) : value( val )
+	{
+	}
 };
 
-#define SCE_IPU_BCLR	0x0
-#define SCE_IPU_IDEC	0x1
-#define SCE_IPU_BDEC	0x2
-#define SCE_IPU_VDEC	0x3
-#define SCE_IPU_FDEC	0x4
-#define SCE_IPU_SETIQ	0x5
-#define SCE_IPU_SETVQ	0x6
-#define SCE_IPU_CSC		0x7
-#define SCE_IPU_PACK	0x8
-#define SCE_IPU_SETTH	0x9
+enum SCE_IPU
+{
+	SCE_IPU_BCLR = 0x0
+,	SCE_IPU_IDEC
+,	SCE_IPU_BDEC
+,	SCE_IPU_VDEC
+,	SCE_IPU_FDEC
+,	SCE_IPU_SETIQ
+,	SCE_IPU_SETVQ
+,	SCE_IPU_CSC
+,	SCE_IPU_PACK
+,	SCE_IPU_SETTH
+};
 
 struct IPUregisters {
   tIPU_CMD  cmd;

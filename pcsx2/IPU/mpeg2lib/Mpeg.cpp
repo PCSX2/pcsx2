@@ -868,7 +868,7 @@ static __forceinline int get_mpeg1_non_intra_block (decoder_t * const decoder)
     return i;
 }
 
-static void slice_intra_DCT (decoder_t * const decoder, const int cc,
+static void __fastcall slice_intra_DCT (decoder_t * const decoder, const int cc,
 				    u8 * const dest, const int stride)
 {
     NEEDBITS (decoder->bitstream_buf, decoder->bitstream_bits, decoder->bitstream_ptr);
@@ -889,7 +889,7 @@ static void slice_intra_DCT (decoder_t * const decoder, const int cc,
 }
 
 /* JayteeMaster: changed dest to 16 bit signed */
-static void slice_non_intra_DCT (decoder_t * const decoder,
+static void __fastcall slice_non_intra_DCT (decoder_t * const decoder,
 					/*u8*/s16 * const dest, const int stride){
     int last;
 	memzero_obj(decoder->DCTblock);

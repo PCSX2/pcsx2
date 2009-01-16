@@ -389,9 +389,9 @@ static void ipuBCLR(u32 val) {
 
 static __forceinline BOOL ipuIDEC(u32 val)
 {
-	tIPU_CMD_IDEC idec={0, 0, 0, 0, 0, 0, 0, 0, 0};
-	
-	*(u32*)&idec=val;
+	tIPU_CMD_IDEC idec( val );
+
+
 						IPU_LOG("IPU IDEC command.\n");
 	if (idec.FB){		IPU_LOG(" Skip %d bits.",idec.FB);}
 						IPU_LOG(" Quantizer step code=0x%X.",idec.QSC);
@@ -407,7 +407,7 @@ static __forceinline BOOL ipuIDEC(u32 val)
 	g_BP.BP+= idec.FB;//skip FB bits
 	//from IPU_CTRL
 	ipuRegs->ctrl.PCT = I_TYPE; //Intra DECoding;)
-	g_decoder.coding_type		=ipuRegs->ctrl.PCT;
+	g_decoder.coding_type	=ipuRegs->ctrl.PCT;
 	g_decoder.mpeg1			=ipuRegs->ctrl.MP1;
 	g_decoder.q_scale_type	=ipuRegs->ctrl.QST;
 	g_decoder.intra_vlc_format=ipuRegs->ctrl.IVF;
@@ -439,8 +439,7 @@ static int s_bdec=0;
 
 static __forceinline BOOL ipuBDEC(u32 val)
 {
-	tIPU_CMD_BDEC bdec={0, 0, 0, 0, 0, 0, 0, 0};
-	*(u32*)&bdec=val;
+	tIPU_CMD_BDEC bdec( val );
 
 							IPU_LOG("IPU BDEC(macroblock decode) command %x, num: 0x%x\n",cpuRegs.pc, s_bdec);
 	if (bdec.FB){			IPU_LOG(" Skip 0x%X bits.", bdec.FB);}
@@ -450,7 +449,7 @@ static __forceinline BOOL ipuBDEC(u32 val)
 	else{					IPU_LOG(" Doesn't reset DC prediction value.");}
 	if (bdec.DT){			IPU_LOG(" Use field DCT.");}
 	else{					IPU_LOG(" Use frame DCT.");}
-							IPU_LOG(" Quantiser step=0x%X\n",bdec.QSC);
+							IPU_LOG(" Quantizer step=0x%X\n",bdec.QSC);
 #ifdef _DEBUG
 	s_bdec++;
 #endif
@@ -615,8 +614,7 @@ static __forceinline BOOL ipuSETVQ(u32 val)
 // IPU Transfers are split into 8Qwords so we need to send ALL the data
 static BOOL __fastcall ipuCSC(u32 val)
 {
-	tIPU_CMD_CSC csc ={0, 0, 0, 0, 0};
-	*(u32*)&csc=val;
+	tIPU_CMD_CSC csc( val );
 
 	IPU_LOG("IPU CSC(Colorspace conversion from YCbCr) command (%d).\n",csc.MBC);
 	if (csc.OFM){	IPU_LOG("Output format is RGB16. ");}
@@ -665,10 +663,9 @@ static BOOL __fastcall ipuCSC(u32 val)
 }
 
 // Todo - Need to add the same stop and start code as CSC
-static BOOL ipuPACK(u32 val) {
-	tIPU_CMD_CSC  csc ={0, 0, 0, 0, 0};
- 
-	*(u32*)&csc=val;
+static BOOL ipuPACK(u32 val)
+{
+	tIPU_CMD_CSC  csc( val );
 
 	IPU_LOG("IPU PACK (Colorspace conversion from RGB32) command.\n");
 	if (csc.OFM){	IPU_LOG("Output format is RGB16. ");}

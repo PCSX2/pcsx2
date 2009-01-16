@@ -21,8 +21,8 @@ void ProfilerTerminateSource( const char* Name );
 // Profiling info in debug builds isn't much use anyway and the console
 // popups are annoying when you're trying to trace debug logs and stuff.
 
-#define ProfilerInit()
-#define ProfilerTerm()
+#define ProfilerInit() (void)0
+#define ProfilerTerm() (void)0
 #define ProfilerSetEnabled 0&&
 #define ProfilerRegisterSource 0&&
 #define ProfilerTerminateSource 0&&
