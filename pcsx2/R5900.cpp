@@ -78,12 +78,6 @@ void cpuReset()
 		cpuIsInitialized = true;
 	}
 
-#ifdef PCSX2_VIRTUAL_MEM
-	// VM Builds require the exception handler during memInit/Reset operations and
-	// during the savestate load/save code.
-	PCSX2_MEM_PROTECT_BEGIN();
-#endif
-
 	memReset();
 	psxMemReset();
 	vuMicroMemReset();
@@ -115,9 +109,6 @@ void cpuReset()
 	rcntInit();
 	psxReset();
 
-#ifdef PCSX2_VIRTUAL_MEM
-	PCSX2_MEM_PROTECT_END();
-#endif
 }
 
 void cpuShutdown()

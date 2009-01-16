@@ -389,8 +389,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 
 
-void RunGui() {
+void RunGui()
+{
     MSG msg;
+
+	PCSX2_MEM_PROTECT_BEGIN();
 
 	while( true )
 	{
@@ -404,6 +407,8 @@ void RunGui() {
 
 		Sleep(10);
 	}
+
+	PCSX2_MEM_PROTECT_END();
 }
 
 BOOL Open_File_Proc( std::string& outstr )

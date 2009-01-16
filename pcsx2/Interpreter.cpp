@@ -1036,10 +1036,8 @@ static void intExecuteBlock()
 {
 	g_EEFreezeRegs = false;
 
-	PCSX2_MEM_PROTECT_BEGIN()
 	branch2 = 0;
 	while (!branch2) execI();
-	PCSX2_MEM_PROTECT_END()
 }
 
 void intStep()

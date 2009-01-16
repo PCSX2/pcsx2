@@ -233,7 +233,6 @@ void ExecuteCpu()
 
 	timeBeginPeriod( 1 );
 
-	PCSX2_MEM_PROTECT_BEGIN();
 	if( CHECK_EEREC )
 	{
 		while( !g_ReturnToGui )
@@ -250,7 +249,6 @@ void ExecuteCpu()
 			SysUpdate();
 		}
 	}
-	PCSX2_MEM_PROTECT_END();
 
 	timeEndPeriod( 1 );
 

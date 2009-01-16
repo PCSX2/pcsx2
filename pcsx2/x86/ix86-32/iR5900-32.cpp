@@ -90,7 +90,7 @@ static u32 s_nInstCacheSize = 0;
 
 static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
-static BASEBLOCK* s_pDispatchBlock = NULL;
+static const BASEBLOCK* s_pDispatchBlock = NULL;
 static u32 s_nEndBlock = 0; // what pc the current block ends	
 static u32 s_nHasDelay = 0;
 
@@ -725,32 +725,12 @@ static __declspec(naked,noreturn) void DispatcherReg()
 {
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
+	if( s_pDispatchBlock->startpc != cpuRegs.pc )
+		recRecompile(cpuRegs.pc);
+
 	__asm
 	{
-		/*shr edx, 14
-		and edx, 0xfffffffc
-		add edx, recLUT
-		mov edx, dword ptr [edx]
-
-		mov eax, ecx
-		and eax, 0xfffc
-		// edx += 2*eax
-		shl eax, 1
-		add edx, eax*/
-
-		// check if startpc == cpuRegs.pc
 		mov eax, s_pDispatchBlock
-		mov ecx, cpuRegs.pc
-		cmp ecx, dword ptr [eax+BLOCKTYPE_STARTPC]
-		je CheckPtrReg
-
-		// recompile
-
-		push cpuRegs.pc // pc
-		call recRecompile
-		add esp, 4 // pop old param
-		mov eax, s_pDispatchBlock
-CheckPtrReg:
 		mov eax, dword ptr [eax]
 	}
 
@@ -767,11 +747,22 @@ CheckPtrReg:
 
 __forceinline void recExecute()
 {
+	// Optimization note : Compared pushad against manually pushing the regs one-by-one.
+	// Manually pushing is faster, especially on Core2's and such. :)
 	do {
 		__asm {
-			pushad
+			
+			push ebx
+			push esi
+			push edi
+			push ebp
+
 			call DispatcherReg
-			popad
+			
+			pop ebp
+			pop edi
+			pop esi
+			pop ebx
 		}
 	}
 	while( !recEventTest() );
@@ -779,15 +770,21 @@ __forceinline void recExecute()
 
 static void recExecuteBlock()
 {
-	PCSX2_MEM_PROTECT_BEGIN()
 	__asm
 	{
-		pushad
+		push ebx
+		push esi
+		push edi
+		push ebp
+
 		call DispatcherReg
-		popad
+
+		pop ebp
+		pop edi
+		pop esi
+		pop ebx
 	}
 	recEventTest();
-	PCSX2_MEM_PROTECT_END()
 }
 
 #else // _MSC_VER
