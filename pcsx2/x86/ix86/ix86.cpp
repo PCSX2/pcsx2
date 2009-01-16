@@ -2494,9 +2494,10 @@ __forceinline u8* JMP( uptr to ) {
 
 	if ( jump > 0x7f ) {
 		assert( to <= 0xffffffff );
-	  return (u8*)JMP32( to );
-	} else {
-	  return (u8*)JMP8( to );
+		return (u8*)JMP32( to );
+	} 
+	else {
+		return (u8*)JMP8( to );
 	}
 }
 
@@ -2660,14 +2661,31 @@ __forceinline u8* JNO8( u8 to )
 { 
 	return J8Rel( 0x71, to ); 
 }
+/* Untested and slower, use 32bit versions instead
+// ja rel16 
+__forceinline u16* JA16( u16 to )
+{
+	return J16Rel( 0x87, to );
+}
 
-// jb rel8 
+// jb rel16 
 __forceinline u16* JB16( u16 to )
 {
 	return J16Rel( 0x82, to );
 }
 
+// je rel16 
+__forceinline u16* JE16( u16 to )
+{
+	return J16Rel( 0x84, to );
+}
 
+// jz rel16 
+__forceinline u16* JZ16( u16 to )
+{
+	return J16Rel( 0x84, to );
+}
+*/
 // jb rel32 
 __forceinline u32* JB32( u32 to )
 {
@@ -2720,6 +2738,12 @@ __forceinline u32* JL32( u32 to )
 __forceinline u32* JLE32( u32 to ) 
 { 
 	return J32Rel( 0x8E, to ); 
+}
+
+/* ja rel32 */
+__forceinline u32* JA32( u32 to ) 
+{ 
+	return J32Rel( 0x87, to ); 
 }
 
 /* jae rel32 */

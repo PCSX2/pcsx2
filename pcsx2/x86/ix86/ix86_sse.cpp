@@ -252,7 +252,7 @@ __forceinline void SSE_MOVUPSRtoRmOffset( x86SSERegType to, x86IntRegType from, 
 //**********************************************************************************
 __forceinline void SSE_MOVAPS_M128_to_XMM( x86SSERegType to, uptr from )          { SSEMtoR( 0x280f, 0 ); }
 __forceinline void SSE_MOVAPS_XMM_to_M128( uptr to, x86SSERegType from )          { SSERtoM( 0x290f, 0 ); }
-__forceinline void SSE_MOVAPS_XMM_to_XMM( x86SSERegType to, x86SSERegType from )  { if (to != from) SSERtoR( 0x280f ); }
+__forceinline void SSE_MOVAPS_XMM_to_XMM( x86SSERegType to, x86SSERegType from )  { if (to != from) { SSERtoR( 0x280f ); } }
 
 __forceinline void SSE_MOVUPS_M128_to_XMM( x86SSERegType to, uptr from )          { SSEMtoR( 0x100f, 0 ); }
 __forceinline void SSE_MOVUPS_XMM_to_M128( uptr to, x86SSERegType from )          { SSERtoM( 0x110f, 0 ); }
@@ -302,7 +302,7 @@ __forceinline void SSE_MOVSS_XMM_to_Rm( x86IntRegType to, x86SSERegType from )
 	ModRM(0, from, to);
 }
 
-__forceinline void SSE_MOVSS_XMM_to_XMM( x86SSERegType to, x86SSERegType from )      { if (to != from) SSE_SS_RtoR( 0x100f ); }
+__forceinline void SSE_MOVSS_XMM_to_XMM( x86SSERegType to, x86SSERegType from )      { if (to != from) { SSE_SS_RtoR( 0x100f ); } }
 
 __forceinline void SSE_MOVSS_RmOffset_to_XMM( x86SSERegType to, x86IntRegType from, int offset )
 {
@@ -850,7 +850,7 @@ __forceinline void SSE2_PXOR_M128_to_XMM( x86SSERegType to, uptr from ){ SSEMtoR
 
 __forceinline void SSE2_MOVDQA_M128_to_XMM(x86SSERegType to, uptr from) {SSEMtoR66(0x6F0F); }
 __forceinline void SSE2_MOVDQA_XMM_to_M128( uptr to, x86SSERegType from ){SSERtoM66(0x7F0F);} 
-__forceinline void SSE2_MOVDQA_XMM_to_XMM( x86SSERegType to, x86SSERegType from) { SSERtoR66(0x6F0F); }
+__forceinline void SSE2_MOVDQA_XMM_to_XMM( x86SSERegType to, x86SSERegType from) { if (to != from) { SSERtoR66(0x6F0F); } }
 
 __forceinline void SSE2_MOVDQU_M128_to_XMM(x86SSERegType to, uptr from) { write8(0xF3); SSEMtoR(0x6F0F, 0); }
 __forceinline void SSE2_MOVDQU_XMM_to_M128( uptr to, x86SSERegType from) { write8(0xF3); SSERtoM(0x7F0F, 0); }
