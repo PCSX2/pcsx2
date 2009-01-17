@@ -110,6 +110,8 @@ static u32 cpuBlockCycles = 0;		// 3 bit fixed point version of cycle count
 
 static std::string disOut;
 
+//long int runs=0;
+
 static void execI()
 {
 #ifdef _DEBUG
@@ -120,6 +122,13 @@ static void execI()
 #endif
 
 	const OPCODE& opcode = GetCurrentInstruction();
+	//use this to find out what opcodes your game uses. very slow! (rama)
+	//runs++;
+	//if (runs > 1599999999){ //leave some time to startup the testgame
+	//	if (opcode.Name[0] == 'L') { //find all opcodes beginning with "L"
+	//		SysPrintf ("Load %s\n",opcode.Name);
+	//	}
+	//}
 
 	cpuBlockCycles += opcode.cycles;
 	cpuRegs.pc += 4;
