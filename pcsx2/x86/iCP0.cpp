@@ -34,6 +34,45 @@ namespace Interp = R5900::Interpreter::OpcodeImpl::COP0;
 
 namespace Dynarec {
 namespace R5900 {
+
+// R5900 branch hepler!
+// Recompiles code for a branch test and/or skip, complete with delay slot
+// handling.  Note, for "likely" branches use iDoBranchImm_Likely instead, which
+// handles delay slots differently.
+// Parameters:
+//   jmpSkip - This parameter is the result of the appropriate J32 instruction
+//   (usually JZ32 or JNZ32).
+static void recDoBranchImm( u32* jmpSkip, bool isLikely = false )
+{
+	// All R5900 branches use this format:
+	const u32 branchTo = (s32)_Imm_ * 4 + pc;
+
+	// First up is the Branch Taken Path : Save the recompiler's state, compile the
+	// DelaySlot, and issue a BranchTest insertion.  The state is reloaded below for
+	// the "did not branch" path (maintains consts, register allocations, and other optimizations).
+
+	SaveBranchState();
+	recompileNextInstruction(1);
+	SetBranchImm(branchTo);
+
+	// Jump target when the branch is *not* taken, skips the branchtest code
+	// insertion above.
+	x86SetJ32(jmpSkip);
+
+	// if it's a likely branch then we'll need to skip the delay slot here, since
+	// MIPS cancels the delay slot instruction when branches aren't taken.
+	if( !isLikely ) pc -= 4;		// instruction rewinde for delay slot ,if non-likely.
+	LoadBranchState();
+	recompileNextInstruction(1);
+
+	SetBranchImm(pc);
+}
+
+static void recDoBranchImm_Likely( u32* jmpSkip )
+{
+	recDoBranchImm( jmpSkip, true );
+}
+
 namespace OpcodeImpl {
 namespace COP0 {
 
@@ -42,14 +81,55 @@ namespace COP0 {
 *                                                        *
 *********************************************************/
 
-void recBC0F() { recBranchCall( Interp::BC0F ); }
-void recBC0T() { recBranchCall( Interp::BC0T ); }
-void recBC0FL() { recBranchCall( Interp::BC0FL ); }
-void recBC0TL() { recBranchCall( Interp::BC0TL ); }
-void recTLBR() { recBranchCall( Interp::TLBR ); }
-void recTLBWI() { recBranchCall( Interp::TLBWI ); }
-void recTLBWR() { recBranchCall( Interp::TLBWR ); }
-void recTLBP() { recBranchCall( Interp::TLBP ); }
+// emits "setup" code for a COP0 branch test.  The instruction immediately following
+// this should be a conditional Jump -- JZ or JNZ normally.
+static void _setupBranchTest()
+{
+	_eeFlushAllUnused();
+
+	// COP0 branch conditionals are based on the following equation:
+	// (((psHu16(DMAC_STAT) & psHu16(DMAC_PCR)) & 0x3ff) == (psHu16(DMAC_PCR) & 0x3ff))
+	// BC0F checks if the statement is false, BC0T checks if the statement is true.
+
+	// note: We only want to compare the 16 bit values of DMAC_STAT and PCR.
+	// But using 32-bit loads here is ok (and faster), because we mask off
+	// everything except the lower 10 bits away.
+
+	MOV32MtoR( EAX, (uptr)&psHu32(DMAC_STAT) );
+	MOV32MtoR( ECX, (uptr)&psHu32(DMAC_PCR) );
+	AND32ItoR( EAX, 0x3ff );	// masks off all but lower 10 bits.
+	AND32ItoR( ECX, 0x3ff );
+	CMP32RtoR( EAX, ECX );
+}
+
+void recBC0F()
+{
+	_setupBranchTest();
+	recDoBranchImm(JNZ32(0));
+}
+
+void recBC0T()
+{
+	_setupBranchTest();
+	recDoBranchImm(JZ32(0));
+}
+
+void recBC0FL()
+{
+	_setupBranchTest();
+	recDoBranchImm_Likely(JNZ32(0));
+}
+
+void recBC0TL()
+{
+	_setupBranchTest();
+	recDoBranchImm_Likely(JZ32(0));
+}
+
+void recTLBR() { recCall( Interp::TLBR, -1 ); }
+void recTLBP() { recCall( Interp::TLBP, -1 ); }
+void recTLBWI() { recCall( Interp::TLBWI, -1 ); }
+void recTLBWR() { recCall( Interp::TLBWR, -1 ); }
 
 void recERET()
 {

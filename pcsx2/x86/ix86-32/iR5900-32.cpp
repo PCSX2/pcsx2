@@ -117,7 +117,7 @@ static const char *txt1 = "REG[%d] = %x_%x\n";
 static const char *txt2 = "M32 = %x\n";
 #endif
 
-static void iBranchTest(u32 newpc, u32 cpuBranch);
+static void iBranchTest(u32 newpc, bool noDispatch=false);
 
 BASEBLOCKEX* PC_GETBLOCKEX(BASEBLOCK* p)
 {
@@ -686,7 +686,7 @@ static __declspec(naked,noreturn) void DispatcherClear()
 	// calc PC_GETBLOCK
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
-	if( s_pDispatchBlock->startpc == cpuRegs.pc )
+	if( s_pDispatchBlock != NULL && s_pDispatchBlock->startpc == cpuRegs.pc )
 	{
 		assert( s_pDispatchBlock->pFnptr != 0 );
 
@@ -725,7 +725,7 @@ static __declspec(naked,noreturn) void DispatcherReg()
 {
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
-	if( s_pDispatchBlock->startpc != cpuRegs.pc )
+	if( s_pDispatchBlock == NULL || s_pDispatchBlock->startpc != cpuRegs.pc )
 		recRecompile(cpuRegs.pc);
 
 	__asm
@@ -750,8 +750,9 @@ __forceinline void recExecute()
 	// Optimization note : Compared pushad against manually pushing the regs one-by-one.
 	// Manually pushing is faster, especially on Core2's and such. :)
 	do {
-		__asm {
-			
+		g_EEFreezeRegs = true;
+		__asm
+		{
 			push ebx
 			push esi
 			push edi
@@ -764,12 +765,14 @@ __forceinline void recExecute()
 			pop esi
 			pop ebx
 		}
+		g_EEFreezeRegs = false;
 	}
 	while( !recEventTest() );
 }
 
 static void recExecuteBlock()
 {
+	g_EEFreezeRegs = true;
 	__asm
 	{
 		push ebx
@@ -784,6 +787,7 @@ static void recExecuteBlock()
 		pop esi
 		pop ebx
 	}
+	g_EEFreezeRegs = false;
 	recEventTest();
 }
 
@@ -958,7 +962,7 @@ void SetBranchReg( u32 reg )
 
 	iFlushCall(FLUSH_EVERYTHING);
 
-	iBranchTest(0xffffffff, 1);
+	iBranchTest(0xffffffff);
 }
 
 void SetBranchImm( u32 imm )
@@ -971,7 +975,7 @@ void SetBranchImm( u32 imm )
 	MOV32ItoM( (uptr)&cpuRegs.pc, imm );
 	iFlushCall(FLUSH_EVERYTHING);
 
-	iBranchTest(imm, imm <= pc);
+	iBranchTest(imm);
 }
 
 void SaveBranchState()
@@ -1111,7 +1115,17 @@ static u32 eeScaleBlockCycles()
 	return s_nBlockCycles >> (3+2);
 }
 
-static void iBranchTest(u32 newpc, u32 cpuBranch)
+// Generates dynarec code for Event tests followed by a block dispatch (branch).
+// Parameters:
+//   newpc - address to jump to at the end of the block.  If newpc == 0xffffffff then
+//   the jump is assumed to be to a register (dynamic).  For any other value the
+//   jump is assumed to be static, in which case the block will be "hardlinked" after
+//   the first time it's dispatched.
+// 
+//   noDispatch - When set true, the jump to Dispatcher.  Used by the recs
+//   for blocks which perform exception checks without branching (it's enabled by
+//   setting "branch = 2";
+static void iBranchTest(u32 newpc, bool noDispatch)
 {
 #ifdef _DEBUG
 	//CALLFunc((uptr)testfpu);
@@ -1121,21 +1135,35 @@ static void iBranchTest(u32 newpc, u32 cpuBranch)
 	if( bExecBIOS ) CheckForBIOSEnd();
 
 	MOV32MtoR(EAX, (uptr)&cpuRegs.cycle);
-	ADD32ItoR(EAX, eeScaleBlockCycles());
-	if( newpc != 0xffffffff )
+	if( !noDispatch && newpc != 0xffffffff )
 	{
+		// Optimization note: Instructions order to pair EDX with EAX's load above.
+
+		// Load EDX with the address of the JS32 jump below.
+		// We do this because the the Dispatcher will use this info to modify
+		// the JS instruction later on with the address of the block it's jumping
+		// to; creating a static link of blocks that doesn't require the overhead
+		// of a dispatcher.
 		MOV32ItoR(EDX, 0);
 		ptr = (u32*)(x86Ptr-4);
 	}
+
+	// Check the Event scheduler if our "cycle target" has been reached.
+	// Equiv code to:
+	//    cpuRegs.cycle += blockcycles;
+	//    if( cpuRegs.cycle > g_nextBranchCycle ) { DoEvents(); }
+	ADD32ItoR(EAX, eeScaleBlockCycles());
 	MOV32RtoM((uptr)&cpuRegs.cycle, EAX); // update cycles
 	SUB32MtoR(EAX, (uptr)&g_nextBranchCycle);
 
 	if( newpc != 0xffffffff )
 	{
+		// This is the jump instruction which gets modified by Dispatcher.
 		*ptr = (u32)JS32((u32)Dispatcher - ( (u32)x86Ptr + 6 ));
 	}
-	else
+	else if( !noDispatch )
 	{
+		// This instruction is a dynamic link, so it's never modified.
 		JS32((uptr)DispatcherReg - ( (uptr)x86Ptr + 6 ));
 	}
 
@@ -1728,8 +1756,9 @@ void recRecompile( const u32 startpc )
 						goto StartRecomp;
 					}
 				}
+				// Fall through!
+				// COP0's branch opcodes line up with COP1 and COP2's
 
-				break;
 			case 17: // cp1
 			case 18: // cp2
 				if( _Rs_ == 8 ) {
@@ -2023,15 +2052,24 @@ StartRecomp:
 	if( !(pc&0x10000000) )
 		maxrecmem = std::max( (pc&~0xa0000000), maxrecmem );
 
-	if( branch == 2 ) {
-		iFlushCall(FLUSH_EVERYTHING);
+	if( branch == 2 )
+	{
+		// Branch type 2 - This is how I "think" this works (air):
+		// Performs a branch/event test but does not actually "break" the block.
+		// This allows exceptions to be raised, and is thus sufficient for
+		// certain types of things like SYSCALL, EI, etc.  but it is not sufficient
+		// for actual branching instructions.
 
-		iBranchTest(0xffffffff, 1);	
+		iFlushCall(FLUSH_EVERYTHING);
+		iBranchTest(0xffffffff, true);
 	}
-	else {
+	else
+	{
 		assert( branch != 3 );
-		if( branch ) assert( !willbranch3 );
-		else ADD32ItoM((int)&cpuRegs.cycle, eeScaleBlockCycles() );
+		if( branch )
+			assert( !willbranch3 );
+		else
+			ADD32ItoM((int)&cpuRegs.cycle, eeScaleBlockCycles() );
 
 		if( willbranch3 ) {
 			BASEBLOCK* pblock = PC_GETBLOCK(s_nEndBlock);
@@ -2088,7 +2126,6 @@ using namespace Dynarec::R5900;
 
 namespace R5900
 {
-
 	R5900cpu recCpu = {
 		recAlloc,
 		recReset,
