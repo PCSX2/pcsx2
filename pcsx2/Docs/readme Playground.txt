@@ -12,13 +12,17 @@ gigaherz		-	General coding,  spu2ghz, cdvdGigaherz, works on stuff until he gets
 Jake.Stine		-	MTGS, counters, timing/syncing, general coding.
 ramapcsx2		-	pcsx2 tweaker, always finds those magic values that make the game work. :p
 
-Beta Tester(s):
+Beta Testers (alphabetically):
 
-Krakatos		-	Devotes several hours of his day to playground testing and discussion.
+Bositman		-	Setup our Playground forums and helps moderate them. Also beta tests for us and actively contributes in Playground discussion.
+Crushtest		-	Helps with Playground beta testing and discussion.
+Krakatos		-	Project Management and Playground forums moderation. Devotes several hours of his day to playground beta-testing and discussion.
 
 Additional Credits:
 
-Special thanks to the official pcsx2 team for making ps2 emulation a reality! More info about the official pcsx2 team can be found in "readme 0.9.4.txt"
+Special thanks to the official pcsx2 team for making ps2 emulation a reality!
+Also a big special-thanks to the pcsx2 team for hosting our Playground forums and builds!
+More info about the official pcsx2 team can be found in "readme 0.9.4.txt"
 
 
 Added Features and Improvements:
