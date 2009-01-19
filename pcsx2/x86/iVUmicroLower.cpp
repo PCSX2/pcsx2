@@ -25,7 +25,7 @@
 #include "iR5900.h"
 #include "iMMI.h"
 #include "iFPU.h"
-#include "iCP0.h"
+#include "iCOP0.h"
 #include "VUmicro.h"
 #include "VUflags.h"
 #include "iVUmicro.h"
@@ -705,13 +705,13 @@ int recVUTransformAddr(int x86reg, VURegs* VU, int vireg, int imm)
 void recVUMI_LQ(VURegs *VU, int info)
 {
 	s16 imm;
-
 	if ( _Ft_ == 0 ) return;
 	//SysPrintf("recVUMI_LQ  \n");
 	imm = (VU->code & 0x400) ? (VU->code & 0x3ff) | 0xfc00 : (VU->code & 0x3ff); 
 	if (_Fs_ == 0) {
 		_loadEAX(VU, -1, (uptr)GET_VU_MEM(VU, (u32)imm*16), info);
-	} else {
+	} 
+	else {
 		int fsreg = ALLOCVI(_Fs_, MODE_READ);
 		_loadEAX(VU, recVUTransformAddr(fsreg, VU, _Fs_, imm), (uptr)VU->Mem, info);
 	}
@@ -777,58 +777,49 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 {
 	assert( offset < 0x80000000 );
 
-	if( _Fs_ == 0 ) {
-		if( _XYZW_SS ) {
+	if ( _Fs_ == 0 ) {
+		if ( _XYZW_SS ) {
 			u32 c = _W ? 0x3f800000 : 0;
-			if( x86reg >= 0 ) MOV32ItoRmOffset(x86reg, c, offset+(_W?12:(_Z?8:(_Y?4:0))));
+			if ( x86reg >= 0 ) MOV32ItoRmOffset(x86reg, c, offset+(_W?12:(_Z?8:(_Y?4:0))));
 			else MOV32ItoM(offset+(_W?12:(_Z?8:(_Y?4:0))), c);
 		}
 		else {
-			int zeroreg = (x86reg == EAX) ? ALLOCTEMPX86(0) : EAX;
-
-			XOR32RtoR(zeroreg, zeroreg);
-			if( x86reg >= 0 ) {
-				if( _X ) MOV32RtoRmOffset(x86reg, zeroreg, offset);
-				if( _Y ) MOV32RtoRmOffset(x86reg, zeroreg, offset+4);
-				if( _Z ) MOV32RtoRmOffset(x86reg, zeroreg, offset+8);
-				if( _W ) MOV32ItoRmOffset(x86reg, 0x3f800000, offset+12);
+			if ( x86reg >= 0 ) {
+				if ( _X ) MOV32ItoRmOffset(x86reg, 0x00000000, offset);
+				if ( _Y ) MOV32ItoRmOffset(x86reg, 0x00000000, offset+4);
+				if ( _Z ) MOV32ItoRmOffset(x86reg, 0x00000000, offset+8);
+				if ( _W ) MOV32ItoRmOffset(x86reg, 0x3f800000, offset+12);
 			}
 			else {
-				if( _X ) MOV32RtoM(offset, zeroreg);
-				if( _Y ) MOV32RtoM(offset+4, zeroreg);
-				if( _Z ) MOV32RtoM(offset+8, zeroreg);
-				if( _W ) MOV32ItoM(offset+12, 0x3f800000);
+				if ( _X ) MOV32ItoM(offset,		0x00000000);
+				if ( _Y ) MOV32ItoM(offset+4,	0x00000000);
+				if ( _Z ) MOV32ItoM(offset+8,	0x00000000);
+				if ( _W ) MOV32ItoM(offset+12,	0x3f800000);
 			}
-
-			if( zeroreg != EAX ) _freeX86reg(zeroreg);
 		}
 		return;
 	}
 
-	switch(_X_Y_Z_W) {
-		case 1: // W
-			//SysPrintf("SAVE EAX W\n");
+	switch ( _X_Y_Z_W ) {
+		case 1: // W*
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
-			if( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset+12);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset+12);
 			else SSE_MOVSS_XMM_to_M32(offset+12, EEREC_S);
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
 			break;
-		case 2: // Z
-			//SysPrintf("SAVE EAX Z\n");
+		case 2: // Z*
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			if( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+8);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+8);
 			else SSE_MOVSS_XMM_to_M32(offset+8, EEREC_TEMP);
 			break;
-		case 3: // ZW
-			//SysPrintf("SAVE EAX ZW\n");
-			if( x86reg >= 0 ) SSE_MOVHPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+8);
+		case 3: // ZW*
+			if ( x86reg >= 0 ) SSE_MOVHPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+8);
 			else SSE_MOVHPS_XMM_to_M64(offset+8, EEREC_S);
 			break;
 		case 5: // YW
-			//SysPrintf("SAVE EAX YW\n");
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB1);
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			if( x86reg >= 0 ) {
+			if ( x86reg >= 0 ) {
 				SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			}
@@ -838,25 +829,22 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			}
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB1);
 			break;
-		case 4: // Y
-			//SysPrintf("SAVE EAX Y\n");
+		case 4: // Y*
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
-			if( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
 			else SSE_MOVSS_XMM_to_M32(offset+4, EEREC_S);
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
 			break;
 		case 6: // YZ
-			//SysPrintf("SAVE EAX YZ\n");
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xc9);
-			if( x86reg >= 0 ) SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
+			if ( x86reg >= 0 ) SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
 			else SSE_MOVLPS_XMM_to_M64(offset+4, EEREC_S);
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xd2);
 			break;
 		case 7: // YZW
-			//SysPrintf("SAVE EAX YZW\n");
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x39);
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			if( x86reg >= 0 ) {
+			if ( x86reg >= 0 ) {
 				SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			}
@@ -866,35 +854,33 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			}
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x93);
 			break;
-		case 8: // X
-			//SysPrintf("SAVE EAX X\n");
-			if( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
+		case 8: // X*
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
 			else SSE_MOVSS_XMM_to_M32(offset, EEREC_S);
 			break;
 		case 9: // XW
-			//SysPrintf("SAVE EAX XW\n");
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			if( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
 			else SSE_MOVSS_XMM_to_M32(offset, EEREC_S);
 			
-			if( cpucaps.hasStreamingSIMD3Extensions ) SSE3_MOVSLDUP_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+			if ( cpucaps.hasStreamingSIMD3Extensions ) SSE3_MOVSLDUP_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 			else SSE_SHUFPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP, 0x55);
 
-			if( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			else SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 
 			break;
+		//case 10: break;
+		//case 11: break;		
 		case 12: // XY
-			//SysPrintf("SAVE EAX XY\n");
-			if( x86reg >= 0 ) SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+0);
+			if ( x86reg >= 0 ) SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+0);
 			else SSE_MOVLPS_XMM_to_M64(offset, EEREC_S);
 			break;
 
 		case 13: // XYW
-			//SysPrintf("SAVE EAX XYW\n");
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB4); //ZWYX
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			if( x86reg >= 0 ) {
+			if ( x86reg >= 0 ) {
 				SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+0);
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			}
@@ -906,9 +892,8 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB4);
 			break;
 		case 14: // XYZ
-			//SysPrintf("SAVE EAX XYZ\n");
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			if( x86reg >= 0 ) {
+			if ( x86reg >= 0 ) {
 				SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+0);
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+8);
 			}
@@ -918,8 +903,7 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			}
 			break;
 		case 15: // XYZW
-			//SysPrintf("SAVE EAX XYZW\n");
-			if( VU == &VU1 ) {
+			if ( VU == &VU1 ) {
 				if( x86reg >= 0 ) SSE_MOVAPSRtoRmOffset(x86reg, EEREC_S, offset+0);
 				else SSE_MOVAPS_XMM_to_M128(offset, EEREC_S);
 			}
@@ -933,22 +917,8 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			break;
 		default: // ToDo: Needs checking! (cottonvibes)
 			SysPrintf("SAVEEAX Default %d\n", _X_Y_Z_W);
-			// EEREC_D is a temp reg
-			// find the first nonwrite reg
-/*			
-			t1reg = _vuGetTempXMMreg(info);
-			if( t1reg < 0 ) {
-				for(t1reg = 0; t1reg < XMMREGS; ++t1reg) {
-					if( xmmregs[t1reg].inuse && !(xmmregs[t1reg].mode&MODE_WRITE) ) break;
-				}
-				if( t1reg == XMMREGS ) t1reg = -1;
-				else if( t1reg != EEREC_S ) _allocTempXMMreg(XMMT_FPS, t1reg);
-			}
-*/
-			// do it with one reg
-			//SSE_MOVAPS_XMM_to_M128((uptr)&VU->VF[_Fs_], EEREC_S);
 
-			if( VU == &VU1 ) {
+			if ( VU == &VU1 ) {
 				if( x86reg >= 0 ) SSE_MOVAPSRmtoROffset(EEREC_TEMP, x86reg, offset);
 				else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
 			}
@@ -962,20 +932,18 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 
 			VU_MERGE_REGS_SAFE(EEREC_TEMP, EEREC_S, _X_Y_Z_W);
 
-			if( VU == &VU1 ) {
+			if ( VU == &VU1 ) {
 				if( x86reg >= 0 ) SSE_MOVAPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
 				else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
 			}
 			else {
-				if( x86reg >= 0 ) SSE_MOVUPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
+				if ( x86reg >= 0 ) SSE_MOVUPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
 				else {
 					if( offset & 15 ) SSE_MOVUPS_XMM_to_M128(offset, EEREC_TEMP);
 					else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
 				}
 			}
 
-			// read back the data
-			//SSE_MOVAPS_M128_to_XMM(EEREC_S, (uptr)&VU->VF[_Fs_]);
 			break;
 	}
 }

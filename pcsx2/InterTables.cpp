@@ -31,7 +31,7 @@
 #include "x86/iR5900LoadStore.h"
 #include "x86/iR5900Move.h"
 #include "x86/iMMI.h"
-#include "x86/iCP0.h"
+#include "x86/iCOP0.h"
 #include "x86/iFPU.h"
 
 namespace R5900

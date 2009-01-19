@@ -35,7 +35,7 @@
 #include "iR5900Move.h"
 #include "iMMI.h"
 #include "iFPU.h"
-#include "iCP0.h"
+#include "iCOP0.h"
 
 namespace Dynarec { 
 namespace R5900

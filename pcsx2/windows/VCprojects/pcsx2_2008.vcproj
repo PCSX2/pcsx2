@@ -2284,6 +2284,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\x86\iCOP0.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iCOP0.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\x86\iCOP2.cpp"
 						>
 					</File>
@@ -2293,14 +2301,6 @@
 					</File>
 					<File
 						RelativePath="..\..\x86\iCore.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\x86\iCP0.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\x86\iCP0.h"
 						>
 					</File>
 					<File
@@ -3004,10 +3004,6 @@
 		</File>
 		<File
 			RelativePath="..\ps2_silver.bmp"
-			>
-		</File>
-		<File
-			RelativePath="..\ps2_silver.jpg"
 			>
 		</File>
 		<File

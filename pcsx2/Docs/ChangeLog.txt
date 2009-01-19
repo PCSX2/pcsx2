@@ -1251,7 +1251,7 @@ v0.9.1:
  * 18/12/03:[*] Improvements to TLB code.
                 (linuzappz)
 
- * 17/12/03:[-] Fixed iCP0.h define to __ICP0__
+ * 17/12/03:[-] Fixed iCOP0.h define to __iCOP0__
  			   [+] Added disR5900GetUpperSym
                 (linuzappz)
 

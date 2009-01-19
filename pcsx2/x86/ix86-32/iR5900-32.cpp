@@ -33,7 +33,7 @@
 #include "iR5900Move.h"
 #include "iMMI.h"
 #include "iFPU.h"
-#include "iCP0.h"
+#include "iCOP0.h"
 #include "iVUmicro.h"
 #include "VU.h"
 #include "VUmicro.h"
