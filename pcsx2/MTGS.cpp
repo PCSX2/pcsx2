@@ -790,7 +790,10 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 	//jASSUME( (size&15) == 0);
 
 	//fixme: Vif sometimes screws up and size is unaligned, try this then (rama)
-	if( (size&15) != 0)	Console::Error( "MTGS problem, size unaligned"); size = (size+15)&(~15);
+	if( (size&15) != 0){
+		Console::Error( "MTGS problem, size unaligned"); 
+		size = (size+15)&(~15);
+	}
 
 	// retval has the amount of data *not* processed, so we only need to reserve
 	// enough room for size - retval:

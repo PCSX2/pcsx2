@@ -1821,7 +1821,7 @@ static void Vif1CMDNull(){ // invalid opcode
 	
      if ((vif1Regs->err & 0x4) == 0) {  //Ignore vifcode and tag mismatch error
 			//fixme: VifCmd unknown hack, see if more games get here (rama)
-			SysPrintf( "UNKNOWN VifCmd: %x\n If you're not playing Fatal Frame report this please!", vif1.cmd );
+			SysPrintf( "UNKNOWN VifCmd: %x\n", vif1.cmd );
             //vif1Regs->stat |= 1 << 13;
 			vif1.irq++;
      }
@@ -1909,16 +1909,16 @@ int VIF1transfer(u32 *data, int size, int istag) {
 			vif1UNPACK(data);
 		} else {
 		VIF_LOG( "VIFtransfer: cmd %x, num %x, imm %x, size %x\n", vif1.cmd, (data[0] >> 16) & 0xff, data[0] & 0xffff, vif1.vifpacketsize );
-
 			//vif1CMD(data, size);
-			/*if((vif1.cmd & 0x7f) > 0x51){
+			if((vif1.cmd & 0x7f) > 0x51){
+				//fixme: VifCmd unknown hack, see if more games get here (rama)
 				if ((vif1Regs->err & 0x4) == 0) {  //Ignore vifcode and tag mismatch error
 						SysPrintf( "UNKNOWN VifCmd: %x\n", vif1.cmd );
-						vif1Regs->stat |= 1 << 13;
+						//vif1Regs->stat |= 1 << 13;
 						vif1.irq++;
 				 }
 				vif1.cmd = 0;
-			} else*/ 	Vif1CMDTLB[(vif1.cmd & 0x7f)]();
+			} else 	Vif1CMDTLB[(vif1.cmd & 0x7f)]();
 		}
 		//vif1Regs->stat &= ~VIF1_STAT_VPS_D;
 		//if(vif1.tag.size > 0) vif1Regs->stat |= VIF1_STAT_VPS_W;
