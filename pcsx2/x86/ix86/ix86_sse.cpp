@@ -1135,6 +1135,14 @@ __forceinline void SSE4_BLENDVPS_M128_to_XMM(x86SSERegType to, uptr from)
 	write32(MEMADDR(from, 4 + overb));
 }
 
+__forceinline void SSE4_PMOVSXDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
+{
+	write8(0x66);
+    RexRB(0, to, from);
+	write24(0x25380F);
+	ModRM(3, to, from);
+}
+
 // SSE-X
 __forceinline void SSEX_MOVDQA_M128_to_XMM( x86SSERegType to, uptr from )
 {
