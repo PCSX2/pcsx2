@@ -69,7 +69,7 @@ void hwReset()
 	ipuReset();
 }
 
-u8  hwRead8(u32 mem)
+__forceinline u8  hwRead8(u32 mem)
 {
 	u8 ret;
 
@@ -102,7 +102,7 @@ u8  hwRead8(u32 mem)
 	return ret;
 }
 
-u16 hwRead16(u32 mem)
+__forceinline u16 hwRead16(u32 mem)
 {
 	u16 ret;
 
@@ -151,7 +151,7 @@ u16 hwRead16(u32 mem)
 	return ret;
 }
 
-u32 hwRead32(u32 mem) {
+__forceinline u32 hwRead32(u32 mem) {
 	u32 ret;
 	
 	//IPU regs
@@ -297,7 +297,7 @@ u32 hwRead32(u32 mem) {
 	return ret;
 }
 
-u64 hwRead64(u32 mem) {
+__forceinline u64 hwRead64(u32 mem) {
 	u64 ret;
 
 	if ((mem>=0x10002000) && (mem<0x10003000)) {
@@ -317,7 +317,7 @@ u64 hwRead64(u32 mem) {
 	return ret;
 }
 
-void hwRead128(u32 mem, u64 *out) {
+__forceinline void hwRead128(u32 mem, u64 *out) {
 	if (mem >= 0x10004000 && mem < 0x10008000) {
 		ReadFIFO(mem, out); return;
 	}
@@ -366,7 +366,7 @@ static void DmaExec( void (*func)(), u32 mem, u32 value )
 char sio_buffer[1024];
 int sio_count;
 
-void hwWrite8(u32 mem, u8 value) {
+__forceinline void hwWrite8(u32 mem, u8 value) {
 
 #ifdef PCSX2_DEVBUILD
 	if( mem >= 0x10000000 && mem < 0x10008000 )
@@ -497,7 +497,7 @@ void hwWrite8(u32 mem, u8 value) {
 	}
 }
 
-void hwWrite16(u32 mem, u16 value)
+__forceinline void hwWrite16(u32 mem, u16 value)
 {
 #ifdef PCSX2_DEVBUILD
 	if( mem >= 0x10000000 && mem < 0x10008000 )
@@ -714,7 +714,7 @@ void hwWrite16(u32 mem, u16 value)
 }
 
 
-void hwWrite32(u32 mem, u32 value) {
+__forceinline void hwWrite32(u32 mem, u32 value) {
 
 	if ((mem>=0x10002000) && (mem<0x10003000)) { //IPU regs
 		ipuWrite32(mem,value);
@@ -985,7 +985,7 @@ void hwWrite32(u32 mem, u32 value) {
 	}
 }
 
-void hwWrite64(u32 mem, u64 value) {
+__forceinline void hwWrite64(u32 mem, u64 value) {
 	u32 val32;
 	int i;
 
@@ -1090,7 +1090,7 @@ void hwWrite64(u32 mem, u64 value) {
 	}
 }
 
-void hwWrite128(u32 mem, const u64 *value) {
+__forceinline void hwWrite128(u32 mem, const u64 *value) {
 	if (mem >= 0x10004000 && mem < 0x10008000) {
 		WriteFIFO(mem, value); return;
 	}
