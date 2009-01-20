@@ -370,26 +370,26 @@ int hwConstRead16(u32 x86reg, u32 mem, u32 sign);
 extern u32  hwRead32(u32 mem);
 int hwConstRead32(u32 x86reg, u32 mem);
 
-extern u64  hwRead64(u32 mem);
+u64  hwRead64(u32 mem);
 void hwConstRead64(u32 mem, int mmreg);
 
-extern void hwRead128(u32 mem, u64 *out);
+void hwRead128(u32 mem, u64 *out);
 void hwConstRead128(u32 mem, int xmmreg);
 
 // hw write functions
-extern void hwWrite8 (u32 mem, u8  value);
+void hwWrite8 (u32 mem, u8  value);
 void hwConstWrite8 (u32 mem, int mmreg);
 
-extern void hwWrite16(u32 mem, u16 value);
+void hwWrite16(u32 mem, u16 value);
 void hwConstWrite16(u32 mem, int mmreg);
 
-extern void hwWrite32(u32 mem, u32 value);
+void hwWrite32(u32 mem, u32 value);
 void hwConstWrite32(u32 mem, int mmreg);
 
-extern void hwWrite64(u32 mem, u64 value);
+void hwWrite64(u32 mem, u64 value);
 void hwConstWrite64(u32 mem, int mmreg);
 
-extern void hwWrite128(u32 mem, const u64 *value);
+void hwWrite128(u32 mem, const u64 *value);
 void hwConstWrite128(u32 mem, int xmmreg);
 
 void hwIntcIrq(int n);
