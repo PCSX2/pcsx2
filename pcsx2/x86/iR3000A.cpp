@@ -328,6 +328,38 @@ void _psxDeleteReg(int reg, int flush)
 	_deleteX86reg(X86TYPE_PSX, reg, flush ? 0 : 2);
 }
 
+void _psxMoveGPRtoR(x86IntRegType to, int fromgpr)
+{
+	if( PSX_IS_CONST1(fromgpr) )
+		MOV32ItoR( to, g_psxConstRegs[fromgpr] );
+	else {
+		// check x86
+		MOV32MtoR(to, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+	}
+}
+
+void _psxMoveGPRtoM(u32 to, int fromgpr)
+{
+	if( PSX_IS_CONST1(fromgpr) )
+		MOV32ItoM( to, g_psxConstRegs[fromgpr] );
+	else {
+		// check x86
+		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+		MOV32RtoM(to, EAX );
+	}
+}
+
+void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
+{
+	if( PSX_IS_CONST1(fromgpr) )
+		MOV32ItoRmOffset( to, g_psxConstRegs[fromgpr], 0 );
+	else {
+		// check x86
+		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+		MOV32RtoRm(to, EAX );
+	}
+}
+
 void _psxFlushCall(int flushtype)
 {
 	_freeX86regs();

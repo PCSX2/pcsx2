@@ -22,41 +22,70 @@
 #include "ix86/ix86.h"
 #include "iVUmicro.h"
 
-// Namespace Note : Dyanmic recompiler tools used by EE, IOP, and PS2 hardware.
-// Underneath this namespace thenare Dynarec::R5900, Dynarec::R3000a, etc. for each
-// of the items specific to those CPUs (those are defined in other headers).
+// Namespace Note : iCore32 contains all of the Register Allocation logic, in addition to a handful
+// of utility functions for emitting frequent code.
 
 namespace Dynarec
 {
-// used to keep block information
-#define BLOCKTYPE_STARTPC	4		// startpc offset
-#define BLOCKTYPE_DELAYSLOT	1		// if bit set, delay slot
+////////////////////////////////////////////////////////////////////////////////
+// Shared Register allocation flags (apply to X86, XMM, MMX, etc).
 
-struct BASEBLOCK
-{
-	u32 pFnptr : 28;
-	u32 uType : 4;
-	u32 startpc;
-};
+#define MODE_READ		1
+#define MODE_WRITE		2
+#define MODE_READHALF	4 // read only low 64 bits
+#define MODE_VUXY		0x8	// vector only has xy valid (real zw are in mem), not the same as MODE_READHALF
+#define MODE_VUZ		0x10 // z only doesn't work for now
+#define MODE_VUXYZ		(MODE_VUZ|MODE_VUXY) // vector only has xyz valid (real w is in memory)
+#define MODE_NOFLUSH	0x20	// can't flush reg to mem
+#define MODE_NOFRAME	0x40	// when allocating x86regs, don't use ebp reg
+#define MODE_8BITREG	0x80	// when allocating x86regs, use only eax, ecx, edx, and ebx
 
-C_ASSERT( sizeof(BASEBLOCK) == 8 );
+#define PROCESS_EE_MMX 0x01
+#define PROCESS_EE_XMM 0x02
 
-// extra block info (only valid for start of fn)
-struct BASEBLOCKEX
-{
-	u16 size; // size in dwords	
-	u16 dummy;
-	u32 startpc; // for debugging?
+// currently only used in FPU
+#define PROCESS_EE_S		0x04 // S is valid, otherwise take from mem
+#define PROCESS_EE_T		0x08 // T is valid, otherwise take from mem
 
-#ifdef PCSX2_DEVBUILD
-	u32 visited; // number of times called
-	LARGE_INTEGER ltime; // regs it assumes to have set already
-#endif
+// not used in VU recs
+#define PROCESS_EE_MODEWRITES 0x10 // if s is a reg, set if not in cpuRegs
+#define PROCESS_EE_MODEWRITET 0x20 // if t is a reg, set if not in cpuRegs
+#define PROCESS_EE_LO		0x40 // lo reg is valid
+#define PROCESS_EE_HI		0x80 // hi reg is valid
+#define PROCESS_EE_ACC		0x40 // acc reg is valid
 
-};
+// used in VU recs
+#define PROCESS_VU_UPDATEFLAGS 0x10
+#define PROCESS_VU_SUPER	0x40 // set if using supervu recompilation
+#define PROCESS_VU_COP2		0x80 // simple cop2
 
-#define GET_BLOCKTYPE(b) ((b)->Type)
-#define PC_GETBLOCK_(x, reclut) ((BASEBLOCK*)(reclut[((u32)(x)) >> 16] + (sizeof(BASEBLOCK)/4)*((x) & 0xffff)))
+#define EEREC_S (((info)>>8)&0xf)
+#define EEREC_T (((info)>>12)&0xf)
+#define EEREC_D (((info)>>16)&0xf)
+#define EEREC_LO (((info)>>20)&0xf)
+#define EEREC_HI (((info)>>24)&0xf)
+#define EEREC_ACC (((info)>>20)&0xf)
+#define EEREC_TEMP (((info)>>24)&0xf)
+#define VUREC_FMAC ((info)&0x80000000)
+
+#define PROCESS_EE_SET_S(reg) ((reg)<<8)
+#define PROCESS_EE_SET_T(reg) ((reg)<<12)
+#define PROCESS_EE_SET_D(reg) ((reg)<<16)
+#define PROCESS_EE_SET_LO(reg) ((reg)<<20)
+#define PROCESS_EE_SET_HI(reg) ((reg)<<24)
+#define PROCESS_EE_SET_ACC(reg) ((reg)<<20)
+
+#define PROCESS_VU_SET_ACC(reg) PROCESS_EE_SET_ACC(reg)
+#define PROCESS_VU_SET_TEMP(reg) ((reg)<<24)
+
+#define PROCESS_VU_SET_FMAC() 0x80000000
+
+// special info not related to above flags
+#define PROCESS_CONSTS 1
+#define PROCESS_CONSTT 2
+
+////////////////////////////////////////////////////////////////////////////////
+//   X86 (32-bit) Register Allocation Tools
 
 #define X86TYPE_TEMP 0
 #define X86TYPE_GPR 1
@@ -106,56 +135,8 @@ void _flushCachedRegs();
 void _flushConstRegs();
 void _flushConstReg(int reg);
 
-// see MEM_X defines for argX format
-extern void _callPushArg(u32 arg, uptr argmem); /// X86ARG is ignored for 32bit recs
-extern void _callFunctionArg1(uptr fn, u32 arg1, uptr arg1mem);
-extern void _callFunctionArg2(uptr fn, u32 arg1, u32 arg2, uptr arg1mem, uptr arg2mem);
-extern void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr arg2mem, uptr arg3mem);
-
-// return type: 0 - const, 1 - mmx, 2 - xmm
-#define PROCESS_EE_MMX 0x01
-#define PROCESS_EE_XMM 0x02
-
-// currently only used in FPU
-#define PROCESS_EE_S		0x04 // S is valid, otherwise take from mem
-#define PROCESS_EE_T		0x08 // T is valid, otherwise take from mem
-
-// not used in VU recs
-#define PROCESS_EE_MODEWRITES 0x10 // if s is a reg, set if not in cpuRegs
-#define PROCESS_EE_MODEWRITET 0x20 // if t is a reg, set if not in cpuRegs
-#define PROCESS_EE_LO		0x40 // lo reg is valid
-#define PROCESS_EE_HI		0x80 // hi reg is valid
-#define PROCESS_EE_ACC		0x40 // acc reg is valid
-
-// used in VU recs
-#define PROCESS_VU_UPDATEFLAGS 0x10
-#define PROCESS_VU_SUPER	0x40 // set if using supervu recompilation
-#define PROCESS_VU_COP2		0x80 // simple cop2
-
-#define EEREC_S (((info)>>8)&0xf)
-#define EEREC_T (((info)>>12)&0xf)
-#define EEREC_D (((info)>>16)&0xf)
-#define EEREC_LO (((info)>>20)&0xf)
-#define EEREC_HI (((info)>>24)&0xf)
-#define EEREC_ACC (((info)>>20)&0xf)
-#define EEREC_TEMP (((info)>>24)&0xf)
-#define VUREC_FMAC ((info)&0x80000000)
-
-#define PROCESS_EE_SET_S(reg) ((reg)<<8)
-#define PROCESS_EE_SET_T(reg) ((reg)<<12)
-#define PROCESS_EE_SET_D(reg) ((reg)<<16)
-#define PROCESS_EE_SET_LO(reg) ((reg)<<20)
-#define PROCESS_EE_SET_HI(reg) ((reg)<<24)
-#define PROCESS_EE_SET_ACC(reg) ((reg)<<20)
-
-#define PROCESS_VU_SET_ACC(reg) PROCESS_EE_SET_ACC(reg)
-#define PROCESS_VU_SET_TEMP(reg) ((reg)<<24)
-
-#define PROCESS_VU_SET_FMAC() 0x80000000
-
-// special info not related to above flags
-#define PROCESS_CONSTS 1
-#define PROCESS_CONSTT 2
+////////////////////////////////////////////////////////////////////////////////
+//   XMM (128-bit) Register Allocation Tools
 
 #define XMM_CONV_VU(VU) (VU==&VU1)
 
@@ -207,49 +188,8 @@ u8 _hasFreeXMMreg();
 void _freeXMMregs();
 int _getNumXMMwrite();
 
-// Constants used for controlling iFlushCall, _psxFlushCall
-#define FLUSH_CACHED_REGS 1
-#define FLUSH_FLUSH_XMM 2
-#define FLUSH_FREE_XMM 4 // both flushes and frees
-#define FLUSH_FLUSH_MMX 8
-#define FLUSH_FREE_MMX 16  // both flushes and frees
-#define FLUSH_FLUSH_ALLX86 32 // flush x86
-#define FLUSH_FREE_TEMPX86 64 // flush and free temporary x86 regs
-#define FLUSH_FREE_ALLX86 128 // free all x86 regs
-#define FLUSH_FREE_VU0 0x100  // free all vu0 related regs
-
-// Flushing vs. Freeing, as understood by Air (I could be wrong still....)
-
-// "Freeing" registers means that the contents of the registers are flushed to memory.
-// This is good for any sort of C code function that plans to modify the actual
-// registers.  When the Recs resume, they'll reload the registers with values saved
-// as needed.  (similar to a "FreezeXMMRegs")
-
-// "Flushing" means that in addition to the standard free (which is actually a flush)
-// the register allocations are additionally wiped.  This should only be necessary if 
-// the code being called is going to modify register allocations -- ie, be doing
-// some kind of recompiling of its own.
-
-#define FLUSH_EVERYTHING 0xfff
-// no freeing, used when callee won't destroy mmx/xmm regs
-#define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_MMX|FLUSH_FLUSH_ALLX86)
-// used when regs aren't going to be changed be callee
-#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
-
-// Note: All functions with _ee prefix are for EE only
-
-// finds where the GPR is stored and moves lower 32 bits to EAX
-void _eeMoveGPRtoR(x86IntRegType to, int fromgpr);
-void _eeMoveGPRtoM(u32 to, int fromgpr);
-void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
-
-void _psxMoveGPRtoR(x86IntRegType to, int fromgpr);
-void _psxMoveGPRtoM(u32 to, int fromgpr);
-void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr);
-
 // uses MEM_MMXTAG/MEM_XMMTAG to differentiate between the regs
 void _recPushReg(int mmreg);
-
 void _signExtendSFtoM(u32 mem);
 
 // returns new index of reg, lower 32 bits already in mmx
@@ -264,10 +204,8 @@ int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy); // returns tr
 #define MEM_EECONSTTAG 0x0100 // argument is a GPR and comes from g_cpuConstRegs
 #define MEM_PSXCONSTTAG 0x0200
 #define MEM_MEMORYTAG 0x0400
-// mmreg is mmxreg
-#define MEM_MMXTAG 0x0800
-// mmreg is xmmreg
-#define MEM_XMMTAG 0x8000
+#define MEM_MMXTAG 0x0800	// mmreg is mmxreg
+#define MEM_XMMTAG 0x8000	// mmreg is xmmreg
 #define MEM_X86TAG 0x4000 // ignored most of the time
 #define MEM_GPRTAG 0x2000 // argument is a GPR reg
 #define MEM_CONSTTAG 0x1000 // argument is a const
@@ -319,13 +257,13 @@ struct EEINST
 };
 
 extern EEINST* g_pCurInstInfo; // info for the cur instruction
-void _recClearInst(EEINST* pinst);
+extern void _recClearInst(EEINST* pinst);
 
 // returns the number of insts + 1 until written (0 if not written)
-u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
+extern u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 // returns the number of insts + 1 until used (0 if not used)
-u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
-void _recFillRegister(EEINST& pinst, int type, int reg, int write);
+extern u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
+extern void _recFillRegister(EEINST& pinst, int type, int reg, int write);
 
 #define EEINST_ISLIVE64(reg) (g_pCurInstInfo->regs[reg] & (EEINST_LIVE0|EEINST_LIVE1))
 #define EEINST_ISLIVEXMM(reg) (g_pCurInstInfo->regs[reg] & (EEINST_LIVE0|EEINST_LIVE1|EEINST_LIVE2))
@@ -345,21 +283,7 @@ void _recFillRegister(EEINST& pinst, int type, int reg, int write);
 #define EEINST_RESETSIGNEXT(reg) { if( (reg) < 32 ) g_cpuRegHasSignExt &= ~(1<<(reg)); }
 #define EEINST_ISSIGNEXT(reg) (g_cpuPrevRegHasSignExt&(1<<(reg)))
 
-// writeback inst (used for cop2)
-struct EEINSTWRITEBACK
-{
-	int cycle;
-	u32 viwrite; // mask of written viregs (REG_STATUS_FLAG and REG_MAC_FLAG are treated the same)
-	EEINST* parent;
-};
-
-void _recClearWritebacks();
-void _recAddWriteBack(int cycle, u32 viwrite, EEINST* parent);
-
-// if cycle == -1, returns the next writeback (used for flushing)
-EEINSTWRITEBACK* _recCheckWriteBack(int cycle);
-
-extern u32 g_recWriteback; // used for jumps
+extern u32 g_recWriteback; // used for jumps (VUrec mess!)
 extern u32 g_cpuRegHasLive1, g_cpuPrevRegHasLive1;
 extern u32 g_cpuRegHasSignExt, g_cpuPrevRegHasSignExt;
 
@@ -379,35 +303,13 @@ int _allocCheckFPUtoXMM(EEINST* pinst, int fpureg, int mode);
 // allocates only if later insts use this register
 int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode);
 
-// 0 - ee, 1 - iop
-void AddBaseBlockEx(BASEBLOCKEX*, int cpu);
-void RemoveBaseBlockEx(BASEBLOCKEX*, int cpu);
-BASEBLOCKEX* GetBaseBlockEx(u32 startpc, int cpu);
-void ResetBaseBlockEx(int cpu);
-
-BASEBLOCKEX** GetAllBaseBlocks(int* pnum, int cpu);
-
-#define MODE_READ		1
-#define MODE_WRITE		2
-#define MODE_READHALF	4 // read only low 64 bits
-#define MODE_VUXY		0x8	// vector only has xy valid (real zw are in mem), not the same as MODE_READHALF
-#define MODE_VUZ		0x10 // z only doesn't work for now
-#define MODE_VUXYZ		(MODE_VUZ|MODE_VUXY) // vector only has xyz valid (real w is in memory)
-#define MODE_NOFLUSH	0x20	// can't flush reg to mem
-#define MODE_NOFRAME	0x40	// when allocating x86regs, don't use ebp reg
-#define MODE_8BITREG	0x80	// when allocating x86regs, use only eax, ecx, edx, and ebx
-
-void SetMMXstate();
-
-void _recMove128MtoM(u32 to, u32 from);
-
-/////////////////////////////
-//     MMX x86-32 only     //
-/////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//   MMX (64-bit) Register Allocation Tools
 
 #define FPU_STATE 0
 #define MMX_STATE 1
 
+void SetMMXstate();
 void SetFPUstate();
 
 // max is 0x7f, when 0x80 is set, need to flush reg
@@ -453,32 +355,76 @@ int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode);
 void _recMove128RmOffsettoM(u32 to, u32 offset);
 void _recMove128MtoRmOffset(u32 offset, u32 from);
 
-// op = 0, and
-// op = 1, or
-// op = 2, xor
-// op = 3, nor (the 32bit versoins only do OR)
-void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-
 // returns new index of reg, lower 32 bits already in mmx
 // shift is used when the data is in the top bits of the mmx reg to begin with
 // a negative shift is for sign extension
-int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
+extern int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
 
 extern _mmxregs mmxregs[MMXREGS], s_saveMMXregs[MMXREGS];
 extern u16 x86FpuState, iCWstate;
 
-void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
-void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);
-void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
-void LogicalOp32ItoM(uptr to, u32 from, int op);
+extern void iDumpRegisters(u32 startpc, u32 temp);
+
+//////////////////////////////////////////////////////////////////////////
+// iFlushCall / _psxFlushCall Parameters
+
+// Flushing vs. Freeing, as understood by Air (I could be wrong still....)
+
+// "Freeing" registers means that the contents of the registers are flushed to memory.
+// This is good for any sort of C code function that plans to modify the actual
+// registers.  When the Recs resume, they'll reload the registers with values saved
+// as needed.  (similar to a "FreezeXMMRegs")
+
+// "Flushing" means that in addition to the standard free (which is actually a flush)
+// the register allocations are additionally wiped.  This should only be necessary if 
+// the code being called is going to modify register allocations -- ie, be doing
+// some kind of recompiling of its own.
+
+#define FLUSH_CACHED_REGS 1
+#define FLUSH_FLUSH_XMM 2
+#define FLUSH_FREE_XMM 4 // both flushes and frees
+#define FLUSH_FLUSH_MMX 8
+#define FLUSH_FREE_MMX 16  // both flushes and frees
+#define FLUSH_FLUSH_ALLX86 32 // flush x86
+#define FLUSH_FREE_TEMPX86 64 // flush and free temporary x86 regs
+#define FLUSH_FREE_ALLX86 128 // free all x86 regs
+#define FLUSH_FREE_VU0 0x100  // free all vu0 related regs
+
+#define FLUSH_EVERYTHING 0xfff
+// no freeing, used when callee won't destroy mmx/xmm regs
+#define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_MMX|FLUSH_FLUSH_ALLX86)
+// used when regs aren't going to be changed be callee
+#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
+
+
+//////////////////////////////////////////////////////////////////////////
+// Utility Functions -- that should probably be part of the Emitter.
+
+// see MEM_X defines for argX format
+extern void _callPushArg(u32 arg, uptr argmem); /// X86ARG is ignored for 32bit recs
+extern void _callFunctionArg1(uptr fn, u32 arg1, uptr arg1mem);
+extern void _callFunctionArg2(uptr fn, u32 arg1, u32 arg2, uptr arg1mem, uptr arg2mem);
+extern void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr arg1mem, uptr arg2mem, uptr arg3mem);
+
+// Moves 128 bits of data using EAX/EDX (used by iCOP2 only currently)
+extern void _recMove128MtoM(u32 to, u32 from);
+
+// op = 0, and
+// op = 1, or
+// op = 2, xor
+// op = 3, nor (the 32bit versoins only do OR)
+extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
+extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
+
+extern void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
+extern void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);
+extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
+extern void LogicalOp32ItoM(uptr to, u32 from, int op);
 
 #ifdef ARITHMETICIMM_RECOMPILE
 extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
 extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
 #endif
-
-void iDumpRegisters(u32 startpc, u32 temp);
 
 }
 

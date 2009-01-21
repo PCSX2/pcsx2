@@ -34,6 +34,7 @@
 #include "VU.h"
 #include "iCore.h"
 #include "iVUzerorec.h"
+#include "BaseblockEx.h"		// for debuild block dumping (which may or may not work anymore?)
 
 #include "GS.h"
 #include "COP0.h"

@@ -18,7 +18,7 @@
 #ifndef _R3000A_SUPERREC_
 #define _R3000A_SUPERREC_
 
-extern void __Log(const char *fmt, ...);
+#include "BaseblockEx.h"
 
 // Cycle penalties for particuarly slow instructions.
 static const int psxInstCycles_Mult = 8;
@@ -50,6 +50,11 @@ void _psxDeleteReg(int reg, int flush);
 void _psxFlushCall(int flushtype);
 
 void _psxOnWriteReg(int reg);
+
+void _psxMoveGPRtoR(x86IntRegType to, int fromgpr);
+void _psxMoveGPRtoM(u32 to, int fromgpr);
+void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr);
+
 void PSX_CHECK_SAVE_REG(int reg);
 
 extern u32 psxpc;			// recompiler pc

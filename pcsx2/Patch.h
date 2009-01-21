@@ -119,7 +119,6 @@ int AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 
 namespace Dynarec {
 	extern void SetFastMemory(int); // iR5900LoadStore.c
-	extern void SetVUNanMemory(int); // iVUmicro.c
 	extern void SetVUNanMode(int mode);
 }
 

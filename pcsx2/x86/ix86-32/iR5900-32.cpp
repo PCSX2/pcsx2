@@ -39,8 +39,8 @@
 #include "VUmicro.h"
 
 #include "iVUzerorec.h"
-
 #include "vtlb.h"
+
 #include "SamplProf.h"
 
 // used to disable register freezing during cpuBranchTests (registers
@@ -336,6 +336,68 @@ u32* _eeGetConstReg(int reg)
 	
 	_flushConstReg(reg);
 	return &cpuRegs.GPR.r[ reg ].UL[0];
+}
+
+void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
+{
+	if( GPR_IS_CONST1(fromgpr) )
+		MOV32ItoR( to, g_cpuConstRegs[fromgpr].UL[0] );
+	else {
+		int mmreg;
+		
+		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode&MODE_WRITE)) {
+			SSE2_MOVD_XMM_to_R(to, mmreg);
+		}
+		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 && (mmxregs[mmreg].mode&MODE_WRITE) ) {
+			MOVD32MMXtoR(to, mmreg);
+			SetMMXstate();
+		}
+		else {
+			MOV32MtoR(to, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+		}
+	}
+}
+
+void _eeMoveGPRtoM(u32 to, int fromgpr)
+{
+	if( GPR_IS_CONST1(fromgpr) )
+		MOV32ItoM( to, g_cpuConstRegs[fromgpr].UL[0] );
+	else {
+		int mmreg;
+		
+		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
+			SSEX_MOVD_XMM_to_M32(to, mmreg);
+		}
+		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
+			MOVDMMXtoM(to, mmreg);
+			SetMMXstate();
+		}
+		else {
+			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32RtoM(to, EAX );
+		}
+	}
+}
+
+void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
+{
+	if( GPR_IS_CONST1(fromgpr) )
+		MOV32ItoRmOffset( to, g_cpuConstRegs[fromgpr].UL[0], 0 );
+	else {
+		int mmreg;
+		
+		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
+			SSEX_MOVD_XMM_to_Rm(to, mmreg);
+		}
+		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
+			MOVD32MMXtoRm(to, mmreg);
+			SetMMXstate();
+		}
+		else {
+			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32RtoRm(to, EAX );
+		}
+	}
 }
 
 int _flushXMMunused()
@@ -1618,7 +1680,6 @@ void recRecompile( const u32 startpc )
 	g_cpuHasConstReg = g_cpuFlushedConstReg = 1;
 	g_cpuPrevRegHasLive1 = g_cpuRegHasLive1 = 0xffffffff;
 	g_cpuPrevRegHasSignExt = g_cpuRegHasSignExt = 0;
-	_recClearWritebacks();
 	assert( g_cpuConstRegs[0].UD[0] == 0 );
 
 	_initX86regs();

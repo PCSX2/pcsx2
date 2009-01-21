@@ -2176,6 +2176,14 @@
 		<Filter
 			Name="Ps2"
 			>
+			<File
+				RelativePath="..\..\x86\BaseblockEx.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\x86\BaseblockEx.h"
+				>
+			</File>
 			<Filter
 				Name="EE"
 				>
@@ -2421,6 +2429,14 @@
 						<File
 							RelativePath="..\..\x86\ix86-32\iR5900-32.cpp"
 							>
+							<FileConfiguration
+								Name="Devel vtlb|Win32"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+									AssemblerOutput="4"
+								/>
+							</FileConfiguration>
 						</File>
 						<File
 							RelativePath="..\..\x86\ix86-32\iR5900Arit.cpp"

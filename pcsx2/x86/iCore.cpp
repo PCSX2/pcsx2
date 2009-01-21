@@ -18,8 +18,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include "PS2Etypes.h"
-
 #include "System.h"
 #include "R5900.h"
 #include "Vif.h"
@@ -1008,39 +1006,6 @@ void _freeXMMregs()
 	}
 }
 
-// PSX 
-void _psxMoveGPRtoR(x86IntRegType to, int fromgpr)
-{
-	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoR( to, g_psxConstRegs[fromgpr] );
-	else {
-		// check x86
-		MOV32MtoR(to, (uptr)&psxRegs.GPR.r[ fromgpr ] );
-	}
-}
-
-void _psxMoveGPRtoM(u32 to, int fromgpr)
-{
-	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoM( to, g_psxConstRegs[fromgpr] );
-	else {
-		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
-		MOV32RtoM(to, EAX );
-	}
-}
-
-void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
-{
-	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoRmOffset( to, g_psxConstRegs[fromgpr], 0 );
-	else {
-		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
-		MOV32RtoRm(to, EAX );
-	}
-}
-
 PCSX2_ALIGNED16(u32 s_zeros[4]) = {0};
 int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy)
 {
@@ -1175,145 +1140,6 @@ void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 
 void SetMMXstate() {
 	x86FpuState = MMX_STATE;
-}
-
-// Writebacks //
-void _recClearWritebacks()
-{
-}
-
-void _recAddWriteBack(int cycle, u32 viwrite, EEINST* parent)
-{
-}
-
-EEINSTWRITEBACK* _recCheckWriteBack(int cycle)
-{
-	return NULL;
-}
-
-struct BASEBLOCKS
-{
-	// 0 - ee, 1 - iop
-	void Add(BASEBLOCKEX*);
-	void Remove(BASEBLOCKEX*);
-	int Get(u32 startpc);
-	void Reset();
-
-	BASEBLOCKEX** GetAll(int* pnum);
-
-	vector<BASEBLOCKEX*> blocks;
-};
-
-void BASEBLOCKS::Add(BASEBLOCKEX* pex)
-{
-	assert( pex != NULL );
-
-	switch(blocks.size()) {
-		case 0:
-			blocks.push_back(pex);
-			return;
-		case 1:
-			assert( blocks.front()->startpc != pex->startpc );
-
-			if( blocks.front()->startpc < pex->startpc ) {
-				blocks.push_back(pex);
-			}
-			else blocks.insert(blocks.begin(), pex);
-
-			return;
-
-		default:
-		{
-			int imin = 0, imax = blocks.size(), imid;
-
-			while(imin < imax) {
-				imid = (imin+imax)>>1;
-
-				if( blocks[imid]->startpc > pex->startpc ) imax = imid;
-				else imin = imid+1;
-			}
-
-			assert( imin == blocks.size() || blocks[imin]->startpc > pex->startpc );
-			if( imin > 0 ) assert( blocks[imin-1]->startpc < pex->startpc );
-			blocks.insert(blocks.begin()+imin, pex);
-
-			return;
-		}
-	}
-}
-
-int BASEBLOCKS::Get(u32 startpc)
-{
-	switch(blocks.size()) {
-		case 1:
-			return 0;
-		case 2:
-			return blocks.front()->startpc < startpc;
-
-		default:
-		{
-			int imin = 0, imax = blocks.size()-1, imid;
-
-			while(imin < imax) {
-				imid = (imin+imax)>>1;
-
-				if( blocks[imid]->startpc > startpc ) imax = imid;
-				else if( blocks[imid]->startpc == startpc ) return imid;
-				else imin = imid+1;
-			}
-
-			assert( blocks[imin]->startpc == startpc );
-			return imin;
-		}
-	}
-}
-
-void BASEBLOCKS::Remove(BASEBLOCKEX* pex)
-{
-	assert( pex != NULL );
-	int i = Get(pex->startpc);
-	assert( blocks[i] == pex ); 
-	blocks.erase(blocks.begin()+i);
-}
-
-void BASEBLOCKS::Reset()
-{
-	blocks.resize(0);
-	blocks.reserve(512);
-}
-
-BASEBLOCKEX** BASEBLOCKS::GetAll(int* pnum)
-{
-	assert( pnum != NULL );
-	*pnum = blocks.size();
-	return &blocks[0];
-}
-
-static BASEBLOCKS s_vecBaseBlocksEx[2];
-
-void AddBaseBlockEx(BASEBLOCKEX* pex, int cpu)
-{
-	s_vecBaseBlocksEx[cpu].Add(pex);
-}
-
-BASEBLOCKEX* GetBaseBlockEx(u32 startpc, int cpu)
-{
-	return s_vecBaseBlocksEx[cpu].blocks[s_vecBaseBlocksEx[cpu].Get(startpc)];
-}
-
-void RemoveBaseBlockEx(BASEBLOCKEX* pex, int cpu)
-{
-	s_vecBaseBlocksEx[cpu].Remove(pex);
-}
-
-void ResetBaseBlockEx(int cpu)
-{
-	s_vecBaseBlocksEx[cpu].Reset();
-}
-
-BASEBLOCKEX** GetAllBaseBlocks(int* pnum, int cpu)
-{
-	return s_vecBaseBlocksEx[cpu].GetAll(pnum);
 }
 
 ////////////////////////////////////////////////////

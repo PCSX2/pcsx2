@@ -25,10 +25,12 @@
 #include "iCore.h"
 #include "R3000A.h"
 
+#include "iR5900.h"
+
 #include <vector>
 
 using namespace std;
-using namespace R5900;
+using namespace ::R5900;
 
 namespace Dynarec
 {
@@ -66,7 +68,8 @@ u32 _x86GetAddr(int type, int reg)
 			return (u32)&g_recWriteback;
 		case X86TYPE_VUJUMP:
 			return (u32)&g_recWriteback;
-		default: assert(0);
+
+		jNO_DEFAULT;
 	}
 
 	return 0;
@@ -279,7 +282,7 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 					_deleteMMXreg(MMX_GPR+reg, 1);
 					_deleteGPRtoXMMreg(reg, 1);
 					
-					_eeMoveGPRtoR(x86reg, reg);
+					R5900::_eeMoveGPRtoR(x86reg, reg);
 					
 					_deleteMMXreg(MMX_GPR+reg, 0);
 					_deleteGPRtoXMMreg(reg, 0);
@@ -819,7 +822,7 @@ __forceinline void _callPushArg(u32 arg, uptr argmem)
     else if( IS_CONSTREG(arg) ) PUSH32I(argmem);
     else if( IS_GPRREG(arg) ) {
         SUB32ItoR(ESP, 4);
-        _eeMoveGPRtoRm(ESP, arg&0xff);
+		R5900::_eeMoveGPRtoRm(ESP, arg&0xff);
     }
     else if( IS_XMMREG(arg) ) {
 		SUB32ItoR(ESP, 4);
@@ -865,69 +868,6 @@ __forceinline void _callFunctionArg3(uptr fn, u32 arg1, u32 arg2, u32 arg3, uptr
     _callPushArg(arg1, arg1mem);
     CALLFunc((uptr)fn);
     ADD32ItoR(ESP, 12);
-}
-
-// EE
-void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
-{
-	if( GPR_IS_CONST1(fromgpr) )
-		MOV32ItoR( to, g_cpuConstRegs[fromgpr].UL[0] );
-	else {
-		int mmreg;
-		
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode&MODE_WRITE)) {
-			SSE2_MOVD_XMM_to_R(to, mmreg);
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 && (mmxregs[mmreg].mode&MODE_WRITE) ) {
-			MOVD32MMXtoR(to, mmreg);
-			SetMMXstate();
-		}
-		else {
-			MOV32MtoR(to, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
-		}
-	}
-}
-
-void _eeMoveGPRtoM(u32 to, int fromgpr)
-{
-	if( GPR_IS_CONST1(fromgpr) )
-		MOV32ItoM( to, g_cpuConstRegs[fromgpr].UL[0] );
-	else {
-		int mmreg;
-		
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
-			SSEX_MOVD_XMM_to_M32(to, mmreg);
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			MOVDMMXtoM(to, mmreg);
-			SetMMXstate();
-		}
-		else {
-			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
-			MOV32RtoM(to, EAX );
-		}
-	}
-}
-
-void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
-{
-	if( GPR_IS_CONST1(fromgpr) )
-		MOV32ItoRmOffset( to, g_cpuConstRegs[fromgpr].UL[0], 0 );
-	else {
-		int mmreg;
-		
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
-			SSEX_MOVD_XMM_to_Rm(to, mmreg);
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+fromgpr, MODE_READ)) >= 0 ) {
-			MOVD32MMXtoRm(to, mmreg);
-			SetMMXstate();
-		}
-		else {
-			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
-			MOV32RtoRm(to, EAX );
-		}
-	}
 }
 
 void _recPushReg(int mmreg)
@@ -1070,6 +1010,8 @@ int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode)
 	return _checkMMXreg(MMX_GPR+reg, mode);
 }
 
+// fixme - yay stupid?  This sucks, and is used form iCOp2.cpp only.
+// Surely there is a better way!
 void _recMove128MtoM(u32 to, u32 from)
 {
 	MOV32MtoR(EAX, from);
@@ -1082,6 +1024,7 @@ void _recMove128MtoM(u32 to, u32 from)
 	MOV32RtoM(to+12, EDX);
 }
 
+// fixme - see above function!
 void _recMove128RmOffsettoM(u32 to, u32 offset)
 {
 	MOV32RmtoROffset(EAX, ECX, offset);
@@ -1094,6 +1037,7 @@ void _recMove128RmOffsettoM(u32 to, u32 offset)
 	MOV32RtoM(to+12, EDX);
 }
 
+// fixme - see above function again!
 void _recMove128MtoRmOffset(u32 offset, u32 from)
 {
 	MOV32MtoR(EAX, from);

@@ -22,6 +22,7 @@
 #include "R5900.h"
 #include "VU.h"
 #include "iCore.h"
+#include "BaseblockEx.h"	// needed for recClear and stuff
 
 // Yay!  These work now! (air)
 #define ARITHMETICIMM_RECOMPILE
@@ -111,6 +112,11 @@ void recCall( void (*func)(), int delreg );
 extern void (*recBSC_co[64])();
 
 u32* _eeGetConstReg(int reg); // gets a memory pointer to the constant reg
+
+// finds where the GPR is stored and moves lower 32 bits to EAX
+void _eeMoveGPRtoR(x86IntRegType to, int fromgpr);
+void _eeMoveGPRtoM(u32 to, int fromgpr);
+void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 
 void _eeFlushAllUnused();
 void _eeOnWriteReg(int reg, int signext);
