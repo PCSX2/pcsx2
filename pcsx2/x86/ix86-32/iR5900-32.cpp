@@ -576,34 +576,6 @@ static void recShutdown( void )
 
 #pragma warning(disable:4731) // frame pointer register 'ebp' modified by inline assembly code
 
-/*
-static __forceinline __declspec(naked) void execute( void )
-{
-#ifdef _MSC_VER
-	__asm pusha;
-#else
-	__asm__("pusha\n");
-#endif
-
-	BASEBLOCK* pblock = PC_GETBLOCK(cpuRegs.pc);
-
-	if ( !pblock->pFnptr || pblock->startpc != cpuRegs.pc )
-		recRecompile(cpuRegs.pc);
-
-	assert( pblock->pFnptr != 0 );
-
-	g_EEFreezeRegs = true;
-	((R5900FNPTR)pblock->pFnptr)();
-
-#ifdef _MSC_VER
-	__asm popa;
-#else
-	__asm__("popa\n");
-#endif
-
-	g_EEFreezeRegs = false;
-}*/
-
 void recStep( void ) {
 }
 
@@ -634,7 +606,7 @@ static u32 g_EEDispatchTemp;
 
 // jumped to when invalid pc address
 // EDX contains the jump addr to modify
-static __declspec(naked,noreturn) void Dispatcher()
+static __naked void Dispatcher()
 {
 	// EDX contains the jump addr to modify
 	__asm push edx
@@ -677,7 +649,7 @@ CheckPtr:
 
 // edx -  baseblock->startpc
 // stack - x86Ptr
-static __declspec(naked,noreturn) void DispatcherClear()
+static __naked void DispatcherClear()
 {
 	// EDX contains the current pc
 	__asm mov cpuRegs.pc, edx
@@ -721,7 +693,7 @@ static __declspec(naked,noreturn) void DispatcherClear()
 }
 
 // called when jumping to variable pc address
-static __declspec(naked,noreturn) void DispatcherReg()
+static __naked void DispatcherReg()
 {
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
@@ -1523,27 +1495,6 @@ void recompileNextInstruction(int delayslot)
 //	_flushCachedRegs();
 //	g_cpuHasConstReg = 1;
 }
-
-//__declspec(naked) void iDummyBlock()
-//{
-////	g_lastpc = cpuRegs.pc;
-////
-////	do {
-////		cpuRegs.cycle = g_nextBranchCycle;
-////		cpuBranchTest();
-////	} while(g_lastpc == cpuRegs.pc);
-////
-////	__asm jmp DispatcherReg
-//	__asm {
-//RepDummy:
-//		add cpuRegs.cycle, 9
-//		call cpuBranchTest
-//		cmp cpuRegs.pc, 0x81fc0
-//		je RepDummy
-//		jmp DispatcherReg
-//	}
-//}
-
 
 extern u32 psxdump;
 

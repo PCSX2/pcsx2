@@ -67,31 +67,6 @@ using std::string;		// we use it enough, so bring it into the global namespace.
 #	define strnicmp _strnicmp
 #	define stricmp _stricmp
 
-#elif defined(__MINGW32__)
-
-#	include <sys/types.h>
-#	include <math.h>
-#	define BOOL int
-#	include <stdlib.h> // posix_memalign()
-#	undef TRUE
-#	undef FALSE
-#	define TRUE  1
-#	define FALSE 0
-
-#	define __declspec(x)
-#	define __assume(x) ;
-#	define strnicmp strncasecmp
-#	define stricmp strcasecmp
-#	include <winbase.h>
-//#	pragma intrinsic (InterlockedAnd)
-// Definitions added Feb 16, 2006 by efp
-//#	define __declspec(x)
-#	include <malloc.h>
-#	define __forceinline inline
-#	define _aligned_malloc(x,y) __mingw_aligned_malloc(x,y)
-#	define _aligned_free(x) __mingw_aligned_free(x)
-#	define pthread_mutex__unlock pthread_mutex_unlock
-
 #else	// must be GCC...
 
 #	include <sys/types.h>

@@ -87,6 +87,8 @@ typedef unsigned int uint;
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
 #define PCSX2_ALIGNED16_DECL(x) __declspec(align(16)) x
 
+#define __naked __declspec(naked)
+
 #else // _MSC_VER
 
 #ifdef __LINUX__
@@ -107,7 +109,7 @@ typedef uint64_t u64;
 typedef uintptr_t uptr;
 typedef intptr_t sptr;
 
-#else // __LINUX__
+#else // HAVE_STDINT_H
 
 typedef char s8;
 typedef short s16;
@@ -119,7 +121,7 @@ typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-#endif // __LINUX__
+#endif // HAVE_STDINT_H
 
 typedef unsigned int uint;
 
@@ -133,15 +135,12 @@ typedef union _LARGE_INTEGER
 #define __unused __attribute__((unused))
 #define _inline __inline__ __attribute__((unused))
 #define __forceinline __attribute__((always_inline,unused))
-#endif
+#define __naked		// GCC lacks the naked specifier
 
-#if defined(__MINGW32__)
-#define PCSX2_ALIGNED(alig,x) __declspec(align(alig)) x
-#define PCSX2_ALIGNED16(x) __declspec(align(16)) x
-#else
+#endif  // __LINUX__
+
 #define PCSX2_ALIGNED(alig,x) x __attribute((aligned(alig)))
 #define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
-#endif
 
 #define PCSX2_ALIGNED16_DECL(x) x
 
