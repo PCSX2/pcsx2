@@ -40,7 +40,7 @@ using namespace std;
 #include "targets.h"
 #include "ZeroGSShaders/zerogsshaders.h"
 
-#ifdef __MSCW32__
+#ifdef _MSC_VER
 #pragma warning(disable:4244)
 #endif
 
@@ -69,11 +69,11 @@ unsigned char zgsbuild	= VER;
 unsigned char zgsminor = 7;
 
 #ifdef _DEBUG
-char *libraryName	 = "ZeroGS OpenGL (Debug) ";
+char *libraryName	 = "ZeroGS-Pg OpenGL (Debug) ";
 #elif defined(RELEASE_TO_PUBLIC)
-char *libraryName	 = "ZeroGS KOSMOS OpenGL ";
+char *libraryName	 = "ZeroGS Playground OpenGL ";
 #else
-char *libraryName	 = "ZeroGS OpenGL (Dev) ";
+char *libraryName	 = "ZeroGS-Pg OpenGL (Dev) ";
 #endif
 
 static const char* s_aa[3] = { "AA none |", "AA 2x |", "AA 4x |" };
@@ -131,7 +131,10 @@ bool THR_bShift = false;
 void __Log(const char *fmt, ...) {
 	va_list list;
 
-	if (!conf.log) return;
+	// gsLog can be null if the config dialog is used prior to Pcsx2 an emulation session.
+	// (GSinit won't have been called then)
+
+	if (gsLog == NULL || !conf.log) return;
 
 	va_start(list, fmt);
 	vfprintf(gsLog, fmt, list);
@@ -142,11 +145,13 @@ void __LogToConsole(const char *fmt, ...) {
 	va_list list;
 
 	va_start(list, fmt);
-	fprintf(gsLog, "ZeroGS: ");
-	vfprintf(gsLog, fmt, list);
-	va_end(list);
 
-	va_start(list, fmt);
+	// gsLog can be null if the config dialog is used prior to Pcsx2 an emulation session.
+	// (GSinit won't have been called then)
+
+	if( gsLog != NULL )
+		vfprintf(gsLog, fmt, list);
+
 	printf("ZeroGS: ");
 	vprintf(fmt, list);
 	va_end(list);

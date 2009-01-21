@@ -33,7 +33,6 @@
 #include "time.h"
 
 //SPU2 plugin defines
-//#define __MSCW32__
 //#define SPU2defs		// not using the PCSX2 defs (see below)
 #include "PS2Edefs.h"
 

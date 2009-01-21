@@ -28,7 +28,7 @@ extern "C" {
 #include "PS2Edefs.h"
 }
 
-#ifdef __WIN32__
+#ifdef _WIN32
 
 #include <windows.h>
 #include <windowsx.h>
@@ -74,7 +74,7 @@ struct Vector_16F
 //#define ZEROGS_CACHEDCLEAR // much better performance
 //#define RELEASE_TO_PUBLIC
 
-#if !defined(_RELEASE)
+#if defined(ZEROGS_DEVBUILD)
 #define GS_LOG __Log
 #else
 #define GS_LOG 0&&

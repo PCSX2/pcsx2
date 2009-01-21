@@ -214,7 +214,7 @@ mtgsThreadObject::mtgsThreadObject() :
 	m_wait_InitDone.Wait();
 
 	if( m_returncode != 0 )	// means the thread failed to init the GS plugin
-		throw Exception::PluginFailure( "GS", "An error occured while opening the " );
+		throw Exception::PluginFailure( "GS", "The GS plugin failed to open/initialize." );
 }
 
 mtgsThreadObject::~mtgsThreadObject()

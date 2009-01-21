@@ -426,7 +426,7 @@ void LoadGSState(const string& file)
 	if (ret != 0)
 	{
 		delete f;
-		throw Exception::PluginFailure( "GS", "Error opening" );
+		throw Exception::PluginFailure( "GS" );
 	}
 
 	ret = PAD1open((void *)&pDsp);

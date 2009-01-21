@@ -16,7 +16,7 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Release (dev)|Win32"
+			Name="Devel|Win32"
 			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
@@ -56,17 +56,14 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;$(SolutionDir)\common&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__WIN32__;__MSCW32__;__i386__;_RELEASE;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				PrecompiledHeaderFile=".\Release/GSsoftdx.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 				CompileAs="0"
 			/>
 			<Tool
@@ -145,16 +142,12 @@
 				Optimization="0"
 				EnableFiberSafeOptimizations="true"
 				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;$(SolutionDir)\common&quot;"
-				PreprocessorDefinitions="D3D_DEBUG_INFO;_USRDLL;__WIN32__;__MSCW32__;_DEBUG;__i386__;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
-				IgnoreStandardIncludePath="false"
+				PreprocessorDefinitions="D3D_DEBUG_INFO;_USRDLL;_DEBUG;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/vc70.pdb"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -200,7 +193,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release (nondev) [public]|Win32"
+			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
@@ -240,16 +233,14 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;$(SolutionDir)\common&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__WIN32__;__MSCW32__;__i386__;_RELEASE;RELEASE_TO_PUBLIC;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;RELEASE_TO_PUBLIC;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\Release (to Public)/"
-				ObjectFile=".\Release (to Public)/"
-				ProgramDataBaseFileName=".\Release (to Public)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
 				CompileAs="0"
 			/>
 			<Tool
@@ -345,7 +336,7 @@
 				RelativePath="..\x86-32.asm"
 				>
 				<FileConfiguration
-					Name="Release (dev)|Win32"
+					Name="Devel|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -363,7 +354,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release (nondev) [public]|Win32"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"

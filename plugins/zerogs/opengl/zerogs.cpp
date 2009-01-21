@@ -4966,7 +4966,7 @@ void ZeroGS::SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0,
 					/* default: 16bit surface, so returned alpha is ok */ \
 			} \
 		break; \
-		\	
+		\
 		case 2: \
 			bNeedBlendFactorInAlpha = 1; /* should disable alpha channel writing */ \
 			vAlphaBlendColor.y = 0; \

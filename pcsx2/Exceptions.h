@@ -204,8 +204,8 @@ namespace Exception
 		std::string plugin_name;		// name of the plugin
 
 		virtual ~PluginFailure() throw() {}
-		explicit PluginFailure( const std::string& plugin, const std::string& msg = "An error occured in the " ) :
-			RuntimeError( plugin + msg + " Plugin" )
+		explicit PluginFailure( const std::string& plugin, const std::string& msg = "A plugin encountered a critical error." ) :
+			RuntimeError( msg )
 		,	plugin_name( plugin ) {}
 	};
 

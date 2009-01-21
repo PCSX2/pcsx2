@@ -16,7 +16,7 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Release (dev)|Win32"
+			Name="Devel|Win32"
 			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
@@ -123,7 +123,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Win32"
+			Name="DebugStrict|Win32"
 			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
@@ -221,7 +221,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release (nondev) [public]|Win32"
+			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
@@ -332,7 +332,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="DebugFast|Win32"
+			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)\bin\plugins\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
@@ -441,7 +441,7 @@
 				RelativePath=".\utf8.cpp"
 				>
 				<FileConfiguration
-					Name="Release (dev)|Win32"
+					Name="Devel|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -449,7 +449,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release (nondev) [public]|Win32"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -476,38 +476,38 @@
 					RelativePath=".\mixer.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
 							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+							CompileAs="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugStrict|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
 							BrowseInformation="1"
 							CompileAs="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							AssemblerOutput="4"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							AssemblerOutput="4"
-							BrowseInformation="1"
-							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DebugFast|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -529,7 +529,26 @@
 					RelativePath=".\debug.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+							CompileAs="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugStrict|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -540,25 +559,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DebugFast|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -575,7 +575,7 @@
 					RelativePath=".\spu2replay.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -583,7 +583,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -599,7 +599,7 @@
 					RelativePath=".\wavedump_wav.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -607,7 +607,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -623,7 +623,7 @@
 					RelativePath=".\sndout.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -633,7 +633,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Win32"
+						Name="DebugStrict|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -642,7 +642,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -653,7 +653,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="DebugFast|Win32"
+						Name="Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -673,7 +673,26 @@
 						RelativePath=".\waveout.cpp"
 						>
 						<FileConfiguration
-							Name="Release (dev)|Win32"
+							Name="Devel|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+								CompileAs="0"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="DebugStrict|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								UsePrecompiledHeader="0"
+								BrowseInformation="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -684,25 +703,6 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release (nondev) [public]|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"
-								BrowseInformation="1"
-								CompileAs="0"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="DebugFast|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -804,7 +804,27 @@
 					RelativePath=".\dma.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							AssemblerOutput="4"
+							BrowseInformation="1"
+							CompileAs="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugStrict|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -816,26 +836,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							AssemblerOutput="4"
-							BrowseInformation="1"
-							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DebugFast|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -884,7 +884,7 @@
 					RelativePath=".\spu2.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -894,7 +894,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Win32"
+						Name="DebugStrict|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -903,7 +903,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -914,7 +914,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="DebugFast|Win32"
+						Name="Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -935,7 +935,26 @@
 					RelativePath=".\config.cpp"
 					>
 					<FileConfiguration
-						Name="Release (dev)|Win32"
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+							CompileAs="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DebugStrict|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -946,25 +965,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nondev) [public]|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-							CompileAs="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DebugFast|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"

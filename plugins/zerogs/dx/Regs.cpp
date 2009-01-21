@@ -33,7 +33,7 @@
 #include "zerogs.h"
 #include "targets.h"
 
-#ifdef __MSCW32__
+#ifdef _MSC_VER
 #pragma warning(disable:4244)
 #endif
 

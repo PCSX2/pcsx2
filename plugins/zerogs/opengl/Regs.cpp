@@ -31,7 +31,7 @@
 const u32 g_primmult[8] = { 1, 2, 2, 3, 3, 3, 2, 0xff };
 const u32 g_primsub[8] = { 1, 2, 1, 3, 1, 1, 2, 0 };
 
-#ifdef __MSCW32__
+#ifdef _MSC_VER
 #pragma warning(disable:4244)
 #endif
 

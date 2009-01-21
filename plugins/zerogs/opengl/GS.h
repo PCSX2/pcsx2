@@ -19,26 +19,12 @@
 #ifndef __GS_H__
 #define __GS_H__
 
-#include <stdio.h>
-#include <malloc.h>
-#include <assert.h>
-
-// need C definitions
-extern "C" {
-#define GSdefs
-#include "PS2Edefs.h"
-}
-
 #ifdef _WIN32
 
 #include <windows.h>
 #include <windowsx.h>
 
 extern HWND GShwnd;
-
-extern "C" u32   CALLBACK PS2EgetLibType(void);
-extern "C" u32   CALLBACK PS2EgetLibVersion2(u32 type);
-extern "C" char* CALLBACK PS2EgetLibName(void);
 
 #else // linux basic definitions
 
@@ -53,14 +39,30 @@ extern "C" char* CALLBACK PS2EgetLibName(void);
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#endif
+
+#include <stdio.h>
+#include <malloc.h>
 #include <assert.h>
-#include <math.h>
+
+// need C definitions
+extern "C" {
+#define GSdefs
+#include "PS2Edefs.h"
+
+extern "C" u32   CALLBACK PS2EgetLibType(void);
+extern "C" u32   CALLBACK PS2EgetLibVersion2(u32 type);
+extern "C" char* CALLBACK PS2EgetLibName(void);
+}
+
+#include "zerogsmath.h"
+
+#ifndef _WIN32
+#include <assert.h>
 
 #include <vector>
 #include <string>
 using namespace std;
-
-#include "zerogsmath.h"
 
 extern u32 THR_KeyEvent; // value for passing out key events beetwen threads
 extern bool THR_bShift;
@@ -145,8 +147,10 @@ struct Vector_16F
 // The only code that uses it is commented out!
 //#define ZEROGS_CACHEDCLEAR // much better performance
 //#define RELEASE_TO_PUBLIC
+// fixme - We should use ZEROGS_DEVBUILD to determine devel/debug builds from "public release" builds.
+//  Means a lot of search-and-replace though. (air)
 
-#if !defined(_RELEASE)
+#ifdef ZEROGS_DEVBUILD
 #define GS_LOG __Log
 #else
 #define GS_LOG 0&&

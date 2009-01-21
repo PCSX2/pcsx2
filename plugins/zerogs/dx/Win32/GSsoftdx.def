@@ -1,6 +1,6 @@
 ; Declares the module parameters for the DLL.
 
-LIBRARY      "ZeroGS"
+;LIBRARY      "ZeroGS"
 
 EXPORTS
     ; Explicit exports can go here

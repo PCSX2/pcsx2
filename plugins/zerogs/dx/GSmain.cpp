@@ -42,7 +42,7 @@ using namespace std;
 #include "targets.h"
 #include "zerogsshaders/zerogsshaders.h"
 
-#ifdef __MSCW32__
+#ifdef _MSC_VER
 #pragma warning(disable:4244)
 #endif
 
@@ -130,7 +130,10 @@ void SysMessage(char *fmt, ...) {
 void __Log(const char *fmt, ...) {
 	va_list list;
 
-	if (!conf.log) return;
+	// gsLog can be null if the config dialog is used prior to Pcsx2 an emulation session.
+	// (GSinit won't have been called then)
+
+	if (gsLog == NULL || !conf.log) return;
 
 	va_start(list, fmt);
 	vfprintf(gsLog, fmt, list);
@@ -142,8 +145,12 @@ void __LogToConsole(const char *fmt, ...) {
 
 	printf("ZeroGS: ");
 
+	// gsLog can be null if the config dialog is used prior to Pcsx2 an emulation session.
+	// (GSinit won't have been called then)
+
 	va_start(list, fmt);
-	vfprintf(gsLog, fmt, list);
+	if( gsLog != NULL )
+		vfprintf(gsLog, fmt, list);
 	vprintf(fmt, list);
 	va_end(list);
 }

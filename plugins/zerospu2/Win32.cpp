@@ -209,7 +209,7 @@ void SysMessage(char *fmt, ...) {
 	char tmp[512];
 
 	va_start(list,fmt);
-	vsprintf(tmp,fmt,list);
+	vsprintf_s(tmp,fmt,list);
 	va_end(list);
 	MessageBox(0, tmp, "SPU2NULL Msg", 0);
 }
@@ -302,10 +302,11 @@ void SaveConfig()
 	szTemp = strrchr(szIniFile, '\\');
 
 	if(!szTemp) return;
-	strcpy(szTemp, "\\inis\\zerospu2.ini");
-	sprintf(szValue,"%u",Conf1->Log);
+	szTemp[0] = 0;		// this modifies szInitFile also.
+	strcat_s(szIniFile, "\\inis\\zerospu2.ini");
+	sprintf_s(szValue,"%u",Conf1->Log);
     WritePrivateProfileString("Interface", "Logging",szValue,szIniFile);
-    sprintf(szValue,"%u",Conf1->options);
+    sprintf_s(szValue,"%u",Conf1->options);
     WritePrivateProfileString("Interface", "Options",szValue,szIniFile);
 
 }
@@ -321,8 +322,9 @@ void LoadConfig()
 	szTemp = strrchr(szIniFile, '\\');
 
 	if(!szTemp) return ;
-	strcpy(szTemp, "\\inis\\zerospu2.ini");
-    fp=fopen("inis\\zerospu2.ini","rt");//check if usbnull.ini really exists
+	szTemp[0] = 0;
+	strcpy_s(szIniFile, "\\inis\\zerospu2.ini");
+    fopen_s(&fp, "inis\\zerospu2.ini","rt");//check if usbnull.ini really exists
 	if (!fp)
 	{
 		CreateDirectory("inis",NULL); 

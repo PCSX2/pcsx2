@@ -6,6 +6,7 @@
 #endif
 
 #include <string.h>
+#include <math.h>
 
 #ifndef PI
 #define PI ((dReal)3.141592654)
