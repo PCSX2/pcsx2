@@ -31,8 +31,8 @@ PCSX2_ALIGNED16( static u64 g_globalMMXData[8] );
 PCSX2_ALIGNED16( static u64 g_globalXMMData[2*XMMREGS] );
 
 // performance counter vars.
-static LARGE_INTEGER lbase = {0}, lfinal = {0};
-static u32 s_pCurBlock_ltime;
+LARGE_INTEGER lbase = {0}, lfinal = {0};
+u32 s_pCurBlock_ltime;
 
 
 /////////////////////////////////////////////////////////////////////
