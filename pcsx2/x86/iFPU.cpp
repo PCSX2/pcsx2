@@ -35,11 +35,6 @@ extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
 static u32 fpucw = 0x007f;
 static u32 fpucws = 0;
 
-//------------------------------------------------------------------
-namespace Dynarec {
-namespace R5900
-{
-
 void SaveCW(int type) {
 	if (iCWstate & type) return;
 
@@ -66,9 +61,10 @@ void LoadCW() {
 }
 
 //------------------------------------------------------------------
+namespace R5900 {
+namespace Dynarec {
 namespace OpcodeImpl {
-namespace COP1
-{
+namespace COP1 {
 
 //------------------------------------------------------------------
 // Helper Macros

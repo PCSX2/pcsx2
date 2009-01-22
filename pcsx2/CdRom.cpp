@@ -18,8 +18,9 @@
 
 #include "PrecompiledHeader.h"
 
-//THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 #include "PsxCommon.h"
+
+//THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 
 #define CdlSync         0
 #define CdlNop	        1

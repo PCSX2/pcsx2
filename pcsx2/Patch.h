@@ -117,10 +117,8 @@ void resetpatch( void );
 
 int AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 
-namespace Dynarec {
-	extern void SetFastMemory(int); // iR5900LoadStore.c
-	extern void SetVUNanMode(int mode);
-}
+extern void SetFastMemory(int); // iR5900LoadStore.c
+extern void SetVUNanMode(int mode);
 
 extern int path3hack;
 extern int g_FFXHack;

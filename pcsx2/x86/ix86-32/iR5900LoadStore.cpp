@@ -23,12 +23,11 @@
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
-namespace Dynarec { 
-
-	// Implemented at the bottom of the module:
-	void SetFastMemory(int bSetFast);
+// Implemented at the bottom of the module:
+void SetFastMemory(int bSetFast);
 
 namespace R5900 { 
+namespace Dynarec { 
 namespace OpcodeImpl
 {
 
@@ -4468,9 +4467,9 @@ void recSQC2( void )
 
 #endif
 
-} }	// end namespace R5900::OpcodeImpl
+} } }	// end namespace R5900::Dynarec::OpcodeImpl
 
-using namespace R5900::OpcodeImpl;
+using namespace R5900::Dynarec;
 
 #ifdef PCSX2_VIRTUAL_MEM
 
@@ -4499,4 +4498,3 @@ using namespace R5900::OpcodeImpl;
 	void SetFastMemory(int bSetFast) {}
 
 #endif
-}

@@ -32,12 +32,6 @@
 
 extern void _vu0WaitMicro();
 
-// Temporary until I can get the VUs namespaced properly.
-using namespace Dynarec::R5900;
-
-namespace Dynarec
-{
-
 #define _Ft_ _Rt_
 #define _Fs_ _Rd_
 #define _Fd_ _Sa_
@@ -49,7 +43,7 @@ namespace Dynarec
 void recCop2BranchCall( void (*func)() )
 {
 	SetFPUstate();
-	R5900::recBranchCall( func );
+	recBranchCall( func );
 	_freeX86regs();
 }
 
@@ -650,22 +644,25 @@ void (*recCOP2SPECIAL2t[128])(s32 info) = {
  rec_C2UNK      ,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,rec_C2UNK,
 };
 
-namespace R5900 { namespace OpcodeImpl {
-void recCOP2()
+namespace R5900 {
+namespace Dynarec {
+namespace OpcodeImpl
 {
-	VU0.code = cpuRegs.code;
+	void recCOP2()
+	{
+		VU0.code = cpuRegs.code;
 
-	g_pCurInstInfo->vuregs.pipe = 0xff; // to notify eeVURecompileCode that COP2
-	s32 info = eeVURecompileCode(&VU0, &g_pCurInstInfo->vuregs);
-	
-	info |= PROCESS_VU_COP2;
-	info |= PROCESS_VU_UPDATEFLAGS;
+		g_pCurInstInfo->vuregs.pipe = 0xff; // to notify eeVURecompileCode that COP2
+		s32 info = eeVURecompileCode(&VU0, &g_pCurInstInfo->vuregs);
+		
+		info |= PROCESS_VU_COP2;
+		info |= PROCESS_VU_UPDATEFLAGS;
 
-	recCOP2t[_Rs_]( info );
+		recCOP2t[_Rs_]( info );
 
-	_freeX86regs();
-}
-} }
+		_freeX86regs();
+	}
+}}}
 
 void recCOP2_SPECIAL(s32 info )
 {
@@ -683,4 +680,3 @@ void recCOP2_SPECIAL2(s32 info)
 	recCOP2SPECIAL2t[opc](info);
 }
 
-}

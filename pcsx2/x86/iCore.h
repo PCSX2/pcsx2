@@ -25,8 +25,6 @@
 // Namespace Note : iCore32 contains all of the Register Allocation logic, in addition to a handful
 // of utility functions for emitting frequent code.
 
-namespace Dynarec
-{
 ////////////////////////////////////////////////////////////////////////////////
 // Shared Register allocation flags (apply to X86, XMM, MMX, etc).
 
@@ -425,7 +423,5 @@ extern void LogicalOp32ItoM(uptr to, u32 from, int op);
 extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
 extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
 #endif
-
-}
 
 #endif

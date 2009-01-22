@@ -64,7 +64,7 @@ void vuMicroCpuReset()
 
 	// SuperVUreset will do nothing is none of the recs are initialized.
 	// But it's needed if one or the other is initialized.
-	Dynarec::SuperVUReset(-1);
+	SuperVUReset(-1);
 }
 
 void vuMicroMemAlloc()

@@ -38,15 +38,9 @@
 
 #include "SamplProf.h"
 
-using namespace R3000a;
-extern char* disR3000Fasm(u32 code, u32 pc);
-
 extern u32 g_psxNextBranchCycle;
 extern void psxBREAK();
 extern void zeroEx();
-
-namespace Dynarec
-{
 
 u32 g_psxMaxRecMem = 0;
 u32 s_psxrecblocks[] = {0};
@@ -1594,9 +1588,6 @@ StartRecomp:
         assert( s_pCurBlock->pFnptr != 0 );
 }
 
-}
-
-using namespace Dynarec;
 R3000Acpu psxRec = {
 	recAlloc,
 	recReset,
@@ -1605,3 +1596,4 @@ R3000Acpu psxRec = {
 	recClear,
 	recShutdown
 };
+

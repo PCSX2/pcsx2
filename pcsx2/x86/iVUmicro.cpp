@@ -38,10 +38,8 @@
 #endif
 //------------------------------------------------------------------
 
-namespace Dynarec
-{
-	using ::Dynarec::R5900::pc;
-	using ::Dynarec::R5900::branch;
+// fixme - VUmicro should really use its own static vars for pc and branch.
+// Sharing with the EE's copies of pc and branch is not cool! (air)
 
 //------------------------------------------------------------------
 // Helper Macros
@@ -1271,6 +1269,4 @@ void SetVUNanMode(int mode)
 {
     g_VuNanHandling = mode;
     if ( mode ) SysPrintf("enabling vunan mode");
-}
-
 }

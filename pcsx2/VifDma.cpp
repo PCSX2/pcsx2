@@ -31,8 +31,6 @@
 #endif
 
 using namespace std;			// for min / max
-using R5900::Cpu;					// for detecting VU1 dummy / frameskip.
-using R5900::cpuRegs;
 
 //#define VIFUNPACKDEBUG //enable unpack debugging output 
 

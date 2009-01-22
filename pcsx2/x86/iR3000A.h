@@ -18,6 +18,7 @@
 #ifndef _R3000A_SUPERREC_
 #define _R3000A_SUPERREC_
 
+#include "R3000A.h"
 #include "BaseblockEx.h"
 
 // Cycle penalties for particuarly slow instructions.
@@ -29,8 +30,6 @@ static const int psxInstCycles_Peephole_Store = 0;
 static const int psxInstCycles_Store = 0;
 static const int psxInstCycles_Load = 0;
 
-namespace Dynarec
-{
 // to be consistent with EE
 #define PSX_HI XMMGPR_HI
 #define PSX_LO XMMGPR_LO
@@ -67,11 +66,29 @@ void psxLoadBranchState();
 void psxSetBranchReg(u32 reg);
 void psxSetBranchImm( u32 imm );
 void psxRecompileNextInstruction(int delayslot);
+void psxRecClearMem(BASEBLOCK* p);
+
+////////////////////////////////////////////////////////////////////
+// IOP Constant Propagation Defines, Vars, and API - From here down!
+
+#define PSX_IS_CONST1(reg) ((reg)<32 && (g_psxHasConstReg&(1<<(reg))))
+#define PSX_IS_CONST2(reg1, reg2) ((g_psxHasConstReg&(1<<(reg1)))&&(g_psxHasConstReg&(1<<(reg2))))
+#define PSX_SET_CONST(reg) { \
+	if( (reg) < 32 ) { \
+		g_psxHasConstReg |= (1<<(reg)); \
+		g_psxFlushedConstReg &= ~(1<<(reg)); \
+	} \
+}
+
+#define PSX_DEL_CONST(reg) { \
+	if( (reg) < 32 ) g_psxHasConstReg &= ~(1<<(reg)); \
+}
+
+extern u32 g_psxConstRegs[32];
+extern u32 g_psxHasConstReg, g_psxFlushedConstReg;
 
 typedef void (*R3000AFNPTR)();
 typedef void (*R3000AFNPTR_INFO)(int info);
-
-void psxRecClearMem(BASEBLOCK* p);
 
 //
 // non mmx/xmm version, slower
@@ -119,7 +136,5 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 void psxRecompileCodeConst2(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode);
 // [lo,hi] = rt op rs
 void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, R3000AFNPTR_INFO consttcode, R3000AFNPTR_INFO noconstcode, int LOHI);
-
-}	// end namespace Dynarec
 
 #endif

@@ -20,6 +20,8 @@
 
 #include "PsxCommon.h"
 
+using namespace R3000A;
+
 // Dma0/1   in Mdec.c
 // Dma3     in CdRom.c
 // Dma8     in PsxSpd.c

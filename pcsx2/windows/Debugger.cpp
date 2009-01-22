@@ -27,13 +27,10 @@
 #include "PsxMem.h"
 #include "R3000A.h"
 
-using namespace R5900;
-
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
-extern void (*IOP_DEBUG_BSC[64])(char *buf);
 void RefreshIOPDebugger(void);
 extern int ISR3000A;//for disasm
 HWND hWnd_debugdisasm, hWnd_debugscroll,hWnd_IOP_debugdisasm, hWnd_IOP_debugscroll;
@@ -215,7 +212,7 @@ BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						opcode_addr=temp;
 						MakeIOPDebugOpcode();											
-                        IOP_DEBUG_BSC[(psxRegs.code) >> 26](tmp);
+						R3000A::IOP_DEBUG_BSC[(psxRegs.code) >> 26](tmp);
 						sprintf(buf, "%08X %08X: %s", temp, psxRegs.code, tmp);
 						fprintf(fp, "%s\n", buf);
 					}
@@ -653,7 +650,7 @@ void RefreshDebugger(void)
 				sprintf(syscall_str, "%08X:\tsyscall\t%s", t, R5900::bios[bios_call]);
 			} else {
 				std::string str;
-				disR5900Fasm(str, *mem, t);
+				R5900::disR5900Fasm(str, *mem, t);
 				str.copy( syscall_str, 256 );
 			}
 		}
@@ -675,7 +672,7 @@ void RefreshIOPDebugger(void)
     {
 		// Make the opcode.
 		u32 mem = PSXMu32(t);
-		char *str = disR3000Fasm(mem, t);
+		char *str = R3000A::disR3000Fasm(mem, t);
         SendMessage(hWnd_IOP_debugdisasm, LB_ADDSTRING, 0, (LPARAM)str);
 	}
     

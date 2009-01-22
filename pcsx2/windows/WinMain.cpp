@@ -741,8 +741,8 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					remoteDebugBios=DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_RDEBUGPARAMS), NULL, (DLGPROC)RemoteDebuggerParamsProc);
 					if (remoteDebugBios)
 					{
-						R5900::cpuReset();
-						R5900::cpuExecuteBios();
+						cpuReset();
+						cpuExecuteBios();
 
 						DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_RDEBUG), NULL, (DLGPROC)RemoteDebuggerProc);
 						//CreateMainWindow(SW_SHOWNORMAL);

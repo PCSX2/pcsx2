@@ -24,8 +24,8 @@
 #ifndef __IMMI_H__
 #define __IMMI_H__
 
-namespace Dynarec { 
 namespace R5900 { 
+namespace Dynarec { 
 namespace OpcodeImpl {
 
 	// These are instructions contained the MMI "opcode space" but are not

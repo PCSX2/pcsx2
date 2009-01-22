@@ -43,11 +43,11 @@
 
 #include "SamplProf.h"
 
+using namespace R5900;
+
 // used to disable register freezing during cpuBranchTests (registers
 // are safe then since they've been completely flushed)
 bool g_EEFreezeRegs = false;
-
-namespace Dynarec { namespace R5900 {
 
 // I can't find where the Linux recRecompile is defined.  Is it used anymore?
 // If so, namespacing might break it. :/  (air)
@@ -68,6 +68,8 @@ u8* dyna_block_discard_recmem=0;
 u32 pc;			         // recompiler pc
 int branch;		         // set for branch
 
+PCSX2_ALIGNED16(GPR_reg64 g_cpuConstRegs[32]) = {0};
+u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 u32 s_saveConstGPRreg = 0;
 GPR_reg64 s_ConstGPRreg;
 
@@ -651,7 +653,7 @@ static __forceinline bool recEventTest()
 #endif
 
 	// Perform counters, ints, and IOP updates:
-	bool retval = ::R5900::_cpuBranchTest_Shared();
+	bool retval = _cpuBranchTest_Shared();
 
 #ifdef PCSX2_DEVBUILD
 	assert( !g_globalXMMSaved && !g_globalMMXSaved);
@@ -833,6 +835,42 @@ extern void DispatcherClear();
 extern void DispatcherReg();
 }
 #endif
+
+namespace R5900 {
+namespace Dynarec {
+namespace OpcodeImpl {
+
+////////////////////////////////////////////////////
+void recSYSCALL( void ) {
+	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
+	iFlushCall(FLUSH_NODESTROY);
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::SYSCALL );
+
+	CMP32ItoM((uptr)&cpuRegs.pc, pc);
+	j8Ptr[0] = JE8(0);
+	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
+	x86SetJ8(j8Ptr[0]);
+	//branch = 2;
+}
+
+////////////////////////////////////////////////////
+void recBREAK( void ) {
+	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
+	iFlushCall(FLUSH_EVERYTHING);
+	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::BREAK );
+
+	CMP32ItoM((uptr)&cpuRegs.pc, pc);
+	j8Ptr[0] = JE8(0);
+	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
+	RET();
+	x86SetJ8(j8Ptr[0]);
+	//branch = 2;
+}
+
+} } }		// end namespace R5900::Dynarec::OpcodeImpl
 
 ////////////////////////////////////////////////////
 void recClear( u32 Addr, u32 Size )
@@ -1101,7 +1139,7 @@ void iFlushCall(int flushtype)
 //}
 
 
-static u32 eeScaleBlockCycles()
+u32 eeScaleBlockCycles()
 {
 	// Note: s_nBlockCycles is 3 bit fixed point.  Divide by 8 when done!
 
@@ -1203,135 +1241,6 @@ static void iBranchTest(u32 newpc, bool noDispatch)
 
 	RET2();
 }
-
-namespace OpcodeImpl
-{
-
-////////////////////////////////////////////////////
-void recSYSCALL( void ) {
-	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	iFlushCall(FLUSH_NODESTROY);
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::SYSCALL );
-
-	CMP32ItoM((uptr)&cpuRegs.pc, pc);
-	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
-	JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
-	x86SetJ8(j8Ptr[0]);
-	//branch = 2;
-}
-
-////////////////////////////////////////////////////
-void recBREAK( void ) {
-	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-	iFlushCall(FLUSH_EVERYTHING);
-	CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::BREAK );
-
-	CMP32ItoM((uptr)&cpuRegs.pc, pc);
-	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
-	RET();
-	x86SetJ8(j8Ptr[0]);
-	//branch = 2;
-}
-
-////////////////////////////////////////////////////
-//static void recCACHE( void ) {
-//	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-//	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-//	iFlushCall(FLUSH_EVERYTHING);
-//	CALLFunc( (uptr)CACHE );
-//	//branch = 2;
-//
-//	CMP32ItoM((int)&cpuRegs.pc, pc);
-//	j8Ptr[0] = JE8(0);
-//	RET();
-//	x86SetJ8(j8Ptr[0]);
-//}
-
-
-void recPREF( void ) 
-{
-}
-
-void recSYNC( void )
-{
-}
-
-void recMFSA( void ) 
-{
-	int mmreg;
-	if (!_Rd_) return;
-
-	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
-	if( mmreg >= 0 ) {
-		SSE_MOVLPS_M64_to_XMM(mmreg, (uptr)&cpuRegs.sa);
-	}
-	else if( (mmreg = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) >= 0 ) {
-		MOVDMtoMMX(mmreg, (uptr)&cpuRegs.sa);
-		SetMMXstate();
-	}
-	else {
-		MOV32MtoR(EAX, (u32)&cpuRegs.sa);
-		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
-	}
-}
-
-void recMTSA( void )
-{
-	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((uptr)&cpuRegs.sa, g_cpuConstRegs[_Rs_].UL[0] );
-	}
-	else {
-		int mmreg;
-		
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-			SSE_MOVSS_XMM_to_M32((uptr)&cpuRegs.sa, mmreg);
-		}
-		else if( (mmreg = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-			MOVDMMXtoM((uptr)&cpuRegs.sa, mmreg);
-			SetMMXstate();
-		}
-		else {
-			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[_Rs_].UL[0]);
-			MOV32RtoM((uptr)&cpuRegs.sa, EAX);
-		}
-	}
-}
-
-void recMTSAB( void ) 
-{
-	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) << 3);
-	}
-	else {
-		_eeMoveGPRtoR(EAX, _Rs_);
-		AND32ItoR(EAX, 0xF);
-		XOR32ItoR(EAX, _Imm_&0xf);
-		SHL32ItoR(EAX, 3);
-		MOV32RtoM((uptr)&cpuRegs.sa, EAX);
-	}
-}
-
-void recMTSAH( void ) 
-{
-	if( GPR_IS_CONST1(_Rs_) ) {
-		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 4);
-	}
-	else {
-		_eeMoveGPRtoR(EAX, _Rs_);
-		AND32ItoR(EAX, 0x7);
-		XOR32ItoR(EAX, _Imm_&0x7);
-		SHL32ItoR(EAX, 4);
-		MOV32RtoM((uptr)&cpuRegs.sa, EAX);
-	}
-}
-
-}		// end Namespace Dynarec::R5900::OpcodeImpl
 
 static void checkcodefn()
 {
@@ -2131,21 +2040,12 @@ StartRecomp:
 	}
 }
 
-} }	// end namespace Dynarec::R5900
-
-using namespace Dynarec;
-using namespace Dynarec::R5900;
-
-namespace R5900
-{
-	R5900cpu recCpu = {
-		recAlloc,
-		recReset,
-		recStep,
-		recExecute,
-		recExecuteBlock,
-		recClear,
-		recShutdown
-	};
-
-}
+R5900cpu recCpu = {
+	recAlloc,
+	recReset,
+	recStep,
+	recExecute,
+	recExecuteBlock,
+	recClear,
+	recShutdown
+};

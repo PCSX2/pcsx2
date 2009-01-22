@@ -267,7 +267,7 @@ __forceinline void SIF0Dma()
 //                        }
 //                    }
 
-					R5900::Cpu->Clear(sif0dma->madr, readSize*4);
+					Cpu->Clear(sif0dma->madr, readSize*4);
 
 					cycles += readSize * BIAS;	// fixme : BIAS is factored in below
 					//cycles += readSize;

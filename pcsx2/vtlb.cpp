@@ -19,6 +19,7 @@
 
 #include "Common.h"
 #include "vtlb.h"
+#include "COP0.h"
 #include "x86/ix86/ix86.h"
 
 using namespace R5900;
@@ -481,9 +482,6 @@ void vtlb_Term()
 }
 
 
-namespace Dynarec
-{
-
 //ecx = addr
 //edx = ptr
 void vtlb_DynGenRead(u32 sz,int freereg)
@@ -694,8 +692,6 @@ void vtlb_DynGenWrite(u32 sz,int freereg)
 	CALL32R(EAX);
 
 	x86SetJ8(cont);
-}
-
 }
 
 #endif		// PCSX2_VIRTUAL_MEM

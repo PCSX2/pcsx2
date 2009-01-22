@@ -34,10 +34,6 @@ extern u8 g_RealGSMem[0x2000];
 #define PS2GS_BASE(mem) (g_RealGSMem+(mem&0x13ff))
 #endif
 
-namespace Dynarec {
-
-using namespace R5900;
-
 // __thiscall -- Calling Convention Notes.
 
 // ** MSVC passes the pointer to the object as ECX.  Other parameters are passed normally
@@ -305,5 +301,3 @@ void gsConstRead128(u32 mem, int xmmreg)
 	GIF_LOG("GS read 128 %8.8lx (%8.8x), at %8.8lx\n", (uptr)PS2GS_BASE(mem), mem);
 	_eeReadConstMem128( xmmreg, (uptr)PS2GS_BASE(mem));
 }
-
-} // end namespace Dynarec

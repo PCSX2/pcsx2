@@ -19,13 +19,15 @@
 #ifndef __iCOP0_H__
 #define __iCOP0_H__
 
+#include "COP0.h"
+
 /*********************************************************
 *   COP0 opcodes                                         *
 *                                                        *
 *********************************************************/
 
-namespace Dynarec { 
 namespace R5900 {
+namespace Dynarec { 
 namespace OpcodeImpl {
 namespace COP0
 {

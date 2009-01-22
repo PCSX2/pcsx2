@@ -23,8 +23,6 @@
 #include "iR5900.h"
 #include "VUmicro.h"
 
-using R5900::Cpu;
-
 #define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
 #define spr1 ((DMACh*)&PS2MEM_HW[0xD400])
 

@@ -25,8 +25,9 @@
 #include "yuv2rgb.h"
 #include "coroutine.h"
 
+#include "Vif.h"
+
 using namespace std;			// for min / max
-using R5900::cpuRegs;
 
 // Zero cycle IRQ schedules aren't really good, but the IPU uses them.
 // Better to throw the IRQ inline:

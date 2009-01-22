@@ -44,11 +44,6 @@
 
 #define EE_CONST_PROP // rec2 - enables constant propagation (faster)
 
-namespace Dynarec {
-namespace R5900 {
-
-using namespace ::R5900;		// This makes sure the Dynarec inherits all R5900 globals.
-
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
 extern u32 pc;
@@ -56,8 +51,8 @@ extern int branch;
 extern uptr* recLUT;
 
 extern u32 maxrecmem;
-extern u32 pc;			         // recompiler pc
-extern int branch;		         // set for branch
+extern u32 pc;			         // recompiler pc (also used by the SuperVU! .. why? (air))
+extern int branch;		         // set for branch (also used by the SuperVU! .. why? (air))
 extern u32 target;		         // branch target
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 extern u32 s_saveConstGPRreg;
@@ -104,14 +99,41 @@ void LoadBranchState();
 void recompileNextInstruction(int delayslot);
 void SetBranchReg( u32 reg );
 void SetBranchImm( u32 imm );
+u32 eeScaleBlockCycles();
 
 void iFlushCall(int flushtype);
 void recBranchCall( void (*func)() );
 void recCall( void (*func)(), int delreg );
 
-extern void (*recBSC_co[64])();
+// these are defined in iFPU.cpp
+void LoadCW();
+void SaveCW(int type);
 
-u32* _eeGetConstReg(int reg); // gets a memory pointer to the constant reg
+extern void recExecute();		// same as recCpu.Execute(), but faster (can be inline'd)
+
+
+////////////////////////////////////////////////////////////////////
+// Constant Propagation - From here to the end of the header!
+
+#define GPR_IS_CONST1(reg) ((reg)<32 && (g_cpuHasConstReg&(1<<(reg))))
+#define GPR_IS_CONST2(reg1, reg2) ((g_cpuHasConstReg&(1<<(reg1)))&&(g_cpuHasConstReg&(1<<(reg2))))
+#define GPR_SET_CONST(reg) { \
+	if( (reg) < 32 ) { \
+		g_cpuHasConstReg |= (1<<(reg)); \
+		g_cpuFlushedConstReg &= ~(1<<(reg)); \
+	} \
+}
+
+#define GPR_DEL_CONST(reg) { \
+	if( (reg) < 32 ) g_cpuHasConstReg &= ~(1<<(reg)); \
+}
+
+extern void (*recBSC_co[64])();
+extern PCSX2_ALIGNED16_DECL(GPR_reg64 g_cpuConstRegs[32]);
+extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
+
+// gets a memory pointer to the constant reg
+u32* _eeGetConstReg(int reg);
 
 // finds where the GPR is stored and moves lower 32 bits to EAX
 void _eeMoveGPRtoR(x86IntRegType to, int fromgpr);
@@ -121,10 +143,6 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 void _eeFlushAllUnused();
 void _eeOnWriteReg(int reg, int signext);
 
-// these are defined in iFPU.cpp
-void LoadCW();
-void SaveCW(int type);
-
 // totally deletes from const, xmm, and mmx entries
 // if flush is 1, also flushes to memory
 // if 0, only flushes if not an xmm reg (used when overwriting lower 64bits of reg)
@@ -133,12 +151,12 @@ void _deleteEEreg(int reg, int flush);
 // allocates memory on the instruction size and returns the pointer
 u32* recAllocStackMem(int size, int align);
 
-extern void recExecute();		// same as recCpu.Execute(), but faster (can be inline'd)
-
+void _vuRegsCOP22(VURegs * VU, _VURegsNum *VUregsn);
 
 //////////////////////////////////////
 // Templates for code recompilation //
 //////////////////////////////////////
+
 typedef void (*R5900FNPTR)();
 typedef void (*R5900FNPTR_INFO)(int info);
 
@@ -289,7 +307,5 @@ protected:
 	void rpropSetFPUWrite0( int reg, int mask );
 
 };
-
-} }
 
 #endif // __IR5900_H__

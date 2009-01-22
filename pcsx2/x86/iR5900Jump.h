@@ -24,10 +24,10 @@
 * Format:  OP target                                     *
 *********************************************************/
 
-namespace Dynarec { 
 namespace R5900 { 
-namespace OpcodeImpl
-{
+namespace Dynarec { 
+namespace OpcodeImpl {
+
 	void recJ( void );
 	void recJAL( void );
 	void recJR( void );

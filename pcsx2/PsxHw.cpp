@@ -22,7 +22,6 @@
 #include "Misc.h"
 #include "iR5900.h"
 
-
 // NOTE: Any modifications to read/write fns should also go into their const counterparts
 // found in iPsxHw.cpp.
 

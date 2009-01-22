@@ -21,6 +21,8 @@
 #include <ctype.h>
 #include "PsxCommon.h"
 
+namespace R3000A {
+
 const char *biosA0n[256] = {
 // 0x00
 	"open",		"lseek",	"read",		"write",
@@ -287,3 +289,4 @@ void psxBiosInit() {
 void psxBiosShutdown() {
 }
 
+}	// end namespace R3000A

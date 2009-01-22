@@ -21,7 +21,11 @@
 #include <time.h>
 #include <cmath>
 #include "Common.h"
-#include "PsxCommon.h"
+#include "Counters.h"
+
+#include "R3000A.h"
+#include "PsxCounters.h"
+
 #include "GS.h"
 #include "VUmicro.h"
 
@@ -29,9 +33,6 @@ using namespace Threading;
 
 extern u8 psxhblankgate;
 u32 g_vu1SkipCount;	// number of frames to disable/skip VU1
-
-namespace R5900
-{
 
 static const uint EECNT_FUTURE_TARGET = 0x10000000;
 
@@ -834,10 +835,6 @@ u32 rcntCycle(int index)
 	else 
 		return counters[index].count;
 }
-
-} // End namespace R5900!
-
-using namespace R5900;
 
 void SaveState::rcntFreeze()
 {

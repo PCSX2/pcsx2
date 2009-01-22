@@ -31,8 +31,8 @@
 extern u32 vudump;
 #endif
 
-namespace Dynarec {
-
+namespace VU1micro
+{
 	// commented out because I'm not sure it actually works anymore with SuperVU (air)
 	/*static void iVU1DumpBlock()
 	{
@@ -125,7 +125,7 @@ namespace Dynarec {
 
 }
 
-using namespace Dynarec;
+using namespace VU1micro;
 
 VUmicroCpu recVU1 = 
 {

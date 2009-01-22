@@ -19,8 +19,6 @@
 #ifndef __COUNTERS_H__
 #define __COUNTERS_H__
 
-namespace R5900
-{
 struct EECNT_MODE
 {
 	// 0 - BUSCLK
@@ -146,7 +144,5 @@ u32	 rcntCycle(int index);
 
 u32 UpdateVSyncRate();
 void frameLimitReset();
-
-}	// End namespace R5900!
 
 #endif /* __COUNTERS_H__ */

@@ -22,6 +22,8 @@
 #include "PsxCommon.h"
 #include "Common.h"
 
+using namespace R3000A;
+
 static int branch = 0;
 static int branch2 = 0;
 static u32 branchPC;
@@ -35,9 +37,6 @@ extern void (*psxREG[32])();
 extern void (*psxCP0[32])();
 extern void (*psxCP2[64])();
 extern void (*psxCP2BSC[32])();
-
-extern void bios_write();
-extern void bios_printf();
 
 struct irxlib {
     char name[16];

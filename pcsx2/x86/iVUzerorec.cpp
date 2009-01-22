@@ -43,15 +43,9 @@
 
 using namespace std;
 
-using namespace R5900;
-using namespace Dynarec::R5900;
-
 // temporary externs
 extern void iDumpVU0Registers();
 extern void iDumpVU1Registers();
-
-namespace Dynarec
-{
 
 // SuperVURec optimization options, uncomment only for debugging purposes
 #define SUPERVU_CACHING			// vu programs are saved and queried via memcompare (should be no reason to disable this)
@@ -4145,6 +4139,4 @@ void recVULowerOP_T3_11( VURegs* VU, s32 info )
 void recVUunknown( VURegs* VU, s32 info )
 { 
 	SysPrintf("Unknown SVU micromode opcode called\n"); 
-}
-
 }

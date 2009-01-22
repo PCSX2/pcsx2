@@ -25,6 +25,7 @@
 #include "VU.h"
 #include "GS.h"
 #include "iR5900.h"
+#include "VifDma.h"
 
 #include "SamplProf.h"
 

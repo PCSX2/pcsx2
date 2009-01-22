@@ -28,8 +28,6 @@
 
 #include "iR5900.h"
 
-using namespace R5900;
-
 int UseGui = 1;
 int nDisableSC = 0; // screensaver
 
@@ -234,7 +232,7 @@ void ExecuteCpu()
 	{
 		while( !g_ReturnToGui )
 		{
-			Dynarec::R5900::recExecute();
+			recExecute();
 			SysUpdate();
 		}
 	}

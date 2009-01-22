@@ -21,8 +21,10 @@
 
 #include "Common.h"
 #include "ix86/ix86.h"
-#include "Vif.h"
 #include "VUmicro.h"
+
+#include "Vif.h"
+#include "VifDma.h"
 
 #include <assert.h>
 

@@ -23,8 +23,6 @@
 
 #include "iVUmicro.h"
 
-namespace Dynarec
-{
 extern void SuperVUAlloc(int vuindex); // global VU resources aare automatically allocated if necessary.
 extern void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
 extern void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
@@ -48,7 +46,5 @@ u32 SuperVUGetVIAddr(int reg, int read);
 
 // if p == 0, flush q else flush p; if wait is != 0, waits for p/q
 void SuperVUFlush(int p, int wait);
-
-}
 
 #endif

@@ -24,10 +24,6 @@
 
 #include "IPU.h"
 
-namespace Dynarec
-{
-using namespace Dynarec::R5900;
-
 ///////////////////////////////////////////////////////////////////////
 //  IPU Register Reads
 
@@ -204,5 +200,4 @@ void ipuConstWrite64(u32 mem, int mmreg)
 			_eeWriteConstMem64( (u32)((u8*)ipuRegs + (mem&0xfff)), mmreg);
 			break;
 	}
-}
 }

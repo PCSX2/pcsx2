@@ -22,8 +22,16 @@
 #include "iR5900.h"
 #include "VUmicro.h"
 #include "PsxMem.h"
+
+// The full suite of hardware APIs:
 #include "IPU/IPU.h"
 #include "GS.h"
+#include "Counters.h"
+#include "Vif.h"
+#include "Vifdma.h"
+#include "SPR.h"
+#include "Sif.h"
+
 
 #ifndef PCSX2_VIRTUAL_MEM
 extern u8  *psH; // hw mem
@@ -33,9 +41,6 @@ extern int rdram_devices;	// put 8 for TOOL and 2 for PS2 and PSX
 extern int rdram_sdevid;
 extern char sio_buffer[1024];
 extern int sio_count;
-
-using namespace Dynarec;
-using namespace Dynarec::R5900;
 
 int hwConstRead8(u32 x86reg, u32 mem, u32 sign)
 {

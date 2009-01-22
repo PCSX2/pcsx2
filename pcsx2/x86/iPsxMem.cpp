@@ -25,9 +25,6 @@
 
 extern int g_psxWriteOk;
 
-namespace Dynarec
-{
-
 extern u32 g_psxMaxRecMem;
 static u32 writectrl;
 
@@ -873,4 +870,3 @@ int psxRecMemConstWrite32(u32 mem, int mmreg)
 }
 
 #endif
-}

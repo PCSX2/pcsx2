@@ -19,18 +19,11 @@
 #include "PrecompiledHeader.h"
 
 #include "System.h"
-#include "R5900.h"
+#include "iR5900.h"
 #include "Vif.h"
 #include "VU.h"
 #include "ix86/ix86.h"
-#include "iCore.h"
 #include "R3000A.h"
-
-// Required because the iCore has tons of code shared between both the EE and IOP.. ugh.
-using namespace R5900;
-
-namespace Dynarec
-{
 
 u16 g_x86AllocCounter = 0;
 u16 g_xmmAllocCounter = 0;
@@ -1210,6 +1203,4 @@ void iDumpRegisters(u32 startpc, u32 temp)
 	__Log("intc %x %x\n", psHu32(INTC_STAT), psHu32(INTC_MASK));
 	__Log("sif: %x %x %x %x %x\n", psHu32(0xf200), psHu32(0xf220), psHu32(0xf230), psHu32(0xf240), psHu32(0xf260));
 #endif
-}
-
 }

@@ -26,8 +26,6 @@
 #include "PsxCommon.h"
 #include "../rdebug/deci2.h"
 
-using namespace R5900;
-
 u32		port=8510;
 SOCKET	serversocket, remote;
 char	message[1024];		//message to add to listbox

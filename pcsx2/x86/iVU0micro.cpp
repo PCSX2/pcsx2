@@ -24,7 +24,8 @@
 #include "VUmicro.h"
 #include "iVUzerorec.h"
 
-namespace Dynarec {
+namespace VU0micro
+{
 
 	static void recAlloc()
 	{
@@ -65,7 +66,7 @@ namespace Dynarec {
 	}
 }
 
-using namespace Dynarec;
+using namespace VU0micro;
 
 VUmicroCpu recVU0 = 
 {
@@ -76,4 +77,3 @@ VUmicroCpu recVU0 =
 ,	recClear
 ,	recShutdown
 };
-

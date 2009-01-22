@@ -24,8 +24,8 @@
 #include "iR5900.h"
 
 
-namespace Dynarec { 
 namespace R5900 { 
+namespace Dynarec { 
 namespace OpcodeImpl
 {
 

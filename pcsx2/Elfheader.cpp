@@ -22,7 +22,6 @@
 #include "CDVDisodrv.h"
 
 using namespace std;
-using namespace R5900;
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
@@ -492,7 +491,7 @@ struct ElfObject
 
 			for( uint i = 1; i < ( secthead[ i_st ].sh_size / sizeof( Elf32_Sym ) ); i++ ) {
 				if ( ( eS[ i ].st_value != 0 ) && ( ELF32_ST_TYPE( eS[ i ].st_info ) == 2 ) ) {
-					disR5900AddSym( eS[i].st_value, &SymNames[ eS[ i ].st_name ] );
+					R5900::disR5900AddSym( eS[i].st_value, &SymNames[ eS[ i ].st_name ] );
 				}
 			}
 		}

@@ -19,18 +19,25 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
+#include "Counters.h"
+
 #include "Memory.h"
 #include "Hw.h"
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
 #include "VUmicro.h"
+#include "COP0.h"
+
 #include "GS.h"
 #include "IPU/IPU.h"
+#include "Vif.h"
+#include "VifDma.h"
+#include "SPR.h"
+#include "Sif.h"
 
 #include "Paths.h"
 
-namespace R5900
-{
+using namespace R5900;	// for R5900 disasm tools
 
 s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
@@ -40,9 +47,6 @@ static int inter;
 PCSX2_ALIGNED16(cpuRegisters cpuRegs);
 PCSX2_ALIGNED16(fpuRegisters fpuRegs);
 PCSX2_ALIGNED16(tlbs tlb[48]);
-PCSX2_ALIGNED16(GPR_reg64 g_cpuConstRegs[32]) = {0};
-
-u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 R5900cpu *Cpu = NULL;
 
 u32 bExecBIOS = 0; // set if the BIOS has already been executed
@@ -50,7 +54,7 @@ u32 bExecBIOS = 0; // set if the BIOS has already been executed
 static bool cpuIsInitialized = false;
 static uint eeWaitCycles = 1024;
 
-bool EventTestIsActive = false;
+bool eeEventTestIsActive = false;
 
 // A run-once procedure for initializing the emulation state.
 // Can be done anytime after allocating memory, and before calling Cpu->Execute().
@@ -108,7 +112,6 @@ void cpuReset()
     vif1Reset();
 	rcntInit();
 	psxReset();
-
 }
 
 void cpuShutdown()
@@ -438,7 +441,7 @@ u32 g_nextBranchCycle = 0;
 // and the recompiler.  (moved here to help alleviate redundant code)
 __forceinline bool _cpuBranchTest_Shared()
 {
-	EventTestIsActive = true;
+	eeEventTestIsActive = true;
 	g_nextBranchCycle = cpuRegs.cycle + eeWaitCycles;
 
 	EEsCycle += cpuRegs.cycle - EEoCycle;
@@ -552,7 +555,7 @@ __forceinline bool _cpuBranchTest_Shared()
 	// Apply vsync and other counter nextCycles
 	cpuSetNextBranch( nextsCounter, nextCounter );
 
-	EventTestIsActive = false;
+	eeEventTestIsActive = false;
 
 	// ---- INTC / DMAC Exceptions -----------------
 	// Raise the INTC and DMAC interrupts here, which usually throw exceptions.
@@ -582,7 +585,7 @@ void cpuTestINTCInts()
 
 	// only set the next branch delta if the exception won't be handled for
 	// the current branch...
-	if( !EventTestIsActive )
+	if( !eeEventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
 	else if(psxCycleEE > 0)
 	{
@@ -605,7 +608,7 @@ __forceinline void cpuTestDMACInts()
 
 	// only set the next branch delta if the exception won't be handled for
 	// the current branch...
-	if( !EventTestIsActive )
+	if( !eeEventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
 	else if(psxCycleEE > 0)
 	{
@@ -682,5 +685,3 @@ __forceinline void CPU_INT( u32 n, s32 ecycle)
 
 	cpuSetNextBranchDelta( cpuRegs.eCycle[n] );
 }
-
-}	// end namespace R5900

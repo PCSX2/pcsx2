@@ -26,16 +26,7 @@
 #include "iCore.h"
 #include "iR3000A.h"
 
-extern void psxLWL();
-extern void psxLWR();
-extern void psxSWL();
-extern void psxSWR();
-
 extern int g_psxWriteOk;
-
-namespace Dynarec
-{
-
 extern u32 g_psxMaxRecMem;
 
 // R3000A instruction implementation
@@ -47,6 +38,11 @@ static void rpsx##f() { \
 	PSX_DEL_CONST(_Rt_); \
 /*	branch = 2; */\
 }
+
+extern void psxLWL();
+extern void psxLWR();
+extern void psxSWL();
+extern void psxSWR();
 
 //// 
 void rpsxADDIU_const()
@@ -2032,6 +2028,4 @@ void rpsxpropCP0(EEINST* prev, EEINST* pinst)
 
 		jNO_DEFAULT
 	}
-}
-
 }

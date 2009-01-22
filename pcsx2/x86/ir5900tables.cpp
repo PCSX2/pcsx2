@@ -37,162 +37,50 @@
 #include "iFPU.h"
 #include "iCOP0.h"
 
-namespace Dynarec { 
-namespace R5900
+// Use this to call into interpreter functions that require an immediate branchtest
+// to be done afterward (anything that throws an exception or enables interrupts, etc).
+void recBranchCall( void (*func)() )
 {
-	// Use this to call into interpreter functions that require an immediate branchtest
-	// to be done afterward (anything that throws an exception or enables interrupts, etc).
-	void recBranchCall( void (*func)() )
-	{
-		// In order to make sure a branch test is performed, the nextBranchCycle is set
-		// to the current cpu cycle.
+	// In order to make sure a branch test is performed, the nextBranchCycle is set
+	// to the current cpu cycle.
 
-		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-		MOV32MtoR( EAX, (uptr)&cpuRegs.cycle );
-		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-		MOV32RtoM( (uptr)&g_nextBranchCycle, EAX );
+	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+	MOV32MtoR( EAX, (uptr)&cpuRegs.cycle );
+	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
+	MOV32RtoM( (uptr)&g_nextBranchCycle, EAX );
 
-		// Might as well flush everything -- it'll all get flushed when the
-		// recompiler inserts the branchtest anyway.
-		iFlushCall(FLUSH_EVERYTHING);
-		CALLFunc( (uptr)func );
-		branch = 2;
-	}
+	// Might as well flush everything -- it'll all get flushed when the
+	// recompiler inserts the branchtest anyway.
+	iFlushCall(FLUSH_EVERYTHING);
+	CALLFunc( (uptr)func );
+	branch = 2;
+}
 
-	void recCall( void (*func)(), int delreg )
-	{
-		MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
-		MOV32ItoM( (uptr)&cpuRegs.pc, pc );
-
-		iFlushCall(FLUSH_EVERYTHING);
-		if( delreg > 0 ) _deleteEEreg(delreg, 0);
-		CALLFunc( (uptr)func );
-	}
-
-namespace OpcodeImpl
+void recCall( void (*func)(), int delreg )
 {
-	////////////////////////////////////////////////////
-	void recNULL( void )
-	{
-		Console::Error("EE: Unimplemented op %x", params cpuRegs.code);
-	}
+	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
+	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 
-	////////////////////////////////////////////////////
-	void recUnknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console::Error("EE: Unrecognized op %x", params cpuRegs.code);
-	}
+	iFlushCall(FLUSH_EVERYTHING);
+	if( delreg > 0 ) _deleteEEreg(delreg, 0);
+	CALLFunc( (uptr)func );
+}
 
-	void recMMI_Unknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console::Error("EE: Unrecognized MMI op %x", params cpuRegs.code);
-	}
+using namespace R5900::Dynarec::OpcodeImpl;
 
-	void recCOP0_Unknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console::Error("EE: Unrecognized COP0 op %x", params cpuRegs.code);
-	}
-
-	void recCOP1_Unknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console::Error("EE: Unrecognized FPU/COP1 op %x", params cpuRegs.code);
-	}
-
-	/**********************************************************
-	*    UNHANDLED YET OPCODES
-	*
-	**********************************************************/
-
-	void recCACHE()
-	{
-	   MOV32ItoM( (uptr)&cpuRegs.code, (u32)cpuRegs.code );
-	   MOV32ItoM( (uptr)&cpuRegs.pc, (u32)pc );
-	   iFlushCall(FLUSH_EVERYTHING);
-	   CALLFunc( (uptr)R5900::Interpreter::OpcodeImpl::CACHE );
-	   branch = 2;
-	}
-
-	void recTGE( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGE );
-	}
-
-	void recTGEU( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEU );
-	}
-
-	void recTLT( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLT );
-	}
-
-	void recTLTU( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTU );
-	}
-
-	void recTEQ( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQ );
-	}
-
-	void recTNE( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TNE );
-	}
-
-	void recTGEI( void )
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEI );
-	}
-
-	void recTGEIU( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEIU );
-	}
-
-	void recTLTI( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTI );
-	}
-
-	void recTLTIU( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTIU );
-	}
-
-	void recTEQI( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQI );
-	}
-
-	void recTNEI( void ) 
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TNEI );
-	}
-
-}	// End OpcodeImpl
-
-	using namespace OpcodeImpl;
-
-	#ifdef PCSX2_VIRTUAL_MEM
-	// coissued insts
-	void (*recBSC_co[64] )() = {
-		recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
-		recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
-		recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
-		recNULL,    recNULL,     recLDL_co,  recLDR_co,   recNULL, recNULL, recLQ_co,    recSQ_co,
-		recLB_co,   recLH_co,    recLWL_co,  recLW_co,    recLBU_co,  recLHU_co,  recLWR_co,   recLWU_co,
-		recSB_co,   recSH_co,    recSWL_co,  recSW_co,    recSDL_co,  recSDR_co,  recSWR_co,   recNULL,
-		recNULL,    recLWC1_co,  recNULL, recNULL,  recNULL, recNULL, recLQC2_co,  recLD_co,
-		recNULL,    recSWC1_co,  recNULL, recNULL,  recNULL, recNULL, recSQC2_co,  recSD_co
-	};
-	#endif
+#ifdef PCSX2_VIRTUAL_MEM
+// coissued insts
+void (*recBSC_co[64] )() = {
+	recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
+	recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
+	recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
+	recNULL,    recNULL,     recLDL_co,  recLDR_co,   recNULL, recNULL, recLQ_co,    recSQ_co,
+	recLB_co,   recLH_co,    recLWL_co,  recLW_co,    recLBU_co,  recLHU_co,  recLWR_co,   recLWU_co,
+	recSB_co,   recSH_co,    recSWL_co,  recSW_co,    recSDL_co,  recSDR_co,  recSWR_co,   recNULL,
+	recNULL,    recLWC1_co,  recNULL, recNULL,  recNULL, recNULL, recLQC2_co,  recLD_co,
+	recNULL,    recSWC1_co,  recNULL, recNULL,  recNULL, recNULL, recSQC2_co,  recSD_co
+};
+#endif
 
 
 /*
@@ -1172,5 +1060,3 @@ void BSCPropagate::rprop()
 			break;
 	}
 }	// End namespace OpcodeImpl
-
-} }		// End namespace Dynarec::R5900

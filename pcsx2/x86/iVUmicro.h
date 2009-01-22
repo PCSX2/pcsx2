@@ -21,16 +21,12 @@
 
 extern u32 vudump;
 
-namespace Dynarec
-{
-
 #define VU0_MEMSIZE 0x1000
 #define VU1_MEMSIZE 0x4000
 
 void recResetVU0();
 void recExecuteVU0Block();
 void recClearVU0( u32 Addr, u32 Size );
-void _vuRegsCOP22(VURegs * VU, _VURegsNum *VUregsn);
 
 void recVU1Init();
 void recVU1Shutdown();
@@ -280,7 +276,5 @@ void recVUMI_XGKICK(VURegs *vuRegs, int info);
 void recVUMI_XTOP(VURegs *vuRegs, int info);
 void recVUMI_XITOP(VURegs *vuRegs, int info);
 void recVUMI_XTOP( VURegs *VU , int info);
-
-}	// end namespace Dynarec
 
 #endif /* __IVUMICRO_H__ */

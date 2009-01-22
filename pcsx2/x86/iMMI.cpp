@@ -31,8 +31,8 @@
 
 namespace Interp = R5900::Interpreter::OpcodeImpl::MMI;
 
-namespace Dynarec {
 namespace R5900 {
+namespace Dynarec {
 namespace OpcodeImpl {
 namespace MMI
 {

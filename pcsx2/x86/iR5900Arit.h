@@ -24,8 +24,8 @@
 * Format:  OP rd, rs, rt                                 *
 *********************************************************/
 
-namespace Dynarec { 
 namespace R5900 { 
+namespace Dynarec { 
 namespace OpcodeImpl
 {
 	void recADD( void );

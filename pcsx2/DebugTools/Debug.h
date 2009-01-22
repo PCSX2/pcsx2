@@ -24,9 +24,6 @@
 
 extern FILE *emuLog;
 
-extern char* disR3000Fasm(u32 code, u32 pc);
-extern char* disR3000AF(u32 code, u32 pc);
-
 extern char* disVU0MicroUF(u32 code, u32 pc);
 extern char* disVU0MicroLF(u32 code, u32 pc);
 extern char* disVU1MicroUF(u32 code, u32 pc);
@@ -65,9 +62,13 @@ namespace R5900
 	extern DisR5900CurrentState disR5900Current;
 }
 
-namespace R3000a
+namespace R3000A
 {
+	extern void (*IOP_DEBUG_BSC[64])(char *buf);
+
 	extern const char * const disRNameGPR[];
+	extern char* disR3000Fasm(u32 code, u32 pc);
+	extern char* disR3000AF(u32 code, u32 pc);
 }
 
 #ifdef PCSX2_DEVBUILD

@@ -19,9 +19,8 @@
 #ifndef __IFPU_H__
 #define __IFPU_H__
 
+namespace R5900 { 
 namespace Dynarec { 
-namespace R5900
-{ 
 
 	void SaveCW();
 	void LoadCW();

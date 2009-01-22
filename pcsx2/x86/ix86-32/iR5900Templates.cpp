@@ -35,10 +35,6 @@
 
 #include "vtlb.h"
 
-namespace Dynarec { 
-namespace R5900
-{
-
 ////////////////////
 // Code Templates //
 ////////////////////
@@ -1007,5 +1003,3 @@ void eeFPURecompileCode(R5900FNPTR_INFO xmmcode, R5900FNPTR fpucode, int xmminfo
 	xmmcode(info);
 	_clearNeededXMMregs();
 }
-
-} }

@@ -69,18 +69,9 @@ extern TESTRUNARGS g_TestRun;
 #include "Memory.h"
 #include "Elfheader.h"
 #include "Hw.h"
-#include "Vif.h"
-#include "SPR.h"
-#include "Sif.h"
 // Moving this before one of the other includes causes compilation issues. 
 #include "Misc.h"
-#include "Counters.h"
 #include "Patch.h"
-#include "COP0.h"
-#include "VifDma.h"
-#if defined(__i386__)
-#include "x86/ix86/ix86.h"
-#endif
 
 #define PCSX2_VERSION "Playground (beta)"
 

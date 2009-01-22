@@ -19,9 +19,10 @@
 #include "PrecompiledHeader.h"
 
 #include "Debug.h"
-#include "R5900.h"
 #include "R3000A.h"
 #include "DisASM.h"
+
+namespace R3000A {
 
 unsigned long IOP_opcode_addr;
 
@@ -358,3 +359,5 @@ void IOPD_MTC2(char *buf){strcpy(buf, "mtc2");}
 void IOPD_CTC2(char *buf){strcpy(buf, "ctc2");}
 //null
 void IOPD_NULL(char *buf){strcpy(buf, "????");}
+
+}		// end Namespace R3000A

@@ -31,7 +31,6 @@
 
 using namespace std;
 using namespace Console;
-using R5900::cpuRegs;
 
 // disable all session overrides by default...
 SessionOverrideFlags g_Session = {false};
@@ -228,7 +227,7 @@ void SysAllocateDynarecs()
 	try
 	{
 		// R5900 and R3000a must be rec-enabled together for now so if either fails they both fail.
-		R5900::recCpu.Allocate();
+		recCpu.Allocate();
 		psxRec.Allocate();
 	}
 	catch( Exception::BaseException& ex )
@@ -240,7 +239,7 @@ void SysAllocateDynarecs()
 
 		g_Session.ForceDisableEErec = true;
 
-		R5900::recCpu.Shutdown();
+		recCpu.Shutdown();
 		psxRec.Shutdown();
 	}
 
@@ -276,14 +275,14 @@ void SysAllocateDynarecs()
 
 	// If both VUrecs failed, then make sure the SuperVU is totally closed out:
 	if( !CHECK_VU0REC && !CHECK_VU1REC)
-		Dynarec::SuperVUDestroy( -1 );
+		SuperVUDestroy( -1 );
 
 }
 
 // This should be called last thing before Pcsx2 exits.
 void SysShutdownMem()
 {
-	R5900::cpuShutdown();
+	cpuShutdown();
 
 	vuMicroMemShutdown();
 	psxMemShutdown();
@@ -296,10 +295,10 @@ void SysShutdownMem()
 void SysShutdownDynarecs()
 {
 	// Special SuperVU "complete" terminator.
-	Dynarec::SuperVUDestroy( -1 );
+	SuperVUDestroy( -1 );
 
 	psxRec.Shutdown();
-	R5900::recCpu.Shutdown();
+	recCpu.Shutdown();
 }
 
 // Resets all PS2 cpu execution states, which does not affect that actual PS2 state/condition.
@@ -311,16 +310,16 @@ void SysResetExecutionState()
 {
 	if( CHECK_EEREC )
 	{
-		R5900::Cpu = &R5900::recCpu;
+		Cpu = &recCpu;
 		psxCpu = &psxRec;
 	}
 	else
 	{
-		R5900::Cpu = &R5900::intCpu;
+		Cpu = &intCpu;
 		psxCpu = &psxInt;
 	}
 
-	R5900::Cpu->Reset();
+	Cpu->Reset();
 	psxCpu->Reset();
 
 	vuMicroCpuReset();

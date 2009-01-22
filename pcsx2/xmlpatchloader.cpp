@@ -159,7 +159,7 @@ int LoadGroup(TiXmlNode *group,int gParent)
 	// only valid for recompilers
 	TiXmlNode *fastmemory=group->FirstChild("FASTMEMORY");
 	if(fastmemory!=NULL)
-		Dynarec::SetFastMemory(1);
+		SetFastMemory(1);
 
     TiXmlNode *zerogs=group->FirstChild("ZEROGS");
 	if(zerogs!=NULL)

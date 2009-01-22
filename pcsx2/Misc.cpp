@@ -43,7 +43,6 @@
 #include "Paths.h"
 
 using namespace std;
-using namespace Dynarec;
 using namespace R5900;
 
 PcsxConfig Config;
@@ -554,7 +553,7 @@ void ProcessFKeys(int fkey, int shift)
 			{
 				SaveState::GetFilename( Text, StatesC );
 				gzLoadingState joe( Text );	// throws exception on version mismatch
-				R5900::cpuReset();
+				cpuReset();
 				joe.FreezeAll();
 			}
 			catch( Exception::StateLoadError_Recoverable& )

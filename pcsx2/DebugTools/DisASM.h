@@ -19,8 +19,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "R5900.h"
-
 //DECODE PROCUDURES
 
 //cop0

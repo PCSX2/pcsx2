@@ -20,6 +20,7 @@
 #include "Win32.h"
 
 #include "Common.h"
+#include "Counters.h"
 #include "VUmicro.h"
 #include "PsxCommon.h"
 #include "plugins.h"
@@ -165,8 +166,8 @@ BOOL CALLBACK CpuDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						}
 						Config.Options = newopts;
 					}
-					else if( R5900::Cpu != NULL )
-						R5900::UpdateVSyncRate();
+					else if( Cpu != NULL )
+						UpdateVSyncRate();
 
 					SaveConfig();
 

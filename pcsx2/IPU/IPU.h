@@ -238,13 +238,10 @@ u64 ipuRead64(u32 mem);
 void ipuWrite32(u32 mem,u32 value);
 void ipuWrite64(u32 mem,u64 value);
 
-namespace Dynarec
-{
-	int ipuConstRead32(u32 x86reg, u32 mem);
-	void ipuConstRead64(u32 mem, int mmreg);
-	void ipuConstWrite32(u32 mem, int mmreg);
-	void ipuConstWrite64(u32 mem, int mmreg);
-}
+int ipuConstRead32(u32 x86reg, u32 mem);
+void ipuConstRead64(u32 mem, int mmreg);
+void ipuConstWrite32(u32 mem, int mmreg);
+void ipuConstWrite64(u32 mem, int mmreg);
 
 extern void IPUCMD_WRITE(u32 val);
 extern void ipuSoftReset();

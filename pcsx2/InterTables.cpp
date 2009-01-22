@@ -46,7 +46,7 @@ namespace R5900
 			cycles, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::name, \
-			::Dynarec::R5900::OpcodeImpl::rec##name, \
+			::R5900::Dynarec::OpcodeImpl::rec##name, \
 			::R5900::OpcodeDisasm::name \
 		}
 
@@ -56,7 +56,7 @@ namespace R5900
 			cycles, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::MMI::name, \
-			::Dynarec::R5900::OpcodeImpl::MMI::rec##name, \
+			::R5900::Dynarec::OpcodeImpl::MMI::rec##name, \
 			::R5900::OpcodeDisasm::name \
 		}
 
@@ -66,7 +66,7 @@ namespace R5900
 			cycles, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::COP0::name, \
-			::Dynarec::R5900::OpcodeImpl::COP0::rec##name, \
+			::R5900::Dynarec::OpcodeImpl::COP0::rec##name, \
 			::R5900::OpcodeDisasm::name \
 		}
 
@@ -76,7 +76,7 @@ namespace R5900
 			cycles, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::COP1::name, \
-			::Dynarec::R5900::OpcodeImpl::COP1::rec##name, \
+			::R5900::Dynarec::OpcodeImpl::COP1::rec##name, \
 			::R5900::OpcodeDisasm::name \
 		}
 

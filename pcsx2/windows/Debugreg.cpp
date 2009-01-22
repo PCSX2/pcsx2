@@ -28,8 +28,6 @@
 #include "R3000a.h"
 #include "VUmicro.h"
 
-using namespace R5900;
-
 HINSTANCE m_hInst;
 HWND m_hWnd;
 char text1[256];

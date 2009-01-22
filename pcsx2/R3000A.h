@@ -21,21 +21,6 @@
 
 #include <stdio.h>
 
-extern u32 g_psxNextBranchCycle;
-
-struct R3000Acpu {
-	void (*Allocate)();
-	void (*Reset)();
-	void (*Execute)();
-	s32 (*ExecuteBlock)( s32 eeCycles );		// executes the given number of EE cycles.
-	void (*Clear)(u32 Addr, u32 Size);
-	void (*Shutdown)();
-};
-
-extern R3000Acpu *psxCpu;
-extern R3000Acpu psxInt;
-extern R3000Acpu psxRec;
-
 union GPRRegs {
 	struct {
 		u32 r0, at, v0, v1, a0, a1, a2, a3,
@@ -135,22 +120,7 @@ struct psxRegisters {
 
 extern PCSX2_ALIGNED16_DECL(psxRegisters psxRegs);
 
-#define PSX_IS_CONST1(reg) ((reg)<32 && (g_psxHasConstReg&(1<<(reg))))
-#define PSX_IS_CONST2(reg1, reg2) ((g_psxHasConstReg&(1<<(reg1)))&&(g_psxHasConstReg&(1<<(reg2))))
-#define PSX_SET_CONST(reg) { \
-	if( (reg) < 32 ) { \
-		g_psxHasConstReg |= (1<<(reg)); \
-		g_psxFlushedConstReg &= ~(1<<(reg)); \
-	} \
-}
-
-#define PSX_DEL_CONST(reg) { \
-	if( (reg) < 32 ) g_psxHasConstReg &= ~(1<<(reg)); \
-}
-
-extern u32 g_psxConstRegs[32];
-extern u32 g_psxHasConstReg, g_psxFlushedConstReg;
-
+extern u32 g_psxNextBranchCycle;
 extern s32 psxBreak;		// used when the IOP execution is broken and control returned to the EE
 extern s32 psxCycleEE;		// tracks IOP's current sych status with the EE
 
@@ -205,16 +175,32 @@ extern u32 EEoCycle;
 
 #endif
 
-void psxMemReset();
+extern s32 psxNextCounter;
+extern u32 psxNextsCounter;
+extern bool iopBranchAction;
+extern bool iopEventTestIsActive;
+
+////////////////////////////////////////////////////////////////////
+// R3000A  Public Interface / API
+
+struct R3000Acpu {
+	void (*Allocate)();
+	void (*Reset)();
+	void (*Execute)();
+	s32 (*ExecuteBlock)( s32 eeCycles );		// executes the given number of EE cycles.
+	void (*Clear)(u32 Addr, u32 Size);
+	void (*Shutdown)();
+};
+
+extern R3000Acpu *psxCpu;
+extern R3000Acpu psxInt;
+extern R3000Acpu psxRec;
+
 void psxReset();
 void psxShutdown();
 void psxException(u32 code, u32 step);
 void psxBranchTest();
 void psxExecuteBios();
-
-extern s32 psxNextCounter;
-extern u32 psxNextsCounter;
-extern bool iopBranchAction;
-extern bool iopEventTestIsActive;
+void psxMemReset();
 
 #endif /* __R3000A_H__ */

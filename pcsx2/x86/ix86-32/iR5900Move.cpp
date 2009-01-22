@@ -29,8 +29,8 @@
 #pragma warning(disable:4761)
 #endif
 
-namespace Dynarec { 
 namespace R5900 { 
+namespace Dynarec { 
 namespace OpcodeImpl
 {
 

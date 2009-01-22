@@ -56,9 +56,6 @@ BIOS
 #include "vtlb.h"
 #include "ipu/IPU.h"
 
-using namespace Dynarec;
-using namespace Dynarec::R5900;
-
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif

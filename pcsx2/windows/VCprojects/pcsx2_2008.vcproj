@@ -2269,6 +2269,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\R5900OpcodeImpl.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Vif.cpp"
 					>
 				</File>
@@ -2397,6 +2401,10 @@
 					</File>
 					<File
 						RelativePath="..\..\x86\iR5900LoadStore.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iR5900Misc.cpp"
 						>
 					</File>
 					<File

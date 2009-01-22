@@ -18,22 +18,15 @@
 #include "PrecompiledHeader.h"
 
 #include "System.h"
-#include "R5900.h"
+#include "iR5900.h"
 #include "Vif.h"
 #include "VU.h"
 #include "ix86/ix86.h"
-#include "iCore.h"
-#include "R3000A.h"
-
-#include "iR5900.h"
+#include "iR3000A.h"
 
 #include <vector>
 
 using namespace std;
-using namespace ::R5900;
-
-namespace Dynarec
-{
 
 u16 x86FpuState, iCWstate;
 u16 g_mmxAllocCounter = 0;
@@ -282,7 +275,7 @@ int _allocX86reg(int x86reg, int type, int reg, int mode)
 					_deleteMMXreg(MMX_GPR+reg, 1);
 					_deleteGPRtoXMMreg(reg, 1);
 					
-					R5900::_eeMoveGPRtoR(x86reg, reg);
+					_eeMoveGPRtoR(x86reg, reg);
 					
 					_deleteMMXreg(MMX_GPR+reg, 0);
 					_deleteGPRtoXMMreg(reg, 0);
@@ -822,7 +815,7 @@ __forceinline void _callPushArg(u32 arg, uptr argmem)
     else if( IS_CONSTREG(arg) ) PUSH32I(argmem);
     else if( IS_GPRREG(arg) ) {
         SUB32ItoR(ESP, 4);
-		R5900::_eeMoveGPRtoRm(ESP, arg&0xff);
+		_eeMoveGPRtoRm(ESP, arg&0xff);
     }
     else if( IS_XMMREG(arg) ) {
 		SUB32ItoR(ESP, 4);
@@ -1117,5 +1110,3 @@ void LogicalOp32ItoM(u32 to, u32 from, int op)
 		case 3: OR32ItoM(to, from); break;
 	}
 }
-
-}		// end namespace Dynarec

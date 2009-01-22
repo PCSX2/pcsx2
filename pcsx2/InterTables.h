@@ -34,9 +34,9 @@ void COP2_SPECIAL2();
 void COP2_Unknown();
 
 
-namespace Dynarec
+namespace R5900
 {
-	namespace R5900 {
+	namespace Dynarec {
 	namespace OpcodeImpl
 	{
 		void recUnknown();
@@ -70,11 +70,8 @@ namespace Dynarec
 		void recTEQI();
 		void recTNEI();
 
-	}
-} }		// end namespace Dynarec::OpcodeImpl::EE
+	} }
 
-namespace R5900
-{
 	///////////////////////////////////////////////////////////////////////////
 	// Encapsulates information about every opcode on the Emotion Engine and
 	// it's many co-processors.
@@ -150,10 +147,7 @@ namespace R5900
 		const OPCODE& Class_COP1_S();
 		const OPCODE& Class_COP1_W();
 	}
-}
 
-namespace R5900
-{
 	namespace OpcodeDisasm
 	{
 //****************************************************************
@@ -444,10 +438,7 @@ namespace R5900
 		void CVT_S( std::string& output );
 //**********************END OF COP1***********************
 	}
-}
 
-namespace R5900
-{
 	namespace Interpreter {
 	namespace OpcodeImpl
 	{
@@ -745,8 +736,8 @@ namespace R5900
 		void C_LE();
 		void CVT_S();
 		}
-	} }		// end namespace R5900::Interpreter::OpcodeImpl::R5900
-}	// End namespace Interpreter
+	} }
+}	// End namespace R5900
 
 //****************************************************************************
 //** COP2 - (VU0)                                                           **

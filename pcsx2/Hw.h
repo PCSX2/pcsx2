@@ -19,9 +19,6 @@
 #ifndef __HW_H__
 #define __HW_H__
 
-#include "PS2Etypes.h"
-#include <assert.h>
-
 #ifndef PCSX2_VIRTUAL_MEM
 extern u8  *psH; // hw mem
 #endif
@@ -35,11 +32,7 @@ extern u8  *psH; // hw mem
 #define psHu32(mem)	(*(u32*)&PS2MEM_HW[(mem) & 0xffff])
 #define psHu64(mem)	(*(u64*)&PS2MEM_HW[(mem) & 0xffff])
 
-namespace R5900{
 extern void CPU_INT( u32 n, s32 ecycle );
-}
-
-using R5900::CPU_INT;
 
 // VIF0   -- 0x10004000 -- psH[0x4000]
 // VIF1   -- 0x10005000 -- psH[0x5000]

@@ -22,8 +22,6 @@
 #include "R5900.h"
 #include "InterTables.h"
 
-namespace R5900
-{
 u32 s_iLastCOP0Cycle = 0;
 u32 s_iLastPERFCycle[2] = { 0, 0 };
 
@@ -150,6 +148,7 @@ void WriteTLB(int i)
 	MapTLB(i);
 }
 
+namespace R5900 {
 namespace Interpreter {
 namespace OpcodeImpl {
 namespace COP0 {

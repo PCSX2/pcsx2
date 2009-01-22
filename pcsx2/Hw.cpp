@@ -23,13 +23,17 @@
 #include "iR5900.h"
 #include "VUmicro.h"
 #include "PsxMem.h"
+
+// The full suite of hardware APIs:
 #include "IPU/IPU.h"
 #include "GS.h"
+#include "Counters.h"
+#include "Vif.h"
+#include "Vifdma.h"
+#include "SPR.h"
+#include "Sif.h"
 
-#include <assert.h>
-
-using namespace Dynarec;
-using namespace Dynarec::R5900;
+using namespace R5900;
 
 #ifndef PCSX2_VIRTUAL_MEM
 u8  *psH; // hw mem

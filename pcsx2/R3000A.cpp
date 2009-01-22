@@ -21,6 +21,8 @@
 #include "PsxCommon.h"
 #include "Misc.h"
 
+using namespace R3000A;
+
 R3000Acpu *psxCpu;
 
 // used for constant propagation
@@ -182,7 +184,7 @@ __forceinline void PSX_INT( IopEventId n, s32 ecycle )
 		// fixme - this doesn't take into account EE/IOP sync (the IOP may be running
 		// ahead or behind the EE as per the EEsCycles value)
 		s32 iopDelta = (g_psxNextBranchCycle-psxRegs.cycle)*8;
-		R5900::cpuSetNextBranchDelta( iopDelta );
+		cpuSetNextBranchDelta( iopDelta );
 	}
 }
 
@@ -257,12 +259,12 @@ void iopTestIntc()
 	if( psxHu32(0x1078) == 0 ) return;
 	if( (psxHu32(0x1070) & psxHu32(0x1074)) == 0 ) return;
 
-	if( !R5900::EventTestIsActive )
+	if( !eeEventTestIsActive )
 	{
 		// An iop exception has occured while the EE is running code.
 		// Inform the EE to branch so the IOP can handle it promptly:
 
-		R5900::cpuSetNextBranchDelta( 16 );
+		cpuSetNextBranchDelta( 16 );
 		iopBranchAction = true;
 		//Console::Error( "** IOP Needs an EE EventText, kthx **  %d", params psxCycleEE );
 
@@ -279,4 +281,3 @@ void psxExecuteBios() {
 	PSX_LOG("*BIOS END*\n");
 */
 }
-

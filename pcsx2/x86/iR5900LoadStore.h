@@ -23,10 +23,10 @@
 * Format:  OP rt, offset(base)                           *
 *********************************************************/
 
-namespace Dynarec { 
 namespace R5900 { 
-namespace OpcodeImpl
-{
+namespace Dynarec { 
+namespace OpcodeImpl {
+
 	void recLB( void );
 	void recLBU( void );
 	void recLH( void );

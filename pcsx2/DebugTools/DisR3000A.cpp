@@ -18,13 +18,14 @@
 
 #include "PrecompiledHeader.h"
 
+#include "R3000A.h"
 #include "Debug.h"
 
-static char ostr[1024];
+namespace R3000A
+{
+	static char ostr[1024];
 
 // Names of registers
-namespace R3000a
-{
 	const char * const disRNameGPR[] = {
 		"r0", "at", "v0", "v1", "a0", "a1","a2", "a3",
 		"t0", "t1", "t2", "t3", "t4", "t5","t6", "t7",
@@ -36,9 +37,6 @@ namespace R3000a
 		"BadVAddr"  , "Count"     , "EntryHi" , "Compare" , "Status"  , "Cause"     , "ExceptPC"  , "PRevID"    ,
 		"Config"    , "LLAddr"    , "WatchLo" , "WatchHi" , "XContext", "*RES*"     , "*RES*"     , "*RES*"     ,
 		"*RES*"     , "*RES* "    , "PErr"    , "CacheErr", "TagLo"   , "TagHi"     , "ErrorEPC"  , "*RES*"     };
-}
-
-using namespace R3000a;
 
 // Type definition of our functions
 
@@ -52,8 +50,6 @@ typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 		b; /*ostr[(strlen(ostr) - 1)] = 0;*/ return ostr; \
 	}
 
-
-#include "R3000A.h"
 
 #undef _Funct_
 #undef _Rd_
@@ -322,3 +318,5 @@ TdisR3000AF disR3000A[] = {
 	disNULL       , disNULL      , disSWC2    , disNULL  , disNULL, disNULL, disNULL , disNULL };
 
 MakeDisFg(disR3000AF,	disR3000A[code >> 26](code, pc))
+
+}

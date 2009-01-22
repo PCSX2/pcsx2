@@ -21,27 +21,13 @@
 
 extern bool g_EEFreezeRegs;
 
-namespace R5900
-{
-	// EE Bios function name tables.
-	extern const char* const bios[256];
-
-struct R5900cpu {
-	void (*Allocate)();		// throws exceptions on failure.
-	void (*Reset)();
-	void (*Step)();
-	void (*Execute)();			/* executes up to a break */
-	void (*ExecuteBlock)();
-	void (*Clear)(u32 Addr, u32 Size);
-	void (*Shutdown)();		// deallocates memory reserved by Allocate
-};
+// EE Bios function name tables.
+namespace R5900 {
+extern const char* const bios[256];
+}
 
 extern s32 EEsCycle;
 extern u32 EEoCycle;
-
-extern R5900cpu *Cpu;
-extern R5900cpu intCpu;
-extern R5900cpu recCpu;
 extern u32 bExecBIOS;
 
 union GPR_reg {   // Declare union type GPR register
@@ -139,19 +125,6 @@ union GPR_reg64 {
 	s8  SC[8];
 };
 
-#define GPR_IS_CONST1(reg) ((reg)<32 && (g_cpuHasConstReg&(1<<(reg))))
-#define GPR_IS_CONST2(reg1, reg2) ((g_cpuHasConstReg&(1<<(reg1)))&&(g_cpuHasConstReg&(1<<(reg2))))
-#define GPR_SET_CONST(reg) { \
-	if( (reg) < 32 ) { \
-		g_cpuHasConstReg |= (1<<(reg)); \
-		g_cpuFlushedConstReg &= ~(1<<(reg)); \
-	} \
-}
-
-#define GPR_DEL_CONST(reg) { \
-	if( (reg) < 32 ) g_cpuHasConstReg &= ~(1<<(reg)); \
-}
-
 union FPRreg {
 	float f;
 	u32 UL;
@@ -192,7 +165,9 @@ struct tlbs
 #define _i8(x) (s8)x
 #define _u8(x) (u8)x
 
-/**** R5900 Instruction Macros ****/
+////////////////////////////////////////////////////////////////////
+// R5900 Instruction Macros
+
 #define _PC_       cpuRegs.pc       // The next PC to be executed
 
 #define _Funct_  ((cpuRegs.code      ) & 0x3F)  // The funct part of the instruction register 
@@ -216,14 +191,56 @@ struct tlbs
 
 #endif
 
-void cpuInit();
-void cpuReset();		// can throw Exception::FileNotFound.
-void cpuShutdown();
-void cpuExecuteBios();
-void cpuException(u32 code, u32 bd);
-void cpuTlbMissR(u32 addr, u32 bd);
-void cpuTlbMissW(u32 addr, u32 bd);
+void JumpCheckSym(u32 addr, u32 pc);
+void JumpCheckSymRet(u32 addr);
+
+extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
+extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
+extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
+
+extern u32 g_nextBranchCycle;
+extern bool eeEventTestIsActive;
+extern u32 s_iLastCOP0Cycle;
+extern u32 s_iLastPERFCycle[2];
+
+bool intEventTest();
+void intSetBranch();
+
+// This is a special form of the interpreter's doBranch that is run from various
+// parts of the Recs (namely COP0's branch codes and stuff).
+void __fastcall intDoBranch(u32 target);
+
+////////////////////////////////////////////////////////////////////
+// R5900 Public Interface / API
+
+struct R5900cpu
+{
+	void (*Allocate)();		// throws exceptions on failure.
+	void (*Reset)();
+	void (*Step)();
+	void (*Execute)();			/* executes up to a break */
+	void (*ExecuteBlock)();
+	void (*Clear)(u32 Addr, u32 Size);
+	void (*Shutdown)();		// deallocates memory reserved by Allocate
+};
+
+extern R5900cpu *Cpu;
+extern R5900cpu intCpu;
+extern R5900cpu recCpu;
+
+extern void cpuInit();
+extern void cpuReset();		// can throw Exception::FileNotFound.
+extern void cpuShutdown();
+extern void cpuExecuteBios();
+extern void cpuException(u32 code, u32 bd);
+extern void cpuTlbMissR(u32 addr, u32 bd);
+extern void cpuTlbMissW(u32 addr, u32 bd);
 extern void cpuTestHwInts();
+
+extern int cpuSetNextBranch( u32 startCycle, s32 delta );
+extern int cpuSetNextBranchDelta( s32 delta );
+extern int cpuTestCycle( u32 startCycle, s32 delta );
+extern void cpuSetBranch();
 
 extern bool _cpuBranchTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:
 
@@ -231,41 +248,9 @@ extern void cpuTestINTCInts();
 extern void cpuTestDMACInts();
 extern void cpuTestTIMRInts();
 
-//u32  VirtualToPhysicalR(u32 addr);
-//u32  VirtualToPhysicalW(u32 addr);
+////////////////////////////////////////////////////////////////////
+// Exception Codes
 
-namespace Interpreter
-{
-	bool intEventTest();
-	void intSetBranch();
-	void intExecuteVU0Block();
-	void intExecuteVU1Block();
-
-	// This is a special form of the interpreter's doBranch that is run from various
-	// parts of the Recs (namely COP0's branch codes and stuff).
-	void __fastcall intDoBranch(u32 target);
-}
-
-void JumpCheckSym(u32 addr, u32 pc);
-void JumpCheckSymRet(u32 addr);
-
-extern int cpuSetNextBranch( u32 startCycle, s32 delta );
-extern int cpuSetNextBranchDelta( s32 delta );
-extern int cpuTestCycle( u32 startCycle, s32 delta );
-extern void cpuSetBranch();
-
-extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
-extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
-extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
-extern PCSX2_ALIGNED16_DECL(GPR_reg64 g_cpuConstRegs[32]);
-
-extern u32 g_nextBranchCycle;
-extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
-extern bool EventTestIsActive;
-extern u32 s_iLastCOP0Cycle;
-extern u32 s_iLastPERFCycle[2];
-
-//exception code
 #define EXC_CODE(x)     ((x)<<2)
 
 #define EXC_CODE_Int    EXC_CODE(0)
@@ -289,7 +274,5 @@ extern u32 s_iLastPERFCycle[2];
 
 #define EXC_TLB_STORE 1
 #define EXC_TLB_LOAD  0
-
-} // End Namespace R5900
 
 #endif /* __R5900_H__ */

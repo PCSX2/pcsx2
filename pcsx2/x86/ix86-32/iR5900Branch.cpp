@@ -27,8 +27,8 @@
 
 namespace Interp = R5900::Interpreter::OpcodeImpl;
 
-namespace Dynarec { 
 namespace R5900 { 
+namespace Dynarec { 
 namespace OpcodeImpl
 {
 

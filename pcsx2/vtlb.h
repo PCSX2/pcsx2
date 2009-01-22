@@ -59,12 +59,8 @@ void __fastcall vtlb_memWrite32(u32 mem, u32 value);
 void __fastcall vtlb_memWrite64(u32 mem, const u64* value);
 void __fastcall vtlb_memWrite128(u32 mem, const u64* value);
 
-namespace Dynarec {
-
 void vtlb_DynGenWrite(u32 sz,int freereg);
 void vtlb_DynGenRead(u32 sz,int freereg);
-
-}
 
 #endif
 

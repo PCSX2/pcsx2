@@ -32,8 +32,8 @@
 
 namespace Interp = R5900::Interpreter::OpcodeImpl::COP0;
 
-namespace Dynarec {
 namespace R5900 {
+namespace Dynarec {
 
 // R5900 branch hepler!
 // Recompiles code for a branch test and/or skip, complete with delay slot

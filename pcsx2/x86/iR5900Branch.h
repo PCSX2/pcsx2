@@ -24,10 +24,10 @@
 * Format:  OP rd, rt, sa                                 *
 *********************************************************/
 
-namespace Dynarec { 
 namespace R5900 { 
-namespace OpcodeImpl
-{
+namespace Dynarec { 
+namespace OpcodeImpl {
+
 	void recBEQ( void );
 	void recBEQL( void );
 	void recBNE( void );
