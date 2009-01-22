@@ -123,8 +123,8 @@ extern SessionOverrideFlags g_Session;
 #define DEFAULT_eeOptions	0x01
 #define DEFAULT_vuOptions	0x01
 //------------ DEFAULT sseMXCSR VALUES!!! ---------------
-#define DEFAULT_sseMXCSR	0x9fc0 //disable all exception, round to 0, flush to 0
-#define DEFAULT_sseVUMXCSR	0x7f80 //disable all exception
+#define DEFAULT_sseMXCSR	0xffc0 //FPU rounding, DaZ, FtZ, "chop"
+#define DEFAULT_sseVUMXCSR	0x7f80 //VU rounding, "chop"
 
 #define CHECK_FRAMELIMIT (Config.Options&PCSX2_FRAMELIMIT_MASK)
 

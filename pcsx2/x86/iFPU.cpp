@@ -459,22 +459,13 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void FPU_ADD_SUB(int regd, int regt, int issub)
 {
-	static u32 PCSX2_ALIGNED16(roundmode_temp[4]) = { 0x00000000, 0x00000000, 0x00000000, 0x00000000 };
 	int tempecx = _allocX86reg(ECX, X86TYPE_TEMP, 0, 0); //receives regd
 	int temp2 = _allocX86reg(-1, X86TYPE_TEMP, 0, 0); //receives regt
-	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt 
-	int roundmodeFlag = 0;
+	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
  
 	if (tempecx != ECX)	{ Console::Error("FPU: ADD/SUB Allocation Error!"); tempecx = ECX;}
 	if (temp2 == -1)	{ Console::Error("FPU: ADD/SUB Allocation Error!"); temp2 = EAX;}
 	if (xmmtemp == -1)	{ Console::Error("FPU: ADD/SUB Allocation Error!"); xmmtemp = XMM0;}
- 
-	if ((g_sseMXCSR & 0x00006000) != 0x00006000) { // Set roundmode to chop if it isn't already
-		roundmode_temp[0] = (g_sseMXCSR & 0xFFFF9FFF) | 0x00006000; // Set new roundmode
-		roundmode_temp[1] = g_sseMXCSR; // Backup old Roundmode
-		SSE_LDMXCSR ((uptr)&roundmode_temp[0]); // Recompile Roundmode Change
-		roundmodeFlag = 1;
-	}
 
 	SSE2_MOVD_XMM_to_R(tempecx, regd); 
 	SSE2_MOVD_XMM_to_R(temp2, regt);
@@ -550,10 +541,6 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 	x86SetJ8(j8Ptr[5]);
 	x86SetJ8(j8Ptr[6]);
 	x86SetJ8(j8Ptr[7]);
-
-	if (roundmodeFlag == 1) { // Set roundmode back if it was changed
-		SSE_LDMXCSR ((uptr)&roundmode_temp[1]);
-	}
 
 	_freeXMMreg(xmmtemp);
 	_freeX86reg(temp2);
@@ -1079,8 +1066,18 @@ void recDIVhelper2(int regd, int regt) // Doesn't sets flags
 
 void recDIV_S_xmm(int info)
 {
+	static u32 PCSX2_ALIGNED16(roundmode_temp[4]) = { 0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+	int roundmodeFlag = 0;
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
     //if (t0reg == -1) {Console::Error("FPU: DIV Allocation Error!");}
+    //SysPrintf("DIV\n");
+	if ((g_sseMXCSR & 0x00006000) != 0x00000000) { // Set roundmode to nearest if it isn't already
+		//SysPrintf("div to nearest\n");
+		roundmode_temp[0] = (g_sseMXCSR & 0xFFFF9FFF); // Set new roundmode
+		roundmode_temp[1] = g_sseMXCSR; // Backup old Roundmode
+		SSE_LDMXCSR ((uptr)&roundmode_temp[0]); // Recompile Roundmode Change
+		roundmodeFlag = 1;
+	}
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -1125,6 +1122,9 @@ void recDIV_S_xmm(int info)
 			if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
 			else recDIVhelper2(EEREC_D, t0reg);
 			break;
+	}
+	if (roundmodeFlag == 1) { // Set roundmode back if it was changed
+		SSE_LDMXCSR ((uptr)&roundmode_temp[1]);
 	}
 	_freeXMMreg(t0reg);
 }
@@ -1623,9 +1623,19 @@ FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 void recSQRT_S_xmm(int info)
 {
 	u8* pjmp;
+	static u32 PCSX2_ALIGNED16(roundmode_temp[4]) = { 0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+	int roundmodeFlag = 0;
 	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
 	if (tempReg == -1) {Console::Error("FPU: SQRT Allocation Error!"); tempReg = EAX;}
 	//SysPrintf("FPU: SQRT\n");
+	
+	if ((g_sseMXCSR & 0x00006000) != 0x00000000) { // Set roundmode to nearest if it isn't already
+		//SysPrintf("sqrt to nearest\n");
+		roundmode_temp[0] = (g_sseMXCSR & 0xFFFF9FFF); // Set new roundmode
+		roundmode_temp[1] = g_sseMXCSR; // Backup old Roundmode
+		SSE_LDMXCSR ((uptr)&roundmode_temp[0]); // Recompile Roundmode Change
+		roundmodeFlag = 1;
+	}
 
 	if( info & PROCESS_EE_T ) SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_T); 
 	else SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
@@ -1646,6 +1656,10 @@ void recSQRT_S_xmm(int info)
 	if (CHECK_FPU_OVERFLOW) SSE_MINSS_M32_to_XMM(EEREC_D, (uptr)&g_maxvals[0]);// Only need to do positive clamp, since EEREC_D is positive
 	SSE_SQRTSS_XMM_to_XMM(EEREC_D, EEREC_D);
 	if (CHECK_FPU_EXTRA_OVERFLOW) ClampValues(EEREC_D); // Shouldn't need to clamp again since SQRT of a number will always be smaller than the original number, doing it just incase :/
+	
+	if (roundmodeFlag == 1) { // Set roundmode back if it was changed
+		SSE_LDMXCSR ((uptr)&roundmode_temp[1]);
+	}
 
 	_freeX86reg(tempReg);
 }
