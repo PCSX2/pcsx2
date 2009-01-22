@@ -29,7 +29,7 @@
 #include "GS.h"
 #include "Counters.h"
 #include "Vif.h"
-#include "Vifdma.h"
+#include "VifDma.h"
 #include "SPR.h"
 #include "Sif.h"
 

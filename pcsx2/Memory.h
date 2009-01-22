@@ -241,6 +241,7 @@ void memShutdown();
 #ifdef __LINUX__
 void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * );
 void __fastcall InstallLinuxExceptionHandler();
+void __fastcall ReleaseLinuxExceptionHandler();
 #endif
 
 #ifdef _WIN32 

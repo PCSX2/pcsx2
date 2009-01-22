@@ -28,6 +28,8 @@
 #include <ctype.h>
 
 #include "R3000A.h"
+#include "iR5900.h"
+#include "System.h"
 
 using namespace R5900;
 

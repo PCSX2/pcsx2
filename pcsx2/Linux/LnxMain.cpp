@@ -29,7 +29,7 @@
 //  Definitely not all. Most of them are coming from assembly files. :(
 
 using namespace R5900;
-using namespace Dynarec;
+//using namespace Dynarec;
 
 DIR *dir;
 
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
 		strcpy(Config.BiosDir,    DEFAULT_BIOS_DIR "/");
 		strcpy(Config.PluginsDir, DEFAULT_PLUGINS_DIR "/");
 		Config.Patch = 1;
-		Config.Options = PCSX2_EEREC | PCSX2_VU0REC | PCSX2_VU1REC | PCSX2_COP2REC;
+		Config.Options = PCSX2_EEREC | PCSX2_VU0REC | PCSX2_VU1REC;
 		Config.sseMXCSR = DEFAULT_sseMXCSR;
 		Config.sseVUMXCSR = DEFAULT_sseVUMXCSR;
 
@@ -356,7 +356,8 @@ void SysMessage(const char *fmt, ...) {
 
 bool SysInit() 
 {
-	sinit=0;
+	if( sinit ) return true;
+	sinit = true;
 	
 	mkdir(SSTATES_DIR, 0755);
 	mkdir(MEMCARDS_DIR, 0755);
@@ -373,7 +374,13 @@ bool SysInit()
 	if( emuLog != NULL )
 		setvbuf(emuLog, NULL, _IONBF, 0);
 
+	PCSX2_MEM_PROTECT_BEGIN();
 	SysDetect();
+	if( !SysAllocateMem() )
+		return false;	// critical memory allocation failure;
+
+	SysAllocateDynarecs();
+	PCSX2_MEM_PROTECT_END();
 
 	while (LoadPlugins() == -1) {
 		if (Pcsx2Configure() == FALSE)
@@ -382,11 +389,7 @@ bool SysInit()
 			exit(1);
 		}
 	}
-
-	if( !cpuInit() )
-		return false;
-
-	sinit = 1;
+	
 	return true;
 }
 

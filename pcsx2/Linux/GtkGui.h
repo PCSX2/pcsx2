@@ -19,7 +19,10 @@
  #ifndef __GTKGUI_H__
 #define __GTKGUI_H__
 
+
+#include "PrecompiledHeader.h"
 #include "Linux.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,9 +34,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#include "R3000A.h"
-#include "PsxMem.h"
-	
 
 bool applychanges = FALSE;
 bool configuringplug = FALSE;

@@ -54,7 +54,7 @@ BIOS
 #include "VUmicro.h"
 #include "GS.h"
 #include "vtlb.h"
-#include "ipu/IPU.h"
+#include "IPU/IPU.h"
 
 #ifdef ENABLECACHE
 #include "Cache.h"
@@ -2912,6 +2912,10 @@ __forceinline void __fastcall InstallLinuxExceptionHandler()
 	sigaction(SIGSEGV, &sa, NULL); 
 }
 
+__forceinline void __fastcall ReleaseLinuxExceptionHandler()
+{
+	// Code this later.
+}
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 // This is my shot in the dark.  Probably needs some work.  Good luck! (air)
 __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )

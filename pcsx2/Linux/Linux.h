@@ -48,6 +48,11 @@
 #include "Paths.h"
 #include "Common.h"
 
+#include "Counters.h"
+#include "VUmicro.h"
+#include "Plugins.h"
+#include "x86/ix86/ix86.h"
+
 /* Misc.c */
 extern void vu0Shutdown();
 extern void vu1Shutdown();

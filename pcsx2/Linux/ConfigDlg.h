@@ -32,7 +32,7 @@ extern "C" {
 }
 #endif
 #include "R3000A.h"
-#include "PsxMem.h"
+#include "IopMem.h"
 	
 
 // Helper Functions

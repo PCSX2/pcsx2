@@ -22,7 +22,7 @@
 #include "Common.h"
 #include "Counters.h"
 #include "VUmicro.h"
-#include "plugins.h"
+#include "Plugins.h"
 
 #include "ix86/ix86.h"
 

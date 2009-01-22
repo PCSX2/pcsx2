@@ -566,8 +566,6 @@ void OnCpu_Ok(GtkButton *button, gpointer user_data) {
 	Config.CustomFrameSkip = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FrameThreshold")));
 	Config.CustomConsecutiveFrames = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesBeforeSkipping")));
 	Config.CustomConsecutiveSkip = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(lookup_widget(CpuDlg, "FramesToSkip")));
-		
-	if (newopts & PCSX2_EEREC ) newopts |= PCSX2_COP2REC;
 	
 	if (Config.Options != newopts)
 	{

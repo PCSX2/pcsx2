@@ -834,6 +834,55 @@ extern void Dispatcher();
 extern void DispatcherClear();
 extern void DispatcherReg();
 }
+__forceinline void recExecute()
+{
+	// Optimization note : Compared pushad against manually pushing the regs one-by-one.
+	// Manually pushing is faster, especially on Core2's and such. :)
+	do {
+		g_EEFreezeRegs = true;
+		__asm
+		(
+			".intel_syntax\n"
+			"push %ebx\n"
+			"push %esi\n"
+			"push %edi\n"
+			"push %ebp\n"
+
+			"call DispatcherReg\n"
+			
+			"pop %ebp\n"
+			"pop %edi\n"
+			"pop %esi\n"
+			"pop %ebx\n"
+			".att_syntax\n"
+		);
+		g_EEFreezeRegs = false;
+	}
+	while( !recEventTest() );
+}
+
+static void recExecuteBlock()
+{
+	g_EEFreezeRegs = true;
+	__asm
+	(
+		".intel_syntax\n"
+		"push %ebx\n"
+		"push %esi\n"
+		"push %edi\n"
+		"push %ebp\n"
+
+		"call DispatcherReg\n"
+
+		"pop %ebp\n"
+		"pop %edi\n"
+		"pop %esi\n"
+		"pop %ebx\n"
+		".att_syntax\n"
+	);
+	g_EEFreezeRegs = false;
+	recEventTest();
+}
 #endif
 
 namespace R5900 {
