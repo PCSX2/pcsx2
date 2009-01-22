@@ -21,7 +21,7 @@
 #include "Common.h"
 #include "iR5900.h"
 #include "VUmicro.h"
-#include "PsxMem.h"
+#include "IopMem.h"
 
 // The full suite of hardware APIs:
 #include "IPU/IPU.h"

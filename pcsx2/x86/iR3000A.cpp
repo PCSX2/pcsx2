@@ -130,6 +130,7 @@ BASEBLOCKEX* PSX_GETBLOCKEX(BASEBLOCK* p)
 
 ////////////////////////////////////////////////////
 #ifdef _DEBUG
+using namespace R3000A;
 static void iIopDumpBlock( int startpc, u8 * ptr )
 {
 	FILE *f;
@@ -1228,7 +1229,7 @@ static s32 recExecuteBlock( s32 eeCycles )
 	return psxBreak + psxCycleEE;
 }
 
-#include "PsxHw.h"
+#include "IopHw.h"
 
 void iDumpPsxRegisters(u32 startpc, u32 temp)
 {

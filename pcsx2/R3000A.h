@@ -180,6 +180,9 @@ extern u32 psxNextsCounter;
 extern bool iopBranchAction;
 extern bool iopEventTestIsActive;
 
+// Branching status used when throwing exceptions.
+extern bool iopIsDelaySlot;
+
 ////////////////////////////////////////////////////////////////////
 // R3000A  Public Interface / API
 
@@ -202,5 +205,13 @@ void psxException(u32 code, u32 step);
 void psxBranchTest();
 void psxExecuteBios();
 void psxMemReset();
+
+// Subsets
+extern void (*psxBSC[64])();
+extern void (*psxSPC[64])();
+extern void (*psxREG[32])();
+extern void (*psxCP0[32])();
+extern void (*psxCP2[64])();
+extern void (*psxCP2BSC[32])();
 
 #endif /* __R3000A_H__ */

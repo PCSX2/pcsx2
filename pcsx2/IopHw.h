@@ -19,6 +19,9 @@
 #ifndef __PSXHW_H__
 #define __PSXHW_H__
 
+#include "R3000A.h"
+#include "IopMem.h"
+
 #define HW_DMA0_MADR (psxHu32(0x1080)) // MDEC in DMA
 #define HW_DMA0_BCR  (psxHu32(0x1084))
 #define HW_DMA0_CHCR (psxHu32(0x1088))

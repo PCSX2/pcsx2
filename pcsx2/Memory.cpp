@@ -48,9 +48,9 @@ BIOS
 #include "Common.h"
 #include "iR5900.h"
 
-#include "PsxMem.h"
+#include "IopMem.h"
 #include "R3000A.h"
-#include "PsxHw.h"
+#include "IopHw.h"
 #include "VUmicro.h"
 #include "GS.h"
 #include "vtlb.h"

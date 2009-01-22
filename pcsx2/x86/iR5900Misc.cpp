@@ -2,7 +2,7 @@
 
 #include "Common.h"
 #include "iR5900.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 
 
 namespace R5900 {

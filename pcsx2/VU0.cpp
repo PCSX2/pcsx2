@@ -31,7 +31,7 @@
 #include "Common.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 #include "VUops.h"
 #include "VUmicro.h"
 

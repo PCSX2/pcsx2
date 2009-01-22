@@ -21,10 +21,10 @@
 #include "win32.h"
 
 #include "resource.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 #include "Debugger.h"
 #include "Common.h"
-#include "PsxMem.h"
+#include "IopMem.h"
 #include "R3000A.h"
 
 #ifdef _MSC_VER

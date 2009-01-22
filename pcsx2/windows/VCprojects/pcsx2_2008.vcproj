@@ -2249,14 +2249,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\InterTables.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\InterTables.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\MMI.cpp"
 					>
 				</File>
@@ -2270,6 +2262,14 @@
 				</File>
 				<File
 					RelativePath="..\..\R5900OpcodeImpl.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R5900OpcodeTables.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R5900OpcodeTables.h"
 					>
 				</File>
 				<File
@@ -2505,55 +2505,47 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxBios.cpp"
+					RelativePath="..\..\IopBios.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxBios.h"
+					RelativePath="..\..\IopBios.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxBios2.h"
+					RelativePath="..\..\IopBios2.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxCommon.h"
+					RelativePath="..\..\IopCounters.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxCounters.cpp"
+					RelativePath="..\..\IopCounters.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxCounters.h"
+					RelativePath="..\..\IopDma.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxDma.cpp"
+					RelativePath="..\..\IopDma.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxDma.h"
+					RelativePath="..\..\IopMem.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxInterpreter.cpp"
+					RelativePath="..\..\IopMem.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxMem.cpp"
+					RelativePath="..\..\IopSio2.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxMem.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\PsxSio2.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\PsxSio2.h"
+					RelativePath="..\..\IopSio2.h"
 					>
 				</File>
 				<File
@@ -2562,6 +2554,14 @@
 				</File>
 				<File
 					RelativePath="..\..\R3000A.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R3000AInterpreter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\R3000AOpcodeTables.cpp"
 					>
 				</File>
 				<File
@@ -2921,11 +2921,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxHw.cpp"
+					RelativePath="..\..\IopHw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\PsxHw.h"
+					RelativePath="..\..\IopHw.h"
 					>
 				</File>
 				<File

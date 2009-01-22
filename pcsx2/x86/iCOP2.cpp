@@ -19,14 +19,14 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 #include "ix86/ix86.h"
 #include "iR5900.h"
 
 #include "Common.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 #include "VUmicro.h"
 #include "iVUmicro.h"
 

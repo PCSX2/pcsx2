@@ -19,7 +19,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 #include "ix86/ix86.h"
 #include "iR5900.h"
 

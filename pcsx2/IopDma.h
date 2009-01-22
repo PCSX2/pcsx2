@@ -19,6 +19,8 @@
 #ifndef __PSXDMA_H__
 #define __PSXDMA_H__
 
+#include "PS2Edefs.h"
+
 void psxDma2(u32 madr, u32 bcr, u32 chcr);
 void psxDma3(u32 madr, u32 bcr, u32 chcr);
 void psxDma4(u32 madr, u32 bcr, u32 chcr);
@@ -39,7 +41,6 @@ void spu2Irq();
 
 extern void iopIntcIrq( uint irqType );
 extern void iopTestIntc();
-
 
 extern DEV9handler dev9Handler;
 extern USBhandler usbHandler;

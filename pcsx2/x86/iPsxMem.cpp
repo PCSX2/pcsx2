@@ -18,10 +18,8 @@
 
 #include "PrecompiledHeader.h"
 
-#include "PsxCommon.h"
-#include "VU.h"
-#include "iCore.h"
 #include "iR3000A.h"
+#include "VU.h"
 
 extern int g_psxWriteOk;
 

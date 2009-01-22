@@ -20,7 +20,7 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
-#include "PsxBios2.h"
+#include "IopBios2.h"
 #include "deci2.h"
 
 struct DECI2_ILOADP_HEADER{

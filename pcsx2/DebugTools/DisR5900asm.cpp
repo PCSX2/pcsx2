@@ -25,7 +25,7 @@
 #include "Debug.h"
 #include "R5900.h"
 #include "DisASM.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 
 unsigned long opcode_addr;
 

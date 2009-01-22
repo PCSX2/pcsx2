@@ -19,12 +19,11 @@
 #include "PrecompiledHeader.h"
 #include <time.h>
 
-#include "PsxCommon.h"
-#include "VU.h"
-
+#include "Misc.h"
 #include "ix86/ix86.h"
-#include "iCore.h"
 #include "iR3000A.h"
+#include "IopMem.h"
+#include "IopDma.h"
 
 extern int g_psxWriteOk;
 extern u32 g_psxMaxRecMem;

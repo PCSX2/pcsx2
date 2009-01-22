@@ -24,7 +24,7 @@
 #include "Counters.h"
 
 #include "R3000A.h"
-#include "PsxCounters.h"
+#include "IopCounters.h"
 
 #include "GS.h"
 #include "VUmicro.h"

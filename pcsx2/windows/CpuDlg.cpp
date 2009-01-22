@@ -22,7 +22,6 @@
 #include "Common.h"
 #include "Counters.h"
 #include "VUmicro.h"
-#include "PsxCommon.h"
 #include "plugins.h"
 
 #include "ix86/ix86.h"

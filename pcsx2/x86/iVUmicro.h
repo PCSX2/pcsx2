@@ -19,6 +19,8 @@
 #ifndef __IVUMICRO_H__
 #define __IVUMICRO_H__
 
+#include "VUmicro.h"
+
 extern u32 vudump;
 
 #define VU0_MEMSIZE 0x1000

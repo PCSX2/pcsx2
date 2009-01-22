@@ -19,7 +19,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Sif.h"
-#include "PsxCommon.h"
+#include "IopHw.h"
 #include "Sifcmd.h"
 
 using namespace std;

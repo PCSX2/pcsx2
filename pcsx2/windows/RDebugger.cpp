@@ -23,7 +23,7 @@
 #include "Debugger.h"
 #include "RDebugger.h"
 #include "Common.h"
-#include "PsxCommon.h"
+#include "R3000A.h"
 #include "../rdebug/deci2.h"
 
 u32		port=8510;

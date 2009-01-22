@@ -20,7 +20,7 @@
 
 #include "Common.h"
 #include "R5900.h"
-#include "InterTables.h"
+#include "R5900OpcodeTables.h"
 
 u32 s_iLastCOP0Cycle = 0;
 u32 s_iLastPERFCycle[2] = { 0, 0 };

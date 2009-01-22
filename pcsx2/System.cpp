@@ -19,11 +19,12 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
-#include "PsxCommon.h"
 #include "VUmicro.h"
 #include "Threading.h"
 
 #include "iR5900.h"
+#include "iR3000A.h"
+#include "IopMem.h"
 #include "iVUzerorec.h"		// for SuperVUReset
 
 

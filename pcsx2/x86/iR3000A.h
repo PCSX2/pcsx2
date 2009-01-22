@@ -19,6 +19,7 @@
 #define _R3000A_SUPERREC_
 
 #include "R3000A.h"
+#include "iCore.h"
 #include "BaseblockEx.h"
 
 // Cycle penalties for particuarly slow instructions.

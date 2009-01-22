@@ -24,7 +24,7 @@
 
 #include "PS2Edefs.h"
 #include "Memory.h"
-#include "PsxMem.h"
+#include "IopMem.h"
 
 #include "cheats.h"
 #include "../../patch.h"

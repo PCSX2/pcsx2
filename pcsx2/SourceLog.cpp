@@ -27,8 +27,7 @@
 #include <cstdarg>
 #include <ctype.h>
 
-#include "Common.h"
-#include "PsxCommon.h"
+#include "R3000A.h"
 
 using namespace R5900;
 
