@@ -212,7 +212,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 			OR16ItoR(x86temp, 0x208); // OS, O flags
 			SHL16ItoR(EAX, 12);
 			OR32RtoR(x86macflag, EAX);
-			pjmp32 = JMP32(0); // Skip Underflow Check
+			if (_XYZW_SS) pjmp32 = JMP32(0); // Skip Underflow Check
 		x86SetJ8(pjmp);
 
 		//-------------------------Check for Underflow flags------------------------------
@@ -244,7 +244,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 			SSE_ORPS_XMM_to_XMM(reg, t1reg); // Denormals are Signed Zero, and unmodified vectors stay the same!
 		}
 
-		x86SetJ32(pjmp32); // If we skipped the Underflow Flag Checking (when we had an Overflow), return here
+		if (_XYZW_SS) x86SetJ32(pjmp32); // If we skipped the Underflow Flag Checking (when we had an Overflow), return here
 	}
 
 	vuFloat2(reg, t1reg, flipMask[_X_Y_Z_W]); // Clamp overflowed vectors that were modified (remember reg's vectors have been flipped, so have to use a flipmask)
@@ -263,7 +263,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		OR16ItoR(x86temp, 0x82); // SS, S flags
 		SHL16ItoR(EAX, 4);
 		OR32RtoR(x86macflag, EAX);
-		pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
+		if (_XYZW_SS) pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
 	x86SetJ8(pjmp);
 
 	//-------------------------Check for Zero flags------------------------------
@@ -281,7 +281,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	//-------------------------Finally: Send the Flags to the Mac Flag Address------------------------------
 
-	x86SetJ8(pjmp2); // If we skipped the Zero Flag Checking, return here
+	if (_XYZW_SS) x86SetJ8(pjmp2); // If we skipped the Zero Flag Checking, return here
 
 	if		(t1regBoolean == 2) SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip back reg to wzyx (have to do this because reg != EEREC_TEMP)
 	else if (t1regBoolean == 1) SSE_MOVAPS_M128_to_XMM( t1reg, (uptr)TEMPXMMData ); // Restore data from temo address
