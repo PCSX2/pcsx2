@@ -108,6 +108,7 @@ extern SessionOverrideFlags g_Session;
 #define CHECK_WAITCYCLE_HACK (Config.Hacks & (1<<4))
 #define CHECK_ESCAPE_HACK	(Config.Hacks & 0x400)
 //------------ SPECIAL GAME FIXES!!! ---------------
+#define CHECK_VUADDSUBHACK	(Config.GameFixes & 0x1) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
 #define CHECK_FPUCLAMPHACK	(Config.GameFixes & 0x4) // Special Fix for Tekken 5, different clamping for FPU (sets NaN to zero; doesn't clamp infinities)
 #define CHECK_VUCLIPHACK	(Config.GameFixes & 0x2) // Special Fix for GoW, updates the clipflag differently in recVUMI_CLIP() (note: turning this hack on, breaks Rockstar games)
 #define CHECK_VUBRANCHHACK	(Config.GameFixes & 0x8) // Special Fix for Magna Carta (note: Breaks Crash Bandicoot)

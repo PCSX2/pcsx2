@@ -74,21 +74,23 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 // Dialog
 //
 
-IDD_GAMEFIXES DIALOGEX 0, 0, 277, 128
+IDD_GAMEFIXES DIALOGEX 0, 0, 278, 139
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Special Fixes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,85,107,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,139,107,50,14
-    CTEXT           "Some games need special settings.\nConfigure them here.",IDC_STATIC,7,7,263,17
+    DEFPUSHBUTTON   "OK",IDOK,85,118,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,139,118,50,14
+    CTEXT           "Some games need special settings.\nConfigure them here.",IDC_STATIC,7,7,264,17
     CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_GAMEFIX2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,61,252,10
-    GROUPBOX        "PCSX2 Gamefixes",IDC_STATIC,6,30,264,66
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,252,10
+    GROUPBOX        "PCSX2 Gamefixes",IDC_STATIC,7,30,264,78
     CONTROL         "FPU Clamp Hack - Special fix for Tekken 5 and Rogue Galaxy.",IDC_GAMEFIX3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,46,249,10
     CONTROL         "VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!",IDC_GAMEFIX4,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,76,252,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,88,252,10
+    CONTROL         "VU Add / Sub Hack - Special fix for Tri-Ace games!",IDC_GAMEFIX1,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,60,252,10
 END
 
 
@@ -103,10 +105,10 @@ BEGIN
     IDD_GAMEFIXES, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 270
+        RIGHTMARGIN, 271
         VERTGUIDE, 12
         TOPMARGIN, 7
-        BOTTOMMARGIN, 121
+        BOTTOMMARGIN, 132
     END
 END
 #endif    // APSTUDIO_INVOKED

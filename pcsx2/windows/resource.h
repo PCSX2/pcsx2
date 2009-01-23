@@ -570,6 +570,8 @@
 #define IDC_SOUNDHACK2                  1304
 #define IDC_ESCHACK                     1304
 #define IDC_VU_CHECK3                   1304
+#define IDC_GAMEFIX5                    1304
+#define IDC_GAMEFIX1                    1304
 #define IDC_EE_ROUNDMODE0               1305
 #define IDC_EE_ROUNDMODE1               1306
 #define IDC_EE_ROUNDMODE2               1307
