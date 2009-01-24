@@ -555,7 +555,7 @@ static void recAlloc()
 }
 
 ////////////////////////////////////////////////////
-static void recReset( void )
+void recResetEE( void )
 {
 	DbgCon::Status( "iR5900-32 > Resetting recompiler memory and structures." );
 
@@ -1582,11 +1582,11 @@ void recRecompile( const u32 startpc )
 	// if recPtr reached the mem limit reset whole mem
 	if ( ( (uptr)recPtr - (uptr)recMem ) >= REC_CACHEMEM-0x40000 || dumplog == 0xffffffff) {
 		DevCon::WriteLn( "EE Recompiler data reset" );
-		recReset();
+		recResetEE();
 	}
 	if ( ( (uptr)recStackPtr - (uptr)recStack ) >= RECSTACK_SIZE-0x100 ) {
 		DevCon::WriteLn("EE recompiler stack reset");
-		recReset();
+		recResetEE();
 	}
 
 	s_pCurBlock = PC_GETBLOCK(startpc);
@@ -1613,7 +1613,7 @@ void recRecompile( const u32 startpc )
 
 		if( s_pCurBlockEx == NULL ) {
 			//SysPrintf("ee reset (blocks)\n");
-			recReset();
+			recResetEE();
 			s_nNextBlock = 0;
 			s_pCurBlockEx = recBlocks;
 		}
@@ -2091,7 +2091,7 @@ StartRecomp:
 
 R5900cpu recCpu = {
 	recAlloc,
-	recReset,
+	recResetEE,
 	recStep,
 	recExecute,
 	recExecuteBlock,

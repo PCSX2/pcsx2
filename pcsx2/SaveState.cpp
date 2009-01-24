@@ -36,11 +36,15 @@
 using namespace R5900;
 
 extern int g_psxWriteOk;
+extern void recResetEE();
+extern void recResetIOP();
 
 // STATES
 
 static void PreLoadPrep()
 {
+	recResetEE();
+	recResetIOP();
 #ifdef PCSX2_VIRTUAL_MEM
 	DWORD OldProtect;
 	// make sure can write

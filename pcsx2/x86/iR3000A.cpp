@@ -608,9 +608,9 @@ static void recAlloc()
 	ProfilerRegisterSource( "IOPRec", recMem, RECMEM_SIZE );
 }
 
-static void recReset()
+void recResetIOP()
 {
-	// calling recReset without first calling recInit is bad mojo.
+	// calling recResetIOP without first calling recInit is bad mojo.
 	jASSUME( psxRecLUT != NULL );
 	jASSUME( recMem != NULL );
 	jASSUME( m_recBlockAlloc != NULL );
@@ -1312,7 +1312,7 @@ void psxRecRecompile(u32 startpc)
 	// if recPtr reached the mem limit reset whole mem
 	if (((uptr)recPtr - (uptr)recMem) >= (RECMEM_SIZE - 0x10000)) {
 		DevCon::WriteLn("IOP Recompiler data reset");
-		recReset();
+		recResetIOP();
 	}
 
 	s_pCurBlock = PSX_GETBLOCK(startpc);
@@ -1339,7 +1339,7 @@ void psxRecRecompile(u32 startpc)
 
 		if( s_pCurBlockEx == NULL ) {
 			DevCon::WriteLn("IOP Recompiler data reset");
-			recReset();
+			recResetIOP();
 			s_nNextBlock = 0;
 			s_pCurBlockEx = recBlocks;
 		}
@@ -1591,7 +1591,7 @@ StartRecomp:
 
 R3000Acpu psxRec = {
 	recAlloc,
-	recReset,
+	recResetIOP,
 	recExecute,
 	recExecuteBlock,
 	recClear,
