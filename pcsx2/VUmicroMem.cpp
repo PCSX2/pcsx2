@@ -40,6 +40,8 @@ static void DummyExecuteVU1Block(void)
 	VU1.vifRegs->stat &= ~4; // also reset the bit (grandia 3 works)
 }
 
+void (*recVU1EB)(), (*intVU1EB)();
+ 
 void vu1MicroEnableSkip()
 {
 	CpuVU1->ExecuteBlock = DummyExecuteVU1Block;
@@ -47,7 +49,7 @@ void vu1MicroEnableSkip()
 
 void vu1MicroDisableSkip()
 {
-	CpuVU1->ExecuteBlock = CHECK_VU1REC ? recVU1.ExecuteBlock : intVU1.ExecuteBlock;
+	CpuVU1->ExecuteBlock = CHECK_VU1REC ? recVU1EB : intVU1EB;
 }
 
 bool vu1MicroIsSkipping()
@@ -57,6 +59,9 @@ bool vu1MicroIsSkipping()
 
 void vuMicroCpuReset()
 {
+	recVU1EB = recVU1.ExecuteBlock;
+	intVU1EB = intVU1.ExecuteBlock;
+ 
 	CpuVU0 = CHECK_VU0REC ? &recVU0 : &intVU0;
 	CpuVU1 = CHECK_VU1REC ? &recVU1 : &intVU1;
 	CpuVU0->Reset();
