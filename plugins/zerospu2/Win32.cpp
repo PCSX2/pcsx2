@@ -60,7 +60,7 @@ int SetupSound()
     pcmwf.nChannels = 2; 
     pcmwf.nBlockAlign = 4;
 
-    pcmwf.nSamplesPerSec = 48000;
+    pcmwf.nSamplesPerSec = SAMPLE_RATE;
 
     pcmwf.nAvgBytesPerSec = pcmwf.nSamplesPerSec * pcmwf.nBlockAlign;
     pcmwf.wBitsPerSample = 16;

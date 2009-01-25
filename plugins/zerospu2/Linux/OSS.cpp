@@ -28,7 +28,7 @@ extern int errno;
 // use OSS for sound
 int OSSSetupSound()
 {
-	int pspeed=48000;
+	int pspeed = SAMPLE_RATE;
 	int pstereo;
 	int format;
 	int fragsize = 0;

@@ -34,7 +34,7 @@ int AlsaSetupSound()
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
 	snd_pcm_status_t *status;
-	unsigned int pspeed = 48000;
+	unsigned int pspeed = SAMPLE_RATE;
 	int pchannels = 2;
 	snd_pcm_format_t format = SND_PCM_FORMAT_S16_LE;
 	unsigned int buffer_time = SOUNDSIZE;
