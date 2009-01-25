@@ -799,10 +799,9 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 
 	switch ( _X_Y_Z_W ) {
 		case 1: // W*
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
-			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset+12);
-			else SSE_MOVSS_XMM_to_M32(offset+12, EEREC_S);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
+			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0x27);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
+			else SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 			break;
 		case 2: // Z*
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
@@ -817,39 +816,35 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB1);
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			if ( x86reg >= 0 ) {
-				SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
+				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			}
 			else {
-				SSE_MOVLPS_XMM_to_M64(offset+4, EEREC_S);
+				SSE_MOVSS_XMM_to_M32(offset+4, EEREC_S);
 				SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 			}
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB1);
 			break;
 		case 4: // Y*
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
-			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
-			else SSE_MOVSS_XMM_to_M32(offset+4, EEREC_S);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
+			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0xe1);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+4);
+			else SSE_MOVSS_XMM_to_M32(offset+4, EEREC_TEMP);
 			break;
 		case 6: // YZ
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xc9);
-			if ( x86reg >= 0 ) SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
-			else SSE_MOVLPS_XMM_to_M64(offset+4, EEREC_S);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xd2);
+			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0xc9);
+			if ( x86reg >= 0 ) SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+4);
+			else SSE_MOVLPS_XMM_to_M64(offset+4, EEREC_TEMP);
 			break;
 		case 7: // YZW
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x39);
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0x93); //ZYXW
 			if ( x86reg >= 0 ) {
-				SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+4);
+				SSE_MOVHPS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+4);
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			}
 			else {
-				SSE_MOVLPS_XMM_to_M64(offset+4, EEREC_S);
+				SSE_MOVHPS_XMM_to_M64(offset+4, EEREC_TEMP);
 				SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 			}
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x93);
 			break;
 		case 8: // X*
 			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
@@ -867,26 +862,41 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			else SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 
 			break;
-		//case 10: break;
-		//case 11: break;		
+		case 10: //XZ
+			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			if ( x86reg >= 0 ) {
+				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
+				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+8);
+			}
+			else {
+				SSE_MOVSS_XMM_to_M32(offset, EEREC_S);
+				SSE_MOVSS_XMM_to_M32(offset+8, EEREC_TEMP);
+			}
+			break;
+		case 11: break; //XZW
+			if ( x86reg >= 0 ) {
+				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
+				SSE_MOVHPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+8);
+			}
+			else {
+				SSE_MOVSS_XMM_to_M32(offset, EEREC_S);
+				SSE_MOVHPS_XMM_to_M64(offset+8, EEREC_S);
+			}
+			break;
 		case 12: // XY
 			if ( x86reg >= 0 ) SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+0);
 			else SSE_MOVLPS_XMM_to_M64(offset, EEREC_S);
 			break;
-
 		case 13: // XYW
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB4); //ZWYX
-			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
+			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0x4b); //YXZW
 			if ( x86reg >= 0 ) {
-				SSE_MOVLPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+0);
+				SSE_MOVHPS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+0);
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			}
 			else {
-				SSE_MOVLPS_XMM_to_M64(offset, EEREC_S);
+				SSE_MOVHPS_XMM_to_M64(offset, EEREC_TEMP);
 				SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
-				
 			}
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB4);
 			break;
 		case 14: // XYZ
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);

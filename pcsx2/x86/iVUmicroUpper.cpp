@@ -182,7 +182,6 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	}
 
 	SSE_SHUFPS_XMM_to_XMM(reg, reg, 0x1B); // Flip wzyx to xyzw 
-	XOR32RtoR(x86macflag, x86macflag); // Clear Mac Flag
 	MOV32MtoR(x86temp, prevstataddr); // Load the previous status in to x86temp
 	AND16ItoR(x86temp, 0xff0); // Keep Sticky and D/I flags
 
@@ -202,13 +201,12 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)VU_Zero_Helper_Mask);
 		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)VU_Pos_Infinity); // If infinity, then overflow has occured (NaN's don't report as overflow)
 
-		SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
+		SSE_MOVMSKPS_XMM_to_R32(x86macflag, t1reg); // Move the sign bits of the previous calculation
 
-		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
+		AND16ItoR(x86macflag, _X_Y_Z_W );  // Grab "Has Overflowed" bits from the previous calculation (also make sure we're only grabbing from the XYZW being modified)
 		pjmp = JZ8(0); // Skip if none are
 			OR16ItoR(x86temp, 0x208); // OS, O flags
-			SHL16ItoR(EAX, 12);
-			OR32RtoR(x86macflag, EAX);
+			SHL16ItoR(x86macflag, 12);
 			if (_XYZW_SS) pjmp32 = JMP32(0); // Skip Underflow Check
 		x86SetJ8(pjmp);
 
@@ -246,35 +244,91 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	vuFloat2(reg, t1reg, flipMask[_X_Y_Z_W]); // Clamp overflowed vectors that were modified (remember reg's vectors have been flipped, so have to use a flipmask)
 
-	//-------------------------Check for Signed flags------------------------------
+	if (_XYZW_SS) {
+		//-------------------------Check for Signed flags------------------------------
 
-	// The following code makes sure the Signed Bit isn't set with Negative Zero
-	SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-	SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is not zero
-	SSE_ANDPS_XMM_to_XMM(t1reg, reg);
+		// The following code makes sure the Signed Bit isn't set with Negative Zero
+		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+		SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
 
-	SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the t1reg
+		if (CHECK_VU_EXTRA_FLAGS) {
+			SSE_ANDNPS_XMM_to_XMM(t1reg, reg);
+			SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the t1reg
 
-	AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
-	pjmp = JZ8(0); // Skip if none are
-		OR16ItoR(x86temp, 0x82); // SS, S flags
-		SHL16ItoR(EAX, 4);
-		OR32RtoR(x86macflag, EAX);
-		if (_XYZW_SS) pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
-	x86SetJ8(pjmp);
+			AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
+			pjmp = JZ8(0); // Skip if none are
+				OR16ItoR(x86temp, 0x82); // SS, S flags
+				SHL16ItoR(EAX, 4);
+				OR32RtoR(x86macflag, EAX);
+				pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
+			x86SetJ8(pjmp);
+		}
+		else {
+			SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the t1reg (for zero flag)
+			SSE_ANDNPS_XMM_to_XMM(t1reg, reg);
+			SSE_MOVMSKPS_XMM_to_R32(x86macflag, t1reg); // Move the sign bits of the t1reg
 
-	//-------------------------Check for Zero flags------------------------------
-	
-	SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
-	SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
+			AND16ItoR(x86macflag, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
+			pjmp = JZ8(0); // Skip if none are
+				OR16ItoR(x86temp, 0x82); // SS, S flags
+				SHL16ItoR(x86macflag, 4);
+				pjmp2 = JMP8(0); // If negative and not Zero, we can skip the Zero Flag checking
+			x86SetJ8(pjmp);
+		}
 
-	SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
+		//-------------------------Check for Zero flags------------------------------
+		
+		if (CHECK_VU_EXTRA_FLAGS) {
+			SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+			SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
 
-	AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
-	pjmp = JZ8(0); // Skip if none are
-		OR16ItoR(x86temp, 0x41); // ZS, Z flags
-		OR32RtoR(x86macflag, EAX);
-	x86SetJ8(pjmp);
+			SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
+		}
+
+		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+		pjmp = JZ8(0); // Skip if none are
+			OR16ItoR(x86temp, 0x41); // ZS, Z flags
+			OR32RtoR(x86macflag, EAX);
+		x86SetJ8(pjmp);
+	}
+	else {
+		//-------------------------Check for Zero flags------------------------------
+		
+		SSE_XORPS_XMM_to_XMM(t1reg, t1reg); // Clear t1reg
+		SSE_CMPEQPS_XMM_to_XMM(t1reg, reg); // Set all F's if each vector is zero
+
+		if (CHECK_VU_EXTRA_FLAGS) {
+			SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the previous calculation
+
+			AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+			pjmp = JZ8(0); // Skip if none are
+				OR16ItoR(x86temp, 0x41); // ZS, Z flags
+				OR32RtoR(x86macflag, EAX);
+			x86SetJ8(pjmp);
+		}
+		else {
+			SSE_MOVMSKPS_XMM_to_R32(x86macflag, t1reg); // Move the sign bits of the previous calculation
+
+			AND16ItoR(x86macflag, _X_Y_Z_W );  // Grab "Is Zero" bits from the previous calculation
+			pjmp = JZ8(0); // Skip if none are
+				OR16ItoR(x86temp, 0x41); // ZS, Z flags
+			x86SetJ8(pjmp);
+		}
+
+		//-------------------------Check for Signed flags------------------------------
+
+		// The following code makes sure the Signed Bit isn't set with Negative Zero
+		SSE_ANDNPS_XMM_to_XMM(t1reg, reg);
+
+		SSE_MOVMSKPS_XMM_to_R32(EAX, t1reg); // Move the sign bits of the t1reg
+
+		AND16ItoR(EAX, _X_Y_Z_W );  // Grab "Is Signed" bits from the previous calculation
+		pjmp = JZ8(0); // Skip if none are
+			OR16ItoR(x86temp, 0x82); // SS, S flags
+			SHL16ItoR(EAX, 4);
+			OR32RtoR(x86macflag, EAX);
+		x86SetJ8(pjmp);
+	}
 
 	//-------------------------Finally: Send the Flags to the Mac Flag Address------------------------------
 
@@ -298,8 +352,6 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 //
 // Note: See FPU_ADD_SUB() for more info on what this is doing.
 //------------------------------------------------------------------
-static const PCSX2_ALIGNED16(u32 VU_fullmask[4])	= {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
-static const PCSX2_ALIGNED16(u32 VU_helperbyte[4])	= {0xff, 0xff, 0xff, 0xff};
 static PCSX2_ALIGNED16(u32 VU_addsuband[2][4]);
 static PCSX2_ALIGNED16(u32 VU_addsub_reg[2][4]);
 static u32 ecx_temp_loc;
@@ -313,17 +365,16 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[0][0], regd);
 	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[1][0], regt);
 
-	SSE_MOVAPS_M128_to_XMM(regd, (uptr)&VU_fullmask[0]);
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
 	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsuband[0][0], regd);
 	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsuband[1][0], regd);
-
 	SSE_MOVAPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]);
 
-	SSE2_PSRLD_I8_to_XMM(regd, 23);
-	SSE2_PSRLD_I8_to_XMM(regt, 23);
+	SSE2_PSLLD_I8_to_XMM(regd, 1);
+	SSE2_PSLLD_I8_to_XMM(regt, 1);
 
-	SSE2_PAND_M128_to_XMM(regd, (uptr)&VU_helperbyte[0]);
-	SSE2_PAND_M128_to_XMM(regt, (uptr)&VU_helperbyte[0]);
+	SSE2_PSRLD_I8_to_XMM(regd, 24);
+	SSE2_PSRLD_I8_to_XMM(regt, 24);
 
 	SSE2_PSUBD_XMM_to_XMM(regd, regt);
 
@@ -389,6 +440,88 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 	_freeX86reg(temp2);
 }
 
+void VU_ADD_SUB_SSE4(u32 regd, u32 regt, int is_sub, int info)  
+{
+	u8 *localptr[4][8];
+	int temp1 = _allocX86reg(ECX, X86TYPE_TEMP, 0, 0); //receives regd//_allocX86reg(ECX, X86TYPE_TEMP, 0, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode);
+	int temp2 = ALLOCTEMPX86(0);
+
+	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[0][0], regd);
+	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[1][0], regt);
+
+	SSE2_PSLLD_I8_to_XMM(regd, 1);
+	SSE2_PSLLD_I8_to_XMM(regt, 1);
+
+	SSE2_PSRLD_I8_to_XMM(regd, 24);
+	SSE2_PSRLD_I8_to_XMM(regt, 24);
+
+	SSE2_PSUBD_XMM_to_XMM(regd, regt);
+
+#define PERFORM_SSE4(i) \
+	\
+	SSE_PEXTRW_XMM_to_R32(temp1, regd, i*2); \
+	MOVSX32R16toR(temp1, temp1); \
+	CMP32ItoR(temp1, 25);\
+	localptr[i][0] = JGE8(0);\
+	CMP32ItoR(temp1, 0);\
+	localptr[i][1] = JG8(0);\
+	localptr[i][2] = JE8(0);\
+	CMP32ItoR(temp1, -25);\
+	localptr[i][3] = JLE8(0);\
+	\
+	NEG32R(temp1); \
+	DEC32R(temp1);\
+	MOV32ItoR(temp2, 0xffffffff); \
+	SHL32CLtoR(temp2); \
+	SSE4_PINSRD_R32_to_XMM(regd, temp2, i); \
+	localptr[i][4] = JMP8(0);\
+	\
+	x86SetJ8(localptr[i][0]);\
+	MOV32ItoR(temp2, 0xffffffff); \
+	SSE4_PINSRD_R32_to_XMM(regd, temp2, i); \
+	SHL32ItoR(temp2, 31); \
+	SSE4_PINSRD_R32_to_XMM(regt, temp2, i); \
+	localptr[i][5] = JMP8(0);\
+	\
+	x86SetJ8(localptr[i][1]);\
+	DEC32R(temp1);\
+	MOV32ItoR(temp2, 0xffffffff);\
+	SSE4_PINSRD_R32_to_XMM(regd, temp2, i); \
+	SHL32CLtoR(temp2); \
+	SSE4_PINSRD_R32_to_XMM(regt, temp2, i); \
+	localptr[i][6] = JMP8(0);\
+	\
+	x86SetJ8(localptr[i][3]);\
+	MOV32ItoR(temp2, 0x80000000); \
+	SSE4_PINSRD_R32_to_XMM(regd, temp2, i); \
+	localptr[i][7] = JMP8(0);\
+	\
+	x86SetJ8(localptr[i][2]);\
+	\
+	x86SetJ8(localptr[i][4]);\
+	x86SetJ8(localptr[i][5]);\
+	x86SetJ8(localptr[i][6]);\
+	x86SetJ8(localptr[i][7]);
+
+	SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+	PERFORM_SSE4(0);
+	PERFORM_SSE4(1);
+	PERFORM_SSE4(2);
+	PERFORM_SSE4(3);
+#undef PERFORM_SSE4
+
+	SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]); //regd contains mask
+	SSE_ANDPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]); //regt contains mask
+
+	if (is_sub)	SSE_SUBPS_XMM_to_XMM(regd, regt);
+	else		SSE_ADDPS_XMM_to_XMM(regd, regt);
+
+	SSE_MOVAPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]);
+
+	_freeX86reg(temp1);
+	_freeX86reg(temp2);
+}
+
 void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)  
 {
 	u8 *localptr[8];
@@ -399,22 +532,17 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[0][0], regd);
 	if (!is_mem) SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[1][0], regt);
 
-	SSE_MOVAPS_M128_to_XMM(regd, (uptr)&VU_fullmask[0]);
-	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsuband[0][0], regd);
-	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsuband[1][0], regd);
-
-	SSE_MOVAPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]);
-
-	SSE_PEXTRW_XMM_to_R32(temp1, regd, 1);
-	SHR32ItoR(temp1, 23 - 16); 
+	SSE2_MOVD_XMM_to_R(temp1, regd);
+	SHR32ItoR(temp1, 23); 
 
 	if (is_mem) {
 		MOV32MtoR(temp2, addrt);
+		MOV32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
 		SHR32ItoR(temp2, 23);
 	}
 	else {
-		SSE_PEXTRW_XMM_to_R32(temp2, regt, 1);
-		SHR32ItoR(temp2, 23 - 16);
+		SSE2_MOVD_XMM_to_R(temp2, regt);
+		SHR32ItoR(temp2, 23);
 	}
 
 	AND32ItoR(temp1, 0xff);
@@ -432,24 +560,60 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 
 	NEG32R(temp1); 
 	DEC32R(temp1);
-	MOV32ItoR(temp2, 0xffffffff); 
-	SHL32CLtoR(temp2); 
-	MOV32RtoM((uptr)&VU_addsuband[0][0], temp2);
+	MOV32ItoR(temp2, 0xffffffff);
+	SHL32CLtoR(temp2);
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	if (is_mem) {
+		SSE_PINSRW_R32_to_XMM(regd, temp2, 0);
+		SHR32ItoR(temp2, 16);
+		SSE_PINSRW_R32_to_XMM(regd, temp2, 1);
+	}
+	else {
+		SSE2_MOVD_R_to_XMM(regt, temp2);
+		SSE_MOVSS_XMM_to_XMM(regd, regt);
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+	}
 	localptr[4] = JMP8(0);
 
 	x86SetJ8(localptr[0]);
-	MOV32ItoM((uptr)&VU_addsuband[1][0], 0x80000000);
+	MOV32ItoR(temp2, 0x80000000);
+	if (is_mem)
+		AND32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
+	else {
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+		SSE2_MOVD_R_to_XMM(regd, temp2);
+		SSE_MOVSS_XMM_to_XMM(regt, regd);
+	}
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
 	localptr[5] = JMP8(0);
 
 	x86SetJ8(localptr[1]);
 	DEC32R(temp1);
 	MOV32ItoR(temp2, 0xffffffff);
 	SHL32CLtoR(temp2); 
-	MOV32RtoM((uptr)&VU_addsuband[1][0], temp2);
+	if (is_mem) 
+		AND32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
+	else {
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+		SSE2_MOVD_R_to_XMM(regd, temp2);
+		SSE_MOVSS_XMM_to_XMM(regt, regd);
+	}
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
 	localptr[6] = JMP8(0);
 
 	x86SetJ8(localptr[3]);
-	MOV32ItoM((uptr)&VU_addsuband[0][0], 0x80000000);
+	MOV32ItoR(temp2, 0x80000000);
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	if (is_mem) {
+		SSE_PINSRW_R32_to_XMM(regd, temp2, 0);
+		SHR32ItoR(temp2, 16);
+		SSE_PINSRW_R32_to_XMM(regd, temp2, 1);
+	}
+	else {
+		SSE2_MOVD_R_to_XMM(regt, temp2);
+		SSE_MOVSS_XMM_to_XMM(regd, regt);
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+	}
 	localptr[7] = JMP8(0);
 
 	x86SetJ8(localptr[2]);
@@ -460,21 +624,121 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 
 	if (is_mem) 
 	{
-		SSE_MOVSS_M32_to_XMM(regd, addrt);
-		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsuband[1][0]); //regd contains addrt
-		SSE_MOVSS_XMM_to_M32((uptr)&VU_addsub_reg[1][0], regd); 
-
-		SSE_MOVAPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]);
-		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsuband[0][0]);
+		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]); //regd contains mask
 
 		if (is_sub)	SSE_SUBSS_M32_to_XMM(regd, (uptr)&VU_addsub_reg[1][0]);
 		else		SSE_ADDSS_M32_to_XMM(regd, (uptr)&VU_addsub_reg[1][0]);
-
 	}
 	else
 	{
-		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsuband[0][0]);
-		SSE_ANDPS_M128_to_XMM(regt, (uptr)&VU_addsuband[1][0]);
+		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]); //regd contains mask
+		SSE_ANDPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]); //regt contains mask
+
+		if (is_sub)	SSE_SUBSS_XMM_to_XMM(regd, regt);
+		else		SSE_ADDSS_XMM_to_XMM(regd, regt);
+
+		SSE_MOVAPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]);
+	}
+
+	_freeX86reg(temp1);
+	_freeX86reg(temp2);
+}
+
+void VU_ADD_SUB_SS_SSE4(u32 regd, u32 regt, int is_sub, int is_mem, int info)  
+{
+	u8 *localptr[8];
+	u32 addrt = regt; //for case is_mem
+	int temp1 = _allocX86reg(ECX, X86TYPE_TEMP, 0, 0); //receives regd //_allocX86reg(ECX, X86TYPE_TEMP, 0, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode);
+	int temp2 = ALLOCTEMPX86(0);
+	
+	SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[0][0], regd);
+	if (!is_mem) SSE_MOVAPS_XMM_to_M128((uptr)&VU_addsub_reg[1][0], regt);
+
+	SSE2_MOVD_XMM_to_R(temp1, regd);
+	SHR32ItoR(temp1, 23); 
+
+	if (is_mem) {
+		MOV32MtoR(temp2, addrt);
+		MOV32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
+		SHR32ItoR(temp2, 23);
+	}
+	else {
+		SSE2_MOVD_XMM_to_R(temp2, regt);
+		SHR32ItoR(temp2, 23);
+	}
+
+	AND32ItoR(temp1, 0xff);
+	AND32ItoR(temp2, 0xff); 
+
+	SUB32RtoR(temp1, temp2); //temp1 = exponent difference
+
+	CMP32ItoR(temp1, 25);
+	localptr[0] = JGE8(0);
+	CMP32ItoR(temp1, 0);
+	localptr[1] = JG8(0);
+	localptr[2] = JE8(0);
+	CMP32ItoR(temp1, -25);
+	localptr[3] = JLE8(0);
+
+	NEG32R(temp1); 
+	DEC32R(temp1);
+	MOV32ItoR(temp2, 0xffffffff);
+	SHL32CLtoR(temp2);
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	SSE4_PINSRD_R32_to_XMM(regd, temp2, 0);
+	if (!is_mem)
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+	localptr[4] = JMP8(0);
+
+	x86SetJ8(localptr[0]);
+	MOV32ItoR(temp2, 0x80000000);
+	if (is_mem)
+		AND32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
+	else {
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+		SSE4_PINSRD_R32_to_XMM(regt, temp2, 0);
+	}
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	localptr[5] = JMP8(0);
+
+	x86SetJ8(localptr[1]);
+	DEC32R(temp1);
+	MOV32ItoR(temp2, 0xffffffff);
+	SHL32CLtoR(temp2); 
+	if (is_mem) 
+		AND32RtoM((uptr)&VU_addsub_reg[1][0], temp2);
+	else {
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+		SSE4_PINSRD_R32_to_XMM(regt, temp2, 0);
+	}
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	localptr[6] = JMP8(0);
+
+	x86SetJ8(localptr[3]);
+	MOV32ItoR(temp2, 0x80000000);
+	SSE2_PCMPEQB_XMM_to_XMM(regd, regd);
+	SSE4_PINSRD_R32_to_XMM(regd, temp2, 0);
+	if (!is_mem)
+		SSE2_PCMPEQB_XMM_to_XMM(regt, regt);
+	localptr[7] = JMP8(0);
+
+	x86SetJ8(localptr[2]);
+	x86SetJ8(localptr[4]);
+	x86SetJ8(localptr[5]);
+	x86SetJ8(localptr[6]);
+	x86SetJ8(localptr[7]);
+
+	if (is_mem) 
+	{
+		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]); //regd contains mask
+
+		if (is_sub)	SSE_SUBSS_M32_to_XMM(regd, (uptr)&VU_addsub_reg[1][0]);
+		else		SSE_ADDSS_M32_to_XMM(regd, (uptr)&VU_addsub_reg[1][0]);
+	}
+	else
+	{
+		SSE_ANDPS_M128_to_XMM(regd, (uptr)&VU_addsub_reg[0][0]); //regd contains mask
+		SSE_ANDPS_M128_to_XMM(regt, (uptr)&VU_addsub_reg[1][0]); //regt contains mask
 
 		if (is_sub)	SSE_SUBSS_XMM_to_XMM(regd, regt);
 		else		SSE_ADDSS_XMM_to_XMM(regd, regt);
@@ -487,27 +751,57 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 }
 
 void SSE_ADDPS_XMM_to_XMM_custom(int info, int regd, int regt) {
-	if (CHECK_VUADDSUBHACK) VU_ADD_SUB(regd, regt, 0, info); 
+	if (CHECK_VUADDSUBHACK) {
+		if ( cpucaps.hasStreamingSIMD4Extensions )
+			VU_ADD_SUB_SSE4(regd, regt, 0, info);
+		else
+			VU_ADD_SUB(regd, regt, 0, info);
+	}
 	else SSE_ADDPS_XMM_to_XMM(regd, regt);
 }
 void SSE_SUBPS_XMM_to_XMM_custom(int info, int regd, int regt) {
-	if (CHECK_VUADDSUBHACK) VU_ADD_SUB(regd, regt, 1, info); 
+	if (CHECK_VUADDSUBHACK) {
+		if ( cpucaps.hasStreamingSIMD4Extensions )
+			VU_ADD_SUB_SSE4(regd, regt, 1, info);
+		else
+			VU_ADD_SUB(regd, regt, 1, info);
+	}
 	else SSE_SUBPS_XMM_to_XMM(regd, regt);
 }
 void SSE_ADDSS_XMM_to_XMM_custom(int info, int regd, int regt) {
-	if (CHECK_VUADDSUBHACK) VU_ADD_SUB_SS(regd, regt, 0, 0, info);  
+	if (CHECK_VUADDSUBHACK) {
+		if ( cpucaps.hasStreamingSIMD4Extensions )
+			VU_ADD_SUB_SS_SSE4(regd, regt, 0, 0, info);
+		else
+			VU_ADD_SUB_SS(regd, regt, 0, 0, info);
+	}
 	else SSE_ADDSS_XMM_to_XMM(regd, regt);
 }
 void SSE_SUBSS_XMM_to_XMM_custom(int info, int regd, int regt) {
-	if (CHECK_VUADDSUBHACK) VU_ADD_SUB_SS(regd, regt, 1, 0, info);
+	if (CHECK_VUADDSUBHACK) {
+		if ( cpucaps.hasStreamingSIMD4Extensions )
+			VU_ADD_SUB_SS_SSE4(regd, regt, 1, 0, info);
+		else
+			VU_ADD_SUB_SS(regd, regt, 1, 0, info);
+	}
 	else SSE_SUBSS_XMM_to_XMM(regd, regt);
 }
 void SSE_ADDSS_M32_to_XMM_custom(int info, int regd, int regt) {
-	if (CHECK_VUADDSUBHACK) VU_ADD_SUB_SS(regd, regt, 0, 1, info);
+	if (CHECK_VUADDSUBHACK) {
+		if ( cpucaps.hasStreamingSIMD4Extensions )
+			VU_ADD_SUB_SS_SSE4(regd, regt, 0, 1, info);
+		else
+			VU_ADD_SUB_SS(regd, regt, 0, 1, info);
+	}
 	else SSE_ADDSS_M32_to_XMM(regd, regt);
 }
 void SSE_SUBSS_M32_to_XMM_custom(int info, int regd, int regt) {
-	if (CHECK_VUADDSUBHACK) VU_ADD_SUB_SS(regd, regt, 1, 1, info); 
+	if (CHECK_VUADDSUBHACK) {
+		if ( cpucaps.hasStreamingSIMD4Extensions )
+			VU_ADD_SUB_SS_SSE4(regd, regt, 1, 1, info);
+		else
+			VU_ADD_SUB_SS(regd, regt, 1, 1, info);
+	}
 	else SSE_SUBSS_M32_to_XMM(regd, regt);
 }
 //------------------------------------------------------------------

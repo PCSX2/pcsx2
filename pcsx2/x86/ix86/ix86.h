@@ -1617,6 +1617,7 @@ extern void SSE4_BLENDPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from, u8 imm
 extern void SSE4_BLENDVPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
 extern void SSE4_BLENDVPS_M128_to_XMM(x86SSERegType to, uptr from);
 extern void SSE4_PMOVSXDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
+extern void SSE4_PINSRD_R32_to_XMM(x86SSERegType to, x86IntRegType from, u8 imm8);
 
 //*********************
 // SSE-X - uses both SSE,SSE2 code and tries to keep consistensies between the data

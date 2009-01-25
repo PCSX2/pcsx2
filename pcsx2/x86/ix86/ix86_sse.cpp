@@ -1143,6 +1143,15 @@ __forceinline void SSE4_PMOVSXDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from
 	ModRM(3, to, from);
 }
 
+__forceinline void SSE4_PINSRD_R32_to_XMM(x86SSERegType to, x86IntRegType from, u8 imm8)
+{
+	write8(0x66);
+    RexRB(0, to, from);
+	write24(0x223A0F);
+	ModRM(3, to, from);
+	write8(imm8);
+}
+
 // SSE-X
 __forceinline void SSEX_MOVDQA_M128_to_XMM( x86SSERegType to, uptr from )
 {
