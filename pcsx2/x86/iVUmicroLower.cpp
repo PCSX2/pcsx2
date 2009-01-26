@@ -768,7 +768,7 @@ void recVUMI_LQI(VURegs *VU, int info)
 
 
 //------------------------------------------------------------------
-// _saveEAX()	ToDo: Needs Checking/Fixing! (cottonvibes)
+// _saveEAX()
 //------------------------------------------------------------------
 void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 {
@@ -798,19 +798,24 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 	}
 
 	switch ( _X_Y_Z_W ) {
-		case 1: // W*
+		case 1: // W
 			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0x27);
 			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+12);
 			else SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 			break;
-		case 2: // Z*
+		case 2: // Z
 			SSE_MOVHLPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+8);
 			else SSE_MOVSS_XMM_to_M32(offset+8, EEREC_TEMP);
 			break;
-		case 3: // ZW*
+		case 3: // ZW
 			if ( x86reg >= 0 ) SSE_MOVHPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+8);
 			else SSE_MOVHPS_XMM_to_M64(offset+8, EEREC_S);
+			break;
+		case 4: // Y
+			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0xe1);
+			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+4);
+			else SSE_MOVSS_XMM_to_M32(offset+4, EEREC_TEMP);
 			break;
 		case 5: // YW
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB1);
@@ -824,11 +829,6 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 				SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 			}
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xB1);
-			break;
-		case 4: // Y*
-			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0xe1);
-			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+4);
-			else SSE_MOVSS_XMM_to_M32(offset+4, EEREC_TEMP);
 			break;
 		case 6: // YZ
 			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0xc9);
@@ -846,7 +846,7 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 				SSE_MOVSS_XMM_to_M32(offset+12, EEREC_TEMP);
 			}
 			break;
-		case 8: // X*
+		case 8: // X
 			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
 			else SSE_MOVSS_XMM_to_M32(offset, EEREC_S);
 			break;
@@ -873,7 +873,7 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 				SSE_MOVSS_XMM_to_M32(offset+8, EEREC_TEMP);
 			}
 			break;
-		case 11: break; //XZW
+		case 11: //XZW
 			if ( x86reg >= 0 ) {
 				SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_S, offset);
 				SSE_MOVHPS_XMM_to_RmOffset(x86reg, EEREC_S, offset+8);
@@ -921,36 +921,6 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 					else SSE_MOVAPS_XMM_to_M128(offset, EEREC_S);
 				}
 			}
-			break;
-		default: // ToDo: Needs checking! (cottonvibes)
-			SysPrintf("SAVEEAX Default %d\n", _X_Y_Z_W);
-
-			if ( VU == &VU1 ) {
-				if( x86reg >= 0 ) SSE_MOVAPSRmtoROffset(EEREC_TEMP, x86reg, offset);
-				else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
-			}
-			else {
-				if( x86reg >= 0 ) SSE_MOVUPSRmtoROffset(EEREC_TEMP, x86reg, offset);
-				else {
-					if( offset & 15 ) SSE_MOVUPS_M128_to_XMM(EEREC_TEMP, offset);
-					else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, offset);
-				}
-			}
-
-			VU_MERGE_REGS_SAFE(EEREC_TEMP, EEREC_S, _X_Y_Z_W);
-
-			if ( VU == &VU1 ) {
-				if( x86reg >= 0 ) SSE_MOVAPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
-				else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
-			}
-			else {
-				if ( x86reg >= 0 ) SSE_MOVUPSRtoRmOffset(x86reg, EEREC_TEMP, offset);
-				else {
-					if( offset & 15 ) SSE_MOVUPS_XMM_to_M128(offset, EEREC_TEMP);
-					else SSE_MOVAPS_XMM_to_M128(offset, EEREC_TEMP);
-				}
-			}
-
 			break;
 	}
 }
