@@ -232,3 +232,114 @@ void iopIntcIrq( uint irqType )
 	psxHu32(0x1070)|= 1<<irqType;
 	iopTestIntc();
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Gigaherz's "Improved DMA Handling" Engine WIP...
+//
+// YES THIS FUCKING SIMPLE CODE IS ALL THE IOP DMAS NEED! (well, when all the fuckups I might have done get fixed)
+#if FALSE
+
+typedef s32  (* DmaHandler) (s32 channel, u32* data, u32 wordsLeft, u32* wordsProcessed);
+typedef void (* DmaIHandler)(s32 channel);
+
+struct DmaHandlerInfo {
+	DmaHandler  Read;
+	DmaHandler  Write;
+	DmaIHandler Interrupt;
+};
+
+struct DmaStatusInfo {
+	u32 Control;
+	u32 Width;		// bytes/word, for timing purposes
+	u32 MemAddr;
+	u32 ByteCount;
+	u32 Target;
+};
+
+// FIXME: Dummy constants, to be "filled in" with proper values later
+#define DMA_CTRL_ACTIVE		1
+#define DMA_CTRL_DIRECTION	2
+
+#define DMA_CHANNEL_MAX		16 /* ? */
+
+DmaStatusInfo  IopChannels[DMA_CHANNEL_MAX]; // I dont' knwo how many there are, 10?
+
+DmaHandlerInfo IopDmaHandlers[DMA_CHANNEL_MAX] = {
+	{0}, //0
+	{0}, //1
+	{0}, //2
+	{cdvdDmaRead, errorDmaWrite,cdvdDmaInterrupt}, //3:  CDVD
+	{spu2DmaRead, spu2DmaWrite, spu2DmaInterrupt}, //4:  Spu Core0
+	{0}, //5
+	{0}, //6: OT?
+	{spu2DmaRead, spu2DmaWrite, spu2DmaInterrupt}, //7:  Spu Core1
+	{dev9DmaRead, dev9DmaWrite, dev9DmaInterrupt}, //8:  Dev9
+	{sif0DmaRead, sif0DmaWrite, sif0DmaInterrupt}, //9:  SIF0
+	{sif1DmaRead, sif1DmaWrite, sif1DmaInterrupt}, //10: SIF1
+	//...
+};
+
+// Prototypes. To be implemented later (or in other parts of the emulator)
+void SetDmaUpdateTarget(u32 delay);
+void RaiseDmaIrq(u32 channel);
+
+// WARNING: CALLER ****[MUST]**** CALL IopDmaUpdate RIGHT AFTER THIS!
+void IopDmaStart(int channel, u32 chcr, u32 madr, u32 bcr)
+{
+	// I dont' really understand this, but it's used above. Is this BYTES OR WHAT?
+	int size = (bcr >> 16) * (bcr & 0xFFFF);
+
+	IopChannels[channel].Control = chcr;
+	IopChannels[channel].MemAddr = madr;
+	IopChannels[channel].ByteCount = size;
+}
+
+void IopDmaUpdate(u32 elapsed)
+{
+	u32 MinDelay = 0xFFFFFFFF;
+
+	for(int i=0;i<DMA_CHANNEL_MAX;i++)
+	{
+		DmaStatusInfo *ch = IopChannels+i;
+
+		if(ch->Control&DMA_CTRL_ACTIVE)
+		{
+			ch->Target-=elapsed;
+			if(ch->Target<=0)
+			{
+				if(ch->ByteCount<=0)
+				{
+					ch->Control &= ~DMA_CTRL_ACTIVE;
+					RaiseDmaIrq(i);
+					IopDmaHandlers[i].Interrupt(i);
+				}
+				else
+				{
+					// TODO: Make sure it's the right order
+					DmaHandler handler = (ch->Control&DMA_CTRL_DIRECTION)?IopDmaHandlers[i].Read:IopDmaHandlers[i].Write;
+
+					u32 BCount = 0;
+					s32 Target = (handler)?handler(i,(u32*)PSXM(ch->MemAddr),ch->ByteCount,&BCount):0;
+
+					ch->Target = 100;
+					if(Target<0)
+					{
+						// TODO: ... What to do if the plugin errors? :P
+					}
+					else if(BCount!=0)
+					{
+						ch->MemAddr   += BCount;
+						ch->ByteCount -= BCount;
+
+						ch->Target = BCount / ch->Width;
+					}
+
+					if (Target!=0) ch->Target=Target;
+				}
+			}
+		}
+	}
+}
+
+#endif
