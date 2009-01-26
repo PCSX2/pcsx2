@@ -1195,16 +1195,13 @@ void psxRecompileNextInstruction(int delayslot)
 
 	g_pCurInstInfo++;
 
-	// peephole optimizations
-	if( g_pCurInstInfo->info & EEINSTINFO_COREC ) {
-		assert(0);
-	}
-	else {
-	 	assert( !(g_pCurInstInfo->info & EEINSTINFO_NOREC) );
-		g_iopCyclePenalty = 0;
-		rpsxBSC[ psxRegs.code >> 26 ]();
-		s_psxBlockCycles += g_iopCyclePenalty;
-	}
+#ifdef PCSX2_VM_COISSUE
+	assert( g_pCurInstInfo->info & EEINSTINFO_COREC );
+#endif
+
+	g_iopCyclePenalty = 0;
+	rpsxBSC[ psxRegs.code >> 26 ]();
+	s_psxBlockCycles += g_iopCyclePenalty;
 
 	if( !delayslot ) {
 		if( s_bFlushReg ) {
@@ -1452,33 +1449,6 @@ StartRecomp:
 			pcur--;
 		}
 	}
-
-	// peephole optimizations //
-//	{
-//		g_pCurInstInfo = s_pInstCache;
-//
-//		for(i = startpc; i < s_nEndBlock-4; i += 4) {
-//			g_pCurInstInfo++;
-//			if( psxRecompileCodeSafe(i) ) {
-//				u32 curcode = *(u32*)PSXM(i);
-//				u32 nextcode = *(u32*)PSXM(i+4);
-//				if( _psxIsLoadStore(curcode) && _psxIsLoadStore(nextcode) && (curcode>>26) == (nextcode>>26) && rpsxBSC_co[curcode>>26] != NULL ) {
-//
-//					// rs has to be the same, and cannot be just written
-//					if( ((curcode >> 21) & 0x1F) == ((nextcode >> 21) & 0x1F) && !_psxLoadWritesRs(curcode) ) {
-//
-//						// good enough
-//						g_pCurInstInfo[0].info |= EEINSTINFO_COREC;
-//						g_pCurInstInfo[0].numpeeps = 1;
-//						g_pCurInstInfo[1].info |= EEINSTINFO_NOREC;
-//						g_pCurInstInfo++;
-//						i += 4;
-//						continue;
-//					}
-//				}
-//			}
-//		}
-//	}
 
 #ifdef _DEBUG
 	// dump code

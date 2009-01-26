@@ -39,6 +39,7 @@ namespace R5900
 	namespace Dynarec {
 	namespace OpcodeImpl
 	{
+		void recNULL();
 		void recUnknown();
 		void recMMI_Unknown();
 		void recCOP0_Unknown();

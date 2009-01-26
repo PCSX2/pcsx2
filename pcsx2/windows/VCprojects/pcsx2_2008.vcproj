@@ -1202,30 +1202,6 @@
 				<File
 					RelativePath="..\..\x86\ix86\ix86_cpudetect.cpp"
 					>
-					<FileConfiguration
-						Name="Devel vm|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug vm|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug vtlb|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\x86\ix86\ix86_fpu.cpp"
@@ -2396,6 +2372,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\x86\iR5900CoissuedLoadStore.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\x86\iR5900Jump.h"
 						>
 					</File>
@@ -2710,6 +2690,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Memory.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\MemoryVM.cpp"
 					>
 				</File>
 				<File

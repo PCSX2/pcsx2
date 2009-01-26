@@ -401,4 +401,6 @@ void iMemRead32Check();
 extern void  intcInterrupt();
 extern void  dmacInterrupt();
 
+extern int rdram_devices, rdram_sdevid;
+
 #endif /* __HW_H__ */

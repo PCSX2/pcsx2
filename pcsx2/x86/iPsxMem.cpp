@@ -18,11 +18,12 @@
 
 #include "PrecompiledHeader.h"
 
+#include "PsxCommon.h"
 #include "iR3000A.h"
 #include "VU.h"
 
-extern int g_psxWriteOk;
 
+extern int g_psxWriteOk;
 extern u32 g_psxMaxRecMem;
 static u32 writectrl;
 

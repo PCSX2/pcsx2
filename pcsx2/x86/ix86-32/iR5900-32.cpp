@@ -1434,17 +1434,17 @@ void recompileNextInstruction(int delayslot)
 	const OPCODE& opcode = GetCurrentInstruction();
 
 	// peephole optimizations
+#ifdef PCSX2_VM_COISSUE
 	if( g_pCurInstInfo->info & EEINSTINFO_COREC ) {
 
-#ifdef PCSX2_VIRTUAL_MEM
 		if( g_pCurInstInfo->numpeeps > 1 ) {
 			switch(_Opcode_) {
-				case 30: OpcodeImpl::recLQ_coX(g_pCurInstInfo->numpeeps); break;
-				case 31: OpcodeImpl::recSQ_coX(g_pCurInstInfo->numpeeps); break;
-				case 49: OpcodeImpl::recLWC1_coX(g_pCurInstInfo->numpeeps); break;
-				case 57: OpcodeImpl::recSWC1_coX(g_pCurInstInfo->numpeeps); break;
-				case 55: OpcodeImpl::recLD_coX(g_pCurInstInfo->numpeeps); break;
-				case 63: OpcodeImpl::recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
+				case 30: recLQ_coX(g_pCurInstInfo->numpeeps); break;
+				case 31: recSQ_coX(g_pCurInstInfo->numpeeps); break;
+				case 49: recLWC1_coX(g_pCurInstInfo->numpeeps); break;
+				case 57: recSWC1_coX(g_pCurInstInfo->numpeeps); break;
+				case 55: recLD_coX(g_pCurInstInfo->numpeeps); break;
+				case 63: recSD_coX(g_pCurInstInfo->numpeeps, 1); break; //not sure if should be set to 1 or 0; looks like "1" handles alignment, so i'm going with that for now
 
 				jNO_DEFAULT
 			}
@@ -1458,12 +1458,11 @@ void recompileNextInstruction(int delayslot)
 			g_pCurInstInfo++;
 			s_nBlockCycles += opcode.cycles*2;
 		}
-#else
-		assert(0);
-#endif
 	}
-	else {
-	 	assert( !(g_pCurInstInfo->info & EEINSTINFO_NOREC) );
+	else
+#endif
+	{
+	 	//assert( !(g_pCurInstInfo->info & EEINSTINFO_NOREC) );
 
 		// if this instruction is a jump or a branch, exit right away
 		if( delayslot ) {
@@ -1804,7 +1803,7 @@ StartRecomp:
 			if( usecop2 ) vucycle++;
 
 			// peephole optimizations //
-#ifdef PCSX2_VIRTUAL_MEM
+#ifdef PCSX2_VM_COISSUE
 			if( i < s_nEndBlock-4 && recompileCodeSafe(i) ) {
 				u32 curcode = cpuRegs.code;
 				u32 nextcode = *(u32*)PSM(i+4);

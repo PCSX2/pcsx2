@@ -53,8 +53,8 @@ namespace OpcodeImpl {
 	void recLQC2( void );
 	void recSQC2( void );
 
-	// coissues
-#ifdef PCSX2_VIRTUAL_MEM
+// coissues
+#ifdef PCSX2_VM_COISSUE
 	void recLB_co( void );
 	void recLBU_co( void );
 	void recLH_co( void );

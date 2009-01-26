@@ -19,7 +19,7 @@
 #include "PrecompiledHeader.h"
 #include <time.h>
 
-#include "Misc.h"
+#include "PsxCommon.h"
 #include "ix86/ix86.h"
 #include "iR3000A.h"
 #include "IopMem.h"

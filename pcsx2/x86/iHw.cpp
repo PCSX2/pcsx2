@@ -279,7 +279,10 @@ int hwConstRead32(u32 x86reg, u32 mem)
 {
 	//IPU regs
 	if ((mem>=0x10002000) && (mem<0x10003000)) {
-		return ipuConstRead32(x86reg, mem);
+		//return ipuConstRead32(x86reg, mem);
+		iFlushCall(0);
+		PUSH32I( mem );
+		CALLFunc( (uptr)ipuRead32 );
 	}
 
 	switch (mem) {

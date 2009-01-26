@@ -68,7 +68,7 @@ void recCall( void (*func)(), int delreg )
 
 using namespace R5900::Dynarec::OpcodeImpl;
 
-#ifdef PCSX2_VIRTUAL_MEM
+#ifdef PCSX2_VM_COISSUE
 // coissued insts
 void (*recBSC_co[64] )() = {
 	recNULL,	recNULL,     recNULL, recNULL,  recNULL, recNULL, recNULL,  recNULL,
@@ -82,19 +82,6 @@ void (*recBSC_co[64] )() = {
 };
 #endif
 
-
-/*
-////////////////////////////////////////////////////
-static void recCOP0BC0( void )
-{
-	recCP0BC0[ ( cpuRegs.code >> 16 ) & 0x03 ]( );
-}
-
-////////////////////////////////////////////////////
-static void recCOP0C0( void ) 
-{
-	recCP0C0[ _Funct_ ]( );
-}*/
 
 ////////////////////////////////////////////////
 // Back-Prob Function Tables - Gathering Info //

@@ -232,8 +232,10 @@ int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy); // returns tr
 
 #define EEINSTINFO_COP1		1
 #define EEINSTINFO_COP2		2
+#ifdef PCSX2_VM_COISSUE
 #define EEINSTINFO_NOREC	4 // if set, inst is recompiled alone
 #define EEINSTINFO_COREC	8 // if set, inst is recompiled with another similar inst
+#endif
 #define EEINSTINFO_MMX		EEINST_MMX
 #define EEINSTINFO_XMM		EEINST_XMM
 

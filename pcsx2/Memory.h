@@ -306,4 +306,6 @@ void __fastcall _memWrite128(u32 mem, u64 *value);
 #define recMemConstWrite128 0&&
 #endif
 
+extern void loadBiosRom( const char *ext, u8 *dest, long maxSize );
+extern u16 ba0R16(u32 mem);
 #endif
