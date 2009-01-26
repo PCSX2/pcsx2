@@ -193,8 +193,12 @@ void SIO_CommandWrite(u8 value,int way) {
 				sio.buf[7]='+';
 				MEMCARDS_LOG("MC(%d) command 0x%02X\n", ((sio.CtrlReg&0x2000)>>13)+1, value);
 				break;
-			case 0x24:											break;
-			case 0x25:											break;
+			case 0x24:					
+				MEMCARDS_LOG("MC(%d) command 0x%02X\n", ((sio.CtrlReg&0x2000)>>13)+1, value);
+				break;
+			case 0x25:							
+				MEMCARDS_LOG("MC(%d) command 0x%02X\n", ((sio.CtrlReg&0x2000)>>13)+1, value);
+				break;
 			case 0x26: 
 				sio.bufcount = 12; sio.mcdst = 99; sio2.packet.recvVal3 = 0x83;	
 				memset_obj<0xff>(sio.buf);
@@ -274,8 +278,12 @@ void SIO_CommandWrite(u8 value,int way) {
 				if (sio.parp==5)sio.sector|=(value & 0xFF)<<24;
 				if (sio.parp==6)
 				{
-					MEMCARDS_LOG("MC(%d) SET PAGE sio.sector 0x%04X\n",
-								((sio.CtrlReg&0x2000)>>13)+1, sio.sector);
+					if (sio_xor((u8 *)&sio.sector, 4) == value)
+						MEMCARDS_LOG("MC(%d) SET PAGE sio.sector 0x%04X\n",
+									((sio.CtrlReg&0x2000)>>13)+1, sio.sector);
+					else
+						MEMCARDS_LOG("MC(%d) SET PAGE XOR value ERROR 0x%02X != ^0x%02X\n",
+							((sio.CtrlReg&0x2000)>>13)+1, value, sio_xor((u8 *)&sio.sector, 4));
 				}
 				break;
 
@@ -296,8 +304,8 @@ void SIO_CommandWrite(u8 value,int way) {
 					sio.buf[2] = '+';
 					sio.buf[3] = sio.terminator;
 					
-					if(value == 0) sio.buf[4] = 0xFF;
-					else sio.buf[4] = 0x55;
+					//if(value == 0) sio.buf[4] = 0xFF; 
+					sio.buf[4] = 0x55;
 				MEMCARDS_LOG("MC(%d) GET TERMINATOR command 0x%02X\n", ((sio.CtrlReg&0x2000)>>13)+1, value);
 				}	
 				break;
@@ -334,12 +342,12 @@ void SIO_CommandWrite(u8 value,int way) {
 					sio.buf[3]='+';
 				MEMCARDS_LOG("MC(%d) READ command 0x%02X\n", ((sio.CtrlReg&0x2000)>>13)+1, value);
 					_ReadMcd(&sio.buf[4], (512+16)*sio.sector+sio.k, value);
-					if(sio.mode==2) 
+					/*if(sio.mode==2) 
 					{
 						int j;
 						for(j=0; j < value; j++)
 							sio.buf[4+j] = ~sio.buf[4+j];
-					}
+					}*/
 
 					sio.k+=value;
 					sio.buf[sio.bufcount-1]=sio_xor(&sio.buf[4], value);
@@ -351,6 +359,11 @@ void SIO_CommandWrite(u8 value,int way) {
 				if(sio.parp==2) {
 					sio.buf[2]='+';
 					sio.buf[3]=sio.terminator;
+					//if (sio.k != 0 || (sio.sector & 0xf) != 0)
+					//	Console::Notice("saving : odd position for erase.");
+
+					_EraseMCDBlock((512+16)*(sio.sector&~0xf));
+
 				/*	memset(sio.buf, -1, 256);
 					_SaveMcd(sio.buf, (512+16)*sio.sector, 256);
 					_SaveMcd(sio.buf, (512+16)*sio.sector+256, 256);
@@ -421,7 +434,6 @@ void SIO_CommandWrite(u8 value,int way) {
 			SIO_INT();
 			return;
 	}
-
 	
 	if(sio.count == 1 || way == 0) InitializeSIO(value);
 }
@@ -586,12 +598,30 @@ void SaveMcd(int mcd, const u8 *data, u32 adr, int size) {
 	if(mcd == 1)
 	{
 		SeekMcd(MemoryCard1, adr);
-		fwrite(data, 1, size, MemoryCard1);
+		u8 *currentdata = (u8 *)malloc(size);
+		fread(currentdata, 1, size, MemoryCard1);
+		for (int i=0; i<size; i++)
+		{
+			if ((currentdata[i] & data[i]) != data[i])
+				Console::Notice("MemoryCard : writing odd data");
+			currentdata[i] &= data[i];
+		}
+		SeekMcd(MemoryCard1, adr);
+		fwrite(currentdata, 1, size, MemoryCard1);
 	}
 	else
 	{
 		SeekMcd(MemoryCard2, adr);
-		fwrite(data, 1, size, MemoryCard2);
+		u8 *currentdata = (u8 *)malloc(size);
+		fread(currentdata, 1, size, MemoryCard2);
+		for (int i=0; i<size; i++)
+		{
+			if ((currentdata[i] & data[i]) != data[i])
+				Console::Notice("MemoryCard : writing odd data");
+			currentdata[i] &= data[i];
+		}
+		SeekMcd(MemoryCard2, adr);
+		fwrite(currentdata, 1, size, MemoryCard2);
 	}		
 }
 
@@ -615,14 +645,14 @@ void EraseMcd(int mcd, u32 adr) {
 void CreateMcd(char *mcd) {
 	FILE *fp;	
 	int i=0, j=0;
-	int enc[16] = {0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0,0,0,0};
+	//int enc[16] = {0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0,0,0,0};
 
 	fp = fopen(mcd, "wb");
 	if (fp == NULL) return;
 	for(i=0; i < 16384; i++) 
 	{
-		for(j=0; j < 512; j++) fputc(0xFF,fp);
-		for(j=0; j < 16; j++) fputc(enc[j],fp);
+		for(j=0; j < 528; j++) fputc(0xFF,fp);
+//		for(j=0; j < 16; j++) fputc(enc[j],fp);
 	}
 	fclose(fp);
 }
