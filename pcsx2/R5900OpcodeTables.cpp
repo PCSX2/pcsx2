@@ -104,15 +104,15 @@ namespace R5900
 			static const int Div = 14*8;
 			static const int MMI_Mult = 3*8;
 			static const int MMI_Div = 22*8;
-			static const int MMI_Default = 18;
+			static const int MMI_Default = 14;
 
 			static const int FPU_Mult = 12;
 
-			static const int Store = 31;
-			static const int Load = 24;
+			static const int Store = 28;
+			static const int Load = 22;
 
-			static const int StoreFast = 13;
-			static const int LoadFast = 11; 
+			static const int StoreFast = 14;
+			static const int LoadFast = 12; 
 		}
 
 		using namespace Cycles;
