@@ -29,7 +29,7 @@ using namespace R3000A;
 
 int iopsifbusy[2] = { 0, 0 };
 
-static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _SPU2writeDMA4Mem spu2WriteFunc )
+static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _SPU2writeDMA4Mem spu2WriteFunc, _SPU2readDMA4Mem spu2ReadFunc )
 {
 	const char dmaNum = spuCore ? '7' : '4';
     /*if (chcr & 0x400) DevCon::Status("SPU 2 DMA %c linked list chain mode! chcr = %x madr = %x bcr = %x\n", dmaNum, chcr, madr, bcr);
@@ -63,7 +63,7 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _
 
 		case 0x01000200: //spu2 to cpu transfer
 			PSXDMA_LOG("*** DMA %c - spu2mem *** %lx addr = %lx size = %lx\n", dmaNum, chcr, madr, bcr);
-			spu2WriteFunc((u16 *)PSXM(madr), size*2);
+			spu2ReadFunc((u16 *)PSXM(madr), size*2);
 			psxCpu->Clear(spuCore ? HW_DMA7_MADR : HW_DMA4_MADR, size);
 		break;
 
@@ -75,7 +75,7 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _
 
 void psxDma4(u32 madr, u32 bcr, u32 chcr)		// SPU2's Core 0
 {
-	psxDmaGeneric( madr, bcr, chcr, 0, SPU2writeDMA4Mem );
+	psxDmaGeneric( madr, bcr, chcr, 0, SPU2writeDMA4Mem, SPU2readDMA4Mem );
 }
 
 int psxDma4Interrupt()
@@ -114,7 +114,7 @@ void psxDma6(u32 madr, u32 bcr, u32 chcr)
 
 void psxDma7(u32 madr, u32 bcr, u32 chcr)		// SPU2's Core 1
 {
-	psxDmaGeneric( madr, bcr, chcr, 1, SPU2writeDMA7Mem );
+	psxDmaGeneric( madr, bcr, chcr, 1, SPU2writeDMA7Mem, SPU2readDMA7Mem );
 }
 
 int psxDma7Interrupt()
@@ -237,11 +237,13 @@ void iopIntcIrq( uint irqType )
 //
 // Gigaherz's "Improved DMA Handling" Engine WIP...
 //
-// YES THIS FUCKING SIMPLE CODE IS ALL THE IOP DMAS NEED! (well, when all the fuckups I might have done get fixed)
 #if FALSE
 
 typedef s32  (* DmaHandler) (s32 channel, u32* data, u32 wordsLeft, u32* wordsProcessed);
 typedef void (* DmaIHandler)(s32 channel);
+
+s32 errDmaWrite (s32 channel, u32* data, u32 wordsLeft, u32* wordsProcessed);
+s32 errDmaRead (s32 channel, u32* data, u32 wordsLeft, u32* wordsProcessed);
 
 struct DmaHandlerInfo {
 	DmaHandler  Read;
@@ -258,8 +260,8 @@ struct DmaStatusInfo {
 };
 
 // FIXME: Dummy constants, to be "filled in" with proper values later
-#define DMA_CTRL_ACTIVE		1
-#define DMA_CTRL_DIRECTION	2
+#define DMA_CTRL_ACTIVE		0x80000000
+#define DMA_CTRL_DIRECTION	0x00000001
 
 #define DMA_CHANNEL_MAX		16 /* ? */
 
@@ -269,7 +271,7 @@ DmaHandlerInfo IopDmaHandlers[DMA_CHANNEL_MAX] = {
 	{0}, //0
 	{0}, //1
 	{0}, //2
-	{cdvdDmaRead, errorDmaWrite,cdvdDmaInterrupt}, //3:  CDVD
+	{cdvdDmaRead, errDmaWrite,  cdvdDmaInterrupt}, //3:  CDVD
 	{spu2DmaRead, spu2DmaWrite, spu2DmaInterrupt}, //4:  Spu Core0
 	{0}, //5
 	{0}, //6: OT?
@@ -277,7 +279,25 @@ DmaHandlerInfo IopDmaHandlers[DMA_CHANNEL_MAX] = {
 	{dev9DmaRead, dev9DmaWrite, dev9DmaInterrupt}, //8:  Dev9
 	{sif0DmaRead, sif0DmaWrite, sif0DmaInterrupt}, //9:  SIF0
 	{sif1DmaRead, sif1DmaWrite, sif1DmaInterrupt}, //10: SIF1
-	//...
+	{0}, // Sio2
+	{0}, // Sio2
+};
+
+const char* IopDmaNames[DMA_CHANNEL_MAX] = {
+	"Ps1 Mdec",
+	"Ps1 Mdec",
+	"Ps1 Gpu",
+	"CDVD",
+	"SPU/SPU2 Core0",
+	"?",
+	"OT",
+	"SPU2 Core1", //7:  Spu Core1
+	"Dev9", //8:  Dev9
+	"Sif0", //9:  SIF0
+	"Sif1", //10: SIF1
+	"Sio2",//...
+	"Sio2",
+	"?","?","?"};
 };
 
 // Prototypes. To be implemented later (or in other parts of the emulator)
@@ -290,7 +310,7 @@ void IopDmaStart(int channel, u32 chcr, u32 madr, u32 bcr)
 	// I dont' really understand this, but it's used above. Is this BYTES OR WHAT?
 	int size = (bcr >> 16) * (bcr & 0xFFFF);
 
-	IopChannels[channel].Control = chcr;
+	IopChannels[channel].Control = chcr | DMA_CTRL_ACTIVE;
 	IopChannels[channel].MemAddr = madr;
 	IopChannels[channel].ByteCount = size;
 }
@@ -341,5 +361,22 @@ void IopDmaUpdate(u32 elapsed)
 		}
 	}
 }
+
+s32 errDmaRead (s32 channel, u32* data, u32 wordsLeft, u32* wordsProcessed)
+{
+	Console::Error("ERROR: Tried to read using DMA %d (%s). Ignoring.",0,channel,IopDmaNames[channel]);
+
+	*wordsProcessed = wordsLeft;
+	return 0;
+}
+
+s32 errDmaWrite (s32 channel, u32* data, u32 wordsLeft, u32* wordsProcessed)
+{
+	Console::Error("ERROR: Tried to write using DMA %d (%s). Ignoring.",0,channel,IopDmaNames[channel]);
+
+	*wordsProcessed = wordsLeft;
+	return 0;
+}
+
 
 #endif
