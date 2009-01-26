@@ -334,7 +334,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	textdomain(PACKAGE);
 #endif
 
-	memset(&g_TestRun, 0, sizeof(g_TestRun));
+	memzero_obj(g_TestRun);
 
 	_getcwd( g_WorkingFolder, g_MaxPath );
 
@@ -429,8 +429,8 @@ BOOL Open_File_Proc( std::string& outstr )
 	char szFileTitle[ g_MaxPath ];
 	char * filter = "ELF Files (*.ELF)\0*.ELF\0ALL Files (*.*)\0*.*\0";
 
-	memset( &szFileName, 0, sizeof( szFileName ) );
-	memset( &szFileTitle, 0, sizeof( szFileTitle ) );
+	memzero_obj( szFileName );
+	memzero_obj( szFileTitle );
 
 	ofn.lStructSize			= sizeof( OPENFILENAME );
 	ofn.hwndOwner			= gApp.hWnd;

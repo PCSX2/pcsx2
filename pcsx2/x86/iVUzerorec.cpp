@@ -158,7 +158,7 @@ struct VuBlockHeader
 class VuInstruction
 {
 public:
-	VuInstruction() { memzero_air<sizeof(VuInstruction)>(this); nParentPc = -1; vicached = -1; }
+	VuInstruction() { memzero_ptr<sizeof(VuInstruction)>(this); nParentPc = -1; vicached = -1; }
 
 	int nParentPc; // used for syncing with flag writes, -1 for no parent
 
@@ -419,7 +419,7 @@ void SuperVUReset(int vuindex)
 	{
 		DbgCon::Status( "SuperVU reset > Resetting recompiler memory and structures." );
 		memset(s_recVUMem, 0xcd, VU_EXESIZE);
-		memzero_air<SUPERVU_STACKSIZE>(recVUStack);
+		memzero_ptr<SUPERVU_STACKSIZE>(recVUStack);
 
 		s_recVUPtr = s_recVUMem;
 	}

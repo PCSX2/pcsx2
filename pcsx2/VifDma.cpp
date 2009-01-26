@@ -68,8 +68,6 @@ static const unsigned int VIF1dmanum = 1;
 int g_vifCycles = 0;
 int path3hack = 0;
 
-extern void * memcpy_fast(void *dest, const void *src, size_t n);
-
 typedef void (*UNPACKFUNCTYPE)( u32 *dest, u32 *data, int size );
 typedef int  (*UNPACKPARTFUNCTYPESSE)( u32 *dest, u32 *data, int size );
 extern void (*Vif1CMDTLB[82])();
@@ -856,9 +854,8 @@ static int Vif0TransSTRow(u32 *data){ // STROW
 		case 3: pmem[8] = data[2]; pmem2[2] = data[2];
 		case 2: pmem[4] = data[1]; pmem2[1] = data[1];
 		case 1: pmem[0] = data[0]; pmem2[0] = data[0]; break;
-#ifdef _MSC_VER
-		default: __assume(0);
-#endif
+
+		jNO_DEFAULT
 	}
     vif0.tag.addr += ret;
     vif0.tag.size -= ret;
@@ -878,9 +875,8 @@ static int Vif0TransSTCol(u32 *data){ // STCOL
 		case 3: pmem[8] = data[2]; pmem2[2] = data[2];
 		case 2: pmem[4] = data[1]; pmem2[1] = data[1];
 		case 1: pmem[0] = data[0]; pmem2[0] = data[0]; break;
-#ifdef _MSC_VER
-		default: __assume(0);
-#endif
+
+		jNO_DEFAULT
 	}
 	vif0.tag.addr += ret;
     vif0.tag.size -= ret;

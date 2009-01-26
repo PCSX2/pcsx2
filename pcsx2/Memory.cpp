@@ -68,8 +68,6 @@ BIOS
 extern u32 maxrecmem;
 extern int rdram_devices, rdram_sdevid;
 
-extern void * memcpy_fast(void *dest, const void *src, size_t n);
-
 //#define FULLTLB
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
 
@@ -518,7 +516,7 @@ void vm_Reset()
 {
 	jASSUME( memLUT != NULL );
 
-	memzero_air<sizeof(PSMEMORYMAP)*0x100000>(memLUT);
+	memzero_ptr<sizeof(PSMEMORYMAP)*0x100000>(memLUT);
 	for (int i=0; i<0x02000; i++) memLUT[i + 0x00000] = initMemoryMap(&s_psM.aPFNs[i], &s_psM.aVFNs[i]);
 	for (int i=2; i<0x00010; i++) memLUT[i + 0x10000] = initMemoryMap(&s_psHw.aPFNs[i], &s_psHw.aVFNs[i]);
 	for (int i=0; i<0x00800; i++) memLUT[i + 0x1c000] = initMemoryMap(&s_psxM.aPFNs[(i & 0x1ff)], &s_psxM.aVFNs[(i & 0x1ff)]);
@@ -2707,8 +2705,8 @@ void memReset()
 	mprotect(PS2EMEM_EROM, Ps2MemSize::ERom, PROT_READ|PROT_WRITE);
 #	endif
 
-	memzero_air<Ps2MemSize::Base>(PS2MEM_BASE);
-	memzero_air<Ps2MemSize::Scratch>(PS2MEM_SCRATCH);
+	memzero_ptr<Ps2MemSize::Base>(PS2MEM_BASE);
+	memzero_ptr<Ps2MemSize::Scratch>(PS2MEM_SCRATCH);
 	vm_Reset();
 
 #else
@@ -2728,7 +2726,7 @@ void memReset()
 	// rest of the emu is not really set up to support a "soft" reset of that sort
 	// we opt for the hard/safe version.
 
-	memzero_air<m_allMemSize>( m_psAllMem );
+	memzero_ptr<m_allMemSize>( m_psAllMem );
 #ifdef ENABLECACHE
 	memset(pCache,0,sizeof(_cacheS)*64);
 #endif

@@ -227,22 +227,24 @@ extern u8 g_globalXMMSaved;
 #define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
 #define FreezeMMXRegs(save) if( g_EEFreezeRegs ) { FreezeMMXRegs_(save); }
 
+void _memset16_unaligned( void* dest, u16 data, size_t size );
 
 #if defined(_WIN32) && !defined(__x86_64__)
 	// faster memcpy
 	extern void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes);
 	extern void __fastcall memcpy_raz_(void *dest, const void *src, size_t qwc);
-	extern void * memcpy_amd_(void *dest, const void *src, size_t n);
-	#include "windows/memzero.h"
+	extern void __fastcall memcpy_amd_(void *dest, const void *src, size_t n);
+#	include "windows/memzero.h"
+#	define memcpy_fast memcpy_amd_
 
-#define memcpy_fast memcpy_amd_
-	//#define memcpy_fast memcpy //Dont use normal memcpy, it has sse in 2k5!
 #else
-	// for now disable linux fast memcpy
+
+	// for now linux uses the GCC memcpy/memset implementations.
 	#define memcpy_fast memcpy
 	#define memcpy_raz_ memcpy
 	#define memcpy_raz_u memcpy
 	#include "Linux/memzero.h"
+
 #endif
 
 

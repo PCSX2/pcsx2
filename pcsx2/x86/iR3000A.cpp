@@ -163,7 +163,7 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 	// write the instruction info
 	fprintf(f, "\n\nlive0 - %x, lastuse - %x used - %x\n", EEINST_LIVE0, EEINST_LASTUSE, EEINST_USED);
 
-	memset(used, 0, sizeof(used));
+	memzero_obj(used);
 	numused = 0;
 	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( s_pInstCache->regs[i] & EEINST_USED ) {

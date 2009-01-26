@@ -180,13 +180,6 @@ void vuMicroMemReset()
 	jASSUME( VU0.Mem != NULL );
 	jASSUME( VU1.Mem != NULL );
 
-/*#ifdef PCSX2_VIRTUAL_MEM
-	memLUT[0x11000].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11000].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11001].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11001].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11002].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11002].aVFNs = &s_psVuMem.aVFNs[0];
-	memLUT[0x11003].aPFNs = &s_psVuMem.aPFNs[0]; memLUT[0x11003].aVFNs = &s_psVuMem.aVFNs[0];
-#endif*/
-
 	// === VU0 Initialization ===
 	memzero_obj(VU0.ACC);
 	memzero_obj(VU0.VF);
@@ -196,8 +189,8 @@ void vuMicroMemReset()
 	VU0.VF[0].f.z = 0.0f;
 	VU0.VF[0].f.w = 1.0f;
 	VU0.VI[0].UL = 0;
-	memzero_air<4*1024>(VU0.Mem);
-	memzero_air<4*1024>(VU0.Micro);
+	memzero_ptr<4*1024>(VU0.Mem);
+	memzero_ptr<4*1024>(VU0.Micro);
 
 	/* this is kinda tricky, maxmem is set to 0x4400 here,
 	   tho it's not 100% accurate, since the mem goes from
@@ -219,8 +212,8 @@ void vuMicroMemReset()
 	VU1.VF[0].f.z = 0.0f;
 	VU1.VF[0].f.w = 1.0f;
 	VU1.VI[0].UL = 0;
-	memzero_air<16*1024>(VU1.Mem);
-	memzero_air<16*1024>(VU1.Micro);
+	memzero_ptr<16*1024>(VU1.Mem);
+	memzero_ptr<16*1024>(VU1.Micro);
 
 	VU1.maxmem   = -1;//16*1024-4;
 	VU1.maxmicro = 16*1024-4;
@@ -247,7 +240,7 @@ void SaveState::vuMicroFreeze()
 	else
 	{
 		// Old versions stored the VIregs as 32 bit values...
-		memset( VU0.VI, 0, sizeof( VU0.VI ) );
+		memzero_obj( VU0.VI );
 		for(int i=0; i<32; i++ )
 			Freeze( VU0.VI[i].UL );
 	}
@@ -263,7 +256,7 @@ void SaveState::vuMicroFreeze()
 	else
 	{
 		// Old versions stored the VIregs as 32 bit values...
-		memset( VU1.VI, 0, sizeof( VU1.VI ) );
+		memzero_obj( VU1.VI );
 		for(int i=0; i<32; i++ )
 			Freeze( VU1.VI[i].UL );
 	}

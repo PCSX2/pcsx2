@@ -86,9 +86,9 @@ void cpuReset()
 	psxMemReset();
 	vuMicroMemReset();
 
-	memset(&cpuRegs, 0, sizeof(cpuRegs));
-	memset(&fpuRegs, 0, sizeof(fpuRegs));
-	memset(&tlb, 0, sizeof(tlb));
+	memzero_obj(cpuRegs);
+	memzero_obj(fpuRegs);
+	memzero_obj(tlb);
 
 	cpuRegs.pc = 0xbfc00000; ///set pc reg to stack 
 	cpuRegs.CP0.n.Config = 0x440;

@@ -89,16 +89,18 @@ void checkregs()
 
 
 __declspec(align(16)) static u8 _xmm_backup[16*2];
-//this one checks for alligments too ...
+
+// this one checks for alignments too ...
 __declspec(naked) void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes)
 {
+	// If src is aligned, use memcpy_raz instead:
 	__asm
 	{
 		test edx,0xf;
 		jz memcpy_raz_;
 	}
-	//THIS CODE IS COPY PASTED FROM memcpy_raz_
-	
+
+	// MOVSRC = opcode used to read. I use the same code for the aligned version, with a different define :)
 	#define MOVSRC movups
 	__asm
 	{
@@ -112,7 +114,7 @@ __declspec(naked) void __fastcall memcpy_raz_u(void *dest, const void *src, size
 		cmp eax,127;
 		jna _loop_1;
 
-		//unrolled version also toiches xmm1, save it :)
+		//unrolled version also touches xmm1, save it :)
 		movaps [_xmm_backup+0x10],xmm1;
 
 		//since this is a common branch target it could be good to align it -- no idea if it has any effect :p
@@ -178,14 +180,17 @@ cleanup:
 	}
 	#undef MOVSRC
 }
-//Custom memcpy, only for 16 byte aligned stuff (used for mtgs)
-//These functions are optimised for medium-small transfer sizes (<2048, >=128).No prefetching is used since the reads are linear
-//and the cache logic can predict em :)
-//this implementation use forward copy, in 128 byte blocks, and then does the remaining in 16 byte blocks :)
-//MOVSRC = opcode used to read.I use the same code for the unaligned version, with a different define :)
-#define MOVSRC movaps
+// Custom memcpy, only for 16 byte aligned stuff (used for mtgs)
+// This function is optimized for medium-small transfer sizes (<2048, >=128). No prefetching is
+// used since the reads are linear and the cache logic can predict em :)
+
 __declspec(naked) void __fastcall memcpy_raz_(void *dest, const void *src, size_t bytes)
 {
+	// Code Implementation Notes:
+	// Uses a forward copy, in 128 byte blocks, and then does the remaining in 16 byte blocks :)
+
+	// MOVSRC = opcode used to read. I use the same code for the unaligned version, with a different define :)
+	#define MOVSRC movaps
 	__asm
 	{
 		//Reads before reads, to avoid stalls
@@ -270,16 +275,15 @@ cleanup:
 //////////////////////////////////////////////////////////////////////////
 // Fast memcpy as coded by AMD.
 
-void * memcpy_amd_(void *dest, const void *src, size_t n)
+// This function clobbers all MMX registers, and is generally not optimal for short memory
+// copies due to the amount of overhead required to test for alignments, copy length,
+// and other ABI overhead.
+void __fastcall memcpy_amd_(void *dest, const void *src, size_t n)
 {
-#ifdef _DEBUG
-	__asm call checkregs
-#endif
-		
     __asm {
+	mov		edi, ecx		; destination
+	mov		esi, edx		; source
 	mov		ecx, [n]		; number of bytes to copy
-	mov		edi, [dest]		; destination
-	mov		esi, [src]		; source
 	mov		ebx, ecx		; keep a copy of count
 
 	cld
@@ -473,7 +477,7 @@ $memcpy_last_few:		; dword aligned from before movsd's
 $memcpy_final: 
 	emms				; clean up the MMX state
 	sfence				; flush the write buffer
-	mov		eax, [dest]	; ret value = destination pointer
+	//mov		eax, [dest]	; ret value = destination pointer
 
     }
 }

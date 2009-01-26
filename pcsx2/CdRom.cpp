@@ -520,7 +520,7 @@ void  cdrReadInterrupt() {
 
 	if (cdr.RErr == -1) {
 		CDR_LOG(" err\n");
-		memzero_air<2340>(cdr.Transfer);
+		memzero_ptr<2340>(cdr.Transfer);
 		cdr.Stat = DiskError;
 		cdr.Result[0]|= 0x01;
 		ReadTrack();

@@ -35,7 +35,7 @@ void psxMemAlloc()
 
 void psxMemReset()
 {
-	memzero_air<Ps2MemSize::IopRam>(psxM);
+	memzero_ptr<Ps2MemSize::IopRam>(psxM);
 }
 
 void psxMemShutdown()
@@ -404,8 +404,8 @@ void psxMemReset()
 
 	DbgCon::Status( "psxMemReset > Resetting core memory!" );
 
-	memzero_air<0x10000 * sizeof(uptr) * 2>( psxMemWLUT );	// clears both allocations, RLUT and WLUT
-	memzero_air<m_psxMemSize>( m_psxAllMem );
+	memzero_ptr<0x10000 * sizeof(uptr) * 2>( psxMemWLUT );	// clears both allocations, RLUT and WLUT
+	memzero_ptr<m_psxMemSize>( m_psxAllMem );
 
 	// Trick!  We're accessing RLUT here through WLUT, since it's the non-const pointer.
 	// So the ones with a 1 prefixed (ala 0x18000, etc) are RLUT tables.

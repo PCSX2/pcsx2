@@ -808,3 +808,12 @@ u64 GetCPUTicks()
     return ((u64)t.tv_sec*GetTickFrequency())+t.tv_usec;
 #endif
 }
+
+void _memset16_unaligned( void* dest, u16 data, size_t size )
+{
+	jASSUME( (size & 0x1) == 0 );
+
+	u16* dst = (u16*)dest;
+	for(int i=size; i; --i, ++dst )
+		*dst = data;
+}

@@ -16,55 +16,55 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef _PCSX2_MEMZERO_H_
-#define _PCSX2_MEMZERO_H_
+#ifndef _LNX_MEMZERO_H_
+#define _LNX_MEMZERO_H_
 
-// This stubs out that memzero Windows specific stuff Air seems to have added
-// all over, to allow Linux to compile. I may actually try to translate the file at 
-// some point, but for now, lets just use memset.
+// This header contains non-optimized implementation of memzero_ptr and memset8_obj,
+// memset16_obj, etc.
 
-template< size_t bytes >
-static __forceinline void memzero_air( void *dest )
+template< u32 data, typename T >
+static __forceinline void memset32_obj( T& obj )
 {
-	memset(dest, 0, bytes);
+	// this function works on 32-bit aligned lengths of data only.
+	// If the data length is not a factor of 32 bits, the C++ optimizing compiler will
+	// probably just generate mysteriously broken code in Release builds. ;)
+
+	jASSUME( (sizeof(T) & 0x3) == 0 );
+
+	u32* dest = (u32*)&obj;
+	for( int i=sizeof(T)>>2; i; --i, ++dest )
+		*dest = data;
 }
 
-template< u8 data, size_t bytes >
-static __forceinline void memset_8( void *dest )
+template< uint size >
+static __forceinline void memzero_ptr( void* dest )
 {
-	memset(dest, data, bytes);
+	memset( dest, 0, size );
 }
 
-template< u16 data, size_t bytes >
-static __forceinline void memset_16( void *dest )
-{
-	memset(dest, data, bytes);
-}
-
-template< u32 data, size_t bytes >
-static __forceinline void memset_32( void *dest )
-{
-	memset(dest, data, bytes);
-}
-
-// This method can clear any object-like entity -- which is anything that is not a pointer.
-// Structures, static arrays, etc.  No need to include sizeof() crap, this does it automatically
-// for you!
 template< typename T >
-static __forceinline void memzero_obj( T& object )
+static __forceinline void memzero_obj( T& obj )
 {
-	memzero_air<sizeof(T)>( &object );
+	memset( &obj, 0, sizeof( T ) );
 }
 
-template< uint data, typename T >
-static __forceinline void memset_obj( T& object )
+template< u8 data, typename T >
+static __forceinline void memset8_obj( T& obj )
 {
-	if( data <= 0xff )
-		memset_8<(u8)data, sizeof(T)>( &object );
-	else if( data <= 0xffff )
-		memset_16<(u16)data, sizeof(T)>( &object );
+	// Aligned sizes use the optimized 32 bit inline memset.  Unaligned sizes use memset.
+	if( (sizeof(T) & 0x3) != 0 )
+		memset( &obj, data, sizeof( T ) );
 	else
-		memset_32<(u32)data, sizeof(T)>( &object );
+		memset32_obj<data + (data<<8) + (data<<16) + (data<<24)>( obj );
+}
+
+template< u16 data, typename T >
+static __forceinline void memset16_obj( T& obj )
+{
+	if( (sizeof(T) & 0x3) != 0 )
+		_memset_16_unaligned( &obj, data, sizeof( T ) )
+	else
+		memset32_obj<data + (data<<16)>( obj );
 }
 
 #endif

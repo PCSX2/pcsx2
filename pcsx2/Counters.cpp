@@ -113,7 +113,7 @@ static __forceinline void cpuRcntSet()
 void rcntInit() {
 	int i;
 
-	memset(counters, 0, sizeof(counters));
+	memzero_obj(counters);
 
 	for (i=0; i<4; i++) {
 		counters[i].rate = 2;

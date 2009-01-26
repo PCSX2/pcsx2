@@ -543,8 +543,8 @@ void OnStates_LoadOther()
 	char szFileTitle[g_MaxPath];
 	char szFilter[g_MaxPath];
 
-	memset(&szFileName,  0, sizeof(szFileName));
-	memset(&szFileTitle, 0, sizeof(szFileTitle));
+	memzero_obj( szFileName );
+	memzero_obj( szFileTitle );
 
 	strcpy(szFilter, _("PCSX2 State Format"));
 	strcatz(szFilter, "*.*;*.*");
@@ -575,8 +575,8 @@ void OnStates_SaveOther()
 	char szFileTitle[g_MaxPath];
 	char szFilter[g_MaxPath];
 
-	memset(&szFileName,  0, sizeof(szFileName));
-	memset(&szFileTitle, 0, sizeof(szFileTitle));
+	memzero_obj( szFileName );
+	memzero_obj( szFileTitle );
 
 	strcpy(szFilter, _("PCSX2 State Format"));
 	strcatz(szFilter, "*.*;*.*");

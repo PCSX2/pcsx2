@@ -175,7 +175,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	fprintf(f, "\n\nlive0 - %x, live1 - %x, live2 - %x, lastuse - %x\nmmx - %x, xmm - %x, used - %x\n",
 		EEINST_LIVE0, EEINST_LIVE1, EEINST_LIVE2, EEINST_LASTUSE, EEINST_MMX, EEINST_XMM, EEINST_USED);
 
-	memset(used, 0, sizeof(used));
+	memzero_obj(used);
 	numused = 0;
 	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( s_pInstCache->regs[i] & EEINST_USED ) {
@@ -184,7 +184,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 		}
 	}
 
-	memset(fpuused, 0, sizeof(fpuused));
+	memzero_obj(fpuused);
 	fpunumused = 0;
 	for(i = 0; i < ARRAYSIZE(s_pInstCache->fpuregs); ++i) {
 		if( s_pInstCache->fpuregs[i] & EEINST_USED ) {

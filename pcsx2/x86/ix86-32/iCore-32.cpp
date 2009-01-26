@@ -17,7 +17,7 @@
  */
 #include "PrecompiledHeader.h"
 
-#include "System.h"
+#include "Misc.h"
 #include "iR5900.h"
 #include "Vif.h"
 #include "VU.h"
@@ -37,7 +37,7 @@ int g_x86checknext;
 // use special x86 register allocation for ia32
 
 void _initX86regs() {
-	memset(x86regs, 0, sizeof(x86regs));
+	memzero_obj(x86regs);
 	g_x86AllocCounter = 0;
 	g_x86checknext = 0;
 }
@@ -402,7 +402,7 @@ static int s_mmxchecknext = 0;
 
 void _initMMXregs()
 {
-	memset(mmxregs, 0, sizeof(mmxregs));
+	memzero_obj(mmxregs);
 	g_mmxAllocCounter = 0;
 	s_mmxchecknext = 0;
 }

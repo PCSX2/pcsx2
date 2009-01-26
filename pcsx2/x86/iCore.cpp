@@ -18,7 +18,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include "System.h"
+#include "Misc.h"
 #include "iR5900.h"
 #include "Vif.h"
 #include "VU.h"
@@ -83,7 +83,7 @@ using namespace std;
 static int s_xmmchecknext = 0;
 
 void _initXMMregs() {
-	memset(xmmregs, 0, sizeof(xmmregs));
+	memzero_obj( xmmregs );
 	g_xmmAllocCounter = 0;
 	s_xmmchecknext = 0;
 }

@@ -239,7 +239,7 @@ void cpudetectInit()
    int num;
    char str[50];
 	
-   memset( cpuinfo.x86ID, 0, sizeof( cpuinfo.x86ID ) );
+   memzero_obj( cpuinfo.x86ID );
    cpuinfo.x86Family = 0;
    cpuinfo.x86Model  = 0;
    cpuinfo.x86PType  = 0;
@@ -326,7 +326,7 @@ void cpudetectInit()
 	if ( cpuinfo.x86ID[ 0 ] == 'G' ){ cputype=0;}//trick lines but if you know a way better ;p
 	if ( cpuinfo.x86ID[ 0 ] == 'A' ){ cputype=1;}
    
-	memset(cpuinfo.x86Fam, 0, sizeof(cpuinfo.x86Fam));
+	memzero_obj( cpuinfo.x86Fam );
 	iCpuId( 0x80000002, (u32*)cpuinfo.x86Fam);
 	iCpuId( 0x80000003, (u32*)(cpuinfo.x86Fam+16));
 	iCpuId( 0x80000004, (u32*)(cpuinfo.x86Fam+32));

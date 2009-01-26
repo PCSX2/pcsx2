@@ -63,8 +63,8 @@ void CDVDFS_init(){
 	cdReadMode.datapattern = CdSecS2048;	//isofs driver only needs
 											//2KB sectors
 
-	memset(fd_table, 0, sizeof(fd_table));
-	memset(fd_used, 0, 16*sizeof(int));
+	memzero_obj( fd_table );
+	memzero_obj( fd_used );
 
 	inited = TRUE;
 

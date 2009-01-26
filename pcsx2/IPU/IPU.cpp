@@ -136,7 +136,7 @@ void IPUProcessInterrupt()
 // Register accesses (run on EE thread)
 int ipuInit()
 {
-	memzero_air<sizeof(IPUregisters)>(ipuRegs);
+	memzero_ptr<sizeof(IPUregisters)>(ipuRegs);
 	memzero_obj(g_BP);
 
 	//other stuff
@@ -154,7 +154,7 @@ int ipuInit()
 
 void ipuReset()
 {
-	memzero_air<sizeof(IPUregisters)>(ipuRegs);
+	memzero_ptr<sizeof(IPUregisters)>(ipuRegs);
 	g_nDMATransfer = 0;
 }
 
@@ -384,7 +384,7 @@ static void ipuBCLR(u32 val) {
 	g_BP.IFC = 0;
 	ipuRegs->ctrl.BUSY = 0;
 	ipuRegs->cmd.BUSY = 0;
-	memzero_air<80>(readbits);
+	memzero_ptr<80>(readbits);
 	IPU_LOG("Clear IPU input FIFO. Set Bit offset=0x%X\n", g_BP.BP);
 }
 
