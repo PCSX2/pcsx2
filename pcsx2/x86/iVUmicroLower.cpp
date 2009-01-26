@@ -130,8 +130,8 @@ void recVUMI_DIV(VURegs *VU, int info)
 	x86SetJ32(ajmp32);
 
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		vuFloat5(EEREC_S, EEREC_TEMP, (1 << (3-_Fsf_)));
-		vuFloat5(EEREC_T, EEREC_TEMP, (1 << (3-_Ftf_)));
+		vuFloat5_useEAX(EEREC_S, EEREC_TEMP, (1 << (3-_Fsf_)));
+		vuFloat5_useEAX(EEREC_T, EEREC_TEMP, (1 << (3-_Ftf_)));
 	}
 
 	_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
@@ -1722,7 +1722,7 @@ void recVUMI_ESUM( VURegs *VU, int info )
 		SSE_ADDSS_XMM_to_XMM(EEREC_TEMP, EEREC_D); // x+y+z+w, w+y, w+y, w+y 
 	}
 
-	vuFloat(info, EEREC_TEMP, 8);
+	vuFloat_useEAX(info, EEREC_TEMP, 8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 //------------------------------------------------------------------
@@ -1739,34 +1739,34 @@ void recVUMI_ERCPR( VURegs *VU, int info )
 	// don't use RCPSS (very bad precision)
 	switch ( _Fsf_ ) {
 		case 0: //0001
-			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5(EEREC_S, EEREC_TEMP, 8);
+			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5_useEAX(EEREC_S, EEREC_TEMP, 8);
 			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE); // temp <- 1
 			SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			break;
 		case 1: //0010
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
-			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5(EEREC_S, EEREC_TEMP, 8);
+			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5_useEAX(EEREC_S, EEREC_TEMP, 8);
 			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE); // temp <- 1
 			SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
 			break;
 		case 2: //0100
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xc6);
-			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5(EEREC_S, EEREC_TEMP, 8);
+			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5_useEAX(EEREC_S, EEREC_TEMP, 8);
 			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE); // temp <- 1
 			SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xc6);
 			break;
 		case 3: //1000
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
-			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5(EEREC_S, EEREC_TEMP, 8);
+			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5_useEAX(EEREC_S, EEREC_TEMP, 8);
 			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE); // temp <- 1
 			SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0x27);
 			break;
 	}
 
-	vuFloat(info, EEREC_TEMP, 8);
+	vuFloat_useEAX(info, EEREC_TEMP, 8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 }
 //------------------------------------------------------------------
@@ -1809,7 +1809,7 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 	{
 		SSE_MOVSS_M32_to_XMM(t1reg, (uptr)VU_ONE);
 		SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP);
-		vuFloat(info, t1reg, 8);
+		vuFloat_useEAX(info, t1reg, 8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), t1reg);
 		_freeXMMreg(t1reg);
 	}
@@ -1818,7 +1818,7 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 		SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE);
 		SSE_DIVSS_M32_to_XMM(EEREC_TEMP, VU_VI_ADDR(REG_P, 0));
-		vuFloat(info, EEREC_TEMP, 8);
+		vuFloat_useEAX(info, EEREC_TEMP, 8);
 		SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_P, 0), EEREC_TEMP);
 	}
 }
