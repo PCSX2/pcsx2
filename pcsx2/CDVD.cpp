@@ -865,8 +865,6 @@ int cdvdReadSector() {
 		return -1;
 	}
 
-	FreezeMMXRegs(1);
-
 	const u32 madr = HW_DMA3_MADR;
 
 	// if raw dvd sector 'fill in the blanks'
@@ -935,7 +933,6 @@ int cdvdReadSector() {
 
 	HW_DMA3_BCR_H16-= (cdvd.BlockSize / (HW_DMA3_BCR_L16*4));
 	HW_DMA3_MADR+= cdvd.BlockSize;
-	FreezeMMXRegs(0);
 
 	return 0;
 }
@@ -2024,9 +2021,7 @@ void cdvdWrite16(u8 rt)		 // SCOMMAND
 			if (cdvd.mg_size + cdvd.ParamC > cdvd.mg_maxsize)
 				cdvd.Result[0] = 0x80;
 			else{
-				FreezeMMXRegs(1);
 				memcpy_fast(cdvd.mg_buffer + cdvd.mg_size, cdvd.Param, cdvd.ParamC);
-				FreezeMMXRegs(0);
 				cdvd.mg_size += cdvd.ParamC;
 				cdvd.Result[0] = 0; // 0 complete ; 1 busy ; 0x80 error
 			}
@@ -2034,11 +2029,9 @@ void cdvdWrite16(u8 rt)		 // SCOMMAND
 
 		case 0x8E: // sceMgReadData
 			SetResultSize( std::min(16, cdvd.mg_size) );
-			FreezeMMXRegs(1);
 			memcpy_fast(cdvd.Result, cdvd.mg_buffer, cdvd.ResultC);
 			cdvd.mg_size -= cdvd.ResultC;
 			memcpy_fast(cdvd.mg_buffer, cdvd.mg_buffer+cdvd.ResultC, cdvd.mg_size);
-			FreezeMMXRegs(0);
 			break;
 
 		case 0x88: // secrman: __mechacon_auth_0x88	//for now it is the same; so, fall;)
@@ -2089,9 +2082,7 @@ fail_pol_cal:
 			SetResultSize(3);//in:0
 			{
 				int bit_ofs = mg_BIToffset(cdvd.mg_buffer);
-				FreezeMMXRegs(1);
 				memcpy_fast(cdvd.mg_buffer, &cdvd.mg_buffer[bit_ofs], 8+16*cdvd.mg_buffer[bit_ofs+4]);
-				FreezeMMXRegs(0);
 			}
 			cdvd.mg_maxsize = 0; // don't allow any write
 			cdvd.mg_size = 8+16*cdvd.mg_buffer[4];//new offset, i just moved the data

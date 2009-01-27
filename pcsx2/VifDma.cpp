@@ -574,9 +574,7 @@ static void VIFunpack(u32 *data, vifCode *v, int size, const unsigned int VIFdma
 				// v4-32
 				if(vifRegs->mode == 0 && !(vifRegs->code & 0x10000000) && vif->usn == 0){
 					vifRegs->num -= size>>4;
-					FreezeMMXRegs(1);
 					memcpy_fast((u8*)dest, cdata, size);
-					FreezeMMXRegs(0);
 					size = 0;
 					//unpacktotal += GetCPUTick()-basetick;
 					return;
@@ -814,9 +812,7 @@ static __forceinline void _vif0mpgTransfer(u32 addr, u32 *data, int size) {
 		fclose(f);
 	}*/
 	if (memcmp(VU0.Micro + addr, data, size << 2)) {
-		FreezeMMXRegs(1);
 		memcpy_fast(VU0.Micro + addr, data, size << 2);
-		FreezeMMXRegs(0);
 		CpuVU0->Clear(addr, size);
 	}
 }
@@ -1490,9 +1486,7 @@ static __forceinline void _vif1mpgTransfer(u32 addr, u32 *data, int size) {
 	}*/
     assert( VU1.Micro > 0 );
 	if (memcmp(VU1.Micro + addr, data, size << 2)) {
-		FreezeMMXRegs(1);
 		memcpy_fast(VU1.Micro + addr, data, size << 2);
-		FreezeMMXRegs(0);
 		CpuVU1->Clear(addr, size);
 	}
 }
@@ -1644,7 +1638,7 @@ static int Vif1TransDirectHL(u32 *data){
 	{
 		//unaligned copy.VIF handling is -very- messy, so i'l use this code til i fix it :)
 		const uint count = mtgsThread->PrepDataPacket( GIF_PATH_2, data, ret<<2 );
-		memcpy_raz_u( mtgsThread->GetDataPacketPtr(), data, count );
+		memcpy_fast( mtgsThread->GetDataPacketPtr(), data, count );
 		mtgsThread->SendDataPacket();
 	}
 	else {

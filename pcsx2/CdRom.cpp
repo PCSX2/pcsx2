@@ -527,9 +527,7 @@ void  cdrReadInterrupt() {
 		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
 		return;
 	}
-	FreezeMMXRegs(1);
 	memcpy_fast(cdr.Transfer, buf+12, 2340);
-	FreezeMMXRegs(0);
 	cdr.Stat = DataReady;
 
 	CDR_LOG(" %x:%x:%x\n", cdr.Transfer[0], cdr.Transfer[1], cdr.Transfer[2]);
@@ -923,9 +921,7 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr) {
 			}
 
 			cdsize = (bcr & 0xffff) * 4;
-			FreezeMMXRegs(1);
 			memcpy_fast((u8*)PSXM(madr), cdr.pTransfer, cdsize);
-			FreezeMMXRegs(0);
 			psxCpu->Clear(madr, cdsize/4);
 			cdr.pTransfer+=cdsize;
 

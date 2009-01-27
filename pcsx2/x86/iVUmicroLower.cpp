@@ -1977,12 +1977,7 @@ void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
     //if( size > 0 )
 	{
 		u8* pmem = mtgsThread->GetDataPacketPtr();
-		//FreezeMMXRegs(1);
-	    //memcpy_fast(pmem, (u8*)pMem+addr, size);
-		//FreezeMMXRegs(0);
-
-		// we can use the faster memcpy_raz_ here (src/dest are garaunteed to be aligned)
-		memcpy_raz_(pmem, (u8*)pMem+addr, size);
+		memcpy_aligned(pmem, (u8*)pMem+addr, size);
 		mtgsThread->SendDataPacket();
 	}
 }

@@ -226,13 +226,11 @@ extern void mfifoGIFtransfer(int);
 #define gif ((DMACh*)&PS2MEM_HW[0xA000])
 void dmaSPR0() { // fromSPR
 	int qwc = spr0->qwc;
-	FreezeMMXRegs(1);
 
 	SPR_LOG("dmaSPR0 chcr = %lx, madr = %lx, qwc  = %lx, sadr = %lx\n",
 			spr0->chcr, spr0->madr, spr0->qwc, spr0->sadr);
 
 	_dmaSPR0();
-	FreezeMMXRegs(0);
 	if ((psHu32(DMAC_CTRL) & 0xC) == 0xC) { // GIF MFIFO
 		if((spr0->madr & ~psHu32(DMAC_RBSR)) != psHu32(DMAC_RBOR)) SysPrintf("GIF MFIFO Write outside MFIFO area\n");
 		spr0->madr = psHu32(DMAC_RBOR) + (spr0->madr & psHu32(DMAC_RBSR));
@@ -308,7 +306,6 @@ void _SPR1interleave() {
 void dmaSPR1() { // toSPR
 	
 	
-	FreezeMMXRegs(1);
 #ifdef SPR_LOG
 	SPR_LOG("dmaSPR1 chcr = 0x%x, madr = 0x%x, qwc  = 0x%x\n"
 			"        tadr = 0x%x, sadr = 0x%x\n",
@@ -325,7 +322,6 @@ void dmaSPR1() { // toSPR
 		// Transfer Dn_QWC from Dn_MADR to SPR1
 		SPR1chain();
 		CPU_INT(9, cycles); 
-		FreezeMMXRegs(0);
 		return;
 	} else if ((spr1->chcr & 0xc) == 0x4){
 			int cycles = 0;
@@ -338,7 +334,6 @@ void dmaSPR1() { // toSPR
 		// Transfer Dn_QWC from Dn_MADR to SPR1
 		SPR1chain();
 		CPU_INT(9, cycles); 
-		FreezeMMXRegs(0);
 		return;
 	}
 	// Chain Mode
@@ -382,7 +377,6 @@ void dmaSPR1() { // toSPR
 	} else { // Interleave Mode
 		_SPR1interleave();
 	} 
-	FreezeMMXRegs(0);
 	
 }
 

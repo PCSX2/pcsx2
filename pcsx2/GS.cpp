@@ -575,11 +575,11 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 			{ 
 				pendmem = (pendmem&~0xfff)-16; 
 			} 
-			memcpy_raz_(pgsmem, pMem, pendmem-(u32)gif->madr+16);
+			memcpy_aligned(pgsmem, pMem, pendmem-(u32)gif->madr+16);
 		}
 		else
 #endif
-		memcpy_raz_(pgsmem, pMem, sizetoread); 
+		memcpy_aligned(pgsmem, pMem, sizetoread); 
 		
 		mtgsThread->SendDataPacket();
 	} 

@@ -230,12 +230,19 @@ extern u8 g_globalXMMSaved;
 void _memset16_unaligned( void* dest, u16 data, size_t size );
 
 #if defined(_WIN32) && !defined(__x86_64__)
-	// faster memcpy
-	extern void __fastcall memcpy_raz_u(void *dest, const void *src, size_t bytes);
-	extern void __fastcall memcpy_raz_(void *dest, const void *src, size_t qwc);
-	extern void __fastcall memcpy_amd_(void *dest, const void *src, size_t n);
+
+	// The new simplified memcpy_amd_ is now faster than memcpy_raz_.
+	// memcpy_amd_ also does mmx register saving, negating the need for freezeregs (code cleanup!)
+	// Additionally, using one single memcpy implementation keeps the code cache cleaner.
+
+	//extern void __fastcall memcpy_raz_udst(void *dest, const void *src, size_t bytes);
+	//extern void __fastcall memcpy_raz_usrc(void *dest, const void *src, size_t bytes);
+	//extern void __fastcall memcpy_raz_(void *dest, const void *src, size_t bytes);
+	extern void __fastcall memcpy_amd_(void *dest, const void *src, size_t bytes);
+
 #	include "windows/memzero.h"
 #	define memcpy_fast memcpy_amd_
+#	define memcpy_aligned memcpy_amd_
 
 #else
 
@@ -243,6 +250,10 @@ void _memset16_unaligned( void* dest, u16 data, size_t size );
 	#define memcpy_fast memcpy
 	#define memcpy_raz_ memcpy
 	#define memcpy_raz_u memcpy
+
+	#define memcpy_aligned memcpy
+	#define memcpy_raz_u memcpy
+
 	#include "Linux/memzero.h"
 
 #endif

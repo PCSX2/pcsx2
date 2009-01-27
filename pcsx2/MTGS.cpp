@@ -430,7 +430,7 @@ int mtgsThreadObject::Callback()
 {
 	Console::WriteLn("MTGS > Thread Started, Opening GS Plugin...");
 
-	memcpy_raz_( m_gsMem, PS2MEM_GS, sizeof(m_gsMem) );
+	memcpy_aligned( m_gsMem, PS2MEM_GS, sizeof(m_gsMem) );
 	GSsetBaseMem( m_gsMem );
 
 	m_returncode = GSopen((void *)&pDsp, "PCSX2", 1);

@@ -329,7 +329,7 @@ static __forceinline u8* dmaGetAddr(u32 mem)
 
 #else
 
-
+// Note: Dma addresses are guaranteed to be aligned to 16 bytes (128 bits)
 static __forceinline void *dmaGetAddr(u32 addr) {
 	u8 *ptr;
 
@@ -355,35 +355,17 @@ void hwShutdown();
 
 // hw read functions
 extern u8   hwRead8 (u32 mem);
-int hwConstRead8 (u32 x86reg, u32 mem, u32 sign);
-
 extern u16  hwRead16(u32 mem);
-int hwConstRead16(u32 x86reg, u32 mem, u32 sign);
-
 extern u32  hwRead32(u32 mem);
-int hwConstRead32(u32 x86reg, u32 mem);
-
-u64  hwRead64(u32 mem);
-void hwConstRead64(u32 mem, int mmreg);
-
-void hwRead128(u32 mem, u64 *out);
-void hwConstRead128(u32 mem, int xmmreg);
+extern u64  hwRead64(u32 mem);
+extern void hwRead128(u32 mem, u64 *out);
 
 // hw write functions
-void hwWrite8 (u32 mem, u8  value);
-void hwConstWrite8 (u32 mem, int mmreg);
-
-void hwWrite16(u32 mem, u16 value);
-void hwConstWrite16(u32 mem, int mmreg);
-
-void hwWrite32(u32 mem, u32 value);
-void hwConstWrite32(u32 mem, int mmreg);
-
-void hwWrite64(u32 mem, u64 value);
-void hwConstWrite64(u32 mem, int mmreg);
-
-void hwWrite128(u32 mem, const u64 *value);
-void hwConstWrite128(u32 mem, int xmmreg);
+extern void hwWrite8 (u32 mem, u8  value);
+extern void hwWrite16(u32 mem, u16 value);
+extern void hwWrite32(u32 mem, u32 value);
+extern void hwWrite64(u32 mem, u64 value);
+extern void hwWrite128(u32 mem, const u64 *value);
 
 void hwIntcIrq(int n);
 void hwDmacIrq(int n);
@@ -393,6 +375,18 @@ int  hwMFIFOWrite(u32 addr, u8 *data, u32 size);
 
 int  hwDmacSrcChainWithStack(DMACh *dma, int id);
 int  hwDmacSrcChain(DMACh *dma, int id);
+
+int hwConstRead8 (u32 x86reg, u32 mem, u32 sign);
+int hwConstRead16(u32 x86reg, u32 mem, u32 sign);
+int hwConstRead32(u32 x86reg, u32 mem);
+void hwConstRead64(u32 mem, int mmreg);
+void hwConstRead128(u32 mem, int xmmreg);
+
+void hwConstWrite8 (u32 mem, int mmreg);
+void hwConstWrite16(u32 mem, int mmreg);
+void hwConstWrite32(u32 mem, int mmreg);
+void hwConstWrite64(u32 mem, int mmreg);
+void hwConstWrite128(u32 mem, int xmmreg);
 
 #ifdef PCSX2_VIRTUAL_MEM
 void iMemRead32Check();

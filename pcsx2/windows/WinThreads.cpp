@@ -49,6 +49,9 @@ namespace Threading
 		}
 
 		cpuinfo.LogicalCores = CPUs;
+		if( LogicalCoresPerPhysicalCPU > CPUs) // for 1-socket HTT-disabled machines
+			LogicalCoresPerPhysicalCPU = CPUs;
+
 		cpuinfo.PhysicalCores = ( CPUs / LogicalCoresPerPhysicalCPU ) * PhysicalCoresPerPhysicalCPU;
 		ptw32_smp_system = ( cpuinfo.LogicalCores > 1 ) ? TRUE : FALSE;
 	}
