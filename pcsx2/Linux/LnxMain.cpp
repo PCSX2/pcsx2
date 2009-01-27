@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 		char* token = argv[i++];
 
 		if( stricmp(token, "-help") == 0 || stricmp(token, "--help") == 0 || stricmp(token, "-h") == 0 ) {
-			//Msgbox::Alert("%s", params phelpmsg);
+			//Msgbox::Alert( phelpmsg );
 			return 0;
 		}
 		else if( stricmp(token, "-efile") == 0 ) {
