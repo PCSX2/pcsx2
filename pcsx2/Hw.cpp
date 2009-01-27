@@ -155,16 +155,16 @@ __forceinline u16 hwRead16(u32 mem)
 	return ret;
 }
 
-__forceinline u32 hwRead32(u32 mem) {
-	u32 ret;
-	
+__forceinline u32 hwRead32(u32 mem)
+{
 	//IPU regs
 	if ((mem>=0x10002000) && (mem<0x10003000)) {
 		return ipuRead32(mem);
 	}
 
 	// gauntlen uses 0x1001xxxx
-	switch (mem) {
+	switch (mem)
+	{
 		case 0x10000000: return (u16)rcntRcount(0);
 		case 0x10000010: return (u16)counters[0].modeval;
 		case 0x10000020: return (u16)counters[0].target;
@@ -183,89 +183,87 @@ __forceinline u32 hwRead32(u32 mem) {
 		case 0x10001810: return (u16)counters[3].modeval;
 		case 0x10001820: return (u16)counters[3].target;
 
-#ifdef PCSX2_DEVBUILD
-		case 0x1000A000:
-			ret = psHu32(mem);//dma2 chcr
-			HW_LOG("Hardware read DMA2_CHCR 32bit at %lx, ret %lx\n", mem, ret);
-			break;
-		case 0x1000A010:
-			ret = psHu32(mem);//dma2 madr
-			HW_LOG("Hardware read DMA2_MADR 32bit at %lx, ret %lx\n", mem, ret);
-			break;
-		case 0x1000A020:
-			ret = psHu32(mem);//dma2 qwc
-			HW_LOG("Hardware readDMA2_QWC 32bit at %lx, ret %lx\n", mem, ret);
-			break;
-		case 0x1000A030:
-			ret = psHu32(mem);//dma2 taddr
-			HW_LOG("Hardware read DMA2_TADDR 32bit at %lx, ret %lx\n", mem, ret);
-			break;
-		case 0x1000A040:
-			ret = psHu32(mem);//dma2 asr0
-			HW_LOG("Hardware read DMA2_ASR0 32bit at %lx, ret %lx\n", mem, ret);
-			break;
-		case 0x1000A050:
-			ret = psHu32(mem);//dma2 asr1
-			HW_LOG("Hardware read DMA2_ASR1 32bit at %lx, ret %lx\n", mem, ret);
-			break;
-		case 0x1000A080:
-			ret = psHu32(mem);//dma2 saddr
-			HW_LOG("Hardware read DMA2_SADDR 32 at %lx, ret %lx\n", mem, ret);
-			break;
+//#ifdef PCSX2_DEVBUILD
+		case 0x1000A000:	//dma2 chcr
+			HW_LOG("Hardware read DMA2_CHCR 32bit at %lx, ret %lx\n", mem, psHu32(mem));
+			return psHu32(mem);
+		case 0x1000A010:	//dma2 madr
+			HW_LOG("Hardware read DMA2_MADR 32bit at %lx, ret %lx\n", mem, psHu32(mem));
+			return psHu32(mem);
+		case 0x1000A020:	//dma2 qwc
+			HW_LOG("Hardware readDMA2_QWC 32bit at %lx, ret %lx\n", mem, psHu32(mem));
+			return psHu32(mem);
+		case 0x1000A030:	//dma2 taddr
+			HW_LOG("Hardware read DMA2_TADDR 32bit at %lx, ret %lx\n", mem, psHu32(mem));
+			return psHu32(mem);
+		case 0x1000A040:	//dma2 asr0
+			HW_LOG("Hardware read DMA2_ASR0 32bit at %lx, ret %lx\n", mem, psHu32(mem));
+			return psHu32(mem);
+		case 0x1000A050:	//dma2 asr1
+			HW_LOG("Hardware read DMA2_ASR1 32bit at %lx, ret %lx\n", mem, psHu32(mem));
+			return psHu32(mem);
+		case 0x1000A080:	//dma2 saddr
+			HW_LOG("Hardware read DMA2_SADDR 32 at %lx, ret %lx\n", mem, psHu32(mem));
+			return psHu32(mem);
 		case 0x1000B400: // dma4 chcr
-			ret = ((DMACh *)&PS2MEM_HW[0xb400])->chcr;
-			SPR_LOG("Hardware read IPU1_CHCR 32 at %lx, ret %x\n", mem, ret);
-			break;
+			SPR_LOG("Hardware read IPU1_CHCR 32 at %lx, ret %x\n", mem, ((DMACh *)&PS2MEM_HW[0xb400])->chcr);
+			return ((DMACh *)&PS2MEM_HW[0xb400])->chcr;
 
 		case 0x1000e010: // DMAC_STAT
 			HW_LOG("DMAC_STAT Read  32bit %x\n", psHu32(0xe010));
 			return psHu32(0xe010);
+
 		case 0x1000f000: // INTC_STAT
-//			HW_LOG("INTC_STAT Read  32bit %x\n", psHu32(0xf000));
+			//HW_LOG("INTC_STAT Read  32bit %x\n", psHu32(0xf000));	// this one tends to spam the logs..
 			return psHu32(0xf000);
+
 		case 0x1000f010: // INTC_MASK
 			HW_LOG("INTC_MASK Read  32bit %x\n", psHu32(0xf010));
 			return psHu32(0xf010);
-#endif
+//#endif
 
 		case 0x1000f130:
+		case 0x1000f260:// SIF?
 		case 0x1000f410:
 		case 0x1000f430://MCH_RICM
-			ret = 0;
-			break;
+			return 0;
 
 		case 0x1000f440://MCH_DRD
 			
-			if ((psHu32(0xf430) >> 6) & 0xF)
-				ret = 0;
-			else
-				switch ((psHu32(0xf430)>>16) & 0xFFF){//MCH_RICM: x:4|SA:12|x:5|SDEV:1|SOP:4|SBC:1|SDEV:5
-				case 0x21://INIT
-					ret = 0x1F * (rdram_sdevid < rdram_devices);
-					rdram_sdevid += (rdram_sdevid < rdram_devices);
+			if( !((psHu32(0xf430) >> 6) & 0xF) )
+			{
+				switch ((psHu32(0xf430)>>16) & 0xFFF)
+				{	//MCH_RICM: x:4|SA:12|x:5|SDEV:1|SOP:4|SBC:1|SDEV:5
+					case 0x21://INIT
+						if(rdram_sdevid < rdram_devices)
+						{
+							rdram_sdevid++;
+							return 0x1F;
+						}
 					break;
-				case 0x23://CNFGA
-					ret = 0x0D0D;	//PVER=3 | MVER=16 | DBL=1 | REFBIT=5
-					break;
-				case 0x24://CNFGB
-					//0x0110 for PSX  SVER=0 | CORG=8(5x9x7) | SPT=1 | DEVTYP=0 | BYTE=0
-					ret = 0x0090;	//SVER=0 | CORG=4(5x9x6) | SPT=1 | DEVTYP=0 | BYTE=0
-					break;
-				case 0x40://DEVID
-					ret = psHu32(0xf430) & 0x1F;	// =SDEV
-					break;
-				default:
-					ret = 0;
-					break;
+
+					case 0x23://CNFGA
+						return 0x0D0D;	//PVER=3 | MVER=16 | DBL=1 | REFBIT=5
+
+					case 0x24://CNFGB
+						//0x0110 for PSX  SVER=0 | CORG=8(5x9x7) | SPT=1 | DEVTYP=0 | BYTE=0
+						return 0x0090;	//SVER=0 | CORG=4(5x9x6) | SPT=1 | DEVTYP=0 | BYTE=0
+
+					case 0x40://DEVID
+						return psHu32(0xf430) & 0x1F;	// =SDEV
+				}
 			}
-			break;
+			return 0;
 
 		case 0x1000f520: // DMAC_ENABLER
 			HW_LOG("DMAC_ENABLER Read 32bit %lx\n", psHu32(0xf590));
 			return psHu32(0xf590);
 
+		case 0x1000f240: // SIF?
+			return psHu32(mem) | 0xF0000102;
+
 		default:
-			if ((mem & 0xffffff0f) == 0x1000f200) {
+			//if ((mem & 0xffffff0f) == 0x1000f200) {
 				// SIF Control Registers
 				/*1D000020 (word) - EE -> IOP status flag ( set to 0x10000 always ready )
 				1D000030 (word) - IOP -> EE status flag
@@ -275,7 +273,7 @@ __forceinline u32 hwRead32(u32 mem) {
                    read must be 0x1D000060, or the top 20 bits must be zero 
 				*/
 				// note, any changes you make in here, also make on recMemRead32
-				if(mem ==0x1000f260) ret = 0;
+				/*if(mem ==0x1000f260) ret = 0;
 				else if(mem == 0x1000F240) {
 					ret = psHu32(mem) | 0xF0000102;
 					//psHu32(mem) &= ~0x4000;
@@ -287,21 +285,20 @@ __forceinline u32 hwRead32(u32 mem) {
 				break;
 			
 			}
-			else if (mem < 0x10010000) {
-				ret = psHu32(mem);
-			}
-			else {
-				SysPrintf("32bit HW read of address 0x%x\n", mem);
-				ret = 0;
-			}
-			HW_LOG("Unknown Hardware Read 32 at %lx, ret %lx\n", mem, ret);
-			break;
-	}	
+			else */
 
-	return ret;
+			HW_LOG("Unknown Hardware Read 32 at %lx, ret %lx\n", mem, psHu32(mem));
+
+			if (mem < 0x10010000)
+				return psHu32(mem);
+			else
+				Console::Notice("*PCSX2* 32bit HW read of invalid address 0x%x\n", params mem);
+
+			return 0;
+	}
 }
 
-u64 hwRead64(u32 mem) {
+__forceinline u64 hwRead64(u32 mem) {
 	u64 ret;
 
 	if ((mem>=0x10002000) && (mem<0x10003000)) {
@@ -321,7 +318,7 @@ u64 hwRead64(u32 mem) {
 	return ret;
 }
 
-void hwRead128(u32 mem, u64 *out) {
+__forceinline void hwRead128(u32 mem, u64 *out) {
 	if (mem >= 0x10004000 && mem < 0x10008000) {
 		ReadFIFO(mem, out); return;
 	}
@@ -472,20 +469,16 @@ void hwWrite8(u32 mem, u8 value) {
 			psHu8(0xf522) = value;
 			break;
 
+		case 0x1000f200: // SIF(?)
+			psHu8(mem) = value;
+			break;
+
+		case 0x1000f240:// SIF(?)
+			if(!(value & 0x100))
+				psHu32(mem) &= ~0x100;
+			break;
+		
 		default:
-			if ((mem & 0xffffff0f) == 0x1000f200) {
-				u32 at = mem & 0xf0;
-				switch(at)
-				{
-				case 0x00:
-					psHu8(mem) = value;
-					break;
-				case 0x40:
-					if(!(value & 0x100)) psHu32(mem) &= ~0x100;
-					break;
-				}
-				return;
-			}
 			assert( (mem&0xff0f) != 0xf200 );
 
 			switch(mem&~3) {
@@ -501,7 +494,7 @@ void hwWrite8(u32 mem, u8 value) {
 	}
 }
 
-void hwWrite16(u32 mem, u16 value)
+__forceinline void hwWrite16(u32 mem, u16 value)
 {
 #ifdef PCSX2_DEVBUILD
 	if( mem >= 0x10000000 && mem < 0x10008000 )
@@ -679,46 +672,40 @@ void hwWrite16(u32 mem, u16 value)
 		case 0x1000f430:
 		case 0x1000f432:
 			break;
-		default:
-			if ((mem & 0xffffff0f) == 0x1000f200) {
-				u32 at = mem & 0xf0;
-				switch(at)
-				{
-				case 0x00:
-					psHu16(mem) = value;
-					break;
-				case 0x20:
-					psHu16(mem) |= value;
-					break;
-				case 0x30:
-					psHu16(mem) &= ~value;
-					break;
-				case 0x40:
-					assert( (mem&2)==0);
-					if(!(value & 0x100)) psHu16(mem) &= ~0x100;
-					else psHu16(mem) |= 0x100;
-					break;
-				case 0x60:
-					psHu16(mem) = 0;
-					break;
-				}
-				return;
-			}
-			assert( (mem&0xff0f) != 0xf200 );
 
+		case 0x1000f200:
+			psHu16(mem) = value;
+			break;
+
+		case 0x1000f220:
+			psHu16(mem) |= value;
+			break;
+		case 0x1000f230:
+			psHu16(mem) &= ~value;
+			break;
+		case 0x1000f240:
+			if(!(value & 0x100))
+				psHu16(mem) &= ~0x100;
+			else
+				psHu16(mem) |= 0x100;
+			break;
+		case 0x1000f260:
+			psHu16(mem) = 0;
+			break;
+
+		default:
 #ifndef PCSX2_VIRTUAL_MEM
 			if (mem < 0x10010000)
 #endif
 			{
 				psHu16(mem) = value;
 			}
+			HW_LOG("Unknown Hardware write 16 at %x with value %x\n",mem,value);
 	}
-
-	HW_LOG("Unknown Hardware write 16 at %x with value %x\n",mem,value);
 }
 
 
-void hwWrite32(u32 mem, u32 value) {
+__forceinline void hwWrite32(u32 mem, u32 value) {
 
 	if ((mem>=0x10002000) && (mem<0x10003000)) { //IPU regs
 		ipuWrite32(mem,value);
@@ -782,6 +769,7 @@ void hwWrite32(u32 mem, u32 value) {
 			DMA_LOG("VIF1dma CHCR %lx\n", value);
 			DmaExec(dmaVIF1, mem, value);
 			break;
+#ifdef PCSX2_DEVBUILD
 		case 0x10009010: // dma1 - vif1 - madr
 			HW_LOG("VIF1dma Madr %lx\n", value);
 			psHu32(mem) = value;//dma1 madr
@@ -806,11 +794,13 @@ void hwWrite32(u32 mem, u32 value) {
 			HW_LOG("VIF1dma SADR %lx\n", value);
 			psHu32(mem) = value;//dma1 sadr
 			break;
+#endif
 //------------------------------------------------------------------
 		case 0x1000a000: // dma2 - gif
 			DMA_LOG("0x%8.8x hwWrite32: GSdma %lx\n", cpuRegs.cycle, value);
 			DmaExec(dmaGIF, mem, value);
 			break;
+#ifdef PCSX2_DEVBUILD
 	    case 0x1000a010:
 		    psHu32(mem) = value;//dma2 madr
 			HW_LOG("Hardware write DMA2_MADR 32bit at %x with value %x\n",mem,value);
@@ -835,12 +825,14 @@ void hwWrite32(u32 mem, u32 value) {
             psHu32(mem) = value;//dma2 saddr
 		    HW_LOG("Hardware write DMA2_SADDR 32bit at %x with value %x\n",mem,value);
 		    break;
+#endif
 //------------------------------------------------------------------
 		case 0x1000b000: // dma3 - fromIPU
 			DMA_LOG("IPU0dma %lx\n", value);
 			DmaExec(dmaIPU0, mem, value);
 			break;
 //------------------------------------------------------------------
+#ifdef PCSX2_DEVBUILD
 		case 0x1000b010:
 	   		psHu32(mem) = value;//dma2 madr
 			HW_LOG("Hardware write IPU0DMA_MADR 32bit at %x with value %x\n",mem,value);
@@ -857,12 +849,14 @@ void hwWrite32(u32 mem, u32 value) {
 			psHu32(mem) = value;//dma2 saddr
 			HW_LOG("Hardware write IPU0DMA_SADDR 32bit at %x with value %x\n",mem,value);
 			break;
+#endif
 //------------------------------------------------------------------
 		case 0x1000b400: // dma4 - toIPU
 			DMA_LOG("IPU1dma %lx\n", value);
 			DmaExec(dmaIPU1, mem, value);
 			break;
 //------------------------------------------------------------------
+#ifdef PCSX2_DEVBUILD
 		case 0x1000b410:
     		psHu32(mem) = value;//dma2 madr
 			HW_LOG("Hardware write IPU1DMA_MADR 32bit at %x with value %x\n",mem,value);
@@ -879,6 +873,7 @@ void hwWrite32(u32 mem, u32 value) {
 			psHu32(mem) = value;//dma2 saddr
 			HW_LOG("Hardware write IPU1DMA_SADDR 32bit at %x with value %x\n",mem,value);
 			break;
+#endif
 //------------------------------------------------------------------
 		case 0x1000c000: // dma5 - sif0
 			DMA_LOG("SIF0dma %lx\n", value);
@@ -890,6 +885,7 @@ void hwWrite32(u32 mem, u32 value) {
 			DMA_LOG("SIF1dma %lx\n", value);
 			DmaExec(dmaSIF1, mem, value);
 			break;
+#ifdef PCSX2_DEVBUILD
 		case 0x1000c420: // dma6 - sif1 - qwc
 			HW_LOG("SIF1dma QWC = %lx\n", value);
 			psHu32(mem) = value;
@@ -898,6 +894,7 @@ void hwWrite32(u32 mem, u32 value) {
 			HW_LOG("SIF1dma TADR = %lx\n", value);
 			psHu32(mem) = value;
 			break;
+#endif
 //------------------------------------------------------------------
 		case 0x1000c800: // dma7 - sif2
 			DMA_LOG("SIF2dma %lx\n", value);
@@ -916,7 +913,7 @@ void hwWrite32(u32 mem, u32 value) {
 //------------------------------------------------------------------
 		case 0x1000e000: // DMAC_CTRL
 			HW_LOG("DMAC_CTRL Write 32bit %x\n", value);
-			psHu32(mem) = value;
+			psHu32(0xe000) = value;
 			break;
 
 		case 0x1000e010: // DMAC_STAT
@@ -965,8 +962,10 @@ void hwWrite32(u32 mem, u32 value) {
 			psHu32(mem) &= ~value;
 			break;
 		case 0x1000f240:
-			if(!(value & 0x100)) psHu32(mem) &= ~0x100;
-			else psHu32(mem) |= 0x100;
+			if(!(value & 0x100))
+				psHu32(mem) &= ~0x100;
+			else
+				psHu32(mem) |= 0x100;
 			break;
 		case 0x1000f260:
 			psHu32(mem) = 0;
@@ -989,7 +988,7 @@ void hwWrite32(u32 mem, u32 value) {
 	}
 }
 
-void hwWrite64(u32 mem, u64 value) {
+__forceinline void hwWrite64(u32 mem, u64 value) {
 	u32 val32;
 	int i;
 
@@ -1051,8 +1050,10 @@ void hwWrite64(u32 mem, u64 value) {
 			val32 = val32 >> 16;
 			for (i=0; i<16; i++) { // reverse on 1
 				if (val32 & (1<<i)) {
-					if (psHu16(0xe012) & (1<<i)) psHu16(0xe012)&= ~(1<<i);
-					else psHu16(0xe012)|= 1<<i;
+					if (psHu16(0xe012) & (1<<i))
+						psHu16(0xe012)&= ~(1<<i);
+					else
+						psHu16(0xe012)|= 1<<i;
 				}
 			}
             cpuTestDMACInts();
@@ -1074,8 +1075,10 @@ void hwWrite64(u32 mem, u64 value) {
 			for (i=0; i<16; i++) { // reverse on 1
                 const int s = (1<<i);
 				if (value & s) {
-					if (psHu32(INTC_MASK) & s) psHu32(INTC_MASK)&= ~s;
-					else psHu32(INTC_MASK)|= s;
+					if (psHu32(INTC_MASK) & s)
+						psHu32(INTC_MASK)&= ~s;
+					else
+						psHu32(INTC_MASK)|= s;
 				}
 			}
 			cpuTestINTCInts();
@@ -1094,7 +1097,7 @@ void hwWrite64(u32 mem, u64 value) {
 	}
 }
 
-void hwWrite128(u32 mem, const u64 *value) {
+__forceinline void hwWrite128(u32 mem, const u64 *value) {
 	if (mem >= 0x10004000 && mem < 0x10008000) {
 		WriteFIFO(mem, value); return;
 	}
