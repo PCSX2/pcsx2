@@ -96,7 +96,7 @@ void vuMicroMemAlloc()
 	{
 		VU0.Mem = NULL;
 		throw Exception::OutOfMemory(
-			fmt_string( "Failed to alloc vu0mem 0x11000000 %d", params GetLastError() )
+			fmt_string( "Failed to alloc vu0mem 0x11000000 %d", GetLastError() )
 		);
 	}
 

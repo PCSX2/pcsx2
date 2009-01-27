@@ -260,15 +260,15 @@ extern void _gs_ChangeTimings( u32 framerate, u32 iTicks );
 void gsGIFReset();
 void gsCSRwrite(u32 value);
 
-void gsWrite8(u32 mem, u8 value);
-void gsWrite16(u32 mem, u16 value);
-void gsWrite32(u32 mem, u32 value);
-void gsWrite64(u32 mem, u64 value);
+extern void gsWrite8(u32 mem, u8 value);
+extern void gsWrite16(u32 mem, u16 value);
+extern void gsWrite32(u32 mem, u32 value);
+extern void gsWrite64(u32 mem, u64 value);
 
-u8   gsRead8(u32 mem);
-u16  gsRead16(u32 mem);
-u32  gsRead32(u32 mem);
-u64  gsRead64(u32 mem);
+extern u8   gsRead8(u32 mem);
+extern u16  gsRead16(u32 mem);
+extern u32  gsRead32(u32 mem);
+extern u64  gsRead64(u32 mem);
 
 void gsConstWrite8(u32 mem, int mmreg);
 void gsConstWrite16(u32 mem, int mmreg);

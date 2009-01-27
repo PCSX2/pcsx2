@@ -166,7 +166,7 @@ namespace Exception
 	public:
 		virtual ~UnsupportedStateVersion() throw() {}
 		explicit UnsupportedStateVersion( int version ) :
-			StateLoadError_Recoverable( fmt_string( "Unknown or unsupported savestate version: 0x%x", params version ) )
+			StateLoadError_Recoverable( fmt_string( "Unknown or unsupported savestate version: 0x%x", version ) )
 		{}
 
 		explicit UnsupportedStateVersion( int version, const std::string& msg ) :

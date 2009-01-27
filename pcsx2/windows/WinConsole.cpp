@@ -136,7 +136,7 @@ namespace Msgbox
 
 		va_list list;
 		va_start(list,dummy);
-		MessageBox(0, fmt_string(fmt,list).c_str(), _("Pcsx2 Msg"), 0);
+		MessageBox(0, vfmt_string(fmt,list).c_str(), _("Pcsx2 Msg"), 0);
 		va_end(list);
 
 		return false;

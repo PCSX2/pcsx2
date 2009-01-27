@@ -63,13 +63,13 @@ namespace Console
 		return false;
 	}
 
-	__forceinline bool __fastcall Write( const string& fmt )
+	__forceinline bool __fastcall Write( const char* fmt )
 	{
 		if (Config.PsxOut)
-			puts( fmt.c_str() );
+			puts( fmt );
 
 		if (emuLog != NULL)
-			fputs(fmt.c_str(), emuLog);
+			fputs(fmt, emuLog);
 
 		return false;
 	}
@@ -87,7 +87,7 @@ namespace Console
 
 namespace Msgbox
 {	
-	bool Alert (const string& fmt)
+	bool Alert (const char* fmt)
 	{
 		GtkWidget *dialog;
 		
@@ -101,14 +101,14 @@ namespace Msgbox
 		dialog = gtk_message_dialog_new (GTK_WINDOW(MainWindow),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_ERROR,
-                                  GTK_BUTTONS_OK, fmt.c_str());
+                                  GTK_BUTTONS_OK, fmt);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
 		
 		return false; 
 	}
 
-	bool Alert(const string& fmt, VARG_PARAM dummy, ...)
+	bool Alert(const char* fmt, VARG_PARAM dummy, ...)
 	{
 		GtkWidget *dialog;
 		string msg;
@@ -118,12 +118,14 @@ namespace Msgbox
 		vssprintf(msg, fmt, list);
 		va_end(list);
 
+		// fixme: using NULL terminators on std::string might work, but are technically "incorrect."
+		// This should use one of the std::string trimming functions instead.
 		if (msg[msg.length()-1] == '\n')
 			msg[msg.length()-1] = 0;
 
 		if (!UseGui) 
 		{ 
-			Console::Error( msg ); 
+			Console::Error( msg.c_str() ); 
 			return false; 
 		}
 		

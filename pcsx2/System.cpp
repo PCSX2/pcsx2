@@ -194,7 +194,7 @@ bool SysAllocateMem()
 
 			if( !CreateProcess(strexe.c_str(), "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir.GetPtr(), &si, &pi))
 			{
-				MessageBox(NULL, fmt_string( "Failed to launch %hs\n", params &strexe ).c_str(), "Failure", MB_OK);
+				MessageBox(NULL, fmt_string( "Failed to launch %hs\n", &strexe ).c_str(), "Failure", MB_OK);
 			}
 			else
 			{

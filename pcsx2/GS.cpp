@@ -360,7 +360,7 @@ static void IMRwrite(u32 value) {
 	// don't update mtgs mem
 }
 
-void gsWrite8(u32 mem, u8 value) {
+__forceinline void gsWrite8(u32 mem, u8 value) {
 	switch (mem) {
 		case 0x12001000: // GS_CSR
 			gsCSRwrite((CSRw & ~0x000000ff) | value); break;
@@ -379,7 +379,7 @@ void gsWrite8(u32 mem, u8 value) {
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx\n", mem, value);
 }
 
-void gsWrite16(u32 mem, u16 value) {
+__forceinline void gsWrite16(u32 mem, u16 value) {
 	
 	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx\n", mem, value);
 
@@ -411,7 +411,7 @@ void gsWrite16(u32 mem, u16 value) {
 		mtgsThread->SendSimplePacket(GS_RINGTYPE_MEMWRITE16, mem&0x13ff, value, 0);
 }
 
-void gsWrite32(u32 mem, u32 value)
+__forceinline void gsWrite32(u32 mem, u32 value)
 {
 	assert( !(mem&3));
 	GIF_LOG("GS write 32 at %8.8lx with data %8.8lx\n", mem, value);
@@ -441,7 +441,7 @@ void gsWrite32(u32 mem, u32 value)
 		mtgsThread->SendSimplePacket(GS_RINGTYPE_MEMWRITE32, mem&0x13ff, value, 0);
 }
 
-void gsWrite64(u32 mem, u64 value) {
+__forceinline void gsWrite64(u32 mem, u64 value) {
 
 	GIF_LOG("GS write 64 at %8.8lx with data %8.8lx_%8.8lx\n", mem, ((u32*)&value)[1], (u32)value);
 
@@ -470,25 +470,25 @@ void gsWrite64(u32 mem, u64 value) {
 		mtgsThread->SendSimplePacket(GS_RINGTYPE_MEMWRITE64, mem&0x13ff, (u32)value, (u32)(value>>32));
 }
 
-u8 gsRead8(u32 mem)
+__forceinline u8 gsRead8(u32 mem)
 {
 	GIF_LOG("GS read 8 from %8.8lx  value: %8.8lx\n", mem, *(u8*)PS2GS_BASE(mem));
 	return *(u8*)PS2GS_BASE(mem);
 }
 
-u16 gsRead16(u32 mem)
+__forceinline u16 gsRead16(u32 mem)
 {
 	GIF_LOG("GS read 16 from %8.8lx  value: %8.8lx\n", mem, *(u16*)PS2GS_BASE(mem));
 	return *(u16*)PS2GS_BASE(mem);
 }
 
-u32 gsRead32(u32 mem) 
+__forceinline u32 gsRead32(u32 mem) 
 {
 	GIF_LOG("GS read 32 from %8.8lx  value: %8.8lx\n", mem, *(u32*)PS2GS_BASE(mem));
 	return *(u32*)PS2GS_BASE(mem);
 }
 
-u64 gsRead64(u32 mem)
+__forceinline u64 gsRead64(u32 mem)
 {
 	GIF_LOG("GS read 64 from %8.8lx  value: %8.8lx_%8.8lx\n", mem, *(u32*)PS2GS_BASE(mem+4), *(u32*)PS2GS_BASE(mem) );
 	return *(u64*)PS2GS_BASE(mem);

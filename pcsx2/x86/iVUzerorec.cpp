@@ -349,7 +349,7 @@ void SuperVUAlloc(int vuindex)
 		if( s_recVUMem == NULL )
 		{
 			throw Exception::OutOfMemory(
-				fmt_string( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", params (u32)s_recVUMem )
+				fmt_string( "SuperVU Error > failed to allocate recompiler memory (addr: 0x%x)", (u32)s_recVUMem )
 			);
 		}
 

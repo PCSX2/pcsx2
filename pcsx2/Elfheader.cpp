@@ -504,7 +504,7 @@ void ElfApplyPatches()
 	ssprintf( filename, "%8.8x", params ElfCRC );
 
 	// if patches found the following status msg will be overwritten
-	Console::SetTitle( fmt_string( "Game running [CRC=%hs]", params &filename ) );
+	Console::SetTitle( fmt_string( "Game running [CRC=%hs]", &filename ) );
 
 	if( !Config.Patch ) return;
 

@@ -155,15 +155,15 @@ void RunExecute( const char* elf_file, bool use_bios )
 	// cross platform gui?)  - Air
 
 	try
-		{
-			cpuReset();
-		}
-		
-		catch( std::exception& ex )
-		{
-			Msgbox::Alert( "%s", params ex.what() );
-			return;
-		}
+	{
+		cpuReset();
+	}
+	
+	catch( std::exception& ex )
+	{
+		Msgbox::Alert( ex.what() );
+		return;
+	}
 
 	if (OpenPlugins(NULL) == -1) 
 	{
@@ -418,9 +418,9 @@ void States_Save( string file, int num = -1 )
 	catch( std::exception& ex )
 	{
 		if( num != -1 )
-			Msgbox::Alert("An error occured while trying to save to slot %d", params num );
+			Msgbox::Alert("An error occurred while trying to save to slot %d", params num );
 		else
-			Msgbox::Alert("An error occured while trying to save to file: %s", params file );
+			Msgbox::Alert("An error occurred while trying to save to file: %s", params file );
 
 		Console::Error("Save state request failed with the following error:" );
 		Console::Error( "%s", params ex.what() );
