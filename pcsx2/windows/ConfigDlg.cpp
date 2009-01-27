@@ -87,7 +87,7 @@ struct ComboInitializer
 		string tmpStr;
 		int i;
 
-		ssprintf(tmpStr, "%s %d.%d.%d", params PS2E_GetLibName(), (version>>8)&0xff, version&0xff, (version>>24)&0xff);
+		ssprintf(tmpStr, "%s %d.%d.%d", PS2E_GetLibName(), (version>>8)&0xff, version&0xff, (version>>24)&0xff);
 		char* lp = (char *)malloc(strlen(FindData.cFileName)+8);
 		sprintf(lp, "%s", FindData.cFileName);
 		i = ComboBox_AddString(hwndCombo, tmpStr.c_str());

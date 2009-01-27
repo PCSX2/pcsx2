@@ -510,7 +510,7 @@ static void flt( std::string& dest, double num, int size, int precision, char fm
 ///////////////////////////////////////////////////////////////////////////
 // This is a "mostly" direct replacement for vsprintf, that is more secure and easier
 // to use than vsnprintf or vsprintf_s.  See the docs for ssprintf for usage notes.
-void vssappendf(std::string& dest, const std::string& format, va_list args)
+void vssappendf(std::string& dest, const char* format, va_list args)
 {
 	int base;
 
@@ -522,9 +522,9 @@ void vssappendf(std::string& dest, const std::string& format, va_list args)
 
 	// Optimization: Memory is cheap.  Allocating it on the fly is not.  Allocate more room
 	// than we'll likely need right upfront!
-	dest.reserve( format.length() * 2 );
+	dest.reserve( strlen( format ) * 2 );
 
-	for( const char* fmt = format.c_str(); *fmt; fmt++ )
+	for( const char* fmt = format; *fmt; fmt++ )
 	{
 		if (*fmt != '%')
 		{
@@ -734,18 +734,16 @@ repeat:
 	}
 }
 
-void vssprintf( std::string& dest, const std::string& format, va_list args )
+void vssprintf( std::string& dest, const char* format, va_list args )
 {
 	dest.clear();
 	vssappendf( dest, format, args );
 }
 
-void ssappendf( std::string& dest, const std::string& format, VARG_PARAM dummy, ...)
+void ssappendf( std::string& dest, const char* format, ...)
 {
-	varg_assert();
-
 	va_list args;
-	va_start(args, dummy);
+	va_start(args, format);
 	vssappendf( dest, format, args );
 	va_end(args);
 }
@@ -779,27 +777,36 @@ void ssappendf( std::string& dest, const std::string& format, VARG_PARAM dummy, 
 //
 //   ssprintf( dest, "Yo Joe, %Ld, %Lx.", params int64, hex64 );
 //
-void ssprintf(std::string& str, const std::string& fmt, VARG_PARAM dummy, ...)
+void ssprintf(std::string& str, const char* fmt, ...)
 {
-	varg_assert();
+	//varg_assert();
 
 	va_list args;
-	va_start(args, dummy);
+	va_start(args, fmt);
 	vssprintf(str, fmt, args);
 	va_end(args);
 }
 
 // See ssprintf for usage details and differences from sprintf formatting.
-std::string fmt_string( const std::string& fmt, VARG_PARAM dummy, ... )
+std::string fmt_string( const char* fmt, ... )
 {
-	varg_assert();
+	//varg_assert();
 
 	std::string retval;
 	va_list args;
-	va_start( args, dummy );
+	va_start( args, fmt );
 	vssprintf( retval, fmt, args );
 	va_end( args );
 
 	return retval;
 }
 
+std::string vfmt_string( const char* fmt, va_list args )
+{
+	//varg_assert();
+
+	std::string retval;
+	vssprintf( retval, fmt, args );
+
+	return retval;
+}

@@ -73,7 +73,7 @@ static void PostLoadPrep()
 void SaveState::GetFilename( string& dest, int slot )
 {
 	string elfcrcText;
-	ssprintf( elfcrcText, "%8.8X.%3.3d", params ElfCRC, slot );
+	ssprintf( elfcrcText, "%8.8X.%3.3d", ElfCRC, slot );
 	Path::Combine( dest, SSTATES_DIR, elfcrcText );
 }
 

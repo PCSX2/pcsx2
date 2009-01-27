@@ -283,14 +283,20 @@ void WinRun( int nCmdShow )
 	catch( Exception::BaseException& ex )
 	{
 		Msgbox::Alert(
-			"An unhandled or unrecoverable exception occurred, with the message:\n\n" + ex.Message() +
-			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file." );
+			"An unhandled or unrecoverable exception occurred, with the message:\n\n"
+			"%s"
+			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file.", params
+			ex.cMessage()
+		);
 	}
 	catch( std::exception& ex )
 	{
 		Msgbox::Alert(
-			string( "An unhandled or unrecoverable exception occurred, with the message:\n\n" ) + ex.what() +
-			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file." );
+			"An unhandled or unrecoverable exception occurred, with the message:\n\n"
+			"%s"
+			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file.", params
+			ex.what()
+		);
 	}
 
 }

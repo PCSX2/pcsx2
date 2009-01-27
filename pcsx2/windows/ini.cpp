@@ -320,7 +320,7 @@ bool LoadConfig()
 	{
 		string text;
 		extern int _nl_msg_cat_cntr;
-		ssprintf(text, "LANGUAGE=%s", params  Config.Lang);
+		ssprintf(text, "LANGUAGE=%s", Config.Lang);
 		gettext_putenv(text.c_str());
 	}
 #endif

@@ -384,7 +384,9 @@ void SaveGSState(const string& file)
 {
 	if( g_SaveGSStream ) return;
 
-	Console::WriteLn( _("Saving GS State...") + file );
+	Console::WriteLn( _("Saving GS State...") );
+	Console::WriteLn( "\t%hs", params file );
+
 	g_fGSSave = new gzSavingState( file );
 	
 	g_SaveGSStream = 1;
@@ -507,7 +509,7 @@ char* mystrlwr( char* string )
 static void GetGSStateFilename( string& dest )
 {
 	string gsText;
-	ssprintf( gsText, "/%8.8X.%d.gs",params ElfCRC, StatesC);
+	ssprintf( gsText, "/%8.8X.%d.gs", ElfCRC, StatesC);
 	Path::Combine( dest, SSTATES_DIR, gsText );
 }
 
@@ -571,7 +573,7 @@ void ProcessFKeys(int fkey, int shift)
 				// to be aborted.  Sorry user!  We'll give you some info for your trouble:
 
 				Console::Error( _("An error occured while trying to load saveslot %d"), params StatesC );
-				Console::Error( ex.Message() );
+				Console::Error( ex.cMessage() );
 				Msgbox::Alert(
 					"Pcsx2 encountered an error while trying to load the savestate\n"
 					"and emulation had to be aborted." );
@@ -674,7 +676,7 @@ void ProcessFKeys(int fkey, int shift)
 					tok = strtok(NULL, " ");
 					if( tok != NULL ) strcat(name, tok);
 
-					ssprintf( gsText, "%s.%d.gs", params name, StatesC);
+					ssprintf( gsText, "%s.%d.gs", name, StatesC);
 					Path::Combine( Text, SSTATES_DIR, gsText );
 				}
 				else

@@ -76,7 +76,7 @@ typedef void (*TdisR5900F)DisFInterface;
 // These macros are used to assemble the disassembler functions
 #define MakeDisF(fn, b) \
 	void fn DisFInterface { \
-		ssprintf(output, "(%8.8x) ", params code); \
+		ssprintf(output, "(%8.8x) ", code); \
 		b; \
 	}
 

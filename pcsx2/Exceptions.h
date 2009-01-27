@@ -76,6 +76,7 @@ namespace Exception
 		{}
 
 		const std::string& Message() const { return m_message; }
+		const char* cMessage() const { return m_message.c_str(); }
 	};
 
 	class RuntimeError : public BaseException

@@ -268,7 +268,7 @@ void RunExecute( const char* elf_file, bool use_bios )
 	}
 	catch( Exception::BaseException& ex )
 	{
-		Msgbox::Alert( ex.Message() );
+		Msgbox::Alert( ex.cMessage() );
 		return;
 	}
 
@@ -436,9 +436,9 @@ void States_Load( const string& file, int num )
 	catch( Exception::StateLoadError_Recoverable& ex)
 	{
 		if( num != -1 )
-			Console::Notice( "Could not load savestate from slot %d.\n\n" + ex.Message(), params num );
+			Console::Notice( "Could not load savestate from slot %d.\n\n%s", params num, ex.cMessage() );
 		else
-			Console::Notice( "Could not load savestate file: %s.\n\n" + ex.Message(), params file );
+			Console::Notice( "Could not load savestate file: %s.\n\n%s", params file, ex.cMessage() );
 
 		// At this point the cpu hasn't been reset, so we can return
 		// control to the user safely... (that's why we use a console notice instead of a popup)
@@ -453,17 +453,17 @@ void States_Load( const string& file, int num )
 
 		if( num != -1 )
 			ssprintf( message,
-				"Encountered an error while loading savestate from slot %d.\n", params num );
+				"Encountered an error while loading savestate from slot %d.\n", num );
 		else
 			ssprintf( message,
-				"Encountered an error while loading savestate from file: %s.\n", params file );
+				"Encountered an error while loading savestate from file: %s.\n", file );
 
 		if( g_EmulationInProgress )
 			message += "Since the savestate load was incomplete, the emulator has been reset.\n";
 
 		message += "\nError: " + ex.Message();
 
-		Msgbox::Alert( message );
+		Msgbox::Alert( message.c_str() );
 		SysClose();
 		return;
 	}
@@ -479,9 +479,9 @@ void States_Save( const string& file, int num )
 		string text;
 		RecoveryZipSavingState( file ).FreezeAll();
 		if( num != -1 )
-			ssprintf( text, _( "State saved to slot %d" ), params num );
+			ssprintf( text, _( "State saved to slot %d" ), num );
 		else
-			ssprintf( text, _( "State saved to file: %s" ), params file );
+			ssprintf( text, _( "State saved to file: %s" ), file );
 
 		StatusBar_Notice( text );
 	}
@@ -490,13 +490,13 @@ void States_Save( const string& file, int num )
 		string message;
 
 		if( num != -1 )
-			ssprintf( message, "An error occured while trying to save to slot %d\n", params num );
+			ssprintf( message, "An error occurred while trying to save to slot %d\n", num );
 		else
-			ssprintf( message, "An error occured while trying to save to file: %s\n", params file );
+			ssprintf( message, "An error occurred while trying to save to file: %s\n", file );
 
 		message += "Your emulation state has not been saved!\n\nError: " + ex.Message();
 
-		Console::Error( message );
+		Console::Error( message.c_str() );
 	}
 }
 

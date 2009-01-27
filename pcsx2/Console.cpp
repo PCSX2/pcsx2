@@ -30,31 +30,26 @@ const _VARG_PARAM va_arg_dummy = { 0 };
 
 namespace Console
 {
-	static __forceinline void __fastcall _WriteLn( Colors color, const string& fmt, va_list args )
+	static __forceinline void __fastcall _WriteLn( Colors color, const char* fmt, va_list args )
 	{
-		string dest;
-		vssprintf( dest, fmt, args);
 		SetColor( color );
-		WriteLn( dest );
+		WriteLn( vfmt_string( fmt, args ).c_str() );
 		ClearColor();
 	}
 		
-	bool Write( const string& fmt, VARG_PARAM dummy, ... )
+	bool Write( const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
-		string dest;
-
 		va_list list;
 		va_start(list,dummy);
-		vssprintf( dest, fmt, list);
+		WriteLn( vfmt_string( fmt, list ).c_str() );
 		va_end(list);
 
-		WriteLn( dest );
 		return false;
 	}
 
-	bool Write( Colors color, const string& fmt )
+	bool Write( Colors color, const char* fmt )
 	{
 		SetColor( color );
 		Write( fmt );
@@ -62,39 +57,33 @@ namespace Console
 		return false;
 	}
 
-	bool Write( Colors color, const string& fmt, VARG_PARAM dummy, ... )
+	bool Write( Colors color, const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
-		string dest;
-
 		va_list list;
 		va_start(list,dummy);
-		vssprintf( dest, fmt, list);
+		Write( vfmt_string( fmt, list ).c_str() );
 		va_end(list);
 
-		Write( dest );
 		return false;
 	}
 
-	bool WriteLn( const string& fmt, VARG_PARAM dummy, ... )
+	bool WriteLn( const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
-		string dest;
-
 		va_list list;
 		va_start(list,dummy);
-		vssprintf( dest, fmt, list);
+		WriteLn( vfmt_string( fmt, list).c_str() );
 		va_end(list);
 
-		WriteLn( dest );
 		return false;
 	}
 
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended.
-	__forceinline bool __fastcall WriteLn( const string& fmt )
+	__forceinline bool __fastcall WriteLn( const char* fmt )
 	{
 		Write( fmt );
 		Newline();
@@ -103,7 +92,7 @@ namespace Console
 
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended.
-	__forceinline bool __fastcall WriteLn( Colors color, const string& fmt )
+	__forceinline bool __fastcall WriteLn( Colors color, const char* fmt )
 	{
 		Write( color, fmt );
 		Newline();
@@ -111,7 +100,7 @@ namespace Console
 	}
 
 	// Writes a line of colored text to the console, with automatic newline appendage.
-	bool WriteLn( Colors color, const string& fmt, VARG_PARAM dummy, ... )
+	bool WriteLn( Colors color, const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
@@ -124,7 +113,7 @@ namespace Console
 
 	// Displays a message in the console with red emphasis.
 	// Newline is automatically appended.
-	bool Error( const string& fmt, VARG_PARAM dummy, ... )
+	bool Error( const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
@@ -137,7 +126,7 @@ namespace Console
 
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
-	bool Notice( const string& fmt, VARG_PARAM dummy, ... )
+	bool Notice( const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
@@ -151,7 +140,7 @@ namespace Console
 
 	// Displays a message in the console with green emphasis.
 	// Newline is automatically appended.
-	bool Status( const string& fmt, VARG_PARAM dummy, ... )
+	bool Status( const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
@@ -164,7 +153,7 @@ namespace Console
 
 	// Displays a message in the console with red emphasis.
 	// Newline is automatically appended.
-	bool Error( const string& fmt )
+	bool Error( const char* fmt )
 	{
 		WriteLn( Color_Red, fmt );
 		return false;
@@ -172,7 +161,7 @@ namespace Console
 
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
-	bool Notice( const string& fmt )
+	bool Notice( const char* fmt )
 	{
 		WriteLn( Color_Yellow, fmt );
 		return false;
@@ -180,7 +169,7 @@ namespace Console
 
 	// Displays a message in the console with green emphasis.
 	// Newline is automatically appended.
-	bool Status( const string& fmt )
+	bool Status( const char* fmt )
 	{
 		WriteLn( Color_Green, fmt );
 		return false;

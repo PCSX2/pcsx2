@@ -104,17 +104,17 @@ namespace Console
 
 	// Writes an unformatted string of text to the console (fast!)
 	// No newline is appended.
-	__forceinline bool __fastcall Write( const string& fmt )
+	__forceinline bool __fastcall Write( const char* fmt )
 	{
 		if (hConsole != NULL)
 		{
 			DWORD tmp;
-			WriteConsole(hConsole, fmt.c_str(), (DWORD)fmt.length(), &tmp, 0);
+			WriteConsole(hConsole, fmt, (DWORD)strlen(fmt), &tmp, 0);
 		}
 
 		// No flushing here -- only flush after newlines.
 		if (emuLog != NULL)
-			fputs((char*)fmt.c_str(), emuLog);
+			fputs(fmt, emuLog);
 
 		return false;
 	}
@@ -122,25 +122,22 @@ namespace Console
 
 namespace Msgbox
 {
-	bool Alert( const string& fmt )
+	bool Alert( const char* fmt )
 	{
-		MessageBox(0, fmt.c_str(), _("Pcsx2 Msg"), 0);
+		MessageBox(0, fmt, _("Pcsx2 Msg"), 0);
 		return false;
 	}
 
 	// Pops up an alert Dialog Box.
 	// Replacement for SysMessage.
-	bool Alert( const string& fmt, VARG_PARAM dummy, ... )
+	bool Alert( const char* fmt, VARG_PARAM dummy, ... )
 	{
 		varg_assert();
 
-		string dest;
 		va_list list;
-
 		va_start(list,dummy);
-		vssprintf(dest,fmt,list);
+		MessageBox(0, fmt_string(fmt,list).c_str(), _("Pcsx2 Msg"), 0);
 		va_end(list);
-		MessageBox(0, dest.c_str(), _("Pcsx2 Msg"), 0);
 
 		return false;
 	}

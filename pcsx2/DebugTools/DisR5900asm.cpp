@@ -651,7 +651,7 @@ void P_COP2_Unknown( string& output )
 void label_decode( string& output, u32 addr )
 {
 	string buf;
-	ssprintf(buf, "0x%08X",params  addr);
+	ssprintf(buf, "0x%08X", addr);
 	const char* label = disR5900GetSym( addr );
 
 	if( label != NULL )

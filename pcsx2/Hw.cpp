@@ -183,7 +183,7 @@ __forceinline u32 hwRead32(u32 mem)
 		case 0x10001810: return (u16)counters[3].modeval;
 		case 0x10001820: return (u16)counters[3].target;
 
-//#ifdef PCSX2_DEVBUILD
+#ifdef PCSX2_DEVBUILD
 		case 0x1000A000:	//dma2 chcr
 			HW_LOG("Hardware read DMA2_CHCR 32bit at %lx, ret %lx\n", mem, psHu32(mem));
 			return psHu32(mem);
@@ -220,7 +220,7 @@ __forceinline u32 hwRead32(u32 mem)
 		case 0x1000f010: // INTC_MASK
 			HW_LOG("INTC_MASK Read  32bit %x\n", psHu32(0xf010));
 			return psHu32(0xf010);
-//#endif
+#endif
 
 		case 0x1000f130:
 		case 0x1000f260:// SIF?
@@ -292,7 +292,7 @@ __forceinline u32 hwRead32(u32 mem)
 			if (mem < 0x10010000)
 				return psHu32(mem);
 			else
-				Console::Notice("*PCSX2* 32bit HW read of invalid address 0x%x\n", params mem);
+				Console::Notice("*PCSX2* 32bit HW read of invalid address 0x%x", params mem);
 
 			return 0;
 	}

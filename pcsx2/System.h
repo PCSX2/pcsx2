@@ -84,7 +84,7 @@ namespace Console
 	};
 
 	// va_args version of WriteLn, mostly for internal use only.
-	extern void __fastcall _WriteLn( Colors color, const std::string& fmt, va_list args );
+	extern void __fastcall _WriteLn( Colors color, const char* fmt, va_list args );
 
 	extern void Open();
 	extern void Close();
@@ -106,61 +106,61 @@ namespace Console
 
 	// Writes an unformatted string of text to the console (fast!)
 	// No newline is appended.
-	extern bool __fastcall Write( const std::string& fmt );
+	extern bool __fastcall Write( const char* fmt );
 
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended.
-	extern bool __fastcall WriteLn( const std::string& fmt );
+	extern bool __fastcall WriteLn( const char* fmt );
 
 	// Writes an unformatted string of text to the console (fast!)
 	// A newline is automatically appended, and the console color reset to default.
-	extern bool __fastcall WriteLn( Colors color, const std::string& fmt );
+	extern bool __fastcall WriteLn( Colors color, const char* fmt );
 
 	// Writes a line of colored text to the console, with automatic newline appendage.
 	// The console color is reset to default when the operation is complete.
-	extern bool WriteLn( Colors color, const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool WriteLn( Colors color, const char* fmt, VARG_PARAM dummy, ... );
 
 	// Writes a line of colored text to the console (no newline).
 	// The console color is reset to default when the operation is complete.
-	extern bool Write( Colors color, const std::string& fmt, VARG_PARAM dummy, ... );
-	extern bool Write( Colors color, const std::string& fmt );
+	extern bool Write( Colors color, const char* fmt, VARG_PARAM dummy, ... );
+	extern bool Write( Colors color, const char* fmt );
 
 	// Writes a formatted message to the console (no newline)
-	extern bool Write( const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool Write( const char* fmt, VARG_PARAM dummy, ... );
 
 	// Writes a formatted message to the console, with appended newline.
-	extern bool WriteLn( const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool WriteLn( const char* fmt, VARG_PARAM dummy, ... );
 
 	// Displays a message in the console with red emphasis.
 	// Newline is automatically appended.
-	extern bool Error( const std::string& fmt, VARG_PARAM dummy, ... );
-	extern bool Error( const std::string& fmt );
+	extern bool Error( const char* fmt, VARG_PARAM dummy, ... );
+	extern bool Error( const char* fmt );
 
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
-	extern bool Notice( const std::string& fmt, VARG_PARAM dummy, ... );
-	extern bool Notice( const std::string& fmt );
+	extern bool Notice( const char* fmt, VARG_PARAM dummy, ... );
+	extern bool Notice( const char* fmt );
 
 	// Displays a message in the console with yellow emphasis.
 	// Newline is automatically appended.
-	extern bool Status( const std::string& fmt, VARG_PARAM dummy, ... );
-	extern bool Status( const std::string& fmt );
+	extern bool Status( const char* fmt, VARG_PARAM dummy, ... );
+	extern bool Status( const char* fmt );
 }
 
 // Different types of message boxes that the emulator can employ from the friendly confines
 // of it's blissful unawareness of whatever GUI it runs under. :)  All message boxes exhibit
-// blocking behavior -- they promt the user for action and only return after the user has
+// blocking behavior -- they prompt the user for action and only return after the user has
 // responded to the prompt.
 namespace Msgbox
 {
 	// Pops up an alert Dialog Box with a singular "OK" button.
 	// Always returns false.  Replacement for SysMessage.
-	extern bool Alert( const std::string& fmt, VARG_PARAM dummy, ... );
-	extern bool Alert( const std::string& fmt );
+	extern bool Alert( const char* fmt, VARG_PARAM dummy, ... );
+	extern bool Alert( const char* fmt );
 
 	// Pops up a dialog box with Ok/Cancel buttons.  Returns the result of the inquiry,
 	// true if OK, false if cancel.
-	extern bool OkCancel( const std::string& fmt, VARG_PARAM dummy, ... );
+	extern bool OkCancel( const char* fmt, VARG_PARAM dummy, ... );
 }
 
 using Console::Color_Red;
@@ -281,6 +281,8 @@ public:
 protected:
 	T* m_ptr;
 	int m_size;	// size of the allocation of memory
+
+	const static std::string m_str_Unnamed;
 
 public:
 	virtual ~MemoryAlloc()

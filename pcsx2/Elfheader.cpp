@@ -539,7 +539,7 @@ int loadElfFile(const char *filename)
 {
 	if( filename == NULL || filename[0] == 0 )
 	{
-		Console::Notice( "Running the PS2 BIOS...", params filename );
+		Console::Notice( "Running the PS2 BIOS..." );
 		return -1;
 	}
 

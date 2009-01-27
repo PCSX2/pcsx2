@@ -101,7 +101,7 @@ void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 
 	// Try first a basic extension concatenation (normally results in something like name.bin.rom1)
-	ssprintf(Bios1, "%hs.%s", params &Bios, ext);
+	ssprintf(Bios1, "%hs.%s", &Bios, ext);
 	if( (filesize=Path::getFileSize( Bios1 ) ) <= 0 )
 	{
 		// Try the name properly extensioned next (name.rom1)
@@ -542,7 +542,7 @@ template<int vunum>
 void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 {
 	addr&=(vunum==0)?0xfff:0x3fff;
-	VURegs* vu=(vunum==0)?&VU0:&VU1;;
+	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	if (*(u64*)&vu->Micro[addr]!=data[0])
 	{

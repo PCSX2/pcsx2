@@ -98,10 +98,10 @@ void SysDetect()
 	if( sysInitialized ) return;
 	sysInitialized = true;
 
-	Notice("PCSX2 " PCSX2_VERSION " - compiled on " __DATE__ );
+	Notice("PCSX2 " PCSX2_VERSION " - compiled on %s", params __DATE__ );
 	Notice("Savestate version: %x", params g_SaveVersion);
 
-	// fixme: what's the point of this line?  Anything? Or just to look "cool"? (air)
+	// fixme: This line is here for the purpose of creating external ASM code.  Yah. >_<
 	DevCon::Notice( "EE pc offset: 0x%x, IOP pc offset: 0x%x", params (u32)&cpuRegs.pc - (u32)&cpuRegs, (u32)&psxRegs.pc - (u32)&psxRegs );
 
 	cpudetectInit();
@@ -176,7 +176,7 @@ bool SysAllocateMem()
 		// the VTLB build instead.  If it's the VTLB build then ... ouch.
 
 #ifdef PCSX2_VIRTUAL_MEM
-		Console::Error( ex.Message() );
+		Console::Error( ex.cMessage() );
 		if( MessageBox(NULL,
 			"Failed to allocate enough physical memory to run pcsx2. Try closing\n"
 			"down background programs, restarting windows, or buying more memory.\n\n"
@@ -204,7 +204,7 @@ bool SysAllocateMem()
 		}
 #else
 		// VTLB build must fail outright...
-		Msgbox::Alert( "Failed to allocate memory needed to run pcsx2.\n\nError: " + ex.Message() );
+		Msgbox::Alert( "Failed to allocate memory needed to run pcsx2.\n\nError: %s", params ex.cMessage() );
 #endif
 		SysShutdownMem();
 
@@ -215,7 +215,7 @@ bool SysAllocateMem()
 }
 
 
-// Allocates memory for all recompilers,a nd force-disables any recs that fail to initialize.
+// Allocates memory for all recompilers, and force-disables any recs that fail to initialize.
 // This should be done asap, since the recompilers tend to demand a lot of system resources, and prefer
 // to have those resources at specific address ranges.  The sooner memory is allocated, the better.
 // Returns FALSE on *critical* failure (GUI should issue a msg and exit).
@@ -234,8 +234,10 @@ void SysAllocateDynarecs()
 	catch( Exception::BaseException& ex )
 	{
 		Msgbox::Alert(
-			"The EE/IOP recompiler failed to initialize with the following error:\n\n" + ex.Message() +
-			"\n\nThe EE/IOP interpreter will be used instead (slow!)."
+			"The EE/IOP recompiler failed to initialize with the following error:\n\n"
+			"%s"
+			"\n\nThe EE/IOP interpreter will be used instead (slow!).", params
+			ex.cMessage()
 		);
 
 		g_Session.ForceDisableEErec = true;
@@ -251,8 +253,10 @@ void SysAllocateDynarecs()
 	catch( Exception::BaseException& ex )
 	{
 		Msgbox::Alert(
-			"The VU0 recompiler failed to initialize with the following error:\n\n" + ex.Message() +
-			"\n\nThe VU0 interpreter will be used for this session (may slow down some games)."
+			"The VU0 recompiler failed to initialize with the following error:\n\n"
+			"%s"
+			"\n\nThe VU0 interpreter will be used for this session (may slow down some games).", params
+			ex.cMessage()
 		);
 
 		g_Session.ForceDisableVU0rec = true;
@@ -266,8 +270,10 @@ void SysAllocateDynarecs()
 	catch( Exception::BaseException& ex )
 	{
 		Msgbox::Alert(
-			"The VU1 recompiler failed to initialize with the following error:\n\n" + ex.Message() +
-			"\n\nThe VU1 interpreter will be used for this session (will slow down most games)."
+			"The VU1 recompiler failed to initialize with the following error:\n\n"
+			"%s"
+			"\n\nThe VU1 interpreter will be used for this session (will slow down most games).", params 
+			ex.cMessage()
 		);
 
 		g_Session.ForceDisableVU1rec = true;

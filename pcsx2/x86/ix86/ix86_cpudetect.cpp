@@ -391,8 +391,8 @@ void cpudetectInit()
 		SysMunmap( recSSE, 0x1000 );
 	}
 
-	// --> Core Counting <--
-	// Hopefully this "best guess" method won't break on AMD cpus!
+	//////////////////////////////////////
+	//  Core Counting!
 
 	if( !cpucaps.hasMultiThreading || LogicalCoresPerPhysicalCPU == 0 )
 		LogicalCoresPerPhysicalCPU = 1;
