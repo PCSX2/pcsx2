@@ -303,12 +303,12 @@ void SaveConfig()
 
 	if(!szTemp) return;
 	szTemp[0] = 0;		// this modifies szInitFile also.
+
 	strcat_s(szIniFile, "\\inis\\zerospu2.ini");
 	sprintf_s(szValue,"%u",Conf1->Log);
     WritePrivateProfileString("Interface", "Logging",szValue,szIniFile);
     sprintf_s(szValue,"%u",Conf1->options);
     WritePrivateProfileString("Interface", "Options",szValue,szIniFile);
-
 }
 
 void LoadConfig()
@@ -317,14 +317,16 @@ void LoadConfig()
     Config *Conf1 = &conf;
 	char *szTemp;
 	char szIniFile[256], szValue[256];
+	int err;
   
 	GetModuleFileName(GetModuleHandle((LPCSTR)hInst), szIniFile, 256);
 	szTemp = strrchr(szIniFile, '\\');
 
 	if(!szTemp) return ;
 	szTemp[0] = 0;
-	strcpy_s(szIniFile, "\\inis\\zerospu2.ini");
-    fopen_s(&fp, "inis\\zerospu2.ini","rt");//check if usbnull.ini really exists
+
+	strcat_s(szIniFile, "\\inis\\zerospu2.ini");
+    fopen_s(&fp, "inis\\zerospu2.ini","rt");//check if zerospu2.ini really exists
 	if (!fp)
 	{
 		CreateDirectory("inis",NULL); 
