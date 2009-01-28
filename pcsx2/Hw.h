@@ -124,6 +124,9 @@ struct DMACh {
 #define D2_MADR			0x1000A010
 #define D2_QWC			0x1000A020
 #define D2_TADR			0x1000A030
+#define D2_ASR0			0x1000A040
+#define D2_ASR1			0x1000A050
+#define D2_SADR			0x1000A080
 
 //fromIPU
 #define D3_CHCR			0x1000B000

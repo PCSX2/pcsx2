@@ -113,8 +113,6 @@ __forceinline u16 hwRead16(u32 mem)
 	if( mem >= 0x10002000 && mem < 0x10008000 )
 		Console::Notice("hwRead16 to %x", params mem);
 
-	SPR_LOG("Hardware read 16bit at %lx, ret %lx\n", mem, psHu16(mem));
-
 	switch (mem) {
 		case 0x10000000: ret = (u16)rcntRcount(0); break;
 		case 0x10000010: ret = (u16)counters[0].modeval; break;
@@ -144,11 +142,8 @@ __forceinline u16 hwRead16(u32 mem)
 				else ret = psHu32(mem);
 				return (u16)ret;
 			}
-			if (mem < 0x10010000) {
-				ret = psHu16(mem);
-			}
-			else ret = 0;
-			HW_LOG("Unknown Hardware Read 16 at %x\n",mem);
+			ret = psHu16(mem);
+			HW_LOG("Hardware Read16 at 0x%x, value= 0x%x\n", ret, mem);
 			break;
 	}
 
@@ -157,14 +152,51 @@ __forceinline u16 hwRead16(u32 mem)
 
 __forceinline u32 hwRead32(u32 mem)
 {
-	//IPU regs
-	if ((mem>=0x10002000) && (mem<0x10003000)) {
-		return ipuRead32(mem);
+	// *Performance Warning*  This function is called -A-LOT.  Be weary when making changes.  It
+	// could impact FPS significantly.
+
+	// Optimization Note:
+	// Shortcut for the INTC_STAT register, which is checked *very* frequently as part of the EE's
+	// vsynch timers.  INTC_STAT has the disadvantage of being in the 0x1000f000 case, which has
+	// a lot of additional registers in it, and combined with it's call frequency is a bad thing.
+
+	if(mem == INTC_STAT)
+	{
+		// This one is checked alot, so leave it commented out unless you love 600 meg logfiles.
+		//HW_LOG("DMAC_STAT Read  32bit %x\n", psHu32(0xe010));
+		return psHu32(INTC_STAT);
 	}
 
-	// gauntlen uses 0x1001xxxx
-	switch (mem)
+	const u16 masked_mem = mem & 0xffff;
+
+	// We optimize the hw register reads by breaking them into manageable 4k chunks (for a total of
+	// 16 cases spanning the 64k PS2 hw register memory map).  It helps also that the EE is, for
+	// the most part, designed so that various classes of registers are sectioned off into these
+	// 4k segments.
+
+	// Notes: Breaks from the switch statement will return a standard hw memory read.
+	// Special case handling of reads should use "return" directly.
+
+	switch( masked_mem>>12 )		// switch out as according to the 4k page of the access.
 	{
+		// Counters Registers
+		// This code uses some optimized trickery to produce more compact output.
+		// See below for the "reference" block to get a better idea what this code does. :)
+
+		case 0x0:		// counters 0 and 1
+		case 0x1:		// counters 2 and 3
+		{
+			const uint cntidx = masked_mem >> 11;	// neat trick to scale the counter HW address into 0-3 range.
+			switch( (masked_mem>>4) & 0xf )
+			{
+				case 0x0: return (u16)rcntRcount(cntidx);
+				case 0x1: return (u16)counters[cntidx].modeval;
+				case 0x2: return (u16)counters[cntidx].target;
+				case 0x3: return (u16)counters[cntidx].hold;
+			}
+		}
+
+#if 0	// Counters Reference Block (original case setup)
 		case 0x10000000: return (u16)rcntRcount(0);
 		case 0x10000010: return (u16)counters[0].modeval;
 		case 0x10000020: return (u16)counters[0].target;
@@ -182,120 +214,109 @@ __forceinline u32 hwRead32(u32 mem)
 		case 0x10001800: return (u16)rcntRcount(3);
 		case 0x10001810: return (u16)counters[3].modeval;
 		case 0x10001820: return (u16)counters[3].target;
-
-#ifdef PCSX2_DEVBUILD
-		case 0x1000A000:	//dma2 chcr
-			HW_LOG("Hardware read DMA2_CHCR 32bit at %lx, ret %lx\n", mem, psHu32(mem));
-			return psHu32(mem);
-		case 0x1000A010:	//dma2 madr
-			HW_LOG("Hardware read DMA2_MADR 32bit at %lx, ret %lx\n", mem, psHu32(mem));
-			return psHu32(mem);
-		case 0x1000A020:	//dma2 qwc
-			HW_LOG("Hardware readDMA2_QWC 32bit at %lx, ret %lx\n", mem, psHu32(mem));
-			return psHu32(mem);
-		case 0x1000A030:	//dma2 taddr
-			HW_LOG("Hardware read DMA2_TADDR 32bit at %lx, ret %lx\n", mem, psHu32(mem));
-			return psHu32(mem);
-		case 0x1000A040:	//dma2 asr0
-			HW_LOG("Hardware read DMA2_ASR0 32bit at %lx, ret %lx\n", mem, psHu32(mem));
-			return psHu32(mem);
-		case 0x1000A050:	//dma2 asr1
-			HW_LOG("Hardware read DMA2_ASR1 32bit at %lx, ret %lx\n", mem, psHu32(mem));
-			return psHu32(mem);
-		case 0x1000A080:	//dma2 saddr
-			HW_LOG("Hardware read DMA2_SADDR 32 at %lx, ret %lx\n", mem, psHu32(mem));
-			return psHu32(mem);
-		case 0x1000B400: // dma4 chcr
-			SPR_LOG("Hardware read IPU1_CHCR 32 at %lx, ret %x\n", mem, ((DMACh *)&PS2MEM_HW[0xb400])->chcr);
-			return ((DMACh *)&PS2MEM_HW[0xb400])->chcr;
-
-		case 0x1000e010: // DMAC_STAT
-			HW_LOG("DMAC_STAT Read  32bit %x\n", psHu32(0xe010));
-			return psHu32(0xe010);
-
-		case 0x1000f000: // INTC_STAT
-			//HW_LOG("INTC_STAT Read  32bit %x\n", psHu32(0xf000));	// this one tends to spam the logs..
-			return psHu32(0xf000);
-
-		case 0x1000f010: // INTC_MASK
-			HW_LOG("INTC_MASK Read  32bit %x\n", psHu32(0xf010));
-			return psHu32(0xf010);
 #endif
 
-		case 0x1000f130:
-		case 0x1000f260:// SIF?
-		case 0x1000f410:
-		case 0x1000f430://MCH_RICM
-			return 0;
+		break;
 
-		case 0x1000f440://MCH_DRD
-			
-			if( !((psHu32(0xf430) >> 6) & 0xF) )
+		case 0x2: return ipuRead32( mem );
+
+		case 0xf:
+			switch( (masked_mem >> 4) & 0xff )
 			{
-				switch ((psHu32(0xf430)>>16) & 0xFFF)
-				{	//MCH_RICM: x:4|SA:12|x:5|SDEV:1|SOP:4|SBC:1|SDEV:5
-					case 0x21://INIT
-						if(rdram_sdevid < rdram_devices)
-						{
-							rdram_sdevid++;
-							return 0x1F;
-						}
-					break;
-
-					case 0x23://CNFGA
-						return 0x0D0D;	//PVER=3 | MVER=16 | DBL=1 | REFBIT=5
-
-					case 0x24://CNFGB
-						//0x0110 for PSX  SVER=0 | CORG=8(5x9x7) | SPT=1 | DEVTYP=0 | BYTE=0
-						return 0x0090;	//SVER=0 | CORG=4(5x9x6) | SPT=1 | DEVTYP=0 | BYTE=0
-
-					case 0x40://DEVID
-						return psHu32(0xf430) & 0x1F;	// =SDEV
-				}
-			}
-			return 0;
-
-		case 0x1000f520: // DMAC_ENABLER
-			HW_LOG("DMAC_ENABLER Read 32bit %lx\n", psHu32(0xf590));
-			return psHu32(0xf590);
-
-		case 0x1000f240: // SIF?
-			return psHu32(mem) | 0xF0000102;
-
-		default:
-			//if ((mem & 0xffffff0f) == 0x1000f200) {
-				// SIF Control Registers
-				/*1D000020 (word) - EE -> IOP status flag ( set to 0x10000 always ready )
-				1D000030 (word) - IOP -> EE status flag
-				1D000040 (word) - See psxMem.c ( Initially set to 0xF00042 and reset to
-				   to this value if 0x20 is written )
-				1D000060 (word) - used to detect whether the SIF interface exists
-                   read must be 0x1D000060, or the top 20 bits must be zero 
-				*/
-				// note, any changes you make in here, also make on recMemRead32
-				/*if(mem ==0x1000f260) ret = 0;
-				else if(mem == 0x1000F240) {
-					ret = psHu32(mem) | 0xF0000102;
-					//psHu32(mem) &= ~0x4000;
-				}
-				else ret = psHu32(mem);
-//#ifdef HW_LOG
-				//__Log("%x: sif %x(%x) Read 32bit %x\n", cpuRegs.pc, mem, 0xbd000000 | (mem & 0xf0),ret);
-//#endif	}
+				case 0x01:
+					HW_LOG("INTC_MASK Read32, value=0x%x", psHu32(INTC_MASK));
 				break;
-			
+
+				case 0x13:	// 0x1000f130
+				case 0x26:	// 0x1000f260 SBUS?
+				case 0x41:	// 0x1000f410
+				case 0x43:	// MCH_RICM
+					return 0;
+
+				case 0x24:	// 0x1000f240: SBUS
+					return psHu32(0xf240) | 0xF0000102;
+
+				case 0x44:	// 0x1000f440: MCH_DRD
+
+					if( !((psHu32(0xf430) >> 6) & 0xF) )
+					{
+						switch ((psHu32(0xf430)>>16) & 0xFFF)
+						{
+							//MCH_RICM: x:4|SA:12|x:5|SDEV:1|SOP:4|SBC:1|SDEV:5
+
+							case 0x21://INIT
+								if(rdram_sdevid < rdram_devices)
+								{
+									rdram_sdevid++;
+									return 0x1F;
+								}
+							return 0;
+
+							case 0x23://CNFGA
+								return 0x0D0D;	//PVER=3 | MVER=16 | DBL=1 | REFBIT=5
+
+							case 0x24://CNFGB
+								//0x0110 for PSX  SVER=0 | CORG=8(5x9x7) | SPT=1 | DEVTYP=0 | BYTE=0
+								return 0x0090;	//SVER=0 | CORG=4(5x9x6) | SPT=1 | DEVTYP=0 | BYTE=0
+
+							case 0x40://DEVID
+								return psHu32(0xf430) & 0x1F;	// =SDEV
+						}
+					}
+					return 0;
 			}
-			else */
+			break;
 
-			HW_LOG("Unknown Hardware Read 32 at %lx, ret %lx\n", mem, psHu32(mem));
+		///////////////////////////////////////////////////////
+		// Most of the following case handlers are for developer builds only (logging).
+		// It'll all optimize to ziltch in public release builds.
 
-			if (mem < 0x10010000)
-				return psHu32(mem);
-			else
-				Console::Notice("*PCSX2* 32bit HW read of invalid address 0x%x", params mem);
+		case 0x03:
+		case 0x04:
+		case 0x05:
+		case 0x06:
+		case 0x07:
+		case 0x08:
+		case 0x09:
+		case 0x0a:
+		{
+			const char* regName = "Unknown";
 
-			return 0;
+			switch( mem )
+			{
+				case D2_CHCR: regName = "DMA2_CHCR"; break;
+				case D2_MADR: regName = "DMA2_MADR"; break;
+				case D2_QWC: regName = "DMA2_QWC"; break;
+				case D2_TADR: regName = "DMA2_TADDR"; break;
+				case D2_ASR0: regName = "DMA2_ASR0"; break;
+				case D2_ASR1: regName = "DMA2_ASR1"; break;
+				case D2_SADR: regName = "DMA2_SADDR"; break;
+			}
+
+			HW_LOG( "Hardware Read32 at 0x%x (%s), value=0x%x\n", regName, mem, psHu32(mem) );
+		}
+		break;
+
+		case 0x0b:
+			if( mem == D4_CHCR )
+				HW_LOG("Hardware Read32 at 0x%x (IPU1:DMA4_CHCR), value=0x%x\n", mem, psHu32(mem));
+		break;
+
+		case 0x0c:
+		case 0x0d:
+		case 0x0e:
+			if( mem == DMAC_STAT )
+				HW_LOG("DMAC_STAT Read32, value=0x%x\n", psHu32(DMAC_STAT));
+		break;
+
+		jNO_DEFAULT;
 	}
+
+	// Optimization note: We masked 'mem' earlier, so it's safe to access PS2MEM_HW directly.
+	// (checked disasm, and MSVC 2008 fails to optimize it on its own)
+
+	//return psHu32(mem);
+	return *((u32*)&PS2MEM_HW[masked_mem]);
 }
 
 __forceinline u64 hwRead64(u32 mem) {

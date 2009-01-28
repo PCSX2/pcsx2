@@ -501,7 +501,7 @@ struct ElfObject
 void ElfApplyPatches()
 {
 	string filename;
-	ssprintf( filename, "%8.8x", params ElfCRC );
+	ssprintf( filename, "%8.8x", ElfCRC );
 
 	// if patches found the following status msg will be overwritten
 	Console::SetTitle( fmt_string( "Game running [CRC=%hs]", &filename ) );
