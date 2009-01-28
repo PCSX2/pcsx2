@@ -2071,33 +2071,6 @@ void SetFastMemory(int bSetFast)
 	// nothing
 }
 
-static __forceinline void vtlb_DynGenOp(bool Read,u32 sz)
-{
-	int reg=-1;
-
-	if (sz==64 && _hasFreeMMXreg())
-	{
-		reg=_allocMMXreg(-1, MMX_TEMP, 0);
-	}
-	else if (sz==128 && _hasFreeXMMreg())
-	{
-		reg=_allocTempXMMreg(XMMT_FPS,-1);
-	}
-
-	if (Read)
-		vtlb_DynGenRead(sz,reg);
-	else
-		vtlb_DynGenWrite(sz,reg);
-
-	if (reg!=-1)
-	{
-		if (sz==128)
-			_freeXMMreg(reg);
-		else
-			_freeMMXreg(reg);
-	}
-}
-
 void recLoad(u32 sz,bool sx)
 {
 	//no int 3? i love to get my hands dirty ;p - Raz
@@ -2105,33 +2078,25 @@ void recLoad(u32 sz,bool sx)
 
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
+
 	if (sz>=64)
-	{
 		EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension -> what does this really do ?
-	}
+
 	_deleteEEreg(_Rt_, 0);
 
 	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )
-	{
 		ADD32ItoR( ECX, _Imm_ );
-	}
 	
 	if (sz==128)
-	{
 		AND32I8toR(ECX,0xF0);
-	}
 
 	if ( _Rt_  && sz>=64)
-	{
 		MOV32ItoR(EDX, (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
-	}
 	else
-	{
 		MOV32ItoR(EDX, (int)&dummyValue[0] );
-	}
 
-	vtlb_DynGenOp(true,sz);
+	vtlb_DynGenRead(sz);
 
 	/*
 	if (sz==8)
@@ -2151,7 +2116,7 @@ void recLoad(u32 sz,bool sx)
 		MOV32MtoR( EAX, (int)&dummyValue[0] ); //ewww, lame ! movsx /zx has r/m forms too ...
 		if (sz==8)
 		{
-			if (sx) 
+			if (sx)
 				MOVSX32R8toR( EAX, EAX );
 			else
 				MOVZX32R8toR( EAX, EAX );
@@ -2507,7 +2472,7 @@ void recStore(u32 sz)
 	}
 	
 	
-	vtlb_DynGenOp(false,sz);
+	vtlb_DynGenWrite(sz);
 
 	/*
 	if (sz==8)
@@ -2682,7 +2647,7 @@ void recLWC1( void )
 
 	MOV32ItoR(EDX, (int)&fpuRegs.fpr[ _Rt_ ].UL ); //no 0 for fpu ?
 	//CALLFunc( (int)memRead32 );
-	vtlb_DynGenOp(true,32);
+	vtlb_DynGenRead(32);
 }
 
 ////////////////////////////////////////////////////
@@ -2698,8 +2663,7 @@ void recSWC1( void )
 	}
 
 	MOV32MtoR(EDX, (int)&fpuRegs.fpr[ _Rt_ ].UL );
-	//CALLFunc( (int)memWrite32 );
-	vtlb_DynGenOp(false,32);
+	vtlb_DynGenWrite(32);
 }
 
 ////////////////////////////////////////////////////
@@ -2727,8 +2691,7 @@ void recLQC2( void )
 	{
 		MOV32ItoR(EDX, (int)&dummyValue[0] );
 	}
-	//CALLFunc( (int)memRead128 );
-	vtlb_DynGenOp(true,128);
+	vtlb_DynGenRead(128);
 }
 
 ////////////////////////////////////////////////////
@@ -2744,8 +2707,7 @@ void recSQC2( void )
 	}
 
 	MOV32ItoR(EDX, (int)&VU0.VF[_Ft_].UD[0] );
-	//CALLFunc( (int)memWrite128 );
-	vtlb_DynGenOp(false,128);
+	vtlb_DynGenWrite(128);
 }
 
 #endif

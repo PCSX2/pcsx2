@@ -21,6 +21,7 @@
 #include "vtlb.h"
 #include "COP0.h"
 #include "x86/ix86/ix86.h"
+#include "iCore.h"
 
 using namespace R5900;
 
@@ -481,12 +482,12 @@ void vtlb_Term()
 	//nothing to do for now
 }
 
+#include "iR5900.h"
 
 //ecx = addr
 //edx = ptr
-void vtlb_DynGenRead(u32 sz,int freereg)
+void vtlb_DynGenRead(u32 sz)
 {
-	freereg=-1;
 	/*
 		u32 vmv=vmap[addr>>VTLB_PAGE_BITS];
 	s32 ppf=addr+vmv;
@@ -554,10 +555,12 @@ void vtlb_DynGenRead(u32 sz,int freereg)
 		break;
 
 	case 64:
-		if (freereg>0)
+		if( _hasFreeMMXreg() )
 		{
+			const int freereg = _allocMMXreg(-1, MMX_TEMP, 0);
 			MOVQRmtoROffset(freereg,ECX,0);
 			MOVQRtoRmOffset(EDX,freereg,0);
+			_freeMMXreg(freereg);
 		}
 		else
 		{
@@ -568,11 +571,14 @@ void vtlb_DynGenRead(u32 sz,int freereg)
 			MOV32RtoRmOffset(EDX,EAX,4);
 		}
 		break;
+
 	case 128:
-		if (freereg>0)
+		if( _hasFreeXMMreg() )
 		{
-			SSE_MOVAPSRmtoROffset(freereg,ECX,0);
-			SSE_MOVAPSRtoRmOffset(EDX,freereg,0);
+			const int freereg = _allocTempXMMreg( XMMT_INT, -1 );
+			SSE2_MOVDQARmtoROffset(freereg,ECX,0);
+			SSE2_MOVDQARtoRmOffset(EDX,freereg,0);
+			_freeXMMreg(freereg);
 		}
 		else
 		{
@@ -590,6 +596,7 @@ void vtlb_DynGenRead(u32 sz,int freereg)
 		}
 		break;
 	}
+
 	u8* cont=JMP8(0);
 	x86SetJ8(_fullread);
 	int szidx=0;
@@ -612,7 +619,7 @@ void vtlb_DynGenRead(u32 sz,int freereg)
 	x86SetJ8(cont);
 }
 
-void vtlb_DynGenWrite(u32 sz,int freereg)
+void vtlb_DynGenWrite(u32 sz)
 {
 	MOV32RtoR(EAX,ECX);
 	SHR32ItoR(EAX,VTLB_PAGE_BITS);
@@ -631,29 +638,14 @@ void vtlb_DynGenWrite(u32 sz,int freereg)
 	case 32:
 		MOV32RtoRm(ECX,EDX);
 		break;
-/*
-	case 64:
-		//write8(0xCC);
-		POP32R(EAX);
-		MOV32RtoRm(ECX,EAX);
 
-		POP32R(EAX);
-		MOV32RtoRmOffset(ECX,EAX,4);
-		break;*/
 	case 64:
-	case 128:
-		if (freereg>0)
+		if( _hasFreeMMXreg() )
 		{
-			if (sz==64)
-			{
-				MOVQRmtoROffset(freereg,EDX,0);
-				MOVQRtoRmOffset(ECX,freereg,0);
-			}
-			else
-			{
-				SSE_MOVAPSRmtoROffset(freereg,EDX,0);
-				SSE_MOVAPSRtoRmOffset(ECX,freereg,0);
-			}
+			const int freereg = _allocMMXreg(-1, MMX_TEMP, 0);
+			MOVQRmtoROffset(freereg,EDX,0);
+			MOVQRtoRmOffset(ECX,freereg,0);
+			_freeMMXreg( freereg );
 		}
 		else
 		{
@@ -662,13 +654,27 @@ void vtlb_DynGenWrite(u32 sz,int freereg)
 
 			MOV32RmtoROffset(EAX,EDX,4);
 			MOV32RtoRmOffset(ECX,EAX,4);
-			if (sz==128)
-			{
-				MOV32RmtoROffset(EAX,EDX,8);
-				MOV32RtoRmOffset(ECX,EAX,8);
-				MOV32RmtoROffset(EAX,EDX,12);
-				MOV32RtoRmOffset(ECX,EAX,12);
-			}
+		}
+		break;
+
+	case 128:
+		if( _hasFreeXMMreg() )
+		{
+			const int freereg = _allocTempXMMreg( XMMT_INT, -1 );
+			SSE2_MOVDQARmtoROffset(freereg,EDX,0);
+			SSE2_MOVDQARtoRmOffset(ECX,freereg,0);
+			_freeXMMreg( freereg );
+		}
+		else
+		{
+			MOV32RmtoR(EAX,EDX);
+			MOV32RtoRm(ECX,EAX);
+			MOV32RmtoROffset(EAX,EDX,4);
+			MOV32RtoRmOffset(ECX,EAX,4);
+			MOV32RmtoROffset(EAX,EDX,8);
+			MOV32RtoRmOffset(ECX,EAX,8);
+			MOV32RmtoROffset(EAX,EDX,12);
+			MOV32RtoRmOffset(ECX,EAX,12);
 		}
 		break;
 	}
