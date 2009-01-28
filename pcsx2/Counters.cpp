@@ -633,7 +633,7 @@ static void _rcntSetGate( int index )
 }
 
 // mode - 0 means hblank source, 8 means vblank source.
-void rcntStartGate(uint mode, u32 sCycle)
+void __fastcall rcntStartGate(uint mode, u32 sCycle)
 {
 	int i;
 
@@ -694,7 +694,7 @@ void rcntStartGate(uint mode, u32 sCycle)
 }
 
 // mode - 0 means hblank signal, 8 means vblank signal.
-void rcntEndGate(uint mode, u32 sCycle)
+void __fastcall rcntEndGate(uint mode, u32 sCycle)
 {
 	int i;
 
@@ -735,7 +735,7 @@ void rcntEndGate(uint mode, u32 sCycle)
 	// rcntUpdate, since we're being called from there anyway.
 }
 
-void rcntWmode(int index, u32 value)  
+void __fastcall rcntWmode(int index, u32 value)  
 {
 	if(counters[index].mode.IsCounting) {
 		if(counters[index].mode.ClockSource != 0x3) {
@@ -766,7 +766,7 @@ void rcntWmode(int index, u32 value)
 	_rcntSet( index );
 }
 
-void rcntWcount(int index, u32 value) 
+void __fastcall rcntWcount(int index, u32 value) 
 {
 	EECNT_LOG("EE Counter[%d] writeCount = %x,   oldcount=%x, target=%x\n", index, value, counters[index].count, counters[index].target );
 
@@ -792,7 +792,7 @@ void rcntWcount(int index, u32 value)
 	_rcntSet( index );
 }
 
-void rcntWtarget(int index, u32 value)
+void __fastcall rcntWtarget(int index, u32 value)
 {
 	EECNT_LOG("EE Counter[%d] writeTarget = %x\n", index, value);
 
@@ -808,13 +808,13 @@ void rcntWtarget(int index, u32 value)
 	_rcntSet( index );
 }
 
-void rcntWhold(int index, u32 value)
+void __fastcall rcntWhold(int index, u32 value)
 {
 	EECNT_LOG("EE Counter[%d] Hold Write = %x\n", index, value);
 	counters[index].hold = value;
 }
 
-u32 rcntRcount(int index)
+u32 __fastcall rcntRcount(int index)
 {
 	u32 ret;
 
@@ -828,7 +828,7 @@ u32 rcntRcount(int index)
 	return ret;
 }
 
-u32 rcntCycle(int index)
+u32 __fastcall rcntCycle(int index)
 {
 	if (counters[index].mode.IsCounting && (counters[index].mode.ClockSource != 0x3)) 
 		return counters[index].count + ((cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate);

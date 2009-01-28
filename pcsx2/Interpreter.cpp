@@ -49,7 +49,7 @@ static void debugI() {}
 static void execI()
 {
 #ifdef _DEBUG
-    if (memRead32(cpuRegs.pc, &cpuRegs.code) == -1) return;
+    memRead32(cpuRegs.pc, &cpuRegs.code);
 	debugI();
 #else
     cpuRegs.code = *(u32 *)PSM(cpuRegs.pc);

@@ -237,7 +237,9 @@ void LB() {
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u8 temp;
 	const u32 rt=_Rt_;
-	if ((0==memRead8(addr, &temp)) && (rt!=0))
+
+	memRead8(addr, &temp);
+	if(rt!=0)
 	{
 		cpuRegs.GPR.r[rt].UD[0]=(s8)temp;
 	}
@@ -249,7 +251,8 @@ void LBU() {
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u8 temp;
 	const u32 rt=_Rt_;
-	if ((0==memRead8(addr, &temp)) && (rt!=0))
+	memRead8(addr, &temp);
+	if(rt!=0)
 	{
 		cpuRegs.GPR.r[rt].UD[0]=temp;
 	}
@@ -261,7 +264,8 @@ void LH() {
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u16 temp;
 	const u32 rt=_Rt_;
-	if ((0==memRead16(addr, &temp)) && (rt!=0))
+	memRead16(addr, &temp);
+	if(rt!=0)
 	{
 		cpuRegs.GPR.r[rt].UD[0]=(s16)temp;
 	}
@@ -273,7 +277,8 @@ void LHU() {
 	addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u16 temp;
 	const u32 rt=_Rt_;
-	if ((0==memRead16(addr, &temp)) && (rt!=0))
+	memRead16(addr, &temp);
+	if(rt!=0)
 	{
 		cpuRegs.GPR.r[rt].UD[0]=temp;
 	}
@@ -287,7 +292,8 @@ void LW() {
 
 	u32 temp;
 	const u32 rt=_Rt_;
-	if ((0==memRead32(addr, &temp)) && (rt!=0))
+	memRead32(addr, &temp);
+	if(rt!=0)
 	{
 		cpuRegs.GPR.r[rt].UD[0]=(s32)temp;
 	}
@@ -300,7 +306,8 @@ void LWU() {
 
 	u32 temp;
 	const u32 rt=_Rt_;
-	if ((0==memRead32(addr, &temp)) && (rt!=0))
+	memRead32(addr, &temp);
+	if(rt!=0)
 	{
 		cpuRegs.GPR.r[rt].UD[0]=temp;
 	}
@@ -315,7 +322,7 @@ void LWL() {
 	u32 mem;
 
 	if (!_Rt_) return;
-	if (memRead32(addr & ~3, &mem) == -1) return;
+	memRead32(addr & ~3, &mem);
 	cpuRegs.GPR.r[_Rt_].UD[0] =	(cpuRegs.GPR.r[_Rt_].UL[0] & LWL_MASK[shift]) | 
 								(mem << LWL_SHIFT[shift]);
 
@@ -338,7 +345,7 @@ void LWR() {
 	u32 mem;
 
 	if (!_Rt_) return;
-	if (memRead32(addr & ~3, &mem) == -1) return;
+	memRead32(addr & ~3, &mem);
 	cpuRegs.GPR.r[_Rt_].UD[0] =	(cpuRegs.GPR.r[_Rt_].UL[0] & LWR_MASK[shift]) | 
 								(mem >> LWR_SHIFT[shift]);
 
@@ -374,7 +381,7 @@ void LDL() {
 	u64 mem;
 
 	if (!_Rt_) return;
-	if (memRead64(addr & ~7, &mem) == -1) return;
+	memRead64(addr & ~7, &mem);
 	cpuRegs.GPR.r[_Rt_].UD[0] =	(cpuRegs.GPR.r[_Rt_].UD[0] & LDL_MASK[shift]) | 
 								(mem << LDL_SHIFT[shift]);
 }
@@ -389,7 +396,7 @@ void LDR() {
 	u64 mem;
 
 	if (!_Rt_) return;
-	if (memRead64(addr & ~7, &mem) == -1) return;
+	memRead64(addr & ~7, &mem);
 	cpuRegs.GPR.r[_Rt_].UD[0] =	(cpuRegs.GPR.r[_Rt_].UD[0] & LDR_MASK[shift]) | 
 								(mem >> LDR_SHIFT[shift]);
 }
@@ -437,7 +444,7 @@ void SWL() {
 	u32 shift = addr & 3;
 	u32 mem;
 
-	if (memRead32(addr & ~3, &mem) == -1) return;
+	memRead32(addr & ~3, &mem);
 
 	memWrite32(addr & ~3,  (cpuRegs.GPR.r[_Rt_].UL[0] >> SWL_SHIFT[shift]) |
 		      (  mem & SWL_MASK[shift]) );
@@ -459,7 +466,7 @@ void SWR() {
 	u32 shift = addr & 3;
 	u32 mem;
 
-	if (memRead32(addr & ~3, &mem) == -1) return;
+	memRead32(addr & ~3, &mem);
 
 	memWrite32(addr & ~3,  (cpuRegs.GPR.r[_Rt_].UL[0] << SWR_SHIFT[shift]) |
 		      ( mem & SWR_MASK[shift]) );
@@ -490,7 +497,7 @@ void SDL() {
 	u32 shift = addr & 7;
 	u64 mem;
 
-	if (memRead64(addr & ~7, &mem) == -1) return;
+	memRead64(addr & ~7, &mem);
 	mem =(cpuRegs.GPR.r[_Rt_].UD[0] >> SDL_SHIFT[shift]) |
 		      ( mem & SDL_MASK[shift]);
 	memWrite64(addr & ~7, &mem);
@@ -505,7 +512,7 @@ void SDR() {
 	u32 shift = addr & 7;
 	u64 mem;
 
-	if (memRead64(addr & ~7, &mem) == -1) return;
+	memRead64(addr & ~7, &mem);
 	mem=(cpuRegs.GPR.r[_Rt_].UD[0] << SDR_SHIFT[shift]) |
 		      ( mem & SDR_MASK[shift]);
 	memWrite64(addr & ~7, &mem );

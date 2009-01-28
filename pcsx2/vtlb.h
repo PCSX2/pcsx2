@@ -5,21 +5,20 @@
 
 #ifndef PCSX2_VIRTUAL_MEM
 
-#define mem8_t u8
-#define mem16_t u16
-#define mem32_t u32
-#define mem64_t u64
-#define mem128_t u64
+typedef u8 mem8_t;
+typedef u16 mem16_t;
+typedef u32 mem32_t;
+typedef u64 mem64_t;
+typedef u64 mem128_t;
 
-// unsafe version needed to avoid template hell on gcc. :/
-typedef  int __fastcall vltbMemRFP(u32 addr,void* data);
+// Specialized function pointers for each read type
+typedef  mem8_t __fastcall vltbMemR8FP(u32 addr);
+typedef  mem16_t __fastcall vltbMemR16FP(u32 addr);
+typedef  mem32_t __fastcall vltbMemR32FP(u32 addr);
+typedef  void __fastcall vltbMemR64FP(u32 addr,mem64_t* data);
+typedef  void __fastcall vltbMemR128FP(u32 addr,mem128_t* data);
 
-typedef  int __fastcall vltbMemR8FP(u32 addr,mem8_t* data);
-typedef  int __fastcall vltbMemR16FP(u32 addr,mem16_t* data);
-typedef  int __fastcall vltbMemR32FP(u32 addr,mem32_t* data);
-typedef  int __fastcall vltbMemR64FP(u32 addr,mem64_t* data);
-typedef  int __fastcall vltbMemR128FP(u32 addr,mem128_t* data);
-
+// Specialized function pointers for each write type
 typedef  void __fastcall vltbMemW8FP(u32 addr,mem8_t data);
 typedef  void __fastcall vltbMemW16FP(u32 addr,mem16_t data);
 typedef  void __fastcall vltbMemW32FP(u32 addr,mem32_t data);
@@ -48,11 +47,11 @@ void vtlb_VMapUnmap(u32 vaddr,u32 sz);
 
 //Memory functions
 
-int __fastcall vtlb_memRead8(u32 mem, u8  *out);
-int __fastcall vtlb_memRead16(u32 mem, u16 *out);
-int __fastcall vtlb_memRead32(u32 mem, u32 *out);
-int __fastcall vtlb_memRead64(u32 mem, u64 *out);
-int __fastcall vtlb_memRead128(u32 mem, u64 *out);
+u8 __fastcall vtlb_memRead8(u32 mem);
+u16 __fastcall vtlb_memRead16(u32 mem);
+u32 __fastcall vtlb_memRead32(u32 mem);
+void __fastcall vtlb_memRead64(u32 mem, u64 *out);
+void __fastcall vtlb_memRead128(u32 mem, u64 *out);
 void __fastcall vtlb_memWrite8 (u32 mem, u8  value);
 void __fastcall vtlb_memWrite16(u32 mem, u16 value);
 void __fastcall vtlb_memWrite32(u32 mem, u32 value);
@@ -60,7 +59,8 @@ void __fastcall vtlb_memWrite64(u32 mem, const u64* value);
 void __fastcall vtlb_memWrite128(u32 mem, const u64* value);
 
 extern void vtlb_DynGenWrite(u32 sz);
-extern void vtlb_DynGenRead(u32 sz);
+extern void vtlb_DynGenRead32(u32 bits, bool sign);
+extern void vtlb_DynGenRead64(u32 sz);
 
 #endif
 

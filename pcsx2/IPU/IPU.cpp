@@ -227,7 +227,7 @@ bool ipuCanFreeze()
 	return ipuCurCmd == 0xffffffff;
 }
 
-u32 ipuRead32(u32 mem)
+__forceinline u32 ipuRead32(u32 mem)
 {
 	IPUProcessInterrupt();
 
@@ -256,7 +256,7 @@ u32 ipuRead32(u32 mem)
 	return *(u32*)(((u8*)ipuRegs)+(mem&0xff)); // ipu repeats every 0x100
 }
 
-u64 ipuRead64(u32 mem)
+__forceinline u64 ipuRead64(u32 mem)
 {
 	IPUProcessInterrupt();
 
@@ -326,7 +326,7 @@ void ipuSoftReset()
 	g_nCmdPos[0] = 0; g_nCmdPos[1] = 0;
 }
 
-void ipuWrite32(u32 mem,u32 value)
+__forceinline void ipuWrite32(u32 mem,u32 value)
 {
 	IPUProcessInterrupt();
 
@@ -355,7 +355,7 @@ void ipuWrite32(u32 mem,u32 value)
 	}
 }
 
-void ipuWrite64(u32 mem, u64 value)
+__forceinline void ipuWrite64(u32 mem, u64 value)
 {
 	IPUProcessInterrupt();
 

@@ -166,6 +166,8 @@ vtlbHandler tlb_fallback_8;
 vtlbHandler vu0_micro_mem;
 vtlbHandler vu1_micro_mem;
 
+vtlbHandler hw_by_page[0x10];
+
 void memMapPhy()
 {
 	//Main mem
@@ -204,6 +206,15 @@ void memMapPhy()
 	vtlb_MapHandler(tlb_fallback_3,0x1f400000,0x10000);
 	vtlb_MapHandler(tlb_fallback_2,0x1f800000,0x10000);
 	vtlb_MapHandler(tlb_fallback_8,0x1f900000,0x10000);
+
+	// map specific optimized page handlers for HW accesses
+	vtlb_MapHandler(hw_by_page[0x0], 0x10000000, 0x01000);
+	vtlb_MapHandler(hw_by_page[0x1], 0x10001000, 0x01000);
+	vtlb_MapHandler(hw_by_page[0x2], 0x10002000, 0x01000);
+	vtlb_MapHandler(hw_by_page[0x3], 0x10003000, 0x01000);
+	vtlb_MapHandler(hw_by_page[0xb], 0x1000b000, 0x01000);
+	vtlb_MapHandler(hw_by_page[0xe], 0x1000e000, 0x01000);
+	vtlb_MapHandler(hw_by_page[0xf], 0x1000f000, 0x01000);
 }
 
 //Why is this required ?
@@ -227,117 +238,122 @@ void memMapUserMem()
 }
 
 template<int p>
-int __fastcall _ext_memRead8 (u32 mem, u8  *out)  {
-
+mem8_t __fastcall _ext_memRead8 (u32 mem) 
+{
 	switch (p) 
 	{
 		case 1: // hwm
-			*out = hwRead8(mem); return 0;
+			return hwRead8(mem);
 		case 2: // psh
-			*out = psxHwRead8(mem); return 0;
+			return psxHwRead8(mem);
 		case 3: // psh4
-			*out = psxHw4Read8(mem); return 0;
+			return psxHw4Read8(mem);
 		case 6: // gsm
-			*out = gsRead8(mem); return 0;
+			return gsRead8(mem);
 		case 7: // dev9
-			*out = DEV9read8(mem & ~0xa4000000);
-			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, *out);
-			return 0;
+		{
+			mem8_t retval = DEV9read8(mem & ~0xa4000000);
+			SysPrintf("DEV9 read8 %8.8lx: %2.2lx\n", mem & ~0xa4000000, retval);
+			return retval;
+		}
 	}
 
-	MEM_LOG("Unknown Memory read32  from address %8.8x\n", mem);
+	MEM_LOG("Unknown Memory Read8   from address %8.8x\n", mem);
 	cpuTlbMissR(mem, cpuRegs.branch);
-
-	return -1;
+	return 0;
 }
+
 template<int p>
-int __fastcall _ext_memRead16(u32 mem, u16 *out)  {
-	switch (p) {
+mem16_t __fastcall _ext_memRead16(u32 mem)
+{
+	switch (p)
+	{
 		case 1: // hwm
-			*out = hwRead16(mem); return 0;
+			return hwRead16(mem);
 		case 2: // psh
-			*out = psxHwRead16(mem); return 0;
+			return psxHwRead16(mem);
 		case 4: // b80
 			MEM_LOG("b800000 Memory read16 address %x\n", mem);
-			*out = 0; return 0;
-		case 5: // ba0
-			*out = ba0R16(mem); return 0;
-		case 6: // gsm
-			*out = gsRead16(mem); return 0;
-		case 7: // dev9
-			*out = DEV9read16(mem & ~0xa4000000);
-			SysPrintf("DEV9 read16 %8.8lx: %4.4lx\n", mem & ~0xa4000000, *out);
 			return 0;
+		case 5: // ba0
+			return ba0R16(mem);
+		case 6: // gsm
+			return gsRead16(mem);
+
+		case 7: // dev9
+		{
+			mem16_t retval = DEV9read16(mem & ~0xa4000000);
+			SysPrintf("DEV9 read16 %8.8lx: %4.4lx\n", mem & ~0xa4000000, retval);
+			return retval;
+		}
+
 		case 8: // spu2
-			*out = SPU2read(mem); return 0;
+			return SPU2read(mem);
 	}
 	MEM_LOG("Unknown Memory read16  from address %8.8x\n", mem);
 	cpuTlbMissR(mem, cpuRegs.branch);
-
-	return -1;
+	return 0;
 }
+
 template<int p>
-int __fastcall _ext_memRead32(u32 mem, u32 *out) 
+mem32_t __fastcall _ext_memRead32(u32 mem) 
 {
-	switch ((int)(uptr)p) {
+	switch (p)
+	{
 		case 1: // hwm
-			*out = hwRead32(mem); return 0;
+			return hwRead32_page_other(mem);
 		case 2: // psh
-			*out = psxHwRead32(mem); return 0;
+			return psxHwRead32(mem);
 		case 6: // gsm
-			*out = gsRead32(mem); return 0;
+			return gsRead32(mem);
 		case 7: // dev9
-			*out = DEV9read32(mem & ~0xa4000000);
-			SysPrintf("DEV9 read32 %8.8lx: %8.8lx\n", mem & ~0xa4000000, *out);
-			return 0;
+		{
+			mem32_t retval = DEV9read32(mem & ~0xa4000000);
+			SysPrintf("DEV9 read32 %8.8lx: %8.8lx\n", mem & ~0xa4000000, retval);
+			return retval;
+		}
 	}
 
 	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)\n", mem, cpuRegs.CP0.n.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
-
-	return -1;
+	return 0;
 }
+
 template<int p>
-int __fastcall _ext_memRead64(u32 mem, u64 *out)
+void __fastcall _ext_memRead64(u32 mem, mem64_t *out)
 {
-	switch ((int)(uptr)p) {
+	switch (p)
+	{
 		case 1: // hwm
-			*out = hwRead64(mem); return 0;
+			*out = hwRead64(mem); return;
 		case 6: // gsm
-			*out = gsRead64(mem); return 0;
+			*out = gsRead64(mem); return;
 	}
 
-#ifdef MEM_LOG
 	MEM_LOG("Unknown Memory read64  from address %8.8x\n", mem);
-#endif
 	cpuTlbMissR(mem, cpuRegs.branch);
-
-	return -1;
 }
 
 template<int p>
-int __fastcall _ext_memRead128(u32 mem, u64 *out)
+void __fastcall _ext_memRead128(u32 mem, mem128_t *out)
 {
-
-	switch ((int)(uptr)p) {
+	switch (p)
+	{
 		case 1: // hwm
-			hwRead128(mem & ~0xa0000000, out); return 0;
+			hwRead128(mem & ~0xa0000000, out); return;
 		case 6: // gsm
-			out[0] = gsRead64((mem  ));
-			out[1] = gsRead64((mem+8)); return 0;
+			out[0] = gsRead64(mem  );
+			out[1] = gsRead64(mem+8); return;
 	}
 
 	MEM_LOG("Unknown Memory read128 from address %8.8x\n", mem);
 	cpuTlbMissR(mem, cpuRegs.branch);
-
-	return -1;
 }
 
 template<int p>
 void __fastcall _ext_memWrite8 (u32 mem, u8  value)
 {
-
-	switch ((int)(uptr)p) {
+	switch (p) {
 		case 1: // hwm
 			hwWrite8(mem, value);
 			return;
@@ -359,7 +375,7 @@ void __fastcall _ext_memWrite8 (u32 mem, u8  value)
 template<int p>
 void __fastcall _ext_memWrite16(u32 mem, u16 value)
 {
-	switch ((int)(uptr)p) {
+	switch (p) {
 		case 1: // hwm
 			hwWrite16(mem, value);
 			return;
@@ -383,10 +399,9 @@ void __fastcall _ext_memWrite16(u32 mem, u16 value)
 template<int p>
 void __fastcall _ext_memWrite32(u32 mem, u32 value)
 {
-	switch ((int)(uptr)p) {
+	switch (p) {
 		case 1: // hwm
-			hwWrite32(mem, value);
-			return;
+			hwWrite32_page_other(mem, value); return;
 		case 2: // psh
 			psxHwWrite32(mem, value); return;
 		case 6: // gsm
@@ -433,55 +448,51 @@ void __fastcall _ext_memWrite128(u32 mem, const u64 *value)
 
 #define vtlb_RegisterHandlerTempl1(nam,t) vtlb_RegisterHandler(nam##Read8<t>,nam##Read16<t>,nam##Read32<t>,nam##Read64<t>,nam##Read128<t>, \
 															   nam##Write8<t>,nam##Write16<t>,nam##Write32<t>,nam##Write64<t>,nam##Write128<t>);
+
 template<int vunum>
-int __fastcall vuMicroRead8(u32 addr,mem8_t* data)
+mem8_t __fastcall vuMicroRead8(u32 addr)
 {
 	addr&=(vunum==0)?0xfff:0x3fff;
 	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
-	*data=vu->Micro[addr];
-	return 0;
+	return vu->Micro[addr];
 }
 
 template<int vunum>
-int __fastcall vuMicroRead16(u32 addr,mem16_t* data)
+mem16_t __fastcall vuMicroRead16(u32 addr)
 {
 	addr&=(vunum==0)?0xfff:0x3fff;
 	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
-	*data=*(u16*)&vu->Micro[addr];
-	return 0;
+	return *(u16*)&vu->Micro[addr];
 }
 
 template<int vunum>
-int __fastcall vuMicroRead32(u32 addr,mem32_t* data)
+mem32_t __fastcall vuMicroRead32(u32 addr)
 {
 	addr&=(vunum==0)?0xfff:0x3fff;
 	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
-	*data=*(u32*)&vu->Micro[addr];
-	return 0;
+	return *(u32*)&vu->Micro[addr];
 }
 
 template<int vunum>
-int __fastcall vuMicroRead64(u32 addr,mem64_t* data)
+void __fastcall vuMicroRead64(u32 addr,mem64_t* data)
 {
 	addr&=(vunum==0)?0xfff:0x3fff;
 	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	*data=*(u64*)&vu->Micro[addr];
-	return 0;
 }
 
 template<int vunum>
-int __fastcall vuMicroRead128(u32 addr,mem128_t* data)
+void __fastcall vuMicroRead128(u32 addr,mem128_t* data)
 {
 	addr&=(vunum==0)?0xfff:0x3fff;
 	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
 	data[0]=*(u64*)&vu->Micro[addr];
 	data[1]=*(u64*)&vu->Micro[addr+8];
-	return 0;
 }
 
 // [TODO] : Profile this code and see how often the VUs get written, and how
@@ -687,7 +698,7 @@ void memReset()
 	vtlb_Init();
 
 	tlb_fallback_0=vtlb_RegisterHandlerTempl1(_ext_mem,0);
-	tlb_fallback_1=vtlb_RegisterHandlerTempl1(_ext_mem,1);
+	//tlb_fallback_1=vtlb_RegisterHandlerTempl1(_ext_mem,1);
 	tlb_fallback_2=vtlb_RegisterHandlerTempl1(_ext_mem,2);
 	tlb_fallback_3=vtlb_RegisterHandlerTempl1(_ext_mem,3);
 	tlb_fallback_4=vtlb_RegisterHandlerTempl1(_ext_mem,4);
@@ -698,6 +709,52 @@ void memReset()
 
 	vu0_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,0);
 	vu1_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,1);
+
+	//////////////////////////////////////////////////////
+	// psHw Optimized Mappings
+	// The HW Registers have been split into pages to improve optimization.
+	// Anything not explicitly mapped into one of the hw_by_page handlers will be handled
+	// by the default/generic tlb_fallback_1 handler.
+
+	tlb_fallback_1 = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_other, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_other, _ext_memWrite64<1>, _ext_memWrite128<1>
+		);
+
+	hw_by_page[0x0] = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_00, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_00, _ext_memWrite64<1>, _ext_memWrite128<1>
+	);
+
+	hw_by_page[0x1] = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_01, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_01, _ext_memWrite64<1>, _ext_memWrite128<1>
+	);
+
+	hw_by_page[0x2] = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_02, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_02, _ext_memWrite64<1>, _ext_memWrite128<1>
+	);
+
+	hw_by_page[0x3] = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_other, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_03, _ext_memWrite64<1>, _ext_memWrite128<1>
+	);
+
+	hw_by_page[0xb] = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_other, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_0B, _ext_memWrite64<1>, _ext_memWrite128<1>
+	);
+
+	hw_by_page[0xe] = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_other, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_0E, _ext_memWrite64<1>, _ext_memWrite128<1>
+	);
+
+	hw_by_page[0xf] = vtlb_RegisterHandler(
+		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_0F, _ext_memRead64<1>, _ext_memRead128<1>,
+		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_0F, _ext_memWrite64<1>, _ext_memWrite128<1>
+	);
 
 	//vtlb_Reset();
 

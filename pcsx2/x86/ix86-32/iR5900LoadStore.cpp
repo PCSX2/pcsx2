@@ -2071,65 +2071,86 @@ void SetFastMemory(int bSetFast)
 	// nothing
 }
 
-void recLoad(u32 sz,bool sx)
+void recLoad64( u32 bits, bool sign )
 {
+	jASSUME( bits == 64 || bits == 128 );
+
 	//no int 3? i love to get my hands dirty ;p - Raz
 	//write8(0xCC);
 
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 
-	if (sz>=64)
-		EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension -> what does this really do ?
+	EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension -> what does this really do ?
 
 	_deleteEEreg(_Rt_, 0);
 
+	// Load ECX with the source memory address that we're reading from.
 	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )
 		ADD32ItoR( ECX, _Imm_ );
-	
-	if (sz==128)
+
+	if( bits == 128 )		// force 16 byte alignment on 128 bit reads
 		AND32I8toR(ECX,0xF0);
 
-	if ( _Rt_  && sz>=64)
+	// Load EDX with the destination.  64/128 bit modes load the result directly into
+	// the cpuRegs.GPR struct.
+
+	if ( _Rt_ )
 		MOV32ItoR(EDX, (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	else
 		MOV32ItoR(EDX, (int)&dummyValue[0] );
 
-	vtlb_DynGenRead(sz);
+	vtlb_DynGenRead64(bits);
+}
 
-	/*
-	if (sz==8)
-		CALLFunc( (int)memRead8 );
-	else if (sz==16)
-		CALLFunc( (int)memRead16 );
-	else if (sz==32)
-		CALLFunc( (int)memRead32 );
-	else if (sz==64)
-		CALLFunc( (int)memRead64 );
-	else if (sz==128)
-		CALLFunc( (int)memRead128 );
-	*/
+void recLoad32(u32 bits,bool sign)
+{
+	jASSUME( bits <= 32 );
 
-	if ( _Rt_ && sz<64) 
+	//no int 3? i love to get my hands dirty ;p - Raz
+	//write8(0xCC);
+
+	_deleteEEreg(_Rs_, 1);
+	_eeOnLoadWrite(_Rt_);
+	_deleteEEreg(_Rt_, 0);
+
+	// Load ECX with the source memory address that we're reading from.
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	if ( _Imm_ != 0 )
+		ADD32ItoR( ECX, _Imm_ );
+	
+	// 8/16/32 bit modes return the loaded value in EAX.
+	//MOV32ItoR(EDX, (int)&dummyValue[0] );
+
+	vtlb_DynGenRead32(bits, sign);
+
+	if ( _Rt_ )
 	{
-		MOV32MtoR( EAX, (int)&dummyValue[0] ); //ewww, lame ! movsx /zx has r/m forms too ...
-		if (sz==8)
+		// Perform sign extension if needed
+
+		//MOV32MtoR( EAX, (int)&dummyValue[0] ); //ewww, lame ! movsx /zx has r/m forms too ...
+		/*if (bits==8)
 		{
-			if (sx)
+			if (sign)
+				//MOVSX32M8toR( EAX, (int)&dummyValue[0] );
 				MOVSX32R8toR( EAX, EAX );
-			else
-				MOVZX32R8toR( EAX, EAX );
+			//else
+				//MOVZX32M8toR( EAX, (int)&dummyValue[0] );
+				//MOVZX32R8toR( EAX, EAX );
 		}
-		else if (sz==16)
+		else if (bits==16)
 		{
-			if (sx) 
+			if (sign) 
+				//MOVSX32M16toR( EAX, (int)&dummyValue[0] );
 				MOVSX32R16toR( EAX, EAX );
-			else
-				MOVZX32R16toR( EAX, EAX );
-		}
-		if (sx)
-			CDQ( );
+			//else
+				//MOVZX32M16toR( EAX, (int)&dummyValue[0] );
+				//MOVZX32R16toR( EAX, EAX );
+		}*/
+
+		if (sign)
+			CDQ();
 		else
 			XOR32RtoR(EDX,EDX);
 
@@ -2137,10 +2158,11 @@ void recLoad(u32 sz,bool sx)
 		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
 	}
 }
+
 ////////////////////////////////////////////////////
 void recLB( void ) 
 {
-	recLoad(8,true);
+	recLoad32(8,true);
 	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2174,7 +2196,7 @@ void recLB( void )
 ////////////////////////////////////////////////////
 void recLBU( void ) 
 {
-	recLoad(8,false);
+	recLoad32(8,false);
 	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2207,7 +2229,7 @@ void recLBU( void )
 ////////////////////////////////////////////////////
 void recLH( void ) 
 {
-	recLoad(16,true);
+	recLoad32(16,true);
 	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2241,7 +2263,7 @@ void recLH( void )
 ////////////////////////////////////////////////////
 void recLHU( void )
 {
-	recLoad(16,false);
+	recLoad32(16,false);
 	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2272,7 +2294,7 @@ void recLHU( void )
 ////////////////////////////////////////////////////
 void recLW( void ) 
 {
-	recLoad(32,true);
+	recLoad32(32,true);
 	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2306,7 +2328,7 @@ void recLW( void )
 ////////////////////////////////////////////////////
 void recLWU( void ) 
 {
-	recLoad(32,false);
+	recLoad32(32,false);
 	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2360,7 +2382,7 @@ extern void MOV64RmtoR( x86IntRegType to, x86IntRegType from );
 
 void recLD( void )
 {
-	recLoad(64,false);
+	recLoad64(64,false);
 	/*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2414,7 +2436,7 @@ void recLDR( void )
 ////////////////////////////////////////////////////
 void recLQ( void ) 
 {
-	recLoad(128,false);
+	recLoad64(128,false);
 /*
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
@@ -2641,13 +2663,12 @@ void recLWC1( void )
 
 	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )	
-	{
 		ADD32ItoR( ECX, _Imm_ );
-	}
 
-	MOV32ItoR(EDX, (int)&fpuRegs.fpr[ _Rt_ ].UL ); //no 0 for fpu ?
+	//MOV32ItoR(EDX, (int)&fpuRegs.fpr[ _Rt_ ].UL ); //no 0 for fpu ?
 	//CALLFunc( (int)memRead32 );
-	vtlb_DynGenRead(32);
+	vtlb_DynGenRead32(32, false);
+	MOV32RtoM( (int)&fpuRegs.fpr[ _Rt_ ].UL, EAX );
 }
 
 ////////////////////////////////////////////////////
@@ -2658,15 +2679,18 @@ void recSWC1( void )
 
 	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )	
-	{
 		ADD32ItoR( ECX, _Imm_ );
-	}
 
 	MOV32MtoR(EDX, (int)&fpuRegs.fpr[ _Rt_ ].UL );
 	vtlb_DynGenWrite(32);
 }
 
 ////////////////////////////////////////////////////
+
+/*********************************************************
+* Load and store for COP2 (VU0 unit)                     *
+* Format:  OP rt, offset(base)                           *
+*********************************************************/
 
 #define _Ft_ _Rt_
 #define _Fs_ _Rd_
@@ -2679,19 +2703,14 @@ void recLQC2( void )
 
 	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )
-	{
 		ADD32ItoR( ECX, _Imm_);
-	}
 
 	if ( _Rt_ )
-	{
 		MOV32ItoR(EDX, (int)&VU0.VF[_Ft_].UD[0] );
-	}
 	else
-	{
 		MOV32ItoR(EDX, (int)&dummyValue[0] );
-	}
-	vtlb_DynGenRead(128);
+
+	vtlb_DynGenRead64(128);
 }
 
 ////////////////////////////////////////////////////
@@ -2702,9 +2721,7 @@ void recSQC2( void )
 
 	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	if ( _Imm_ != 0 )
-	{
 		ADD32ItoR( ECX, _Imm_ );
-	}
 
 	MOV32ItoR(EDX, (int)&VU0.VF[_Ft_].UD[0] );
 	vtlb_DynGenWrite(128);

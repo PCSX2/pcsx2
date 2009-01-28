@@ -132,15 +132,15 @@ extern void rcntUpdate_hScanline();
 extern bool rcntUpdate_vSync();
 extern bool rcntUpdate();
 
-void rcntInit();
-void rcntStartGate(unsigned int mode, u32 sCycle);
-void rcntEndGate(unsigned int mode, u32 sCycle);
-void rcntWcount(int index, u32 value);
-void rcntWmode(int index, u32 value);
-void rcntWtarget(int index, u32 value);
-void rcntWhold(int index, u32 value);
-u32	 rcntRcount(int index);
-u32	 rcntCycle(int index);
+extern void rcntInit();
+extern void __fastcall rcntStartGate(unsigned int mode, u32 sCycle);
+extern void __fastcall rcntEndGate(unsigned int mode, u32 sCycle);
+extern void __fastcall rcntWcount(int index, u32 value);
+extern void __fastcall rcntWmode(int index, u32 value);
+extern void __fastcall rcntWtarget(int index, u32 value);
+extern void __fastcall rcntWhold(int index, u32 value);
+extern u32	 __fastcall rcntRcount(int index);
+extern u32	 __fastcall rcntCycle(int index);
 
 u32 UpdateVSyncRate();
 void frameLimitReset();

@@ -10,36 +10,21 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthreads", "pcsx2\windows\V
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug vm|Win32 = Debug vm|Win32
 		Debug vtlb|Win32 = Debug vtlb|Win32
-		Devel vm|Win32 = Devel vm|Win32
 		Devel vtlb|Win32 = Devel vtlb|Win32
-		Release vm|Win32 = Release vm|Win32
 		Release vtlb|Win32 = Release vtlb|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vm|Win32.ActiveCfg = Debug vm|Win32
-		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vm|Win32.Build.0 = Debug vm|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vtlb|Win32.ActiveCfg = Debug vtlb|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Debug vtlb|Win32.Build.0 = Debug vtlb|Win32
-		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Devel vm|Win32.ActiveCfg = Devel vm|Win32
-		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Devel vm|Win32.Build.0 = Devel vm|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Devel vtlb|Win32.ActiveCfg = Devel vtlb|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Devel vtlb|Win32.Build.0 = Devel vtlb|Win32
-		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vm|Win32.ActiveCfg = Release vm|Win32
-		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vm|Win32.Build.0 = Release vm|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vtlb|Win32.ActiveCfg = Release vtlb|Win32
 		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}.Release vtlb|Win32.Build.0 = Release vtlb|Win32
-		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vm|Win32.ActiveCfg = Debug|Win32
-		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vm|Win32.Build.0 = Debug|Win32
 		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vtlb|Win32.ActiveCfg = Debug|Win32
 		{26511268-2902-4997-8421-ECD7055F9E28}.Debug vtlb|Win32.Build.0 = Debug|Win32
-		{26511268-2902-4997-8421-ECD7055F9E28}.Devel vm|Win32.ActiveCfg = Release|Win32
-		{26511268-2902-4997-8421-ECD7055F9E28}.Devel vm|Win32.Build.0 = Release|Win32
 		{26511268-2902-4997-8421-ECD7055F9E28}.Devel vtlb|Win32.ActiveCfg = Release|Win32
 		{26511268-2902-4997-8421-ECD7055F9E28}.Devel vtlb|Win32.Build.0 = Release|Win32
-		{26511268-2902-4997-8421-ECD7055F9E28}.Release vm|Win32.ActiveCfg = Release|Win32
-		{26511268-2902-4997-8421-ECD7055F9E28}.Release vm|Win32.Build.0 = Release|Win32
 		{26511268-2902-4997-8421-ECD7055F9E28}.Release vtlb|Win32.ActiveCfg = Release|Win32
 		{26511268-2902-4997-8421-ECD7055F9E28}.Release vtlb|Win32.Build.0 = Release|Win32
 	EndGlobalSection

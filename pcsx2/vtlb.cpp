@@ -41,10 +41,12 @@ static const uint VTLB_VMAP_ITEMS=(0x100000000ULL/VTLB_PAGE_SIZE);
 static s32 pmap[VTLB_PMAP_ITEMS];	//512KB
 static s32 vmap[VTLB_VMAP_ITEMS];   //4MB
 
-//5 -> one for each size
-//2 -> read/write
-//
-void* RWFT[5][2][128];
+// first indexer -- 8/16/32/64/128 bit tables [values 0-4]
+// second indexer -- read/write  [0 or 1]
+// third indexer -- 128 pages of memory!
+static void* RWFT[5][2][128];
+
+
 vtlbHandler vtlbHandlerCount=0;
 
 vtlbHandler DefaultPhyHandler;
@@ -79,9 +81,35 @@ callfunction:
 		jmp [readfunctions8-0x800000+eax];
 	}*/
 
-
+// For 8, 16, and 32 bit accesses
 template<int DataSize,typename DataType>
-__forceinline int __fastcall MemOp_r(u32 addr, DataType* data)
+__forceinline DataType __fastcall MemOp_r0(u32 addr)
+{
+	u32 vmv=vmap[addr>>VTLB_PAGE_BITS];
+	s32 ppf=addr+vmv;
+
+	if (!(ppf<0))
+		return *reinterpret_cast<DataType*>(ppf);
+
+	//has to: translate, find function, call function
+	u32 hand=(u8)vmv;
+	u32 paddr=ppf-hand+0x80000000;
+	//SysPrintf("Translated 0x%08X to 0x%08X\n",addr,paddr);
+	//return reinterpret_cast<TemplateHelper<DataSize,false>::HandlerType*>(RWFT[TemplateHelper<DataSize,false>::sidx][0][hand])(paddr,data);
+
+	switch( DataSize )
+	{
+		case 8: return ((vltbMemR8FP*)RWFT[0][0][hand])(paddr);
+		case 16: return ((vltbMemR16FP*)RWFT[1][0][hand])(paddr);
+		case 32: return ((vltbMemR32FP*)RWFT[2][0][hand])(paddr);
+
+		jNO_DEFAULT;
+	}
+}
+
+// For 64 and 128 bit accesses.
+template<int DataSize,typename DataType>
+__forceinline void __fastcall MemOp_r1(u32 addr, DataType* data)
 {
 	u32 vmv=vmap[addr>>VTLB_PAGE_BITS];
 	s32 ppf=addr+vmv;
@@ -91,29 +119,24 @@ __forceinline int __fastcall MemOp_r(u32 addr, DataType* data)
 		data[0]=*reinterpret_cast<DataType*>(ppf);
 		if (DataSize==128)
 			data[1]=*reinterpret_cast<DataType*>(ppf+8);
-		return 0;
 	}
 	else
 	{	
 		//has to: translate, find function, call function
 		u32 hand=(u8)vmv;
 		u32 paddr=ppf-hand+0x80000000;
-		//SysPrintf("Translted 0x%08X to 0x%08X\n",addr,paddr);
+		//SysPrintf("Translated 0x%08X to 0x%08X\n",addr,paddr);
 		//return reinterpret_cast<TemplateHelper<DataSize,false>::HandlerType*>(RWFT[TemplateHelper<DataSize,false>::sidx][0][hand])(paddr,data);
 
 		switch( DataSize )
 		{
-			case 8: return ((vltbMemRFP*)RWFT[0][0][hand])(paddr, data);
-			case 16: return ((vltbMemRFP*)RWFT[1][0][hand])(paddr, data);
-			case 32: return ((vltbMemRFP*)RWFT[2][0][hand])(paddr, data);
-			case 64: return ((vltbMemRFP*)RWFT[3][0][hand])(paddr, data);
-			case 128: return ((vltbMemRFP*)RWFT[4][0][hand])(paddr, data);
+			case 64: ((vltbMemR64FP*)RWFT[3][0][hand])(paddr, data); break;
+			case 128: ((vltbMemR128FP*)RWFT[4][0][hand])(paddr, data); break;
 
 			jNO_DEFAULT;
 		}
 	}
 }
-
 
 template<int DataSize,typename DataType>
 __forceinline void __fastcall MemOp_w0(u32 addr, DataType data)
@@ -168,48 +191,55 @@ __forceinline void __fastcall MemOp_w1(u32 addr,const DataType* data)
 		}
 	}
 }
-int __fastcall vtlb_memRead8(u32 mem, u8  *out)
+
+mem8_t __fastcall vtlb_memRead8(u32 mem)
 {
-	return MemOp_r<8,u8>(mem,out);
+	return MemOp_r0<8,mem8_t>(mem);
 }
-int __fastcall vtlb_memRead16(u32 mem, u16 *out)
+mem16_t __fastcall vtlb_memRead16(u32 mem)
 {
-	return MemOp_r<16,u16>(mem,out);
+	return MemOp_r0<16,mem16_t>(mem);
 }
-int __fastcall vtlb_memRead32(u32 mem, u32 *out)
+mem32_t __fastcall vtlb_memRead32(u32 mem)
 {
-	return MemOp_r<32,u32>(mem,out);
+	return MemOp_r0<32,mem32_t>(mem);
 }
-int __fastcall vtlb_memRead64(u32 mem, u64 *out)
+void __fastcall vtlb_memRead64(u32 mem, u64 *out)
 {
-	return MemOp_r<64,u64>(mem,out);
+	return MemOp_r1<64,mem64_t>(mem,out);
 }
-int __fastcall vtlb_memRead128(u32 mem, u64 *out)
+void __fastcall vtlb_memRead128(u32 mem, u64 *out)
 {
-	return MemOp_r<128,u64>(mem,out);
+	return MemOp_r1<128,mem128_t>(mem,out);
 }
-void __fastcall vtlb_memWrite8 (u32 mem, u8  value)
+void __fastcall vtlb_memWrite8 (u32 mem, mem8_t value)
 {
-	MemOp_w0<8,u8>(mem,value);
+	MemOp_w0<8,mem8_t>(mem,value);
 }
-void __fastcall vtlb_memWrite16(u32 mem, u16 value)
+void __fastcall vtlb_memWrite16(u32 mem, mem16_t value)
 {
-	MemOp_w0<16,u16>(mem,value);
+	MemOp_w0<16,mem16_t>(mem,value);
 }
-void __fastcall vtlb_memWrite32(u32 mem, u32 value)
+void __fastcall vtlb_memWrite32(u32 mem, mem32_t value)
 {
-	MemOp_w0<32,u32>(mem,value);
+	MemOp_w0<32,mem32_t>(mem,value);
 }
-void __fastcall vtlb_memWrite64(u32 mem, const u64* value)
+void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 {
-	MemOp_w1<64,u64>(mem,value);
+	MemOp_w1<64,mem64_t>(mem,value);
 }
-void __fastcall vtlb_memWrite128(u32 mem, const u64 *value)
+void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 {
-	MemOp_w1<128,u64>(mem,value);
+	MemOp_w1<128,mem128_t>(mem,value);
 }
 
-static __forceinline int vtlb_Miss(u32 addr,u32 mode)
+// Some functions used by interpreters and stuff...
+void __fastcall memRead8(u32 mem, u8  *out) { *out = vtlb_memRead8( mem ); }
+void __fastcall memRead16(u32 mem, u16 *out) { *out = vtlb_memRead16( mem ); }
+void __fastcall memRead32(u32 mem, u32 *out) { *out = vtlb_memRead32( mem ); }
+
+
+static __forceinline void vtlb_Miss(u32 addr,u32 mode)
 {
 	SysPrintf("vtlb miss : addr 0x%X, mode %d\n",addr,mode);
 	verify(false);
@@ -217,26 +247,23 @@ static __forceinline int vtlb_Miss(u32 addr,u32 mode)
 		cpuTlbMissR(addr, cpuRegs.branch);
 	else
 		cpuTlbMissW(addr, cpuRegs.branch);
-	
-	return -1;
 }
-static __forceinline int vtlb_BusError(u32 addr,u32 mode)
+static __forceinline void vtlb_BusError(u32 addr,u32 mode)
 {
 	SysPrintf("vtlb bus error : addr 0x%X, mode %d\n",addr,mode);
 	verify(false);
-	return -1;
 }
 /////
 template<u32 saddr>
-int __fastcall vtlbUnmappedVRead8(u32 addr,mem8_t* data) { return vtlb_Miss(addr|saddr,0); }
+mem8_t __fastcall vtlbUnmappedVRead8(u32 addr) { vtlb_Miss(addr|saddr,0); return 0; }
 template<u32 saddr>
-int __fastcall vtlbUnmappedVRead16(u32 addr,mem16_t* data)  { return vtlb_Miss(addr|saddr,0); }
+mem16_t __fastcall vtlbUnmappedVRead16(u32 addr)  { vtlb_Miss(addr|saddr,0); return 0; }
 template<u32 saddr>
-int __fastcall vtlbUnmappedVRead32(u32 addr,mem32_t* data) { return vtlb_Miss(addr|saddr,0); }
+mem32_t __fastcall vtlbUnmappedVRead32(u32 addr) { vtlb_Miss(addr|saddr,0); return 0; }
 template<u32 saddr>
-int __fastcall vtlbUnmappedVRead64(u32 addr,mem64_t* data) { return vtlb_Miss(addr|saddr,0); }
+void __fastcall vtlbUnmappedVRead64(u32 addr,mem64_t* data) { vtlb_Miss(addr|saddr,0); }
 template<u32 saddr>
-int __fastcall vtlbUnmappedVRead128(u32 addr,mem128_t* data) { return vtlb_Miss(addr|saddr,0); }
+void __fastcall vtlbUnmappedVRead128(u32 addr,mem128_t* data) { vtlb_Miss(addr|saddr,0); }
 template<u32 saddr>
 void __fastcall vtlbUnmappedVWrite8(u32 addr,mem8_t data) { vtlb_Miss(addr|saddr,1); }
 template<u32 saddr>
@@ -249,15 +276,15 @@ template<u32 saddr>
 void __fastcall vtlbUnmappedVWrite128(u32 addr,const mem128_t* data) { vtlb_Miss(addr|saddr,1); }
 /////
 template<u32 saddr>
-int __fastcall vtlbUnmappedPRead8(u32 addr,mem8_t* data) { return vtlb_BusError(addr|saddr,0); }
+mem8_t __fastcall vtlbUnmappedPRead8(u32 addr) { vtlb_BusError(addr|saddr,0); return 0; }
 template<u32 saddr>
-int __fastcall vtlbUnmappedPRead16(u32 addr,mem16_t* data)  { return vtlb_BusError(addr|saddr,0); }
+mem16_t __fastcall vtlbUnmappedPRead16(u32 addr)  { vtlb_BusError(addr|saddr,0); return 0; }
 template<u32 saddr>
-int __fastcall vtlbUnmappedPRead32(u32 addr,mem32_t* data) { return vtlb_BusError(addr|saddr,0); }
+mem32_t __fastcall vtlbUnmappedPRead32(u32 addr) { vtlb_BusError(addr|saddr,0); return 0; }
 template<u32 saddr>
-int __fastcall vtlbUnmappedPRead64(u32 addr,mem64_t* data) { return vtlb_BusError(addr|saddr,0); }
+void __fastcall vtlbUnmappedPRead64(u32 addr,mem64_t* data) { vtlb_BusError(addr|saddr,0); }
 template<u32 saddr>
-int __fastcall vtlbUnmappedPRead128(u32 addr,mem128_t* data) { return vtlb_BusError(addr|saddr,0); }
+void __fastcall vtlbUnmappedPRead128(u32 addr,mem128_t* data) { vtlb_BusError(addr|saddr,0); }
 template<u32 saddr>
 void __fastcall vtlbUnmappedPWrite8(u32 addr,mem8_t data) { vtlb_BusError(addr|saddr,1); }
 template<u32 saddr>
@@ -269,11 +296,11 @@ void __fastcall vtlbUnmappedPWrite64(u32 addr,const mem64_t* data) { vtlb_BusErr
 template<u32 saddr>
 void __fastcall vtlbUnmappedPWrite128(u32 addr,const mem128_t* data) { vtlb_BusError(addr|saddr,1); }
 /////
-int __fastcall vtlbDefaultPhyRead8(u32 addr,mem8_t* data) { SysPrintf("vtlbDefaultPhyRead8: 0x%X\n",addr); verify(false); return -1; }
-int __fastcall vtlbDefaultPhyRead16(u32 addr,mem16_t* data)  { SysPrintf("vtlbDefaultPhyRead16: 0x%X\n",addr); verify(false); return -1; }
-int __fastcall vtlbDefaultPhyRead32(u32 addr,mem32_t* data) { SysPrintf("vtlbDefaultPhyRead32: 0x%X\n",addr); verify(false); return -1; }
-int __fastcall vtlbDefaultPhyRead64(u32 addr,mem64_t* data) { SysPrintf("vtlbDefaultPhyRead64: 0x%X\n",addr); verify(false); return -1; }
-int __fastcall vtlbDefaultPhyRead128(u32 addr,mem128_t* data) { SysPrintf("vtlbDefaultPhyRead128: 0x%X\n",addr); verify(false); return -1; }
+mem8_t __fastcall vtlbDefaultPhyRead8(u32 addr) { SysPrintf("vtlbDefaultPhyRead8: 0x%X\n",addr); verify(false); return -1; }
+mem16_t __fastcall vtlbDefaultPhyRead16(u32 addr)  { SysPrintf("vtlbDefaultPhyRead16: 0x%X\n",addr); verify(false); return -1; }
+mem32_t __fastcall vtlbDefaultPhyRead32(u32 addr) { SysPrintf("vtlbDefaultPhyRead32: 0x%X\n",addr); verify(false); return -1; }
+void __fastcall vtlbDefaultPhyRead64(u32 addr,mem64_t* data) { SysPrintf("vtlbDefaultPhyRead64: 0x%X\n",addr); verify(false); }
+void __fastcall vtlbDefaultPhyRead128(u32 addr,mem128_t* data) { SysPrintf("vtlbDefaultPhyRead128: 0x%X\n",addr); verify(false); }
 
 void __fastcall vtlbDefaultPhyWrite8(u32 addr,mem8_t data) { SysPrintf("vtlbDefaultPhyWrite8: 0x%X\n",addr); verify(false); }
 void __fastcall vtlbDefaultPhyWrite16(u32 addr,mem16_t data) { SysPrintf("vtlbDefaultPhyWrite16: 0x%X\n",addr); verify(false); }
@@ -287,17 +314,17 @@ vtlbHandler vtlb_RegisterHandler(	vltbMemR8FP* r8,vltbMemR16FP* r16,vltbMemR32FP
 	//write the code :p
 	vtlbHandler rv=vtlbHandlerCount++;
 	
-	RWFT[0][0][rv]=r8!=0?r8:vtlbDefaultPhyRead8;
-	RWFT[1][0][rv]=r16!=0?r16:vtlbDefaultPhyRead16;
-	RWFT[2][0][rv]=r32!=0?r32:vtlbDefaultPhyRead32;
-	RWFT[3][0][rv]=r64!=0?r64:vtlbDefaultPhyRead64;
-	RWFT[4][0][rv]=r128!=0?r128:vtlbDefaultPhyRead128;
+	RWFT[0][0][rv] = (r8!=0)   ? r8:vtlbDefaultPhyRead8;
+	RWFT[1][0][rv] = (r16!=0)  ? r16:vtlbDefaultPhyRead16;
+	RWFT[2][0][rv] = (r32!=0)  ? r32:vtlbDefaultPhyRead32;
+	RWFT[3][0][rv] = (r64!=0)  ? r64:vtlbDefaultPhyRead64;
+	RWFT[4][0][rv] = (r128!=0) ? r128:vtlbDefaultPhyRead128;
 
-	RWFT[0][1][rv]=w8!=0?w8:vtlbDefaultPhyWrite8;
-	RWFT[1][1][rv]=w16!=0?w16:vtlbDefaultPhyWrite16;
-	RWFT[2][1][rv]=w32!=0?w32:vtlbDefaultPhyWrite32;
-	RWFT[3][1][rv]=w64!=0?w64:vtlbDefaultPhyWrite64;
-	RWFT[4][1][rv]=w128!=0?w128:vtlbDefaultPhyWrite128;
+	RWFT[0][1][rv] = (w8!=0)   ? w8:vtlbDefaultPhyWrite8;
+	RWFT[1][1][rv] = (w16!=0)  ? w16:vtlbDefaultPhyWrite16;
+	RWFT[2][1][rv] = (w32!=0)  ? w32:vtlbDefaultPhyWrite32;
+	RWFT[3][1][rv] = (w64!=0)  ? w64:vtlbDefaultPhyWrite64;
+	RWFT[4][1][rv] = (w128!=0) ? w128:vtlbDefaultPhyWrite128;
 
 	return rv;
 }
@@ -486,7 +513,7 @@ void vtlb_Term()
 
 //ecx = addr
 //edx = ptr
-void vtlb_DynGenRead(u32 sz)
+void vtlb_DynGenRead64(u32 bits)
 {
 	/*
 		u32 vmv=vmap[addr>>VTLB_PAGE_BITS];
@@ -539,21 +566,8 @@ void vtlb_DynGenRead(u32 sz)
 	MOV32RmSOffsettoR(EAX,EAX,(int)vmap,2);
 	ADD32RtoR(ECX,EAX);
 	u8* _fullread=JS8(0);
-	switch(sz)
+	switch(bits)
 	{
-	case 8:
-		MOVZX32Rm8toR(EAX,ECX);
-		MOV8RtoRm(EDX,EAX);
-		break;
-	case 16:
-		MOVZX32Rm16toR(EAX,ECX);
-		MOV16RtoRm(EDX,EAX);
-		break;
-	case 32:
-		MOV32RmtoR(EAX,ECX);
-		MOV32RtoRm(EDX,EAX);
-		break;
-
 	case 64:
 		if( _hasFreeMMXreg() )
 		{
@@ -595,26 +609,101 @@ void vtlb_DynGenRead(u32 sz)
 			MOV32RtoRmOffset(EDX,EAX,12);
 		}
 		break;
+
+	jNO_DEFAULT
 	}
 
 	u8* cont=JMP8(0);
 	x86SetJ8(_fullread);
-	int szidx=0;
+	int szidx;
 
-	switch(sz)
+	switch(bits)
 	{
-	case 8:  szidx=0;	break;
-	case 16:   szidx=1;	break;
-	case 32:   szidx=2;	break;
-	case 64:   szidx=3;	break;
-	case 128:   szidx=4; break;
+		case 64:   szidx=3;	break;
+		case 128:  szidx=4; break;
+		jNO_DEFAULT
 	}
+
 	MOVZX32R8toR(EAX,EAX);
 	SUB32RtoR(ECX,EAX);
 	//eax=[funct+eax]
-	MOV32RmSOffsettoR(EAX,EAX,(int)&RWFT[szidx][0][0],2);
+	MOV32RmSOffsettoR(EAX,EAX,(int)RWFT[szidx][0],2);
 	SUB32ItoR(ECX,0x80000000);
 	CALL32R(EAX);
+
+	x86SetJ8(cont);
+}
+
+// ecx - source address to read from
+// Returns read value in eax.
+void vtlb_DynGenRead32(u32 bits, bool sign)
+{
+	jASSUME( bits <= 32 );
+
+	MOV32RtoR(EAX,ECX);
+	SHR32ItoR(EAX,VTLB_PAGE_BITS);
+	MOV32RmSOffsettoR(EAX,EAX,(int)vmap,2);
+	ADD32RtoR(ECX,EAX);
+	u8* _fullread=JS8(0);
+
+	switch(bits)
+	{
+	case 8:
+		if( sign )
+			MOVSX32Rm8toR(EAX,ECX);
+		else
+			MOVZX32Rm8toR(EAX,ECX);
+		break;
+
+	case 16:
+		if( sign )
+			MOVSX32Rm16toR(EAX,ECX);
+		else
+			MOVZX32Rm16toR(EAX,ECX);
+		break;
+
+	case 32:
+		MOV32RmtoR(EAX,ECX);
+		break;
+
+	jNO_DEFAULT
+	}
+
+	u8* cont=JMP8(0);
+	x86SetJ8(_fullread);
+	int szidx;
+
+	switch(bits)
+	{
+		case 8:  szidx=0;	break;
+		case 16: szidx=1;	break;
+		case 32: szidx=2;	break;
+		jNO_DEFAULT
+	}
+
+	MOVZX32R8toR(EAX,EAX);
+	SUB32RtoR(ECX,EAX);
+	//eax=[funct+eax]
+	MOV32RmSOffsettoR(EAX,EAX,(int)RWFT[szidx][0],2);
+	SUB32ItoR(ECX,0x80000000);
+	CALL32R(EAX);
+
+	// perform sign extension on the result:
+
+	if( bits==8 )
+	{
+		if( sign )
+			MOVSX32R8toR(EAX,EAX);
+		else
+			MOVZX32R8toR(EAX,EAX);
+	}
+	else if( bits==16 )
+	{
+		if( sign )
+			MOVSX32R16toR(EAX,EAX);
+		else
+			MOVZX32R16toR(EAX,EAX);
+	}
 
 	x86SetJ8(cont);
 }
@@ -693,7 +782,7 @@ void vtlb_DynGenWrite(u32 sz)
 	MOVZX32R8toR(EAX,EAX);
 	SUB32RtoR(ECX,EAX);
 	//eax=[funct+eax]
-	MOV32RmSOffsettoR(EAX,EAX,(int)&RWFT[szidx][1][0],2);
+	MOV32RmSOffsettoR(EAX,EAX,(int)RWFT[szidx][1],2);
 	SUB32ItoR(ECX,0x80000000);
 	CALL32R(EAX);
 

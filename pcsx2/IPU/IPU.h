@@ -233,10 +233,10 @@ int  ipuFreeze(gzFile f, int Mode);
 bool ipuCanFreeze();
 
 
-u32 ipuRead32(u32 mem);
-u64 ipuRead64(u32 mem);
-void ipuWrite32(u32 mem,u32 value);
-void ipuWrite64(u32 mem,u64 value);
+extern u32 ipuRead32(u32 mem);
+extern u64 ipuRead64(u32 mem);
+extern void ipuWrite32(u32 mem,u32 value);
+extern void ipuWrite64(u32 mem,u64 value);
 
 int ipuConstRead32(u32 x86reg, u32 mem);
 void ipuConstRead64(u32 mem, int mmreg);

@@ -466,7 +466,9 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 					 */
 					EnterRunningState(hDlg);
 
-					if (memRead32(cpuRegs.pc, &cpuRegs.code) != -1){
+					memRead32(cpuRegs.pc, &cpuRegs.code);
+
+					{
 						u32 target_pc = 0;
 						if (3 == (cpuRegs.code >> 26)){
 							/* it's a JAL instruction. */
@@ -483,7 +485,8 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 							Cpu->Step();
 						}
 					}
-                    DebuggerPC = 0;
+
+					DebuggerPC = 0;
 					DebuggerIOPPC=0;
 					EnterHaltedState(hDlg);
                     RefreshDebugAll();

@@ -357,7 +357,8 @@ void vu0Finish()
 		}
 		if(VU0.VI[REG_VPU_STAT].UL & 0x1) {
 			VU0.VI[REG_VPU_STAT].UL &= ~1;
-			Console::Notice("vu0Finish > stall aborted by force.");
+			// this log tends to spam a lot (MGS3)
+			//Console::Notice("vu0Finish > stall aborted by force.");
 		}
 	}
 }

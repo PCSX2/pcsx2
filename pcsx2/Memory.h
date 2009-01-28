@@ -255,20 +255,17 @@ int mmap_GetRamPageInfo(void* ptr);
 void mmap_MarkCountedRamPage(void* ptr,u32 vaddr);
 void mmap_ResetBlockTracking();
 
-int  __fastcall _memRead8(u32 mem, u8  *out);
-int  __fastcall _memRead16(u32 mem, u16 *out);
-int  __fastcall _memRead32(u32 mem, u32 *out);
-int  __fastcall _memRead64(u32 mem, u64 *out);
+extern void __fastcall memRead8(u32 mem, u8  *out);
+extern void __fastcall memRead16(u32 mem, u16 *out);
+extern void __fastcall memRead32(u32 mem, u32 *out);
+/*int  __fastcall _memRead64(u32 mem, u64 *out);
 int  __fastcall _memRead128(u32 mem, u64 *out);
 void __fastcall _memWrite8 (u32 mem, u8  value);
 void __fastcall _memWrite16(u32 mem, u16 value);
 void __fastcall _memWrite32(u32 mem, u32 value);
 void __fastcall _memWrite64(u32 mem, u64 value);
-void __fastcall _memWrite128(u32 mem, u64 *value);
+void __fastcall _memWrite128(u32 mem, u64 *value);*/
 
-#define memRead8 vtlb_memRead8
-#define memRead16 vtlb_memRead16
-#define memRead32 vtlb_memRead32
 #define memRead64 vtlb_memRead64
 #define memRead128 vtlb_memRead128
 

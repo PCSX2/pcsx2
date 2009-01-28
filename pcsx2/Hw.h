@@ -118,6 +118,9 @@ struct DMACh {
 #define D1_MADR			0x10009010
 #define D1_QWC			0x10009020
 #define D1_TADR			0x10009030
+#define D1_ASR0			0x10009040
+#define D1_ASR1			0x10009050
+#define D1_SADR			0x10009080
 
 //GS
 #define D2_CHCR			0x1000A000
@@ -132,12 +135,15 @@ struct DMACh {
 #define D3_CHCR			0x1000B000
 #define D3_MADR			0x1000B010
 #define D3_QWC			0x1000B020
+#define D3_TADR			0x1000B030
+#define D3_SADR			0x1000B080
 
 //toIPU
 #define D4_CHCR			0x1000B400
 #define D4_MADR			0x1000B410
 #define D4_QWC			0x1000B420
 #define D4_TADR			0x1000B430
+#define D4_SADR			0x1000B480
 
 //SIF0
 #define D5_CHCR			0x1000C000
@@ -359,16 +365,33 @@ void hwShutdown();
 // hw read functions
 extern u8   hwRead8 (u32 mem);
 extern u16  hwRead16(u32 mem);
-extern u32  hwRead32(u32 mem);
 extern u64  hwRead64(u32 mem);
 extern void hwRead128(u32 mem, u64 *out);
+
+extern mem32_t __fastcall hwRead32_page_00(u32 mem);
+extern mem32_t __fastcall hwRead32_page_01(u32 mem);
+extern mem32_t __fastcall hwRead32_page_02(u32 mem);
+extern mem32_t __fastcall hwRead32_page_0F(u32 mem);
+extern mem32_t __fastcall hwRead32_page_other(u32 mem);
+
+extern mem32_t __fastcall hwRead32(u32 mem);
 
 // hw write functions
 extern void hwWrite8 (u32 mem, u8  value);
 extern void hwWrite16(u32 mem, u16 value);
-extern void hwWrite32(u32 mem, u32 value);
 extern void hwWrite64(u32 mem, u64 value);
 extern void hwWrite128(u32 mem, const u64 *value);
+
+extern void __fastcall hwWrite32_page_00( u32 mem, u32 value );
+extern void __fastcall hwWrite32_page_01( u32 mem, u32 value );
+extern void __fastcall hwWrite32_page_02( u32 mem, u32 value );
+extern void __fastcall hwWrite32_page_03( u32 mem, u32 value );
+extern void __fastcall hwWrite32_page_0B( u32 mem, u32 value );
+extern void __fastcall hwWrite32_page_0E( u32 mem, u32 value );
+extern void __fastcall hwWrite32_page_0F( u32 mem, u32 value );
+extern void __fastcall hwWrite32_page_other( u32 mem, u32 value );
+
+extern void __fastcall hwWrite32(u32 mem, u32 value);
 
 void hwIntcIrq(int n);
 void hwDmacIrq(int n);
