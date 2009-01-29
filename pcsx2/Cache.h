@@ -26,14 +26,14 @@ struct _u8bit_128 {
 
 };
 
-struct u128 {
+struct u8bit_128 {
 	_u8bit_128 b8;
 
 };
 
 struct _cacheS {
 	u32 tag[2];
-	u128 data[2][4];
+	u8bit_128 data[2][4];
 };
 
 extern _cacheS pCache[64];

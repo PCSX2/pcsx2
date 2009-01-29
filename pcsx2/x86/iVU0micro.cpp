@@ -45,7 +45,7 @@ namespace VU0micro
 	{
 		SuperVUReset(0);
 
-		// these shouldn't be needed, but shouldn't hurt anythign either.
+		// these shouldn't be needed, but shouldn't hurt anything either.
 		x86FpuState = FPU_STATE;
 		iCWstate = 0;
 	}

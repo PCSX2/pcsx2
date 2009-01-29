@@ -120,8 +120,8 @@ void WriteFIFO(u32 mem, const u64 *value) {
 
 		if( mtgsThread != NULL )
 		{
-			const uint count = mtgsThread->PrepDataPacket( GIF_PATH_3, value, 16 );
-			jASSUME( count == 16 );
+			const uint count = mtgsThread->PrepDataPacket( GIF_PATH_3, value, 1 );
+			jASSUME( count == 1 );
 			u64* data = (u64*)mtgsThread->GetDataPacketPtr();
 			data[0] = value[0];
 			data[1] = value[1];

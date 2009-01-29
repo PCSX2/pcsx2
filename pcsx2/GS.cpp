@@ -552,7 +552,7 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 	if( mtgsThread != NULL )
 	{ 
 		int sizetoread = (qwc)<<4; 
-		sizetoread = mtgsThread->PrepDataPacket( GIF_PATH_3, pMem, sizetoread );
+		sizetoread = mtgsThread->PrepDataPacket( GIF_PATH_3, pMem, qwc );
 		u8* pgsmem = mtgsThread->GetDataPacketPtr();
 
 		/* check if page of endmem is valid (dark cloud2) */
@@ -579,7 +579,7 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 		}
 		else
 #endif
-		memcpy_aligned(pgsmem, pMem, sizetoread); 
+		memcpy_aligned(pgsmem, pMem, sizetoread<<4); 
 		
 		mtgsThread->SendDataPacket();
 	} 

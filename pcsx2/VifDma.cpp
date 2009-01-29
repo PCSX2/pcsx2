@@ -1587,8 +1587,8 @@ static int Vif1TransDirectHL(u32 *data){
 		{
 			// copy 16 bytes the fast way:
 			const u64* src = (u64*)splittransfer[0];
-			const uint count = mtgsThread->PrepDataPacket( GIF_PATH_2, src, 16);
-			jASSUME( count == 16 );
+			const uint count = mtgsThread->PrepDataPacket( GIF_PATH_2, src, 1);
+			jASSUME( count == 1 );
 			u64* dst = (u64*)mtgsThread->GetDataPacketPtr();
 			dst[0] = src[0];
 			dst[1] = src[1];
@@ -1633,8 +1633,9 @@ static int Vif1TransDirectHL(u32 *data){
 	if( mtgsThread != NULL )
 	{
 		//unaligned copy.VIF handling is -very- messy, so i'l use this code til i fix it :)
-		const uint count = mtgsThread->PrepDataPacket( GIF_PATH_2, data, ret<<2 );
-		memcpy_fast( mtgsThread->GetDataPacketPtr(), data, count );
+		// Round ret up, just in case it's not 128bit aligned.
+		const uint count = mtgsThread->PrepDataPacket( GIF_PATH_2, data, (ret+3)>>2 );
+		memcpy_fast( mtgsThread->GetDataPacketPtr(), data, count<<4 );
 		mtgsThread->SendDataPacket();
 	}
 	else {

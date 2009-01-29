@@ -622,14 +622,28 @@ void ShutdownPlugins()
 		OpenStatus.GS = false;
 	}
 
-	GSshutdown();
-	PAD1shutdown();
-	PAD2shutdown();
-	SPU2shutdown();
-	CDVDshutdown();
-	DEV9shutdown();
-	USBshutdown();
-    FWshutdown();
+	if( GSshutdown != NULL )
+		GSshutdown();
+	
+	if( PAD1shutdown != NULL )
+		PAD1shutdown();
+	if( PAD2shutdown != NULL )
+		PAD2shutdown();
+
+	if( SPU2shutdown != NULL )
+		SPU2shutdown();
+
+	if( CDVDshutdown != NULL )
+		CDVDshutdown();
+
+	if( DEV9shutdown != NULL )
+		DEV9shutdown();
+
+	if( USBshutdown != NULL )
+		USBshutdown();
+
+	if( FWshutdown != NULL )
+		FWshutdown();
 }
 
 int LoadPlugins() {

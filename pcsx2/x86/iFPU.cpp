@@ -681,7 +681,6 @@ void recBC1T( void ) {
 	SaveBranchState();
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
-	//j32Ptr[1] = JMP32(0);
 
 	x86SetJ32(j32Ptr[0]);
 
@@ -691,7 +690,6 @@ void recBC1T( void ) {
 	recompileNextInstruction(1);
 
 	SetBranchImm(pc);
-	//x86SetJ32(j32Ptr[1]);	
 }
 
 void recBC1FL( void ) {

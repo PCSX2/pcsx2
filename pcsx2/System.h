@@ -283,6 +283,25 @@ protected:
 	int m_size;	// size of the allocation of memory
 
 	const static std::string m_str_Unnamed;
+protected:
+	// Internal contructor for use by derrived classes.  This allws a derrived class to
+	// use its own memory allocation (with an aligned memory, for example).
+	// Throws:
+	//   Exception::OutOfMemory if the allocated_mem pointr is NULL.
+	explicit MemoryAlloc( const std::string& name, T* allocated_mem, int initSize ) : 
+	  Name( name )
+	, ChunkSize( DefaultChunkSize )
+	, m_ptr( allocated_mem )
+	, m_size( initSize )
+	{
+		if( m_ptr == NULL )
+			throw Exception::OutOfMemory();
+	}
+
+	virtual T* _virtual_realloc( int newsize )
+	{
+		return (T*)realloc( m_ptr, newsize * sizeof(T) );
+	}
 
 public:
 	virtual ~MemoryAlloc()
@@ -322,7 +341,7 @@ public:
 		if( blockSize > m_size )
 		{
 			const uint newalloc = blockSize + ChunkSize;
-			m_ptr = (T*)realloc( m_ptr, newalloc * sizeof(T) );
+			m_ptr = _virtual_realloc( newalloc );
 			if( m_ptr == NULL )
 			{
 				throw Exception::OutOfMemory(
@@ -353,19 +372,69 @@ public:
 	}
 
 protected:
+	// A safe array index fetcher.  Throws an exception if the array index
+	// is outside the bounds of the array.
+	// Performance Considerations: This function adds quite a bit of overhead
+	// to array indexing and thus should be done infrequently if used in
+	// time-critical situations.  Indead of using it from inside loops, cache
+	// the pointer into a local variable and use stad (unsafe) C indexes.
 	T* _getPtr( uint i ) const
 	{
+#ifdef PCSX2_DEVBUILD
 		if( i >= (uint)m_size )
 		{
-			throw std::out_of_range(
+			throw Exception::IndexBoundsFault(
 				"Index out of bounds on MemoryAlloc: " + Name + 
 				" (index=" + to_string(i) + 
 				", size=" + to_string(m_size) + ")"
 			);
 		}
+#endif
 		return &m_ptr[i];
 	}
 
+};
+
+template< typename T, uint Alignment >
+class SafeAlignedArray : public MemoryAlloc<T>
+{
+protected:
+	T* _virtual_realloc( int newsize )
+	{
+		// TODO : aligned_realloc will need a linux implementation now. -_-
+		return (T*)_aligned_realloc( m_ptr, newsize * sizeof(T), Alignment );
+	}
+
+	// Appends "(align: xx)" to the name of the allocation in devel builds.
+	// Maybe useful,maybe not... no harm in atatching it. :D
+	string _getName( const string& src )
+	{
+#ifdef PCSX2_DEVBUILD
+		return src + "(align:" + to_string(Alignment) + ")";
+#endif
+		return src;
+	}
+
+public:
+	virtual ~SafeAlignedArray()
+	{
+		safe_aligned_free( m_ptr );
+		// mptr is set to null, so the parent class's destructor won't re-free it.
+	}
+
+	explicit SafeAlignedArray( const std::string& name="Unnamed" ) : 
+		MemoryAlloc( name )
+	{
+	}
+
+	explicit SafeAlignedArray( int initialSize, const std::string& name="Unnamed" ) : 
+		MemoryAlloc(
+			_getName(name),
+			(T*)_aligned_malloc( initialSize * sizeof(T), Alignment ),
+			initialSize 
+		)
+	{
+	}
 };
 
 #endif /* __SYSTEM_H__ */

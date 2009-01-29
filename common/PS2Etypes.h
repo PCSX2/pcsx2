@@ -156,6 +156,56 @@ typedef s32 sptr;
 #endif
 #endif
 
+// A rough-and-ready cross platform 128-bit datatype, Non-SSE style.
+#ifdef __cplusplus
+struct u128
+{
+	u64 lo;
+	u64 hi;
+
+	// Implicit conversion from u64
+	u128( u64 src ) :
+		lo( src )
+	,	hi( 0 ) {}
+
+	// Implicit conversion from u32
+	u128( u32 src ) :
+		lo( src )
+	,	hi( 0 ) {}
+};
+
+struct s128
+{
+	s64 lo;
+	s64 hi;
+
+	// Implicit conversion from u64
+	s128( s64 src ) :
+		lo( src )
+	,	hi( 0 ) {}
+
+	// Implicit conversion from u32
+	s128( s32 src ) :
+		lo( src )
+	,	hi( 0 ) {}
+};
+
+#else
+
+typedef union _u128_t
+{
+	u64 lo;
+	u64 hi;
+} u128;
+
+typedef union _s128_t
+{
+	s64 lo;
+	s64 hi;
+} s128;
+
+#endif
+
 typedef struct {
 	int size;
 	s8 *data;

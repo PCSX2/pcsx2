@@ -20,6 +20,7 @@
 #define _THREADING_H_
 
 #include <errno.h> // EBUSY
+#include <semaphore.h>
 
 #include "PS2Etypes.h"
 #include "Exceptions.h"
@@ -39,6 +40,19 @@ namespace Threading
 
 		void Set();
 		void Wait();
+	};
+
+	struct Semaphore
+	{
+		sem_t sema;
+
+		Semaphore();
+		~Semaphore();
+
+		void Post();
+		void Post( int multiple );
+		void Wait();
+		int Count();
 	};
 
 	struct MutexLock
@@ -70,7 +84,7 @@ namespace Threading
 		int m_returncode;		// value returned from the thread on close.
 		bool m_terminated;		// set true after the thread has been closed.
 		u32 m_sigterm;			// set to true(1) when the thread has been requested to exit.
-		WaitEvent m_wait_event;	// general wait event that's needed by most threads.
+		Semaphore m_post_event;	// general wait event that's needed by most threads.
 
 	public:
 		virtual ~Thread();

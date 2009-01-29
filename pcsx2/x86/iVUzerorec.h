@@ -23,7 +23,7 @@
 
 #include "iVUmicro.h"
 
-extern void SuperVUAlloc(int vuindex); // global VU resources aare automatically allocated if necessary.
+extern void SuperVUAlloc(int vuindex); // global VU resources are automatically allocated if necessary.
 extern void SuperVUDestroy(int vuindex); // if vuindex is -1, destroys everything
 extern void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
 
@@ -37,7 +37,7 @@ extern void svudispfntemp();
 #ifdef __LINUX__
 }
 #endif
-extern void SuperVUClear(u32 startpc, u32 size, int vuindex);
+extern void __fastcall SuperVUClear(u32 startpc, u32 size, int vuindex);
 
 // read = 0, will write to reg
 // read = 1, will read from reg

@@ -112,7 +112,9 @@ struct GIFPath
 /////////////////////////////////////////////////////////////////////////////
 // MTGS Threaded Class Declaration
 
-#define MTGS_RINGBUFFERSIZE	0x00300000 // 3Mb
+// Uncomment this to enable the MTGS debug stack, which tracks to ensure reads
+// and writes stay synchronized.  Warning: the debug stack is VERY slow.
+//#define RINGBUF_DEBUG_STACK
 
 enum GIF_PATH
 {
@@ -143,18 +145,29 @@ enum GS_RINGTYPE
 ,	GS_RINGTYPE_STARTTIME	// special case for min==max fps frameskip settings
 };
 
-
 class mtgsThreadObject : public Threading::Thread
 {
 	friend class SaveState;
 
 protected:
-	// note: when g_pGSRingPos == g_pGSWritePos, the fifo is empty
-	const u8* m_RingPos;		// cur pos gs is reading from
-	u8* m_WritePos;				// cur pos ee thread is writing to
-	const u8* const m_RingBufferEnd;	// pointer to the end of the ringbuffer (used to detect buffer wraps)
+	// Size of the ringbuffer as a power of 2 -- size is a multiple of simd128s.
+	// (actual size is 1<<m_RingBufferSizeFactor simd vectors [128-bit values])
+	// A value of 17 is a 4meg ring buffer.  16 would be 2 megs, and 18 would be 8 megs.
+	static const uint m_RingBufferSizeFactor = 17;
 
-	Threading::WaitEvent m_wait_InitDone;	// used to regulate thread startup and gsInit
+	// size of the ringbuffer in simd128's.
+	static const uint m_RingBufferSize = 1<<m_RingBufferSizeFactor;
+
+	// Mask to apply to ring buffer indices to wrap the pointer from end to
+	// start (the wrapping is what makes it a ringbuffer, yo!)
+	static const uint m_RingBufferMask = m_RingBufferSize - 1;
+
+protected:
+	// note: when g_pGSRingPos == g_pGSWritePos, the fifo is empty
+	uint m_RingPos;		// cur pos gs is reading from
+	uint m_WritePos;	// cur pos ee thread is writing to
+
+	Threading::Semaphore m_post_InitDone;	// used to regulate thread startup and gsInit
 	Threading::MutexLock m_lock_RingRestart;
 
 	// Used to delay the sending of events.  Performance is better if the ringbuffer
@@ -167,20 +180,23 @@ protected:
 	// Only one data packet can be constructed and uploaded at a time.
 
 	uint m_packet_size;		// size of the packet (data only, ie. not including the 16 byte command!)
-	u8* m_packet_data;		// pointer to the data location in the ringbuffer.
+	uint m_packet_ringpos;	// index of the data location in the ringbuffer.
 
 #ifdef RINGBUF_DEBUG_STACK
-	MutexLock m_lock_Stack;
+	Threading::MutexLock m_lock_Stack;
 #endif
 
 	// the MTGS "dummy" GIFtag info!
+	// 16 byte alignment isn't "critical" here, so if GCC ignores the aignment directive
+	// it shouldn't cause any issues.
 	PCSX2_ALIGNED16( GIFPath m_path[3] );
+
+	// contains aligned memory allocations for gs and Ringbuffer.
+	SafeAlignedArray<u128,16> m_RingBuffer;
 
 	// mtgs needs its own memory space separate from the PS2.  The PS2 memory is in
 	// synch with the EE while this stays in sync with the GS (ie, it lags behind)
-	PCSX2_ALIGNED16( u8 m_gsMem[0x2000] );
-
-	PCSX2_ALIGNED( 4096, u8 m_RingBuffer[MTGS_RINGBUFFERSIZE] );
+	u8* const m_gsMem;
 
 public:
 	mtgsThreadObject();
@@ -225,8 +241,8 @@ protected:
 	u32 _gifTransferDummy( GIF_PATH pathidx, const u8 *pMem, u32 size );
 
 	// Used internally by SendSimplePacket type functions
-	const u8* _PrepForSimplePacket();
-	void _FinishSimplePacket( const u8* future_writepos );
+	uint _PrepForSimplePacket();
+	void _FinishSimplePacket( uint future_writepos );
 
 	int Callback();
 };

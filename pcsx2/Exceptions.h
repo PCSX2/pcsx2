@@ -104,13 +104,23 @@ namespace Exception
 			RuntimeError( msg ) {}
 	};
 
-	// This exception  exception thrown any time an operation is attempted when an object
+	// This exception thrown any time an operation is attempted when an object
 	// is in an uninitialized state.
 	class InvalidOperation : public LogicError
 	{
 	public:
 		virtual ~InvalidOperation() throw() {}
 		explicit InvalidOperation( const std::string& msg="Attempted method call is invalid for the current object or program state." ) :
+			LogicError( msg ) {}
+	};
+
+	// Keep those array indexers in bounds when using the SafeArray type, or you'll be
+	// seeing these.
+	class IndexBoundsFault : public LogicError
+	{
+	public:
+		virtual ~IndexBoundsFault() throw() {}
+		explicit IndexBoundsFault( const std::string& msg="Array index is outsides the bounds of an array." ) :
 			LogicError( msg ) {}
 	};
 

@@ -443,7 +443,7 @@ void SuperVUReset(int vuindex)
 }
 
 // clear the block and any joining blocks
-__forceinline void SuperVUClear(u32 startpc, u32 size, int vuindex)
+void __fastcall SuperVUClear(u32 startpc, u32 size, int vuindex)
 {
 	vector<VuFunctionHeader::RANGE>::iterator itrange;
 	list<VuFunctionHeader*>::iterator it = s_listVUHeaders[vuindex].begin();

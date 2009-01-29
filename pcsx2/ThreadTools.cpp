@@ -28,7 +28,7 @@ namespace Threading
 	,	m_returncode( 0 )
 	,	m_terminated( false )
 	,	m_sigterm( 0 )
-	,	m_wait_event()
+	,	m_post_event()
 	{
 		if( pthread_create( &m_thread, NULL, _internal_callback, this ) != 0 )
 			throw Exception::ThreadCreationError();
@@ -42,7 +42,7 @@ namespace Threading
 	void Thread::Close()
 	{
 		AtomicExchange( m_sigterm, 1 );
-		m_wait_event.Set();
+		m_post_event.Post();
 		pthread_join( m_thread, NULL );
 	}
 
@@ -80,6 +80,38 @@ namespace Threading
 		pthread_mutex_lock( &mutex );
 		pthread_cond_wait( &cond, &mutex );
 		pthread_mutex_unlock( &mutex );
+	}
+
+	Semaphore::Semaphore()
+	{
+		sem_init( &sema, false, 0 );
+	}
+
+	Semaphore::~Semaphore()
+	{
+		sem_destroy( &sema );
+	}
+
+	void Semaphore::Post()
+	{
+		sem_post( &sema );
+	}
+
+	void Semaphore::Post( int multiple )
+	{
+		sem_post_multiple( &sema, multiple );
+	}
+
+	void Semaphore::Wait()
+	{
+		sem_wait( &sema );
+	}
+
+	int Semaphore::Count()
+	{
+		int retval;
+		sem_getvalue( &sema, &retval );
+		return retval;
 	}
 
 	MutexLock::MutexLock()

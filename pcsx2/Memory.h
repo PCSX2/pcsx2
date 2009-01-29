@@ -33,14 +33,16 @@ namespace Ps2MemSize
 {
 	static const uint Base	= 0x02000000;		// 32 MB main memory!
 	static const uint Rom	= 0x00400000;		// 4 MB main rom
-	static const uint Rom1	= 0x00040000;		// fixme - TLB allocates 0x00080000 ?
-	static const uint Rom2	= 0x00080000;
-	static const uint ERom	= 0x001C0000;
+	static const uint Rom1	= 0x00040000;		// DVD player
+	static const uint Rom2	= 0x00080000;		// Chinese rom extension (?)
+	static const uint ERom	= 0x001C0000;		// DVD player extensions (?)
 	static const uint Hardware = 0x00010000;
-	static const uint Scratch = 0x00004000;	// fixme - VM allocates 0x10000 ?
+	static const uint Scratch = 0x00004000;
 
-	static const uint IopRam = 0x200000;	// 2MB main ram on the IOP.
+	static const uint IopRam = 0x00200000;	// 2MB main ram on the IOP.
 	static const uint IopHardware = 0x00010000;
+
+	static const uint GSregs = 0x00002000;		// 8k for the GS registers and stuff.
 }
 
 #ifdef PCSX2_VIRTUAL_MEM

@@ -1970,14 +1970,13 @@ void VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 	// Chances are this should be a "loops around memory" situation, and the packet
 	// should be continued starting at addr zero (0).
 
-	size = mtgsThread->PrepDataPacket( GIF_PATH_1, data, (0x4000-(addr&0x3fff)));
-	//size = 0x4000-(size<<4)-(addr&0x3fff);
+	size = mtgsThread->PrepDataPacket( GIF_PATH_1, data, (0x4000-(addr&0x3fff)) >> 4);
     jASSUME( size > 0 );
 	
     //if( size > 0 )
 	{
 		u8* pmem = mtgsThread->GetDataPacketPtr();
-		memcpy_aligned(pmem, (u8*)pMem+addr, size);
+		memcpy_aligned(pmem, (u8*)pMem+addr, size<<4);
 		mtgsThread->SendDataPacket();
 	}
 }
