@@ -1523,9 +1523,7 @@ static int Vif1TransSTRow(u32 *data){
 		case 3: pmem[8] = data[2]; pmem2[2] = data[2];
 		case 2: pmem[4] = data[1]; pmem2[1] = data[1];
 		case 1: pmem[0] = data[0]; pmem2[0] = data[0]; break;
-#ifdef _MSC_VER
-		default: __assume(0);
-#endif
+		jNO_DEFAULT;
 	}
     vif1.tag.addr += ret;
     vif1.tag.size -= ret;
@@ -1545,9 +1543,7 @@ static int Vif1TransSTCol(u32 *data){
 		case 3: pmem[8] = data[2]; pmem2[2] = data[2];
 		case 2: pmem[4] = data[1]; pmem2[1] = data[1];
 		case 1: pmem[0] = data[0]; pmem2[0] = data[0]; break;
-#ifdef _MSC_VER
-		default: __assume(0);
-#endif
+		jNO_DEFAULT;
 	}
 	vif1.tag.addr += ret;
     vif1.tag.size -= ret;

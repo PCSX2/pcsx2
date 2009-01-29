@@ -132,10 +132,17 @@ void vuMicroMemAlloc()
 
 		g_pVU1 = (VURegs*)(VU0.Mem + 0x4000);
 
-		VU1.Mem   = (u8*)_aligned_malloc(16*1024*2, 16);
+		// HACKFIX!  (Air)
+		// The VIFdma1 has a nasty habit of transferring data into the 4k page of memory above
+		// the VU1. (oops!!)  This happens to be recLUT most of the time, which causes rapid death
+		// of our emulator.  So we allocate some extra space here to keep VIF1 a little happier.
+
+		// fixme - When the VIF is fixed, change the *3 below back to an *2.
+
+		VU1.Mem   = (u8*)_aligned_malloc(0x4000*3, 16);
 		if (VU1.Mem == NULL )
 			throw Exception::OutOfMemory( "vu1Init > Failed to allocate memory for the VU1micro." );
-		VU1.Micro = VU1.Mem + 16*1024; //(u8*)_aligned_malloc(16*1024, 16);
+		VU1.Micro = VU1.Mem + 0x4000; //(u8*)_aligned_malloc(16*1024, 16);
 	}
 
 	if( VU0.Micro == NULL )
