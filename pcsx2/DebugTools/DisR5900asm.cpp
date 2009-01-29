@@ -610,14 +610,18 @@ void disR5900Fasm(string& output, u32 code, u32 pc)
 {
 	string dbuf;
 	char obuf[48];
+	const R5900::OPCODE *op;
 
 	const u32 scode = cpuRegs.code;
 	opcode_addr = pc;
 	cpuRegs.code = code;
+	op = &R5900::OpcodeTables::tbl_Standard[(code) >> 26];
+	while (op->getsubclass)
+		op = &op->getsubclass();
 
 	sprintf(obuf, "%08X:\t", pc );
 	output.assign( obuf );
-	R5900::OpcodeTables::tbl_Standard[(code) >> 26].disasm( output );
+	op->disasm( output );
 
 	cpuRegs.code = scode;
 }
@@ -706,7 +710,7 @@ void COP1_Unknown( string& output )
 
 // sap!  it stands for string append.  It's not a friendly name but for now it makes
 // the copy-paste marathon of code below more readable!
-#define _sap( str ) ssappendf( output, str, params 
+#define _sap( str ) ssappendf( output, str,
 
 //********************* Standard Opcodes***********************
 void J( string& output )      { output += "j\t";        jump_decode(output);}

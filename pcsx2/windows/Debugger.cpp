@@ -375,6 +375,7 @@ void EnterRunningState(HWND hDlg)
 	EnableWindow(GetDlgItem(hDlg, IDC_DEBUG_STEP_EE), FALSE);
 	EnableWindow(GetDlgItem(hDlg, IDC_DEBUG_STEP), FALSE);
 	EnableWindow(GetDlgItem(hDlg, IDC_DEBUG_SKIP), FALSE);
+	OpenPlugins(NULL);
 }
 
 static
@@ -655,6 +656,7 @@ void RefreshDebugger(void)
 				std::string str;
 				R5900::disR5900Fasm(str, *mem, t);
 				str.copy( syscall_str, 256 );
+				syscall_str[str.length()] = 0;
 			}
 		}
         SendMessage(hWnd_debugdisasm, LB_ADDSTRING, 0, (LPARAM)syscall_str );
