@@ -13,7 +13,21 @@
 #define LANGS_DIR "Langs"
 #define LOGS_DIR "logs"
 
-
 #define DEFAULT_MEMCARD1 "Mcd001.ps2"
 #define DEFAULT_MEMCARD2 "Mcd002.ps2"
+
+#define g_MaxPath 255			// 255 is safer with antiquated Win32 ASCII APIs.
+
+namespace Path
+{
+	void Combine( string& dest, const string& srcPath, const string& srcFile );
+	bool isRooted( const string& path );
+	bool isDirectory( const string& path );
+	bool isFile( const string& path );
+	bool Exists( const string& path );
+	int getFileSize( const string& path );
+
+	void ReplaceExtension( string& dest, const string& src, const string& ext );
+}
+
 #endif

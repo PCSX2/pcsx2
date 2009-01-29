@@ -28,9 +28,10 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
+#include "SaveState.h"
+
 #include "CDVDisodrv.h"
 #include "VUmicro.h"
-
 #include "VU.h"
 #include "iCore.h"
 #include "iVUzerorec.h"
@@ -556,6 +557,7 @@ void ProcessFKeys(int fkey, int shift)
 				SaveState::GetFilename( Text, StatesC );
 				gzLoadingState joe( Text );	// throws exception on version mismatch
 				cpuReset();
+				SysResetExecutionState();
 				joe.FreezeAll();
 			}
 			catch( Exception::StateLoadError_Recoverable& )

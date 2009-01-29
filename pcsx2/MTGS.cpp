@@ -206,6 +206,8 @@ mtgsThreadObject::mtgsThreadObject() :
 ,	m_RingBuffer( m_RingBufferSize + (Ps2MemSize::GSregs/sizeof(u128)) )
 ,	m_gsMem( (u8*)m_RingBuffer.GetPtr( m_RingBufferSize ) )
 {
+	memzero_obj( m_path );
+
 	// Wait for the thread to finish initialization (it runs GSinit, which can take
 	// some time since it's creating a new window and all), and then check for errors.
 
@@ -641,7 +643,7 @@ void mtgsThreadObject::SetEvent()
 	m_CopyDataTally = 0;
 }
 
-void mtgsThreadObject::SetEventWait()
+void mtgsThreadObject::PrepEventWait()
 {
 	// Freeze registers because some kernel code likes to destroy them
 	FreezeXMMRegs(1);
@@ -649,6 +651,10 @@ void mtgsThreadObject::SetEventWait()
 	//Console::Notice( "MTGS Stall!  EE waits for nothing! ... except your GPU sometimes." );
 	SetEvent();
 	Timeslice();
+}
+
+void mtgsThreadObject::PostEventWait() const
+{
 	FreezeXMMRegs(0); 
 	FreezeMMXRegs(0);
 }
@@ -825,20 +831,21 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 	{
 		// generic gs wait/stall.
 		// Waits until the readpos is outside the scope of the write area.
-		while( true )
+
+		// if the writepos is past the readpos then we're safe.
+		// But if not then we need to make sure the readpos is outside the scope of
+		// the block about to be written (writepos + size)
+		if( writepos < volatize(m_RingPos) )
 		{
-			// two conditionals in the following while() loop, so precache
-			// the readpos for more efficient behavior:
-			uint readpos = volatize(m_RingPos);
-
-			// if the writepos is past the readpos then we're safe:
-			if( writepos >= readpos ) break;
-			
-			// writepos is behind the readpos, so do a second check to see if the
+			// writepos is behind the readpos, so we need to wait until
 			// readpos is out past the end of the future write pos:
-			if( writepos+size < readpos ) break;
 
-			SetEventWait();
+			PrepEventWait();
+			while( writepos+size < volatize(m_RingPos) )
+			{
+				SpinWait();
+			}
+			PostEventWait();
 		}
 	}
 	else if( writepos + size > m_RingBufferSize )
@@ -851,6 +858,7 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 		// greater than the current write position then we need to stall
 		// until it loops around to the beginning of the buffer
 
+		PrepEventWait();
 		while( true )
 		{
 			uint readpos = volatize(m_RingPos);
@@ -863,7 +871,7 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 			// position below (bad!)
 			if( readpos < writepos && readpos != 0 ) break;
 
-			SetEventWait();
+			SpinWait();
 		}
 
 		m_lock_RingRestart.Lock();
@@ -871,6 +879,7 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 		writepos = 0;
 		AtomicExchange( m_WritePos, writepos );
 		m_lock_RingRestart.Unlock();
+		SetEvent();
 
 		// stall until the read position is past the end of our incoming block,
 		// or until it reaches the current write position (signals an empty buffer).
@@ -881,27 +890,31 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 			if( readpos == m_WritePos ) break;
 			if( writepos+size < readpos ) break;
 
-			SetEventWait();
+			SpinWait();
 		}
+		PostEventWait();
 	}
     else	// always true - if( writepos + size == MTGS_RINGBUFFEREND )
 	{
 		// Yay.  Perfect fit.  What are the odds?
-
 		//SysPrintf( "MTGS > Perfect Fit!\n");
+
+		PrepEventWait();
 		while( true )
 		{
 			uint readpos = volatize(m_RingPos);
 
-			// is the buffer empty?  Don't wait...
-			if( readpos == writepos ) break;
+			// stop waiting if the buffer is empty!
+			if( writepos == readpos ) break;
 
 			// Copy is ready so long as readpos is less than writepos and *not*
-			// equal to the base of the ringbuffer (otherwise the buffer will stop)
+			// equal to the base of the ringbuffer (otherwise the buffer will stop
+			// when the writepos is wrapped around to zero later-on in SendDataPacket)
 			if( readpos < writepos && readpos != 0 ) break;
 
-			SetEventWait();
+			SpinWait();
 		}
+		PostEventWait();
     }
 
 #ifdef RINGBUF_DEBUG_STACK
@@ -934,8 +947,15 @@ __forceinline uint mtgsThreadObject::_PrepForSimplePacket()
 
     future_writepos &= m_RingBufferMask;
 
-	while( future_writepos == volatize(m_RingPos) )
-		SetEventWait();
+	if( future_writepos == volatize(m_RingPos) )
+	{
+		PrepEventWait();
+		do
+		{
+			SpinWait();
+		} while( future_writepos == volatize(m_RingPos) );
+		PostEventWait();
+	}
 
 	return future_writepos;
 }

@@ -197,6 +197,7 @@ static __forceinline void memzero_ptr( void *dest )
 		case 3:
 			__asm
 			{
+				cld;
 				mov edi, dest
 				xor eax, eax
 				stosd
@@ -208,6 +209,7 @@ static __forceinline void memzero_ptr( void *dest )
 		case 4:
 			__asm
 			{
+				cld;
 				mov edi, dest
 				xor eax, eax
 				stosd
@@ -220,6 +222,7 @@ static __forceinline void memzero_ptr( void *dest )
 		case 5:
 			__asm
 			{
+				cld;
 				mov edi, dest
 				xor eax, eax
 				stosd
@@ -233,6 +236,7 @@ static __forceinline void memzero_ptr( void *dest )
 		default:
 			__asm
 			{
+				cld;
 				mov ecx, remdat
 				mov edi, dest
 				xor eax, eax
@@ -332,6 +336,7 @@ static __forceinline void memset_8( void *dest )
 		case 3:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -343,6 +348,7 @@ static __forceinline void memset_8( void *dest )
 		case 4:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -355,6 +361,7 @@ static __forceinline void memset_8( void *dest )
 		case 5:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -368,6 +375,7 @@ static __forceinline void memset_8( void *dest )
 		default:
 			__asm
 			{
+				cld;
 				mov ecx, remdat;
 				mov edi, dest;
 				mov eax, data32;
@@ -420,6 +428,7 @@ static __forceinline void memset_16( void *dest )
 		case 3:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -431,6 +440,7 @@ static __forceinline void memset_16( void *dest )
 		case 4:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -443,6 +453,7 @@ static __forceinline void memset_16( void *dest )
 		case 5:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -456,6 +467,7 @@ static __forceinline void memset_16( void *dest )
 		default:
 			__asm
 			{
+				cld;
 				mov ecx, remdat;
 				mov edi, dest;
 				mov eax, data32;
@@ -496,18 +508,14 @@ static __forceinline void memset_32( void *dest )
 		return;
 
 		case 2:
-			__asm
-			{
-				mov edi, dest;
-				mov eax, data32;
-				stosd;
-				stosd;
-			}
+			((u32*)dest)[0] = data32;
+			((u32*)dest)[1] = data32;
 		return;
 
 		case 3:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -519,6 +527,7 @@ static __forceinline void memset_32( void *dest )
 		case 4:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -531,6 +540,7 @@ static __forceinline void memset_32( void *dest )
 		case 5:
 			__asm
 			{
+				cld;
 				mov edi, dest;
 				mov eax, data32;
 				stosd;
@@ -544,6 +554,7 @@ static __forceinline void memset_32( void *dest )
 		default:
 			__asm
 			{
+				cld;
 				mov ecx, remdat;
 				mov edi, dest;
 				mov eax, data32;

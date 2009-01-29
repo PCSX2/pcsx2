@@ -290,7 +290,7 @@ static bool _gsGIFSoftReset( int mask )
 		if( !warned )
 		{
 			Console::Notice( "GIF Warning > Soft reset requested, but the GS plugin doesn't support it!" );
-			warned = true;
+			//warned = true;
 		}
 		return false;
 	}
@@ -307,7 +307,7 @@ void gsGIFReset()
 {
 #ifndef PCSX2_VIRTUAL_MEM
 	// fixme - should this be here? (air)
-	memzero_obj(g_RealGSMem);
+	//memzero_obj(g_RealGSMem);
 #endif
 
 	// perform a soft reset (but do not do a full reset if the soft reset API is unavailable)

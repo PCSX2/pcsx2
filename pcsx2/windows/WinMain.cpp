@@ -750,6 +750,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					if (remoteDebugBios)
 					{
 						cpuReset();
+						SysResetExecutionState();
 						cpuExecuteBios();
 
 						DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_RDEBUG), NULL, (DLGPROC)RemoteDebuggerProc);

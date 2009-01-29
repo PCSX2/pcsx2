@@ -125,8 +125,6 @@ void cpuShutdown()
 //	biosShutdown();
 	psxShutdown();
 	disR5900FreeSyms();
-
-	//Cpu->Shutdown();
 }
 
 void cpuException(u32 code, u32 bd)
@@ -630,6 +628,10 @@ void cpuTestHwInts() {
 	cpuTestTIMRInts();
 }
 
+// This function performs a "hackish" execution of the BIOS stub, which initializes EE
+// memory and hardware.  It forcefully breaks execution when the stub is finished, prior
+// to the PS2 logos being displayed.  This allows us to "shortcut" right into a game
+// without having to wait through the logos or endure game/bios localization checks.
 void cpuExecuteBios()
 {
 	// Set the video mode to user's default request:
@@ -660,7 +662,11 @@ void cpuExecuteBios()
 //	REC_CLEARM(0x00200008);
 //	REC_CLEARM(0x00100008);
 //	REC_CLEARM(cpuRegs.pc);
-	//if( CHECK_EEREC ) Cpu->Reset();
+
+	// Reset the EErecs here, because the bios generates "slow" blocks that have hacky
+	// bBiosEnd checks in them and stuff.  This deletes them so that the recs replace them
+	// with new faster versions:
+	Cpu->Reset();
 
 	Console::Notice("* PCSX2 *: ExecuteBios Complete");
 	//GSprintf(5, "PCSX2 " PCSX2_VERSION "\nExecuteBios Complete\n");

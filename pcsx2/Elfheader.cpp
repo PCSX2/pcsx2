@@ -537,11 +537,19 @@ u32 loadElfCRC( const char* filename )
 
 int loadElfFile(const char *filename)
 {
+	// Reset all recompilers prior to initiating a BIOS or new ELF.  The cleaner the
+	// slate, the happier the recompiler!
+
+	SysResetExecutionState();
+
 	if( filename == NULL || filename[0] == 0 )
 	{
 		Console::Notice( "Running the PS2 BIOS..." );
 		return -1;
 	}
+
+	// We still need to run the BIOS stub, so that all the EE hardware gets initialized correctly.
+	cpuExecuteBios();
 
 	int elfsize;
 

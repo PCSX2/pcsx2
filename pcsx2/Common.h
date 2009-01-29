@@ -63,14 +63,15 @@ extern TESTRUNARGS g_TestRun;
 #define PSXSOUNDCLK		((int)(48000))
 
 #include "Plugins.h"
-#include "System.h"
+#include "Misc.h"
+#include "SaveState.h"
 #include "DebugTools/Debug.h"
 #include "R5900.h"
 #include "Memory.h"
 #include "Elfheader.h"
 #include "Hw.h"
 // Moving this before one of the other includes causes compilation issues. 
-#include "Misc.h"
+//#include "Misc.h"
 #include "Patch.h"
 
 #define PCSX2_VERSION "Playground (beta)"

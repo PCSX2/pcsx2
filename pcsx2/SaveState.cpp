@@ -20,9 +20,10 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
+#include "SaveState.h"
+
 #include "CDVDisodrv.h"
 #include "VUmicro.h"
-
 #include "VU.h"
 #include "iCore.h"
 #include "iVUzerorec.h"
@@ -31,7 +32,6 @@
 #include "COP0.h"
 #include "Cache.h"
 
-#include "Paths.h"
 
 using namespace R5900;
 
@@ -43,8 +43,8 @@ extern void recResetIOP();
 
 static void PreLoadPrep()
 {
-	recResetEE();
-	recResetIOP();
+	SysResetExecutionState();
+
 #ifdef PCSX2_VIRTUAL_MEM
 	DWORD OldProtect;
 	// make sure can write

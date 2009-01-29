@@ -19,11 +19,10 @@
 #ifndef __MISC_H__
 #define __MISC_H__
 
-#include "PS2Etypes.h"
 #include "System.h"
-#include "SaveState.h"
 
-// --->> GNU GetText / NLS
+/////////////////////////////////////////////////////////////////////////
+// GNU GetText / NLS
 
 #ifdef ENABLE_NLS
 
@@ -48,27 +47,6 @@
 #define N_(msgid) msgid
 
 #endif		// ENABLE_NLS
-
-// <<--- End GNU GetText / NLS 
-
-
-// --->> Path Utilities [PathUtil.c]
-
-#define g_MaxPath 255			// 255 is safer with antiquitated Win32 ASCII APIs.
-
-namespace Path
-{
-	void Combine( string& dest, const string& srcPath, const string& srcFile );
-	bool isRooted( const string& path );
-	bool isDirectory( const string& path );
-	bool isFile( const string& path );
-	bool Exists( const string& path );
-	int getFileSize( const string& path );
-
-	void ReplaceExtension( string& dest, const string& src, const string& ext );
-}
-
-// <<--- END Path Utilities [PathUtil.c]
 
 // [TODO] : Move the config options mess from Misc.h into "config.h" or someting more sensible.
 
@@ -226,41 +204,6 @@ extern u8 g_globalXMMSaved;
 // these macros check to see if needs freezing
 #define FreezeXMMRegs(save) if( g_EEFreezeRegs ) { FreezeXMMRegs_(save); }
 #define FreezeMMXRegs(save) if( g_EEFreezeRegs ) { FreezeMMXRegs_(save); }
-
-void _memset16_unaligned( void* dest, u16 data, size_t size );
-
-#if defined(_WIN32) && !defined(__x86_64__)
-
-	// The new simplified memcpy_amd_ is now faster than memcpy_raz_.
-	// memcpy_amd_ also does mmx register saving, negating the need for freezeregs (code cleanup!)
-	// Additionally, using one single memcpy implementation keeps the code cache cleaner.
-
-	//extern void __fastcall memcpy_raz_udst(void *dest, const void *src, size_t bytes);
-	//extern void __fastcall memcpy_raz_usrc(void *dest, const void *src, size_t bytes);
-	//extern void __fastcall memcpy_raz_(void *dest, const void *src, size_t bytes);
-	extern void __fastcall memcpy_amd_(void *dest, const void *src, size_t bytes);
-
-#	include "windows/memzero.h"
-#	define memcpy_fast memcpy_amd_
-#	define memcpy_aligned memcpy_amd_
-
-#else
-
-	// for now linux uses the GCC memcpy/memset implementations.
-	#define memcpy_fast memcpy
-	#define memcpy_raz_ memcpy
-	#define memcpy_raz_u memcpy
-
-	#define memcpy_aligned memcpy
-	#define memcpy_raz_u memcpy
-
-	#include "Linux/memzero.h"
-
-#endif
-
-
-u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
-void memxor_mmx(void* dst, const void* src1, int cmpsize);
 
 #ifdef	_MSC_VER
 #pragma pack()

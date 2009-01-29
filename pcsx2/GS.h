@@ -230,10 +230,14 @@ public:
 #endif
 		//return (uptr)&SendSimplePacket;
 	}
+
 protected:
-	// Sets the gsEvent flag and releases a timeslice.
-	// For use in loops that wait on the GS thread to do certain things.
-	void SetEventWait();
+	// Saves MMX/XMM regs, posts an event to the mtgsThread flag and releases a timeslice.
+	// For use in surrounding loops that wait on the mtgs.
+	void PrepEventWait();
+
+	// Restores MMX/XMM regs.  For use in surrounding loops that wait on the mtgs.
+	void PostEventWait() const;
 
 	// Processes a GIFtag & packet, and throws out some gsIRQs as needed.
 	// Used to keep interrupts in sync with the EE, while the GS itself

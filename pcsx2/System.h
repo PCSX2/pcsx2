@@ -22,6 +22,8 @@
 #include "PS2Etypes.h"
 #include "Exceptions.h"
 #include "Paths.h"
+#include "MemcpyFast.h"
+#include "SafeArray.h"
 
 void SysDetect();						// Detects cpu type and fills cpuInfo structs.
 bool SysInit();							// Init logfiles, directories, critical memory resources, and other OS-specific one-time
@@ -37,11 +39,11 @@ void SysResetExecutionState();
 
 void *SysLoadLibrary(const char *lib);	// Loads Library
 void *SysLoadSym(void *lib, const char *sym);	// Loads Symbol from Library
-const char *SysLibError();				// Gets previous error loading sysbols
+const char *SysLibError();				// Gets previous error loading symbols
 void SysCloseLibrary(void *lib);		// Closes Library
 
 // Maps a block of memory for use as a recompiled code buffer.
-// The allocated block has code execution privliges.
+// The allocated block has code execution privileges.
 // Returns NULL on allocation failure.
 void *SysMmap(uptr base, u32 size);
 
@@ -99,7 +101,7 @@ namespace Console
 	extern void ClearColor();
 
 	// The following Write functions return bool so that we can use macros to exclude
-	// them from different buildypes.  The return values are always zero.
+	// them from different build types.  The return values are always zero.
 
 	// Writes a newline to the console.
 	extern bool __fastcall Newline();
@@ -172,43 +174,9 @@ using Console::Color_Yellow;
 using Console::Color_White;
 
 //////////////////////////////////////////////////////////////
-// Safe deallocation macros -- always check pointer validity (non-null)
-// and set pointer to null on deallocation.
-
-#define safe_delete( ptr ) \
-	if( ptr != NULL ) { \
-		delete ptr; \
-		ptr = NULL; \
-	}
-
-#define safe_delete_array( ptr ) \
-	if( ptr != NULL ) { \
-		delete[] ptr; \
-		ptr = NULL; \
-	}
-
-#define safe_free( ptr ) \
-	if( ptr != NULL ) { \
-		free( ptr ); \
-		ptr = NULL; \
-	}
-
-#define safe_aligned_free( ptr ) \
-	if( ptr != NULL ) { \
-		_aligned_free( ptr ); \
-		ptr = NULL; \
-	}
-
-#define SafeSysMunmap( ptr, size ) \
-	if( ptr != NULL ) { \
-		SysMunmap( (uptr)ptr, size ); \
-		ptr = NULL; \
-	}
-
-//////////////////////////////////////////////////////////////
 // Dev / Debug conditionals --
 //   Consts for using if() statements instead of uglier #ifdef macros.
-//   Abbrivated macros for dev/debug only consoles and mesgboxes.
+//   Abbreviated macros for dev/debug only consoles and msgboxes.
 
 #ifdef PCSX2_DEVBUILD
 
@@ -264,177 +232,5 @@ int SysMapUserPhysicalPages(void* Addr, uptr NumPages, uptr* pblock, int pageoff
 
 #endif
 
-//////////////////////////////////////////////////////////////////
-// Handy little class for allocating a resizable memory block, complete with
-// exception-based error handling and automatic cleanup.
-
-template< typename T >
-class MemoryAlloc : public NoncopyableObject
-{
-public:
-	static const int DefaultChunkSize = 0x1000 * sizeof(T);
-
-public: 
-	const std::string Name;		// user-assigned block name
-	int ChunkSize;
-
-protected:
-	T* m_ptr;
-	int m_size;	// size of the allocation of memory
-
-	const static std::string m_str_Unnamed;
-protected:
-	// Internal contructor for use by derrived classes.  This allws a derrived class to
-	// use its own memory allocation (with an aligned memory, for example).
-	// Throws:
-	//   Exception::OutOfMemory if the allocated_mem pointr is NULL.
-	explicit MemoryAlloc( const std::string& name, T* allocated_mem, int initSize ) : 
-	  Name( name )
-	, ChunkSize( DefaultChunkSize )
-	, m_ptr( allocated_mem )
-	, m_size( initSize )
-	{
-		if( m_ptr == NULL )
-			throw Exception::OutOfMemory();
-	}
-
-	virtual T* _virtual_realloc( int newsize )
-	{
-		return (T*)realloc( m_ptr, newsize * sizeof(T) );
-	}
-
-public:
-	virtual ~MemoryAlloc()
-	{
-		safe_free( m_ptr );
-	}
-
-	explicit MemoryAlloc( const std::string& name="Unnamed" ) : 
-	  Name( name )
-	, ChunkSize( DefaultChunkSize )
-	, m_ptr( NULL )
-	, m_size( 0 )
-	{
-	}
-
-	explicit MemoryAlloc( int initialSize, const std::string& name="Unnamed" ) : 
-	  Name( name )
-	, ChunkSize( DefaultChunkSize )
-	, m_ptr( (T*)malloc( initialSize * sizeof(T) ) )
-	, m_size( initialSize )
-	{
-		if( m_ptr == NULL )
-			throw Exception::OutOfMemory();
-	}
-
-	// Returns the size of the memory allocation, as according to the array type.
-	int GetLength() const { return m_size; }
-	// Returns the size of the memory allocation in bytes.
-	int GetSizeInBytes() const { return m_size * sizeof(T); }
-
-	// Ensures that the allocation is large enough to fit data of the
-	// amount requested.  The memory allocation is not resized smaller.
-	void MakeRoomFor( int blockSize )
-	{
-		std::string temp;
-		
-		if( blockSize > m_size )
-		{
-			const uint newalloc = blockSize + ChunkSize;
-			m_ptr = _virtual_realloc( newalloc );
-			if( m_ptr == NULL )
-			{
-				throw Exception::OutOfMemory(
-					"Out-of-memory on block re-allocation. "
-					"Old size: " + to_string( m_size ) + " bytes, "
-					"New size: " + to_string( newalloc ) + " bytes"
-				);
-			}
-			m_size = newalloc;
-		}
-	}
-
-	// Gets a pointer to the requested allocation index.
-	// DevBuilds : Throws std::out_of_range() if the index is invalid.
-	T *GetPtr( uint idx=0 ) { return _getPtr( idx ); }
-	const T *GetPtr( uint idx=0 ) const { return _getPtr( idx ); }
-
-	// Gets an element of this memory allocation much as if it were an array.
-	// DevBuilds : Throws std::out_of_range() if the index is invalid.
-	T& operator[]( int idx ) { return *_getPtr( (uint)idx ); }
-	const T& operator[]( int idx ) const { return *_getPtr( (uint)idx ); }
-
-	virtual MemoryAlloc<T>& Clone() const
-	{
-		MemoryAlloc<T>* retval = new MemoryAlloc<T>( m_size );
-		memcpy( retval->GetPtr(), m_ptr, sizeof(T) * m_size );
-		return *retval;
-	}
-
-protected:
-	// A safe array index fetcher.  Throws an exception if the array index
-	// is outside the bounds of the array.
-	// Performance Considerations: This function adds quite a bit of overhead
-	// to array indexing and thus should be done infrequently if used in
-	// time-critical situations.  Indead of using it from inside loops, cache
-	// the pointer into a local variable and use stad (unsafe) C indexes.
-	T* _getPtr( uint i ) const
-	{
-#ifdef PCSX2_DEVBUILD
-		if( i >= (uint)m_size )
-		{
-			throw Exception::IndexBoundsFault(
-				"Index out of bounds on MemoryAlloc: " + Name + 
-				" (index=" + to_string(i) + 
-				", size=" + to_string(m_size) + ")"
-			);
-		}
-#endif
-		return &m_ptr[i];
-	}
-
-};
-
-template< typename T, uint Alignment >
-class SafeAlignedArray : public MemoryAlloc<T>
-{
-protected:
-	T* _virtual_realloc( int newsize )
-	{
-		// TODO : aligned_realloc will need a linux implementation now. -_-
-		return (T*)_aligned_realloc( m_ptr, newsize * sizeof(T), Alignment );
-	}
-
-	// Appends "(align: xx)" to the name of the allocation in devel builds.
-	// Maybe useful,maybe not... no harm in atatching it. :D
-	string _getName( const string& src )
-	{
-#ifdef PCSX2_DEVBUILD
-		return src + "(align:" + to_string(Alignment) + ")";
-#endif
-		return src;
-	}
-
-public:
-	virtual ~SafeAlignedArray()
-	{
-		safe_aligned_free( m_ptr );
-		// mptr is set to null, so the parent class's destructor won't re-free it.
-	}
-
-	explicit SafeAlignedArray( const std::string& name="Unnamed" ) : 
-		MemoryAlloc( name )
-	{
-	}
-
-	explicit SafeAlignedArray( int initialSize, const std::string& name="Unnamed" ) : 
-		MemoryAlloc(
-			_getName(name),
-			(T*)_aligned_malloc( initialSize * sizeof(T), Alignment ),
-			initialSize 
-		)
-	{
-	}
-};
 
 #endif /* __SYSTEM_H__ */

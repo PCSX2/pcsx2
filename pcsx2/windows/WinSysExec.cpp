@@ -275,8 +275,6 @@ void RunExecute( const char* elf_file, bool use_bios )
 	if (OpenPlugins(g_TestRun.ptitle) == -1)
 		return;
 
-	SysResetExecutionState();
-
 	if( elf_file == NULL )
 	{
 		if(g_RecoveryState != NULL)
@@ -305,11 +303,11 @@ void RunExecute( const char* elf_file, bool use_bios )
 			// if the elf_file is null we use the CDVD elf file.
 			// But if the elf_file is an empty string then we boot the bios instead.
 
-			cpuExecuteBios();
 			char ename[g_MaxPath];
 			ename[0] = 0;
 			if( !use_bios )
 				GetPS2ElfName( ename );
+
 			loadElfFile( ename );
 		}
 	}
@@ -318,7 +316,6 @@ void RunExecute( const char* elf_file, bool use_bios )
 		// Custom ELF specified (not using CDVD).
 		// Run the BIOS and load the ELF.
 
-		cpuExecuteBios();
 		loadElfFile( elf_file );
 	}
 
