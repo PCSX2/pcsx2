@@ -31,8 +31,11 @@ extern PSMEMORYBLOCK s_psVuMem;
 extern PSMEMORYMAP *memLUT;
 #endif
 
-VUmicroCpu *CpuVU0;
-VUmicroCpu *CpuVU1;
+// The following CpuVU objects are value types instead of handles or pointers because they are
+// modified on the fly to implement VU1 Skip.
+
+VUmicroCpu CpuVU0;		// contains a working copy of the VU0 cpu functions/API
+VUmicroCpu CpuVU1;		// contains a working copy of the VU1 cpu functions/API
 
 static void DummyExecuteVU1Block(void)
 {
@@ -40,32 +43,27 @@ static void DummyExecuteVU1Block(void)
 	VU1.vifRegs->stat &= ~4; // also reset the bit (grandia 3 works)
 }
 
-void (*recVU1EB)(), (*intVU1EB)();
- 
 void vu1MicroEnableSkip()
 {
-	CpuVU1->ExecuteBlock = DummyExecuteVU1Block;
+	CpuVU1.ExecuteBlock = DummyExecuteVU1Block;
 }
 
 void vu1MicroDisableSkip()
 {
-	CpuVU1->ExecuteBlock = CHECK_VU1REC ? recVU1EB : intVU1EB;
+	CpuVU1.ExecuteBlock = CHECK_VU1REC ? recVU1.ExecuteBlock : intVU1.ExecuteBlock;
 }
 
 bool vu1MicroIsSkipping()
 {
-	return CpuVU1->ExecuteBlock == DummyExecuteVU1Block;
+	return CpuVU1.ExecuteBlock == DummyExecuteVU1Block;
 }
 
 void vuMicroCpuReset()
 {
-	recVU1EB = recVU1.ExecuteBlock;
-	intVU1EB = intVU1.ExecuteBlock;
- 
-	CpuVU0 = CHECK_VU0REC ? &recVU0 : &intVU0;
-	CpuVU1 = CHECK_VU1REC ? &recVU1 : &intVU1;
-	CpuVU0->Reset();
-	CpuVU1->Reset();
+	CpuVU0 = CHECK_VU0REC ? recVU0 : intVU0;
+	CpuVU1 = CHECK_VU1REC ? recVU1 : intVU1;
+	CpuVU0.Reset();
+	CpuVU1.Reset();
 
 	// SuperVUreset will do nothing is none of the recs are initialized.
 	// But it's needed if one or the other is initialized.
@@ -180,6 +178,8 @@ void vuMicroMemReset()
 	jASSUME( VU0.Mem != NULL );
 	jASSUME( VU1.Mem != NULL );
 
+	memMapVUmicro();
+
 	// === VU0 Initialization ===
 	memzero_obj(VU0.ACC);
 	memzero_obj(VU0.VF);
@@ -221,7 +221,6 @@ void vuMicroMemReset()
 //	VU1.VI       = (REG_VI*)(VU0.Mem + 0x4200);
 	VU1.vuExec   = vu1Exec;
 	VU1.vifRegs  = vif1Regs;
-
 }
 
 void SaveState::vuMicroFreeze()

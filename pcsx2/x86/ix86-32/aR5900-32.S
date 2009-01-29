@@ -12,11 +12,16 @@
 #define BLOCKTYPE_DELAYSLOT	1		// if bit set, delay slot
 
 #define BASEBLOCK_SIZE 2 // in dwords
-#define PCOFFSET 0x2a8
+#define PCOFFSET 0x2a8 // this must always match what Pcsx2 displays at startup
 
 #define REG_PC %ecx
 #define REG_BLOCK %esi
 
+//////////////////////////////////////////////////////////////////////////
+// Recompiles the next block, and links the old block directly to it.
+// This is a on-shot execution for ny block which uses it.  Once the block
+// has been statically linked to the new block, this function will be bypassed
+//
 .globl Dispatcher
 Dispatcher:
 	# EDX contains the jump addr to modify
@@ -24,48 +29,59 @@ Dispatcher:
 
 	# calc PC_GETBLOCK
 	# ((BASEBLOCK*)(recLUT[((u32)(x)) >> 16] + (sizeof(BASEBLOCK)/4)*((x) & 0xffff)))
-	mov %eax, dword ptr [cpuRegs + PCOFFSET]
-	mov REG_BLOCK, %eax
-	mov REG_PC, %eax
-	shr %eax, 16   
-	and REG_BLOCK, 0xffff
-    shl %eax, 2
-    add %eax, dword ptr [recLUT]
-    shl REG_BLOCK, 1
-	add REG_BLOCK, dword ptr [%eax]
-	
+	#mov %eax, dword ptr [cpuRegs + PCOFFSET]
+	#mov REG_BLOCK, %eax
+	#mov REG_PC, %eax
+	#shr %eax, 16   
+	#and REG_BLOCK, 0xffff
+    #shl %eax, 2
+    #add %eax, dword ptr [recLUT]
+    #shl REG_BLOCK, 1
+	#add REG_BLOCK, dword ptr [%eax]
+
+	mov %eax,dword ptr [cpuRegs+PCOFFSET] 
+	mov %ecx,%eax
+	mov REG_PC,%eax
+	shr %eax,10h 
+	and %ecx,0FFFFh 
+	mov %edx,dword ptr [recLUT] 
+	mov %eax,dword ptr [edx+eax*4] 
+	lea %ecx,[eax+ecx*2] 
+
 	// check if startpc == cpuRegs.pc
 	//and %ecx, 0x5fffffff // remove higher bits
-	cmp REG_PC, dword ptr [REG_BLOCK+BLOCKTYPE_STARTPC]
+	cmp REG_PC, dword ptr [%ecx+BLOCKTYPE_STARTPC]
 	je Dispatcher_CheckPtr
 
 	// recompile
 	push REG_BLOCK
 	push REG_PC // pc
 	call recRecompile
-	add %esp, 4 // pop old param
-	pop REG_BLOCK
+	add %esp, 4
+	pop %eax	// eax is now the REG_BLOCK
 Dispatcher_CheckPtr:
-	mov REG_BLOCK, dword ptr [REG_BLOCK]
+	mov %eax, dword ptr [%eax]
 
 #ifdef _DEBUG
-	test REG_BLOCK, REG_BLOCK
+	test %eax, %eax
 	jnz Dispatcher_CallFn
 	// throw an exception
 	int 10
 	
 Dispatcher_CallFn:
 #endif
-
-	and REG_BLOCK, 0x0fffffff
-	mov %edx, REG_BLOCK
+	and %eax, 0x0fffffff
 	pop %ecx // x86Ptr to mod
+	mov %edx, %eax
 	sub %edx, %ecx
 	sub %edx, 4
 	mov dword ptr [%ecx], %edx
 
-	jmp REG_BLOCK
+	jmp %eax
 
+//////////////////////////////////////////////////////////////////////////
+// edx -  baseblock->startpc
+// stack - x86Ptr
 .globl DispatcherClear
 DispatcherClear:
 	// EDX contains the current pc
@@ -119,58 +135,47 @@ DispatcherClear_Recompile:
 
 	jmp %eax
 
-
+//////////////////////////////////////////////////////////////////////////
 // called when jumping to variable pc address
+// This is basically the same as Dispatcher but without the part at the end
+// that modifies the block's jmp instruction.  (ie, no static block linking)
+
 .globl DispatcherReg
 DispatcherReg:
 
-	//s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
-	mov %edx, dword ptr [cpuRegs+PCOFFSET]
-	mov %ecx, %edx
-	
-	shr %edx, 14
-	and %edx, 0xfffffffc
-	add %edx, [recLUT]
-	mov %edx, dword ptr [%edx]
+	mov %eax,dword ptr [cpuRegs+PCOFFSET] 
+	mov %ecx,%eax
+	mov REG_PC,%eax
+	shr %eax,10h 
+	and %ecx,0FFFFh 
+	mov %edx,dword ptr [recLUT] 
+	mov %eax,dword ptr [edx+eax*4] 
+	lea %ecx,[eax+ecx*2] 
 
-	mov %eax, %ecx
-	and %eax, 0xfffc
-	// %edx += 2*%eax
-	shl %eax, 1
-	add %edx, %eax
-	
 	// check if startpc == cpuRegs.pc
-	mov %eax, %ecx
-	//and %eax, 0x5fffffff // remove higher bits
-	cmp %eax, dword ptr [%edx+BLOCKTYPE_STARTPC]
-	jne DispatcherReg_recomp
+	//and %ecx, 0x5fffffff // remove higher bits
+	cmp REG_PC, dword ptr [%ecx+BLOCKTYPE_STARTPC]
+	je Dispatcher_CheckPtr
 
-	mov %eax, dword ptr [%edx]
+	// recompile
+	push REG_BLOCK
+	push REG_PC // pc
+	call recRecompile
+	add %esp, 4
+	pop %eax	// eax is now the REG_BLOCK
+Dispatcher_CheckPtr:
+	mov %eax, dword ptr [%eax]
 
 #ifdef _DEBUG
 	test %eax, %eax
-	jnz CallFn2
-	# throw an exception
+	jnz Dispatcher_CallFn
+	// throw an exception
 	int 10
 	
-CallFn2:
-
+Dispatcher_CallFn:
 #endif
-
 	and %eax, 0x0fffffff
-	jmp %eax // fnptr
-
-DispatcherReg_recomp:
-	sub %esp, 8
-	mov dword ptr [%esp+4], %edx
-	mov dword ptr [%esp], %ecx
-	call recRecompile
-	mov %edx, dword ptr [%esp+4]
-	add %esp, 8
-	
-	mov %eax, dword ptr [%edx]
-	and %eax, 0x0fffffff
-	jmp %eax // fnptr
+	jmp %eax
 
 
 .globl _StartPerfCounter

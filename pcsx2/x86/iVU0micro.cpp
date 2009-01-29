@@ -26,10 +26,19 @@
 
 namespace VU0micro
 {
-
-	static void recAlloc()
+	void recAlloc()
 	{
 		SuperVUAlloc(0);
+	}
+
+	void __fastcall recClear(u32 Addr, u32 Size)
+	{
+		SuperVUClear(Addr, Size*4, 0);
+	}
+
+	void recShutdown()
+	{
+		SuperVUDestroy( 0 );
 	}
 
 	static void recReset()
@@ -54,26 +63,14 @@ namespace VU0micro
 		SuperVUExecuteProgram(VU0.VI[ REG_TPC ].UL & 0xfff, 0);
 		FreezeXMMRegs(0);
 	}
-
-	static void recClear(u32 Addr, u32 Size)
-	{
-		SuperVUClear(Addr, Size*4, 0);
-	}
-
-	static void recShutdown()
-	{
-		SuperVUDestroy( 0 );
-	}
 }
 
 using namespace VU0micro;
 
-VUmicroCpu recVU0 = 
+const VUmicroCpu recVU0 = 
 {
-	recAlloc
-,	recReset
+	recReset
 ,	recStep
 ,	recExecuteBlock
 ,	recClear
-,	recShutdown
 };

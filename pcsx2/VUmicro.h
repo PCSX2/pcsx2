@@ -23,21 +23,43 @@
 
 struct VUmicroCpu
 {
-	void (*Allocate)();		// throws exceptions on failure.
 	void (*Reset)();
 	void (*Step)();
 	void (*ExecuteBlock)();	// VUs should support block-level execution only.
-	void (*Clear)(u32 Addr, u32 Size);
-	void (*Shutdown)();		// deallocates memory reserved by Allocate
+	void (__fastcall *Clear)(u32 Addr, u32 Size);
 };
 
-extern VUmicroCpu *CpuVU0;
-extern VUmicroCpu intVU0;
-extern VUmicroCpu recVU0;
+extern VUmicroCpu CpuVU0;
+extern const VUmicroCpu intVU0;
+extern const VUmicroCpu recVU0;
 
-extern VUmicroCpu *CpuVU1;
-extern VUmicroCpu intVU1;
-extern VUmicroCpu recVU1;
+extern VUmicroCpu CpuVU1;
+extern const VUmicroCpu intVU1;
+extern const VUmicroCpu recVU1;
+
+namespace VU0micro
+{
+	extern void recAlloc();
+	extern void recShutdown();
+	extern void __fastcall recClear(u32 Addr, u32 Size);
+
+	// Note: Interpreter functions are dummies -- they don't actually do anything.
+	extern void intAlloc();
+	extern void intShutdown();
+	extern void __fastcall intClear(u32 Addr, u32 Size);
+}
+
+namespace VU1micro
+{
+	extern void recAlloc();
+	extern void recShutdown();
+	extern void __fastcall recClear(u32 Addr, u32 Size);
+
+	// Note: Interpreter functions are dummies -- they don't actually do anything.
+	extern void intAlloc();
+	extern void intShutdown();
+	extern void __fastcall intClear(u32 Addr, u32 Size);
+}
 
 /////////////////////////////////////////////////////////////////
 // These functions initialize memory for both VUs.

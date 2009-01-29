@@ -1,3 +1,21 @@
+/*  Pcsx2 - Pc Ps2 Emulator
+ *  Copyright (C) 2002-2008  Pcsx2 Team
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
 /*
 	EE physical map :
 	[0000 0000,1000 0000) -> Ram (mirrored ?)
@@ -20,10 +38,9 @@
 #include "Common.h"
 #include "vtlb.h"
 #include "COP0.h"
-#include "x86/ix86/ix86.h"
-#include "iCore.h"
 
 using namespace R5900;
+using namespace vtlb_private;
 
 #ifdef PCSX2_DEVBUILD
 #define verify(x) {if (!(x)) { (*(u8*)0)=3; }}
@@ -31,21 +48,16 @@ using namespace R5900;
 #define verify jASSUME
 #endif
 
-static const uint VTLB_PAGE_BITS =12;
-static const uint VTLB_PAGE_MASK=(4095);
-static const uint VTLB_PAGE_SIZE=(4096);
+namespace vtlb_private
+{
+	s32 pmap[VTLB_PMAP_ITEMS];	//512KB
+	s32 vmap[VTLB_VMAP_ITEMS];   //4MB
 
-static const uint VTLB_PMAP_ITEMS=(0x20000000/VTLB_PAGE_SIZE);
-static const uint VTLB_PMAP_SZ=0x20000000;
-static const uint VTLB_VMAP_ITEMS=(0x100000000ULL/VTLB_PAGE_SIZE);
-static s32 pmap[VTLB_PMAP_ITEMS];	//512KB
-static s32 vmap[VTLB_VMAP_ITEMS];   //4MB
-
-// first indexer -- 8/16/32/64/128 bit tables [values 0-4]
-// second indexer -- read/write  [0 or 1]
-// third indexer -- 128 pages of memory!
-static void* RWFT[5][2][128];
-
+	// first indexer -- 8/16/32/64/128 bit tables [values 0-4]
+	// second indexer -- read/write  [0 or 1]
+	// third indexer -- 128 pages of memory!
+	void* RWFT[5][2][128];
+}
 
 vtlbHandler vtlbHandlerCount=0;
 
@@ -81,7 +93,11 @@ callfunction:
 		jmp [readfunctions8-0x800000+eax];
 	}*/
 
-// For 8, 16, and 32 bit accesses
+/////////////////////////////////////////////////////////////////////////
+// Interpreter Implementations of VTLB Memory Operations.
+// See recVTLB.cpp for the dynarec versions.
+
+// Interpreterd VTLB lookup for 8, 16, and 32 bit accesses
 template<int DataSize,typename DataType>
 __forceinline DataType __fastcall MemOp_r0(u32 addr)
 {
@@ -107,7 +123,7 @@ __forceinline DataType __fastcall MemOp_r0(u32 addr)
 	}
 }
 
-// For 64 and 128 bit accesses.
+// Interpreterd VTLB lookup for 64 and 128 bit accesses.
 template<int DataSize,typename DataType>
 __forceinline void __fastcall MemOp_r1(u32 addr, DataType* data)
 {
@@ -234,26 +250,36 @@ void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 }
 
 // Some functions used by interpreters and stuff...
+// These maintain a "consistent" API with 64/128 reads.
 void __fastcall memRead8(u32 mem, u8  *out) { *out = vtlb_memRead8( mem ); }
 void __fastcall memRead16(u32 mem, u16 *out) { *out = vtlb_memRead16( mem ); }
 void __fastcall memRead32(u32 mem, u32 *out) { *out = vtlb_memRead32( mem ); }
 
+/////////////////////////////////////////////////////////////////////////
+// Error / TLB Miss Handlers
+// 
 
+// Generates a VtlbMiss Exception
 static __forceinline void vtlb_Miss(u32 addr,u32 mode)
 {
-	SysPrintf("vtlb miss : addr 0x%X, mode %d\n",addr,mode);
+	Console::Error("vtlb miss : addr 0x%X, mode %d", params addr,mode);
 	verify(false);
+
 	if (mode==0)
 		cpuTlbMissR(addr, cpuRegs.branch);
 	else
 		cpuTlbMissW(addr, cpuRegs.branch);
 }
+
+// Just dies a horrible death for now.
+// 
 static __forceinline void vtlb_BusError(u32 addr,u32 mode)
 {
-	SysPrintf("vtlb bus error : addr 0x%X, mode %d\n",addr,mode);
+	Console::Error("vtlb bus error : addr 0x%X, mode %d\n",params addr,mode);
 	verify(false);
 }
-/////
+
+///// Virtual Mapping Errors (TLB Miss)
 template<u32 saddr>
 mem8_t __fastcall vtlbUnmappedVRead8(u32 addr) { vtlb_Miss(addr|saddr,0); return 0; }
 template<u32 saddr>
@@ -274,7 +300,8 @@ template<u32 saddr>
 void __fastcall vtlbUnmappedVWrite64(u32 addr,const mem64_t* data) { vtlb_Miss(addr|saddr,1); }
 template<u32 saddr>
 void __fastcall vtlbUnmappedVWrite128(u32 addr,const mem128_t* data) { vtlb_Miss(addr|saddr,1); }
-/////
+
+///// Physical Mapping Errors (Bus Error)
 template<u32 saddr>
 mem8_t __fastcall vtlbUnmappedPRead8(u32 addr) { vtlb_BusError(addr|saddr,0); return 0; }
 template<u32 saddr>
@@ -295,19 +322,34 @@ template<u32 saddr>
 void __fastcall vtlbUnmappedPWrite64(u32 addr,const mem64_t* data) { vtlb_BusError(addr|saddr,1); }
 template<u32 saddr>
 void __fastcall vtlbUnmappedPWrite128(u32 addr,const mem128_t* data) { vtlb_BusError(addr|saddr,1); }
-/////
-mem8_t __fastcall vtlbDefaultPhyRead8(u32 addr) { SysPrintf("vtlbDefaultPhyRead8: 0x%X\n",addr); verify(false); return -1; }
-mem16_t __fastcall vtlbDefaultPhyRead16(u32 addr)  { SysPrintf("vtlbDefaultPhyRead16: 0x%X\n",addr); verify(false); return -1; }
-mem32_t __fastcall vtlbDefaultPhyRead32(u32 addr) { SysPrintf("vtlbDefaultPhyRead32: 0x%X\n",addr); verify(false); return -1; }
-void __fastcall vtlbDefaultPhyRead64(u32 addr,mem64_t* data) { SysPrintf("vtlbDefaultPhyRead64: 0x%X\n",addr); verify(false); }
-void __fastcall vtlbDefaultPhyRead128(u32 addr,mem128_t* data) { SysPrintf("vtlbDefaultPhyRead128: 0x%X\n",addr); verify(false); }
 
-void __fastcall vtlbDefaultPhyWrite8(u32 addr,mem8_t data) { SysPrintf("vtlbDefaultPhyWrite8: 0x%X\n",addr); verify(false); }
-void __fastcall vtlbDefaultPhyWrite16(u32 addr,mem16_t data) { SysPrintf("vtlbDefaultPhyWrite16: 0x%X\n",addr); verify(false); }
-void __fastcall vtlbDefaultPhyWrite32(u32 addr,mem32_t data) { SysPrintf("vtlbDefaultPhyWrite32: 0x%X\n",addr); verify(false); }
-void __fastcall vtlbDefaultPhyWrite64(u32 addr,const mem64_t* data) { SysPrintf("vtlbDefaultPhyWrite64: 0x%X\n",addr); verify(false); }
-void __fastcall vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data) { SysPrintf("vtlbDefaultPhyWrite128: 0x%X\n",addr); verify(false); }
-/////
+///// VTLB mapping errors (unmapped address spaces)
+mem8_t __fastcall vtlbDefaultPhyRead8(u32 addr) { Console::Error("vtlbDefaultPhyRead8: 0x%X",params addr); verify(false); return -1; }
+mem16_t __fastcall vtlbDefaultPhyRead16(u32 addr)  { Console::Error("vtlbDefaultPhyRead16: 0x%X",params addr); verify(false); return -1; }
+mem32_t __fastcall vtlbDefaultPhyRead32(u32 addr) { Console::Error("vtlbDefaultPhyRead32: 0x%X",params addr); verify(false); return -1; }
+void __fastcall vtlbDefaultPhyRead64(u32 addr,mem64_t* data) { Console::Error("vtlbDefaultPhyRead64: 0x%X",params addr); verify(false); }
+void __fastcall vtlbDefaultPhyRead128(u32 addr,mem128_t* data) { Console::Error("vtlbDefaultPhyRead128: 0x%X",params addr); verify(false); }
+
+void __fastcall vtlbDefaultPhyWrite8(u32 addr,mem8_t data) { Console::Error("vtlbDefaultPhyWrite8: 0x%X",params addr); verify(false); }
+void __fastcall vtlbDefaultPhyWrite16(u32 addr,mem16_t data) { Console::Error("vtlbDefaultPhyWrite16: 0x%X",params addr); verify(false); }
+void __fastcall vtlbDefaultPhyWrite32(u32 addr,mem32_t data) { Console::Error("vtlbDefaultPhyWrite32: 0x%X",params addr); verify(false); }
+void __fastcall vtlbDefaultPhyWrite64(u32 addr,const mem64_t* data) { Console::Error("vtlbDefaultPhyWrite64: 0x%X",params addr); verify(false); }
+void __fastcall vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data) { Console::Error("vtlbDefaultPhyWrite128: 0x%X",params addr); verify(false); }
+
+
+/////////////////////////////////////////////////////////////////////////
+// VTLB Public API -- Init/Term/RegisterHandler stuff
+// 
+
+
+// Registers a handler into the VTLB's internal handler array.  The handler defines specific behavior
+// for how memory pages bound to the handler are read from / written to.  If any of the handler pointers
+// are NULL, the memory operations will be mapped to the BusError handler (thus generating BusError
+// exceptions if the emulated app attempts to access them).
+//
+// Note: All handlers persist across calls to vtlb_Reset(), but are wiped/invalidated by calls to vtlb_Init()
+//
+// Returns a handle for the newly created handler  See .vtlb_MapHandler for use of the return value.
 vtlbHandler vtlb_RegisterHandler(	vltbMemR8FP* r8,vltbMemR16FP* r16,vltbMemR32FP* r32,vltbMemR64FP* r64,vltbMemR128FP* r128,
 									vltbMemW8FP* w8,vltbMemW16FP* w16,vltbMemW32FP* w32,vltbMemW64FP* w64,vltbMemW128FP* w128)
 {
@@ -329,6 +371,13 @@ vtlbHandler vtlb_RegisterHandler(	vltbMemR8FP* r8,vltbMemR16FP* r16,vltbMemR32FP
 	return rv;
 }
 
+// Maps the given hander (created with vtlb_RegisterHandler) to the specified memory region.
+// New mappings always assume priority over previous mappings, so place "generic" mappings for
+// large areas of memory first, and then specialize specific small regions of memory afterward.
+// A single handler can be mapped to many different regions by using multiple calls to this
+// function.
+//
+// The memory region start and size parameters must be pagesize aligned.
 void vtlb_MapHandler(vtlbHandler handler,u32 start,u32 size)
 {
 	verify(0==(start&VTLB_PAGE_MASK));
@@ -343,6 +392,7 @@ void vtlb_MapHandler(vtlbHandler handler,u32 start,u32 size)
 		size-=VTLB_PAGE_SIZE;
 	}	
 }
+
 void vtlb_MapBlock(void* base,u32 start,u32 size,u32 blocksize)
 {
 	s32 baseint=(s32)base;
@@ -370,6 +420,7 @@ void vtlb_MapBlock(void* base,u32 start,u32 size,u32 blocksize)
 		}
 	}
 }
+
 void vtlb_Mirror(u32 new_region,u32 start,u32 size)
 {
 	verify(0==(new_region&VTLB_PAGE_MASK));
@@ -394,6 +445,7 @@ __forceinline void* vtlb_GetPhyPtr(u32 paddr)
 		return reinterpret_cast<void*>(pmap[paddr>>VTLB_PAGE_BITS]+(paddr&VTLB_PAGE_MASK));
 
 }
+
 //virtual mappings
 //TODO: Add invalid paddr checks
 void vtlb_VMap(u32 vaddr,u32 paddr,u32 sz)
@@ -459,14 +511,14 @@ void vtlb_VMapUnmap(u32 vaddr,u32 sz)
 	}
 }
 
+// Clears vtlb handlers and memory mappings.
 void vtlb_Init()
 {
-	//Reset all vars to default values
 	vtlbHandlerCount=0;
 	memzero_obj(RWFT);
 
 	//Register default handlers
-	//Unmapped Virt handlers _MUST_ be registed first.
+	//Unmapped Virt handlers _MUST_ be registered first.
 	//On address translation the top bit cannot be preserved.This is not normaly a problem since
 	//the physical address space can be 'compressed' to just 29 bits.However, to properly handle exceptions
 	//there must be a way to get the full address back.Thats why i use these 2 functions and encode the hi bit directly into em :)
@@ -499,6 +551,8 @@ void vtlb_Init()
 	vtlb_VMapUnmap((VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE,VTLB_PAGE_SIZE);
 }
 
+// Performs a COP0-level reset of the PS2's TLB.
+// This function should probably be part of the COP0 rather than here in VTLB.
 void vtlb_Reset()
 {
 	for(int i=0; i<48; i++) UnmapTLB(i);
@@ -507,286 +561,6 @@ void vtlb_Reset()
 void vtlb_Term()
 {
 	//nothing to do for now
-}
-
-#include "iR5900.h"
-
-//ecx = addr
-//edx = ptr
-void vtlb_DynGenRead64(u32 bits)
-{
-	/*
-		u32 vmv=vmap[addr>>VTLB_PAGE_BITS];
-	s32 ppf=addr+vmv;
-	if (!(ppf<0))
-	{
-		data[0]=*reinterpret_cast<DataType*>(ppf);
-		if (DataSize==128)
-			data[1]=*reinterpret_cast<DataType*>(ppf+8);
-		return 0;
-	}
-	else
-	{	
-		//has to: translate, find function, call function
-		u32 hand=(u8)vmv;
-		u32 paddr=ppf-hand+0x80000000;
-		//SysPrintf("Translted 0x%08X to 0x%08X\n",addr,paddr);
-		return reinterpret_cast<TemplateHelper<DataSize,false>::HandlerType*>(RWFT[TemplateHelper<DataSize,false>::sidx][0][hand])(paddr,data);
-	}
-
-		mov eax,ecx;
-		shr eax,VTLB_PAGE_BITS;
-		mov eax,[eax*4+vmap];
-		add ecx,eax;
-		js _fullread;
-
-		//these are wrong order, just an example ...
-		mov [eax],ecx;
-		mov ecx,[edx];
-		mov [eax+4],ecx;
-		mov ecx,[edx+4];
-		mov [eax+4+4],ecx;
-		mov ecx,[edx+4+4];
-		mov [eax+4+4+4+4],ecx;
-		mov ecx,[edx+4+4+4+4];
-		///....
-
-		jmp cont;
-		_fullread:
-		movzx eax,al;
-		sub   ecx,eax;
-		sub   ecx,0x80000000;
-		call [eax+stuff];
-		cont:
-		........
-
-	*/
-	MOV32RtoR(EAX,ECX);
-	SHR32ItoR(EAX,VTLB_PAGE_BITS);
-	MOV32RmSOffsettoR(EAX,EAX,(int)vmap,2);
-	ADD32RtoR(ECX,EAX);
-	u8* _fullread=JS8(0);
-	switch(bits)
-	{
-	case 64:
-		if( _hasFreeMMXreg() )
-		{
-			const int freereg = _allocMMXreg(-1, MMX_TEMP, 0);
-			MOVQRmtoROffset(freereg,ECX,0);
-			MOVQRtoRmOffset(EDX,freereg,0);
-			_freeMMXreg(freereg);
-		}
-		else
-		{
-			MOV32RmtoR(EAX,ECX);
-			MOV32RtoRm(EDX,EAX);
-
-			MOV32RmtoROffset(EAX,ECX,4);
-			MOV32RtoRmOffset(EDX,EAX,4);
-		}
-		break;
-
-	case 128:
-		if( _hasFreeXMMreg() )
-		{
-			const int freereg = _allocTempXMMreg( XMMT_INT, -1 );
-			SSE2_MOVDQARmtoROffset(freereg,ECX,0);
-			SSE2_MOVDQARtoRmOffset(EDX,freereg,0);
-			_freeXMMreg(freereg);
-		}
-		else
-		{
-			MOV32RmtoR(EAX,ECX);
-			MOV32RtoRm(EDX,EAX);
-
-			MOV32RmtoROffset(EAX,ECX,4);
-			MOV32RtoRmOffset(EDX,EAX,4);
-
-			MOV32RmtoROffset(EAX,ECX,8);
-			MOV32RtoRmOffset(EDX,EAX,8);
-
-			MOV32RmtoROffset(EAX,ECX,12);
-			MOV32RtoRmOffset(EDX,EAX,12);
-		}
-		break;
-
-	jNO_DEFAULT
-	}
-
-	u8* cont=JMP8(0);
-	x86SetJ8(_fullread);
-	int szidx;
-
-	switch(bits)
-	{
-		case 64:   szidx=3;	break;
-		case 128:  szidx=4; break;
-		jNO_DEFAULT
-	}
-
-	MOVZX32R8toR(EAX,EAX);
-	SUB32RtoR(ECX,EAX);
-	//eax=[funct+eax]
-	MOV32RmSOffsettoR(EAX,EAX,(int)RWFT[szidx][0],2);
-	SUB32ItoR(ECX,0x80000000);
-	CALL32R(EAX);
-
-	x86SetJ8(cont);
-}
-
-// ecx - source address to read from
-// Returns read value in eax.
-void vtlb_DynGenRead32(u32 bits, bool sign)
-{
-	jASSUME( bits <= 32 );
-
-	MOV32RtoR(EAX,ECX);
-	SHR32ItoR(EAX,VTLB_PAGE_BITS);
-	MOV32RmSOffsettoR(EAX,EAX,(int)vmap,2);
-	ADD32RtoR(ECX,EAX);
-	u8* _fullread=JS8(0);
-
-	switch(bits)
-	{
-	case 8:
-		if( sign )
-			MOVSX32Rm8toR(EAX,ECX);
-		else
-			MOVZX32Rm8toR(EAX,ECX);
-		break;
-
-	case 16:
-		if( sign )
-			MOVSX32Rm16toR(EAX,ECX);
-		else
-			MOVZX32Rm16toR(EAX,ECX);
-		break;
-
-	case 32:
-		MOV32RmtoR(EAX,ECX);
-		break;
-
-	jNO_DEFAULT
-	}
-
-	u8* cont=JMP8(0);
-	x86SetJ8(_fullread);
-	int szidx;
-
-	switch(bits)
-	{
-		case 8:  szidx=0;	break;
-		case 16: szidx=1;	break;
-		case 32: szidx=2;	break;
-		jNO_DEFAULT
-	}
-
-	MOVZX32R8toR(EAX,EAX);
-	SUB32RtoR(ECX,EAX);
-	//eax=[funct+eax]
-	MOV32RmSOffsettoR(EAX,EAX,(int)RWFT[szidx][0],2);
-	SUB32ItoR(ECX,0x80000000);
-	CALL32R(EAX);
-
-	// perform sign extension on the result:
-
-	if( bits==8 )
-	{
-		if( sign )
-			MOVSX32R8toR(EAX,EAX);
-		else
-			MOVZX32R8toR(EAX,EAX);
-	}
-	else if( bits==16 )
-	{
-		if( sign )
-			MOVSX32R16toR(EAX,EAX);
-		else
-			MOVZX32R16toR(EAX,EAX);
-	}
-
-	x86SetJ8(cont);
-}
-
-void vtlb_DynGenWrite(u32 sz)
-{
-	MOV32RtoR(EAX,ECX);
-	SHR32ItoR(EAX,VTLB_PAGE_BITS);
-	MOV32RmSOffsettoR(EAX,EAX,(int)vmap,2);
-	ADD32RtoR(ECX,EAX);
-	u8* _full=JS8(0);
-	switch(sz)
-	{
-		//8 , 16, 32 : data on EDX
-	case 8:
-		MOV8RtoRm(ECX,EDX);
-		break;
-	case 16:
-		MOV16RtoRm(ECX,EDX);
-		break;
-	case 32:
-		MOV32RtoRm(ECX,EDX);
-		break;
-
-	case 64:
-		if( _hasFreeMMXreg() )
-		{
-			const int freereg = _allocMMXreg(-1, MMX_TEMP, 0);
-			MOVQRmtoROffset(freereg,EDX,0);
-			MOVQRtoRmOffset(ECX,freereg,0);
-			_freeMMXreg( freereg );
-		}
-		else
-		{
-			MOV32RmtoR(EAX,EDX);
-			MOV32RtoRm(ECX,EAX);
-
-			MOV32RmtoROffset(EAX,EDX,4);
-			MOV32RtoRmOffset(ECX,EAX,4);
-		}
-		break;
-
-	case 128:
-		if( _hasFreeXMMreg() )
-		{
-			const int freereg = _allocTempXMMreg( XMMT_INT, -1 );
-			SSE2_MOVDQARmtoROffset(freereg,EDX,0);
-			SSE2_MOVDQARtoRmOffset(ECX,freereg,0);
-			_freeXMMreg( freereg );
-		}
-		else
-		{
-			MOV32RmtoR(EAX,EDX);
-			MOV32RtoRm(ECX,EAX);
-			MOV32RmtoROffset(EAX,EDX,4);
-			MOV32RtoRmOffset(ECX,EAX,4);
-			MOV32RmtoROffset(EAX,EDX,8);
-			MOV32RtoRmOffset(ECX,EAX,8);
-			MOV32RmtoROffset(EAX,EDX,12);
-			MOV32RtoRmOffset(ECX,EAX,12);
-		}
-		break;
-	}
-	u8* cont=JMP8(0);
-	x86SetJ8(_full);
-	int szidx=0;
-
-	switch(sz)
-	{
-	case 8:  szidx=0;	break;
-	case 16:   szidx=1;	break;
-	case 32:   szidx=2;	break;
-	case 64:   szidx=3;	break;
-	case 128:   szidx=4; break;
-	}
-	MOVZX32R8toR(EAX,EAX);
-	SUB32RtoR(ECX,EAX);
-	//eax=[funct+eax]
-	MOV32RmSOffsettoR(EAX,EAX,(int)RWFT[szidx][1],2);
-	SUB32ItoR(ECX,0x80000000);
-	CALL32R(EAX);
-
-	x86SetJ8(cont);
 }
 
 #endif		// PCSX2_VIRTUAL_MEM

@@ -33,6 +33,22 @@ extern u32 vudump;
 
 namespace VU1micro
 {
+	void recAlloc()
+	{
+		SuperVUAlloc(1);
+	}
+
+	void __fastcall recClear( u32 Addr, u32 Size )
+	{
+		assert( (Addr&7) == 0 );
+		SuperVUClear(Addr, Size*4, 1);
+	}
+
+	void recShutdown()
+	{
+		SuperVUDestroy( 1 );
+	}
+
 	// commented out because I'm not sure it actually works anymore with SuperVU (air)
 	/*static void iVU1DumpBlock()
 	{
@@ -64,16 +80,11 @@ namespace VU1micro
 		fclose( f );
 	}*/
 
-	static void recAlloc()
-	{
-		SuperVUAlloc(1);
-	}
-
 	static void recReset()
 	{
 		SuperVUReset(1);
 
-		// these shouldn't be needed, but shouldn't hurt anythign either.
+		// these shouldn't be needed, but shouldn't hurt anything either.
 		x86FpuState = FPU_STATE;
 		iCWstate = 0;
 	}
@@ -111,28 +122,14 @@ namespace VU1micro
 		} while( VU0.VI[ REG_VPU_STAT ].UL&0x100 );
 		FreezeXMMRegs(0);
 	}
-
-	static void recClear( u32 Addr, u32 Size )
-	{
-		assert( (Addr&7) == 0 );
-		SuperVUClear(Addr, Size*4, 1);
-	}
-
-	static void recShutdown()
-	{
-		SuperVUDestroy( 1 );
-	}
-
 }
 
 using namespace VU1micro;
 
-VUmicroCpu recVU1 = 
+const VUmicroCpu recVU1 = 
 {
-	recAlloc
-,	recReset
+	recReset
 ,	recStep
 ,	recExecuteBlock
 ,	recClear
-,	recShutdown
 };

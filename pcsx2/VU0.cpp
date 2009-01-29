@@ -79,7 +79,7 @@ void _vu0WaitMicro() {
 	VU0.flags&= ~VUFLAG_MFLAGSET;
 
 	do {
-		CpuVU0->ExecuteBlock();
+		CpuVU0.ExecuteBlock();
         // knockout kings 2002 loops here
         if( VU0.cycle-startcycle > 0x1000 ) {
 			Console::Notice("VU0 perma-stall, breaking execution..."); // (email zero if gfx are bad)
@@ -351,7 +351,7 @@ void vu0Finish()
 		int i = 0;
 
 		while(i++ < 32) {
-			CpuVU0->ExecuteBlock();
+			CpuVU0.ExecuteBlock();
 			if(!(VU0.VI[REG_VPU_STAT].UL & 0x1))
 				break;
 		}

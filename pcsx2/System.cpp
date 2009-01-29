@@ -248,7 +248,7 @@ void SysAllocateDynarecs()
 
 	try
 	{
-		recVU0.Allocate();
+		VU0micro::recAlloc();
 	}
 	catch( Exception::BaseException& ex )
 	{
@@ -260,12 +260,12 @@ void SysAllocateDynarecs()
 		);
 
 		g_Session.ForceDisableVU0rec = true;
-		recVU0.Shutdown();
+		VU0micro::recShutdown();
 	}
 
 	try
 	{
-		recVU1.Allocate();
+		VU1micro::recAlloc();
 	}
 	catch( Exception::BaseException& ex )
 	{
@@ -277,7 +277,7 @@ void SysAllocateDynarecs()
 		);
 
 		g_Session.ForceDisableVU1rec = true;
-		recVU1.Shutdown();
+		VU1micro::recShutdown();
 	}
 
 	// If both VUrecs failed, then make sure the SuperVU is totally closed out:

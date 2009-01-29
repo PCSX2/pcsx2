@@ -163,10 +163,18 @@ vtlbHandler tlb_fallback_6;
 vtlbHandler tlb_fallback_7;
 vtlbHandler tlb_fallback_8;
 
-vtlbHandler vu0_micro_mem;
-vtlbHandler vu1_micro_mem;
+vtlbHandler vu0_micro_mem[2];		// 0 - dynarec, 1 - interpreter
+vtlbHandler vu1_micro_mem[2];		// 0 - dynarec, 1 - interpreter
 
 vtlbHandler hw_by_page[0x10];
+
+// Used to remap the VUmicro memory according to the VU0/VU1 dynarec setting.
+// (the VU memory operations are different for recs vs. interpreters)
+void memMapVUmicro()
+{
+	vtlb_MapHandler(vu0_micro_mem[CHECK_VU0REC ? 0 : 1],0x11000000,0x00004000);
+	vtlb_MapHandler(vu1_micro_mem[CHECK_VU1REC ? 0 : 1],0x11008000,0x00004000);
+}
 
 void memMapPhy()
 {
@@ -185,15 +193,7 @@ void memMapPhy()
 	//IOP mem
 	vtlb_MapBlock(psxM,0x1c000000,0x00800000);
 
-	//VU0:Micro
-	//vtlb_MapBlock(VU0.Micro,0x11000000,0x00004000,0x1000);
-	vtlb_MapHandler(vu0_micro_mem,0x11000000,0x00004000);
-	//VU0:Mem
 	vtlb_MapBlock(VU0.Mem,0x11004000,0x00004000,0x1000);
-	//VU1:Micro
-	//vtlb_MapBlock(VU1.Micro,0x11008000,0x00004000);
-	vtlb_MapHandler(vu1_micro_mem,0x11008000,0x00004000);
-	//VU1:Mem
 	vtlb_MapBlock(VU1.Mem,0x1100c000,0x00004000);
 
 	//These fallback to mem* stuff ...
@@ -447,7 +447,20 @@ void __fastcall _ext_memWrite128(u32 mem, const u64 *value)
 }
 
 #define vtlb_RegisterHandlerTempl1(nam,t) vtlb_RegisterHandler(nam##Read8<t>,nam##Read16<t>,nam##Read32<t>,nam##Read64<t>,nam##Read128<t>, \
-															   nam##Write8<t>,nam##Write16<t>,nam##Write32<t>,nam##Write64<t>,nam##Write128<t>);
+															   nam##Write8<t>,nam##Write16<t>,nam##Write32<t>,nam##Write64<t>,nam##Write128<t>)
+
+#define vtlb_RegisterHandlerTempl2(nam,t,rec) vtlb_RegisterHandler(nam##Read8<t>,nam##Read16<t>,nam##Read32<t>,nam##Read64<t>,nam##Read128<t>, \
+																   nam##Write8<t,rec>,nam##Write16<t,rec>,nam##Write32<t,rec>,nam##Write64<t,rec>,nam##Write128<t,rec>)
+
+typedef void __fastcall ClearFunc_t( u32 addr, u32 qwc );
+
+template<int vunum, bool dynarec>
+static __forceinline ClearFunc_t& GetClearFunc()
+{
+	return dynarec ?
+		(( vunum==0 ) ? VU0micro::recClear : VU1micro::recClear)
+		:	(( vunum==0 ) ? VU0micro::intClear : VU1micro::intClear);
+}
 
 template<int vunum>
 mem8_t __fastcall vuMicroRead8(u32 addr)
@@ -498,89 +511,74 @@ void __fastcall vuMicroRead128(u32 addr,mem128_t* data)
 // [TODO] : Profile this code and see how often the VUs get written, and how
 // often it changes the values being written (invoking a cpuClear).
 
-template<int vunum>
+template<int vunum, bool dynrec>
 void __fastcall vuMicroWrite8(u32 addr,mem8_t data)
 {
-	addr&=(vunum==0)?0xfff:0x3fff;
-	VURegs* vu=(vunum==0)?&VU0:&VU1;
+	addr &= (vunum==0) ? 0xfff : 0x3fff;
+	VURegs& vu = (vunum==0) ? VU0 : VU1;
 
-	if (vu->Micro[addr]!=data)
+	if (vu.Micro[addr]!=data)
 	{
-		vu->Micro[addr]=data;
+		vu.Micro[addr]=data;
 
-		if (vunum==0)
-			CpuVU0->Clear(addr&(~7),1);
-		else
-			CpuVU1->Clear(addr&(~7),1);
+		GetClearFunc<vunum, dynrec>()(addr&(~7),1);
 	}
 }
 
-template<int vunum>
+template<int vunum, bool dynrec>
 void __fastcall vuMicroWrite16(u32 addr,mem16_t data)
 {
-	addr&=(vunum==0)?0xfff:0x3fff;
-	VURegs* vu=(vunum==0)?&VU0:&VU1;
+	addr &= (vunum==0) ? 0xfff : 0x3fff;
+	VURegs& vu = (vunum==0) ? VU0 : VU1;
 
-	if (*(u16*)&vu->Micro[addr]!=data)
+	if (*(u16*)&vu.Micro[addr]!=data)
 	{
-		*(u16*)&vu->Micro[addr]=data;
+		*(u16*)&vu.Micro[addr]=data;
 
-		if (vunum==0)
-			CpuVU0->Clear(addr&(~7),1);
-		else
-			CpuVU1->Clear(addr&(~7),1);
+		GetClearFunc<vunum, dynrec>()(addr&(~7),1);
 	}
 }
 
-template<int vunum>
+template<int vunum, bool dynrec>
 void __fastcall vuMicroWrite32(u32 addr,mem32_t data)
 {
-	addr&=(vunum==0)?0xfff:0x3fff;
-	VURegs* vu=(vunum==0)?&VU0:&VU1;
+	addr &= (vunum==0) ? 0xfff : 0x3fff;
+	VURegs& vu = (vunum==0) ? VU0 : VU1;
 
-	if (*(u32*)&vu->Micro[addr]!=data)
+	if (*(u32*)&vu.Micro[addr]!=data)
 	{
-		*(u32*)&vu->Micro[addr]=data;
+		*(u32*)&vu.Micro[addr]=data;
 
-		if (vunum==0)
-			CpuVU0->Clear(addr&(~7),1);
-		else
-			CpuVU1->Clear(addr&(~7),1);
+		GetClearFunc<vunum, dynrec>()(addr&(~7),1);
 	}
 }
 
-template<int vunum>
+template<int vunum, bool dynrec>
 void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 {
-	addr&=(vunum==0)?0xfff:0x3fff;
-	VURegs* vu=(vunum==0)?&VU0:&VU1;
+	addr &= (vunum==0) ? 0xfff : 0x3fff;
+	VURegs& vu = (vunum==0) ? VU0 : VU1;
 
-	if (*(u64*)&vu->Micro[addr]!=data[0])
+	if (*(u64*)&vu.Micro[addr]!=data[0])
 	{
-		*(u64*)&vu->Micro[addr]=data[0];
+		*(u64*)&vu.Micro[addr]=data[0];
 
-		if (vunum==0)
-			CpuVU0->Clear(addr,1);
-		else
-			CpuVU1->Clear(addr,1);
+		GetClearFunc<vunum, dynrec>()(addr,1);
 	}
 }
 
-template<int vunum>
+template<int vunum, bool dynrec>
 void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 {
-	addr&=(vunum==0)?0xfff:0x3fff;
-	VURegs* vu=(vunum==0)?&VU0:&VU1;
+	addr &= (vunum==0) ? 0xfff : 0x3fff;
+	VURegs& vu = (vunum==0) ? VU0 : VU1;
 
-	if (*(u64*)&vu->Micro[addr]!=data[0] || *(u64*)&vu->Micro[addr+8]!=data[1])
+	if (*(u64*)&vu.Micro[addr]!=data[0] || *(u64*)&vu.Micro[addr+8]!=data[1])
 	{
-		*(u64*)&vu->Micro[addr]=data[0];
-		*(u64*)&vu->Micro[addr+8]=data[1];
+		*(u64*)&vu.Micro[addr]=data[0];
+		*(u64*)&vu.Micro[addr+8]=data[1];
 
-		if (vunum==0)
-			CpuVU0->Clear(addr,2);
-		else
-			CpuVU1->Clear(addr,2);
+		GetClearFunc<vunum, dynrec>()(addr,2);
 	}
 }
 
@@ -605,7 +603,7 @@ void memClearPageAddr(u32 vaddr)
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// VTLB Memory Init / Reset / Shutdown
+// PS2 Memory Init / Reset / Shutdown
 
 static const uint m_allMemSize = 
 		Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2 + Ps2MemSize::ERom +
@@ -707,8 +705,13 @@ void memReset()
 	tlb_fallback_7=vtlb_RegisterHandlerTempl1(_ext_mem,7);
 	tlb_fallback_8=vtlb_RegisterHandlerTempl1(_ext_mem,8);
 
-	vu0_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,0);
-	vu1_micro_mem=vtlb_RegisterHandlerTempl1(vuMicro,1);
+	// Dynarec versions of VUs
+	vu0_micro_mem[0] = vtlb_RegisterHandlerTempl2(vuMicro,0,true);
+	vu1_micro_mem[0] = vtlb_RegisterHandlerTempl2(vuMicro,1,true);
+
+	// Interpreter versions of VUs
+	vu0_micro_mem[1] = vtlb_RegisterHandlerTempl2(vuMicro,0,false);
+	vu1_micro_mem[1] = vtlb_RegisterHandlerTempl2(vuMicro,1,false);
 
 	//////////////////////////////////////////////////////
 	// psHw Optimized Mappings
@@ -719,7 +722,7 @@ void memReset()
 	tlb_fallback_1 = vtlb_RegisterHandler(
 		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_other, _ext_memRead64<1>, _ext_memRead128<1>,
 		_ext_memWrite8<1>, _ext_memWrite16<1>, hwWrite32_page_other, _ext_memWrite64<1>, _ext_memWrite128<1>
-		);
+	);
 
 	hw_by_page[0x0] = vtlb_RegisterHandler(
 		_ext_memRead8<1>, _ext_memRead16<1>, hwRead32_page_00, _ext_memRead64<1>, _ext_memRead128<1>,
@@ -763,6 +766,7 @@ void memReset()
 	//vtlb_VMapUnmap(0x20000000,0x60000000);
 
 	memMapPhy();
+	memMapVUmicro();
 	memMapKernelMem();
 	memMapSupervisorMem();
 	memMapUserMem();

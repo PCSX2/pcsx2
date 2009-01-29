@@ -31,20 +31,20 @@ extern void SuperVUReset(int vuindex); // if vuindex is -1, resets everything
 #ifdef __LINUX__
 extern "C" {
 #endif
-void SuperVUExecuteProgram(u32 startpc, int vuindex);
-void SuperVUEndProgram();
-void svudispfntemp();
+extern void SuperVUExecuteProgram(u32 startpc, int vuindex);
+extern void SuperVUEndProgram();
+extern void svudispfntemp();
 #ifdef __LINUX__
 }
 #endif
-void SuperVUClear(u32 startpc, u32 size, int vuindex);
+extern void SuperVUClear(u32 startpc, u32 size, int vuindex);
 
 // read = 0, will write to reg
 // read = 1, will read from reg
 // read = 2, addr of previously written reg (used for status and clip flags)
-u32 SuperVUGetVIAddr(int reg, int read);
+extern u32 SuperVUGetVIAddr(int reg, int read);
 
 // if p == 0, flush q else flush p; if wait is != 0, waits for p/q
-void SuperVUFlush(int p, int wait);
+extern void SuperVUFlush(int p, int wait);
 
 #endif

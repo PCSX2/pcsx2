@@ -219,7 +219,7 @@ __forceinline void vif1FLUSH() {
 
 	if( VU0.VI[REG_VPU_STAT].UL & 0x100 ) {
 		do {
-			CpuVU1->ExecuteBlock();
+			CpuVU1.ExecuteBlock();
 		} while(VU0.VI[REG_VPU_STAT].UL & 0x100);
 
 		g_vifCycles+= (VU1.cycle - _cycles)*BIAS;
@@ -813,7 +813,7 @@ static __forceinline void _vif0mpgTransfer(u32 addr, u32 *data, int size) {
 	}*/
 	if (memcmp(VU0.Micro + addr, data, size << 2)) {
 		memcpy_fast(VU0.Micro + addr, data, size << 2);
-		CpuVU0->Clear(addr, size);
+		CpuVU0.Clear(addr, size);
 	}
 }
 
@@ -1487,7 +1487,7 @@ static __forceinline void _vif1mpgTransfer(u32 addr, u32 *data, int size) {
     assert( VU1.Micro > 0 );
 	if (memcmp(VU1.Micro + addr, data, size << 2)) {
 		memcpy_fast(VU1.Micro + addr, data, size << 2);
-		CpuVU1->Clear(addr, size);
+		CpuVU1.Clear(addr, size);
 	}
 }
 

@@ -230,21 +230,22 @@ extern u8 g_RealGSMem[0x2000];
 #define PSMu32(mem)	(*(u32*)PSM(mem))
 #define PSMu64(mem)	(*(u64*)PSM(mem))
 
-void memAlloc();
-void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.
-void memSetKernelMode();
-void memSetSupervisorMode();
-void memSetUserMode();
-void memSetPageAddr(u32 vaddr, u32 paddr);
-void memClearPageAddr(u32 vaddr);
-void memShutdown();
+extern void memAlloc();
+extern void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.
+extern void memShutdown();
+extern void memSetKernelMode();
+extern void memSetSupervisorMode();
+extern void memSetUserMode();
+extern void memSetPageAddr(u32 vaddr, u32 paddr);
+extern void memClearPageAddr(u32 vaddr);
+
+extern void memMapVUmicro();
+
 #ifdef __LINUX__
 void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * );
 void __fastcall InstallLinuxExceptionHandler();
 void __fastcall ReleaseLinuxExceptionHandler();
-#endif
-
-#ifdef _WIN32 
+#else
 int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps);
 #endif
 
@@ -258,13 +259,6 @@ void mmap_ResetBlockTracking();
 extern void __fastcall memRead8(u32 mem, u8  *out);
 extern void __fastcall memRead16(u32 mem, u16 *out);
 extern void __fastcall memRead32(u32 mem, u32 *out);
-/*int  __fastcall _memRead64(u32 mem, u64 *out);
-int  __fastcall _memRead128(u32 mem, u64 *out);
-void __fastcall _memWrite8 (u32 mem, u8  value);
-void __fastcall _memWrite16(u32 mem, u16 value);
-void __fastcall _memWrite32(u32 mem, u32 value);
-void __fastcall _memWrite64(u32 mem, u64 value);
-void __fastcall _memWrite128(u32 mem, u64 *value);*/
 
 #define memRead64 vtlb_memRead64
 #define memRead128 vtlb_memRead128

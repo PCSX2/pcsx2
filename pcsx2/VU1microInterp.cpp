@@ -179,57 +179,59 @@ void vu1Exec(VURegs* VU)
 	if (VU->VF[0].f.w != 1.0f) DbgCon::Error("VF[0].w != 1.0!!!!\n");
 }
 
-static void intAlloc()
+namespace VU1micro
 {
-}
-
-static void intReset()
-{
-}
-
-static void intStep()
-{
-	vu1Exec( &VU1 );
-}
-
-static void intExecuteBlock()
-{
-	int i;
-#ifdef _DEBUG
-	int prevbranch;
-#endif
-
-	for (i = 128; i--;) {
-		if ((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0)
-			break;
-
-#ifdef _DEBUG
-		prevbranch = vu1branch;
-#endif
-		vu1Exec(&VU1);
+	void intAlloc()
+	{
 	}
 
-	if( i < 0 && (VU1.branch || VU1.ebit) ) {
-		// execute one more
-		vu1Exec(&VU1);
+	void __fastcall intClear(u32 Addr, u32 Size)
+	{
+	}
+
+	void intShutdown()
+	{
+	}
+
+	static void intReset()
+	{
+	}
+
+	static void intStep()
+	{
+		vu1Exec( &VU1 );
+	}
+
+	static void intExecuteBlock()
+	{
+		int i;
+	#ifdef _DEBUG
+		int prevbranch;
+	#endif
+
+		for (i = 128; i--;) {
+			if ((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0)
+				break;
+
+	#ifdef _DEBUG
+			prevbranch = vu1branch;
+	#endif
+			vu1Exec(&VU1);
+		}
+
+		if( i < 0 && (VU1.branch || VU1.ebit) ) {
+			// execute one more
+			vu1Exec(&VU1);
+		}
 	}
 }
 
+using namespace VU1micro;
 
-static void intClear(u32 Addr, u32 Size)
+const VUmicroCpu intVU1 = 
 {
-}
-
-static void intShutdown()
-{
-}
-
-VUmicroCpu intVU1 = 
-{
-	intAlloc
-,	intReset
+	intReset
 ,	intStep
 ,	intExecuteBlock
 ,	intClear
-,	intShutdown
 };

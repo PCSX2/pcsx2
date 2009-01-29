@@ -27,40 +27,55 @@ typedef  void __fastcall vltbMemW128FP(u32 addr,const mem128_t* data);
 
 typedef u32 vtlbHandler;
 
-void vtlb_Init();
-void vtlb_Reset();
-void vtlb_Term();
+extern void vtlb_Init();
+extern void vtlb_Reset();
+extern void vtlb_Term();
 
 //physical stuff
 vtlbHandler vtlb_RegisterHandler(	vltbMemR8FP* r8,vltbMemR16FP* r16,vltbMemR32FP* r32,vltbMemR64FP* r64,vltbMemR128FP* r128,
 									vltbMemW8FP* w8,vltbMemW16FP* w16,vltbMemW32FP* w32,vltbMemW64FP* w64,vltbMemW128FP* w128);
 
-void vtlb_MapHandler(vtlbHandler handler,u32 start,u32 size);
-void vtlb_MapBlock(void* base,u32 start,u32 size,u32 blocksize=0);
+extern void vtlb_MapHandler(vtlbHandler handler,u32 start,u32 size);
+extern void vtlb_MapBlock(void* base,u32 start,u32 size,u32 blocksize=0);
 extern void* vtlb_GetPhyPtr(u32 paddr);
-//void vtlb_Mirror(u32 new_region,u32 start,u32 size); // -> not working yet :(
+//extern void vtlb_Mirror(u32 new_region,u32 start,u32 size); // -> not working yet :(
 
 //virtual mappings
-void vtlb_VMap(u32 vaddr,u32 paddr,u32 sz);
-void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 sz);
-void vtlb_VMapUnmap(u32 vaddr,u32 sz);
+extern void vtlb_VMap(u32 vaddr,u32 paddr,u32 sz);
+extern void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 sz);
+extern void vtlb_VMapUnmap(u32 vaddr,u32 sz);
 
 //Memory functions
 
-u8 __fastcall vtlb_memRead8(u32 mem);
-u16 __fastcall vtlb_memRead16(u32 mem);
-u32 __fastcall vtlb_memRead32(u32 mem);
-void __fastcall vtlb_memRead64(u32 mem, u64 *out);
-void __fastcall vtlb_memRead128(u32 mem, u64 *out);
-void __fastcall vtlb_memWrite8 (u32 mem, u8  value);
-void __fastcall vtlb_memWrite16(u32 mem, u16 value);
-void __fastcall vtlb_memWrite32(u32 mem, u32 value);
-void __fastcall vtlb_memWrite64(u32 mem, const u64* value);
-void __fastcall vtlb_memWrite128(u32 mem, const u64* value);
+extern u8 __fastcall vtlb_memRead8(u32 mem);
+extern u16 __fastcall vtlb_memRead16(u32 mem);
+extern u32 __fastcall vtlb_memRead32(u32 mem);
+extern void __fastcall vtlb_memRead64(u32 mem, u64 *out);
+extern void __fastcall vtlb_memRead128(u32 mem, u64 *out);
+extern void __fastcall vtlb_memWrite8 (u32 mem, u8  value);
+extern void __fastcall vtlb_memWrite16(u32 mem, u16 value);
+extern void __fastcall vtlb_memWrite32(u32 mem, u32 value);
+extern void __fastcall vtlb_memWrite64(u32 mem, const u64* value);
+extern void __fastcall vtlb_memWrite128(u32 mem, const u64* value);
 
 extern void vtlb_DynGenWrite(u32 sz);
 extern void vtlb_DynGenRead32(u32 bits, bool sign);
 extern void vtlb_DynGenRead64(u32 sz);
+
+namespace vtlb_private
+{
+	static const uint VTLB_PAGE_BITS = 12;
+	static const uint VTLB_PAGE_MASK = 4095;
+	static const uint VTLB_PAGE_SIZE = 4096;
+
+	static const uint VTLB_PMAP_ITEMS = 0x20000000 / VTLB_PAGE_SIZE;
+	static const uint VTLB_PMAP_SZ = 0x20000000;
+	static const uint VTLB_VMAP_ITEMS = 0x100000000ULL / VTLB_PAGE_SIZE;
+
+	extern void* RWFT[5][2][128];
+	extern s32 pmap[VTLB_PMAP_ITEMS];	//512KB
+	extern s32 vmap[VTLB_VMAP_ITEMS];   //4MB
+}
 
 #endif
 

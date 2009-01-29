@@ -2697,6 +2697,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\x86\ix86-32\recVTLB.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\vtlb.cpp"
 					>
 				</File>
