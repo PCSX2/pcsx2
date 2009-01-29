@@ -117,10 +117,10 @@ extern SessionOverrideFlags g_Session;
 #define CHECK_VU_EXTRA_OVERFLOW	(Config.vuOptions & 0x2) // If enabled, Operands are clamped before being used in the VU recs
 #define CHECK_VU_SIGN_OVERFLOW	(Config.vuOptions & 0x4)
 #define CHECK_VU_UNDERFLOW		(Config.vuOptions & 0x8)
-#define CHECK_VU_EXTRA_FLAGS 0	// Always disabled now, doesn't seem to affect games positively. // Sets correct flags in the VU recs
+#define CHECK_VU_EXTRA_FLAGS 0	// Always disabled now // Sets correct flags in the VU recs
 #define CHECK_FPU_OVERFLOW			(Config.eeOptions & 0x1)
 #define CHECK_FPU_EXTRA_OVERFLOW	(Config.eeOptions & 0x2) // If enabled, Operands are checked for infinities before being used in the FPU recs
-#define CHECK_FPU_EXTRA_FLAGS 0	// Always disabled now, doesn't seem to affect games positively. // Sets correct flags in the FPU recs
+#define CHECK_FPU_EXTRA_FLAGS 1	// Always enabled now // Sets D/I flags on FPU instructions
 #define DEFAULT_eeOptions	0x01
 #define DEFAULT_vuOptions	0x01
 //------------ DEFAULT sseMXCSR VALUES!!! ---------------

@@ -1071,6 +1071,7 @@ void recDIV_S_xmm(int info)
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
     //if (t0reg == -1) {Console::Error("FPU: DIV Allocation Error!");}
     //SysPrintf("DIV\n");
+
 	if ((g_sseMXCSR & 0x00006000) != 0x00000000) { // Set roundmode to nearest if it isn't already
 		//SysPrintf("div to nearest\n");
 		roundmode_temp[0] = (g_sseMXCSR & 0xFFFF9FFF); // Set new roundmode
@@ -1625,8 +1626,6 @@ void recSQRT_S_xmm(int info)
 	u8* pjmp;
 	static u32 PCSX2_ALIGNED16(roundmode_temp[4]) = { 0x00000000, 0x00000000, 0x00000000, 0x00000000 };
 	int roundmodeFlag = 0;
-	int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
-	if (tempReg == -1) {Console::Error("FPU: SQRT Allocation Error!"); tempReg = EAX;}
 	//SysPrintf("FPU: SQRT\n");
 	
 	if ((g_sseMXCSR & 0x00006000) != 0x00000000) { // Set roundmode to nearest if it isn't already
@@ -1641,6 +1640,9 @@ void recSQRT_S_xmm(int info)
 	else SSE_MOVSS_M32_to_XMM(EEREC_D, (uptr)&fpuRegs.fpr[_Ft_]);
 
 	if (CHECK_FPU_EXTRA_FLAGS) {
+		int tempReg = _allocX86reg(-1, X86TYPE_TEMP, 0, 0);
+		if (tempReg == -1) {Console::Error("FPU: SQRT Allocation Error!"); tempReg = EAX;}
+
 		AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
 		/*--- Check for negative SQRT ---*/
@@ -1650,6 +1652,8 @@ void recSQRT_S_xmm(int info)
 			OR32ItoM((uptr)&fpuRegs.fprc[31], FPUflagI|FPUflagSI); // Set I and SI flags
 			SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]); // Make EEREC_D Positive
 		x86SetJ8(pjmp);
+
+		_freeX86reg(tempReg);
 	}
 	else SSE_ANDPS_M128_to_XMM(EEREC_D, (uptr)&s_pos[0]); // Make EEREC_D Positive
 	
@@ -1660,8 +1664,6 @@ void recSQRT_S_xmm(int info)
 	if (roundmodeFlag == 1) { // Set roundmode back if it was changed
 		SSE_LDMXCSR ((uptr)&roundmode_temp[1]);
 	}
-
-	_freeX86reg(tempReg);
 }
 
 FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);
