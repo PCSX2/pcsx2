@@ -29,15 +29,6 @@ Dispatcher:
 
 	# calc PC_GETBLOCK
 	# ((BASEBLOCK*)(recLUT[((u32)(x)) >> 16] + (sizeof(BASEBLOCK)/4)*((x) & 0xffff)))
-	#mov %eax, dword ptr [cpuRegs + PCOFFSET]
-	#mov REG_BLOCK, %eax
-	#mov REG_PC, %eax
-	#shr %eax, 16   
-	#and REG_BLOCK, 0xffff
-    #shl %eax, 2
-    #add %eax, dword ptr [recLUT]
-    #shl REG_BLOCK, 1
-	#add REG_BLOCK, dword ptr [%eax]
 
 	mov %eax,dword ptr [cpuRegs+PCOFFSET] 
 	mov %ecx,%eax
@@ -54,13 +45,13 @@ Dispatcher:
 	je Dispatcher_CheckPtr
 
 	// recompile
-	push REG_BLOCK
+	push %ecx
 	push REG_PC // pc
 	call recRecompile
 	add %esp, 4
-	pop %eax	// eax is now the REG_BLOCK
+	pop %ecx	// ecx is now the REG_BLOCK
 Dispatcher_CheckPtr:
-	mov %eax, dword ptr [%eax]
+	mov %eax, dword ptr [%ecx]
 
 #ifdef _DEBUG
 	test %eax, %eax
@@ -158,13 +149,13 @@ DispatcherReg:
 	je Dispatcher_CheckPtr
 
 	// recompile
-	push REG_BLOCK
+	push %ecx
 	push REG_PC // pc
 	call recRecompile
 	add %esp, 4
-	pop %eax	// eax is now the REG_BLOCK
+	pop %ecx
 Dispatcher_CheckPtr:
-	mov %eax, dword ptr [%eax]
+	mov %eax, dword ptr [%ecx]
 
 #ifdef _DEBUG
 	test %eax, %eax
