@@ -340,49 +340,25 @@ void* _PSXM(u32 mem)
 }
 #endif
 
-u8 *psxM;
-u8 *psxP;
-u8 *psxH;
-u8 *psxS;
+u8 *psxM = NULL;
+u8 *psxP = NULL;
+u8 *psxH = NULL;
+u8 *psxS = NULL;
 
-uptr *psxMemWLUT;
-const uptr *psxMemRLUT;
+uptr *psxMemWLUT = NULL;
+const uptr *psxMemRLUT = NULL;
 
 static u8* m_psxAllMem = NULL;
-static const uint m_psxMemSize = Ps2MemSize::IopRam + Ps2MemSize::IopHardware + 0x00010000 + 0x00010000 ;
+static const uint m_psxMemSize =
+	Ps2MemSize::IopRam +
+	Ps2MemSize::IopHardware +
+	0x00010000 +		// psxP
+	0x00010000 ;		// psxS
 
 void psxMemAlloc()
 {
-	psxMemWLUT = (uptr*)_aligned_malloc(0x10000 * sizeof(uptr) * 2,16);
-	psxMemRLUT = psxMemWLUT + 0x10000; //(uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
-
-#ifdef __LINUX__
-
 	if( m_psxAllMem == NULL )
-		m_psxAllMem = (u8*)SysMmap( 0x28000000, m_psxMemSize );
-
-	if( m_psxAllMem == NULL || (uptr)m_psxAllMem > 0xe0000000 )
-	{
-		// memory allocation *must* have the top bit clear, so let's try again
-		// with NULL (let the OS pick something for us).
-
-		if( m_psxAllMem != NULL )
-			SysMunmap( m_psxAllMem, m_psxMemSize );
-
-		m_psxAllMem = (u8*)SysMmap( NULL, m_psxMemSize );
-		if( (uptr)m_psxAllMem > 0xe0000000 )
-		{
-			if( m_psxAllMem != NULL )
-				SysMunmap( m_psxAllMem, m_psxMemSize );
-
-			m_psxAllMem = NULL;		// let the os-independent code below handle the error
-		}
-	}
-
-#else
-	if( m_psxAllMem == NULL )
-		m_psxAllMem = (u8*)_aligned_malloc( m_psxMemSize, 4096 );
-#endif
+		m_psxAllMem = vtlb_malloc( m_psxMemSize, 4096, 0x21000000 );
 
 	if( m_psxAllMem == NULL)
 		throw Exception::OutOfMemory( "psxMemAlloc > failed allocating memory for the IOP processor." );
@@ -393,6 +369,8 @@ void psxMemAlloc()
 	psxH = curpos; curpos += Ps2MemSize::IopHardware;
 	psxS = curpos; //curpos += 0x00010000;
 
+	psxMemWLUT = (uptr*)_aligned_malloc(0x10000 * sizeof(uptr) * 2, 16);
+	psxMemRLUT = psxMemWLUT + 0x10000; //(uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
 }
 
 // Note!  Resetting the IOP's memory state is dependent on having *all* psx memory allocated,
@@ -460,11 +438,9 @@ void psxMemReset()
 
 void psxMemShutdown()
 {
-#ifdef __LINUX__
-	SafeSysMunmap( m_psxAllMem, m_psxMemSize );
-#else
-	safe_aligned_free( m_psxAllMem );
-#endif
+	vtlb_free( m_psxAllMem, m_psxMemSize );
+	m_psxAllMem = NULL;
+	//safe_aligned_free( m_psxAllMem );
 
 	psxM = psxP = psxH = psxS = NULL;
 

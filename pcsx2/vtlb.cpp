@@ -563,4 +563,47 @@ void vtlb_Term()
 	//nothing to do for now
 }
 
+// This function allocates memory block with are compatible with the Vtlb's requirements
+// for memory locations.  The Vtlb requires the topmost bit (Sign bit) of the memory
+// pointer to be cleared.  Some operating systems and/or implementations of malloc do that,
+// but others do not.  So use this instead to allocate the memory correctly for your
+// platform.
+u8* vtlb_malloc( uint size, uint align, uptr tryBaseAddress )
+{
+#ifdef __LINUX__
+	void* retval =
+		( tryBaseAddress != NULL ) ? SysMmap( tryBaseAddress, size ) : NULL;
+
+	if( retval == NULL || (uptr)retval > 0x80000000 )
+	{
+		// memory allocation *must* have the top bit clear, so let's try again
+		// with NULL (let the OS pick something for us).
+
+		SafeSysMunmap( retval, size );
+
+		retval = (u8*)SysMmap( NULL, size );
+		if( (uptr)retval > 0x80000000 )
+			SafeSysMunmap( retval, size );
+	}
+	return (u8*)retval;
+#else
+	// Win32 just needs this, since malloc always maps below 2GB.
+	return (u8*)_aligned_malloc(size, align);
+#endif
+}
+
+void vtlb_free( void* pmem, uint size )
+{
+	if( pmem == NULL ) return;
+
+#ifdef __LINUX__
+	SafeSysMunmap( pmem, size );
+#else
+// Make sure and unprotect memory first, since CrtDebug will try to write to it.
+	DWORD old;
+	VirtualProtect( pmem, size, PAGE_READWRITE, &old );
+	safe_aligned_free( pmem );
+#endif
+}
+
 #endif		// PCSX2_VIRTUAL_MEM

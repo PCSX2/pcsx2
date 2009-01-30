@@ -2742,6 +2742,10 @@
 			Name="System"
 			>
 			<File
+				RelativePath="..\..\AlignedMalloc.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Console.cpp"
 				>
 			</File>

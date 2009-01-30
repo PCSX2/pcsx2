@@ -21,6 +21,16 @@
 
 #include "MemcpyFast.h"
 
+extern void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align);
+extern void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align);
+extern void pcsx2_aligned_free(void* pmem);
+
+// aligned_malloc: Implement/declare linux equivalents here!
+#if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
+#	define _aligned_malloc pcsx2_aligned_malloc
+#	define _aligned_free pcsx2_aligned_free
+#endif
+
 //////////////////////////////////////////////////////////////
 // Safe deallocation macros -- always check pointer validity (non-null)
 // and set pointer to null on deallocation.

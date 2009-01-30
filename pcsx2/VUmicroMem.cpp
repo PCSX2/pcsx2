@@ -70,6 +70,21 @@ void vuMicroCpuReset()
 	SuperVUReset(-1);
 }
 
+static u8* m_vuAllMem = NULL;
+static const uint m_vuMemSize = 
+	0x4000+0x800 +				// VU0 memory and VU1 registers
+	0x1000 +					// VU0micro memory
+	0x4000 +					// VU1 memory
+	0x4000 +					// VU1micro memory
+	0x4000;						// HACKFIX (see below)
+
+// HACKFIX!  (air)
+// The VIFdma1 has a nasty habit of transferring data into the 4k page of memory above
+// the VU1. (oops!!)  This happens to be recLUT most of the time, which causes rapid death
+// of our emulator.  So we allocate some extra space here to keep VIF1 a little happier.
+
+// fixme - When the VIF is fixed, remove the third +0x4000 above. :)
+
 void vuMicroMemAlloc()
 {
 #ifdef PCSX2_VIRTUAL_MEM
@@ -120,36 +135,20 @@ void vuMicroMemAlloc()
 
 	// -- VTLB Memory Allocation --
 
-	if( VU0.Mem == NULL )
-	{
-		VU0.Mem = (u8*)_aligned_malloc(0x4000+sizeof(VURegs), 16); // for VU1
+	if( m_vuAllMem == NULL )
+		m_vuAllMem = vtlb_malloc( m_vuMemSize, 16, 0x28000000 );
 
-		if( VU0.Mem == NULL )
-			throw Exception::OutOfMemory( "vu0init > Failed to allocate VUmicro memory." );
+	if( m_vuAllMem == NULL )
+		throw Exception::OutOfMemory( "vuMicroMemInit > Failed to allocate VUmicro memory." );
 
-		// Initialize VU1 memory using VU0's allocations:
-		// Important!  VU1 is actually a macro to g_pVU1 (yes, awkward!)  so we need to assign it first.
+	jASSUME( sizeof( VURegs ) <= 0x800 );
 
-		g_pVU1 = (VURegs*)(VU0.Mem + 0x4000);
-
-		// HACKFIX!  (Air)
-		// The VIFdma1 has a nasty habit of transferring data into the 4k page of memory above
-		// the VU1. (oops!!)  This happens to be recLUT most of the time, which causes rapid death
-		// of our emulator.  So we allocate some extra space here to keep VIF1 a little happier.
-
-		// fixme - When the VIF is fixed, change the *3 below back to an *2.
-
-		VU1.Mem   = (u8*)_aligned_malloc(0x4000*3, 16);
-		if (VU1.Mem == NULL )
-			throw Exception::OutOfMemory( "vu1Init > Failed to allocate memory for the VU1micro." );
-		VU1.Micro = VU1.Mem + 0x4000; //(u8*)_aligned_malloc(16*1024, 16);
-	}
-
-	if( VU0.Micro == NULL )
-		VU0.Micro = (u8*)_aligned_malloc(4*1024, 16);
-
-	if( VU0.Micro == NULL )
-		throw Exception::OutOfMemory( "vu0init > Failed to allocate VUmicro memory." );
+	u8* curpos = m_vuAllMem;
+	VU0.Mem		= curpos; curpos += 0x4000;
+	g_pVU1		= (VURegs*)curpos; curpos += 0x800;
+	VU0.Micro	= curpos; curpos += 0x1000;
+	VU1.Mem		= curpos; curpos += 0x4000;
+	VU1.Micro	= curpos; //curpos += 0x4000;
 
 #endif
 }
@@ -173,10 +172,9 @@ void vuMicroMemShutdown()
 
 	// -- VTLB Memory Allocation --
 
-	safe_aligned_free( VU1.Mem );
-	safe_aligned_free( VU0.Mem );
-	safe_aligned_free( VU0.Micro );
-
+	vtlb_free( m_vuAllMem, m_vuMemSize );
+	m_vuAllMem = NULL;
+	g_pVU1 = NULL;
 #endif
 }
 

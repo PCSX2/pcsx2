@@ -211,34 +211,6 @@ extern u8 g_globalXMMSaved;
 
 void injectIRX(const char *filename);
 
-// aligned_malloc: Implement/declare linux equivalents here!
-#if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
-
-static  __forceinline void* pcsx2_aligned_malloc(size_t size, size_t align)
-{
-	assert( align < 0x10000 );
-	char* p = (char*)malloc(size+align);
-	int off = 2+align - ((int)(uptr)(p+2) % align);
-
-	p += off;
-	*(u16*)(p-2) = off;
-
-	return p;
-}
-
-static __forceinline void pcsx2_aligned_free(void* pmem)
-{
-	if( pmem != NULL ) {
-		char* p = (char*)pmem;
-		free(p - (int)*(u16*)(p-2));
-	}
-}
-
-#define _aligned_malloc pcsx2_aligned_malloc
-#define _aligned_free pcsx2_aligned_free
-
-#endif
-
 extern void InitCPUTicks();
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();

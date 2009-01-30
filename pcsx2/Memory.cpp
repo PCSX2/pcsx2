@@ -624,35 +624,8 @@ static u8* m_psAllMem = NULL;
 
 void memAlloc() 
 {
-#ifdef __LINUX__
-	// For Linux we need to use the system virtual memory mapper so that we
-	// can coerce an allocation below the 2GB line.
-
-	// just try an arbitrary address first...
-	// maybe there's a better one to pick?
 	if( m_psAllMem == NULL )
-		m_psAllMem = (u8*)SysMmap( 0x24000000, m_allMemSize );
-
-	if( m_psAllMem == NULL || (uptr)m_psAllMem > 0xe0000000 )
-	{
-		// memory allocation *must* have the top bit clear, so let's try again
-		// with NULL (let the OS pick something for us).
-
-		if( m_psAllMem != NULL )
-			SysMunmap( m_psAllMem, m_allMemSize );
-
-		m_psAllMem = (u8*)SysMmap( NULL, m_allMemSize );
-		if( (uptr)m_psAllMem > 0xe0000000 )
-		{
-			SysMunmap( m_psAllMem, m_allMemSize );
-			m_psAllMem = NULL;		// let the os-independent code below handle the error
-		}
-	}
-
-#else
-	if( m_psAllMem == NULL )
-		m_psAllMem = (u8*)_aligned_malloc(m_allMemSize, 4096 );
-#endif
+		m_psAllMem = vtlb_malloc( m_allMemSize, 4096, 0x2400000 );
 
 	if( m_psAllMem == NULL)
 		throw Exception::OutOfMemory( "memAlloc > failed to allocate PS2's base ram/rom/scratchpad." );
@@ -669,14 +642,8 @@ void memAlloc()
 
 void memShutdown() 
 {
-#ifdef __LINUX__
-	SafeSysMunmap( m_psAllMem, m_allMemSize );
-#else
-	// Make sure and unprotect memory first, since CrtDebug will try to write to it.
-	DWORD old;
-	VirtualProtect( m_psAllMem, m_allMemSize, PAGE_READWRITE, &old );
-	safe_aligned_free(m_psAllMem);
-#endif
+	vtlb_free( m_psAllMem, m_allMemSize );
+	m_psAllMem = NULL;
 	psM = psR = psR1 = psR2 = psER = psS = psH = NULL;
 	vtlb_Term();
 }

@@ -30,6 +30,9 @@ typedef u32 vtlbHandler;
 extern void vtlb_Init();
 extern void vtlb_Reset();
 extern void vtlb_Term();
+extern u8* vtlb_malloc( uint size, uint align, uptr tryBaseAddress );
+extern void vtlb_free( void* pmem, uint size );
+
 
 //physical stuff
 vtlbHandler vtlb_RegisterHandler(	vltbMemR8FP* r8,vltbMemR16FP* r16,vltbMemR32FP* r32,vltbMemR64FP* r64,vltbMemR128FP* r128,

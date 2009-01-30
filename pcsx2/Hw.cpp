@@ -327,7 +327,7 @@ mem32_t __fastcall hwRead32_page_other(u32 mem)
 				case D2_SADR: regName = "DMA2_SADDR"; break;
 			}
 
-			HW_LOG( "Hardware Read32 at 0x%x (%s), value=0x%x\n", regName, mem, psHu32(mem) );
+			HW_LOG( "Hardware Read32 at 0x%x (%s), value=0x%x\n", mem, regName, psHu32(mem) );
 		}
 		break;
 
@@ -1511,7 +1511,7 @@ mem32_t __fastcall hwRead32(u32 mem)
 				case D2_SADR: regName = "DMA2_SADDR"; break;
 			}
 
-			HW_LOG( "Hardware Read32 at 0x%x (%s), value=0x%x\n", regName, mem, psHu32(mem) );
+			HW_LOG( "Hardware Read32 at 0x%x (%s), value=0x%x\n", mem, regName, psHu32(mem) );
 		}
 		break;
 
