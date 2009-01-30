@@ -298,7 +298,7 @@ void OnOK(HWND hW) {
 
 	SaveConfig();
 	SysRestorableReset();
-	ResetPlugins();
+	ReleasePlugins();
 }
 
 

@@ -197,6 +197,8 @@ extern void x86SetJ32( u32 *j32 );
 extern void x86SetJ32A( u32 *j32 );
 
 extern void x86Align( int bytes );
+extern void x86AlignExecutable( int align );
+
 u64 GetCPUTick( void );
 
 // General Helper functions

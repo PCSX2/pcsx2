@@ -258,6 +258,39 @@ __forceinline void x86Align( int bytes )
 	x86Ptr = (u8*)( ( (uptr)x86Ptr + bytes - 1) & ~( bytes - 1 ) );
 }
 
+////////////////////////////////////////////////////
+// Generates executable code to align to the given alignment (could be useful for the second leg
+// of if/else conditionals, which usually fall through a jump target label).
+void x86AlignExecutable( int align )
+{
+	uptr newx86 = ( (uptr)x86Ptr + align - 1) & ~( align - 1 );
+	uptr bytes = ( newx86 - (uptr)x86Ptr );
+
+	switch( bytes )
+	{
+		case 0: break;
+
+		case 1: NOP(); break;
+		case 2: MOV32RtoR( ESI, ESI ); break;
+		case 3: write8(0x08D); write8(0x024); write8(0x024); break;
+		case 5: NOP();	// falls through to 4...
+		case 4: write8(0x08D); write8(0x064); write8(0x024); write8(0); break;
+		case 6: write8(0x08D); write8(0x0B6); write32(0); break;
+		case 8: NOP();	// falls through to 7...
+		case 7: write8(0x08D); write8(0x034); write8(0x035); write32(0); break;
+		
+		default:
+		{
+			// for larger alignments, just use a JMP...
+			u8* aligned_target = JMP8(0);
+			x86Ptr = (u8*)newx86;
+			x86SetJ8( aligned_target );
+		}
+	}
+
+	jASSUME( x86Ptr == (u8*)newx86 );
+}
+
 /********************/
 /* IX86 intructions */
 /********************/

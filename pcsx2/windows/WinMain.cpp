@@ -671,7 +671,9 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			case ID_CONFIG_CONFIGURE:
 				Pcsx2Configure(hWnd);
-				ReleasePlugins();
+
+				// Configure may unload plugins if the user changes settings, so reload
+				// them here.  If they weren't unloaded these functions do nothing.
 				LoadPlugins();
 				return FALSE;
 

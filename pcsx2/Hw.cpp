@@ -77,31 +77,61 @@ __forceinline u8  hwRead8(u32 mem)
 {
 	u8 ret;
 
-	if( mem >= 0x10000000 && mem < 0x10008000 )
+	if( mem >= 0x10002000 && mem < 0x10008000 )
 		DevCon::Notice("hwRead8 to %x", params mem);
 
 	SPR_LOG("Hardware read 8bit at %lx, ret %lx\n", mem, psHu8(mem));
 
-//	switch (mem) {
-//		default:
-	if ((mem & 0xffffff0f) == 0x1000f200) {
-		if(mem == 0x1000f260) ret = 0;
-		else if(mem == 0x1000F240) {
-			ret = psHu32(mem);
-			//psHu32(mem) &= ~0x4000;
-		}
-		else ret = psHu32(mem);
-		return (u8)ret;
-	}
-
-	if (mem < 0x10010000)
+	switch (mem)
 	{
-		ret = psHu8(mem);
+		case 0x10000000: ret = (u8)rcntRcount(0); break;
+		case 0x10000010: ret = (u8)counters[0].modeval; break;
+		case 0x10000020: ret = (u8)counters[0].target; break;
+		case 0x10000030: ret = (u8)counters[0].hold; break;
+		case 0x10000001: ret = (u8)(rcntRcount(0)>>8); break;
+		case 0x10000011: ret = (u8)(counters[0].modeval>>8); break;
+		case 0x10000021: ret = (u8)(counters[0].target>>8); break;
+		case 0x10000031: ret = (u8)(counters[0].hold>>8); break;
+
+		case 0x10000800: ret = (u8)rcntRcount(1); break;
+		case 0x10000810: ret = (u8)counters[1].modeval; break;
+		case 0x10000820: ret = (u8)counters[1].target; break;
+		case 0x10000830: ret = (u8)counters[1].hold; break;
+		case 0x10000801: ret = (u8)(rcntRcount(1)>>8); break;
+		case 0x10000811: ret = (u8)(counters[1].modeval>>8); break;
+		case 0x10000821: ret = (u8)(counters[1].target>>8); break;
+		case 0x10000831: ret = (u8)(counters[1].hold>>8); break;
+
+		case 0x10001000: ret = (u8)rcntRcount(2); break;
+		case 0x10001010: ret = (u8)counters[2].modeval; break;
+		case 0x10001020: ret = (u8)counters[2].target; break;
+		case 0x10001001: ret = (u8)(rcntRcount(2)>>8); break;
+		case 0x10001011: ret = (u8)(counters[2].modeval>>8); break;
+		case 0x10001021: ret = (u8)(counters[2].target>>8); break;
+
+		case 0x10001800: ret = (u8)rcntRcount(3); break;
+		case 0x10001810: ret = (u8)counters[3].modeval; break;
+		case 0x10001820: ret = (u8)counters[3].target; break;
+		case 0x10001801: ret = (u8)(rcntRcount(3)>>8); break;
+		case 0x10001811: ret = (u8)(counters[3].modeval>>8); break;
+		case 0x10001821: ret = (u8)(counters[3].target>>8); break;
+
+		default:
+			if ((mem & 0xffffff0f) == 0x1000f200)
+			{
+				if(mem == 0x1000f260) ret = 0;
+				else if(mem == 0x1000F240) {
+					ret = psHu32(mem);
+					//psHu32(mem) &= ~0x4000;
+				}
+				else ret = psHu32(mem);
+				return (u8)ret;
+			}
+
+			ret = psHu8(mem);
+			HW_LOG("Unknown Hardware Read 8 at %x\n",mem);
+			break;
 	}
-	else ret = 0;
-	HW_LOG("Unknown Hardware Read 8 at %x\n",mem);
-//			break;
-//	}
 
 	return ret;
 }
@@ -391,7 +421,7 @@ int sio_count;
 void hwWrite8(u32 mem, u8 value) {
 
 #ifdef PCSX2_DEVBUILD
-	if( mem >= 0x10000000 && mem < 0x10008000 )
+	if( mem >= 0x10002000 && mem < 0x10008000 )
 		SysPrintf("hwWrite8 to %x\n", mem);
 #endif
 
@@ -518,10 +548,30 @@ void hwWrite8(u32 mem, u8 value) {
 __forceinline void hwWrite16(u32 mem, u16 value)
 {
 #ifdef PCSX2_DEVBUILD
-	if( mem >= 0x10000000 && mem < 0x10008000 )
+	if( mem >= 0x10002000 && mem < 0x10008000 )
 		SysPrintf("hwWrite16 to %x\n", mem);
 #endif
-	switch(mem) {
+
+	switch(mem)
+	{
+		case 0x10000000: rcntWcount(0, value); break;
+		case 0x10000010: rcntWmode(0, value); break;
+		case 0x10000020: rcntWtarget(0, value); break;
+		case 0x10000030: rcntWhold(0, value); break;
+
+		case 0x10000800: rcntWcount(1, value); break;
+		case 0x10000810: rcntWmode(1, value); break;
+		case 0x10000820: rcntWtarget(1, value); break;
+		case 0x10000830: rcntWhold(1, value); break;
+
+		case 0x10001000: rcntWcount(2, value); break;
+		case 0x10001010: rcntWmode(2, value); break;
+		case 0x10001020: rcntWtarget(2, value); break;
+
+		case 0x10001800: rcntWcount(3, value); break;
+		case 0x10001810: rcntWmode(3, value); break;
+		case 0x10001820: rcntWtarget(3, value); break;
+
 		case 0x10008000: // dma0 - vif0
 			DMA_LOG("VIF0dma %lx\n", value);
 			DmaExec16(dmaVIF0, mem, value);
