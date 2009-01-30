@@ -34,45 +34,6 @@ namespace Interp = R5900::Interpreter::OpcodeImpl::COP0;
 
 namespace R5900 {
 namespace Dynarec {
-
-// R5900 branch hepler!
-// Recompiles code for a branch test and/or skip, complete with delay slot
-// handling.  Note, for "likely" branches use iDoBranchImm_Likely instead, which
-// handles delay slots differently.
-// Parameters:
-//   jmpSkip - This parameter is the result of the appropriate J32 instruction
-//   (usually JZ32 or JNZ32).
-static void recDoBranchImm( u32* jmpSkip, bool isLikely = false )
-{
-	// All R5900 branches use this format:
-	const u32 branchTo = (s32)_Imm_ * 4 + pc;
-
-	// First up is the Branch Taken Path : Save the recompiler's state, compile the
-	// DelaySlot, and issue a BranchTest insertion.  The state is reloaded below for
-	// the "did not branch" path (maintains consts, register allocations, and other optimizations).
-
-	SaveBranchState();
-	recompileNextInstruction(1);
-	SetBranchImm(branchTo);
-
-	// Jump target when the branch is *not* taken, skips the branchtest code
-	// insertion above.
-	x86SetJ32(jmpSkip);
-
-	// if it's a likely branch then we'll need to skip the delay slot here, since
-	// MIPS cancels the delay slot instruction when branches aren't taken.
-	if( !isLikely ) pc -= 4;		// instruction rewinde for delay slot ,if non-likely.
-	LoadBranchState();
-	recompileNextInstruction(1);
-
-	SetBranchImm(pc);
-}
-
-static void recDoBranchImm_Likely( u32* jmpSkip )
-{
-	recDoBranchImm( jmpSkip, true );
-}
-
 namespace OpcodeImpl {
 namespace COP0 {
 

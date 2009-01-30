@@ -644,87 +644,44 @@ void recADDA_S_xmm(int info)
 FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 //------------------------------------------------------------------
 
-
 //------------------------------------------------------------------
 // BC1x XMM
 //------------------------------------------------------------------
-void recBC1F( void ) {
-	u32 branchTo = (s32)_Imm_ * 4 + pc;
-	
+
+static void _setupBranchTest()
+{
 	_eeFlushAllUnused();
+
+	// COP1 branch conditionals are based on the following equation:
+	// (fpuRegs.fprc[31] & 0x00800000)
+	// BC2F checks if the statement is false, BC2T checks if the statement is true.
+
 	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
 	TEST32ItoR(EAX, FPUflagC);
-	j32Ptr[0] = JNZ32(0);
-
-	SaveBranchState();
-	recompileNextInstruction(1);
-	SetBranchImm(branchTo);
-	
-	x86SetJ32(j32Ptr[0]);
-
-	// recopy the next inst
-	pc -= 4;
-	LoadBranchState();
-	recompileNextInstruction(1);
-
-	SetBranchImm(pc);
 }
 
-void recBC1T( void ) {
-	u32 branchTo = (s32)_Imm_ * 4 + pc;
-
-	_eeFlushAllUnused();
-	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
-	TEST32ItoR(EAX, FPUflagC);
-	j32Ptr[0] = JZ32(0);
-
-	SaveBranchState();
-	recompileNextInstruction(1);
-	SetBranchImm(branchTo);
-
-	x86SetJ32(j32Ptr[0]);
-
-	// recopy the next inst
-	pc -= 4;
-	LoadBranchState();
-	recompileNextInstruction(1);
-
-	SetBranchImm(pc);
+void recBC1F( void )
+{
+	_setupBranchTest();
+	recDoBranchImm(JNZ32(0));
 }
 
-void recBC1FL( void ) {
-	u32 branchTo = _Imm_ * 4 + pc;
-
-	_eeFlushAllUnused();
-	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
-	TEST32ItoR(EAX, FPUflagC);
-	j32Ptr[0] = JNZ32(0);
-
-	SaveBranchState();
-	recompileNextInstruction(1);
-	SetBranchImm(branchTo);
-
-	x86SetJ32(j32Ptr[0]);
-
-	LoadBranchState();
-	SetBranchImm(pc);
+void recBC1T( void )
+{
+	_setupBranchTest();
+	recDoBranchImm(JZ32(0));
 }
 
-void recBC1TL( void ) {
-	u32 branchTo = _Imm_ * 4 + pc;
+void recBC1FL( void )
+{
+	_setupBranchTest();
+	recDoBranchImm_Likely(JNZ32(0));
+}
 
-	_eeFlushAllUnused();
-	MOV32MtoR(EAX, (uptr)&fpuRegs.fprc[31]);
-	TEST32ItoR(EAX, FPUflagC);
-	j32Ptr[0] = JZ32(0);
-
-	SaveBranchState();
-	recompileNextInstruction(1);
-	SetBranchImm(branchTo);
-	x86SetJ32(j32Ptr[0]);
-
-	LoadBranchState();
-	SetBranchImm(pc);
+void recBC1TL( void )
+{
+	_setupBranchTest();
+	recDoBranchImm_Likely(JZ32(0));
 }
 //------------------------------------------------------------------
 

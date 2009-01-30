@@ -1112,8 +1112,8 @@ void SaveBranchState()
 	s_saveRegHasSignExt = g_cpuRegHasSignExt;
 
 	// save all mmx regs
-	memcpy(s_saveMMXregs, mmxregs, sizeof(mmxregs));
-	memcpy(s_saveXMMregs, xmmregs, sizeof(xmmregs));
+	memcpy_fast(s_saveMMXregs, mmxregs, sizeof(mmxregs));
+	memcpy_fast(s_saveXMMregs, xmmregs, sizeof(xmmregs));
 }
 
 void LoadBranchState()
@@ -1142,8 +1142,8 @@ void LoadBranchState()
 	g_cpuRegHasSignExt = g_cpuPrevRegHasSignExt = s_saveRegHasSignExt;
 
 	// restore all mmx regs
-	memcpy(mmxregs, s_saveMMXregs, sizeof(mmxregs));
-	memcpy(xmmregs, s_saveXMMregs, sizeof(xmmregs));
+	memcpy_fast(mmxregs, s_saveMMXregs, sizeof(mmxregs));
+	memcpy_fast(xmmregs, s_saveXMMregs, sizeof(xmmregs));
 }
 
 void iFlushCall(int flushtype)

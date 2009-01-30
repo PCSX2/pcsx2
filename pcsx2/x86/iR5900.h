@@ -111,6 +111,11 @@ void SaveCW(int type);
 
 extern void recExecute();		// same as recCpu.Execute(), but faster (can be inline'd)
 
+namespace R5900{
+namespace Dynarec {
+extern void recDoBranchImm( u32* jmpSkip, bool isLikely = false );
+extern void recDoBranchImm_Likely( u32* jmpSkip );
+} }
 
 ////////////////////////////////////////////////////////////////////
 // Constant Propagation - From here to the end of the header!

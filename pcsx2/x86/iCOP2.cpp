@@ -379,10 +379,49 @@ static void recQMTC2(s32 info)
 //////////////////////////////////////////////////////////////////////////
 //    BC2: Instructions 
 //////////////////////////////////////////////////////////////////////////
-REC_COP2_FUNC(BC2F);
-REC_COP2_FUNC(BC2T);
-REC_COP2_FUNC(BC2FL);
-REC_COP2_FUNC(BC2TL);
+//REC_COP2_FUNC(BC2F);
+//REC_COP2_FUNC(BC2T);
+//REC_COP2_FUNC(BC2FL);
+//REC_COP2_FUNC(BC2TL);
+
+using namespace R5900::Dynarec;
+
+static void _setupBranchTest()
+{
+	_eeFlushAllUnused();
+
+	// COP2 branch conditionals are based on the following equation:
+	// ((VU0.VI[REG_VPU_STAT].US[0] >> 8) & 1)
+	// BC2F checks if the statement is false, BC2T checks if the statement is true.
+
+	MOV32MtoR( EAX, (uptr)&VU0.VI[REG_VPU_STAT].UL );
+	TEST32ItoR( EAX, 0x100 );
+}
+
+void recBC2F( s32 info )
+{
+	_setupBranchTest();
+	recDoBranchImm(JNZ32(0));
+}
+
+void recBC2T( s32 info )
+{
+	_setupBranchTest();
+	recDoBranchImm(JZ32(0));
+}
+
+void recBC2FL( s32 info )
+{
+	_setupBranchTest();
+	recDoBranchImm_Likely(JNZ32(0));
+}
+
+void recBC2TL( s32 info )
+{
+	_setupBranchTest();
+	recDoBranchImm_Likely(JZ32(0));
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //    Special1 instructions 
