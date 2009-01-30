@@ -947,6 +947,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 {
 	// check if block already exists
 	//SysPrintf("startpc %x\n", startpc);
+	bool TwoCycle = false;
 	startpc &= (s_vu ? 0x3fff : 0xfff);
 	VuBlockHeader* pbh = &recVUBlocks[s_vu][startpc/8];
 
@@ -1148,6 +1149,8 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 
 #ifdef SUPERVU_VIBRANCHDELAY
         if( pinst->regs[0].pipe == VUPIPE_BRANCH && pblock->insts.size() > 1 ) {
+		
+			TwoCycle = true;
 
             if( pprevinst != NULL && pprevinst->info.cycle+1==pinst->info.cycle && 
                 (pprevinst->regs[0].pipe == VUPIPE_IALU||pprevinst->regs[0].pipe == VUPIPE_FMAC) && ((pprevinst->regs[0].VIwrite & pinst->regs[0].VIread) & 0xffff) 
@@ -1169,6 +1172,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
                     lowercode = *(int*)&VU->Micro[pc-24]; 
                     pdelayinst = ppprevinst;
                 }
+				
 
                 //SysPrintf("vurec: %x\n", pc);
                 // ignore if prev instruction is ILW or ILWR (xenosaga 2)
@@ -1193,6 +1197,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
                 }
             }
         }
+		else TwoCycle = false;
 #endif
 
 		if( prevbranch ) {
@@ -1445,7 +1450,12 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 
 	pblock = recVUBlocks[s_vu][lastpc/8-2].pblock;
 
-	if( hasSecondBranch ) {
+#ifdef SUPERVU_VIBRANCHDELAY
+	if( hasSecondBranch && ( CHECK_DELAYSLOTHACK ?  (!TwoCycle ? 1 : 0) : 1 ) ) {
+#else
+	if( hasSecondBranch) {
+#endif
+
 		u32 vucode = *(u32*)(VU->Micro+lastpc-8);
 		pc = lastpc;
 		int bpc = _recbranchAddr(vucode);
