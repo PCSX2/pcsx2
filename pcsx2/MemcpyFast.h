@@ -19,6 +19,8 @@
 #ifndef __MEMCPY_FAST_H__
 #define __MEMCPY_FAST_H__
 
+//#include "Misc.h"
+
 void _memset16_unaligned( void* dest, u16 data, size_t size );
 
 #if defined(_WIN32) && !defined(__x86_64__)

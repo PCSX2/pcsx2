@@ -171,9 +171,11 @@ void RunExecute( const char* elf_file, bool use_bios )
 		return;
 	}
 	
-	if( elf_file == 0 )
+	SysResetExecutionState() ;
+
+	if (elf_file == 0 )
 	{
-		if(g_RecoveryState != NULL)
+		if (g_RecoveryState != NULL)
 		{
 			try
 			{

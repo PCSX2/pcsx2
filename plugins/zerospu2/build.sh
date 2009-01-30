@@ -12,7 +12,7 @@ then
 aclocal
 automake -a
 autoconf
-./configure --enable-debug-build --prefix=${PCSX2PLUGINS}
+./configure --prefix=${PCSX2PLUGINS}
 make clean
 make install
 

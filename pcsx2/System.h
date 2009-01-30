@@ -233,4 +233,33 @@ int SysMapUserPhysicalPages(void* Addr, uptr NumPages, uptr* pblock, int pageoff
 #endif
 
 
+static __forceinline u8 *SysBoundedMmap(uptr base, u32 size, u32 bounds, char *caller) 
+{
+	u8 *Mem = NULL;	
+	// For Linux we need to use the system virtual memory mapper so that we
+	// can coerce an allocation below the 2GB line.
+
+	// just try an arbitrary address first...
+	// maybe there's a better one to pick?
+	Mem = (u8*)SysMmap( base, size );
+
+	if( (Mem == NULL) || ((uptr)Mem + size) > bounds )
+	{
+		DevCon::Error("Problem allocating in %s.", params caller);
+		// memory allocation *must* have the top bit clear, so let's try again
+		// with NULL (let the OS pick something for us).
+
+		if( Mem != NULL ) SysMunmap( base, size );
+
+		Mem = (u8*)SysMmap( NULL, size );
+		if( (uptr)Mem > bounds )
+		{
+			DevCon::Error("Continuing problems allocating in %s.", params caller);
+			SysMunmap( Mem, size );
+			Mem = NULL;		// let the os-independent code below handle the error
+		}
+	}
+	return Mem;
+}
+
 #endif /* __SYSTEM_H__ */

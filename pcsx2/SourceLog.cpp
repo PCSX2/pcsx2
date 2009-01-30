@@ -35,13 +35,13 @@ using namespace R5900;
 
 FILE *emuLog;
 
-#ifdef PCSX2_DEVBUILD
+//#ifdef PCSX2_DEVBUILD
 u32 varLog;
 
 // these used by the depreciated _old_Log only
 u16 logProtocol;
 u8 logSource;
-#endif
+//#endif
 
 int connected=0;
 
@@ -70,7 +70,8 @@ void __Log( const char* fmt, ... )
 	{
 		Console::Write(tmp);
 
-	} else if( emuLog != NULL )		// manually write to the logfile.
+	} 
+	else if( emuLog != NULL )		// manually write to the logfile.
 	{
 		fputs( tmp, emuLog );
 		//fputs( "\r\n", emuLog );

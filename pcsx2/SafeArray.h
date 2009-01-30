@@ -29,6 +29,7 @@ extern void pcsx2_aligned_free(void* pmem);
 #if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
 #	define _aligned_malloc pcsx2_aligned_malloc
 #	define _aligned_free pcsx2_aligned_free
+# 	define _aligned_realloc pcsx2_aligned_realloc
 #endif
 
 //////////////////////////////////////////////////////////////
@@ -208,8 +209,7 @@ class SafeAlignedArray : public MemoryAlloc<T>
 protected:
 	T* _virtual_realloc( int newsize )
 	{
-		// TODO : aligned_realloc will need a linux implementation now. -_-
-		return (T*)_aligned_realloc( m_ptr, newsize * sizeof(T), Alignment );
+		return (T*)_aligned_realloc( this->m_ptr, newsize * sizeof(T), Alignment );
 	}
 
 	// Appends "(align: xx)" to the name of the allocation in devel builds.
@@ -225,17 +225,17 @@ protected:
 public:
 	virtual ~SafeAlignedArray()
 	{
-		safe_aligned_free( m_ptr );
+		safe_aligned_free( this->m_ptr );
 		// mptr is set to null, so the parent class's destructor won't re-free it.
 	}
 
 	explicit SafeAlignedArray( const std::string& name="Unnamed" ) : 
-		MemoryAlloc( name )
+		MemoryAlloc<T>::MemoryAlloc( name )
 	{
 	}
 
 	explicit SafeAlignedArray( int initialSize, const std::string& name="Unnamed" ) : 
-		MemoryAlloc(
+		MemoryAlloc<T>::MemoryAlloc(
 			_getName(name),
 			(T*)_aligned_malloc( initialSize * sizeof(T), Alignment ),
 			initialSize 
@@ -245,8 +245,8 @@ public:
 
 	virtual SafeAlignedArray<T,Alignment>* Clone() const
 	{
-		SafeAlignedArray<T,Alignment>* retval = new SafeAlignedArray<T,Alignment>( m_size );
-		memcpy_fast( retval->GetPtr(), m_ptr, sizeof(T) * m_size );
+		SafeAlignedArray<T,Alignment>* retval = new SafeAlignedArray<T,Alignment>( this->m_size );
+		memcpy_fast( retval->GetPtr(), this->m_ptr, sizeof(T) * this->m_size );
 		return retval;
 	}
 };

@@ -21,15 +21,7 @@
 
 #include "LnxMain.h"
 
-// these namespace directives globalize the new namespaces and make the code behave basically
-// like it used to (with cpuReset() and other cpu* vars and functions global).
-// Not sure if the Dynarec ones are needed, so uncomment them if you get unresolved external
-// link errors.  Should solve some of them (maybe not all...) - (air)
-
-//  Definitely not all. Most of them are coming from assembly files. :(
-
 using namespace R5900;
-//using namespace Dynarec;
 
 DIR *dir;
 
@@ -475,10 +467,16 @@ void SysRunGui() {
 	RunGui();
 }
 
-void *SysMmap(uptr base, u32 size) {
-	return mmap((uptr*)base, size, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+void *SysMmap(uptr base, u32 size) 
+{
+	u8 *Mem;
+	Mem = mmap((uptr*)base, size, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+	if (Mem == MAP_FAILED) Console::Notice("Mmap Failed!");
+	
+	return Mem;
 }
 
-void SysMunmap(uptr base, u32 size) {
+void SysMunmap(uptr base, u32 size) 
+{
 	munmap((uptr*)base, size);
 }

@@ -324,27 +324,12 @@ void SuperVUAlloc(int vuindex)
 	// The old -1 crap has been depreciated on this function.  Please
 	// specify either 0 or 1, thanks.
 	jASSUME( vuindex >= 0 );
-
+	
+	// upper 4 bits must be zero!
 	if( s_recVUMem == NULL )
 	{
 		// upper 4 bits must be zero!
-		s_recVUMem = (u8*)SysMmap( 0x0c000000, VU_EXESIZE);
-
-		if( s_recVUMem == NULL || ((uptr)s_recVUMem > 0x80000000) )
-		{
-			// Allocation failed?  Well then let's just try an operating-system-assigned
-			// location, by specifying NULL as the address "hint."
-
-			if( s_recVUMem != NULL )
-				SysMunmap( s_recVUMem, VU_EXESIZE );
-
-			s_recVUMem = (u8*)SysMmap( NULL, VU_EXESIZE);
-			if( (uptr)s_recVUMem > 0x80000000 )
-			{
-				SysMunmap( s_recVUMem, VU_EXESIZE );		// failed...
-				s_recVUMem = NULL;
-			}
-		}
+		s_recVUMem = SysBoundedMmap(0x0c000000, VU_EXESIZE, 0x80000000, "SuperVUAlloc");
 
 		if( s_recVUMem == NULL )
 		{
@@ -355,8 +340,7 @@ void SuperVUAlloc(int vuindex)
 
 		ProfilerRegisterSource( "VURec", s_recVUMem, VU_EXESIZE);
 
-		if( recVUStack == NULL )
-			recVUStack = new u8[SUPERVU_STACKSIZE * 4];
+		if( recVUStack == NULL ) recVUStack = new u8[SUPERVU_STACKSIZE * 4];
 	}
 
 	if( vuindex >= 0 )

@@ -33,11 +33,11 @@ Dispatcher:
 	mov %eax,dword ptr [cpuRegs+PCOFFSET] 
 	mov %ecx,%eax
 	mov REG_PC,%eax
-	shr %eax,10h 
-	and %ecx,0FFFFh 
+	shr %eax,0x10 
+	and %ecx,0xFFFF
 	mov %edx,dword ptr [recLUT] 
-	mov %eax,dword ptr [edx+eax*4] 
-	lea %ecx,[eax+ecx*2] 
+	mov %eax,dword ptr [%edx+%eax*4] 
+	lea %ecx,[%eax+%ecx*2] 
 
 	// check if startpc == cpuRegs.pc
 	//and %ecx, 0x5fffffff // remove higher bits
@@ -137,16 +137,16 @@ DispatcherReg:
 	mov %eax,dword ptr [cpuRegs+PCOFFSET] 
 	mov %ecx,%eax
 	mov REG_PC,%eax
-	shr %eax,10h 
-	and %ecx,0FFFFh 
+	shr %eax,0x10
+	and %ecx,0xFFFF 
 	mov %edx,dword ptr [recLUT] 
-	mov %eax,dword ptr [edx+eax*4] 
-	lea %ecx,[eax+ecx*2] 
+	mov %eax,dword ptr [%edx+%eax*4] 
+	lea %ecx,[%eax+%ecx*2] 
 
 	// check if startpc == cpuRegs.pc
 	//and %ecx, 0x5fffffff // remove higher bits
 	cmp REG_PC, dword ptr [%ecx+BLOCKTYPE_STARTPC]
-	je Dispatcher_CheckPtr
+	je DispatcherReg_CheckPtr
 
 	// recompile
 	push %ecx
@@ -154,16 +154,16 @@ DispatcherReg:
 	call recRecompile
 	add %esp, 4
 	pop %ecx
-Dispatcher_CheckPtr:
+DispatcherReg_CheckPtr:
 	mov %eax, dword ptr [%ecx]
 
 #ifdef _DEBUG
 	test %eax, %eax
-	jnz Dispatcher_CallFn
+	jnz DispatcherReg_CallFn
 	// throw an exception
 	int 10
 	
-Dispatcher_CallFn:
+DispatcherReg_CallFn:
 #endif
 	and %eax, 0x0fffffff
 	jmp %eax

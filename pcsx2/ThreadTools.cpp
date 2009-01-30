@@ -99,7 +99,9 @@ namespace Threading
 
 	void Semaphore::Post( int multiple )
 	{
+#if defined(_MSC_VER)
 		sem_post_multiple( &sema, multiple );
+#endif
 	}
 
 	void Semaphore::Wait()

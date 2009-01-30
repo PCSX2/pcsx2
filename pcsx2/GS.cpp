@@ -25,7 +25,7 @@
 #include "iR5900.h"
 #include "Counters.h"
 
-#include "Vifdma.h"
+#include "VifDma.h"
 
 using namespace Threading;
 using namespace std;
