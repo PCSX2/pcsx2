@@ -65,18 +65,6 @@ pthread_t s_threadSPU2;
 void* SPU2ThreadProc(void*);
 #endif
 
-struct AUDIOBUFFER
-{
-	u8* pbuf;
-	u32 len;
-
-	// 1 if new channels started in this packet
-	// Variable used to smooth out sound by concentrating on new voices
-	u32 timestamp; // in microseconds, only used for time stretching
-	u32 avgtime;
-	int newchannels;
-};
-
 static AUDIOBUFFER s_pAudioBuffers[NSPACKETS];
 static int s_nCurBuffer = 0, s_nQueuedBuffers = 0;
 static s16* s_pCurOutput = NULL;
@@ -98,8 +86,7 @@ int SPUTargetCycle[2];
 
 int g_logsound=0;
 
-int ADMAS4Write();
-int ADMAS7Write();
+int ADMASWrite(int c);
 
 void InitADSR();
 
@@ -220,7 +207,8 @@ s32 CALLBACK SPU2init()
 	memset(spu2mem, 0, 0x200000);
 	if ((spu2mem == NULL) || (spu2regs == NULL)) 
 	{
-		SysMessage("Error allocating Memory\n"); return -1;
+		SysMessage("Error allocating Memory\n"); 
+		return -1;
 	}
 	
 	memset(dwEndChannel2, 0, sizeof(dwEndChannel2));
@@ -360,11 +348,6 @@ void CALLBACK SPU2shutdown()
 	if (spu2Log) fclose(spu2Log);
 }
 
-// simulate SPU2 for 1ms
-void SPU2Worker();
-
-#define CYCLES_PER_MS (36864000/1000)
-
 void CALLBACK SPU2async(u32 cycle)
 {
 	SPUCycles += cycle;
@@ -402,9 +385,9 @@ void CALLBACK SPU2async(u32 cycle)
 
 void InitADSR()									// INIT ADSR
 {
-	unsigned long r,rs,rd;
+	u32 r,rs,rd;
 	int i;
-	memset(RateTable,0,sizeof(unsigned long)*160);		// build the rate table according to Neill's rules (see at bottom of file)
+	memset(RateTable,0,sizeof(u32)*160);		// build the rate table according to Neill's rules (see at bottom of file)
 
 	r=3;rs=1;rd=0;
 
@@ -529,12 +512,69 @@ int MixADSR(VOICE_PROCESSED* pvoice)							 // MIX ADSR
 	return 0;
 }
 
+void MixChannels(int core)
+{
+	// mix all channels
+	int c_offset = 0x0400 * core;
+	int dma;
+	ADMA *Adma;
+	
+	if (core == 0)
+	{
+		Adma = &Adma4;
+		dma = 4;
+	}
+	else
+	{
+		Adma = &Adma7;
+		dma = 7;
+	}
+	
+	if ((spu2Ru16(REG_C0_MMIX + c_offset) & 0xF0) && (spu2Ru16(REG_C0_ADMAS + c_offset) & (0x1 + core))) 
+	{
+		for (int ns=0;ns<NSSIZE;ns++) 
+		{ 
+			if ((spu2Ru16(REG_C0_MMIX + c_offset) & 0x80)) 
+				s_buffers[ns][0] += (((short*)spu2mem)[0x2000 + c_offset +Adma->Index]*(int)spu2Ru16(REG_C0_BVOLL + c_offset))>>16;
+			if ((spu2Ru16(REG_C0_MMIX + c_offset) & 0x40)) 
+				s_buffers[ns][1] += (((short*)spu2mem)[0x2200 + c_offset +Adma->Index]*(int)spu2Ru16(REG_C0_BVOLR + c_offset))>>16;
+			
+			Adma->Index +=1;
+			MemAddr[core] += 4;
+			
+			if (Adma->Index == 128 || Adma->Index == 384)
+			{
+				if (ADMASWrite(core))
+				{
+					if (interrupt & (0x2 * (core + 1)))
+					{
+						interrupt &= ~(0x2 * (core + 1));
+						printf("Stopping double interrupt DMA7\n");
+					}
+					if (core == 0)
+						irqCallbackDMA4();
+					else
+						irqCallbackDMA7();
+					
+				}
+				if (core == 1) Adma->Enabled = 2;
+			}
+
+			if (Adma->Index == 512) 
+			{
+				if ( Adma->Enabled == 2 ) Adma->Enabled = 0;
+				Adma->Index = 0;
+			}
+		}
+	}
+}
+
 // simulate SPU2 for 1ms
 void SPU2Worker()
 {
 	int s_1,s_2,fa;
 	u8* start;
-	unsigned int nSample;
+	u32 nSample;
 	int ch,predict_nr,shift_factor,flags,d,s;
 
 	// assume s_buffers are zeroed out
@@ -585,29 +625,29 @@ void SPU2Worker()
 					s_1=pChannel->s_1;
 					s_2=pChannel->s_2;
 
-					predict_nr=(int)start[0];
+					predict_nr=(s32)start[0];
 					shift_factor=predict_nr&0xf;
 					predict_nr >>= 4;
-					flags=(int)start[1];
+					flags=(s32)start[1];
 					start += 2;
 
 					for (nSample=0;nSample<28; ++start)
 					{
 						d = (int)*start;
-						s = ((d&0xf)<<12);
-						if (s&0x8000) s|=0xffff0000;
+						s = ((d & 0xf)<<12);
+						if (s & 0x8000) s |= 0xffff0000;
 
 						fa = (s >> shift_factor);
-						fa += ((s_1 * f[predict_nr][0])>>6) + ((s_2 * f[predict_nr][1])>>6);
+						fa += ((s_1 * f[predict_nr][0]) >> 6) + ((s_2 * f[predict_nr][1]) >> 6);
 						s_2 = s_1;
 						s_1 = fa;
 						s = ((d & 0xf0) << 8);
 
 						pChannel->SB[nSample++]=fa;
 
-						if (s&0x8000) s|=0xffff0000;
+						if (s & 0x8000) s|=0xffff0000;
 						fa = (s>>shift_factor);			  
-						fa += ((s_1 * f[predict_nr][0])>>6) + ((s_2 * f[predict_nr][1])>>6);
+						fa += ((s_1 * f[predict_nr][0])>>6) + ((s_2 * f[predict_nr][1]) >> 6);
 						s_2 = s_1;
 						s_1 = fa;
 
@@ -617,11 +657,11 @@ void SPU2Worker()
 					// irq occurs no matter what core access the address
 					for (int core = 0; core < 2; ++core) 
 					{
-						if (((SPU_CONTROL_*)(spu2regs+0x400*core+REG_C0_CTRL))->irq)		 // some callback and irq active?
+						if (((SPU_CONTROL_*)(spu2regs + 0x400 * core + REG_C0_CTRL))->irq)		 // some callback and irq active?
 						{
 							// if irq address reached or irq on looping addr, when stop/loop flag is set 
 							u8* pirq = (u8*)pSpuIrq[core];
-							if ((pirq > start-16  && pirq <= start) || ((flags&1) && (pirq >  pChannel->pLoop-16 && pirq <= pChannel->pLoop)))
+							if ((pirq > (start - 16)  && pirq <= start) || ((flags & 1) && (pirq > (pChannel->pLoop - 16) && pirq <= pChannel->pLoop)))
 							{
 								IRQINFO |= 4<<core;
 								SPU2_LOG("SPU2Worker:interrupt\n");
@@ -666,19 +706,19 @@ void SPU2Worker()
 			else
 				fa=pChannel->iGetInterpolationVal();	   // get sample val
 
-			int sval = (MixADSR(pChannel)*fa)/1023;   // mix adsr
+			int sval = (MixADSR(pChannel) * fa) / 1023;   // mix adsr
 
-			if (pChannel->bFMod==2)						// fmod freq channel
+			if (pChannel->bFMod == 2)						// fmod freq channel
 			{
-				iFMod[ns]=sval;					// -> store 1T sample data, use that to do fmod on next channel
+				iFMod[ns] = sval;					// -> store 1T sample data, use that to do fmod on next channel
 			}
 			else 
 			{
 				if (pChannel->bVolumeL)
-					s_buffers[ns][0]+=(sval*pChannel->leftvol)>>14;
+					s_buffers[ns][0]+=(sval * pChannel->leftvol)>>14;
 				
 				if (pChannel->bVolumeR)
-					s_buffers[ns][1]+=(sval*pChannel->rightvol)>>14;
+					s_buffers[ns][1]+=(sval * pChannel->rightvol)>>14;
 			}
 
 			// go to the next packet
@@ -690,107 +730,18 @@ ENDX:
 	}
 
 	// mix all channels
-	if ((spu2Ru16(REG_C0_MMIX) & 0xF0) && (spu2Ru16(REG_C0_ADMAS) & 0x1) /*&& !(spu2Ru16(REG_C0_CTRL) & 0x30)*/) 
-	{
-		ADMA *Adma = &Adma4;
-		
-		for (int ns=0;ns<NSSIZE;ns++) 
-		{ 
-		
-			if ((spu2Ru16(REG_C0_MMIX) & 0x80)) 
-				s_buffers[ns][0] += (((short*)spu2mem)[0x2000+Adma->Index]*(int)spu2Ru16(REG_C0_BVOLL))>>16;
-			if ((spu2Ru16(REG_C0_MMIX) & 0x40)) 
-				s_buffers[ns][1] += (((short*)spu2mem)[0x2200+Adma->Index]*(int)spu2Ru16(REG_C0_BVOLR))>>16;
-
-			Adma->Index +=1;
-			// just add after every sample, it is better than adding 1024 all at once (games like Genji don't like it)
-			MemAddr[0] += 4;
-
-			if ((Adma->Index == 128) || (Adma->Index == 384))
-			{
-				if (ADMAS4Write())
-				{
-					if (interrupt & 0x2)
-					{
-						interrupt &= ~0x2;
-						printf("Stopping double interrupt DMA4\n");
-					}
-					irqCallbackDMA4();
-					
-				}
-			}
-			
-			if (Adma->Index == 512) 
-			{
-				if ( Adma->Enabled == 2 ) 
-				{
-					Adma->Enabled = 0;
-				}
-				Adma->Index = 0;
-			}
-		}
-	}
-
-	// Let's do the same bloody mixing code again, only for C1. 
-	// fixme - There is way too much duplication of code between C0 & C1, and Adma4 & Adma7.
-	// arcum42
-	if ((spu2Ru16(REG_C1_MMIX) & 0xF0) && (spu2Ru16(REG_C1_ADMAS) & 0x2)) 
-	{
-		ADMA *Adma = &Adma7;
-
-		for (int ns=0;ns<NSSIZE;ns++) 
-		{ 
-			if ((spu2Ru16(REG_C1_MMIX) & 0x80)) 
-				s_buffers[ns][0] += (((short*)spu2mem)[0x2400+Adma->Index]*(int)spu2Ru16(REG_C1_BVOLL))>>16;
-			if ((spu2Ru16(REG_C1_MMIX) & 0x40)) 
-				s_buffers[ns][1] += (((short*)spu2mem)[0x2600+Adma->Index]*(int)spu2Ru16(REG_C1_BVOLR))>>16;
-			
-			Adma->Index +=1;
-			MemAddr[1] += 4;
-			
-			if (Adma->Index == 128 || Adma->Index == 384)
-			{
-				if (ADMAS7Write())
-				{
-					if (interrupt & 0x4)
-					{
-						interrupt &= ~0x4;
-						printf("Stopping double interrupt DMA7\n");
-					}
-					irqCallbackDMA7();
-					
-				}
-				Adma->Enabled = 2;
-			}
-
-			if (Adma->Index == 512) 
-			{
-				if ( Adma->Enabled == 2 ) Adma->Enabled = 0;
-				Adma->Index = 0;
-			}
-		}
-	}
-
+	MixChannels(0);
+	MixChannels(1);
+	
 	if ( g_bPlaySound ) 
 	{
 		assert( s_pCurOutput != NULL);
 
-		for (int ns=0;ns<NSSIZE;ns++) 
+		for (int ns=0; ns<NSSIZE; ns++) 
 		{
 			// clamp and write
-			if ( s_buffers[ns][0] < -32767 ) 
-				s_pCurOutput[0] = -32767;
-			else if ( s_buffers[ns][0] > 32767 ) 
-				s_pCurOutput[0] = 32767;
-			else 
-				s_pCurOutput[0] = (s16)s_buffers[ns][0];
-			
-			if ( s_buffers[ns][1] < -32767 ) 
-				s_pCurOutput[1] = -32767;
-			else if ( s_buffers[ns][1] > 32767 ) 
-				s_pCurOutput[1] = 32767;
-			else 
-				s_pCurOutput[1] = (s16)s_buffers[ns][1];
+			clampandwrite16(s_pCurOutput[0],s_buffers[ns][0]);
+			clampandwrite16(s_pCurOutput[1],s_buffers[ns][1]);
 			
 			s_pCurOutput += 2;
 			s_buffers[ns][0] = 0;
@@ -803,7 +754,7 @@ ENDX:
 
 			if ( conf.options & OPTION_RECORDING ) 
 			{
-				static int lastrectime=0;
+				static int lastrectime = 0;
 				if (timeGetTime() - lastrectime > 5000) 
 				{
 					printf("ZeroSPU2: recording\n");
@@ -870,8 +821,8 @@ void ResampleLinear(s16* pStereoSamples, int oldsamples, s16* pNewSamples, int n
 		old *= 2;
 		int newsampL = pStereoSamples[old] * (newsamples - rem) + pStereoSamples[old+2] * rem;
 		int newsampR = pStereoSamples[old+1] * (newsamples - rem) + pStereoSamples[old+3] * rem;
-		pNewSamples[2*i] = newsampL / newsamples;
-		pNewSamples[2*i+1] = newsampR / newsamples;
+		pNewSamples[2 * i] = newsampL / newsamples;
+		pNewSamples[2 * i + 1] = newsampR / newsamples;
 	}
 }
 
@@ -917,7 +868,7 @@ void* SPU2ThreadProc(void* lpParam)
 		}
 
 
-		int ps2delay = timeGetTime() - s_pAudioBuffers[nReadBuf].timestamp;
+		//int ps2delay = timeGetTime() - s_pAudioBuffers[nReadBuf].timestamp;
 		int NewSamples = s_pAudioBuffers[nReadBuf].avgtime;
 
 		if ( (conf.options & OPTION_TIMESTRETCH) ) 
@@ -942,11 +893,11 @@ void* SPU2ThreadProc(void* lpParam)
 			NewSamples *= NSSIZE;
 			NewSamples /= 1000;
 
-			NewSamples = min(NewSamples, NSFRAMES*NSSIZE*3);
+			NewSamples = min(NewSamples, NSFRAMES * NSSIZE * 3);
 
-			int oldsamples = s_pAudioBuffers[nReadBuf].len/4;
+			int oldsamples = s_pAudioBuffers[nReadBuf].len / 4;
 
-			if ((nReadBuf&3)==0)  // wow, this if statement makes the whole difference
+			if ((nReadBuf & 3) == 0)  // wow, this if statement makes the whole difference
 				pSoundTouch->setTempoChange(100.0f*(float)oldsamples/(float)NewSamples - 100.0f);
 
 			pSoundTouch->putSamples((s16*)s_pAudioBuffers[nReadBuf].pbuf, oldsamples);
@@ -956,8 +907,8 @@ void* SPU2ThreadProc(void* lpParam)
 			
 			do
 			{
-				nOutSamples = pSoundTouch->receiveSamples(s_ThreadBuffer, NSSIZE*NSFRAMES*5);
-				if ( nOutSamples > 0 ) SoundFeedVoiceData((u8*)s_ThreadBuffer, nOutSamples*4);
+				nOutSamples = pSoundTouch->receiveSamples(s_ThreadBuffer, NSSIZE * NSFRAMES * 5);
+				if ( nOutSamples > 0 ) SoundFeedVoiceData((u8*)s_ThreadBuffer, nOutSamples * 4);
 				
 			} while (nOutSamples != 0);
 
@@ -1026,16 +977,16 @@ void VolumeOn(int start,int end,unsigned short val,int iRight)  // VOLUME ON PSX
 		if (val&1) 
 		{										   // -> reverb on/off
 			if (iRight) 
-			voices[ch].bVolumeR=1;
+				voices[ch].bVolumeR = true;
 			else	   
-			voices[ch].bVolumeL=1;
+				voices[ch].bVolumeL = true;
 		}
 		else 
 		{
 			if (iRight) 
-			voices[ch].bVolumeR=0;
+				voices[ch].bVolumeR = false;
 			else	   
-			voices[ch].bVolumeL=0;
+				voices[ch].bVolumeL = false;
 		}
 	}
 }
@@ -1045,38 +996,42 @@ void CALLBACK SPU2write(u32 mem, u16 value)
 	u32 spuaddr;
 	SPU2_LOG("SPU2 write mem %x value %x\n", mem, value);
 
-	assert( C0_SPUADDR < 0x100000);
-	assert( C1_SPUADDR < 0x100000);
+	assert(C0_SPUADDR() < 0x100000);
+	assert(C1_SPUADDR() < 0x100000);
 
 	spu2Ru16(mem) = value;
-	u32 r = mem&0xffff;
+	u32 r = mem & 0xffff;
 
 	// channel info
-	if ((r>=0x0000 && r<0x0180) || (r>=0x0400 && r<0x0580))  // some channel info?
+	if ((r<0x0180) || (r>=0x0400 && r<0x0580))  //  u32s are always >= 0.
 	{
 		int ch=0;
-		if (r>=0x400) ch=((r-0x400)>>4)+24;
-		else ch=(r>>4);
+		if (r >= 0x400) 
+			ch = ((r - 0x400) >> 4) + 24;
+		else 
+			ch = (r >> 4);
 
 		VOICE_PROCESSED* pvoice = &voices[ch];
 
-		switch(r&0x0f)
+		switch(r & 0x0f)
 		{
 			case 0:
 			case 2:
-				pvoice->SetVolume(mem&0x2);
+				pvoice->SetVolume(mem & 0x2);
 				break;
 			case 4:
 			{
 				int NP;
-				if (value>0x3fff) NP=0x3fff;							 // get pitch val
-				else		   NP=value;
+				if (value> 0x3fff) 
+					NP=0x3fff;							 // get pitch val
+				else		  
+					NP=value;
 
 				pvoice->pvoice->pitch = NP;
 
 				NP = (SAMPLE_RATE * NP) / 4096L;								 // calc frequency
-				if (NP<1) NP=1;										// some security
-				pvoice->iActFreq=NP;							   // store frequency
+				if (NP<1) NP = 1;										// some security
+				pvoice->iActFreq = NP;							   // store frequency
 				break;
 			}
 			case 6:
@@ -1116,16 +1071,16 @@ void CALLBACK SPU2write(u32 mem, u16 value)
 
 		switch(rx)
 		{
-			case 0x1C0:
-				pvoice->iStartAddr=(((unsigned long)value&0x3f)<<16)|(pvoice->iStartAddr&0xFFFF);
+			case REG_VA_SSA:
+				pvoice->iStartAddr=(((u32)value&0x3f)<<16)|(pvoice->iStartAddr&0xFFFF);
 				pvoice->pStart=(u8*)(spu2mem+pvoice->iStartAddr);
 				break;
 			case 0x1C2:
 				pvoice->iStartAddr=(pvoice->iStartAddr & 0x3f0000) | (value & 0xFFFF);
 				pvoice->pStart=(u8*)(spu2mem+pvoice->iStartAddr);
 				break;
-			case 0x1C4:
-				pvoice->iLoopAddr =(((unsigned long)value&0x3f)<<16)|(pvoice->iLoopAddr&0xFFFF);
+			case REG_VA_LSAX:
+				pvoice->iLoopAddr =(((u32)value&0x3f)<<16)|(pvoice->iLoopAddr&0xFFFF);
 				pvoice->pLoop=(u8*)(spu2mem+pvoice->iLoopAddr);
 				pvoice->bIgnoreLoop=pvoice->iLoopAddr>0;
 				break;
@@ -1134,9 +1089,9 @@ void CALLBACK SPU2write(u32 mem, u16 value)
 				pvoice->pLoop=(u8*)(spu2mem+pvoice->iLoopAddr);
 				pvoice->bIgnoreLoop=pvoice->iLoopAddr>0;
 				break;
-			case 0x1C8:
+			case REG_VA_NAX:
 				// unused... check if it gets written as well
-				pvoice->iNextAddr=(((unsigned long)value&0x3f)<<16)|(pvoice->iNextAddr&0xFFFF);
+				pvoice->iNextAddr=(((u32)value&0x3f)<<16)|(pvoice->iNextAddr&0xFFFF);
 				break;
 			case 0x1CA:
 				// unused... check if it gets written as well
@@ -1148,7 +1103,7 @@ void CALLBACK SPU2write(u32 mem, u16 value)
 	}
 
 	// process non-channel data
-	switch(mem&0xffff) 
+	switch(mem & 0xffff) 
 	{
 		case REG_C0_SPUDATA:
 			spuaddr = C0_SPUADDR();
@@ -1244,36 +1199,39 @@ void CALLBACK SPU2write(u32 mem, u16 value)
 		case REG_C1_VMIXR2: VolumeOn(40,48,value,1); break;
 	}
 
-	assert( C0_SPUADDR < 0x100000);
-	assert( C1_SPUADDR < 0x100000);
+	assert( C0_SPUADDR() < 0x100000);
+	assert( C1_SPUADDR() < 0x100000);
 }
 
 u16  CALLBACK SPU2read(u32 mem)
 {
 	u32 spuaddr;
-	u16 ret;
-	u32 r = mem&0xffff;
+	u16 ret = 0;
+	u32 r = mem & 0xffff; // register
 
-	if ((r>=0x0000 && r<0x0180)||(r>=0x0400 && r<0x0580))  // some channel info?
+	// channel info 
+	// if the register is any of the regs before core 0, or is somewhere between core 0 and 1...
+	if ((r < 0x0180) || (r >= 0x0400 && r < 0x0580))  //  u32s are always >= 0.
 	{
-		int ch=0;
+		int ch = 0;
 		
-		if (r>=0x400) 
-			ch=((r-0x400)>>4)+24;
+		if (r >= 0x400) 
+			ch=((r - 0x400) >> 4) + 24;
 		else 
-			ch=(r>>4);
+			ch = (r >> 4);
 
 		VOICE_PROCESSED* pvoice = &voices[ch];
 				
-		if ((r&0x0f) == 10) return (unsigned short)(pvoice->ADSRX.EnvelopeVol>>16);
+		if ((r&0x0f) == 10) return (u16)(pvoice->ADSRX.EnvelopeVol >> 16);
 	}
 
-	if ((r>=0x01c0 && r<0x02E0)||(r>=0x05c0 && r<0x06E0))  // some channel info?
+	
+	if ((r>=REG_VA_SSA && r<REG_A_ESA) || (r>=0x05c0 && r<0x06E0))  // some channel info?
 	{
 		int ch=0;
-		unsigned long rx=r;
+		unsigned long rx = r;
 		
-		if (rx>=0x400)
+		if (rx >=0x400)
 		{
 			ch=24;
 			rx-=0x400;
@@ -1286,19 +1244,19 @@ u16  CALLBACK SPU2read(u32 mem)
 		// Note - can we generalize this?
 		switch(rx) 
 		{
-			case 0x1C0:
+			case REG_VA_SSA:
 				ret = ((((uptr)pvoice->pStart-(uptr)spu2mem)>>17)&0x3F);
 				break;
 			case 0x1C2:
 				ret = ((((uptr)pvoice->pStart-(uptr)spu2mem)>>1)&0xFFFF);
 				break;
-			case 0x1C4:
+			case REG_VA_LSAX:
 				ret = ((((uptr)pvoice->pLoop-(uptr)spu2mem)>>17)&0x3F);
 				break;
 			case 0x1C6:
 				ret = ((((uptr)pvoice->pLoop-(uptr)spu2mem)>>1)&0xFFFF);
 				break;
-			case 0x1C8:
+			case REG_VA_NAX:
 				ret = ((((uptr)pvoice->pCurr-(uptr)spu2mem)>>17)&0x3F);
 				break;
 			case 0x1CA:
@@ -1310,28 +1268,26 @@ u16  CALLBACK SPU2read(u32 mem)
 		return ret;
 	}
 
-	switch(mem&0xffff) 
+	switch(mem & 0xffff) 
 	{
 		case REG_C0_SPUDATA:
 			spuaddr = C0_SPUADDR();
 			ret =spu2mem[spuaddr];
 			spuaddr++;
-			if (spuaddr>0xfffff)
-				spuaddr=0;
+			if (spuaddr > 0xfffff) spuaddr=0;
 			C0_SPUADDR_SET(spuaddr);
 			break;
 		case REG_C1_SPUDATA:
 			spuaddr = C1_SPUADDR();
 			ret = spu2mem[spuaddr];
 			spuaddr++;
-			if (spuaddr>0xfffff)
-				spuaddr=0;
+			if (spuaddr > 0xfffff) spuaddr=0;
 			C1_SPUADDR_SET(spuaddr);
 			break;
 
 		case REG_C0_END1: ret = (dwEndChannel2[0]&0xffff); break;
-		case REG_C0_END2: ret = (dwEndChannel2[0]>>16); break;
 		case REG_C1_END1: ret = (dwEndChannel2[1]&0xffff); break;
+		case REG_C0_END2: ret = (dwEndChannel2[0]>>16); break;
 		case REG_C1_END2: ret = (dwEndChannel2[1]>>16); break;
 
 		case REG_IRQINFO: 
@@ -1349,12 +1305,12 @@ u16  CALLBACK SPU2read(u32 mem)
 
 void CALLBACK SPU2WriteMemAddr(int core, u32 value)
 {
-	MemAddr[core] = g_pDMABaseAddr+value;
+	MemAddr[core] = g_pDMABaseAddr + value;
 }
 
 u32 CALLBACK SPU2ReadMemAddr(int core)
 {
-	return MemAddr[core]-g_pDMABaseAddr;
+	return MemAddr[core] - g_pDMABaseAddr;
 }
 
 void CALLBACK SPU2setDMABaseAddr(uptr baseaddr)
@@ -1374,52 +1330,46 @@ s32 CALLBACK SPU2test()
 	return 0;
 }
 
+#define SetPacket(s) \
+{ \
+	if (s & 0x8000) s|=0xffff0000; \
+	fa = (s >> shift_factor); \
+	fa += ((s_1 * f[predict_nr][0]) >> 6) + ((s_2 * f[predict_nr][1]) >> 6); \
+	s_2 = s_1; \
+	s_1 = fa; \
+	buf[nSample++] = fa; \
+}
+
 // size is in bytes
 void LogPacketSound(void* packet, int memsize)
 {
 	u16 buf[28];
 
 	u8* pstart = (u8*)packet;
-	int s_1 = 0;
-	int s_2=0;
+	int s_1 = 0, s_2=0;
 	
 	for (int i = 0; i < memsize; i += 16) 
 	{
 		int predict_nr=(int)pstart[0];
 		int shift_factor=predict_nr&0xf;
 		predict_nr >>= 4;
-		int flags=(int)pstart[1];
 		pstart += 2;
 
 		for (int nSample=0;nSample<28; ++pstart)
 		{
 			int d=(int)*pstart;
-			int s=((d&0xf)<<12);
-			if (s&0x8000) s|=0xffff0000;
-			int fa;
+			int s, fa;
 			
-			fa = (s >> shift_factor);
-			fa += ((s_1 * f[predict_nr][0])>>6) + ((s_2 * f[predict_nr][1])>>6);
-			s_2 = s_1;
-			s_1 = fa;
+			s =((d & 0xf) << 12);
+			SetPacket(s);
+			
 			s=((d & 0xf0) << 8);
-
-			buf[nSample++]=fa;
-
-			if (s&0x8000) s|=0xffff0000;
-			fa = (s>>shift_factor);			  
-			fa += ((s_1 * f[predict_nr][0])>>6) + ((s_2 * f[predict_nr][1])>>6);
-			s_2 = s_1;
-			s_1 = fa;
-
-			buf[nSample++]=fa;
+			SetPacket(s);
 		}
 
 		LogRawSound(buf, 2, buf, 2, 28);
 	}
 }
-
-#define RECORD_FILENAME "zerospu2.wav"
 
 void LogRawSound(void* pleft, int leftstride, void* pright, int rightstride, int numsamples)
 {
@@ -1430,7 +1380,7 @@ void LogRawSound(void* pleft, int leftstride, void* pright, int rightstride, int
 	u8* right = (u8*)pright;
 	static vector<s16> tempbuf;
 
-	tempbuf.resize(2*numsamples);
+	tempbuf.resize(2 * numsamples);
 
 	for (int i = 0; i < numsamples; ++i) 
 	{
@@ -1458,28 +1408,6 @@ int CALLBACK SPU2setupRecording(int start, void* pData)
 	
 	return 1;
 }
-
-struct SPU2freezeData
-{
-	u32 version;
-	u8 spu2regs[0x10000];
-	u8 spu2mem[0x200000];
-	u16 interrupt;
-	int nSpuIrq[2];
-	u32 dwNewChannel2[2], dwEndChannel2[2];
-	u32 dwNoiseVal;
-	int iFMod[NSSIZE];
-	u32 MemAddr[2];
-	ADMA adma[2];
-	u32 Adma4MemAddr, Adma7MemAddr;
-
-	int SPUCycles, SPUWorkerCycles;
-	int SPUStartCycle[2];
-	int SPUTargetCycle[2];
-
-	int voicesize;
-	VOICE_PROCESSED voices[SPU_NUMBER_VOICES+1];
-};
 
 s32  CALLBACK SPU2freeze(int mode, freezeData *data)
 {

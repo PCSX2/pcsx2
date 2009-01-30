@@ -201,10 +201,7 @@ int VOICE_PROCESSED::iGetNoiseVal()
 	// mmm... depending on the noise freq we allow bigger/smaller changes to the previous val
 	fa=iOldNoise + ((fa - iOldNoise) / ((0x001f - (GetCtrl()->noiseFreq)) + 1));
 	
-	if (fa > 32767L)
-		fa = 32767L;
-	if (fa < -32767L)
-		fa = -32767L;
+	clamp16(fa);
 
 	iOldNoise=fa;
 	SB[29] = fa;							   // -> store noise val in "current sample" slot
@@ -221,10 +218,7 @@ void VOICE_PROCESSED::StoreInterpolationVal(int fa)
 			fa=0;					   // muted?
 		else												// else adjust
 		{
-			if (fa >32767L)
-				fa = 32767L;
-			if (fa < -32767L)
-				fa = -32767L;			  
+			clamp16(fa);			
 		}
 
 		SB[28] = 0;					
