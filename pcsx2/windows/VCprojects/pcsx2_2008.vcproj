@@ -2489,6 +2489,10 @@
 				Name="GS"
 				>
 				<File
+					RelativePath="..\..\Gif.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\GS.cpp"
 					>
 				</File>

@@ -277,6 +277,7 @@ extern void _gs_ChangeTimings( u32 framerate, u32 iTicks );
 
 
 // used for resetting GIF fifo
+bool gsGIFSoftReset( int mask );
 void gsGIFReset();
 void gsCSRwrite(u32 value);
 

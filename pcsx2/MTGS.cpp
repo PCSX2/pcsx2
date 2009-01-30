@@ -655,8 +655,8 @@ void mtgsThreadObject::PrepEventWait()
 
 void mtgsThreadObject::PostEventWait() const
 {
-	FreezeXMMRegs(0); 
 	FreezeMMXRegs(0);
+	FreezeXMMRegs(0); 
 }
 
 u8* mtgsThreadObject::GetDataPacketPtr() const
@@ -713,14 +713,14 @@ void mtgsThreadObject::SendDataPacket()
 	//  8 - roughly 2% slower on HT machines.
 
 	m_CopyDataTally += m_packet_size;
-	if( ( m_CopyDataTally > 0x4000 ) || ( ++m_CopyCommandTally > 16 ) )
+	if( ( m_CopyDataTally > 0x8000 ) || ( ++m_CopyCommandTally > 16 ) )
 	{
 		FreezeXMMRegs(1); 
 		FreezeMMXRegs(1);
 		//Console::Status( "MTGS Kick! DataSize : 0x%5.8x, CommandTally : %d", m_CopyDataTally, m_CopyCommandTally );
 		SetEvent();
-		FreezeXMMRegs(0); 
 		FreezeMMXRegs(0);
+		FreezeXMMRegs(0); 
 	}
 }
 
@@ -830,19 +830,22 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 	if( writepos + size < m_RingBufferSize )
 	{
 		// generic gs wait/stall.
-		// Waits until the readpos is outside the scope of the write area.
-
 		// if the writepos is past the readpos then we're safe.
 		// But if not then we need to make sure the readpos is outside the scope of
 		// the block about to be written (writepos + size)
+
 		if( writepos < volatize(m_RingPos) )
 		{
 			// writepos is behind the readpos, so we need to wait until
-			// readpos is out past the end of the future write pos:
+			// readpos is out past the end of the future write pos, or until it wraps
+			// around (in which case writepos will be >= readpos)
 
-			PrepEventWait();
-			while( writepos+size < volatize(m_RingPos) )
+			PrepEventWait(); 
+			while( true )
 			{
+				uint readpos = volatize(m_RingPos);
+				if( writepos >= readpos ) break;
+				if( writepos+size < readpos ) break;
 				SpinWait();
 			}
 			PostEventWait();
