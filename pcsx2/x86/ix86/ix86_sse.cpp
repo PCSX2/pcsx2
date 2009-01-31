@@ -1152,6 +1152,74 @@ __forceinline void SSE4_PINSRD_R32_to_XMM(x86SSERegType to, x86IntRegType from, 
 	write8(imm8);
 }
 
+__forceinline void SSE4_PMAXSD_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
+{
+	write8(0x66);
+	RexRB(0, to, from);
+	write24(0x3D380F);
+	ModRM(3, to, from);
+}
+
+__forceinline void SSE4_PMINSD_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
+{
+	write8(0x66);
+	RexRB(0, to, from);
+	write24(0x39380F);
+	ModRM(3, to, from);
+}
+
+__forceinline void SSE4_PMAXUD_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
+{
+	write8(0x66);
+	RexRB(0, to, from);
+	write24(0x3F380F);
+	ModRM(3, to, from);
+}
+
+__forceinline void SSE4_PMINUD_XMM_to_XMM(x86SSERegType to, x86SSERegType from)
+{
+	write8(0x66);
+	RexRB(0, to, from);
+	write24(0x3B380F);
+	ModRM(3, to, from);
+}
+
+__forceinline void SSE4_PMAXSD_M128_to_XMM(x86SSERegType to, uptr from)
+{
+	write8(0x66);
+	RexR(0, to);
+	write24(0x3D380F);
+	ModRM( 0, to, DISP32 );
+	write32(MEMADDR(from, 4));
+}
+
+__forceinline void SSE4_PMINSD_M128_to_XMM(x86SSERegType to, uptr from)
+{
+	write8(0x66);
+	RexR(0, to);
+	write24(0x39380F);
+	ModRM( 0, to, DISP32 );
+	write32(MEMADDR(from, 4));
+}
+
+__forceinline void SSE4_PMAXUD_M128_to_XMM(x86SSERegType to, uptr from)
+{
+	write8(0x66);
+	RexR(0, to);
+	write24(0x3F380F);
+	ModRM( 0, to, DISP32 );
+	write32(MEMADDR(from, 4));
+}
+
+__forceinline void SSE4_PMINUD_M128_to_XMM(x86SSERegType to, uptr from)
+{
+	write8(0x66);
+	RexR(0, to);
+	write24(0x3B380F);
+	ModRM( 0, to, DISP32 );
+	write32(MEMADDR(from, 4));
+}
+
 // SSE-X
 __forceinline void SSEX_MOVDQA_M128_to_XMM( x86SSERegType to, uptr from )
 {

@@ -1620,6 +1620,14 @@ extern void SSE4_BLENDVPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
 extern void SSE4_BLENDVPS_M128_to_XMM(x86SSERegType to, uptr from);
 extern void SSE4_PMOVSXDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
 extern void SSE4_PINSRD_R32_to_XMM(x86SSERegType to, x86IntRegType from, u8 imm8);
+extern void SSE4_PMAXSD_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
+extern void SSE4_PMINSD_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
+extern void SSE4_PMAXUD_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
+extern void SSE4_PMINUD_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
+extern void SSE4_PMAXSD_M128_to_XMM(x86SSERegType to, uptr from);
+extern void SSE4_PMINSD_M128_to_XMM(x86SSERegType to, uptr from);
+extern void SSE4_PMAXUD_M128_to_XMM(x86SSERegType to, uptr from);
+extern void SSE4_PMINUD_M128_to_XMM(x86SSERegType to, uptr from);
 
 //*********************
 // SSE-X - uses both SSE,SSE2 code and tries to keep consistensies between the data

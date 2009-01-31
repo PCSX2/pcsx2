@@ -72,6 +72,8 @@ typedef void (*vFloat)(int regd, int regTemp);
 extern vFloat vFloats1[16];
 extern vFloat vFloats1_useEAX[16];
 extern vFloat vFloats2[16];
+extern vFloat vFloats4[16];
+extern vFloat vFloats4_useEAX[16];
 extern PCSX2_ALIGNED16(float s_fones[8]);
 extern PCSX2_ALIGNED16(u32 s_mask[4]);
 extern PCSX2_ALIGNED16(u32 s_expmask[4]);

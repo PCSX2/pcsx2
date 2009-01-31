@@ -140,7 +140,7 @@ void recVUMI_DIV(VURegs *VU, int info)
 	SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 	_vuFlipRegSS_xyzw(EEREC_T, _Ftf_);
 
-	vuFloat2(EEREC_TEMP, EEREC_TEMP, 0x8);
+	vuFloat_useEAX(info, EEREC_TEMP, 0x8);
 	
 	x86SetJ32(bjmp32);
 
@@ -226,9 +226,9 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 	x86SetJ8(ajmp8);
 
 	_unpackVFSS_xyzw(t1reg, EEREC_S, _Fsf_);
-	if (CHECK_VU_EXTRA_OVERFLOW) vuFloat2(t1reg, t1reg, 0x8); // Clamp Infinities
+	if (CHECK_VU_EXTRA_OVERFLOW) vuFloat_useEAX(info, t1reg, 0x8); // Clamp Infinities
 	SSE_DIVSS_XMM_to_XMM(t1reg, EEREC_TEMP);
-	vuFloat2(t1reg, t1reg, 0x8);
+	vuFloat_useEAX(info, t1reg, 0x8);
 	SSE_MOVSS_XMM_to_M32(VU_VI_ADDR(REG_Q, 0), t1reg);
 
 	x86SetJ8(bjmp8);
@@ -813,7 +813,7 @@ void _saveEAX(VURegs *VU, int x86reg, uptr offset, int info)
 			else SSE_MOVHPS_XMM_to_M64(offset+8, EEREC_S);
 			break;
 		case 4: // Y
-			SSE2_PSHUFD_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0xe1);
+			SSE2_PSHUFLW_XMM_to_XMM(EEREC_TEMP, EEREC_S, 0x4e);
 			if ( x86reg >= 0 ) SSE_MOVSS_XMM_to_RmOffset(x86reg, EEREC_TEMP, offset+4);
 			else SSE_MOVSS_XMM_to_M32(offset+4, EEREC_TEMP);
 			break;
@@ -1566,7 +1566,7 @@ void vuSqSumXYZ(int regd, int regs, int regtemp) // regd.x =  x ^ 2 + y ^ 2 + z 
 		}
 		else {
 			SSE_MOVSS_XMM_to_XMM(regd, regtemp);
-			SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xE1); // wzyx -> wzxy
+			SSE2_PSHUFLW_XMM_to_XMM(regtemp, regtemp, 0x4e); // wzyx -> wzxy
 			SSE_ADDSS_XMM_to_XMM(regd, regtemp); // x ^ 2 + y ^ 2
 			SSE_SHUFPS_XMM_to_XMM(regtemp, regtemp, 0xD2); // wzxy -> wxyz 
 			SSE_ADDSS_XMM_to_XMM(regd, regtemp); // x ^ 2 + y ^ 2 + z ^ 2
@@ -1710,7 +1710,7 @@ void recVUMI_ESUM( VURegs *VU, int info )
 
 	if( cpucaps.hasStreamingSIMD3Extensions ) {
 		SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-		if (CHECK_VU_EXTRA_OVERFLOW) vuFloat2(EEREC_TEMP, EEREC_TEMP, 0xf);
+		if (CHECK_VU_EXTRA_OVERFLOW) vuFloat_useEAX(info, EEREC_TEMP, 0xf);
 		SSE3_HADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 		SSE3_HADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
 	}
@@ -1744,11 +1744,11 @@ void recVUMI_ERCPR( VURegs *VU, int info )
 			SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 			break;
 		case 1: //0010
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
+			SSE2_PSHUFLW_XMM_to_XMM(EEREC_S, EEREC_S, 0x4e);
 			if (CHECK_VU_EXTRA_OVERFLOW) vuFloat5_useEAX(EEREC_S, EEREC_TEMP, 8);
 			SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)VU_ONE); // temp <- 1
 			SSE_DIVSS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
-			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xe1);
+			SSE2_PSHUFLW_XMM_to_XMM(EEREC_S, EEREC_S, 0x4e);
 			break;
 		case 2: //0100
 			SSE_SHUFPS_XMM_to_XMM(EEREC_S, EEREC_S, 0xc6);

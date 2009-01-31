@@ -1502,9 +1502,8 @@ void recVUMI_MUL_toD(VURegs *VU, int regd, int info)
 {
 	//SysPrintf ("recVUMI_MUL_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		//using vuFloat instead of vuFloat2 incase regd == EEREC_TEMP
-		if (_Fs_) vuFloat_useEAX( info, EEREC_S, _X_Y_Z_W );
-		if (_Ft_) vuFloat_useEAX( info, EEREC_T, _X_Y_Z_W );
+		if (_Fs_) vuFloat5_useEAX( EEREC_S, EEREC_TEMP, _X_Y_Z_W );
+		if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, _X_Y_Z_W );
 	}
 
 	if (_X_Y_Z_W == 1 && (_Ft_ == 0 || _Fs_==0) ) { // W
@@ -1545,7 +1544,7 @@ void recVUMI_MUL_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 	//SysPrintf ("recVUMI_MUL_iq_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		if (_Fs_) vuFloat_useEAX( info, EEREC_S, _X_Y_Z_W );
+		if (_Fs_) vuFloat5_useEAX( EEREC_S, EEREC_TEMP, _X_Y_Z_W );
 	}
 
 	if( _XYZW_SS ) {
@@ -1599,11 +1598,12 @@ void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
 	//SysPrintf ("recVUMI_MUL_xyzw_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		if (_Ft_) vuFloat_useEAX( info, EEREC_T, ( 1 << (3 - xyzw) ) );
+		if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
 	}
-	// This is needed for alot of games
-	if (_Fs_) vFloats1_useEAX[_X_Y_Z_W]( EEREC_S, EEREC_S ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
-
+	if (_Fs_) { // This is needed for alot of games; so always clamp this operand
+		if (CHECK_VU_SIGN_OVERFLOW) vFloats4_useEAX[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
+		else vFloats2[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
+	}
 	if( _Ft_ == 0 ) {
 		if( xyzw < 3 ) {
 			if (_X_Y_Z_W != 0xf) {	
@@ -1736,9 +1736,9 @@ void recVUMI_MADD_toD(VURegs *VU, int regd, int info)
 {
 	//SysPrintf ("recVUMI_MADD_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		if (_Fs_) vuFloat_useEAX( info, EEREC_S, _X_Y_Z_W );
-		if (_Ft_) vuFloat_useEAX( info, EEREC_T, _X_Y_Z_W );
-		vuFloat_useEAX( info, EEREC_ACC, _X_Y_Z_W );
+		if (_Fs_) vuFloat5_useEAX( EEREC_S, EEREC_TEMP, _X_Y_Z_W );
+		if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, _X_Y_Z_W );
+		vuFloat5_useEAX( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W );
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -1804,8 +1804,8 @@ void recVUMI_MADD_iq_toD(VURegs *VU, uptr addr, int regd, int info)
 	//SysPrintf ("recVUMI_MADD_iq_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		vuFloat3(addr);
-		if (_Fs_) vuFloat_useEAX( info, EEREC_S, _X_Y_Z_W );
-		vuFloat_useEAX( info, EEREC_ACC, _X_Y_Z_W );
+		if (_Fs_) vuFloat5_useEAX( EEREC_S, EEREC_TEMP, _X_Y_Z_W );
+		vuFloat5_useEAX( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W );
 	}
 
 	if( _X_Y_Z_W == 8 ) {
@@ -1891,12 +1891,13 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 {
 	//SysPrintf ("recVUMI_MADD_xyzw_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		if (_Ft_) vuFloat_useEAX( info, EEREC_T, ( 1 << (3 - xyzw) ) );
-		vuFloat_useEAX( info, EEREC_ACC, _X_Y_Z_W );
+		if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
+		vuFloat5_useEAX( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W );
 	}
-	// This is needed for alot of games
-	if (_Fs_) vFloats1_useEAX[_X_Y_Z_W]( EEREC_S, EEREC_S ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
-	
+	if (_Fs_) { // This is needed for alot of games; so always clamp this operand
+		if (CHECK_VU_SIGN_OVERFLOW) vFloats4_useEAX[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
+		else vFloats2[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
+	}
 	if( _Ft_ == 0 ) {
 
 		if( xyzw == 3 ) {
@@ -2094,9 +2095,9 @@ void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 {
 	//SysPrintf ("recVUMI_MSUB_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		if (_Fs_) vuFloat_useEAX( info, EEREC_S, _X_Y_Z_W );
-		if (_Ft_) vuFloat_useEAX( info, EEREC_T, _X_Y_Z_W );
-		vuFloat_useEAX( info, EEREC_ACC, _X_Y_Z_W );
+		if (_Fs_) vuFloat5_useEAX( EEREC_S, EEREC_TEMP, _X_Y_Z_W );
+		if (_Ft_) vuFloat5_useEAX( EEREC_S, EEREC_TEMP, _X_Y_Z_W );
+		vuFloat5_useEAX( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W );
 	}
 
 	if (_X_Y_Z_W != 0xf) {
@@ -2155,8 +2156,8 @@ void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 {
 	//SysPrintf ("recVUMI_MSUB_temp_toD  \n");
 	if (CHECK_VU_EXTRA_OVERFLOW) {
-		if (_Fs_) vuFloat_useEAX( info, EEREC_S, _X_Y_Z_W );
-		vuFloat_useEAX( info, EEREC_ACC, _X_Y_Z_W );
+		if (_Fs_) vuFloat5_useEAX( EEREC_S, EEREC_TEMP, _X_Y_Z_W );
+		vuFloat5_useEAX( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W );
 	}
 
 	if (_X_Y_Z_W != 0xf) {
