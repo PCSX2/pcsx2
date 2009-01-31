@@ -54,140 +54,142 @@ REC_FUNC_DEL( PSLLH, _Rd_ );
 REC_FUNC_DEL( PSLLW, _Rd_ );
 
 #else
-
+// fixme: Recompiled PLZCW breaks God of War, also see BSCPropagate::rpropMMI() if re-eanbling this (rama)
 void recPLZCW()
 {
-	int regd = -1;
-	int regs = 0;
+	recCall( Interp::PLZCW, _Rd_ );
 
-	if ( ! _Rd_ ) return;
+	//int regd = -1;
+	//int regs = 0;
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		_eeOnWriteReg(_Rd_, 0);
-		_deleteEEreg(_Rd_, 0);
-		GPR_SET_CONST(_Rd_);
+	//if ( ! _Rd_ ) return;
 
-		for(regs = 0; regs < 2; ++regs) {
-			u32 val = g_cpuConstRegs[_Rs_].UL[regs];
+	//if( GPR_IS_CONST1(_Rs_) ) {
+	//	_eeOnWriteReg(_Rd_, 0);
+	//	_deleteEEreg(_Rd_, 0);
+	//	GPR_SET_CONST(_Rd_);
 
-			if( val != 0 ) {
-				u32 setbit = val&0x80000000;
-				g_cpuConstRegs[_Rd_].UL[regs] = 0;
-				val <<= 1;
+	//	for(regs = 0; regs < 2; ++regs) {
+	//		u32 val = g_cpuConstRegs[_Rs_].UL[regs];
 
-				while((val & 0x80000000) == setbit) {
-					g_cpuConstRegs[_Rd_].UL[regs]++;
-					val <<= 1;
-				}
-			}
-			else {
-				g_cpuConstRegs[_Rd_].UL[regs] = 31;
-			}
-		}
-		return;
-	}
+	//		if( val != 0 ) {
+	//			u32 setbit = val&0x80000000;
+	//			g_cpuConstRegs[_Rd_].UL[regs] = 0;
+	//			val <<= 1;
 
-	_eeOnWriteReg(_Rd_, 0);
+	//			while((val & 0x80000000) == setbit) {
+	//				g_cpuConstRegs[_Rd_].UL[regs]++;
+	//				val <<= 1;
+	//			}
+	//		}
+	//		else {
+	//			g_cpuConstRegs[_Rd_].UL[regs] = 31;
+	//		}
+	//	}
+	//	return;
+	//}
 
-	if( (regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-		SSE2_MOVD_XMM_to_R(EAX, regs);
-		regs |= MEM_XMMTAG;
-	}
-	else if( (regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
-		MOVD32MMXtoR(EAX, regs);
-		SetMMXstate();
-		regs |= MEM_MMXTAG;
-	}
-	else {
-		MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
-		regs = 0;
-	}
+	//_eeOnWriteReg(_Rd_, 0);
 
-	if( EEINST_ISLIVE1(_Rd_) )
-		_deleteEEreg(_Rd_, 0);
-	else {
-		if( (regd = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) < 0 ) 
-			_deleteEEreg(_Rd_, 0);
-	}
+	//if( (regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
+	//	SSE2_MOVD_XMM_to_R(EAX, regs);
+	//	regs |= MEM_XMMTAG;
+	//}
+	//else if( (regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
+	//	MOVD32MMXtoR(EAX, regs);
+	//	SetMMXstate();
+	//	regs |= MEM_MMXTAG;
+	//}
+	//else {
+	//	MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
+	//	regs = 0;
+	//}
 
-	// first word
-	TEST32RtoR(EAX, EAX);
-	j8Ptr[0] = JNZ8(0);
+	//if( EEINST_ISLIVE1(_Rd_) )
+	//	_deleteEEreg(_Rd_, 0);
+	//else {
+	//	if( (regd = _checkMMXreg(MMX_GPR+_Rd_, MODE_WRITE)) < 0 ) 
+	//		_deleteEEreg(_Rd_, 0);
+	//}
 
-	// zero, so put 31
-	if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], 31);
-	}
-	else {
-		SetMMXstate();
-		PCMPEQDRtoR(regd, regd);
-		PSRLQItoR(regd, 59);
-	}
+	//// first word
+	//TEST32RtoR(EAX, EAX);
+	//j8Ptr[0] = JNZ8(0);
 
-	j8Ptr[1] = JMP8(0);
-	x86SetJ8(j8Ptr[0]);
+	//// zero, so put 31
+	//if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
+	//	MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], 31);
+	//}
+	//else {
+	//	SetMMXstate();
+	//	PCMPEQDRtoR(regd, regd);
+	//	PSRLQItoR(regd, 59);
+	//}
 
-	TEST32ItoR(EAX, 0x80000000);
-	j8Ptr[0] = JZ8(0);
-	NOT32R(EAX);
-	x86SetJ8(j8Ptr[0]);
+	//j8Ptr[1] = JMP8(0);
+	//x86SetJ8(j8Ptr[0]);
 
-	// not zero
-	x86SetJ8(j8Ptr[0]);
-	BSRRtoR(EAX, EAX);
-	MOV32ItoR(ECX, 30);
-	SUB32RtoR(ECX, EAX);
-	if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], ECX);
-	}
-	else {
-		SetMMXstate();
-		MOVD32RtoMMX(regd, ECX);
-	}
+	//TEST32ItoR(EAX, 0x80000000);
+	//j8Ptr[0] = JZ8(0);
+	//NOT32R(EAX);
+	//x86SetJ8(j8Ptr[0]);
 
-	x86SetJ8(j8Ptr[1]);
+	//// not zero
+	//x86SetJ8(j8Ptr[0]);
+	//BSRRtoR(EAX, EAX);
+	//MOV32ItoR(ECX, 30);
+	//SUB32RtoR(ECX, EAX);
+	//if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
+	//	MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], ECX);
+	//}
+	//else {
+	//	SetMMXstate();
+	//	MOVD32RtoMMX(regd, ECX);
+	//}
 
-	// second word
-	if( EEINST_ISLIVE1(_Rd_) ) {
-		if( regs >= 0 && (regs & MEM_XMMTAG) ) {
-			SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0x4e);
-			SSE2_MOVD_XMM_to_R(EAX, regs&0xf);
-			SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0x4e);
-		}
-		else if( regs >= 0 && (regs & MEM_MMXTAG) ) {
-			PSHUFWRtoR(regs, regs, 0x4e);
-			MOVD32MMXtoR(EAX, regs&0xf);
-			PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
-			SetMMXstate();
-		}
-		else MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]);
+	//x86SetJ8(j8Ptr[1]);
 
-		TEST32RtoR(EAX, EAX);
-		j8Ptr[0] = JNZ8(0);
+	//// second word
+	//if( EEINST_ISLIVE1(_Rd_) ) {
+	//	if( regs >= 0 && (regs & MEM_XMMTAG) ) {
+	//		SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0x4e);
+	//		SSE2_MOVD_XMM_to_R(EAX, regs&0xf);
+	//		SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0x4e);
+	//	}
+	//	else if( regs >= 0 && (regs & MEM_MMXTAG) ) {
+	//		PSHUFWRtoR(regs, regs, 0x4e);
+	//		MOVD32MMXtoR(EAX, regs&0xf);
+	//		PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
+	//		SetMMXstate();
+	//	}
+	//	else MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]);
 
-		// zero, so put 31
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], 31);
-		j8Ptr[1] = JMP8(0);
-		x86SetJ8(j8Ptr[0]);
+	//	TEST32RtoR(EAX, EAX);
+	//	j8Ptr[0] = JNZ8(0);
 
-		TEST32ItoR(EAX, 0x80000000);
-		j8Ptr[0] = JZ8(0);
-		NOT32R(EAX);
-		x86SetJ8(j8Ptr[0]);
+	//	// zero, so put 31
+	//	MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], 31);
+	//	j8Ptr[1] = JMP8(0);
+	//	x86SetJ8(j8Ptr[0]);
 
-		// not zero
-		x86SetJ8(j8Ptr[0]);
-		BSRRtoR(EAX, EAX);
-		MOV32ItoR(ECX, 30);
-		SUB32RtoR(ECX, EAX);
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], ECX);
-		x86SetJ8(j8Ptr[1]);
-	}
-	else {
-		EEINST_RESETHASLIVE1(_Rd_);
-	}
+	//	TEST32ItoR(EAX, 0x80000000);
+	//	j8Ptr[0] = JZ8(0);
+	//	NOT32R(EAX);
+	//	x86SetJ8(j8Ptr[0]);
 
-	GPR_DEL_CONST(_Rd_);
+	//	// not zero
+	//	x86SetJ8(j8Ptr[0]);
+	//	BSRRtoR(EAX, EAX);
+	//	MOV32ItoR(ECX, 30);
+	//	SUB32RtoR(ECX, EAX);
+	//	MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], ECX);
+	//	x86SetJ8(j8Ptr[1]);
+	//}
+	//else {
+	//	EEINST_RESETHASLIVE1(_Rd_);
+	//}
+
+	//GPR_DEL_CONST(_Rd_);
 }
 
 static u32 PCSX2_ALIGNED16(s_CmpMasks[]) = { 0x0000ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff };

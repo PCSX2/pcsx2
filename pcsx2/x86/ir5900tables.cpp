@@ -618,9 +618,10 @@ __forceinline void BSCPropagate::rpropMMI()
 		case 1: // maddu
 			rpropSetLOHI<MODE_READ|MODE_WRITE, MODE_READ|MODE_WRITE>(_Rd_, _Rs_, _Rt_, EEINST_LIVE1);
 			break;
-		case 4: // plzcw
-			rpropSetFast(_Rd_, _Rs_, 0, EEINST_LIVE1);
-			break;
+		//fixme : recompiler PLZCW() has been replaced with Interpreter, so fall trough here (rama)
+		//case 4: // plzcw
+		//	rpropSetFast(_Rd_, _Rs_, 0, EEINST_LIVE1);
+		//	break;
 		case 8: rpropMMI0(); break;
 		case 9: rpropMMI2(); break;
 
