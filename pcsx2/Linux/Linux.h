@@ -84,11 +84,13 @@ extern void SaveConfig();
 /* GtkGui */
 extern void init_widgets();
 extern MemoryAlloc<u8>* g_RecoveryState;
-extern bool g_GameInProgress;
 extern void SysRestorableReset();
 extern void SysDetect();
 extern void RunExecute( const char* elf_file, bool use_bios = false);
 extern void ExecuteCpu();
+
+extern bool g_ReturnToGui;			// set to exit the execution of the emulator and return control to the GUI
+extern bool g_EmulationInProgress;	// Set TRUE if a game is actively running (set to false on reset)
 
 typedef struct {
 	char lang[g_MaxPath];
