@@ -349,7 +349,7 @@ u8 *SysMmap(uptr base, u32 size, uptr bounds, const char *caller)
 		SafeSysMunmap( base, size );
 
 		Mem = (u8*)SysMmap( NULL, size );
-		if( (uptr)Mem > bounds )
+		if( ((uptr)Mem + size) > bounds )
 		{
 			DevCon::Error( "Second try failed allocating %s, block ptr 0x%x does not meet required criteria.", params caller, Mem );
 			SafeSysMunmap( Mem, size );
