@@ -203,9 +203,6 @@ int main(int argc, char *argv[]) {
 	if (!efile) efile=GetPS2ElfName(elfname);
 	loadElfFile(elfname);
 
-	if( GSsetGameCRC != NULL ) 
-		GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
-
 	ExecuteCpu();
 
 	return 0;

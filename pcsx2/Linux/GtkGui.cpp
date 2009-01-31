@@ -126,17 +126,41 @@ void SignalExit(int sig) {
 
 void ExecuteCpu()
 {
+	// Make sure any left-over recovery states are cleaned up.
+	safe_delete( g_RecoveryState );
+	
 	// Destroy the window.  Ugly thing.
 	gtk_widget_destroy(MainWindow);
 	gtk_main_quit();
 	while (gtk_events_pending()) gtk_main_iteration();
+
+	g_GameInProgress = true;
+	m_ReturnToGame = false;
 	
 	signal(SIGINT, SignalExit);
 	signal(SIGPIPE, SignalExit);
 
-	g_GameInProgress = true;
-	Cpu->Execute();
-	g_GameInProgress = false;
+	//timeBeginPeriod( 1 );
+
+	if( CHECK_EEREC )
+	{
+		while( !m_ReturnToGame )
+		{
+			recExecute();
+			SysUpdate();
+		}
+	}
+	else
+	{
+		while( !m_ReturnToGame )
+		{
+			Cpu->Execute();
+			SysUpdate();
+		}
+	}
+
+	//timeEndPeriod( 1 );
+	
 }
 
 void RunExecute( const char* elf_file, bool use_bios )

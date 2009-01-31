@@ -31,27 +31,27 @@ Dispatcher:
 	# ((BASEBLOCK*)(recLUT[((u32)(x)) >> 16] + (sizeof(BASEBLOCK)/4)*((x) & 0xffff)))
 
 	mov %eax,dword ptr [cpuRegs+PCOFFSET] 
-	mov %ecx,%eax
+	mov REG_BLOCK,%eax
 	mov REG_PC,%eax
 	shr %eax,0x10 
 	and %ecx,0xFFFF
 	mov %edx,dword ptr [recLUT] 
 	mov %eax,dword ptr [%edx+%eax*4] 
-	lea %ecx,[%eax+%ecx*2] 
+	lea REG_BLOCK,[%eax+REG_BLOCK*2]  
 
 	// check if startpc == cpuRegs.pc
 	//and %ecx, 0x5fffffff // remove higher bits
-	cmp REG_PC, dword ptr [%ecx+BLOCKTYPE_STARTPC]
+	cmp REG_PC, dword ptr [REG_BLOCK+BLOCKTYPE_STARTPC]
 	je Dispatcher_CheckPtr
 
 	// recompile
-	push %ecx
+	push REG_BLOCK 		// BASEBLOCK
 	push REG_PC // pc
 	call recRecompile
 	add %esp, 4
-	pop %ecx	// ecx is now the REG_BLOCK
+	pop REG_BLOCK		// ecx is now the REG_BLOCK
 Dispatcher_CheckPtr:
-	mov %eax, dword ptr [%ecx]
+	mov %eax, dword ptr [REG_BLOCK]
 
 #ifdef _DEBUG
 	test %eax, %eax
@@ -135,27 +135,27 @@ DispatcherClear_Recompile:
 DispatcherReg:
 
 	mov %eax,dword ptr [cpuRegs+PCOFFSET] 
-	mov %ecx,%eax
+	mov REG_BLOCK,%eax
 	mov REG_PC,%eax
 	shr %eax,0x10
-	and %ecx,0xFFFF 
+	and REG_BLOCK,0xFFFF 
 	mov %edx,dword ptr [recLUT] 
 	mov %eax,dword ptr [%edx+%eax*4] 
-	lea %ecx,[%eax+%ecx*2] 
+	lea REG_BLOCK,[%eax+REG_BLOCK*2] 
 
 	// check if startpc == cpuRegs.pc
 	//and %ecx, 0x5fffffff // remove higher bits
-	cmp REG_PC, dword ptr [%ecx+BLOCKTYPE_STARTPC]
+	cmp REG_PC, dword ptr [REG_BLOCK+BLOCKTYPE_STARTPC]
 	je DispatcherReg_CheckPtr
 
 	// recompile
-	push %ecx
+	push REG_BLOCK
 	push REG_PC // pc
 	call recRecompile
 	add %esp, 4
-	pop %ecx
+	pop REG_BLOCK
 DispatcherReg_CheckPtr:
-	mov %eax, dword ptr [%ecx]
+	mov %eax, dword ptr [REG_BLOCK]
 
 #ifdef _DEBUG
 	test %eax, %eax

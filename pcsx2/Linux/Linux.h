@@ -52,6 +52,7 @@
 #include "VUmicro.h"
 #include "Plugins.h"
 #include "x86/ix86/ix86.h"
+#include "x86/iR5900.h"
 
 /* Misc.c */
 extern void vu0Shutdown();
