@@ -29,7 +29,7 @@ void psxHwReset() {
 /*	if (Config.Sio) psxHu32(0x1070) |= 0x80;
 	if (Config.SpuIrq) psxHu32(0x1070) |= 0x200;*/
 
-	memset(psxH, 0, 0x10000);
+	memzero_ptr<0x10000>(psxH);
 
 //	mdecInit(); //intialize mdec decoder
 	cdrReset();

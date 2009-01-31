@@ -134,7 +134,7 @@ void IPUProcessInterrupt()
 // Register accesses (run on EE thread)
 int ipuInit()
 {
-	memzero_ptr<sizeof(IPUregisters)>(ipuRegs);
+	memzero_obj(*ipuRegs);
 	memzero_obj(g_BP);
 
 	//other stuff
@@ -152,7 +152,7 @@ int ipuInit()
 
 void ipuReset()
 {
-	memzero_ptr<sizeof(IPUregisters)>(ipuRegs);
+	memzero_obj(*ipuRegs);
 	g_nDMATransfer = 0;
 }
 

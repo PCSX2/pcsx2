@@ -1054,8 +1054,8 @@ void mpeg2sliceIDEC(void* pdone)
 				decoder->coded_block_pattern = 0x3F;//all 6 blocks
                 //ipuRegs->ctrl.CBP = 0x3f;
 
-				memzero_ptr<sizeof(macroblock_8)>(decoder->mb8);
-				memzero_ptr<sizeof(rgb32)>(decoder->rgb32);
+				memzero_obj(*decoder->mb8);
+				memzero_obj(*decoder->rgb32);
 
 				slice_intra_DCT (decoder, 0, (u8*)decoder->mb8->Y, DCT_stride);
 				slice_intra_DCT (decoder, 0, (u8*)decoder->mb8->Y + 8, DCT_stride);
@@ -1194,8 +1194,8 @@ void mpeg2_slice(void* pdone)
 	*(int*)pdone = 0;
 	ipuRegs->ctrl.ECD = 0;
 
-	memzero_ptr<sizeof(macroblock_8)>(decoder->mb8);
-	memzero_ptr<sizeof(macroblock_16)>(decoder->mb16);
+	memzero_obj(*decoder->mb8);
+	memzero_obj(*decoder->mb16);
 
 	bitstream_init (decoder);
 	

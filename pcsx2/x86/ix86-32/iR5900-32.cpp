@@ -536,11 +536,6 @@ static void recAlloc()
 
 	ProfilerRegisterSource( "EERec", recMem, REC_CACHEMEM+0x1000 );
 
-	// Clear remMem here but not in Reset.  Unfortunately the GUI requires recMem to beintact
-	// in order to "return" execution even after a reset of the emulator.
-
-	memset(recMem, 0xcd, REC_CACHEMEM);
-
 	x86FpuState = FPU_STATE;
 }
 
@@ -551,8 +546,12 @@ void recResetEE( void )
 
 	s_nNextBlock = 0;
 	maxrecmem = 0;
-	memset( m_recBlockAlloc,  0, m_recBlockAllocSize );
-	if( s_pInstCache ) memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
+
+	memset_8<0xcd, REC_CACHEMEM>(recMem);
+	memzero_ptr<m_recBlockAllocSize>( m_recBlockAlloc );
+
+	if( s_pInstCache )
+		memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
 
 	ResetBaseBlockEx(0);
 	mmap_ResetBlockTracking();
@@ -563,7 +562,7 @@ void recResetEE( void )
     __asm__("emms");
 #endif
 
-	memset( recLUT, 0, 0x010000 * sizeof(uptr) );
+	memzero_ptr<0x010000 * sizeof(uptr)>( recLUT );
 
 	for ( int i = 0x0000; i < 0x0200; i++ )
 	{
@@ -586,11 +585,9 @@ void recResetEE( void )
 		recLUT[ i + 0xbe00 ] = (uptr)&recROM1[ i << 14 ];
 	}
 
-	memcpy( recLUT + 0x8000, recLUT, 0x2000 * sizeof(uptr) );
-	memcpy( recLUT + 0xa000, recLUT, 0x2000 * sizeof(uptr) );
+	memcpy_fast( recLUT + 0x8000, recLUT, 0x2000 * sizeof(uptr) );
+	memcpy_fast( recLUT + 0xa000, recLUT, 0x2000 * sizeof(uptr) );
 	
-	//memset(recStack, 0, RECSTACK_SIZE);
-
 	// This may or may not be needed anymore... 
 	x86SetPtr(recMem+REC_CACHEMEM);
 	dyna_block_discard_recmem=(u8*)x86Ptr;
@@ -665,7 +662,7 @@ static __naked void Dispatcher()
 	// calc PC_GETBLOCK
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 	
-	if( s_pDispatchBlock == NULL || s_pDispatchBlock->startpc != cpuRegs.pc )
+	if( s_pDispatchBlock->startpc != cpuRegs.pc )
 		recRecompile(cpuRegs.pc);
 
 	__asm
@@ -702,7 +699,7 @@ static __naked void DispatcherClear()
 	// calc PC_GETBLOCK
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
-	if( s_pDispatchBlock != NULL && s_pDispatchBlock->startpc == cpuRegs.pc )
+	if( s_pDispatchBlock->startpc == cpuRegs.pc )
 	{
 		assert( s_pDispatchBlock->pFnptr != 0 );
 
@@ -741,7 +738,7 @@ static __naked void DispatcherReg()
 {
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
-	if( s_pDispatchBlock == NULL || s_pDispatchBlock->startpc != cpuRegs.pc )
+	if( s_pDispatchBlock->startpc != cpuRegs.pc )
 		recRecompile(cpuRegs.pc);
 
 	__asm
@@ -1527,19 +1524,8 @@ void badespfn() {
 
 void __fastcall dyna_block_discard(u32 start,u32 sz)
 {
-#ifdef _MSC_VER
-	__asm push ebp;
-#else
-	__asm__("push %ebp\n");
-#endif
 	Console::WriteLn("dyna_block_discard %08X , count %d", params start,sz);
 	Cpu->Clear(start,sz);
-#ifdef _MSC_VER
-	__asm pop ebp;
-#else
-	__asm__("pop %ebp\n");
-#endif
-	return;
 }
 
 void recRecompile( const u32 startpc )
@@ -1943,8 +1929,7 @@ StartRecomp:
 				while(stg>0)
 				{
 					CMP32ItoM((uptr)PSM(lpc),*(u32*)PSM(lpc));
-					// fixme: was dyna_block_discard_recmem .. but umm.. why?
-					JNE32(((u32)&dyna_block_discard)- ( (u32)x86Ptr + 6 ));
+					JNE32(((u32)&dyna_block_discard_recmem)- ( (u32)x86Ptr + 6 ));
 
 					stg-=4;
 					lpc+=4;

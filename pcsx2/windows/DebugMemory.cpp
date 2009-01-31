@@ -70,7 +70,7 @@ void RefreshMemory(void)
 
     for (y = 0; y < 21; y++)
     {
-		memset(text, 0, 32);
+		memzero_obj(text);
         sprintf(buf, "%08X:  ", addr);
 
         for (x = 0; x < 16; x++)

@@ -59,7 +59,7 @@ void hwReset()
 {
 	hwInit();
 
-	memset(PS2MEM_HW, 0, Ps2MemSize::Hardware);
+	memzero_ptr<Ps2MemSize::Hardware>( PS2MEM_HW );
 	//memset(PS2MEM_HW+0x2000, 0, 0x0000e000);
 
 	psHu32(0xf520) = 0x1201;

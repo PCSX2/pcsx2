@@ -601,9 +601,9 @@ void recResetIOP()
 
 	DbgCon::Status( "iR3000A > Resetting recompiler memory and structures!" );
 
-	memset(psxRecLUT, 0, 0x010000 * sizeof(uptr));
-	memset(recMem, 0xcd, RECMEM_SIZE);
-	memset(m_recBlockAlloc, 0, m_recBlockAllocSize);
+	memzero_ptr<0x010000 * sizeof(uptr)>( psxRecLUT );
+	memset_8<0xcd,RECMEM_SIZE>( recMem );
+	memzero_ptr<m_recBlockAllocSize>( m_recBlockAlloc );
 
 	// We're only mapping 20 pages here in 4 places.
 	// 0x80 comes from : (Ps2MemSize::IopRam / 0x10000) * 4

@@ -158,7 +158,7 @@ struct VuBlockHeader
 class VuInstruction
 {
 public:
-	VuInstruction() { memzero_ptr<sizeof(VuInstruction)>(this); nParentPc = -1; vicached = -1; }
+	VuInstruction() { memzero_obj(*this); nParentPc = -1; vicached = -1; }
 
 	int nParentPc; // used for syncing with flag writes, -1 for no parent
 
@@ -329,7 +329,8 @@ void SuperVUAlloc(int vuindex)
 	if( s_recVUMem == NULL )
 	{
 		// upper 4 bits must be zero!
-		s_recVUMem = SysMmap(0x0c000000, VU_EXESIZE, 0x10000000, "SuperVUAlloc");
+		// Changed "first try base" to 0xb800000, since 0x0c000000 liked to fail a lot. (air)
+		s_recVUMem = SysMmap(0x0b800000, VU_EXESIZE, 0x10000000, "SuperVUAlloc");
 
 		if( s_recVUMem == NULL )
 		{
@@ -402,7 +403,7 @@ void SuperVUReset(int vuindex)
 	if( vuindex < 0 )
 	{
 		DbgCon::Status( "SuperVU reset > Resetting recompiler memory and structures." );
-		memset(s_recVUMem, 0xcd, VU_EXESIZE);
+		memset_8<0xcd, VU_EXESIZE>(s_recVUMem);
 		memzero_ptr<SUPERVU_STACKSIZE>(recVUStack);
 
 		s_recVUPtr = s_recVUMem;

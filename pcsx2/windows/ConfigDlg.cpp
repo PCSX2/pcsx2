@@ -69,7 +69,11 @@ struct ComboInitializer
 		string tmpStr;
 		Path::Combine( tmpStr, Config.PluginsDir, FindData.cFileName );
 		Lib = LoadLibrary(tmpStr.c_str());
-		if (Lib == NULL) { Console::Error( "%hs: %s", params &tmpStr, SysLibError()); return false; }
+		if (Lib == NULL)
+		{
+			Console::Error( "Plugin load failure: %hs\n\tSysLibError Message: %s", params &tmpStr, SysLibError() );
+			return false;
+		}
 
 		PS2E_GetLibType = (_PS2EgetLibType) GetProcAddress((HMODULE)Lib,"PS2EgetLibType");
 		PS2E_GetLibName = (_PS2EgetLibName) GetProcAddress((HMODULE)Lib,"PS2EgetLibName");

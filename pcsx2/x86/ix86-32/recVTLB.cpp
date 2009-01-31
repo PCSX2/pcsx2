@@ -296,9 +296,10 @@ void vtlb_DynGenWrite(u32 sz)
 			break;
 	}
 	u8* cont=JMP8(0);
-	x86SetJ8(_full);
-	int szidx=0;
 
+	x86SetJ8(_full);
+
+	int szidx=0;
 	switch(sz)
 	{
 		case 8:  szidx=0;	break;

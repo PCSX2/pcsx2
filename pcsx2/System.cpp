@@ -317,7 +317,7 @@ u8 *SysMmap(uptr base, u32 size, uptr bounds, const char *caller)
 		// memory allocation *must* have the top bit clear, so let's try again
 		// with NULL (let the OS pick something for us).
 
-		SafeSysMunmap( base, size );
+		SafeSysMunmap( Mem, size );
 
 		Mem = (u8*)SysMmap( NULL, size );
 		if( ((uptr)Mem + size) > bounds )

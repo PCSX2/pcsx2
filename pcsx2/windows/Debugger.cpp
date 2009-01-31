@@ -406,7 +406,7 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
             debughWnd=hDlg;
             DebuggerPC = 0;
             // Clear all breakpoints.
-			memset(bkpt_regv, 0, sizeof(bkpt_regv));
+			memzero_obj(bkpt_regv);
 
 			hWnd_debugdisasm = GetDlgItem(hDlg, IDC_DEBUG_DISASM);
             hWnd_debugscroll = GetDlgItem(hDlg, IDC_DEBUG_SCROLL);
@@ -599,7 +599,7 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 					return TRUE;
 
                 case IDC_DEBUG_BP_CLEAR:
-					memset(bkpt_regv, 0, sizeof(bkpt_regv));
+					memzero_obj(bkpt_regv);
 					return TRUE;
 
 				case IDC_DEBUG_DUMP:

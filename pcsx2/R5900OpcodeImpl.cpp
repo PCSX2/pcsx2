@@ -562,7 +562,16 @@ char deci2buffer[256];
  */
 
 int __Deci2Call(int call, u32 *addr) {
-	if (call > 0x10) {
+	if (call > 0x10)
+		return -1;
+
+	// fixme: is this an indication of bad emulation, that addr is sometimes null?
+	// Games affected include Samurai Warriors 2 XL (and others I don't know offhand)
+	// (air)
+
+	if( addr == NULL )
+	{
+		Console::Notice( "Deci2Call > Ignoring Null Pointer." );
 		return -1;
 	}
 

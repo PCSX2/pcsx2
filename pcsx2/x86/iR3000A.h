@@ -22,9 +22,9 @@
 #include "iCore.h"
 #include "BaseblockEx.h"
 
-// Cycle penalties for particuarly slow instructions.
-static const int psxInstCycles_Mult = 8;
-static const int psxInstCycles_Div = 60;
+// Cycle penalties for particularly slow instructions.
+static const int psxInstCycles_Mult = 7;
+static const int psxInstCycles_Div = 40;
 
 // Currently unused (iop mod incomplete)
 static const int psxInstCycles_Peephole_Store = 0;

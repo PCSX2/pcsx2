@@ -429,8 +429,8 @@ void inifile_command( char * cmd )
 		pEqual = cmd+strlen(cmd);
 	}
 
-	memset( command, 0, sizeof( command ) );
-	memset( parameter, 0, sizeof( parameter ) );
+	memzero_obj( command );
+	memzero_obj( parameter );
 		
 	strncpy( command, cmd, pEqual - cmd );
 	strncpy( parameter, pEqual + 1, sizeof( parameter ) );

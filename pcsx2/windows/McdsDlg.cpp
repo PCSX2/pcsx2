@@ -35,7 +35,7 @@ u16 SJISTable[0xFFFF];
 
 void IniSJISTable()
 {
-	memset(SJISTable, 0, 0xFFFF);
+	memzero_obj(SJISTable);
 	//Blow me sony for using this retarded sjis to store the savegame name
 	SJISTable[0x20]	= 0x0020;
 	SJISTable[0x21]	= 0x0021;
@@ -800,7 +800,7 @@ class MemoryCard
 			{
 				fclose(fp);
 			}
-			memset(FAT, 0, 256*256*4);
+			memzero_obj(FAT);
 			Root.Release();
 
 			SaveGameList.clear();
@@ -1110,7 +1110,7 @@ class MemoryCard
 			
 			int dircluster = FindEmptyCluster();
 			char dir[512];
-			memset(dir, 0, 512);
+			memzero_obj(dir);
 			*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_DIRECTORY | Dir::DF_READ; // mode flag
 			*(u32 *)&dir[4] = Di->Sons.size(); // number of files inside the dir
 			*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1163,7 +1163,7 @@ class MemoryCard
 			int numfiles = 5;
 
 			// ADD FILE ENTRIES TO DIR ., ..
-			memset(dir, 0, 512);
+			memzero_obj(dir);
 			*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_DIRECTORY | Dir::DF_READ; // mode flag
 			*(u32 *)&dir[4] = numfiles; // number of files inside the dir
 			*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1185,7 +1185,7 @@ class MemoryCard
 			fseek(fp, 0xA920 + (((dircluster) * 0x420) + 0), SEEK_SET);
 			fwrite(dir, 512, 1, fp);
 
-			memset(dir, 0, 512);
+			memzero_obj(dir);
 			*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_DIRECTORY | Dir::DF_READ; // mode flag
 			*(u32 *)&dir[4] = 2; // number of files inside the dir
 			*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1221,7 +1221,7 @@ class MemoryCard
 				dircluster = newcluster;
 
 				// Add first file
-				memset(dir, 0, 512);
+				memzero_obj(dir);
 				*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_FILE | Dir::DF_READ; // mode flag
 				*(u32 *)&dir[4] = 0; // SIZE OF FILE
 				*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1310,7 +1310,7 @@ class MemoryCard
 			
 			int dircluster = FindEmptyCluster();
 			char dir[512];
-			memset(dir, 0, 512);
+			memzero_obj(dir);
 			*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_DIRECTORY | Dir::DF_READ; // mode flag
 			*(u32 *)&dir[4] = 2; // number of files inside the dir
 			*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1363,7 +1363,7 @@ class MemoryCard
 			int numfiles = 5;
 
 			// ADD FILE ENTRIES TO DIR ., ..
-			memset(dir, 0, 512);
+			memzero_obj(dir);
 			*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_DIRECTORY | Dir::DF_READ; // mode flag
 			*(u32 *)&dir[4] = numfiles; // number of files inside the dir
 			*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1385,7 +1385,7 @@ class MemoryCard
 			fseek(fp, 0xA920 + (((dircluster) * 0x420) + 0), SEEK_SET);
 			fwrite(dir, 512, 1, fp);
 
-			memset(dir, 0, 512);
+			memzero_obj(dir);
 			*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_DIRECTORY | Dir::DF_READ; // mode flag
 			*(u32 *)&dir[4] = 2; // number of files inside the dir
 			*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1421,7 +1421,7 @@ class MemoryCard
 				dircluster = newcluster;
 
 				// Add first file
-				memset(dir, 0, 512);
+				memzero_obj(dir);
 				*(u16 *)&dir[0] = Dir::DF_EXISTS | Dir::DF_FILE | Dir::DF_READ; // mode flag
 				*(u32 *)&dir[4] = 2; // number of files inside the dir
 				*(u8 *)&dir[8] = 0; // creation time seconds
@@ -1514,9 +1514,9 @@ void Open_Mcd_Proc(HWND hW, int mcd) {
 	char szFilter[1024];
 	char *str;
 
-	memset(szFileName,  0, sizeof(szFileName));
-	memset(szFileTitle, 0, sizeof(szFileTitle));
-	memset(szFilter,    0, sizeof(szFilter));
+	memzero_obj(szFileName);
+	memzero_obj(szFileTitle);
+	memzero_obj(szFilter);
 
 
 	strcpy(szFilter, _("Ps2 Memory Card (*.ps2)"));
@@ -1557,9 +1557,9 @@ void SaveFileDialog(HWND hW, int MC, char *dir, char *name) {
 	char szFilter[1024];
 //	char *str;  (unused for now)
 
-	memset(szFileName,  0, sizeof(szFileName));
-	memset(szFileTitle, 0, sizeof(szFileTitle));
-	memset(szFilter,    0, sizeof(szFilter));
+	memzero_obj(szFileName);
+	memzero_obj(szFileTitle);
+	memzero_obj(szFilter);
 
 	strcpy(szFilter, "All Files (*.*)");
 	strcpy(szFileName, name);

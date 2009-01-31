@@ -441,7 +441,7 @@ void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs)
 	// check upper flags
 	if (ptr[1] & 0x80000000) { // I flag
 		info->cycle = vucycle;
-		memzero_ptr<sizeof(lregs)>(lregs);
+		memzero_obj(*lregs);
 	} 
 	else {
 

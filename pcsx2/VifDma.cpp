@@ -1334,7 +1334,7 @@ void vif0Write32(u32 mem, u32 value) {
 		if (value & 0x1) {
 			/* Reset VIF */
 			//SysPrintf("Vif0 Reset %x\n", vif0Regs->stat);
-			memset(&vif0, 0, sizeof(vif0));
+			memzero_obj(vif0);
 			vif0ch->qwc = 0; //?
 			psHu64(0x10004000) = 0;
 			psHu64(0x10004008) = 0;
@@ -1406,8 +1406,8 @@ void vif0Write32(u32 mem, u32 value) {
 void vif0Reset() {
 	/* Reset the whole VIF, meaning the internal pcsx2 vars
 	   and all the registers */
-	memset(&vif0, 0, sizeof(vif0));
-	memset(vif0Regs, 0, sizeof(vif0Regs));
+	memzero_obj(vif0);
+	memzero_obj(*vif0Regs);
 	SetNewMask(g_vif0Masks, g_vif0HasMask3, 0, 0xffffffff);
 	psHu64(0x10004000) = 0;
 	psHu64(0x10004008) = 0;
@@ -2301,7 +2301,7 @@ void vif1Write32(u32 mem, u32 value) {
 		if (value & 0x1) {
 			/* Reset VIF */
 			//SysPrintf("Vif1 Reset %x\n", vif1Regs->stat);
-			memset(&vif1, 0, sizeof(vif1));
+			memzero_obj(vif1);
 			vif1ch->qwc = 0; //?
 			psHu64(0x10005000) = 0;
 			psHu64(0x10005008) = 0;
@@ -2409,8 +2409,8 @@ void vif1Write32(u32 mem, u32 value) {
 void vif1Reset() {
 	/* Reset the whole VIF, meaning the internal pcsx2 vars
 	   and all the registers */
-	memset(&vif1, 0, sizeof(vif1));
-	memset(vif1Regs, 0, sizeof(vif1Regs));
+	memzero_obj(vif1);
+	memzero_obj(*vif1Regs);
 	SetNewMask(g_vif1Masks, g_vif1HasMask3, 0, 0xffffffff);
 	psHu64(0x10005000) = 0;
 	psHu64(0x10005008) = 0;

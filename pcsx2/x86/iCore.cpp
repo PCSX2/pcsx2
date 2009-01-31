@@ -1065,9 +1065,9 @@ int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode)
 
 void _recClearInst(EEINST* pinst)
 {
-	memset(&pinst->regs[0], EEINST_LIVE0|EEINST_LIVE1|EEINST_LIVE2, sizeof(pinst->regs));
-	memset(&pinst->fpuregs[0], EEINST_LIVE0, sizeof(pinst->fpuregs));
-	memset(&pinst->info, 0, sizeof(EEINST)-sizeof(pinst->regs)-sizeof(pinst->fpuregs));
+	memzero_obj( *pinst );
+	memset8_obj<EEINST_LIVE0|EEINST_LIVE1|EEINST_LIVE2>( pinst->regs );
+	memset8_obj<EEINST_LIVE0>( pinst->fpuregs );
 }
 
 // returns nonzero value if reg has been written between [startpc, endpc-4]
