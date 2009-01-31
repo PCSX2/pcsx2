@@ -65,7 +65,6 @@ extern u8 g_RealGSMem[0x2000];
 
 //#define _PSM(mem)	(memLUTR[(mem) >> 12] == 0 ? NULL : (void*)(memLUTR[(mem) >> 12] + ((mem) & 0xfff)))
 #define PSM(mem)	(vtlb_GetPhyPtr(mem&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
-#define FREE(ptr) _aligned_free(ptr)
 
 #define psMs8(mem)	(*(s8 *)&PS2MEM_BASE[(mem) & 0x1ffffff])
 #define psMs16(mem)	(*(s16*)&PS2MEM_BASE[(mem) & 0x1ffffff])

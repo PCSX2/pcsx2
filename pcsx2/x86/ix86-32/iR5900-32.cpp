@@ -63,7 +63,7 @@ u32 maxrecmem = 0;
 uptr *recLUT = NULL;
 
 u32 s_nBlockCycles = 0; // cycles of current block recompiling
-u8* dyna_block_discard_recmem=0;
+//u8* dyna_block_discard_recmem=0;
 
 u32 pc;			         // recompiler pc
 int branch;		         // set for branch
@@ -588,10 +588,14 @@ void recResetEE( void )
 	memcpy_fast( recLUT + 0x8000, recLUT, 0x2000 * sizeof(uptr) );
 	memcpy_fast( recLUT + 0xa000, recLUT, 0x2000 * sizeof(uptr) );
 	
-	// This may or may not be needed anymore... 
-	x86SetPtr(recMem+REC_CACHEMEM);
-	dyna_block_discard_recmem=(u8*)x86Ptr;
-	JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
+	// drk||Raziel says this is useful but I'm not sure why.  Something to do with forward jumps.
+	// Anyways, it causes random crashing for some reasom, possibly because of memory
+	// corrupition elsewhere in the recs.  I can't reproduce the problem here though,
+	// so a fix will have to wait until later. -_- (air)
+
+	//x86SetPtr(recMem+REC_CACHEMEM);
+	//dyna_block_discard_recmem=(u8*)x86Ptr;
+	//JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
 
 	x86SetPtr(recMem);
 
@@ -699,7 +703,7 @@ static __naked void DispatcherClear()
 	// calc PC_GETBLOCK
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 
-	if( s_pDispatchBlock->startpc == cpuRegs.pc )
+	if( s_pDispatchBlock != NULL && s_pDispatchBlock->startpc == cpuRegs.pc )
 	{
 		assert( s_pDispatchBlock->pFnptr != 0 );
 
@@ -1928,8 +1932,9 @@ StartRecomp:
 				u32 stg=pgsz;
 				while(stg>0)
 				{
+					// was dyna_block_discard_recmem.  See note in recResetEE for details.
 					CMP32ItoM((uptr)PSM(lpc),*(u32*)PSM(lpc));
-					JNE32(((u32)&dyna_block_discard_recmem)- ( (u32)x86Ptr + 6 ));
+					JNE32(((u32)&dyna_block_discard)- ( (u32)x86Ptr + 6 ));
 
 					stg-=4;
 					lpc+=4;

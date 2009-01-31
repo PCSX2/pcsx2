@@ -561,54 +561,62 @@ char deci2buffer[256];
  *	int Deci2Call(int, u_int *);
  */
 
-int __Deci2Call(int call, u32 *addr) {
+int __Deci2Call(int call, u32 *addr)
+{
 	if (call > 0x10)
 		return -1;
 
-	// fixme: is this an indication of bad emulation, that addr is sometimes null?
-	// Games affected include Samurai Warriors 2 XL (and others I don't know offhand)
-	// (air)
-
-	if( addr == NULL )
+	switch (call)
 	{
-		Console::Notice( "Deci2Call > Ignoring Null Pointer." );
-		return -1;
-	}
-
-	switch (call) {
 		case 1: // open
-			deci2addr = (u32*)PSM(addr[1]);
-			BIOS_LOG("deci2open: %x,%x,%x,%x\n",
-					 addr[3], addr[2], addr[1], addr[0]);
-			deci2handler = addr[2];
+			if( addr != NULL )
+			{
+				deci2addr = (u32*)PSM(addr[1]);
+				BIOS_LOG("deci2open: %x,%x,%x,%x\n",
+						 addr[3], addr[2], addr[1], addr[0]);
+				deci2handler = addr[2];
+			}
+			else
+			{
+				deci2handler = NULL;
+				DevCon::Notice( "Deci2Call.Open > NULL address ignored." );
+			}
 			return 1;
 
 		case 2: // close
 			return 1;
 
 		case 3: // reqsend
-			BIOS_LOG("deci2reqsend: %x,%x,%x,%x: deci2addr: %x,%x,%x,buf=%x %x,%x,len=%x,%x\n",
-					 addr[3], addr[2], addr[1], addr[0],
-					 deci2addr[7], deci2addr[6], deci2addr[5], deci2addr[4],
-					 deci2addr[3], deci2addr[2], deci2addr[1], deci2addr[0]);
+		{
+			char reqaddr[128];
+			if( addr != NULL )
+				sprintf( reqaddr, "%x %x %x %x", addr[3], addr[2], addr[1], addr[0] );
+
+			BIOS_LOG("deci2reqsend: %s: deci2addr: %x,%x,%x,buf=%x %x,%x,len=%x,%x\n",
+				(( addr == NULL ) ? "NULL" : reqaddr),
+				deci2addr[7], deci2addr[6], deci2addr[5], deci2addr[4],
+				deci2addr[3], deci2addr[2], deci2addr[1], deci2addr[0]);
 
 //			cpuRegs.pc = deci2handler;
 //			SysPrintf("deci2msg: %s", (char*)PSM(deci2addr[4]+0xc));
 			if (deci2addr == NULL) return 1;
 			if (deci2addr[1]>0xc){
 				u8* pdeciaddr = (u8*)dmaGetAddr(deci2addr[4]+0xc);
-				if( pdeciaddr == NULL ) pdeciaddr = (u8*)PSM(deci2addr[4]+0xc);
-				else pdeciaddr += (deci2addr[4]+0xc)%16;
+				if( pdeciaddr == NULL )
+					pdeciaddr = (u8*)PSM(deci2addr[4]+0xc);
+				else
+					pdeciaddr += (deci2addr[4]+0xc)%16;
 				memcpy(deci2buffer, pdeciaddr, deci2addr[1]-0xc);
 				deci2buffer[deci2addr[1]-0xc>=255?255:deci2addr[1]-0xc]='\0';
 				Console::Write( Color_Cyan, deci2buffer );
 			}
 			deci2addr[3] = 0;
 			return 1;
+		}
 
 		case 4: // poll
-			BIOS_LOG("deci2poll: %x,%x,%x,%x\n",
-					 addr[3], addr[2], addr[1], addr[0]);
+			if( addr != NULL )
+				BIOS_LOG("deci2poll: %x,%x,%x,%x\n", addr[3], addr[2], addr[1], addr[0]);
 			return 1;
 
 		case 5: // exrecv
@@ -618,7 +626,8 @@ int __Deci2Call(int call, u32 *addr) {
 			return 1;
 
 		case 0x10://kputs
-			Console::Write( Color_Cyan, "%s", params PSM(*addr));
+			if( addr != NULL )
+				Console::Write( Color_Cyan, "%s", params PSM(*addr));
 			return 1;
 	}
 
@@ -626,42 +635,48 @@ int __Deci2Call(int call, u32 *addr) {
 }
 
 
-void SYSCALL() {
-#ifdef BIOS_LOG
+void SYSCALL()
+{
 	u8 call;
 
-		if (cpuRegs.GPR.n.v1.SL[0] < 0)
-			 call = (u8)(-cpuRegs.GPR.n.v1.SL[0]);
-		else call = cpuRegs.GPR.n.v1.UC[0];
-		BIOS_LOG("Bios call: %s (%x)\n", bios[call], call);
-		if (call == 0x7c && cpuRegs.GPR.n.a0.UL[0] == 0x10) {
-			Console::Write( Color_Cyan, "%s", params PSM(PSMu32(cpuRegs.GPR.n.a1.UL[0])));
-		} else
-		//if (call == 0x7c) SysPrintf("Deci2Call: %x\n", cpuRegs.GPR.n.a0.UL[0]);
-		if (call == 0x7c) __Deci2Call(cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
-		if (call == 0x77) {
-	struct t_sif_dma_transfer *dmat;
-//	struct t_sif_cmd_header	*hdr;
-//	struct t_sif_rpc_bind *bind;
-//	struct t_rpc_server_data *server;
-	int n_transfer;
-	u32 addr;
-//	int sid;
+	if (cpuRegs.GPR.n.v1.SL[0] < 0)
+		 call = (u8)(-cpuRegs.GPR.n.v1.SL[0]);
+	else
+		call = cpuRegs.GPR.n.v1.UC[0];
 
-	n_transfer = cpuRegs.GPR.n.a1.UL[0] - 1;
-	if (n_transfer >= 0) {
-	addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(struct t_sif_dma_transfer);
-	dmat = (struct t_sif_dma_transfer*)PSM(addr);
+	BIOS_LOG("Bios call: %s (%x)\n", bios[call], call);
 
-	BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x\n",
-			 bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
-			 dmat->size, dmat->attr,
-			 dmat->dest, dmat->src);
+	if (call == 0x7c)
+	{
+		if(cpuRegs.GPR.n.a0.UL[0] == 0x10)
+			Console::Write( Color_Cyan, (char*)PSM(PSMu32(cpuRegs.GPR.n.a1.UL[0])) );
+		else
+			__Deci2Call( cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]) );
 	}
-//Log=1;
+
+	if (call == 0x77)
+	{
+		t_sif_dma_transfer *dmat;
+		//struct t_sif_cmd_header	*hdr;
+		//struct t_sif_rpc_bind *bind;
+		//struct t_rpc_server_data *server;
+		int n_transfer;
+		u32 addr;
+		//int sid;
+
+		n_transfer = cpuRegs.GPR.n.a1.UL[0] - 1;
+		if (n_transfer >= 0)
+		{
+			addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(t_sif_dma_transfer);
+			dmat = (t_sif_dma_transfer*)PSM(addr);
+
+			BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x\n",
+				bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
+				dmat->size, dmat->attr,
+				dmat->dest, dmat->src);
 		}
-#endif
-//	if (cpuRegs.GPR.n.v1.UD[0] == 0x77) Log=1;
+	}
+
 	cpuRegs.pc -= 4;
 	cpuException(0x20, cpuRegs.branch);
 }
