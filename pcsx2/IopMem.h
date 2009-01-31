@@ -19,18 +19,6 @@
 #ifndef __PSXMEMORY_H__
 #define __PSXMEMORY_H__
 
-#ifdef PCSX2_VIRTUAL_MEM
-
-// VM
-#define psxM PS2MEM_PSX
-#define psxH PS2MEM_PSXHW
-
-#define PSXM(mem) ((mem&0x10000000)?PSM(mem):(PS2MEM_PSX+(mem&0x1fffff)))
-#define _PSXM(mem) PSXM(mem)
-
-#else
-
-// TLB
 extern u8 *psxM;
 extern u8 *psxP;
 extern u8 *psxH;
@@ -38,7 +26,6 @@ extern u8 *psxS;
 extern uptr *psxMemWLUT;
 extern const uptr *psxMemRLUT;
 
-//#define TLB_DEBUG_MEM
 #ifdef TLB_DEBUG_MEM
 void* PSXM(u32 mem);
 void* _PSXM(u32 mem);
@@ -53,8 +40,6 @@ void* _PSXM(u32 mem);
 #define psxSu8(mem)		(*(u8*) &psxS[(mem) & 0xffff])
 #define psxSu16(mem)	(*(u16*)&psxS[(mem) & 0xffff])
 #define psxSu32(mem)	(*(u32*)&psxS[(mem) & 0xffff])
-
-#endif
 
 #define psxMs8(mem)		psxM[(mem) & 0x1fffff]
 #define psxMs16(mem)	(*(s16*)&psxM[(mem) & 0x1fffff])

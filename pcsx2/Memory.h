@@ -45,6 +45,163 @@ namespace Ps2MemSize
 	static const uint GSregs = 0x00002000;		// 8k for the GS registers and stuff.
 }
 
+extern u8  *psM; //32mb Main Ram
+extern u8  *psR; //4mb rom area
+extern u8  *psR1; //256kb rom1 area (actually 196kb, but can't mask this)
+extern u8  *psR2; // 0x00080000
+extern u8  *psER; // 0x001C0000
+extern u8  *psS; //0.015 mb, scratch pad
+
+#define PS2MEM_BASE		psM
+#define PS2MEM_HW		psH
+#define PS2MEM_ROM		psR
+#define PS2MEM_ROM1		psR1
+#define PS2MEM_ROM2		psR2
+#define PS2MEM_EROM		psER
+#define PS2MEM_SCRATCH	psS
+
+extern u8 g_RealGSMem[0x2000];
+#define PS2MEM_GS	g_RealGSMem
+
+//#define _PSM(mem)	(memLUTR[(mem) >> 12] == 0 ? NULL : (void*)(memLUTR[(mem) >> 12] + ((mem) & 0xfff)))
+#define PSM(mem)	(vtlb_GetPhyPtr(mem&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
+#define FREE(ptr) _aligned_free(ptr)
+
+#define psMs8(mem)	(*(s8 *)&PS2MEM_BASE[(mem) & 0x1ffffff])
+#define psMs16(mem)	(*(s16*)&PS2MEM_BASE[(mem) & 0x1ffffff])
+#define psMs32(mem)	(*(s32*)&PS2MEM_BASE[(mem) & 0x1ffffff])
+#define psMs64(mem)	(*(s64*)&PS2MEM_BASE[(mem) & 0x1ffffff])
+#define psMu8(mem)	(*(u8 *)&PS2MEM_BASE[(mem) & 0x1ffffff])
+#define psMu16(mem)	(*(u16*)&PS2MEM_BASE[(mem) & 0x1ffffff])
+#define psMu32(mem)	(*(u32*)&PS2MEM_BASE[(mem) & 0x1ffffff])
+#define psMu64(mem)	(*(u64*)&PS2MEM_BASE[(mem) & 0x1ffffff])
+
+#define psRs8(mem)	(*(s8 *)&PS2MEM_ROM[(mem) & 0x3fffff])
+#define psRs16(mem)	(*(s16*)&PS2MEM_ROM[(mem) & 0x3fffff])
+#define psRs32(mem)	(*(s32*)&PS2MEM_ROM[(mem) & 0x3fffff])
+#define psRs64(mem)	(*(s64*)&PS2MEM_ROM[(mem) & 0x3fffff])
+#define psRu8(mem)	(*(u8 *)&PS2MEM_ROM[(mem) & 0x3fffff])
+#define psRu16(mem)	(*(u16*)&PS2MEM_ROM[(mem) & 0x3fffff])
+#define psRu32(mem)	(*(u32*)&PS2MEM_ROM[(mem) & 0x3fffff])
+#define psRu64(mem)	(*(u64*)&PS2MEM_ROM[(mem) & 0x3fffff])
+
+#define psR1s8(mem)		(*(s8 *)&PS2MEM_ROM1[(mem) & 0x3ffff])
+#define psR1s16(mem)	(*(s16*)&PS2MEM_ROM1[(mem) & 0x3ffff])
+#define psR1s32(mem)	(*(s32*)&PS2MEM_ROM1[(mem) & 0x3ffff])
+#define psR1s64(mem)	(*(s64*)&PS2MEM_ROM1[(mem) & 0x3ffff])
+#define psR1u8(mem)		(*(u8 *)&PS2MEM_ROM1[(mem) & 0x3ffff])
+#define psR1u16(mem)	(*(u16*)&PS2MEM_ROM1[(mem) & 0x3ffff])
+#define psR1u32(mem)	(*(u32*)&PS2MEM_ROM1[(mem) & 0x3ffff])
+#define psR1u64(mem)	(*(u64*)&PS2MEM_ROM1[(mem) & 0x3ffff])
+
+#define psR2s8(mem)		(*(s8 *)&PS2MEM_ROM2[(mem) & 0x3ffff])
+#define psR2s16(mem)	(*(s16*)&PS2MEM_ROM2[(mem) & 0x3ffff])
+#define psR2s32(mem)	(*(s32*)&PS2MEM_ROM2[(mem) & 0x3ffff])
+#define psR2s64(mem)	(*(s64*)&PS2MEM_ROM2[(mem) & 0x3ffff])
+#define psR2u8(mem)		(*(u8 *)&PS2MEM_ROM2[(mem) & 0x3ffff])
+#define psR2u16(mem)	(*(u16*)&PS2MEM_ROM2[(mem) & 0x3ffff])
+#define psR2u32(mem)	(*(u32*)&PS2MEM_ROM2[(mem) & 0x3ffff])
+#define psR2u64(mem)	(*(u64*)&PS2MEM_ROM2[(mem) & 0x3ffff])
+
+#define psERs8(mem)		(*(s8 *)&PS2MEM_EROM[(mem) & 0x3ffff])
+#define psERs16(mem)	(*(s16*)&PS2MEM_EROM[(mem) & 0x3ffff])
+#define psERs32(mem)	(*(s32*)&PS2MEM_EROM[(mem) & 0x3ffff])
+#define psERs64(mem)	(*(s64*)&PS2MEM_EROM[(mem) & 0x3ffff])
+#define psERu8(mem)		(*(u8 *)&PS2MEM_EROM[(mem) & 0x3ffff])
+#define psERu16(mem)	(*(u16*)&PS2MEM_EROM[(mem) & 0x3ffff])
+#define psERu32(mem)	(*(u32*)&PS2MEM_EROM[(mem) & 0x3ffff])
+#define psERu64(mem)	(*(u64*)&PS2MEM_EROM[(mem) & 0x3ffff])
+
+#define psSs8(mem)	(*(s8 *)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+#define psSs16(mem)	(*(s16*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+#define psSs32(mem)	(*(s32*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+#define psSs64(mem)	(*(s64*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+#define psSu8(mem)	(*(u8 *)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+#define psSu16(mem)	(*(u16*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+#define psSu32(mem)	(*(u32*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+#define psSu64(mem)	(*(u64*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
+
+#define PSMs8(mem)	(*(s8 *)PSM(mem))
+#define PSMs16(mem)	(*(s16*)PSM(mem))
+#define PSMs32(mem)	(*(s32*)PSM(mem))
+#define PSMs64(mem)	(*(s64*)PSM(mem))
+#define PSMu8(mem)	(*(u8 *)PSM(mem))
+#define PSMu16(mem)	(*(u16*)PSM(mem))
+#define PSMu32(mem)	(*(u32*)PSM(mem))
+#define PSMu64(mem)	(*(u64*)PSM(mem))
+
+extern void memAlloc();
+extern void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.
+extern void memShutdown();
+extern void memSetKernelMode();
+extern void memSetSupervisorMode();
+extern void memSetUserMode();
+extern void memSetPageAddr(u32 vaddr, u32 paddr);
+extern void memClearPageAddr(u32 vaddr);
+
+extern void memMapVUmicro();
+
+#ifdef __LINUX__
+void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * );
+void __fastcall InstallLinuxExceptionHandler();
+void __fastcall ReleaseLinuxExceptionHandler();
+#else
+int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps);
+#endif
+
+#include "vtlb.h"
+
+int mmap_GetRamPageInfo(void* ptr);
+void mmap_MarkCountedRamPage(void* ptr,u32 vaddr);
+void mmap_ResetBlockTracking();
+
+extern void __fastcall memRead8(u32 mem, u8  *out);
+extern void __fastcall memRead16(u32 mem, u16 *out);
+extern void __fastcall memRead32(u32 mem, u32 *out);
+
+#define memRead64 vtlb_memRead64
+#define memRead128 vtlb_memRead128
+
+#define memWrite8 vtlb_memWrite8
+#define memWrite16 vtlb_memWrite16
+#define memWrite32 vtlb_memWrite32
+#define memWrite64 vtlb_memWrite64
+#define memWrite128 vtlb_memWrite128
+
+#define _eeReadConstMem8 0&&
+#define _eeReadConstMem16 0&&
+#define _eeReadConstMem32 0&&
+#define _eeReadConstMem128 0&&
+#define _eeWriteConstMem8 0&&
+#define _eeWriteConstMem16 0&&
+#define _eeWriteConstMem32 0&&
+#define _eeWriteConstMem64 0&&
+#define _eeWriteConstMem128 0&&
+#define _eeMoveMMREGtoR 0&&
+
+// extra ops
+#define _eeWriteConstMem16OP 0&&
+#define _eeWriteConstMem32OP 0&&
+
+#define recMemConstRead8 0&&
+#define recMemConstRead16 0&&
+#define recMemConstRead32 0&&
+#define recMemConstRead64 0&&
+#define recMemConstRead128 0&&
+
+#define recMemConstWrite8 0&&
+#define recMemConstWrite16 0&&
+#define recMemConstWrite32 0&&
+#define recMemConstWrite64 0&&
+#define recMemConstWrite128 0&&
+
+extern void loadBiosRom( const char *ext, u8 *dest, long maxSize );
+extern u16 ba0R16(u32 mem);
+
+//////////////////////////////////////////////////////////////////////////
+// The rest of this header contains the old VM version of the Memory.h API.
+// Left in for references purposes.
+
 #ifdef PCSX2_VIRTUAL_MEM
 
 #define PS2MEM_BASE_	0x15000000
@@ -142,163 +299,6 @@ int recMemConstWrite16(u32 mem, int mmreg);
 int recMemConstWrite32(u32 mem, int mmreg);
 int recMemConstWrite64(u32 mem, int mmreg);
 int recMemConstWrite128(u32 mem, int xmmreg);
-
-#else
-
-extern u8  *psM; //32mb Main Ram
-extern u8  *psR; //4mb rom area
-extern u8  *psR1; //256kb rom1 area (actually 196kb, but can't mask this)
-extern u8  *psR2; // 0x00080000
-extern u8  *psER; // 0x001C0000
-extern u8  *psS; //0.015 mb, scratch pad
-
-#define PS2MEM_BASE		psM
-#define PS2MEM_HW		psH
-#define PS2MEM_ROM		psR
-#define PS2MEM_ROM1		psR1
-#define PS2MEM_ROM2		psR2
-#define PS2MEM_EROM		psER
-#define PS2MEM_SCRATCH	psS
-
-extern u8 g_RealGSMem[0x2000];
-#define PS2MEM_GS	g_RealGSMem
-
-//#define _PSM(mem)	(memLUTR[(mem) >> 12] == 0 ? NULL : (void*)(memLUTR[(mem) >> 12] + ((mem) & 0xfff)))
-#define PSM(mem)	(vtlb_GetPhyPtr(mem&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
-#define FREE(ptr) _aligned_free(ptr)
-
 #endif
 
-#define psMs8(mem)	(*(s8 *)&PS2MEM_BASE[(mem) & 0x1ffffff])
-#define psMs16(mem)	(*(s16*)&PS2MEM_BASE[(mem) & 0x1ffffff])
-#define psMs32(mem)	(*(s32*)&PS2MEM_BASE[(mem) & 0x1ffffff])
-#define psMs64(mem)	(*(s64*)&PS2MEM_BASE[(mem) & 0x1ffffff])
-#define psMu8(mem)	(*(u8 *)&PS2MEM_BASE[(mem) & 0x1ffffff])
-#define psMu16(mem)	(*(u16*)&PS2MEM_BASE[(mem) & 0x1ffffff])
-#define psMu32(mem)	(*(u32*)&PS2MEM_BASE[(mem) & 0x1ffffff])
-#define psMu64(mem)	(*(u64*)&PS2MEM_BASE[(mem) & 0x1ffffff])
-
-#define psRs8(mem)	(*(s8 *)&PS2MEM_ROM[(mem) & 0x3fffff])
-#define psRs16(mem)	(*(s16*)&PS2MEM_ROM[(mem) & 0x3fffff])
-#define psRs32(mem)	(*(s32*)&PS2MEM_ROM[(mem) & 0x3fffff])
-#define psRs64(mem)	(*(s64*)&PS2MEM_ROM[(mem) & 0x3fffff])
-#define psRu8(mem)	(*(u8 *)&PS2MEM_ROM[(mem) & 0x3fffff])
-#define psRu16(mem)	(*(u16*)&PS2MEM_ROM[(mem) & 0x3fffff])
-#define psRu32(mem)	(*(u32*)&PS2MEM_ROM[(mem) & 0x3fffff])
-#define psRu64(mem)	(*(u64*)&PS2MEM_ROM[(mem) & 0x3fffff])
-
-#define psR1s8(mem)		(*(s8 *)&PS2MEM_ROM1[(mem) & 0x3ffff])
-#define psR1s16(mem)	(*(s16*)&PS2MEM_ROM1[(mem) & 0x3ffff])
-#define psR1s32(mem)	(*(s32*)&PS2MEM_ROM1[(mem) & 0x3ffff])
-#define psR1s64(mem)	(*(s64*)&PS2MEM_ROM1[(mem) & 0x3ffff])
-#define psR1u8(mem)		(*(u8 *)&PS2MEM_ROM1[(mem) & 0x3ffff])
-#define psR1u16(mem)	(*(u16*)&PS2MEM_ROM1[(mem) & 0x3ffff])
-#define psR1u32(mem)	(*(u32*)&PS2MEM_ROM1[(mem) & 0x3ffff])
-#define psR1u64(mem)	(*(u64*)&PS2MEM_ROM1[(mem) & 0x3ffff])
-
-#define psR2s8(mem)		(*(s8 *)&PS2MEM_ROM2[(mem) & 0x3ffff])
-#define psR2s16(mem)	(*(s16*)&PS2MEM_ROM2[(mem) & 0x3ffff])
-#define psR2s32(mem)	(*(s32*)&PS2MEM_ROM2[(mem) & 0x3ffff])
-#define psR2s64(mem)	(*(s64*)&PS2MEM_ROM2[(mem) & 0x3ffff])
-#define psR2u8(mem)		(*(u8 *)&PS2MEM_ROM2[(mem) & 0x3ffff])
-#define psR2u16(mem)	(*(u16*)&PS2MEM_ROM2[(mem) & 0x3ffff])
-#define psR2u32(mem)	(*(u32*)&PS2MEM_ROM2[(mem) & 0x3ffff])
-#define psR2u64(mem)	(*(u64*)&PS2MEM_ROM2[(mem) & 0x3ffff])
-
-#define psERs8(mem)		(*(s8 *)&PS2MEM_EROM[(mem) & 0x3ffff])
-#define psERs16(mem)	(*(s16*)&PS2MEM_EROM[(mem) & 0x3ffff])
-#define psERs32(mem)	(*(s32*)&PS2MEM_EROM[(mem) & 0x3ffff])
-#define psERs64(mem)	(*(s64*)&PS2MEM_EROM[(mem) & 0x3ffff])
-#define psERu8(mem)		(*(u8 *)&PS2MEM_EROM[(mem) & 0x3ffff])
-#define psERu16(mem)	(*(u16*)&PS2MEM_EROM[(mem) & 0x3ffff])
-#define psERu32(mem)	(*(u32*)&PS2MEM_EROM[(mem) & 0x3ffff])
-#define psERu64(mem)	(*(u64*)&PS2MEM_EROM[(mem) & 0x3ffff])
-
-#define psSs8(mem)	(*(s8 *)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-#define psSs16(mem)	(*(s16*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-#define psSs32(mem)	(*(s32*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-#define psSs64(mem)	(*(s64*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-#define psSu8(mem)	(*(u8 *)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-#define psSu16(mem)	(*(u16*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-#define psSu32(mem)	(*(u32*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-#define psSu64(mem)	(*(u64*)&PS2MEM_SCRATCH[(mem) & 0x3fff])
-
-#define PSMs8(mem)	(*(s8 *)PSM(mem))
-#define PSMs16(mem)	(*(s16*)PSM(mem))
-#define PSMs32(mem)	(*(s32*)PSM(mem))
-#define PSMs64(mem)	(*(s64*)PSM(mem))
-#define PSMu8(mem)	(*(u8 *)PSM(mem))
-#define PSMu16(mem)	(*(u16*)PSM(mem))
-#define PSMu32(mem)	(*(u32*)PSM(mem))
-#define PSMu64(mem)	(*(u64*)PSM(mem))
-
-extern void memAlloc();
-extern void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.
-extern void memShutdown();
-extern void memSetKernelMode();
-extern void memSetSupervisorMode();
-extern void memSetUserMode();
-extern void memSetPageAddr(u32 vaddr, u32 paddr);
-extern void memClearPageAddr(u32 vaddr);
-
-extern void memMapVUmicro();
-
-#ifdef __LINUX__
-void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * );
-void __fastcall InstallLinuxExceptionHandler();
-void __fastcall ReleaseLinuxExceptionHandler();
-#else
-int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps);
-#endif
-
-#ifndef PCSX2_VIRTUAL_MEM
-#include "vtlb.h"
-
-int mmap_GetRamPageInfo(void* ptr);
-void mmap_MarkCountedRamPage(void* ptr,u32 vaddr);
-void mmap_ResetBlockTracking();
-
-extern void __fastcall memRead8(u32 mem, u8  *out);
-extern void __fastcall memRead16(u32 mem, u16 *out);
-extern void __fastcall memRead32(u32 mem, u32 *out);
-
-#define memRead64 vtlb_memRead64
-#define memRead128 vtlb_memRead128
-
-#define memWrite8 vtlb_memWrite8
-#define memWrite16 vtlb_memWrite16
-#define memWrite32 vtlb_memWrite32
-#define memWrite64 vtlb_memWrite64
-#define memWrite128 vtlb_memWrite128
-
-#define _eeReadConstMem8 0&&
-#define _eeReadConstMem16 0&&
-#define _eeReadConstMem32 0&&
-#define _eeReadConstMem128 0&&
-#define _eeWriteConstMem8 0&&
-#define _eeWriteConstMem16 0&&
-#define _eeWriteConstMem32 0&&
-#define _eeWriteConstMem64 0&&
-#define _eeWriteConstMem128 0&&
-#define _eeMoveMMREGtoR 0&&
-
-// extra ops
-#define _eeWriteConstMem16OP 0&&
-#define _eeWriteConstMem32OP 0&&
-
-#define recMemConstRead8 0&&
-#define recMemConstRead16 0&&
-#define recMemConstRead32 0&&
-#define recMemConstRead64 0&&
-#define recMemConstRead128 0&&
-
-#define recMemConstWrite8 0&&
-#define recMemConstWrite16 0&&
-#define recMemConstWrite32 0&&
-#define recMemConstWrite64 0&&
-#define recMemConstWrite128 0&&
-#endif
-
-extern void loadBiosRom( const char *ext, u8 *dest, long maxSize );
-extern u16 ba0R16(u32 mem);
 #endif

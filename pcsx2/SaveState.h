@@ -29,11 +29,7 @@
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.
 
-#ifdef PCSX2_VIRTUAL_MEM
-static const u32 g_SaveVersion = 0x7a300012;
-#else
 static const u32 g_SaveVersion = 0x8b400002;
-#endif
 
 // this function is meant to be sued in the place of GSfreeze, and provides a safe layer
 // between the GS saving function and the MTGS's needs. :)
@@ -59,12 +55,8 @@ public:
 	// The version refers to the low 16 bits only (high 16 bits classifies Pcsx2 build types)
 	u32 GetVersion() const
 	{
-#ifdef PCSX2_VIRTUAL_MEM
-		return m_version & 0xffff;
-#else
 		// HACK!  Matches the vTLB build versions with VM
 		return (m_version & 0xffff) + 0x10;
-#endif
 	}
 
 	// Loads or saves the entire emulation state.

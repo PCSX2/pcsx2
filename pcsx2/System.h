@@ -210,32 +210,4 @@ using Console::Color_White;
 
 #endif
 
-#ifdef PCSX2_VIRTUAL_MEM
-
-struct PSMEMORYBLOCK
-{
-#ifdef _WIN32
-    int NumberPages;
-	uptr* aPFNs;
-	uptr* aVFNs; // virtual pages that own the physical pages
-#else
-    int fd; // file descriptor
-    char* pname; // given name
-    int size; // size of allocated region
-#endif
-};
-
-int SysPhysicalAlloc(u32 size, PSMEMORYBLOCK* pblock);
-void SysPhysicalFree(PSMEMORYBLOCK* pblock);
-int SysVirtualPhyAlloc(void* base, u32 size, PSMEMORYBLOCK* pblock);
-void SysVirtualFree(void* lpMemReserved, u32 size);
-
-// returns 1 if successful, 0 otherwise
-int SysMapUserPhysicalPages(void* Addr, uptr NumPages, uptr* pblock, int pageoffset);
-
-// call to enable physical page allocation
-//BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
-
-#endif
-
 #endif /* __SYSTEM_H__ */

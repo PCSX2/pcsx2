@@ -175,37 +175,8 @@ bool SysAllocateMem()
 		// completely non-functional.  If the failure is in the VM build then we can try running
 		// the VTLB build instead.  If it's the VTLB build then ... ouch.
 
-#ifdef PCSX2_VIRTUAL_MEM
-		Console::Error( ex.cMessage() );
-		if( MessageBox(NULL,
-			"Failed to allocate enough physical memory to run pcsx2. Try closing\n"
-			"down background programs, restarting windows, or buying more memory.\n\n"
-			"Launch TLB version of pcsx2 (pcsx2t.exe)?", "Memory Allocation Error", MB_YESNO) == IDYES )
-		{
-			PROCESS_INFORMATION pi;
-			STARTUPINFO si;
-
-			MemoryAlloc<char> strdir( GetCurrentDirectory( 0, NULL )+2, "VTLB Launcher" );
-			string strexe;
-
-			GetCurrentDirectory(strdir.GetLength(), strdir.GetPtr());
-			Path::Combine( strexe, strdir.GetPtr(), "pcsx2-vtlb.exe" );
-			memset(&si, 0, sizeof(si));
-
-			if( !CreateProcess(strexe.c_str(), "", NULL, NULL, FALSE, DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP, NULL, strdir.GetPtr(), &si, &pi))
-			{
-				MessageBox(NULL, fmt_string( "Failed to launch %hs\n", &strexe ).c_str(), "Failure", MB_OK);
-			}
-			else
-			{
-				CloseHandle(pi.hProcess);
-				CloseHandle(pi.hThread);
-			}
-		}
-#else
 		// VTLB build must fail outright...
 		Msgbox::Alert( "Failed to allocate memory needed to run pcsx2.\n\nError: %s", params ex.cMessage() );
-#endif
 		SysShutdownMem();
 
 		return false;

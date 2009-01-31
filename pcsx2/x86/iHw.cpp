@@ -33,10 +33,6 @@
 #include "Sif.h"
 
 
-#ifndef PCSX2_VIRTUAL_MEM
-extern u8  *psH; // hw mem
-#endif
-
 extern int rdram_devices;	// put 8 for TOOL and 2 for PS2 and PSX
 extern int rdram_sdevid;
 extern char sio_buffer[1024];
@@ -191,65 +187,6 @@ int hwConstRead16(u32 x86reg, u32 mem, u32 sign)
 			return 0;
 	}
 }
-
-#ifdef PCSX2_VIRTUAL_MEM
-//
-//#if defined(_MSC_VER)
-//__declspec(naked) void recCheckF440()
-//{
-//	__asm {
-//		add b440, 1
-//		mov eax, b440
-//		sub eax, 3
-//		mov edx, 31
-//
-//		cmp eax, 27
-//		ja WriteVal
-//		shl eax, 2
-//		mov edx, dword ptr [eax+b440table]
-//
-//WriteVal:
-//		mov eax, PS2MEM_BASE_+0x1000f440
-//		mov dword ptr [eax], edx
-//		ret
-//	}
-//}
-//#else
-//void recCheckF440();
-//#endif
-
-void iMemRead32Check()
-{
-	// test if 0xf440
-//	if( bExecBIOS ) {
-//		u8* ptempptr[2];
-//		CMP32ItoR(ECX, 0x1000f440);
-//		ptempptr[0] = JNE8(0);
-//
-////		// increment and test
-////		INC32M((uptr)&b440);
-////		MOV32MtoR(EAX, (uptr)&b440);
-////		SUB32ItoR(EAX, 3);
-////		MOV32ItoR(EDX, 31);
-////
-////		CMP32ItoR(EAX, 27);
-////
-////		// look up table
-////		ptempptr[1] = JA8(0);
-////		SHL32ItoR(EAX, 2);
-////		ADD32ItoR(EAX, (int)b440table);
-////		MOV32RmtoR(EDX, EAX);
-////
-////		x86SetJ8( ptempptr[1] );
-////
-////		MOV32RtoM( (int)PS2MEM_HW+0xf440, EDX);
-//		CALLFunc((uptr)recCheckF440);
-//
-//		x86SetJ8( ptempptr[0] );
-//	}
-}
-
-#endif
 
 int hwContRead32_f440()
 {
@@ -636,15 +573,7 @@ void hwConstWrite8(u32 mem, int mmreg)
 				case 0x1000f430:
 					break;
 				default:
-#ifdef PCSX2_VIRTUAL_MEM
-					//NOTE: this might cause crashes, but is more correct
-					_eeWriteConstMem8((u32)PS2MEM_BASE + mem, mmreg);
-#else
-					if (mem < 0x10010000)
-					{
-						_eeWriteConstMem8((uptr)&PS2MEM_HW[mem&0xffff], mmreg);
-					}
-#endif
+					_eeWriteConstMem8((uptr)&PS2MEM_HW[mem&0xffff], mmreg);
 			}
 
 			break;
@@ -793,15 +722,7 @@ void hwConstWrite16(u32 mem, int mmreg)
 				return;
 			}
 
-#ifdef PCSX2_VIRTUAL_MEM
-		//NOTE: this might cause crashes, but is more correct
-		_eeWriteConstMem16((u32)PS2MEM_BASE + mem, mmreg);
-#else
-		if (mem < 0x10010000)
-		{
 			_eeWriteConstMem16((uptr)&PS2MEM_HW[mem&0xffff], mmreg);
-		}
-#endif
 	}
 }
 
@@ -1087,15 +1008,7 @@ void hwConstWrite32(u32 mem, int mmreg)
 				return;
 			}
 
-#ifdef PCSX2_VIRTUAL_MEM
-			//NOTE: this might cause crashes, but is more correct
-			_eeWriteConstMem32((u32)PS2MEM_BASE + mem, mmreg);
-#else
-			if (mem < 0x10010000)
-			{
-				_eeWriteConstMem32((uptr)&PS2MEM_HW[mem&0xffff], mmreg);
-			}
-#endif
+			_eeWriteConstMem32((uptr)&PS2MEM_HW[mem&0xffff], mmreg);
 		break;
 	}
 }
@@ -1234,12 +1147,7 @@ void hwConstWrite128(u32 mem, int mmreg)
 
 		default:
 
-#ifdef PCSX2_VIRTUAL_MEM
-			_eeWriteConstMem128( PS2MEM_BASE_+mem, mmreg);
-#else
-			if (mem < 0x10010000)
-				_eeWriteConstMem128((uptr)&PS2MEM_HW[mem&0xffff], mmreg);
-#endif
+			_eeWriteConstMem128((uptr)&PS2MEM_HW[mem&0xffff], mmreg);
 			break;
 	}
 }

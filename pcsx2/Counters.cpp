@@ -852,16 +852,6 @@ void SaveState::rcntFreeze()
 	{
 		UpdateVSyncRate();
 
-#ifdef PCSX2_VIRTUAL_MEM
-		// Sanity check for loading older savestates:
-
-		if( counters[4].sCycle == 0 )
-			counters[4].sCycle = cpuRegs.cycle;
-
-		if( counters[5].sCycle == 0 )
-			counters[5].sCycle = cpuRegs.cycle;
-#endif
-	
 		// make sure the gate flags are set based on the counter modes...
 		for( int i=0; i<4; i++ )
 			_rcntSetGate( i );

@@ -30,16 +30,10 @@
 
 #define GSPATH3FIX
 
-#ifdef PCSX2_VIRTUAL_MEM
-#define GSCSRr *((u64*)(PS2MEM_GS+0x1000))
-#define GSIMR *((u32*)(PS2MEM_GS+0x1010))
-#define GSSIGLBLID ((GSRegSIGBLID*)(PS2MEM_GS+0x1080))
-#else
 PCSX2_ALIGNED16( extern u8 g_RealGSMem[0x2000] );
 #define GSCSRr *((u64*)(g_RealGSMem+0x1000))
 #define GSIMR *((u32*)(g_RealGSMem+0x1010))
 #define GSSIGLBLID ((GSRegSIGBLID*)(g_RealGSMem+0x1080))
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // MTGS GIFtag Parser - Declaration

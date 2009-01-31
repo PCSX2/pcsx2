@@ -720,58 +720,7 @@ u64 psxRcntCycles(int index)
 
 void SaveState::psxRcntFreeze()
 {
-#ifdef PCSX2_VIRTUAL_MEM
-	if( IsLoading() && (GetVersion() < 0x10) )
-	{
-		// --- Reading Mode, Old Version ---
-		// struct used to be 32bit count and target
-		int i;
-		u32 val;
-		for(i = 0; i < ARRAYSIZE(psxCounters); ++i)
-		{
-			Freeze(val); psxCounters[i].count = val;
-			Freeze(val); psxCounters[i].mode = val;
-			Freeze(val); psxCounters[i].target = val;
-			FreezeMem((u8*)&psxCounters[i].rate, sizeof(psxCounters[i])-20);
-		}
-	}
-    else
-	{
-	    Freeze(psxCounters);
-
-		// new in v.11
-		if( GetVersion() > 0x10 )
-		{
-			Freeze(psxNextCounter);
-			Freeze(psxNextsCounter);
-		}
-	}
-
-	if( IsLoading() && (GetVersion() <= 0x10) )
-	{
-		psxNextCounter = 0;
-		psxNextsCounter = psxRegs.cycle;
-
-		// This is needed to make old save states compatible.
-		psxCounters[6].rate = 768*12;
-		psxCounters[6].CycleT = psxCounters[6].rate;
-		psxCounters[7].rate = PSXCLK/1000;
-		psxCounters[7].CycleT = psxCounters[7].rate;	
-		
-		// PSXHBLANK is now an arbitrary value, since it can differ based 
-		// on PAL/NTSC and is timed by the EE.
-		if(psxCounters[1].mode & IOPCNT_ALT_SOURCE)
-			psxCounters[1].rate = PSXHBLANK;
-
-		if(psxCounters[3].mode & IOPCNT_ALT_SOURCE)
-			psxCounters[3].rate = PSXHBLANK;
-	}
-#else
-
-	// vTLB's new savestate version! :D
-
     Freeze(psxCounters);
 	Freeze(psxNextCounter);
 	Freeze(psxNextsCounter);
-#endif
 }

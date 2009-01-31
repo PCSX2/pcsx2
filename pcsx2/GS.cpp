@@ -108,12 +108,8 @@ __forceinline void GSVSYNC(void) {
 
 u32 CSRw;
 
-#ifdef PCSX2_VIRTUAL_MEM
-#define PS2GS_BASE(mem) ((PS2MEM_BASE+0x12000000)+(mem&0x13ff))
-#else
 PCSX2_ALIGNED16( u8 g_RealGSMem[0x2000] );
 #define PS2GS_BASE(mem) (g_RealGSMem+(mem&0x13ff))
-#endif
 
 extern int m_nCounters[];
 
@@ -262,9 +258,7 @@ void gsReset()
 		UpdateVSyncRate() 
 	);
 
-#ifndef PCSX2_VIRTUAL_MEM
 	memzero_obj(g_RealGSMem);
-#endif
 
 	Path3transfer = 0;
 
@@ -298,10 +292,8 @@ bool gsGIFSoftReset( int mask )
 
 void gsGIFReset()
 {
-#ifndef PCSX2_VIRTUAL_MEM
 	// fixme - should this be here? (air)
 	//memzero_obj(g_RealGSMem);
-#endif
 
 	// perform a soft reset (but do not do a full reset if the soft reset API is unavailable)
 	gsGIFSoftReset( 7 );

@@ -130,8 +130,6 @@ void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 	fclose(fp);
 }
 
-#ifndef PCSX2_VIRTUAL_MEM
-
 u32 psMPWC[(Ps2MemSize::Base/32)>>12];
 std::vector<u32> psMPWVA[Ps2MemSize::Base>>12];
 
@@ -906,6 +904,4 @@ __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t
 	}
 	psMPWVA[offset].clear();
 }
-#endif
-
 #endif

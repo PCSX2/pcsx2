@@ -32,10 +32,6 @@
 
 VURegs* g_pVU1;
 
-#ifdef PCSX2_VIRTUAL_MEM
-extern PSMEMORYBLOCK s_psVuMem;
-#endif
-
 #ifdef _DEBUG
 u32 vudump = 0;
 #endif

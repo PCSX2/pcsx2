@@ -35,9 +35,7 @@
 
 using namespace R5900;
 
-#ifndef PCSX2_VIRTUAL_MEM
 u8  *psH; // hw mem
-#endif
 
 int rdram_devices = 2;	// put 8 for TOOL and 2 for PS2 and PSX
 int rdram_sdevid = 0;
@@ -1367,7 +1365,7 @@ int hwDmacSrcChain(DMACh *dma, int id) {
 }
 
 // Original hwRead/Write32 functions .. left in for now, for troubleshooting purposes.
-#if 1
+#if 0
 mem32_t __fastcall hwRead32(u32 mem)
 {
 	// *Performance Warning*  This function is called -A-LOT.  Be weary when making changes.  It
@@ -1811,14 +1809,10 @@ __forceinline void __fastcall hwWrite32(u32 mem, u32 value)
 			break;
 //------------------------------------------------------------------
 		default:
-#ifndef PCSX2_VIRTUAL_MEM
-			if (mem < 0x10010000)
-#endif
-			{
-				psHu32(mem) = value;
-			}
+			psHu32(mem) = value;
 			HW_LOG("Unknown Hardware write 32 at %x with value %x (%x)\n", mem, value, cpuRegs.CP0.n.Status.val);
 		break;
 	}
 }
 #endif
+

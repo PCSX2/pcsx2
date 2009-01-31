@@ -33,8 +33,6 @@
 
 #include "PrecompiledHeader.h"
 
-#ifndef PCSX2_VIRTUAL_MEM
-
 #include "Common.h"
 #include "vtlb.h"
 #include "COP0.h"
@@ -591,5 +589,3 @@ void vtlb_free( void* pmem, uint size )
 	safe_aligned_free( pmem );
 #endif
 }
-
-#endif		// PCSX2_VIRTUAL_MEM

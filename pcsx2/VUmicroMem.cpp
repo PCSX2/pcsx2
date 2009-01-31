@@ -26,11 +26,6 @@
 
 #include "iVUzerorec.h"
 
-#ifdef PCSX2_VIRTUAL_MEM
-extern PSMEMORYBLOCK s_psVuMem;
-extern PSMEMORYMAP *memLUT;
-#endif
-
 // The following CpuVU objects are value types instead of handles or pointers because they are
 // modified on the fly to implement VU1 Skip.
 
@@ -87,54 +82,6 @@ static const uint m_vuMemSize =
 
 void vuMicroMemAlloc()
 {
-#ifdef PCSX2_VIRTUAL_MEM
-	jASSUME( memLUT != NULL );		// memAlloc() must always be called first, thanks.
-
-	// unmap all vu0 pages
-	SysMapUserPhysicalPages(PS2MEM_VU0MICRO, 16, NULL, 0);
-
-	// mirror 4 times
-	VU0.Micro = PS2MEM_VU0MICRO;
-
-	// since vuregisters are mapped in vumem0, go to diff addr, but mapping to same physical addr
-    //VirtualFree((void*)0x11000000, 0x10000, MEM_RELEASE); // free just in case
-	bool vu1_reassign = false;
-	if( VU0.Mem == NULL )
-	{
-		VU0.Mem = (u8*)VirtualAlloc((void*)0x11000000, 0x10000, MEM_RESERVE|MEM_PHYSICAL, PAGE_READWRITE);
-		vu1_reassign = true;
-	}
-
-	if( VU0.Mem != (void*)0x11000000 )
-	{
-		VU0.Mem = NULL;
-		throw Exception::OutOfMemory(
-			fmt_string( "Failed to alloc vu0mem 0x11000000 %d", GetLastError() )
-		);
-	}
-
-	memLUT[0x11004].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11004].aVFNs = &s_psVuMem.aVFNs[1];
-	memLUT[0x11005].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11005].aVFNs = &s_psVuMem.aVFNs[1];
-	memLUT[0x11006].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11006].aVFNs = &s_psVuMem.aVFNs[1];
-	memLUT[0x11007].aPFNs = &s_psVuMem.aPFNs[1]; memLUT[0x11007].aVFNs = &s_psVuMem.aVFNs[1];
-
-	// map only registers
-	SysMapUserPhysicalPages(VU0.Mem+0x4000, 1, s_psVuMem.aPFNs, 2);
-
-	if( vu1_reassign )
-	{
-		// Initialize VU1 memory using VU0's allocations:
-		// Important!  VU1 is actually a macro to g_pVU1 (yes, awkward!)  so we need to assign it first.
-		g_pVU1 = (VURegs*)(VU0.Mem + 0x4000);
-
-		VU1.Mem = PS2MEM_VU1MEM;
-		VU1.Micro = PS2MEM_VU1MICRO;
-	}
-
-#else
-
-	// -- VTLB Memory Allocation --
-
 	if( m_vuAllMem == NULL )
 		m_vuAllMem = vtlb_malloc( m_vuMemSize, 16, 0x28000000 );
 
@@ -149,33 +96,15 @@ void vuMicroMemAlloc()
 	VU0.Micro	= curpos; curpos += 0x1000;
 	VU1.Mem		= curpos; curpos += 0x4000;
 	VU1.Micro	= curpos; //curpos += 0x4000;
-
-#endif
 }
 
 void vuMicroMemShutdown()
 {
-#ifdef PCSX2_VIRTUAL_MEM
-
-	if( VU0.Mem != NULL )
-	{
-		if( !SysMapUserPhysicalPages(VU0.Mem, 16, NULL, 0) )
-			Console::Error("Error releasing vu0 memory %d", params GetLastError());
-
-		if( VirtualFree(VU0.Mem, 0, MEM_RELEASE) == 0 )
-			Console::Error("Error freeing vu0 memory %d", params GetLastError());
-	}
-	VU0.Mem = NULL;
-	VU0.Micro = NULL;
-
-#else
-
 	// -- VTLB Memory Allocation --
 
 	vtlb_free( m_vuAllMem, m_vuMemSize );
 	m_vuAllMem = NULL;
 	g_pVU1 = NULL;
-#endif
 }
 
 void vuMicroMemReset()

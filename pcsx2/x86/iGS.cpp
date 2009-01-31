@@ -27,12 +27,8 @@
 #include "GS.h"
 #include "DebugTools/Debug.h"
 	
-#ifdef PCSX2_VIRTUAL_MEM
-#define PS2GS_BASE(mem) ((PS2MEM_BASE+0x12000000)+(mem&0x13ff))
-#else
 extern u8 g_RealGSMem[0x2000];
 #define PS2GS_BASE(mem) (g_RealGSMem+(mem&0x13ff))
-#endif
 
 // __thiscall -- Calling Convention Notes.
 

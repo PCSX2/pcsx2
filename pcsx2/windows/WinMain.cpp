@@ -182,10 +182,6 @@ void WinClose()
 
 	SysShutdownDynarecs();
 	SysShutdownMem();
-
-#ifdef PCSX2_VIRTUAL_MEM
-	VirtualFree(PS2MEM_BASE, 0, MEM_RELEASE);
-#endif
 }
 
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
@@ -307,23 +303,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int i;
 
 	CreateDirectory(LOGS_DIR, NULL);
-
-#ifdef PCSX2_VIRTUAL_MEM
-	LPVOID lpMemReserved;
-
-	if( !SysLoggedSetLockPagesPrivilege( GetCurrentProcess(), TRUE ) )
-		return -1;
-
-	lpMemReserved = VirtualAlloc(PS2MEM_BASE, 0x40000000, MEM_RESERVE, PAGE_NOACCESS);
-
-	if( lpMemReserved == NULL || lpMemReserved!= PS2MEM_BASE ) {
-		char str[255];
-		sprintf(str, "Cannot allocate mem addresses %x-%x, err: %d", PS2MEM_BASE, PS2MEM_BASE+0x40000000, GetLastError());
-		MessageBox(NULL, str, "SysError", MB_OK);
-		return -1;
-	}
-
-#endif
 
 	InitCommonControls();
 	pInstance=hInstance;
@@ -1087,11 +1066,7 @@ void CreateMainWindow(int nCmdShow) {
 	GetObject(hbitmap_background, sizeof(bm), &bm);
 
 	{
-#ifdef PCSX2_VIRTUAL_MEM
-		const char* pvm = "VM";
-#else
 		const char* pvm = "VTLB";
-#endif
 
 #ifdef PCSX2_DEVBUILD
 		sprintf(buf, _("PCSX2 %s - %s Compile Date - %s %s"), PCSX2_VERSION, pvm, COMPILEDATE, COMPILER);

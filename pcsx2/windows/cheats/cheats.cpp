@@ -69,11 +69,7 @@ char tn[100];
 char to[100];
 char tv[100];
 
-#ifdef PCSX2_VIRTUAL_MEM
-u8 *mptr[2]={PS2MEM_BASE,PS2MEM_PSX};
-#else
 u8 *mptr[2];
-#endif
 
 int  msize[2]={0x02000000,0x00200000};
 
@@ -437,13 +433,10 @@ BOOL CALLBACK FinderProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case WM_PAINT:
 			INIT_CHECK(IDC_UNSIGNED,Unsigned);
 			return FALSE;
-		case WM_INITDIALOG:
 
-#ifndef PCSX2_VIRTUAL_MEM
+		case WM_INITDIALOG:
 			mptr[0]=psM;
 			mptr[1]=psxM;
-#endif
-
 
 			hWndFinder=hWnd;
 

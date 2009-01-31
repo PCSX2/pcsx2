@@ -1,10 +1,6 @@
 #ifndef _VTLB_H_
 #define _VTLB_H_
 
-#include <xmmintrin.h>
-
-#ifndef PCSX2_VIRTUAL_MEM
-
 typedef u8 mem8_t;
 typedef u16 mem16_t;
 typedef u32 mem32_t;
@@ -79,7 +75,5 @@ namespace vtlb_private
 	extern s32 pmap[VTLB_PMAP_ITEMS];	//512KB
 	extern s32 vmap[VTLB_VMAP_ITEMS];   //4MB
 }
-
-#endif
 
 #endif

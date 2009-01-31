@@ -48,9 +48,7 @@ using namespace std;			// for min / max
 #	define IPU_FORCEINLINE __forceinline
 #endif
 
-#ifndef PCSX2_VIRTUAL_MEM
-IPUregisters g_ipuRegsReal;
-#endif
+//IPUregisters g_ipuRegsReal;
 
 #define ipu0dma ((DMACh *)&PS2MEM_HW[0xb000])
 #define ipu1dma ((DMACh *)&PS2MEM_HW[0xb400])

@@ -555,10 +555,7 @@ void recResetEE( void )
 	if( s_pInstCache ) memset( s_pInstCache, 0, sizeof(EEINST)*s_nInstCacheSize );
 
 	ResetBaseBlockEx(0);
-
-#ifndef PCSX2_VIRTUAL_MEM
 	mmap_ResetBlockTracking();
-#endif
 
 #ifdef _MSC_VER
 	__asm emms;
@@ -668,19 +665,12 @@ static __naked void Dispatcher()
 	// calc PC_GETBLOCK
 	s_pDispatchBlock = PC_GETBLOCK(cpuRegs.pc);
 	
-	__asm {
-		// check if startpc == cpuRegs.pc
-		mov eax, s_pDispatchBlock
-		mov ecx, cpuRegs.pc
-		cmp ecx, dword ptr [eax+BLOCKTYPE_STARTPC]
-		je CheckPtr
+	if( s_pDispatchBlock == NULL || s_pDispatchBlock->startpc != cpuRegs.pc )
+		recRecompile(cpuRegs.pc);
 
-		// recompile
-		push cpuRegs.pc // pc
-		call recRecompile
-		add esp, 4 // pop old param
+	__asm
+	{
 		mov eax, s_pDispatchBlock
-CheckPtr:
 		mov eax, dword ptr [eax]
 	}
 
@@ -1931,7 +1921,6 @@ StartRecomp:
 	MOV32ItoR(ECX,startpc);
 	MOV32ItoR(EDX,sz);
 
-#ifndef PCSX2_VIRTUAL_MEM
 	while(inpage_sz)
 	{
 		int PageType=mmap_GetRamPageInfo((u32*)PSM(inpage_ptr));
@@ -1968,7 +1957,6 @@ StartRecomp:
 		inpage_sz-=pgsz;
 		inpage_offs=inpage_ptr&0xFFF;
 	}
-#endif
 
 	// finally recompile //
 	g_pCurInstInfo = s_pInstCache;

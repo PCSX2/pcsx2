@@ -19,9 +19,7 @@
 #ifndef __HW_H__
 #define __HW_H__
 
-#ifndef PCSX2_VIRTUAL_MEM
 extern u8  *psH; // hw mem
-#endif
 
 #define psHs8(mem)	(*(s8 *)&PS2MEM_HW[(mem) & 0xffff])
 #define psHs16(mem)	(*(s16*)&PS2MEM_HW[(mem) & 0xffff])
@@ -308,6 +306,7 @@ struct DMACh {
 extern PSMEMORYMAP* memLUT;
 #endif
 
+// VM-version of dmaGetAddr -- Left in for references purposes for now (air)
 static __forceinline u8* dmaGetAddr(u32 mem)
 {
 	u8* p, *pbase;
@@ -413,10 +412,6 @@ void hwConstWrite16(u32 mem, int mmreg);
 void hwConstWrite32(u32 mem, int mmreg);
 void hwConstWrite64(u32 mem, int mmreg);
 void hwConstWrite128(u32 mem, int xmmreg);
-
-#ifdef PCSX2_VIRTUAL_MEM
-void iMemRead32Check();
-#endif
 
 extern void  intcInterrupt();
 extern void  dmacInterrupt();

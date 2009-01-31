@@ -29,11 +29,7 @@
 using std::min;
 
 
-#ifdef PCSX2_VIRTUAL_MEM
-#define gif ((DMACh*)&PS2MEM_HW[0xA000])
-#else
 #define gif ((DMACh*)&psH[0xA000])
-#endif
 
 static u64 s_gstag=0; // used for querying the last tag
 static int gspath3done=0;
@@ -100,21 +96,6 @@ static void WRITERING_DMA(u32 *pMem, u32 qwc)
 		// fixed? PrepDataPacket now returns the actual size of the packet.
 		// VIF handles scratchpad wrapping also, so this code shouldn't be needed anymore.
 
-		//vm build still needs this, fixes Fatal Frame init(rama)
-
-#ifdef PCSX2_VIRTUAL_MEM  //only do this for vm build, vtlb is fine 
-		u32 pendmem = (u32)gif->madr + sizetoread; 
-		if( dmaGetAddr(pendmem-16) == NULL )
-		{ 
-			pendmem = ((pendmem-16)&~0xfff)-16; 
-			while(dmaGetAddr(pendmem) == NULL)
-			{ 
-				pendmem = (pendmem&~0xfff)-16; 
-			} 
-			memcpy_aligned(pgsmem, pMem, pendmem-(u32)gif->madr+16);
-		}
-		else
-#endif
 		memcpy_aligned(pgsmem, pMem, sizetoread<<4); 
 		
 		mtgsThread->SendDataPacket();

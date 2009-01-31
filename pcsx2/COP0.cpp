@@ -47,16 +47,15 @@ void MapTLB(int i)
 	u32 mask, addr;
 	u32 saddr, eaddr;
 
-#ifndef PCSX2_VIRTUAL_MEM
 	DevCon::WriteLn("MAP TLB %d: %08x-> [%08x %08x] S=%d G=%d ASID=%d Mask= %03X", params
 		i,tlb[i].VPN2,tlb[i].PFN0,tlb[i].PFN1,tlb[i].S,tlb[i].G,tlb[i].ASID,tlb[i].Mask);
 
 	if (tlb[i].S)
 	{
-		SysPrintf("OMG SPRAM MAPPING %08X %08X\n",tlb[i].VPN2,tlb[i].Mask);
+		DevCon::WriteLn("OMG SPRAM MAPPING %08X %08X\n",params tlb[i].VPN2,tlb[i].Mask);
 		vtlb_VMapBuffer(tlb[i].VPN2,psS,0x4000);
 	}
-#endif
+
 	if (tlb[i].VPN2 == 0x70000000) return; //uh uhh right ...
 
 	if (tlb[i].EntryLo0 & 0x2) {
@@ -92,13 +91,11 @@ void UnmapTLB(int i)
 	u32 mask, addr;
 	u32 saddr, eaddr;
 
-#ifndef PCSX2_VIRTUAL_MEM
 	if (tlb[i].S)
 	{
 		vtlb_VMapUnmap(tlb[i].VPN2,0x4000);
 		return;
 	}
-#endif
 
 	if (tlb[i].EntryLo0 & 0x2) 
 	{
@@ -142,9 +139,8 @@ void WriteTLB(int i)
 	tlb[i].G = cpuRegs.CP0.n.EntryLo0 & cpuRegs.CP0.n.EntryLo1 & 0x1;
 	tlb[i].PFN0 = (((cpuRegs.CP0.n.EntryLo0 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
 	tlb[i].PFN1 = (((cpuRegs.CP0.n.EntryLo1 >> 6) & 0xFFFFF) & (~tlb[i].Mask)) << 12;
-#ifndef PCSX2_VIRTUAL_MEM
 	tlb[i].S = cpuRegs.CP0.n.EntryLo0&0x80000000;
-#endif
+
 	MapTLB(i);
 }
 

@@ -146,9 +146,7 @@ struct tlbs
 	u32 VPN2;
 	u32 PFN0;
 	u32 PFN1;
-#ifndef PCSX2_VIRTUAL_MEM
 	u32 S;
-#endif
 };
 
 #ifndef _PC_

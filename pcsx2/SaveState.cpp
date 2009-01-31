@@ -44,28 +44,11 @@ extern void recResetIOP();
 static void PreLoadPrep()
 {
 	SysResetExecutionState();
-
-#ifdef PCSX2_VIRTUAL_MEM
-	DWORD OldProtect;
-	// make sure can write
-	VirtualProtect(PS2MEM_ROM, 0x00400000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_ROM1, 0x00040000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READWRITE, &OldProtect);
-	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READWRITE, &OldProtect);
-#endif
 }
 
 static void PostLoadPrep()
 {
-#ifdef PCSX2_VIRTUAL_MEM
-	DWORD OldProtect;
-	VirtualProtect(PS2MEM_ROM, 0x00400000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_ROM1, 0x00040000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_ROM2, 0x00080000, PAGE_READONLY, &OldProtect);
-	VirtualProtect(PS2MEM_EROM, 0x001C0000, PAGE_READONLY, &OldProtect);
-#endif
-
-	memset(pCache,0,sizeof(pCache));
+	memzero_obj(pCache);
 //	WriteCP0Status(cpuRegs.CP0.n.Status.val);
 	for(int i=0; i<48; i++) MapTLB(i);
 }
@@ -113,12 +96,6 @@ void SaveState::FreezeAll()
 {
 	if( IsLoading() )
 		PreLoadPrep();
-
-#ifdef PCSX2_VIRTUAL_MEM
-	// VM Builds require the exception handler during memInit/Reset operations and
-	// during the savestate load/save code.
-	PCSX2_MEM_PROTECT_BEGIN();
-#endif
 
 	FreezeMem(PS2MEM_BASE, Ps2MemSize::Base);	// 32 MB main memory   
 	FreezeMem(PS2MEM_ROM, Ps2MemSize::Rom);		// 4 mb rom memory
@@ -168,10 +145,6 @@ void SaveState::FreezeAll()
 	FreezePlugin( "SPU2", SPU2freeze );
 	FreezePlugin( "DEV9", DEV9freeze );
 	FreezePlugin( "USB", USBfreeze );
-
-#ifdef PCSX2_VIRTUAL_MEM
-	PCSX2_MEM_PROTECT_END();
-#endif
 
 	if( IsLoading() )
 		PostLoadPrep();
@@ -231,15 +204,6 @@ gzLoadingState::gzLoadingState( const string& filename ) :
 
 	if( m_version != g_SaveVersion )
 	{
-#ifdef PCSX2_VIRTUAL_MEM
-		if( m_version >= 0x8b400000 )
-		{
-			throw Exception::UnsupportedStateVersion( m_version, "VM edition cannot safely load savestates created by the VTLB edition." );
-		}
-		// pcsx2 vm supports opening these formats
-		if( m_version < 0x7a30000d )
-			throw Exception::UnsupportedStateVersion( m_version );
-#else
 		if( ( m_version >> 16 ) == 0x7a30 )
 		{
 			Console::Error(
@@ -247,7 +211,6 @@ gzLoadingState::gzLoadingState( const string& filename ) :
 				"\tVTLB edition cannot safely load savestates created by the VM edition." );
 			throw Exception::UnsupportedStateVersion( m_version );
 		}
-#endif
 	}
 
 	_testCdvdCrc();
