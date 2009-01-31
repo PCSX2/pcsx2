@@ -33,6 +33,11 @@ GtkWidget *MsgDlg;
 
 static int sinit=0;
 
+// These two status vars replace the old g_GameInProgress status var.
+
+bool g_ReturnToGui = false;			// set to exit the execution of the emulator and return control to the GUI
+bool g_EmulationInProgress = false;	// Set TRUE if a game is actively running (set to false on reset)
+
 int main(int argc, char *argv[]) {
 	char *file = NULL;
 	char elfname[g_MaxPath];
@@ -278,19 +283,24 @@ void KeyEvent(keyEvent* ev) {
 			//Config_hacks_backup = Config.Hacks;
 		}
 		
-		switch (ev->key) {
-			case XK_F1: ProcessFKeys(1, shift); break;
-			case XK_F2: ProcessFKeys(2, shift); break;
-			case XK_F3: ProcessFKeys(3, shift); break;
-			case XK_F4: ProcessFKeys(4, shift); break;
-			case XK_F5: ProcessFKeys(5, shift); break;
-			case XK_F6: ProcessFKeys(6, shift); break;
-			case XK_F7: ProcessFKeys(7, shift); break;
-			case XK_F8: ProcessFKeys(8, shift); break;
-			case XK_F9: ProcessFKeys(9, shift); break;
-			case XK_F10: ProcessFKeys(10, shift); break;
-			case XK_F11: ProcessFKeys(11, shift); break;
-			case XK_F12: ProcessFKeys(12, shift); break;
+		switch (ev->key)
+		{
+			case XK_F1: case XK_F2:  case XK_F3:  case XK_F4:
+			case XK_F5: case XK_F6:  case XK_F7:  case XK_F8:
+			case XK_F9: case XK_F10: case XK_F11: case XK_F12:
+				try
+				{
+					ProcessFKeys(ev->key-XK_F1 + 1, shift);
+				}
+				catch( Exception::CpuStateShutdown& )
+				{
+					// Woops!  Something was unrecoverable.  Bummer.
+					// Let's give the user a RunGui!
+
+					g_EmulationInProgress = false;
+					g_ReturnToGui = true;
+				}
+				break;
 
 			case XK_Escape:
 				signal(SIGINT, SIG_DFL);
@@ -305,8 +315,17 @@ void KeyEvent(keyEvent* ev) {
 
 				ClosePlugins();
 				if (!UseGui) exit(0);
+
+				// fixme: The GUI is now capable of recieving control back from the
+				// emulator.  Which means that when I set g_ReturnToGui here, the emulation
+				// loop in ExecuteCpu() will exit.  You should be able to set it up so
+				// that it returns control to the existing GTK event loop, instead of
+				// always starting a new one via RunGui().  (but could take some trial and
+				// error)  -- (air)
+				g_ReturnToGui = true;
 				RunGui();
 				break;
+
 			default:
 				GSkeyEvent(ev);
 				break;
@@ -385,7 +404,7 @@ bool SysInit()
 void SysRestorableReset()
 {
 	// already reset? and saved?
-	if( !g_GameInProgress ) return;
+	if( !g_EmulationInProgress ) return;
 	if( g_RecoveryState != NULL ) return;
 
 	try
@@ -393,13 +412,13 @@ void SysRestorableReset()
 		g_RecoveryState = new MemoryAlloc<u8>( "Memory Savestate Recovery" );
 		memSavingState( *g_RecoveryState ).FreezeAll();
 		cpuShutdown();
-		g_GameInProgress = false;
+		g_EmulationInProgress = false;
 	}
-	catch( std::runtime_error& ex )
+	catch( Exception::RuntimeError& ex )
 	{
 		Msgbox::Alert(
 			"Pcsx2 gamestate recovery failed. Some options may have been reverted to protect your game's state.\n"
-			"Error: %s", params ex.what() );
+			"Error: %s", params ex.cMessage() );
 		safe_delete( g_RecoveryState );
 	}
 }
@@ -408,15 +427,18 @@ void SysReset()
 {
 	if (!sinit) return;
 
-	g_GameInProgress = false;
+	g_EmulationInProgress = false;
 	safe_free( g_RecoveryState );
 
 	ResetPlugins();
+
+	ElfCRC = 0;
 }
 
 void SysClose() {
 	if (sinit == 0) return;
 	cpuShutdown();
+	ClosePlugins();
 	ReleasePlugins();
 
 	if (emuLog != NULL) 

@@ -334,3 +334,27 @@ void SysResetExecutionState()
 	// make sure the VU1 doesn't have lingering "skip" enabled.
 	vu1MicroDisableSkip();
 }
+
+u8 *SysMmap(uptr base, u32 size, uptr bounds, const char *caller)
+{
+	u8 *Mem = (u8*)SysMmap( base, size );
+
+	if( (Mem == NULL) || ((uptr)Mem + size) > bounds )
+	{
+		DevCon::Error( "First try failed allocating %s at address 0x%x", params caller, base );
+
+		// memory allocation *must* have the top bit clear, so let's try again
+		// with NULL (let the OS pick something for us).
+
+		SafeSysMunmap( base, size );
+
+		Mem = (u8*)SysMmap( NULL, size );
+		if( (uptr)Mem > bounds )
+		{
+			DevCon::Error( "Second try failed allocating %s, block ptr 0x%x does not meet required criteria.", params caller, Mem );
+			SafeSysMunmap( Mem, size );
+		}
+	}
+	return Mem;
+}
+

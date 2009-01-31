@@ -36,7 +36,7 @@ MemoryAlloc<u8>* g_gsRecoveryState = NULL;
 
 
 bool g_ReturnToGui = false;			// set to exit the execution of the emulator and return control to the GUI
-bool g_EmulationInProgress = false;		// Set TRUE if a game is actively running (set to false on reset)
+bool g_EmulationInProgress = false;	// Set TRUE if a game is actively running (set to false on reset)
 
 // This instance is not modified by command line overrides so
 // that command line plugins and stuff won't be saved into the
@@ -258,9 +258,6 @@ void RunExecute( const char* elf_file, bool use_bios )
 	SetThreadPriority(GetCurrentThread(), Config.ThPriority);
 	SetPriorityClass(GetCurrentProcess(), Config.ThPriority == THREAD_PRIORITY_HIGHEST ? ABOVE_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS);
     nDisableSC = 1;
-
-	// Issue a cpu reset if the emulation state is invalid or if a recovery state
-	// is waiting to be loaded.
 
 	try
 	{
@@ -718,11 +715,11 @@ void SysRestorableReset()
 		safe_delete( g_gsRecoveryState );
 		g_EmulationInProgress = false;
 	}
-	catch( std::runtime_error& ex )
+	catch( Exception::RuntimeError& ex )
 	{
 		Msgbox::Alert(
 			"Pcsx2 gamestate recovery failed. Some options may have been reverted to protect your game's state.\n"
-			"Error: %s", params ex.what() );
+			"Error: %s", params ex.cMessage() );
 		safe_delete( g_RecoveryState );
 	}
 }

@@ -329,7 +329,7 @@ void SuperVUAlloc(int vuindex)
 	if( s_recVUMem == NULL )
 	{
 		// upper 4 bits must be zero!
-		s_recVUMem = SysBoundedMmap(0x0c000000, VU_EXESIZE, 0x80000000, "SuperVUAlloc");
+		s_recVUMem = SysMmap(0x0c000000, VU_EXESIZE, 0x10000000, "SuperVUAlloc");
 
 		if( s_recVUMem == NULL )
 		{

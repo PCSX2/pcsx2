@@ -571,21 +571,7 @@ void vtlb_Term()
 u8* vtlb_malloc( uint size, uint align, uptr tryBaseAddress )
 {
 #ifdef __LINUX__
-	void* retval =
-		( tryBaseAddress != NULL ) ? SysMmap( tryBaseAddress, size ) : NULL;
-
-	if( retval == NULL || (uptr)retval > 0x80000000 )
-	{
-		// memory allocation *must* have the top bit clear, so let's try again
-		// with NULL (let the OS pick something for us).
-
-		SafeSysMunmap( retval, size );
-
-		retval = (u8*)SysMmap( NULL, size );
-		if( (uptr)retval > 0x80000000 )
-			SafeSysMunmap( retval, size );
-	}
-	return (u8*)retval;
+	return SysMmap( tryBaseAddress, size, "Vtlb" );
 #else
 	// Win32 just needs this, since malloc always maps below 2GB.
 	return (u8*)_aligned_malloc(size, align);
@@ -599,7 +585,7 @@ void vtlb_free( void* pmem, uint size )
 #ifdef __LINUX__
 	SafeSysMunmap( pmem, size );
 #else
-// Make sure and unprotect memory first, since CrtDebug will try to write to it.
+	// Make sure and unprotect memory first, since CrtDebug will try to write to it.
 	DWORD old;
 	VirtualProtect( pmem, size, PAGE_READWRITE, &old );
 	safe_aligned_free( pmem );

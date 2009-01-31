@@ -140,11 +140,27 @@ void ExecuteCpu()
 	signal(SIGINT, SignalExit);
 	signal(SIGPIPE, SignalExit);
 
-	//timeBeginPeriod( 1 );
+	// Make sure any left-over recovery states are cleaned up.
+	safe_delete( g_RecoveryState );
+
+	// Just in case they weren't initialized earlier (no harm in calling this multiple times)
+	if (OpenPlugins(NULL) == -1) return;
+
+	// this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
+	if( GSsetGameCRC != NULL ) GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
+
+	// Optimization: We hardcode two versions of the EE here -- one for recs and one for ints.
+	// This is because recs are performance critical, and being able to inline them into the
+	// function here helps a small bit (not much but every small bit counts!).
+
+	g_EmulationInProgress = true;
+	g_ReturnToGui = false;
+
+	PCSX2_MEM_PROTECT_BEGIN();
 
 	if( CHECK_EEREC )
 	{
-		while( !m_ReturnToGame )
+		while( !g_ReturnToGui )
 		{
 			recExecute();
 			SysUpdate();
@@ -152,15 +168,13 @@ void ExecuteCpu()
 	}
 	else
 	{
-		while( !m_ReturnToGame )
+		while( !g_ReturnToGui )
 		{
 			Cpu->Execute();
 			SysUpdate();
 		}
 	}
-
-	//timeEndPeriod( 1 );
-	
+	PCSX2_MEM_PROTECT_END();
 }
 
 void RunExecute( const char* elf_file, bool use_bios )
@@ -195,9 +209,7 @@ void RunExecute( const char* elf_file, bool use_bios )
 		return;
 	}
 	
-	SysResetExecutionState() ;
-
-	if (elf_file == 0 )
+	if (elf_file == NULL )
 	{
 		if (g_RecoveryState != NULL)
 		{
@@ -222,13 +234,14 @@ void RunExecute( const char* elf_file, bool use_bios )
 		{
 			// Not recovering a state, so need to execute the bios and load the ELF information.
 
-			// Note: if the elf_file is null we use the CDVD elf file.
+			// if the elf_file is null we use the CDVD elf file.
 			// But if the elf_file is an empty string then we boot the bios instead.
 
-			cpuExecuteBios();
 			char ename[g_MaxPath];
 			ename[0] = 0;
-			if( !use_bios ) GetPS2ElfName(ename);
+			if( !use_bios )
+				GetPS2ElfName( ename );
+
 			loadElfFile( ename );
 		}
 	}
@@ -237,15 +250,11 @@ void RunExecute( const char* elf_file, bool use_bios )
 		// Custom ELF specified (not using CDVD).
 		// Run the BIOS and load the ELF.
 
-		cpuExecuteBios();
 		loadElfFile( elf_file );
 	}
 	
 	FixCPUState();
 
-	// this needs to be called for every new game! (note: sometimes launching games through bios will give a crc of 0)
-	if( GSsetGameCRC != NULL ) GSsetGameCRC(ElfCRC, g_ZeroGSOptions);
-		
 	ExecuteCpu();
 }
 
@@ -327,8 +336,8 @@ void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data)
 
 void OnEmu_Run(GtkMenuItem *menuitem, gpointer user_data)
 {
-	if( g_GameInProgress )
-		m_ReturnToGame = 1;
+	if( g_EmulationInProgress )
+		ExecuteCpu();
 	else
 		RunExecute( NULL, true );	// boots bios if no savestate is to be recovered
 
@@ -336,7 +345,6 @@ void OnEmu_Run(GtkMenuItem *menuitem, gpointer user_data)
 
 void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
 {
-	safe_free( g_RecoveryState );
 	SysReset();
 }
 

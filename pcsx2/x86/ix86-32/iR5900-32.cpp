@@ -500,16 +500,18 @@ static void recAlloc()
 	if( recMem == NULL )
 	{
 		const uint cachememsize = REC_CACHEMEM+0x1000;
-
-		// try an arbitrary address first, and if it doesn't work, try NULL.
-		recMem = (u8*)SysBoundedMmap(0x0d000000, cachememsize, 0x80000000, "recAlloc(5900)");
+		recMem = (u8*)SysMmap(0x0d000000, cachememsize, 0x10000000, "recAlloc(5900)");
 	}
+
+	if( recMem == NULL )
+		throw Exception::OutOfMemory( "R5900-32 > failed to allocate recompiler memory." );
+
 	// Goal: Allocate BASEBLOCKs for every possible branch target in PS2 memory.
 	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
 	// always 4 bytes long).
 
-        if( m_recBlockAlloc == NULL )
-                m_recBlockAlloc = (u8*) _aligned_malloc( m_recBlockAllocSize, 4096 );
+    if( m_recBlockAlloc == NULL )
+		m_recBlockAlloc = (u8*) _aligned_malloc( m_recBlockAllocSize, 4096 );
 
 	if( m_recBlockAlloc == NULL )
 		throw Exception::OutOfMemory( "R5900-32 Init > Failed to allocate memory for BASEBLOCK tables." );

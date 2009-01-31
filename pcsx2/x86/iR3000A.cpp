@@ -556,7 +556,7 @@ static void recAlloc()
 	// ... we can't? (air)
 
 	if( recMem == NULL )
-		recMem = (u8*)SysBoundedMmap(0x0f000000, RECMEM_SIZE, 0xf0000000, "recAlloc(3000)");
+		recMem = (u8*)SysMmap(0x0f000000, RECMEM_SIZE, 0x10000000, "recAlloc(3000)");
 	
 	if( recMem == NULL )
 		throw Exception::OutOfMemory( "R3000a Init > failed to allocate memory for the recompiler." );
