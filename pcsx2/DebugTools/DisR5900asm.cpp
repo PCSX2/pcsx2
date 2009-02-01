@@ -610,18 +610,14 @@ void disR5900Fasm(string& output, u32 code, u32 pc)
 {
 	string dbuf;
 	char obuf[48];
-	const R5900::OPCODE *op;
 
 	const u32 scode = cpuRegs.code;
 	opcode_addr = pc;
 	cpuRegs.code = code;
-	op = &R5900::OpcodeTables::tbl_Standard[(code) >> 26];
-	while (op->getsubclass)
-		op = &op->getsubclass();
 
 	sprintf(obuf, "%08X:\t", pc );
 	output.assign( obuf );
-	op->disasm( output );
+	GetCurrentInstruction().disasm( output );
 
 	cpuRegs.code = scode;
 }
@@ -727,8 +723,8 @@ void ANDI( string& output )   { _sap("andi\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT
 void ORI( string& output )    { _sap("ori\t%s, %s, 0x%04X")    GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
 void XORI( string& output )   { _sap("xori\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
 void LUI( string& output )    { _sap("lui\t%s, 0x%04X")        GPR_REG[DECODE_RT], DECODE_IMMED); }
-void BEQL( string& output )   { _sap("beql\t%s, %s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
-void BNEL( string& output )   { _sap("bnel\t%s, %s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
+void BEQL( string& output )   { _sap("beql\t%s, %s, ")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
+void BNEL( string& output )   { _sap("bnel\t%s, %s, ")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
 void BLEZL( string& output )  { _sap("blezl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
 void BGTZL( string& output )  { _sap("bgtzl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
 void DADDI( string& output )  { _sap("daddi\t%s, %s, 0x%04X")  GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }

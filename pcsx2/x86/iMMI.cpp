@@ -110,35 +110,28 @@ void recPLZCW()
 			_deleteEEreg(_Rd_, 0);
 	}
 
-	// first word
+	// Count the number of leading bits (MSB) that match the sign bit, excluding the sign
+	// bit itself.
 
-	TEST32ItoR(EAX, 0x80000000);
-	j8Ptr[0] = JZ8(0);
+	// Strategy: If the sign bit is set, then negate the value.  And that way the same
+	// bitcompare can be used for either bit status.  but be warned!  BSR returns undefined
+	// results if the EAX is zero, so we need to have special checks for zeros before
+	// using it.
+
+	// --- first word ---
+
+	MOV32ItoR(ECX,31);
+	TEST32RtoR(EAX, EAX);		// TEST sets the sign flag accordingly.
+	u8* label_notSigned = JNS8(0);
 	NOT32R(EAX);
-	x86SetJ8(j8Ptr[0]);
+	x86SetJ8(label_notSigned);
 
-
-	TEST32RtoR(EAX, EAX);
-	j8Ptr[0] = JNZ8(0);
-
-	// zero, so put 31
-	if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], 31);
-	}
-	else {
-		SetMMXstate();
-		PCMPEQDRtoR(regd, regd);
-		PSRLQItoR(regd, 59);
-	}
-
-	j8Ptr[1] = JMP8(0);
-	x86SetJ8(j8Ptr[0]);
-
-	// not zero
-	x86SetJ8(j8Ptr[0]);
 	BSRRtoR(EAX, EAX);
-	MOV32ItoR(ECX, 30);
+	u8* label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
 	SUB32RtoR(ECX, EAX);
+	DEC32R(ECX);			// PS2 doesn't count the first bit
+
+	x86SetJ8(label_Zeroed);
 	if( EEINST_ISLIVE1(_Rd_) || regd < 0 ) {
 		MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], ECX);
 	}
@@ -147,9 +140,8 @@ void recPLZCW()
 		MOVD32RtoMMX(regd, ECX);
 	}
 
-	x86SetJ8(j8Ptr[1]);
-
 	// second word
+
 	if( EEINST_ISLIVE1(_Rd_) ) {
 		if( regs >= 0 && (regs & MEM_XMMTAG) ) {
 			SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0x4e);
@@ -164,26 +156,19 @@ void recPLZCW()
 		}
 		else MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]);
 
-		TEST32ItoR(EAX, 0x80000000);
-		j8Ptr[0] = JZ8(0);
+		MOV32ItoR(ECX, 31);
+		TEST32RtoR(EAX, EAX);		// TEST sets the sign flag accordingly.
+		label_notSigned = JNS8(0);
 		NOT32R(EAX);
-		x86SetJ8(j8Ptr[0]);
+		x86SetJ8(label_notSigned);
 
-		TEST32RtoR(EAX, EAX);
-		j8Ptr[0] = JNZ8(0);
-
-		// zero, so put 31
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], 31);
-		j8Ptr[1] = JMP8(0);
-		x86SetJ8(j8Ptr[0]);
-
-		// not zero
-		x86SetJ8(j8Ptr[0]);
 		BSRRtoR(EAX, EAX);
-		MOV32ItoR(ECX, 30);
+		u8* label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
 		SUB32RtoR(ECX, EAX);
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], ECX);
-		x86SetJ8(j8Ptr[1]);
+		DEC32R(ECX);			// PS2 doesn't count the first bit
+
+		x86SetJ8(label_Zeroed);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], ECX);
 	}
 	else {
 		EEINST_RESETHASLIVE1(_Rd_);
@@ -265,7 +250,7 @@ CPU_SSE2_XMMCACHE_START(XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI)
 
 CPU_SSE_XMMCACHE_END
 
-recCall( Interp::PMFHL, _Rd_ );
+	recCall( Interp::PMFHL, _Rd_ );
 }
 
 void recPMTHL()

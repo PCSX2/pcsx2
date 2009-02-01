@@ -132,17 +132,21 @@ namespace MMI {
 
 __forceinline void _PLZCW(int n) 
 { 
-	int i;
-	u32 sign;
-	
-	sign = cpuRegs.GPR.r[_Rs_].UL[n] >> 31; 
-	
-	for (i=30; i>=0; i--) { 
-		if (((cpuRegs.GPR.r[_Rs_].UL[n] >> i) & 0x1) != sign) 
-			break; 
-	} 
-	
-	cpuRegs.GPR.r[_Rd_].UL[n] = 30 - i; 
+	// This function counts the number of "like" bits in the source register, starting
+	// with the MSB and working its way down, and returns the result MINUS ONE.
+	// So 0xff00 would return 7, not 8.
+
+	int c = 0;
+	s32 i = cpuRegs.GPR.r[_Rs_].SL[n];
+
+	// Negate the source based on the sign bit.  This allows us to use a simple
+	// unified bit test of the MSB for either condition.
+	if( i >= 0 ) i = ~i;
+
+	// shift first, compare, then increment.  This excludes the sign bit from our final count.
+	while( i <<= 1, i < 0 ) c++;
+
+	cpuRegs.GPR.r[_Rd_].UL[n] = c; 
 }
 
 void PLZCW() {

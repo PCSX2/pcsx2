@@ -117,7 +117,7 @@ extern void EEDumpRegs(FILE * fp);
 extern void IOPDumpRegs(FILE * fp);
 BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    char start[16], end[16], fname[128], tmp[128], buf[128];
+    char start[16], end[16], fname[128], tmp[128];
     unsigned long start_pc, end_pc, temp;
 
 	FILE *fp;
@@ -125,14 +125,14 @@ BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
         case WM_INITDIALOG:
-            sprintf(buf, "%08X", cpuRegs.pc);
-            SetDlgItemText(hDlg, IDC_DUMP_START, buf);
-            SetDlgItemText(hDlg, IDC_DUMP_END,   buf);
+            sprintf(tmp, "%08X", cpuRegs.pc);
+            SetDlgItemText(hDlg, IDC_DUMP_START, tmp);
+            SetDlgItemText(hDlg, IDC_DUMP_END,   tmp);
 			SetDlgItemText(hDlg, IDC_DUMP_FNAME, "EEdisasm.txt");
 
-			sprintf(buf, "%08X", psxRegs.pc);
-            SetDlgItemText(hDlg, IDC_DUMP_STARTIOP, buf);
-            SetDlgItemText(hDlg, IDC_DUMP_ENDIOP,   buf);
+			sprintf(tmp, "%08X", psxRegs.pc);
+            SetDlgItemText(hDlg, IDC_DUMP_STARTIOP, tmp);
+            SetDlgItemText(hDlg, IDC_DUMP_ENDIOP,   tmp);
 			SetDlgItemText(hDlg, IDC_DUMP_FNAMEIOP, "IOPdisasm.txt");
             return TRUE;
 
@@ -168,13 +168,9 @@ BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						MakeDebugOpcode();
 
 						output.assign( HasBreakpoint() ? "*" : "" );
-						sprintf(buf, "%08X %08X: %s", temp, cpuRegs.code, tmp);
-						output.append( buf );
+						R5900::GetCurrentInstruction().disasm( output );
 
-						R5900::OpcodeTables::tbl_Standard[_Opcode_].disasm( output );
-
-
-						fprintf(fp, "%s\n", buf);
+						fprintf(fp, "%08X %08X: %s\n", temp, cpuRegs.code, output.c_str());
 					}
 
 
@@ -213,8 +209,7 @@ BOOL APIENTRY DumpProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						opcode_addr=temp;
 						MakeIOPDebugOpcode();											
 						R3000A::IOP_DEBUG_BSC[(psxRegs.code) >> 26](tmp);
-						sprintf(buf, "%08X %08X: %s", temp, psxRegs.code, tmp);
-						fprintf(fp, "%s\n", buf);
+						fprintf(fp, "%08X %08X: %s\n", temp, psxRegs.code, tmp);
 					}
 
 					fprintf(fp,"\n\n\n----------------------------------\n");
