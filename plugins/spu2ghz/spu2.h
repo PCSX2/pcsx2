@@ -125,6 +125,9 @@ default: \
 //--------------------------------------------------------------------------------------
 // Helper macros
 //--------------------------------------------------------------------------------------
+#ifndef SAFE_FREE
+#	define SAFE_FREE(p)		{ if(p) { free(p); (p)=NULL; } }
+#endif
 #ifndef SAFE_DELETE_ARRAY
 #	define SAFE_DELETE_ARRAY(p)		{ if(p) { delete[] (p);   (p)=NULL; } }
 #endif
@@ -141,6 +144,10 @@ extern u32  spdif_init();
 extern void spdif_shutdown();
 extern void spdif_get_samples(s32 *samples); // fills the buffer with [l,r,c,lfe,sl,sr] if using 5.1 output, or [l,r] if using stereo
 
+// The SPU2 has a dynamic memory range which is used for several internal operations, such as
+// registers, CORE 1/2 mixing, AutoDMAs, and some other fancy stuff.  We exclude this range
+// from the cache here:
+static const s32 SPU2_DYN_MEMLINE = 0x6000;
 
 extern short *spu2regs;
 extern short *_spu2mem;
@@ -156,10 +163,7 @@ extern void __inline __fastcall spu2M_Write( u32 addr, u16 value );
 #define spu2Rs16(mmem)	(*(s16 *)((s8 *)spu2regs + ((mmem) & 0x1fff)))
 #define spu2Ru16(mmem)	(*(u16 *)((s8 *)spu2regs + ((mmem) & 0x1fff)))
 
-//#define spu2Ms16(mmem)	(*GetMemPtr((mmem) & 0xfffff))
-//#define spu2Mu16(mmem)	(*(u16*)GetMemPtr((mmem) & 0xfffff))
-
-void SysMessage(char *fmt, ...);
+void SysMessage(const char *fmt, ...);
 
 extern void VoiceStart(int core,int vc);
 extern void VoiceStop(int core,int vc);

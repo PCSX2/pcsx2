@@ -114,7 +114,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD dwReason,LPVOID lpvReserved)
 	return TRUE;
 }
 
-void SysMessage(char *fmt, ...) 
+void SysMessage(const char *fmt, ...) 
 {
 	va_list list;
 	char tmp[512];
@@ -226,7 +226,7 @@ __inline void __fastcall spu2M_Write( u32 addr, s16 value )
 	addr &= 0xfffff;
 	const u32 nexta = addr >> 3;		// 8 words per encoded block.
 	const u32 flagbitmask = 1ul<<(nexta & 31);  // 31 flags per array entry
-	pcm_cache_flags[nexta>>5] &= ~flagbitmask;
+	pcm_cache_flags[nexta/32] &= ~flagbitmask;
 
 	*GetMemPtr( addr ) = value;
 }
@@ -323,6 +323,11 @@ void CoreReset(int c)
 
 extern void LowPassFilterInit();
 
+// number of cachable ADPCM blocks (any blocks above the SPU2_DYN_MEMLINE)
+static const int pcm_BlockCount = 0x100000 / 8; // (0x100000-SPU2_DYN_MEMLINE) / 8;
+
+static const int pcm_DecodedSamplesPerBlock = 28;
+
 EXPORT_C_(s32) SPU2init() 
 {
 #define MAKESURE(a,b) \
@@ -365,8 +370,8 @@ EXPORT_C_(s32) SPU2init()
 	//  Expanded: 16 bytes expands to 56 bytes [3.5:1 ratio]
 	//    Resulting in 2MB * 3.5.
 
-	pcm_cache_flags = (u32*)calloc( 0x200000 / (16*32), 4 );
-	pcm_cache_data = (s16*)calloc( (0x200000 / 16) * 28, 2 );
+	pcm_cache_flags = (u32*)calloc( pcm_BlockCount / 32, sizeof(u32) );
+	pcm_cache_data = (s16*)calloc( pcm_BlockCount * pcm_DecodedSamplesPerBlock, sizeof(s16) );
 
 	if( (spu2regs == NULL) || (_spu2mem == NULL) ||
 		(pcm_cache_data == NULL) || (pcm_cache_flags == NULL) )
@@ -531,11 +536,11 @@ EXPORT_C_(void) SPU2shutdown()
 
 	spu2init = false;
 
-	free(spu2regs);
-	free(_spu2mem);
+	SAFE_FREE(spu2regs);
+	SAFE_FREE(_spu2mem);
 
-	free( pcm_cache_flags );
-	free( pcm_cache_data );
+	SAFE_FREE( pcm_cache_flags );
+	SAFE_FREE( pcm_cache_data );
 
 	spu2regs = NULL;
 	_spu2mem = NULL;
@@ -1696,11 +1701,9 @@ EXPORT_C_(u16) SPU2read(u32 rmem)
 	return ret;
 }
 
-#define PCM_CACHE_BLOCK_COUNT ( 0x200000 / 16 )
-
 struct cacheFreezeData
 {
-	u32 flags[PCM_CACHE_BLOCK_COUNT/32];
+	u32 flags[pcm_BlockCount/32];
 	s16 startData;
 };
 
@@ -1750,17 +1753,21 @@ static int getFreezeSize()
 
 	// calculate the amount of memory consumed by our cache:
 
-	for( int bidx=0; bidx<PCM_CACHE_BLOCK_COUNT; bidx++ )
+	for( int bidx=0; bidx<pcm_BlockCount; bidx++ )
 	{
 		const u32 flagmask = 1ul << (bidx & 31);
-		if( pcm_cache_flags[bidx>>5] & flagmask )
-		{
-			size += 28*2;
-		}
+		if( pcm_cache_flags[bidx/32] & flagmask )
+			size += pcm_DecodedSamplesPerBlock*sizeof(s16);
 	}
 	return size;
 }
 
+
+static void wipe_the_cache()
+{
+	memset( pcm_cache_flags, 0, pcm_BlockCount/32 * sizeof(u32) );
+	memset( pcm_cache_data, 0, pcm_BlockCount * pcm_DecodedSamplesPerBlock * sizeof(s16) );
+}
 
 EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 {
@@ -1790,8 +1797,7 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 
 			// adpcm cache : Clear all the cache flags and buffers.
 
-			memset( pcm_cache_flags, 0, (0x200000 / (16*32)) * 4 );
-			memset( pcm_cache_data, 0, (0x200000 / 16) * 28 * 2 );
+			wipe_the_cache();
 		}
 		else
 		{
@@ -1803,34 +1809,35 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 
 			memcpy(Cores, spud->Cores, sizeof(Cores));
 			memcpy(&Spdif, &spud->Spdif, sizeof(Spdif));
-			OutPos=spud->OutPos;
-			InputPos=spud->InputPos;
-			InpBuff=spud->InpBuff;
-			Cycles=spud->Cycles;
-			uTicks=spud->uTicks;
-			srate_pv=spud->srate_pv;
-			opitch=spud->opitch;
-			osps=spud->osps;
-			PlayMode=spud->PlayMode;
-			lClocks = spud->lClocks;
+			OutPos		= spud->OutPos;
+			InputPos	= spud->InputPos;
+			InpBuff		= spud->InpBuff;
+			Cycles		= spud->Cycles;
+			uTicks		= spud->uTicks;
+			srate_pv	= spud->srate_pv;
+			opitch		= spud->opitch;
+			osps		= spud->osps;
+			PlayMode	= spud->PlayMode;
+			lClocks		= spud->lClocks;
 
 			// Load the ADPCM cache:
 
 			const cacheFreezeData &cfd = spud->cacheData;
 			const s16* pcmSrc = &cfd.startData;
 
-			memcpy( pcm_cache_flags, cfd.flags, PCM_CACHE_BLOCK_COUNT / 8 );
+			memcpy( pcm_cache_flags, cfd.flags, (pcm_BlockCount/32) * sizeof(u32) );
 
 			int blksLoaded=0;
 
-			for( int bidx=0; bidx<PCM_CACHE_BLOCK_COUNT; bidx++ )
+			for( int bidx=0; bidx<pcm_BlockCount; bidx++ )
 			{
 				const u32 flagmask = 1ul << (bidx & 31);
-				if( cfd.flags[bidx>>5] & flagmask )
+				if( cfd.flags[bidx/32] & flagmask )
 				{
 					// load a cache block!
-					memcpy( &pcm_cache_data[bidx*28], pcmSrc, 28*2 );
-					pcmSrc += 28;
+					memcpy( &pcm_cache_data[bidx*pcm_DecodedSamplesPerBlock],
+						pcmSrc, pcm_DecodedSamplesPerBlock*sizeof(s16) );
+					pcmSrc += pcm_DecodedSamplesPerBlock;
 					blksLoaded++;
 				}
 			}
@@ -1842,7 +1849,7 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 			{
 				for( int v=0; v<24; v++ )
 				{
-					Cores[c].Voices[v].SBuffer = (s16*) ((u64)spud->Cores[c].Voices[v].SBuffer + (u64)pcm_cache_data );
+					Cores[c].Voices[v].SBuffer = (s16*) ((uptr)spud->Cores[c].Voices[v].SBuffer + (uptr)pcm_cache_data );
 				}
 			}
 
@@ -1873,16 +1880,16 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 		memcpy(spud->mem,     _spu2mem, 0x200000);
 		memcpy(spud->Cores, Cores, sizeof(Cores));
 		memcpy(&spud->Spdif, &Spdif, sizeof(Spdif));
-		spud->OutPos=OutPos;
-		spud->InputPos=InputPos;
-		spud->InpBuff=InpBuff;
-		spud->Cycles=Cycles;
-		spud->uTicks=uTicks;
-		spud->srate_pv=srate_pv;
-		spud->opitch=opitch;
-		spud->osps=osps;
-		spud->PlayMode=PlayMode;
-		spud->lClocks = lClocks;
+		spud->OutPos		= OutPos;
+		spud->InputPos		= InputPos;
+		spud->InpBuff		= InpBuff;
+		spud->Cycles		= Cycles;
+		spud->uTicks		= uTicks;
+		spud->srate_pv		= srate_pv;
+		spud->opitch		= opitch;
+		spud->osps			= osps;
+		spud->PlayMode		= PlayMode;
+		spud->lClocks		= lClocks;
 
 		// Save our cache:
 		//   We could just force the user to rebuild the cache when loading
@@ -1900,14 +1907,15 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 		memcpy( cfd.flags, pcm_cache_flags, sizeof(cfd.flags) );
 
 		int blksSaved=0;
-		for( int bidx=0; bidx<PCM_CACHE_BLOCK_COUNT; bidx++ )
+		for( int bidx=0; bidx<pcm_BlockCount; bidx++ )
 		{
 			const u32 flagmask = 1ul << (bidx & 31);
-			if( cfd.flags[bidx>>5] & flagmask )
+			if( cfd.flags[bidx/32] & flagmask )
 			{
 				// save a cache block!
-				memcpy( pcmDst, &pcm_cache_data[bidx*28], 28*2 );
-				pcmDst += 28;
+				memcpy( pcmDst, &pcm_cache_data[bidx*pcm_DecodedSamplesPerBlock],
+					pcm_DecodedSamplesPerBlock*sizeof(s16) );
+				pcmDst += pcm_DecodedSamplesPerBlock;
 				blksSaved++;
 			}
 		}
@@ -1920,7 +1928,7 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 			for( int v=0; v<24; v++ )
 			{
 				spud->Cores[c].Voices[v].SBuffer = 
-					(s16*) ((u64)spud->Cores[c].Voices[v].SBuffer - (u64)pcm_cache_data );
+					(s16*) ((uptr)spud->Cores[c].Voices[v].SBuffer - (uptr)pcm_cache_data );
 			}
 		}
 		//printf( " * SPU2 > FreezeSave > Saved %d cache blocks.\n", blksSaved++ );

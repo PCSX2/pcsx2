@@ -51,7 +51,6 @@ double srate_pv=1.0;
 extern u32 PsxRates[160];
 
 static const s32 ADSR_MAX_VOL = 0x7fffffff;
-static const s32 SPU2_DYN_MEMLINE = 0x3600;
 
 // Performs a 64-bit multiplication between two values and returns the
 // high 32 bits as a result (discarding the fractional 32 bits).
@@ -185,7 +184,8 @@ static void __forceinline XA_decode_block_unsaturated(s16* buffer, const s16* bl
 
 static void __forceinline IncrementNextA( const V_Core& thiscore, V_Voice& vc )
 {
-	if((vc.NextA==thiscore.IRQA)&&(thiscore.IRQEnable)) { 
+	if((vc.NextA==thiscore.IRQA)&&(thiscore.IRQEnable))
+	{ 
 		#ifndef PUBLIC
 		ConLog(" * SPU2: IRQ Called (IRQ passed).\n"); 
 		#endif
@@ -198,8 +198,8 @@ static void __forceinline IncrementNextA( const V_Core& thiscore, V_Voice& vc )
 }
 
 
-u32 *pcm_cache_flags=NULL;
-s16 *pcm_cache_data=NULL;
+u32 *pcm_cache_flags = NULL;
+s16 *pcm_cache_data = NULL;
 
 #ifndef PUBLIC
 int g_counter_cache_hits=0;
@@ -283,16 +283,11 @@ static void __forceinline __fastcall GetNextDataBuffered( V_Core& thiscore, V_Vo
 
 			//XA_decode_block_unsaturated( vc.SBuffer, memptr, vc.Prev1, vc.Prev2 );
 
-			//vc.LoopEnd  =   (data>> 8)&1;
-			//vc.Loop     =   (data>> 9)&1;
-			//vc.LoopStart=   (data>>10)&1;
 		}
 
 		vc.SCurrent = 0;
 		if( (vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode )
-		{
-			vc.LoopStartA=vc.NextA;
-		}
+			vc.LoopStartA = vc.NextA;
 
 		// [Air] : Increment will get called below (change made to avoid needless code cache clutter)		
 		//IncrementNextA( thiscore, vc );

@@ -224,10 +224,10 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 	u32 buff1end = Cores[core].TSA + size;
 	u32 buff2end=0;
-	if( buff1end > 0xfffff )
+	if( buff1end > 0x100000 )
 	{
-		buff2end = buff1end - 0xfffff;
-		buff1end = 0xfffff;
+		buff2end = buff1end - 0x100000;
+		buff1end = 0x100000;
 	}
 
 	// Ideally we would only mask bits actually written to, but it's a complex algorithm
@@ -247,9 +247,12 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 	// just rounding the count upward could cause problems if both start and end
 	// points are mis-aligned.
 
-	const u32 roundUp = (1<<(3+3))-1;
-	const u32 flagTSA = Cores[core].TSA >> (3+3);
-	const u32 flagTDA = (buff1end + roundUp) >> (3 + 3);	// endpoint, rounded up
+	// indexer scalar - 8 addresses per block, and 8 bits per byte:
+	const u32 indexer_scalar = 8*8;
+
+	const u32 roundUp = indexer_scalar-1;
+	const u32 flagTSA = Cores[core].TSA / indexer_scalar;
+	const u32 flagTDA = (buff1end + roundUp) / indexer_scalar;	// endpoint, rounded up
 	u8* cache = (u8*)pcm_cache_flags;
 	
 	memset( &cache[flagTSA], 0, flagTDA - flagTSA );
@@ -259,9 +262,13 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 		// second branch needs cleared:
 		// It starts at the beginning of memory and moves forward to buff2end
 
-		const u32 endpt2 = (buff2end + roundUp) >> (3+3);
+		// endpoint cache should be irrelevant, since it's almost certainly dynamic 
+		// memory (registers and such)
+
+		//const u32 endpt2 = (buff2end + roundUp) / indexer_scalar;
+		//memset( pcm_cache_flags, 0, endpt2 );
+
 		memcpy( GetMemPtr( 0 ), &pMem[buff1size], buff2end*2 );
-		memset( pcm_cache_flags, 0, endpt2 );
 
 		Cores[core].TDA = buff2end;
 
@@ -315,8 +322,8 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 	for (i=0;i<size;i++)
 		pMem[i]=DmaRead(core);
 	i=Cores[core].TSA;
-	Cores[core].TDA=Cores[core].TSA+size+0x1f;
-	Cores[core].TSA=Cores[core].TDA&0xFFFFF;
+	Cores[core].TDA=Cores[core].TSA+size+0x20;
+	Cores[core].TSA=(Cores[core].TSA+size)&0xFFFFF;
 	if((Cores[core].TDA>0xFFFFF)||((Cores[core].TSA<=Cores[core].IRQA)&&(i>=Cores[core].IRQA))) {
 		if(Cores[core].IRQEnable)
 		{
