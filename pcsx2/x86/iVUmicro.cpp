@@ -94,6 +94,7 @@ PCSX2_ALIGNED16(u32 g_minvals[4])	= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7ff
 PCSX2_ALIGNED16(u32 g_maxvals[4])	= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 PCSX2_ALIGNED16(u32 const_clip[8])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
 									   0x80000000, 0x80000000, 0x80000000, 0x80000000};
+PCSX2_ALIGNED(64, u32 g_ones[4])	= {0x00000001, 0x00000001, 0x00000001, 0x00000001};
 PCSX2_ALIGNED16(u32 g_minvals_XYZW[16][4]) =
 {
    { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff }, //0000
@@ -131,25 +132,6 @@ PCSX2_ALIGNED16(u32 g_maxvals_XYZW[16][4])=
    { 0x7f7fffff, 0x7f7fffff, 0x7fffffff, 0x7f7fffff }, //1101
    { 0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7fffffff }, //1110
    { 0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff }, //1111
-};
-PCSX2_ALIGNED16(u32 g_Infs_XYZW[16][4])=
-{
-   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //0000
-   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7f800000 }, //0001
-   { 0x7fffffff, 0x7fffffff, 0x7f800000, 0x7fffffff }, //0010
-   { 0x7fffffff, 0x7fffffff, 0x7f800000, 0x7f800000 }, //0011
-   { 0x7fffffff, 0x7f800000, 0x7fffffff, 0x7fffffff }, //0100
-   { 0x7fffffff, 0x7f800000, 0x7fffffff, 0x7f800000 }, //0101
-   { 0x7fffffff, 0x7f800000, 0x7f800000, 0x7fffffff }, //0110
-   { 0x7fffffff, 0x7f800000, 0x7f800000, 0x7f800000 }, //0111
-   { 0x7f800000, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //1000
-   { 0x7f800000, 0x7fffffff, 0x7fffffff, 0x7f800000 }, //1001
-   { 0x7f800000, 0x7fffffff, 0x7f800000, 0x7fffffff }, //1010
-   { 0x7f800000, 0x7fffffff, 0x7f800000, 0x7f800000 }, //1011
-   { 0x7f800000, 0x7f800000, 0x7fffffff, 0x7fffffff }, //1100
-   { 0x7f800000, 0x7f800000, 0x7fffffff, 0x7f800000 }, //1101
-   { 0x7f800000, 0x7f800000, 0x7f800000, 0x7fffffff }, //1110
-   { 0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000 }, //1111
 };
 //------------------------------------------------------------------
 
@@ -881,12 +863,11 @@ void VU_MERGE_REGS_SAFE(int dest, int src, int xyzw) {
 // Misc VU Reg Clamping/Overflow Functions
 //------------------------------------------------------------------
 #define CLAMP_NORMAL_SSE4(n) \
-	SSE2_PCMPEQD_XMM_to_XMM(regTemp, regTemp);\
-	SSE2_PSLLD_I8_to_XMM(regTemp, 31);\
-	SSE_XORPS_XMM_to_XMM(regTemp, regd);\
-	SSE4_PMINSD_M128_to_XMM(regd, (uptr)&g_maxvals_XYZW[n][0]);\
+	SSE_MOVAPS_XMM_to_XMM(regTemp, regd);\
 	SSE4_PMINUD_M128_to_XMM(regd, (uptr)&g_minvals_XYZW[n][0]);\
-	SSE2_PCMPGTD_M128_to_XMM(regTemp, (uptr)&g_Infs_XYZW[n][0]);\
+	SSE2_PSUBD_XMM_to_XMM(regTemp, regd);\
+	SSE2_PCMPGTD_M128_to_XMM(regTemp, (uptr)&g_ones[0]);\
+	SSE4_PMINSD_M128_to_XMM(regd, (uptr)&g_maxvals_XYZW[n][0]);\
 	SSE2_PSLLD_I8_to_XMM(regTemp, 31);\
 	SSE_XORPS_XMM_to_XMM(regd, regTemp);
 
