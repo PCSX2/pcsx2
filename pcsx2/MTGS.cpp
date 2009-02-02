@@ -813,7 +813,8 @@ int mtgsThreadObject::PrepDataPacket( GIF_PATH pathidx, const u8* srcdata, u32 s
 	jASSUME( writepos < m_RingBufferSize );
 
 	//fixme: Vif sometimes screws up and size is unaligned, try this then (rama)
-	// Is this still a problem?  It should be fixed on the specific VIF command now. (air)
+	//Is this still a problem?  It should be fixed on the specific VIF command now. (air)
+	//It seems to be fixed in Fatal Frame, leaving the code here still in case we get that again (rama)
 	/*if( (size&15) != 0){
 		Console::Error( "MTGS problem, size unaligned"); 
 		size = (size+15)&(~15);
