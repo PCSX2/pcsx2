@@ -144,7 +144,9 @@ void AutoDMAReadBuffer(int core, int mode) //mode: 0= split stereo; 1 = do not s
 void StartADMAWrite(int core,u16 *pMem, u32 sz)
 {
 	int size=(sz)&(~511);
-	if(MsgAutoDMA()) ConLog(" * SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
+
+	if(MsgAutoDMA()) ConLog(" * SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
+		(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
 
 	Cores[core].InputDataProgress=0;
 	if((Cores[core].AutoDMACtrl&(core+1))==0)
@@ -215,14 +217,30 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 
 	if(MsgDMA()) ConLog(" * SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x).\n",(core==0)?'4':'7',size<<1,Cores[core].TSA,Cores[core].DMABits,Cores[core].AutoDMACtrl,(~Cores[core].Regs.ATTR)&0x7fff);
 
-	// split the DMA copy into two chunks if needed.
-
-	// Instead of checking the adpcm cache for every word, we check for every ADPCM block.
-	// That way we can use the optimized fast write instruction to commit the memory.
-
 	Cores[core].TSA &= 0xfffff;
 
 	u32 buff1end = Cores[core].TSA + size;
+
+	// Pcm Cache Invalidation!
+	// Ideally we would only mask bits actually written to, but it's a complex algorithm
+	// that is way more work than it's worth.  Masking out bytes would in theory work a
+	// little more effiently, but was buggy in practice for some reason.  So a dumb and
+	// dirty 32-bit mask will suffice.
+
+	// Note: When clearing cache flags, the *endpoint* needs to be rounded upward.
+	// just rounding the count upward could cause problems if both start and end
+	// points are mis-aligned.
+
+	// indexer scalar - 8 addresses per block, and 32 bits per dword:
+	const u32 indexer_scalar = 8*32;
+
+	const int roundUp = indexer_scalar-1;
+	const int flagTSA = Cores[core].TSA / indexer_scalar;
+	int flagTDA = (buff1end + roundUp) / indexer_scalar;	// endpoint, rounded up
+	u8* cache = (u8*)pcm_cache_flags;
+
+	memset( &pcm_cache_flags[flagTSA], 0, (flagTDA - flagTSA) * 4 );
+
 	u32 buff2end=0;
 	if( buff1end > 0x100000 )
 	{
@@ -230,47 +248,25 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 		buff1end = 0x100000;
 	}
 
-	// Ideally we would only mask bits actually written to, but it's a complex algorithm
-	// that is way more work than it's worth.  Instead we just mask out entire bytes, which
-	// means that in rare cases some games may end up having to re-decode some blocks
-	// unnecessarily.  To minimize the chance of that, I mask at the byte level instead
-	// of the dword level, so at worst there are only 7 extra blocks to the front or back
-	// of the DMA transfer that get cleared when they shouldn't be.
-
 	// First Branch needs cleared:
 	// It starts at TSA and goes to buff1end.
 
 	const u32 buff1size = (buff1end-Cores[core].TSA);
 	memcpy( GetMemPtr( Cores[core].TSA ), pMem, buff1size*2 );
 	
-	// Note: When clearing cache flags, the *endpoint* needs to be rounded upward.
-	// just rounding the count upward could cause problems if both start and end
-	// points are mis-aligned.
-
-	// indexer scalar - 8 addresses per block, and 8 bits per byte:
-	const u32 indexer_scalar = 8*8;
-
-	const u32 roundUp = indexer_scalar-1;
-	const u32 flagTSA = Cores[core].TSA / indexer_scalar;
-	const u32 flagTDA = (buff1end + roundUp) / indexer_scalar;	// endpoint, rounded up
-	u8* cache = (u8*)pcm_cache_flags;
-	
-	memset( &cache[flagTSA], 0, flagTDA - flagTSA );
-
 	if( buff2end > 0 )
 	{
-		// second branch needs cleared:
+		// second branch needs copied:
 		// It starts at the beginning of memory and moves forward to buff2end
 
 		// endpoint cache should be irrelevant, since it's almost certainly dynamic 
-		// memory (registers and such)
-
+		// memory below 0x2800 (registers and such)
 		//const u32 endpt2 = (buff2end + roundUp) / indexer_scalar;
 		//memset( pcm_cache_flags, 0, endpt2 );
 
 		memcpy( GetMemPtr( 0 ), &pMem[buff1size], buff2end*2 );
 
-		Cores[core].TDA = buff2end;
+		Cores[core].TDA = (buff2end+1) & 0xfffff;
 
 		if(Cores[core].IRQEnable)
 		{
@@ -316,21 +312,72 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 {
 	if(hasPtr) TimeUpdate(*cPtr);
 
-	u32 i;
-	Cores[core].TSA&=~7;
-	Cores[core].TDA=Cores[core].TSA;
-	for (i=0;i<size;i++)
-		pMem[i]=DmaRead(core);
-	i=Cores[core].TSA;
-	Cores[core].TDA=Cores[core].TSA+size+0x20;
-	Cores[core].TSA=(Cores[core].TSA+size)&0xFFFFF;
-	if((Cores[core].TDA>0xFFFFF)||((Cores[core].TSA<=Cores[core].IRQA)&&(i>=Cores[core].IRQA))) {
-		if(Cores[core].IRQEnable)
+	Cores[core].TSA &= 0xffff8;
+
+	u32 buff1end = Cores[core].TSA + size;
+	u32 buff2end = 0;
+	if( buff1end > 0x100000 )
+	{
+		buff2end = buff1end - 0x100000;
+		buff1end = 0x100000;
+	}
+
+	const u32 buff1size = (buff1end-Cores[core].TSA);
+	memcpy( pMem, GetMemPtr( Cores[core].TSA ), buff1size*2 );
+
+	if( buff2end > 0 )
+	{
+		// second branch needs cleared:
+		// It starts at the beginning of memory and moves forward to buff2end
+
+		memcpy( &pMem[buff1size], GetMemPtr( 0 ), buff2end*2 );
+
+		Cores[core].TDA = (buff2end+0x20) & 0xfffff;
+
+		for( int i=0; i<2; i++ )
 		{
-			Spdif.Info=4<<core;
-			SetIrqCall();
+			if(Cores[i].IRQEnable)
+			{
+				// Flag interrupt?
+				// If IRQA occurs between start and dest, flag it.
+				// Since the buffer wraps, the conditional might seem odd, but it works.
+
+				if( ( Cores[i].IRQA >= Cores[core].TSA ) ||
+					( Cores[i].IRQA <= Cores[core].TDA ) )
+				{
+					Spdif.Info=4<<i;
+					SetIrqCall();
+				}
+			}
 		}
 	}
+	else
+	{
+		// Buffer doesn't wrap/overflow!
+		// Just set the TDA and check for an IRQ...
+
+		Cores[core].TDA = buff1end;
+
+		for( int i=0; i<2; i++ )
+		{
+			if(Cores[i].IRQEnable)
+			{
+				// Flag interrupt?
+				// If IRQA occurs between start and dest, flag it:
+
+				if( ( Cores[i].IRQA >= Cores[i].TSA ) &&
+					( Cores[i].IRQA <= Cores[i].TDA+0x1f ) )
+				{
+					Spdif.Info=4<<i;
+					SetIrqCall();
+				}
+			}
+		}
+	}
+
+
+	Cores[core].TSA=Cores[core].TDA & 0xFFFFF;
+
 	Cores[core].DMAICounter=size;
 	Cores[core].Regs.STATX &= ~0x80;
 	//Cores[core].Regs.ATTR |= 0x30;

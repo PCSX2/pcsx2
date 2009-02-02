@@ -147,7 +147,7 @@ extern void spdif_get_samples(s32 *samples); // fills the buffer with [l,r,c,lfe
 // The SPU2 has a dynamic memory range which is used for several internal operations, such as
 // registers, CORE 1/2 mixing, AutoDMAs, and some other fancy stuff.  We exclude this range
 // from the cache here:
-static const s32 SPU2_DYN_MEMLINE = 0x6000;
+static const s32 SPU2_DYN_MEMLINE = 0x2800;
 
 extern short *spu2regs;
 extern short *_spu2mem;

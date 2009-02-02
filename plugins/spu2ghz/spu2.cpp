@@ -224,10 +224,14 @@ __inline void __fastcall spu2M_Write( u32 addr, s16 value )
 	// (note to self : addr address WORDs, not bytes)
 
 	addr &= 0xfffff;
-	const u32 nexta = addr >> 3;		// 8 words per encoded block.
-	const u32 flagbitmask = 1ul<<(nexta & 31);  // 31 flags per array entry
-	pcm_cache_flags[nexta/32] &= ~flagbitmask;
+	if( addr >= SPU2_DYN_MEMLINE )
+	{
+		const u32 nexta = addr >> 3;		// 8 words per encoded block.
+		const u32 flagbitmask = 1ul<<(nexta & 31);  // 31 flags per array entry
+		pcm_cache_flags[nexta/32] &= ~flagbitmask;
 
+		ConLog( " * SPU2 : PcmCache Block Clear at 0x%x (idx=0x%x, bit=%d)\n", addr, nexta, nexta & 31);
+	}
 	*GetMemPtr( addr ) = value;
 }
 

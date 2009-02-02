@@ -184,13 +184,19 @@ static void __forceinline XA_decode_block_unsaturated(s16* buffer, const s16* bl
 
 static void __forceinline IncrementNextA( const V_Core& thiscore, V_Voice& vc )
 {
-	if((vc.NextA==thiscore.IRQA)&&(thiscore.IRQEnable))
-	{ 
-		#ifndef PUBLIC
-		ConLog(" * SPU2: IRQ Called (IRQ passed).\n"); 
-		#endif
-		Spdif.Info=4<<core;
-		SetIrqCall();
+	// Important!  Both cores signal IRQ when an address is read, regardless of
+	// which core actually reads the address.
+
+	for( int i=0; i<2; i++ )
+	{
+		if( Cores[i].IRQEnable && (vc.NextA==Cores[i].IRQA ) )
+		{ 
+			#ifndef PUBLIC
+			ConLog(" * SPU2 Core %d: IRQ Called (IRQ passed).\n", i); 
+			#endif
+			Spdif.Info=4<<i;
+			SetIrqCall();
+		}
 	}
 
 	vc.NextA++;
@@ -243,12 +249,12 @@ static void __forceinline __fastcall GetNextDataBuffered( V_Core& thiscore, V_Vo
 
 		s16* memptr = GetMemPtr(vc.NextA&0xFFFFF);
 		vc.LoopFlags = *memptr >> 8;	// grab loop flags from the upper byte.
-		int nexta = vc.NextA >> 3;		// 8 words per encoded block.
+		int nexta = vc.NextA / 8;		// 8 words per encoded block.
 		
 		vc.SBuffer = &pcm_cache_data[nexta * 28];
 
 		const u32 flagbitmask = 1ul<<(nexta & 31);  // 32 flags per array entry
-		nexta >>= 5;
+		nexta /= 32;
 
 		if( pcm_cache_flags[nexta] & flagbitmask )
 		{
@@ -999,12 +1005,6 @@ static void DoReverb( V_Core& thiscore, s32& OutL, s32& OutR, s32 InL, s32 InR)
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
-bool inited = false;
-s32 count=0;
-s32 maxpeak=0;
-double rfactor=1;
-double cfactor=1;
-double diff=0;
 
 // writes a signed value to the SPU2 ram
 // Performs no cache invalidation -- use only for dynamic memory ranges
@@ -1092,6 +1092,7 @@ static void __fastcall MixCore(s32& OutL, s32& OutR, s32 ExtL, s32 ExtR)
 	s32 TDL,TDR;
 
 	// Mix in the Input data
+	// divide by 3 fixes some volume problems.
 	TDL = OutL * thiscore.InpDryL;
 	TDR = OutR * thiscore.InpDryR;
 
