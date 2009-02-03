@@ -1054,6 +1054,8 @@ __forceinline void SSE2_PMOVMSKB_XMM_to_R32(x86IntRegType to, x86SSERegType from
 __forceinline void SSE_MOVMSKPS_XMM_to_R32(x86IntRegType to, x86SSERegType from) { SSERtoR(0x500F); }
 __forceinline void SSE2_MOVMSKPD_XMM_to_R32(x86IntRegType to, x86SSERegType from) { SSERtoR66(0x500F); }
 
+__forceinline void SSE2_PMADDWD_XMM_to_XMM(x86SSERegType to, x86SSERegType from) { SSERtoR66(0xF50F); }
+
 __forceinline void SSE3_HADDPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from) { write8(0xf2); SSERtoR( 0x7c0f ); }
 __forceinline void SSE3_HADDPS_M128_to_XMM(x86SSERegType to, uptr from){ write8(0xf2); SSEMtoR( 0x7c0f, 0 ); }
 

@@ -1488,6 +1488,8 @@ extern void SSE2_PADDD_XMM_to_XMM(x86SSERegType to, x86SSERegType from );
 extern void SSE2_PADDD_M128_to_XMM(x86SSERegType to, uptr from );
 extern void SSE2_PADDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from );
 extern void SSE2_PADDQ_M128_to_XMM(x86SSERegType to, uptr from );
+extern void SSE2_PMADDWD_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
+
 
 //**********************************************************************************/
 //PACKSSWB,PACKSSDW: Pack Saturate Signed Word

@@ -2390,43 +2390,61 @@ CPU_SSE_XMMCACHE_END
 ////////////////////////////////////////////////////
 void recPMSUBH()
 {
-CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
+	CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
-
-	SSEX_MOVDQA_XMM_to_XMM(t0reg, EEREC_S);
-	SSEX_MOVDQA_XMM_to_XMM(t1reg, EEREC_S);
-
-	SSE2_PMULLW_XMM_to_XMM(t0reg, EEREC_T);
-	SSE2_PMULHW_XMM_to_XMM(t1reg, EEREC_T);
-	SSEX_MOVDQA_XMM_to_XMM(EEREC_D, t0reg);
-
-	// 0-3
-	SSE2_PUNPCKLWD_XMM_to_XMM(t0reg, t1reg);
-	// 4-7
-	SSE2_PUNPCKHWD_XMM_to_XMM(EEREC_D, t1reg);
-	SSEX_MOVDQA_XMM_to_XMM(t1reg, t0reg);
-
-	// 0,1,4,5, L->H
-	SSE2_PUNPCKLQDQ_XMM_to_XMM(t0reg, EEREC_D);
-	// 2,3,6,7, L->H
-	SSE2_PUNPCKHQDQ_XMM_to_XMM(t1reg, EEREC_D);
-
-	SSE2_PSUBD_XMM_to_XMM(EEREC_LO, t0reg);
-	SSE2_PSUBD_XMM_to_XMM(EEREC_HI, t1reg);
-
-	if( _Rd_ ) {
+ 
+	if( !_Rd_ ) {
+		SSE2_PXOR_XMM_to_XMM(t0reg, t0reg);
+		SSE2_PSHUFD_XMM_to_XMM(t1reg, EEREC_S, 0xd8); //S0, S1, S4, S5, S2, S3, S6, S7
+		SSE2_PUNPCKLWD_XMM_to_XMM(t1reg, t0reg); //S0, 0, S1, 0, S4, 0, S5, 0
+		SSE2_PSHUFD_XMM_to_XMM(t0reg, EEREC_T, 0xd8); //T0, T1, T4, T5, T2, T3, T6, T7
+		SSE2_PUNPCKLWD_XMM_to_XMM(t0reg, t0reg); //T0, T0, T1, T1, T4, T4, T5, T5
+		SSE2_PMADDWD_XMM_to_XMM(t0reg, t1reg); //S0*T0+0*T0, S1*T1+0*T1, S4*T4+0*T4, S5*T5+0*T5
+ 
+		SSE2_PSUBD_XMM_to_XMM(EEREC_LO, t0reg);
+ 
+		SSE2_PXOR_XMM_to_XMM(t0reg, t0reg);
+		SSE2_PSHUFD_XMM_to_XMM(t1reg, EEREC_S, 0xd8); //S0, S1, S4, S5, S2, S3, S6, S7
+		SSE2_PUNPCKHWD_XMM_to_XMM(t1reg, t0reg); //S2, 0, S3, 0, S6, 0, S7, 0
+		SSE2_PSHUFD_XMM_to_XMM(t0reg, EEREC_T, 0xd8); //T0, T1, T4, T5, T2, T3, T6, T7
+		SSE2_PUNPCKHWD_XMM_to_XMM(t0reg, t0reg); //T2, T2, T3, T3, T6, T6, T7, T7
+		SSE2_PMADDWD_XMM_to_XMM(t0reg, t1reg); //S2*T2+0*T2, S3*T3+0*T3, S6*T6+0*T6, S7*T7+0*T7
+ 
+		SSE2_PSUBD_XMM_to_XMM(EEREC_HI, t0reg);
+	}
+	else {
+		SSEX_MOVDQA_XMM_to_XMM(t0reg, EEREC_S);
+		SSEX_MOVDQA_XMM_to_XMM(t1reg, EEREC_S);
+ 
+		SSE2_PMULLW_XMM_to_XMM(t0reg, EEREC_T);
+		SSE2_PMULHW_XMM_to_XMM(t1reg, EEREC_T);
+		SSEX_MOVDQA_XMM_to_XMM(EEREC_D, t0reg);
+ 
+		// 0-3
+		SSE2_PUNPCKLWD_XMM_to_XMM(t0reg, t1reg);
+		// 4-7
+		SSE2_PUNPCKHWD_XMM_to_XMM(EEREC_D, t1reg);
+		SSEX_MOVDQA_XMM_to_XMM(t1reg, t0reg);
+ 
+		// 0,1,4,5, L->H
+		SSE2_PUNPCKLQDQ_XMM_to_XMM(t0reg, EEREC_D);
+		// 2,3,6,7, L->H
+		SSE2_PUNPCKHQDQ_XMM_to_XMM(t1reg, EEREC_D);
+ 
+		SSE2_PSUBD_XMM_to_XMM(EEREC_LO, t0reg);
+		SSE2_PSUBD_XMM_to_XMM(EEREC_HI, t1reg);
+ 
 		// 0,2,4,6, L->H
 		SSE2_PSHUFD_XMM_to_XMM(EEREC_D, EEREC_LO, 0x88);
 		SSE2_PSHUFD_XMM_to_XMM(t0reg, EEREC_HI, 0x88);
-		SSE2_PUNPCKLQDQ_XMM_to_XMM(EEREC_D, t0reg);
+		SSE2_PUNPCKLDQ_XMM_to_XMM(EEREC_D, t0reg);
 	}
-
+ 
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
-
+ 
 CPU_SSE_XMMCACHE_END
-
 	recCall( Interp::PMSUBH, _Rd_ );
 }
 
@@ -2836,44 +2854,62 @@ CPU_SSE_XMMCACHE_END
 		)
 }
 
-
 void recPMADDH( void ) 
 {
-CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
+	CPU_SSE2_XMMCACHE_START((_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI)
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
-
-	SSEX_MOVDQA_XMM_to_XMM(t0reg, EEREC_S);
-	SSEX_MOVDQA_XMM_to_XMM(t1reg, EEREC_S);
-
-	SSE2_PMULLW_XMM_to_XMM(t0reg, EEREC_T);
-	SSE2_PMULHW_XMM_to_XMM(t1reg, EEREC_T);
-	SSEX_MOVDQA_XMM_to_XMM(EEREC_D, t0reg);
-
-	// 0-3
-	SSE2_PUNPCKLWD_XMM_to_XMM(t0reg, t1reg);
-	// 4-7
-	SSE2_PUNPCKHWD_XMM_to_XMM(EEREC_D, t1reg);
-	SSEX_MOVDQA_XMM_to_XMM(t1reg, t0reg);
-
-	// 0,1,4,5, L->H
-	SSE2_PUNPCKLQDQ_XMM_to_XMM(t0reg, EEREC_D);
-	// 2,3,6,7, L->H
-	SSE2_PUNPCKHQDQ_XMM_to_XMM(t1reg, EEREC_D);
-
-	SSE2_PADDD_XMM_to_XMM(EEREC_LO, t0reg);
-	SSE2_PADDD_XMM_to_XMM(EEREC_HI, t1reg);
-
-	if( _Rd_ ) {
-		// 0,2,4,6, L->H
-		SSE2_PSHUFD_XMM_to_XMM(t0reg, EEREC_LO, 0x88);
-		SSE2_PSHUFD_XMM_to_XMM(EEREC_D, EEREC_HI, 0x88);
-		SSE2_PUNPCKLQDQ_XMM_to_XMM(EEREC_D, t0reg);
+ 
+	if( !_Rd_ ) {
+		SSE2_PXOR_XMM_to_XMM(t0reg, t0reg);
+		SSE2_PSHUFD_XMM_to_XMM(t1reg, EEREC_S, 0xd8); //S0, S1, S4, S5, S2, S3, S6, S7
+		SSE2_PUNPCKLWD_XMM_to_XMM(t1reg, t0reg); //S0, 0, S1, 0, S4, 0, S5, 0
+		SSE2_PSHUFD_XMM_to_XMM(t0reg, EEREC_T, 0xd8); //T0, T1, T4, T5, T2, T3, T6, T7
+		SSE2_PUNPCKLWD_XMM_to_XMM(t0reg, t0reg); //T0, T0, T1, T1, T4, T4, T5, T5
+		SSE2_PMADDWD_XMM_to_XMM(t0reg, t1reg); //S0*T0+0*T0, S1*T1+0*T1, S4*T4+0*T4, S5*T5+0*T5
+ 
+		SSE2_PADDD_XMM_to_XMM(EEREC_LO, t0reg);
+ 
+		SSE2_PXOR_XMM_to_XMM(t0reg, t0reg);
+		SSE2_PSHUFD_XMM_to_XMM(t1reg, EEREC_S, 0xd8); //S0, S1, S4, S5, S2, S3, S6, S7
+		SSE2_PUNPCKHWD_XMM_to_XMM(t1reg, t0reg); //S2, 0, S3, 0, S6, 0, S7, 0
+		SSE2_PSHUFD_XMM_to_XMM(t0reg, EEREC_T, 0xd8); //T0, T1, T4, T5, T2, T3, T6, T7
+		SSE2_PUNPCKHWD_XMM_to_XMM(t0reg, t0reg); //T2, T2, T3, T3, T6, T6, T7, T7
+		SSE2_PMADDWD_XMM_to_XMM(t0reg, t1reg); //S2*T2+0*T2, S3*T3+0*T3, S6*T6+0*T6, S7*T7+0*T7
+ 
+		SSE2_PADDD_XMM_to_XMM(EEREC_HI, t0reg);
 	}
-
+	else {
+		SSEX_MOVDQA_XMM_to_XMM(t0reg, EEREC_S);
+		SSEX_MOVDQA_XMM_to_XMM(t1reg, EEREC_S);
+ 
+		SSE2_PMULLW_XMM_to_XMM(t0reg, EEREC_T);
+		SSE2_PMULHW_XMM_to_XMM(t1reg, EEREC_T);
+		SSEX_MOVDQA_XMM_to_XMM(EEREC_D, t0reg);
+ 
+		// 0-3
+		SSE2_PUNPCKLWD_XMM_to_XMM(t0reg, t1reg);
+		// 4-7
+		SSE2_PUNPCKHWD_XMM_to_XMM(EEREC_D, t1reg);
+		SSEX_MOVDQA_XMM_to_XMM(t1reg, t0reg);
+ 
+		// 0,1,4,5, L->H
+		SSE2_PUNPCKLQDQ_XMM_to_XMM(t0reg, EEREC_D);
+		// 2,3,6,7, L->H
+		SSE2_PUNPCKHQDQ_XMM_to_XMM(t1reg, EEREC_D);
+ 
+		SSE2_PADDD_XMM_to_XMM(EEREC_LO, t0reg);
+		SSE2_PADDD_XMM_to_XMM(EEREC_HI, t1reg);
+ 
+		// 0,2,4,6, L->H
+		SSE2_PSHUFD_XMM_to_XMM(EEREC_D, EEREC_LO, 0x88);
+		SSE2_PSHUFD_XMM_to_XMM(t0reg, EEREC_HI, 0x88);
+		SSE2_PUNPCKLDQ_XMM_to_XMM(EEREC_D, t0reg);
+	}
+ 
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
-
+ 
 CPU_SSE_XMMCACHE_END
 
 	_flushCachedRegs();
