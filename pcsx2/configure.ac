@@ -123,7 +123,7 @@ AC_OUTPUT([
  tinyxml/Makefile
  x86/Makefile
  x86/ix86/Makefile
- zlib/Makefile
+ 3rdparty/zlib/Makefile
  ])
 
 dnl bindir = pcsx2exe

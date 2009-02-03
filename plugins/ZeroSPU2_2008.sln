@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroSPU2", "zerospu2\ZeroSPU2_2008.vcproj", "{7F059854-568D-4E08-9D00-1E78E203E4DC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroSPU2", "zerospu2\Win32\ZeroSPU2_2008.vcproj", "{7F059854-568D-4E08-9D00-1E78E203E4DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
