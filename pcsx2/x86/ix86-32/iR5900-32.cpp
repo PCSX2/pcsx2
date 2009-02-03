@@ -113,10 +113,10 @@ static u32 dumplog = 0;
 
 #ifdef PCSX2_DEVBUILD
 // and not sure what these might have once been used for... (air)
-static const char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
-static const char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %x : EDI = %x\n";
-static const char *txt1 = "REG[%d] = %x_%x\n";
-static const char *txt2 = "M32 = %x\n";
+//static const char *txt0 = "EAX = %x : ECX = %x : EDX = %x\n";
+//static const char *txt0RC = "EAX = %x : EBX = %x : ECX = %x : EDX = %x : ESI = %x : EDI = %x\n";
+//static const char *txt1 = "REG[%d] = %x_%x\n";
+//static const char *txt2 = "M32 = %x\n";
 #endif
 
 static void iBranchTest(u32 newpc, bool noDispatch=false);

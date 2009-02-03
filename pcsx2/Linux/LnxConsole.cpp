@@ -20,9 +20,12 @@
 
 #define COLOR_RESET		"\033[0m"
 
-
 // Linux Note : The Linux Console is pretty simple.  It just dumps to the stdio!
 // (no console open/close/title stuff tho, so those functions are dummies)
+
+//  Fixme - A lot of extra \ns are being added in here somewhere. I think it's 
+// partially in SetColor/ClearColor, as colored lines have more extra \ns then the other
+// lines.
 namespace Console
 {
 	static const char* tbl_color_codes[] = 

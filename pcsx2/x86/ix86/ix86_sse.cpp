@@ -1082,12 +1082,10 @@ __forceinline void SSE4_DPPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from, u8
 
 __forceinline void SSE4_DPPS_M128_to_XMM(x86SSERegType to, uptr from, u8 imm8)
 {
-	const int overb = 0; // TODO: x64?
-
 	write8(0x66);
 	write24(0x403A0F);
 	ModRM(0, to, DISP32);
-	write32(MEMADDR(from, 4 + overb));
+	write32(MEMADDR(from, 4));
 	write8(imm8);
 }
 
@@ -1128,13 +1126,11 @@ __forceinline void SSE4_BLENDVPS_XMM_to_XMM(x86SSERegType to, x86SSERegType from
 
 __forceinline void SSE4_BLENDVPS_M128_to_XMM(x86SSERegType to, uptr from)
 {
-	const int overb = 0; // TODO: x64?
-
 	write8(0x66);
     RexR(0, to);
 	write24(0x14380F);
 	ModRM(0, to, DISP32);
-	write32(MEMADDR(from, 4 + overb));
+	write32(MEMADDR(from, 4));
 }
 
 __forceinline void SSE4_PMOVSXDQ_XMM_to_XMM(x86SSERegType to, x86SSERegType from)

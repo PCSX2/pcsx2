@@ -859,7 +859,7 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 #else
 #include "errno.h"
 
-__forceinline void __fastcall InstallLinuxExceptionHandler()
+void InstallLinuxExceptionHandler()
 {
 	struct sigaction sa;
 	
@@ -869,13 +869,13 @@ __forceinline void __fastcall InstallLinuxExceptionHandler()
 	sigaction(SIGSEGV, &sa, NULL); 
 }
 
-__forceinline void __fastcall ReleaseLinuxExceptionHandler()
+void ReleaseLinuxExceptionHandler()
 {
 	// Code this later.
 }
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 // This is my shot in the dark.  Probably needs some work.  Good luck! (air)
-__forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )
+void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )
 {
 	int err;
 	u32 pagesize = getpagesize();
@@ -884,6 +884,8 @@ __forceinline void __fastcall SysPageFaultExceptionFilter( int signal, siginfo_t
 	// get bad virtual address
 	u32 offset = (u8*)info->si_addr - psM;
 	uptr pageoffset = ( offset / pagesize ) * pagesize;
+	
+	DevCon::Status( "Protected memory cleanup. Offset 0x%x", params offset );
 
 	if (offset>=Ps2MemSize::Base)
 	{

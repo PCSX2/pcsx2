@@ -34,9 +34,9 @@
 using namespace R5900;
 
 FILE *emuLog;
+u32 varLog;
 
 #ifdef PCSX2_DEVBUILD
-u32 varLog;
 
 // these used by the depreciated _old_Log only
 u16 logProtocol;

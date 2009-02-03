@@ -67,4 +67,116 @@ static __forceinline void memset16_obj( T& obj )
 		memset32_obj<data + (data<<16)>( obj );
 }
 
+
+// An optimized memset for 8 bit destination data.
+template< u8 data, size_t bytes >
+static __forceinline void memset_8( void *dest )
+{
+	if( bytes == 0 ) return;
+
+	if( (bytes & 0x3) != 0 )
+	{
+		// unaligned data length.  No point in doing an optimized inline version (too complicated!)
+		// So fall back on the compiler implementation:
+
+		memset( dest, data, bytes );
+		return;
+	}
+
+	// This function only works on 32-bit alignments of data copied.
+	jASSUME( (bytes & 0x3) == 0 );
+
+	enum
+	{
+		remdat = bytes>>2,
+		data32 = data + (data<<8) + (data<<16) + (data<<24)
+	};
+
+	// macro to execute the x86/32 "stosd" copies.
+	switch( remdat )
+	{
+		case 1:
+			*(u32*)dest = data32;
+		return;
+
+		case 2:
+			((u32*)dest)[0] = data32;
+			((u32*)dest)[1] = data32;
+		return;
+
+		case 3:
+			__asm__ 
+			(
+				".intel_syntax\n"
+				"cld\n"
+//				"mov %edi, %0\n"
+//				"mov %eax, %1\n"
+				"stosd\n"
+				"stosd\n"
+				"stosd\n"
+				".att_syntax\n"
+				: 
+				: "D"(dest), "a"(data32)
+// D - edi, a -- eax, c ecx
+				:  
+			);
+		return;
+
+		case 4:
+			__asm__ 
+			(			
+				".intel_syntax\n"
+				"cld\n"
+//				"mov %edi, %0\n"
+//				"mov %eax, %1\n"
+				"stosd\n"
+				"stosd\n"
+				"stosd\n"
+				"stosd\n"
+				".att_syntax\n"
+				: 
+				: "D"(dest), "a"(data32)
+				:  
+				
+			);
+		return;
+
+		case 5:
+			__asm__
+			(
+				".intel_syntax\n"
+				"cld\n"
+//				"mov %edi, %0\n"
+//				"mov %eax, %1\n"
+				"stosd\n"
+				"stosd\n"
+				"stosd\n"
+				"stosd\n"
+				"stosd\n"
+				".att_syntax\n"
+				: 
+				: "D"(dest), "a"(data32)
+				:  
+				
+			);
+		return;
+
+		default:
+			__asm__
+			(
+				".intel_syntax\n"
+				"cld\n"
+//				"mov ecx, %0\n"
+//				"mov edi, %1\n"
+//				"mov eax, %2\n"
+				"rep stosd\n"
+				".att_syntax\n"
+				: 
+				: "c"(remdat), "D"(dest), "a"(data32)
+				:  
+			);
+		return;
+	}
+}
+
 #endif
