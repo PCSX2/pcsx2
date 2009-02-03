@@ -39,6 +39,9 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 WNDPROC GSwndProc=NULL;
 HWND GShwnd=NULL;
 
+extern keyEvent event;
+
+
 void SaveConfig()
 {
     char *szTemp;
@@ -188,7 +191,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
             }
 
-            event.event = KEYPRESS;
+            event.evt = KEYPRESS;
             event.key = wParam;
 			break;
 
@@ -203,7 +206,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
             }
 
-            event.event = KEYRELEASE;
+            event.evt = KEYRELEASE;
             event.key = wParam;
 			break;
 
@@ -250,7 +253,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_DESTROY:
 		case WM_QUIT:
-			event.event = KEYPRESS;
+			event.evt = KEYPRESS;
 			event.key = VK_ESCAPE;
 		    return GSwndProc(hWnd, msg, wParam, lParam);
 

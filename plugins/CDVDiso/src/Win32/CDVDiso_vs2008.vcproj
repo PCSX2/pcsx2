@@ -314,7 +314,7 @@
 			Name="bzip2"
 			>
 			<File
-				RelativePath="..\bzip2\blocksort.c"
+				RelativePath="..\3rdparty\bzip2\blocksort.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -338,7 +338,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\bzip2\bzlib.c"
+				RelativePath="..\3rdparty\bzip2\bzlib.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -362,39 +362,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\bzip2\bzlib.h"
+				RelativePath="..\3rdparty\bzip2\bzlib.h"
 				>
 			</File>
 			<File
-				RelativePath="..\bzip2\bzlib_private.h"
+				RelativePath="..\3rdparty\bzip2\bzlib_private.h"
 				>
 			</File>
 			<File
-				RelativePath="..\bzip2\compress.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(ParentName)\"
-						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
-						CompileAs="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(ParentName)\"
-						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
-						CompileAs="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\bzip2\crctable.c"
+				RelativePath="..\3rdparty\bzip2\compress.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -418,7 +394,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\bzip2\decompress.c"
+				RelativePath="..\3rdparty\bzip2\crctable.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -442,7 +418,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\bzip2\huffman.c"
+				RelativePath="..\3rdparty\bzip2\decompress.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -466,7 +442,31 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\bzip2\randtable.c"
+				RelativePath="..\3rdparty\bzip2\huffman.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(ParentName)\"
+						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(ParentName)\"
+						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\3rdparty\bzip2\randtable.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -494,7 +494,7 @@
 			Name="zlib"
 			>
 			<File
-				RelativePath="..\zlib\adler32.c"
+				RelativePath="..\3rdparty\zlib\adler32.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -517,7 +517,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\compress.c"
+				RelativePath="..\3rdparty\zlib\compress.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -540,7 +540,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\crc32.c"
+				RelativePath="..\3rdparty\zlib\crc32.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -562,52 +562,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\deflate.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(ParentName)\"
-						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
-						CompileAs="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(ParentName)\"
-						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\zlib\gzio.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(ParentName)\"
-						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(ParentName)\"
-						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\zlib\infback.c"
+				RelativePath="..\3rdparty\zlib\deflate.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -630,7 +585,29 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\inffast.c"
+				RelativePath="..\3rdparty\zlib\gzio.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(ParentName)\"
+						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(ParentName)\"
+						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\3rdparty\zlib\infback.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -653,7 +630,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\inflate.c"
+				RelativePath="..\3rdparty\zlib\inffast.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -676,7 +653,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\inftrees.c"
+				RelativePath="..\3rdparty\zlib\inflate.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -699,7 +676,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\trees.c"
+				RelativePath="..\3rdparty\zlib\inftrees.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -722,7 +699,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\uncompr.c"
+				RelativePath="..\3rdparty\zlib\trees.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -745,7 +722,30 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\zlib\zutil.c"
+				RelativePath="..\3rdparty\zlib\uncompr.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(ParentName)\"
+						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(ParentName)\"
+						XMLDocumentationFileName="$(IntDir)\$(ParentName)\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\3rdparty\zlib\zutil.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -771,43 +771,43 @@
 				Name="headers"
 				>
 				<File
-					RelativePath="..\zlib\crc32.h"
+					RelativePath="..\3rdparty\zlib\crc32.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\deflate.h"
+					RelativePath="..\3rdparty\zlib\deflate.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\inffast.h"
+					RelativePath="..\3rdparty\zlib\inffast.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\inffixed.h"
+					RelativePath="..\3rdparty\zlib\inffixed.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\inflate.h"
+					RelativePath="..\3rdparty\zlib\inflate.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\inftrees.h"
+					RelativePath="..\3rdparty\zlib\inftrees.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\trees.h"
+					RelativePath="..\3rdparty\zlib\trees.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\zconf.h"
+					RelativePath="..\3rdparty\zlib\zconf.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\zlib.h"
+					RelativePath="..\3rdparty\zlib\zlib.h"
 					>
 				</File>
 				<File
-					RelativePath="..\zlib\zutil.h"
+					RelativePath="..\3rdparty\zlib\zutil.h"
 					>
 				</File>
 			</Filter>

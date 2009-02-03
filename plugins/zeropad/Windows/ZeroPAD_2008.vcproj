@@ -25,6 +25,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -42,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="libs;.."
+				AdditionalIncludeDirectories="libs;../;../common"
 				PreprocessorDefinitions="_WIN32;_DEBUG;_WINDOWS;_USRDLL;ZEROPAD_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -108,6 +109,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -128,7 +130,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="libs;.."
+				AdditionalIncludeDirectories="libs;../;../common"
 				PreprocessorDefinitions="_WIN32;NDEBUG;_WINDOWS;_USRDLL;ZEROPAD_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"

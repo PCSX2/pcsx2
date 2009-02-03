@@ -828,6 +828,9 @@ void ResampleLinear(s16* pStereoSamples, int oldsamples, s16* pNewSamples, int n
 
 static PCSX2_ALIGNED16(s16 s_ThreadBuffer[NSSIZE*NSFRAMES*2*5]);
 
+// SoundTouch's INTEGER system is broken these days, so we'll need this to do float conversions...
+static PCSX2_ALIGNED16(float s_floatBuffer[NSSIZE*NSFRAMES*2*5]);
+
 // communicates with the audio hardware
 #ifdef _WIN32
 DWORD WINAPI SPU2ThreadProc(LPVOID)
@@ -900,15 +903,24 @@ void* SPU2ThreadProc(void* lpParam)
 			if ((nReadBuf & 3) == 0)  // wow, this if statement makes the whole difference
 				pSoundTouch->setTempoChange(100.0f*(float)oldsamples/(float)NewSamples - 100.0f);
 
-			pSoundTouch->putSamples((s16*)s_pAudioBuffers[nReadBuf].pbuf, oldsamples);
+			for( int sx=0; sx<oldsamples*2; sx++ )
+				s_floatBuffer[sx] = ((s16*)s_pAudioBuffers[nReadBuf].pbuf)[sx]/65536.0f;
+
+			pSoundTouch->putSamples(s_floatBuffer, oldsamples);
 
 			// extract 2*NSFRAMES ms at a time
 			int nOutSamples;
 			
 			do
 			{
-				nOutSamples = pSoundTouch->receiveSamples(s_ThreadBuffer, NSSIZE * NSFRAMES * 5);
-				if ( nOutSamples > 0 ) SoundFeedVoiceData((u8*)s_ThreadBuffer, nOutSamples * 4);
+				nOutSamples = pSoundTouch->receiveSamples(s_floatBuffer, NSSIZE * NSFRAMES * 5);
+				if ( nOutSamples > 0 )
+				{
+					for( int sx=0; sx<nOutSamples*2; sx++ )
+						s_ThreadBuffer[sx] = (s16)(s_floatBuffer[sx]*65536.0f);
+
+					SoundFeedVoiceData((u8*)s_ThreadBuffer, nOutSamples * 4);
+				}
 				
 			} while (nOutSamples != 0);
 

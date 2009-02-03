@@ -16,10 +16,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "zerospu2.h"
-
 #include <assert.h>
 #include <stdlib.h>
+
+#include "zerospu2.h"
 
 #include "SoundTouch/SoundTouch.h"
 #include "SoundTouch/WavFile.h"

@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
-				PreprocessorDefinitions="_WIN32;_DEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
+				PreprocessorDefinitions="_WIN32;WIN32;_DEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -130,7 +130,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
-				PreprocessorDefinitions="_WIN32;NDEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
+				PreprocessorDefinitions="FLOAT_SAMPLES;_WIN32;WIN32;NDEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -261,6 +261,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\3rdparty\SoundTouch\BPMDetect.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\3rdparty\SoundTouch\BPMDetect.h"
 				>
 			</File>
@@ -294,6 +298,30 @@
 			</File>
 			<File
 				RelativePath="..\3rdparty\SoundTouch\mmx_optimized.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\3rdparty\SoundTouch\PeakFinder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\3rdparty\SoundTouch\PeakFinder.h"
 				>
 			</File>
 			<File
