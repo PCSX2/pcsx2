@@ -261,10 +261,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\3rdparty\SoundTouch\BPMDetect.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\3rdparty\SoundTouch\BPMDetect.h"
 				>
 			</File>
@@ -315,14 +311,6 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\3rdparty\SoundTouch\PeakFinder.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\3rdparty\SoundTouch\PeakFinder.h"
-				>
 			</File>
 			<File
 				RelativePath="..\3rdparty\SoundTouch\RateTransposer.cpp"
