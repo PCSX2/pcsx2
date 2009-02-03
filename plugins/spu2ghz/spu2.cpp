@@ -226,11 +226,10 @@ __inline void __fastcall spu2M_Write( u32 addr, s16 value )
 	addr &= 0xfffff;
 	if( addr >= SPU2_DYN_MEMLINE )
 	{
-		const u32 nexta = addr >> 3;		// 8 words per encoded block.
-		const u32 flagbitmask = 1ul<<(nexta & 31);  // 31 flags per array entry
-		pcm_cache_flags[nexta/32] &= ~flagbitmask;
+		const int cacheIdx = addr / pcm_WordsPerBlock;
+		pcm_cache_data[cacheIdx].Validated = false;
 
-		ConLog( " * SPU2 : PcmCache Block Clear at 0x%x (idx=0x%x, bit=%d)\n", addr, nexta, nexta & 31);
+		ConLog( " * SPU2 : PcmCache Block Clear at 0x%x (cacheIdx=0x%x)\n", addr, cacheIdx);
 	}
 	*GetMemPtr( addr ) = value;
 }
@@ -327,11 +326,6 @@ void CoreReset(int c)
 
 extern void LowPassFilterInit();
 
-// number of cachable ADPCM blocks (any blocks above the SPU2_DYN_MEMLINE)
-static const int pcm_BlockCount = 0x100000 / 8; // (0x100000-SPU2_DYN_MEMLINE) / 8;
-
-static const int pcm_DecodedSamplesPerBlock = 28;
-
 EXPORT_C_(s32) SPU2init() 
 {
 #define MAKESURE(a,b) \
@@ -374,11 +368,10 @@ EXPORT_C_(s32) SPU2init()
 	//  Expanded: 16 bytes expands to 56 bytes [3.5:1 ratio]
 	//    Resulting in 2MB * 3.5.
 
-	pcm_cache_flags = (u32*)calloc( pcm_BlockCount / 32, sizeof(u32) );
-	pcm_cache_data = (s16*)calloc( pcm_BlockCount * pcm_DecodedSamplesPerBlock, sizeof(s16) );
+	pcm_cache_data = (PcmCacheEntry*)calloc( pcm_BlockCount, sizeof(PcmCacheEntry) );
 
 	if( (spu2regs == NULL) || (_spu2mem == NULL) ||
-		(pcm_cache_data == NULL) || (pcm_cache_flags == NULL) )
+		(pcm_cache_data == NULL) )
 	{
 		SysMessage("SPU2: Error allocating Memory\n"); return -1;
 	}
@@ -543,12 +536,10 @@ EXPORT_C_(void) SPU2shutdown()
 	SAFE_FREE(spu2regs);
 	SAFE_FREE(_spu2mem);
 
-	SAFE_FREE( pcm_cache_flags );
 	SAFE_FREE( pcm_cache_data );
 
 	spu2regs = NULL;
 	_spu2mem = NULL;
-	pcm_cache_flags = NULL;
 	pcm_cache_data = NULL;
 
 #ifdef SPU2_LOG
@@ -1705,12 +1696,6 @@ EXPORT_C_(u16) SPU2read(u32 rmem)
 	return ret;
 }
 
-struct cacheFreezeData
-{
-	u32 flags[pcm_BlockCount/32];
-	s16 startData;
-};
-
 typedef struct 
 {
 	// compatibility with zerospu2 removed...
@@ -1734,7 +1719,7 @@ typedef struct
 
 	int lClocks;
 
-	cacheFreezeData cacheData;
+	PcmCacheEntry cacheData;
 
 } SPU2freezeData;
 
@@ -1747,7 +1732,7 @@ typedef struct
 // Increment this if changes to V_Core or V_Voice structs are made.
 // Chances are we'll never explicitly support older save versions,
 // but might as well version them anyway.  Could come in handly someday!
-#define SAVE_VERSION 0x0100
+#define SAVE_VERSION 0x0101
 
 static int getFreezeSize()
 {
@@ -1759,9 +1744,8 @@ static int getFreezeSize()
 
 	for( int bidx=0; bidx<pcm_BlockCount; bidx++ )
 	{
-		const u32 flagmask = 1ul << (bidx & 31);
-		if( pcm_cache_flags[bidx/32] & flagmask )
-			size += pcm_DecodedSamplesPerBlock*sizeof(s16);
+		if( pcm_cache_data[bidx].Validated )
+			size += pcm_DecodedSamplesPerBlock*sizeof(PcmCacheEntry);
 	}
 	return size;
 }
@@ -1769,9 +1753,11 @@ static int getFreezeSize()
 
 static void wipe_the_cache()
 {
-	memset( pcm_cache_flags, 0, pcm_BlockCount/32 * sizeof(u32) );
-	memset( pcm_cache_data, 0, pcm_BlockCount * pcm_DecodedSamplesPerBlock * sizeof(s16) );
+	memset( pcm_cache_data, 0, pcm_BlockCount * sizeof(PcmCacheEntry) );
 }
+
+
+static s16 old_state_sBuffer[pcm_DecodedSamplesPerBlock] = {0};
 
 EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 {
@@ -1779,7 +1765,7 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 	{
 		const SPU2freezeData *spud = (SPU2freezeData*)data->data;
 
-		if( spud->id != SAVE_ID || spud->version != SAVE_VERSION )
+		if( spud->id != SAVE_ID || spud->version < 0x100 )
 		{
 			printf("\n*** SPU2Ghz Warning:\n");
 			printf("  The savestate you are trying to load was not made with this plugin.\n");
@@ -1826,36 +1812,51 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 
 			// Load the ADPCM cache:
 
-			const cacheFreezeData &cfd = spud->cacheData;
-			const s16* pcmSrc = &cfd.startData;
-
-			memcpy( pcm_cache_flags, cfd.flags, (pcm_BlockCount/32) * sizeof(u32) );
-
-			int blksLoaded=0;
-
-			for( int bidx=0; bidx<pcm_BlockCount; bidx++ )
+			wipe_the_cache();
+			if( spud->version == 0x100 )		// don't support 0x100 cache anymore.
 			{
-				const u32 flagmask = 1ul << (bidx & 31);
-				if( cfd.flags[bidx/32] & flagmask )
+				printf("\n*** SPU2Ghz Warning:\n");
+				printf("\tSavestate version is from an older version of this plugin.\n");
+				printf("\tAudio may not recover correctly.");
+
+				const PcmCacheEntry* pcmSrc = &spud->cacheData;
+				int blksLoaded=0;
+
+				for( int bidx=0; bidx<pcm_BlockCount; bidx++ )
 				{
-					// load a cache block!
-					memcpy( &pcm_cache_data[bidx*pcm_DecodedSamplesPerBlock],
-						pcmSrc, pcm_DecodedSamplesPerBlock*sizeof(s16) );
-					pcmSrc += pcm_DecodedSamplesPerBlock;
-					blksLoaded++;
+					if( pcm_cache_data[bidx].Validated )
+					{
+						// load a cache block!
+						memcpy( &pcm_cache_data[bidx], pcmSrc, sizeof(PcmCacheEntry) );
+						pcmSrc++;
+						blksLoaded++;
+					}
+				}
+
+				// Go through the V_Voice structs and recalculate SBuffer pointer from
+				// the NextA setting.
+
+				for( int c=0; c<2; c++ )
+				{
+					for( int v=0; v<24; v++ )
+					{
+						const int cacheIdx = Cores[c].Voices[v].NextA / pcm_WordsPerBlock;
+						Cores[c].Voices[v].SBuffer = pcm_cache_data[cacheIdx].Sampledata;
+					}
+				}
+			}
+			else
+			{
+				// We don't support the cache, so make sure the SBuffer pointers
+				// are safe (don't want any GPFs reading bad data)
+
+				for( int c=0; c<2; c++ )
+				{
+					for( int v=0; v<24; v++ )
+						Cores[c].Voices[v].SBuffer = old_state_sBuffer;
 				}
 			}
 
-			// Go through the V_Voice structs and replace the SBuffer pointer
-			// with an absolute address into our cache buffer this session.
-
-			for( int c=0; c<2; c++ )
-			{
-				for( int v=0; v<24; v++ )
-				{
-					Cores[c].Voices[v].SBuffer = (s16*) ((uptr)spud->Cores[c].Voices[v].SBuffer + (uptr)pcm_cache_data );
-				}
-			}
 
 			//printf( " * SPU2 > FreezeLoad > Loaded %d cache blocks.\n", blksLoaded++ );
 		}
@@ -1905,36 +1906,20 @@ EXPORT_C_(s32) SPU2freeze(int mode, freezeData *data)
 		//   decoded blocks currently in use by active voices.  This allows
 		//   voices to resume seamlessly on load.
 
-		cacheFreezeData &cfd = spud->cacheData;
-		s16* pcmDst = &cfd.startData;
-
-		memcpy( cfd.flags, pcm_cache_flags, sizeof(cfd.flags) );
-
+		PcmCacheEntry* pcmDst = &spud->cacheData;
 		int blksSaved=0;
+
 		for( int bidx=0; bidx<pcm_BlockCount; bidx++ )
 		{
-			const u32 flagmask = 1ul << (bidx & 31);
-			if( cfd.flags[bidx/32] & flagmask )
+			if( pcm_cache_data[bidx].Validated )
 			{
 				// save a cache block!
-				memcpy( pcmDst, &pcm_cache_data[bidx*pcm_DecodedSamplesPerBlock],
-					pcm_DecodedSamplesPerBlock*sizeof(s16) );
-				pcmDst += pcm_DecodedSamplesPerBlock;
+				memcpy( pcmDst, &pcm_cache_data[bidx], sizeof(PcmCacheEntry) );
+				pcmDst++;
 				blksSaved++;
 			}
 		}
 
-		// Time to go through the V_Voice structs and replace the SBuffer pointer
-		// with a relative address that can be applied later on when the state is loaded.
-
-		for( int c=0; c<2; c++ )
-		{
-			for( int v=0; v<24; v++ )
-			{
-				spud->Cores[c].Voices[v].SBuffer = 
-					(s16*) ((uptr)spud->Cores[c].Voices[v].SBuffer - (uptr)pcm_cache_data );
-			}
-		}
 		//printf( " * SPU2 > FreezeSave > Saved %d cache blocks.\n", blksSaved++ );
 
 	}

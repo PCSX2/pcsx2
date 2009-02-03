@@ -220,33 +220,66 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 	Cores[core].TSA &= 0xfffff;
 
 	u32 buff1end = Cores[core].TSA + size;
-
-	// Pcm Cache Invalidation!
-	// Ideally we would only mask bits actually written to, but it's a complex algorithm
-	// that is way more work than it's worth.  Masking out bytes would in theory work a
-	// little more effiently, but was buggy in practice for some reason.  So a dumb and
-	// dirty 32-bit mask will suffice.
-
-	// Note: When clearing cache flags, the *endpoint* needs to be rounded upward.
-	// just rounding the count upward could cause problems if both start and end
-	// points are mis-aligned.
-
-	// indexer scalar - 8 addresses per block, and 32 bits per dword:
-	const u32 indexer_scalar = 8*32;
-
-	const int roundUp = indexer_scalar-1;
-	const int flagTSA = Cores[core].TSA / indexer_scalar;
-	int flagTDA = (buff1end + roundUp) / indexer_scalar;	// endpoint, rounded up
-	u8* cache = (u8*)pcm_cache_flags;
-
-	memset( &pcm_cache_flags[flagTSA], 0, (flagTDA - flagTSA) * 4 );
-
 	u32 buff2end=0;
 	if( buff1end > 0x100000 )
 	{
 		buff2end = buff1end - 0x100000;
 		buff1end = 0x100000;
 	}
+
+	const int cacheIdxStart = Cores[core].TSA / pcm_WordsPerBlock;
+	const int cacheIdxEnd = (buff1end+pcm_WordsPerBlock-1) / pcm_WordsPerBlock;
+	PcmCacheEntry* cacheLine = &pcm_cache_data[cacheIdxStart];
+	PcmCacheEntry& cacheEnd = pcm_cache_data[cacheIdxEnd];
+
+	do 
+	{
+		cacheLine->Validated = false;
+		cacheLine++;
+	} while ( cacheLine != &cacheEnd );
+
+#if 0
+	// Pcm Cache Invalidation!
+	// It's a requirement that we mask bits for the blocks that are written to *only*,
+	// because doing anything else can cause the cache to fail, thanks to the progressive
+	// nature of the SPU2's ADPCM encoding.  (the same thing that makes it impossible
+	// to use SSE optimizations on it).
+
+	u8* cache = (u8*)pcm_cache_flags;
+
+	// Step 1: Clear bits in the front remainder.
+
+	const int pcmTSA = Cores[core].TSA / pcm_WordsPerBlock;
+	const int pcmTDA = buff1end / pcm_WordsPerBlock;
+	const int remFront = pcmTSA & 31;
+	const int remBack = ((buff1end+pcm_WordsPerBlock-1)/pcm_WordsPerBlock) & 31;	// round up to get the end remainder
+
+	int flagTSA = pcmTSA / 32;
+
+	if( remFront )
+	{
+		// need to clear some upper bits of this u32
+		uint mask = (1ul<<remFront)-1;
+		cache[flagTSA++] &= mask;
+	}
+
+	// Step 2: Clear the middle run
+	const int flagClearLen = pcmTDA-pcmTSA;
+	memset( &cache[flagTSA], 0, flagClearLen );
+
+	// Step 3: Clear bits in the end remainder.
+
+	if( remBack )
+	{
+		// need to clear some lower bits in this u32
+		uint mask = ~(1ul<<remBack)-1;
+		cache[flagTSA + flagClearLen] &= mask;
+	}
+#endif
+
+	//ConLog( " * SPU2 : Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
+	//	Cores[core].TSA, buff1end, flagTSA, flagTDA, clearLen );
+
 
 	// First Branch needs cleared:
 	// It starts at TSA and goes to buff1end.

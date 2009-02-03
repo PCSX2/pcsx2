@@ -128,7 +128,7 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 			pcm = data>>shift;
 			pcm+=((pred1*prev1)+(pred2*prev2))>>6;
 			if(pcm> 32767) pcm= 32767;
-			if(pcm<-32768) pcm=-32768;
+			else if(pcm<-32768) pcm=-32768;
 			*(buffer++) = pcm;
 		}
 
@@ -140,7 +140,7 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 			pcm2 = data>>shift;
 			pcm2+=((pred1*pcm)+(pred2*prev1))>>6;
 			if(pcm2> 32767) pcm2= 32767;
-			if(pcm2<-32768) pcm2=-32768;
+			else if(pcm2<-32768) pcm2=-32768;
 			*(buffer++) = pcm2;
 		}
 
@@ -203,9 +203,10 @@ static void __forceinline IncrementNextA( const V_Core& thiscore, V_Voice& vc )
 	vc.NextA&=0xFFFFF;
 }
 
-
-u32 *pcm_cache_flags = NULL;
-s16 *pcm_cache_data = NULL;
+// decoded pcm data, used to cache the decoded data so that it needn't be decoded
+// multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
+// invalided when DMA transfers and memory writes are performed.
+PcmCacheEntry *pcm_cache_data = NULL;
 
 #ifndef PUBLIC
 int g_counter_cache_hits=0;
@@ -249,16 +250,20 @@ static void __forceinline __fastcall GetNextDataBuffered( V_Core& thiscore, V_Vo
 
 		s16* memptr = GetMemPtr(vc.NextA&0xFFFFF);
 		vc.LoopFlags = *memptr >> 8;	// grab loop flags from the upper byte.
-		int nexta = vc.NextA / 8;		// 8 words per encoded block.
-		
-		vc.SBuffer = &pcm_cache_data[nexta * 28];
 
-		const u32 flagbitmask = 1ul<<(nexta & 31);  // 32 flags per array entry
-		nexta /= 32;
+		const int cacheIdx = vc.NextA / pcm_WordsPerBlock;
+		PcmCacheEntry& cacheLine = pcm_cache_data[cacheIdx];
+		vc.SBuffer = cacheLine.Sampledata;
 
-		if( pcm_cache_flags[nexta] & flagbitmask )
+		if( cacheLine.Validated )
 		{
-			// Cached block!  Read from the cache directly (ie, do nothing)
+			// Cached block!  Read from the cache directly.
+			// Make sure to propagate the prev1/prev2 ADPCM:
+
+			vc.Prev1 = vc.SBuffer[27];
+			vc.Prev2 = vc.SBuffer[26];
+
+			//ConLog( " * SPU2 : Cache Hit! NextA=0x%x, cacheIdx=0x%x\n", vc.NextA, cacheIdx );
 
 			#ifndef PUBLIC
 			g_counter_cache_hits++;
@@ -267,19 +272,20 @@ static void __forceinline __fastcall GetNextDataBuffered( V_Core& thiscore, V_Vo
 		else
 		{
 			// Only flag the cache if it's a non-dynamic memory range.
-			if( nexta >= (SPU2_DYN_MEMLINE / (8*32)) )
-				pcm_cache_flags[nexta] |= flagbitmask;
+			if( vc.NextA >= SPU2_DYN_MEMLINE )
+				cacheLine.Validated = true;
 
 			#ifndef PUBLIC
-			if( nexta < (SPU2_DYN_MEMLINE / (8*32)) )
+			if( vc.NextA < SPU2_DYN_MEMLINE )
 				g_counter_cache_ignores++;
 			else
 				g_counter_cache_misses++;
 			#endif
 
-			// saturated decoder
+			s16* sbuffer = cacheLine.Sampledata;
 
-			XA_decode_block(vc.SBuffer, memptr, vc.Prev1, vc.Prev2);
+			// saturated decoder
+			XA_decode_block( sbuffer, memptr, vc.Prev1, vc.Prev2 );
 
 			// [Air]: Testing use of a new unsaturated decoder. (benchmark needed)
 			//   Chances are the saturation isn't needed, but for a very few exception games.
@@ -288,7 +294,6 @@ static void __forceinline __fastcall GetNextDataBuffered( V_Core& thiscore, V_Vo
 			//   heavy use of the SPU2 via music or sfx will mostly use the cache anyway.
 
 			//XA_decode_block_unsaturated( vc.SBuffer, memptr, vc.Prev1, vc.Prev2 );
-
 		}
 
 		vc.SCurrent = 0;
@@ -1173,8 +1178,8 @@ void __fastcall Mix()
 	}
 
 	// Commit Core 0 output to ram before mixing Core 1:
-	ExtL>>=13;
-	ExtR>>=13;
+	ExtL>>=14;
+	ExtR>>=14;
 	spu2M_WriteFast( 0x800 + OutPos, ExtL>>3 );
 	spu2M_WriteFast( 0xA00 + OutPos, ExtR>>3 );
 

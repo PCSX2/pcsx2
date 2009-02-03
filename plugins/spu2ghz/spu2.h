@@ -138,22 +138,35 @@ default: \
 #	define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
 #endif
 
+// The SPU2 has a dynamic memory range which is used for several internal operations, such as
+// registers, CORE 1/2 mixing, AutoDMAs, and some other fancy stuff.  We exclude this range
+// from the cache here:
+static const s32 SPU2_DYN_MEMLINE = 0x2800;
+
+// 8 short words per encoded PCM block. (as stored in SPU2 ram)
+static const int pcm_WordsPerBlock = 8;
+
+// number of cachable ADPCM blocks (any blocks above the SPU2_DYN_MEMLINE)
+static const int pcm_BlockCount = 0x100000 / pcm_WordsPerBlock;
+
+// 28 samples per decoded PCM block (as stored in our cache)
+static const int pcm_DecodedSamplesPerBlock = 28;
+
+struct PcmCacheEntry
+{
+	bool Validated; 
+	s16 Sampledata[pcm_DecodedSamplesPerBlock];
+};
 
 extern void spdif_set51(u32 is_5_1_out);
 extern u32  spdif_init();
 extern void spdif_shutdown();
 extern void spdif_get_samples(s32 *samples); // fills the buffer with [l,r,c,lfe,sl,sr] if using 5.1 output, or [l,r] if using stereo
 
-// The SPU2 has a dynamic memory range which is used for several internal operations, such as
-// registers, CORE 1/2 mixing, AutoDMAs, and some other fancy stuff.  We exclude this range
-// from the cache here:
-static const s32 SPU2_DYN_MEMLINE = 0x2800;
-
 extern short *spu2regs;
 extern short *_spu2mem;
 
-extern u32 *pcm_cache_flags;
-extern s16 *pcm_cache_data;
+extern PcmCacheEntry* pcm_cache_data;
 
 extern s16 __forceinline * __fastcall GetMemPtr(u32 addr);
 extern s16 __forceinline __fastcall spu2M_Read( u32 addr );
