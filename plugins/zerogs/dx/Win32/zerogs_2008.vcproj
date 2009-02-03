@@ -27,7 +27,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -55,7 +55,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;$(SolutionDir)\common&quot;"
+				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;..\common&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -123,7 +123,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -141,7 +141,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;$(SolutionDir)\common&quot;"
+				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;..\common&quot;"
 				PreprocessorDefinitions="D3D_DEBUG_INFO;_USRDLL;_DEBUG;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -204,7 +204,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -232,7 +232,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;$(SolutionDir)\common&quot;"
+				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;..\common&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;RELEASE_TO_PUBLIC;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"

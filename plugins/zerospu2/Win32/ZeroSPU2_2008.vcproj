@@ -25,7 +25,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
 				PreprocessorDefinitions="_WIN32;_DEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -107,7 +107,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="$(SolutionDir)\common\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\&quot; &quot;$(SolutionDir)common&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -129,7 +129,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(SolutionDir)\common&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
 				PreprocessorDefinitions="_WIN32;NDEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -197,7 +197,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\voices.cpp"
+				RelativePath="..\voices.cpp"
 				>
 			</File>
 			<File
@@ -205,11 +205,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\zerodma.cpp"
+				RelativePath="..\zerodma.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\zerospu2.cpp"
+				RelativePath="..\zerospu2.cpp"
 				>
 			</File>
 		</Filter>
@@ -219,11 +219,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\misc.h"
+				RelativePath="..\misc.h"
 				>
 			</File>
 			<File
-				RelativePath=".\reg.h"
+				RelativePath="..\reg.h"
 				>
 			</File>
 			<File
@@ -249,91 +249,91 @@
 			Name="SoundTouch"
 			>
 			<File
-				RelativePath=".\SoundTouch\3dnow_win.cpp"
+				RelativePath="..\3rdparty\SoundTouch\3dnow_win.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\AAFilter.cpp"
+				RelativePath="..\3rdparty\SoundTouch\AAFilter.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\AAFilter.h"
+				RelativePath="..\3rdparty\SoundTouch\AAFilter.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\BPMDetect.h"
+				RelativePath="..\3rdparty\SoundTouch\BPMDetect.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\cpu_detect.h"
+				RelativePath="..\3rdparty\SoundTouch\cpu_detect.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\cpu_detect_x86_win.cpp"
+				RelativePath="..\3rdparty\SoundTouch\cpu_detect_x86_win.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\FIFOSampleBuffer.cpp"
+				RelativePath="..\3rdparty\SoundTouch\FIFOSampleBuffer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\FIFOSampleBuffer.h"
+				RelativePath="..\3rdparty\SoundTouch\FIFOSampleBuffer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\FIFOSamplePipe.h"
+				RelativePath="..\3rdparty\SoundTouch\FIFOSamplePipe.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\FIRFilter.cpp"
+				RelativePath="..\3rdparty\SoundTouch\FIRFilter.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\FIRFilter.h"
+				RelativePath="..\3rdparty\SoundTouch\FIRFilter.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\mmx_optimized.cpp"
+				RelativePath="..\3rdparty\SoundTouch\mmx_optimized.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\RateTransposer.cpp"
+				RelativePath="..\3rdparty\SoundTouch\RateTransposer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\RateTransposer.h"
+				RelativePath="..\3rdparty\SoundTouch\RateTransposer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\SoundTouch.cpp"
+				RelativePath="..\3rdparty\SoundTouch\SoundTouch.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\SoundTouch.h"
+				RelativePath="..\3rdparty\SoundTouch\SoundTouch.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\sse_optimized.cpp"
+				RelativePath="..\3rdparty\SoundTouch\sse_optimized.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\STTypes.h"
+				RelativePath="..\3rdparty\SoundTouch\STTypes.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\TDStretch.cpp"
+				RelativePath="..\3rdparty\SoundTouch\TDStretch.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\TDStretch.h"
+				RelativePath="..\3rdparty\SoundTouch\TDStretch.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\WavFile.cpp"
+				RelativePath="..\3rdparty\SoundTouch\WavFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SoundTouch\WavFile.h"
+				RelativePath="..\3rdparty\SoundTouch\WavFile.h"
 				>
 			</File>
 		</Filter>
