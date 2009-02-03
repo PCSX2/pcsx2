@@ -27,7 +27,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -55,7 +55,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
+				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
 				PreprocessorDefinitions="NDEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -65,7 +65,6 @@
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Release/SPU2ghz.pch"
-				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -133,7 +132,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -156,7 +155,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
+				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
 				PreprocessorDefinitions="_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -165,7 +164,6 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
-				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -232,7 +230,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -260,7 +258,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
+				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
 				PreprocessorDefinitions="NDEBUG;PUBLIC;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -270,7 +268,6 @@
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -342,7 +339,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -365,7 +362,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
+				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
 				PreprocessorDefinitions="_DEBUG_FAST;_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -374,7 +371,6 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\Debug/SPU2ghz.pch"
-				AssemblerListingLocation="$(IntDir)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -721,6 +717,14 @@
 					</File>
 					<File
 						RelativePath=".\dsoundout.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\lowpass.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\lowpass.h"
 						>
 					</File>
 				</Filter>

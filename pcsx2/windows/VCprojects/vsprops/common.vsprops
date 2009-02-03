@@ -8,7 +8,7 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="./;../../;../../IPU;../../ZLIB;../../DebugTools;../../x86;&quot;../../x86/ix86-32&quot;;../libs;../pthreads"
+		AdditionalIncludeDirectories="./;../../common;../../;../../IPU;../../3rdparty/ZLIB;../../DebugTools;../../x86;&quot;../../x86/ix86-32&quot;;../libs;../pthreads"
 		PreprocessorDefinitions="WIN32;_WINDOWS;__i386__;PTW32_STATIC_LIB;ENABLE_NLS;PACKAGE=\&quot;pcsx2\&quot;;_CRT_SECURE_NO_DEPRECATE;TIXML_USE_STL"
 		StructMemberAlignment="5"
 		RuntimeTypeInfo="false"

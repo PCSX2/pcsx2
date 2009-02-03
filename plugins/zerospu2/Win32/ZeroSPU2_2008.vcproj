@@ -25,7 +25,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
+				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
 				PreprocessorDefinitions="_WIN32;_DEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -107,7 +107,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;SubWCRev.exe&quot; &quot;$(ProjectDir)\..\&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
+				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -129,7 +129,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;..\common&quot;"
+				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
 				PreprocessorDefinitions="_WIN32;NDEBUG;_WINDOWS;_USRDLL;ZEROSPU2_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
