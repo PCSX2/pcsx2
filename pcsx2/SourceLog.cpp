@@ -22,6 +22,7 @@
 #include "RDebug/deci2.h"
 #else
 #include <sys/time.h>
+#include "DebugTools/Debug.h"
 #endif
 
 #include <cstdarg>
@@ -34,9 +35,9 @@
 using namespace R5900;
 
 FILE *emuLog;
-u32 varLog;
 
 #ifdef PCSX2_DEVBUILD
+u32 varLog;
 
 // these used by the depreciated _old_Log only
 u16 logProtocol;
