@@ -21,8 +21,8 @@
 
 #include "zerospu2.h"
 
-#include "SoundTouch.h"
-#include "WavFile.h"
+#include "SoundTouch/SoundTouch.h"
+#include "SoundTouch/WavFile.h"
 
 
 // VOICE_PROCESSED definitions

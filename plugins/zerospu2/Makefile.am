@@ -1,7 +1,7 @@
 # Create a shared library libZeroSPU2
 AUTOMAKE_OPTIONS = foreign
 noinst_LIBRARIES = libZeroSPU2.a
-INCLUDES = -I@srcdir@/common -I@srcdir@/3rdparty/SoundTouch
+INCLUDES = -I@srcdir@/common -I@srcdir@/3rdparty
 
 libZeroSPU2_a_CXXFLAGS = $(shell pkg-config --cflags gtk+-2.0)
 libZeroSPU2_a_CFLAGS = $(shell pkg-config --cflags gtk+-2.0)
