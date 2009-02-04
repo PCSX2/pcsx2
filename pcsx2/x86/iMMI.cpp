@@ -168,7 +168,7 @@ void recPLZCW()
 		DEC32R(ECX);			// PS2 doesn't count the first bit
 
 		x86SetJ8(label_Zeroed);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], ECX);
+		MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], ECX);
 	}
 	else {
 		EEINST_RESETHASLIVE1(_Rd_);
@@ -3283,7 +3283,7 @@ void recPCPYUD( void )
 {
    if ( ! _Rd_ ) return;
 
-CPU_SSE_XMMCACHE_START(XMMINFO_READS|(( _Rs_ == 0) ? 0:XMMINFO_READT)|XMMINFO_WRITED)
+CPU_SSE_XMMCACHE_START(XMMINFO_READS|(( _Rt_ == 0) ? 0:XMMINFO_READT)|XMMINFO_WRITED)
 
 		if( _Rt_ == 0 ) {
 			if( EEREC_D == EEREC_S ) {
