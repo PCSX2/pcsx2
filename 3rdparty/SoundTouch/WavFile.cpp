@@ -51,6 +51,9 @@
 #include <assert.h>
 #include <limits.h>
 
+#include <cstdlib>
+#include <cstring>
+
 #include "WavFile.h"
 
 using namespace std;

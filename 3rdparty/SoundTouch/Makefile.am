@@ -21,7 +21,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-noinst_HEADERS=AAFilter.h cpu_detect.h cpu_detect_x86_gcc.cpp FIRFilter.h RateTransposer.h TDStretch.h
+noinst_HEADERS=AAFilter.h cpu_detect.h FIRFilter.h RateTransposer.h TDStretch.h cpu_detect_x86_gcc.cpp
 noinst_LIBRARIES = libSoundTouch.a
 
 if X86_64
@@ -34,7 +34,8 @@ endif
 
 #lib_LTLIBRARIES=libSoundTouch.la
 # the mmx_gcc.cpp and cpu_detect_x86_gcc.cpp may need to be conditionally included here from things discovered in configure.ac
-libSoundTouch_a_SOURCES=AAFilter.cpp FIRFilter.cpp FIFOSampleBuffer.cpp mmx_optimized.cpp sse_optimized.cpp RateTransposer.cpp SoundTouch.cpp TDStretch.cpp cpu_detect_x86_gcc.cpp WavFile.cpp
+libSoundTouch_a_SOURCES=AAFilter.cpp FIRFilter.cpp FIFOSampleBuffer.cpp mmx_optimized.cpp sse_optimized.cpp \
+RateTransposer.cpp SoundTouch.cpp TDStretch.cpp WavFile.cpp cpu_detect_x86_gcc.cpp
 
 # ??? test for -fcheck-new in configure.ac
 # other compiler flags to add

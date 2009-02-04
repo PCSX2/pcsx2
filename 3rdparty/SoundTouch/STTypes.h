@@ -88,7 +88,7 @@ typedef unsigned long   ulongptr;
 #define HAVE_UNISTD_H 1
 
 /* Use Integer as Sample type */
-#define INTEGER_SAMPLES 1
+//#define INTEGER_SAMPLES 1
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -103,8 +103,13 @@ typedef unsigned long   ulongptr;
 
     typedef int BOOL;
 
+#ifndef FALSE
     #define FALSE   0
+#endif
+
+#ifndef TRUE
     #define TRUE    1
+#endif
 
 #endif  // _WINDEF_
 
