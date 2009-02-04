@@ -767,6 +767,8 @@ create_GameFixDlg (void)
   GtkWidget *check_VU_Clip;
   GtkWidget *check_FPU_Clamp;
   GtkWidget *check_VU_Branch;
+  GtkWidget *check_VU_Add_Sub;
+  GtkWidget *check_Avoid_Delay_Handling;
   GtkWidget *label42;
   GtkWidget *dialog_action_area1;
   GtkWidget *cancelbutton1;
@@ -805,6 +807,14 @@ create_GameFixDlg (void)
   gtk_widget_show (check_VU_Branch);
   gtk_box_pack_start (GTK_BOX (vbox30), check_VU_Branch, FALSE, FALSE, 0);
 
+  check_VU_Add_Sub = gtk_check_button_new_with_mnemonic (_("VU Add / Sub Hack - Special fix for Tri-Ace games!"));
+  gtk_widget_show (check_VU_Add_Sub);
+  gtk_box_pack_start (GTK_BOX (vbox30), check_VU_Add_Sub, FALSE, FALSE, 0);
+
+  check_Avoid_Delay_Handling = gtk_check_button_new_with_mnemonic (_("Avoid 2 cycle branch delay handling - Fixes KH2 and Tri-Ace games"));
+  gtk_widget_show (check_Avoid_Delay_Handling);
+  gtk_box_pack_start (GTK_BOX (vbox30), check_Avoid_Delay_Handling, FALSE, FALSE, 0);
+
   label42 = gtk_label_new (_("<b>Some games need special settings.\nConfigure them here.</b>"));
   gtk_widget_show (label42);
   gtk_frame_set_label_widget (GTK_FRAME (GameSettings), label42);
@@ -840,6 +850,8 @@ create_GameFixDlg (void)
   GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Clip, "check_VU_Clip");
   GLADE_HOOKUP_OBJECT (GameFixDlg, check_FPU_Clamp, "check_FPU_Clamp");
   GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Branch, "check_VU_Branch");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, check_VU_Add_Sub, "check_VU_Add_Sub");
+  GLADE_HOOKUP_OBJECT (GameFixDlg, check_Avoid_Delay_Handling, "check_Avoid_Delay_Handling");
   GLADE_HOOKUP_OBJECT (GameFixDlg, label42, "label42");
   GLADE_HOOKUP_OBJECT_NO_REF (GameFixDlg, dialog_action_area1, "dialog_action_area1");
   GLADE_HOOKUP_OBJECT (GameFixDlg, cancelbutton1, "cancelbutton1");

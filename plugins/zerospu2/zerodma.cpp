@@ -21,8 +21,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "SoundTouch/SoundTouch.h"
-#include "SoundTouch/WavFile.h"
+#include "SoundTouch.h"
+#include "WavFile.h"
 
 void CALLBACK SPU2readDMAMem(u16 *pMem, int size, int core)
 {

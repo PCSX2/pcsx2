@@ -12,8 +12,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "zlib/zlib.h"
-#include "bzip2/bzlib.h"
+#include "3rdparty/zlib/zlib.h"
+#include "3rdparty/bzip2/bzlib.h"
 
 #include "common/PS2Etypes.h"
 #include "CDVDiso.h"

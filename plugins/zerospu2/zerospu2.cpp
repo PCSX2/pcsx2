@@ -25,8 +25,8 @@
 #include "svnrev.h"
 #endif 
 
-#include "SoundTouch/SoundTouch.h"
-#include "SoundTouch/WavFile.h"
+#include "SoundTouch.h"
+#include "WavFile.h"
 
 char libraryName[256];
 

@@ -769,9 +769,11 @@ void on_Game_Fixes(GtkMenuItem *menuitem, gpointer user_data)
 {
 	GameFixDlg = create_GameFixDlg();
 	
+	set_checked(GameFixDlg, "check_VU_Add_Sub", (Config.GameFixes & FLAG_VU_ADD_SUB));
 	set_checked(GameFixDlg, "check_VU_Clip", (Config.GameFixes & FLAG_VU_CLIP));
 	set_checked(GameFixDlg, "check_FPU_Clamp", (Config.GameFixes & FLAG_FPU_CLAMP));
 	set_checked(GameFixDlg, "check_VU_Branch", (Config.GameFixes & FLAG_VU_BRANCH));
+	set_checked(GameFixDlg, "check_Avoid_Delay_Handling", (Config.GameFixes & FLAG_AVOID_DELAY_HANDLING));
 	
 	gtk_widget_show_all(GameFixDlg);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
@@ -782,9 +784,11 @@ void on_Game_Fix_OK(GtkButton *button, gpointer user_data)
 {
 	
 	Config.GameFixes = 0;
+	Config.GameFixes |= is_checked(GameFixDlg, "check_VU_Add_Sub") ? FLAG_VU_ADD_SUB : 0;
 	Config.GameFixes |= is_checked(GameFixDlg, "check_VU_Clip") ? FLAG_VU_CLIP : 0;
 	Config.GameFixes |= is_checked(GameFixDlg, "check_FPU_Clamp") ? FLAG_FPU_CLAMP : 0;
 	Config.GameFixes |= is_checked(GameFixDlg, "check_VU_Branch") ? FLAG_VU_BRANCH : 0;
+	Config.GameFixes |= is_checked(GameFixDlg, "check_Avoid_Delay_Handling") ? FLAG_AVOID_DELAY_HANDLING : 0;
 	
 	SaveConfig();
 	gtk_widget_destroy(GameFixDlg);
