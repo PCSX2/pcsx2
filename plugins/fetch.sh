@@ -24,7 +24,7 @@ mkdir "temp"
 if [ -d "temp" ]
 then
 cd "temp"
-svn checkout http://pcsx2.googlecode.com/svn/trunk/plugins ./
+svn checkout http://pcsx2.googlecode.com/svn/trunk/plugins ./ -r 405
 
 echo "Copying..."
 for i in $PLUGINDIRS; do
