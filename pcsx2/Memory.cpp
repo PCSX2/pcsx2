@@ -528,9 +528,8 @@ void __fastcall vuMicroWrite8(u32 addr,mem8_t data)
 
 	if (vu.Micro[addr]!=data)
 	{
+		ClearVuFunc<vunum, dynrec>(addr&(~7), 8); // Clear before writing new data (clearing 8 bytes because an instruction is 8 bytes) (cottonvibes)
 		vu.Micro[addr]=data;
-
-		ClearVuFunc<vunum, dynrec>(addr&(~7),1);
 	}
 }
 
@@ -542,9 +541,8 @@ void __fastcall vuMicroWrite16(u32 addr,mem16_t data)
 
 	if (*(u16*)&vu.Micro[addr]!=data)
 	{
+		ClearVuFunc<vunum, dynrec>(addr&(~7), 8);
 		*(u16*)&vu.Micro[addr]=data;
-
-		ClearVuFunc<vunum, dynrec>(addr&(~7),1);
 	}
 }
 
@@ -556,9 +554,8 @@ void __fastcall vuMicroWrite32(u32 addr,mem32_t data)
 
 	if (*(u32*)&vu.Micro[addr]!=data)
 	{
+		ClearVuFunc<vunum, dynrec>(addr&(~7), 8);
 		*(u32*)&vu.Micro[addr]=data;
-
-		ClearVuFunc<vunum, dynrec>(addr&(~7),1);
 	}
 }
 
@@ -570,9 +567,8 @@ void __fastcall vuMicroWrite64(u32 addr,const mem64_t* data)
 
 	if (*(u64*)&vu.Micro[addr]!=data[0])
 	{
+		ClearVuFunc<vunum, dynrec>(addr&(~7), 8);
 		*(u64*)&vu.Micro[addr]=data[0];
-
-		ClearVuFunc<vunum, dynrec>(addr,1);
 	}
 }
 
@@ -584,10 +580,9 @@ void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 
 	if (*(u64*)&vu.Micro[addr]!=data[0] || *(u64*)&vu.Micro[addr+8]!=data[1])
 	{
+		ClearVuFunc<vunum, dynrec>(addr&(~7), 16);
 		*(u64*)&vu.Micro[addr]=data[0];
 		*(u64*)&vu.Micro[addr+8]=data[1];
-
-		ClearVuFunc<vunum, dynrec>(addr,2);
 	}
 }
 

@@ -50,7 +50,7 @@ static void TestClearVUs(u32 madr, u32 size)
 {
 	if( madr >= 0x11000000 ) {
 		if( madr < 0x11004000 ) {
-			DbgCon::Notice("scratch pad clearing vu0");
+			DbgCon::Notice("scratch pad clearing vu0\n");
 			CpuVU0.Clear(madr&0xfff, size);
 		}
 		else if( madr >= 0x11008000 && madr < 0x1100c000 ) {
@@ -78,7 +78,7 @@ int  _SPR0chain() {
 		memcpy_fast((u8*)pMem, &PS2MEM_SCRATCH[spr0->sadr & 0x3fff], spr0->qwc << 4);
 		Cpu->Clear(spr0->madr, spr0->qwc<<2);
 		// clear VU mem also!
-		TestClearVUs(spr0->madr, spr0->qwc << 2);
+		TestClearVUs(spr0->madr, spr0->qwc << 2); // Wtf is going on here? AFAIK, only VIF should affect VU micromem (cottonvibes)
 		
 		spr0->madr += spr0->qwc << 4;
 	}

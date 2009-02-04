@@ -33,7 +33,7 @@ namespace VU0micro
 
 	void __fastcall recClear(u32 Addr, u32 Size)
 	{
-		SuperVUClear(Addr, Size*4, 0);
+		SuperVUClear(Addr, Size, 0); // Size should be a multiple of 8 bytes!
 	}
 
 	void recShutdown()

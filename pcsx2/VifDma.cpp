@@ -812,8 +812,8 @@ static __forceinline void _vif0mpgTransfer(u32 addr, u32 *data, int size) {
 		fclose(f);
 	}*/
 	if (memcmp(VU0.Micro + addr, data, size << 2)) {
+		CpuVU0.Clear(addr, size << 2); // Clear before writing! :/ (cottonvibes)
 		memcpy_fast(VU0.Micro + addr, data, size << 2);
-		CpuVU0.Clear(addr, size);
 	}
 }
 
@@ -1486,8 +1486,8 @@ static __forceinline void _vif1mpgTransfer(u32 addr, u32 *data, int size) {
 	}*/
     assert( VU1.Micro > 0 );
 	if (memcmp(VU1.Micro + addr, data, size << 2)) {
+		CpuVU1.Clear(addr, size << 2); // Clear before writing! :/
 		memcpy_fast(VU1.Micro + addr, data, size << 2);
-		CpuVU1.Clear(addr, size);
 	}
 }
 

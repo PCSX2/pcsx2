@@ -41,7 +41,7 @@ namespace VU1micro
 	void __fastcall recClear( u32 Addr, u32 Size )
 	{
 		assert( (Addr&7) == 0 );
-		SuperVUClear(Addr, Size*4, 1);
+		SuperVUClear(Addr, Size, 1); // Size should be a multiple of 8 bytes!
 	}
 
 	void recShutdown()
