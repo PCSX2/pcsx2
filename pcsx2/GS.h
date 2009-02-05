@@ -258,6 +258,7 @@ extern void gsInit();
 extern s32 gsOpen();
 extern void gsClose();
 extern void gsReset();
+extern void gsOnModeChanged( u32 framerate, u32 newTickrate );
 extern void gsSetVideoRegionType( u32 isPal );
 extern void gsResetFrameSkip();
 extern void gsSyncLimiterLostTime( s32 deltaTime );

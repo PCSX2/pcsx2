@@ -18,6 +18,7 @@
 
 // Mega VU(micro) recompiler! - author: cottonvibes(@gmail.com)
 
+#include "PrecompiledHeader.h"
 #include "megaVU.h"
 #ifdef PCSX2_MEGAVU
 

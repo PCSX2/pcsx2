@@ -46,11 +46,10 @@ using namespace std;
 #endif
 
 // forces the compiler to treat a non-volatile value as volatile.
-// This allows us to delacre the vars as non-volatile and only use
+// This allows us to declare the vars as non-volatile and only use
 // them as volatile when appropriate (more optimized).
 
-#define volatize(x) (*reinterpret_cast<volatile uint*>(&(x)))		// for writepos
-//#define volatize_c(x) (*(volatile u32*)&(x))	// for readpos
+#define volatize(x) (*reinterpret_cast<volatile uint*>(&(x)))
 
 /////////////////////////////////////////////////////////////////////////////
 //   BEGIN  --  MTGS GIFtag Parse Implementation

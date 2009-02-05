@@ -146,7 +146,7 @@ void _gs_ChangeTimings( u32 framerate, u32 iTicks )
 	}
 }
 
-static void gsOnModeChanged(  u32 framerate, u32 newTickrate )
+void gsOnModeChanged( u32 framerate, u32 newTickrate )
 {
 	if( mtgsThread != NULL )
 		mtgsThread->SendSimplePacket( GS_RINGTYPE_MODECHANGE, framerate, newTickrate, 0 );
@@ -169,7 +169,7 @@ void gsSetVideoRegionType( u32 isPal )
 		Config.PsxType &= ~1;
 	}
 
-	u32 newTickrate = UpdateVSyncRate();
+	UpdateVSyncRate();
 }
 
 
@@ -550,7 +550,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 	{
 		if( !FramesToSkip )
 		{
-			//SysPrintf( "- Skipping some VUs!\n" );
+			Console::Status( "- Skipping some VUs!" );
 
 			GSsetFrameSkip( 1 );
 			FramesToRender = noSkipFrames;
@@ -566,7 +566,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 	// Otherwise we could start compounding the issue and skips would be too long.
 	if( g_vu1SkipCount > 0 )
 	{
-		//SysPrintf("- Already Assigned a Skipcount.. %d\n", g_vu1SkipCount );
+		Console::Status("- Already Assigned a Skipcount.. %d", params g_vu1SkipCount );
 		return;
 	}
 
@@ -590,7 +590,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 			if( (m_justSkipped && (sSlowDeltaTime > m_iSlowTicks)) || 
 				(sSlowDeltaTime > m_iSlowTicks*2) )
 			{
-				//SysPrintf( "Frameskip Initiated! Lateness: %d\n", (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
+				Console::Status( "Frameskip Initiated! Lateness: %d", params (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
 				
 				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
 				{
@@ -637,7 +637,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 
 			if( sSlowDeltaTime > (m_iSlowTicks + ((s64)GetTickFrequency() / 4)) )
 			{
-				//SysPrintf( "Frameskip couldn't skip enough -- had to lose some time!\n" );
+				Console::Status( "Frameskip couldn't skip enough -- had to lose some time!" );
 				m_iSlowStart = iEnd - m_iSlowTicks;
 			}
 

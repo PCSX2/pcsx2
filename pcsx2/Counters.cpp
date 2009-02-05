@@ -214,7 +214,7 @@ static __forceinline void vSyncInfoCalc( vSyncTimingInfo* info, u32 framesPerSec
 
 u32 UpdateVSyncRate()
 {
-	const char *limiterMsg = "Framelimiter rate updated (UpdateVSyncRate): %d.%d fps\n";
+	const char *limiterMsg = "Framelimiter rate updated (UpdateVSyncRate): %d.%d fps";
 
 	// fixme - According to some docs, progressive-scan modes actually refresh slower than
 	// interlaced modes.  But I can't fathom how, since the refresh rate is a function of
@@ -244,7 +244,8 @@ u32 UpdateVSyncRate()
 		if( m_iTicks != ticks )
 		{
 			m_iTicks = ticks;
-			SysPrintf( limiterMsg, Config.CustomFps, 0 );
+			gsOnModeChanged( vSyncInfo.Framerate, m_iTicks );
+			Console::Status( limiterMsg, params Config.CustomFps, 0 );
 		}
 	}
 	else
@@ -253,7 +254,8 @@ u32 UpdateVSyncRate()
 		if( m_iTicks != ticks )
 		{
 			m_iTicks = ticks;
-			SysPrintf( limiterMsg, vSyncInfo.Framerate/50, (vSyncInfo.Framerate*2)%100 );
+			gsOnModeChanged( vSyncInfo.Framerate, m_iTicks );
+			Console::Status( limiterMsg, params vSyncInfo.Framerate/50, (vSyncInfo.Framerate*2)%100 );
 		}
 	}
 
