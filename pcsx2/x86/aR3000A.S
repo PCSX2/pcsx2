@@ -115,7 +115,8 @@ psxDispatcher_CheckPtr:
 psxDispatcher_CallFn:
 #endif
         
-		and REG_BLOCK, 0x0fffffff
+		//and REG_BLOCK, 0x0fffffff
+		shl REG_BLOCK, 4
         mov %rdx, REG_BLOCK
         pop %rcx // x86Ptr to mod
         sub %rdx, %rcx
@@ -161,7 +162,8 @@ psxDispatcherClear:
 psxDispatcherClear_CallFn:
 #endif
 
-        and %rax, 0x0fffffff
+        //and %rax, 0x0fffffff
+	shl %rax, 4
         jmp %rax
                 
 psxDispatcherClear_Recompile:
@@ -169,7 +171,8 @@ psxDispatcherClear_Recompile:
         mov %eax, dword ptr [REG_BLOCK]
 
         // r15 holds the prev x86 pointer
-        and %rax, 0x0fffffff
+        //and %rax, 0x0fffffff
+	shl %rax, 4
         mov byte ptr [%r15], 0xe9 // jmp32
         mov %rdx, %rax
         sub %rdx, %r15
@@ -214,7 +217,8 @@ psxDispatcherReg_recomp:
 		call psxRecRecompile
 	
         mov %eax, dword ptr [REG_BLOCK]
-        and %rax, 0x0fffffff
+        //and %rax, 0x0fffffff
+	shl, REG_BLOCK, 4
         jmp %rax // fnprt
 
 #else // not x86-64
@@ -266,7 +270,8 @@ psxDispatcher_CheckPtr:
 psxDispatcher_CallFn:
 #endif
         
-		and REG_BLOCK, 0x0fffffff
+		//and REG_BLOCK, 0x0fffffff
+		shl REG_BLOCK, 4
 		mov %edx, REG_BLOCK
 		pop %ecx // x86Ptr to mod
 		sub %edx, %ecx
@@ -327,7 +332,7 @@ psxDispatcherClear_Recompile:
 		pop %ecx // old fnptr
 
 		//and %eax, 0x0fffffff
-        shl %eax, 4
+		shl %eax, 4
 		mov byte ptr [%ecx], 0xe9 // jmp32
 		mov %edx, %eax
 		sub %edx, %ecx
@@ -370,7 +375,7 @@ psxDispatcherReg:
 psxDispatcherReg_CallFn2:
 #endif
 		//and %eax, 0x0fffffff
-        shl %eax, 4
+		shl %eax, 4
 		jmp %eax // fnptr
 
 psxDispatcherReg_recomp:
@@ -383,7 +388,7 @@ psxDispatcherReg_recomp:
 		
 		mov %eax, dword ptr [%edx]
 		//and %eax, 0x0fffffff
-        shl %eax, 4
+		shl %eax, 4
 		jmp %eax // fnptr
 
 #endif
