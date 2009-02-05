@@ -195,11 +195,11 @@ void vu0Exec(VURegs* VU)
 
 namespace VU0micro
 {
-	static void intAlloc()
+	void intAlloc()
 	{
 	}
 
-	static void intShutdown()
+	void intShutdown()
 	{
 	}
 

@@ -150,9 +150,9 @@ struct CPUINFO{
    u32 PhysicalCores;
    u32 LogicalCores;
 
-   s8  x86ID[16];	   // Vendor ID  //the vendor creator (in %s)
+   char x86ID[16];	   // Vendor ID  //the vendor creator (in %s)
    char x86Type[20];   //cpu type in char format //the cpu type (in %s)
-   s8  x86Fam[50];    // family in char format //the original cpu name string (in %s)
+   char x86Fam[50];    // family in char format //the original cpu name string (in %s)
    u32 cpuspeed;      // speed of cpu //this will give cpu speed (in %d)
 };
 

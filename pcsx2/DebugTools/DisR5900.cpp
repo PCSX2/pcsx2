@@ -1063,7 +1063,7 @@ TdisR5900F disR5900[] = {
     disNULL   , disLWC1  , disNULL, disPREF , disNULL, disNULL, disLQC2 , disLD   ,
     disNULL   , disSWC1  , disNULL, disNULL  , disNULL, disNULL, disSQC2 , disSD  };
 
-static void disR5900F( string& output, u32 code )
+void disR5900F( string& output, u32 code )
 {
 	disR5900[code >> 26]( output, code );
 }

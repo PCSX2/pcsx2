@@ -395,7 +395,7 @@ void States_Load(string file, int num = -1 )
 		if( num != -1 )
 			Msgbox::Alert("Savestate slot %d is an unsupported version." , params num);
 		else
-			Msgbox::Alert( "%s : This is an unsupported savestate version." , params file);
+			Msgbox::Alert( "%s : This is an unsupported savestate version." , params file.c_str());
 
 		// At this point the cpu hasn't been reset, so we can return
 		// control to the user safely...
@@ -407,7 +407,7 @@ void States_Load(string file, int num = -1 )
 		if (num != -1)
 			Console::Error("Error occured while trying to load savestate slot %d", params num);
 		else
-			Console::Error("Error occured while trying to load savestate file: %d", params file);
+			Console::Error("Error occured while trying to load savestate file: %d", params file.c_str());
 
 		Console::Error( "%s", params ex.what() );
 
@@ -447,14 +447,14 @@ void States_Save( string file, int num = -1 )
 		if( num != -1 )
 			Console::Notice("State saved to slot %d", params num );
 		else
-			Console::Notice( "State saved to file: %s", params file );
+			Console::Notice( "State saved to file: %s", params file.c_str() );
 	}
 	catch( std::exception& ex )
 	{
 		if( num != -1 )
 			Msgbox::Alert("An error occurred while trying to save to slot %d", params num );
 		else
-			Msgbox::Alert("An error occurred while trying to save to file: %s", params file );
+			Msgbox::Alert("An error occurred while trying to save to file: %s", params file.c_str() );
 
 		Console::Error("Save state request failed with the following error:" );
 		Console::Error( "%s", params ex.what() );

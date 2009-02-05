@@ -30,7 +30,7 @@ const _VARG_PARAM va_arg_dummy = { 0 };
 
 namespace Console
 {
-	static __forceinline void __fastcall _WriteLn( Colors color, const char* fmt, va_list args )
+	__forceinline void __fastcall _WriteLn( Colors color, const char* fmt, va_list args )
 	{
 		SetColor( color );
 		WriteLn( vfmt_string( fmt, args ).c_str() );

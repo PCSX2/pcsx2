@@ -134,7 +134,7 @@ struct dirTocEntry
 	u8	fileProperties;
 	u8	reserved2[6];
 	u8	filenameLength;
-	s8	filename[128];
+	char filename[128];
 #if defined(_MSC_VER)
 };
 #else
