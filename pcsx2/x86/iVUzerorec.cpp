@@ -932,7 +932,6 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 {
 	// check if block already exists
 	//SysPrintf("startpc %x\n", startpc);
-	bool TwoCycle = false;
 	startpc &= (s_vu ? 0x3fff : 0xfff);
 	VuBlockHeader* pbh = &recVUBlocks[s_vu][startpc/8];
 
@@ -1135,8 +1134,6 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 #ifdef SUPERVU_VIBRANCHDELAY
         if( pinst->regs[0].pipe == VUPIPE_BRANCH && pblock->insts.size() > 1 ) {
 		
-			TwoCycle = true;
-
             if( pprevinst != NULL && pprevinst->info.cycle+1==pinst->info.cycle && 
                 (pprevinst->regs[0].pipe == VUPIPE_IALU||pprevinst->regs[0].pipe == VUPIPE_FMAC) && ((pprevinst->regs[0].VIwrite & pinst->regs[0].VIread) & 0xffff) 
                 && !(pprevinst->regs[0].VIread&((1<<REG_STATUS_FLAG)|(1<<REG_MAC_FLAG)|(1<<REG_CLIP_FLAG))) ) {
@@ -1182,7 +1179,6 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
                 }
             }
         }
-		else TwoCycle = false;
 #endif
 
 		if( prevbranch ) {
@@ -1366,6 +1362,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 		case 0x24: // jr
 			pblock->type |= BLOCKTYPE_EOP; // jump out of procedure, since not returning, set EOP
 			pblock->insts.push_back(SuperVUFlushInst());
+			firstbranch = 0xff; //Non-Conditional Jump
 			break;
 
 		case 0x25: // jalr
@@ -1380,6 +1377,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 			assert( pblock != NULL );
 
 			pblock->blocks.push_back(pjumpblock);
+			firstbranch = 0xff; //Non-Conditional Jump
 			break;
 		}
 		case 0x20: // B
@@ -1391,6 +1389,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 			assert( pblock != NULL );
 
 			pblock->blocks.push_back(pbranchblock);
+			firstbranch = 0xff; //Non-Conditional Jump
 			break;
 		}
 		case 0x21: // BAL
@@ -1401,6 +1400,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 			pblock = recVUBlocks[s_vu][lastpc/8-2].pblock;
 			assert( pblock != NULL );
 			pblock->blocks.push_back(pbranchblock);
+			firstbranch = 0xff; //Non-Conditional Jump
 			break;
 		}
 		case 0x28: // IBEQ
@@ -1436,7 +1436,11 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 	pblock = recVUBlocks[s_vu][lastpc/8-2].pblock;
 
 #ifdef SUPERVU_VIBRANCHDELAY
-	if( hasSecondBranch && ( CHECK_DELAYSLOTHACK ?  (!TwoCycle ? 1 : 0) : 1 ) ) {
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///// NOTE! This could still be a hack for KH2/GoW, but until we know how it properly works, this will do for now.///
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if( hasSecondBranch && firstbranch != 0xff ) { //check the previous jump was conditional and there is a second branch
 #else
 	if( hasSecondBranch) {
 #endif

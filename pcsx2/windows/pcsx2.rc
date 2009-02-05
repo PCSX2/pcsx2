@@ -7,12 +7,11 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxresmw.h"
-/////////////////////////////////////////////////////////////////////////////
+#include "afxresmw.h" /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Rumänisch resources
+// Romanian resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ROM)
 #ifdef _WIN32
@@ -56,12 +55,12 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Rumänisch resources
+#endif    // Romanian resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Deutsch (Deutschland) resources
+// German (Germany) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
 #ifdef _WIN32
@@ -74,25 +73,21 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 // Dialog
 //
 
-IDD_GAMEFIXES DIALOGEX 0, 0, 278, 154
+IDD_GAMEFIXES DIALOGEX 0, 0, 278, 129
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Special Fixes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,85,133,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,139,133,50,14
+    DEFPUSHBUTTON   "OK",IDOK,85,108,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,139,108,50,14
     CTEXT           "Some games need special settings.\nConfigure them here.",IDC_STATIC,7,7,264,17
-    CONTROL         "VU Clip Hack - Special fix for God of War; Breaks Rockstar games!",IDC_GAMEFIX2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,252,10
     GROUPBOX        "PCSX2 Gamefixes",IDC_STATIC,7,30,264,92
-    CONTROL         "FPU Clamp Hack - Special fix for Tekken 5 and Rogue Galaxy.",IDC_GAMEFIX3,
+    CONTROL         "FPU Clamp Hack - Special fix for Tekken 5.",IDC_GAMEFIX3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,46,249,10
     CONTROL         "VU Branch Hack - Special fix for Magna Carta; Breaks Crash Bandicoot!",IDC_GAMEFIX4,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,88,252,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,74,252,10
     CONTROL         "VU Add / Sub Hack - Special fix for Tri-Ace games!",IDC_GAMEFIX1,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,60,252,10
-    CONTROL         "Avoid 2 cycle branch delay handling - Fixes KH2 and Tri-Ace games",IDC_GAMEFIX6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,103,252,10
 END
 
 
@@ -110,17 +105,17 @@ BEGIN
         RIGHTMARGIN, 271
         VERTGUIDE, 12
         TOPMARGIN, 7
-        BOTTOMMARGIN, 147
+        BOTTOMMARGIN, 122
     END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Deutsch (Deutschland) resources
+#endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1025,12 +1020,12 @@ END
 //
 
 IDB_PS2SILVER           BITMAP                  "ps2_silver.bmp"
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (GB) resources
+// English (U.K.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
 #ifdef _WIN32
@@ -1117,12 +1112,12 @@ END
 //
 
 SPLASH_LOGO             BITMAP                  "..\\pcsxAbout.bmp"
-#endif    // Englisch (GB) resources
+#endif    // English (U.K.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Spanisch resources
+// Spanish resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESN)
 #ifdef _WIN32
@@ -1363,12 +1358,12 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Spanisch resources
+#endif    // Spanish resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Spanisch (Argentinien) resources
+// Spanish (Argentina) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESS)
 #ifdef _WIN32
@@ -1521,12 +1516,12 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON                ICON                    "Cdrom02.ico"
-#endif    // Spanisch (Argentinien) resources
+#endif    // Spanish (Argentina) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Griechisch resources
+// Greek resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ELL)
 #ifdef _WIN32
@@ -1708,7 +1703,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Griechisch resources
+#endif    // Greek resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -1718,7 +1713,6 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-
-/////////////////////////////////////////////////////////////////////////////
+ /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

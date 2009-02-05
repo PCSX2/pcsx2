@@ -524,7 +524,6 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			if(Config.GameFixes & 0x2) CheckDlgButton(hDlg, IDC_GAMEFIX2, TRUE);
 			if(Config.GameFixes & 0x4) CheckDlgButton(hDlg, IDC_GAMEFIX3, TRUE);
 			if(Config.GameFixes & 0x8) CheckDlgButton(hDlg, IDC_GAMEFIX4, TRUE);
-			if(Config.GameFixes & 0x10) CheckDlgButton(hDlg, IDC_GAMEFIX6, TRUE);
 		return TRUE;
 
         case WM_COMMAND:
@@ -535,7 +534,6 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX2) ? 0x2 : 0;
 				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX3) ? 0x4 : 0;
 				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX4) ? 0x8 : 0;
-				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX6) ? 0x10 : 0;
 				
 				EndDialog(hDlg, TRUE);
 

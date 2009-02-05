@@ -3014,12 +3014,18 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	u32 clipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 0);
 	u32 prevclipaddr = VU_VI_ADDR(REG_CLIP_FLAG, 2);
 
-	//SysPrintf ("recVUMI_CLIP  \n");
-
 	if( clipaddr == 0 ) { // battle star has a clip right before fcset
 		SysPrintf("skipping vu clip\n");
 		return;
 	}
+
+	//Flush the clip flag before processing, incase of double clip commands (GoW)
+
+	if( prevclipaddr != (uptr)&VU->VI[REG_CLIP_FLAG] ) { 
+		MOV32MtoR(EAX, prevclipaddr);
+		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
+	}
+
 	assert( clipaddr != 0 );
 	assert( t1reg != t2reg && t1reg != EEREC_TEMP && t2reg != EEREC_TEMP );
 	
@@ -3064,8 +3070,7 @@ void recVUMI_CLIP(VURegs *VU, int info)
 
 	MOV32RtoM(clipaddr, EAX);
 
-	// God of War needs this additional move, but it breaks Rockstar games; ideally this hack shouldn't be needed, i think its a clipflag allocation bug in iVUzerorec.cpp
-	if ( ( CHECK_VUCLIPHACK ) || ( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) ) 
+	if (( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) )  //Instantly update the flag if its called from elsewhere (unlikely, but ok)
 		MOV32RtoM((uptr)&VU->VI[REG_CLIP_FLAG], EAX);
 
 	_freeX86reg(x86temp1);
