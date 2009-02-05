@@ -312,7 +312,8 @@ psxDispatcherClear:
 psxDispatcherClear_CallFn:
 #endif
 
-        and %eax, 0x0fffffff
+        //and %eax, 0x0fffffff
+        shl %eax, 4
         jmp %eax
                 
 psxDispatcherClear_Recompile:
@@ -325,7 +326,8 @@ psxDispatcherClear_Recompile:
 
 		pop %ecx // old fnptr
 
-		and %eax, 0x0fffffff
+		//and %eax, 0x0fffffff
+        shl %eax, 4
 		mov byte ptr [%ecx], 0xe9 // jmp32
 		mov %edx, %eax
 		sub %edx, %ecx
@@ -355,7 +357,6 @@ psxDispatcherReg:
 		
 		// check if startpc == psxRegs.pc
 		mov %eax, %ecx
-		//and %eax, 0x5fffffff // remove higher bits
 		cmp %eax, dword ptr [%edx+BLOCKTYPE_STARTPC]
 		jne psxDispatcherReg_recomp
 
@@ -368,7 +369,8 @@ psxDispatcherReg:
         int 10
 psxDispatcherReg_CallFn2:
 #endif
-		and %eax, 0x0fffffff
+		//and %eax, 0x0fffffff
+        shl %eax, 4
 		jmp %eax // fnptr
 
 psxDispatcherReg_recomp:
@@ -380,7 +382,8 @@ psxDispatcherReg_recomp:
 		add %esp, 8
 		
 		mov %eax, dword ptr [%edx]
-		and %eax, 0x0fffffff
+		//and %eax, 0x0fffffff
+        shl %eax, 4
 		jmp %eax // fnptr
 
 #endif

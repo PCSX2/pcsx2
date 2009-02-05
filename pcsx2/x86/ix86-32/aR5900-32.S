@@ -60,7 +60,8 @@ Dispatcher_CheckPtr:
 	
 Dispatcher_CallFn:
 #endif
-	and %eax, 0x0fffffff
+	//and %eax, 0x0fffffff
+	shl %eax, 4
 	pop %ecx // x86Ptr to mod
 	mov %edx, %eax
 	sub %edx, %ecx
@@ -103,7 +104,8 @@ DispatcherClear:
 DispatcherClear_CallFn:
 #endif
 
-	and %eax, 0x0fffffff
+	//and %eax, 0x0fffffff
+	shl %eax, 4
 	jmp %eax
 
 DispatcherClear_Recompile:
@@ -116,7 +118,8 @@ DispatcherClear_Recompile:
 
 	pop %ecx // old fnptr
 
-	and %eax, 0x0fffffff
+	//and %eax, 0x0fffffff
+    shl %eax, 4
 	mov byte ptr [%ecx], 0xe9 // jmp32
 	mov %edx, %eax
 	sub %edx, %ecx
@@ -164,7 +167,8 @@ DispatcherReg_CheckPtr:
 	
 DispatcherReg_CallFn:
 #endif
-	and %eax, 0x0fffffff
+	//and %eax, 0x0fffffff
+    shl %eax, 4
 	jmp %eax
 
 

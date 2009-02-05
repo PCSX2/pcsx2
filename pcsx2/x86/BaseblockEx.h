@@ -32,7 +32,7 @@ struct BASEBLOCK
 	u32 uType : 4;
 	u32 startpc;
 
-	uptr GetFnptr() const { return ((u32)m_pFnptr)<<4; }
+	const uptr GetFnptr() const { return ((u32)m_pFnptr)<<4; }
 	void SetFnptr( uptr ptr )
 	{
 		// 16 byte alignments only, please!
