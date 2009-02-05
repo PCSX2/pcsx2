@@ -306,13 +306,13 @@ void SysResetExecutionState()
 	vu1MicroDisableSkip();
 }
 
-u8 *SysMmap(uptr base, u32 size, uptr bounds, const char *caller)
+u8 *SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 {
 	u8 *Mem = (u8*)SysMmap( base, size );
 
-	if( (Mem == NULL) || ((uptr)Mem + size) > bounds )
+	if( (Mem == NULL) || (bounds != 0 && (((uptr)Mem + size) > bounds)) )
 	{
-		DevCon::Error( "First try failed allocating %s at address 0x%x", params caller, base );
+		DevCon::Notice( "First try failed allocating %s at address 0x%x", params caller, base );
 
 		// memory allocation *must* have the top bit clear, so let's try again
 		// with NULL (let the OS pick something for us).
@@ -320,10 +320,12 @@ u8 *SysMmap(uptr base, u32 size, uptr bounds, const char *caller)
 		SafeSysMunmap( Mem, size );
 
 		Mem = (u8*)SysMmap( NULL, size );
-		if( ((uptr)Mem + size) > bounds )
+		if( bounds != 0 && (((uptr)Mem + size) > bounds) )
 		{
-			DevCon::Error( "Second try failed allocating %s, block ptr 0x%x does not meet required criteria.", params caller, Mem );
+			DevCon::Error( "Fatal Error:\n\tSecond try failed allocating %s, block ptr 0x%x does not meet required criteria.", params caller, Mem );
 			SafeSysMunmap( Mem, size );
+
+			// returns NULL, caller should throw an exception.
 		}
 	}
 	return Mem;

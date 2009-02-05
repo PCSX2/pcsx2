@@ -330,7 +330,7 @@ void SuperVUAlloc(int vuindex)
 	{
 		// upper 4 bits must be zero!
 		// Changed "first try base" to 0xb800000, since 0x0c000000 liked to fail a lot. (air)
-		s_recVUMem = SysMmap(0x0b800000, VU_EXESIZE, 0x10000000, "SuperVUAlloc");
+		s_recVUMem = SysMmapEx(0x0e000000, VU_EXESIZE, 0x10000000, "SuperVUAlloc");
 
 		if( s_recVUMem == NULL )
 		{

@@ -51,7 +51,7 @@ void *SysMmap(uptr base, u32 size);
 // allocation is below a certain memory address (specified in "bounds" parameter).
 // The allocated block has code execution privileges.
 // Returns NULL on allocation failure.
-u8 *SysMmap(uptr base, u32 size, uptr bounds, const char *caller="Unnamed");
+u8 *SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller="Unnamed");
 
 // Unmaps a block allocated by SysMmap
 void SysMunmap(uptr base, u32 size);

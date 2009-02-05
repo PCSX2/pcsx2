@@ -569,7 +569,7 @@ void vtlb_Term()
 u8* vtlb_malloc( uint size, uint align, uptr tryBaseAddress )
 {
 #ifdef __LINUX__
-	return SysMmap( tryBaseAddress, size, 0x80000000, "Vtlb" );
+	return SysMmapEx( tryBaseAddress, size, 0x80000000, "Vtlb" );
 #else
 	// Win32 just needs this, since malloc always maps below 2GB.
 	return (u8*)_aligned_malloc(size, align);

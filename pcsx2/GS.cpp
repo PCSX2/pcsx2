@@ -248,7 +248,7 @@ void gsReset()
 		mtgsThread->Reset();
 	else
 	{
-		Console::Notice( "GIF reset");
+		Console::Notice( "GIF reset" );
 		GSreset();
 		GSsetFrameSkip(0);
 	}
@@ -550,7 +550,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 	{
 		if( !FramesToSkip )
 		{
-			Console::Status( "- Skipping some VUs!" );
+			//Console::Status( "- Skipping some VUs!" );
 
 			GSsetFrameSkip( 1 );
 			FramesToRender = noSkipFrames;
@@ -566,7 +566,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 	// Otherwise we could start compounding the issue and skips would be too long.
 	if( g_vu1SkipCount > 0 )
 	{
-		Console::Status("- Already Assigned a Skipcount.. %d", params g_vu1SkipCount );
+		//Console::Status("- Already Assigned a Skipcount.. %d", params g_vu1SkipCount );
 		return;
 	}
 
@@ -590,7 +590,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 			if( (m_justSkipped && (sSlowDeltaTime > m_iSlowTicks)) || 
 				(sSlowDeltaTime > m_iSlowTicks*2) )
 			{
-				Console::Status( "Frameskip Initiated! Lateness: %d", params (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
+				//Console::Status( "Frameskip Initiated! Lateness: %d", params (int)( (sSlowDeltaTime*100) / m_iSlowTicks ) );
 				
 				if( CHECK_FRAMELIMIT == PCSX2_FRAMELIMIT_VUSKIP )
 				{
@@ -637,7 +637,7 @@ __forceinline void gsFrameSkip( bool forceskip )
 
 			if( sSlowDeltaTime > (m_iSlowTicks + ((s64)GetTickFrequency() / 4)) )
 			{
-				Console::Status( "Frameskip couldn't skip enough -- had to lose some time!" );
+				//Console::Status( "Frameskip couldn't skip enough -- had to lose some time!" );
 				m_iSlowStart = iEnd - m_iSlowTicks;
 			}
 

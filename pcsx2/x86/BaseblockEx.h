@@ -28,9 +28,17 @@
 // addressable memory.  Yay!
 struct BASEBLOCK
 {
-	u32 pFnptr : 28;
+	u32 m_pFnptr : 28;
 	u32 uType : 4;
 	u32 startpc;
+
+	uptr GetFnptr() const { return ((u32)m_pFnptr)<<4; }
+	void SetFnptr( uptr ptr )
+	{
+		// 16 byte alignments only, please!
+		jASSUME( (ptr & 0xf) == 0 );
+		m_pFnptr = ptr>>4;
+	}
 };
 
 // extra block info (only valid for start of fn)

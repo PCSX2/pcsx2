@@ -203,98 +203,74 @@ static bool TestRunMode()
 
 void WinRun( int nCmdShow )
 {
-	try
+	// Load the command line overrides for plugins.
+	// Back up the user's preferences in winConfig.
+
+	memcpy( &winConfig, &Config, sizeof( PcsxConfig ) );
+
+	if( g_TestRun.pgsdll )
 	{
-		SysInit();
+		_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
+		Console::Notice( "* GS plugin override: \n\t%s\n", params Config.GS );
+	}
+	if( g_TestRun.pcdvddll )
+	{
+		_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
+		Console::Notice( "* CDVD plugin override: \n\t%s\n", params Config.CDVD );
+	}
+	if( g_TestRun.pspudll )
+	{
+		_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
+		Console::Notice( "* SPU2 plugin override: \n\t%s\n", params Config.SPU2 );
+	}
 
-		// Load the command line overrides for plugins.
-		// Back up the user's preferences in winConfig.
-
-		memcpy( &winConfig, &Config, sizeof( PcsxConfig ) );
-
-		if( g_TestRun.pgsdll )
-		{
-			_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
-			Console::Notice( "* GS plugin override: \n\t%s\n", params Config.GS );
-		}
-		if( g_TestRun.pcdvddll )
-		{
-			_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
-			Console::Notice( "* CDVD plugin override: \n\t%s\n", params Config.CDVD );
-		}
-		if( g_TestRun.pspudll )
-		{
-			_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
-			Console::Notice( "* SPU2 plugin override: \n\t%s\n", params Config.SPU2 );
-		}
-
-		// [TODO] : Add the other plugin overrides here...
+	// [TODO] : Add the other plugin overrides here...
 
 #ifndef _DEBUG
-		if( Config.Profiler )
-			ProfilerInit();
+	if( Config.Profiler )
+		ProfilerInit();
 #endif
 
-		InitCPUTicks();
+	InitCPUTicks();
 
-		while (LoadPlugins() == -1)
-		{
-			if (Pcsx2Configure(NULL) == FALSE) return;
-		}
+	while (LoadPlugins() == -1)
+	{
+		if (Pcsx2Configure(NULL) == FALSE) return;
+	}
 
-		if( TestRunMode() ) return;
+	if( TestRunMode() ) return;
 
 #ifdef PCSX2_DEVBUILD
-		if( g_pRunGSState ) {
-			LoadGSState(g_pRunGSState);
-			return;
-		}
+	if( g_pRunGSState ) {
+		LoadGSState(g_pRunGSState);
+		return;
+	}
 #endif
 
-		CreateMainWindow( nCmdShow );
+	CreateMainWindow( nCmdShow );
 
-		if( Config.PsxOut )
-		{
-			// output the help commands
-			Console::SetColor( Console::Color_White );
-
-			Console::WriteLn( "Hotkeys:" );
-
-			Console::WriteLn(
-				"\tF1  - save state\n"
-				"\t(Shift +) F2 - cycle states\n"
-				"\tF3  - load state"
-				);
-
-			DevCon::WriteLn(
-				//"\tF10 - dump performance counters\n"
-				"\tF11 - save GS state\n"
-				//"\tF12 - dump hardware registers"
-				);
-			Console::ClearColor();
-		}
-
-		RunGui();
-	}
-	catch( Exception::BaseException& ex )
+	if( Config.PsxOut )
 	{
-		Msgbox::Alert(
-			"An unhandled or unrecoverable exception occurred, with the message:\n\n"
-			"%s"
-			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file.", params
-			ex.cMessage()
-		);
-	}
-	catch( std::exception& ex )
-	{
-		Msgbox::Alert(
-			"An unhandled or unrecoverable exception occurred, with the message:\n\n"
-			"%s"
-			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file.", params
-			ex.what()
-		);
+		// output the help commands
+		Console::SetColor( Console::Color_White );
+
+		Console::WriteLn( "Hotkeys:" );
+
+		Console::WriteLn(
+			"\tF1  - save state\n"
+			"\t(Shift +) F2 - cycle states\n"
+			"\tF3  - load state"
+			);
+
+		DevCon::WriteLn(
+			//"\tF10 - dump performance counters\n"
+			"\tF11 - save GS state\n"
+			//"\tF12 - dump hardware registers"
+			);
+		Console::ClearColor();
 	}
 
+	RunGui();
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -342,40 +318,70 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	if( !LoadConfig() )
+	try
 	{
-		// Prompt the user for a valid configuration before starting the program.
-		Msgbox::Alert( "Pcsx2 needs to be configured." );
-		Pcsx2Configure( NULL );
+		bool needsToConfig = !LoadConfig();
+
+		// Enumerate available translations
+
+		if (needsToConfig || Config.Lang[0] == 0) {
+			strcpy(Config.Lang, "en_US");
+		}
+
+		langs = (_langs*)malloc(sizeof(_langs));
+		strcpy(langs[0].lang, "en_US");
+		InitLanguages(); i=1;
+		while ((lang = GetLanguageNext()) != NULL) {
+			langs = (_langs*)realloc(langs, sizeof(_langs)*(i+1));
+			strcpy(langs[i].lang, lang);
+			i++;
+		}
+		CloseLanguages();
+		langsMax = i;
+
+		// automatically and always open the console for first-time uses (no ini file)
+		if(needsToConfig || Config.PsxOut )
+			Console::Open();
+
+		// Important!  Always allocate dynarecs before loading plugins, to give the dynarecs
+		// the best possible chance of claiming ideal memory space!
+
+		SysInit();
+
+		if( needsToConfig )
+		{
+			// Prompt the user for a valid configuration before starting the program.
+			Msgbox::Alert( _( "Pcsx2 needs to be configured." ) );
+			Pcsx2Configure( NULL );
+			LoadConfig();	// forces re-loading of language and stuff.
+		}
+
+		if( Config.PsxOut )
+			Console::Open();
+		else
+			Console::Close();
+
+		WinRun( nCmdShow );
 	}
-
-	// Important!  Always allocate dynarecs before loading plugins, to give the dynarecs
-	// the best possible chance of claiming ideal memory space!
-
-	if (Config.Lang[0] == 0) {
-		strcpy(Config.Lang, "en_US");
-	}
-
-	langs = (_langs*)malloc(sizeof(_langs));
-	strcpy(langs[0].lang, "en_US");
-	InitLanguages(); i=1;
-	while ((lang = GetLanguageNext()) != NULL) {
-		langs = (_langs*)realloc(langs, sizeof(_langs)*(i+1));
-		strcpy(langs[i].lang, lang);
-		i++;
-	}
-	CloseLanguages();
-	langsMax = i;
-
-	if( Config.PsxOut )
+	catch( Exception::BaseException& ex )
 	{
-		Console::Open();
-
-		//if( lpCmdLine == NULL || *lpCmdLine == 0 )
-		//	Console::WriteLn("-help to see arguments");
+		Msgbox::Alert(
+			"An unhandled or unrecoverable exception occurred, with the message:\n\n"
+			"%s"
+			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file.", params
+			ex.cMessage()
+			);
+	}
+	catch( std::exception& ex )
+	{
+		Msgbox::Alert(
+			"An unhandled or unrecoverable exception occurred, with the message:\n\n"
+			"%s"
+			"\n\nPcsx2 will now close.  More details may be available via the emuLog.txt file.", params
+			ex.what()
+			);
 	}
 
-	WinRun( nCmdShow );
 	WinClose();
 
 	return 0;
