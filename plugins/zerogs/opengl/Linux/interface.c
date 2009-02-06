@@ -40,11 +40,13 @@ create_Config (void)
   GSList *radioAANone_group = NULL;
   GtkWidget *radioAA2X;
   GtkWidget *radioAA4X;
+  GtkWidget *radioAA8X;
+  GtkWidget *radioAA16X;
   GtkWidget *label9;
   GtkWidget *checkWireframe;
   GtkWidget *checkAVI;
   GtkWidget *checkTGA;
-  GtkWidget *checkbutton6;
+  GtkWidget *checkfullscreen;
   GtkWidget *frame5;
   GtkWidget *alignment2;
   GtkWidget *hbox7;
@@ -112,6 +114,18 @@ create_Config (void)
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radioAA4X), radioAANone_group);
   radioAANone_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radioAA4X));
 
+  radioAA8X = gtk_radio_button_new_with_mnemonic (NULL, _("8X"));
+  gtk_widget_show (radioAA8X);
+  gtk_box_pack_start (GTK_BOX (hbox6), radioAA8X, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radioAA8X), radioAANone_group);
+  radioAANone_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radioAA8X));
+
+  radioAA16X = gtk_radio_button_new_with_mnemonic (NULL, _("16X"));
+  gtk_widget_show (radioAA16X);
+  gtk_box_pack_start (GTK_BOX (hbox6), radioAA16X, FALSE, FALSE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radioAA16X), radioAANone_group);
+  radioAANone_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radioAA16X));
+
   label9 = gtk_label_new (_("<b>Anti-aliasing for higher quality (F6)</b>"));
   gtk_widget_show (label9);
   gtk_frame_set_label_widget (GTK_FRAME (frame4), label9);
@@ -129,9 +143,9 @@ create_Config (void)
   gtk_widget_show (checkTGA);
   gtk_box_pack_start (GTK_BOX (vbox4), checkTGA, FALSE, FALSE, 0);
 
-  checkbutton6 = gtk_check_button_new_with_mnemonic (_("Fullscreen (Alt+Enter)\n   to get out press Alt+Enter again (or ESC)"));
-  gtk_widget_show (checkbutton6);
-  gtk_box_pack_start (GTK_BOX (vbox4), checkbutton6, FALSE, FALSE, 0);
+  checkfullscreen = gtk_check_button_new_with_mnemonic (_("Fullscreen (Alt+Enter)\n   to get out press Alt+Enter again (or ESC)"));
+  gtk_widget_show (checkfullscreen);
+  gtk_box_pack_start (GTK_BOX (vbox4), checkfullscreen, FALSE, FALSE, 0);
 
   frame5 = gtk_frame_new (NULL);
   gtk_widget_show (frame5);
@@ -238,11 +252,13 @@ create_Config (void)
   GLADE_HOOKUP_OBJECT (Config, radioAANone, "radioAANone");
   GLADE_HOOKUP_OBJECT (Config, radioAA2X, "radioAA2X");
   GLADE_HOOKUP_OBJECT (Config, radioAA4X, "radioAA4X");
+  GLADE_HOOKUP_OBJECT (Config, radioAA8X, "radioAA8X");
+  GLADE_HOOKUP_OBJECT (Config, radioAA16X, "radioAA16X");
   GLADE_HOOKUP_OBJECT (Config, label9, "label9");
   GLADE_HOOKUP_OBJECT (Config, checkWireframe, "checkWireframe");
   GLADE_HOOKUP_OBJECT (Config, checkAVI, "checkAVI");
   GLADE_HOOKUP_OBJECT (Config, checkTGA, "checkTGA");
-  GLADE_HOOKUP_OBJECT (Config, checkbutton6, "checkbutton6");
+  GLADE_HOOKUP_OBJECT (Config, checkfullscreen, "checkfullscreen");
   GLADE_HOOKUP_OBJECT (Config, frame5, "frame5");
   GLADE_HOOKUP_OBJECT (Config, alignment2, "alignment2");
   GLADE_HOOKUP_OBJECT (Config, hbox7, "hbox7");

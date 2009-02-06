@@ -4418,7 +4418,7 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
  CFLAGS+="-O3 -fomit-frame-pointer "
- CPPFLAGS+="-O3 -fomit-frame-pointer -fpermissive "
+ CPPFLAGS+="-O3 -fomit-frame-pointer "
  CXXFLAGS+="-O3 -fomit-frame-pointer -fpermissive "
 fi
 { $as_echo "$as_me:$LINENO: result: $debug" >&5

@@ -1217,6 +1217,8 @@ void ZeroGS::ChangeDeviceSize(int nNewWidth, int nNewHeight)
 
 void ZeroGS::SetAA(int mode)
 {
+	float f;
+	
 	// need to flush all targets
 	s_RTs.ResolveAll();
 	s_RTs.Destroy();
@@ -1224,7 +1226,8 @@ void ZeroGS::SetAA(int mode)
 	s_DepthRTs.Destroy();
 
 	s_AAx = s_AAy = 0;
-	if( mode > 0 ) {
+	if( mode > 0 ) 
+	{
 		s_AAx = (mode+1) / 2;
 		s_AAy = mode / 2;
 	}
@@ -1233,7 +1236,8 @@ void ZeroGS::SetAA(int mode)
 
 	vb[0].prndr = NULL; vb[0].pdepth = NULL; vb[0].bNeedFrameCheck = 1; vb[0].bNeedZCheck = 1;
 	vb[1].prndr = NULL; vb[1].pdepth = NULL; vb[1].bNeedFrameCheck = 1; vb[1].bNeedZCheck = 1;
-	float f = mode > 0 ? 2.0f : 1.0f;
+	
+	f = mode > 0 ? 2.0f : 1.0f;
 	SETRS(D3DRS_POINTSIZE, FtoDW(f));
 }
 

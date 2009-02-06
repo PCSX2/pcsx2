@@ -42,7 +42,7 @@ then
 else
  AC_DEFINE(NDEBUG,1,[NDEBUG])
  CFLAGS+="-O3 -fomit-frame-pointer "
- CPPFLAGS+="-O3 -fomit-frame-pointer -fpermissive "
+ CPPFLAGS+="-O3 -fomit-frame-pointer "
  CXXFLAGS+="-O3 -fomit-frame-pointer -fpermissive "
 fi
 AC_MSG_RESULT($debug)

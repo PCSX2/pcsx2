@@ -76,7 +76,7 @@ char *libraryName	 = "ZeroGS Playground OpenGL ";
 char *libraryName	 = "ZeroGS-Pg OpenGL (Dev) ";
 #endif
 
-static const char* s_aa[3] = { "AA none |", "AA 2x |", "AA 4x |" };
+static const char* s_aa[5] = { "AA none |", "AA 2x |", "AA 4x |", "AA 8x |", "AA 16x |" };
 static const char* pbilinear[] = { "off", "normal", "forced" };
 
 extern GIFRegHandler g_GIFPackedRegHandlers[];
@@ -329,7 +329,7 @@ void OnKeyboardF6(int shift)
 	char strtitle[256];
 	if( shift ) {
 		conf.aa--; // -1
-		if( conf.aa < 0 ) conf.aa = 4;
+		if( conf.aa > 4 ) conf.aa = 4;					// u8 in unsigned, so negative value is 255. 
 		sprintf(strtitle, "anti-aliasing - %s", s_aa[conf.aa]);
 		ZeroGS::SetAA(conf.aa);
 	}
@@ -1155,19 +1155,24 @@ int CALLBACK GSsetupRecording(int start, void* pData)
 	return 1;
 }
 
-s32 CALLBACK GSfreeze(int mode, freezeData *data) {
-	if (mode == FREEZE_LOAD) {
-		if( !ZeroGS::Load(data->data) )
-			ERROR_LOG("Bad load format!");
-		g_nRealFrame += 100;
-
-	} else if (mode == FREEZE_SAVE) {
-		ZeroGS::Save(data->data);
+s32 CALLBACK GSfreeze(int mode, freezeData *data) 
+{
+	switch (mode)
+	{
+		case FREEZE_LOAD:
+			if (!ZeroGS::Load(data->data)) ERROR_LOG("GS: Bad load format!");
+			g_nRealFrame += 100;
+			break;
+		case FREEZE_SAVE:
+			ZeroGS::Save(data->data);
+			break;
+		case FREEZE_SIZE:
+			data->size = ZeroGS::Save(NULL);
+			break;
+		default:
+			break;
 	}
-	if (mode == FREEZE_SIZE) {
-		data->size = ZeroGS::Save(NULL);
-	}
-
+	
 	return 0;
 }
 

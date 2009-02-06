@@ -548,7 +548,7 @@ void CALLBACK GSvsync(int interlace)
 						
 						if( (GetKeyState(VK_SHIFT)&0x8000) ) {
 							conf.aa--; // -1
-							if( conf.aa < 0 ) conf.aa = 4;
+							if( conf.aa > 4) conf.aa = 4;
 							sprintf(strtitle, "anti-aliasing - %s", s_aa[conf.aa]);
 							ZeroGS::SetAA(conf.aa);
 						}
@@ -1016,17 +1016,22 @@ int CALLBACK GSsetupRecording(int start, void* pData)
 	return 1;
 }
 
-s32 CALLBACK GSfreeze(int mode, freezeData *data) {
-	if (mode == FREEZE_LOAD) {
-		if( !ZeroGS::Load(data->data) )
-			DEBUG_LOG("GS: Bad load format!");
-		g_nRealFrame += 100;
-
-	} else if (mode == FREEZE_SAVE) {
-		ZeroGS::Save(data->data);
-	}
-	if (mode == FREEZE_SIZE) {
-		data->size = ZeroGS::Save(NULL);
+s32 CALLBACK GSfreeze(int mode, freezeData *data) 
+{
+	switch (mode)
+	{
+		case FREEZE_LOAD:
+			if (!ZeroGS::Load(data->data)) DEBUG_LOG("GS: Bad load format!");
+			g_nRealFrame += 100;
+			break;
+		case FREEZE_SAVE:
+			ZeroGS::Save(data->data);
+			break;
+		case FREEZE_SIZE:
+			data->size = ZeroGS::Save(NULL);
+			break;
+		default:
+			break;
 	}
 
 	return 0;

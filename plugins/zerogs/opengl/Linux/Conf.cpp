@@ -26,25 +26,30 @@
 
 extern string s_strIniPath;
 
-void SaveConfig() {
+void SaveConfig() 
+{
 	FILE *f;
 	char cfg[255];
 
 	strcpy(cfg, s_strIniPath.c_str());
 	f = fopen(cfg,"w");
-	if (f == NULL) {
+	if (f == NULL) 
+	{
 		printf("failed to open %s\n", s_strIniPath.c_str());
 		return;
 	}
+	
 	fprintf(f, "interlace = %x\n", conf.interlace);
-	fprintf(f, "aliasing = %x\n", conf.aa);
-	fprintf(f, "bilinear  = %x\n", conf.bilinear);
+	fprintf(f, "mrtdepth = %x\n", conf.mrtdepth);
 	fprintf(f, "options = %x\n", conf.options);
+	fprintf(f, "bilinear  = %x\n", conf.bilinear);
+	fprintf(f, "aliasing = %x\n", conf.aa);
 	fprintf(f, "gamesettings = %x\n", conf.gamesettings);
 	fclose(f);
 }
 
-void LoadConfig() {
+void LoadConfig() 
+{
 	FILE *f;
 	char cfg[255];
 
@@ -55,25 +60,29 @@ void LoadConfig() {
 	conf.bilinear = 1;
 	conf.width = 640;
 	conf.height = 480;
+	conf.aa = 0;
 
 	strcpy(cfg, s_strIniPath.c_str());
 	f = fopen(cfg, "r");
-	if (f == NULL) {
+	if (f == NULL) 
+	{
 		printf("failed to open %s\n", s_strIniPath.c_str());
 		SaveConfig();//save and return
 		return;
 	}
 	fscanf(f, "interlace = %x\n", &conf.interlace);
-	fscanf(f, "aliasing = %x\n", &conf.aa);
-	fscanf(f, "bilinear = %x\n", &conf.bilinear);
+	fscanf(f, "mrtdepth = %x\n", &conf.mrtdepth);
 	fscanf(f, "options = %x\n", &conf.options);
+	fscanf(f, "bilinear = %x\n", &conf.bilinear);
+	fscanf(f, "aliasing = %x\n", &conf.aa);
 	fscanf(f, "gamesettings = %x\n", &conf.gamesettings);
 	fclose(f);
 
 	// filter bad files
-	if( conf.aa < 0 || conf.aa > 2 ) conf.aa = 0;
+	if ((conf.aa < 0) || (conf.aa > 4)) conf.aa = 0;
 
-	switch(conf.options&GSOPTION_WINDIMS) {
+	switch(conf.options & GSOPTION_WINDIMS) 
+	{
 		case GSOPTION_WIN640:
 			conf.width = 640;
 			conf.height = 480;
@@ -92,11 +101,12 @@ void LoadConfig() {
 			break;
 	}
 
-	// turn off all hacks by defaultof
-	conf.options &= ~(GSOPTION_FULLSCREEN|GSOPTION_WIREFRAME|GSOPTION_CAPTUREAVI);
+	// turn off all hacks by default
+	conf.options &= ~(GSOPTION_FULLSCREEN | GSOPTION_WIREFRAME | GSOPTION_CAPTUREAVI);
 	conf.options |= GSOPTION_LOADED;
 
-	if( conf.width <= 0 || conf.height <= 0 ) {
+	if( conf.width <= 0 || conf.height <= 0 ) 
+	{
 		conf.width = 640;
 		conf.height = 480;
 	}
