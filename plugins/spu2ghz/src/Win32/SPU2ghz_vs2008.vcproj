@@ -302,10 +302,6 @@
 			<Tool
 				Name="VCAppVerifierTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine=""
-			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
