@@ -19,7 +19,6 @@
 #ifndef __PAD_H__
 #define __PAD_H__
 
-#define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
 #include <assert.h>
 

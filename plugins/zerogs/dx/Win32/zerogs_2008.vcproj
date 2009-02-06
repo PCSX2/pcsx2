@@ -17,18 +17,13 @@
 	<Configurations>
 		<Configuration
 			Name="Devel|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
-			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -55,8 +50,8 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;..\common"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="..\x86\;..\..\ZeroGSShaders\"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -88,7 +83,6 @@
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/GSsoftdx.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -109,22 +103,13 @@
 			<Tool
 				Name="VCAppVerifierTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine=""
-			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
-			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -141,8 +126,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;..\common"
-				PreprocessorDefinitions="D3D_DEBUG_INFO;_USRDLL;_DEBUG;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="..\x86\;..\..\ZeroGSShaders\"
+				PreprocessorDefinitions="D3D_DEBUG_INFO;_USRDLL;_DEBUG;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
@@ -187,25 +172,16 @@
 			<Tool
 				Name="VCAppVerifierTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine=""
-			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
-			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -232,8 +208,8 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;..\common"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;RELEASE_TO_PUBLIC;ZEROGS_SSE2;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="..\x86\;..\..\ZeroGSShaders\"
+				PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;__i386__;RELEASE_TO_PUBLIC;ZEROGS_SSE2"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -286,10 +262,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>

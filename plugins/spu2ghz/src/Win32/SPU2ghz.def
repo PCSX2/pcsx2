@@ -17,7 +17,7 @@
 ;
 ; SPU2ghz.def : Declares the module parameters for the DLL.
 
-LIBRARY      "SPU2ghz"
+;LIBRARY      "SPU2ghz"
 
 EXPORTS
     ; Explicit exports can go here

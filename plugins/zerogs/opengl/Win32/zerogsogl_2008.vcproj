@@ -17,8 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Devel|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -42,7 +41,6 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/GSsoftdx.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -53,8 +51,8 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;..\common&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;ZEROGS_DEVBUILD;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\x86\;..\..\ZeroGSShaders\"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;__i386__;ZEROGS_DEVBUILD"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -84,7 +82,6 @@
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/GSsoftdx.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -105,15 +102,10 @@
 			<Tool
 				Name="VCAppVerifierTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine=""
-			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -135,8 +127,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;..\common&quot;"
-				PreprocessorDefinitions="_USRDLL;ZEROGS_DEVBUILD;_DEBUG;__i386__;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\x86\;..\..\ZeroGSShaders\"
+				PreprocessorDefinitions="_USRDLL;ZEROGS_DEVBUILD;_DEBUG;__i386__"
 				IgnoreStandardIncludePath="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -183,15 +175,10 @@
 			<Tool
 				Name="VCAppVerifierTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine=""
-			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -216,7 +203,6 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/GSsoftdx.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -227,8 +213,8 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\;..\x86\;..\..\ZeroGSShaders\;&quot;..\common&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;__i386__;_CRT_SECURE_NO_DEPRECATE;ZEROGS_SSE2;RELEASE_TO_PUBLIC"
+				AdditionalIncludeDirectories="..\x86\;..\..\ZeroGSShaders\"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;__i386__;ZEROGS_SSE2;RELEASE_TO_PUBLIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -278,10 +264,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>

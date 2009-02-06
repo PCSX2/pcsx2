@@ -1,7 +1,7 @@
 ; SPU2null.def : Declares the module parameters for the DLL.
 
-LIBRARY      "SPU2null"
-DESCRIPTION  'SPU2 Null Driver'
+;LIBRARY      "SPU2null"
+;DESCRIPTION  'SPU2 Null Driver'
 
 EXPORTS
     ; Explicit exports can go here

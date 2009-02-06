@@ -19,8 +19,6 @@
 #ifndef __SPU2_H__
 #define __SPU2_H__
 
-#define _CRT_SECURE_NO_DEPRECATE
-
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>

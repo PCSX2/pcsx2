@@ -17,18 +17,13 @@
 	<Configurations>
 		<Configuration
 			Name="Devel|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
-			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -55,8 +50,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
-				PreprocessorDefinitions="FLOAT_SAMPLES;NDEBUG;__WIN32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="FLOAT_SAMPLES;NDEBUG;_USRDLL;SPU2GHZ_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				StructMemberAlignment="5"
@@ -94,7 +88,6 @@
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/SPU2ghz.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -123,17 +116,12 @@
 		</Configuration>
 		<Configuration
 			Name="DebugStrict|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
-			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -155,8 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
-				PreprocessorDefinitions="FLOAT_SAMPLES;_DEBUG;__WIN32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="FLOAT_SAMPLES;_DEBUG;_USRDLL;SPU2GHZ_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -220,18 +207,13 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
-			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -247,7 +229,6 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/SPU2ghz.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -258,8 +239,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
-				PreprocessorDefinitions="FLOAT_SAMPLES;NDEBUG;PUBLIC;__WIN32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="FLOAT_SAMPLES;NDEBUG;PUBLIC;_USRDLL;SPU2GHZ_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				StructMemberAlignment="5"
@@ -300,7 +280,6 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/SPU2ghz.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -330,17 +309,12 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\bin\plugins\"
-			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
+			InheritedPropertySheets=".\vsprops\pcsx2_plugin_common.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				CommandLine=".\tsvnrev\updateRevision.cmd &quot;$(ProjectDir)\..&quot; &quot;$(ProjectDir)\tsvnrev&quot;"
-			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -362,8 +336,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;&quot;$(ProjectDir)&quot;;..\common;..\3rdparty"
-				PreprocessorDefinitions="FLOAT_SAMPLES;_DEBUG_FAST;_DEBUG;__WIN32__;__MSCW32__;WIN32;_WINDOWS;_USRDLL;SPU2GHZ_EXPORTS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="FLOAT_SAMPLES;_DEBUG_FAST;_DEBUG;_USRDLL;SPU2GHZ_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
