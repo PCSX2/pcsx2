@@ -71,11 +71,13 @@ void CALLBACK SPU2readDMAMem(u16 *pMem, int size, int core)
 
 void CALLBACK SPU2readDMA4Mem(u16 *pMem, int size)
 {
+	LOG_CALLBACK("SPU2readDMA4Mem()\n");
 	return SPU2readDMAMem(pMem, size, 0);
 }
 
 void CALLBACK SPU2readDMA7Mem(u16* pMem, int size)
 {
+	LOG_CALLBACK("SPU2readDMA7Mem()\n");
 	return SPU2readDMAMem(pMem, size, 1);
 }
 
@@ -226,11 +228,13 @@ void CALLBACK SPU2writeDMAMem(u16* pMem, int size, int core)
 
 void CALLBACK SPU2writeDMA4Mem(u16* pMem, int size)
 {
+	LOG_CALLBACK("SPU2writeDMA4Mem()\n");
 	SPU2writeDMAMem(pMem, size, 0);
 }
 
 void CALLBACK SPU2writeDMA7Mem(u16* pMem, int size)
 {
+	LOG_CALLBACK("SPU2writeDMA7Mem()\n");
 	SPU2writeDMAMem(pMem, size, 1);
 }
 
@@ -256,10 +260,12 @@ void CALLBACK SPU2interruptDMA(int core)
 
 void CALLBACK SPU2interruptDMA4()
 {
+	LOG_CALLBACK("SPU2interruptDMA4()\n");
 	SPU2interruptDMA(0);
 }
 
 void CALLBACK SPU2interruptDMA7()
 {
+	LOG_CALLBACK("SPU2interruptDMA7()\n");
 	SPU2interruptDMA(1);
 }

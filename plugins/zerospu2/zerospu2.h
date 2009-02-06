@@ -36,6 +36,17 @@ extern "C" {
 using namespace std;
 
 extern FILE *spu2Log;
+
+// Prints most of the function names of the callbacks as they are called by pcsx2. 
+// I'm keeping the code in because I have a feeling it will come in handy.
+//#define PRINT_CALLBACKS
+
+#ifdef PRINT_CALLBACKS
+#define LOG_CALLBACK printf
+#else
+#define LOG_CALLBACK 0&&
+#endif
+
 #ifdef _DEBUG
 #define SPU2_LOG __Log  //debug mode
 #else

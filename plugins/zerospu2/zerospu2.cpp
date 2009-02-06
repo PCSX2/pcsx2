@@ -186,6 +186,7 @@ void __Log(char *fmt, ...)
 
 s32 CALLBACK SPU2init()
 {
+	LOG_CALLBACK("SPU2init()\n");
 	spu2Log = fopen("logs/spu2.txt", "w");
 	if (spu2Log) setvbuf(spu2Log, NULL,  _IONBF, 0);
 	
@@ -237,6 +238,7 @@ s32 CALLBACK SPU2init()
 
 s32 CALLBACK SPU2open(void *pDsp) 
 {
+	LOG_CALLBACK("SPU2open()\n");
 #ifdef _WIN32
 	hWMain = pDsp == NULL ? NULL : *(HWND*)pDsp;
 	if (!IsWindow(hWMain))
@@ -313,7 +315,9 @@ s32 CALLBACK SPU2open(void *pDsp)
 	return 0;
 }
 
-void CALLBACK SPU2close() {
+void CALLBACK SPU2close() 
+{
+	LOG_CALLBACK("SPU2close()\n");
 	g_nSpuInit = 0;
 
 	if ( g_bPlaySound && !s_bThreadExit ) {
@@ -342,6 +346,7 @@ void CALLBACK SPU2close() {
 
 void CALLBACK SPU2shutdown()
 {
+	LOG_CALLBACK("SPU2shutdown()\n");
 	free(spu2regs); spu2regs = NULL;
 	free(spu2mem); spu2mem = NULL;
 
@@ -350,6 +355,7 @@ void CALLBACK SPU2shutdown()
 
 void CALLBACK SPU2async(u32 cycle)
 {
+	//LOG_CALLBACK("SPU2async()\n");
 	SPUCycles += cycle;
 	
 	if (interrupt & (1<<2))
@@ -730,9 +736,93 @@ ENDX:
 	}
 
 	// mix all channels
-	MixChannels(0);
-	MixChannels(1);
+	/*MixChannels(0);
+	MixChannels(1);*/
 	
+	
+        // mix all channels
+	// This code is temporarily being put back, till I work out why the replacement is breaking things, --arcum42
+        if ((spu2Ru16(REG_C0_MMIX) & 0xF0) && (spu2Ru16(REG_C0_ADMAS) & 0x1) /*&& !(spu2Ru16(REG_C0_CTRL) & 0x30)*/) 
+        {
+                ADMA *Adma = &Adma4;
+                
+                for (int ns=0;ns<NSSIZE;ns++) 
+                { 
+                
+                        if ((spu2Ru16(REG_C0_MMIX) & 0x80)) 
+                                s_buffers[ns][0] += (((short*)spu2mem)[0x2000+Adma->Index]*(int)spu2Ru16(REG_C0_BVOLL))>>16;
+                        if ((spu2Ru16(REG_C0_MMIX) & 0x40)) 
+                                s_buffers[ns][1] += (((short*)spu2mem)[0x2200+Adma->Index]*(int)spu2Ru16(REG_C0_BVOLR))>>16;
+
+                        Adma->Index +=1;
+                        // just add after every sample, it is better than adding 1024 all at once (games like Genji don't like it)
+                        MemAddr[0] += 4;
+
+                        if ((Adma->Index == 128) || (Adma->Index == 384))
+                        {
+                                if (ADMASWrite(0))
+                                {
+                                        if (interrupt & 0x2)
+                                        {
+                                                interrupt &= ~0x2;
+                                                printf("Stopping double interrupt DMA4\n");
+                                        }
+                                        irqCallbackDMA4();
+                                        
+                                }
+                        }
+                        
+                        if (Adma->Index == 512) 
+                        {
+                                if ( Adma->Enabled == 2 ) 
+                                {
+                                        Adma->Enabled = 0;
+                                }
+                                Adma->Index = 0;
+                        }
+                }
+        }
+
+        // Let's do the same bloody mixing code again, only for C1. 
+        // fixme - There is way too much duplication of code between C0 & C1, and Adma4 & Adma7.
+        // arcum42
+        if ((spu2Ru16(REG_C1_MMIX) & 0xF0) && (spu2Ru16(REG_C1_ADMAS) & 0x2)) 
+        {
+                ADMA *Adma = &Adma7;
+
+                for (int ns=0;ns<NSSIZE;ns++) 
+                { 
+                        if ((spu2Ru16(REG_C1_MMIX) & 0x80)) 
+                                s_buffers[ns][0] += (((short*)spu2mem)[0x2400+Adma->Index]*(int)spu2Ru16(REG_C1_BVOLL))>>16;
+                        if ((spu2Ru16(REG_C1_MMIX) & 0x40)) 
+                                s_buffers[ns][1] += (((short*)spu2mem)[0x2600+Adma->Index]*(int)spu2Ru16(REG_C1_BVOLR))>>16;
+                        
+                        Adma->Index +=1;
+                        MemAddr[1] += 4;
+                        
+                        if (Adma->Index == 128 || Adma->Index == 384)
+                        {
+                                if (ADMASWrite(1))
+                                {
+                                        if (interrupt & 0x4)
+                                        {
+                                                interrupt &= ~0x4;
+                                                printf("Stopping double interrupt DMA7\n");
+                                        }
+                                        irqCallbackDMA7();
+                                        
+                                }
+                                Adma->Enabled = 2;
+                        }
+
+                        if (Adma->Index == 512) 
+                        {
+                                if ( Adma->Enabled == 2 ) Adma->Enabled = 0;
+                                Adma->Index = 0;
+                        }
+                }
+        }
+
 	if ( g_bPlaySound ) 
 	{
 		assert( s_pCurOutput != NULL);
@@ -1005,6 +1095,7 @@ void VolumeOn(int start,int end,unsigned short val,int iRight)  // VOLUME ON PSX
 
 void CALLBACK SPU2write(u32 mem, u16 value)
 {
+	LOG_CALLBACK("SPU2write()\n");
 	u32 spuaddr;
 	SPU2_LOG("SPU2 write mem %x value %x\n", mem, value);
 
@@ -1217,6 +1308,7 @@ void CALLBACK SPU2write(u32 mem, u16 value)
 
 u16  CALLBACK SPU2read(u32 mem)
 {
+	LOG_CALLBACK("SPU2read()\n");
 	u32 spuaddr;
 	u16 ret = 0;
 	u32 r = mem & 0xffff; // register
@@ -1317,21 +1409,25 @@ u16  CALLBACK SPU2read(u32 mem)
 
 void CALLBACK SPU2WriteMemAddr(int core, u32 value)
 {
+	LOG_CALLBACK("SPU2WriteMemAddr(%d, %d)\n", core, value);
 	MemAddr[core] = g_pDMABaseAddr + value;
 }
 
 u32 CALLBACK SPU2ReadMemAddr(int core)
 {
+	LOG_CALLBACK("SPU2ReadMemAddr(%d)\n", core);
 	return MemAddr[core] - g_pDMABaseAddr;
 }
 
 void CALLBACK SPU2setDMABaseAddr(uptr baseaddr)
 {
+	LOG_CALLBACK("SPU2setDMABaseAddr()\n");
 	g_pDMABaseAddr = baseaddr;
 }
 
 void CALLBACK SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void (*DMA7callback)())
 {
+	LOG_CALLBACK("SPU2irqCallback()\n");
 	irqCallbackSPU2 = SPU2callback;
 	irqCallbackDMA4 = DMA4callback;
 	irqCallbackDMA7 = DMA7callback;
@@ -1339,6 +1435,7 @@ void CALLBACK SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void
 
 s32 CALLBACK SPU2test()
 {
+	LOG_CALLBACK("SPU2test()\n");
 	return 0;
 }
 
@@ -1407,6 +1504,7 @@ void LogRawSound(void* pleft, int leftstride, void* pright, int rightstride, int
 
 int CALLBACK SPU2setupRecording(int start, void* pData)
 {
+	LOG_CALLBACK("SPU2setupRecording()\n");
 	if ( start ) 
 	{
 		conf.options |= OPTION_RECORDING;
@@ -1423,6 +1521,7 @@ int CALLBACK SPU2setupRecording(int start, void* pData)
 
 s32  CALLBACK SPU2freeze(int mode, freezeData *data)
 {
+	LOG_CALLBACK("SPU2freeze()\n");
 	SPU2freezeData *spud;
 	int i;
 	assert( g_pDMABaseAddr != 0 );

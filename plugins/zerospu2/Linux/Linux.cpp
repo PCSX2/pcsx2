@@ -111,7 +111,9 @@ void SysMessage(char *fmt, ...) {
 	gtk_main();
 }
 
-void CALLBACK SPU2configure() {
+void CALLBACK SPU2configure() 
+{
+	LOG_CALLBACK("SPU2configure()\n");
 	ConfDlg = create_Config();
 	LoadConfig();
 	set_checked(ConfDlg, "timescalingbutton", (conf.options & OPTION_TIMESTRETCH));
@@ -154,7 +156,9 @@ void on_Conf_Cancel (GtkButton *button, gpointer user_data)
 extern char *libraryName;
 extern string s_strIniPath;
 
-void CALLBACK SPU2about() {
+void CALLBACK SPU2about() 
+{
+	LOG_CALLBACK("SPU2about()\n");
 	SysMessage("%s %d.%d\ndeveloper: zerofrog", libraryName, SPU2_VERSION, SPU2_BUILD);
 }
 
