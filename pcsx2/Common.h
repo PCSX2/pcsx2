@@ -70,10 +70,8 @@ extern TESTRUNARGS g_TestRun;
 #include "Memory.h"
 #include "Elfheader.h"
 #include "Hw.h"
-// Moving this before one of the other includes causes compilation issues. 
-//#include "Misc.h"
 #include "Patch.h"
 
-#define PCSX2_VERSION "(beta)"
+#define PCSX2_VERSION "rc.0.9.6"
 
 #endif /* __COMMON_H__ */
