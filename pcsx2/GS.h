@@ -188,7 +188,7 @@ protected:
 	SafeAlignedArray<u128,16> m_RingBuffer;
 
 	// mtgs needs its own memory space separate from the PS2.  The PS2 memory is in
-	// synch with the EE while this stays in sync with the GS (ie, it lags behind)
+	// sync with the EE while this stays in sync with the GS (ie, it lags behind)
 	u8* const m_gsMem;
 
 public:
@@ -215,6 +215,8 @@ public:
 	u8* GetDataPacketPtr() const;
 	void Freeze( SaveState& state );
 	void SetEvent();
+
+	void PostVsyncEnd( bool updategs );
 
 	uptr FnPtr_SimplePacket() const
 	{

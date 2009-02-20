@@ -436,6 +436,16 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 	return size;
 }
 
+void mtgsThreadObject::PostVsyncEnd( bool updategs )
+{
+	SendSimplePacket( GS_RINGTYPE_VSYNC,
+		(*(u32*)(PS2MEM_GS+0x1000)&0x2000), updategs, 0);
+
+	// No need to freeze MMX/XMM registers here since this
+	// code is always called from the context of a BranchTest.
+	SetEvent();
+}
+
 struct PacketTagType
 {
 	u32 command;
@@ -448,6 +458,7 @@ int mtgsThreadObject::Callback()
 
 	memcpy_aligned( m_gsMem, PS2MEM_GS, sizeof(m_gsMem) );
 	GSsetBaseMem( m_gsMem );
+	GSirqCallback( NULL );
 
 	m_returncode = GSopen((void *)&pDsp, "PCSX2", 1);
 
@@ -534,7 +545,6 @@ int mtgsThreadObject::Callback()
 				case GS_RINGTYPE_VSYNC:
 				{
 					GSvsync(tag.data[0]);
-
 					gsFrameSkip( !tag.data[1] );
 
 					if( PAD1update != NULL ) PAD1update(0);

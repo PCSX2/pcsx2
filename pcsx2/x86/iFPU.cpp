@@ -875,8 +875,7 @@ void recC_LT_xmm(int info)
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
 			// Makes NaNs and +Infinity be +maximum; -Infinity stays 
-			// the same, but this is okay for a Compare operation.
-			// Note: This fixes a crash in Rule of Rose.
+			// the same, but this is okay for a Compare operation.			// Note: This fixes a crash in Rule of Rose.
 			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
 			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
