@@ -51,24 +51,23 @@ static void ConfPlugin(PluginConf confs, char* plugin, const char* name)
 {
 	void *drv;
 	void (*conf)();
-	char file[g_MaxPath];
+	char file[g_MaxPath], file2[g_MaxPath];
 
 	GetComboText(confs.Combo, confs.plist, plugin);
 	strcpy(file, Config.PluginsDir);
 	strcat(file, plugin);
-
+	
 	drv = SysLoadLibrary(file);
-#ifndef LOCAL_PLUGIN_INIS
-	getcwd(file, ARRAYSIZE(file)); /* store current dir */
-	chdir(Config.PluginsDir); /* change dirs so that plugins can find their config file*/
-#endif
+//#ifndef LOCAL_PLUGIN_INIS
+//	chdir(Config.PluginsDir); /* change dirs so that plugins can find their config file*/
+//#endif
 	if (drv == NULL) return;
 
 	conf = (void (*)()) SysLoadSym(drv, name);
 	if (SysLibError() == NULL) conf();
-#ifndef LOCAL_PLUGIN_INIS
-	chdir(file); /* change back*/
-#endif
+//#ifndef LOCAL_PLUGIN_INIS
+//	chdir(MAIN_DIR); /* change back*/
+//#endif
 	SysCloseLibrary(drv);
 }
 
@@ -85,13 +84,10 @@ static void TestPlugin(PluginConf confs, char* plugin, const char* name)
 	strcat(file, plugin);
 
 	drv = SysLoadLibrary(file);
-	getcwd(file, ARRAYSIZE(file)); /* store current dir */
-	chdir(Config.PluginsDir); /* change dirs so that plugins can find their config file*/
 	if (drv == NULL) return;
 
 	conf = (s32(* (*)())()) SysLoadSym(drv, name);
 	if (SysLibError() == NULL) ret = (s32) conf();
-	chdir(file); /* change back*/
 	SysCloseLibrary(drv);
 
 	if (ret == 0)
@@ -104,85 +100,53 @@ void OnConf_Gs(GtkMenuItem *menuitem, gpointer user_data)
 {
 	char file[255];
 
-	getcwd(file, ARRAYSIZE(file));
-	chdir(Config.PluginsDir);
+//	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	GSconfigure();
-	chdir(file);
 	gtk_widget_set_sensitive(MainWindow, TRUE);
 }
 
 void OnConf_Pads(GtkMenuItem *menuitem, gpointer user_data)
 {
-	char file[255];
-
-	getcwd(file, ARRAYSIZE(file));
-	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	PAD1configure();
 	if (strcmp(Config.PAD1, Config.PAD2)) PAD2configure();
-	chdir(file);
 	gtk_widget_set_sensitive(MainWindow, TRUE);
 }
 
 void OnConf_Spu2(GtkMenuItem *menuitem, gpointer user_data)
 {
-	char file[255];
-
-	getcwd(file, ARRAYSIZE(file));
-	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	SPU2configure();
 	gtk_widget_set_sensitive(MainWindow, TRUE);
-	chdir(file);
 }
 
 void OnConf_Cdvd(GtkMenuItem *menuitem, gpointer user_data)
 {
-	char file[255];
-
-	getcwd(file, ARRAYSIZE(file));
-	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	CDVDconfigure();
 	gtk_widget_set_sensitive(MainWindow, TRUE);
-	chdir(file);
 }
 
 void OnConf_Dev9(GtkMenuItem *menuitem, gpointer user_data)
 {
-	char file[255];
-
-	getcwd(file, ARRAYSIZE(file));
-	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	DEV9configure();
 	gtk_widget_set_sensitive(MainWindow, TRUE);
-	chdir(file);
 }
 
 void OnConf_Usb(GtkMenuItem *menuitem, gpointer user_data)
 {
-	char file[255];
-
-	getcwd(file, ARRAYSIZE(file));
-	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	USBconfigure();
 	gtk_widget_set_sensitive(MainWindow, TRUE);
-	chdir(file);
 }
 
 void OnConf_Fw(GtkMenuItem *menuitem, gpointer user_data)
 {
-	char file[255];
-
-	getcwd(file, ARRAYSIZE(file));
-	chdir(Config.PluginsDir);
 	gtk_widget_set_sensitive(MainWindow, FALSE);
 	FWconfigure();
 	gtk_widget_set_sensitive(MainWindow, TRUE);
-	chdir(file);
 }
 
 void SetActiveComboItem(GtkComboBox *widget, char plist[255][255], GList *list, char *conf)
@@ -515,30 +479,22 @@ void FindPlugins()
 		sprintf(plugin, "%s%s", Config.PluginsDir, ent->d_name);
 
 		if (strstr(plugin, ".so") == NULL) continue;
-		Handle = dlopen(plugin, RTLD_NOW);
+		Handle = SysLoadLibrary(plugin);
 		if (Handle == NULL)
 		{
-			Console::Error("Can't open %s: %s\n", params ent->d_name, dlerror());
+			Console::Error("Can't open %s: %s\n", params ent->d_name, SysLibError());
 			continue;
 		}
+		
+		PS2EgetLibType = (_PS2EgetLibType) SysLoadSym(Handle, "PS2EgetLibType");
+		PS2EgetLibName = (_PS2EgetLibName) SysLoadSym(Handle, "PS2EgetLibName");
+		PS2EgetLibVersion2 = (_PS2EgetLibVersion2) SysLoadSym(Handle, "PS2EgetLibVersion2");
 
-		PS2EgetLibType = (_PS2EgetLibType) dlsym(Handle, "PS2EgetLibType");
-		PS2EgetLibName = (_PS2EgetLibName) dlsym(Handle, "PS2EgetLibName");
-		PS2EgetLibVersion2 = (_PS2EgetLibVersion2) dlsym(Handle, "PS2EgetLibVersion2");
-
-		if (PS2EgetLibType == NULL)
+		if ((PS2EgetLibType == NULL) || (PS2EgetLibName == NULL) || (PS2EgetLibVersion2 == NULL))
 		{
-			Console::Error("PS2EgetLibType==NULL for %s", params ent->d_name);
-			continue;
-		}
-		if (PS2EgetLibName == NULL)
-		{
-			Console::Error("PS2EgetLibName==NULL for %s", params ent->d_name);
-			continue;
-		}
-		if (PS2EgetLibVersion2 == NULL)
-		{
-			Console::Error("PS2EgetLibVersion2==NULL for %s", params ent->d_name);
+			if (PS2EgetLibType == NULL) Console::Error("PS2EgetLibType==NULL for %s", params ent->d_name);
+			if (PS2EgetLibName == NULL) Console::Error("PS2EgetLibName==NULL for %s", params ent->d_name);
+			if (PS2EgetLibVersion2 == NULL) Console::Error("PS2EgetLibVersion2==NULL for %s", params ent->d_name);
 			continue;
 		}
 

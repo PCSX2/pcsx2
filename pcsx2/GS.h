@@ -171,6 +171,15 @@ protected:
 	int m_CopyDataTally;
 	volatile u32 m_RingBufferIsBusy;
 
+	// Counts the number of vsync frames queued in the MTGS ringbuffer.  This is used to
+	// throttle the number of frames allowed to be rendered ahead of time for games that
+	// run very fast and have little or no ringbuffer overhead (typically opening menus)
+	volatile s32 m_QueuedFrames;
+
+	// Protection lock for the frame queue counter -- needed because we can't safely
+	// AtomicExchange from two threads.
+	Threading::MutexLock m_lock_FrameQueueCounter;
+
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.
 

@@ -438,6 +438,21 @@ __forceinline u32 mtgsThreadObject::_gifTransferDummy( GIF_PATH pathidx, const u
 
 void mtgsThreadObject::PostVsyncEnd( bool updategs )
 {
+	while( m_QueuedFrames > 8 )
+	{
+		if( m_WritePos == volatize( m_RingPos ) )
+		{
+			// MTGS ringbuffer is empty, but we still have queued frames in the counter?  Ouch!
+			Console::Error( "MTGS > Queued framecount mismatch = %d", params m_QueuedFrames );
+			m_QueuedFrames = 0;
+			break;
+		}
+		Sleep( 2 );		// Sleep off quite a bit of time, since we're obviously *waaay* ahead.
+		SpinWait();
+	}
+	m_lock_FrameQueueCounter.Lock();
+	m_QueuedFrames++;
+	m_lock_FrameQueueCounter.Unlock();
 	SendSimplePacket( GS_RINGTYPE_VSYNC,
 		(*(u32*)(PS2MEM_GS+0x1000)&0x2000), updategs, 0);
 
@@ -546,6 +561,11 @@ int mtgsThreadObject::Callback()
 				{
 					GSvsync(tag.data[0]);
 					gsFrameSkip( !tag.data[1] );
+
+					m_lock_FrameQueueCounter.Lock();
+					AtomicDecrement( m_QueuedFrames );
+					jASSUME( m_QueuedFrames >= 0 );
+					m_lock_FrameQueueCounter.Unlock();
 
 					if( PAD1update != NULL ) PAD1update(0);
 					if( PAD2update != NULL ) PAD2update(1);

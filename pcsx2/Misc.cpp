@@ -35,7 +35,7 @@
 #include "VU.h"
 #include "iCore.h"
 #include "iVUzerorec.h"
-#include "BaseblockEx.h"		// for debuild block dumping (which may or may not work anymore?)
+#include "BaseblockEx.h"		// included for devbuild block dumping (which may or may not work anymore?)
 
 #include "GS.h"
 #include "COP0.h"
@@ -53,30 +53,32 @@ static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
 
 const char *LabelAuthors = { N_(
 	"PCSX2, a PS2 emulator\n\n"
-	"originally written by:\n"
-	"saqib, refraction, zerofrog,\n"
-	"shadow, linuzappz, florin,\n"
-	"nachbrenner, auMatt, loser, \n"
-	"alexey silinov, goldfinger\n"
+	"Active Devs: Arcum42, Refraction,\n"
+	"drk||raziel, cottonvibes, gigaherz,\n"
+	"rama, Jake.Stine, saqib, Tmkk\n"
 	"\n"
-	"Devs:\n"
-	"Arcum42, drkIIRaziel, Cottonvibes, \n"
-	"Jake.Stine, Rama\n\n"
-	"Testing:\n"
-	"Krakatos\n"
+	"Inactive devs: Alexey silinov, Aumatt,\n"
+	"Florin, goldfinger, Linuzappz, loser,\n"
+	"Nachbrenner, shadow, Zerofrog\n"
 	"\n"
-	"Webmasters: CKemu, Falcon4ever")
+	"Betatesting: Bositman, ChaosCode,\n"
+	"CKemu, crushtest, GeneralPlot,\n"
+	"Krakatos, Paorotaku, Rudy_X\n"
+	"\n"
+	"Webmasters: CKemu, Falcon4ever"
+	)
 };
 
 const char *LabelGreets = { N_(
-	"Greets to: Bobbi, Keith, CpUMasteR, Nave, Snake785\n\n"
-	"Special thanks to: Gigaherz, Gabest, Sjeep, Dreamtime, F|RES, BGnome, MrBrown, \n"
-	"Seta-San, Skarmeth, blackd_wd, _Demo_\n"
+	"Contributors: Hiryu and Sjeep for libcvd (the iso parsing and\n"
+	"filesystem driver code), nneeve, pseudonym\n"
 	"\n"
-	"Credits: Hiryu && Sjeep for their libcdvd (iso parsing and filesystem driver code)\n"
+	"Plugin Specialists: ChickenLiver (Lilypad), Efp (efp),\n"
+	"Gabest (Gsdx, Cdvdolio, Xpad)\n"
 	"\n"
-	"Some betatester/support dudes: Belmont, bositman, ChaosCode, CKemu, crushtest,"
-	"Falcon4ever, GeneralPlot, jegHegy, parotaku, Prafull, Razorblade, Rudy_X, Seta-san")
+	"Special thanks to: black_wd, Belmont, BGome, _Demo_, Dreamtime,\n"
+	"F|RES, MrBrown, razorblade, Seta-san, Skarmeth"
+	)
 };
 
 static struct {
@@ -514,6 +516,66 @@ static void GetGSStateFilename( string& dest )
 	Path::Combine( dest, SSTATES_DIR, gsText );
 }
 
+void CycleFrameLimit(int dir)
+{
+	const char* limitMsg;
+	u32 newOptions;
+	u32 curFrameLimit = Config.Options & PCSX2_FRAMELIMIT_MASK;
+	u32 newFrameLimit;
+	static u32 oldFrameLimit = PCSX2_FRAMELIMIT_LIMIT;
+
+	if( dir == 0 ) {
+		// turn off limit or restore previous limit mode
+		if (curFrameLimit) {
+			oldFrameLimit = curFrameLimit;
+			newFrameLimit = 0;
+		} else
+			newFrameLimit = oldFrameLimit;
+	} else if (dir > 0) {
+		// next
+		newFrameLimit = (curFrameLimit + PCSX2_FRAMELIMIT_LIMIT) & PCSX2_FRAMELIMIT_MASK;
+	} else {
+		// previous
+		newFrameLimit = (curFrameLimit + PCSX2_FRAMELIMIT_VUSKIP) & PCSX2_FRAMELIMIT_MASK;
+	}
+
+	newOptions = (Config.Options & ~PCSX2_FRAMELIMIT_MASK) | newFrameLimit;
+
+	gsResetFrameSkip();
+
+	switch(newFrameLimit) {
+		case PCSX2_FRAMELIMIT_NORMAL:
+			limitMsg = "None/Normal";
+			break;
+		case PCSX2_FRAMELIMIT_LIMIT:
+			limitMsg = "Limit";
+			break;
+		case PCSX2_FRAMELIMIT_SKIP:
+		case PCSX2_FRAMELIMIT_VUSKIP:
+			if( GSsetFrameSkip == NULL )
+			{
+				newOptions &= ~PCSX2_FRAMELIMIT_MASK;
+				Console::Notice("Notice: GS Plugin does not support frameskipping.");
+				limitMsg = "None/Normal";
+			}
+			else
+			{
+				// When enabling Skipping we have to make sure Skipper (GS) and Limiter (EE)
+				// are properly synchronized.
+				gsDynamicSkipEnable();
+				limitMsg = ((newOptions & PCSX2_FRAMELIMIT_MASK) == PCSX2_FRAMELIMIT_SKIP) ? "Skip" : "VUSkip";
+			}
+
+			break;
+	}
+	Threading::AtomicExchange( Config.Options, newOptions );
+
+	Console::Notice("Frame Limit Mode Changed: %s", params limitMsg );
+
+	// [Air]: Do we really want to save runtime changes to frameskipping?
+	//SaveConfig();
+}
+
 void ProcessFKeys(int fkey, int shift)
 {
     string Text;
@@ -580,7 +642,7 @@ void ProcessFKeys(int fkey, int shift)
 					"Pcsx2 encountered an error while trying to load the savestate\n"
 					"and emulation had to be aborted." );
 
-				ClosePlugins();
+				ClosePlugins( true );
 
 				throw Exception::CpuStateShutdown(
 					"Saveslot load failed; PS2 emulated state had to be shut down." );	// let the GUI handle the error "gracefully"
@@ -588,54 +650,8 @@ void ProcessFKeys(int fkey, int shift)
 			break;
 
 		case 4:
-		{
-			const char* limitMsg;
-			u32 newOptions;
-			// cycle
-            if( shift ) {
-                // previous
-                newOptions = (Config.Options&~PCSX2_FRAMELIMIT_MASK)|(((Config.Options&PCSX2_FRAMELIMIT_MASK)+PCSX2_FRAMELIMIT_VUSKIP)&PCSX2_FRAMELIMIT_MASK);
-            }
-            else {
-                // next
-                newOptions = (Config.Options&~PCSX2_FRAMELIMIT_MASK)|(((Config.Options&PCSX2_FRAMELIMIT_MASK)+PCSX2_FRAMELIMIT_LIMIT)&PCSX2_FRAMELIMIT_MASK);
-            }
-
-			gsResetFrameSkip();
-
-			switch(newOptions & PCSX2_FRAMELIMIT_MASK) {
-				case PCSX2_FRAMELIMIT_NORMAL:
-					limitMsg = "None/Normal";
-					break;
-				case PCSX2_FRAMELIMIT_LIMIT:
-					limitMsg = "Limit";
-					break;
-				case PCSX2_FRAMELIMIT_SKIP:
-				case PCSX2_FRAMELIMIT_VUSKIP:
-					if( GSsetFrameSkip == NULL )
-					{
-						newOptions &= ~PCSX2_FRAMELIMIT_MASK;
-						Console::Notice("Notice: GS Plugin does not support frameskipping.");
-						limitMsg = "None/Normal";
-					}
-					else
-					{
-						// When enabling Skipping we have to make sure Skipper (GS) and Limiter (EE)
-						// are properly synchronized.
-						gsDynamicSkipEnable();
-						limitMsg = ((newOptions & PCSX2_FRAMELIMIT_MASK) == PCSX2_FRAMELIMIT_SKIP) ? "Skip" : "VUSkip";
-					}
-
-					break;
-			}
-			Threading::AtomicExchange( Config.Options, newOptions );
-
-			Console::Notice("Frame Limit Mode Changed: %s", params limitMsg );
-
-			// [Air]: Do we really want to save runtime changes to frameskipping?
-			//SaveConfig();
-		}
-		break;
+			CycleFrameLimit(shift ? -1 : 1);
+			break;
 
 		// note: VK_F5-VK_F7 are reserved for GS
 		case 8:

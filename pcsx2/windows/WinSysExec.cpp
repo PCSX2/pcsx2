@@ -288,7 +288,7 @@ void RunExecute( const char* elf_file, bool use_bios )
 
 				// Take the user back to the GUI...
 				safe_delete( g_RecoveryState );
-				ClosePlugins();
+				ClosePlugins( true );
 				return;
 			}
 		}
@@ -655,6 +655,10 @@ static void __fastcall KeyEvent(keyEvent* ev)
 			}
 		break;
 
+		case VK_TAB:
+			CycleFrameLimit(0);
+			break;
+
 		case VK_ESCAPE:
 #ifdef PCSX2_DEVBUILD
 			if( g_SaveGSStream >= 3 ) {
@@ -685,10 +689,9 @@ static void __fastcall KeyEvent(keyEvent* ev)
 					JustGsSavingState eddie;
 					eddie.FreezePlugin( "GS", gsSafeFreeze ) ;
 					eddie.gsFreeze();
-					PluginsResetGS();
 				}
 
-				ClosePlugins();
+				ClosePlugins( Config.closeGSonEsc );
 				nDisableSC = 0;
 			}
 			break;
@@ -780,12 +783,13 @@ bool SysInit()
 }
 
 // completely shuts down the emulator's cpu state, and unloads all plugins from memory.
-void SysClose() {
+void SysClose()
+{
 	if (!sinit) return;
 	cpuShutdown();
-	ClosePlugins();
+	ClosePlugins( true );
 	ReleasePlugins();
-	sinit=false;
+	sinit = false;
 }
 
 

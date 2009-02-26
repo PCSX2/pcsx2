@@ -34,6 +34,7 @@ bool Slots[5] = { false, false, false, false, false };
 TESTRUNARGS g_TestRun;
 #endif
 
+char MAIN_DIR[g_MaxPath];
 
 int main(int argc, char *argv[])
 {
@@ -41,6 +42,9 @@ int main(int argc, char *argv[])
 	char elfname[g_MaxPath];
 
 	efile = 0;
+	
+	getcwd(MAIN_DIR, ARRAYSIZE(MAIN_DIR)); /* store main dir */
+	Console::Notice("MAIN_DIR is %s", params MAIN_DIR);
 #ifdef ENABLE_NLS
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, "Langs");
@@ -64,11 +68,11 @@ int main(int argc, char *argv[])
 #endif
 
 	// make gtk thread safe if using MTGS
-	/*if (CHECK_MULTIGS)
-	{*/
+	if (CHECK_MULTIGS)
+	{
 		g_thread_init(NULL);
 		gdk_threads_init();
-	/*}*/
+	}
 
 	if (UseGui)
 	{
@@ -79,10 +83,10 @@ int main(int argc, char *argv[])
 	{
 
 		memset(&Config, 0, sizeof(Config));
-		strcpy(Config.BiosDir,    DEFAULT_BIOS_DIR "/");
-		strcpy(Config.PluginsDir, DEFAULT_PLUGINS_DIR "/");
-		strcpy(Config.Mcd[0].Filename, MEMCARDS_DIR "/" DEFAULT_MEMCARD1);
-		strcpy(Config.Mcd[1].Filename, MEMCARDS_DIR "/" DEFAULT_MEMCARD2);
+		sprintf(Config.BiosDir, "%s/%s/", MAIN_DIR, DEFAULT_BIOS_DIR);
+		sprintf(Config.PluginsDir, "%s/%s/", MAIN_DIR, DEFAULT_PLUGINS_DIR);
+		sprintf(Config.Mcd[0].Filename, "%s/%s/%s", MAIN_DIR, MEMCARDS_DIR, DEFAULT_MEMCARD1);
+		sprintf(Config.Mcd[1].Filename, "%s/%s/%s", MAIN_DIR, MEMCARDS_DIR, DEFAULT_MEMCARD2);
 		Config.Mcd[0].Enabled = 1;
 		Config.Mcd[1].Enabled = 1;
 		Config.McdEnableEject = 1;
@@ -225,11 +229,12 @@ void StartGui()
 	add_pixmap_directory(".pixmaps");
 	MainWindow = create_MainWindow();
 
-	if (SVN_REV != 0)
-		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV);
-	else
-		gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION);
 
+#ifdef PCSX2_DEVBUILD
+	gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION" "SVN_REV);
+#else
+	gtk_window_set_title(GTK_WINDOW(MainWindow), "PCSX2 "PCSX2_VERSION);
+#endif
 	// status bar
 	pStatusBar = gtk_statusbar_new();
 	gtk_box_pack_start(GTK_BOX(lookup_widget(MainWindow, "status_box")), pStatusBar, TRUE, TRUE, 0);
@@ -366,7 +371,7 @@ void pcsx2_exit()
 			sprintf(plugin, "%s%s", Config.PluginsDir, ent->d_name);
 
 			if (strstr(plugin, ".so") == NULL) continue;
-			Handle = dlopen(plugin, RTLD_NOW);
+			Handle = SysLoadLibrary(plugin);
 			if (Handle == NULL) continue;
 		}
 	}
@@ -388,7 +393,7 @@ void pcsx2_exit()
 
 void SignalExit(int sig)
 {
-	ClosePlugins();
+	ClosePlugins(true);
 	pcsx2_exit();
 }
 
