@@ -37,6 +37,7 @@ struct TESTRUNARGS
 	const char* pimagename;
 	const char* plogname;
 	const char* pgsdll, *pcdvddll, *pspudll;
+	const char* ppad1dll, *ppad2dll, *pdev9dll;
 
 };
 
@@ -70,8 +71,10 @@ extern TESTRUNARGS g_TestRun;
 #include "Memory.h"
 #include "Elfheader.h"
 #include "Hw.h"
+// Moving this before one of the other includes causes compilation issues. 
+//#include "Misc.h"
 #include "Patch.h"
 
-#define PCSX2_VERSION "0.9.6"
+#define PCSX2_VERSION "(beta)"
 
 #endif /* __COMMON_H__ */

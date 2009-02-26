@@ -768,7 +768,9 @@ void gsPostVsyncEnd( bool updategs )
 	*(u32*)(PS2MEM_GS+0x1000) ^= 0x2000; // swap the vsync field
 
 	if( mtgsThread != NULL ) 
-		mtgsThread->PostVsyncEnd( updategs );	else	{
+		mtgsThread->PostVsyncEnd( updategs );
+	else
+	{
 		GSvsync((*(u32*)(PS2MEM_GS+0x1000)&0x2000));
 
 		// update here on single thread mode *OBSOLETE*

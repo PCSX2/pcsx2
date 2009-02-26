@@ -198,6 +198,8 @@ mtgsThreadObject::mtgsThreadObject() :
 ,	m_CopyCommandTally( 0 )
 ,	m_CopyDataTally( 0 )
 ,	m_RingBufferIsBusy( 0 )
+,	m_QueuedFrames( 0 )
+,	m_lock_FrameQueueCounter()
 ,	m_packet_size( 0 )
 ,	m_packet_ringpos( 0 )
 
@@ -450,9 +452,11 @@ void mtgsThreadObject::PostVsyncEnd( bool updategs )
 		Sleep( 2 );		// Sleep off quite a bit of time, since we're obviously *waaay* ahead.
 		SpinWait();
 	}
+
 	m_lock_FrameQueueCounter.Lock();
 	m_QueuedFrames++;
 	m_lock_FrameQueueCounter.Unlock();
+
 	SendSimplePacket( GS_RINGTYPE_VSYNC,
 		(*(u32*)(PS2MEM_GS+0x1000)&0x2000), updategs, 0);
 

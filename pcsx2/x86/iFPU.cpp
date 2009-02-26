@@ -413,10 +413,9 @@ __forceinline void fpuFloat3(int regd) {
 	// This clamp function is used in the recC_xx opcodes
 	// Rule of Rose needs clamping or else it crashes (minss or maxss both fix the crash)
 	// Tekken 5 has disappearing characters unless preserving NaN sign (fpuFloat4() preserves NaN sign).
-	// Digimon Rumble Arena 2 needs MAXSS clamping (if you only use minss, it spins on the intro-menus;
+	// Digimon Rumble Arena 2 needs MAXSS clamping (if you only use minss, it spins on the intro-menus; 
 	// it also doesn't like preserving NaN sign with fpuFloat4, so the only way to make Digimon work
 	// is by calling MAXSS first)
-
 	if (CHECK_FPUCOMPAREHACK) {
 		//SSE_MINSS_M32_to_XMM(regd, (uptr)&g_maxvals[0]);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)&g_minvals[0]);
@@ -424,8 +423,7 @@ __forceinline void fpuFloat3(int regd) {
 	else fpuFloat4(regd);
 }
 
-void ClampValues(int regd)
-{ 
+void ClampValues(int regd) { 
 	fpuFloat(regd);
 }
 //------------------------------------------------------------------
@@ -701,30 +699,30 @@ void recC_EQ_xmm(int info)
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S: 
-			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_S);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); 
-				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				fpuFloat3(t0reg);
 				SSE_UCOMISS_XMM_to_XMM(EEREC_S, t0reg); 
 				_freeXMMreg(t0reg);
 			}
 			else SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
 			break;
 		case PROCESS_EE_T: 
-			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_T);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]); 
-				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				fpuFloat3(t0reg);
 				SSE_UCOMISS_XMM_to_XMM(t0reg, EEREC_T); 
 				_freeXMMreg(t0reg);
 			}
 			else SSE_UCOMISS_M32_to_XMM(EEREC_T, (uptr)&fpuRegs.fpr[_Fs_]);
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T): 
-			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
-			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_S);
+			fpuFloat3(EEREC_T);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
 			break;
 		default: 
@@ -771,22 +769,22 @@ void recC_LE_xmm(int info )
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S: 
-			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_S);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); 
-				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				fpuFloat3(t0reg);
 				SSE_UCOMISS_XMM_to_XMM(EEREC_S, t0reg); 
 				_freeXMMreg(t0reg);
 			}
 			else SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]); 
 			break;
 		case PROCESS_EE_T: 
-			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_T);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]); 
-				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				fpuFloat3(t0reg);
 				SSE_UCOMISS_XMM_to_XMM(t0reg, EEREC_T); 
 				_freeXMMreg(t0reg);
 			}
@@ -803,8 +801,8 @@ void recC_LE_xmm(int info )
 			}
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
-			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
-			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_S);
+			fpuFloat3(EEREC_T);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
 			break;
 		default: // Untested and incorrect, but this case is never reached AFAIK (cottonvibes)
@@ -845,22 +843,22 @@ void recC_LT_xmm(int info)
 	
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
-			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_S);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Ft_]); 
-				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				fpuFloat3(t0reg);
 				SSE_UCOMISS_XMM_to_XMM(EEREC_S, t0reg); 
 				_freeXMMreg(t0reg);
 			}
 			else SSE_UCOMISS_M32_to_XMM(EEREC_S, (uptr)&fpuRegs.fpr[_Ft_]);
 			break;
 		case PROCESS_EE_T:
-			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
+			fpuFloat3(EEREC_T);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				SSE_MOVSS_M32_to_XMM(t0reg, (uptr)&fpuRegs.fpr[_Fs_]); 
-				SSE_MINSS_M32_to_XMM(t0reg, (uptr)&g_maxvals[0]);
+				fpuFloat3(t0reg);
 				SSE_UCOMISS_XMM_to_XMM(t0reg, EEREC_T); 
 				_freeXMMreg(t0reg);
 			}
@@ -877,10 +875,10 @@ void recC_LT_xmm(int info)
 			}
 			break;
 		case (PROCESS_EE_S|PROCESS_EE_T):
-			// Makes NaNs and +Infinity be +maximum; -Infinity stays 
-			// the same, but this is okay for a Compare operation.			// Note: This fixes a crash in Rule of Rose.
-			SSE_MINSS_M32_to_XMM(EEREC_S, (uptr)&g_maxvals[0]);
-			SSE_MINSS_M32_to_XMM(EEREC_T, (uptr)&g_maxvals[0]);
+			// Clamp NaNs
+			// Note: This fixes a crash in Rule of Rose.
+			fpuFloat3(EEREC_S);
+			fpuFloat3(EEREC_T);
 			SSE_UCOMISS_XMM_to_XMM(EEREC_S, EEREC_T); 
 			break;
 		default:
