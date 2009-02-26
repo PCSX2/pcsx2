@@ -2584,7 +2584,8 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		} 
 		else {
-			if( xyzw < 3 ) SSE_XORPS_XMM_to_XMM(EEREC_D, EEREC_D);
+			//If VF0.w isnt chosen as the constant, then its going to be MAX( 0, VF0 ), so the result is VF0
+			if( xyzw < 3 ) { SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)&VU->VF[0].UL[0]); }
 			else SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)s_fones);
 		}
 		return;
@@ -2754,6 +2755,23 @@ void recVUMI_MINI_xyzw(VURegs *VU, int xyzw, int info)
 	if ( _Fd_ == 0 ) return;
 	//SysPrintf ("recVUMI_MINI_xyzw  \n");
 
+	if (_Fs_ == 0 && _Ft_ == 0)
+	{
+		if( _X_Y_Z_W == 0xf )
+		{
+			//If VF0.w is the constant, the result will match VF0, else its all 0's
+			if(xyzw == 3) SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)&VU->VF[0].UL[0]);
+			else SSE_XORPS_XMM_to_XMM(EEREC_D, EEREC_D);
+		}
+		else 
+		{
+			//If VF0.w is the constant, the result will match VF0, else its all 0's
+			if(xyzw == 3) SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[0]);
+			else SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP);
+			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
+		}
+		return;
+	}
 	if (MINMAXFIX)
 		MINMAXlogical(VU, info, 1, 2, 0, xyzw);
 	else
