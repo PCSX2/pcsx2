@@ -35,59 +35,12 @@ static u32 gscycles = 0, prevcycles = 0, mfifocycles = 0;
 static u32 gifqwc = 0;
 static bool gifmfifoirq = false;
 
-//Just some temporary bits to store Path1 transfers if another is in progress.
-__aligned16 u8 Path1Buffer[0x1000000];
-u32 Path1WritePos = 0;
-u32 Path1ReadPos = 0;
-
 static __forceinline void clearFIFOstuff(bool full)
 {
 	if (full)
 		CSRreg.FIFO = CSR_FIFO_FULL;
 	else
 		CSRreg.FIFO = CSR_FIFO_EMPTY;
-}
-
-void gsPath1Interrupt()
-{
-	//DevCon.Warning("Path1 flush W %x, R %x", Path1WritePos, Path1ReadPos);
-
-	
-
-	if((gifRegs->stat.APATH <= GIF_APATH1 || (gifRegs->stat.IP3 == true && gifRegs->stat.APATH == GIF_APATH3)) && Path1WritePos > 0 && !gifRegs->stat.PSE)
-	{
-		gifRegs->stat.P1Q = false;
-
-		if (uint size = (Path1WritePos - Path1ReadPos))
-		{
-			GetMTGS().PrepDataPacket(GIF_PATH_1, size);
-			//DevCon.Warning("Flush Size = %x", size);
-			while(size > 0)
-			{
-				uint count = GIFPath_CopyTag(GIF_PATH_1, ((u128*)Path1Buffer) + Path1ReadPos, size);
-				Path1ReadPos += count;
-				size -= count;
-
-				if(GSTransferStatus.PTH1 == STOPPED_MODE)
-				{		
-					gifRegs->stat.APATH = GIF_APATH_IDLE;
-				}
-			}
-			GetMTGS().SendDataPacket();
-
-			if(Path1ReadPos == Path1WritePos)
-			{
-				Path1WritePos = Path1ReadPos = 0;
-			}
-		}
-	}
-	else
-	{
-		if(gifRegs->stat.PSE) DevCon.Warning("Path1 paused by GIF_CTRL");
-		DevCon.Warning("Looping??? IP3 %x APATH %x OPH %x", gifRegs->stat.IP3, gifRegs->stat.APATH, gifRegs->stat.OPH);
-		//if(!(cpuRegs.interrupt & (1<<28)) && Path1WritePos > 0)CPU_INT(28, 128);
-	}
-	
 }
 
 extern bool SIGNAL_IMR_Pending;
@@ -107,7 +60,7 @@ __forceinline void gsInterrupt()
 	{
 		GSTransferStatus.PTH3 = STOPPED_MODE;
 		gifRegs->stat.APATH = GIF_APATH_IDLE;
-		if(gifRegs->stat.P1Q) gsPath1Interrupt();
+		//if(gifRegs->stat.P1Q) gsPath1Interrupt();
 	}
 	
 
@@ -233,7 +186,7 @@ bool CheckPaths(int Channel)
 			if((vif1.cmd & 0x7f) != 0x51 || gifRegs->stat.P1Q == true)
 			{
 					gifRegs->stat.IP3 = true;
-					if(gifRegs->stat.P1Q) gsPath1Interrupt();
+					//if(gifRegs->stat.P1Q) gsPath1Interrupt();
 					CPU_INT(DMAC_GIF, 16);
 					return false;
 			}
@@ -631,7 +584,7 @@ void gifMFIFOInterrupt()
 	if(GSTransferStatus.PTH3 == STOPPED_MODE && gifRegs->stat.APATH == GIF_APATH3 )
 	{
 		gifRegs->stat.APATH = GIF_APATH_IDLE;
-		if(gifRegs->stat.P1Q) gsPath1Interrupt();
+		//if(gifRegs->stat.P1Q) gsPath1Interrupt();
 	}
 
 	if(CheckPaths(11) == false) return;
@@ -691,22 +644,4 @@ void SaveStateBase::gifFreeze()
 	Freeze( gscycles );
 	//Freeze(gifempty);
 	// Note: mfifocycles is not a persistent var, so no need to save it here.
-
-	int bufsize = Path1WritePos - Path1ReadPos;
-	Freeze(bufsize);
-
-	if (IsSaving())
-	{
-		// We can just load the queued Path1 data into the front of the buffer, and
-		// reset the ReadPos and WritePos accordingly.
-		FreezeMem(Path1Buffer, bufsize);
-		Path1ReadPos = 0;
-		Path1WritePos = bufsize;
-	}
-	else
-	{
-		// Only want to save the actual Path1 data between readpos and writepos.  The
-		// rest of the buffer is just unused-ness!
-		FreezeMem(&Path1Buffer[Path1ReadPos], bufsize);
-	}
 }

@@ -165,7 +165,7 @@ void __fastcall WriteFIFO_page_5(u32 mem, const mem128_t *value)
 	if(GSTransferStatus.PTH2 == STOPPED_MODE && gifRegs->stat.APATH == GIF_APATH2)
 	{
 		gifRegs->stat.APATH = GIF_APATH_IDLE;
-		if(gifRegs->stat.P1Q) gsPath1Interrupt();
+		//if(gifRegs->stat.P1Q) gsPath1Interrupt();
 	}
 	if (vif1.cmd) 
 	{
@@ -201,7 +201,7 @@ void __fastcall WriteFIFO_page_6(u32 mem, const mem128_t *value)
 	if(GSTransferStatus.PTH3 == STOPPED_MODE && gifRegs->stat.APATH == GIF_APATH3 )
 	{
 		gifRegs->stat.APATH = GIF_APATH_IDLE;
-		if(gifRegs->stat.P1Q) gsPath1Interrupt();
+		//if(gifRegs->stat.P1Q) gsPath1Interrupt();
 	}
 }
 

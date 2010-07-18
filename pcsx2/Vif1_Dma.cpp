@@ -346,7 +346,7 @@ __forceinline void vif1Interrupt()
 	if(GSTransferStatus.PTH2 == STOPPED_MODE && gifRegs->stat.APATH == GIF_APATH2)
 	{
 		gifRegs->stat.APATH = GIF_APATH_IDLE;
-		if(gifRegs->stat.P1Q) gsPath1Interrupt();
+		//if(gifRegs->stat.P1Q) gsPath1Interrupt();
 	}
 
 	if (schedulepath3msk & 0x10) 

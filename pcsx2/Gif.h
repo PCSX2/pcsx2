@@ -287,10 +287,4 @@ extern void GIFdma();
 extern void dmaGIF();
 extern void mfifoGIFtransfer(int qwc);
 extern void gifMFIFOInterrupt();
-
-//Just some temporary bits to store Path1 transfers if another is in progress.
-extern void gsPath1Interrupt();
-extern __aligned16 u8 Path1Buffer[0x1000000];
-extern u32 Path1WritePos;
-extern u32 Path1ReadPos;
 #endif

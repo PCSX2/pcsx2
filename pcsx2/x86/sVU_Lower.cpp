@@ -1977,53 +1977,13 @@ void __fastcall VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 	addr &= 0x3fff;
 	u8* data  = VU1.Mem + (addr);
 	u32 diff  = 0x400 - (addr >> 4);
-	u32 size;
-	u8* pDest;
 
-	if(gifRegs->stat.APATH <= GIF_APATH1 || (gifRegs->stat.APATH == GIF_APATH3 && gifRegs->stat.IP3 == true) && SIGNAL_IMR_Pending == false)
-	{
+	GetMTGS().PrepDataPacket(GIF_PATH_1, 0x400);
+	GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff);
+	GetMTGS().SendDataPacket();
 
-		if(Path1WritePos != 0)	
-		{
-			//Flush any pending transfers so things dont go up in the wrong order
-			while(gifRegs->stat.P1Q == true) gsPath1Interrupt();
-		}
-		GetMTGS().PrepDataPacket(GIF_PATH_1, 0x400);
-		size = GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff);
-		GetMTGS().SendDataPacket();
-
-		if(GSTransferStatus.PTH1 == STOPPED_MODE )
-		{
-			gifRegs->stat.APATH = GIF_APATH_IDLE;
-		}
+	if (GSTransferStatus.PTH1 == STOPPED_MODE) {
+		gifRegs->stat.APATH   =  GIF_APATH_IDLE;
 	}
-	else
-	{
-		//DevCon.Warning("GIF APATH busy %x Holding for later  W %x, R %x", gifRegs->stat.APATH, Path1WritePos, Path1ReadPos);
-		size = GIFPath_ParseTagQuick(GIF_PATH_1, data, diff);
-		pDest = &Path1Buffer[Path1WritePos*16];
-
-		pxAssumeMsg((Path1WritePos+size < sizeof(Path1Buffer)), "XGKick Buffer Overflow detected on Path1Buffer!");
-
-		//DevCon.Warning("Storing size %x PATH 1", size);
-		if (size > diff) {
-			// fixme: one of these days the following *16's will get cleaned up when we introduce
-			// a special qwc/simd16 optimized version of memcpy_aligned. :)
-			//DevCon.Status("XGkick Wrap!");
-			memcpy_aligned(pDest, VU1.Mem + addr, diff);
-			Path1WritePos += size;
-			size  -= diff;
-			pDest += diff*16;
-			memcpy_aligned(pDest, VU1.Mem, size);			
-		}
-		else {
-			memcpy_aligned(pDest, VU1.Mem + addr, size);
-			Path1WritePos += size;
-		}
-		//if(!gifRegs->stat.P1Q) CPU_INT(28, 128);
-		gifRegs->stat.P1Q = true;
-	}
-
-
 }
 //------------------------------------------------------------------

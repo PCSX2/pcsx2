@@ -128,7 +128,7 @@ static __forceinline void gsCSRwrite( const tGS_CSR& csr )
 		
 		SIGNAL_IMR_Pending = false;
 
-		if(gifRegs->stat.P1Q && gifRegs->stat.APATH <= GIF_APATH1) gsPath1Interrupt();
+		//if(gifRegs->stat.P1Q && gifRegs->stat.APATH <= GIF_APATH1) gsPath1Interrupt();
 	}
 	
 	if(csr.FINISH)	CSRreg.FINISH	= false;
