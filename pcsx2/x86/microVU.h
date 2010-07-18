@@ -162,8 +162,9 @@ struct microProgManager {
 
 struct microVU {
 
-	__aligned16 u32 macFlag[4];  // 4 instances of mac  flag (used in execution)
-	__aligned16 u32 clipFlag[4]; // 4 instances of clip flag (used in execution)
+	__aligned16 u32 statFlag[4]; // 4 instances of status flag (backup for xgkick)
+	__aligned16 u32 macFlag[4];  // 4 instances of mac    flag (used in execution)
+	__aligned16 u32 clipFlag[4]; // 4 instances of clip   flag (used in execution)
 	__aligned16 u32 xmmPQb[4];   // Backup for xmmPQ
 	__aligned16 u32 xmmCTemp[4]; // Backup used in mVUclamp2()
 
@@ -177,23 +178,26 @@ struct microVU {
 	microProgManager prog;		// Micro Program Data
 	microRegAlloc*	 regAlloc;	// Reg Alloc Class
 
-	AsciiFile* logFile;	 // Log File Pointer
-	VURegs*	regs;		 // VU Regs Struct
-	u8*		cache;		 // Dynarec Cache Start (where we will start writing the recompiled code to)
-	u8*		dispCache;	 // Dispatchers Cache (where startFunct and exitFunct are written to)
-	u8*		startFunct;	 // Ptr Function to the Start code for recompiled programs
-	u8*		exitFunct;	 // Ptr Function to the Exit  code for recompiled programs
-	u32		code;		 // Contains the current Instruction
-	u32		divFlag;	 // 1 instance of I/D flags
-	u32		VIbackup;	 // Holds a backup of a VI reg if modified before a branch
-	u32		VIxgkick;	 // Holds a backup of a VI reg used for xgkick-delays
-	u32		branch;		 // Holds branch compare result (IBxx) OR Holds address to Jump to (JALR/JR)
-	u32		badBranch;	 // For Branches in Branch Delay Slots, holds Address the first Branch went to + 8
-	u32		evilBranch;	 // For Branches in Branch Delay Slots, holds Address to Jump to
-	u32		p;			 // Holds current P instance index
-	u32		q;			 // Holds current Q instance index
-	u32		totalCycles; // Total Cycles that mVU is expected to run for
-	u32		cycles;		 // Cycles Counter
+	AsciiFile* logFile;	  // Log File Pointer
+	VURegs*	regs;		  // VU Regs Struct
+	u8*		cache;		  // Dynarec Cache Start (where we will start writing the recompiled code to)
+	u8*		dispCache;	  // Dispatchers Cache (where startFunct and exitFunct are written to)
+	u8*		startFunct;	  // Function Ptr to the recompiler dispatcher (start)
+	u8*		exitFunct;	  // Function Ptr to the recompiler dispatcher (exit)
+	u8*		startFunctXG; // Function Ptr to the recompiler dispatcher (xgkick resume)
+	u8*		exitFunctXG;  // Function Ptr to the recompiler dispatcher (xgkick exit)
+	u8*		resumePtrXG;  // Ptr to recompiled code position to resume xgkick
+	u32		code;		  // Contains the current Instruction
+	u32		divFlag;	  // 1 instance of I/D flags
+	u32		VIbackup;	  // Holds a backup of a VI reg if modified before a branch
+	u32		VIxgkick;	  // Holds a backup of a VI reg used for xgkick-delays
+	u32		branch;		  // Holds branch compare result (IBxx) OR Holds address to Jump to (JALR/JR)
+	u32		badBranch;	  // For Branches in Branch Delay Slots, holds Address the first Branch went to + 8
+	u32		evilBranch;	  // For Branches in Branch Delay Slots, holds Address to Jump to
+	u32		p;			  // Holds current P instance index
+	u32		q;			  // Holds current Q instance index
+	u32		totalCycles;  // Total Cycles that mVU is expected to run for
+	u32		cycles;		  // Cycles Counter
 };
 
 // microVU rec structs
@@ -228,7 +232,7 @@ void* __fastcall mVUexecuteVU1(u32 startPC, u32 cycles);
 
 // recCall Function Pointer
 typedef void (__fastcall *mVUrecCall)(u32, u32);
-
+typedef void (*mVUrecCallXG)(void);
 
 // Include all the *.inl files (Needed because C++ sucks with templates and *.cpp files)
 #include "microVU_Clamp.inl"

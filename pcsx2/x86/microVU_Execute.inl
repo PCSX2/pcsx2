@@ -65,6 +65,8 @@ void mVUdispatcherA(mV) {
 
 	// Jump to Recompiled Code Block
 	xJMP(eax);
+
+	mVUcacheCheck(x86Ptr, mVU->dispCache, mVUdispCacheSize);
 }
 
 // Generates the code to exit from recompiled blocks
@@ -79,6 +81,71 @@ void mVUdispatcherB(mV) {
 	if (!isVU1) { xCALL(mVUcleanUpVU0); }
 	else		{ xCALL(mVUcleanUpVU1); }
 
+	// Unalign the stackframe:
+	#ifdef __GNUC__
+	xADD( esp, 12 );
+	#endif
+
+	// Restore cpu state
+	xPOP(edi);
+	xPOP(esi);
+	xPOP(ebx);
+	xPOP(ebp);
+
+	xRET();
+
+	mVUcacheCheck(x86Ptr, mVU->dispCache, mVUdispCacheSize);
+}
+
+// Generates the code for resuming xgkick
+void mVUdispatcherC(mV) {
+	mVU->startFunctXG = x86Ptr;
+
+	// Backup cpu state
+	xPUSH(ebp);
+	xPUSH(ebx);
+	xPUSH(esi);
+	xPUSH(edi);
+	
+	// Align the stackframe (GCC only, since GCC assumes stackframe is always aligned)
+	#ifdef __GNUC__
+	xSUB(esp, 12);
+	#endif
+
+	// Load VU's MXCSR state
+	xLDMXCSR(g_sseVUMXCSR);
+
+	mVUrestoreRegs(mVU);
+
+	xMOV(gprF0, ptr32[&mVU->statFlag[0]]);
+	xMOV(gprF1, ptr32[&mVU->statFlag[1]]);
+	xMOV(gprF2, ptr32[&mVU->statFlag[2]]);
+	xMOV(gprF3, ptr32[&mVU->statFlag[3]]);
+
+	// Jump to Recompiled Code Block
+	//xJMP(ptr32[mVU->resumePtrXG]);
+	xMOV(gprT1, ptr32[&mVU->resumePtrXG]);
+	xJMP(gprT1);
+
+	mVUcacheCheck(x86Ptr, mVU->dispCache, mVUdispCacheSize);
+}
+
+// Generates the code to exit from xgkick
+void mVUdispatcherD(mV) {
+	mVU->exitFunctXG = x86Ptr;
+
+	//xPOP(gprT1); // Pop return address
+	//xMOV(ptr32[&mVU->resumePtrXG], gprT1);
+
+	// Backup Status Flag (other regs were backed up on xgkick)
+	xMOV(ptr32[&mVU->statFlag[0]], gprF0);
+	xMOV(ptr32[&mVU->statFlag[1]], gprF1);
+	xMOV(ptr32[&mVU->statFlag[2]], gprF2);
+	xMOV(ptr32[&mVU->statFlag[3]], gprF3);
+
+	// Load EE's MXCSR state
+	xLDMXCSR(g_sseMXCSR);
+	
 	// Unalign the stackframe:
 	#ifdef __GNUC__
 	xADD( esp, 12 );
