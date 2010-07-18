@@ -123,9 +123,7 @@ void mVUdispatcherC(mV) {
 	xMOV(gprF3, ptr32[&mVU->statFlag[3]]);
 
 	// Jump to Recompiled Code Block
-	//xJMP(ptr32[mVU->resumePtrXG]);
-	xMOV(gprT1, ptr32[&mVU->resumePtrXG]);
-	xJMP(gprT1);
+	xJMP(ptr32[&mVU->resumePtrXG]);
 
 	mVUcacheCheck(x86Ptr, mVU->dispCache, mVUdispCacheSize);
 }
