@@ -257,7 +257,7 @@ __forceinline void vif1SetupTransfer()
 
 extern bool SIGNAL_IMR_Pending;
 
-bool CheckPath2GIF(int channel)
+bool CheckPath2GIF(EE_EventType channel)
 {
 	if ((vif1Regs->stat.VGW))
 	{

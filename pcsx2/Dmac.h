@@ -13,9 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef __DMAC_H__
-#define __DMAC_H__
+#pragma once
 
 extern u8  *psH; // hw mem
 
@@ -330,25 +328,6 @@ enum dmac_conditions
 	DMAC_STAT_BEIS	= (1<<15),	 // bus error
 	DMAC_STAT_SIM	= (1<<29),	 // stall mask
 	DMAC_STAT_MEIM	= (1<<30)	 // mfifo mask
-};
-
-enum DMACIrqs
-{
-	DMAC_VIF0	= 0,
-	DMAC_VIF1,
-	DMAC_GIF,
-	DMAC_FROM_IPU,
-	DMAC_TO_IPU,
-	DMAC_SIF0,
-	DMAC_SIF1,
-	DMAC_SIF2,
-	DMAC_FROM_SPR,
-	DMAC_TO_SPR,
-
-	// We're setting error conditions through hwDmacIrq, so these correspond to the conditions above.
-	DMAC_STALL_SIS		= 13, // SIS
-	DMAC_MFIFO_EMPTY	= 14, // MEIS
-	DMAC_BUS_ERROR	= 15      // BEIS
 };
 
 //DMA interrupts & masks
@@ -700,7 +679,3 @@ extern bool hwMFIFOWrite(u32 addr, const u128* data, uint size_qwc);
 extern bool hwDmacSrcChainWithStack(DMACh *dma, int id);
 extern bool hwDmacSrcChain(DMACh *dma, int id);
 
-extern void intcInterrupt();
-extern void dmacInterrupt();
-
-#endif

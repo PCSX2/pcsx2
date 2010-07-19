@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "R5900.h"
+
 enum vif0_stat_flags
 {
 	VIF0_STAT_VPS_W 	= (1),
@@ -230,4 +232,4 @@ extern void mfifoVIF1transfer(int qwc);
 extern bool VIF0transfer(u32 *data, int size);
 extern bool VIF1transfer(u32 *data, int size);
 extern void vifMFIFOInterrupt();
-extern bool CheckPath2GIF(int channel);
+extern bool CheckPath2GIF(EE_EventType channel);
