@@ -1976,7 +1976,7 @@ void __fastcall VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 {
 	addr &= 0x3fff;
 	u8* data  = VU1.Mem + (addr);
-	u32 diff  = 0x400 - (addr >> 4);
+	u32 diff  = 0x400 - (addr / 16);
 
 	GetMTGS().PrepDataPacket(GIF_PATH_1, 0x400);
 	GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff);

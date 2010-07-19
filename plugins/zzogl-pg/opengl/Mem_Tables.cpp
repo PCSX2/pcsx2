@@ -19,6 +19,7 @@
 
 #include "GS.h"
 #include "Mem.h"
+#include "Mem_Swizzle.h"
 
 u32 g_blockTable32[4][8] =
 {
@@ -259,7 +260,36 @@ u32 g_pageTable4[128][128];
 	32Z, 24Z, 16Z, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, 16SZ, NULL, NULL, NULL, NULL, NULL };
 */
-
+char* psm_name[64] =
+{ 	"PSMCT32", "PSMCT24", "PSMCT16", NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, "PSMCT16S", NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, "PSMT8", "PSMT4", NULL, NULL, NULL,
+	NULL, NULL, NULL, "PSMT8H", NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, "PSMT4HL", NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, "PSMT4HH", NULL, NULL, NULL,
+	"PSMT32Z", "PSMT24Z", "PSMT16Z", NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, "PSMT16SZ", NULL, NULL, NULL, NULL, NULL };
+	
+_SwizzleBlock swizzleBlockFun[64] =
+{ 	SwizzleBlock32, SwizzleBlock24, SwizzleBlock16, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, SwizzleBlock16S, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, SwizzleBlock8, SwizzleBlock4, NULL, NULL, NULL,
+	NULL, NULL, NULL, SwizzleBlock8H, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, SwizzleBlock4HL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, SwizzleBlock4HH, NULL, NULL, NULL,
+	SwizzleBlock32Z, SwizzleBlock24Z, SwizzleBlock16Z, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, SwizzleBlock16SZ, NULL, NULL, NULL, NULL, NULL };
+	
+_SwizzleBlock swizzleBlockUnFun[64] =
+{ 	SwizzleBlock32u, SwizzleBlock24u, SwizzleBlock16u, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, SwizzleBlock16Su, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, SwizzleBlock8u, SwizzleBlock4u, NULL, NULL, NULL,
+	NULL, NULL, NULL, SwizzleBlock8Hu, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, SwizzleBlock4HLu, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, SwizzleBlock4HHu, NULL, NULL, NULL,
+	SwizzleBlock32Zu, SwizzleBlock24Zu, SwizzleBlock16Zu, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, SwizzleBlock16SZu, NULL, NULL, NULL, NULL, NULL };
+	
 _getPixelAddress_0 getPixelFun_0[64] = 
 { 	
 	getPixelAddress32_0, getPixelAddress24_0, getPixelAddress16_0, NULL, NULL, NULL, NULL, NULL,
@@ -296,4 +326,83 @@ _readPixel_0 readPixelFun_0[64] =
 	NULL, NULL, readPixel16SZ_0, NULL, NULL, NULL, NULL, NULL 
 };
 
+_writePixel writePixelFun[64] = 
+{ 	
+	writePixel32, writePixel24, writePixel16, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, writePixel16S, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, writePixel8, writePixel4, NULL, NULL, NULL,
+	NULL, NULL, NULL, writePixel8H, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, writePixel4HL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, writePixel4HH, NULL, NULL, NULL,
+	writePixel32Z, writePixel24Z, writePixel16Z, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, writePixel16SZ, NULL, NULL, NULL, NULL, NULL 
+};
+
+_readPixel readPixelFun[64] = 
+{ 	
+	readPixel32, readPixel24, readPixel16, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, readPixel16S, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, readPixel8, readPixel4, NULL, NULL, NULL,
+	NULL, NULL, NULL, readPixel8H, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, readPixel4HL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, readPixel4HH, NULL, NULL, NULL,
+	readPixel32Z, readPixel24Z, readPixel16Z, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, readPixel16SZ, NULL, NULL, NULL, NULL, NULL 
+};
+
+_TransferHostLocal TransferHostLocalFun[64] = 
+{ 	
+	TransferHostLocal32, TransferHostLocal24, TransferHostLocal16, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, TransferHostLocal16S, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, TransferHostLocal8, TransferHostLocal4, NULL, NULL, NULL,
+	NULL, NULL, NULL, TransferHostLocal8H, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, TransferHostLocal4HL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, TransferHostLocal4HH, NULL, NULL, NULL,
+	TransferHostLocal32Z, TransferHostLocal24Z, TransferHostLocal16Z, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, TransferHostLocal16SZ, NULL, NULL, NULL, NULL, NULL 
+};
+
+_TransferLocalHost TransferLocalHostFun[64] = 
+{ 	
+	TransferLocalHost32, TransferLocalHost24, TransferLocalHost16, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, TransferLocalHost16S, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, TransferLocalHost8, TransferLocalHost4, NULL, NULL, NULL,
+	NULL, NULL, NULL, TransferLocalHost8H, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, TransferLocalHost4HL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, TransferLocalHost4HH, NULL, NULL, NULL,
+	TransferLocalHost32Z, TransferLocalHost24Z, TransferLocalHost16Z, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, TransferLocalHost16SZ, NULL, NULL, NULL, NULL, NULL 
+};
+
+#define TD_NULL {0,0,0,0,0,0}
+TransferData tData[64] =
+{ 	
+	{2,32,8,8,32,PSMCT32}, 
+	{8,32,8,8,24,PSMCT24}, 
+	{4,16,16,8,16,PSMCT16}, 
+	TD_NULL, TD_NULL, TD_NULL, TD_NULL, TD_NULL,
+	TD_NULL, TD_NULL, 
+	{4,16,16,8,16,PSMCT16S}, 
+	TD_NULL, TD_NULL, TD_NULL, TD_NULL, TD_NULL,
+	TD_NULL, TD_NULL, TD_NULL, 
+	{4,8,16,16,8,PSMT8}, 
+	{8,4,32,16,4,PSMT4}, 
+	TD_NULL, TD_NULL, TD_NULL,
+	TD_NULL, TD_NULL, TD_NULL, 
+	{4,32,8,8,8,PSMT8H}, 
+	TD_NULL, TD_NULL, TD_NULL, TD_NULL,
+	TD_NULL, TD_NULL, TD_NULL, TD_NULL, 
+	{8,32,8,8,4,PSMT4HL}, 
+	TD_NULL, TD_NULL, TD_NULL,
+	TD_NULL, TD_NULL, TD_NULL, TD_NULL, 
+	{8,32,8,8,4,PSMT4HH}, 
+	TD_NULL, TD_NULL, TD_NULL,
+	{2,32,8,8,32,PSMT32Z}, 
+	{8,32,8,8,24,PSMT24Z},
+	{4,16,16,8,16,PSMT16Z}, 
+	TD_NULL, TD_NULL, TD_NULL, TD_NULL, TD_NULL,
+	TD_NULL, TD_NULL, 
+	{4,16,16,8,16,PSMT16SZ}, 
+	TD_NULL, TD_NULL, TD_NULL, TD_NULL, TD_NULL 
+};
 

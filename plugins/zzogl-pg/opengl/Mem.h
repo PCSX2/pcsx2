@@ -47,13 +47,12 @@ typedef void (*_SwizzleBlock)(u8 *dst, u8 *src, int pitch, u32 WriteMask);
 extern _getPixelAddress_0 getPixelFun_0[64];
 extern _writePixel_0 writePixelFun_0[64];
 extern _readPixel_0 readPixelFun_0[64];
-
-enum Psm_Size
-{
-	PSM_ = 0,
-	PSM_4_,
-	PSM_24_
-};
+extern _writePixel writePixelFun[64];
+extern _readPixel readPixelFun[64];
+extern _SwizzleBlock swizzleBlockFun[64];
+extern _SwizzleBlock swizzleBlockUnFun[64];
+extern _TransferHostLocal TransferHostLocalFun[64];
+extern _TransferLocalHost TransferLocalHostFun[64];
 
 // Both of the following structs should probably be local class variables or in a namespace,
 // but this works for the moment.
@@ -66,16 +65,7 @@ struct TransferData
 	u32 blockwidth;
 	u32 blockheight;
 	u32 transfersize;
-	Psm_Size psm;
-	__forceinline TransferData(u32 limit, u32 bits, u32 width, u32 height, u32 size, Psm_Size ps)
-	{
-		widthlimit = limit;
-		blockbits = bits;
-		blockwidth = width;
-		blockheight = height;
-		transfersize = size;
-		psm = ps;
-	}
+	u32 psm;
 };
 
 struct TransferFuncts
@@ -90,8 +80,16 @@ struct TransferFuncts
 		Swizzle = s;
 		Swizzle_u = su;
 	}
+	__forceinline TransferFuncts(u32 psm)
+	{
+		wp = writePixelFun_0[psm];
+		gp = getPixelFun_0[psm];
+		Swizzle = swizzleBlockFun[psm];
+		Swizzle_u = swizzleBlockUnFun[psm];
+	}
 };
 
+extern TransferData tData[64];
 // rest not visible externally
 
 struct BLOCK
@@ -102,6 +100,7 @@ struct BLOCK
 	Vector vTexBlock;
 	Vector vTexDims;
 	int width, height;	// dims of one page in pixels
+	int ox, oy, mult;
 	int bpp;
 	int colwidth, colheight;
 	u32* pageTable;	// offset inside each page
@@ -119,6 +118,30 @@ struct BLOCK
 
 	// texture must be of dims BLOCK_TEXWIDTH and BLOCK_TEXHEIGHT
 	static void FillBlocks(std::vector<char>& vBlockData, std::vector<char>& vBilinearData, int floatfmt);
+	
+	void SetDim(u32 bw, u32 bh, u32 ox2, u32 oy2, u32 mult2)
+	{
+		ox = ox2;
+		oy = oy2;
+		mult = mult2;
+		vTexDims = Vector(BLOCK_TEXWIDTH/(float)(bw), BLOCK_TEXHEIGHT/(float)bh, 0, 0); 
+		vTexBlock = Vector((float)bw/BLOCK_TEXWIDTH, (float)bh/BLOCK_TEXHEIGHT, ((float)ox+0.2f)/BLOCK_TEXWIDTH, ((float)oy+0.05f)/BLOCK_TEXHEIGHT);
+		width = bw;
+		height = bh;
+		colwidth = bh / 4;
+		colheight = bw / 8;
+		bpp = 32/mult;
+	}
+	
+	void SetFun(u32 psm)
+	{
+		writePixel = writePixelFun[psm];
+		writePixel_0 = writePixelFun_0[psm];
+		readPixel = readPixelFun[psm];
+		readPixel_0 = readPixelFun_0[psm];
+		TransferHostLocal = TransferHostLocalFun[psm];
+		TransferLocalHost = TransferLocalHostFun[psm];
+	}
 };
 
 extern BLOCK m_Blocks[];
@@ -270,8 +293,8 @@ static __forceinline u32 getPixelAddress16SZ_0(int x, int y, u32 bw)
 	return word;
 }
 
-#define getPixelAddress_0(psm,x,y,bw) getPixelAddress##psm##_0(x,y,bw)
-#define getPixelAddress(psm,x,y,bp,bw) getPixelAddress##psm##(x,y,bp,bw)
+//#define getPixelAddress_0(psm,x,y,bw) getPixelAddress##psm##_0(x,y,bw)
+//#define getPixelAddress(psm,x,y,bp,bw) getPixelAddress##psm##(x,y,bp,bw)
 
 static __forceinline void writePixel32(void* pmem, int x, int y, u32 pixel, u32 bp, u32 bw)
 {
@@ -589,5 +612,33 @@ static __forceinline u32 readPixel16SZ_0(const void* pmem, int x, int y, u32 bw)
 {
 	return ((const u16*)pmem)[getPixelAddress16SZ_0(x, y, bw)];
 }
+
+extern int TransferHostLocal32(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal32Z(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal24(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal24Z(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal16(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal16S(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal16Z(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal16SZ(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal8(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal4(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal8H(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal4HL(const void* pbyMem, u32 nQWordSize);
+extern int TransferHostLocal4HH(const void* pbyMem, u32 nQWordSize);
+
+extern void TransferLocalHost32(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost24(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost16(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost16S(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost8(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost4(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost8H(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost4HL(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost4HH(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost32Z(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost24Z(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost16Z(void* pbyMem, u32 nQWordSize);
+extern void TransferLocalHost16SZ(void* pbyMem, u32 nQWordSize);
 
 #endif /* __MEM_H__ */
