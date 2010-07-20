@@ -300,6 +300,8 @@ const __aligned16 VIFUnpackFuncTable VIFfuncTable[32] =
 
 _vifT void vifUnpackSetup(u32 *data) {
 
+	vifStruct& vifX = GetVifX;
+
 	if ((vifXRegs->cycle.wl == 0) && (vifXRegs->cycle.wl < vifXRegs->cycle.cl)) {
         Console.WriteLn("Vif%d CL %d, WL %d", idx, vifXRegs->cycle.cl, vifXRegs->cycle.wl);
 		vifX.cmd = 0;

@@ -220,7 +220,7 @@ extern VIFregisters *vifRegs;
 #define vif1Regs (&vif1RegsRef)
 
 #define _vifT		template <int idx>
-#define  vifX		(idx ? (vif1)     : (vif0))
+#define  GetVifX	(idx ? (vif1)     : (vif0))
 #define  vifXch		(idx ? (vif1ch)   : (vif0ch))
 #define  vifXRegs	(idx ? (vif1Regs) : (vif0Regs))
 #define  vifXCode	(idx ? (vif1Code) : (vif0Code))

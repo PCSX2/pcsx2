@@ -141,7 +141,7 @@ _f void vif0FBRST(u32 value) {
 
 				// loop necessary for spiderman
 				//vif0ch->chcr.STR = true;
-				 if(vif0ch->chcr.STR == true) CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
+				 if(vif0ch->chcr.STR) CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
 			}
 		}
 	}
