@@ -93,8 +93,9 @@ extern void Vif1MskPath3();
 extern void vif1Write32(u32 mem, u32 value);
 extern void vif1Reset();
 
-extern int (__fastcall *vif0Code[128])(int pass, u32 *data);
-extern int (__fastcall *vif1Code[128])(int pass, u32 *data);
+typedef int __fastcall FnType_VifCmdHandler(int pass, const u32 *data);
+
+extern __aligned16 FnType_VifCmdHandler* const vifCmdHandler[2][128];
 
 __forceinline static int _limit(int a, int max)
 {

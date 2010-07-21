@@ -134,7 +134,7 @@ bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
 	wxString trace( pxGetStackTrace(origin.function) );
 	wxString dbgmsg( origin.ToString( msg ) );
 
-	wxMessageOutputDebug().Printf( L"%s", dbgmsg.data() );
+	wxMessageOutputDebug().Printf( L"%s", dbgmsg.c_str() );
 
 	Console.Error( L"%s", dbgmsg.c_str() );
 	Console.WriteLn( L"%s", trace.c_str() );

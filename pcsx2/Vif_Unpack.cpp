@@ -298,7 +298,7 @@ const __aligned16 VIFUnpackFuncTable VIFfuncTable[32] =
 // Unpack Setup Code
 //----------------------------------------------------------------------------
 
-_vifT void vifUnpackSetup(u32 *data) {
+_vifT void vifUnpackSetup(const u32 *data) {
 
 	vifStruct& vifX = GetVifX;
 
@@ -340,5 +340,5 @@ _vifT void vifUnpackSetup(u32 *data) {
 	vifXRegs->offset = 0;
 }
 
-void vif0UnpackSetup(u32 *data) { vifUnpackSetup<0>(data); }
-void vif1UnpackSetup(u32 *data) { vifUnpackSetup<1>(data); }
+template void vifUnpackSetup<0>(const u32 *data);
+template void vifUnpackSetup<1>(const u32 *data);
