@@ -89,7 +89,7 @@ static __releaseinline void writeXYZW(u32 offnum, u32 &dest, u32 data) {
 }
 
 template < bool doMask, class T >
-static __forceinline void __fastcall UNPACK_S(u32 *dest, T *data, int size)
+static __forceinline void __fastcall UNPACK_S(u32 *dest, const T *data, int size)
 {
 	//S-# will always be a complete packet, no matter what. So we can skip the offset bits
 	writeXYZW<doMask>(OFFSET_X, *dest++, *data);
@@ -99,7 +99,7 @@ static __forceinline void __fastcall UNPACK_S(u32 *dest, T *data, int size)
 }
 
 template <bool doMask, class T>
-static __forceinline void __fastcall UNPACK_V2(u32 *dest, T *data, int size)
+static __forceinline void __fastcall UNPACK_V2(u32 *dest, const T *data, int size)
 {
 	if (vifRegs->offset == OFFSET_X)
 	{
@@ -135,7 +135,7 @@ static __forceinline void __fastcall UNPACK_V2(u32 *dest, T *data, int size)
 }
 
 template <bool doMask, class T>
-static __forceinline void __fastcall UNPACK_V3(u32 *dest, T *data, int size)
+static __forceinline void __fastcall UNPACK_V3(u32 *dest, const T *data, int size)
 {
 	if(vifRegs->offset == OFFSET_X)
 	{
@@ -177,7 +177,7 @@ static __forceinline void __fastcall UNPACK_V3(u32 *dest, T *data, int size)
 }
 
 template <bool doMask, class T>
-static __forceinline void __fastcall UNPACK_V4(u32 *dest, T *data , int size)
+static __forceinline void __fastcall UNPACK_V4(u32 *dest, const T *data , int size)
 {
 	while (size > 0)
 	{
@@ -190,7 +190,7 @@ static __forceinline void __fastcall UNPACK_V4(u32 *dest, T *data , int size)
 }
 
 template< bool doMask >
-static __releaseinline void __fastcall UNPACK_V4_5(u32 *dest, u32 *data, int size)
+static __releaseinline void __fastcall UNPACK_V4_5(u32 *dest, const u32 *data, int size)
 {
 	//As with S-#, this will always be a complete packet
 	writeXYZW<doMask>(OFFSET_X, *dest++,	((*data & 0x001f) << 3));
@@ -202,31 +202,31 @@ static __releaseinline void __fastcall UNPACK_V4_5(u32 *dest, u32 *data, int siz
 // =====================================================================================================
 
 template < bool doMask, int size, class T >
-static void __fastcall fUNPACK_S(u32 *dest, T *data)
+static void __fastcall fUNPACK_S(u32 *dest, const T *data)
 {
 	UNPACK_S<doMask>( dest, data, size );
 }
 
 template <bool doMask, int size, class T>
-static void __fastcall fUNPACK_V2(u32 *dest, T *data)
+static void __fastcall fUNPACK_V2(u32 *dest, const T *data)
 {
 	UNPACK_V2<doMask>( dest, data, size );
 }
 
 template <bool doMask, int size, class T>
-static void __fastcall fUNPACK_V3(u32 *dest, T *data)
+static void __fastcall fUNPACK_V3(u32 *dest, const T *data)
 {
 	UNPACK_V3<doMask>( dest, data, size );
 }
 
 template <bool doMask, int size, class T>
-static void __fastcall fUNPACK_V4(u32 *dest, T *data)
+static void __fastcall fUNPACK_V4(u32 *dest, const T *data)
 {
 	UNPACK_V4<doMask>( dest, data, size );
 }
 
 template< bool doMask >
-static void __fastcall fUNPACK_V4_5(u32 *dest, u32 *data)
+static void __fastcall fUNPACK_V4_5(u32 *dest, const u32 *data)
 {
 	UNPACK_V4_5<doMask>(dest, data, 0);		// size is ignored.
 }
