@@ -94,8 +94,9 @@ extern void vif1Write32(u32 mem, u32 value);
 extern void vif1Reset();
 
 typedef int __fastcall FnType_VifCmdHandler(int pass, const u32 *data);
+typedef FnType_VifCmdHandler* Fnptr_VifCmdHandler;
 
-extern __aligned16 FnType_VifCmdHandler* const vifCmdHandler[2][128];
+extern const __aligned16 Fnptr_VifCmdHandler vifCmdHandler[2][128];
 
 __forceinline static int _limit(int a, int max)
 {
