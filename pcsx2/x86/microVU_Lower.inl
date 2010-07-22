@@ -1069,7 +1069,8 @@ mVUop(mVU_WAITQ) {
 mVUop(mVU_XTOP) {
 	pass1 { if (!_It_) { mVUlow.isNOP = 1; } analyzeVIreg2(_It_, mVUlow.VI_write, 1); }
 	pass2 {
-		xMOVZX(gprT1, ptr16[&mVU->regs->vifRegs->top]);
+		VIFregisters& vifRegs = mVU->index ? vif1RegsRef : vif0RegsRef;
+		xMOVZX(gprT1, ptr16[&vifRegs.top]);
 		mVUallocVIb(mVU, gprT1, _It_);
 	}
 	pass3 { mVUlog("XTOP vi%02d", _Ft_); }
@@ -1078,7 +1079,8 @@ mVUop(mVU_XTOP) {
 mVUop(mVU_XITOP) {
 	pass1 { if (!_It_) { mVUlow.isNOP = 1; } analyzeVIreg2(_It_, mVUlow.VI_write, 1); }
 	pass2 {
-		xMOVZX(gprT1, ptr16[&mVU->regs->vifRegs->itop]);
+		VIFregisters& vifRegs = mVU->index ? vif1RegsRef : vif0RegsRef;
+		xMOVZX(gprT1, ptr16[&vifRegs.itop]);
 		xAND(gprT1, isVU1 ? 0x3ff : 0xff);
 		mVUallocVIb(mVU, gprT1, _It_);
 	}

@@ -2747,10 +2747,12 @@ static void SuperVURecompile()
 
 				if (pchild->type & BLOCKTYPE_HASEOP)
 				{
+					VIFregisters& vifRegs = (VU == &VU1) ? vif1RegsRef : vif0RegsRef;
+
 					pxAssert(pchild->blocks.size() == 0);
 
 					AND32ItoM((uptr)&VU0.VI[ REG_VPU_STAT ].UL, s_vu ? ~0x100 : ~0x001); // E flag
-					AND32ItoM((uptr)&VU->vifRegs->stat, ~VIF1_STAT_VEW);
+					AND32ItoM((uptr)&vifRegs.stat, ~VIF1_STAT_VEW);
 
 					MOV32ItoM((uptr)&VU->VI[REG_TPC], pchild->endpc);
 					JMP32((uptr)SuperVUEndProgram - ((uptr)x86Ptr + 5));
@@ -3019,11 +3021,13 @@ void VuBaseBlock::Recompile()
 	// compute branches, jumps, eop
 	if (type & BLOCKTYPE_HASEOP)
 	{
+		VIFregisters& vifRegs = (VU == &VU1) ? vif1RegsRef : vif0RegsRef;
+
 		// end
 		_freeXMMregs();
 		_freeX86regs();
 		AND32ItoM((uptr)&VU0.VI[ REG_VPU_STAT ].UL, s_vu ? ~0x100 : ~0x001); // E flag
-		AND32ItoM((uptr)&VU->vifRegs->stat, ~VIF1_STAT_VEW);
+		AND32ItoM((uptr)&vifRegs.stat, ~VIF1_STAT_VEW);
 
 		if (!branch) MOV32ItoM((uptr)&VU->VI[REG_TPC], endpc);
 

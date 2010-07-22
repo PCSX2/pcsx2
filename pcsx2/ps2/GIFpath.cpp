@@ -824,7 +824,7 @@ __forceinline int GIFPath::CopyTag(const u128* pMem128, u32 size)
 			
 			break;
 		}
-		if(SIGNAL_IMR_Pending == true)
+		if(SIGNAL_IMR_Pending)
 		{
 			//DevCon.Warning("Path %x", pathidx + 1);
 			break;
@@ -832,6 +832,8 @@ __forceinline int GIFPath::CopyTag(const u128* pMem128, u32 size)
 	}
 
 	size = (startSize - size);
+
+	DMACh& gif = DMACh_GIF;
 
 	if (tag.EOP && nloop == 0) {
 	
@@ -849,10 +851,10 @@ __forceinline int GIFPath::CopyTag(const u128* pMem128, u32 size)
 				//For huge chunks we may have delay problems, so we need to stall it till the interrupt, else we get desync (Lemmings)
 				if(size > 8) GSTransferStatus.PTH3 = PENDINGSTOP_MODE;
 				else  GSTransferStatus.PTH3 = STOPPED_MODE;
-				if (gif->chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
+				if (gif.chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
 					//GIF_LOG("Path3 end EOP %x NLOOP %x Status %x", tag.EOP, nloop, GSTransferStatus.PTH3);
-					gif->madr += size * 16;
-					gif->qwc  -= size;
+					gif.madr += size * 16;
+					gif.qwc  -= size;
 				}
 				break;
 		}
@@ -860,10 +862,10 @@ __forceinline int GIFPath::CopyTag(const u128* pMem128, u32 size)
 	else if(pathidx == 2)
 	{
 		//if(nloop <= 16 && GSTransferStatus.PTH3 == IMAGE_MODE)GSTransferStatus.PTH3 = PENDINGIMAGE_MODE;
-		if (gif->chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
+		if (gif.chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
 			//GIF_LOG("Path3 end EOP %x NLOOP %x Status %x", tag.EOP, nloop, GSTransferStatus.PTH3);
-			gif->madr += size * 16;
-			gif->qwc  -= size;
+			gif.madr += size * 16;
+			gif.qwc  -= size;
 		}
 	}
 

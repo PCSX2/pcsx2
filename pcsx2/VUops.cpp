@@ -2047,7 +2047,8 @@ void _vuEEXP(VURegs * VU) {
 
 void _vuXITOP(VURegs * VU) {
 	if (_It_ == 0) return;
-	VU->VI[_It_].US[0] = VU->vifRegs->itop;
+	VIFregisters& vifRegs = (VU == &VU1) ? vif1RegsRef : vif0RegsRef;
+	VU->VI[_It_].US[0] = vifRegs.itop;
 }
 
 void _vuXGKICK(VURegs * VU)
@@ -2064,7 +2065,8 @@ void _vuXGKICK(VURegs * VU)
 
 void _vuXTOP(VURegs * VU) {
 	if(_It_ == 0) return;
-	VU->VI[_It_].US[0] = (u16)VU->vifRegs->top;
+	VIFregisters& vifRegs = (VU == &VU1) ? vif1RegsRef : vif0RegsRef;
+	VU->VI[_It_].US[0] = (u16)vifRegs.top;
 }
 
 #define GET_VF0_FLAG(reg) (((reg)==0)?(1<<REG_VF0_FLAG):0)

@@ -219,11 +219,11 @@ extern VIFregisters *vifRegs;
 #define vif0Regs (&vif0RegsRef)
 #define vif1Regs (&vif1RegsRef)
 
-#define _vifT		template <int idx>
-#define  GetVifX	(idx ? (vif1)     : (vif0))
-#define  vifXch		(idx ? (vif1ch)   : (vif0ch))
-#define  vifXRegs	(idx ? (vif1Regs) : (vif0Regs))
-#define _f			__forceinline
+#define _vifT			template <int idx>
+#define  GetVifX		(idx ? (vif1)			: (vif0))
+#define  GetVifXch		(idx ? (DMACh_VIF1)		: (DMACh_VIF0))
+#define  GetVifXregs	(idx ? (vif1RegsRef)	: (vif0RegsRef))
+#define _f				__forceinline
 
 extern void dmaVIF0();
 extern void dmaVIF1();
@@ -232,3 +232,4 @@ extern bool VIF0transfer(u32 *data, int size);
 extern bool VIF1transfer(u32 *data, int size);
 extern void vifMFIFOInterrupt();
 extern bool CheckPath2GIF(EE_EventType channel);
+

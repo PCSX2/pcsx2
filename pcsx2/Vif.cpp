@@ -86,7 +86,9 @@ void SaveStateBase::vif1Freeze()
 extern bool _chainVIF0();
 extern bool _VIF0chain();
 
-_f void vif0FBRST(u32 value) {
+_f void vif0FBRST(u32 value)
+{
+	DMACh& vif0ch = DMACh_VIF0;
 	VIF_LOG("VIF0_FBRST write32 0x%8.8x", value);
 
 	if (value & 0x1) // Reset Vif.
@@ -94,7 +96,7 @@ _f void vif0FBRST(u32 value) {
 		//Console.WriteLn("Vif0 Reset %x", vif0Regs->stat._u32);
 
 		memzero(vif0);
-		vif0ch->qwc = 0; //?
+		vif0ch.qwc = 0; //?
 		cpuRegs.interrupt &= ~1; //Stop all vif0 DMA's
 		psHu64(VIF0_FIFO) = 0;
 		psHu64(VIF0_FIFO + 8) = 0;
@@ -140,28 +142,31 @@ _f void vif0FBRST(u32 value) {
 				g_vifCycles = 0;
 
 				// loop necessary for spiderman
-				//vif0ch->chcr.STR = true;
-				 if(vif0ch->chcr.STR) CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
+				//vif0ch.chcr.STR = true;
+				 if(vif0ch.chcr.STR) CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
 			}
 		}
 	}
 }
 
-_f void vif1FBRST(u32 value) {
+_f void vif1FBRST(u32 value)
+{
+	DMACh& vif1ch = DMACh_VIF1;
 	VIF_LOG("VIF1_FBRST write32 0x%8.8x", value);
 
 	if (FBRST(value).RST) // Reset Vif.
 	{
 		memzero(vif1);
 		//cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-		vif1ch->qwc -= min((int)vif1ch->qwc, 16); //?
+		vif1ch.qwc -= min((int)vif1ch.qwc, 16); //?
 		psHu64(VIF1_FIFO) = 0;
 		psHu64(VIF1_FIFO + 8) = 0;
 		//vif1.done = false;
 
 		
+		DMACh& gif = DMACh_GIF;
 		//DevCon.Warning("VIF FBRST Reset MSK = %x", vif1Regs->mskpath3);
-		if(vif1Regs->mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE && gif->chcr.STR == true) 
+		if(vif1Regs->mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE && gif.chcr.STR == true) 
 		{
 			//DevCon.Warning("VIF Path3 Resume on FBRST MSK = %x", vif1Regs->mskpath3);
 			gsInterrupt();
@@ -224,18 +229,18 @@ _f void vif1FBRST(u32 value) {
 				{
 				    case MFD_VIF1:
                         //Console.WriteLn("MFIFO Stall");
-                        if(vif1ch->chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
+                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
                         break;
 
                     case NO_MFD:
                     case MFD_RESERVED:
                     case MFD_GIF: // Wonder if this should be with VIF?
                         // Gets the timing right - Flatout
-                        if(vif1ch->chcr.STR == true) CPU_INT(DMAC_VIF1, 0);
+                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_VIF1, 0);
                         break;
 				}
 
-				//vif1ch->chcr.STR = true;
+				//vif1ch.chcr.STR = true;
 			}
 		}
 	}
@@ -278,11 +283,13 @@ _f void vif1STAT(u32 value) {
 #define caseVif(x) (idx ? VIF1_##x : VIF0_##x)
 
 _vifT void vifWrite32(u32 mem, u32 value) {
+	VIFregisters&	vifXRegs	= GetVifXregs;
+
 	switch (mem) {
 		case caseVif(MARK):
 			VIF_LOG("VIF%d_MARK write32 0x%8.8x", idx, value);
-			vifXRegs->stat.MRK = false;
-			vifXRegs->mark	   = value;
+			vifXRegs.stat.MRK = false;
+			vifXRegs.mark	   = value;
 			break;
 
 		case caseVif(FBRST):
@@ -292,7 +299,7 @@ _vifT void vifWrite32(u32 mem, u32 value) {
 
 		case caseVif(ERR):
 			VIF_LOG("VIF%d_ERR write32 0x%8.8x", idx, value);
-			vifXRegs->err.write(value);
+			vifXRegs.err.write(value);
 			break;
 
 		case caseVif(STAT):
@@ -306,7 +313,7 @@ _vifT void vifWrite32(u32 mem, u32 value) {
 			break;
 
 		case caseVif(MODE):
-			vifXRegs->mode = value;
+			vifXRegs.mode = value;
 			break;
 
 		case caseVif(R0):
@@ -315,7 +322,7 @@ _vifT void vifWrite32(u32 mem, u32 value) {
 		case caseVif(R3):
 			if (!idx) g_vifmask.Row0[ (mem>>4)&3 ]   = value;
 			else	  g_vifmask.Row1[ (mem>>4)&3 ]   = value;
-			((u32*)&vifXRegs->r0)   [((mem>>4)&3)*4] = value;
+			((u32*)&vifXRegs.r0)   [((mem>>4)&3)*4] = value;
 			break;
 
 		case caseVif(C0):
@@ -324,7 +331,7 @@ _vifT void vifWrite32(u32 mem, u32 value) {
 		case caseVif(C3):
 			if (!idx) g_vifmask.Col0[ (mem>>4)&3 ]   = value;
 			else	  g_vifmask.Col1[ (mem>>4)&3 ]   = value;
-			((u32*)&vifXRegs->c0)   [((mem>>4)&3)*4] = value;
+			((u32*)&vifXRegs.c0)   [((mem>>4)&3)*4] = value;
 			break;
 
 		default:

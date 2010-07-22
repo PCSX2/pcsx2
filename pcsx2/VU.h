@@ -133,7 +133,6 @@ struct VURegs {
 	u32 flags;
 
 	void (*vuExec)(VURegs*);
-	VIFregisters *vifRegs;
 
 	u8 *Mem;
 	u8 *Micro;
@@ -151,11 +150,12 @@ struct VURegs {
 	efuPipe efu;
 	ialuPipe ialu[8];
 
-	VURegs() :
-		Mem( NULL )
-	,	Micro( NULL )
+	VURegs()
 	{
+		Mem = NULL;
+		Micro = NULL;
 	}
+
 } __packed;
 
 enum VUPipeState

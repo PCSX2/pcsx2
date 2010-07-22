@@ -1947,8 +1947,9 @@ void recVUMI_XITOP( VURegs *VU, int info )
 	int itreg;
 	if (_It_ == 0) return;
 	//Console.WriteLn("recVUMI_XITOP");
+	VIFregisters& vifRegs = (VU == &VU1) ? vif1RegsRef : vif0RegsRef;
 	itreg = ALLOCVI(_It_, MODE_WRITE);
-	MOVZX32M16toR( itreg, (uptr)&VU->vifRegs->itop );
+	MOVZX32M16toR( itreg, (uptr)&vifRegs.itop );
 }
 //------------------------------------------------------------------
 
@@ -1961,8 +1962,10 @@ void recVUMI_XTOP( VURegs *VU, int info )
 	int itreg;
 	if ( _It_ == 0 ) return;
 	//Console.WriteLn("recVUMI_XTOP");
+
+	VIFregisters& vifRegs = (VU == &VU1) ? vif1RegsRef : vif0RegsRef;
 	itreg = ALLOCVI(_It_, MODE_WRITE);
-	MOVZX32M16toR( itreg, (uptr)&VU->vifRegs->top );
+	MOVZX32M16toR( itreg, (uptr)&vifRegs.top );
 }
 //------------------------------------------------------------------
 

@@ -33,10 +33,10 @@ enum tag_id
 	TAG_REFE = 0, 	// Transfer Packet According to ADDR field, clear STR, and end
 	TAG_CNT, 		// Transfer QWC following the tag.
 	TAG_NEXT,		// Transfer QWC following tag. TADR = ADDR
-	TAG_REF,			// Transfer QWC from ADDR field
+	TAG_REF,		// Transfer QWC from ADDR field
 	TAG_REFS,		// Transfer QWC from ADDR field (Stall Control)
 	TAG_CALL,		// Transfer QWC following the tag, save succeeding tag
-	TAG_RET,			// Transfer QWC following the tag, load next tag
+	TAG_RET,		// Transfer QWC following the tag, load next tag
 	TAG_END			// Transfer QWC following the tag
 };
 
@@ -215,9 +215,10 @@ union tDMA_QWC {
 	wxString desc() const { return wxsFormat(L"QWC: 0x%x", _u32); }
 	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
 };
-static __forceinline void setDmacStat(u32 num);
-static __forceinline tDMA_TAG *dmaGetAddr(u32 addr, bool write);
-static __forceinline void throwBusError(const char *s);
+
+static void setDmacStat(u32 num);
+static tDMA_TAG *dmaGetAddr(u32 addr, bool write);
+static void throwBusError(const char *s);
 
 struct DMACh {
 	tDMA_CHCR chcr;
@@ -553,6 +554,17 @@ struct DMACregisters
 	tDMAC_RBOR	rbor;
 	u32 _padding5[3];
 	tDMAC_STADR	stadr;
+	
+	__releaseinline u32 mfifoWrapAddr(u32 mask)
+	{
+		return (rbor.ADDR + (mask & rbsr.RMSK));
+	}
+
+	__releaseinline u32 mfifoRingEnd()
+	{
+		return rbor.ADDR + rbsr.RMSK;
+	}
+
 };
 
 // Currently guesswork.
@@ -677,6 +689,6 @@ extern void hwIntcIrq(int n);
 extern void hwDmacIrq(int n);
 
 extern bool hwMFIFOWrite(u32 addr, const u128* data, uint size_qwc);
-extern bool hwDmacSrcChainWithStack(DMACh *dma, int id);
-extern bool hwDmacSrcChain(DMACh *dma, int id);
+extern bool hwDmacSrcChainWithStack(DMACh& dma, int id);
+extern bool hwDmacSrcChain(DMACh& dma, int id);
 

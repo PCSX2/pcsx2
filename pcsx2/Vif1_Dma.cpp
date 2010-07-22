@@ -57,8 +57,9 @@ __forceinline void vif1FLUSH()
 
 void vif1TransferToMemory()
 {
+	DMACh& vif1ch = DMACh_VIF1;
 	u32 size;
-	u64* pMem = (u64*)dmaGetAddr(vif1ch->madr, false);
+	u64* pMem = (u64*)dmaGetAddr(vif1ch.madr, false);
 
 	// VIF from gsMemory
 	if (pMem == NULL)  						//Is vif0ptag empty?
@@ -67,7 +68,7 @@ void vif1TransferToMemory()
 		dmacRegs->stat.BEIS = true;      //Bus Error
 		vif1Regs->stat.FQC = 0;
 
-		vif1ch->qwc = 0;
+		vif1ch.qwc = 0;
 		vif1.done = true;
 		CPU_INT(DMAC_VIF1, 0);
 		return;						   //An error has occurred.
@@ -76,8 +77,8 @@ void vif1TransferToMemory()
 	// MTGS concerns:  The MTGS is inherently disagreeable with the idea of downloading
 	// stuff from the GS.  The *only* way to handle this case safely is to flush the GS
 	// completely and execute the transfer there-after.
-	//Console.Warning("Real QWC %x", vif1ch->qwc);
-	size = min((u32)vif1ch->qwc, vif1.GSLastDownloadSize);
+	//Console.Warning("Real QWC %x", vif1ch.qwc);
+	size = min((u32)vif1ch.qwc, vif1.GSLastDownloadSize);
 
 	if (GSreadFIFO2 == NULL)
 	{
@@ -90,10 +91,10 @@ void vif1TransferToMemory()
 			pMem[1] = psHu64(VIF1_FIFO + 8);
 			pMem += 2;
 		}
-		if(vif1ch->qwc > vif1.GSLastDownloadSize)
+		if(vif1ch.qwc > vif1.GSLastDownloadSize)
 		{
 			DevCon.Warning("GS Transfer < VIF QWC, Clearing end of space");
-			for (size = vif1ch->qwc - vif1.GSLastDownloadSize; size > 0; --size)
+			for (size = vif1ch.qwc - vif1.GSLastDownloadSize; size > 0; --size)
 			{
 				psHu64(VIF1_FIFO) = 0;
 				psHu64(VIF1_FIFO + 8) = 0;
@@ -112,10 +113,10 @@ void vif1TransferToMemory()
 		psHu64(VIF1_FIFO) = pMem[2*size-2];
 		psHu64(VIF1_FIFO + 8) = pMem[2*size-1];
 		pMem += size * 2;
-		if(vif1ch->qwc > vif1.GSLastDownloadSize)
+		if(vif1ch.qwc > vif1.GSLastDownloadSize)
 		{
 			DevCon.Warning("GS Transfer < VIF QWC, Clearing end of space");
-			for (size = vif1ch->qwc - vif1.GSLastDownloadSize; size > 0; --size)
+			for (size = vif1ch.qwc - vif1.GSLastDownloadSize; size > 0; --size)
 			{
 				psHu64(VIF1_FIFO) = 0;
 				psHu64(VIF1_FIFO + 8) = 0;
@@ -127,11 +128,11 @@ void vif1TransferToMemory()
 	}
 
 
-	g_vifCycles += vif1ch->qwc * 2;
-	vif1ch->madr += vif1ch->qwc * 16; // mgs3 scene changes
-	if(vif1.GSLastDownloadSize >= vif1ch->qwc)
+	g_vifCycles += vif1ch.qwc * 2;
+	vif1ch.madr += vif1ch.qwc * 16; // mgs3 scene changes
+	if(vif1.GSLastDownloadSize >= vif1ch.qwc)
 	{
-		vif1.GSLastDownloadSize -= vif1ch->qwc;
+		vif1.GSLastDownloadSize -= vif1ch.qwc;
 		vif1Regs->stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
 	}
 	else
@@ -140,14 +141,15 @@ void vif1TransferToMemory()
 		vif1.GSLastDownloadSize = 0;
 	}
 
-	vif1ch->qwc = 0;
+	vif1ch.qwc = 0;
 }
 
 bool _VIF1chain()
 {
+	DMACh& vif1ch = DMACh_VIF1;
 	u32 *pMem;
 
-	if (vif1ch->qwc == 0)
+	if (vif1ch.qwc == 0)
 	{
 		vif1.inprogress = 0;
 		vif1.irqoffset = 0;
@@ -162,28 +164,28 @@ bool _VIF1chain()
 		return true;
 	}
 
-	pMem = (u32*)dmaGetAddr(vif1ch->madr, !vif1ch->chcr.DIR);
+	pMem = (u32*)dmaGetAddr(vif1ch.madr, !vif1ch.chcr.DIR);
 	if (pMem == NULL)
 	{
 		vif1.cmd = 0;
 		vif1.tag.size = 0;
-		vif1ch->qwc = 0;
+		vif1ch.qwc = 0;
 		return true;
 	}
 
 	VIF_LOG("VIF1chain size=%d, madr=%lx, tadr=%lx",
-	        vif1ch->qwc, vif1ch->madr, vif1ch->tadr);
+	        vif1ch.qwc, vif1ch.madr, vif1ch.tadr);
 
 	if (vif1.vifstalled)
-		return VIF1transfer(pMem + vif1.irqoffset, vif1ch->qwc * 4 - vif1.irqoffset);
+		return VIF1transfer(pMem + vif1.irqoffset, vif1ch.qwc * 4 - vif1.irqoffset);
 	else
-		return VIF1transfer(pMem, vif1ch->qwc * 4);
+		return VIF1transfer(pMem, vif1ch.qwc * 4);
 }
 
 __forceinline void vif1SetupTransfer()
 {
     tDMA_TAG *ptag;
-	DMACh& vif1c = (DMACh&)PS2MEM_HW[0x9000];
+	DMACh& vif1ch = DMACh_VIF1;
 	
 	switch (vif1.dmamode)
 	{
@@ -195,20 +197,20 @@ __forceinline void vif1SetupTransfer()
 		break;
 
 		case VIF_CHAIN_MODE:
-			ptag = dmaGetAddr(vif1c.tadr, false); //Set memory pointer to TADR
+			ptag = dmaGetAddr(vif1ch.tadr, false); //Set memory pointer to TADR
 
-			if (!(vif1c.transfer("Vif1 Tag", ptag))) return;
+			if (!(vif1ch.transfer("Vif1 Tag", ptag))) return;
 
-			vif1c.madr = ptag[1]._u32;            //MADR = ADDR field + SPR
+			vif1ch.madr = ptag[1]._u32;            //MADR = ADDR field + SPR
 			g_vifCycles += 1; // Add 1 g_vifCycles from the QW read for the tag
 
 			VIF_LOG("VIF1 Tag %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx\n",
-			        ptag[1]._u32, ptag[0]._u32, vif1c.qwc, ptag->ID, vif1c.madr, vif1c.tadr);
+			        ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr);
 
 			if (!vif1.done && ((dmacRegs->ctrl.STD == STD_VIF1) && (ptag->ID == TAG_REFS)))   // STD == VIF1
 			{
 				// there are still bugs, need to also check if gif->madr +16*qwc >= stadr, if not, stall
-				if ((vif1c.madr + vif1c.qwc * 16) >= dmacRegs->stadr.ADDR)
+				if ((vif1ch.madr + vif1ch.qwc * 16) >= dmacRegs->stadr.ADDR)
 				{
 					// stalled
 					hwDmacIrq(DMAC_STALL_SIS);
@@ -219,7 +221,7 @@ __forceinline void vif1SetupTransfer()
 			
 			vif1.inprogress = 0;
 
-			if (vif1c.chcr.TTE)
+			if (vif1ch.chcr.TTE)
 			{
 				// Transfer dma tag if tte is set
 
@@ -243,10 +245,10 @@ __forceinline void vif1SetupTransfer()
 
 			vif1.done |= hwDmacSrcChainWithStack(vif1ch, ptag->ID);
 
-			if(vif1c.qwc > 0) vif1.inprogress = 1;
+			if(vif1ch.qwc > 0) vif1.inprogress = 1;
 
 			//Check TIE bit of CHCR and IRQ bit of tag
-			if (vif1c.chcr.TIE && ptag->IRQ)
+			if (vif1ch.chcr.TIE && ptag->IRQ)
 			{
 				VIF_LOG("dmaIrq Set");
 
@@ -342,6 +344,7 @@ bool CheckPath2GIF(EE_EventType channel)
 }
 __forceinline void vif1Interrupt()
 {
+	DMACh& vif1ch = DMACh_VIF1;
 	VIF_LOG("vif1Interrupt: %8.8x", cpuRegs.cycle);
 
 	g_vifCycles = 0;
@@ -363,26 +366,26 @@ __forceinline void vif1Interrupt()
 	{
 		//Console.WriteLn("VIFMFIFO\n");
 		// Test changed because the Final Fantasy 12 opening somehow has the tag in *Undefined* mode, which is not in the documentation that I saw.
-		if (vif1ch->chcr.MOD == NORMAL_MODE) Console.WriteLn("MFIFO mode is normal (which isn't normal here)! %x", vif1ch->chcr._u32);
-		vif1Regs->stat.FQC = min((u16)0x10, vif1ch->qwc);
+		if (vif1ch.chcr.MOD == NORMAL_MODE) Console.WriteLn("MFIFO mode is normal (which isn't normal here)! %x", vif1ch.chcr._u32);
+		vif1Regs->stat.FQC = min((u16)0x10, vif1ch.qwc);
 		vifMFIFOInterrupt();
 		return;
 	}
 
 	//We need to check the direction, if it is downloading from the GS, we handle that separately (KH2 for testing)
-	if (vif1ch->chcr.DIR)
+	if (vif1ch.chcr.DIR)
 	{
 		if (!CheckPath2GIF(DMAC_VIF1)) return;
 		
-		vif1Regs->stat.FQC = min(vif1ch->qwc, (u16)16);
+		vif1Regs->stat.FQC = min(vif1ch.qwc, (u16)16);
 		//Simulated GS transfer time done, clear the flags
 	}
 	
-	if (!vif1ch->chcr.STR) Console.WriteLn("Vif1 running when CHCR == %x", vif1ch->chcr._u32);
+	if (!vif1ch.chcr.STR) Console.WriteLn("Vif1 running when CHCR == %x", vif1ch.chcr._u32);
 
 	if (vif1.cmd) 
 	{
-		if (vif1.done && (vif1ch->qwc == 0)) vif1Regs->stat.VPS = VPS_WAITING;
+		if (vif1.done && (vif1ch.qwc == 0)) vif1Regs->stat.VPS = VPS_WAITING;
 	}
 	else		 
 	{
@@ -400,7 +403,7 @@ __forceinline void vif1Interrupt()
 
 			//NFSHPS stalls when the whole packet has gone across (it stalls in the last 32bit cmd)
 			//In this case VIF will end
-			if(vif1ch->qwc > 0 || !vif1.done)	return;
+			if(vif1ch.qwc > 0 || !vif1.done)	return;
 		}
 	}
 
@@ -409,7 +412,7 @@ __forceinline void vif1Interrupt()
 		_VIF1chain();
 		// VIF_NORMAL_FROM_MEM_MODE is a very slow operation.
 		// Timesplitters 2 depends on this beeing a bit higher than 128.
-		if (vif1ch->chcr.DIR) vif1Regs->stat.FQC = min(vif1ch->qwc, (u16)16);
+		if (vif1ch.chcr.DIR) vif1Regs->stat.FQC = min(vif1ch.qwc, (u16)16);
 		// Refraction - Removing voodoo timings for now, completely messes a lot of Path3 masked games.
 		/*if (vif1.dmamode == VIF_NORMAL_FROM_MEM_MODE ) CPU_INT(DMAC_VIF1, 1024);
 		else */CPU_INT(DMAC_VIF1, g_vifCycles /*VifCycleVoodoo*/);
@@ -426,7 +429,7 @@ __forceinline void vif1Interrupt()
 		}
 
 		if ((vif1.inprogress & 0x1) == 0) vif1SetupTransfer();
-		if (vif1ch->chcr.DIR) vif1Regs->stat.FQC = min(vif1ch->qwc, (u16)16);
+		if (vif1ch.chcr.DIR) vif1Regs->stat.FQC = min(vif1ch.qwc, (u16)16);
 		CPU_INT(DMAC_VIF1, g_vifCycles);
 		return;
 	}
@@ -438,11 +441,11 @@ __forceinline void vif1Interrupt()
 		return; //Dont want to end if vif is stalled.
 	}
 #ifdef PCSX2_DEVBUILD
-	if (vif1ch->qwc > 0) Console.WriteLn("VIF1 Ending with %x QWC left", vif1ch->qwc);
+	if (vif1ch.qwc > 0) Console.WriteLn("VIF1 Ending with %x QWC left", vif1ch.qwc);
 	if (vif1.cmd != 0) Console.WriteLn("vif1.cmd still set %x tag size %x", vif1.cmd, vif1.tag.size);
 #endif
 
-	vif1ch->chcr.STR = false;
+	vif1ch.chcr.STR = false;
 	vif1.vifstalled = false;
 	g_vifCycles = 0;
 	g_vu1Cycles = 0;
@@ -453,10 +456,11 @@ __forceinline void vif1Interrupt()
 
 void dmaVIF1()
 {
+	DMACh& vif1ch = DMACh_VIF1;
 	VIF_LOG("dmaVIF1 chcr = %lx, madr = %lx, qwc  = %lx\n"
 	        "        tadr = %lx, asr0 = %lx, asr1 = %lx",
-	        vif1ch->chcr._u32, vif1ch->madr, vif1ch->qwc,
-	        vif1ch->tadr, vif1ch->asr0, vif1ch->asr1);
+	        vif1ch.chcr._u32, vif1ch.madr, vif1ch.qwc,
+	        vif1ch.tadr, vif1ch.asr0, vif1ch.asr1);
 
 //	vif1.done = false;
 	
@@ -474,25 +478,25 @@ void dmaVIF1()
 	}
 #endif
 
-	if ((vif1ch->chcr.MOD == NORMAL_MODE) || vif1ch->qwc > 0)   // Normal Mode
+	if ((vif1ch.chcr.MOD == NORMAL_MODE) || vif1ch.qwc > 0)   // Normal Mode
 	{
 
 		if (dmacRegs->ctrl.STD == STD_VIF1)
 			Console.WriteLn("DMA Stall Control on VIF1 normal");
 
-		if (vif1ch->chcr.DIR)  // to Memory
+		if (vif1ch.chcr.DIR)  // to Memory
 			vif1.dmamode = VIF_NORMAL_FROM_MEM_MODE;
 		else
 			vif1.dmamode = VIF_NORMAL_TO_MEM_MODE;
 
 		vif1.done = false;
 
-		if(vif1ch->chcr.MOD == CHAIN_MODE && vif1ch->qwc > 0) 
+		if(vif1ch.chcr.MOD == CHAIN_MODE && vif1ch.qwc > 0) 
 		{
 			vif1.dmamode = VIF_CHAIN_MODE;
-			DevCon.Warning(L"VIF1 QWC on Chain CHCR " + vif1ch->chcr.desc());
+			DevCon.Warning(L"VIF1 QWC on Chain CHCR " + vif1ch.chcr.desc());
 			
-			if ((vif1ch->chcr.tag().ID == TAG_REFE) || (vif1ch->chcr.tag().ID == TAG_END))
+			if ((vif1ch.chcr.tag().ID == TAG_REFE) || (vif1ch.chcr.tag().ID == TAG_END))
 			{
 				vif1.done = true;
 			}
@@ -504,7 +508,7 @@ void dmaVIF1()
 		vif1.done = false;
 	}
 
-	if (vif1ch->chcr.DIR) vif1Regs->stat.FQC = min((u16)0x10, vif1ch->qwc);
+	if (vif1ch.chcr.DIR) vif1Regs->stat.FQC = min((u16)0x10, vif1ch.qwc);
 
 	// Chain Mode
 	CPU_INT(DMAC_VIF1, 4);

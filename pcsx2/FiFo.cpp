@@ -121,6 +121,7 @@ void __fastcall ReadFIFO_page_7(u32 mem, u64 *out)
 
 void __fastcall WriteFIFO_page_4(u32 mem, const mem128_t *value)
 {
+	DMACh& vif0ch = DMACh_VIF0;
 	pxAssert( (mem >= VIF0_FIFO) && (mem < VIF1_FIFO) );
 
 	VIF_LOG("WriteFIFO/VIF0, addr=0x%08X", mem);
@@ -128,15 +129,15 @@ void __fastcall WriteFIFO_page_4(u32 mem, const mem128_t *value)
 	psHu64(VIF0_FIFO) = value[0];
 	psHu64(VIF0_FIFO + 8) = value[1];
 
-	vif0ch->qwc += 1;
+	vif0ch.qwc += 1;
 	if(vif0.irqoffset != 0 && vif0.vifstalled == true) DevCon.Warning("Offset on VIF0 FIFO start!");
 	bool ret = VIF0transfer((u32*)value, 4);
 
 	if (vif0.cmd) 
 	{
-		if(vif0.done == true && vif0ch->qwc == 0)	vif0Regs->stat.VPS = VPS_WAITING;
+		if(vif0.done == true && vif0ch.qwc == 0)	vif0Regs->stat.VPS = VPS_WAITING;
 	}
-	else		 
+	else
 	{
 		vif0Regs->stat.VPS = VPS_IDLE;
 	}
@@ -146,6 +147,8 @@ void __fastcall WriteFIFO_page_4(u32 mem, const mem128_t *value)
 
 void __fastcall WriteFIFO_page_5(u32 mem, const mem128_t *value)
 {
+	DMACh& vif1ch = DMACh_VIF1;
+
 	pxAssert( (mem >= VIF1_FIFO) && (mem < GIF_FIFO) );
 
 	VIF_LOG("WriteFIFO/VIF1, addr=0x%08X", mem);
@@ -158,7 +161,7 @@ void __fastcall WriteFIFO_page_5(u32 mem, const mem128_t *value)
 	if (vif1Regs->stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS) )
 		DevCon.Warning("writing to vif1 fifo when stalled");
 
-	vif1ch->qwc += 1;
+	vif1ch.qwc += 1;
 	if(vif1.irqoffset != 0 && vif1.vifstalled == true) DevCon.Warning("Offset on VIF1 FIFO start!");
 	bool ret = VIF1transfer((u32*)value, 4);
 
@@ -169,7 +172,7 @@ void __fastcall WriteFIFO_page_5(u32 mem, const mem128_t *value)
 	}
 	if (vif1.cmd) 
 	{
-		if(vif1.done == true && vif1ch->qwc == 0)	vif1Regs->stat.VPS = VPS_WAITING;
+		if(vif1.done == true && vif1ch.qwc == 0)	vif1Regs->stat.VPS = VPS_WAITING;
 	}
 	else		 
 	{

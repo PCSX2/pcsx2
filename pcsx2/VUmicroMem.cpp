@@ -81,7 +81,6 @@ void vuMicroMemReset()
 	VU0.maxmem = 0x4800-4; //We are allocating 0x800 for vu1 reg's
 	VU0.maxmicro = 0x1000-4;
 	VU0.vuExec = vu0Exec;
-	VU0.vifRegs = vif0Regs;
 
 	// === VU1 Initialization ===
 	memzero(VU1.ACC);
@@ -100,7 +99,6 @@ void vuMicroMemReset()
 //	VU1.VF       = (VECTOR*)(VU0.Mem + 0x4000);
 //	VU1.VI       = (REG_VI*)(VU0.Mem + 0x4200);
 	VU1.vuExec   = vu1Exec;
-	VU1.vifRegs  = vif1Regs;
 }
 
 void SaveStateBase::vuMicroFreeze()

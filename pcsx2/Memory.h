@@ -1,4 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
+jkiuhnbj
  *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -43,22 +44,22 @@ extern u8  *psMHW;
 #define PS2MEM_SCRATCH	psS
 
 // Various useful locations
-#define spr0 ((DMACh*)&PS2MEM_HW[0xD000])
-#define spr1 ((DMACh*)&PS2MEM_HW[0xD400])
+#define DMACh_SPR0	((DMACh&)PS2MEM_HW[0xD000])
+#define DMACh_SPR1	((DMACh&)PS2MEM_HW[0xD400])
+#define DMACh_GIF	((DMACh&)PS2MEM_HW[0xA000])
+#define DMACh_VIF0	((DMACh&)PS2MEM_HW[0x8000])
+#define DMACh_VIF1	((DMACh&)PS2MEM_HW[0x9000])
 
-#define gif ((DMACh*)&PS2MEM_HW[0xA000])
+// [TODO] : reformat these to use references similar to the ones above.
 
-#define vif0ch ((DMACh*)&PS2MEM_HW[0x8000])
-#define vif1ch ((DMACh*)&PS2MEM_HW[0x9000])
+#define sif0dma		((DMACh*)&PS2MEM_HW[0xc000])
+#define sif1dma		((DMACh*)&PS2MEM_HW[0xc400])
+#define sif2dma		((DMACh*)&PS2MEM_HW[0xc800])
 
-#define sif0dma ((DMACh*)&PS2MEM_HW[0xc000])
-#define sif1dma ((DMACh*)&PS2MEM_HW[0xc400])
-#define sif2dma ((DMACh*)&PS2MEM_HW[0xc800])
+#define ipu0dma		((DMACh *)&PS2MEM_HW[0xb000])
+#define ipu1dma		((DMACh *)&PS2MEM_HW[0xb400])
 
-#define ipu0dma ((DMACh *)&PS2MEM_HW[0xb000])
-#define ipu1dma ((DMACh *)&PS2MEM_HW[0xb400])
-
-#define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
+#define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff))
 
 #define psHs8(mem)	(*(s8 *)&PS2MEM_HW[(mem) & 0xffff])
 #define psHs16(mem)	(*(s16*)&PS2MEM_HW[(mem) & 0xffff])
