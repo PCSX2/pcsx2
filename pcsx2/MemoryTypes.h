@@ -36,3 +36,16 @@ typedef u16 mem16_t;
 typedef u32 mem32_t;
 typedef u64 mem64_t;
 typedef u64 mem128_t;
+
+// This namespace contains physical memory addresses for peripherals, HW registers, and ROMs.
+// These are the physical mappings, which should be referenced from DMAs and from VTLB setup
+// code.  Theoretically the EE's MMU can remap things around on-the-fly, however no known
+// game does so, and thus PCSX2's support for the MMU is fairly non-existent at this time.
+namespace PhysMemMap
+{
+	static const uint VU0prog = 0x11000000;
+	static const uint VU1prog = 0x11008000;
+
+	static const uint VU0data = 0x11004000;
+	static const uint VU1data = 0x1100C000;
+}

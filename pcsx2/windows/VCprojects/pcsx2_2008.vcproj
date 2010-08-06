@@ -749,30 +749,10 @@
 					<Filter
 						Name="DMAC"
 						>
-						<Filter
-							Name="Sif"
+						<File
+							RelativePath="..\..\ps2\NewDmac.cpp"
 							>
-							<File
-								RelativePath="..\..\Sif.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Sif.h"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Sif0.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Sif1.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Sifcmd.h"
-								>
-							</File>
-						</Filter>
+						</File>
 						<Filter
 							Name="Vif"
 							>
@@ -882,6 +862,30 @@
 							</File>
 							<File
 								RelativePath="..\..\Gif.h"
+								>
+							</File>
+						</Filter>
+						<Filter
+							Name="Sif"
+							>
+							<File
+								RelativePath="..\..\Sif.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Sif.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Sif0.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Sif1.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Sifcmd.h"
 								>
 							</File>
 						</Filter>

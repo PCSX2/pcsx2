@@ -71,7 +71,7 @@ static __forceinline bool WriteFifoToIOP()
 	sif1.fifo.read((u32*)iopPhysMem(hw_dma(10).madr), readSize);
 	psxCpu->Clear(hw_dma(10).madr, readSize);
 	hw_dma(10).madr += readSize << 2;
-	sif1.iop.cycles += readSize >> 2;		// fixme: should be >> 4
+	sif1.iop.cycles += readSize >> 2;
 	sif1.iop.counter -= readSize;
 
 	return true;
@@ -203,7 +203,7 @@ static __forceinline void EndIOP()
 // Handle the EE transfer.
 static __forceinline void HandleEETransfer()
 {
-	if(sif1dma->chcr.STR == false)
+	if(!sif1dma->chcr.STR)
 	{
 		DevCon.Warning("Replacement for irq prevention hack EE SIF1");
 		sif1.ee.end = false;
@@ -213,6 +213,7 @@ static __forceinline void HandleEETransfer()
 	if (dmacRegs->ctrl.STD == STD_SIF1)
 	{
 		DevCon.Warning("SIF1 stall control"); // STD == fromSIF1
+		pxAssertMsg(false, "SIF1 stall control");
 	}
 
 	/*if (sif1dma->qwc == 0)

@@ -48,6 +48,8 @@ enum mfd_type
 	MFD_GIF
 };
 
+// Stall control source channel selector. (Peripheral->Memory)
+// Note that stall control between SIF0 and SIF1 is not allowed.
 enum sts_type
 {
 	NO_STS = 0,
@@ -56,6 +58,8 @@ enum sts_type
 	STS_fromIPU
 };
 
+// Stall control drain channel selector. (Memory->Peripheral)
+// Note that stall control between SIF0 and SIF1 is not allowed.
 enum std_type
 {
 	NO_STD = 0,
@@ -101,14 +105,14 @@ union tDMA_TAG {
 	{
 		switch(ID)
 		{
-			case TAG_REFE: return wxsFormat(L"REFE %08X", _u32); break;
-			case TAG_CNT: return L"CNT"; break;
-			case TAG_NEXT: return wxsFormat(L"NEXT %08X", _u32); break;
-			case TAG_REF: return wxsFormat(L"REF %08X", _u32); break;
-			case TAG_REFS: return wxsFormat(L"REFS %08X", _u32); break;
-			case TAG_CALL: return L"CALL"; break;
-			case TAG_RET: return L"RET"; break;
-			case TAG_END: return L"END"; break;
+			case TAG_REFE:	return wxsFormat(L"REFE 0x%08X", _u32); break;
+			case TAG_CNT:	return L"CNT"; break;
+			case TAG_NEXT:	return wxsFormat(L"NEXT 0x%08X", _u32); break;
+			case TAG_REF:	return wxsFormat(L"REF  0x%08X", _u32); break;
+			case TAG_REFS:	return wxsFormat(L"REFS 0x%08X", _u32); break;
+			case TAG_CALL:	return L"CALL"; break;
+			case TAG_RET:	return L"RET"; break;
+			case TAG_END:	return L"END"; break;
 			default: return L"????"; break;
 		}
 	}
@@ -118,7 +122,7 @@ union tDMA_TAG {
 
 union tDMA_CHCR {
 	struct {
-		u32 DIR : 1;        // Direction: 0 - to memory, 1 - from memory. VIF1 & SIF2 only.
+		u32 DIR : 1;        // Direction: 0 - to memory (source), 1 - from memory (drain).  Valid for VIF1 & SIF2 only.
 		u32 _reserved1 : 1;
 		u32 MOD : 2;		// Logical transfer mode. Normal, Chain, or Interleave (see LogicalTransferMode enum)
 		u32 ASP : 2;        // ASP1 & ASP2; Address stack pointer. 0, 1, or 2 addresses.
@@ -140,7 +144,7 @@ union tDMA_CHCR {
 	u16 upper() const { return (_u32 >> 16); }
 	u16 lower() const { return (u16)_u32; }
 	wxString desc() const { return wxsFormat(L"Chcr: 0x%x", _u32); }
-	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
+	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 #define CHCR(value) ((tDMA_CHCR)(value))
@@ -156,7 +160,7 @@ union tDMA_SADR {
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"Sadr: 0x%x", _u32); }
-	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
+	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 union tDMA_MADR {
@@ -170,7 +174,7 @@ union tDMA_MADR {
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"Madr: 0x%x", _u32); }
-	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
+	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 union tDMA_TADR {
@@ -184,7 +188,7 @@ union tDMA_TADR {
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"Tadr: 0x%x", _u32); }
-	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
+	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 // The Address Stack Register
@@ -199,7 +203,7 @@ union tDMA_ASR {
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"Asr: 0x%x", _u32); }
-	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
+	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 union tDMA_QWC {
@@ -213,7 +217,7 @@ union tDMA_QWC {
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"QWC: 0x%x", _u32); }
-	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
+	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 static void setDmacStat(u32 num);
@@ -288,7 +292,7 @@ struct DMACh {
         return tag;
 	}
 
-	tDMA_TAG dma_tag()
+	tDMA_TAG dma_tag() const
 	{
 		return chcr.tag();
 	}

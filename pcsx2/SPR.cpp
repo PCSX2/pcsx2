@@ -32,22 +32,19 @@ void sprInit()
 
 static void TestClearVUs(u32 madr, u32 size)
 {
-	if (madr >= 0x11000000)
+	if ((madr >= PhysMemMap::VU0prog) && (madr < PhysMemMap::VU0data))
 	{
-		if (madr < 0x11004000)
-		{
-			DbgCon.Warning("scratch pad clearing vu0");
-			CpuVU0->Clear(madr&0xfff, size);
-		}
-		else if (madr >= 0x11008000 && madr < 0x1100c000)
-		{
-			DbgCon.Warning("scratch pad clearing vu1");
-			CpuVU1->Clear(madr&0x3fff, size);
-		}
+		DbgCon.Warning("scratch pad clearing vu0");
+		CpuVU0->Clear(madr&0xfff, size);
+	}
+	else if ((madr >= PhysMemMap::VU1prog) && (madr < PhysMemMap::VU1data))
+	{
+		DbgCon.Warning("scratch pad clearing vu1");
+		CpuVU1->Clear(madr&0x3fff, size);
 	}
 }
 
-int  _SPR0chain()
+static int  _SPR0chain()
 {
 	DMACh& spr0 = DMACh_SPR0;
 	tDMA_TAG *pMem;

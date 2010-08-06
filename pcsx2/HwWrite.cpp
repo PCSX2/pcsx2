@@ -358,6 +358,7 @@ void hwWrite8(u32 mem, u8 value)
 				if (!QueuedDMA.empty()) StartQueuedDMA();
 			}
 			break;
+
 		case DMAC_CTRL+2:
 			oldvalue = psHu8(mem);
 			if ((oldvalue & 0x3) != (value & 0x3))

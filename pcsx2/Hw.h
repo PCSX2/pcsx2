@@ -143,7 +143,7 @@ enum EERegisterAddresses
 	D1_ASR1			=	0x10009050,
 	D1_SADR			=	0x10009080,
 
-//GS
+//GS / GIF
 	D2_CHCR			=	0x1000A000,
 	D2_MADR			=	0x1000A010,
 	D2_QWC			=	0x1000A020,
@@ -187,7 +187,9 @@ enum EERegisterAddresses
 	D8_MADR			=	0x1000D010,
 	D8_QWC			=	0x1000D020,
 	D8_SADR			=	0x1000D080,
-	D9_CHCR		=	0x1000D400,
+
+//toSPR
+	D9_CHCR			=	0x1000D400,
 
 	DMAC_CTRL		=	0x1000E000,
 	DMAC_STAT		=	0x1000E010,

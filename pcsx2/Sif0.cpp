@@ -104,18 +104,21 @@ static __forceinline bool ProcessEETag()
 	{
 		case TAG_REFE:
 			sif0.ee.end = true;
-			if (dmacRegs->ctrl.STS != NO_STS)
+			
+			// Stall control address (STADR) is updated regardless of if the dest chain
+			// has stall control enabled or not.
+			if (dmacRegs->ctrl.STS == STS_SIF0)
 				dmacRegs->stadr.ADDR = sif0dma->madr + (sif0dma->qwc * 16);
-				break;
+		break;
 
 		case TAG_REFS:
-			if (dmacRegs->ctrl.STS != NO_STS)
+			if (dmacRegs->ctrl.STS == STS_SIF0)
 				dmacRegs->stadr.ADDR = sif0dma->madr + (sif0dma->qwc * 16);
-				break;
+		break;
 
 		case TAG_END:
 			sif0.ee.end = true;
-			break;
+		break;
 	}
 	return true;
 }
