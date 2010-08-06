@@ -1,7 +1,7 @@
 # zlib library
 
 # library name
-set(zlibName pcsx2_zlib)
+set(Output pcsx2_zlib)
 
 set(CommonFlags
     -W
@@ -62,4 +62,9 @@ crc32.h
 inftrees.h )
 
 # add library
-add_library(${zlibName} STATIC ${zlibSources} ${zlibHeaders})
+add_library(${Output} STATIC ${zlibSources} ${zlibHeaders})
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

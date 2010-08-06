@@ -7,13 +7,14 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 
 # plugin name
-set(CDVDnullName CDVDnull)
+set(Output CDVDnull)
 
 set(CommonFlags
     -Wall
     )
 
 set(OptimizationFlags
+    -fvisibility=hidden
     -O2
     -DNDEBUG
     )
@@ -57,11 +58,16 @@ set(CDVDnullWindowsHeaders
 include_directories(.)
 
 # add library
-add_library(${CDVDnullName} SHARED
+add_library(${Output} SHARED
 			${CDVDnullSources}
 			${CDVDnullHeaders}
             )
 
 # set output directory
-set_target_properties(${CDVDnullName} PROPERTIES
+set_target_properties(${Output} PROPERTIES
 					  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/plugins)
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

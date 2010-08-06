@@ -5,12 +5,15 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
+# plugin name
+set(Output PADnull)
 
 set(CommonFlags
     -Wall
     )
 
 set(OptimizationFlags
+    -fvisibility=hidden
     -O2
     -DNDEBUG
     )
@@ -68,12 +71,17 @@ include_directories(.
 					Linux)
 
 # add library
-add_library(${PadNullName} SHARED
+add_library(${Output} SHARED
 			${PadNullSources}
 			${PadNullHeaders}
 			${PadNullLinuxSources}
 			${PadNullLinuxHeaders})
 
 # set output directory
-set_target_properties(${PadNullName} PROPERTIES
+set_target_properties(${Output} PROPERTIES
 					  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/plugins)
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

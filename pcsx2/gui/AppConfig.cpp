@@ -326,8 +326,8 @@ namespace FilenameDefs
 			}
 		};
 
-		IndexBoundsCheckDev( L"FilenameDefs::Memcard", port, 2 );
-		IndexBoundsCheckDev( L"FilenameDefs::Memcard", slot, 4 );
+		IndexBoundsAssumeDev( L"FilenameDefs::Memcard", port, 2 );
+		IndexBoundsAssumeDev( L"FilenameDefs::Memcard", slot, 4 );
 
 		return retval[port][slot];
 	}
@@ -408,7 +408,7 @@ AppConfig::AppConfig()
 // ------------------------------------------------------------------------
 void AppConfig::LoadSaveUserMode( IniInterface& ini, const wxString& cwdhash )
 {
-	IniScopedGroup path( ini, cwdhash );
+	ScopedIniGroup path( ini, cwdhash );
 
 	// timestamping would be useful if we want to auto-purge unused entries after
 	// a period of time.  Dunno if it's needed.
@@ -455,7 +455,7 @@ void AppConfig::LoadSaveUserMode( IniInterface& ini, const wxString& cwdhash )
 void AppConfig::LoadSaveMemcards( IniInterface& ini )
 {
 	AppConfig defaults;
-	IniScopedGroup path( ini, L"MemoryCards" );
+	ScopedIniGroup path( ini, L"MemoryCards" );
 
 	for( uint slot=0; slot<2; ++slot )
 	{
@@ -534,6 +534,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 AppConfig::ConsoleLogOptions::ConsoleLogOptions()
 	: DisplayPosition( wxDefaultPosition )
 	, DisplaySize( wxSize( 680, 560 ) )
+	, Theme(L"Default")
 {
 	Visible		= true;
 	AutoDock	= true;
@@ -543,13 +544,14 @@ AppConfig::ConsoleLogOptions::ConsoleLogOptions()
 void AppConfig::ConsoleLogOptions::LoadSave( IniInterface& ini, const wxChar* logger )
 {
 	ConsoleLogOptions defaults;
-	IniScopedGroup path( ini, logger );
+	ScopedIniGroup path( ini, logger );
 
 	IniEntry( Visible );
 	IniEntry( AutoDock );
 	IniEntry( DisplayPosition );
 	IniEntry( DisplaySize );
 	IniEntry( FontSize );
+	IniEntry( Theme );
 }
 
 void AppConfig::FolderOptions::ApplyDefaults()
@@ -580,7 +582,7 @@ AppConfig::FolderOptions::FolderOptions()
 void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 {
 	FolderOptions defaults;
-	IniScopedGroup path( ini, L"Folders" );
+	ScopedIniGroup path( ini, L"Folders" );
 
 	if( ini.IsSaving() )
 	{
@@ -620,13 +622,13 @@ void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 // ------------------------------------------------------------------------
 const wxFileName& AppConfig::FilenameOptions::operator[]( PluginsEnum_t pluginidx ) const
 {
-	IndexBoundsCheckDev( L"Filename[Plugin]", pluginidx, PluginId_Count );
+	IndexBoundsAssumeDev( L"Filename[Plugin]", pluginidx, PluginId_Count );
 	return Plugins[pluginidx];
 }
 
 void AppConfig::FilenameOptions::LoadSave( IniInterface& ini )
 {
-	IniScopedGroup path( ini, L"Filenames" );
+	ScopedIniGroup path( ini, L"Filenames" );
 
 	static const wxFileName pc( L"Please Configure" );
 
@@ -674,7 +676,7 @@ void AppConfig::GSWindowOptions::SanityCheck()
 
 void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 {
-	IniScopedGroup path( ini, L"GSWindow" );
+	ScopedIniGroup path( ini, L"GSWindow" );
 	GSWindowOptions defaults;
 
 	IniEntry( CloseOnEsc );
@@ -720,10 +722,9 @@ void AppConfig::FramerateOptions::SanityCheck()
 	SlomoScalar		.ConfineTo( 0.05, 10.0 );
 }
 
-
 void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 {
-	IniScopedGroup path( ini, L"Framerate" );
+	ScopedIniGroup path( ini, L"Framerate" );
 	FramerateOptions defaults;
 
 	IniEntry( NominalScalar );
@@ -733,7 +734,6 @@ void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 	IniEntry( SkipOnLimit );
 	IniEntry( SkipOnTurbo );
 }
-
 
 wxFileConfig* OpenFileConfig( const wxString& filename )
 {
@@ -792,6 +792,127 @@ void AppConfig_OnChangedSettingsFolder( bool overwrite )
 		AppLoadSettings();
 
 	AppApplySettings();
+}
+
+// --------------------------------------------------------------------------------------
+//  pxDudConfig
+// --------------------------------------------------------------------------------------
+// Used to handle config actions prior to the creation of the ini file (for example, the
+// first time wizard).  Attempts to save ini settings are simply ignored through this
+// class, which allows us to give the user a way to set everything up in the wizard, apply
+// settings as usual, and only *save* something once the whole wizard is complete.
+//
+class pxDudConfig : public wxConfigBase
+{
+protected:
+	wxString	m_empty;
+
+public:
+	virtual ~pxDudConfig() {}
+
+	virtual void SetPath(const wxString& ) {}
+	virtual const wxString& GetPath() const { return m_empty; }
+
+	virtual bool GetFirstGroup(wxString& , long& ) const { return false; }
+	virtual bool GetNextGroup (wxString& , long& ) const { return false; }
+	virtual bool GetFirstEntry(wxString& , long& ) const { return false; }
+	virtual bool GetNextEntry (wxString& , long& ) const { return false; }
+	virtual size_t GetNumberOfEntries(bool ) const  { return 0; }
+	virtual size_t GetNumberOfGroups(bool ) const  { return 0; }
+
+	virtual bool HasGroup(const wxString& ) const { return false; }
+	virtual bool HasEntry(const wxString& ) const { return false; }
+
+	virtual bool Flush(bool ) { return false; }
+
+	virtual bool RenameEntry(const wxString&, const wxString& ) { return false; }
+
+	virtual bool RenameGroup(const wxString&, const wxString& ) { return false; }
+
+	virtual bool DeleteEntry(const wxString&, bool bDeleteGroupIfEmpty = true) { return false; }
+	virtual bool DeleteGroup(const wxString& ) { return false; }
+	virtual bool DeleteAll() { return false; }
+
+protected:
+	virtual bool DoReadString(const wxString& , wxString *) const  { return false; }
+	virtual bool DoReadLong(const wxString& , long *) const  { return false; }
+
+	virtual bool DoWriteString(const wxString& , const wxString& )  { return false; }
+	virtual bool DoWriteLong(const wxString& , long )  { return false; }
+};
+
+static pxDudConfig _dud_config;
+
+// --------------------------------------------------------------------------------------
+//  AppIniSaver / AppIniLoader
+// --------------------------------------------------------------------------------------
+class AppIniSaver : public IniSaver
+{
+public:
+	AppIniSaver();
+	virtual ~AppIniSaver() throw() {}
+};
+
+class AppIniLoader : public IniLoader
+{
+public:
+	AppIniLoader();
+	virtual ~AppIniLoader() throw() {}
+};
+
+AppIniSaver::AppIniSaver()
+	: IniSaver( (GetAppConfig() != NULL) ? *GetAppConfig() : _dud_config )
+{
+}
+
+AppIniLoader::AppIniLoader()
+	: IniLoader( (GetAppConfig() != NULL) ? *GetAppConfig() : _dud_config )
+{
+}
+
+
+void AppLoadSettings()
+{
+	if( wxGetApp().Rpc_TryInvoke(AppLoadSettings) ) return;
+
+	AppIniLoader loader;
+	ConLog_LoadSaveSettings( loader );
+	SysTraceLog_LoadSaveSettings( loader );
+	g_Conf->LoadSave( loader );
+
+	if( !wxFile::Exists( g_Conf->CurrentIso ) )
+		g_Conf->CurrentIso.clear();
+
+	sApp.DispatchEvent( loader );
+}
+
+void AppSaveSettings()
+{
+	// If multiple SaveSettings messages are requested, we want to ignore most of them.
+	// Saving settings once when the GUI is idle should be fine. :)
+
+	static u32 isPosted = false;
+
+	if( !wxThread::IsMain() )
+	{
+		if( AtomicExchange(isPosted, true) )
+			wxGetApp().PostIdleMethod( AppSaveSettings );
+
+		return;
+	}
+
+	if( !wxFile::Exists( g_Conf->CurrentIso ) )
+		g_Conf->CurrentIso.clear();
+
+	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );
+
+	AtomicExchange( isPosted, false );
+
+	AppIniSaver saver;
+	g_Conf->LoadSave( saver );
+	ConLog_LoadSaveSettings( saver );
+	SysTraceLog_LoadSaveSettings( saver );
+	sApp.DispatchEvent( saver );
 }
 
 // Returns the current application configuration file.  This is preferred over using

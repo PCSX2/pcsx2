@@ -1,7 +1,7 @@
 # CDVDlinuz Plugin
 
 # plugin name
-set(CDVDlinuzName CDVDlinuz)
+set(Output CDVDlinuz)
 
 set(CommonFlags
     -Wall
@@ -82,12 +82,17 @@ include_directories(.
     Linux)
 
 # add library
-add_library(${CDVDlinuzName} SHARED
+add_library(${Output} SHARED
     ${CDVDlinuzSources}
     ${CDVDlinuzHeaders}
     ${CDVDlinuzLinuxSources}
     ${CDVDlinuzLinuxHeaders})
 
 # set output directory
-set_target_properties(${CDVDlinuzName} PROPERTIES
+set_target_properties(${Output} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/plugins)
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

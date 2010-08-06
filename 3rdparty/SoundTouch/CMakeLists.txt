@@ -1,7 +1,7 @@
 # SoundTouch library
 
 # library name
-set(SoundTouchName pcsx2_SoundTouch)
+set(Output pcsx2_SoundTouch)
 
 set(CommonFlags
     -march=athlon-xp
@@ -59,4 +59,9 @@ set(SoundTouchHeaders
 	cpu_detect.h)
 
 # add library
-add_library(${SoundTouchName} STATIC ${SoundTouchSources} ${SoundTouchHeaders})
+add_library(${Output} STATIC ${SoundTouchSources} ${SoundTouchHeaders})
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

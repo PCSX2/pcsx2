@@ -7,7 +7,7 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 
 # library name
-set(UtilitiesName Utilities)
+set(Output Utilities)
 
 # set common flags
 set(CommonFlags 
@@ -96,6 +96,8 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 set(UtilitiesSources
 	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
+    ../../include/Utilities/SafeArray.inl
+    ../../include/Utilities/TlsVariable.inl
 	AlignedMalloc.cpp
 	CheckedStaticBox.cpp
 	Console.cpp
@@ -114,6 +116,7 @@ set(UtilitiesSources
 	pxRadioPanel.cpp
 	pxStaticText.cpp
 	pxTextStream.cpp
+	pxTranslate.cpp
 	pxWindowTextWriter.cpp
 	Semaphore.cpp
 	StringHelpers.cpp
@@ -155,6 +158,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/StringHelpers.h
 	../../include/Utilities/Threading.h
 	../../include/Utilities/ThreadingDialogs.h
+	../../include/Utilities/TraceLog.h
 	../../include/Utilities/wxAppWithHelpers.h
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h
@@ -166,7 +170,12 @@ include_directories(.)
 set_source_files_properties(${UtilitiesSSources} PROPERTIES LANGUAGE CXX)
 
 # add library
-add_library(${UtilitiesName} STATIC ${UtilitiesSources} ${UtilitiesHeaders} ${UtilitiesSSources})
+add_library(${Output} STATIC ${UtilitiesSources} ${UtilitiesHeaders} ${UtilitiesSSources})
 
 # link target with wx
-target_link_libraries(${UtilitiesName} ${wxWidgets_LIBRARIES})
+target_link_libraries(${Output} ${wxWidgets_LIBRARIES})
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

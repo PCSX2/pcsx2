@@ -670,7 +670,7 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 			const char *funcname = irxImportFuncname(libname, index);
 			irxDEBUG debug = irxImportDebug(libname, index);
 
-			if (macTrace.IOP.Bios()) {
+			if (SysTracePack.IOP.Bios.IsEnabled()) {
 				xMOV(ecx, (uptr)libname);
 				xMOV(edx, index);
 				xPUSH((uptr)funcname);
@@ -1010,7 +1010,7 @@ void psxSetBranchImm( u32 imm )
 
 static __forceinline u32 psxScaleBlockCycles()
 {
-	return s_psxBlockCycles * (EmuConfig.Speedhacks.IopCycleRate_X2 ? 2 : 1);
+	return s_psxBlockCycles;
 }
 
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)

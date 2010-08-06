@@ -116,7 +116,7 @@ static __forceinline void gsCSRwrite( const tGS_CSR& csr )
 		if(SIGNAL_IMR_Pending == true)
 		{
 			//DevCon.Warning("Firing pending signal");
-			GIF_LOG("GS SIGNAL (pending) data=%x_%x IMR=%x CSRr=%x\n",SIGNAL_Data_Pending[0], SIGNAL_Data_Pending[1], GSIMR, GSCSRr);
+			GIF_LOG("GS SIGNAL (pending) data=%x_%x IMR=%x CSRr=%x",SIGNAL_Data_Pending[0], SIGNAL_Data_Pending[1], GSIMR, GSCSRr);
 			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID&~SIGNAL_Data_Pending[1])|(SIGNAL_Data_Pending[0]&SIGNAL_Data_Pending[1]);
 
 			if (!(GSIMR&0x100))
@@ -283,15 +283,10 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 		case 0x12001040: //busdir
 
 			//This is probably a complete hack, however writing to BUSDIR "should" start a transfer 
-			//(Bleach Blade Battlers, Growlanser 2 and 3, Wizardry)
 			//Only problem is it kills killzone :(.
 			// (yes it *is* a complete hack; both lines here in fact --air)
 			//=========================================================================
-			//Console.Warning("BUSDIR write! Setting OPH and DIR to = %x",(u32)value[0]);
-			if ((u32)value[0] == 1)
-				gifRegs->stat.OPH = true;
-			else
-				gifRegs->stat.OPH = false;
+			//gifRegs->stat.OPH = true; // Bleach wants it, Killzone hates it.
 			
 			gifRegs->stat.DIR = (u32)value[0];
 			//=========================================================================

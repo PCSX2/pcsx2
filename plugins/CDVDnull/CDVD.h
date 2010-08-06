@@ -25,9 +25,7 @@
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
 
-#ifdef __LINUX__
-#include <gtk/gtk.h>
-#else
+#ifdef _MSC_VER
 #include <windows.h>
 #include <windowsx.h>
 #endif
@@ -41,7 +39,7 @@
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
 #else
-#define EXPORT_C_(type) extern "C" type
+#define EXPORT_C_(type) extern "C" __attribute__((externally_visible,visibility("default"))) type
 #endif
 
 extern const unsigned char version;

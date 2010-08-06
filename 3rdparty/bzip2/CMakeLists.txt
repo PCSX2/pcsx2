@@ -1,7 +1,7 @@
 # bzip2 library
 
 # library name
-set(bzip2Name pcsx2_bzip2)
+set(Output pcsx2_bzip2)
 
 set(CommonFlags
     -march=athlon-xp
@@ -47,4 +47,9 @@ set(bzip2Headers
 	bzlib_private.h)
 
 # add library
-add_library(${bzip2Name} STATIC ${bzip2Sources} ${bzip2Headers})
+add_library(${Output} STATIC ${bzip2Sources} ${bzip2Headers})
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

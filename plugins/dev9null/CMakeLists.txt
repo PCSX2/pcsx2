@@ -7,13 +7,14 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 
 # plugin name
-set(dev9nullName dev9null)
+set(Output dev9null)
 
 set(CommonFlags
     -Wall
     )
 
 set(OptimizationFlags
+    -fvisibility=hidden
     -O2
     -DNDEBUG
     )
@@ -66,12 +67,17 @@ set(dev9nullWindowsHeaders
 include_directories(.)
 
 # add library
-add_library(${dev9nullName} SHARED
+add_library(${Output} SHARED
 			${dev9nullSources}
 			${dev9nullHeaders}
 			${dev9nullLinuxSources}
 			${dev9nullLinuxHeaders})
 
 # set output directory
-set_target_properties(${dev9nullName} PROPERTIES
+set_target_properties(${Output} PROPERTIES
 					  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/plugins)
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

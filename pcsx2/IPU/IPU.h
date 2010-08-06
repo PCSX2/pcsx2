@@ -13,15 +13,12 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IPU_H__
-#define __IPU_H__
+#pragma once
 
-#include "mpeg2lib/Mpeg.h"
-#include "coroutine.h"
 #include "IPU_Fifo.h"
 
 #ifdef _MSC_VER
-#pragma pack(1)
+//#pragma pack(1)
 #endif
 
 #define ipumsk( src ) ( (src) & 0xff )
@@ -58,15 +55,7 @@ struct IPUStatus {
 
 struct tIPU_CMD
 {
-	union
-	{
-		struct
-		{
-			u32 OPTION : 28;	// VDEC decoded value
-			u32 CMD : 4;	// last command
-		};
-		u32 DATA;
-	};
+	u32 DATA;
 	u32 BUSY;
 };
 
@@ -114,7 +103,7 @@ struct tIPU_BP {
 };
 
 #ifdef _WIN32
-#pragma pack()
+//#pragma pack()
 #endif
 
 union tIPU_CMD_IDEC
@@ -140,31 +129,7 @@ union tIPU_CMD_IDEC
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	void log()
-	{
-		IPU_LOG("IPU IDEC command.");
-
-		if (FB) IPU_LOG(" Skip %d	bits.", FB);
-		IPU_LOG(" Quantizer step code=0x%X.", QSC);
-
-		if (DTD == 0)
-			IPU_LOG(" Does not decode DT.");
-		else
-			IPU_LOG(" Decodes DT.");
-
-		if (SGN == 0)
-			IPU_LOG(" No bias.");
-		else
-			IPU_LOG(" Bias=128.");
-
-		if (DTE == 1) IPU_LOG(" Dither Enabled.");
-		if (OFM == 0)
-			IPU_LOG(" Output format is RGB32.");
-		else
-			IPU_LOG(" Output format is RGB16.");
-
-		IPU_LOG("");
-	}
+	void log() const;
 };
 
 union tIPU_CMD_BDEC
@@ -188,28 +153,7 @@ union tIPU_CMD_BDEC
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	void log(int s_bdec)
-	{
-		IPU_LOG("IPU BDEC(macroblock decode) command %x, num: 0x%x", cpuRegs.pc, s_bdec);
-		if (FB) IPU_LOG(" Skip 0x%X bits.", FB);
-
-		if (MBI)
-			IPU_LOG(" Intra MB.");
-		else
-			IPU_LOG(" Non-intra MB.");
-
-		if (DCR)
-			IPU_LOG(" Resets DC prediction value.");
-		else
-			IPU_LOG(" Doesn't reset DC prediction value.");
-
-		if (DT)
-			IPU_LOG(" Use field DCT.");
-		else
-			IPU_LOG(" Use frame DCT.");
-
-		IPU_LOG(" Quantizer step=0x%X", QSC);
-	}
+	void log(int s_bdec) const;
 };
 
 union tIPU_CMD_CSC
@@ -230,29 +174,8 @@ union tIPU_CMD_CSC
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
-	void log_from_YCbCr()
-	{
-		IPU_LOG("IPU CSC(Colorspace conversion from YCbCr) command (%d).", MBC);
-		if (OFM)
-			IPU_LOG("Output format is RGB16. ");
-		else
-			IPU_LOG("Output format is RGB32. ");
-
-		if (DTE) IPU_LOG("Dithering enabled.");
-	}
-	void log_from_RGB32()
-	{
-		IPU_LOG("IPU PACK (Colorspace conversion from RGB32) command.");
-
-		if (OFM)
-			IPU_LOG("Output format is RGB16. ");
-		else
-			IPU_LOG("Output format is INDX4. ");
-
-		if (DTE) IPU_LOG("Dithering enabled.");
-
-		IPU_LOG("Number of macroblocks to be converted: %d", MBC);
-	}
+	void log_from_YCbCr() const;
+	void log_from_RGB32() const;
 };
 
 union tIPU_DMA
@@ -327,8 +250,14 @@ struct IPUregisters {
 struct tIPU_cmd
 {
 	int index;
-	int pos[2];
-	int current;
+	int pos[6];
+	union {
+		struct {
+			u32 OPTION : 28;
+			u32 CMD : 4;
+		};
+		u32 current;
+	};
 	void clear()
 	{
 		memzero(pos);
@@ -342,16 +271,10 @@ struct tIPU_cmd
 	}
 };
 
-//extern tIPU_cmd ipu_cmd;
-extern tIPU_BP g_BP;
+extern tIPU_cmd ipu_cmd;
 extern int coded_block_pattern;
-extern int g_nIPU0Data; // or 0x80000000 whenever transferring
-extern u8* g_pIPU0Pointer;
-
-// The IPU can only do one task at once and never uses other buffers so these
-// should be made available to functions in other modules to save registers.
-extern __aligned16 macroblock_rgb32	rgb32;
-extern __aligned16 macroblock_8		mb8;
+extern IPUStatus IPU1Status;
+extern tIPU_DMA g_nDMATransfer;
 
 extern int ipuInit();
 extern void ipuReset();
@@ -376,10 +299,9 @@ extern int IPU0dma();
 extern int IPU1dma();
 
 extern u16 __fastcall FillInternalBuffer(u32 * pointer, u32 advance, u32 size);
+extern u8 __fastcall getBits128(u8 *address, u32 advance);
+extern u8 __fastcall getBits64(u8 *address, u32 advance);
 extern u8 __fastcall getBits32(u8 *address, u32 advance);
 extern u8 __fastcall getBits16(u8 *address, u32 advance);
 extern u8 __fastcall getBits8(u8 *address, u32 advance);
-extern int __fastcall getBits(u8 *address, u32 size, u32 advance);
 
-
-#endif

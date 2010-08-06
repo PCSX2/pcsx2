@@ -7,13 +7,14 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 
 # plugin name
-set(FWnullName FWnull)
+set(Output FWnull)
 
 set(CommonFlags
     -Wall
     )
 
 set(OptimizationFlags
+    -fvisibility=hidden
     -O2
     )
 
@@ -68,12 +69,17 @@ set(FWnullWindowsHeaders
 include_directories(.)
 
 # add library
-add_library(${FWnullName} SHARED
+add_library(${Output} SHARED
 			${FWnullSources}
 			${FWnullHeaders}
 			${FWnullLinuxSources}
 			${FWnullLinuxHeaders})
 
 # set output directory
-set_target_properties(${FWnullName} PROPERTIES
+set_target_properties(${Output} PROPERTIES
 					  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/plugins)
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")

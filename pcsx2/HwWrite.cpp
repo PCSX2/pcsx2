@@ -163,10 +163,6 @@ static _f void DmaExec16( void (*func)(), u32 mem, u16 value )
 /////////////////////////////////////////////////////////////////////////
 // Hardware WRITE 8 bit
 
-char sio_buffer[1024];
-int sio_count;
-
-
 void hwWrite8(u32 mem, u8 value)
 {
 	if ((mem >= VIF0_STAT) && (mem < VIF0_FIFO)) {
@@ -230,23 +226,29 @@ void hwWrite8(u32 mem, u8 value)
 			//if(value & GIF_MODE_IMT) DevCon.Warning("8bit GIFMODE INT write %x", value);
 		}
 		break;
+
 		case SIO_TXFIFO:
 		{
-			// Terminate lines on CR or full buffers, and ignore \n's if the string contents
-			// are empty (otherwise terminate on \n too!)
-			if (( value == '\r' ) || ( sio_count == 1023 ) ||
-			     ( value == '\n' && sio_count != 0 ))
-			{
-				// Use "%s" below even though it feels indirect -- it's necessary to avoid
-				// errors if/when games use printf formatting control chars.
+			static bool iggy_newline = false;
+			static char sio_buffer[1024];
+			static int sio_count;
 
-				sio_buffer[sio_count] = 0;
-				Console.WriteLn( ConColor_EE, L"%s", ShiftJIS_ConvertString(sio_buffer).c_str() );
-				sio_count = 0;
-			}
-			else if( value != '\n' )
+			if (value == '\r')
 			{
+				iggy_newline = true;
+				sio_buffer[sio_count++] = '\n';
+			}
+			else if (!iggy_newline || (value != '\n'))
+			{
+				iggy_newline = false;
 				sio_buffer[sio_count++] = value;
+			}
+
+			if ((sio_count == ArraySize(sio_buffer)-1) || (sio_buffer[sio_count-1] == '\n'))
+			{
+				sio_buffer[sio_count] = 0;
+				eeConLog( ShiftJIS_ConvertString(sio_buffer) );
+				sio_count = 0;
 			}
 		}
 		break;
@@ -363,11 +365,11 @@ void hwWrite8(u32 mem, u8 value)
 			oldvalue = psHu8(mem);
 			if ((oldvalue & 0x3) != (value & 0x3))
 			{
-				DevCon.Warning("8 Stall Source Changed to %x", (value & 0x30) >> 4);
+				DevCon.Warning("8bit Stall Source Changed to %x", (value & 0x30) >> 4);
 			}
 			if ((oldvalue & 0xC) != (value & 0xC))
 			{
-				DevCon.Warning("8 Stall Destination Changed to %x", (value & 0xC0) >> 4);
+				DevCon.Warning("8bit Stall Destination Changed to %x", (value & 0xC0) >> 4);
 			}
 			psHu8(mem) = value;
 			break;
@@ -679,11 +681,11 @@ __forceinline void hwWrite16(u32 mem, u16 value)
 			oldvalue = psHu16(mem);
 			if ((oldvalue & 0x30) != (value & 0x30))
 			{
-				DevCon.Warning("Stall Source Changed to %x", (value & 0x30) >> 4);
+				DevCon.Warning("16bit Stall Source Changed to %x", (value & 0x30) >> 4);
 			}
 			if ((oldvalue & 0xC0) != (value & 0xC0))
 			{
-				DevCon.Warning("Stall Destination Changed to %x", (value & 0xC0) >> 4);
+				DevCon.Warning("16bit Stall Destination Changed to %x", (value & 0xC0) >> 4);
 			}
 			psHu16(mem) = value;
 			break;
@@ -878,11 +880,11 @@ void __fastcall hwWrite32_page_0E( u32 mem, u32 value )
 			}
 			if ((oldvalue & 0x30) != (value & 0x30))
 			{
-				DevCon.Warning("Stall Source Changed to %x", (value & 0x30) >> 4);
+				DevCon.Warning("32bit Stall Source Changed to %x", (value & 0x30) >> 4);
 			}
 			if ((oldvalue & 0xC0) != (value & 0xC0))
 			{
-				DevCon.Warning("Stall Destination Changed to %x", (value & 0xC0) >> 4);
+				DevCon.Warning("32bit Stall Destination Changed to %x", (value & 0xC0) >> 4);
 			}
 			break;
 		}
@@ -1147,11 +1149,11 @@ void __fastcall hwWrite64_page_0E( u32 mem, const mem64_t* srcval )
 			}
 			if ((oldvalue & 0x30) != (value & 0x30))
 			{
-				DevCon.Warning("Stall Source Changed to %x", (value & 0x30) >> 4);
+				DevCon.Warning("64bit Stall Source Changed to %x", (value & 0x30) >> 4);
 			}
 			if ((oldvalue & 0xC0) != (value & 0xC0))
 			{
-				DevCon.Warning("Stall Destination Changed to %x", (value & 0xC0) >> 4);
+				DevCon.Warning("64bit Stall Destination Changed to %x", (value & 0xC0) >> 4);
 			}
 			break;
 		}

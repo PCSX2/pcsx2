@@ -45,6 +45,7 @@ void LoadConfig()
 
 	if (!fp)
 	{
+		SysMessage("Unable to open ZZOgl-PG's ini file!");
 		CreateDirectory(s_strIniPath.c_str(), NULL);
 		SaveConfig();//save and return
 		return ;

@@ -72,7 +72,7 @@ set(OptimizationFlags
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	
 	# executable name
-	set(pcsx2Name pcsx2-dbg)
+	set(Output pcsx2-dbg)
 	
 	# add defines
 	add_definitions(${CommonFlags} ${DebugFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP)
@@ -82,7 +82,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 	# executable name
-	set(pcsx2Name pcsx2-dev)
+	set(Output pcsx2-dev)
 	
 	# add defines
 	add_definitions(${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD -DWX_PRECOMP -DNDEBUG)
@@ -92,7 +92,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 
 	# executable name
-	set(pcsx2Name pcsx2)
+	set(Output pcsx2)
 	
 	# add defines
 	add_definitions(${CommonFlags} ${OptimizationFlags} -DWX_PRECOMP -DNDEBUG)
@@ -371,7 +371,6 @@ set(pcsx2GuiHeaders
 
 # IPU sources
 set(pcsx2IPUSources
-	IPU/coroutine.cpp
 	IPU/IPU.cpp
 	IPU/IPU_Fifo.cpp
 	IPU/mpeg2lib/Idct.cpp
@@ -380,7 +379,6 @@ set(pcsx2IPUSources
 
 # IPU headers
 set(pcsx2IPUHeaders
-	IPU/coroutine.h
 	IPU/IPU.h
 	IPU/IPU_Fifo.h
 	IPU/yuv2rgb.h)
@@ -554,13 +552,11 @@ set(pcsx2x86Headers
 
 # colect .asm files
 set(pcsx2AsmFiles
-	IPU/acoroutine.asm
 	IPU/yuv2rgb.asm
 	x86/ix86-32/aVif_proc-32.asm)
 
 # collect .S files
 set(pcsx2SSources
-	IPU/acoroutine.S
 	x86/aVUzerorec.S)
 
 # change language of .S-files to c++
@@ -621,23 +617,28 @@ include_directories(.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
 # add executable
-add_executable(${pcsx2Name}
+add_executable(${Output}
 			   ${Common}
 			   ${Platform})
 
 # add dependencies
-add_dependencies(${pcsx2Name} Resources)
+add_dependencies(${Output} Resources)
 
 # link target with project internal libraries
-target_link_libraries(${pcsx2Name} Utilities x86emitter)
+target_link_libraries(${Output} Utilities x86emitter)
 					
 # link target with wx
-target_link_libraries(${pcsx2Name} ${wxWidgets_LIBRARIES})
+target_link_libraries(${Output} ${wxWidgets_LIBRARIES})
 
 if(Linux)
 	# link target with gtk2
-	target_link_libraries(${pcsx2Name} ${GTK2_LIBRARIES})
+	target_link_libraries(${Output} ${GTK2_LIBRARIES})
 endif(Linux)
 
 # link target with zlib
-target_link_libraries(${pcsx2Name} ${ZLIB_LIBRARIES})
+target_link_libraries(${Output} ${ZLIB_LIBRARIES})
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
