@@ -82,7 +82,7 @@ static int  _SPR0chain()
 	return (spr0.qwc); // bus is 1/2 the ee speed
 }
 
-__forceinline void SPR0chain()
+__fi void SPR0chain()
 {
 	DMACh& spr0 = DMACh_SPR0;
 	CPU_INT(DMAC_FROM_SPR, _SPR0chain() / BIAS);
@@ -132,7 +132,7 @@ void _SPR0interleave()
 	spr0.qwc = 0;
 }
 
-static __forceinline void _dmaSPR0()
+static __fi void _dmaSPR0()
 {
 	DMACh& spr0 = DMACh_SPR0;
 
@@ -277,7 +277,7 @@ void dmaSPR0()   // fromSPR
 	SPRFROMinterrupt();
 }
 
-__forceinline static void SPR1transfer(const void* data, int qwc)
+__fi static void SPR1transfer(const void* data, int qwc)
 {
 	DMACh& spr1 = DMACh_SPR1;
 	memcpy_qwc(&psSu128(spr1.sadr), data, qwc);
@@ -300,7 +300,7 @@ int  _SPR1chain()
 	return (spr1.qwc);
 }
 
-__forceinline void SPR1chain()
+__fi void SPR1chain()
 {
 	DMACh& spr1 = DMACh_SPR1;
 	CPU_INT(DMAC_TO_SPR, _SPR1chain() / BIAS);

@@ -86,7 +86,7 @@ void SaveStateBase::vif1Freeze()
 extern bool _chainVIF0();
 extern bool _VIF0chain();
 
-_f void vif0FBRST(u32 value)
+__fi void vif0FBRST(u32 value)
 {
 	DMACh& vif0ch = DMACh_VIF0;
 	VIF_LOG("VIF0_FBRST write32 0x%8.8x", value);
@@ -149,7 +149,7 @@ _f void vif0FBRST(u32 value)
 	}
 }
 
-_f void vif1FBRST(u32 value)
+__fi void vif1FBRST(u32 value)
 {
 	DMACh& vif1ch = DMACh_VIF1;
 	VIF_LOG("VIF1_FBRST write32 0x%8.8x", value);
@@ -246,7 +246,7 @@ _f void vif1FBRST(u32 value)
 	}
 }
 
-_f void vif1STAT(u32 value) {
+__fi void vif1STAT(u32 value) {
 	VIF_LOG("VIF1_STAT write32 0x%8.8x", value);
 
 	/* Only FDR bit is writable, so mask the rest */

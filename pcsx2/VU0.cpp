@@ -60,7 +60,7 @@ void COP2_Unknown()
 
 //****************************************************************************
 
-__forceinline void _vu0run(bool breakOnMbit, bool addCycles) {
+__fi void _vu0run(bool breakOnMbit, bool addCycles) {
 
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
@@ -88,7 +88,7 @@ namespace OpcodeImpl
 	void LQC2() {
 		u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)cpuRegs.code;
 		if (_Ft_) {
-			memRead128(addr,   &VU0.VF[_Ft_].UD[0]);
+			memRead128(addr,   VU0.VF[_Ft_].UD);
 		} else {
 			u64 val[2];
  			memRead128(addr,   val);
@@ -102,7 +102,7 @@ namespace OpcodeImpl
 		u32 addr = _Imm_ + cpuRegs.GPR.r[_Rs_].UL[0];
 		//memWrite64(addr,  VU0.VF[_Ft_].UD[0]);
 		//memWrite64(addr+8,VU0.VF[_Ft_].UD[1]);
-		memWrite128(addr,  &VU0.VF[_Ft_].UD[0]);
+		memWrite128(addr,  VU0.VF[_Ft_].UD);
 	}
 }}}
 
@@ -179,13 +179,13 @@ void CTC2() {
 //---------------------------------------------------------------------------------------
 
 
-__forceinline void SYNCMSFLAGS()
+__fi void SYNCMSFLAGS()
 {
 	VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag;
 	VU0.VI[REG_MAC_FLAG].UL = VU0.macflag;
 }
 
-__forceinline void SYNCFDIV()
+__fi void SYNCFDIV()
 {
 	VU0.VI[REG_Q].UL = VU0.q.UL;
 	VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag;

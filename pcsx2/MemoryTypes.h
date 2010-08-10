@@ -35,7 +35,7 @@ typedef u8 mem8_t;
 typedef u16 mem16_t;
 typedef u32 mem32_t;
 typedef u64 mem64_t;
-typedef u64 mem128_t;
+typedef u128 mem128_t;
 
 // This namespace contains physical memory addresses for peripherals, HW registers, and ROMs.
 // These are the physical mappings, which should be referenced from DMAs and from VTLB setup

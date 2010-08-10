@@ -58,7 +58,7 @@ static void StartQueuedDMA()
 	if (QueuedDMA.SPR1) { DMA_LOG("Resuming DMA for SPR1"); QueuedDMA.SPR1 = !QuickDmaExec(dmaSPR1, D9_CHCR); }
 }
 
-static _f void DmaExec( void (*func)(), u32 mem, u32 value )
+static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 {
 	DMACh *reg = &psH_DMACh(mem);
     tDMA_CHCR chcr(value);
@@ -145,7 +145,7 @@ static _f void DmaExec( void (*func)(), u32 mem, u32 value )
 
 // DmaExec8 should only be called for the second byte of CHCR.
 // Testing Note: dark cloud 2 uses 8 bit DMAs register writes.
-static _f void DmaExec8( void (*func)(), u32 mem, u8 value )
+static __fi void DmaExec8( void (*func)(), u32 mem, u8 value )
 {
 	pxAssumeMsg( (mem & 0xf) == 1, "DmaExec8 should only be called for the second byte of CHCR" );
 
@@ -154,7 +154,7 @@ static _f void DmaExec8( void (*func)(), u32 mem, u8 value )
 	DmaExec( func, mem & ~0xf, (u32)value<<8 );
 }
 
-static _f void DmaExec16( void (*func)(), u32 mem, u16 value )
+static __fi void DmaExec16( void (*func)(), u32 mem, u16 value )
 {
 	DmaExec( func, mem, (u32)value );
 }
@@ -419,7 +419,7 @@ void hwWrite8(u32 mem, u8 value)
 	}
 }
 
-__forceinline void hwWrite16(u32 mem, u16 value)
+__ri void hwWrite16(u32 mem, u16 value)
 {
 	if( mem >= IPU_CMD && mem < D0_CHCR )
 		Console.Warning( "hwWrite16 to %x", mem );
@@ -1228,25 +1228,27 @@ void __fastcall hwWrite128_generic(u32 mem, const mem128_t *srcval)
 {
 	//hwWrite128( mem, srcval ); return;
 
+	const uint srcval32 = *srcval;
+
 	switch (mem)
 	{
 		case INTC_STAT:
-			HW_LOG("INTC_STAT Write 64bit %x", (u32)srcval[0]);
-			psHu32(INTC_STAT) &= ~srcval[0];
+			HW_LOG("INTC_STAT Write 128bit %x (lower 32bits effective)", srcval32);
+			psHu32(INTC_STAT) &= ~srcval32;
 			//cpuTestINTCInts();
 		break;
 
 		case INTC_MASK:
-			HW_LOG("INTC_MASK Write 64bit %x", (u32)srcval[0]);
-			psHu32(INTC_MASK) ^= (u16)srcval[0];
+			HW_LOG("INTC_MASK Write 128bit %x (lower 32bits effective)", srcval32);
+			psHu32(INTC_MASK) ^= (u16)srcval32;
 			cpuTestINTCInts();
 		break;
 
 		case DMAC_ENABLEW: // DMAC_ENABLEW
 			oldvalue = psHu8(DMAC_ENABLEW + 2);
-			psHu32(DMAC_ENABLEW) = srcval[0];
-			psHu32(DMAC_ENABLER) = srcval[0];
-			if (((oldvalue & 0x1) == 1) && (((srcval[0] >> 16) & 0x1) == 0))
+			psHu32(DMAC_ENABLEW) = srcval32;
+			psHu32(DMAC_ENABLER) = srcval32;
+			if (((oldvalue & 0x1) == 1) && (((srcval32 >> 16) & 0x1) == 0))
 			{
 				if (!QueuedDMA.empty()) StartQueuedDMA();
 			}
@@ -1258,9 +1260,7 @@ void __fastcall hwWrite128_generic(u32 mem, const mem128_t *srcval)
 			break;
 
 		default:
-			psHu64(mem  ) = srcval[0];
-			psHu64(mem+8) = srcval[1];
-
+			CopyQWC(&psHu128(mem), srcval);
 			UnknownHW_LOG("Unknown Hardware write 128 at %x with value %x_%x (status=%x)", mem, srcval[1], srcval[0], cpuRegs.CP0.n.Status.val);
 		break;
 	}

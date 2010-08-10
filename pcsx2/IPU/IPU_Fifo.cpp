@@ -168,7 +168,7 @@ void IPU_Fifo_Output::readsingle(void *value)
 	}
 }
 
-__forceinline bool decoder_t::ReadIpuData(u128* out)
+__fi bool decoder_t::ReadIpuData(u128* out)
 {
 	if(decoder.ipu0_data == 0) return false;
 	_mm_store_ps((float*)out, _mm_load_ps((float*)GetIpuDataPtr()));
@@ -179,7 +179,7 @@ __forceinline bool decoder_t::ReadIpuData(u128* out)
 	return true;
 }
 
-void __fastcall ReadFIFO_page_7(u32 mem, u64 *out)
+void __fastcall ReadFIFO_page_7(u32 mem, mem128_t* out)
 {
 	pxAssert( (mem >= IPUout_FIFO) && (mem < D0_CHCR) );
 
@@ -188,7 +188,7 @@ void __fastcall ReadFIFO_page_7(u32 mem, u64 *out)
 
 	if (mem == 0) // IPUout_FIFO
 	{
-		if (decoder.ReadIpuData((u128*)out))
+		if (decoder.ReadIpuData(out))
 		{
 			ipu_fifo.out.readpos = (ipu_fifo.out.readpos + 4) & 31;
 		}

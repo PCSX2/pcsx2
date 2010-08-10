@@ -245,7 +245,7 @@ static void __fastcall nullRead64(u32 mem, mem64_t *out) {
 }
 static void __fastcall nullRead128(u32 mem, mem128_t *out) {
 	MEM_LOG("Read uninstalled memory at address %08x", mem);
-	*out = 0;
+	ZeroQWC(out);
 }
 static void __fastcall nullWrite8(u32 mem, mem8_t value)
 {
@@ -363,8 +363,8 @@ static void __fastcall _ext_memRead128(u32 mem, mem128_t *out)
 		//case 1: // hwm
 		//	hwRead128(mem & ~0xa0000000, out); return;
 		case 6: // gsm
-			out[0] = gsRead64(mem  );
-			out[1] = gsRead64(mem+8); return;
+			CopyQWC(out,PS2GS_BASE(mem));
+		return;
 	}
 
 	MEM_LOG("Unknown Memory read128 from address %8.8x", mem);
@@ -469,7 +469,7 @@ static void __fastcall _ext_memWrite128(u32 mem, const mem128_t *value)
 typedef void __fastcall ClearFunc_t( u32 addr, u32 qwc );
 
 template<int vunum>
-static __forceinline void ClearVuFunc( u32 addr, u32 size )
+static __fi void ClearVuFunc( u32 addr, u32 size )
 {
 	if( vunum==0 )
 		CpuVU0->Clear(addr,size);
@@ -519,8 +519,7 @@ static void __fastcall vuMicroRead128(u32 addr,mem128_t* data)
 	addr&=(vunum==0)?0xfff:0x3fff;
 	VURegs* vu=(vunum==0)?&VU0:&VU1;
 
-	data[0]=*(u64*)&vu->Micro[addr];
-	data[1]=*(u64*)&vu->Micro[addr+8];
+	CopyQWC(data,&vu->Micro[addr]);
 }
 
 // Profiled VU writes: Happen very infrequently, with exception of BIOS initialization (at most twice per
@@ -584,11 +583,10 @@ static void __fastcall vuMicroWrite128(u32 addr,const mem128_t* data)
 	addr &= (vunum==0) ? 0xfff : 0x3fff;
 	VURegs& vu = (vunum==0) ? VU0 : VU1;
 
-	if (*(u64*)&vu.Micro[addr]!=data[0] || *(u64*)&vu.Micro[addr+8]!=data[1])
+	if ((u128&)vu.Micro[addr] != *data)
 	{
 		ClearVuFunc<vunum>(addr&(~7), 16);
-		*(u64*)&vu.Micro[addr]=data[0];
-		*(u64*)&vu.Micro[addr+8]=data[1];
+		CopyQWC(&vu.Micro[addr],data);
 	}
 }
 
@@ -928,7 +926,7 @@ void mmap_MarkCountedRamPage( u32 paddr )
 // offset - offset of address relative to psM.
 // All recompiled blocks belonging to the page are cleared, and any new blocks recompiled
 // from code residing in this page will use manual protection.
-static __forceinline void mmap_ClearCpuBlock( uint offset )
+static __fi void mmap_ClearCpuBlock( uint offset )
 {
 	int rampage = offset >> 12;
 

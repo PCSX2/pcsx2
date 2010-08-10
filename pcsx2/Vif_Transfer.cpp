@@ -105,7 +105,7 @@ _vifT void vifTransferLoop(u32* &data) {
 	if (pSize)	  vifX.vifstalled	 = true;
 }
 
-_vifT _f bool vifTransfer(u32 *data, int size) {
+_vifT static __fi bool vifTransfer(u32 *data, int size) {
 	vifStruct&		vifX		= GetVifX;
 	DMACh&			vifXch		= GetVifXch;
 	VIFregisters&	vifXRegs	= GetVifXregs;

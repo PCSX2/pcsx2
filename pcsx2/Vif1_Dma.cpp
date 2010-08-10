@@ -22,7 +22,7 @@
 #include "newVif.h"
 
 
-__forceinline void vif1FLUSH()
+__fi void vif1FLUSH()
 {
 	if(g_packetsizeonvu > vif1.vifpacketsize && g_vu1Cycles > 0) 
 	{
@@ -182,7 +182,7 @@ bool _VIF1chain()
 		return VIF1transfer(pMem, vif1ch.qwc * 4);
 }
 
-__forceinline void vif1SetupTransfer()
+__fi void vif1SetupTransfer()
 {
     tDMA_TAG *ptag;
 	DMACh& vif1ch = DMACh_VIF1;
@@ -342,7 +342,7 @@ bool CheckPath2GIF(EE_EventType channel)
 	}
 	return true;
 }
-__forceinline void vif1Interrupt()
+__fi void vif1Interrupt()
 {
 	DMACh& vif1ch = DMACh_VIF1;
 	VIF_LOG("vif1Interrupt: %8.8x", cpuRegs.cycle);

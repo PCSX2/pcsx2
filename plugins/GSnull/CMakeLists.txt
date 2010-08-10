@@ -10,12 +10,11 @@ endif(NOT TOP_CMAKE_WAS_SOURCED)
 set(Output GSnull)
 
 set(CommonFlags
+    -fvisibility=hidden
     -Wall
-    -msse2
     )
 
 set(OptimizationFlags
-    -fvisibility=hidden
     -O2
     -DNDEBUG
     )
@@ -41,7 +40,8 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 # GSnull sources
 set(GSnullSources
 	GifTransfer.cpp
-	GS.cpp)
+	GS.cpp
+	Registers.cpp)
 
 # GSnull headers
 set(GSnullHeaders

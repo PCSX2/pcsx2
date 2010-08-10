@@ -223,8 +223,6 @@ extern VIFregisters *vifRegs;
 #define  GetVifX		(idx ? (vif1)			: (vif0))
 #define  GetVifXch		(idx ? (DMACh_VIF1)		: (DMACh_VIF0))
 #define  GetVifXregs	(idx ? (vif1RegsRef)	: (vif0RegsRef))
-#define _f				__forceinline
-#define _ri			__releaseinline
 
 extern void dmaVIF0();
 extern void dmaVIF1();
