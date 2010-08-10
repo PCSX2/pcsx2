@@ -377,7 +377,6 @@ vtlbHandler vtlb_RegisterHandler(	vtlbMemR8FP* r8,vtlbMemR16FP* r16,vtlbMemR32FP
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////
 // Maps the given hander (created with vtlb_RegisterHandler) to the specified memory region.
 // New mappings always assume priority over previous mappings, so place "generic" mappings for
 // large areas of memory first, and then specialize specific small regions of memory afterward.

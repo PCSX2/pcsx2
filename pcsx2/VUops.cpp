@@ -2059,7 +2059,7 @@ void _vuXGKICK(VURegs * VU)
 	u8* data = ((u8*)VU->Mem + ((VU->VI[_Is_].US[0]*16) & 0x3fff));
 	u32 size;
 	GetMTGS().PrepDataPacket( GIF_PATH_1, 0x400 );
-	size = GIFPath_CopyTag( GIF_PATH_1, (u128*)data, (0x400-(VU->VI[_Is_].US[0] & 0x3ff)) );
+	size = GIFPath_CopyTag( GIF_PATH_1, (u128*)data, (0x400-(VU->VI[_Is_].US[0] & 0x3ff)), 0x400 );
 	GetMTGS().SendDataPacket();
 }
 

@@ -503,7 +503,7 @@ void dmaVIF1()
 			vif1.dmamode = VIF_CHAIN_MODE;
 			DevCon.Warning(L"VIF1 QWC on Chain CHCR " + vif1ch.chcr.desc());
 			
-			if ((vif1ch.chcr.tag().ID == TAG_REFE) || (vif1ch.chcr.tag().ID == TAG_END))
+			if ((vif1ch.chcr.TAG.ID == TAG_REFE) || (vif1ch.chcr.TAG.ID == TAG_END))
 			{
 				vif1.done = true;
 			}

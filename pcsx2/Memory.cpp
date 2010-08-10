@@ -156,6 +156,7 @@ void memMapPhy()
 {
 	// Main memory
 	vtlb_MapBlock(psM,	0x00000000,Ps2MemSize::Base);//mirrored on first 256 mb ?
+
 	// High memory, uninstalled on the configuration we emulate
 	vtlb_MapHandler(null_handler, Ps2MemSize::Base, 0x10000000 - Ps2MemSize::Base);
 

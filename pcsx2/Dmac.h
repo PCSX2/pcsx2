@@ -122,16 +122,29 @@ union tDMA_TAG {
 
 union tDMA_CHCR {
 	struct {
-		u32 DIR : 1;        // Direction: 0 - to memory (source), 1 - from memory (drain).  Valid for VIF1 & SIF2 only.
-		u32 _reserved1 : 1;
-		u32 MOD : 2;		// Logical transfer mode. Normal, Chain, or Interleave (see LogicalTransferMode enum)
-		u32 ASP : 2;        // ASP1 & ASP2; Address stack pointer. 0, 1, or 2 addresses.
-		u32 TTE : 1;        // Tag Transfer Enable. 0 - Disable / 1 - Enable.
-		u32 TIE : 1;        // Tag Interrupt Enable. 0 - Disable / 1 - Enable.
-		u32 STR : 1;        // Start. 0 while stopping DMA, 1 while it's running.
-		u32 _reserved2 : 7;
-		u32 TAG : 16;		// Maintains upper 16 bits of the most recently read DMAtag.
+		u16 DIR : 1;        // Direction: 0 - to memory (source), 1 - from memory (drain).  Valid for VIF1 & SIF2 only.
+		u16 _reserved1 : 1;
+		u16 MOD : 2;		// Logical transfer mode. Normal, Chain, or Interleave (see LogicalTransferMode enum)
+		u16 ASP : 2;        // ASP1 & ASP2; Address stack pointer. 0, 1, or 2 addresses.
+		u16 TTE : 1;        // Tag Transfer Enable. 0 - Disable / 1 - Enable.
+		u16 TIE : 1;        // Tag Interrupt Enable. 0 - Disable / 1 - Enable.
+		u16 STR : 1;        // Start. 0 while stopping DMA, 1 while it's running.
+		u16 _reserved2 : 7;
+
+		union
+		{
+			struct
+			{
+				u16 _reserved  : 10;
+				u16 PCE		: 2;	// Priority Control Enable
+				u16 ID		: 3;	// Tag ID (see enum tag_id)
+				u16 IRQ		: 1;	// Interrupt Request (when enabled, fire interrupt when transfer finished)
+			} TAG; 		// Maintains upper 16 bits of the most recently read DMAtag.
+			
+			u16 _tag16;
 	};
+	};
+
 	u32 _u32;
 
 	tDMA_CHCR( u32 val) { _u32 = val; }
@@ -144,7 +157,6 @@ union tDMA_CHCR {
 	u16 upper() const { return (_u32 >> 16); }
 	u16 lower() const { return (u16)_u32; }
 	wxString desc() const { return wxsFormat(L"Chcr: 0x%x", _u32); }
-	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 #define CHCR(value) ((tDMA_CHCR)(value))
@@ -206,6 +218,28 @@ union tDMA_ASR {
 	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
+union tDMA_ADDR {
+	struct {
+		u32 ADDR : 31;	// Transfer memory address
+		u32 SPR : 1;	// Memory/SPR Address
+	};
+	u32 _u32;
+
+	tDMA_ADDR(u32 val) { _u32 = val; }
+
+	void clear() { _u32 = 0; }
+	
+	void IncrementQWC(uint incval = 1)
+	{
+		ADDR += incval;
+		if (SPR) ADDR &= (Ps2MemSize::Scratch-1);
+
+		// No need to test for VU/SPR direct mappings -- this function is only
+		// used from chain modes, which do not support SPR/VU direct mappings.
+	}
+};
+
+
 union tDMA_QWC {
 	struct {
 		u32 QWC : 16;
@@ -240,7 +274,7 @@ struct DMACh {
 
 	void chcrTransfer(tDMA_TAG* ptag)
 	{
-	    chcr.TAG = ptag[0].upper();
+	    chcr._tag16 = ptag[0].upper();
 	}
 
 	void qwcTransfer(tDMA_TAG* ptag)
@@ -289,11 +323,6 @@ struct DMACh {
 	    chcrTransfer(tag);
         qwcTransfer(tag);
         return tag;
-	}
-
-	tDMA_TAG dma_tag() const
-	{
-		return chcr.tag();
 	}
 
 	wxString cmq_to_str() const

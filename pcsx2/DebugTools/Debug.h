@@ -338,6 +338,7 @@ extern void __Log( const char* fmt, ... );
 #define GIF_LOG			macTrace(EE.GIF)
 #define EECNT_LOG		macTrace(EE.Counters)
 #define VifCodeLog		macTrace(EE.VIFcode)
+#define DMAC_LOG		macTrace(EE.DMAC)
 
 
 #define PSXBIOS_LOG		macTrace(IOP.Bios)
@@ -369,6 +370,7 @@ extern void __Log( const char* fmt, ... );
 #define IPU_LOG		0&&
 #define VUM_LOG		0&&
 #define VifCodeLog	0&&
+#define DMAC_LOG	0&&
 
 #define PSXCPU_LOG  0&&
 #define PSXMEM_LOG  0&&

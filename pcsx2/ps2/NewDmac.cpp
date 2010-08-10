@@ -19,6 +19,18 @@
 
 #include "Hardware.h"
 
+enum DMA_StallMode
+{
+	// No stalling logic is performed (STADR is not read or written)
+	DmaStall_None,
+	
+	// STADR is written with the MADR after data is transfered.
+	DmaStall_Source,
+
+	// STADR is read and MADR is not allowed to advance beyond that point.
+	DmaStall_Drain,
+};
+
 enum DMA_DirectionMode
 {
 	// Indicates a DMA that transfers from peripheral to memory
@@ -31,27 +43,71 @@ enum DMA_DirectionMode
 	DmaDir_Both,
 };
 
+#define __dmacall __fastcall
+
+// Returns the number of QWC actually transferred.  Return value can be 0, in cases where the
+// peripheral has no room to receive data (SIF FIFO is full, or occupied by another channel,
+// for example).
+typedef uint __dmacall FnType_ToPeripheral(const u128* src, uint qwc);
+
+// Returns the number of QWC actually transferred.  Return value can be 0, in cases where the
+// peripheral has no data to provide (SIF FIFO is empty, or occupied by another channel,
+// for example).
+typedef uint __dmacall FnType_FromPeripheral(u128* dest, uint qwc);
+
+typedef FnType_ToPeripheral*	Fnptr_ToPeripheral;
+typedef FnType_FromPeripheral*	Fnptr_FromPeripheral;
+
+// --------------------------------------------------------------------------------------
+//  Exception::DmaRaiseIRQ
+// --------------------------------------------------------------------------------------
+namespace Exception
+{
+	class DmaRaiseIRQ
+	{
+	public:
+		bool		BusError;
+		const char* Cause;
+
+		DmaRaiseIRQ( const char* _cause=NULL, bool buserr = false)
+		{
+			BusError = buserr;
+			Cause = _cause;
+		}
+	};
+}
+
+// --------------------------------------------------------------------------------------
+//  DmaChannelInformation
+// --------------------------------------------------------------------------------------
 struct DmaChannelInformation
 {
 	const wxChar*	name;
 
 	uint			regbaseaddr;
 	
-	DMA_DirectionMode direction;
-
-	bool			hasDrainStall;
+	DMA_StallMode	DmaStall;
 	bool			hasSourceChain;
 	bool			hasDestChain;
 	bool			hasAddressStack;
+
+	Fnptr_ToPeripheral		toFunc;
+	Fnptr_FromPeripheral	fromFunc;
+
+	DMA_DirectionMode GetDir() const
+	{
+		if (toFunc && fromFunc) return DmaDir_Both;
+		return toFunc ? DmaDir_Drain : DmaDir_Source;
+	}
 
 	tDMA_CHCR& GetCHCR() const
 	{
 		return (tDMA_CHCR&)PS2MEM_HW[regbaseaddr];
 	}
 
-	tDMA_MADR& GetMADR() const
+	tDMA_ADDR& GetMADR() const
 	{
-		return (tDMA_MADR&)PS2MEM_HW[regbaseaddr+0x10];
+		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x10];
 	}
 
 	tDMA_QWC& GetQWC() const
@@ -59,51 +115,88 @@ struct DmaChannelInformation
 		return (tDMA_QWC&)PS2MEM_HW[regbaseaddr+0x20];
 	}
 	
-	tDMA_TADR& GetTADR() const
+	tDMA_ADDR& GetTADR() const
 	{
 		pxAssert(hasSourceChain || hasDestChain);
-		return (tDMA_TADR&)PS2MEM_HW[regbaseaddr+0x30];
+		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x30];
 	}
 
-	tDMA_ASR& GetASR0() const
+	tDMA_ADDR& GetASR0() const
 	{
 		pxAssert(hasAddressStack);
-		return (tDMA_ASR&)PS2MEM_HW[regbaseaddr+0x40];
+		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x40];
 	}
 
-	tDMA_ASR& GetASR1() const
+	tDMA_ADDR& GetASR1() const
 	{
 		pxAssert(hasAddressStack);
-		return (tDMA_ASR&)PS2MEM_HW[regbaseaddr+0x50];
+		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x50];
 	}
 };
+
+extern FnType_FromPeripheral fromVIF0;
+extern FnType_FromPeripheral fromIPU;
+extern FnType_FromPeripheral fromSIF0;
+extern FnType_FromPeripheral fromSIF2;
+extern FnType_FromPeripheral fromSPR;
+
+extern FnType_ToPeripheral toVIF0;
+extern FnType_ToPeripheral toVIF1;
+extern FnType_ToPeripheral toGIF;
+extern FnType_ToPeripheral toIPU;
+extern FnType_ToPeripheral toSIF1;
+extern FnType_ToPeripheral toSIF2;
+extern FnType_ToPeripheral toSPR;
+
+enum DMA_ChannelId
+{
+	DmaId_VIF0 = 0,
+	DmaId_VIF1,
+	DmaId_GIF,
+	DmaId_fromIPU,
+	DmaId_toIPU,
+	DmaId_SIF0,
+	DmaId_SIF1,
+	DmaId_SIF2,
+	DmaId_fromSPR,
+	DmaId_toSPR,
+
+	DmaId_None
+};
+
+#define _m(v) ((v) & 0xffff)
 
 static const DmaChannelInformation DmaChan[] =
 {
-	//				baseaddr	Direction		Drain	Src/DstChain	A.S.
-	{ L"VIF0",		D0_CHCR,	DmaDir_Both,	false,	true,	false,	true,	},
-	{ L"VIF1",		D1_CHCR,	DmaDir_Drain,	true,	true,	false,	true,	},
-	{ L"GIF",		D2_CHCR,	DmaDir_Drain,	true,	true,	false,	true,	},
-	{ L"fromIPU",	D3_CHCR,	DmaDir_Source,	false,	false,	false,	false,	},
-	{ L"toIPU",		D4_CHCR,	DmaDir_Drain,	false,	true,	false,	false,	},
-	{ L"SIF0",		D5_CHCR,	DmaDir_Source,	false,	false,	true,	false,	},
-	{ L"SIF1",		D6_CHCR,	DmaDir_Drain,	true,	true,	false,	false,	},
-	{ L"SIF2",		D7_CHCR,	DmaDir_Both,	false,	false,	false,	false,	},
-	{ L"fromSPR",	D8_CHCR,	DmaDir_Source,	false,	false,	true,	false,	},
-	{ L"toSPR",		D9_CHCR,	DmaDir_Drain,	false,	true,	false,	false,	},
+	//				baseaddr		D.S.				S.C.	D.C.	A.S.
+	{ L"VIF0",		_m(D0_CHCR),	DmaStall_None,		true,	false,	true,	toVIF0,		fromVIF0	},
+	{ L"VIF1",		_m(D1_CHCR),	DmaStall_Drain,		true,	false,	true,	toVIF1,		NULL		},
+	{ L"GIF",		_m(D2_CHCR),	DmaStall_Drain,		true,	false,	true,	toGIF,		NULL		},
+	{ L"fromIPU",	_m(D3_CHCR),	DmaStall_Source,	false,	false,	false,	NULL,		fromIPU		},
+	{ L"toIPU",		_m(D4_CHCR),	DmaStall_None,		true,	false,	false,	toIPU,		NULL		},
+	{ L"SIF0",		_m(D5_CHCR),	DmaStall_Source,	false,	true,	false,	NULL,		fromSIF0	},
+	{ L"SIF1",		_m(D6_CHCR),	DmaStall_Drain,		true,	false,	false,	toSIF1,		NULL		},
+	{ L"SIF2",		_m(D7_CHCR),	DmaStall_None,		false,	false,	false,	toSIF2,		fromSIF2	},
+	{ L"fromSPR",	_m(D8_CHCR),	DmaStall_Source,	false,	true,	false,	NULL,		fromSPR		},
+	{ L"toSPR",		_m(D9_CHCR),	DmaStall_None,		true,	false,	false,	toSPR,		NULL		},
 
-	// A.S  -- Has Address Stack
+	// Legend:
+	//   D.S.  -- DMA Stall
+	//   S.C.  -- Source Chain
+	//   D.C.  -- Destination Chain
+	//   A.S.  -- Has Address Stack
 };
 
+#undef _m
 
-static const wxChar* StallSrcNames[] =
+static const DMA_ChannelId StallSrcChan[4] =
 {
-	L"None", L"SIF0(5)", L"fromSPR(3)", L"fromIPU(8)"
+	DmaId_None, DmaId_SIF0, DmaId_fromSPR, DmaId_fromIPU
 };
 
-static const wxChar* StallDrainNames[] =
+static const DMA_ChannelId StallDrainChan[4] =
 {
-	L"None", L"VIF1(1)", L"SIF1(6)", L"GIF(2)"
+	DmaId_None, DmaId_VIF1, DmaId_SIF1, DmaId_GIF
 };
 
 static const wxChar* MfifoDrainNames[] =
@@ -157,10 +250,10 @@ static bool IsSprChannel( uint cid )
 	return (cid == 8) || (cid == 9);
 }
 
-uint round_robin = 1;
+static uint round_robin = 1;
 
 // Returns the index of the next DMA channel granted bus rights.
-static uint ArbitrateBusRight()
+static DMA_ChannelId ArbitrateBusRight()
 {
 	//  * VIF0 has top priority.
 	//  * SIF2 has secondary priority.
@@ -168,21 +261,21 @@ static uint ArbitrateBusRight()
 
 	wxString ActiveDmaMsg;
 
-	const tDMAC_PCR& pcr = (tDMAC_PCR&)PS2MEM_HW[DMAC_PCR];
+	const tDMAC_PCR& pcr = (tDMAC_PCR&)psHu8(DMAC_PCR);
 
 	// VIF0 is the highest of the high priorities!!
 	const tDMA_CHCR& vif0chcr = DmaChan[0].GetCHCR();
 	if (vif0chcr.STR)
 	{
-		if (!pcr.PCE || (pcr.CDE & 2)) return 0;
+		if (!pcr.PCE || (pcr.CDE & 2)) return DmaId_VIF0;
 		DMA_LOG("\tVIF0 bypassed due to PCE/CDE0 condition.");
 	}
 
 	// SIF2 is next!!
 	const tDMA_CHCR& sif2chcr = DmaChan[7].GetCHCR();
-	if (vif0chcr.STR)
+	if (sif2chcr.STR)
 	{
-		if (!pcr.PCE || (pcr.CDE & 2)) return 0;
+		if (!pcr.PCE || (pcr.CDE & 2)) return DmaId_SIF2;
 		DMA_LOG("\tSIF2 bypassed due to PCE/CDE0 condition.");
 	}
 
@@ -200,12 +293,12 @@ static uint ArbitrateBusRight()
 			continue;
 		}
 
-		if (DmaChan[round_robin].hasDrainStall)
+		if (DmaChan[round_robin].DmaStall == DmaStall_Drain)
 		{
 			// this channel supports drain stalling.  If the stall condition is already met
 			// then we need to skip it by and try another channel.
-			
-			const tDMAC_STADR& stadr = (tDMAC_STADR&)PS2MEM_HW[DMAC_STADR];
+
+			const tDMAC_STADR& stadr = (tDMAC_STADR&)psHu8(DMAC_STADR);
 
 			// Unknown: Should stall comparisons factor the SPR bit, ignore SPR bit, or base the
 			// comparison on the translated physical address? Implied behavior seems to be that
@@ -223,21 +316,83 @@ static uint ArbitrateBusRight()
 		{
 			// [TODO] Strict DMA Timings!
 			// In strict mode each DMA channel has built-in timers that monitor their FIFO drain
-			// rates (actual DMA channel FIFOs are not emulated, only their busrt copy size is
-			// enforced).  When a peripheral FIFO is deemed full or empty (depending on src/drain
-			// flag), the DMA is available for selection.
+			// rates (actual DMA channel FIFOs are not emulated, only their burst copy size is
+			// enforced, which is typically 8 QWC tho varies in interleave and chain modes).
+			// When a peripheral FIFO is deemed full or empty (depending on src/drain flag),
+			// the DMA is available for selection.
 		}
 
-		return round_robin;
+		return (DMA_ChannelId)round_robin;
 	}
 
-	return -1;
+	return DmaId_None;
 }
 
+// Two 1 megabyte (max DMA) buffers for reading and writing to high memory (>32MB).
+// Such accesses are not documented as causing bus errors but as the memory does
+// not exist, reads should continue to return 0 and writes should be discarded.
+// Probably.
+static __aligned16 u128 highmem[(_1mb * 2) / 16];
+
+u128* DMAC_GetHostPtr( const tDMA_ADDR& addrReg, bool writeToMem )
+{
+	static const uint addr = addrReg.ADDR;
+
+	if (addrReg.SPR) return &psSu128(addr);
+
+	// The DMAC appears to be directly hardwired to various memory banks: Main memory (including
+	// ROM), VUs, and the Scratchpad.  It is likely wired to the Hardware Register map as well,
+	// since it uses registers internally for accessing some peripherals (such as the GS FIFO
+	// regs).
+
+	// Supporting the hardware regs properly is problematic, but fortunately there's no reason
+	// a game would likely ever use it, so we don't really support them (the PCSX2 emulated DMA
+	// will map to the psH[] memory, but does not invoke any of the indirect read/write handlers).
+
+	if ((addr >= PhysMemMap::Scratchpad) && (addr < PhysMemMap::ScratchpadEnd))
+	{
+		// Secret scratchpad address for DMA; games typically specify 0x70000000, but chances
+		// are the DMAC masks all addresses to MIPS physical memory specification (512MB),
+		// which would place SPR between 0x10000000 and 0x10004000.  Unknown yet if that is true
+		// so I'm sticking with the 0x70000000 mapping.
+
+		return &psSu128(addr);
+	}
+
+	void* result = vtlb_GetPhyPtr(addr);
+	if (!result)
+	{
+		if (addr < 0x10000000)		// 256mb (PS2 max memory)
+		{
+			// Such accesses are not documented as causing bus errors but as the memory does
+			// not exist, reads should continue to return 0 and writes should be discarded.
+			// IOP has similar behavior on its DMAs and some memory accesses.
+
+			return &highmem[writeToMem ? _1mb : 0];
+		}
+		else
+		{
+			wxString msg;
+			msg.Printf( L"DMA address error: 0x%08x", addr );
+			Console.Error(msg);
+			pxAssertDev(false, msg);
+			throw Exception::DmaRaiseIRQ("BusError", true);
+		}
+	}
+
+	pxFailDev( "Unreachable code reached (!)" );
+	return NULL;
+}
+
+u32 DMAC_Read32( DMA_ChannelId chanId, const tDMA_ADDR& addr )
+{
+	return *(u32*)DMAC_GetHostPtr(addr, false);
+}
 
 void eeEvt_UpdateDmac()
 {
-	tDMAC_CTRL& dmactrl = (tDMAC_CTRL&)PS2MEM_HW[DMAC_CTRL];
+	tDMAC_CTRL& dmactrl = (tDMAC_CTRL&)psHu8(DMAC_CTRL);
+	tDMAC_STAT& dmastat = (tDMAC_STAT&)psHu8(DMAC_STAT);
 
 	DMA_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmactrl._u32);
 
@@ -271,11 +426,9 @@ void eeEvt_UpdateDmac()
 		return;
 	}
 
+	do {
+		DMA_ChannelId chanId = ArbitrateBusRight();
 
-	do
-	{
-		int chanId = ArbitrateBusRight();
-		
 		if (chanId == -1)
 		{
 			// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
@@ -287,12 +440,14 @@ void eeEvt_UpdateDmac()
 
 		const DmaChannelInformation& chan = DmaChan[chanId];
 
-		tDMA_CHCR& chcr	= chan.GetCHCR();
-		tDMA_MADR& madr	= chan.GetMADR();
-		tDMA_QWC& qwc	= chan.GetQWC();
+		tDMA_CHCR& chcr = chan.GetCHCR();
+		tDMA_ADDR& madr = chan.GetMADR();
+		tDMA_QWC& qwcreg = chan.GetQWC();
 
-		DMA_DirectionMode dir = chan.direction;
+		// Determine Direction!
+		// --------------------
 
+		DMA_DirectionMode dir = chan.GetDir();
 		const char* SrcDrainMsg = "";
 
 		if (dir == DmaDir_Both)
@@ -301,84 +456,223 @@ void eeEvt_UpdateDmac()
 			SrcDrainMsg = chcr.DIR ? "(Drain)" : "(Source)";
 		}
 
-		DMA_LOG("\tBus right granted to %s%s MADR=0x%08X QWC=0x%4x", chan.name, SrcDrainMsg, madr.ADDR, qwc.QWC);
-
-		// Determine copyable length of this DMA.
+		DMA_LOG("\tBus right granted to %s%s MADR=0x%08X QWC=0x%4x", chan.name, SrcDrainMsg, madr.ADDR, qwcreg.QWC);
 
 		const tDMAC_STADR& stadr = (tDMAC_STADR&)PS2MEM_HW[DMAC_STADR];
-		
+		const char* PhysModeStr;
+
+		// Determine MADR and Initial Copyable Length
+		// ------------------------------------------
+		// The initial length determined here does not take into consideration STADR, which
+		// must be applied later once our memory wrapping parameters are known.
+
+		uint qwc = 0;
+
+		try
+		{
 		switch (chcr.MOD)
 		{
+			case UNDEFINED_MODE:
+				pxAssertDev( false, "DMAC: Undefined physical transfer mode?!" );
+			break;
+
 			case NORMAL_MODE:
+				PhysModeStr = "NORMAL";
+				qwc = qwcreg.QWC;
+			break;
+
+			case CHAIN_MODE:
 			{
-				// By default DMAs don't wrap.  SPR and VU transfers do, however.
-				uint wrapspot = 0;
-				uint stallspot = 0;
-				uint endaddr = madr.ADDR + qwc.QWC;		// estimated end address of the transfer.
+				PhysModeStr = "CHAIN";
 
-				if (madr.SPR)
+				if (qwcreg.QWC == 0)
 				{
-					wrapspot = Ps2MemSize::Scratch;
-				}
-				else
-				{
-					if (madr.ADDR >= 0x70000000)
+					// Update TADR!
+					// This is done *after* each chain transfer has completed.
+
+					tDMA_ADDR& tadr = chan.GetTADR();
+					switch(chcr.TAG.ID)
 					{
-						// It appears that games can access the SPR directly using 0x70000000, but
-						// most just use the SPR bit.  What's unknown is if the direct mapping via
-						// 0x70000000 affects stalling behavior or SPR memory wrap-around (behavior
-						// for direct SPR mapping should match that of direct VU mappings, however).
+						// REFE (Reference and End) - Transfer packet according to ADDR field and End Transfer.
+						// END (Continue and End) - Transfer QWC following the tag and end.
+						case TAG_REFE:
+						case TAG_END:
+							// Note that when ending transfers, TADR is *not* updated (Soul Calibur 2 and 3)
+							chcr.STR = 0;
+						break;
 
-						wrapspot = 0x70000000;
-					}
-
-					// toSPR/fromSPR have special behavior
-
-					if ((madr.ADDR >= 0x11004000) && (madr.ADDR < 0x11010000))
-					{
-					
-					}
-
-					if (IsSprChannel(chanId))
-					{
-
-					}
-				}
-
-				if (wrapspot)
-				{
-					pxAssertDev(stadr.ADDR != wrapspot, "DMAC wrapspot logic error detected.");
-					if ((stadr.ADDR >= madr.ADDR) && (stadr.ADDR < wrapspot))
-					{
-						// Transfer is set to stall prior to the wrap spot.  We can only
-						// transfer up to the stall position.
+						// CNT (Continue) - Transfer QWC following the tag, and following QWC becomes the new TADR.
+						case TAG_CNT:
+							tadr.ADDR = madr.ADDR + 16;
+						break;
 						
-						stallspot = stadr.ADDR-8;
+						// NEXT - Transfer QWC following the tag, and uses ADDR of the old tag as the new TADR.
+						case TAG_NEXT:
+							tadr._u32 = DMAC_Read32(chanId, tadr);
+						break;
+						
+						// REF  (Reference) - Transfer QWC from the ADDR field, and increment the TADR to get the next tag.
+						// REFS (Reference and Stall) - ... and check STADR and stall if needed, when reading the QWC.
+						case TAG_REF:
+						case TAG_REFS:
+							tadr.IncrementQWC();
+						break;
+
+						// CALL - Transfer QWC following the tag, pushes MADR onto the ASR stack, and uses ADDR as the
+						//        next tag.  (QWC is typically 0).
+						case TAG_CALL:
+						{
+							// Stash an address on the address stack pointer.
+							switch(chcr.ASP)
+							{
+								case 0: //Check if ASR0 is empty
+									// Store the succeeding tag in asr0, and mark chcr as having 1 address.
+									//dma.asr0 = dma.madr + (dma.qwc << 4);
+									//dma.chcr.ASP++;
+								break;
+
+								case 1:
+									// Store the succeeding tag in asr1, and mark chcr as having 2 addresses.
+									//dma.asr1 = dma.madr + (dma.qwc << 4);
+									//dma.chcr.ASP++;
+								break;
+
+								default:
+									Console.Warning("DMA CHAIN callstack overflow.  Transfer stopped.");
+									throw Exception::DmaRaiseIRQ();
+								break;
+							}
+						}
+						break;
+						
+						case TAG_RET:
+						break;
 					}
+
+					if (!chcr.STR)
+					{
+						// The chain has ended.  Nothing more to do here, and we should pass
+						// arbitration to another active DMA since this one didn't transfer any data.
+						continue;
+					}
+
+					// Load next tag from TADR and store the upper 16 bits in CHCR:
+					const tDMA_TAG* tag = (tDMA_TAG*)DMAC_GetHostPtr(tadr, false);
+					chcr._tag16 = tag->upper();
+					qwcreg.QWC = tag->QWC;
+					
 				}
-				
-				
 			}
 			break;
-			
-			case CHAIN_MODE:
-			break;
-			
+
 			case INTERLEAVE_MODE:
+				PhysModeStr = "INTERLEAVE";
+
 				// Should only be valid for toSPR and fromSPR DMAs only.
 				pxAssertDev( IsSprChannel(chanId), "DMAC: Interleave mode specified on Scratchpad channel!" );
 			break;
 		}
+
+		// Determine Memory Wrapping Parameters (if needed)
+		// ------------------------------------------------
+		// By default DMAs don't wrap.  SPR transfers do, however; and VU transfers likely wrap
+		// as well.
+
+		// Will be assigned only if needed; and will remain zero if no wrapping is performed.
+		uint wrapsize = 0;
+
+		if (madr.SPR)
+		{
+			wrapsize = Ps2MemSize::Scratch;
+		}
+		else
+		{
+			if ((madr.ADDR >= PhysMemMap::Scratchpad) && (madr.ADDR < PhysMemMap::ScratchpadEnd))
+			{
+				// It appears that games can access the SPR directly using 0x70000000, but
+				// most just use the SPR bit.  What's unknown is if the direct mapping via
+				// 0x70000000 affects stalling behavior or SPR memory wrap-around.
+
+				// For now we're assuming SPR direct mappings wrap --air
+				wrapsize = Ps2MemSize::Scratch;
+			}
+
+			else if ((madr.ADDR >= PhysMemMap::VUMemStart) && (madr.ADDR < PhysMemMap::VUMemEnd))
+			{
+				// VU memory can also be accessed directly via DMA
+				// (this may only be available on to/fromSPR dmas)
+
+				// For now we're assuming VU direct mappings wrap --air
+
+				wrapsize = (madr.ADDR < PhysMemMap::VU1prog) ? 0x400 : 0x1000;
+			}
+		}
+
+
+		/*if (chan.DmaStall == DmaStall_Drain)
+		{
+			pxAssertDev(stadr.ADDR != addrEnd, "DMAC stall address error detected.");
+			if ((stadr.ADDR >= madr.ADDR) && (stadr.ADDR < addrEnd))
+			{
+				// Transfer is set to stall prior to the end address.  We can only
+				// transfer up to the stall position -- the rest will have to come later,
+				// once the stall address has been written to.
+
+				addrEnd = stadr.ADDR-8;
+			}
+		}
+
+		uint qwc = addrEnd - madr.ADDR;*/
 		
+		if (!pxAssertMsg(qwc < _1mb, "DMAC: QWC is over 1 meg!  Truncating."))
+			qwc = _1mb;
+
+		if (dir==DmaDir_Drain)
+		{
+			DMA_LOG("%s xfer %s->%s (qwc=%x)", PhysModeStr,
+				pxsFmt(madr.SPR ? "0x%04X(SPR)" : "0x%08X", madr.ADDR).GetResult(),
+				chan.name, qwc
+			);
+
+			pxAssume(chan.toFunc);
+			//chan.toFunc(  );
+		}
+		else
+		{
+			DMA_LOG("%s xfer %s->%s (qwc=%x)", PhysModeStr, chan.name,
+				pxsFmt(madr.SPR ? "0x%04X(SPR)" : "0x%08X", madr.ADDR).GetResult(),
+				qwc
+			);
+
+			pxAssume(chan.fromFunc);
+			//chan.fromFunc();
+		}
+
+		} catch( Exception::DmaRaiseIRQ& ex )
+		{
+			chcr.STR = 0;
+			dmastat.CIS |= (1 << chanId);
+
+			if (ex.BusError)
+			{
+				Console.Error(L"BUSERR: %s(%u)", chan.name, chanId);
+				dmastat.BEIS = 1;
+			}
+
+			DMA_LOG("IRQ Raised on %s(%u), cause=%s", chan.name, chanId, ex.Cause);
+
+			// arbitrate back to the EE for a while?
+			//break;
+		}
+
 	} while (UseDmaBurstHack);
-
-
+	
 	//
 
 
-	wxString StallSrcMsg = StallSrcNames[dmactrl.STS];
-	wxString StallDrainMsg = StallDrainNames[dmactrl.STD];
-	wxString MfifoDrainMsg = StallDrainNames[dmactrl.STD];
+	//wxString StallSrcMsg = StallSrcNames[dmactrl.STS];
+	//wxString StallDrainMsg = StallDrainNames[dmactrl.STD];
+	//wxString MfifoDrainMsg = StallDrainNames[dmactrl.STD];
 	
 	// Furthermore, the SPR DMAs are "Burst" mode DMAs that behave very predictably
 	// when the RELE bit is cleared (no cycle stealing): all other DMAs are stalled
@@ -477,3 +771,20 @@ void eeEvt_UpdateDmac()
 		
 	}
 }
+
+
+uint __dmacall toVIF0(const u128* src, uint qwc) { return 0; }
+uint __dmacall toGIF(const u128* src, uint qwc) { return 0; }
+uint __dmacall toVIF1(const u128* src, uint qwc) { return 0; }
+uint __dmacall toSIF1(const u128* src, uint qwc) { return 0; }
+uint __dmacall toSIF2(const u128* src, uint qwc) { return 0; }
+uint __dmacall toIPU(const u128* src, uint qwc) { return 0; }
+uint __dmacall toSPR(const u128* src, uint qwc) { return 0; }
+
+uint __dmacall fromIPU(u128* dest, uint qwc) { return 0; }
+uint __dmacall fromSPR(u128* dest, uint qwc) { return 0; }
+uint __dmacall fromSIF0(u128* dest, uint qwc) { return 0; }
+uint __dmacall fromSIF2(u128* dest, uint qwc) { return 0; }
+uint __dmacall fromVIF0(u128* dest, uint qwc) { return 0; }
+//uint fromIPU(u128& dest, uint qwc) {}
+//uint fromIPU(u128& dest, uint qwc) {}

@@ -230,8 +230,7 @@ enum GIF_PATH
 };
 
 extern void GIFPath_Initialize();
-extern int  GIFPath_CopyTag(GIF_PATH pathidx, const u128* pMem, u32 size);
-extern int  GIFPath_ParseTagQuick(GIF_PATH pathidx, const u8* pMem, u32 size);
+extern int  GIFPath_CopyTag(GIF_PATH pathidx, const u128* pMem, uint size, uint wrapSize=0);
 extern void GIFPath_Reset();
 extern void GIFPath_Clear( GIF_PATH pathidx );
 

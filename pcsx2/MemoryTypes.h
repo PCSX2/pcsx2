@@ -43,9 +43,14 @@ typedef u128 mem128_t;
 // game does so, and thus PCSX2's support for the MMU is fairly non-existent at this time.
 namespace PhysMemMap
 {
-	static const uint VU0prog = 0x11000000;
-	static const uint VU1prog = 0x11008000;
+ 	static const uint VUMemStart	= 0x11000000;
+	static const uint VUMemEnd		= 0x11010000;
 
-	static const uint VU0data = 0x11004000;
-	static const uint VU1data = 0x1100C000;
+	static const uint VU0prog		= 0x11000000;
+	static const uint VU0data		= 0x11004000;
+	static const uint VU1prog		= 0x11008000;
+	static const uint VU1data		= 0x1100C000;
+	
+	static const uint Scratchpad	= 0x70000000;
+	static const uint ScratchpadEnd	= 0x70004000;
 }

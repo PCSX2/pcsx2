@@ -150,7 +150,6 @@ public:
 	FastFormatUnicode& WriteV( const wxChar* fmt, va_list argptr );
 
 	const wxChar* GetResult() const;
-	const wxString GetString() const;
 
 	operator const wxChar*() const
 	{

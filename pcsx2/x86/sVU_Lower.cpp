@@ -1982,7 +1982,7 @@ void __fastcall VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 	u32 diff  = 0x400 - (addr / 16);
 
 	GetMTGS().PrepDataPacket(GIF_PATH_1, 0x400);
-	GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff);
+	GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff, 0x400);
 	GetMTGS().SendDataPacket();
 
 	if (GSTransferStatus.PTH1 == STOPPED_MODE) {

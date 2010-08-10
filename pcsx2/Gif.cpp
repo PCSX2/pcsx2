@@ -387,7 +387,7 @@ void dmaGIF()
 	if(gif.chcr.MOD == CHAIN_MODE && gif.qwc > 0) 
 	{
 		//DevCon.Warning(L"GIF QWC on Chain " + gif.chcr.desc());
-		if ((gif.chcr.tag().ID == TAG_REFE) || (gif.chcr.tag().ID == TAG_END))
+		if ((gif.chcr.TAG.ID == TAG_REFE) || (gif.chcr.TAG.ID == TAG_END))
 		{
 			gspath3done = true;
 		}
