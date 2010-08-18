@@ -92,10 +92,7 @@ int s_nResolveCounts[30] = {0}; // resolve counts for last 30 frames
 
 ////////////////////
 // State parameters
-int nBackbufferWidth, nBackbufferHeight;
-
-u8* g_pbyGSMemory = NULL;   // 4Mb GS system mem
-u8* g_pbyGSClut = NULL;													// ZZ
+int nBackbufferWidth, nBackbufferHeight;									// ZZ
 
 namespace ZeroGS
 {
@@ -166,7 +163,7 @@ class ZeroGSInit
 	public:
 		ZeroGSInit()
 		{
-			const u32 mem_size = 0x00400000 + 0x10000; // leave some room for out of range accesses (saves on the checks)
+			const u32 mem_size = MEMORY_END + 0x10000; // leave some room for out of range accesses (saves on the checks)
 			// clear
 			g_pbyGSMemory = (u8*)_aligned_malloc(mem_size, 1024);
 			memset(g_pbyGSMemory, 0, mem_size);

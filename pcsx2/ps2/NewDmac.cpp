@@ -102,35 +102,35 @@ struct DmaChannelInformation
 
 	tDMA_CHCR& GetCHCR() const
 	{
-		return (tDMA_CHCR&)PS2MEM_HW[regbaseaddr];
+		return (tDMA_CHCR&)eeMem->HW[regbaseaddr];
 	}
 
 	tDMA_ADDR& GetMADR() const
 	{
-		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x10];
+		return (tDMA_ADDR&)eeMem->HW[regbaseaddr+0x10];
 	}
 
 	tDMA_QWC& GetQWC() const
 	{
-		return (tDMA_QWC&)PS2MEM_HW[regbaseaddr+0x20];
+		return (tDMA_QWC&)eeMem->HW[regbaseaddr+0x20];
 	}
 	
 	tDMA_ADDR& GetTADR() const
 	{
 		pxAssert(hasSourceChain || hasDestChain);
-		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x30];
+		return (tDMA_ADDR&)eeMem->HW[regbaseaddr+0x30];
 	}
 
 	tDMA_ADDR& GetASR0() const
 	{
 		pxAssert(hasAddressStack);
-		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x40];
+		return (tDMA_ADDR&)eeMem->HW[regbaseaddr+0x40];
 	}
 
 	tDMA_ADDR& GetASR1() const
 	{
 		pxAssert(hasAddressStack);
-		return (tDMA_ADDR&)PS2MEM_HW[regbaseaddr+0x50];
+		return (tDMA_ADDR&)eeMem->HW[regbaseaddr+0x50];
 	}
 };
 
@@ -298,7 +298,7 @@ static DMA_ChannelId ArbitrateBusRight()
 			// this channel supports drain stalling.  If the stall condition is already met
 			// then we need to skip it by and try another channel.
 
-			const tDMAC_STADR& stadr = (tDMAC_STADR&)psHu8(DMAC_STADR);
+			const tDMA_ADDR& stadr = (tDMA_ADDR&)psHu8(DMAC_STADR);
 
 			// Unknown: Should stall comparisons factor the SPR bit, ignore SPR bit, or base the
 			// comparison on the translated physical address? Implied behavior seems to be that
@@ -458,7 +458,7 @@ void eeEvt_UpdateDmac()
 
 		DMA_LOG("\tBus right granted to %s%s MADR=0x%08X QWC=0x%4x", chan.name, SrcDrainMsg, madr.ADDR, qwcreg.QWC);
 
-		const tDMAC_STADR& stadr = (tDMAC_STADR&)PS2MEM_HW[DMAC_STADR];
+		const tDMA_ADDR& stadr = (tDMA_ADDR&)eeMem->HW[DMAC_STADR];
 		const char* PhysModeStr;
 
 		// Determine MADR and Initial Copyable Length

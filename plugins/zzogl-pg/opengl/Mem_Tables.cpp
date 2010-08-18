@@ -326,6 +326,18 @@ _readPixel_0 readPixelFun_0[64] =
 	NULL, NULL, readPixel16SZ_0, NULL, NULL, NULL, NULL, NULL 
 };
 
+_getPixelAddress getPixelFun[64] = 
+{ 	
+	getPixelAddress32, getPixelAddress24, getPixelAddress16, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, getPixelAddress16S, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, getPixelAddress8, getPixelAddress4, NULL, NULL, NULL,
+	NULL, NULL, NULL, getPixelAddress8H, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, getPixelAddress4HL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, getPixelAddress4HH, NULL, NULL, NULL,
+	getPixelAddress32Z, getPixelAddress24Z, getPixelAddress16Z, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, getPixelAddress16SZ, NULL, NULL, NULL, NULL, NULL 
+};
+
 _writePixel writePixelFun[64] = 
 { 	
 	writePixel32, writePixel24, writePixel16, NULL, NULL, NULL, NULL, NULL,

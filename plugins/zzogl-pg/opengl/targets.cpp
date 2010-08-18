@@ -1979,7 +1979,7 @@ void MemoryTarget_GetMemAddress(int& start, int& end,  const tex0Info& tex0)
 	int nbStart, nbEnd;
 	GetRectMemAddress(nbStart, nbEnd, tex0.psm, 0, 0, tex0.tw, tex0.th, tex0.tbp0, tex0.tbw);
 	assert(nbStart < nbEnd);
-	nbEnd = min(nbEnd, 0x00400000);
+	nbEnd = min(nbEnd, MEMORY_END);
 
 	start = nbStart / (4 * GPU_TEXWIDTH);
 	end = (nbEnd + GPU_TEXWIDTH * 4 - 1) / (4 * GPU_TEXWIDTH);
@@ -2543,24 +2543,25 @@ u32 ZeroGS::CBitwiseTextureMngr::GetTexInt(u32 bitvalue, u32 ptexDoNotDelete)
 
 	if (glGetError() != GL_NO_ERROR) ZZLog::Error_Log("Error on generation of bitmask texture.");
 
-	vector<u16> data(GPU_TEXMASKWIDTH + 1);
+	vector<u16> data(GPU_TEXMASKWIDTH);
 
 	for (u32 i = 0; i < GPU_TEXMASKWIDTH; ++i)
 	{
 		data[i] = (((i << MASKDIVISOR) & bitvalue) << 6); // add the 1/2 offset so that
 	}
+	
+	//	data[GPU_TEXMASKWIDTH] = 0;	// I remove GPU_TEXMASKWIDTH+1 element of this texture, because it was a reason of FFC crush
+									// Probably, some sort of PoT incompability in drivers.
 
-	data[GPU_TEXMASKWIDTH] = 0;
-
-	glBindTexture(GL_TEXTURE_RECTANGLE_NV, ptex);
+	glBindTexture(GL_TEXTURE_RECTANGLE, ptex);
 	if (glGetError() != GL_NO_ERROR) ZZLog::Error_Log("Error on binding bitmask texture.");
 
-	TextureRect(GL_LUMINANCE16, GPU_TEXMASKWIDTH + 1, 1, GL_LUMINANCE, GL_UNSIGNED_SHORT, &data[0]);
+	TextureRect2(GL_LUMINANCE16, GPU_TEXMASKWIDTH, 1, GL_LUMINANCE, GL_UNSIGNED_SHORT, &data[0]);
 	if (glGetError() != GL_NO_ERROR) ZZLog::Error_Log("Error on applying bitmask texture.");
 
 //	Removing clamping, as it seems lead to numerous troubles at some drivers
 //	Need to observe, may be clamping is not really needed.
-	/* setTexRectWrap(GL_REPEAT);
+	/* setRectWrap2(GL_REPEAT);
 
 	GLint Error = glGetError();
 	if( Error != GL_NO_ERROR ) {
@@ -2947,7 +2948,7 @@ void FlushTransferRanges(const tex0Info* ptex)
 		\
 		Tsrc* src = (Tsrc*)(psrc); \
 		T* pPageOffset = (T*)g_pbyGSMemory + fbp*(256/sizeof(T)), *dst; \
-		int maxfbh = (0x00400000-fbp*256) / (sizeof(T) * fbw); \
+		int maxfbh = (MEMORY_END-fbp*256) / (sizeof(T) * fbw); \
 		if( maxfbh > fbh ) maxfbh = fbh; \
 		\
 		for(int i = 0; i < maxfbh; ++i) { \
@@ -3092,7 +3093,7 @@ void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, boo
 		Tsrc* src = (Tsrc*)(psrc); \
 		T* pPageOffset = (T*)g_pbyGSMemory + fbp*(256/sizeof(T)), *dst; \
 		int srcpitch = Pitch(fbw) * blockheight/sizeof(Tsrc); \
-		int maxfbh = (0x00400000-fbp*256) / (sizeof(T) * fbw); \
+		int maxfbh = (MEMORY_END-fbp*256) / (sizeof(T) * fbw); \
 		if( maxfbh > fbh ) maxfbh = fbh; \
 		for(i = 0; i < (maxfbh&~(blockheight-1))*X; i += blockheight) { \
 			/*if( smask2 && (i&1) == smask1 ) continue; */ \

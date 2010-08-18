@@ -173,12 +173,13 @@ struct microVU {
 	u32 vuMemSize;		// VU Main  Memory Size (in bytes)
 	u32 microMemSize;	// VU Micro Memory Size (in bytes)
 	u32 progSize;		// VU Micro Memory Size (in u32's)
+	u32 progMemMask;	// VU Micro Memory Size (in u32's)
 	u32 cacheSize;		// VU Cache Size
 
 	microProgManager prog;		// Micro Program Data
-	microRegAlloc*	 regAlloc;	// Reg Alloc Class
+	ScopedPtr<microRegAlloc>	regAlloc;	// Reg Alloc Class
+	ScopedPtr<AsciiFile>		logFile;	// Log File Pointer
 
-	AsciiFile* logFile;	  // Log File Pointer
 	VURegs*	regs;		  // VU Regs Struct
 	u8*		cache;		  // Dynarec Cache Start (where we will start writing the recompiled code to)
 	u8*		dispCache;	  // Dispatchers Cache (where startFunct and exitFunct are written to)
@@ -198,6 +199,33 @@ struct microVU {
 	u32		q;			  // Holds current Q instance index
 	u32		totalCycles;  // Total Cycles that mVU is expected to run for
 	u32		cycles;		  // Cycles Counter
+
+	__fi s16 Imm5() const	{ return ((code & 0x400) ? 0xfff0 : 0) | ((code >> 6) & 0xf); }
+	__fi s32 Imm11() const	{ return (code & 0x400) ? (0xfffffc00 | (code & 0x3ff)) : (code & 0x3ff); }
+	__fi u32 Imm12() const	{ return (((code >> 21) & 0x1) << 11) | (code & 0x7ff); }
+	__fi u32 Imm15() const	{ return ((code >> 10) & 0x7800) | (code & 0x7ff); }
+	__fi u32 Imm24() const	{ return code & 0xffffff; }
+
+	// Fetches the PC and instruction opcode relative to the current PC.  Used to rewind and
+	// fast-forward the IR state while calculating VU pipeline conditions (branches, writebacks, etc)
+	__fi void advancePC( int x )
+	{
+		prog.IRinfo.curPC += x;
+		prog.IRinfo.curPC &= progMemMask;
+		code = ((u32*)regs->Micro)[prog.IRinfo.curPC];
+	}
+	
+	__ri uint getBranchAddr() const
+	{
+		pxAssumeDev((prog.IRinfo.curPC & 1) == 0, "microVU recompiler: Upper instructions cannot have valid branch addresses.");
+		return (((prog.IRinfo.curPC + 2)  + (Imm11() * 2)) & progMemMask) * 4;
+	}
+
+	__ri uint getBranchAddrN() const
+	{
+		pxAssumeDev((prog.IRinfo.curPC & 1) == 0, "microVU recompiler: Upper instructions cannot have valid branch addresses.");
+		return (((prog.IRinfo.curPC + 4)  + (Imm11() * 2)) & progMemMask) * 4;
+	}
 };
 
 // microVU rec structs
@@ -208,12 +236,12 @@ extern __aligned16 microVU microVU1;
 int mVUdebugNow = 0;
 
 // Main Functions
-extern void  mVUinit(VURegs*, int);
-extern void  mVUreset(mV);
-extern void  mVUclose(mV);
-extern void  mVUclear(mV, u32, u32);
-extern void  mVUresizeCache(mV, u32);
-extern void* mVUblockFetch(microVU* mVU, u32 startPC, uptr pState);
+static void  mVUinit(int);
+static void  mVUreset(mV, VURegs* vuRegsPtr = NULL);
+static void  mVUclose(mV);
+static void  mVUclear(mV, u32, u32);
+static void  mVUresizeCache(mV, u32);
+static void* mVUblockFetch(microVU* mVU, u32 startPC, uptr pState);
 _mVUt extern void* __fastcall mVUcompileJIT(u32 startPC, uptr pState);
 
 // Prototypes for Linux

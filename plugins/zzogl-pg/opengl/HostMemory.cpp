@@ -27,6 +27,50 @@
 #include "zerogs.h"
 #include "targets.h"
 
+
+ u8* g_pbyGSMemory = NULL;   // 4Mb GS system mem
+
+ void GSMemory::init()
+ {
+	const u32 mem_size = MEMORY_END + 0x10000; // leave some room for out of range accesses (saves on the checks)
+			
+	// clear
+	g_pbyGSMemory = (u8*)_aligned_malloc(mem_size, 1024);
+	memset(g_pbyGSMemory, 0, mem_size);
+ }
+
+ void GSMemory::destroy()
+ {
+	_aligned_free(g_pbyGSMemory);
+	g_pbyGSMemory = NULL;
+ }
+	
+ u8* GSMemory::get() { return g_pbyGSMemory; }
+	
+ u8* GSMemory::get(u32 addr) { return &g_pbyGSMemory[addr*8]; }
+ u8* GSMemory::get_raw(u32 addr) { return &g_pbyGSMemory[addr]; }
+
+ u8* g_pbyGSClut = NULL;		// ZZ
+
+ void GSClut::init()
+ {
+	g_pbyGSClut = (u8*)_aligned_malloc(256 * 8, 1024); // need 512 alignment!
+	memset(g_pbyGSClut, 0, 256*8);
+ }
+
+ void GSClut::destroy()
+ {
+ 	_aligned_free(g_pbyGSClut);
+ 	g_pbyGSClut = NULL;
+ }
+
+ u8* GSClut::get() { return g_pbyGSClut; }
+	
+ u8* GSClut::get(u32 addr) { return &g_pbyGSClut[addr*8]; }
+ u8* GSClut::get_raw(u32 addr) { return &g_pbyGSClut[addr]; }
+	
+ extern _getPixelAddress getPixelFun[64];
+
  namespace ZeroGS
  {
 	extern CRangeManager s_RangeMngr; // manages overwritten memory
@@ -38,57 +82,50 @@
 	void GetRectMemAddress(int& start, int& end, int psm, int x, int y, int w, int h, int bp, int bw)
 	{
 		FUNCLOG
+		u32 bits = 0;
 
 		if (m_Blocks[psm].bpp == 0)
 		{
 			ZZLog::Error_Log("ZeroGS: Bad psm 0x%x.", psm);
 			start = 0;
-			end = 0x00400000;
+			end = MEMORY_END;
 			return;
 		}
-
-		if (PSMT_ISZTEX(psm) || psm == PSMCT16S)
+		
+		if (PSMT_ISZTEX(psm))
 		{
-
+			// Somehow, I doubt this code is right. I'll have to look into it. For the moment, I'm keeping it the
+			// way it was. --arcum42
+			
 			const BLOCK& b = m_Blocks[psm];
 
 			bw = (bw + b.width - 1) / b.width;
 			start = bp * 256 + ((y / b.height) * bw + (x / b.width)) * 0x2000;
 			end = bp * 256  + (((y + h - 1) / b.height) * bw + (x + w + b.width - 1) / b.width) * 0x2000;
+			return;
+		}
+		
+		bits = PSMT_BITS_NUM(psm);
+		start = getPixelFun[psm](x, y, bp, bw);
+		end = getPixelFun[psm](x + w - 1, y + h - 1, bp, bw) + 1;
+		
+		if (bits > 0)
+		{
+			start *= bits;
+			end *= bits;
 		}
 		else
 		{
-			// just take the addresses
-			switch (psm)
-			{
-				case PSMCT32:
-				case PSMCT24:
-				case PSMT8H:
-				case PSMT4HL:
-				case PSMT4HH:
-					start = 4 * getPixelAddress32(x, y, bp, bw);
-					end = 4 * getPixelAddress32(x + w - 1, y + h - 1, bp, bw) + 4;
-					break;
-
-				case PSMCT16:
-					start = 2 * getPixelAddress16(x, y, bp, bw);
-					end = 2 * getPixelAddress16(x + w - 1, y + h - 1, bp, bw) + 2;
-					break;
-
-				case PSMT8:
-					start = getPixelAddress8(x, y, bp, bw);
-					end = getPixelAddress8(x + w - 1, y + h - 1, bp, bw) + 1;
-					break;
-
-				case PSMT4:
-				{
-					start = getPixelAddress4(x, y, bp, bw) / 2;
-					int newx = ((x + w - 1 + 31) & ~31) - 1;
-					int newy = ((y + h - 1 + 15) & ~15) - 1;
-					end = (getPixelAddress4(max(newx, x), max(newy, y), bp, bw) + 2) / 2;
-					break;
-				}
-			}
+			// This is what it used to do, which doesn't seem right.
+			// Keeping it for reference, in case removing it breaks anything.
+			
+			//int newx = ((x + w - 1 + 31) & ~31) - 1;
+			//int newy = ((y + h - 1 + 15) & ~15) - 1;
+			//start = getPixelAddress4(x, y, bp, bw) / 2;
+			//end = (getPixelAddress4(max(newx, x), max(newy, y), bp, bw) + 2) / 2;
+			
+			start /= 2;
+			end /= 2;
 		}
 	}
 
@@ -114,6 +151,7 @@
 
 		assert(gs.imageEndX < 2048 && gs.imageEndY < 2048);
 
+		// This needs to be looked in to, since psm should *not* be 63.
 		// hack! viewful joe
 		if (gs.dstbuf.psm == 63) gs.dstbuf.psm = 0;
 
@@ -121,11 +159,11 @@
 
 		GetRectMemAddress(start, end, gs.dstbuf.psm, gs.trxpos.dx, gs.trxpos.dy, gs.imageWnew, gs.imageHnew, gs.dstbuf.bp, gs.dstbuf.bw);
 
-		if (end > 0x00400000)
+		if (end > MEMORY_END)
 		{
 			ZZLog::Warn_Log("Host local out of bounds!");
 			//gs.imageTransfer = -1;
-			end = 0x00400000;
+			end = MEMORY_END;
 		}
 
 		gs_imageEnd = end;
@@ -468,7 +506,7 @@ __forceinline void _TransferLocalLocal_4()
 		{
 			_TransferLocalLocal_4();
 		}
-
+		
 		g_MemTargs.ClearRange(dststart, dstend);
 
 	#ifdef ZEROGS_DEVBUILD

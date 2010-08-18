@@ -42,6 +42,8 @@ using namespace std;
 #include <X11/extensions/xf86vmode.h>
 #endif
 
+#define MEMORY_END 0x00400000
+
 class GLWindow
 {
 
@@ -70,6 +72,29 @@ class GLWindow
 
 extern GLWindow GLWin;
 
+extern u8* g_pbyGSMemory;
+
+class GSMemory
+{
+	public:
+		void init();
+		void destroy();
+		u8* get();
+		u8* get(u32 addr);
+		u8* get_raw(u32 addr);
+};
+
+extern u8* g_pbyGSClut;		// the temporary clut buffer
+
+class GSClut
+{
+	public:
+		void init();
+		void destroy();
+		u8* get();
+		u8* get(u32 addr);
+		u8* get_raw(u32 addr);
+};
 struct Vector_16F
 {
 	u16 x, y, z, w;
@@ -311,6 +336,30 @@ enum PSM_value
 // Check target bit mode. PSMCT32 and 32Z return 0, 24 and 24Z - 1
 // 16, 16S, 16Z, 16SZ -- 2, PSMT8 and 8H - 3, PSMT4, 4HL, 4HH -- 4.
 inline int PSMT_BITMODE(int psm) {return (psm & 0x7);}
+
+inline int PSMT_BITS_NUM(int psm)
+{
+	// Treat these as 32 bit.
+	if ((psm == PSMT8H) || (psm == PSMT4HL) || (psm == PSMT4HH)) 
+	{
+		return 4;
+	}
+	
+	switch (PSMT_BITMODE(psm))
+	{
+		case 4: 
+			return 0;
+			
+		case 3:
+			return 1;
+			
+		case 2:
+			return 2;
+			
+		default:
+			return 4;
+	}
+}
 
 // CLUT = Color look up table. Set proper color to table according CLUT table.
 // Used for PSMT8, PSMT8H, PSMT4, PSMT4HH, PSMT4HL textures
@@ -637,6 +686,9 @@ typedef struct
 
 	pathInfo path[4];
 	GIFRegDIMX dimx;
+	GSMemory mem;
+	GSClut clut_buffer;
+	
 	void setRGBA(u32 r, u32 g, u32 b, u32 a)
 	{
 		rgba = (r & 0xff) |

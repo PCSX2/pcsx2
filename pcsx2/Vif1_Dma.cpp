@@ -151,7 +151,7 @@ bool _VIF1chain()
 
 	if (vif1ch.qwc == 0)
 	{
-		vif1.inprogress = 0;
+		vif1.inprogress &= ~1;
 		vif1.irqoffset = 0;
 		return true;
 	}
@@ -160,7 +160,7 @@ bool _VIF1chain()
 	if (vif1.dmamode == VIF_NORMAL_TO_MEM_MODE)
 	{
 		vif1TransferToMemory();
-		vif1.inprogress = 0;
+		vif1.inprogress &= ~1;
 		return true;
 	}
 
@@ -191,7 +191,7 @@ __fi void vif1SetupTransfer()
 	{
 		case VIF_NORMAL_TO_MEM_MODE:
 		case VIF_NORMAL_FROM_MEM_MODE:
-			vif1.inprogress = 1;
+			vif1.inprogress |= 1;
 			vif1.done = true;
 			g_vifCycles = 2;
 		break;
@@ -219,7 +219,7 @@ __fi void vif1SetupTransfer()
 			}
 
 			
-			vif1.inprogress = 0;
+			vif1.inprogress &= ~1;
 
 			if (vif1ch.chcr.TTE)
 			{
@@ -236,7 +236,7 @@ __fi void vif1SetupTransfer()
 				
 				if (!ret && vif1.irqoffset < 2)
 				{
-					vif1.inprogress = 0; //Better clear this so it has to do it again (Jak 1)
+					vif1.inprogress &= ~1; //Better clear this so it has to do it again (Jak 1)
 					return;        //IRQ set by VIFTransfer
 					
 				} //else vif1.vifstalled = false;
@@ -245,7 +245,7 @@ __fi void vif1SetupTransfer()
 
 			vif1.done |= hwDmacSrcChainWithStack(vif1ch, ptag->ID);
 
-			if(vif1ch.qwc > 0) vif1.inprogress = 1;
+			if(vif1ch.qwc > 0) vif1.inprogress |= 1;
 
 			//Check TIE bit of CHCR and IRQ bit of tag
 			if (vif1ch.chcr.TIE && ptag->IRQ)
@@ -497,8 +497,9 @@ void dmaVIF1()
 			vif1.dmamode = VIF_NORMAL_TO_MEM_MODE;
 
 		vif1.done = false;
-
-		if(vif1ch.chcr.MOD == CHAIN_MODE && vif1ch.qwc > 0) 
+		
+		// ignore tag if it's a GS download (Def Jam Fight for NY)
+		if(vif1ch.chcr.MOD == CHAIN_MODE && vif1.dmamode != VIF_NORMAL_TO_MEM_MODE) 
 		{
 			vif1.dmamode = VIF_CHAIN_MODE;
 			DevCon.Warning(L"VIF1 QWC on Chain CHCR " + vif1ch.chcr.desc());
