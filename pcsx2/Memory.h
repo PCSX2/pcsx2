@@ -36,14 +36,6 @@ static __fi void ZeroQWC( void* dest )
 }
 
 // Various useful locations
-#define DMACh_SPR0	((DMACh&)eeMem->HW[0xD000])
-#define DMACh_SPR1	((DMACh&)eeMem->HW[0xD400])
-#define DMACh_GIF	((DMACh&)eeMem->HW[0xA000])
-#define DMACh_VIF0	((DMACh&)eeMem->HW[0x8000])
-#define DMACh_VIF1	((DMACh&)eeMem->HW[0x9000])
-
-// [TODO] : reformat these to use references similar to the ones above.
-
 #define sif0dma ((DMACh*)&eeMem->HW[0xc000])
 #define sif1dma ((DMACh*)&eeMem->HW[0xc400])
 #define sif2dma ((DMACh*)&eeMem->HW[0xc800])
@@ -51,7 +43,7 @@ static __fi void ZeroQWC( void* dest )
 #define ipu0dma ((DMACh *)&eeMem->HW[0xb000])
 #define ipu1dma ((DMACh *)&eeMem->HW[0xb400])
 
-#define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff))
+#define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
 
 #define psHs8(mem)	(*(s8 *)&eeMem->HW[(mem) & 0xffff])
 #define psHs16(mem)	(*(s16*)&eeMem->HW[(mem) & 0xffff])
@@ -116,6 +108,13 @@ static __fi void ZeroQWC( void* dest )
 #define psSu128(mem)	(*(u128*)&eeMem->Scratch[(mem) & 0x3fff])
 
 #define psH_DMACh(mem)	(*(DMACh*)&eeMem->HW[(mem) & 0xffff])
+
+// Various useful locations
+#define DMACh_SPR0	((DMACh&)eeMem->HW[0xD000])
+#define DMACh_SPR1	((DMACh&)eeMem->HW[0xD400])
+#define DMACh_GIF	((DMACh&)eeMem->HW[0xA000])
+#define DMACh_VIF0	((DMACh&)eeMem->HW[0x8000])
+#define DMACh_VIF1	((DMACh&)eeMem->HW[0x9000])
 
 extern void memAlloc();
 extern void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.

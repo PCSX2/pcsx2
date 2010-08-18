@@ -15,6 +15,31 @@
 
 #pragma once
 
+// Strict DMA emulation actually requires the DMAC event be run on every other CPU
+// cycle, and thus will only be available with interpreters.
+static const bool UseStrictDmaTiming = false;
+
+// when enabled, the DMAC bursts through all active and pending DMA transfers that it can
+// in each IRQ call.  Ie, it continues to rpocess and update DMA transfers and chains until
+// a stall condition or interrupt request forces the DMAC to stop execution; or until all
+// DMAs are completed.
+static const bool UseDmaBurstHack = true;
+
+// MFIFO hack, when enabled, bypasses the PS2's MFIFO system.  Instead of copying data into
+// a FIFO and then right back out again, the DMAC will connect the Source and Drain DMAs
+// directly. For example, a typical Spr->MFIFO->VIF1 procedure can be done by providing
+// the SPR memory directly to VIF1.
+//
+// DevNote: GIF supports Drain Stall checking against STADR when doing REFS tag transfers.
+// This should still work reliably even with the hack enabled, because the only sane way
+// to use REFS is to reference memory outside the MFIFO work area (otherwise you'd deadlock).
+//
+// [TODO] : When this hack is enabled, hardware register accesses to active MFIFO channel
+// madr/tadr should be monitored and generate warnings or assertions, *or* they should
+// produce "simulated" results that reflect 
+static const bool UseMFIFOHack = true;
+
+
 // Useful enums for some of the fields.
 enum pce_values
 {
@@ -27,7 +52,7 @@ enum pce_values
 
 enum tag_id
 {
-	TAG_CNTS = 0,
+	TAG_CNTS = 0,	// (Destination Chanin only, SIF0 and fromSPR only)
 	TAG_REFE = 0, 	// Transfer Packet According to ADDR field, clear STR, and end
 	TAG_CNT, 		// Transfer QWC following the tag.
 	TAG_NEXT,		// Transfer QWC following tag. TADR = ADDR
@@ -35,7 +60,8 @@ enum tag_id
 	TAG_REFS,		// Transfer QWC from ADDR field (Stall Control)
 	TAG_CALL,		// Transfer QWC following the tag, save succeeding tag
 	TAG_RET,		// Transfer QWC following the tag, load next tag
-	TAG_END			// Transfer QWC following the tag
+	TAG_END,		// Transfer QWC following the tag
+	tag_id_count
 };
 
 enum mfd_type
@@ -115,6 +141,7 @@ union tDMA_TAG {
 		}
 	}
 	void reset() { _u32 = 0; }
+
 };
 #define DMA_TAG(value) ((tDMA_TAG)(value))
 
@@ -140,7 +167,7 @@ union tDMA_CHCR {
 			} TAG; 		// Maintains upper 16 bits of the most recently read DMAtag.
 			
 			u16 _tag16;
-	};
+		};
 	};
 
 	u32 _u32;
@@ -155,9 +182,16 @@ union tDMA_CHCR {
 	u16 upper() const { return (_u32 >> 16); }
 	u16 lower() const { return (u16)_u32; }
 	wxString desc() const { return wxsFormat(L"Chcr: 0x%x", _u32); }
+	
+	const char* ModeToUTF8() const
+	{
+		static const char* const modestr[] = {
+			"Normal", "Chain", "Interleave", "Undefined"
+		};
+		
+		return modestr[MOD];
+	}
 };
-
-#define CHCR(value) ((tDMA_CHCR)(value))
 
 union tDMA_SADR {
 	struct {
@@ -172,28 +206,6 @@ union tDMA_SADR {
 	wxString desc() const { return wxsFormat(L"Sadr: 0x%x", _u32); }
 	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
-
-union tDMA_ADDR {
-	struct {
-		u32 ADDR : 31;	// Transfer memory address
-		u32 SPR : 1;	// Memory/SPR Address
-	};
-	u32 _u32;
-
-	tDMA_ADDR(u32 val) { _u32 = val; }
-
-	void clear() { _u32 = 0; }
-	
-	void IncrementQWC(uint incval = 1)
-	{
-		ADDR += incval;
-		if (SPR) ADDR &= (Ps2MemSize::Scratch-1);
-
-		// No need to test for VU/SPR direct mappings -- this function is only
-		// used from chain modes, which do not support SPR/VU direct mappings.
-	}
-};
-
 
 union tDMA_QWC {
 	struct {
@@ -549,7 +561,7 @@ union tDMAC_ADDR
 		ADDR += incval;
 		if (SPR) ADDR &= (Ps2MemSize::Scratch-1);
 	}
-
+	
 	wxString ToString(bool sprIsValid=true) const
 	{
 		return pxsFmt((sprIsValid && SPR) ? L"0x%04X(SPR)" : L"0x%08X", ADDR);
@@ -561,34 +573,47 @@ union tDMAC_ADDR
 	}
 };
 
-struct DMACregisters
+// --------------------------------------------------------------------------------------
+//  DMA_ControllerRegisters
+// --------------------------------------------------------------------------------------
+struct DMA_ControllerRegisters
 {
 	tDMAC_CTRL	ctrl;
 	u32 _padding[3];
+
 	tDMAC_STAT	stat;
 	u32 _padding1[3];
+
 	tDMAC_PCR	pcr;
 	u32 _padding2[3];
 
+
 	tDMAC_SQWC	sqwc;
 	u32 _padding3[3];
+
 	tDMAC_RBSR	rbsr;
 	u32 _padding4[3];
+
 	tDMAC_RBOR	rbor;
 	u32 _padding5[3];
+
 	tDMAC_ADDR	stadr;
 	u32 _padding6[3];
 	
-	__releaseinline u32 mfifoWrapAddr(u32 mask)
+	__ri u32 mfifoWrapAddr(u32 offset)
 	{
-		return (rbor.ADDR + (mask & rbsr.RMSK));
+		return (rbor.ADDR + (offset & rbsr.RMSK));
 	}
 
-	__releaseinline u32 mfifoRingEnd()
+	__ri u32 mfifoRingEnd()
 	{
 		return rbor.ADDR + rbsr.RMSK;
 	}
 
+	static DMA_ControllerRegisters& Get()
+	{
+		return (DMA_ControllerRegisters&)psHu8(DMAC_CTRL);
+	}
 };
 
 // Currently guesswork.
@@ -632,7 +657,7 @@ struct INTCregisters
 	u32 _padding2[3];
 };
 
-#define dmacRegs ((DMACregisters*)(eeMem->HW+0xE000))
+#define dmacRegs ((DMA_ControllerRegisters*)(eeMem->HW+0xE000))
 #define intcRegs ((INTCregisters*)(eeMem->HW+0xF000))
 
 static __fi void throwBusError(const char *s)

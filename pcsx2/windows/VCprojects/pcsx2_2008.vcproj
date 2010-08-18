@@ -750,7 +750,23 @@
 						Name="DMAC"
 						>
 						<File
+							RelativePath="..\..\ps2\DMAC-Overview.txt"
+							>
+						</File>
+						<File
 							RelativePath="..\..\ps2\NewDmac.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\ps2\NewDmac.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\ps2\NewDmac_ChainMode.inl"
+							>
+						</File>
+						<File
+							RelativePath="..\..\ps2\NewDmac_Tables.inl"
 							>
 						</File>
 						<Filter

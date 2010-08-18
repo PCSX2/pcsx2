@@ -74,14 +74,14 @@ __fi mem8_t hwRead8(u32 mem)
 				case 0x30: regName = "TADR"; break;
 				case 0x40: regName = "ASR0"; break;
 				case 0x50: regName = "ASR1"; break;
-				case 0x80: regName = "SADDR"; break;
+				case 0x80: regName = "SADR"; break;
 			}
 
 			HW_LOG("Hardware Read 8 at 0x%x (%ls %s), value=0x%x", mem, ChcrName(mem & ~0xff), regName, psHu8(mem) );
 			ret = psHu8(mem);
 			return ret;
 		}
-}
+	}
 #endif
 
 	switch (mem)

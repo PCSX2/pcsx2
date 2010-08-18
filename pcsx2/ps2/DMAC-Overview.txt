@@ -1,0 +1,58 @@
+
+==================================
+-/-   DMAC Hardware Overview   -/-
+==================================
+
+Generally speaking, the actual hardware emulation of the DMAC isn't going to be important.
+This is because the DMAC is a multi-peripheral interface with FIFOs attached to each
+peripheral, and the EE is a multi-threaded environment with exception and interrupt handlers.
+So in order to do safe DMA arbitration, programs can make few assumptions about how long
+a DMA takes to complete or about DMA status even after starting a transfer immediately.
+However, understanding the DMAC hardware can help understand what games are trying to do
+with their DMAC registers.
+
+The DMAC works by loading/draining FIFOs attached to each peripheral from/to main memory
+using a BURST transfer.  That is, Main Memory -> FIFO is a burst, and then the peripheral
+drains the FIFO at its internal bus speed.
+
+Most peripherals (except SPR) operate at half the main bus speed, and incur additional
+penalties depending on what's being fed to/from them (the gs for example has several commands
+that have 1 cycle penalties).  The SIF transfers are especially slow since the IOP DMAs are
+a mere 1/16th fraction the speed of the EE's.  Thus, in order to maximize bus speed its
+*always* best to have two or more DMAs running concurrently.  The DMAC will slice between
+the DMAs accordingly, filling and draining FIFOs as needed, all while the FIFOs are being
+filled/drained by the attached peripherals *in parallel.*
+
+SPR is the Exception!  SPR DMAs can max out the DMAC bandwidth, and as such the toSPR and
+fromSPR DMAs are always BURST mode for the entire duration of their transfers, since the
+DMAC would have no performance benefit from slicing them with other FIFO-based DMA transfers.
+
+
+=========================
+-/-   MFIFO Details   -/-
+=========================
+
+The MFIFO is a pretty funky little thing, with quite a few specific rules:
+
+1. Source channel is fromSPR.
+  1a. ... and it MUST be in NORMAL mode (logical transfer mode).
+
+2. Drain channel can be either VIF1 or GIF 
+  2a. ... and it MUST be in SOURCE CHAIN mode (logical transfer mode).
+  2b. ... and the only valid tags are CNT, END, REF, REFS, REFE.
+
+3. fromSpr.MADR becomes the ringbuffer "writepos" and Dn.TADR becomes the ringbuffer "readpos"
+  3a. when (fromSpr.MADR == Dn.TADR) the ringbuffer is empty and the drain channel stalls.
+
+4. fromSPR transfers in BURSTs based on the source chain packet sizes (tag + QWC), which
+   is why the drain channel must be in CHAIN mode.  Because of this, it would be a serious
+   error to pass non-CHAIN data through fromSPR (likely causing deadlock).
+
+5. MEIS occurs when fromSPR.STR == 0 and drain channel empties the MFIFO (by rule 3a above).
+   It appears MEIS is based on Dn.MADR, rather than Dn.TADR, as based on the following
+   known conditions:
+  
+  5a. MEIS is only detected on CNT tags, and is *not* detected on REF-type tags.
+  5b. ... thus MEIS should not raised if the MFIFO empties itself on a REFx tag.
+  5c. MEIS is raised properly on incomplete END/CNT tags (ie, tag has a QWC of 50 but
+      fromSPR.QWC is only 30).
