@@ -56,3 +56,43 @@ The MFIFO is a pretty funky little thing, with quite a few specific rules:
   5b. ... thus MEIS should not raised if the MFIFO empties itself on a REFx tag.
   5c. MEIS is raised properly on incomplete END/CNT tags (ie, tag has a QWC of 50 but
       fromSPR.QWC is only 30).
+
+======================================
+-/-   Transfer Tag Enable (TTE=1)  -/-
+======================================
+
+TTE is available in source Chain mode only, and when enabled it transfers the QWC containing
+the DMAtag along with the data.
+
+The TTE doesn't really do what we might initially think.  First off, tansferring the DMAtag
+itself (the lower 64 bits) is typically a recipe for disaster: if sent to the VIF code
+or GIF tag parsers, it would end up being who-knows-what tag!  But on the other hand the
+DMAC can't just send the upper 64 bits of the tag either; it has strict QWC-only limitations.
+So what it *really* does, as best as we can tell, is mask the lower 64 bits of the tag to
+zero and upload the masked QWC to the destination peripheral.
+
+This works nicely since zeros are NOPs on both VIFcode and GIFtag parsers.  So it allows
+the DMAC to operate efficiently, while doing nothing more than dumping a pair of harmless
+zeros into the target peripherals.
+
+The PS2 engineers' rational for implementing the TTE is due to how the EE's RAM is configured,
+how the DMAC interfaces with EE RAM, and due to the DMAC's slice transfer behavior.
+
+The DMAC operates most efficiently when it starts at 128-byte (8 QWC) boundaries in memory
+and can increment the bottom 3 bits of its transfer src/dest address sequentially.  Note
+that the upper bits are not relevant to DMAC performance!  It can hop around in memory
+(via REF tags) all it wants, so long as the internal read alignment remains consistent.
+Thus, TTE was introduced, since TTE=1 is usually ideal for CNT tags and TTE=0 is usually
+ideal for REF tags.
+
+(... and mixing REF and CNT tags is generally no recommended ;)
+
+Since the only real purpose of TTE is to allow source chain transfers to pad their transfers
+with zeros, so to applease the DMAC's preferences for QWC alignment, its reasonable to 
+assume that the hardware simply masks the value before witing the result.
+
+** Confirming TTE Behavior **
+
+ * TTE can be confirmed easily using toSPR's Source Chain mode transfer.  Write dummy
+   data to SPR memory, initiate a simple chain transfer wih TTE=1, and read back the
+   result.

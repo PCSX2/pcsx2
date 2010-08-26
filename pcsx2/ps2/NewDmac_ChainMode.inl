@@ -17,9 +17,9 @@
 
 #include "NewDmac.h"
 
-void DMA_ChannelState::MFIFO_SrcChainUpdateTADR()
+void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 {
-	tDMAC_ADDR& tadr = chan.TADR();
+	tDMAC_ADDR& tadr = info.TADR();
 
 	switch(chcr.TAG.ID)
 	{
@@ -34,8 +34,8 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateTADR()
 		// CNT (Continue) - Transfer QWC following the tag, and following QWC becomes the new TADR.
 		case TAG_CNT:
 		{
-			const DMA_ChannelInformation& fromSPR = DmaChan[DmaId_fromSPR];
-			DMA_ChannelRegisters& fromSprReg = fromSPR.GetRegs();
+			const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
+			ChannelRegisters& fromSprReg = fromSPR.GetRegs();
 
 			if (UseMFIFOHack)
 			{
@@ -68,7 +68,7 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateTADR()
 		// REF  (Reference) - Transfer QWC from the ADDR field, and increment the TADR to get the next tag.
 		// REFS (Reference and Stall) - ... and check STADR and stall if needed, when reading the QWC.
 		case TAG_REFS:
-			if (!pxAssertDev(DmaStall_Drain != chan.DmaStall, L"REFS without stall control"))
+			if (!pxAssertDev(Stall_Drain != info.DmaStall, L"REFS without stall control"))
 				throw Exception::DmaRaiseIRQ(L"REFS without stall control").Verbose();
 
 		case TAG_REF:
@@ -101,14 +101,14 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateTADR()
 		throw Exception::DmaRaiseIRQ(L"Tag IRQ");
 }
 
-void DMA_ChannelState::MFIFO_SrcChainUpdateMADR( const tDMA_TAG64& tag )
+void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateMADR( const DMAtag& tag )
 {
-	const tDMAC_ADDR& tadr = chan.TADR();
+	const tDMAC_ADDR& tadr = info.TADR();
 
 	switch (chcr.TAG.ID)
 	{
 		case TAG_REFS:
-			if (!pxAssertDev(chan.DmaStall == DmaStall_Drain, "(DMA CHAIN) REFS tag invoked on an unsupported channel."))
+			if (!pxAssertDev(info.DmaStall == Stall_Drain, "(DMA CHAIN) REFS tag invoked on an unsupported channel."))
 			{
 				// Most likely this is correct, though there is a possibility that the
 				// Real DMAC actually just treats CNTS like a CNT if the channel doesn't
@@ -121,8 +121,8 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateMADR( const tDMA_TAG64& tag )
 		{
 			if (UseMFIFOHack)
 			{
-				const DMA_ChannelInformation& fromSPR = DmaChan[DmaId_fromSPR];
-				DMA_ChannelRegisters& fromSprReg = fromSPR.GetRegs();
+				const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
+				ChannelRegisters& fromSprReg = fromSPR.GetRegs();
 
 				fromSprReg.qwc.QWC += 1;
 				fromSprReg.sadr.ADDR += 16;
@@ -130,7 +130,7 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateMADR( const tDMA_TAG64& tag )
 				if (0 == fromSprReg.qwc.QWC)
 				{
 					fromSprReg.chcr.STR = 0;
-					dmacReg.stat.CIS |= (1 << DmaId_fromSPR);
+					dmacReg.stat.CIS |= (1 << ChanId_fromSPR);
 				}
 			}
 			else
@@ -144,8 +144,8 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateMADR( const tDMA_TAG64& tag )
 		case TAG_CNT:
 			if (UseMFIFOHack)
 			{
-				const DMA_ChannelInformation& fromSPR = DmaChan[DmaId_fromSPR];
-				DMA_ChannelRegisters& fromSprReg = fromSPR.GetRegs();
+				const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
+				ChannelRegisters& fromSprReg = fromSPR.GetRegs();
 				madr.ADDR = fromSprReg.sadr.ADDR;
 				madr.SPR = 1;
 				madr.IncrementQWC();
@@ -162,7 +162,7 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateMADR( const tDMA_TAG64& tag )
 				if (0 == fromSprReg.qwc.QWC)
 				{
 					fromSprReg.chcr.STR = 0;
-					dmacReg.stat.CIS |= (1 << DmaId_fromSPR);
+					dmacReg.stat.CIS |= (1 << ChanId_fromSPR);
 				}
 
 			}
@@ -186,12 +186,12 @@ void DMA_ChannelState::MFIFO_SrcChainUpdateMADR( const tDMA_TAG64& tag )
 }
 
 
-void DMA_ChannelState::SrcChainUpdateTADR()
+void EE_DMAC::ChannelState::SrcChainUpdateTADR()
 {
-	tDMAC_ADDR& tadr = chan.TADR();
+	tDMAC_ADDR& tadr = info.TADR();
 
 	// Not really sure what the Real DMACdoes if this happens. >_<
-	pxAssumeDev(chan.hasSourceChain, "(DMAC) Source chain invoked on unsupported channel.");
+	pxAssumeDev(info.hasSourceChain, "(DMAC) Source chain invoked on unsupported channel.");
 
 	switch(chcr.TAG.ID)
 	{
@@ -217,7 +217,7 @@ void DMA_ChannelState::SrcChainUpdateTADR()
 		// REF  (Reference) - Transfer QWC from the ADDR field, and increment the TADR to get the next tag.
 		// REFS (Reference and Stall) - ... and check STADR and stall if needed, when reading the QWC.
 		case TAG_REFS:
-			if (!pxAssertDev(DmaStall_Drain != chan.DmaStall, L"REFS without stall control"))
+			if (!pxAssertDev(Stall_Drain != info.DmaStall, L"REFS without stall control"))
 				throw Exception::DmaRaiseIRQ(L"REFS without stall control").Verbose();
 
 		case TAG_REF:
@@ -228,7 +228,7 @@ void DMA_ChannelState::SrcChainUpdateTADR()
 		//        of the old tag as the call target (assigned to TADR).
 		case TAG_CALL:
 		{
-			if (!pxAssertDev(chan.hasAddressStack, "(DMAC CHAIN) CALL tag invoked on an unsupported channel (no address stack)." ))
+			if (!pxAssertDev(info.hasAddressStack, "(DMAC CHAIN) CALL tag invoked on an unsupported channel (no address stack)." ))
 			{
 				// Note that this condition should typically be unreachable, since the same
 				// check is performed when TADR is read and set.
@@ -262,7 +262,7 @@ void DMA_ChannelState::SrcChainUpdateTADR()
 		// RET - Transfer QWC following the tag, an pops ASR0/1 into the TADR.
 		case TAG_RET:
 		{
-			if (!pxAssertDev(chan.hasAddressStack, "(DMAC CHAIN) RET tag invoked on an unsupported channel (no address stack)." ))
+			if (!pxAssertDev(info.hasAddressStack, "(DMAC CHAIN) RET tag invoked on an unsupported channel (no address stack)." ))
 			{
 				// Note that this condition should typically be unreachable, since the same
 				// check is performed when TADR is read and set.
@@ -307,10 +307,10 @@ void DMA_ChannelState::SrcChainUpdateTADR()
 		throw Exception::DmaRaiseIRQ(L"Tag IRQ");
 }
 
-void DMA_ChannelState::SrcChainUpdateMADR( const tDMA_TAG64& tag )
+void EE_DMAC::ChannelState::SrcChainUpdateMADR( const DMAtag& tag )
 {
 	// Not really sure what the Real DMACdoes if this happens. >_<
-	pxAssumeDev(chan.hasSourceChain, "(DMAC) Source chain invoked on unsupported channel.");
+	pxAssumeDev(info.hasSourceChain, "(DMAC) Source chain invoked on unsupported channel.");
 
 	switch (chcr.TAG.ID)
 	{
@@ -318,7 +318,7 @@ void DMA_ChannelState::SrcChainUpdateMADR( const tDMA_TAG64& tag )
 		// These tags all transfer from the ADDR field read from the TADR pointer.
 		// --------------------------------------------------------------------------------------
 		case TAG_REFS:
-			if (!pxAssertDev(chan.DmaStall == DmaStall_Drain, "(DMA CHAIN) REFS tag invoked on an unsupported channel."))
+			if (!pxAssertDev(info.DmaStall == Stall_Drain, "(DMA CHAIN) REFS tag invoked on an unsupported channel."))
 			{
 				// Most likely this is correct, though there is a possibility that the
 				// Real DMAC actually just treats CNTS like a CNT if the channel doesn't
@@ -337,7 +337,7 @@ void DMA_ChannelState::SrcChainUpdateMADR( const tDMA_TAG64& tag )
 		// --------------------------------------------------------------------------------------
 		case TAG_CALL:
 		case TAG_RET:
-			if (!pxAssertDev(chan.hasAddressStack, "(DMAC CHAIN) CALL/RET tag invoked on an unsupported channel (no address stack)." ))
+			if (!pxAssertDev(info.hasAddressStack, "(DMAC CHAIN) CALL/RET tag invoked on an unsupported channel (no address stack)." ))
 			{
 				// Note that this condition should typically be unreachable, since the same
 				// check is performed when TADR is read and set.
@@ -362,10 +362,10 @@ void DMA_ChannelState::SrcChainUpdateMADR( const tDMA_TAG64& tag )
 	}
 }
 
-void DMA_ChannelState::DstChainUpdateTADR()
+void EE_DMAC::ChannelState::DstChainUpdateTADR()
 {
 	// Not really sure what the Real DMACdoes if this happens. >_<
-	pxAssumeDev(chan.hasDestChain, "(DMAC) Destination chain invoked on unsupported channel.");
+	pxAssumeDev(info.hasDestChain, "(DMAC) Destination chain invoked on unsupported channel.");
 
 	// Destination chains perform IRQ checks prior to updating TADR!
 	if(chcr.TAG.IRQ && chcr.TIE)
@@ -382,7 +382,7 @@ void DMA_ChannelState::DstChainUpdateTADR()
 		// CNT (Continue) - Transfer QWC following the tag, and following QWC becomes the new TADR.
 		// CNT (Continue with Stall) - ... and stall against STADR as needed.
 		case TAG_CNTS:
-			if (!pxAssertDev(chan.DmaStall == DmaStall_Source, "(DMA CHAIN) CNTS tag invoked on an unsupported channel."))
+			if (!pxAssertDev(info.DmaStall == Stall_Source, "(DMA CHAIN) CNTS tag invoked on an unsupported channel."))
 			{
 				// Most likely this is correct, though there is a possibility that the
 				// Real DMAC actually just treats CNTS like a CNT if the channel doesn't
@@ -403,11 +403,11 @@ void DMA_ChannelState::DstChainUpdateTADR()
 	}
 }
 
-void DMA_ChannelState::DstChainUpdateMADR()
+void EE_DMAC::ChannelState::DstChainUpdateMADR()
 {
 	if (TAG_CNTS == chcr.TAG.ID)
 	{
-		if (!pxAssertDev(chan.DmaStall == DmaStall_Source, "(DMA CHAIN) CNTS tag invoked on an unsupported channel."))
+		if (!pxAssertDev(info.DmaStall == Stall_Source, "(DMA CHAIN) CNTS tag invoked on an unsupported channel."))
 		{
 			// Most likely this is correct, though there is a possibility that the
 			// Real DMAC actually just treats CNTS like a CNT if the channel doesn't

@@ -21,45 +21,49 @@
 #undef dmacRegs
 #undef intcRegs
 
-enum DMA_StallMode
+namespace EE_DMAC {
+
+enum StallMode
 {
 	// No stalling logic is performed (STADR is not read or written)
-	DmaStall_None,
+	Stall_None,
 	
 	// STADR is written with the MADR after data is transfered.
-	DmaStall_Source,
+	Stall_Source,
 
 	// STADR is read and MADR is not allowed to advance beyond that point.
-	DmaStall_Drain,
+	Stall_Drain,
 };
 
-enum DMA_DirectionMode
+enum DirectionMode
 {
 	// Indicates a DMA that transfers from peripheral to memory
-	DmaDir_Source,
+	Dir_Source,
 	
 	// Indicates a DMA that transfers from peripheral to memory
-	DmaDir_Drain,
+	Dir_Drain,
 	
 	// Indicates a DAM that bases its transfer direction on the DIR bit of its CHCR register.
-	DmaDir_Both,
+	Dir_Both,
 };
 
-enum DMA_ChannelId
+enum ChannelId
 {
-	DmaId_VIF0 = 0,
-	DmaId_VIF1,
-	DmaId_GIF,
-	DmaId_fromIPU,
-	DmaId_toIPU,
-	DmaId_SIF0,
-	DmaId_SIF1,
-	DmaId_SIF2,
-	DmaId_fromSPR,
-	DmaId_toSPR,
+	ChanId_VIF0 = 0,
+	ChanId_VIF1,
+	ChanId_GIF,
+	ChanId_fromIPU,
+	ChanId_toIPU,
+	ChanId_SIF0,
+	ChanId_SIF1,
+	ChanId_SIF2,
+	ChanId_fromSPR,
+	ChanId_toSPR,
 
-	DmaId_None
+	NumChannels,
+	ChanId_None = NumChannels
 };
+
 
 #define __dmacall
 
@@ -78,9 +82,9 @@ typedef FnType_FromPeripheral*	Fnptr_FromPeripheral;
 
 
 // --------------------------------------------------------------------------------------
-//  DMA_ChannelRegisters
+//  EE_DMAC::ChannelRegisters
 // --------------------------------------------------------------------------------------
-struct DMA_ChannelRegisters
+struct ChannelRegisters
 {
 	tDMA_CHCR	chcr;
 	u32	_null0[3];
@@ -106,9 +110,9 @@ struct DMA_ChannelRegisters
 };
 
 // --------------------------------------------------------------------------------------
-//  tDMA_TAG64
+//  EE_DMAC::DMAtag
 // --------------------------------------------------------------------------------------
-union tDMA_TAG64
+union DMAtag
 {
 	struct
 	{
@@ -129,19 +133,19 @@ union tDMA_TAG64
 	u32 _u32[2];
 	u16 _u16[4];
 
-	tDMA_TAG64(u64 val) { _u64 = val; }
+	DMAtag(u64 val) { _u64 = val; }
 
 	// Returns the upper 16 bits of the tag, which is typically stored to the channel's
 	// CHCR register during chain mode processing.
 	u16 Bits16to31() const { return _u16[1]; }
 	
-	wxString ToString(DMA_DirectionMode dir) const
+	wxString ToString(DirectionMode dir) const
 	{
 		const char* label;
 		switch(ID)
 		{
 			case TAG_REFE:
-				label = (dir == DmaDir_Source) ? "CNTS" : "REFE";
+				label = (dir == Dir_Source) ? "CNTS" : "REFE";
 			break;
 
 			case TAG_CNT:	label = "CNT";		break;
@@ -164,6 +168,49 @@ union tDMA_TAG64
 
 	void Clear() { _u64 = 0; }
 
+};
+
+// --------------------------------------------------------------------------------------
+//  EE_DMAC::ControllerRegisters
+// --------------------------------------------------------------------------------------
+struct ControllerRegisters
+{
+	tDMAC_CTRL	ctrl;
+	u32 _padding[3];
+
+	tDMAC_STAT	stat;
+	u32 _padding1[3];
+
+	tDMAC_PCR	pcr;
+	u32 _padding2[3];
+
+
+	tDMAC_SQWC	sqwc;
+	u32 _padding3[3];
+
+	tDMAC_RBSR	rbsr;
+	u32 _padding4[3];
+
+	tDMAC_RBOR	rbor;
+	u32 _padding5[3];
+
+	tDMAC_ADDR	stadr;
+	u32 _padding6[3];
+
+	__ri u32 mfifoWrapAddr(u32 offset)
+	{
+		return (rbor.ADDR + (offset & rbsr.RMSK));
+	}
+
+	__ri u32 mfifoRingEnd()
+	{
+		return rbor.ADDR + rbsr.RMSK;
+	}
+
+	static ControllerRegisters& Get()
+	{
+		return (ControllerRegisters&)psHu8(DMAC_CTRL);
+	}
 };
 
 // --------------------------------------------------------------------------------------
@@ -197,36 +244,122 @@ namespace Exception
 }
 
 // --------------------------------------------------------------------------------------
-//  DMA_ChannelInformation
+//  EE_DMAC::ChannelMetrics
 // --------------------------------------------------------------------------------------
-struct DMA_ChannelInformation
+struct ChannelMetrics
+{
+	// total data copied, categorized by LogicalTransferMode.
+	u64			qwc[4];
+
+	// times this DMA channel has skipped its arbitration rights due to
+	// some stall condition.
+	uint		skipped_arbitrations;
+
+	// total number of transfers started for this DMA channel, categorized
+	// by LogicalTransferMode.
+	// (counted every time STR is set to 1 while DMA is in CHAIN mode)
+	uint		xfers[4];
+
+	// total number of CHAIN mode packets transferred since metric was reset.
+	uint		chain_packets[tag_id_count];
+
+	// Counting length of the current series of chains (reset to 0 on each
+	// STR=1).
+	uint		current_chain;
+
+	// Longest series of chain packets transferred in a single DMA kick (ie, from
+	// STR=1 until an END tag.
+	uint		longest_chain;
+
+
+	void Reset()
+	{
+		memzero( *this );
+	}
+};
+
+// --------------------------------------------------------------------------------------
+//  EE_DMAC::ControllerMetrics
+// --------------------------------------------------------------------------------------
+struct ControllerMetrics
+{
+	ChannelMetrics		channel[NumChannels];
+	
+	// Incremented each time the DMAC event hander is entered.
+	uint		events;
+
+	// Incremented for each arbitration check performed.  Since some DMAs give up arbitration
+	// during their actual transfer logic, multiple arbitrations can be performed per-event.
+	// When the DMA Burst hack is enabled, there will usually be significantly fewer events
+	// and significantly more arbitration checks.
+	uint		arbitration_checks;
+
+	void Reset()
+	{
+		memzero( channel );
+	}
+	
+	__fi void RecordXfer( ChannelId dmaId, LogicalTransferMode mode, uint qwc )
+	{
+		if (!IsDevBuild) return;
+		++channel[dmaId].xfers[mode];
+		channel[dmaId].qwc[mode] += qwc;
+		channel[dmaId].current_chain = 0;
+	}
+
+	__fi void RecordChainPacket( ChannelId dmaId, tag_id tag, uint qwc )
+	{
+		if (!IsDevBuild) return;
+		++channel[dmaId].chain_packets[tag];
+		++channel[dmaId].current_chain;
+		channel[dmaId].qwc[CHAIN_MODE] += qwc;
+	}
+
+	__fi void RecordChainEnd( ChannelId dmaId )
+	{
+		if (!IsDevBuild) return;
+		if (channel[dmaId].current_chain >= channel[dmaId].longest_chain)
+			channel[dmaId].longest_chain = channel[dmaId].current_chain;
+	}
+
+	u64 GetQWC(LogicalTransferMode mode) const;
+	u64 GetQWC() const;
+
+	uint GetTransferCount(LogicalTransferMode mode) const;
+	uint GetTransferCount() const;
+};
+
+// --------------------------------------------------------------------------------------
+//  EE_DMAC::ChannelInformation
+// --------------------------------------------------------------------------------------
+struct ChannelInformation
 {
 	const char*		NameA;
 	const wxChar*	NameW;
 
 	uint			regbaseaddr;
 	
-	DMA_StallMode	DmaStall;
+	StallMode		DmaStall;
 	bool			hasSourceChain;
 	bool			hasDestChain;
 	bool			hasAddressStack;
 	bool			isSprChannel;
 
 	// (Drain) Non-Null for channels that can xfer from main memory to peripheral.
-	Fnptr_ToPeripheral		toFunc;
+	Fnptr_ToPeripheral		fnptr_xferTo;
 
 	// (Source) Non-Null for channels that can xfer from peripheral to main memory.
-	Fnptr_FromPeripheral	fromFunc;
+	Fnptr_FromPeripheral	fnptr_xferFrom;
 
-	DMA_DirectionMode GetRawDirection() const
+	DirectionMode GetRawDirection() const
 	{
-		if (toFunc && fromFunc) return DmaDir_Both;
-		return toFunc ? DmaDir_Drain : DmaDir_Source;
+		if (fnptr_xferTo && fnptr_xferFrom) return Dir_Both;
+		return fnptr_xferTo ? Dir_Drain : Dir_Source;
 	}
 
-	DMA_ChannelRegisters& GetRegs() const
+	ChannelRegisters& GetRegs() const
 	{
-		return (DMA_ChannelRegisters&)eeMem->HW[regbaseaddr];
+		return (ChannelRegisters&)eeMem->HW[regbaseaddr];
 	}
 
 	tDMA_CHCR& CHCR() const
@@ -273,22 +406,22 @@ struct DMA_ChannelInformation
 };
 
 // --------------------------------------------------------------------------------------
-//  DMA_ChannelState
+//  EE_DMAC::ChannelState
 // --------------------------------------------------------------------------------------
-class DMA_ChannelState
+class ChannelState
 {
 protected:
-	const DMA_ChannelId				Id;
-	DMA_ControllerRegisters&		dmacReg;
-	const DMA_ChannelInformation&	chan;
-	DMA_ChannelRegisters&			creg;
-	tDMA_CHCR&						chcr;
-	tDMAC_ADDR&						madr;
+	const ChannelId				Id;
+	ControllerRegisters&		dmacReg;
+	const ChannelInformation&	info;
+	ChannelRegisters&			creg;
+	tDMA_CHCR&					chcr;
+	tDMAC_ADDR&					madr;
 
 public:
-	DMA_ChannelState( DMA_ChannelId chanId );
+	ChannelState( ChannelId chanId );
 
-	DMA_DirectionMode GetDir() const;
+	DirectionMode GetDir() const;
 	bool DrainStallActive() const;
 	bool SourceStallActive() const;
 	bool MFIFOActive() const;
@@ -297,24 +430,31 @@ public:
 
 	bool IsSliced()
 	{
-		return (Id < DmaId_fromSPR);
+		return (Id < ChanId_fromSPR);
 	}
 
 	bool IsBurst()
 	{
-		return (Id >= DmaId_fromSPR);
+		return (Id >= ChanId_fromSPR);
 	}
+
+	uint TransferSource(u128* destMemHost, uint lenQwc, uint destStartQwc=0, uint destSize=0) const;
+	uint TransferDrain(const u128* srcMemHost, uint lenQwc, uint srcStartQwc=0, uint srcSize=0) const;
+	template< typename T >
+	uint TransferDrain( const T& srcBuffer ) const;
 
 protected:
 	void TransferInterleaveData();
 	void TransferNormalAndChainData();
 
 	void MFIFO_SrcChainUpdateTADR();
-	void MFIFO_SrcChainUpdateMADR( const tDMA_TAG64& tag );
+	void MFIFO_SrcChainUpdateMADR( const DMAtag& tag );
 
 	void SrcChainUpdateTADR();
-	void SrcChainUpdateMADR( const tDMA_TAG64& tag );
+	void SrcChainUpdateMADR( const DMAtag& tag );
 
 	void DstChainUpdateTADR();
 	void DstChainUpdateMADR();
 };
+
+}		// namespace EE_DMAC

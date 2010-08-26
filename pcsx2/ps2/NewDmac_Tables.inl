@@ -18,6 +18,10 @@
 #define _m(v) ((D##v##_CHCR) & 0xffff)
 #define _n(v) #v, wxT(#v)
 
+using namespace EE_DMAC;
+
+namespace EE_DMAC
+{
 extern FnType_FromPeripheral fromVIF0;
 extern FnType_FromPeripheral fromIPU;
 extern FnType_FromPeripheral fromSIF0;
@@ -32,19 +36,19 @@ extern FnType_ToPeripheral toSIF1;
 extern FnType_ToPeripheral toSIF2;
 extern FnType_ToPeripheral toSPR;
 
-static const DMA_ChannelInformation DmaChan[] =
+static const ChannelInformation ChannelInfo[NumChannels] =
 {
 	//							D.S.			S.C.	D.C.	A.S.	SPR
-	{ _n(VIF0),		_m(0),	DmaStall_None,		true,	false,	true,	false,	toVIF0,		fromVIF0	},
-	{ _n(VIF1),		_m(1),	DmaStall_Drain,		true,	false,	true,	false,	toVIF1,		NULL		},
-	{ _n(GIF),		_m(2),	DmaStall_Drain,		true,	false,	true,	false,	toGIF,		NULL		},
-	{ _n(fromIPU),	_m(3),	DmaStall_Source,	false,	false,	false,	false,	NULL,		fromIPU		},
-	{ _n(toIPU),	_m(4),	DmaStall_None,		true,	false,	false,	false,	toIPU,		NULL		},
-	{ _n(SIF0),		_m(5),	DmaStall_Source,	false,	true,	false,	false,	NULL,		fromSIF0	},
-	{ _n(SIF1),		_m(6),	DmaStall_Drain,		true,	false,	false,	false,	toSIF1,		NULL		},
-	{ _n(SIF2),		_m(7),	DmaStall_None,		false,	false,	false,	false,	toSIF2,		fromSIF2	},
-	{ _n(fromSPR),	_m(8),	DmaStall_Source,	false,	true,	false,	true,	NULL,		fromSPR		},
-	{ _n(toSPR),	_m(9),	DmaStall_None,		true,	false,	false,	true,	toSPR,		NULL		},
+	{ _n(VIF0),		_m(0),	Stall_None,		true,	false,	true,	false,	toVIF0,		fromVIF0	},
+	{ _n(VIF1),		_m(1),	Stall_Drain,	true,	false,	true,	false,	toVIF1,		NULL		},
+	{ _n(GIF),		_m(2),	Stall_Drain,	true,	false,	true,	false,	toGIF,		NULL		},
+	{ _n(fromIPU),	_m(3),	Stall_Source,	false,	false,	false,	false,	NULL,		fromIPU		},
+	{ _n(toIPU),	_m(4),	Stall_None,		true,	false,	false,	false,	toIPU,		NULL		},
+	{ _n(SIF0),		_m(5),	Stall_Source,	false,	true,	false,	false,	NULL,		fromSIF0	},
+	{ _n(SIF1),		_m(6),	Stall_Drain,	true,	false,	false,	false,	toSIF1,		NULL		},
+	{ _n(SIF2),		_m(7),	Stall_None,		false,	false,	false,	false,	toSIF2,		fromSIF2	},
+	{ _n(fromSPR),	_m(8),	Stall_Source,	false,	true,	false,	true,	NULL,		fromSPR		},
+	{ _n(toSPR),	_m(9),	Stall_None,		true,	false,	false,	true,	toSPR,		NULL		},
 
 	// Legend:
 	//   D.S.  -- DMA Stall
@@ -53,8 +57,6 @@ static const DMA_ChannelInformation DmaChan[] =
 	//   A.S.  -- Has Address Stack
 	//   SPR   -- Scratchpad is the peripheral (uses SADR register for scratchpad src/dest)
 };
-
-static const uint ChannelCount = ArraySize(DmaChan);
 
 #undef _m
 #undef _n
@@ -122,11 +124,12 @@ u32 DMAC_Read32( const tDMAC_ADDR& addr )
 	return *(u32*)DMAC_GetHostPtr(addr, false);
 }
 
+}		// End Namespace EE_DMAC
 
 // --------------------------------------------------------------------------------------
-//  DMA_ChannelInformation  (implementations)
+//  EE_DMAC::ChannelInformation  (implementations)
 // --------------------------------------------------------------------------------------
-wxCharBuffer DMA_ChannelInformation::ToUTF8() const
+wxCharBuffer EE_DMAC::ChannelInformation::ToUTF8() const
 {
 	FastFormatAscii msg;
 
@@ -140,28 +143,28 @@ wxCharBuffer DMA_ChannelInformation::ToUTF8() const
 
 
 // --------------------------------------------------------------------------------------
-//  DMA_ChannelState  (implementations)
+//  EE_DMAC::ChannelState  (implementations)
 // --------------------------------------------------------------------------------------
-DMA_ChannelState::DMA_ChannelState( DMA_ChannelId chanId )
+EE_DMAC::ChannelState::ChannelState( ChannelId chanId )
 	: Id( chanId )
-	, dmacReg( DMA_ControllerRegisters::Get() )
-	, chan( DmaChan[Id] )
-	, creg( chan.GetRegs() )
-	, chcr( chan.CHCR() )
-	, madr( chan.MADR() )
+	, dmacReg( ControllerRegisters::Get() )
+	, info( ChannelInfo[Id] )
+	, creg( info.GetRegs() )
+	, chcr( info.CHCR() )
+	, madr( info.MADR() )
 {
 }
 
-DMA_DirectionMode DMA_ChannelState::GetDir() const
+DirectionMode EE_DMAC::ChannelState::GetDir() const
 {
-	const DMA_DirectionMode dir = chan.GetRawDirection();
-	return (dir==DmaDir_Both) ? (chcr.DIR ? DmaDir_Drain : DmaDir_Source) : dir;
+	const DirectionMode dir = info.GetRawDirection();
+	return (dir==Dir_Both) ? (chcr.DIR ? Dir_Drain : Dir_Source) : dir;
 }
 
-bool DMA_ChannelState::DrainStallActive() const
+bool EE_DMAC::ChannelState::DrainStallActive() const
 {
-	static const DMA_ChannelId StallDrainChan[4] = {
-		DmaId_None, DmaId_VIF1, DmaId_SIF1, DmaId_GIF
+	static const ChannelId StallDrainChan[4] = {
+		ChanId_None, ChanId_VIF1, ChanId_SIF1, ChanId_GIF
 	};
 
 	if (StallDrainChan[dmacReg.ctrl.STD] != Id) return false;
@@ -170,10 +173,10 @@ bool DMA_ChannelState::DrainStallActive() const
 	return true;
 }
 
-bool DMA_ChannelState::SourceStallActive() const
+bool EE_DMAC::ChannelState::SourceStallActive() const
 {
-	static const DMA_ChannelId StallSrcChan[4] = {
-		DmaId_None, DmaId_SIF0, DmaId_fromSPR, DmaId_fromIPU
+	static const ChannelId StallSrcChan[4] = {
+		ChanId_None, ChanId_SIF0, ChanId_fromSPR, ChanId_fromIPU
 	};
 
 	if (StallSrcChan[dmacReg.ctrl.STD] != Id) return false;
@@ -182,8 +185,24 @@ bool DMA_ChannelState::SourceStallActive() const
 	return true;
 }
 
-bool DMA_ChannelState::MFIFOActive() const
+bool EE_DMAC::ChannelState::MFIFOActive() const
 {
-	static const DMA_ChannelId mfifo_chanId[4] = { DmaId_None, DmaId_None, DmaId_VIF1, DmaId_GIF };
+	static const ChannelId mfifo_chanId[4] = { ChanId_None, ChanId_None, ChanId_VIF1, ChanId_GIF };
 	return mfifo_chanId[dmacReg.ctrl.MFD] == Id;
+}
+
+uint EE_DMAC::ChannelState::TransferSource( u128* destMemHost, uint lenQwc, uint destStartQwc, uint destSize ) const
+{
+	return info.fnptr_xferFrom( destMemHost, destStartQwc, destSize, lenQwc );
+}
+
+uint EE_DMAC::ChannelState::TransferDrain( const u128* srcMemHost, uint lenQwc, uint srcStartQwc, uint srcSize ) const
+{
+	return info.fnptr_xferTo( srcMemHost, srcStartQwc, srcSize, lenQwc );
+}
+
+template< typename T >
+uint EE_DMAC::ChannelState::TransferDrain( const T& srcBuffer ) const
+{
+	return info.fnptr_xferTo( (u128*)&srcBuffer, 0, 0, sizeof(T) );
 }
