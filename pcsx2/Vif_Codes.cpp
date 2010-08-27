@@ -38,7 +38,6 @@ static __fi void vifFlush(int idx) {
 }
 
 static __fi void vuExecMicro(int idx, u32 addr) {
-	//VURegs&			VU		= *nVif[idx].VU;
 	VIFregisters&	vifRegs	= GetVifXregs;
 
 	int startcycles = 0;

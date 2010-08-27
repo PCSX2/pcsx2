@@ -657,8 +657,8 @@ struct INTCregisters
 	u32 _padding2[3];
 };
 
-#define dmacRegs ((DMA_ControllerRegisters*)(eeMem->HW+0xE000))
-#define intcRegs ((INTCregisters*)(eeMem->HW+0xF000))
+#define dmacRegs ((DMA_ControllerRegisters*)(eeHw+0xE000))
+#define intcRegs ((INTCregisters*)(eeHw+0xF000))
 
 static __fi void throwBusError(const char *s)
 {

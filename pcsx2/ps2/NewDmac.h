@@ -359,7 +359,7 @@ struct ChannelInformation
 
 	ChannelRegisters& GetRegs() const
 	{
-		return (ChannelRegisters&)eeMem->HW[regbaseaddr];
+		return (ChannelRegisters&)eeHw[regbaseaddr];
 	}
 
 	tDMA_CHCR& CHCR() const
