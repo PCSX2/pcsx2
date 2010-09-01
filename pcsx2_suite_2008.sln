@@ -95,7 +95,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Include", "Include", "{0FAD
 		common\include\intrin_x86.h = common\include\intrin_x86.h
 		common\include\Pcsx2Api.h = common\include\Pcsx2Api.h
 		common\include\Pcsx2Defs.h = common\include\Pcsx2Defs.h
-		common\include\Pcsx2Types.h = common\include\Pcsx2Types.h
 		common\include\PluginCallbacks.h = common\include\PluginCallbacks.h
 		common\include\PS2Edefs.h = common\include\PS2Edefs.h
 		common\include\PS2Etypes.h = common\include\PS2Etypes.h

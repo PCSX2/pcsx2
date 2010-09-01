@@ -18,8 +18,6 @@
 #define _m(v) ((D##v##_CHCR) & 0xffff)
 #define _n(v) #v, wxT(#v)
 
-using namespace EE_DMAC;
-
 namespace EE_DMAC
 {
 extern FnType_FromPeripheral fromVIF0;
@@ -60,6 +58,8 @@ static const ChannelInformation ChannelInfo[NumChannels] =
 
 #undef _m
 #undef _n
+
+using namespace EE_DMAC;
 
 static const wxChar* MfifoDrainNames[] =
 {
@@ -138,7 +138,7 @@ wxCharBuffer EE_DMAC::ChannelInformation::ToUTF8() const
 	else
 		msg.Write(NameA);
 
-	return msg.GetResult();
+	return msg.c_str();
 }
 
 
@@ -147,7 +147,6 @@ wxCharBuffer EE_DMAC::ChannelInformation::ToUTF8() const
 // --------------------------------------------------------------------------------------
 EE_DMAC::ChannelState::ChannelState( ChannelId chanId )
 	: Id( chanId )
-	, dmacReg( ControllerRegisters::Get() )
 	, info( ChannelInfo[Id] )
 	, creg( info.GetRegs() )
 	, chcr( info.CHCR() )
@@ -167,7 +166,7 @@ bool EE_DMAC::ChannelState::DrainStallActive() const
 		ChanId_None, ChanId_VIF1, ChanId_SIF1, ChanId_GIF
 	};
 
-	if (StallDrainChan[dmacReg.ctrl.STD] != Id) return false;
+	if (StallDrainChan[dmacRegs.ctrl.STD] != Id) return false;
 	if (chcr.MOD == CHAIN_MODE) return (chcr.TAG.ID == TAG_REFS);
 
 	return true;
@@ -179,7 +178,7 @@ bool EE_DMAC::ChannelState::SourceStallActive() const
 		ChanId_None, ChanId_SIF0, ChanId_fromSPR, ChanId_fromIPU
 	};
 
-	if (StallSrcChan[dmacReg.ctrl.STD] != Id) return false;
+	if (StallSrcChan[dmacRegs.ctrl.STD] != Id) return false;
 	if (chcr.MOD == CHAIN_MODE) return (chcr.TAG.ID == TAG_CNTS);
 
 	return true;
@@ -188,7 +187,7 @@ bool EE_DMAC::ChannelState::SourceStallActive() const
 bool EE_DMAC::ChannelState::MFIFOActive() const
 {
 	static const ChannelId mfifo_chanId[4] = { ChanId_None, ChanId_None, ChanId_VIF1, ChanId_GIF };
-	return mfifo_chanId[dmacReg.ctrl.MFD] == Id;
+	return mfifo_chanId[dmacRegs.ctrl.MFD] == Id;
 }
 
 uint EE_DMAC::ChannelState::TransferSource( u128* destMemHost, uint lenQwc, uint destStartQwc, uint destSize ) const

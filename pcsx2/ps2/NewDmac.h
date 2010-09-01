@@ -16,7 +16,9 @@
 #pragma once
 
 #include "Common.h"
-#include "Hardware.h"
+#include "Counters.h"
+#include "GS.h"
+#include "Hw.h"
 
 #undef dmacRegs
 #undef intcRegs
@@ -412,11 +414,11 @@ class ChannelState
 {
 protected:
 	const ChannelId				Id;
-	ControllerRegisters&		dmacReg;
 	const ChannelInformation&	info;
 	ChannelRegisters&			creg;
-	tDMA_CHCR&					chcr;
-	tDMAC_ADDR&					madr;
+
+	tDMA_CHCR&					chcr;		// Top-level shortcut/mirror for creg.chcr
+	tDMAC_ADDR&					madr;		// Top-level shortcut/mirror for creg.madr
 
 public:
 	ChannelState( ChannelId chanId );
@@ -456,5 +458,7 @@ protected:
 	void DstChainUpdateTADR();
 	void DstChainUpdateMADR();
 };
+
+static ControllerRegisters& dmacRegs = (ControllerRegisters&)eeHw[0xE000];
 
 }		// namespace EE_DMAC

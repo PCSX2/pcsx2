@@ -35,6 +35,11 @@ static __fi void ZeroQWC( void* dest )
 	_mm_store_ps( (float*)dest, _mm_setzero_ps() );
 }
 
+static __fi void ZeroQWC( u128& dest )
+{
+	_mm_store_ps( (float*)&dest, _mm_setzero_ps() );
+}
+
 // Various useful locations
 #define sif0dma ((DMACh*)&eeHw[0xc000])
 #define sif1dma ((DMACh*)&eeHw[0xc400])
@@ -106,15 +111,6 @@ static __fi void ZeroQWC( void* dest )
 #define psSu32(mem)		(*(u32 *)&eeMem->Scratch[(mem) & 0x3fff])
 #define psSu64(mem)		(*(u64 *)&eeMem->Scratch[(mem) & 0x3fff])
 #define psSu128(mem)	(*(u128*)&eeMem->Scratch[(mem) & 0x3fff])
-
-#define psH_DMACh(mem)	(*(DMACh*)&eeHw[(mem) & 0xffff])
-
-// Various useful locations
-#define DMACh_SPR0	((DMACh&)eeHw[0xD000])
-#define DMACh_SPR1	((DMACh&)eeHw[0xD400])
-#define DMACh_GIF	((DMACh&)eeHw[0xA000])
-#define DMACh_VIF0	((DMACh&)eeHw[0x8000])
-#define DMACh_VIF1	((DMACh&)eeHw[0x9000])
 
 extern void memAlloc();
 extern void memReset();		// clears PS2 ram and loads the bios.  Throws Exception::FileNotFound on error.

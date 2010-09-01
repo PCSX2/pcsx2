@@ -510,7 +510,7 @@
 						Name="Hardware"
 						>
 						<File
-							RelativePath="..\..\Dmac.h"
+							RelativePath="..\..\ps2\eeHwTraceLog.inl"
 							>
 						</File>
 						<File
@@ -527,6 +527,10 @@
 						</File>
 						<File
 							RelativePath="..\..\Hw.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\ps2\HwInternal.h"
 							>
 						</File>
 						<File
@@ -755,6 +759,18 @@
 						>
 						<File
 							RelativePath="..\..\ps2\DMAC-Overview.txt"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Dmac.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\DmacLegacy.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\ps2\LegacyDmac.cpp"
 							>
 						</File>
 						<File

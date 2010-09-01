@@ -21,6 +21,7 @@
 #include "VUmicro.h"
 #include "newVif.h"
 
+#include "DmacLegacy.h"
 
 __fi void vif1FLUSH()
 {
@@ -46,10 +47,10 @@ __fi void vif1FLUSH()
 		//DevCon.Warning("VIF1 adding %x cycles", (VU1.cycle - _cycles) * BIAS);
 		g_vifCycles += (VU1.cycle - _cycles) * BIAS;
 	}
-	if(gifRegs->stat.P1Q && ((vif1.cmd & 0x7f) != 0x14) && ((vif1.cmd & 0x7f) != 0x17))
+	if(gifRegs.stat.P1Q && ((vif1.cmd & 0x7f) != 0x14) && ((vif1.cmd & 0x7f) != 0x17))
 	{
 		vif1.vifstalled = true;
-		vif1Regs->stat.VGW = true;
+		vif1Regs.stat.VGW = true;
 		vif1.GifWaitState = 2;
 	}
 	
@@ -57,7 +58,6 @@ __fi void vif1FLUSH()
 
 void vif1TransferToMemory()
 {
-	DMACh& vif1ch = DMACh_VIF1;
 	u32 size;
 	u64* pMem = (u64*)dmaGetAddr(vif1ch.madr, false);
 
@@ -65,8 +65,8 @@ void vif1TransferToMemory()
 	if (pMem == NULL)  						//Is vif0ptag empty?
 	{
 		Console.WriteLn("Vif1 Tag BUSERR");
-		dmacRegs->stat.BEIS = true;      //Bus Error
-		vif1Regs->stat.FQC = 0;
+		dmacRegs.stat.BEIS = true;      //Bus Error
+		vif1Regs.stat.FQC = 0;
 
 		vif1ch.qwc = 0;
 		vif1.done = true;
@@ -133,11 +133,11 @@ void vif1TransferToMemory()
 	if(vif1.GSLastDownloadSize >= vif1ch.qwc)
 	{
 		vif1.GSLastDownloadSize -= vif1ch.qwc;
-		vif1Regs->stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
+		vif1Regs.stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
 	}
 	else
 	{
-		vif1Regs->stat.FQC = 0;
+		vif1Regs.stat.FQC = 0;
 		vif1.GSLastDownloadSize = 0;
 	}
 
@@ -146,7 +146,6 @@ void vif1TransferToMemory()
 
 bool _VIF1chain()
 {
-	DMACh& vif1ch = DMACh_VIF1;
 	u32 *pMem;
 
 	if (vif1ch.qwc == 0)
@@ -185,7 +184,6 @@ bool _VIF1chain()
 __fi void vif1SetupTransfer()
 {
     tDMA_TAG *ptag;
-	DMACh& vif1ch = DMACh_VIF1;
 	
 	switch (vif1.dmamode)
 	{
@@ -207,10 +205,10 @@ __fi void vif1SetupTransfer()
 			VIF_LOG("VIF1 Tag %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx",
 			        ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr);
 
-			if (!vif1.done && ((dmacRegs->ctrl.STD == STD_VIF1) && (ptag->ID == TAG_REFS)))   // STD == VIF1
+			if (!vif1.done && ((dmacRegs.ctrl.STD == STD_VIF1) && (ptag->ID == TAG_REFS)))   // STD == VIF1
 			{
 				// there are still bugs, need to also check if gif->madr +16*qwc >= stadr, if not, stall
-				if ((vif1ch.madr + vif1ch.qwc * 16) >= dmacRegs->stadr.ADDR)
+				if ((vif1ch.madr + vif1ch.qwc * 16) >= dmacRegs.stadr.ADDR)
 				{
 					// stalled
 					hwDmacIrq(DMAC_STALL_SIS);
@@ -264,73 +262,73 @@ extern bool SIGNAL_IMR_Pending;
 
 bool CheckPath2GIF(EE_EventType channel)
 {
-	if ((vif1Regs->stat.VGW))
+	if ((vif1Regs.stat.VGW))
 	{
 		if( vif1.GifWaitState == 0 ) //DIRECT/HL Check
 		{
-			if(GSTransferStatus.PTH3 < IDLE_MODE || gifRegs->stat.P1Q)
+			if(GSTransferStatus.PTH3 < IDLE_MODE || gifRegs.stat.P1Q)
 			{
-				if(gifRegs->stat.IMT && GSTransferStatus.PTH3 <= IMAGE_MODE && (vif1.cmd & 0x7f) == 0x50 && gifRegs->stat.P1Q == false)
+				if(gifRegs.stat.IMT && GSTransferStatus.PTH3 <= IMAGE_MODE && (vif1.cmd & 0x7f) == 0x50 && gifRegs.stat.P1Q == false)
 				{
-					vif1Regs->stat.VGW = false;
+					vif1Regs.stat.VGW = false;
 				}
 				else
 				{
-					//DevCon.Warning("VIF1-0 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs->stat.P1Q, gifRegs->stat.P2Q, gifRegs->stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
+					//DevCon.Warning("VIF1-0 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs.stat.P1Q, gifRegs.stat.P2Q, gifRegs.stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
 					CPU_INT(channel, 128);
 					return false;
 				}
 			}
 			else
 			{
-				vif1Regs->stat.VGW = false;
+				vif1Regs.stat.VGW = false;
 			}
 		}
 		else if( vif1.GifWaitState == 1 ) // Else we're flushing path3 :), but of course waiting for the microprogram to finish
 		{
-			if (gifRegs->stat.P1Q)
+			if (gifRegs.stat.P1Q)
 			{
-				//DevCon.Warning("VIF1-1 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs->stat.P1Q, gifRegs->stat.P2Q, gifRegs->stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
+				//DevCon.Warning("VIF1-1 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs.stat.P1Q, gifRegs.stat.P2Q, gifRegs.stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
 				CPU_INT(channel, 128);
 				return false;
 			}
 
 			if (GSTransferStatus.PTH3 < IDLE_MODE)
 			{
-				//DevCon.Warning("VIF1-11 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs->stat.P1Q, gifRegs->stat.P2Q, gifRegs->stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
-				//DevCon.Warning("PTH3 %x P1Q %x P3Q %x IP3 %x", GSTransferStatus.PTH3, gifRegs->stat.P1Q, gifRegs->stat.P3Q, gifRegs->stat.IP3 );
+				//DevCon.Warning("VIF1-11 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs.stat.P1Q, gifRegs.stat.P2Q, gifRegs.stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
+				//DevCon.Warning("PTH3 %x P1Q %x P3Q %x IP3 %x", GSTransferStatus.PTH3, gifRegs.stat.P1Q, gifRegs.stat.P3Q, gifRegs.stat.IP3 );
 				CPU_INT(channel, 8);
 				return false;
 			}
 			else
 			{
-				vif1Regs->stat.VGW = false;
+				vif1Regs.stat.VGW = false;
 			}
 		}
 		else if( vif1.GifWaitState == 3 ) // Else we're flushing path3 :), but of course waiting for the microprogram to finish
 		{
-			if (gifRegs->ctrl.PSE)
+			if (gifRegs.ctrl.PSE)
 			{
-				//DevCon.Warning("VIF1-1 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs->stat.P1Q, gifRegs->stat.P2Q, gifRegs->stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
+				//DevCon.Warning("VIF1-1 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs.stat.P1Q, gifRegs.stat.P2Q, gifRegs.stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
 				CPU_INT(channel, 128);
 				return false;
 			}
 			else
 			{
-				vif1Regs->stat.VGW = false;
+				vif1Regs.stat.VGW = false;
 			}
 		}
 		else //Normal Flush
 		{
-			if (gifRegs->stat.P1Q)
+			if (gifRegs.stat.P1Q)
 			{
-				//DevCon.Warning("VIF1-2 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs->stat.P1Q, gifRegs->stat.P2Q, gifRegs->stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
+				//DevCon.Warning("VIF1-2 stall P1Q %x P2Q %x APATH %x PTH3 %x vif1cmd %x", gifRegs.stat.P1Q, gifRegs.stat.P2Q, gifRegs.stat.APATH, GSTransferStatus.PTH3, vif1.cmd);
 				CPU_INT(channel, 128);
 				return false;
 			}
 			else
 			{
-				vif1Regs->stat.VGW = false;
+				vif1Regs.stat.VGW = false;
 			}
 		}
 	}
@@ -344,16 +342,14 @@ bool CheckPath2GIF(EE_EventType channel)
 }
 __fi void vif1Interrupt()
 {
-	DMACh& vif1ch = DMACh_VIF1;
 	VIF_LOG("vif1Interrupt: %8.8x", cpuRegs.cycle);
 
 	g_vifCycles = 0;
 
-	if(GSTransferStatus.PTH2 == STOPPED_MODE && gifRegs->stat.APATH == GIF_APATH2)
+	if(GSTransferStatus.PTH2 == STOPPED_MODE && gifRegs.stat.APATH == GIF_APATH2)
 	{
-		gifRegs->stat.OPH = false;
-		gifRegs->stat.APATH = GIF_APATH_IDLE;
-		//if(gifRegs->stat.P1Q) gsPath1Interrupt();
+		gifRegs.stat.OPH = false;
+		gifRegs.stat.APATH = GIF_APATH_IDLE;
 	}
 
 	if (schedulepath3msk & 0x10) 
@@ -363,12 +359,12 @@ __fi void vif1Interrupt()
 		return;
 	}
 	//Some games (Fahrenheit being one) start vif first, let it loop through blankness while it sets MFIFO mode, so we need to check it here.
-	if (dmacRegs->ctrl.MFD == MFD_VIF1)
+	if (dmacRegs.ctrl.MFD == MFD_VIF1)
 	{
 		//Console.WriteLn("VIFMFIFO\n");
 		// Test changed because the Final Fantasy 12 opening somehow has the tag in *Undefined* mode, which is not in the documentation that I saw.
 		if (vif1ch.chcr.MOD == NORMAL_MODE) Console.WriteLn("MFIFO mode is normal (which isn't normal here)! %x", vif1ch.chcr._u32);
-		vif1Regs->stat.FQC = min((u16)0x10, vif1ch.qwc);
+		vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
 		vifMFIFOInterrupt();
 		return;
 	}
@@ -378,7 +374,7 @@ __fi void vif1Interrupt()
 	{
 		if (!CheckPath2GIF(DMAC_VIF1)) return;
 		
-		vif1Regs->stat.FQC = min(vif1ch.qwc, (u16)16);
+		vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
 		//Simulated GS transfer time done, clear the flags
 	}
 	
@@ -386,21 +382,21 @@ __fi void vif1Interrupt()
 
 	if (vif1.cmd) 
 	{
-		if (vif1.done && (vif1ch.qwc == 0)) vif1Regs->stat.VPS = VPS_WAITING;
+		if (vif1.done && (vif1ch.qwc == 0)) vif1Regs.stat.VPS = VPS_WAITING;
 	}
 	else		 
 	{
-		vif1Regs->stat.VPS = VPS_IDLE;
+		vif1Regs.stat.VPS = VPS_IDLE;
 	}
 
 	if (vif1.irq && vif1.tag.size == 0)
 	{
-		vif1Regs->stat.INT = true;
+		vif1Regs.stat.INT = true;
 		hwIntcIrq(VIF1intc);
 		--vif1.irq;
-		if (vif1Regs->stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
+		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
 		{
-			//vif1Regs->stat.FQC = 0;
+			//vif1Regs.stat.FQC = 0;
 
 			//NFSHPS stalls when the whole packet has gone across (it stalls in the last 32bit cmd)
 			//In this case VIF will end
@@ -413,7 +409,7 @@ __fi void vif1Interrupt()
 		_VIF1chain();
 		// VIF_NORMAL_FROM_MEM_MODE is a very slow operation.
 		// Timesplitters 2 depends on this beeing a bit higher than 128.
-		if (vif1ch.chcr.DIR) vif1Regs->stat.FQC = min(vif1ch.qwc, (u16)16);
+		if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
 		// Refraction - Removing voodoo timings for now, completely messes a lot of Path3 masked games.
 		/*if (vif1.dmamode == VIF_NORMAL_FROM_MEM_MODE ) CPU_INT(DMAC_VIF1, 1024);
 		else */CPU_INT(DMAC_VIF1, g_vifCycles /*VifCycleVoodoo*/);
@@ -423,14 +419,14 @@ __fi void vif1Interrupt()
 	if (!vif1.done)
 	{
 
-		if (!(dmacRegs->ctrl.DMAE))
+		if (!(dmacRegs.ctrl.DMAE))
 		{
 			Console.WriteLn("vif1 dma masked");
 			return;
 		}
 
 		if ((vif1.inprogress & 0x1) == 0) vif1SetupTransfer();
-		if (vif1ch.chcr.DIR) vif1Regs->stat.FQC = min(vif1ch.qwc, (u16)16);
+		if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
 		CPU_INT(DMAC_VIF1, g_vifCycles);
 		return;
 	}
@@ -449,7 +445,7 @@ __fi void vif1Interrupt()
 	if((vif1ch.chcr.DIR == VIF_NORMAL_TO_MEM_MODE) && vif1.GSLastDownloadSize <= 16)
 	{
 		//Reverse fifo has finished and nothing is left, so lets clear the outputting flag
-		gifRegs->stat.OPH = false;
+		gifRegs.stat.OPH = false;
 	}
 
 	vif1ch.chcr.STR = false;
@@ -463,7 +459,6 @@ __fi void vif1Interrupt()
 
 void dmaVIF1()
 {
-	DMACh& vif1ch = DMACh_VIF1;
 	VIF_LOG("dmaVIF1 chcr = %lx, madr = %lx, qwc  = %lx\n"
 	        "        tadr = %lx, asr0 = %lx, asr1 = %lx",
 	        vif1ch.chcr._u32, vif1ch.madr, vif1ch.qwc,
@@ -479,7 +474,7 @@ void dmaVIF1()
 	g_vu1Cycles = 0;
 
 #ifdef PCSX2_DEVBUILD
-	if (dmacRegs->ctrl.STD == STD_VIF1)
+	if (dmacRegs.ctrl.STD == STD_VIF1)
 	{
 		//DevCon.WriteLn("VIF Stall Control Source = %x, Drain = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3);
 	}
@@ -488,7 +483,7 @@ void dmaVIF1()
 	if ((vif1ch.chcr.MOD == NORMAL_MODE) || vif1ch.qwc > 0)   // Normal Mode
 	{
 
-		if (dmacRegs->ctrl.STD == STD_VIF1)
+		if (dmacRegs.ctrl.STD == STD_VIF1)
 			Console.WriteLn("DMA Stall Control on VIF1 normal");
 
 		if (vif1ch.chcr.DIR)  // to Memory
@@ -516,7 +511,7 @@ void dmaVIF1()
 		vif1.done = false;
 	}
 
-	if (vif1ch.chcr.DIR) vif1Regs->stat.FQC = min((u16)0x10, vif1ch.qwc);
+	if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
 
 	// Chain Mode
 	CPU_INT(DMAC_VIF1, 4);

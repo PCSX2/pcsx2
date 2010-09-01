@@ -19,6 +19,8 @@
 #include "Gif.h"
 #include "Vif_Dma.h"
 
+#include "DmacLegacy.h"
+
 VIFregisters *vifRegs;
 vifStruct	 *vif;
 u16 vifqwc = 0;
@@ -31,10 +33,8 @@ __aligned16 VifMaskTypes g_vifmask;
 
 static __fi bool mfifoVIF1rbTransfer()
 {
-	DMACh& vif1ch = DMACh_VIF1;
-
-	u32 maddr = dmacRegs->rbor.ADDR;
-	u32 msize = dmacRegs->mfifoRingEnd() + 16;
+	u32 maddr = dmacRegs.rbor.ADDR;
+	u32 msize = dmacRegs.mfifoRingEnd() + 16;
 	u16 mfifoqwc = std::min(vif1ch.qwc, vifqwc);
 	u32 *src;
 	bool ret;
@@ -55,7 +55,7 @@ static __fi bool mfifoVIF1rbTransfer()
 		else
 			ret = VIF1transfer(src, s1);
 
-		vif1ch.madr = dmacRegs->mfifoWrapAddr(vif1ch.madr);
+		vif1ch.madr = dmacRegs.mfifoWrapAddr(vif1ch.madr);
 		
 		if (ret)
 		{
@@ -66,7 +66,7 @@ static __fi bool mfifoVIF1rbTransfer()
             if (src == NULL) return false;
             VIF1transfer(src, ((mfifoqwc << 2) - s1));
 		}
-		vif1ch.madr = dmacRegs->mfifoWrapAddr(vif1ch.madr);
+		vif1ch.madr = dmacRegs.mfifoWrapAddr(vif1ch.madr);
 		
 	}
 	else
@@ -82,7 +82,7 @@ static __fi bool mfifoVIF1rbTransfer()
 		else
 			ret = VIF1transfer(src, mfifoqwc << 2);
 
-		vif1ch.madr = dmacRegs->mfifoWrapAddr(vif1ch.madr);
+		vif1ch.madr = dmacRegs.mfifoWrapAddr(vif1ch.madr);
 		
 	}
 	return ret;
@@ -90,7 +90,6 @@ static __fi bool mfifoVIF1rbTransfer()
 
 static __fi void mfifo_VIF1chain()
 {
-	DMACh& vif1ch = DMACh_VIF1;
 	/* Is QWC = 0? if so there is nothing to transfer */
 	if ((vif1ch.qwc == 0))
 	{
@@ -98,7 +97,7 @@ static __fi void mfifo_VIF1chain()
 		return;
 	}
 
-	if ((vif1ch.madr >= dmacRegs->rbor.ADDR) && (vif1ch.madr <= dmacRegs->mfifoRingEnd()))
+	if ((vif1ch.madr >= dmacRegs.rbor.ADDR) && (vif1ch.madr <= dmacRegs.mfifoRingEnd()))
 	{
 		//Need to exit on mfifo locations, if the madr is matching the madr of spr, we dont have any data left :(
 
@@ -127,7 +126,6 @@ static __fi void mfifo_VIF1chain()
 
 void mfifoVIF1transfer(int qwc)
 {
-	DMACh& vif1ch = DMACh_VIF1;
 	tDMA_TAG *ptag;
 
 	g_vifCycles = 0;
@@ -140,7 +138,7 @@ void mfifoVIF1transfer(int qwc)
 		{
 			if(vif1ch.chcr.STR == true)CPU_INT(DMAC_MFIFO_VIF, 4);
 
-			vif1Regs->stat.FQC = 0x10; // FQC=16
+			vif1Regs.stat.FQC = 0x10; // FQC=16
 		}
 		vif1.inprogress &= ~0x10;
 
@@ -175,13 +173,13 @@ void mfifoVIF1transfer(int qwc)
 		vifqwc--;
 
 		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx mfifo qwc = %x spr0 madr = %x",
-			ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, vifqwc, DMACh_SPR0.madr);
+        ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, vifqwc, spr0ch.madr);
 
 		switch (ptag->ID)
 		{
 			case TAG_REFE: 
 				// Refe - Transfer Packet According to ADDR field
-				vif1ch.tadr = dmacRegs->mfifoWrapAddr(vif1ch.tadr + 16);
+				vif1ch.tadr = dmacRegs.mfifoWrapAddr(vif1ch.tadr + 16);
 				vif1.done = true;
 				break;
 
@@ -190,8 +188,8 @@ void mfifoVIF1transfer(int qwc)
 				//  * Set MADR to QW after Tag
 				//  * Set TADR to QW following the data
 
-				vif1ch.madr = dmacRegs->mfifoWrapAddr(vif1ch.tadr + 16);
-				vif1ch.tadr = dmacRegs->mfifoWrapAddr(vif1ch.madr + (vif1ch.qwc << 4));
+				vif1ch.madr = dmacRegs.mfifoWrapAddr(vif1ch.tadr + 16);
+				vif1ch.tadr = dmacRegs.mfifoWrapAddr(vif1ch.madr + (vif1ch.qwc << 4));
 				vif1.done = false;
 				break;
 
@@ -203,9 +201,9 @@ void mfifoVIF1transfer(int qwc)
 				//  * Copy temporarily stored ADDR to Tag
 
 				int temp = vif1ch.madr;
-				vif1ch.madr = dmacRegs->mfifoWrapAddr(vif1ch.tadr + 16);
+				vif1ch.madr = dmacRegs.mfifoWrapAddr(vif1ch.tadr + 16);
 				vif1ch.tadr = temp;
-				if ((temp & dmacRegs->rbsr.RMSK) != dmacRegs->rbor.ADDR) Console.WriteLn("Next tag = %x outside ring %x size %x", temp, psHu32(DMAC_RBOR), psHu32(DMAC_RBSR));
+				if ((temp & dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("Next tag = %x outside ring %x size %x", temp, psHu32(DMAC_RBOR), psHu32(DMAC_RBSR));
 				vif1.done = false;
 				break;
 			}
@@ -216,7 +214,7 @@ void mfifoVIF1transfer(int qwc)
 				// Refs	-   ... with Stall Control! (effective only on VIF1, GIF, and SIF1)
 				//  * Set TADR to next tag
 
-				vif1ch.tadr = dmacRegs->mfifoWrapAddr(vif1ch.tadr + 16);
+				vif1ch.tadr = dmacRegs.mfifoWrapAddr(vif1ch.tadr + 16);
 				vif1.done = false;
 				break;
 
@@ -225,8 +223,8 @@ void mfifoVIF1transfer(int qwc)
 				//  * Set MADR to data following the tag
 				//  * Set TADR to QW following the data
 			
-				vif1ch.madr = dmacRegs->mfifoWrapAddr(vif1ch.tadr + 16);
-				vif1ch.tadr = dmacRegs->mfifoWrapAddr(vif1ch.madr + (vif1ch.qwc << 4));
+				vif1ch.madr = dmacRegs.mfifoWrapAddr(vif1ch.tadr + 16);
+				vif1ch.tadr = dmacRegs.mfifoWrapAddr(vif1ch.madr + (vif1ch.qwc << 4));
 				vif1.done = true;
 				break;
 		}
@@ -237,7 +235,7 @@ void mfifoVIF1transfer(int qwc)
 			vif1.done = true;
 		}
 
-	vif1Regs->stat.FQC = min(vif1ch.qwc, (u16)16);
+	vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
 	vif1.inprogress |= 1;
 	}
 	
@@ -247,19 +245,16 @@ void mfifoVIF1transfer(int qwc)
 
 void vifMFIFOInterrupt()
 {
-	DMACh& vif1ch = DMACh_VIF1;
-
 	g_vifCycles = 0;
 	VIF_LOG("vif mfifo interrupt");
 
-	if(GSTransferStatus.PTH2 == STOPPED_MODE && gifRegs->stat.APATH == GIF_APATH2)
+	if(GSTransferStatus.PTH2 == STOPPED_MODE && gifRegs.stat.APATH == GIF_APATH2)
 	{
 		GSTransferStatus.PTH2 = STOPPED_MODE;
-		if(gifRegs->stat.DIR == 0)gifRegs->stat.OPH = false;
-		gifRegs->stat.APATH = GIF_APATH_IDLE;
-		//if(gifRegs->stat.P1Q) gsPath1Interrupt();
-		/*gifRegs->stat.APATH = GIF_APATH_IDLE;
-		if(gifRegs->stat.DIR == 0)gifRegs->stat.OPH = false;*/
+		if(gifRegs.stat.DIR == 0)gifRegs.stat.OPH = false;
+		gifRegs.stat.APATH = GIF_APATH_IDLE;
+		/*gifRegs.stat.APATH = GIF_APATH_IDLE;
+		if(gifRegs.stat.DIR == 0)gifRegs.stat.OPH = false;*/
 	}
 
 	if (schedulepath3msk & 0x10) Vif1MskPath3();
@@ -271,35 +266,33 @@ void vifMFIFOInterrupt()
 	
 	if (vif1.cmd) 
 	{
-		if(vif1.done == true && vif1ch.qwc == 0)	vif1Regs->stat.VPS = VPS_WAITING;
+		if(vif1.done == true && vif1ch.qwc == 0)	vif1Regs.stat.VPS = VPS_WAITING;
 	}
 	else		 
 	{
-		vif1Regs->stat.VPS = VPS_IDLE;
+		vif1Regs.stat.VPS = VPS_IDLE;
 	}
 
 	if (vif1.irq && vif1.tag.size == 0)
 	{
-		vif1Regs->stat.INT = true;
+		vif1Regs.stat.INT = true;
 		hwIntcIrq(INTC_VIF1);
 		--vif1.irq;
 
-		if (vif1Regs->stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
+		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
 		{
-			/*vif1Regs->stat.FQC = 0; // FQC=0
+			/*vif1Regs.stat.FQC = 0; // FQC=0
 			vif1ch.chcr.STR = false;*/
 			if(vif1ch.qwc > 0 || !vif1.done) return;
 		}
 	}
-
-	DMACh& spr0 = DMACh_SPR0;
 
 	if (vif1.done == false || vif1ch.qwc)
 	{
 		switch(vif1.inprogress & 1)
 		{
 			case 0: //Set up transfer
-                if (vif1ch.tadr == spr0.madr)
+                if (vif1ch.tadr == spr0ch.madr)
 				{
 				//	Console.WriteLn("Empty 1");
 					vifqwc = 0;
@@ -308,7 +301,7 @@ void vifMFIFOInterrupt()
 					hwDmacIrq(DMAC_MFIFO_EMPTY);
 						vif1.inprogress |= 0x10;
 					}
-					vif1Regs->stat.FQC = 0;					
+					vif1Regs.stat.FQC = 0;					
 					return;
 				}
 
@@ -328,7 +321,7 @@ void vifMFIFOInterrupt()
 
 	//FF7 Dirge of Cerberus seems to like the mfifo to tell it when it's empty, even if it's ending.
 	//Doesn't seem to care about the vif1 dma interrupting (possibly disabled the interrupt?)
-	if (vif1ch.tadr == spr0.madr)
+	if (vif1ch.tadr == spr0ch.madr)
 	{
 		vifqwc = 0;
 		if((vif1.inprogress & 0x10) == 0) 
@@ -344,5 +337,5 @@ void vifMFIFOInterrupt()
 	hwDmacIrq(DMAC_VIF1);
 	VIF_LOG("vif mfifo dma end");
 
-	vif1Regs->stat.FQC = 0;
+	vif1Regs.stat.FQC = 0;
 }

@@ -100,14 +100,13 @@ enum LogicalTransferMode
 	UNDEFINED_MODE
 };
 
-//
-// --- DMA ---
-//
-
+// --------------------------------------------------------------------------------------
+//  tDMA_TAG
+// --------------------------------------------------------------------------------------
 // Doing double duty as both the top 32 bits *and* the lower 32 bits of a chain tag.
 // Theoretically should probably both be in a u64 together, but with the way the
 // code is layed out, this is easier for the moment.
-
+//
 union tDMA_TAG {
 	struct {
 		u32 QWC : 16;
@@ -143,8 +142,10 @@ union tDMA_TAG {
 	void reset() { _u32 = 0; }
 
 };
-#define DMA_TAG(value) ((tDMA_TAG)(value))
 
+// --------------------------------------------------------------------------------------
+//  tDMA_CHCR
+// --------------------------------------------------------------------------------------
 union tDMA_CHCR {
 	struct {
 		u16 DIR : 1;        // Direction: 0 - to memory (source), 1 - from memory (drain).  Valid for VIF1 & SIF2 only.
@@ -219,89 +220,6 @@ union tDMA_QWC {
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"QWC: 0x%04x", QWC); }
 	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
-};
-
-static void setDmacStat(u32 num);
-static tDMA_TAG *dmaGetAddr(u32 addr, bool write);
-static void throwBusError(const char *s);
-
-struct DMACh {
-	tDMA_CHCR chcr;
-	u32 _null0[3];
-	u32 madr;
-	u32 _null1[3];
-	u16 qwc; u16 pad;
-	u32 _null2[3];
-	u32 tadr;
-	u32 _null3[3];
-	u32 asr0;
-	u32 _null4[3];
-	u32 asr1;
-	u32 _null5[11];
-	u32 sadr;
-
-	void chcrTransfer(tDMA_TAG* ptag)
-	{
-	    chcr._tag16 = ptag[0].upper();
-	}
-
-	void qwcTransfer(tDMA_TAG* ptag)
-	{
-	    qwc = ptag[0].QWC;
-	}
-
-	bool transfer(const char *s, tDMA_TAG* ptag)
-	{
-		if (ptag == NULL)  					 // Is ptag empty?
-		{
-			throwBusError(s);
-			return false;
-		}
-	    chcrTransfer(ptag);
-
-        qwcTransfer(ptag);
-        return true;
-	}
-
-	void unsafeTransfer(tDMA_TAG* ptag)
-	{
-        chcrTransfer(ptag);
-        qwcTransfer(ptag);
-	}
-
-	tDMA_TAG *getAddr(u32 addr, u32 num, bool write)
-	{
-		tDMA_TAG *ptr = dmaGetAddr(addr, write);
-		if (ptr == NULL)
-		{
-			throwBusError("dmaGetAddr");
-			setDmacStat(num);
-			chcr.STR = false;
-		}
-
-		return ptr;
-	}
-
-	tDMA_TAG *DMAtransfer(u32 addr, u32 num)
-	{
-		tDMA_TAG *tag = getAddr(addr, num, false);
-
-		if (tag == NULL) return NULL;
-
-	    chcrTransfer(tag);
-        qwcTransfer(tag);
-        return tag;
-	}
-
-	wxString cmq_to_str() const
-	{
-		return wxsFormat(L"chcr = %lx, madr = %lx, qwc  = %lx", chcr._u32, madr, qwc);
-	}
-
-	wxString cmqt_to_str() const
-	{
-		return wxsFormat(L"chcr = %lx, madr = %lx, qwc  = %lx, tadr = %1x", chcr._u32, madr, qwc, tadr);
-	}
 };
 
 enum INTCIrqs
@@ -569,50 +487,7 @@ union tDMAC_ADDR
 
 	wxCharBuffer ToUTF8(bool sprIsValid=true) const
 	{
-		return FastFormatAscii().Write((sprIsValid && SPR) ? "0x%04X(SPR)" : "0x%08X", ADDR).GetResult();
-	}
-};
-
-// --------------------------------------------------------------------------------------
-//  DMA_ControllerRegisters
-// --------------------------------------------------------------------------------------
-struct DMA_ControllerRegisters
-{
-	tDMAC_CTRL	ctrl;
-	u32 _padding[3];
-
-	tDMAC_STAT	stat;
-	u32 _padding1[3];
-
-	tDMAC_PCR	pcr;
-	u32 _padding2[3];
-
-
-	tDMAC_SQWC	sqwc;
-	u32 _padding3[3];
-
-	tDMAC_RBSR	rbsr;
-	u32 _padding4[3];
-
-	tDMAC_RBOR	rbor;
-	u32 _padding5[3];
-
-	tDMAC_ADDR	stadr;
-	u32 _padding6[3];
-	
-	__ri u32 mfifoWrapAddr(u32 offset)
-	{
-		return (rbor.ADDR + (offset & rbsr.RMSK));
-	}
-
-	__ri u32 mfifoRingEnd()
-	{
-		return rbor.ADDR + rbsr.RMSK;
-	}
-
-	static DMA_ControllerRegisters& Get()
-	{
-		return (DMA_ControllerRegisters&)psHu8(DMAC_CTRL);
+		return FastFormatAscii().Write((sprIsValid && SPR) ? "0x%04X(SPR)" : "0x%08X", ADDR).c_str();
 	}
 };
 
@@ -657,88 +532,6 @@ struct INTCregisters
 	u32 _padding2[3];
 };
 
-#define dmacRegs ((DMA_ControllerRegisters*)(eeHw+0xE000))
-#define intcRegs ((INTCregisters*)(eeHw+0xF000))
-
-static __fi void throwBusError(const char *s)
-{
-    Console.Error("%s BUSERR", s);
-    dmacRegs->stat.BEIS = true;
-}
-
-static __fi void setDmacStat(u32 num)
-{
-	dmacRegs->stat.set_flags(1 << num);
-}
-
-// Note: Dma addresses are guaranteed to be aligned to 16 bytes (128 bits)
-static __fi tDMA_TAG *SPRdmaGetAddr(u32 addr, bool write)
-{
-	// if (addr & 0xf) { DMA_LOG("*PCSX2*: DMA address not 128bit aligned: %8.8x", addr); }
-
-	//For some reason Getaway references SPR Memory from itself using SPR0, oh well, let it i guess...
-	if((addr & 0x70000000) == 0x70000000)
-	{
-		return (tDMA_TAG*)&eeMem->Scratch[addr & 0x3ff0];
-	}
-
-	// FIXME: Why??? DMA uses physical addresses
-	addr &= 0x1ffffff0;
-
-	if (addr < Ps2MemSize::Base)
-	{
-		return (tDMA_TAG*)&eeMem->Main[addr];
-	}
-	else if (addr < 0x10000000)
-	{
-		return (tDMA_TAG*)(write ? eeMem->ZeroWrite : eeMem->ZeroRead);
-	}
-	else if ((addr >= 0x11004000) && (addr < 0x11010000))
-	{
-		//Access for VU Memory
-		return (tDMA_TAG*)vtlb_GetPhyPtr(addr & 0x1FFFFFF0);
-	}
-	else
-	{
-		Console.Error( "*PCSX2*: DMA error: %8.8x", addr);
-		return NULL;
-	}
-}
-
-// Note: Dma addresses are guaranteed to be aligned to 16 bytes (128 bits)
-static __ri tDMA_TAG *dmaGetAddr(u32 addr, bool write)
-{
-	// if (addr & 0xf) { DMA_LOG("*PCSX2*: DMA address not 128bit aligned: %8.8x", addr); }
-	if (DMA_TAG(addr).SPR) return (tDMA_TAG*)&eeMem->Scratch[addr & 0x3ff0];
-
-	// FIXME: Why??? DMA uses physical addresses
-	addr &= 0x1ffffff0;
-
-	if (addr < Ps2MemSize::Base)
-	{
-		return (tDMA_TAG*)&eeMem->Main[addr];
-	}
-	else if (addr < 0x10000000)
-	{
-		return (tDMA_TAG*)(write ? eeMem->ZeroWrite : eeMem->ZeroRead);
-	}
-	else if (addr < 0x10004000)
-	{
-		// Secret scratchpad address for DMA = end of maximum main memory?
-		//Console.Warning("Writing to the scratchpad without the SPR flag set!");
-		return (tDMA_TAG*)&eeMem->Scratch[addr & 0x3ff0];
-	}
-	else
-	{
-		Console.Error( "*PCSX2*: DMA error: %8.8x", addr);
-		return NULL;
-	}
-}
-
 extern void hwIntcIrq(int n);
 extern void hwDmacIrq(int n);
-
-extern bool hwMFIFOWrite(u32 addr, const u128* data, uint size_qwc);
-extern bool hwDmacSrcChainWithStack(DMACh& dma, int id);
-extern bool hwDmacSrcChain(DMACh& dma, int id);
 

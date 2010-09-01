@@ -23,6 +23,7 @@
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
 
+#include "DmacLegacy.h"		// needed for hacky dmaGetAddr() below (which should be fixed anyway)
 
 static __fi s64 _add64_Overflow( s64 x, s64 y )
 {

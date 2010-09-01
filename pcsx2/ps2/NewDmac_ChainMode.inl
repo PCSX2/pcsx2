@@ -48,8 +48,8 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 			}
 			else
 			{
-				uint new_tadr = dmacReg.mfifoWrapAddr(madr.ADDR + 16);
-				fromSprReg.madr = dmacReg.mfifoWrapAddr(fromSprReg.madr.ADDR);
+				uint new_tadr = dmacRegs.mfifoWrapAddr(madr.ADDR + 16);
+				fromSprReg.madr = dmacRegs.mfifoWrapAddr(fromSprReg.madr.ADDR);
 
 				if ((new_tadr == fromSprReg.madr.ADDR) && !fromSprReg.chcr.STR)
 				{
@@ -78,7 +78,7 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 			}
 			else
 			{
-				tadr.ADDR = dmacReg.mfifoWrapAddr(tadr.ADDR + 16);
+				tadr.ADDR = dmacRegs.mfifoWrapAddr(tadr.ADDR + 16);
 			}
 		break;
 
@@ -130,7 +130,7 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateMADR( const DMAtag& tag )
 				if (0 == fromSprReg.qwc.QWC)
 				{
 					fromSprReg.chcr.STR = 0;
-					dmacReg.stat.CIS |= (1 << ChanId_fromSPR);
+					dmacRegs.stat.CIS |= (1 << ChanId_fromSPR);
 				}
 			}
 			else
@@ -162,13 +162,13 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateMADR( const DMAtag& tag )
 				if (0 == fromSprReg.qwc.QWC)
 				{
 					fromSprReg.chcr.STR = 0;
-					dmacReg.stat.CIS |= (1 << ChanId_fromSPR);
+					dmacRegs.stat.CIS |= (1 << ChanId_fromSPR);
 				}
 
 			}
 			else
 			{
-				madr.ADDR = dmacReg.mfifoWrapAddr(tadr.ADDR + 16);
+				madr.ADDR = dmacRegs.mfifoWrapAddr(tadr.ADDR + 16);
 			}
 		break;
 
@@ -284,7 +284,7 @@ void EE_DMAC::ChannelState::SrcChainUpdateTADR()
 					//throw Exception::DmaRaiseIRQ(L"Callstack Underflow");
 
 					chcr.STR = 0;
-					dmacReg.stat.CIS |= (1 << Id);
+					dmacRegs.stat.CIS |= (1 << Id);
 				}
 
 				case 1: creg.asr0 = madr; break;
@@ -390,7 +390,7 @@ void EE_DMAC::ChannelState::DstChainUpdateTADR()
 				throw Exception::DmaRaiseIRQ(L"CNTS without stall control").Verbose();
 			}
 			if (SourceStallActive())
-				dmacReg.stadr = madr;
+				dmacRegs.stadr = madr;
 			
 			// .. and fall through!
 

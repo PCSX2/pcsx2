@@ -1098,9 +1098,10 @@ void __fastcall mVU_XGKICK_(u32 addr) {
 	GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff, 0x400);
 	GetMTGS().SendDataPacket();
 
-	if(GSTransferStatus.PTH1 == STOPPED_MODE) {
-		gifRegs->stat.OPH = false;
-		gifRegs->stat.APATH  =  GIF_APATH_IDLE;
+		if(GSTransferStatus.PTH1 == STOPPED_MODE)
+		{
+			gifRegs.stat.OPH = false;
+			gifRegs.stat.APATH = GIF_APATH_IDLE;
 	}
 }
 

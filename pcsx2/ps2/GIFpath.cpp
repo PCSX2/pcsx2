@@ -356,7 +356,7 @@ static __fi void gsHandler(const u8* pMem)
 			// games must take care to ensure transfer rectangles are exact multiples of a qword
 			vif1.GSLastDownloadSize = vif1.TRXREG.RRW * vif1.TRXREG.RRH * bpp >> 7;
 			//DevCon.Warning("GS download in progress");
-			gifRegs->stat.OPH = true;
+			gifRegs.stat.OPH = true;
 		}
 	}
 	if (reg >= 0x60)
@@ -444,7 +444,7 @@ __fi int GIFPath::CopyTag(const u128* pMem128, uint size, uint wrapSize)
 						else GSTransferStatus.PTH2 = TRANSFER_MODE;
 						break;
 					case GIF_PATH_3:
-						if(vif1Regs->mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE) 
+						if(vif1Regs.mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE) 
 						{
 							GSTransferStatus.PTH3 = IDLE_MODE;
 							
@@ -460,8 +460,8 @@ __fi int GIFPath::CopyTag(const u128* pMem128, uint size, uint wrapSize)
 			}	
 			if(GSTransferStatus.PTH3 < PENDINGSTOP_MODE || pathidx != 2)
 			{
-				gifRegs->stat.OPH = true;
-				gifRegs->stat.APATH = pathidx + 1;	
+				gifRegs.stat.OPH = true;
+				gifRegs.stat.APATH = pathidx + 1;	
 			}
 
 			if(pathidx == GIF_PATH_3) 
@@ -487,8 +487,8 @@ __fi int GIFPath::CopyTag(const u128* pMem128, uint size, uint wrapSize)
 
 					break;
 			}
-			gifRegs->stat.APATH = pathidx + 1;
-			gifRegs->stat.OPH = true;
+			gifRegs.stat.APATH = pathidx + 1;
+			gifRegs.stat.OPH = true;
 	
 			switch(tag.FLG) {
 				case GIF_FLG_PACKED:
@@ -651,10 +651,10 @@ __fi int GIFPath::CopyTag(const u128* pMem128, uint size, uint wrapSize)
 				// FINISH is *not* a per-path register, and it seems to pretty clearly indicate that all active
 				// drawing *and* image transfer actions must be finished before the IRQ raises.
 
-				if(gifRegs->stat.P1Q || gifRegs->stat.P2Q || gifRegs->stat.P3Q) 					
+				if(gifRegs.stat.P1Q || gifRegs.stat.P2Q || gifRegs.stat.P3Q) 					
 				{
 					//GH3 and possibly others have path data queued waiting for another path to finish! we need to check they are done too
-					//DevCon.Warning("Early FINISH signal! P1 %x P2 %x P3 %x", gifRegs->stat.P1Q, gifRegs->stat.P2Q, gifRegs->stat.P3Q);
+					//DevCon.Warning("Early FINISH signal! P1 %x P2 %x P3 %x", gifRegs.stat.P1Q, gifRegs.stat.P2Q, gifRegs.stat.P3Q);
 				}
 				else if (!(GSIMR&0x200) && !s_gifPath.path[0].IsActive() && !s_gifPath.path[1].IsActive() && !s_gifPath.path[2].IsActive())
 				{
@@ -675,12 +675,10 @@ __fi int GIFPath::CopyTag(const u128* pMem128, uint size, uint wrapSize)
 
 	size = (startSize - size);
 
-	DMACh& gif = DMACh_GIF;
-
 	if (tag.EOP && nloop == 0) {
 	
-		/*if(gifRegs->stat.DIR == 0)gifRegs->stat.OPH = false;
-		gifRegs->stat.APATH = GIF_APATH_IDLE;*/
+		/*if(gifRegs.stat.DIR == 0)gifRegs.stat.OPH = false;
+		gifRegs.stat.APATH = GIF_APATH_IDLE;*/
 		switch(pathidx)
 		{
 			case GIF_PATH_1:
@@ -693,10 +691,10 @@ __fi int GIFPath::CopyTag(const u128* pMem128, uint size, uint wrapSize)
 				//For huge chunks we may have delay problems, so we need to stall it till the interrupt, else we get desync (Lemmings)
 				if(size > 8) GSTransferStatus.PTH3 = PENDINGSTOP_MODE;
 				else  GSTransferStatus.PTH3 = STOPPED_MODE;
-				if (gif.chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
+				if (gifch.chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
 					//GIF_LOG("Path3 end EOP %x NLOOP %x Status %x", tag.EOP, nloop, GSTransferStatus.PTH3);
-					gif.madr += size * 16;
-					gif.qwc  -= size;
+					gifch.madr += size * 16;
+					gifch.qwc  -= size;
 				}
 				break;
 		}
@@ -704,10 +702,10 @@ __fi int GIFPath::CopyTag(const u128* pMem128, uint size, uint wrapSize)
 	else if(pathidx == 2)
 	{
 		//if(nloop <= 16 && GSTransferStatus.PTH3 == IMAGE_MODE)GSTransferStatus.PTH3 = PENDINGIMAGE_MODE;
-		if (gif.chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
+		if (gifch.chcr.STR) { //Make sure we are really doing a DMA and not using FIFO
 			//GIF_LOG("Path3 end EOP %x NLOOP %x Status %x", tag.EOP, nloop, GSTransferStatus.PTH3);
-			gif.madr += size * 16;
-			gif.qwc  -= size;
+			gifch.madr += size * 16;
+			gifch.qwc  -= size;
 		}
 	}
 

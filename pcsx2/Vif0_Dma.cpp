@@ -19,6 +19,8 @@
 #include "VUmicro.h"
 #include "newVif.h"
 
+#include "DmacLegacy.h"
+
 // Run VU0 until finish, don't add cycles to EE
 // because its vif stalling not the EE core...
 __fi void vif0FLUSH()
@@ -52,7 +54,6 @@ __fi void vif0FLUSH()
 
 bool _VIF0chain()
 {
-	DMACh& vif0ch = DMACh_VIF0;
 	u32 *pMem;
 
 	if (vif0ch.qwc == 0)
@@ -81,7 +82,6 @@ bool _VIF0chain()
 
 __fi void vif0SetupTransfer()
 {
-	DMACh& vif0ch = DMACh_VIF0;
     tDMA_TAG *ptag;
 
 	switch (vif0.dmamode)
@@ -142,7 +142,6 @@ __fi void vif0SetupTransfer()
 
 __fi void vif0Interrupt()
 {
-	DMACh& vif0ch = DMACh_VIF0;
 	VIF_LOG("vif0Interrupt: %8.8x", cpuRegs.cycle);
 
 	g_vifCycles = 0;
@@ -151,21 +150,21 @@ __fi void vif0Interrupt()
 
 	if (vif0.cmd) 
 	{
-		if(vif0.done == true && vif0ch.qwc == 0)	vif0Regs->stat.VPS = VPS_WAITING;
+		if(vif0.done == true && vif0ch.qwc == 0)	vif0Regs.stat.VPS = VPS_WAITING;
 	}
 	else		 
 	{
-		vif0Regs->stat.VPS = VPS_IDLE;
+		vif0Regs.stat.VPS = VPS_IDLE;
 	}
 
 	if (vif0.irq && vif0.tag.size == 0)
 	{
-		vif0Regs->stat.INT = true;
+		vif0Regs.stat.INT = true;
 		hwIntcIrq(VIF0intc);
 		--vif0.irq;
-		if (vif0Regs->stat.test(VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS))
+		if (vif0Regs.stat.test(VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS))
 		{
-			vif0Regs->stat.FQC = 0;
+			vif0Regs.stat.FQC = 0;
 
 			// One game doesn't like vif stalling at end, can't remember what. Spiderman isn't keen on it tho
 			//vif0ch.chcr.STR = false;
@@ -183,7 +182,7 @@ __fi void vif0Interrupt()
 	if (!vif0.done)
 	{
 
-		if (!(dmacRegs->ctrl.DMAE))
+		if (!(dmacRegs.ctrl.DMAE))
 		{
 			Console.WriteLn("vif0 dma masked");
 			return;
@@ -209,12 +208,11 @@ __fi void vif0Interrupt()
 	vif0ch.chcr.STR = false;
 	g_vifCycles = 0;
 	hwDmacIrq(DMAC_VIF0);
-	vif0Regs->stat.FQC = 0;
+	vif0Regs.stat.FQC = 0;
 }
 
 void dmaVIF0()
 {
-	DMACh& vif0ch = DMACh_VIF0;
 	VIF_LOG("dmaVIF0 chcr = %lx, madr = %lx, qwc  = %lx\n"
 	        "        tadr = %lx, asr0 = %lx, asr1 = %lx",
 	        vif0ch.chcr._u32, vif0ch.madr, vif0ch.qwc,
@@ -251,7 +249,7 @@ void dmaVIF0()
 		vif0.done = false;
 	}
 
-	vif0Regs->stat.FQC = min((u16)0x8, vif0ch.qwc);
+	vif0Regs.stat.FQC = min((u16)0x8, vif0ch.qwc);
 
 	//Using a delay as Beyond Good and Evil does the DMA twice with 2 different TADR's (no checks in the middle, all one block of code),
 	//the first bit it sends isnt required for it to work.

@@ -215,15 +215,13 @@ struct VIFregisters {
 
 extern VIFregisters *vifRegs;
 
-static VIFregisters& vif0RegsRef = (VIFregisters&)eeHw[0x3800];
-static VIFregisters& vif1RegsRef = (VIFregisters&)eeHw[0x3C00];
-#define vif0Regs (&vif0RegsRef)
-#define vif1Regs (&vif1RegsRef)
+static VIFregisters& vif0Regs = (VIFregisters&)eeHw[0x3800];
+static VIFregisters& vif1Regs = (VIFregisters&)eeHw[0x3C00];
 
 #define _vifT			template <int idx>
-#define  GetVifX		(idx ? (vif1)			: (vif0))
-#define  GetVifXch		(idx ? (DMACh_VIF1)		: (DMACh_VIF0))
-#define  GetVifXregs	(idx ? (vif1RegsRef)	: (vif0RegsRef))
+#define  GetVifX		(idx ? (vif1)		: (vif0))
+#define  GetVifXch		(idx ? (vif1ch)		: (vif0ch))
+#define  GetVifXregs	(idx ? (vif1Regs)	: (vif0Regs))
 
 extern void dmaVIF0();
 extern void dmaVIF1();

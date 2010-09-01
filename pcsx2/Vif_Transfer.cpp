@@ -18,6 +18,8 @@
 #include "Vif_Dma.h"
 #include "newVif.h"
 
+#include "DmacLegacy.h"
+
 //------------------------------------------------------------------
 // VifCode Transfer Interpreter (Vif0/Vif1)
 //------------------------------------------------------------------
@@ -36,7 +38,6 @@ _vifT bool runMark(u32* &data) {
 _vifT bool analyzeIbit(u32* &data, int iBit) {
 	vifStruct&		vifX		= GetVifX;
 	VIFregisters&	vifXRegs	= GetVifXregs;
-
 	if (iBit && !vifX.cmd && !vifXRegs.err.MII) {
 		//DevCon.WriteLn("Vif I-Bit IRQ");
 		vifX.irq++;

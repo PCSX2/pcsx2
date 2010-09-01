@@ -51,13 +51,13 @@ s32 PrepareEERead()
 	case TAG_REFE:
 		sif0.ee.end = true;
 		// STADR is updated regardless of stall control enabled chains or not.
-		if (dmacRegs->ctrl.STS != NO_STS)
-			dmacRegs->stadr.ADDR = sif0dma->madr + (sif0dma->qwc * 16);
+		if (dmacRegs.ctrl.STS != NO_STS)
+			dmacRegs.stadr.ADDR = sif0dma->madr + (sif0dma->qwc * 16);
 		break;
 
 	case TAG_REFS:
-		if (dmacRegs->ctrl.STS == STS_SIF0)
-			dmacRegs->stadr.ADDR = sif0dma->madr + (sif0dma->qwc * 16);
+		if (dmacRegs.ctrl.STS == STS_SIF0)
+			dmacRegs.stadr.ADDR = sif0dma->madr + (sif0dma->qwc * 16);
 		break;
 
 	case TAG_END:

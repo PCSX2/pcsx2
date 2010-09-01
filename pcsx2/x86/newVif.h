@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Vif.h"
+#include "Vif_Dma.h"
 #include "VU.h"
 
 #include "x86emitter/x86emitter.h"

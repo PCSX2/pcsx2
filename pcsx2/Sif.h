@@ -16,6 +16,8 @@
 #ifndef __SIF_H__
 #define __SIF_H__
 
+#include "DmacLegacy.h"
+
 #define FIFO_SIF_W 128
 
 struct sifData

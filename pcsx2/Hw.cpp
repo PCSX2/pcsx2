@@ -18,6 +18,7 @@
 
 #include "Hardware.h"
 #include "newVif.h"
+#include "DmacLegacy.h"
 
 using namespace R5900;
 
@@ -104,7 +105,7 @@ __fi void dmacInterrupt()
 		return;
 	}
 
-	if (!(dmacRegs->ctrl.DMAE) || psHu8(DMAC_ENABLER+2) == 1) 
+	if (!(dmacRegs.ctrl.DMAE) || psHu8(DMAC_ENABLER+2) == 1) 
 	{
 		//DevCon.Warning("DMAC Suspended or Disabled on interrupt");
 		return;
@@ -131,7 +132,7 @@ void hwDmacIrq(int n)
 __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 {
 	// all FIFO addresses should always be QWC-aligned.
-	pxAssume((dmacRegs->rbor.ADDR & 15) == 0);
+	pxAssume((dmacRegs.rbor.ADDR & 15) == 0);
 	pxAssume((addr & 15) == 0);
 
 	// DMAC Address resolution:  FIFO can be placed anywhere in the *physical* memory map
@@ -139,17 +140,17 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 	// valid/invalid page areas of ram, so realistically we only need to test the base address
 	// of the FIFO for address validity.
 
-	if (u128* dst = (u128*)PSM(dmacRegs->rbor.ADDR))
+	if (u128* dst = (u128*)PSM(dmacRegs.rbor.ADDR))
 	{
-		const u32 ringsize = (dmacRegs->rbsr.RMSK / 16) + 1;
-		pxAssertMsg( PSM(dmacRegs->rbor.ADDR+ringsize-1) != NULL, "Scratchpad/MFIFO ringbuffer spans into invalid (unmapped) physical memory!" );
-		uint startpos = (addr & dmacRegs->rbsr.RMSK)/16;
+		const u32 ringsize = (dmacRegs.rbsr.RMSK / 16) + 1;
+		pxAssertMsg( PSM(dmacRegs.rbor.ADDR+ringsize-1) != NULL, "Scratchpad/MFIFO ringbuffer spans into invalid (unmapped) physical memory!" );
+		uint startpos = (addr & dmacRegs.rbsr.RMSK)/16;
 		MemCopy_WrappedDest( data, dst, startpos, ringsize, qwc );
 	}
 	else
 	{
-		SPR_LOG( "Scratchpad/MFIFO: invalid base physical address: 0x%08x", dmacRegs->rbor.ADDR );
-		pxFailDev( wxsFormat( L"Scratchpad/MFIFO: Invalid base physical address: 0x%08x", dmacRegs->rbor.ADDR) );
+		SPR_LOG( "Scratchpad/MFIFO: invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR );
+		pxFailDev( wxsFormat( L"Scratchpad/MFIFO: Invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR) );
 		return false;
 	}
 
@@ -264,7 +265,7 @@ __ri bool hwDmacSrcChainWithStack(DMACh& dma, int id) {
 	return false;
 }
 
-__releaseinline bool hwDmacSrcChain(DMACh& dma, int id)
+bool hwDmacSrcChain(DMACh& dma, int id)
 {
 	u32 temp;
 

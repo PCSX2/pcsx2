@@ -57,7 +57,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 	// later if, in fact, it isn't skipped. ;)
 	if (IsDevBuild) ++dmac_metrics.channel[round_robin].skipped_arbitrations;
 
-	if (dmacReg.pcr.PCE && !(dmacReg.pcr.CDE & (1<<round_robin)))
+	if (dmacRegs.pcr.PCE && !(dmacRegs.pcr.CDE & (1<<round_robin)))
 	{
 		DMA_LOG("\t%s bypassed due to PCE/CDE%d condition", info.NameA, round_robin);
 		return false;
@@ -78,7 +78,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 		// The last two "features" are difficult to emulate, and are currently on the
 		// [TODO] list.
 					
-		uint stallAt = dmacReg.stadr.ADDR;
+		uint stallAt = dmacRegs.stadr.ADDR;
 		uint endAt = madr.ADDR + 8*16;
 
 		if (!madr.SPR)
@@ -86,7 +86,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 			if (endAt > stallAt)
 			{
 				DMAC_LOG("\t%s bypassed due to DRAIN STALL condition (D%d_MADR=0x%08x, STADR=0x%08x",
-					info.NameA, madr.ADDR, dmacReg.stadr.ADDR);
+					info.NameA, madr.ADDR, dmacRegs.stadr.ADDR);
 
 				return false;
 			}
@@ -101,7 +101,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 			if ((madr.ADDR < stallAt) && (endAt > stallAt))
 			{
 				DMAC_LOG("\t%s bypassed due to DRAIN STALL condition (D%d_MADR=%s, STADR=0x%08x)",
-					info.NameA, madr.ToUTF8().data(), dmacReg.stadr.ADDR);
+					info.NameA, madr.ToUTF8().data(), dmacRegs.stadr.ADDR);
 
 				return false;
 			}
@@ -111,7 +111,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 				if ((madr.ADDR >= stallAt) && (endAt > stallAt))
 				{
 					DMAC_LOG("\t%s bypassed due to DRAIN STALL condition (D%d_MADR=%s, STADR=0x%08x) [SPR memory wrap!]",
-						info.NameA, madr.ToUTF8().data(), dmacReg.stadr.ADDR);
+						info.NameA, madr.ToUTF8().data(), dmacRegs.stadr.ADDR);
 
 					return false;
 				}
@@ -119,7 +119,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 		}
 	}
 
-	if (UseMFIFOHack && (Id == ChanId_fromSPR) && (dmacReg.ctrl.MFD != NO_MFD) && (dmacReg.ctrl.MFD != MFD_RESERVED))
+	if (UseMFIFOHack && (Id == ChanId_fromSPR) && (dmacRegs.ctrl.MFD != NO_MFD) && (dmacRegs.ctrl.MFD != MFD_RESERVED))
 	{
 		// When the MFIFO hack is enabled, we ignore fromSPR's side of MFIFO.  VIF1
 		// and GIF will drain directly from fromSPR when arbitration is passed to them.
@@ -150,7 +150,7 @@ static ChannelId ArbitrateBusRight()
 	const tDMA_CHCR& vif0chcr = ChannelInfo[ChanId_VIF0].CHCR();
 	if (vif0chcr.STR)
 	{
-		if (!dmacReg.pcr.PCE || (dmacReg.pcr.CDE & 2)) return ChanId_VIF0;
+		if (!dmacRegs.pcr.PCE || (dmacRegs.pcr.CDE & 2)) return ChanId_VIF0;
 		DMA_LOG("\tVIF0 bypassed due to PCE/CDE0 condition.");
 		if (IsDevBuild) ++dmac_metrics.channel[ChanId_VIF0].skipped_arbitrations;
 	}
@@ -159,7 +159,7 @@ static ChannelId ArbitrateBusRight()
 	const tDMA_CHCR& sif2chcr = ChannelInfo[ChanId_SIF2].CHCR();
 	if (sif2chcr.STR)
 	{
-		if (!dmacReg.pcr.PCE || (dmacReg.pcr.CDE & 2)) return ChanId_SIF2;
+		if (!dmacRegs.pcr.PCE || (dmacRegs.pcr.CDE & 2)) return ChanId_SIF2;
 		DMA_LOG("\tSIF2 bypassed due to PCE/CDE0 condition.");
 		if (IsDevBuild) ++dmac_metrics.channel[ChanId_SIF2].skipped_arbitrations;
 	}
@@ -198,14 +198,14 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 	// DMAC ignores MFIFO settings in this case, and performs a normal SPR<->Memory xfer.
 	// (though its also possible the DMAC has an error starting the transfer or some such)
 	if (IsDebugBuild)
-		pxAssert( dmacReg.ctrl.MFD <= MFD_RESERVED );
+		pxAssert( dmacRegs.ctrl.MFD <= MFD_RESERVED );
 	else
 		DevCon.Warning("(DMAC) MFIFO enabled during interleaved transfer (ignored!)");
 
-	DMAC_LOG("\tTQWC=%u, SQWC=%u", dmacReg.sqwc.TQWC, dmacReg.sqwc.SQWC );
-	pxAssumeDev( (creg.qwc.QWC % dmacReg.sqwc.TQWC) == 0, "(DMAC INTERLEAVE) QWC is not evenly divisible by TQWC!" );
+	DMAC_LOG("\tTQWC=%u, SQWC=%u", dmacRegs.sqwc.TQWC, dmacRegs.sqwc.SQWC );
+	pxAssumeDev( (creg.qwc.QWC % dmacRegs.sqwc.TQWC) == 0, "(DMAC INTERLEAVE) QWC is not evenly divisible by TQWC!" );
 
-	uint tqwc = dmacReg.sqwc.TQWC;
+	uint tqwc = dmacRegs.sqwc.TQWC;
 	if (!pxAssert(tqwc!=0))
 	{
 		// The old PCSX2 DMA code treats a zero-length TQWC as "copy a single row" --
@@ -222,7 +222,7 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 		// will always be within the same mappable page of ram, and that it won't cross
 		// some oddball boundary or spill over into unmapped ram.
 		
-		uint add = (tqwc + dmacReg.sqwc.SQWC);
+		uint add = (tqwc + dmacRegs.sqwc.SQWC);
 
 		tDMAC_ADDR endaddr = madr;
 		endaddr.ADDR += add * 16;
@@ -253,16 +253,16 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 				(u128*)eeMem->Scratch, addrtmp,
 				Ps2MemSize::Scratch/16, writeTo, tqwc
 			);
-			writeTo	+= tqwc + dmacReg.sqwc.SQWC;
+			writeTo	+= tqwc + dmacRegs.sqwc.SQWC;
 			curqwc	-= tqwc;
-			addrtmp	+= dmacReg.sqwc.SQWC;
+			addrtmp	+= dmacRegs.sqwc.SQWC;
 			addrtmp	&= (Ps2MemSize::Scratch / 16) - 1;
 		} while(UseDmaBurstHack && curqwc);
 
-		if(dmacReg.ctrl.STS == STS_fromSPR)
+		if(dmacRegs.ctrl.STS == STS_fromSPR)
 		{
-			DMAC_LOG("\tUpdated STADR=%s (prev=%s)", madr.ToUTF8(false), dmacReg.stadr.ToUTF8(false));
-			dmacReg.stadr = madr;
+			DMAC_LOG("\tUpdated STADR=%s (prev=%s)", madr.ToUTF8(false), dmacRegs.stadr.ToUTF8(false));
+			dmacRegs.stadr = madr;
 		}
 	}
 	else
@@ -277,9 +277,9 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 				readFrom, (u128*)eeMem->Scratch,
 				addrtmp, Ps2MemSize::Scratch/16, tqwc
 			);
-			readFrom+= tqwc + dmacReg.sqwc.SQWC;
+			readFrom+= tqwc + dmacRegs.sqwc.SQWC;
 			curqwc	-= tqwc;
-			addrtmp	+= dmacReg.sqwc.SQWC;
+			addrtmp	+= dmacRegs.sqwc.SQWC;
 			addrtmp	&= (Ps2MemSize::Scratch / 16) - 1;
 		} while(UseDmaBurstHack && curqwc);
 	}
@@ -337,7 +337,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 			// transfer an even 8-qwc block, the drain DMA will actually deadlock until
 			// the PS2 app manually writes 0 to STR!  (and this is correct!) --air
 
-			uint stallAt = dmacReg.stadr.ADDR;
+			uint stallAt = dmacRegs.stadr.ADDR;
 			uint endAt = madr.ADDR + qwc*16;
 
 			if (!madr.SPR)
@@ -345,7 +345,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 				if (endAt > stallAt)
 				{
 					qwc = (stallAt - madr.ADDR) / 16;
-					DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacReg.stadr.ToUTF8(false), qwc);
+					DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
 				}
 			}
 			else if (stallAt < Ps2MemSize::Scratch)
@@ -358,7 +358,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 				if ((madr.ADDR < stallAt) && (endAt > stallAt))
 				{
 					qwc = (stallAt - madr.ADDR) / 16;
-					DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacReg.stadr.ToUTF8(false), qwc);
+					DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
 				}
 				else
 				{
@@ -367,7 +367,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 					{
 						// Copy from madr->ScratchEnd and from ScratchStart->StallAt
 						qwc = ((Ps2MemSize::Scratch - madr.ADDR) + stallAt) / 16;
-						DMAC_LOG("\tDRAIN STALL condition (STADR=%s, newQWC=%u) [SPR memory wrap]", dmacReg.stadr.ToUTF8(false), qwc);
+						DMAC_LOG("\tDRAIN STALL condition (STADR=%s, newQWC=%u) [SPR memory wrap]", dmacRegs.stadr.ToUTF8(false), qwc);
 					}
 				}
 			}
@@ -404,7 +404,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 			if (NORMAL_MODE == creg.chcr.MOD)
 			{
 				creg.chcr.STR = 0;
-				dmacReg.stat.CIS |= (1 << Id);
+				dmacRegs.stat.CIS |= (1 << Id);
 			}
 			else // (CHAIN_MODE == creg.chcr.MOD)
 			{
@@ -492,11 +492,11 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 		if (!ex.m_MFIFOstall)
 		{
 			chcr.STR = 0;
-			dmacReg.stat.CIS |= (1 << Id);
-			dmacReg.stat.BEIS = ex.m_BusError;
+			dmacRegs.stat.CIS |= (1 << Id);
+			dmacRegs.stat.BEIS = ex.m_BusError;
 		}
 
-		dmacReg.stat.MEIS = ex.m_MFIFOstall;
+		dmacRegs.stat.MEIS = ex.m_MFIFOstall;
 
 		if (ex.m_Verbose)
 		{
@@ -534,7 +534,7 @@ void eeEvt_UpdateDmac()
 {
 	ControllerRegisters& dmacReg = (ControllerRegisters&)psHu8(DMAC_CTRL);
 
-	DMA_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacReg.ctrl._u32);
+	DMA_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacRegs.ctrl._u32);
 
 	/* DMAC_ENABLER / DMAC_ENABLEW
 	
@@ -558,11 +558,11 @@ void eeEvt_UpdateDmac()
 	from the indirect memop handlers.
 	*/
 
-	if ((psHu32(DMAC_ENABLER) & 0x10000) || dmacReg.ctrl.DMAE)
+	if ((psHu32(DMAC_ENABLER) & 0x10000) || dmacRegs.ctrl.DMAE)
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 		// the DMAC register(s) are written and the DMAC is fully re-enabled.
-		DMA_LOG("DMAC disabled, no actions performed. (DMAE=%d, ENABLER=0x%08x", dmacReg.ctrl.DMAE, psHu32(DMAC_ENABLER));
+		DMA_LOG("DMAC disabled, no actions performed. (DMAE=%d, ENABLER=0x%08x", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
 		return;
 	}
 
@@ -588,7 +588,7 @@ void eeEvt_UpdateDmac()
 	// and the SPR DMA transfers all its data in one shot.
 
 	wxString CycStealMsg;
-	if (dmacReg.ctrl.RELE)
+	if (dmacRegs.ctrl.RELE)
 	{
 		/* Cycle Stealing Enabled?
 
@@ -607,14 +607,14 @@ void eeEvt_UpdateDmac()
 		 respond to IRQs either until the transfer finishes -- hmm)
 		*/
 		
-		CycStealMsg = wxsFormat(L"On/%d",8<<dmacReg.ctrl.RCYC);
+		CycStealMsg = wxsFormat(L"On/%d",8<<dmacRegs.ctrl.RCYC);
 	}
 	else
 	{
 		CycStealMsg = L"Off";
 	}
 
-	if (dmacReg.ctrl.MFD)
+	if (dmacRegs.ctrl.MFD)
 	{
 		/* Memory FIFO Drain Channel (MFIFO)
 		
@@ -641,7 +641,7 @@ void eeEvt_UpdateDmac()
 
 	}
 	
-	if (dmacReg.ctrl.STS)
+	if (dmacRegs.ctrl.STS)
 	{
 		/* Stall Control Source Channel
 		
@@ -653,7 +653,7 @@ void eeEvt_UpdateDmac()
 		*/
 	}
 
-	if (dmacReg.ctrl.STD)
+	if (dmacRegs.ctrl.STD)
 	{
 		/* Stall Control Drain Channel
 		
