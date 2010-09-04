@@ -153,9 +153,6 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 //------------------------------------------------------------------
 // Define mVUquickSearch
 //------------------------------------------------------------------
-// FIXME: I changed the below saerchXMM extern from __aligned16 to __pagealigned.
-// This *probably* fixes the crashing bugs in linux when using the optimized memcmp.
-// Needs testing... --air
 #ifndef __LINUX__
 extern __pagealigned u8 mVUsearchXMM[__pagesize];
 typedef u32 (__fastcall *mVUCall)(void*, void*);
@@ -248,12 +245,14 @@ typedef u32 (__fastcall *mVUCall)(void*, void*);
 //------------------------------------------------------------------
 
 // Reg Alloc
-#define doRegAlloc 1 // Set to 0 to flush every 64bit Instruction
+static const bool doRegAlloc = 1; // Set to 0 to flush every 32bit Instruction
 // This turns off reg alloc for the most part, but reg alloc will still
-// be done between Upper/Lower and within instructions...
+// be done within instructions... Also on doSwapOp() regAlloc is needed between
+// Lower and Upper instructions, so in this case it flushes after the full
+// 64bit instruction (lower and upper)
 
 // No Flag Optimizations
-#define noFlagOpts 0 // Set to 1 to disable all flag setting optimizations
+static const bool noFlagOpts = 0; // Set to 1 to disable all flag setting optimizations
 // Note: The flag optimizations this disables should all be harmless, so
 // this option is mainly just for debugging... it effectively forces mVU
 // to always update Mac and Status Flags (both sticky and non-sticky) whenever
@@ -261,7 +260,7 @@ typedef u32 (__fastcall *mVUCall)(void*, void*);
 // flag instances between blocks...
 
 // Constant Propagation
-#define CHECK_VU_CONSTPROP 0 // Set to 1 to turn on vi15 const propagation
+static const bool doConstProp = 0; // Set to 1 to turn on vi15 const propagation
 // Enables Constant Propagation for Jumps based on vi15 'link-register'
 // allowing us to know many indirect jump target addresses.
 // Makes GoW a lot slower due to extra recompilation time and extra code-gen!

@@ -13,14 +13,15 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Hardware.h"
 
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
-#include "DmacLegacy.h"
+//#include "DmacLegacy.h"
+
+
 
 using namespace R5900;
 
@@ -74,6 +75,49 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 		return;
 
 		case 0x03:
+			if (mem >= EEMemoryMap::VIF0_Start)
+			{
+				if(mem >= EEMemoryMap::VIF1_Start)
+				{
+					if (!vifWrite32<1>(mem, value)) return;
+				}
+				else
+				{
+					if (!vifWrite32<0>(mem, value)) return;
+				}
+			}
+			else iswitch(mem)
+			{
+				icase(GIF_CTRL)
+				{
+					psHu32(mem) = value & 0x8;
+
+					if (value & 0x1)
+						gsGIFReset();
+
+					if (value & 8)
+						gifRegs.stat.PSE = true;
+					else
+						gifRegs.stat.PSE = false;
+
+					return;
+				}
+
+				icase(GIF_MODE)
+				{
+					// need to set GIF_MODE (hamster ball)
+					gifRegs.mode.write(value);
+
+					// set/clear bits 0 and 2 as per the GIF_MODE value.
+					const u32 bitmask = GIF_MODE_M3R | GIF_MODE_IMT;
+					psHu32(GIF_STAT) &= ~bitmask;
+					psHu32(GIF_STAT) |= (u32)value & bitmask;
+
+					return;
+				}
+			}
+		break;
+
 		case 0x08:
 		case 0x09:
 		case 0x0a:
@@ -81,7 +125,14 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 		case 0x0c:
 		case 0x0d:
 		case 0x0e:
-			if (!dmacWrite32<page>(mem, value)) return;
+			if (UseLegacyDMAC)
+			{
+				if (!dmacWrite32_legacy<page>(mem, value)) return;
+			}
+			else
+			{
+				if (!dmacWrite32<page>(mem, value)) return;
+			}
 		break;
 		
 		case 0x0f:
@@ -147,7 +198,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				break;
 
 				mcase(DMAC_ENABLEW):
-					if (!dmacWrite32<0x0f>(DMAC_ENABLEW, value)) return;
+					if (!dmacWrite32_legacy<0x0f>(DMAC_ENABLEW, value)) return;
 
 				//mcase(SIO_ISR):
 				//mcase(0x1000f410):
@@ -307,18 +358,13 @@ void __fastcall _hwWrite128(u32 mem, const mem128_t* srcval)
 
 		case 0x07:
 			if (mem & 0x10)
-			{
 				WriteFIFO_IPUin(srcval);
-			}
-			else
-			{
+			//else
 				// [Ps2Confirm] Most likely writes to IPUout will be silently discarded.  A test
 				// to confirm such would be easy -- just dump some data to FIFO_IPUout and see
 				// if the program causes BUSERR or something on the PS2.
 
 				//WriteFIFO_IPUout(srcval);
-			}
-				
 		return;
 	}
 

@@ -56,10 +56,16 @@ static const ChannelInformation ChannelInfo[NumChannels] =
 	//   SPR   -- Scratchpad is the peripheral (uses SADR register for scratchpad src/dest)
 };
 
+static const ChannelId StallSrcChan[4] = {
+	ChanId_None, ChanId_SIF0, ChanId_fromSPR, ChanId_fromIPU
+};
+
+static const ChannelId StallDrainChan[4] = {
+	ChanId_None, ChanId_VIF1, ChanId_SIF1, ChanId_GIF
+};
+
 #undef _m
 #undef _n
-
-using namespace EE_DMAC;
 
 static const wxChar* MfifoDrainNames[] =
 {
@@ -124,12 +130,13 @@ u32 DMAC_Read32( const tDMAC_ADDR& addr )
 	return *(u32*)DMAC_GetHostPtr(addr, false);
 }
 
-}		// End Namespace EE_DMAC
+
+using namespace EE_DMAC;
 
 // --------------------------------------------------------------------------------------
 //  EE_DMAC::ChannelInformation  (implementations)
 // --------------------------------------------------------------------------------------
-wxCharBuffer EE_DMAC::ChannelInformation::ToUTF8() const
+wxCharBuffer ChannelInformation::ToUTF8() const
 {
 	FastFormatAscii msg;
 
@@ -145,7 +152,7 @@ wxCharBuffer EE_DMAC::ChannelInformation::ToUTF8() const
 // --------------------------------------------------------------------------------------
 //  EE_DMAC::ChannelState  (implementations)
 // --------------------------------------------------------------------------------------
-EE_DMAC::ChannelState::ChannelState( ChannelId chanId )
+ChannelState::ChannelState( ChannelId chanId )
 	: Id( chanId )
 	, info( ChannelInfo[Id] )
 	, creg( info.GetRegs() )
@@ -154,54 +161,48 @@ EE_DMAC::ChannelState::ChannelState( ChannelId chanId )
 {
 }
 
-DirectionMode EE_DMAC::ChannelState::GetDir() const
+DirectionMode ChannelState::GetDir() const
 {
 	const DirectionMode dir = info.GetRawDirection();
 	return (dir==Dir_Both) ? (chcr.DIR ? Dir_Drain : Dir_Source) : dir;
 }
 
-bool EE_DMAC::ChannelState::DrainStallActive() const
+bool ChannelState::DrainStallActive() const
 {
-	static const ChannelId StallDrainChan[4] = {
-		ChanId_None, ChanId_VIF1, ChanId_SIF1, ChanId_GIF
-	};
-
 	if (StallDrainChan[dmacRegs.ctrl.STD] != Id) return false;
 	if (chcr.MOD == CHAIN_MODE) return (chcr.TAG.ID == TAG_REFS);
 
 	return true;
 }
 
-bool EE_DMAC::ChannelState::SourceStallActive() const
+bool ChannelState::SourceStallActive() const
 {
-	static const ChannelId StallSrcChan[4] = {
-		ChanId_None, ChanId_SIF0, ChanId_fromSPR, ChanId_fromIPU
-	};
-
-	if (StallSrcChan[dmacRegs.ctrl.STD] != Id) return false;
+	if (StallSrcChan[dmacRegs.ctrl.STS] != Id) return false;
 	if (chcr.MOD == CHAIN_MODE) return (chcr.TAG.ID == TAG_CNTS);
 
 	return true;
 }
 
-bool EE_DMAC::ChannelState::MFIFOActive() const
+bool ChannelState::MFIFOActive() const
 {
 	static const ChannelId mfifo_chanId[4] = { ChanId_None, ChanId_None, ChanId_VIF1, ChanId_GIF };
 	return mfifo_chanId[dmacRegs.ctrl.MFD] == Id;
 }
 
-uint EE_DMAC::ChannelState::TransferSource( u128* destMemHost, uint lenQwc, uint destStartQwc, uint destSize ) const
+uint ChannelState::TransferSource( u128* destMemHost, uint lenQwc, uint destStartQwc, uint destSize ) const
 {
 	return info.fnptr_xferFrom( destMemHost, destStartQwc, destSize, lenQwc );
 }
 
-uint EE_DMAC::ChannelState::TransferDrain( const u128* srcMemHost, uint lenQwc, uint srcStartQwc, uint srcSize ) const
+uint ChannelState::TransferDrain( const u128* srcMemHost, uint lenQwc, uint srcStartQwc, uint srcSize ) const
 {
 	return info.fnptr_xferTo( srcMemHost, srcStartQwc, srcSize, lenQwc );
 }
 
 template< typename T >
-uint EE_DMAC::ChannelState::TransferDrain( const T& srcBuffer ) const
+uint ChannelState::TransferDrain( const T& srcBuffer ) const
 {
 	return info.fnptr_xferTo( (u128*)&srcBuffer, 0, 0, sizeof(T) );
 }
+
+}		// End Namespace EE_DMAC

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#define UseLegacyDMAC 1
+
 namespace EEMemoryMap
 {
 	static const uint RCNT0_Start		= 0x10000000;

@@ -20,9 +20,10 @@
 static const bool UseStrictDmaTiming = false;
 
 // when enabled, the DMAC bursts through all active and pending DMA transfers that it can
-// in each IRQ call.  Ie, it continues to rpocess and update DMA transfers and chains until
+// in each IRQ call.  Ie, it continues to process and update DMA transfers and chains until
 // a stall condition or interrupt request forces the DMAC to stop execution; or until all
-// DMAs are completed.
+// DMAs are completed.  This hack also disables all memory speed emulation (delaying DMA
+// copies in order to emulate real hardware latencies).
 static const bool UseDmaBurstHack = true;
 
 // MFIFO hack, when enabled, bypasses the PS2's MFIFO system.  Instead of copying data into
@@ -38,7 +39,6 @@ static const bool UseDmaBurstHack = true;
 // madr/tadr should be monitored and generate warnings or assertions, *or* they should
 // produce "simulated" results that reflect 
 static const bool UseMFIFOHack = true;
-
 
 // Useful enums for some of the fields.
 enum pce_values
@@ -167,7 +167,7 @@ union tDMA_CHCR {
 				u16 IRQ		: 1;	// Interrupt Request (when enabled, fire interrupt when transfer finished)
 			} TAG; 		// Maintains upper 16 bits of the most recently read DMAtag.
 			
-			u16 _tag16;
+			u16 tag16;
 		};
 	};
 
@@ -216,6 +216,9 @@ union tDMA_QWC {
 	u32 _u32;
 
 	tDMA_QWC(u32 val) { _u32 = val; }
+
+	bool operator==( const tDMA_QWC& right ) const	{ return _u32 == right._u32; }
+	bool operator!=( const tDMA_QWC& right ) const	{ return _u32 != right._u32; }
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"QWC: 0x%04x", QWC); }
@@ -357,16 +360,36 @@ union tDMAC_CTRL {
 
 union tDMAC_STAT {
 	struct {
-		u32 CIS : 10;
-		u32 _reserved1 : 3;
-		u32 SIS : 1;
-		u32 MEIS : 1;
-		u32 BEIS : 1;
-		u32 CIM : 10;
-		u32 _reserved2 : 3;
-		u32 SIM : 1;
-		u32 MEIM : 1;
-		u32 _reserved3 : 1;
+		// Channel Interrupt Status.  One bit corresponding to each DMA channel.  Set to 1 when
+		// transfer via the channel completes.  Cleared to zero when written a 1.
+		u32 CIS			: 10;
+		u32 _reserved1	: 3;
+		
+		// Stall Condition Interrupt Status, set to 1 when the channel specified by the ctrl.STD
+		// (stall control drain) stalls against STADR.
+		u32 SIS			: 1;
+		
+		// MFIFO Empty Interrupt Status, set to 1 when the MFIFO drains and the source channel
+		// has no more data to feed it.
+		u32 MEIS		: 1;
+		
+		// Bus Error Interrupt Status, 
+		u32 BEIS		: 1;
+		
+		// Channel Interrupt Mask.  One bit corresponding to each DMA channel.
+		// These bits should never be modified by the emulator directly (PS2 apps manage them).
+		// 1 to enable the interrupt, 0 to disable it.
+		u32 CIM			: 10;
+		u32 _reserved2	: 3;
+		
+		// Stall Control Interrupt Mask.  This bit should never be modified by the emu directly.
+		// 1 enables Stall control interrupts; 0 disables them.
+		u32 SIM			: 1;
+
+		// MFIFO Interrupt Mask.  This bit should never be modified by the emu directly.
+		// 1 enables MFIFO interrupts; 0 disables them.
+		u32 MEIM		: 1;
+		u32 _reserved3	: 1;
 	};
 	u32 _u32;
 	u16 _u16[2];
@@ -465,6 +488,9 @@ union tDMAC_ADDR
 
 	tDMAC_ADDR() {}
 	tDMAC_ADDR(u32 val) { _u32 = val; }
+
+	bool operator==( const tDMAC_ADDR& right ) const	{ return _u32 == right._u32; }
+	bool operator!=( const tDMAC_ADDR& right ) const	{ return _u32 != right._u32; }
 
 	void clear() { _u32 = 0; }
 

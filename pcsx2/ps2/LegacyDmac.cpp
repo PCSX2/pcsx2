@@ -219,7 +219,7 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 			//if(reg.chcr.TAG != chcr.TAG) DevCon.Warning(L"32bit CHCR Tag on %s changed to %x from %x QWC = %x Channel Active", ChcrName(mem), chcr.TAG, reg.chcr.TAG, reg.qwc);
 			//Here we update the LOWER CHCR, if a chain is stopped half way through, it can be manipulated in to a different mode
 			//But we need to preserve the existing tag for now
-			reg.chcr.set(((uint)reg.chcr._tag16 << 16) | chcr.lower());
+			reg.chcr.set(((uint)reg.chcr.tag16 << 16) | chcr.lower());
 			return;
 		}
 		else //Else the DMA is running (Not Suspended), so we cant touch it!
@@ -270,7 +270,7 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 }
 
 template< uint page >
-__fi u32 dmacRead32( u32 mem )
+__fi u32 dmacRead32_Legacy( u32 mem )
 {
 	// Fixme: OPH hack. Toggle the flag on each GIF_STAT access. (rama)
 	if (IsPageFor(mem) && (mem == GIF_STAT) && CHECK_OPHFLAGHACK)
@@ -284,44 +284,9 @@ __fi u32 dmacRead32( u32 mem )
 // Returns TRUE if the caller should do writeback of the register to eeHw; false if the
 // register has no writeback, or if the writeback is handled internally.
 template< uint page >
-__fi bool dmacWrite32( u32 mem, mem32_t& value )
+__fi bool dmacWrite32_legacy( u32 mem, mem32_t& value )
 {
-	if (IsPageFor(EEMemoryMap::VIF0_Start) && (mem >= EEMemoryMap::VIF0_Start))
-	{
-		return (mem >= EEMemoryMap::VIF1_Start)
-			? vifWrite32<1>(mem, value)
-			: vifWrite32<0>(mem, value);
-	}
-
 	iswitch(mem) {
-	icase(GIF_CTRL)
-	{
-		psHu32(mem) = value & 0x8;
-
-		if (value & 0x1)
-			gsGIFReset();
-		
-		if (value & 8)
-			gifRegs.stat.PSE = true;
-		else
-			gifRegs.stat.PSE = false;
-
-		return false;
-	}
-
-	icase(GIF_MODE)
-	{
-		// need to set GIF_MODE (hamster ball)
-		gifRegs.mode.write(value);
-
-		// set/clear bits 0 and 2 as per the GIF_MODE value.
-		const u32 bitmask = GIF_MODE_M3R | GIF_MODE_IMT;
-		psHu32(GIF_STAT) &= ~bitmask;
-		psHu32(GIF_STAT) |= (u32)value & bitmask;
-
-		return false;
-	}
-
 	icase(D0_CHCR) // dma0 - vif0
 	{
 		DMA_LOG("VIF0dma EXECUTE, value=0x%x", value);
@@ -447,21 +412,21 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	return true;
 }
 
-template u32 dmacRead32<0x03>( u32 mem );
+template u32 dmacRead32_Legacy<0x03>( u32 mem );
 
-template bool dmacWrite32<0x00>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x01>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x02>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x03>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x04>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x05>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x06>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x07>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x08>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x09>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x0a>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x0b>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x0c>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x0d>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x0e>( u32 mem, mem32_t& value );
-template bool dmacWrite32<0x0f>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x00>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x01>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x02>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x03>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x04>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x05>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x06>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x07>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x08>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x09>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x0a>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x0b>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x0c>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x0d>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x0e>( u32 mem, mem32_t& value );
+template bool dmacWrite32_legacy<0x0f>( u32 mem, mem32_t& value );

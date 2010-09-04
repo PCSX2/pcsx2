@@ -33,86 +33,82 @@ using namespace x86Emitter;
 #include "microVU_IR.h"
 
 struct microBlockLink {
-	microBlock*		block;
+	microBlock		block;
 	microBlockLink*	next;
 };
 
 class microBlockManager {
 private:
-	microBlockLink  blockList;
+	microBlockLink* blockList;
 	microBlockLink* blockEnd;
 	int listI;
 
 public:
 	microBlockManager() {
-		listI = -1;
-		blockList.block = NULL;
-		blockList.next  = NULL;
-		blockEnd = &blockList;
+		listI = 0;
+		blockEnd = blockList = NULL;
 	}
 	~microBlockManager() { reset(); }
 	void reset() {
-		if (listI >= 0) {
-			microBlockLink* linkI = &blockList;
-			microBlockLink* linkD = NULL;
-			for (int i = 0; i <= listI; i++) {
-				safe_aligned_free(linkI->block);
+		microBlockLink* linkI = blockList;
+		while( linkI != NULL )
+		{
+			microBlockLink* freeI = linkI;
 				linkI = linkI->next;
-				safe_delete(linkD);
-				linkD = linkI;
+			_aligned_free(freeI);
 			}
-			safe_delete(linkI);
-		}
-		listI = -1;
-		blockEnd = &blockList;
+		listI = 0;
+		blockEnd = blockList = NULL;
 	};
 	microBlock* add(microBlock* pBlock) {
 		microBlock* thisBlock = search(&pBlock->pState);
 		if (!thisBlock) {
 			listI++;
-			blockEnd->block = (microBlock*)_aligned_malloc(sizeof(microBlock), 16);
-			blockEnd->next  = new microBlockLink;
-			memcpy_const(blockEnd->block, pBlock, sizeof(microBlock));
-			thisBlock =  blockEnd->block;
-			blockEnd  =  blockEnd->next;
+			microBlockLink* newBlock = (microBlockLink*)_aligned_malloc(sizeof(microBlockLink), 16);
+			newBlock->next = NULL;
+
+			if (blockEnd) {
+				blockEnd->next	= newBlock;
+				blockEnd		= newBlock;
+		}
+			else {
+				blockEnd = blockList = newBlock;
+			}
+
+			memcpy_const(&newBlock->block, pBlock, sizeof(microBlock));
+			thisBlock =  &newBlock->block;
 		}
 		return thisBlock;
 	}
 	__ri microBlock* search(microRegInfo* pState) {
-		microBlockLink* linkI = &blockList;
 		if (pState->needExactMatch) { // Needs Detailed Search (Exact Match of Pipeline State)
-			for (int i = 0; i <= listI; i++) {
-				if (mVUquickSearch((void*)pState, (void*)&linkI->block->pState, sizeof(microRegInfo))) return linkI->block;
-				linkI = linkI->next;
+			for (microBlockLink* linkI = blockList; linkI != NULL; linkI = linkI->next) {
+				if (mVUquickSearch((void*)pState, (void*)&linkI->block.pState, sizeof(microRegInfo)))
+					return &linkI->block;
 			}
 		}
 		else { // Can do Simple Search (Only Matches the Important Pipeline Stuff)
-			for (int i = 0; i <= listI; i++) {
-				if ((linkI->block->pState.q			== pState->q)
-				&&  (linkI->block->pState.p			== pState->p)
-				&& ((linkI->block->pState.vi15		== pState->vi15) || !CHECK_VU_CONSTPROP)
-				&&  (linkI->block->pState.flags		== pState->flags)
-				&&  (linkI->block->pState.xgkick	== pState->xgkick)
-				&&  (linkI->block->pState.viBackUp	== pState->viBackUp)
-				&&  (linkI->block->pState.blockType	== pState->blockType)
-				&& !(linkI->block->pState.needExactMatch & 7)) { return linkI->block; }
-				linkI = linkI->next;
+			for (microBlockLink* linkI = blockList; linkI != NULL; linkI = linkI->next) {
+				if (doConstProp && (linkI->block.pState.vi15 != pState->vi15)) continue;
+				if (linkI->block.pState.quick32[0] != pState->quick32[0]) continue;
+				if (linkI->block.pState.quick32[1] != pState->quick32[1]) continue;
+				return &linkI->block;
 			}
 		}
 		return NULL;
 	}
 	void printInfo(int pc) {
 		if (listI < 7) return;
-		microBlockLink* linkI = &blockList;
+		microBlockLink* linkI = blockList;
 		for (int i = 0; i <= listI; i++) {
 			u32 viCRC = 0, vfCRC = 0, crc = 0, z = sizeof(microRegInfo)/4;
-			for (u32 j = 0; j < 4;  j++) viCRC -= ((u32*)linkI->block->pState.VI)[j];
-			for (u32 j = 0; j < 32; j++) vfCRC -= linkI->block->pState.VF[j].reg;
-			for (u32 j = 0; j < z;  j++) crc   -= ((u32*)&linkI->block->pState)[j];
+			for (u32 j = 0; j < 4;  j++) viCRC -= ((u32*)linkI->block.pState.VI)[j];
+			for (u32 j = 0; j < 32; j++) vfCRC -= linkI->block.pState.VF[j].reg;
+			for (u32 j = 0; j < z;  j++) crc   -= ((u32*)&linkI->block.pState)[j];
 			DevCon.WriteLn(Color_Green, "[%04x][Block #%d][crc=%08x][q=%02d][p=%02d][xgkick=%d][vi15=%08x][viBackup=%02d]"
-			"[flags=%02x][exactMatch=%x][blockType=%d][viCRC=%08x][vfCRC=%08x]", pc, i, crc, linkI->block->pState.q, 
-			linkI->block->pState.p, linkI->block->pState.xgkick, linkI->block->pState.vi15, linkI->block->pState.viBackUp, 
-			linkI->block->pState.flags, linkI->block->pState.needExactMatch, linkI->block->pState.blockType, viCRC, vfCRC);
+			"[flags=%02x][exactMatch=%x][blockType=%d][viCRC=%08x][vfCRC=%08x]", pc, i, crc, linkI->block.pState.q, 
+			linkI->block.pState.p, linkI->block.pState.xgkick, linkI->block.pState.vi15, linkI->block.pState.viBackUp, 
+			linkI->block.pState.flags, linkI->block.pState.needExactMatch, linkI->block.pState.blockType, viCRC, vfCRC);
 			linkI = linkI->next;
 		}
 	}
@@ -163,10 +159,10 @@ struct microProgManager {
 struct microVU {
 
 	__aligned16 u32 statFlag[4]; // 4 instances of status flag (backup for xgkick)
-	__aligned16 u32 macFlag[4];  // 4 instances of mac    flag (used in execution)
-	__aligned16 u32 clipFlag[4]; // 4 instances of clip   flag (used in execution)
-	__aligned16 u32 xmmPQb[4];   // Backup for xmmPQ
+	__aligned16 u32 macFlag[4];		 // 4 instances of mac  flag (used in execution)
+	__aligned16 u32 clipFlag[4];	 // 4 instances of clip flag (used in execution)
 	__aligned16 u32 xmmCTemp[4]; // Backup used in mVUclamp2()
+	__aligned16 u32 xmmBackup[8][4]; // Backup for xmm0~xmm7
 
 	u32 index;			// VU Index (VU0 or VU1)
 	u32 cop2;			// VU is in COP2 mode?  (No/Yes)
@@ -231,12 +227,6 @@ struct microVU {
 	{
 		pxAssumeDev((prog.IRinfo.curPC & 1) == 0, "microVU recompiler: Upper instructions cannot have valid branch addresses.");
 		return (((prog.IRinfo.curPC + 4)  + (Imm11() * 2)) & progMemMask) * 4;
-	}
-
-	__ri void loadIreg(const xmm& reg, int xyzw)
-	{
-		xMOVSSZX(reg, ptr32[&getVI(REG_I)]);
-		if (!_XYZWss(xyzw)) xSHUF.PS(reg, reg, 0);
 	}
 
 	void init(uint vuIndex);

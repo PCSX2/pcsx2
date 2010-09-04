@@ -48,7 +48,9 @@ mem32_t __fastcall _hwRead32(u32 mem)
 		
 		case 0x02:	return ipuRead32( mem );
 
-		case 0x03:	return dmacRead32<0x03>( mem );
+		case 0x03:	return UseLegacyDMAC
+			? dmacRead32_Legacy<0x03>( mem )
+			: dmacRead32<0x03>( mem );
 		
 		case 0x04:
 		case 0x05:
@@ -287,7 +289,8 @@ void __fastcall hwRead128(u32 mem, mem128_t* result )
 	template mem16_t __fastcall hwRead16<pageidx>(u32 mem); \
 	template mem32_t __fastcall hwRead32<pageidx>(u32 mem); \
 	template void __fastcall hwRead64<pageidx>(u32 mem, mem64_t* result ); \
-	template void __fastcall hwRead128<pageidx>(u32 mem, mem128_t* result );
+	template void __fastcall hwRead128<pageidx>(u32 mem, mem128_t* result ); \
+	template mem32_t __fastcall _hwRead32<pageidx, false>(u32 mem);
 
 InstantizeHwRead(0x00);	InstantizeHwRead(0x08);
 InstantizeHwRead(0x01);	InstantizeHwRead(0x09);

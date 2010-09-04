@@ -421,6 +421,7 @@ extern int  cpuTestCycle( u32 startCycle, s32 delta );
 extern void cpuSetBranch();
 
 extern void _cpuBranchTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:
+extern bool cpuIntsEnabled(int Interrupt);
 
 extern void cpuTestINTCInts();
 extern void cpuTestDMACInts();

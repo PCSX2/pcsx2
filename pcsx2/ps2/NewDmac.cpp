@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "NewDmac.h"
+#include "HwInternal.h"
 
 #include "NewDmac_Tables.inl"
 #include "NewDmac_ChainMode.inl"
@@ -437,7 +438,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 
 					// Load next tag from TADR and store the upper 16 bits in CHCR.
 					tag = (DMAtag*)DMAC_GetHostPtr(creg.tadr, false);
-					chcr._tag16 = tag->Bits16to31();
+					chcr.tag16 = tag->Bits16to31();
 					creg.qwc.QWC = tag->QWC;
 
 					MFIFO_SrcChainUpdateMADR(*tag);
@@ -454,7 +455,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 
 					// Load next tag from TADR and store the upper 16 bits in CHCR.
 					tag = (DMAtag*)DMAC_GetHostPtr(creg.tadr, false);
-					chcr._tag16 = tag->Bits16to31();
+					chcr.tag16 = tag->Bits16to31();
 					creg.qwc.QWC = tag->QWC;
 
 					if (dir == Dir_Drain)
@@ -474,7 +475,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 					// * TTE's behavior regarding the lower 64 bits is currently a strong assumption,
 					//   but can be confirmed easily using toSPR's Source Chain mode transfer.  Write
 					//   dummy data to SPR memory, initiate a simple chain transfer with TTE=1, and
-					//   read back the result.
+					//   read back the tracewarn.
 
 					static __aligned16 u64 masked_tag[2] = {0,0};
 					masked_tag[1] = tag->_u64;
@@ -543,7 +544,7 @@ void eeEvt_UpdateDmac()
 	by DMAC are suspended and the EE is allowed to safely write to DMA registers, without
 	the possibility of DMAC register writebacks interfering with results (DMAC and EE are
 	concurrent processes, and if both access a register at the same time, either of their
-	writes could be ignored and result in rather unpredictable behavior).
+	writes could be ignored and tracewarn in rather unpredictable behavior).
 
 	Chances are, the real hardware uses the upper 16 bits of this register to store some status
 	info needed to safely resume the DMA transfer where it left off.  It may use the bottom
@@ -657,7 +658,7 @@ void eeEvt_UpdateDmac()
 	{
 		/* Stall Control Drain Channel
 		
-		The most important aspect of this function is that certain conditions can result in
+		The most important aspect of this function is that certain conditions can tracewarn in
 		a DMA request being completely disregarded.  This value must also be respected when
 		the DMAC is running in purist mode (slicing and arbitrating at 8 QWC boundaries).
 
@@ -680,6 +681,265 @@ void eeEvt_UpdateDmac()
 		
 	}
 }
+
+template< uint page >
+__fi u32 dmacRead32( u32 mem )
+{
+	return psHu32(mem);
+}
+
+void dmacScheduleEvent()
+{
+	// If the DMAC is completely disabled then no point in scheduling anything.
+	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLEW) & (1 << 16))) return;
+
+	cpuRegs.interrupt|= 1;
+	cpuRegs.sCycle[0] = cpuRegs.cycle;
+	cpuRegs.eCycle[0] = 8;
+
+	cpuSetNextBranchDelta( 8 );
+}
+
+void dmacScheduleException()
+{
+	if (cpuRegs.interrupt & (1 << 31)) return;
+	if (!cpuIntsEnabled(0x800)) return;
+
+	cpuRegs.interrupt |= 1 << 31;
+
+	cpuRegs.sCycle[31] = cpuRegs.cycle;
+	cpuRegs.eCycle[31] = 0; //4;  //Needs to be 4 to account for bus delays/pipelines etc
+
+	//cpuSetNextBranchDelta( 4 );
+}
+
+void dmacChanInt( ChannelId id )
+{
+	pxAssume(eeEventTestIsActive);
+
+	// IRQ is only raised if the bit status has changed.
+
+	uint bit = 1<<id;
+	bool curbit = !!(dmacRegs.stat.CIS & bit);
+
+	dmacRegs.stat.CIS |= bit;
+	
+	if (dmacRegs.stat.CIM & bit)
+		dmacScheduleException();
+}
+
+// Returns TRUE if the caller should do writeback of the register to eeHw; false if the
+// register has no writeback, or if the writeback is handled internally.
+template< uint page >
+__fi bool dmacWrite32( u32 mem, mem32_t& value )
+{
+	// this bool is set true when important information is modified which affects the
+	// operational status of the DMAC.
+	
+	iswitch(mem) {
+	icase(DMAC_CTRL)
+	{
+		bool needs_event = false;
+
+		const tDMAC_CTRL& newval = (tDMAC_CTRL&)value;
+		const tDMAC_CTRL& oldval = (tDMAC_CTRL&)psHu32(mem);
+
+		if (oldval.STS != newval.STS)
+		{
+			DMAC_LOG( "Stall control source [STS] changed from %s to %s",
+				newval.STS ? ChannelInfo[StallSrcChan[oldval.STS]].NameA : "None",
+				newval.STS ? ChannelInfo[StallSrcChan[newval.STS]].NameA : "None"
+			);
+
+			if (newval.STS != NO_STS)
+			{
+				// Enabling STS on a transfer-in-progress shouldn't affect anything
+				// since the DMAC should already be re-raising events anyway, but
+				// no harm in being safe:
+				needs_event |= ChannelInfo[StallSrcChan[newval.STS]].CHCR().STR;
+			}
+		}
+
+		if (oldval.STD != newval.STD)
+		{
+			DMAC_LOG( "Stall control drain [STD] changed from %s to %s",
+				newval.STD ? ChannelInfo[StallDrainChan[oldval.STD]].NameA : "None",
+				newval.STD ? ChannelInfo[StallDrainChan[newval.STD]].NameA : "None"
+			);
+
+			if (oldval.STD != NO_STD)
+			{
+				// Releasing the STD setting on an active channel might clear the stall
+				// condition preventing it from completing, so raise an event in such cases:
+				needs_event |= ChannelInfo[StallSrcChan[oldval.STD]].CHCR().STR;
+			}
+		}
+		
+		if (needs_event) dmacScheduleEvent();
+
+		return false;
+	}
+
+	icase(DMAC_STAT)
+	{
+		tDMAC_STAT& curval = (tDMAC_STAT&)psHu32(mem);
+		const tDMAC_STAT& newval = (tDMAC_STAT&)value;
+		const tDMAC_STAT oldval = curval;
+
+		// lower 16 bits: clear on 1
+		// upper 16 bits: reverse on 1
+
+		curval._u16[0] &= newval._u16[0];
+		curval._u16[1] ^= newval._u16[1];
+
+		// We only want to raise a cpu exception if one of the newly-unmasked bits (upper 16)
+		// is also high in the lower side -- which technically means that we want to disregard
+		// any bits that weren't changed.
+
+		if( (curval._u16[1] & curval._u16[0] & newval._u16[1]) != 0 )
+			cpuTestDMACInts();
+		return false;
+	}
+
+	icase(DMAC_ENABLEW)
+	{
+		// ENABLEW has a single bit (bit 16) which can be set to 0 (enable DMAC) or 1 (disable DMAC).
+		// We need to make sure the DMAC event chain is resumed when 1 is written.
+
+		psHu32(DMAC_ENABLEW) = value;
+		psHu32(DMAC_ENABLER) = value;
+
+		dmacScheduleEvent();
+		return false;
+	}
+	}
+
+	const ChannelInformation* info = NULL;
+
+	// Fall-through from above cases means that all we have left 
+	// First pass is to determine the channel being modified.  After that we can dispatch
+	// based on the actual register of the channel being modified.
+
+	#define dmaCase(num) icase(D##num##_CHCR) { info = &ChannelInfo[num]; }
+
+	iswitch(mem & ~0x0ff) {
+		dmaCase(0); dmaCase(1); dmaCase(2);
+		dmaCase(3); dmaCase(4); dmaCase(5);
+		dmaCase(6); dmaCase(7);
+		dmaCase(8); dmaCase(9);
+	}
+	
+	if (!info) return true;
+
+	FastFormatAscii tracewarn;
+	const tDMA_CHCR& curchcr = info->CHCR();
+
+	switch(mem & 0x0ff)
+	{
+		case 0x00:		// CHCR
+		{
+			tDMA_CHCR& newchcr = (tDMA_CHCR&)value;
+
+			if (!curchcr.STR)
+			{
+				if( newchcr.STR )
+				{
+					DMAC_LOG("DmaExec Received (STR set to 1).");
+					
+					// [TODO] Log all DMA settings at STR=1;
+				}
+			}
+			else
+			{
+				// Writing STR while the channel is running is allowed so long as the entire DMAC
+				// is completely disabled. Doing so otherwise produces undefined results (typically
+				// that the transfer will stop at some unknown time in the future).
+
+				if (info->CHCR().DIR != newchcr.DIR)
+				{
+					if ( !(psHu32(DMAC_ENABLER) & (1<<16)) )
+						DevCon.WriteLn("%s stopped during active transfer!", info->NameA);
+						
+					DMAC_LOG("%s STR changed to %u (DMAC is suspended)", info->NameA, newchcr.DIR);
+				}
+
+				// The game is writing newchcr while the DMA channel is active (STR==1).  This is
+				// typically an error if done *ever* (ENABLEW or not) and will product undefined
+				// results on real hardware.
+				if (SysTrace.EE.DMAC.IsActive())
+				{
+					static const char* tbl_LogicalTransferNames[] =
+					{
+						"NORMAL", "CHAIN", "INTERLEAVE", "UNDEFINED"
+					};
+
+					FastFormatAscii result;
+					if (curchcr.MOD != newchcr.MOD)
+						tracewarn.Write("\n\tCHCR.MOD changed to %s (oldval=%s)", info->NameA, tbl_LogicalTransferNames[newchcr.MOD], tbl_LogicalTransferNames[curchcr.MOD]);
+
+					if (curchcr.ASP != newchcr.ASP)
+						tracewarn.Write("\n\tCHCR.ASP changed to %u (oldval=%u)", info->NameA, newchcr.ASP, curchcr.ASP);
+					
+					if (curchcr.TTE != newchcr.TTE)
+						tracewarn.Write("\n\tCHCR.TTE changed to %u (oldval=%u)", info->NameA, newchcr.TTE, curchcr.TTE);
+
+					if (curchcr.TIE != newchcr.TIE)
+						tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", info->NameA, newchcr.TIE, curchcr.TIE);
+
+					if (curchcr.tag16 != newchcr.tag16)
+						tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", info->NameA, newchcr.tag16, curchcr.tag16);
+				}
+			}	
+		}
+		break;
+		
+		case 0x10:		// MADR
+		{
+			if (!info->CHCR().STR) break;
+
+			const tDMAC_ADDR& madr = (tDMAC_ADDR&)value;
+
+			if(madr != info->MADR())
+				tracewarn.Write("\n\tMADR changed to %s (oldval=%s)", info->NameA, madr.ToUTF8(), info->MADR().ToUTF8());
+		}
+		break;
+		
+		case 0x20:		// QWC
+		{
+			if (!info->CHCR().STR) break;
+
+			const tDMA_QWC& qwc = (tDMA_QWC&)value;
+
+			if(qwc != info->QWC())
+				tracewarn.Write("\n\tQWC changed to 0x%04x (oldval=0x%04x)", info->NameA, qwc, info->QWC());
+		}
+		
+		// [TODO] Finish checks for other per-channel DMA registers.
+	}
+
+	if (!tracewarn.IsEmpty())
+		DMAC_LOG("[Warning] %s modified mid-transfer: %s", tracewarn.c_str());
+	return true;
+}
+
+template u32 dmacRead32<0x03>( u32 mem );
+
+template bool dmacWrite32<0x00>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x01>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x02>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x03>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x04>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x05>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x06>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x07>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x08>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x09>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x0a>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x0b>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x0c>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x0d>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x0e>( u32 mem, mem32_t& value );
+template bool dmacWrite32<0x0f>( u32 mem, mem32_t& value );
 
 
 uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }

@@ -289,11 +289,6 @@ static __fi void TESTINT( u8 n, void (*callback)() )
 
 static __fi void _cpuTestInterrupts()
 {
-	if (!dmacRegs.ctrl.DMAE || psHu8(DMAC_ENABLER+2) == 1)
-	{
-		//Console.Write("DMAC Disabled or suspended");
-		return;
-	}
 	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
 	   that depends on the cycle timings */
 
@@ -354,7 +349,7 @@ static __fi void _cpuTestPERF()
 // them out.  Exceptions while the exception handler is active (EIE), or exceptions of any
 // level other than 0 are ignored here.
 
-static bool cpuIntsEnabled(int Interrupt)
+bool cpuIntsEnabled(int Interrupt)
 {
 	bool IntType = !!(cpuRegs.CP0.n.Status.val & Interrupt); //Choose either INTC or DMAC, depending on what called it
 
@@ -390,8 +385,19 @@ __fi void _cpuBranchTest_Shared()
 	// ---- Interrupts -------------
 	// Handles all interrupts except 30 and 31, which are handled later.
 
-	if( cpuRegs.interrupt & ~(3<<30) )
-		_cpuTestInterrupts();
+
+	if (dmacRegs.ctrl.DMAE && ((psHu8(DMAC_ENABLER+2) & 1) == 0))
+	{
+		if (UseLegacyDMAC)
+		{
+			if( cpuRegs.interrupt & ~(3<<30) )
+				_cpuTestInterrupts();
+		}
+		else
+		{
+			
+		}
+	}
 
 	// ---- IOP -------------
 	// * It's important to run a psxBranchTest before calling ExecuteBlock. This
@@ -415,7 +421,7 @@ __fi void _cpuBranchTest_Shared()
 		//if( EEsCycle < -450 )
 		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
 
-		// Experimental and Probably Unnecessry Logic -->
+		// Experimental and Probably Unnecessary Logic -->
 		// Check if the EE already has an exception pending, and if so we shouldn't
 		// waste too much time updating the IOP.  Theory being that the EE and IOP should
 		// run closely in sync during raised exception events.  But in practice it didn't
@@ -502,11 +508,8 @@ __ri void cpuTestINTCInts()
 	cpuRegs.sCycle[30] = cpuRegs.cycle;
 	cpuRegs.eCycle[30] = 4;  //Needs to be 4 to account for bus delays/pipelines etc
 
-	// only set the next branch delta if the exception won't be handled for
-	// the current branch...
-	if( !eeEventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
-	else if(psxCycleEE > 0)
+	if(eeEventTestIsActive && (psxCycleEE > 0))
 	{
 		psxBreak += psxCycleEE;		// record the number of cycles the IOP didn't run.
 		psxCycleEE = 0;
@@ -515,6 +518,8 @@ __ri void cpuTestINTCInts()
 
 __fi void cpuTestDMACInts()
 {
+	if (!UseLegacyDMAC) return;
+
 	// Check the internal Event System -- if one's already scheduled then don't bother:
 	if ( cpuRegs.interrupt & (1 << 31) ) return;
 
@@ -529,11 +534,8 @@ __fi void cpuTestDMACInts()
 	cpuRegs.sCycle[31] = cpuRegs.cycle;
 	cpuRegs.eCycle[31] = 4;  //Needs to be 4 to account for bus delays/pipelines etc
 
-	// only set the next branch delta if the exception won't be handled for
-	// the current branch...
-	if( !eeEventTestIsActive )
 		cpuSetNextBranchDelta( 4 );
-	else if(psxCycleEE > 0)
+	if(eeEventTestIsActive && (psxCycleEE > 0))
 	{
 		psxBreak += psxCycleEE;		// record the number of cycles the IOP didn't run.
 		psxCycleEE = 0;
@@ -555,6 +557,8 @@ __fi void cpuTestHwInts() {
 
 __fi void CPU_INT( EE_EventType n, s32 ecycle)
 {
+	if (!UseLegacyDMAC) return;
+
 	if( n != 2 && cpuRegs.interrupt & (1<<n) ){ //2 is Gif, and every path 3 masking game triggers this :/
 		DevCon.Warning( "***** EE > Twice-thrown int on IRQ %d", n );
 	}
