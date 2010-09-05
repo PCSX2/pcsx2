@@ -18,7 +18,12 @@
 
 #include "DmacLegacy.h"
 
-#define FIFO_SIF_W 128
+static const int FIFO_SIF_W = 128;
+
+static DMACh& sif0dma = (DMACh&)eeHw[0xc000];
+static DMACh& sif1dma = (DMACh&)eeHw[0xc400];
+static DMACh& sif2dma = (DMACh&)eeHw[0xc800];
+
 
 struct sifData
 {

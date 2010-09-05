@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "IPU.h"
+#include "IPU/IPUdma.h"
 #include "mpeg2lib/Mpeg.h"
 
 
@@ -35,7 +36,7 @@ void IPU_Fifo_Input::clear()
 {
 	memzero(data);
 	g_BP.IFC = 0;
-	ipuRegs->ctrl.IFC = 0;
+	ipuRegs.ctrl.IFC = 0;
 	readpos = 0;
 	writepos = 0;
 }
@@ -43,7 +44,7 @@ void IPU_Fifo_Input::clear()
 void IPU_Fifo_Output::clear()
 {
 	memzero(data);
-	ipuRegs->ctrl.OFC = 0;
+	ipuRegs.ctrl.OFC = 0;
 	readpos = 0;
 	writepos = 0;
 }
@@ -89,9 +90,9 @@ int IPU_Fifo_Output::write(const u32 *value, int size)
 {
 	int transsize, firsttrans;
 
-	if ((int)ipuRegs->ctrl.OFC >= 8) IPU0dma();
+	if ((int)ipuRegs.ctrl.OFC >= 8) IPU0dma();
 
-	transsize = min(size, 8 - (int)ipuRegs->ctrl.OFC);
+	transsize = min(size, 8 - (int)ipuRegs.ctrl.OFC);
 	firsttrans = transsize;
 
 	while (transsize-- > 0)
@@ -104,7 +105,7 @@ int IPU_Fifo_Output::write(const u32 *value, int size)
 		value += 4;
 	}
 
-	ipuRegs->ctrl.OFC += firsttrans;
+	ipuRegs.ctrl.OFC += firsttrans;
 	IPU0dma();
 
 	return firsttrans;
@@ -150,7 +151,7 @@ void IPU_Fifo_Output::_readsingle(void *value)
 
 void IPU_Fifo_Output::read(void *value, int size)
 {
-	ipuRegs->ctrl.OFC -= size;
+	ipuRegs.ctrl.OFC -= size;
 	while (size > 0)
 	{
 		_readsingle(value);
@@ -161,9 +162,9 @@ void IPU_Fifo_Output::read(void *value, int size)
 
 void IPU_Fifo_Output::readsingle(void *value)
 {
-	if (ipuRegs->ctrl.OFC > 0)
+	if (ipuRegs.ctrl.OFC > 0)
 	{
-		ipuRegs->ctrl.OFC--;
+		ipuRegs.ctrl.OFC--;
 		_readsingle(value);
 	}
 }
@@ -204,13 +205,8 @@ void __fastcall WriteFIFO_IPUin(const mem128_t* value)
 	IPU_LOG( "WriteFIFO/IPUin <- %ls", value->ToString().c_str() );
 
 	//committing every 16 bytes
-	while( ipu_fifo.in.write((u32*)value, 1) == 0 )
+	if( ipu_fifo.in.write((u32*)value, 1) == 0 )
 	{
-		// Legacy code from an older thread-based IPU.  Current IPU is fixed to always
-		// return non-zero from the above write function; but we'll leave this in place
-		// for now in case we change our minds (again) and re-add threading. --air
-
-		Console.WriteLn("IPU sleeping");
-		Threading::Timeslice();
+		IPUProcessInterrupt();
 	}
 }

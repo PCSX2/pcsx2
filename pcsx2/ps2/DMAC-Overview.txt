@@ -28,6 +28,50 @@ fromSPR DMAs are always BURST mode for the entire duration of their transfers, s
 DMAC would have no performance benefit from slicing them with other FIFO-based DMA transfers.
 
 
+=======================================
+-/-   DMAC_ENABLER / DMAC_ENABLEW   -/-
+=======================================
+	
+These registers regulate the master DMAC transfer status for all DMAs.  On the real hardware
+it acts as an immediate stoppage of all DMA activity, so that all hardware register accesses
+by DMAC are suspended and the EE is allowed to safely write to DMA registers, without the
+possibility of DMAC register writebacks interfering with results (DMAC and EE are concurrent
+processes, and if both access a register at the same time, either of their writes could be
+ignored and tracewarn in rather unpredictable behavior).
+
+Chances are, the real hardware uses the upper 16 bits of this register to store some status
+info needed to safely resume the DMA transfer where it left off.  This would explain why it
+has separate read and write register addresses, which would allow for concurrent-safe reads
+and writes.  It may use the bottom bits as well, or they may be some sort of safety check ID.
+PS2 BIOS seems to expect the bottom 16 bits to always be 0x1201, according to code comments
+found in HW.cpp.
+
+In any case, our DMAC is *not* a concurrent process, and all our status vars are already
+in order (mostly stored in DMA registers) so there isn't much we need to do except adhere
+to the program's wishes and suspend all transfers. :)
+
+Note: ENABLEW is a write-to reg only, and it automatically updates DMAC_ENABLER when handled
+from the indirect memop handlers.
+
+
+=========================
+-/-   Stall Control   -/-
+=========================
+
+The DMAC stall control consists of the Source channel (STS), which simply updated STADR as it
+processes and transfers data; and the Drain channel (STD), which requires more complicated
+logic that checks the STADR prior to each copy to ensure that it does not process data beyond
+the STS channel.
+
+The STADR can also be modified freely by PS2 apps on-the-fly, allowing them to do manual
+stall control if they so please (done by having a valid STD setting and STS set to zero).
+
+The most important aspect to remember is that Stall Control Destination functionality can 
+result in a DMA request being completely disregarded: if the stall condition is met when the
+DMA is started (STR=1), the transfer will be disregarded (apparently).
+
+
+
 =========================
 -/-   MFIFO Details   -/-
 =========================

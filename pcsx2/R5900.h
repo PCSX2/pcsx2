@@ -244,7 +244,7 @@ extern __aligned16 cpuRegisters cpuRegs;
 extern __aligned16 fpuRegisters fpuRegs;
 extern __aligned16 tlbs tlb[48];
 
-extern u32 g_nextBranchCycle;
+extern u32 g_nextEventCycle;
 extern bool eeEventTestIsActive;
 extern u32 s_iLastCOP0Cycle;
 extern u32 s_iLastPERFCycle[2];
@@ -376,12 +376,19 @@ struct R5900cpu
 	void (*Clear)(u32 Addr, u32 Size);
 };
 
-extern R5900cpu *Cpu;
+extern R5900cpu* Cpu;
 extern R5900cpu intCpu;
 extern R5900cpu recCpu;
 
 enum EE_EventType
 {
+	// new dmac is s single-event-fits-all system!
+	DMAC_EVENT = 0,
+
+
+	// old legacy DMAC uses an event for each channel, and piggy backs the event id with
+	// the channel id in the D_STAT bitmask for IRQs.
+	
 	DMAC_VIF0	= 0,
 	DMAC_VIF1,
 	DMAC_GIF,
@@ -403,8 +410,8 @@ enum EE_EventType
 };
 
 extern void CPU_INT( EE_EventType n, s32 ecycle );
-extern void intcInterrupt();
-extern void dmacInterrupt();
+extern uint intcInterrupt();
+extern uint dmacInterrupt();
 
 
 extern void cpuInit();
@@ -415,12 +422,12 @@ extern void cpuTlbMissW(u32 addr, u32 bd);
 extern void cpuTestHwInts();
 extern void cpuClearInt(uint n);
 
-extern void cpuSetNextBranch( u32 startCycle, s32 delta );
-extern void cpuSetNextBranchDelta( s32 delta );
+extern void cpuSetNextEvent( u32 startCycle, s32 delta );
+extern void cpuSetNextEventDelta( s32 delta );
 extern int  cpuTestCycle( u32 startCycle, s32 delta );
-extern void cpuSetBranch();
+extern void cpuSetEvent();
 
-extern void _cpuBranchTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:
+extern void _cpuEventTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:
 extern bool cpuIntsEnabled(int Interrupt);
 
 extern void cpuTestINTCInts();

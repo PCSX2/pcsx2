@@ -537,29 +537,7 @@ void eeEvt_UpdateDmac()
 
 	DMA_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacRegs.ctrl._u32);
 
-	/* DMAC_ENABLER / DMAC_ENABLEW
-	
-	These registers regulate the master DMAC transfer status for all DMAs.  On the real hardware
-	it acts as an immediate stoppage of all DMA activity, so that all hardware register accesses
-	by DMAC are suspended and the EE is allowed to safely write to DMA registers, without
-	the possibility of DMAC register writebacks interfering with results (DMAC and EE are
-	concurrent processes, and if both access a register at the same time, either of their
-	writes could be ignored and tracewarn in rather unpredictable behavior).
-
-	Chances are, the real hardware uses the upper 16 bits of this register to store some status
-	info needed to safely resume the DMA transfer where it left off.  It may use the bottom
-	bits as well, or they may be some sort of safety check ID.  PS2 BIOs seems to expect the
-	bottom 16 bits to always be 0x1201, for example.
-	
-	In any case, our DMAC is *not* a concurrent process, and all our status vars are already
-	in order (mostly stored in DMA registers) so there isn't much we need to do except adhere
-	to the program's wishes and suspend all transfers. :)
-	
-	Note: ENABLEW is a write-to reg only, and it automatically updates DMAC_ENABLER when handled
-	from the indirect memop handlers.
-	*/
-
-	if ((psHu32(DMAC_ENABLER) & 0x10000) || dmacRegs.ctrl.DMAE)
+	if ((psHu32(DMAC_ENABLER) & (1<<16)) || dmacRegs.ctrl.DMAE)
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 		// the DMAC register(s) are written and the DMAC is fully re-enabled.
@@ -584,9 +562,7 @@ void eeEvt_UpdateDmac()
 
 	} while (UseDmaBurstHack);
 	
-	// Furthermore, the SPR DMAs are "Burst" mode DMAs that behave very predictably
-	// when the RELE bit is cleared (no cycle stealing): all other DMAs are stalled
-	// and the SPR DMA transfers all its data in one shot.
+
 
 	wxString CycStealMsg;
 	if (dmacRegs.ctrl.RELE)
@@ -615,65 +591,6 @@ void eeEvt_UpdateDmac()
 		CycStealMsg = L"Off";
 	}
 
-	if (dmacRegs.ctrl.MFD)
-	{
-		/* Memory FIFO Drain Channel (MFIFO)
-		
-		The MFIFO is a provisioned alternative to stall control, for transferring data
-		to/from SPR and VIF/GIF.  Since all three DMAs can only transfer to/from physical
-		memory, connecting them requires a memory buffer.  Using stall control leads to
-		lots of lost DMA cycles.  Using an MFIFO allows for the memory transfer bursts
-		to be much larger and thusly much more efficient.
-		 
-		While that's all well and good, the actual likeliness of this process being important
-		to the running application is slim.  Apps can, however, completely suspend the DMAC
-		and read back the current SADR and TADR addresses of the MFIFO; perhaps for debugging
-		or what-not.  Even in this case, apps should function fine (though not necessarily
-		"as expected") so long as SADR and TADR are set to the same address in memory (see
-		below).
-		 
-		Since the functionality is likely unneeded for games, support for MFIFO is implemented
-		conditionally.  When disabled, transfers are passed directly from SPR to the per-
-		ipheral, without having to write to some memory buffer as a go-between.  In case
-		some games use the SADR/TADR progress for some sort of timing or logic, the SADR
-		and TADR registers are updated at each chain segment, but always reflect a fully
-		drained buffer.  (also necessary because they need to raise IRQs when drained).
-		*/
-
-	}
-	
-	if (dmacRegs.ctrl.STS)
-	{
-		/* Stall Control Source Channel
-		
-		This function must be be emulated at all times.  It essentially causes the DMAC to
-		write the MADR of the specified channel to STADR.  While this isn't always needed
-		by our own DMAC (which can avoid stalling by doing complete BURST style transfers
-		for all unchained DMAs), apps could still rely on STADR for their own internal
-		logic.
-		*/
-	}
-
-	if (dmacRegs.ctrl.STD)
-	{
-		/* Stall Control Drain Channel
-		
-		The most important aspect of this function is that certain conditions can tracewarn in
-		a DMA request being completely disregarded.  This value must also be respected when
-		the DMAC is running in purist mode (slicing and arbitrating at 8 QWC boundaries).
-
-		When DMAs are in Normal mode, using BURST transfers for all DMAs should eliminate
-		any need for advanced stall control logic.  However, there *is* a potential cavet:
-		when the drain channel is in Source Chain mode, stall control is apparently performed
-		on each REFS tag; meaning that each chain of the DMA must perform stall checks and
-		arbitration on the referenced address, which can jump all around memory.  
-		 
-		It is possible that BURSTing through entire chains will also negate the need for
-		stall control logic.  But its also possible for an app to micro-manage the STADR
-		register.
-		*/
-	}
-
 	wxsFormat(L"[CycSteal:%s]", CycStealMsg);
 
 	for( uint i=0; i<NumChannels; ++i )
@@ -682,37 +599,17 @@ void eeEvt_UpdateDmac()
 	}
 }
 
-template< uint page >
-__fi u32 dmacRead32( u32 mem )
-{
-	return psHu32(mem);
-}
-
+// Tells the PCSX2 event scheduler to execute the DMAC handler (eeEvt_UpdateDmac)
 void dmacScheduleEvent()
 {
 	// If the DMAC is completely disabled then no point in scheduling anything.
 	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLEW) & (1 << 16))) return;
 
-	cpuRegs.interrupt|= 1;
-	cpuRegs.sCycle[0] = cpuRegs.cycle;
-	cpuRegs.eCycle[0] = 8;
-
-	cpuSetNextBranchDelta( 8 );
+	CPU_INT( DMAC_EVENT, 8 );
 }
 
-void dmacScheduleException()
-{
-	if (cpuRegs.interrupt & (1 << 31)) return;
-	if (!cpuIntsEnabled(0x800)) return;
-
-	cpuRegs.interrupt |= 1 << 31;
-
-	cpuRegs.sCycle[31] = cpuRegs.cycle;
-	cpuRegs.eCycle[31] = 0; //4;  //Needs to be 4 to account for bus delays/pipelines etc
-
-	//cpuSetNextBranchDelta( 4 );
-}
-
+// Schedules a cpu-level exception in response to a DMA channel being completed.  Actual
+// scheduling of the exception depends on the mask status of the corresponding channel irq.
 void dmacChanInt( ChannelId id )
 {
 	pxAssume(eeEventTestIsActive);
@@ -725,7 +622,13 @@ void dmacChanInt( ChannelId id )
 	dmacRegs.stat.CIS |= bit;
 	
 	if (dmacRegs.stat.CIM & bit)
-		dmacScheduleException();
+		cpuSetNextEventDelta( 0 );
+}
+
+template< uint page >
+__fi u32 dmacRead32( u32 mem )
+{
+	return psHu32(mem);
 }
 
 // Returns TRUE if the caller should do writeback of the register to eeHw; false if the
@@ -814,11 +717,31 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	}
 	}
 
-	const ChannelInformation* info = NULL;
+	if (page < 0x08 || page > 0x0d) return true;		// valid pages for individual DMA channels
 
-	// Fall-through from above cases means that all we have left 
-	// First pass is to determine the channel being modified.  After that we can dispatch
-	// based on the actual register of the channel being modified.
+	// Fall-through from above cases means that all we have left are the per-channel DMA registers;
+	// such as CHCR, MADR, QWC, and others.  Only changes to STR matter from a virtual machine
+	// point-of-view.  The rest of the registers are handled only for trace logging purposes.
+
+	if ((mem & 0xf0) == 0)
+	{
+		// Since CHCR is being written, perform necessary STR tests so we know to schedule a DMA
+		// or not.  (if STR is set to 1, schedule it.  If set to 0, do nothing).  Logging is
+		// performed later, if enabled.
+
+		tDMA_CHCR& newchcr = (tDMA_CHCR&)value;
+		tDMA_CHCR& curchcr = (tDMA_CHCR&)psHu32(mem);
+
+		if (newchcr.STR && !curchcr.STR)
+			dmacScheduleEvent();
+	}
+
+	// First pass is to determine the channel being modified.   After that we can dispatch based
+	// on the actual register of the channel being modified.  This allows us to reuse all the same
+	// code for all 10 DMAs.
+
+	if (!SysTraceActive(EE.DMAC)) return true;
+	const ChannelInformation* info = NULL;
 
 	#define dmaCase(num) icase(D##num##_CHCR) { info = &ChannelInfo[num]; }
 
@@ -831,8 +754,8 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	
 	if (!info) return true;
 
-	FastFormatAscii tracewarn;
 	const tDMA_CHCR& curchcr = info->CHCR();
+	FastFormatAscii tracewarn;
 
 	switch(mem & 0x0ff)
 	{
@@ -844,7 +767,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			{
 				if( newchcr.STR )
 				{
-					DMAC_LOG("DmaExec Received (STR set to 1).");
+					DMAC_LOG("%s DmaExec Received (STR set to 1).", info->NameA);
 					
 					// [TODO] Log all DMA settings at STR=1;
 				}
@@ -866,29 +789,26 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 				// The game is writing newchcr while the DMA channel is active (STR==1).  This is
 				// typically an error if done *ever* (ENABLEW or not) and will product undefined
 				// results on real hardware.
-				if (SysTrace.EE.DMAC.IsActive())
+				static const char* tbl_LogicalTransferNames[] =
 				{
-					static const char* tbl_LogicalTransferNames[] =
-					{
-						"NORMAL", "CHAIN", "INTERLEAVE", "UNDEFINED"
-					};
+					"NORMAL", "CHAIN", "INTERLEAVE", "UNDEFINED"
+				};
 
-					FastFormatAscii result;
-					if (curchcr.MOD != newchcr.MOD)
-						tracewarn.Write("\n\tCHCR.MOD changed to %s (oldval=%s)", info->NameA, tbl_LogicalTransferNames[newchcr.MOD], tbl_LogicalTransferNames[curchcr.MOD]);
+				FastFormatAscii result;
+				if (curchcr.MOD != newchcr.MOD)
+					tracewarn.Write("\n\tCHCR.MOD changed to %s (oldval=%s)", info->NameA, tbl_LogicalTransferNames[newchcr.MOD], tbl_LogicalTransferNames[curchcr.MOD]);
 
-					if (curchcr.ASP != newchcr.ASP)
-						tracewarn.Write("\n\tCHCR.ASP changed to %u (oldval=%u)", info->NameA, newchcr.ASP, curchcr.ASP);
-					
-					if (curchcr.TTE != newchcr.TTE)
-						tracewarn.Write("\n\tCHCR.TTE changed to %u (oldval=%u)", info->NameA, newchcr.TTE, curchcr.TTE);
+				if (curchcr.ASP != newchcr.ASP)
+					tracewarn.Write("\n\tCHCR.ASP changed to %u (oldval=%u)", info->NameA, newchcr.ASP, curchcr.ASP);
+				
+				if (curchcr.TTE != newchcr.TTE)
+					tracewarn.Write("\n\tCHCR.TTE changed to %u (oldval=%u)", info->NameA, newchcr.TTE, curchcr.TTE);
 
-					if (curchcr.TIE != newchcr.TIE)
-						tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", info->NameA, newchcr.TIE, curchcr.TIE);
+				if (curchcr.TIE != newchcr.TIE)
+					tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", info->NameA, newchcr.TIE, curchcr.TIE);
 
-					if (curchcr.tag16 != newchcr.tag16)
-						tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", info->NameA, newchcr.tag16, curchcr.tag16);
-				}
+				if (curchcr.tag16 != newchcr.tag16)
+					tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", info->NameA, newchcr.tag16, curchcr.tag16);
 			}	
 		}
 		break;
@@ -913,12 +833,14 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			if(qwc != info->QWC())
 				tracewarn.Write("\n\tQWC changed to 0x%04x (oldval=0x%04x)", info->NameA, qwc, info->QWC());
 		}
-		
+		break;
+
 		// [TODO] Finish checks for other per-channel DMA registers.
 	}
 
 	if (!tracewarn.IsEmpty())
 		DMAC_LOG("[Warning] %s modified mid-transfer: %s", tracewarn.c_str());
+
 	return true;
 }
 

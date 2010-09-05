@@ -18,6 +18,7 @@
 
 #include "Hardware.h"
 #include "newVif.h"
+#include "IPU/IPUdma.h"
 #include "DmacLegacy.h"
 
 using namespace R5900;
@@ -46,17 +47,11 @@ void hwInit()
 	hwInitialized = true;
 }
 
-/*void hwShutdown()
-{
-	ipuShutdown();
-}*/
-
 void hwReset()
 {
 	hwInit();
 
-	memzero_ptr<Ps2MemSize::Hardware>( eeHw );
-	//memset(eeHw+0x2000, 0, 0x0000e000);
+	memzero( eeHw );
 
 	psHu32(SBUS_F260) = 0x1D000060;
 
@@ -73,18 +68,21 @@ void hwReset()
 	ipuReset();
 	vif0Reset();
 	vif1Reset();
+
+	// needed for legacy DMAC
+	ipuDmaReset();
 }
 
-__fi void intcInterrupt()
+__fi uint intcInterrupt()
 {
 	if ((psHu32(INTC_STAT)) == 0) {
 		//DevCon.Warning("*PCSX2*: intcInterrupt already cleared");
-        return;
+        return 0;
 	}
 	if ((psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0) 
 	{
 		//DevCon.Warning("*PCSX2*: No valid interrupt INTC_MASK: %x INTC_STAT: %x", psHu32(INTC_MASK), psHu32(INTC_STAT));
-		return;
+		return 0;
 	}
 
 	HW_LOG("intcInterrupt %x", psHu32(INTC_STAT) & psHu32(INTC_MASK));
@@ -93,27 +91,29 @@ __fi void intcInterrupt()
 		counters[1].hold = rcntRcount(1);
 	}
 
-	cpuException(0x400, cpuRegs.branch);
+	//cpuException(0x400, cpuRegs.branch);
+	return 0x400;
 }
 
-__fi void dmacInterrupt()
+__fi uint dmacInterrupt()
 {
 	if( ((psHu16(DMAC_STAT + 2) & psHu16(DMAC_STAT)) == 0 ) &&
 		( psHu16(DMAC_STAT) & 0x8000) == 0 ) 
 	{
 		//DevCon.Warning("No valid DMAC interrupt MASK %x STAT %x", psHu16(DMAC_STAT+2), psHu16(DMAC_STAT));
-		return;
+		return 0;
 	}
 
-	if (!(dmacRegs.ctrl.DMAE) || psHu8(DMAC_ENABLER+2) == 1) 
+	if (!dmacRegs.ctrl.DMAE || psHu8(DMAC_ENABLER+2) == 1) 
 	{
 		//DevCon.Warning("DMAC Suspended or Disabled on interrupt");
-		return;
+		return 0;
 	}
 	HW_LOG("dmacInterrupt %x", (psHu16(DMAC_STAT + 2) & psHu16(DMAC_STAT) |
 								  psHu16(DMAC_STAT) & 0x8000));
 
-	cpuException(0x800, cpuRegs.branch);
+	//cpuException(0x800, cpuRegs.branch);
+	return 0x800;
 }
 
 void hwIntcIrq(int n)

@@ -70,7 +70,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 			zerofill._u32[(mem >> 2) & 0x03] = value;
 
 			DevCon.WriteLn( Color_Cyan, "Writing 32-bit FIFO data (zero-extended to 128 bits)" );
-			_hwWrite128<page>(mem, &zerofill);
+			_hwWrite128<page>(mem & ~0x0f, &zerofill);
 		}
 		return;
 
@@ -127,7 +127,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 		case 0x0e:
 			if (UseLegacyDMAC)
 			{
-				if (!dmacWrite32_legacy<page>(mem, value)) return;
+				if (!dmacWrite32_Legacy<page>(mem, value)) return;
 			}
 			else
 			{
@@ -198,7 +198,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				break;
 
 				mcase(DMAC_ENABLEW):
-					if (!dmacWrite32_legacy<0x0f>(DMAC_ENABLEW, value)) return;
+					if (!dmacWrite32_Legacy<0x0f>(DMAC_ENABLEW, value)) return;
 
 				//mcase(SIO_ISR):
 				//mcase(0x1000f410):
@@ -227,8 +227,6 @@ void __fastcall hwWrite32( u32 mem, u32 value )
 template< uint page >
 void __fastcall _hwWrite8(u32 mem, u8 value)
 {
-	pxAssert( (mem & 0x03) == 0 );
-
 	iswitch (mem)
 	icase(SIO_TXFIFO)
 	{
@@ -256,7 +254,7 @@ void __fastcall _hwWrite8(u32 mem, u8 value)
 		return;
 	}
 
-	u32 merged = _hwRead32<page,false>(mem);
+	u32 merged = _hwRead32<page,false>(mem & ~0x03);
 	((u8*)&merged)[mem & 0x3] = value;
 
 	_hwWrite32<page>(mem & ~0x03, merged);
@@ -274,7 +272,7 @@ void __fastcall _hwWrite16(u32 mem, u16 value)
 {
 	pxAssume( (mem & 0x01) == 0 );
 
-	u32 merged = _hwRead32<page,false>(mem);
+	u32 merged = _hwRead32<page,false>(mem & ~0x03);
 	((u16*)&merged)[(mem>>1) & 0x1] = value;
 
 	hwWrite32<page>(mem & ~0x03, merged);
@@ -312,7 +310,7 @@ void __fastcall _hwWrite64( u32 mem, const mem64_t* srcval )
 
 			u128 zerofill = u128::From32(0);
 			zerofill._u64[(mem >> 3) & 0x01] = *srcval;
-			hwWrite128<page>(mem, &zerofill);
+			hwWrite128<page>(mem & ~0x0f, &zerofill);
 		}
 		return;
 		

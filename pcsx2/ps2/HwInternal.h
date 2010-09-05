@@ -66,7 +66,7 @@ template< uint page > extern u32 dmacRead32( u32 mem );
 template< uint page > extern bool dmacWrite32( u32 mem, mem32_t& value );
 
 template< uint page > extern u32 dmacRead32_Legacy( u32 mem );
-template< uint page > extern bool dmacWrite32_legacy( u32 mem, mem32_t& value );
+template< uint page > extern bool dmacWrite32_Legacy( u32 mem, mem32_t& value );
 
 // --------------------------------------------------------------------------------------
 //  Hardware FIFOs (128 bit access only!)

@@ -18,6 +18,7 @@
 #include "Common.h"
 #include "Hardware.h"
 
+#include "IPU/IPUdma.h"
 #include "ps2/HwInternal.h"
 #include "DmacLegacy.h"
 
@@ -284,7 +285,7 @@ __fi u32 dmacRead32_Legacy( u32 mem )
 // Returns TRUE if the caller should do writeback of the register to eeHw; false if the
 // register has no writeback, or if the writeback is handled internally.
 template< uint page >
-__fi bool dmacWrite32_legacy( u32 mem, mem32_t& value )
+__fi bool dmacWrite32_Legacy( u32 mem, mem32_t& value )
 {
 	iswitch(mem) {
 	icase(D0_CHCR) // dma0 - vif0
@@ -414,19 +415,19 @@ __fi bool dmacWrite32_legacy( u32 mem, mem32_t& value )
 
 template u32 dmacRead32_Legacy<0x03>( u32 mem );
 
-template bool dmacWrite32_legacy<0x00>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x01>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x02>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x03>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x04>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x05>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x06>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x07>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x08>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x09>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x0a>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x0b>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x0c>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x0d>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x0e>( u32 mem, mem32_t& value );
-template bool dmacWrite32_legacy<0x0f>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x00>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x01>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x02>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x03>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x04>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x05>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x06>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x07>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x08>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x09>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x0a>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x0b>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x0c>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x0d>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x0e>( u32 mem, mem32_t& value );
+template bool dmacWrite32_Legacy<0x0f>( u32 mem, mem32_t& value );
