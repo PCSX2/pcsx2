@@ -14,6 +14,7 @@ set(CommonFlags
 	-fno-dse
 	-fno-tree-dse
 	-fno-strict-aliasing
+    -Wstrict-aliasing # Allow to track strict aliasing issue.
 	-pipe
 	-Wno-format
 	-Wno-unused-parameter
@@ -155,15 +156,10 @@ set(pcsx2Sources
 	Sif1.cpp
 	Sio.cpp
 	SourceLog.cpp
-	SPR.cpp
 	Stats.cpp
 	System.cpp
-	Vif0_Dma.cpp
-	Vif1_Dma.cpp
-	Vif1_MFIFO.cpp
 	Vif.cpp
 	Vif_Codes.cpp
-	Vif_Transfer.cpp
 	Vif_Unpack.cpp
 	vtlb.cpp
 	VU0.cpp
@@ -218,14 +214,11 @@ set(pcsx2Headers
 	Sif.h
 	Sio.h
 	sio_internal.h
-	SPR.h
 	Stats.h
 	SysForwardDefs.h
 	System.h
-	Vif_Dma.h
 	Vif.h
 	Vif_Unpack.h
-	Vif_Unpack.inl
 	vtlb.h
 	VUflags.h
 	VUmicro.h
@@ -371,7 +364,6 @@ set(pcsx2GuiHeaders
 set(pcsx2IPUSources
 	IPU/IPU.cpp
 	IPU/IPU_Fifo.cpp
-	IPU/IPUdma.cpp
 	IPU/mpeg2lib/Idct.cpp
 	IPU/mpeg2lib/Mpeg.cpp
 	IPU/yuv2rgb.cpp)
@@ -380,7 +372,6 @@ set(pcsx2IPUSources
 set(pcsx2IPUHeaders
 	IPU/IPU.h
 	IPU/IPU_Fifo.h
-	IPU/IPUdma.h
 	IPU/yuv2rgb.h)
 
 # Linux sources
@@ -397,6 +388,7 @@ set(pcsx2ps2Sources
 	ps2/BiosTools.cpp
 	ps2/GIFpath.cpp
 	ps2/LegacyDmac.cpp
+	ps2/NewVif.cpp
 	ps2/Iop/IopHwRead.cpp
 	ps2/Iop/IopHwWrite.cpp)
 

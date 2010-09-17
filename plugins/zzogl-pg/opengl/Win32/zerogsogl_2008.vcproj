@@ -377,6 +377,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ZZoglFlushHack.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ZZoglSave.cpp"
 				>
 			</File>
@@ -478,15 +482,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\zerogsmath.h"
-				>
-			</File>
-			<File
 				RelativePath="..\ZZGl.h"
 				>
 			</File>
 			<File
 				RelativePath="..\ZZLog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ZZoglFlushHack.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ZZoglMath.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ZZoglShaders.h"
 				>
 			</File>
 		</Filter>
@@ -517,6 +529,10 @@
 		</Filter>
 		<File
 			RelativePath="..\ps2hw.dat"
+			>
+		</File>
+		<File
+			RelativePath=".\ps2hw.dat"
 			>
 		</File>
 	</Files>

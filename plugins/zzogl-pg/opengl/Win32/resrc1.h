@@ -4,6 +4,8 @@
 //
 #define IDC_CONF_DEFAULT                3
 #define IDR_DATA1                       112
+#define IDD_ADV_OPTIONS                 113
+#define IDD_CONFIG2                     114
 #define IDC_ABOUTTEXT                   1015
 #define IDC_CONFIG_AA                   1016
 #define IDC_CONFIG_INTERLACE            1017
@@ -49,12 +51,15 @@
 #define IDC_CONFOPT_00004000            1047
 #define IDC_BUTTON1                     1048
 #define IDC_CONFOPT_COMPUTEOR           1048
+#define IDC_ADV_BTN                     1048
 #define IDC_CONFOPT_4001                1049
 #define IDC_CONFOPT_00000010            1049
 #define IDC_CONFOPT_00008000            1050
 #define IDC_CONFOPT_00010000            1052
 #define IDC_CONFOPT_00020000            1054
+#define IDC_AA_COMBO                    1054
 #define IDC_CONFOPT_00000002            1055
+#define IDC_WIN_SIZE_COMBO              1055
 #define IDC_CONFOPT_01000000            1056
 #define IDC_CONFOPT_00800000            1057
 #define IDC_CONFOPT_00000008            1058
@@ -64,20 +69,20 @@
 #define IDC_CONFOPT_00040000            1063
 #define IDC_CONFOPT_02000000            1064
 #define IDC_CONFOPT_04000000            1065
-#define IDC_CONFOPT_10000000            1068
-#define IDC_CONFOPT_20000000            1069
 #define IDC_CONFOPT_00000100            1066
 #define IDC_CONFIG_WIDESCREEN           1067
+#define IDC_CONFOPT_10000000            1068
+#define IDC_CONFOPT_20000000            1069
 #define IDC_CONFIG_AA8                  2003
 #define IDC_CONFIG_AA16                 2004
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        113
+#define _APS_NEXT_RESOURCE_VALUE        116
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1049
+#define _APS_NEXT_CONTROL_VALUE         1056
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

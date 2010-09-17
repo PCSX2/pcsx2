@@ -140,7 +140,7 @@ void __gifCall KickVertex(bool adc)
 		{
 			/* tri fans need special processing */
 			if (gs.nTriFanVert == gs.primIndex)
-				gs.primIndex = (gs.primIndex + 1) % ArraySize(gs.gsvertex);
+				gs.primIndex = gs.primNext();
 		}
 	}
 }
@@ -638,7 +638,7 @@ void __gifCall GIFRegHandlerSCISSOR(const u32* data)
 		Flush();
 	}
 
-	m_env.CTXT[i].SCISSOR = (GSVector4i)r->SCISSOR;
+	m_env.CTXT[i].SCISSOR = (Vector4i)r->SCISSOR;
 
 	m_env.CTXT[i].UpdateScissor();*/
 	ZZLog::Greg_Log("SCISSOR%d", i);

@@ -52,7 +52,7 @@ extern "C" u32   CALLBACK PS2EgetLibType(void);
 extern "C" u32   CALLBACK PS2EgetLibVersion2(u32 type);
 extern "C" char* CALLBACK PS2EgetLibName(void);
 
-#include "zerogsmath.h"
+#include "ZZoglMath.h"
 
 #include <vector>
 #include <string>
@@ -173,7 +173,7 @@ typedef union
 		u32 reget : 1; // some sort of weirdness in ReGet() code
 		u32 gust : 1; // Needed for Gustgames fast update.
 		u32 no_logz : 1; // Intended for linux -- not logarithmic Z.
-		u32 reserved1 :1;
+		u32 automatic_skip_draw :1; // allow debug of the automatic skip draw option
 		u32 reserved2 :1;
 	};
 	u32 _u32;
@@ -201,7 +201,6 @@ typedef struct
 	u8 mrtdepth; // write color in render target
 	u8 interlace; // intelacing mode 0, 1, 3-off
 	u8 aa;	// antialiasing 0 - off, 1 - 2x, 2 - 4x, 3 - 8x, 4 - 16x
-	u8 negaa; // negative aliasing
 	u8 bilinear; // set to enable bilinear support. 0 - off, 1 -- on, 2 -- force (use for textures that usually need it)
 	ZZOptions zz_options;
 	gameHacks hacks; // game options -- different hacks.
@@ -209,6 +208,7 @@ typedef struct
 	int width, height; // View target size, has no impact towards speed
 	int x, y; // Lets try for a persistant window position.
 	bool isWideScreen; // Widescreen support
+	u32 SkipDraw;
 	u32 log;
 	
 	void incAA() { aa++; if (aa > 4) aa = 0; }
@@ -271,8 +271,8 @@ typedef struct
 				break;
 				
 			default:
-				width = 640;
-				height = 480;
+				width = 800;
+				height = 600;
 				break;
 		}
 	}
@@ -351,6 +351,6 @@ extern "C" void * memcpy_amd(void *dest, const void *src, size_t n);
 extern "C" u8 memcmp_mmx(const void *dest, const void *src, int n);
 #endif
 
-
+extern bool g_bDisplayFPS; // should we display FPS on screen?
 
 #endif // UTIL_H_INCLUDED
