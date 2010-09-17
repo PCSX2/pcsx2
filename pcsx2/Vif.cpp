@@ -14,273 +14,47 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Common.h"
 #include "Vif.h"
-#include "Vif_Dma.h"
 #include "newVif.h"
-#include "GS.h"
-#include "Gif.h"
+#include "ps2/NewDmac.h"
 
-#include "DmacLegacy.h"
+__aligned16 VifProcessingUnit vifProc[2];
 
-vifStruct  vif0;
-vifStruct  vif1;
-tGSTransferStatus GSTransferStatus((STOPPED_MODE<<8) | (STOPPED_MODE<<4) | STOPPED_MODE);
-
-void vif0Reset()
+void vifReset()
 {
-	/* Reset the whole VIF, meaning the internal pcsx2 vars and all the registers */
-	memzero(vif0);
 	memzero(vif0Regs);
-
-	psHu64(VIF0_FIFO) = 0;
-	psHu64(VIF0_FIFO + 8) = 0;
-
-	vif0Regs.stat.VPS = VPS_IDLE;
-	vif0Regs.stat.FQC = 0;
-
-	vif0.done = false;
-
-	resetNewVif(0);
-}
-
-void vif1Reset()
-{
-	/* Reset the whole VIF, meaning the internal pcsx2 vars, and all the registers */
-	memzero(vif1);
 	memzero(vif1Regs);
 
-	psHu64(VIF1_FIFO) = 0;
-	psHu64(VIF1_FIFO + 8) = 0;
+	memzero(vifProc);
 
-	vif1Regs.stat.VPS = VPS_IDLE;
-	vif1Regs.stat.FQC = 0; // FQC=0
-
-	vif1.done = false;
-	cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-
-	resetNewVif(1);
+	vifProc[0].idx	= 0;
+	vifProc[1].idx	= 1;
 }
 
-void SaveStateBase::vif0Freeze()
+void SaveStateBase::vifFreeze()
 {
-	FreezeTag("VIFdma");
-	Freeze(g_vifCycles); // Dunno if this one is needed, but whatever, it's small. :)
-	Freeze(g_vifmask);	 // mask settings for VIF0 and VIF1
-	Freeze(vif0);
-
-	Freeze(nVif[0].bSize);
-	FreezeMem(nVif[0].buffer, nVif[0].bSize);
+	FreezeTag("VIFunpack (VPU)");
+	Freeze(vifProc);
 }
 
-void SaveStateBase::vif1Freeze()
-{
-	Freeze(vif1);
+#define vcase(reg)  case (idx ? VIF1_##reg : VIF0_##reg)
 
-	Freeze(nVif[1].bSize);
-	FreezeMem(nVif[1].buffer, nVif[1].bSize);
+_vifT __fi u32 vifRead32(u32 mem) {
+
+	switch (mem) {
+		vcase(ROW0): return vifProc[idx].MaskRow._u32[0];
+		vcase(ROW1): return vifProc[idx].MaskRow._u32[1];
+		vcase(ROW2): return vifProc[idx].MaskRow._u32[2];
+		vcase(ROW3): return vifProc[idx].MaskRow._u32[3];
+
+		vcase(COL0): return vifProc[idx].MaskCol._u32[0];
+		vcase(COL1): return vifProc[idx].MaskCol._u32[1];
+		vcase(COL2): return vifProc[idx].MaskCol._u32[2];
+		vcase(COL3): return vifProc[idx].MaskCol._u32[3];
+	}
+
+	return psHu32(mem);
 }
-
-//------------------------------------------------------------------
-// Vif0/Vif1 Write32
-//------------------------------------------------------------------
-
-extern bool _chainVIF0();
-extern bool _VIF0chain();
-
-__fi void vif0FBRST(u32 value)
-{
-	VIF_LOG("VIF0_FBRST write32 0x%8.8x", value);
-
-	if (value & 0x1) // Reset Vif.
-	{
-		//Console.WriteLn("Vif0 Reset %x", vif0Regs.stat._u32);
-
-		memzero(vif0);
-		vif0ch.qwc = 0; //?
-		cpuRegs.interrupt &= ~1; //Stop all vif0 DMA's
-		psHu64(VIF0_FIFO) = 0;
-		psHu64(VIF0_FIFO + 8) = 0;
-		vif0.done = false;
-		vif0Regs.err.reset();
-		vif0Regs.stat.clear_flags(VIF0_STAT_FQC | VIF0_STAT_INT | VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS | VIF0_STAT_VPS); // FQC=0
-	}
-
-	/* Fixme: Forcebreaks are pretty unknown for operation, presumption is it just stops it what its doing
-	          usually accompanied by a reset, but if we find a broken game which falls here, we need to see it! (Refraction) */
-	if (value & 0x2) // Forcebreak Vif,
-	{
-		/* I guess we should stop the VIF dma here, but not 100% sure (linuz) */
-		cpuRegs.interrupt &= ~1; //Stop all vif0 DMA's
-		vif0Regs.stat.VFS = true;
-		vif0Regs.stat.VPS = VPS_IDLE;
-		Console.WriteLn("vif0 force break");
-	}
-
-	if (value & 0x4) // Stop Vif.
-	{
-		// Not completely sure about this, can't remember what game, used this, but 'draining' the VIF helped it, instead of
-		//  just stoppin the VIF (linuz).
-		vif0Regs.stat.VSS = true;
-		vif0Regs.stat.VPS = VPS_IDLE;
-		vif0.vifstalled = true;
-	}
-
-	if (value & 0x8) // Cancel Vif Stall.
-	{
-		bool cancel = false;
-
-		/* Cancel stall, first check if there is a stall to cancel, and then clear VIF0_STAT VSS|VFS|VIS|INT|ER0|ER1 bits */
-		if (vif0Regs.stat.test(VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS))
-			cancel = true;
-
-		vif0Regs.stat.clear_flags(VIF0_STAT_VSS | VIF0_STAT_VFS | VIF0_STAT_VIS |
-				    VIF0_STAT_INT | VIF0_STAT_ER0 | VIF0_STAT_ER1);
-		if (cancel)
-		{
-			if (vif0.vifstalled)
-			{
-				g_vifCycles = 0;
-
-				// loop necessary for spiderman
-				//vif0ch.chcr.STR = true;
-				 if(vif0ch.chcr.STR) CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
-			}
-		}
-	}
-}
-
-__fi void vif1FBRST(u32 value)
-{
-
-	VIF_LOG("VIF1_FBRST write32 0x%8.8x", value);
-
-	if (FBRST(value).RST) // Reset Vif.
-	{
-		memzero(vif1);
-		//cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-		vif1ch.qwc -= min((int)vif1ch.qwc, 16); //?
-		psHu64(VIF1_FIFO) = 0;
-		psHu64(VIF1_FIFO + 8) = 0;
-		//vif1.done = false;
-
-		
-		//DevCon.Warning("VIF FBRST Reset MSK = %x", vif1Regs.mskpath3);
-		if(vif1Regs.mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE && gifch.chcr.STR == true) 
-		{
-			//DevCon.Warning("VIF Path3 Resume on FBRST MSK = %x", vif1Regs.mskpath3);
-			gsInterrupt();
-			vif1Regs.mskpath3 = false;
-			gifRegs.stat.M3P = 0;
-		}
-
-		vif1Regs.mskpath3 = false;
-		gifRegs.stat.M3P = 0;
-		vif1Regs.err.reset();
-		vif1.inprogress = 0;
-		vif1.cmd = 0;
-		vif1.vifstalled = false;
-		vif1Regs.stat.FQC = 0;
-		vif1Regs.stat.clear_flags(VIF1_STAT_FDR | VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS | VIF1_STAT_VPS);
-	}
-
-	/* Fixme: Forcebreaks are pretty unknown for operation, presumption is it just stops it what its doing
-	          usually accompanied by a reset, but if we find a broken game which falls here, we need to see it! (Refraction) */
-
-	if (FBRST(value).FBK) // Forcebreak Vif.
-	{
-		/* I guess we should stop the VIF dma here, but not 100% sure (linuz) */
-		vif1Regs.stat.VFS = true;
-		vif1Regs.stat.VPS = VPS_IDLE;
-		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-		Console.WriteLn("vif1 force break");
-	}
-
-	if (FBRST(value).STP) // Stop Vif.
-	{
-		// Not completely sure about this, can't remember what game used this, but 'draining' the VIF helped it, instead of
-		//   just stoppin the VIF (linuz).
-		vif1Regs.stat.VSS = true;
-		vif1Regs.stat.VPS = VPS_IDLE;
-		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-		vif1.vifstalled = true;
-	}
-
-	if (FBRST(value).STC) // Cancel Vif Stall.
-	{
-		bool cancel = false;
-
-		/* Cancel stall, first check if there is a stall to cancel, and then clear VIF1_STAT VSS|VFS|VIS|INT|ER0|ER1 bits */
-		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
-		{
-			cancel = true;
-		}
-
-		vif1Regs.stat.clear_flags(VIF1_STAT_VSS | VIF1_STAT_VFS | VIF1_STAT_VIS |
-				VIF1_STAT_INT | VIF1_STAT_ER0 | VIF1_STAT_ER1);
-
-		if (cancel)
-		{
-			if (vif1.vifstalled)
-			{
-				g_vifCycles = 0;
-				// loop necessary for spiderman
-				switch(dmacRegs.ctrl.MFD)
-				{
-				    case MFD_VIF1:
-                        //Console.WriteLn("MFIFO Stall");
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
-                        break;
-
-                    case NO_MFD:
-                    case MFD_RESERVED:
-                    case MFD_GIF: // Wonder if this should be with VIF?
-                        // Gets the timing right - Flatout
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_VIF1, 0);
-                        break;
-				}
-
-				//vif1ch.chcr.STR = true;
-			}
-		}
-	}
-}
-
-__fi void vif1STAT(u32 value) {
-	VIF_LOG("VIF1_STAT write32 0x%8.8x", value);
-
-	/* Only FDR bit is writable, so mask the rest */
-	if ((vif1Regs.stat.FDR) ^ ((tVIF_STAT&)value).FDR) {
-		// different so can't be stalled
-		if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
-			DevCon.WriteLn("changing dir when vif1 fifo stalled");
-		}
-	}
-
-	vif1Regs.stat.FDR = VIF_STAT(value).FDR;
-
-	if (vif1Regs.stat.FDR) // Vif transferring to memory.
-	{
-	    // Hack but it checks this is true before transfer? (fatal frame)
-		// Update Refraction: Use of this function has been investigated and understood.
-		// Before this ever happens, a DIRECT/HL command takes place sending the transfer info to the GS
-		// One of the registers told about this is TRXREG which tells us how much data is going to transfer (th x tw) in words
-		// As far as the GS is concerned, the transfer starts as soon as TRXDIR is accessed, which is why fatal frame
-		// was expecting data, the GS should already be sending it over (buffering in the FIFO)
-
-		vif1Regs.stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
-		//Console.Warning("Reversing VIF Transfer for %x QWC", vif1.GSLastDownloadSize);
-
-	}
-	else // Memory transferring to Vif.
-	{
-		//Sometimes the value from the GS is bigger than vif wanted, so it just sets it back and cancels it.
-		//Other times it can read it off ;)
-		vif1Regs.stat.FQC = 0;
-	}
-}
-
-#define caseVif(x) (idx ? VIF1_##x : VIF0_##x)
 
 // returns FALSE if no writeback is needed (or writeback is handled internally)
 // returns TRUE if the caller should writeback the value to the eeHw register map.
@@ -289,55 +63,194 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value) {
 	VIFregisters&	vifXRegs	= GetVifXregs;
 
 	switch (mem) {
-		case caseVif(MARK):
+		vcase(MARK):
 			VIF_LOG("VIF%d_MARK write32 0x%8.8x", idx, value);
-			vifXRegs.stat.MRK = false;
-			//vifXRegs.mark	   = value;
-			break;
+			vifXRegs.stat.MRK = 0;
+		break;
 
-		case caseVif(FBRST):
-			if (!idx) vif0FBRST(value);
-			else	  vif1FBRST(value);
-		return false;
+		vcase(FBRST):
+		{
+			// IMPORTANT:  VIF resets have *nothing* to do with VIF DMAs!!  Issuing a reset to
+			// VIF while a DMA is in progress does not reset or modify the DMA status in any way.
+			// (though technically it is probably an error to try to reset the VIF while a DMA is
+			// in progress as it would yield indeterminate results, ie errors).
 
-		case caseVif(STAT):
-			if (idx) { // Only Vif1 does this stuff?
-				vif1STAT(value);
+			tVIF_FBRST& fbrst = (tVIF_FBRST&)value;
+	
+			if (fbrst.RST)
+			{
+				// Docs specify specific flags of STAT that should be cleared, however all other
+				// flags are implicitly cleared as part of the reset operation; so just clear the
+				// whole mess.  Other regs below are indicated as being set to 0, and anything
+				// else should either be unmodified or indeterminate.
+
+				vifXRegs.stat.reset();
+				vifXRegs.num	= 0;
+				vifXRegs.mark	= 0;
+				vifXRegs.err.reset();
+				
+				memzero(vifProc[idx]);
 			}
-		return false;
 
-		case caseVif(ERR):
-		case caseVif(MODE):
+			if (fbrst.FBK)
+			{
+				// Forcebreak is mostly a VU command -- meant to break execution of the VU processor
+				// associated with the VIF interface (0/1).  It is only be used for debugging
+				// purposes since a VU microprogram cannot be safely resumed after ForceBreak.
+				//  (translation: very likely no games use this)
+
+				// FIXME: VUs currently do not support forcebreak.
+				vifXRegs.stat.VFS = true;
+			}
+			
+			if (fbrst.STP)
+			{
+				// Signals that the VIF should stop as soon as the current VIFcode finishes processing.
+				// At the conclusion of every VIFcode, this bit is checked, and if it is 1, the VIF
+				// stalls until the app cancels the stall.
+				vifXRegs.stat.VSS = true;
+			}
+			
+			if (fbrst.STC)
+			{
+				// Cancel VIF stall, clear stall/error flags, and request DMA transfer resume if
+				// a DMA is pending:
+
+				if (vifXRegs.IsStalled())
+				{
+					dmacRequestXfer( idx ? EE_DMAC::ChanId_VIF1 : EE_DMAC::ChanId_VIF0);
+				}
+
+			}
+			return false;
+		}
+
+		vcase(STAT):
+		{
+			if (!idx) return false;
+
+			// VIF1's FDR bit controls the VIF1 FIFO direction, and is the only writable bit
+			// in STAT.  VIF0 has no writable bits, so writes to it are disregarded.
+			
+			// Note that transferring data from GS to host (EE) is a complex task that requires
+			// an app to completely clear out all GIF and GIFpath activity, switch GS trans-
+			// mission direction, and switch VIF transmission direction.  The GIF/VIF direction
+			// changes can be done in any order; if the VIF is switched first the DMA will
+			// stall until the GS starts filling its FIFO.  If the GS is switched first, its
+			// transfer stalls until the VIF starts draining its FIFO.
+
+			tVIF_STAT& stat = (tVIF_STAT&)value;
+			vifXRegs.stat.FDR = stat.FDR;
+			return false;
+		}
+
+		vcase(ERR):
+		vcase(MODE):
 			// standard register writes -- handled by caller.
 			break;
 
-		case caseVif(ROW0):
-		case caseVif(ROW1):
-		case caseVif(ROW2):
-		case caseVif(ROW3):
-			// Here's a neat way to obfuscate code.  This is a super-fancy-complicated version
-			// of a standard psHu32(mem) = value; writeback.  Handled by caller for us, thanks! --air
-			//if (!idx) g_vifmask.Row0[ (mem>>4)&3 ]   = value;
-			//else	  g_vifmask.Row1[ (mem>>4)&3 ]   = value;
-			//((u32*)&vifXRegs.r0)   [((mem>>4)&3)*4] = value;
-			break;
+		vcase(ROW0): vifProc[idx].MaskRow._u32[0] = value; return false;
+		vcase(ROW1): vifProc[idx].MaskRow._u32[1] = value; return false;
+		vcase(ROW2): vifProc[idx].MaskRow._u32[2] = value; return false;
+		vcase(ROW3): vifProc[idx].MaskRow._u32[3] = value; return false;
 
-		case caseVif(COL0):
-		case caseVif(COL1):
-		case caseVif(COL2):
-		case caseVif(COL3):
-			// Here's a neat way to obfuscate code.  This is a super-fancy-complicated version
-			// of a standard psHu32(mem) = value; writeback.  Handled by caller for us, thanks! --air
-			//if (!idx) g_vifmask.Col0[ (mem>>4)&3 ]   = value;
-			//else	  g_vifmask.Col1[ (mem>>4)&3 ]   = value;
-			//((u32*)&vifXRegs.c0)   [((mem>>4)&3)*4] = value;
-			break;
+		vcase(COL0): vifProc[idx].MaskCol._u32[0] = value; return false;
+		vcase(COL1): vifProc[idx].MaskCol._u32[1] = value; return false;
+		vcase(COL2): vifProc[idx].MaskCol._u32[2] = value; return false;
+		vcase(COL3): vifProc[idx].MaskCol._u32[3] = value; return false;
 	}
 
 	// fall-through case: issue standard writeback behavior.
 	return true;
 }
 
+// Processes as many commands in the packet as possible.
+_vifT static size_t vifTransferLoop(const u128* data, uint size_qwc) {
+}
+
+// size should always be a multiple of 128 bits (16 bytes) [assertion checked]
+// Returns the number of QWC not processed (non-zero typically means the VIF stalled
+// due to IRQ or MARK).
+_vifT size_t vifTransfer(const u128* data, int size_qwc) {
+	VifProcessingUnit&	vifX	= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+
+	pxAssumeMsg( (size_qwc & ~15) == 0, "VIFcode transfer size is not a multiple of QWC." );
+
+	vifX.fragment_size	= size_qwc * 4;
+	vifX.data			= (u32*)data;
+
+	do {
+		if (regs.stat.VPS == VPS_IDLE)
+		{
+			// Fetch and dispatch a new VIFcode.
+			regs.code = *vifX.data;
+			++vifX.data;
+			--vifX.fragment_size;
+		}
+
+		vifCmdHandler[idx][regs.code.CMD]();
+
+		if (regs.stat.VPS != VPS_IDLE)
+		{
+			// Command was unable to finish processing, meaning it needs more data or that
+			// some blocking/stall condition has occurred.
+
+			break;
+		}
+
+		// Code processed in complete, so check the I-bit status.
+
+		// Okay did some testing with Max Payne, it does this:
+		// VifMark  value = 0x666   (i know, evil!)
+		// NOP with I Bit
+		// VifMark  value = 0
+		//
+		// If you break after the 2nd Mark has run, the game reports invalid mark 0 and the game dies.
+		// So it has to occur here, testing a theory that it only doesn't stall if the command with
+		// the iBit IS mark, but still sends the IRQ to let the cpu know the mark is there. (Refraction)
+		//
+		// --------------------------
+		//
+		// This is how it probably works: i-bit sets the IRQ flag, and VIF keeps running until it encounters
+		// a non-MARK instruction.  This includes the *current* instruction.  ie, execution only continues
+		// unimpeded if MARK[i] is specified, and keeps executing unimpeded until any non-MARK command.
+		// Any other command with an I bit should stall immediately.
+		// Example:
+		//
+		// VifMark[i] value = 0x321   (with I bit)
+		// VifMark    value = 0
+		// VifMark    value = 0x333
+		// NOP
+		//
+		// ... the VIF should not stall and raise the interrupt until after the NOP is processed.
+		// So the final value for MARK as the game sees it will be 0x333. --air
+
+		if (regs.code.IBIT && !regs.err.MII)
+		{
+			VifCodeLog("I-Bit IRQ raised (unmasked)");
+			regs.stat.INT = 1;
+			hwIntcIrq(idx ? INTC_VIF1 : INTC_VIF0);
+		}
+
+		// As per understanding outlined above: Stall VIF only if the current instruction is not MARK.
+		if (regs.stat.INT && (regs.code.CMD != VIFcode_MARK))
+			regs.stat.VIS = 1;
+
+	} while (vifX.fragment_size && !regs.stat.IsStalled());
+	
+	// Return the amount of data not processed as a function of QWC.
+	// (data not processed should always be 128 bit/qwc-aligned).
+
+	pxAssumeDev( (vifX.fragment_size & 0x03) == 0, "Misaligned size after VIFcode stall." );
+	return vifX.fragment_size / 4;
+}
+
+template size_t vifTransfer<0>(const u128 *data, int size);
+template size_t vifTransfer<1>(const u128 *data, int size);
+
+template u32 vifRead32<0>(u32 mem);
+template u32 vifRead32<1>(u32 mem);
 
 template bool vifWrite32<0>(u32 mem, u32 value);
 template bool vifWrite32<1>(u32 mem, u32 value);

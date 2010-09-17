@@ -1094,15 +1094,9 @@ void __fastcall mVU_XGKICK_(u32 addr) {
 	u8* data  = vuRegs[1].Mem + (addr*16);
 	u32 diff  = 0x400 - addr;
 	
-	GetMTGS().PrepDataPacket(GIF_PATH_1, 0x400);
-	GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff, 0x400);
+	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, 0x400);
+	g_gifpath.CopyTag((u128*)data, diff, 0x400);
 	GetMTGS().SendDataPacket();
-
-		if(GSTransferStatus.PTH1 == STOPPED_MODE)
-		{
-			gifRegs.stat.OPH = false;
-			gifRegs.stat.APATH = GIF_APATH_IDLE;
-	}
 }
 
 static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {

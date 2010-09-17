@@ -31,7 +31,6 @@ __fi void dmaSIF2()
 	SIF_LOG(wxString(L"dmaSIF2" + sif2dma.cmq_to_str()).To8BitData());
 
 	sif2dma.chcr.STR = false;
-	hwDmacIrq(DMAC_SIF2);
 	Console.WriteLn("*PCSX2*: dmaSIF2");
 }
 

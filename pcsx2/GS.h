@@ -229,11 +229,57 @@ enum GIF_PATH
 	GIF_PATH_3,
 };
 
-extern void GIFPath_Initialize();
-extern int  GIFPath_CopyTag(GIF_PATH pathidx, const u128* pMem, uint size, uint wrapSize=0);
-extern void GIFPath_Reset();
-extern void GIFPath_Clear( GIF_PATH pathidx );
+// --------------------------------------------------------------------------------------
+//  GIFTAG
+// --------------------------------------------------------------------------------------
+// Members of this structure are in CAPS to help visually denote that they are representative
+// of actual hw register states of the GIF, unlike the internal tracking vars in GIFPath, which
+// are modified during the GIFtag unpacking process.
+struct GIFTAG
+{
+	u32 NLOOP	: 15;
+	u32 EOP		: 1;
+	u32 _dummy0	: 16;
+	u32 _dummy1	: 14;
+	u32 PRE		: 1;
+	u32 PRIM	: 11;
+	u32 FLG		: 2;
+	u32 NREG	: 4;
+	u32 REGS[2];
 
+	GIFTAG() {}
+};
+
+// --------------------------------------------------------------------------------------
+//  GIFPath -- PS2 GIFtag info (one for each path).
+// --------------------------------------------------------------------------------------
+// fixme: The real PS2 has a single internal PATH and 3 logical sources, not 3 entirely
+// separate paths.  But for that to work properly we need also interlocked path sources.
+// That is, when the GIF selects a source, it sticks to that source until an EOP.  Currently
+// this is not emulated!
+
+struct GIFPath
+{
+	GIFTAG tag;			// A copy of the "original" tag -- modification allowed only by SetTag(), so let's make it const.
+	u8 regs[16];		// positioned after tag ensures 16-bit aligned (in case we SSE optimize later)
+
+	u32 nloop;			// local copy nloop counts toward zero, and leaves the tag copy unmodified.
+	u32 curreg;			// reg we left of on (for traversing through loops)
+	u32 numregs;		// number of regs (when NREG is 0, numregs is 16)
+	u32 DetectE;
+
+	GIFPath();
+
+	void Reset();
+	void PrepPackedRegs();
+	bool StepReg();
+	u8 GetReg();
+
+	void SetTag(const void* mem);
+	int CopyTag(const u128* pMem, uint size, uint wrapSize=0);
+};
+
+extern __aligned16 GIFPath		g_gifpath;
 extern GS_RegionMode gsRegionMode;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -245,14 +291,11 @@ extern GS_RegionMode gsRegionMode;
 
 enum MTGS_RingCommand
 {
-	GS_RINGTYPE_P1
-,	GS_RINGTYPE_P2
-,	GS_RINGTYPE_P3
+	GS_RINGTYPE_PATH
 ,	GS_RINGTYPE_VSYNC
 ,	GS_RINGTYPE_FRAMESKIP
 ,	GS_RINGTYPE_FREEZE
 ,	GS_RINGTYPE_RESET			// issues a GSreset() command.
-,	GS_RINGTYPE_SOFTRESET		// issues a soft reset for the GIF
 ,	GS_RINGTYPE_MODECHANGE		// for issued mode changes.
 ,	GS_RINGTYPE_CRC
 };
@@ -319,7 +362,6 @@ public:
 	void ResetGS();
 
 	void PrepDataPacket( MTGS_RingCommand cmd, u32 size );
-	void PrepDataPacket( GIF_PATH pathidx, u32 size );
 	void SendDataPacket();
 	void SendGameCRC( u32 crc );
 	void WaitForOpen();

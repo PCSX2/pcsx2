@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "System.h"
+
 // Allocates a Chunk of memory using SysMmapEx...
 // This memory can be used to write recompiled code to.
 // Its got basic resizing/growing ability too, but probably

@@ -16,7 +16,6 @@
 #pragma once
 
 #include "Common.h"
-#include "Vif_Dma.h"
 #include "newVif.h"
 
 #include <xmmintrin.h>
@@ -46,7 +45,7 @@ public:
 	VifUnpackSSE_Base();
 	virtual ~VifUnpackSSE_Base() throw() {}
 
-	virtual void xUnpack( int upktype ) const;
+	virtual bool xUnpack( int upktype ) const;
 	virtual bool IsUnmaskedOp() const=0;
 	virtual void xMovDest() const;
 
@@ -109,15 +108,13 @@ public:
 
 protected:
 	const nVifStruct&	v;			// vif0 or vif1
-	const nVifBlock&	vB;			// some pre-collected data from VifStruct
 	int					vCL;		// internal copy of vif->cl
 
 public:
-	VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlock& vifBlock_);
+	VifUnpackSSE_Dynarec(const nVifStruct& vif_);
 	VifUnpackSSE_Dynarec(const VifUnpackSSE_Dynarec& src)	// copy constructor
 		: _parent(src)
 		, v(src.v)
-		, vB(src.vB)
 	{
 		isFill	= src.isFill;
 		vCL		= src.vCL;
@@ -127,7 +124,7 @@ public:
 
 	virtual bool IsUnmaskedOp() const{ return !doMode && !doMask; }
 
-	void CompileRoutine();
+	void CompileRoutine(uint vSize);
 
 protected:
 	virtual void doMaskWrite(const xRegisterSSE& regX) const;

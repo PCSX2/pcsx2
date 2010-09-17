@@ -382,8 +382,9 @@ extern R5900cpu recCpu;
 
 enum EE_EventType
 {
-	// new dmac is s single-event-fits-all system!
+	// new dmac is a single-event-fits-all system!
 	DMAC_EVENT = 0,
+	FIFO_EVENT = 1,
 
 
 	// old legacy DMAC uses an event for each channel, and piggy backs the event id with
@@ -419,8 +420,6 @@ extern void cpuReset();		// can throw Exception::FileNotFound.
 extern void cpuException(u32 code, u32 bd);
 extern void cpuTlbMissR(u32 addr, u32 bd);
 extern void cpuTlbMissW(u32 addr, u32 bd);
-extern void cpuTestHwInts();
-extern void cpuClearInt(uint n);
 
 extern void cpuSetNextEvent( u32 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
@@ -431,7 +430,6 @@ extern void _cpuEventTest_Shared();		// for internal use by the Dynarecs and Int
 extern bool cpuIntsEnabled(int Interrupt);
 
 extern void cpuTestINTCInts();
-extern void cpuTestDMACInts();
 extern void cpuTestTIMRInts();
 
 ////////////////////////////////////////////////////////////////////

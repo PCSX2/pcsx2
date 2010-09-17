@@ -2014,7 +2014,7 @@ static __ri void _vuEEXP(VURegs * VU) {
 
 static __ri void _vuXITOP(VURegs * VU) {
 	if (_It_ == 0) return;
-	VU->VI[_It_].US[0] = VU->GetVifRegs().itop;
+	VU->VI[_It_].US[0] = VU->GetVifRegs().itop.ADDR;
 }
 
 static __ri void _vuXGKICK(VURegs * VU)
@@ -2024,14 +2024,14 @@ static __ri void _vuXGKICK(VURegs * VU)
 
 	u8* data = ((u8*)VU->Mem + ((VU->VI[_Is_].US[0]*16) & 0x3fff));
 	u32 size;
-	GetMTGS().PrepDataPacket( GIF_PATH_1, 0x400 );
-	size = GIFPath_CopyTag( GIF_PATH_1, (u128*)data, (0x400-(VU->VI[_Is_].US[0] & 0x3ff)), 0x400 );
+	GetMTGS().PrepDataPacket( GS_RINGTYPE_PATH, 0x400 );
+	size = g_gifpath.CopyTag( (u128*)data, (0x400-(VU->VI[_Is_].US[0] & 0x3ff)), 0x400 );
 	GetMTGS().SendDataPacket();
 }
 
 static __ri void _vuXTOP(VURegs * VU) {
 	if(_It_ == 0) return;
-	VU->VI[_It_].US[0] = (u16)VU->GetVifRegs().top;
+	VU->VI[_It_].US[0] = (u16)VU->GetVifRegs().top.ADDR;
 }
 
 #define GET_VF0_FLAG(reg) (((reg)==0)?(1<<REG_VF0_FLAG):0)

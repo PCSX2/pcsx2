@@ -190,13 +190,10 @@ void SaveStateBase::FreezeRegisters()
 	rcntFreeze();
 	gsFreeze();
 	vuMicroFreeze();
-	vif0Freeze();
-	vif1Freeze();
+	vifFreeze();
 	sifFreeze();
 	ipuFreeze();
-	ipuDmaFreeze();
 	gifFreeze();
-	sprFreeze();
 
 	// Fifth Block - iop-related systems
 	// ---------------------------------

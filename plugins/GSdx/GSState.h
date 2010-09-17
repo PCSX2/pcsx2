@@ -208,11 +208,11 @@ public:
 
 	void Move();
 	void Write(const uint8* mem, int len);
-	void Read(uint8* mem, int len);
+	void Read(uint8* mem, int& len);
 
 	void SoftReset(uint32 mask);
 	void WriteCSR(uint32 csr) {m_regs->CSR.u32[1] = csr;}
-	void ReadFIFO(uint8* mem, int size);
+	int ReadFIFO(uint8* mem, int size);
 	template<int index> void Transfer(const uint8* mem, uint32 size);
 	int Freeze(GSFreezeData* fd, bool sizeonly);
 	int Defrost(const GSFreezeData* fd);

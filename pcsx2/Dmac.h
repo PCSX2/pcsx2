@@ -271,31 +271,6 @@ enum DMAInter
 	MEISintr = 0x40004000
 };
 
-union tDMAC_QUEUE
-{
-	struct
-	{
-	    u16 VIF0 : 1;
-	    u16 VIF1 : 1;
-	    u16 GIF  : 1;
-	    u16 IPU0 : 1;
-	    u16 IPU1 : 1;
-	    u16 SIF0 : 1;
-	    u16 SIF1 : 1;
-	    u16 SIF2 : 1;
-	    u16 SPR0 : 1;
-        u16 SPR1 : 1;
-	    u16 SIS  : 1;
-	    u16 MEIS : 1;
-	    u16 BEIS : 1;
-	};
-	u16 _u16;
-
-	tDMAC_QUEUE(u16 val) { _u16 = val; }
-	void reset() { _u16 = 0; }
-	bool empty() const { return (_u16 == 0); }
-};
-
 static __fi const wxChar* ChcrName(u32 addr)
 {
     switch (addr)
@@ -348,6 +323,7 @@ union tDMAC_CTRL {
 		u32 _reserved1 : 21;
 	};
 	u32 _u32;
+	u16 _u16[2];
 
 	tDMAC_CTRL(u32 val) { _u32 = val; }
 
@@ -389,6 +365,8 @@ union tDMAC_STAT {
 		// MFIFO Interrupt Mask.  This bit should never be modified by the emu directly.
 		// 1 enables MFIFO interrupts; 0 disables them.
 		u32 MEIM		: 1;
+		
+		// This would be the BUSERR mask, except there isn't one -- BUSERR is unmaskable.
 		u32 _reserved3	: 1;
 	};
 	u32 _u32;
@@ -559,5 +537,4 @@ struct INTCregisters
 };
 
 extern void hwIntcIrq(int n);
-extern void hwDmacIrq(int n);
 

@@ -20,15 +20,18 @@
 #include "Gif.h"
 #include "GS.h"
 #include "Vif.h"
-#include "Vif_Dma.h"
 #include "IPU/IPU.h"
 #include "IPU/IPU_Fifo.h"
 
-#include "DmacLegacy.h"
+#include "ps2/NewDmac.h"
+
+using namespace EE_DMAC;
 
 //////////////////////////////////////////////////////////////////////////
 /////////////////////////// Quick & dirty FIFO :D ////////////////////////
 //////////////////////////////////////////////////////////////////////////
+
+__aligned16 PeripheralFifoPack g_fifo;
 
 // Notes on FIFO implementation
 //
@@ -42,104 +45,178 @@
 
 void __fastcall ReadFIFO_VIF1(mem128_t* out)
 {
-	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS) )
-		DevCon.Warning( "Reading from vif1 fifo when stalled" );
+	// Notes:
+	//  * VIF1 is only readable if the FIFO direction has been reversed.
+	//  * FDR should only be reversible if the VIF is "clear" (idle), so there shouldn't
+	//    be any stall conditions or other obstructions  (writes to FDR other times are
+	//    likely disregarded or yield indeterminate results).
 
-	pxAssertRel(vif1Regs.stat.FQC != 0, "FQC = 0 on VIF FIFO READ!");
-	if (vif1Regs.stat.FDR)
+	//if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS) )
+	//	DevCon.Warning( "Reading from vif1 fifo when stalled" );
+
+	// [Ps2Confirm] We're not sure what real hardware does when the VIF1 FIFO is empty or
+	// when the direction is pointing the wrong way.  It could either deadlock the EE, return 0,
+	// or return some indeterminate value (equivalent to leaving the out unmodified, etc.).
+	// Current assumption is indeterminate.
+
+	if (!vif1Regs.stat.FDR)
 	{
-		if(vif1Regs.stat.FQC > vif1.GSLastDownloadSize)
-		{
-			DevCon.Warning("Warning! GS Download size < FIFO count!");
-		}
-		if (vif1Regs.stat.FQC > 0)
-		{
-			GetMTGS().WaitGS();
-			GSreadFIFO(&psHu64(VIF1_FIFO));
-			vif1.GSLastDownloadSize--;
-			if (vif1.GSLastDownloadSize <= 16)
-				gifRegs.stat.OPH = false;
-			vif1Regs.stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
-		}
+		VIF_LOG("Read from VIF1 FIFO ignored due to FDR=0.");
+		return;
 	}
 
-	CopyQWC( out, &psHu128(VIF1_FIFO) );
+	if (vif1Regs.stat.FQC == 0)
+	{
+		// FIFO is empty, so queue up 16 qwc from the GS plugin.  Operating in bursts should
+		// keep framerates from being too terribly miserable.
+
+		// Note: The only safe way to download data form the GS is to perform a full sync/flush
+		// of the GS ringbuffer.  It's slow but absolutely unavoidable.  Fortunately few games
+		// rely on this feature (its quite slow on the PS2 as well for the same reason).
+
+		GetMTGS().WaitGS();
+		vif1Regs.stat.FQC = GSreadFIFO2((u64*)g_fifo.vif1, FifoSize_Vif1);
+		if(!pxAssertDev(vif1Regs.stat.FQC != 0, "Reading from an empty VIF1 FIFO (FQC=0)")) return;
+	}
+
+	--vif1Regs.stat.FQC;
+	CopyQWC(out, &g_fifo.vif1[vif1Regs.stat.FQC]);
+
 	VIF_LOG("ReadFIFO/VIF1 -> %ls", out->ToString().c_str());
 }
 
-//////////////////////////////////////////////////////////////////////////
-// WriteFIFO Pages
+// --------------------------------------------------------------------------------------
+//  WriteFIFO Strategies
+// --------------------------------------------------------------------------------------
+//  * Writes to VIF FIFOs should only occur while the DMA is inactive, since writing the FIFO
+//    directly while DMA is running likely yields indeterminate results (corrupted VIFcodes
+//    most likely). [assertion checked]
 //
-void __fastcall WriteFIFO_VIF0(const mem128_t *value)
+// The VIF/GIF could be stalled, in which case the data will be denied; so we *must* emulate
+// the fifo so that the EE has a place to queue commands until it deals with the stall
+// condition. The FIFO will be automatically drained whenever the VIF STAT register is written
+// (which is the only action that can alleviate stalls).
+//
+// Technically each FIFO should start processing almost immediately (2-4 cycle delay from the
+// perspective of the EE).  But since the whole point of the FIFO is to eliminate the need
+// for the EE to ever care about such prompt responsiveness, we delay longer.  This gives the
+// EE some time to queue up a few commands before we try to process them.
+//
+// (we could process immediately anyway, but I prefer to keep the hwRegister handlers as
+//  simple as possible and defer complicated VIFcode processing until the ee event test-- air).
+//
+// [Ps2Confirm] If the FIFO is full, we don't know what to do (yet) so we just disregard the
+// write for now.
+//
+void ProcessFifoEvent()
 {
-	VIF_LOG("WriteFIFO/VIF0 <- %ls", value->ToString().c_str());
-
-	CopyQWC(&psHu128(VIF0_FIFO), value);
-
-	vif0ch.qwc += 1;
-	if(vif0.irqoffset != 0 && vif0.vifstalled == true) DevCon.Warning("Offset on VIF0 FIFO start!");
-	bool ret = VIF0transfer((u32*)value, 4);
-
-	if (vif0.cmd) 
+	if (vif0Regs.stat.FQC)
 	{
-		if(vif0.done && vif0ch.qwc == 0)	vif0Regs.stat.VPS = VPS_WAITING;
-	}
-	else
-	{
-		vif0Regs.stat.VPS = VPS_IDLE;
+		VIF_LOG("Draining VIF0 FIFO (FQC = %u)", vif0Regs.stat.FQC);
+		uint remaining = vifTransfer<0>(g_fifo.vif0, vif0Regs.stat.FQC);
+
+		if (remaining)
+		{
+			// VIF stalled during processing.  Copy remaining QWC to the head of the buffer.
+			// For such small ring buffers as the PS2 FIFOs, its faster to use copies than to
+			// use actual ringbuffer logic.
+
+			memcpy_qwc(g_fifo.vif0, &g_fifo.vif0[vif0Regs.stat.FQC-remaining], remaining);
+			vif0Regs.stat.FQC = remaining;
+		}
 	}
 
-	pxAssertDev( ret, "vif stall code not implemented" );
+	if (vif1Regs.stat.FQC && !vif1Regs.stat.FDR)
+	{
+		// cannot drain the VIF1 FIFO when its in Source (toMemory) mode (FDR=1).  The EE has
+		// to read from it or reset it manually.
+
+		VIF_LOG("Draining VIF1 FIFO (FQC = %u)", vif1Regs.stat.FQC);
+		uint remaining = vifTransfer<1>(g_fifo.vif1, vif1Regs.stat.FQC);
+
+		if (remaining)
+		{
+			// VIF stalled during processing.  Copy remaining QWC to the head of the buffer.
+			// For such small ring buffers as the PS2 FIFOs, its faster to use copies than to
+			// use actual ringbuffer logic.
+
+			memcpy_qwc(g_fifo.vif1, &g_fifo.vif1[vif1Regs.stat.FQC-remaining], remaining);
+			vif1Regs.stat.FQC = remaining;
+		}
+	}
+
+	if (gifRegs.stat.FQC)
+	{
+		// GIF FIFO uses PATH3 for transfer (same as GIF DMA).
+		// So if PATH3 cannot get arbitration rights to the GIF, then the FIFO cannot empty itself.
+
+		GIF_LOG("Draining GIF FIFO (FQC = %u)", gifRegs.stat.FQC);
+		
+		GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, gifRegs.stat.FQC);
+		uint remaining = g_gifpath.CopyTag(g_fifo.gif, gifRegs.stat.FQC);
+		GetMTGS().SendDataPacket();
+
+		if (remaining)
+		{
+			// GIF stalled during processing.  Copy remaining QWC to the head of the buffer.
+			// For such small ring buffers as the PS2 FIFOs, its faster to use copies than to
+			// use actual ringbuffer logic.
+
+			memcpy_qwc(g_fifo.gif, &g_fifo.gif[gifRegs.stat.FQC-remaining], remaining);
+			gifRegs.stat.FQC = remaining;
+		}
+	}
+	
+	// [TODO] : IPU FIFOs (but those need some work)
+}
+
+void __fastcall WriteFIFO_VIF0(const mem128_t* value)
+{
+	// Devs: please read the WriteFIFO Strategies topic above before modifying.
+
+	pxAssume( !vif0dma.chcr.STR );
+	VIF_LOG("WriteFIFO/VIF0 <- %ls (FQC=%u)", value->ToString().c_str(), vif0Regs.stat.FQC);
+
+	if (vif0Regs.stat.FQC >= FifoSize_Vif0) return;
+
+	CopyQWC(&g_fifo.vif0[vif0Regs.stat.FQC], value);
+	++vif0Regs.stat.FQC;
+
+	CPU_INT(FIFO_EVENT, 64);
 }
 
 void __fastcall WriteFIFO_VIF1(const mem128_t *value)
 {
-	VIF_LOG("WriteFIFO/VIF1 <- %ls", value->ToString().c_str());
+	// Devs: please read the WriteFIFO Strategies topic above before modifying.
 
-	CopyQWC(&psHu128(VIF1_FIFO), value);
+	pxAssume( !vif1dma.chcr.STR );
+	VIF_LOG("WriteFIFO/VIF1 <- %ls (FQC=%u)", value->ToString().c_str(), vif1Regs.stat.FQC);
 
-	if (vif1Regs.stat.FDR)
-		DevCon.Warning("writing to fifo when fdr is set!");
-	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS) )
-		DevCon.Warning("writing to vif1 fifo when stalled");
+	if (vif1Regs.stat.FQC >= FifoSize_Vif1) return;
+	
+	// Writes to VIF1 FIFO when its in Source mode (VIF->memory transfer direction) are
+	// likely disregarded.
+	if (vif1Regs.stat.FDR) return;
 
-	vif1ch.qwc += 1;
-	if(vif1.irqoffset != 0 && vif1.vifstalled == true) DevCon.Warning("Offset on VIF1 FIFO start!");
-	bool ret = VIF1transfer((u32*)value, 4);
+	CopyQWC(&g_fifo.vif1[vif1Regs.stat.FQC], value);
+	++vif1Regs.stat.FQC;
 
-	if(GSTransferStatus.PTH2 == STOPPED_MODE && gifRegs.stat.APATH == GIF_APATH2)
-	{
-		if(gifRegs.stat.DIR == 0)gifRegs.stat.OPH = false;
-		gifRegs.stat.APATH = GIF_APATH_IDLE;
-	}
-	if (vif1.cmd) 
-	{
-		if(vif1.done == true && vif1ch.qwc == 0)	vif1Regs.stat.VPS = VPS_WAITING;
-	}
-	else		 
-	{
-		vif1Regs.stat.VPS = VPS_IDLE;
-	}
-
-	pxAssertDev( ret, "vif stall code not implemented" );
+	CPU_INT(FIFO_EVENT, 64);
 }
-
-// Dummy GIF-TAG Packet to Guarantee Count = 1
-__aligned16 u128 nloop0_packet;
 
 void __fastcall WriteFIFO_GIF(const mem128_t *value)
 {
-	GIF_LOG("WriteFIFO/GIF <- %ls", value->ToString().c_str());
+	// Devs: please read the WriteFIFO Strategies topic above before modifying.
 
-	CopyQWC(&psHu128(GIF_FIFO), value);
-	CopyQWC(&nloop0_packet, value);
+	// GIF FIFO uses PATH3 for transfer (same as GIF DMA).
 
-	GetMTGS().PrepDataPacket(GIF_PATH_3, 1);
-	GIFPath_CopyTag( GIF_PATH_3, &nloop0_packet, 1 );
-	GetMTGS().SendDataPacket();
-	if(GSTransferStatus.PTH3 == STOPPED_MODE && gifRegs.stat.APATH == GIF_APATH3 )
-	{
-		if(gifRegs.stat.DIR == 0)gifRegs.stat.OPH = false;
-		gifRegs.stat.APATH = GIF_APATH_IDLE;
-	}
+	pxAssume( !gifdma.chcr.STR );
+	GIF_LOG("WriteFIFO/GIF <- %ls (FQC=%u)", value->ToString().c_str(), gifRegs.stat.FQC);
+
+	if (gifRegs.stat.FQC >= FifoSize_Gif) return;
+
+	CopyQWC(&g_fifo.gif[gifRegs.stat.FQC], value);
+	++gifRegs.stat.FQC;
+
+	CPU_INT(FIFO_EVENT, 64);
 }

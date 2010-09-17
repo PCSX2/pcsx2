@@ -20,8 +20,6 @@
 #include "GS.h"
 #include "Hw.h"
 #include "IPU/IPU.h"
-#include "SPR.h"
 #include "Gif.h"
 #include "Sif.h"
 #include "Vif.h"
-#include "Vif_Dma.h"

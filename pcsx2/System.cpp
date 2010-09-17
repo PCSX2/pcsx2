@@ -25,9 +25,7 @@
 #include "sVU_zerorec.h"
 #include "GameDatabase.h"
 #include "Elfheader.h"
-
-extern void closeNewVif(int idx);
-extern void resetNewVif(int idx);
+#include "newVif.h"
 
 template class EventSource< IEventListener_PageFault >;
 
@@ -351,8 +349,11 @@ void SysCpuProviderPack::CleanupMess() throw()
 {
 	try
 	{
-		closeNewVif(0);
-		closeNewVif(1);
+		if (newVifDynaRec)
+		{
+			dVifClose(0);
+			dVifClose(1);
+		}
 
 		// Special SuperVU "complete" terminator (stupid hacky recompiler)
 		SuperVUDestroy( -1 );
@@ -428,8 +429,11 @@ void SysClearExecutionCache()
 	CpuVU0->Reset();
 	CpuVU1->Reset();
 
-	resetNewVif(0);
-	resetNewVif(1);
+	if (newVifDynaRec)
+	{
+		dVifReset(0);
+		dVifReset(1);
+	}
 }
 
 // Maps a block of memory for use as a recompiled code buffer, and ensures that the

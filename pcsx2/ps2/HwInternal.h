@@ -62,12 +62,6 @@ template<uint page> extern void __fastcall hwWrite64 (u32 mem, const mem64_t* sr
 template<uint page> extern void __fastcall hwWrite128(u32 mem, const mem128_t* srcval);
 
 
-template< uint page > extern u32 dmacRead32( u32 mem );
-template< uint page > extern bool dmacWrite32( u32 mem, mem32_t& value );
-
-template< uint page > extern u32 dmacRead32_Legacy( u32 mem );
-template< uint page > extern bool dmacWrite32_Legacy( u32 mem, mem32_t& value );
-
 // --------------------------------------------------------------------------------------
 //  Hardware FIFOs (128 bit access only!)
 // --------------------------------------------------------------------------------------

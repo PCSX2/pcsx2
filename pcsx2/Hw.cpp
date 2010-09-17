@@ -18,8 +18,6 @@
 
 #include "Hardware.h"
 #include "newVif.h"
-#include "IPU/IPUdma.h"
-#include "DmacLegacy.h"
 
 using namespace R5900;
 
@@ -41,7 +39,6 @@ void hwInit()
 
 	gsInit();
 	sifInit();
-	sprInit();
 	ipuInit();
 
 	hwInitialized = true;
@@ -62,15 +59,10 @@ void hwReset()
 	SPU2reset();
 
 	sifInit();
-	sprInit();
 
 	gsReset();
 	ipuReset();
-	vif0Reset();
-	vif1Reset();
-
-	// needed for legacy DMAC
-	ipuDmaReset();
+	vifReset();
 }
 
 __fi uint intcInterrupt()
@@ -119,13 +111,7 @@ __fi uint dmacInterrupt()
 void hwIntcIrq(int n)
 {
 	psHu32(INTC_STAT) |= 1<<n;
-	if(psHu32(INTC_MASK) & (1<<n))cpuTestINTCInts();
-}
-
-void hwDmacIrq(int n)
-{
-	psHu32(DMAC_STAT) |= 1<<n;
-	if(psHu16(DMAC_STAT+2) & (1<<n))cpuTestDMACInts();
+	if(psHu32(INTC_MASK) & (1<<n)) cpuTestINTCInts();
 }
 
 // Write 'size' bytes to memory address 'addr' from 'data'.

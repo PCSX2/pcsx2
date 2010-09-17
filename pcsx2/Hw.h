@@ -15,8 +15,6 @@
 
 #pragma once
 
-#define UseLegacyDMAC 1
-
 namespace EEMemoryMap
 {
 	static const uint RCNT0_Start		= 0x10000000;
@@ -375,7 +373,29 @@ union tGS_SMODE2
 	bool IsInterlaced() const { return INT; }
 };
 
+static const uint FifoSize_Vif0		= 8;
+static const uint FifoSize_Vif1		= 16;
+static const uint FifoSize_Gif		= 16;
+static const uint FifoSize_Ipu0		= 8;
+static const uint FifoSize_Ipu1		= 8;
+static const uint FifoSize_Sif		= 8;
+
+struct PeripheralFifoPack
+{
+	u128 vif0[FifoSize_Vif0];
+	u128 vif1[FifoSize_Vif1];
+	u128 gif[FifoSize_Gif];
+	u128 ipu0[FifoSize_Ipu0];
+	u128 ipu1[FifoSize_Ipu1];
+
+	u128 sif[FifoSize_Sif];
+};
+
+extern __aligned16 PeripheralFifoPack g_fifo;
+
+
 extern void hwReset();
+extern void ProcessFifoEvent();
 
 extern const int rdram_devices;
 extern int rdram_sdevid;

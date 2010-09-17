@@ -36,31 +36,6 @@ void mergeVectors(xRegisterSSE dest, xRegisterSSE src, xRegisterSSE temp, int xy
 	}
 }
 
-// Loads Row/Col Data from vifRegs instead of g_vifmask
-// Useful for testing vifReg and g_vifmask inconsistency.
-void loadRowCol(nVifStruct& v) {
-	xMOVAPS(xmm0, ptr32[&v.vifRegs->r0]);
-	xMOVAPS(xmm1, ptr32[&v.vifRegs->r1]);
-	xMOVAPS(xmm2, ptr32[&v.vifRegs->r2]);
-	xMOVAPS(xmm6, ptr32[&v.vifRegs->r3]);
-
-	xPSHUF.D(xmm0, xmm0, _v0);
-	xPSHUF.D(xmm1, xmm1, _v0);
-	xPSHUF.D(xmm2, xmm2, _v0);
-	xPSHUF.D(xmm6, xmm6, _v0);
-	mVUmergeRegs(xmm6, xmm0, 8);
-	mVUmergeRegs(xmm6, xmm1, 4);
-	mVUmergeRegs(xmm6, xmm2, 2);
-	xMOVAPS(xmm2, ptr32[&v.vifRegs->c0]);
-	xMOVAPS(xmm3, ptr32[&v.vifRegs->c1]);
-	xMOVAPS(xmm4, ptr32[&v.vifRegs->c2]);
-	xMOVAPS(xmm5, ptr32[&v.vifRegs->c3]);
-	xPSHUF.D(xmm2, xmm2, _v0);
-	xPSHUF.D(xmm3, xmm3, _v0);
-	xPSHUF.D(xmm4, xmm4, _v0);
-	xPSHUF.D(xmm5, xmm5, _v0);
-}
-
 // =====================================================================================================
 //  VifUnpackSSE_Base Section
 // =====================================================================================================
@@ -245,7 +220,9 @@ void VifUnpackSSE_Base::xUPK_V4_5() const {
 	xPSRL.D		(destReg, 24); // single AND...
 }
 
-void VifUnpackSSE_Base::xUnpack( int upknum ) const
+// Returns TRUE if the unpack is valid and results in generated code.
+// Returns FALSE if the unpack is invalid (no code generated).
+bool VifUnpackSSE_Base::xUnpack( int upknum ) const
 {
 	switch( upknum )
 	{
@@ -266,12 +243,9 @@ void VifUnpackSSE_Base::xUnpack( int upknum ) const
 		case 14: xUPK_V4_8();	break;
 		case 15: xUPK_V4_5();	break;
 
-		case 3:
-		case 7:
-		case 11:
-			pxFailRel( wxsFormat( L"Vpu/Vif - Invalid Unpack! [%d]", upknum ) );
-		break;
+		default: return false;
 	}
+	return true;
 }
 
 // =====================================================================================================
@@ -306,11 +280,8 @@ static void nVifGen(int usn, int mask, int curCycle) {
 	for( int i=0; i<16; ++i )
 	{
 		nVifCall& ucall( nVifUpk[((usnpart+maskpart+i) * 4) + curCycle] );
-		ucall = NULL;
-		if( nVifT[i] == 0 ) continue;
-
 		ucall = (nVifCall)xGetAlignedCallTarget();
-		vpugen.xUnpack(i);
+		if (!vpugen.xUnpack(i)) continue;
 		vpugen.xMovDest();
 		xRET();
 

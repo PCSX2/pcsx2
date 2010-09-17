@@ -17,18 +17,16 @@
 #include "Common.h"
 
 #include "IPU.h"
-#include "IPUdma.h"
 #include "yuv2rgb.h"
 #include "mpeg2lib/Mpeg.h"
 
 #include "Vif.h"
 #include "Gif.h"
-#include "Vif_Dma.h"
 #include <limits.h>
 
 static __fi void IPU_INT0_FROM()
 {
-	if (ipu0dma.qwc > 0 && ipu0dma.chcr.STR) ipu0Interrupt();
+	//if (ipu0dma.qwc > 0 && ipu0dma.chcr.STR) ipu0Interrupt();
 }
 
 tIPU_cmd ipu_cmd;
@@ -356,7 +354,6 @@ static void ipuBCLR(u32 val)
 
 	g_BP.BP = val & 0x7F;
 	g_BP.FP = 0;
-	//g_BP.bufferhasnew = 0;
 	ipuRegs.ctrl.BUSY = 0;
 	ipuRegs.cmd.BUSY = 0;
 	memzero(_readbits);
@@ -993,8 +990,8 @@ void IPUCMD_WRITE(u32 val)
 				break;
 
 		case SCE_IPU_FDEC:
-			IPU_LOG("FDEC command. Skip 0x%X bits, FIFO 0x%X qwords, BP 0x%X, FP %d, CHCR 0x%x",
-			        val & 0x3f, g_BP.IFC, (int)g_BP.BP, g_BP.FP, ipu1dma.chcr._u32);
+			IPU_LOG("FDEC command. Skip 0x%X bits, FIFO 0x%X qwords, BP 0x%X, FP %d",
+			        val & 0x3f, g_BP.IFC, (int)g_BP.BP, g_BP.FP);
 			g_BP.BP += val & 0x3F;
 			if (ipuFDEC(val)) return;
 			ipuRegs.cmd.BUSY = 0x80000000;
@@ -1022,10 +1019,10 @@ void IPUCMD_WRITE(u32 val)
 			ipu_cmd.index = 0;
 
 			if (ipuCSC(val))
-		{
+			{
 				IPU_INT0_FROM();
 				return;
-		}
+			}
 			break;
 
 		case SCE_IPU_PACK:
@@ -1036,11 +1033,11 @@ void IPUCMD_WRITE(u32 val)
 
 		case SCE_IPU_IDEC:
 			if (ipuIDEC(val, false))
-	{
+			{
 				// idec done, ipu0 done too
 				IPU_INT0_FROM();
 				return;
-		}
+			}
 
 			ipuRegs.topbusy = 0x80000000;
 			break;
@@ -1051,17 +1048,18 @@ void IPUCMD_WRITE(u32 val)
 				IPU_INT0_FROM();
 				if (ipuRegs.ctrl.SCD || ipuRegs.ctrl.ECD) hwIntcIrq(INTC_IPU);
 				return;
-					}
+			}
 			else
-				{
+			{
 				ipuRegs.topbusy = 0x80000000;
-					}
-							break;
-					}
+			}
+			break;
+	}
 
 	// have to resort to the thread
 	ipuRegs.ctrl.BUSY = 1;
-	if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+
+	//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 }
 
 void IPUWorker()
@@ -1072,8 +1070,8 @@ void IPUWorker()
 	{
 		case SCE_IPU_VDEC:
 			if (!ipuVDEC(ipu_cmd.current))
-		{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
 			}
 			ipuRegs.cmd.BUSY = 0;
@@ -1082,53 +1080,53 @@ void IPUWorker()
 
 		case SCE_IPU_FDEC:
 			if (!ipuFDEC(ipu_cmd.current))
-	{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
-	}
+			}
 			ipuRegs.cmd.BUSY = 0;
 			ipuRegs.topbusy = 0;
 			break;
 
 		case SCE_IPU_SETIQ:
 			if (!ipuSETIQ(ipu_cmd.current))
-	{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
-	}
+			}
 			break;
 
 		case SCE_IPU_SETVQ:
 			if (!ipuSETVQ(ipu_cmd.current))
-	{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
-		}
+			}
 			break;
 
 		case SCE_IPU_CSC:
 			if (!ipuCSC(ipu_cmd.current))
-	{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
-		}
+			}
 			IPU_INT0_FROM();
 			break;
 
 		case SCE_IPU_PACK:
 			if (!ipuPACK(ipu_cmd.current))
-	{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
-	}
+			}
 			break;
 
 		case SCE_IPU_IDEC:
 			if (!ipuIDEC(ipu_cmd.current, true))
-	{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
-	}
+			}
 
 			ipuRegs.ctrl.OFC = 0;
 			ipuRegs.ctrl.BUSY = 0;
@@ -1142,10 +1140,10 @@ void IPUWorker()
 
 		case SCE_IPU_BDEC:
 			if (!ipuBDEC(ipu_cmd.current, true))
-	{
-				if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
+			{
+				//if(ipu1dma.chcr.STR == false) hwIntcIrq(INTC_IPU);
 				return;
-	}
+			}
 
 			ipuRegs.ctrl.BUSY = 0;
 			ipuRegs.topbusy = 0;

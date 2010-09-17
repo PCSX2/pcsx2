@@ -461,4 +461,18 @@ protected:
 
 static ControllerRegisters& dmacRegs = (ControllerRegisters&)eeHw[0xE000];
 
+// Various useful locations
+static ChannelRegisters& spr0dma	= (ChannelRegisters&)eeHw[0xD000];
+static ChannelRegisters& spr1dma	= (ChannelRegisters&)eeHw[0xD400];
+static ChannelRegisters& gifdma		= (ChannelRegisters&)eeHw[0xA000];
+static ChannelRegisters& vif0dma	= (ChannelRegisters&)eeHw[0x8000];
+static ChannelRegisters& vif1dma	= (ChannelRegisters&)eeHw[0x9000];
+
+extern void UpdateDmacEvent();
+
 }		// namespace EE_DMAC
+
+
+template< uint page > extern u32 dmacRead32( u32 mem );
+template< uint page > extern bool dmacWrite32( u32 mem, mem32_t& value );
+extern void dmacRequestXfer( EE_DMAC::ChannelId cid );

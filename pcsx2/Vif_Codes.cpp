@@ -17,568 +17,615 @@
 #include "Common.h"
 #include "GS.h"
 #include "Gif.h"
-#include "Vif_Dma.h"
 #include "newVif.h"
 #include "VUmicro.h"
 
 #include "DmacLegacy.h"
 
-#define vifOp(vifCodeName) _vifT int __fastcall vifCodeName(int pass, const u32 *data)
-#define pass1 if (pass == 0)
-#define pass2 if (pass == 1)
-#define pass3 if (pass == 2)
-#define vif1Only() { if (!idx) return vifCode_Null<idx>(pass, (u32*)data); }
-vifOp(vifCode_Null);
+#define _vifCodeT template< uint idx > static void
 
-//------------------------------------------------------------------
-// Vif0/Vif1 Misc Functions
-//------------------------------------------------------------------
+#define vif1Only()	pxAssumeMsg( idx==1, "Vifcode command is VIF1-only; please remove the link from the VIFcode0 LUT.")
 
-static __fi void vifFlush(int idx) {
-	if (!idx) vif0FLUSH();
-	else	  vif1FLUSH();
-}
+_vifCodeT vifCode_Null();
 
-static __fi void vuExecMicro(int idx, u32 addr) {
-	VIFregisters&	vifRegs	= GetVifXregs;
+// ------------------------------------------------------------------
+//  Vif0/Vif1 Misc Functions
+// ------------------------------------------------------------------
 
-	int startcycles = 0;
-	//vifFlush(idx);
-
-	//if(vifX.vifstalled == true) return;
-
-	if (vifRegs.itops  > (idx ? 0x3ffu : 0xffu)) {
-		Console.WriteLn("VIF%d ITOP overrun! %x", idx, vifRegs.itops);
-		vifRegs.itops &= (idx ? 0x3ffu : 0xffu);
-	}
-
-	vifRegs.itop = vifRegs.itops;
-
-	if (idx) {
-		// in case we're handling a VIF1 execMicro, set the top with the tops value
-		vifRegs.top = vifRegs.tops & 0x3ff;
-
-		// is DBF flag set in VIF_STAT?
-		if (vifRegs.stat.DBF) {
-			// it is, so set tops with base, and clear the stat DBF flag
-			vifRegs.tops = vifRegs.base;
-			vifRegs.stat.DBF = false;
-		}
-		else {
-			// it is not, so set tops with base + offset, and set stat DBF flag
-			vifRegs.tops = vifRegs.base + vifRegs.ofst;
-			vifRegs.stat.DBF = true;
-		}
-	}
-
-	if(!idx)startcycles = VU0.cycle;
-	else    startcycles = VU1.cycle;
-
-	if (!idx) vu0ExecMicro(addr);
-	else	  vu1ExecMicro(addr);
-
-	if(!idx) { g_vu0Cycles += (VU0.cycle-startcycles) * BIAS; g_packetsizeonvu = vif0.vifpacketsize; }
-	else     { g_vu1Cycles += (VU1.cycle-startcycles) * BIAS; g_packetsizeonvu = vif1.vifpacketsize; }
-	//DevCon.Warning("Ran VU%x, VU0 Cycles %x, VU1 Cycles %x", idx, g_vu0Cycles, g_vu1Cycles);
-	GetVifX.vifstalled = true;
-}
-
-u8 schedulepath3msk = 0;
-
-void Vif1MskPath3() {
-
-	vif1Regs.mskpath3 = schedulepath3msk & 0x1;
-	GIF_LOG("VIF MSKPATH3 %x gif str %x path3 status %x", vif1Regs.mskpath3, gifch.chcr.STR, GSTransferStatus.PTH3);
-	gifRegs.stat.M3P = vif1Regs.mskpath3;
-
-	if (!vif1Regs.mskpath3)
+template<uint idx>
+static __fi void vuExecMicro(VIFregisters& regs, u32 addr)
+{
+	if (idx)
 	{
-		//if(GSTransferStatus.PTH3 > TRANSFER_MODE && gif->chcr.STR) GSTransferStatus.PTH3 = TRANSFER_MODE;
-		//DevCon.Warning("Mask off");
-		//if(GSTransferStatus.PTH3 >= PENDINGSTOP_MODE) GSTransferStatus.PTH3 = IDLE_MODE;
-		if(gifRegs.stat.P3Q) 
-		{
-			gsInterrupt();//gsInterrupt();
-		}
-	
-	}// else if(!gif->chcr.STR && GSTransferStatus.PTH3 == IDLE_MODE) GSTransferStatus.PTH3 = STOPPED_MODE;//else DevCon.Warning("Mask on");
+		// in case we're handling a VIF1 execMicro, set the top with the tops value
+		regs.top = regs.tops;
 
-	schedulepath3msk = 0;
-}
+		// VU1 Double-buffering operation!  Depending on the DBF flag, we do the following:
+		//  * set tops with base, and clear the stat DBF flag
+		//  * set tops with base + offset, and set stat DBF flag
 
-//------------------------------------------------------------------
-// Vif0/Vif1 Code Implementations
-//------------------------------------------------------------------
-
-vifOp(vifCode_Base) {
-	vif1Only();
-	pass1 { vif1Regs.base = vif1Regs.code & 0x3ff; vif1.cmd = 0; }
-	pass3 { VifCodeLog("Base"); }
-	return 0;
-}
-
-extern bool SIGNAL_IMR_Pending;
-
-template<int idx> __fi int _vifCode_Direct(int pass, const u8* data, bool isDirectHL) {
-	pass1 {
-		vif1Only();
-		int vifImm    = (u16)vif1Regs.code;
-		vif1.tag.size = vifImm ? (vifImm*4) : (65536*4);
-		vif1.vifstalled    = true;
-		gifRegs.stat.P2Q = true;
-		if (gifRegs.stat.PSE)  // temporarily stop
-		{
-			Console.WriteLn("Gif dma temp paused? VIF DIRECT");
-			vif1.GifWaitState = 3;
-			vif1Regs.stat.VGW = true;
-		}
-		//Should cause this to split here to try and time PATH3 right.		
-		return 0;
-	}
-	pass2 {
-		vif1Only();
-
-		if (GSTransferStatus.PTH3 < IDLE_MODE || gifRegs.stat.P1Q == true)
-		{
-			if(gifRegs.stat.APATH == GIF_APATH2 || ((GSTransferStatus.PTH3 <= IMAGE_MODE && gifRegs.stat.IMT && (vif1.cmd & 0x7f) == 0x50)) && gifRegs.stat.P1Q == false)
-			{
-				//Do nothing, allow it
-				vif1Regs.stat.VGW = false;
-				//if(gifRegs.stat.APATH != GIF_APATH2)DevCon.Warning("Continue DIRECT/HL %x P3 %x APATH %x P1Q %x", vif1.cmd, GSTransferStatus.PTH3, gifRegs.stat.APATH, gifRegs.stat.P1Q);
-			}
-			else
-			{
-				//DevCon.Warning("Stall DIRECT/HL %x P3 %x APATH %x P1Q %x", vif1.cmd, GSTransferStatus.PTH3, gifRegs.stat.APATH, gifRegs.stat.P1Q);
-				vif1Regs.stat.VGW = true; // PATH3 is in image mode (DIRECTHL), or busy (BOTH no IMT)
-				vif1.GifWaitState = 0;
-				vif1.vifstalled    = true;
-				return 0;
-			}
-		}
-		if(SIGNAL_IMR_Pending == true)
-		{
-			DevCon.Warning("Path 2 Paused (At start)");
-			vif1.vifstalled    = true;
-			return 0;
-		}
-		if (gifRegs.stat.PSE)  // temporarily stop
-		{
-			Console.WriteLn("Gif dma temp paused? VIF DIRECT");
-			vif1.GifWaitState = 3;
-			vif1.vifstalled    = true;
-			vif1Regs.stat.VGW = true;
-			return 0;
-		}
-
-		// HACK ATTACK!
-		// we shouldn't be clearing the queue flag here at all.  Ideally, the queue statuses
-		// should be checked, handled, and cleared from the EOP check in GIFPath only. --air
-		gifRegs.stat.clear_flags(GIF_STAT_P2Q);
-
-		uint minSize	 = aMin(vif1.vifpacketsize, vif1.tag.size);
-		uint ret;
-
-		if(minSize < 4)
-		{
-			// When TTE==1, the VIF might end up sending us 8-byte packets instead of the usual 16-byte
-			// variety, if DIRECT tags cross chain dma boundaries.  The actual behavior of real hardware
-			// is unknown at this time, but it seems that games *only* ever try to upload zero'd data
-			// in this situation.
-			//
-			// Games that use TTE==1 and DIRECT in this fashion:  ICO
-			//
-			// Because DIRECT normally has a strict QWC alignment requirement, and this funky behavior
-			// only seems to happen on TTE mode transfers with their split-64-bit packets, there shouldn't
-			// be any need to worry about queuing more than 16 bytes of data,
-			//
-
-			static __aligned16 u32 partial_write[4];
-			static uint partial_count = 0;
-
-			for( uint i=0; i<(minSize & 3); ++i)
-				partial_write[partial_count++] = ((u32*)data)[i];
-
-			pxAssume( partial_count <= 4 );
-			ret = 0;
-			if (partial_count == 4)
-			{
-				GetMTGS().PrepDataPacket(GIF_PATH_2, 1);
-				GIFPath_CopyTag(GIF_PATH_2, (u128*)partial_write, 1);
-				GetMTGS().SendDataPacket();
-				partial_count = 0;
-				ret = 4;
-			}
-		}
-		else
-		{
-			if (!minSize)
-				DevCon.Warning("VIF DIRECT (PATH2): No Data Transfer?");
-
-			// TTE=1 mode is the only time we should be getting DIRECT packet sizes that are
-			// not a multiple of QWC, and those are assured to be under 128 bits in size.
-			// So if this assert is triggered then it probably means something else is amiss.
-			pxAssertMsg((minSize & 3) == 0, "DIRECT packet size is not a multiple of QWC." );
-
-			GetMTGS().PrepDataPacket(GIF_PATH_2, minSize/4);
-			ret = GIFPath_CopyTag(GIF_PATH_2, (u128*)data, minSize/4)*4;
-			GetMTGS().SendDataPacket();
-		}
-
-		vif1.tag.size -= ret;
-
-		if(vif1.tag.size == 0) 
-		{
-			vif1.cmd = 0;
-		}
-		vif1.vifstalled    = true;
-		return ret;
-	}
-	return 0;
-}
-
-vifOp(vifCode_Direct) {
-	pass3 { VifCodeLog("Direct"); }
-	return _vifCode_Direct<idx>(pass, (u8*)data, 0);
-}
-
-vifOp(vifCode_DirectHL) {
-	pass3 { VifCodeLog("DirectHL"); }
-	return _vifCode_Direct<idx>(pass, (u8*)data, 1);
-}
-
-// ToDo: FixMe
-vifOp(vifCode_Flush) {
-	vif1Only();
-	vifStruct& vifX = GetVifX;
-	pass1 { vifFlush(idx);  vifX.cmd = 0; }
-	pass3 { VifCodeLog("Flush"); }
-	return 0;
-}
-
-// ToDo: FixMe
-vifOp(vifCode_FlushA) {
-	vif1Only();
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 {
-		vifFlush(idx);
-		// Gif is already transferring so wait for it.
-		if (gifRegs.stat.P1Q || GSTransferStatus.PTH3 <= PENDINGSTOP_MODE) {
-			//DevCon.Warning("VIF FlushA Wait MSK = %x", vif1Regs.mskpath3);
-			//
-			
-			//DevCon.WriteLn("FlushA path3 Wait! PTH3 MD %x STR %x", GSTransferStatus.PTH3, gif->chcr.STR);
-			vifXRegs.stat.VGW = true;
-			vifX.GifWaitState  = 1;
-			vifX.vifstalled    = true;
-		}	// else DevCon.WriteLn("FlushA path3 no Wait! PTH3 MD %x STR %x", GSTransferStatus.PTH3, gif->chcr.STR);	
-		
-		vifX.cmd = 0;
-	}
-	pass3 { VifCodeLog("FlushA"); }
-	return 0;
-}
-
-// ToDo: FixMe
-vifOp(vifCode_FlushE) {
-	vifStruct& vifX = GetVifX;
-	pass1 { vifFlush(idx); vifX.cmd = 0; }
-	pass3 { VifCodeLog("FlushE"); }
-	return 0;
-}
-
-vifOp(vifCode_ITop) {
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 { vifXRegs.itops = vifXRegs.code & 0x3ff; GetVifX.cmd = 0; }
-	pass3 { VifCodeLog("ITop"); }
-	return 0;
-}
-
-vifOp(vifCode_Mark) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 {
-		vifXRegs.mark     = (u16)vifXRegs.code;
-		vifXRegs.stat.MRK = true;
-		vifX.cmd           = 0;
-	}
-	pass3 { VifCodeLog("Mark"); }
-	return 0;
-}
-
-static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
-	VURegs& VUx = idx ? VU1 : VU0;
-	pxAssume(VUx.Micro > 0);
-
-	if (memcmp_mmx(VUx.Micro + addr, data, size*4)) {
-		// Clear VU memory before writing!
-		// (VUs expect size to be 32-bit scale, same as VIF's internal working sizes)
-		if (!idx)  CpuVU0->Clear(addr, size);
-		else	   CpuVU1->Clear(addr, size);
-		memcpy_fast(VUx.Micro + addr, data, size*4);
-	}
-}
-
-vifOp(vifCode_MPG) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 {
-		int    vifNum =  (u8)(vifXRegs.code >> 16);
-		vifX.tag.addr = (u16)(vifXRegs.code <<  3) & (idx ? 0x3fff : 0xfff);
-		vifX.tag.size = vifNum ? (vifNum*2) : 512;
-		//vifFlush(idx);
-		return 1;
-	}
-	pass2 {
-		if (vifX.vifpacketsize < vifX.tag.size) { // Partial Transfer
-			if((vifX.tag.addr + vifX.vifpacketsize*4) > (idx ? 0x4000 : 0x1000)) {
-				DevCon.Warning("Vif%d MPG Split Overflow", idx);
-			}
-			_vifCode_MPG(idx,    vifX.tag.addr, data, vifX.vifpacketsize);
-			vifX.tag.addr   +=   vifX.vifpacketsize * 4;
-			vifX.tag.size   -=   vifX.vifpacketsize;
-			return vifX.vifpacketsize;
-		}
-		else { // Full Transfer
-			if((vifX.tag.addr + vifX.tag.size*4) > (idx ? 0x4000 : 0x1000)) {
-				DevCon.Warning("Vif%d MPG Split Overflow", idx);
-			}
-			_vifCode_MPG(idx,  vifX.tag.addr, data, vifX.tag.size);
-			int ret       = vifX.tag.size;
-			vifX.tag.size = 0;
-			vifX.cmd      = 0;
-			return ret;
-		}
-	}
-	pass3 { VifCodeLog("MPG"); }
-	return 0;
-}
-
-vifOp(vifCode_MSCAL) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 { vifFlush(idx); vuExecMicro(idx, (u16)(vifXRegs.code) << 3); vifX.cmd = 0;}
-	pass3 { VifCodeLog("MSCAL"); }
-	return 0;
-}
-
-vifOp(vifCode_MSCALF) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 { vifFlush(idx); vuExecMicro(idx, (u16)(vifXRegs.code) << 3); vifX.cmd = 0; }
-	pass3 { VifCodeLog("MSCALF"); }
-	return 0;
-}
-
-vifOp(vifCode_MSCNT) {
-	vifStruct& vifX = GetVifX;
-	pass1 { vifFlush(idx); vuExecMicro(idx, -1); vifX.cmd = 0; }
-	pass3 { VifCodeLog("MSCNT"); }
-	return 0;
-}
-
-// ToDo: FixMe
-vifOp(vifCode_MskPath3) {
-	vif1Only();
-	pass1 {
-		if (vif1ch.chcr.STR && vif1.lastcmd != 0x13) {
-			schedulepath3msk = 0x10 | ((vif1Regs.code >> 15) & 0x1);
-			vif1.vifstalled = true;
+		if (regs.stat.DBF) {
+			regs.tops = regs.base;
+			regs.stat.DBF = 0;
 		}
 		else {
-			schedulepath3msk = (vif1Regs.code >> 15) & 0x1;
-			Vif1MskPath3();
+			regs.tops = regs.base + regs.ofst;
+			regs.stat.DBF = 1;
 		}
-		vif1.cmd = 0;
+
+		regs.itop = regs.itops;
+
+		vu1ExecMicro(addr);
 	}
-	pass3 { VifCodeLog("MskPath3"); }
-	return 0;
+	else
+	{
+		vu0ExecMicro(addr);
+	}
 }
 
-vifOp(vifCode_Nop) {
-	pass1 { GetVifX.cmd = 0; }
-	pass3 { VifCodeLog("Nop"); }
-	return 0;
+// ------------------------------------------------------------------
+//  Vif0/Vif1 Code Implementations
+// ------------------------------------------------------------------
+// Pass1 is for simple commands that require only 32 bits to process.
+// Pass3 is for logging.
+
+
+// Writes lower 10 bits of the code to the BASE register.
+_vifCodeT vc_Base() {
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("Base");
+	vif1Only();
+
+	regs.base = regs.code.ADDR;
+}
+
+// Perform direct transfer of GIFtag data to the GIF via PATH2.  The GIF manually checks the
+// vifProc[1] code status to determine PATH3 interruption procedures, thus both DIRECT/HL
+// codes are handled by the same function here.
+//
+_vifCodeT vc_Direct()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+
+	vif1Only();
+
+	// DIRECT: If PATH3 is in transfer and has intermittent transfer mode enabled, the transfer
+	// can be interrupted.
+	// DIRECTHL:  PATH3 transfer is not interrupted, regardless of PATH3 transfer status.
+
+	if (vif1Regs.stat.VPS == VPS_IDLE)
+	{
+		VifCodeLog("Direct%s IMM/QWC=%0x04X",
+			(vif1Regs.code.CMD == VIFcode_DIRECTHL) ? "HL" : "",
+			vif1Regs.code.IMMEDIATE
+		);
+
+		uint vifImm		= vif1Regs.code.IMMEDIATE;
+		vif1Regs.num	= (vifImm ? vifImm : 65536) * 4;
+
+		// The VIF has a strict alignment requirement on DIRECT/HL tags.  The tag must be
+		// positioned such that the data is 128-bit aligned.
+		pxAssume(((uptr)vpu.data & 15) == 0);
+		pxAssume((vpu.fragment_size & 3) == 0);
+
+		if (vpu.fragment_size == 0)
+		{
+			vif1Regs.stat.VPS = VPS_WAITING;
+			return;
+		}
+
+		// Attempt to acquire the GIF via PATH2 transfer immediately.  If the GIF is busy then
+		// we'll have to stall transfer until it becomes available.
+
+		if (!GIF_QueuePath2())
+		{
+			vif1Regs.stat.VPS = VPS_TRANSFERRING;
+			return;
+		}
+	}
+
+	// Fragment size should never be zero here since the VIFunpacker shouldn't rerun the
+	// code with an empty packet (if fragment size is zero on the first run, it's handled above).
+	pxAssume( vpu.fragment_size != 0 );
+
+	uint minSize = std::min(vif1Regs.num, vpu.fragment_size/4);
+
+	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, minSize);
+	uint ret = g_gifpath.CopyTag((u128*)vpu.data, minSize);
+	GetMTGS().SendDataPacket();
+
+	vpu.data				+= ret * 4;
+	vpu.fragment_size	-= ret * 4;
+	vif1Regs.num		-= ret;
+
+	if (vif1Regs.num != 0)
+	{
+		// Partial transfer.  Whether or not we're waiting for the GIF to finish transfer or
+		// waiting for the VIF to acquire more data depends on the fragment_size.
+		vif1Regs.stat.VPS = vpu.fragment_size ? VPS_TRANSFERRING : VPS_WAITING;
+	}
+}
+
+_vifCodeT vc_ITop()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("ITop @ 0x%03x", regs.code.ADDR);
+
+	regs.itops = regs.code.ADDR;
+}
+
+_vifCodeT vc_Mark()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("Mark = 0x%04x", regs.code.IMMEDIATE);
+
+	regs.mark     = regs.code.IMMEDIATE;
+	regs.stat.MRK = 1;
+}
+
+
+// Returns TRUE if the VU microprogram finished execution, or FALSE if the microprogram
+// itself cannot finish execution until some other system event occurs.
+static __fi bool flushVU(int idx)
+{
+	// [TODO] Finish executing the pending VU microprogram (if there is one).
+	return true;
+}
+
+// Returns TRUE if both PATHs 1 and 2 flushed successfully, or FALSE if the flush stalled
+// due to some other event obstruction (typically should only happen in purist DMA emulation
+// modes -- if UseDmaBurstHask is enabled, this should always return TRUE).
+static __fi bool flushPaths12()
+{
+	if (gifRegs.stat.APATH == GIF_APATH_IDLE)
+	{
+		pxAssume( !gifRegs.stat.OPH );
+		return true;
+	}
+	
+	return (gifRegs.stat.APATH == GIF_APATH3);
+}
+
+// Flushes only the current microprogram.  Pending PATH transfers are not relevant.
+_vifCodeT vc_FlushE()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("FlushE");
+
+	regs.stat.VPS = VPS_TRANSFERRING;
+	if (!flushVU(idx)) return;
+}
+
+// Flushes the running microprogram and waits for VIF-related PATH transfers to finish
+// (PATHs 1 and 2 only).  [vif1 only]
+_vifCodeT vc_Flush()
+{
+	VifCodeLog("Flush");
+	vif1Only();
+
+	if (!flushVU(idx) || !flushPaths12())
+	{
+		vif1Regs.stat.VPS = VPS_TRANSFERRING;
+		return;
+	}
+}
+
+// Flushes the running microprogram and waits for all PATH transfers to finish
+// (PATHs 1, 2, and 3).  [vif1 only]
+_vifCodeT vc_FlushA()
+{
+	VifCodeLog("FlushA");
+	vif1Only();
+
+	if (!flushVU(idx) || (gifRegs.stat.APATH != GIF_APATH_IDLE))
+	{
+		vif1Regs.stat.VPS = VPS_TRANSFERRING;
+		return;
+	}
+
+	pxAssume( !gifRegs.stat.OPH );
+
+	// Casual note:
+	// PATH3 could be busy for more than a few reasons; such as the EE/DMAC being masked or
+	// disabled temporarily, or the EE performing direct GIF FIFO writes.
+
+	// [TODO] register a listener for GIFpath.EOP?
+}
+
+_vifCodeT vc_MPG()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+
+	if (regs.stat.VPS == VPS_IDLE)
+	{
+		VifCodeLog("MPG  imm=0x%04X  num=0x%03X", regs.code.IMMEDIATE, regs.code.NUM);
+
+		regs.num			= regs.code.NUM ? regs.code.NUM : 256;
+		vpu.vu_target_addr	= regs.code.IMMEDIATE;
+		
+		// The VIF has a strict alignment requirement on MPG tags.  The tag must be
+		// positioned such that the data is 64-bit aligned.
+		pxAssume(((uptr)vpu.data & 7) == 0);
+		pxAssume((vpu.fragment_size & 1) == 0);
+
+		if (vpu.fragment_size == 0)
+		{
+			regs.stat.VPS = VPS_WAITING;
+			return;
+		}
+	}
+
+	// Fragment size should never be zero here (zero is checked for above)
+	pxAssume(vpu.fragment_size != 0);
+
+	uint minSize = min(regs.num, vpu.fragment_size/2);
+
+	u64* dest = vuRegs[idx].GetProgMem(vpu.vu_target_addr);
+	if (memcmp_mmx(dest, vpu.data, minSize)) {
+		// (VUs expect size to be 32-bit scale, vif expects things in 64-bit scale)
+		if (!vpu.idx)	CpuVU0->Clear(vpu.vu_target_addr*8, minSize*2);
+		else			CpuVU1->Clear(vpu.vu_target_addr*8, minSize*2);
+
+		memcpy_fast(dest, vpu.data, minSize*8);
+	}
+
+	vpu.data			+= minSize * 2;
+	vpu.fragment_size	-= minSize * 2;
+	regs.num			-= minSize;
+
+	if (regs.num != 0)
+	{
+		// Partial transfer.  Whether or not we're waiting for the GIF to finish transfer or
+		// waiting for the VIF to acquire more data depends on the fragment_size.
+		regs.stat.VPS = vpu.fragment_size ? VPS_TRANSFERRING : VPS_WAITING;
+		vpu.vu_target_addr += minSize;
+	}
+}
+
+// Finishes execution of the current microprogram and starts execution of a new microprogram.
+// Immediate field of the VIFcode contains the execution address of the new program.
+_vifCodeT vc_MSCAL()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("MSCAL");
+
+	flushVU(idx);
+	vuExecMicro<idx>(regs, regs.code.IMMEDIATE * 8);
+}
+
+_vifCodeT vc_MSCALF()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("MSCAL");
+
+	flushVU(idx);
+	flushPaths12();
+	vuExecMicro<idx>(regs, regs.code.IMMEDIATE * 8);
+}
+
+_vifCodeT vc_MSCNT()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("MSCAL");
+
+	flushVU(idx);
+	vuExecMicro<idx>(regs, -1);
+}
+
+_vifCodeT vc_MskPath3()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifCodeLog("MskPath3");
+	vif1Only();
+
+	vpu.maskpath3 = true;		// The GIF will deny PATH3 arbitration accordingly.
+}
+
+_vifCodeT vc_Nop()
+{
+	VifCodeLog("Nop");
 }
 
 // ToDo: Review Flags
-vifOp(vifCode_Null) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 {
-		// if ME1, then force the vif to interrupt
-		if (!(vifXRegs.err.ME1)) { // Ignore vifcode and tag mismatch error
-			Console.WriteLn("Vif%d: Unknown VifCmd! [%x]", idx, vifX.cmd);
-			vifXRegs.stat.ER1 = true;
-			vifX.vifstalled = true;
-			//vifX.irq++;
-		}
-		vifX.cmd = 0;
+_vifCodeT vc_Null()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+
+	VifCodeLog("Null [cmd=0x%02X]", regs.code.CMD);
+
+	// if ME1 is unmasked (0), then force the vif to stall
+	// [Ps2Confirm] Its unknown if VIF errors should cause an interrupt or not.  Current assumption
+	//  is that no interrupt is generated.
+
+	if (!regs.err.ME1)
+	{
+		VifCodeLog("VIF STALL due to unmasked ME1 (invalid code).");
+		//pxFailDev( pxsFmt("VIF STALL due to unmasked ME1 (invalid code). [cmd=0x%02x]", regs.code.CMD) );
+		regs.stat.ER1 = 1;
 	}
-	pass2 { Console.Error("Vif%d bad vifcode! [CMD = %x]", idx, vifX.cmd); }
-	pass3 { VifCodeLog("Null"); }
-	return 0;
 }
 
-vifOp(vifCode_Offset) {
+_vifCodeT vc_Offset()
+{
+	VifCodeLog("Offset");
 	vif1Only();
-	pass1 {
-		vif1Regs.stat.DBF	= false;
-		vif1Regs.ofst		= vif1Regs.code & 0x3ff;
-		vif1Regs.tops		= vif1Regs.base;
-		vif1.cmd			= 0;
-	}
-	pass3 { VifCodeLog("Offset"); }
-	return 0;
+
+	vif1Regs.stat.DBF	= 0;
+	vif1Regs.ofst.ADDR	= vif1Regs.code.ADDR;
+	vif1Regs.tops		= vif1Regs.base;
 }
 
-template<int idx> static __fi int _vifCode_STColRow(const u32* data, u32* pmem1, u32* pmem2) {
-	vifStruct& vifX = GetVifX;
+// Loads the following 128 bits of data into the C0->C3 registers (32 bits each).  PCSX2 also
+// stores the values internally at g_vifmask.Col0-3 for SIMD convenience.
+_vifCodeT vc_STCol()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
 
-	int ret = min(4 - vifX.tag.addr, vifX.vifpacketsize);
-	pxAssume(vifX.tag.addr < 4);
-	pxAssume(ret > 0);
-
-	switch (ret) {
-		case 4:
-			pmem1[12] = data[3];
-			pmem2[3]  = data[3];
-		case 3:
-			pmem1[8]  = data[2];
-			pmem2[2]  = data[2];
-		case 2:
-			pmem1[4]  = data[1];
-			pmem2[1]  = data[1];
-		case 1:
-			pmem1[0]  = data[0];
-			pmem2[0]  = data[0];
-			break;
-		jNO_DEFAULT
+	if (regs.stat.VPS == VPS_IDLE)
+	{
+		VifCodeLog("STCol");
+		vpu.running_idx = 0;
 	}
 
-	vifX.tag.addr += ret;
-	vifX.tag.size -= ret;
-	if (!vifX.tag.size) vifX.cmd = 0;
+	do
+	{
+		vpu.MaskCol._u32[vpu.running_idx] = *vpu.data;
 
-	return ret;
+		++vpu.data;
+		++vpu.running_idx;
+		--vpu.fragment_size;
+
+		if (vpu.fragment_size == 0)
+		{
+			regs.stat.VPS = VPS_WAITING;
+			return;
+		}
+	} while(vpu.running_idx < 4);
 }
 
-vifOp(vifCode_STCol) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 {
-		vifX.tag.addr = 0;
-		vifX.tag.size = 4;
-		return 1;
+_vifCodeT vc_STRow()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+
+	if (regs.stat.VPS == VPS_IDLE)
+	{
+		VifCodeLog("STRow");
+		vpu.running_idx = 0;
 	}
-	pass2 {
-		u32* cols  = idx ? g_vifmask.Col1 : g_vifmask.Col0;
-		u32* pmem1 = &vifXRegs.c0 + (vifX.tag.addr << 2);
-		u32* pmem2 = cols			+  vifX.tag.addr;
-		return _vifCode_STColRow<idx>(data, pmem1, pmem2);
-	}
-	pass3 { VifCodeLog("STCol"); }
-	return 0;
+
+	do
+	{
+		vpu.MaskRow._u32[vpu.running_idx] = *vpu.data;
+
+		++vpu.data;
+		++vpu.running_idx;
+		--vpu.fragment_size;
+
+		if (vpu.fragment_size == 0)
+		{
+			regs.stat.VPS = VPS_WAITING;
+			return;
+		}
+	} while(vpu.running_idx < 4);
 }
 
-vifOp(vifCode_STRow) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
+// Loads the vifRegs.CYCLE register with CL/WL values accordingly.
+_vifCodeT vc_STCycl()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
 
-	pass1 {
-		vifX.tag.addr = 0;
-		vifX.tag.size = 4;
-		return 1;
-	}
-	pass2 {
-		u32* rows  = idx ? g_vifmask.Row1 : g_vifmask.Row0;
-		u32* pmem1 = &vifXRegs.r0 + (vifX.tag.addr << 2);
-		u32* pmem2 = rows			+  vifX.tag.addr;
-		return _vifCode_STColRow<idx>(data, pmem1, pmem2);
-	}
-	pass3 { VifCodeLog("STRow"); }
-	return 0;
+	u8 cl = regs.code.IMMEDIATE;
+	u8 wl = regs.code.IMMEDIATE >> 8;
+
+	VifCodeLog("STCycl cl=0x%02X  wl=0x%02X", cl, wl);
+
+	regs.cycle.cl = cl;
+	regs.cycle.wl = wl;
 }
 
-vifOp(vifCode_STCycl) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 {
-		vifXRegs.cycle.cl = (u8)(vifXRegs.code);
-		vifXRegs.cycle.wl = (u8)(vifXRegs.code >> 8);
-		vifX.cmd			= 0;
+_vifCodeT vc_STMask()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+
+	if (regs.stat.VPS == VPS_IDLE)
+	{
+		VifCodeLog("STMask");
+		if (vpu.fragment_size == 0)
+		{
+			regs.stat.VPS = VPS_WAITING;
+			return;
+		}
 	}
-	pass3 { VifCodeLog("STCycl"); }
-	return 0;
+
+	pxAssume(vpu.fragment_size != 0);
+
+	regs.mask = *vpu.data;
+	++vpu.data;
+	--vpu.fragment_size;
 }
 
-vifOp(vifCode_STMask) {
-	vifStruct&		vifX		= GetVifX;
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 { vifX.tag.size = 1; }
-	pass2 { vifXRegs.mask = data[0]; vifX.tag.size = 0; vifX.cmd = 0; }
-	pass3 { VifCodeLog("STMask"); }
-	return 1;
+_vifCodeT vc_STMod()
+{
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
+	VifCodeLog("STMod");
+	regs.mode = regs.code.MODE;
 }
 
-vifOp(vifCode_STMod) {
-	VIFregisters&	vifXRegs	= GetVifXregs;
-	pass1 { vifXRegs.mode = vifXRegs.code & 0x3; GetVifX.cmd = 0; }
-	pass3 { VifCodeLog("STMod"); }
-	return 0;
-}
+template< bool UseRecs, uint idx, uint mask, uint vn, uint vl >
+static void vc_Unpack() {
+	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
 
-vifOp(vifCode_Unpack) {
-	pass1 {
-		if (!idx) vifUnpackSetup<0>(data);
-		else	  vifUnpackSetup<1>(data);
-		return 1;
+	const bool isFill = (regs.cycle.cl < regs.cycle.wl);
+
+	uint vSize = ((32 >> vl) * (vn+1)) / 8;		// size of data (in bytes) used for each write cycle
+	u8* vpd = (u8*)vpu.data;
+
+	if (regs.stat.VPS == VPS_IDLE)
+	{
+		static const char* const vntbl[] = { "S", "V2", "V3", "V4" };
+		static const char* const vltbl[] = { "32", "16", "8", "5" };
+		VifCodeLog("Unpack %s_%u", vntbl[vn], vltbl[vl]);
+
+		regs.num = regs.code.NUM;
+		vpu.vu_target_addr	= regs.code.ADDR;
+		vpu.cl				= 0;
+		vpu.running_idx		= 0;		// needed for incomplete vector write cycles (due to fragmented packets)
+
+		if (idx && regs.code.FLG)
+		{
+			vpu.vu_target_addr += regs.tops.ADDR;		// TOPS register is VU1 only.
+		}
+
+		if (isFill)
+		{
+			// since regs.num is based on the amount of data *written* and not the amount of data
+			// read, we have to do some interesting math to calculate the length of the incoming
+			// packet of data when its a Filling Write.
+
+			int limit = regs.num % regs.cycle.wl;
+			if (limit > regs.cycle.cl) limit = regs.cycle.cl;
+
+			int n = regs.cycle.cl * (regs.num / regs.cycle.wl) + limit;
+			vpu.packet_size = ((n * vSize) + 3) >> 2;
+		}
+		else
+		{
+			vpu.packet_size = ((regs.num * vSize) + 3) >> 2;
+		}
 	}
-	pass2 { return nVifUnpack(idx, (u8*)data); }
-	pass3 { VifCodeLog("Unpack");  }
-	return 0;
+
+	if (vpu.packet_size > vpu.fragment_size)
+	{
+		// This unpack is split across the end of the fragment.  The unpackers expect only complete
+		// packets only (for sake of logic sanity), so we need to copy and queue this data into
+		// a buffer until the full packet is received later.
+
+		vpd = (u8*)vpu.buffer;
+		memcpy_fast( vpd + vpu.running_idx, vpd, vpu.fragment_size * 4 );
+
+		vpu.data			+= vpu.fragment_size;
+		vpu.running_idx		+= vpu.fragment_size;
+		vpu.packet_size		-= vpu.fragment_size;
+
+		// We need to provide accurate accounting of the NUM register, in case games decided
+		// to read back from it mid-transfer.  Since so few games actually use partial transfers
+		// of VIF unpacks, this code should not be any bottleneck.
+
+		while (vpu.fragment_size >= vSize) {
+			pxAssume( regs.num != 0 );
+			--regs.num;
+			++vpu.cl;
+
+			if (isFill) {
+				if (vpu.cl < regs.cycle.cl)			vpu.fragment_size -= vSize;
+				else if (vpu.cl == regs.cycle.wl)	vpu.cl = 0;
+			}
+			else
+			{
+				vpu.fragment_size -= vSize;
+				if (vpu.cl >= regs.cycle.wl) vpu.cl = 0;
+			}
+		}
+
+		vpu.fragment_size	= 0;
+		regs.stat.VPS		= VPS_WAITING;
+		return;
+	}
+
+	// Complete transfer...
+
+	if (vpu.running_idx)
+	{
+		// Previous partial transfer, so we'll need to concatenate them together in the
+		// buffer for processing.  We grab NUM from the original VIFcode input, since the current
+		// NUM is "simulated" (above), and the unpacker expects the original value.
+
+		vpd			= (u8*)vpu.buffer;
+		memcpy_fast( vpd + vpu.running_idx, vpd, vpu.packet_size );
+		regs.num	= regs.code.NUM;
+	}
+
+	vpu.cl = 0;
+
+	if (UseRecs)
+	{
+		dVifUnpack<idx,mask,(vn<<2) | vl>(vpd, isFill, vSize);
+	}
+	else
+	{
+		if ((regs.mode!=0) && mask) VifUnpackSetMasks(vpu, regs);
+
+		const bool doMode = !!regs.mode;
+		VifUnpackLoopTable[idx][doMode][isFill](vSize, vpd);
+	}
+
+	regs.num			= 0;
+	vpu.fragment_size	-= vpu.packet_size;
+	vpu.data			+= vpu.packet_size;
+
+	if (vpu.fragment_size == 0)
+		regs.stat.VPS = VPS_WAITING;
 }
 
 //------------------------------------------------------------------
 // Vif0/Vif1 Code Tables
 //------------------------------------------------------------------
 
+#define InsertUnpackSet(useRec, idx, doMask) \
+	vc_Unpack<useRec,idx,doMask,0,0>,		vc_Unpack<useRec,idx,doMask,0,1>,		vc_Unpack<useRec,idx,doMask,0,2>,		vc_Null<0>, \
+	vc_Unpack<useRec,idx,doMask,1,0>,		vc_Unpack<useRec,idx,doMask,1,1>,		vc_Unpack<useRec,idx,doMask,1,2>,		vc_Null<0>, \
+	vc_Unpack<useRec,idx,doMask,2,0>,		vc_Unpack<useRec,idx,doMask,2,1>,		vc_Unpack<useRec,idx,doMask,2,2>,		vc_Null<0>, \
+	vc_Unpack<useRec,idx,doMask,3,0>,		vc_Unpack<useRec,idx,doMask,3,1>,		vc_Unpack<useRec,idx,doMask,3,2>,		vc_Unpack<useRec,idx,doMask,3,3>
+
 __aligned16 FnType_VifCmdHandler* const vifCmdHandler[2][128] =
 {
 	{
-		vifCode_Nop<0>     , vifCode_STCycl<0>  , vifCode_Offset<0>	, vifCode_Base<0>   , vifCode_ITop<0>   , vifCode_STMod<0>  , vifCode_MskPath3<0>, vifCode_Mark<0>,   /*0x00*/
-		vifCode_Null<0>    , vifCode_Null<0>    , vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>    , vifCode_Null<0>,   /*0x08*/
-		vifCode_FlushE<0>  , vifCode_Flush<0>   , vifCode_Null<0>	, vifCode_FlushA<0> , vifCode_MSCAL<0>  , vifCode_MSCALF<0> , vifCode_Null<0>	 , vifCode_MSCNT<0>,  /*0x10*/
-		vifCode_Null<0>    , vifCode_Null<0>    , vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>    , vifCode_Null<0>,   /*0x18*/
-		vifCode_STMask<0>  , vifCode_Null<0>    , vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>	 , vifCode_Null<0>,   /*0x20*/
-		vifCode_Null<0>    , vifCode_Null<0>    , vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>	 , vifCode_Null<0>,   /*0x28*/
-		vifCode_STRow<0>   , vifCode_STCol<0>	, vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>	 , vifCode_Null<0>,   /*0x30*/
-		vifCode_Null<0>    , vifCode_Null<0>    , vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>    , vifCode_Null<0>,   /*0x38*/
-		vifCode_Null<0>    , vifCode_Null<0>    , vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>    , vifCode_Null<0>,   /*0x40*/
-		vifCode_Null<0>    , vifCode_Null<0>    , vifCode_MPG<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>    , vifCode_Null<0>,   /*0x48*/
-		vifCode_Direct<0>  , vifCode_DirectHL<0>, vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>    , vifCode_Null<0>,   /*0x50*/
-		vifCode_Null<0>	   , vifCode_Null<0>	, vifCode_Null<0>	, vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>   , vifCode_Null<0>    , vifCode_Null<0>,   /*0x58*/
-		vifCode_Unpack<0>  , vifCode_Unpack<0>  , vifCode_Unpack<0>	, vifCode_Unpack<0> , vifCode_Unpack<0> , vifCode_Unpack<0> , vifCode_Unpack<0>  , vifCode_Null<0>,   /*0x60*/
-		vifCode_Unpack<0>  , vifCode_Unpack<0>  , vifCode_Unpack<0>	, vifCode_Unpack<0> , vifCode_Unpack<0> , vifCode_Unpack<0> , vifCode_Unpack<0>  , vifCode_Unpack<0>, /*0x68*/
-		vifCode_Unpack<0>  , vifCode_Unpack<0>  , vifCode_Unpack<0>	, vifCode_Unpack<0> , vifCode_Unpack<0> , vifCode_Unpack<0> , vifCode_Unpack<0>  , vifCode_Null<0>,   /*0x70*/
-		vifCode_Unpack<0>  , vifCode_Unpack<0>  , vifCode_Unpack<0>	, vifCode_Null<0>   , vifCode_Unpack<0> , vifCode_Unpack<0> , vifCode_Unpack<0>  , vifCode_Unpack<0>  /*0x78*/
+		vc_Nop<0>     , vc_STCycl<0>, vc_Offset<0>	, vc_Base<0>   , vc_ITop<0>   , vc_STMod<0>  , vc_MskPath3<0>, vc_Mark<0>,   /*0x00*/
+		vc_Null<0>    , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x08*/
+		vc_FlushE<0>  , vc_Flush<0>	, vc_Null<0>	, vc_FlushA<0> , vc_MSCAL<0>  , vc_MSCALF<0> , vc_Null<0>	 , vc_MSCNT<0>,  /*0x10*/
+		vc_Null<0>    , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x18*/
+		vc_STMask<0>  , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>	 , vc_Null<0>,   /*0x20*/
+		vc_Null<0>    , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>	 , vc_Null<0>,   /*0x28*/
+		vc_STRow<0>   , vc_STCol<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>	 , vc_Null<0>,   /*0x30*/
+		vc_Null<0>    , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x38*/
+		vc_Null<0>    , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x40*/
+		vc_Null<0>    , vc_Null<0>	, vc_MPG<0>		, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x48*/
+		vc_Direct<0>  , vc_Direct<0>, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x50*/
+		vc_Null<0>	  , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x58*/
+
+		InsertUnpackSet(false, 0, 0),		// unmasked
+		InsertUnpackSet(false, 0, 1),		// masked
 	},
 	{
-		vifCode_Nop<1>     , vifCode_STCycl<1>  , vifCode_Offset<1>	, vifCode_Base<1>   , vifCode_ITop<1>   , vifCode_STMod<1>  , vifCode_MskPath3<1>, vifCode_Mark<1>,   /*0x00*/
-		vifCode_Null<1>    , vifCode_Null<1>    , vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>    , vifCode_Null<1>,   /*0x08*/
-		vifCode_FlushE<1>  , vifCode_Flush<1>   , vifCode_Null<1>	, vifCode_FlushA<1> , vifCode_MSCAL<1>  , vifCode_MSCALF<1> , vifCode_Null<1>	 , vifCode_MSCNT<1>,  /*0x10*/
-		vifCode_Null<1>    , vifCode_Null<1>    , vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>    , vifCode_Null<1>,   /*0x18*/
-		vifCode_STMask<1>  , vifCode_Null<1>    , vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>	 , vifCode_Null<1>,   /*0x20*/
-		vifCode_Null<1>    , vifCode_Null<1>    , vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>	 , vifCode_Null<1>,   /*0x28*/
-		vifCode_STRow<1>   , vifCode_STCol<1>	, vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>	 , vifCode_Null<1>,   /*0x30*/
-		vifCode_Null<1>    , vifCode_Null<1>    , vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>    , vifCode_Null<1>,   /*0x38*/
-		vifCode_Null<1>    , vifCode_Null<1>    , vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>    , vifCode_Null<1>,   /*0x40*/
-		vifCode_Null<1>    , vifCode_Null<1>    , vifCode_MPG<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>    , vifCode_Null<1>,   /*0x48*/
-		vifCode_Direct<1>  , vifCode_DirectHL<1>, vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>    , vifCode_Null<1>,   /*0x50*/
-		vifCode_Null<1>	   , vifCode_Null<1>	, vifCode_Null<1>	, vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>   , vifCode_Null<1>    , vifCode_Null<1>,   /*0x58*/
-		vifCode_Unpack<1>  , vifCode_Unpack<1>  , vifCode_Unpack<1>	, vifCode_Unpack<1> , vifCode_Unpack<1> , vifCode_Unpack<1> , vifCode_Unpack<1>  , vifCode_Null<1>,   /*0x60*/
-		vifCode_Unpack<1>  , vifCode_Unpack<1>  , vifCode_Unpack<1>	, vifCode_Unpack<1> , vifCode_Unpack<1> , vifCode_Unpack<1> , vifCode_Unpack<1>  , vifCode_Unpack<1>, /*0x68*/
-		vifCode_Unpack<1>  , vifCode_Unpack<1>  , vifCode_Unpack<1>	, vifCode_Unpack<1> , vifCode_Unpack<1> , vifCode_Unpack<1> , vifCode_Unpack<1>  , vifCode_Null<1>,   /*0x70*/
-		vifCode_Unpack<1>  , vifCode_Unpack<1>  , vifCode_Unpack<1>	, vifCode_Null<1>   , vifCode_Unpack<1> , vifCode_Unpack<1> , vifCode_Unpack<1>  , vifCode_Unpack<1>  /*0x78*/
+		vc_Nop<1>     , vc_STCycl<1>  , vc_Offset<1>	, vc_Base<1>   , vc_ITop<1>   , vc_STMod<1>  , vc_MskPath3<1>, vc_Mark<1>,   /*0x00*/
+		vc_Null<1>    , vc_Null<1>    , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x08*/
+		vc_FlushE<1>  , vc_Flush<1>   , vc_Null<1>	, vc_FlushA<1> , vc_MSCAL<1>  , vc_MSCALF<1> , vc_Null<1>	 , vc_MSCNT<1>,  /*0x10*/
+		vc_Null<1>    , vc_Null<1>    , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x18*/
+		vc_STMask<1>  , vc_Null<1>    , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>	 , vc_Null<1>,   /*0x20*/
+		vc_Null<1>    , vc_Null<1>    , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>	 , vc_Null<1>,   /*0x28*/
+		vc_STRow<1>   , vc_STCol<1>	  , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>	 , vc_Null<1>,   /*0x30*/
+		vc_Null<1>    , vc_Null<1>    , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x38*/
+		vc_Null<1>    , vc_Null<1>    , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x40*/
+		vc_Null<1>    , vc_Null<1>    , vc_MPG<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x48*/
+		vc_Direct<1>  , vc_Direct<1>, vc_Null<1>	, vc_Null<1>   , vc_Null<1>	, vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x50*/
+		vc_Null<1>	  , vc_Null<1>	  , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x58*/
+
+		InsertUnpackSet(false, 0, 0),		// unmasked
+		InsertUnpackSet(false, 0, 1),		// masked
 	}
 };

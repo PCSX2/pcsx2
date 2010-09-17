@@ -17,9 +17,9 @@
 #include "Common.h"
 #include "Hardware.h"
 
+#include "ps2/NewDmac.h"
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
-//#include "DmacLegacy.h"
 
 
 
@@ -125,14 +125,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 		case 0x0c:
 		case 0x0d:
 		case 0x0e:
-			if (UseLegacyDMAC)
-			{
-				if (!dmacWrite32_Legacy<page>(mem, value)) return;
-			}
-			else
-			{
-				if (!dmacWrite32<page>(mem, value)) return;
-			}
+			if (!dmacWrite32<page>(mem, value)) return;
 		break;
 		
 		case 0x0f:
@@ -198,7 +191,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				break;
 
 				mcase(DMAC_ENABLEW):
-					if (!dmacWrite32_Legacy<0x0f>(DMAC_ENABLEW, value)) return;
+					if (!dmacWrite32<0x0f>(DMAC_ENABLEW, value)) return;
 
 				//mcase(SIO_ISR):
 				//mcase(0x1000f410):

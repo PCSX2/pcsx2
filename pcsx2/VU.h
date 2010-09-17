@@ -16,6 +16,16 @@
 #pragma once
 #include "Vif.h"
 
+static const uint VU0_MEMSIZE = 0x1000;
+static const uint VU0_PROGSIZE = 0x1000;
+static const uint VU1_MEMSIZE = 0x4000;
+static const uint VU1_PROGSIZE = 0x4000;
+
+static const uint VU0_MEMMASK = VU0_MEMSIZE-1;
+static const uint VU0_PROGMASK = VU0_PROGSIZE-1;
+static const uint VU1_MEMMASK = VU1_MEMSIZE-1;
+static const uint VU1_PROGMASK = VU1_PROGSIZE-1;
+
 enum VURegFlags
 {
     REG_STATUS_FLAG	= 16,
@@ -169,6 +179,12 @@ struct __aligned16 VURegs {
 	VIFregisters& GetVifRegs() const
 	{
 		return IsVU1() ? vif1Regs : vif0Regs;
+	}
+
+	u64* GetProgMem( u32 inst ) const
+	{
+		uint mask = ((IsVU1() ? VU1_PROGSIZE : VU0_PROGSIZE) / 8) - 1;
+		return ((u64*)Micro) + (inst & mask);
 	}
 };
 

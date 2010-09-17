@@ -60,7 +60,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 
 	if (dmacRegs.pcr.PCE && !(dmacRegs.pcr.CDE & (1<<round_robin)))
 	{
-		DMA_LOG("\t%s bypassed due to PCE/CDE%d condition", info.NameA, round_robin);
+		DMAC_LOG("\t%s bypassed due to PCE/CDE%d condition", info.NameA, round_robin);
 		return false;
 	}
 
@@ -152,7 +152,7 @@ static ChannelId ArbitrateBusRight()
 	if (vif0chcr.STR)
 	{
 		if (!dmacRegs.pcr.PCE || (dmacRegs.pcr.CDE & 2)) return ChanId_VIF0;
-		DMA_LOG("\tVIF0 bypassed due to PCE/CDE0 condition.");
+		DMAC_LOG("\tVIF0 bypassed due to PCE/CDE0 condition.");
 		if (IsDevBuild) ++dmac_metrics.channel[ChanId_VIF0].skipped_arbitrations;
 	}
 
@@ -161,7 +161,7 @@ static ChannelId ArbitrateBusRight()
 	if (sif2chcr.STR)
 	{
 		if (!dmacRegs.pcr.PCE || (dmacRegs.pcr.CDE & 2)) return ChanId_SIF2;
-		DMA_LOG("\tSIF2 bypassed due to PCE/CDE0 condition.");
+		DMAC_LOG("\tSIF2 bypassed due to PCE/CDE0 condition.");
 		if (IsDevBuild) ++dmac_metrics.channel[ChanId_SIF2].skipped_arbitrations;
 	}
 
@@ -531,17 +531,17 @@ void EE_DMAC::ChannelState::TransferData()
 		TransferNormalAndChainData();
 }
 
-void eeEvt_UpdateDmac()
+void EE_DMAC::UpdateDmacEvent()
 {
 	ControllerRegisters& dmacReg = (ControllerRegisters&)psHu8(DMAC_CTRL);
 
-	DMA_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacRegs.ctrl._u32);
+	DMAC_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacRegs.ctrl._u32);
 
 	if ((psHu32(DMAC_ENABLER) & (1<<16)) || dmacRegs.ctrl.DMAE)
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 		// the DMAC register(s) are written and the DMAC is fully re-enabled.
-		DMA_LOG("DMAC disabled, no actions performed. (DMAE=%d, ENABLER=0x%08x", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
+		DMAC_LOG("DMAC disabled, no actions performed. (DMAE=%d, ENABLER=0x%08x", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
 		return;
 	}
 
@@ -553,7 +553,7 @@ void eeEvt_UpdateDmac()
 			// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 			// the STR bits are written and the DMAC is enabled.
 
-			DMA_LOG("DMAC Arbitration complete.");
+			DMAC_LOG("DMAC Arbitration complete.");
 			break;
 		}
 
@@ -603,7 +603,7 @@ void eeEvt_UpdateDmac()
 void dmacScheduleEvent()
 {
 	// If the DMAC is completely disabled then no point in scheduling anything.
-	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLEW) & (1 << 16))) return;
+	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLER) & (1 << 16))) return;
 
 	CPU_INT( DMAC_EVENT, 8 );
 }
@@ -614,10 +614,7 @@ void dmacChanInt( ChannelId id )
 {
 	pxAssume(eeEventTestIsActive);
 
-	// IRQ is only raised if the bit status has changed.
-
 	uint bit = 1<<id;
-	bool curbit = !!(dmacRegs.stat.CIS & bit);
 
 	dmacRegs.stat.CIS |= bit;
 	
@@ -625,10 +622,34 @@ void dmacChanInt( ChannelId id )
 		cpuSetNextEventDelta( 0 );
 }
 
+// Issues a standard DMA transfer request from the DMAC.  This is an internal operation between
+// DMAC and peripherals that is not related to IRQs or externally accessible registers.  Once
+// a transfer request is made, the DMAC will attempt to transfer data to/from the peripheral
+// on the next Idle slot.  If the peripheral is not ready, the DMAC will stall for a cycle and
+// re-arbitrate to another channel with pending transfer request.
+//
+// Rationale: The DMAC transfers based on these requests in order to reduce the number of cycles
+// wasted trying to transfer data to/from busy peripherals.  Actual emulation of this system is
+// not needed, and is ignored by default.  It is only regarded when the DMAC is in "purist" mode.
+void dmacRequestXfer( ChannelId cid )
+{
+	dma_request[cid] = true;
+	dmacScheduleEvent();
+}
+
 template< uint page >
 __fi u32 dmacRead32( u32 mem )
 {
 	return psHu32(mem);
+}
+
+__fi bool dmacHasPendingIRQ()
+{
+	if (!cpuIntsEnabled(0x800)) return false;
+	if ((dmacRegs.ctrl._u16[0] & dmacRegs.stat._u16[1]) == 0) return false;
+	if (!dmacRegs.stat.BEIS) return false;
+
+	return true;
 }
 
 // Returns TRUE if the caller should do writeback of the register to eeHw; false if the
@@ -645,12 +666,11 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		bool needs_event = false;
 
 		const tDMAC_CTRL& newval = (tDMAC_CTRL&)value;
-		const tDMAC_CTRL& oldval = (tDMAC_CTRL&)psHu32(mem);
 
-		if (oldval.STS != newval.STS)
+		if (dmacRegs.ctrl.STS != newval.STS)
 		{
 			DMAC_LOG( "Stall control source [STS] changed from %s to %s",
-				newval.STS ? ChannelInfo[StallSrcChan[oldval.STS]].NameA : "None",
+				newval.STS ? ChannelInfo[StallSrcChan[dmacRegs.ctrl.STS]].NameA : "None",
 				newval.STS ? ChannelInfo[StallSrcChan[newval.STS]].NameA : "None"
 			);
 
@@ -663,44 +683,41 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			}
 		}
 
-		if (oldval.STD != newval.STD)
+		if (dmacRegs.ctrl.STD != newval.STD)
 		{
 			DMAC_LOG( "Stall control drain [STD] changed from %s to %s",
-				newval.STD ? ChannelInfo[StallDrainChan[oldval.STD]].NameA : "None",
+				newval.STD ? ChannelInfo[StallDrainChan[dmacRegs.ctrl.STD]].NameA : "None",
 				newval.STD ? ChannelInfo[StallDrainChan[newval.STD]].NameA : "None"
 			);
 
-			if (oldval.STD != NO_STD)
+			if (dmacRegs.ctrl.STD != NO_STD)
 			{
 				// Releasing the STD setting on an active channel might clear the stall
 				// condition preventing it from completing, so raise an event in such cases:
-				needs_event |= ChannelInfo[StallSrcChan[oldval.STD]].CHCR().STR;
+				needs_event |= ChannelInfo[StallSrcChan[dmacRegs.ctrl.STD]].CHCR().STR;
 			}
 		}
-		
-		if (needs_event) dmacScheduleEvent();
 
+		dmacRegs.ctrl = newval;
+		if (needs_event) dmacScheduleEvent();
 		return false;
 	}
 
 	icase(DMAC_STAT)
 	{
-		tDMAC_STAT& curval = (tDMAC_STAT&)psHu32(mem);
 		const tDMAC_STAT& newval = (tDMAC_STAT&)value;
-		const tDMAC_STAT oldval = curval;
 
 		// lower 16 bits: clear on 1
 		// upper 16 bits: reverse on 1
 
-		curval._u16[0] &= newval._u16[0];
-		curval._u16[1] ^= newval._u16[1];
+		dmacRegs.stat._u16[0] &= newval._u16[0];
+		dmacRegs.stat._u16[1] ^= newval._u16[1];
 
 		// We only want to raise a cpu exception if one of the newly-unmasked bits (upper 16)
 		// is also high in the lower side -- which technically means that we want to disregard
 		// any bits that weren't changed.
 
-		if( (curval._u16[1] & curval._u16[0] & newval._u16[1]) != 0 )
-			cpuTestDMACInts();
+		if (dmacHasPendingIRQ()) cpuSetNextEventDelta( 0 );
 		return false;
 	}
 
@@ -765,18 +782,25 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 			if (!curchcr.STR)
 			{
-				if( newchcr.STR )
+				if (newchcr.STR)
 				{
 					DMAC_LOG("%s DmaExec Received (STR set to 1).", info->NameA);
 					
 					// [TODO] Log all DMA settings at STR=1;
+					
+					// [Ps2Confirm] If the DMA is VIF1 and the direction doesn't match the VIF transfer
+					// direction, the DMA likely stalls until the VIF transfer direction is reversed.
+					// It's possible however the DMA reads zeros in such a case.
 				}
 			}
 			else
 			{
 				// Writing STR while the channel is running is allowed so long as the entire DMAC
 				// is completely disabled. Doing so otherwise produces undefined results (typically
-				// that the transfer will stop at some unknown time in the future).
+				// that the transfer will stop at some unknown time in the future).  PCSX2 actually
+				// yields defined results -- an immediate forced stop -- but we should log/warn on
+				// such behavior anyway, in case some game relies on some undocumented PS2 behavior
+				// that differs.
 
 				if (info->CHCR().DIR != newchcr.DIR)
 				{
@@ -864,7 +888,11 @@ template bool dmacWrite32<0x0e>( u32 mem, mem32_t& value );
 template bool dmacWrite32<0x0f>( u32 mem, mem32_t& value );
 
 
-uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
+uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	
+	return 0;
+}
 uint __dmacall EE_DMAC::toGIF	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toSIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }

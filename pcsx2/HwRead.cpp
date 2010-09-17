@@ -18,6 +18,7 @@
 #include "Common.h"
 #include "Hardware.h"
 
+#include "ps2/NewDmac.h"
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
@@ -48,9 +49,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 		
 		case 0x02:	return ipuRead32( mem );
 
-		case 0x03:	return UseLegacyDMAC
-			? dmacRead32_Legacy<0x03>( mem )
-			: dmacRead32<0x03>( mem );
+		case 0x03:	return dmacRead32<0x03>( mem );
 		
 		case 0x04:
 		case 0x05:

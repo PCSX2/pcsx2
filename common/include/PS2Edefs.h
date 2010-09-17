@@ -572,7 +572,7 @@ typedef void (CALLBACK* _GSgifTransfer2)(u32 *pMem, u32 size);
 typedef void (CALLBACK* _GSgifTransfer3)(u32 *pMem, u32 size);
 typedef void (CALLBACK* _GSgifSoftReset)(u32 mask);
 typedef void (CALLBACK* _GSreadFIFO)(u64 *pMem);
-typedef void (CALLBACK* _GSreadFIFO2)(u64 *pMem, int qwc);
+typedef uint (CALLBACK* _GSreadFIFO2)(u64 *pMem, int qwc);
 
 typedef void (CALLBACK* _GSchangeSaveState)(int, const char* filename);
 typedef void (CALLBACK* _GSgetTitleInfo)(char dest[128]);

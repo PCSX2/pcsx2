@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "IPU.h"
-#include "IPU/IPUdma.h"
 #include "mpeg2lib/Mpeg.h"
 
 
@@ -32,6 +31,15 @@ void IPU_Fifo::init()
 	memzero(out.data);
 }
 
+void IPU_Fifo::clear()
+{
+	in.clear();
+	out.clear();
+}
+
+// --------------------------------------------------------------------------------------
+//  IPU_Fifo_Input
+// --------------------------------------------------------------------------------------
 void IPU_Fifo_Input::clear()
 {
 	memzero(data);
@@ -41,28 +49,9 @@ void IPU_Fifo_Input::clear()
 	writepos = 0;
 }
 
-void IPU_Fifo_Output::clear()
-{
-	memzero(data);
-	ipuRegs.ctrl.OFC = 0;
-	readpos = 0;
-	writepos = 0;
-}
-
-void IPU_Fifo::clear()
-{
-	in.clear();
-	out.clear();
-}
-
 wxString IPU_Fifo_Input::desc() const
 {
 	return wxsFormat(L"IPU Fifo Input: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
-}
-
-wxString IPU_Fifo_Output::desc() const
-{
-	return wxsFormat(L"IPU Fifo Output: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
 }
 
 int IPU_Fifo_Input::write(u32* pMem, int size)
@@ -82,31 +71,6 @@ int IPU_Fifo_Input::write(u32* pMem, int size)
 		writepos = (writepos + 4) & 31;
 		pMem += 4;
 	}
-
-	return firsttrans;
-}
-
-int IPU_Fifo_Output::write(const u32 *value, int size)
-{
-	int transsize, firsttrans;
-
-	if ((int)ipuRegs.ctrl.OFC >= 8) IPU0dma();
-
-	transsize = min(size, 8 - (int)ipuRegs.ctrl.OFC);
-	firsttrans = transsize;
-
-	while (transsize-- > 0)
-	{
-		for (int i = 0; i <= 3; i++)
-		{
-			data[writepos + i] = ((u32*)value)[i];
-		}
-		writepos = (writepos + 4) & 31;
-		value += 4;
-	}
-
-	ipuRegs.ctrl.OFC += firsttrans;
-	IPU0dma();
 
 	return firsttrans;
 }
@@ -136,6 +100,47 @@ int IPU_Fifo_Input::read(void *value)
 	readpos = (readpos + 4) & 31;
 	g_BP.IFC--;
 	return 1;
+}
+
+// --------------------------------------------------------------------------------------
+//  IPU_Fifo_Output
+// --------------------------------------------------------------------------------------
+void IPU_Fifo_Output::clear()
+{
+	memzero(data);
+	ipuRegs.ctrl.OFC = 0;
+	readpos = 0;
+	writepos = 0;
+}
+
+int IPU_Fifo_Output::write(const u32 *value, int size)
+{
+	int transsize, firsttrans;
+
+	//if ((int)ipuRegs.ctrl.OFC >= 8) IPU0dma();
+
+	transsize = min(size, 8 - (int)ipuRegs.ctrl.OFC);
+	firsttrans = transsize;
+
+	while (transsize-- > 0)
+	{
+		for (int i = 0; i <= 3; i++)
+		{
+			data[writepos + i] = ((u32*)value)[i];
+		}
+		writepos = (writepos + 4) & 31;
+		value += 4;
+	}
+
+	ipuRegs.ctrl.OFC += firsttrans;
+	//IPU0dma();
+
+	return firsttrans;
+}
+
+wxString IPU_Fifo_Output::desc() const
+{
+	return wxsFormat(L"IPU Fifo Output: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
 }
 
 void IPU_Fifo_Output::_readsingle(void *value)
@@ -169,6 +174,9 @@ void IPU_Fifo_Output::readsingle(void *value)
 	}
 }
 
+// --------------------------------------------------------------------------------------
+//  ReadFIFO_IPUout / WriteFIFO_IPUin
+// --------------------------------------------------------------------------------------
 __fi bool decoder_t::ReadIpuData(u128* out)
 {
 	if(ipu0_data == 0)

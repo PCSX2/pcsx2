@@ -61,7 +61,7 @@ public:
 	int quickFind(u32 data) {
 		return mBucket[data % hSize].Size;
 	}
-	__fi T* find(T* dataPtr) {
+	__fi T* find(const T* dataPtr) const {
 		u32 d = *((u32*)dataPtr);
 		const SizeChain<T>& bucket( mBucket[d % hSize] );
 

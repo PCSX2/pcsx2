@@ -1118,7 +1118,7 @@ void GSState::Write(const uint8* mem, int len)
 	m_mem.m_clut.Invalidate();
 }
 
-void GSState::Read(uint8* mem, int len)
+void GSState::Read(uint8* mem, int& len)
 {
 	if(len <= 0) return;
 
@@ -1429,7 +1429,8 @@ void GSState::SoftReset(uint32 mask)
 	m_q = 1;
 }
 
-void GSState::ReadFIFO(uint8* mem, int size)
+// returns the number of QWC copied.
+int GSState::ReadFIFO(uint8* mem, int size)
 {
 	GSPerfMonAutoTimer pmat(m_perfmon);
 
@@ -1443,6 +1444,9 @@ void GSState::ReadFIFO(uint8* mem, int size)
 	{
 		m_dump.ReadFIFO(size);
 	}
+	
+	assert((size & 15) == 0);
+	return size / 16;
 }
 
 template void GSState::Transfer<0>(const uint8* mem, uint32 size);

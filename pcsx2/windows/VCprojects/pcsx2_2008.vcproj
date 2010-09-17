@@ -797,27 +797,7 @@
 								>
 							</File>
 							<File
-								RelativePath="..\..\Vif0_Dma.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Vif1_Dma.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Vif1_MFIFO.cpp"
-								>
-							</File>
-							<File
 								RelativePath="..\..\Vif_Codes.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Vif_Dma.h"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Vif_Transfer.cpp"
 								>
 							</File>
 							<Filter
@@ -829,10 +809,6 @@
 								</File>
 								<File
 									RelativePath="..\..\Vif_Unpack.h"
-									>
-								</File>
-								<File
-									RelativePath="..\..\Vif_Unpack.inl"
 									>
 								</File>
 								<Filter
@@ -874,18 +850,6 @@
 							</Filter>
 						</Filter>
 						<Filter
-							Name="SPR"
-							>
-							<File
-								RelativePath="..\..\SPR.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\SPR.h"
-								>
-							</File>
-						</Filter>
-						<Filter
 							Name="Gif"
 							>
 							<File
@@ -894,6 +858,10 @@
 							</File>
 							<File
 								RelativePath="..\..\Gif.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\ps2\GIFpath.cpp"
 								>
 							</File>
 						</Filter>
@@ -1355,10 +1323,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\IPU\IPUdma.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\..\IPU\IPUdma.h"
 						>
 					</File>
@@ -1394,10 +1358,6 @@
 				<Filter
 					Name="GS"
 					>
-					<File
-						RelativePath="..\..\ps2\GIFpath.cpp"
-						>
-					</File>
 					<File
 						RelativePath="..\..\GS.cpp"
 						>

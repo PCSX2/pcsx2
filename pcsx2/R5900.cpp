@@ -26,7 +26,7 @@
 #include "R5900Exceptions.h"
 
 #include "Hardware.h"
-#include "IPU/IPUdma.h"
+#include "ps2/NewDmac.h"
 
 #include "Elfheader.h"
 #include "CDVD/CDVD.h"
@@ -242,56 +242,6 @@ __fi void cpuSetEvent()
 	g_nextEventCycle = cpuRegs.cycle;
 }
 
-__fi void cpuClearInt( uint i )
-{
-	jASSUME( i < 32 );
-	cpuRegs.interrupt &= ~(1 << i);
-}
-
-static __fi void TESTINT( u8 n, void (*callback)() )
-{
-	if( !(cpuRegs.interrupt & (1 << n)) ) return;
-
-	if( cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
-	{
-		cpuClearInt( n );
-		callback();
-	}
-	else
-		cpuSetNextEvent( cpuRegs.sCycle[n], cpuRegs.eCycle[n] );
-}
-
-// [TODO] move this function to LegacyDmac.cpp, and remove most of the DMAC-related headers from
-// being included into R5900.cpp.
-static __fi void _cpuTestInterrupts()
-{
-	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
-	   that depends on the cycle timings */
-
-	TESTINT(DMAC_VIF1,		vif1Interrupt);	
-	TESTINT(DMAC_GIF,		gsInterrupt);	
-	TESTINT(DMAC_SIF0,		EEsif0Interrupt);
-	TESTINT(DMAC_SIF1,		EEsif1Interrupt);
-
-	// Profile-guided Optimization (sorta)
-	// The following ints are rarely called.  Encasing them in a conditional
-	// as follows helps speed up most games.
-
-	if( cpuRegs.interrupt & 0xF19 ) // Bits 0 3 4 8 9 10 11 ( 111100011001 )
-	{
-		TESTINT(DMAC_VIF0,		vif0Interrupt);
-
-		TESTINT(DMAC_FROM_IPU,	ipu0Interrupt);
-		TESTINT(DMAC_TO_IPU,	ipu1Interrupt);
-
-		TESTINT(DMAC_FROM_SPR,	SPRFROMinterrupt);
-		TESTINT(DMAC_TO_SPR,	SPRTOinterrupt);
-
-		TESTINT(DMAC_MFIFO_VIF, vifMFIFOInterrupt);
-		TESTINT(DMAC_MFIFO_GIF, gifMFIFOInterrupt);
-	}
-}
-
 static __fi void _cpuTestTIMR()
 {
 	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
@@ -367,22 +317,16 @@ __fi void _cpuEventTest_Shared()
 
 	_cpuTestTIMR();
 
-	// ---- Interrupts -------------
-	// These are basically just DMAC-related events, which also piggy-back the same bits as
-	// the PS2's own DMA channel IRQs and IRQ Masks.
+	// ---- DMAC / FIFO Events -------------
+	// The FIFOs should always be checked/emptied first, as the DMAC may have new (STR==1 set)
+	// transfers that need FIFOs cleared in order to begin processing.
 
+	if(cpuRegs.interrupt & (1<<FIFO_EVENT))
+		ProcessFifoEvent();
+	if(cpuRegs.interrupt & (1<<DMAC_EVENT))
+		EE_DMAC::UpdateDmacEvent();
 
-	if (dmacRegs.ctrl.DMAE && ((psHu8(DMAC_ENABLER+2) & 1) == 0))
-	{
-		if (UseLegacyDMAC)
-		{
-			_cpuTestInterrupts();
-		}
-		else
-		{
-			
-		}
-	}
+	cpuRegs.interrupt = 0;
 
 	// ---- IOP -------------
 	// * It's important to run a iopEventTest before calling ExecuteBlock. This
@@ -458,24 +402,6 @@ __ri void cpuTestINTCInts()
 	}
 }
 
-__fi void cpuTestDMACInts()
-{
-	if (!UseLegacyDMAC) return;
-	// Check the COP0's Status register for general interrupt disables, and the 0x800
-	// bit (which is the DMAC master toggle).
-	if( !cpuIntsEnabled(0x800) ) return;
-
-	if ( ( (psHu16(0xe012) & psHu16(0xe010)) == 0) &&
-		 ( (psHu16(0xe010) & 0x8000) == 0) ) return;
-
-	cpuSetNextEventDelta( 4 );
-	if(eeEventTestIsActive && (iopCycleEE > 0))
-	{
-		iopBreak += iopCycleEE;		// record the number of cycles the IOP didn't run.
-		iopCycleEE = 0;
-	}
-}
-
 __fi void cpuTestTIMRInts() {
 	if ((cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001) {
 		_cpuTestPERF();
@@ -483,24 +409,9 @@ __fi void cpuTestTIMRInts() {
 	}
 }
 
-__fi void cpuTestHwInts() {
-	cpuTestINTCInts();
-	cpuTestDMACInts();
-	cpuTestTIMRInts();
-}
-
 __fi void CPU_INT( EE_EventType n, s32 ecycle)
 {
-	if (!UseLegacyDMAC) return;
-
-	if( n != 2 && cpuRegs.interrupt & (1<<n) ){ //2 is Gif, and every path 3 masking game triggers this :/
-		DevCon.Warning( "***** EE > Twice-thrown int on IRQ %d", n );
-	}
-
-	// EE events happen 8 cycles in the future instead of whatever was requested.
-	// This can be used on games with PATH3 masking issues for example, or when
-	// some FMV look bad.
-	if(CHECK_EETIMINGHACK) ecycle = 8;
+	if (cpuRegs.interrupt & (1 << n)) return;
 
 	cpuRegs.interrupt|= 1 << n;
 	cpuRegs.sCycle[n] = cpuRegs.cycle;

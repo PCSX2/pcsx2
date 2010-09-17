@@ -207,16 +207,13 @@ protected:
 
 	void rcntFreeze();
 	void vuMicroFreeze();
-	void vif0Freeze();
-	void vif1Freeze();
+	void vifFreeze();
 #ifdef ENABLE_NEW_IOPDMA
 	void iopDmacFreeze();
 #endif
 	void sifFreeze();
 	void ipuFreeze();
-	void ipuDmaFreeze();	
 	void gifFreeze();
-	void sprFreeze();
 
 	void sioFreeze();
 	void cdrFreeze();
@@ -225,7 +222,6 @@ protected:
 	void sio2Freeze();
 
 	void gifPathFreeze();		// called by gsFreeze
-	
 	void deci2Freeze();
 };
 

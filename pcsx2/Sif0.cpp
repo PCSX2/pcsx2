@@ -328,7 +328,7 @@ __fi void  sif0Interrupt()
 
 __fi void  EEsif0Interrupt()
 {
-	hwDmacIrq(DMAC_SIF0);
+	//hwDmacIrq(DMAC_SIF0);
 	sif0dma.chcr.STR = false;
 }
 

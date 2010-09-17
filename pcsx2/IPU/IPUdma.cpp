@@ -21,7 +21,6 @@
 
 #include "Vif.h"
 #include "Gif.h"
-#include "Vif_Dma.h"
 
 static IPUStatus IPU1Status;
 static tIPU_DMA g_nDMATransfer;
@@ -90,26 +89,6 @@ static __fi void ipuDmacSrcChain()
 
 static __fi bool WaitGSPaths()
 {
-	if(CHECK_IPUWAITHACK)
-	{
-		if(GSTransferStatus.PTH3 < STOPPED_MODE && GSTransferStatus.PTH3 != IDLE_MODE)
-		{
-			//GIF_LOG("Flushing gif chcr %x tadr %x madr %x qwc %x", gif->chcr._u32, gif->tadr, gif->madr, gif->qwc);
-			//DevCon.WriteLn("Waiting for GIF");
-			return false;
-		}
-
-		if(GSTransferStatus.PTH2 != STOPPED_MODE)
-		{
-			//DevCon.WriteLn("Waiting for VIF");
-			return false;
-		}
-		if(GSTransferStatus.PTH1 != STOPPED_MODE)
-		{
-			//DevCon.WriteLn("Waiting for VU");
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -379,7 +358,7 @@ __fi void dmaIPU0() // fromIPU
 		ipu0dma.qwc = ipu0dma.pad = 0;
 		//If we are going to clear down IPU0, we should end it too. Going to test this scenario on the PS2 mind - Refraction
 		ipu0dma.chcr.STR = false;
-		hwDmacIrq(DMAC_FROM_IPU);
+		//hwDmacIrq(DMAC_FROM_IPU);
 	}
 	IPUProcessInterrupt();
 }
@@ -397,7 +376,7 @@ __fi void dmaIPU1() // toIPU
 		// If we are going to clear down IPU1, we should end it too.
 		// Going to test this scenario on the PS2 mind - Refraction
 		ipu1dma.chcr.STR = false;
-		hwDmacIrq(DMAC_TO_IPU);
+		//hwDmacIrq(DMAC_TO_IPU);
 	}
 
 	if (ipu1dma.chcr.MOD == CHAIN_MODE)  //Chain Mode
@@ -430,7 +409,7 @@ __fi void dmaIPU1() // toIPU
 				ipuRegs.ctrl.BUSY = 0;
 				ipuRegs.topbusy = 0;
 				//
-			hwDmacIrq(DMAC_TO_IPU);
+			//hwDmacIrq(DMAC_TO_IPU);
 			Console.Warning("IPU1 Normal error!");
 		}
 		else
@@ -489,7 +468,7 @@ void ipu0Interrupt()
 	}
 
 	ipu0dma.chcr.STR = false;
-	hwDmacIrq(DMAC_FROM_IPU);
+	//hwDmacIrq(DMAC_FROM_IPU);
 }
 
 IPU_FORCEINLINE void ipu1Interrupt()
@@ -505,5 +484,5 @@ IPU_FORCEINLINE void ipu1Interrupt()
 	IPU_LOG("ipu1 finish %x:", cpuRegs.cycle);
 	ipu1dma.chcr.STR = false;
 	IPU1Status.DMAMode = 2;
-	hwDmacIrq(DMAC_TO_IPU);
+	//hwDmacIrq(DMAC_TO_IPU);
 }

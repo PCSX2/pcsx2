@@ -113,8 +113,6 @@ void SysMtgsThread::ResetGS()
 	SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
 	SendSimplePacket( GS_RINGTYPE_FRAMESKIP, 0, 0, 0 );
 	SetEvent();
-
-	GIFPath_Reset();
 }
 
 struct RingCmdPacket_Vsync
@@ -322,16 +320,16 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 			switch( tag.command )
 			{
-				case GS_RINGTYPE_P1:
+				case GS_RINGTYPE_PATH:
 				{
 					uint datapos = (m_ReadPos+1) & RingBufferMask;
 					const int qsize = tag.data[0];
 					const u128* data = &RingBuffer[datapos];
 
-					MTGS_LOG( "(MTGS Packet Read) ringtype=P1, qwc=%u", qsize );
+					MTGS_LOG( "(MTGS Packet Read) ringtype=PATH, qwc=%u", qsize );
 
 					uint endpos = datapos + qsize;
-					if( endpos >= RingBufferSize )
+					if (endpos >= RingBufferSize)
 					{
 						uint firstcopylen = RingBufferSize - datapos;
 						GSgifTransfer( (u32*)data, firstcopylen );
@@ -341,56 +339,6 @@ void SysMtgsThread::ExecuteTaskInThread()
 					else
 					{
 						GSgifTransfer( (u32*)data, qsize );
-					}
-
-					ringposinc += qsize;
-				}
-				break;
-
-				case GS_RINGTYPE_P2:
-				{
-					uint datapos = (m_ReadPos+1) & RingBufferMask;
-					const int qsize = tag.data[0];
-					const u128* data = &RingBuffer[datapos];
-
-					MTGS_LOG( "(MTGS Packet Read) ringtype=P2, qwc=%u", qsize );
-
-					uint endpos = datapos + qsize;
-					if( endpos >= RingBufferSize )
-					{
-						uint firstcopylen = RingBufferSize - datapos;
-						GSgifTransfer2( (u32*)data, firstcopylen );
-						datapos = endpos & RingBufferMask;
-						GSgifTransfer2( (u32*)RingBuffer.m_Ring, datapos );
-					}
-					else
-					{
-						GSgifTransfer2( (u32*)data, qsize );
-					}
-
-					ringposinc += qsize;
-				}
-				break;
-
-				case GS_RINGTYPE_P3:
-				{
-					uint datapos = (m_ReadPos+1) & RingBufferMask;
-					const int qsize = tag.data[0];
-					const u128* data = &RingBuffer[datapos];
-
-					MTGS_LOG( "(MTGS Packet Read) ringtype=P3, qwc=%u", qsize );
-
-					uint endpos = datapos + qsize;
-					if( endpos >= RingBufferSize )
-					{
-						uint firstcopylen = RingBufferSize - datapos;
-						GSgifTransfer3( (u32*)data, firstcopylen );
-						datapos = endpos & RingBufferMask;
-						GSgifTransfer3( (u32*)RingBuffer.m_Ring, datapos );
-					}
-					else
-					{
-						GSgifTransfer3( (u32*)data, qsize );
 					}
 
 					ringposinc += qsize;
@@ -455,14 +403,6 @@ void SysMtgsThread::ExecuteTaskInThread()
 						case GS_RINGTYPE_RESET:
 							MTGS_LOG( "(MTGS Packet Read) ringtype=Reset" );
 							if( GSreset != NULL ) GSreset();
-						break;
-
-						case GS_RINGTYPE_SOFTRESET:
-						{
-							int mask = tag.data[0];
-							MTGS_LOG( "(MTGS Packet Read) ringtype=SoftReset" );
-							GSgifSoftReset( mask );
-						}
 						break;
 
 						case GS_RINGTYPE_MODECHANGE:
@@ -723,18 +663,6 @@ void SysMtgsThread::PrepDataPacket( MTGS_RingCommand cmd, u32 size )
 	tag.data[0] = m_packet_size;
 	m_packet_startpos = m_WritePos;
 	m_packet_writepos = (m_WritePos + 1) & RingBufferMask;
-}
-
-// Returns the amount of giftag data processed (in simd128 values).
-// Return value is used by VU1's XGKICK instruction to wrap the data
-// around VU memory instead of having buffer overflow...
-// Parameters:
-//  size - size of the packet data, in smd128's
-void SysMtgsThread::PrepDataPacket( GIF_PATH pathidx, u32 size )
-{
-	//m_PacketLocker.Acquire();
-
-	PrepDataPacket( (MTGS_RingCommand)pathidx, size );
 }
 
 __fi void SysMtgsThread::_FinishSimplePacket()

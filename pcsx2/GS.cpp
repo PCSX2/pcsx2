@@ -66,7 +66,6 @@ void gsReset()
 	GetMTGS().ResetGS();
 
 	UpdateVSyncRate();
-	GSTransferStatus = (STOPPED_MODE<<8) | (STOPPED_MODE<<4) | STOPPED_MODE;
 	memzero(g_RealGSMem);
 
 	SIGNAL_IMR_Pending = false;
@@ -83,19 +82,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 {
 	if (csr.RESET) {
 
-		// perform a soft reset -- which is a clearing of all GIFpaths -- and fall back to doing
-		// a full reset if the plugin doesn't support soft resets.
-
-		if( GSgifSoftReset != NULL )
-		{
-			GIFPath_Clear( GIF_PATH_1 );
-			GIFPath_Clear( GIF_PATH_2 );
-			GIFPath_Clear( GIF_PATH_3 );
-		}
-		else
-		{
-			GetMTGS().SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
-		}
+		GetMTGS().SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
 
 		SIGNAL_IMR_Pending = false;
 		CSRreg.Reset();
