@@ -762,14 +762,6 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\DmacLegacy.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\ps2\LegacyDmac.cpp"
-							>
-						</File>
-						<File
 							RelativePath="..\..\ps2\NewDmac.cpp"
 							>
 						</File>
@@ -874,14 +866,6 @@
 							</File>
 							<File
 								RelativePath="..\..\Sif.h"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Sif0.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Sif1.cpp"
 								>
 							</File>
 							<File
@@ -1129,10 +1113,6 @@
 								Name="VCCLCompilerTool"
 							/>
 						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\IopSif.cpp"
-						>
 					</File>
 					<File
 						RelativePath="..\..\IopSio2.cpp"

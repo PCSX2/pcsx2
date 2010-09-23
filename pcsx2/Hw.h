@@ -361,11 +361,11 @@ union tGS_SMODE2
 {
 	struct
 	{
-		u32 INT:1;
-		u32 FFMD:1;
-		u32 DPMS:2;
-		u32 _PAD2:28;
-		u32 _PAD3:32;
+		u32 INT		: 1;
+		u32 FFMD	: 1;
+		u32 DPMS	: 2;
+		u32 _pad2	: 28;
+		u32 _pad3	: 32;
 	};
 
 	u64 _u64;
@@ -388,7 +388,9 @@ struct PeripheralFifoPack
 	u128 ipu0[FifoSize_Ipu0];
 	u128 ipu1[FifoSize_Ipu1];
 
-	u128 sif[FifoSize_Sif];
+	// The SFIFO is currently not emulated -- all SIF transfers are performed using a direct
+	// connection between IOP and EE (doable because our EE/IOP do not run in parallel).
+	//u128 sif[FifoSize_Sif];
 };
 
 extern __aligned16 PeripheralFifoPack g_fifo;

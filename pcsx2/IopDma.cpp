@@ -17,6 +17,7 @@
 #include "IopCommon.h"
 
 #include "Sif.h"
+#include "ps2/NewDmac.h"
 
 using namespace R3000A;
 
@@ -194,31 +195,31 @@ void psxDma9(u32 madr, u32 bcr, u32 chcr)
 {
 	SIF_LOG("IOP: dmaSIF0 chcr = %lx, madr = %lx, bcr = %lx, tadr = %lx",	chcr, madr, bcr, HW_DMA9_TADR);
 
-	sif0.iop.busy = true;
-	psHu32(SBUS_F240) |= 0x2000;
+	//psHu32(SBUS_F240) |= 0x2000;
 
-	/*if (sif0.ee.busy)
-	{*/
-		SIF0Dma();
-		psHu32(SBUS_F240) &= ~0x20;
-		psHu32(SBUS_F240) &= ~0x2000;
-	//}
+	// The EE is responsible for performing all SIF transfers, so the IOP can only signal
+	// to the EE that it is ready for transfer (DREQ); and then continue on its merry way.
+
+	EE_DMAC::dmacRequestSlice(EE_DMAC::ChanId_SIF0);
+
+	//psHu32(SBUS_F240) &= ~0x20;
+	//psHu32(SBUS_F240) &= ~0x2000;
 }
 
 void psxDma10(u32 madr, u32 bcr, u32 chcr)
 {
 	SIF_LOG("IOP: dmaSIF1 chcr = %lx, madr = %lx, bcr = %lx",	chcr, madr, bcr);
 
-	sif1.iop.busy = true;
-	psHu32(SBUS_F240) |= 0x4000;
+	//psHu32(SBUS_F240) |= 0x4000;
 
-	/*if (sif1.ee.busy)
-	{*/
-		SIF1Dma();
-		psHu32(SBUS_F240) &= ~0x40;
-		psHu32(SBUS_F240) &= ~0x100;
-		psHu32(SBUS_F240) &= ~0x4000;
-	//}
+	// The EE is responsible for performing all SIF transfers, so the IOP can only signal
+	// to the EE that it is ready for transfer (DREQ); and then continue on its merry way.
+
+	EE_DMAC::dmacRequestSlice(EE_DMAC::ChanId_SIF1);
+
+	//psHu32(SBUS_F240) &= ~0x40;
+	//psHu32(SBUS_F240) &= ~0x100;
+	//psHu32(SBUS_F240) &= ~0x4000;
 }
 
 /* psxDma11 & psxDma 12 are in IopSio2.cpp, along with the appropriate interrupt functions. */

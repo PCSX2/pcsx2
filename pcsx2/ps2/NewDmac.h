@@ -79,9 +79,13 @@ typedef uint __dmacall FnType_ToPeripheral(const u128* srcBase, uint srcSize, ui
 // for example).
 typedef uint __dmacall FnType_FromPeripheral(u128* dest, uint destSize, uint destStartQwc, uint lenQwc);
 
+// Transfers a single quadword into the FIFO for a peripheral.  Currently used only for
+// TTE-enabled source chain DMAs.
+typedef void __dmacall FnType_XferToFifo(const u128& src);
+
 typedef FnType_ToPeripheral*	Fnptr_ToPeripheral;
 typedef FnType_FromPeripheral*	Fnptr_FromPeripheral;
-
+typedef FnType_XferToFifo*		Fnptr_XferToFifo;
 
 // --------------------------------------------------------------------------------------
 //  EE_DMAC::ChannelRegisters
@@ -114,6 +118,9 @@ struct ChannelRegisters
 // --------------------------------------------------------------------------------------
 //  EE_DMAC::DMAtag
 // --------------------------------------------------------------------------------------
+// The DMAtag is used during all CHAIN mode transfers (and is not present for NORMAL or
+// INTERLEAVE transfers).  It describes the length of transfer, TADR advancement strategy,
+// and the destination address (who's exact meaning also varies depending on the TAG.ID type).
 union DMAtag
 {
 	struct
@@ -215,35 +222,24 @@ struct ControllerRegisters
 	}
 };
 
-// --------------------------------------------------------------------------------------
-//  Exception::DmaRaiseIRQ
-// --------------------------------------------------------------------------------------
-// This is a local exception for doing error/IRQ-related flow control within the context
-// of the DMAC.  The exception is not (and should never be) leaked to any external contexts.
-namespace Exception
+enum StallCauseId
 {
-	class DmaRaiseIRQ
-	{
-	public:
-		bool			m_BusError;
-		bool			m_MFIFOstall;
-		bool			m_Verbose;
-		const wxChar*	m_Cause;
+	Stall_EndOfTransfer = 0,
+	Stall_MFIFO,
+	Stall_TagIRQ,
+	Stall_TagError,
 
-		DmaRaiseIRQ( const wxChar* _cause=NULL )
-		{
-			m_BusError		= false;
-			m_MFIFOstall	= false;
-			m_Verbose		= false;
-			m_Cause			= _cause;
-		}
+	// Bus Error occurs when the DMA transfer attempts to access memory outside a
+	// valid mapping.
+	Stall_BusError,
 
-		DmaRaiseIRQ& BusError()		{ m_BusError	= true; return *this; }
-		DmaRaiseIRQ& MFIFOstall()	{ m_MFIFOstall	= true; return *this; }
-		DmaRaiseIRQ& Verbose()		{ m_Verbose		= true; return *this; }
-		
-	};
-}
+	Stall_CallstackOverflow,
+	Stall_CallstackUnderflow,
+	
+	// Stall condition occurring when the TTE bit is enabled on Source Chain modes, but
+	// the peripheral (likely VIF or GIF) is stalled due to some IRQ condition.
+	Stall_TagTransfer,
+};
 
 // --------------------------------------------------------------------------------------
 //  EE_DMAC::ChannelMetrics
@@ -345,14 +341,17 @@ struct ChannelInformation
 	bool			hasSourceChain;
 	bool			hasDestChain;
 	bool			hasAddressStack;
-	bool			isSprChannel;
+
+	bool isSprChannel() const;
+	bool isSifChannel() const;
+	bool HonorsSprBit() const;
 
 	// (Drain) Non-Null for channels that can xfer from main memory to peripheral.
 	Fnptr_ToPeripheral		fnptr_xferTo;
 
 	// (Source) Non-Null for channels that can xfer from peripheral to main memory.
 	Fnptr_FromPeripheral	fnptr_xferFrom;
-
+	
 	DirectionMode GetRawDirection() const
 	{
 		if (fnptr_xferTo && fnptr_xferFrom) return Dir_Both;
@@ -379,9 +378,11 @@ struct ChannelInformation
 		return GetRegs().qwc;
 	}
 	
+	// TADR is available on channels with Source Chain only.  Destination Chain channels
+	// read tags directly from the peripheral's stream and store them in the TAG register.
 	tDMAC_ADDR& TADR() const
 	{
-		pxAssert(hasSourceChain || hasDestChain);
+		pxAssert(hasSourceChain);
 		return GetRegs().tadr;
 	}
 
@@ -399,9 +400,8 @@ struct ChannelInformation
 	
 	tDMA_SADR& SADR() const
 	{
-		pxAssert(isSprChannel);
+		pxAssert(isSprChannel());
 		return GetRegs().sadr;
-		
 	}
 	
 	wxCharBuffer ToUTF8() const;
@@ -442,6 +442,9 @@ public:
 
 	uint TransferSource(u128* destMemHost, uint lenQwc, uint destStartQwc=0, uint destSize=0) const;
 	uint TransferDrain(const u128* srcMemHost, uint lenQwc, uint srcStartQwc=0, uint srcSize=0) const;
+
+	template< typename T >
+	uint TransferSource( T& destBuffer ) const;
 	template< typename T >
 	uint TransferDrain( const T& srcBuffer ) const;
 
@@ -449,14 +452,20 @@ protected:
 	void TransferInterleaveData();
 	void TransferNormalAndChainData();
 
-	void MFIFO_SrcChainUpdateTADR();
+	tDMAC_ADDR MFIFO_SrcChainNextTag();
 	void MFIFO_SrcChainUpdateMADR( const DMAtag& tag );
 
-	void SrcChainUpdateTADR();
+	tDMAC_ADDR SrcChainNextTag();
 	void SrcChainUpdateMADR( const DMAtag& tag );
+	const DMAtag& SrcChainLoadTag( const tDMAC_ADDR& tadr );
 
-	void DstChainUpdateTADR();
-	void DstChainUpdateMADR();
+	void DstChainNextTag();
+
+	void IrqStall( const StallCauseId& _cause, const wxChar* details=NULL );
+
+	u128* TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem );
+	u128* GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem );
+	u32 Read32( const tDMAC_ADDR& addr );
 };
 
 static ControllerRegisters& dmacRegs = (ControllerRegisters&)eeHw[0xE000];
@@ -470,9 +479,26 @@ static ChannelRegisters& vif1dma	= (ChannelRegisters&)eeHw[0x9000];
 
 extern void UpdateDmacEvent();
 
+extern FnType_FromPeripheral fromVIF0;
+extern FnType_FromPeripheral fromIPU;
+extern FnType_FromPeripheral fromSIF0;
+extern FnType_FromPeripheral fromSIF2;
+extern FnType_FromPeripheral fromSPR;
+
+extern FnType_ToPeripheral toVIF0;
+extern FnType_ToPeripheral toVIF1;
+extern FnType_ToPeripheral toGIF;
+extern FnType_ToPeripheral toIPU;
+extern FnType_ToPeripheral toSIF1;
+extern FnType_ToPeripheral toSIF2;
+extern FnType_ToPeripheral toSPR;
+
+extern void dmacRequestSlice( EE_DMAC::ChannelId cid );
+extern void dmacScheduleEvent();
+extern void dmacChanInt( ChannelId id );
+
 }		// namespace EE_DMAC
 
 
 template< uint page > extern u32 dmacRead32( u32 mem );
 template< uint page > extern bool dmacWrite32( u32 mem, mem32_t& value );
-extern void dmacRequestXfer( EE_DMAC::ChannelId cid );

@@ -38,6 +38,76 @@ ControllerMetrics dmac_metrics;
 //
 static bool dma_request[NumChannels];
 
+__fi void EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxChar* details )
+{
+	// Standard IRQ behavior for all channel errors is to stop the DMA (STR=0)
+	// and set the CIS bit corresponding to the DMA channel.  Bus Errors set
+	// the BEIS bit additionally.
+
+	// Unlike other types of IRQ, MFIFO does not stop the transfer (STR remains 1), and
+	// does not set CIS bits.
+
+	if (cause != Stall_MFIFO)
+	{
+		chcr.STR = 0;
+		dmacRegs.stat.CIS |= (1 << Id);
+	}
+
+	static const wxChar* causeMsg;
+	bool verbose = false;
+
+	switch(cause)
+	{
+		case Stall_EndOfTransfer:
+			causeMsg = L"Transfer Ended";
+		break;
+
+		case Stall_MFIFO:
+			dmacRegs.stat.MEIS = 1;
+			causeMsg = L"MFIFO Stall";
+		break;
+
+		case Stall_TagIRQ:
+			causeMsg = L"Tag IRQ";
+		break;
+
+		case Stall_TagError:
+			causeMsg = L"Invalid Tag";
+			verbose = true;
+		break;
+		
+		case Stall_BusError:
+			dmacRegs.stat.BEIS = 1;
+			causeMsg = L"Bus Error";
+			verbose = true;
+		break;
+
+		case Stall_CallstackOverflow:
+			causeMsg = L"Callstack Overflow";
+			verbose = true;
+		break;
+
+		case Stall_CallstackUnderflow:
+			// Underflows are fairly legitimate methods of terminating
+			// transfers, so do not log them verbosely.
+			causeMsg = L"Callstack Underflow";
+		break;
+		
+		case Stall_TagTransfer:
+			causeMsg = L"Tag Transfer Stall";
+		break;
+	}
+
+	if (!details) details = L"";
+
+	if (verbose)
+		Console.Warning(L"(DMAC) IRQ raised on %s(%u) due to %s %s", info.NameW, Id, causeMsg, details);
+
+	DMAC_LOG("IRQ Raised on %s(%u) due to %ls %ls", info.NameA, Id, causeMsg);
+
+	throw Exception::DmaTransferStall();
+}
+
 bool EE_DMAC::ChannelState::TestArbitration()
 {
 	if (!chcr.STR) return false;
@@ -193,7 +263,7 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 	// supporting them is trivial, so although I'm asserting on debug builds, all other
 	// builds actually perform the interleaved memcpy to/from SPR ram (this just in case
 	// the EE actually supports it in spite of being indicated otherwise).
-	pxAssertMsg( info.isSprChannel, "DMAC: Interleave mode specified on Scratchpad channel!" );
+	pxAssertMsg( info.isSprChannel(), "DMAC: Interleave mode specified on Scratchpad channel!" );
 
 	// Interleave should never be used in conjunction with MFIFO.  Most likely the Real
 	// DMAC ignores MFIFO settings in this case, and performs a normal SPR<->Memory xfer.
@@ -228,8 +298,8 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 		tDMAC_ADDR endaddr = madr;
 		endaddr.ADDR += add * 16;
 
-		u128* startmem	= DMAC_GetHostPtr(madr, false);
-		u128* endmem	= DMAC_TryGetHostPtr(endaddr, false);
+		u128* startmem	= GetHostPtr(madr, false);
+		u128* endmem	= TryGetHostPtr(endaddr, false);
 		pxAssertDev( (endmem != NULL) && ((startmem+add) == endmem),
 			"(DMAC) Physical memory cross-boundary violation detected on SPR INTERLEAVE transfer!"
 		);
@@ -246,7 +316,7 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 	{
 		// fromSPR -> Xfer from SPR to memory.
 
-		u128* writeTo = DMAC_GetHostPtr(madr, true);
+		u128* writeTo = GetHostPtr(madr, true);
 
 		do {
 
@@ -271,7 +341,7 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 		// toSPR -> Drain from memory to SPR.
 		// DMAC does not perform STADR checks in this direction.
 
-		const u128* readFrom = DMAC_GetHostPtr(madr, false);
+		const u128* readFrom = GetHostPtr(madr, false);
 
 		do {
 			MemCopy_WrappedDest(
@@ -296,128 +366,32 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 {
 	const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
 	ChannelRegisters& fromSprReg = fromSPR.GetRegs();
-
-	// Step 1 : Determine MADR and Copyable Length
-
 	const DirectionMode dir = GetDir();
-	uint qwc = creg.qwc.QWC;
 
-	try
+	// Step 1 : Load next tag if CHAIN mode is active and QWC is zero.
+	//  (this is needed because chain transfers are often started with
+	//   an initial QWC of zero).
+	//
+	// Note that it is the responsibility of the app to make sure that chcr.TAG
+	// is properly configured prior to starting transfers.  (this usually means 
+	// providing a TAG_CNT id with IRQ bits cleared).
+
+	if (0 == creg.qwc.QWC)
 	{
-		// CHAIN modes arbitrate per-packet regardless of slice or burst modes.
-		// NORMAL modes arbitrate at 8 QWC slices.
-
-		if (NORMAL_MODE == chcr.MOD)
+		if (NORMAL_MODE == creg.chcr.MOD)
 		{
-			if (!UseDmaBurstHack && IsSliced())
-				qwc = std::min<uint>(creg.qwc.QWC, 8);
+			creg.chcr.STR = 0;
+			return;
+
+			// NORMAL mode transfers of 0 QWC are actually disregarded (no interrupt raised).
+			//dmacRegs.stat.CIS |= (1 << Id);
 		}
-		else // CHAIN_MODE
+		else // (CHAIN_MODE == creg.chcr.MOD)
 		{
-			if (UseMFIFOHack && ((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
+			if (dir == Dir_Drain)
 			{
-				// MFIFOhack: We can't let the peripheral out-strip SPR.
-				//  (REFx tags copy from sources other than our SPRdma, which is why we
-				//   exclude them above).
-				qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
-			}
-		}
-
-		if (DrainStallActive())
-		{
-			// this channel has drain stalling enabled.  If the stall condition is already met
-			// then we need to skip it by and try another channel.
-
-			// Drain Stalling Rules:
-			//  * We can copy data up to STADR (exclusive).
-			//  * Arbitration is not granted until at least 8 QWC is available for copy.
-			//  
-			// Furthermore, there must be at *least* 8 QWCs available for transfer or the
-			// DMA stalls.  Stall-control DMAs do not transfer partial QWCs at the edge of
-			// STADR.  Translation: If the source DMA (the one writing to STADR) doesn't
-			// transfer an even 8-qwc block, the drain DMA will actually deadlock until
-			// the PS2 app manually writes 0 to STR!  (and this is correct!) --air
-
-			uint stallAt = dmacRegs.stadr.ADDR;
-			uint endAt = madr.ADDR + qwc*16;
-
-			if (!madr.SPR)
-			{
-				if (endAt > stallAt)
-				{
-					qwc = (stallAt - madr.ADDR) / 16;
-					DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
-				}
-			}
-			else if (stallAt < Ps2MemSize::Scratch)
-			{
-				// Assumptions:
-				// SPR bit transfers most likely perform automatic memory wrapping/masking on MADR
-				// and likely do not automatically mask/wrap STADR (both of these assertions
-				// need proper test app confirmations!! -- air)
-
-				if ((madr.ADDR < stallAt) && (endAt > stallAt))
-				{
-					qwc = (stallAt - madr.ADDR) / 16;
-					DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
-				}
-				else
-				{
-					endAt &= (Ps2MemSize::Scratch-1);
-					if ((madr.ADDR >= stallAt) && (endAt > stallAt))
-					{
-						// Copy from madr->ScratchEnd and from ScratchStart->StallAt
-						qwc = ((Ps2MemSize::Scratch - madr.ADDR) + stallAt) / 16;
-						DMAC_LOG("\tDRAIN STALL condition (STADR=%s, newQWC=%u) [SPR memory wrap]", dmacRegs.stadr.ToUTF8(false), qwc);
-					}
-				}
-			}
-		}
-		
-		// The real hardware has undefined behavior for this, but PCSX2 supports it.
- 		pxAssertMsg(creg.qwc.QWC < _1mb, "DMAC: QWC is over 1 meg!");
-
-		// -----------------------------------
-		// DO THAT MOVEMENT OF DATA.  NOOOOOW!		
-		// -----------------------------------
-
-		uint qwc_xfer = (dir == Dir_Source)
-			? TransferSource(DMAC_GetHostPtr(madr,true), qwc)
-			: TransferDrain(DMAC_GetHostPtr(madr,false), qwc);
-
-		// Peripherals have the option to stall transfers on their end, usually due to
-		// specific conditions that can arise, such as tag errors or IRQs.
-
-		if (qwc_xfer != qwc)
-		{
-			DMAC_LOG( "\tPartial transfer %s peripheral (qwc=%u, xfer=%u)",
-				(dir==Dir_Drain) ? "to" : "from",
-				qwc, qwc_xfer
-			);
-		}
-
-		creg.qwc.QWC -= qwc_xfer;
-		if (0 == creg.qwc.QWC)
-		{
-			// NORMAL MODE: STR becomes 0 when transfer ends (qwc==0)
-			// CHAIN MODE: hop to the next link in the chain!
-
-			if (NORMAL_MODE == creg.chcr.MOD)
-			{
-				creg.chcr.STR = 0;
-				dmacRegs.stat.CIS |= (1 << Id);
-			}
-			else // (CHAIN_MODE == creg.chcr.MOD)
-			{
-				// In order to process chains correctly, we must update TADR and MADR
-				// in separate passes.  This mimics the real DMAC behavior, which itself
-				// does not update/advance the TADR until after the current chain's transfer
-				// has completed successfully.
-				//
 				// After TADR is established, the new TAG is loaded into the channel's CHCR,
 				// and then the new MADR established.
-
-				const DMAtag* tag;
 
 				if (MFIFOActive())
 				{
@@ -431,85 +405,117 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 					//  2. Hack Disabled: Copy data to/from the ringbuffer specified by the
 					//     RBOR and RBSR registers (requires lots of wrapped memcpys).
 
-					MFIFO_SrcChainUpdateTADR();
-
-					if (!chcr.STR)
-						return;
-
-					// Load next tag from TADR and store the upper 16 bits in CHCR.
-					tag = (DMAtag*)DMAC_GetHostPtr(creg.tadr, false);
-					chcr.tag16 = tag->Bits16to31();
-					creg.qwc.QWC = tag->QWC;
-
-					MFIFO_SrcChainUpdateMADR(*tag);
+					tDMAC_ADDR newtag = MFIFO_SrcChainNextTag();
+					MFIFO_SrcChainUpdateMADR( SrcChainLoadTag(newtag) );
 				}
 				else
 				{
-					if (dir == Dir_Drain)
-						SrcChainUpdateTADR();
-					else
-						DstChainUpdateTADR();
-
-					if (!chcr.STR)
-						return;
-
-					// Load next tag from TADR and store the upper 16 bits in CHCR.
-					tag = (DMAtag*)DMAC_GetHostPtr(creg.tadr, false);
-					chcr.tag16 = tag->Bits16to31();
-					creg.qwc.QWC = tag->QWC;
-
-					if (dir == Dir_Drain)
-						SrcChainUpdateMADR(*tag);
-					else
-						DstChainUpdateMADR();
+					tDMAC_ADDR newtag = SrcChainNextTag();
+					SrcChainUpdateMADR( SrcChainLoadTag(newtag) );
 				}
+			}
+			else
+			{
+				DstChainNextTag();
+			}
+		}
+	}
 
-				if (chcr.TTE && (dir == Dir_Drain))
+	uint qwc = creg.qwc.QWC;
+
+	// CHAIN modes arbitrate per-packet regardless of slice or burst modes, and then
+	// also arbitrate at 8 QWC slices during each chain.
+	//
+	// NORMAL modes arbitrate at 8 QWC slices.
+
+	if (UseMFIFOHack && (NORMAL_MODE == chcr.MOD) &&
+	   ((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
+	{
+		// MFIFOhack: We can't let the peripheral out-strip SPR.
+		//  (REFx tags copy from sources other than our SPRdma, which is why we
+		//   exclude them above).
+
+		qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
+	}
+
+	if (!UseDmaBurstHack && IsSliced())
+		qwc = std::min<uint>(creg.qwc.QWC, 8);
+
+	if (DrainStallActive())
+	{
+		// this channel has drain stalling enabled.  If the stall condition is already met
+		// then we need to skip it by and try another channel.
+
+		// Drain Stalling Rules:
+		//  * We can copy data up to STADR (exclusive).
+		//  * Arbitration is not granted until at least 8 QWC is available for copy.
+		//  
+		// Furthermore, there must be at *least* 8 QWCs available for transfer or the
+		// DMA stalls.  Stall-control DMAs do not transfer partial QWCs at the edge of
+		// STADR.  Translation: If the source DMA (the one writing to STADR) doesn't
+		// transfer an even 8-qwc block, the drain DMA will actually deadlock until
+		// the PS2 app manually writes 0 to STR!  (and this is correct!) --air
+
+		uint stallAt = dmacRegs.stadr.ADDR;
+		uint endAt = madr.ADDR + qwc*16;
+
+		if (!madr.SPR)
+		{
+			if (endAt > stallAt)
+			{
+				qwc = (stallAt - madr.ADDR) / 16;
+				DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
+			}
+		}
+		else if (stallAt < Ps2MemSize::Scratch)
+		{
+			// Assumptions:
+			// SPR bit transfers most likely perform automatic memory wrapping/masking on MADR
+			// and likely do not automatically mask/wrap STADR (both of these assertions
+			// need proper test app confirmations!! -- air)
+
+			if ((madr.ADDR < stallAt) && (endAt > stallAt))
+			{
+				qwc = (stallAt - madr.ADDR) / 16;
+				DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
+			}
+			else
+			{
+				endAt &= (Ps2MemSize::Scratch-1);
+				if ((madr.ADDR >= stallAt) && (endAt > stallAt))
 				{
-					// Tag Transfer is enabled
-					// -----------------------
-					// DMAtag is transferred with the data.  Tag is 128 bits, but the lower 64
-					// bits are masked to zero; which typically translates into harmless NOPs in
-					// GIFtag and VIFcode lands.
- 
-					// * TTE's behavior regarding the lower 64 bits is currently a strong assumption,
-					//   but can be confirmed easily using toSPR's Source Chain mode transfer.  Write
-					//   dummy data to SPR memory, initiate a simple chain transfer with TTE=1, and
-					//   read back the tracewarn.
-
-					static __aligned16 u64 masked_tag[2] = {0,0};
-					masked_tag[1] = tag->_u64;
-					TransferDrain(masked_tag);
+					// Copy from madr->ScratchEnd and from ScratchStart->StallAt
+					qwc = ((Ps2MemSize::Scratch - madr.ADDR) + stallAt) / 16;
+					DMAC_LOG("\tDRAIN STALL condition (STADR=%s, newQWC=%u) [SPR memory wrap]", dmacRegs.stadr.ToUTF8(false), qwc);
 				}
 			}
 		}
+	}
+	
+	// The real hardware has undefined behavior for this, but PCSX2 supports it.
+	pxAssertMsg(creg.qwc.QWC < _1mb, "DMAC: QWC is over 1 meg!");
 
-	} catch( Exception::DmaRaiseIRQ& ex )
+	// -----------------------------------
+	// DO THAT MOVEMENT OF DATA.  NOOOOOW!		
+	// -----------------------------------
+
+	uint qwc_xfer = (dir == Dir_Source)
+		? TransferSource(GetHostPtr(madr,true), qwc)
+		: TransferDrain(GetHostPtr(madr,false), qwc);
+
+	// Peripherals have the option to stall transfers on their end, usually due to
+	// specific conditions that can arise, such as tag errors or IRQs.
+
+	if (qwc_xfer != qwc)
 	{
-		// Standard IRQ behavior for all channel errors is to stop the DMA (STR=0)
-		// and set the CIS bit corresponding to the DMA channel.  Bus Errors set
-		// the BEIS bit additionally.
-
-		if (!ex.m_MFIFOstall)
-		{
-			chcr.STR = 0;
-			dmacRegs.stat.CIS |= (1 << Id);
-			dmacRegs.stat.BEIS = ex.m_BusError;
-		}
-
-		dmacRegs.stat.MEIS = ex.m_MFIFOstall;
-
-		if (ex.m_Verbose)
-		{
-			Console.Warning(L"(DMAC) IRQ raised on %s(%u), cause=%s", info.NameW, Id, ex.m_Cause);
-		}
-
-		DMAC_LOG("IRQ Raised on %s(%u), cause=%s", info.NameA, Id, wxString(ex.m_Cause).ToUTF8().data());
-
-		// arbitrate back to the EE for a while?
-		//break;
+		DMAC_LOG( "\tPartial transfer %s peripheral (qwc=%u, xfer=%u)",
+			(dir==Dir_Drain) ? "to" : "from",
+			qwc, qwc_xfer
+		);
 	}
 
+	creg.qwc.QWC	-= qwc_xfer;
+	creg.madr.ADDR	+= qwc_xfer * 16;
 }
 
 void EE_DMAC::ChannelState::TransferData()
@@ -557,8 +563,13 @@ void EE_DMAC::UpdateDmacEvent()
 			break;
 		}
 
-		ChannelState cstate( chanId );
-		cstate.TransferData();
+		try {
+			ChannelState cstate( chanId );
+			cstate.TransferData();
+		}
+		catch(Exception::DmaTransferStall())
+		{
+		}
 
 	} while (UseDmaBurstHack);
 	
@@ -600,7 +611,7 @@ void EE_DMAC::UpdateDmacEvent()
 }
 
 // Tells the PCSX2 event scheduler to execute the DMAC handler (eeEvt_UpdateDmac)
-void dmacScheduleEvent()
+void EE_DMAC::dmacScheduleEvent()
 {
 	// If the DMAC is completely disabled then no point in scheduling anything.
 	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLER) & (1 << 16))) return;
@@ -610,7 +621,7 @@ void dmacScheduleEvent()
 
 // Schedules a cpu-level exception in response to a DMA channel being completed.  Actual
 // scheduling of the exception depends on the mask status of the corresponding channel irq.
-void dmacChanInt( ChannelId id )
+void EE_DMAC::dmacChanInt( ChannelId id )
 {
 	pxAssume(eeEventTestIsActive);
 
@@ -631,7 +642,7 @@ void dmacChanInt( ChannelId id )
 // Rationale: The DMAC transfers based on these requests in order to reduce the number of cycles
 // wasted trying to transfer data to/from busy peripherals.  Actual emulation of this system is
 // not needed, and is ignored by default.  It is only regarded when the DMAC is in "purist" mode.
-void dmacRequestXfer( ChannelId cid )
+void EE_DMAC::dmacRequestSlice( ChannelId cid )
 {
 	dma_request[cid] = true;
 	dmacScheduleEvent();
@@ -895,14 +906,12 @@ uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStart
 }
 uint __dmacall EE_DMAC::toGIF	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::toSIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toSIF2	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toIPU	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toSPR	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 
 uint __dmacall EE_DMAC::fromIPU	(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::fromSIF0(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::fromSIF2(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::fromVIF0(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
 

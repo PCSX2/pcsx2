@@ -20,33 +20,29 @@
 
 namespace EE_DMAC
 {
-extern FnType_FromPeripheral fromVIF0;
-extern FnType_FromPeripheral fromIPU;
-extern FnType_FromPeripheral fromSIF0;
-extern FnType_FromPeripheral fromSIF2;
-extern FnType_FromPeripheral fromSPR;
 
-extern FnType_ToPeripheral toVIF0;
-extern FnType_ToPeripheral toVIF1;
-extern FnType_ToPeripheral toGIF;
-extern FnType_ToPeripheral toIPU;
-extern FnType_ToPeripheral toSIF1;
-extern FnType_ToPeripheral toSIF2;
-extern FnType_ToPeripheral toSPR;
+namespace Exception
+{
+	// simple class used to break DMA transfer logic for the current channel.  I prefer
+	// to use this rather than explicitly testing every possible error and stall condition,
+	// since that would pretty much make every function call in the DMAC a conditional. >_<
+	class DmaTransferStall { };
+}
+
 
 static const ChannelInformation ChannelInfo[NumChannels] =
 {
-	//							D.S.			S.C.	D.C.	A.S.	SPR
-	{ _n(VIF0),		_m(0),	Stall_None,		true,	false,	true,	false,	toVIF0,		fromVIF0	},
-	{ _n(VIF1),		_m(1),	Stall_Drain,	true,	false,	true,	false,	toVIF1,		NULL		},
-	{ _n(GIF),		_m(2),	Stall_Drain,	true,	false,	true,	false,	toGIF,		NULL		},
-	{ _n(fromIPU),	_m(3),	Stall_Source,	false,	false,	false,	false,	NULL,		fromIPU		},
-	{ _n(toIPU),	_m(4),	Stall_None,		true,	false,	false,	false,	toIPU,		NULL		},
-	{ _n(SIF0),		_m(5),	Stall_Source,	false,	true,	false,	false,	NULL,		fromSIF0	},
-	{ _n(SIF1),		_m(6),	Stall_Drain,	true,	false,	false,	false,	toSIF1,		NULL		},
-	{ _n(SIF2),		_m(7),	Stall_None,		false,	false,	false,	false,	toSIF2,		fromSIF2	},
-	{ _n(fromSPR),	_m(8),	Stall_Source,	false,	true,	false,	true,	NULL,		fromSPR		},
-	{ _n(toSPR),	_m(9),	Stall_None,		true,	false,	false,	true,	toSPR,		NULL		},
+	//							D.S.		S.C.	D.C.	A.S.
+	{ _n(VIF0),		_m(0),	Stall_None,		true,	false,	true,	toVIF0,		fromVIF0	},
+	{ _n(VIF1),		_m(1),	Stall_Drain,	true,	false,	true,	toVIF1,		NULL		},
+	{ _n(GIF),		_m(2),	Stall_Drain,	true,	false,	true,	toGIF,		NULL		},
+	{ _n(fromIPU),	_m(3),	Stall_Source,	false,	false,	false,	NULL,		fromIPU		},
+	{ _n(toIPU),	_m(4),	Stall_None,		true,	false,	false,	toIPU,		NULL		},
+	{ _n(SIF0),		_m(5),	Stall_Source,	false,	true,	false,	NULL,		fromSIF0	},
+	{ _n(SIF1),		_m(6),	Stall_Drain,	true,	false,	false,	toSIF1,		NULL		},
+	{ _n(SIF2),		_m(7),	Stall_None,		false,	false,	false,	toSIF2,		fromSIF2	},
+	{ _n(fromSPR),	_m(8),	Stall_Source,	false,	true,	false,	NULL,		fromSPR		},
+	{ _n(toSPR),	_m(9),	Stall_None,		true,	false,	false,	toSPR,		NULL		},
 
 	// Legend:
 	//   D.S.  -- DMA Stall
@@ -55,6 +51,22 @@ static const ChannelInformation ChannelInfo[NumChannels] =
 	//   A.S.  -- Has Address Stack
 	//   SPR   -- Scratchpad is the peripheral (uses SADR register for scratchpad src/dest)
 };
+
+bool ChannelInformation::isSprChannel() const
+{
+	return (_m(8) == regbaseaddr) || (_m(9) == regbaseaddr);
+}
+
+bool ChannelInformation::isSifChannel() const
+{
+	return (_m(5) == regbaseaddr) || (_m(6) == regbaseaddr) || (_m(7) == regbaseaddr);
+}
+
+// VIF, GIF, and IPu honor the SPR bit on addresses.  SPR and SIF transfers ignore it.
+bool ChannelInformation::HonorsSprBit() const
+{
+	return regbaseaddr <= _m(4);
+}
 
 static const ChannelId StallSrcChan[4] = {
 	ChanId_None, ChanId_SIF0, ChanId_fromSPR, ChanId_fromIPU
@@ -73,64 +85,6 @@ static const wxChar* MfifoDrainNames[] =
 };
 
 
-u128* DMAC_TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
-{
-	static const uint addr = addrReg.ADDR;
-
-	if (addrReg.SPR) return &psSu128(addr);
-
-	// The DMAC appears to be directly hardwired to various memory banks: Main memory (including
-	// ROM), VUs, and the Scratchpad.  It is likely wired to the Hardware Register map as well,
-	// since it uses registers internally for accessing some peripherals (such as the GS FIFO
-	// regs).
-
-	// Supporting the hardware regs properly is problematic, but fortunately there's no reason
-	// a game would likely ever use it, so we don't really support them (the PCSX2 emulated DMA
-	// will map to the eeMem->HW memory, but does not invoke any of the indirect read/write handlers).
-
-	if ((addr >= PhysMemMap::Scratchpad) && (addr < PhysMemMap::ScratchpadEnd))
-	{
-		// Secret scratchpad address for DMA; games typically specify 0x70000000, but chances
-		// are the DMAC masks all addresses to MIPS physical memory specification (512MB),
-		// which would place SPR between 0x10000000 and 0x10004000.  Unknown yet if that is true
-		// so I'm sticking with the 0x70000000 mapping.
-
-		return &psSu128(addr);
-	}
-
-	void* result = vtlb_GetPhyPtr(addr);
-	if (!result && (addr < _256mb))
-	{
-		// 256mb (PS2 max memory)
-		// Such accesses are not documented as causing bus errors but as the memory does
-		// not exist, reads should continue to return 0 and writes should be discarded.
-		// (note that IOP has similar behavior on its DMAs and some memory accesses).
-
-		return (u128*)(writeToMem ? eeMem->ZeroWrite : eeMem->ZeroRead);
-	}
-
-	return NULL;
-}
-
-u128* DMAC_GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
-{
-	if (u128* retval = DMAC_TryGetHostPtr(addrReg, writeToMem)) return retval;
-
-	// NULL returned?  Raise a DMA BusError!
-
-	wxString msg;
-	msg.Printf( L"DMA address error (BUSERR): 0x%08x", addrReg.ADDR );
-	Console.Error(msg);
-	pxFailDev(msg);
-	throw Exception::DmaRaiseIRQ(L"BusError").BusError();
-}
-
-u32 DMAC_Read32( const tDMAC_ADDR& addr )
-{
-	return *(u32*)DMAC_GetHostPtr(addr, false);
-}
-
-
 using namespace EE_DMAC;
 
 // --------------------------------------------------------------------------------------
@@ -140,7 +94,7 @@ wxCharBuffer ChannelInformation::ToUTF8() const
 {
 	FastFormatAscii msg;
 
-	if (isSprChannel)
+	if (isSprChannel())
 		msg.Write("%s(0x%04x)", NameA, GetRegs().sadr.ADDR);
 	else
 		msg.Write(NameA);
@@ -200,9 +154,94 @@ uint ChannelState::TransferDrain( const u128* srcMemHost, uint lenQwc, uint srcS
 }
 
 template< typename T >
+uint ChannelState::TransferSource( T& destBuffer ) const
+{
+	pxAssume((sizeof(T) & 15) == 0);		// quadwords only please!!
+	return info.fnptr_xferFrom( (u128*)&destBuffer, 0, 0, sizeof(T) );
+}
+
+template< typename T >
 uint ChannelState::TransferDrain( const T& srcBuffer ) const
 {
+	pxAssume((sizeof(T) & 15) == 0);		// quadwords only please!!
 	return info.fnptr_xferTo( (u128*)&srcBuffer, 0, 0, sizeof(T) );
+}
+
+// --------------------------------------------------------------------------------------
+// EmotionEngine Programmable DMA Controller Address Resolution
+// --------------------------------------------------------------------------------------
+// 
+//  * All channels are hard-wired main memory (including ROM).
+//
+//  * VIF, GIF, and IPU channels are hard-wired to SPR; both via the SPR bit and via
+//    direct mapping at 0x70000000 (the former supports automatic memory wrapping while
+//    the latter likely generates BUSERR if the DMA exceeds the SPRAM's 16kb range).
+//
+//  * toSPR and fromSPR are hard-wired to VU data memory (but not VU micro memory?).
+//
+//  * SIF channels are *not* hard-wired to SPR or VU memory.  They can transfer to/from
+//    main memory only (this is likely because the SIF is typically *very* slow).
+//
+//  * Channels may be wired to hardware registers as well, but no known PS2 software
+//    depends on such functionality, so we don't have explicit confirmation yet.
+//    (implementing DMA access to hardware regs is exceptionally difficult and slow anyway,
+//     and will likely never be done.)
+//
+
+
+u128* ChannelState::TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
+{
+	static const uint addr = addrReg.ADDR;
+
+	if (info.HonorsSprBit())
+	{
+		// Secret scratchpad address for DMA; games typically specify 0x70000000, but chances
+		// are the DMAC masks all addresses to MIPS physical memory specification (512MB),
+		// which would place SPR between 0x10000000 and 0x10004000.  Unknown yet if that is true
+		// so I'm sticking with the 0x70000000 mapping.
+		
+		// [Ps2Confirm] The secret scratchpad support for 0x7000000 appears to only apply to
+		// channels that also honor the SPR bit (VIF, GIF, IPU).  SIF and SPR channels should
+		// be tested on real hardware to determine behavior.
+
+		if (addrReg.SPR || ((addr >= PhysMemMap::Scratchpad) && (addr < PhysMemMap::ScratchpadEnd)) )
+		{
+			return &psSu128(addr);
+		}
+	}
+
+	void* result = vtlb_GetPhyPtr(addr);
+	if (!result && (addr < _256mb))
+	{
+		// 256mb (PS2 max memory)
+		// Such accesses are not documented as causing bus errors but as the memory does
+		// not exist, reads should continue to return 0 and writes should be discarded.
+		// (note that IOP has similar behavior on its DMAs and some memory accesses).
+
+		return (u128*)(writeToMem ? eeMem->ZeroWrite : eeMem->ZeroRead);
+	}
+
+	return NULL;
+}
+
+u128* ChannelState::GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
+{
+	if (u128* retval = TryGetHostPtr(addrReg, writeToMem)) return retval;
+
+	// NULL returned?  Raise a DMA BusError!
+
+	wxString msg;
+	msg.Printf( L"DMA address error (BUSERR): 0x%08x", addrReg.ADDR );
+	Console.Error(msg);
+	//pxFailDev(msg);
+	IrqStall(Stall_BusError);
+
+	return NULL;	// technically unreachable
+}
+
+u32 ChannelState::Read32( const tDMAC_ADDR& addr )
+{
+	return *(u32*)GetHostPtr(addr, false);
 }
 
 }		// End Namespace EE_DMAC

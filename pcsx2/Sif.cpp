@@ -15,30 +15,353 @@
 
 #include "PrecompiledHeader.h"
 
-#define _PC_	// disables MIPS opcode macros.
-
-#include "IopCommon.h"
 #include "Sif.h"
+#include "IopHw.h"
+#include "ps2/NewDmac.h"
+
+/*
+SIF Overview:
+
+  The SIF is a connection between the EE and the IOP.  For the most part the SIF is a simple
+  design that transfers data in and out of the FIFOs (one 8 QWC FIFO attached to the EE and
+  an 8-WORD fifo on the IOP  (where WORDs are 32 bits each).  The SIF differs from the
+  other FIFO'd DMAs on the EE in the following ways:
+  
+   * all three SIF DMA channels share the same FIFO.
+   * The SIF FIFO does not appear to be mapped to hardware register (meaning it is only
+     accessible via DMA); or if it is, nothing ever seems to attempt to access it directly.
+   * There is no way to control SIF FIFO direction (like there is with VIF); the FIFO appears
+     to be controlled by DMAC exclusively.
+
+  In spite of SIF DMAs sharing a single FIFO, the DMAs can apparently run relatively
+  asynchronously.  The actual method of asynchronous operation is unknown, but is likely
+  some form of SFIFO arbitration, where by the FIFO direction is switched in order to
+  accommodate incoming data.
+
+  The SIF is the most "uncertain" of all PS2 components, from a programmer's perspective.
+  It is a handshake exchange between two entirely separate CPUs, both of which rarely aware
+  of the other's current status.  Even if the SFIFO were directly accessible via hardware
+  register, it would be either incredibly slow or entirely unsafe to use such a mechanism
+  (in order to be safe, both CPUs would need to be forcibly synchronized via SBUS registers
+  prior to FIFO use).  Tus, for EE/IOP communications to proceed efficiently, things must
+  be executed in as much batch/queue style as possible.  Because of this, "accurate" timing
+  is both unnecessary and nearly impossible.
+
+IOP SIF Transfer Mode:
+
+  The IOP SIF0 appears to always be in IOP CHAIN mode operation (a mode of transfer only
+  supported by the IOP SIF).  Unlike EE chains, IOP chains are very simple, specifying
+  only a start address and length in the TAG.
+  
+Emulation strategy overview:
+ 
+  Actual emulation of the FIFOs is *not* necessary.  FIFO activity always drains completely
+  before the next DMA transfer slice begins, and the SFIFO is only accessible via DMA so there
+  is no need to worry with one-at-a-time style FIFO feeds.  EE/IOP DMAs are directly linked
+  and perform all transfers in immediate time, with transfers following the basic rules of
+  stall and arbitration: if a SIF1 transfer is started on the EE, it will stall until a
+  SIF0 transfer on the IOP is also started.
+  
+  SFIFO emulation is not provided even in a strict/purist emulation sense.  We do not have
+  a detailed understanding of how the EE/IOP FIFOs perform bi-directional arbitration,
+  so any implementation would be mostly made up abyway.  Nor do the EE or IOP have direct
+  control over the SFIFO in any way (which allows us maximum freedom in implementation of
+  the system, regardless of how the real hardware performs its own FIFO arbitration
+  internally).
+
+*/
+
+
+#define SFIFO_EMULATED 0
+
+// --------------------------------------------------------------------------------------
+//  IopDmaTag
+// --------------------------------------------------------------------------------------
+// The IOP supports a bastardized version of Source Chain DMA transfer on the SIF channel
+// only.  The tag is a quadword, where the lower 64 bits are used for IOP address and transfer
+// size information. The upper 64 bits are actually the EE's DMAtag (qwc count and destination
+// address).
+//
+// When transferring from IOP to EE, the copy process looks as such:
+//   ee_tag (64 bits)      -> EE
+//   NULL   (64 bits)      -> EE
+//   addr   (wcnt*4 bytes) -> EE
+//
+// The NULL bits after the ee_tag are to ensure proper 128-bit alignment of the data after
+// the DMAtag, which the EE expects.  The actual data is irrelevant -- zero'd or current stale
+// FIFO contents work fine.
+//
+// The Low 32-bits of the IOP Chain Tag contain the MADR/Address and some various bits
+// of information (some of which is unknown at this time).
+//   Bits 0->23 are the address.
+//   Bit 30 is the End of Chain bit (set to 1 to end the IOP DMA transfer)
+//   Bit 31 is the IRQ bit, which suspends the chain transfer.
+//
+// Both EOC and IRQ cause an interrupt to be generated to host (IOP), though the two may
+// imply slightly different TAG and/or TADR behavior (which is unknown at this time).
+//
+union iDMAtag
+{
+	struct
+	{
+		// First 32 bits:
+
+		u32		ADDR		: 24;		// source address (loaded into MADR)
+		u32		_unknown	: 6;
+		u32		EOC			: 1;		// End of Chain
+		u32		IRQ			: 1;
+
+		// Second 32 bits:
+
+		u16		WCNT;		// word count (words are 32 bits on MIPS)
+		u16		_zero;		// likely hardwired to zero.
+	};
+
+	u64 _u64;
+	u32 _u32[2];
+};
+
+// --------------------------------------------------------------------------------------
+//  SIF_Internals
+// --------------------------------------------------------------------------------------
+// Because the SIF has no known hardware registers for tracking FIFO status, we have to
+// use our own internal data structures for it.
+//
+struct SIF_Internals
+{
+	// Unused -- We're not emulating the SIF's SFIFO at all currently
+	//uint	FQC;		// # of quadwords in the FIFO
+	uint	DIR;		// current FIFO direction (0=Source [SIF0], 1=Drain [SIF1])
+
+	// Unused -- we're storing the info in the IOP's BCR instead.
+	//uint	QWC;		// remaining quadwords in the current IOP DMA transfer
+
+	iDMAtag tag;
+};
+
+__aligned16 SIF_Internals sifstate;
 
 void sifInit()
 {
-	memzero(sif0);
-	memzero(sif1);
+	memzero(sifstate);
 }
-
-__fi void dmaSIF2()
-{
-	SIF_LOG(wxString(L"dmaSIF2" + sif2dma.cmq_to_str()).To8BitData());
-
-	sif2dma.chcr.STR = false;
-	Console.WriteLn("*PCSX2*: dmaSIF2");
-}
-
 
 void SaveStateBase::sifFreeze()
 {
 	FreezeTag("SIFdma");
+	Freeze(sifstate);
+}
 
-	Freeze(sif0);
-	Freeze(sif1);
+// returns the number of qwc actually transferred.
+// Destination is typically either EE memory or the SFIFO (if implemented/enabled).
+static uint SIF0_Transfer(u128* dest, uint dstQwc)
+{
+	// If there's no pending DMA transfer on the IOP side to feed us data, then the
+	// DMA stalls.
+	if (!hw_dma9.chcr.STR) return 0;
+
+	sifstate.DIR = 0;
+
+	// FIXME:  IOP BCR! 
+	// If IOP behaves like the EE, then it will attempt to transfer data as per the BCR
+	// prior to reading and processing tags.  Likewise, the IOP's DMAC may actually load
+	// the BCR with the word count for each transfer in the chain (same as the EE, and
+	// would make sense since the IOP DMAC likely relies on such behavior to resume from
+	// DMA suspension).
+	//
+	//pxAssertDev( (hw_dma9.bcr >> 16) == 0 || (hw_dma9.bcr & 0xffff) == 0 );
+
+	uint startQwc = dstQwc;
+
+	uint wcnt = ((hw_dma9.bcr >> 16) * (hw_dma9.bcr & 0xffff));
+	uint iopQwc = (wcnt + 3) / 4;
+
+	while (dstQwc)
+	{
+		if (!iopQwc)
+		{
+			// Check for End-of-Chain / IRQ of the previous chain tag:
+			// Since it unknown if the IOP has a proper holding area for chain mode
+			// TAG information, we have to maintain that stuff ourselves in sifstate.
+
+			if (sifstate.tag.IRQ || sifstate.tag.EOC)
+			{
+				hw_dma9.chcr.STR = 0;
+				psxDmaInterrupt2(2);
+				break;
+			}
+
+			// Fetch next tag in the chain. IOP's "Source Chain" mode is a 128 bit tag pair, where
+			// the first 64 bits is the IOP's DMAtag, and the second 64 bits is the EE's DMAtag).
+
+			const u64* tagPtr = (u64*)iopPhysMem(hw_dma9.tadr);
+			Copy64(&sifstate.tag, tagPtr);
+
+			hw_dma9.tadr += 16;
+			hw_dma9.madr = sifstate.tag.ADDR;
+			iopQwc = (sifstate.tag.WCNT + 3) / 4;
+
+			// Copy the EE's tag.  The EE expects the tag to be 128 bits, with the upper
+			// 64 bits being ineffective (ignored).  Since the IOP's source address isn't
+			// 128 bit aligned, we can't use MOVAPS/MOVDQA, but we can use MOVLPS, which is
+			// not alignment-restricted (yay).
+
+			//*(u64*) = ioptag->ee_tag._u64;
+
+			Copy64(dest, tagPtr);
+			++dest;
+			--dstQwc;
+			continue;
+		}
+
+		// IOP's source address memory is likely not QWC-aligned so we can't use memcpy_qwc here.
+		uint transable = std::min(dstQwc, iopQwc);
+		memcpy_fast(dest, iopPhysMem(hw_dma9.madr), transable*16);
+
+		hw_dma9.madr += transable * 16;
+		iopQwc -= transable;
+		dstQwc -= transable;
+
+	}
+
+	// write the IOP's BCR back; we might need it later if this was a partial transfer:
+	hw_dma9.bcr = (iopQwc << 16) | 0x10;
+
+	return startQwc-dstQwc;
+}
+
+// returns the number of qwc actually transferred
+static uint SIF1_Transfer(const u128* src, uint srcQwc)
+{
+	// If there's no pending DMA transfer on the IOP side to receive data, the DMA stalls.
+	if (!hw_dma10.chcr.STR) return 0;
+
+	sifstate.DIR = 1;
+
+	// Unlike source chain mode, the packets in IOP's destination chain do not need to
+	// be QWC-aligned; so we have to process everything in words (32 bits) at a time.  This
+	// of course complicates everything neatly. :)
+
+	uint startQwc = srcQwc;
+	uint wcnt = ((hw_dma10.bcr >> 16) * (hw_dma10.bcr & 0xffff));
+	pxAssumeDev((wcnt & 3) == 0, "IOP SIF1 Unaligned size specified in BCR.");
+	uint iopQwc = wcnt * 4;
+
+	while (srcQwc)
+	{
+		u8* iopdest;
+
+		if (!iopQwc)
+		{
+			// Check for End-of-Chain / IRQ of the previous chain tag:
+			// Since it unknown if the IOP has a proper holding area for chain mode
+			// TAG information, we have to maintain that stuff ourselves in sifstate.
+
+			if (sifstate.tag.IRQ || sifstate.tag.EOC)
+			{
+				hw_dma10.chcr.STR = 0;
+				psxDmaInterrupt2(2);
+				break;
+			}
+
+			// fetch the next tag from the incoming DMA stream.
+			// IOP's "Destination Chain" mode is a 128-bit tag, immediately followed by data
+			// to be written to the destination address specified in the tag.  The lower 64 bits
+			// is the IOP DMAtag, and the upper 64 bits are ineffective.  Data size indicated by
+			// the tag should always be QWC-aligned.
+
+			// source is 128-bit aligned, destBase is likely not, and the upper 64 bits can be discarded.
+			// Conclusion: this set of SSE copies should work nicely!
+
+			__m128d copyreg = _mm_load_pd((double*)src);
+			_mm_storel_pd((double*)&sifstate.tag, copyreg);		// store back low 64 bits, alignment-safe.
+			++src;
+			--srcQwc;
+
+			pxAssumeDev((sifstate.tag.WCNT & 3) == 0, "IOP SIF1 Unaligned size specified in tag.");
+
+			iopQwc = sifstate.tag.WCNT / 4;
+			hw_dma10.madr = sifstate.tag.ADDR;
+			continue;
+		}
+
+		uint transable = std::min(srcQwc, iopQwc);
+		iopdest = iopPhysMem(hw_dma10.madr);
+		if (!iopdest)
+		{
+			pxFailDev("Invalid target address for IOP SIF1 (Dma 10)");
+			// [TODO] IOP Bus error?  More likely a DMA-local bus error that simply stops
+			// the DMA and flags a bit somewhere:
+
+			hw_dma10.chcr.STR = 0;
+			psxDmaInterrupt2(2);
+			break;
+		}
+
+		memcpy_fast(iopdest, src, transable * 4);
+
+		hw_dma9.madr += transable * 4;
+		iopQwc -= transable;
+		srcQwc -= transable;
+
+	}
+
+	// write the IOP's BCR back; we might need it later if this was a partial transfer:
+	hw_dma10.bcr = (iopQwc << 16) | 0x4;
+
+	return startQwc - srcQwc;
+}
+
+uint __dmacall EE_DMAC::fromSIF0(u128* destBase, uint destSize, uint destStartQwc, uint lenQwc)
+{
+	// SIF transfers do not support wrapping, since they do not honor the SPR bit,
+	// cannot be used in conjunction with the MFIFO; and we don't emulate the SFIFO either.
+
+	pxAssume(destSize==0 && destStartQwc==0);
+
+	#if SFIFO_EMULATED
+	if (sifstate.FQC)
+	{
+		// Need to drain the FIFO we can transfer the requested data packet.
+		// We can only drain it if its already pointing in the right direction, though.
+		// If the direction is wrong, we'll have to skip arbitration until the other
+		// direction drains the FIFO properly.
+
+		if (sifstate.DIR != 0) return 0;
+
+		uint xferqwc = SIF0_Transfer(g_fifo.sif, sifstate.FQC);
+		sifstate.FQC -= xferqwc;
+		if (sifstate.FQC) return 0;
+	}
+	#endif
+	
+	return SIF0_Transfer( destBase, lenQwc );
+}
+
+uint __dmacall EE_DMAC::toSIF1(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	// SIF transfers do not support wrapping, since they do not honor the SPR bit,
+	// cannot be used in conjunction with the MFIFO; and we don't emulate the SFIFO either.
+
+	pxAssume(srcSize==0 && srcStartQwc==0);
+
+	#if SFIFO_EMULATED
+	if (sifstate.FQC)
+	{
+		// Need to drain the FIFO before we can transfer the requested data packet.
+		// We can only drain it if its already pointing in the right direction, though.
+		// If the direction is wrong, we'll have to skip arbitration until the other
+		// direction drains the FIFO properly.
+
+		if (sifstate.DIR != 1) return 0;
+
+		uint xferqwc = SIF1_Transfer(g_fifo.sif, sifstate.FQC);
+		sifstate.FQC -= xferqwc;
+		if (sifstate.FQC) return 0;
+	}
+	#endif
+
+	return SIF1_Transfer( srcBase, lenQwc );
+
+	return 0;
 }

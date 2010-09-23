@@ -17,9 +17,69 @@
 
 #include "NewDmac.h"
 
-void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
+using namespace EE_DMAC;
+
+// Returns FALSE if the transfer has ended or been suspended for some reason (usually
+// end-of-transfer or newtag irq).
+const DMAtag& ChannelState::SrcChainLoadTag( const tDMAC_ADDR& tadr )
 {
-	tDMAC_ADDR& tadr = info.TADR();
+	// Any conditions that set STR==0 should exception and skip past this code.
+	pxAssume(chcr.STR);
+
+	// Source chains perform IRQ checks *after* updating TADR, but *before* actually loading
+	// the new newtag into CHCR.
+
+	if (chcr.TAG.IRQ && chcr.TIE)
+		IrqStall(Stall_TagIRQ);
+
+	// Load next newtag from TADR and store the upper 16 bits in CHCR.
+	const DMAtag* newtag = (DMAtag*)GetHostPtr(tadr, false);
+
+	if (chcr.TTE)
+	{
+		// Tag Transfer is enabled
+		// -----------------------
+		// DMAtag is transferred with the data.  Tag is 128 bits, but the lower 64
+		// bits are masked to zero; which typically translates into harmless NOPs in
+		// GIFtag and VIFcode lands.
+
+		// [Ps2Confirm] TTE's behavior regarding the lower 64 bits is currently a
+		//   strong assumption, but can be confirmed easily using toSPR's Source
+		//   Chain mode transfer.  Write dummy data to SPR memory, initiate a simple
+		//   chain transfer with TTE=1, and read back the result.
+
+		static __aligned16 u128 masked_tag;
+		
+		masked_tag._u64[0] = 0;
+		masked_tag._u64[1] = newtag->_u64;
+
+		if (!TransferDrain(masked_tag))
+		{
+			// Peripheral is stalled.  We'll need to try and transfer the newtag again
+			// later, which means we need to either rewind TADR or include a flag to
+			// indicate the TADR is updated -- rewinding TADR is probably simpler and more
+			// emulation-exact.
+
+			//pxAssume(info.fnptr_xferToFifo);
+			//info.fnptr_xferToFifo(masked_tag);
+
+			//return NULL;
+			throw Exception::DmaTransferStall();
+		}
+	}
+
+	// tag transfered successfully (or TTE disabled) -- update tag registers:
+	creg.tadr = tadr;
+	chcr.tag16 = newtag->Bits16to31();
+	creg.qwc.QWC = newtag->QWC;
+
+	return *newtag;
+}
+
+tDMAC_ADDR ChannelState::MFIFO_SrcChainNextTag()
+{
+	// copy, not a reference! (actual TADR will be updated later after TTE).
+	tDMAC_ADDR tadr = info.TADR();
 
 	switch(chcr.TAG.ID)
 	{
@@ -28,7 +88,7 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 		case TAG_REFE:
 		case TAG_END:
 			// Note that when ending transfers, TADR is *not* updated (Soul Calibur 2 and 3)
-			chcr.STR = 0;
+			IrqStall( Stall_EndOfTransfer );
 		break;
 
 		// CNT (Continue) - Transfer QWC following the tag, and following QWC becomes the new TADR.
@@ -40,7 +100,10 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 			if (UseMFIFOHack)
 			{
 				if (!fromSprReg.chcr.STR)
-					throw Exception::DmaRaiseIRQ(L"MFIFO stall").MFIFOstall();
+				{
+					// See below for details...
+					IrqStall(Stall_MFIFO);
+				}
 
 				tadr.ADDR = fromSprReg.sadr.ADDR;
 				tadr.SPR = 1;
@@ -55,10 +118,10 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 				{
 					// MFIFO Stall condition (!)  The FIFO is drained and the SPR isn't
 					// feeding it any more data.  Oddly enough, the drain channel does
-					// *not* stop in this situation, though we can't very well keep reading
-					// data, so throw an exception:
+					// *not* stop in this situation (STR remains 1), though we can't very
+					// well keep reading data.. :p
 
-					throw Exception::DmaRaiseIRQ(L"MFIFO stall").MFIFOstall();
+					IrqStall(Stall_MFIFO);
 				}
 				tadr.ADDR = new_tadr;
 			}
@@ -69,7 +132,10 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 		// REFS (Reference and Stall) - ... and check STADR and stall if needed, when reading the QWC.
 		case TAG_REFS:
 			if (!pxAssertDev(Stall_Drain != info.DmaStall, L"REFS without stall control"))
-				throw Exception::DmaRaiseIRQ(L"REFS without stall control").Verbose();
+			{
+				IrqStall(Stall_TagError, L"REFS without stall control");
+			}
+		// fall through...
 
 		case TAG_REF:
 			if (UseMFIFOHack)
@@ -85,37 +151,38 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateTADR()
 		// -------------------------------------
 		// Tags not supported in MFIFO transfers
 		// -------------------------------------
+		// This code should be unreachable since the MADR update below will be the
+		// first to check the tag for validity.
+
+		#if 0
 		case TAG_CALL:
 		case TAG_RET:
 		case TAG_NEXT:
-			pxAssumeDev(false, "(DMAC CHAIN) Unsupported tag invoked during MFIFO." );
+			//pxAssumeDev("(DMAC CHAIN) Unsupported tag invoked during MFIFO." );
+			IrqStall(Stall_TagError, L"Unsupported tag invoked during MFIFO");
 		break;
+		#endif
 
 		jNO_DEFAULT
 	}
-
-	// Source chains perform IRQ checks after updating TADR, but *before* actually loading
-	// the new tag into CHCR (the exception skips the loading part)
-
-	if(chcr.TAG.IRQ && chcr.TIE)
-		throw Exception::DmaRaiseIRQ(L"Tag IRQ");
+	
+	return tadr;
 }
 
 void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateMADR( const DMAtag& tag )
 {
-	const tDMAC_ADDR& tadr = info.TADR();
-
 	switch (chcr.TAG.ID)
 	{
 		case TAG_REFS:
 			if (!pxAssertDev(info.DmaStall == Stall_Drain, "(DMA CHAIN) REFS tag invoked on an unsupported channel."))
 			{
-				// Most likely this is correct, though there is a possibility that the
-				// Real DMAC actually just treats CNTS like a CNT if the channel doesn't
-				// support Source Stall mode.
-				throw Exception::DmaRaiseIRQ(L"REFS without stall control").Verbose();
+				// Most likely this is correct, though there is a possibility that the Real DMAC
+				// actually just treats CNTS like a CNT if the channel doesn't support Source
+				// Stall mode.
+				IrqStall(Stall_TagError, L"REFS without stall control");
 			}
-	
+		// fall through ...
+
 		case TAG_REFE:
 		case TAG_REF:
 		{
@@ -168,29 +235,33 @@ void EE_DMAC::ChannelState::MFIFO_SrcChainUpdateMADR( const DMAtag& tag )
 			}
 			else
 			{
-				madr.ADDR = dmacRegs.mfifoWrapAddr(tadr.ADDR + 16);
+				madr.ADDR = dmacRegs.mfifoWrapAddr(info.TADR().ADDR + 16);
 			}
 		break;
 
 		// -------------------------------------
 		// Tags not supported in MFIFO transfers
 		// -------------------------------------
+		// [Ps2Confirm] Should these cause invalid tag errors, or be silently ignored?
+
 		case TAG_CALL:
 		case TAG_RET:
 		case TAG_NEXT:
-			pxAssumeDev(false, "(DMAC CHAIN) Unsupported tag invoked during MFIFO." );
+			//pxAssumeDev(false, "(DMAC CHAIN) Unsupported tag invoked during MFIFO." );
+			IrqStall(Stall_TagError, L"Unsupported tag invoked during MFIFO");
 		break;
 
-		jNO_DEFAULT
+		default: IrqStall(Stall_TagError, L"Unknown/reserved ID");
 	}
 }
 
 
-void EE_DMAC::ChannelState::SrcChainUpdateTADR()
+tDMAC_ADDR EE_DMAC::ChannelState::SrcChainNextTag()
 {
-	tDMAC_ADDR& tadr = info.TADR();
+	// copy, not a reference! (actual TADR will be updated later after TTE).
+	tDMAC_ADDR tadr = info.TADR();
 
-	// Not really sure what the Real DMACdoes if this happens. >_<
+	// Not really sure what the Real DMAC does if this happens. >_<
 	pxAssumeDev(info.hasSourceChain, "(DMAC) Source chain invoked on unsupported channel.");
 
 	switch(chcr.TAG.ID)
@@ -200,7 +271,7 @@ void EE_DMAC::ChannelState::SrcChainUpdateTADR()
 		case TAG_REFE:
 		case TAG_END:
 			// Note that when ending transfers, TADR is *not* updated (Soul Calibur 2 and 3)
-			chcr.STR = 0;
+			IrqStall(Stall_EndOfTransfer);
 		break;
 
 		// CNT (Continue) - Transfer QWC following the tag, and following QWC becomes the new TADR.
@@ -211,14 +282,15 @@ void EE_DMAC::ChannelState::SrcChainUpdateTADR()
 		
 		// NEXT - Transfer QWC following the tag, and uses ADDR of the old tag as the new TADR.
 		case TAG_NEXT:
-			tadr._u32 = DMAC_Read32(tadr);
+			tadr._u32 = Read32(tadr);
 		break;
 		
 		// REF  (Reference) - Transfer QWC from the ADDR field, and increment the TADR to get the next tag.
 		// REFS (Reference and Stall) - ... and check STADR and stall if needed, when reading the QWC.
 		case TAG_REFS:
 			if (!pxAssertDev(Stall_Drain != info.DmaStall, L"REFS without stall control"))
-				throw Exception::DmaRaiseIRQ(L"REFS without stall control").Verbose();
+				IrqStall(Stall_TagError, L"REFS without stall control");
+		// fall through...
 
 		case TAG_REF:
 			tadr.IncrementQWC();
@@ -237,7 +309,7 @@ void EE_DMAC::ChannelState::SrcChainUpdateTADR()
 				// channel the *likely* reaction of the DMAC is to stop the transfer and
 				// raise an interrupt:
 
-				throw Exception::DmaRaiseIRQ(L"CALL without address stack").Verbose();
+				IrqStall(Stall_TagError, L"CALL without address stack");
 			}
 			
 			// Stash an address on the address stack pointer.
@@ -250,12 +322,11 @@ void EE_DMAC::ChannelState::SrcChainUpdateTADR()
 				case 0: creg.asr0 = madr; break;
 				case 1: creg.asr1 = madr; break;
 
-				default:
-					throw Exception::DmaRaiseIRQ(L"Callstack Overflow").Verbose();
+				default: IrqStall(Stall_CallstackOverflow);
 			}
 
 			++chcr.ASP;
-			tadr._u32 = DMAC_Read32(tadr);
+			tadr._u32 = Read32(tadr);
 		}
 		break;
 		
@@ -271,40 +342,30 @@ void EE_DMAC::ChannelState::SrcChainUpdateTADR()
 				// channel the *likely* reaction of the DMAC is to stop the transfer and
 				// raise an interrupt:
 
-				throw Exception::DmaRaiseIRQ(L"RET without address stack").Verbose();
+				IrqStall(Stall_TagError, L"RET without address stack");
 			}
 
 			switch(chcr.ASP)
 			{
-				case 0:
-				{
-					// Callstack underflow could be a common occurrence in games, since
-					// it is a convenient way to end chains.  So lets do the IRQ manually
-					// and avoid the overhead of throwing an exception.
-					//throw Exception::DmaRaiseIRQ(L"Callstack Underflow");
-
-					chcr.STR = 0;
-					dmacRegs.stat.CIS |= (1 << Id);
-				}
-
+				case 0: IrqStall(Stall_CallstackUnderflow); break;
 				case 1: creg.asr0 = madr; break;
 				case 2: creg.asr1 = madr; break;
 
 				case 3:
-					pxFailDev("(DMAC) Invalid address stack pointer value = 3.");
+					pxAssumeDev(false, "(DMAC) Invalid address stack pointer value = 3.");
 			}
 			--chcr.ASP;
 		}
 		break;
 
 		jNO_DEFAULT
+		
+		// This should be unreachable -- tags are first checked for validity when
+		// SrcChainUpdateMADR() is called.
+		//default: IrqStall(Stall_TagError, "Unknown/reserved ID");
 	}
-
-	// Source chains perform IRQ checks after updating TADR, but *before* actually loading
-	// the new tag into CHCR (the exception skips the loading part)
-
-	if(chcr.TAG.IRQ && chcr.TIE)
-		throw Exception::DmaRaiseIRQ(L"Tag IRQ");
+	
+	return tadr;
 }
 
 void EE_DMAC::ChannelState::SrcChainUpdateMADR( const DMAtag& tag )
@@ -323,8 +384,9 @@ void EE_DMAC::ChannelState::SrcChainUpdateMADR( const DMAtag& tag )
 				// Most likely this is correct, though there is a possibility that the
 				// Real DMAC actually just treats CNTS like a CNT if the channel doesn't
 				// support Source Stall mode.
-				throw Exception::DmaRaiseIRQ(L"REFS without stall control").Verbose();
+				IrqStall(Stall_TagError, L"REFS without stall control");
 			}
+		// fall through...
 	
 		case TAG_REFE:
 		case TAG_REF:
@@ -337,7 +399,7 @@ void EE_DMAC::ChannelState::SrcChainUpdateMADR( const DMAtag& tag )
 		// --------------------------------------------------------------------------------------
 		case TAG_CALL:
 		case TAG_RET:
-			if (!pxAssertDev(info.hasAddressStack, "(DMAC CHAIN) CALL/RET tag invoked on an unsupported channel (no address stack)." ))
+			if (!pxAssertDev(info.hasAddressStack, L"(DMAC CHAIN) CALL/RET invoked on an unsupported channel (no address stack)." ))
 			{
 				// Note that this condition should typically be unreachable, since the same
 				// check is performed when TADR is read and set.
@@ -346,9 +408,8 @@ void EE_DMAC::ChannelState::SrcChainUpdateMADR( const DMAtag& tag )
 				// channel the *likely* reaction of the DMAC is to stop the transfer and
 				// raise an interrupt:
 
-				throw Exception::DmaRaiseIRQ(L"CALL without address stack").Verbose();
+				IrqStall(Stall_TagError, L"CALL/RET invoked on an unsupported channel (no address stack)");
 			}
-
 		// ...and fall through!
 
 		case TAG_END:
@@ -362,21 +423,23 @@ void EE_DMAC::ChannelState::SrcChainUpdateMADR( const DMAtag& tag )
 	}
 }
 
-void EE_DMAC::ChannelState::DstChainUpdateTADR()
+void EE_DMAC::ChannelState::DstChainNextTag()
 {
-	// Not really sure what the Real DMACdoes if this happens. >_<
+	// Not really sure what the Real DMAC does if this happens. >_<
 	pxAssumeDev(info.hasDestChain, "(DMAC) Destination chain invoked on unsupported channel.");
 
-	// Destination chains perform IRQ checks prior to updating TADR!
+	// Dest chain mode checks for interrupt on the current tag *prior* to loading the next
+	// tag from the peripheral.
 	if(chcr.TAG.IRQ && chcr.TIE)
-		throw Exception::DmaRaiseIRQ(L"Tag IRQ");
+	{
+		IrqStall(Stall_TagIRQ);
+	}
 
 	switch(chcr.TAG.ID)
 	{
 		// END (Continue and End) - Transfer QWC following the tag and end.
 		case TAG_END:
-			// Note that when ending transfers, TADR is *not* updated (Soul Calibur 2 and 3)
-			chcr.STR = 0;
+			IrqStall(Stall_EndOfTransfer);
 		break;
 
 		// CNT (Continue) - Transfer QWC following the tag, and following QWC becomes the new TADR.
@@ -387,7 +450,7 @@ void EE_DMAC::ChannelState::DstChainUpdateTADR()
 				// Most likely this is correct, though there is a possibility that the
 				// Real DMAC actually just treats CNTS like a CNT if the channel doesn't
 				// support Source Stall mode.
-				throw Exception::DmaRaiseIRQ(L"CNTS without stall control").Verbose();
+				IrqStall(Stall_TagError, L"CNTS without stall control");
 			}
 			if (SourceStallActive())
 				dmacRegs.stadr = madr;
@@ -395,27 +458,22 @@ void EE_DMAC::ChannelState::DstChainUpdateTADR()
 			// .. and fall through!
 
 		case TAG_CNT:
-			creg.tadr = madr;
-			creg.tadr.IncrementQWC();
+		{
+			u128 dest;
+			if (!TransferSource(dest))
+				throw Exception::DmaTransferStall();
+
+			chcr.tag16 = ((DMAtag&)dest).Bits16to31();
+			madr = ((DMAtag&)dest).addr;
+		}
 		break;
 
-		jNO_DEFAULT
-	}
-}
+		// jNO_DEFAULT is an optimized path that works for all known games.  The real PS2
+		// hardware behaves as though the default case is reached: it stalls the transfer
+		// and raises an exception.
 
-void EE_DMAC::ChannelState::DstChainUpdateMADR()
-{
-	if (TAG_CNTS == chcr.TAG.ID)
-	{
-		if (!pxAssertDev(info.DmaStall == Stall_Source, "(DMA CHAIN) CNTS tag invoked on an unsupported channel."))
-		{
-			// Most likely this is correct, though there is a possibility that the
-			// Real DMAC actually just treats CNTS like a CNT if the channel doesn't
-			// support Source Stall mode.
-			throw Exception::DmaRaiseIRQ(L"CNTS without stall control").Verbose();
-		}
+		//jNO_DEFAULT
+		default:
+			IrqStall(Stall_TagError, L"Unknown/reserved ID");
 	}
-
-	madr = creg.tadr;
-	madr.IncrementQWC();
 }

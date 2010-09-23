@@ -40,6 +40,16 @@ static __fi void ZeroQWC( u128& dest )
 	_mm_store_ps( (float*)&dest, _mm_setzero_ps() );
 }
 
+// Fast copy of 64 bits using SSE.
+static __fi void Copy64( void* dest, const void* src )
+{
+	// yes its uninitialized.  That's fine.  The upper bits are never used anyway.
+	__m128d mreg;
+
+	// Uses PD variants instead of PI variants as those are SSE1 compat.
+	_mm_storel_pd( (double*)dest, _mm_loadl_pd( mreg, (double*)src ));
+}
+
 #define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
 
 #define psHs8(mem)	(*(s8 *)&eeHw[(mem) & 0xffff])

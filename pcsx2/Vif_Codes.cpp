@@ -20,8 +20,6 @@
 #include "newVif.h"
 #include "VUmicro.h"
 
-#include "DmacLegacy.h"
-
 #define _vifCodeT template< uint idx > static void
 
 #define vif1Only()	pxAssumeMsg( idx==1, "Vifcode command is VIF1-only; please remove the link from the VIFcode0 LUT.")
@@ -234,6 +232,8 @@ _vifCodeT vc_FlushA()
 	// disabled temporarily, or the EE performing direct GIF FIFO writes.
 
 	// [TODO] register a listener for GIFpath.EOP?
+	//  (the DMAC will eventually re-invoke VIF regardless, though an EOP listener would
+	//   be more direct and perhaps more efficient).
 }
 
 _vifCodeT vc_MPG()

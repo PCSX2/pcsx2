@@ -101,49 +101,6 @@ enum LogicalTransferMode
 };
 
 // --------------------------------------------------------------------------------------
-//  tDMA_TAG
-// --------------------------------------------------------------------------------------
-// Doing double duty as both the top 32 bits *and* the lower 32 bits of a chain tag.
-// Theoretically should probably both be in a u64 together, but with the way the
-// code is layed out, this is easier for the moment.
-//
-union tDMA_TAG {
-	struct {
-		u32 QWC : 16;
-		u32 _reserved2 : 10;
-		u32 PCE : 2;
-		u32 ID : 3;
-		u32 IRQ : 1;
-	};
-	struct {
-		u32 ADDR : 31;
-		u32 SPR : 1;
-	};
-	u32 _u32;
-
-	tDMA_TAG(u32 val) { _u32 = val; }
-	u16 upper() const { return (_u32 >> 16); }
-	u16 lower() const { return (u16)_u32; }
-	wxString tag_to_str() const
-	{
-		switch(ID)
-		{
-			case TAG_REFE:	return wxsFormat(L"REFE 0x%08X", _u32); break;
-			case TAG_CNT:	return L"CNT"; break;
-			case TAG_NEXT:	return wxsFormat(L"NEXT 0x%08X", _u32); break;
-			case TAG_REF:	return wxsFormat(L"REF  0x%08X", _u32); break;
-			case TAG_REFS:	return wxsFormat(L"REFS 0x%08X", _u32); break;
-			case TAG_CALL:	return L"CALL"; break;
-			case TAG_RET:	return L"RET"; break;
-			case TAG_END:	return L"END"; break;
-			default: return L"????"; break;
-		}
-	}
-	void reset() { _u32 = 0; }
-
-};
-
-// --------------------------------------------------------------------------------------
 //  tDMA_CHCR
 // --------------------------------------------------------------------------------------
 union tDMA_CHCR {
@@ -205,7 +162,6 @@ union tDMA_SADR {
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"Sadr: 0x%x", _u32); }
-	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 union tDMA_QWC {
@@ -222,7 +178,6 @@ union tDMA_QWC {
 
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"QWC: 0x%04x", QWC); }
-	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
 };
 
 enum INTCIrqs

@@ -23,8 +23,6 @@
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
 
-#include "DmacLegacy.h"		// needed for hacky dmaGetAddr() below (which should be fixed anyway)
-
 static __fi s64 _add64_Overflow( s64 x, s64 y )
 {
 	const s64 result = x + y;
@@ -191,13 +189,13 @@ static int __Deci2Call(int call, u32 *addr)
 //			cpuRegs.pc = deci2handler;
 //			Console.WriteLn("deci2msg: %s",  (char*)PSM(d2ptr[4]+0xc));
 
-			if (d2ptr[1]>0xc){
-				// this looks horribly wrong, justification please?
-				u8* pdeciaddr = (u8*)dmaGetAddr(d2ptr[4]+0xc, false);
-				if( pdeciaddr == NULL )
-					pdeciaddr = (u8*)PSM(d2ptr[4]+0xc);
-				else
-					pdeciaddr += (d2ptr[4]+0xc) % 16;
+			if (d2ptr[1] > 0xc)
+			{
+				// FIXME : DECI2 should use virtual memory, not* physical memory. --air
+				uint d2adr = (d2ptr[4]+0xc);
+				d2adr = (d2adr + 15) & ~15;		// align up to nearest QWC (?)
+
+				u8* pdeciaddr = (u8*)PSM(d2adr);
 
 				const int copylen = std::min<uint>(255, d2ptr[1]-0xc);
 				memcpy_fast(deci2buffer, pdeciaddr, copylen );

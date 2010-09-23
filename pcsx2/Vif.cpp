@@ -118,7 +118,7 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value) {
 
 				if (vifXRegs.IsStalled())
 				{
-					dmacRequestXfer( idx ? EE_DMAC::ChanId_VIF1 : EE_DMAC::ChanId_VIF0);
+					dmacRequestSlice( idx ? EE_DMAC::ChanId_VIF1 : EE_DMAC::ChanId_VIF0);
 				}
 
 			}
@@ -199,7 +199,7 @@ _vifT size_t vifTransfer(const u128* data, int size_qwc) {
 			break;
 		}
 
-		// Code processed in complete, so check the I-bit status.
+		// Code processed in complete, so check the I-bit status:
 
 		// Okay did some testing with Max Payne, it does this:
 		// VifMark  value = 0x666   (i know, evil!)
