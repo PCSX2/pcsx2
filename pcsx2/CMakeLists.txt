@@ -385,8 +385,6 @@ set(pcsx2LinuxHeaders
 set(pcsx2ps2Sources
 	ps2/BiosTools.cpp
 	ps2/GIFpath.cpp
-	ps2/LegacyDmac.cpp
-	ps2/NewVif.cpp
 	ps2/Iop/IopHwRead.cpp
 	ps2/Iop/IopHwWrite.cpp)
 
