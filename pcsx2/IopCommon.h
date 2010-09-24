@@ -21,9 +21,9 @@
 #include "CDVD/CDVD.h"
 #include "CDVD/CdRom.h"
 
+#include "IopHw.h"
 #include "IopDma.h"
 #include "IopMem.h"
-#include "IopHw.h"
 #include "IopBios.h"
 #include "IopCounters.h"
 #include "IopSio2.h"

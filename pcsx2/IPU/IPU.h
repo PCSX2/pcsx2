@@ -67,7 +67,7 @@ union tIPU_CTRL {
 	void reset() { _u32 = 0; }
 };
 
-__aligned16 struct tIPU_BP {
+struct __aligned16 tIPU_BP {
 	__aligned16 u128 internal_qwc[2];
 
 	u32 BP;		// Bit stream point (0 to 128*2)
@@ -85,7 +85,7 @@ __aligned16 struct tIPU_BP {
 		BP += bits;
 		pxAssume( BP <= 256 );
 
-		if (BP > 127)
+		if (BP >= 128)
 		{
 			BP -= 128;
 
@@ -100,8 +100,11 @@ __aligned16 struct tIPU_BP {
 			else
 			{
 				// if FP == 1 then the buffer has been completely drained.
-				// if FP == 0 then an already-drained buffer is being advanced.
-				// In either case we just assign FP to 0.
+				// if FP == 0 then an already-drained buffer is being advanced, and we need to drop a
+				// quadword from the IPU FIFO.
+
+				if (!FP)
+					ipu_fifo.in.read(&internal_qwc[0]);
 
 				FP = 0;
 			}

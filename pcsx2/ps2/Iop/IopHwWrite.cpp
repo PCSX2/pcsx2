@@ -24,7 +24,7 @@ namespace IopMemory {
 using namespace Internal;
 
 // Template-compatible version of the psxHu macro.  Used for writing.
-#define psxHu(mem)	(*(u32*)&psxH[(mem) & 0xffff])
+#define psxHu(mem)	(*(u32*)&iopHw[(mem) & 0xffff])
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -392,13 +392,11 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			break;
 
 			mcase(0x1f801528):	// DMA9 CHCR -- SIF0
-				psxHu(addr) = val;
-				DmaExec2(9);
+				psxDma9(val);
 			break;
 
 			mcase(0x1f801538):	// DMA10 CHCR -- SIF1
-				psxHu(addr) = val;
-				DmaExec2(10);
+				psxDma10(val);
 			break;
 
 			mcase(0x1f801548):	// DMA11 CHCR -- SIO2 IN

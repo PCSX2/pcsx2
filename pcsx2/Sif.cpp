@@ -119,6 +119,8 @@ union iDMAtag
 
 	u64 _u64;
 	u32 _u32[2];
+	
+	void clear() { _u64 = 0; }
 };
 
 // --------------------------------------------------------------------------------------
@@ -221,7 +223,6 @@ static uint SIF0_Transfer(u128* dest, uint dstQwc)
 		hw_dma9.madr += transable * 16;
 		iopQwc -= transable;
 		dstQwc -= transable;
-
 	}
 
 	// write the IOP's BCR back; we might need it later if this was a partial transfer:
@@ -364,4 +365,70 @@ uint __dmacall EE_DMAC::toSIF1(const u128* srcBase, uint srcSize, uint srcStartQ
 	return SIF1_Transfer( srcBase, lenQwc );
 
 	return 0;
+}
+
+
+void psxDma9(iDMA_CHCR newchcr)
+{
+	// We ignore the write if:
+	//  * if STR is already set (log/assert if game is trying to clear it)
+	// 	* is STR is not being changed (old == new)
+
+	if (!hw_dma9.chcr.STR)
+	{
+		if (newchcr.STR)
+		{
+			// PCR is the Priority Control Register.  This shouldn't be disabling transfers outright;
+			// it should only be changing the arbitration order (delaying a channel's transfer until
+			// another has completed).  Since we have no priority system, let's ignore it for now.
+
+			//uint bitmess = 8 << ((9-7) * 4);
+			//if ((HW_DMA_PCR2 & bitmess) == 0) return;
+
+			SIF_LOG("IOP dmaSIF0(9) chcr = %08x, madr = %08x, bcr = %08x, tadr = %08x",	hw_dma9.chcr, hw_dma9.madr, hw_dma9.bcr);
+
+			// The EE is responsible for performing all SIF transfers, so the IOP can only signal
+			// to the EE that it is ready for transfer (DREQ); and then continue on its merry way.
+
+			sifstate.tag.clear();
+			EE_DMAC::dmacRequestSlice(EE_DMAC::ChanId_SIF0);
+		}
+	}
+	else if(newchcr.STR)
+	{
+		pxFailDev("Attempted manual clearing of IOP SIF0 STR bit.");
+	}
+
+	hw_dma9.chcr = newchcr;
+}
+
+void psxDma10(iDMA_CHCR newchcr)
+{
+	// We ignore the write if:
+	//  * if STR is already set (log/assert if game is trying to clear it)
+	// 	* is STR is not being changed (old == new)
+
+	if (!hw_dma10.chcr.STR)
+	{
+		if (newchcr.STR)
+		{
+			SIF_LOG("IOP: dmaSIF1(10) chcr = %08x, madr = %08x, bcr = %08x", hw_dma10.chcr, hw_dma10.madr, hw_dma10.bcr);
+
+			// The EE is responsible for performing all SIF transfers, so the IOP can only signal
+			// to the EE that it is ready for transfer (DREQ); and then continue on its merry way.
+
+			// See SIF0 above.
+			//uint bitmess = 8 << ((10-7) * 4);
+			//if ((HW_DMA_PCR2 & bitmess) == 0) return;
+
+			sifstate.tag.clear();
+			EE_DMAC::dmacRequestSlice(EE_DMAC::ChanId_SIF1);
+		}
+	}
+	else if(newchcr.STR)
+	{
+		pxFailDev("Attempted manual clearing of IOP SIF1 STR bit.");
+	}
+
+	hw_dma10.chcr = newchcr;
 }

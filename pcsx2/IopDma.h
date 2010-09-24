@@ -17,8 +17,7 @@
 #define __PSXDMA_H__
 
 #include "PS2Edefs.h"
-
-// defined in PS2Edefs.h
+#include "IopHw.h"
 
 #ifdef ENABLE_NEW_IOPDMA
 
@@ -70,8 +69,9 @@ extern void psxDma7(u32 madr, u32 bcr, u32 chcr);
 #ifndef ENABLE_NEW_IOPDMA_DEV9
 extern void psxDma8(u32 madr, u32 bcr, u32 chcr);
 #endif
-extern void psxDma9(u32 madr, u32 bcr, u32 chcr);
-extern void psxDma10(u32 madr, u32 bcr, u32 chcr);
+
+extern void psxDma9( iDMA_CHCR newchcr );
+extern void psxDma10( iDMA_CHCR newchcr );
 
 extern int  psxDma4Interrupt();
 extern int  psxDma7Interrupt();
