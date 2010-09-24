@@ -151,10 +151,8 @@ void ProcessFifoEvent()
 		// So if PATH3 cannot get arbitration rights to the GIF, then the FIFO cannot empty itself.
 
 		GIF_LOG("Draining GIF FIFO (FQC = %u)", gifRegs.stat.FQC);
-		
-		GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, gifRegs.stat.FQC);
-		uint remaining = g_gifpath.CopyTag(g_fifo.gif, gifRegs.stat.FQC);
-		GetMTGS().SendDataPacket();
+
+		uint remaining = GIF_UploadTag(g_fifo.gif, gifRegs.stat.FQC);
 
 		if (remaining)
 		{

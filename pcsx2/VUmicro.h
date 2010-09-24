@@ -262,8 +262,9 @@ extern void vu0Finish();
 extern void iDumpVU0Registers();
 
 // VU1
-extern void vu1Finish();
+extern bool vu1Finish();
 extern void vu1ResetRegs();
+extern bool vu1ResumeXGKICK();
 extern void __fastcall vu1ExecMicro(u32 addr);
 extern void vu1Exec(VURegs* VU);
 extern void iDumpVU1Registers();

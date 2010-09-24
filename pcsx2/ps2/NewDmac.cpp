@@ -903,12 +903,54 @@ template bool dmacWrite32<0x0d>( u32 mem, mem32_t& value );
 template bool dmacWrite32<0x0e>( u32 mem, mem32_t& value );
 template bool dmacWrite32<0x0f>( u32 mem, mem32_t& value );
 
-uint __dmacall EE_DMAC::toIPU	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::toSPR	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
+// --------------------------------------------------------------------------------------
+//  toSPR / fromSPR
+// --------------------------------------------------------------------------------------
+uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	// Source data is copied from src to the destination address specified in SPR's SADR.
+	// The destination is wrapped (SPR auto-wraps).  If purist MFIFO is active, the source
+	// can be wrapped as well (sigh).
+	
+	uint destPos = spr0dma.sadr.ADDR / 16;
+	
+	if (UseMFIFOHack)
+	{
+		// Yay!  only have to worry about wrapping the destination copy.
+		pxAssume(srcSize == 0 && srcStartQwc == 0);
+		MemCopy_WrappedDest(srcBase, (u128*)eeMem->Scratch, destPos, sizeof(eeMem->Scratch), lenQwc);
+	}
+	else
+	{
+		pxFailDev("Implement Me!!");
+	}
 
-uint __dmacall EE_DMAC::fromIPU	(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::fromVIF0(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
+	spr0dma.sadr.ADDR = destPos * 16;
+	return lenQwc;
+}
+
+uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, uint lenQwc)
+{
+	// Scratchpad data is copied from the address specified in the SPR's SADR.
+	// The source is wrapped (SPR auto-wraps).  If purist MFIFO is active, the dest
+	// can be wrapped as well (sigh).
+
+	uint srcPos = spr1dma.sadr.ADDR / 16;
+
+	if (UseMFIFOHack)
+	{
+		// Yay!  only have to worry about wrapping the source data.
+		pxAssume(destSize == 0 && destStartQwc == 0);
+		MemCopy_WrappedSrc((u128*)eeMem->Scratch, srcPos, sizeof(eeMem->Scratch), dest, lenQwc);
+	}
+	else
+	{
+		pxFailDev("Implement Me!!");
+	}
+
+	spr1dma.sadr.ADDR = srcPos * 16;
+	return lenQwc;
+}
 
 // SIF2 is a special interface used *only* when the PS2 is playing legacy PS1 games.  It is most likely a very
 // simple bi-directional DMA transfer that may not support chain mode features ala SIF0/SIF1.  At this time

@@ -23,6 +23,7 @@
 #include <cmath>
 
 #include "VUmicro.h"
+#include "Gif.h"
 
 #ifdef PCSX2_DEBUG
 u32 vudump = 0;
@@ -38,20 +39,37 @@ void vu1ResetRegs()
 	vif1Regs.stat.VEW = false;
 }
 
-void vu1Finish() {
-	while (VU0.VI[REG_VPU_STAT].UL & 0x100) {
-		VUM_LOG("vu1ExecMicro > Stalling until current microprogram finishes");
-		CpuVU1->Execute(vu1RunCycles);
+// Returns TRUE if the VU1 finished, and is either in STOP or READY state.
+// Returns FALSE if execution was stalled for some reason (typically an XGKICK).
+bool vu1Finish() {
+	if (!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return true;
+
+	// if the VU1 is waiting on an XGKICK transfer, then there's really nothing we can
+	// do.  The XGKICK will be completed in due time when the blocking condition (either
+	// SIGNAL/IMR or a pending PATH2/PATH3 transfer) is cleared.
+	
+	if (gifRegs.stat.P1Q)
+	{
+		VUM_LOG("VU1 stalled due to XGKICK.");
+		return false;
 	}
+	
+	CpuVU1->Execute(vu1RunCycles);
+	return !(VU0.VI[REG_VPU_STAT].UL & 0x100);
+}
+
+bool vu1ResumeXGKICK()
+{
+	if (!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return true;
+	CpuVU1->ResumeXGkick();
+	return !(VU0.VI[REG_VPU_STAT].UL & 0x100);
 }
 
 void __fastcall vu1ExecMicro(u32 addr)
 {
-	static int count = 0;
-	vu1Finish();
+	pxAssumeDev((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0, "vu1ExecMicro: VU1 already running!" );
 
 	VUM_LOG("vu1ExecMicro %x", addr);
-	VUM_LOG("vu1ExecMicro %x (count=%d)", addr, count++);
 
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 	VU0.VI[REG_VPU_STAT].UL |=  0x0100;

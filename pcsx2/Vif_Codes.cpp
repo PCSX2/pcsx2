@@ -128,12 +128,9 @@ _vifCodeT vc_Direct()
 	pxAssume( vpu.fragment_size != 0 );
 
 	uint minSize = std::min(vif1Regs.num, vpu.fragment_size/4);
+	uint ret = GIF_UploadTag((u128*)vpu.data, minSize);
 
-	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, minSize);
-	uint ret = g_gifpath.CopyTag((u128*)vpu.data, minSize);
-	GetMTGS().SendDataPacket();
-
-	vpu.data				+= ret * 4;
+	vpu.data			+= ret * 4;
 	vpu.fragment_size	-= ret * 4;
 	vif1Regs.num		-= ret;
 
@@ -169,8 +166,24 @@ _vifCodeT vc_Mark()
 // itself cannot finish execution until some other system event occurs.
 static __fi bool flushVU(int idx)
 {
-	// [TODO] Finish executing the pending VU microprogram (if there is one).
-	return true;
+
+	if (idx)
+	{
+		// Note that the only realistic reason for failure here is if we're operating on VPU1
+		// and the VU is blocking due to an XGKICK.  The EE may be able to clear such a condition
+		// by completing a PATH3 transfer or clearing the SIGNAL/IMR condition.
+		return vu1Finish();
+	}
+	else
+	{
+		// The VU0 automatically ForceBreaks after running for a long period of time without
+		// encountering an E-Bit, STOP, or ForceBreak (currently not implemented).  Thusly, the
+		// VU0 cannot deadlock, and games can actually block against a VU0 which is spinning
+		// indefinitely, and then expect it *not* to deadlock. ;)
+
+		vu0Finish();
+		return true;
+	}
 }
 
 // Returns TRUE if both PATHs 1 and 2 flushed successfully, or FALSE if the flush stalled

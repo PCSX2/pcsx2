@@ -255,6 +255,11 @@ template u32 vifRead32<1>(u32 mem);
 template bool vifWrite32<0>(u32 mem, u32 value);
 template bool vifWrite32<1>(u32 mem, u32 value);
 
+uint __dmacall EE_DMAC::fromVIF0(u128* dest, uint destSize, uint destStartQwc, uint lenQwc)
+{
+	return 0;
+}
+
 
 // Returns the number of QWC actually transferred  (confusing because VIF functions return the # of QWC
 // *not* transferred).

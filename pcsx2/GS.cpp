@@ -100,7 +100,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		// SIGNAL : What's not known here is whether or not the SIGID register should be updated
 		//  here or when the IMR is cleared (below).
 
-		if(SIGNAL_IMR_Pending == true)
+		if(SIGNAL_IMR_Pending)
 		{
 			//DevCon.Warning("Firing pending signal");
 			GIF_LOG("GS SIGNAL (pending) data=%x_%x IMR=%x CSRr=%x",SIGNAL_Data_Pending[0], SIGNAL_Data_Pending[1], GSIMR, GSCSRr);
@@ -109,12 +109,11 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 			if (!(GSIMR&0x100))
 			gsIrq();
 
-			CSRreg.SIGNAL = true; //Just to be sure :P
+			CSRreg.SIGNAL = true;
+			SIGNAL_IMR_Pending = false;
+			GIF_ArbitratePaths();
 		}
 		else CSRreg.SIGNAL = false;
-		
-		SIGNAL_IMR_Pending = false;
-
 	}
 	
 	if(csr.FINISH)	CSRreg.FINISH	= false;

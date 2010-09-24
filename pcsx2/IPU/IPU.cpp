@@ -22,6 +22,8 @@
 
 #include "Vif.h"
 #include "Gif.h"
+#include "ps2/NewDmac.h"
+
 #include <limits.h>
 
 static __fi void IPU_INT0_FROM()
@@ -1040,4 +1042,14 @@ void IPUWorker()
 	// success
 	ipuRegs.ctrl.BUSY = 0;
 	ipu_cmd.current = 0xffffffff;
+}
+
+uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	return 0;
+}
+
+uint __dmacall EE_DMAC::fromIPU(u128* dest, uint destSize, uint destStartQwc, uint lenQwc)
+{
+	return 0;
 }

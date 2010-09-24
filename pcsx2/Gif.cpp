@@ -19,8 +19,9 @@
 #include "GS.h"
 #include "Gif.h"
 #include "Vif.h"		// needed to test for VIF path3 masking
+#include "VUmicro.h"
+
 #include "ps2/NewDmac.h"
-#include "VU.h"
 
 using namespace EE_DMAC;
 
@@ -40,18 +41,24 @@ static u32 xgkick_queue_addr;
 //   Amount of data processed.  Actual processed amount may be less than provided size, depending
 //   on GS stalls (caused by SIGNAL or EOP, etc).
 //
-__fi uint GIF_UploadTag(const u128* baseMem, uint fragment_size, uint startPos=0, uint memSize=0)
+static __fi uint _uploadTag(const u128* baseMem, uint fragment_size, uint startPos, uint memSize)
 {
 	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, fragment_size ? fragment_size : memSize);
 	uint processed = g_gifpath.CopyTag(baseMem, fragment_size, startPos, memSize);
 	GetMTGS().SendDataPacket();
-	
 	return processed;
 }
 
-bool GIF_TransferXGKICK( u32 vumem )
+__fi uint GIF_UploadTag(const u128* baseMem, uint fragment_size, uint startPos, uint memSize)
 {
-	uint processed = GIF_UploadTag( (u128*)vuRegs[1].Mem, 0x400, vumem, 0x400 );
+	uint processed = _uploadTag(baseMem, fragment_size, startPos, memSize);
+	GIF_ArbitratePaths();
+	return processed;
+}
+
+static bool GIF_TransferXGKICK( u32 vumem )
+{
+	uint processed = _uploadTag( (u128*)vuRegs[1].Mem, 0x400, vumem, 0x400 );
 	if (gifRegs.GetActivePath() == GIF_APATH1)
 	{
 		// Transfer stalled for some reason, either due to SIGNAL or due to infinite-wrapping.
@@ -59,7 +66,7 @@ bool GIF_TransferXGKICK( u32 vumem )
 
 		GIF_LOG("GIFpath transfer stall on PATH1 (VU1 XGKICK)");
 
-		gifRegs.stat.P1Q = 1;
+		//gifRegs.stat.P1Q = 1;
 		xgkick_queue_addr = (vumem + processed) & 0x3ff;
 		return false;
 	}
@@ -69,8 +76,8 @@ bool GIF_TransferXGKICK( u32 vumem )
 
 void GIF_ArbitratePaths()
 {
-	pxAssume(gifRegs.stat.APATH == GIF_APATH_IDLE);
-	pxAssume(!gifRegs.stat.OPH);
+	//pxAssume(gifRegs.stat.APATH == GIF_APATH_IDLE);
+	//pxAssume(!gifRegs.stat.OPH);
 
 	// GIF Arbitrates with a simple priority logic that goes in order of PATH.  As long
 	// as PATH1 transfers are queued, it'll keep using those, for example.
@@ -78,74 +85,78 @@ void GIF_ArbitratePaths()
 	// PATH1 transfers are handled inline; PATH2 and PATH3 transfers are handled by sending
 	// a DREQ to the respective DMA channel and then waiting for it to resume the transfer.
 
-	do {
+	if (gifRegs.stat.P1Q || (gifRegs.GetActivePath() == GIF_APATH1))
+	{
+		gifRegs.SetActivePath( GIF_APATH1 );
+		gifRegs.stat.P1Q = 0;
+
+		if (!GIF_TransferXGKICK(xgkick_queue_addr)) return;
+
+		vu1ResumeXGKICK();
 		if (gifRegs.stat.P1Q)
 		{
-			gifRegs.SetActivePath( GIF_APATH1 );
-			gifRegs.stat.P1Q = 0;
-
-			if (!GIF_TransferXGKICK(xgkick_queue_addr)) break;
+			// Micro-program queued and stalled *AGAIN*  .. dumb thing.
+			// (whatever blocking condition will need to be cleared by the EE, so break)
+			return;
 		}
-		else if (gifRegs.stat.P2Q)
-		{
-			gifRegs.SetActivePath( GIF_APATH2 );
-			gifRegs.stat.P2Q = 0;
+	}
 
-			dmacRequestSlice( ChanId_VIF1 );
-		}
-		else if (gifRegs.stat.IP3)
-		{
-			// Resuming in-progress PATH3 transfer.
-			// Reload suspended tag info.
+	if (gifRegs.stat.P2Q)
+	{
+		gifRegs.SetActivePath( GIF_APATH2 );
+		gifRegs.stat.P2Q = 0;
 
-			gifRegs.SetActivePath( GIF_APATH3 );
+		dmacRequestSlice( ChanId_VIF1 );
+	}
+	
+	if (gifRegs.stat.IP3)
+	{
+		// Resuming in-progress PATH3 transfer.
+		// Reload suspended tag info.
 
-			gifRegs.stat.IP3	= 0;
-			gifRegs.tag0		= gifRegs.p3tag;
+		gifRegs.SetActivePath( GIF_APATH3 );
 
-			g_gifpath.nloop		= gifRegs.p3cnt.P3CNT;
-			g_gifpath.tag.EOP	= gifRegs.p3tag.EOP;
-			g_gifpath.tag.NLOOP	= gifRegs.p3tag.LOOPCNT;
-			g_gifpath.tag.FLG	= GIF_FLG_IMAGE;
+		gifRegs.stat.IP3	= 0;
+		gifRegs.tag0		= gifRegs.p3tag;
 
-			dmacRequestSlice(ChanId_GIF);
-			break;
-		}
-		else
-		{
-			// PATH3 can only transfer if it hasn't been masked
+		g_gifpath.nloop		= gifRegs.p3cnt.P3CNT;
+		g_gifpath.tag.EOP	= gifRegs.p3tag.EOP;
+		g_gifpath.tag.NLOOP	= gifRegs.p3tag.LOOPCNT;
+		g_gifpath.tag.FLG	= GIF_FLG_IMAGE;
 
-			// [Ps2Confirm] Changes to M3R and MSKPATH3 registers likely take effect during
-			// arbitration to a new PATH3 transfer only, and should not affect resuming an
-			// intermittent transfer.  This is an assumption at this point and has not been
-			// confirmed.
+		dmacRequestSlice(ChanId_GIF);
+		return;
+	}
+	
+	if (gifRegs.stat.P3Q)
+	{
+		// PATH3 can only transfer if it hasn't been masked
 
-			if (gifRegs.mode.M3R || vifProc[1].maskpath3) return;
+		// [Ps2Confirm] Changes to M3R and MSKPATH3 registers likely take effect during
+		// arbitration to a new PATH3 transfer only, and should not affect resuming an
+		// intermittent transfer.  This is an assumption at this point and has not been
+		// confirmed.
 
-			if (gifRegs.stat.P3Q)
-			{
-				gifRegs.SetActivePath( GIF_APATH3 );
-				gifRegs.stat.P3Q = 0;
-			}
+		if (gifRegs.mode.M3R || vifProc[1].maskpath3) return;
 
-			dmacRequestSlice(ChanId_GIF);
-			break;
-		}
-	} while (UseDmaBurstHack);
+		gifRegs.SetActivePath( GIF_APATH3 );
+		gifRegs.stat.P3Q = 0;
+
+		dmacRequestSlice(ChanId_GIF);
+		return;
+	}
+
+	// No queued or pending/partial transfers left:  Signal FINISH if needed,
 
 	// IMPORTANT: We only signal FINISH if GIFpath processing stopped (EOP and no nloop),
 	// *and* no other transfers are in the queue (including PATH3 interrupted!!).
 	// FINISH is typically used to make sure the FIFO for the GIF is clear before
 	// switching the TXDIR.
 
-	if (CSRreg.FINISH && !gifRegs.HasPendingPaths())
+	if (CSRreg.FINISH && !(GSIMR & 0x200))
 	{
-		if (!(GSIMR & 0x200))
-		{
-			gsIrq();
-		}
+		gsIrq();
 	}
-
 }
 
 bool GIF_InterruptPath3( gif_active_path apath )
@@ -252,7 +263,7 @@ uint __dmacall EE_DMAC::toGIF(const u128* srcBase, uint srcSize, uint srcStartQw
 	// PATH3 can be disabled/masked by various conditions.  In such cases the DMA acts as a stall:
 
 	if (gifRegs.GetActivePath() != GIF_APATH3) return 0;
-	return srcSize - g_gifpath.CopyTag(srcBase, lenQwc, srcStartQwc, srcSize);
+	return srcSize - GIF_UploadTag(srcBase, lenQwc, srcStartQwc, srcSize);
 }
 
 void SaveStateBase::gifFreeze()
