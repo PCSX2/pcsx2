@@ -567,7 +567,7 @@ void EE_DMAC::UpdateDmacEvent()
 			ChannelState cstate( chanId );
 			cstate.TransferData();
 		}
-		catch(Exception::DmaTransferStall())
+		catch( Exception::DmaTransferStall& )
 		{
 		}
 
@@ -639,13 +639,18 @@ void EE_DMAC::dmacChanInt( ChannelId id )
 // on the next Idle slot.  If the peripheral is not ready, the DMAC will stall for a cycle and
 // re-arbitrate to another channel with pending transfer request.
 //
+// If no DMA is currently active (STR==0), the DREQ is recorded but no event is generated for
+// the DMAC.  The event will be generated when the DMA is kicked.
+//
 // Rationale: The DMAC transfers based on these requests in order to reduce the number of cycles
 // wasted trying to transfer data to/from busy peripherals.  Actual emulation of this system is
 // not needed, and is ignored by default.  It is only regarded when the DMAC is in "purist" mode.
 void EE_DMAC::dmacRequestSlice( ChannelId cid )
 {
 	dma_request[cid] = true;
-	dmacScheduleEvent();
+	
+	if (ChannelInfo[cid].CHCR().STR)
+		dmacScheduleEvent();
 }
 
 template< uint page >
@@ -898,22 +903,27 @@ template bool dmacWrite32<0x0d>( u32 mem, mem32_t& value );
 template bool dmacWrite32<0x0e>( u32 mem, mem32_t& value );
 template bool dmacWrite32<0x0f>( u32 mem, mem32_t& value );
 
-
-uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
-{
-	
-	return 0;
-}
-uint __dmacall EE_DMAC::toGIF	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::toSIF2	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toIPU	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::toSPR	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc) { return 0; }
 
 uint __dmacall EE_DMAC::fromIPU	(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
-uint __dmacall EE_DMAC::fromSIF2(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
 uint __dmacall EE_DMAC::fromVIF0(u128* dest, uint destSize, uint destStartQwc, uint lenQwc) { return 0; }
+
+// SIF2 is a special interface used *only* when the PS2 is playing legacy PS1 games.  It is most likely a very
+// simple bi-directional DMA transfer that may not support chain mode features ala SIF0/SIF1.  At this time
+// nothing else is known of SIF2.
+uint __dmacall EE_DMAC::toSIF2	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	pxFailRel("SIF2 is not implemented!");
+	return 0;
+}
+
+uint __dmacall EE_DMAC::fromSIF2(u128* dest, uint destSize, uint destStartQwc, uint lenQwc)
+{
+	pxFailRel("SIF2 is not implemented!");
+	return 0;
+}
 
 
 // --------------------------------------------------------------------------------------

@@ -280,7 +280,8 @@ struct GIFPath
 	u8 GetReg();
 
 	void SetTag(const void* mem);
-	int CopyTag(const u128* pMem, uint size, uint wrapSize=0);
+	int CopyTag(const u128* baseMem, uint fragment_size, uint startPos=0, uint memSize=0);
+	void TransferPackedRegs( const u128*& pMem128, uint& size, uint& ringpos );
 };
 
 extern __aligned16 GIFPath		g_gifpath;

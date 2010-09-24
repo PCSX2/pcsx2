@@ -20,8 +20,52 @@
 #include "Gif.h"
 #include "Vif.h"		// needed to test for VIF path3 masking
 #include "ps2/NewDmac.h"
+#include "VU.h"
 
 using namespace EE_DMAC;
+
+static u32 xgkick_queue_addr;
+
+// Parameters:
+//   baseMem - pointer to the base of the memory buffer.  If the transfer wraps past the specified
+//      memSize, it restarts bask here.
+//
+//   fragment_size - size of incoming data stream, in qwc (simd128).  If this parameter is 0, then
+//      the GIF continues to process until the first EOP condition is met.
+//
+//   startPos - start position within the buffer.
+//   memSize - size of the source memory buffer pointed to by baseMem.  If 0, no wrapping logic is performed.
+//
+// Returns:
+//   Amount of data processed.  Actual processed amount may be less than provided size, depending
+//   on GS stalls (caused by SIGNAL or EOP, etc).
+//
+__fi uint GIF_UploadTag(const u128* baseMem, uint fragment_size, uint startPos=0, uint memSize=0)
+{
+	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, fragment_size ? fragment_size : memSize);
+	uint processed = g_gifpath.CopyTag(baseMem, fragment_size, startPos, memSize);
+	GetMTGS().SendDataPacket();
+	
+	return processed;
+}
+
+bool GIF_TransferXGKICK( u32 vumem )
+{
+	uint processed = GIF_UploadTag( (u128*)vuRegs[1].Mem, 0x400, vumem, 0x400 );
+	if (gifRegs.GetActivePath() == GIF_APATH1)
+	{
+		// Transfer stalled for some reason, either due to SIGNAL or due to infinite-wrapping.
+		// We'll have to try and finish it later.
+
+		GIF_LOG("GIFpath transfer stall on PATH1 (VU1 XGKICK)");
+
+		gifRegs.stat.P1Q = 1;
+		xgkick_queue_addr = (vumem + processed) & 0x3ff;
+		return false;
+	}
+
+	return true;
+}
 
 void GIF_ArbitratePaths()
 {
@@ -29,7 +73,10 @@ void GIF_ArbitratePaths()
 	pxAssume(!gifRegs.stat.OPH);
 
 	// GIF Arbitrates with a simple priority logic that goes in order of PATH.  As long
-	// as PATH! transfers are queued, it'll keep using those, for example.
+	// as PATH1 transfers are queued, it'll keep using those, for example.
+
+	// PATH1 transfers are handled inline; PATH2 and PATH3 transfers are handled by sending
+	// a DREQ to the respective DMA channel and then waiting for it to resume the transfer.
 
 	do {
 		if (gifRegs.stat.P1Q)
@@ -37,13 +84,14 @@ void GIF_ArbitratePaths()
 			gifRegs.SetActivePath( GIF_APATH1 );
 			gifRegs.stat.P1Q = 0;
 
-			// Transfer XGKICK data
-			
+			if (!GIF_TransferXGKICK(xgkick_queue_addr)) break;
 		}
 		else if (gifRegs.stat.P2Q)
 		{
 			gifRegs.SetActivePath( GIF_APATH2 );
 			gifRegs.stat.P2Q = 0;
+
+			dmacRequestSlice( ChanId_VIF1 );
 		}
 		else if (gifRegs.stat.IP3)
 		{
@@ -59,6 +107,9 @@ void GIF_ArbitratePaths()
 			g_gifpath.tag.EOP	= gifRegs.p3tag.EOP;
 			g_gifpath.tag.NLOOP	= gifRegs.p3tag.LOOPCNT;
 			g_gifpath.tag.FLG	= GIF_FLG_IMAGE;
+
+			dmacRequestSlice(ChanId_GIF);
+			break;
 		}
 		else
 		{
@@ -76,8 +127,25 @@ void GIF_ArbitratePaths()
 				gifRegs.SetActivePath( GIF_APATH3 );
 				gifRegs.stat.P3Q = 0;
 			}
+
+			dmacRequestSlice(ChanId_GIF);
+			break;
 		}
 	} while (UseDmaBurstHack);
+
+	// IMPORTANT: We only signal FINISH if GIFpath processing stopped (EOP and no nloop),
+	// *and* no other transfers are in the queue (including PATH3 interrupted!!).
+	// FINISH is typically used to make sure the FIFO for the GIF is clear before
+	// switching the TXDIR.
+
+	if (CSRreg.FINISH && !gifRegs.HasPendingPaths())
+	{
+		if (!(GSIMR & 0x200))
+		{
+			gsIrq();
+		}
+	}
+
 }
 
 bool GIF_InterruptPath3( gif_active_path apath )
@@ -105,20 +173,31 @@ bool GIF_InterruptPath3( gif_active_path apath )
 	return true;
 }
 
-GIF_PathQueueResult GIF_QueuePath1()
+
+// returns FALSE if the transfer is blocked; returns true if the transfer proceeds unimpeeded
+// and/or is queued.
+//
+// (called from recompilers, must remain __fastcall!)
+bool __fastcall GIF_QueuePath1( u32 vumem )
 {
-	if ((gifRegs.stat.APATH == GIF_APATH_IDLE) || GIF_InterruptPath3(GIF_APATH1))
+	vumem &= 0x3ff;
+	if ((gifRegs.GetActivePath() == GIF_APATH_IDLE) || GIF_InterruptPath3(GIF_APATH1))
 	{
 		gifRegs.SetActivePath( GIF_APATH1 );
 		GIF_LOG("GIFpath rights acquired by PATH1 (VU1 XGKICK).");
-		return GIFpath_Acquired;
+		GIF_TransferXGKICK(vumem);
+
+		// Always return true -- if the transfer stalled it'll queue (next XGKICK will stall instead).
+		return true;
 	}
 
-	if (gifRegs.stat.P1Q) return GIFpath_Busy;
-	
-	GIF_LOG("GIFpath queued request for PATH1 (VU1 XGKICK).");
+	if (gifRegs.stat.P1Q) return false;
+
+	GIF_LOG("GIFpath queued request for PATH1 (VU1 XGKICK) @ 0x%04x", vumem);
 	gifRegs.stat.P1Q = 1;
-	return GIFpath_Queued;
+	xgkick_queue_addr = vumem;
+
+	return true;
 }
 
 GIF_PathQueueResult GIF_QueuePath2()
@@ -165,6 +244,15 @@ GIF_PathQueueResult GIF_QueuePath3()
 	GIF_LOG("GIFpath queued request for PATH3 (GIF DMA/FIFO).");
 	gifRegs.stat.P3Q = 1;
 	return GIFpath_Queued;
+}
+
+uint __dmacall EE_DMAC::toGIF(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	// DMA transfers to GIF use PATH3.
+	// PATH3 can be disabled/masked by various conditions.  In such cases the DMA acts as a stall:
+
+	if (gifRegs.GetActivePath() != GIF_APATH3) return 0;
+	return srcSize - g_gifpath.CopyTag(srcBase, lenQwc, srcStartQwc, srcSize);
 }
 
 void SaveStateBase::gifFreeze()

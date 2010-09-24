@@ -1089,26 +1089,26 @@ mVUop(mVU_XITOP) {
 // XGkick
 //------------------------------------------------------------------
 
-void __fastcall mVU_XGKICK_(u32 addr) {
-	addr &= 0x3ff;
-	u8* data  = vuRegs[1].Mem + (addr*16);
-	u32 diff  = 0x400 - addr;
-	
-	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, 0x400);
-	g_gifpath.CopyTag((u128*)data, diff, 0x400);
-	GetMTGS().SendDataPacket();
-}
-
 static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {
 	mVUbackupRegs(mVU);
-#if 0 // XGkick Break - ToDo: Change "SomeGifPathValue" to w/e needs to be tested
-	xTEST (ptr32[&SomeGifPathValue], 1); // If '1', breaks execution
-	xMOV  (ptr32[&mVU->resumePtrXG], (uptr)xGetPtr() + 10 + 6);
-	xJcc32(Jcc_NotZero, (uptr)mVU->exitFunctXG - ((uptr)xGetPtr()+6));
-#endif
+
 	if (memVI)	xMOV(gprT2, ptr32[&mVU->VIxgkick]);
 	else		mVUallocVIa(mVU, gprT2, _Is_);
-	xCALL(mVU_XGKICK_);
+
+	// if XGKICK returns FALSE, the transfer could not be executed due to PATH priority conflicts
+	// (active PATH2 or uninterruptable PATH3).  At such time, microVU aborts execution by saving
+	// the code execution address and jumping to an exit function.  When execution resumes, the
+	// stalled XGKICK instruction is re-run.
+
+	xMOV(ptr32[&mVU->resumePtrXG], 0xcdcdcdcd);
+	uptr* writeback = ((uptr*)xGetPtr()) - 1;
+
+	xCALL(GIF_QueuePath1);
+
+	xCMP(eax, 0);
+	xJE(mVU->exitFunctXG);
+
+	*writeback = (uptr)xGetPtr();
 	mVUrestoreRegs(mVU);
 }
 

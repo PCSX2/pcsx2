@@ -4345,9 +4345,11 @@ void recVUMI_XGKICK_(VURegs *VU)
 	_freeX86regs();
 	_freeXMMregs();
 
-	xMOV(edx, xRegister32(s_XGKICKReg));
-	xMOV(ecx, (uptr)VU->Mem);
-	xCALL(VU1XGKICK_MTGSTransfer);
+	xMOV(ecx, xRegister32(s_XGKICKReg));
+	xCALL(GIF_QueuePath1);
+
+	// FIXME URGENT: Add support for breaking execution!
+	//  (or maybe just remove superVU?)
 
 	s_ScheduleXGKICK = 0;
 }

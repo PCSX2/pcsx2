@@ -181,14 +181,19 @@ void InterpVU1::Step()
 
 void InterpVU1::Execute(u32 cycles)
 {
-	for (int i = (int)cycles; i > 0 ; i--) {
-		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100)) {
-			if (VU1.branch || VU1.ebit) {
-				Step(); // run branch delay slot?
+	try {
+		for (int i = (int)cycles; i > 0 ; i--) {
+			if (!(VU0.VI[REG_VPU_STAT].UL & 0x100)) {
+				if (VU1.branch || VU1.ebit) {
+					Step(); // run branch delay slot?
+				}
+				break;
 			}
-			break;
+			Step();
 		}
-		Step();
+	} catch( Exception::ExitCpuExecute& )
+	{
+		// Typically caused by an XGKICK stall.
 	}
 }
 

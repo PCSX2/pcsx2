@@ -254,3 +254,55 @@ template u32 vifRead32<1>(u32 mem);
 
 template bool vifWrite32<0>(u32 mem, u32 value);
 template bool vifWrite32<1>(u32 mem, u32 value);
+
+
+// Returns the number of QWC actually transferred  (confusing because VIF functions return the # of QWC
+// *not* transferred).
+uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	// [TODO] : Optimization...
+	// VIF may be better to have built in wrapping logic similar to GIF.
+
+	uint endpos = srcStartQwc + lenQwc;
+	uint remainder;
+
+	if (endpos < srcSize)
+	{
+		remainder = vifTransfer<0>(srcBase, lenQwc);
+	}
+	else
+	{
+		uint firstcopylen = srcSize - srcStartQwc;
+		remainder = vifTransfer<0>(srcBase, firstcopylen);
+
+		if (!remainder)
+		{
+			srcStartQwc = endpos % srcSize;
+			remainder = vifTransfer<0>(srcBase, srcStartQwc);
+		}
+	}
+	return lenQwc - remainder;
+}
+
+uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	uint endpos = srcStartQwc + lenQwc;
+	uint remainder;
+
+	if (endpos < srcSize)
+	{
+		remainder = vifTransfer<1>(srcBase, lenQwc);
+	}
+	else
+	{
+		uint firstcopylen = srcSize - srcStartQwc;
+		remainder = vifTransfer<1>(srcBase, firstcopylen);
+
+		if (!remainder)
+		{
+			srcStartQwc = endpos % srcSize;
+			remainder = vifTransfer<1>(srcBase, srcStartQwc);
+		}
+	}
+	return lenQwc - remainder;
+}

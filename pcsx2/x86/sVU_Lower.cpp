@@ -1968,20 +1968,3 @@ void recVUMI_XTOP( VURegs *VU, int info )
 }
 //------------------------------------------------------------------
 
-
-//------------------------------------------------------------------
-// VU1XGKICK_MTGSTransfer() - Called by ivuZerorec.cpp
-//------------------------------------------------------------------
-extern bool SIGNAL_IMR_Pending;
-
-void __fastcall VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
-{
-	addr &= 0x3fff;
-	u8* data  = VU1.Mem + (addr);
-	u32 diff  = 0x400 - (addr / 16);
-
-	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, 0x400);
-	g_gifpath.CopyTag((u128*)data, diff, 0x400);
-	GetMTGS().SendDataPacket();
-}
-//------------------------------------------------------------------

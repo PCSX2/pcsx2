@@ -17,6 +17,7 @@
 #include "Common.h"
 #include "VUops.h"
 #include "GS.h"
+#include "Gif.h"
 
 #include <cmath>
 
@@ -2019,14 +2020,8 @@ static __ri void _vuXITOP(VURegs * VU) {
 
 static __ri void _vuXGKICK(VURegs * VU)
 {
-	// flush all pipelines first (in the right order)
-	_vuFlushAll(VU);
-
-	u8* data = ((u8*)VU->Mem + ((VU->VI[_Is_].US[0]*16) & 0x3fff));
-	u32 size;
-	GetMTGS().PrepDataPacket( GS_RINGTYPE_PATH, 0x400 );
-	size = g_gifpath.CopyTag( (u128*)data, (0x400-(VU->VI[_Is_].US[0] & 0x3ff)), 0x400 );
-	GetMTGS().SendDataPacket();
+	if (!GIF_QueuePath1(VU->VI[_Is_].US[0]))
+		throw Exception::ExitCpuExecute();
 }
 
 static __ri void _vuXTOP(VURegs * VU) {

@@ -312,14 +312,23 @@ struct GIFregisters
 	{
 		stat.SetActivePath(path);
 	}
+
+	gif_active_path GetActivePath() const
+	{
+		return (gif_active_path)stat.APATH;
+	}
 	
 	bool HasPendingPaths() const
 	{
 		// gifRegs.stat.P1Q || gifRegs.stat.P2Q || gifRegs.stat.P3Q || gifRegs.stat.IP3
-		
+
 		return (stat._u32 & (0x7<<5)) != 0;		// Translation: Bits 5-8!
 	}
 };
+
+namespace Exception {
+	class SignalDoubleIMR {};
+}
 
 static GIFregisters& gifRegs = (GIFregisters&)eeHw[0x3000];
 
@@ -331,7 +340,7 @@ enum GIF_PathQueueResult
 };
 
 extern bool GIF_InterruptPath3( gif_active_path apath );
-extern GIF_PathQueueResult GIF_QueuePath1();
+extern bool __fastcall GIF_QueuePath1( u32 addr );
 extern GIF_PathQueueResult GIF_QueuePath2();
 extern GIF_PathQueueResult GIF_QueuePath3();
 
