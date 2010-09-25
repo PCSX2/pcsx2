@@ -616,7 +616,7 @@ void EE_DMAC::dmacScheduleEvent()
 	// If the DMAC is completely disabled then no point in scheduling anything.
 	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLER) & (1 << 16))) return;
 
-	CPU_INT( DMAC_EVENT, 8 );
+	CPU_ScheduleEvent( DMAC_EVENT, 8 );
 }
 
 // Schedules a cpu-level exception in response to a DMA channel being completed.  Actual

@@ -409,7 +409,12 @@ __fi void cpuTestTIMRInts() {
 	}
 }
 
-__fi void CPU_INT( EE_EventType n, s32 ecycle)
+__fi void CPU_ClearEvent( EE_EventType n )
+{
+	cpuRegs.interrupt &= ~(1 << n);
+}
+
+__fi void CPU_ScheduleEvent( EE_EventType n, s32 ecycle )
 {
 	if (cpuRegs.interrupt & (1 << n)) return;
 

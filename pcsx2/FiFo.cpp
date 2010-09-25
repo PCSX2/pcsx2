@@ -21,17 +21,60 @@
 #include "GS.h"
 #include "Vif.h"
 #include "IPU/IPU.h"
-#include "IPU/IPU_Fifo.h"
 
 #include "ps2/NewDmac.h"
 
 using namespace EE_DMAC;
 
-//////////////////////////////////////////////////////////////////////////
-/////////////////////////// Quick & dirty FIFO :D ////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
 __aligned16 PeripheralFifoPack g_fifo;
+
+
+template< uint size >
+void FifoRingBuffer<size>::SendToPeripheral(Fnptr_ToPeripheral toFunc, const char* name)
+{
+	uint transferred = toFunc( buffer, size, readpos, qwc );
+	qwc -= transferred;
+
+	readpos += transferred;
+	readpos &= size-1;
+}
+
+template< uint size >
+void FifoRingBuffer<size>::HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, const char* name)
+{
+	GIF_LOG("WriteFIFO/%s <- %ls (FQC=%u)", src->ToString().c_str(), qwc);
+
+	if (qwc >= size) return;
+	WriteQWC(src);
+
+	if (qwc >= size)
+	{
+		ProcessFifoEvent();
+		CPU_ClearEvent(FIFO_EVENT);
+	}
+	else
+	{
+		CPU_ScheduleEvent(FIFO_EVENT, 128);
+	}
+}
+
+template< uint size >
+void FifoRingBuffer<size>::ReadQWC(u128* dest)
+{
+	pxAssume(qwc);
+	CopyQWC(dest, &buffer[readpos]);
+	readpos = (readpos+1) & (size-1);
+	--qwc;
+}
+
+template< uint size >
+void FifoRingBuffer<size>::WriteQWC(const u128* src)
+{
+	pxAssume(qwc < size);
+	CopyQWC(&buffer[writepos], src);
+	writepos = (writepos+1) & (size-1);
+	++qwc;
+}
 
 // Notes on FIFO implementation
 //
@@ -65,7 +108,7 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 		return;
 	}
 
-	if (vif1Regs.stat.FQC == 0)
+	if (g_fifo.vif1.IsEmpty())
 	{
 		// FIFO is empty, so queue up 16 qwc from the GS plugin.  Operating in bursts should
 		// keep framerates from being too terribly miserable.
@@ -75,14 +118,25 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 		// rely on this feature (its quite slow on the PS2 as well for the same reason).
 
 		GetMTGS().WaitGS();
-		vif1Regs.stat.FQC = GSreadFIFO2((u64*)g_fifo.vif1, FifoSize_Vif1);
-		if(!pxAssertDev(vif1Regs.stat.FQC != 0, "Reading from an empty VIF1 FIFO (FQC=0)")) return;
+
+		g_fifo.vif1.qwc = GSreadFIFO2((u64*)g_fifo.vif1.buffer, FifoSize_Vif1);
+		g_fifo.vif1.readpos = 0;
+		g_fifo.vif1.writepos = g_fifo.vif1.qwc;
+
+		if(!pxAssertDev(!g_fifo.vif1.IsEmpty(), "Reading from an empty VIF1 FIFO (FQC=0)")) return;
 	}
 
-	--vif1Regs.stat.FQC;
-	CopyQWC(out, &g_fifo.vif1[vif1Regs.stat.FQC]);
-
+	g_fifo.vif1.ReadQWC(out);
 	VIF_LOG("ReadFIFO/VIF1 -> %ls", out->ToString().c_str());
+}
+
+void __fastcall ReadFIFO_IPUout(mem128_t* out)
+{
+	// Games should always check the fifo before reading from it -- so if the FIFO has no data
+	// its either some glitchy game or a bug in pcsx2.
+
+	if (!pxAssertDev( g_fifo.ipu0.qwc > 0, "Attempted read from IPUout's FIFO, but the FIFO is empty!" )) return;
+	g_fifo.ipu0.ReadQWC(out);
 }
 
 // --------------------------------------------------------------------------------------
@@ -108,113 +162,59 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 // [Ps2Confirm] If the FIFO is full, we don't know what to do (yet) so we just disregard the
 // write for now.
 //
+void __fastcall WriteFIFO_VIF0(const mem128_t* value)
+{
+	pxAssume( !vif0dma.chcr.STR );
+	g_fifo.gif.HwWrite(EE_DMAC::toVIF0, value, "VIF0");
+}
+
+void __fastcall WriteFIFO_VIF1(const mem128_t* value)
+{
+	pxAssume( !vif1dma.chcr.STR );
+
+	// Writes to VIF1 FIFO when its in Source mode (VIF->memory transfer direction) are likely disregarded.
+	if (vif1Regs.stat.FDR) return;
+
+	g_fifo.gif.HwWrite(EE_DMAC::toVIF1, value, "VIF1");
+}
+
+void __fastcall WriteFIFO_GIF(const mem128_t* value)
+{
+	// GIF FIFO uses PATH3 for transfer (same as GIF DMA).
+
+	pxAssume( !gifdma.chcr.STR );
+	g_fifo.gif.HwWrite(EE_DMAC::toGIF, value, "GIF");
+}
+
+void __fastcall WriteFIFO_IPUin(const mem128_t* value)
+{
+	pxAssume( !gifdma.chcr.STR );
+	g_fifo.ipu1.HwWrite(EE_DMAC::toIPU, value, "toIPU");
+}
+
 void ProcessFifoEvent()
 {
-	if (vif0Regs.stat.FQC)
+	CPU_ClearEvent(FIFO_EVENT);
+	if (g_fifo.vif0.IsEmpty())
 	{
-		VIF_LOG("Draining VIF0 FIFO (FQC = %u)", vif0Regs.stat.FQC);
-		uint remaining = vifTransfer<0>(g_fifo.vif0, vif0Regs.stat.FQC);
-
-		if (remaining)
-		{
-			// VIF stalled during processing.  Copy remaining QWC to the head of the buffer.
-			// For such small ring buffers as the PS2 FIFOs, its faster to use copies than to
-			// use actual ringbuffer logic.
-
-			memcpy_qwc(g_fifo.vif0, &g_fifo.vif0[vif0Regs.stat.FQC-remaining], remaining);
-			vif0Regs.stat.FQC = remaining;
-		}
+		g_fifo.vif0.SendToPeripheral(EE_DMAC::toVIF0, "VIF0");
 	}
 
-	if (vif1Regs.stat.FQC && !vif1Regs.stat.FDR)
+	if (g_fifo.vif1.IsEmpty() && !vif1Regs.stat.FDR)
 	{
 		// cannot drain the VIF1 FIFO when its in Source (toMemory) mode (FDR=1).  The EE has
 		// to read from it or reset it manually.
 
-		VIF_LOG("Draining VIF1 FIFO (FQC = %u)", vif1Regs.stat.FQC);
-		uint remaining = vifTransfer<1>(g_fifo.vif1, vif1Regs.stat.FQC);
-
-		if (remaining)
-		{
-			// VIF stalled during processing.  Copy remaining QWC to the head of the buffer.
-			// For such small ring buffers as the PS2 FIFOs, its faster to use copies than to
-			// use actual ringbuffer logic.
-
-			memcpy_qwc(g_fifo.vif1, &g_fifo.vif1[vif1Regs.stat.FQC-remaining], remaining);
-			vif1Regs.stat.FQC = remaining;
-		}
+		g_fifo.vif1.SendToPeripheral(EE_DMAC::toVIF1, "VIF1");
 	}
 
-	if (gifRegs.stat.FQC)
+	if (g_fifo.gif.IsEmpty())
 	{
 		// GIF FIFO uses PATH3 for transfer (same as GIF DMA).
 		// So if PATH3 cannot get arbitration rights to the GIF, then the FIFO cannot empty itself.
 
-		GIF_LOG("Draining GIF FIFO (FQC = %u)", gifRegs.stat.FQC);
-
-		uint remaining = GIF_UploadTag(g_fifo.gif, gifRegs.stat.FQC);
-
-		if (remaining)
-		{
-			// GIF stalled during processing.  Copy remaining QWC to the head of the buffer.
-			// For such small ring buffers as the PS2 FIFOs, its faster to use copies than to
-			// use actual ringbuffer logic.
-
-			memcpy_qwc(g_fifo.gif, &g_fifo.gif[gifRegs.stat.FQC-remaining], remaining);
-			gifRegs.stat.FQC = remaining;
-		}
+		g_fifo.gif.SendToPeripheral(EE_DMAC::toGIF, "GIF");
 	}
-	
+
 	// [TODO] : IPU FIFOs (but those need some work)
-}
-
-void __fastcall WriteFIFO_VIF0(const mem128_t* value)
-{
-	// Devs: please read the WriteFIFO Strategies topic above before modifying.
-
-	pxAssume( !vif0dma.chcr.STR );
-	VIF_LOG("WriteFIFO/VIF0 <- %ls (FQC=%u)", value->ToString().c_str(), vif0Regs.stat.FQC);
-
-	if (vif0Regs.stat.FQC >= FifoSize_Vif0) return;
-
-	CopyQWC(&g_fifo.vif0[vif0Regs.stat.FQC], value);
-	++vif0Regs.stat.FQC;
-
-	CPU_INT(FIFO_EVENT, 64);
-}
-
-void __fastcall WriteFIFO_VIF1(const mem128_t *value)
-{
-	// Devs: please read the WriteFIFO Strategies topic above before modifying.
-
-	pxAssume( !vif1dma.chcr.STR );
-	VIF_LOG("WriteFIFO/VIF1 <- %ls (FQC=%u)", value->ToString().c_str(), vif1Regs.stat.FQC);
-
-	if (vif1Regs.stat.FQC >= FifoSize_Vif1) return;
-	
-	// Writes to VIF1 FIFO when its in Source mode (VIF->memory transfer direction) are
-	// likely disregarded.
-	if (vif1Regs.stat.FDR) return;
-
-	CopyQWC(&g_fifo.vif1[vif1Regs.stat.FQC], value);
-	++vif1Regs.stat.FQC;
-
-	CPU_INT(FIFO_EVENT, 64);
-}
-
-void __fastcall WriteFIFO_GIF(const mem128_t *value)
-{
-	// Devs: please read the WriteFIFO Strategies topic above before modifying.
-
-	// GIF FIFO uses PATH3 for transfer (same as GIF DMA).
-
-	pxAssume( !gifdma.chcr.STR );
-	GIF_LOG("WriteFIFO/GIF <- %ls (FQC=%u)", value->ToString().c_str(), gifRegs.stat.FQC);
-
-	if (gifRegs.stat.FQC >= FifoSize_Gif) return;
-
-	CopyQWC(&g_fifo.gif[gifRegs.stat.FQC], value);
-	++gifRegs.stat.FQC;
-
-	CPU_INT(FIFO_EVENT, 64);
 }

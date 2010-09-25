@@ -66,27 +66,6 @@ enum ChannelId
 	ChanId_None = NumChannels
 };
 
-
-#define __dmacall
-
-// Returns the number of QWC actually transferred.  Return value can be 0, in cases where the
-// peripheral has no room to receive data (SIF FIFO is full, or occupied by another channel,
-// for example).
-typedef uint __dmacall FnType_ToPeripheral(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc);
-
-// Returns the number of QWC actually transferred.  Return value can be 0, in cases where the
-// peripheral has no data to provide (SIF FIFO is empty, or occupied by another channel,
-// for example).
-typedef uint __dmacall FnType_FromPeripheral(u128* dest, uint destSize, uint destStartQwc, uint lenQwc);
-
-// Transfers a single quadword into the FIFO for a peripheral.  Currently used only for
-// TTE-enabled source chain DMAs.
-typedef void __dmacall FnType_XferToFifo(const u128& src);
-
-typedef FnType_ToPeripheral*	Fnptr_ToPeripheral;
-typedef FnType_FromPeripheral*	Fnptr_FromPeripheral;
-typedef FnType_XferToFifo*		Fnptr_XferToFifo;
-
 // --------------------------------------------------------------------------------------
 //  EE_DMAC::ChannelRegisters
 // --------------------------------------------------------------------------------------
@@ -476,6 +455,8 @@ static ChannelRegisters& spr1dma	= (ChannelRegisters&)eeHw[0xD400];
 static ChannelRegisters& gifdma		= (ChannelRegisters&)eeHw[0xA000];
 static ChannelRegisters& vif0dma	= (ChannelRegisters&)eeHw[0x8000];
 static ChannelRegisters& vif1dma	= (ChannelRegisters&)eeHw[0x9000];
+static ChannelRegisters& ipu0dma	= (ChannelRegisters&)eeHw[0xB000];
+static ChannelRegisters& ipu1dma	= (ChannelRegisters&)eeHw[0xB400];
 
 extern void UpdateDmacEvent();
 

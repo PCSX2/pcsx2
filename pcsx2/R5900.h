@@ -410,7 +410,8 @@ enum EE_EventType
 	DMAC_BUS_ERROR	= 15      // BEIS
 };
 
-extern void CPU_INT( EE_EventType n, s32 ecycle );
+extern void CPU_ClearEvent( EE_EventType n );
+extern void CPU_ScheduleEvent( EE_EventType n, s32 ecycle );
 extern uint intcInterrupt();
 extern uint dmacInterrupt();
 

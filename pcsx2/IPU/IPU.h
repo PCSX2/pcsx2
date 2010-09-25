@@ -15,13 +15,11 @@
 
 #pragma once
 
-#include "IPU_Fifo.h"
-
 #define ipumsk( src ) ( (src) & 0xff )
 #define ipucase( src ) case ipumsk(src)
 
-#define IPU_INT_TO( cycles )  if(!(cpuRegs.interrupt & (1<<4))) CPU_INT( DMAC_TO_IPU, cycles )
-#define IPU_INT_FROM( cycles )  CPU_INT( DMAC_FROM_IPU, cycles )
+#define IPU_INT_TO( cycles )  if(!(cpuRegs.interrupt & (1<<4))) CPU_ScheduleEvent( DMAC_TO_IPU, cycles )
+#define IPU_INT_FROM( cycles )  CPU_ScheduleEvent( DMAC_FROM_IPU, cycles )
 
 #define IPU_FORCEINLINE __fi
 
@@ -33,6 +31,11 @@ struct tIPU_CMD
 {
 	u32 DATA;
 	u32 BUSY;
+	
+	void SetBusy(bool busy=true)
+	{
+		BUSY = busy ? 0x80000000 : 0;
+	}
 };
 
 union tIPU_CTRL {
@@ -67,11 +70,10 @@ union tIPU_CTRL {
 	void reset() { _u32 = 0; }
 };
 
-struct __aligned16 tIPU_BP {
-	__aligned16 u128 internal_qwc[2];
+struct tIPU_BP {
+	u128 internal_qwc[2];
 
 	u32 BP;		// Bit stream point (0 to 128*2)
-	u32 IFC;	// Input FIFO counter (8QWC) (0 to 8)
 	u32 FP;		// internal FIFO (2QWC) fill status (0 to 2)
 
 	__fi void Align()
@@ -80,59 +82,18 @@ struct __aligned16 tIPU_BP {
 		Advance(0);
 	}
 
-	__fi void Advance(uint bits)
+	void Advance(uint bits);
+	bool FillBuffer(u32 bits);
+	
+	void reset(uint newbp=0)
 	{
-		BP += bits;
-		pxAssume( BP <= 256 );
-
-		if (BP >= 128)
-		{
-			BP -= 128;
-
-			if (FP == 2)
-			{
-				// when BP is over 128 it means we're reading data from the second quadword.  Shift that one
-				// to the front and load the new quadword into the second QWC (its a manualized ringbuffer!)
-
-				CopyQWC(&internal_qwc[0], &internal_qwc[1]);
-				FP = 1;
-			}
-			else
-			{
-				// if FP == 1 then the buffer has been completely drained.
-				// if FP == 0 then an already-drained buffer is being advanced, and we need to drop a
-				// quadword from the IPU FIFO.
-
-				if (!FP)
-					ipu_fifo.in.read(&internal_qwc[0]);
-
-				FP = 0;
-			}
-		}
-	}
-
-	__fi bool FillBuffer(u32 bits)
-	{
-		while (FP < 2)
-		{
-			if (ipu_fifo.in.read(&internal_qwc[FP]) == 0)
-			{
-				// Here we *try* to fill the entire internal QWC buffer; however that may not necessarily
-				// be possible -- so if the fill fails we'll only return 0 if we don't have enough
-				// remaining bits in the FIFO to fill the request.
-
-				return ((FP!=0) && (BP + bits) <= 128);
-			}
-
-			++FP;
-		}
-
-		return true;
+		BP = newbp;
+		FP = 0;
 	}
 
 	wxString desc() const
 	{
-		return wxsFormat(L"Ipu BP: bp = 0x%x, IFC = 0x%x, FP = 0x%x.", BP, IFC, FP);
+		return pxsFmt(L"Ipu BP: bp = 0x%x, FP = 0x%x.", BP, FP);
 	}
 };
 
@@ -223,48 +184,88 @@ enum SCE_IPU
 };
 
 struct IPUregisters {
-  tIPU_CMD  cmd;
-  u32 dummy0[2];
-  tIPU_CTRL ctrl;
-  u32 dummy1[3];
-  u32   ipubp;
-  u32 dummy2[3];
-  u32		top;
-  u32		topbusy;
-  u32 dummy3[2];
+	tIPU_CMD	cmd;
+	u32			dummy0[2];
+
+	tIPU_CTRL	ctrl;
+	u32			dummy1[3];
+
+	u32			ipubp;
+	u32			dummy2[3];
+
+	u32			top;
+	u32			topbusy;
+	u32			dummy3[2];
+
+	void SetTopBusy()
+	{
+		topbusy = 0x80000000;
+	}
+
+	void SetDataBusy()
+	{
+		cmd.BUSY = 0x80000000;
+		topbusy = 0x80000000;
+	}
+
 };
 
-struct tIPU_cmd
+union tIPU_cmd
 {
-	int index;
-	int pos[6];
-	union {
-		struct {
-			u32 OPTION : 28;
-			u32 CMD : 4;
-		};
-		u32 current;
-	};
-	void clear()
+	struct
 	{
-		memzero(pos);
-		index = 0;
-		current = 0xffffffff;
-	}
+		int index;
+		int pos[6];
+		union {
+			struct {
+				u32 OPTION : 28;
+				u32 CMD : 4;
+			};
+			u32 current;
+		};
+	};
+	
+	u128 _u128[2];
+
+	void clear();
 	wxString desc() const
 	{
-		return wxsFormat(L"Ipu cmd: index = 0x%x, current = 0x%x, pos[0] = 0x%x, pos[1] = 0x%x",
+		return pxsFmt(L"Ipu cmd: index = 0x%x, current = 0x%x, pos[0] = 0x%x, pos[1] = 0x%x",
 			index, current, pos[0], pos[1]);
 	}
 };
 
+struct IPU_DataSource
+{
+	const u128* basePtr;
+	uint memsizeQwc;
+	uint curposQwc;
+	uint leftQwc;
+
+	void GetNextQWC( u128* dest );
+};
+
+struct IPU_DataTarget
+{
+	u128* basePtr;
+	uint memsizeQwc;
+	uint curposQwc;
+	uint leftQwc;
+
+	bool Write( const void* src, uint sizeQwc );
+};
+
 static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
 
-extern tIPU_cmd ipu_cmd;
+extern __aligned16 IPU_DataSource ipu_dsrc;
+extern __aligned16 IPU_DataTarget ipu_dtarg;
+extern __aligned16 tIPU_cmd ipu_cmd;
+
 extern int coded_block_pattern;
 
 extern int ipuInit();
 extern void ipuReset();
+extern void IPUWorker();
 
 extern u32 ipuRead32(u32 mem);
 extern u64 ipuRead64(u32 mem);

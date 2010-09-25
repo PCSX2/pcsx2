@@ -292,8 +292,6 @@
 		<Unit filename="../HwWrite.cpp" />
 		<Unit filename="../IPU/IPU.cpp" />
 		<Unit filename="../IPU/IPU.h" />
-		<Unit filename="../IPU/IPU_Fifo.cpp" />
-		<Unit filename="../IPU/IPU_Fifo.h" />
 		<Unit filename="../IPU/mpeg2lib/Idct.cpp" />
 		<Unit filename="../IPU/mpeg2lib/Mpeg.cpp" />
 		<Unit filename="../IPU/mpeg2lib/Mpeg.h" />

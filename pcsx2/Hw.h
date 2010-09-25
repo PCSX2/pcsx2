@@ -373,6 +373,22 @@ union tGS_SMODE2
 	bool IsInterlaced() const { return INT; }
 };
 
+#define __dmacall
+
+// Returns the number of QWC actually transferred.  Return value can be 0, in cases where the
+// peripheral has no room to receive data (SIF FIFO is full, or occupied by another channel,
+// for example).
+typedef uint __dmacall FnType_ToPeripheral(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc);
+
+// Returns the number of QWC actually transferred.  Return value can be 0, in cases where the
+// peripheral has no data to provide (SIF FIFO is empty, or occupied by another channel,
+// for example).
+typedef uint __dmacall FnType_FromPeripheral(u128* dest, uint destSize, uint destStartQwc, uint lenQwc);
+
+typedef FnType_ToPeripheral*	Fnptr_ToPeripheral;
+typedef FnType_FromPeripheral*	Fnptr_FromPeripheral;
+
+
 static const uint FifoSize_Vif0		= 8;
 static const uint FifoSize_Vif1		= 16;
 static const uint FifoSize_Gif		= 16;
@@ -380,13 +396,39 @@ static const uint FifoSize_Ipu0		= 8;
 static const uint FifoSize_Ipu1		= 8;
 static const uint FifoSize_Sif		= 8;
 
+template< uint size >
+struct FifoRingBuffer
+{
+	u128 buffer[size];
+
+	// Use a union to enforce 128 bit alignment here:
+	union {
+		struct {
+			uint writepos;
+			uint readpos;
+			uint qwc;
+		};
+		
+		u128 _indexers;
+	};
+
+	void ReadQWC(u128* dest);
+	void WriteQWC(const u128* src);
+	
+	bool IsEmpty() const	{ return qwc == 0; }
+	bool IsFull() const		{ return qwc == size; }
+	
+	void SendToPeripheral(Fnptr_ToPeripheral toFunc, const char* name);
+	void HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, const char* name );
+};
+
 struct PeripheralFifoPack
 {
-	u128 vif0[FifoSize_Vif0];
-	u128 vif1[FifoSize_Vif1];
-	u128 gif[FifoSize_Gif];
-	u128 ipu0[FifoSize_Ipu0];
-	u128 ipu1[FifoSize_Ipu1];
+	FifoRingBuffer<FifoSize_Vif0>	vif0;
+	FifoRingBuffer<FifoSize_Vif1>	vif1;
+	FifoRingBuffer<FifoSize_Gif>	gif;
+	FifoRingBuffer<FifoSize_Ipu0>	ipu0;
+	FifoRingBuffer<FifoSize_Ipu1>	ipu1;
 
 	// The SFIFO is currently not emulated -- all SIF transfers are performed using a direct
 	// connection between IOP and EE (doable because our EE/IOP do not run in parallel).
