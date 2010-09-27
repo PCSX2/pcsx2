@@ -51,6 +51,7 @@ __fi void EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxCh
 	{
 		chcr.STR = 0;
 		dmacRegs.stat.CIS |= (1 << Id);
+		cpuSetNextEventDelta(4);
 	}
 
 	static const wxChar* causeMsg;
@@ -219,7 +220,7 @@ static ChannelId ArbitrateBusRight()
 
 	// VIF0 is the highest of the high priorities!!
 	const tDMA_CHCR& vif0chcr = ChannelInfo[ChanId_VIF0].CHCR();
-	if (vif0chcr.STR)
+	if (dma_request[ChanId_VIF0] && vif0chcr.STR)
 	{
 		if (!dmacRegs.pcr.PCE || (dmacRegs.pcr.CDE & 2)) return ChanId_VIF0;
 		DMAC_LOG("\tVIF0 bypassed due to PCE/CDE0 condition.");
@@ -227,8 +228,9 @@ static ChannelId ArbitrateBusRight()
 	}
 
 	// SIF2 is next!!
+	// (note: SIF2 is only needed for legacy PS1 emulation functionality)
 	const tDMA_CHCR& sif2chcr = ChannelInfo[ChanId_SIF2].CHCR();
-	if (sif2chcr.STR)
+	if (dma_request[ChanId_SIF2] && sif2chcr.STR)
 	{
 		if (!dmacRegs.pcr.PCE || (dmacRegs.pcr.CDE & 2)) return ChanId_SIF2;
 		DMAC_LOG("\tSIF2 bypassed due to PCE/CDE0 condition.");
@@ -241,7 +243,7 @@ static ChannelId ArbitrateBusRight()
 		++round_robin;
 		if (round_robin >= NumChannels) round_robin = 1;
 
-		if (ChannelState( (ChannelId)round_robin ).TestArbitration())
+		if (dma_request[round_robin] && ChannelState( (ChannelId)round_robin ).TestArbitration())
 			return (ChannelId)round_robin;
 	}
 
@@ -329,12 +331,6 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 			addrtmp	+= dmacRegs.sqwc.SQWC;
 			addrtmp	&= (Ps2MemSize::Scratch / 16) - 1;
 		} while(UseDmaBurstHack && curqwc);
-
-		if(dmacRegs.ctrl.STS == STS_fromSPR)
-		{
-			DMAC_LOG("\tUpdated STADR=%s (prev=%s)", madr.ToUTF8(false), dmacRegs.stadr.ToUTF8(false));
-			dmacRegs.stadr = madr;
-		}
 	}
 	else
 	{
@@ -362,36 +358,36 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 	dmac_metrics.RecordXfer(Id, INTERLEAVE_MODE, qwc_copied);
 }
 
+void EE_DMAC::ChannelState::UpdateSourceStall()
+{
+	if (!SourceStallActive() || (GetDir() != Dir_Source)) return;
+
+	DMAC_LOG("\tUpdated STADR=%s (prev=%s)", madr.ToUTF8(false), dmacRegs.stadr.ToUTF8(false));
+
+	dmacRegs.stadr = madr;
+	if (dmacRegs.ctrl.STD)
+		dmacRequestSlice(StallDrainChan[dmacRegs.ctrl.STD]);
+}
+
 void EE_DMAC::ChannelState::TransferNormalAndChainData()
 {
 	const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
 	ChannelRegisters& fromSprReg = fromSPR.GetRegs();
 	const DirectionMode dir = GetDir();
 
-	// Step 1 : Load next tag if CHAIN mode is active and QWC is zero.
-	//  (this is needed because chain transfers are often started with
-	//   an initial QWC of zero).
-	//
-	// Note that it is the responsibility of the app to make sure that chcr.TAG
-	// is properly configured prior to starting transfers.  (this usually means 
-	// providing a TAG_CNT id with IRQ bits cleared).
-
 	if (0 == creg.qwc.QWC)
 	{
 		if (NORMAL_MODE == creg.chcr.MOD)
 		{
-			creg.chcr.STR = 0;
-			return;
-
-			// NORMAL mode transfers of 0 QWC are actually disregarded (no interrupt raised).
-			//dmacRegs.stat.CIS |= (1 << Id);
+			IrqStall( Stall_EndOfTransfer );
 		}
 		else // (CHAIN_MODE == creg.chcr.MOD)
 		{
 			if (dir == Dir_Drain)
 			{
-				// After TADR is established, the new TAG is loaded into the channel's CHCR,
-				// and then the new MADR established.
+				// Load the new tag pointed to by TADR (assigns chcr.TAG, QWC, and MADR), and then
+				// advance the TADR to point to the next tag that will be used when this transfer
+				// completes.
 
 				if (MFIFOActive())
 				{
@@ -405,18 +401,16 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 					//  2. Hack Disabled: Copy data to/from the ringbuffer specified by the
 					//     RBOR and RBSR registers (requires lots of wrapped memcpys).
 
-					tDMAC_ADDR newtag = MFIFO_SrcChainNextTag();
-					MFIFO_SrcChainUpdateMADR( SrcChainLoadTag(newtag) );
+					MFIFO_SrcChainLoadTag();
 				}
 				else
 				{
-					tDMAC_ADDR newtag = SrcChainNextTag();
-					SrcChainUpdateMADR( SrcChainLoadTag(newtag) );
+					SrcChainLoadTag();
 				}
 			}
 			else
 			{
-				DstChainNextTag();
+				DstChainLoadTag();
 			}
 		}
 	}
@@ -492,8 +486,9 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 		}
 	}
 	
-	// The real hardware has undefined behavior for this, but PCSX2 supports it.
-	pxAssertMsg(creg.qwc.QWC < _1mb, "DMAC: QWC is over 1 meg!");
+	// The real hardware has "undefined" behavior for this, though some games still freely
+	// upload huge values to the QWC anyway.  (Ateleir Iris during FMVs).
+	pxAssertMsg(creg.qwc.QWC < (_1mb/16), "DMAC: QWC is over 1 meg!");
 
 	// -----------------------------------
 	// DO THAT MOVEMENT OF DATA.  NOOOOOW!		
@@ -514,15 +509,43 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 		);
 	}
 
-	creg.qwc.QWC	-= qwc_xfer;
 	creg.madr.ADDR	+= qwc_xfer * 16;
+	creg.qwc.QWC	-= qwc_xfer;
+
+	// (optimization) -- DmaBurstHack writes back the STADR later
+	if (!UseDmaBurstHack) UpdateSourceStall();
+
+	if (creg.qwc.QWC == 0)
+	{
+		if (NORMAL_MODE == creg.chcr.MOD)
+			IrqStall(Stall_EndOfTransfer);
+		else
+		{
+			// Chain mode!  Check the current tag for IRQ requests.
+			if (chcr.TAG.IRQ && chcr.TIE)
+				IrqStall(Stall_TagIRQ);
+
+			if (dir == Dir_Drain)
+			{
+				if (MFIFOActive())
+					MFIFO_SrcChainUpdateTADR();
+				else
+					SrcChainUpdateTADR();
+			}
+			else
+			{
+				if (chcr.TAG.ID == TAG_END)
+					IrqStall(Stall_EndOfTransfer);
+			}
+		}
+	}
 }
 
 void EE_DMAC::ChannelState::TransferData()
 {
 	const char* const SrcDrainMsg = GetDir() ? "<-" : "->";
 
-	DMAC_LOG("\tBus right granted to %s%s%s QWC=0x%4x MODE=%s",
+	DMAC_LOG("\tBus right granted to %s%s%s,  QWC=0x%04x,  MODE=%s",
 		info.ToUTF8().data(), SrcDrainMsg, creg.madr.ToUTF8(),
 		creg.qwc.QWC, chcr.ModeToUTF8()
 	);
@@ -534,7 +557,16 @@ void EE_DMAC::ChannelState::TransferData()
 	if (chcr.MOD == INTERLEAVE_MODE)
 		TransferInterleaveData();
 	else
-		TransferNormalAndChainData();
+	{
+		// The following loop is for chain modes only, which typically execute a series of
+		// chains, with stalling occuring when the QWC is != 0 (peripheral stall).
+		//  -- normal modes will use C++ exceptions to exit to the top level caller.
+		do {
+			TransferNormalAndChainData();
+		} while (UseDmaBurstHack && (creg.qwc.QWC == 0));
+	}
+
+	if (UseDmaBurstHack) UpdateSourceStall();
 }
 
 void EE_DMAC::UpdateDmacEvent()
@@ -543,7 +575,7 @@ void EE_DMAC::UpdateDmacEvent()
 
 	DMAC_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacRegs.ctrl._u32);
 
-	if ((psHu32(DMAC_ENABLER) & (1<<16)) || dmacRegs.ctrl.DMAE)
+	if ((psHu32(DMAC_ENABLER) & (1<<16)) || !dmacRegs.ctrl.DMAE)
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 		// the DMAC register(s) are written and the DMAC is fully re-enabled.
@@ -552,9 +584,9 @@ void EE_DMAC::UpdateDmacEvent()
 	}
 
 	do {
-		ChannelId chanId = ArbitrateBusRight();
+		const ChannelId chanId = ArbitrateBusRight();
 
-		if (chanId == -1)
+		if (chanId == ChanId_None)
 		{
 			// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 			// the STR bits are written and the DMAC is enabled.
@@ -562,6 +594,8 @@ void EE_DMAC::UpdateDmacEvent()
 			DMAC_LOG("DMAC Arbitration complete.");
 			break;
 		}
+
+		dma_request[chanId] = false;
 
 		try {
 			ChannelState cstate( chanId );
@@ -601,20 +635,17 @@ void EE_DMAC::UpdateDmacEvent()
 	{
 		CycStealMsg = L"Off";
 	}
-
-	wxsFormat(L"[CycSteal:%s]", CycStealMsg);
-
-	for( uint i=0; i<NumChannels; ++i )
-	{
-		
-	}
 }
 
 // Tells the PCSX2 event scheduler to execute the DMAC handler (eeEvt_UpdateDmac)
 void EE_DMAC::dmacScheduleEvent()
 {
 	// If the DMAC is completely disabled then no point in scheduling anything.
-	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLER) & (1 << 16))) return;
+	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLER) & (1 << 16)))
+	{
+		CPU_ClearEvent( DMAC_EVENT );
+		return;
+	}
 
 	CPU_ScheduleEvent( DMAC_EVENT, 8 );
 }
@@ -645,12 +676,12 @@ void EE_DMAC::dmacChanInt( ChannelId id )
 // Rationale: The DMAC transfers based on these requests in order to reduce the number of cycles
 // wasted trying to transfer data to/from busy peripherals.  Actual emulation of this system is
 // not needed, and is ignored by default.  It is only regarded when the DMAC is in "purist" mode.
-void EE_DMAC::dmacRequestSlice( ChannelId cid )
+void EE_DMAC::dmacRequestSlice( ChannelId cid, bool force )
 {
+	if (!force && !ChannelInfo[cid].CHCR().STR) return;
+
 	dma_request[cid] = true;
-	
-	if (ChannelInfo[cid].CHCR().STR)
-		dmacScheduleEvent();
+	dmacScheduleEvent();
 }
 
 template< uint page >
@@ -679,8 +710,6 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	iswitch(mem) {
 	icase(DMAC_CTRL)
 	{
-		bool needs_event = false;
-
 		const tDMAC_CTRL& newval = (tDMAC_CTRL&)value;
 
 		if (dmacRegs.ctrl.STS != newval.STS)
@@ -695,7 +724,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 				// Enabling STS on a transfer-in-progress shouldn't affect anything
 				// since the DMAC should already be re-raising events anyway, but
 				// no harm in being safe:
-				needs_event |= ChannelInfo[StallSrcChan[newval.STS]].CHCR().STR;
+				dmacRequestSlice(StallSrcChan[dmacRegs.ctrl.STS]);
 			}
 		}
 
@@ -710,12 +739,11 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			{
 				// Releasing the STD setting on an active channel might clear the stall
 				// condition preventing it from completing, so raise an event in such cases:
-				needs_event |= ChannelInfo[StallSrcChan[dmacRegs.ctrl.STD]].CHCR().STR;
+				dmacRequestSlice(StallSrcChan[dmacRegs.ctrl.STD]);
 			}
 		}
 
 		dmacRegs.ctrl = newval;
-		if (needs_event) dmacScheduleEvent();
 		return false;
 	}
 
@@ -756,6 +784,23 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	// such as CHCR, MADR, QWC, and others.  Only changes to STR matter from a virtual machine
 	// point-of-view.  The rest of the registers are handled only for trace logging purposes.
 
+	// First pass is to determine the channel being modified.   After that we can dispatch based
+	// on the actual register of the channel being modified.  This allows us to reuse all the same
+	// code for all 10 DMAs.
+
+	ChannelId chanid = ChanId_None;
+	#define dmaCase(num) icase(D##num##_CHCR) { chanid = (ChannelId)num; }
+
+	iswitch(mem & ~0x0ff) {
+		dmaCase(0); dmaCase(1); dmaCase(2);
+		dmaCase(3); dmaCase(4); dmaCase(5);
+		dmaCase(6); dmaCase(7);
+		dmaCase(8); dmaCase(9);
+	}
+
+	if (chanid == ChanId_None) return true;
+	const ChannelInformation& info = ChannelInfo[chanid];
+
 	if ((mem & 0xf0) == 0)
 	{
 		// Since CHCR is being written, perform necessary STR tests so we know to schedule a DMA
@@ -766,28 +811,12 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		tDMA_CHCR& curchcr = (tDMA_CHCR&)psHu32(mem);
 
 		if (newchcr.STR && !curchcr.STR)
-			dmacScheduleEvent();
+			dmacRequestSlice(chanid, true);
 	}
-
-	// First pass is to determine the channel being modified.   After that we can dispatch based
-	// on the actual register of the channel being modified.  This allows us to reuse all the same
-	// code for all 10 DMAs.
 
 	if (!SysTraceActive(EE.DMAC)) return true;
-	const ChannelInformation* info = NULL;
 
-	#define dmaCase(num) icase(D##num##_CHCR) { info = &ChannelInfo[num]; }
-
-	iswitch(mem & ~0x0ff) {
-		dmaCase(0); dmaCase(1); dmaCase(2);
-		dmaCase(3); dmaCase(4); dmaCase(5);
-		dmaCase(6); dmaCase(7);
-		dmaCase(8); dmaCase(9);
-	}
-	
-	if (!info) return true;
-
-	const tDMA_CHCR& curchcr = info->CHCR();
+	const tDMA_CHCR& curchcr = info.CHCR();
 	FastFormatAscii tracewarn;
 
 	switch(mem & 0x0ff)
@@ -800,7 +829,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			{
 				if (newchcr.STR)
 				{
-					DMAC_LOG("%s DmaExec Received (STR set to 1).", info->NameA);
+					DMAC_LOG("%s DmaExec Received (STR set to 1).", info.NameA);
 					
 					// [TODO] Log all DMA settings at STR=1;
 					
@@ -818,12 +847,12 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 				// such behavior anyway, in case some game relies on some undocumented PS2 behavior
 				// that differs.
 
-				if (info->CHCR().DIR != newchcr.DIR)
+				if (info.CHCR().DIR != newchcr.DIR)
 				{
 					if ( !(psHu32(DMAC_ENABLER) & (1<<16)) )
-						DevCon.WriteLn("%s stopped during active transfer!", info->NameA);
+						DevCon.WriteLn("%s stopped during active transfer!", info.NameA);
 						
-					DMAC_LOG("%s STR changed to %u (DMAC is suspended)", info->NameA, newchcr.DIR);
+					DMAC_LOG("%s STR changed to %u (DMAC is suspended)", info.NameA, newchcr.DIR);
 				}
 
 				// The game is writing newchcr while the DMA channel is active (STR==1).  This is
@@ -836,42 +865,42 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 				FastFormatAscii result;
 				if (curchcr.MOD != newchcr.MOD)
-					tracewarn.Write("\n\tCHCR.MOD changed to %s (oldval=%s)", info->NameA, tbl_LogicalTransferNames[newchcr.MOD], tbl_LogicalTransferNames[curchcr.MOD]);
+					tracewarn.Write("\n\tCHCR.MOD changed to %s (oldval=%s)", info.NameA, tbl_LogicalTransferNames[newchcr.MOD], tbl_LogicalTransferNames[curchcr.MOD]);
 
 				if (curchcr.ASP != newchcr.ASP)
-					tracewarn.Write("\n\tCHCR.ASP changed to %u (oldval=%u)", info->NameA, newchcr.ASP, curchcr.ASP);
+					tracewarn.Write("\n\tCHCR.ASP changed to %u (oldval=%u)", info.NameA, newchcr.ASP, curchcr.ASP);
 				
 				if (curchcr.TTE != newchcr.TTE)
-					tracewarn.Write("\n\tCHCR.TTE changed to %u (oldval=%u)", info->NameA, newchcr.TTE, curchcr.TTE);
+					tracewarn.Write("\n\tCHCR.TTE changed to %u (oldval=%u)", info.NameA, newchcr.TTE, curchcr.TTE);
 
 				if (curchcr.TIE != newchcr.TIE)
-					tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", info->NameA, newchcr.TIE, curchcr.TIE);
+					tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", info.NameA, newchcr.TIE, curchcr.TIE);
 
 				if (curchcr.tag16 != newchcr.tag16)
-					tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", info->NameA, newchcr.tag16, curchcr.tag16);
+					tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", info.NameA, newchcr.tag16, curchcr.tag16);
 			}	
 		}
 		break;
 		
 		case 0x10:		// MADR
 		{
-			if (!info->CHCR().STR) break;
+			if (!info.CHCR().STR) break;
 
 			const tDMAC_ADDR& madr = (tDMAC_ADDR&)value;
 
-			if(madr != info->MADR())
-				tracewarn.Write("\n\tMADR changed to %s (oldval=%s)", info->NameA, madr.ToUTF8(), info->MADR().ToUTF8());
+			if(madr != info.MADR())
+				tracewarn.Write("\n\tMADR changed to %s (oldval=%s)", info.NameA, madr.ToUTF8(), info.MADR().ToUTF8());
 		}
 		break;
 		
 		case 0x20:		// QWC
 		{
-			if (!info->CHCR().STR) break;
+			if (!info.CHCR().STR) break;
 
 			const tDMA_QWC& qwc = (tDMA_QWC&)value;
 
-			if(qwc != info->QWC())
-				tracewarn.Write("\n\tQWC changed to 0x%04x (oldval=0x%04x)", info->NameA, qwc, info->QWC());
+			if(qwc != info.QWC())
+				tracewarn.Write("\n\tQWC changed to 0x%04x (oldval=0x%04x)", info.NameA, qwc, info.QWC());
 		}
 		break;
 
@@ -918,7 +947,7 @@ uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQw
 	{
 		// Yay!  only have to worry about wrapping the destination copy.
 		pxAssume(srcSize == 0 && srcStartQwc == 0);
-		MemCopy_WrappedDest(srcBase, (u128*)eeMem->Scratch, destPos, sizeof(eeMem->Scratch), lenQwc);
+		MemCopy_WrappedDest(srcBase, (u128*)eeMem->Scratch, destPos, sizeof(eeMem->Scratch)/16, lenQwc);
 	}
 	else
 	{
@@ -941,7 +970,7 @@ uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, u
 	{
 		// Yay!  only have to worry about wrapping the source data.
 		pxAssume(destSize == 0 && destStartQwc == 0);
-		MemCopy_WrappedSrc((u128*)eeMem->Scratch, srcPos, sizeof(eeMem->Scratch), dest, lenQwc);
+		MemCopy_WrappedSrc((u128*)eeMem->Scratch, srcPos, sizeof(eeMem->Scratch) / 16, dest, lenQwc);
 	}
 	else
 	{

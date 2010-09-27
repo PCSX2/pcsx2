@@ -52,7 +52,7 @@ enum pce_values
 
 enum tag_id
 {
-	TAG_CNTS = 0,	// (Destination Chanin only, SIF0 and fromSPR only)
+	TAG_CNTS = 0,	// (Destination Chain only, SIF0 and fromSPR only)
 	TAG_REFE = 0, 	// Transfer Packet According to ADDR field, clear STR, and end
 	TAG_CNT, 		// Transfer QWC following the tag.
 	TAG_NEXT,		// Transfer QWC following tag. TADR = ADDR
@@ -435,7 +435,7 @@ union tDMAC_ADDR
 
 	void IncrementQWC(uint incval = 1)
 	{
-		ADDR += incval;
+		ADDR += incval * 16;
 		if (SPR) ADDR &= (Ps2MemSize::Scratch-1);
 	}
 	

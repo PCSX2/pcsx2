@@ -157,14 +157,14 @@ template< typename T >
 uint ChannelState::TransferSource( T& destBuffer ) const
 {
 	pxAssume((sizeof(T) & 15) == 0);		// quadwords only please!!
-	return info.fnptr_xferFrom( (u128*)&destBuffer, 0, 0, sizeof(T) );
+	return info.fnptr_xferFrom( (u128*)&destBuffer, 0, 0, sizeof(T) / 16 );
 }
 
 template< typename T >
 uint ChannelState::TransferDrain( const T& srcBuffer ) const
 {
 	pxAssume((sizeof(T) & 15) == 0);		// quadwords only please!!
-	return info.fnptr_xferTo( (u128*)&srcBuffer, 0, 0, sizeof(T) );
+	return info.fnptr_xferTo( (u128*)&srcBuffer, 0, 0, sizeof(T) / 16 );
 }
 
 // --------------------------------------------------------------------------------------
@@ -191,7 +191,7 @@ uint ChannelState::TransferDrain( const T& srcBuffer ) const
 
 u128* ChannelState::TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
 {
-	static const uint addr = addrReg.ADDR;
+	const uint addr = addrReg.ADDR;
 
 	if (info.HonorsSprBit())
 	{
@@ -210,18 +210,22 @@ u128* ChannelState::TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
 		}
 	}
 
-	void* result = vtlb_GetPhyPtr(addr);
-	if (!result && (addr < _256mb))
+	u128* result = (u128*)vtlb_GetPhyPtr(addr & 0x1fffffff);
+	if (!result)
 	{
-		// 256mb (PS2 max memory)
-		// Such accesses are not documented as causing bus errors but as the memory does
-		// not exist, reads should continue to return 0 and writes should be discarded.
-		// (note that IOP has similar behavior on its DMAs and some memory accesses).
+		if(addr < _256mb)
+		{
+			// 256mb (PS2 max memory)
+			// Such accesses are not documented as causing bus errors but as the memory does
+			// not exist, reads should continue to return 0 and writes should be discarded.
+			// (note that IOP has similar behavior on its DMAs and some memory accesses).
 
-		return (u128*)(writeToMem ? eeMem->ZeroWrite : eeMem->ZeroRead);
+			return (u128*)(writeToMem ? eeMem->ZeroWrite : eeMem->ZeroRead);
+		}
+		return NULL;
 	}
 
-	return NULL;
+	return result;
 }
 
 u128* ChannelState::GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )

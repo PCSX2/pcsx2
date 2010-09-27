@@ -39,9 +39,13 @@ void SaveStateBase::vifFreeze()
 
 #define vcase(reg)  case (idx ? VIF1_##reg : VIF0_##reg)
 
-_vifT __fi u32 vifRead32(u32 mem) {
-
+_vifT __fi u32 vifRead32(u32 mem)
+{
 	switch (mem) {
+		vcase(STAT):
+			GetVifXregs.stat.FQC = idx ? g_fifo.vif1.qwc : g_fifo.vif0.qwc;
+			return GetVifXregs.stat._u32;
+	
 		vcase(ROW0): return vifProc[idx].MaskRow._u32[0];
 		vcase(ROW1): return vifProc[idx].MaskRow._u32[1];
 		vcase(ROW2): return vifProc[idx].MaskRow._u32[2];
@@ -64,7 +68,6 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value) {
 
 	switch (mem) {
 		vcase(MARK):
-			VIF_LOG("VIF%d_MARK write32 0x%8.8x", idx, value);
 			vifXRegs.stat.MRK = 0;
 		break;
 
@@ -90,6 +93,8 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value) {
 				vifXRegs.err.reset();
 				
 				memzero(vifProc[idx]);
+				if (idx)	memzero(g_fifo.vif1);
+				else		memzero(g_fifo.vif0);
 			}
 
 			if (fbrst.FBK)

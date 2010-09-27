@@ -24,57 +24,13 @@
 
 #include "ps2/NewDmac.h"
 
+
+#include "FiFo.inl"
+
 using namespace EE_DMAC;
 
 __aligned16 PeripheralFifoPack g_fifo;
 
-
-template< uint size >
-void FifoRingBuffer<size>::SendToPeripheral(Fnptr_ToPeripheral toFunc, const char* name)
-{
-	uint transferred = toFunc( buffer, size, readpos, qwc );
-	qwc -= transferred;
-
-	readpos += transferred;
-	readpos &= size-1;
-}
-
-template< uint size >
-void FifoRingBuffer<size>::HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, const char* name)
-{
-	GIF_LOG("WriteFIFO/%s <- %ls (FQC=%u)", src->ToString().c_str(), qwc);
-
-	if (qwc >= size) return;
-	WriteQWC(src);
-
-	if (qwc >= size)
-	{
-		ProcessFifoEvent();
-		CPU_ClearEvent(FIFO_EVENT);
-	}
-	else
-	{
-		CPU_ScheduleEvent(FIFO_EVENT, 128);
-	}
-}
-
-template< uint size >
-void FifoRingBuffer<size>::ReadQWC(u128* dest)
-{
-	pxAssume(qwc);
-	CopyQWC(dest, &buffer[readpos]);
-	readpos = (readpos+1) & (size-1);
-	--qwc;
-}
-
-template< uint size >
-void FifoRingBuffer<size>::WriteQWC(const u128* src)
-{
-	pxAssume(qwc < size);
-	CopyQWC(&buffer[writepos], src);
-	writepos = (writepos+1) & (size-1);
-	++qwc;
-}
 
 // Notes on FIFO implementation
 //
@@ -126,7 +82,7 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 		if(!pxAssertDev(!g_fifo.vif1.IsEmpty(), "Reading from an empty VIF1 FIFO (FQC=0)")) return;
 	}
 
-	g_fifo.vif1.ReadQWC(out);
+	g_fifo.vif1.ReadSingle(out);
 	VIF_LOG("ReadFIFO/VIF1 -> %ls", out->ToString().c_str());
 }
 
@@ -136,7 +92,8 @@ void __fastcall ReadFIFO_IPUout(mem128_t* out)
 	// its either some glitchy game or a bug in pcsx2.
 
 	if (!pxAssertDev( g_fifo.ipu0.qwc > 0, "Attempted read from IPUout's FIFO, but the FIFO is empty!" )) return;
-	g_fifo.ipu0.ReadQWC(out);
+	g_fifo.ipu0.ReadSingle(out);
+	IPU_LOG("ReadFIFO/IPUout -> %ls", out->ToString().c_str());
 }
 
 // --------------------------------------------------------------------------------------
@@ -165,7 +122,7 @@ void __fastcall ReadFIFO_IPUout(mem128_t* out)
 void __fastcall WriteFIFO_VIF0(const mem128_t* value)
 {
 	pxAssume( !vif0dma.chcr.STR );
-	g_fifo.gif.HwWrite(EE_DMAC::toVIF0, value, "VIF0");
+	g_fifo.vif0.HwWrite(EE_DMAC::toVIF0, value, SysTrace.EE.VIF);
 }
 
 void __fastcall WriteFIFO_VIF1(const mem128_t* value)
@@ -175,7 +132,7 @@ void __fastcall WriteFIFO_VIF1(const mem128_t* value)
 	// Writes to VIF1 FIFO when its in Source mode (VIF->memory transfer direction) are likely disregarded.
 	if (vif1Regs.stat.FDR) return;
 
-	g_fifo.gif.HwWrite(EE_DMAC::toVIF1, value, "VIF1");
+	g_fifo.vif1.HwWrite(EE_DMAC::toVIF1, value, SysTrace.EE.VIF);
 }
 
 void __fastcall WriteFIFO_GIF(const mem128_t* value)
@@ -183,38 +140,43 @@ void __fastcall WriteFIFO_GIF(const mem128_t* value)
 	// GIF FIFO uses PATH3 for transfer (same as GIF DMA).
 
 	pxAssume( !gifdma.chcr.STR );
-	g_fifo.gif.HwWrite(EE_DMAC::toGIF, value, "GIF");
+
+	g_fifo.gif.HwWrite(EE_DMAC::toGIF, value, SysTrace.EE.GIF);
 }
 
 void __fastcall WriteFIFO_IPUin(const mem128_t* value)
 {
 	pxAssume( !gifdma.chcr.STR );
-	g_fifo.ipu1.HwWrite(EE_DMAC::toIPU, value, "toIPU");
+	g_fifo.ipu1.HwWrite(EE_DMAC::toIPU, value, SysTrace.EE.IPU);
 }
 
 void ProcessFifoEvent()
 {
 	CPU_ClearEvent(FIFO_EVENT);
-	if (g_fifo.vif0.IsEmpty())
+
+	if (!g_fifo.vif0.IsEmpty())
 	{
-		g_fifo.vif0.SendToPeripheral(EE_DMAC::toVIF0, "VIF0");
+		g_fifo.vif0.SendToPeripheral(EE_DMAC::toVIF0);
 	}
 
-	if (g_fifo.vif1.IsEmpty() && !vif1Regs.stat.FDR)
+	if (!g_fifo.vif1.IsEmpty() && !vif1Regs.stat.FDR)
 	{
 		// cannot drain the VIF1 FIFO when its in Source (toMemory) mode (FDR=1).  The EE has
 		// to read from it or reset it manually.
 
-		g_fifo.vif1.SendToPeripheral(EE_DMAC::toVIF1, "VIF1");
+		g_fifo.vif1.SendToPeripheral(EE_DMAC::toVIF1);
 	}
 
-	if (g_fifo.gif.IsEmpty())
+	if (!g_fifo.gif.IsEmpty() && !GIF_MaskedPath3())
 	{
 		// GIF FIFO uses PATH3 for transfer (same as GIF DMA).
 		// So if PATH3 cannot get arbitration rights to the GIF, then the FIFO cannot empty itself.
 
-		g_fifo.gif.SendToPeripheral(EE_DMAC::toGIF, "GIF");
+		g_fifo.gif.SendToPeripheral(EE_DMAC::toGIF);
 	}
 
-	// [TODO] : IPU FIFOs (but those need some work)
+	if (!g_fifo.ipu1.IsEmpty())
+	{
+		g_fifo.ipu1.SendToPeripheral(EE_DMAC::toIPU);
+	}
 }

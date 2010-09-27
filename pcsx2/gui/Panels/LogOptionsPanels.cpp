@@ -33,7 +33,7 @@ Panels::eeLogOptionsPanel::eeLogOptionsPanel( LogOptionsPanel* parent )
 
 	m_disasmPanel	= new CheckedStaticBox( this, wxVERTICAL, L"Disasm" );
 	m_hwPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Registers" );
-	m_evtPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Events" );
+	m_evtPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Peripherals" );
 
 	wxFlexGridSizer& eeTable( *new wxFlexGridSizer( 2, 5 ) );
 
@@ -82,7 +82,7 @@ CheckedStaticBox* Panels::eeLogOptionsPanel::GetStaticBox( const wxString& subgr
 {
 	if (0 == subgroup.CmpNoCase( L"Disasm" ))		return m_disasmPanel;
 	if (0 == subgroup.CmpNoCase( L"Registers" ))	return m_hwPanel;
-	if (0 == subgroup.CmpNoCase( L"Events" ))		return m_evtPanel;
+	if (0 == subgroup.CmpNoCase( L"Peripherals" ))	return m_evtPanel;
 
 	return NULL;
 }
@@ -104,7 +104,7 @@ void Panels::eeLogOptionsPanel::OnSettingsChanged()
 	SetValue( conf.EE.m_EnableAll );
 
 	m_disasmPanel	->SetValue( conf.EE.m_EnableDisasm );
-	m_evtPanel		->SetValue( conf.EE.m_EnableEvents );
+	m_evtPanel		->SetValue( conf.EE.m_EnablePeripherals );
 	m_hwPanel		->SetValue( conf.EE.m_EnableRegisters );
 }
 
@@ -134,14 +134,13 @@ static SysTraceLog * const traceLogList[] =
 
 	&SysTrace.EE.KnownHw,
 	&SysTrace.EE.UnknownHw,
-	&SysTrace.EE.DMAhw,
-	&SysTrace.EE.IPU,
 	&SysTrace.EE.GIFtag,
 	&SysTrace.EE.VIFcode,
 
 	&SysTrace.EE.DMAC,
 	&SysTrace.EE.Counters,
-	&SysTrace.EE.SPR,
+	&SysTrace.EE.SIF,
+	&SysTrace.EE.IPU,
 	&SysTrace.EE.VIF,
 	&SysTrace.EE.GIF,
 	
@@ -324,8 +323,6 @@ void Panels::LogOptionsPanel::Apply()
 	}
 }
 
-#define GetSet( cpu, name )		SysTrace.cpu.name.Enabled	= m_##name->GetValue()
-
 void Panels::eeLogOptionsPanel::Apply()
 {
 	TraceFiltersEE& conf( g_Conf->EmuOptions.Trace.EE );
@@ -333,7 +330,7 @@ void Panels::eeLogOptionsPanel::Apply()
 	conf.m_EnableAll		= GetValue();
 	conf.m_EnableDisasm		= m_disasmPanel->GetValue();
 	conf.m_EnableRegisters	= m_hwPanel->GetValue();
-	conf.m_EnableEvents		= m_evtPanel->GetValue();
+	conf.m_EnablePeripherals= m_evtPanel->GetValue();
 }
 
 void Panels::iopLogOptionsPanel::Apply()

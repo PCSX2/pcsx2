@@ -182,35 +182,26 @@ static uint SIF0_Transfer(u128* dest, uint dstQwc)
 	{
 		if (!iopQwc)
 		{
-			// Check for End-of-Chain / IRQ of the previous chain tag:
-			// Since it unknown if the IOP has a proper holding area for chain mode
-			// TAG information, we have to maintain that stuff ourselves in sifstate.
-
-			if (sifstate.tag.IRQ || sifstate.tag.EOC)
-			{
-				hw_dma9.chcr.STR = 0;
-				psxDmaInterrupt2(2);
-				break;
-			}
-
 			// Fetch next tag in the chain. IOP's "Source Chain" mode is a 128 bit tag pair, where
 			// the first 64 bits is the IOP's DMAtag, and the second 64 bits is the EE's DMAtag).
 
 			const u64* tagPtr = (u64*)iopPhysMem(hw_dma9.tadr);
 			Copy64(&sifstate.tag, tagPtr);
 
+			SIF_LOG("IOP/SIF0 Source Chain Tag Loaded @ TADR=0x%06X : MADR=0x%06X, WCNT=0x%04X",
+				hw_dma9.tadr, sifstate.tag.ADDR, sifstate.tag.WCNT);
+
 			hw_dma9.tadr += 16;
 			hw_dma9.madr = sifstate.tag.ADDR;
 			iopQwc = (sifstate.tag.WCNT + 3) / 4;
+
 
 			// Copy the EE's tag.  The EE expects the tag to be 128 bits, with the upper
 			// 64 bits being ineffective (ignored).  Since the IOP's source address isn't
 			// 128 bit aligned, we can't use MOVAPS/MOVDQA, but we can use MOVLPS, which is
 			// not alignment-restricted (yay).
 
-			//*(u64*) = ioptag->ee_tag._u64;
-
-			Copy64(dest, tagPtr);
+			Copy64(dest, tagPtr + 1);
 			++dest;
 			--dstQwc;
 			continue;
@@ -223,6 +214,18 @@ static uint SIF0_Transfer(u128* dest, uint dstQwc)
 		hw_dma9.madr += transable * 16;
 		iopQwc -= transable;
 		dstQwc -= transable;
+
+		// Check for End-of-Chain / IRQ of the current chain tag:
+
+		if (sifstate.tag.IRQ || sifstate.tag.EOC)
+		{
+			psHu32(SBUS_F240) &= ~0x20;
+			psHu32(SBUS_F240) &= ~0x2000;
+
+			hw_dma9.chcr.STR = 0;
+			psxDmaInterrupt2(2);
+			break;
+		}
 	}
 
 	// write the IOP's BCR back; we might need it later if this was a partial transfer:
@@ -254,17 +257,6 @@ static uint SIF1_Transfer(const u128* src, uint srcQwc)
 
 		if (!iopQwc)
 		{
-			// Check for End-of-Chain / IRQ of the previous chain tag:
-			// Since it unknown if the IOP has a proper holding area for chain mode
-			// TAG information, we have to maintain that stuff ourselves in sifstate.
-
-			if (sifstate.tag.IRQ || sifstate.tag.EOC)
-			{
-				hw_dma10.chcr.STR = 0;
-				psxDmaInterrupt2(2);
-				break;
-			}
-
 			// fetch the next tag from the incoming DMA stream.
 			// IOP's "Destination Chain" mode is a 128-bit tag, immediately followed by data
 			// to be written to the destination address specified in the tag.  The lower 64 bits
@@ -278,6 +270,9 @@ static uint SIF1_Transfer(const u128* src, uint srcQwc)
 			_mm_storel_pd((double*)&sifstate.tag, copyreg);		// store back low 64 bits, alignment-safe.
 			++src;
 			--srcQwc;
+
+			SIF_LOG("IOP/SIF1 Dest Chain Tag Loaded : MADR=0x%06X, WCNT=0x%04X",
+				sifstate.tag.ADDR, sifstate.tag.WCNT);
 
 			pxAssumeDev((sifstate.tag.WCNT & 3) == 0, "IOP SIF1 Unaligned size specified in tag.");
 
@@ -295,16 +290,32 @@ static uint SIF1_Transfer(const u128* src, uint srcQwc)
 			// the DMA and flags a bit somewhere:
 
 			hw_dma10.chcr.STR = 0;
-			psxDmaInterrupt2(2);
+			psxDmaInterrupt2(3);
 			break;
 		}
 
-		memcpy_fast(iopdest, src, transable * 4);
+		memcpy_fast(iopdest, src, transable * 16);
 
-		hw_dma9.madr += transable * 4;
+		hw_dma10.madr += transable * 16;
 		iopQwc -= transable;
 		srcQwc -= transable;
+		
+		if (iopQwc == 0)
+		{
+			// Check for End-of-Chain / IRQ of the current chain tag:
+			// Since it unknown if the IOP has a proper holding area for chain mode
+			// TAG information, we have to maintain that stuff ourselves in sifstate.
 
+			if (sifstate.tag.IRQ || sifstate.tag.EOC)
+			{
+				psHu32(SBUS_F240) &= ~0x40;
+				psHu32(SBUS_F240) &= ~0x4000;
+
+				hw_dma10.chcr.STR = 0;
+				psxDmaInterrupt2(3);
+				break;
+			}
+		}
 	}
 
 	// write the IOP's BCR back; we might need it later if this was a partial transfer:
@@ -363,8 +374,6 @@ uint __dmacall EE_DMAC::toSIF1(const u128* srcBase, uint srcSize, uint srcStartQ
 	#endif
 
 	return SIF1_Transfer( srcBase, lenQwc );
-
-	return 0;
 }
 
 
@@ -385,7 +394,9 @@ void psxDma9(iDMA_CHCR newchcr)
 			//uint bitmess = 8 << ((9-7) * 4);
 			//if ((HW_DMA_PCR2 & bitmess) == 0) return;
 
-			SIF_LOG("IOP dmaSIF0(9) chcr = %08x, madr = %08x, bcr = %08x, tadr = %08x",	hw_dma9.chcr, hw_dma9.madr, hw_dma9.bcr);
+			SIF_LOG("IOP dmaSIF0(9): chcr = %08x, madr = %08x, bcr = %08x, tadr = %08x",	hw_dma9.chcr, hw_dma9.madr, hw_dma9.bcr, hw_dma9.tadr);
+
+			psHu32(SBUS_F240) |= 0x2000;
 
 			// The EE is responsible for performing all SIF transfers, so the IOP can only signal
 			// to the EE that it is ready for transfer (DREQ); and then continue on its merry way.
@@ -413,6 +424,8 @@ void psxDma10(iDMA_CHCR newchcr)
 		if (newchcr.STR)
 		{
 			SIF_LOG("IOP: dmaSIF1(10) chcr = %08x, madr = %08x, bcr = %08x", hw_dma10.chcr, hw_dma10.madr, hw_dma10.bcr);
+
+			psHu32(SBUS_F240) |= 0x4000;
 
 			// The EE is responsible for performing all SIF transfers, so the IOP can only signal
 			// to the EE that it is ready for transfer (DREQ); and then continue on its merry way.

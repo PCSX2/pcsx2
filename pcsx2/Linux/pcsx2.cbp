@@ -278,6 +278,7 @@
 		<Unit filename="../Elfheader.h" />
 		<Unit filename="../FPU.cpp" />
 		<Unit filename="../FiFo.cpp" />
+		<Unit filename="../FiFo.inl" />
 		<Unit filename="../GS.cpp" />
 		<Unit filename="../GS.h" />
 		<Unit filename="../GSState.cpp" />

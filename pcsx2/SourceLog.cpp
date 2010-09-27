@@ -194,12 +194,6 @@ TLD_EE_UnknownHw = {
 	"eReg"
 },
 
-TLD_EE_DMAhw = {
-	L"DmaRegs",		L"DMA Regs",
-	wxLt("Logs only DMA-related registers."),
-	"eReg"
-},
-
 TLD_EE_IPU = {
 	L"IPU",			L"IPU",
 	wxLt("IPU activity: hardware registers, decoding operations, DMA status, etc."),
@@ -216,12 +210,6 @@ TLD_EE_VIFcode = {
 	L"VIFcodes",	L"VIFcodes",
 	wxLt("All VIFcode processing; command, tag style, interrupts."),
 	"VIF"
-},
-
-TLD_EE_SPR = {
-	L"MFIFO",		L"Scratchpad MFIFO",
-	wxLt("Scratchpad's MFIFO activity."),
-	"SPR"
 },
 
 TLD_EE_DMAC = {
@@ -242,9 +230,15 @@ TLD_EE_VIF = {
 	"VIF"
 },
 
+TLD_EE_SIF = {
+	L"SIF",			L"SIF",
+	wxLt("Dumps various SIFcrap... maybe ."),
+	"SIF"
+},
+
 TLD_EE_GIF = {
 	L"GIF",			L"GIF",
-	wxLt("Dumps various GIF and GIFtag parsing data."),
+	wxLt("Dumps GIF hardware, fifo, and path arbitration logs."),
 	"GIF"
 };
 
@@ -344,15 +338,14 @@ SysTraceLogPack::EE_PACK::EE_PACK()
 		
 	, KnownHw	(&TLD_EE_KnownHw)
 	, UnknownHw	(&TLD_EE_UnknownHw)
-	, DMAhw		(&TLD_EE_DMAhw)
-	, IPU		(&TLD_EE_IPU)
 
 	, DMAC		(&TLD_EE_DMAC)
 	, Counters	(&TLD_EE_Counters)
-	, SPR		(&TLD_EE_SPR)
 
 	, VIF		(&TLD_EE_VIF)
 	, GIF		(&TLD_EE_GIF)
+	, SIF		(&TLD_EE_SIF)
+	, IPU		(&TLD_EE_IPU)
 {
 }
 

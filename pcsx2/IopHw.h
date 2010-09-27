@@ -209,7 +209,7 @@ union iDMA_CHCR
 		// Unknown bits.  Some of them are likely performance control bits for the
 		// DMAC, to regulate slicing, cpu cycle stealing, or other things not relevant
 		// to accurate emulation.
-		u32 _unknown	: 22;
+		u32 _unknown	: 23;
 
 		// Start bit.  Apps set this to 1 to start a transfer.  The DMAC sets it to
 		// 0 when the transfer is finished.  Apps writing 0 to this value are likely

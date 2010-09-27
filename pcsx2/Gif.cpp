@@ -124,6 +124,7 @@ void GIF_ArbitratePaths()
 		g_gifpath.tag.NLOOP	= gifRegs.p3tag.LOOPCNT;
 		g_gifpath.tag.FLG	= GIF_FLG_IMAGE;
 
+		ProcessFifoEvent();
 		dmacRequestSlice(ChanId_GIF);
 		return;
 	}
@@ -137,11 +138,12 @@ void GIF_ArbitratePaths()
 		// intermittent transfer.  This is an assumption at this point and has not been
 		// confirmed.
 
-		if (gifRegs.mode.M3R || vifProc[1].maskpath3) return;
+		if (GIF_MaskedPath3()) return;
 
 		gifRegs.SetActivePath( GIF_APATH3 );
 		gifRegs.stat.P3Q = 0;
 
+		ProcessFifoEvent();
 		dmacRequestSlice(ChanId_GIF);
 		return;
 	}
@@ -211,8 +213,10 @@ bool __fastcall GIF_QueuePath1( u32 vumem )
 	return true;
 }
 
-GIF_PathQueueResult GIF_QueuePath2()
+bool GIF_QueuePath2()
 {
+	pxAssume(!gifRegs.stat.P2Q);
+	
 	pxAssumeDev( (vif1Regs.code.CMD == VIFcode_DIRECTHL) || (vif1Regs.code.CMD == VIFcode_DIRECT),
 		"Invalid VIFcode state encountered while processing PATH2.  Current VIFcode is not DIRECT/DIRECTHL!"
 	);
@@ -223,38 +227,62 @@ GIF_PathQueueResult GIF_QueuePath2()
 	{
 		gifRegs.SetActivePath( GIF_APATH2 );
 		GIF_LOG("GIFpath rights acquired by PATH2 (VIF1 DIRECT%s).", isDirectHL ? "HL" : "");
-		return GIFpath_Acquired;
+		return true;
 	}
 
 	if (!isDirectHL && GIF_InterruptPath3(GIF_APATH2))
 	{
 		gifRegs.SetActivePath( GIF_APATH2 );
 		GIF_LOG("GIFpath rights acquired by PATH2 (VIF1 DIRECT%s).", isDirectHL ? "HL" : "");
-		return GIFpath_Acquired;
+		return true;
 	}
-
-	//if (!pxAssertDev(gifRegs.stat.APATH == GIF_APATH2 || gifRegs.stat.P2Q, "Possible recursive PATH2 transfer detected!"))
-	if (gifRegs.stat.P2Q) return GIFpath_Busy;
 
 	GIF_LOG("GIFpath queued request for PATH2 (VIF1 DIRECT%s).", isDirectHL ? "HL" : "");
 	gifRegs.stat.P2Q = 1;
-	return GIFpath_Queued;
+	return false;
 }
 
-GIF_PathQueueResult GIF_QueuePath3()
+bool GIF_ClaimPath3()
 {
-	if (gifRegs.stat.APATH == GIF_APATH_IDLE)
+	if (gifRegs.stat.APATH == GIF_APATH3) return true;
+	if (gifRegs.stat.P3Q)
 	{
-		gifRegs.SetActivePath( GIF_APATH3 );
-		GIF_LOG("GIFpath rights acquired by PATH3 (GIF DMA/FIFO).");
-		return GIFpath_Acquired;
+		pxAssumeDev(gifRegs.stat.APATH != GIF_APATH_IDLE, "Invalid GIFpath state during PATH3 arbitration request.");
+		return false;
 	}
 
-	if (gifRegs.stat.P3Q) return GIFpath_Busy;
+	if (gifRegs.stat.APATH == GIF_APATH_IDLE)
+	{
+		if (GIF_MaskedPath3())
+		{
+			GIF_LOG("PATH3 Masked!  (arbitration denied)");
+			gifRegs.stat.P3Q = 1;
+			return false;
+		}
+
+		gifRegs.SetActivePath( GIF_APATH3 );
+		GIF_LOG("GIFpath rights acquired by PATH3 (GIF DMA/FIFO).");
+		return true;
+	}
 
 	GIF_LOG("GIFpath queued request for PATH3 (GIF DMA/FIFO).");
 	gifRegs.stat.P3Q = 1;
-	return GIFpath_Queued;
+	return false;
+}
+
+bool GIF_MaskedPath3()
+{
+	return (gifRegs.mode.M3R || vifProc[1].maskpath3);
+}
+
+__fi u32 gifRead32(u32 mem)
+{
+	switch (mem) {
+		case GIF_STAT:
+			gifRegs.stat.FQC = g_fifo.gif.qwc;
+			return gifRegs.stat._u32;
+	}
+	return psHu32(mem);
 }
 
 uint __dmacall EE_DMAC::toGIF(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
@@ -262,8 +290,9 @@ uint __dmacall EE_DMAC::toGIF(const u128* srcBase, uint srcSize, uint srcStartQw
 	// DMA transfers to GIF use PATH3.
 	// PATH3 can be disabled/masked by various conditions.  In such cases the DMA acts as a stall:
 
-	if (gifRegs.GetActivePath() != GIF_APATH3) return 0;
-	return srcSize - GIF_UploadTag(srcBase, lenQwc, srcStartQwc, srcSize);
+	if ((gifRegs.stat.APATH != GIF_APATH3) && !GIF_ClaimPath3()) return 0;
+
+	return GIF_UploadTag(srcBase, lenQwc, srcStartQwc, srcSize);
 }
 
 void SaveStateBase::gifFreeze()

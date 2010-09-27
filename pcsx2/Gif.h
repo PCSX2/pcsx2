@@ -332,18 +332,13 @@ namespace Exception {
 
 static GIFregisters& gifRegs = (GIFregisters&)eeHw[0x3000];
 
-enum GIF_PathQueueResult
-{
-	GIFpath_Acquired,
-	GIFpath_Queued,
-	GIFpath_Busy,
-};
-
 extern uint GIF_UploadTag(const u128* baseMem, uint fragment_size, uint startPos=0, uint memSize=0);
 
 extern void GIF_ArbitratePaths();
 extern bool GIF_InterruptPath3( gif_active_path apath );
 extern bool __fastcall GIF_QueuePath1( u32 addr );
-extern GIF_PathQueueResult GIF_QueuePath2();
-extern GIF_PathQueueResult GIF_QueuePath3();
+extern bool GIF_QueuePath2();
+extern bool GIF_ClaimPath3();
+extern bool GIF_MaskedPath3();
 
+extern u32 gifRead32(u32 mem);

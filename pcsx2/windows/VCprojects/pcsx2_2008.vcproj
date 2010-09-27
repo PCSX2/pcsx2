@@ -518,6 +518,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\FiFo.inl"
+							>
+						</File>
+						<File
 							RelativePath="..\..\Hardware.h"
 							>
 						</File>

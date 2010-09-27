@@ -241,6 +241,11 @@ struct IPU_DataSource
 	uint memsizeQwc;
 	uint curposQwc;
 	uint leftQwc;
+	uint transferred;
+	
+#ifdef PCSX2_DEVBUILD
+	uint origStartQwc;
+#endif
 
 	void GetNextQWC( u128* dest );
 };
@@ -251,8 +256,13 @@ struct IPU_DataTarget
 	uint memsizeQwc;
 	uint curposQwc;
 	uint leftQwc;
+	uint transferred;
 
-	bool Write( const void* src, uint sizeQwc );
+#ifdef PCSX2_DEVBUILD
+	uint origStartQwc;
+#endif
+
+	uint Write( const void* src, uint sizeQwc );
 };
 
 static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
@@ -265,7 +275,6 @@ extern int coded_block_pattern;
 
 extern int ipuInit();
 extern void ipuReset();
-extern void IPUWorker();
 
 extern u32 ipuRead32(u32 mem);
 extern u64 ipuRead64(u32 mem);
@@ -274,7 +283,6 @@ extern bool ipuWrite64(u32 mem,u64 value);
 
 extern void IPUCMD_WRITE(u32 val);
 extern void ipuSoftReset();
-extern void IPUProcessInterrupt();
 
 extern u8 getBits128(u8 *address, bool advance);
 extern u8 getBits64(u8 *address, bool advance);

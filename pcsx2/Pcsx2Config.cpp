@@ -335,6 +335,7 @@ Pcsx2Config::Pcsx2Config()
 {
 	bitset = 0;
 	McdEnableEjection = true;
+	EnablePatches = true;
 }
 
 void Pcsx2Config::LoadSave( IniInterface& ini )

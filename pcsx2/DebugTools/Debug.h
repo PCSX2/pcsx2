@@ -160,19 +160,19 @@ public:
 	wxString GetCategory() const { return _parent::GetCategory() + L".Registers"; }
 };
 
-class SysTraceLog_EE_Events : public SysTraceLog_EE
+class SysTraceLog_EE_Peripherals : public SysTraceLog_EE
 {
 	typedef SysTraceLog_EE _parent;
 
 public:
-	SysTraceLog_EE_Events( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
+	SysTraceLog_EE_Peripherals( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
 	bool IsActive() const
 	{
-		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableEvents;
+		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnablePeripherals;
 	}
 
-	wxString GetCategory() const { return _parent::GetCategory() + L".Events"; }
+	wxString GetCategory() const { return _parent::GetCategory() + L".Peripherals"; }
 };
 
 
@@ -273,6 +273,9 @@ struct SysTraceLogPack
 	{
 		SysTraceLog_EE				Bios;
 		SysTraceLog_EE				Memory;
+		SysTraceLog_EE				DMAC;
+		SysTraceLog_EE				Counters;
+
 		SysTraceLog_EE				GIFtag;
 		SysTraceLog_VIFcode			VIFcode;
 
@@ -284,15 +287,11 @@ struct SysTraceLogPack
 		
 		SysTraceLog_EE_Registers	KnownHw;
 		SysTraceLog_EE_Registers	UnknownHw;
-		SysTraceLog_EE_Registers	DMAhw;
-		SysTraceLog_EE_Registers	IPU;
 
-		SysTraceLog_EE_Events		DMAC;
-		SysTraceLog_EE_Events		Counters;
-		SysTraceLog_EE_Events		SPR;
-
-		SysTraceLog_EE_Events		VIF;
-		SysTraceLog_EE_Events		GIF;
+		SysTraceLog_EE_Peripherals	IPU;
+		SysTraceLog_EE_Peripherals	VIF;
+		SysTraceLog_EE_Peripherals	GIF;
+		SysTraceLog_EE_Peripherals	SIF;
 
 		EE_PACK();
 	} EE;
@@ -366,10 +365,8 @@ extern void __Log( const char* fmt, ... );
 #define CACHE_LOG		macTrace(EE.Cache)
 #define HW_LOG			macTrace(EE.KnownHw)
 #define UnknownHW_LOG	macTrace(EE.UnknownHw)
-#define DMA_LOG			macTrace(EE.DMAhw)
 #define IPU_LOG			macTrace(EE.IPU)
 #define VIF_LOG			macTrace(EE.VIF)
-#define SPR_LOG			macTrace(EE.SPR)
 #define GIF_LOG			macTrace(EE.GIF)
 #define EECNT_LOG		macTrace(EE.Counters)
 #define VifCodeLog		macTrace(EE.VIFcode)

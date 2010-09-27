@@ -583,8 +583,8 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 				else
 				{
 					size = fragment_size - processed;
+					startSize = size;
 					pMem128 = baseMem;
-					if (!size) break;
 				}
 			}
 		}

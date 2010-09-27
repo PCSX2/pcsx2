@@ -182,6 +182,7 @@ set(pcsx2Headers
 	Dump.h
 	GameDatabase.h
 	Elfheader.h
+	FiFo.inl
 	Gif.h
 	GS.h
 	Hardware.h

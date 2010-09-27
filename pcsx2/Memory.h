@@ -1,5 +1,4 @@
 /*  PCSX2 - PS2 Emulator for PCs
-jkiuhnbj
  *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -24,6 +23,7 @@ jkiuhnbj
 #include "vtlb.h"
 
 #include <xmmintrin.h>
+#include <emmintrin.h>
 
 static __fi void CopyQWC( void* dest, const void* src )
 {
@@ -43,11 +43,7 @@ static __fi void ZeroQWC( u128& dest )
 // Fast copy of 64 bits using SSE.
 static __fi void Copy64( void* dest, const void* src )
 {
-	// yes its uninitialized.  That's fine.  The upper bits are never used anyway.
-	__m128d mreg;
-
-	// Uses PD variants instead of PI variants as those are SSE1 compat.
-	_mm_storel_pd( (double*)dest, _mm_loadl_pd( mreg, (double*)src ));
+	_mm_storel_epi64( (__m128i*)dest, _mm_loadl_epi64((__m128i*)src) );
 }
 
 #define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D

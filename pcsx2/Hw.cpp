@@ -49,6 +49,7 @@ void hwReset()
 	hwInit();
 
 	memzero( eeHw );
+	memzero( g_fifo );
 
 	psHu32(SBUS_F260) = 0x1D000060;
 

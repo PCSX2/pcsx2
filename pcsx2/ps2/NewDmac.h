@@ -147,8 +147,8 @@ union DMAtag
 			default:		label = "????";		break;
 		}
 
-		return pxsFmt("%s ADDR=0x%08X%s, QWC=0x%04X, IRQ=%s, PCE=%s",
-			addr.ADDR, addr.SPR ? "(SPR)" : "", QWC,
+		return pxsFmt("ID=%s  ADDR=%s, QWC=0x%04X, IRQ=%s, PCE=%s",
+			label, addr.ToString().c_str(), QWC,
 			IRQ ? "on" : "off",
 			PCE ? "on" : "off"
 		);
@@ -431,14 +431,15 @@ protected:
 	void TransferInterleaveData();
 	void TransferNormalAndChainData();
 
-	tDMAC_ADDR MFIFO_SrcChainNextTag();
-	void MFIFO_SrcChainUpdateMADR( const DMAtag& tag );
-
-	tDMAC_ADDR SrcChainNextTag();
-	void SrcChainUpdateMADR( const DMAtag& tag );
-	const DMAtag& SrcChainLoadTag( const tDMAC_ADDR& tadr );
-
-	void DstChainNextTag();
+	const DMAtag& SrcChainTransferTag();
+	
+	void MFIFO_SrcChainLoadTag();
+	void MFIFO_SrcChainUpdateTADR();
+	void SrcChainLoadTag();
+	void SrcChainUpdateTADR();
+	void DstChainLoadTag();
+	
+	void UpdateSourceStall();
 
 	void IrqStall( const StallCauseId& _cause, const wxChar* details=NULL );
 
@@ -474,7 +475,7 @@ extern FnType_ToPeripheral toSIF1;
 extern FnType_ToPeripheral toSIF2;
 extern FnType_ToPeripheral toSPR;
 
-extern void dmacRequestSlice( EE_DMAC::ChannelId cid );
+extern void dmacRequestSlice( EE_DMAC::ChannelId cid, bool force=false );
 extern void dmacScheduleEvent();
 extern void dmacChanInt( ChannelId id );
 

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "DebugTools/Debug.h"
+
 namespace EEMemoryMap
 {
 	static const uint RCNT0_Start		= 0x10000000;
@@ -412,14 +414,17 @@ struct FifoRingBuffer
 		u128 _indexers;
 	};
 
-	void ReadQWC(u128* dest);
-	void WriteQWC(const u128* src);
+	void ReadSingle(u128* dest);
+	void WriteSingle(const u128* src);
+	uint Read(u128* dest, uint qwc);
+	uint Write(const u128* src, uint qwc);
+
 	
 	bool IsEmpty() const	{ return qwc == 0; }
 	bool IsFull() const		{ return qwc == size; }
 	
-	void SendToPeripheral(Fnptr_ToPeripheral toFunc, const char* name);
-	void HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, const char* name );
+	void SendToPeripheral(Fnptr_ToPeripheral toFunc);
+	void HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, SysTraceLog_EE_Peripherals& logger );
 };
 
 struct PeripheralFifoPack
