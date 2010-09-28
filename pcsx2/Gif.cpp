@@ -279,6 +279,7 @@ __fi u32 gifRead32(u32 mem)
 {
 	switch (mem) {
 		case GIF_STAT:
+			ProcessFifoEvent();
 			gifRegs.stat.FQC = g_fifo.gif.qwc;
 			return gifRegs.stat._u32;
 	}

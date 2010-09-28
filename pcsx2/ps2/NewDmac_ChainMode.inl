@@ -252,6 +252,8 @@ void ChannelState::SrcChainLoadTag()
 	tDMAC_ADDR& tadr = info.TADR();
 	const DMAtag& newtag = SrcChainTransferTag();
 
+	DMAC_LOG("SrcChain Tag @ 0x%06X = %ls", tadr, newtag.ToString(Dir_Drain).c_str());
+
 	switch (chcr.TAG.ID)
 	{
 		// --------------------------------------------------------------------------------------
@@ -427,6 +429,8 @@ void EE_DMAC::ChannelState::DstChainLoadTag()
 	chcr.tag16		= tag.Bits16to31();
 	creg.qwc.QWC	= tag.QWC;
 	madr			= tag.addr;
+
+	DMAC_LOG("DestChain Tag = %ls", tag.ToString(Dir_Source).c_str());
 
 	switch(chcr.TAG.ID)
 	{

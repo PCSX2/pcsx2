@@ -49,9 +49,12 @@ __fi void EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxCh
 
 	if (cause != Stall_MFIFO)
 	{
+		uint bit = (1 << Id);
 		chcr.STR = 0;
-		dmacRegs.stat.CIS |= (1 << Id);
-		cpuSetNextEventDelta(4);
+		dmacRegs.stat.CIS |= bit;
+
+		if (dmacRegs.stat.CIM & bit)
+			cpuSetNextEventDelta(4);
 	}
 
 	static const wxChar* causeMsg;
@@ -754,14 +757,10 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		// lower 16 bits: clear on 1
 		// upper 16 bits: reverse on 1
 
-		dmacRegs.stat._u16[0] &= newval._u16[0];
+		dmacRegs.stat._u16[0] &= ~newval._u16[0];
 		dmacRegs.stat._u16[1] ^= newval._u16[1];
 
-		// We only want to raise a cpu exception if one of the newly-unmasked bits (upper 16)
-		// is also high in the lower side -- which technically means that we want to disregard
-		// any bits that weren't changed.
-
-		if (dmacHasPendingIRQ()) cpuSetNextEventDelta( 0 );
+		if (dmacHasPendingIRQ()) cpuSetNextEventDelta( 4 );
 		return false;
 	}
 
@@ -908,7 +907,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	}
 
 	if (!tracewarn.IsEmpty())
-		DMAC_LOG("[Warning] %s modified mid-transfer: %s", tracewarn.c_str());
+		DMAC_LOG("[Warning] %s modified mid-transfer: %s", info.NameA, tracewarn.c_str());
 
 	return true;
 }

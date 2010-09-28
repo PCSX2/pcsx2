@@ -43,6 +43,7 @@ _vifT __fi u32 vifRead32(u32 mem)
 {
 	switch (mem) {
 		vcase(STAT):
+			ProcessFifoEvent();
 			GetVifXregs.stat.FQC = idx ? g_fifo.vif1.qwc : g_fifo.vif0.qwc;
 			return GetVifXregs.stat._u32;
 	

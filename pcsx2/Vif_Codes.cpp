@@ -336,10 +336,13 @@ _vifCodeT vc_MSCNT()
 _vifCodeT vc_MskPath3()
 {
 	VifProcessingUnit&	vpu		= vifProc[idx];
+	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("MskPath3");
 	vif1Only();
 
-	vpu.maskpath3 = true;		// The GIF will deny PATH3 arbitration accordingly.
+	vpu.maskpath3 = regs.code.MASKPATH3;
+
+	// The GIF will deny PATH3 arbitration accordingly.
 }
 
 _vifCodeT vc_Nop()

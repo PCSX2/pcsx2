@@ -278,7 +278,14 @@ union tVIF_CODE
 			{
 				// MODE field is available for STMOD codes only.
 				u16 MODE	: 2;
-				u16 _pad2	: 14;
+				u16 _pad3	: 14;
+			};
+
+			struct  
+			{
+				// MODE field is available for STMOD codes only.
+				u16 _pad2		: 15;
+				u16 MASKPATH3	: 1;
 			};
 			
 			struct 

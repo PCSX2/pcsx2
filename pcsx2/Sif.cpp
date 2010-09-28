@@ -18,6 +18,7 @@
 #include "Sif.h"
 #include "IopHw.h"
 #include "ps2/NewDmac.h"
+#include "R3000A.h"
 
 /*
 SIF Overview:
@@ -191,6 +192,9 @@ static uint SIF0_Transfer(u128* dest, uint dstQwc)
 			SIF_LOG("IOP/SIF0 Source Chain Tag Loaded @ TADR=0x%06X : MADR=0x%06X, WCNT=0x%04X",
 				hw_dma9.tadr, sifstate.tag.ADDR, sifstate.tag.WCNT);
 
+			if (sifstate.tag.ADDR==0x01CCB0 && sifstate.tag.WCNT==0x0004)
+				Console.WriteLn("Woombey!");
+
 			hw_dma9.tadr += 16;
 			hw_dma9.madr = sifstate.tag.ADDR;
 			iopQwc = (sifstate.tag.WCNT + 3) / 4;
@@ -229,7 +233,7 @@ static uint SIF0_Transfer(u128* dest, uint dstQwc)
 	}
 
 	// write the IOP's BCR back; we might need it later if this was a partial transfer:
-	hw_dma9.bcr = (iopQwc << 16) | 0x10;
+	hw_dma9.bcr = (iopQwc << 16) | 0x4;
 
 	return startQwc-dstQwc;
 }
@@ -249,7 +253,7 @@ static uint SIF1_Transfer(const u128* src, uint srcQwc)
 	uint startQwc = srcQwc;
 	uint wcnt = ((hw_dma10.bcr >> 16) * (hw_dma10.bcr & 0xffff));
 	pxAssumeDev((wcnt & 3) == 0, "IOP SIF1 Unaligned size specified in BCR.");
-	uint iopQwc = wcnt * 4;
+	uint iopQwc = wcnt / 4;
 
 	while (srcQwc)
 	{
@@ -295,11 +299,12 @@ static uint SIF1_Transfer(const u128* src, uint srcQwc)
 		}
 
 		memcpy_fast(iopdest, src, transable * 16);
+		psxCpu->Clear(hw_dma10.madr, transable*4);
 
 		hw_dma10.madr += transable * 16;
 		iopQwc -= transable;
 		srcQwc -= transable;
-		
+
 		if (iopQwc == 0)
 		{
 			// Check for End-of-Chain / IRQ of the current chain tag:
@@ -394,7 +399,8 @@ void psxDma9(iDMA_CHCR newchcr)
 			//uint bitmess = 8 << ((9-7) * 4);
 			//if ((HW_DMA_PCR2 & bitmess) == 0) return;
 
-			SIF_LOG("IOP dmaSIF0(9): chcr = %08x, madr = %08x, bcr = %08x, tadr = %08x",	hw_dma9.chcr, hw_dma9.madr, hw_dma9.bcr, hw_dma9.tadr);
+			SIF_LOG("IOP dmaSIF0(9): chcr = %08x, madr = %08x, bcr = %08x, tadr = %08x",
+				newchcr, hw_dma9.madr, hw_dma9.bcr, hw_dma9.tadr);
 
 			psHu32(SBUS_F240) |= 0x2000;
 
@@ -423,7 +429,8 @@ void psxDma10(iDMA_CHCR newchcr)
 	{
 		if (newchcr.STR)
 		{
-			SIF_LOG("IOP: dmaSIF1(10) chcr = %08x, madr = %08x, bcr = %08x", hw_dma10.chcr, hw_dma10.madr, hw_dma10.bcr);
+			SIF_LOG("IOP dmaSIF1(10): chcr = %08x, madr = %08x, bcr = %08x",
+				newchcr, hw_dma10.madr, hw_dma10.bcr);
 
 			psHu32(SBUS_F240) |= 0x4000;
 
