@@ -192,9 +192,6 @@ static uint SIF0_Transfer(u128* dest, uint dstQwc)
 			SIF_LOG("IOP/SIF0 Source Chain Tag Loaded @ TADR=0x%06X : MADR=0x%06X, WCNT=0x%04X",
 				hw_dma9.tadr, sifstate.tag.ADDR, sifstate.tag.WCNT);
 
-			if (sifstate.tag.ADDR==0x01CCB0 && sifstate.tag.WCNT==0x0004)
-				Console.WriteLn("Woombey!");
-
 			hw_dma9.tadr += 16;
 			hw_dma9.madr = sifstate.tag.ADDR;
 			iopQwc = (sifstate.tag.WCNT + 3) / 4;

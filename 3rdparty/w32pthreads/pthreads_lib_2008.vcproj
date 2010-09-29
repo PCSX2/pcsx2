@@ -107,6 +107,7 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="ptw32pch.h"
 				WarningLevel="3"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

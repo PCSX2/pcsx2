@@ -851,7 +851,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 					if ( !(psHu32(DMAC_ENABLER) & (1<<16)) )
 						DevCon.WriteLn("%s stopped during active transfer!", info.NameA);
 						
-					DMAC_LOG("%s STR changed to %u (DMAC is suspended)", info.NameA, newchcr.DIR);
+					tracewarn.Write("\n\tSTR changed to %u (DMAC is suspended)", newchcr.DIR);
 				}
 
 				// The game is writing newchcr while the DMA channel is active (STR==1).  This is
@@ -862,21 +862,20 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 					"NORMAL", "CHAIN", "INTERLEAVE", "UNDEFINED"
 				};
 
-				FastFormatAscii result;
 				if (curchcr.MOD != newchcr.MOD)
-					tracewarn.Write("\n\tCHCR.MOD changed to %s (oldval=%s)", info.NameA, tbl_LogicalTransferNames[newchcr.MOD], tbl_LogicalTransferNames[curchcr.MOD]);
+					tracewarn.Write("\n\tCHCR.MOD changed to %s (oldval=%s)", tbl_LogicalTransferNames[newchcr.MOD], tbl_LogicalTransferNames[curchcr.MOD]);
 
 				if (curchcr.ASP != newchcr.ASP)
-					tracewarn.Write("\n\tCHCR.ASP changed to %u (oldval=%u)", info.NameA, newchcr.ASP, curchcr.ASP);
+					tracewarn.Write("\n\tCHCR.ASP changed to %u (oldval=%u)", newchcr.ASP, curchcr.ASP);
 				
 				if (curchcr.TTE != newchcr.TTE)
-					tracewarn.Write("\n\tCHCR.TTE changed to %u (oldval=%u)", info.NameA, newchcr.TTE, curchcr.TTE);
+					tracewarn.Write("\n\tCHCR.TTE changed to %u (oldval=%u)", newchcr.TTE, curchcr.TTE);
 
 				if (curchcr.TIE != newchcr.TIE)
-					tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", info.NameA, newchcr.TIE, curchcr.TIE);
+					tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", newchcr.TIE, curchcr.TIE);
 
 				if (curchcr.tag16 != newchcr.tag16)
-					tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", info.NameA, newchcr.tag16, curchcr.tag16);
+					tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", newchcr.tag16, curchcr.tag16);
 			}	
 		}
 		break;
@@ -888,7 +887,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			const tDMAC_ADDR& madr = (tDMAC_ADDR&)value;
 
 			if(madr != info.MADR())
-				tracewarn.Write("\n\tMADR changed to %s (oldval=%s)", info.NameA, madr.ToUTF8(), info.MADR().ToUTF8());
+				tracewarn.Write("\n\tMADR changed to %s (oldval=%s)", madr.ToUTF8(), info.MADR().ToUTF8());
 		}
 		break;
 		
