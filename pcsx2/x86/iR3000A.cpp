@@ -879,10 +879,10 @@ static __noinline s32 recExecuteBlock( s32 eeCycles )
 	iopBreak = 0;
 	iopCycleEE = eeCycles;
 
-	#ifdef PCSX2_DEVBUILD
+#ifdef PCSX2_DEVBUILD
 	if (SysTrace.SIF.IsActive())
 		SysTrace.IOP.R3000A.Write("Switching to IOP CPU for %d cycles", eeCycles);
-	#endif
+#endif
 
 	// [TODO] recExecuteBlock could be replaced by a direct call to the iopEnterRecompiledCode()
 	//   (by assigning its address to the psxRec structure).  But for that to happen, we need

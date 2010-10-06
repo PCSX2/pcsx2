@@ -113,7 +113,7 @@ static void __fastcall RegHandlerSIGNAL(const u32* data)
 //
 static void __fastcall RegHandlerFINISH(const u32* data)
 {
-	GIF_LOG("GIFpath FINISH data=%x_%x CSRr=%x", data[0], data[1], GSCSRr);
+	GifTagLog("GIFpath FINISH data=%x_%x CSRr=%x", data[0], data[1], GSCSRr);
 
 	// The FINISH bit is set here, and then it will be cleared when all three
 	// logical GIFpaths finish their packets (EOPs) At that time (found below
@@ -124,7 +124,7 @@ static void __fastcall RegHandlerFINISH(const u32* data)
 
 static void __fastcall RegHandlerLABEL(const u32* data)
 {
-	GIF_LOG( "GIFpath LABEL" );
+	GifTagLog( "GIFpath LABEL" );
 	GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID&~data[1])|(data[0]&data[1]);
 }
 

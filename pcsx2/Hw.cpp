@@ -103,9 +103,9 @@ __fi uint dmacInterrupt()
 		return 0;
 	}
 
-	DMAC_LOG("dmacInterrupt mask=0x%08x",
-		(psHu16(DMAC_STAT + 2) & psHu16(DMAC_STAT) |
-		 psHu16(DMAC_STAT) & 0x8000)
+	DMAC_LOG("dmacInterrupt %x",
+		((psHu16(DMAC_STAT + 2) & psHu16(DMAC_STAT)) |
+		 (psHu16(DMAC_STAT) & 0x8000))
 	);
 
 	//cpuException(0x800, cpuRegs.branch);

@@ -349,11 +349,11 @@ extern void __Log( const char* fmt, ... );
 //  passed into the function)
 #ifdef PCSX2_DEVBUILD
 #	define SysTraceActive(trace)	SysTrace.trace.IsActive()
-#	define macTrace(trace)			SysTraceActive(trace) && SysTrace.trace.Write
 #else
 #	define SysTraceActive(trace)	(false)
-#	define macTrace(trace)
 #endif
+
+#define macTrace(trace)	SysTraceActive(trace) && SysTrace.trace.Write
 
 #define SIF_LOG			macTrace(SIF)
 
