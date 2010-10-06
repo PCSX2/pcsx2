@@ -15,8 +15,12 @@
 
 #include "PrecompiledHeader.h"
 #include "Vif.h"
+#include "Gif.h"
 #include "newVif.h"
 #include "ps2/NewDmac.h"
+
+#include "FiFo.inl"
+
 
 __aligned16 VifProcessingUnit vifProc[2];
 
@@ -94,8 +98,13 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value) {
 				vifXRegs.err.reset();
 				
 				memzero(vifProc[idx]);
-				if (idx)	memzero(g_fifo.vif1);
-				else		memzero(g_fifo.vif0);
+				
+				if (idx)	g_fifo.vif1.Clear();
+				else		g_fifo.vif0.Clear();
+				
+				// Clearing the VIF releases VIF-side PATH3 masking, GIF arbitration may be able
+				// to resume transfer:
+				GIF_ArbitratePaths();
 			}
 
 			if (fbrst.FBK)
@@ -181,10 +190,10 @@ _vifT size_t vifTransfer(const u128* data, int size_qwc) {
 	VifProcessingUnit&	vifX	= vifProc[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
-	pxAssumeMsg( (size_qwc & ~15) == 0, "VIFcode transfer size is not a multiple of QWC." );
+	pxAssume(size_qwc != 0);
 
-	vifX.fragment_size	= size_qwc * 4;
-	vifX.data			= (u32*)data;
+	vifX.fragment_size	= (size_qwc * 4) - vifX.stallpos;
+	vifX.data			= (u32*)data + vifX.stallpos;
 
 	do {
 		if (regs.stat.VPS == VPS_IDLE)
@@ -200,7 +209,8 @@ _vifT size_t vifTransfer(const u128* data, int size_qwc) {
 		if (regs.stat.VPS != VPS_IDLE)
 		{
 			// Command was unable to finish processing, meaning it needs more data or that
-			// some blocking/stall condition has occurred.
+			// some blocking/stall condition has occurred.  Break execution without checking
+			// iBit or mask status (since those only trigger once the command has completed).
 
 			break;
 		}
@@ -245,11 +255,11 @@ _vifT size_t vifTransfer(const u128* data, int size_qwc) {
 
 	} while (vifX.fragment_size && !regs.stat.IsStalled());
 	
-	// Return the amount of data not processed as a function of QWC.
-	// (data not processed should always be 128 bit/qwc-aligned).
+	// Return the amount of data not processed as a function of QWC.  If the VIF stalled mid-
+	// transfer, record the stall position and don't process the current QWC until later.
 
-	pxAssumeDev( (vifX.fragment_size & 0x03) == 0, "Misaligned size after VIFcode stall." );
-	return vifX.fragment_size / 4;
+	vifX.stallpos = (4 - (vifX.fragment_size & 0x03)) & 0x03;
+	return (vifX.fragment_size+3) / 4;
 }
 
 template size_t vifTransfer<0>(const u128 *data, int size);
@@ -277,22 +287,26 @@ uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStart
 	uint endpos = srcStartQwc + lenQwc;
 	uint remainder;
 
-	if (endpos < srcSize)
+	if (srcSize == 0 || endpos < srcSize)
 	{
 		remainder = vifTransfer<0>(srcBase, lenQwc);
+		return lenQwc - remainder;
 	}
 	else
 	{
+		uint fullLen = lenQwc;
 		uint firstcopylen = srcSize - srcStartQwc;
 		remainder = vifTransfer<0>(srcBase, firstcopylen);
 
-		if (!remainder)
+		lenQwc -= (firstcopylen - remainder);
+
+		if (lenQwc)
 		{
-			srcStartQwc = endpos % srcSize;
-			remainder = vifTransfer<0>(srcBase, srcStartQwc);
+			lenQwc = vifTransfer<0>(srcBase, lenQwc);
 		}
+
+		return fullLen - lenQwc;
 	}
-	return lenQwc - remainder;
 }
 
 uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
@@ -300,20 +314,24 @@ uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStart
 	uint endpos = srcStartQwc + lenQwc;
 	uint remainder;
 
-	if (endpos < srcSize)
+	if (srcSize == 0 || endpos < srcSize)
 	{
 		remainder = vifTransfer<1>(srcBase, lenQwc);
+		return lenQwc - remainder;
 	}
 	else
 	{
+		uint fullLen = lenQwc;
 		uint firstcopylen = srcSize - srcStartQwc;
 		remainder = vifTransfer<1>(srcBase, firstcopylen);
 
-		if (!remainder)
+		lenQwc -= (firstcopylen - remainder);
+
+		if (lenQwc)
 		{
-			srcStartQwc = endpos % srcSize;
-			remainder = vifTransfer<1>(srcBase, srcStartQwc);
+			lenQwc = vifTransfer<1>(srcBase, lenQwc);
 		}
+
+		return fullLen - lenQwc;
 	}
-	return lenQwc - remainder;
 }

@@ -370,6 +370,7 @@ extern void __Log( const char* fmt, ... );
 #define GIF_LOG			macTrace(EE.GIF)
 #define EECNT_LOG		macTrace(EE.Counters)
 #define VifCodeLog		macTrace(EE.VIFcode)
+#define GifTagLog		macTrace(EE.GIFtag)
 #define DMAC_LOG		macTrace(EE.DMAC)
 
 

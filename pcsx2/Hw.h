@@ -418,7 +418,7 @@ struct FifoRingBuffer
 	void WriteSingle(const u128* src);
 	uint Read(u128* dest, uint qwc);
 	uint Write(const u128* src, uint qwc);
-
+	void Clear();
 	
 	bool IsEmpty() const	{ return qwc == 0; }
 	bool IsFull() const		{ return qwc == size; }

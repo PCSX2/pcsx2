@@ -215,7 +215,7 @@ TLD_EE_VIFcode = {
 TLD_EE_DMAC = {
 	L"DmaCtrl",		L"DMA Controller",
 	wxLt("Actual data transfer logs, bus right arbitration, stalls, etc."),
-	"eDmaC"
+	"eDMA"
 },
 
 TLD_EE_Counters = {
@@ -304,7 +304,7 @@ TLD_IOP_PAD = {
 TLD_IOP_DMAC = {
 	L"DmaCrl",			L"DMA Controller",
 	wxLt("Actual DMA event processing and data transfer logs."),
-	"iDmaC"
+	"iDMA"
 },
 
 TLD_IOP_Counters = {

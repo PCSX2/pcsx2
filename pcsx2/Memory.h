@@ -25,6 +25,47 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 
+template< typename T >
+__noinline void memzero_sse_a( T& dest )
+{
+#define MZFqwc (sizeof(dest)/16)
+
+	C_ASSERT( (sizeof(dest) & 0xf) == 0 );
+
+	__m128 zeroreg = _mm_setzero_ps();
+
+	float (*destxmm)[4] = (float(*)[4])&dest;
+
+#define StoreDestIdx(idx) case idx: _mm_store_ps(&destxmm[idx-1][0], zeroreg)
+
+	switch( MZFqwc & 0x07 )
+	{
+		StoreDestIdx(0x07);
+		StoreDestIdx(0x06);
+		StoreDestIdx(0x05);
+		StoreDestIdx(0x04);
+		StoreDestIdx(0x03);
+		StoreDestIdx(0x02);
+		StoreDestIdx(0x01);
+	}
+
+	destxmm += (MZFqwc & 0x07);
+	for( uint i=0; i<MZFqwc / 8; ++i, destxmm+=8 )
+	{
+		_mm_store_ps(&destxmm[0][0], zeroreg);
+		_mm_store_ps(&destxmm[1][0], zeroreg);
+		_mm_store_ps(&destxmm[2][0], zeroreg);
+		_mm_store_ps(&destxmm[3][0], zeroreg);
+		_mm_store_ps(&destxmm[4][0], zeroreg);
+		_mm_store_ps(&destxmm[5][0], zeroreg);
+		_mm_store_ps(&destxmm[6][0], zeroreg);
+		_mm_store_ps(&destxmm[7][0], zeroreg);
+	}
+
+#undef MZFqwc
+};
+
+
 static __fi void CopyQWC( void* dest, const void* src )
 {
 	_mm_store_ps( (float*)dest, _mm_load_ps((const float*)src) );

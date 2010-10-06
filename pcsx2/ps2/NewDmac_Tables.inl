@@ -23,10 +23,11 @@ namespace EE_DMAC
 
 namespace Exception
 {
-	// simple class used to break DMA transfer logic for the current channel.  I prefer
-	// to use this rather than explicitly testing every possible error and stall condition,
-	// since that would pretty much make every function call in the DMAC a conditional. >_<
-	class DmaTransferStall { };
+	// simple class used to break DMA transfer logic for the current channel when a bus error
+	// or critical tag error occurs.  Standard stall conditions such as EndOfTransfer detection
+	// are handled inline using return codes (exception stack walking is a bit too slow for
+	// them, especially in the context of the debugger).
+	class DmaBusError { };
 }
 
 
@@ -90,16 +91,16 @@ using namespace EE_DMAC;
 // --------------------------------------------------------------------------------------
 //  EE_DMAC::ChannelInformation  (implementations)
 // --------------------------------------------------------------------------------------
-wxCharBuffer ChannelInformation::ToUTF8() const
+wxString ChannelInformation::ToString() const
 {
-	FastFormatAscii msg;
+	FastFormatUnicode msg;
 
 	if (isSprChannel())
 		msg.Write("%s(0x%04x)", NameA, GetRegs().sadr.ADDR);
 	else
 		msg.Write(NameA);
 
-	return msg.c_str();
+	return msg;
 }
 
 
@@ -239,8 +240,9 @@ u128* ChannelState::GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
 	Console.Error(msg);
 	//pxFailDev(msg);
 	IrqStall(Stall_BusError);
+	throw Exception::DmaBusError();
 
-	return NULL;	// technically unreachable
+	//return NULL;	// technically unreachable
 }
 
 u32 ChannelState::Read32( const tDMAC_ADDR& addr )

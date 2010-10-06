@@ -29,7 +29,7 @@ static __ri bool _eelog_enabled( u32 addr )
 	if (eeAddrInRange(SBUS, addr)) return false;
 
 	// INTC!
-	if (addr == INTC_STAT || addr == INTC_MASK) return true;
+	if (addr == INTC_STAT || addr == INTC_MASK) return false;
 
 	return true;
 }

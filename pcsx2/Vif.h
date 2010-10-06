@@ -201,7 +201,7 @@ union tVIF_STAT {
 		// uses manually-constructed mask (typically optimizes better, thanks dumb-ass compilers)
 		//return VSS || VFS || VIS || ER0 || ER1;
 		return (_u32 &
-			(VIF_STAT_VSS | VIF_STAT_VFS | VIF_STAT_VIS | VIF_STAT_ER0 | VIF_STAT_ER1)
+			(VIF_STAT_VPS | VIF_STAT_VSS | VIF_STAT_VFS | VIF_STAT_VIS | VIF_STAT_ER0 | VIF_STAT_ER1)
 		) != 0;
 	}
 };
@@ -350,7 +350,9 @@ struct VIFregisters {
 	// bits for representing 256 (which is '0' on the PS2).  The vifRead handler masks off the
 	// top bit to ensure games get upper 24 its zeroed (which is what they expect).
 	// [Ps2Confirm] We really have no idea how this register should behave when doing large
-	// transfers via DIRECT/HL.  Its only 8 bits, and DIRECT/HL have a 16-bit immediate.
+	//   transfers via DIRECT/HL.  Its only 8 bits, and DIRECT/HL have a 16-bit immediate.  A
+	//   test should be written that starts a fragmented VIF unpack and then reads back NUM
+	//   at multiple stages.
 	u32				num;
 	u32  pad6[3];
 
@@ -426,6 +428,7 @@ struct VifProcessingUnit
 	const u32* data;
 	u32 fragment_size;		// size of the incoming DMA packet fragment, in 32 bit units.
 	u32 packet_size;		// total expected size of the VIFcode payload, in 32 bit units.
+	u32 stallpos;			// 32-bit position in the last QWC loaded when VIF stalled.
 
 	// Used by MPG and UNPACK commands; represents the target address.
 	// (value is in 64-bit units for MPG, and in 128-bit units for UNPACK).

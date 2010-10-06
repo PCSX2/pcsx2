@@ -383,7 +383,7 @@ struct ChannelInformation
 		return GetRegs().sadr;
 	}
 	
-	wxCharBuffer ToUTF8() const;
+	wxString ToString() const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -429,19 +429,19 @@ public:
 
 protected:
 	void TransferInterleaveData();
-	void TransferNormalAndChainData();
+	bool TransferNormalAndChainData();
 
-	const DMAtag& SrcChainTransferTag();
+	const DMAtag* SrcChainTransferTag();
 	
-	void MFIFO_SrcChainLoadTag();
-	void MFIFO_SrcChainUpdateTADR();
-	void SrcChainLoadTag();
-	void SrcChainUpdateTADR();
-	void DstChainLoadTag();
+	bool MFIFO_SrcChainLoadTag();
+	bool MFIFO_SrcChainUpdateTADR();
+	bool SrcChainLoadTag();
+	bool SrcChainUpdateTADR();
+	bool DstChainLoadTag();
 	
 	void UpdateSourceStall();
 
-	void IrqStall( const StallCauseId& _cause, const wxChar* details=NULL );
+	bool IrqStall( const StallCauseId& _cause, const wxChar* details=NULL );
 
 	u128* TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem );
 	u128* GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem );
@@ -459,7 +459,8 @@ static ChannelRegisters& vif1dma	= (ChannelRegisters&)eeHw[0x9000];
 static ChannelRegisters& ipu0dma	= (ChannelRegisters&)eeHw[0xB000];
 static ChannelRegisters& ipu1dma	= (ChannelRegisters&)eeHw[0xB400];
 
-extern void UpdateDmacEvent();
+extern void dmacEventUpdate();
+extern bool dmacControllerEnabled();
 
 extern FnType_FromPeripheral fromVIF0;
 extern FnType_FromPeripheral fromIPU;
@@ -475,7 +476,7 @@ extern FnType_ToPeripheral toSIF1;
 extern FnType_ToPeripheral toSIF2;
 extern FnType_ToPeripheral toSPR;
 
-extern void dmacRequestSlice( EE_DMAC::ChannelId cid, bool force=false );
+extern bool dmacRequestSlice( ChannelId cid, bool force=false );
 extern void dmacScheduleEvent();
 extern void dmacChanInt( ChannelId id );
 

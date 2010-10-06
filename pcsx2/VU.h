@@ -181,10 +181,12 @@ struct __aligned16 VURegs {
 		return IsVU1() ? vif1Regs : vif0Regs;
 	}
 
-	u64* GetProgMem( u32 inst ) const
+	// Prarameter:
+	//   inst64 - instruction address, in 64 bit units (VUs address instructions in 32 bit pairs).
+	u64* GetProgMem( u32 inst64 ) const
 	{
 		uint mask = ((IsVU1() ? VU1_PROGSIZE : VU0_PROGSIZE) / 8) - 1;
-		return ((u64*)Micro) + (inst & mask);
+		return ((u64*)Micro) + (inst64 & mask);
 	}
 };
 

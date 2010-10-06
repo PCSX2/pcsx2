@@ -190,22 +190,22 @@ void VifUnpackSSE_Dynarec::CompileRoutine(uint vSize) {
 	xRET();
 }
 
-_vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
+_vifT static __fi u128* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 	VifProcessingUnit&	vpu			= vifProc[idx];
 	VIFregisters&		regs		= GetVifXregs;
 	const VURegs&		VU			= vuRegs[idx];
-	const uint			vuMemLimit	= idx ? 0x4000 : 0x1000;
+	const uint			vuMemLimit	= idx ? 0x400 : 0x100;
 
-	u8* startmem	= VU.Mem + (vpu.vu_target_addr & (vuMemLimit-0x10));
-	u8* endmem		= VU.Mem + vuMemLimit;
-	uint length		= regs.num * 16;
+	u128* startmem	= (u128*)VU.Mem + (vpu.vu_target_addr & (vuMemLimit-1));
+	u128* endmem	= (u128*)VU.Mem + vuMemLimit;
+	uint length		= regs.num;
 
 	if (!isFill) {
 		// Accounting for skipping mode: Subtract the last skip cycle, since the skipped part of the run
 		// shouldn't count as wrapped data.  Otherwise, a trailing skip can cause the emu to drop back
 		// to the interpreter. -- Refraction (test with MGS3)
 
-		uint skipSize  = (cl - wl) * 16;
+		uint skipSize  = (cl - wl);
 		uint blocks    = regs.num / wl;
 		length += (blocks-1) * skipSize;
 	}
@@ -234,7 +234,7 @@ _vifT static __fi bool dVifExecuteUnpack(const u8* data, bool isFill, uint vSize
 	VIFregisters&		regs	= GetVifXregs;
 
 	if (nVifBlock* b = v.vifBlocks->find(&v.Block)) {
-		if (u8* dest = dVifsetVUptr<idx>(regs.cycle.cl, regs.cycle.wl, isFill)) {
+		if (u128* dest = dVifsetVUptr<idx>(regs.cycle.cl, regs.cycle.wl, isFill)) {
 			//DevCon.WriteLn("Running Recompiled Block!");
 			((nVifrecCall)b->startPtr)((uptr)dest, (uptr)data);
 		}

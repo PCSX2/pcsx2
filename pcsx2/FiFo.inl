@@ -29,7 +29,7 @@ template< uint size >
 void FifoRingBuffer<size>::HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, SysTraceLog_EE_Peripherals& logger)
 {
 	if (logger.IsActive())
-		logger.Write("WriteFIFO/%s <- %ls (FQC=%u)", logger.GetShortName(), src->ToString().c_str(), qwc);
+		logger.Write("WriteFIFO/%ls <- %ls (FQC=%u)", logger.GetShortName().c_str(), src->ToString().c_str(), qwc);
 
 	if (qwc >= size) return;
 	WriteSingle(src);
@@ -91,3 +91,8 @@ void FifoRingBuffer<size>::WriteSingle(const u128* src)
 	++qwc;
 }
 
+template< uint size >
+void FifoRingBuffer<size>::Clear()
+{
+	memzero_sse_a( *this );
+}

@@ -27,7 +27,9 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 	const int  test = m_Idx ? 0x100 : 1;
 	const int  s = 1024*6; // Kick Start Cycles (Silver Surfer needs this amount)
 	const int  c = 1024*1; // Continue Cycles
+
 	if (!(stat & test)) return;
+
 	if (startUp) {  // Start Executing a microprogram
 		Execute(s); // Kick start VU
 

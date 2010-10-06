@@ -143,22 +143,20 @@ union CP0regs {
 
 struct cpuRegisters {
 	GPRregs GPR;		// GPR regs
-	// NOTE: don't change order since recompiler uses it
 	GPR_reg HI;
 	GPR_reg LO;			// hi & log 128bit wide
 	CP0regs CP0;		// is COP0 32bit?
+
+	PERFregs PERF;
+
 	u32 sa;				// shift amount (32bit), needs to be 16 byte aligned
 	u32 IsDelaySlot;	// set true when the current instruction is a delay slot.
 	u32 pc;				// Program counter, when changing offset in struct, check iR5900-X.S to make sure offset is correct
 	u32 code;			// current instruction
-	PERFregs PERF;
-	u32 eCycle[32];
-	u32 sCycle[32];		// for internal counters
 	u32 cycle;			// calculate cpucycles..
 	u32 interrupt;
 	int branch;
 	int opmode;			// operating mode
-	u32 tempcycles;
 };
 
 // used for optimization
@@ -384,34 +382,12 @@ enum EE_EventType
 {
 	// new dmac is a single-event-fits-all system!
 	DMAC_EVENT = 0,
-	FIFO_EVENT = 1,
-
-
-	// old legacy DMAC uses an event for each channel, and piggy backs the event id with
-	// the channel id in the D_STAT bitmask for IRQs.
-	
-	DMAC_VIF0	= 0,
-	DMAC_VIF1,
-	DMAC_GIF,
-	DMAC_FROM_IPU,
-	DMAC_TO_IPU,
-	DMAC_SIF0,
-	DMAC_SIF1,
-	DMAC_SIF2,
-	DMAC_FROM_SPR,
-	DMAC_TO_SPR,
-
-	DMAC_MFIFO_VIF,
-	DMAC_MFIFO_GIF,
-
-	// We're setting error conditions through hwDmacIrq, so these correspond to the conditions above.
-	DMAC_STALL_SIS		= 13, // SIS
-	DMAC_MFIFO_EMPTY	= 14, // MEIS
-	DMAC_BUS_ERROR	= 15      // BEIS
+	FIFO_EVENT,
+	GIF_EVENT
 };
 
 extern void CPU_ClearEvent( EE_EventType n );
-extern void CPU_ScheduleEvent( EE_EventType n, s32 ecycle );
+extern void CPU_ScheduleEvent( EE_EventType n, s32 delay = 8 );
 extern uint intcInterrupt();
 extern uint dmacInterrupt();
 
@@ -424,7 +400,7 @@ extern void cpuTlbMissW(u32 addr, u32 bd);
 
 extern void cpuSetNextEvent( u32 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
-extern int  cpuTestCycle( u32 startCycle, s32 delta );
+extern bool cpuTestCycle( u32 startCycle, s32 delta );
 extern void cpuSetEvent();
 
 extern void _cpuEventTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:

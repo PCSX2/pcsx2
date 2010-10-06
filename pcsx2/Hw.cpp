@@ -60,6 +60,7 @@ void hwReset()
 	SPU2reset();
 
 	gsReset();
+	gifReset();
 	ipuReset();
 	vifReset();
 	sifInit();

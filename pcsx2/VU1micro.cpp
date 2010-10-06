@@ -24,6 +24,9 @@
 
 #include "VUmicro.h"
 #include "Gif.h"
+#include "ps2\NewDmac.h"
+
+using namespace EE_DMAC;
 
 #ifdef PCSX2_DEBUG
 u32 vudump = 0;
@@ -31,18 +34,26 @@ u32 vudump = 0;
 
 #define VF_VAL(x) ((x==0x80000000)?0:(x))
 
-// This is called by the COP2 as per the CTC instruction
+__fi bool vu1Running()
+{
+	return !!(VU0.VI[REG_VPU_STAT].UL & 0x100);
+}
+
+// This is called by the COP2 as per FBRST being written via the CTC2 instruction.
 void vu1ResetRegs()
 {
-	VU0.VI[REG_VPU_STAT].UL &= ~0xff00; // stop vu1
-	VU0.VI[REG_FBRST].UL &= ~0xff00; // stop vu1
-	vif1Regs.stat.VEW = false;
+	VU0.VI[REG_VPU_STAT].UL	&= ~0xff00; // stop vu1
+	VU0.VI[REG_FBRST].UL	&= ~0xff00; // stop vu1
+
+	// In case the VIF1 is waiting on the VU1 to end:
+	if (vif1Regs.stat.VEW)
+		dmacRequestSlice(ChanId_VIF1);
 }
 
 // Returns TRUE if the VU1 finished, and is either in STOP or READY state.
 // Returns FALSE if execution was stalled for some reason (typically an XGKICK).
 bool vu1Finish() {
-	if (!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return true;
+	if (!vu1Running()) return true;
 
 	// if the VU1 is waiting on an XGKICK transfer, then there's really nothing we can
 	// do.  The XGKICK will be completed in due time when the blocking condition (either
@@ -55,26 +66,33 @@ bool vu1Finish() {
 	}
 	
 	CpuVU1->Execute(vu1RunCycles);
-	return !(VU0.VI[REG_VPU_STAT].UL & 0x100);
+	return !vu1Running();
 }
 
 bool vu1ResumeXGKICK()
 {
-	if (!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return true;
+	if (!vu1Running()) return true;
 	CpuVU1->ResumeXGkick();
-	return !(VU0.VI[REG_VPU_STAT].UL & 0x100);
+
+	if (!vu1Running())
+	{
+		// In case the VIF1 is waiting on the VU1 to end:
+		if (vif1Regs.stat.VEW)
+			dmacRequestSlice(ChanId_VIF1);
+		return true;
+	}
+	return false;
 }
 
 void __fastcall vu1ExecMicro(u32 addr)
 {
-	pxAssumeDev((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0, "vu1ExecMicro: VU1 already running!" );
+	pxAssumeDev(!vu1Running(), "vu1ExecMicro: VU1 already running!" );
 
 	VUM_LOG("vu1ExecMicro %x", addr);
 
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 	VU0.VI[REG_VPU_STAT].UL |=  0x0100;
 
-	vif1Regs.stat.VEW = true;
 	if ((s32)addr != -1) VU1.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU1);
 

@@ -54,13 +54,6 @@ void gsInit()
 extern bool SIGNAL_IMR_Pending;
 extern u32 SIGNAL_Data_Pending[2];
 
-void gsGIFReset()
-{
-	gifRegs.stat.reset();
-	gifRegs.ctrl.reset();
-	gifRegs.mode.reset();
-}
-
 void gsReset()
 {
 	GetMTGS().ResetGS();
@@ -72,10 +65,6 @@ void gsReset()
 
 	CSRreg.Reset();
 	GSIMR = 0x7f00;
-
-	// FIXME: This really doesn't belong here, and I seriously doubt it's needed.
-	// If it is needed it should be in the GIF portion of hwReset().  --air
-	gsGIFReset();
 }
 
 static __fi void gsCSRwrite( const tGS_CSR& csr )

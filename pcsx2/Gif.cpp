@@ -23,9 +23,19 @@
 
 #include "ps2/NewDmac.h"
 
+#include "FiFo.inl"
+
 using namespace EE_DMAC;
 
 static u32 xgkick_queue_addr;
+static s32 gif_busyCycles = 0;
+static u32 gif_sCycle;
+
+void gifReset()
+{
+	xgkick_queue_addr = 0;
+	gif_busyCycles = 0;
+}
 
 // Parameters:
 //   baseMem - pointer to the base of the memory buffer.  If the transfer wraps past the specified
@@ -58,7 +68,10 @@ __fi uint GIF_UploadTag(const u128* baseMem, uint fragment_size, uint startPos, 
 
 static bool GIF_TransferXGKICK( u32 vumem )
 {
-	uint processed = _uploadTag( (u128*)vuRegs[1].Mem, 0x400, vumem, 0x400 );
+	// Note: fragment_size is specified as 0 to indicate that the transfer continues until
+	// the first EOP is encountered (standard VU1 XGKIcK behavior).
+ 
+	uint processed = _uploadTag( (u128*)vuRegs[1].Mem, 0, vumem, 0x400 );
 	if (gifRegs.GetActivePath() == GIF_APATH1)
 	{
 		// Transfer stalled for some reason, either due to SIGNAL or due to infinite-wrapping.
@@ -66,7 +79,8 @@ static bool GIF_TransferXGKICK( u32 vumem )
 
 		GIF_LOG("GIFpath transfer stall on PATH1 (VU1 XGKICK)");
 
-		//gifRegs.stat.P1Q = 1;
+		pxAssume(!gifRegs.stat.P1Q);
+		gifRegs.stat.P1Q = 1;
 		xgkick_queue_addr = (vumem + processed) & 0x3ff;
 		return false;
 	}
@@ -74,10 +88,30 @@ static bool GIF_TransferXGKICK( u32 vumem )
 	return true;
 }
 
+// Delays the next arbitration for xx number of cycles, simulating the GIF bus being
+// occupied for a period of time with a transfer.  For calls to this function to
+// be meaningful, the GIF must be in a non-idle state.
+void GIF_DelayArbitration( uint cycles )
+{
+	gif_sCycle		= cpuRegs.cycle;
+	gif_busyCycles	= cycles * 2;
+}
+
 void GIF_ArbitratePaths()
 {
-	//pxAssume(gifRegs.stat.APATH == GIF_APATH_IDLE);
-	//pxAssume(!gifRegs.stat.OPH);
+	CPU_ClearEvent(GIF_EVENT);
+	
+	if (gif_busyCycles)
+	{
+		int timepass = cpuRegs.cycle - gif_sCycle;
+		if (timepass <= gif_busyCycles)
+		{
+			GIF_LOG("Arbitration skipped due to busy cycles (APATH=%u, cycles=%u)", gifRegs.stat.APATH, gif_busyCycles - timepass);
+			CPU_ScheduleEvent(GIF_EVENT, gif_busyCycles - timepass);
+			return;
+		}
+		gif_busyCycles = 0;
+	}
 
 	// GIF Arbitrates with a simple priority logic that goes in order of PATH.  As long
 	// as PATH1 transfers are queued, it'll keep using those, for example.
@@ -129,6 +163,14 @@ void GIF_ArbitratePaths()
 		return;
 	}
 	
+	// Mirror GIF_MODE.M3R and VIF's MASKPATH3 settings to gifRegs.stat.
+	// This works on the assumption that GIF_STAT reflects the status of the current
+	// PATH3 transfer.
+
+	gifRegs.stat.M3R = gifRegs.mode.M3R;
+	gifRegs.stat.IMT = gifRegs.mode.IMT;
+	gifRegs.stat.M3P = vifProc[1].maskpath3;
+
 	if (gifRegs.stat.P3Q)
 	{
 		// PATH3 can only transfer if it hasn't been masked
@@ -148,6 +190,8 @@ void GIF_ArbitratePaths()
 		return;
 	}
 
+	gifRegs.SetActivePath( GIF_APATH_IDLE );
+
 	// No queued or pending/partial transfers left:  Signal FINISH if needed,
 
 	// IMPORTANT: We only signal FINISH if GIFpath processing stopped (EOP and no nloop),
@@ -163,7 +207,7 @@ void GIF_ArbitratePaths()
 
 bool GIF_InterruptPath3( gif_active_path apath )
 {
-	pxAssumeDev((apath != GIF_APATH1) && (apath != GIF_APATH2),
+	pxAssumeDev((apath == GIF_APATH1) || (apath == GIF_APATH2),
 		"Invalid parameter; please specify either PATH1 or PATH2.");
 
 	if (gifRegs.stat.APATH != GIF_APATH3) return false;
@@ -190,10 +234,17 @@ bool GIF_InterruptPath3( gif_active_path apath )
 // returns FALSE if the transfer is blocked; returns true if the transfer proceeds unimpeeded
 // and/or is queued.
 //
-// (called from recompilers, must remain __fastcall!)
-bool __fastcall GIF_QueuePath1( u32 vumem )
+// (called from recompilers, must remain __fastcall and must return u32 instead of bool!)
+u32 __fastcall GIF_QueuePath1( u32 vumem )
 {
 	vumem &= 0x3ff;
+
+	if (gifRegs.GetActivePath() == GIF_APATH1)
+	{
+		GIF_LOG("GIFpath denied XGKICK @ 0x%04x, due to pending PATH1 transfer.", vumem);
+		return false;
+	}
+
 	if ((gifRegs.GetActivePath() == GIF_APATH_IDLE) || GIF_InterruptPath3(GIF_APATH1))
 	{
 		gifRegs.SetActivePath( GIF_APATH1 );
@@ -261,6 +312,7 @@ bool GIF_ClaimPath3()
 		}
 
 		gifRegs.SetActivePath( GIF_APATH3 );
+
 		GIF_LOG("GIFpath rights acquired by PATH3 (GIF DMA/FIFO).");
 		return true;
 	}
@@ -282,8 +334,84 @@ __fi u32 gifRead32(u32 mem)
 			ProcessFifoEvent();
 			gifRegs.stat.FQC = g_fifo.gif.qwc;
 			return gifRegs.stat._u32;
+			
+		case GIF_CTRL:
+			Console.Warning("Attempted read from GIF_CTRL (read-only register).");
+			return 0;
+
+		case GIF_MODE:
+			Console.Warning("Attempted read from GIF_MODE (read-only register).");
+			return 0;
 	}
 	return psHu32(mem);
+}
+
+__fi bool gifWrite32(u32 mem, u32 value)
+{
+	switch (mem) {
+		case GIF_CTRL:
+		{
+			gifRegs.ctrl._u32 = value;
+
+			if (value & 0x1)
+			{
+				// GIF reset!
+				// [Ps2Confirm] Issuing a GIF reset while the GIF is busy.  Details:
+				// Does this cancel all pending GIF transfers somehow?  Seems unlikely.  And
+				// what happens if an intermittent PATH3 transfer is currently in an interrupted
+				// state and this is called?  Is the DMAC just left danging or does the DMAC
+				// know enough to end the pending transfer?  What happens if there is a reverse
+				// FIFO (DIR=1) transfer in progress?
+				//
+				// Current assumption is that calling GIF reset during GIF activity probably
+				// yields indeterminate results, and that the reset function is only really
+				// useful for clearing the FIFO and possibly clearing the reverse transfer
+				// direction flag (since it makes sense that the GIF might have the ability
+				// to cancel that).
+
+				pxAssertDev (!gifRegs.HasPendingPaths(), "GIF reset requested while GIF is busy!");
+				gifRegs.stat.reset();
+				gifRegs.mode.reset();
+				g_fifo.gif.Clear();
+			}
+
+			gifRegs.stat.PSE = !!(value & 8);
+			if (value & 8)
+				gifRegs.stat.PSE = true;
+			else
+				gifRegs.stat.PSE = false;
+
+			return false;
+		}
+
+		case GIF_MODE:
+		{
+			// The GIF_STAT register contains bits to mirror MODE.M3R and MODE.IMT,
+			// When written 0, the STAT condition is updated immediately and GIF arbitration
+			// is performed (as there may be pending masked PATH3 transfers). When enabled,
+			// M3R is mirrored to STAT only when the *current* PATH3 transfer is actually
+			// finished -- in-progress transfers cannot be masked mid-transfer.  This behavior
+			// is assumption at this time and needs proper confirmation. --air
+			//
+			// [Ps2Confirm] Test if GIF_STAT updates:
+			//   1) immediately when GIF_MODE's M3R/IMT bits are written with 1?
+			//   2) after an in-progress PATH3 transfer is finished?
+			//   3) only after a new PATH3 transfer begins?
+
+			const tGIF_MODE& newmode = value;
+			
+			if (!newmode.M3R && gifRegs.stat.M3R)
+			{
+				// Clearing PATH3 masking:
+				GIF_LOG("GIF_MODE's PATH3 masking cleared (MODE.M3R=0)");
+				GIF_ArbitratePaths();
+			}
+			break;
+		}
+	}
+	
+	// use default writeback behavior...
+	return true;
 }
 
 uint __dmacall EE_DMAC::toGIF(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)

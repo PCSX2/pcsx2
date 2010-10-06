@@ -443,11 +443,6 @@ union tDMAC_ADDR
 	{
 		return pxsFmt((sprIsValid && SPR) ? L"0x%04X(SPR)" : L"0x%08X", ADDR);
 	}
-
-	wxCharBuffer ToUTF8(bool sprIsValid=true) const
-	{
-		return FastFormatAscii().Write((sprIsValid && SPR) ? "0x%04X(SPR)" : "0x%08X", ADDR).c_str();
-	}
 };
 
 // Currently guesswork.

@@ -38,7 +38,7 @@ ControllerMetrics dmac_metrics;
 //
 static bool dma_request[NumChannels];
 
-__fi void EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxChar* details )
+__fi bool EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxChar* details )
 {
 	// Standard IRQ behavior for all channel errors is to stop the DMA (STR=0)
 	// and set the CIS bit corresponding to the DMA channel.  Bus Errors set
@@ -49,12 +49,8 @@ __fi void EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxCh
 
 	if (cause != Stall_MFIFO)
 	{
-		uint bit = (1 << Id);
 		chcr.STR = 0;
-		dmacRegs.stat.CIS |= bit;
-
-		if (dmacRegs.stat.CIM & bit)
-			cpuSetNextEventDelta(4);
+		dmacChanInt(Id);
 	}
 
 	static const wxChar* causeMsg;
@@ -108,8 +104,8 @@ __fi void EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxCh
 		Console.Warning(L"(DMAC) IRQ raised on %s(%u) due to %s %s", info.NameW, Id, causeMsg, details);
 
 	DMAC_LOG("IRQ Raised on %s(%u) due to %ls %ls", info.NameA, Id, causeMsg);
-
-	throw Exception::DmaTransferStall();
+	
+	return false;
 }
 
 bool EE_DMAC::ChannelState::TestArbitration()
@@ -175,8 +171,8 @@ bool EE_DMAC::ChannelState::TestArbitration()
 
 			if ((madr.ADDR < stallAt) && (endAt > stallAt))
 			{
-				DMAC_LOG("\t%s bypassed due to DRAIN STALL condition (D%d_MADR=%s, STADR=0x%08x)",
-					info.NameA, madr.ToUTF8().data(), dmacRegs.stadr.ADDR);
+				DMAC_LOG("\t%s bypassed due to DRAIN STALL condition (D%d_MADR=%ls, STADR=0x%08x)",
+					info.NameA, Id, madr.ToString().c_str(), dmacRegs.stadr.ADDR);
 
 				return false;
 			}
@@ -185,8 +181,8 @@ bool EE_DMAC::ChannelState::TestArbitration()
 				endAt &= (Ps2MemSize::Scratch-1);
 				if ((madr.ADDR >= stallAt) && (endAt > stallAt))
 				{
-					DMAC_LOG("\t%s bypassed due to DRAIN STALL condition (D%d_MADR=%s, STADR=0x%08x) [SPR memory wrap!]",
-						info.NameA, madr.ToUTF8().data(), dmacRegs.stadr.ADDR);
+					DMAC_LOG("\t%s bypassed due to DRAIN STALL condition (D%d_MADR=%ls, STADR=0x%08x) [SPR memory wrap!]",
+						info.NameA, Id, madr.ToString().c_str(), dmacRegs.stadr.ADDR);
 
 					return false;
 				}
@@ -365,14 +361,14 @@ void EE_DMAC::ChannelState::UpdateSourceStall()
 {
 	if (!SourceStallActive() || (GetDir() != Dir_Source)) return;
 
-	DMAC_LOG("\tUpdated STADR=%s (prev=%s)", madr.ToUTF8(false), dmacRegs.stadr.ToUTF8(false));
+	DMAC_LOG("\tUpdated STADR=%ls (prev=%ls)", madr.ToString(false).c_str(), dmacRegs.stadr.ToString(false).c_str());
 
 	dmacRegs.stadr = madr;
 	if (dmacRegs.ctrl.STD)
 		dmacRequestSlice(StallDrainChan[dmacRegs.ctrl.STD]);
 }
 
-void EE_DMAC::ChannelState::TransferNormalAndChainData()
+bool EE_DMAC::ChannelState::TransferNormalAndChainData()
 {
 	const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
 	ChannelRegisters& fromSprReg = fromSPR.GetRegs();
@@ -382,7 +378,7 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 	{
 		if (NORMAL_MODE == creg.chcr.MOD)
 		{
-			IrqStall( Stall_EndOfTransfer );
+			return IrqStall( Stall_EndOfTransfer );
 		}
 		else // (CHAIN_MODE == creg.chcr.MOD)
 		{
@@ -404,116 +400,117 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 					//  2. Hack Disabled: Copy data to/from the ringbuffer specified by the
 					//     RBOR and RBSR registers (requires lots of wrapped memcpys).
 
-					MFIFO_SrcChainLoadTag();
+					if (!MFIFO_SrcChainLoadTag()) return false;
 				}
 				else
 				{
-					SrcChainLoadTag();
+					if (!SrcChainLoadTag()) return false;
 				}
 			}
 			else
 			{
-				DstChainLoadTag();
+				if (!DstChainLoadTag()) return false;
 			}
 		}
 	}
 
-	uint qwc = creg.qwc.QWC;
-
-	// CHAIN modes arbitrate per-packet regardless of slice or burst modes, and then
-	// also arbitrate at 8 QWC slices during each chain.
-	//
-	// NORMAL modes arbitrate at 8 QWC slices.
-
-	if (UseMFIFOHack && (NORMAL_MODE == chcr.MOD) &&
-	   ((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
+	if (uint qwc = creg.qwc.QWC)
 	{
-		// MFIFOhack: We can't let the peripheral out-strip SPR.
-		//  (REFx tags copy from sources other than our SPRdma, which is why we
-		//   exclude them above).
+		// CHAIN modes arbitrate per-packet regardless of slice or burst modes, and then
+		// also arbitrate at 8 QWC slices during each chain.
+		//
+		// NORMAL modes arbitrate at 8 QWC slices.
 
-		qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
-	}
-
-	if (!UseDmaBurstHack && IsSliced())
-		qwc = std::min<uint>(creg.qwc.QWC, 8);
-
-	if (DrainStallActive())
-	{
-		// this channel has drain stalling enabled.  If the stall condition is already met
-		// then we need to skip it by and try another channel.
-
-		// Drain Stalling Rules:
-		//  * We can copy data up to STADR (exclusive).
-		//  * Arbitration is not granted until at least 8 QWC is available for copy.
-		//  
-		// Furthermore, there must be at *least* 8 QWCs available for transfer or the
-		// DMA stalls.  Stall-control DMAs do not transfer partial QWCs at the edge of
-		// STADR.  Translation: If the source DMA (the one writing to STADR) doesn't
-		// transfer an even 8-qwc block, the drain DMA will actually deadlock until
-		// the PS2 app manually writes 0 to STR!  (and this is correct!) --air
-
-		uint stallAt = dmacRegs.stadr.ADDR;
-		uint endAt = madr.ADDR + qwc*16;
-
-		if (!madr.SPR)
+		if (UseMFIFOHack && (NORMAL_MODE == chcr.MOD) &&
+		   ((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
 		{
-			if (endAt > stallAt)
-			{
-				qwc = (stallAt - madr.ADDR) / 16;
-				DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
-			}
+			// MFIFOhack: We can't let the peripheral out-strip SPR.
+			//  (REFx tags copy from sources other than our SPRdma, which is why we
+			//   exclude them above).
+
+			qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
 		}
-		else if (stallAt < Ps2MemSize::Scratch)
-		{
-			// Assumptions:
-			// SPR bit transfers most likely perform automatic memory wrapping/masking on MADR
-			// and likely do not automatically mask/wrap STADR (both of these assertions
-			// need proper test app confirmations!! -- air)
 
-			if ((madr.ADDR < stallAt) && (endAt > stallAt))
+		if (!UseDmaBurstHack && IsSliced())
+			qwc = std::min<uint>(creg.qwc.QWC, 8);
+
+		if (DrainStallActive())
+		{
+			// this channel has drain stalling enabled.  If the stall condition is already met
+			// then we need to skip it by and try another channel.
+
+			// Drain Stalling Rules:
+			//  * We can copy data up to STADR (exclusive).
+			//  * Arbitration is not granted until at least 8 QWC is available for copy.
+			//  
+			// Furthermore, there must be at *least* 8 QWCs available for transfer or the
+			// DMA stalls.  Stall-control DMAs do not transfer partial QWCs at the edge of
+			// STADR.  Translation: If the source DMA (the one writing to STADR) doesn't
+			// transfer an even 8-qwc block, the drain DMA will actually deadlock until
+			// the PS2 app manually writes 0 to STR!  (and this is correct!) --air
+
+			uint stallAt = dmacRegs.stadr.ADDR;
+			uint endAt = madr.ADDR + qwc*16;
+
+			if (!madr.SPR)
 			{
-				qwc = (stallAt - madr.ADDR) / 16;
-				DMAC_LOG("\tDRAIN STALL condition! (STADR=%s, newQWC=%u)", dmacRegs.stadr.ToUTF8(false), qwc);
-			}
-			else
-			{
-				endAt &= (Ps2MemSize::Scratch-1);
-				if ((madr.ADDR >= stallAt) && (endAt > stallAt))
+				if (endAt > stallAt)
 				{
-					// Copy from madr->ScratchEnd and from ScratchStart->StallAt
-					qwc = ((Ps2MemSize::Scratch - madr.ADDR) + stallAt) / 16;
-					DMAC_LOG("\tDRAIN STALL condition (STADR=%s, newQWC=%u) [SPR memory wrap]", dmacRegs.stadr.ToUTF8(false), qwc);
+					qwc = (stallAt - madr.ADDR) / 16;
+					DMAC_LOG("\tDRAIN STALL condition! (STADR=%ls, newQWC=%u)", dmacRegs.stadr.ToString(false).c_str(), qwc);
+				}
+			}
+			else if (stallAt < Ps2MemSize::Scratch)
+			{
+				// Assumptions:
+				// SPR bit transfers most likely perform automatic memory wrapping/masking on MADR
+				// and likely do not automatically mask/wrap STADR (both of these assertions
+				// need proper test app confirmations!! -- air)
+
+				if ((madr.ADDR < stallAt) && (endAt > stallAt))
+				{
+					qwc = (stallAt - madr.ADDR) / 16;
+					DMAC_LOG("\tDRAIN STALL condition! (STADR=%ls, newQWC=%u)", dmacRegs.stadr.ToString(false).c_str(), qwc);
+				}
+				else
+				{
+					endAt &= (Ps2MemSize::Scratch-1);
+					if ((madr.ADDR >= stallAt) && (endAt > stallAt))
+					{
+						// Copy from madr->ScratchEnd and from ScratchStart->StallAt
+						qwc = ((Ps2MemSize::Scratch - madr.ADDR) + stallAt) / 16;
+						DMAC_LOG("\tDRAIN STALL condition (STADR=%ls, newQWC=%u) [SPR memory wrap]", dmacRegs.stadr.ToString(false).c_str(), qwc);
+					}
 				}
 			}
 		}
+		
+		// The real hardware has "undefined" behavior for this, though some games still freely
+		// upload huge values to the QWC anyway.  (Ateleir Iris during FMVs).
+		pxAssertMsg(creg.qwc.QWC < (_1mb/16), "DMAC: QWC is over 1 meg!");
+
+		// -----------------------------------
+		// DO THAT MOVEMENT OF DATA.  NOOOOOW!		
+		// -----------------------------------
+
+		uint qwc_xfer = (dir == Dir_Source)
+			? TransferSource(GetHostPtr(madr,true), qwc)
+			: TransferDrain(GetHostPtr(madr,false), qwc);
+
+		// Peripherals have the option to stall transfers on their end, usually due to
+		// specific conditions that can arise, such as tag errors or IRQs.
+
+		if (qwc_xfer != qwc)
+		{
+			DMAC_LOG( "\tPartial transfer %s peripheral (qwc=%u, xfer=%u)",
+				(dir==Dir_Drain) ? "to" : "from",
+				qwc, qwc_xfer
+			);
+		}
+
+		creg.madr.ADDR	+= qwc_xfer * 16;
+		creg.qwc.QWC	-= qwc_xfer;
 	}
-	
-	// The real hardware has "undefined" behavior for this, though some games still freely
-	// upload huge values to the QWC anyway.  (Ateleir Iris during FMVs).
-	pxAssertMsg(creg.qwc.QWC < (_1mb/16), "DMAC: QWC is over 1 meg!");
-
-	// -----------------------------------
-	// DO THAT MOVEMENT OF DATA.  NOOOOOW!		
-	// -----------------------------------
-
-	uint qwc_xfer = (dir == Dir_Source)
-		? TransferSource(GetHostPtr(madr,true), qwc)
-		: TransferDrain(GetHostPtr(madr,false), qwc);
-
-	// Peripherals have the option to stall transfers on their end, usually due to
-	// specific conditions that can arise, such as tag errors or IRQs.
-
-	if (qwc_xfer != qwc)
-	{
-		DMAC_LOG( "\tPartial transfer %s peripheral (qwc=%u, xfer=%u)",
-			(dir==Dir_Drain) ? "to" : "from",
-			qwc, qwc_xfer
-		);
-	}
-
-	creg.madr.ADDR	+= qwc_xfer * 16;
-	creg.qwc.QWC	-= qwc_xfer;
 
 	// (optimization) -- DmaBurstHack writes back the STADR later
 	if (!UseDmaBurstHack) UpdateSourceStall();
@@ -521,35 +518,41 @@ void EE_DMAC::ChannelState::TransferNormalAndChainData()
 	if (creg.qwc.QWC == 0)
 	{
 		if (NORMAL_MODE == creg.chcr.MOD)
-			IrqStall(Stall_EndOfTransfer);
+			return IrqStall(Stall_EndOfTransfer);
 		else
 		{
 			// Chain mode!  Check the current tag for IRQ requests.
 			if (chcr.TAG.IRQ && chcr.TIE)
-				IrqStall(Stall_TagIRQ);
+				return IrqStall(Stall_TagIRQ);
 
 			if (dir == Dir_Drain)
 			{
 				if (MFIFOActive())
-					MFIFO_SrcChainUpdateTADR();
+				{
+					if (!MFIFO_SrcChainUpdateTADR()) return false;
+				}
 				else
-					SrcChainUpdateTADR();
+				{
+					if (!SrcChainUpdateTADR()) return false;
+				}
 			}
 			else
 			{
 				if (chcr.TAG.ID == TAG_END)
-					IrqStall(Stall_EndOfTransfer);
+					return IrqStall(Stall_EndOfTransfer);
 			}
 		}
 	}
+	
+	return true;
 }
 
 void EE_DMAC::ChannelState::TransferData()
 {
 	const char* const SrcDrainMsg = GetDir() ? "<-" : "->";
 
-	DMAC_LOG("\tBus right granted to %s%s%s,  QWC=0x%04x,  MODE=%s",
-		info.ToUTF8().data(), SrcDrainMsg, creg.madr.ToUTF8(),
+	DMAC_LOG("\tBus right granted to %ls%s%ls,  QWC=0x%04x,  MODE=%s",
+		info.ToString().c_str(), SrcDrainMsg, creg.madr.ToString().c_str(),
 		creg.qwc.QWC, chcr.ModeToUTF8()
 	);
 
@@ -565,24 +568,31 @@ void EE_DMAC::ChannelState::TransferData()
 		// chains, with stalling occuring when the QWC is != 0 (peripheral stall).
 		//  -- normal modes will use C++ exceptions to exit to the top level caller.
 		do {
-			TransferNormalAndChainData();
+			if (!TransferNormalAndChainData()) break;
 		} while (UseDmaBurstHack && (creg.qwc.QWC == 0));
 	}
 
 	if (UseDmaBurstHack) UpdateSourceStall();
 }
 
-void EE_DMAC::UpdateDmacEvent()
+bool EE_DMAC::dmacControllerEnabled()
+{
+	return !(psHu32(DMAC_ENABLER) & (1<<16));
+}
+
+void EE_DMAC::dmacEventUpdate()
 {
 	ControllerRegisters& dmacReg = (ControllerRegisters&)psHu8(DMAC_CTRL);
 
 	DMAC_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacRegs.ctrl._u32);
 
-	if ((psHu32(DMAC_ENABLER) & (1<<16)) || !dmacRegs.ctrl.DMAE)
+	CPU_ClearEvent(DMAC_EVENT);
+
+	if (!dmacControllerEnabled() || !dmacRegs.ctrl.DMAE)
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 		// the DMAC register(s) are written and the DMAC is fully re-enabled.
-		DMAC_LOG("DMAC disabled, no actions performed. (DMAE=%d, ENABLER=0x%08x", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
+		DMAC_LOG("DMAC disabled, no actions performed. (DMAE=%d, ENABLER=0x%08x)", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
 		return;
 	}
 
@@ -604,7 +614,7 @@ void EE_DMAC::UpdateDmacEvent()
 			ChannelState cstate( chanId );
 			cstate.TransferData();
 		}
-		catch( Exception::DmaTransferStall& )
+		catch( Exception::DmaBusError& )
 		{
 		}
 
@@ -644,7 +654,7 @@ void EE_DMAC::UpdateDmacEvent()
 void EE_DMAC::dmacScheduleEvent()
 {
 	// If the DMAC is completely disabled then no point in scheduling anything.
-	if (!dmacRegs.ctrl.DMAE || (psHu32(DMAC_ENABLER) & (1 << 16)))
+	if (!dmacRegs.ctrl.DMAE || !dmacControllerEnabled())
 	{
 		CPU_ClearEvent( DMAC_EVENT );
 		return;
@@ -662,7 +672,6 @@ void EE_DMAC::dmacChanInt( ChannelId id )
 	uint bit = 1<<id;
 
 	dmacRegs.stat.CIS |= bit;
-	
 	if (dmacRegs.stat.CIM & bit)
 		cpuSetNextEventDelta( 0 );
 }
@@ -679,12 +688,16 @@ void EE_DMAC::dmacChanInt( ChannelId id )
 // Rationale: The DMAC transfers based on these requests in order to reduce the number of cycles
 // wasted trying to transfer data to/from busy peripherals.  Actual emulation of this system is
 // not needed, and is ignored by default.  It is only regarded when the DMAC is in "purist" mode.
-void EE_DMAC::dmacRequestSlice( ChannelId cid, bool force )
+//
+// Returns: TRUE if the channel has an active transfer (STR=1), FALSE if the channel is
+// inoperative at this time.
+bool EE_DMAC::dmacRequestSlice( ChannelId cid, bool force )
 {
-	if (!force && !ChannelInfo[cid].CHCR().STR) return;
+	if (!force && !ChannelInfo[cid].CHCR().STR) return false;
 
 	dma_request[cid] = true;
 	dmacScheduleEvent();
+	return true;
 }
 
 template< uint page >
@@ -772,7 +785,8 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		psHu32(DMAC_ENABLEW) = value;
 		psHu32(DMAC_ENABLER) = value;
 
-		dmacScheduleEvent();
+		//dmacScheduleEvent();
+		dmacEventUpdate();
 		return false;
 	}
 	}
@@ -802,15 +816,41 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 	if ((mem & 0xf0) == 0)
 	{
-		// Since CHCR is being written, perform necessary STR tests so we know to schedule a DMA
-		// or not.  (if STR is set to 1, schedule it.  If set to 0, do nothing).  Logging is
-		// performed later, if enabled.
-
 		tDMA_CHCR& newchcr = (tDMA_CHCR&)value;
 		tDMA_CHCR& curchcr = (tDMA_CHCR&)psHu32(mem);
 
-		if (newchcr.STR && !curchcr.STR)
-			dmacRequestSlice(chanid, true);
+		// New assumption: the EE kernel appears to expect to be able to write to CHCR and have
+		// it *disregarded* if the DMAC is not in an alterable state.  Typically any STR=1 condition
+		// would be unalterable, EXCEPT if the particular channel is in Destination Chain mode.
+		// In that case, the DMAC is in an alterable state any time it is sitting around waiting
+		// for the peripheral to feed it a new tag (indicated by QWC=0).  The SIF manager
+		// relies on this behavior.
+
+		if (curchcr.STR)
+		{
+			dmacEventUpdate();
+
+			// Disregard the write if the DMAC is unalterable (see above).
+			
+			if ((CHAIN_MODE != curchcr.MOD) || (info.QWC().QWC != 0) || !dmacControllerEnabled())
+			{
+				DMAC_LOG("%s write to CHCR disregarded.", info.NameA);
+				return false;
+			}
+
+			DMAC_LOG("%s write to CHCR while STR=1 (channel state inactive; write not disregarded).", info.NameA);
+		}	
+		else
+		{
+			if (newchcr.STR)
+			{
+				// NOTE: always drain the FIFO prior to starting a transfer, just in case something
+				// is left over in there (however unlikely).
+
+				ProcessFifoEvent();
+				dmacRequestSlice(chanid, true);
+			}
+		}
 	}
 
 	if (!SysTraceActive(EE.DMAC)) return true;
@@ -830,7 +870,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 				{
 					DMAC_LOG("%s DmaExec Received (STR set to 1).", info.NameA);
 					
-					// [TODO] Log all DMA settings at STR=1;
+					// [TODO] Log all DMA settings at DMA kick.
 					
 					// [Ps2Confirm] If the DMA is VIF1 and the direction doesn't match the VIF transfer
 					// direction, the DMA likely stalls until the VIF transfer direction is reversed.
@@ -840,11 +880,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			else
 			{
 				// Writing STR while the channel is running is allowed so long as the entire DMAC
-				// is completely disabled. Doing so otherwise produces undefined results (typically
-				// that the transfer will stop at some unknown time in the future).  PCSX2 actually
-				// yields defined results -- an immediate forced stop -- but we should log/warn on
-				// such behavior anyway, in case some game relies on some undocumented PS2 behavior
-				// that differs.
+				// is completely disabled, or if the DMA is in chain mode and actively awaiting
+				// the next tag in the chain (QWC=0).  In any other case, the write to CHCR will
+				// have ben disregarded above.
 
 				if (info.CHCR().DIR != newchcr.DIR)
 				{
@@ -882,12 +920,12 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		
 		case 0x10:		// MADR
 		{
-			if (!info.CHCR().STR) break;
-
 			const tDMAC_ADDR& madr = (tDMAC_ADDR&)value;
 
+			if (!info.CHCR().STR) break;
+
 			if(madr != info.MADR())
-				tracewarn.Write("\n\tMADR changed to %s (oldval=%s)", madr.ToUTF8(), info.MADR().ToUTF8());
+				tracewarn.Write("\n\tMADR changed to %ls (oldval=%ls)", madr.ToString().c_str(), info.MADR().ToString().c_str());
 		}
 		break;
 		

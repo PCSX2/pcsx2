@@ -171,6 +171,51 @@ static __aligned16 const GIFRegHandler s_gsHandlers[0x100-0x60] =
 };
 
 // --------------------------------------------------------------------------------------
+//  GIFTAG  (implementations)
+// --------------------------------------------------------------------------------------
+wxString GIFTAG::ToString() const
+{
+	static const char* GifTagModeLabel[] =
+	{
+		"Packed", "RegList", "Image", "Image2"
+	};
+
+	FastFormatUnicode result;
+	result.Write("NLOOP=0x%04X, PRE=%u, PRIM=0x%03X, MODE=%s",
+		NLOOP, PRE, PRIM, GifTagModeLabel[FLG]);
+
+	return result;
+}
+
+wxString GIFTAG::DumpRegsToString() const
+{
+	static const char* PackedModeRegsLabel[] =
+	{
+		"PRIM",		"RGBA",		"STQ",		"UV",
+		"XYZF2",	"XYZ2",		"TEX0_1",	"TEX0_2",
+		"CLAMP_1",	"CLAMP_2",	"FOG",		"Unknown",
+		"XYZF3",	"XYZ3",		"A_D",		"NOP"
+	};
+
+	u32 tempreg		= REGS[0];
+	uint numregs	= ((NREG-1)&0xf) + 1;
+
+	FastFormatUnicode result;
+	result.Write("NREG=0x%02X (", NREG);
+
+	for (u32 i = 0; i < numregs; i++) {
+		if (i == 8) tempreg = REGS[1];
+		if (i > 0) result.Write(" ");
+		result.Write(PackedModeRegsLabel[tempreg & 0xf]);
+		tempreg >>= 4;
+	}
+
+	result.Write(")");
+	return result;
+}
+
+
+// --------------------------------------------------------------------------------------
 //  GIFPath Method Implementations
 // --------------------------------------------------------------------------------------
 
@@ -338,6 +383,7 @@ __ri void MemCopy_WrappedSrc( const u128* srcBase, uint& srcStart, uint srcSize,
 
 #define copyTag() do {						\
 	_mm_store_ps( (float*)&RingBuffer.m_Ring[ringpos], Aligned ? _mm_load_ps((float*)pMem128) : _mm_loadu_ps((float*)pMem128)); \
+	/*_mm_stream_ps( (float*)&RingBuffer.m_Ring[ringpos], Aligned ? _mm_load_ps((float*)pMem128) : _mm_loadu_ps((float*)pMem128));*/ \
 	++pMem128; --size;						\
 	ringpos = (ringpos+1)&RingBufferMask;	\
 } while(false)
@@ -346,9 +392,9 @@ __ri void GIFPath::TransferPackedRegs( const u128*& pMem128, uint& size, uint& r
 {
 	static const bool Aligned = true;
 
-	GIF_LOG("Packed Mode EOP %x", tag.EOP);
 	PrepPackedRegs();
-
+	GifTagLog("\tPacked Mode, %ls", tag.DumpRegsToString().c_str());
+	
 	if(DetectE > 0)
 	{
 		do {
@@ -419,10 +465,14 @@ __ri void GIFPath::TransferPackedRegs( const u128*& pMem128, uint& size, uint& r
 //   Amount of data processed.  Actual processed amount may be less than provided size, depending
 //   on GS stalls (caused by SIGNAL or EOP, etc).
 //
-__ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uint memSize)
+int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uint memSize)
 {
 	// Cannot transfer while a second IMR is pending (!)
-	if (SIGNAL_IMR_Pending) return 0;
+	if (SIGNAL_IMR_Pending)
+	{
+		GifTagLog("GIFTAG IGNORED due to SIGNAL/IMR condition.");
+		return 0;
+	}
 
 	static const bool Aligned = true;
 
@@ -440,11 +490,17 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 			size = firstlen;
 		else
 			size = std::min(firstlen, fragment_size);
+
+		GifTagLog("GIFTAG BEGIN fragment_size=0x%03X (wrapping @ wrapSize=0x%06X, startPos=0x%04X)",
+			fragment_size, memSize, startPos
+		);
 	}
 	else
 	{
 		pxAssume(fragment_size);
 		size = fragment_size;
+
+		GifTagLog("GIFTAG BEGIN fragment_size=0x%03X", fragment_size);
 	}
 
 	uint startSize = size;
@@ -455,6 +511,8 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 
 				SetTag((u8*)pMem128);
 				copyTag();
+				
+				GifTagLog("\tSetTag  %ls", tag.ToString().c_str());
 			}
 			else
 			{
@@ -465,7 +523,7 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 
 					case GIF_FLG_REGLIST:
 					{
-						GIF_LOG("Reglist Mode EOP %x", tag.EOP);
+						GifTagLog("\tReglist Mode, NREG=0x%02X", tag.NREG);
 
 						// In reglist mode, the GIF packs 2 registers into each QWC.  The nloop however
 						// can be an odd number, in which case the upper half of the final QWC is ignored (skipped).
@@ -478,15 +536,12 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 
 						if(size < total_listlen)
 						{
-							//Console.Warning("GIF path %u Fragmented REGLIST!  Please report if you experience problems", gifRegs.stat.APATH);
-
 							len = size;
 							const u32 reglen = len * 2;
 
 							const int nloops_copied		= reglen / numregs;
 							const int regs_not_copied	= reglen % numregs;
 
-							//DevCon.Warning("Hit it path %u", gifRegs.stat.APATH);
 							curreg += regs_not_copied;
 							nloop -= nloops_copied;
 
@@ -512,8 +567,8 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 					case GIF_FLG_IMAGE:
 					case GIF_FLG_IMAGE2:
 					{
-						GIF_LOG("IMAGE Mode EOP %x", tag.EOP);
 						int len = aMin(size, nloop);
+						GifTagLog("\tImage mode, len=0x%04X", len);
 
 						MemCopy_WrappedDest( pMem128, RingBuffer.m_Ring, ringpos, RingBufferSize, len );
 
@@ -551,25 +606,24 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 				{
 					// waiting for EOP -- fragment_size is ignored.  We still need to check for and detect
 					// cases where the transfer has wrapped all the way around the buffer (infinite loop)
-					// and force-break the transfer in such cases.
+					// and force-break the transfer and resume it after some amount of time has passed.
+					// (the BIOS does this, by using an XGKICK on VU memory and then writes an EOP to VU
+					// memory later on).
 
 					if (startSize < memSize)
 					{
-						size = memSize - startSize;
-						startSize = size;
-						pMem128 = baseMem;
+						GifTagLog("\tVU1 Buffer Wrap!");
+						size		= memSize - startSize;
+						memSize		= size;
+						startSize	= size;
+						pMem128		= baseMem;
 					}
 					else
 					{
-						// Note: The BIOS does an XGKICK on the VU1 and lets it DMA to the GS without an EOP
-						// (seemingly to loop forever), only to write an EOP later on.  No other game is known to
-						// do anything of the sort.
-						// So lets just cap the DMA at 16k, and force it to "look" like it's terminated for now.
-						// (note: truly accurate emulation would mean having the VU1's XGKICK break execution,
-						//  split time to EE and other processors, and then resume the kick's DMA later.  
-						//  ... yea, not happening for a while. ;) -- air
+						DevCon.Warning("GIF PATH1 infinite transfer detected!");
+						//GIF_DelayArbitration(0x200);
+						//CPU_ScheduleEvent(GIF_EVENT);
 
-						Console.Warning("GIFTAG PATH%u error: size exceeded wrapped memory size %x", gifRegs.stat.APATH, memSize);
 						nloop	= 0;
 						const_cast<GIFTAG&>(tag).EOP = 1;
 
@@ -577,14 +631,18 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 						// to get confused and die. >_<
 
 						ringpos = original_ringpos;
+						gifRegs.SetActivePath( GIF_APATH_IDLE );
+
 						break;
 					}
 				}
 				else
 				{
-					size = fragment_size - processed;
-					startSize = size;
-					pMem128 = baseMem;
+					size		= fragment_size - processed;
+					startSize	= size;
+					pMem128		= baseMem;
+
+					if (size) GifTagLog("\tMFIFO/SPRAM buffer Wrap!");
 				}
 			}
 		}
@@ -594,8 +652,10 @@ __ri int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos
 		// IMR occurred twice; GIF transfer stalls indefinitely until the EE writes
 		// the proper sequence of CSR/IMR regs to restart it.
 
+		GifTagLog("\tSIGNAL/IMR detected, parsing aborted");
 		StepReg();		// advances past the SIGNAL that caused the exception.
 	}
 
+	GifTagLog("GIFTAG END, processed=0x%04X", processed + (startSize - size));
 	return processed + (startSize - size);
 }

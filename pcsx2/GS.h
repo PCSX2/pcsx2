@@ -252,6 +252,9 @@ struct GIFTAG
 	u32 REGS[2];
 
 	GIFTAG() {}
+
+	wxString ToString() const;
+	wxString DumpRegsToString() const;
 };
 
 // --------------------------------------------------------------------------------------

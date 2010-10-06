@@ -255,6 +255,7 @@ extern void vuMicroMemShutdown();
 extern void vuMicroMemReset();
 
 // VU0
+extern bool vu0Running();
 extern void vu0ResetRegs();
 extern void __fastcall vu0ExecMicro(u32 addr);
 extern void vu0Exec(VURegs* VU);
@@ -262,6 +263,7 @@ extern void vu0Finish();
 extern void iDumpVU0Registers();
 
 // VU1
+extern bool vu1Running();
 extern bool vu1Finish();
 extern void vu1ResetRegs();
 extern bool vu1ResumeXGKICK();

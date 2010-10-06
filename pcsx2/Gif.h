@@ -131,20 +131,40 @@ union tGIF_STAT
 {
 	struct
 	{
+		// PATH3 mask status.
+		// This value is assigned based on the GIF_MODE.M3R flag when a new transfer is
+		// started on PATH3.
 		u32 M3R : 1;
+		
+		// VIF PATH3 mask status.
+		// This value is assigned based on the VIF's internal PATH3 masking status when a new
+		// transfer is started on PATH3.
 		u32 M3P : 1;
+
+		// PATH3 intermittent mode enable.
+		// This value is assigned based on the GIF_MODE.IMT flag when a new transfer is
+		// started on PATH3.
 		u32 IMT : 1;
+
+		// GIF temporary stop.
+		// This value is set to 1 when the GIF has acknowledged the GIF_CTRL.PSE flag set to 1,
+		// indicating that the GIF is stopped and debug registers are readable (GIF_TAG and such)
 		u32 PSE : 1;
+
 		u32 _reserved1 : 1;
 		
 		// Interrupted PATH3 status?
 		//  Set to 1 when PATH3 is interrupted midst an IMAGE transfer (arbitration granted to
-		//    either PATH1 or PATH2).
+		//  either PATH1 or PATH2).
 		u32 IP3 : 1;
 
 		u32 P3Q : 1;		// PATH3 transfer request in the queue?
-		u32 P2Q : 1;		// PATH2 transfer request int he queue?
+		u32 P2Q : 1;		// PATH2 transfer request in the queue?
 		u32 P1Q : 1;		// PATH1 transfer request in the queue?
+
+		// Output path active.
+		// Set to 1 whenever a transfer is active along any PATH.  Cleared to zero only at the
+		// conclusion of a GIF packet (EOP and NLOOP=0).
 		u32 OPH : 1;
 		
 		// Indicates the currently active GIF path, either "idle", 1, 2, or 3.  See enum
@@ -172,7 +192,7 @@ union tGIF_STAT
 	void SetActivePath( gif_active_path path )
 	{
 		APATH	= path;
-		OPH		= !(path == GIF_APATH_IDLE);
+		OPH		= (path != GIF_APATH_IDLE);
 	}
 };
 
@@ -334,11 +354,14 @@ static GIFregisters& gifRegs = (GIFregisters&)eeHw[0x3000];
 
 extern uint GIF_UploadTag(const u128* baseMem, uint fragment_size, uint startPos=0, uint memSize=0);
 
+extern void GIF_DelayArbitration( uint cycles );
 extern void GIF_ArbitratePaths();
 extern bool GIF_InterruptPath3( gif_active_path apath );
-extern bool __fastcall GIF_QueuePath1( u32 addr );
+extern u32 __fastcall GIF_QueuePath1( u32 addr );
 extern bool GIF_QueuePath2();
 extern bool GIF_ClaimPath3();
 extern bool GIF_MaskedPath3();
 
+extern void gifReset();
 extern u32 gifRead32(u32 mem);
+extern bool gifWrite32(u32 mem, u32 value);

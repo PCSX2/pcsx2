@@ -252,6 +252,9 @@ void COP2_Interlock(bool mBitSync) {
 	}
 }
 
+// [TODO] : Implement VU ForceBreak operation (currently only VU reset is supported).
+// Priority is low, since ForceBreak ismost likely only a debug-useful command; however
+// implementation of it shouldn't be especially difficult either. :)  --air
 void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex) {
 	xTEST(eax, (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;

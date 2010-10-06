@@ -35,6 +35,7 @@
 #include "SamplProf.h"
 
 using namespace R5900;	// for R5900 disasm tools
+using namespace EE_DMAC;
 
 s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
@@ -97,6 +98,22 @@ void cpuReset()
 	LastELF = L"";
 }
 
+static wxString CheckIntcDmacString(uint cause)
+{
+	wxString result;
+
+	if (cause & 0x400)
+		result += L"INTC";
+
+	if (cause & 0x800)
+	{
+		if (!result.IsEmpty()) result += L"+";
+		result += L"DMAC";
+	}
+	
+	return result;
+}
+
 __ri void cpuException(u32 code, u32 bd)
 {
 	bool errLevel2, checkStatus;
@@ -104,7 +121,7 @@ __ri void cpuException(u32 code, u32 bd)
 
     cpuRegs.branch = 0;		// Tells the interpreter that an exception occurred during a branch.
 	cpuRegs.CP0.n.Cause = code & 0xffff;
-
+	
 	if(cpuRegs.CP0.n.Status.b.ERL == 0)
 	{
 		//Error Level 0-1
@@ -112,11 +129,20 @@ __ri void cpuException(u32 code, u32 bd)
 		checkStatus = (cpuRegs.CP0.n.Status.b.BEV == 0); //  for TLB/general exceptions
 
 		if (((code & 0x7C) >= 0x8) && ((code & 0x7C) <= 0xC))
+		{
 			offset = 0x0; //TLB Refill
+			CPU_LOG("cpuException:  TLB Refill");
+		}
 		else if ((code & 0x7C) == 0x0)
+		{
 			offset = 0x200; //Interrupt
+			DMAC_LOG("cpuException:  %ls", CheckIntcDmacString(code).c_str() );
+		}
 		else
+		{
 			offset = 0x180; // Everything else
+			CPU_LOG("cpuException:  Crazyness");
+		}
 	}
 	else
 	{
@@ -228,12 +254,12 @@ __fi void cpuSetNextEventDelta( s32 delta )
 
 // tests the cpu cycle against the given start and delta values.
 // Returns true if the delta time has passed.
-__fi int cpuTestCycle( u32 startCycle, s32 delta )
+__fi bool cpuTestCycle( u32 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't explode
 	// if the startCycle is ahead of our current cpu cycle.
 
-	return (int)(cpuRegs.cycle - startCycle) >= delta;
+	return ((int)(cpuRegs.cycle - startCycle)) >= delta;
 }
 
 // tells the EE to run the branch test the next time it gets a chance.
@@ -293,6 +319,8 @@ __fi void _cpuEventTest_Shared()
 	ScopedBool etest(eeEventTestIsActive);
 	g_nextEventCycle = cpuRegs.cycle + eeWaitCycles;
 
+	CPU_LOG("EE EVENT TEST");
+
 	// ---- INTC / DMAC (CPU-level Exceptions) -----------------
 	// Done first because exceptions raised during event tests need to be postponed a few
 	// cycles (fixes Grandia II [PAL], which does a spin loop on a vsync and expects to
@@ -323,10 +351,14 @@ __fi void _cpuEventTest_Shared()
 
 	if(cpuRegs.interrupt & (1<<FIFO_EVENT))
 		ProcessFifoEvent();
-	if(cpuRegs.interrupt & (1<<DMAC_EVENT))
-		EE_DMAC::UpdateDmacEvent();
 
-	cpuRegs.interrupt = 0;
+	if(cpuRegs.interrupt & (1<<DMAC_EVENT))
+		dmacEventUpdate();
+
+	if(cpuRegs.interrupt & (1<<GIF_EVENT))
+		GIF_ArbitratePaths();
+
+	//cpuRegs.interrupt = 0;
 
 	// ---- IOP -------------
 	// * It's important to run a iopEventTest before calling ExecuteBlock. This
@@ -340,39 +372,37 @@ __fi void _cpuEventTest_Shared()
 	EEsCycle += cpuRegs.cycle - EEoCycle;
 	EEoCycle = cpuRegs.cycle;
 
-	if( EEsCycle > 0 )
-		iopEventAction = true;
+	//iopEventTest();
 
-	iopEventTest();
-
-	if( iopEventAction )
+	if( EEsCycle > 128 )
 	{
 		//if( EEsCycle < -450 )
 		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
 
 		EEsCycle = psxCpu->ExecuteBlock( EEsCycle );
-		iopEventAction = false;
+		//iopEventAction = false;
 	}
 
 	// ---- VU0 -------------
 	// We're in a EventTest.  All dynarec registers are flushed
 	// so there is no need to freeze registers here.
-	CpuVU0->ExecuteBlock();
+	if (vu0Running())
+	{
+		CpuVU0->ExecuteBlock();
+
+		// In case the VIF0 is waiting on the VU0 to end:
+		if (vif0Regs.stat.VEW)
+		{
+			if (dmacRequestSlice(ChanId_VIF0))
+				dmacEventUpdate();
+		}
+	}
 
 	// Note:  We don't update the VU1 here because it runs it's micro-programs in
 	// one shot always.  That is, when a program is executed the VU1 doesn't even
 	// bother to return until the program is completely finished.
 
 	// ---- Schedule Next Event Test --------------
-
-	if( EEsCycle > 192 )
-	{
-		// EE's running way ahead of the IOP still, so we should branch quickly to give the
-		// IOP extra timeslices in short order.
-
-		cpuSetNextEventDelta( 48 );
-		//Console.Warning( "EE ahead of the IOP -- Rapid Event!  %d", EEsCycle );
-	}
 
 	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
@@ -413,17 +443,15 @@ __fi void CPU_ClearEvent( EE_EventType n )
 	cpuRegs.interrupt &= ~(1 << n);
 }
 
-__fi void CPU_ScheduleEvent( EE_EventType n, s32 ecycle )
+__fi void CPU_ScheduleEvent( EE_EventType n, s32 delay )
 {
 	if (cpuRegs.interrupt & (1 << n)) return;
 
 	cpuRegs.interrupt|= 1 << n;
-	cpuRegs.sCycle[n] = cpuRegs.cycle;
-	cpuRegs.eCycle[n] = ecycle;
 
 	// Interrupt is happening soon: make sure both EE and IOP are aware.
 
-	if( ecycle <= 28 && iopCycleEE > 0 )
+	if (iopCycleEE > 0)
 	{
 		// If running in the IOP, force it to break immediately into the EE.
 		// the EE's branch test is due to run.
@@ -432,7 +460,7 @@ __fi void CPU_ScheduleEvent( EE_EventType n, s32 ecycle )
 		iopCycleEE = 0;
 	}
 
-	cpuSetNextEventDelta( cpuRegs.eCycle[n] );
+	cpuSetNextEventDelta( delay );
 }
 
 // Called from recompilers; __fastcall define is mandatory.
