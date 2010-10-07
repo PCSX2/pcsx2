@@ -195,7 +195,8 @@ _vifT size_t vifTransfer(const u128* data, int size_qwc) {
 	vifX.fragment_size	= (size_qwc * 4) - vifX.stallpos;
 	vifX.data			= (u32*)data + vifX.stallpos;
 
-	do {
+	while (vifX.fragment_size && !regs.stat.IsStalled())
+	{
 		if (regs.stat.VPS == VPS_IDLE)
 		{
 			// Fetch and dispatch a new VIFcode.
@@ -216,44 +217,19 @@ _vifT size_t vifTransfer(const u128* data, int size_qwc) {
 		}
 
 		// Code processed in complete, so check the I-bit status:
-
-		// Okay did some testing with Max Payne, it does this:
-		// VifMark  value = 0x666   (i know, evil!)
-		// NOP with I Bit
-		// VifMark  value = 0
-		//
-		// If you break after the 2nd Mark has run, the game reports invalid mark 0 and the game dies.
-		// So it has to occur here, testing a theory that it only doesn't stall if the command with
-		// the iBit IS mark, but still sends the IRQ to let the cpu know the mark is there. (Refraction)
-		//
-		// --------------------------
-		//
-		// This is how it probably works: i-bit sets the IRQ flag, and VIF keeps running until it encounters
-		// a non-MARK instruction.  This includes the *current* instruction.  ie, execution only continues
-		// unimpeded if MARK[i] is specified, and keeps executing unimpeded until any non-MARK command.
-		// Any other command with an I bit should stall immediately.
-		// Example:
-		//
-		// VifMark[i] value = 0x321   (with I bit)
-		// VifMark    value = 0
-		// VifMark    value = 0x333
-		// NOP
-		//
-		// ... the VIF should not stall and raise the interrupt until after the NOP is processed.
-		// So the final value for MARK as the game sees it will be 0x333. --air
+		//  * i-bit stalls on all instructions *except* mark.  Use Max Payne for testing (it issues
+		//    a series of MARK/NOP/MARK instructions)
 
 		if (regs.code.IBIT && !regs.err.MII)
 		{
-			VifCodeLog("I-Bit IRQ raised (unmasked)");
+			VIF_LOG("I-Bit IRQ raised (unmasked)");
 			regs.stat.INT = 1;
 			hwIntcIrq(idx ? INTC_VIF1 : INTC_VIF0);
+
+			if (regs.code.CMD != VIFcode_MARK)
+				regs.stat.VIS = 1;
 		}
-
-		// As per understanding outlined above: Stall VIF only if the current instruction is not MARK.
-		if (regs.stat.INT && (regs.code.CMD != VIFcode_MARK))
-			regs.stat.VIS = 1;
-
-	} while (vifX.fragment_size && !regs.stat.IsStalled());
+	}
 	
 	// Return the amount of data not processed as a function of QWC.  If the VIF stalled mid-
 	// transfer, record the stall position and don't process the current QWC until later.
@@ -289,7 +265,7 @@ uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStart
 
 	if (srcSize == 0 || endpos < srcSize)
 	{
-		remainder = vifTransfer<0>(srcBase, lenQwc);
+		remainder = vifTransfer<0>(srcBase+srcStartQwc, lenQwc);
 		return lenQwc - remainder;
 	}
 	else
@@ -316,7 +292,7 @@ uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStart
 
 	if (srcSize == 0 || endpos < srcSize)
 	{
-		remainder = vifTransfer<1>(srcBase, lenQwc);
+		remainder = vifTransfer<1>(srcBase+srcStartQwc, lenQwc);
 		return lenQwc - remainder;
 	}
 	else

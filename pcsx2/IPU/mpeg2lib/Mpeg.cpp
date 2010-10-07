@@ -807,7 +807,7 @@ __fi bool mpeg2sliceIDEC()
 			{
 				pxAssume(decoder.ipu0_data > 0);
 
-				uint read = ipu_dtarg.Write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
+				uint read = ipu_dtarg.Write(decoder.GetIpuDataPtr(), decoder.ipu0_data);
 				decoder.AdvanceIpuDataBy(read);
 
 				if (decoder.ipu0_data != 0)
@@ -1112,7 +1112,7 @@ __fi bool mpeg2_slice()
 	{
 		pxAssume(decoder.ipu0_data > 0);
 
-		uint read = ipu_dtarg.Write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
+		uint read = ipu_dtarg.Write(decoder.GetIpuDataPtr(), decoder.ipu0_data);
 		decoder.AdvanceIpuDataBy(read);
 
 		if (decoder.ipu0_data != 0)
