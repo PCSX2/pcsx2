@@ -1043,10 +1043,10 @@ uint IPU_DataTarget::Write( const void* src, uint sizeQwc )
 	{
 		pxAssumeDev(ipu0dma.chcr.STR, "IPU0 DataTarget/STR mismatch detected.");
 
+		IPU_LOG("\tfromIPU write (DMA): srcSize=0x%03X, destLeft=0x%04X, destpos=0x%04X", sizeQwc, leftQwc, curposQwc);
+
 		uint copylen = std::min( sizeQwc, leftQwc );
 		MemCopy_WrappedDest((u128*)src, basePtr, curposQwc, memsizeQwc, copylen);
-		
-		IPU_LOG("\tfromIPU write (DMA): srcSize=0x%03X, destLeft=0x%04X, destpos=0x%04X", sizeQwc, leftQwc, curposQwc);
 
 		leftQwc -= copylen;
 		sizeQwc -= copylen;

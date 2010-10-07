@@ -633,6 +633,10 @@ static void vc_Unpack() {
 	vpu.data			+= vpu.packet_size;
 }
 
+// [TODO] This can be replaced with a GUI option that modifies the following tables accordingly
+// based on 2 sets of source tables (one each true and false).
+static const bool UseVpuRecompilers = true;
+
 //------------------------------------------------------------------
 // Vif0/Vif1 Code Tables
 //------------------------------------------------------------------
@@ -659,8 +663,8 @@ __aligned16 FnType_VifCmdHandler* const vifCmdHandler[2][128] =
 		vc_Direct<0>  , vc_Direct<0>, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x50*/
 		vc_Null<0>	  , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x58*/
 
-		InsertUnpackSet(true, 0, 0),		// unmasked
-		InsertUnpackSet(true, 0, 1),		// masked
+		InsertUnpackSet(UseVpuRecompilers, 0, 0),		// unmasked
+		InsertUnpackSet(UseVpuRecompilers, 0, 1),		// masked
 	},
 	{
 		vc_Nop<1>     , vc_STCycl<1>  , vc_Offset<1>	, vc_Base<1>   , vc_ITop<1>   , vc_STMod<1>  , vc_MskPath3<1>, vc_Mark<1>,   /*0x00*/
@@ -676,7 +680,7 @@ __aligned16 FnType_VifCmdHandler* const vifCmdHandler[2][128] =
 		vc_Direct<1>  , vc_Direct<1>, vc_Null<1>	, vc_Null<1>   , vc_Null<1>	, vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x50*/
 		vc_Null<1>	  , vc_Null<1>	  , vc_Null<1>	, vc_Null<1>   , vc_Null<1>   , vc_Null<1>   , vc_Null<1>    , vc_Null<1>,   /*0x58*/
 
-		InsertUnpackSet(true, 1, 0),		// unmasked
-		InsertUnpackSet(true, 1, 1),		// masked
+		InsertUnpackSet(UseVpuRecompilers, 1, 0),		// unmasked
+		InsertUnpackSet(UseVpuRecompilers, 1, 1),		// masked
 	}
 };

@@ -63,7 +63,9 @@ uint FifoRingBuffer<size>::Read(u128* dest, uint srcQwc)
 {
 	pxAssume(srcQwc);
 
-	uint minLen = std::min(srcQwc, size);
+	uint minLen = std::min(srcQwc, qwc);
+	pxAssume(minLen);
+
 	MemCopy_WrappedSrc(buffer, readpos, size, dest, minLen);
 	qwc -= minLen;
 	return minLen;
@@ -75,7 +77,9 @@ uint FifoRingBuffer<size>::Write(const u128* src, uint srcQwc)
 {
 	pxAssume(srcQwc);
 
-	uint minLen = std::min(srcQwc, size);
+	uint minLen = std::min(srcQwc, size-qwc);
+	pxAssume(minLen);
+
 	MemCopy_WrappedDest(src, buffer, writepos, size, minLen);
 	qwc += minLen;
 	return minLen;
