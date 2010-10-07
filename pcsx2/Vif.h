@@ -201,7 +201,7 @@ union tVIF_STAT {
 		// uses manually-constructed mask (typically optimizes better, thanks dumb-ass compilers)
 		//return VSS || VFS || VIS || ER0 || ER1;
 		return (_u32 &
-			(VIF_STAT_VPS | VIF_STAT_VSS | VIF_STAT_VFS | VIF_STAT_VIS | VIF_STAT_ER0 | VIF_STAT_ER1)
+			(VIF_STAT_VSS | VIF_STAT_VFS | VIF_STAT_VIS | VIF_STAT_ER0 | VIF_STAT_ER1)
 		) != 0;
 	}
 };
