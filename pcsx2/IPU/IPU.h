@@ -243,10 +243,6 @@ struct IPU_DataSource
 	uint leftQwc;
 	uint transferred;
 	
-#ifdef PCSX2_DEVBUILD
-	uint origStartQwc;
-#endif
-
 	void GetNextQWC( u128* dest );
 };
 
@@ -257,10 +253,6 @@ struct IPU_DataTarget
 	uint curposQwc;
 	uint leftQwc;
 	uint transferred;
-
-#ifdef PCSX2_DEVBUILD
-	uint origStartQwc;
-#endif
 
 	uint Write( const void* src, uint sizeQwc );
 };
@@ -290,3 +282,4 @@ extern u8 getBits32(u8 *address, bool advance);
 extern u8 getBits16(u8 *address, bool advance);
 extern u8 getBits8(u8 *address, bool advance);
 
+extern uint __dmacall toIPU_FromFIFOonly(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc);

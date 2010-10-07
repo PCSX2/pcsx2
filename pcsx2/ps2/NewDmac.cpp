@@ -103,7 +103,7 @@ __fi bool EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxCh
 	if (verbose)
 		Console.Warning(L"(DMAC) IRQ raised on %s(%u) due to %s %s", info.NameW, Id, causeMsg, details);
 
-	DMAC_LOG("IRQ Raised on %s(%u) due to %ls %ls", info.NameA, Id, causeMsg);
+	DMAC_LOG("\tIRQ Raised on %s(%u) due to %ls %ls", info.NameA, Id, causeMsg);
 	
 	return false;
 }
@@ -187,6 +187,18 @@ bool EE_DMAC::ChannelState::TestArbitration()
 					return false;
 				}
 			}
+		}
+	}
+
+	if (MFIFOActive())
+	{
+		const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
+		const ChannelRegisters& fromSprReg = fromSPR.GetRegs();
+
+		if (!fromSprReg.chcr.STR || !fromSprReg.qwc.QWC)
+		{
+			DMAC_LOG("\tArbitration skipped due to MFIFO condition (fromSPR.STR==0)");
+			return false;
 		}
 	}
 
@@ -421,13 +433,14 @@ bool EE_DMAC::ChannelState::TransferNormalAndChainData()
 		//
 		// NORMAL modes arbitrate at 8 QWC slices.
 
-		if (UseMFIFOHack && (NORMAL_MODE == chcr.MOD) &&
+		if (UseMFIFOHack && MFIFOActive() &&
 		   ((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
 		{
 			// MFIFOhack: We can't let the peripheral out-strip SPR.
 			//  (REFx tags copy from sources other than our SPRdma, which is why we
 			//   exclude them above).
 
+			pxAssumeDev(fromSprReg.chcr.STR, "MFIFO transfer arbitration error: source channel (fromSPR) is not active yet.");
 			qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
 		}
 
@@ -497,12 +510,14 @@ bool EE_DMAC::ChannelState::TransferNormalAndChainData()
 			? TransferSource(GetHostPtr(madr,true), qwc)
 			: TransferDrain(GetHostPtr(madr,false), qwc);
 
+		pxAssume(qwc_xfer <= qwc);
+
 		// Peripherals have the option to stall transfers on their end, usually due to
 		// specific conditions that can arise, such as tag errors or IRQs.
 
 		if (qwc_xfer != qwc)
 		{
-			DMAC_LOG( "\tPartial transfer %s peripheral (qwc=%u, xfer=%u)",
+			DMAC_LOG( "\tPartial transfer %s peripheral (qwc=0x%04X, xfer=0x%04X)",
 				(dir==Dir_Drain) ? "to" : "from",
 				qwc, qwc_xfer
 			);
@@ -584,7 +599,7 @@ void EE_DMAC::dmacEventUpdate()
 {
 	ControllerRegisters& dmacReg = (ControllerRegisters&)psHu8(DMAC_CTRL);
 
-	DMAC_LOG("(UpdateDMAC Event) D_CTRL=0x%08X", dmacRegs.ctrl._u32);
+	DMAC_LOG("*DMAC Arbitration Started*  (D_CTRL=0x%08X)", dmacRegs.ctrl._u32);
 
 	CPU_ClearEvent(DMAC_EVENT);
 
@@ -604,7 +619,7 @@ void EE_DMAC::dmacEventUpdate()
 			// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 			// the STR bits are written and the DMAC is enabled.
 
-			DMAC_LOG("DMAC Arbitration complete.");
+			DMAC_LOG("*DMAC Arbitration complete*");
 			break;
 		}
 

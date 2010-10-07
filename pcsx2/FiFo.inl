@@ -15,14 +15,18 @@
 
 #pragma once
 
+// returns the number of QWC transferred.  Use the "qwc" member of the structure to determine
+// if the transfer stalled or not. -- if (qwc!=0)  then a stall occurred.
 template< uint size >
-void FifoRingBuffer<size>::SendToPeripheral(Fnptr_ToPeripheral toFunc)
+uint FifoRingBuffer<size>::SendToPeripheral(Fnptr_ToPeripheral toFunc)
 {
 	uint transferred = toFunc( buffer, size, readpos, qwc );
 	qwc -= transferred;
 
 	readpos += transferred;
 	readpos &= size-1;
+
+	return transferred;
 }
 
 template< uint size >
@@ -31,13 +35,13 @@ void FifoRingBuffer<size>::HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, S
 	if (logger.IsActive())
 		logger.Write("WriteFIFO/%ls <- %ls (FQC=%u)", logger.GetShortName().c_str(), src->ToString().c_str(), qwc);
 
-	if (qwc >= size) return;
+	if (!pxAssert(qwc < size)) return;
+	
 	WriteSingle(src);
 
 	if (qwc >= size)
 	{
-		ProcessFifoEvent();
-		CPU_ClearEvent(FIFO_EVENT);
+		SendToPeripheral(toFunc);
 	}
 	else
 	{
@@ -55,28 +59,24 @@ void FifoRingBuffer<size>::ReadSingle(u128* dest)
 }
 
 template< uint size >
-uint FifoRingBuffer<size>::Read(u128* dest, uint qwc)
+uint FifoRingBuffer<size>::Read(u128* dest, uint srcQwc)
 {
-	pxAssume(qwc);
+	pxAssume(srcQwc);
 
-	uint minLen = std::min(qwc, size);
+	uint minLen = std::min(srcQwc, size);
 	MemCopy_WrappedSrc(buffer, readpos, size, dest, minLen);
-	readpos += minLen;
-	readpos &= size-1;
 	qwc -= minLen;
 	return minLen;
 }
 
 
 template< uint size >
-uint FifoRingBuffer<size>::Write(const u128* src, uint qwc)
+uint FifoRingBuffer<size>::Write(const u128* src, uint srcQwc)
 {
-	pxAssume(qwc);
+	pxAssume(srcQwc);
 
-	uint minLen = std::min(qwc, size);
+	uint minLen = std::min(srcQwc, size);
 	MemCopy_WrappedDest(src, buffer, writepos, size, minLen);
-	writepos += minLen;
-	writepos &= size-1;
 	qwc += minLen;
 	return minLen;
 }

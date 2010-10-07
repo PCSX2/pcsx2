@@ -146,8 +146,8 @@ void __fastcall WriteFIFO_GIF(const mem128_t* value)
 
 void __fastcall WriteFIFO_IPUin(const mem128_t* value)
 {
-	pxAssume( !gifdma.chcr.STR );
-	g_fifo.ipu1.HwWrite(EE_DMAC::toIPU, value, SysTrace.EE.IPU);
+	pxAssume( !ipu1dma.chcr.STR );
+	g_fifo.ipu1.HwWrite(toIPU_FromFIFOonly, value, SysTrace.EE.IPU);
 }
 
 void ProcessFifoEvent()
@@ -175,8 +175,8 @@ void ProcessFifoEvent()
 		g_fifo.gif.SendToPeripheral(EE_DMAC::toGIF);
 	}
 
-	if (!g_fifo.ipu1.IsEmpty())
+	/*if (!g_fifo.ipu1.IsEmpty())
 	{
 		g_fifo.ipu1.SendToPeripheral(EE_DMAC::toIPU);
-	}
+	}*/
 }

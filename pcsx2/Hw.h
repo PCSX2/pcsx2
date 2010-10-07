@@ -423,7 +423,7 @@ struct FifoRingBuffer
 	bool IsEmpty() const	{ return qwc == 0; }
 	bool IsFull() const		{ return qwc == size; }
 	
-	void SendToPeripheral(Fnptr_ToPeripheral toFunc);
+	uint SendToPeripheral(Fnptr_ToPeripheral toFunc);
 	void HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, SysTraceLog_EE_Peripherals& logger );
 };
 

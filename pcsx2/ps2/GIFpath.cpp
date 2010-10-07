@@ -345,10 +345,14 @@ static __fi void gsHandler(const u8* pMem)
 
 #define aMin(x, y) std::min(x, y)
 
+// Parameters:
+//  destSize - Size of the destination buffer.  Copies will copy from destBase -> destBase+destSize and
+//    then wrap back around.  If the destSize is 0, wrapping is disabled (the method call is regarded as
+//    a regular unwrapped copy).
 __ri void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart, uint destSize, uint len )
 {
 	uint endpos = destStart + len;
-	if( endpos < destSize )
+	if ((destSize == 0) || (endpos < destSize))
 	{
 		memcpy_qwc(&destBase[destStart], src, len );
 		destStart += len;
@@ -366,7 +370,7 @@ __ri void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart,
 __ri void MemCopy_WrappedSrc( const u128* srcBase, uint& srcStart, uint srcSize, u128* dest, uint len )
 {
 	uint endpos = srcStart + len;
-	if( endpos < srcSize )
+	if ((srcSize==0) || (endpos < srcSize))
 	{
 		memcpy_qwc(dest, &srcBase[srcStart], len );
 		srcStart += len;
