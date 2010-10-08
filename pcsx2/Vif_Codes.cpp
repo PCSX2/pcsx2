@@ -72,7 +72,7 @@ static __fi void vuExecMicro(VIFregisters& regs, u32 addr)
 _vifCodeT vc_Base() {
 	VifProcessingUnit&	vpu		= vifProc[idx];
 	VIFregisters&		regs	= GetVifXregs;
-	VifCodeLog("Base");
+	VifCodeLog("Base @ 0x%04X", regs.code.ADDR);
 	vif1Only();
 
 	regs.base = regs.code.ADDR;
@@ -160,7 +160,7 @@ _vifCodeT vc_Mark()
 
 	regs.mark     = regs.code.IMMEDIATE;
 	regs.stat.MRK = 1;
-	regs.stat.INT = 1;
+	//regs.stat.INT = 1;
 }
 
 
@@ -395,7 +395,7 @@ _vifCodeT vc_Null()
 
 _vifCodeT vc_Offset()
 {
-	VifCodeLog("Offset");
+	VifCodeLog("Offset @ 0x%04X (base/tops=0x%04X)", vif1Regs.code.ADDR, vif1Regs.base);
 	vif1Only();
 
 	vif1Regs.stat.DBF	= 0;
@@ -510,6 +510,16 @@ _vifCodeT vc_STMod()
 	regs.mode = regs.code.MODE;
 }
 
+template< uint idx >
+static uint calc_addr(bool flg)
+{
+	VIFregisters&		regs	= GetVifXregs;
+
+	uint retval = regs.code.ADDR;
+	if (idx && flg) retval += regs.tops.ADDR;
+	return retval;
+}
+
 template< bool UseRecs, uint idx, uint mask, uint vn, uint vl >
 static void vc_Unpack() {
 	VifProcessingUnit&	vpu		= vifProc[idx];
@@ -525,8 +535,8 @@ static void vc_Unpack() {
 		static const char* const	vntbl[] = { "S", "V2", "V3", "V4" };
 		static const uint			vltbl[] = { 32,	  16,   8,    5   };
 
-		VifCodeLog("Unpack %s_%u (%s) @ 0x@04X (cl=%u  wl=%u  num=%0x2X)",
-			vntbl[vn], vltbl[vl], mask ? "masked" : "unmasked", regs.code.ADDR, 
+		VifCodeLog("Unpack %s_%u (%s) @ 0x%04X%s (cl=%u  wl=%u  num=0x%02X)",
+			vntbl[vn], vltbl[vl], mask ? "masked" : "unmasked", calc_addr<idx>(regs.code.FLG), 
 			regs.cycle.cl, regs.cycle.wl, regs.code.NUM
 		);
 

@@ -249,6 +249,7 @@ template bool vifWrite32<1>(u32 mem, u32 value);
 
 uint __dmacall EE_DMAC::fromVIF0(u128* dest, uint destSize, uint destStartQwc, uint lenQwc)
 {
+	pxFailRel("Not implemented yet!");
 	return 0;
 }
 
@@ -272,7 +273,7 @@ uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStart
 	{
 		uint fullLen = lenQwc;
 		uint firstcopylen = srcSize - srcStartQwc;
-		remainder = vifTransfer<0>(srcBase, firstcopylen);
+		remainder = vifTransfer<0>(srcBase+srcStartQwc, firstcopylen);
 
 		lenQwc -= (firstcopylen - remainder);
 
@@ -299,7 +300,7 @@ uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStart
 	{
 		uint fullLen = lenQwc;
 		uint firstcopylen = srcSize - srcStartQwc;
-		remainder = vifTransfer<1>(srcBase, firstcopylen);
+		remainder = vifTransfer<1>(srcBase+srcStartQwc, firstcopylen);
 
 		lenQwc -= (firstcopylen - remainder);
 

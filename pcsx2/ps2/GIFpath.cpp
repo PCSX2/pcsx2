@@ -181,8 +181,8 @@ wxString GIFTAG::ToString() const
 	};
 
 	FastFormatUnicode result;
-	result.Write("NLOOP=0x%04X, PRE=%u, PRIM=0x%03X, MODE=%s",
-		NLOOP, PRE, PRIM, GifTagModeLabel[FLG]);
+	result.Write("NLOOP=0x%04X, EOP=%u, PRE=%u, PRIM=0x%03X, MODE=%s",
+		NLOOP, EOP, PRE, PRIM, GifTagModeLabel[FLG]);
 
 	return result;
 }
@@ -354,13 +354,13 @@ __ri void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart,
 	uint endpos = destStart + len;
 	if ((destSize == 0) || (endpos < destSize))
 	{
-		memcpy_qwc(&destBase[destStart], src, len );
+		memcpy_qwc(destBase + destStart, src, len );
 		destStart += len;
 	}
 	else
 	{
 		uint firstcopylen = destSize - destStart;
-		memcpy_qwc(&destBase[destStart], src, firstcopylen );
+		memcpy_qwc(destBase + destStart, src, firstcopylen );
 
 		destStart = endpos % destSize;
 		memcpy_qwc(destBase, src+firstcopylen, destStart );
@@ -372,13 +372,13 @@ __ri void MemCopy_WrappedSrc( const u128* srcBase, uint& srcStart, uint srcSize,
 	uint endpos = srcStart + len;
 	if ((srcSize==0) || (endpos < srcSize))
 	{
-		memcpy_qwc(dest, &srcBase[srcStart], len );
+		memcpy_qwc(dest, srcBase + srcStart, len );
 		srcStart += len;
 	}
 	else
 	{
 		uint firstcopylen = srcSize - srcStart;
-		memcpy_qwc(dest, &srcBase[srcStart], firstcopylen );
+		memcpy_qwc(dest, srcBase + srcStart, firstcopylen );
 
 		srcStart = endpos % srcSize;
 		memcpy_qwc(dest+firstcopylen, srcBase, srcStart );
@@ -491,20 +491,24 @@ int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uin
 	{
 		uint firstlen = memSize - startPos;
 		if (!fragment_size)
+		{
 			size = firstlen;
+			GifTagLog("GIFTAG XGKICK @ 0x%04X (wrapping @ 0x%04X)", startPos, memSize );
+		}
 		else
+		{
 			size = std::min(firstlen, fragment_size);
-
-		GifTagLog("GIFTAG BEGIN fragment_size=0x%03X (wrapping @ wrapSize=0x%06X, startPos=0x%04X)",
-			fragment_size, memSize, startPos
-		);
+			GifTagLog("GIFTAG START fragment=0x%03X (wrapping @ 0x%06X, startPos=0x%06X)",
+				fragment_size, memSize, startPos
+			);
+		}
 	}
 	else
 	{
 		pxAssume(fragment_size);
 		size = fragment_size;
 
-		GifTagLog("GIFTAG BEGIN fragment_size=0x%03X", fragment_size);
+		GifTagLog("GIFTAG START fragment_size=0x%03X (unwrapped)", fragment_size);
 	}
 
 	uint startSize = size;
@@ -516,7 +520,7 @@ int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uin
 				SetTag((u8*)pMem128);
 				copyTag();
 				
-				GifTagLog("\tSetTag  %ls", tag.ToString().c_str());
+				GifTagLog("\tSetTag @ 0x%04X: %ls", startPos, tag.ToString().c_str());
 			}
 			else
 			{
@@ -628,7 +632,8 @@ int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uin
 						//GIF_DelayArbitration(0x200);
 						//CPU_ScheduleEvent(GIF_EVENT);
 
-						nloop	= 0;
+						nloop = 0;
+						startSize = size = 0;
 						const_cast<GIFTAG&>(tag).EOP = 1;
 
 						// Don't send the packet to the GS -- its incomplete and might cause the GS plugin
