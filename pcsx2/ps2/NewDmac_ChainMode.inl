@@ -19,6 +19,9 @@
 
 using namespace EE_DMAC;
 
+static tDMAC_ADDR mfifo_tadr;
+static tDMAC_ADDR mfifo_madr;
+
 
 const DMAtag* ChannelState::SrcChainTransferTag()
 {
@@ -65,12 +68,17 @@ const DMAtag* ChannelState::SrcChainTransferTag()
 	return newtag;
 }
 
+
 // Returns FALSE if the transfer has ended or been suspended for some reason (usually
 // end-of-transfer or newtag irq).
 bool ChannelState::MFIFO_SrcChainLoadTag()
 {
 	const DMAtag* newtag = SrcChainTransferTag();
 	if (!newtag) return false;
+
+	// MFIFO shouldn't be able to be located in SPR memory.  It's quite possible the SPR bit
+	// is disregarded if ever set (or causes a DMA bus error).
+	pxAssume(!madr.SPR);
 
 	switch (chcr.TAG.ID)
 	{
@@ -103,7 +111,7 @@ bool ChannelState::MFIFO_SrcChainLoadTag()
 			}
 			else
 			{
-				madr = newtag->addr;
+				madr = dmacRegs.mfifoWrapAddr(newtag->addr);
 			}
 		}
 		break;
@@ -133,7 +141,7 @@ bool ChannelState::MFIFO_SrcChainLoadTag()
 			}
 			else
 			{
-				madr.ADDR = dmacRegs.mfifoWrapAddr(info.TADR().ADDR + 16);
+				madr = dmacRegs.mfifoWrapAddr(info.TADR(), 16);
 			}
 		break;
 
@@ -189,19 +197,24 @@ bool ChannelState::MFIFO_SrcChainUpdateTADR()
 			}
 			else
 			{
-				uint new_tadr = dmacRegs.mfifoWrapAddr(madr.ADDR + 16);
-				fromSprReg.madr = dmacRegs.mfifoWrapAddr(fromSprReg.madr.ADDR);
+				tDMAC_ADDR new_tadr = dmacRegs.mfifoWrapAddr(madr.ADDR + 16);
+				pxAssertDev(fromSprReg.madr == dmacRegs.mfifoWrapAddr(fromSprReg.madr.ADDR), "MFIFO MADR wrapping failure.");
+				//fromSprReg.madr = dmacRegs.mfifoWrapAddr(fromSprReg.madr.ADDR);
 
-				if ((new_tadr == fromSprReg.madr.ADDR) && !fromSprReg.chcr.STR)
+				if ((new_tadr == fromSprReg.madr) && !fromSprReg.chcr.STR)
 				{
 					// MFIFO Stall condition (!)  The FIFO is drained and the SPR isn't
 					// feeding it any more data.  Oddly enough, the drain channel does
 					// *not* stop in this situation (STR remains 1), though we can't very
 					// well keep reading data.. :p
+					
+					// (the reason the MFIFO drain channel does not stall is because it must
+					//  be started first, and thus as soon as it is started this stall condition
+					//  is met, until the fromSPR Source channel is also established).
 
 					return IrqStall(Stall_MFIFO);
 				}
-				tadr.ADDR = new_tadr;
+				tadr = new_tadr;
 			}
 		}
 		break;
@@ -222,7 +235,7 @@ bool ChannelState::MFIFO_SrcChainUpdateTADR()
 			}
 			else
 			{
-				tadr.ADDR = dmacRegs.mfifoWrapAddr(tadr.ADDR + 16);
+				tadr = dmacRegs.mfifoWrapAddr(tadr, 16);
 			}
 		break;
 

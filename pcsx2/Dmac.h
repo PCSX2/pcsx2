@@ -38,7 +38,7 @@ static const bool UseDmaBurstHack = true;
 // [TODO] : When this hack is enabled, hardware register accesses to active MFIFO channel
 // madr/tadr should be monitored and generate warnings or assertions, *or* they should
 // produce "simulated" results that reflect 
-static const bool UseMFIFOHack = true;
+static const bool UseMFIFOHack = false;
 
 // Useful enums for some of the fields.
 enum pce_values

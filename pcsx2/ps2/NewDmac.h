@@ -176,21 +176,29 @@ struct ControllerRegisters
 	tDMAC_SQWC	sqwc;
 	u32 _padding3[3];
 
+	// MFIFO size register (technically a mask based on the size, so actual value in the 
+	// register is ringbuffer_size - 0x10).
 	tDMAC_RBSR	rbsr;
 	u32 _padding4[3];
 
+	// MFIFO ringbuffer base address (offset).
 	tDMAC_RBOR	rbor;
 	u32 _padding5[3];
 
 	tDMAC_ADDR	stadr;
 	u32 _padding6[3];
 
-	__ri u32 mfifoWrapAddr(u32 offset)
+	__ri tDMAC_ADDR mfifoWrapAddr(const tDMAC_ADDR& offset, u32 incr=0) const
 	{
-		return (rbor.ADDR + (offset & rbsr.RMSK));
+		return (tDMAC_ADDR) (((offset.ADDR + incr) & rbsr.RMSK) + rbor.ADDR);
 	}
 
-	__ri u32 mfifoRingEnd()
+	__ri u32 mfifoRingSize() const
+	{
+		return rbsr.RMSK + 0x10;
+	}
+
+	__ri u32 mfifoRingEnd() const
 	{
 		return rbor.ADDR + rbsr.RMSK;
 	}
@@ -431,6 +439,10 @@ protected:
 	void TransferInterleaveData();
 	bool TransferNormalAndChainData();
 
+	bool MFIFO_TransferSource();
+	bool MFIFO_TransferDrain();
+
+
 	const DMAtag* SrcChainTransferTag();
 	
 	bool MFIFO_SrcChainLoadTag();
@@ -439,12 +451,15 @@ protected:
 	bool SrcChainUpdateTADR();
 	bool DstChainLoadTag();
 	
+	void ApplySlicing(uint& qwc);
+	void CheckDrainStallCondition(uint& qwc);
 	void UpdateSourceStall();
 
 	bool IrqStall( const StallCauseId& _cause, const wxChar* details=NULL );
 
 	u128* TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem );
 	u128* GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem );
+	u128* GetHostPtr( const tDMAC_RBOR& addrReg, bool writeToMem );
 	u32 Read32( const tDMAC_ADDR& addr );
 };
 

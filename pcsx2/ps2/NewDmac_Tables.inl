@@ -77,6 +77,11 @@ static const ChannelId StallDrainChan[4] = {
 	ChanId_None, ChanId_VIF1, ChanId_SIF1, ChanId_GIF
 };
 
+static const ChannelId mfifo_DrainChanTable[4] = {
+	ChanId_None, ChanId_None, ChanId_VIF1, ChanId_GIF
+};
+
+
 #undef _m
 #undef _n
 
@@ -140,8 +145,7 @@ bool ChannelState::SourceStallActive() const
 
 bool ChannelState::MFIFOActive() const
 {
-	static const ChannelId mfifo_chanId[4] = { ChanId_None, ChanId_None, ChanId_VIF1, ChanId_GIF };
-	return mfifo_chanId[dmacRegs.ctrl.MFD] == Id;
+	return mfifo_DrainChanTable[dmacRegs.ctrl.MFD] == Id;
 }
 
 uint ChannelState::TransferSource( u128* destMemHost, uint lenQwc, uint destStartQwc, uint destSize ) const
@@ -229,6 +233,34 @@ u128* ChannelState::TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
 	return result;
 }
 
+u128* ChannelState::GetHostPtr( const tDMAC_RBOR& addrReg, bool writeToMem )
+{
+	// RBOR is allowed to address physical ram ONLY.
+
+	uint addr = addrReg.ADDR;
+
+	u128* result = (u128*)vtlb_GetPhyPtr(addr & 0x1fffffff);
+	if (!result)
+	{
+		if(addr < _256mb)
+		{
+			// 256mb (PS2 max memory)
+			// Such accesses are not documented as causing bus errors but as the memory does
+			// not exist, reads should continue to return 0 and writes should be discarded.
+			// (note that IOP has similar behavior on its DMAs and some memory accesses).
+
+			return (u128*)(writeToMem ? eeMem->ZeroWrite : eeMem->ZeroRead);
+		}
+
+		wxString msg;
+		msg.Printf( L"DMA address error (BUSERR) during MFIFO: 0x%08x [%s]", addrReg.ADDR, writeToMem ? "write" : "read" );
+		pxFailDev(msg);
+		IrqStall(Stall_BusError);
+		throw Exception::DmaBusError();
+	}
+	return result;
+}
+
 u128* ChannelState::GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
 {
 	if (u128* retval = TryGetHostPtr(addrReg, writeToMem)) return retval;
@@ -236,9 +268,8 @@ u128* ChannelState::GetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
 	// NULL returned?  Raise a DMA BusError!
 
 	wxString msg;
-	msg.Printf( L"DMA address error (BUSERR): 0x%08x", addrReg.ADDR );
-	Console.Error(msg);
-	//pxFailDev(msg);
+	msg.Printf( L"DMA address error (BUSERR): 0x%08x", addrReg.ADDR, writeToMem ? "write" : "read" );
+	pxFailDev(msg);
 	IrqStall(Stall_BusError);
 	throw Exception::DmaBusError();
 

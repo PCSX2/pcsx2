@@ -288,6 +288,7 @@ enum EERegisterAddresses
 	fromSPR_CHCR	=	0x1000D000,
 	fromSPR_MADR	=	0x1000D010,
 	fromSPR_QWC		=	0x1000D020,
+	fromSPR_SADR	=	0x1000D080,
 
 //toSPR
 
@@ -299,6 +300,7 @@ enum EERegisterAddresses
 	toSPR_CHCR		=	0x1000D400,
 	toSPR_MADR		=	0x1000D410,
 	toSPR_QWC		=	0x1000D420,
+	toSPR_SADR		=	0x1000D480,
 
 	DMAC_CTRL		=	0x1000E000,
 	DMAC_STAT		=	0x1000E010,

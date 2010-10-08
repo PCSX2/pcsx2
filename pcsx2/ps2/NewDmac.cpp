@@ -379,10 +379,197 @@ void EE_DMAC::ChannelState::UpdateSourceStall()
 		dmacRequestSlice(StallDrainChan[dmacRegs.ctrl.STD]);
 }
 
-bool EE_DMAC::ChannelState::TransferNormalAndChainData()
+// Applies DMAC slicing logic to the channel's qwc transfer request.
+void EE_DMAC::ChannelState::ApplySlicing(uint& qwc)
+{
+	// * CHAIN modes arbitrate per-packet regardless of slice or burst modes, and then
+	//   also arbitrate at 8 QWC slices during each chain.
+	//
+	// * NORMAL modes arbitrate at 8 QWC slices.
+	//
+	// * Slices are split according to MADR alignment (!)
+
+	if (!UseDmaBurstHack && IsSliced())
+		qwc = std::min<uint>(creg.qwc.QWC, 8);
+}
+
+void EE_DMAC::ChannelState::CheckDrainStallCondition(uint& qwc)
+{
+	if (!DrainStallActive()) return;
+
+	// this channel has drain stalling enabled.  If the stall condition is already met
+	// then we need to skip it by and try another channel.
+
+	// Drain Stalling Rules:
+	//  * We can copy data up to STADR (exclusive).
+	//  * Arbitration is not granted until at least 8 QWC is available for copy.
+	//  
+	// Furthermore, there must be at *least* 8 QWCs available for transfer or the
+	// DMA stalls.  Stall-control DMAs do not transfer partial QWCs at the edge of
+	// STADR.  Translation: If the source DMA (the one writing to STADR) doesn't
+	// transfer an even 8-qwc block, the drain DMA will actually deadlock until
+	// the PS2 app manually writes 0 to STR!  (and this is correct!) --air
+
+	uint stallAt = dmacRegs.stadr.ADDR;
+	uint endAt = madr.ADDR + qwc*16;
+
+	if (!madr.SPR)
+	{
+		if (endAt > stallAt)
+		{
+			qwc = (stallAt - madr.ADDR) / 16;
+			DMAC_LOG("\tDRAIN STALL condition! (STADR=%ls, newQWC=%u)", dmacRegs.stadr.ToString(false).c_str(), qwc);
+		}
+	}
+	else if (stallAt < Ps2MemSize::Scratch)
+	{
+		// Assumptions:
+		// SPR bit transfers most likely perform automatic memory wrapping/masking on MADR
+		// and likely do not automatically mask/wrap STADR (both of these assertions
+		// need proper test app confirmations!! -- air)
+
+		if ((madr.ADDR < stallAt) && (endAt > stallAt))
+		{
+			qwc = (stallAt - madr.ADDR) / 16;
+			DMAC_LOG("\tDRAIN STALL condition! (STADR=%ls, newQWC=%u)", dmacRegs.stadr.ToString(false).c_str(), qwc);
+		}
+		else
+		{
+			endAt &= (Ps2MemSize::Scratch-1);
+			if ((madr.ADDR >= stallAt) && (endAt > stallAt))
+			{
+				// Copy from madr->ScratchEnd and from ScratchStart->StallAt
+				qwc = ((Ps2MemSize::Scratch - madr.ADDR) + stallAt) / 16;
+				DMAC_LOG("\tDRAIN STALL condition (STADR=%ls, newQWC=%u) [SPR memory wrap]", dmacRegs.stadr.ToString(false).c_str(), qwc);
+			}
+		}
+	}
+	
+}
+
+// This is the peripheral side of the MFIFO (VIF or GIF).  It is always in CHAIN mode and DRAIN direction.
+bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 {
 	const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
 	ChannelRegisters& fromSprReg = fromSPR.GetRegs();
+
+	if (fromSprReg.chcr.STR)
+	{
+		pxAssumeDev(NORMAL_MODE == fromSprReg.chcr.MOD, "MFIFO error: fromSPR is not in NORMAL mode.");
+		pxAssumeDev(fromSprReg.qwc.QWC >= 1, "(MFIFO) fromSPR is running but has a QWC of zero!?");
+	}
+
+	// MFIFO Enabled on this channel.
+	// Based on the UseMFIFOHack, there are two approaches here:
+	//  1. Hack Enabled: Copy data directly to/from SPR and the MFD peripheral.
+	//  2. Hack Disabled: Copy data to/from the ringbuffer specified by the
+	//     RBOR and RBSR registers (requires lots of wrapped memcpys).
+
+	pxAssumeDev(CHAIN_MODE == chcr.MOD, "MFIFO drain channel is not set to CHAIN mode!");
+
+	if (!MFIFO_SrcChainLoadTag()) return false;
+
+	if (uint qwc = creg.qwc.QWC)
+	{
+		if (UseMFIFOHack && MFIFOActive() &&
+			((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
+		{
+			// MFIFOhack: We can't let the peripheral out-strip SPR.
+			//  (REFx tags copy from sources other than our SPRdma, which is why we
+			//   exclude them above).
+
+			pxAssumeDev(fromSprReg.chcr.STR, "MFIFO transfer arbitration error: source channel (fromSPR) is not active yet.");
+			qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
+		}
+	}
+
+	uint qwc = creg.qwc.QWC;
+
+	ApplySlicing(qwc);
+	CheckDrainStallCondition(qwc);
+
+	if (qwc)
+	{
+		uint qwc_xfer = TransferDrain(GetHostPtr(madr,false), qwc);
+
+		pxAssume(qwc_xfer <= qwc);
+
+		// Peripherals have the option to stall transfers on their end, usually due to
+		// specific conditions that can arise, such as tag errors or IRQs.
+
+		if (qwc_xfer != qwc)
+		{
+			DMAC_LOG( "\tPartial transfer to peripheral (qwc=0x%04X, xfer=0x%04X)", qwc, qwc_xfer );
+		}
+
+		creg.madr.ADDR	+= qwc_xfer * 16;
+		creg.qwc.QWC	-= qwc_xfer;
+	}
+
+	return true;
+}
+
+// returns the TADR of the currently selected MFIFO channel.  Asserts if MFIFO is not active.
+static uint mfifoGetTADR()
+{
+	pxAssume(dmacRegs.ctrl.MFD);
+	return ChannelInfo[mfifo_DrainChanTable[dmacRegs.ctrl.MFD]].TADR().ADDR;
+}
+
+
+// This is the fromSPR side of MFIFO.  It is always in NORMAL mode.
+bool EE_DMAC::ChannelState::MFIFO_TransferSource()
+{
+	if (UseMFIFOHack) return true;
+
+	if (0 == creg.qwc.QWC)
+		return IrqStall( Stall_EndOfTransfer );
+
+	pxAssumeDev(NORMAL_MODE == chcr.MOD, "MFIFO source channel (fromSPR) is not set to NORMAL mode!");
+	//pxAssumeDev()
+	
+	uint qwc = creg.qwc.QWC;
+	uint tadr = mfifoGetTADR();
+
+	// the DMAC manages SPR in bursts only, and because of this the fromSPR channel DOES NOT transfer
+	// data until there is enough room left in the FIFO for the transfer in its entirety.  This is
+	// good news because it means we don't need to worry about partial transfer logic.  Instead the
+	// fromSPR cheerfully stalls until QWC room is opened up in the MFIFO:
+	
+	DMAC_LOG( "\tMFIFO fromSPR: madr=%S, rbor=0x%08X, rbsr=0x%08X, qwc=0x%04X",
+		madr.ToString().c_str(), dmacRegs.rbor.ADDR, dmacRegs.rbsr.RMSK, qwc
+	);
+
+	uint mfifo_remain = dmacRegs.mfifoRingSize();
+	
+	if (tadr != madr.ADDR)
+	{
+		mfifo_remain += tadr - madr.ADDR;
+		mfifo_remain &= dmacRegs.rbsr.RMSK;
+	}
+
+	if (mfifo_remain < qwc)
+	{
+		DMAC_LOG( "\tfromSPR stalled (not enough room);  mfifo_remain = 0x%05X", mfifo_remain);
+		return false;
+	}
+
+	if (qwc)
+	{
+		uint qwc_xfer = TransferSource(GetHostPtr(dmacRegs.rbor,true), qwc, madr._u32 & dmacRegs.rbsr.RMSK, dmacRegs.mfifoRingSize());
+
+		pxAssume(qwc_xfer == qwc);	// fromSPR can't stall
+
+		creg.madr = dmacRegs.mfifoWrapAddr(creg.madr, qwc_xfer * 16);
+		creg.qwc.QWC -= qwc_xfer;
+	}
+	
+	return true;
+}
+
+
+bool EE_DMAC::ChannelState::TransferNormalAndChainData()
+{
 	const DirectionMode dir = GetDir();
 
 	if (0 == creg.qwc.QWC)
@@ -399,24 +586,7 @@ bool EE_DMAC::ChannelState::TransferNormalAndChainData()
 				// advance the TADR to point to the next tag that will be used when this transfer
 				// completes.
 
-				if (MFIFOActive())
-				{
-					pxAssumeDev(NORMAL_MODE == fromSprReg.chcr.MOD, "MFIFO error: fromSPR is not in NORMAL mode.");
-					if (fromSprReg.chcr.STR)
-						pxAssumeDev(fromSprReg.qwc.QWC >= 1, "(MFIFO) fromSPR is running but has a QWC of zero!?");
-
-					// MFIFO Enabled on this channel.
-					// Based on the UseMFIFOHack, there are two approaches here:
-					//  1. Hack Enabled: Copy data directly to/from SPR and the MFD peripheral.
-					//  2. Hack Disabled: Copy data to/from the ringbuffer specified by the
-					//     RBOR and RBSR registers (requires lots of wrapped memcpys).
-
-					if (!MFIFO_SrcChainLoadTag()) return false;
-				}
-				else
-				{
-					if (!SrcChainLoadTag()) return false;
-				}
+				if (!SrcChainLoadTag()) return false;
 			}
 			else
 			{
@@ -425,82 +595,17 @@ bool EE_DMAC::ChannelState::TransferNormalAndChainData()
 		}
 	}
 
-	if (uint qwc = creg.qwc.QWC)
-	{
-		// CHAIN modes arbitrate per-packet regardless of slice or burst modes, and then
-		// also arbitrate at 8 QWC slices during each chain.
-		//
-		// NORMAL modes arbitrate at 8 QWC slices.
+	uint qwc = creg.qwc.QWC;
 
-		if (UseMFIFOHack && MFIFOActive() &&
-		   ((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
-		{
-			// MFIFOhack: We can't let the peripheral out-strip SPR.
-			//  (REFx tags copy from sources other than our SPRdma, which is why we
-			//   exclude them above).
-
-			pxAssumeDev(fromSprReg.chcr.STR, "MFIFO transfer arbitration error: source channel (fromSPR) is not active yet.");
-			qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
-		}
-
-		if (!UseDmaBurstHack && IsSliced())
-			qwc = std::min<uint>(creg.qwc.QWC, 8);
-
-		if (DrainStallActive())
-		{
-			// this channel has drain stalling enabled.  If the stall condition is already met
-			// then we need to skip it by and try another channel.
-
-			// Drain Stalling Rules:
-			//  * We can copy data up to STADR (exclusive).
-			//  * Arbitration is not granted until at least 8 QWC is available for copy.
-			//  
-			// Furthermore, there must be at *least* 8 QWCs available for transfer or the
-			// DMA stalls.  Stall-control DMAs do not transfer partial QWCs at the edge of
-			// STADR.  Translation: If the source DMA (the one writing to STADR) doesn't
-			// transfer an even 8-qwc block, the drain DMA will actually deadlock until
-			// the PS2 app manually writes 0 to STR!  (and this is correct!) --air
-
-			uint stallAt = dmacRegs.stadr.ADDR;
-			uint endAt = madr.ADDR + qwc*16;
-
-			if (!madr.SPR)
-			{
-				if (endAt > stallAt)
-				{
-					qwc = (stallAt - madr.ADDR) / 16;
-					DMAC_LOG("\tDRAIN STALL condition! (STADR=%ls, newQWC=%u)", dmacRegs.stadr.ToString(false).c_str(), qwc);
-				}
-			}
-			else if (stallAt < Ps2MemSize::Scratch)
-			{
-				// Assumptions:
-				// SPR bit transfers most likely perform automatic memory wrapping/masking on MADR
-				// and likely do not automatically mask/wrap STADR (both of these assertions
-				// need proper test app confirmations!! -- air)
-
-				if ((madr.ADDR < stallAt) && (endAt > stallAt))
-				{
-					qwc = (stallAt - madr.ADDR) / 16;
-					DMAC_LOG("\tDRAIN STALL condition! (STADR=%ls, newQWC=%u)", dmacRegs.stadr.ToString(false).c_str(), qwc);
-				}
-				else
-				{
-					endAt &= (Ps2MemSize::Scratch-1);
-					if ((madr.ADDR >= stallAt) && (endAt > stallAt))
-					{
-						// Copy from madr->ScratchEnd and from ScratchStart->StallAt
-						qwc = ((Ps2MemSize::Scratch - madr.ADDR) + stallAt) / 16;
-						DMAC_LOG("\tDRAIN STALL condition (STADR=%ls, newQWC=%u) [SPR memory wrap]", dmacRegs.stadr.ToString(false).c_str(), qwc);
-					}
-				}
-			}
-		}
+	ApplySlicing(qwc);
+	CheckDrainStallCondition(qwc);
 		
-		// The real hardware has "undefined" behavior for this, though some games still freely
-		// upload huge values to the QWC anyway.  (Ateleir Iris during FMVs).
-		pxAssertMsg(creg.qwc.QWC < (_1mb/16), "DMAC: QWC is over 1 meg!");
+	// The real hardware has "undefined" behavior for this, though some games still freely
+	// upload huge values to the QWC anyway.  (Ateleir Iris during FMVs).
+	pxAssertMsg(creg.qwc.QWC < (_1mb/16), "DMAC: QWC is over 1 meg!");
 
+	if (qwc)
+	{
 		// -----------------------------------
 		// DO THAT MOVEMENT OF DATA.  NOOOOOW!		
 		// -----------------------------------
@@ -541,14 +646,7 @@ bool EE_DMAC::ChannelState::TransferNormalAndChainData()
 
 			if (dir == Dir_Drain)
 			{
-				if (MFIFOActive())
-				{
-					if (!MFIFO_SrcChainUpdateTADR()) return false;
-				}
-				else
-				{
-					if (!SrcChainUpdateTADR()) return false;
-				}
+				if (!SrcChainUpdateTADR()) return false;
 			}
 			else
 			{
@@ -570,17 +668,39 @@ void EE_DMAC::ChannelState::TransferData()
 		creg.qwc.QWC, chcr.ModeToUTF8()
 	);
 
-	// Interleave mode has special accelerated handling in burst mode, and a lot of
-	// checks and assertions, so lets handle it from its own function to help maintain
-	// programmer sanity.
+	if(dmacRegs.ctrl.MFD)
+	{
+		// MFIFO is hacked into the PS2's DMAC in such a way that we really just need to
+		// handle it specially here:
+
+		if (MFIFOActive())
+		{
+			do {
+				if (!MFIFO_TransferDrain()) break;
+			} while (UseDmaBurstHack && (creg.qwc.QWC == 0));
+
+			return;
+		}
+		else if (Id == ChanId_fromSPR)
+		{
+			MFIFO_TransferSource();
+			UpdateSourceStall();
+			return;
+		}
+	}
 
 	if (chcr.MOD == INTERLEAVE_MODE)
+	{
+		// Interleave mode has special accelerated handling in burst mode, and a lot of
+		// checks and assertions, so lets handle it from its own function to help maintain
+		// programmer sanity.
+
 		TransferInterleaveData();
+	}
 	else
 	{
 		// The following loop is for chain modes only, which typically execute a series of
-		// chains, with stalling occuring when the QWC is != 0 (peripheral stall).
-		//  -- normal modes will use C++ exceptions to exit to the top level caller.
+		// chains, with stalling occurring when the QWC is != 0 (peripheral stall).
 		do {
 			if (!TransferNormalAndChainData()) break;
 		} while (UseDmaBurstHack && (creg.qwc.QWC == 0));
@@ -991,9 +1111,9 @@ uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQw
 	// The destination is wrapped (SPR auto-wraps).  If purist MFIFO is active, the source
 	// can be wrapped as well (sigh).
 	
-	uint destPos = spr0dma.sadr.ADDR / 16;
-	
-	if (UseMFIFOHack)
+	uint destPos = spr1dma.sadr.ADDR / 16;
+
+	if (UseMFIFOHack || srcSize == 0)
 	{
 		// Yay!  only have to worry about wrapping the destination copy.
 		pxAssume(srcSize == 0 && srcStartQwc == 0);
@@ -1004,7 +1124,7 @@ uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQw
 		pxFailDev("Implement Me!!");
 	}
 
-	spr0dma.sadr.ADDR = destPos * 16;
+	spr1dma.sadr.ADDR = destPos * 16;
 	return lenQwc;
 }
 
@@ -1014,9 +1134,9 @@ uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, u
 	// The source is wrapped (SPR auto-wraps).  If purist MFIFO is active, the dest
 	// can be wrapped as well (sigh).
 
-	uint srcPos = spr1dma.sadr.ADDR / 16;
+	uint srcPos = spr0dma.sadr.ADDR / 16;
 
-	if (UseMFIFOHack)
+	if (UseMFIFOHack || destSize == 0)
 	{
 		// Yay!  only have to worry about wrapping the source data.
 		pxAssume(destSize == 0 && destStartQwc == 0);
@@ -1024,10 +1144,9 @@ uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, u
 	}
 	else
 	{
-		pxFailDev("Implement Me!!");
 	}
 
-	spr1dma.sadr.ADDR = srcPos * 16;
+	spr0dma.sadr.ADDR = srcPos * 16;
 	return lenQwc;
 }
 
