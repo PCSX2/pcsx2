@@ -506,7 +506,7 @@ _vifCodeT vc_STMod()
 {
 	VifProcessingUnit&	vpu		= vifProc[idx];
 	VIFregisters&		regs	= GetVifXregs;
-	VifCodeLog("STMod");
+	VifCodeLog("STMod = 0x%03X", regs.code.MODE);
 	regs.mode = regs.code.MODE;
 }
 
@@ -536,7 +536,8 @@ static void vc_Unpack() {
 		static const uint			vltbl[] = { 32,	  16,   8,    5   };
 
 		VifCodeLog("Unpack %s_%u (%s) @ 0x%04X%s (cl=%u  wl=%u  num=0x%02X)",
-			vntbl[vn], vltbl[vl], mask ? "masked" : "unmasked", calc_addr<idx>(regs.code.FLG), 
+			vntbl[vn], vltbl[vl], mask ? "masked" : "unmasked", calc_addr<idx>(regs.code.FLG),
+			regs.code.FLG ? "(FLG)" : "",
 			regs.cycle.cl, regs.cycle.wl, regs.code.NUM
 		);
 
