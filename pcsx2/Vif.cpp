@@ -31,8 +31,10 @@ void vifReset()
 
 	memzero(vifProc);
 
+	#ifdef PCSX2_DEVBUILD
 	vifProc[0].idx	= 0;
 	vifProc[1].idx	= 1;
+	#endif
 }
 
 void SaveStateBase::vifFreeze()

@@ -273,7 +273,7 @@ _vifCodeT vc_MPG()
 		// The VIF has a strict alignment requirement on MPG tags.  The tag must be
 		// positioned such that the data is 64-bit aligned.
 		pxAssume(((uptr)vpu.data & 7) == 0);
-		pxAssume((vpu.fragment_size & 1) == 0);
+		//pxAssume((vpu.fragment_size & 1) == 0);
 
 		if (vpu.fragment_size == 0)
 		{
@@ -290,8 +290,8 @@ _vifCodeT vc_MPG()
 	u64* dest = vuRegs[idx].GetProgMem(vpu.vu_target_addr);
 	if (memcmp_mmx(dest, vpu.data, minSize64*8)) {
 		// (VUs expect size to be 32-bit scale and addresses to be in bytes -_-)
-		if (!vpu.idx)	CpuVU0->Clear(vpu.vu_target_addr*8, minSize64*2);
-		else			CpuVU1->Clear(vpu.vu_target_addr*8, minSize64*2);
+		if (!idx)	CpuVU0->Clear(vpu.vu_target_addr*8, minSize64*2);
+		else		CpuVU1->Clear(vpu.vu_target_addr*8, minSize64*2);
 
 		memcpy_fast(dest, vpu.data, minSize64*8);
 	}
@@ -416,22 +416,22 @@ _vifCodeT vc_STCol()
 		vpu.running_idx = 0;
 	}
 
-	do
+	while(vpu.fragment_size != 0)
 	{
 		vpu.MaskCol._u32[vpu.running_idx] = *vpu.data;
 
+		--vpu.fragment_size;
 		++vpu.data;
 		++vpu.running_idx;
-		--vpu.fragment_size;
 
-		if (vpu.fragment_size == 0)
+		if(vpu.running_idx == 4)
 		{
-			regs.stat.VPS = VPS_WAITING;
+			regs.stat.VPS = VPS_IDLE;
 			return;
 		}
-	} while(vpu.running_idx < 4);
+	};
 
-	regs.stat.VPS = VPS_IDLE;
+	regs.stat.VPS = VPS_WAITING;
 }
 
 _vifCodeT vc_STRow()
@@ -445,22 +445,22 @@ _vifCodeT vc_STRow()
 		vpu.running_idx = 0;
 	}
 
-	do
+	while(vpu.fragment_size != 0)
 	{
 		vpu.MaskRow._u32[vpu.running_idx] = *vpu.data;
 
+		--vpu.fragment_size;
 		++vpu.data;
 		++vpu.running_idx;
-		--vpu.fragment_size;
 
-		if (vpu.fragment_size == 0)
+		if (vpu.running_idx == 4)
 		{
-			regs.stat.VPS = VPS_WAITING;
+			regs.stat.VPS = VPS_IDLE;
 			return;
 		}
-	} while(vpu.running_idx < 4);
+	}
 
-	regs.stat.VPS = VPS_IDLE;
+	regs.stat.VPS = VPS_WAITING;
 }
 
 // Loads the vifRegs.CYCLE register with CL/WL values accordingly.

@@ -423,7 +423,9 @@ struct VifProcessingUnit
 	u128 buffer[256];
 	uint running_idx;
 
+	#ifdef PCSX2_DEVBUILD
 	uint idx;				// VIF0 or VIF1, that is the question answered here.
+	#endif
 
 	const u32* data;
 	u32 fragment_size;		// size of the incoming DMA packet fragment, in 32 bit units.
