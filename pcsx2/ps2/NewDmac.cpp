@@ -197,12 +197,11 @@ bool EE_DMAC::ChannelState::TestArbitration()
 
 		if (!fromSprReg.chcr.STR || !fromSprReg.qwc.QWC)
 		{
-			DMAC_LOG("\tArbitration skipped due to MFIFO condition (fromSPR.STR==0)");
+			DMAC_LOG("\t%s arbitration skipped due to MFIFO condition (fromSPR.STR==0)", info.NameA);
 			return false;
 		}
 	}
-
-	if (UseMFIFOHack && (Id == ChanId_fromSPR) && (dmacRegs.ctrl.MFD != NO_MFD) && (dmacRegs.ctrl.MFD != MFD_RESERVED))
+	else if (UseMFIFOHack && (Id == ChanId_fromSPR) && (dmacRegs.ctrl.MFD != NO_MFD) && (dmacRegs.ctrl.MFD != MFD_RESERVED))
 	{
 		// When the MFIFO hack is enabled, we ignore fromSPR's side of MFIFO.  VIF1
 		// and GIF will drain directly from fromSPR when arbitration is passed to them.
@@ -599,7 +598,7 @@ void EE_DMAC::dmacEventUpdate()
 {
 	ControllerRegisters& dmacReg = (ControllerRegisters&)psHu8(DMAC_CTRL);
 
-	DMAC_LOG("*DMAC Arbitration Started*  (D_CTRL=0x%08X)", dmacRegs.ctrl._u32);
+	//DMAC_LOG("*DMAC Arbitration Started*  (D_CTRL=0x%08X)", dmacRegs.ctrl._u32);
 
 	CPU_ClearEvent(DMAC_EVENT);
 
@@ -607,7 +606,7 @@ void EE_DMAC::dmacEventUpdate()
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 		// the DMAC register(s) are written and the DMAC is fully re-enabled.
-		DMAC_LOG("DMAC disabled, no actions performed. (DMAE=%d, ENABLER=0x%08x)", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
+		DMAC_LOG("DMAC disabled, arbitration request ignored. (DMAE=%d, ENABLER=0x%08x)", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
 		return;
 	}
 
@@ -619,7 +618,7 @@ void EE_DMAC::dmacEventUpdate()
 			// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 			// the STR bits are written and the DMAC is enabled.
 
-			DMAC_LOG("*DMAC Arbitration complete*");
+			//DMAC_LOG("*DMAC Arbitration complete*");
 			break;
 		}
 

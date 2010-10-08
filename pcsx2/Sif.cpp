@@ -114,8 +114,7 @@ union iDMAtag
 
 		// Second 32 bits:
 
-		u16		WCNT;		// word count (words are 32 bits on MIPS)
-		u16		_zero;		// likely hardwired to zero.
+		u32		WCNT;		// word count (words are 32 bits units on MIPS)
 	};
 
 	u64 _u64;
@@ -289,6 +288,9 @@ static uint SIF1_Transfer(const u128* src, uint srcQwc)
 			pxFailDev("Invalid target address for IOP SIF1 (Dma 10)");
 			// [TODO] IOP Bus error?  More likely a DMA-local bus error that simply stops
 			// the DMA and flags a bit somewhere:
+
+			psHu32(SBUS_F240) &= ~0x40;
+			psHu32(SBUS_F240) &= ~0x4000;
 
 			hw_dma10.chcr.STR = 0;
 			psxDmaInterrupt2(3);

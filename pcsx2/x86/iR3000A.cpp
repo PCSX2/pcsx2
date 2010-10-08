@@ -172,7 +172,7 @@ static void _DynGen_StackFrameCheck()
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
 {
-	pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
+	pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITCompile.  Thanks." );
 
 	u8* retval = xGetPtr();
 	_DynGen_StackFrameCheck();
@@ -880,8 +880,8 @@ static __noinline s32 recExecuteBlock( s32 eeCycles )
 	iopCycleEE = eeCycles;
 
 #ifdef PCSX2_DEVBUILD
-	if (SysTrace.SIF.IsActive())
-		SysTrace.IOP.R3000A.Write("Switching to IOP CPU for %d cycles", eeCycles);
+	//if (SysTrace.SIF.IsActive())
+	//	SysTrace.IOP.R3000A.Write("Switching to IOP CPU for %d cycles", eeCycles);
 #endif
 
 	// [TODO] recExecuteBlock could be replaced by a direct call to the iopEnterRecompiledCode()
