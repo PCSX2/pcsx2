@@ -34,8 +34,8 @@ namespace Exception
 static const ChannelInformation ChannelInfo[NumChannels] =
 {
 	//							D.S.		S.C.	D.C.	A.S.
-	{ _n(VIF0),		_m(0),	Stall_None,		true,	false,	true,	toVIF0,		fromVIF0	},
-	{ _n(VIF1),		_m(1),	Stall_Drain,	true,	false,	true,	toVIF1,		NULL		},
+	{ _n(VIF0),		_m(0),	Stall_None,		true,	false,	true,	toVIF0,		NULL		},
+	{ _n(VIF1),		_m(1),	Stall_Drain,	true,	false,	true,	toVIF1,		fromVIF1	},
 	{ _n(GIF),		_m(2),	Stall_Drain,	true,	false,	true,	toGIF,		NULL		},
 	{ _n(fromIPU),	_m(3),	Stall_Source,	false,	false,	false,	NULL,		fromIPU		},
 	{ _n(toIPU),	_m(4),	Stall_None,		true,	false,	false,	toIPU,		NULL		},

@@ -36,10 +36,10 @@ void FifoRingBuffer<size>::HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, S
 		logger.Write("WriteFIFO/%ls <- %ls (FQC=%u)", logger.GetShortName().c_str(), src->ToString().c_str(), qwc);
 
 	if (!pxAssert(qwc < size)) return;
-	
+
 	WriteSingle(src);
 
-	if (qwc >= size)
+	if (IsFull())
 	{
 		SendToPeripheral(toFunc);
 	}

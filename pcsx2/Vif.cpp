@@ -249,10 +249,36 @@ template u32 vifRead32<1>(u32 mem);
 template bool vifWrite32<0>(u32 mem, u32 value);
 template bool vifWrite32<1>(u32 mem, u32 value);
 
-uint __dmacall EE_DMAC::fromVIF0(u128* dest, uint destSize, uint destStartQwc, uint lenQwc)
+uint __dmacall EE_DMAC::fromVIF1(u128* destBase, uint destSize, uint destStartQwc, uint lenQwc)
 {
-	pxFailRel("Not implemented yet!");
-	return 0;
+	// Note: The only safe way to download data from the GS is to perform a full sync/flush
+	// of the GS ringbuffer.  It's slow but absolutely unavoidable.  Fortunately few games
+	// rely on this feature (its quite slow on the PS2 as well for the same reason).
+
+	GetMTGS().WaitGS();
+
+	if (destSize)
+	{
+		// destination buffer has a size -- so wrapped transfer logic needed:
+
+		uint fullLen = lenQwc;
+		uint firstcopylen = destSize - destStartQwc;
+		uint remainder = GSreadFIFO2((u64*)(destBase+destStartQwc), firstcopylen);
+
+		lenQwc -= (firstcopylen - remainder);
+
+		if (lenQwc)
+		{
+			lenQwc = GSreadFIFO2((u64*)destBase, firstcopylen);
+		}
+
+		return fullLen - lenQwc;
+	}
+	else
+	{
+		uint remainder = GSreadFIFO2((u64*)(destBase+destStartQwc), lenQwc);
+		return lenQwc - remainder;
+	}
 }
 
 
@@ -264,18 +290,17 @@ uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStart
 	// VIF may be better to have built in wrapping logic similar to GIF.
 
 	uint endpos = srcStartQwc + lenQwc;
-	uint remainder;
 
 	if (srcSize == 0 || endpos < srcSize)
 	{
-		remainder = vifTransfer<0>(srcBase+srcStartQwc, lenQwc);
+		uint remainder = vifTransfer<0>(srcBase+srcStartQwc, lenQwc);
 		return lenQwc - remainder;
 	}
 	else
 	{
 		uint fullLen = lenQwc;
 		uint firstcopylen = srcSize - srcStartQwc;
-		remainder = vifTransfer<0>(srcBase+srcStartQwc, firstcopylen);
+		uint remainder = vifTransfer<0>(srcBase+srcStartQwc, firstcopylen);
 
 		lenQwc -= (firstcopylen - remainder);
 
@@ -291,18 +316,17 @@ uint __dmacall EE_DMAC::toVIF0	(const u128* srcBase, uint srcSize, uint srcStart
 uint __dmacall EE_DMAC::toVIF1	(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
 {
 	uint endpos = srcStartQwc + lenQwc;
-	uint remainder;
 
 	if (srcSize == 0 || endpos < srcSize)
 	{
-		remainder = vifTransfer<1>(srcBase+srcStartQwc, lenQwc);
+		uint remainder = vifTransfer<1>(srcBase+srcStartQwc, lenQwc);
 		return lenQwc - remainder;
 	}
 	else
 	{
 		uint fullLen = lenQwc;
 		uint firstcopylen = srcSize - srcStartQwc;
-		remainder = vifTransfer<1>(srcBase+srcStartQwc, firstcopylen);
+		uint remainder = vifTransfer<1>(srcBase+srcStartQwc, firstcopylen);
 
 		lenQwc -= (firstcopylen - remainder);
 

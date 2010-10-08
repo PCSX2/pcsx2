@@ -69,7 +69,7 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 		// FIFO is empty, so queue up 16 qwc from the GS plugin.  Operating in bursts should
 		// keep framerates from being too terribly miserable.
 
-		// Note: The only safe way to download data form the GS is to perform a full sync/flush
+		// Note: The only safe way to download data from the GS is to perform a full sync/flush
 		// of the GS ringbuffer.  It's slow but absolutely unavoidable.  Fortunately few games
 		// rely on this feature (its quite slow on the PS2 as well for the same reason).
 
@@ -147,7 +147,21 @@ void __fastcall WriteFIFO_GIF(const mem128_t* value)
 void __fastcall WriteFIFO_IPUin(const mem128_t* value)
 {
 	pxAssume( !ipu1dma.chcr.STR );
-	g_fifo.ipu1.HwWrite(toIPU_FromFIFOonly, value, SysTrace.EE.IPU);
+	//g_fifo.ipu1.HwWrite(toIPU_FromFIFOonly, value, SysTrace.EE.IPU);
+
+	if (SysTrace.EE.IPU.IsActive())
+		SysTrace.EE.IPU.Write("WriteFIFO/toIPU <- %ls (FQC=%u)", value->ToString().c_str(), g_fifo.ipu1.qwc);
+
+	if (!pxAssert(g_fifo.ipu1.qwc < 8)) return;
+	g_fifo.ipu1.WriteSingle(value);
+
+	if (g_fifo.ipu1.IsFull())
+	{
+		ipuProcessInterrupt();
+	}
+	else
+		CPU_ScheduleEvent(FIFO_EVENT, 128);
+
 }
 
 void ProcessFifoEvent()

@@ -336,11 +336,11 @@ __fi u32 gifRead32(u32 mem)
 			return gifRegs.stat._u32;
 			
 		case GIF_CTRL:
-			Console.Warning("Attempted read from GIF_CTRL (read-only register).");
+			Console.Warning("Attempted read from GIF_CTRL (write-only register).");
 			return 0;
 
 		case GIF_MODE:
-			Console.Warning("Attempted read from GIF_MODE (read-only register).");
+			Console.Warning("Attempted read from GIF_MODE (write-only register).");
 			return 0;
 	}
 	return psHu32(mem);

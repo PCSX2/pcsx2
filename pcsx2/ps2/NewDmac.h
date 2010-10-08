@@ -477,7 +477,7 @@ static ChannelRegisters& ipu1dma	= (ChannelRegisters&)eeHw[0xB400];
 extern void dmacEventUpdate();
 extern bool dmacControllerEnabled();
 
-extern FnType_FromPeripheral fromVIF0;
+extern FnType_FromPeripheral fromVIF1;
 extern FnType_FromPeripheral fromIPU;
 extern FnType_FromPeripheral fromSIF0;
 extern FnType_FromPeripheral fromSIF2;

@@ -31,9 +31,6 @@
 
 using namespace EE_DMAC;
 
-__aligned16 IPU_DataSource ipu_dsrc;
-__aligned16 IPU_DataTarget ipu_dtarg;
-
 __aligned16 tIPU_cmd ipu_cmd;
 __aligned16 tIPU_BP g_BP;
 __aligned16 decoder_t decoder;
@@ -61,24 +58,17 @@ void tIPU_cmd::clear()
 	current = 0xffffffff;
 }
 
-static __fi void IPUProcessInterrupt()
+__fi void ipuProcessInterrupt()
 {
-	if (dmacRequestSlice(ChanId_toIPU)) return;
-
-	// If the DMAC is closed and there's still junk left in the internal bit buffer (2QWC)
-	// *or* the FIFO of the IPU (8QWC!), then we have to do some IPUWorker magic and empty it here:
-
-	if (!g_fifo.ipu1.IsEmpty())
-	{
-		g_fifo.ipu1.SendToPeripheral(toIPU_FromFIFOonly);
-		if (!g_fifo.ipu1.IsEmpty()) return;
-	}
-
 	if (!ipuRegs.ctrl.BUSY) return;
 
-	pxAssume(ipu_dsrc.leftQwc == 0);
-	ipu_dsrc.leftQwc = 0;
 	IPUWorker();
+
+	if (g_fifo.ipu0.IsFull())
+		dmacRequestSlice(ChanId_fromIPU);
+	
+	if (g_fifo.ipu1.IsEmpty())
+		dmacRequestSlice(ChanId_toIPU);
 }
 
 // Register accesses (run on EE thread)
@@ -87,8 +77,11 @@ int ipuInit()
 	memzero(ipuRegs);
 	memzero(g_BP);
 	memzero(decoder);
+
+#if UseIpuDirectDmaHack
 	memzero(ipu_dsrc);
 	memzero(ipu_dtarg);
+#endif
 
 	decoder.picture_structure = FRAME_PICTURE;	//default: progressive...my guess:P
 
@@ -212,7 +205,7 @@ __fi u32 ipuRead32(u32 mem)
 	pxAssert((mem & ~0xff) == 0x10002000);
 	mem &= 0xff;	// ipu repeats every 0x100
 
-	IPUProcessInterrupt();
+	ipuProcessInterrupt();
 
 	switch (mem)
 	{
@@ -255,7 +248,7 @@ __fi u64 ipuRead64(u32 mem)
 	pxAssert((mem & ~0xff) == 0x10002000);
 	mem &= 0xff;	// ipu repeats every 0x100
 
-	IPUProcessInterrupt();
+	ipuProcessInterrupt();
 
 	switch (mem)
 	{
@@ -309,7 +302,7 @@ __fi bool ipuWrite32(u32 mem, u32 value)
 		ipucase(IPU_CMD): // IPU_CMD
 			IPU_LOG("write32: IPU_CMD=0x%08X", value);
 			IPUCMD_WRITE(value);
-			IPUProcessInterrupt();
+			ipuProcessInterrupt();
 		return false;
 
 		ipucase(IPU_CTRL): // IPU_CTRL
@@ -345,7 +338,7 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 		ipucase(IPU_CMD):
 			IPU_LOG("write64: IPU_CMD=0x%08X", value);
 			IPUCMD_WRITE((u32)value);
-			IPUProcessInterrupt();
+			ipuProcessInterrupt();
 		return false;
 	}
 
@@ -582,12 +575,12 @@ static __ri bool ipuCSC(tIPU_CMD_CSC csc)
 		
 		if (csc.OFM)
 		{
-				ipu_cmd.pos[1] += ipu_dtarg.Write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
+				ipu_cmd.pos[1] += IPUout_Write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
 			if (ipu_cmd.pos[1] < 32) return false;
 			}
 		else
 		{
-				ipu_cmd.pos[1] += ipu_dtarg.Write(((u32*) & decoder.rgb32) + 4 * ipu_cmd.pos[1], 64 - ipu_cmd.pos[1]);
+				ipu_cmd.pos[1] += IPUout_Write(((u32*) & decoder.rgb32) + 4 * ipu_cmd.pos[1], 64 - ipu_cmd.pos[1]);
 			if (ipu_cmd.pos[1] < 64) return false;
 			}
 
@@ -616,12 +609,12 @@ static __ri bool ipuPACK(tIPU_CMD_CSC csc)
 
 		if (csc.OFM)
 		{
-			ipu_cmd.pos[1] += ipu_dtarg.Write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
+			ipu_cmd.pos[1] += IPUout_Write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
 			if (ipu_cmd.pos[1] < 32) return false;
 		}
 		else
 		{
-			ipu_cmd.pos[1] += ipu_dtarg.Write(((u32*)indx4) + 4 * ipu_cmd.pos[1], 8 - ipu_cmd.pos[1]);
+			ipu_cmd.pos[1] += IPUout_Write(((u32*)indx4) + 4 * ipu_cmd.pos[1], 8 - ipu_cmd.pos[1]);
 			if (ipu_cmd.pos[1] < 8) return false;
 		}
 
@@ -724,8 +717,8 @@ void tIPU_BP::Advance(uint bits)
 			// if FP == 0 then an already-drained buffer is being advanced, and we need to drop a
 			// quadword from the IPU FIFO.
 
-			if (!FP && ipu_dsrc.leftQwc)
-				ipu_dsrc.GetNextQWC(&internal_qwc[0]);
+			if (!FP && IPUin_HasData())
+				IPUin_GetNextQWC(&internal_qwc[0]);
 
 			FP = 0;
 		}
@@ -736,7 +729,7 @@ bool tIPU_BP::FillBuffer(u32 bits)
 {
 	while (FP < 2)
 	{
-		if (!ipu_dsrc.leftQwc)
+		if (!IPUin_HasData())
 		{
 			// Here we *try* to fill the entire internal QWC buffer; however that may not necessarily
 			// be possible -- so if the fill fails we'll only return 0 if we don't have enough
@@ -745,7 +738,7 @@ bool tIPU_BP::FillBuffer(u32 bits)
 			return ((FP!=0) && (BP + bits) <= 128);
 		}
 
-		ipu_dsrc.GetNextQWC(&internal_qwc[FP++]);
+		IPUin_GetNextQWC(&internal_qwc[FP++]);
 	}
 
 	return true;
@@ -1020,6 +1013,133 @@ __noinline void IPUWorker()
 	hwIntcIrq(INTC_IPU);
 }
 
+bool IPUin_HasData()
+{
+	// [TODO] : Optimization - In order to promote efficiency, this could call the DMAC's
+	// transfer code for IPU1 directly, instead of forcing the IPU to exit state.
+	// Care must be taken since IPU processing is done from EE_DMAC::toIPU normally, so IPU
+	// processing would probably have to be done from an external cpuEvent.
+
+	return !g_fifo.ipu1.IsEmpty();
+}
+
+void IPUin_GetNextQWC( u128* dest )
+{
+	g_fifo.ipu1.ReadSingle(dest);
+}
+
+uint IPUout_Write( const void* src, uint sizeQwc )
+{
+	// [TODO] : Optimization - In order to promote efficiency, this should call the DMAC's
+	// transfer code for IPU0 directly, instead of forcing the IPU to exit state.
+	// (if implemented, calls to IPUworker in EE_DMAC::fromIPU should be removed).
+
+	if (g_fifo.ipu0.IsFull()) return 0;
+
+	// drain the rest into the FIFO, if possible
+	uint copylen = g_fifo.ipu0.Write( (u128*)src, sizeQwc );
+	IPU_LOG("\tfromIPU write (FIFO): srcSize=0x%03X, copyLen=0x%02X", sizeQwc, copylen);
+	return copylen;
+}
+
+// --------------------------------------------------------------------------------------
+//  
+// --------------------------------------------------------------------------------------
+//
+// IPU transfer strategy is unique, due to the special needs of the IPU. 
+//   * IPU must routinely access toIPU0 and fromIPU in tandem, so both DMAs have to run
+//     concurrently.  The real PS2 does so in slices, but for us that's just too slow.
+//   * IPU is frequently used with both DMAs and FIFOs in tandem so FIFO support must
+//     be relatively complete, and FIFOs must be flushed properly prior to DMA data
+//     being streamed in/out.
+//
+// toIPU, meanwhile, transmits data via the IPU_DataSource interface.
+//
+// Note: IPU can always have wrapped transfers, due to direct SPR access (via the SPR bit in MADR).
+//
+
+uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
+{
+	// FIFO note: Wait until a full 8 QWC is free before transferring into the FIFO.  This
+	// mimics the real DMAC and improves our own efficiency.
+
+	uint runningLen = lenQwc;
+
+	//if (lenQwc == 6)
+	//	Console.WriteLn("Fail");
+
+	do {
+		if (ipuRegs.ctrl.BUSY) IPUWorker();
+		if (g_fifo.ipu1.qwc) break;
+		if (!runningLen) break;
+
+		g_fifo.ipu1.qwc = std::min(runningLen, ArraySize(g_fifo.ipu1.buffer));
+		g_fifo.ipu1.readpos = g_fifo.ipu1.writepos = 0;
+		MemCopy_WrappedSrc(srcBase, srcStartQwc, srcSize, g_fifo.ipu1.buffer, g_fifo.ipu1.qwc);
+		runningLen -= g_fifo.ipu1.qwc;
+	}
+	while (true);
+
+	if (!g_fifo.ipu0.IsEmpty())
+		dmacRequestSlice(ChanId_fromIPU);
+
+	return lenQwc - runningLen;
+}
+
+uint __dmacall EE_DMAC::fromIPU(u128* destBase, uint destSize, uint destStartQwc, uint lenQwc)
+{
+	if (ipu0dma.qwc._u32 != ipu0dma.qwc.QWC)
+	{
+		Console.Warning("IPU Hackfix for GUST games executed!");
+		ipu0dma.chcr.STR = 0;
+		ipu0dma.qwc._u32 = 0;
+		return 0;
+	}
+
+	// As long as the IPU's input has pending data, we can be picky and transfer only 8 QWC
+	// slices.
+
+	uint runningLen = lenQwc;
+
+	// wrapping-enabled version; since both src and dest can wrap its easier to just
+	// copy the FIFO one QWC at a time. >_<
+
+	do {
+		if (ipuRegs.ctrl.BUSY) IPUWorker();
+		if (g_fifo.ipu0.IsEmpty()) break;
+		if (!runningLen) break;
+
+		do {
+			destStartQwc &= destSize-1;
+			g_fifo.ipu0.ReadSingle(&destBase[destStartQwc]);
+			++destStartQwc;
+			--runningLen;
+		}
+		while (g_fifo.ipu0.qwc && runningLen);
+	}
+	while (true);
+
+	/*
+		// destination doesn't have wrapping enabled (yay)
+		transferred += g_fifo.ipu0.Read(&destBase[destStartQwc+transferred], lenQwc);
+		if (transferred == lenQwc) return transferred;
+	*/
+	
+	if (ipuRegs.ctrl.BUSY)
+		dmacRequestSlice(ChanId_toIPU);
+
+	return lenQwc - runningLen;
+}
+
+
+// --------------------------------------------------------------------------------------
+//  UseIpuDirectDmaHack
+// --------------------------------------------------------------------------------------
+
+#if UseIpuDirectDmaHack
+
+__aligned16 IPU_DataSource ipu_dsrc;
+__aligned16 IPU_DataTarget ipu_dtarg;
 
 void IPU_DataSource::GetNextQWC( u128* dest )
 {
@@ -1065,55 +1185,22 @@ uint IPU_DataTarget::Write( const void* src, uint sizeQwc )
 	return origSize - sizeQwc;
 }
 
-// --------------------------------------------------------------------------------------
-//  
-// --------------------------------------------------------------------------------------
-//
-// IPU transfer strategy is unique, due to the special needs of the IPU. 
-//   * IPU must routinely access toIPU0 and fromIPU in tandem, so both DMAs have to run
-//     concurrently.  The real PS2 does so in slices, but for us that's just too slow.
-//   * IPU is frequently used with both DMAs and FIFOs in tandum so FIFO support must
-//     be relatively complete, and FIFOs must be flushed properly prior to DMA data
-//     being streamed in/out.
-//
-
-// toIPU, meanwhile, transmits data via the IPU_DataSource interface.
-//
-// Note: IPU can always have wrapped transfers, due to direct SPR access (via the SPR bit in MADR).
-//
-
-uint __dmacall toIPU_FromFIFOonly(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
-{
-	if (!ipuRegs.ctrl.BUSY) return 0;
-
-	ipu_dsrc.basePtr		= srcBase;
-	ipu_dsrc.memsizeQwc		= srcSize;
-	ipu_dsrc.curposQwc		= srcStartQwc;
-	ipu_dsrc.leftQwc		= lenQwc;
-	ipu_dsrc.transferred	= 0;
-
-	IPUWorker();
-	uint retval = ipu_dsrc.transferred;
-	ipu_dsrc.transferred	= 0;
-	return retval;
-}
-
 uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQwc, uint lenQwc)
 {
-	pxAssumeDev( ipu_dsrc.transferred == 0, "Passive transfer on toIPU DMA is not allowed!" );
 
-	if(!ipuRegs.ctrl.BUSY) return 0;
+	uint transferred = ipu_dsrc.transferred;
+	pxAssumeDev(transferred <= lenQwc, "IPU DMA transfer size mismatch.");
+	ipu_dsrc.transferred	= 0;
+
+	if (transferred)
+		IPU_LOG("\ttoIPU passive commit: QWC=0x%04X", transferred);
+
+	if(!ipuRegs.ctrl.BUSY) return transferred;
 
 	// Request a fromIPU transfer as standard policy -- if the STR bit is 0, it'll be ignored,
 	// and if STR is 1 most likely there's some data ready for it anyway.
 	dmacRequestSlice(ChanId_fromIPU);
 	
-	if (!g_fifo.ipu1.IsEmpty())
-	{
-		g_fifo.ipu1.SendToPeripheral(toIPU_FromFIFOonly);
-		if (!g_fifo.ipu1.IsEmpty()) return 0;
-	}
-
 	ipu_dsrc.basePtr		= srcBase;
 	ipu_dsrc.memsizeQwc		= srcSize;
 	ipu_dsrc.curposQwc		= srcStartQwc;
@@ -1123,7 +1210,7 @@ uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQw
 	// IPU is busy and there's room in the DMA; try to process more IPU data immediately,
 	// and account for anything that got processed before returning:
 	IPUWorker();
-	uint transferred = ipu_dsrc.transferred;
+	transferred += ipu_dsrc.transferred;
 	ipu_dsrc.transferred = 0;
 
 	return transferred;
@@ -1191,3 +1278,4 @@ uint __dmacall EE_DMAC::fromIPU(u128* destBase, uint destSize, uint destStartQwc
 	dmacRequestSlice(ChanId_toIPU);
 	return transferred;
 }
+#endif

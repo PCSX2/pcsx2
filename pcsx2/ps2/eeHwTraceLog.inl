@@ -29,7 +29,7 @@ static __ri bool _eelog_enabled( u32 addr )
 	if (eeAddrInRange(SBUS, addr)) return false;
 
 	// INTC!
-	if (addr == INTC_STAT || addr == INTC_MASK) return true;
+	if (addr == INTC_STAT || addr == INTC_MASK) return false;
 
 	return true;
 }
@@ -183,6 +183,7 @@ static __ri const char* _eelog_GetHwName( u32 addr, T val )
 		EasyCase(toSPR_MADR);
 		EasyCase(toSPR_QWC);
 		EasyCase(toSPR_SADR);
+		EasyCase(toSPR_TADR);
 
 		// DMAC!		
 		EasyCase(DMAC_CTRL);

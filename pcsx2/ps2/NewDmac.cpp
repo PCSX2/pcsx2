@@ -720,8 +720,6 @@ void EE_DMAC::dmacEventUpdate()
 
 	//DMAC_LOG("*DMAC Arbitration Started*  (D_CTRL=0x%08X)", dmacRegs.ctrl._u32);
 
-	CPU_ClearEvent(DMAC_EVENT);
-
 	if (!dmacControllerEnabled() || !dmacRegs.ctrl.DMAE)
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
@@ -753,7 +751,9 @@ void EE_DMAC::dmacEventUpdate()
 		}
 
 	} while (UseDmaBurstHack);
-	
+
+	if(UseDmaBurstHack)
+		CPU_ClearEvent(DMAC_EVENT);
 
 
 	wxString CycStealMsg;

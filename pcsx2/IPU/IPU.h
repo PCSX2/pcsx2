@@ -235,6 +235,9 @@ union tIPU_cmd
 	}
 };
 
+#define UseIpuDirectDmaHack 0
+
+#if UseIpuDirectDmaHack
 struct IPU_DataSource
 {
 	const u128* basePtr;
@@ -257,16 +260,24 @@ struct IPU_DataTarget
 	uint Write( const void* src, uint sizeQwc );
 };
 
-static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
-
 extern __aligned16 IPU_DataSource ipu_dsrc;
 extern __aligned16 IPU_DataTarget ipu_dtarg;
+#endif
+
+extern bool IPUin_HasData();
+extern void IPUin_GetNextQWC( u128* dest );
+extern uint IPUout_Write( const void* src, uint sizeQwc );
+
+
+static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
+
 extern __aligned16 tIPU_cmd ipu_cmd;
 
 extern int coded_block_pattern;
 
 extern int ipuInit();
 extern void ipuReset();
+extern void ipuProcessInterrupt();
 
 extern u32 ipuRead32(u32 mem);
 extern u64 ipuRead64(u32 mem);
