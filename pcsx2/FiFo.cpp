@@ -191,6 +191,8 @@ void ProcessFifoEvent()
 
 	/*if (!g_fifo.ipu1.IsEmpty())
 	{
-		g_fifo.ipu1.SendToPeripheral(EE_DMAC::toIPU);
+		// Not neede -- IPU events during command writes, FIFO reads/writes, and
+		// DMA activity suffices fine, due to IPU rules and dependencies.
+		ipuProcessInterrupt();
 	}*/
 }

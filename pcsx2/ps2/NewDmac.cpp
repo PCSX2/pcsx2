@@ -966,7 +966,10 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 			// Disregard the write if the DMAC is unalterable (see above).
 			
-			if ((CHAIN_MODE != curchcr.MOD) || (info.QWC().QWC != 0) || !dmacControllerEnabled())
+			bool allowWrite = !dmacControllerEnabled();
+			allowWrite = allowWrite || (info.QWC().QWC == 0);
+
+			if (!allowWrite)
 			{
 				DMAC_LOG("%s write to CHCR disregarded.", info.NameA);
 				return false;
@@ -1047,7 +1050,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 					tracewarn.Write("\n\tCHCR.TIE changed to %u (oldval=%u)", newchcr.TIE, curchcr.TIE);
 
 				if (curchcr.tag16 != newchcr.tag16)
-					tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x04x)", newchcr.tag16, curchcr.tag16);
+					tracewarn.Write("\n\tCHCR.TAG changed to 0x%04x (oldval=0x%04x)", newchcr.tag16, curchcr.tag16);
 			}	
 		}
 		break;

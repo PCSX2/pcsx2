@@ -50,8 +50,14 @@ void FifoRingBuffer<size>::HwWrite(Fnptr_ToPeripheral toFunc, const u128* src, S
 }
 
 template< uint size >
-void FifoRingBuffer<size>::ReadSingle(u128* dest)
+void FifoRingBuffer<size>::ReadSingle(u128* dest, bool ipulog)
 {
+	if( ipulog) IPU_LOG("IPUin/READ : readpos=%u, writepos=%u, qwc=%u  (data=%S)",
+		readpos,
+		writepos,
+		qwc-1, buffer[readpos].ToString().c_str()
+	);
+
 	pxAssume(qwc);
 	CopyQWC(dest, &buffer[readpos]);
 	readpos = (readpos+1) & (size-1);
@@ -87,8 +93,14 @@ uint FifoRingBuffer<size>::Write(const u128* src, uint srcQwc)
 
 
 template< uint size >
-void FifoRingBuffer<size>::WriteSingle(const u128* src)
+void FifoRingBuffer<size>::WriteSingle(const u128* src, bool ipulog)
 {
+	if(ipulog) IPU_LOG("IPUin/WRITE: readpos=%u, writepos=%u, qwc=%u  (data=%S)",
+		readpos,
+		writepos,
+		qwc+1, src->ToString().c_str()
+	);
+
 	pxAssume(qwc < size);
 	CopyQWC(&buffer[writepos], src);
 	writepos = (writepos+1) & (size-1);

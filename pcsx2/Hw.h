@@ -417,8 +417,8 @@ struct FifoRingBuffer
 		u128 _indexers;
 	};
 
-	void ReadSingle(u128* dest);
-	void WriteSingle(const u128* src);
+	void ReadSingle(u128* dest, bool ipulog = false);
+	void WriteSingle(const u128* src, bool ipulog = false);
 	uint Read(u128* dest, uint qwc);
 	uint Write(const u128* src, uint qwc);
 	void Clear();

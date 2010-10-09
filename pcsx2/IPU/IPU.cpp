@@ -352,7 +352,6 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 static void ipuBCLR(u32 val)
 {
 	g_BP.reset(val & 0x7F);
-	g_fifo.ipu0.Clear();
 	g_fifo.ipu1.Clear();
 	
 	ipuRegs.ctrl.BUSY = 0;
@@ -1025,7 +1024,7 @@ bool IPUin_HasData()
 
 void IPUin_GetNextQWC( u128* dest )
 {
-	g_fifo.ipu1.ReadSingle(dest);
+	g_fifo.ipu1.ReadSingle(dest, false);
 }
 
 uint IPUout_Write( const void* src, uint sizeQwc )
@@ -1038,7 +1037,7 @@ uint IPUout_Write( const void* src, uint sizeQwc )
 
 	// drain the rest into the FIFO, if possible
 	uint copylen = g_fifo.ipu0.Write( (u128*)src, sizeQwc );
-	IPU_LOG("\tfromIPU write (FIFO): srcSize=0x%03X, copyLen=0x%02X", sizeQwc, copylen);
+	IPU_LOG("\tipuOut_Write: srcSize=0x%03X, copyLen=0x%02X", sizeQwc, copylen);
 	return copylen;
 }
 
@@ -1065,13 +1064,22 @@ uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQw
 
 	uint runningLen = lenQwc;
 
-	//if (lenQwc == 6)
-	//	Console.WriteLn("Fail");
-
 	do {
+		g_BP.FillBuffer(0);
 		if (ipuRegs.ctrl.BUSY) IPUWorker();
-		if (g_fifo.ipu1.qwc) break;
+		if (!g_fifo.ipu1.IsEmpty()) break;
 		if (!runningLen) break;
+
+		/*do {
+			srcStartQwc &= srcSize-1;
+			g_fifo.ipu1.WriteSingle(&srcBase[srcStartQwc], false);
+			++srcStartQwc;
+			--runningLen;
+		}
+		while (!g_fifo.ipu1.IsFull() && runningLen);*/
+
+		// This is the accelerated version that copies in 8 QWC slices.
+		// (should be more accurate as well as faster)
 
 		g_fifo.ipu1.qwc = std::min(runningLen, ArraySize(g_fifo.ipu1.buffer));
 		g_fifo.ipu1.readpos = g_fifo.ipu1.writepos = 0;

@@ -408,7 +408,7 @@ struct VIFregisters {
 // --------------------------------------------------------------------------------------
 //  VifProcessingUnit
 // --------------------------------------------------------------------------------------
-struct VifProcessingUnit
+struct __aligned16 VifProcessingUnit
 {
 	u128 MaskRow;
 	u128 MaskCol;
