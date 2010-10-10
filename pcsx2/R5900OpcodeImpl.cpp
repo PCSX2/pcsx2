@@ -193,7 +193,7 @@ static int __Deci2Call(int call, u32 *addr)
 			{
 				// FIXME : DECI2 should use virtual memory, not* physical memory. --air
 				uint d2adr = (d2ptr[4]+0xc);
-				d2adr = (d2adr + 15) & ~15;		// align up to nearest QWC (?)
+				//d2adr = (d2adr + 15) & ~15;		// align up to nearest QWC (?)
 
 				u8* pdeciaddr = (u8*)PSM(d2adr);
 
