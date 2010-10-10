@@ -695,7 +695,7 @@ void EE_DMAC::ChannelState::TransferData()
 {
 	const char* const SrcDrainMsg = GetDir() ? "<-" : "->";
 
-	DMAC_LOG("\tBus right granted to %ls%s%ls,  QWC=0x%04x,  MODE=%s",
+	DMAC_LOG("DMA bus granted to %ls%s%ls,  QWC=0x%04x,  MODE=%s",
 		info.ToString().c_str(), SrcDrainMsg, creg.madr.ToString().c_str(),
 		creg.qwc.QWC, chcr.ModeToUTF8()
 	);

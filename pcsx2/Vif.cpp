@@ -269,7 +269,7 @@ uint __dmacall EE_DMAC::fromVIF1(u128* destBase, uint destSize, uint destStartQw
 
 		if (lenQwc)
 		{
-			lenQwc = GSreadFIFO2((u64*)destBase, firstcopylen);
+			lenQwc = GSreadFIFO2((u64*)destBase, lenQwc);
 		}
 
 		return fullLen - lenQwc;
