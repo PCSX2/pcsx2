@@ -150,12 +150,12 @@ bool ChannelState::MFIFOActive() const
 
 uint ChannelState::TransferSource( u128* destMemHost, uint lenQwc, uint destStartQwc, uint destSize ) const
 {
-	return info.fnptr_xferFrom( destMemHost, destStartQwc, destSize, lenQwc );
+	return info.fnptr_xferFrom( destMemHost, destSize, destStartQwc, lenQwc );
 }
 
 uint ChannelState::TransferDrain( const u128* srcMemHost, uint lenQwc, uint srcStartQwc, uint srcSize ) const
 {
-	return info.fnptr_xferTo( srcMemHost, srcStartQwc, srcSize, lenQwc );
+	return info.fnptr_xferTo( srcMemHost, srcSize, srcStartQwc, lenQwc );
 }
 
 template< typename T >
@@ -209,7 +209,9 @@ u128* ChannelState::TryGetHostPtr( const tDMAC_ADDR& addrReg, bool writeToMem )
 		// channels that also honor the SPR bit (VIF, GIF, IPU).  SIF and SPR channels should
 		// be tested on real hardware to determine behavior.
 
-		if (addrReg.SPR || ((addr >= PhysMemMap::Scratchpad) && (addr < PhysMemMap::ScratchpadEnd)) )
+		if (addrReg.SPR ||
+			((addr >= PhysMemMap::Scratchpad) && (addr < PhysMemMap::ScratchpadEnd)) ||
+			((addr >= 0x50000000) && (addr < 0x50004000)) )
 		{
 			return &psSu128(addr);
 		}

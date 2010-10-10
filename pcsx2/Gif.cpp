@@ -54,7 +54,7 @@ void gifReset()
 static __fi uint _uploadTag(const u128* baseMem, uint fragment_size, uint startPos, uint memSize)
 {
 	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, fragment_size ? fragment_size : memSize);
-	uint processed = g_gifpath.CopyTag(baseMem, fragment_size, startPos, memSize);
+	uint processed = g_gifpath.CopyTag(baseMem, memSize, startPos, fragment_size);
 	GetMTGS().SendDataPacket();
 	return processed;
 }

@@ -154,7 +154,7 @@ bool ChannelState::MFIFO_SrcChainLoadTag()
 		case TAG_RET:
 		case TAG_NEXT:
 			//pxAssumeDev(false, "(DMAC CHAIN) Unsupported tag invoked during MFIFO." );
-			return IrqStall(Stall_TagError, L"Unsupported tag invoked during MFIFO");
+			return IrqStall(Stall_TagError, L"Unsupported tag invoked during MFIFO.");
 		break;
 
 		default: return IrqStall(Stall_TagError, L"Unknown/reserved ID");
@@ -347,14 +347,6 @@ bool EE_DMAC::ChannelState::SrcChainUpdateTADR()
 			tadr = madr;
 		break;
 		
-		// NEXT - Transfer QWC following the tag, and uses ADDR specified by the tag as the new TADR.
-		case TAG_NEXT:
-		{
-			const DMAtag& newtag = *(DMAtag*)GetHostPtr(tadr, false);
-			tadr._u32 = newtag.addr._u32;
-		}
-		break;
-
 		// REF  (Reference) - Transfer QWC from the ADDR field, and increment the TADR to get the next tag.
 		// REFS (Reference and Stall) - ... and check STADR and stall if needed, when reading the QWC.
 		case TAG_REFS:
@@ -366,14 +358,15 @@ bool EE_DMAC::ChannelState::SrcChainUpdateTADR()
 			tadr.IncrementQWC();
 		break;
 
-		// CALL - Transfer QWC following the tag, push MADR onto the ASR stack, and use ADDR
-		//        of the old tag as the call target (assigned to TADR).
+		// CALL - Transfer QWC following the tag, push post-transfer MADR onto the ASR stack, and
+		//        use ADDR of the old tag as the call target (assigned to TADR).
 		case TAG_CALL:
 		{
 			if (!pxAssertDev(info.hasAddressStack, "(DMAC CHAIN) CALL tag invoked on an unsupported channel (no address stack)." ))
 			{
 				// Note that this condition should typically be unreachable, since the same
-				// check is performed when the tag is loaded.
+				// check is performed when the tag is loaded.  However, since games can alter
+				// tags mid-transfer; we are better safe to check redundantly.
 
 				// CALL and RET are only supported on VIF0, VIF1, and GIF.  On any other
 				// channel the *likely* reaction of the DMAC is to stop the transfer and
@@ -381,22 +374,30 @@ bool EE_DMAC::ChannelState::SrcChainUpdateTADR()
 
 				return IrqStall(Stall_TagError, L"CALL without address stack");
 			}
-			
+
 			// Stash an address on the address stack pointer.
 			// Channels that support the address stack have two addresses available:
 			// ASR0 and ASR1.  If both addresses are full, an error occurs and the
 			// DMA is stopped.
-			
+
 			switch(chcr.ASP)
 			{
 				case 0: creg.asr0 = madr; break;
 				case 1: creg.asr1 = madr; break;
 
-				default: return IrqStall(Stall_CallstackOverflow);
+				default:
+					return IrqStall(Stall_CallstackOverflow);
 			}
 
 			++chcr.ASP;
-			tadr._u32 = Read32(tadr);
+			// Fall through to NEXT:
+		}
+
+		// NEXT - Transfer QWC following the tag, and uses ADDR specified by the tag as the new TADR.
+		case TAG_NEXT:
+		{
+			const DMAtag& newtag = *(DMAtag*)GetHostPtr(tadr, false);
+			tadr = newtag.addr;
 		}
 		break;
 		
@@ -418,8 +419,8 @@ bool EE_DMAC::ChannelState::SrcChainUpdateTADR()
 			switch(chcr.ASP)
 			{
 				case 0: return IrqStall(Stall_CallstackUnderflow); break;
-				case 1: creg.asr0 = madr; break;
-				case 2: creg.asr1 = madr; break;
+				case 1: tadr = creg.asr0; break;
+				case 2: tadr = creg.asr1; break;
 
 				case 3:
 					pxAssumeDev(false, "(DMAC) Invalid address stack pointer value = 3.");

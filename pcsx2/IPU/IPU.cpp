@@ -1083,7 +1083,7 @@ uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQw
 
 		g_fifo.ipu1.qwc = std::min(runningLen, ArraySize(g_fifo.ipu1.buffer));
 		g_fifo.ipu1.readpos = g_fifo.ipu1.writepos = 0;
-		MemCopy_WrappedSrc(srcBase, srcStartQwc, srcSize, g_fifo.ipu1.buffer, g_fifo.ipu1.qwc);
+		MemCopy_WrappedSrc(srcBase, srcSize, srcStartQwc, g_fifo.ipu1.buffer, g_fifo.ipu1.qwc);
 		runningLen -= g_fifo.ipu1.qwc;
 	}
 	while (true);
@@ -1174,7 +1174,7 @@ uint IPU_DataTarget::Write( const void* src, uint sizeQwc )
 		IPU_LOG("\tfromIPU write (DMA): srcSize=0x%03X, destLeft=0x%04X, destpos=0x%04X", sizeQwc, leftQwc, curposQwc);
 
 		uint copylen = std::min( sizeQwc, leftQwc );
-		MemCopy_WrappedDest((u128*)src, basePtr, curposQwc, memsizeQwc, copylen);
+		MemCopy_WrappedDest(basePtr, memsizeQwc, curposQwc, (u128*)src, copylen);
 
 		leftQwc -= copylen;
 		sizeQwc -= copylen;

@@ -38,6 +38,18 @@ ControllerMetrics dmac_metrics;
 //
 static bool dma_request[NumChannels];
 
+u32 EE_DMAC::ControllerRegisters::mfifoEmptySize( uint tadr ) const
+{
+	uint mfifo_remain = (tadr - spr0dma.madr.ADDR) & rbsr.RMSK;
+	return (!mfifo_remain) ? mfifoRingSize() : mfifo_remain;
+}
+
+bool EE_DMAC::ControllerRegisters::mfifoIsEmpty( uint tadr ) const
+{
+	return tadr == spr0dma.madr.ADDR;
+}
+
+
 __fi bool EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxChar* details )
 {
 	// Standard IRQ behavior for all channel errors is to stop the DMA (STR=0)
@@ -195,11 +207,17 @@ bool EE_DMAC::ChannelState::TestArbitration()
 		const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
 		const ChannelRegisters& fromSprReg = fromSPR.GetRegs();
 
-		if (!fromSprReg.chcr.STR || !fromSprReg.qwc.QWC)
+		if (dmacRegs.mfifoEmptySize(info.TADR().ADDR))
+		{
+			IrqStall( Stall_MFIFO );
+			return false;
+		}
+
+		/*if (!fromSprReg.chcr.STR || !fromSprReg.qwc.QWC)
 		{
 			DMAC_LOG("\t%s arbitration skipped due to MFIFO condition (fromSPR.STR==0)", info.NameA);
 			return false;
-		}
+		}*/
 	}
 	else if (UseMFIFOHack && (Id == ChanId_fromSPR) && (dmacRegs.ctrl.MFD != NO_MFD) && (dmacRegs.ctrl.MFD != MFD_RESERVED))
 	{
@@ -333,8 +351,8 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 		do {
 
 			MemCopy_WrappedSrc(
-				(u128*)eeMem->Scratch, addrtmp,
-				Ps2MemSize::Scratch/16, writeTo, tqwc
+				(u128*)eeMem->Scratch, Ps2MemSize::Scratch/16, addrtmp,
+				writeTo, tqwc
 			);
 			writeTo	+= tqwc + dmacRegs.sqwc.SQWC;
 			curqwc	-= tqwc;
@@ -351,8 +369,8 @@ void EE_DMAC::ChannelState::TransferInterleaveData()
 
 		do {
 			MemCopy_WrappedDest(
-				readFrom, (u128*)eeMem->Scratch,
-				addrtmp, Ps2MemSize::Scratch/16, tqwc
+				(u128*)eeMem->Scratch, Ps2MemSize::Scratch/16, addrtmp, 
+				readFrom,tqwc
 			);
 			readFrom+= tqwc + dmacRegs.sqwc.SQWC;
 			curqwc	-= tqwc;
@@ -450,15 +468,6 @@ void EE_DMAC::ChannelState::CheckDrainStallCondition(uint& qwc)
 // This is the peripheral side of the MFIFO (VIF or GIF).  It is always in CHAIN mode and DRAIN direction.
 bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 {
-	const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
-	ChannelRegisters& fromSprReg = fromSPR.GetRegs();
-
-	if (fromSprReg.chcr.STR)
-	{
-		pxAssumeDev(NORMAL_MODE == fromSprReg.chcr.MOD, "MFIFO error: fromSPR is not in NORMAL mode.");
-		pxAssumeDev(fromSprReg.qwc.QWC >= 1, "(MFIFO) fromSPR is running but has a QWC of zero!?");
-	}
-
 	// MFIFO Enabled on this channel.
 	// Based on the UseMFIFOHack, there are two approaches here:
 	//  1. Hack Enabled: Copy data directly to/from SPR and the MFD peripheral.
@@ -478,8 +487,8 @@ bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 			//  (REFx tags copy from sources other than our SPRdma, which is why we
 			//   exclude them above).
 
-			pxAssumeDev(fromSprReg.chcr.STR, "MFIFO transfer arbitration error: source channel (fromSPR) is not active yet.");
-			qwc = std::min<uint>(creg.qwc.QWC, fromSprReg.qwc.QWC);
+			//pxAssumeDev(fromSprReg.chcr.STR, "MFIFO transfer arbitration error: source channel (fromSPR) is not active yet.");
+			qwc = std::min<uint>(creg.qwc.QWC, spr0dma.qwc.QWC);
 		}
 	}
 
@@ -490,8 +499,26 @@ bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 
 	if (qwc)
 	{
-		uint qwc_xfer = TransferDrain(GetHostPtr(madr,false), qwc);
+		uint qwc_xfer;
+		if ((chcr.TAG.ID == TAG_CNT) || (chcr.TAG.ID == TAG_END))
+		{
+			// Transferring immediately from the ringbuffer.  This requires wrap-around logic.
 
+			qwc_xfer = TransferDrain(GetHostPtr(dmacRegs.rbor,false), qwc,
+				creg.madr.ADDR & dmacRegs.rbsr.RMSK,
+				dmacRegs.mfifoRingSize()
+			);
+
+			creg.madr = dmacRegs.mfifoWrapAddr( creg.madr, qwc_xfer * 16 );
+		}
+		else
+		{
+			qwc_xfer = TransferDrain(GetHostPtr(madr,false), qwc);
+
+			creg.madr.ADDR	+= qwc_xfer * 16;
+		}
+
+		creg.qwc.QWC	-= qwc_xfer;
 		pxAssume(qwc_xfer <= qwc);
 
 		// Peripherals have the option to stall transfers on their end, usually due to
@@ -501,10 +528,16 @@ bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 		{
 			DMAC_LOG( "\tPartial transfer to peripheral (qwc=0x%04X, xfer=0x%04X)", qwc, qwc_xfer );
 		}
-
-		creg.madr.ADDR	+= qwc_xfer * 16;
-		creg.qwc.QWC	-= qwc_xfer;
 	}
+	
+	if (dmacRegs.mfifoIsEmpty(info.TADR().ADDR))
+	{
+		if (!dmacRequestSlice(ChanId_fromSPR))
+			return IrqStall( Stall_MFIFO );
+	}
+
+	if (creg.qwc.QWC == 0)
+		dmacRequestSlice(ChanId_fromSPR);
 
 	return true;
 }
@@ -522,34 +555,26 @@ bool EE_DMAC::ChannelState::MFIFO_TransferSource()
 {
 	if (UseMFIFOHack) return true;
 
-	if (0 == creg.qwc.QWC)
-		return IrqStall( Stall_EndOfTransfer );
-
 	pxAssumeDev(NORMAL_MODE == chcr.MOD, "MFIFO source channel (fromSPR) is not set to NORMAL mode!");
 	//pxAssumeDev()
 	
-	uint qwc = creg.qwc.QWC;
 	uint tadr = mfifoGetTADR();
-
+	uint qwc = creg.qwc.QWC;
+	
 	// the DMAC manages SPR in bursts only, and because of this the fromSPR channel DOES NOT transfer
 	// data until there is enough room left in the FIFO for the transfer in its entirety.  This is
 	// good news because it means we don't need to worry about partial transfer logic.  Instead the
 	// fromSPR cheerfully stalls until QWC room is opened up in the MFIFO:
-	
+
 	DMAC_LOG( "\tMFIFO fromSPR: madr=%S, rbor=0x%08X, rbsr=0x%08X, qwc=0x%04X",
 		madr.ToString().c_str(), dmacRegs.rbor.ADDR, dmacRegs.rbsr.RMSK, qwc
 	);
 
-	uint mfifo_remain = dmacRegs.mfifoRingSize();
-	
-	if (tadr != madr.ADDR)
-	{
-		mfifo_remain += tadr - madr.ADDR;
-		mfifo_remain &= dmacRegs.rbsr.RMSK;
-	}
+	uint mfifo_remain = dmacRegs.mfifoEmptySize(tadr);
 
 	if (mfifo_remain < qwc)
 	{
+		// Wait a while (the drain channel will fire a DREQ when it has drained something)
 		DMAC_LOG( "\tfromSPR stalled (not enough room);  mfifo_remain = 0x%05X", mfifo_remain);
 		return false;
 	}
@@ -562,8 +587,15 @@ bool EE_DMAC::ChannelState::MFIFO_TransferSource()
 
 		creg.madr = dmacRegs.mfifoWrapAddr(creg.madr, qwc_xfer * 16);
 		creg.qwc.QWC -= qwc_xfer;
+		
+		dmacRequestSlice(mfifo_DrainChanTable[dmacRegs.ctrl.MFD]);
 	}
-	
+
+	if (0 == creg.qwc.QWC)
+	{
+		return IrqStall( Stall_EndOfTransfer );
+	}
+
 	return true;
 }
 
@@ -724,7 +756,7 @@ void EE_DMAC::dmacEventUpdate()
 	{
 		// Do not reschedule the event.  The indirect HW reg handler will reschedule it when
 		// the DMAC register(s) are written and the DMAC is fully re-enabled.
-		DMAC_LOG("DMAC disabled, arbitration request ignored. (DMAE=%d, ENABLER=0x%08x)", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
+		//DMAC_LOG("DMAC disabled, arbitration request ignored. (DMAE=%d, ENABLER=0x%08x)", dmacRegs.ctrl.DMAE, psHu32(DMAC_ENABLER));
 		return;
 	}
 
@@ -1120,7 +1152,7 @@ uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQw
 	{
 		// Yay!  only have to worry about wrapping the destination copy.
 		pxAssume(srcSize == 0 && srcStartQwc == 0);
-		MemCopy_WrappedDest(srcBase, (u128*)eeMem->Scratch, destPos, sizeof(eeMem->Scratch)/16, lenQwc);
+		MemCopy_WrappedDest((u128*)eeMem->Scratch, sizeof(eeMem->Scratch)/16, destPos, srcBase, lenQwc);
 	}
 	else
 	{
@@ -1143,7 +1175,7 @@ uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, u
 	{
 		// Yay!  only have to worry about wrapping the source data.
 		pxAssume(destSize == 0 && destStartQwc == 0);
-		MemCopy_WrappedSrc((u128*)eeMem->Scratch, srcPos, sizeof(eeMem->Scratch) / 16, dest, lenQwc);
+		MemCopy_WrappedSrc((u128*)eeMem->Scratch, sizeof(eeMem->Scratch) / 16, srcPos, dest, lenQwc);
 	}
 	else
 	{

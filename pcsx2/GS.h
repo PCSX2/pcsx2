@@ -283,7 +283,7 @@ struct GIFPath
 	u8 GetReg();
 
 	void SetTag(const void* mem);
-	int CopyTag(const u128* baseMem, uint fragment_size, uint startPos=0, uint memSize=0);
+	int CopyTag(const u128* baseMem, uint memSize, uint startPos, uint fragment_size);
 	void TransferPackedRegs( const u128*& pMem128, uint& size, uint& ringpos );
 };
 
@@ -498,5 +498,5 @@ extern __aligned(32) MTGS_BufferedData RingBuffer;
 
 // FIXME: These belong in common with other memcpy tools.  Will move them there later if no one
 // else beats me to it.  --air
-extern void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart, uint destSize, uint len );
-extern void MemCopy_WrappedSrc( const u128* srcBase, uint& srcStart, uint srcSize, u128* dest, uint len );
+extern void MemCopy_WrappedDest( u128* destBase, uint destSize, uint& destStart, const u128* src, uint len );
+extern void MemCopy_WrappedSrc( const u128* srcBase, uint srcSize, uint& srcStart, u128* dest, uint len );

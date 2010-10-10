@@ -147,7 +147,7 @@ union DMAtag
 			default:		label = "????";		break;
 		}
 
-		return pxsFmt("ID=%s  ADDR=%s, QWC=0x%04X, IRQ=%s, PCE=%s",
+		return pxsFmt("ID=%s  ADDR=%S, QWC=0x%04X, IRQ=%s, PCE=%s",
 			label, addr.ToString().c_str(), QWC,
 			IRQ ? "on" : "off",
 			PCE ? "on" : "off"
@@ -202,6 +202,9 @@ struct ControllerRegisters
 	{
 		return rbor.ADDR + rbsr.RMSK;
 	}
+
+	u32 mfifoEmptySize( uint tadr ) const;
+	bool mfifoIsEmpty( uint tadr ) const;
 
 	static ControllerRegisters& Get()
 	{

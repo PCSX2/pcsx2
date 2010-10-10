@@ -661,7 +661,7 @@ static const bool UseVpuRecompilers = true;
 __aligned16 FnType_VifCmdHandler* const vifCmdHandler[2][128] =
 {
 	{
-		vc_Nop<0>     , vc_STCycl<0>, vc_Offset<0>	, vc_Base<0>   , vc_ITop<0>   , vc_STMod<0>  , vc_MskPath3<0>, vc_Mark<0>,   /*0x00*/
+		vc_Nop<0>     , vc_STCycl<0>, vc_Offset<0>	, vc_Null<0>   , vc_ITop<0>   , vc_STMod<0>  , vc_MskPath3<0>, vc_Mark<0>,   /*0x00*/
 		vc_Null<0>    , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x08*/
 		vc_FlushE<0>  , vc_Flush<0>	, vc_Null<0>	, vc_FlushA<0> , vc_MSCAL<0>  , vc_MSCALF<0> , vc_Null<0>	 , vc_MSCNT<0>,  /*0x10*/
 		vc_Null<0>    , vc_Null<0>	, vc_Null<0>	, vc_Null<0>   , vc_Null<0>   , vc_Null<0>   , vc_Null<0>    , vc_Null<0>,   /*0x18*/

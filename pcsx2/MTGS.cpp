@@ -132,7 +132,7 @@ void SysMtgsThread::PostVsyncEnd()
 
 	uint packsize = sizeof(RingCmdPacket_Vsync) / 16;
 	PrepDataPacket(GS_RINGTYPE_VSYNC, packsize);
-	MemCopy_WrappedDest( (u128*)PS2MEM_GS, RingBuffer.m_Ring, m_packet_writepos, RingBufferSize, 0xf );
+	MemCopy_WrappedDest( RingBuffer.m_Ring, RingBufferSize, m_packet_writepos, (u128*)PS2MEM_GS, 0xf );
 
 	u32* remainder = (u32*)GetDataPacketPtr();
 	remainder[0] = GSCSRr;
@@ -361,7 +361,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 							// around the edge of the ringbuffer.  If not for that I'd just use a struct. >_<
 
 							uint datapos = (m_ReadPos+1) & RingBufferMask;
-							MemCopy_WrappedSrc( RingBuffer.m_Ring, datapos, RingBufferSize, (u128*)RingBuffer.Regs, 0xf );
+							MemCopy_WrappedSrc( RingBuffer.m_Ring, RingBufferSize, datapos, (u128*)RingBuffer.Regs, 0xf );
 
 							u32* remainder = (u32*)&RingBuffer[datapos];
 							((u32&)RingBuffer.Regs[0x1000])				= remainder[0];

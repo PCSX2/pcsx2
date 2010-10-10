@@ -349,7 +349,7 @@ static __fi void gsHandler(const u8* pMem)
 //  destSize - Size of the destination buffer.  Copies will copy from destBase -> destBase+destSize and
 //    then wrap back around.  If the destSize is 0, wrapping is disabled (the method call is regarded as
 //    a regular unwrapped copy).
-__ri void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart, uint destSize, uint len )
+__ri void MemCopy_WrappedDest( u128* destBase, uint destSize, uint& destStart, const u128* src, uint len )
 {
 	uint endpos = destStart + len;
 	if ((destSize == 0) || (endpos < destSize))
@@ -367,7 +367,7 @@ __ri void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart,
 	}
 }
 
-__ri void MemCopy_WrappedSrc( const u128* srcBase, uint& srcStart, uint srcSize, u128* dest, uint len )
+__ri void MemCopy_WrappedSrc( const u128* srcBase, uint srcSize, uint& srcStart, u128* dest, uint len )
 {
 	uint endpos = srcStart + len;
 	if ((srcSize==0) || (endpos < srcSize))
@@ -449,7 +449,7 @@ __ri void GIFPath::TransferPackedRegs( const u128*& pMem128, uint& size, uint& r
 			nloop = 0;
 		}
 
-		MemCopy_WrappedDest( pMem128, RingBuffer.m_Ring, ringpos, RingBufferSize, len );
+		MemCopy_WrappedDest( RingBuffer.m_Ring, RingBufferSize, ringpos, pMem128, len );
 		pMem128 += len;
 		size -= len;
 	}
@@ -469,7 +469,7 @@ __ri void GIFPath::TransferPackedRegs( const u128*& pMem128, uint& size, uint& r
 //   Amount of data processed.  Actual processed amount may be less than provided size, depending
 //   on GS stalls (caused by SIGNAL or EOP, etc).
 //
-int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uint memSize)
+int GIFPath::CopyTag(const u128* baseMem, uint memSize, uint startPos, uint fragment_size)
 {
 	// Cannot transfer while a second IMR is pending (!)
 	if (SIGNAL_IMR_Pending)
@@ -566,7 +566,7 @@ int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uin
 							nloop = 0;
 						}
 
-						MemCopy_WrappedDest( pMem128, RingBuffer.m_Ring, ringpos, RingBufferSize, len );
+						MemCopy_WrappedDest( RingBuffer.m_Ring, RingBufferSize, ringpos, pMem128, len );
 						pMem128 += len;
 						size -= len;
 					}
@@ -578,7 +578,7 @@ int GIFPath::CopyTag(const u128* baseMem, uint fragment_size, uint startPos, uin
 						int len = aMin(size, nloop);
 						GifTagLog("\tImage mode, len=0x%04X", len);
 
-						MemCopy_WrappedDest( pMem128, RingBuffer.m_Ring, ringpos, RingBufferSize, len );
+						MemCopy_WrappedDest( RingBuffer.m_Ring, RingBufferSize, ringpos, pMem128, len );
 
 						pMem128 += len;
 						size -= len;
