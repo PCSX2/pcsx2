@@ -180,28 +180,25 @@ bool ChannelState::MFIFO_SrcChainUpdateTADR()
 		// CNT (Continue) - Transfer QWC following the tag, and following QWC becomes the new TADR.
 		case TAG_CNT:
 		{
-			const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
-			ChannelRegisters& fromSprReg = fromSPR.GetRegs();
-
 			if (UseMFIFOHack)
 			{
-				if (!fromSprReg.chcr.STR)
+				if (!spr0dma.chcr.STR)
 				{
 					// See below for details...
 					return IrqStall(Stall_MFIFO);
 				}
 
-				tadr.ADDR = fromSprReg.sadr.ADDR;
+				tadr.ADDR = spr0dma.sadr.ADDR;
 				tadr.SPR = 1;
 				tadr.IncrementQWC();
 			}
 			else
 			{
-				tDMAC_ADDR new_tadr = dmacRegs.mfifoWrapAddr(madr.ADDR + 16);
-				pxAssertDev(fromSprReg.madr == dmacRegs.mfifoWrapAddr(fromSprReg.madr.ADDR), "MFIFO MADR wrapping failure.");
-				//fromSprReg.madr = dmacRegs.mfifoWrapAddr(fromSprReg.madr.ADDR);
+				tadr = dmacRegs.mfifoWrapAddr(madr);
+				pxAssertDev(spr0dma.madr == dmacRegs.mfifoWrapAddr(spr0dma.madr), "MFIFO MADR wrapping failure.");
+				//spr0dma.madr = dmacRegs.mfifoWrapAddr(spr0dma.madr.ADDR);
 
-				if ((new_tadr == fromSprReg.madr) && !fromSprReg.chcr.STR)
+				if (tadr == spr0dma.madr)
 				{
 					// MFIFO Stall condition (!)  The FIFO is drained and the SPR isn't
 					// feeding it any more data.  Oddly enough, the drain channel does
@@ -214,7 +211,6 @@ bool ChannelState::MFIFO_SrcChainUpdateTADR()
 
 					return IrqStall(Stall_MFIFO);
 				}
-				tadr = new_tadr;
 			}
 		}
 		break;

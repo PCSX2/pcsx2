@@ -62,8 +62,9 @@ __fi bool EE_DMAC::ChannelState::IrqStall( const StallCauseId& cause, const wxCh
 	if (cause != Stall_MFIFO)
 	{
 		chcr.STR = 0;
-		dmacChanInt(Id);
 	}
+
+	dmacChanInt(Id);
 
 	static const wxChar* causeMsg;
 	bool verbose = false;
@@ -207,7 +208,7 @@ bool EE_DMAC::ChannelState::TestArbitration()
 		const ChannelInformation& fromSPR = ChannelInfo[ChanId_fromSPR];
 		const ChannelRegisters& fromSprReg = fromSPR.GetRegs();
 
-		if (dmacRegs.mfifoEmptySize(info.TADR().ADDR))
+		if (dmacRegs.mfifoIsEmpty(info.TADR().ADDR))
 		{
 			IrqStall( Stall_MFIFO );
 			return false;
@@ -478,7 +479,9 @@ bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 
 	if (!MFIFO_SrcChainLoadTag()) return false;
 
-	if (uint qwc = creg.qwc.QWC)
+	uint qwc = creg.qwc.QWC;
+
+	if (qwc)
 	{
 		if (UseMFIFOHack && MFIFOActive() &&
 			((creg.chcr.TAG.ID == TAG_CNT) || (creg.chcr.TAG.ID == TAG_END)))
@@ -491,8 +494,6 @@ bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 			qwc = std::min<uint>(creg.qwc.QWC, spr0dma.qwc.QWC);
 		}
 	}
-
-	uint qwc = creg.qwc.QWC;
 
 	ApplySlicing(qwc);
 	CheckDrainStallCondition(qwc);
@@ -530,14 +531,16 @@ bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 		}
 	}
 	
-	if (dmacRegs.mfifoIsEmpty(info.TADR().ADDR))
+	if (creg.qwc.QWC == 0)
+		dmacRequestSlice(ChanId_fromSPR);
+
+	return MFIFO_SrcChainUpdateTADR();
+	
+	/*if (dmacRegs.mfifoIsEmpty(creg.tadr.ADDR))
 	{
 		if (!dmacRequestSlice(ChanId_fromSPR))
 			return IrqStall( Stall_MFIFO );
-	}
-
-	if (creg.qwc.QWC == 0)
-		dmacRequestSlice(ChanId_fromSPR);
+	}*/
 
 	return true;
 }
@@ -1008,6 +1011,8 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			}
 
 			DMAC_LOG("%s write to CHCR while STR=1 (channel state inactive; write not disregarded).", info.NameA);
+			curchcr.STR = 0;
+			return false;
 		}	
 		else
 		{
@@ -1148,7 +1153,7 @@ uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQw
 	
 	uint destPos = spr1dma.sadr.ADDR / 16;
 
-	if (UseMFIFOHack || srcSize == 0)
+	if (srcSize == 0)
 	{
 		// Yay!  only have to worry about wrapping the destination copy.
 		pxAssume(srcSize == 0 && srcStartQwc == 0);
@@ -1169,19 +1174,45 @@ uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, u
 	// The source is wrapped (SPR auto-wraps).  If purist MFIFO is active, the dest
 	// can be wrapped as well (sigh).
 
-	uint srcPos = spr0dma.sadr.ADDR / 16;
+	static const uint scratchSize = sizeof(eeMem->Scratch) / 16;
 
-	if (UseMFIFOHack || destSize == 0)
+	uint srcPos = spr0dma.sadr.ADDR / 16;
+	uint destEndpos	= destStartQwc + lenQwc;
+
+	if (UseMFIFOHack || destSize == 0 || (destEndpos < destSize))
 	{
 		// Yay!  only have to worry about wrapping the source data.
-		pxAssume(destSize == 0 && destStartQwc == 0);
-		MemCopy_WrappedSrc((u128*)eeMem->Scratch, sizeof(eeMem->Scratch) / 16, srcPos, dest, lenQwc);
+		MemCopy_WrappedSrc((u128*)eeMem->Scratch, scratchSize, srcPos, dest + destStartQwc, lenQwc);
+		spr0dma.sadr._u32 = srcPos * 16;
 	}
 	else
 	{
+		uint sprEndpos	= srcPos + lenQwc;
+
+		if (sprEndpos < scratchSize)
+		{
+			// Yay, SPR (our source) does not wrap.  Easy!
+			// (we don't even need to mask the SADR writeback!)
+
+			MemCopy_WrappedDest(dest, destSize, destStartQwc, (u128*)eeMem->Scratch + srcPos, lenQwc);
+		}
+		else
+		{
+			// Ugh.  Both source and dest are wrapping.  My life sucks at this moment.
+
+			uint fullLen = lenQwc;
+			uint firstcopylen = destSize - destStartQwc;
+			MemCopy_WrappedSrc((u128*)eeMem->Scratch, scratchSize, srcPos, dest + destStartQwc, firstcopylen);
+
+			pxAssume(lenQwc > firstcopylen);
+			lenQwc -= firstcopylen;
+
+			MemCopy_WrappedSrc((u128*)eeMem->Scratch, scratchSize, srcPos, dest, lenQwc);
+		}
+
+		spr0dma.sadr.ADDR = srcPos;
 	}
 
-	spr0dma.sadr.ADDR = srcPos * 16;
 	return lenQwc;
 }
 
