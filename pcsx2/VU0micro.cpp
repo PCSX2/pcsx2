@@ -22,7 +22,7 @@
 #include "Common.h"
 #include "VUmicro.h"
 
-#include "ps2\NewDmac.h"
+#include "ps2/NewDmac.h"
 
 #include <cmath>
 

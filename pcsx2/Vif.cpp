@@ -22,25 +22,25 @@
 #include "FiFo.inl"
 
 
-__aligned16 VifProcessingUnit vifProc[2];
+__aligned16 VifProcessingUnit g_vpu[2];
 
 void vifReset()
 {
 	memzero(vif0Regs);
 	memzero(vif1Regs);
 
-	memzero(vifProc);
+	memzero(g_vpu);
 
 	#ifdef PCSX2_DEVBUILD
-	vifProc[0].idx	= 0;
-	vifProc[1].idx	= 1;
+	g_vpu[0].idx	= 0;
+	g_vpu[1].idx	= 1;
 	#endif
 }
 
 void SaveStateBase::vifFreeze()
 {
 	FreezeTag("VIFunpack (VPU)");
-	Freeze(vifProc);
+	Freeze(g_vpu);
 }
 
 #define vcase(reg)  case (idx ? VIF1_##reg : VIF0_##reg)
@@ -53,15 +53,15 @@ _vifT __fi u32 vifRead32(u32 mem)
 			GetVifXregs.stat.FQC = idx ? g_fifo.vif1.qwc : g_fifo.vif0.qwc;
 			return GetVifXregs.stat._u32;
 	
-		vcase(ROW0): return vifProc[idx].MaskRow._u32[0];
-		vcase(ROW1): return vifProc[idx].MaskRow._u32[1];
-		vcase(ROW2): return vifProc[idx].MaskRow._u32[2];
-		vcase(ROW3): return vifProc[idx].MaskRow._u32[3];
+		vcase(ROW0): return g_vpu[idx].MaskRow._u32[0];
+		vcase(ROW1): return g_vpu[idx].MaskRow._u32[1];
+		vcase(ROW2): return g_vpu[idx].MaskRow._u32[2];
+		vcase(ROW3): return g_vpu[idx].MaskRow._u32[3];
 
-		vcase(COL0): return vifProc[idx].MaskCol._u32[0];
-		vcase(COL1): return vifProc[idx].MaskCol._u32[1];
-		vcase(COL2): return vifProc[idx].MaskCol._u32[2];
-		vcase(COL3): return vifProc[idx].MaskCol._u32[3];
+		vcase(COL0): return g_vpu[idx].MaskCol._u32[0];
+		vcase(COL1): return g_vpu[idx].MaskCol._u32[1];
+		vcase(COL2): return g_vpu[idx].MaskCol._u32[2];
+		vcase(COL3): return g_vpu[idx].MaskCol._u32[3];
 	}
 
 	return psHu32(mem);
@@ -99,7 +99,7 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value) {
 				vifXRegs.mark	= 0;
 				vifXRegs.err.reset();
 				
-				memzero(vifProc[idx]);
+				memzero(g_vpu[idx]);
 				
 				if (idx)	g_fifo.vif1.Clear();
 				else		g_fifo.vif0.Clear();
@@ -166,15 +166,15 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value) {
 			// standard register writes -- handled by caller.
 			break;
 
-		vcase(ROW0): vifProc[idx].MaskRow._u32[0] = value; return false;
-		vcase(ROW1): vifProc[idx].MaskRow._u32[1] = value; return false;
-		vcase(ROW2): vifProc[idx].MaskRow._u32[2] = value; return false;
-		vcase(ROW3): vifProc[idx].MaskRow._u32[3] = value; return false;
+		vcase(ROW0): g_vpu[idx].MaskRow._u32[0] = value; return false;
+		vcase(ROW1): g_vpu[idx].MaskRow._u32[1] = value; return false;
+		vcase(ROW2): g_vpu[idx].MaskRow._u32[2] = value; return false;
+		vcase(ROW3): g_vpu[idx].MaskRow._u32[3] = value; return false;
 
-		vcase(COL0): vifProc[idx].MaskCol._u32[0] = value; return false;
-		vcase(COL1): vifProc[idx].MaskCol._u32[1] = value; return false;
-		vcase(COL2): vifProc[idx].MaskCol._u32[2] = value; return false;
-		vcase(COL3): vifProc[idx].MaskCol._u32[3] = value; return false;
+		vcase(COL0): g_vpu[idx].MaskCol._u32[0] = value; return false;
+		vcase(COL1): g_vpu[idx].MaskCol._u32[1] = value; return false;
+		vcase(COL2): g_vpu[idx].MaskCol._u32[2] = value; return false;
+		vcase(COL3): g_vpu[idx].MaskCol._u32[3] = value; return false;
 	}
 
 	// fall-through case: issue standard writeback behavior.
@@ -189,7 +189,7 @@ _vifT static size_t vifTransferLoop(const u128* data, uint size_qwc) {
 // Returns the number of QWC not processed (non-zero typically means the VIF stalled
 // due to IRQ or MARK).
 _vifT size_t vifTransfer(const u128* data, int size_qwc) {
-	VifProcessingUnit&	vifX	= vifProc[idx];
+	VifProcessingUnit&	vifX	= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	pxAssume(size_qwc != 0);

@@ -40,13 +40,13 @@ static bool dma_request[NumChannels];
 
 u32 EE_DMAC::ControllerRegisters::mfifoEmptySize( uint tadr ) const
 {
-	uint mfifo_remain = (tadr - spr0dma.madr.ADDR) & rbsr.RMSK;
+	uint mfifo_remain = (tadr - fromSprDma.madr.ADDR) & rbsr.RMSK;
 	return (!mfifo_remain) ? mfifoRingSize() : mfifo_remain;
 }
 
 bool EE_DMAC::ControllerRegisters::mfifoIsEmpty( uint tadr ) const
 {
-	return tadr == spr0dma.madr.ADDR;
+	return tadr == fromSprDma.madr.ADDR;
 }
 
 
@@ -491,7 +491,7 @@ bool EE_DMAC::ChannelState::MFIFO_TransferDrain()
 			//   exclude them above).
 
 			//pxAssumeDev(fromSprReg.chcr.STR, "MFIFO transfer arbitration error: source channel (fromSPR) is not active yet.");
-			qwc = std::min<uint>(creg.qwc.QWC, spr0dma.qwc.QWC);
+			qwc = std::min<uint>(creg.qwc.QWC, fromSprDma.qwc.QWC);
 		}
 	}
 
@@ -1151,7 +1151,7 @@ uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQw
 	// The destination is wrapped (SPR auto-wraps).  If purist MFIFO is active, the source
 	// can be wrapped as well (sigh).
 	
-	uint destPos = spr1dma.sadr.ADDR / 16;
+	uint destPos = toSprDma.sadr.ADDR / 16;
 
 	if (srcSize == 0)
 	{
@@ -1164,7 +1164,7 @@ uint __dmacall EE_DMAC::toSPR(const u128* srcBase, uint srcSize, uint srcStartQw
 		pxFailDev("Implement Me!!");
 	}
 
-	spr1dma.sadr.ADDR = destPos * 16;
+	toSprDma.sadr.ADDR = destPos * 16;
 	return lenQwc;
 }
 
@@ -1176,14 +1176,14 @@ uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, u
 
 	static const uint scratchSize = sizeof(eeMem->Scratch) / 16;
 
-	uint srcPos = spr0dma.sadr.ADDR / 16;
+	uint srcPos = fromSprDma.sadr.ADDR / 16;
 	uint destEndpos	= destStartQwc + lenQwc;
 
 	if (UseMFIFOHack || destSize == 0 || (destEndpos < destSize))
 	{
 		// Yay!  only have to worry about wrapping the source data.
 		MemCopy_WrappedSrc((u128*)eeMem->Scratch, scratchSize, srcPos, dest + destStartQwc, lenQwc);
-		spr0dma.sadr._u32 = srcPos * 16;
+		fromSprDma.sadr._u32 = srcPos * 16;
 	}
 	else
 	{
@@ -1210,7 +1210,7 @@ uint __dmacall EE_DMAC::fromSPR	(u128* dest, uint destSize, uint destStartQwc, u
 			MemCopy_WrappedSrc((u128*)eeMem->Scratch, scratchSize, srcPos, dest, lenQwc);
 		}
 
-		spr0dma.sadr.ADDR = srcPos;
+		fromSprDma.sadr.ADDR = srcPos;
 	}
 
 	return lenQwc;

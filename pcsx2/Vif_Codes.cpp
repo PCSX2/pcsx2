@@ -70,7 +70,7 @@ static __fi void vuExecMicro(VIFregisters& regs, u32 addr)
 
 // Writes lower 10 bits of the code to the BASE register.
 _vifCodeT vc_Base() {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("Base @ 0x%04X", regs.code.ADDR);
 	vif1Only();
@@ -79,12 +79,12 @@ _vifCodeT vc_Base() {
 }
 
 // Perform direct transfer of GIFtag data to the GIF via PATH2.  The GIF manually checks the
-// vifProc[1] code status to determine PATH3 interruption procedures, thus both DIRECT/HL
+// g_vpu[1] code status to determine PATH3 interruption procedures, thus both DIRECT/HL
 // codes are handled by the same function here.
 //
 _vifCodeT vc_Direct()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 
 	vif1Only();
 
@@ -145,7 +145,7 @@ _vifCodeT vc_Direct()
 
 _vifCodeT vc_ITop()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("ITop @ 0x%03x", regs.code.ADDR);
 
@@ -154,7 +154,7 @@ _vifCodeT vc_ITop()
 
 _vifCodeT vc_Mark()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("Mark = 0x%04x", regs.code.IMMEDIATE);
 
@@ -211,7 +211,7 @@ static __fi bool flushPaths12(uint idx)
 // Flushes only the current microprogram.  Pending PATH transfers are not relevant.
 _vifCodeT vc_FlushE()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("FlushE");
 
@@ -260,7 +260,7 @@ _vifCodeT vc_FlushA()
 
 _vifCodeT vc_MPG()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	if (regs.stat.VPS == VPS_IDLE)
@@ -314,7 +314,7 @@ _vifCodeT vc_MPG()
 // Immediate field of the VIFcode contains the execution address of the new program.
 _vifCodeT vc_MSCAL()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("MSCAL imm=0x%04X", regs.code.IMMEDIATE);
 
@@ -327,7 +327,7 @@ _vifCodeT vc_MSCAL()
 
 _vifCodeT vc_MSCALF()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("MSCALF imm=0x%04X", regs.code.IMMEDIATE);
 
@@ -340,7 +340,7 @@ _vifCodeT vc_MSCALF()
 
 _vifCodeT vc_MSCNT()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("MSCNT");
 
@@ -353,7 +353,7 @@ _vifCodeT vc_MSCNT()
 
 _vifCodeT vc_MskPath3()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("MskPath3 %s", regs.code.MASKPATH3 ? "enable" : "disable");
 	vif1Only();
@@ -375,7 +375,7 @@ _vifCodeT vc_Nop()
 // ToDo: Review Flags
 _vifCodeT vc_Null()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	VifCodeLog("Null [cmd=0x%02X]", regs.code.CMD);
@@ -407,7 +407,7 @@ _vifCodeT vc_Offset()
 // stores the values internally at g_vifmask.Col0-3 for SIMD convenience.
 _vifCodeT vc_STCol()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	if (regs.stat.VPS == VPS_IDLE)
@@ -436,7 +436,7 @@ _vifCodeT vc_STCol()
 
 _vifCodeT vc_STRow()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	if (regs.stat.VPS == VPS_IDLE)
@@ -466,7 +466,7 @@ _vifCodeT vc_STRow()
 // Loads the vifRegs.CYCLE register with CL/WL values accordingly.
 _vifCodeT vc_STCycl()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	u8 cl = regs.code.IMMEDIATE;
@@ -480,7 +480,7 @@ _vifCodeT vc_STCycl()
 
 _vifCodeT vc_STMask()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	if (regs.stat.VPS == VPS_IDLE)
@@ -504,7 +504,7 @@ _vifCodeT vc_STMask()
 
 _vifCodeT vc_STMod()
 {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 	VifCodeLog("STMod = 0x%03X", regs.code.MODE);
 	regs.mode = regs.code.MODE;
@@ -517,12 +517,12 @@ static uint calc_addr(bool flg)
 
 	uint retval = regs.code.ADDR;
 	if (idx && flg) retval += regs.tops.ADDR;
-	return retval;
+	return retval & (idx ? 0x3ff : 0xff);
 }
 
 template< bool UseRecs, uint idx, uint mask, uint vn, uint vl >
 static void vc_Unpack() {
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	const bool isFill = (regs.cycle.cl < regs.cycle.wl);

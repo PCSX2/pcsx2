@@ -73,7 +73,7 @@ void VifUnpackSetMasks(VifProcessingUnit& vpu, const VIFregisters& v) {
 template< uint idx, bool doMode, bool isFill >
 __ri void __fastcall _nVifUnpackLoop(const uint vSize, const u8* src)
 {
-	VifProcessingUnit& vpu = vifProc[idx];
+	VifProcessingUnit& vpu = g_vpu[idx];
 	VIFregisters& regs = GetVifXregs;
 
 	// skipSize used for skipping writes only
@@ -123,7 +123,7 @@ __ri void __fastcall _nVifUnpackLoop(const uint vSize, const u8* src)
 	} while (--regs.num);
 }
 
-static const __aligned16 Fnptr_VifUnpackLoop VifUnpackLoopTable[2][2][2] = {
+const __aligned16 Fnptr_VifUnpackLoop VifUnpackLoopTable[2][2][2] = {
 	{{ _nVifUnpackLoop<0,0,0>, _nVifUnpackLoop<0,0,1> },
 	{  _nVifUnpackLoop<0,1,0>, _nVifUnpackLoop<0,1,1> },},
 	{{ _nVifUnpackLoop<1,0,0>, _nVifUnpackLoop<1,0,1> },

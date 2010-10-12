@@ -448,7 +448,7 @@ typedef FnType_VifCmdHandler* Fnptr_VifCmdHandler;
 
 extern __aligned16 const Fnptr_VifCmdHandler vifCmdHandler[2][128];
 
-extern __aligned16 VifProcessingUnit vifProc[2];
+extern __aligned16 VifProcessingUnit g_vpu[2];
 
 static VIFregisters& vif0Regs = (VIFregisters&)eeHw[0x3800];
 static VIFregisters& vif1Regs = (VIFregisters&)eeHw[0x3C00];

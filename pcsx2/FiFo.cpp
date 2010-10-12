@@ -91,8 +91,8 @@ void __fastcall ReadFIFO_IPUout(mem128_t* out)
 	// Games should always check the fifo before reading from it -- so if the FIFO has no data
 	// its either some glitchy game or a bug in pcsx2.
 
-	if (!pxAssertDev( g_fifo.ipu0.qwc > 0, "Attempted read from IPUout's FIFO, but the FIFO is empty!" )) return;
-	g_fifo.ipu0.ReadSingle(out);
+	if (!pxAssertDev( g_fifo.fromIpu.qwc > 0, "Attempted read from IPUout's FIFO, but the FIFO is empty!" )) return;
+	g_fifo.fromIpu.ReadSingle(out);
 	IPU_LOG("ReadFIFO/IPUout -> %ls", out->ToString().c_str());
 }
 
@@ -146,16 +146,16 @@ void __fastcall WriteFIFO_GIF(const mem128_t* value)
 
 void __fastcall WriteFIFO_IPUin(const mem128_t* value)
 {
-	pxAssume( !ipu1dma.chcr.STR );
-	//g_fifo.ipu1.HwWrite(toIPU_FromFIFOonly, value, SysTrace.EE.IPU);
+	pxAssume( !toIpuDma.chcr.STR );
+	//g_fifo.toIpu.HwWrite(toIPU_FromFIFOonly, value, SysTrace.EE.IPU);
 
 	if (SysTrace.EE.IPU.IsActive())
-		SysTrace.EE.IPU.Write("WriteFIFO/toIPU <- %ls (FQC=%u)", value->ToString().c_str(), g_fifo.ipu1.qwc);
+		SysTrace.EE.IPU.Write("WriteFIFO/toIPU <- %ls (FQC=%u)", value->ToString().c_str(), g_fifo.toIpu.qwc);
 
-	if (!pxAssert(g_fifo.ipu1.qwc < 8)) return;
-	g_fifo.ipu1.WriteSingle(value);
+	if (!pxAssert(g_fifo.toIpu.qwc < 8)) return;
+	g_fifo.toIpu.WriteSingle(value);
 
-	if (g_fifo.ipu1.IsFull())
+	if (g_fifo.toIpu.IsFull())
 	{
 		ipuProcessInterrupt();
 	}
@@ -189,7 +189,7 @@ void ProcessFifoEvent()
 		g_fifo.gif.SendToPeripheral(EE_DMAC::toGIF);
 	}
 
-	/*if (!g_fifo.ipu1.IsEmpty())
+	/*if (!g_fifo.toIpu.IsEmpty())
 	{
 		// Not neede -- IPU events during command writes, FIFO reads/writes, and
 		// DMA activity suffices fine, due to IPU rules and dependencies.

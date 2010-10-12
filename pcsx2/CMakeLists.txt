@@ -138,6 +138,7 @@ set(pcsx2Sources
 	Memory.cpp
 	MMI.cpp
 	MTGS.cpp
+	NewDmac.cpp
 	Patch.cpp
 	Patch_Memory.cpp
 	Pcsx2Config.cpp

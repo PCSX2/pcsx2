@@ -323,6 +323,7 @@
 		<Unit filename="../Memory.cpp" />
 		<Unit filename="../Memory.h" />
 		<Unit filename="../NakedAsm.h" />
+		<Unit filename="../NewDmac.cpp" />
 		<Unit filename="../Patch.cpp" />
 		<Unit filename="../Patch.h" />
 		<Unit filename="../Patch_Memory.cpp" />

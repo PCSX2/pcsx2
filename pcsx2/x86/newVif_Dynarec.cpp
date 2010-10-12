@@ -67,7 +67,7 @@ VifUnpackSSE_Dynarec::VifUnpackSSE_Dynarec(const nVifStruct& vif_)
 }
 
 __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const {
-	VifProcessingUnit&	vpu	= vifProc[v.idx];
+	VifProcessingUnit&	vpu	= g_vpu[v.idx];
 	u32 m0 = v.Block.mask;
 	u32 m1 =  m0 & 0xaaaaaaaa;
 	u32 m2 =(~m1>>1) &  m0;
@@ -118,7 +118,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const {
 }
 
 void VifUnpackSSE_Dynarec::writeBackRow() const {
-	VifProcessingUnit&	vpu	= vifProc[v.idx];
+	VifProcessingUnit&	vpu	= g_vpu[v.idx];
 	xMOVAPS(ptr128[&vpu.MaskRow], xmmRow);
 	DevCon.WriteLn("nVif: writing back row reg! [doMode = 2]");
 }
@@ -191,7 +191,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine(uint vSize) {
 }
 
 _vifT static __fi u128* dVifsetVUptr(uint cl, uint wl, bool isFill) {
-	VifProcessingUnit&	vpu			= vifProc[idx];
+	VifProcessingUnit&	vpu			= g_vpu[idx];
 	VIFregisters&		regs		= GetVifXregs;
 	const VURegs&		VU			= vuRegs[idx];
 	const uint			vuMemLimit	= idx ? 0x400 : 0x100;
@@ -251,7 +251,7 @@ template< uint idx, bool doMask, uint upkType >
 __fi void dVifUnpack(const u8* data, bool isFill, uint vSize) {
 
 	nVifStruct&			v		= nVif[idx];
-	VifProcessingUnit&	vpu		= vifProc[idx];
+	VifProcessingUnit&	vpu		= g_vpu[idx];
 	VIFregisters&		regs	= GetVifXregs;
 
 	v.Block.upkType = upkType | (doMask << 4) | (regs.code.USN << 5);	// combines VN, VL, doMask, USN into one u8.

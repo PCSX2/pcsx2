@@ -435,8 +435,8 @@ struct PeripheralFifoPack
 	FifoRingBuffer<FifoSize_Vif0>	vif0;
 	FifoRingBuffer<FifoSize_Vif1>	vif1;
 	FifoRingBuffer<FifoSize_Gif>	gif;
-	FifoRingBuffer<FifoSize_Ipu0>	ipu0;
-	FifoRingBuffer<FifoSize_Ipu1>	ipu1;
+	FifoRingBuffer<FifoSize_Ipu0>	fromIpu;
+	FifoRingBuffer<FifoSize_Ipu1>	toIpu;
 
 	// The SFIFO is currently not emulated -- all SIF transfers are performed using a direct
 	// connection between IOP and EE (doable because our EE/IOP do not run in parallel).

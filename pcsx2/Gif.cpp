@@ -169,7 +169,7 @@ void GIF_ArbitratePaths()
 
 	gifRegs.stat.M3R = gifRegs.mode.M3R;
 	gifRegs.stat.IMT = gifRegs.mode.IMT;
-	gifRegs.stat.M3P = vifProc[1].maskpath3;
+	gifRegs.stat.M3P = g_vpu[1].maskpath3;
 
 	if (gifRegs.stat.P3Q)
 	{
@@ -324,7 +324,7 @@ bool GIF_ClaimPath3()
 
 bool GIF_MaskedPath3()
 {
-	return (gifRegs.mode.M3R || vifProc[1].maskpath3);
+	return (gifRegs.mode.M3R || g_vpu[1].maskpath3);
 }
 
 __fi u32 gifRead32(u32 mem)
@@ -426,6 +426,8 @@ uint __dmacall EE_DMAC::toGIF(const u128* srcBase, uint srcSize, uint srcStartQw
 
 void SaveStateBase::gifFreeze()
 {
-	FreezeTag( "GIFdma" );
-
+	FreezeTag( "GIFpath" );
+	Freeze(xgkick_queue_addr);
+	Freeze(gif_busyCycles);
+	Freeze(gif_sCycle);
 }

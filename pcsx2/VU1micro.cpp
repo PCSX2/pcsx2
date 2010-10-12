@@ -24,7 +24,7 @@
 
 #include "VUmicro.h"
 #include "Gif.h"
-#include "ps2\NewDmac.h"
+#include "ps2/NewDmac.h"
 
 using namespace EE_DMAC;
 

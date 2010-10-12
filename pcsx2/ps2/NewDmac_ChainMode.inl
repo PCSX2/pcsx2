@@ -182,23 +182,23 @@ bool ChannelState::MFIFO_SrcChainUpdateTADR()
 		{
 			if (UseMFIFOHack)
 			{
-				if (!spr0dma.chcr.STR)
+				if (!fromSprDma.chcr.STR)
 				{
 					// See below for details...
 					return IrqStall(Stall_MFIFO);
 				}
 
-				tadr.ADDR = spr0dma.sadr.ADDR;
+				tadr.ADDR = fromSprDma.sadr.ADDR;
 				tadr.SPR = 1;
 				tadr.IncrementQWC();
 			}
 			else
 			{
 				tadr = dmacRegs.mfifoWrapAddr(madr);
-				pxAssertDev(spr0dma.madr == dmacRegs.mfifoWrapAddr(spr0dma.madr), "MFIFO MADR wrapping failure.");
-				//spr0dma.madr = dmacRegs.mfifoWrapAddr(spr0dma.madr.ADDR);
+				pxAssertDev(fromSprDma.madr == dmacRegs.mfifoWrapAddr(fromSprDma.madr), "MFIFO MADR wrapping failure.");
+				//fromSprDma.madr = dmacRegs.mfifoWrapAddr(fromSprDma.madr.ADDR);
 
-				if (tadr == spr0dma.madr)
+				if (tadr == fromSprDma.madr)
 				{
 					// MFIFO Stall condition (!)  The FIFO is drained and the SPR isn't
 					// feeding it any more data.  Oddly enough, the drain channel does

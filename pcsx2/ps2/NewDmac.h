@@ -469,13 +469,13 @@ protected:
 static ControllerRegisters& dmacRegs = (ControllerRegisters&)eeHw[0xE000];
 
 // Various useful locations
-static ChannelRegisters& spr0dma	= (ChannelRegisters&)eeHw[0xD000];
-static ChannelRegisters& spr1dma	= (ChannelRegisters&)eeHw[0xD400];
+static ChannelRegisters& fromSprDma	= (ChannelRegisters&)eeHw[0xD000];
+static ChannelRegisters& toSprDma	= (ChannelRegisters&)eeHw[0xD400];
 static ChannelRegisters& gifdma		= (ChannelRegisters&)eeHw[0xA000];
 static ChannelRegisters& vif0dma	= (ChannelRegisters&)eeHw[0x8000];
 static ChannelRegisters& vif1dma	= (ChannelRegisters&)eeHw[0x9000];
-static ChannelRegisters& ipu0dma	= (ChannelRegisters&)eeHw[0xB000];
-static ChannelRegisters& ipu1dma	= (ChannelRegisters&)eeHw[0xB400];
+static ChannelRegisters& fromIpuDma	= (ChannelRegisters&)eeHw[0xB000];
+static ChannelRegisters& toIpuDma	= (ChannelRegisters&)eeHw[0xB400];
 
 extern void dmacEventUpdate();
 extern bool dmacControllerEnabled();

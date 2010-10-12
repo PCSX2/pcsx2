@@ -64,10 +64,10 @@ __fi void ipuProcessInterrupt()
 
 	IPUWorker();
 
-	if (g_fifo.ipu0.IsFull())
+	if (!g_fifo.fromIpu.IsEmpty())
 		dmacRequestSlice(ChanId_fromIPU);
 	
-	if (g_fifo.ipu1.IsEmpty())
+	if (g_fifo.toIpu.IsEmpty())
 		dmacRequestSlice(ChanId_toIPU);
 }
 
@@ -211,8 +211,8 @@ __fi u32 ipuRead32(u32 mem)
 	{
 		ipucase(IPU_CTRL): // IPU_CTRL
 		{
-			ipuRegs.ctrl.IFC = g_fifo.ipu1.qwc;
-			ipuRegs.ctrl.OFC = g_fifo.ipu0.qwc;
+			ipuRegs.ctrl.IFC = g_fifo.toIpu.qwc;
+			ipuRegs.ctrl.OFC = g_fifo.fromIpu.qwc;
 			ipuRegs.ctrl.CBP = coded_block_pattern;
 
 			if (!ipuRegs.ctrl.BUSY)
@@ -226,7 +226,7 @@ __fi u32 ipuRead32(u32 mem)
 			pxAssume(g_BP.FP <= 2);
 			
 			ipuRegs.ipubp = g_BP.BP & 0x7f;
-			ipuRegs.ipubp |= g_fifo.ipu1.qwc << 8;
+			ipuRegs.ipubp |= g_fifo.toIpu.qwc << 8;
 			ipuRegs.ipubp |= g_BP.FP << 16;
 
 			IPU_LOG("read32: IPU_BP=0x%08X", ipuRegs.ipubp);
@@ -352,7 +352,7 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 static void ipuBCLR(u32 val)
 {
 	g_BP.reset(val & 0x7F);
-	g_fifo.ipu1.Clear();
+	g_fifo.toIpu.Clear();
 	
 	ipuRegs.ctrl.BUSY = 0;
 	ipuRegs.cmd.BUSY = 0;
@@ -873,6 +873,8 @@ __fi void IPUCMD_WRITE(u32 val)
 {
 	// don't process anything if currently busy
 	//if (ipuRegs.ctrl.BUSY) Console.WriteLn("IPU BUSY!"); // wait for thread
+	
+	pxAssume(!ipuRegs.ctrl.BUSY);
 
 	ipuRegs.ctrl.ECD = 0;
 	ipuRegs.ctrl.SCD = 0;
@@ -912,23 +914,23 @@ __fi void IPUCMD_WRITE(u32 val)
 		case SCE_IPU_VDEC:
 			g_BP.Advance(val & 0x3F);
 			ipuRegs.SetDataBusy();
-				break;
+			break;
 
 		case SCE_IPU_FDEC:
 			IPU_LOG("FDEC command. Skip 0x%X bits, FIFO 0x%X qwords, BP 0x%X",
-			        val & 0x3f, g_fifo.ipu1.qwc, g_BP.BP);
+			        val & 0x3f, g_fifo.toIpu.qwc, g_BP.BP);
 
 			g_BP.Advance(val & 0x3F);
 			ipuRegs.SetDataBusy();
-				break;
+			break;
 
 		case SCE_IPU_SETIQ:
 			IPU_LOG("SETIQ command.");
 			g_BP.Advance(val & 0x3F);
-				break;
+			break;
 
 		case SCE_IPU_SETVQ:
-				break;
+			break;
 
 		case SCE_IPU_CSC:
 			break;
@@ -1019,12 +1021,12 @@ bool IPUin_HasData()
 	// Care must be taken since IPU processing is done from EE_DMAC::toIPU normally, so IPU
 	// processing would probably have to be done from an external cpuEvent.
 
-	return !g_fifo.ipu1.IsEmpty();
+	return !g_fifo.toIpu.IsEmpty();
 }
 
 void IPUin_GetNextQWC( u128* dest )
 {
-	g_fifo.ipu1.ReadSingle(dest, false);
+	g_fifo.toIpu.ReadSingle(dest, false);
 }
 
 uint IPUout_Write( const void* src, uint sizeQwc )
@@ -1033,10 +1035,10 @@ uint IPUout_Write( const void* src, uint sizeQwc )
 	// transfer code for IPU0 directly, instead of forcing the IPU to exit state.
 	// (if implemented, calls to IPUworker in EE_DMAC::fromIPU should be removed).
 
-	if (g_fifo.ipu0.IsFull()) return 0;
+	if (g_fifo.fromIpu.IsFull()) return 0;
 
 	// drain the rest into the FIFO, if possible
-	uint copylen = g_fifo.ipu0.Write( (u128*)src, sizeQwc );
+	uint copylen = g_fifo.fromIpu.Write( (u128*)src, sizeQwc );
 	IPU_LOG("\tipuOut_Write: srcSize=0x%03X, copyLen=0x%02X", sizeQwc, copylen);
 	return copylen;
 }
@@ -1067,28 +1069,28 @@ uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQw
 	do {
 		g_BP.FillBuffer(0);
 		if (ipuRegs.ctrl.BUSY) IPUWorker();
-		if (!g_fifo.ipu1.IsEmpty()) break;
+		if (!g_fifo.toIpu.IsEmpty()) break;
 		if (!runningLen) break;
 
 		/*do {
 			srcStartQwc &= srcSize-1;
-			g_fifo.ipu1.WriteSingle(&srcBase[srcStartQwc], false);
+			g_fifo.toIpu.WriteSingle(&srcBase[srcStartQwc], false);
 			++srcStartQwc;
 			--runningLen;
 		}
-		while (!g_fifo.ipu1.IsFull() && runningLen);*/
+		while (!g_fifo.toIpu.IsFull() && runningLen);*/
 
 		// This is the accelerated version that copies in 8 QWC slices.
 		// (should be more accurate as well as faster)
 
-		g_fifo.ipu1.qwc = std::min(runningLen, ArraySize(g_fifo.ipu1.buffer));
-		g_fifo.ipu1.readpos = g_fifo.ipu1.writepos = 0;
-		MemCopy_WrappedSrc(srcBase, srcSize, srcStartQwc, g_fifo.ipu1.buffer, g_fifo.ipu1.qwc);
-		runningLen -= g_fifo.ipu1.qwc;
+		g_fifo.toIpu.qwc = std::min(runningLen, ArraySize(g_fifo.toIpu.buffer));
+		g_fifo.toIpu.readpos = g_fifo.toIpu.writepos = 0;
+		MemCopy_WrappedSrc(srcBase, srcSize, srcStartQwc, g_fifo.toIpu.buffer, g_fifo.toIpu.qwc);
+		runningLen -= g_fifo.toIpu.qwc;
 	}
 	while (true);
 
-	if (!g_fifo.ipu0.IsEmpty())
+	if (!g_fifo.fromIpu.IsEmpty())
 		dmacRequestSlice(ChanId_fromIPU);
 
 	return lenQwc - runningLen;
@@ -1096,11 +1098,11 @@ uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQw
 
 uint __dmacall EE_DMAC::fromIPU(u128* destBase, uint destSize, uint destStartQwc, uint lenQwc)
 {
-	if (ipu0dma.qwc._u32 != ipu0dma.qwc.QWC)
+	if (fromIpuDma.qwc._u32 != fromIpuDma.qwc.QWC)
 	{
 		Console.Warning("IPU Hackfix for GUST games executed!");
-		ipu0dma.chcr.STR = 0;
-		ipu0dma.qwc._u32 = 0;
+		fromIpuDma.chcr.STR = 0;
+		fromIpuDma.qwc._u32 = 0;
 		return 0;
 	}
 
@@ -1114,22 +1116,22 @@ uint __dmacall EE_DMAC::fromIPU(u128* destBase, uint destSize, uint destStartQwc
 
 	do {
 		if (ipuRegs.ctrl.BUSY) IPUWorker();
-		if (g_fifo.ipu0.IsEmpty()) break;
+		if (g_fifo.fromIpu.IsEmpty()) break;
 		if (!runningLen) break;
 
 		do {
 			destStartQwc &= destSize-1;
-			g_fifo.ipu0.ReadSingle(&destBase[destStartQwc]);
+			g_fifo.fromIpu.ReadSingle(&destBase[destStartQwc]);
 			++destStartQwc;
 			--runningLen;
 		}
-		while (g_fifo.ipu0.qwc && runningLen);
+		while (g_fifo.fromIpu.qwc && runningLen);
 	}
 	while (true);
 
 	/*
 		// destination doesn't have wrapping enabled (yay)
-		transferred += g_fifo.ipu0.Read(&destBase[destStartQwc+transferred], lenQwc);
+		transferred += g_fifo.fromIpu.Read(&destBase[destStartQwc+transferred], lenQwc);
 		if (transferred == lenQwc) return transferred;
 	*/
 	
@@ -1169,7 +1171,7 @@ uint IPU_DataTarget::Write( const void* src, uint sizeQwc )
 
 	if (leftQwc)
 	{
-		pxAssumeDev(ipu0dma.chcr.STR, "IPU0 DataTarget/STR mismatch detected.");
+		pxAssumeDev(fromIpuDma.chcr.STR, "IPU0 DataTarget/STR mismatch detected.");
 
 		IPU_LOG("\tfromIPU write (DMA): srcSize=0x%03X, destLeft=0x%04X, destpos=0x%04X", sizeQwc, leftQwc, curposQwc);
 
@@ -1182,10 +1184,10 @@ uint IPU_DataTarget::Write( const void* src, uint sizeQwc )
 		transferred += copylen;
 	}
 
-	if (sizeQwc && !g_fifo.ipu0.IsFull())
+	if (sizeQwc && !g_fifo.fromIpu.IsFull())
 	{
 		// drain the rest into the FIFO, if possible
-		uint copylen = g_fifo.ipu0.Write( (u128*)src, sizeQwc );
+		uint copylen = g_fifo.fromIpu.Write( (u128*)src, sizeQwc );
 		IPU_LOG("\tfromIPU write (FIFO): srcSize=0x%03X, copyLen=0x%02X", sizeQwc, copylen);
 		sizeQwc -= copylen;
 	}
@@ -1226,11 +1228,11 @@ uint __dmacall EE_DMAC::toIPU(const u128* srcBase, uint srcSize, uint srcStartQw
 
 uint __dmacall EE_DMAC::fromIPU(u128* destBase, uint destSize, uint destStartQwc, uint lenQwc)
 {
-	if (ipu0dma.qwc._u32 != ipu0dma.qwc.QWC)
+	if (fromIpuDma.qwc._u32 != fromIpuDma.qwc.QWC)
 	{
 		Console.Warning("IPU Hackfix for GUST games executed!");
-		ipu0dma.chcr.STR = 0;
-		ipu0dma.qwc._u32 = 0;
+		fromIpuDma.chcr.STR = 0;
+		fromIpuDma.qwc._u32 = 0;
 		return 0;
 	}
 
@@ -1250,8 +1252,8 @@ uint __dmacall EE_DMAC::fromIPU(u128* destBase, uint destSize, uint destStartQwc
 	// much else DMA as we can (limited by IPU command type and input data availability).
 	// Finally we program the IPU's DataTarget structure to point to this DMA information.
 
-	if (g_fifo.ipu0.qwc)
-		IPU_LOG("\tfromIPU commit from FIFO: QWC=0x%04X", g_fifo.ipu0.qwc);
+	if (g_fifo.fromIpu.qwc)
+		IPU_LOG("\tfromIPU commit from FIFO: QWC=0x%04X", g_fifo.fromIpu.qwc._u32);
 
 	if (destSize)
 	{
@@ -1260,19 +1262,19 @@ uint __dmacall EE_DMAC::fromIPU(u128* destBase, uint destSize, uint destStartQwc
 
 		destStartQwc += transferred;
 
-		while (g_fifo.ipu0.qwc)
+		while (g_fifo.fromIpu.qwc)
 		{
 			destStartQwc &= destSize-1;
-			g_fifo.ipu0.ReadSingle(&destBase[destStartQwc]);
+			g_fifo.fromIpu.ReadSingle(&destBase[destStartQwc]);
 			++transferred;
 			if (transferred == lenQwc) return transferred;
 			++destStartQwc;
 		}
 	}
-	else if(g_fifo.ipu0.qwc)
+	else if(g_fifo.fromIpu.qwc)
 	{
 		// destination doesn't have wrapping enabled (yay)
-		transferred += g_fifo.ipu0.Read(&destBase[destStartQwc+transferred], lenQwc);
+		transferred += g_fifo.fromIpu.Read(&destBase[destStartQwc+transferred], lenQwc);
 		if (transferred == lenQwc) return transferred;
 
 		destStartQwc += transferred;

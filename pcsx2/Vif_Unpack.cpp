@@ -34,7 +34,7 @@ template< uint idx, uint mode, bool doMask >
 static __fi void writeXYZW(u32 offnum, u32 &dest, u32 data, bool isV4_5 = false) {
 	int n = 0;
 
-	VifProcessingUnit& vpu = vifProc[idx];
+	VifProcessingUnit& vpu = g_vpu[idx];
 	
 	if (doMask) {
 		const VIFregisters& regs = GetVifXregs;

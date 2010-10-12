@@ -194,6 +194,7 @@ void SaveStateBase::FreezeRegisters()
 	sifFreeze();
 	ipuFreeze();
 	gifFreeze();
+	Freeze(g_fifo);
 
 	// Fifth Block - iop-related systems
 	// ---------------------------------
