@@ -32,8 +32,9 @@ const DMAtag* ChannelState::SrcChainTransferTag()
 	const DMAtag* newtag = (DMAtag*)GetHostPtr(creg.tadr, false);
 
 	DMAC_LOG("\tSrcChain Tag @ %ls : %ls", creg.tadr.ToString().c_str(), newtag->ToString(Dir_Drain).c_str());
-
-	if (chcr.TTE)
+//FIXME:
+//Gif still doesnt like TTE (Dark Cloud 2 Text Mess) Some games send rubbish, as with vif, it could be mid packet.
+	if (chcr.TTE && ChannelState::Id != ChanId_GIF)
 	{
 		// Tag Transfer is enabled
 		// -----------------------
