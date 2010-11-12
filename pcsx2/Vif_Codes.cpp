@@ -107,6 +107,19 @@ _vifCodeT vc_Direct()
 		pxAssume(((uptr)vpu.data & 15) == 0);
 		pxAssume((vpu.fragment_size & 3) == 0);
 
+		if(((uptr)vpu.data & 15) != 0) // remove when fixed
+		{ 
+			Console.Warning(" vpu.data alignment error. data is %d ",(uptr)vpu.data);
+			//Fixme: returning here fixes a few crashes and lets Lego Star Wars work fine.
+			//return; 
+		}
+		if((vpu.fragment_size & 3) != 0) // remove when fixed
+		{
+			Console.Warning(" vpu.fragment_size alignment error. size is = %d ",vpu.fragment_size);
+			//Fixme: same as above?
+			//return; 
+		}
+
 		if (vpu.fragment_size == 0)
 		{
 			vif1Regs.stat.VPS = VPS_WAITING;
@@ -137,6 +150,9 @@ _vifCodeT vc_Direct()
 
 	if (vif1Regs.num != 0)
 	{
+		//Fixme: leaving vif1Regs.stat.VPS at IDLE here fixes part of Fatal Frame
+		Console.Warning("vif1Regs.num != 0! is %d instead. ",vif1Regs.num); // remove when fixed
+
 		// Partial transfer.  Whether or not we're waiting for the GIF to finish transfer or
 		// waiting for the VIF to acquire more data depends on the fragment_size.
 		vif1Regs.stat.VPS = vpu.fragment_size ? VPS_TRANSFERRING : VPS_WAITING;
@@ -303,6 +319,7 @@ _vifCodeT vc_MPG()
 
 	if (regs.num != 0)
 	{
+		Console.Warning(" test ");
 		// Partial transfer.  Whether or not we're waiting for the GIF to finish transfer or
 		// waiting for the VIF to acquire more data depends on the fragment_size.
 		regs.stat.VPS = vpu.fragment_size ? VPS_TRANSFERRING : VPS_WAITING;
