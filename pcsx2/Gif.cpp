@@ -226,7 +226,7 @@ bool GIF_InterruptPath3( gif_active_path apath )
 	
 	pxAssumeDev(gifRegs.p3cnt.P3CNT != 0, "Resuming PATH3 is already finished? (p3cnt==0)");
 
-	GIF_LOG( "PATH3 interrupted by PATH%u (P3CNT=%x)", gifRegs.p3cnt );
+	GIF_LOG( "PATH3 interrupted by PATH%u (P3CNT=%x)", gifRegs.p3cnt._u32 );
 	return true;
 }
 

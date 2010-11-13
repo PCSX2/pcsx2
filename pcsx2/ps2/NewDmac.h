@@ -190,7 +190,9 @@ struct ControllerRegisters
 
 	__ri tDMAC_ADDR mfifoWrapAddr(const tDMAC_ADDR& offset, u32 incr=0) const
 	{
-		return (tDMAC_ADDR) (((offset.ADDR + incr) & rbsr.RMSK) + rbor.ADDR);
+		tDMAC_ADDR ret;
+		ret.set(((offset.ADDR + incr) & rbsr.RMSK) + rbor.ADDR);
+		return ret;
 	}
 
 	__ri u32 mfifoRingSize() const

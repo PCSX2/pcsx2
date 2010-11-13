@@ -323,7 +323,6 @@
 		<Unit filename="../Memory.cpp" />
 		<Unit filename="../Memory.h" />
 		<Unit filename="../NakedAsm.h" />
-		<Unit filename="../NewDmac.cpp" />
 		<Unit filename="../Patch.cpp" />
 		<Unit filename="../Patch.h" />
 		<Unit filename="../Patch_Memory.cpp" />
@@ -380,7 +379,6 @@
 		<Unit filename="../VUops.h" />
 		<Unit filename="../Vif.cpp" />
 		<Unit filename="../Vif.h" />
-		<Unit filename="../Vif1_MFIFO.cpp" />
 		<Unit filename="../Vif_Codes.cpp" />
 		<Unit filename="../Vif_Unpack.cpp" />
 		<Unit filename="../Vif_Unpack.h" />
@@ -571,6 +569,11 @@
 		<Unit filename="../ps2/Iop/IopHwRead.cpp" />
 		<Unit filename="../ps2/Iop/IopHwWrite.cpp" />
 		<Unit filename="../ps2/Iop/IopHw_Internal.h" />
+		<Unit filename="../ps2/NewDmac.cpp" />
+		<Unit filename="../ps2/NewDmac.h" />
+		<Unit filename="../ps2/NewDmac_ChainMode.inl" />
+		<Unit filename="../ps2/NewDmac_Tables.inl" />
+		<Unit filename="../ps2/eeHwTraceLog.inl" />
 		<Unit filename="../vtlb.cpp" />
 		<Unit filename="../vtlb.h" />
 		<Unit filename="../x86/BaseblockEx.cpp" />

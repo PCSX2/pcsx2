@@ -50,6 +50,7 @@ __noinline void memzero_sse_a( T& dest )
 	}
 
 	destxmm += (MZFqwc & 0x07);
+	// Gives a warning about an unsigned expression < 0 always being false if T = tIPU_cmd in gcc.
 	for( uint i=0; i<MZFqwc / 8; ++i, destxmm+=8 )
 	{
 		_mm_store_ps(&destxmm[0][0], zeroreg);

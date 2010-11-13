@@ -300,7 +300,7 @@ __fi bool ipuWrite32(u32 mem, u32 value)
 	switch (mem)
 	{
 		ipucase(IPU_CMD): // IPU_CMD
-			IPU_LOG("write32: IPU_CMD=0x%08X", value);
+			IPU_LOG("write32: IPU_CMD=0x%08X", value); // 0xf in Dot Hack 1?
 			IPUCMD_WRITE(value);
 			ipuProcessInterrupt();
 		return false;
@@ -1004,7 +1004,7 @@ __noinline void IPUWorker()
 		case SCE_IPU_PACK:
 			if (!ipuPACK(ipu_cmd.current)) return;
 			break;
-
+			
 		jNO_DEFAULT
 	}
 

@@ -1110,7 +1110,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			const tDMA_QWC& qwc = (tDMA_QWC&)value;
 
 			if(qwc != info.QWC())
-				tracewarn.Write("\n\tQWC changed to 0x%04x (oldval=0x%04x)", info.NameA, qwc, info.QWC());
+				tracewarn.Write("\n\tQWC changed to 0x%04x (oldval=0x%04x)", info.NameA, qwc._u32, info.QWC()._u32);
 		}
 		break;
 

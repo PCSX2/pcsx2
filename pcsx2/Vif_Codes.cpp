@@ -412,7 +412,7 @@ _vifCodeT vc_Null()
 
 _vifCodeT vc_Offset()
 {
-	VifCodeLog("Offset @ 0x%04X (base/tops=0x%04X)", vif1Regs.code.ADDR, vif1Regs.base);
+	VifCodeLog("Offset @ 0x%04X (base/tops=0x%04X)", vif1Regs.code.ADDR, vif1Regs.base._u32);
 	vif1Only();
 
 	vif1Regs.stat.DBF	= 0;

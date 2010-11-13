@@ -138,7 +138,6 @@ set(pcsx2Sources
 	Memory.cpp
 	MMI.cpp
 	MTGS.cpp
-	NewDmac.cpp
 	Patch.cpp
 	Patch_Memory.cpp
 	Pcsx2Config.cpp
@@ -386,13 +385,17 @@ set(pcsx2ps2Sources
 	ps2/BiosTools.cpp
 	ps2/GIFpath.cpp
 	ps2/Iop/IopHwRead.cpp
-	ps2/Iop/IopHwWrite.cpp)
+	ps2/Iop/IopHwWrite.cpp
+	ps2/NewDmac.cpp)
 
 # ps2 headers
 set(pcsx2ps2Headers
 	ps2/BiosTools.h
 	ps2/eeHwTraceLog.inl
 	ps2/HwInternal.h
+	ps2/NewDmac.h
+	ps2/NewDmac_ChainMode.inl
+	ps2/NewDmac_Tables.inl
 	ps2/Iop/IopHw_Internal.h)
 
 # RDebug sources

@@ -399,7 +399,7 @@ void psxDma9(iDMA_CHCR newchcr)
 			//if ((HW_DMA_PCR2 & bitmess) == 0) return;
 
 			SIF_LOG("IOP dmaSIF0(9): chcr = %08x, madr = %08x, bcr = %08x, tadr = %08x",
-				newchcr, hw_dma9.madr, hw_dma9.bcr, hw_dma9.tadr);
+				newchcr._u32, hw_dma9.madr, hw_dma9.bcr, hw_dma9.tadr);
 
 			psHu32(SBUS_F240) |= 0x2000;
 
@@ -429,7 +429,7 @@ void psxDma10(iDMA_CHCR newchcr)
 		if (newchcr.STR)
 		{
 			SIF_LOG("IOP dmaSIF1(10): chcr = %08x, madr = %08x, bcr = %08x",
-				newchcr, hw_dma10.madr, hw_dma10.bcr);
+				newchcr._u32, hw_dma10.madr, hw_dma10.bcr);
 
 			psHu32(SBUS_F240) |= 0x4000;
 

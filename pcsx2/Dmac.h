@@ -419,8 +419,9 @@ union tDMAC_ADDR
 	};
 	u32 _u32;
 
-	tDMAC_ADDR() {}
-	tDMAC_ADDR(u32 val) { _u32 = val; }
+	//tDMAC_ADDR() {}
+	//tDMAC_ADDR(u32 val) { _u32 = val; }
+	void set(u32 val) { _u32 = val; }
 
 	bool operator==( const tDMAC_ADDR& right ) const	{ return _u32 == right._u32; }
 	bool operator!=( const tDMAC_ADDR& right ) const	{ return _u32 != right._u32; }
