@@ -25,17 +25,22 @@ else
     echo "Please provide the subversion revision number as the first parameter"
     exit 1;
 fi
-if [ -n "$2" ] ; then
-    # Use branch argument
-    SVN_TRUNK="http://pcsx2.googlecode.com/svn/branches/$2"
-else
-    # by default take the trunk
-    SVN_TRUNK="http://pcsx2.googlecode.com/svn/trunk"
-fi
+# if [ -n "$2" ] ; then
+#     # Use branch argument
+#     SVN_TRUNK="http://pcsx2.googlecode.com/svn/branches/$2"
+# else
+#     # by default take the trunk
+#     SVN_TRUNK="http://pcsx2.googlecode.com/svn/trunk"
+# fi
+# Warning hardcode release version
+SVN_TRUNK="http://pcsx2.googlecode.com/svn/branches/0.9.8"
 
 # Debian name of package and tarball
-PKG_NAME="pcsx2-${SVN_CO_VERSION}"
-TAR_NAME="pcsx2_${SVN_CO_VERSION}.orig.tar"
+# Warning hardcode release version
+PKG_NAME="pcsx2-0.9.8"
+TAR_NAME="pcsx2_0.9.8.orig.tar"
+#PKG_NAME="pcsx2-${SVN_CO_VERSION}"
+#TAR_NAME="pcsx2_${SVN_CO_VERSION}.orig.tar"
 
 # Directory
 TMP_DIR=/tmp
@@ -80,7 +85,7 @@ echo "Downloading pcsx2 source revision ${SVN_CO_VERSION}"
 mkdir -p $ROOT_DIR;
 (cd $ROOT_DIR; 
     get_svn_file CMakeLists.txt;
-    get_svn_dir bin common cmake pcsx2 tools;
+    get_svn_dir bin common cmake locales pcsx2 tools;
     get_svn_dir debian-upstream;
 echo "Done")
 
