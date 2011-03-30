@@ -64,7 +64,7 @@ void Panels::DirPickerPanel::Explore_Click( wxCommandEvent &evt )
 		wxDialogWithHelpers createPathDlg( NULL, _("Path does not exist") );
 		createPathDlg.SetMinWidth( 600 );
 
-		createPathDlg += createPathDlg.Text( path.ToString() ) | StdCenter();
+		createPathDlg += createPathDlg.Label( path.ToString() ) | StdCenter();
 
 		createPathDlg += createPathDlg.Heading( pxE( "!Notice:DirPicker:CreatePath",
 			L"The specified path/directory does not exist.  Would you like to create it?" )
@@ -117,9 +117,9 @@ void Panels::DirPickerPanel::Init( FoldersEnum_t folderid, const wxString& dialo
 		// The default path is invalid... What should we do here? hmm..
 	}
 
-	if (InstallationMode == InstallMode_Portable)
-		InitForPortableMode(normalized);
-	else
+//	if (InstallationMode == InstallMode_Portable)
+//		InitForPortableMode(normalized);
+//	else
 		InitForRegisteredMode(normalized, dialogLabel, isCompact);
 
 	// wx warns when paths don't exist, but this is typically normal when the wizard
@@ -128,9 +128,11 @@ void Panels::DirPickerPanel::Init( FoldersEnum_t folderid, const wxString& dialo
 	AppStatusEvent_OnSettingsApplied();	// forces default settings based on g_Conf
 }
 
+
+// InitForPortableMode is currently unused because portable now allows fully custom folders.
 void Panels::DirPickerPanel::InitForPortableMode( const wxString& normalized )
 {
-	// In portable mode the path is unchangeable, and only a browse button is provided (which
+	// In portable mode the path is unchangeable, and only a "open in explorer" button is provided (which
 	// itself is windows-only at this time).
 
 	m_textCtrl = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY );

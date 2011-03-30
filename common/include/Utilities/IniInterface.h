@@ -50,8 +50,8 @@ public:
 	bool IsSaving() const { return !IsLoading(); }
 
 	virtual void Entry( const wxString& var, wxString& value, const wxString defvalue=wxString() )=0;
-	virtual void Entry( const wxString& var, wxDirName& value, const wxDirName defvalue=wxDirName() )=0;
-	virtual void Entry( const wxString& var, wxFileName& value, const wxFileName defvalue=wxFileName() )=0;
+	virtual void Entry( const wxString& var, wxDirName& value, const wxDirName defvalue=wxDirName(), bool isAllowRelative=false )=0;
+	virtual void Entry( const wxString& var, wxFileName& value, const wxFileName defvalue=wxFileName(), bool isAllowRelative=false )=0;
 	virtual void Entry( const wxString& var, int& value, const int defvalue=0 )=0;
 	virtual void Entry( const wxString& var, uint& value, const uint defvalue=0 )=0;
 	virtual void Entry( const wxString& var, bool& value, const bool defvalue=false )=0;
@@ -113,8 +113,8 @@ public:
 	bool IsLoading() const { return true; }
 
 	void Entry( const wxString& var, wxString& value, const wxString defvalue=wxEmptyString );
-	void Entry( const wxString& var, wxDirName& value, const wxDirName defvalue=wxDirName() );
-	void Entry( const wxString& var, wxFileName& value, const wxFileName defvalue=wxFileName() );
+	void Entry( const wxString& var, wxDirName& value, const wxDirName defvalue=wxDirName(), bool isAllowRelative=false );
+	void Entry( const wxString& var, wxFileName& value, const wxFileName defvalue=wxFileName(), bool isAllowRelative=false );
 	void Entry( const wxString& var, int& value, const int defvalue=0 );
 	void Entry( const wxString& var, uint& value, const uint defvalue=0 );
 	void Entry( const wxString& var, bool& value, const bool defvalue=false );
@@ -151,8 +151,8 @@ public:
 	bool IsLoading() const { return false; }
 
 	void Entry( const wxString& var, wxString& value, const wxString defvalue=wxString() );
-	void Entry( const wxString& var, wxDirName& value, const wxDirName defvalue=wxDirName() );
-	void Entry( const wxString& var, wxFileName& value, const wxFileName defvalue=wxFileName() );
+	void Entry( const wxString& var, wxDirName& value, const wxDirName defvalue=wxDirName(), bool isAllowRelative=false );
+	void Entry( const wxString& var, wxFileName& value, const wxFileName defvalue=wxFileName(), bool isAllowRelative=false );
 	void Entry( const wxString& var, int& value, const int defvalue=0 );
 	void Entry( const wxString& var, uint& value, const uint defvalue=0 );
 	void Entry( const wxString& var, bool& value, const bool defvalue=false );
@@ -175,8 +175,13 @@ protected:
 // syntax errors. >_<
 //
 #define IniEntry( varname )		ini.Entry( wxT(#varname), varname, varname )
+#define IniEntryDirFile( varname, isAllowRelative )		ini.Entry( wxT(#varname), varname, varname, isAllowRelative )
 #define IniBitfield( varname )	varname = ini.EntryBitfield( wxT(#varname), varname, varname )
 #define IniBitBool( varname )	varname = ini.EntryBitBool( wxT(#varname), !!varname, varname )
 
 #define IniBitfieldEx( varname, textname )	varname = ini.EntryBitfield( wxT(textname), varname, varname )
 #define IniBitBoolEx( varname, textname )	varname = ini.EntryBitBool( wxT(textname), !!varname, varname )
+
+//used for filenames and folder names as ini values.
+//Set to app root folder, so all files and folders which are inside appRoot will be written as relative.
+void SetFullBaseDir( wxDirName appRoot );

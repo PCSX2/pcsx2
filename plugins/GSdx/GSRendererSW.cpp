@@ -171,17 +171,20 @@ void GSRendererSW::Draw()
 		s_n++;
 	}
 
+	GSVector4i scissor(m_context->scissor.in);
+	GSVector4i bbox = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p));
+	GSVector4i r = bbox.rintersect(scissor);
+	
 	GSRasterizerData data;
 
-	data.scissor = GSVector4i(m_context->scissor.in);
-	data.scissor.z = min(data.scissor.z, (int)m_context->FRAME.FBW * 64); // TODO: find a game that overflows and check which one is the right behaviour
+	data.scissor = scissor;
+	data.scissor.z = std::min<int>(data.scissor.z, (int)m_context->FRAME.FBW * 64); // TODO: find a game that overflows and check which one is the right behaviour
+	data.scissor_test = !bbox.eq(r);
 	data.primclass = m_vt.m_primclass;
 	data.vertices = m_vertices;
 	data.count = m_count;
 	data.frame = m_perfmon.GetFrame();
 	data.param = &gd;
-
-	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(data.scissor);
 
 	m_rl.Draw(&data, r.width(), r.height());
 
@@ -364,8 +367,6 @@ bool GSRendererSW::GetScanlineGlobalData(GSScanlineGlobalData& gd)
 				// 100 l round
 				// 101 l tri
 			
-				// TODO: (int)m_vt.m_lod.x >= mxl => LCM == 1
-
 				if(m_vt.m_lod.x > 0)
 				{
 					gd.sel.ltf = context->TEX1.MMIN >> 2;
@@ -381,14 +382,18 @@ bool GSRendererSW::GetScanlineGlobalData(GSScanlineGlobalData& gd)
 				int mxl = (std::min<int>((int)context->TEX1.MXL, 6) << 16);
 				int k = context->TEX1.K << 12;
 
-				if(gd.sel.mmin == 2)
+				if((int)m_vt.m_lod.x >= (int)context->TEX1.MXL)
 				{
-					mxl--;
+					k = (int)m_vt.m_lod.x << 16; // set lod to max
+
+					gd.sel.lcm = 1; // lod is constant
+					gd.sel.mmin = 1; // tri-linear is meaningless
 				}
 
-				gd.mxl = GSVector4((float)mxl);
-				gd.l = GSVector4((float)(-0x10000 << context->TEX1.L));
-				gd.k = GSVector4((float)k);
+				if(gd.sel.mmin == 2)
+				{
+					mxl--; // don't sample beyond the last level (TODO: add a dummy level instead?)
+				}
 
 				if(gd.sel.fst)
 				{
@@ -411,6 +416,12 @@ bool GSRendererSW::GetScanlineGlobalData(GSScanlineGlobalData& gd)
 					gd.lod.f = GSVector4i(lod & 0xffff).xxxxl().xxzz();
 
 					// TODO: lot to optimize when lod is constant
+				}
+				else
+				{
+					gd.mxl = GSVector4((float)mxl);
+					gd.l = GSVector4((float)(-0x10000 << context->TEX1.L));
+					gd.k = GSVector4((float)k);
 				}
 
 				GIFRegTEX0 MIP_TEX0 = context->TEX0;
@@ -486,8 +497,6 @@ bool GSRendererSW::GetScanlineGlobalData(GSScanlineGlobalData& gd)
 			}
 			else
 			{
-				// TODO: these shortcuts are not compatible with mipmapping, yet
-
 				if(gd.sel.fst == 0)
 				{
 					// skip per pixel division if q is constant
@@ -507,8 +516,6 @@ bool GSRendererSW::GetScanlineGlobalData(GSScanlineGlobalData& gd)
 								v[i].t *= w;
 							}
 						}
-
-						// TODO: q is now destoroyed, but since q is constant we should be able to pre-calc gd.lod and change LCM to 1
 					}
 					else if(primclass == GS_SPRITE_CLASS)
 					{
@@ -521,8 +528,6 @@ bool GSRendererSW::GetScanlineGlobalData(GSScanlineGlobalData& gd)
 							v[i + 0].t *= w;
 							v[i + 1].t *= w;
 						}
-
-						// TODO: preserve q, or if there only one sprite then see the comment above
 					}
 				}
 

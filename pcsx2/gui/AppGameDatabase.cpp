@@ -149,8 +149,12 @@ void DBLoaderHelper::ReadGames()
 //  AppGameDatabase  (implementations)
 // --------------------------------------------------------------------------------------
 
-AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& file, const wxString& key )
+AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file, const wxString& key )
 {
+	wxString file(_file);
+	if( wxFileName(file).IsRelative() )
+		file = (InstallFolder + file).GetFullPath();
+	
 	if (!wxFileExists(file))
 	{
 		Console.Error(L"(GameDB) Database Not Found! [%s]", file.c_str());
@@ -179,6 +183,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& file, const wxStr
 }
 
 // Saves changes to the database
+
 void AppGameDatabase::SaveToFile(const wxString& file) {
 	wxFFileOutputStream writer( file );
 	pxWriteMultiline(writer, header);

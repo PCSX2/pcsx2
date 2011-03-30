@@ -375,7 +375,7 @@ Panels::PluginSelectorPanel::ComboBoxPanel::ComboBoxPanel( PluginSelectorPanel* 
 		s_plugin	+= m_configbutton[pid];
 	} while( ++pi, pi->shortname != NULL );
 
-	if (InstallationMode != InstallMode_Portable)
+//	if (InstallationMode != InstallMode_Portable)
 		m_FolderPicker.SetStaticDesc( _("Click the Browse button to select a different folder for PCSX2 plugins.") );
 
 	*this	+= s_plugin			| pxExpand;
@@ -645,6 +645,7 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 	{
 		
 		wxWindowDisabler disabler;
+		wxDoNotLogInThisScope quiettime;
 		ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(pid) );
 		if (!CorePlugins.AreLoaded())
 		{
@@ -652,12 +653,12 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 
 			if( SetDirFnptr func = (SetDirFnptr)dynlib.GetSymbol( tbl_PluginInfo[pid].GetShortname() + L"setSettingsDir" ) )
 			{
-				func( GetSettingsFolder().ToUTF8() );
+				func( GetSettingsFolder().ToString().mb_str(wxConvFile) );
 			}
 
 			if( SetDirFnptr func = (SetDirFnptr)dynlib.GetSymbol( tbl_PluginInfo[pid].GetShortname() + L"setLogDir" ) )
 			{
-				func( GetLogFolder().ToUTF8() );
+				func( GetLogFolder().ToString().mb_str(wxConvFile) );
 			}
 		}
 

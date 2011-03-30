@@ -13,8 +13,8 @@
 !endif
 
 !ifndef INC_LANGS
-  ; Set to 1 to enable inclusion of Languages folders (which are currently missing in 0.9.7)
-  !define INC_LANGS     0
+  ; Set to 1 to enable inclusion of Languages folders
+  !define INC_LANGS     1
 !endif
 
 !ifndef USE_PACKAGE_REV
@@ -44,7 +44,7 @@
 ;   uninstall folders.  
 
 !ifndef APP_VERSION
-  !define APP_VERSION      "0.9.7"
+  !define APP_VERSION      "0.9.8"
 !endif
 
 !define APP_NAME         "PCSX2 ${APP_VERSION} (r${SVNREV_PACKAGE})"
@@ -68,10 +68,6 @@ OutFile "output\pcsx2-${APP_VERSION}-r${SVNREV_PACKAGE}-${OUTFILE_POSTFIX}.exe"
 
 ; The default installation directory
 InstallDir "$PROGRAMFILES\PCSX2 ${APP_VERSION}"
-
-; Registry key to check for directory (so if you install again, it will 
-; overwrite the old one automatically)
-InstallDirRegKey ${INSTDIR_REG_ROOT} "Software\PCSX2\${APP_VERSION}" "Install_Dir"
 
 ; These defines are dependent on NSIS vars assigned above.
 

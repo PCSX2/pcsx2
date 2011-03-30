@@ -2330,8 +2330,8 @@ public:
 	static const GSVector4 m_ps4567;
 	static const GSVector4 m_half;
 	static const GSVector4 m_one;
-
-	static const GSVector4 m_x3f800000;
+	static const GSVector4 m_two;
+	static const GSVector4 m_four;
 	static const GSVector4 m_x4b000000;
 
 	__forceinline GSVector4()
@@ -2462,12 +2462,12 @@ public:
 
 		if((mode & 7) == (Round_NegInf & 7))
 		{
-			return b - ((a < b) & m_x3f800000);
+			return b - ((a < b) & m_one);
 		}
 
 		if((mode & 7) == (Round_PosInf & 7))
 		{
-			return b + ((a > b) & m_x3f800000);
+			return b + ((a > b) & m_one);
 		}
 
 		ASSERT((mode & 7) == (Round_NearestInt & 7)); // other modes aren't implemented
@@ -2581,18 +2581,52 @@ public:
 	__forceinline GSVector4 hadd() const
 	{
 		#if _M_SSE >= 0x300
+		
 		return GSVector4(_mm_hadd_ps(m, m));
+		
 		#else
+		
 		return xzxz() + ywyw();
+		
 		#endif
 	}
 
 	__forceinline GSVector4 hadd(const GSVector4& v) const
 	{
 		#if _M_SSE >= 0x300
+		
 		return GSVector4(_mm_hadd_ps(m, v.m));
+		
 		#else
+		
 		return xzxz(v) + ywyw(v);
+		
+		#endif
+	}
+
+	__forceinline GSVector4 hsub() const
+	{
+		#if _M_SSE >= 0x300
+		
+		return GSVector4(_mm_hsub_ps(m, m));
+		
+		#else
+		
+		return xzxz() - ywyw();
+		
+		#endif
+	}
+
+	__forceinline GSVector4 hsub(const GSVector4& v) const
+	{
+		#if _M_SSE >= 0x300
+		
+		return GSVector4(_mm_hsub_ps(m, v.m));
+		
+		#else
+		
+		return xzxz(v) - ywyw(v);
+
 		#endif
 	}
 
@@ -2702,7 +2736,66 @@ public:
 		#endif
 	}
 
-	// TODO: insert
+	template<int src, int dst> __forceinline GSVector4 insert(const GSVector4& v) const
+	{
+		#if 0 // _M_SSE >= 0x401
+
+		// NOTE: it's faster with shuffles...
+
+		return GSVector4(_mm_insert_ps(m, v.m, _MM_MK_INSERTPS_NDX(src, dst, 0)));
+
+		#else
+
+		switch(dst)
+		{
+		case 0:
+			switch(src)
+			{
+			case 0: return v.xxyy(*this).xzzw(*this);
+			case 1: return v.yyyy(*this).xzzw(*this);
+			case 2: return v.zzyy(*this).xzzw(*this);
+			case 3: return v.wwyy(*this).xzzw(*this);
+			default: __assume(0);
+			}
+			break;
+		case 1:
+			switch(src)
+			{
+			case 0: return v.xxxx(*this).zxzw(*this);
+			case 1: return v.yyxx(*this).zxzw(*this);
+			case 2: return v.zzxx(*this).zxzw(*this);
+			case 3: return v.wwxx(*this).zxzw(*this);
+			default: __assume(0);
+			}
+			break;
+		case 2:
+			switch(src)
+			{
+			case 0: return xyxz(v.xxww(*this));
+			case 1: return xyxz(v.yyww(*this));
+			case 2: return xyxz(v.zzww(*this));
+			case 3: return xyxz(v.wwww(*this));
+			default: __assume(0);
+			}
+			break;
+		case 3:
+			switch(src)
+			{
+			case 0: return xyzx(v.xxzz(*this));
+			case 1: return xyzx(v.yyzz(*this));
+			case 2: return xyzx(v.zzzz(*this));
+			case 3: return xyzx(v.wwzz(*this));
+			default: __assume(0);
+			}
+			break;
+		default:
+			__assume(0);
+		}
+
+		#endif
+
+		return *this;
+	}
 
 	template<int i> __forceinline int extract() const
 	{
@@ -3054,7 +3147,7 @@ public:
 
 	__forceinline GSVector8i(__m128i m0, __m128i m1)
 	{
-		m = _mm256_insertf128_si256(_mm256_insertf128_si256(zero(), m0, 0), m1, 1);
+		this->m = zero().insert<0>(m0).insert<1>(m1);
 	}
 
 	__forceinline GSVector8i(const GSVector8i& v)
@@ -3342,7 +3435,11 @@ public:
 
 	__forceinline GSVector8(__m128 m0, __m128 m1)
 	{
-		m = _mm256_permute2f128_ps(_mm256_castps128_ps256(m0), _mm256_castps128_ps256(m1), 0x20);
+		// FIXME: MSVC bug, _mm256_castps128_ps256 may directy reload spilled regs from unaligned memory with vmovaps
+
+		// m = _mm256_permute2f128_ps(_mm256_castps128_ps256(m0), _mm256_castps128_ps256(m1), 0x20);
+
+		this->m = zero().insert<0>(m0).insert<1>(m1);
 	}
 
 	__forceinline GSVector8(const GSVector8& v)
@@ -3357,8 +3454,12 @@ public:
 
 	__forceinline explicit GSVector8(__m128 m)
 	{
-		this->m = _mm256_castps128_ps256(m);
-		this->m = _mm256_permute2f128_ps(this->m, this->m, 0);
+		// FIXME: MSVC bug, _mm256_castps128_ps256 may directy reload spilled regs from unaligned memory with vmovaps
+
+		// this->m = _mm256_castps128_ps256(m);
+		// this->m = _mm256_permute2f128_ps(this->m, this->m, 0);
+
+		this->m = zero().insert<0>(m).xx();
 	}
 
 	__forceinline explicit GSVector8(__m256 m)
