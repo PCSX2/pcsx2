@@ -155,7 +155,7 @@ struct microProgManager {
 	microProgramQuick	quick[mProgSize/2];	// Quick reference to valid microPrograms for current execution
 	microProgram*		cur;				// Pointer to currently running MicroProgram
 	int					total;				// Total Number of valid MicroPrograms
-	int					isSame;				// Current cached microProgram is Exact Same program as mVU->regs().Micro (-1 = unknown, 0 = No, 1 = Yes)
+	int					isSame;				// Current cached microProgram is Exact Same program as mVU.regs().Micro (-1 = unknown, 0 = No, 1 = Yes)
 	int					cleared;			// Micro Program is Indeterminate so must be searched for (and if no matches are found then recompile a new one)
 	u32					curFrame;			// Frame Counter
 	u8*					x86ptr;				// Pointer to program's recompilation code
@@ -189,7 +189,6 @@ struct microVU {
 	ScopedPtr<microRegAlloc>	regAlloc;	// Reg Alloc Class
 	ScopedPtr<AsciiFile>		logFile;	// Log File Pointer
 
-
 	RecompiledCodeReserve* cache_reserve;
 	u8*		cache;		  // Dynarec Cache Start (where we will start writing the recompiled code to)
 	u8*		dispCache;	  // Dispatchers Cache (where startFunct and exitFunct are written to)
@@ -212,37 +211,9 @@ struct microVU {
 
 	VURegs& regs() const { return ::vuRegs[index]; }
 
-	VIFregisters& getVifRegs()   const	{ return regs().GetVifRegs(); }
-	__fi REG_VI& getVI(uint reg) const	{ return regs().VI[reg]; }
-	__fi VECTOR& getVF(uint reg) const	{ return regs().VF[reg]; }
-
-
-	__fi s16 Imm5()  const	{ return ((code & 0x400) ? 0xfff0 : 0) | ((code >> 6) & 0xf); }
-	__fi s32 Imm11() const	{ return (code & 0x400) ? (0xfffffc00 | (code & 0x3ff)) : (code & 0x3ff); }
-	__fi u32 Imm12() const	{ return (((code >> 21) & 0x1) << 11) | (code & 0x7ff); }
-	__fi u32 Imm15() const	{ return ((code >> 10) & 0x7800) | (code & 0x7ff); }
-	__fi u32 Imm24() const	{ return code & 0xffffff; }
-
-	// Fetches the PC and instruction opcode relative to the current PC.  Used to rewind and
-	// fast-forward the IR state while calculating VU pipeline conditions (branches, writebacks, etc)
-	__fi void advancePC( int x )
-	{
-		prog.IRinfo.curPC += x;
-		prog.IRinfo.curPC &= progMemMask;
-		code = ((u32*)regs().Micro)[prog.IRinfo.curPC];
-	}
-	
-	__ri uint getBranchAddr() const
-	{
-		pxAssumeDev((prog.IRinfo.curPC & 1) == 0, "microVU recompiler: Upper instructions cannot have valid branch addresses.");
-		return (((prog.IRinfo.curPC + 2)  + (Imm11() * 2)) & progMemMask) * 4;
-	}
-
-	__ri uint getBranchAddrN() const
-	{
-		pxAssumeDev((prog.IRinfo.curPC & 1) == 0, "microVU recompiler: Upper instructions cannot have valid branch addresses.");
-		return (((prog.IRinfo.curPC + 4)  + (Imm11() * 2)) & progMemMask) * 4;
-	}
+	__fi VIFregisters&	getVifRegs()	const	{ return regs().GetVifRegs(); }
+	__fi REG_VI&		getVI(uint reg) const	{ return regs().VI[reg]; }
+	__fi VECTOR&		getVF(uint reg) const	{ return regs().VF[reg]; }
 };
 
 // microVU rec structs
@@ -255,7 +226,7 @@ int mVUdebugNow = 0;
 // Main Functions
 extern void  mVUclear(mV, u32, u32);
 extern void  mVUreset(microVU& mVU, bool resetReserve);
-static void* mVUblockFetch(microVU* mVU, u32 startPC, uptr pState);
+extern void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState);
 _mVUt extern void* __fastcall mVUcompileJIT(u32 startPC, uptr ptr);
 
 // Prototypes for Linux

@@ -28,13 +28,13 @@
 void SaveConfig()
 {
 	const wxString iniFile_s(Path::Combine(s_strIniPath, L"zzogl-pg.ini"));
-	const char* iniFile = iniFile_s.mb_str();
+	std::string iniFile = std::string(iniFile_s.mb_str());
 	
-	FILE* f = fopen(iniFile, "w");
+	FILE* f = fopen(iniFile.c_str(), "w");
 
 	if (f == NULL)
 	{
-		ZZLog::Error_Log("Failed to open '%s'", iniFile);
+		ZZLog::Error_Log("Failed to open '%s'", iniFile.c_str());
 		return;
 	}
 
@@ -69,13 +69,13 @@ void LoadConfig()
 	conf.disableHacks = 0;
 
 	const wxString iniFile_s(Path::Combine(s_strIniPath, L"zzogl-pg.ini"));
-	const char* iniFile = iniFile_s.mb_str();
+	std::string iniFile = std::string(iniFile_s.mb_str());
 
-	FILE* f = fopen(iniFile, "r");
+	FILE* f = fopen(iniFile.c_str(), "r");
 
 	if (f == NULL)
 	{
-		ZZLog::Error_Log("Failed to open '%s'", iniFile);
+		ZZLog::Error_Log("Failed to open '%s'", iniFile.c_str());
 		SaveConfig();//save and return
 		return;
 	}
