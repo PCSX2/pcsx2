@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
-"PO-Revision-Date: 2011-03-19 09:22-0300\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"PO-Revision-Date: 2011-03-28 00:48-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -44,27 +44,27 @@ msgstr "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir.
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Plug-in the Cartão de Memória Interno falhou em inicializar."
 
-#: pcsx2/gui/AppConfig.cpp:778
+#: pcsx2/gui/AppConfig.cpp:813
 msgid "Safest"
 msgstr "Mais seguro"
 
-#: pcsx2/gui/AppConfig.cpp:779
+#: pcsx2/gui/AppConfig.cpp:814
 msgid "Safe (faster)"
 msgstr "Seguro (mais rápido)"
 
-#: pcsx2/gui/AppConfig.cpp:780
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Balanced"
 msgstr "Balanceado"
 
-#: pcsx2/gui/AppConfig.cpp:781
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Aggressive"
 msgstr "Agressivo"
 
-#: pcsx2/gui/AppConfig.cpp:782
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Aggressive plus"
 msgstr "Agressivo plus"
 
-#: pcsx2/gui/AppConfig.cpp:783
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Mostly Harmful"
 msgstr "Prejudicial"
 
@@ -159,9 +159,9 @@ msgstr ""
 msgid "!Notice:Tooltip:Presets:Slider"
 msgstr ""
 "As Pré-Definições aplicam hacks de velocidade, opções de alguns "
-"recompiladores e algumas reparações de jogos conhecidas por impulsionar a "
-"velocidade. Reparações de jogos ('Patches') conhecidos como importantes "
-"serão aplicados automaticamente.\n"
+"recompiladores e algumas correções de jogos conhecidas por impulsionar a "
+"velocidade. Correções de jogos ('Patches') conhecidos como importantes serão "
+"aplicados automaticamente.\n"
 "\n"
 "Informações das Pré-Definições:\n"
 "1 -     A emulação mais precisa, mas também a mais lenta.\n"
@@ -174,9 +174,9 @@ msgstr ""
 msgid "!Notice:Tooltip:Presets:Checkbox"
 msgstr ""
 "As Pré-Definições aplicam hacks de velocidade, opções de alguns "
-"recompiladores e algumas reparações de jogos conhecidas por impulsionar a "
-"velocidade. Reparações de jogos ('Patches') conhecidas como importantes "
-"serão aplicadas automaticamente.\n"
+"recompiladores e algumas correções de jogos conhecidas por impulsionar a "
+"velocidade. Correções de jogos ('Patches') conhecidas como importantes serão "
+"aplicadas automaticamente.\n"
 "\n"
 "--> Desmarque para modifcar configurações manualmente (com base na pré-"
 "definição selecionada)"
@@ -186,7 +186,7 @@ msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr ""
 "Registra eventos assim que eles são passados para a máquina virtual do PS2."
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:156
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:158
 msgid "!ContextTip:DirPicker:UseDefault"
 msgstr ""
 "Quando marcado essa pasta vai refletir automaticamente a associação "
@@ -236,6 +236,15 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:80
 msgid "!ContextTip:Gamefixes:OPH Flag hack"
+msgstr ""
+"Sabe-se que afeta os jogos:\n"
+" * Bleach Blade Battler\n"
+" * Growlanser II e III\n"
+" * Wizardry"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:89
+#, fuzzy
+msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr ""
 "Sabe-se que afeta os jogos:\n"
 " * Bleach Blade Battler\n"
@@ -317,28 +326,21 @@ msgstr ""
 "EmotionEngine. Maiores valores aumentam o número de ciclos roubados do EE "
 "para cada micro-programa VU que o jogo roda."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
 msgid "!ContextTip:Speedhacks:vuFlagHack"
 msgstr ""
 "Atualiza Sinalizadores de Estado somente nos blocos que vão ler eles, ao "
 "contrário de de o tempo todo. Isso é seguro na maioria do tempo, e o Super "
 "VU faz coisa semelhante por padrão."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid "!ContextTip:Speedhacks:vuBlockHack"
 msgstr ""
 "Presume que num futuro bem distante os blocos não vão precisar dos dados de "
 "instâncias de sinalizadores antigos. Isso pode ser bem seguro. Não se sabe "
 "se isso quebra algum jogo..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
-msgid "!ContextTip:Speedhacks:vuMinMax"
-msgstr ""
-"Usa o Min/Máx de Operações com Pontos Flutuantes do SSE ao invés de rotinas "
-"de Min/Máx de lógica personalizadas. Sabe-se que quebra Gran Turismo 4, "
-"Tekken 5."
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:202
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid "!ContextTip:Speedhacks:INTC"
 msgstr ""
 "Esse hack funciona melhor para jogos que usam o registrador de INTC Status "
@@ -346,7 +348,7 @@ msgstr ""
 "Jogos que não usam esse método de vsync vão aproveitar um pouco ou nada de "
 "aceleração desse hack."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:207
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
 msgid "!ContextTip:Speedhacks:BIFC0"
 msgstr ""
 "Mirando primariamente o loop ocioso do EE no endereço 0x81Fc0 no kernel, "
@@ -356,7 +358,7 @@ msgstr ""
 "avançamos para a vez do evento seguinte ou o fim da fatia de tempo do "
 "processador, seja qual for que vier a ocorrer primeiro."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:214
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid "!ContextTip:Speedhacks:fastCDVD"
 msgstr ""
 "Verifica lista de compatibilidade de HDLoader para jogos conhecidos que "
@@ -408,6 +410,12 @@ msgstr ""
 "\n"
 "Aviso: Essa opção pode ser ativada durante o jogo, mas normalmente não pode "
 "ser desativada durante o jogo (o vídeo normalmente ficará estragado)"
+
+#~ msgid "!ContextTip:Speedhacks:vuMinMax"
+#~ msgstr ""
+#~ "Usa o Min/Máx de Operações com Pontos Flutuantes do SSE ao invés de "
+#~ "rotinas de Min/Máx de lógica personalizadas. Sabe-se que quebra Gran "
+#~ "Turismo 4, Tekken 5."
 
 #~ msgid "!ContextTip:Window:FullscreenExclusive"
 #~ msgstr ""

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
-"PO-Revision-Date: 2011-03-21 17:28+0800\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"PO-Revision-Date: 2011-04-01 14:04+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -159,22 +159,24 @@ msgstr "注: 大多数游戏使用默认选项即可。"
 msgid "!Notice:DirPicker:CreatePath"
 msgstr "指定的路径/目录不存在。是否需要创建?"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:103
 msgid "!Panel:Gamefixes:Compat Warning"
 msgstr ""
 "游戏特殊修正可以修正一些游戏中的模拟错误。但它也可能在其它游戏中导致兼容或性"
-"能问题。您需要在更换游戏时手动开关相应选项。"
+"能问题。\n"
+"建议在主菜单启用 '自动应用游戏特殊修正'，不建议在此手动设置 ('自动' 即针对特"
+"定游戏自动应用对应修正)。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:720
 msgid "!Notice:Mcd:Delete"
 msgstr ""
 "即将删除已格式化的位于 %u 插柄上的记忆卡。此记忆卡中所有数据将丢失! 是否确定?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:755
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:758
 msgid "!Notice:Mcd:CantDuplicate"
 msgstr "失败: 只允许复制到一个空的 PS2 端口或文件系统。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:798
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
 msgid "!Notice:Mcd:Copy Failed"
 msgstr "错误! 无法将记忆卡复到到插槽 %u。目标文件正在使用。"
 

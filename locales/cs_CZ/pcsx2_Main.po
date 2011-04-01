@@ -1,32 +1,38 @@
+# Well perhaps PCSX2 Czech Translation Main, but I'm not sure.
+# Copyright (C) 2002-2011 (Gosh, that's old) PCSX2_Dev_Team
+# This file is distributed under the same license as the PCSX2 package.
+# Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2011.
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
 "POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-03-14 19:41+0100\n"
-"Last-Translator: \n"
-"Language-Team: PCSX2\n"
+"PO-Revision-Date: 2011-03-28 13:39+0100\n"
+"Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
+"Language-Team: Zbyněk Schwarz\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-KeywordsList: _;wxLt;pxL\n"
+"X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: C:\\new trunk!\n"
+"X-Poedit-Language: Czech\n"
+"X-Poedit-Country: CZECH REPUBLIC\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
 #: common/include/Utilities/Exceptions.h:226
 msgid "Parse error"
-msgstr "Fehler beim Lesen"
+msgstr "Chyba analyzování"
 
 #: common/include/Utilities/Exceptions.h:250
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr "Dieser Computer hat leider zu PCSX2 inkompatible Hardware. Sorry."
+msgstr "Váš hardware stroje je neschopen spustit PCSX2. Soráč chlape."
 
 #: common/src/Utilities/Exceptions.cpp:219
 msgid "Oh noes! Out of memory!"
-msgstr "Oh nein! Kein RAM Speicher mehr!"
+msgstr "Ale ne! Došla paměť!"
 
 #: common/src/Utilities/Exceptions.cpp:234
 msgid ""
@@ -34,72 +40,70 @@ msgid ""
 "drivers, services, or may simply have insufficient memory or resources to "
 "meet PCSX2's lofty needs."
 msgstr ""
-"Virtuell Speicherzuweisung ist fehlgeschlagen! Dein System könnte zu wenig "
-"RAM haben oder ein Systemtreiber / Systemdienst verweigert die Zuweisung."
+"Selhání mapování virtuální paměti! Váš systém může mít konfliktní ovladače "
+"zařízení, služby, nebo má prostě nedostatečnou paměť nebo zdroje, pro "
+"splnění vysokých nároků PCSX2."
 
 #: common/src/Utilities/Exceptions.cpp:309
 msgid "Path: "
-msgstr "Pfad:"
+msgstr "Cesta:"
 
 #: common/src/Utilities/Exceptions.cpp:313
 msgid "[Unnamed or unknown]"
-msgstr "[Unbenannt oder unbekannt]"
+msgstr "[Nepojmenované nebo neznámé]"
 
 #: common/src/Utilities/Exceptions.cpp:333
 msgid "A file could not be created."
-msgstr "Eine Datei konnte nicht erstellt werden."
+msgstr "Soubor nemohl být vytvořen."
 
 #: common/src/Utilities/Exceptions.cpp:353
 msgid "File not found."
-msgstr "Datei nicht gefunden."
+msgstr "Soubor nenalezen."
 
 #: common/src/Utilities/Exceptions.cpp:373
 msgid ""
 "Permission denied while trying to open file, likely due to insufficient user "
 "account rights."
 msgstr ""
-"Zugriff verweigert beim Versuch die Datei zu öffnen. Überprüfe die "
-"Nutzerberechtigungen."
+"Oprávnění zamítnuto při pokusu o otevření souboru, pravděpodobně kvůli "
+"nedostatečným uživatelským oprávněním."
 
 #: common/src/Utilities/Exceptions.cpp:393
 msgid ""
 "Unexpected end of file or stream encountered.  File is probably truncated or "
 "corrupted."
 msgstr ""
-"Unerwartet auf das Datei / Streamende gestoßen. Datei ist wahrscheinlich "
-"korrupt."
+"Objeven nečekaný konec souboru nebo proudu. Soubor je pravděpodobně zkrácen "
+"nebo poškozen."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:30
 msgid "Waiting for tasks..."
-msgstr "Warte auf Tasks..."
+msgstr "Čekám na úkoly..."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:41
 msgid "Waiting for task..."
-msgstr "Warte auf Task..."
+msgstr "Čekám na úkol..."
 
 #: pcsx2/CDVD/IsoFileFormats.cpp:416
-#, fuzzy
 msgid "Unrecognized ISO image file format"
-msgstr "Unbekanntes ISO Dateiformat"
+msgstr ""
 
 #: pcsx2/Elfheader.cpp:266
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
-msgstr ""
-"Die ELF-Datei konnte nicht geladen werden.  Sie ist korrupt oder ungültig."
+msgstr "Nelze načíst binární obraz ELF. Soubor může být poškozen nebo neúplný."
 
 #: pcsx2/Elfheader.cpp:268
 msgid ""
 "If loading from an ISO image, this error may be caused by an unsupported ISO "
 "image type or a bug in PCSX2 ISO image support."
 msgstr ""
-"Dieser Fehler könnte durch ein nicht unterstütztes ISO Format oder einen Bug "
-"im ISO Code verursacht worden sein."
+"Pokud načítáte z obrazu ISO, tato chyba mohla být způsobena nepodporovaným "
+"typem obrazu ISO nebo chyba PCSX2 v podpoře obrazů ISO."
 
 #: pcsx2/PluginManager.cpp:692
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
-msgstr ""
-"Der Savestate konnte nicht geladen werden. Er ist korrupt oder unvollständig."
+msgstr "Uložený stav nelze načíst, protože vypadá poškozený nebo neúplný"
 
 #: pcsx2/PluginManager.cpp:702
 #, c-format
@@ -107,8 +111,8 @@ msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
 "incompatible hardware/drivers."
 msgstr ""
-"%s Plugin konnte nicht geöffnet werden. Dein Computer hat eventuell zu wenig "
-"Ressourcen oder inkompatible Treiber."
+"Zásuvný modul %s nelze otevřít. Váš počítač může mít nedostatečné zdroje, "
+"nebo nekompatibilní hardware/ovladače."
 
 #: pcsx2/PluginManager.cpp:709
 #, c-format
@@ -116,18 +120,18 @@ msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
 "resources needed."
 msgstr ""
-"%s Plugin konnte nicht initialisiert werden. Dein Computer hat eventuell zu "
-"wenig Ressourcen oder inkompatible Treiber."
+"Zásuvný modul %s nelze spustit. Váš systém možná nemá dostatečnou paměť nebo "
+"potřebné zdroje."
 
 #: pcsx2/PluginManager.cpp:815
 #, c-format
 msgid "The configured %s plugin file was not found"
-msgstr "Das konfigurierte %s Plugin konnte nicht gefunden werden"
+msgstr "Nastavený soubor zásuvného modulu %s nebyl nalezen"
 
 #: pcsx2/PluginManager.cpp:819
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
-msgstr "Das konfigurierte %s Plugin ist keine korrektes DLL Datei"
+msgstr "Nastavený soubor zásuvného modulu %s není platná dynamická knihovna"
 
 #: pcsx2/PluginManager.cpp:837
 #, c-format
@@ -135,20 +139,23 @@ msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"Das konfigurierte %s Plugin ist kein PCSX2 Plugin oder für eine alte Version"
+"Nastavený zásuvný modul %s není platný modul PCSX2, nebo je pro starší "
+"nepodporovanou verzi PCSX2."
 
 #: pcsx2/PluginManager.cpp:862
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
-"Das Plugin meldet, dass deine Hardware oder Software nicht supported werden."
+"Zásuvný modul hlásí, že Váš hardware nebo software/ovladače nejsou "
+"podporovány."
 
 #: pcsx2/PluginManager.cpp:883
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
 msgstr ""
-"Das konfigurierte %s Plugin ist kein PCSX2 Plugin oder für eine alte Version"
+"Nastavený zásuvný modul není modul PCSX2. nebo je pro starší nepodporovanou "
+"verzi PCSX2."
 
 #: pcsx2/PluginManager.cpp:909
 #, c-format
@@ -156,17 +163,16 @@ msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"Konfiguriertes %s Plugin ist kein PCSX2 Plugin oder für eine alte Version"
+"Nastavený zásuvný modul %s není platný modul PCSX2, nebo je pro starší "
+"nepodporovanou verzi PCSX2."
 
 #: pcsx2/PluginManager.cpp:1726
 msgid "Unloaded Plugin"
-msgstr "Plugin entladen"
+msgstr "Uvolněný Zásuvný Modul"
 
 #: pcsx2/SaveState.cpp:338
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
-msgstr ""
-"Kann Savestate nicht laden. Er ist von einer unbekannten, nicht "
-"unterstützten Version."
+msgstr "Nelze načíst uložený stav. Je neznámé nebo nepodporované verze."
 
 #: pcsx2/System.h:206 pcsx2/System.h:207 pcsx2/System.h:208
 msgid "PCSX2 Message"
@@ -177,118 +183,113 @@ msgid ""
 "The savestate was not properly saved. The temporary file was created "
 "successfully but could not be moved to its final resting place."
 msgstr ""
-"Der Savestate wurde nicht korrekt gespeichert. Die temporäre Datei konnte "
-"zwar erstellt, aber nicht an den finalen Platz kopiert werden."
+"Uložený stav nebyl správně uložen. Dočasný soubor byl úspěšně vytvořen ale "
+"nemohl být přesunut do svého posledního místa odpočinku."
 
 #: pcsx2/gui/AppConfig.cpp:975 pcsx2/gui/AppConfig.cpp:981
 msgid "Failed to overwrite existing settings file; permission was denied."
-msgstr ""
-"Konnte existierende Konfigurationsdatei nicht überschreiben. Zugriff "
-"verweigert."
+msgstr "Nelze přepsat existující soubor nastavení; oprávnění bylo zamítnuto."
 
 #: pcsx2/gui/AppCorePlugins.cpp:404
 msgid "Loading PS2 system plugins..."
-msgstr "Lade PS2 Systemplugins..."
+msgstr "Nahrávám systémové zásuvné moduly PS2..."
 
 #: pcsx2/gui/AppInit.cpp:41
 msgid "PCSX2 - SSE2 Recommended"
-msgstr "PCSX2 - SSE2 empfohlen"
+msgstr "PCSX2 - SSE2 Doporučeno"
 
 #: pcsx2/gui/AppInit.cpp:71
 msgid ""
 "SSE extensions are not available.  PCSX2 requires a cpu that supports the "
 "SSE instruction set."
 msgstr ""
-"SSE Erweiterungen nicht verfügbar. PCSX2 benötigt einen Prozessor, der über "
-"SSE verfügt."
+"Rozšíření SSE nejsou dostupná. PCSX2 vyžaduje procesor, který podporuje "
+"instrukční sadu SSE."
 
 #: pcsx2/gui/AppInit.cpp:154
 msgid "PCSX2 Recompiler Error(s)"
-msgstr "PCSX2 Recompiler Fehler"
+msgstr "Chyba/y Rekompilátoru PCSX2"
 
 #: pcsx2/gui/AppInit.cpp:227
 msgid "All options are for the current session only and will not be saved.\n"
-msgstr ""
-"Alle Optionen sind nur für die aktuelle Sitzung und werden nicht "
-"gespeichert. \n"
+msgstr "Všechny volby jsou pouze pro současnou relaci a nebudou uloženy.\n"
 
 #: pcsx2/gui/AppInit.cpp:237 pcsx2/gui/AppMain.cpp:291
 msgid "IsoFile"
-msgstr "IsoDatei"
+msgstr "Soubor ISO"
 
 #: pcsx2/gui/AppInit.cpp:238
 msgid "displays this list of command line options"
-msgstr "Zeigt eine Liste der verfügbaren Kommandozeilenoptionen."
+msgstr "zobrazí tento seznam voleb příkazového řádku"
 
 #: pcsx2/gui/AppInit.cpp:239
 msgid "forces the program log/console to be visible"
-msgstr "Macht Konsole ständig sichtbar"
+msgstr "donutí, aby záznam programu/konzola byly viditelné"
 
 #: pcsx2/gui/AppInit.cpp:240
 msgid "use fullscreen GS mode"
-msgstr "Benutze Vollbild GS Modus"
+msgstr "použít GS režim na celou obrazovku"
 
 #: pcsx2/gui/AppInit.cpp:241
 msgid "use windowed GS mode"
-msgstr "Benutze Fenster GS Modus"
+msgstr "použít režim GS v okně"
 
 #: pcsx2/gui/AppInit.cpp:243
 msgid "disables display of the gui while running games"
-msgstr "Deaktiviere GUI Anzeige während Spiele laufen"
+msgstr "zakáže zobrazení rozhraní, když hry běží"
 
 #: pcsx2/gui/AppInit.cpp:244
 msgid "executes an ELF image"
-msgstr "Führt eine ELF Datei aus"
+msgstr "spustí obraz ELF"
 
 #: pcsx2/gui/AppInit.cpp:245
 msgid "boots an empty dvd tray; use to enter the PS2 system menu"
 msgstr ""
-"Bootet mit einem lehren DVD Laufwerk. Benutze dies, um in das PS2 Systemmenü "
-"zu gelangen."
+"zavede prázdnou mechaniku dvd; použijte pro vstup do systémového menu PS2"
 
 #: pcsx2/gui/AppInit.cpp:246
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
-msgstr "Bootet vom CDVD Plugin (override des IsoFile Parameters)"
+msgstr "zavádí ze zásuvného modulu CDVD (potlačí parametr IsoFile)"
 
 #: pcsx2/gui/AppInit.cpp:248
 msgid "disables all speedhacks"
-msgstr "Deaktiviert alle Speedhacks"
+msgstr "zakáže všechny hacky rychlosti"
 
 #: pcsx2/gui/AppInit.cpp:249
 msgid "use the specified comma or pipe-delimited list of gamefixes."
-msgstr ""
-"Benutze die spezifizierte Komma oder Pipe-getrennte Liste von Gamefixes."
+msgstr "použít seznam oprav her určených čárkami nebo svislými čárami."
 
 #: pcsx2/gui/AppInit.cpp:250
 msgid "disables fast booting"
-msgstr "Deaktiviert schnelles Booten"
+msgstr "zakáže rychlé zavádění"
 
 #: pcsx2/gui/AppInit.cpp:252
 msgid "changes the configuration file path"
-msgstr "Ändert den Pfad zu den Konfigurationsdateien"
+msgstr "změní cestu k souboru s nastavením"
 
 #: pcsx2/gui/AppInit.cpp:253
 msgid "specifies the PCSX2 configuration file to use"
-msgstr "Spezifiziert die zu benutzende PCSX2 Konfigurationsdatei"
+msgstr "určuje, který soubor s nastavením PCSX2 použít"
 
 #: pcsx2/gui/AppInit.cpp:254
 #, c-format
 msgid "forces %s to start the First-time Wizard"
-msgstr "Lässt %s den Konfigurationshelfer starten"
+msgstr "donutí %s spustit Průvodce Prvním Spuštěním"
 
 #: pcsx2/gui/AppInit.cpp:255
 msgid "enables portable mode operation (requires admin/root access)"
-msgstr "Aktiviert den portablen Installationsmodus (benötigt Adminrechte)."
+msgstr ""
+"povolí operace přenosného režimu (vyžaduje administrátorský/kořenový přístup)"
 
 #: pcsx2/gui/AppInit.cpp:259
 #, c-format
 msgid "specify the file to use as the %s plugin"
-msgstr "Wähle die Datei, welche als %s Plugin genutzt werden soll"
+msgstr "určete soubor, který použít jako zásuvný modul %s"
 
 #: pcsx2/gui/AppInit.cpp:307
 #, c-format
 msgid "Plugin Override Error - %s"
-msgstr "Plugin Override Fehler - %s"
+msgstr "Chyba Potlačení Zásuvného Modulu - %s"
 
 #: pcsx2/gui/AppInit.cpp:310
 #, c-format
@@ -297,30 +298,30 @@ msgid ""
 "valid %s plugin:\n"
 "\n"
 msgstr ""
-"%s Plugin Override Fehler! Die folgende Datei existiert nicht oder sie ist "
-"ungültig: %s Plugin:\n"
+"Chyba Potlačení Zásuvného Modulu %s! Následující soubor neexistuje nebo není "
+"platný modul %s:\n"
 "\n"
 
 #: pcsx2/gui/AppInit.cpp:317
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
-"Drücke OK um das Standardplugin zu benutzen, oder Abbrechen um %s zu "
-"schließen."
+"Stiskněte OK pro použití výchozího nastaveného zásuvného modulu, nebo Zrušit "
+"pro zavření %s."
 
 #: pcsx2/gui/AppInit.cpp:495
 msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "PCSX2 Fehler: Hardwareproblem"
+msgstr "Chyba PCSX2: Hardwarová Vada"
 
 #: pcsx2/gui/AppInit.cpp:495 pcsx2/gui/AppInit.cpp:507
 #, c-format
 msgid "Press OK to close %s."
-msgstr "Wähle OK um %s zu schließen."
+msgstr "Stiskněte OK pro uzavření %s."
 
 #: pcsx2/gui/AppInit.cpp:508
 #, c-format
 msgid "%s Critical Error"
-msgstr "%s Kritischer Fehler"
+msgstr "%s Kritická Chyba"
 
 #: pcsx2/gui/AppInit.cpp:678
 msgid "OK"
@@ -332,63 +333,63 @@ msgstr "&OK"
 
 #: pcsx2/gui/AppInit.cpp:680
 msgid "Cancel"
-msgstr "Abbrechen"
+msgstr "Zrušit"
 
 #: pcsx2/gui/AppInit.cpp:681
 msgid "&Cancel"
-msgstr "&Abbrechen"
+msgstr "&Zrušit"
 
 #: pcsx2/gui/AppInit.cpp:682
 msgid "&Apply"
-msgstr "&Anwenden"
+msgstr "&Použít"
 
 #: pcsx2/gui/AppInit.cpp:683
 msgid "&Next >"
-msgstr "&Weiter >"
+msgstr "&Další >"
 
 #: pcsx2/gui/AppInit.cpp:684
 msgid "< &Back"
-msgstr "< &Zurück"
+msgstr "< &Zpět"
 
 #: pcsx2/gui/AppInit.cpp:685
 msgid "&Back"
-msgstr "&Zurück"
+msgstr "&Zpět"
 
 #: pcsx2/gui/AppInit.cpp:686
 msgid "&Finish"
-msgstr "&Fertigstellen"
+msgstr "&Dokončit"
 
 #: pcsx2/gui/AppInit.cpp:687
 msgid "&Yes"
-msgstr "&Ja"
+msgstr "&Ano"
 
 #: pcsx2/gui/AppInit.cpp:688
 msgid "&No"
-msgstr "&Nein"
+msgstr "&Ne"
 
 #: pcsx2/gui/AppInit.cpp:689
 msgid "Browse"
-msgstr "Suche"
+msgstr "Procházet"
 
 #: pcsx2/gui/AppInit.cpp:690
 msgid "&Save"
-msgstr "&Speichern"
+msgstr "&Uložit"
 
 #: pcsx2/gui/AppInit.cpp:691
 msgid "Save &As..."
-msgstr "Speichern &als..."
+msgstr "Uložit &Jako..."
 
 #: pcsx2/gui/AppInit.cpp:692
 msgid "&Help"
-msgstr "&Hilfe"
+msgstr "&Nápověda"
 
 #: pcsx2/gui/AppInit.cpp:693
 msgid "&Home"
-msgstr "&Home"
+msgstr "&Domů"
 
 #: pcsx2/gui/AppInit.cpp:695
 msgid "Show about dialog"
-msgstr "Zeige About Dialog"
+msgstr "Zobrazí dialogové okno O Programu "
 
 #: pcsx2/gui/AppMain.cpp:79
 msgid ""
@@ -398,342 +399,336 @@ msgid ""
 msgstr ""
 "\n"
 "\n"
-"Drücke OK um in das Pluginkonfigurationsmenü zu gelangen."
+"Stiskněte Ok pro přechod na Panel Nastavení Zásuvných Modulů."
 
 #: pcsx2/gui/AppMain.cpp:132 pcsx2/gui/AppMain.cpp:146
 msgid ""
 "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
-msgstr "Warnung! Systemplugins sind nicht geladen. PCSX2 kann inoperabel sein."
+msgstr ""
+"Varování! Systémové zásuvné moduly nebyly načteny. PCSX2 může být "
+"nepoužitelný."
 
 #: pcsx2/gui/AppMain.cpp:301
 #, c-format
 msgid "%s Commandline Options"
-msgstr "%s Kommandozeilenoptionen"
+msgstr "%s Volby Příkazového Řádku"
 
 #: pcsx2/gui/AppMain.cpp:565
 msgid "PS2 BIOS Error"
-msgstr "PS2 BIOS Fehler"
+msgstr "Chyba BIOSu PS2"
 
 #: pcsx2/gui/AppMain.cpp:566
 msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr "Wähle OK um in das BIOS Konfigurationsmenü zu gelangen."
+msgstr "Stiskněte OK pro"
 
 #: pcsx2/gui/AppMain.cpp:618
 msgid "PCSX2 Unresponsive Thread"
-msgstr "PCSX2 nicht antwortender Thread"
+msgstr "Neodpovídající Vlákno PCSX2"
 
 #: pcsx2/gui/AppMain.cpp:628
 msgid "Terminate"
-msgstr "Beende"
+msgstr "Ukončit"
 
 #: pcsx2/gui/AppMain.cpp:938
 msgid "Executing PS2 Virtual Machine..."
-msgstr "Lasse PS2 Virtuelle Maschine laufen..."
+msgstr "Spouštím Virtuální Stroj PS2..."
 
 #: pcsx2/gui/AppRes.cpp:72
 msgid "Browse for an Iso that is not in your recent history."
-msgstr "Wähle ein ISO das nicht in der Liste der letzten Dateien ist."
+msgstr "Procházet pro Iso, které není ve Vaši nedávné historii"
 
 #: pcsx2/gui/AppRes.cpp:72
 msgid "Browse..."
-msgstr "Suche..."
+msgstr "Procházet..."
 
 #: pcsx2/gui/AppUserMode.cpp:99
 msgid "The following folders exist, but are not writable:"
-msgstr "Die folgenden Ordner existieren, es bestehen aber keine Schreibrechte:"
+msgstr "Následující adresáře existují, ale nejsou zapisovatelné:"
 
 #: pcsx2/gui/AppUserMode.cpp:104
 msgid "The following folders are missing and cannot be created:"
-msgstr "Die folgenden Ordner fehlen und können nicht erstellt werden:"
+msgstr "Následující adresáře chybí a nemůžou být vytvořeny:"
 
 #: pcsx2/gui/AppUserMode.cpp:144
 #, c-format
 msgid "Portable mode error - %s"
-msgstr "Portabler Modus: Fehler - %s"
+msgstr "Chyba přenosného režimu - %s"
 
 #: pcsx2/gui/AppUserMode.cpp:157
 msgid ""
 "PCSX2 has been installed as a portable application but cannot run due to the "
 "following errors:"
 msgstr ""
-"PCSX2 wurde im portablen Modus installiert, kann aber wegen folgender Fehler "
-"nicht starten:"
+"PCSX2 byl nainstalován jako přenosná aplikace, ale nemůže být spuštěn kvůli "
+"následujícím chybám:"
 
 #: pcsx2/gui/AppUserMode.cpp:165
 msgid "Switch to User Documents Mode"
-msgstr "Eigene Dateien Modus"
+msgstr "Přepnout do Režimu Dokumentů Uživatele"
 
 #: pcsx2/gui/AppUserMode.cpp:178
 #, c-format
 msgid "%s is switching to local install mode."
-msgstr "%s wechselt in den portablen Installationsmodus."
+msgstr "%s se přepíná do režimu místní instalace."
 
 #: pcsx2/gui/AppUserMode.cpp:179
 msgid ""
 "Try to remove the file called \"portable.ini\" from your installation "
 "directory manually."
 msgstr ""
-"Versuche die Datei \"portable.ini\" manuell aus dem "
-"Installationsverzeichniss zu löschen."
+"Zkuste odstranit soubor nazvaný \"portable.ini\" z Vašeho instalačního "
+"adresáře ručně. "
 
 #: pcsx2/gui/ApplyState.h:55
 msgid "Cannot apply new settings, one of the settings is invalid."
-msgstr ""
-"Konnte neue Einstellungen nicht anwenden, eine Einstellung muss ungültig "
-"sein."
+msgstr "Nelze použít nová nastavení, jedno z nastavení je neplatné."
 
 #: pcsx2/gui/ConsoleLogger.cpp:120
 msgid "Save log question"
-msgstr "Speiche Logfrage"
+msgstr "Otázka uložení záznamu"
 
 #: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "Small"
-msgstr "Klein"
+msgstr "Malé"
 
 #: pcsx2/gui/ConsoleLogger.cpp:415 pcsx2/gui/Panels/CpuPanel.cpp:38
 msgid "Normal"
-msgstr "Normal"
+msgstr "Normální"
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Large"
-msgstr "Gross"
+msgstr "Velké"
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "Huge"
-msgstr "Riesig"
+msgstr "Obrovské"
 
 #: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "Light theme"
-msgstr "Helles Thema"
+msgstr "Světlý vzhled"
 
 #: pcsx2/gui/ConsoleLogger.cpp:424
 msgid "Dark theme"
-msgstr "Dunkles Thema"
+msgstr "Tmavý vzhled"
 
 #: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "Always on Top"
-msgstr "Immer im Vordergrund"
+msgstr "Vždy Nahoře"
 
 #: pcsx2/gui/ConsoleLogger.cpp:430
 msgid "&Save..."
-msgstr "&Speichern..."
+msgstr "&Uložit..."
 
 #: pcsx2/gui/ConsoleLogger.cpp:430
 msgid "Save log contents to file"
-msgstr "Speichere Logfensterinhalt in eine Datei"
+msgstr "Uložit obsah záznamu do souboru"
 
 #: pcsx2/gui/ConsoleLogger.cpp:431
 msgid "C&lear"
-msgstr "Löschen"
+msgstr "&Vyčistit"
 
 #: pcsx2/gui/ConsoleLogger.cpp:431
 msgid "Clear the log window contents"
-msgstr "Lösche Logfensterinhalt"
+msgstr "Vyčistit obsah okna se záznamem"
 
 #: pcsx2/gui/ConsoleLogger.cpp:433 pcsx2/gui/Dialogs/SysConfigDialog.cpp:280
 msgid "Appearance"
-msgstr "Ansicht"
+msgstr "Vzhled"
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "&Close"
-msgstr "&Schließen"
+msgstr "&Zavřít"
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "Close this log window; contents are preserved"
-msgstr "Schließe dieses Logfenster; Inhalt wird beibehalten."
+msgstr "Zavřít toto okno se záznamem; obsah je uchován"
 
 #: pcsx2/gui/ConsoleLogger.cpp:439
 msgid "Dev/Verbose"
-msgstr "Dev/Ausgiebig"
+msgstr "Vývoj/Výřečný"
 
 #: pcsx2/gui/ConsoleLogger.cpp:439
 msgid "Shows PCSX2 developer logs"
-msgstr "Zeige PCSX2 Entwicklerlogs"
+msgstr "Zobrazí záznamy vývojářů PCSX2"
 
 #: pcsx2/gui/ConsoleLogger.cpp:440
 msgid "CDVD reads"
-msgstr "CDVD Zugriff"
+msgstr "čtení CDVD"
 
 #: pcsx2/gui/ConsoleLogger.cpp:440
 msgid "Shows disk read activity"
-msgstr "Zeigt CD/DVD Leseaktivität"
+msgstr "Zobrazí aktivitu čtení disku"
 
 #: pcsx2/gui/ConsoleLogger.cpp:457
 msgid "Enable all"
-msgstr "Aktiviere alle"
+msgstr "Povolit vše"
 
 #: pcsx2/gui/ConsoleLogger.cpp:457
 msgid "Enables all log source filters."
-msgstr "Aktiviere alle Logquellenfilter."
+msgstr "Povolí všechny filtry zdroje záznamů."
 
 #: pcsx2/gui/ConsoleLogger.cpp:458
 msgid "Disable all"
-msgstr "Deaktiviere alle"
+msgstr "Zakázat vše"
 
 #: pcsx2/gui/ConsoleLogger.cpp:458
 msgid "Disables all log source filters."
-msgstr "Deaktiviere alle Logquellenfilter."
+msgstr "Zakáže všechny filtry zdroje záznamů."
 
 #: pcsx2/gui/ConsoleLogger.cpp:460
 msgid "&Log"
-msgstr "&Log"
+msgstr "&Záznam"
 
 #: pcsx2/gui/ConsoleLogger.cpp:461
 msgid "&Sources"
-msgstr "&Quellen"
+msgstr "&Zdroje"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
 msgid "About %s"
-msgstr "Über %s"
+msgstr "O %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Betatesting"
-msgstr "Betatesting"
+msgstr "Beta testeři"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Previous versions"
-msgstr "Vorherige Versionen"
+msgstr "Předchozí verze"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Webmasters"
-msgstr "Webmasters"
+msgstr "Správci Int. Stránek"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Plugin Specialists"
-msgstr "Plugin Spezialisten"
+msgstr "Odborníci Zásuvných Modulů"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Special thanks to"
-msgstr "Vielen Dank an"
+msgstr "Zvláštní poděkování"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
 msgid "Developers"
-msgstr "Entwickler"
+msgstr "Vývojáři"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
 msgid "Contributors"
-msgstr "Mithelfer"
+msgstr "Přispěvatelé"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "A Playstation 2 Emulator"
-msgstr "Ein Playstation 2 Emulator"
+msgstr "Emulátor Playstation 2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
 msgid "PCSX2 Official Website and Forums"
-msgstr "PCSX2 offizielle Webseite und Foren (Englisch)"
+msgstr "Officiální stránka a Fóra PCSX2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
 msgid "PCSX2 Official Svn Repository at Googlecode"
-msgstr "Offizielles PCSX2 SVN Repository auf Googlecode"
+msgstr "Oficiální úložiště Svn PCSX2 na Googlecode"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
-msgstr "Danke, habe genug gesehen"
+msgstr "Už jsem viděl dost"
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
 msgid "Assertion Failure - "
-msgstr "Assertion Fehler - "
+msgstr "Selhání Uplatnění - "
 
 #: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:192
 msgid "Saves a snapshot of this settings panel to a PNG file."
-msgstr "Speichert einen Screenshot dieser Einstellungen in eine PNG Datei."
+msgstr "Uloží snímek tohoto panelu nastavení do souboru PNG."
 
 #: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:303
 msgid "Save dialog screenshots to..."
-msgstr "Speichere Dialog Screenshots nach..."
+msgstr "Uložit snímek obrazovky dialogového okna do..."
 
 #: pcsx2/gui/Dialogs/BiosSelectorDialog.cpp:31
 msgid "BIOS Selector"
-msgstr "BIOS Wählen"
+msgstr "Výběr BIOSu"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:193
 msgid "Do not show this dialog again."
-msgstr "Zeige diesen Dialog nicht noch einmal."
+msgstr "Už toto dialogové okno nezobrazovat."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:199
 msgid ""
 "Disables this popup and whatever response you select here will be "
 "automatically used from now on."
 msgstr ""
-"Deaktiviert dieses Popup von nun an. Die gewählte Einstellung wird die "
-"Standardeinstellung werden."
+"Zakáže toto vyskakovací okno a jakákoliv odpověď, kterou zde vyberete bude, "
+"odteď automaticky použita."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:201
 msgid ""
 "The popup will not be shown again.  This setting can be undone from the "
 "settings panels."
 msgstr ""
-"Dieses Popup wird nicht noch einmal erscheinen. Diese Einstellung kann im "
-"Menü rückgängig gemacht werden."
+"Vyskakující okno už se znovu nezobrazí. Toto nastavení může být zrušeno z "
+"panelů nastavení."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:247
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:292
 msgid "Ignore"
-msgstr "Ignorieren"
+msgstr "Ignorovat"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:278
 msgid "Reset"
-msgstr "Reset"
+msgstr "Resetovat"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:40
-#, fuzzy
 msgid "Create a new memory card"
-msgstr "Erstelle neue Memory Card"
+msgstr "Vytvořit novou paměťovou kartu"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:59
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:74
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:273
 msgid "Create"
-msgstr "Erstelle"
+msgstr "Vytvořit"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:71
-#, fuzzy
 msgid "New memory card:"
-msgstr "Erstelle neue Memory Card"
+msgstr "Nová paměťová karta:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
-#, fuzzy
 msgid "At folder:    "
-msgstr "Selbst gewählter Ordner:"
+msgstr "V adresáři:    "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:75
-#, fuzzy
 msgid "Select file name: "
-msgstr "Wähle ein Theme:"
+msgstr "Vybrat jméno souboru:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:149
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:855
 #, c-format
 msgid "Error (%s)"
-msgstr ""
+msgstr "Chyba (%s)"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:150
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:164
-#, fuzzy
 msgid "Create memory card"
-msgstr "Erstelle neue Memory Card"
+msgstr "Vytvořit paměťovou kartu"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
-#, fuzzy
 msgid "Error: The memory card could not be created."
-msgstr "Fehler: Die Memory Card konnte nicht erstellt werden."
+msgstr "Chyba: Paměťová karta nemohla být vytvořena."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:177
 msgid "Use NTFS compression when creating this card."
-msgstr "Benutze NTFS Kompression beim Erstellen der Karte."
+msgstr "Použít komprimaci NTFS při vytváření této karty."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:195
 msgid "8 MB [most compatible]"
-msgstr "8 MB [Standard, kompatibel]"
+msgstr "8 MB [nejvíce kompatibilní]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:195
 msgid ""
 "This is the standard Sony-provisioned size, and is supported by all games "
 "and BIOS versions."
 msgstr ""
-"Dieses ist die Standardgröße der Sony Memory Cards. Alle Spiele unterstützen "
-"sie."
+"Toto je standardní velikost dodávaná Sony a je podporována všemi hrami a "
+"verzemi BIOS."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:199
 msgid "16 MB"
@@ -744,8 +739,8 @@ msgstr "16 MB"
 msgid ""
 "A typical size for 3rd-party memory cards which should work with most games."
 msgstr ""
-"Eine typische Drittherstellergröße für Memory Cards welche gut mit Spielen "
-"funktionieren sollte."
+"Typická velikost pro paměťové karty 3. strany, která by měla fungovat ve "
+"většině her."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:203
 msgid "32 MB"
@@ -760,116 +755,119 @@ msgid ""
 "Low compatibility warning: Yes it's very big, but may not work with many "
 "games."
 msgstr ""
-"Warnung: Diese Karte wäre zwar sehr gross aber viele Spiele werden damit "
-"nicht funktionieren."
+"Varování nízké kompatibility: Ano, je velmi velká, ale nefunguje ve spoustě "
+"hrách."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 #, c-format
 msgid "Select a folder for %s settings"
-msgstr "Wähle einen Ordner für %s Einstellungen"
+msgstr "Vybrat adresář pro nastavení %s"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 msgid "Settings"
-msgstr "Einstellungen"
+msgstr "Nastavení"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:81
 msgid "Language selector"
-msgstr "Sprache:"
+msgstr "Výběr jazyka"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
 msgstr ""
-"Ändere hier die Sprache falls benötigt.\n"
-"Der Systemstandard wurde automatisch gewählt."
+"Jazyk změňte, pouze pokud potřebujete.\n"
+"Výchozí jazyk by měl vyhovovat většině operačních systémů."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:90
 msgid "Welcome to PCSX2!"
-msgstr "Willkommen bei PCSX2!"
+msgstr "Vítejte v PCSX2!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
 msgid "Configuration Guides (online)"
-msgstr "Konfigurationsratgeber (online)"
+msgstr "Průvodci Nastavením (online)"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
 msgid "Readme / FAQ (Offline/PDF)"
-msgstr "Readme / FAQ (Offline/PDF)"
+msgstr "Přečti mě/ Nejčastější Otázky (Offline/PDF)"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
 msgid "%s First Time Configuration"
-msgstr "%s Konfigurationshelfer"
+msgstr "Prvotní Nastavení %s"
 
 #: pcsx2/gui/Dialogs/GameDatabaseDialog.cpp:24
 #, c-format
 msgid "Game database - %s"
-msgstr "Spieldatenbank - %s"
+msgstr "Herní databáze - %s"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:24
 msgid "Import Existing Settings?"
-msgstr "Importiere existierende Einstellungen?"
+msgstr "Importovat Existující Nastavení?"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:39
 msgid "Import"
-msgstr "Importiere"
+msgstr "Importovat"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:40
 msgid "Overwrite"
-msgstr "Überschreibe"
+msgstr "Přepsat"
 
 #: pcsx2/gui/Dialogs/LogOptionsDialog.cpp:27
 msgid "Trace Logging"
-msgstr "Spur Logging"
+msgstr "Záznam Sledování"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:40
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Werfe Memory Cards aus nach einem Savestate Ladevorgang"
+msgstr "Automaticky vyjmout paměťové karty při nahrávání uložených stavů"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:96
 msgid "MemoryCard Manager"
-msgstr "Memory Card Manager"
+msgstr "Správce Paměťových Karet"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:112
 msgid "Drag cards to or from PS2-ports"
-msgstr ""
+msgstr "Táhnout karty do nebo z portů PS2"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:113
 msgid ""
 "\n"
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
+"\n"
+"Poznámka: Kopírovat/Přejmenovat/Vytvořit/Smazat NEBUDE tlačítkem 'Zrušit' "
+"přerušeno."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
-msgstr "PCSX2 Konfigurationshelfer"
+msgstr "Prvotní nastavení PCSX2"
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:29
 #, c-format
 msgid "%s is starting from a new or unknown folder and needs to be configured."
 msgstr ""
-"%s startet von einem unbekannten Ordner aus und muss eingestellt werden."
+"%s je spouštěn z nového nebo neznámého adresáře a potřebuje být nastaven."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:28
 msgid "PCSX2 Thread is not responding"
-msgstr "PCSX2 Thread reagiert nicht"
+msgstr "Vlákno PCSX2 neodpovídá"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:36
 msgid "Config Overrides Warning"
-msgstr "Konfigurations-Override Warnung"
+msgstr "Varování Potlačení Nastavení"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:56
 msgid "Components Overrides Warning"
-msgstr "Komponenten Override Warnung"
+msgstr "Varování Potlačení Součástí"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:147
 msgid "Preset:"
-msgstr "Preset:"
+msgstr "Předvolby:"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:228
 #, c-format
 msgid "Emulation Settings - %s"
-msgstr "Emulationseinstellungen - %s"
+msgstr "Nastavení Emulace - %s"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:237
 msgid "EE/IOP"
@@ -877,7 +875,7 @@ msgstr "EE/IOP"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:238
 msgid "VUs"
-msgstr "VUs"
+msgstr "VJy"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:239
 msgid "GS"
@@ -885,24 +883,24 @@ msgstr "GS"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:240
 msgid "GS Window"
-msgstr "GS Fenster"
+msgstr "Okno GS"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:241
 msgid "Speedhacks"
-msgstr "Speedhacks"
+msgstr "Hacky Rychlosti"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:242
 msgid "Game Fixes"
-msgstr "Spielefixes"
+msgstr "Opravy Her"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:253
 #, c-format
 msgid "Components Selectors - %s"
-msgstr "Komponenten Selektoren - %s"
+msgstr "Výběr Součástí - %s"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:260
 msgid "Plugins"
-msgstr "Plugins"
+msgstr "Zásuvné Moduly"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:261
 msgid "BIOS"
@@ -910,86 +908,84 @@ msgstr "BIOS"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:262
 msgid "Folders"
-msgstr "Ordner"
+msgstr "Adresáře"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:273
 #, c-format
 msgid "Appearance/Themes - %s"
-msgstr "Ansicht/Themes - %s"
+msgstr "Motivy/Vzhledy - %s"
 
 #: pcsx2/gui/ExecutorThread.cpp:430
 msgid "Press Cancel to attempt to cancel the action."
-msgstr "Drücke Abbrechen um zu versuchen die Aktion abzubrechen."
+msgstr "Stiskněte Zrušit pro pokus o zrušení činnosti."
 
 #: pcsx2/gui/ExecutorThread.cpp:431
 #, c-format
 msgid "Press Terminate to kill %s immediately."
-msgstr "Drücke Beenden um %s sofort zu beenden."
+msgstr "Stiskněte Ukončit pro okamžité ukončení %s."
 
 #: pcsx2/gui/ExecutorThread.cpp:434
 msgid "Terminate App"
-msgstr "Schließe Anwendung"
+msgstr "Ukončit Aplikaci"
 
 #: pcsx2/gui/FrameForGS.cpp:275
 msgid "GS Output is Disabled!"
-msgstr "GS Ausgabe deaktivert!"
+msgstr "Výstup GS je Zakázán!"
 
 #: pcsx2/gui/GlobalCommands.cpp:268 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
-msgstr "Speichere Savestate"
+msgstr "Uložit stav"
 
 #: pcsx2/gui/GlobalCommands.cpp:269
 msgid "Saves the virtual machine state to the current slot."
-msgstr "Speichert den Status der virtuellen Maschine im aktuellen Slot"
+msgstr "Uloží stav virtuálního stroje do současné pozice."
 
 #: pcsx2/gui/GlobalCommands.cpp:274 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
-msgstr "Lade Savestate"
+msgstr "Nahrát stav"
 
 #: pcsx2/gui/GlobalCommands.cpp:275
 msgid "Loads a virtual machine state from the current slot."
-msgstr "Lädt einen Savestate vom aktuellen Slot."
+msgstr "Nahraje stav virtuálního stroje ze současné pozice."
 
 #: pcsx2/gui/GlobalCommands.cpp:280
-#, fuzzy
 msgid "Load State Backup"
-msgstr "Lade Savestate"
+msgstr "Nahrát Zálohu Stavu"
 
 #: pcsx2/gui/GlobalCommands.cpp:281
-#, fuzzy
 msgid "Loads virtual machine state backup for current slot."
-msgstr "Lädt einen Savestate vom aktuellen Slot."
+msgstr "\"Nahraje zálohu stavu virtuálního stroje do současné pozice."
 
 #: pcsx2/gui/GlobalCommands.cpp:286
 msgid "Cycle to next slot"
-msgstr "Wähle nächsten Slot"
+msgstr "Cyklovat do další pozice"
 
 #: pcsx2/gui/GlobalCommands.cpp:287
 msgid "Cycles the current save slot in +1 fashion!"
-msgstr "Inkrementiert den aktuellen Slot um 1."
+msgstr "Cykluje současnou pozici uložení ve stylu +1!"
 
 #: pcsx2/gui/GlobalCommands.cpp:292
 msgid "Cycle to prev slot"
-msgstr "Wähle vorherigen Slot"
+msgstr "Cyklovat do předchozí pozice"
 
 #: pcsx2/gui/GlobalCommands.cpp:293
 msgid "Cycles the current save slot in -1 fashion!"
-msgstr "Dekrementiert den aktuellen Slot um 1."
+msgstr "Cykluje současnou pozici uložení ve stylu -1!"
 
 #: pcsx2/gui/IsoDropTarget.cpp:57
 msgid "Drag and Drop Error"
-msgstr "Drag and Drop Fehler"
+msgstr "Chyba Přetáhnutí"
 
 #: pcsx2/gui/IsoDropTarget.cpp:58
 #, c-format
 msgid ""
 "It is an error to drop multiple files onto a %s window.  One at a time "
 "please, thank you."
-msgstr "Bitte nur eine Datei zur gleichen Zeit in das %s Fenster ziehen."
+msgstr "Je chyba přetahovat mnoho souborů do okna %s. "
 
 #: pcsx2/gui/IsoDropTarget.cpp:89 pcsx2/gui/MainMenuClicks.cpp:338
 msgid "Confirm PS2 Reset"
-msgstr "Bestätige PS2 Reset"
+msgstr "Potvrdit Resetování PS2"
 
 #: pcsx2/gui/IsoDropTarget.cpp:91
 #, c-format
@@ -997,35 +993,34 @@ msgid ""
 "You have dropped the following ELF binary into %s:\n"
 "\n"
 msgstr ""
-"Du hast die folgende ELF Datei in %s gezogen:\n"
+"Přetáhli jste následující ELF binární soubor do %s:\n"
 "\n"
 
 #: pcsx2/gui/IsoDropTarget.cpp:135
 #, c-format
 msgid "You have dropped the following ISO image into %s:"
-msgstr "Du hast die folgende ISO Datei in %s gezogen:"
+msgstr "Přetáhli jste následující obraz ISO do %s:"
 
 #: pcsx2/gui/MainFrame.cpp:38
 #, c-format
 msgid "Slot %d"
-msgstr "Slot %d"
+msgstr "Pozice %d"
 
 #: pcsx2/gui/MainFrame.cpp:44 pcsx2/gui/Saveslots.cpp:150
-#, fuzzy
 msgid "Backup"
-msgstr "&Zurück"
+msgstr "Záloha"
 
 #: pcsx2/gui/MainFrame.cpp:322
 msgid "Show Console"
-msgstr "Öffne Konsole"
+msgstr "Zobrazit Konzoli"
 
 #: pcsx2/gui/MainFrame.cpp:323
 msgid "Console to Stdio"
-msgstr "Konsolenausgabe nach Stdio"
+msgstr "Konzole na Výstup"
 
 #: pcsx2/gui/MainFrame.cpp:336
 msgid "&System"
-msgstr "&System"
+msgstr "&Systém"
 
 #: pcsx2/gui/MainFrame.cpp:337
 msgid "CD&VD"
@@ -1033,15 +1028,15 @@ msgstr "CD&VD"
 
 #: pcsx2/gui/MainFrame.cpp:338
 msgid "&Config"
-msgstr "&Konfiguration"
+msgstr "&Nastavení"
 
 #: pcsx2/gui/MainFrame.cpp:339
 msgid "&Misc"
-msgstr "&Verschiedenes"
+msgstr "&Ostatní"
 
 #: pcsx2/gui/MainFrame.cpp:341
 msgid "&Debug"
-msgstr "&Debug"
+msgstr "&Ladění"
 
 #: pcsx2/gui/MainFrame.cpp:353
 #, c-format
@@ -1055,29 +1050,29 @@ msgstr "%s  %d.%d.%d %s"
 
 #: pcsx2/gui/MainFrame.cpp:360
 msgid "(modded)"
-msgstr "(modifiziert)"
+msgstr "(pozměněno)"
 
 #: pcsx2/gui/MainFrame.cpp:397 pcsx2/gui/MainFrame.cpp:399
 #: pcsx2/gui/MainFrame.cpp:405
 msgid "Initializing..."
-msgstr "Initialisiere..."
+msgstr "Zavádím..."
 
 #: pcsx2/gui/MainFrame.cpp:401
 msgid "Run ELF..."
-msgstr "Lade ELF..."
+msgstr "Spustit ELF..."
 
 #: pcsx2/gui/MainFrame.cpp:402
 msgid "For running raw PS2 binaries directly"
-msgstr "Um PS2 Anwendungen (Homebrew) direkt zu laden."
+msgstr "Pro přímé spuštění souborů PS2"
 
 #: pcsx2/gui/MainFrame.cpp:414
 msgid "Backup before save"
-msgstr "Backup vor dem Speichern"
+msgstr "Před uložením zálohovat"
 
 #: pcsx2/gui/MainFrame.cpp:419
 #, fuzzy
 msgid "Automatic Gamefixes"
-msgstr "spezielle Spielefixes"
+msgstr "Herní záplaty"
 
 #: pcsx2/gui/MainFrame.cpp:420
 msgid "Automatically applies needed Gamefixes to known problematic games"
@@ -1085,36 +1080,36 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:422
 msgid "Enable Cheats"
-msgstr "Aktiviere Cheats"
+msgstr "Povolit Cheaty"
 
 #: pcsx2/gui/MainFrame.cpp:425
 msgid "Enable Host Filesystem"
-msgstr "Aktiviere Host-Dateisystem"
+msgstr "Povolit Systém Souborů Hostitele"
 
 #: pcsx2/gui/MainFrame.cpp:430
 msgid "Shutdown"
-msgstr "Herunterfahren"
+msgstr "Vypnout"
 
 #: pcsx2/gui/MainFrame.cpp:431
 msgid "Wipes all internal VM states and shuts down plugins."
-msgstr "Löscht alle VM Daten und Plugins und fährt VM herunter"
+msgstr "Smaže všechny vnitřní stavy VS a vypne zásuvné moduly."
 
 #: pcsx2/gui/MainFrame.cpp:433
 msgid "Exit"
-msgstr "Verlassen"
+msgstr "Ukončit"
 
 #: pcsx2/gui/MainFrame.cpp:434
 #, c-format
 msgid "Closing %s may be hazardous to your health"
-msgstr "%s zu verlassen kann gesundheitsschädlich sein."
+msgstr "Zavření %s může ohrozit Vaše zdraví"
 
 #: pcsx2/gui/MainFrame.cpp:441
 msgid "Iso Selector"
-msgstr "ISO Wählen"
+msgstr "Výběr Iso"
 
 #: pcsx2/gui/MainFrame.cpp:442
 msgid "Plugin Menu"
-msgstr "Plugin Menü"
+msgstr "Menu Zásuvného Modulu"
 
 #: pcsx2/gui/MainFrame.cpp:445
 msgid "Iso"
@@ -1122,51 +1117,51 @@ msgstr "ISO"
 
 #: pcsx2/gui/MainFrame.cpp:445
 msgid "Makes the specified ISO image the CDVD source."
-msgstr "Macht die gewählte ISO Datei zur CDVD Quelle."
+msgstr "Udělá z určeného obrazu ISO zdroj CDVD."
 
 #: pcsx2/gui/MainFrame.cpp:446
 msgid "Plugin"
-msgstr "Plugin"
+msgstr "Zásuvný modul"
 
 #: pcsx2/gui/MainFrame.cpp:446
 msgid "Uses an external plugin as the CDVD source."
-msgstr "Benutzt ein externes Plugin als CDVD Quelle."
+msgstr "Používá externí zásuvný modul jako zdroj CDVD."
 
 #: pcsx2/gui/MainFrame.cpp:447
 msgid "No disc"
-msgstr "Keine Disk"
+msgstr "Žádný disk"
 
 #: pcsx2/gui/MainFrame.cpp:447
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
-msgstr "Benutze dies, um in dein PS2 BIOS zu Booten."
+msgstr "Toto použijte pro spuštění do nastavení BIOSu Vašeho virtuálního PS2."
 
 #: pcsx2/gui/MainFrame.cpp:455
 msgid "Emulation &Settings"
-msgstr "Emulations&einstellungen"
+msgstr "&Nastavení Emulace"
 
 #: pcsx2/gui/MainFrame.cpp:456
 msgid "&Memory cards"
-msgstr "&Memory Cards"
+msgstr "&Paměťové karty"
 
 #: pcsx2/gui/MainFrame.cpp:457
 msgid "&Plugin/BIOS Selector"
-msgstr "&Plugin/BIOS Selektor"
+msgstr "&Výběr Zásuvných Modulů/BIOSu"
 
 #: pcsx2/gui/MainFrame.cpp:458 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
 msgid "Game Database Editor"
-msgstr "Spieldatenbankeditor"
+msgstr "Editor Databáze Her"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "&Video (GS)"
-msgstr "&Video (GS)"
+msgstr "&Obraz (GS)"
 
 #: pcsx2/gui/MainFrame.cpp:465
 msgid "&Audio (SPU2)"
-msgstr "&Audio (SPU2)"
+msgstr "&Zvuk (SPU2)"
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "&Controllers (PAD)"
-msgstr "&Kontroller (PAD)"
+msgstr "&Ovladače (PAD)"
 
 #: pcsx2/gui/MainFrame.cpp:467
 msgid "Dev9"
@@ -1190,319 +1185,318 @@ msgstr "Multitap 2"
 
 #: pcsx2/gui/MainFrame.cpp:479
 msgid "Clear all settings..."
-msgstr "Lösche alle Einstellungen..."
+msgstr "Vyčistit všechna nastavení..."
 
 #: pcsx2/gui/MainFrame.cpp:480
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
-msgstr "Löscht alle %s Einstellungen, um den Setup Wizard neu auszuführen."
+msgstr "Vyčistí všechna nastavení %s a znovu spustí průvodce při spuštění."
 
 #: pcsx2/gui/MainFrame.cpp:502
 msgid "About..."
-msgstr "Über..."
+msgstr "O Programu..."
 
 #: pcsx2/gui/MainFrame.cpp:506
 msgid "Logging..."
-msgstr "Logging..."
+msgstr "Záznam..."
 
 #: pcsx2/gui/MainFrame.cpp:583
 msgid "Pause"
-msgstr ""
+msgstr "Pozastavit"
 
 #: pcsx2/gui/MainFrame.cpp:584
 msgid "Safely pauses emulation and preserves the PS2 state."
-msgstr "Pausiert Emulation und sichert den PS2 Status."
+msgstr "Bezpečně pozastaví emulaci a uchová stav PS2."
 
 #: pcsx2/gui/MainFrame.cpp:591
 msgid "Resume"
-msgstr "Fortsetzen"
+msgstr "Pokračovat"
 
 #: pcsx2/gui/MainFrame.cpp:592
 msgid "Resumes the suspended emulation state."
-msgstr "Setzt den angehaltenen Emulationsstatus fort."
+msgstr "Obnoví pozastavený stav emulace."
 
 #: pcsx2/gui/MainFrame.cpp:596
-#, fuzzy
 msgid "Pause/Resume"
-msgstr "Anhalten/Fortsetzen"
+msgstr "Pozastavit/Pokračovat"
 
 #: pcsx2/gui/MainFrame.cpp:597
 msgid "No emulation state is active; cannot suspend or resume."
-msgstr "Kein aktiver VM status; Kann nicht Anhalten oder Fortsetzen."
+msgstr "Žádný stav emulace není aktivní; nelze pozastavit nebo pokračovat."
 
 #: pcsx2/gui/MainFrame.cpp:606
 msgid "Restart"
-msgstr "Neustart"
+msgstr "restartovat"
 
 #: pcsx2/gui/MainFrame.cpp:607
 msgid "Simulates hardware reset of the PS2 virtual machine."
-msgstr "Simuliert einen Hardware Reset der PS2 VM."
+msgstr "Napodobí tvrdý reset virtuálního stroje PS2."
 
 #: pcsx2/gui/MainFrame.cpp:612
 msgid "No emulation state is active; boot something first."
-msgstr "Kein aktiver Emulationsstatus; Boote zuerst etwas."
+msgstr "Není aktivní žádný stav emulace; něco nejdříve zaveďte."
 
 #: pcsx2/gui/MainFrame.cpp:620
 msgid "Reboot CDVD (full)"
-msgstr "Neustart (Vollständig)"
+msgstr "Restartovat CDVD (úplně)"
 
 #: pcsx2/gui/MainFrame.cpp:621
 msgid "Hard reset of the active VM."
-msgstr "Reset der aktiven VM."
+msgstr "Tvrdý reset aktivního VS."
 
 #: pcsx2/gui/MainFrame.cpp:625
 msgid "Boot CDVD (full)"
-msgstr "Starte CDVD (Vollständig)"
+msgstr "Zavést CDVD (úplně)"
 
 #: pcsx2/gui/MainFrame.cpp:626
 msgid "Boot the VM using the current DVD or Iso source media"
-msgstr "Starte die VM mit der aktuellen DVD oder der ISO Datei."
+msgstr "Zavést VS použitím současného zdrojového média DVD nebo Iso"
 
 #: pcsx2/gui/MainFrame.cpp:634
 msgid "Reboot CDVD (fast)"
-msgstr "Reboot CDVD (schnell)"
+msgstr "Restartovat CDVD (rychle)"
 
 #: pcsx2/gui/MainFrame.cpp:635
 msgid "Reboot using fast BOOT (skips splash screens)"
-msgstr "Neustart mit Fast Boot (keine BIOS Splashscreens)"
+msgstr "Restartovat pomocí rychlého ZAVEDENÍ (přeskočí úvodní obrazovky)"
 
 #: pcsx2/gui/MainFrame.cpp:639
 msgid "Boot CDVD (fast)"
-msgstr "Boote CDVD (schnell)"
+msgstr "Zavést CDVD (rychle)"
 
 #: pcsx2/gui/MainFrame.cpp:640
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Fast Boot: Umgeht PS2 Start / Splashscreens."
+msgstr ""
+"Použít rychlé zavedení pro přeskočení spouštěcích a úvodních obrazovek PS2"
 
 #: pcsx2/gui/MainFrame.cpp:701 pcsx2/gui/MainFrame.cpp:736
 msgid "No plugin loaded"
-msgstr "Kein Plugin geladen"
+msgstr "Nejsou načteny žádné zásuvné moduly"
 
 #: pcsx2/gui/MainFrame.cpp:706
 msgid "Core GS Settings..."
-msgstr "GS Einstellungen"
+msgstr "Nastavení Jádra GS..."
 
 #: pcsx2/gui/MainFrame.cpp:707
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
-msgstr "Ändere Hardwareemulationseinstellungen der PCSX2 virtuellen Maschine."
+msgstr ""
+"Změnit nastavení emulace hardwaru, regulované jádrem virtuálního stroje "
+"PCSX2."
 
 #: pcsx2/gui/MainFrame.cpp:709
 msgid "Window Settings..."
-msgstr "Fenster Einstellungen..."
+msgstr "Nastavení Okna..."
 
 #: pcsx2/gui/MainFrame.cpp:710
 msgid "Modify window and appearance options, including aspect ratio."
-msgstr "Ändere Fenster und Ansichtseinstellungen, sowie das Seitenverhältnis."
+msgstr "Změnit nastavení okna a vzhledu, zahrnující i poměr stran."
 
 #: pcsx2/gui/MainFrame.cpp:717
 msgid "Plugin Settings..."
-msgstr "Plugin Einstellungen..."
+msgstr "Nastavení Zásuvného Modulu..."
 
 #: pcsx2/gui/MainFrame.cpp:718
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
-msgstr "Öffnet %s's erweiterte  Einstellungen."
+msgstr "Otevře dialogové okno pokročilého nastavení zásuvného modulu %s."
 
 #: pcsx2/gui/MainMenuClicks.cpp:112
 msgid "Reset all settings?"
-msgstr "Resette alle Einstellungen?"
+msgstr "Resetovat všechna nastavení?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:140
 msgid "Confirm ISO image change"
-msgstr "Bestätige ISO Abbild Wechsel"
+msgstr "Potvrdit změnu obrazu ISO"
 
 #: pcsx2/gui/MainMenuClicks.cpp:146
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
-msgstr ""
-"Möchtest du die Disk wechseln oder die neue Disk booten (via System Reset)?"
+msgstr "Chcete vyměnit disky nebo zavést nový obraz (přes reset systému)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:148 pcsx2/gui/MainMenuClicks.cpp:192
 msgid "Swap Disc"
-msgstr "Wechsle Disk"
+msgstr "Vyměnit Disk"
 
 #: pcsx2/gui/MainMenuClicks.cpp:182
 msgid "Confirm CDVD source change"
-msgstr "Bestätige CDVD Quelländerung"
+msgstr "Potvrdit změnu zdroje CDVD"
 
 #: pcsx2/gui/MainMenuClicks.cpp:185
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
-msgstr "Du hast gewählt die CDVD Quelle von %s nach %s zu ändern."
+msgstr "Vybrali jste výměnu zdroje CDVD z %s na %s."
 
 #: pcsx2/gui/MainMenuClicks.cpp:189
 msgid "Do you want to swap discs or boot the new image (system reset)?"
-msgstr ""
-"Möchtest du die Disk wechseln oder die neue Disk booten (System Reset)?"
+msgstr "Chcete vyměnit disky nebo zavést nový obraz (reset systému)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:257
 #, c-format
 msgid "All Supported (%s)"
-msgstr "Alle unterstützten (%s)"
+msgstr "Vše Podporované (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:260
 #, c-format
 msgid "Disc Images (%s)"
-msgstr "Disk Abbilder (%s)"
+msgstr "Obrazy Disku (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:263
 #, c-format
 msgid "Blockdumps (%s)"
-msgstr "Blockdumps (%s)"
+msgstr "Výpisy bloků (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:266 pcsx2/gui/MainMenuClicks.cpp:287
 msgid "All Files (*.*)"
-msgstr "Alle Dateien (*.*)"
+msgstr "Všechny soubory (*.*)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:269
 msgid "Select CDVD source iso..."
-msgstr "Wähle CDVD Quell ISO"
+msgstr "Vyberte zdrojové iso CDVD..."
 
 #: pcsx2/gui/MainMenuClicks.cpp:286
 msgid "Select ELF file..."
-msgstr "Wähle ELF Datei..."
+msgstr "Vyberte soubor ELF..."
 
 #: pcsx2/gui/MainMenuClicks.cpp:312
 msgid "ISO file not found!"
-msgstr "ISO Datei nicht gefunden!"
+msgstr "Soubor ISO nenalezen!"
 
 #: pcsx2/gui/MainMenuClicks.cpp:314
 msgid "An error occurred while trying to open the file:"
-msgstr ""
-"Während des Versuchs folgende Datei zu öffnen ist ein Fehler aufgetreten: "
+msgstr "Vyskytla se chyba při pokusu o otevření souboru:"
 
 #: pcsx2/gui/MainMenuClicks.cpp:315
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
 msgstr ""
-"Fehler: Die konfigurierte ISO Datei existiert nicht. Klicke OK um eine neue "
-"ISO Quelle zu wählen."
+"Chyba: Nastavený soubor ISO neexistuje. Klikněte na OK pro vybrání nového "
+"zdroje ISO pro CDVD."
 
 #: pcsx2/gui/MainMenuClicks.cpp:381
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
 msgstr ""
-"Du hast die folgende ISO Datei gewählt:\n"
+"Vybrali jste následující obraz ISO do PCSX2:\n"
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:183
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Could not create a memory card: \n"
 "\n"
 "%s\n"
 "\n"
 msgstr ""
-"Konnte eine Memory Card Datei nicht erstellen: \n"
+"Nelze vytvořit paměťovou kartu: \n"
 "\n"
 "%s\n"
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:201
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Access denied to memory card: \n"
 "\n"
 "%s\n"
 "\n"
 msgstr ""
-"Zugriff verweigert auf Memory Card Datei: \n"
+"Přístup k paměťové kartě zamítnut: \n"
 "\n"
 "%s\n"
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:525
 msgid "File name empty or too short"
-msgstr ""
+msgstr "Jméno souboru prázdné nebo příliš krátké"
 
 #: pcsx2/gui/MemoryCardFile.cpp:530
 msgid "File name outside of required directory"
-msgstr ""
+msgstr "Jméno souboru mimo vyžadovaný adresář"
 
 #: pcsx2/gui/MemoryCardFile.cpp:536
 msgid "File name already exists"
-msgstr ""
+msgstr "Jméno souboru již existuje"
 
 #: pcsx2/gui/MemoryCardFile.cpp:543
 msgid "The Operating-System prevents this file from being created"
-msgstr "Das Betriebssystem verhindert, das diese Datei erstellt wird"
+msgstr "Operační systém zabraňuje vytvoření tohoto souboru"
 
 #: pcsx2/gui/Panels/BaseApplicableConfigPanel.cpp:103
 msgid "Cannot apply settings..."
-msgstr "Kann Einstellungen nicht anwenden..."
+msgstr "Nelze použít nastavení..."
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:103
 msgid "BIOS Search Path:"
-msgstr "BIOS Suchpfad"
+msgstr "Cesta pro hledání BIOS:"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
 msgid "Select folder with PS2 BIOS roms"
-msgstr "Wähle Ordner mit PS2 BIOS Roms"
+msgstr "Vyberte adresář s romy BIOSu PS2"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:111
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
 msgstr ""
-"Drücke den Suchen Button um einen anderen Ordner zu wählen in dem PCSX2 nach "
-"BIOS Roms sucht."
+"Klikněte na tlačítko Procházet pro vybrání jiného adresáře, kde bude PCSX2 "
+"hledat romy BIOSu PS2."
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:113
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:156
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:47
 msgid "Refresh list"
-msgstr "Aktualisiere Liste"
+msgstr "Obnovit seznam"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
 msgid "Select a BIOS rom:"
-msgstr "Wähle ein BIOS rom:"
+msgstr "Vyberte rom BIOS:"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:24
 msgid "Round Mode"
-msgstr "Rundungsmodus"
+msgstr "Režim Zaokrouhlení"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:25
 msgid "Clamping Mode"
-msgstr "Clampingmodus"
+msgstr "Režim Upnutí"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:29
 msgid "Nearest"
-msgstr "Nearest"
+msgstr "Nejbližší"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:30
 msgid "Negative"
-msgstr "Negativ"
+msgstr "Záporné"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:31
 msgid "Positive"
-msgstr "Positiv"
+msgstr "Kladné"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:32
 msgid "Chop / Zero"
-msgstr "Chop / Zero"
+msgstr "Useknout / Nula"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:37
 msgid "None"
-msgstr "Kein"
+msgstr "Žádný"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:85
 msgid "EE/FPU Advanced Recompiler Options"
-msgstr "EE/FPU erweiterte Recompiler Einstellungen"
+msgstr "EE/MKO Pokročilé Možnosti Rekompilátoru"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:87 pcsx2/gui/Panels/CpuPanel.cpp:102
 msgid "Extra + Preserve Sign"
-msgstr "Extra + Vorzeichen behalten"
+msgstr "Extra + Zachovat Znaménko"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:88
 msgid "Full"
-msgstr "Voll"
+msgstr "Úplné"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:99
 msgid "VU0 / VU1 Advanced Recompiler Options"
-msgstr "VU0 / VU1 erweiterte Recompiler Einstellungen"
+msgstr "VJ0 / VJ1 Pokročilé Volby Rekompilátoru"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:101
 msgid "Extra"
@@ -1511,160 +1505,168 @@ msgstr "Extra"
 #: pcsx2/gui/Panels/CpuPanel.cpp:117 pcsx2/gui/Panels/CpuPanel.cpp:126
 #: pcsx2/gui/Panels/CpuPanel.cpp:184
 msgid "Interpreter"
-msgstr "Interpreter"
+msgstr "Převaděč"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:118
 msgid "Quite possibly the slowest thing in the universe."
-msgstr "So ziemlich das Langsamste im gesamten Universum ;p"
+msgstr "Dost možná ta nejpomalejší věc ve vesmíru."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:120 pcsx2/gui/Panels/CpuPanel.cpp:129
 msgid "Recompiler"
-msgstr "Recompiler"
+msgstr "Rekompilátor"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:121
 msgid ""
 "Performs just-in-time binary translation of 64-bit MIPS-IV machine code to "
 "x86."
-msgstr "Just-in-time Codeübersetzung von 64bit MIPS IV nach x86."
+msgstr ""
+"Provádí binární překlad 'za běhu' 64 bitového strojového kódu MIPS-IV do x86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
-msgstr "Ziemlich langsam, nur zu Diagnosezwecken verwenden."
+msgstr "Pěkně pomalý; poskytnutý pouze pro diagnostické účely."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
 "Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
 "x86."
-msgstr "Just-in-time Codeübersetzung von 32bit MIPS I nach x86."
+msgstr ""
+"Provádí binární překlad 'za běhu' 32 bitového strojového kódu MIPS-I do x86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
 msgid "Enable EE Cache - Interpreter Only! (Slower)"
-msgstr "Aktiviere EE Cacheemulation - Nur für Interpreter"
+msgstr "Povolit Vyr. Paměť EE - Pouze Převaděč! (Pomalejší)"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:223
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:110
 msgid "Restore Defaults"
-msgstr "Standardeinstellung"
+msgstr "Obnovit Výchozí"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:185
 msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
 msgstr ""
-"Vector Unit Interpreter. Langsam, Fehlerhaft und generell nicht empfohlen."
+"Převaděč Vektorové Jednotky. Pomalý a ne moc kompatibilní. Používaný pouze "
+"pro diagnostiku."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:187
 msgid "microVU Recompiler"
-msgstr "microVU Recompiler [empfohlen]"
+msgstr "Rekompilátor mikroVJ"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid ""
 "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr ""
-"Neuer Vector Unit Recompiler mit verbesserter Kompatibilität. Empfohlen."
+"Nový rekompilátor Vektorové Jednotky s mnohem lepší kompatibilitou. "
+"Doporučeno."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:190
 msgid "superVU Recompiler [legacy]"
-msgstr "superVU Recompiler [veraltet]"
+msgstr "Rekompilátor superVJ [zastaralé]"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:191
 msgid ""
 "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
-msgstr "Nützlich, um Bugs oder Probleme im mVU Recompiler zu finden."
+msgstr ""
+"Užitečné pro zjišťování chyb nebo problémů s upnutím v novém mVJ "
+"rekompilátoru."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
 msgid "Path does not exist"
-msgstr "Pfad existiert nicht"
+msgstr "Cesta neexistuje"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:156
 msgid "Use default setting"
-msgstr "Benutze Standardeinstellung"
+msgstr "Použít výchozí nastavení"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:176
 msgid "Open in Explorer"
-msgstr "Öffne im Explorer"
+msgstr "Otevřít v Průzkumníku"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:177
 msgid "Open an explorer window to this folder."
-msgstr "Öffnet ein Explorerfenster mit diesem Ordner."
+msgstr "Otevře okno průzkumníka v tomto adresáři."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:268
 msgid "Create folder?"
-msgstr "Erstelle Ordner?"
+msgstr "Vytvořit adresář?"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:269
 #, c-format
 msgid "A configured folder does not exist.  Should %s try to create it?"
-msgstr ""
-"Ein eingestellter Ordner existiert nicht. Soll %s versuchen ihn zu erstellen?"
+msgstr "Nastavený adresář neexistuje. Měl by se %s pokusit o vytvoření?"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:30
 msgid "Fit to Window/Screen"
-msgstr "Nutze gesamtes Fenster"
+msgstr "Přizpůsobit Oknu/Obrazovce"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:31
 msgid "Standard (4:3)"
-msgstr "Standard (4:3)"
+msgstr "Standardní (4:3)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:32
 msgid "Widescreen (16:9)"
-msgstr "Widescreen (16:9)"
+msgstr "Širokoúhlý (16:9)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:44
 msgid "Disable window resize border"
-msgstr "Deaktiviere den Fenstergrößenänderungsrahmen"
+msgstr "Zakázat hranici okna pro změnu velikosti"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:45
 msgid "Always hide mouse cursor"
-msgstr "Verstecke Mauscursor"
+msgstr "Vždy skrýt kurzor myši"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
-#, fuzzy
 msgid "Hide window when paused"
-msgstr "Verstecke Fenster wenn pausiert"
+msgstr "Skrýt okno při pozastavení"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Default to fullscreen mode on open"
-msgstr "Standardmäßig Vollbild beim Starten"
+msgstr "Standardně na režim celé obrazovky při otevření"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:48
 msgid "Wait for Vsync on refresh"
-msgstr "Warte auf VSync"
+msgstr "Čekat na Vsynch při obnově"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:49
 msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
-msgstr "Vsync dynamisch An / Ausschalten (Bitte Tooltip lesen!)"
+msgstr ""
+"Dynamicky přepínat Vsynch v závislosti na snímkové frekvenci (přečtěte si "
+"popisek!)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Double-click toggles fullscreen mode"
-msgstr "Doppelklick für Vollbild ein/aus"
+msgstr "Dvojklik přepíná do režimu celé obrazovky"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:100
 msgid "Aspect Ratio:"
-msgstr "Seitenverhältnis:"
+msgstr "Poměr Stran:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:102
 msgid "Custom Window Size:"
-msgstr "Eigene Fenstergröße:"
+msgstr "Vlastní Velikost Okna:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:180
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
-msgstr "Ungültige Fenstergröße angegeben: Größe muss numerisch sein!"
+msgstr ""
+"Zadány neplatné rozměry okna: Velikost nemůže obsahovat nečíselné číslice! "
+">_<"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
 msgid "Search"
-msgstr "Suche"
+msgstr "Hledat"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:368
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
-msgstr "spezielle Spielefixes"
+msgstr "Herní záplaty"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:38
 msgid "VU Add Hack - Fixes Tri-Ace games boot crash."
-msgstr "VU Add Hack - Behebt Crash beim Booten von Tri-Ace Spielen."
+msgstr "Hack Sčítání VJ - Opravuje pád při zavádění her Tri-Ace."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:39
 msgid ""
@@ -1673,48 +1675,52 @@ msgid ""
 " * Radiata Stories\n"
 " * Valkyrie Profile 2"
 msgstr ""
-"Behebt Crash beim Booten folgender Spiele:\n"
+"Hry, které potřebují tento hack k zavedení:\n"
 " * Star Ocean 3\n"
 " * Radiata Stories\n"
 " * Valkyrie Profile 2"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:42
 msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
-msgstr "VU Clip Flag Hack - Behebt Probleme mit SuperVU in Persona Spielen."
+msgstr ""
+"Hack Příznaku Sevření VJ - Pro hry Persona (pouze rekompilátor superVJ)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:46
 msgid "FPU Compare Hack - For Digimon Rumble Arena 2."
-msgstr "FPU Compare Hack - Für Digimon Rumble Arena 2."
+msgstr "Hack Porovnání MKO - Pro  Digimon Rumble Arena 2."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:50
 msgid "FPU Multiply Hack - For Tales of Destiny."
-msgstr "FPU Multiply Hack - Für Tales of Destiny."
+msgstr "Hack Násobení MKO - Pro Tales of Destiny."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:54
 msgid "FPU Negative Div Hack - For Gundam games."
-msgstr "FPU Negative Div Hack - Für Gundam games."
+msgstr "Hack Negativního Děl. MKO - Pro hry Gundam."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:58
 msgid "VU XGkick Hack - For Erementar Gerad."
-msgstr "VU XGkick Hack - Für Erementar Gerad."
+msgstr "Hack XGkick VJ - Pro Erementar Gerad."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:62
 msgid "FFX videos fix - Fixes bad graphics overlay in FFX videos."
-msgstr "FFX videos fix - Veraltet"
+msgstr "oprava videí FFX - Opravuje špatný grafický překryv ve videích FFX."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:66
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
-msgstr ""
-"EE timing hack - All Aroundhack. Versuche diesen wenn nichts anderes hilft."
+msgstr "Hack časování EE - Víceúčelový hack. Zkuste, pokud vše ostatní selže."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:75
 msgid ""
 "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
-msgstr "Versucht MPEG Videos zu überspringen."
+msgstr ""
+"Hack přeskočení MPEG - Přeskočí videa/FMV v hrách k zabránění zaseknutí/"
+"zamrznutí her."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:79
 msgid "OPH Flag hack - Try if your game freezes showing the same frame."
-msgstr "OPH Flag Hack - Versuchen, wenn das Spiel hängenbleibt."
+msgstr ""
+"Hack Příznaku OPH - Zkuste, pokud se Vaše hra zasekne a zobrazuje stejný "
+"snímek."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid "Ignore DMAC writes when it is busy."
@@ -1723,148 +1729,140 @@ msgstr ""
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:102
 #, fuzzy
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "EE Cyclerate [nicht empfohlen]"
+msgstr "Množství Cyklů EE [Nedoporučeno]"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:111
 msgid ""
 "The safest way to make sure that all game fixes are completely disabled."
-msgstr "Beste Methode sicherzugehen, dass alle Spielefixes deaktiviert sind."
+msgstr ""
+"Nejbezpečnější způsob, jak se ujistit, že všechny záplaty her jsou úplně "
+"vypnuté."
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:249
 msgid "Enable Trace Logging"
-msgstr "Aktiviere Trace Logging"
+msgstr "Povolit Záznam Sledování"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
 msgid ""
 "Trace logs are all written to emulog.txt.  Toggle trace logging at any time "
 "using F10."
 msgstr ""
-"Trace Logs werden nach emulog.txt geschrieben. Wechsle zwischen an und aus "
-"mit F10."
+"Záznamy sledování jsou všechny zapisovány do emulog.txt. Přepnout záznam "
+"sledování můžete kdykoli použitím F10."
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:251
 msgid ""
 "Warning: Enabling trace logs is typically very slow, and is a leading cause "
 "of 'What happened to my FPS?' problems. :)"
-msgstr "Warnung: Trace Logs sind sehr langsam!"
+msgstr ""
+"Varování: Zapnutí sledování záznamu je obyčejně velmi pomalé, a je to hlavní "
+"důvod v problémech s 'Co se stalo s mými SZS?'. :)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:151
 msgid "Select folder with PS2 memory cards"
-msgstr "Wähle Ordner mit PS2 Memory Cards"
+msgstr "Vyberte adresář s paměťovými kartami PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:448
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:533
 msgid "Eject"
-msgstr ""
+msgstr "Vyjmout"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:449
 msgid "Duplicate ..."
-msgstr ""
+msgstr "Kopírovat ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:450
-#, fuzzy
 msgid "Rename ..."
-msgstr "Bewege Datei..."
+msgstr "Přejmenovat ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:451
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:515
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:542
-#, fuzzy
 msgid "Create ..."
-msgstr "Erstelle"
+msgstr "Vytvořit ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
 msgid "Card: "
-msgstr ""
+msgstr "Karta:"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:516
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:549
-#, fuzzy
 msgid "Create a new memory card."
-msgstr "Erstelle neue Memory Card"
+msgstr "Vytvořit novou paměťovou kartu."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:529
-#, fuzzy
 msgid "Rename this memory card ..."
-msgstr ""
-"Zugriff verweigert auf Memory Card Datei: \n"
-"\n"
-"%s\n"
-"\n"
+msgstr "Přejmenovat tuto paměťovou kartu ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:533
 msgid "Insert ..."
-msgstr ""
+msgstr "Vložit ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:534
 msgid "Eject the card from this port"
-msgstr ""
+msgstr "Vyjmout kartu z tohoto portu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:534
 msgid "Insert this card to a port ..."
-msgstr ""
+msgstr "Vložit tuto kartu do portu ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:538
-#, fuzzy
 msgid "Create a duplicate of this memory card ..."
-msgstr "Erstelle neue Memory Card"
+msgstr "Vytvořit kopii této paměťové karty ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:542
 msgid "Delete"
-msgstr "Lösche"
+msgstr "Smazat"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:545
-#, fuzzy
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr ""
-"Löscht die gewählte Memory Card von der Festplatte (alle Spielstände gehen "
-"verloren)."
+"Natrvalo smazat tuto paměťovou kartu z disku (veškerý obsah bude ztracen)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:547
-#, fuzzy
 msgid "Create a new memory card and assign it to this Port."
-msgstr "Erstellt eine neue Memory Card in dem gewählten Slot."
+msgstr "Vytvořit novou paměťovou kartu a přiřadit ji k tomuto Portu."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:726
-#, fuzzy
 msgid "Delete memory file?"
-msgstr "Lösche Memory Card?"
+msgstr "Smazat paměťový soubor?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:750
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:762
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:783
-#, fuzzy
 msgid "Duplicate memory card"
-msgstr "Lösche Memory Card?"
+msgstr "Kopírovat paměťovou kartu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:750
 msgid "Failed: Can only duplicate an existing card."
-msgstr ""
+msgstr "Selhání: Kopírovat lze pouze existující kartu."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
+"Vyberte jméno pro kopii\n"
+"( '.ps2' bude přidáno automaticky)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:782
 #, c-format
 msgid "Failed: %s"
-msgstr ""
+msgstr "Selhalo: %s"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:808
 msgid "Copy failed!"
-msgstr "Kopieren fehlgeschlagen!"
+msgstr "Kopírování selhalo!"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr ""
+msgstr "Paměťová karta '%s' zkopírována do '%s'."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:820
 msgid "Success"
-msgstr ""
+msgstr "Úspěch"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:841
 #, c-format
@@ -1872,220 +1870,212 @@ msgid ""
 "Select a new name for the memory card '%s'\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
+"Vyberte nové jméno pro paměťovou kartu '%s'\n"
+"('.ps2' bude přidána automaticky)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:844
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:856
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
-#, fuzzy
 msgid "Rename memory card"
-msgstr "Lösche Memory Card?"
+msgstr "Přejmenovat paměťovou kartu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
-#, fuzzy
 msgid "Error: Rename could not be completed.\n"
-msgstr "Fehler: Die Memory Card konnte nicht erstellt werden."
+msgstr "Chyba: Přejmenování nemohlo být dokončeno.\n"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:962
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:139
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
-msgstr ""
+msgstr "Port-%u / Multitap-%u--Port-1"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:140
-#, fuzzy, c-format
+#, c-format
 msgid "             Multitap-%u--Port-%u"
-msgstr "Aktiviere Multitap im Port %u"
+msgstr "             Multitap-%u--Port-%u"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:988
 msgid "Empty"
-msgstr ""
+msgstr "Prázdné"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:994
-#, fuzzy, c-format
+#, c-format
 msgid "Select a target port for '%s'"
-msgstr "Wähle einen Ordner für %s"
+msgstr "Vyberte cílový port pro '%s'"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:995
 msgid "Insert card"
-msgstr ""
+msgstr "Vložit kartu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
 msgid "Eject card"
-msgstr ""
+msgstr "Vyjmout kartu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
-#, fuzzy
 msgid "Insert card ..."
-msgstr "Bewege Datei..."
+msgstr "Vložit kartu ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1056
 msgid "Duplicate card ..."
-msgstr ""
+msgstr "Kopírovat kartu ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1057
-#, fuzzy
 msgid "Rename card ..."
-msgstr "Bewege Datei..."
+msgstr "Přejmenovat kartu ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1058
-#, fuzzy
 msgid "Delete card"
-msgstr "Lösche Memory Card?"
+msgstr "Smazat kartu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1061
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1065
-#, fuzzy
 msgid "Create a new card ..."
-msgstr "Erstelle neu..."
+msgstr "Vytvořit novou kartu ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1069
 msgid "Refresh List"
-msgstr "Aktualisiere Liste"
+msgstr "Obnovit Seznam"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:105
-#, fuzzy
 msgid "PS2 Port"
-msgstr "Ort:"
+msgstr "Port PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:107
-#, fuzzy
 msgid "Card (file) name"
-msgstr "Dateiname"
+msgstr "Jméno karty (souboru)"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:108
 msgid "Card size"
-msgstr ""
+msgstr "Velikost karty"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:109
 msgid "Formatted"
-msgstr "Formatiert"
+msgstr "Formátována"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:110
-#, fuzzy
 msgid "Last Modified"
-msgstr "Modifiziert"
+msgstr "Naposledy Změněna"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:111
-#, fuzzy
 msgid "Created on"
-msgstr "Erstellt"
+msgstr "Vytvořena"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:156
 msgid "No"
-msgstr "Nein"
+msgstr "Ne"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:156
 msgid "Yes"
-msgstr "Ja"
+msgstr "Ano"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:169
 msgid "[-- Unused cards --]"
-msgstr ""
+msgstr "[-- Nepoužité karty --]"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:171
 msgid "[-- No unused cards --]"
-msgstr ""
+msgstr "[-- Žádné nepoužité karty --]"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:33
 msgid "Usermode Selection"
-msgstr "Wahl des Benutzermodus"
+msgstr "Výběr Uživatelského Režimu"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:50
 msgid "User Documents (recommended)"
-msgstr "Eigene Dateien (empfohlen)"
+msgstr "Dokumenty Uživatele (doporučeno)"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:51
 msgid "Location: "
-msgstr "Ort:"
+msgstr "Umístění:"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:55
 msgid "Custom folder:"
-msgstr "Selbst gewählter Ordner:"
+msgstr "Vlastní adresář:"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:57
 msgid ""
 "This setting may require administration privileges from your operating "
 "system, depending on how your system is configured."
 msgstr ""
-"Diese Einstellung könnte Administratorberechtigungen benötigen, je nachdem "
-"wie dein System konfiguriert  ist."
+"Toto nastavení může vyžadovat administrátorské výsady od Vašeho operačního "
+"systému, v závislosti na tom, jak je Váš systém nastaven."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:66
 #, c-format
 msgid "Select a document root for %s"
-msgstr "Wähle einen Ordner für %s"
+msgstr "Vyberte kořen dokumentů pro %s"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:124
 msgid "Apply"
-msgstr "Anwenden"
+msgstr "Použít"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:125
 msgid "Make this language my default right now!"
-msgstr "Aktiviere diese Sprache jetzt!"
+msgstr "Hned teď udělat z tohoto jazyka můj výchozí!"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Savestates:"
-msgstr "Savestates:"
+msgstr "Uložené stavy:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 msgid "Select folder for Savestates"
-msgstr "Wähle einen Ordner für Savestates"
+msgstr "Vybrat adresář pro Ukládání Stavů"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid "Snapshots:"
-msgstr "Snapshots:"
+msgstr "Snímky:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:49
 msgid "Select a folder for Snapshots"
-msgstr "Wähle einen Ordner für Snapshots"
+msgstr "Vyberte adresář pro Snímky"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:58
 msgid "Logs/Dumps:"
-msgstr "Logdateien / Dumps:"
+msgstr "Záznamy/Výpisy:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:59
 msgid "Select a folder for logs/dumps"
-msgstr "Wähle einen Ordner für Logdateien / Dumps"
+msgstr "Vyberte adresář pro záznamy/výpisy"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:230
 msgid "Applying settings..."
-msgstr "Wende Einstellungen an..."
+msgstr "Aplikuji nastavení..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:240
 msgid "Shutdown PS2 virtual machine?"
-msgstr "Fahre die virtuelle PS2 herunter?"
+msgstr "Vypnout virtuální stroj PS2?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:321
 msgid "I'm givin' her all she's got, Captain!"
-msgstr ""
-"Kirk: Scotty, ich geb dir 4 Stunden! Scotty: Ok Captain, ich machs in zwei."
+msgstr "Dávám jí, co to jde, Kapitáne!"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:323
 msgid "Enumerating available plugins..."
-msgstr "Prüfe verfügbare Plugins..."
+msgstr "Inventarizuji dostupné zásuvné moduly..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:356
 msgid "Plugins Search Path:"
-msgstr "Plugin Suchpfad:"
+msgstr "Cesta Pro Hledání Zásuvných modulů:"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:357
 msgid "Select a folder with PCSX2 plugins"
-msgstr "Wähle einen Ordner mit PCSX2 Plugins"
+msgstr "Vyberte adresář se zásuvnými moduly PCSX2"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:370
 msgid "Configure..."
-msgstr "Konfigurieren..."
+msgstr "Nastavit..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:379
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
 msgstr ""
-"Klicke den Suchen Button um einen anderen Ordner für PCSX2 Plugins zu wählen."
+"Klikněte na tlačítko Procházet k vybrání jiného adresáře pro zásuvné moduly "
+"PCSX2."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:481
 #, c-format
 msgid "Please select a valid plugin for the %s."
-msgstr "Bitte wähle ein Plugin für %s."
+msgstr "Prosím vyberte platný zásuvný modul pro %s."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:519
 #, c-format
@@ -2095,211 +2085,223 @@ msgid ""
 "Reason: %s\n"
 "\n"
 msgstr ""
-"Das gewählte %s Plugin konnte nicht geladen werden.\n"
+"Vybraný zásuvný modul %s nemohl být načten.\n"
 "\n"
-"Ursache: %s\n"
+"Důvod. %s\n"
 "\n"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:730
 msgid "Completing tasks..."
-msgstr "Beende Aufgaben..."
+msgstr "Dokončuji úkoly..."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:96
 msgid "Enable speedhacks"
-msgstr "Aktiviere Speedhacks"
+msgstr "Povolit hacky rychlosti"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:102
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
-"Eine einfache Möglichkeit sicherzugehen, dass alle Hacks deaktiviert sind."
+"Bezpečný a jednoduchý způsob, jak se ujistit, že všechny hacky rychlosti "
+"jsou úplně zakázané."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:111
 msgid ""
 "Resets all speedhack options to their defaults, which consequently turns "
 "them all OFF."
-msgstr "Stellt die Standardeinstellungen wieder her (alles deaktiviert)."
+msgstr ""
+"Resetuje všechny volby hacků rychlosti na jejich výchozí hodnoty, což "
+"následně všechny VYPNE."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:120
 msgid "EE Cyclerate [Not Recommended]"
-msgstr "EE Cyclerate [nicht empfohlen]"
+msgstr "Množství Cyklů EE [Nedoporučeno]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:141
 msgid "VU Cycle Stealing [Not Recommended]"
-msgstr "VU Cycle Stealing [nicht empfohlen]"
+msgstr "Krádež Cyklů VJ [Nedoporučeno]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid "microVU Hacks"
-msgstr "microVU Hacks"
+msgstr "Hacky mikroVJ"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid "mVU Flag Hack"
-msgstr "mVU Flag Hack"
+msgstr "Hack Příznaku mVJ"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid ""
 "Good Speedup and High Compatibility; may cause garbage graphics, SPS, etc... "
 "[Recommended]"
-msgstr "Guter FPS Anstieg, gute Kompatibilität [empfohlen]"
+msgstr ""
+"Dobré Zrychlení a Vysoká Kompatibilita; může způsobit grafické chyby, SŠP, "
+"atd... [Doporučeno]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:166
 msgid "mVU Block Hack"
-msgstr "mVU Block Hack"
+msgstr "Hack Bloku mVJ"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
 msgid ""
 "Good Speedup and High Compatibility; may cause garbage graphics, SPS, etc..."
-msgstr "Guter FPS Anstieg, gute Kompatibilität [empfohlen]"
+msgstr ""
+"Dobré Zrychlení a Vysoká Kompatibilita; může způsobit grafické chyby, SŠP, "
+"atd..."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid "Other Hacks"
-msgstr "Andere Hacks"
+msgstr "Jiné Hacky"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
 msgid "Enable INTC Spin Detection"
-msgstr "Aktiviere INTC Warteschleifenerkennung"
+msgstr "Povolit Zjišťování Otáčení KPŘE"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
 msgstr ""
-"Gute Geschwindigkeitsverbesserung, fast keine "
-"Kompatibilitätseinschränkungen. [empfohlen]"
+"Velké zrychlení v některých hrách bez jakýchkoliv vedlejších účinků na "
+"kompatibilitu. [Doporučeno]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Enable Wait Loop Detection"
-msgstr "Aktiviere erkennen von Warteschleifen"
+msgstr "Povolit Zjištění Čekací Smyčky"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
-msgstr "Leichte Geschwindigkeitsverbesserung in einigen Spielen [empfohlen]"
+msgstr ""
+"Mírné zrychlení v některých hrách bez žádných známých vedlejších účinků. "
+"[Doporučeno]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid "Enable fast CDVD"
-msgstr "Aktiviere schnelles CDVD"
+msgstr "Zapnout rychlé CDVD"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
 msgid "Fast disc access, less loading times. [Not Recommended]"
-msgstr "Schnellerer Diskzugriff, kürzere Ladezeiten [nicht empfohlen]"
+msgstr "Rychlý přístup k disku, menší doba nahrávání. [Nedoporučeno]"
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:37
 msgid "Themes Search Path:"
-msgstr "Themes Suchpfad:"
+msgstr "Cesta pro Hledání Vzhledů:"
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:38
 msgid "Select folder containing PCSX2 visual themes"
-msgstr "Wähle einen Ordner für PCSX2 Themes."
+msgstr "Vyberte adresář obsahující grafické vzhledy PCSX2"
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:45
 msgid ""
 "Click the Browse button to select a different folder containing PCSX2 visual "
 "themes."
 msgstr ""
-"Klicke den Suchen Button um einen anderen Ordner für PCSX2 Themes zu wählen."
+"Klikněte na tlačítko Procházet pro vybrání jiného adresáře obsahující "
+"grafické vzhledy PCSX2."
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:49
 msgid "Select a visual theme:"
-msgstr "Wähle ein Theme:"
+msgstr "Vyberte grafický vzhled:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:34
 msgid "Disable Framelimiting"
-msgstr "Deaktiviere FPS Limitierung"
+msgstr "Vypnout Omezování Snímků"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Useful for running benchmarks. Toggle this option in-game by pressing F4."
 msgstr ""
-"Sinnvoll für Benchmarks. Kann auch während des Spielens mit F4 aktiviert "
-"werden."
+"Užitečné pro spuštění zatěžovacích testů. Tuto možnost přepínáte ve hře "
+"stiskem F4."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:61
 msgid "Base Framerate Adjust:"
-msgstr "Basis Bildwiederholrate:"
+msgstr "Úprava Základní Frekvence Snímků:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:67
 msgid "Slow Motion Adjust:"
-msgstr "Slowmotion Einstellung:"
+msgstr "Úprava Zpomaleného Pohybu:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:73
 msgid "Turbo Adjust:"
-msgstr "Turbo Einstellung:"
+msgstr "Turbo Úprava:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:88
 msgid "NTSC Framerate:"
-msgstr "NTSC  Bildwiederholrate"
+msgstr "Frekvence Snímků NTSC:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:91 pcsx2/gui/Panels/VideoPanel.cpp:97
 msgid "FPS"
-msgstr "FPS"
+msgstr "SZS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:94
 msgid "PAL Framerate:"
-msgstr "PAL Bildwiederholrate"
+msgstr "Frekvence Snímků PAL:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:180
 msgid "Disabled [default]"
-msgstr "Deaktiviert  [standard]"
+msgstr "Vypnuto [výchozí]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:184
 msgid "Skip when on Turbo only (TAB to enable)"
-msgstr "Skipping nur im Turbomodus"
+msgstr "Přeskočit pouze když je použito Turbo (TAB pro zapnutí)"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:188
 msgid "Constant skipping"
-msgstr "Konstantes Skipping"
+msgstr "Neustálé přeskakování"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:190
 msgid ""
 "Normal and Turbo limit rates skip frames.  Slow motion mode will still "
 "disable frameskipping."
-msgstr "Normal und Turbo werden Bilder auslassen, Slow motion nicht."
+msgstr ""
+"Normální a Turbo omezují množství přeskočených snímků. Režim zpomaleného "
+"pohybu přesto vypne přeskakování snímků."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:213
 msgid "Frames to Draw"
-msgstr "Bilder darstellen"
+msgstr "Snímky na Vykreslení"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:218
 msgid "Frames to Skip"
-msgstr "Bilder auslassen"
+msgstr "Snímky na Přeskočení"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Use Synchronized MTGS"
-msgstr "Benutze synchrones MTGS"
+msgstr "Použít Synchronizovaný VVGS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:298
 msgid "Disable all GS output"
-msgstr "Deaktiviere GS Ausgabe"
+msgstr "Zakázat všechen výstup GS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:316
 msgid "Frame Skipping"
-msgstr "Bilder auslassen (skipping)"
+msgstr "Přeskakování Snímků"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:319
 msgid "Framelimiter"
-msgstr "FPS Limitierung"
+msgstr "Omezovač Snímků"
 
 #: pcsx2/gui/SysState.cpp:283
 msgid ""
 "Cannot load this savestate.  The state is from an incompatible edition of "
 "PCSX2 that is either newer than this version, or is no longer supported."
 msgstr ""
-"Kann diesen Savestate nicht laden. Der State ist von einer inkompatiblem "
-"PCSX2 Version."
+"Nelze načíst tento uložený stav. Stav je z nekompatibilní edice PCSX2, která "
+"je buď novější než tato, nebo už není podporována."
 
 #: pcsx2/gui/SysState.cpp:290
 msgid ""
 "Cannot load this savestate. The state is an unsupported version, likely "
 "created by a newer edition of PCSX2."
 msgstr ""
-"Kann den State nicht laden. Der State ist möglicherweise von einer neueren "
-"Version von PCSX2."
+"Nelze načíst tento uložený stav. Stav je z nepodporované verze, "
+"pravděpodobně vytvořen novou edicí PCSX2."
 
 #: pcsx2/gui/SysState.cpp:326
 #, fuzzy
 msgid "There is no active virtual machine state to download or save."
-msgstr "Speichert den Status der virtuellen Maschine im aktuellen Slot"
+msgstr "Uloží stav virtuálního stroje do současné pozice."
 
 #: pcsx2/gui/SysState.cpp:520
 msgid ""
@@ -2307,40 +2309,38 @@ msgid ""
 "may have been created by an older unsupported version of PCSX2, or it may be "
 "corrupted."
 msgstr ""
-"Dieser Savestate kann nicht geladen werden, da er kein gültiges gzip Format "
-"besitzt. Er ist entweder von einer älteren oder nicht unterstützten PCSX2 "
-"Version oder er ist beschädigt."
+"Uložený stav nemůže být nahrán, protože to není platný archiv gzip. Mohl být "
+"vytvořen starší nepodporovanou verzí PCSX2 nebo může být poškozen."
 
 #: pcsx2/gui/SysState.cpp:579
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr ""
-"Dies ist kein gültiger Savestate oder er ist von einer nicht unterstützten "
-"PCSX2 Version."
+"Tento soubor není platný uložený stav PCSX2. Podívejte se na soubor se "
+"záznamem pro podrobnosti."
 
 #: pcsx2/gui/SysState.cpp:598
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
 msgstr ""
-"Dieser Savestate kann nicht geladen werden, da wichtige Komponenten fehlen. "
-"Weitere Informationen in der Logdatei."
+"Uložený stav nemůže být nahrán kvůli chybějícím důležitým součástem. "
+"Prohlédněte si záznam pro podrobnosti."
 
 #: pcsx2/ps2/BiosTools.cpp:83 pcsx2/ps2/BiosTools.cpp:151
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
-msgstr ""
-"Die gewählte BIOS-Datei ist kein korrektes PS2 BIOS. Bitte neu konfigurieren."
+msgstr "Vybraný soubor BIOSu není platný BIOS PS2. Prosím nastavte znovu."
 
 #: pcsx2/ps2/BiosTools.cpp:244
 msgid ""
 "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
 "configuration has been corrupted.  Please re-configure."
 msgstr ""
-"Das PS2 BIOS konnte nicht geladen werden. Entweder wurde das BIOS nicht "
-"konfiguriert oder die Konfiguration ist korrupt. Bitte neu konfigurieren."
+"BIOS PS2 nemohl nýt načten. BIOS nebyl nastaven nebo bylo nastavení "
+"poškozeno. Nastavte prosím znovu."
 
 #: pcsx2/ps2/BiosTools.cpp:251
 msgid "The configured BIOS file does not exist.  Please re-configure."
-msgstr "Die gewählte BIOS-Datei existiert nicht. Bitte neu konfigurieren."
+msgstr "Nastavený soubor BIOSu neexistuje. Prosím nastavte znovu."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:578
 #, c-format
@@ -2348,8 +2348,8 @@ msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "MMX, SSE, and SSE2 extensions."
 msgstr ""
-"%s Erweiterungen nicht gefunden. Der R5900-32 Recompiler benötigt einen "
-"Prozessor mit MMX, SSE und SSE2 Erweiterungen."
+"Rozšíření %s nenalezeno. Rekompilátor R5900-32 potřebuje hostitelský "
+"procesor s rozšířením MMX, SSE, a SSE2."
 
 #: pcsx2/x86/microVU.cpp:28
 #, c-format
@@ -2357,353 +2357,36 @@ msgid ""
 "%s Extensions not found.  microVU requires a host CPU with MMX, SSE, and "
 "SSE2 extensions."
 msgstr ""
-"%s Erweiterungen nicht gefunden. MicroVU benötigt einen Prozessor mit MMX, "
-"SSE und SSE2 Erweiterungen."
+"Rozšíření %s nenalezeno. mikroVJ vyžaduje, aby hostitelský procesor měl "
+"rozšíření MMX, SSE, a SSE2."
 
 #~ msgid "ISO mounting failed: PCSX2 is unable to identify the ISO image type."
-#~ msgstr ""
-#~ "ISO laden fehlgeschlagen: PCSX2 kann den Typ der Imagedatei nicht "
-#~ "feststellen."
+#~ msgstr "Připojení ISO selhalo: PCSX2 nedokáže rozpoznat typ obrazu ISO."
 
 #~ msgid "Enable Patches"
-#~ msgstr "Aktiviere Patches"
+#~ msgstr "Povolit Záplaty"
 
 #~ msgid "Patches (unimplemented)"
-#~ msgstr "Patches (nicht implementiert)"
+#~ msgstr "Záplaty (nezavedeno)"
 
 #~ msgid "Open Debug Window..."
-#~ msgstr "Öffne Debug Fenster..."
+#~ msgstr "Otevřít Okno Ladění..."
 
 #~ msgid "Memory Dump..."
-#~ msgstr "Speicher Dump..."
+#~ msgstr "Výpis Paměti..."
 
 #~ msgid "Enable game fixes"
-#~ msgstr "Aktiviere Spielspezifische Fixes"
+#~ msgstr "Povolit opravy her"
 
 #~ msgid "mVU Min/Max Hack"
-#~ msgstr "mVU Min/Max Hack"
+#~ msgstr "Min/Max Hack mVJ"
 
 #~ msgid ""
 #~ "Small Speedup; may cause black screens, garbage graphics, SPS, etc... "
 #~ "[Not Recommended]"
-#~ msgstr "Kleine FPS Verbesserung; Kann Fehler verursachen. [nicht empfohlen]"
-
-#, fuzzy
-#~ msgid "Use Multitap on Port %u"
-#~ msgstr "Aktiviere Multitap im Port %u"
-
-#, fuzzy
-#~ msgid "Drag card files in the list to swap or copy between ports."
 #~ msgstr ""
-#~ "Ziehe Memory Cards in die Liste um sie zu wechseln oder zu kopieren."
+#~ "Malé Zrychlení; může způsobit černé obrazovky, grafické chyby, SŠP, "
+#~ "atd... [Nedoporučeno]"
 
-#~ msgid "Other..."
-#~ msgstr "Andere..."
-
-#~ msgid "Suspend"
-#~ msgstr "Pausiere"
-
-#, fuzzy
-#~ msgid "Copy memory card file"
-#~ msgstr "Erstelle neue Memory Card"
-
-#, fuzzy
 #~ msgid "Copy canceled"
-#~ msgstr "Kopieren fehlgeschlagen!"
-
-#, fuzzy
-#~ msgid "Overwrite memory card file?"
-#~ msgstr "Memory Card überschreiben?"
-
-#, fuzzy
-#~ msgid "Create card file"
-#~ msgstr "Erstelle Ordner?"
-
-#, fuzzy
-#~ msgid "Enable port"
-#~ msgstr "Aktiviere"
-
-#, fuzzy
-#~ msgid "Disable Port"
-#~ msgstr "Deaktiviere"
-
-#, fuzzy
-#~ msgid "Enable Port"
-#~ msgstr "Aktiviere Patches"
-
-#, fuzzy
-#~ msgid ""
-#~ "Disable the selected PS2-Port (this memory card will be invisible to "
-#~ "games/BIOS)."
-#~ msgstr ""
-#~ "Deaktiviert die gewählte Memory Card, so dass Spiele oder das BIOS sie "
-#~ "nicht sehen können."
-
-#~ msgid "Disabled"
-#~ msgstr "Deaktiviert"
-
-#~ msgid "Enabled"
-#~ msgstr "Aktiviert"
-
-#~ msgid "Select memory card for Port %u / Slot %u"
-#~ msgstr "Wähle Memory Card fürr Port %u / Slot %u"
-
-#~ msgid "New card will be saved to:"
-#~ msgstr "Neue Karte wird gespeichert nach:"
-
-#~ msgid "memory card creation error"
-#~ msgstr "Memory Card Erstellungsfehler"
-
-#~ msgid "Mount"
-#~ msgstr "Aktiviere"
-
-#~ msgid "Mounts the selected memory card, so that games can see it again."
-#~ msgstr ""
-#~ "Binded die gewählte Memory Card ein, so dass Spiele sie wider sehen "
-#~ "können."
-
-#~ msgid "Status"
-#~ msgstr "Status"
-
-#~ msgid "Size"
-#~ msgstr "Größe"
-
-#~ msgid "Missing"
-#~ msgstr "Fehlt"
-
-#~ msgid "N/A"
-#~ msgstr "N/V"
-
-#~ msgid "Backup existing Savestate when creating a new one"
-#~ msgstr "Sichere (backup) alten Savestate wenn ein neuer angelegt wird"
-
-#~ msgid "Print CDVD Info"
-#~ msgstr "Zeige CDVD Aktivität"
-
-#~ msgid "Use exclusive fullscreen mode (if available)"
-#~ msgstr "Benutze exklusiven Vollbildmodus (wenn verfügbar)"
-
-#~ msgid "Slot"
-#~ msgstr "Slot"
-
-#~ msgid ""
-#~ "The MTGS thread has become unresponsive while waiting for the GS plugin "
-#~ "to open."
-#~ msgstr ""
-#~ "Der MTGS Thread ist eingefroren. GS Plugin konnte nicht geladen werden."
-
-#~ msgid "Dumps detailed information for PS2 executables (ELFs)."
-#~ msgstr "Dumps detailed information for PS2 executables (ELFs)."
-
-#~ msgid ""
-#~ "Logs manual protection, split blocks, and other things that might impact "
-#~ "performance."
-#~ msgstr ""
-#~ "Logs manual protection, split blocks, and other things that might impact "
-#~ "performance."
-
-#~ msgid "Shows the game developer's logging text (EE processor)"
-#~ msgstr "Zeigt EE Log Text"
-
-#~ msgid "Shows the game developer's logging text (IOP processor)"
-#~ msgstr "Zeigt IOP Log Text"
-
-#~ msgid "Shows DECI2 debugging logs (EE processor)"
-#~ msgstr "Zeigt DECI2 Debug (EE) Log Text"
-
-#~ msgid "SYSCALL and DECI2 activity."
-#~ msgstr "SYSCALL und DECI2 Aktivität."
-
-#~ msgid "Direct memory accesses to unknown or unmapped EE memory space."
-#~ msgstr "Direct memory accesses to unknown or unmapped EE memory space."
-
-#~ msgid "Disasm of executing core instructions (excluding COPs and CACHE)."
-#~ msgstr "Disasm of executing core instructions (excluding COPs and CACHE)."
-
-#~ msgid "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."
-#~ msgstr "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."
-
-#~ msgid "Disasm of the EE's floating point unit (FPU) only."
-#~ msgstr "Disasm of the EE's floating point unit (FPU) only."
-
-#~ msgid "Disasm of the EE's VU0macro co-processor instructions."
-#~ msgstr "Disasm of the EE's VU0macro co-processor instructions."
-
-#~ msgid "Execution of EE cache instructions."
-#~ msgstr "Execution of EE cache instructions."
-
-#~ msgid ""
-#~ "All known hardware register accesses (very slow!); not including sub "
-#~ "filter options below."
-#~ msgstr ""
-#~ "All known hardware register accesses (very slow!); not including sub "
-#~ "filter options below."
-
-#~ msgid "Logs only unknown, unmapped, or unimplemented register accesses."
-#~ msgstr "Logs only unknown, unmapped, or unimplemented register accesses."
-
-#~ msgid "Logs only DMA-related registers."
-#~ msgstr "Logs only DMA-related registers."
-
-#~ msgid ""
-#~ "IPU activity: hardware registers, decoding operations, DMA status, etc."
-#~ msgstr ""
-#~ "IPU activity: hardware registers, decoding operations, DMA status, etc."
-
-#~ msgid "All GIFtag parse activity; path index, tag type, etc."
-#~ msgstr "All GIFtag parse activity; path index, tag type, etc."
-
-#~ msgid "All VIFcode processing; command, tag style, interrupts."
-#~ msgstr "All VIFcode processing; command, tag style, interrupts."
-
-#~ msgid "Scratchpad's MFIFO activity."
-#~ msgstr "Scratchpad's MFIFO activity."
-
-#~ msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
-#~ msgstr "Actual data transfer logs, bus right arbitration, stalls, etc."
-
-#~ msgid "Tracks all EE counters events and some counter register activity."
-#~ msgstr "Tracks all EE counters events and some counter register activity."
-
-#~ msgid "Dumps various VIF and VIFcode processing data."
-#~ msgstr "Dumps various VIF and VIFcode processing data."
-
-#~ msgid "Dumps various GIF and GIFtag parsing data."
-#~ msgstr "Dumps various GIF and GIFtag parsing data."
-
-#~ msgid "SYSCALL and IRX activity."
-#~ msgstr "SYSCALL and IRX activity."
-
-#~ msgid "Direct memory accesses to unknown or unmapped IOP memory space."
-#~ msgstr "Direct memory accesses to unknown or unmapped IOP memory space."
-
-#~ msgid "Disasm of the IOP's GPU co-processor instructions."
-#~ msgstr "Disasm of the IOP's GPU co-processor instructions."
-
-#~ msgid ""
-#~ "All known hardware register accesses, not including the sub-filters below."
-#~ msgstr ""
-#~ "All known hardware register accesses, not including the sub-filters below."
-
-#~ msgid "Memorycard reads, writes, erases, terminators, and other processing."
-#~ msgstr ""
-#~ "Memorycard reads, writes, erases, terminators, and other processing."
-
-#~ msgid "Gamepad activity on the SIO."
-#~ msgstr "Gamepad activity on the SIO."
-
-#~ msgid "Actual DMA event processing and data transfer logs."
-#~ msgstr "Actual DMA event processing and data transfer logs."
-
-#~ msgid "Tracks all IOP counters events and some counter register activity."
-#~ msgstr "Tracks all IOP counters events and some counter register activity."
-
-#~ msgid "Detailed logging of CDVD hardware."
-#~ msgstr "Detailed logging of CDVD hardware."
-
-#~ msgid "The savestate data is invalid or corrupted."
-#~ msgstr "Die Savestate Datei ist falsch oder korrupt"
-
-#~ msgid "Illegal ELF file size over 2GB!"
-#~ msgstr "ELF Dateigröße ist illegal, über 2GB!"
-
-#~ msgid "ELF file does not exist!"
-#~ msgstr "ELF Datei existiert nicht!"
-
-#~ msgid "Unexpected end of ELF file."
-#~ msgstr "Unvorhergesehenes Ende der ELF Datei."
-
-#~ msgid "Internal Memorycard Plugin failed to initialize."
-#~ msgstr "Interne Memory Card Plugin konnte nicht initialisiert werden."
-
-#~ msgid "Fits a lot of log in a microcosmically small area."
-#~ msgstr "Zwängt eine Menge an Logs in eine kleine Fläche."
-
-#~ msgid "It's what I use (the programmer guy)."
-#~ msgstr "Das ist was ich benutze (der Programmierertyp)."
-
-#~ msgid "Its nice and readable."
-#~ msgstr "Es ist nett und lesbar."
-
-#~ msgid "In case you have a really high res display."
-#~ msgstr "Falls du ein sehr hochauflösendes Display hast."
-
-#~ msgid "Default soft-tone color scheme."
-#~ msgstr "Standard Farbschema, weiche Töne."
-
-#~ msgid ""
-#~ "Classic black color scheme for people who enjoy having text seared into "
-#~ "their optic nerves."
-#~ msgstr ""
-#~ "Klassisch schwarzes Farbschema. Für alle die es mögen, den Text in die "
-#~ "Augen gebrannt zu bekommen."
-
-#~ msgid ""
-#~ "When checked the log window will be visible over other foreground windows."
-#~ msgstr ""
-#~ "Wenn aktiviert, wird das Logfenster über allen Anderen sichtbar sein."
-
-#~ msgid "Data read failed: Invalid or corrupted gzip archive."
-#~ msgstr ""
-#~ "Lesen der Daten fehlgeschlagen: Ungültiges oder korruptes gzip Archiv."
-
-#~ msgid "Logs events as they are passed to the PS2 virtual machine."
-#~ msgstr "Logt Ereignisse, die der PS2 VM übergeben werden."
-
-#~ msgid "&Back >"
-#~ msgstr "&Zurück <"
-
-#~ msgid ""
-#~ "Always use this option if you want the safest and surest memory card "
-#~ "behavior."
-#~ msgstr ""
-#~ "Benutze diese Option, wenn du das sicherste Memory Card verhalten wünscht."
-
-#~ msgid "16 and 32 MB cards have roughly the same compatibility factor."
-#~ msgstr "16 und 32 MB Karten sind in etwa gleich kompatibel."
-
-#~ msgid ""
-#~ "Use at your own risk.  Erratic memory card behavior is possible (though "
-#~ "unlikely)."
-#~ msgstr "Benutze auf eigenes Risiko."
-
-#~ msgid ""
-#~ "%s will create the following folder for documents.  You can change this "
-#~ "setting later, at any time."
-#~ msgstr ""
-#~ "%s wird den folgenden Ordner für Dokumente erstellen. Du kannst das "
-#~ "jederzeit später ändern."
-
-#~ msgid "Flush to Zero"
-#~ msgstr "Flush to Zero"
-
-#~ msgid "Denormals are Zero"
-#~ msgstr "Denormals are Zero"
-
-#~ msgid ""
-#~ "Error while parsing either NTSC or PAL framerate settings.  Settings must "
-#~ "be valid floating point numerics."
-#~ msgstr ""
-#~ "Fehler beim Verarbeiten der NTSC oder PAL Bildrateneinstellung. Die Werte "
-#~ "müssen Fließkommazahlen sein."
-
-#~ msgid ""
-#~ "For troubleshooting potential bugs in the MTGS only, as it is potentially "
-#~ "very slow."
-#~ msgstr "Um potentielle Bugs im MTGS zu finden. Sehr langsam."
-
-#~ msgid ""
-#~ "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
-#~ "components."
-#~ msgstr ""
-#~ "Deaktiviert die GS (Grafik) Funktionalität komplett. Ideal um die "
-#~ "Geschwindigkeit der PS2 Kernemulation zu messen."
-
-#~ msgid "Threading activity: start, detach, sync, deletion, etc."
-#~ msgstr "Threadaktivität: Start, Abkoppeln, Synchronisieren, Löschen, etc."
-
-#~ msgid "Includes idle event processing and some other uncommon event usages."
-#~ msgstr "Idle Events und andere ungewöhnliche Events."
-
-#~ msgid "No reason given."
-#~ msgstr "Kein Grund angegeben"
+#~ msgstr "Kopírování zrušeno"

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.8\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
-"PO-Revision-Date: 2011-03-19 13:03+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"PO-Revision-Date: 2011-03-30 00:30+0100\n"
 "Last-Translator: Georg Ronnert <pgert@yahoo.se>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -198,26 +198,26 @@ msgstr "Bemärk: De flesta spel har det fint med förvalsmöjligheterna."
 msgid "!Notice:DirPicker:CreatePath"
 msgstr "Den angivna sökvägen/katalogen finnes ej. Vill Ni skapa den?"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:103
 msgid "!Panel:Gamefixes:Compat Warning"
 msgstr ""
 "Spelfixar kan åtgärda felaktig emulering för vissa spel. \n"
 "De kan dock orsaka kompabilitets- eller prestandaproblem för andra spel. \n"
 "Ni får stänga av Spelfixar manuellt när Ni byter spel."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:720
 msgid "!Notice:Mcd:Delete"
 msgstr ""
 "Ni är på väg att radera det formaterade minneskortet i sockel %u. \n"
 "All data på detta kort kommer att förloras! Är Ni helt säker?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:755
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:758
 msgid "!Notice:Mcd:CantDuplicate"
 msgstr ""
 "Misslyckades: Dubblering är endast tillåtet till en tom PS2-Sockel, eller "
 "till ett filsystem."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:798
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
 msgid "!Notice:Mcd:Copy Failed"
 msgstr ""
 "Fel! Kunde inte kopiera innehållet till sockel %u. Målfilen används "

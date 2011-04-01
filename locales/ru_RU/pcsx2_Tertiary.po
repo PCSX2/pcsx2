@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
 "PO-Revision-Date: 2010-12-28 13:40+0300\n"
 "Last-Translator: Kein <kein-of@yandex.ru>\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
@@ -43,27 +43,27 @@ msgstr ""
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Ошибка инициализации встроенного плагина карт памяти."
 
-#: pcsx2/gui/AppConfig.cpp:778
+#: pcsx2/gui/AppConfig.cpp:813
 msgid "Safest"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:779
+#: pcsx2/gui/AppConfig.cpp:814
 msgid "Safe (faster)"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:780
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Balanced"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:781
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Aggressive"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:782
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Aggressive plus"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:783
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Mostly Harmful"
 msgstr ""
 
@@ -148,7 +148,7 @@ msgstr ""
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "Отображает события которые отправляются вирутальной машине PS2."
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:156
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:158
 msgid "!ContextTip:DirPicker:UseDefault"
 msgstr ""
 "Активируйте данную опцию, если желаете чтобы PCSX2 создавала соответствующие "
@@ -198,6 +198,15 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:80
 msgid "!ContextTip:Gamefixes:OPH Flag hack"
+msgstr ""
+"Актуален для следующих игр:\n"
+"* Bleach Blade Battler\n"
+"* Growlanser II and III\n"
+"* Wizardry\""
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:89
+#, fuzzy
+msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr ""
 "Актуален для следующих игр:\n"
 "* Bleach Blade Battler\n"
@@ -277,28 +286,21 @@ msgstr ""
 "EmotionEngine. Более высокое значение хака увеличивает количество циклов, "
 "которые будут \"позаимствованы\" у EE для обработки микропрограмм VU."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
 msgid "!ContextTip:Speedhacks:vuFlagHack"
 msgstr ""
 "Обновляет флаги состояния только на тех блоках, которые будут читать данные "
 "флаги (вместо постоянного обновления всех блоков). Вполне безопасный хак, "
 "SuperVU-рекомпилятор делает нечто подобное по-умолчанию."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid "!ContextTip:Speedhacks:vuBlockHack"
 msgstr ""
 "Предугадывает, какие блоки микропрограмм не будут читать данные флагов в "
 "обозримом будущем. Неизвестно, провоцирует ли это какие-либо проблемы в "
 "каких-либо играх, посему, данный хак можно считать безопасным."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
-msgid "!ContextTip:Speedhacks:vuMinMax"
-msgstr ""
-"Использует SSEx-инструкции для Min/Max-операции с плавающей точкой, вместо "
-"дополнительных Min/Max-операций при просчете логики. \"Ломает\" Gran Turismo "
-"4 и Tekken 5. Возможно что-то еще."
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:202
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid "!ContextTip:Speedhacks:INTC"
 msgstr ""
 "Данный хак лучше всего применять для игр которые используют регистрацию "
@@ -306,7 +308,7 @@ msgstr ""
 "не использующие 3D. Все остальные игры либо не получат никакого ускорения, "
 "либо оно будет чрезвычайно мало."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:207
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
 msgid "!ContextTip:Speedhacks:BIFC0"
 msgstr ""
 "Изначально нацеленный на пустые циклы EE-рекомпилятора по адресу ядра "
@@ -320,7 +322,7 @@ msgstr ""
 "событию или\n"
 "вообще к концу процессорного интервала."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:214
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid "!ContextTip:Speedhacks:fastCDVD"
 msgstr ""
 "Для получения списка игр, которые испытывают проблемы при использовании "
@@ -366,6 +368,12 @@ msgstr ""
 "\n"
 "Примечание: данная опция применяется \"на лету\", однако ее последующее "
 "отключение в реальном времени чревато появлением графического мусора в игре. "
+
+#~ msgid "!ContextTip:Speedhacks:vuMinMax"
+#~ msgstr ""
+#~ "Использует SSEx-инструкции для Min/Max-операции с плавающей точкой, "
+#~ "вместо дополнительных Min/Max-операций при просчете логики. \"Ломает\" "
+#~ "Gran Turismo 4 и Tekken 5. Возможно что-то еще."
 
 #~ msgid "!ContextTip:Window:FullscreenExclusive"
 #~ msgstr ""

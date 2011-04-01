@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
 "PO-Revision-Date: 2011-03-02 03:50+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -75,9 +75,10 @@ msgstr "等待任務完成..."
 msgid "Waiting for task..."
 msgstr "等待任務完成..."
 
-#: pcsx2/CDVD/IsoFileFormats.cpp:417
-msgid "ISO mounting failed: PCSX2 is unable to identify the ISO image type."
-msgstr "掛載光碟映像檔失敗：PCSX2 無法確認光碟映像檔的類型。"
+#: pcsx2/CDVD/IsoFileFormats.cpp:416
+#, fuzzy
+msgid "Unrecognized ISO image file format"
+msgstr "無法辨識的 ISO 檔案格式。"
 
 #: pcsx2/Elfheader.cpp:266
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
@@ -157,13 +158,17 @@ msgstr "未載入的插件"
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr "無法讀取即時存檔，檔案版本未知或不支援。"
 
+#: pcsx2/System.h:206 pcsx2/System.h:207 pcsx2/System.h:208
+msgid "PCSX2 Message"
+msgstr ""
+
 #: pcsx2/ZipTools/thread_gzip.cpp:82
 msgid ""
 "The savestate was not properly saved. The temporary file was created "
 "successfully but could not be moved to its final resting place."
 msgstr "即時存檔未能正確地儲存。成功建立暫存檔，但是無法將其移至目的地。"
 
-#: pcsx2/gui/AppConfig.cpp:940 pcsx2/gui/AppConfig.cpp:946
+#: pcsx2/gui/AppConfig.cpp:975 pcsx2/gui/AppConfig.cpp:981
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "覆寫現存的設定檔失敗；沒有權限。"
 
@@ -647,7 +652,7 @@ msgstr "新增記憶卡"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:59
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:74
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:271
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:273
 msgid "Create"
 msgstr "新增"
 
@@ -667,7 +672,7 @@ msgid "Select file name: "
 msgstr "選擇視覺主題："
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:149
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:852
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:855
 #, c-format
 msgid "Error (%s)"
 msgstr ""
@@ -944,7 +949,7 @@ msgid ""
 "please, thank you."
 msgstr "拖曳多個檔案至 %s 視窗是一個錯誤。請一次一個檔案，謝謝。"
 
-#: pcsx2/gui/IsoDropTarget.cpp:89 pcsx2/gui/MainMenuClicks.cpp:337
+#: pcsx2/gui/IsoDropTarget.cpp:89 pcsx2/gui/MainMenuClicks.cpp:338
 msgid "Confirm PS2 Reset"
 msgstr "確認重新啟動 PS2"
 
@@ -1032,8 +1037,13 @@ msgid "Backup before save"
 msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:419
-msgid "Enable Patches"
-msgstr "啟用補丁"
+#, fuzzy
+msgid "Automatic Gamefixes"
+msgstr "遊戲修正"
+
+#: pcsx2/gui/MainFrame.cpp:420
+msgid "Automatically applies needed Gamefixes to known problematic games"
+msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:422
 msgid "Enable Cheats"
@@ -1132,10 +1142,6 @@ msgstr "USB"
 msgid "Firewire"
 msgstr "Firewire"
 
-#: pcsx2/gui/MainFrame.cpp:472
-msgid "Patches (unimplemented)"
-msgstr "補丁（未實現）"
-
 #: pcsx2/gui/MainFrame.cpp:475
 msgid "Multitap 1"
 msgstr "手把擴充器 1"
@@ -1156,14 +1162,6 @@ msgstr "清除全部 %s 設定，重新執行「 首次執行精靈 」"
 #: pcsx2/gui/MainFrame.cpp:502
 msgid "About..."
 msgstr "關於 PCSX2"
-
-#: pcsx2/gui/MainFrame.cpp:504
-msgid "Open Debug Window..."
-msgstr "開啟偵錯視窗"
-
-#: pcsx2/gui/MainFrame.cpp:505
-msgid "Memory Dump..."
-msgstr "記憶體轉存"
 
 #: pcsx2/gui/MainFrame.cpp:506
 msgid "Logging..."
@@ -1281,65 +1279,65 @@ msgstr "確認更換光碟映像檔"
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr "您是想要更換光碟還是啟動新的映像檔 ( 重新啟動遊戲 )？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:148 pcsx2/gui/MainMenuClicks.cpp:191
+#: pcsx2/gui/MainMenuClicks.cpp:148 pcsx2/gui/MainMenuClicks.cpp:192
 msgid "Swap Disc"
 msgstr "更換光碟"
 
-#: pcsx2/gui/MainMenuClicks.cpp:181
+#: pcsx2/gui/MainMenuClicks.cpp:182
 msgid "Confirm CDVD source change"
 msgstr "確認更換光碟"
 
-#: pcsx2/gui/MainMenuClicks.cpp:184
+#: pcsx2/gui/MainMenuClicks.cpp:185
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
 msgstr "您已經選擇將遊戲來源從【%s】更換到【%s】"
 
-#: pcsx2/gui/MainMenuClicks.cpp:188
+#: pcsx2/gui/MainMenuClicks.cpp:189
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr "您是想要更換光碟還是啟動新的映像檔 ( 重新啟動遊戲 )？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:256
+#: pcsx2/gui/MainMenuClicks.cpp:257
 #, c-format
 msgid "All Supported (%s)"
 msgstr "所有支援的檔案類型 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:259
+#: pcsx2/gui/MainMenuClicks.cpp:260
 #, c-format
 msgid "Disc Images (%s)"
 msgstr "光碟映像檔 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:262
+#: pcsx2/gui/MainMenuClicks.cpp:263
 #, c-format
 msgid "Blockdumps (%s)"
 msgstr "區塊轉存檔 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:265 pcsx2/gui/MainMenuClicks.cpp:286
+#: pcsx2/gui/MainMenuClicks.cpp:266 pcsx2/gui/MainMenuClicks.cpp:287
 msgid "All Files (*.*)"
 msgstr "所有檔案 (*.*)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:268
+#: pcsx2/gui/MainMenuClicks.cpp:269
 msgid "Select CDVD source iso..."
 msgstr "選擇光碟映像檔"
 
-#: pcsx2/gui/MainMenuClicks.cpp:285
+#: pcsx2/gui/MainMenuClicks.cpp:286
 msgid "Select ELF file..."
 msgstr "選擇 ELF 檔案"
 
-#: pcsx2/gui/MainMenuClicks.cpp:311
+#: pcsx2/gui/MainMenuClicks.cpp:312
 msgid "ISO file not found!"
 msgstr "未找到光碟映像檔！"
 
-#: pcsx2/gui/MainMenuClicks.cpp:313
+#: pcsx2/gui/MainMenuClicks.cpp:314
 msgid "An error occurred while trying to open the file:"
 msgstr "當嘗試開啟這個檔案時出現錯誤："
 
-#: pcsx2/gui/MainMenuClicks.cpp:314
+#: pcsx2/gui/MainMenuClicks.cpp:315
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
 msgstr "錯誤：指定的光碟映像檔不存在。按【確定】選擇一個新的光碟映像檔。"
 
-#: pcsx2/gui/MainMenuClicks.cpp:380
+#: pcsx2/gui/MainMenuClicks.cpp:381
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
@@ -1389,7 +1387,7 @@ msgstr ""
 msgid "The Operating-System prevents this file from being created"
 msgstr ""
 
-#: pcsx2/gui/Panels/BaseApplicableConfigPanel.cpp:97
+#: pcsx2/gui/Panels/BaseApplicableConfigPanel.cpp:103
 msgid "Cannot apply settings..."
 msgstr "無法套用設定"
 
@@ -1531,23 +1529,23 @@ msgstr "對於診斷 microVU 的程式錯誤或夾持模式的問題是有用的
 msgid "Path does not exist"
 msgstr "路徑不存在"
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:154
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:156
 msgid "Use default setting"
 msgstr "使用預設值"
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:174
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:176
 msgid "Open in Explorer"
 msgstr "在檔案總管中開啟"
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:175
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:177
 msgid "Open an explorer window to this folder."
 msgstr "在檔案總管視窗中開啟此資料夾"
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:266
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:268
 msgid "Create folder?"
 msgstr "新增資料夾？"
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:267
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:269
 #, c-format
 msgid "A configured folder does not exist.  Should %s try to create it?"
 msgstr ""
@@ -1679,11 +1677,16 @@ msgstr ""
 "OPH Flag hack - 若遊戲畫面定住時持續顯示同樣的畫框，嘗試之（死神刀刃戰士、夢"
 "幻騎士 II 和 III、巫術）"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:95
-msgid "Enable game fixes"
-msgstr "啟用遊戲修正"
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
+msgid "Ignore DMAC writes when it is busy."
+msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:103
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:102
+#, fuzzy
+msgid "Enable manual game fixes [Not recommended]"
+msgstr "EE Cyclerate【不推薦】"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:111
 msgid ""
 "The safest way to make sure that all game fixes are completely disabled."
 msgstr "最安全的狀態就是確保完全停用所有遊戲修正"
@@ -1781,121 +1784,121 @@ msgstr "刪除所選擇的記憶卡（失去所有遊戲存檔）"
 msgid "Create a new memory card and assign it to this Port."
 msgstr "於空插槽新增一個新的記憶卡。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:723
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:726
 #, fuzzy
 msgid "Delete memory file?"
 msgstr "刪除記憶卡？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:747
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:759
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:766
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:780
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:750
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:762
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:783
 #, fuzzy
 msgid "Duplicate memory card"
 msgstr "刪除記憶卡？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:747
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:750
 msgid "Failed: Can only duplicate an existing card."
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:766
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:779
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:782
 #, c-format
 msgid "Failed: %s"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:805
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:808
 msgid "Copy failed!"
 msgstr "複製失敗！"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:817
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:820
 msgid "Success"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:838
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:841
 #, c-format
 msgid ""
 "Select a new name for the memory card '%s'\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:841
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:853
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:869
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:844
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:856
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
 #, fuzzy
 msgid "Rename memory card"
 msgstr "刪除記憶卡？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:869
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
 #, fuzzy
 msgid "Error: Rename could not be completed.\n"
 msgstr "錯誤：無法新增記憶卡。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:962
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:139
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:960
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:140
 #, fuzzy, c-format
 msgid "             Multitap-%u--Port-%u"
 msgstr "在手把插槽 %u 啟用手把擴充器"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:985
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:988
 msgid "Empty"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:991
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:994
 #, fuzzy, c-format
 msgid "Select a target port for '%s'"
 msgstr "選擇 %s 的檔案根目錄"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:992
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:995
 msgid "Insert card"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1052
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
 msgid "Eject card"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1052
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
 #, fuzzy
 msgid "Insert card ..."
 msgstr "遷移檔案"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1053
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1056
 msgid "Duplicate card ..."
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1054
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1057
 #, fuzzy
 msgid "Rename card ..."
 msgstr "遷移檔案"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1058
 #, fuzzy
 msgid "Delete card"
 msgstr "刪除記憶卡？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1058
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1062
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1061
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1065
 #, fuzzy
 msgid "Create a new card ..."
 msgstr "新增"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1066
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1069
 msgid "Refresh List"
 msgstr "重新載入列表"
 
@@ -2054,7 +2057,7 @@ msgstr ""
 "原因：%s\n"
 "\n"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:729
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:730
 msgid "Completing tasks..."
 msgstr "正在完成任務..."
 
@@ -2109,28 +2112,15 @@ msgstr ""
 "不錯的速度提升而且相容性高；可能導致\n"
 "圖像變得垃圾、有尖刺的多邊形，等等..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
-msgid "mVU Min/Max Hack"
-msgstr "mVU Min/Max Hack"
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
-msgid ""
-"Small Speedup; may cause black screens, garbage graphics, SPS, etc... [Not "
-"Recommended]"
-msgstr ""
-"速度少量提升；可能導致遊戲畫面全黑、\n"
-"圖像變得垃圾、有尖刺的多邊形，等等...\n"
-"【不推薦】"
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid "Other Hacks"
 msgstr "其他駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:192
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
 msgid "Enable INTC Spin Detection"
 msgstr "Enable INTC Spin Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2138,22 +2128,22 @@ msgstr ""
 "對於一些遊戲有巨大的速度提升，\n"
 "幾乎沒有相容性副作用【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:195
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Enable Wait Loop Detection"
 msgstr "Enable Wait Loop Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "對於一些遊戲有適度的速度提升，\n"
 "沒有已知的副作用【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:198
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid "Enable fast CDVD"
 msgstr "Enable fast CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "快速讀取光碟，減少載入時間【不推薦】"
 
@@ -2269,6 +2259,11 @@ msgstr ""
 "無法讀取即時存檔。即時存檔的版本不被支援，即時存檔可能是由比當前版本新的 "
 "PCSX2 建立。"
 
+#: pcsx2/gui/SysState.cpp:326
+#, fuzzy
+msgid "There is no active virtual machine state to download or save."
+msgstr "將虛擬機狀態儲存到當前的即時存檔插槽。"
+
 #: pcsx2/gui/SysState.cpp:520
 msgid ""
 "This savestate cannot be loaded because it is not a valid gzip archive.  It "
@@ -2315,6 +2310,35 @@ msgid ""
 "%s Extensions not found.  microVU requires a host CPU with MMX, SSE, and "
 "SSE2 extensions."
 msgstr "%s 指令集未找到。microVU 要求 CPU 支援 MMX、SSE、SSE2。"
+
+#~ msgid "ISO mounting failed: PCSX2 is unable to identify the ISO image type."
+#~ msgstr "掛載光碟映像檔失敗：PCSX2 無法確認光碟映像檔的類型。"
+
+#~ msgid "Enable Patches"
+#~ msgstr "啟用補丁"
+
+#~ msgid "Patches (unimplemented)"
+#~ msgstr "補丁（未實現）"
+
+#~ msgid "Open Debug Window..."
+#~ msgstr "開啟偵錯視窗"
+
+#~ msgid "Memory Dump..."
+#~ msgstr "記憶體轉存"
+
+#~ msgid "Enable game fixes"
+#~ msgstr "啟用遊戲修正"
+
+#~ msgid "mVU Min/Max Hack"
+#~ msgstr "mVU Min/Max Hack"
+
+#~ msgid ""
+#~ "Small Speedup; may cause black screens, garbage graphics, SPS, etc... "
+#~ "[Not Recommended]"
+#~ msgstr ""
+#~ "速度少量提升；可能導致遊戲畫面全黑、\n"
+#~ "圖像變得垃圾、有尖刺的多邊形，等等...\n"
+#~ "【不推薦】"
 
 #, fuzzy
 #~ msgid "Use Multitap on Port %u"
@@ -2567,9 +2591,6 @@ msgstr "%s 指令集未找到。microVU 要求 CPU 支援 MMX、SSE、SSE2。"
 
 #~ msgid "Detailed logging of CDVD hardware."
 #~ msgstr "CDVD 硬體的詳細日誌紀錄。"
-
-#~ msgid "Unrecognized ISO file format."
-#~ msgstr "無法辨識的 ISO 檔案格式。"
 
 #~ msgid "Fits a lot of log in a microcosmically small area."
 #~ msgstr "在同等區域中顯示較多日誌"

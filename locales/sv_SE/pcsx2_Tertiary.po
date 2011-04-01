@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.8\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
-"PO-Revision-Date: 2011-03-15 04:25+0100\n"
+"POT-Creation-Date: 2011-04-01 20:20+0200\n"
+"PO-Revision-Date: 2011-03-25 19:23+0100\n"
 "Last-Translator: Georg Ronnert <pgert@yahoo.se>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -45,27 +45,27 @@ msgid "Internal Memorycard Plugin failed to initialize."
 msgstr ""
 "Det interna minneskorts-insticksprogrammet misslyckades att initialiseras."
 
-#: pcsx2/gui/AppConfig.cpp:778
+#: pcsx2/gui/AppConfig.cpp:813
 msgid "Safest"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:779
+#: pcsx2/gui/AppConfig.cpp:814
 msgid "Safe (faster)"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:780
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Balanced"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:781
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Aggressive"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:782
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Aggressive plus"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:783
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Mostly Harmful"
 msgstr ""
 
@@ -178,7 +178,7 @@ msgstr ""
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "Loggar händelser medans de skickas till PS2-VM."
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:156
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:158
 msgid "!ContextTip:DirPicker:UseDefault"
 msgstr ""
 "När markerad kommer denna mapp att automatiskt begrunda förvalen assosierade "
@@ -237,6 +237,15 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:80
 msgid "!ContextTip:Gamefixes:OPH Flag hack"
+msgstr ""
+"Påverkar till vetskap följande spel:\n"
+" * Bleach Blade Battler\n"
+" * Growlanser II and III\n"
+" * Wizardry"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:89
+#, fuzzy
+msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr ""
 "Påverkar till vetskap följande spel:\n"
 " * Bleach Blade Battler\n"
@@ -321,14 +330,14 @@ msgstr ""
 "Högre värden ökar antalet cykler som stjäls från EE'n för varje VU-"
 "microprogram spelt kör."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
 msgid "!ContextTip:Speedhacks:vuFlagHack"
 msgstr ""
 "Updaterar endast Statusflaggor för block som kommer att läsa dem, isället "
 "för alltid. \n"
 "Detta är för det mesta säkert, och Super-VU gör något liknande som standard."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid "!ContextTip:Speedhacks:vuBlockHack"
 msgstr ""
 "Förmodar att väldigt långt in i framtiden så kommer block inte behöva "
@@ -336,14 +345,7 @@ msgstr ""
 "Detta borde vara rätt säkert. Det är okänt ifall detta har sönder något "
 "spel..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
-msgid "!ContextTip:Speedhacks:vuMinMax"
-msgstr ""
-"Använder SSE's Min/Max Flyttalsoperationer istället för logiska Min/Max "
-"rutiner, som annars är brukligt. \n"
-"Känt att förstöra Gran Turismo 4 & Tekken 5."
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:202
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid "!ContextTip:Speedhacks:INTC"
 msgstr ""
 "Denna fix fungerar bäst för spel som använder INTC-statusregistret för att "
@@ -351,7 +353,7 @@ msgstr ""
 "RPG titlar. Spel som inte använder denna vsync-metod kommer på sin höjd att "
 "få en liten uppsnabbning av denna fix."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:207
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
 msgid "!ContextTip:Speedhacks:BIFC0"
 msgstr ""
 "I första hand inriktat på EE tomgångs-loop hos adress 0x81FC0 i kärnan, "
@@ -363,7 +365,7 @@ msgstr ""
 "avanserar vi till tiden för nästa händelse eller till slutet av processorns "
 "tidskvantum, vilket som än kommer först."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:214
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid "!ContextTip:Speedhacks:fastCDVD"
 msgstr ""
 "Kolla HDLaddar-kompabilitetslistan för spel som till vetskap kommer till "
@@ -415,6 +417,12 @@ msgstr ""
 "\n"
 "Varning: Denna möjlighet kan möjliggöras dynamiskt men kan vanligtvis inte "
 "förhindras på samma vis (video blir ofta skräp)."
+
+#~ msgid "!ContextTip:Speedhacks:vuMinMax"
+#~ msgstr ""
+#~ "Använder SSE's Min/Max Flyttalsoperationer istället för logiska Min/Max "
+#~ "rutiner, som annars är brukligt. \n"
+#~ "Känt att förstöra Gran Turismo 4 & Tekken 5."
 
 #~ msgid "!ContextTip:Window:FullscreenExclusive"
 #~ msgstr ""

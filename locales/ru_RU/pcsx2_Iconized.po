@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
 "PO-Revision-Date: 2010-12-28 13:54+0300\n"
 "Last-Translator: Kein <kein-of@yandex.ru>\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
@@ -189,27 +189,27 @@ msgstr ""
 msgid "!Notice:DirPicker:CreatePath"
 msgstr "Указаные путь/папка не существуют. Желаете создать их?"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:103
 msgid "!Panel:Gamefixes:Compat Warning"
 msgstr ""
 "Определенные игровые хаки исправляют ошибки эмуляции в определенных играх, "
 "однако почти всегда вызывают ошибки и проблемы в других. При смене игры вам "
 "необходимо отключить хаки вручную (если какие-либо их них были включены)."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:720
 msgid "!Notice:Mcd:Delete"
 msgstr ""
 "Вы действительно хотите удалить отформатированную карту памяти в слоте %u? "
 "Все сохраненные данные на ней будут потеряны!"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:755
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:758
 #, fuzzy
 msgid "!Notice:Mcd:CantDuplicate"
 msgstr ""
 "Вы действительно хотите удалить отформатированную карту памяти в слоте %u? "
 "Все сохраненные данные на ней будут потеряны!"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:798
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
 msgid "!Notice:Mcd:Copy Failed"
 msgstr ""
 "Ошибка! Невозможно скопировать выбранную карту памяти в слот %u. Указанный "

@@ -1,0 +1,262 @@
+# Translation of Iconized.po from PCSX2 project. (No icons here, what a let down.)
+# Copyright (C) 2002-2011 PCSX2_Dev_Team
+# This file is distributed under the same license as the PCSX2 package.
+# Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2011.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: PCSX2 0.9.7\n"
+"Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"PO-Revision-Date: 2011-03-28 13:31+0100\n"
+"Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
+"Language-Team: Zbyněk Schwarz\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: pxE\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-Language: Czech\n"
+"X-Poedit-Country: CZECH REPUBLIC\n"
+"X-Poedit-SearchPath-0: pcsx2\n"
+"X-Poedit-SearchPath-1: common\n"
+
+#: common/src/Utilities/Exceptions.cpp:254
+msgid "!Notice:VirtualMemoryMap"
+msgstr ""
+"Není dostatek virtuální paměti, nebo potřebná mapování virtuální paměti již "
+"byly vyhrazeny jinými procesy, službami, nebo DLL."
+
+#: pcsx2/CDVD/CDVD.cpp:385
+msgid "!Notice:PsxDisc"
+msgstr ""
+"Herní disky Playstation nejsou PCSX2 podporovány. Pokud chcete emulovat hry "
+"PSX, pak si budete muset stáhnout PSX emulátor, jako ePSXe nebo PCSX."
+
+#: pcsx2/System.cpp:114
+msgid "!Notice:Recompiler:VirtualMemoryAlloc"
+msgstr ""
+"Tento rekompilátor nemohl vyhradit přilehlou paměť potřebnou pro vnitřní "
+"vyrovnávací paměti. Tato chyba může být způsobena nízkými zdroji virtuální "
+"paměti, jako např. vypnutý nebo malý stránkovací soubor, nebo jiným "
+"programem náročným na paměť. Můžete také zkusit snížit výchozí velikost "
+"vyrovnávací paměti pro všechny rekompilátory PCSX2, naleznete v Nastavení "
+"Hostitele."
+
+#: pcsx2/System.cpp:348
+msgid "!Notice:EmuCore::MemoryForVM"
+msgstr ""
+"PCSX2 nemůže přidělit paměť potřebnou pro virtuální stroj PS2. Zavřete "
+"některé úlohy na pozadí náročné na paměť a zkuste to znovu."
+
+#: pcsx2/gui/AppInit.cpp:43
+msgid "!Notice:Startup:NoSSE2"
+msgstr ""
+"Varování: Váš počítač nepodporuje SSE2, která je vyžadována většinou "
+"rekompilátorů PCSX2 a zásuvných modulů. Vaše volby budou omezené a emulace "
+"bude *velmi* pomalá."
+
+#: pcsx2/gui/AppInit.cpp:162
+msgid "!Notice:RecompilerInit:Header"
+msgstr ""
+"Varování: Některé z nastavených rekompilátorů PS2 nelze spustit a byly "
+"zakázány:"
+
+#: pcsx2/gui/AppInit.cpp:211
+msgid "!Notice:RecompilerInit:Footer"
+msgstr ""
+"Poznámka: Rekompilátory nejsou potřeba ke spuštění PCSX2, nicméně normálně "
+"výrazně zlepšují rychlost emulace. Možná budete muset ruřne rekompilátory "
+"znovu zapnout, pokud vyřešíte chyby."
+
+#: pcsx2/gui/AppMain.cpp:538
+msgid "!Notice:BiosDumpRequired"
+msgstr ""
+"PCSX2 vyžaduje ke spuštění BIOS PS2. Z právních důvodů *musíte* BIOS získat "
+"ze skutečného PS2, které vlastníte (půjčení se nepočítá). Podívejte se "
+"prosím na Nejčastější Otázky a Průvodce pro další instrukce."
+
+#: pcsx2/gui/AppMain.cpp:621
+msgid "!Notice Error:Thread Deadlock Actions"
+msgstr ""
+"'Ignorovat' pro pokračování čekání na odpověď vlákna.\n"
+"'Zrušit' pro pokus o zrušení vlákna."
+
+#: pcsx2/gui/AppUserMode.cpp:57
+msgid "!Notice:PortableModeRights"
+msgstr ""
+"Ujistěte se prosím, že tyto adresáře jsou vytvořeny a že Váš uživatelský "
+"účet má udělená oprávnění k zápisu do těchto adresářů -- nebo znovu spusťte "
+"PCSX2 jako správce (administrátorské oprávnění), což by mělo udělit PCSX2 "
+"schopnost samo si potřebné adresáře vytvořit. Pokud nemáte na tomto počítači "
+"správcovská oprávnění, pak budete muset přepnout do režimu Uživatelských "
+"Dokumentů (klikněte na tlačítko níže)."
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:54
+msgid "!Panel:Folders:Settings"
+msgstr ""
+"Můžete také zde dobrovolně zadat umístění Vašeho nastavení PCSX2. Pokud "
+"umístění obsahuje existující nastavení PCSX2, bude Vám dána možnost je "
+"importovat nebo přepsat."
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:94
+msgid "!Wizard:Welcome"
+msgstr ""
+"Tento průvodce Vám pomůže skrz nastavení zásuvných modulů, paměťových karet "
+"a BIOSu. Je doporučeno, pokud je toto poprvé co instalujete %s, si "
+"prohlédnout 'Přečti mě' a průvodce nastavením."
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
+msgid "!Wizard:Bios:Tutorial"
+msgstr ""
+"PCSX2 vyžaduje *legální* kopii BIOSu PS2, abyste mohli hrát hry.\n"
+"Nemůžete použít kopii získanou od kamaráda nebo z Internetu.\n"
+"Musíte ho vypsat z *Vaší* vlastní konzole Playstation 2."
+
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:31
+msgid "!Notice:ImportExistingSettings"
+msgstr ""
+"Existující nastavení %s byly nalezeny v určeném adresáři nastavení. Chtěli "
+"byste tyto nastavení importovat nebo je přepsat výchozími hodnotami %s?\n"
+"\n"
+"(nebo stiskněte Zrušit pro vybrání jiného adresáře nastavení)"
+
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:30
+msgid "!Panel:Mcd:NtfsCompress"
+msgstr ""
+"Komprimace NTFS je zabudovaná, rychlá a naprosto spolehlivá a většinou "
+"komprimuje paměťové karty velmi dobře (tato volba je vysoce doporučená)."
+
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:41
+msgid "!Panel:Mcd:EnableEjection"
+msgstr ""
+"Zabraňuje poškození paměťové karty tím, že donutí hry reindexovat obsah "
+"karty po načtení uloženého stavu. Nemusí být kompatibilní se všemi hrami "
+"(Guitar Hero)."
+
+#: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
+msgid "!Panel:StuckThread:Heading"
+msgstr ""
+"Vlákno '%s' neodpovídá. Mohlo uváznout, nebo prostě běží *velmi* pomalu."
+
+#: pcsx2/gui/IsoDropTarget.cpp:28
+msgid "!Notice:ConfirmSysReset"
+msgstr ""
+"Tato činnost resetuje existující stav virtuálního stroje PS2; veškerý "
+"současný postup bude ztracen. Jste si jisti?"
+
+#: pcsx2/gui/MainMenuClicks.cpp:106
+msgid "!Notice:DeleteSettings"
+msgstr ""
+"Tento příkaz vyčistí nastavení %s a umožňuje Vám znovu spustit Průvodce "
+"Prvním Spuštěním. Po této operaci budete muset ručně restartovat %s.\n"
+"\n"
+"VAROVÁNÍ!! Kliknutím na OK smažete *VŠECHNA* nastavení pro %s a přinutíte "
+"tuto aplikaci uzavřít, čímž ztratíte jakýkoli postup emulace. Jste si "
+"naprosto jisti?\n"
+"\n"
+"(poznámka: nastavení zásuvných modulů nejsou ovlivněna)"
+
+#: pcsx2/gui/MemoryCardFile.cpp:78
+msgid "!Notice:Mcd:HasBeenDisabled"
+msgstr ""
+"Pozice PS2 %d byla automaticky zakázána. Můžete tento problém opravit\n"
+"a znovu ji kdykoli povolit pomocí Nastavení:Paměťové Karty z hlavního menu."
+
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+msgid "!Notice:BIOS:InvalidSelection"
+msgstr ""
+"Prosím zvolte platný BIOS. Pokud nejste schopni provést platnou volbu, pak "
+"stiskněte Zrušit pro zavření Konfiguračního panelu."
+
+#: pcsx2/gui/Panels/CpuPanel.cpp:111
+msgid "!Panel:EE/IOP:Heading"
+msgstr "Upozornění: Většina her bude v pořádku s výchozím nastavením."
+
+#: pcsx2/gui/Panels/CpuPanel.cpp:178
+msgid "!Panel:VUs:Heading"
+msgstr "Upozornění: Většina her bude v pořádku s výchozím nastavením."
+
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:69
+msgid "!Notice:DirPicker:CreatePath"
+msgstr "Zadaná cesta/adresář neexistuje. Chtěli byste je vytvořit?"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:103
+msgid "!Panel:Gamefixes:Compat Warning"
+msgstr ""
+"Opravy her můžou obejít špatnou emulaci v některých hrách.\n"
+"Můžou ale také způsobit problémy s kompatibilitou a výkonem, takže nejsou "
+"doporučeny.\n"
+"Opravy her jsou použity automaticky, takže zde nic nemusíte nastavovat."
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:720
+msgid "!Notice:Mcd:Delete"
+msgstr ""
+"Chystáte se smazat formátovanou paměťovou kartu '%s'. Všechna data na kartě "
+"budou ztracena! Jste si naprosto a zcela jisti?"
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:758
+msgid "!Notice:Mcd:CantDuplicate"
+msgstr ""
+"Selhání: Kopírování je povoleno pouze na prázdnou pozici PS2 nebo do systému "
+"souborů."
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
+msgid "!Notice:Mcd:Copy Failed"
+msgstr "Selhání: Cílová paměťová karta '%s' se používá."
+
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:35
+msgid "!Panel:Usermode:Explained"
+msgstr ""
+"Prosím vyberte níže Vaši upřednostňované výchozí umístění pro dokumenty "
+"uživatelské úrovně PCSX2 (zahrnující paměťové karty, snímky obrazovky, "
+"nastavení a uložené stavy). Tyto umístění adresářů mohou být kdykoli "
+"potlačena použitím panelu Hlavního Nastavení."
+
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:41
+msgid "!Panel:Usermode:Warning"
+msgstr ""
+"Prosím vyberte níže Vaši upřednostňované výchozí umístění pro dokumenty "
+"uživatelské úrovně PCSX2 (zahrnující paměťové karty, snímky obrazovky, "
+"nastavení a uložené stavy). Tato volba ovlivňuje pouze Standardní Cesty, "
+"které jsou nastaveny, aby používali výchozí hodnoty instalace."
+
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
+msgid "!Notice:PluginSelector:ConfirmShutdown"
+msgstr "Varování! Změna zásuvných modulů vyžaduje"
+
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:457
+msgid "!Notice:PluginSelector:ApplyFailed"
+msgstr ""
+"Všechny zásuvné moduly musí mít platný výběr pro %s ke spuštění. Pokud "
+"nemůžete provést výběr kvůli chybějícímu modulu nebo nedokončené instalaci "
+"%s, pak stiskněte Zrušit pro uzavření panelu Nastavení."
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:97
+msgid "!Panel:Speedhacks:Overview"
+msgstr ""
+"Hacky Rychlosti většinou zlepšují rychlost emulace, ale můžou způsobovat "
+"chyby, špatný zvuk a špatné údaje o SZS. Když máte problémy s emulací, tento "
+"panel zakažte nejdříve."
+
+#: pcsx2/gui/Panels/VideoPanel.cpp:223
+msgid "!Panel:Frameskip:Heading"
+msgstr ""
+"Upozornění: Kvůli hardwarovému designu PS2 je přesné přeskakování snímků "
+"nemožné. Zapnutím tohoto způsobí vážné grafické chyby v některých hrách."
+
+#: pcsx2/vtlb.cpp:702
+msgid "!Notice:HostVmReserve"
+msgstr ""
+"Váš systém má příliš nízké virtuální zdroje, aby mohl být PCSX2 spuštěn. To "
+"může být způsobeno malým nebo vypnutým stránkovacím souborem, nebo jinými "
+"programy, které jsou náročné na zdroje."
+
+#: pcsx2/x86/sVU_zerorec.cpp:362
+msgid "!Notice:superVU:VirtualMemoryAlloc"
+msgstr ""
+"Došla Paměť (tak trochu): Rekompilátor SuperVJ nemohl vyhradit určitý "
+"vyžadovaný rozsah paměti a nebude dostupný k použití. To není kritická "
+"chyba, protože rek sVU je zastaralý a stejně byste místo něj měli používat "
+"mVU :)."

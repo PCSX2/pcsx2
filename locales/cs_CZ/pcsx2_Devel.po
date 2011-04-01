@@ -1,165 +1,172 @@
+# Who cares about devel? I do!!!! (Ok, not so descriptive, but I ran out of ideas)
+# Copyright (C) 2002-2011 PCSX2_Dev_Team
+# This file is distributed under the same license as the PCSX2 package.
+# Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2011.
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 0.9.8\n"
+"Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
 "POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-03-30 00:30+0100\n"
-"Last-Translator: Georg Ronnert <pgert@yahoo.se>\n"
-"Language-Team: \n"
+"PO-Revision-Date: 2011-03-28 13:27+0100\n"
+"Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
+"Language-Team: Zbyněk Schwarz\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-KeywordsList: pxE_dev;pxDt\n"
+"X-Poedit-KeywordsList: _d;pxDt\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: C:\\Arkiv\\PCSX2\\SVN\n"
-"X-Poedit-Language: Swedish\n"
-"X-Poedit-Country: SWEDEN\n"
+"X-Poedit-Basepath: trunk\\\n"
+"X-Poedit-Language: Czech\n"
+"X-Poedit-Country: CZECH REPUBLIC\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
-msgstr "Dumpar detaljerad information om PS2 verkställare (ELFar)."
+msgstr "Vypíše detailní informace pro spustitelné soubory PS2 (ELF)."
 
 #: pcsx2/SourceLog.cpp:101
 msgid ""
 "Logs manual protection, split blocks, and other things that might impact "
 "performance."
 msgstr ""
-"Loggar manuellt skydd, delar block, och annat som kan vara av betydelse för "
-"prestanda."
+"Zaznamená ruční ochranu, rozdělené bloky, a jiné věci, které můžou mít vliv "
+"na výkon."
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
-msgstr "Visar spelutveklarens loggningstext (EE processor)"
+msgstr "Zobrazí text záznamu vývojáře hry (Procesor EE)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
-msgstr "Visar spelutvecklarens loggningstext (IOP processor)"
+msgstr "Zobrazí text záznamu vývojáře hry (Procesor IOP)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
-msgstr "Visar DECI2 felsökningsloggar (EE processor)"
+msgstr "Zobrazí záznamy ladění DECI2 (procesor EE)"
 
 #: pcsx2/SourceLog.cpp:145
 msgid "SYSCALL and DECI2 activity."
-msgstr "SYSCALL och DECI2 aktivitet."
+msgstr "Aktivita SYSCALL a DECI2"
 
 #: pcsx2/SourceLog.cpp:151
 msgid "Direct memory accesses to unknown or unmapped EE memory space."
-msgstr "Direkt minnestillgång till okänt eller ofördelat EE minne."
+msgstr ""
+"Přístupy přímé paměti do neznámého nebo nezmapovaného paměťového místa EE."
 
 #: pcsx2/SourceLog.cpp:157 pcsx2/SourceLog.cpp:276
 msgid "Disasm of executing core instructions (excluding COPs and CACHE)."
-msgstr ""
-"Avassembering av verkställande kärninstruktioner (exklusive COPar och CACHE)."
+msgstr "Rozložení spouštění instrukcí jádra (mimo COP a CACHE)"
 
 #: pcsx2/SourceLog.cpp:163
 msgid "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."
-msgstr "Avassemblering av COP0 instruktioner (MMU, CPU och DMA status etc)."
+msgstr "Rozložení instrukcí COP0 (MMU, stav procesoru a dma, atd.)."
 
 #: pcsx2/SourceLog.cpp:169
 msgid "Disasm of the EE's floating point unit (FPU) only."
-msgstr "Endast avassemblering av EE's flyttalsenhet (FPU)."
+msgstr "Rozložení pouze matematického koprocesoru EE (MKO)."
 
 #: pcsx2/SourceLog.cpp:175
 msgid "Disasm of the EE's VU0macro co-processor instructions."
-msgstr "Avassemblering av EE's VU0macro hjälpprocessorinstruktioner."
+msgstr "Rozložení instrukcí koprocesoru VJ0makro v EE."
 
 #: pcsx2/SourceLog.cpp:181
 msgid "Execution of EE cache instructions."
-msgstr "Verkställande av EE cacheinstruktioner."
+msgstr "Spuštění instrukcí vyrovnávací paměti EE."
 
 #: pcsx2/SourceLog.cpp:187
 msgid ""
 "All known hardware register accesses (very slow!); not including sub filter "
 "options below."
 msgstr ""
-"Alla kända hårdvaruregister ges åtkomst (mycket långsamt!); ej inräknat "
-"underfiltermöjligheterna nedanför."
+"Všechny známé přístupy hardwarového registru (velmi pomalé!); nezahrnuje "
+"možnosti pod filtru níže."
 
 #: pcsx2/SourceLog.cpp:193 pcsx2/SourceLog.cpp:294
 msgid "Logs only unknown, unmapped, or unimplemented register accesses."
-msgstr "Loggar endast okända, ofördelade, eller ogenomförda registeråtkomster."
+msgstr ""
+"Zaznamená pouze neznámé, nezmapované, nebo nezavedené přístupy registru."
 
 #: pcsx2/SourceLog.cpp:199 pcsx2/SourceLog.cpp:300
 msgid "Logs only DMA-related registers."
-msgstr "Loggar endast DMA-närliggande register."
+msgstr "Zaznamená pouze registry vztahující se k DMA."
 
 #: pcsx2/SourceLog.cpp:205
 msgid "IPU activity: hardware registers, decoding operations, DMA status, etc."
-msgstr ""
-"IPU aktivitet: hårdvaruregister, avkådningsprocedurer, DMA status, etc."
+msgstr "Aktivita IPU: hardwarové registry, operace dekódování, stav DMA, atd."
 
 #: pcsx2/SourceLog.cpp:211
 msgid "All GIFtag parse activity; path index, tag type, etc."
-msgstr "All slags GIF-märkesaktivitetstolkningar; sökvägsindex, märktyp, etc."
+msgstr "Veškerá aktivita analýzy GIFznačky; index cesty, typ značky, atd."
 
 #: pcsx2/SourceLog.cpp:217
 msgid "All VIFcode processing; command, tag style, interrupts."
-msgstr "All slags VIF-kodsbearbetning; betingande, märkstil, avbrott."
+msgstr "Veškeré zpracování VIFkódu; příkazy, styl značky, přerušení."
 
 #: pcsx2/SourceLog.cpp:223
 msgid "All processing involved in Path3 Masking"
-msgstr "All bearbetning inblandat i Path3 Maskning."
+msgstr "Veškeré zpracování spojené s Maskováním Path3"
 
 #: pcsx2/SourceLog.cpp:229
 msgid "Scratchpad's MFIFO activity."
-msgstr "Antekningshäftets MFIFO aktivitet."
+msgstr "MFIFO aktivita Schratchpadu."
 
 #: pcsx2/SourceLog.cpp:235
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
-msgstr "Faktiska dataöverföringsloggar, rätt buss medling, uppehåll, etc."
+msgstr ""
+"Skutečné záznamy přenosu dat, arbitráž oprávnění sběrnice, zahlcení, atd."
 
 #: pcsx2/SourceLog.cpp:241
 msgid "Tracks all EE counters events and some counter register activity."
-msgstr "Spårar all EE räknarbegivenhet och en del registerräknaraktivitet."
+msgstr "Sleduje všechny události čítače EE a některé aktivity registru čítače."
 
 #: pcsx2/SourceLog.cpp:247
 msgid "Dumps various VIF and VIFcode processing data."
-msgstr "Dumpar diverse VIF och VIF-kod bearbetningsdata."
+msgstr "Vypíše různá VIF a VIFkód data zpracování."
 
 #: pcsx2/SourceLog.cpp:253
 msgid "Dumps various GIF and GIFtag parsing data."
-msgstr "Dumpar diverse GIF och GIF-märkt tolkningsdata."
+msgstr "Vypíše různá GIF a GIFznačka data analyzování."
 
 #: pcsx2/SourceLog.cpp:264
 msgid "SYSCALL and IRX activity."
-msgstr "SYSCALL och IRX aktivitet."
+msgstr "Aktivita SYSCALL a IRX"
 
 #: pcsx2/SourceLog.cpp:270
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
-msgstr "Direkt minnestillgång till okänd eller ofördelat IOP minne."
+msgstr ""
+"Přímé vstupy paměti do neznámého nebo nezmapovaného prostoru paměti IOP."
 
 #: pcsx2/SourceLog.cpp:282
 msgid "Disasm of the IOP's GPU co-processor instructions."
-msgstr "Avassemblering av IOP's GPU-hjälpprocessorinstruktioner."
+msgstr "Rozložení instrukcí koprocesoru IOP z GPU."
 
 #: pcsx2/SourceLog.cpp:288
 msgid ""
 "All known hardware register accesses, not including the sub-filters below."
 msgstr ""
-"Alla kända hårdvaruregister ges tillgång, ej inräknat underfilterna nedanför."
+"Všechny známé přístupy hardwarového registru, nezahrnuje možnosti pod filtru "
+"níže."
 
 #: pcsx2/SourceLog.cpp:306
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
-msgstr ""
-"Minneskorts läs-, skriv-, raderings-, avslutar-, och andra, bearbetningar."
+msgstr "Čtení, zápisy, mazání, ukončení, a jiné zpracování paměťových karet."
 
 #: pcsx2/SourceLog.cpp:312
 msgid "Gamepad activity on the SIO."
-msgstr "Spelplattsaktivitet hos SIO."
+msgstr "Aktivita gamepadu na SIO."
 
 #: pcsx2/SourceLog.cpp:318
 msgid "Actual DMA event processing and data transfer logs."
-msgstr "Faktisk DMA begivenhetsbearbetning och dataöverföringsloggar."
+msgstr "Skutečné zpracování události DMA a záznamy přenosu dat."
 
 #: pcsx2/SourceLog.cpp:324
 msgid "Tracks all IOP counters events and some counter register activity."
 msgstr ""
-"Spårar alla IOP räknares begivenheter och några räknarregisters aktiviteter."
+"Sleduje všechny události čítače IOP a některé aktivity registru čítače."
 
 #: pcsx2/SourceLog.cpp:330
 msgid "Detailed logging of CDVD hardware."
-msgstr "Detaljerad loggning av CDVD hårdvara."
+msgstr "Detailní záznam hardwaru CDVD."

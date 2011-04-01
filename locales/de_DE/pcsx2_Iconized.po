@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
 "PO-Revision-Date: 2011-03-14 19:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
@@ -156,26 +156,26 @@ msgstr "Normalerweise müssen diese Einstellungen nicht angepasst werden."
 msgid "!Notice:DirPicker:CreatePath"
 msgstr "Das angegebene Verzeichnis existiert nicht. Möchtest du es erstellen?"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:103
 msgid "!Panel:Gamefixes:Compat Warning"
 msgstr ""
 "Spielefixes können spezifische, bekannte Fehler in einigen Spielen beheben. "
 "Sie sollten aber nur für diese Spiele aktiviert werden."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:720
 msgid "!Notice:Mcd:Delete"
 msgstr ""
 "Hiermit wird die komplette Memory Card in Slot %u gelöscht. Bist du dir "
 "absolut sicher?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:755
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:758
 #, fuzzy
 msgid "!Notice:Mcd:CantDuplicate"
 msgstr ""
 "Hiermit wird die komplette Memory Card in Slot %u gelöscht. Bist du dir "
 "absolut sicher?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:798
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
 msgid "!Notice:Mcd:Copy Failed"
 msgstr "Konnte die Memory Card nicht kopieren. Die Zieldatei ist in Benutzung."
 

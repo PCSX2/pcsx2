@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
 "PO-Revision-Date: 2011-03-06 02:34+0200\n"
 "Last-Translator: PyramidHead <atiamar@hotmail.com>\n"
 "Language-Team: PyramidHead <atiamar@hotmail.com>\n"
@@ -41,27 +41,27 @@ msgstr ""
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Hafıza kartı eklentisi başlatılamadı."
 
-#: pcsx2/gui/AppConfig.cpp:778
+#: pcsx2/gui/AppConfig.cpp:813
 msgid "Safest"
 msgstr "En güvenli"
 
-#: pcsx2/gui/AppConfig.cpp:779
+#: pcsx2/gui/AppConfig.cpp:814
 msgid "Safe (faster)"
 msgstr "Güvenli (daha hızlı)"
 
-#: pcsx2/gui/AppConfig.cpp:780
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Balanced"
 msgstr "Dengeli"
 
-#: pcsx2/gui/AppConfig.cpp:781
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Aggressive"
 msgstr "Agresif"
 
-#: pcsx2/gui/AppConfig.cpp:782
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Aggressive plus"
 msgstr "Daha agresif"
 
-#: pcsx2/gui/AppConfig.cpp:783
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Mostly Harmful"
 msgstr "Çoğu Zaman Zararlı"
 
@@ -143,7 +143,7 @@ msgstr "!Notice:Tooltip:Presets:Checkbox"
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "Olayları PS2 sanal makinesindeki gibi günlükler."
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:156
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:158
 msgid "!ContextTip:DirPicker:UseDefault"
 msgstr "!ContextTip:DirPicker:UseDefault"
 
@@ -174,6 +174,11 @@ msgstr "!ContextTip:Gamefixes:EE Timing Hack"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:80
 msgid "!ContextTip:Gamefixes:OPH Flag hack"
+msgstr "!ContextTip:Gamefixes:OPH Flag hack"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:89
+#, fuzzy
+msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr "!ContextTip:Gamefixes:OPH Flag hack"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
@@ -224,27 +229,23 @@ msgstr "!ContextTip:Speedhacks:EECycleRate Slider"
 msgid "!ContextTip:Speedhacks:VUCycleStealing Slider"
 msgstr "!ContextTip:Speedhacks:VUCycleStealing Slider"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
 msgid "!ContextTip:Speedhacks:vuFlagHack"
 msgstr "!ContextTip:Speedhacks:vuFlagHack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid "!ContextTip:Speedhacks:vuBlockHack"
 msgstr "!ContextTip:Speedhacks:vuBlockHack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
-msgid "!ContextTip:Speedhacks:vuMinMax"
-msgstr "!ContextTip:Speedhacks:vuMinMax"
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:202
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid "!ContextTip:Speedhacks:INTC"
 msgstr "!ContextTip:Speedhacks:INTC"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:207
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
 msgid "!ContextTip:Speedhacks:BIFC0"
 msgstr "!ContextTip:Speedhacks:BIFC0"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:214
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid "!ContextTip:Speedhacks:fastCDVD"
 msgstr "!ContextTip:Speedhacks:fastCDVD"
 
@@ -281,6 +282,9 @@ msgstr "!ContextTip:GS:SyncMTGS"
 #: pcsx2/gui/Panels/VideoPanel.cpp:306
 msgid "!ContextTip:GS:DisableOutput"
 msgstr "!ContextTip:GS:DisableOutput"
+
+#~ msgid "!ContextTip:Speedhacks:vuMinMax"
+#~ msgstr "!ContextTip:Speedhacks:vuMinMax"
 
 #~ msgid "!ContextTip:Window:FullscreenExclusive"
 #~ msgstr "!ContextTip:Window:FullscreenExclusive"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
 "PO-Revision-Date: 2011-03-02 06:48+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -171,27 +171,27 @@ msgstr "注意：大多數遊戲只需使用預設設定即可。"
 msgid "!Notice:DirPicker:CreatePath"
 msgstr "指定的路徑 / 資料夾不存在。您想要新增嗎？"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:103
 msgid "!Panel:Gamefixes:Compat Warning"
 msgstr ""
 "遊戲修正能夠修復在一些遊戲裡不正確的模擬。但會引起其他遊戲出現相容性或效能問"
 "題。\n"
 "若變更所玩的遊戲，您需要手動關閉已啟用的遊戲修正。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:717
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:720
 msgid "!Notice:Mcd:Delete"
 msgstr ""
 "您即將刪除 %u 插槽已格式化的記憶卡。\n"
 "該記憶卡的全部資料將會丟失！您真的確定嗎？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:755
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:758
 #, fuzzy
 msgid "!Notice:Mcd:CantDuplicate"
 msgstr ""
 "您即將刪除 %u 插槽已格式化的記憶卡。\n"
 "該記憶卡的全部資料將會丟失！您真的確定嗎？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:798
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
 msgid "!Notice:Mcd:Copy Failed"
 msgstr "錯誤！無法複製記憶卡至插槽 %u。目標檔案使用中。"
 

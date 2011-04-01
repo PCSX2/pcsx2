@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-03-21 18:33+0100\n"
+"POT-Creation-Date: 2011-04-01 20:15+0200\n"
 "PO-Revision-Date: 2011-03-04 03:40+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -40,27 +40,27 @@ msgstr "當等候圖形插件開啟時，多執行緒圖形模式的執行緒停
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "初始化內部記憶卡插件失敗。"
 
-#: pcsx2/gui/AppConfig.cpp:778
+#: pcsx2/gui/AppConfig.cpp:813
 msgid "Safest"
 msgstr "最安全"
 
-#: pcsx2/gui/AppConfig.cpp:779
+#: pcsx2/gui/AppConfig.cpp:814
 msgid "Safe (faster)"
 msgstr "安全（速度更快）"
 
-#: pcsx2/gui/AppConfig.cpp:780
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Balanced"
 msgstr "平衡"
 
-#: pcsx2/gui/AppConfig.cpp:781
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Aggressive"
 msgstr "激進"
 
-#: pcsx2/gui/AppConfig.cpp:782
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Aggressive plus"
 msgstr "更加激進"
 
-#: pcsx2/gui/AppConfig.cpp:783
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Mostly Harmful"
 msgstr "基本上有害"
 
@@ -158,7 +158,7 @@ msgstr ""
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "隨著事件傳遞給 PS2 虛擬機，記錄事件。"
 
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:156
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:158
 msgid "!ContextTip:DirPicker:UseDefault"
 msgstr ""
 "當勾選時，此資料夾將會自動反映與 PCSX2 當前的使用者設定所關聯的預設值。"
@@ -205,6 +205,15 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:80
 msgid "!ContextTip:Gamefixes:OPH Flag hack"
+msgstr ""
+"已知影響下列遊戲：\n"
+" * 死神刀刃戰士（Bleach Blade Battler）\n"
+" * 夢幻騎士（Growlancer）II 和 III\n"
+" * 巫術（Wizardry）"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:89
+#, fuzzy
+msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr ""
 "已知影響下列遊戲：\n"
 " * 死神刀刃戰士（Bleach Blade Battler）\n"
@@ -289,32 +298,26 @@ msgstr ""
 "滑桿控制著 VU 從 EE 偷竊的週期的數目。\n"
 "數值愈高，遊戲執行的每一個 VU 微程式從 EE 偷的就愈多。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:169
 msgid "!ContextTip:Speedhacks:vuFlagHack"
 msgstr ""
 "僅對讀取狀態旗標的塊，更新狀態旗標，取代一直更新狀態旗標。\n"
 "大部分時間是安全的，Super VU 預設做類似的事情。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid "!ContextTip:Speedhacks:vuBlockHack"
 msgstr ""
 "假定遙遠未來的塊不需要舊的旗標實例資料。\n"
 "非常安全。不曉得會不會令遊戲不正常..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
-msgid "!ContextTip:Speedhacks:vuMinMax"
-msgstr ""
-"使用 SSE 的 Min/Max 浮點操作，取代自訂邏輯 Min/Max 例行程序。\n"
-"已知令 Gran Turismo 4（GT4）和 Tekken 5（鐵拳 5）遊戲不正常。"
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:202
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid "!ContextTip:Speedhacks:INTC"
 msgstr ""
 "對於使用 INTC 狀態暫存器等待垂直同步的遊戲，表現最好。\n"
 "主要包括 RPG 遊戲非 3D 的標題。\n"
 "不使用此垂直同步方式的遊戲，將會有少量或沒有速度提升。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:207
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
 msgid "!ContextTip:Speedhacks:BIFC0"
 msgstr ""
 "主要把核心內位址 0x81FC0 的 EE 空閒循環作為目標。\n"
@@ -323,7 +326,7 @@ msgstr ""
 "這樣的循環重複一次之後，取決於哪個先到：\n"
 "我們前進到下次事件或處理器時間片段的結束。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:214
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid "!ContextTip:Speedhacks:fastCDVD"
 msgstr ""
 "查閱 HDLoader 相容性列表，以確定已知使用這個選項會出現問題的遊戲。\n"
@@ -372,6 +375,11 @@ msgstr ""
 "\n"
 "警告：這個選項在遊戲運行時啟用即可生效，但無法在遊戲運行時停用（圖像變得垃"
 "圾）。"
+
+#~ msgid "!ContextTip:Speedhacks:vuMinMax"
+#~ msgstr ""
+#~ "使用 SSE 的 Min/Max 浮點操作，取代自訂邏輯 Min/Max 例行程序。\n"
+#~ "已知令 Gran Turismo 4（GT4）和 Tekken 5（鐵拳 5）遊戲不正常。"
 
 #~ msgid "!ContextTip:Window:FullscreenExclusive"
 #~ msgstr ""
