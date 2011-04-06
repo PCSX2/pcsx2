@@ -52,13 +52,14 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
 	//m_check_ExclusiveFS = new pxCheckBox( this, _("Use exclusive fullscreen mode (if available)") );
 
-	m_text_Zoom->SetToolTip( pxEt( "!ContextTip:Window:Zoom",
+	// 0.9.8: This new text came after the string freeze. People can figure it out without this help, I hope :)
+	/*m_text_Zoom->SetToolTip( pxEt( "!ContextTip:Window:Zoom",
 		L"Zoom = 100: Fit the entire image to the window without any cropping.\n"
 		L"Above/Below 100: Zoom In/Out\n"
 		L"0: Automatic-Zoom-In untill the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n"
 		L"  NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\n"
 		L"Keyboard: NUMPAD-PLUS: Zoom-In, NUMPAD-MINUS: Zoom-Out, NUMPAD-*: Toggle 100/0"
-	) );
+	) );*/
 
 	m_check_VsyncEnable->SetToolTip( pxEt( "!ContextTip:Window:Vsync",
 		L"Vsync eliminates screen tearing but typically has a big performance hit. "
