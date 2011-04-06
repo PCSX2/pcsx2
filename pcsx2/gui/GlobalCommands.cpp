@@ -161,6 +161,54 @@ namespace Implementations
 		pauser.AllowResume();
 	}
 
+	void GSwindow_CycleAspectRatio()
+	{
+		AspectRatioType& art = g_Conf->GSWindow.AspectRatio;
+		wxString arts(L"Not modified");
+		switch( art )
+		{
+			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = L"AspectRatio_4_3"; break;
+			case AspectRatio_4_3:		art = AspectRatio_16_9; arts = L"AspectRatio_16:9"; break;
+			case AspectRatio_16_9:		art = AspectRatio_Stretch; arts = L"AspectRatio_Stretch";break;
+		}
+
+		Console.WriteLn(L"(GSwindow) Aspect ratio: %s.", arts.c_str());
+		AppApplySettings();
+	}
+
+	void SetZoom(float zoom)
+	{
+		if( zoom < 0 )
+			return;
+		g_Conf->GSWindow.Zoom = zoom;
+		Console.WriteLn(L"GSwindow: set zoom: %f", zoom);
+		AppApplySettings();
+	}
+
+
+	void GSwindow_ZoomIn()
+	{
+		float z = g_Conf->GSWindow.Zoom.ToFloat();
+		if( z==0 ) z = 100;
+		z++;
+		SetZoom( z );
+	}
+	void GSwindow_ZoomOut()
+	{
+		float z = g_Conf->GSWindow.Zoom.ToFloat();
+		if( z==0 ) z = 100;
+		z--;
+		SetZoom( z );
+	}
+	void GSwindow_ZoomToggle()
+	{
+		float z = g_Conf->GSWindow.Zoom.ToFloat();
+		if( z==100 )	z = 0;
+		else			z = 100;
+
+		SetZoom( z );
+	}
+
 	void Sys_Suspend()
 	{
 		CoreThread.Suspend();
@@ -313,6 +361,30 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 
 	{	"Framelimiter_MasterToggle",
 		Implementations::Framelimiter_MasterToggle,
+		NULL,
+		NULL,
+	},
+
+	{	"GSwindow_CycleAspectRatio",
+		Implementations::GSwindow_CycleAspectRatio,
+		NULL,
+		NULL,
+	},
+
+	{	"GSwindow_ZoomIn",
+		Implementations::GSwindow_ZoomIn,
+		NULL,
+		NULL,
+	},
+
+	{	"GSwindow_ZoomOut",
+		Implementations::GSwindow_ZoomOut,
+		NULL,
+		NULL,
+	},
+
+	{	"GSwindow_ZoomToggle",
+		Implementations::GSwindow_ZoomToggle,
 		NULL,
 		NULL,
 	},

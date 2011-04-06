@@ -121,7 +121,9 @@ void RecentIsoManager::Repopulate()
 
 	m_Separator = m_Menu->AppendSeparator();
 	
-	for( int i=0; i<cnt; ++i )
+	//Note: the internal recent iso list (m_Items) has the most recent item last (also at the INI file)
+	//  but the menu is composed in reverse order such that the most recent item appears at the top.
+	for( int i=cnt-1; i>=0; --i )
 		InsertIntoMenu( i );
 }
 
@@ -152,16 +154,19 @@ void RecentIsoManager::Add( const wxString& src )
 		}
 	}
 
+	//New item doesn't exist at the menu/internal-list - add it, and refresh the menu.
+	RemoveAllFromMenu();
+
 	m_Items.push_back( RecentItem( normalized ) );
-	InsertIntoMenu( m_cursel = (m_Items.size()-1) );
 
 	while( m_Items.size() > m_MaxLength )
-	{
 		m_Items.erase( m_Items.begin() );
-	}
+
+	Repopulate();
+	m_Items[m_cursel = m_Items.size()-1].ItemPtr->Check();
 }
 
-//id here is the position index at the list of recent ISOs
+//id here is the position index at the internal list of recent ISOs (m_Items)
 void RecentIsoManager::InsertIntoMenu( int id )
 {
 	if( m_Menu == NULL ) return;
