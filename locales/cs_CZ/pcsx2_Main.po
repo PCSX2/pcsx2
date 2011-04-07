@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-03-28 13:39+0100\n"
+"POT-Creation-Date: 2011-04-07 12:06+0200\n"
+"PO-Revision-Date: 2011-04-01 22:17+0100\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
 "Language: \n"
@@ -86,7 +86,7 @@ msgstr "Čekám na úkol..."
 
 #: pcsx2/CDVD/IsoFileFormats.cpp:416
 msgid "Unrecognized ISO image file format"
-msgstr ""
+msgstr "Nerozpoznaný formát souboru obrazu ISO"
 
 #: pcsx2/Elfheader.cpp:266
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
@@ -176,7 +176,7 @@ msgstr "Nelze načíst uložený stav. Je neznámé nebo nepodporované verze."
 
 #: pcsx2/System.h:206 pcsx2/System.h:207 pcsx2/System.h:208
 msgid "PCSX2 Message"
-msgstr ""
+msgstr "Zpráva PCSX2"
 
 #: pcsx2/ZipTools/thread_gzip.cpp:82
 msgid ""
@@ -186,7 +186,7 @@ msgstr ""
 "Uložený stav nebyl správně uložen. Dočasný soubor byl úspěšně vytvořen ale "
 "nemohl být přesunut do svého posledního místa odpočinku."
 
-#: pcsx2/gui/AppConfig.cpp:975 pcsx2/gui/AppConfig.cpp:981
+#: pcsx2/gui/AppConfig.cpp:977 pcsx2/gui/AppConfig.cpp:983
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "Nelze přepsat existující soubor nastavení; oprávnění bylo zamítnuto."
 
@@ -928,47 +928,47 @@ msgstr "Stiskněte Ukončit pro okamžité ukončení %s."
 msgid "Terminate App"
 msgstr "Ukončit Aplikaci"
 
-#: pcsx2/gui/FrameForGS.cpp:275
+#: pcsx2/gui/FrameForGS.cpp:276
 msgid "GS Output is Disabled!"
 msgstr "Výstup GS je Zakázán!"
 
-#: pcsx2/gui/GlobalCommands.cpp:268 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:322 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
 msgstr "Uložit stav"
 
-#: pcsx2/gui/GlobalCommands.cpp:269
+#: pcsx2/gui/GlobalCommands.cpp:323
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Uloží stav virtuálního stroje do současné pozice."
 
-#: pcsx2/gui/GlobalCommands.cpp:274 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:328 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
 msgstr "Nahrát stav"
 
-#: pcsx2/gui/GlobalCommands.cpp:275
+#: pcsx2/gui/GlobalCommands.cpp:329
 msgid "Loads a virtual machine state from the current slot."
 msgstr "Nahraje stav virtuálního stroje ze současné pozice."
 
-#: pcsx2/gui/GlobalCommands.cpp:280
+#: pcsx2/gui/GlobalCommands.cpp:334
 msgid "Load State Backup"
 msgstr "Nahrát Zálohu Stavu"
 
-#: pcsx2/gui/GlobalCommands.cpp:281
+#: pcsx2/gui/GlobalCommands.cpp:335
 msgid "Loads virtual machine state backup for current slot."
 msgstr "\"Nahraje zálohu stavu virtuálního stroje do současné pozice."
 
-#: pcsx2/gui/GlobalCommands.cpp:286
+#: pcsx2/gui/GlobalCommands.cpp:340
 msgid "Cycle to next slot"
 msgstr "Cyklovat do další pozice"
 
-#: pcsx2/gui/GlobalCommands.cpp:287
+#: pcsx2/gui/GlobalCommands.cpp:341
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "Cykluje současnou pozici uložení ve stylu +1!"
 
-#: pcsx2/gui/GlobalCommands.cpp:292
+#: pcsx2/gui/GlobalCommands.cpp:346
 msgid "Cycle to prev slot"
 msgstr "Cyklovat do předchozí pozice"
 
-#: pcsx2/gui/GlobalCommands.cpp:293
+#: pcsx2/gui/GlobalCommands.cpp:347
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "Cykluje současnou pozici uložení ve stylu -1!"
 
@@ -1070,13 +1070,12 @@ msgid "Backup before save"
 msgstr "Před uložením zálohovat"
 
 #: pcsx2/gui/MainFrame.cpp:419
-#, fuzzy
 msgid "Automatic Gamefixes"
-msgstr "Herní záplaty"
+msgstr "Automatické Herní Záplaty"
 
 #: pcsx2/gui/MainFrame.cpp:420
 msgid "Automatically applies needed Gamefixes to known problematic games"
-msgstr ""
+msgstr "Automaticky použije potřebné Herní Záplaty pro známé problematické hry"
 
 #: pcsx2/gui/MainFrame.cpp:422
 msgid "Enable Cheats"
@@ -1609,45 +1608,49 @@ msgstr "Standardní (4:3)"
 msgid "Widescreen (16:9)"
 msgstr "Širokoúhlý (16:9)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:44
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
 msgstr "Zakázat hranici okna pro změnu velikosti"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:45
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Always hide mouse cursor"
 msgstr "Vždy skrýt kurzor myši"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
 msgid "Hide window when paused"
 msgstr "Skrýt okno při pozastavení"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
 msgid "Default to fullscreen mode on open"
 msgstr "Standardně na režim celé obrazovky při otevření"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
 msgstr "Čekat na Vsynch při obnově"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
 msgstr ""
 "Dynamicky přepínat Vsynch v závislosti na snímkové frekvenci (přečtěte si "
 "popisek!)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 msgid "Double-click toggles fullscreen mode"
 msgstr "Dvojklik přepíná do režimu celé obrazovky"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:100
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
 msgid "Aspect Ratio:"
 msgstr "Poměr Stran:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:102
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:113
 msgid "Custom Window Size:"
 msgstr "Vlastní Velikost Okna:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:180
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:116
+msgid "Zoom:"
+msgstr ""
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:197
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
@@ -1724,12 +1727,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid "Ignore DMAC writes when it is busy."
-msgstr ""
+msgstr "Ignorovat zápisy do kontroly DMA, když je zaneprázdněna."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:102
-#, fuzzy
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "Množství Cyklů EE [Nedoporučeno]"
+msgstr "Povolit ruční záplaty her [Nedoporučeno]"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:111
 msgid ""
@@ -2299,9 +2301,8 @@ msgstr ""
 "pravděpodobně vytvořen novou edicí PCSX2."
 
 #: pcsx2/gui/SysState.cpp:326
-#, fuzzy
 msgid "There is no active virtual machine state to download or save."
-msgstr "Uloží stav virtuálního stroje do současné pozice."
+msgstr "Neexistuje žádný stav virtuálního stroje k načtení nebo uložení."
 
 #: pcsx2/gui/SysState.cpp:520
 msgid ""

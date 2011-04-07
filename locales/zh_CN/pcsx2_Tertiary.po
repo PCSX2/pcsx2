@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-04-01 14:04+0800\n"
+"POT-Creation-Date: 2011-04-07 12:14+0200\n"
+"PO-Revision-Date: 2011-04-07 13:27+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -42,27 +42,27 @@ msgstr "MTGS 线程在等待 GS 插件打开时失去响应。"
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "内置记忆卡插件初始化失败。"
 
-#: pcsx2/gui/AppConfig.cpp:813
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Safest"
 msgstr "最安全"
 
-#: pcsx2/gui/AppConfig.cpp:814
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Safe (faster)"
 msgstr "安全 (较快)"
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Balanced"
 msgstr "平衡"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Aggressive"
 msgstr "较激进"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Aggressive plus"
 msgstr "激进"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Mostly Harmful"
 msgstr "不稳定"
 
@@ -165,13 +165,13 @@ msgstr "在事件被传递至 PS2 虚拟机时记录到日志中。"
 msgid "!ContextTip:DirPicker:UseDefault"
 msgstr "选中时此文件夹将自动反映当前 PCSX2 用户设置选项相关的默认值。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:53
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid "!ContextTip:Window:Vsync"
 msgstr ""
 "垂直同步可以消除花屏但通常对性能有较大影响。通常仅应用于全屏幕模式，且不一定"
 "对所有的 GS 插件都有效。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
 "如帧率处于全速状态则启用垂直同步，否则垂直同步将被禁用以避免性能进一步损"
@@ -180,18 +180,18 @@ msgstr ""
 "渲染模式将忽略此选项或导致图像闪烁。此选项同时需要垂直同步在插件配置中被启"
 "用。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:66
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
 msgstr ""
 "选中此项强制 GS 窗口中不显示鼠标光标。在使用鼠标控制游戏时比较有用。默认状态"
 "鼠标在 2 秒不活动后隐藏。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:72
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid "!ContextTip:Window:Fullscreen"
 msgstr ""
 "启动或恢复模拟时自动切换至全屏。您可以使用 Alt+Enter 随时切换全屏或窗口模式。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:94
 msgid "!ContextTip:Window:HideGS"
 msgstr "在按 ESC 或挂起模拟器时彻底关闭 GS 窗口。"
 
@@ -342,6 +342,16 @@ msgstr ""
 "理想的场景中存档，启用此选项，读档。\n"
 "\n"
 "警告: 此选项可以即时启用但通常不能即时关闭 (通常会导致图像损坏)。"
+
+#~ msgid "!ContextTip:Window:Zoom"
+#~ msgstr ""
+#~ "缩放 = 100: 图像适合窗口大小，无任何裁剪。\n"
+#~ "大于或小于 100: 放大/缩小。\n"
+#~ "0: 自动放大直到黑条消失 (纵横比将被保持，部分图像将位于屏幕外面)。\n"
+#~ " 注: 一些游戏手动绘制黑条，这种情况黑条将不会被移除。\n"
+#~ "\n"
+#~ "键盘: Ctrl+小键盘加号: 放大，Ctrl+小键盘减号: 缩小，Ctrl+小键盘星号: 在 "
+#~ "100 和 0 之间切换"
 
 #~ msgid "!ContextTip:Speedhacks:vuMinMax"
 #~ msgstr ""

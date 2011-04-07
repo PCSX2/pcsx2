@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"POT-Creation-Date: 2011-04-06 18:25+0200\n"
 "PO-Revision-Date: 2011-03-14 19:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
@@ -38,27 +38,27 @@ msgstr "Der MTGS Thread ist eingefroren."
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Internes Memory Card Plugin konnte nicht Initialisiert werden."
 
-#: pcsx2/gui/AppConfig.cpp:813
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Safest"
 msgstr "Sicher"
 
-#: pcsx2/gui/AppConfig.cpp:814
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Safe (faster)"
 msgstr "Sicher (schneller)"
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Balanced"
 msgstr "Ausbalanciert"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Aggressive"
 msgstr "Aggressiv"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Aggressive plus"
 msgstr "Aggressiv Plus"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Mostly Harmful"
 msgstr "Maximum"
 
@@ -161,28 +161,28 @@ msgstr "Loggt Ereignisse, die der PS2 Virtual Machine übergeben werden."
 msgid "!ContextTip:DirPicker:UseDefault"
 msgstr "Nutzt das Standardverzeichnis des gewählten Installationsmodus."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:53
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid "!ContextTip:Window:Vsync"
 msgstr ""
 "VSync ist eine Grafikoption, die versucht Jidder und Tearing zu vermeiden. "
 "Sie setzt voraus, dass das Spiel mit voller Geschwindigkeit läuft, was "
 "selten zu 100% der Fall ist. Es wird nicht empfohlen, VSync zu aktivieren."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
 "Aktiviert Vsync nur bei voller Geschwindigkeit. Sobald die FPS unter 50 "
 "(PAL) oder 60 (NTSC) fallen, wird Vsync deaktiviert."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:66
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
 msgstr "Versteckt den Mauscursor."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:72
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid "!ContextTip:Window:Fullscreen"
 msgstr "Kann auch während der Emulation mit ALT+ENTER erreicht werden."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:94
 msgid "!ContextTip:Window:HideGS"
 msgstr "Versteckt das GS Fenster wenn man mit ESC die Emulation pausiert."
 

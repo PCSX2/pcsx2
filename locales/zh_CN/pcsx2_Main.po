@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-04-01 14:04+0800\n"
+"POT-Creation-Date: 2011-04-07 12:14+0200\n"
+"PO-Revision-Date: 2011-04-07 13:27+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -171,7 +171,7 @@ msgid ""
 "successfully but could not be moved to its final resting place."
 msgstr "即时存档未正确保存。临时文件建立成功但无法移至存档位置。"
 
-#: pcsx2/gui/AppConfig.cpp:975 pcsx2/gui/AppConfig.cpp:981
+#: pcsx2/gui/AppConfig.cpp:977 pcsx2/gui/AppConfig.cpp:983
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "覆盖已存在文件失败；权限被拒绝。"
 
@@ -888,47 +888,47 @@ msgstr "单击终止可立即结束 %s。"
 msgid "Terminate App"
 msgstr "终止应用程序"
 
-#: pcsx2/gui/FrameForGS.cpp:275
+#: pcsx2/gui/FrameForGS.cpp:276
 msgid "GS Output is Disabled!"
 msgstr "GS 输出已禁用!"
 
-#: pcsx2/gui/GlobalCommands.cpp:268 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:322 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
 msgstr "即时存档"
 
-#: pcsx2/gui/GlobalCommands.cpp:269
+#: pcsx2/gui/GlobalCommands.cpp:323
 msgid "Saves the virtual machine state to the current slot."
 msgstr "将虚拟机的状态保存至当前存档位置。"
 
-#: pcsx2/gui/GlobalCommands.cpp:274 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:328 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
 msgstr "即时读档"
 
-#: pcsx2/gui/GlobalCommands.cpp:275
+#: pcsx2/gui/GlobalCommands.cpp:329
 msgid "Loads a virtual machine state from the current slot."
 msgstr "从当前存档位置读取虚拟机状态。"
 
-#: pcsx2/gui/GlobalCommands.cpp:280
+#: pcsx2/gui/GlobalCommands.cpp:334
 msgid "Load State Backup"
 msgstr "读取即时存档备份"
 
-#: pcsx2/gui/GlobalCommands.cpp:281
+#: pcsx2/gui/GlobalCommands.cpp:335
 msgid "Loads virtual machine state backup for current slot."
 msgstr "从当前存档位置读取虚拟机状态的备份。"
 
-#: pcsx2/gui/GlobalCommands.cpp:286
+#: pcsx2/gui/GlobalCommands.cpp:340
 msgid "Cycle to next slot"
 msgstr "切换至下一位置"
 
-#: pcsx2/gui/GlobalCommands.cpp:287
+#: pcsx2/gui/GlobalCommands.cpp:341
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "切换至下一位置。"
 
-#: pcsx2/gui/GlobalCommands.cpp:292
+#: pcsx2/gui/GlobalCommands.cpp:346
 msgid "Cycle to prev slot"
 msgstr "切换至上一位置"
 
-#: pcsx2/gui/GlobalCommands.cpp:293
+#: pcsx2/gui/GlobalCommands.cpp:347
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "切换至上一位置。"
 
@@ -1553,43 +1553,47 @@ msgstr "标准 (4:3)"
 msgid "Widescreen (16:9)"
 msgstr "宽屏 (16:9)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:44
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
 msgstr "禁用窗口调整大小边框"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:45
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Always hide mouse cursor"
 msgstr "总是隐藏鼠标指针"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
 msgid "Hide window when paused"
 msgstr "暂停时隐藏窗口"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
 msgid "Default to fullscreen mode on open"
 msgstr "打开时默认为全屏幕模式"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
 msgstr "等待垂直同步刷新"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
 msgstr "根据帧率自动打开或关闭垂直同步 (请查看工具提示!)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 msgid "Double-click toggles fullscreen mode"
 msgstr "双击切换全屏模式"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:100
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
 msgid "Aspect Ratio:"
 msgstr "纵横比:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:102
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:113
 msgid "Custom Window Size:"
 msgstr "自定义窗口大小:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:180
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:116
+msgid "Zoom:"
+msgstr "缩放:"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:197
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"

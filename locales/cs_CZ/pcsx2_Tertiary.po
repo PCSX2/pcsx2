@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-03-28 13:42+0100\n"
+"POT-Creation-Date: 2011-04-07 12:06+0200\n"
+"PO-Revision-Date: 2011-04-01 22:20+0100\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
 "Language: \n"
@@ -19,6 +19,7 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Language: Czech\n"
 "X-Poedit-Country: CZECH REPUBLIC\n"
+"X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -46,27 +47,27 @@ msgstr ""
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Vnitřní zásuvný modul Paměťové Karty nelze spustit."
 
-#: pcsx2/gui/AppConfig.cpp:813
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Safest"
 msgstr "Nejbezpečnější"
 
-#: pcsx2/gui/AppConfig.cpp:814
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Safe (faster)"
 msgstr "Bezpečné (rychlejší)"
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Balanced"
 msgstr "Vyrovnaný"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Aggressive"
 msgstr "Agresivní"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Aggressive plus"
 msgstr "Agresivní plus"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Mostly Harmful"
 msgstr "Většinou Škodlivý"
 
@@ -80,7 +81,7 @@ msgstr "To, co používám já (programátor)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Its nice and readable."
-msgstr "Je to hezké a čitelné."
+msgstr "Je hezké a čitelné."
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "In case you have a really high res display."
@@ -187,14 +188,14 @@ msgstr ""
 "Je-li zaškrtnuto, tento adresář bude automaticky odrážet výchozí asociaci se "
 "současným nastavením uživatelského režimu PCSX2."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:53
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid "!ContextTip:Window:Vsync"
 msgstr ""
 "Vsynch odstraňuje trhání obrazovky, ale má velký vliv na výkon. Většinou se "
 "toto týká režimu celé obrazovky a nemusí fungovat se všemi zásuvnými moduly "
 "GS."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
 "Povolí Vsynch když snímkovací frekvence je přesně na plné rychlosti. Pokud "
@@ -205,20 +206,20 @@ msgstr ""
 "snímek, který blikne, kdykoliv je režim přepnut. Také vyžaduje povolenou "
 "Vsynch."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:66
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
 msgstr ""
 "Zašrktněte toto pro vynucení zneviditelnění kurzoru myši uvnitř okna GS; "
 "užitečné, jestli myš používáte jako hlavní kontrolní zařízení pro hraní. "
 "Standardně je myš schována po 2 vteřinách nečinnosti."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:72
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid "!ContextTip:Window:Fullscreen"
 msgstr ""
 "Povolí automatické přepnutí režimu na celou obrazovku, při spuštění nebo "
 "obnově emulace. Stále můžete přepnout na celou obrazovku pomocí alt-enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:94
 msgid "!ContextTip:Window:HideGS"
 msgstr ""
 "Úplně zavře často velké a rozměrné okno GS při stisku ESC nebo pozastavení "
@@ -241,13 +242,10 @@ msgstr ""
 "* Wizardry"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:89
-#, fuzzy
 msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr ""
 "Známo, že ovlivňuje následující hry:\n"
-"* Bleach Blade Battler\n"
-"* Growlanser II and III\n"
-"* Wizardry"
+"* Mana Khemia 1 (Going \"off campus\")"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "!ContextTip:Folders:Savestates"

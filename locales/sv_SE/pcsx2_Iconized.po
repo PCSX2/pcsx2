@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.8\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-03-30 00:30+0100\n"
+"POT-Creation-Date: 2011-04-07 12:06+0200\n"
+"PO-Revision-Date: 2011-04-06 18:54+0100\n"
 "Last-Translator: Georg Ronnert <pgert@yahoo.se>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -297,24 +297,6 @@ msgstr ""
 #~ "Detta kommer att kopiera innehållet i minneskortet i sockel %u till "
 #~ "minneskortet i sockel %u. \n"
 #~ "All data i sockel %u kommer att förloras. Är Ni säker?"
-
-#~ msgid "!Panel:Presets:Name:1"
-#~ msgstr "Säkrast"
-
-#~ msgid "!Panel:Presets:Name:2"
-#~ msgstr "Säkert (snabbare)"
-
-#~ msgid "!Panel:Presets:Name:3"
-#~ msgstr "Balanserat"
-
-#~ msgid "!Panel:Presets:Name:4"
-#~ msgstr "Aggresivt"
-
-#~ msgid "!Panel:Presets:Name:5"
-#~ msgstr "Aggresivt plus"
-
-#~ msgid "!Panel:Presets:Name:6"
-#~ msgstr "Mest skadligt"
 
 #~ msgid "!Panel:HasHacksOverrides"
 #~ msgstr ""

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:24+0200\n"
+"POT-Creation-Date: 2011-04-07 12:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -140,7 +140,7 @@ msgstr ""
 msgid "The savestate was not properly saved. The temporary file was created successfully but could not be moved to its final resting place."
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:975 pcsx2/gui/AppConfig.cpp:981
+#: pcsx2/gui/AppConfig.cpp:977 pcsx2/gui/AppConfig.cpp:983
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr ""
 
@@ -831,47 +831,47 @@ msgstr ""
 msgid "Terminate App"
 msgstr ""
 
-#: pcsx2/gui/FrameForGS.cpp:275
+#: pcsx2/gui/FrameForGS.cpp:276
 msgid "GS Output is Disabled!"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:268 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:322 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:269
+#: pcsx2/gui/GlobalCommands.cpp:323
 msgid "Saves the virtual machine state to the current slot."
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:274 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:328 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:275
+#: pcsx2/gui/GlobalCommands.cpp:329
 msgid "Loads a virtual machine state from the current slot."
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:280
+#: pcsx2/gui/GlobalCommands.cpp:334
 msgid "Load State Backup"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:281
+#: pcsx2/gui/GlobalCommands.cpp:335
 msgid "Loads virtual machine state backup for current slot."
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:286
+#: pcsx2/gui/GlobalCommands.cpp:340
 msgid "Cycle to next slot"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:287
+#: pcsx2/gui/GlobalCommands.cpp:341
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:292
+#: pcsx2/gui/GlobalCommands.cpp:346
 msgid "Cycle to prev slot"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:293
+#: pcsx2/gui/GlobalCommands.cpp:347
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr ""
 
@@ -1468,43 +1468,47 @@ msgstr ""
 msgid "Widescreen (16:9)"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:44
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:45
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Always hide mouse cursor"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
 msgid "Hide window when paused"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
 msgid "Default to fullscreen mode on open"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 msgid "Double-click toggles fullscreen mode"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:100
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
 msgid "Aspect Ratio:"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:102
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:113
 msgid "Custom Window Size:"
 msgstr ""
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:180
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:116
+msgid "Zoom:"
+msgstr ""
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:197
 msgid "Invalid window dimensions specified: Size cannot contain non-numeric digits! >_<"
 msgstr ""
 

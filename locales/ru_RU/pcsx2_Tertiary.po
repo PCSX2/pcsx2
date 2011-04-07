@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"POT-Creation-Date: 2011-04-06 18:25+0200\n"
 "PO-Revision-Date: 2010-12-28 13:40+0300\n"
 "Last-Translator: Kein <kein-of@yandex.ru>\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
@@ -43,27 +43,27 @@ msgstr ""
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Ошибка инициализации встроенного плагина карт памяти."
 
-#: pcsx2/gui/AppConfig.cpp:813
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Safest"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:814
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Safe (faster)"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Balanced"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Aggressive"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Aggressive plus"
 msgstr ""
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Mostly Harmful"
 msgstr ""
 
@@ -154,7 +154,7 @@ msgstr ""
 "Активируйте данную опцию, если желаете чтобы PCSX2 создавала соответствующие "
 "папки относительно пути указанному в настройках пользовательского режима."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:53
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid "!ContextTip:Window:Vsync"
 msgstr ""
 "Устраняет \"излом\" изображения при активной смене картинки на экране, "
@@ -162,7 +162,7 @@ msgstr ""
 "лишь при использовании полноэкранного режима и лишь в связке с теми видео-"
 "плагинами, которые его поддерживают."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 #, fuzzy
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
@@ -171,20 +171,20 @@ msgstr ""
 "лишь при использовании полноэкранного режима и лишь в связке с теми видео-"
 "плагинами, которые его поддерживают."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:66
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
 msgstr ""
 "По умолчанию, курсор мыши скрывается после 2-ух секунд бездействия. Данная "
 "опция моментально скрывает курсор мыши в видеоокне. Удобно, если вы "
 "используете управление мышью в игре."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:72
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid "!ContextTip:Window:Fullscreen"
 msgstr ""
 "Автоматически переводит видеоокно в полный режим при запуске игры. Впрочем, "
 "вы всегда можете выйти из данного режима с помощью комбинации ALT+ENTER."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:94
 msgid "!ContextTip:Window:HideGS"
 msgstr "Скрывает видеоокно при установке паузы или нажатии ESC."
 

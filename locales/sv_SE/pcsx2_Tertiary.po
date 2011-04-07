@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.8\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:20+0200\n"
-"PO-Revision-Date: 2011-03-25 19:23+0100\n"
+"POT-Creation-Date: 2011-04-07 12:07+0200\n"
+"PO-Revision-Date: 2011-04-06 19:24+0100\n"
 "Last-Translator: Georg Ronnert <pgert@yahoo.se>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -45,60 +45,62 @@ msgid "Internal Memorycard Plugin failed to initialize."
 msgstr ""
 "Det interna minneskorts-insticksprogrammet misslyckades att initialiseras."
 
-#: pcsx2/gui/AppConfig.cpp:813
-msgid "Safest"
-msgstr ""
-
-#: pcsx2/gui/AppConfig.cpp:814
-msgid "Safe (faster)"
-msgstr ""
-
 #: pcsx2/gui/AppConfig.cpp:815
-msgid "Balanced"
-msgstr ""
+msgid "Safest"
+msgstr "Säkrast"
 
 #: pcsx2/gui/AppConfig.cpp:816
-msgid "Aggressive"
-msgstr ""
+msgid "Safe (faster)"
+msgstr "Säkert (snabare)"
 
 #: pcsx2/gui/AppConfig.cpp:817
-msgid "Aggressive plus"
-msgstr ""
+msgid "Balanced"
+msgstr "Balanserat"
 
 #: pcsx2/gui/AppConfig.cpp:818
+msgid "Aggressive"
+msgstr "Aggressivt"
+
+#: pcsx2/gui/AppConfig.cpp:819
+msgid "Aggressive plus"
+msgstr "Aggressivt plus"
+
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Mostly Harmful"
-msgstr ""
+msgstr "Mest Skadligt"
 
 #: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "Fits a lot of log in a microcosmically small area."
-msgstr ""
+msgstr "Klämmer in mycket loggning i en mikroskopiskt liten yta."
 
 #: pcsx2/gui/ConsoleLogger.cpp:415
 msgid "It's what I use (the programmer guy)."
-msgstr ""
+msgstr "Det är vad Jag använder (programmerarsnubben)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Its nice and readable."
-msgstr ""
+msgstr "Det är fint och läsbart."
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "In case you have a really high res display."
-msgstr ""
+msgstr "Utifall att Ni har en riktigt hög upplösning."
 
 #: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "Default soft-tone color scheme."
-msgstr ""
+msgstr "Förvals mjukatmosfärs färgtema."
 
 #: pcsx2/gui/ConsoleLogger.cpp:424
 msgid ""
 "Classic black color scheme for people who enjoy having text seared into "
 "their optic nerves."
 msgstr ""
+"Klassiskt svart färgtema för folk som njuter av att ha text svedd in i sina "
+"synnerver."
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
 "When checked the log window will be visible over other foreground windows."
-msgstr ""
+msgstr "När markerad kommer loggfönstret att bli synligt över andra fönster."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
 msgid "!ContextTip:ChangingNTFS"
@@ -111,17 +113,21 @@ msgid ""
 "Always use this option if you want the safest and surest memory card "
 "behavior."
 msgstr ""
+"Använd alltid denna möjlighet om Ni vill ha det säkraste och "
+"tillförlitligaste minneskortsbeteendet."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:200
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:204
 msgid "16 and 32 MB cards have roughly the same compatibility factor."
-msgstr ""
+msgstr "16 och 32 MB kort har ungefär samma kompabilitetsfaktor."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:208
 msgid ""
 "Use at your own risk.  Erratic memory card behavior is possible (though "
 "unlikely)."
 msgstr ""
+"Använd på egen risk.  Oberäkneliga minneskortsbeteenden är möjliga (dock "
+"osannolika)."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:49
 msgid "!ContextTip:Folders:Settings"
@@ -184,14 +190,14 @@ msgstr ""
 "När markerad kommer denna mapp att automatiskt begrunda förvalen assosierade "
 "med PCSX2's nuvarande användarinställningar."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:53
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid "!ContextTip:Window:Vsync"
 msgstr ""
 "Vsync slår ut skärmsönderrivning men har oftast en stor prestationseffekt. \n"
 "Det tillämpar vanligtvis bara i helskärmsläge, och kanske inte fungerar för "
 "alla GS insticksprogram."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
 "Möjliggör Vsync när bildfrekvensen är precis på full hastighet. \n"
@@ -205,7 +211,7 @@ msgstr ""
 "eller producera en svart skärm som blinkar när läget byts. \n"
 "Det kräver även att Vsync möjliggörs."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:66
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
 msgstr ""
 "Markera denna för att tvinga muspekaren att bli osynlig när den är i ett GS-"
@@ -213,7 +219,7 @@ msgstr ""
 "användbart om man har musen som främsta kontroll-mojäng för spelande. \n"
 "Som förval auto-gömmer sig musen efter 2 sekunders inaktivitet."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:72
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid "!ContextTip:Window:Fullscreen"
 msgstr ""
 "Möjliggör automatiskt lägesbyte till fullskärm när emulering statas eller "
@@ -221,7 +227,7 @@ msgstr ""
 "Ni kan ännu växla mellan helskärm och fönsterläge genom att trycka Alt + "
 "Enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:94
 msgid "!ContextTip:Window:HideGS"
 msgstr ""
 "Stänger helt det ofta stora och omfångsrika GS-fönstret \n"
@@ -244,13 +250,10 @@ msgstr ""
 " * Wizardry"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:89
-#, fuzzy
 msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr ""
 "Påverkar till vetskap följande spel:\n"
-" * Bleach Blade Battler\n"
-" * Growlanser II and III\n"
-" * Wizardry"
+" * Mana Khemia 1 (Går \"bortom behörighet\")"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "!ContextTip:Folders:Savestates"
@@ -383,6 +386,8 @@ msgid ""
 "Error while parsing either NTSC or PAL framerate settings.  Settings must be "
 "valid floating point numerics."
 msgstr ""
+"Fel under tolkning av antingen NTSC eller PAL bildfrekvensinstälningar.  "
+"Inställningarna måste vara giltliga flyttalsnummer."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:295
 msgid ""
@@ -417,6 +422,27 @@ msgstr ""
 "\n"
 "Varning: Denna möjlighet kan möjliggöras dynamiskt men kan vanligtvis inte "
 "förhindras på samma vis (video blir ofta skräp)."
+
+#~ msgid "!ContextTip:Window:Zoom"
+#~ msgstr ""
+#~ "Zoom = 100: Passar in hela bilden i fönstret utan beskärkning.\n"
+#~ "Över/Under 100: Zooma In/Ut\n"
+#~ "0: Automatisk-Inzoomning tills de svarta räckena är borta "
+#~ "(Bildförhållande bibehålls, en del av bilden går utanför skärmen).\n"
+#~ "BEMÄRK: Vissa spel ritar sina egna svarta räcken, vilka inte tas bort med "
+#~ "'0'.\n"
+#~ "\n"
+#~ "Tangentbord: Ctrl + Sifferbord-Plus: Inzoomning, Ctrl + Sifferbord-Minus: "
+#~ "Utzooming, Ctrl + Sifferbord-*: Växla 100/0"
+
+#~ msgid ""
+#~ "Error while parsing either NTSC or PAL framerate settings.\n"
+#~ "\tNTSC Input = %s\n"
+#~ "\tPAL Input  = %s"
+#~ msgstr ""
+#~ "Fel under tolkning av antingen NTSC eller PAL bildfrekvensinstälningar.\n"
+#~ "\tNTSC Input = %s\n"
+#~ "\tPAL Input  = %s"
 
 #~ msgid "!ContextTip:Speedhacks:vuMinMax"
 #~ msgstr ""

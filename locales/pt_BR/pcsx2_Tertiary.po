@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"POT-Creation-Date: 2011-04-06 18:25+0200\n"
 "PO-Revision-Date: 2011-03-28 00:48-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
@@ -44,27 +44,27 @@ msgstr "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir.
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Plug-in the Cartão de Memória Interno falhou em inicializar."
 
-#: pcsx2/gui/AppConfig.cpp:813
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Safest"
 msgstr "Mais seguro"
 
-#: pcsx2/gui/AppConfig.cpp:814
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Safe (faster)"
 msgstr "Seguro (mais rápido)"
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Balanced"
 msgstr "Balanceado"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Aggressive"
 msgstr "Agressivo"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Aggressive plus"
 msgstr "Agressivo plus"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Mostly Harmful"
 msgstr "Prejudicial"
 
@@ -192,12 +192,12 @@ msgstr ""
 "Quando marcado essa pasta vai refletir automaticamente a associação "
 "automática com a configuração de modo usuário do PCSX2."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:53
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid "!ContextTip:Window:Vsync"
 msgstr ""
 "Vsync elimina ranhuras na tela, mas tipicamente ataca em muito a performance."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
 "Habilita Vsync quando o framerate está exatamente na velocidade máxima. "
@@ -207,20 +207,20 @@ msgstr ""
 "renderização vão ignorar a opção ou vão produzir uma janela preta que pisca "
 "quando alterado o modo. Essa opção requer que Vsync esteja habilitado."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:66
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
 msgstr ""
 "Marque para forçar a ocultação do cursor do mouse dentro da janela do GS; "
 "útil se usando o mouse como dispositivo de controle primário para jogar. Por "
 "padrão o mouse se auto-oculta após 2 segundos de inatividade."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:72
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid "!ContextTip:Window:Fullscreen"
 msgstr ""
 "Ativa alteração automática para tela cheia quando iniciando ou resumindo "
 "emulação."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:94
 msgid "!ContextTip:Window:HideGS"
 msgstr ""
 "Fecha completamente a normalmente grande e volumosa janela do GS quando "

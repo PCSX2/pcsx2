@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-03-06 02:46+0200\n"
+"POT-Creation-Date: 2011-04-06 18:25+0200\n"
+"PO-Revision-Date: 2011-04-04 17:40+0200\n"
 "Last-Translator: PyramidHead <atiamar@hotmail.com>\n"
 "Language-Team: PyramidHead <atiamar@hotmail.com>\n"
 "Language: \n"
@@ -78,7 +78,7 @@ msgstr "İşlem bekleniyor..."
 
 #: pcsx2/CDVD/IsoFileFormats.cpp:416
 msgid "Unrecognized ISO image file format"
-msgstr ""
+msgstr "Bilinmeyen ISO dosyası formatı"
 
 #: pcsx2/Elfheader.cpp:266
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
@@ -166,7 +166,7 @@ msgstr ""
 
 #: pcsx2/System.h:206 pcsx2/System.h:207 pcsx2/System.h:208
 msgid "PCSX2 Message"
-msgstr ""
+msgstr "PCSX2 Mesajı"
 
 #: pcsx2/ZipTools/thread_gzip.cpp:82
 msgid ""
@@ -176,7 +176,7 @@ msgstr ""
 "Kayıt konumu doğru şekilde kaydedilemedi. Geçici dosya oluşturuldu fakat "
 "tamamlanamadı."
 
-#: pcsx2/gui/AppConfig.cpp:975 pcsx2/gui/AppConfig.cpp:981
+#: pcsx2/gui/AppConfig.cpp:977 pcsx2/gui/AppConfig.cpp:983
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "Dosya üzerine yazmak için yetkiniz yok."
 
@@ -377,7 +377,7 @@ msgstr "Web Sayfası"
 
 #: pcsx2/gui/AppInit.cpp:695
 msgid "Show about dialog"
-msgstr ""
+msgstr "Hakkında penceresini göster"
 
 #: pcsx2/gui/AppMain.cpp:79
 msgid ""
@@ -537,11 +537,11 @@ msgstr "PCSX2 geliştirici günlüklerini gösterir"
 
 #: pcsx2/gui/ConsoleLogger.cpp:440
 msgid "CDVD reads"
-msgstr ""
+msgstr "CDVD okumaları"
 
 #: pcsx2/gui/ConsoleLogger.cpp:440
 msgid "Shows disk read activity"
-msgstr ""
+msgstr "Disk okuma aktivitesini göster"
 
 #: pcsx2/gui/ConsoleLogger.cpp:457
 msgid "Enable all"
@@ -573,34 +573,32 @@ msgid "About %s"
 msgstr "%s Hakkında"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-#, fuzzy
 msgid "Betatesting"
-msgstr "Ayarlar"
+msgstr "Betatesting"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Previous versions"
-msgstr ""
+msgstr "Önceki sürümler"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Webmasters"
-msgstr ""
+msgstr "Site Yöneticileri"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
-#, fuzzy
 msgid "Plugin Specialists"
-msgstr "Eklenti Klasörü:"
+msgstr "Eklenti Geliştiricileri"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Special thanks to"
-msgstr ""
+msgstr "Özel teşekkür"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
 msgid "Developers"
-msgstr ""
+msgstr "Geliştiriciler"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
 msgid "Contributors"
-msgstr ""
+msgstr "Katkıda Bulunanlar"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "A Playstation 2 Emulator"
@@ -616,7 +614,7 @@ msgstr "PCSX2 Resmi SVN Sayfası"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
-msgstr ""
+msgstr "Göreceğimi gördüm"
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
 msgid "Assertion Failure - "
@@ -664,7 +662,6 @@ msgid "Reset"
 msgstr "Yeniden Başlat"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:40
-#, fuzzy
 msgid "Create a new memory card"
 msgstr "Hafıza kartı oluştur"
 
@@ -675,34 +672,29 @@ msgid "Create"
 msgstr "Oluştur"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:71
-#, fuzzy
 msgid "New memory card:"
-msgstr "Hafıza kartı oluştur"
+msgstr "Yeni hafıza kartı:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
-#, fuzzy
 msgid "At folder:    "
-msgstr "Seçili klasör:"
+msgstr "Klasör:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:75
-#, fuzzy
 msgid "Select file name: "
-msgstr "Tema seçiniz:"
+msgstr "Dosya adı seçiniz:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:149
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:855
 #, c-format
 msgid "Error (%s)"
-msgstr ""
+msgstr "Hata (%s)"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:150
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:164
-#, fuzzy
 msgid "Create memory card"
 msgstr "Hafıza kartı oluştur"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
-#, fuzzy
 msgid "Error: The memory card could not be created."
 msgstr "Hata: Hafıza kartı oluşturulamadı."
 
@@ -819,13 +811,16 @@ msgstr "Hafıza Kartı Yöneticisi"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:112
 msgid "Drag cards to or from PS2-ports"
-msgstr ""
+msgstr "Hafıza kartlarını PS2 portlarına ya da portlarından çek"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:113
 msgid ""
 "\n"
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
+"\n"
+" Not: Kopyala/İsim değiştir/Oluştur/Sil işlemleri 'İptal' seçeneğiyle İPTAL "
+"EDİLEMEZ."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -917,49 +912,47 @@ msgstr "%s 'ı sonlandırmak için Sonlandır'a basın."
 msgid "Terminate App"
 msgstr "İşlemi Sonlandır"
 
-#: pcsx2/gui/FrameForGS.cpp:275
+#: pcsx2/gui/FrameForGS.cpp:276
 msgid "GS Output is Disabled!"
 msgstr "GS Çıkışı devre dışı!"
 
-#: pcsx2/gui/GlobalCommands.cpp:268 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:322 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
 msgstr "Kayıt konumu"
 
-#: pcsx2/gui/GlobalCommands.cpp:269
+#: pcsx2/gui/GlobalCommands.cpp:323
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Oyun konumunu şimdiki slota kaydeder."
 
-#: pcsx2/gui/GlobalCommands.cpp:274 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:328 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
 msgstr "Konum yükle"
 
-#: pcsx2/gui/GlobalCommands.cpp:275
+#: pcsx2/gui/GlobalCommands.cpp:329
 msgid "Loads a virtual machine state from the current slot."
 msgstr "Oyun konumunu şimdiki slottan yükler."
 
-#: pcsx2/gui/GlobalCommands.cpp:280
-#, fuzzy
+#: pcsx2/gui/GlobalCommands.cpp:334
 msgid "Load State Backup"
-msgstr "Konum yükle"
+msgstr "Konum Yükle"
 
-#: pcsx2/gui/GlobalCommands.cpp:281
-#, fuzzy
+#: pcsx2/gui/GlobalCommands.cpp:335
 msgid "Loads virtual machine state backup for current slot."
 msgstr "Oyun konumunu şimdiki slottan yükler."
 
-#: pcsx2/gui/GlobalCommands.cpp:286
+#: pcsx2/gui/GlobalCommands.cpp:340
 msgid "Cycle to next slot"
 msgstr "Bir sonraki slota geç"
 
-#: pcsx2/gui/GlobalCommands.cpp:287
+#: pcsx2/gui/GlobalCommands.cpp:341
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "Kayıt işlemini sürekli bir sonraki slota kaydederek yapar."
 
-#: pcsx2/gui/GlobalCommands.cpp:292
+#: pcsx2/gui/GlobalCommands.cpp:346
 msgid "Cycle to prev slot"
 msgstr "Önceki slota geç"
 
-#: pcsx2/gui/GlobalCommands.cpp:293
+#: pcsx2/gui/GlobalCommands.cpp:347
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "Kayıt işlemini sürekli bir önceki slota kaydederek yapar."
 
@@ -1000,9 +993,8 @@ msgid "Slot %d"
 msgstr "Slot %d"
 
 #: pcsx2/gui/MainFrame.cpp:44 pcsx2/gui/Saveslots.cpp:150
-#, fuzzy
 msgid "Backup"
-msgstr "&Geri"
+msgstr "Yedekle"
 
 #: pcsx2/gui/MainFrame.cpp:322
 msgid "Show Console"
@@ -1061,16 +1053,15 @@ msgstr "Ham PS2 kütüphanelerini doğrudan yürütmek için"
 
 #: pcsx2/gui/MainFrame.cpp:414
 msgid "Backup before save"
-msgstr ""
+msgstr "Kaydetmeden önce yedeğini al"
 
 #: pcsx2/gui/MainFrame.cpp:419
-#, fuzzy
 msgid "Automatic Gamefixes"
-msgstr "Oyun Yamaları"
+msgstr "Otomatik Oyun Yamaları"
 
 #: pcsx2/gui/MainFrame.cpp:420
 msgid "Automatically applies needed Gamefixes to known problematic games"
-msgstr ""
+msgstr "Bilinen sorunlu oyunlara otomatik olarak yamaları uygular"
 
 #: pcsx2/gui/MainFrame.cpp:422
 msgid "Enable Cheats"
@@ -1196,7 +1187,7 @@ msgstr "Günlükleniyor..."
 
 #: pcsx2/gui/MainFrame.cpp:583
 msgid "Pause"
-msgstr ""
+msgstr "Duraklat"
 
 #: pcsx2/gui/MainFrame.cpp:584
 msgid "Safely pauses emulation and preserves the PS2 state."
@@ -1211,7 +1202,6 @@ msgid "Resumes the suspended emulation state."
 msgstr "Emülatörün çalışmasını kaldığı yerden devam ettirir."
 
 #: pcsx2/gui/MainFrame.cpp:596
-#, fuzzy
 msgid "Pause/Resume"
 msgstr "Duraklat/Devam Et"
 
@@ -1380,7 +1370,7 @@ msgstr ""
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:183
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Could not create a memory card: \n"
 "\n"
@@ -1393,33 +1383,33 @@ msgstr ""
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:201
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Access denied to memory card: \n"
 "\n"
 "%s\n"
 "\n"
 msgstr ""
-"Hafıza kartına erilemiyor: \n"
+"Hafıza kartına erişilemiyor: \n"
 "\n"
 "%s\n"
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:525
 msgid "File name empty or too short"
-msgstr ""
+msgstr "Dosya adı çok kısa ya da girilmemiş"
 
 #: pcsx2/gui/MemoryCardFile.cpp:530
 msgid "File name outside of required directory"
-msgstr ""
+msgstr "Dosya adı gerekli klasörün dışında"
 
 #: pcsx2/gui/MemoryCardFile.cpp:536
 msgid "File name already exists"
-msgstr ""
+msgstr "Aynı isimde başka bir dosya var"
 
 #: pcsx2/gui/MemoryCardFile.cpp:543
 msgid "The Operating-System prevents this file from being created"
-msgstr ""
+msgstr "İşletim sistemi dosyanın oluşturulmasını engelliyor"
 
 #: pcsx2/gui/Panels/BaseApplicableConfigPanel.cpp:103
 msgid "Cannot apply settings..."
@@ -1596,46 +1586,47 @@ msgstr "Standart (4:3)"
 msgid "Widescreen (16:9)"
 msgstr "Geniş Ekran (16:9)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:44
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
 msgstr "Pencere konumlama sınırını devre dışı bırak"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:45
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Always hide mouse cursor"
 msgstr "Fare imlecini her zaman gizle"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
-#, fuzzy
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
 msgid "Hide window when paused"
 msgstr "Duraklatma sırasında pencereyi gizle"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
 msgid "Default to fullscreen mode on open"
 msgstr "Varsayılan olarak program çalıştığında doğrudan tam ekrana geç"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
-#, fuzzy
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
 msgstr "Vsync'i etkinleştir"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
-msgstr ""
+msgstr "Kare hızına göre Vsync'i otomatik aç ya da kapat (ipucunu okuyun!)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
-#, fuzzy
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 msgid "Double-click toggles fullscreen mode"
 msgstr "Çift tıklama tam ekrana geçer"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:100
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
 msgid "Aspect Ratio:"
 msgstr "En Boy Oranı:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:102
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:113
 msgid "Custom Window Size:"
 msgstr "Özel Pencere Boyutu:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:180
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:116
+msgid "Zoom:"
+msgstr ""
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:197
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
@@ -1712,12 +1703,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid "Ignore DMAC writes when it is busy."
-msgstr ""
+msgstr "Meşgulken DMAC'yı yoksay."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:102
-#, fuzzy
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "EE Cyclerate [Önerilmez]"
+msgstr "Elle yapılan oyun yamalarını etkinleştir [Önerilmez]"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:111
 msgid ""
@@ -1751,76 +1741,64 @@ msgstr "PS2 hafıza kartlarının bulunduğu klasörü seçin"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:448
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:533
 msgid "Eject"
-msgstr ""
+msgstr "Çıkart"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:449
 msgid "Duplicate ..."
-msgstr ""
+msgstr "Kopyala ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:450
-#, fuzzy
 msgid "Rename ..."
-msgstr "Konumu yeniden belirle..."
+msgstr "İsmini değiştir ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:451
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:515
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:542
-#, fuzzy
 msgid "Create ..."
-msgstr "Oluştur"
+msgstr "Yeni oluştur..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
 msgid "Card: "
-msgstr ""
+msgstr "Kart:"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:516
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:549
-#, fuzzy
 msgid "Create a new memory card."
-msgstr "Hafıza kartı oluştur"
+msgstr "Hafıza kartı oluştur."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:529
-#, fuzzy
 msgid "Rename this memory card ..."
-msgstr ""
-"Hafıza kartına erilemiyor: \n"
-"\n"
-"%s\n"
-"\n"
+msgstr "Hafıza kartını yeniden isimlendir ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:533
 msgid "Insert ..."
-msgstr ""
+msgstr "Tak ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:534
 msgid "Eject the card from this port"
-msgstr ""
+msgstr "Kartı bu porttan çıkart"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:534
 msgid "Insert this card to a port ..."
-msgstr ""
+msgstr "Kartı bir porta takın ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:538
-#, fuzzy
 msgid "Create a duplicate of this memory card ..."
-msgstr "Hafıza kartı oluştur"
+msgstr "Bu hafıza kartının bir kopyasını oluştur ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:542
 msgid "Delete"
 msgstr "Sil"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:545
-#, fuzzy
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr "Seçili hafıza kartını siler (tüm içerik kaybedilir)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:547
-#, fuzzy
 msgid "Create a new memory card and assign it to this Port."
-msgstr "Boş bir slotta yeni bir hafıza kartı oluşturur."
+msgstr "Bu portta yeni bir hafıza kartı oluştur."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:726
-#, fuzzy
 msgid "Delete memory file?"
 msgstr "Hafıza kartını silmek istediğinizden emin misiniz?"
 
@@ -1828,24 +1806,25 @@ msgstr "Hafıza kartını silmek istediğinizden emin misiniz?"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:762
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:783
-#, fuzzy
 msgid "Duplicate memory card"
-msgstr "Hafıza kartını silmek istediğinizden emin misiniz?"
+msgstr "Hafıza kartını kopyala"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:750
 msgid "Failed: Can only duplicate an existing card."
-msgstr ""
+msgstr "Hata: Yalnızca varolan bir kart kopyalanabilir."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
+"Kopyanın adını girin \n"
+"('.ps2' kendiliğinden eklenecektir)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:782
 #, c-format
 msgid "Failed: %s"
-msgstr ""
+msgstr "Hata: %s"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:808
 msgid "Copy failed!"
@@ -1854,11 +1833,11 @@ msgstr "Kopyalama başarısız!"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr ""
+msgstr "'%s' hafıza kartı '%s' 'a kopyalandı."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:820
 msgid "Success"
-msgstr ""
+msgstr "Başarılı"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:841
 #, c-format
@@ -1866,104 +1845,96 @@ msgid ""
 "Select a new name for the memory card '%s'\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
+"'%s' hafıza kartı için yeni bir isim seçin \n"
+"('.ps2' kendiliğinden eklenecektir)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:844
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:856
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
-#, fuzzy
 msgid "Rename memory card"
-msgstr "Hafıza kartını silmek istediğinizden emin misiniz?"
+msgstr "Hafıza kartının ismini değiştir"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
-#, fuzzy
 msgid "Error: Rename could not be completed.\n"
-msgstr "Hata: Hafıza kartı oluşturulamadı."
+msgstr "Hata: İsim değiştirme başarısız.\n"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:962
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:139
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
-msgstr ""
+msgstr "Port-%u / Multitap-%u--Port-1"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:140
-#, fuzzy, c-format
+#, c-format
 msgid "             Multitap-%u--Port-%u"
-msgstr "%u portunda Multitap'ı etkinleştir"
+msgstr "             Multitap-%u--Port-%u"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:988
 msgid "Empty"
-msgstr ""
+msgstr "Boş"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:994
-#, fuzzy, c-format
+#, c-format
 msgid "Select a target port for '%s'"
-msgstr "%s için bir belge kökü seçin"
+msgstr "%s için hedef portu seçin"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:995
 msgid "Insert card"
-msgstr ""
+msgstr "Kartı tak"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
 msgid "Eject card"
-msgstr ""
+msgstr "Kartı çıkart"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
-#, fuzzy
 msgid "Insert card ..."
-msgstr "Konumu yeniden belirle..."
+msgstr "Kart tak ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1056
 msgid "Duplicate card ..."
-msgstr ""
+msgstr "Kartı kopyala"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1057
-#, fuzzy
 msgid "Rename card ..."
-msgstr "Konumu yeniden belirle..."
+msgstr "Kartın adını değiştir ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1058
-#, fuzzy
 msgid "Delete card"
-msgstr "Hafıza kartını silmek istediğinizden emin misiniz?"
+msgstr "Kartı sil"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1061
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1065
-#, fuzzy
 msgid "Create a new card ..."
-msgstr "Yeni oluştur..."
+msgstr "Yeni hafıza kartı oluştur..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1069
 msgid "Refresh List"
 msgstr "Listeyi Yenile"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:105
-#, fuzzy
 msgid "PS2 Port"
-msgstr "Konum:"
+msgstr "PS2 Portu"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:107
-#, fuzzy
 msgid "Card (file) name"
-msgstr "Dosya adı"
+msgstr "Kart (dosya) adı"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:108
 msgid "Card size"
-msgstr ""
+msgstr "Kart boyutu"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:109
 msgid "Formatted"
 msgstr "Formatlandı"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:110
-#, fuzzy
 msgid "Last Modified"
-msgstr "Değiştirildi"
+msgstr "Şu tarihte değiştirildi"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:111
-#, fuzzy
 msgid "Created on"
-msgstr "Oluşturuldu"
+msgstr "Şu tarihte oluşturuldu"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:156
 msgid "No"
@@ -1975,11 +1946,11 @@ msgstr "Evet"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:169
 msgid "[-- Unused cards --]"
-msgstr ""
+msgstr "[-- Kullanılmayan kartlar --]"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:171
 msgid "[-- No unused cards --]"
-msgstr ""
+msgstr "[-- Kullanılmayan kart yok --]"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:33
 msgid "Usermode Selection"
@@ -2075,7 +2046,7 @@ msgstr "Eklentiler için farklı bir klasör seçmek istiyorsanız Göz at'a bas
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:481
 #, c-format
 msgid "Please select a valid plugin for the %s."
-msgstr ""
+msgstr "Lütfen %s için geçerli bir eklenti seçin."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:519
 #, c-format
@@ -2291,9 +2262,8 @@ msgstr ""
 "kaydedilmiş."
 
 #: pcsx2/gui/SysState.cpp:326
-#, fuzzy
 msgid "There is no active virtual machine state to download or save."
-msgstr "Oyun konumunu şimdiki slota kaydeder."
+msgstr "Kaydetmek ya da indirmek için aktif bir sanal makine olması gerekir."
 
 #: pcsx2/gui/SysState.cpp:520
 msgid ""
@@ -2355,11 +2325,36 @@ msgstr ""
 #~ msgid "ISO mounting failed: PCSX2 is unable to identify the ISO image type."
 #~ msgstr "ISO yüklemesi başarısız: PCSX2 ISO dosyası türünü tanımlayamıyor."
 
+#~ msgid "Select memory card for Port %u / Slot %u"
+#~ msgstr "%u / %u port ve slotu için bir hazıfa kartı seçin"
+
+#~ msgid "New card will be saved to:"
+#~ msgstr "Yeni hafıza kartının kaydedileceği yer:"
+
+#~ msgid "memory card creation error"
+#~ msgstr "hafıza kartı oluşturma hatası"
+
+#~ msgid "Backup existing Savestate when creating a new one"
+#~ msgstr "Yeni bir Kayıt dosyası oluşturulurken eskisini yedekle"
+
+#~ msgid "Enable Multitap on Port %u"
+#~ msgstr "%u portunda Multitap'ı etkinleştir"
+
+#~ msgid ""
+#~ "Drag items over other items in the list to swap or copy memory cards."
+#~ msgstr "Hafıza kartlarını kopyalamak ya da değiştirmek için sürükleyin."
+
+#~ msgid "Other..."
+#~ msgstr "Diğer..."
+
 #~ msgid "Enable Patches"
 #~ msgstr "Yamaları Etkinleştir"
 
 #~ msgid "Patches (unimplemented)"
 #~ msgstr "Yamalar (düzenlenmedi)"
+
+#~ msgid "Print CDVD Info"
+#~ msgstr "CDVD bilgisini yazdır"
 
 #~ msgid "Open Debug Window..."
 #~ msgstr "Geliştirici Ekranı Açılıyor..."
@@ -2367,8 +2362,58 @@ msgstr ""
 #~ msgid "Memory Dump..."
 #~ msgstr "Hafıza Dökümü..."
 
+#~ msgid "Suspend"
+#~ msgstr "Duraklat"
+
+#~ msgid "Use exclusive fullscreen mode (if available)"
+#~ msgstr "Tam ekran işlemci önceliğini kullan"
+
 #~ msgid "Enable game fixes"
 #~ msgstr "Oyun yamalarını etkinleştir"
+
+#~ msgid "Overwrite memory card?"
+#~ msgstr "Hafıza kartının üzerine yazmak istediğinizden emin misiniz?"
+
+#~ msgid "Mount"
+#~ msgstr "Oluştur"
+
+#~ msgid "Disable"
+#~ msgstr "Devre Dışı Bırak"
+
+#~ msgid "Enable"
+#~ msgstr "Etkinleştir"
+
+#~ msgid ""
+#~ "Disables the selected memory card, so that it will not be seen by games "
+#~ "or BIOS."
+#~ msgstr "Seçili hafıza kartını devre dışı bırakır."
+
+#~ msgid "Mounts the selected memory card, so that games can see it again."
+#~ msgstr "Seçili hafıza kartını etkinleştirir."
+
+#~ msgid "Slot"
+#~ msgstr "Slot"
+
+#~ msgid "Status"
+#~ msgstr "Durum"
+
+#~ msgid "Size"
+#~ msgstr "Boyut"
+
+#~ msgid "Filename"
+#~ msgstr "Dosya adı"
+
+#~ msgid "Disabled"
+#~ msgstr "Devre Dışı"
+
+#~ msgid "Enabled"
+#~ msgstr "Etkin"
+
+#~ msgid "Missing"
+#~ msgstr "Kayıp"
+
+#~ msgid "N/A"
+#~ msgstr "Hiçbiri"
 
 #~ msgid "mVU Min/Max Hack"
 #~ msgstr "mVU Min/Max Hack"
@@ -2379,99 +2424,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Hızı biraz artırır; saçma sapan ses ya da görüntü hatalarına neden "
 #~ "olabilir [Önerilmez]"
-
-#, fuzzy
-#~ msgid "Use Multitap on Port %u"
-#~ msgstr "%u portunda Multitap'ı etkinleştir"
-
-#, fuzzy
-#~ msgid "Drag card files in the list to swap or copy between ports."
-#~ msgstr "Hafıza kartlarını kopyalamak ya da değiştirmek için sürükleyin."
-
-#~ msgid "Other..."
-#~ msgstr "Diğer..."
-
-#~ msgid "Suspend"
-#~ msgstr "Duraklat"
-
-#, fuzzy
-#~ msgid "Copy memory card file"
-#~ msgstr "Hafıza kartı oluştur"
-
-#, fuzzy
-#~ msgid "Copy canceled"
-#~ msgstr "Kopyalama başarısız!"
-
-#, fuzzy
-#~ msgid "Overwrite memory card file?"
-#~ msgstr "Hafıza kartının üzerine yazmak istediğinizden emin misiniz?"
-
-#, fuzzy
-#~ msgid "Create card file"
-#~ msgstr "Klasörü oluşturmak istediğinizden emin misiniz?"
-
-#, fuzzy
-#~ msgid "Enable port"
-#~ msgstr "Etkinleştir"
-
-#, fuzzy
-#~ msgid "Disable Port"
-#~ msgstr "Devre Dışı Bırak"
-
-#, fuzzy
-#~ msgid "Enable Port"
-#~ msgstr "Yamaları Etkinleştir"
-
-#, fuzzy
-#~ msgid ""
-#~ "Disable the selected PS2-Port (this memory card will be invisible to "
-#~ "games/BIOS)."
-#~ msgstr "Seçili hafıza kartını devre dışı bırakır."
-
-#~ msgid "Disabled"
-#~ msgstr "Devre Dışı"
-
-#~ msgid "Enabled"
-#~ msgstr "Etkin"
-
-#~ msgid "Select memory card for Port %u / Slot %u"
-#~ msgstr "%u / %u port ve slotu için bir hazıfa kartı seçin"
-
-#~ msgid "New card will be saved to:"
-#~ msgstr "Yeni hafıza kartının kaydedileceği yer:"
-
-#~ msgid "memory card creation error"
-#~ msgstr "hafıza kartı oluşturma hatası"
-
-#~ msgid "Mount"
-#~ msgstr "Oluştur"
-
-#~ msgid "Mounts the selected memory card, so that games can see it again."
-#~ msgstr "Seçili hafıza kartını etkinleştirir."
-
-#~ msgid "Status"
-#~ msgstr "Durum"
-
-#~ msgid "Size"
-#~ msgstr "Boyut"
-
-#~ msgid "Missing"
-#~ msgstr "Kayıp"
-
-#~ msgid "N/A"
-#~ msgstr "Hiçbiri"
-
-#~ msgid "Backup existing Savestate when creating a new one"
-#~ msgstr "Yeni bir Kayıt dosyası oluşturulurken eskisini yedekle"
-
-#~ msgid "Print CDVD Info"
-#~ msgstr "CDVD bilgisini yazdır"
-
-#~ msgid "Use exclusive fullscreen mode (if available)"
-#~ msgstr "Tam ekran işlemci önceliğini kullan"
-
-#~ msgid "Slot"
-#~ msgstr "Slot"
 
 #~ msgid "&Back >"
 #~ msgstr "&Geri >"

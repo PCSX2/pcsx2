@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
+"POT-Creation-Date: 2011-04-06 18:25+0200\n"
 "PO-Revision-Date: 2011-03-04 03:40+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -40,27 +40,27 @@ msgstr "當等候圖形插件開啟時，多執行緒圖形模式的執行緒停
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "初始化內部記憶卡插件失敗。"
 
-#: pcsx2/gui/AppConfig.cpp:813
+#: pcsx2/gui/AppConfig.cpp:815
 msgid "Safest"
 msgstr "最安全"
 
-#: pcsx2/gui/AppConfig.cpp:814
+#: pcsx2/gui/AppConfig.cpp:816
 msgid "Safe (faster)"
 msgstr "安全（速度更快）"
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:817
 msgid "Balanced"
 msgstr "平衡"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Aggressive"
 msgstr "激進"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Aggressive plus"
 msgstr "更加激進"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Mostly Harmful"
 msgstr "基本上有害"
 
@@ -163,33 +163,33 @@ msgid "!ContextTip:DirPicker:UseDefault"
 msgstr ""
 "當勾選時，此資料夾將會自動反映與 PCSX2 當前的使用者設定所關聯的預設值。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:53
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
 msgid "!ContextTip:Window:Vsync"
 msgstr ""
 "垂直同步消除遊戲畫面出現斷層（Screen tearing），但是效能大幅損失。\n"
 "通常僅用於全螢幕模式，恐怕不是在所有的圖形插件中都能工作。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 #, fuzzy
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
 "垂直同步消除遊戲畫面出現斷層（Screen tearing），但是效能大幅損失。\n"
 "通常僅用於全螢幕模式，恐怕不是在所有的圖形插件中都能工作。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:66
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
 msgstr ""
 "當勾選時，強行令滑鼠指標在遊戲視窗中不可見；\n"
 "對於使用滑鼠作為遊戲中主要的控制裝置，是有用的。\n"
 "預設，滑鼠指標在 2 秒非活動之後自動隱藏。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:72
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid "!ContextTip:Window:Fullscreen"
 msgstr ""
 "當開始或恢復模擬時，自動切換至全螢幕模式。\n"
 "您仍能使用 Alt + Enter，在視窗模式和全螢幕模式之間隨時切換。"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:94
 msgid "!ContextTip:Window:HideGS"
 msgstr ""
 "當按 ESC 或透過選單「檔案 -> 暫停遊戲」暫停模擬器的模擬時，\n"
