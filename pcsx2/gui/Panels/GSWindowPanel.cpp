@@ -113,9 +113,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	s_AspectRatio += Label(_("Custom Window Size:"))| pxMiddle;
 	s_AspectRatio += s_customsize					| pxAlignRight;
 
-	// 0.9.8: This new text came after the string freeze.
-	//s_AspectRatio	+= Label(_("Zoom:"))			| StdExpand();
-	s_AspectRatio	+= Label( L"Zoom:" )			| StdExpand();
+	s_AspectRatio	+= Label(_("Zoom:"))			| StdExpand();
 	s_AspectRatio	+= m_text_Zoom;
 
 
