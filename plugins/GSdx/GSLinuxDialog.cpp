@@ -48,6 +48,7 @@ bool RunLinuxDialog()
 	GtkWidget *render_label, *render_combo_box;
 	GtkWidget *interlace_label, *interlace_combo_box;
 	GtkWidget *aspect_label, *aspect_combo_box;
+	GtkWidget *swthreads_label, *swthreads_text;
 	GtkWidget *filter_check, *logz_check, *paltex_check, *fba_check, *aa_check, *win_check;
 	int return_value;
 
@@ -71,6 +72,7 @@ bool RunLinuxDialog()
 	gtk_combo_box_append_text(GTK_COMBO_BOX(res_combo_box), "640x480@60");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(res_combo_box), "800x600@60");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(res_combo_box), "1024x768@60");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(res_combo_box), "1280x960@60");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(res_combo_box), "And a few other values like that.");
 
 	// Or whatever the default value is.
@@ -131,9 +133,20 @@ bool RunLinuxDialog()
 		gtk_combo_box_append_text(GTK_COMBO_BOX(aspect_combo_box), label.c_str());
 	}
 
+
 	gtk_combo_box_set_active(GTK_COMBO_BOX(aspect_combo_box), 0);
 	gtk_container_add(GTK_CONTAINER(main_box), aspect_label);
 	gtk_container_add(GTK_CONTAINER(main_box), aspect_combo_box);
+
+	swthreads_label = gtk_label_new("Software renderer threads:");
+	swthreads_text = gtk_entry_new();
+	char buf[5];
+	sprintf(buf, "%d", theApp.GetConfig("swthreads", 1));
+
+	gtk_entry_set_text(GTK_ENTRY(swthreads_text), buf);
+	gtk_container_add(GTK_CONTAINER(main_box), swthreads_label);
+	gtk_container_add(GTK_CONTAINER(main_box), swthreads_text);
+
 
 
 	filter_check = gtk_check_button_new_with_label("Texture Filtering");
@@ -180,6 +193,19 @@ bool RunLinuxDialog()
 		if (gtk_combo_box_get_active(GTK_COMBO_BOX(aspect_combo_box)) != -1)
 			aspect = gtk_combo_box_get_active(GTK_COMBO_BOX(aspect_combo_box));
 		#endif
+		if (gtk_combo_box_get_active(GTK_COMBO_BOX(res_combo_box)) != -1) {
+			int resolution = gtk_combo_box_get_active(GTK_COMBO_BOX(res_combo_box));
+			switch (resolution) {
+				case 0: theApp.SetConfig("w", 640); theApp.SetConfig("h", 480); break;
+				case 1: theApp.SetConfig("w", 800); theApp.SetConfig("h", 600); break;
+				case 2: theApp.SetConfig("w", 1024); theApp.SetConfig("h", 768); break;
+				case 3: theApp.SetConfig("w", 1280); theApp.SetConfig("h", 960); break;
+				default: theApp.SetConfig("w", 640); theApp.SetConfig("h", 480);
+			}
+
+		}
+
+		theApp.SetConfig("swthreads", atoi((char*)gtk_entry_get_text(GTK_ENTRY(swthreads_text))) );
 
         theApp.SetConfig("filter", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(filter_check)));
         theApp.SetConfig("logz", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(logz_check)));
