@@ -1,9 +1,14 @@
+# This is a translation file for Portuguese (Brazil), or pt_BR.
+# Copyright (C) 2011 PCSX2_Dev_Team
+# This file is distributed under the same license as the PCSX2 package.
+# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-01 20:15+0200\n"
-"PO-Revision-Date: 2011-03-28 00:48-0300\n"
+"POT-Creation-Date: 2011-04-07 12:30+0200\n"
+"PO-Revision-Date: 2011-04-01 21:11-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -12,12 +17,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: trunk\\\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "X-Poedit-Language: Portuguese\n"
 "X-Poedit-Country: BRAZIL\n"
-"X-Poedit-SearchPath-0: common\n"
-"X-Poedit-SearchPath-1: pcsx2\n"
 
 #: common/src/Utilities/Exceptions.cpp:254
 msgid "!Notice:VirtualMemoryMap"

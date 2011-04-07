@@ -1,9 +1,14 @@
+# This is a translation file for Portuguese (Brazil), or pt_BR.
+# Copyright (C) 2011 PCSX2_Dev_Team
+# This file is distributed under the same license as the PCSX2 package.
+# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-06 18:25+0200\n"
-"PO-Revision-Date: 2011-03-28 00:48-0300\n"
+"POT-Creation-Date: 2011-04-07 12:30+0200\n"
+"PO-Revision-Date: 2011-04-01 21:14-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -12,12 +17,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: trunk\\\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "X-Poedit-Language: Portuguese\n"
 "X-Poedit-Country: BRAZIL\n"
-"X-Poedit-SearchPath-0: common\n"
-"X-Poedit-SearchPath-1: pcsx2\n"
 
 #: common/include/Utilities/Exceptions.h:226
 msgid "Parse error"
@@ -83,9 +85,8 @@ msgid "Waiting for task..."
 msgstr "Esperando por tarefa..."
 
 #: pcsx2/CDVD/IsoFileFormats.cpp:416
-#, fuzzy
 msgid "Unrecognized ISO image file format"
-msgstr "Formato de arquivo ISO não reconhecido."
+msgstr "Formato de arquivo de imagem ISO não reconhecido."
 
 #: pcsx2/Elfheader.cpp:266
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
@@ -181,7 +182,7 @@ msgstr ""
 
 #: pcsx2/System.h:206 pcsx2/System.h:207 pcsx2/System.h:208
 msgid "PCSX2 Message"
-msgstr ""
+msgstr "Mensagem PCSX2"
 
 #: pcsx2/ZipTools/thread_gzip.cpp:82
 msgid ""
@@ -1755,12 +1756,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid "Ignore DMAC writes when it is busy."
-msgstr ""
+msgstr "Ignorar alterações no DMAC quando estiver ocupado."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:102
-#, fuzzy
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "Taxa de Ciclo EE [Não Recomendado]"
+msgstr "Habilitar correções de jogos manual [Não Recomendado]"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:111
 msgid ""
@@ -2331,9 +2331,8 @@ msgstr ""
 "provavelmente criado por uma edição mais nova do PCSX2."
 
 #: pcsx2/gui/SysState.cpp:326
-#, fuzzy
 msgid "There is no active virtual machine state to download or save."
-msgstr "Salva o estado da máquina virtual para o slot atual."
+msgstr "Não há estado de máquina virtual ativo para baixar ou salvar"
 
 #: pcsx2/gui/SysState.cpp:520
 msgid ""
