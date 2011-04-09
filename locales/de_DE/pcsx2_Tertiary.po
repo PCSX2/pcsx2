@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-06 18:25+0200\n"
-"PO-Revision-Date: 2011-03-14 19:41+0100\n"
+"POT-Creation-Date: 2011-04-09 10:54+0200\n"
+"PO-Revision-Date: 2011-04-09 01:48+0100\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
 "Language: \n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxEt;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: C:\\new trunk!\n"
+"X-Poedit-Basepath: ..\\..\\\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -197,9 +197,8 @@ msgid "!ContextTip:Gamefixes:OPH Flag hack"
 msgstr "Veraltet"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:89
-#, fuzzy
 msgid "!ContextTip:Gamefixes:DMA Busy hack"
-msgstr "Veraltet"
+msgstr "!ContextTip:Gamefixes:DMA Busy hack"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "!ContextTip:Folders:Savestates"
@@ -314,6 +313,9 @@ msgid "!ContextTip:GS:DisableOutput"
 msgstr ""
 "Entfernt störende Faktoren von der Grafikkarte oder Treiberproblemen. Nur "
 "für PCSX2 Benchmarks interressant."
+
+#~ msgid "!ContextTip:Window:Zoom"
+#~ msgstr "!ContextTip:Window:Zoom"
 
 #~ msgid "!ContextTip:Speedhacks:vuMinMax"
 #~ msgstr "Funktioniert nicht mit Gran Turismo 4 oder Tekken 5."
