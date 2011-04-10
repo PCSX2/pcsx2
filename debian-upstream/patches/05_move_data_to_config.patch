@@ -1,8 +1,8 @@
-Index: pcsx2-3369/pcsx2/gui/AppConfig.cpp
+Index: pcsx2-0.9.8/pcsx2/gui/AppConfig.cpp
 ===================================================================
---- pcsx2-3369.orig/pcsx2/gui/AppConfig.cpp
-+++ pcsx2-3369/pcsx2/gui/AppConfig.cpp
-@@ -125,7 +125,12 @@
+--- pcsx2-0.9.8.orig/pcsx2/gui/AppConfig.cpp	2011-04-10 16:10:07.000000000 +0200
++++ pcsx2-0.9.8/pcsx2/gui/AppConfig.cpp	2011-04-10 16:12:23.000000000 +0200
+@@ -133,7 +133,12 @@
  	{
  		switch( mode )
  		{
@@ -12,6 +12,6 @@ Index: pcsx2-3369/pcsx2/gui/AppConfig.cpp
 +#else
  			case DocsFolder_User:	return (wxDirName)Path::Combine( wxStandardPaths::Get().GetDocumentsDir(), pxGetAppName() );
 +#endif
- 			//case DocsFolder_CWD:	return (wxDirName)wxGetCwd();
  			case DocsFolder_Custom: return CustomDocumentsFolder;
  
+ 			jNO_DEFAULT
