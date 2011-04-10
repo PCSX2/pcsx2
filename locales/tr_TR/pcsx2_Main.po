@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-09 10:54+0200\n"
-"PO-Revision-Date: 2011-04-08 19:53+0200\n"
+"POT-Creation-Date: 2011-04-10 17:03+0200\n"
+"PO-Revision-Date: 2011-04-09 16:40+0200\n"
 "Last-Translator: PyramidHead <atiamar@hotmail.com>\n"
 "Language-Team: Ceyhun Özgöç (PyramidHead) <atiamar@hotmail.com>\n"
 "Language: \n"
@@ -1627,7 +1627,7 @@ msgstr "Özel Pencere Boyutu:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:116
 msgid "Zoom:"
-msgstr ""
+msgstr "Yakınlaştırma:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:197
 msgid ""

@@ -1672,7 +1672,7 @@ msgstr "Tamanho de Janela Personalizada:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:116
 msgid "Zoom:"
-msgstr ""
+msgstr "Zoom:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:197
 msgid ""
