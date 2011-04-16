@@ -2,17 +2,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-06 18:25+0200\n"
-"PO-Revision-Date: 2011-03-04 03:40+0800\n"
+"POT-Creation-Date: 2011-04-15 19:09+0200\n"
+"PO-Revision-Date: 2011-04-14 14:19+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-KeywordsList: pxEt\n"
+"X-Poedit-KeywordsList: _t;pxLt;pxEt\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: F:\\PCSX2_0.9.7_GUI_翻譯\\SRC_4378\\\n"
+"X-Poedit-Basepath: F:\\PCSX2_0.9.7_GUI_翻譯\\SRC_0.9.8_branch_4565\\\n"
 "X-Poedit-Language: Chinese\n"
 "X-Poedit-Country: TAIWAN\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -40,27 +40,27 @@ msgstr "當等候圖形插件開啟時，多執行緒圖形模式的執行緒停
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "初始化內部記憶卡插件失敗。"
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Safest"
 msgstr "最安全"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Safe (faster)"
 msgstr "安全（速度更快）"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Balanced"
 msgstr "平衡"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:821
 msgid "Aggressive"
 msgstr "激進"
 
-#: pcsx2/gui/AppConfig.cpp:819
+#: pcsx2/gui/AppConfig.cpp:822
 msgid "Aggressive plus"
 msgstr "更加激進"
 
-#: pcsx2/gui/AppConfig.cpp:820
+#: pcsx2/gui/AppConfig.cpp:823
 msgid "Mostly Harmful"
 msgstr "基本上有害"
 
@@ -170,11 +170,14 @@ msgstr ""
 "通常僅用於全螢幕模式，恐怕不是在所有的圖形插件中都能工作。"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:69
-#, fuzzy
 msgid "!ContextTip:Window:ManagedVsync"
 msgstr ""
-"垂直同步消除遊戲畫面出現斷層（Screen tearing），但是效能大幅損失。\n"
-"通常僅用於全螢幕模式，恐怕不是在所有的圖形插件中都能工作。"
+"當擁有正常的遊戲速度時，開啟垂直同步。\n"
+"若達不到正常的遊戲速度，就關閉垂直同步以避免遊戲速度進一步下降。\n"
+"注意：僅用於 GSdx 的 Renderer 設定為 Direct3D10/11 (Hardware)。\n"
+"任何其他的圖形插件或 GSdx 的 Renderer 設定將會忽略本選項，\n"
+"或在切換垂直同步時，出現閃爍的黑色框架。\n"
+"本選項也要求開啟顯示卡的垂直同步。"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid "!ContextTip:Window:HideMouse"
@@ -212,13 +215,10 @@ msgstr ""
 " * 巫術（Wizardry）"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:89
-#, fuzzy
 msgid "!ContextTip:Gamefixes:DMA Busy hack"
 msgstr ""
 "已知影響下列遊戲：\n"
-" * 死神刀刃戰士（Bleach Blade Battler）\n"
-" * 夢幻騎士（Growlancer）II 和 III\n"
-" * 巫術（Wizardry）"
+" * Mana Khemia 1 離開校園（Off Campus）"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "!ContextTip:Folders:Savestates"
@@ -376,13 +376,13 @@ msgstr ""
 "警告：這個選項在遊戲運行時啟用即可生效，但無法在遊戲運行時停用（圖像變得垃"
 "圾）。"
 
-#~ msgid "!ContextTip:Speedhacks:vuMinMax"
-#~ msgstr ""
-#~ "使用 SSE 的 Min/Max 浮點操作，取代自訂邏輯 Min/Max 例行程序。\n"
-#~ "已知令 Gran Turismo 4（GT4）和 Tekken 5（鐵拳 5）遊戲不正常。"
-
 #~ msgid "!ContextTip:Window:FullscreenExclusive"
 #~ msgstr ""
 #~ "可能在 CRT 螢幕上，畫面看起來更好；可能在老舊的顯示卡中，速度稍微快一"
 #~ "些。\n"
 #~ "但會導致當視窗模式和全螢幕模式之間切換時，記憶體洩漏或模擬器隨機當掉。"
+
+#~ msgid "!ContextTip:Speedhacks:vuMinMax"
+#~ msgstr ""
+#~ "使用 SSE 的 Min/Max 浮點操作，取代自訂邏輯 Min/Max 例行程序。\n"
+#~ "已知令 Gran Turismo 4（GT4）和 Tekken 5（鐵拳 5）遊戲不正常。"

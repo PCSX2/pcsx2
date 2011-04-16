@@ -2,17 +2,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-06 18:25+0200\n"
-"PO-Revision-Date: 2011-03-02 03:50+0800\n"
+"POT-Creation-Date: 2011-04-15 19:09+0200\n"
+"PO-Revision-Date: 2011-04-14 15:51+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-KeywordsList: _;wxLt\n"
+"X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: F:\\PCSX2_0.9.7_GUI_翻譯\\SRC_4378\\\n"
+"X-Poedit-Basepath: F:\\PCSX2_0.9.7_GUI_翻譯\\SRC_0.9.8_branch_4565\\\n"
 "X-Poedit-Language: Chinese\n"
 "X-Poedit-Country: TAIWAN\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -76,9 +76,8 @@ msgid "Waiting for task..."
 msgstr "等待任務完成..."
 
 #: pcsx2/CDVD/IsoFileFormats.cpp:416
-#, fuzzy
 msgid "Unrecognized ISO image file format"
-msgstr "無法辨識的 ISO 檔案格式。"
+msgstr "無法辨識的 ISO 映像檔格式。"
 
 #: pcsx2/Elfheader.cpp:266
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
@@ -160,7 +159,7 @@ msgstr "無法讀取即時存檔，檔案版本未知或不支援。"
 
 #: pcsx2/System.h:206 pcsx2/System.h:207 pcsx2/System.h:208
 msgid "PCSX2 Message"
-msgstr ""
+msgstr "PCSX2 訊息"
 
 #: pcsx2/ZipTools/thread_gzip.cpp:82
 msgid ""
@@ -168,7 +167,7 @@ msgid ""
 "successfully but could not be moved to its final resting place."
 msgstr "即時存檔未能正確地儲存。成功建立暫存檔，但是無法將其移至目的地。"
 
-#: pcsx2/gui/AppConfig.cpp:977 pcsx2/gui/AppConfig.cpp:983
+#: pcsx2/gui/AppConfig.cpp:980 pcsx2/gui/AppConfig.cpp:986
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "覆寫現存的設定檔失敗；沒有權限。"
 
@@ -364,7 +363,7 @@ msgstr "家"
 
 #: pcsx2/gui/AppInit.cpp:695
 msgid "Show about dialog"
-msgstr ""
+msgstr "顯示關於視窗"
 
 #: pcsx2/gui/AppMain.cpp:79
 msgid ""
@@ -522,11 +521,11 @@ msgstr "顯示 PCSX2 開發人員日誌"
 
 #: pcsx2/gui/ConsoleLogger.cpp:440
 msgid "CDVD reads"
-msgstr ""
+msgstr "光碟讀取"
 
 #: pcsx2/gui/ConsoleLogger.cpp:440
 msgid "Shows disk read activity"
-msgstr ""
+msgstr "顯示光碟讀取日誌"
 
 #: pcsx2/gui/ConsoleLogger.cpp:457
 msgid "Enable all"
@@ -558,34 +557,32 @@ msgid "About %s"
 msgstr "關於 %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-#, fuzzy
 msgid "Betatesting"
-msgstr "設定檔的位置"
+msgstr "測試人員"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Previous versions"
-msgstr ""
+msgstr "早期版本的開發人員"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
 msgid "Webmasters"
-msgstr ""
+msgstr "網站管理員"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
-#, fuzzy
 msgid "Plugin Specialists"
-msgstr "插件的搜尋路徑："
+msgstr "插件作者"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Special thanks to"
-msgstr ""
+msgstr "特別感謝"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
 msgid "Developers"
-msgstr ""
+msgstr "開發人員"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
 msgid "Contributors"
-msgstr ""
+msgstr "有貢獻的人"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "A Playstation 2 Emulator"
@@ -601,7 +598,7 @@ msgstr "PCSX2 官方 SVN 檔案庫位於 Googlecode"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
-msgstr ""
+msgstr "我已經看得足夠多"
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
 msgid "Assertion Failure - "
@@ -646,9 +643,8 @@ msgid "Reset"
 msgstr "重新啟動遊戲"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:40
-#, fuzzy
 msgid "Create a new memory card"
-msgstr "新增記憶卡"
+msgstr "建立一個新的記憶卡"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:59
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:74
@@ -657,34 +653,29 @@ msgid "Create"
 msgstr "新增"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:71
-#, fuzzy
 msgid "New memory card:"
-msgstr "新增記憶卡"
+msgstr "新記憶卡："
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
-#, fuzzy
 msgid "At folder:    "
-msgstr "自訂資料夾："
+msgstr "位於資料夾：    "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:75
-#, fuzzy
 msgid "Select file name: "
-msgstr "選擇視覺主題："
+msgstr "給記憶卡取名： "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:149
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:855
 #, c-format
 msgid "Error (%s)"
-msgstr ""
+msgstr "錯誤（%s）"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:150
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:164
-#, fuzzy
 msgid "Create memory card"
 msgstr "新增記憶卡"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
-#, fuzzy
 msgid "Error: The memory card could not be created."
 msgstr "錯誤：無法新增記憶卡。"
 
@@ -795,13 +786,16 @@ msgstr "管理記憶卡"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:112
 msgid "Drag cards to or from PS2-ports"
-msgstr ""
+msgstr "可以用滑鼠拖曳列表中的記憶卡，完成某些操作。"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:113
 msgid ""
 "\n"
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
+"\n"
+"注意：建立副本、重新命名、新增、刪除，這些操作一旦完成，就無法使用【取消】按"
+"鈕復原。"
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -892,49 +886,47 @@ msgstr "按【終止】立即終止 %s。"
 msgid "Terminate App"
 msgstr "終止"
 
-#: pcsx2/gui/FrameForGS.cpp:276
+#: pcsx2/gui/FrameForGS.cpp:294
 msgid "GS Output is Disabled!"
 msgstr "畫面輸出被停用！"
 
-#: pcsx2/gui/GlobalCommands.cpp:322 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:381 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
 msgstr "即時存檔"
 
-#: pcsx2/gui/GlobalCommands.cpp:323
+#: pcsx2/gui/GlobalCommands.cpp:382
 msgid "Saves the virtual machine state to the current slot."
 msgstr "將虛擬機狀態儲存到當前的即時存檔插槽。"
 
-#: pcsx2/gui/GlobalCommands.cpp:328 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:387 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
 msgstr "即時讀檔"
 
-#: pcsx2/gui/GlobalCommands.cpp:329
+#: pcsx2/gui/GlobalCommands.cpp:388
 msgid "Loads a virtual machine state from the current slot."
 msgstr "從當前的即時存檔插槽讀取虛擬機狀態。"
 
-#: pcsx2/gui/GlobalCommands.cpp:334
-#, fuzzy
+#: pcsx2/gui/GlobalCommands.cpp:393
 msgid "Load State Backup"
-msgstr "即時讀檔"
+msgstr "讀取狀態備份"
 
-#: pcsx2/gui/GlobalCommands.cpp:335
-#, fuzzy
+#: pcsx2/gui/GlobalCommands.cpp:394
 msgid "Loads virtual machine state backup for current slot."
-msgstr "從當前的即時存檔插槽讀取虛擬機狀態。"
+msgstr "當前的即時存檔插槽讀取虛擬機狀態備份。"
 
-#: pcsx2/gui/GlobalCommands.cpp:340
+#: pcsx2/gui/GlobalCommands.cpp:399
 msgid "Cycle to next slot"
 msgstr "循環至下一個即時存檔插槽"
 
-#: pcsx2/gui/GlobalCommands.cpp:341
+#: pcsx2/gui/GlobalCommands.cpp:400
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "將當前的即時存檔插槽以 +1 的式樣循環！"
 
-#: pcsx2/gui/GlobalCommands.cpp:346
+#: pcsx2/gui/GlobalCommands.cpp:405
 msgid "Cycle to prev slot"
 msgstr "循環至上一個即時存檔插槽"
 
-#: pcsx2/gui/GlobalCommands.cpp:347
+#: pcsx2/gui/GlobalCommands.cpp:406
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "將當前的即時存檔插槽以 -1 的式樣循環！"
 
@@ -973,9 +965,8 @@ msgid "Slot %d"
 msgstr "插槽 %d"
 
 #: pcsx2/gui/MainFrame.cpp:44 pcsx2/gui/Saveslots.cpp:150
-#, fuzzy
 msgid "Backup"
-msgstr "上一步"
+msgstr "備份"
 
 #: pcsx2/gui/MainFrame.cpp:322
 msgid "Show Console"
@@ -1034,16 +1025,15 @@ msgstr "為了直接執行原始的 PS2 二進位檔案"
 
 #: pcsx2/gui/MainFrame.cpp:414
 msgid "Backup before save"
-msgstr ""
+msgstr "自動備份即時存檔"
 
 #: pcsx2/gui/MainFrame.cpp:419
-#, fuzzy
 msgid "Automatic Gamefixes"
-msgstr "遊戲修正"
+msgstr "自動使用遊戲修正"
 
 #: pcsx2/gui/MainFrame.cpp:420
 msgid "Automatically applies needed Gamefixes to known problematic games"
-msgstr ""
+msgstr "自動套用所需的遊戲修正給已知有問題的遊戲"
 
 #: pcsx2/gui/MainFrame.cpp:422
 msgid "Enable Cheats"
@@ -1169,7 +1159,7 @@ msgstr "日誌"
 
 #: pcsx2/gui/MainFrame.cpp:583
 msgid "Pause"
-msgstr ""
+msgstr "暫停遊戲"
 
 #: pcsx2/gui/MainFrame.cpp:584
 msgid "Safely pauses emulation and preserves the PS2 state."
@@ -1184,7 +1174,6 @@ msgid "Resumes the suspended emulation state."
 msgstr "從暫停的模擬器狀態中恢復遊戲"
 
 #: pcsx2/gui/MainFrame.cpp:596
-#, fuzzy
 msgid "Pause/Resume"
 msgstr "暫停 / 繼續"
 
@@ -1346,46 +1335,46 @@ msgstr ""
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:183
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Could not create a memory card: \n"
 "\n"
 "%s\n"
 "\n"
 msgstr ""
-"無法新增記憶卡檔案：\n"
+"無法新增記憶卡：\n"
 "\n"
 "%s\n"
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:201
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Access denied to memory card: \n"
 "\n"
 "%s\n"
 "\n"
 msgstr ""
-"拒絕存取記憶卡檔案：\n"
+"拒絕存取記憶卡：\n"
 "\n"
 "%s\n"
 "\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:525
 msgid "File name empty or too short"
-msgstr ""
+msgstr "檔案名稱是空的或太短"
 
 #: pcsx2/gui/MemoryCardFile.cpp:530
 msgid "File name outside of required directory"
-msgstr ""
+msgstr "檔案名稱在所要求的資料夾之外"
 
 #: pcsx2/gui/MemoryCardFile.cpp:536
 msgid "File name already exists"
-msgstr ""
+msgstr "檔案名稱已經存在"
 
 #: pcsx2/gui/MemoryCardFile.cpp:543
 msgid "The Operating-System prevents this file from being created"
-msgstr ""
+msgstr "作業系統阻止建立這個檔案"
 
 #: pcsx2/gui/Panels/BaseApplicableConfigPanel.cpp:103
 msgid "Cannot apply settings..."
@@ -1573,7 +1562,6 @@ msgid "Always hide mouse cursor"
 msgstr "總是隱藏滑鼠指標"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:48
-#, fuzzy
 msgid "Hide window when paused"
 msgstr "模擬器暫停時隱藏遊戲視窗"
 
@@ -1582,16 +1570,14 @@ msgid "Default to fullscreen mode on open"
 msgstr "預設以全螢幕模式進入遊戲"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
-#, fuzzy
 msgid "Wait for Vsync on refresh"
 msgstr "重新整理時等待垂直同步"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
-msgstr ""
+msgstr "視遊戲速度而定，隨時開啟或關閉垂直同步（閱讀工具提示！）"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:52
-#, fuzzy
 msgid "Double-click toggles fullscreen mode"
 msgstr "滑鼠雙擊遊戲畫面切換全螢幕模式和視窗模式"
 
@@ -1605,7 +1591,7 @@ msgstr "自訂視窗大小："
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:116
 msgid "Zoom:"
-msgstr ""
+msgstr "畫面縮放（以百分數表示）："
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:197
 msgid ""
@@ -1684,11 +1670,12 @@ msgstr ""
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid "Ignore DMAC writes when it is busy."
 msgstr ""
+"當 DMAC 忙碌時忽略其寫入 - 修正 Mana Khemia 1 離開校園進入大地圖時（Off "
+"Campus）遊戲畫面全黑"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:102
-#, fuzzy
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "EE Cyclerate【不推薦】"
+msgstr "手動設定遊戲修正【不推薦】"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:111
 msgid ""
@@ -1720,76 +1707,64 @@ msgstr "選擇含有 PS2 記憶卡的資料夾"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:448
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:533
 msgid "Eject"
-msgstr ""
+msgstr "退出"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:449
 msgid "Duplicate ..."
-msgstr ""
+msgstr "建立副本"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:450
-#, fuzzy
 msgid "Rename ..."
-msgstr "遷移檔案"
+msgstr "重新命名"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:451
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:515
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:542
-#, fuzzy
 msgid "Create ..."
 msgstr "新增"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
 msgid "Card: "
-msgstr ""
+msgstr "記憶卡： "
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:516
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:549
-#, fuzzy
 msgid "Create a new memory card."
-msgstr "新增記憶卡"
+msgstr "建立一個新的記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:529
-#, fuzzy
 msgid "Rename this memory card ..."
-msgstr ""
-"拒絕存取記憶卡檔案：\n"
-"\n"
-"%s\n"
-"\n"
+msgstr "重新命名所選擇的記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:533
 msgid "Insert ..."
-msgstr ""
+msgstr "插入"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:534
 msgid "Eject the card from this port"
-msgstr ""
+msgstr "退出所選擇的記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:534
 msgid "Insert this card to a port ..."
-msgstr ""
+msgstr "將所選擇的記憶卡插入記憶卡插口"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:538
-#, fuzzy
 msgid "Create a duplicate of this memory card ..."
-msgstr "新增記憶卡"
+msgstr "建立所選記憶卡的副本"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:542
 msgid "Delete"
 msgstr "刪除"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:545
-#, fuzzy
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr "刪除所選擇的記憶卡（失去所有遊戲存檔）"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:547
-#, fuzzy
 msgid "Create a new memory card and assign it to this Port."
-msgstr "於空插槽新增一個新的記憶卡。"
+msgstr "建立一個新的記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:726
-#, fuzzy
 msgid "Delete memory file?"
 msgstr "刪除記憶卡？"
 
@@ -1797,24 +1772,25 @@ msgstr "刪除記憶卡？"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:762
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:783
-#, fuzzy
 msgid "Duplicate memory card"
-msgstr "刪除記憶卡？"
+msgstr "建立記憶卡的副本"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:750
 msgid "Failed: Can only duplicate an existing card."
-msgstr ""
+msgstr "失敗：僅能給已經存在的記憶卡建立副本。"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:769
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
+"取一個名字給副本記憶卡\n"
+"（.ps2 副檔名會被自動添加）"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:782
 #, c-format
 msgid "Failed: %s"
-msgstr ""
+msgstr "失敗：%s"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:808
 msgid "Copy failed!"
@@ -1823,11 +1799,11 @@ msgstr "複製失敗！"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr ""
+msgstr "記憶卡『 %s 』的副本是『 %s 』"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:820
 msgid "Success"
-msgstr ""
+msgstr "成功"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:841
 #, c-format
@@ -1835,102 +1811,94 @@ msgid ""
 "Select a new name for the memory card '%s'\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
+"取一個新名字給記憶卡『 %s 』\n"
+"（.ps2 副檔名會被自動添加）"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:844
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:856
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
-#, fuzzy
 msgid "Rename memory card"
-msgstr "刪除記憶卡？"
+msgstr "重新命名記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:872
-#, fuzzy
 msgid "Error: Rename could not be completed.\n"
-msgstr "錯誤：無法新增記憶卡。"
+msgstr "錯誤：重新命名無法完成。\n"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:962
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:139
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
-msgstr ""
+msgstr "插口-%u / 手把擴充器-%u--插口-1"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:140
-#, fuzzy, c-format
+#, c-format
 msgid "             Multitap-%u--Port-%u"
-msgstr "在手把插槽 %u 啟用手把擴充器"
+msgstr "             手把擴充器-%u--插口-%u"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:988
 msgid "Empty"
-msgstr ""
+msgstr "空插口"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:994
-#, fuzzy, c-format
+#, c-format
 msgid "Select a target port for '%s'"
-msgstr "選擇 %s 的檔案根目錄"
+msgstr "選擇一個記憶卡插口用來插入記憶卡『 %s 』"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:995
 msgid "Insert card"
-msgstr ""
+msgstr "插入記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
 msgid "Eject card"
-msgstr ""
+msgstr "退出記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1055
-#, fuzzy
 msgid "Insert card ..."
-msgstr "遷移檔案"
+msgstr "插入記憶卡插口"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1056
 msgid "Duplicate card ..."
-msgstr ""
+msgstr "建立記憶卡的副本"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1057
-#, fuzzy
 msgid "Rename card ..."
-msgstr "遷移檔案"
+msgstr "重新命名記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1058
-#, fuzzy
 msgid "Delete card"
-msgstr "刪除記憶卡？"
+msgstr "刪除記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1061
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1065
-#, fuzzy
 msgid "Create a new card ..."
-msgstr "新增"
+msgstr "新增記憶卡"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1069
 msgid "Refresh List"
 msgstr "重新載入列表"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:105
-#, fuzzy
 msgid "PS2 Port"
-msgstr "位置："
+msgstr "記憶卡插口"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:107
-#, fuzzy
 msgid "Card (file) name"
 msgstr "檔案名稱"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:108
 msgid "Card size"
-msgstr ""
+msgstr "大小"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:109
 msgid "Formatted"
 msgstr "已格式化"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:110
-#, fuzzy
 msgid "Last Modified"
 msgstr "修改日期"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:111
-#, fuzzy
 msgid "Created on"
 msgstr "建立日期"
 
@@ -1944,11 +1912,11 @@ msgstr "是"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:169
 msgid "[-- Unused cards --]"
-msgstr ""
+msgstr "[-- 未使用的記憶卡 --]"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:171
 msgid "[-- No unused cards --]"
-msgstr ""
+msgstr "[-- 沒有未使用的記憶卡 --]"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:33
 msgid "Usermode Selection"
@@ -2046,7 +2014,7 @@ msgstr "按下【瀏覽】按鈕選擇不同的資料夾"
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:481
 #, c-format
 msgid "Please select a valid plugin for the %s."
-msgstr ""
+msgstr "請選擇一個有效的【%s】插件。"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:519
 #, c-format
@@ -2264,9 +2232,8 @@ msgstr ""
 "PCSX2 建立。"
 
 #: pcsx2/gui/SysState.cpp:326
-#, fuzzy
 msgid "There is no active virtual machine state to download or save."
-msgstr "將虛擬機狀態儲存到當前的即時存檔插槽。"
+msgstr "沒有活動中的虛擬機狀態以下載或儲存。"
 
 #: pcsx2/gui/SysState.cpp:520
 msgid ""
@@ -2318,11 +2285,37 @@ msgstr "%s 指令集未找到。microVU 要求 CPU 支援 MMX、SSE、SSE2。"
 #~ msgid "ISO mounting failed: PCSX2 is unable to identify the ISO image type."
 #~ msgstr "掛載光碟映像檔失敗：PCSX2 無法確認光碟映像檔的類型。"
 
+#~ msgid "Select memory card for Port %u / Slot %u"
+#~ msgstr "選擇用在手把插槽 %u / 插槽 %u 的記憶卡"
+
+#~ msgid "New card will be saved to:"
+#~ msgstr "新記憶卡將會儲存在："
+
+#~ msgid "memory card creation error"
+#~ msgstr "新增記憶卡時出現錯誤"
+
+#~ msgid "Backup existing Savestate when creating a new one"
+#~ msgstr "當建立一個新的即時存檔時，備份現有的即時存檔"
+
+#~ msgid "Enable Multitap on Port %u"
+#~ msgstr "在手把插槽 %u 啟用手把擴充器"
+
+#~ msgid ""
+#~ "Drag items over other items in the list to swap or copy memory cards."
+#~ msgstr ""
+#~ "在記憶卡列表中，將一個記憶卡拖曳到其他記憶卡的上面，以更換或複製記憶卡。"
+
+#~ msgid "Other..."
+#~ msgstr "其他..."
+
 #~ msgid "Enable Patches"
 #~ msgstr "啟用補丁"
 
 #~ msgid "Patches (unimplemented)"
 #~ msgstr "補丁（未實現）"
+
+#~ msgid "Print CDVD Info"
+#~ msgstr "在主控台顯示光碟讀取日誌"
 
 #~ msgid "Open Debug Window..."
 #~ msgstr "開啟偵錯視窗"
@@ -2330,8 +2323,88 @@ msgstr "%s 指令集未找到。microVU 要求 CPU 支援 MMX、SSE、SSE2。"
 #~ msgid "Memory Dump..."
 #~ msgstr "記憶體轉存"
 
+#~ msgid "Suspend"
+#~ msgstr "暫停遊戲"
+
+#~ msgid "Suspend/Resume"
+#~ msgstr "暫停 / 繼續"
+
+#~ msgid "Hide window on suspend"
+#~ msgstr "模擬器暫停時隱藏遊戲視窗"
+
+#~ msgid "Wait for vsync on refresh"
+#~ msgstr "重新整理時等待垂直同步"
+
+#~ msgid "Double-click Toggles Full-Screen mode"
+#~ msgstr "滑鼠雙擊遊戲畫面切換全螢幕模式和視窗模式"
+
+#~ msgid "Use exclusive fullscreen mode (if available)"
+#~ msgstr "使用全螢幕獨占模式（若可用）"
+
 #~ msgid "Enable game fixes"
 #~ msgstr "啟用遊戲修正"
+
+#~ msgid "Overwrite memory card?"
+#~ msgstr "覆寫記憶卡？"
+
+#~ msgid "Mount"
+#~ msgstr "掛載"
+
+#~ msgid "Deletes the existing memory card from disk (all contents are lost)."
+#~ msgstr "刪除所選擇的記憶卡（失去所有遊戲存檔）"
+
+#~ msgid "Creates a new memory card in the empty slot."
+#~ msgstr "於空插口建立一個新的記憶卡。"
+
+#~ msgid "Disable"
+#~ msgstr "停用"
+
+#~ msgid "Enable"
+#~ msgstr "啟用"
+
+#~ msgid ""
+#~ "Disables the selected memory card, so that it will not be seen by games "
+#~ "or BIOS."
+#~ msgstr "停用所選擇的記憶卡，遊戲或 BIOS 中就看不到該記憶卡。"
+
+#~ msgid "Mounts the selected memory card, so that games can see it again."
+#~ msgstr "掛載所選擇的記憶卡，遊戲中能夠再次看到該記憶卡。"
+
+#~ msgid "Create new..."
+#~ msgstr "新增"
+
+#~ msgid "Relocate file..."
+#~ msgstr "遷移檔案"
+
+#~ msgid "Slot"
+#~ msgstr "插口"
+
+#~ msgid "Status"
+#~ msgstr "狀態"
+
+#~ msgid "Size"
+#~ msgstr "大小"
+
+#~ msgid "Modified"
+#~ msgstr "修改日期"
+
+#~ msgid "Created"
+#~ msgstr "建立日期"
+
+#~ msgid "Filename"
+#~ msgstr "檔案名稱"
+
+#~ msgid "Disabled"
+#~ msgstr "已停用"
+
+#~ msgid "Enabled"
+#~ msgstr "已啟用"
+
+#~ msgid "Missing"
+#~ msgstr "不存在"
+
+#~ msgid "N/A"
+#~ msgstr "N/A"
 
 #~ msgid "mVU Min/Max Hack"
 #~ msgstr "mVU Min/Max Hack"
@@ -2343,100 +2416,6 @@ msgstr "%s 指令集未找到。microVU 要求 CPU 支援 MMX、SSE、SSE2。"
 #~ "速度少量提升；可能導致遊戲畫面全黑、\n"
 #~ "圖像變得垃圾、有尖刺的多邊形，等等...\n"
 #~ "【不推薦】"
-
-#, fuzzy
-#~ msgid "Use Multitap on Port %u"
-#~ msgstr "在手把插槽 %u 啟用手把擴充器"
-
-#, fuzzy
-#~ msgid "Drag card files in the list to swap or copy between ports."
-#~ msgstr ""
-#~ "在記憶卡列表中，將一個記憶卡拖曳到其他記憶卡的上面，以更換或複製記憶卡。"
-
-#~ msgid "Other..."
-#~ msgstr "其他..."
-
-#~ msgid "Suspend"
-#~ msgstr "暫停遊戲"
-
-#, fuzzy
-#~ msgid "Copy memory card file"
-#~ msgstr "新增記憶卡"
-
-#, fuzzy
-#~ msgid "Copy canceled"
-#~ msgstr "複製失敗！"
-
-#, fuzzy
-#~ msgid "Overwrite memory card file?"
-#~ msgstr "覆寫記憶卡？"
-
-#, fuzzy
-#~ msgid "Create card file"
-#~ msgstr "新增資料夾？"
-
-#, fuzzy
-#~ msgid "Enable port"
-#~ msgstr "啟用"
-
-#, fuzzy
-#~ msgid "Disable Port"
-#~ msgstr "停用"
-
-#, fuzzy
-#~ msgid "Enable Port"
-#~ msgstr "啟用補丁"
-
-#, fuzzy
-#~ msgid ""
-#~ "Disable the selected PS2-Port (this memory card will be invisible to "
-#~ "games/BIOS)."
-#~ msgstr "停用所選擇的記憶卡，遊戲或 BIOS 中就看不到該記憶卡。"
-
-#~ msgid "Disabled"
-#~ msgstr "已停用"
-
-#~ msgid "Enabled"
-#~ msgstr "已啟用"
-
-#~ msgid "Select memory card for Port %u / Slot %u"
-#~ msgstr "選擇用在手把插槽 %u / 插槽 %u 的記憶卡"
-
-#~ msgid "New card will be saved to:"
-#~ msgstr "新記憶卡將會儲存在："
-
-#~ msgid "memory card creation error"
-#~ msgstr "新增記憶卡時出現錯誤"
-
-#~ msgid "Mount"
-#~ msgstr "掛載"
-
-#~ msgid "Mounts the selected memory card, so that games can see it again."
-#~ msgstr "掛載所選擇的記憶卡，遊戲中能夠再次看到該記憶卡。"
-
-#~ msgid "Status"
-#~ msgstr "狀態"
-
-#~ msgid "Size"
-#~ msgstr "大小"
-
-#~ msgid "Missing"
-#~ msgstr "不存在"
-
-#~ msgid "N/A"
-#~ msgstr "N/A"
-
-#~ msgid "Backup existing Savestate when creating a new one"
-#~ msgstr "當建立一個新的即時存檔時，備份現有的即時存檔"
-
-#~ msgid "Print CDVD Info"
-#~ msgstr "在主控台顯示光碟讀取日誌"
-
-#~ msgid "Use exclusive fullscreen mode (if available)"
-#~ msgstr "使用全螢幕獨占模式（若可用）"
-
-#~ msgid "Slot"
-#~ msgstr "插口"
 
 #~ msgid "&Back >"
 #~ msgstr "上一步 >"
