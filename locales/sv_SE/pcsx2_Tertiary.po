@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.8\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-07 12:07+0200\n"
+"POT-Creation-Date: 2011-04-15 19:09+0200\n"
 "PO-Revision-Date: 2011-04-06 19:24+0100\n"
 "Last-Translator: Georg Ronnert <pgert@yahoo.se>\n"
 "Language-Team: \n"
@@ -45,27 +45,27 @@ msgid "Internal Memorycard Plugin failed to initialize."
 msgstr ""
 "Det interna minneskorts-insticksprogrammet misslyckades att initialiseras."
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Safest"
 msgstr "Säkrast"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Safe (faster)"
 msgstr "Säkert (snabare)"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Balanced"
 msgstr "Balanserat"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:821
 msgid "Aggressive"
 msgstr "Aggressivt"
 
-#: pcsx2/gui/AppConfig.cpp:819
+#: pcsx2/gui/AppConfig.cpp:822
 msgid "Aggressive plus"
 msgstr "Aggressivt plus"
 
-#: pcsx2/gui/AppConfig.cpp:820
+#: pcsx2/gui/AppConfig.cpp:823
 msgid "Mostly Harmful"
 msgstr "Mest Skadligt"
 

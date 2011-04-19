@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-06 18:25+0200\n"
+"POT-Creation-Date: 2011-04-15 19:09+0200\n"
 "PO-Revision-Date: 2011-01-01 17:48+0300\n"
 "Last-Translator: Kein <kein-of@yandex.ru>\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
@@ -191,7 +191,7 @@ msgstr ""
 "вполне успешно, но по каким-то причинам он не может быть перемещен в пункт "
 "назначения."
 
-#: pcsx2/gui/AppConfig.cpp:977 pcsx2/gui/AppConfig.cpp:983
+#: pcsx2/gui/AppConfig.cpp:980 pcsx2/gui/AppConfig.cpp:986
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "Ошибка прав доступа при перезаписи текущего файла настроек."
 
@@ -947,49 +947,49 @@ msgstr "Нажмите \"Закрыть\" для завершения работ
 msgid "Terminate App"
 msgstr "Закрыть"
 
-#: pcsx2/gui/FrameForGS.cpp:276
+#: pcsx2/gui/FrameForGS.cpp:294
 msgid "GS Output is Disabled!"
 msgstr "Вывод видеоданных отключен!"
 
-#: pcsx2/gui/GlobalCommands.cpp:322 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:381 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
 msgstr "Быстрое сохранение"
 
-#: pcsx2/gui/GlobalCommands.cpp:323
+#: pcsx2/gui/GlobalCommands.cpp:382
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Создает быстрое сохранение ассоциированное с данным слотом."
 
-#: pcsx2/gui/GlobalCommands.cpp:328 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:387 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
 msgstr "Быстрая загрузка"
 
-#: pcsx2/gui/GlobalCommands.cpp:329
+#: pcsx2/gui/GlobalCommands.cpp:388
 msgid "Loads a virtual machine state from the current slot."
 msgstr "Загружает быстрое сохранение ассоциированное с данным слотом."
 
-#: pcsx2/gui/GlobalCommands.cpp:334
+#: pcsx2/gui/GlobalCommands.cpp:393
 #, fuzzy
 msgid "Load State Backup"
 msgstr "Быстрая загрузка"
 
-#: pcsx2/gui/GlobalCommands.cpp:335
+#: pcsx2/gui/GlobalCommands.cpp:394
 #, fuzzy
 msgid "Loads virtual machine state backup for current slot."
 msgstr "Загружает быстрое сохранение ассоциированное с данным слотом."
 
-#: pcsx2/gui/GlobalCommands.cpp:340
+#: pcsx2/gui/GlobalCommands.cpp:399
 msgid "Cycle to next slot"
 msgstr "Переключиться на следующий слот."
 
-#: pcsx2/gui/GlobalCommands.cpp:341
+#: pcsx2/gui/GlobalCommands.cpp:400
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:346
+#: pcsx2/gui/GlobalCommands.cpp:405
 msgid "Cycle to prev slot"
 msgstr "Переключиться на предыдущий слот."
 
-#: pcsx2/gui/GlobalCommands.cpp:347
+#: pcsx2/gui/GlobalCommands.cpp:406
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr ""
 

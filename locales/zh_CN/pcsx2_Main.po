@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-07 12:14+0200\n"
+"POT-Creation-Date: 2011-04-15 19:09+0200\n"
 "PO-Revision-Date: 2011-04-07 13:27+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
@@ -171,7 +171,7 @@ msgid ""
 "successfully but could not be moved to its final resting place."
 msgstr "即时存档未正确保存。临时文件建立成功但无法移至存档位置。"
 
-#: pcsx2/gui/AppConfig.cpp:977 pcsx2/gui/AppConfig.cpp:983
+#: pcsx2/gui/AppConfig.cpp:980 pcsx2/gui/AppConfig.cpp:986
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "覆盖已存在文件失败；权限被拒绝。"
 
@@ -888,47 +888,47 @@ msgstr "单击终止可立即结束 %s。"
 msgid "Terminate App"
 msgstr "终止应用程序"
 
-#: pcsx2/gui/FrameForGS.cpp:276
+#: pcsx2/gui/FrameForGS.cpp:294
 msgid "GS Output is Disabled!"
 msgstr "GS 输出已禁用!"
 
-#: pcsx2/gui/GlobalCommands.cpp:322 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:381 pcsx2/gui/MainFrame.cpp:412
 msgid "Save state"
 msgstr "即时存档"
 
-#: pcsx2/gui/GlobalCommands.cpp:323
+#: pcsx2/gui/GlobalCommands.cpp:382
 msgid "Saves the virtual machine state to the current slot."
 msgstr "将虚拟机的状态保存至当前存档位置。"
 
-#: pcsx2/gui/GlobalCommands.cpp:328 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:387 pcsx2/gui/MainFrame.cpp:411
 msgid "Load state"
 msgstr "即时读档"
 
-#: pcsx2/gui/GlobalCommands.cpp:329
+#: pcsx2/gui/GlobalCommands.cpp:388
 msgid "Loads a virtual machine state from the current slot."
 msgstr "从当前存档位置读取虚拟机状态。"
 
-#: pcsx2/gui/GlobalCommands.cpp:334
+#: pcsx2/gui/GlobalCommands.cpp:393
 msgid "Load State Backup"
 msgstr "读取即时存档备份"
 
-#: pcsx2/gui/GlobalCommands.cpp:335
+#: pcsx2/gui/GlobalCommands.cpp:394
 msgid "Loads virtual machine state backup for current slot."
 msgstr "从当前存档位置读取虚拟机状态的备份。"
 
-#: pcsx2/gui/GlobalCommands.cpp:340
+#: pcsx2/gui/GlobalCommands.cpp:399
 msgid "Cycle to next slot"
 msgstr "切换至下一位置"
 
-#: pcsx2/gui/GlobalCommands.cpp:341
+#: pcsx2/gui/GlobalCommands.cpp:400
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "切换至下一位置。"
 
-#: pcsx2/gui/GlobalCommands.cpp:346
+#: pcsx2/gui/GlobalCommands.cpp:405
 msgid "Cycle to prev slot"
 msgstr "切换至上一位置"
 
-#: pcsx2/gui/GlobalCommands.cpp:347
+#: pcsx2/gui/GlobalCommands.cpp:406
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "切换至上一位置。"
 

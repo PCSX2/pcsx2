@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.8\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-07 12:30+0200\n"
+"POT-Creation-Date: 2011-04-15 19:09+0200\n"
 "PO-Revision-Date: 2011-04-01 23:01-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
@@ -46,27 +46,27 @@ msgstr "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir.
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Plug-in de  Cartão de Memória interno falhou em inicializar."
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Safest"
 msgstr "Mais seguro"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Safe (faster)"
 msgstr "Seguro (+ rápido)"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Balanced"
 msgstr "Balanceado"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:821
 msgid "Aggressive"
 msgstr "Agressivo"
 
-#: pcsx2/gui/AppConfig.cpp:819
+#: pcsx2/gui/AppConfig.cpp:822
 msgid "Aggressive plus"
 msgstr "Agressivo plus"
 
-#: pcsx2/gui/AppConfig.cpp:820
+#: pcsx2/gui/AppConfig.cpp:823
 msgid "Mostly Harmful"
 msgstr "Prejudicial"
 

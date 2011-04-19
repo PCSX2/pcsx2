@@ -2,12 +2,12 @@
 # Copyright (C) 2002-2011 PCSX2_Dev_Team
 # This file is distributed under the same license as the PCSX2 package.
 # Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2011.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-07 12:06+0200\n"
+"POT-Creation-Date: 2011-04-15 19:09+0200\n"
 "PO-Revision-Date: 2011-04-01 22:20+0100\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
@@ -47,27 +47,27 @@ msgstr ""
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Vnitřní zásuvný modul Paměťové Karty nelze spustit."
 
-#: pcsx2/gui/AppConfig.cpp:815
+#: pcsx2/gui/AppConfig.cpp:818
 msgid "Safest"
 msgstr "Nejbezpečnější"
 
-#: pcsx2/gui/AppConfig.cpp:816
+#: pcsx2/gui/AppConfig.cpp:819
 msgid "Safe (faster)"
 msgstr "Bezpečné (rychlejší)"
 
-#: pcsx2/gui/AppConfig.cpp:817
+#: pcsx2/gui/AppConfig.cpp:820
 msgid "Balanced"
 msgstr "Vyrovnaný"
 
-#: pcsx2/gui/AppConfig.cpp:818
+#: pcsx2/gui/AppConfig.cpp:821
 msgid "Aggressive"
 msgstr "Agresivní"
 
-#: pcsx2/gui/AppConfig.cpp:819
+#: pcsx2/gui/AppConfig.cpp:822
 msgid "Aggressive plus"
 msgstr "Agresivní plus"
 
-#: pcsx2/gui/AppConfig.cpp:820
+#: pcsx2/gui/AppConfig.cpp:823
 msgid "Mostly Harmful"
 msgstr "Většinou Škodlivý"
 
