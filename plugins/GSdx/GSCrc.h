@@ -52,6 +52,8 @@ public:
 		OnePieceGrandBattle,
 		ICO,
 		GT4,
+		GT3,
+		GTConcept,
 		WildArms5,
 		WildArms4,
 		Manhunt2,
@@ -86,6 +88,11 @@ public:
 		TenchuFS,
 		Sly3,
 		Sly2,
+		DemonStone,
+		BigMuthaTruckers,
+		TimeSplitters2,
+		ReZ,
+		LordOfTheRingsTwoTowers,
 		TitleCount,
 	};
 

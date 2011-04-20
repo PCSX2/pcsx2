@@ -2096,6 +2096,32 @@ bool GSC_GT4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_GT3(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP >= 0x02de0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180) && fi.TPSM == PSM_PSMT8)
+		{
+			skip = 770;
+		}
+	}
+
+	return true;
+}
+
+bool GSC_GTConcept(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP >= 0x03420 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01400) && fi.TPSM == PSM_PSMT8)
+		{
+			skip = 880;
+		}
+	}
+	
+	return true;
+}
+
 bool GSC_WildArms4(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2153,23 +2179,23 @@ bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00a00) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00a00) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x008c0 || fi.TBP0 == 0x00a00) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
 		{
 			return false; // allowed
 		}
 
-		if(fi.TME && fi.FBP == 0x02200 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01400 && fi.TPSM == PSM_PSMZ24)
+		if(fi.TME && (fi.FBP == 0x01e40 || fi.FBP == 0x02200)  && fi.FPSM == PSM_PSMZ24 && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.TPSM == PSM_PSMZ24)
 		{
-			skip = 41;
+			skip = 42;
 		}
 	}
 	else
 	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00a00) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03c00 && fi.TPSM == PSM_PSMCT32)
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03c00 && fi.TPSM == PSM_PSMCT32)
 		{
 			skip = 0;
 		}
-		else if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00a00))
+		else if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00))
 		{
 			skip = 0;
 		}
@@ -2238,9 +2264,13 @@ bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x02ea0 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		if(fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
 		{
 			skip = 95;
+		}
+		else if(fi.TME && (fi.FBP == 0x02bc0 || fi.FBP == 0x02be0) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 2;
 		}
 	}
 
@@ -2424,6 +2454,14 @@ bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
+		/*if(fi.TME && (fi.FBP == 0x018c0 || fi.FBP == 0x02180) && fi.FPSM == fi.TPSM && fi.TBP0 >= 0x03200 && fi.TPSM == PSM_PSMCT32)	//NTSC only, !(fi.TBP0 == 0x03580 || fi.TBP0 == 0x03960)
+		{
+			skip = 1;	//red garbage in lost forest, removes other effects...
+		}
+		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
+		{
+			skip = 1;	//garbage in cutscenes, doesn't remove completely, better use "Alpha Hack"
+		}*/
 		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
 			skip = 1000; //
@@ -2537,6 +2575,7 @@ bool GSC_Sly3(const GSFrameInfo& fi, int& skip)
 			skip = 3;
 		}
 	}
+
 	return true;
 }
 
@@ -2544,7 +2583,7 @@ bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME &&  (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00800) &&  fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
+		if(fi.TME &&  (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00800) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
 			skip = 1000;
 		}
@@ -2554,6 +2593,89 @@ bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
 			skip = 3;
+		}
+	}
+	
+	return true;
+}
+
+bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 1000;
+		}
+	}
+	else
+	{
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
+		{
+			skip = 2;
+		}
+	}
+	
+	return true;
+}
+
+bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00a00) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 3;
+		}
+	}
+	
+	return true;
+}
+
+bool GSC_TimeSplitters2(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0FF000000)
+		{
+			skip = 1;
+		}
+	}
+	
+	return true;
+}
+
+bool GSC_ReZ(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1; 
+		}
+	}
+
+	return true;
+}
+
+bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && (fi.FBP == 0x01180 || fi.FBP == 0x01400) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 1000;//shadows
+		}
+		else if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.TBP0 == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
+		{
+			skip = 3;	//wall of fog
+		}
+	}
+	else
+	{
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.FPSM == PSM_PSMCT32)
+		{
+			skip = 2;
 		}
 	}
 	
@@ -2593,6 +2715,8 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
 		map[CRC::ICO] = GSC_ICO;
 		map[CRC::GT4] = GSC_GT4;
+		map[CRC::GT3] = GSC_GT3;
+		map[CRC::GTConcept] = GSC_GTConcept;
 		map[CRC::WildArms4] = GSC_WildArms4;
 		map[CRC::WildArms5] = GSC_WildArms5;
 		map[CRC::Manhunt2] = GSC_Manhunt2;
@@ -2619,6 +2743,11 @@ bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
 		map[CRC::TenchuFS] = GSC_TenchuFS;
 		map[CRC::Sly3] = GSC_Sly3;
 		map[CRC::Sly2] = GSC_Sly2;
+		map[CRC::DemonStone] = GSC_DemonStone;
+		map[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
+		map[CRC::TimeSplitters2] = GSC_TimeSplitters2;
+		map[CRC::ReZ] = GSC_ReZ;
+		map[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 	}
 
 	// TODO: just set gsc in SetGameCRC once

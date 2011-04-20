@@ -638,11 +638,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			// FIXME: timesplitters blurs the render target by blending itself over a couple of times
 			hack = true;
-			if(tw == 256 && th == 128 && (TEX0.TBP0 == 0 || TEX0.TBP0 == 0x00e00))
-			{
-				delete src;
-				return NULL;
-			}
+			//if(tw == 256 && th == 128 && (TEX0.TBP0 == 0 || TEX0.TBP0 == 0x00e00))
+			//{
+			//	delete src;
+			//	return NULL;
+			//}
 		}
 		// width/height conversion
 
