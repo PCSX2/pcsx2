@@ -56,10 +56,10 @@ Section "!${APP_NAME} (required)" SEC_CORE
     File /nonfatal /oname=gsdx-sse2-r${SVNREV_GSDX}.dll    ..\bin\Plugins\gsdx-sse2.dll
     File /nonfatal /oname=gsdx-ssse3-r${SVNREV_GSDX}.dll   ..\bin\Plugins\gsdx-ssse3.dll 
     File /nonfatal /oname=gsdx-sse4-r${SVNREV_GSDX}.dll    ..\bin\Plugins\gsdx-sse4.dll
-    File /nonfatal /oname=zerogs-r${SVNREV_ZEROGS}.dll     ..\bin\Plugins\zerogs.dll
+    ;File /nonfatal /oname=zerogs-r${SVNREV_ZEROGS}.dll     ..\bin\Plugins\zerogs.dll
   
     File /nonfatal /oname=spu2-x-r${SVNREV_SPU2X}.dll      ..\bin\Plugins\spu2-x.dll
-    File /nonfatal /oname=zerospu2-r${SVNREV_ZEROSPU2}.dll ..\bin\Plugins\zerospu2.dll
+    ;File /nonfatal /oname=zerospu2-r${SVNREV_ZEROSPU2}.dll ..\bin\Plugins\zerospu2.dll
   
     File /nonfatal /oname=cdvdiso-r${SVNREV_CDVDISO}.dll   ..\bin\Plugins\cdvdiso.dll
     File                                                   ..\bin\Plugins\cdvdGigaherz.dll
@@ -120,7 +120,7 @@ Section "Microsoft Visual C++ 2008 SP1 Redist (required)"  SEC_CRT2008
 
   Pop $R0 ;Get the return value
   StrCmp $R0 "success" OnSuccess
-  DetailPrint "Cound not contact Microsoft.com, or the file has been (re)moved!"
+  DetailPrint "Could not contact Microsoft.com, or the file has been (re)moved!"
   DetailPrint "Contacting Googlecode.com..."
   NSISdl::download /TIMEOUT=20000 "http://pcsx2.googlecode.com/files/vcredist_2008_sp1_x86.exe" "vcredist_2008_sp1_x86.exe"
 
@@ -171,7 +171,7 @@ Section "Microsoft Visual C++ 2010 Redist (required)" SEC_CRT2010
 
   Pop $R0 ;Get the return value
   StrCmp $R0 "success" OnSuccess
-  DetailPrint "Cound not contact Microsoft.com, or the file has been (re)moved!"
+  DetailPrint "Could not contact Microsoft.com, or the file has been (re)moved!"
   DetailPrint "Contacting Googlecode.com..."
   NSISdl::download /TIMEOUT=20000 "http://pcsx2.googlecode.com/files/vcredist_2010_x86.exe" "vcredist_2010_x86.exe"
 
@@ -218,13 +218,13 @@ Section "DirectX Web Setup (recommended)" SEC_DIRECTX
 
   ;Pop $R0 ;Get the return value
   ;StrCmp $R0 "success" OnSuccess
-  ;DetailPrint "Cound not contact Microsoft.com, or the file has been (re)moved!"
+  ;DetailPrint "Could not contact Microsoft.com, or the file has been (re)moved!"
   ;DetailPrint "Contacting Googlecode.com..."
   ;NSISdl::download /TIMEOUT=20000 "http://code.google.com/dxwebsetup01.exe" "dxwebsetup.exe"
 
   Pop $R0 ;Get the return value
   StrCmp $R0 "success" OnSuccess
-  DetailPrint "Cound not contact Microsoft.com, or the file has been (re)moved!"
+  DetailPrint "Could not contact Microsoft.com, or the file has been (re)moved!"
   MessageBox MB_OK "Could not download the DirectX Web Setup.  Microsoft probably rearranged their website.  Please do an internet search for 'DirectX Setup' and download and install it yourself after this installer has finished."
   Goto done
 
