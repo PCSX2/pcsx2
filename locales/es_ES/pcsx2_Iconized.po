@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-19 19:31+0200\n"
-"PO-Revision-Date: 2011-04-19 14:56+0100\n"
+"POT-Creation-Date: 2011-04-24 14:45+0200\n"
+"PO-Revision-Date: 2011-04-24 14:13+0100\n"
 "Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -17,7 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: trunk\\\n"
+"X-Poedit-Basepath: C:\\Program Files\\PCSX2 Tradu\\Volcado PCSX2 - Export"
+"\\Volcado PCSX2\n"
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: SPAIN\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -26,143 +27,274 @@ msgstr ""
 #: common/src/Utilities/Exceptions.cpp:254
 msgid "!Notice:VirtualMemoryMap"
 msgstr ""
+"No hay la suficiente memoria virtual disponible, o las asignaciones de "
+"memoria virtual necesarias ya las han reservado otros procesos, servicios o "
+"DLLs."
 
 #: pcsx2/CDVD/CDVD.cpp:385
 msgid "!Notice:PsxDisc"
 msgstr ""
+"PCSX2 no admite discos de juego de PlayStation 1.  Si quieres emular juegos "
+"de PSX tendrás que descargarte un emulador específico para PSX, como ePSXe o "
+"PCSX."
 
 #: pcsx2/System.cpp:114
 msgid "!Notice:Recompiler:VirtualMemoryAlloc"
 msgstr ""
+"Este recompilador no ha podido reservar la memoria contigua necesaria para "
+"las cachés internas.\n"
+"Este error lo peuden provocar una cantidad baja de recursos de memoria "
+"virtual, como un swapfile pequeño o desactivado, o cualquier otro programa "
+"que esté acumulando mucha memoria.  También puedes intentar reducir los "
+"tamaños de caché predeterminados para todos los recompiladores de PCSX2, "
+"encontrado en la Configuración del anfitrión."
 
 #: pcsx2/System.cpp:348
 msgid "!Notice:EmuCore::MemoryForVM"
 msgstr ""
+"PCSX no puede ubicar la memoria necesaria para la máquina virtual de PS2.\n"
+"Cierra cualquier programa en segundo plano que esté acumulando recursos y "
+"vuelve a intentarlo."
 
 #: pcsx2/gui/AppInit.cpp:43
 msgid "!Notice:Startup:NoSSE2"
 msgstr ""
+"Aviso: Tu ordenador no admite SSE2, que es necesario por la mayoría de "
+"recompiladores y plugins de PCSX2.\n"
+"Tus opciones estarán limitadas y la emulación será *muy* lenta."
 
 #: pcsx2/gui/AppInit.cpp:162
 msgid "!Notice:RecompilerInit:Header"
 msgstr ""
+"Aviso: Algunos de los recompiladores configurados de PS2 no se han iniciado "
+"y por lo tanto están desactivados:"
 
 #: pcsx2/gui/AppInit.cpp:211
 msgid "!Notice:RecompilerInit:Footer"
 msgstr ""
+"Nota: Los recompiladores no son necesarios para el funcionamiento de PCSX2, "
+"sin embargo suelen mejorar la velocidad de emulación sustancialmente.\n"
+"Tendrás que volver a activar manualmente los recompiladores indicados "
+"encima, si consigues arreglar los errores."
 
 #: pcsx2/gui/AppMain.cpp:538
 msgid "!Notice:BiosDumpRequired"
 msgstr ""
+"PCSX2 necesita una BIOS de PS2 para poder funcionar.  Por motivos legales, "
+"*debes* conseguir una BIOS de una consola PS2 real que poseas (no vale "
+"pedirla prestada).\n"
+"Consulta los FAQs y las guías para tener más información."
 
 #: pcsx2/gui/AppMain.cpp:621
 msgid "!Notice Error:Thread Deadlock Actions"
 msgstr ""
+"'Ignorar' para seguir esperando a que el hilo responda.\n"
+"'Cancelar' para intentar cancelar el hilo.\n"
+"'Terminar' para abandonar PCSX2 de inmediato."
 
 #: pcsx2/gui/AppUserMode.cpp:57
 msgid "!Notice:PortableModeRights"
 msgstr ""
+"Asegúrate de que estas carpetas son creadas y de que tu cuenta de usuario "
+"tiene los permisos para escribir en ellas; o vuelve a ejecutar PCSX2 con "
+"derechos superiores (de administrador), que debería dar a PCSX2 la capacidad "
+"de crear las carpetas necesarias por su cuenta. Si no tienes los permisos "
+"superiores en este ordenador, tendrás que cambiar al modo de Documentos del "
+"usuario (pulsa en el botón de abajo)."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:54
 msgid "!Panel:Folders:Settings"
 msgstr ""
+"Puedes especificar de forma opcional la ubicación de la configuración de "
+"PCSX2 aquí.  Si la ubicación ya contiene configuración de PCSX2, se te dará "
+"la opción de importarla o sobrescribirla."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:94
 msgid "!Wizard:Welcome"
 msgstr ""
+"Este asistente te guiará para configurar los plugins, tarjetas de memoria y "
+"BIOS.  Si es la primera vez que instalas %s se recomienda que mires el "
+"archivo léeme y la guía de configuración."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
 msgid "!Wizard:Bios:Tutorial"
 msgstr ""
+"PCSX2 necesita una copia *legal* de una BIOS de PS2 para poder ejecutar "
+"juegos.\n"
+"No puedes utilizar una copia que te haya pasado un amigo o descargada de "
+"internet.\n"
+"Debes volcar la BIOS desde tu *propia* consola PlayStation 2."
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:31
 msgid "!Notice:ImportExistingSettings"
 msgstr ""
+"Se ha encontrado configuración ya existente de %s en la carpeta\n"
+"de configuración asignada. ¿Quieres importar esta configuración o "
+"sobrescribirla\n"
+"con los ajustes predeterminados de %s?\n"
+"\n"
+"(o pulsa en Cancelar para seleccionar otra carpeta de configuración)"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:30
 msgid "!Panel:Mcd:NtfsCompress"
 msgstr ""
+"La compresión NTFS está integrada, es rápida y completamente fiable, y "
+"generalmente comprime bastante las tarjetas de memoria (esta opción es muy "
+"recomendada)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:41
 msgid "!Panel:Mcd:EnableEjection"
 msgstr ""
+"Evita que se dañe la tarjeta de memoria forzando a los juegos a rehacer el "
+"índice de los contenidos de la tarjeta tras cargar un guardado rápido.  "
+"Puede no ser compatible con todos los juegos (Guitar Hero)."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 msgid "!Panel:StuckThread:Heading"
 msgstr ""
+"El hilo '%s' no responde.  Podría haber dejado de funcionar, o simplemente "
+"se ejecute *muy* lentamente."
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
 msgid "!Notice:ConfirmSysReset"
 msgstr ""
+"Esta acción reiniciará el estado actual de la máquina virtual de PS2, y se "
+"perderán todos los progresos no guardados.  ¿Seguro que quieres continuar?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:106
 msgid "!Notice:DeleteSettings"
 msgstr ""
+"Esta opción elimina la configuración de %s y te permite volver a ejecutar\n"
+"el asistente inicial. Tendrás que reiniciar de forma manual %s tras esta "
+"operación.\n"
+"\n"
+"¡¡AVISO!!  Pulsa en Aceptar para borrar *TODA* la configuración de %s\n"
+"y forzar el cierre de la aplicación, perdiendo todo el progreso hecho en la "
+"emulación.\n"
+"¿Estás completamente seguro?\n"
+"\n"
+"(Nota: la configuración de los plugins no se verá afectada)"
 
 #: pcsx2/gui/MemoryCardFile.cpp:78
 msgid "!Notice:Mcd:HasBeenDisabled"
 msgstr ""
+"La ranura de PS2 %d ha sido desactivada automáticamente.  Puedes resolver el "
+"problema y volver a activarla en cualquier momento dirigiéndote a Ajustes -> "
+"Tarjetas de memoria en el menú principal."
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid "!Notice:BIOS:InvalidSelection"
 msgstr ""
+"Selecciona una BIOS válida.  Si no puedes seleccionar una opción válida, "
+"pulsa en Cancelar para cerrar el panel de configuración."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:111
 msgid "!Panel:EE/IOP:Heading"
 msgstr ""
+"Nota: La mayoría de los juegos funcionan bien con las opciones "
+"predeterminadas."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:178
 msgid "!Panel:VUs:Heading"
 msgstr ""
+"Nota: La mayoría de los juegos funcionan bien con las opciones "
+"predeterminadas."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:69
 msgid "!Notice:DirPicker:CreatePath"
-msgstr ""
+msgstr "La carpeta indicada no existe.  ¿Quieres crearla?"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:103
 msgid "!Panel:Gamefixes:Compat Warning"
 msgstr ""
+"Los arreglos para juegos son un arreglo temporal para poder emular algunos "
+"juegos.\n"
+"También pueden provocar problemas de compatibilidad o de rendimiento.\n"
+"\n"
+"Es mejor activar 'Arreglos para juegos automáticos' en el menú principal y "
+"dejar esta sección vacía.\n"
+"('Automático' significa: utilizar de forma selectiva arreglos ya probados "
+"para juegos concretos)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:720
 msgid "!Notice:Mcd:Delete"
 msgstr ""
+"Vas a eliminar la tarjeta de memoria formateada '%s'.\n"
+"¡Se perderán todos los datos de esta tarjeta!  ¿Estás total y completamente "
+"seguro?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:758
 msgid "!Notice:Mcd:CantDuplicate"
 msgstr ""
+"Sólo se permite duplicar a un puerto vacío de PS2 o al sistema de archivos."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
 msgid "!Notice:Mcd:Copy Failed"
-msgstr ""
+msgstr "Error: La tarjeta de memoria de destino '%s' está siendo utilizada."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:35
 msgid "!Panel:Usermode:Explained"
 msgstr ""
+"Selecciona tu ubicación preferida para los documentos de usuario de PCSX2:\n"
+"(incluye tarjetas de memoria, capturas de pantalla, configuración y "
+"guardados rápidos)\n"
+"Las carpetas seleccionadas pueden cambiarse en cualquier momento en el panel "
+"de ajustes generales."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:41
 msgid "!Panel:Usermode:Warning"
 msgstr ""
+"Puedes cambiar la ubicación preferida para los documentos de usuario de "
+"PCSX2 aquí:\n"
+"(incluye tarjetas de memoria, capturas de pantalla, configuración y "
+"guardados rápidos)\n"
+"Esta opción sólo afecta a las carpetas estándar, que se utilizarán según la "
+"configuración de instalación predeterminada."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
 msgid "!Notice:PluginSelector:ConfirmShutdown"
 msgstr ""
+"¡Aviso!  Cambiar de plugins necesita apagar y reiniciar por completo la "
+"máquina virtual de PS2.\n"
+"PCSX2 intentará hacer un guardado rápido y cargarlo, pero si los plugins "
+"cambiados no son compatibles la recuperación podría fallar, y se perderán "
+"los progresos no guardados.\n"
+"\n"
+"¿Seguro que quieres aplicar la configuración ahora?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:457
 msgid "!Notice:PluginSelector:ApplyFailed"
 msgstr ""
+"Todos los plugins deben tener una opción válida para que %s funcione.  Si no "
+"puedes hacer una selección válida porque te falten plugins o la instalación "
+"de %s esté incompleta, pulsa en Cancelar para cerrar el panel de "
+"configuración."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:97
 msgid "!Panel:Speedhacks:Overview"
 msgstr ""
+"Los arreglos de velocidad generalmente mejoran la velocidad de la emulación, "
+"pero pueden provocar fallos gráficos, sonido entrecortado, y falsas lecturas "
+"de FPS.  Si tienes problemas de emulación, empieza por desactivar este panel."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:223
 msgid "!Panel:Frameskip:Heading"
 msgstr ""
+"Aviso: Debido al diseño del hardware de PS2, es imposible hacer un salto de "
+"fotogramas preciso.\n"
+"Activarlo causará serios fallos visuales en varios juegos."
 
 #: pcsx2/vtlb.cpp:702
 msgid "!Notice:HostVmReserve"
 msgstr ""
+"Tu sistema tiene muy pocos recursos virtuales para que PCSX2 pueda "
+"funcionar.  Esto lo puede provocar tener un swapfile pequeño o desactivado, "
+"o que otros programas estén acumulando recursos."
 
 #: pcsx2/x86/sVU_zerorec.cpp:362
 msgid "!Notice:superVU:VirtualMemoryAlloc"
 msgstr ""
+"Sin memoria (algo parecido): El recompilador SuperVU no ha podido reservar "
+"los rangos de memoria concretos que son necesarios, y no podrá ser "
+"utilizado.  Este no es un error crítico, ya que el recompilador SuperVU es "
+"obsoleto, y deberías utilizar en su lugar microVU."

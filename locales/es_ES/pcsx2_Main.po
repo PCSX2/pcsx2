@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-19 19:30+0200\n"
-"PO-Revision-Date: 2011-04-19 14:56+0100\n"
+"POT-Creation-Date: 2011-04-24 14:45+0200\n"
+"PO-Revision-Date: 2011-04-24 14:14+0100\n"
 "Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -17,7 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: trunk\\\n"
+"X-Poedit-Basepath: C:\\Program Files\\PCSX2 Tradu\\Volcado PCSX2 - Export"
+"\\Volcado PCSX2\n"
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: SPAIN\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -947,43 +948,43 @@ msgstr "Abortar aplicación"
 msgid "GS Output is Disabled!"
 msgstr "¡Se ha desactivado la salida de GS!"
 
-#: pcsx2/gui/GlobalCommands.cpp:381 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:385 pcsx2/gui/MainFrame.cpp:414
 msgid "Save state"
 msgstr "Guardado rápido"
 
-#: pcsx2/gui/GlobalCommands.cpp:382
+#: pcsx2/gui/GlobalCommands.cpp:386
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Guarda el estado de la máquina virtual en el hueco actual."
 
-#: pcsx2/gui/GlobalCommands.cpp:387 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:391 pcsx2/gui/MainFrame.cpp:413
 msgid "Load state"
 msgstr "Carga rápida"
 
-#: pcsx2/gui/GlobalCommands.cpp:388
+#: pcsx2/gui/GlobalCommands.cpp:392
 msgid "Loads a virtual machine state from the current slot."
 msgstr "Carga un estado de la máquina virtual del hueco actual."
 
-#: pcsx2/gui/GlobalCommands.cpp:393
+#: pcsx2/gui/GlobalCommands.cpp:397
 msgid "Load State Backup"
 msgstr "Cargar copia del estado"
 
-#: pcsx2/gui/GlobalCommands.cpp:394
+#: pcsx2/gui/GlobalCommands.cpp:398
 msgid "Loads virtual machine state backup for current slot."
 msgstr "Carga la copia del estado de la máquina virtual del hueco actual."
 
-#: pcsx2/gui/GlobalCommands.cpp:399
+#: pcsx2/gui/GlobalCommands.cpp:403
 msgid "Cycle to next slot"
 msgstr "Pasar a hueco siguiente"
 
-#: pcsx2/gui/GlobalCommands.cpp:400
+#: pcsx2/gui/GlobalCommands.cpp:404
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "Cambia el hueco de guardado actual al siguiente puesto."
 
-#: pcsx2/gui/GlobalCommands.cpp:405
+#: pcsx2/gui/GlobalCommands.cpp:409
 msgid "Cycle to prev slot"
 msgstr "Pasar a hueco anterior"
 
-#: pcsx2/gui/GlobalCommands.cpp:406
+#: pcsx2/gui/GlobalCommands.cpp:410
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "Cambia el hueco de guardado actual al puesto anterior."
 
@@ -1000,7 +1001,7 @@ msgstr ""
 "Es un error soltar varios archivos en una ventana de %s.  Por favor, "
 "arrástralos de uno en uno."
 
-#: pcsx2/gui/IsoDropTarget.cpp:89 pcsx2/gui/MainMenuClicks.cpp:338
+#: pcsx2/gui/IsoDropTarget.cpp:89 pcsx2/gui/MainMenuClicks.cpp:342
 msgid "Confirm PS2 Reset"
 msgstr "Confirmar reinicio de PS2"
 
@@ -1027,279 +1028,279 @@ msgstr "Hueco %d"
 msgid "Backup"
 msgstr "Copia de seguridad"
 
-#: pcsx2/gui/MainFrame.cpp:322
+#: pcsx2/gui/MainFrame.cpp:324
 msgid "Show Console"
 msgstr "Mostrar consola"
 
-#: pcsx2/gui/MainFrame.cpp:323
+#: pcsx2/gui/MainFrame.cpp:325
 msgid "Console to Stdio"
 msgstr "Consola a Stdio"
 
-#: pcsx2/gui/MainFrame.cpp:336
+#: pcsx2/gui/MainFrame.cpp:338
 msgid "&System"
 msgstr "&Sistema"
 
-#: pcsx2/gui/MainFrame.cpp:337
+#: pcsx2/gui/MainFrame.cpp:339
 msgid "CD&VD"
 msgstr "CD&VD"
 
-#: pcsx2/gui/MainFrame.cpp:338
+#: pcsx2/gui/MainFrame.cpp:340
 msgid "&Config"
 msgstr "&Ajustes"
 
-#: pcsx2/gui/MainFrame.cpp:339
+#: pcsx2/gui/MainFrame.cpp:341
 msgid "&Misc"
 msgstr "&Otros"
 
-#: pcsx2/gui/MainFrame.cpp:341
+#: pcsx2/gui/MainFrame.cpp:343
 msgid "&Debug"
 msgstr "&Depuración"
 
-#: pcsx2/gui/MainFrame.cpp:353
+#: pcsx2/gui/MainFrame.cpp:355
 #, c-format
 msgid "%s  %d.%d.%d.%d%s (svn)  %s"
 msgstr "%s  %d.%d.%d.%d%s (svn)  %s"
 
-#: pcsx2/gui/MainFrame.cpp:359
+#: pcsx2/gui/MainFrame.cpp:361
 #, c-format
 msgid "%s  %d.%d.%d %s"
 msgstr "%s  %d.%d.%d %s"
 
-#: pcsx2/gui/MainFrame.cpp:360
+#: pcsx2/gui/MainFrame.cpp:362
 msgid "(modded)"
 msgstr "(modificado)"
 
-#: pcsx2/gui/MainFrame.cpp:397 pcsx2/gui/MainFrame.cpp:399
-#: pcsx2/gui/MainFrame.cpp:405
+#: pcsx2/gui/MainFrame.cpp:399 pcsx2/gui/MainFrame.cpp:401
+#: pcsx2/gui/MainFrame.cpp:407
 msgid "Initializing..."
 msgstr "Iniciando..."
 
-#: pcsx2/gui/MainFrame.cpp:401
+#: pcsx2/gui/MainFrame.cpp:403
 msgid "Run ELF..."
 msgstr "Ejecutar ELF..."
 
-#: pcsx2/gui/MainFrame.cpp:402
+#: pcsx2/gui/MainFrame.cpp:404
 msgid "For running raw PS2 binaries directly"
 msgstr "Para ejecutar directamente binarios de PS2"
 
-#: pcsx2/gui/MainFrame.cpp:414
+#: pcsx2/gui/MainFrame.cpp:416
 msgid "Backup before save"
 msgstr "Copia de seguridad antes de guardar"
 
-#: pcsx2/gui/MainFrame.cpp:419
+#: pcsx2/gui/MainFrame.cpp:421
 msgid "Automatic Gamefixes"
 msgstr "Arreglos para juegos automáticos"
 
-#: pcsx2/gui/MainFrame.cpp:420
+#: pcsx2/gui/MainFrame.cpp:422
 msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr ""
 "Aplica automáticamente los arreglos para juegos necesarios en juegos "
 "problemáticos conocidos"
 
-#: pcsx2/gui/MainFrame.cpp:422
+#: pcsx2/gui/MainFrame.cpp:424
 msgid "Enable Cheats"
 msgstr "Activar trampas"
 
-#: pcsx2/gui/MainFrame.cpp:425
+#: pcsx2/gui/MainFrame.cpp:427
 msgid "Enable Host Filesystem"
 msgstr "Activar sistema de archivos del host"
 
-#: pcsx2/gui/MainFrame.cpp:430
+#: pcsx2/gui/MainFrame.cpp:432
 msgid "Shutdown"
 msgstr "Apagar"
 
-#: pcsx2/gui/MainFrame.cpp:431
+#: pcsx2/gui/MainFrame.cpp:433
 msgid "Wipes all internal VM states and shuts down plugins."
 msgstr "Elimina todos los estados internos de la MV y desconecta los plugins."
 
-#: pcsx2/gui/MainFrame.cpp:433
+#: pcsx2/gui/MainFrame.cpp:435
 msgid "Exit"
 msgstr "Salir"
 
-#: pcsx2/gui/MainFrame.cpp:434
+#: pcsx2/gui/MainFrame.cpp:436
 #, c-format
 msgid "Closing %s may be hazardous to your health"
 msgstr "Cerrar %s podría ser peligroso para tu salud"
 
-#: pcsx2/gui/MainFrame.cpp:441
+#: pcsx2/gui/MainFrame.cpp:443
 msgid "Iso Selector"
 msgstr "Selector de Iso"
 
-#: pcsx2/gui/MainFrame.cpp:442
+#: pcsx2/gui/MainFrame.cpp:444
 msgid "Plugin Menu"
 msgstr "Menú de plugins"
 
-#: pcsx2/gui/MainFrame.cpp:445
+#: pcsx2/gui/MainFrame.cpp:447
 msgid "Iso"
 msgstr "Imagen Iso"
 
-#: pcsx2/gui/MainFrame.cpp:445
+#: pcsx2/gui/MainFrame.cpp:447
 msgid "Makes the specified ISO image the CDVD source."
 msgstr "Convierte a la imagen ISO seleccionada la fuente del CDVD."
 
-#: pcsx2/gui/MainFrame.cpp:446
+#: pcsx2/gui/MainFrame.cpp:448
 msgid "Plugin"
 msgstr "Plugin"
 
-#: pcsx2/gui/MainFrame.cpp:446
+#: pcsx2/gui/MainFrame.cpp:448
 msgid "Uses an external plugin as the CDVD source."
 msgstr "Utiliza un plugin externo como la fuente del CDVD."
 
-#: pcsx2/gui/MainFrame.cpp:447
+#: pcsx2/gui/MainFrame.cpp:449
 msgid "No disc"
 msgstr "Sin disco"
 
-#: pcsx2/gui/MainFrame.cpp:447
+#: pcsx2/gui/MainFrame.cpp:449
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
 msgstr ""
 "Utiliza esta opción para entrar en la configuración de la BIOS virtual de "
 "PS2."
 
-#: pcsx2/gui/MainFrame.cpp:455
+#: pcsx2/gui/MainFrame.cpp:457
 msgid "Emulation &Settings"
 msgstr "A&justes de emulación"
 
-#: pcsx2/gui/MainFrame.cpp:456
+#: pcsx2/gui/MainFrame.cpp:458
 msgid "&Memory cards"
 msgstr "Tarjetas de &memoria"
 
-#: pcsx2/gui/MainFrame.cpp:457
+#: pcsx2/gui/MainFrame.cpp:459
 msgid "&Plugin/BIOS Selector"
 msgstr "Selector de &Plugin/BIOS"
 
-#: pcsx2/gui/MainFrame.cpp:458 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
+#: pcsx2/gui/MainFrame.cpp:460 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
 msgid "Game Database Editor"
 msgstr "Editor de base de datos de juegos"
 
-#: pcsx2/gui/MainFrame.cpp:464
+#: pcsx2/gui/MainFrame.cpp:466
 msgid "&Video (GS)"
 msgstr "&Vídeo (GS)"
 
-#: pcsx2/gui/MainFrame.cpp:465
+#: pcsx2/gui/MainFrame.cpp:467
 msgid "&Audio (SPU2)"
 msgstr "&Sonido (SPU2)"
 
-#: pcsx2/gui/MainFrame.cpp:466
+#: pcsx2/gui/MainFrame.cpp:468
 msgid "&Controllers (PAD)"
 msgstr "&Mandos (PAD)"
 
-#: pcsx2/gui/MainFrame.cpp:467
+#: pcsx2/gui/MainFrame.cpp:469
 msgid "Dev9"
 msgstr "Dev9"
 
-#: pcsx2/gui/MainFrame.cpp:468
+#: pcsx2/gui/MainFrame.cpp:470
 msgid "USB"
 msgstr "USB"
 
-#: pcsx2/gui/MainFrame.cpp:469
+#: pcsx2/gui/MainFrame.cpp:471
 msgid "Firewire"
 msgstr "Firewire"
 
-#: pcsx2/gui/MainFrame.cpp:475
+#: pcsx2/gui/MainFrame.cpp:477
 msgid "Multitap 1"
 msgstr "Multitap 1"
 
-#: pcsx2/gui/MainFrame.cpp:476
+#: pcsx2/gui/MainFrame.cpp:478
 msgid "Multitap 2"
 msgstr "Multitap 2"
 
-#: pcsx2/gui/MainFrame.cpp:479
+#: pcsx2/gui/MainFrame.cpp:481
 msgid "Clear all settings..."
 msgstr "Borrar todos los ajustes..."
 
-#: pcsx2/gui/MainFrame.cpp:480
+#: pcsx2/gui/MainFrame.cpp:482
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "Borra todos los ajustes de %s y arranca el asistente inicial."
 
-#: pcsx2/gui/MainFrame.cpp:502
+#: pcsx2/gui/MainFrame.cpp:504
 msgid "About..."
 msgstr "Acerca de..."
 
-#: pcsx2/gui/MainFrame.cpp:506
+#: pcsx2/gui/MainFrame.cpp:508
 msgid "Logging..."
 msgstr "Registros..."
 
-#: pcsx2/gui/MainFrame.cpp:583
+#: pcsx2/gui/MainFrame.cpp:585
 msgid "Pause"
 msgstr "Pausar"
 
-#: pcsx2/gui/MainFrame.cpp:584
+#: pcsx2/gui/MainFrame.cpp:586
 msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "Pausa la emulación de forma segura y conserva el estado de PS2."
 
-#: pcsx2/gui/MainFrame.cpp:591
+#: pcsx2/gui/MainFrame.cpp:593
 msgid "Resume"
 msgstr "Reanudar"
 
-#: pcsx2/gui/MainFrame.cpp:592
+#: pcsx2/gui/MainFrame.cpp:594
 msgid "Resumes the suspended emulation state."
 msgstr "Reanuda el estado de emulación suspendido."
 
-#: pcsx2/gui/MainFrame.cpp:596
+#: pcsx2/gui/MainFrame.cpp:598
 msgid "Pause/Resume"
 msgstr "Pausar/Reanudar"
 
-#: pcsx2/gui/MainFrame.cpp:597
+#: pcsx2/gui/MainFrame.cpp:599
 msgid "No emulation state is active; cannot suspend or resume."
 msgstr ""
 "No hay un estado de emulación activo, no se puede suspender o reanudar."
 
-#: pcsx2/gui/MainFrame.cpp:606
+#: pcsx2/gui/MainFrame.cpp:608
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: pcsx2/gui/MainFrame.cpp:607
+#: pcsx2/gui/MainFrame.cpp:609
 msgid "Simulates hardware reset of the PS2 virtual machine."
 msgstr "Simula un reinicio por hardware de la máquina virtual de PS2."
 
-#: pcsx2/gui/MainFrame.cpp:612
+#: pcsx2/gui/MainFrame.cpp:614
 msgid "No emulation state is active; boot something first."
 msgstr "No hay un estado de emulación activo, antes debes ejecutar algo."
 
-#: pcsx2/gui/MainFrame.cpp:620
+#: pcsx2/gui/MainFrame.cpp:622
 msgid "Reboot CDVD (full)"
 msgstr "Reiniciar CDVD (completo)"
 
-#: pcsx2/gui/MainFrame.cpp:621
+#: pcsx2/gui/MainFrame.cpp:623
 msgid "Hard reset of the active VM."
 msgstr "Reinicio forzado de la MV activa."
 
-#: pcsx2/gui/MainFrame.cpp:625
+#: pcsx2/gui/MainFrame.cpp:627
 msgid "Boot CDVD (full)"
 msgstr "Iniciar CDVD (completo)"
 
-#: pcsx2/gui/MainFrame.cpp:626
+#: pcsx2/gui/MainFrame.cpp:628
 msgid "Boot the VM using the current DVD or Iso source media"
 msgstr ""
 "Ejecuta la MV utilizando como el DVD actual o la imagen ISO como fuente "
 "actual"
 
-#: pcsx2/gui/MainFrame.cpp:634
+#: pcsx2/gui/MainFrame.cpp:636
 msgid "Reboot CDVD (fast)"
 msgstr "Reiniciar CDVD (rápido)"
 
-#: pcsx2/gui/MainFrame.cpp:635
+#: pcsx2/gui/MainFrame.cpp:637
 msgid "Reboot using fast BOOT (skips splash screens)"
 msgstr "Reinicia utilizando el arranque rápido (salta las pantallas iniciales)"
 
-#: pcsx2/gui/MainFrame.cpp:639
+#: pcsx2/gui/MainFrame.cpp:641
 msgid "Boot CDVD (fast)"
 msgstr "Iniciar CDVD (rápido)"
 
-#: pcsx2/gui/MainFrame.cpp:640
+#: pcsx2/gui/MainFrame.cpp:642
 msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "Utiliza el inicio rápido para saltarte las pantallas de inicio de PS2."
 
-#: pcsx2/gui/MainFrame.cpp:701 pcsx2/gui/MainFrame.cpp:736
+#: pcsx2/gui/MainFrame.cpp:703 pcsx2/gui/MainFrame.cpp:738
 msgid "No plugin loaded"
 msgstr "No se ha cargado un plugin"
 
-#: pcsx2/gui/MainFrame.cpp:706
+#: pcsx2/gui/MainFrame.cpp:708
 msgid "Core GS Settings..."
 msgstr "Ajustes del núcleo GS..."
 
-#: pcsx2/gui/MainFrame.cpp:707
+#: pcsx2/gui/MainFrame.cpp:709
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
@@ -1307,19 +1308,19 @@ msgstr ""
 "Modifica los ajustes de emulación de hardware regulados por el núcleo de la "
 "máquina virtual de PCSX2."
 
-#: pcsx2/gui/MainFrame.cpp:709
+#: pcsx2/gui/MainFrame.cpp:711
 msgid "Window Settings..."
 msgstr "Ajustes de ventana..."
 
-#: pcsx2/gui/MainFrame.cpp:710
+#: pcsx2/gui/MainFrame.cpp:712
 msgid "Modify window and appearance options, including aspect ratio."
 msgstr "Modifica las opciones de ventana y aspecto, incluyendo su proporción."
 
-#: pcsx2/gui/MainFrame.cpp:717
+#: pcsx2/gui/MainFrame.cpp:719
 msgid "Plugin Settings..."
 msgstr "Ajustes del plugin..."
 
-#: pcsx2/gui/MainFrame.cpp:718
+#: pcsx2/gui/MainFrame.cpp:720
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
 msgstr "Abre la ventana de ajustes avanzados del plugin %s."
@@ -1338,61 +1339,61 @@ msgstr ""
 "¿Quieres cambiar de disco o iniciar la nueva imagen (mediante reinicio del "
 "sistema)?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:148 pcsx2/gui/MainMenuClicks.cpp:192
+#: pcsx2/gui/MainMenuClicks.cpp:148 pcsx2/gui/MainMenuClicks.cpp:194
 msgid "Swap Disc"
 msgstr "Cambiar de disco"
 
-#: pcsx2/gui/MainMenuClicks.cpp:182
+#: pcsx2/gui/MainMenuClicks.cpp:184
 msgid "Confirm CDVD source change"
 msgstr "Confirmar cambio de la fuente CDVD"
 
-#: pcsx2/gui/MainMenuClicks.cpp:185
+#: pcsx2/gui/MainMenuClicks.cpp:187
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
 msgstr "Has seleccionado cambiar la fuente del CDVD de %s a %s."
 
-#: pcsx2/gui/MainMenuClicks.cpp:189
+#: pcsx2/gui/MainMenuClicks.cpp:191
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr ""
 "¿Quieres cambiar de disco o iniciar la nueva imagen (mediante reinicio del "
 "sistema)?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:257
+#: pcsx2/gui/MainMenuClicks.cpp:261
 #, c-format
 msgid "All Supported (%s)"
 msgstr "Todos los admitidos (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:260
+#: pcsx2/gui/MainMenuClicks.cpp:264
 #, c-format
 msgid "Disc Images (%s)"
 msgstr "Imágenes de disco (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:263
+#: pcsx2/gui/MainMenuClicks.cpp:267
 #, c-format
 msgid "Blockdumps (%s)"
 msgstr "Volcados de bloques (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:266 pcsx2/gui/MainMenuClicks.cpp:287
+#: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
 msgid "All Files (*.*)"
 msgstr "Todos los archivos (*.*)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:269
+#: pcsx2/gui/MainMenuClicks.cpp:273
 msgid "Select CDVD source iso..."
 msgstr "Selecciona la ISO que se utilizará en CDVD..."
 
-#: pcsx2/gui/MainMenuClicks.cpp:286
+#: pcsx2/gui/MainMenuClicks.cpp:290
 msgid "Select ELF file..."
 msgstr "Selecciona un archivo ELF..."
 
-#: pcsx2/gui/MainMenuClicks.cpp:312
+#: pcsx2/gui/MainMenuClicks.cpp:316
 msgid "ISO file not found!"
 msgstr "¡No se ha encontrado el archivo ISO!"
 
-#: pcsx2/gui/MainMenuClicks.cpp:314
+#: pcsx2/gui/MainMenuClicks.cpp:318
 msgid "An error occurred while trying to open the file:"
 msgstr "Ha habido un error al intentar abrir el archivo:"
 
-#: pcsx2/gui/MainMenuClicks.cpp:315
+#: pcsx2/gui/MainMenuClicks.cpp:319
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
@@ -1400,7 +1401,7 @@ msgstr ""
 "Error: El archivo ISO configurado no existe.  Pulsa en Aceptar para "
 "seleccionar una nueva ISO a cargar en CDVD."
 
-#: pcsx2/gui/MainMenuClicks.cpp:381
+#: pcsx2/gui/MainMenuClicks.cpp:390
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
@@ -1467,8 +1468,8 @@ msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
 msgstr ""
-"Pulsa en Buscar para seleccionar una nueva carpeta donde PCSX2 buscará las "
-"roms de la BIOS de PS2."
+"Pulsa en Buscar para seleccionar la carpeta donde PCSX2 buscará las roms de "
+"la BIOS de PS2."
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:113
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:156
@@ -1978,15 +1979,15 @@ msgstr "Puerto de PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:107
 msgid "Card (file) name"
-msgstr "Nombre de (archivo de) tarjeta"
+msgstr "Nombre del archivo"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:108
 msgid "Card size"
-msgstr "Tamaño de tarjeta"
+msgstr "Tamaño"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:109
 msgid "Formatted"
-msgstr "Formato"
+msgstr "Formatada"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:110
 msgid "Last Modified"
@@ -2154,7 +2155,7 @@ msgstr "Velocidad de ciclos EE (No recomendado)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:141
 msgid "VU Cycle Stealing [Not Recommended]"
-msgstr "Robar ciclos de VU (No recomendado]"
+msgstr "Robar ciclos de VU (No recomendado)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid "microVU Hacks"

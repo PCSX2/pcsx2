@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-04-15 19:09+0200\n"
+"POT-Creation-Date: 2011-04-20 18:40+0200\n"
 "PO-Revision-Date: 2011-04-14 15:51+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -890,43 +890,43 @@ msgstr "終止"
 msgid "GS Output is Disabled!"
 msgstr "畫面輸出被停用！"
 
-#: pcsx2/gui/GlobalCommands.cpp:381 pcsx2/gui/MainFrame.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:385 pcsx2/gui/MainFrame.cpp:414
 msgid "Save state"
 msgstr "即時存檔"
 
-#: pcsx2/gui/GlobalCommands.cpp:382
+#: pcsx2/gui/GlobalCommands.cpp:386
 msgid "Saves the virtual machine state to the current slot."
 msgstr "將虛擬機狀態儲存到當前的即時存檔插槽。"
 
-#: pcsx2/gui/GlobalCommands.cpp:387 pcsx2/gui/MainFrame.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:391 pcsx2/gui/MainFrame.cpp:413
 msgid "Load state"
 msgstr "即時讀檔"
 
-#: pcsx2/gui/GlobalCommands.cpp:388
+#: pcsx2/gui/GlobalCommands.cpp:392
 msgid "Loads a virtual machine state from the current slot."
 msgstr "從當前的即時存檔插槽讀取虛擬機狀態。"
 
-#: pcsx2/gui/GlobalCommands.cpp:393
+#: pcsx2/gui/GlobalCommands.cpp:397
 msgid "Load State Backup"
 msgstr "讀取狀態備份"
 
-#: pcsx2/gui/GlobalCommands.cpp:394
+#: pcsx2/gui/GlobalCommands.cpp:398
 msgid "Loads virtual machine state backup for current slot."
 msgstr "當前的即時存檔插槽讀取虛擬機狀態備份。"
 
-#: pcsx2/gui/GlobalCommands.cpp:399
+#: pcsx2/gui/GlobalCommands.cpp:403
 msgid "Cycle to next slot"
 msgstr "循環至下一個即時存檔插槽"
 
-#: pcsx2/gui/GlobalCommands.cpp:400
+#: pcsx2/gui/GlobalCommands.cpp:404
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "將當前的即時存檔插槽以 +1 的式樣循環！"
 
-#: pcsx2/gui/GlobalCommands.cpp:405
+#: pcsx2/gui/GlobalCommands.cpp:409
 msgid "Cycle to prev slot"
 msgstr "循環至上一個即時存檔插槽"
 
-#: pcsx2/gui/GlobalCommands.cpp:406
+#: pcsx2/gui/GlobalCommands.cpp:410
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "將當前的即時存檔插槽以 -1 的式樣循環！"
 
@@ -941,7 +941,7 @@ msgid ""
 "please, thank you."
 msgstr "拖曳多個檔案至 %s 視窗是一個錯誤。請一次一個檔案，謝謝。"
 
-#: pcsx2/gui/IsoDropTarget.cpp:89 pcsx2/gui/MainMenuClicks.cpp:338
+#: pcsx2/gui/IsoDropTarget.cpp:89 pcsx2/gui/MainMenuClicks.cpp:342
 msgid "Confirm PS2 Reset"
 msgstr "確認重新啟動 PS2"
 
@@ -968,290 +968,290 @@ msgstr "插槽 %d"
 msgid "Backup"
 msgstr "備份"
 
-#: pcsx2/gui/MainFrame.cpp:322
+#: pcsx2/gui/MainFrame.cpp:324
 msgid "Show Console"
 msgstr "顯示主控台"
 
-#: pcsx2/gui/MainFrame.cpp:323
+#: pcsx2/gui/MainFrame.cpp:325
 msgid "Console to Stdio"
 msgstr "顯示主控台至標準輸入輸出"
 
-#: pcsx2/gui/MainFrame.cpp:336
+#: pcsx2/gui/MainFrame.cpp:338
 msgid "&System"
 msgstr "檔案"
 
-#: pcsx2/gui/MainFrame.cpp:337
+#: pcsx2/gui/MainFrame.cpp:339
 msgid "CD&VD"
 msgstr "光碟"
 
-#: pcsx2/gui/MainFrame.cpp:338
+#: pcsx2/gui/MainFrame.cpp:340
 msgid "&Config"
 msgstr "設定"
 
-#: pcsx2/gui/MainFrame.cpp:339
+#: pcsx2/gui/MainFrame.cpp:341
 msgid "&Misc"
 msgstr "其他"
 
-#: pcsx2/gui/MainFrame.cpp:341
+#: pcsx2/gui/MainFrame.cpp:343
 msgid "&Debug"
 msgstr "偵錯"
 
-#: pcsx2/gui/MainFrame.cpp:353
+#: pcsx2/gui/MainFrame.cpp:355
 #, c-format
 msgid "%s  %d.%d.%d.%d%s (svn)  %s"
 msgstr "%s  %d.%d.%d.%d%s (svn)  %s"
 
-#: pcsx2/gui/MainFrame.cpp:359
+#: pcsx2/gui/MainFrame.cpp:361
 #, c-format
 msgid "%s  %d.%d.%d %s"
 msgstr "%s  %d.%d.%d %s"
 
-#: pcsx2/gui/MainFrame.cpp:360
+#: pcsx2/gui/MainFrame.cpp:362
 msgid "(modded)"
 msgstr "(modded)"
 
-#: pcsx2/gui/MainFrame.cpp:397 pcsx2/gui/MainFrame.cpp:399
-#: pcsx2/gui/MainFrame.cpp:405
+#: pcsx2/gui/MainFrame.cpp:399 pcsx2/gui/MainFrame.cpp:401
+#: pcsx2/gui/MainFrame.cpp:407
 msgid "Initializing..."
 msgstr "正在初始化..."
 
-#: pcsx2/gui/MainFrame.cpp:401
+#: pcsx2/gui/MainFrame.cpp:403
 msgid "Run ELF..."
 msgstr "執行 ELF 檔案"
 
-#: pcsx2/gui/MainFrame.cpp:402
+#: pcsx2/gui/MainFrame.cpp:404
 msgid "For running raw PS2 binaries directly"
 msgstr "為了直接執行原始的 PS2 二進位檔案"
 
-#: pcsx2/gui/MainFrame.cpp:414
+#: pcsx2/gui/MainFrame.cpp:416
 msgid "Backup before save"
 msgstr "自動備份即時存檔"
 
-#: pcsx2/gui/MainFrame.cpp:419
+#: pcsx2/gui/MainFrame.cpp:421
 msgid "Automatic Gamefixes"
 msgstr "自動使用遊戲修正"
 
-#: pcsx2/gui/MainFrame.cpp:420
+#: pcsx2/gui/MainFrame.cpp:422
 msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr "自動套用所需的遊戲修正給已知有問題的遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:422
+#: pcsx2/gui/MainFrame.cpp:424
 msgid "Enable Cheats"
 msgstr "啟用作弊"
 
-#: pcsx2/gui/MainFrame.cpp:425
+#: pcsx2/gui/MainFrame.cpp:427
 msgid "Enable Host Filesystem"
 msgstr "啟用主機檔案系統"
 
-#: pcsx2/gui/MainFrame.cpp:430
+#: pcsx2/gui/MainFrame.cpp:432
 msgid "Shutdown"
 msgstr "關閉遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:431
+#: pcsx2/gui/MainFrame.cpp:433
 msgid "Wipes all internal VM states and shuts down plugins."
 msgstr "清除所有內部虛擬機狀態並關閉插件"
 
-#: pcsx2/gui/MainFrame.cpp:433
+#: pcsx2/gui/MainFrame.cpp:435
 msgid "Exit"
 msgstr "離開"
 
-#: pcsx2/gui/MainFrame.cpp:434
+#: pcsx2/gui/MainFrame.cpp:436
 #, c-format
 msgid "Closing %s may be hazardous to your health"
 msgstr "關閉 %s 或許有害健康"
 
-#: pcsx2/gui/MainFrame.cpp:441
+#: pcsx2/gui/MainFrame.cpp:443
 msgid "Iso Selector"
 msgstr "選擇光碟映像檔"
 
-#: pcsx2/gui/MainFrame.cpp:442
+#: pcsx2/gui/MainFrame.cpp:444
 msgid "Plugin Menu"
 msgstr "光碟插件"
 
-#: pcsx2/gui/MainFrame.cpp:445
+#: pcsx2/gui/MainFrame.cpp:447
 msgid "Iso"
 msgstr "使用光碟映像檔"
 
-#: pcsx2/gui/MainFrame.cpp:445
+#: pcsx2/gui/MainFrame.cpp:447
 msgid "Makes the specified ISO image the CDVD source."
 msgstr "使用指定的光碟映像檔作為遊戲來源"
 
-#: pcsx2/gui/MainFrame.cpp:446
+#: pcsx2/gui/MainFrame.cpp:448
 msgid "Plugin"
 msgstr "使用光碟插件"
 
-#: pcsx2/gui/MainFrame.cpp:446
+#: pcsx2/gui/MainFrame.cpp:448
 msgid "Uses an external plugin as the CDVD source."
 msgstr "使用外部的光碟插件作為遊戲來源"
 
-#: pcsx2/gui/MainFrame.cpp:447
+#: pcsx2/gui/MainFrame.cpp:449
 msgid "No disc"
 msgstr "無光碟"
 
-#: pcsx2/gui/MainFrame.cpp:447
+#: pcsx2/gui/MainFrame.cpp:449
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
 msgstr "進入 PS2 的 BIOS 設定"
 
-#: pcsx2/gui/MainFrame.cpp:455
+#: pcsx2/gui/MainFrame.cpp:457
 msgid "Emulation &Settings"
 msgstr "模擬器選項"
 
-#: pcsx2/gui/MainFrame.cpp:456
+#: pcsx2/gui/MainFrame.cpp:458
 msgid "&Memory cards"
 msgstr "記憶卡"
 
-#: pcsx2/gui/MainFrame.cpp:457
+#: pcsx2/gui/MainFrame.cpp:459
 msgid "&Plugin/BIOS Selector"
 msgstr "插件 / BIOS"
 
-#: pcsx2/gui/MainFrame.cpp:458 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
+#: pcsx2/gui/MainFrame.cpp:460 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
 msgid "Game Database Editor"
 msgstr "遊戲資料庫編輯器"
 
-#: pcsx2/gui/MainFrame.cpp:464
+#: pcsx2/gui/MainFrame.cpp:466
 msgid "&Video (GS)"
 msgstr "圖形 (GS)"
 
-#: pcsx2/gui/MainFrame.cpp:465
+#: pcsx2/gui/MainFrame.cpp:467
 msgid "&Audio (SPU2)"
 msgstr "聲音 (SPU2)"
 
-#: pcsx2/gui/MainFrame.cpp:466
+#: pcsx2/gui/MainFrame.cpp:468
 msgid "&Controllers (PAD)"
 msgstr "控制器 (PAD)"
 
-#: pcsx2/gui/MainFrame.cpp:467
+#: pcsx2/gui/MainFrame.cpp:469
 msgid "Dev9"
 msgstr "Dev9"
 
-#: pcsx2/gui/MainFrame.cpp:468
+#: pcsx2/gui/MainFrame.cpp:470
 msgid "USB"
 msgstr "USB"
 
-#: pcsx2/gui/MainFrame.cpp:469
+#: pcsx2/gui/MainFrame.cpp:471
 msgid "Firewire"
 msgstr "Firewire"
 
-#: pcsx2/gui/MainFrame.cpp:475
+#: pcsx2/gui/MainFrame.cpp:477
 msgid "Multitap 1"
 msgstr "手把擴充器 1"
 
-#: pcsx2/gui/MainFrame.cpp:476
+#: pcsx2/gui/MainFrame.cpp:478
 msgid "Multitap 2"
 msgstr "手把擴充器 2"
 
-#: pcsx2/gui/MainFrame.cpp:479
+#: pcsx2/gui/MainFrame.cpp:481
 msgid "Clear all settings..."
 msgstr "清除全部設定"
 
-#: pcsx2/gui/MainFrame.cpp:480
+#: pcsx2/gui/MainFrame.cpp:482
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "清除全部 %s 設定，重新執行「 首次執行精靈 」"
 
-#: pcsx2/gui/MainFrame.cpp:502
+#: pcsx2/gui/MainFrame.cpp:504
 msgid "About..."
 msgstr "關於 PCSX2"
 
-#: pcsx2/gui/MainFrame.cpp:506
+#: pcsx2/gui/MainFrame.cpp:508
 msgid "Logging..."
 msgstr "日誌"
 
-#: pcsx2/gui/MainFrame.cpp:583
+#: pcsx2/gui/MainFrame.cpp:585
 msgid "Pause"
 msgstr "暫停遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:584
+#: pcsx2/gui/MainFrame.cpp:586
 msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "安全地暫停模擬並保留 PS2 狀態"
 
-#: pcsx2/gui/MainFrame.cpp:591
+#: pcsx2/gui/MainFrame.cpp:593
 msgid "Resume"
 msgstr "繼續遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:592
+#: pcsx2/gui/MainFrame.cpp:594
 msgid "Resumes the suspended emulation state."
 msgstr "從暫停的模擬器狀態中恢復遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:596
+#: pcsx2/gui/MainFrame.cpp:598
 msgid "Pause/Resume"
 msgstr "暫停 / 繼續"
 
-#: pcsx2/gui/MainFrame.cpp:597
+#: pcsx2/gui/MainFrame.cpp:599
 msgid "No emulation state is active; cannot suspend or resume."
 msgstr "無現存的模擬器狀態，不能暫停或繼續"
 
-#: pcsx2/gui/MainFrame.cpp:606
+#: pcsx2/gui/MainFrame.cpp:608
 msgid "Restart"
 msgstr "重新啟動"
 
-#: pcsx2/gui/MainFrame.cpp:607
+#: pcsx2/gui/MainFrame.cpp:609
 msgid "Simulates hardware reset of the PS2 virtual machine."
 msgstr "模擬 PS2 虛擬機的硬體重置。"
 
-#: pcsx2/gui/MainFrame.cpp:612
+#: pcsx2/gui/MainFrame.cpp:614
 msgid "No emulation state is active; boot something first."
 msgstr "無現存的模擬器狀態，請先啟動些什麼"
 
-#: pcsx2/gui/MainFrame.cpp:620
+#: pcsx2/gui/MainFrame.cpp:622
 msgid "Reboot CDVD (full)"
 msgstr "重新啟動遊戲（完整）"
 
-#: pcsx2/gui/MainFrame.cpp:621
+#: pcsx2/gui/MainFrame.cpp:623
 msgid "Hard reset of the active VM."
 msgstr "重新啟動遊戲時顯示 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:625
+#: pcsx2/gui/MainFrame.cpp:627
 msgid "Boot CDVD (full)"
 msgstr "啟動遊戲（完整）"
 
-#: pcsx2/gui/MainFrame.cpp:626
+#: pcsx2/gui/MainFrame.cpp:628
 msgid "Boot the VM using the current DVD or Iso source media"
 msgstr "啟動遊戲時顯示 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:634
+#: pcsx2/gui/MainFrame.cpp:636
 msgid "Reboot CDVD (fast)"
 msgstr "重新啟動遊戲（快速）"
 
-#: pcsx2/gui/MainFrame.cpp:635
+#: pcsx2/gui/MainFrame.cpp:637
 msgid "Reboot using fast BOOT (skips splash screens)"
 msgstr "重新啟動遊戲時跳過 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:639
+#: pcsx2/gui/MainFrame.cpp:641
 msgid "Boot CDVD (fast)"
 msgstr "啟動遊戲（快速）"
 
-#: pcsx2/gui/MainFrame.cpp:640
+#: pcsx2/gui/MainFrame.cpp:642
 msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "啟動遊戲時跳過 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:701 pcsx2/gui/MainFrame.cpp:736
+#: pcsx2/gui/MainFrame.cpp:703 pcsx2/gui/MainFrame.cpp:738
 msgid "No plugin loaded"
 msgstr "未載入插件"
 
-#: pcsx2/gui/MainFrame.cpp:706
+#: pcsx2/gui/MainFrame.cpp:708
 msgid "Core GS Settings..."
 msgstr "核心設定"
 
-#: pcsx2/gui/MainFrame.cpp:707
+#: pcsx2/gui/MainFrame.cpp:709
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
 msgstr "變更 PCSX2 核心虛擬機控制的硬體模擬設定"
 
-#: pcsx2/gui/MainFrame.cpp:709
+#: pcsx2/gui/MainFrame.cpp:711
 msgid "Window Settings..."
 msgstr "遊戲視窗"
 
-#: pcsx2/gui/MainFrame.cpp:710
+#: pcsx2/gui/MainFrame.cpp:712
 msgid "Modify window and appearance options, including aspect ratio."
 msgstr "視窗及視窗外觀的選項調節，包括【圖像縱橫比】"
 
-#: pcsx2/gui/MainFrame.cpp:717
+#: pcsx2/gui/MainFrame.cpp:719
 msgid "Plugin Settings..."
 msgstr "插件設定"
 
-#: pcsx2/gui/MainFrame.cpp:718
+#: pcsx2/gui/MainFrame.cpp:720
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
 msgstr "開啟 %s 插件的設定視窗"
@@ -1268,65 +1268,65 @@ msgstr "確認更換光碟映像檔"
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr "您是想要更換光碟還是啟動新的映像檔 ( 重新啟動遊戲 )？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:148 pcsx2/gui/MainMenuClicks.cpp:192
+#: pcsx2/gui/MainMenuClicks.cpp:148 pcsx2/gui/MainMenuClicks.cpp:194
 msgid "Swap Disc"
 msgstr "更換光碟"
 
-#: pcsx2/gui/MainMenuClicks.cpp:182
+#: pcsx2/gui/MainMenuClicks.cpp:184
 msgid "Confirm CDVD source change"
 msgstr "確認更換光碟"
 
-#: pcsx2/gui/MainMenuClicks.cpp:185
+#: pcsx2/gui/MainMenuClicks.cpp:187
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
 msgstr "您已經選擇將遊戲來源從【%s】更換到【%s】"
 
-#: pcsx2/gui/MainMenuClicks.cpp:189
+#: pcsx2/gui/MainMenuClicks.cpp:191
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr "您是想要更換光碟還是啟動新的映像檔 ( 重新啟動遊戲 )？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:257
+#: pcsx2/gui/MainMenuClicks.cpp:261
 #, c-format
 msgid "All Supported (%s)"
 msgstr "所有支援的檔案類型 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:260
+#: pcsx2/gui/MainMenuClicks.cpp:264
 #, c-format
 msgid "Disc Images (%s)"
 msgstr "光碟映像檔 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:263
+#: pcsx2/gui/MainMenuClicks.cpp:267
 #, c-format
 msgid "Blockdumps (%s)"
 msgstr "區塊轉存檔 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:266 pcsx2/gui/MainMenuClicks.cpp:287
+#: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
 msgid "All Files (*.*)"
 msgstr "所有檔案 (*.*)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:269
+#: pcsx2/gui/MainMenuClicks.cpp:273
 msgid "Select CDVD source iso..."
 msgstr "選擇光碟映像檔"
 
-#: pcsx2/gui/MainMenuClicks.cpp:286
+#: pcsx2/gui/MainMenuClicks.cpp:290
 msgid "Select ELF file..."
 msgstr "選擇 ELF 檔案"
 
-#: pcsx2/gui/MainMenuClicks.cpp:312
+#: pcsx2/gui/MainMenuClicks.cpp:316
 msgid "ISO file not found!"
 msgstr "未找到光碟映像檔！"
 
-#: pcsx2/gui/MainMenuClicks.cpp:314
+#: pcsx2/gui/MainMenuClicks.cpp:318
 msgid "An error occurred while trying to open the file:"
 msgstr "當嘗試開啟這個檔案時出現錯誤："
 
-#: pcsx2/gui/MainMenuClicks.cpp:315
+#: pcsx2/gui/MainMenuClicks.cpp:319
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
 msgstr "錯誤：指定的光碟映像檔不存在。按【確定】選擇一個新的光碟映像檔。"
 
-#: pcsx2/gui/MainMenuClicks.cpp:381
+#: pcsx2/gui/MainMenuClicks.cpp:390
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
