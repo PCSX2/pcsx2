@@ -1,16 +1,21 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR PCSX2_Dev_Team
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
-"POT-Creation-Date: 2011-02-25 18:54+0100\n"
-"PO-Revision-Date: 2010-12-28 13:54+0300\n"
-"Last-Translator: Kein <kein-of@yandex.ru>\n"
-"Language-Team: \n"
+"POT-Creation-Date: 2011-04-09 10:54+0200\n"
+"PO-Revision-Date: 2011-04-25 08:23+0300\n"
+"Last-Translator: NIKE <nike-spawn@ya.ru>\n"
+"Language-Team: NIKE\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-KeywordsList: pxE_dev;pxDt\n"
+"X-Poedit-KeywordsList: _d;pxDt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: trunk\\\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -18,91 +23,86 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
-msgstr ""
-"Отображает детальную информацию касательно исполняемых файлов PS2 (ELF-"
-"файлах)."
+msgstr "дампы детальной информации для PS2 исполняемого файлы (ELFы)."
 
 #: pcsx2/SourceLog.cpp:101
-msgid ""
-"Logs manual protection, split blocks, and other things that might impact "
-"performance."
-msgstr ""
-"Отображает информацию о manual protection, split blocks, и других "
-"источниках, которые могут влиять на производительность."
+msgid "Logs manual protection, split blocks, and other things that might impact performance."
+msgstr "Журналы ручной защиты, разделённых блоков, и другие которые могут повлиять на производительность."
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
-msgstr "Отображает отладочную информацию касательно EE-процессора."
+msgstr "Показать текст журналирования разработчиков игры (EE процессор)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
-msgstr "Отображает отладочную информацию касательно IOP-процессора."
+msgstr "Показать текст журналирования разработчиков игры (IOP процессор)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
-msgstr ""
+msgstr "Показать жунал отладки DECI2 (EE процессор)"
 
 #: pcsx2/SourceLog.cpp:145
 msgid "SYSCALL and DECI2 activity."
-msgstr ""
+msgstr "Активность SYSCALL и DECI2."
 
 #: pcsx2/SourceLog.cpp:151
 msgid "Direct memory accesses to unknown or unmapped EE memory space."
-msgstr ""
+msgstr "Прямой доступ к памяти для неизвестных или неадресованных EE пространст памяти."
 
-#: pcsx2/SourceLog.cpp:157 pcsx2/SourceLog.cpp:276
+#: pcsx2/SourceLog.cpp:157
+#: pcsx2/SourceLog.cpp:276
 msgid "Disasm of executing core instructions (excluding COPs and CACHE)."
-msgstr ""
+msgstr "Дизасемблирование выполнения основных команд (за исключением COP и CACHE)."
 
 #: pcsx2/SourceLog.cpp:163
 msgid "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."
-msgstr ""
+msgstr "Дизасемблирование COP0 инструкций (MMU, CPU и DMA статус, и т.д)."
 
 #: pcsx2/SourceLog.cpp:169
 msgid "Disasm of the EE's floating point unit (FPU) only."
-msgstr ""
+msgstr "Дизасемблирование только EE с плавающей точкой (FPU)."
 
 #: pcsx2/SourceLog.cpp:175
 msgid "Disasm of the EE's VU0macro co-processor instructions."
-msgstr ""
+msgstr "Дизасемблирование EEmacro со-процессорных иструкций."
 
 #: pcsx2/SourceLog.cpp:181
 msgid "Execution of EE cache instructions."
-msgstr ""
+msgstr "исполнение инструкций EE кэша."
 
 #: pcsx2/SourceLog.cpp:187
-msgid ""
-"All known hardware register accesses (very slow!); not including sub filter "
-"options below."
-msgstr ""
+msgid "All known hardware register accesses (very slow!); not including sub filter options below."
+msgstr "Все известные аппаратные регистры доступа (очень медленно!), не включает опции саб-фильтров ниже."
 
-#: pcsx2/SourceLog.cpp:193 pcsx2/SourceLog.cpp:294
+#: pcsx2/SourceLog.cpp:193
+#: pcsx2/SourceLog.cpp:294
 msgid "Logs only unknown, unmapped, or unimplemented register accesses."
-msgstr ""
+msgstr "Журналы только неизвестных, неадресованных, или нереализованных регисмтров доуступа."
 
-#: pcsx2/SourceLog.cpp:199 pcsx2/SourceLog.cpp:300
+#: pcsx2/SourceLog.cpp:199
+#: pcsx2/SourceLog.cpp:300
 msgid "Logs only DMA-related registers."
-msgstr ""
+msgstr "Журналы только DMA-связанных регистров."
 
 #: pcsx2/SourceLog.cpp:205
 msgid "IPU activity: hardware registers, decoding operations, DMA status, etc."
-msgstr ""
+msgstr "IPU активность: аппаратные регистры, операции декодирования, статус DMA, и т.д."
 
 #: pcsx2/SourceLog.cpp:211
 msgid "All GIFtag parse activity; path index, tag type, etc."
-msgstr ""
+msgstr "Анализ активности всего GIF-тега: индекса пути, типа тега, и т.д."
 
 #: pcsx2/SourceLog.cpp:217
 msgid "All VIFcode processing; command, tag style, interrupts."
-msgstr ""
+msgstr "Обработка всего VIF-кода: комманды, стиль тегов, прерывания."
 
 #: pcsx2/SourceLog.cpp:223
 msgid "All processing involved in Path3 Masking"
-msgstr ""
+msgstr "Вся обработка участвующая в Path3 Masking"
 
 #: pcsx2/SourceLog.cpp:229
 msgid "Scratchpad's MFIFO activity."
-msgstr ""
+msgstr "Активность Scratchpad's MFIFO."
 
 #: pcsx2/SourceLog.cpp:235
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
@@ -110,49 +110,49 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:241
 msgid "Tracks all EE counters events and some counter register activity."
-msgstr ""
+msgstr "Отслеживать все EE счетчики событий и некоторые счетчиков активности регистра."
 
 #: pcsx2/SourceLog.cpp:247
 msgid "Dumps various VIF and VIFcode processing data."
-msgstr ""
+msgstr "Дампы обработки различных VIF и VIFcode данных."
 
 #: pcsx2/SourceLog.cpp:253
 msgid "Dumps various GIF and GIFtag parsing data."
-msgstr ""
+msgstr "Дампы анализа различных GIF и GIFtag данных."
 
 #: pcsx2/SourceLog.cpp:264
 msgid "SYSCALL and IRX activity."
-msgstr ""
+msgstr "Активность SYSCALL и IRX"
 
 #: pcsx2/SourceLog.cpp:270
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
-msgstr ""
+msgstr "Прямой доступ к памяти для неизвестных или неадресованого IOP пространств памяти."
 
 #: pcsx2/SourceLog.cpp:282
 msgid "Disasm of the IOP's GPU co-processor instructions."
-msgstr ""
+msgstr "Дизассемблирование IOP GPU со-процессорных инструкций"
 
 #: pcsx2/SourceLog.cpp:288
-msgid ""
-"All known hardware register accesses, not including the sub-filters below."
-msgstr ""
+msgid "All known hardware register accesses, not including the sub-filters below."
+msgstr "Все известные доступные аппаратные регистры, за исключением суб-фильтров ниже."
 
 #: pcsx2/SourceLog.cpp:306
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
-msgstr ""
+msgstr "Чтение, запись, очистка, удаление, и другие операции с картой памяти."
 
 #: pcsx2/SourceLog.cpp:312
 msgid "Gamepad activity on the SIO."
-msgstr ""
+msgstr "Активность джостика на SIO"
 
 #: pcsx2/SourceLog.cpp:318
 msgid "Actual DMA event processing and data transfer logs."
-msgstr ""
+msgstr "Фактические DMA события обработки и передачи данных журналов."
 
 #: pcsx2/SourceLog.cpp:324
 msgid "Tracks all IOP counters events and some counter register activity."
-msgstr ""
+msgstr "Наблюдать все IOP события и другую активность регистра"
 
 #: pcsx2/SourceLog.cpp:330
 msgid "Detailed logging of CDVD hardware."
-msgstr "Выводит в лог детальную информацию о CDVD-системе."
+msgstr "Детализированное логирование CDVD"
+
