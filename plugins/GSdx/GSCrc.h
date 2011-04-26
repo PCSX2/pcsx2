@@ -93,6 +93,11 @@ public:
 		TimeSplitters2,
 		ReZ,
 		LordOfTheRingsTwoTowers,
+		SilentHill3,
+		SilentHill2,
+		BleachBladeBattlers,
+		CastlevaniaCoD,
+		CastlevaniaLoI,
 		TitleCount,
 	};
 
@@ -109,6 +114,7 @@ public:
 		IT,
 		ES,
 		ASIA,
+		KO,
 		RegionCount,
 	};
 
