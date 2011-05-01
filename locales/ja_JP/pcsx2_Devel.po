@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR PCSX2_Dev_Team
-# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) 2011 PCSX2_Dev_Team
+# This file is distributed under the same license as the PCSX2 package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""

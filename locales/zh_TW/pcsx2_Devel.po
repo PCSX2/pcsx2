@@ -1,3 +1,5 @@
+# Copyright (C) 2011 PCSX2 Team
+# This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
