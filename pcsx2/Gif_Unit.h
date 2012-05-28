@@ -145,6 +145,7 @@ struct Gif_Path {
 	u32 buffLimit;	  // Cut off limit to wrap around
 	u32 curSize;	  // Used buffer in bytes
 	u32 curOffset;	  // Offset of current gifTag
+	u32 dmaRewind;    // Used by path3 when only part of a DMA chain is used
 	Gif_Tag   gifTag; // Current GS Primitive tag
 	GS_Packet gsPack; // Current GS Packet info
 	GIF_PATH  idx;	  // Gif Path Index
@@ -183,7 +184,7 @@ struct Gif_Path {
 	s32 getReadAmount()     { return AtomicRead(readAmount) + gsPack.readAmount; }
 	bool hasDataRemaining() { return curOffset < curSize; }
 	bool isDone()           { return isMTVU() ? !mtvu.fakePackets 
-							: (!hasDataRemaining() && state == GIF_PATH_IDLE); }
+							: (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
 
 	// Waits on the MTGS to process gs packets
 	void mtgsReadWait() {
@@ -295,9 +296,30 @@ struct Gif_Path {
 			if (gifTag.tag.EOP) {
 				GS_Packet t = gsPack;
 				t.done = 1;
-				state  = GIF_PATH_IDLE;
+
+				
+				dmaRewind = 0;
+				
 				gsPack.Reset();
 				gsPack.offset = curOffset;
+				
+				//Path 3 Masking is timing sensitive, we need to simulate its length! (NFSU2/Outrun 2006)
+				
+				if((gifRegs.stat.APATH-1) == GIF_PATH_3)
+				{
+					state = GIF_PATH_WAIT;
+
+					if(curSize - curOffset > 0 && (gifRegs.stat.M3R || gifRegs.stat.M3P))
+					{
+						//Including breaking packets early (Rewind DMA to pick up where left off)
+						//but only do this when the path is masked, else we're pointlessly slowing things down.
+						dmaRewind = curSize - curOffset;
+						curSize = curOffset;
+					}	
+				}
+				else 
+					state  = GIF_PATH_IDLE;
+
 				return t; // Complete GS packet
 			}
 		}
@@ -480,7 +502,7 @@ struct Gif_Unit {
 		}
 
 		gifPath[tranType&3].CopyGSPacketData(pMem, size, aligned);
-		Execute();
+		size -= Execute();
 		return size;
 	}
 
@@ -518,10 +540,12 @@ struct Gif_Unit {
 
 	// Processes gif packets and performs path arbitration
 	// on EOPs or on Path 3 Images when IMT is set.
-	void Execute() {
-		if (!CanDoGif()) { DevCon.Error("Gif Unit - Signal or PSE Set or Dir = GS to EE"); return; }
+	int Execute() {
+		if (!CanDoGif()) { DevCon.Error("Gif Unit - Signal or PSE Set or Dir = GS to EE"); return 0; }
 		bool didPath3 = false;
+		int curPath = stat.APATH > 0 ? stat.APATH-1 : 0; //Init to zero if no path is already set.
 		stat.OPH = 1;
+		
 		for(;;) {
 			if (stat.APATH) { // Some Transfer is happening
 				Gif_Path& path   = gifPath[stat.APATH-1];
@@ -555,14 +579,25 @@ struct Gif_Unit {
 				//DevCon.WriteLn("Adding GS Packet for path %d", stat.APATH);
 				AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH-1));
 			}
-			if   (!gsSIGNAL.queued && !gifPath[0].isDone()) { stat.APATH = 1; stat.P1Q = 0; }
-			elif (!gsSIGNAL.queued && !gifPath[1].isDone()) { stat.APATH = 2; stat.P2Q = 0; }
+			if   (!gsSIGNAL.queued && !gifPath[0].isDone()) { stat.APATH = 1; stat.P1Q = 0; gifPath[0].dmaRewind = 0; curPath = 0; }
+			elif (!gsSIGNAL.queued && !gifPath[1].isDone()) { stat.APATH = 2; stat.P2Q = 0; gifPath[1].dmaRewind = 0; curPath = 1; }
 			elif (!gsSIGNAL.queued && !gifPath[2].isDone() && !Path3Masked() /*&& !stat.P2Q*/)
-				 { stat.APATH = 3; stat.P3Q = 0; stat.IP3 = 0; }
+				 { stat.APATH = 3; stat.P3Q = 0; stat.IP3 = 0; gifPath[2].dmaRewind = 0; curPath = 2; }
 			else { stat.APATH = 0; stat.OPH = 0; break; }
 		}
+
+		//Some loaders/Refresh Rate selectors and things dont issue "End of Packet" commands
+		//So we look and see if the end of the last tag is all there, if so, stick it in the buffer for the GS :)
+		//(Invisible Screens on Terminator 3 and Growlanser 2/3)
+		if(gifPath[curPath].curOffset == gifPath[curPath].curSize) 
+		{
+			FlushToMTGS();
+		}
+
 		Gif_FinishIRQ();
-		//DevCon.WriteLn("APATH = %d [%d,%d,%d]", stat.APATH, !!checkPaths(1,0,0,0),!!checkPaths(0,1,0,0),!!checkPaths(0,0,1,0));
+
+		//Path3 can rewind the DMA, so we send back the amount we go back!
+		return gifPath[curPath].dmaRewind;
 	}
 
 	// XGkick
@@ -584,7 +619,7 @@ struct Gif_Unit {
 	bool CanDoP3Slice() { return stat.IMT == 1 && gifPath[GIF_PATH_3].state == GIF_PATH_IMAGE; }
 	bool CanDoGif()		{ return stat.PSE == 0 && (CHECK_GIFREVERSEHACK ? 1 : stat.DIR == 0) && gsSIGNAL.queued == 0; }
 	//Mask stops the next packet which hasnt started from transferring
-	bool Path3Masked()  { return ((stat.M3R || stat.M3P) && (gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)); }
+	bool Path3Masked()  { return ((stat.M3R || stat.M3P) && (gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)); }
 
 	void PrintInfo(bool printP1=1, bool printP2=1, bool printP3=1) {
 		u32 a = checkPaths(1,1,1), b = checkQueued(1,1,1);
