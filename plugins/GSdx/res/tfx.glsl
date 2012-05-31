@@ -86,6 +86,10 @@ void vs_main()
 	// example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
 	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
 	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
+
+    // Greg TEST
+    //float logz = log2(1+float(z))/32 * 0.999f;
+	//vec4 p = vec4(i_p, logz, 0) - vec4(0.05f, 0.05f, 0, 0); 
 	
 	vec4 p = vec4(i_p, z, 0) - vec4(0.05f, 0.05f, 0, 0); 
 	vec4 final_p = p * VertexScale - VertexOffset;
@@ -261,12 +265,8 @@ void gs_main()
 layout(location = 0) in vertex PSin;
 
 // Same buffer but 2 colors for dual source blending
-#ifndef DISABLE_DUAL_BLEND
-layout(location = 0, index = 1) out vec4 SV_Target0;
-layout(location = 0, index = 0) out vec4 SV_Target1;
-#else
-layout(location = 0) out vec4 SV_Target1;
-#endif
+layout(location = 0, index = 0) out vec4 SV_Target0;
+layout(location = 0, index = 1) out vec4 SV_Target1;
 
 layout(binding = 0) uniform sampler2D TextureSampler;
 layout(binding = 1) uniform sampler2D PaletteSampler;
@@ -650,9 +650,7 @@ void ps_main()
 		if(c.a < 0.5) c.a += 0.5;
 	}
 
-    SV_Target1 = c;
-#ifndef DISABLE_DUAL_BLEND
-    SV_Target0 = vec4(alpha, alpha, alpha, alpha);
-#endif
+    SV_Target0 = c;
+    SV_Target1 = vec4(alpha, alpha, alpha, alpha);
 }
 #endif

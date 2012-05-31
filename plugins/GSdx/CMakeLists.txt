@@ -18,7 +18,7 @@ set(CommonFlags
     -Wunused-variable
     -std=c++0x
     -fno-strict-aliasing
-    -DOGL_DEBUG # FIXME remove me when code is ready
+    #-DOGL_DEBUG # FIXME remove me when code is ready
     # Unload of Geometry shader was fixed in Cat 12.3 (ie OpenGL version string: 4.2.11554)
     #-DAMD_DRIVER_WORKAROUND
     )
@@ -201,7 +201,7 @@ if(PACKAGE_MODE)
     install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
 
     foreach(glsl IN ITEMS convert.glsl interlace.glsl merge.glsl tfx.glsl shadeboost.glsl)
-        install(FILES ${PROJECT_SOURCE_DIR}/plugins/GSdx/res/${glsl} DESTINATION ${PLUGIN_DIR})
+        install(FILES ${PROJECT_SOURCE_DIR}/plugins/GSdx/res/${glsl} DESTINATION ${GLSL_SHADER_DIR})
     endforeach(glsl IN ITEMS convert.glsl interlace.glsl merge.glsl tfx.glsl shadeboost.glsl)
 else(PACKAGE_MODE)
     install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)

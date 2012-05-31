@@ -29,9 +29,6 @@
 //#define PRINT_FRAME_NUMBER
 //#define ONLY_LINES
 
-// It seems dual blending does not work on AMD !!!
-//#define DISABLE_DUAL_BLEND
-
 static uint32 g_draw_count = 0;
 static uint32 g_frame_count = 1;		
 
@@ -42,6 +39,7 @@ GSDeviceOGL::GSDeviceOGL()
 	  , m_pipeline(0)
 	  , m_fbo(0)
 	  , m_fbo_read(0)
+	  , m_enable_shader_AMD_hack(false)
 	  , m_vb_sr(NULL)
 	  , m_srv_changed(false)
 	  , m_ss_changed(false)
@@ -55,8 +53,10 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_state, 0, sizeof(m_state));
 
 	// Reset the debug file
+	#ifdef OGL_DEBUG
 	FILE* f = fopen("Debug.txt","w");
 	fclose(f);
+	#endif
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -168,6 +168,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 		const GLubyte* s;
 		s = glGetString(GL_VERSION);
 		if (s == NULL) return false;
+		fprintf(stderr, "Supported Opengl version: %s\n", s);
 
 		GLuint dot = 0;
 		while (s[dot] != '\0' && s[dot] != '.') dot++;
@@ -225,7 +226,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	CompileShaderFromSource("convert.glsl", "vs_main", GL_VERTEX_SHADER, &m_convert.vs);
 	CompileShaderFromSource("convert.glsl", "gs_main", GL_GEOMETRY_SHADER, &m_convert.gs);
-	for(int i = 0; i < countof(m_convert.ps); i++)
+	for(uint i = 0; i < countof(m_convert.ps); i++)
 		CompileShaderFromSource("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, &m_convert.ps[i]);
 
 	// Note the following object are initialized to 0 so disabled.
@@ -253,7 +254,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	glSamplerParameteri(m_convert.ln, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(m_convert.ln, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	// FIXME which value for GL_TEXTURE_MIN_LOD
-	glSamplerParameteri(m_convert.ln, GL_TEXTURE_MAX_LOD, FLT_MAX);
+	glSamplerParameterf(m_convert.ln, GL_TEXTURE_MAX_LOD, FLT_MAX);
 	// FIXME: seems there is 2 possibility in opengl
 	// DX: sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	// glSamplerParameteri(m_convert.ln, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -269,7 +270,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	glSamplerParameteri(m_convert.pt, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(m_convert.pt, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	// FIXME which value for GL_TEXTURE_MIN_LOD
-	glSamplerParameteri(m_convert.pt, GL_TEXTURE_MAX_LOD, FLT_MAX);
+	glSamplerParameterf(m_convert.pt, GL_TEXTURE_MAX_LOD, FLT_MAX);
 	// FIXME: seems there is 2 possibility in opengl
 	// DX: sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	// glSamplerParameteri(m_convert.pt, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -285,7 +286,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	m_merge_obj.cb = new GSUniformBufferOGL(1, sizeof(MergeConstantBuffer));
 
-	for(int i = 0; i < countof(m_merge_obj.ps); i++)
+	for(uint i = 0; i < countof(m_merge_obj.ps); i++)
 		CompileShaderFromSource("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, &m_merge_obj.ps[i]);
 
 	m_merge_obj.bs = new GSBlendStateOGL();
@@ -297,7 +298,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	m_interlace.cb = new GSUniformBufferOGL(2, sizeof(InterlaceConstantBuffer));
 
-	for(int i = 0; i < countof(m_interlace.ps); i++)
+	for(uint i = 0; i < countof(m_interlace.ps); i++)
 		CompileShaderFromSource("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, &m_interlace.ps[i]);
 	// ****************************************************************
 	// Shade boost
@@ -378,6 +379,7 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// HW renderer shader
 	// ****************************************************************
+	m_enable_shader_AMD_hack = true; // ....
 	CreateTextureFX();
 
 	// ****************************************************************
@@ -500,7 +502,9 @@ bool GSDeviceOGL::Reset(int w, int h)
 void GSDeviceOGL::Flip()
 {
 	// FIXME: disable it when code is working
+	#ifdef OGL_DEBUG
 	CheckDebugLog();
+	#endif
 
 	m_wnd->Flip();
 
@@ -1166,8 +1170,6 @@ void GSDeviceOGL::OMSetFBO(GLuint fbo, GLenum buffer)
 
 void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref)
 {
-	uint ref = sref;
-
 	if(m_state.dss != dss) {
 		m_state.dss = dss;
 		m_state.sref = sref;
@@ -1236,6 +1238,40 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	}
 }
 
+// AMD drivers fail to support correctly the setting of index in fragment shader (layout statement in glsl)...
+// So instead to use directly glCreateShaderProgramv, you need to emulate the function and manually set 
+// the index in the fragment shader.
+GLuint GSDeviceOGL::glCreateShaderProgramv_AMD_BUG_WORKAROUND(GLenum  type,  GLsizei  count,  const char ** strings)
+{
+	const GLuint shader = glCreateShader(type);
+	if (shader) {
+		glShaderSource(shader, count, strings, NULL);
+		glCompileShader(shader);
+		const GLuint program = glCreateProgram();
+		if (program) {
+			GLint compiled = GL_FALSE;
+			glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+			glProgramParameteri(program, GL_PROGRAM_SEPARABLE, GL_TRUE);
+			if (compiled) {
+				glAttachShader(program, shader);
+				// HACK TO SET CORRECTLY THE INDEX
+				if (type == GL_FRAGMENT_SHADER && m_enable_shader_AMD_hack) {
+					glBindFragDataLocationIndexed(program, 0, 0, "SV_Target0");
+					glBindFragDataLocationIndexed(program, 0, 1, "SV_Target1");
+				}
+				// END OF HACK
+				glLinkProgram(program);
+				glDetachShader(program, shader);
+			}
+			/* append-shader-info-log-to-program-info-log */
+		}
+		glDeleteShader(shader);
+		return program;
+	} else {
+		return 0;
+	}
+}
+
 void GSDeviceOGL::CompileShaderFromSource(const std::string& glsl_file, const std::string& entry, GLenum type, GLuint* program, const std::string& macro_sel)
 {
 	// *****************************************************
@@ -1264,9 +1300,6 @@ void GSDeviceOGL::CompileShaderFromSource(const std::string& glsl_file, const st
 	std::string entry_main = format("#define %s main\n", entry.c_str());
 
 	std::string header = version + shader_type + entry_main + macro_sel;
-#ifdef DISABLE_DUAL_BLEND
-	header += "#define DISABLE_DUAL_BLEND 1\n";
-#endif
 
 	// *****************************************************
 	// Read the source file
@@ -1275,10 +1308,10 @@ void GSDeviceOGL::CompileShaderFromSource(const std::string& glsl_file, const st
 	std::string line;
 	// Each linux distributions have his rules for path so we give them the possibility to
 	// change it with compilation flags. -- Gregory
-#ifdef PLUGIN_DIR_COMPILATION
-#define xPLUGIN_DIR_str(s) PLUGIN_DIR_str(s)
-#define PLUGIN_DIR_str(s) #s
-	const std::string shader_file = string(xPLUGIN_DIR_str(PLUGIN_DIR_COMPILATION)) + '/' + glsl_file;
+#ifdef GLSL_SHADER_DIR_COMPILATION
+#define xGLSL_SHADER_DIR_str(s) GLSL_SHADER_DIR_str(s)
+#define GLSL_SHADER_DIR_str(s) #s
+	const std::string shader_file = string(xGLSL_SHADER_DIR_str(GLSL_SHADER_DIR_COMPILATION)) + '/' + glsl_file;
 #else
 	const std::string shader_file = string("plugins/") + glsl_file;
 #endif
@@ -1309,7 +1342,22 @@ void GSDeviceOGL::CompileShaderFromSource(const std::string& glsl_file, const st
 	header.copy(header_str, header.size(), 0);
 	header_str[header.size()] = '\0';
 
-	*program = glCreateShaderProgramv(type, 2, sources_array);
+	// ... See below to test that index is correctly set by driver
+	//*program = glCreateShaderProgramv(type, 2, sources_array);
+	*program = glCreateShaderProgramv_AMD_BUG_WORKAROUND(type, 2, sources_array);
+
+	// DEBUG AMD failure...
+	// GLint index = -1;
+
+	// index    = glGetFragDataIndex(*program,  "SV_Target0");
+	// fprintf(stderr, "Frag0 index %d\n", index);
+	// assert(index == 0);
+
+	// index    = glGetFragDataIndex(*program,  "SV_Target1");
+	// fprintf(stderr, "Frag1 index %d\n", index);
+	// assert(index == 1);
+	// END DEBUG AMD
+
 	free(source_str);
 	free(header_str);
 	free(sources_array);
@@ -1430,13 +1478,8 @@ void GSDeviceOGL::DebugOutputToFile(unsigned int source, unsigned int type, unsi
 #define D3DBLEND_BLENDFACTOR	GL_CONSTANT_COLOR
 #define D3DBLEND_INVBLENDFACTOR GL_ONE_MINUS_CONSTANT_COLOR
 
-#ifdef DISABLE_DUAL_BLEND
-	#define D3DBLEND_SRCALPHA		GL_SRC_ALPHA
-	#define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC_ALPHA
-#else
-	#define D3DBLEND_SRCALPHA		GL_SRC1_ALPHA
-	#define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC1_ALPHA
-#endif
+#define D3DBLEND_SRCALPHA		GL_SRC1_ALPHA
+#define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC1_ALPHA
                         
 const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
 {
