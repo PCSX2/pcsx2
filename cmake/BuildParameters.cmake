@@ -20,6 +20,7 @@
 ### Packaging options
 # Installation path           : -DPACKAGE_MODE=TRUE(follow FHS)|FALSE(local bin/)
 # Plugin installation path    : -DPLUGIN_DIR="/usr/lib/pcsx2"
+# GL Shader installation path : -DGLSL_SHADER_DIR="/usr/share/games/pcsx2"
 # Game DB installation path   : -DGAMEINDEX_DIR="/var/games/pcsx2"
 # Follow XDG standard         : -DXDG_STD=TRUE|FALSE
 #-------------------------------------------------------------------------------
@@ -123,7 +124,7 @@ set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "")
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-set(DEFAULT_WARNINGS "-Wno-write-strings -Wno-format -Wno-unused-parameter -Wno-unused-value -Wstrict-aliasing")
+set(DEFAULT_WARNINGS "-Wno-write-strings -Wno-format -Wno-unused-parameter -Wno-unused-value -Wstrict-aliasing -Wno-unused-function")
 set(DEFAULT_GCC_FLAG "-m32 -msse -msse2 -march=i686 -pthread ${DEFAULT_WARNINGS}")
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 
@@ -183,8 +184,13 @@ if(PACKAGE_MODE)
         set(GAMEINDEX_DIR "/var/games/pcsx2")
     endif(NOT DEFINED GAMEINDEX_DIR)
 
-    # Compile all source codes with these 2 defines
+    if(NOT DEFINED GLSL_SHADER_DIR)
+        set(GLSL_SHADER_DIR "/usr/share/games/pcsx2")
+    endif(NOT DEFINED GLSL_SHADER_DIR)
+
+    # Compile all source codes with these 3 defines
     add_definitions(-DPLUGIN_DIR_COMPILATION=${PLUGIN_DIR} -DGAMEINDEX_DIR_COMPILATION=${GAMEINDEX_DIR})
+    add_definitions(-DGLSL_SHADER_DIR_COMPILATION=${GLSL_SHADER_DIR})
 endif(PACKAGE_MODE)
 
 #-------------------------------------------------------------------------------

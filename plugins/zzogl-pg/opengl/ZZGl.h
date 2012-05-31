@@ -84,13 +84,20 @@ static __forceinline void GL_STENCILFUNC_SET()
 	glStencilFunc(s_stencilfunc, s_stencilref, s_stencilmask); 
 }
 
+#ifdef GLSL4_API
+#include "ZZoglShaders.h"
+#endif
 // sets the data stream
 static __forceinline void SET_STREAM()
 {
+#ifndef GLSL4_API
 	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexGPU), (void*)8);
 	glSecondaryColorPointerEXT(4, GL_UNSIGNED_BYTE, sizeof(VertexGPU), (void*)12);
 	glTexCoordPointer(3, GL_FLOAT, sizeof(VertexGPU), (void*)16);
 	glVertexPointer(4, GL_SHORT, sizeof(VertexGPU), (void*)0);
+#else
+	vertex_array->set_internal_format();
+#endif
 }
 
 // global alpha blending settings
@@ -149,8 +156,14 @@ extern PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC glGetFramebufferAttachmen
 extern PFNGLGENERATEMIPMAPEXTPROC glGenerateMipmapEXT;
 extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
 
+#ifdef GLSL4_API
+#include "ZZoglShaders.h"
+#endif
 static __forceinline void DrawTriangleArray()
 {
+#ifdef GLSL4_API
+	ZZshSetupShader();
+#endif
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	GL_REPORT_ERRORD();
 }

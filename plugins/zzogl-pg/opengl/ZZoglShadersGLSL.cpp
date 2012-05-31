@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef GLSL_API 		// This code is only for GLSL API
+#if defined(GLSL_API) && !defined(GLSL4_API) 		// This code is only for GLSL API
 // ZZogl Shader manipulation functions.
 
 /*
@@ -237,10 +237,10 @@ bool ZZshCreateOpenShadersFile() {
 	if ((ShaderFD == -1) || (fstat(ShaderFD, &sb) == -1)) {	
 		// Each linux distributions have his rules for path so we give them the possibility to
 		// change it with compilation flags. -- Gregory
-#ifdef PLUGIN_DIR_COMPILATION
-#define xPLUGIN_DIR_str(s) PLUGIN_DIR_str(s)
-#define PLUGIN_DIR_str(s) #s
-		ShaderFileName = string(xPLUGIN_DIR_str(PLUGIN_DIR_COMPILATION)) + "/ps2hw.glsl";
+#ifdef GLSL_SHADER_DIR_COMPILATION
+#define xGLSL_SHADER_DIR_str(s) GLSL_SHADER_DIR_str(s)
+#define GLSL_SHADER_DIR_str(s) #s
+		ShaderFileName = string(xGLSL_SHADER_DIR_str(GLSL_SHADER_DIR_COMPILATION)) + "/ps2hw.glsl";
 		ShaderFD = open(ShaderFileName.c_str(), O_RDONLY);
 #endif
 		if ((ShaderFD == -1) || (fstat(ShaderFD, &sb) == -1)) {	
@@ -290,7 +290,7 @@ void ZZshGLSetTextureParameter(ZZshShaderLink prog, ZZshParameter param, GLuint 
 // This is helper of cgGLSetParameter4fv, made for debug purpose.
 // Name could be any string. We must use it on compilation time, because erroneus handler does not
 // return name
-void ZZshSetParameter4fv(ZZshShaderLink prog, ZZshParameter param, const float* v, const char* name) {	
+void ZZshSetParameter4fv(ZZshShaderLink& prog, ZZshParameter param, const float* v, const char* name) {
 	if (param > -1) {
 //		ZZLog::Error_Log("Set float parameter %s %f, %f, %f, %f... Ok", name, v[0], v[1], v[2], v[3]);
 		SettleFloat(UniformsIndex[param].fvalue, v);
@@ -307,13 +307,13 @@ void ZZshSetParameter4fv(ZZshParameter param, const float* v, const char* name) 
 }
 
 // The same stuff, but also with retry of param, name should be USED name of param for prog.
-void ZZshSetParameter4fvWithRetry(ZZshParameter* param, ZZshShaderLink prog, const float* v, const char* name) {
+void ZZshSetParameter4fvWithRetry(ZZshParameter* param, ZZshShaderLink& prog, const float* v, const char* name) {
 	if (param != NULL)
 		ZZshSetParameter4fv(prog, *param, v, name);
 }
 
 // Used sometimes for color 1.
-void ZZshDefaultOneColor( FRAGMENTSHADER ptr ) {
+void ZZshDefaultOneColor( FRAGMENTSHADER& ptr ) {
 //	return;	
 	ShaderHandleName = "Set Default One colot";
 	float4 v = float4 ( 1, 1, 1, 1 );
@@ -426,7 +426,7 @@ inline bool GetLinkLog(ZZshProgram prog) {
 
 	if (LinkStatus == GL_TRUE && glIsProgram(prog)) return true;
 
-#ifdef DEVBUILD
+#if	defined(DEVBUILD) || defined(_DEBUG)
 	int* lenght, infologlength;
 	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &infologlength);
 	char* InfoLog = new char[infologlength];
@@ -474,6 +474,9 @@ static void PutParametersInProgam(int start, int finish) {
 			}
 			else
 			{
+				// assert(param.texid != 0);
+				// ZZLog::Error_Log("Set texture (%s) : %d with sampler %d\n", param.ShName, param.texid, param.sampler);
+				// assert(param.sampler >= 0);
 				glActiveTexture(GL_TEXTURE0 + param.sampler);
 				if (param.type == ZZ_TEXTURE_2D)
 					glBindTexture(GL_TEXTURE_2D, param.texid);
@@ -974,4 +977,4 @@ FRAGMENTSHADER* ZZshLoadShadeEffect(int type, int texfilter, int fog, int testae
 	return NULL;
 }
 
-#endif // GLSL_API
+#endif
