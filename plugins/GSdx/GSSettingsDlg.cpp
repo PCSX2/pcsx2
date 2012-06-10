@@ -105,7 +105,7 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfig("logz", 1));
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfig("fba", 1));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfig("aa1", 0));
-	CheckDlgButton(m_hWnd, IDC_NATIVERES, theApp.GetConfig("nativeres", 0));
+	CheckDlgButton(m_hWnd, IDC_NATIVERES, theApp.GetConfig("nativeres", 1));
 
 	// Shade Boost
 	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfig("ShadeBoost", 0));
@@ -487,7 +487,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			case IDC_AGGRESSIVECRC:
 				helpstr = "Use more aggressive CRC hacks on some games\n\n"
 						  "Only affects few games, removing some effects which might make the image sharper/clearer.\n"
-						  "Affected games: FFX, FFX2, GOW2, SoTC, SSX3.";
+						  "Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3.";
 				break;
 			default:
 				helpstr = "Hover over an item to get a description.";
