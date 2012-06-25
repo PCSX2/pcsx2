@@ -110,7 +110,9 @@ const ZZshParamInfo  qZero = {ShName:"", type:ZZ_UNDEFINED, fvalue:{0}, sampler:
 const ZZshShaderLink sZero = {link: NULL, isFragment: false};
 
 inline bool ZZshActiveParameter(ZZshParameter param) {return (param > -1); }
+#ifndef GLSL4_API
 #define SAFE_RELEASE_PROG(x) 	{ /*don't know what to do*/ }
+#endif
 
 // ---------------------------
 
@@ -351,11 +353,21 @@ struct SamplerParam {
 		assert(unit >= 0);
 		assert(unit < 11);
 		if (texid) {
+			// Unfortunately there is a nastly corner case
+			// 1/ Attach a texture to the unit
+			// 2/ delete the texture
+			// 3/ recreate a texture (with same id)
+			// 4/ => texture need to be reattached again...
+#if 0
 			if (g_current_texture_bind[unit] != texid) {
 				glActiveTexture(GL_TEXTURE0 + unit);
 				glBindTexture(target, texid);
 				g_current_texture_bind[unit] = texid;
 			}
+#else
+			glActiveTexture(GL_TEXTURE0 + unit);
+			glBindTexture(target, texid);
+#endif
 		}
 	}
 
@@ -616,7 +628,28 @@ struct VERTEXSHADER
 	bool IsDualContext(ZZshParameter param) { return false;}
 
 	void set_context(uint new_context) { context = new_context * NOCONTEXT;}
+
+	void release_prog() {
+		if(program) {
+			glDeleteProgram(program);
+			program = 0;
+		}
+	}
 };
+#endif
+
+#ifdef GLSL4_API
+#define SAFE_RELEASE_PROG(x) 	{ \
+	if ((x.link) != NULL) { \
+		if (x.isFragment) { \
+			FRAGMENTSHADER* shader = (FRAGMENTSHADER*)x.link; \
+			shader->release_prog(); \
+		} else { \
+			VERTEXSHADER* shader = (VERTEXSHADER*)x.link; \
+			shader->release_prog(); \
+		} \
+	} \
+}
 #endif
 
 	extern VERTEXSHADER pvsBitBlt;
