@@ -32,7 +32,7 @@ EOF
 
 # Default value
 SVN_CO_VERSION=0;
-BRANCH="trunk"
+BRANCH="1.0.0"
 LOCAL=0
 while [ -n "$1" ]; do
 case $1 in
@@ -130,15 +130,6 @@ mkdir -p $ROOT_DIR/plugins
 echo "Note: some plugins are more or less deprecated CDVDisoEFP, CDVDlinuz, Zerogs, Zeropad ...";
 echo "Done")
 
-## Download the internal sdl 1.3 for gsdx
-# echo "Downloading 3rdpary SDL 1.3 (need by gsdx) revision ${SVN_CO_VERSION}"
-# mkdir -p $ROOT_DIR/3rdparty
-# (cd $ROOT_DIR/3rdparty/;
-#     get_svn_file 3rdparty/CMakeLists.txt;
-#     get_svn_dir 3rdparty/SDL-1.3.0-5387;)
-# echo "Done"
-    
-
 ## Installation
 echo "Copy the subversion repository to a temporary directory"
 # Copy the dir
@@ -156,7 +147,6 @@ echo "Remove useless files (copyright issues)"
 rm -fr "${NEW_DIR}/plugins/zzogl-pg/opengl/ZeroGSShaders"
 rm -fr "${NEW_DIR}/common/src/Utilities/x86/MemcpyFast.cpp"
 rm -fr "${NEW_DIR}/plugins/GSdx/baseclasses"
-rm -fr "${NEW_DIR}/plugins/GSdx/vtune"
 
 ## BUILD
 echo "Build the tar.gz file"
