@@ -1,0 +1,11 @@
+Bug fix release 1.0.1:
+
+System:
+Fixed incorrect handling of framerate adjustment percentage settings.
+Fixed cases in which GS window settings do not apply until the PCSX2 is restarted.
+
+Core:
+Fixed crash on startup when virtual memory for SuperVU cannot be allocated.
+
+SPU2-X:
+Fixed out of bounds array access in ADPCM decoding causing bad audio.  (Multiple Crash Bandicoot games.)

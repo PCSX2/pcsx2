@@ -350,7 +350,8 @@ static void SuperVUAlloc(int vuindex)
 {
 	if (s_recVUMem[vuindex]) return;
 
-	s_recVUMem[vuindex] = new RecompiledCodeReserve( pxsFmt("SuperVU%u Recompiler Cache", vuindex), 0 );
+	wxString mem_name = pxsFmt("SuperVU%u Recompiler Cache", vuindex);
+	s_recVUMem[vuindex] = new RecompiledCodeReserve( mem_name, 0 );
 	s_recVUMem[vuindex]->Reserve( sVU_EXESIZE, vuindex ? HostMemoryMap::sVU1rec : HostMemoryMap::sVU0rec, _256mb );
 	s_recVUMem[vuindex]->SetProfilerName(pxsFmt("sVU%urec",vuindex));
 
@@ -358,7 +359,7 @@ static void SuperVUAlloc(int vuindex)
 	if (!s_recVUMem[vuindex]->IsOk())
 	{
 		safe_delete(s_recVUMem[vuindex]);
-		throw Exception::VirtualMemoryMapConflict( s_recVUMem[vuindex]->GetName() )
+		throw Exception::VirtualMemoryMapConflict(mem_name)
 			.SetDiagMsg(pxsFmt( L"SuperVU failed to allocate virtual memory below 256MB." ))
 			.SetUserMsg(pxE( "!Notice:superVU:VirtualMemoryAlloc",
 				L"Out of Memory (sorta): The SuperVU recompiler was unable to reserve the specific memory "
