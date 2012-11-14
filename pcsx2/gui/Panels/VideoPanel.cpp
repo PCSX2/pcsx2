@@ -313,6 +313,8 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 		L"Warning: This option can be enabled on-the-fly but typically cannot be disabled on-the-fly (video will typically be garbage)."
 	) );
 
+	m_check_DisableOutput->Hide(); // Band-aid fix since currently broken
+
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
 	//winpan->AddFrame(_("Display/Window"));
 

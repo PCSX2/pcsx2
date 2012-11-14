@@ -3,9 +3,12 @@ Bug fix release 1.0.1:
 System:
 Fixed incorrect handling of framerate adjustment percentage settings.
 Fixed cases in which GS window settings do not apply until the PCSX2 is restarted.
+Hidden disable GS output option as isn't currently stable and is only meant for testing.
 
 Core:
 Fixed crash on startup when virtual memory for SuperVU cannot be allocated.
+Fixed scratchpad DMA access to VU1 memory.
 
 SPU2-X:
 Fixed out of bounds array access in ADPCM decoding causing bad audio.  (Multiple Crash Bandicoot games.)
+Disable digital effects when the effects buffer has an illegal address until we know what to do with it.  Prevents crash / memory corruption.
