@@ -1,0 +1,70 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.loungecat.pcsx2android"
+    android:versionCode="6"
+    android:versionName="0.r6" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="19" />
+	
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.READ_LOGS" />
+
+	<uses-feature android:glEsVersion="0x00020000" android:required="true" />
+	<uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+	<uses-feature android:name="android.hardware.microphone" android:required="false"/>
+  
+    <application
+        android:hardwareAccelerated="true"
+        android:largeHeap="true" 
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        
+        <activity
+            android:name=".Launcher"
+            android:label="@string/app_name"
+            android:configChanges="orientation|screenSize|screenLayout|uiMode" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity
+            android:name="com.reicast.emulator.MainActivity"
+            android:label="@string/app_name"
+            android:configChanges="orientation|screenSize|screenLayout|uiMode" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="tv.ouya.intent.category.GAME"/>
+            </intent-filter>
+        </activity>
+        
+        <activity android:name="com.reicast.emulator.GL2JNIActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            <meta-data android:name="android.app.lib_name" android:value="dc" />
+            
+            <intent-filter>
+		        <action android:name="android.intent.action.VIEW" />
+		        <category android:name="android.intent.category.DEFAULT" />
+		        <category android:name="android.intent.category.BROWSABLE" />
+		        <data android:scheme="file" android:mimeType="*/*" android:host="*" android:pathPattern=".*\\.GDI"/>
+		        <data android:scheme="file" android:mimeType="*/*" android:host="*" android:pathPattern=".*\\.gdi"/>
+		        <data android:scheme="file" android:mimeType="*/*" android:host="*" android:pathPattern=".*\\.CHD"/>
+		        <data android:scheme="file" android:mimeType="*/*" android:host="*" android:pathPattern=".*\\.chd"/>
+		        <data android:scheme="file" android:mimeType="*/*" android:host="*" android:pathPattern=".*\\.CDI"/>
+		        <data android:scheme="file" android:mimeType="*/*" android:host="*" android:pathPattern=".*\\.cdi"/>
+		     </intent-filter>
+        </activity>
+
+        <activity android:name="com.reicast.emulator.EditVJoyActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+        
+    </application>
+
+</manifest>

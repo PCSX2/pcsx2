@@ -1,0 +1,83 @@
+<resources>
+
+    <string name="menu_settings">Einstellungen</string>
+    <string name="system_path">System Pfad (Speicherort des data Ordners welcher dc_boot.bin und dc_flash.bin enthält)</string>
+    <string name="browser_path">Standard System Pfad</string>
+    <string name="games_path">Spiele Pfad (Speicherort von .gdi, .chd oder .cdi Abbildern)</string>
+    <string name="game_path">Standard Spiele Pfad</string>
+    
+    <string name="boot_bios">Dreamcast Bios Starten</string>
+    <string name="missing_bios">Fehlendes BIOS. Für einen funktionsfähigen Emulator ist das Dreamcast BIOS erforderlich. Legen Sie die BIOS Datei unter %1$s/data/dc_boot.bin ab.</string>
+    <string name="missing_flash">Fehlender Flash. Für einen funktionsfähigen Emulator ist der Dreamcast Flash erforderlich. Legen Sie die Flash Datei unter %1$s/data/dc_flash.bin ab.</string>
+    <string name="require_bios">Es muss ein BIOS bereitgestellt werden</string>
+    
+    <string name="folder_bios">BIOS STARTEN</string>
+    <string name="folder_select">AKTUELLES VERZEICHNIS WÄHLEN</string>
+
+    <string name="select_dynarec">Dynarec Optionen</string>
+    <string name="select_unstable">Nicht stabile Optimierungen</string>
+    <string name="select_region">DC Region</string>
+    <string name="select_limitfps">Limitiere FPS</string>
+    <string name="select_mipmaps">Verwende Mipmaps (Fehlerbehebung für den SGX540)</string>
+    <string name="select_stretch">Breitbild Modus</string>
+    <string name="set_frameskip">Frameskip Wert</string>
+    <string name="select_render">PVR Rendering (Hat momentan keine Funktion)</string>
+    <string name="default_disk">Wähle Standard Datenträger</string>
+
+    <string name="games_listing">Verfügbare Dreamcast Spiele</string>
+
+    <string name="customize_touch_controls">Touch Steuerung anpassen</string>
+    <string name="launch_editor">Editor Starten</string>
+    <string name="touch_vibration">Touch Vibration</string>
+    <string name="controller_a">Controller A</string>
+    <string name="controller_b">Controller B</string>
+    <string name="controller_c">Controller C</string>
+    <string name="controller_d">Controller D</string>
+    <string name="controller_not_connected">Controller Nicht Verbunden</string>
+    <string name="controller_none_selected">Kein Controller Ausgewählt</string>
+    <string name="select">Auswählen</string>
+    <string name="remove">Entfernen</string>
+    <string name="select_controller_title">Controller Auswählen</string>
+    <string name="select_controller_message">Drücken Sie eine beliebe Taste auf Controller %1$s für ein Hinzufügen zum Port</string>
+    <string name="controller_already_in_use">Dieser Controller ist bereits in Verwendung!</string>
+    <string name="modified_layout">Benutzerdefiniertes Layout</string>
+    <string name="controller_compat">Kompatibilitätsmodus</string>
+    
+    <string name="customize_physical_controls">Physische Controller anpassen</string>
+    <string name="map_keycode_title">Controller Ändern</string>
+    <string name="map_keycode_message">Drücken Sie die neue Controller-Taste für %1$s</string>
+    
+    <string name="moga_pro_connect">MOGA Pro verbunden!</string>
+    <string name="moga_connect">MOGA verbunden!</string>
+
+    <string name="about_text">reicast ist ein Dreamcast Emulator\n\nVersion: %1$s</string>
+    
+    <string-array name="controllers">
+    <item>Controller A</item>
+    <item>Controller B</item>
+    <item>Controller C</item>
+    <item>Controller D</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>(Standard)</item>
+    </string-array>
+
+   	<string name="browser">Browser</string>
+    <string name="settings">Einstellungen</string>
+    <string name="paths">Pfade</string>
+    <string name="input">Eingabe</string>
+    <string name="about">Über</string>
+    <string name="rateme">Bewerten</string>
+    
+    <string name="textOn">Ein</string>
+    <string name="textOff">Aus</string>
+    
+    <string name="platform">Kopieren logcat Inhalt in die Zwischenablage kopieren\nBitte fügen Sie in der Ausgabe Bericht</string>
+
+    <string name="menu_debug">Senden Debug-Protokolle</string>
+
+</resources>

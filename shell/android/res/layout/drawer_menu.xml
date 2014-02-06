@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/background" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/browser_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical|left"
+            android:layout_marginLeft="4dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:background="@drawable/game_selector" >
+
+            <ImageView
+                android:id="@+id/browser"
+                android:layout_width="52dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:gravity="center_vertical|left"
+                android:scaleType="fitCenter"
+                android:src="@drawable/disk_unknown" />
+
+            <TextView
+                android:id="@+id/browser_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+				style="@android:style/TextAppearance.Large"
+                android:text="@string/browser"
+                android:textSize="28dp"
+                android:textAppearance="@style/BaseText" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settings_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical|left"
+            android:layout_marginLeft="26dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:background="@drawable/game_selector" >
+
+            <ImageView
+                android:id="@+id/config"
+                android:layout_width="52dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:gravity="center_vertical|left"
+                android:scaleType="fitCenter"
+                android:src="@drawable/config" />
+
+            <TextView
+                android:id="@+id/config_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+				style="@android:style/TextAppearance.Large"
+                android:text="@string/settings"
+                android:textSize="28dp"
+                android:textAppearance="@style/BaseText" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/paths_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical|left"
+            android:layout_marginLeft="4dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:background="@drawable/game_selector" >
+
+            <ImageView
+                android:id="@+id/options"
+                android:layout_width="52dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:gravity="center_vertical|left"
+                android:scaleType="fitCenter"
+                android:src="@drawable/open_folder" />
+
+            <TextView
+                android:id="@+id/options_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+				style="@android:style/TextAppearance.Large"
+                android:text="@string/paths"
+                android:textSize="28dp"
+                android:textAppearance="@style/BaseText" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/input_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical|left"
+            android:layout_marginLeft="26dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:background="@drawable/game_selector" >
+
+            <ImageView
+                android:id="@+id/input"
+                android:layout_width="52dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:gravity="center_vertical|left"
+                android:scaleType="fitCenter"
+                android:src="@drawable/input" />
+
+            <TextView
+                android:id="@+id/input_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+				style="@android:style/TextAppearance.Large"
+                android:text="@string/input"
+                android:textSize="28dp"
+                android:textAppearance="@style/BaseText" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/about_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical|left"
+            android:layout_marginLeft="4dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:background="@drawable/game_selector" >
+
+            <ImageView
+                android:id="@+id/about"
+                android:layout_width="52dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:gravity="center_vertical|left"
+                android:scaleType="fitCenter"
+                android:src="@drawable/question" />
+
+            <TextView
+                android:id="@+id/about_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+				style="@android:style/TextAppearance.Large"
+                android:text="@string/about"
+                android:textSize="28dp"
+                android:textAppearance="@style/BaseText" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rateme_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical|left"
+            android:layout_marginLeft="26dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:background="@drawable/game_selector" >
+
+            <ImageView
+                android:id="@+id/rate"
+                android:layout_width="52dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/star" />
+
+            <TextView
+                android:id="@+id/rateme_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+				style="@android:style/TextAppearance.Large"
+                android:text="@string/rateme"
+                android:textSize="28dp"
+                android:textAppearance="@style/BaseText" />
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
