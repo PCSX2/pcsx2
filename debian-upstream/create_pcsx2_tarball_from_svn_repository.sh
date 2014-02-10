@@ -32,7 +32,7 @@ EOF
 
 # Default value
 SVN_CO_VERSION=0;
-BRANCH="trunk"
+BRANCH="1.2.x"
 LOCAL=0
 while [ -n "$1" ]; do
 case $1 in
@@ -57,8 +57,8 @@ else
 fi
 
 # Debian name of package and tarball
-PKG_NAME="pcsx2.snapshot-${SVN_CO_VERSION}"
-TAR_NAME="pcsx2.snapshot_${SVN_CO_VERSION}.orig.tar"
+PKG_NAME="pcsx2-1.2.2"
+TAR_NAME="pcsx2_1.2.2.orig.tar"
 
 # Directory
 TMP_DIR=/tmp

@@ -17,7 +17,7 @@ override_dh_auto_configure:
 		-DPACKAGE_MODE=TRUE
 
 override_dh_strip:
-	dh_strip --package=pcsx2-unstable --dbg-package=pcsx2-unstable-dbg
+	dh_strip --package=pcsx2 --dbg-package=pcsx2-dbg
 
 override_dh_makeshlibs:
 

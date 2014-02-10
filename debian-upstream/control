@@ -1,4 +1,4 @@
-Source: pcsx2.snapshot
+Source: pcsx2
 Section: contrib/games
 Priority: optional
 Maintainer: Gregory Hainaut <gregory.hainaut@gmail.com>
@@ -28,7 +28,7 @@ Build-Depends: cmake (>= 2.8.5),
 Standards-Version: 3.9.3
 Homepage: http://pcsx2.net/
 
-Package: pcsx2-unstable
+Package: pcsx2
 Architecture: i386
 Depends: ${shlibs:Depends}, ${misc:Depends}
 # libasound => alsa plugin for pulseaudio
@@ -36,12 +36,12 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: libasound2-plugins,
     libusb-0.1-4
 Conflicts: pcsx2,
-    pcsx2-data-unstable,
-    pcsx2-l10n-unstable,
-    pcsx2-plugins-unstable
-Replaces: pcsx2-data-unstable,
-    pcsx2-l10n-unstable,
-    pcsx2-plugins-unstable
+    pcsx2-data,
+    pcsx2-l10n,
+    pcsx2-plugins
+Replaces: pcsx2-data,
+    pcsx2-l10n,
+    pcsx2-plugins
 Description: Playstation 2 emulator
  PCSX2 is a PlayStation 2 emulator for Windows and Linux.
  .
@@ -49,14 +49,14 @@ Description: Playstation 2 emulator
  this instruction set, it does not have enough horse power to run this emulator
  anyway.
 
-Package: pcsx2-unstable-dbg
+Package: pcsx2-dbg
 Section: contrib/debug
 Priority: extra
 Architecture: i386
-Depends: ${misc:Depends}, pcsx2-unstable (= ${binary:Version})
+Depends: ${misc:Depends}, pcsx2 (= ${binary:Version})
 Conflicts: pcsx2-dbg,
-    pcsx2-plugins-unstable-dbg
-Replaces: pcsx2-plugins-unstable-dbg
+    pcsx2-plugins-dbg
+Replaces: pcsx2-plugins-dbg
 Description: Debug symbols for pcsx2
  PCSX2 is a PlayStation 2 emulator for Windows and Linux.
  .
