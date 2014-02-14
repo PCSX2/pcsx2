@@ -20,6 +20,8 @@
 
 #include <wx/stdpaths.h>
 
+#include "Debugger/DisassemblyDialog.h"
+
 #include "Utilities/TlsVariable.inl"
 
 #include "ps2/BiosTools.h"
@@ -197,7 +199,21 @@ void AppCoreThread::OnResumeReady()
 {
 	wxGetApp().SysApplySettings();
 	wxGetApp().PostMethod( AppSaveSettings );
+
+	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
+	if (dlg)
+		dlg->setDebugMode(false);
+
 	_parent::OnResumeReady();
+}
+
+void AppCoreThread::OnPause()
+{
+	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
+	if (dlg)
+		dlg->setDebugMode(true);
+
+	_parent::OnPause();
 }
 
 // Load Game Settings found in database

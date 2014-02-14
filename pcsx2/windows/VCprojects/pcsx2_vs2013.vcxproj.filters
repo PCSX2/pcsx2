@@ -148,6 +148,9 @@
     <Filter Include="AppHost\Cheats">
       <UniqueIdentifier>{b9da6fbf-4fd9-4cfb-89f7-34ac0f933ce9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AppHost\Debugger">
+      <UniqueIdentifier>{7a0a1104-f9ee-4cd1-aaba-f8267eba1658}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -811,6 +814,12 @@
     <ClCompile Include="..\..\DebugTools\DisassemblyManager.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\CtrlDisassemblyView.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1188,6 +1197,12 @@
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\DisassemblyManager.h">
       <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h">
+      <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h">
+      <Filter>AppHost\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
