@@ -7,6 +7,10 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
 	EVT_MOTION(CtrlDisassemblyView::mouseEvent)
 	EVT_KEY_DOWN(CtrlDisassemblyView::keydownEvent)
+	EVT_SCROLLWIN_LINEUP(CtrlDisassemblyView::scrollbarEvent)
+	EVT_SCROLLWIN_LINEDOWN(CtrlDisassemblyView::scrollbarEvent)
+	EVT_SCROLLWIN_PAGEUP(CtrlDisassemblyView::scrollbarEvent)
+	EVT_SCROLLWIN_PAGEDOWN(CtrlDisassemblyView::scrollbarEvent)
 END_EVENT_TABLE()
 
 CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
@@ -19,6 +23,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	charWidth = 10;
 	displaySymbols = true;
 
+	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);
 	calculatePixelPositions();
 }
@@ -29,7 +34,7 @@ void CtrlDisassemblyView::paintEvent(wxPaintEvent & evt)
 	render(dc);
 }
 
-void CtrlDisassemblyView::paintNow()
+void CtrlDisassemblyView::redraw()
 {
 	wxClientDC dc(this);
 	render(dc);
@@ -170,7 +175,7 @@ void CtrlDisassemblyView::gotoAddress(u32 addr)
 	}
 
 	setCurAddress(addr);
-	paintNow();
+	redraw();
 }
 
 void CtrlDisassemblyView::scrollAddressIntoView()
@@ -231,7 +236,27 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 		break;
 	}
 
-	paintNow();
+	redraw();
+}
+
+void CtrlDisassemblyView::scrollbarEvent(wxScrollWinEvent& evt)
+{
+	int type = evt.GetEventType();
+	if (type == wxEVT_SCROLLWIN_LINEUP)
+	{
+		windowStart = manager.getNthPreviousAddress(windowStart,1);
+	} else if (type == wxEVT_SCROLLWIN_LINEDOWN)
+	{
+		windowStart = manager.getNthNextAddress(windowStart,1);
+	} else if (type == wxEVT_SCROLLWIN_PAGEUP)
+	{
+		windowStart = manager.getNthPreviousAddress(windowStart,visibleRows);
+	} else if (type == wxEVT_SCROLLWIN_PAGEDOWN)
+	{
+		windowStart = manager.getNthNextAddress(windowStart,visibleRows);
+	}
+
+	redraw();
 }
 
 void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
@@ -252,7 +277,7 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 		windowStart = manager.getNthNextAddress(windowStart,3);
 	}
 
-	paintNow();
+	redraw();
 }
 
 u32 CtrlDisassemblyView::yToAddress(int y)

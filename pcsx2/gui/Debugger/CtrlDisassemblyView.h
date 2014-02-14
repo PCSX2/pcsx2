@@ -12,7 +12,9 @@ public:
 	void mouseEvent(wxMouseEvent& evt);
 	void paintEvent(wxPaintEvent & evt);
 	void keydownEvent(wxKeyEvent& evt);
-	void paintNow();
+	void scrollbarEvent(wxScrollWinEvent& evt);
+
+	void redraw();
 	
 	void gotoAddress(u32 addr);
 	DECLARE_EVENT_TABLE()
