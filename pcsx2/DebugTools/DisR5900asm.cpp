@@ -649,15 +649,7 @@ void P_COP2_Unknown( string& output )
 void label_decode( string& output, u32 addr )
 {
 	string buf;
-	ssprintf(buf, "0x%08X", addr);
-	const char* label = disR5900GetSym( addr );
-
-	if( label != NULL )
-	{
-		output += label;
-		output += ' ';
-	}
-
+	ssprintf(buf, "->$0x%08X", addr);
 	output += buf;
 }
 
@@ -768,16 +760,16 @@ void SRA( string& output )    { _sap("sra\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], 
 void SLLV( string& output )   { _sap("sllv\t%s, %s, %s")    GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]); }
 void SRLV( string& output )   { _sap("srlv\t%s, %s, %s")    GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]);}
 void SRAV( string& output )   { _sap("srav\t%s, %s, %s")    GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]); }
-void JR( string& output )     { _sap("jr\t%s")              GPR_REG[DECODE_RS]); }
+void JR( string& output )     { _sap("jr\t->%s")            GPR_REG[DECODE_RS]); }
 
 void JALR( string& output )
 {
     int rd = DECODE_RD;
 
     if (rd == 31)
-        _sap("jalr\t%s") GPR_REG[DECODE_RS]);
+        _sap("jalr\t->%s") GPR_REG[DECODE_RS]);
     else
-        _sap("jalr\t%s, %s") GPR_REG[rd], GPR_REG[DECODE_RS]);
+        _sap("jalr\t%s, ->%s") GPR_REG[rd], GPR_REG[DECODE_RS]);
 }
 
 

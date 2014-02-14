@@ -10,7 +10,17 @@ extern AppCoreThread CoreThread;
 
 DebugInterface debug;
 
-u32 DebugInterface::readWord(u32 address)
+u32 DebugInterface::read8(u32 address)
+{
+	return memRead8(address);
+}
+
+u32 DebugInterface::read16(u32 address)
+{
+	return memRead16(address);
+}
+
+u32 DebugInterface::read32(u32 address)
 {
 	return memRead32(address);
 }
@@ -57,6 +67,6 @@ void DebugInterface::resumeCpu()
 std::string DebugInterface::disasm(u32 address)
 {
 	std::string out;
-	R5900::disR5900Fasm(out,memRead32(address),address);
+	R5900::disR5900F(out,memRead32(address));
 	return out;
 }
