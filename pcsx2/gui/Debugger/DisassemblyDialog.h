@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include "App.h"
 
+#include "CtrlDisassemblyView.h"
 
 class DisassemblyDialog : public wxDialogWithHelpers
 {
@@ -13,10 +14,11 @@ public:
 	wxString GetDialogName() const { return GetNameStatic(); }
 
 	void update();
-	void setDebugMode(bool debug);
+	void setDebugMode(bool debugMode);
 protected:
 	void onPauseResumeClicked(wxCommandEvent& evt);
 
 private:
 	wxButton* stopGoButton;
+	CtrlDisassemblyView* disassembly;
 };

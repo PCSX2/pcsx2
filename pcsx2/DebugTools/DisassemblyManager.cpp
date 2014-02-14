@@ -52,6 +52,14 @@ static u32 computeHash(u32 address, u32 size)
 
 void parseDisasm(const char* disasm, char* opcode, char* arguments, bool insertSymbols)
 {
+	if (*disasm == '(')
+	{
+		while (*disasm != ')' && *disasm != 0)
+			disasm++;
+		if (*disasm == ')')
+			disasm++;
+	}
+
 	// copy opcode
 	while (*disasm != 0 && *disasm != '\t')
 	{
@@ -83,7 +91,7 @@ void parseDisasm(const char* disasm, char* opcode, char* arguments, bool insertS
 				arguments += sprintf(arguments,"0x%08X",branchTarget);
 			}
 
-			disasm += 3+8;
+			disasm += 3+2+8;
 			continue;
 		}
 

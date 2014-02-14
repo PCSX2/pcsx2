@@ -45,6 +45,11 @@ u32 DebugInterface::getPC()
 	return cpuRegs.pc;
 }
 
+bool DebugInterface::isRunning()
+{
+	return GetCoreThread().IsRunning();
+}
+
 bool DebugInterface::isCpuPaused()
 {
 	return GetCoreThread().IsPaused();
@@ -67,6 +72,6 @@ void DebugInterface::resumeCpu()
 std::string DebugInterface::disasm(u32 address)
 {
 	std::string out;
-	R5900::disR5900F(out,memRead32(address));
+	R5900::disR5900Fasm(out,memRead32(address),address);
 	return out;
 }

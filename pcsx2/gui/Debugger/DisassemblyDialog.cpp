@@ -11,6 +11,10 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent)
 	stopGoButton = new wxButton( this, wxID_ANY, L"Go" );
 	Connect( stopGoButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onPauseResumeClicked ) );
 
+	disassembly = new CtrlDisassemblyView(this,&debug);
+	disassembly->SetSize(600,500);
+	disassembly->Move(100,20);
+
 	setDebugMode(true);
 	SetMinSize(wxSize(800,600));
 }
@@ -25,15 +29,22 @@ void DisassemblyDialog::onPauseResumeClicked(wxCommandEvent& evt)
 
 void DisassemblyDialog::update()
 {
-
+	disassembly->Refresh();
 }
 
-void DisassemblyDialog::setDebugMode(bool debug)
+void DisassemblyDialog::setDebugMode(bool debugMode)
 {
-	if (debug)
+	bool running = debug.isRunning();
+	stopGoButton->Enable(running);
+
+	if (debugMode)
 	{
 		stopGoButton->SetLabel(L"Go");
+
+		disassembly->gotoAddress(debug.getPC());
 	} else {
 		stopGoButton->SetLabel(L"Stop");
 	}
+
+	update();
 }

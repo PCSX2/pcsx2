@@ -613,8 +613,6 @@ void disR5900Fasm( string& output, u32 code, u32 pc )
 	opcode_addr = pc;
 	cpuRegs.code = code;
 
-	sprintf(obuf, "%08X:\t", pc );
-	output.assign( obuf );
 	GetCurrentInstruction().disasm( output );
 
 	cpuRegs.code = scode;

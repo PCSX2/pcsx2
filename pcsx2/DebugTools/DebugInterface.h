@@ -12,6 +12,7 @@ public:
 	u128 getLO();
 	u32 getPC();
 
+	bool isRunning();
 	bool isCpuPaused();
 	void pauseCpu();
 	void resumeCpu();

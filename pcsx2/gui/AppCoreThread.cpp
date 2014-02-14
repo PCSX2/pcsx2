@@ -110,6 +110,10 @@ void AppCoreThread::Reset()
 		return;
 	}
 
+	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
+	if (dlg)
+		dlg->setDebugMode(true);
+
 	_parent::Reset();
 }
 
