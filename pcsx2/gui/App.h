@@ -533,6 +533,7 @@ public:
 	
 	void enterDebugMode();
 	void leaveDebugMode();
+	void resetDebugger();
 
 	bool HasMainFrame() const	{ return GetMainFramePtr() != NULL; }
 

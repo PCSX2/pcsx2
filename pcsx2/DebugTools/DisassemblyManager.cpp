@@ -561,18 +561,18 @@ void DisassemblyFunction::load()
 			funcPos += 4;
 			continue;
 		}
-		/*
+		
 		// lui
 		if (MIPS_GET_OP(opInfo.encodedOpcode) == 0x0F && funcPos < funcEnd && funcPos != nextData)
 		{
-			MIPSOpcode next = Memory::Read_Instruction(funcPos);
-			MIPSInfo nextInfo = MIPSGetInfo(next);
+			u32 next = cpu->read32(funcPos);
 
-			u32 immediate = ((opInfo.encodedOpcode & 0xFFFF) << 16) + (s16)(next.encoding & 0xFFFF);
+			u32 immediate = ((opInfo.encodedOpcode & 0xFFFF) << 16) + (s16)(next & 0xFFFF);
+			u32 immediateOr = ((opInfo.encodedOpcode & 0xFFFF) << 16) | (u16)(next & 0xFFFF);
 			int rt = MIPS_GET_RT(opInfo.encodedOpcode);
 
-			int nextRs = MIPS_GET_RS(next.encoding);
-			int nextRt = MIPS_GET_RT(next.encoding);
+			int nextRs = MIPS_GET_RS(next);
+			int nextRt = MIPS_GET_RT(next);
 
 			// both rs and rt of the second op have to match rt of the first,
 			// otherwise there may be hidden consequences if the macro is displayed.
@@ -580,41 +580,55 @@ void DisassemblyFunction::load()
 			if (nextRs == rt && nextRt == rt && branchTargets.find(funcPos) == branchTargets.end())
 			{
 				DisassemblyMacro* macro = NULL;
-				switch (MIPS_GET_OP(next.encoding))
+				switch (MIPS_GET_OP(next))
 				{
 				case 0x09:	// addiu
 					macro = new DisassemblyMacro(opAddress);
 					macro->setMacroLi(immediate,rt);
 					funcPos += 4;
 					break;
+				case 0x0D:	// ori
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroLi(immediateOr,rt);
+					funcPos += 4;
+					break;
 				case 0x20:	// lb
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroMemory("lb",immediate,rt,1);
+					funcPos += 4;
+					break;
 				case 0x21:	// lh
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroMemory("lh",immediate,rt,2);
+					funcPos += 4;
+					break;
 				case 0x23:	// lw
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroMemory("lw",immediate,rt,4);
+					funcPos += 4;
+					break;
 				case 0x24:	// lbu
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroMemory("lbu",immediate,rt,1);
+					funcPos += 4;
+					break;
 				case 0x25:	// lhu
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroMemory("lhu",immediate,rt,2);
+					funcPos += 4;
+					break;
 				case 0x28:	// sb
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroMemory("sb",immediate,rt,1);
+					funcPos += 4;
+					break;
 				case 0x29:	// sh
+					macro = new DisassemblyMacro(opAddress);
+					macro->setMacroMemory("sh",immediate,rt,2);
+					funcPos += 4;
 				case 0x2B:	// sw
 					macro = new DisassemblyMacro(opAddress);
-					
-					int dataSize;
-					switch (nextInfo & MEMTYPE_MASK) {
-					case MEMTYPE_BYTE:
-						dataSize = 1;
-						break;
-					case MEMTYPE_HWORD:
-						dataSize = 2;
-						break;
-					case MEMTYPE_WORD:
-					case MEMTYPE_FLOAT:
-						dataSize = 4;
-						break;
-					case MEMTYPE_VQUAD:
-						dataSize = 16;
-						break;
-					}
-
-					macro->setMacroMemory(MIPSGetName(next),immediate,rt,dataSize);
+					macro->setMacroMemory("sw",immediate,rt,4);
 					funcPos += 4;
 					break;
 				}
@@ -634,7 +648,7 @@ void DisassemblyFunction::load()
 					continue;
 				}
 			}
-		}*/
+		}
 
 		// just a normal opcode
 	}
@@ -735,15 +749,15 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 	std::string addressSymbol;
 	switch (type)
 	{
-/*	case MACRO_LI:
+	case MACRO_LI:
 		dest.name = name;
 		
 		addressSymbol = symbolMap.GetLabelString(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
-			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->GetRegName(0,rt),addressSymbol.c_str());
+			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegName(rt),addressSymbol.c_str());
 		} else {
-			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->GetRegName(0,rt),immediate);
+			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegName(rt),immediate);
 		}
 
 		dest.params = buffer;
@@ -757,9 +771,9 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 		addressSymbol = symbolMap.GetLabelString(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
-			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->GetRegName(0,rt),addressSymbol.c_str());
+			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegName(rt),addressSymbol.c_str());
 		} else {
-			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->GetRegName(0,rt),immediate);
+			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegName(rt),immediate);
 		}
 
 		dest.params = buffer;
@@ -770,7 +784,7 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 
 		dest.info.hasRelevantAddress = true;
 		dest.info.releventAddress = immediate;
-		break;*/
+		break;
 	default:
 		return false;
 	}

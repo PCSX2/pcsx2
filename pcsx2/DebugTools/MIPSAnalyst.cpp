@@ -2,9 +2,143 @@
 #include "MIPSAnalyst.h"
 #include "Debug.h"
 #include "DebugInterface.h"
+#include "SymbolMap.h"
+#include "DebugInterface.h"
+
+static std::vector<MIPSAnalyst::AnalyzedFunction> functions;
+
+#define MIPS_MAKE_J(addr)   (0x08000000 | ((addr)>>2))
+#define MIPS_MAKE_JAL(addr) (0x0C000000 | ((addr)>>2))
+#define MIPS_MAKE_JR_RA()   (0x03e00008)
+#define MIPS_MAKE_NOP()     (0)
 
 namespace MIPSAnalyst
 {
+	
+	static const char *DefaultFunctionName(char buffer[256], u32 startAddr) {
+		sprintf(buffer, "z_un_%08x", startAddr);
+		return buffer;
+	}
+
+	void ScanForFunctions(u32 startAddr, u32 endAddr, bool insertSymbols) {
+		AnalyzedFunction currentFunction = {startAddr};
+
+		u32 furthestBranch = 0;
+		bool looking = false;
+		bool end = false;
+		bool isStraightLeaf = true;
+
+		u32 addr;
+		for (addr = startAddr; addr <= endAddr; addr += 4) {
+			// Use pre-existing symbol map info if available. May be more reliable.
+			SymbolInfo syminfo;
+			if (symbolMap.GetSymbolInfo(&syminfo, addr, ST_FUNCTION)) {
+				addr = syminfo.address + syminfo.size - 4;
+
+				// We still need to insert the func for hashing purposes.
+				currentFunction.start = syminfo.address;
+				currentFunction.end = syminfo.address + syminfo.size - 4;
+				functions.push_back(currentFunction);
+				currentFunction.start = addr + 4;
+				furthestBranch = 0;
+				looking = false;
+				end = false;
+				continue;
+			}
+
+			u32 op = debug.read32(addr);
+/*
+			MIPSOpcode op = Memory::Read_Instruction(addr);
+			u32 target = GetBranchTargetNoRA(addr);
+			if (target != INVALIDTARGET) {
+				isStraightLeaf = false;
+				if (target > furthestBranch) {
+					furthestBranch = target;
+				}
+			} else if ((op & 0xFC000000) == 0x08000000) {
+				u32 sureTarget = GetJumpTarget(addr);
+				// Check for a tail call.  Might not even have a jr ra.
+				if (sureTarget != INVALIDTARGET && sureTarget < currentFunction.start) {
+					if (furthestBranch > addr) {
+						looking = true;
+						addr += 4;
+					} else {
+						end = true;
+					}
+				} else if (sureTarget != INVALIDTARGET && sureTarget > addr && sureTarget > furthestBranch) {
+					// A jump later.  Probably tail, but let's check if it jumps back.
+					u32 knownEnd = furthestBranch == 0 ? addr : furthestBranch;
+					u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd);
+					if (jumpback != INVALIDTARGET && jumpback > addr && jumpback > knownEnd) {
+						furthestBranch = jumpback;
+					} else {
+						if (furthestBranch > addr) {
+							looking = true;
+							addr += 4;
+						} else {
+							end = true;
+						}
+					}
+				}
+			}*/
+			if (op == MIPS_MAKE_JR_RA()) {
+				// If a branch goes to the jr ra, it's still ending here.
+				if (furthestBranch > addr) {
+					looking = true;
+					addr += 4;
+				} else {
+					end = true;
+				}
+			}
+
+	/*		if (looking) {
+				if (addr >= furthestBranch) {
+					u32 sureTarget = GetSureBranchTarget(addr);
+					// Regular j only, jals are to new funcs.
+					if (sureTarget == INVALIDTARGET && ((op & 0xFC000000) == 0x08000000)) {
+						sureTarget = GetJumpTarget(addr);
+					}
+
+					if (sureTarget != INVALIDTARGET && sureTarget < addr) {
+						end = true;
+					} else if (sureTarget != INVALIDTARGET) {
+						// Okay, we have a downward jump.  Might be an else or a tail call...
+						// If there's a jump back upward in spitting distance of it, it's an else.
+						u32 knownEnd = furthestBranch == 0 ? addr : furthestBranch;
+						u32 jumpback = ScanAheadForJumpback(sureTarget, currentFunction.start, knownEnd);
+						if (jumpback != INVALIDTARGET && jumpback > addr && jumpback > knownEnd) {
+							furthestBranch = jumpback;
+						}
+					}
+				}
+			}
+			*/
+			if (end) {
+				currentFunction.end = addr + 4;
+				currentFunction.isStraightLeaf = isStraightLeaf;
+				functions.push_back(currentFunction);
+				furthestBranch = 0;
+				addr += 4;
+				looking = false;
+				end = false;
+				isStraightLeaf = true;
+				currentFunction.start = addr+4;
+			}
+		}
+
+		currentFunction.end = addr + 4;
+		functions.push_back(currentFunction);
+
+		for (auto iter = functions.begin(); iter != functions.end(); iter++) {
+			iter->size = iter->end - iter->start + 4;
+			if (insertSymbols) {
+				char temp[256];
+				symbolMap.AddFunction(DefaultFunctionName(temp, iter->start), iter->start, iter->end - iter->start + 4);
+			}
+		}
+	}
+
+
 	enum BranchType { NONE, JUMP, BRANCH };
 	struct BranchInfo
 	{

@@ -14,6 +14,7 @@ public:
 	wxString GetDialogName() const { return GetNameStatic(); }
 
 	void update();
+	void reset() { disassembly->clearFunctions(); };
 	void setDebugMode(bool debugMode);
 protected:
 	void onPauseResumeClicked(wxCommandEvent& evt);

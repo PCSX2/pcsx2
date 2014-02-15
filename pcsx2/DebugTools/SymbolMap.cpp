@@ -430,7 +430,7 @@ void SymbolMap::UpdateActiveSymbols() {
 
 	for (auto it = functions.begin(), end = functions.end(); it != end; ++it) {
 		const auto mod = activeModuleIndexes.find(it->second.module);
-		if (it->second.module == 0) {
+		if (it->second.module <= 0) {
 			activeFunctions.insert(std::make_pair(it->second.start, it->second));
 		} else if (mod != activeModuleIndexes.end()) {
 			activeFunctions.insert(std::make_pair(mod->second + it->second.start, it->second));
@@ -439,7 +439,7 @@ void SymbolMap::UpdateActiveSymbols() {
 
 	for (auto it = labels.begin(), end = labels.end(); it != end; ++it) {
 		const auto mod = activeModuleIndexes.find(it->second.module);
-		if (it->second.module == 0) {
+		if (it->second.module <= 0) {
 			activeLabels.insert(std::make_pair(it->second.addr, it->second));
 		} else if (mod != activeModuleIndexes.end()) {
 			activeLabels.insert(std::make_pair(mod->second + it->second.addr, it->second));
@@ -448,7 +448,7 @@ void SymbolMap::UpdateActiveSymbols() {
 
 	for (auto it = data.begin(), end = data.end(); it != end; ++it) {
 		const auto mod = activeModuleIndexes.find(it->second.module);
-		if (it->second.module == 0) {
+		if (it->second.module <= 0) {
 			activeData.insert(std::make_pair(it->second.start, it->second));
 		} else if (mod != activeModuleIndexes.end()) {
 			activeData.insert(std::make_pair(mod->second + it->second.start, it->second));

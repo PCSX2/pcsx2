@@ -25,6 +25,9 @@
 #include "SysThreads.h"
 #include "MTVU.h"
 
+#include "../DebugTools/MIPSAnalyst.h"
+#include "../DebugTools/SymbolMap.h"
+
 #include "Utilities/PageFaultSource.h"
 #include "Utilities/TlsVariable.inl"
 
@@ -225,6 +228,10 @@ void SysCoreThread::VsyncInThread()
 void SysCoreThread::GameStartingInThread()
 {
 	GetMTGS().SendGameCRC(ElfCRC);
+
+	MIPSAnalyst::ScanForFunctions(ElfTextRange.first,ElfTextRange.first+ElfTextRange.second,true);
+	symbolMap.UpdateActiveSymbols();
+	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
 	if (EmuConfig.EnablePatches) ApplyPatch(0);
 	if (EmuConfig.EnableCheats)  ApplyCheat(0);

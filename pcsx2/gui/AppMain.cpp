@@ -767,6 +767,13 @@ void Pcsx2App::leaveDebugMode()
 		dlg->setDebugMode(false);
 }
 
+void Pcsx2App::resetDebugger()
+{
+	DisassemblyDialog* dlg = GetDisassemblyPtr();
+	if (dlg)
+		dlg->reset();
+}
+
 // NOTE: Plugins are *not* applied by this function.  Changes to plugins need to handled
 // manually.  The PluginSelectorPanel does this, for example.
 void AppApplySettings( const AppConfig* oldconf )

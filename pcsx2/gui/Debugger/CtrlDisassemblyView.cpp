@@ -30,6 +30,11 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	setCurAddress(windowStart);
 }
 
+void CtrlDisassemblyView::scanFunctions()
+{
+	manager.analyze(windowStart,manager.getNthNextAddress(windowStart,visibleRows)-windowStart);
+}
+
 void CtrlDisassemblyView::paintEvent(wxPaintEvent & evt)
 {
 	wxPaintDC dc(this);
@@ -177,6 +182,14 @@ void CtrlDisassemblyView::drawBranchLine(wxDC& dc, std::map<u32,int>& addressPos
 	}
 }
 
+int getBackgroundColor(unsigned int address)
+{
+	int colors[6] = {0xFFe0FFFF,0xFFFFe0e0,0xFFe8e8FF,0xFFFFe0FF,0xFFe0FFe0,0xFFFFFFe0};
+	int n=symbolMap.GetFunctionNum(address);
+	if (n==-1) return 0xFFFFFFFF;
+	return colors[n%6];
+}
+
 void CtrlDisassemblyView::render(wxDC& dc)
 {
 	// init stuff
@@ -208,14 +221,14 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	DisassemblyLineInfo line;
 	for (int i = 0; i < visibleRows; i++)
 	{
-		manager.getLine(address,false,line);
+		manager.getLine(address,displaySymbols,line);
 		
 		int rowY1 = rowHeight*i;
 		int rowY2 = rowHeight*(i+1);
 		
 		addressPositions[address] = rowY1;
 
-		wxColor backgroundColor = wxColor(0xFFFFFFFF);
+		wxColor backgroundColor = wxColor(getBackgroundColor(address));
 		wxColor textColor = wxColor(0xFF000000);
 		
 		if (isInInterval(address,line.totalSize,cpu->getPC()))
@@ -276,6 +289,7 @@ void CtrlDisassemblyView::gotoAddress(u32 addr)
 	}
 
 	setCurAddress(addr);
+	scanFunctions();
 	redraw();
 }
 
@@ -287,6 +301,8 @@ void CtrlDisassemblyView::scrollAddressIntoView()
 		windowStart = curAddress;
 	else if (curAddress >= windowEnd)
 		windowStart =  manager.getNthPreviousAddress(curAddress,visibleRows-1);
+	
+	scanFunctions();
 }
 
 void CtrlDisassemblyView::calculatePixelPositions()
@@ -343,10 +359,12 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 	case WXK_UP:
 		setCurAddress(manager.getNthPreviousAddress(curAddress,1), wxGetKeyState(WXK_SHIFT));
 		scrollAddressIntoView();
+		scanFunctions();
 		break;
 	case WXK_DOWN:
 		setCurAddress(manager.getNthNextAddress(curAddress,1), wxGetKeyState(WXK_SHIFT));
 		scrollAddressIntoView();
+		scanFunctions();
 		break;
 	case WXK_TAB:
 		displaySymbols = !displaySymbols;
@@ -359,6 +377,7 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 			setCurAddress(manager.getNthPreviousAddress(windowStart,visibleRows), wxGetKeyState(WXK_SHIFT));
 			scrollAddressIntoView();
 		}
+		scanFunctions();
 		break;
 	case WXK_PAGEDOWN:
 		if (manager.getNthNextAddress(curAddress,1) != windowEnd && curAddressIsVisible()) {
@@ -368,6 +387,7 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 			setCurAddress(manager.getNthNextAddress(windowEnd,visibleRows-1), wxGetKeyState(WXK_SHIFT));
 			scrollAddressIntoView();
 		}
+		scanFunctions();
 		break;
 	}
 
@@ -380,15 +400,19 @@ void CtrlDisassemblyView::scrollbarEvent(wxScrollWinEvent& evt)
 	if (type == wxEVT_SCROLLWIN_LINEUP)
 	{
 		windowStart = manager.getNthPreviousAddress(windowStart,1);
+		scanFunctions();
 	} else if (type == wxEVT_SCROLLWIN_LINEDOWN)
 	{
 		windowStart = manager.getNthNextAddress(windowStart,1);
+		scanFunctions();
 	} else if (type == wxEVT_SCROLLWIN_PAGEUP)
 	{
 		windowStart = manager.getNthPreviousAddress(windowStart,visibleRows);
+		scanFunctions();
 	} else if (type == wxEVT_SCROLLWIN_PAGEDOWN)
 	{
 		windowStart = manager.getNthNextAddress(windowStart,visibleRows);
+		scanFunctions();
 	}
 
 	redraw();
@@ -408,8 +432,10 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 	if (evt.GetWheelRotation() > 0)
 	{
 		windowStart = manager.getNthPreviousAddress(windowStart,3);
+		scanFunctions();
 	} else if (evt.GetWheelRotation() < 0) {
 		windowStart = manager.getNthNextAddress(windowStart,3);
+		scanFunctions();
 	}
 
 	redraw();

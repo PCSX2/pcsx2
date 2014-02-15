@@ -51,6 +51,11 @@ u32 DebugInterface::getPC()
 	return cpuRegs.pc;
 }
 
+const char* DebugInterface::getRegName(int num)
+{
+	return R5900::disRNameGPR[num];
+}
+
 bool DebugInterface::isRunning()
 {
 	return GetCoreThread().IsRunning();

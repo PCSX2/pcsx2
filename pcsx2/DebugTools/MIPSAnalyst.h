@@ -13,6 +13,19 @@ class DebugInterface;
 
 namespace MIPSAnalyst
 {
+	struct AnalyzedFunction {
+		u32 start;
+		u32 end;
+		u64 hash;
+		u32 size;
+		bool isStraightLeaf;
+		bool hasHash;
+		bool usesVFPU;
+		char name[64];
+	};
+
+	void ScanForFunctions(u32 startAddr, u32 endAddr, bool insertSymbols);
+
 	typedef struct {
 		DebugInterface* cpu;
 		u32 opcodeAddress;

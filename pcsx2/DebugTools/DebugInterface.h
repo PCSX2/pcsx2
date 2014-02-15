@@ -11,6 +11,7 @@ public:
 	u128 getHI();
 	u128 getLO();
 	u32 getPC();
+	const char* getRegName(int num);
 
 	bool isRunning();
 	bool isCpuPaused();

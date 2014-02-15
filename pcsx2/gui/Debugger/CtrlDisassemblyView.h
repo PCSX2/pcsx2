@@ -14,7 +14,9 @@ public:
 	void keydownEvent(wxKeyEvent& evt);
 	void scrollbarEvent(wxScrollWinEvent& evt);
 	void sizeEvent(wxSizeEvent& evt);
-
+	
+	void scanFunctions();
+	void clearFunctions() { manager.clear(); };
 	void redraw();
 	
 	void gotoAddress(u32 addr);
