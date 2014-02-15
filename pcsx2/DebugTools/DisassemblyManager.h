@@ -4,13 +4,14 @@
 #include "Utilities/Threading.h"
 #include "Pcsx2Types.h"
 #include "DebugInterface.h"
+#include "MIPSAnalyst.h"
 
 enum DisassemblyLineType { DISTYPE_OPCODE, DISTYPE_MACRO, DISTYPE_DATA, DISTYPE_OTHER };
 
 struct DisassemblyLineInfo
 {
 	DisassemblyLineType type;
-//	MIPSAnalyst::MipsOpcodeInfo info;
+	MIPSAnalyst::MipsOpcodeInfo info;
 	std::string name;
 	std::string params;
 	u32 totalSize;

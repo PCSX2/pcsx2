@@ -297,6 +297,30 @@ void CtrlDisassemblyView::calculatePixelPositions()
 	pixelPositions.arrowsStart = pixelPositions.argumentsStart + 30*charWidth;
 }
 
+
+void CtrlDisassemblyView::followBranch()
+{
+	DisassemblyLineInfo line;
+	manager.getLine(curAddress,true,line);
+
+	if (line.type == DISTYPE_OPCODE || line.type == DISTYPE_MACRO)
+	{
+		if (line.info.isBranch)
+		{
+			jumpStack.push_back(curAddress);
+			gotoAddress(line.info.branchTarget);
+		} else if (line.info.hasRelevantAddress)
+		{
+			// well, not  exactly a branch, but we can do something anyway
+			// todo: position memory viewer to line.info.releventAddress
+		}
+	} else if (line.type == DISTYPE_DATA)
+	{
+		// jump to the start of the current line
+			// todo: position memory viewer to curAddress
+	}
+}
+
 void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 {
 	u32 windowEnd = manager.getNthNextAddress(windowStart,visibleRows);
@@ -304,7 +328,17 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 	switch (evt.GetKeyCode())
 	{
 	case WXK_LEFT:
-		gotoAddress(cpu->getPC());
+		if (jumpStack.empty())
+		{
+			gotoAddress(cpu->getPC());
+		} else {
+			u32 addr = jumpStack[jumpStack.size()-1];
+			jumpStack.pop_back();
+			gotoAddress(addr);
+		}
+		break;
+	case WXK_RIGHT:
+		followBranch();
 		break;
 	case WXK_UP:
 		setCurAddress(manager.getNthPreviousAddress(curAddress,1), wxGetKeyState(WXK_SHIFT));

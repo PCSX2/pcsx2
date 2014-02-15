@@ -666,7 +666,7 @@ bool DisassemblyOpcode::disassemble(u32 address, DisassemblyLineInfo& dest, bool
 	dest.name = opcode;
 	dest.params = arguments;
 	dest.totalSize = 4;
-//	dest.info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),address);
+	dest.info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),address);
 	return true;
 }
 
@@ -730,7 +730,7 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 {
 	char buffer[64];
 	dest.type = DISTYPE_MACRO;
-//	dest.info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),address);
+	dest.info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),address);
 
 	std::string addressSymbol;
 	switch (type)
