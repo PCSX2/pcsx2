@@ -261,6 +261,10 @@ set(pcsx2CDVDHeaders
 
 # DebugTools sources
 set(pcsx2DebugToolsSources
+	DebugTools/DebugInterface.cpp
+	DebugTools/DisassemblyManager.cpp
+	DebugTools/MIPSAnalyst.cpp
+	DebugTools/SymbolMap.cpp
 	DebugTools/DisR3000A.cpp
 	DebugTools/DisR5900asm.cpp
 	DebugTools/DisR5900.cpp
@@ -269,6 +273,10 @@ set(pcsx2DebugToolsSources
 
 # DebugTools headers
 set(pcsx2DebugToolsHeaders
+	DebugTools/DebugInterface.h
+	DebugTools/DisassemblyManager.h
+	DebugTools/MIPSAnalyst.h
+	DebugTools/SymbolMap.h
 	DebugTools/Debug.h
 	DebugTools/DisASm.h
 	DebugTools/DisVUmicro.h
@@ -307,6 +315,8 @@ set(pcsx2GuiSources
 	gui/Dialogs/PickUserModeDialog.cpp
 	gui/Dialogs/StuckThreadDialog.cpp
 	gui/Dialogs/SysConfigDialog.cpp
+	gui/Debugger/CtrlDisassemblyView.cpp
+	gui/Debugger/DisassemblyDialog.cpp
 	gui/ExecutorThread.cpp
 	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
@@ -356,6 +366,8 @@ set(pcsx2GuiHeaders
 	gui/Dialogs/ConfigurationDialog.h
 	gui/Dialogs/LogOptionsDialog.h
 	gui/Dialogs/ModalPopups.h
+	gui/Debugger/CtrlDisassemblyView.h
+	gui/Debugger/DisassemblyDialog.h
 	gui/i18n.h
 	gui/IsoDropTarget.h
 	gui/MainFrame.h

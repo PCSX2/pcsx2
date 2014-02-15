@@ -148,6 +148,9 @@
     <Filter Include="AppHost\Cheats">
       <UniqueIdentifier>{b9da6fbf-4fd9-4cfb-89f7-34ac0f933ce9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AppHost\Debugger">
+      <UniqueIdentifier>{02398f88-aadb-4183-be7e-68f0cacdf620}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -802,6 +805,24 @@
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\CtrlDisassemblyView.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\DebugInterface.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\DisassemblyManager.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\SymbolMap.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1170,6 +1191,24 @@
     </ClInclude>
     <ClInclude Include="..\..\AsyncFileReader.h">
       <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h">
+      <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h">
+      <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\DebugInterface.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\DisassemblyManager.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\SymbolMap.h">
+      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
