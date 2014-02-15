@@ -110,10 +110,8 @@ void AppCoreThread::Reset()
 		return;
 	}
 
-	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
-	if (dlg)
-		dlg->setDebugMode(true);
-
+	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
+		
 	_parent::Reset();
 }
 
@@ -203,20 +201,14 @@ void AppCoreThread::OnResumeReady()
 {
 	wxGetApp().SysApplySettings();
 	wxGetApp().PostMethod( AppSaveSettings );
-
-	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
-	if (dlg)
-		dlg->setDebugMode(false);
-
+	
+	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
 	_parent::OnResumeReady();
 }
 
 void AppCoreThread::OnPause()
 {
-	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
-	if (dlg)
-		dlg->setDebugMode(true);
-
+	sApp.PostAppMethod( &Pcsx2App::enterDebugMode );
 	_parent::OnPause();
 }
 
