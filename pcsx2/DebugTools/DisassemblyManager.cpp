@@ -7,6 +7,7 @@
 #include "DisassemblyManager.h"
 #include "Memory.h"
 #include "debug.h"
+#include "MIPSAnalyst.h"
 
 std::map<u32, DisassemblyEntry*> DisassemblyManager::entries;
 DebugInterface* DisassemblyManager::cpu;
@@ -15,26 +16,6 @@ int DisassemblyManager::maxParamChars = 29;
 bool isInInterval(u32 start, u32 size, u32 value)
 {
 	return start <= value && value <= (start+size-1);
-}
-
-bool IsValidAddress(u32 address)
-{
-	if (address >= 0x00100000 && address <= 0x01ffffff)
-		return true;
-	if (address >= 0x20100000 && address <= 0x21ffffff)
-		return true;
-	if (address >= 0x30100000 && address <= 0x31ffffff)
-		return true;
-	if (address >= 0x70000000 && address <= 0x70003fff)
-		return true;
-	if (address >= 0x1FC00000 && address <= 0x1FFFFFFF)
-		return true;
-	if (address >= 0x9FC00000 && address <= 0x9FFFFFFF)
-		return true;
-	if (address >= 0xBFC00000 && address <= 0xBFFFFFFF)
-		return true;
-
-	return false;
 }
 
 static u32 computeHash(u32 address, u32 size)
@@ -286,7 +267,7 @@ u32 DisassemblyManager::getStartAddress(u32 address)
 
 u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 {
-	while (IsValidAddress(address))
+	while (isValidAddress(address))
 	{
 		auto it = findDisassemblyEntry(entries,address,false);
 	
@@ -313,7 +294,7 @@ u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 
 u32 DisassemblyManager::getNthNextAddress(u32 address, int n)
 {
-	while (IsValidAddress(address))
+	while (isValidAddress(address))
 	{
 		auto it = findDisassemblyEntry(entries,address,false);
 	
@@ -450,7 +431,7 @@ void DisassemblyFunction::generateBranchLines()
 	u32 end = address+size;
 
 	DebugInterface* cpu = DisassemblyManager::getCpu();
-/*	for (u32 funcPos = address; funcPos < end; funcPos += 4)
+	for (u32 funcPos = address; funcPos < end; funcPos += 4)
 	{
 		MIPSAnalyst::MipsOpcodeInfo opInfo = MIPSAnalyst::GetOpcodeInfo(cpu,funcPos);
 
@@ -471,7 +452,7 @@ void DisassemblyFunction::generateBranchLines()
 
 			lines.push_back(line);
 		}
-	}*/
+	}
 			
 	std::sort(lines.begin(),lines.end());
 	for (size_t i = 0; i < lines.size(); i++)
@@ -570,17 +551,17 @@ void DisassemblyFunction::load()
 			continue;
 		}
 
-//		MIPSAnalyst::MipsOpcodeInfo opInfo = MIPSAnalyst::GetOpcodeInfo(cpu,funcPos);
+		MIPSAnalyst::MipsOpcodeInfo opInfo = MIPSAnalyst::GetOpcodeInfo(cpu,funcPos);
 		u32 opAddress = funcPos;
 		funcPos += 4;
-		/*
+		
 		// skip branches and their delay slots
 		if (opInfo.isBranch)
 		{
 			funcPos += 4;
 			continue;
 		}
-
+		/*
 		// lui
 		if (MIPS_GET_OP(opInfo.encodedOpcode) == 0x0F && funcPos < funcEnd && funcPos != nextData)
 		{
@@ -700,7 +681,7 @@ void DisassemblyOpcode::getBranchLines(u32 start, u32 size, std::vector<BranchLi
 	if (start+size > address+num*4)
 		size = address+num*4-start;
 
-/*	int lane = 0;
+	int lane = 0;
 	for (u32 pos = start; pos < start+size; pos += 4)
 	{
 		MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),pos);
@@ -722,7 +703,7 @@ void DisassemblyOpcode::getBranchLines(u32 start, u32 size, std::vector<BranchLi
 
 			dest.push_back(line);
 		}
-	}*/
+	}
 }
 
 

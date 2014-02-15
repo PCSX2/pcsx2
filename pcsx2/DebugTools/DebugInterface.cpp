@@ -12,16 +12,22 @@ DebugInterface debug;
 
 u32 DebugInterface::read8(u32 address)
 {
+	if (!isValidAddress(address))
+		return -1;
 	return memRead8(address);
 }
 
 u32 DebugInterface::read16(u32 address)
 {
+	if (!isValidAddress(address))
+		return -1;
 	return memRead16(address);
 }
 
 u32 DebugInterface::read32(u32 address)
 {
+	if (!isValidAddress(address))
+		return -1;
 	return memRead32(address);
 }
 
@@ -72,6 +78,8 @@ void DebugInterface::resumeCpu()
 std::string DebugInterface::disasm(u32 address)
 {
 	std::string out;
-	R5900::disR5900Fasm(out,memRead32(address),address);
+
+	u32 op = read32(address);
+	R5900::disR5900Fasm(out,op,address);
 	return out;
 }

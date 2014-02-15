@@ -11,21 +11,23 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_SCROLLWIN_LINEDOWN(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEUP(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEDOWN(CtrlDisassemblyView::scrollbarEvent)
+	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
 END_EVENT_TABLE()
 
 CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS), cpu(_cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_SUNKEN), cpu(_cpu)
 {
 	manager.setCpu(cpu);
 	windowStart = 0x20100000;
-	curAddress = windowStart;
-	rowHeight = 16;
-	charWidth = 10;
+	rowHeight = 14;
+	charWidth = 8;
 	displaySymbols = true;
+	visibleRows = 1;
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);
 	calculatePixelPositions();
+	setCurAddress(windowStart);
 }
 
 void CtrlDisassemblyView::paintEvent(wxPaintEvent & evt)
@@ -87,6 +89,94 @@ wxColor scaleColor(wxColor color, float factor)
 	return wxColor(r,g,b,a);
 }
 
+void CtrlDisassemblyView::drawBranchLine(wxDC& dc, std::map<u32,int>& addressPositions, BranchLine& line)
+{
+	u32 windowEnd = manager.getNthNextAddress(windowStart,visibleRows);
+	
+	int winBottom = GetSize().GetHeight();
+
+	int topY;
+	int bottomY;
+	if (line.first < windowStart)
+	{
+		topY = -1;
+	} else if (line.first >= windowEnd)
+	{
+		topY = GetSize().GetHeight()+1;
+	} else {
+		topY = addressPositions[line.first] + rowHeight/2;
+	}
+			
+	if (line.second < windowStart)
+	{
+		bottomY = -1;
+	} else if (line.second >= windowEnd)
+	{
+		bottomY = GetSize().GetHeight()+1;
+	} else {
+		bottomY = addressPositions[line.second] + rowHeight/2;
+	}
+
+	if ((topY < 0 && bottomY < 0) || (topY > winBottom && bottomY > winBottom))
+	{
+		return;
+	}
+
+	// highlight line in a different color if it affects the currently selected opcode
+	wxColor color;
+	if (line.first == curAddress || line.second == curAddress)
+	{
+		color = wxColor(0xFF257AFA);
+	} else {
+		color = wxColor(0xFFFF3020);
+	}
+	
+	wxPen pen = wxPen(color);
+	dc.SetBrush(wxBrush(color));
+	dc.SetPen(wxPen(color));
+
+	int x = pixelPositions.arrowsStart+line.laneIndex*8;
+
+	if (topY < 0)	// first is not visible, but second is
+	{
+		dc.DrawLine(x-2,bottomY,x+2,bottomY);
+		dc.DrawLine(x+2,bottomY,x+2,0);
+
+		if (line.type == LINE_DOWN)
+		{
+			dc.DrawLine(x,bottomY-4,x-4,bottomY);
+			dc.DrawLine(x-4,bottomY,x+1,bottomY+5);
+		}
+	} else if (bottomY > winBottom) // second is not visible, but first is
+	{
+		dc.DrawLine(x-2,topY,x+2,topY);
+		dc.DrawLine(x+2,topY,x+2,winBottom);
+				
+		if (line.type == LINE_UP)
+		{
+			dc.DrawLine(x,topY-4,x-4,topY);
+			dc.DrawLine(x-4,topY,x+1,topY+5);
+		}
+	} else { // both are visible
+		if (line.type == LINE_UP)
+		{
+			dc.DrawLine(x-2,bottomY,x+2,bottomY);
+			dc.DrawLine(x+2,bottomY,x+2,topY);
+			dc.DrawLine(x+2,topY,x-4,topY);
+			
+			dc.DrawLine(x,topY-4,x-4,topY);
+			dc.DrawLine(x-4,topY,x+1,topY+5);
+		} else {
+			dc.DrawLine(x-2,topY,x+2,topY);
+			dc.DrawLine(x+2,topY,x+2,bottomY);
+			dc.DrawLine(x+2,bottomY,x-4,bottomY);
+			
+			dc.DrawLine(x,bottomY-4,x-4,bottomY);
+			dc.DrawLine(x-4,bottomY,x+1,bottomY+5);
+		}
+	}
+}
+
 void CtrlDisassemblyView::render(wxDC& dc)
 {
 	// init stuff
@@ -111,6 +201,8 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	wxFont boldFont = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
 
 	bool hasFocus = true;//wxWindow::FindFocus() == this;
+	
+	std::map<u32,int> addressPositions;
 
 	unsigned int address = windowStart;
 	DisassemblyLineInfo line;
@@ -121,6 +213,8 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		int rowY1 = rowHeight*i;
 		int rowY2 = rowHeight*(i+1);
 		
+		addressPositions[address] = rowY1;
+
 		wxColor backgroundColor = wxColor(0xFFFFFFFF);
 		wxColor textColor = wxColor(0xFF000000);
 		
@@ -162,6 +256,13 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		
 		address += line.totalSize;
 	}
+
+	std::vector<BranchLine> branchLines = manager.getBranchLines(windowStart,address-windowStart);
+	for (size_t i = 0; i < branchLines.size(); i++)
+	{
+		drawBranchLine(dc,addressPositions,branchLines[i]);
+	}
+	
 }
 
 void CtrlDisassemblyView::gotoAddress(u32 addr)
@@ -278,6 +379,12 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 	}
 
 	redraw();
+}
+
+void CtrlDisassemblyView::sizeEvent(wxSizeEvent& evt)
+{
+	wxSize s = evt.GetSize();
+	visibleRows = s.GetWidth()/rowHeight;
 }
 
 u32 CtrlDisassemblyView::yToAddress(int y)

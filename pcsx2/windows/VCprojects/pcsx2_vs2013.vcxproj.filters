@@ -820,6 +820,9 @@
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp">
       <Filter>AppHost\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1203,6 +1206,9 @@
     </ClInclude>
     <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h">
       <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h">
+      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -409,6 +409,7 @@
     <ClCompile Include="..\..\CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="..\..\DebugTools\DebugInterface.cpp" />
     <ClCompile Include="..\..\DebugTools\DisassemblyManager.cpp" />
+    <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp" />
     <ClCompile Include="..\..\DebugTools\SymbolMap.cpp" />
     <ClCompile Include="..\..\GameDatabase.cpp" />
     <ClCompile Include="..\..\Gif_Logger.cpp" />
@@ -686,6 +687,7 @@
     <ClInclude Include="..\..\AsyncFileReader.h" />
     <ClInclude Include="..\..\DebugTools\DebugInterface.h" />
     <ClInclude Include="..\..\DebugTools\DisassemblyManager.h" />
+    <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />

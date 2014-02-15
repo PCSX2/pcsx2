@@ -13,12 +13,14 @@ public:
 	void paintEvent(wxPaintEvent & evt);
 	void keydownEvent(wxKeyEvent& evt);
 	void scrollbarEvent(wxScrollWinEvent& evt);
+	void sizeEvent(wxSizeEvent& evt);
 
 	void redraw();
 	
 	void gotoAddress(u32 addr);
 	DECLARE_EVENT_TABLE()
 private:
+	void drawBranchLine(wxDC& dc, std::map<u32,int>& addressPositions, BranchLine& line);
 	void render(wxDC& dc);
 	void calculatePixelPositions();
 	bool getDisasmAddressText(u32 address, char* dest, bool abbreviateLabels, bool showData);

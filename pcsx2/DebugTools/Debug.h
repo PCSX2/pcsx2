@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Utilities/TraceLog.h"
+#include "../Memory.h"
 
 extern FILE *emuLog;
 extern wxString emuLogName;
@@ -28,6 +29,14 @@ extern char* disVU1MicroLF(u32 code, u32 pc);
 extern const char * const CP2VFnames[];
 extern const char * const disRNameCP2f[];
 extern const char * const disRNameCP2i[];
+
+inline bool isValidAddress(u32 addr)
+{
+//	return true;
+	if ((addr & 0x1FFFFFFF) < 0x10000)
+		return false;
+	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
+}
 
 namespace R5900
 {
