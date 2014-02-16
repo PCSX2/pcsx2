@@ -284,6 +284,12 @@ void CtrlDisassemblyView::render(wxDC& dc)
 			}
 		}
 
+		// display whether the condition of a branch is met
+		if (line.info.isConditional && address == cpu->getPC())
+		{
+			line.params += line.info.conditionMet ? "  ; true" : "  ; false";
+		}
+
 		// draw background
 		dc.SetBrush(wxBrush(backgroundColor));
 		dc.SetPen(wxPen(backgroundColor));
@@ -618,9 +624,11 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 		{
 			int newAddress = yToAddress(evt.GetY());
 			setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
-		}
+		} else
+			return;
 	} else {
 		evt.Skip();
+		return;
 	}
 
 	redraw();

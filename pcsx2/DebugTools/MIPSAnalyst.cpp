@@ -154,8 +154,16 @@ namespace MIPSAnalyst
 		bool link = false;
 		bool likely = false;
 		bool toRegister = false;
+		bool met = false;
 
 		u32 op = info.encodedOpcode;
+
+		u32 opNum = MIPS_GET_OP(op);
+		u32 rsNum = MIPS_GET_RS(op);
+		u32 rtNum = MIPS_GET_RT(op);
+		u32 rs = info.cpu->getGPR(rsNum);
+		u32 rt = info.cpu->getGPR(rtNum);
+
 		switch (MIPS_GET_OP(op))
 		{
 		case 0x00:		// special
@@ -176,24 +184,23 @@ namespace MIPSAnalyst
 			switch (MIPS_GET_RT(op))
 			{
 			case 0x00:		// bltz
-			case 0x01:		// bgez
-				type = BRANCH;
-				break;
 			case 0x02:		// bltzl
-			case 0x03:		// bgezl
-				type = BRANCH;
-				likely = true;
-				break;
 			case 0x10:		// bltzal
-			case 0x11:		// bgezal
-				type = BRANCH;
-				link = true;
-				break;
 			case 0x12:		// bltzall
+				type = BRANCH;
+				met = (((s32)rs) < 0);
+				likely = (rt & 2) != 0;
+				link = rt >= 0x10;
+				break;
+				
+			case 0x01:		// bgez
+			case 0x03:		// bgezl
+			case 0x11:		// bgezal
 			case 0x13:		// bgezall
 				type = BRANCH;
-				likely = true;
-				link = true;
+				met = (((s32)rs) >= 0);
+				likely = (rt & 2) != 0;
+				link = rt >= 0x10;
 				break;
 			}
 			break;
@@ -204,18 +211,37 @@ namespace MIPSAnalyst
 			type = JUMP;
 			link = true;
 			break;
+			
 		case 0x04:		// beq
-		case 0x05:		// bne
-		case 0x06:		// blez
-		case 0x07:		// bgtz
-			type = BRANCH;
-			break;
 		case 0x14:		// beql
+			type = BRANCH;
+			met = (rt == rs);
+			if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	// always true
+				info.isConditional = false;
+			likely = opNum >= 0x10;
+			break;
+			
+		case 0x05:		// bne
 		case 0x15:		// bnel
+			type = BRANCH;
+			met = (rt != rs);
+			if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	// always false
+				info.isConditional = false;
+			likely = opNum >= 0x10;
+			break;
+			
+		case 0x06:		// blez
 		case 0x16:		// blezl
+			type = BRANCH;
+			met = (((s32)rs) <= 0);
+			likely = opNum >= 0x10;
+			break;
+
+		case 0x07:		// bgtz
 		case 0x17:		// bgtzl
 			type = BRANCH;
-			likely = true;
+			met = (((s32)rs) > 0);
+			likely = opNum >= 0x10;
 			break;
 		}
 
@@ -227,7 +253,8 @@ namespace MIPSAnalyst
 		info.isLikelyBranch = true;
 		info.isBranchToRegister = toRegister;
 		info.isConditional = type == BRANCH;
-		
+		info.conditionMet = met;
+
 		switch (type)
 		{
 		case JUMP:
@@ -299,54 +326,6 @@ namespace MIPSAnalyst
 				break;
 			case CONDTYPE_NE:
 				info.conditionMet = (rt != 0);
-				break;
-			}
-		}
-
-		// beq, bgtz, ...
-		if (opInfo & IS_CONDBRANCH) {
-			info.isBranch = true;
-			info.isConditional = true;
-			info.branchTarget = GetBranchTarget(address);
-
-			if (opInfo & OUT_RA) {  // link
-				info.isLinkedBranch = true;
-			}
-
-			u32 rt = cpu->GetRegValue(0, (int)MIPS_GET_RT(op));
-			u32 rs = cpu->GetRegValue(0, (int)MIPS_GET_RS(op));
-			switch (opInfo & CONDTYPE_MASK) {
-			case CONDTYPE_EQ:
-				if (opInfo & IN_FPUFLAG) {	// fpu branch
-					info.conditionMet = currentMIPS->fpcond == 0;
-				} else {
-					info.conditionMet = (rt == rs);
-					if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	{	// always true
-						info.isConditional = false;
-					}
-				}
-				break;
-			case CONDTYPE_NE:
-				if (opInfo & IN_FPUFLAG) {	// fpu branch
-					info.conditionMet = currentMIPS->fpcond != 0;
-				} else {
-					info.conditionMet = (rt != rs);
-					if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	{	// always true
-						info.isConditional = false;
-					}
-				}
-				break;
-			case CONDTYPE_LEZ:
-				info.conditionMet = (((s32)rs) <= 0);
-				break;
-			case CONDTYPE_GTZ:
-				info.conditionMet = (((s32)rs) > 0);
-				break;
-			case CONDTYPE_LTZ:
-				info.conditionMet = (((s32)rs) < 0);
-				break;
-			case CONDTYPE_GEZ:
-				info.conditionMet = (((s32)rs) >= 0);
 				break;
 			}
 		}
