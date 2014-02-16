@@ -256,7 +256,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 
 	unsigned int address = windowStart;
 	DisassemblyLineInfo line;
-	for (int i = 0; i < visibleRows; i++)
+	for (int i = 0; i < visibleRows+1; i++)
 	{
 		manager.getLine(address,displaySymbols,line);
 		

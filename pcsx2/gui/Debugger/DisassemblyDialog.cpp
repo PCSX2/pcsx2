@@ -13,22 +13,33 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Disassembler", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION )
 {
 
-	wxBoxSizer* topSizer = new wxBoxSizer( wxEXPAND );
+	wxBoxSizer* topSizer = new wxBoxSizer( wxVERTICAL );
 	wxPanel *panel = new wxPanel(this, wxID_ANY, 
 		wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 	panel->SetSizer(topSizer);
 
+	// create top row
+	wxBoxSizer* topRowSizer = new wxBoxSizer(wxHORIZONTAL);
+
 	breakResumeButton = new wxButton(panel, wxID_ANY, L"Resume");
 	Connect(breakResumeButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onPauseResumeClicked));
-	
+	topRowSizer->Add(breakResumeButton);
+
 	wxButton* stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
 	Connect( stepOverButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOverClicked ) );
+	topRowSizer->Add(stepOverButton);
 
-	stepOverButton->Move(80,0);
+	topSizer->Add(topRowSizer);
+	
+	// create middle part of the window
+	wxBoxSizer* middleSizer = new wxBoxSizer(wxVERTICAL);
 
 	disassembly = new CtrlDisassemblyView(panel,&debug);
-	disassembly->SetSize(600,500);
-	disassembly->Move(100,25);
+	middleSizer->Add(disassembly,1,wxEXPAND);
+
+	topSizer->Add(middleSizer,1,wxEXPAND);
+
+	// todo: create bottom part
 
 	CreateStatusBar(1);
 	
