@@ -18,7 +18,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 		wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 	panel->SetSizer(topSizer);
 
-	breakResumeButton = new wxButton(panel, wxID_ANY, L"Go");
+	breakResumeButton = new wxButton(panel, wxID_ANY, L"Resume");
 	Connect(breakResumeButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onPauseResumeClicked));
 	
 	wxButton* stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
