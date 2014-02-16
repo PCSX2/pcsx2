@@ -46,6 +46,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 		stopGoButton->SetLabel(L"Go");
 
 		disassembly->gotoAddress(debug.getPC());
+		disassembly->SetFocus();
 	} else {
 		stopGoButton->SetLabel(L"Stop");
 	}

@@ -286,14 +286,14 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		getDisasmAddressText(address,addressText,true,line.type == DISTYPE_OPCODE);
 
 		dc.SetFont(font);
-		dc.DrawText(wxString(addressText,wxConvUTF8),pixelPositions.addressStart,rowY1+1);
-		dc.DrawText(wxString(line.params.c_str(),wxConvUTF8),pixelPositions.argumentsStart,rowY1+1);
+		dc.DrawText(wxString(addressText,wxConvUTF8),pixelPositions.addressStart,rowY1+2);
+		dc.DrawText(wxString(line.params.c_str(),wxConvUTF8),pixelPositions.argumentsStart,rowY1+2);
 		
 		if (isInInterval(address,line.totalSize,cpu->getPC()))
 			dc.DrawText(L"■",pixelPositions.opcodeStart-8,rowY1);
 
 		dc.SetFont(boldFont);
-		dc.DrawText(wxString(line.name.c_str(),wxConvUTF8),pixelPositions.opcodeStart,rowY1+1);
+		dc.DrawText(wxString(line.name.c_str(),wxConvUTF8),pixelPositions.opcodeStart,rowY1+2);
 		
 		address += line.totalSize;
 	}
