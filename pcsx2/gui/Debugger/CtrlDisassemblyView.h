@@ -43,6 +43,8 @@ private:
 	void postEvent(wxEventType type, wxString text);
 	void postEvent(wxEventType type, int value);
 
+	void onPopupClick(wxCommandEvent& evt);
+
 	void setCurAddress(u32 newAddress, bool extend = false)
 	{
 		newAddress = manager.getStartAddress(newAddress);
@@ -74,4 +76,5 @@ private:
 	std::vector<u32> jumpStack;
 
 	wxIcon bpEnabled,bpDisabled;
+	wxMenu menu;
 };

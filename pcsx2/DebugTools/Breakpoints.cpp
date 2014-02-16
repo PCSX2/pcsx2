@@ -182,18 +182,14 @@ void CBreakPoints::ClearTemporaryBreakPoints()
 	if (breakPoints_.empty())
 		return;
 
-	bool update = false;
 	for (int i = (int)breakPoints_.size()-1; i >= 0; --i)
 	{
 		if (breakPoints_[i].temporary)
 		{
+			Update(breakPoints_[i].addr);
 			breakPoints_.erase(breakPoints_.begin() + i);
-			update = true;
 		}
 	}
-	
-	if (update)
-		Update();
 }
 
 void CBreakPoints::ChangeBreakPointAddCond(u32 addr, const BreakPointCond &cond)
@@ -388,6 +384,7 @@ void CBreakPoints::Update(u32 addr)
 	if (addr != 0)
 		Cpu->Clear(addr-4,8);
 	else
+		// todo: this doesn't seem to do what we want
 		Cpu->Clear(0,0xFFFFFFFF);
 /*	if (MIPSComp::jit)
 	{

@@ -134,6 +134,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 {
 	bool running = debug.isRunning();
 	breakResumeButton->Enable(running);
+	disassembly->Enable(running);
 
 	if (running)
 	{
@@ -142,7 +143,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 			CBreakPoints::ClearTemporaryBreakPoints();
 			breakResumeButton->SetLabel(L"Resume");
 
-			stepOutButton->Enable(true);
+			stepOverButton->Enable(true);
 
 			disassembly->gotoAddress(debug.getPC());
 			disassembly->SetFocus();
@@ -150,7 +151,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 			breakResumeButton->SetLabel(L"Break");
 
 			stepIntoButton->Enable(false);
-			stepOutButton->Enable(true);
+			stepOverButton->Enable(false);
 			stepOutButton->Enable(false);
 		}
 	}

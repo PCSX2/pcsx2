@@ -128,6 +128,9 @@ std::map<u32,DisassemblyEntry*>::iterator findDisassemblyEntry(std::map<u32,Disa
 
 void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 {
+	if (cpu->isRunning() == false)
+		return;
+
 	u32 end = address+size;
 
 	address &= ~3;

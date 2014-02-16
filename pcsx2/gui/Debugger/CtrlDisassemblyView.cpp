@@ -14,6 +14,7 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_MOUSEWHEEL(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DCLICK(CtrlDisassemblyView::mouseEvent)
+	EVT_RIGHT_DOWN(CtrlDisassemblyView::mouseEvent)
 	EVT_MOTION(CtrlDisassemblyView::mouseEvent)
 	EVT_KEY_DOWN(CtrlDisassemblyView::keydownEvent)
 	EVT_CHAR(CtrlDisassemblyView::keydownEvent)
@@ -23,6 +24,46 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_SCROLLWIN_PAGEDOWN(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
 END_EVENT_TABLE()
+
+/*
+        MENUITEM "Copy Address",               ID_DISASM_COPYADDRESS
+        MENUITEM "Copy Instruction (Hex)",     ID_DISASM_COPYINSTRUCTIONHEX
+        MENUITEM "Copy Instruction (Disasm)",  ID_DISASM_COPYINSTRUCTIONDISASM
+        MENUITEM "Disassemble to File",        ID_DISASM_DISASSEMBLETOFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Assemble Opcode",            ID_DISASM_ASSEMBLE
+        MENUITEM SEPARATOR
+        MENUITEM "Run to Cursor",              ID_DISASM_RUNTOHERE
+        MENUITEM "Jump to Cursor",             ID_DISASM_SETPCTOHERE
+        MENUITEM "Toggle Breakpoint",          ID_DISASM_TOGGLEBREAKPOINT
+        MENUITEM "Follow Branch",              ID_DISASM_FOLLOWBRANCH
+        MENUITEM SEPARATOR
+        MENUITEM "Show Dynarec Results",       ID_DISASM_DYNARECRESULTS
+        MENUITEM "Go to in Memory View",       ID_DISASM_GOTOINMEMORYVIEW
+        MENUITEM SEPARATOR
+        MENUITEM "Kill Function",              ID_DISASM_ADDHLE
+        MENUITEM "Rename Function...",         ID_DISASM_RENAMEFUNCTION
+		MENUITEM "Remove Function",            ID_DISASM_REMOVEFUNCTION
+		MENUITEM "Add Function Here",          ID_DISASM_ADDFUNCTION*/
+enum DisassemblyMenuIdentifiers
+{
+	ID_DISASM_COPYADDRESS = 1,
+	ID_DISASM_COPYINSTRUCTIONHEX,
+	ID_DISASM_COPYINSTRUCTIONDISASM,
+	ID_DISASM_DISASSEMBLETOFILE,
+	ID_DISASM_ASSEMBLE,
+	ID_DISASM_RUNTOHERE,
+	ID_DISASM_SETPCTOHERE,
+	ID_DISASM_TOGGLEBREAKPOINT,
+	ID_DISASM_FOLLOWBRANCH,
+	ID_DISASM_GOTOINMEMORYVIEW,
+	ID_DISASM_KILLFUNCTION,
+	ID_DISASM_RENAMEFUNCTION,
+	ID_DISASM_REMOVEFUNCTION,
+	ID_DISASM_ADDFUNCTION
+};
+
+
 
 inline wxIcon _wxGetIconFromMemory(const unsigned char *data, int length) {
    wxMemoryInputStream is(data, length);
@@ -45,6 +86,26 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	bpEnabled = _wxGetIconFromMemory(res_Breakpoint_Active::Data,res_Breakpoint_Active::Length);
 	bpDisabled = _wxGetIconFromMemory(res_Breakpoint_Inactive::Data,res_Breakpoint_Inactive::Length);
 
+	menu.Append(ID_DISASM_COPYADDRESS,				L"Copy Address");
+	menu.Append(ID_DISASM_COPYINSTRUCTIONHEX,		L"Copy Instruction (Hex)");
+	menu.Append(ID_DISASM_COPYINSTRUCTIONDISASM,	L"Copy Instruction (Disasm)");
+	menu.Append(ID_DISASM_DISASSEMBLETOFILE,		L"Disassemble to File");
+	menu.AppendSeparator();
+	menu.Append(ID_DISASM_ASSEMBLE,					L"Assemble Opcode");
+	menu.AppendSeparator();
+	menu.Append(ID_DISASM_RUNTOHERE,				L"Run to Cursor");
+	menu.Append(ID_DISASM_SETPCTOHERE,				L"Jump to Cursor");
+	menu.Append(ID_DISASM_TOGGLEBREAKPOINT,			L"Toggle Breakpoint");
+	menu.Append(ID_DISASM_FOLLOWBRANCH,				L"Follow Branch");
+	menu.AppendSeparator();
+	menu.Append(ID_DISASM_GOTOINMEMORYVIEW,			L"Go to in Memory View");
+	menu.AppendSeparator();
+	menu.Append(ID_DISASM_KILLFUNCTION,				L"Kill Function");
+	menu.Append(ID_DISASM_RENAMEFUNCTION,			L"Rename Function");
+	menu.Append(ID_DISASM_REMOVEFUNCTION,			L"Remove Function");
+	menu.Append(ID_DISASM_ADDFUNCTION,				L"Add Function Here");
+ 	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlDisassemblyView::onPopupClick, NULL, this);
+
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);
 	calculatePixelPositions();
@@ -53,6 +114,9 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 
 void CtrlDisassemblyView::scanFunctions()
 {
+	if (cpu->isRunning() == false)
+		return;
+
 	manager.analyze(windowStart,manager.getNthNextAddress(windowStart,visibleRows)-windowStart);
 }
 
@@ -390,6 +454,19 @@ void CtrlDisassemblyView::followBranch()
 	}
 }
 
+void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
+{
+	switch (evt.GetId())
+	{
+	case ID_DISASM_FOLLOWBRANCH:
+		followBranch();
+		break;
+	default:
+		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
+		break;
+	}
+}
+
 void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 {
 	u32 windowEnd = manager.getNthNextAddress(windowStart,visibleRows);
@@ -607,6 +684,14 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 			setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
 		SetFocus();
 		SetFocusFromKbd();
+	} else if (evt.GetEventType() == wxEVT_RIGHT_DOWN)
+	{
+		int newAddress = yToAddress(evt.GetY());
+		setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
+		redraw();
+
+		PopupMenu(&menu,evt.GetPosition());
+		return;
 	// wheel
 	} else if (evt.GetEventType() == wxEVT_MOUSEWHEEL)
 	{
