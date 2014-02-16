@@ -1,0 +1,95 @@
+<resources>
+
+    <string name="app_name">reicast</string>
+    <string name="menu_settings">설정</string>
+    <string name="system_path">시스템 경로 (dc_boot.bin / dc_flash.bin 내부와 데이터 폴더의 ​​위치)</string>
+    <string name="browser_path">기본 시스템 경로</string>
+    <string name="games_path">저장 경로 (. GDI의 위치입니다. CHD 나. CDI 이미지)</string>
+    <string name="game_path">기본 게임 저장</string>
+    
+    <string name="boot_bios">부팅 드림 캐스트 바이오스</string>
+    <string name="missing_bios">BIOS는 없음.드림 캐스트 BIOS가 작동하려면이 에뮬레이터가 필요합니다.BIOS 파일에 배치 %1$s/데이터/dc_boot.bin</string>
+    <string name="missing_flash">누락 플래시.드림 캐스트 플래시가 작동하려면이 에뮬레이터가 필요합니다.플래시 파일에 배치 %1$s/데이터/dc_flash.bin</string>
+    <string name="require_bios">당신은 BIOS를 제공해야</string>
+    
+    <string name="folder_bios">BOOT의 BIOS</string>
+    <string name="folder_select">현재 폴더를 선택</string>
+
+    <string name="experimental_opts">실험 (광범위한 패닉이 발생할 수 있음)</string>
+    <string name="select_dynarec">Dynarec 옵션</string>
+    <string name="select_unstable">불안정 최적화</string>
+    <string name="select_region">DC 지역</string>
+    <string name="select_limitfps">제한 FPS</string>
+    <string name="select_mipmaps">사용 밉맵 (구 SGX540에 대한 수정)</string>
+    <string name="select_stretch">와이드 스크린 모드</string>
+    <string name="set_frameskip">frameskip있는 값</string>
+    <string name="select_render">PVR 렌더링 (지금은 아무것도하지 않습니다)</string>
+    <string name="default_disk">설정 기본 디스크</string>
+
+    <string name="games_listing">가능 드림 캐스트 게임</string>
+
+    <string name="customize_touch_controls">터치 컨트롤 사용자 지정</string>
+    <string name="launch_editor">편집자에게 시작</string>
+    <string name="touch_vibration">진동을 터치</string>
+    <string name="controller_a">제어 장치 A</string>
+    <string name="controller_b">제어 장치 B</string>
+    <string name="controller_c">제어 장치 C</string>
+    <string name="controller_d">제어 장치 D</string>
+    <string name="controller_not_connected">컨트롤러 연결되지 않음</string>
+    <string name="controller_none_selected">선정 된 제어기가 없습니다</string>
+    <string name="select">선택</string>
+    <string name="remove">제거</string>
+    <string name="select_controller_title">선택 컨트롤러</string>
+    <string name="select_controller_message">컨트롤러의 버튼을 누르면 %1$s 포트에 할당</string>
+    <string name="controller_already_in_use">이 컨트롤러는 이미 사용 중입니다!</string>
+    <string name="modified_layout">사용자 정의 키 레이아웃보기 사용</string>
+    <string name="controller_compat">호환성 모드 사용</string>
+    <string name="dpad_joystick">조이스틱 DPAD 레이아웃을 사용</string>
+    
+    <string name="customize_physical_controls">물리적 컨트롤 사용자 지정</string>
+    <string name="map_keycode_title">컨트롤러를 수정</string>
+    <string name="map_keycode_message">의 새로운 컨트롤러의 버튼을 눌러 %1$s</string>
+    
+    <string name="moga_pro_connect">MOGA 프로 연결!</string>
+    <string name="moga_connect">MOGA 연결!</string>
+
+    <string name="about_text">reicast는 드림 캐스트 에뮬레이터\n\n버전: %1$s</string>
+    <string name="app_site">홈페이지: http://reicast.com</string>
+    <string name="beta_site">베타: http://reicast.loungekatt.com</string>
+    <string name="git_api">https://api.github.com/repos/reicast/reicast-emulator/commits</string>
+    
+    <string-array name="controllers">
+    <item>제어 장치 A</item>
+    <item>제어 장치 B</item>
+    <item>제어 장치 C</item>
+    <item>제어 장치 D</item>
+    </string-array>
+    
+    <string-array name="images">
+        <item>cdi</item>
+        <item>chd</item>
+        <item>gdi</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item>E - 미국</item>
+        <item>J - 일본의</item>
+        <item>U - 유럽의</item>
+        <item>R - 지역</item>
+    </string-array>
+    
+    <string name="browser">브라우저</string>
+    <string name="settings">설정</string>
+    <string name="paths">경로</string>
+    <string name="input">입력</string>
+    <string name="about">약</string>
+    <string name="rateme">저를 평가 해</string>
+    
+    <string name="textOn">ON</string>
+    <string name="textOff">OFF</string>
+    
+    <string name="platform">클립 보드에 복사 logcat 내용\n문제 보고서에 붙여 넣기</string>
+
+    <string name="menu_debug">디버그 로그를 제출</string>
+
+</resources>

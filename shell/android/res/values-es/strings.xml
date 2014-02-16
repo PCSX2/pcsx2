@@ -1,0 +1,82 @@
+<resources>
+
+    <string name="menu_settings">Configuración</string>
+    <string name="system_path">Ruta de acceso del sistema (ubicación de la carpeta de datos con dc_boot.bin / dc_flash.bin interior)</string>
+    <string name="browser_path">Ruta por defecto del sistema</string>
+    <string name="games_path">Ruta de Almacenamiento (ubicación de .gdi .chd o Imágenes .cdi )</string>
+    <string name="game_path">Por defecto Game Almacenamiento</string>
+    
+    <string name="boot_bios">Boot Bios Dreamcast</string>
+    <string name="missing_bios">BIOS no encontrada. La Dreamcast BIOS se requiere para este emulador para trabajar. Coloque el archivo BIOS en %1$s/data/dc_boot.bin</string>
+    <string name="missing_flash">Flash no encontrada. La Dreamcast Flash es necesario para este emulador para trabajar. Coloque el archivo Flash en %1$s/data/dc_flash.bin</string>
+    <string name="require_bios">Usted tiene que proporcionar la BIOS</string>
+    
+    <string name="folder_bios">BIOS BOOT</string>
+    <string name="folder_select">SELECCIONE LA CARPETA ACTUAL</string>
+
+    <string name="select_dynarec">Opciones dynarec</string>
+    <string name="select_unstable">Optimizaciones inestables</string>
+    <string name="select_region">Región DC</string>
+    <string name="select_limitfps">Límite FPS</string>
+    <string name="select_mipmaps">Uso Mipmaps (arreglo para Powervr SGX540)</string>
+    <string name="select_stretch">Modo de pantalla ancha</string>
+    <string name="set_frameskip">Valor salto de frames</string>
+    <string name="select_render">Renderizado PVR  (no hace nada por el momento)</string>
+
+    <string name="games_listing">Lista de discos por defecto</string>
+
+    <string name="customize_touch_controls">Personalizar controles táctiles</string>
+    <string name="launch_editor">Inicie Editor</string>
+    <string name="touch_vibration">Toque vibración</string>
+    <string name="controller_a">Controlador A</string>
+    <string name="controller_b">Controlador B</string>
+    <string name="controller_c">Controlador C</string>
+    <string name="controller_d">Controlador D</string>
+    <string name="controller_not_connected">Controller No conectado</string>
+    <string name="controller_none_selected">No Controlador seleccionado</string>
+    <string name="select">Seleccionar</string>
+    <string name="remove">Eliminar</string>
+    <string name="select_controller_title">Seleccione Controlador</string>
+    <string name="select_controller_message">Pulse cualquier botón del mando a %1$s para asignar al puerto</string>
+    <string name="controller_already_in_use">Este controlador ya está en uso!</string>
+    <string name="modified_layout">Habilitar un diseño personal clave</string>
+    <string name="controller_compat">Activar el modo de compatibilidad</string>
+    
+    <string name="customize_physical_controls">Personalizar controles físicos</string>
+    <string name="map_keycode_title">Modificar Controller</string>
+    <string name="map_keycode_message">Pulse el botón nuevo controlador para %1$s</string>
+    
+    <string name="moga_pro_connect">MOGA Pro conectado!</string>
+    <string name="moga_connect">MOGA conectado!</string>
+
+    <string name="about_text">reicast es un emulador de Dreamcast\n\nVersion: %1$s</string>
+    
+    <string-array name="controllers">
+    <item>Controlador A</item>
+    <item>Controlador B</item>
+    <item>Controlador C</item>
+    <item>Controlador D</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>(Predeterminado)</item>
+    </string-array>
+
+    <string name="browser">Navegador</string>
+    <string name="settings">Configuración</string>
+    <string name="paths">Caminos</string>
+    <string name="input">Entrada</string>
+    <string name="about">Acerca de</string>
+    <string name="rateme">Califícame</string>
+
+    <string name="textOn">EN</string>
+    <string name="textOff">OFF</string>
+
+    <string name="platform">Contenido Copiado Logcat al portapapeles\nPor favor, pegue en el informe de problema</string>
+    
+    <string name="menu_debug">Enviar registros de errores</string>
+
+</resources>

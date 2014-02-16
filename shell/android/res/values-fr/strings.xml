@@ -1,0 +1,88 @@
+<resources>
+
+    <string name="menu_settings">Réglages</string>
+    <string name="system_path">Répertoire système (emplacement du répertoire \'data\' comprenant les fichiers \'dc_boot.bin\' et \'dc_flash.bin\')</string>
+    <string name="browser_path">Répertoire système par défaut</string>
+    <string name="games_path">Répertoire des jeux (emplacement de vos fichiers images au format gdi, chd ou cdi)</string>
+    <string name="game_path">Répertoire des jeux par défaut</string>
+    
+    <string name="boot_bios">Démarrer le bios Dreamcast</string>
+    <string name="missing_bios">Il manque le fichier BIOS. Le fichier BIOS de la Dreamcast est indispensable pour faire fonctionner cet émulateur. Celui-ci doit être placé comme ceci: %1$s/data/dc_boot.bin (ou configurer le répertoire bios)</string>
+    <string name="missing_flash">Il manque le fichier FLASH. Le fichier FLASH de la Dreamcast est indispensable pour faire fonctionner cet émulateur. Celui-ci doit être placé comme ceci: %1$s/data/dc_flash.bin (ou configurer le répertoire bios)</string>
+    <string name="require_bios">Vous devez fournir un fichier BIOS</string>
+    
+    <string name="folder_bios">DEMARRER LE BIOS</string>
+    <string name="folder_select">SELECTIONNER LE DOSSIER ACTUEL</string>
+
+    <string name="experimental_opts">Experimental (peut causer des crashs)</string>
+    <string name="select_dynarec">Dynarec</string>
+    <string name="select_unstable">Optimisations instables</string>
+    <string name="select_region">Région du bios</string>
+    <string name="select_limitfps">Limiter le nombre de FPS</string>
+    <string name="select_mipmaps">Rendu Mipmaps (correctif pour l\'ancien SGX540)</string>
+    <string name="select_stretch">Mode portrait (écran large)</string>
+    <string name="set_frameskip">Valeur de saut des images</string>
+    <string name="select_render">Rendu PVR (ne fonctionne pas pour le moment)</string>
+    <string name="default_disk">Réglage du disque par défaut</string>
+
+    <string name="games_listing">Liste des jeux disponibles</string>
+
+    <string name="customize_touch_controls">Personnaliser les contrôles tactiles</string>
+    <string name="launch_editor">Lancer l\'éditeur</string>
+    <string name="touch_vibration">Vibrations</string>
+    <string name="controller_a">Manette A</string>
+    <string name="controller_b">Manette B</string>
+    <string name="controller_c">Manette C</string>
+    <string name="controller_d">Manette D</string>
+    <string name="controller_not_connected">Manette non connectée</string>
+    <string name="controller_none_selected">Aucune manette selectionnée</string>
+    <string name="select">Choisir</string>
+    <string name="remove">Supprimer</string>
+    <string name="select_controller_title">Choisir manette</string>
+    <string name="select_controller_message">Pressez une touche de la manette %1$s pour attribuer le bouton</string>
+    <string name="controller_already_in_use">Cette manette est déjà utilisé !</string>
+    <string name="modified_layout">Activer la fonction de disposition des touches</string>
+    <string name="controller_compat">Activer le mode de compatibilité</string>
+    <string name="dpad_joystick">Le joystick doit utiliser la disposition du pad directionnel</string>
+    
+    <string name="customize_physical_controls">Customiser les touches physiques</string>
+    <string name="map_keycode_title">Modifier la manette</string>
+    <string name="map_keycode_message">Pressez une nouvelle touche pour %1$s</string>
+    
+    <string name="moga_pro_connect">MOGA Pro connecté</string>
+    <string name="moga_connect">MOGA connecté</string>
+
+    <string name="about_text">reicast est un émulateur dreamcast\n\nVersion: %1$s</string>
+    <string name="app_site">Site web officiel: http://reicast.com</string>
+    <string name="beta_site">Bétas: http://reicast.loungekatt.com</string>
+    <string name="git_api">https://api.github.com/repos/NoblesseOblige/reicast-emulator/commits</string>
+    
+    <string-array name="controllers">
+    <item>Manette A</item>
+    <item>Manette B</item>
+    <item>Manette C</item>
+    <item>Manette D</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item>E - Etats-Unis</item>
+        <item>J - Japon</item>
+        <item>U - Europe</item>
+        <item>R - Sans région</item>
+    </string-array>
+
+    <string name="browser">Navigation</string>
+    <string name="settings">Réglages</string>
+    <string name="paths">Répertoires</string>
+    <string name="input">Manettes</string>
+    <string name="about">A propos</string>
+    <string name="rateme">Evaluez-nous</string>
+    
+    <string name="textOn">ACTIF</string>
+    <string name="textOff">DESACT.</string>
+    
+    <string name="platform">Le contenu du logcat a été copié dans le presse-papiers\nVeuillez coller le rapport d\'émission</string>
+
+    <string name="menu_debug">Soumettre le log d\'erreurs</string>
+
+</resources>

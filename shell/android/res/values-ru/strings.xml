@@ -1,0 +1,82 @@
+<resources>
+
+    <string name="menu_settings">Настройки</string>
+    <string name="system_path">Системная папка (папка с dc_boot.bin/dc_flash.bin)</string>
+    <string name="browser_path">Стандартная системная папка</string>
+    <string name="games_path">Папка образов (папка с образами .gdi, .chd или .cdi)</string>
+    <string name="game_path">Стандартная папка образов</string>
+    
+    <string name="boot_bios">Запуск BIOS</string>
+    <string name="missing_bios">BIOS не найден. BIOS Dreamcast необходим для работы эмулятора. Скопируйте файл BIOS в %1$s/data/dc_boot.bin</string>
+    <string name="missing_flash">Flash не найден. Flash Dreamcast необходим для работы эмулятора. Скопируйте файл Flash в %1$s/data/dc_flash.bin</string>
+    <string name="require_bios">Вы должны скопировать BIOS</string>
+    
+    <string name="folder_bios">ЗАГРУЗКА BIOS</string>
+    <string name="folder_select">ВЫБРАТЬ ТЕКУЩУЮ ПАПКУ</string>
+
+    <string name="select_dynarec">Параметры динамической компиляция</string>
+    <string name="select_unstable">Нестабильные опции</string>
+    <string name="select_region">Регион DC</string>
+    <string name="select_limitfps">Ограничитель FPS</string>
+    <string name="select_mipmaps">Использовать мипмаппинг</string>
+    <string name="select_stretch">Широкий экран</string>
+    <string name="set_frameskip">Пропуск</string>
+    <string name="select_render">PVR рендеринг</string>
+
+    <string name="games_listing">Доступные игры</string>
+
+    <string name="customize_touch_controls">Параметры управления</string>
+    <string name="launch_editor">Запустить редактор</string>
+    <string name="touch_vibration">Вибрация при касании</string>
+    <string name="controller_a">Контролер A</string>
+    <string name="controller_b">Контролер B</string>
+    <string name="controller_c">Контролер C</string>
+    <string name="controller_d">Контролер D</string>
+    <string name="controller_not_connected">Контролер не подключен</string>
+    <string name="controller_none_selected">Контролер не выбран</string>
+    <string name="select">Выбрать</string>
+    <string name="remove">Удалить</string>
+    <string name="select_controller_title">Выбор контролера</string>
+    <string name="select_controller_message">Нажмите любую кнопку на контролере %1$s для выбора</string>
+    <string name="controller_already_in_use">Этот контролер уже используется!</string>
+    <string name="modified_layout">Включить пользовательский режим</string>
+    <string name="controller_compat">Включить режим совместимости</string>
+    
+    <string name="customize_physical_controls">Настроить физический контролер</string>
+    <string name="map_keycode_title">Изменить контролер</string>
+    <string name="map_keycode_message">Выберите кнопку для %1$s</string>
+    
+    <string name="moga_pro_connect">Подключена MOGA Pro!</string>
+    <string name="moga_connect">Подключена MOGA!</string>
+
+    <string name="about_text">reicast эмулятор dreamcast\n\nВерсия: %1$s\n\n</string>
+    
+    <string-array name="controllers">
+    <item>Контролер A</item>
+    <item>Контролер B</item>
+    <item>Контролер C</item>
+    <item>Контролер D</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>(По умолчанию)</item>
+    </string-array>
+
+    <string name="browser">Обзор</string>
+    <string name="settings">Настройки</string>
+    <string name="paths">Папки</string>
+    <string name="input">Управление</string>
+    <string name="about">О программе</string>
+    <string name="rateme">Поставить рейтинг</string>
+    
+    <string name="textOn">Вкл.</string>
+    <string name="textOff">Выкл.</string>
+
+    <string name="platform">Содержание Копирование Logcat в буфер\nПожалуйста, вставьте в отчета об итогах выпуска</string>
+    
+    <string name="menu_debug">Представьте журналы ошибок</string>
+
+</resources>

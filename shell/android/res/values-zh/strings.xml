@@ -1,0 +1,90 @@
+<resources>
+
+    <string name="menu_settings">設置</string>
+    
+<string name="system_path">系統路徑 (dc_boot.bin/dc_flash.bin 所在的路徑)</string>
+    <string name="browser_path">默認系統路徑</string>
+    <string name="games_path">儲存路徑 (.gdi, .chd 或 .cdi 鏡像所在的路徑)</string>
+    <string name="game_path">默認儲存路徑</string>
+    
+    <string name="boot_bios">啟動Dreamcast Bios</string>
+    <string name="missing_bios">找不到BIOS. 需要Dreamcast BIOS才能讓模擬器運行.請把 BIOS文件放置在  %1$s/data/dc_boot.bin</string>
+    <string name="missing_flash">找不到Flash. 需要 Dreamcast Flash才能讓模擬器運行. 請把 Flash文件放置在  %1$s/data/dc_flash.bin</string>
+    <string name="require_bios">妳需要提供BIOS</string>
+    
+    <string name="folder_bios">啟動BIOS</string>
+    <string name="folder_select">選擇當前路徑</string>
+
+    <string name="experimental_opts">實驗性 (可能造成不穩定)</string>
+    <string name="select_dynarec">Dynarec設置</string>
+    <string name="select_unstable">不穩定優化</string>
+    <string name="select_region">DC區域</string>
+    <string name="select_limitfps">幀數限制</string>
+    <string name="select_mipmaps">使用Mipmaps (修復SGX540)</string>
+    <string name="select_stretch">寬屏模式</string>
+    <string name="set_frameskip">跳幀值</string>
+    <string name="select_render">PVR 渲染 (目前沒有任何效果)</string>
+    <string name="default_disk">設置默認光盤</string>
+
+    <string name="games_listing">可用的Dreamcast遊戲</string>
+
+    <string name="customize_touch_controls">自定義觸屏控制</string>
+    <string name="launch_editor">啟動編輯器</string>
+    <string name="touch_vibration">按鍵振動</string>
+    <string name="controller_a">控制器A</string>
+    <string name="controller_b">控制器B</string>
+    <string name="controller_c">控制器C</string>
+    <string name="controller_d">控制器D</string>
+    <string name="controller_not_connected">控制器未連接</string>
+    <string name="controller_none_selected">未選擇任何控制器</string>
+    <string name="select">選擇</string>
+    <string name="remove">移除</string>
+    <string name="select_controller_title">選擇控制器</string>
+    <string name="select_controller_message">按控制器  %1$s 上的任意鍵來分配控制器</string>
+    <string name="controller_already_in_use">該控制器已被使用!</string>
+    <string name="modified_layout">啟用自定義按鍵布局</string>
+    <string name="controller_compat">啟用兼容模式</string>
+    <string name="dpad_joystick">搖桿使用方向鍵布局</string>
+    <string name="mic_in_port_2">麥克風插入Port 2</string>
+    
+    <string name="customize_physical_controls">自定義物理控制</string>
+    <string name="map_keycode_title">修改控制器</string>
+    <string name="map_keycode_message">按下控制器按鈕來映射 %1$s</string>
+    
+    <string name="moga_pro_connect">MOGA Pro已連接!</string>
+    <string name="moga_connect">MOGA已連接</string>
+
+    <string name="about_text">reicast是壹款dreamcast模擬器 \n\n版本: %1$s</string>
+    <string name="app_site">主頁: http://reicast.com</string>
+    <string name="beta_site">測試版: http://reicast.loungekatt.com</string>
+    <string name="git_api">https://api.github.com/repos/reicast/reicast-emulator/commits</string>
+    
+    <string-array name="controllers">
+    <item>控制器A</item>
+    <item>控制器B</item>
+    <item>控制器C</item>
+    <item>控制器D</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item>E - 美國</item>
+        <item>J - 日本</item>
+        <item>U - 歐洲</item>
+        <item>R - 無地區</item>
+    </string-array>
+    
+    <string name="browser">瀏覽器</string>
+    <string name="settings">設置</string>
+    <string name="paths">路徑</string>
+    <string name="input">輸入</string>
+    <string name="about">關於</string>
+    <string name="rateme">評價我</string>
+    
+    <string name="textOn">開</string>
+    <string name="textOff">關</string>
+    
+    <string name="platform">複製logcat的內容到剪貼板\n請在問題的報告貼</string>
+    
+    <string name="menu_debug">提交錯誤日誌</string>
+
+</resources>

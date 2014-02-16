@@ -1,0 +1,83 @@
+<resources>
+
+    <string name="menu_settings">セッティング</string>
+    <string name="system_path">システムパス (dc_boot.bin/dc_flash.bin)</string>
+    <string name="browser_path">デフォルトのシステムパス</string>
+    <string name="games_path">ストレージパス (.gdi .cdi or .cdh イメージ)</string>
+    <string name="game_path">デフォルトゲーム·ストレージ</string>
+    
+    <string name="boot_bios">ブートドリームキャストビオス</string>
+    <string name="missing_bios">BIOSが不足している。ドリームキャストBIOSが動作するように、このエミュレータに必要です。 BIOSファイル内に配置します %1$s/data/dc_boot.bin</string>
+    <string name="missing_flash">行方不明に点滅します。ドリームキャストのFlashが動作するためにこのエミュレータに必要です。 Flashファイル内に配置します %1$s/data/dc_flash.bin</string>
+    <string name="require_bios">あなたは、BIOSを提供する必要が</string>
+    
+    <string name="folder_bios">BOOT BIOSを</string>
+    <string name="folder_select">現在のフォルダを選択</string>
+
+    <string name="select_dynarec">Dynarecオプション</string>
+    <string name="select_unstable">不安定な最適化</string>
+    <string name="select_region">DC地域</string>
+    <string name="select_limitfps">限界FPS</string>
+    <string name="select_mipmaps">ミップマップを使用してください（SGX540フィックス）</string>
+    <string name="select_stretch">ワイドスクリーンモード</string>
+    <string name="set_frameskip">フレーム船舶の価値</string>
+    <string name="select_render">PVRレンダリング</string>
+
+    <string name="games_listing">利用可能なドリームキャストのゲーム</string>
+    <string name="select_locale">DC Region (dc_flash[X].bin where X is region code)</string>
+
+    <string name="customize_touch_controls">タッチコントロールをカスタマイズする</string>
+    <string name="launch_editor">エディタを起動します</string>
+    <string name="touch_vibration">振動をタッチ</string>
+    <string name="controller_a">コントローラ A</string>
+    <string name="controller_b">コントローラ B</string>
+    <string name="controller_c">コントローラ C</string>
+    <string name="controller_d">コントローラ D</string>
+    <string name="controller_not_connected">コントローラ接続されていません</string>
+    <string name="controller_none_selected">でコントローラ選択されていません</string>
+    <string name="select">選択する</string>
+    <string name="remove">削除する</string>
+    <string name="select_controller_title">セレクトコントローラ</string>
+    <string name="select_controller_message">ポートに割り当てるコントローラのいずれかのボタンを押してください</string>
+    <string name="controller_already_in_use">このコントローラは、すでに使用されています！</string>
+    <string name="modified_layout">カスタムキーレイアウトを可能にする</string>
+    <string name="controller_compat">互換モードを有効にする</string>
+    
+    <string name="customize_physical_controls">物理コントロールをカスタマイズする</string>
+    <string name="map_keycode_title">コントローラを変更する</string>
+    <string name="map_keycode_message">のための新しいコントローラのボタンを押してください %1$s</string>
+    
+    <string name="moga_pro_connect">MOGAプロ接続!</string>
+    <string name="moga_connect">MOGA接続!</string>
+
+    <string name="about_text">reicastはドリームキャストエミュレータです\n\nバージョン: %1$s</string>
+    
+    <string-array name="controllers">
+    <item>コントローラ A</item>
+    <item>コントローラ B</item>
+    <item>コントローラ C</item>
+    <item>コントローラ D</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item>E - 米国</item>
+        <item>J - 日本の</item>
+        <item>U - 欧州の</item>
+        <item>R - リージョンフリー</item>
+    </string-array>
+
+    <string name="browser">ブラウザ</string>
+    <string name="settings">セッティング</string>
+    <string name="paths">パス</string>
+    <string name="input">コントローラー</string>
+    <string name="about">およそ</string>
+    <string name="rateme">私を評価してください</string>
+    
+    <string name="textOn">上の</string>
+    <string name="textOff">オフ</string>
+
+    <string name="platform">クリップボードにコピーするlogcatをコンテンツ\n問題報告書に貼り付けてください</string>
+    
+    <string name="menu_debug">デバッグログを提出</string>
+
+</resources>

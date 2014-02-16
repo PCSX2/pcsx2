@@ -1,0 +1,95 @@
+<resources>
+
+    <string name="menu_settings">Configurações</string>
+
+    <string name="system_path">Diretório do sistema (localização do diretório de dados com os arquivos dc_boot.bin / dc_flash.bin)</string>
+    <string name="browser_path">Diretório padrão de jogos</string>
+    <string name="games_path">Caminho do armazenamento (local das imagens .gdi, .chd ou .cdi)</string>
+    <string name="game_path">Diretório padrão de jogos</string>
+    
+    <string name="boot_bios">Iniciar Bios do Dreamcast</string>
+    <string name="missing_bios">Arquivo de BIOS está faltando. A BIOS do Dreamcast é necessária para este emulador funcionar. Coloque o arquivo de BIOS em %1$s/data/dc_boot.bin</string>
+    <string name="missing_flash">Arquivo de Flash está faltando. A Flash do Dreamcast é necessária para este emulador funcionar. Coloque o arquivo Flash em %1$s/data/dc_flash.bin</string>
+    <string name="require_bios">Você tem que informar a localização da BIOS do Dreamcast</string>
+    
+    <string name="folder_bios">INICIAR BIOS</string>
+    <string name="folder_select">SELECIONAR DIRETÓRIO ATUAL</string>
+
+    <string name="experimental_opts">Experimental (Pode causar problemas)</string>
+    <string name="select_dynarec">Habilitar Recompilador Dinâmico (Dynarec)</string>
+    <string name="select_unstable">Otimizações instáveis</string>
+    <string name="select_region">Região DC</string>
+    <string name="select_limitfps">Limitar FPS</string>
+    <string name="select_mipmaps">Usar Mipmaps (correção para o GPU SGX540)</string>
+    <string name="select_stretch">Modo Widescreen</string>
+    <string name="set_frameskip">Pulo de Frames</string>
+    <string name="select_render">Renderização PVR (não faz nada por enquanto)</string>
+    <string name="default_disk">Definir disco padrão</string>
+
+    <string name="games_listing">Jogos disponíveis</string>
+
+    <string name="customize_touch_controls">Configurar controles de toque na tela</string>
+    <string name="launch_editor">Iniciar editor</string>
+    <string name="touch_vibration">Vibrar ao tocar a tela</string>
+    <string name="controller_a">Controle A</string>
+    <string name="controller_b">Controle B</string>
+    <string name="controller_c">Controle C</string>
+    <string name="controller_d">Controle D</string>
+    <string name="controller_not_connected">Controle não está Conectado</string>
+    <string name="controller_none_selected">Nenhum controle selecionado</string>
+    <string name="select">Selecionar</string>
+    <string name="remove">Remover</string>
+    <string name="select_controller_title">Selecionar controle</string>
+    <string name="select_controller_message">Pressione qualquer botão no controle %1$s para atribuir uma porta</string>
+    <string name="controller_already_in_use">Esse controle já está em uso!</string>
+    <string name="modified_layout">Habilitar layout de botões personalizado</string>
+    <string name="controller_compat">Habilitar modo de compatibilidade</string>
+    <string name="dpad_joystick">Controle analógico usa layout do DPAD</string>
+    
+    <string name="customize_physical_controls">Personalizar controles físicos</string>
+    <string name="map_keycode_title">Configurar controle</string>
+    <string name="map_keycode_message">Pressione o novo botão para o controle %1$s</string>
+    
+    <string name="moga_pro_connect">MOGA Pro Conectado!</string>
+    <string name="moga_connect">MOGA Conectado!</string>
+
+    <string name="about_text">reicast é um emulador de Dreamcast\n\nVersão: %1$s</string>
+    <string name="app_site">Página: http://reicast.com</string>
+    <string name="beta_site">Betas: http://reicast.loungekatt.com</string>
+    <string name="git_api">https://api.github.com/repos/reicast/reicast-emulator/commits</string>
+    
+    <string-array name="controllers">
+    <item>Controle A</item>
+    <item>Controle B</item>
+    <item>Controle C</item>
+    <item>Controle D</item>
+    </string-array>
+    
+    <string-array name="images">
+        <item>cdi</item>
+        <item>chd</item>
+        <item>gdi</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item>E - Estados Unidos</item>
+        <item>J - Japão</item>
+        <item>U - Europa</item>
+        <item>R - Sem Região</item>
+    </string-array>
+    
+    <string name="browser">Selecionar Jogos</string>
+    <string name="settings">Configurações</string>
+    <string name="paths">Diretórios</string>
+    <string name="input">Controle</string>
+    <string name="about">Sobre</string>
+    <string name="rateme">Avaliar</string>
+    
+    <string name="textOn">LIG</string>
+    <string name="textOff">DESL</string>
+    
+    <string name="platform">Copiar conteúdo logcat para o clipboard\nPor favor, cole no relatório questão</string>
+
+    <string name="menu_debug">Submeter Logs de Erros</string>
+
+</resources>

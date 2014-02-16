@@ -1,0 +1,99 @@
+<resources>
+
+    <string name="app_name">PCSX2Android</string>
+    <string name="menu_settings">Settings</string>
+    <string name="system_path">System Path (dc_boot.bin/dc_flash.bin)</string>
+    <string name="browser_path">Default System Path</string>
+    <string name="games_path">Storage Path (.gdi .cdi or .cdh images)</string>
+    <string name="game_path">Default Game Storage</string>
+    
+    <string name="boot_bios">Boot PS2 Bios</string>
+    <string name="missing_bios">BIOS Missing. The PS2 BIOS is required for this emulator to work. Place the BIOS file in %1$s/data/dc_boot.bin</string>
+    <string name="missing_flash">Flash Missing. The PS2 Flash is required for this emulator to work. Place the Flash file in %1$s/data/dc_flash.bin</string>
+    <string name="require_bios">You have to provide the BIOS</string>
+    
+    <string name="folder_bios">BOOT BIOS</string>
+    <string name="folder_select">SELECT CURRENT FOLDER</string>
+
+    <string name="experimental_opts">Experimental (May cause widespread panic)</string>
+    <string name="select_dynarec">Dynarec Options</string>
+    <string name="select_unstable">Unstable Optimisations</string>
+    <string name="select_region">PS2 Region</string>
+    <string name="select_limitfps">Limit FPS</string>
+    <string name="select_mipmaps">Use Mipmaps (SGX540 Fix)</string>
+    <string name="select_stretch">Widescreen Mode</string>
+    <string name="set_frameskip">Frameskip Value</string>
+    <string name="select_render">PVR Rendering</string>
+    <string name="select_force_gpu">Force v6 GPU Config</string>
+    <string name="select_enable_zhack">Enable zHack</string>
+    <string name="default_disk">Set Default Disk</string>
+
+    <string name="games_listing">Available PS2 Games</string>
+    <string name="select_locale">PS2 Region (dc_flash[X].bin where X is region code)</string>
+
+    <string name="customize_touch_controls">Customize Touch Controls</string>
+    <string name="launch_editor">Launch Editor</string>
+    <string name="touch_vibration">Touch Vibration</string>
+    <string name="controller_a">Controller A</string>
+    <string name="controller_b">Controller B</string>
+    <string name="controller_c">Controller C</string>
+    <string name="controller_d">Controller D</string>
+    <string name="controller_not_connected">Controller Not Connected</string>
+    <string name="controller_none_selected">No Controller Selected</string>
+    <string name="select">Select</string>
+    <string name="remove">Remove</string>
+    <string name="select_controller_title">Select Controller</string>
+    <string name="select_controller_message">Press any button on the controller %1$s to assign to port</string>
+    <string name="controller_already_in_use">This controller is already in use!</string>
+    <string name="modified_layout">Enable Custom Key Layout</string>
+    <string name="controller_compat">Enable Compatibility Mode</string>
+    <string name="dpad_joystick">Joystick Uses DPAD Layout</string>
+    <string name="mic_in_port_2">Microphone plugged into port 2</string>
+    
+    <string name="customize_physical_controls">Customize Physical Controls</string>
+    <string name="map_keycode_title">Modify Controller</string>
+    <string name="map_keycode_message">Press the new controller button for %1$s</string>
+    
+    <string name="moga_pro_connect">MOGA Pro Connected!</string>
+    <string name="moga_connect">MOGA Connected!</string>
+
+    <string name="about_text">PCSX2Android is a PS2 emulator\n\nVersion: %1$s</string>
+    <string name="app_site">Homepage: http://loungekatt.com</string>
+    <string name="beta_site">Betas: http://pcsx2android.loungekatt.com</string>
+    <string name="git_api">https://api.github.com/repos/LoungeKatt/PCSX2Android/commits</string>
+    
+    <string-array name="controllers">
+    <item>Controller A</item>
+    <item>Controller B</item>
+    <item>Controller C</item>
+    <item>Controller D</item>
+    </string-array>
+    
+    <string-array name="images">
+        <item>cdi</item>
+        <item>chd</item>
+        <item>gdi</item>
+    </string-array>
+    
+    <string-array name="region">
+        <item>E - United States</item>
+        <item>J - Japanese</item>
+        <item>U - European</item>
+        <item>R - Region Free</item>
+    </string-array>
+    
+    <string name="browser">Browser</string>
+    <string name="settings">Settings</string>
+    <string name="paths">Paths</string>
+    <string name="input">Input</string>
+    <string name="about">About</string>
+    <string name="rateme">Rate Me</string>
+    
+    <string name="textOn">ON</string>
+    <string name="textOff">OFF</string>
+    
+    <string name="platform">Copying logcat content to clipboard\nPlease paste in the issue report</string>
+    
+    <string name="menu_debug">Submit Error Logs</string>
+
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Selector style for listrow -->
+    <item android:drawable="@drawable/gradient_bg" android:state_pressed="false" android:state_selected="false"/>
+    <item android:drawable="@drawable/gradient_bg_hover" android:state_pressed="true"/>
+    <item android:drawable="@drawable/gradient_bg_hover" android:state_pressed="false" android:state_selected="true"/>
+
+</selector>

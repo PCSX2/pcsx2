@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<attr name="switchStyle" format="reference" />
+    <declare-styleable name="Switch">
+        <attr name="thumb" format="reference"/>
+        <attr name="track" format="reference" />
+        <attr name="textOn" format="string"/>
+        <attr name="textOff" format="string"/>
+        <attr name="thumbTextPadding" format="dimension" />
+        <attr name="switchTextAppearance" format="reference" />
+        <attr name="switchMinWidth" format="dimension" />
+        <attr name="switchPadding" format="dimension" />
+        <attr name="switchPreferenceStyle" format="reference" />
+	</declare-styleable>
+	
+    <attr name="textAppearance" format="reference" />
+  <declare-styleable name="TextAppearanceSwitch" >
+      	<attr name="textColor" format="color" /> 
+        <attr name="textSize" format="dimension"/>
+        <attr name="textStyle" format="reference"/>
+        <attr name="typeface" format="reference"/>
+        <attr name="fontFamily" format="reference"/>
+        <attr name="textColorHighlight" format="color"/>
+        <attr name="textColorHint" format="color" />
+        <attr name="textColorLink" format="color" />
+        <attr name="textAllCaps" format="boolean" />
+    </declare-styleable>
+    
+  <declare-styleable name="SlidingMenu">
+        <attr name="mode">
+            <enum name="left" value="0" />
+            <enum name="right" value="1" />
+        </attr>
+        <attr name="viewAbove" format="reference" />
+        <attr name="viewBehind" format="reference" />
+        <attr name="behindOffset" format="dimension" />
+        <attr name="behindWidth" format="dimension" />
+        <attr name="behindScrollScale" format="float" />
+        <attr name="touchModeAbove">
+            <enum name="margin" value="0" />
+            <enum name="fullscreen" value="1" />
+        </attr>
+        <attr name="touchModeBehind">
+            <enum name="margin" value="0" />
+            <enum name="fullscreen" value="1" />
+        </attr>
+        <attr name="shadowDrawable" format="reference" />
+        <attr name="shadowWidth" format="dimension" />
+        <attr name="fadeEnabled" format="boolean" />
+        <attr name="fadeDegree" format="float" />
+        <attr name="selectorEnabled" format="boolean" />
+        <attr name="selectorDrawable" format="reference" />
+    </declare-styleable>
+  
+</resources>

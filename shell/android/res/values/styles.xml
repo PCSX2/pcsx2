@@ -1,0 +1,33 @@
+<resources>
+
+    <style name="AppTheme" parent="android:Theme.NoTitleBar.Fullscreen">
+        <item name="switchStyle">@style/switch_dark</item>
+		<item name="textAppearance">@style/TextAppearance</item>
+	</style>
+    
+    <style name="switch_dark">
+        <item name="track">@drawable/switch_track_holo_dark</item>
+        <item name="thumb">@drawable/switch_inner_holo_dark</item>
+        <item name="textOn">@string/textOn</item>
+        <item name="textOff">@string/textOff</item>
+        <item name="thumbTextPadding">12dip</item>
+        <item name="switchMinWidth">96dip</item>
+        <item name="switchPadding">16dip</item>
+        <item name="switchTextAppearance">@style/TextAppearance</item>
+    </style>
+    
+    <style name="TextAppearance">
+        <item name="textColor">?android:attr/textColorPrimary</item>
+        <item name="textColorHighlight">?android:attr/textColorHighlight</item>
+        <item name="textColorHint">?android:attr/textColorHint</item>
+        <item name="textColorLink">?android:attr/textColorLink</item>
+        <item name="textSize">16sp</item>
+    </style>
+    
+    <style name="BaseText" parent="@android:style/TextAppearance">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+</resources>
