@@ -23,11 +23,24 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 
 	breakResumeButton = new wxButton(panel, wxID_ANY, L"Resume");
 	Connect(breakResumeButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onPauseResumeClicked));
-	topRowSizer->Add(breakResumeButton);
+	topRowSizer->Add(breakResumeButton,0,wxRIGHT,8);
 
-	wxButton* stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
+	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into" );
+	stepIntoButton->Enable(false);
+	topRowSizer->Add(stepIntoButton,0,wxBOTTOM,2);
+
+	stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
+	stepOverButton->Enable(false);
 	Connect( stepOverButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOverClicked ) );
 	topRowSizer->Add(stepOverButton);
+	
+	stepOutButton = new wxButton( panel, wxID_ANY, L"Step Out" );
+	stepOutButton->Enable(false);
+	topRowSizer->Add(stepOutButton,0,wxRIGHT,8);
+	
+	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
+	breakpointButton->Enable(false);
+	topRowSizer->Add(breakpointButton);
 
 	topSizer->Add(topRowSizer);
 	
@@ -37,7 +50,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	disassembly = new CtrlDisassemblyView(panel,&debug);
 	middleSizer->Add(disassembly,1,wxEXPAND);
 
-	topSizer->Add(middleSizer,1,wxEXPAND);
+	topSizer->Add(middleSizer,1,wxEXPAND|wxBOTTOM,2);
 
 	// todo: create bottom part
 
@@ -122,15 +135,24 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 	bool running = debug.isRunning();
 	breakResumeButton->Enable(running);
 
-	if (debugMode)
+	if (running)
 	{
-		CBreakPoints::ClearTemporaryBreakPoints();
-		breakResumeButton->SetLabel(L"Resume");
+		if (debugMode)
+		{
+			CBreakPoints::ClearTemporaryBreakPoints();
+			breakResumeButton->SetLabel(L"Resume");
 
-		disassembly->gotoAddress(debug.getPC());
-		disassembly->SetFocus();
-	} else {
-		breakResumeButton->SetLabel(L"Break");
+			stepOutButton->Enable(true);
+
+			disassembly->gotoAddress(debug.getPC());
+			disassembly->SetFocus();
+		} else {
+			breakResumeButton->SetLabel(L"Break");
+
+			stepIntoButton->Enable(false);
+			stepOutButton->Enable(true);
+			stepOutButton->Enable(false);
+		}
 	}
 
 	update();

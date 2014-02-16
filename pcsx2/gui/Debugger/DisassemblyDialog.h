@@ -29,5 +29,9 @@ protected:
 private:
 	wxStatusBar* statusBar;
 	wxButton* breakResumeButton;
+	wxButton* stepIntoButton;
+	wxButton* stepOverButton;
+	wxButton* stepOutButton;
+	wxButton* breakpointButton;
 	CtrlDisassemblyView* disassembly;
 };
