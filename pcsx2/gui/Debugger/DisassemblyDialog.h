@@ -28,6 +28,6 @@ protected:
 	void stepOver();
 private:
 	wxStatusBar* statusBar;
-	wxButton* stopGoButton;
+	wxButton* breakResumeButton;
 	CtrlDisassemblyView* disassembly;
 };
