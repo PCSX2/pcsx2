@@ -515,7 +515,7 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 		}
 	} else if (evt.GetEventType() == wxEVT_MOTION)
 	{
-		if (evt.ButtonIsDown(wxLEFT))
+		if (evt.ButtonIsDown(wxMOUSE_BTN_LEFT))
 		{
 			int newAddress = yToAddress(evt.GetY());
 			setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
