@@ -113,7 +113,8 @@ public:
 	virtual void Suspend( bool isBlocking = true );
 	virtual void Resume();
 	virtual void Pause();
-	
+	virtual void PauseSelf();
+
 protected:
 	virtual void OnStart();
 

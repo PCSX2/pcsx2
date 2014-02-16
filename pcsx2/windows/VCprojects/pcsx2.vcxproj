@@ -160,6 +160,24 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
     </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+    </CustomBuild>
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
     <None Include="..\..\x86\aVUzerorec.S" />
@@ -402,6 +420,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\OutputIsoFile.cpp" />
+    <ClCompile Include="..\..\DebugTools\Breakpoints.cpp" />
     <ClCompile Include="..\..\DebugTools\DebugInterface.cpp" />
     <ClCompile Include="..\..\DebugTools\DisassemblyManager.cpp" />
     <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp" />
@@ -680,6 +699,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\AsyncFileReader.h" />
+    <ClInclude Include="..\..\DebugTools\Breakpoints.h" />
     <ClInclude Include="..\..\DebugTools\DebugInterface.h" />
     <ClInclude Include="..\..\DebugTools\DisassemblyManager.h" />
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h" />

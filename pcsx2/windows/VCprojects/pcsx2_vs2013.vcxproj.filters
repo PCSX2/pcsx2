@@ -823,6 +823,9 @@
     <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DebugTools\Breakpoints.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1210,6 +1213,9 @@
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\DebugTools\Breakpoints.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\3rdparty\wxWidgets\include\wx\msw\wx.rc">
@@ -1283,6 +1289,12 @@
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
+      <Filter>AppHost\Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
+      <Filter>AppHost\Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
   </ItemGroup>

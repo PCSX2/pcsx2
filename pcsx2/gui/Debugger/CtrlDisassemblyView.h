@@ -29,6 +29,7 @@ private:
 	u32 yToAddress(int y);
 	bool curAddressIsVisible();
 	void followBranch();
+	void toggleBreakpoint(bool toggleEnabled);
 
 	void setCurAddress(u32 newAddress, bool extend = false)
 	{
@@ -58,4 +59,6 @@ private:
 	int charWidth;
 	bool displaySymbols;
 	std::vector<u32> jumpStack;
+
+	wxIcon bpEnabled,bpDisabled;
 };

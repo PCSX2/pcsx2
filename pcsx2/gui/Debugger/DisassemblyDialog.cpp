@@ -3,6 +3,7 @@
 #include "DisassemblyDialog.h"
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
+#include "DebugTools/Breakpoints.h"
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent)
 	: wxDialogWithHelpers( parent, L"Disassembler", pxDialogFlags().Resize().MinWidth( 460 ) )
@@ -22,8 +23,11 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent)
 void DisassemblyDialog::onPauseResumeClicked(wxCommandEvent& evt)
 {	
 	if (debug.isCpuPaused())
+	{
+		if (CBreakPoints::IsAddressBreakPoint(debug.getPC()))
+			CBreakPoints::SetSkipFirst(debug.getPC());
 		debug.resumeCpu();
-	else
+	} else
 		debug.pauseCpu();
 }
 

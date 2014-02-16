@@ -264,6 +264,7 @@ set(pcsx2DebugToolsSources
 	DebugTools/DebugInterface.cpp
 	DebugTools/DisassemblyManager.cpp
 	DebugTools/MIPSAnalyst.cpp
+	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
 	DebugTools/DisR3000A.cpp
 	DebugTools/DisR5900asm.cpp
@@ -276,6 +277,7 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DebugInterface.h
 	DebugTools/DisassemblyManager.h
 	DebugTools/MIPSAnalyst.h
+	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h
 	DebugTools/DisASm.h
@@ -399,6 +401,8 @@ set(pcsx2GuiResources
     ${res_bin}/ConfigIcon_Speedhacks.h
     ${res_bin}/ConfigIcon_Video.h
     ${res_bin}/Dualshock.h
+    ${res_bin}/Breakpoint_Active.h
+    ${res_bin}/Breakpoint_Inactive.h
     )
 
 # IPU sources

@@ -1,18 +1,33 @@
 ﻿#include "PrecompiledHeader.h"
 #include "CtrlDisassemblyView.h"
+#include "DebugTools/Breakpoints.h"
+
+#include <wx/mstream.h>
+#include "Resources/Breakpoint_Active.h"
+#include "Resources/Breakpoint_Inactive.h"
 
 BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_PAINT(CtrlDisassemblyView::paintEvent)
 	EVT_MOUSEWHEEL(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
+	EVT_LEFT_DCLICK(CtrlDisassemblyView::mouseEvent)
 	EVT_MOTION(CtrlDisassemblyView::mouseEvent)
 	EVT_KEY_DOWN(CtrlDisassemblyView::keydownEvent)
+	EVT_CHAR(CtrlDisassemblyView::keydownEvent)
 	EVT_SCROLLWIN_LINEUP(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SCROLLWIN_LINEDOWN(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEUP(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEDOWN(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
 END_EVENT_TABLE()
+
+inline wxIcon _wxGetIconFromMemory(const unsigned char *data, int length) {
+   wxMemoryInputStream is(data, length);
+   wxBitmap b = wxBitmap(wxImage(is, wxBITMAP_TYPE_ANY, -1), -1);
+   wxIcon icon;
+   icon.CopyFromBitmap(b);
+   return icon;
+}
 
 CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_SUNKEN), cpu(_cpu)
@@ -23,6 +38,9 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	charWidth = 8;
 	displaySymbols = true;
 	visibleRows = 1;
+
+	bpEnabled = _wxGetIconFromMemory(res_Breakpoint_Active::Data,res_Breakpoint_Active::Length);
+	bpDisabled = _wxGetIconFromMemory(res_Breakpoint_Inactive::Data,res_Breakpoint_Inactive::Length);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);
@@ -252,6 +270,16 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		dc.SetPen(wxPen(backgroundColor));
 		dc.DrawRectangle(0,rowY1,totalWidth,rowHeight);
 		
+		// display address/symbol
+		bool enabled;
+		if (CBreakPoints::IsAddressBreakPoint(address,&enabled))
+		{
+			if (enabled)
+				textColor = 0x0000FF;
+			int yOffset = max(-1,(rowHeight-14+1)/2);
+			dc.DrawIcon(enabled ? bpEnabled : bpDisabled,2,rowY1+1+yOffset);
+		}
+		
 		dc.SetTextForeground(textColor);
 
 		char addressText[64];
@@ -341,54 +369,71 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 {
 	u32 windowEnd = manager.getNthNextAddress(windowStart,visibleRows);
 
-	switch (evt.GetKeyCode())
+	if (evt.ControlDown())
 	{
-	case WXK_LEFT:
-		if (jumpStack.empty())
+		switch (evt.GetKeyCode())
 		{
-			gotoAddress(cpu->getPC());
-		} else {
-			u32 addr = jumpStack[jumpStack.size()-1];
-			jumpStack.pop_back();
-			gotoAddress(addr);
+		case 'd':
+		case 'D':
+			toggleBreakpoint(true);
+			break;
+		default:
+			evt.Skip();
+			break;
 		}
-		break;
-	case WXK_RIGHT:
-		followBranch();
-		break;
-	case WXK_UP:
-		setCurAddress(manager.getNthPreviousAddress(curAddress,1), wxGetKeyState(WXK_SHIFT));
-		scrollAddressIntoView();
-		scanFunctions();
-		break;
-	case WXK_DOWN:
-		setCurAddress(manager.getNthNextAddress(curAddress,1), wxGetKeyState(WXK_SHIFT));
-		scrollAddressIntoView();
-		scanFunctions();
-		break;
-	case WXK_TAB:
-		displaySymbols = !displaySymbols;
-		break;
-	case WXK_PAGEUP:
-		if (curAddress != windowStart && curAddressIsVisible()) {
-			setCurAddress(windowStart, wxGetKeyState(WXK_SHIFT));
+	} else {
+		switch (evt.GetKeyCode())
+		{
+		case WXK_LEFT:
+			if (jumpStack.empty())
+			{
+				gotoAddress(cpu->getPC());
+			} else {
+				u32 addr = jumpStack[jumpStack.size()-1];
+				jumpStack.pop_back();
+				gotoAddress(addr);
+			}
+			break;
+		case WXK_RIGHT:
+			followBranch();
+			break;
+		case WXK_UP:
+			setCurAddress(manager.getNthPreviousAddress(curAddress,1), wxGetKeyState(WXK_SHIFT));
 			scrollAddressIntoView();
-		} else {
-			setCurAddress(manager.getNthPreviousAddress(windowStart,visibleRows), wxGetKeyState(WXK_SHIFT));
+			scanFunctions();
+			break;
+		case WXK_DOWN:
+			setCurAddress(manager.getNthNextAddress(curAddress,1), wxGetKeyState(WXK_SHIFT));
 			scrollAddressIntoView();
+			scanFunctions();
+			break;
+		case WXK_TAB:
+			displaySymbols = !displaySymbols;
+			break;
+		case WXK_PAGEUP:
+			if (curAddress != windowStart && curAddressIsVisible()) {
+				setCurAddress(windowStart, wxGetKeyState(WXK_SHIFT));
+				scrollAddressIntoView();
+			} else {
+				setCurAddress(manager.getNthPreviousAddress(windowStart,visibleRows), wxGetKeyState(WXK_SHIFT));
+				scrollAddressIntoView();
+			}
+			scanFunctions();
+			break;
+		case WXK_PAGEDOWN:
+			if (manager.getNthNextAddress(curAddress,1) != windowEnd && curAddressIsVisible()) {
+				setCurAddress(manager.getNthPreviousAddress(windowEnd,1), wxGetKeyState(WXK_SHIFT));
+				scrollAddressIntoView();
+			} else {
+				setCurAddress(manager.getNthNextAddress(windowEnd,visibleRows-1), wxGetKeyState(WXK_SHIFT));
+				scrollAddressIntoView();
+			}
+			scanFunctions();
+			break;
+		default:
+			evt.Skip();
+			break;
 		}
-		scanFunctions();
-		break;
-	case WXK_PAGEDOWN:
-		if (manager.getNthNextAddress(curAddress,1) != windowEnd && curAddressIsVisible()) {
-			setCurAddress(manager.getNthPreviousAddress(windowEnd,1), wxGetKeyState(WXK_SHIFT));
-			scrollAddressIntoView();
-		} else {
-			setCurAddress(manager.getNthNextAddress(windowEnd,visibleRows-1), wxGetKeyState(WXK_SHIFT));
-			scrollAddressIntoView();
-		}
-		scanFunctions();
-		break;
 	}
 
 	redraw();
@@ -418,24 +463,65 @@ void CtrlDisassemblyView::scrollbarEvent(wxScrollWinEvent& evt)
 	redraw();
 }
 
+void CtrlDisassemblyView::toggleBreakpoint(bool toggleEnabled)
+{
+	bool enabled;
+	if (CBreakPoints::IsAddressBreakPoint(curAddress,&enabled))
+	{
+		if (!enabled)
+		{
+			// enable disabled breakpoints
+			CBreakPoints::ChangeBreakPoint(curAddress,true);
+		} else if (!toggleEnabled && CBreakPoints::GetBreakPointCondition(curAddress) != NULL)
+		{
+			// don't just delete a breakpoint with a custom condition
+			CBreakPoints::RemoveBreakPoint(curAddress);
+		} else if (toggleEnabled)
+		{
+			// disable breakpoint
+			CBreakPoints::ChangeBreakPoint(curAddress,false);
+		} else {
+			// otherwise just remove breakpoint
+			CBreakPoints::RemoveBreakPoint(curAddress);
+		}
+	} else {
+		CBreakPoints::AddBreakPoint(curAddress);
+	}
+}
+
 void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 {
 	// left button
-	if (evt.ButtonDown(wxMOUSE_BTN_LEFT))
+	if (evt.GetEventType() == wxEVT_LEFT_DOWN || evt.GetEventType() == wxEVT_LEFT_DCLICK)
 	{
-		setCurAddress(yToAddress(evt.GetY()),wxGetKeyState(WXK_SHIFT));
+		int newAddress = yToAddress(evt.GetY());
+
+		if (curAddress == newAddress)
+			toggleBreakpoint(false);
+		else
+			setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
 		SetFocus();
 		SetFocusFromKbd();
-	}
-
-	// handle wheel
-	if (evt.GetWheelRotation() > 0)
+	// wheel
+	} else if (evt.GetEventType() == wxEVT_MOUSEWHEEL)
 	{
-		windowStart = manager.getNthPreviousAddress(windowStart,3);
-		scanFunctions();
-	} else if (evt.GetWheelRotation() < 0) {
-		windowStart = manager.getNthNextAddress(windowStart,3);
-		scanFunctions();
+		if (evt.GetWheelRotation() > 0)
+		{
+			windowStart = manager.getNthPreviousAddress(windowStart,3);
+			scanFunctions();
+		} else if (evt.GetWheelRotation() < 0) {
+			windowStart = manager.getNthNextAddress(windowStart,3);
+			scanFunctions();
+		}
+	} else if (evt.GetEventType() == wxEVT_MOTION)
+	{
+		if (evt.ButtonIsDown(wxLEFT))
+		{
+			int newAddress = yToAddress(evt.GetY());
+			setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
+		}
+	} else {
+		evt.Skip();
 	}
 
 	redraw();

@@ -149,6 +149,21 @@ void SysThreadBase::Pause()
 	m_RunningLock.Wait();
 }
 
+void SysThreadBase::PauseSelf()
+{
+	if( !IsSelf() || !IsRunning() ) return;
+
+	{
+		ScopedLock locker( m_ExecModeMutex );
+		
+		if( m_ExecMode == ExecMode_Opened )
+			m_ExecMode = ExecMode_Pausing;
+		
+		OnPause();
+		m_sem_event.Post();
+	}
+}
+
 // Resumes the core execution state, or does nothing is the core is already running.  If
 // settings were changed, resets will be performed as needed and emulation state resumed from
 // memory savestates.
