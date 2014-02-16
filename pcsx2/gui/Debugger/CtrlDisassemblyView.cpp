@@ -250,7 +250,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
 	wxFont boldFont = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
 
-	bool hasFocus = true;//wxWindow::FindFocus() == this;
+	bool hasFocus = wxWindow::FindFocus() == this;
 	
 	std::map<u32,int> addressPositions;
 
@@ -642,4 +642,15 @@ bool CtrlDisassemblyView::curAddressIsVisible()
 {
 	u32 windowEnd = manager.getNthNextAddress(windowStart,visibleRows);
 	return curAddress >= windowStart && curAddress < windowEnd;
+}
+
+void CtrlDisassemblyView::scrollStepping(u32 newPc)
+{
+	u32 windowEnd = manager.getNthNextAddress(windowStart,visibleRows);
+
+	newPc = manager.getStartAddress(newPc);
+	if (newPc >= windowEnd || newPc >= manager.getNthPreviousAddress(windowEnd,1))
+	{
+		windowStart = manager.getNthPreviousAddress(newPc,visibleRows-2);
+	}
 }

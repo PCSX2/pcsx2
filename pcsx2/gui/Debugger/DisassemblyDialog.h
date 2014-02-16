@@ -23,6 +23,9 @@ public:
 protected:
 	void onPauseResumeClicked(wxCommandEvent& evt);
 	void onSetStatusBarText(wxCommandEvent& evt);
+	void onStepOverClicked(wxCommandEvent& evt);
+
+	void stepOver();
 private:
 	wxStatusBar* statusBar;
 	wxButton* stopGoButton;

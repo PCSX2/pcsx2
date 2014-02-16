@@ -19,7 +19,15 @@ public:
 	void clearFunctions() { manager.clear(); };
 	void redraw();
 	
+	u32 getInstructionSizeAt(u32 address)
+	{
+		u32 start = manager.getStartAddress(address);
+		u32 next  = manager.getNthNextAddress(start,1);
+		return next-address;
+	}
+
 	void gotoAddress(u32 addr);
+	void scrollStepping(u32 newPc);
 	DECLARE_EVENT_TABLE()
 private:
 	void drawBranchLine(wxDC& dc, std::map<u32,int>& addressPositions, BranchLine& line);

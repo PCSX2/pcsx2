@@ -20,10 +20,15 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 
 	stopGoButton = new wxButton( panel, wxID_ANY, L"Go" );
 	Connect( stopGoButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onPauseResumeClicked ) );
+	
+	wxButton* stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
+	Connect( stepOverButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOverClicked ) );
+
+	stepOverButton->Move(80,0);
 
 	disassembly = new CtrlDisassemblyView(panel,&debug);
 	disassembly->SetSize(600,500);
-	disassembly->Move(100,20);
+	disassembly->Move(100,25);
 
 	CreateStatusBar(1);
 	
@@ -44,6 +49,53 @@ void DisassemblyDialog::onPauseResumeClicked(wxCommandEvent& evt)
 		debug.pauseCpu();
 }
 
+void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
+{	
+	stepOver();
+}
+
+
+void DisassemblyDialog::stepOver()
+{
+	if (!debug.isRunning() || !debug.isCpuPaused())
+		return;
+	
+	// If the current PC is on a breakpoint, the user doesn't want to do nothing.
+	CBreakPoints::SetSkipFirst(debug.getPC());
+	u32 currentPc = debug.getPC();
+
+	MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(&debug,debug.getPC());
+	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
+	if (info.isBranch)
+	{
+		if (info.isConditional == false)
+		{
+			if (info.isLinkedBranch)	// jal, jalr
+			{
+				// it's a function call with a delay slot - skip that too
+				breakpointAddress += 4;
+			} else {					// j, ...
+				// in case of absolute branches, set the breakpoint at the branch target
+				breakpointAddress = info.branchTarget;
+			}
+		} else {						// beq, ...
+			if (info.conditionMet)
+			{
+				breakpointAddress = info.branchTarget;
+			} else {
+				breakpointAddress = currentPc+2*4;
+				disassembly->scrollStepping(breakpointAddress);
+			}
+		}
+	} else {
+		disassembly->scrollStepping(breakpointAddress);
+	}
+
+	CBreakPoints::AddBreakPoint(breakpointAddress,true);
+	debug.resumeCpu();
+}
+
+
 void DisassemblyDialog::onSetStatusBarText(wxCommandEvent& evt)
 {
 	GetStatusBar()->SetLabel(evt.GetString());
@@ -61,6 +113,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 
 	if (debugMode)
 	{
+		CBreakPoints::ClearTemporaryBreakPoints();
 		stopGoButton->SetLabel(L"Go");
 
 		disassembly->gotoAddress(debug.getPC());
