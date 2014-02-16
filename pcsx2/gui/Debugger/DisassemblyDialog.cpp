@@ -18,8 +18,8 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 		wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 	panel->SetSizer(topSizer);
 
-	stopGoButton = new wxButton( panel, wxID_ANY, L"Go" );
-	Connect( stopGoButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onPauseResumeClicked ) );
+	breakResumeButton = new wxButton(panel, wxID_ANY, L"Go");
+	Connect(breakResumeButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onPauseResumeClicked));
 	
 	wxButton* stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
 	Connect( stepOverButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOverClicked ) );
@@ -109,17 +109,17 @@ void DisassemblyDialog::update()
 void DisassemblyDialog::setDebugMode(bool debugMode)
 {
 	bool running = debug.isRunning();
-	stopGoButton->Enable(running);
+	breakResumeButton->Enable(running);
 
 	if (debugMode)
 	{
 		CBreakPoints::ClearTemporaryBreakPoints();
-		stopGoButton->SetLabel(L"Go");
+		breakResumeButton->SetLabel(L"Resume");
 
 		disassembly->gotoAddress(debug.getPC());
 		disassembly->SetFocus();
 	} else {
-		stopGoButton->SetLabel(L"Stop");
+		breakResumeButton->SetLabel(L"Break");
 	}
 
 	update();
