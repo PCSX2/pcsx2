@@ -1,6 +1,9 @@
 ﻿#include "PrecompiledHeader.h"
 #include "CtrlDisassemblyView.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/Debug.h"
+
+#include "DebugEvents.h"
 
 #include <wx/mstream.h>
 #include "Resources/Breakpoint_Active.h"
@@ -51,6 +54,22 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 void CtrlDisassemblyView::scanFunctions()
 {
 	manager.analyze(windowStart,manager.getNthNextAddress(windowStart,visibleRows)-windowStart);
+}
+
+void CtrlDisassemblyView::postEvent(wxEventType type, wxString text)
+{
+   wxCommandEvent event( type);
+   event.SetEventObject(this);
+   event.SetString(text);
+   wxPostEvent(this,event);
+}
+
+void CtrlDisassemblyView::postEvent(wxEventType type, int value)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetInt(value);
+   wxPostEvent(this,event);
 }
 
 void CtrlDisassemblyView::paintEvent(wxPaintEvent & evt)
@@ -487,6 +506,86 @@ void CtrlDisassemblyView::toggleBreakpoint(bool toggleEnabled)
 	} else {
 		CBreakPoints::AddBreakPoint(curAddress);
 	}
+}
+
+
+void CtrlDisassemblyView::updateStatusBarText()
+{
+	char text[512];
+	DisassemblyLineInfo line;
+	manager.getLine(curAddress,true,line);
+	
+	text[0] = 0;
+	if (line.type == DISTYPE_OPCODE || line.type == DISTYPE_MACRO)
+	{
+		if (line.info.isDataAccess)
+		{
+			if (!isValidAddress(line.info.dataAddress))
+			{
+				sprintf(text,"Invalid address %08X",line.info.dataAddress);
+			} else {
+				switch (line.info.dataSize)
+				{
+				case 1:
+					sprintf(text,"[%08X] = %02X",line.info.dataAddress,cpu->read8(line.info.dataAddress));
+					break;
+				case 2:
+					sprintf(text,"[%08X] = %04X",line.info.dataAddress,cpu->read16(line.info.dataAddress));
+					break;
+				case 4:
+					// TODO: Could also be a float...
+					{
+						u32 data = cpu->read32(line.info.dataAddress);
+						const std::string addressSymbol = symbolMap.GetLabelString(data);
+						if (!addressSymbol.empty())
+						{
+							sprintf(text,"[%08X] = %s (%08X)",line.info.dataAddress,addressSymbol.c_str(),data);
+						} else {
+							sprintf(text,"[%08X] = %08X",line.info.dataAddress,data);
+						}
+						break;
+					}
+				case 16:
+					// TODO: vector
+					break;
+				}
+			}
+		}
+
+		if (line.info.isBranch)
+		{
+			const std::string addressSymbol = symbolMap.GetLabelString(line.info.branchTarget);
+			if (addressSymbol.empty())
+			{
+				sprintf(text,"%08X",line.info.branchTarget);
+			} else {
+				sprintf(text,"%08X = %s",line.info.branchTarget,addressSymbol.c_str());
+			}
+		}
+	} else if (line.type == DISTYPE_DATA)
+	{
+		u32 start = symbolMap.GetDataStart(curAddress);
+		if (start == -1)
+			start = curAddress;
+
+		u32 diff = curAddress-start;
+		const std::string label = symbolMap.GetLabelString(start);
+
+		if (!label.empty())
+		{
+			if (diff != 0)
+				sprintf(text,"%08X (%s) + %08X",start,label.c_str(),diff);
+			else
+				sprintf(text,"%08X (%s)",start,label.c_str());
+		} else {
+			if (diff != 0)
+				sprintf(text,"%08X + %08X",start,diff);
+			else
+				sprintf(text,"%08X",start);
+		}
+	}
+
+	postEvent(debEVT_SETSTATUSBARTEXT,wxString(text,wxConvUTF8));
 }
 
 void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)

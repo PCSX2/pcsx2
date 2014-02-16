@@ -30,6 +30,10 @@ private:
 	bool curAddressIsVisible();
 	void followBranch();
 	void toggleBreakpoint(bool toggleEnabled);
+	void updateStatusBarText();
+
+	void postEvent(wxEventType type, wxString text);
+	void postEvent(wxEventType type, int value);
 
 	void setCurAddress(u32 newAddress, bool extend = false)
 	{
@@ -38,6 +42,7 @@ private:
 		curAddress = newAddress;
 		selectRangeStart = extend ? std::min(selectRangeStart, newAddress) : newAddress;
 		selectRangeEnd = extend ? std::max(selectRangeEnd, after) : after;
+		updateStatusBarText();
 	}
 
 	void scrollAddressIntoView();

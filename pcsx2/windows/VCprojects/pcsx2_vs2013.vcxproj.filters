@@ -826,6 +826,9 @@
     <ClCompile Include="..\..\DebugTools\Breakpoints.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\DebugEvents.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1215,6 +1218,9 @@
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\Breakpoints.h">
       <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\DebugEvents.h">
+      <Filter>AppHost\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -319,6 +319,7 @@ set(pcsx2GuiSources
 	gui/Dialogs/SysConfigDialog.cpp
 	gui/Debugger/CtrlDisassemblyView.cpp
 	gui/Debugger/DisassemblyDialog.cpp
+	gui/Debugger/DebugEvents.cpp
 	gui/ExecutorThread.cpp
 	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
@@ -370,6 +371,7 @@ set(pcsx2GuiHeaders
 	gui/Dialogs/ModalPopups.h
 	gui/Debugger/CtrlDisassemblyView.h
 	gui/Debugger/DisassemblyDialog.h
+	gui/Debugger/DebugEvents.h
 	gui/i18n.h
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
