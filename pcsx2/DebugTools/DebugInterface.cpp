@@ -10,6 +10,8 @@ extern AppCoreThread CoreThread;
 
 DebugInterface debug;
 
+enum { CAT_GPR, CAT_CP0, CAT_CP1, CAT_COUNT };
+
 u32 DebugInterface::read8(u32 address)
 {
 	if (!isValidAddress(address))
@@ -35,15 +37,19 @@ u32 DebugInterface::read32(u32 address)
 
 int DebugInterface::getRegisterCategoryCount()
 {
-	return 1;
+	return CAT_COUNT;
 }
 
 const char* DebugInterface::getRegisterCategoryName(int cat)
 {
 	switch (cat)
 	{
-	case 0:
+	case CAT_GPR:
 		return "GPR";
+	case CAT_CP0:
+		return "CP0";
+	case CAT_CP1:
+		return "CP1";
 	default:
 		return "Invalid";
 	}
@@ -53,8 +59,11 @@ int DebugInterface::getRegisterSize(int cat)
 {
 	switch (cat)
 	{
-	case 0:
+	case CAT_GPR:
 		return 128;
+	case CAT_CP0:
+	case CAT_CP1:
+		return 32;
 	default:
 		return 0;
 	}
@@ -64,8 +73,11 @@ int DebugInterface::getRegisterCount(int cat)
 {
 	switch (cat)
 	{
-	case 0:
+	case CAT_GPR:
 		return 35;	// 32 + pc + hi + lo
+	case CAT_CP0:
+	case CAT_CP1:
+		return 32;
 	default:
 		return 0;
 	}
@@ -75,9 +87,12 @@ DebugInterface::RegisterType DebugInterface::getRegisterType(int cat)
 {
 	switch (cat)
 	{
-	case 0:
+	case CAT_GPR:
+	case CAT_CP0:
 	default:
 		return NORMAL;
+	case CAT_CP1:
+		return SPECIAL;
 	}
 }
 
@@ -85,7 +100,7 @@ const char* DebugInterface::getRegisterName(int cat, int num)
 {
 	switch (cat)
 	{
-	case 0:
+	case CAT_GPR:
 		switch (num)
 		{
 		case 32:	// pc
@@ -97,6 +112,10 @@ const char* DebugInterface::getRegisterName(int cat, int num)
 		default:
 			return R5900::disRNameGPR[num];
 		}
+	case CAT_CP0:
+		return R5900::disRNameCP0[num];
+	case CAT_CP1:
+		return R5900::disRNameCP1[num];
 	default:
 		return "Invalid";
 	}
@@ -107,7 +126,7 @@ u128 DebugInterface::getRegister(int cat, int num)
 	u128 result;
 	switch (cat)
 	{
-	case 0:
+	case CAT_GPR:
 		switch (num)
 		{
 		case 32:	// pc
@@ -123,6 +142,13 @@ u128 DebugInterface::getRegister(int cat, int num)
 			result = cpuRegs.GPR.r[num].UQ;
 			break;
 		}
+		break;
+	case CAT_CP0:
+		result = u128::From32(cpuRegs.CP0.r[num]);
+		break;
+	case CAT_CP1:
+		result = u128::From32(fpuRegs.fpr[num].UL);
+		break;
 	default:
 		result.From32(0);
 		break;
@@ -135,8 +161,15 @@ wxString DebugInterface::getRegisterString(int cat, int num)
 {
 	switch (cat)
 	{
-	case 0:
+	case CAT_GPR:
+	case CAT_CP0:
 		return getRegister(cat,num).ToString();
+	case CAT_CP1:
+		{
+			char str[64];
+			sprintf(str,"%f",fpuRegs.fpr[num].f);
+			return wxString(str,wxConvUTF8);
+		}
 	default:
 		return L"";
 	}

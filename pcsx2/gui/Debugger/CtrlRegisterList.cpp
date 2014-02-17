@@ -6,6 +6,8 @@
 
 BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
 	EVT_PAINT(CtrlRegisterList::paintEvent)
+	EVT_LEFT_DOWN(CtrlRegisterList::mouseEvent)
+	EVT_MOTION(CtrlRegisterList::mouseEvent)
 END_EVENT_TABLE()
 
 CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
@@ -14,7 +16,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	rowHeight = 14;
 	charWidth = 8;
 	currentRow = 0;
-	category = 0;
+	category = 1;
 
 	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 	{
@@ -23,6 +25,15 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 		ChangedReg* regs = new ChangedReg[count];
 		memset(regs,0,sizeof(ChangedReg)*count);
 		changedCategories.push_back(regs);
+
+		int maxLen = 0;
+		for (int k = 0; k < cpu->getRegisterCount(i); k++)
+		{
+			maxLen = std::max<int>(maxLen,strlen(cpu->getRegisterName(i,k)));
+		}
+
+		int x = 17+(maxLen+3)*charWidth;
+		startPositions.push_back(x);
 	}
 
 	SetDoubleBuffered(true);
@@ -115,8 +126,32 @@ void CtrlRegisterList::render(wxDC& dc)
 	wxColor colorUnchanged = wxColor(0xFF004000);
 	wxColor colorNormal = wxColor(0xFF600000);
 
+	// draw categories
+	int piece = size.x/cpu->getRegisterCategoryCount();
+	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
+	{
+		const char* name = cpu->getRegisterCategoryName(i);
+
+		int x = i*piece;
+
+		if (i == category)
+		{
+			dc.SetBrush(wxBrush(wxColor(0xFF70FF70)));
+			dc.SetPen(wxPen(wxColor(0xFF000000)));
+		} else {
+			dc.SetBrush(wxBrush(wxColor(0xFFFFEFE8)));
+			dc.SetPen(wxPen(wxColor(0xFF000000)));
+		}
+		
+		dc.DrawRectangle(x,0,piece,rowHeight);
+
+		// center text
+		x += (piece-strlen(name)*charWidth)/2;
+		dc.DrawText(wxString(name,wxConvUTF8),x,1);
+	}
+
 	int nameStart = 17;
-	int valueStart = 77;
+	int valueStart = startPositions[category];
 
 	ChangedReg* changedRegs = changedCategories[category];
 	int displayBits = cpu->getRegisterSize(category);
@@ -125,7 +160,7 @@ void CtrlRegisterList::render(wxDC& dc)
 	for (int i = 0; i < cpu->getRegisterCount(category); i++)
 	{
 		int x = valueStart;
-		int y = 2+i*rowHeight;
+		int y = 2+rowHeight*(i+1);
 
 		const char* name = cpu->getRegisterName(category,i);
 		dc.SetTextForeground(colorNormal);
@@ -193,6 +228,27 @@ void CtrlRegisterList::render(wxDC& dc)
 
 				dc.DrawText(cpu->getRegisterString(category,i),x,y);
 				break;
+			}
+		}
+	}
+}
+
+void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
+{
+	if (evt.ButtonIsDown(wxMOUSE_BTN_LEFT))
+	{
+		int x = evt.GetPosition().x;
+		int y = evt.GetPosition().y;
+
+		if (y < rowHeight)
+		{
+			int piece = GetSize().x/cpu->getRegisterCategoryCount();
+			int cat = x/piece;
+
+			if (cat != category)
+			{
+				category = cat;
+				Refresh();
 			}
 		}
 	}

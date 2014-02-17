@@ -10,21 +10,26 @@ public:
 	CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu);
 	
 	void paintEvent(wxPaintEvent & evt);
+	void mouseEvent(wxMouseEvent& evt);
 	void redraw();
 	DECLARE_EVENT_TABLE()
 
 	virtual wxSize GetMinClientSize() const
 	{
-		int maxBits = 0;
+		int maxWidth = 0;
 		for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 		{
-			maxBits = std::max<int>(maxBits,cpu->getRegisterSize(i));
+			int bits = cpu->getRegisterSize(i);
+			int start = startPositions[i];
+			
+			int w = start+(bits/4) * charWidth;
+			if (bits > 32)
+				w += (bits/32)*2-2;
+
+			maxWidth = std::max<int>(maxWidth,w);
 		}
 
-		int w = 77+(maxBits/4) * charWidth;
-		if (maxBits > 32)
-			w += (maxBits/32)*2-2;
-		return wxSize(w+2,2+rowHeight);
+		return wxSize(maxWidth+4,2+rowHeight);
 	}
 	virtual wxSize DoGetBestClientSize() const
 	{
@@ -41,6 +46,7 @@ private:
 	};
 
 	std::vector<ChangedReg*> changedCategories;
+	std::vector<int> startPositions;
 
 	DebugInterface* cpu;
 	int rowHeight,charWidth;

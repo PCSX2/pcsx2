@@ -51,6 +51,8 @@ namespace R5900
 	void dFindSym( std::string& output, u32 addr );
 
 	extern const char * const disRNameGPR[];
+	extern const char * const disRNameCP0[];
+	extern const char * const disRNameCP1[];
 
 	// A helper class for getting a quick and efficient string representation of the
 	// R5900's current instruction.  This class is *not* thread safe!
