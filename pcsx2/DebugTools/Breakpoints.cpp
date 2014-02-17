@@ -4,6 +4,7 @@
 #include "MIPSAnalyst.h"
 #include <cstdio>
 #include "../R5900.h"
+#include "../System.h"
 
 std::vector<BreakPoint> CBreakPoints::breakPoints_;
 u32 CBreakPoints::breakSkipFirstAt_ = 0;
@@ -376,36 +377,21 @@ const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
 
 void CBreakPoints::Update(u32 addr)
 {
+	bool resume = false;
 	if (debug.isCpuPaused() == false)
 	{
 		debug.pauseCpu();
+		resume = true;
 	}
-
+	
 	if (addr != 0)
 		Cpu->Clear(addr-4,8);
 	else
-		// todo: this doesn't seem to do what we want
-		Cpu->Clear(0,0xFFFFFFFF);
-/*	if (MIPSComp::jit)
-	{
-		bool resume = false;
-		if (Core_IsStepping() == false)
-		{
-			Core_EnableStepping(true);
-			Core_WaitInactive();
-			resume = true;
-		}
-		
-		// In case this is a delay slot, clear the previous instruction too.
-		if (addr != 0)
-			MIPSComp::jit->ClearCacheAt(addr - 4, 8);
-		else
-			MIPSComp::jit->ClearCache();
-
-		if (resume)
-			Core_EnableStepping(false);
-	}
+		SysClearExecutionCache();
+	
+	if (resume)
+		debug.resumeCpu();
 
 	// Redraw in order to show the breakpoint.
-	host->UpdateDisassembly();*/
+	// host->UpdateDisassembly();
 }
