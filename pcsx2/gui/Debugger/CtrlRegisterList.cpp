@@ -143,7 +143,7 @@ void CtrlRegisterList::render(wxDC& dc)
 			dc.SetPen(wxPen(wxColor(0xFF000000)));
 		}
 		
-		dc.DrawRectangle(x,0,piece,rowHeight);
+		dc.DrawRectangle(x-1,-1,piece+1,rowHeight);
 
 		// center text
 		x += (piece-strlen(name)*charWidth)/2;
