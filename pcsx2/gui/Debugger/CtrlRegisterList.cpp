@@ -219,6 +219,9 @@ void CtrlRegisterList::render(wxDC& dc)
 			case 128:
 				{
 					int startIndex = std::min<int>(3,maxBits/32-1);
+					int actualX = size.x-4-(startIndex+1)*(8*charWidth+2);
+					x = std::max<int>(actualX,x);
+
 					if (startIndex != 3)
 					{
 						bool c = false;

@@ -11,7 +11,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
 END_EVENT_TABLE()
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
-	wxFrame( parent, wxID_ANY, L"Disassembler", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION )
+	wxFrame( parent, wxID_ANY, L"Disassembler", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU )
 {
 
 	topSizer = new wxBoxSizer( wxVERTICAL );
@@ -62,7 +62,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 
 	CreateStatusBar(1);
 	
-	SetMinSize(wxSize(800,600));
+	SetMinSize(wxSize(1000,600));
 	panel->GetSizer()->Fit(this);
 
 	setDebugMode(true);

@@ -38,6 +38,9 @@ inline bool isValidAddress(u32 addr)
 	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
 }
 
+extern const char * const disRNameCP2f[];
+extern const char * const disRNameCP2i[];
+
 namespace R5900
 {
 	// [TODO] : These function names can be de-obfuscated with the help of a little namespace love.

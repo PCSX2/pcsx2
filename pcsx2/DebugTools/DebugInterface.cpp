@@ -5,12 +5,13 @@
 #include "r5900.h"
 #include "AppCoreThread.h"
 #include "Debug.h"
+#include "../VU.h"
 
 extern AppCoreThread CoreThread;
 
 DebugInterface debug;
 
-enum { CAT_GPR, CAT_CP0, CAT_CP1, CAT_COUNT };
+enum { CAT_GPR, CAT_CP0, CAT_CP1, CAT_CP2F, CAT_CP2I, CAT_COUNT };
 
 u32 DebugInterface::read8(u32 address)
 {
@@ -50,6 +51,10 @@ const char* DebugInterface::getRegisterCategoryName(int cat)
 		return "CP0";
 	case CAT_CP1:
 		return "CP1";
+	case CAT_CP2F:
+		return "CP2f";
+	case CAT_CP2I:
+		return "CP2i";
 	default:
 		return "Invalid";
 	}
@@ -60,9 +65,11 @@ int DebugInterface::getRegisterSize(int cat)
 	switch (cat)
 	{
 	case CAT_GPR:
+	case CAT_CP2F:
 		return 128;
 	case CAT_CP0:
 	case CAT_CP1:
+	case CAT_CP2I:
 		return 32;
 	default:
 		return 0;
@@ -77,6 +84,8 @@ int DebugInterface::getRegisterCount(int cat)
 		return 35;	// 32 + pc + hi + lo
 	case CAT_CP0:
 	case CAT_CP1:
+	case CAT_CP2F:
+	case CAT_CP2I:
 		return 32;
 	default:
 		return 0;
@@ -89,6 +98,8 @@ DebugInterface::RegisterType DebugInterface::getRegisterType(int cat)
 	{
 	case CAT_GPR:
 	case CAT_CP0:
+	case CAT_CP2F:
+	case CAT_CP2I:
 	default:
 		return NORMAL;
 	case CAT_CP1:
@@ -116,6 +127,10 @@ const char* DebugInterface::getRegisterName(int cat, int num)
 		return R5900::disRNameCP0[num];
 	case CAT_CP1:
 		return R5900::disRNameCP1[num];
+	case CAT_CP2F:
+		return disRNameCP2f[num];
+	case CAT_CP2I:
+		return disRNameCP2i[num];
 	default:
 		return "Invalid";
 	}
@@ -148,6 +163,12 @@ u128 DebugInterface::getRegister(int cat, int num)
 		break;
 	case CAT_CP1:
 		result = u128::From32(fpuRegs.fpr[num].UL);
+		break;
+	case CAT_CP2F:
+		result = VU1.VF[num].UQ;
+		break;
+	case CAT_CP2I:
+		result = u128::From32(VU1.VI[num].UL);
 		break;
 	default:
 		result.From32(0);
