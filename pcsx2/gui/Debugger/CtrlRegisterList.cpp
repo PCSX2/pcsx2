@@ -14,7 +14,16 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	rowHeight = 14;
 	charWidth = 8;
 	currentRow = 0;
-	displayBits = 128;
+	category = 0;
+
+	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
+	{
+		int count = cpu->getRegisterCount(i);
+
+		ChangedReg* regs = new ChangedReg[count];
+		memset(regs,0,sizeof(ChangedReg)*count);
+		changedCategories.push_back(regs);
+	}
 
 	SetDoubleBuffered(true);
 	SetInitialBestSize(ClientToWindowSize(GetMinClientSize()));
@@ -25,36 +34,42 @@ void CtrlRegisterList::refreshChangedRegs()
 	if (cpu->getPC() == lastPc)
 		return;
 
-	for (int i = 0; i < 32; i++)
+	for (size_t cat = 0; cat < changedCategories.size(); cat++)
 	{
-		ChangedReg& reg = changedRegs[i];
-		memset(&reg.changed,0,sizeof(reg.changed));
+		ChangedReg* regs = changedCategories[cat];
+		int size = cpu->getRegisterSize(category);
 
-		u128 newValue = cpu->getGPR(i);
-
-		if (reg.oldValue != newValue)
+		for (int i = 0; i < cpu->getRegisterCount(cat); i++)
 		{
-			bool changed = false;
+			ChangedReg& reg = regs[i];
+			memset(&reg.changed,0,sizeof(reg.changed));
 
-			if (reg.oldValue._u32[3] != newValue._u32[3] || reg.oldValue._u32[2] != newValue._u32[2])
+			u128 newValue = cpu->getRegister(cat,i);
+
+			if (reg.oldValue != newValue)
 			{
-				changed = true;
-				reg.changed[3] = true;
-				reg.changed[2] = true;
-			}
+				bool changed = false;
 
-			if (reg.oldValue._u32[1] != newValue._u32[1] || changed)
-			{
-				changed = true;
-				reg.changed[1] = true;
-			}
+				if (size >= 128 && (reg.oldValue._u32[3] != newValue._u32[3] || reg.oldValue._u32[2] != newValue._u32[2]))
+				{
+					changed = true;
+					reg.changed[3] = true;
+					reg.changed[2] = true;
+				}
 
-			if (reg.oldValue._u32[0] != newValue._u32[0] || changed)
-			{
-				reg.changed[0] = true;
-			}
+				if (size >= 64 && (reg.oldValue._u32[1] != newValue._u32[1] || changed))
+				{
+					changed = true;
+					reg.changed[1] = true;
+				}
 
-			reg.oldValue = newValue;
+				if (reg.oldValue._u32[0] != newValue._u32[0] || changed)
+				{
+					reg.changed[0] = true;
+				}
+
+				reg.oldValue = newValue;
+			}
 		}
 	}
 
@@ -102,69 +117,81 @@ void CtrlRegisterList::render(wxDC& dc)
 
 	int nameStart = 17;
 	int valueStart = 77;
-	for (int i = 0; i < 32; i++)
+
+	ChangedReg* changedRegs = changedCategories[category];
+	int displayBits = cpu->getRegisterSize(category);
+	DebugInterface::RegisterType type = cpu->getRegisterType(category);
+
+	for (int i = 0; i < cpu->getRegisterCount(category); i++)
 	{
 		int x = valueStart;
 		int y = 2+i*rowHeight;
 
-		const char* name = cpu->getRegName(i);
+		const char* name = cpu->getRegisterName(category,i);
 		dc.SetTextForeground(colorNormal);
 		dc.DrawText(wxString(name,wxConvUTF8),nameStart,y);
 
-		u128 value = cpu->getGPR(i);
+		u128 value = cpu->getRegister(category,i);
 		ChangedReg& changed = changedRegs[i];
 
-		switch (displayBits)
+		switch (type)
 		{
-		case 128:
+		case DebugInterface::NORMAL:	// display them in 32 bit parts
+			switch (displayBits)
 			{
-				for (int i = 3; i >= 0; i--)
+			case 128:
 				{
-					if (changed.changed[i])
+					for (int i = 3; i >= 0; i--)
+					{
+						if (changed.changed[i])
+							dc.SetTextForeground(colorChanged);
+						else
+							dc.SetTextForeground(colorUnchanged);
+
+						drawU32Text(dc,value._u32[i],x,y);
+						x += charWidth*8+2;
+					}
+					break;
+				}
+			case 64:
+				{
+					for (int i = 1; i >= 0; i--)
+					{
+						if (changed.changed[i])
+							dc.SetTextForeground(colorChanged);
+						else
+							dc.SetTextForeground(colorUnchanged);
+
+						drawU32Text(dc,value._u32[i],x,y);
+						x += charWidth*8+2;
+					}
+					break;
+				}
+			case 32:
+				{
+					if (changed.changed[0])
 						dc.SetTextForeground(colorChanged);
 					else
 						dc.SetTextForeground(colorUnchanged);
 
-					drawU32Text(dc,value._u32[i],x,y);
-					x += charWidth*8+2;
+					switch (type)
+					{
+					case DebugInterface::NORMAL:
+						drawU32Text(dc,value._u32[0],x,y);
+						break;
+					}
+					break;
 				}
-				break;
 			}
-		case 64:
+			break;
+		case DebugInterface::SPECIAL:		// let debug interface format them and just display them
 			{
-				// check if upper bits have changed
-				if (changed.changed[3] || changed.changed[2])
-				{
-					dc.SetTextForeground(colorChanged);
-					dc.DrawText(L"+",x-charWidth,y);
-				}
-
-				for (int i = 1; i >= 0; i--)
-				{
-					if (changed.changed[i])
-						dc.SetTextForeground(colorChanged);
-					else
-						dc.SetTextForeground(colorUnchanged);
-
-					drawU32Text(dc,value._u32[i],x,y);
-					x += charWidth*8+2;
-				}
-				break;
-			}
-		case 32:
-			{
-				// check if upper bits have changed
-				if (changed.changed[3] || changed.changed[2] || changed.changed[1])
-				{
-					dc.SetTextForeground(colorChanged);
-					dc.DrawText(L"+",x-charWidth,y);
-				}
-
-				if (changed.changed[0])
+				if (changed.changed[0] || changed.changed[1] || changed.changed[2] || changed.changed[3])
 					dc.SetTextForeground(colorChanged);
 				else
 					dc.SetTextForeground(colorUnchanged);
-				drawU32Text(dc,value._u32[0],x,y);
+
+				dc.DrawText(cpu->getRegisterString(category,i),x,y);
 				break;
 			}
 		}

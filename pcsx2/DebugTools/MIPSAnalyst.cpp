@@ -161,8 +161,8 @@ namespace MIPSAnalyst
 		u32 opNum = MIPS_GET_OP(op);
 		u32 rsNum = MIPS_GET_RS(op);
 		u32 rtNum = MIPS_GET_RT(op);
-		u32 rs = info.cpu->getGPR(rsNum);
-		u32 rt = info.cpu->getGPR(rtNum);
+		u32 rs = info.cpu->getRegister(0,rsNum);
+		u32 rt = info.cpu->getRegister(0,rtNum);
 
 		switch (MIPS_GET_OP(op))
 		{
@@ -261,7 +261,7 @@ namespace MIPSAnalyst
 			if (toRegister)
 			{
 				info.branchRegisterNum = (int)MIPS_GET_RS(op);
-				info.branchTarget = info.cpu->getGPR(info.branchRegisterNum)._u32[0];
+				info.branchTarget = info.cpu->getRegister(0,info.branchRegisterNum)._u32[0];
 			} else {
 				info.branchTarget =  (info.opcodeAddress & 0xF0000000) | ((op&0x03FFFFFF) << 2);
 			}
@@ -298,19 +298,19 @@ namespace MIPSAnalyst
 			case 0x20:	// add
 			case 0x21:	// addu
 				info.hasRelevantAddress = true;
-				info.releventAddress = cpu->getGPR(MIPS_GET_RS(op))._u32[0]+cpu->getGPR(MIPS_GET_RT(op))._u32[0];
+				info.releventAddress = cpu->getRegister(0,MIPS_GET_RS(op))._u32[0]+cpu->getRegister(0,MIPS_GET_RT(op))._u32[0];
 				break;
 			case 0x22:	// sub
 			case 0x23:	// subu
 				info.hasRelevantAddress = true;
-				info.releventAddress = cpu->getGPR(MIPS_GET_RS(op))._u32[0]-cpu->getGPR(MIPS_GET_RT(op))._u32[0];
+				info.releventAddress = cpu->getRegister(0,MIPS_GET_RS(op))._u32[0]-cpu->getRegister(0,MIPS_GET_RT(op))._u32[0];
 				break;
 			}
 			break;
 		case 0x08:	// addi
 		case 0x09:	// adiu
 			info.hasRelevantAddress = true;
-			info.releventAddress = cpu->getGPR(MIPS_GET_RS(op))._u32[0]+((s16)(op & 0xFFFF));
+			info.releventAddress = cpu->getRegister(0,MIPS_GET_RS(op))._u32[0]+((s16)(op & 0xFFFF));
 			break;
 		}
 

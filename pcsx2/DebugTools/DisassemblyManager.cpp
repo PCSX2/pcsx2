@@ -758,9 +758,9 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 		addressSymbol = symbolMap.GetLabelString(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
-			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegName(rt),addressSymbol.c_str());
+			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegisterName(0,rt),addressSymbol.c_str());
 		} else {
-			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegName(rt),immediate);
+			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegisterName(0,rt),immediate);
 		}
 
 		dest.params = buffer;
@@ -774,9 +774,9 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 		addressSymbol = symbolMap.GetLabelString(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
-			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegName(rt),addressSymbol.c_str());
+			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegisterName(0,rt),addressSymbol.c_str());
 		} else {
-			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegName(rt),immediate);
+			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegisterName(0,rt),immediate);
 		}
 
 		dest.params = buffer;

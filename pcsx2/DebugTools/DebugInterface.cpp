@@ -31,10 +31,117 @@ u32 DebugInterface::read32(u32 address)
 	return memRead32(address);
 }
 
-u128 DebugInterface::getGPR(int num)
+
+
+int DebugInterface::getRegisterCategoryCount()
 {
-	return cpuRegs.GPR.r[num].UQ;
+	return 1;
 }
+
+const char* DebugInterface::getRegisterCategoryName(int cat)
+{
+	switch (cat)
+	{
+	case 0:
+		return "GPR";
+	default:
+		return "Invalid";
+	}
+}
+
+int DebugInterface::getRegisterSize(int cat)
+{
+	switch (cat)
+	{
+	case 0:
+		return 128;
+	default:
+		return 0;
+	}
+}
+
+int DebugInterface::getRegisterCount(int cat)
+{
+	switch (cat)
+	{
+	case 0:
+		return 35;	// 32 + pc + hi + lo
+	default:
+		return 0;
+	}
+}
+
+DebugInterface::RegisterType DebugInterface::getRegisterType(int cat)
+{
+	switch (cat)
+	{
+	case 0:
+	default:
+		return NORMAL;
+	}
+}
+
+const char* DebugInterface::getRegisterName(int cat, int num)
+{
+	switch (cat)
+	{
+	case 0:
+		switch (num)
+		{
+		case 32:	// pc
+			return "pc";
+		case 33:	// hi
+			return "hi";
+		case 34:	// lo
+			return "lo";
+		default:
+			return R5900::disRNameGPR[num];
+		}
+	default:
+		return "Invalid";
+	}
+}
+
+u128 DebugInterface::getRegister(int cat, int num)
+{
+	u128 result;
+	switch (cat)
+	{
+	case 0:
+		switch (num)
+		{
+		case 32:	// pc
+			result = u128::From32(cpuRegs.pc);
+			break;
+		case 33:	// hi
+			result = cpuRegs.HI.UQ;
+			break;
+		case 34:	// lo
+			result = cpuRegs.LO.UQ;
+			break;
+		default:
+			result = cpuRegs.GPR.r[num].UQ;
+			break;
+		}
+	default:
+		result.From32(0);
+		break;
+	}
+
+	return result;
+}
+
+wxString DebugInterface::getRegisterString(int cat, int num)
+{
+	switch (cat)
+	{
+	case 0:
+		return getRegister(cat,num).ToString();
+	default:
+		return L"";
+	}
+}
+
 
 u128 DebugInterface::getHI()
 {
@@ -49,11 +156,6 @@ u128 DebugInterface::getLO()
 u32 DebugInterface::getPC()
 {
 	return cpuRegs.pc;
-}
-
-const char* DebugInterface::getRegName(int num)
-{
-	return R5900::disRNameGPR[num];
 }
 
 bool DebugInterface::isRunning()

@@ -4,14 +4,24 @@
 class DebugInterface
 {
 public:
+	enum RegisterType { NORMAL, SPECIAL };
+
 	u32 read8(u32 address);
 	u32 read16(u32 address);
 	u32 read32(u32 address);
-	u128 getGPR(int num);
+
+	// register stuff
+	int getRegisterCategoryCount();
+	const char* getRegisterCategoryName(int cat);
+	int getRegisterSize(int cat);
+	int getRegisterCount(int cat);
+	RegisterType getRegisterType(int cat);
+	const char* getRegisterName(int cat, int num);
+	u128 getRegister(int cat, int num);
+	wxString getRegisterString(int cat, int num);
 	u128 getHI();
 	u128 getLO();
 	u32 getPC();
-	const char* getRegName(int num);
 
 	bool isRunning();
 	bool isCpuPaused();

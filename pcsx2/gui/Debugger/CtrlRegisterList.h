@@ -15,9 +15,15 @@ public:
 
 	virtual wxSize GetMinClientSize() const
 	{
-		int w = 77+(displayBits/4) * charWidth;
-		if (displayBits > 32)
-			w += (displayBits/32)*2-2;
+		int maxBits = 0;
+		for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
+		{
+			maxBits = std::max<int>(maxBits,cpu->getRegisterSize(i));
+		}
+
+		int w = 77+(maxBits/4) * charWidth;
+		if (maxBits > 32)
+			w += (maxBits/32)*2-2;
 		return wxSize(w+2,2+rowHeight);
 	}
 	virtual wxSize DoGetBestClientSize() const
@@ -34,11 +40,11 @@ private:
 		bool changed[4];
 	};
 
-	ChangedReg changedRegs[32];
+	std::vector<ChangedReg*> changedCategories;
 
 	DebugInterface* cpu;
 	int rowHeight,charWidth;
 	int currentRow;
-	int displayBits;
 	u32 lastPc;
+	int category;
 };
