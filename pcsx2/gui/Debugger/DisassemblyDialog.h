@@ -24,10 +24,12 @@ public:
 protected:
 	void onPauseResumeClicked(wxCommandEvent& evt);
 	void onSetStatusBarText(wxCommandEvent& evt);
+	void onUpdateLayout(wxCommandEvent& evt);
 	void onStepOverClicked(wxCommandEvent& evt);
 
 	void stepOver();
 private:
+	wxBoxSizer* topSizer;
 	wxStatusBar* statusBar;
 	wxButton* breakResumeButton;
 	wxButton* stepIntoButton;

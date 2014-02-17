@@ -7,16 +7,25 @@
 BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
 	EVT_PAINT(CtrlRegisterList::paintEvent)
 	EVT_LEFT_DOWN(CtrlRegisterList::mouseEvent)
+	EVT_RIGHT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_MOTION(CtrlRegisterList::mouseEvent)
 END_EVENT_TABLE()
+
+enum DisassemblyMenuIdentifiers
+{
+	ID_REGISTERLIST_DISPLAY32 = 1,
+	ID_REGISTERLIST_DISPLAY64,
+	ID_REGISTERLIST_DISPLAY128,
+};
+
 
 CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER), cpu(_cpu)
 {
 	rowHeight = 14;
 	charWidth = 8;
-	currentRow = 0;
-	category = 1;
+	category = 0;
+	maxBits = 128;
 
 	for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 	{
@@ -34,10 +43,33 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 
 		int x = 17+(maxLen+3)*charWidth;
 		startPositions.push_back(x);
+		currentRows.push_back(0);
 	}
+
+	menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY32,		L"Display 32 bit");
+	menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY64,		L"Display 64 bit");
+	menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY128,	L"Display 128 bit");
+	menu.Check(ID_REGISTERLIST_DISPLAY128,true);
+ 	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlRegisterList::onPopupClick, NULL, this);
 
 	SetDoubleBuffered(true);
 	SetInitialBestSize(ClientToWindowSize(GetMinClientSize()));
+}
+
+void CtrlRegisterList::postEvent(wxEventType type, wxString text)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetString(text);
+   wxPostEvent(this,event);
+}
+
+void CtrlRegisterList::postEvent(wxEventType type, int value)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetInt(value);
+   wxPostEvent(this,event);
 }
 
 void CtrlRegisterList::refreshChangedRegs()
@@ -143,7 +175,10 @@ void CtrlRegisterList::render(wxDC& dc)
 			dc.SetPen(wxPen(wxColor(0xFF000000)));
 		}
 		
-		dc.DrawRectangle(x-1,-1,piece+1,rowHeight);
+		if (i == cpu->getRegisterCategoryCount()-1)
+			piece++;
+
+		dc.DrawRectangle(x-1,-1,piece+1,rowHeight+1);
 
 		// center text
 		x += (piece-strlen(name)*charWidth)/2;
@@ -154,17 +189,24 @@ void CtrlRegisterList::render(wxDC& dc)
 	int valueStart = startPositions[category];
 
 	ChangedReg* changedRegs = changedCategories[category];
-	int displayBits = cpu->getRegisterSize(category);
+	int registerBits = cpu->getRegisterSize(category);
 	DebugInterface::RegisterType type = cpu->getRegisterType(category);
 
 	for (int i = 0; i < cpu->getRegisterCount(category); i++)
 	{
 		int x = valueStart;
-		int y = 2+rowHeight*(i+1);
+		int y = rowHeight*(i+1);
+
+		if (currentRows[category] == i)
+		{
+			dc.SetBrush(wxBrush(wxColor(0xFFFFEFE8)));
+			dc.SetPen(wxPen(wxColor(0xFFFFEFE8)));
+			dc.DrawRectangle(0,y,size.x,rowHeight);
+		}
 
 		const char* name = cpu->getRegisterName(category,i);
 		dc.SetTextForeground(colorNormal);
-		dc.DrawText(wxString(name,wxConvUTF8),nameStart,y);
+		dc.DrawText(wxString(name,wxConvUTF8),nameStart,y+2);
 
 		u128 value = cpu->getRegister(category,i);
 		ChangedReg& changed = changedRegs[i];
@@ -172,24 +214,44 @@ void CtrlRegisterList::render(wxDC& dc)
 		switch (type)
 		{
 		case DebugInterface::NORMAL:	// display them in 32 bit parts
-			switch (displayBits)
+			switch (registerBits)
 			{
 			case 128:
 				{
-					for (int i = 3; i >= 0; i--)
+					int startIndex = std::min<int>(3,maxBits/32-1);
+					if (startIndex != 3)
+					{
+						bool c = false;
+						for (int i = 3; i > startIndex; i--)
+							c = c || changed.changed[i];
+
+						if (c)
+						{
+							dc.SetTextForeground(colorChanged);
+							dc.DrawText(L"+",x-charWidth,y+2);
+						}
+					}
+
+					for (int i = startIndex; i >= 0; i--)
 					{
 						if (changed.changed[i])
 							dc.SetTextForeground(colorChanged);
 						else
 							dc.SetTextForeground(colorUnchanged);
 
-						drawU32Text(dc,value._u32[i],x,y);
+						drawU32Text(dc,value._u32[i],x,y+2);
 						x += charWidth*8+2;
 					}
 					break;
 				}
 			case 64:
 				{
+					if (maxBits < 64 && changed.changed[1])
+					{
+						dc.SetTextForeground(colorChanged);
+						dc.DrawText(L"+",x-charWidth,y+2);
+					}
+
 					for (int i = 1; i >= 0; i--)
 					{
 						if (changed.changed[i])
@@ -197,7 +259,7 @@ void CtrlRegisterList::render(wxDC& dc)
 						else
 							dc.SetTextForeground(colorUnchanged);
 
-						drawU32Text(dc,value._u32[i],x,y);
+						drawU32Text(dc,value._u32[i],x,y+2);
 						x += charWidth*8+2;
 					}
 					break;
@@ -209,12 +271,7 @@ void CtrlRegisterList::render(wxDC& dc)
 					else
 						dc.SetTextForeground(colorUnchanged);
 
-					switch (type)
-					{
-					case DebugInterface::NORMAL:
-						drawU32Text(dc,value._u32[0],x,y);
-						break;
-					}
+					drawU32Text(dc,value._u32[0],x,y+2);
 					break;
 				}
 			}
@@ -226,15 +283,61 @@ void CtrlRegisterList::render(wxDC& dc)
 				else
 					dc.SetTextForeground(colorUnchanged);
 
-				dc.DrawText(cpu->getRegisterString(category,i),x,y);
+				dc.DrawText(cpu->getRegisterString(category,i),x,y+2);
 				break;
 			}
 		}
 	}
 }
 
+void CtrlRegisterList::onPopupClick(wxCommandEvent& evt)
+{
+	switch (evt.GetId())
+	{
+	case ID_REGISTERLIST_DISPLAY32:
+		maxBits = 32;
+		SetBestSize(ClientToWindowSize(GetMinClientSize()));
+		postEvent(debEVT_UPDATELAYOUT,0);
+		Refresh();
+		break;
+	case ID_REGISTERLIST_DISPLAY64:
+		maxBits = 64;
+		SetBestSize(ClientToWindowSize(GetMinClientSize()));
+		postEvent(debEVT_UPDATELAYOUT,0);
+		Refresh();
+		break;
+	case ID_REGISTERLIST_DISPLAY128:
+		maxBits = 128;
+		SetBestSize(ClientToWindowSize(GetMinClientSize()));
+		postEvent(debEVT_UPDATELAYOUT,0);
+		Refresh();
+		break;
+	default:
+		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
+		break;
+	}
+}
+
 void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 {
+	if (evt.GetEventType() == wxEVT_RIGHT_DOWN)
+	{
+		int y = evt.GetPosition().y;
+
+		if (y >= rowHeight)
+		{
+			int row = (y-rowHeight)/rowHeight;
+			if (row != currentRows[category] && row < cpu->getRegisterCount(category))
+			{
+				currentRows[category] = row;
+				Refresh();
+			}
+		}
+		
+		PopupMenu(&menu,evt.GetPosition());
+		return;
+	}
+
 	if (evt.ButtonIsDown(wxMOUSE_BTN_LEFT))
 	{
 		int x = evt.GetPosition().x;
@@ -248,6 +351,13 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 			if (cat != category)
 			{
 				category = cat;
+				Refresh();
+			}
+		} else {
+			int row = (y-rowHeight)/rowHeight;
+			if (row != currentRows[category] && row < cpu->getRegisterCount(category))
+			{
+				currentRows[category] = row;
 				Refresh();
 			}
 		}

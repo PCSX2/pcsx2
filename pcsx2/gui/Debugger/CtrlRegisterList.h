@@ -11,15 +11,19 @@ public:
 	
 	void paintEvent(wxPaintEvent & evt);
 	void mouseEvent(wxMouseEvent& evt);
+	void onPopupClick(wxCommandEvent& evt);
 	void redraw();
 	DECLARE_EVENT_TABLE()
 
 	virtual wxSize GetMinClientSize() const
 	{
+		int columnChars = 0;
 		int maxWidth = 0;
+		int maxRows = 0;
+
 		for (int i = 0; i < cpu->getRegisterCategoryCount(); i++)
 		{
-			int bits = cpu->getRegisterSize(i);
+			int bits = std::min<u32>(maxBits,cpu->getRegisterSize(i));
 			int start = startPositions[i];
 			
 			int w = start+(bits/4) * charWidth;
@@ -27,10 +31,15 @@ public:
 				w += (bits/32)*2-2;
 
 			maxWidth = std::max<int>(maxWidth,w);
+			columnChars += strlen(cpu->getRegisterCategoryName(i))+1;
+			maxRows = std::max<int>(maxRows,cpu->getRegisterCount(i));
 		}
 
-		return wxSize(maxWidth+4,2+rowHeight);
+		maxWidth = std::max<int>(columnChars*charWidth,maxWidth+4);
+
+		return wxSize(maxWidth,(maxRows+1)*rowHeight);
 	}
+
 	virtual wxSize DoGetBestClientSize() const
 	{
 		return GetMinClientSize();
@@ -38,6 +47,9 @@ public:
 private:
 	void render(wxDC& dc);
 	void refreshChangedRegs();
+	
+	void postEvent(wxEventType type, wxString text);
+	void postEvent(wxEventType type, int value);
 
 	struct ChangedReg
 	{
@@ -47,10 +59,12 @@ private:
 
 	std::vector<ChangedReg*> changedCategories;
 	std::vector<int> startPositions;
+	std::vector<int> currentRows;
 
 	DebugInterface* cpu;
 	int rowHeight,charWidth;
-	int currentRow;
 	u32 lastPc;
 	int category;
+	int maxBits;
+	wxMenu menu;
 };

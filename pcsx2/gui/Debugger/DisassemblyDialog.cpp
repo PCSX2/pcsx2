@@ -7,13 +7,14 @@
 
 BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onSetStatusBarText )
+   EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onUpdateLayout )
 END_EVENT_TABLE()
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Disassembler", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION )
 {
 
-	wxBoxSizer* topSizer = new wxBoxSizer( wxVERTICAL );
+	topSizer = new wxBoxSizer( wxVERTICAL );
 	wxPanel *panel = new wxPanel(this, wxID_ANY, 
 		wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 	panel->SetSizer(topSizer);
@@ -127,6 +128,12 @@ void DisassemblyDialog::onSetStatusBarText(wxCommandEvent& evt)
 {
 	GetStatusBar()->SetLabel(evt.GetString());
 }
+
+void DisassemblyDialog::onUpdateLayout(wxCommandEvent& evt)
+{
+	topSizer->Layout();
+}
+
 
 void DisassemblyDialog::update()
 {

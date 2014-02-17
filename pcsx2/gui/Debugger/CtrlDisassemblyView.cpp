@@ -102,7 +102,7 @@ void CtrlDisassemblyView::scanFunctions()
 
 void CtrlDisassemblyView::postEvent(wxEventType type, wxString text)
 {
-   wxCommandEvent event( type);
+   wxCommandEvent event( type, GetId() );
    event.SetEventObject(this);
    event.SetString(text);
    wxPostEvent(this,event);
