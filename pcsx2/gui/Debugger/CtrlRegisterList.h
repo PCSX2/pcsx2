@@ -26,9 +26,19 @@ public:
 	}
 private:
 	void render(wxDC& dc);
+	void refreshChangedRegs();
+
+	struct ChangedReg
+	{
+		u128 oldValue;
+		bool changed[4];
+	};
+
+	ChangedReg changedRegs[32];
 
 	DebugInterface* cpu;
 	int rowHeight,charWidth;
 	int currentRow;
 	int displayBits;
+	u32 lastPc;
 };
