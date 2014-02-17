@@ -11,6 +11,7 @@ public:
 	
 	void paintEvent(wxPaintEvent & evt);
 	void mouseEvent(wxMouseEvent& evt);
+	void keydownEvent(wxKeyEvent& evt);
 	void onPopupClick(wxCommandEvent& evt);
 	void redraw();
 	DECLARE_EVENT_TABLE()
@@ -47,7 +48,8 @@ public:
 private:
 	void render(wxDC& dc);
 	void refreshChangedRegs();
-	
+	void setCurrentRow(int row);
+
 	void postEvent(wxEventType type, wxString text);
 	void postEvent(wxEventType type, int value);
 

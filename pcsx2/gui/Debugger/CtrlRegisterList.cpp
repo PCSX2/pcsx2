@@ -9,6 +9,7 @@ BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
 	EVT_LEFT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_MOTION(CtrlRegisterList::mouseEvent)
+	EVT_KEY_DOWN(CtrlRegisterList::keydownEvent)
 END_EVENT_TABLE()
 
 enum DisassemblyMenuIdentifiers
@@ -50,7 +51,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY64,		L"Display 64 bit");
 	menu.AppendRadioItem(ID_REGISTERLIST_DISPLAY128,	L"Display 128 bit");
 	menu.Check(ID_REGISTERLIST_DISPLAY128,true);
- 	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlRegisterList::onPopupClick, NULL, this);
+	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlRegisterList::onPopupClick, NULL, this);
 
 	SetDoubleBuffered(true);
 	SetInitialBestSize(ClientToWindowSize(GetMinClientSize()));
@@ -321,6 +322,42 @@ void CtrlRegisterList::onPopupClick(wxCommandEvent& evt)
 	}
 }
 
+void CtrlRegisterList::setCurrentRow(int row)
+{
+	char str[256];
+	u128 value ;
+	wxString text;
+
+	const char* name = cpu->getRegisterName(category,row);
+
+	switch (cpu->getRegisterType(category))
+	{
+	case DebugInterface::NORMAL:
+		value = cpu->getRegister(category,row);
+		switch (cpu->getRegisterSize(category))
+		{
+		case 128:
+			sprintf(str,"%s = 0x%08X%08X%08X%08X",name,value._u32[3],value._u32[2],value._u32[1],value._u32[0]);
+			break;
+		case 64:
+			sprintf(str,"%s = 0x%08X%08X",name,value._u32[1],value._u32[0]);
+			break;
+		case 32:
+			sprintf(str,"%s = 0x%08X",name,value._u32[0]);
+			break;
+		}
+		text = wxString(str,wxConvUTF8);
+		break;
+	case DebugInterface::SPECIAL:
+		text = wxString(name,wxConvUTF8) + L" = " + cpu->getRegisterString(category,row);
+		break;
+	}
+
+	currentRows[category] = row;
+	postEvent(debEVT_SETSTATUSBARTEXT,text);
+	Refresh();
+}
+
 void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 {
 	if (evt.GetEventType() == wxEVT_RIGHT_DOWN)
@@ -331,10 +368,7 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 		{
 			int row = (y-rowHeight)/rowHeight;
 			if (row != currentRows[category] && row < cpu->getRegisterCount(category))
-			{
-				currentRows[category] = row;
-				Refresh();
-			}
+				setCurrentRow(row);
 		}
 		
 		PopupMenu(&menu,evt.GetPosition());
@@ -359,10 +393,24 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 		} else {
 			int row = (y-rowHeight)/rowHeight;
 			if (row != currentRows[category] && row < cpu->getRegisterCount(category))
-			{
-				currentRows[category] = row;
-				Refresh();
-			}
+				setCurrentRow(row);
 		}
+	}
+}
+
+void CtrlRegisterList::keydownEvent(wxKeyEvent& evt)
+{
+	switch (evt.GetKeyCode())
+	{
+	case WXK_UP:
+		setCurrentRow(std::max<int>(currentRows[category]-1,0));
+		break;
+	case WXK_DOWN:
+		setCurrentRow(std::min<int>(currentRows[category]+1,cpu->getRegisterCount(category)));
+		break;
+	case WXK_TAB:
+		category = (category+1) % cpu->getRegisterCategoryCount();
+		Refresh();
+		break;
 	}
 }
