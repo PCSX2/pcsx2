@@ -45,10 +45,13 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	topSizer->Add(topRowSizer);
 	
 	// create middle part of the window
-	wxBoxSizer* middleSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
+
+	registerList = new CtrlRegisterList(panel,&debug);
+	middleSizer->Add(registerList,1,wxEXPAND|wxRIGHT,4);
 
 	disassembly = new CtrlDisassemblyView(panel,&debug);
-	middleSizer->Add(disassembly,1,wxEXPAND);
+	middleSizer->Add(disassembly,2,wxEXPAND);
 
 	topSizer->Add(middleSizer,1,wxEXPAND|wxBOTTOM,2);
 
@@ -128,6 +131,7 @@ void DisassemblyDialog::onSetStatusBarText(wxCommandEvent& evt)
 void DisassemblyDialog::update()
 {
 	disassembly->Refresh();
+	registerList->Refresh();
 }
 
 void DisassemblyDialog::setDebugMode(bool debugMode)

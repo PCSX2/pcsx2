@@ -3,6 +3,7 @@
 #include "App.h"
 
 #include "CtrlDisassemblyView.h"
+#include "CtrlRegisterList.h"
 #include "DebugEvents.h"
 
 class DisassemblyDialog : public wxFrame
@@ -34,4 +35,5 @@ private:
 	wxButton* stepOutButton;
 	wxButton* breakpointButton;
 	CtrlDisassemblyView* disassembly;
+	CtrlRegisterList* registerList;
 };

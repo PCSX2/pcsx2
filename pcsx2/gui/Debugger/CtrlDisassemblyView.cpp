@@ -25,26 +25,6 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
 END_EVENT_TABLE()
 
-/*
-        MENUITEM "Copy Address",               ID_DISASM_COPYADDRESS
-        MENUITEM "Copy Instruction (Hex)",     ID_DISASM_COPYINSTRUCTIONHEX
-        MENUITEM "Copy Instruction (Disasm)",  ID_DISASM_COPYINSTRUCTIONDISASM
-        MENUITEM "Disassemble to File",        ID_DISASM_DISASSEMBLETOFILE
-        MENUITEM SEPARATOR
-        MENUITEM "Assemble Opcode",            ID_DISASM_ASSEMBLE
-        MENUITEM SEPARATOR
-        MENUITEM "Run to Cursor",              ID_DISASM_RUNTOHERE
-        MENUITEM "Jump to Cursor",             ID_DISASM_SETPCTOHERE
-        MENUITEM "Toggle Breakpoint",          ID_DISASM_TOGGLEBREAKPOINT
-        MENUITEM "Follow Branch",              ID_DISASM_FOLLOWBRANCH
-        MENUITEM SEPARATOR
-        MENUITEM "Show Dynarec Results",       ID_DISASM_DYNARECRESULTS
-        MENUITEM "Go to in Memory View",       ID_DISASM_GOTOINMEMORYVIEW
-        MENUITEM SEPARATOR
-        MENUITEM "Kill Function",              ID_DISASM_ADDHLE
-        MENUITEM "Rename Function...",         ID_DISASM_RENAMEFUNCTION
-		MENUITEM "Remove Function",            ID_DISASM_REMOVEFUNCTION
-		MENUITEM "Add Function Here",          ID_DISASM_ADDFUNCTION*/
 enum DisassemblyMenuIdentifiers
 {
 	ID_DISASM_COPYADDRESS = 1,
