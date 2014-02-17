@@ -109,8 +109,6 @@ void AppCoreThread::Reset()
 		GetSysExecutorThread().PostEvent( SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Reset) );
 		return;
 	}
-
-	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
 		
 	_parent::Reset();
 }

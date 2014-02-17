@@ -87,7 +87,7 @@ void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
 
 void DisassemblyDialog::stepOver()
 {
-	if (!debug.isRunning() || !debug.isCpuPaused())
+	if (!debug.isAlive() || !debug.isCpuPaused())
 		return;
 	
 	// If the current PC is on a breakpoint, the user doesn't want to do nothing.
@@ -146,7 +146,7 @@ void DisassemblyDialog::update()
 
 void DisassemblyDialog::setDebugMode(bool debugMode)
 {
-	bool running = debug.isRunning();
+	bool running = debug.isAlive();
 	breakResumeButton->Enable(running);
 	disassembly->Enable(running);
 

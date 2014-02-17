@@ -94,7 +94,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 
 void CtrlDisassemblyView::scanFunctions()
 {
-	if (cpu->isRunning() == false)
+	if (cpu->isAlive() == false)
 		return;
 
 	manager.analyze(windowStart,manager.getNthNextAddress(windowStart,visibleRows)-windowStart);
@@ -288,7 +288,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	dc.GetSize(&width,&height);
 	dc.DrawRectangle(0,0,width,height);
 
-	if (!cpu->isRunning())
+	if (!cpu->isAlive())
 		return;
 
 	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");

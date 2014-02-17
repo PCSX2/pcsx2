@@ -130,6 +130,7 @@ void SysCoreThread::Reset()
 	ResetQuick();
 	GetVmMemory().DecommitAll();
 	SysClearExecutionCache();
+	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
 }
 
 

@@ -212,9 +212,9 @@ u32 DebugInterface::getPC()
 	return cpuRegs.pc;
 }
 
-bool DebugInterface::isRunning()
+bool DebugInterface::isAlive()
 {
-	return GetCoreThread().IsRunning();
+	return GetCoreThread().IsOpen();
 }
 
 bool DebugInterface::isCpuPaused()

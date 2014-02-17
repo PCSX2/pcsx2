@@ -23,7 +23,7 @@ public:
 	u128 getLO();
 	u32 getPC();
 
-	bool isRunning();
+	bool isAlive();
 	bool isCpuPaused();
 	void pauseCpu();
 	void resumeCpu();
