@@ -608,6 +608,9 @@ set(pcsx2SSources
 # change language of .S-files to c++
 set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
 
+# C++11 is used for debug tools, so we enable it
+set_source_files_properties(${pcsx2DebugToolsSources} PROPERTIES COMPILE_FLAGS "-std=c++0x")
+
 # common Sources
 set(Common
 	${pcsx2Sources}
