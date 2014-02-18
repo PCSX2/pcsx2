@@ -274,6 +274,48 @@ namespace MIPSAnalyst
 		return true;
 	}
 
+	bool getDataAccessInfo(MipsOpcodeInfo& info)
+	{
+		int size = 0;
+		
+		u32 op = info.encodedOpcode;
+		switch (MIPS_GET_OP(op))
+		{
+		case 0x20:		// lb
+		case 0x24:		// lbu
+		case 0x28:		// sb
+			size = 1;
+			break;
+		case 0x21:		// lh
+		case 0x25:		// lhu
+		case 0x29:		// sh
+			size = 2;
+			break;
+		case 0x22:		// lwl
+		case 0x23:		// lw
+		case 0x26:		// lwr
+		case 0x2A:		// swl
+		case 0x2B:		// sw
+		case 0x2E:		// swr
+			size = 4;
+			break;
+		}
+
+		if (size == 0)
+			return false;
+
+		info.isDataAccess = true;
+		info.dataSize = size;
+
+		u32 rs = info.cpu->getRegister(0, (int)MIPS_GET_RS(op));
+		s16 imm16 = op & 0xFFFF;
+		info.dataAddress = rs + imm16;
+
+		info.hasRelevantAddress = true;
+		info.releventAddress = info.dataAddress;
+		return true;
+	}
+
 	MipsOpcodeInfo GetOpcodeInfo(DebugInterface* cpu, u32 address) {
 		MipsOpcodeInfo info;
 		memset(&info, 0, sizeof(info));
@@ -288,6 +330,9 @@ namespace MIPSAnalyst
 		u32 op = info.encodedOpcode;
 
 		if (getBranchInfo(info) == true)
+			return info;
+
+		if (getDataAccessInfo(info) == true)
 			return info;
 
 		// gather relevant address for alu operations
@@ -328,33 +373,6 @@ namespace MIPSAnalyst
 				info.conditionMet = (rt != 0);
 				break;
 			}
-		}
-
-		// lw, sh, ...
-		if ((opInfo & IN_MEM) || (opInfo & OUT_MEM)) {
-			info.isDataAccess = true;
-			switch (opInfo & MEMTYPE_MASK) {
-			case MEMTYPE_BYTE:
-				info.dataSize = 1;
-				break;
-			case MEMTYPE_HWORD:
-				info.dataSize = 2;
-				break;
-			case MEMTYPE_WORD:
-			case MEMTYPE_FLOAT:
-				info.dataSize = 4;
-				break;
-
-			case MEMTYPE_VQUAD:
-				info.dataSize = 16;
-			}
-
-			u32 rs = cpu->GetRegValue(0, (int)MIPS_GET_RS(op));
-			s16 imm16 = op & 0xFFFF;
-			info.dataAddress = rs + imm16;
-
-			info.hasRelevantAddress = true;
-			info.releventAddress = info.dataAddress;
 		}*/
 
 		return info;
