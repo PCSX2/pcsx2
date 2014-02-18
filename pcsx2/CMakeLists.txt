@@ -618,7 +618,6 @@ set(Common
 	${pcsx2CDVDSources}
 	${pcsx2CDVDHeaders}
 	${pcsx2DebugToolsSources}
-	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
     ${pcsx2GuiResources}
 	${pcsx2GuiHeaders}
