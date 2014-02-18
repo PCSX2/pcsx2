@@ -34,7 +34,25 @@ u32 DebugInterface::read32(u32 address)
 	return memRead32(address);
 }
 
+u64 DebugInterface::read64(u32 address)
+{
+	if (!isValidAddress(address))
+		return -1;
 
+	u64 result;
+	memRead64(address,result);
+	return result;
+}
+
+u128 DebugInterface::read128(u32 address)
+{
+	if (!isValidAddress(address))
+		return u128::From32(-1);
+
+	u128 result;
+	memRead128(address,result);
+	return result;
+}
 
 int DebugInterface::getRegisterCategoryCount()
 {

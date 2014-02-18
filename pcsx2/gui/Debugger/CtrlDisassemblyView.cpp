@@ -598,7 +598,6 @@ void CtrlDisassemblyView::updateStatusBarText()
 					sprintf(text,"[%08X] = %04X",line.info.dataAddress,cpu->read16(line.info.dataAddress));
 					break;
 				case 4:
-					// TODO: Could also be a float...
 					{
 						u32 data = cpu->read32(line.info.dataAddress);
 						const std::string addressSymbol = symbolMap.GetLabelString(data);
@@ -610,9 +609,20 @@ void CtrlDisassemblyView::updateStatusBarText()
 						}
 						break;
 					}
+				case 8:
+					{
+						u64 data = cpu->read64(line.info.dataAddress);
+						sprintf(text,"[%08X] = %08X%08X",line.info.dataAddress,
+							data >> 32,data);
+						break;
+					}
 				case 16:
-					// TODO: vector
-					break;
+					{
+						u128 data = cpu->read128(line.info.dataAddress);
+						sprintf(text,"[%08X] = %08X%08X%08X%08X",line.info.dataAddress,
+							data._u32[0],data._u32[1],data._u32[2],data._u32[3]);
+						break;
+					}
 				}
 			}
 		}

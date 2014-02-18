@@ -279,6 +279,7 @@ namespace MIPSAnalyst
 		int size = 0;
 		
 		u32 op = info.encodedOpcode;
+		int off = 0;
 		switch (MIPS_GET_OP(op))
 		{
 		case 0x20:		// lb
@@ -291,13 +292,27 @@ namespace MIPSAnalyst
 		case 0x29:		// sh
 			size = 2;
 			break;
-		case 0x22:		// lwl
 		case 0x23:		// lw
 		case 0x26:		// lwr
-		case 0x2A:		// swl
 		case 0x2B:		// sw
 		case 0x2E:		// swr
 			size = 4;
+			break;
+		case 0x22:		// lwl
+		case 0x2A:		// swl
+			size = 4;
+			off = -3;
+			break;
+		case 0x37:		// ld
+		case 0x1B:		// ldr
+		case 0x3F:		// sd
+		case 0x2D:		// sdr
+			size = 8;
+			break;
+		case 0x1A:		// ldl
+		case 0x2C:		// sdl
+			size = 8;
+			off = -7;
 			break;
 		}
 
@@ -309,7 +324,7 @@ namespace MIPSAnalyst
 
 		u32 rs = info.cpu->getRegister(0, (int)MIPS_GET_RS(op));
 		s16 imm16 = op & 0xFFFF;
-		info.dataAddress = rs + imm16;
+		info.dataAddress = rs + imm16 + off;
 
 		info.hasRelevantAddress = true;
 		info.releventAddress = info.dataAddress;

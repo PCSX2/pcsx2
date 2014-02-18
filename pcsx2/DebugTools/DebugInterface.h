@@ -9,6 +9,8 @@ public:
 	u32 read8(u32 address);
 	u32 read16(u32 address);
 	u32 read32(u32 address);
+	u64 read64(u32 address);
+	u128 read128(u32 address);
 
 	// register stuff
 	int getRegisterCategoryCount();
