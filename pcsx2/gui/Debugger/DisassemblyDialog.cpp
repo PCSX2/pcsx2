@@ -6,8 +6,9 @@
 #include "DebugTools/Breakpoints.h"
 
 BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
-   EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onSetStatusBarText )
-   EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onUpdateLayout )
+   EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
 END_EVENT_TABLE()
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
@@ -130,18 +131,21 @@ void DisassemblyDialog::stepOver()
 	debug.resumeCpu();
 }
 
-
-void DisassemblyDialog::onSetStatusBarText(wxCommandEvent& evt)
+void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 {
-	GetStatusBar()->SetLabel(evt.GetString());
+	wxEventType type = evt.GetEventType();
+	if (type == debEVT_SETSTATUSBARTEXT)
+	{
+		GetStatusBar()->SetLabel(evt.GetString());
+	} else if (type == debEVT_UPDATELAYOUT)
+	{
+		topSizer->Layout();
+		update();
+	} else if (type == debEVT_GOTOINMEMORYVIEW)
+	{
+		memory->gotoAddress(evt.GetInt());
+	}
 }
-
-void DisassemblyDialog::onUpdateLayout(wxCommandEvent& evt)
-{
-	topSizer->Layout();
-	update();
-}
-
 
 void DisassemblyDialog::update()
 {

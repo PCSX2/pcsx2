@@ -13,6 +13,7 @@ public:
 	void mouseEvent(wxMouseEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);
 	void redraw();
+	void gotoAddress(u32 address);
 
 	DECLARE_EVENT_TABLE()
 private:

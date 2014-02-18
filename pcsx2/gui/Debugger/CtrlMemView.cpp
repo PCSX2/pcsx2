@@ -284,6 +284,23 @@ void CtrlMemView::updateStatusBarText()
 	postEvent(debEVT_SETSTATUSBARTEXT,text);
 }
 
+void CtrlMemView::gotoAddress(u32 addr)
+{	
+	int lines= GetClientSize().y/rowHeight;
+	u32 windowEnd = windowStart+lines*rowSize;
+
+	curAddress = addr;
+	selectedNibble = 0;
+
+	if (curAddress < windowStart || curAddress >= windowEnd)
+	{
+		windowStart = curAddress & ~15;
+	}
+
+	updateStatusBarText();
+	redraw();
+}
+
 void CtrlMemView::gotoPoint(int x, int y)
 {
 	int line = y/rowHeight;

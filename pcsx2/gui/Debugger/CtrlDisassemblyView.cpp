@@ -426,13 +426,13 @@ void CtrlDisassemblyView::followBranch()
 			gotoAddress(line.info.branchTarget);
 		} else if (line.info.hasRelevantAddress)
 		{
-			// well, not  exactly a branch, but we can do something anyway
-			// todo: position memory viewer to line.info.releventAddress
+			// well, not  exactly a branch, but we can do something anyway	
+			postEvent(debEVT_GOTOINMEMORYVIEW,line.info.releventAddress);
 		}
 	} else if (line.type == DISTYPE_DATA)
 	{
 		// jump to the start of the current line
-			// todo: position memory viewer to curAddress
+		postEvent(debEVT_GOTOINMEMORYVIEW,curAddress);
 	}
 }
 

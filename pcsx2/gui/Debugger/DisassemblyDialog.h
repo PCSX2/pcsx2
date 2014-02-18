@@ -25,10 +25,8 @@ public:
 	DECLARE_EVENT_TABLE()
 protected:
 	void onPauseResumeClicked(wxCommandEvent& evt);
-	void onSetStatusBarText(wxCommandEvent& evt);
-	void onUpdateLayout(wxCommandEvent& evt);
 	void onStepOverClicked(wxCommandEvent& evt);
-
+	void onDebuggerEvent(wxCommandEvent& evt);
 	void stepOver();
 private:
 	wxBoxSizer* topSizer;
