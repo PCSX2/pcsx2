@@ -57,7 +57,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	disassembly = new CtrlDisassemblyView(panel,&debug);
 	middleSizer->Add(disassembly,2,wxEXPAND);
 
-	topSizer->Add(middleSizer,3,wxEXPAND|wxBOTTOM,2);
+	topSizer->Add(middleSizer,3,wxEXPAND|wxALL,3);
 
 	// create bottom part
 	bottomTabs = new wxNotebook(panel,wxID_ANY);

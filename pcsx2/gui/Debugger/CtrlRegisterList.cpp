@@ -22,7 +22,7 @@ enum DisassemblyMenuIdentifiers
 
 
 CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER), cpu(_cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_SUNKEN), cpu(_cpu)
 {
 	rowHeight = 14;
 	charWidth = 8;
@@ -177,9 +177,6 @@ void CtrlRegisterList::render(wxDC& dc)
 			dc.SetPen(wxPen(wxColor(0xFF000000)));
 		}
 		
-		if (i == cpu->getRegisterCategoryCount()-1)
-			piece++;
-
 		dc.DrawRectangle(x-1,-1,piece+1,rowHeight+1);
 
 		// center text
