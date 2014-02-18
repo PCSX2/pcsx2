@@ -612,15 +612,13 @@ void CtrlDisassemblyView::updateStatusBarText()
 				case 8:
 					{
 						u64 data = cpu->read64(line.info.dataAddress);
-						sprintf(text,"[%08X] = %08X%08X",line.info.dataAddress,
-							data >> 32,data);
+						sprintf(text,"[%08X] = %016llX",line.info.dataAddress,data);
 						break;
 					}
 				case 16:
 					{
 						u128 data = cpu->read128(line.info.dataAddress);
-						sprintf(text,"[%08X] = %08X%08X%08X%08X",line.info.dataAddress,
-							data._u32[0],data._u32[1],data._u32[2],data._u32[3]);
+						sprintf(text,"[%08X] = %016llX%016llX",line.info.dataAddress,data._u64[1],data._u64[0]);
 						break;
 					}
 				}
