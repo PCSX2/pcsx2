@@ -1,0 +1,319 @@
+#include "PrecompiledHeader.h"
+#include "CtrlMemView.h"
+#include "DebugTools/Debug.h"
+
+#include "DebugEvents.h"
+#include <wchar.h>
+
+BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
+	EVT_PAINT(CtrlMemView::paintEvent)
+	EVT_MOUSEWHEEL(CtrlMemView::mouseEvent)
+	EVT_LEFT_DOWN(CtrlMemView::mouseEvent)
+	EVT_LEFT_DCLICK(CtrlMemView::mouseEvent)
+	EVT_RIGHT_DOWN(CtrlMemView::mouseEvent)
+	EVT_KEY_DOWN(CtrlMemView::keydownEvent)
+END_EVENT_TABLE()
+
+CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS), cpu(_cpu)
+{
+	rowHeight = 12;
+	charWidth = 8;
+	windowStart = 0x480000;
+	curAddress = windowStart;
+	rowSize = 16;
+	
+	asciiSelected = false;
+	selectedNibble = 0;
+	rowSize = 16;
+	addressStart = charWidth;
+	hexStart = addressStart + 9*charWidth;
+	asciiStart = hexStart + (rowSize*3+1)*charWidth;
+
+	font = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	underlineFont = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,true,L"Lucida Console");
+
+	SetScrollbar(wxVERTICAL,100,1,201,true);
+	SetDoubleBuffered(true);
+}
+
+void CtrlMemView::postEvent(wxEventType type, wxString text)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetString(text);
+   wxPostEvent(this,event);
+}
+
+void CtrlMemView::postEvent(wxEventType type, int value)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetInt(value);
+   wxPostEvent(this,event);
+}
+
+void CtrlMemView::paintEvent(wxPaintEvent & evt)
+{
+	wxPaintDC dc(this);
+	render(dc);
+}
+
+void CtrlMemView::redraw()
+{
+	wxClientDC dc(this);
+	render(dc);
+}
+
+void CtrlMemView::render(wxDC& dc)
+{
+	bool hasFocus = wxWindow::FindFocus() == this;
+	int visibleRows = GetClientSize().y/rowHeight;
+
+	for (int i = 0; i < visibleRows+1; i++)
+	{
+		wchar_t temp[32];
+
+		unsigned int address = windowStart + i*rowSize;
+		int rowY = rowHeight*i;
+
+		swprintf(temp,L"%08X",address);
+		dc.SetFont(font);
+		dc.SetTextForeground(wxColor(0xFF600000));
+		dc.DrawText(temp,addressStart,rowY);
+
+		u32 memory[4];
+		bool valid = cpu != NULL && cpu->isAlive() && isValidAddress(address);
+		if (valid)
+		{
+			memory[0] = cpu->read32(address);
+			memory[1] = cpu->read32(address+4);
+			memory[2] = cpu->read32(address+8);
+			memory[3] = cpu->read32(address+12);
+		}
+		
+		u8* m = (u8*) memory;
+		for (int j = 0; j < rowSize; j++)
+		{
+			if (valid)
+				swprintf(temp,L"%02X",m[j]);
+			else
+				wcscpy(temp,L"??");
+			
+			unsigned char c = m[j];
+			if (c < 32 || c >= 128 || valid == false)
+				c = '.';
+			
+			if (address+j == curAddress)
+			{
+				wchar_t text[2];
+
+				if (hasFocus && !asciiSelected)
+				{
+					dc.SetTextForeground(wxColor(0xFFFFFFFF));
+
+					dc.SetPen(wxColor(0xFFFF9933));
+					dc.SetBrush(wxColor(0xFFFF9933));
+					dc.DrawRectangle(hexStart+j*3*charWidth,rowY,charWidth,rowHeight);
+
+					if (selectedNibble == 0)
+						dc.SetFont(underlineFont);
+				} else {
+					dc.SetTextForeground(wxColor(0xFF000000));
+					
+					dc.SetPen(wxColor(0xFFC0C0C0));
+					dc.SetBrush(wxColor(0xFFC0C0C0));
+					dc.DrawRectangle(hexStart+j*3*charWidth,rowY,charWidth,rowHeight);
+				}
+
+				text[0] = temp[0];
+				text[1] = 0;
+				dc.DrawText(text,hexStart+j*3*charWidth,rowY);
+				
+				if (hasFocus && !asciiSelected)
+				{
+					dc.DrawRectangle(hexStart+j*3*charWidth+charWidth,rowY,charWidth,rowHeight);
+
+					if (selectedNibble == 1)
+						dc.SetFont(underlineFont);
+					else
+						dc.SetFont(font);
+				} else {
+					dc.DrawRectangle(hexStart+j*3*charWidth+charWidth,rowY,charWidth,rowHeight);
+				}
+				
+				text[0] = temp[1];
+				text[1] = 0;
+				dc.DrawText(text,hexStart+j*3*charWidth+charWidth,rowY);
+
+				if (hasFocus && asciiSelected)
+				{
+					dc.SetTextForeground(wxColor(0xFFFFFFFF));
+					
+					dc.SetPen(wxColor(0xFFFF9933));
+					dc.SetBrush(wxColor(0xFFFF9933));
+					dc.DrawRectangle(asciiStart+j*(charWidth+2),rowY,charWidth,rowHeight);
+				} else {
+					dc.SetTextForeground(wxColor(0xFF000000));
+					dc.SetFont(font);
+
+					dc.SetPen(wxColor(0xFFC0C0C0));
+					dc.SetBrush(wxColor(0xFFC0C0C0));
+					dc.DrawRectangle(asciiStart+j*(charWidth+2),rowY,charWidth,rowHeight);
+				}
+				
+				text[0] = c;
+				text[1] = 0;
+				dc.DrawText(text,asciiStart+j*(charWidth+2),rowY);
+			} else {
+				wchar_t text[2];
+				text[0] = c;
+				text[1] = 0;
+
+				dc.SetTextForeground(wxColor(0xFF000000));
+				dc.DrawText(temp,hexStart+j*3*charWidth,rowY);
+				dc.DrawText(text,asciiStart+j*(charWidth+2),rowY);
+			}
+		}
+	}
+}
+
+void CtrlMemView::mouseEvent(wxMouseEvent& evt)
+{
+	// left button
+	if (evt.GetEventType() == wxEVT_LEFT_DOWN || evt.GetEventType() == wxEVT_LEFT_DCLICK
+		|| evt.GetEventType() == wxEVT_RIGHT_DOWN || evt.GetEventType() == wxEVT_RIGHT_DCLICK)
+	{
+		gotoPoint(evt.GetPosition().x,evt.GetPosition().y);
+		SetFocus();
+		SetFocusFromKbd();
+	} else if (evt.GetEventType() == wxEVT_RIGHT_UP)
+	{
+		return;
+	// wheel
+	} else if (evt.GetEventType() == wxEVT_MOUSEWHEEL)
+	{
+		if (evt.GetWheelRotation() > 0)
+		{
+			scrollWindow(-3);
+		} else if (evt.GetWheelRotation() < 0) {
+			scrollWindow(3);
+		}
+	} else {
+		evt.Skip();
+		return;
+	}
+
+	redraw();
+}
+
+void CtrlMemView::keydownEvent(wxKeyEvent& evt)
+{
+	switch (evt.GetKeyCode())
+	{
+	case WXK_LEFT:
+		scrollCursor(-1);
+		break;
+	case WXK_RIGHT:
+		scrollCursor(1);
+		break;
+	case WXK_UP:
+		scrollCursor(-rowSize);
+		break;
+	case WXK_DOWN:
+		scrollCursor(rowSize);
+		break;
+	case WXK_PAGEUP:
+		scrollWindow(-GetClientSize().y/rowHeight);
+		break;
+	case WXK_PAGEDOWN:
+		scrollWindow(GetClientSize().y/rowHeight);
+		break;
+	}
+}
+
+void CtrlMemView::scrollWindow(int lines)
+{
+	windowStart += lines*rowSize;
+	curAddress += lines*rowSize;
+	redraw();
+}
+
+void CtrlMemView::scrollCursor(int bytes)
+{
+	if (!asciiSelected && bytes == 1)
+	{
+		if (selectedNibble == 0)
+		{
+			selectedNibble = 1;
+			bytes = 0;
+		} else {
+			selectedNibble = 0;
+		}
+	} else if (!asciiSelected && bytes == -1)
+	{
+		if (selectedNibble == 0)
+		{
+			selectedNibble = 1;
+		} else {
+			selectedNibble = 0;
+			bytes = 0;
+		}
+	} 
+
+	curAddress += bytes;
+	
+	int visibleRows = GetClientSize().y/rowHeight;
+	u32 windowEnd = windowStart+visibleRows*rowSize;
+	if (curAddress < windowStart)
+	{
+		windowStart = curAddress & ~15;
+	} else if (curAddress >= windowEnd)
+	{
+		windowStart = (curAddress-(visibleRows-1)*rowSize) & ~15;
+	}
+	
+	updateStatusBarText();
+	redraw();
+}
+
+void CtrlMemView::updateStatusBarText()
+{
+	wchar_t text[64];
+	swprintf(text,L"%08X",curAddress);
+	postEvent(debEVT_SETSTATUSBARTEXT,text);
+}
+
+void CtrlMemView::gotoPoint(int x, int y)
+{
+	int line = y/rowHeight;
+	int lineAddress = windowStart+line*rowSize;
+
+	if (x >= asciiStart)
+	{
+		int col = (x-asciiStart) / (charWidth+2);
+		if (col >= rowSize) return;
+		
+		asciiSelected = true;
+		curAddress = lineAddress+col;
+		selectedNibble = 0;
+		updateStatusBarText();
+		redraw();
+	} else if (x >= hexStart)
+	{
+		int col = (x-hexStart) / charWidth;
+		if ((col/3) >= rowSize) return;
+
+		switch (col % 3)
+		{
+		case 0: selectedNibble = 0; break;
+		case 1: selectedNibble = 1; break;
+		case 2: return;		// don't change position when clicking on the space
+		}
+
+		asciiSelected = false;
+		curAddress = lineAddress+col/3;
+		updateStatusBarText();
+		redraw();
+	}
+}

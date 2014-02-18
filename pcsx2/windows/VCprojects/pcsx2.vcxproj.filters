@@ -832,6 +832,9 @@
     <ClCompile Include="..\..\gui\Debugger\CtrlRegisterList.cpp">
       <Filter>AppHost\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\CtrlMemView.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1226,6 +1229,9 @@
       <Filter>AppHost\Debugger</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gui\Debugger\CtrlRegisterList.h">
+      <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\CtrlMemView.h">
       <Filter>AppHost\Debugger</Filter>
     </ClInclude>
   </ItemGroup>

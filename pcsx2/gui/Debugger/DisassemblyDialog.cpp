@@ -56,9 +56,14 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	disassembly = new CtrlDisassemblyView(panel,&debug);
 	middleSizer->Add(disassembly,2,wxEXPAND);
 
-	topSizer->Add(middleSizer,1,wxEXPAND|wxBOTTOM,2);
+	topSizer->Add(middleSizer,3,wxEXPAND|wxBOTTOM,2);
 
-	// todo: create bottom part
+	// create bottom part
+	bottomTabs = new wxNotebook(panel,wxID_ANY);
+	memory = new CtrlMemView(bottomTabs,&debug);
+	bottomTabs->AddPage(memory,L"Memory");
+
+	topSizer->Add(bottomTabs,1,wxEXPAND);
 
 	CreateStatusBar(1);
 	
@@ -142,6 +147,7 @@ void DisassemblyDialog::update()
 {
 	disassembly->Refresh();
 	registerList->Refresh();
+	bottomTabs->Refresh();
 }
 
 void DisassemblyDialog::setDebugMode(bool debugMode)

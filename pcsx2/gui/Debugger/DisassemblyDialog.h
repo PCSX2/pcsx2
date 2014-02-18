@@ -1,9 +1,11 @@
 #pragma once
 #include <wx/wx.h>
+#include <wx/notebook.h>
 #include "App.h"
 
 #include "CtrlDisassemblyView.h"
 #include "CtrlRegisterList.h"
+#include "CtrlMemView.h"
 #include "DebugEvents.h"
 
 class DisassemblyDialog : public wxFrame
@@ -30,6 +32,7 @@ protected:
 	void stepOver();
 private:
 	wxBoxSizer* topSizer;
+	wxNotebook* bottomTabs;
 	wxStatusBar* statusBar;
 	wxButton* breakResumeButton;
 	wxButton* stepIntoButton;
@@ -37,5 +40,6 @@ private:
 	wxButton* stepOutButton;
 	wxButton* breakpointButton;
 	CtrlDisassemblyView* disassembly;
+	CtrlMemView* memory;
 	CtrlRegisterList* registerList;
 };

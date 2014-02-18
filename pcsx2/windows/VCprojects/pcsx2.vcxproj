@@ -431,6 +431,7 @@
     <ClCompile Include="..\..\gui\AppGameDatabase.cpp" />
     <ClCompile Include="..\..\gui\AppUserMode.cpp" />
     <ClCompile Include="..\..\gui\Debugger\CtrlDisassemblyView.cpp" />
+    <ClCompile Include="..\..\gui\Debugger\CtrlMemView.cpp" />
     <ClCompile Include="..\..\gui\Debugger\CtrlRegisterList.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DebugEvents.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp" />
@@ -710,6 +711,7 @@
     <ClInclude Include="..\..\Gif_Unit.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />
+    <ClInclude Include="..\..\gui\Debugger\CtrlMemView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlRegisterList.h" />
     <ClInclude Include="..\..\gui\Debugger\DebugEvents.h" />
     <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h" />

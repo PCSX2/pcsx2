@@ -8,6 +8,7 @@ BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
 	EVT_PAINT(CtrlRegisterList::paintEvent)
 	EVT_LEFT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlRegisterList::mouseEvent)
+	EVT_RIGHT_UP(CtrlRegisterList::mouseEvent)
 	EVT_MOTION(CtrlRegisterList::mouseEvent)
 	EVT_KEY_DOWN(CtrlRegisterList::keydownEvent)
 END_EVENT_TABLE()
@@ -360,7 +361,7 @@ void CtrlRegisterList::setCurrentRow(int row)
 
 void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 {
-	if (evt.GetEventType() == wxEVT_RIGHT_DOWN)
+	if (evt.GetEventType() == wxEVT_RIGHT_UP)
 	{
 		int y = evt.GetPosition().y;
 
@@ -375,7 +376,7 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 		return;
 	}
 
-	if (evt.ButtonIsDown(wxMOUSE_BTN_LEFT))
+	if (evt.ButtonIsDown(wxMOUSE_BTN_LEFT) || evt.ButtonIsDown(wxMOUSE_BTN_RIGHT))
 	{
 		int x = evt.GetPosition().x;
 		int y = evt.GetPosition().y;

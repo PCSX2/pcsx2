@@ -15,6 +15,8 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DCLICK(CtrlDisassemblyView::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlDisassemblyView::mouseEvent)
+	EVT_RIGHT_DCLICK(CtrlDisassemblyView::mouseEvent)
+	EVT_RIGHT_UP(CtrlDisassemblyView::mouseEvent)
 	EVT_MOTION(CtrlDisassemblyView::mouseEvent)
 	EVT_KEY_DOWN(CtrlDisassemblyView::keydownEvent)
 	EVT_CHAR(CtrlDisassemblyView::keydownEvent)
@@ -84,7 +86,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_DISASM_RENAMEFUNCTION,			L"Rename Function");
 	menu.Append(ID_DISASM_REMOVEFUNCTION,			L"Remove Function");
 	menu.Append(ID_DISASM_ADDFUNCTION,				L"Add Function Here");
- 	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlDisassemblyView::onPopupClick, NULL, this);
+	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlDisassemblyView::onPopupClick, NULL, this);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);
@@ -654,7 +656,8 @@ void CtrlDisassemblyView::updateStatusBarText()
 void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 {
 	// left button
-	if (evt.GetEventType() == wxEVT_LEFT_DOWN || evt.GetEventType() == wxEVT_LEFT_DCLICK)
+	if (evt.GetEventType() == wxEVT_LEFT_DOWN || evt.GetEventType() == wxEVT_LEFT_DCLICK
+		|| evt.GetEventType() == wxEVT_RIGHT_DOWN || evt.GetEventType() == wxEVT_RIGHT_DCLICK)
 	{
 		int newAddress = yToAddress(evt.GetY());
 
@@ -664,7 +667,7 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 			setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
 		SetFocus();
 		SetFocusFromKbd();
-	} else if (evt.GetEventType() == wxEVT_RIGHT_DOWN)
+	} else if (evt.GetEventType() == wxEVT_RIGHT_UP)
 	{
 		int newAddress = yToAddress(evt.GetY());
 		setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
