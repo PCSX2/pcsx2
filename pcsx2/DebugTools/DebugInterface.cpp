@@ -54,6 +54,14 @@ u128 DebugInterface::read128(u32 address)
 	return result;
 }
 
+void DebugInterface::write8(u32 address, u8 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	memWrite8(address,value);
+}
+
 int DebugInterface::getRegisterCategoryCount()
 {
 	return CAT_COUNT;

@@ -12,6 +12,7 @@ BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_LEFT_DCLICK(CtrlMemView::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlMemView::mouseEvent)
 	EVT_KEY_DOWN(CtrlMemView::keydownEvent)
+	EVT_CHAR(CtrlMemView::charEvent)
 END_EVENT_TABLE()
 
 CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
@@ -229,7 +230,54 @@ void CtrlMemView::keydownEvent(wxKeyEvent& evt)
 	case WXK_PAGEDOWN:
 		scrollWindow(GetClientSize().y/rowHeight);
 		break;
+	default:
+		evt.Skip();
+		break;
 	}
+}
+
+void CtrlMemView::charEvent(wxKeyEvent& evt)
+{
+	if (evt.GetKeyCode() < 32)
+		return;
+
+	if (!isValidAddress(curAddress))
+	{
+		scrollCursor(1);
+		return;
+	}
+
+	bool active = !cpu->isCpuPaused();
+	if (active)
+		cpu->pauseCpu();
+
+	if (asciiSelected)
+	{
+		u8 newValue = evt.GetKeyCode();
+		cpu->write8(curAddress,newValue);
+		scrollCursor(1);
+	} else {
+		u8 key = tolower(evt.GetKeyCode());
+		int inputValue = -1;
+
+		if (key >= '0' && key <= '9') inputValue = key - '0';
+		if (key >= 'a' && key <= 'f') inputValue = key -'a' + 10;
+
+		if (inputValue >= 0)
+		{
+			int shiftAmount = (1-selectedNibble)*4;
+
+			u8 oldValue = cpu->read8(curAddress);
+			oldValue &= ~(0xF << shiftAmount);
+			u8 newValue = oldValue | (inputValue << shiftAmount);
+			cpu->write8(curAddress,newValue);
+			scrollCursor(1);
+		}
+	}
+
+	if (active)
+		cpu->resumeCpu();
+	redraw();
 }
 
 void CtrlMemView::scrollWindow(int lines)

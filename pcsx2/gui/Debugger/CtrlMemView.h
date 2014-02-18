@@ -12,6 +12,7 @@ public:
 	void paintEvent(wxPaintEvent & evt);
 	void mouseEvent(wxMouseEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);
+	void charEvent(wxKeyEvent& evt);
 	void redraw();
 	void gotoAddress(u32 address);
 
