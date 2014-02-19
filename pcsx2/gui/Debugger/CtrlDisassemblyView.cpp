@@ -158,7 +158,7 @@ bool CtrlDisassemblyView::getDisasmAddressText(u32 address, char* dest, bool abb
 		}
 	} else {
 		if (showData)
-			sprintf(dest,"%08X %08X",address,debug.read32(address));
+			sprintf(dest,"%08X %08X",address,cpu->read32(address));
 		else
 			sprintf(dest,"%08X",address);
 		return false;

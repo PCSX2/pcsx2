@@ -378,9 +378,9 @@ const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
 void CBreakPoints::Update(u32 addr)
 {
 	bool resume = false;
-	if (debug.isCpuPaused() == false)
+	if (r5900Debug.isCpuPaused() == false)
 	{
-		debug.pauseCpu();
+		r5900Debug.pauseCpu();
 		resume = true;
 	}
 	
@@ -390,7 +390,7 @@ void CBreakPoints::Update(u32 addr)
 		SysClearExecutionCache();
 	
 	if (resume)
-		debug.resumeCpu();
+		r5900Debug.resumeCpu();
 
 	// Redraw in order to show the breakpoint.
 	// host->UpdateDisassembly();

@@ -46,7 +46,7 @@ namespace MIPSAnalyst
 				continue;
 			}
 
-			u32 op = debug.read32(addr);
+			u32 op = r5900Debug.read32(addr);
 /*
 			MIPSOpcode op = Memory::Read_Instruction(addr);
 			u32 target = GetBranchTargetNoRA(addr);

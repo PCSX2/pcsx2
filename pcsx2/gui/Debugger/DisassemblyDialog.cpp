@@ -52,18 +52,18 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
 
 	wxBoxSizer* registerSizer = new wxBoxSizer(wxVERTICAL);
-	registerList = new CtrlRegisterList(panel,&debug);
+	registerList = new CtrlRegisterList(panel,&r5900Debug);
 	registerSizer->Add(registerList,1);
 	middleSizer->Add(registerSizer,0,wxEXPAND|wxRIGHT,4);
 
-	disassembly = new CtrlDisassemblyView(panel,&debug);
+	disassembly = new CtrlDisassemblyView(panel,&r5900Debug);
 	middleSizer->Add(disassembly,2,wxEXPAND);
 
 	topSizer->Add(middleSizer,3,wxEXPAND|wxALL,3);
 
 	// create bottom part
 	bottomTabs = new wxNotebook(panel,wxID_ANY);
-	memory = new CtrlMemView(bottomTabs,&debug);
+	memory = new CtrlMemView(bottomTabs,&r5900Debug);
 	bottomTabs->AddPage(memory,L"Memory");
 
 	topSizer->Add(bottomTabs,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
@@ -78,13 +78,13 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 
 void DisassemblyDialog::onPauseResumeClicked(wxCommandEvent& evt)
 {	
-	if (debug.isCpuPaused())
+	if (r5900Debug.isCpuPaused())
 	{
-		if (CBreakPoints::IsAddressBreakPoint(debug.getPC()))
-			CBreakPoints::SetSkipFirst(debug.getPC());
-		debug.resumeCpu();
+		if (CBreakPoints::IsAddressBreakPoint(r5900Debug.getPC()))
+			CBreakPoints::SetSkipFirst(r5900Debug.getPC());
+		r5900Debug.resumeCpu();
 	} else
-		debug.pauseCpu();
+		r5900Debug.pauseCpu();
 }
 
 void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
@@ -95,14 +95,14 @@ void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
 
 void DisassemblyDialog::stepOver()
 {
-	if (!debug.isAlive() || !debug.isCpuPaused())
+	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused())
 		return;
 	
 	// If the current PC is on a breakpoint, the user doesn't want to do nothing.
-	CBreakPoints::SetSkipFirst(debug.getPC());
-	u32 currentPc = debug.getPC();
+	CBreakPoints::SetSkipFirst(r5900Debug.getPC());
+	u32 currentPc = r5900Debug.getPC();
 
-	MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(&debug,debug.getPC());
+	MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(&r5900Debug,r5900Debug.getPC());
 	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
 	if (info.isBranch)
 	{
@@ -130,7 +130,7 @@ void DisassemblyDialog::stepOver()
 	}
 
 	CBreakPoints::AddBreakPoint(breakpointAddress,true);
-	debug.resumeCpu();
+	r5900Debug.resumeCpu();
 }
 
 void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
@@ -149,7 +149,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	} else if (type == debEVT_RUNTOPOS)
 	{
 		CBreakPoints::AddBreakPoint(evt.GetInt(),true);
-		debug.resumeCpu();
+		r5900Debug.resumeCpu();
 	} else if (type == debEVT_GOTOINDISASM)
 	{
 		disassembly->gotoAddress(evt.GetInt());
@@ -167,7 +167,7 @@ void DisassemblyDialog::update()
 
 void DisassemblyDialog::setDebugMode(bool debugMode)
 {
-	bool running = debug.isAlive();
+	bool running = r5900Debug.isAlive();
 	breakResumeButton->Enable(running);
 	disassembly->Enable(running);
 
@@ -180,7 +180,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 
 			stepOverButton->Enable(true);
 
-			disassembly->gotoAddress(debug.getPC());
+			disassembly->gotoAddress(r5900Debug.getPC());
 			disassembly->SetFocus();
 		} else {
 			breakResumeButton->SetLabel(L"Break");
