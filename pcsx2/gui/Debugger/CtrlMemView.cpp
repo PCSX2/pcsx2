@@ -111,7 +111,7 @@ void CtrlMemView::render(wxDC& dc)
 		unsigned int address = windowStart + i*rowSize;
 		int rowY = rowHeight*i;
 
-		swprintf(temp,L"%08X",address);
+		swprintf(temp,32,L"%08X",address);
 		dc.SetFont(font);
 		dc.SetTextForeground(wxColor(0xFF600000));
 		dc.DrawText(temp,addressStart,rowY);
@@ -130,7 +130,7 @@ void CtrlMemView::render(wxDC& dc)
 		for (int j = 0; j < rowSize; j++)
 		{
 			if (valid)
-				swprintf(temp,L"%02X",m[j]);
+				swprintf(temp,32,L"%02X",m[j]);
 			else
 				wcscpy(temp,L"??");
 			
@@ -221,7 +221,7 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 	case ID_MEMVIEW_COPYADDRESS:
 		if (wxTheClipboard->Open())
 		{
-			swprintf(str,L"%08X",curAddress);
+			swprintf(str,64,L"%08X",curAddress);
 			wxTheClipboard->SetData(new wxTextDataObject(str));
 			wxTheClipboard->Close();
 		}
@@ -232,7 +232,7 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 	case ID_MEMVIEW_COPYVALUE_8:
 		if (wxTheClipboard->Open())
 		{
-			swprintf(str,L"%02X",cpu->read8(curAddress));
+			swprintf(str,64,L"%02X",cpu->read8(curAddress));
 			wxTheClipboard->SetData(new wxTextDataObject(str));
 			wxTheClipboard->Close();
 		}
@@ -240,7 +240,7 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 	case ID_MEMVIEW_COPYVALUE_16:
 		if (wxTheClipboard->Open())
 		{
-			swprintf(str,L"%04X",cpu->read16(curAddress));
+			swprintf(str,64,L"%04X",cpu->read16(curAddress));
 			wxTheClipboard->SetData(new wxTextDataObject(str));
 			wxTheClipboard->Close();
 		}
@@ -248,7 +248,7 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 	case ID_MEMVIEW_COPYVALUE_32:
 		if (wxTheClipboard->Open())
 		{
-			swprintf(str,L"%08X",cpu->read32(curAddress));
+			swprintf(str,64,L"%08X",cpu->read32(curAddress));
 			wxTheClipboard->SetData(new wxTextDataObject(str));
 			wxTheClipboard->Close();
 		}
@@ -256,7 +256,7 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 	case ID_MEMVIEW_COPYVALUE_64:
 		if (wxTheClipboard->Open())
 		{
-			swprintf(str,L"%016llX",cpu->read64(curAddress));
+			swprintf(str,64,L"%016llX",cpu->read64(curAddress));
 			wxTheClipboard->SetData(new wxTextDataObject(str));
 			wxTheClipboard->Close();
 		}
@@ -265,7 +265,7 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 		if (wxTheClipboard->Open())
 		{
 			u128 value = cpu->read128(curAddress);
-			swprintf(str,L"%016llX%016llX",value._u64[1],value._u64[0]);
+			swprintf(str,64,L"%016llX%016llX",value._u64[1],value._u64[0]);
 			wxTheClipboard->SetData(new wxTextDataObject(str));
 			wxTheClipboard->Close();
 		}
@@ -427,7 +427,7 @@ void CtrlMemView::scrollCursor(int bytes)
 void CtrlMemView::updateStatusBarText()
 {
 	wchar_t text[64];
-	swprintf(text,L"%08X",curAddress);
+	swprintf(text,64,L"%08X",curAddress);
 	postEvent(debEVT_SETSTATUSBARTEXT,text);
 }
 

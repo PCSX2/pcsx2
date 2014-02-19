@@ -456,7 +456,7 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 		if (wxTheClipboard->Open())
 		{
 			wchar_t text[64];
-			swprintf(text,L"%08X",curAddress);
+			swprintf(text,64,L"%08X",curAddress);
 
 			wxTheClipboard->SetData(new wxTextDataObject(text));
 			wxTheClipboard->Close();
