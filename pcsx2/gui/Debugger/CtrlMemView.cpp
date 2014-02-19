@@ -45,8 +45,15 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	hexStart = addressStart + 9*charWidth;
 	asciiStart = hexStart + (rowSize*3+1)*charWidth;
 
+	#ifdef WIN32
 	font = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
 	underlineFont = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,true,L"Lucida Console");
+	#else
+	font = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	font.SetPixelSize(wxSize(charWidth,rowHeight));
+	underlineFont = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,true,L"Lucida Console");
+	underlineFont.SetPixelSize(wxSize(charWidth,rowHeight));
+	#endif
 
 	menu.Append(ID_MEMVIEW_GOTOINDISASM,		L"Go to in Disasm");
 	menu.Append(ID_MEMVIEW_COPYADDRESS,			L"Copy address");
