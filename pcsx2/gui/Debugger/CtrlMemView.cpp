@@ -4,6 +4,7 @@
 
 #include "DebugEvents.h"
 #include <wchar.h>
+#include <wx/clipbrd.h>
 
 BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_PAINT(CtrlMemView::paintEvent)
@@ -11,9 +12,22 @@ BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_LEFT_DOWN(CtrlMemView::mouseEvent)
 	EVT_LEFT_DCLICK(CtrlMemView::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlMemView::mouseEvent)
+	EVT_RIGHT_UP(CtrlMemView::mouseEvent)
 	EVT_KEY_DOWN(CtrlMemView::keydownEvent)
 	EVT_CHAR(CtrlMemView::charEvent)
 END_EVENT_TABLE()
+
+enum MemoryViewMenuIdentifiers
+{
+	ID_MEMVIEW_GOTOINDISASM = 1,
+	ID_MEMVIEW_COPYADDRESS,
+	ID_MEMVIEW_COPYVALUE_8,
+	ID_MEMVIEW_COPYVALUE_16,
+	ID_MEMVIEW_COPYVALUE_32,
+	ID_MEMVIEW_COPYVALUE_64,
+	ID_MEMVIEW_COPYVALUE_128,
+	ID_MEMVIEW_DUMP,
+};
 
 CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS), cpu(_cpu)
@@ -33,6 +47,18 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 
 	font = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
 	underlineFont = wxFont(wxSize(charWidth,rowHeight),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,true,L"Lucida Console");
+
+	menu.Append(ID_MEMVIEW_GOTOINDISASM,		L"Go to in Disasm");
+	menu.Append(ID_MEMVIEW_COPYADDRESS,			L"Copy address");
+	menu.AppendSeparator();
+	menu.Append(ID_MEMVIEW_COPYVALUE_8,			L"Copy Value (8 bit)");
+	menu.Append(ID_MEMVIEW_COPYVALUE_16,		L"Copy Value (16 bit)");
+	menu.Append(ID_MEMVIEW_COPYVALUE_32,		L"Copy Value (32 bit)");
+	menu.Append(ID_MEMVIEW_COPYVALUE_64,		L"Copy Value (64 bit)");
+	menu.Append(ID_MEMVIEW_COPYVALUE_128,		L"Copy Value (128 bit)");
+	menu.Append(ID_MEMVIEW_DUMP,				L"Dump...");
+	menu.Enable(ID_MEMVIEW_DUMP,false);
+	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlMemView::onPopupClick, NULL, this);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);
@@ -179,6 +205,67 @@ void CtrlMemView::render(wxDC& dc)
 	}
 }
 
+void CtrlMemView::onPopupClick(wxCommandEvent& evt)
+{
+	wchar_t str[64];
+
+	switch (evt.GetId())
+	{
+	case ID_MEMVIEW_COPYADDRESS:
+		if (wxTheClipboard->Open())
+		{
+			swprintf(str,L"%08X",curAddress);
+			wxTheClipboard->SetData(new wxTextDataObject(str));
+			wxTheClipboard->Close();
+		}
+		break;
+	case ID_MEMVIEW_GOTOINDISASM:
+		postEvent(debEVT_GOTOINDISASM,curAddress);
+		break;
+	case ID_MEMVIEW_COPYVALUE_8:
+		if (wxTheClipboard->Open())
+		{
+			swprintf(str,L"%02X",cpu->read8(curAddress));
+			wxTheClipboard->SetData(new wxTextDataObject(str));
+			wxTheClipboard->Close();
+		}
+		break;
+	case ID_MEMVIEW_COPYVALUE_16:
+		if (wxTheClipboard->Open())
+		{
+			swprintf(str,L"%04X",cpu->read16(curAddress));
+			wxTheClipboard->SetData(new wxTextDataObject(str));
+			wxTheClipboard->Close();
+		}
+		break;
+	case ID_MEMVIEW_COPYVALUE_32:
+		if (wxTheClipboard->Open())
+		{
+			swprintf(str,L"%08X",cpu->read32(curAddress));
+			wxTheClipboard->SetData(new wxTextDataObject(str));
+			wxTheClipboard->Close();
+		}
+		break;
+	case ID_MEMVIEW_COPYVALUE_64:
+		if (wxTheClipboard->Open())
+		{
+			swprintf(str,L"%016llX",cpu->read64(curAddress));
+			wxTheClipboard->SetData(new wxTextDataObject(str));
+			wxTheClipboard->Close();
+		}
+		break;
+	case ID_MEMVIEW_COPYVALUE_128:
+		if (wxTheClipboard->Open())
+		{
+			u128 value = cpu->read128(curAddress);
+			swprintf(str,L"%016llX%016llX",value._u64[1],value._u64[0]);
+			wxTheClipboard->SetData(new wxTextDataObject(str));
+			wxTheClipboard->Close();
+		}
+		break;
+	}
+}
+
 void CtrlMemView::mouseEvent(wxMouseEvent& evt)
 {
 	// left button
@@ -190,8 +277,13 @@ void CtrlMemView::mouseEvent(wxMouseEvent& evt)
 		SetFocusFromKbd();
 	} else if (evt.GetEventType() == wxEVT_RIGHT_UP)
 	{
+		menu.Enable(ID_MEMVIEW_COPYVALUE_128,(curAddress & 15) == 0);
+		menu.Enable(ID_MEMVIEW_COPYVALUE_64,(curAddress & 7) == 0);
+		menu.Enable(ID_MEMVIEW_COPYVALUE_32,(curAddress & 3) == 0);
+		menu.Enable(ID_MEMVIEW_COPYVALUE_16,(curAddress & 1) == 0);
+
+		PopupMenu(&menu);
 		return;
-	// wheel
 	} else if (evt.GetEventType() == wxEVT_MOUSEWHEEL)
 	{
 		if (evt.GetWheelRotation() > 0)

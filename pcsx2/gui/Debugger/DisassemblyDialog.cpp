@@ -10,6 +10,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_RUNTOPOS, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_GOTOINDISASM, DisassemblyDialog::onDebuggerEvent )
 END_EVENT_TABLE()
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
@@ -149,6 +150,11 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	{
 		CBreakPoints::AddBreakPoint(evt.GetInt(),true);
 		debug.resumeCpu();
+	} else if (type == debEVT_GOTOINDISASM)
+	{
+		disassembly->gotoAddress(evt.GetInt());
+		disassembly->SetFocus();
+		update();
 	}
 }
 

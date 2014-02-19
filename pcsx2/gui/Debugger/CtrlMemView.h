@@ -25,6 +25,7 @@ private:
 	void postEvent(wxEventType type, int value);
 	void scrollWindow(int lines);
 	void scrollCursor(int bytes);
+	void onPopupClick(wxCommandEvent& evt);
 
 	DebugInterface* cpu;
 	int rowHeight;
@@ -39,4 +40,6 @@ private:
 	int asciiStart;
 	bool asciiSelected;
 	int selectedNibble;
+
+	wxMenu menu;
 };
