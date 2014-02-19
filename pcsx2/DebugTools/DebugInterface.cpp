@@ -238,6 +238,11 @@ u32 DebugInterface::getPC()
 	return cpuRegs.pc;
 }
 
+void DebugInterface::setPc(u32 newPc)
+{
+	cpuRegs.pc = newPc;
+}
+
 bool DebugInterface::isAlive()
 {
 	return GetCoreThread().IsOpen();

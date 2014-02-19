@@ -25,6 +25,7 @@ public:
 	u128 getHI();
 	u128 getLO();
 	u32 getPC();
+	void setPc(u32 newPc);
 
 	bool isAlive();
 	bool isCpuPaused();

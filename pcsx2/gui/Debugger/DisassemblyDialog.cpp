@@ -9,6 +9,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_RUNTOPOS, DisassemblyDialog::onDebuggerEvent )
 END_EVENT_TABLE()
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
@@ -44,7 +45,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	breakpointButton->Enable(false);
 	topRowSizer->Add(breakpointButton);
 
-	topSizer->Add(topRowSizer);
+	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
 	
 	// create middle part of the window
 	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -64,7 +65,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	memory = new CtrlMemView(bottomTabs,&debug);
 	bottomTabs->AddPage(memory,L"Memory");
 
-	topSizer->Add(bottomTabs,1,wxEXPAND);
+	topSizer->Add(bottomTabs,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
 
 	CreateStatusBar(1);
 	
@@ -144,6 +145,10 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	} else if (type == debEVT_GOTOINMEMORYVIEW)
 	{
 		memory->gotoAddress(evt.GetInt());
+	} else if (type == debEVT_RUNTOPOS)
+	{
+		CBreakPoints::AddBreakPoint(evt.GetInt(),true);
+		debug.resumeCpu();
 	}
 }
 

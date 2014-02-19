@@ -6,6 +6,9 @@
 #include "DebugEvents.h"
 
 #include <wx/mstream.h>
+#include <wx/clipbrd.h>
+#include <wx/file.h>
+
 #include "Resources/Breakpoint_Active.h"
 #include "Resources/Breakpoint_Inactive.h"
 
@@ -15,7 +18,6 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DCLICK(CtrlDisassemblyView::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlDisassemblyView::mouseEvent)
-	EVT_RIGHT_DCLICK(CtrlDisassemblyView::mouseEvent)
 	EVT_RIGHT_UP(CtrlDisassemblyView::mouseEvent)
 	EVT_MOTION(CtrlDisassemblyView::mouseEvent)
 	EVT_KEY_DOWN(CtrlDisassemblyView::keydownEvent)
@@ -74,6 +76,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_DISASM_DISASSEMBLETOFILE,		L"Disassemble to File");
 	menu.AppendSeparator();
 	menu.Append(ID_DISASM_ASSEMBLE,					L"Assemble Opcode");
+	menu.Enable(ID_DISASM_ASSEMBLE,false);
 	menu.AppendSeparator();
 	menu.Append(ID_DISASM_RUNTOHERE,				L"Run to Cursor");
 	menu.Append(ID_DISASM_SETPCTOHERE,				L"Jump to Cursor");
@@ -82,10 +85,9 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.AppendSeparator();
 	menu.Append(ID_DISASM_GOTOINMEMORYVIEW,			L"Go to in Memory View");
 	menu.AppendSeparator();
-	menu.Append(ID_DISASM_KILLFUNCTION,				L"Kill Function");
+	menu.Append(ID_DISASM_ADDFUNCTION,				L"Add Function Here");
 	menu.Append(ID_DISASM_RENAMEFUNCTION,			L"Rename Function");
 	menu.Append(ID_DISASM_REMOVEFUNCTION,			L"Remove Function");
-	menu.Append(ID_DISASM_ADDFUNCTION,				L"Add Function Here");
 	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlDisassemblyView::onPopupClick, NULL, this);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
@@ -443,6 +445,125 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 	case ID_DISASM_FOLLOWBRANCH:
 		followBranch();
 		break;
+	case ID_DISASM_COPYADDRESS:
+		if (wxTheClipboard->Open())
+		{
+			wchar_t text[64];
+			swprintf(text,L"%08X",curAddress);
+
+			wxTheClipboard->SetData(new wxTextDataObject(text));
+			wxTheClipboard->Close();
+		}
+		break;
+	case ID_DISASM_GOTOINMEMORYVIEW:
+		postEvent(debEVT_GOTOINMEMORYVIEW,curAddress);
+		break;
+	case ID_DISASM_COPYINSTRUCTIONHEX:
+		copyInstructions(selectRangeStart,selectRangeEnd,false);
+		break;
+	case ID_DISASM_COPYINSTRUCTIONDISASM:
+		copyInstructions(selectRangeStart,selectRangeEnd,true);
+		break;
+	case ID_DISASM_SETPCTOHERE:
+		cpu->setPc(curAddress);
+		redraw();
+		break;
+	case ID_DISASM_RUNTOHERE:
+		postEvent(debEVT_RUNTOPOS,curAddress);
+		break;
+	case ID_DISASM_DISASSEMBLETOFILE:
+		disassembleToFile();
+		break;
+	case ID_DISASM_RENAMEFUNCTION:
+		{		
+			u32 funcBegin = symbolMap.GetFunctionStart(curAddress);
+			if (funcBegin != -1)
+			{
+				wxString newName = wxGetTextFromUser(L"Enter the new function name",L"New function name",
+					wxString(symbolMap.GetLabelString(funcBegin).c_str(),wxConvUTF8),this);
+
+				if (!newName.empty())
+				{
+					const wxCharBuffer converted = newName.ToUTF8();
+					symbolMap.SetLabelName(converted,funcBegin);
+					postEvent(debEVT_MAPLOADED,0);
+					redraw();
+				}
+			}
+			else
+			{
+				wxMessageBox(L"No symbol selected",L"Error",wxICON_ERROR);
+			}
+			break;
+		}
+	case ID_DISASM_REMOVEFUNCTION:
+		{
+			u32 funcBegin = symbolMap.GetFunctionStart(curAddress);
+			if (funcBegin != -1)
+			{
+				u32 prevBegin = symbolMap.GetFunctionStart(funcBegin-1);
+				if (prevBegin != -1)
+				{
+					u32 expandedSize = symbolMap.GetFunctionSize(prevBegin)+symbolMap.GetFunctionSize(funcBegin);
+					symbolMap.SetFunctionSize(prevBegin,expandedSize);
+				}
+					
+				symbolMap.RemoveFunction(funcBegin,true);
+				symbolMap.SortSymbols();
+				symbolMap.UpdateActiveSymbols();
+				manager.clear();
+					
+				postEvent(debEVT_MAPLOADED,0);
+			}
+			else
+			{
+				postEvent(debEVT_SETSTATUSBARTEXT,L"WARNING: unable to find function symbol here");
+			}
+
+			redraw();
+			break;
+		}
+	case ID_DISASM_ADDFUNCTION:
+		{
+			u32 prevBegin = symbolMap.GetFunctionStart(curAddress);
+			if (prevBegin != -1)
+			{
+				if (prevBegin == curAddress)
+				{
+					postEvent(debEVT_SETSTATUSBARTEXT,L"WARNING: There's already a function entry point at this adress");
+				}
+				else
+				{
+					char symname[128];
+					u32 prevSize = symbolMap.GetFunctionSize(prevBegin);
+					u32 newSize = curAddress-prevBegin;
+					symbolMap.SetFunctionSize(prevBegin,newSize);
+
+					newSize = prevSize-newSize;
+					sprintf(symname,"u_un_%08X",curAddress);
+					symbolMap.AddFunction(symname,curAddress,newSize);
+					symbolMap.SortSymbols();
+					symbolMap.UpdateActiveSymbols();
+					manager.clear();
+						
+					postEvent(debEVT_MAPLOADED,0);
+				}
+			}
+			else
+			{
+				char symname[128];
+				int newSize = selectRangeEnd - selectRangeStart;
+				sprintf(symname, "u_un_%08X", selectRangeStart);
+				symbolMap.AddFunction(symname, selectRangeStart, newSize);
+				symbolMap.SortSymbols();
+				symbolMap.UpdateActiveSymbols();
+					
+				postEvent(debEVT_MAPLOADED,0);
+			}
+
+			redraw();
+			break;
+		}
 	default:
 		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
 		break;
@@ -664,26 +785,31 @@ void CtrlDisassemblyView::updateStatusBarText()
 void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 {
 	// left button
-	if (evt.GetEventType() == wxEVT_LEFT_DOWN || evt.GetEventType() == wxEVT_LEFT_DCLICK
-		|| evt.GetEventType() == wxEVT_RIGHT_DOWN || evt.GetEventType() == wxEVT_RIGHT_DCLICK)
-	{
-		int newAddress = yToAddress(evt.GetY());
+	wxEventType type = evt.GetEventType();
+	bool hasFocus = wxWindow::FindFocus() == this;
 
-		if (curAddress == newAddress)
-			toggleBreakpoint(false);
-		else
-			setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
+	if (type == wxEVT_LEFT_DOWN || type == wxEVT_LEFT_DCLICK || type == wxEVT_RIGHT_DOWN )
+	{
+		u32 newAddress = yToAddress(evt.GetY());
+		bool extend = wxGetKeyState(WXK_SHIFT);
+
+		if (type == wxEVT_RIGHT_DOWN)
+		{
+			// Maintain the current selection if right clicking into it.
+			if (newAddress >= selectRangeStart && newAddress < selectRangeEnd)
+				extend = true;
+		} else {
+			if (curAddress == newAddress && hasFocus)
+				toggleBreakpoint(false);
+		}
+
+		setCurAddress(newAddress,extend);
 		SetFocus();
 		SetFocusFromKbd();
 	} else if (evt.GetEventType() == wxEVT_RIGHT_UP)
 	{
-		int newAddress = yToAddress(evt.GetY());
-		setCurAddress(newAddress,wxGetKeyState(WXK_SHIFT));
-		redraw();
-
 		PopupMenu(&menu,evt.GetPosition());
 		return;
-	// wheel
 	} else if (evt.GetEventType() == wxEVT_MOUSEWHEEL)
 	{
 		if (evt.GetWheelRotation() > 0)
@@ -737,4 +863,110 @@ void CtrlDisassemblyView::scrollStepping(u32 newPc)
 	{
 		windowStart = manager.getNthPreviousAddress(newPc,visibleRows-2);
 	}
+}
+
+std::string CtrlDisassemblyView::disassembleRange(u32 start, u32 size)
+{
+	std::string result;
+
+	// gather all branch targets without labels
+	std::set<u32> branchAddresses;
+	for (u32 i = 0; i < size; i += 4)
+	{
+		MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(cpu,start+i);
+
+		if (info.isBranch && symbolMap.GetLabelString(info.branchTarget).empty())
+		{
+			if (branchAddresses.find(info.branchTarget) == branchAddresses.end())
+			{
+				branchAddresses.insert(info.branchTarget);
+			}
+		}
+	}
+
+	u32 disAddress = start;
+	bool previousLabel = true;
+	DisassemblyLineInfo line;
+	while (disAddress < start+size)
+	{
+		char addressText[64],buffer[512];
+
+		manager.getLine(disAddress,displaySymbols,line);
+		bool isLabel = getDisasmAddressText(disAddress,addressText,false,line.type == DISTYPE_OPCODE);
+
+		if (isLabel)
+		{
+			if (!previousLabel) result += "\r\n";
+			sprintf(buffer,"%s\r\n\r\n",addressText);
+			result += buffer;
+		} else if (branchAddresses.find(disAddress) != branchAddresses.end())
+		{
+			if (!previousLabel) result += "\r\n";
+			sprintf(buffer,"pos_%08X:\r\n\r\n",disAddress);
+			result += buffer;
+		}
+
+		if (line.info.isBranch && !line.info.isBranchToRegister
+			&& symbolMap.GetLabelString(line.info.branchTarget).empty()
+			&& branchAddresses.find(line.info.branchTarget) != branchAddresses.end())
+		{
+			sprintf(buffer,"pos_%08X",line.info.branchTarget);
+			line.params = line.params.substr(0,line.params.find("0x")) + buffer;
+		}
+
+		sprintf(buffer,"\t%s\t%s\r\n",line.name.c_str(),line.params.c_str());
+		result += buffer;
+		previousLabel = isLabel;
+		disAddress += line.totalSize;
+	}
+
+	return result;
+}
+
+void CtrlDisassemblyView::copyInstructions(u32 startAddr, u32 endAddr, bool withDisasm)
+{
+	if (!wxTheClipboard->Open())
+	{
+		wxMessageBox( L"Could not open clipboard.",  L"Error", wxICON_ERROR);
+		return;
+	}
+
+	if (withDisasm == false)
+	{
+		int instructionSize = 4;
+		int count = (endAddr - startAddr) / instructionSize;
+		int space = count * 32;
+		char *temp = new char[space];
+
+		char *p = temp, *end = temp + space;
+		for (u32 pos = startAddr; pos < endAddr; pos += instructionSize)
+		{
+			p += sprintf(p, "%08X", cpu->read32(pos));
+
+			// Don't leave a trailing newline.
+			if (pos + instructionSize < endAddr)
+				p += sprintf(p,"\r\n");
+		}
+		
+		wxTheClipboard->SetData(new wxTextDataObject(wxString(temp,wxConvUTF8)));
+		delete [] temp;
+	} else
+	{
+		std::string disassembly = disassembleRange(startAddr,endAddr-startAddr);
+		wxTheClipboard->SetData(new wxTextDataObject(wxString(disassembly.c_str(),wxConvUTF8)));
+	}
+
+	wxTheClipboard->Close();
+}
+
+void CtrlDisassemblyView::disassembleToFile()
+{
+	wxFileDialog dlg(this,wxEmptyString,wxEmptyString,wxEmptyString,L"*.*",wxFD_SAVE);
+
+	if (dlg.ShowModal() == wxID_CANCEL)
+		return;
+	
+	std::string disassembly = disassembleRange(selectRangeStart,selectRangeEnd-selectRangeStart);
+	wxFile output(dlg.GetPath(),wxFile::write);
+	output.Write(wxString(disassembly.c_str(),wxConvUTF8));
 }
