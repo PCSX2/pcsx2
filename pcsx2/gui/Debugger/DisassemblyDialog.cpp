@@ -86,6 +86,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	middleBook->AddPage(iopTab,L"R3000");
 	Connect(middleBook->GetId(),wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,wxCommandEventHandler( DisassemblyDialog::onPageChanging));
 	topSizer->Add(middleBook,3,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
+	currentCpu = eeTab;
 
 	CreateStatusBar(1);
 	
