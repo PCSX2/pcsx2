@@ -11,6 +11,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_RUNTOPOS, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINDISASM, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_STEPOVER, DisassemblyDialog::onDebuggerEvent )
 END_EVENT_TABLE()
 
 CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
@@ -208,6 +209,10 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 			currentCpu->getDisassembly()->SetFocus();
 			update();
 		}
+	} else if (type == debEVT_STEPOVER)
+	{
+		if (currentCpu != NULL)
+			stepOver();
 	}
 }
 

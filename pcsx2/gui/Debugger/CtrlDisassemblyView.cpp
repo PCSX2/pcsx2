@@ -96,6 +96,20 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	setCurAddress(windowStart);
 }
 
+#ifdef WIN32
+WXLRESULT CtrlDisassemblyView::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
+{
+	switch (nMsg)
+	{
+	case 0x0104:		// WM_SYSKEYDOWN, make f10 usable
+		postEvent(debEVT_STEPOVER,0);
+		return 0;
+	}
+
+	return wxWindow::MSWWindowProc(nMsg,wParam,lParam);
+}
+#endif
+
 void CtrlDisassemblyView::scanFunctions()
 {
 	if (cpu->isAlive() == false)
@@ -649,6 +663,9 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 				scrollAddressIntoView();
 			}
 			scanFunctions();
+			break;
+		case WXK_F10:
+			postEvent(debEVT_STEPOVER,0);
 			break;
 		default:
 			evt.Skip();

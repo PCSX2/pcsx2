@@ -15,6 +15,10 @@ public:
 	void scrollbarEvent(wxScrollWinEvent& evt);
 	void sizeEvent(wxSizeEvent& evt);
 	
+#ifdef WIN32
+	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
+#endif
+
 	void scanFunctions();
 	void clearFunctions() { manager.clear(); };
 	void redraw();
