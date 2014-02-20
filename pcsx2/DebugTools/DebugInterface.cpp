@@ -2,7 +2,7 @@
 
 #include "DebugInterface.h"
 #include "Memory.h"
-#include "r5900.h"
+#include "R5900.h"
 #include "AppCoreThread.h"
 #include "Debug.h"
 #include "../VU.h"

@@ -295,8 +295,15 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	if (!cpu->isAlive())
 		return;
 
+	#ifdef WIN32
 	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
 	wxFont boldFont = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
+	#else
+	wxFont font = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	font.SetPixelSize(wxSize(charWidth,rowHeight-2));
+	wxFont boldFont = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
+	boldFont.SetPixelSize(wxSize(charWidth,rowHeight-2));
+	#endif
 
 	bool hasFocus = wxWindow::FindFocus() == this;
 	
@@ -449,7 +456,7 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 		if (wxTheClipboard->Open())
 		{
 			wchar_t text[64];
-			swprintf(text,L"%08X",curAddress);
+			swprintf(text,64,L"%08X",curAddress);
 
 			wxTheClipboard->SetData(new wxTextDataObject(text));
 			wxTheClipboard->Close();

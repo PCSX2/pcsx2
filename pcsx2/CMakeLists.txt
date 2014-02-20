@@ -608,13 +608,15 @@ set(pcsx2SSources
 # change language of .S-files to c++
 set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
 
+# C++11 is used for debug tools, so we enable it
+set_source_files_properties(${pcsx2DebugToolsSources} PROPERTIES COMPILE_FLAGS "-std=c++0x")
+
 # common Sources
 set(Common
 	${pcsx2Sources}
 	${pcsx2Headers}
 	${pcsx2CDVDSources}
 	${pcsx2CDVDHeaders}
-	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
     ${pcsx2GuiResources}
@@ -674,12 +676,12 @@ add_custom_command(OUTPUT  "${res_bin}/Dualshock.h"  COMMAND perl ${PROJECT_SOUR
 foreach(res_file IN ITEMS
         AppIcon16 AppIcon32 AppIcon64 BackgroundLogo ButtonIcon_Camera
         ConfigIcon_Appearance ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
-        ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video)
+        ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${PROJECT_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
 endforeach(res_file IN ITEMS
         AppIcon16 AppIcon32 AppIcon64 BackgroundLogo ButtonIcon_Camera
         ConfigIcon_Appearance ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
-        ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video)
+        ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
 
 # Suppress all the system-specific predefined macros outside the reserved namespace.
 # Needed when stringifying macros.

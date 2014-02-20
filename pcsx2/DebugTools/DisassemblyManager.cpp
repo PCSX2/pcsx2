@@ -6,7 +6,7 @@
 
 #include "DisassemblyManager.h"
 #include "Memory.h"
-#include "debug.h"
+#include "Debug.h"
 #include "MIPSAnalyst.h"
 
 int DisassemblyManager::maxParamChars = 29;

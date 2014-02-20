@@ -142,7 +142,12 @@ void drawU32Text(wxDC& dc, u32 value, int x, int y)
 
 void CtrlRegisterList::render(wxDC& dc)
 {
+	#ifdef WIN32
 	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	#else
+	wxFont font = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	font.SetPixelSize(wxSize(charWidth,rowHeight-2));
+	#endif
 	dc.SetFont(font);
 	
 	// clear background
