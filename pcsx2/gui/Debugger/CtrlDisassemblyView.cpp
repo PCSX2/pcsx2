@@ -589,6 +589,14 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 		case 'D':
 			toggleBreakpoint(true);
 			break;
+		case 'g':
+		case 'G':
+			{
+				u64 addr;
+				if (executeExpressionWindow(this,cpu,addr) == false)
+					return;
+				gotoAddress(addr);
+			}
 		default:
 			evt.Skip();
 			break;

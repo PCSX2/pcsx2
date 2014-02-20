@@ -1,5 +1,6 @@
 #pragma once
 #include "MemoryTypes.h"
+#include "ExpressionParser.h"
 
 class DebugInterface
 {
@@ -29,7 +30,9 @@ public:
 	
 	virtual std::string disasm(u32 address) = 0;
 	virtual bool isValidAddress(u32 address) = 0;
-
+	
+	bool initExpression(const char* exp, PostfixExpression& dest);
+	bool parseExpression(PostfixExpression& exp, u64& dest);
 	bool isAlive();
 	bool isCpuPaused();
 	void pauseCpu();

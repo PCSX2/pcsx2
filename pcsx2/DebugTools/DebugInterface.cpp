@@ -9,6 +9,7 @@
 
 #include "../R3000A.h"
 #include "../IopMem.h"
+#include "SymbolMap.h"
 
 extern AppCoreThread CoreThread;
 
@@ -17,6 +18,130 @@ R3000DebugInterface r3000Debug;
 
 enum { EECAT_GPR, EECAT_CP0, EECAT_CP1, EECAT_CP2F, EECAT_CP2I, EECAT_COUNT };
 enum { IOPCAT_GPR, IOPCAT_COUNT };
+
+#ifdef WIN32
+#define strcasecmp stricmp
+#endif
+
+enum ReferenceIndexType {
+	REF_INDEX_PC = 32,
+	REF_INDEX_HI = 33,
+	REF_INDEX_LO = 34,
+	REF_INDEX_FPU = 0x1000,
+	REF_INDEX_FPU_INT = 0x2000,
+	REF_INDEX_VFPU = 0x4000,
+	REF_INDEX_VFPU_INT = 0x8000,
+	REF_INDEX_IS_FLOAT = REF_INDEX_FPU | REF_INDEX_VFPU,
+};
+
+
+class MipsExpressionFunctions: public IExpressionFunctions
+{
+public:
+	MipsExpressionFunctions(DebugInterface* cpu): cpu(cpu) { };
+
+	virtual bool parseReference(char* str, u64& referenceIndex)
+	{
+		for (int i = 0; i < 32; i++)
+		{
+			char reg[8];
+			sprintf(reg, "r%d", i);
+
+			if (strcasecmp(str, reg) == 0 || strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
+			{
+				referenceIndex = i;
+				return true;
+			}
+		}
+
+		if (strcasecmp(str, "pc") == 0)
+		{
+			referenceIndex = REF_INDEX_PC;
+			return true;
+		}
+
+		if (strcasecmp(str, "hi") == 0)
+		{
+			referenceIndex = REF_INDEX_HI;
+			return true;
+		}
+
+		if (strcasecmp(str, "lo") == 0)
+		{
+			referenceIndex = REF_INDEX_LO;
+			return true;
+		}
+
+		return false;
+	}
+
+	virtual bool parseSymbol(char* str, u64& symbolValue)
+	{
+		u32 value;
+		bool result = symbolMap.GetLabelValue(str,value);
+		symbolValue = value;
+		return result;
+	}
+
+	virtual u64 getReferenceValue(u64 referenceIndex)
+	{
+		if (referenceIndex < 32)
+			return cpu->getRegister(0, referenceIndex)._u64[0];
+		if (referenceIndex == REF_INDEX_PC)
+			return cpu->getPC();
+		if (referenceIndex == REF_INDEX_HI)
+			return cpu->getHI()._u64[0];
+		if (referenceIndex == REF_INDEX_LO)
+			return cpu->getLO()._u64[0];
+		return -1;
+	}
+
+	virtual ExpressionType getReferenceType(u64 referenceIndex) {
+		if (referenceIndex & REF_INDEX_IS_FLOAT) {
+			return EXPR_TYPE_FLOAT;
+		}
+		return EXPR_TYPE_UINT;
+	}
+	
+	virtual bool getMemoryValue(u32 address, int size, u64& dest, char* error)
+	{
+		switch (size)
+		{
+		case 1: case 2: case 4: case 8:
+			break;
+		default:
+			sprintf(error,"Invalid memory access size %d",size);
+			return false;
+		}
+
+		if (address % size)
+		{
+			sprintf(error,"Invalid memory access (unaligned)");
+			return false;
+		}
+
+		switch (size)
+		{
+		case 1:
+			dest = cpu->read8(address);
+			break;
+		case 2:
+			dest = cpu->read16(address);
+			break;
+		case 4:
+			dest = cpu->read32(address);
+			break;
+		case 8:
+			dest = cpu->read64(address);
+			break;
+		}
+
+		return true;
+	}
+
+private:
+	DebugInterface* cpu;
+};
 
 //
 // DebugInterface
@@ -44,6 +169,18 @@ void DebugInterface::resumeCpu()
 	SysCoreThread& core = GetCoreThread();
 	if (core.IsPaused())
 		core.Resume();
+}
+
+bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)
+{
+	MipsExpressionFunctions funcs(this);
+	return initPostfixExpression(exp,&funcs,dest);
+}
+
+bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
+{
+	MipsExpressionFunctions funcs(this);
+	return parsePostfixExpression(exp,&funcs,dest);
 }
 
 

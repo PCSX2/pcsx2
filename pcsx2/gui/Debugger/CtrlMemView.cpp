@@ -309,6 +309,26 @@ void CtrlMemView::mouseEvent(wxMouseEvent& evt)
 
 void CtrlMemView::keydownEvent(wxKeyEvent& evt)
 {
+	if (evt.ControlDown())
+	{
+		switch (evt.GetKeyCode())
+		{
+		case 'g':
+		case 'G':
+			{
+				u64 addr;
+				if (executeExpressionWindow(this,cpu,addr) == false)
+					return;
+				gotoAddress(addr);
+			}
+			break;
+		default:
+			evt.Skip();
+			break;
+		}
+		return;
+	}
+
 	switch (evt.GetKeyCode())
 	{
 	case WXK_LEFT:
