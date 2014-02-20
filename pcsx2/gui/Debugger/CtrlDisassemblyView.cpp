@@ -58,7 +58,7 @@ inline wxIcon _wxGetIconFromMemory(const unsigned char *data, int length) {
 }
 
 CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_SUNKEN), cpu(_cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER), cpu(_cpu)
 {
 	manager.setCpu(cpu);
 	windowStart = 0x20100000;
@@ -706,7 +706,7 @@ void CtrlDisassemblyView::updateStatusBarText()
 	{
 		if (line.info.isDataAccess)
 		{
-			if (!isValidAddress(line.info.dataAddress))
+			if (!cpu->isValidAddress(line.info.dataAddress))
 			{
 				sprintf(text,"Invalid address %08X",line.info.dataAddress);
 			} else {

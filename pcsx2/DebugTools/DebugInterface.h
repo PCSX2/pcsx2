@@ -28,6 +28,7 @@ public:
 	virtual void setPc(u32 newPc) = 0;
 	
 	virtual std::string disasm(u32 address) = 0;
+	virtual bool isValidAddress(u32 address) = 0;
 
 	bool isAlive();
 	bool isCpuPaused();
@@ -60,6 +61,7 @@ public:
 	virtual void setPc(u32 newPc);
 
 	virtual std::string disasm(u32 address);
+	virtual bool isValidAddress(u32 address);
 };
 
 
@@ -88,6 +90,7 @@ public:
 	virtual void setPc(u32 newPc);
 
 	virtual std::string disasm(u32 address);
+	virtual bool isValidAddress(u32 address);
 };
 
 extern R5900DebugInterface r5900Debug;

@@ -48,7 +48,7 @@ public:
 class DisassemblyFunction: public DisassemblyEntry
 {
 public:
-	DisassemblyFunction(u32 _address, u32 _size);
+	DisassemblyFunction(DebugInterface* _cpu, u32 _address, u32 _size);
 	virtual void recheck();
 	virtual int getNumLines();
 	virtual int getLineNum(u32 address, bool findStart);
@@ -62,6 +62,7 @@ private:
 	void clear();
 	void addOpcodeSequence(u32 start, u32 end);
 
+	DebugInterface* cpu;
 	u32 address;
 	u32 size;
 	u32 hash;
@@ -73,7 +74,7 @@ private:
 class DisassemblyOpcode: public DisassemblyEntry
 {
 public:
-	DisassemblyOpcode(u32 _address, int _num): address(_address), num(_num) { };
+	DisassemblyOpcode(DebugInterface* _cpu, u32 _address, int _num): cpu(_cpu), address(_address), num(_num) { };
 	virtual ~DisassemblyOpcode() { };
 	virtual void recheck() { };
 	virtual int getNumLines() { return num; };
@@ -83,6 +84,7 @@ public:
 	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols);
 	virtual void getBranchLines(u32 start, u32 size, std::vector<BranchLine>& dest);
 private:
+	DebugInterface* cpu;
 	u32 address;
 	int num;
 };
@@ -91,7 +93,7 @@ private:
 class DisassemblyMacro: public DisassemblyEntry
 {
 public:
-	DisassemblyMacro(u32 _address): address(_address) { };
+	DisassemblyMacro(DebugInterface* _cpu, u32 _address): cpu(_cpu), address(_address) { };
 	virtual ~DisassemblyMacro() { };
 	
 	void setMacroLi(u32 _immediate, u8 _rt);
@@ -105,7 +107,8 @@ public:
 	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols) ;
 private:
 	enum MacroType { MACRO_LI, MACRO_MEMORYIMM };
-
+	
+	DebugInterface* cpu;
 	MacroType type;
 	std::string name;
 	u32 immediate;
@@ -119,7 +122,7 @@ private:
 class DisassemblyData: public DisassemblyEntry
 {
 public:
-	DisassemblyData(u32 _address, u32 _size, DataType _type);
+	DisassemblyData(DebugInterface* _cpu, u32 _address, u32 _size, DataType _type);
 	virtual ~DisassemblyData() { };
 	
 	virtual void recheck();
@@ -137,7 +140,8 @@ private:
 		u32 size;
 		int lineNum;
 	};
-
+	
+	DebugInterface* cpu;
 	u32 address;
 	u32 size;
 	u32 hash;
@@ -149,7 +153,7 @@ private:
 class DisassemblyComment: public DisassemblyEntry
 {
 public:
-	DisassemblyComment(u32 _address, u32 _size, std::string name, std::string param);
+	DisassemblyComment(DebugInterface* _cpu, u32 _address, u32 _size, std::string name, std::string param);
 	virtual ~DisassemblyComment() { };
 	
 	virtual void recheck() { };
@@ -159,6 +163,7 @@ public:
 	virtual u32 getTotalSize() { return size; };
 	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols);
 private:
+	DebugInterface* cpu;
 	u32 address;
 	u32 size;
 	std::string name;
@@ -182,12 +187,11 @@ public:
 	u32 getNthPreviousAddress(u32 address, int n = 1);
 	u32 getNthNextAddress(u32 address, int n = 1);
 
-	static DebugInterface* getCpu() { return cpu; };
 	static int getMaxParamChars() { return maxParamChars; };
 private:
 	DisassemblyEntry* getEntry(u32 address);
-	static std::map<u32,DisassemblyEntry*> entries;
-	static DebugInterface* cpu;
+	std::map<u32,DisassemblyEntry*> entries;
+	DebugInterface* cpu;
 	static int maxParamChars;
 };
 

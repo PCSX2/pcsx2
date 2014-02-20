@@ -13,8 +13,37 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINDISASM, DisassemblyDialog::onDebuggerEvent )
 END_EVENT_TABLE()
 
+CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
+	: wxPanel(parent), cpu(_cpu)
+{
+	wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(mainSizer);
+	
+	bottomTabs = new wxNotebook(this,wxID_ANY);
+	disassembly = new CtrlDisassemblyView(this,cpu);
+	registerList = new CtrlRegisterList(this,cpu);
+	memory = new CtrlMemView(bottomTabs,cpu);
+
+	// create register list and disassembly section
+	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
+
+	wxBoxSizer* registerSizer = new wxBoxSizer(wxVERTICAL);
+	registerSizer->Add(registerList,1);
+	
+	middleSizer->Add(registerSizer,0,wxEXPAND|wxRIGHT,2);
+	middleSizer->Add(disassembly,2,wxEXPAND);
+	mainSizer->Add(middleSizer,3,wxEXPAND|wxBOTTOM,3);
+
+	// create bottom section
+	bottomTabs->AddPage(memory,L"Memory");
+	mainSizer->Add(bottomTabs,1,wxEXPAND);
+
+	mainSizer->Layout();
+}
+
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
-	wxFrame( parent, wxID_ANY, L"Disassembler", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU )
+	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
+	currentCpu(NULL)
 {
 
 	topSizer = new wxBoxSizer( wxVERTICAL );
@@ -25,9 +54,9 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	// create top row
 	wxBoxSizer* topRowSizer = new wxBoxSizer(wxHORIZONTAL);
 
-	breakResumeButton = new wxButton(panel, wxID_ANY, L"Resume");
-	Connect(breakResumeButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onPauseResumeClicked));
-	topRowSizer->Add(breakResumeButton,0,wxRIGHT,8);
+	breakRunButton = new wxButton(panel, wxID_ANY, L"Run");
+	Connect(breakRunButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onBreakRunClicked));
+	topRowSizer->Add(breakRunButton,0,wxRIGHT,8);
 
 	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into" );
 	stepIntoButton->Enable(false);
@@ -47,26 +76,16 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	topRowSizer->Add(breakpointButton);
 
 	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
-	
+
 	// create middle part of the window
-	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
-
-	wxBoxSizer* registerSizer = new wxBoxSizer(wxVERTICAL);
-	registerList = new CtrlRegisterList(panel,&r5900Debug);
-	registerSizer->Add(registerList,1);
-	middleSizer->Add(registerSizer,0,wxEXPAND|wxRIGHT,4);
-
-	disassembly = new CtrlDisassemblyView(panel,&r5900Debug);
-	middleSizer->Add(disassembly,2,wxEXPAND);
-
-	topSizer->Add(middleSizer,3,wxEXPAND|wxALL,3);
-
-	// create bottom part
-	bottomTabs = new wxNotebook(panel,wxID_ANY);
-	memory = new CtrlMemView(bottomTabs,&r5900Debug);
-	bottomTabs->AddPage(memory,L"Memory");
-
-	topSizer->Add(bottomTabs,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
+	wxNotebook* middleBook = new wxNotebook(panel,wxID_ANY);  
+	middleBook->SetBackgroundColour(wxColour(0xFFF0F0F0));
+	eeTab = new CpuTabPage(middleBook,&r5900Debug);
+	iopTab = new CpuTabPage(middleBook,&r3000Debug);
+	middleBook->AddPage(eeTab,L"R5900");
+	middleBook->AddPage(iopTab,L"R3000");
+	Connect(middleBook->GetId(),wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,wxCommandEventHandler( DisassemblyDialog::onPageChanging));
+	topSizer->Add(middleBook,3,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
 
 	CreateStatusBar(1);
 	
@@ -76,7 +95,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	setDebugMode(true);
 }
 
-void DisassemblyDialog::onPauseResumeClicked(wxCommandEvent& evt)
+void DisassemblyDialog::onBreakRunClicked(wxCommandEvent& evt)
 {	
 	if (r5900Debug.isCpuPaused())
 	{
@@ -92,12 +111,36 @@ void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
 	stepOver();
 }
 
+void DisassemblyDialog::onPageChanging(wxCommandEvent& evt)
+{
+	wxNotebook* notebook = (wxNotebook*)wxWindow::FindWindowById(evt.GetId());
+	wxWindow* currentPage = notebook->GetCurrentPage();
+
+	if (currentPage == eeTab)
+		currentCpu = eeTab;
+	else if (currentPage == iopTab)
+		currentCpu = iopTab;
+	else
+		currentCpu = NULL;
+
+	if (currentCpu != NULL)
+	{
+		currentCpu->getDisassembly()->SetFocus();
+		currentCpu->Refresh();
+	}
+}
 
 void DisassemblyDialog::stepOver()
 {
-	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused())
+	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
 		return;
 	
+	// todo: breakpoints for iop
+	if (currentCpu != eeTab)
+		return;
+
+	CtrlDisassemblyView* disassembly = currentCpu->getDisassembly();
+
 	// If the current PC is on a breakpoint, the user doesn't want to do nothing.
 	CBreakPoints::SetSkipFirst(r5900Debug.getPC());
 	u32 currentPc = r5900Debug.getPC();
@@ -141,49 +184,71 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		GetStatusBar()->SetLabel(evt.GetString());
 	} else if (type == debEVT_UPDATELAYOUT)
 	{
+		if (currentCpu != NULL)
+			currentCpu->GetSizer()->Layout();
 		topSizer->Layout();
 		update();
 	} else if (type == debEVT_GOTOINMEMORYVIEW)
 	{
-		memory->gotoAddress(evt.GetInt());
+		if (currentCpu != NULL)
+			currentCpu->getMemoryView()->gotoAddress(evt.GetInt());
 	} else if (type == debEVT_RUNTOPOS)
 	{
+		// todo: breakpoints for iop
+		if (currentCpu != eeTab)
+			return;
 		CBreakPoints::AddBreakPoint(evt.GetInt(),true);
-		r5900Debug.resumeCpu();
+		currentCpu->getCpu()->resumeCpu();
 	} else if (type == debEVT_GOTOINDISASM)
 	{
-		disassembly->gotoAddress(evt.GetInt());
-		disassembly->SetFocus();
-		update();
+		if (currentCpu != NULL)
+		{
+			currentCpu->getDisassembly()->gotoAddress(r5900Debug.getPC());
+			currentCpu->getDisassembly()->SetFocus();
+			update();
+		}
 	}
 }
 
 void DisassemblyDialog::update()
 {
-	disassembly->Refresh();
-	registerList->Refresh();
-	bottomTabs->Refresh();
+	if (currentCpu != NULL)
+	{
+		stepOverButton->Enable(true);
+		currentCpu->Refresh();
+	} else {
+		stepOverButton->Enable(false);
+	}
 }
+
+void DisassemblyDialog::reset()
+{
+	eeTab->getDisassembly()->clearFunctions();
+	iopTab->getDisassembly()->clearFunctions();
+};
 
 void DisassemblyDialog::setDebugMode(bool debugMode)
 {
 	bool running = r5900Debug.isAlive();
-	breakResumeButton->Enable(running);
-	disassembly->Enable(running);
+	
+	eeTab->Enable(running);
+	iopTab->Enable(running);
 
 	if (running)
 	{
 		if (debugMode)
 		{
 			CBreakPoints::ClearTemporaryBreakPoints();
-			breakResumeButton->SetLabel(L"Resume");
+			breakRunButton->SetLabel(L"Run");
 
 			stepOverButton->Enable(true);
 
-			disassembly->gotoAddress(r5900Debug.getPC());
-			disassembly->SetFocus();
+			eeTab->getDisassembly()->gotoPc();
+			iopTab->getDisassembly()->gotoPc();
+			if (currentCpu != NULL)
+				currentCpu->getDisassembly()->SetFocus();
 		} else {
-			breakResumeButton->SetLabel(L"Break");
+			breakRunButton->SetLabel(L"Break");
 
 			stepIntoButton->Enable(false);
 			stepOverButton->Enable(false);

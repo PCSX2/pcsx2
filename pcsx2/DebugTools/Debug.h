@@ -30,20 +30,6 @@ extern const char * const CP2VFnames[];
 extern const char * const disRNameCP2f[];
 extern const char * const disRNameCP2i[];
 
-inline bool isValidAddress(u32 addr)
-{
-	if (addr < 0x100000)
-		return false;
-	if (addr >= 0x10000000 && addr < 0x10010000)
-		return true;
-	if (addr >= 0x12000000 && addr < 0x12001100)
-		return true;
-	if (addr >= 0x70000000 && addr < 0x70004000)
-		return true;
-
-	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
-}
-
 extern const char * const disRNameCP2f[];
 extern const char * const disRNameCP2i[];
 

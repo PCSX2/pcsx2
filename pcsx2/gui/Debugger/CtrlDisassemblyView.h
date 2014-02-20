@@ -27,6 +27,7 @@ public:
 	}
 
 	void gotoAddress(u32 addr);
+	void gotoPc() { gotoAddress(cpu->getPC()); };
 	void scrollStepping(u32 newPc);
 	DECLARE_EVENT_TABLE()
 private:

@@ -110,7 +110,7 @@ void CtrlMemView::render(wxDC& dc)
 		dc.DrawText(temp,addressStart,rowY);
 
 		u32 memory[4];
-		bool valid = cpu != NULL && cpu->isAlive() && isValidAddress(address);
+		bool valid = cpu != NULL && cpu->isAlive() && cpu->isValidAddress(address);
 		if (valid)
 		{
 			memory[0] = cpu->read32(address);
@@ -333,7 +333,7 @@ void CtrlMemView::charEvent(wxKeyEvent& evt)
 	if (evt.GetKeyCode() < 32)
 		return;
 
-	if (!isValidAddress(curAddress))
+	if (!cpu->isValidAddress(curAddress))
 	{
 		scrollCursor(1);
 		return;

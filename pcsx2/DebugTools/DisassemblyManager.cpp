@@ -9,8 +9,6 @@
 #include "debug.h"
 #include "MIPSAnalyst.h"
 
-std::map<u32, DisassemblyEntry*> DisassemblyManager::entries;
-DebugInterface* DisassemblyManager::cpu;
 int DisassemblyManager::maxParamChars = 29;
 
 bool isInInterval(u32 start, u32 size, u32 value)
@@ -153,7 +151,7 @@ void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 			if (address % 4)
 			{
 				u32 next = std::min<u32>((address+3) & ~3,symbolMap.GetNextSymbolAddress(address,ST_ALL));
-				DisassemblyData* data = new DisassemblyData(address,next-address,DATATYPE_BYTE);
+				DisassemblyData* data = new DisassemblyData(cpu,address,next-address,DATATYPE_BYTE);
 				entries[address] = data;
 				address = next;
 				continue;
@@ -167,14 +165,14 @@ void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 
 				if (alignedNext != address)
 				{
-					DisassemblyOpcode* opcode = new DisassemblyOpcode(address,(alignedNext-address)/4);
+					DisassemblyOpcode* opcode = new DisassemblyOpcode(cpu,address,(alignedNext-address)/4);
 					entries[address] = opcode;
 				}
 
-				DisassemblyData* data = new DisassemblyData(address,next-alignedNext,DATATYPE_BYTE);
+				DisassemblyData* data = new DisassemblyData(cpu,address,next-alignedNext,DATATYPE_BYTE);
 				entries[alignedNext] = data;
 			} else {
-				DisassemblyOpcode* opcode = new DisassemblyOpcode(address,(next-address)/4);
+				DisassemblyOpcode* opcode = new DisassemblyOpcode(cpu,address,(next-address)/4);
 				entries[address] = opcode;
 			}
 
@@ -186,14 +184,14 @@ void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 		{
 		case ST_FUNCTION:
 			{
-				DisassemblyFunction* function = new DisassemblyFunction(info.address,info.size);
+				DisassemblyFunction* function = new DisassemblyFunction(cpu,info.address,info.size);
 				entries[info.address] = function;
 				address = info.address+info.size;
 			}
 			break;
 		case ST_DATA:
 			{
-				DisassemblyData* data = new DisassemblyData(info.address,info.size,symbolMap.GetDataType(info.address));
+				DisassemblyData* data = new DisassemblyData(cpu,info.address,info.size,symbolMap.GetDataType(info.address));
 				entries[info.address] = data;
 				address = info.address+info.size;
 			}
@@ -270,7 +268,7 @@ u32 DisassemblyManager::getStartAddress(u32 address)
 
 u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 {
-	while (isValidAddress(address))
+	while (cpu->isValidAddress(address))
 	{
 		auto it = findDisassemblyEntry(entries,address,false);
 	
@@ -297,7 +295,7 @@ u32 DisassemblyManager::getNthPreviousAddress(u32 address, int n)
 
 u32 DisassemblyManager::getNthNextAddress(u32 address, int n)
 {
-	while (isValidAddress(address))
+	while (cpu->isValidAddress(address))
 	{
 		auto it = findDisassemblyEntry(entries,address,false);
 	
@@ -331,8 +329,9 @@ void DisassemblyManager::clear()
 	entries.clear();
 }
 
-DisassemblyFunction::DisassemblyFunction(u32 _address, u32 _size): address(_address), size(_size)
+DisassemblyFunction::DisassemblyFunction(DebugInterface* _cpu, u32 _address, u32 _size): address(_address), size(_size)
 {
+	cpu = _cpu;
 	hash = computeHash(address,size);
 	load();
 }
@@ -433,7 +432,6 @@ void DisassemblyFunction::generateBranchLines()
 
 	u32 end = address+size;
 
-	DebugInterface* cpu = DisassemblyManager::getCpu();
 	for (u32 funcPos = address; funcPos < end; funcPos += 4)
 	{
 		MIPSAnalyst::MipsOpcodeInfo opInfo = MIPSAnalyst::GetOpcodeInfo(cpu,funcPos);
@@ -490,7 +488,7 @@ void DisassemblyFunction::generateBranchLines()
 
 void DisassemblyFunction::addOpcodeSequence(u32 start, u32 end)
 {
-	DisassemblyOpcode* opcode = new DisassemblyOpcode(start,(end-start)/4);
+	DisassemblyOpcode* opcode = new DisassemblyOpcode(cpu,start,(end-start)/4);
 	entries[start] = opcode;
 	for (u32 pos = start; pos < end; pos += 4)
 	{
@@ -517,7 +515,6 @@ void DisassemblyFunction::load()
 		}
 	}
 	
-	DebugInterface* cpu = DisassemblyManager::getCpu();
 	u32 funcPos = address;
 	u32 funcEnd = address+size;
 
@@ -530,7 +527,7 @@ void DisassemblyFunction::load()
 			if (opcodeSequenceStart != funcPos)
 				addOpcodeSequence(opcodeSequenceStart,funcPos);
 
-			DisassemblyData* data = new DisassemblyData(funcPos,symbolMap.GetDataSize(funcPos),symbolMap.GetDataType(funcPos));
+			DisassemblyData* data = new DisassemblyData(cpu,funcPos,symbolMap.GetDataSize(funcPos),symbolMap.GetDataType(funcPos));
 			entries[funcPos] = data;
 			lineAddresses.push_back(funcPos);
 			funcPos += data->getTotalSize();
@@ -545,7 +542,7 @@ void DisassemblyFunction::load()
 		{
 			u32 nextPos = (funcPos+3) & ~3;
 
-			DisassemblyComment* comment = new DisassemblyComment(funcPos,nextPos-funcPos,".align","4");
+			DisassemblyComment* comment = new DisassemblyComment(cpu,funcPos,nextPos-funcPos,".align","4");
 			entries[funcPos] = comment;
 			lineAddresses.push_back(funcPos);
 			
@@ -586,51 +583,51 @@ void DisassemblyFunction::load()
 				switch (MIPS_GET_OP(next))
 				{
 				case 0x09:	// addiu
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroLi(immediate,rt);
 					funcPos += 4;
 					break;
 				case 0x0D:	// ori
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroLi(immediateOr,rt);
 					funcPos += 4;
 					break;
 				case 0x20:	// lb
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("lb",immediate,rt,1);
 					funcPos += 4;
 					break;
 				case 0x21:	// lh
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("lh",immediate,rt,2);
 					funcPos += 4;
 					break;
 				case 0x23:	// lw
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("lw",immediate,rt,4);
 					funcPos += 4;
 					break;
 				case 0x24:	// lbu
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("lbu",immediate,rt,1);
 					funcPos += 4;
 					break;
 				case 0x25:	// lhu
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("lhu",immediate,rt,2);
 					funcPos += 4;
 					break;
 				case 0x28:	// sb
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("sb",immediate,rt,1);
 					funcPos += 4;
 					break;
 				case 0x29:	// sh
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("sh",immediate,rt,2);
 					funcPos += 4;
 				case 0x2B:	// sw
-					macro = new DisassemblyMacro(opAddress);
+					macro = new DisassemblyMacro(cpu,opAddress);
 					macro->setMacroMemory("sw",immediate,rt,4);
 					funcPos += 4;
 					break;
@@ -677,13 +674,13 @@ bool DisassemblyOpcode::disassemble(u32 address, DisassemblyLineInfo& dest, bool
 {
 	char opcode[64],arguments[256];
 	
-	std::string dis = DisassemblyManager().getCpu()->disasm(address);
+	std::string dis = cpu->disasm(address);
 	parseDisasm(dis.c_str(),opcode,arguments,insertSymbols);
 	dest.type = DISTYPE_OPCODE;
 	dest.name = opcode;
 	dest.params = arguments;
 	dest.totalSize = 4;
-	dest.info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),address);
+	dest.info = MIPSAnalyst::GetOpcodeInfo(cpu,address);
 	return true;
 }
 
@@ -701,7 +698,7 @@ void DisassemblyOpcode::getBranchLines(u32 start, u32 size, std::vector<BranchLi
 	int lane = 0;
 	for (u32 pos = start; pos < start+size; pos += 4)
 	{
-		MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),pos);
+		MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(cpu,pos);
 		if (info.isBranch && !info.isBranchToRegister && !info.isLinkedBranch)
 		{
 			BranchLine line;
@@ -747,7 +744,7 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 {
 	char buffer[64];
 	dest.type = DISTYPE_MACRO;
-	dest.info = MIPSAnalyst::GetOpcodeInfo(DisassemblyManager::getCpu(),address);
+	dest.info = MIPSAnalyst::GetOpcodeInfo(cpu,address);
 
 	std::string addressSymbol;
 	switch (type)
@@ -758,9 +755,9 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 		addressSymbol = symbolMap.GetLabelString(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
-			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegisterName(0,rt),addressSymbol.c_str());
+			sprintf(buffer,"%s,%s",cpu->getRegisterName(0,rt),addressSymbol.c_str());
 		} else {
-			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegisterName(0,rt),immediate);
+			sprintf(buffer,"%s,0x%08X",cpu->getRegisterName(0,rt),immediate);
 		}
 
 		dest.params = buffer;
@@ -774,9 +771,9 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 		addressSymbol = symbolMap.GetLabelString(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
-			sprintf(buffer,"%s,%s",DisassemblyManager::getCpu()->getRegisterName(0,rt),addressSymbol.c_str());
+			sprintf(buffer,"%s,%s",cpu->getRegisterName(0,rt),addressSymbol.c_str());
 		} else {
-			sprintf(buffer,"%s,0x%08X",DisassemblyManager::getCpu()->getRegisterName(0,rt),immediate);
+			sprintf(buffer,"%s,0x%08X",cpu->getRegisterName(0,rt),immediate);
 		}
 
 		dest.params = buffer;
@@ -797,8 +794,9 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 }
 
 
-DisassemblyData::DisassemblyData(u32 _address, u32 _size, DataType _type): address(_address), size(_size), type(_type)
+DisassemblyData::DisassemblyData(DebugInterface* _cpu, u32 _address, u32 _size, DataType _type): address(_address), size(_size), type(_type)
 {
+	cpu = _cpu;
 	hash = computeHash(address,size);
 	createLines();
 }
@@ -1001,8 +999,8 @@ void DisassemblyData::createLines()
 }
 
 
-DisassemblyComment::DisassemblyComment(u32 _address, u32 _size, std::string _name, std::string _param)
-	: address(_address), size(_size), name(_name), param(_param)
+DisassemblyComment::DisassemblyComment(DebugInterface* _cpu, u32 _address, u32 _size, std::string _name, std::string _param)
+	: cpu(_cpu), address(_address), size(_size), name(_name), param(_param)
 {
 
 }

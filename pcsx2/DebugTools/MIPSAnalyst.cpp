@@ -335,7 +335,7 @@ namespace MIPSAnalyst
 		MipsOpcodeInfo info;
 		memset(&info, 0, sizeof(info));
 
-		if (isValidAddress(address) == false) {
+		if (cpu->isValidAddress(address) == false) {
 			return info;
 		}
 
