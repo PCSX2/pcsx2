@@ -263,6 +263,7 @@ set(pcsx2CDVDHeaders
 set(pcsx2DebugToolsSources
 	DebugTools/DebugInterface.cpp
 	DebugTools/DisassemblyManager.cpp
+	DebugTools/ExpressionParser.cpp
 	DebugTools/MIPSAnalyst.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
@@ -276,6 +277,7 @@ set(pcsx2DebugToolsSources
 set(pcsx2DebugToolsHeaders
 	DebugTools/DebugInterface.h
 	DebugTools/DisassemblyManager.h
+	DebugTools/ExpressionParser.h
 	DebugTools/MIPSAnalyst.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
