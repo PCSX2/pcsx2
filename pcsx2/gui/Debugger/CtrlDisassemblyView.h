@@ -14,7 +14,7 @@ public:
 	void keydownEvent(wxKeyEvent& evt);
 	void scrollbarEvent(wxScrollWinEvent& evt);
 	void sizeEvent(wxSizeEvent& evt);
-	
+	void focusEvent(wxFocusEvent& evt) { Refresh(); };
 #ifdef WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 #endif
@@ -47,6 +47,7 @@ private:
 	std::string disassembleRange(u32 start, u32 size);
 	void copyInstructions(u32 startAddr, u32 endAddr, bool withDisasm);
 	void disassembleToFile();
+	void editBreakpoint();
 
 	void postEvent(wxEventType type, wxString text);
 	void postEvent(wxEventType type, int value);

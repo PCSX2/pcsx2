@@ -431,6 +431,7 @@
     <ClCompile Include="..\..\Gif_Unit.cpp" />
     <ClCompile Include="..\..\gui\AppGameDatabase.cpp" />
     <ClCompile Include="..\..\gui\AppUserMode.cpp" />
+    <ClCompile Include="..\..\gui\Debugger\BreakpointWindow.cpp" />
     <ClCompile Include="..\..\gui\Debugger\CtrlDisassemblyView.cpp" />
     <ClCompile Include="..\..\gui\Debugger\CtrlMemView.cpp" />
     <ClCompile Include="..\..\gui\Debugger\CtrlRegisterList.cpp" />
@@ -712,6 +713,7 @@
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />
+    <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlMemView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlRegisterList.h" />

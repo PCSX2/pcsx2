@@ -2,6 +2,7 @@
 #include "CtrlMemView.h"
 #include "DebugTools/Debug.h"
 
+#include "BreakpointWindow.h"
 #include "DebugEvents.h"
 #include <wchar.h>
 #include <wx/clipbrd.h>
@@ -15,6 +16,8 @@ BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_RIGHT_UP(CtrlMemView::mouseEvent)
 	EVT_KEY_DOWN(CtrlMemView::keydownEvent)
 	EVT_CHAR(CtrlMemView::charEvent)
+	EVT_SET_FOCUS(CtrlMemView::focusEvent)
+	EVT_KILL_FOCUS(CtrlMemView::focusEvent)
 END_EVENT_TABLE()
 
 enum MemoryViewMenuIdentifiers
@@ -320,6 +323,17 @@ void CtrlMemView::keydownEvent(wxKeyEvent& evt)
 				if (executeExpressionWindow(this,cpu,addr) == false)
 					return;
 				gotoAddress(addr);
+			}
+			break;
+		case 'b':
+		case 'B':
+			{
+				BreakpointWindow bpw(this,cpu);
+				if (bpw.ShowModal() == wxID_OK)
+				{
+					bpw.addBreakpoint();
+					postEvent(debEVT_UPDATE,0);
+				}
 			}
 			break;
 		default:

@@ -838,6 +838,9 @@
     <ClCompile Include="..\..\DebugTools\ExpressionParser.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\BreakpointWindow.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1239,6 +1242,9 @@
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\ExpressionParser.h">
       <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h">
+      <Filter>AppHost\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

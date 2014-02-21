@@ -398,6 +398,9 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 			if (row != currentRows[category] && row < cpu->getRegisterCount(category))
 				setCurrentRow(row);
 		}
+
+		SetFocus();
+		SetFocusFromKbd();
 	}
 }
 

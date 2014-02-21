@@ -4,6 +4,7 @@
 #include "DebugTools/Debug.h"
 
 #include "DebugEvents.h"
+#include "BreakpointWindow.h"
 
 #include <wx/mstream.h>
 #include <wx/clipbrd.h>
@@ -27,6 +28,8 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_SCROLLWIN_PAGEUP(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEDOWN(CtrlDisassemblyView::scrollbarEvent)
 	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
+	EVT_SET_FOCUS(CtrlDisassemblyView::focusEvent)
+	EVT_KILL_FOCUS(CtrlDisassemblyView::focusEvent)
 END_EVENT_TABLE()
 
 enum DisassemblyMenuIdentifiers
@@ -603,6 +606,21 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 		case 'D':
 			toggleBreakpoint(true);
 			break;
+		case 'e':
+		case 'E':
+			editBreakpoint();
+			break;
+		case 'b':
+		case 'B':
+			{
+				BreakpointWindow bpw(this,cpu);
+				if (bpw.ShowModal() == wxID_OK)
+				{
+					bpw.addBreakpoint();
+					postEvent(debEVT_UPDATE,0);
+				}
+			}
+			break;
 		case 'g':
 		case 'G':
 			{
@@ -1001,4 +1019,35 @@ void CtrlDisassemblyView::disassembleToFile()
 	std::string disassembly = disassembleRange(selectRangeStart,selectRangeEnd-selectRangeStart);
 	wxFile output(dlg.GetPath(),wxFile::write);
 	output.Write(wxString(disassembly.c_str(),wxConvUTF8));
+}
+
+void CtrlDisassemblyView::editBreakpoint()
+{
+	BreakpointWindow win(this,cpu);
+
+	bool exists = false;
+	if (CBreakPoints::IsAddressBreakPoint(curAddress))
+	{
+		auto breakpoints = CBreakPoints::GetBreakpoints();
+		for (size_t i = 0; i < breakpoints.size(); i++)
+		{
+			if (breakpoints[i].addr == curAddress)
+			{
+				win.loadFromBreakpoint(breakpoints[i]);
+				exists = true;
+				break;
+			}
+		}
+	}
+
+	if (!exists)
+		win.initBreakpoint(curAddress);
+
+	if (win.ShowModal() == wxID_OK)
+	{
+		if (exists)
+			CBreakPoints::RemoveBreakPoint(curAddress);
+		win.addBreakpoint();	
+		postEvent(debEVT_UPDATE,0);
+	}
 }

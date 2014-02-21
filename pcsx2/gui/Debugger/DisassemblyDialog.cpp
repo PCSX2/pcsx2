@@ -4,6 +4,7 @@
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 #include "DebugTools/Breakpoints.h"
+#include "BreakpointWindow.h"
 
 BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onDebuggerEvent )
@@ -12,6 +13,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_RUNTOPOS, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINDISASM, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPOVER, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
 END_EVENT_TABLE()
 
 CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
@@ -73,7 +75,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	topRowSizer->Add(stepOutButton,0,wxRIGHT,8);
 	
 	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
-	breakpointButton->Enable(false);
+	Connect( breakpointButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onBreakpointClick ) );
 	topRowSizer->Add(breakpointButton);
 
 	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
@@ -137,6 +139,7 @@ void DisassemblyDialog::stepOver()
 	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
 		return;
 	
+
 	// todo: breakpoints for iop
 	if (currentCpu != eeTab)
 		return;
@@ -178,6 +181,19 @@ void DisassemblyDialog::stepOver()
 	r5900Debug.resumeCpu();
 }
 
+void DisassemblyDialog::onBreakpointClick(wxCommandEvent& evt)
+{
+	if (currentCpu == NULL)
+		return;
+
+	BreakpointWindow bpw(this,currentCpu->getCpu());
+	if (bpw.ShowModal() == wxID_OK)
+	{
+		bpw.addBreakpoint();
+		update();
+	}
+}
+
 void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 {
 	wxEventType type = evt.GetEventType();
@@ -213,6 +229,9 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	{
 		if (currentCpu != NULL)
 			stepOver();
+	} else if (type == debEVT_UPDATE)
+	{
+		update();
 	}
 }
 
@@ -221,9 +240,11 @@ void DisassemblyDialog::update()
 	if (currentCpu != NULL)
 	{
 		stepOverButton->Enable(true);
+		breakpointButton->Enable(true);
 		currentCpu->Refresh();
 	} else {
 		stepOverButton->Enable(false);
+		breakpointButton->Enable(false);
 	}
 }
 

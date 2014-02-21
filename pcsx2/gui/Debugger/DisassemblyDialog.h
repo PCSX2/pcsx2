@@ -44,6 +44,7 @@ protected:
 	void onStepOverClicked(wxCommandEvent& evt);
 	void onDebuggerEvent(wxCommandEvent& evt);
 	void onPageChanging(wxCommandEvent& evt);
+	void onBreakpointClick(wxCommandEvent& evt);
 	void stepOver();
 private:
 	CpuTabPage* eeTab;

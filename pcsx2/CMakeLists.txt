@@ -319,6 +319,7 @@ set(pcsx2GuiSources
 	gui/Dialogs/PickUserModeDialog.cpp
 	gui/Dialogs/StuckThreadDialog.cpp
 	gui/Dialogs/SysConfigDialog.cpp
+	gui/Debugger/BreakpointWindow.cpp
 	gui/Debugger/CtrlDisassemblyView.cpp
 	gui/Debugger/CtrlRegisterList.cpp
 	gui/Debugger/CtrlMemView.cpp
@@ -373,6 +374,7 @@ set(pcsx2GuiHeaders
 	gui/Dialogs/ConfigurationDialog.h
 	gui/Dialogs/LogOptionsDialog.h
 	gui/Dialogs/ModalPopups.h
+	gui/Debugger/BreakpointWindow.h
 	gui/Debugger/CtrlDisassemblyView.h
 	gui/Debugger/CtrlRegisterList.h
 	gui/Debugger/CtrlMemView.h

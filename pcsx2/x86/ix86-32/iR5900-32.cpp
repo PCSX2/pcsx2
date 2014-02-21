@@ -1264,6 +1264,10 @@ void dynarecCheckBreakpoint(u32 pc)
 		CBreakPoints::SetSkipFirst(0xFFFFFFFF);
 		return;
 	}
+	
+	auto cond = CBreakPoints::GetBreakPointCondition(pc);
+	if (cond && !cond->Evaluate())
+		return;
 
 	GetCoreThread().PauseSelf();
 	recExitExecution();

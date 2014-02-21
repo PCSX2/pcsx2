@@ -25,7 +25,7 @@
 struct BreakPointCond
 {
 	DebugInterface *debug;
-//	PostfixExpression expression;
+	PostfixExpression expression;
 	char expressionString[128];
 
 	BreakPointCond() : debug(NULL)
@@ -35,10 +35,9 @@ struct BreakPointCond
 
 	u32 Evaluate()
 	{
-		return 0;
-/*		u32 result;
-		if (debug->parseExpression(expression,result) == false) return 0;
-		return result;*/
+		u64 result;
+		if (debug->parseExpression(expression,result) == false || result == 0) return 0;
+		return 1;
 	}
 };
 
