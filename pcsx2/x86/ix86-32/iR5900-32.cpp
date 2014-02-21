@@ -1257,14 +1257,15 @@ int cop2flags(u32 code)
 #endif
 
 
-void dynarecCheckBreakpoint(u32 pc)
+void dynarecCheckBreakpoint()
 {
+	u32 pc = cpuRegs.pc;
  	if (CBreakPoints::CheckSkipFirst(pc))
 	{
 		CBreakPoints::SetSkipFirst(0xFFFFFFFF);
 		return;
 	}
-	
+
 	auto cond = CBreakPoints::GetBreakPointCondition(pc);
 	if (cond && !cond->Evaluate())
 		return;
@@ -1282,8 +1283,6 @@ void recompileNextInstruction(int delayslot)
 	if (CBreakPoints::IsAddressBreakPoint(pc))
 	{
 		iFlushCall(FLUSH_EVERYTHING);
-
-		PUSH32I(pc);
 		xCALL(&dynarecCheckBreakpoint);
 	}
 

@@ -428,10 +428,9 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			for (int l = 0; l < ExpressionOpcodes[opcode].args; l++)
 			{
 				arg[l] = valueStack[valueStack.size()-1];
+				fArg[l] = arg[l];
 				valueStack.pop_back();
 			}
-			// In case of float representation.
-			memcpy(fArg, arg, sizeof(fArg));
 
 			switch (opcode)
 			{
