@@ -46,9 +46,9 @@ function(write_svnrev_h)
         string(REGEX REPLACE "[%:\\-]" "" tmpvar_WC_INFO "${tmpvar_WC_INFO}")
         string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" tmpvar_WC_INFO "${tmpvar_WC_INFO}")
 
-        file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${tmpvar_WC_INFO}ll \n#define SVN_MODS 0")
+        file(WRITE ${CMAKE_SOURCE_DIR}/common/include/svnrev.h "#define SVN_REV ${tmpvar_WC_INFO}ll \n#define SVN_MODS 0")
     else()
-        file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV_UNKNOWN\n#define SVN_REV 0ll \n#define SVN_MODS 0")
+        file(WRITE ${CMAKE_SOURCE_DIR}/common/include/svnrev.h "#define SVN_REV_UNKNOWN\n#define SVN_REV 0ll \n#define SVN_MODS 0")
     endif()
 endfunction()
 
