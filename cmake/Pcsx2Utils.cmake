@@ -39,16 +39,16 @@ endfunction(detectOperatingSystem)
 
 function(write_svnrev_h)
     if (GIT_FOUND)
-        execute_process(COMMAND git show -s --format=%ci HEAD
+        execute_process(COMMAND git -C ${CMAKE_SOURCE_DIR} show  -s --format=%ci HEAD
             OUTPUT_VARIABLE tmpvar_WC_INFO
             OUTPUT_STRIP_TRAILING_WHITESPACE)
         # %2014-03-25 16:36:29 +0100
         string(REGEX REPLACE "[%:\\-]" "" tmpvar_WC_INFO "${tmpvar_WC_INFO}")
         string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" tmpvar_WC_INFO "${tmpvar_WC_INFO}")
 
-        file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${tmpvar_WC_INFO}ll \n#define SVN_MODS 0")
+        file(WRITE ${CMAKE_SOURCE_DIR}/common/include/svnrev.h "#define SVN_REV ${tmpvar_WC_INFO}ll \n#define SVN_MODS 0")
     else()
-        file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV_UNKNOWN\n#define SVN_REV 0ll \n#define SVN_MODS 0")
+        file(WRITE ${CMAKE_SOURCE_DIR}/common/include/svnrev.h "#define SVN_REV_UNKNOWN\n#define SVN_REV 0ll \n#define SVN_MODS 0")
     endif()
 endfunction()
 
