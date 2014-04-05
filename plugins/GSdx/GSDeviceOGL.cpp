@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
+#include "GSOsdFreeType.h"
 
 #include "res/glsl_source.h"
 
@@ -47,6 +48,7 @@ GSDeviceOGL::GSDeviceOGL()
 	  , m_fbo(0)
 	  , m_fbo_read(0)
 	  , m_vb_sr(NULL)
+	  , m_font(NULL)
 	  , m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
@@ -316,6 +318,14 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// Pbo Pool allocation
 	// ****************************************************************
 	PboPool::Init();
+
+	// ****************************************************************
+	// Texture Font (OSD)
+	// ****************************************************************
+	GSVector2i tex_font = m_osd.get_texture_font_size();
+	m_font = new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read);
+	ClearRenderTarget(m_font, 0);
+	m_osd.upload_texture_atlas(m_font);
 
 	// ****************************************************************
 	// Finish window setup and backbuffer

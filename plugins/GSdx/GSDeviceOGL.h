@@ -28,6 +28,7 @@
 #include "GSUniformBufferOGL.h"
 #include "GSShaderOGL.h"
 #include "GLState.h"
+#include "GSOsdFreeType.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern uint32 g_texture_upload_byte;
@@ -539,6 +540,9 @@ class GSDeviceOGL : public GSDevice
 
 	VSConstantBuffer m_vs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
+
+	OsdManager    m_osd;
+	GSTextureOGL* m_font;
 
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
