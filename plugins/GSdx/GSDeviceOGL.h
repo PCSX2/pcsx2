@@ -551,6 +551,7 @@ class GSDeviceOGL : public GSDevice
 	void DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool linear, float yoffset = 0);
 	void DoFXAA(GSTexture* st, GSTexture* dt);
 	void DoShadeBoost(GSTexture* st, GSTexture* dt);
+	void RenderString(const std::string& text, GSTexture* dt);
 
 	void OMAttachRt(GLuint rt);
 	void OMAttachDs(GLuint ds);

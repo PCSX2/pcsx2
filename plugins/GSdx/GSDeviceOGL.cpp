@@ -871,6 +871,45 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 	EndScene();
 }
 
+void GSDeviceOGL::RenderString(const std::string& text, GSTexture* dt)
+{
+	BeginScene();
+
+	m_shader->VS(m_convert.vs);
+	m_shader->GS(0);
+	m_shader->PS(m_convert.ps[10]);
+
+	OMSetDepthStencilState(m_convert.dss, 0);
+	//OMSetBlendState(m_convert.bs, 0);
+	OMSetBlendState(m_merge_obj.bs, 0);
+	OMSetRenderTargets(dt, NULL);
+
+	// FIXME that not efficient but let's do a proof-of-concept first
+	GSVector4* vertices = (GSVector4*)_aligned_malloc(6*sizeof(GSVector4)*(text.size()), 32);
+	// Offset and scaling. Note scaling could also be done in shader (require gl3/dx10)
+	GSVector2i ds = dt->GetSize();
+	GSVector4 r(-0.98f, 0.95f, 2.0f/ds.x, 2.0f/ds.y);
+
+	m_osd.text_to_vertex(vertices, text.c_str(), r);
+
+	IASetVertexState(m_vb_sr);
+	IASetVertexBuffer(vertices, 6*text.size());
+	IASetPrimitiveTopology(GL_TRIANGLES);
+
+	if (GLLoader::found_GL_ARB_bindless_texture) {
+		GLuint64 handle[2] = {static_cast<GSTextureOGL*>(m_font)->GetHandle(m_convert.pt) , 0};
+		m_shader->PS_ressources(handle);
+	} else {
+		PSSetShaderResource(static_cast<GSTextureOGL*>(m_font)->GetID());
+		PSSetSamplerState(m_convert.pt);
+	}
+
+	DrawPrimitive();
+
+	_aligned_free(vertices);
+	EndScene();
+}
+
 void GSDeviceOGL::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
 {
 	ClearRenderTarget(dt, c);

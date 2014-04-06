@@ -162,6 +162,7 @@ public:
 	void FXAA();
 	void ShadeBoost();
 	void ExternalFX();
+	virtual void RenderString(const std::string& text, GSTexture* dt) {};
 
 	bool ResizeTexture(GSTexture** t, int w, int h);
 
