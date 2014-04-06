@@ -141,6 +141,14 @@ void ps_main0()
 }
 #endif
 
+#ifdef ps_main10
+void ps_main10()
+{
+	float alpha = texture(TextureSampler, PSin_t);
+	SV_Target0 = vec4(1, 0, 0, alpha);
+}
+#endif
+
 #ifdef ps_main1
 void ps_main1()
 {
