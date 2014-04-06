@@ -59,4 +59,5 @@ class OsdManager {
 
 	GSVector2i get_texture_font_size();
 	void upload_texture_atlas(GSTexture* t);
+	void text_to_vertex(GSVector4* dst, const char* text, GSVector4 r);
 };

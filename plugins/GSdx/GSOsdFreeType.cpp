@@ -90,6 +90,32 @@ void OsdManager::upload_texture_atlas(GSTexture* t) {
 		}
 
 		GSVector4i r(c_info[i].tx, 0, c_info[i].tx+c_info[i].bw, c_info[i].bh);
-		t->Update(r, face->glyph->bitmap.buffer, c_info[i].bw);
+		if (r.width())
+			t->Update(r, face->glyph->bitmap.buffer, c_info[i].bw);
+	}
+}
+
+void OsdManager::text_to_vertex(GSVector4* dst, const char* text, GSVector4 r)
+{
+	uint32 n = 0;
+	for (const char* p = text; *p; p++) {
+		float x2 =  r.x + c_info[*p].bl * r.w;
+		float y2 = -r.y - c_info[*p].bt * r.z;
+		float w = c_info[*p].bw * r.w;
+		float h = c_info[*p].bh * r.z;
+
+		/* Advance the cursor to the start of the next character */
+		r.x += c_info[*p].ax * r.w;
+		r.y += c_info[*p].ay * r.z;
+
+		// NOTE: In the future we could use only a SHORT for texture
+		// coordinate. And do the division by the texture size on the vertex
+		// shader (need to drop dx9 compatibility)
+		dst[n++] = GSVector4(x2    , -y2    , (float)c_info[*p].tx / (float)atlas_w                   , 0.0f);
+		dst[n++] = GSVector4(x2 + w, -y2    , (float)(c_info[*p].tx + c_info[*p].bw) / (float)atlas_w , 0.0f);
+		dst[n++] = GSVector4(x2    , -y2 - h, (float)c_info[*p].tx / atlas_w                          , (float)c_info[*p].bh / (float)atlas_h);
+		dst[n++] = GSVector4(x2 + w, -y2    , (float)(c_info[*p].tx + c_info[*p].bw) / (float)atlas_w , 0.0f);
+		dst[n++] = GSVector4(x2    , -y2 - h, (float)c_info[*p].tx / atlas_w                          , (float)c_info[*p].bh / (float)atlas_h);
+		dst[n++] = GSVector4(x2 + w, -y2 - h, (float)(c_info[*p].tx + c_info[*p].bw) / (float)atlas_w , (float)c_info[*p].bh / (float)atlas_h);
 	}
 }
