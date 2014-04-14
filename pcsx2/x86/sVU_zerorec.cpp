@@ -3040,7 +3040,7 @@ void VuBaseBlock::Recompile()
 			if (!x86regs[s_JumpX86].inuse)
 			{
 				pxAssert(x86regs[s_JumpX86].type == X86TYPE_VUJUMP);
-				s_JumpX86 = 0xffffffff; // notify to jump from g_recWriteback
+				s_JumpX86 = -1; // notify to jump from g_recWriteback
 			}
 		}
 
@@ -3113,7 +3113,7 @@ void VuBaseBlock::Recompile()
 
 				SuperVUTestVU0Condition(0);
 
-				if (s_JumpX86 == 0xffffffff)
+				if (s_JumpX86 == -1)
 					JMP32M((uptr)&g_recWriteback);
 				else
 					JMPR(s_JumpX86);

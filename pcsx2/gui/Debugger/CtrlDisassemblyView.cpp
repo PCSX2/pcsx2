@@ -521,7 +521,7 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 	case ID_DISASM_RENAMEFUNCTION:
 		{		
 			u32 funcBegin = symbolMap.GetFunctionStart(curAddress);
-			if (funcBegin != -1)
+			if (funcBegin != 0xFFFFFFFF)
 			{
 				wxString newName = wxGetTextFromUser(L"Enter the new function name",L"New function name",
 					wxString(symbolMap.GetLabelString(funcBegin).c_str(),wxConvUTF8),this);
@@ -543,10 +543,10 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 	case ID_DISASM_REMOVEFUNCTION:
 		{
 			u32 funcBegin = symbolMap.GetFunctionStart(curAddress);
-			if (funcBegin != -1)
+			if (funcBegin != 0xFFFFFFFF)
 			{
 				u32 prevBegin = symbolMap.GetFunctionStart(funcBegin-1);
-				if (prevBegin != -1)
+				if (prevBegin != 0xFFFFFFFF)
 				{
 					u32 expandedSize = symbolMap.GetFunctionSize(prevBegin)+symbolMap.GetFunctionSize(funcBegin);
 					symbolMap.SetFunctionSize(prevBegin,expandedSize);
@@ -570,7 +570,7 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 	case ID_DISASM_ADDFUNCTION:
 		{
 			u32 prevBegin = symbolMap.GetFunctionStart(curAddress);
-			if (prevBegin != -1)
+			if (prevBegin != 0xFFFFFFFF)
 			{
 				if (prevBegin == curAddress)
 				{
@@ -832,7 +832,7 @@ void CtrlDisassemblyView::updateStatusBarText()
 	} else if (line.type == DISTYPE_DATA)
 	{
 		u32 start = symbolMap.GetDataStart(curAddress);
-		if (start == -1)
+		if (start == 0xFFFFFFFF)
 			start = curAddress;
 
 		u32 diff = curAddress-start;

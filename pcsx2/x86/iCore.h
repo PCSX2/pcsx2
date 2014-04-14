@@ -177,7 +177,7 @@ void _deleteVFtoXMMreg(int reg, int vu, int flush);
 //void _deleteACCtoXMMreg(int vu, int flush);
 void _deleteGPRtoXMMreg(int reg, int flush);
 void _deleteFPtoXMMreg(int reg, int flush);
-void _freeXMMreg(int xmmreg);
+void _freeXMMreg(u32 xmmreg);
 //void _moveXMMreg(int xmmreg); // instead of freeing, moves it to a diff location
 void _flushXMMregs();
 u8 _hasFreeXMMreg();
@@ -307,7 +307,7 @@ void _addNeededMMXreg(int reg);
 int _checkMMXreg(int reg, int mode);
 void _clearNeededMMXregs();
 void _deleteMMXreg(int reg, int flush);
-void _freeMMXreg(int mmxreg);
+void _freeMMXreg(u32 mmxreg);
 void _moveMMXreg(int mmxreg); // instead of freeing, moves it to a diff location
 void _flushMMXregs();
 u8 _hasFreeMMXreg();

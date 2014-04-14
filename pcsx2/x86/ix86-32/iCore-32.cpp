@@ -435,7 +435,7 @@ void _deleteX86reg(int type, int reg, int flush)
 
 void _freeX86reg(int x86reg)
 {
-	pxAssert( x86reg >= 0 && x86reg < iREGCNT_GPR );
+	pxAssert( x86reg >= 0 && x86reg < (int)iREGCNT_GPR );
 
 	if( x86regs[x86reg].inuse && (x86regs[x86reg].mode&MODE_WRITE) ) {
 		x86regs[x86reg].mode &= ~MODE_WRITE;
@@ -760,7 +760,7 @@ u8 _hasFreeMMXreg()
 	return 0;
 }
 
-void _freeMMXreg(int mmxreg)
+void _freeMMXreg(u32 mmxreg)
 {
 	pxAssert( mmxreg < iREGCNT_MMX );
 	if (!mmxregs[mmxreg].inuse) return;

@@ -161,7 +161,7 @@ void BreakpointWindow::setDefaultValues()
 	checkLog->Enable(memory);
 
 	wchar_t str[64];
-	if (address != -1)
+	if (address != 0xFFFFFFFF)
 	{
 		swprintf(str,64,L"0x%08X",address);
 		editAddress->SetLabel(str);

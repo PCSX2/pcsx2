@@ -187,7 +187,7 @@ EXPORT_C_(void) GSsetGameCRC(int crc, int options)
 	{
 		for (u32 i = 0; i < GAME_INFO_INDEX; i++)
 		{
-			if (crc_game_list[i].crc == crc)
+			if (crc_game_list[i].crc == (u32)crc)
 			{
 				ZZLog::WriteLn("Found CRC[%x] in crc game list.", crc);
 				
