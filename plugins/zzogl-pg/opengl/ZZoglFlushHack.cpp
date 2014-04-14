@@ -445,11 +445,11 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
     // Note GSdx seems to use invert somewhere FBMSK. So values were inverted
 	if(skip == 0)
     {
-        if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSMCT16S && fi.FBMSK == ~(0x03FFF))
+        if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSMCT16S && ~fi.FBMSK == 0x03FFF)
             skip = 1;
         else if(fi.TME && fi.FBP == 0x3000 && fi.TBP0 == 0x3380)
             skip = 1; // bloom
-        else if(fi.TME && fi.FBP == fi.TBP0 && fi.TBP0 == 0x3000 && fi.FBMSK == ~(0xFFFFFF) &&
+        else if(fi.TME && fi.FBP == fi.TBP0 && fi.TBP0 == 0x3000 && ~fi.FBMSK == 0xFFFFFF &&
                 GABEST_HAS_SHARED_BITS(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM))
             skip = 1; 
     }

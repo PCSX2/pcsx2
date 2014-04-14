@@ -78,7 +78,7 @@ int  _SPR0chain()
 	pMem = SPRdmaGetAddr(spr0ch.madr, true);
 	if (pMem == NULL) return -1;
 
-	if(spr0ch.madr >= dmacRegs.rbor.ADDR && spr0ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16))
+	if(spr0ch.madr >= dmacRegs.rbor.ADDR && spr0ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
 	{
 			partialqwc = spr0ch.qwc;
 

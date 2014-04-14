@@ -764,7 +764,7 @@ list<VuInstruction>::iterator VuBaseBlock::GetInstIterAtPc(int instpc)
 {
 	pxAssert(instpc >= 0);
 
-	u32 curpc = startpc;
+	int curpc = startpc;
 	list<VuInstruction>::iterator it;
 	for (it = insts.begin(); it != insts.end(); ++it)
 	{
@@ -785,7 +785,7 @@ void VuBaseBlock::GetInstsAtPc(int instpc, list<VuInstruction*>& listinsts)
 
 	listinsts.clear();
 
-	u32 curpc = startpc;
+	int curpc = startpc;
 	list<VuInstruction>::iterator it;
 	for (it = insts.begin(); it != insts.end(); ++it)
 	{
