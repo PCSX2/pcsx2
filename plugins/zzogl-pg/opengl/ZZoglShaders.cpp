@@ -602,7 +602,7 @@ bool ZZshLoadExtraEffects()
 	SHADERHEADER* header;
 	bool bLoadSuccess = true;
 
-	const int vsshaders[4] = { SH_REGULARVS, SH_TEXTUREVS, SH_REGULARFOGVS, SH_TEXTUREFOGVS };
+	const u32 vsshaders[4] = { SH_REGULARVS, SH_TEXTUREVS, SH_REGULARFOGVS, SH_TEXTUREFOGVS };
 
 	for(int i = 0; i < 4; ++i) {
 		LOAD_VS(vsshaders[i], pvs[2*i]);
@@ -690,7 +690,7 @@ FRAGMENTSHADER* ZZshLoadShadeEffect(int type, int texfilter, int fog, int testae
 	else
 		texwrap = TEXWRAP_REPEAT_CLAMP;
 
-	int index = GET_SHADER_INDEX(type, texfilter, texwrap, fog, s_bWriteDepth, testaem, exactcolor, context, 0);
+	u32 index = GET_SHADER_INDEX(type, texfilter, texwrap, fog, s_bWriteDepth, testaem, exactcolor, context, 0);
 
 	assert( index < ArraySize(ppsTexture) );
 	FRAGMENTSHADER* pf = ppsTexture+index;
