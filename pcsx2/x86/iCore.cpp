@@ -755,7 +755,7 @@ void _deleteFPtoXMMreg(int reg, int flush)
 	}
 }
 
-void _freeXMMreg(int xmmreg)
+void _freeXMMreg(u32 xmmreg)
 {
 	pxAssert( xmmreg < iREGCNT_XMM );
 
