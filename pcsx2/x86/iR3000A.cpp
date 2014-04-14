@@ -1182,7 +1182,7 @@ static void __fastcall  PreBlockCheck( u32 blockpc )
 #ifdef PCSX2_DEBUG
 	extern void iDumpPsxRegisters(u32 startpc, u32 temp);
 
-	static int lastrec = 0;
+	static u32 lastrec = 0;
 	static int curcount = 0;
 	const int skip = 0;
 
