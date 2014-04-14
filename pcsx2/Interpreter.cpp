@@ -395,7 +395,7 @@ static void intExecute()
 			while (cpuRegs.pc != EELOAD_START);
 			eeloadReplaceOSDSYS();
 		}
-		if (ElfEntry != -1) {
+		if (ElfEntry != 0xFFFFFFFF) {
 			do
 				execI();
 			while (cpuRegs.pc != ElfEntry);

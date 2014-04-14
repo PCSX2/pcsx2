@@ -157,7 +157,7 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 	pxAssert((dmacRegs.rbor.ADDR & 15) == 0);
 	pxAssert((addr & 15) == 0);
 
-	if(qwc > ((dmacRegs.rbsr.RMSK + 16) >> 4)) DevCon.Warning("MFIFO Write bigger than MFIFO! QWC=%x FifoSize=%x", qwc, ((dmacRegs.rbsr.RMSK + 16) >> 4));
+	if(qwc > ((dmacRegs.rbsr.RMSK + 16u) >> 4u)) DevCon.Warning("MFIFO Write bigger than MFIFO! QWC=%x FifoSize=%x", qwc, ((dmacRegs.rbsr.RMSK + 16) >> 4));
 	// DMAC Address resolution:  FIFO can be placed anywhere in the *physical* memory map
 	// for the PS2.  Its probably a serious error for a PS2 app to have the buffer cross
 	// valid/invalid page areas of ram, so realistically we only need to test the base address
