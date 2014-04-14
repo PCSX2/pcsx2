@@ -1962,12 +1962,6 @@ void GSLocalMemory::SaveBMP(const string& fn, uint32 bp, uint32 bw, uint32 psm, 
 	TEX0.TBW = bw;
 	TEX0.PSM = psm;
 
-	GIFRegTEXA TEXA;
-
-	TEXA.AEM = 0;
-	TEXA.TA0 = 0;
-	TEXA.TA1 = 0x80;
-
 	readPixel rp = m_psm[psm].rp;
 
 	uint8* p = (uint8*)bits;

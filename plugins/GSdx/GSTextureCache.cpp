@@ -56,7 +56,7 @@ void GSTextureCache::RemoveAll()
 GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
-	const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
+	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
 
 	GIFRegTEXA plainTEXA;
 
@@ -423,7 +423,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* o, const GSVector4i& r)
 {
 	uint32 bp = o->bp;
 	uint32 psm = o->psm;
-	uint32 bw = o->bw;
+	//uint32 bw = o->bw;
 
 	// No depth handling please.
 	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S)
@@ -573,7 +573,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 	int tw = 1 << TEX0.TW;
 	int th = 1 << TEX0.TH;
-	int tp = TEX0.TBW << 6;
+	//int tp = TEX0.TBW << 6;
 
 	bool hack = false;
 

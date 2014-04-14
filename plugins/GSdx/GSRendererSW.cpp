@@ -463,7 +463,7 @@ void GSRendererSW::Draw()
 
 	//
 
-	GSScanlineGlobalData& gd = sd->global;
+	// GSScanlineGlobalData& gd = sd->global;
 
 	uint32* fb_pages = NULL;
 	uint32* zb_pages = NULL;

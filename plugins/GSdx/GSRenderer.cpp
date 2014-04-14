@@ -126,7 +126,7 @@ bool GSRenderer::Merge(int field)
 		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
 		m_regs->DISP[0].DISPFB.PSM == m_regs->DISP[1].DISPFB.PSM;
 
-	bool blurdetected = false;
+	// bool blurdetected = false;
 
 	if(samesrc /*&& m_regs->PMODE.SLBG == 0 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0x80*/)
 	{
@@ -159,7 +159,7 @@ bool GSRenderer::Merge(int field)
 			dr[0].bottom = bottom;
 			dr[1].bottom = bottom;
 
-			blurdetected = true;
+			// blurdetected = true;
 		}
 		else if(dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, 1, 0, 1)) || fr[1].eq(fr[0] + GSVector4i(0, 1, 0, 1))))
 		{
@@ -176,7 +176,7 @@ bool GSRenderer::Merge(int field)
 			fr[0].top = fr[1].top = top;
 			fr[0].bottom = fr[1].bottom = bottom;
 
-			blurdetected = true;
+			// blurdetected = true;
 		}
 		//printf("samesrc = %d blurdetected = %d\n",samesrc,blurdetected);
 	}
