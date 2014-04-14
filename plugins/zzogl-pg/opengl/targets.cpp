@@ -254,7 +254,7 @@ void CRangeManager::Insert(int start, int end)
 
 		assert(imid < (int)ranges.size());
 
-		if ((ranges[imid].end <= end) && ((imid == ranges.size() - 1) || (ranges[imid+1].start > end)))
+		if ((ranges[imid].end <= end) && ((imid == (int)ranges.size() - 1) || (ranges[imid+1].start > end)))
 		{
 			imin = imid;
 			break;

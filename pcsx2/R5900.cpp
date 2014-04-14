@@ -558,7 +558,7 @@ void __fastcall eeloadReplaceOSDSYS()
 		cdvdReloadElfInfo();
 
 	// didn't recognize an ELF
-	if (ElfEntry == -1) {
+	if (ElfEntry == 0xFFFFFFFF) {
 		eeGameStarting();
 		return;
 	}

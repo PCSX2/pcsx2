@@ -44,7 +44,7 @@ static __fi void SetResultSize(u8 size)
 	cdvd.sDataIn&=~0x40;
 }
 
-static void CDVDREAD_INT(int eCycle)
+static void CDVDREAD_INT(u32 eCycle)
 {
 	// Give it an arbitary FAST value. Good for ~5000kb/s in ULE when copying a file from CDVD to HDD
 	// Keep long seeks out though, as games may try to push dmas while seeking. (Tales of the Abyss)
