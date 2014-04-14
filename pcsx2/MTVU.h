@@ -83,8 +83,8 @@ private:
 	void WaitOnSize(s32 size);
 	void ReserveSpace(s32 size);
 
-	volatile s32 GetReadPos();
-	volatile s32 GetWritePos();
+	s32 GetReadPos();
+	s32 GetWritePos();
 	u32* GetWritePtr();
 
 	void incReadPos(s32 offset);

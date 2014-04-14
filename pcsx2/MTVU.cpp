@@ -179,12 +179,12 @@ void VU_Thread::ReserveSpace(s32 size)
 }
 
 // Use this when reading read_pos from ee thread
-__fi volatile s32 VU_Thread::GetReadPos()
+__fi s32 VU_Thread::GetReadPos()
 {
 	return AtomicRead(read_pos);
 }
 // Use this when reading write_pos from vu thread
-__fi volatile s32 VU_Thread::GetWritePos()
+__fi s32 VU_Thread::GetWritePos()
 {
 	return AtomicRead(volatize(write_pos));
 }
