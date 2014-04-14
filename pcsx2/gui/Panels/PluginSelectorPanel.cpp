@@ -708,7 +708,7 @@ void Panels::PluginSelectorPanel::OnProgress( wxCommandEvent& evt )
 
 	if( DisableThreading )
 	{
-		const int nextidx = evtidx+1;
+		const u32 nextidx = evtidx+1;
 		if( nextidx == m_FileList->Count() )
 		{
 			wxCommandEvent done( pxEvt_EnumerationFinished );

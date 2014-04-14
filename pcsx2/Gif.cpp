@@ -348,7 +348,7 @@ static __fi bool mfifoGIFrbTransfer()
 		return true; // Skip if can't do path3
 	}
 
-	bool needWrap = (gifch.madr + (mfifoqwc * 16)) > (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16);
+	bool needWrap = (gifch.madr + (mfifoqwc * 16u)) > (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u);
 	uint s1 = ((dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16) - gifch.madr) >> 4;
 	uint s2 = mfifoqwc - s1;
 	uint s3 = needWrap ? s1 : mfifoqwc;
@@ -378,7 +378,7 @@ static __fi bool mfifoGIFchain()
 	if (gifch.qwc == 0) return true;
 
 	if (gifch.madr >= dmacRegs.rbor.ADDR &&
-		gifch.madr <= (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16))
+		gifch.madr <= (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
 	{
 		bool ret = true;
 	//	if(gifch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16)) DevCon.Warning("Edge GIF");
