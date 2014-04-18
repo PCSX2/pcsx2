@@ -65,11 +65,11 @@ unsigned char zgsbuild	= VER;
 unsigned char zgsminor = 0;
 
 #ifdef _DEBUG
-char *libraryName	 = "ZZ Ogl PG (Debug) ";
+const char *libraryName	 = "ZZ Ogl PG (Debug) ";
 #elif defined(ZEROGS_DEVBUILD)
-char *libraryName	 = "ZZ Ogl PG (Dev)";
+const char *libraryName	 = "ZZ Ogl PG (Dev)";
 #else
-char *libraryName	 = "ZZ Ogl PG ";
+const char *libraryName	 = "ZZ Ogl PG ";
 #endif
 
 extern int g_nPixelShaderVer, g_nFrameRender, g_nFramesSkipped;
@@ -99,7 +99,7 @@ EXPORT_C_(u32) PS2EgetLibType()
 
 EXPORT_C_(char*) PS2EgetLibName()
 {
-	return libraryName;
+	return (char*) libraryName;
 }
 
 EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
@@ -393,7 +393,7 @@ EXPORT_C_(void) GSchangeSaveState(int newstate, const char* filename)
 	SaveStateExists = (access(SaveStateFile, 0) == 0);
 }
 
-static bool get_snapshot_filename(char *filename, char* path, const char* extension)
+static bool get_snapshot_filename(char *filename, const char* path, const char* extension)
 {
 	FUNCLOG
 
@@ -440,7 +440,7 @@ EXPORT_C_(void) GSmakeSnapshot(char *path)
 	FUNCLOG
 
 	char filename[256];
-	if (get_snapshot_filename(filename, path, (conf.zz_options.tga_snap) ? "bmp" : "jpg"))
+	if (get_snapshot_filename(filename, (const char*)path, (conf.zz_options.tga_snap) ? "bmp" : "jpg"))
 		SaveSnapshot(filename);
 }
 

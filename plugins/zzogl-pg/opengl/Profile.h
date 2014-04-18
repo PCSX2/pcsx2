@@ -101,7 +101,7 @@ static __forceinline u64 GetCPUTicks()
 // IMPORTANT: For every Register there must be an End
 void DVProfRegister(char* pname);			// first checks if this profiler exists in g_listProfilers
 void DVProfEnd(u32 dwUserData);
-void DVProfWrite(char* pfilename, u32 frames = 0);
+void DVProfWrite(const char* pfilename, u32 frames = 0);
 void DVProfClear();						// clears all the profilers
 
 #define DVPROFILE
