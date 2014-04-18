@@ -1415,6 +1415,18 @@ inline unsigned long timeGetTime()
 	return (unsigned long)(t.time*1000 + t.millitm);
 }
 
+void _fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+	static uint32 read_cnt = 0;
+	read_cnt++;
+
+	size_t result = fread(ptr, size, nmemb, stream);
+	if (result != nmemb) {
+		fprintf(stderr, "Read error\n");
+		exit(read_cnt);
+	}
+}
+
 // Note
 EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 {
@@ -1471,17 +1483,17 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		if (s_gs->m_wnd == NULL) return;
 
 		uint32 crc;
-		fread(&crc, 4, 1, fp);
+		_fread(&crc, 4, 1, fp);
 		GSsetGameCRC(crc, 0);
 
 		GSFreezeData fd;
-		fread(&fd.size, 4, 1, fp);
+		_fread(&fd.size, 4, 1, fp);
 		fd.data = new uint8[fd.size];
-		fread(fd.data, fd.size, 1, fp);
+		_fread(fd.data, fd.size, 1, fp);
 		GSfreeze(FREEZE_LOAD, &fd);
 		delete [] fd.data;
 
-		fread(regs, 0x2000, 1, fp);
+		_fread(regs, 0x2000, 1, fp);
 
 		GSvsync(1);
 
@@ -1503,20 +1515,20 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 				p->param = (uint8)fgetc(fp);
 
-				fread(&p->size, 4, 1, fp);
+				_fread(&p->size, 4, 1, fp);
 
 				switch(p->param)
 				{
 				case 0:
 					p->buff.resize(0x4000);
 					p->addr = 0x4000 - p->size;
-					fread(&p->buff[p->addr], p->size, 1, fp);
+					_fread(&p->buff[p->addr], p->size, 1, fp);
 					break;
 				case 1:
 				case 2:
 				case 3:
 					p->buff.resize(p->size);
-					fread(&p->buff[0], p->size, 1, fp);
+					_fread(&p->buff[0], p->size, 1, fp);
 					break;
 				}
 
@@ -1530,7 +1542,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 			case 2:
 
-				fread(&p->size, 4, 1, fp);
+				_fread(&p->size, 4, 1, fp);
 
 				break;
 
@@ -1538,7 +1550,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 				p->buff.resize(0x2000);
 
-				fread(&p->buff[0], 0x2000, 1, fp);
+				_fread(&p->buff[0], 0x2000, 1, fp);
 
 				break;
 			}

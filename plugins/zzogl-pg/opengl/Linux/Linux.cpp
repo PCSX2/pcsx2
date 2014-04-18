@@ -435,7 +435,10 @@ void DisplayDialog()
 EXPORT_C_(void) GSconfigure()
 {
 	char strcurdir[256];
-	getcwd(strcurdir, 256);
+	if (getcwd(strcurdir, 256) == NULL) {
+		fprintf(stderr, "Failed to get current working directory\n");
+		return;
+	}
 
 	if (!(conf.loaded())) LoadConfig();
 

@@ -146,7 +146,9 @@ struct PluginConf
         int value = defval;
         std::string buf = item + " = %d\n";
 
-        if (ConfFile) fscanf(ConfFile, buf.c_str(), &value);
+        if (ConfFile)
+			if (fscanf(ConfFile, buf.c_str(), &value) < 0)
+				SysMessage("Somethings got wrong when option was read\n");
 
         return value;
     }
