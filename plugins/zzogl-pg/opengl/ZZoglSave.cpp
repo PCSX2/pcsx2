@@ -33,11 +33,11 @@ extern void ZZGSStateReset();
 
 // Hack for save game compatible!
 #ifdef _DEBUG
-char *libraryNameX	 = "ZeroGS-Pg OpenGL (Debug) ";
+const char *libraryNameX	 = "ZeroGS-Pg OpenGL (Debug) ";
 #elif defined(ZEROGS_DEVBUILD)
-char *libraryNameX	 = "ZeroGS-Pg OpenGL (Dev) ";
+const char *libraryNameX	 = "ZeroGS-Pg OpenGL (Dev) ";
 #else
-char *libraryNameX	 = "ZeroGS Playground OpenGL ";
+const char *libraryNameX	 = "ZeroGS Playground OpenGL ";
 #endif
 
 //------------------ Code

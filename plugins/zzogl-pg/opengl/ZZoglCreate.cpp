@@ -86,8 +86,8 @@ extern u8* s_lpShaderResources;
 
 // String's for shader file in developer mode
 //#ifdef ZEROGS_DEVBUILD
-char* EFFECT_NAME = "";
-char* EFFECT_DIR = "";
+char EFFECT_NAME[256];
+char EFFECT_DIR[256];
 //#endif
 
 /////////////////////

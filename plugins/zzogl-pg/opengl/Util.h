@@ -317,8 +317,8 @@ extern void SysCloseLibrary(void *lib);		// Closes Library
 extern void SysMessage(const char *fmt, ...);
 
 #ifdef ZEROGS_DEVBUILD
-extern char* EFFECT_NAME;
-extern char* EFFECT_DIR;
+extern char EFFECT_NAME[256];
+extern char EFFECT_DIR[256];
 extern u32 g_nGenVars, g_nTexVars, g_nAlphaVars, g_nResolve;
 extern bool g_bSaveTrans, g_bUpdateEffect, g_bSaveTex, g_bSaveResolved;
 #endif

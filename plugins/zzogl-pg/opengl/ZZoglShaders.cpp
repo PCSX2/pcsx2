@@ -88,8 +88,8 @@ ZZshProgram 	g_vsprog = 0, g_psprog = 0;							// 2 -- ZZ
 ZZshParameter 	g_vparamPosXY[2] = {0}, g_fparamFogColor = 0;
 
 //#ifdef DEVBUILD
-extern char* EFFECT_NAME;		// All this variables used for testing and set manually
-extern char* EFFECT_DIR;
+extern char EFFECT_NAME[256];		// All this variables used for testing and set manually
+extern char EFFECT_DIR[256];
 //#endif
 
 bool g_bCRTCBilinear = true;
