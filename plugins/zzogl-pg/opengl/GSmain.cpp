@@ -664,21 +664,27 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 		void* hWnd = NULL;
 
-		//_GSopen((void**)&hWnd, "", renderer);
-		GSopen((void**)&hWnd, "", 0);
+		const char* title = "replayer";
+		GSopen((void**)&hWnd, (char*)title, 0);
 
 		u32 crc;
-		fread(&crc, 4, 1, fp);
+		size_t err;
+		err = fread(&crc, 4, 1, fp);
 		GSsetGameCRC(crc, 0);
 
 		freezeData fd;
-		fread(&fd.size, 4, 1, fp);
+		err = fread(&fd.size, 4, 1, fp);
 		fd.data = new s8[fd.size];
-		fread(fd.data, fd.size, 1, fp);
+		err = fread(fd.data, fd.size, 1, fp);
 		GSfreeze(FREEZE_LOAD, &fd);
 		delete [] fd.data;
 
-		fread(regs, 0x2000, 1, fp);
+		err = fread(regs, 0x2000, 1, fp);
+
+		if (!err) {
+			fprintf(stderr, "Failed to read %s. Wrong format?\n", lpszCmdLine);
+			return;
+		}
 
 		GSvsync(1);
 
@@ -698,8 +704,8 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 				p->param = (u8)fgetc(fp);
 
-				fread(&p->size, 4, 1, fp);
-				fread(&p->real_size, 4, 1, fp);
+				err = fread(&p->size, 4, 1, fp);
+				err = fread(&p->real_size, 4, 1, fp);
 
 				switch(p->param)
 				{
@@ -707,13 +713,13 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 					p->buff.resize(0x4000);
 					//p->addr = 0x4000 - p->size;
 					//fread(&p->buff[p->addr], p->size, 1, fp);
-					fread(&p->buff[0], p->size, 1, fp);
+					err = fread(&p->buff[0], p->size, 1, fp);
 					break;
 				case 1:
 				case 2:
 				case 3:
 					p->buff.resize(p->size);
-					fread(&p->buff[0], p->size, 1, fp);
+					err = fread(&p->buff[0], p->size, 1, fp);
 					break;
 				}
 
@@ -721,14 +727,14 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 			case 1:
 
-				fread(&p->param, 4, 1, fp);
+				err = fread(&p->param, 4, 1, fp);
 				//p->param = (u8)fgetc(fp);
 
 				break;
 
 			case 2:
 
-				fread(&p->size, 4, 1, fp);
+				err = fread(&p->size, 4, 1, fp);
 
 				break;
 
@@ -736,7 +742,7 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 				p->buff.resize(0x2000);
 
-				fread(&p->buff[0], 0x2000, 1, fp);
+				err = fread(&p->buff[0], 0x2000, 1, fp);
 
 				break;
 
@@ -744,6 +750,8 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 			}
 
 			packets.push_back(p);
+			if (!err)
+				fprintf(stderr, "Failed to read %s. corrupted file?\n", lpszCmdLine);
 		}
 
 		sleep(1);
