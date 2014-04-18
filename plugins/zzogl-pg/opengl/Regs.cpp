@@ -74,7 +74,7 @@ u32 s_uClampData[2] = {0, };
 #ifdef SPAM_UNUSED_REGISTERS
 #define REG_LOG ZZLog::Error_Log
 #else
-#define REG_LOG 0 && 
+#define REG_LOG(exp, ...) ((void)0)
 #endif
 
 void __gifCall GIFPackedRegHandlerNull(const u32* data)

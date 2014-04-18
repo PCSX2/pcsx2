@@ -81,19 +81,31 @@ void LoadConfig()
 	}
 
 	err = fscanf(f, "interlace = %hhx\n", &conf.interlace);
-
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "mrtdepth = %hhx\n", &conf.mrtdepth);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "zzoptions = %x\n", &conf.zz_options._u32);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "options = %x\n", &conf.hacks._u32);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "bilinear = %hhx\n", &conf.bilinear);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "aliasing = %hhx\n", &conf.aa);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "width = %x\n", &conf.width);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "height = %x\n", &conf.height);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "x = %x\n", &conf.x);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "y = %x\n", &conf.y);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "log = %x\n", &conf.log);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "skipdraw = %x\n", &conf.SkipDraw);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	err = fscanf(f, "disablehacks = %x\n", &conf.disableHacks);
+	if (err != 1) ZZLog::Error_Log("Failed to read zzogl option");
 	fclose(f);
 
 	// turn off all hacks by default
