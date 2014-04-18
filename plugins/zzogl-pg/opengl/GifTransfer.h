@@ -126,7 +126,7 @@ typedef struct
 
 extern void _GSgifPacket(pathInfo *path, const u32 *pMem);
 extern void _GSgifRegList(pathInfo *path, const u32 *pMem);
-extern void _GSgifTransfer(pathInfo *path, const u32 *pMem, u32 size);
+extern void GSgifTransfer0(u32* pMem, u32 addr);
 
 extern GIFRegHandler g_GIFPackedRegHandlers[];
 extern GIFRegHandler g_GIFRegHandlers[];
