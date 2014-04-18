@@ -767,7 +767,7 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 					switch(p->param)
 					{
 					//case 0: GSgifTransfer1((u32*)&p->buff[0], p->addr); break;
-					case 0: _GSgifTransfer<0>((u32*)&p->buff[0], p->real_size); break;
+					case 0: GSgifTransfer0((u32*)&p->buff[0], p->real_size); break;
 					case 1: GSgifTransfer2((u32*)&p->buff[0], p->real_size); break;
 					case 2: GSgifTransfer3((u32*)&p->buff[0], p->real_size); break;
 					case 3: GSgifTransfer((u32*)&p->buff[0], p->real_size); break;

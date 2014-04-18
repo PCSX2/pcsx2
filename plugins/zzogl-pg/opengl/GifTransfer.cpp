@@ -244,6 +244,12 @@ template<int index> void _GSgifTransfer(const u32 *pMem, u32 size)
 	}
 }
 
+// Used for replay
+void GSgifTransfer0(u32 *pMem, u32 addr)
+{
+	_GSgifTransfer<0>(pMem, addr);
+}
+
 EXPORT_C_(void) GSgifTransfer1(u32 *pMem, u32 addr)
 {
 	FUNCLOG
