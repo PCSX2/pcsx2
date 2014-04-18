@@ -91,7 +91,12 @@ set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "")
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-set(DEFAULT_WARNINGS "-Wno-write-strings -Wno-format -Wno-unused-parameter -Wno-unused-value -Wstrict-aliasing -Wno-unused-function -Wno-attributes -Wno-unused-result -Wno-missing-field-initializers -Wno-unused-local-typedefs -Wno-parentheses")
+#set(DEFAULT_WARNINGS "-Wno-write-strings -Wno-format -Wno-unused-parameter  -Wno-unused-function -Wno-unused-result  -Wno-unused-local-typedefs -Wno-parentheses")
+# -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
+# -Wstrict-aliasing: to fix one day aliasing issue
+# -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
+# -Wno-unused-function: warn for function not used in release build
+set(DEFAULT_WARNINGS "-Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function")
 set(HARDEING_OPT "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 set(DEFAULT_GCC_FLAG "-m32 -msse -msse2 -march=i686 -pthread ${DEFAULT_WARNINGS} ${HARDEING_OPT}")
 if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")

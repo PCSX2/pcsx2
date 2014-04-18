@@ -15,9 +15,10 @@ set(CommonFlags
     -mpreferred-stack-boundary=2
     -mfpmath=sse
     #-Wstrict-aliasing # Allow to track strict aliasing issue.
-    -Wunused-variable
     -std=c++0x
     -fno-strict-aliasing
+    -Wno-unknown-pragmas
+    -Wno-parentheses
     )
 
 set(OptimizationFlags
@@ -32,7 +33,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    add_definitions(${CommonFlags} ${OptimizationFlags} -D_DEVEL -g -W)
+    add_definitions(${CommonFlags} ${OptimizationFlags} -D_DEVEL -g)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
