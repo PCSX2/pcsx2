@@ -21,6 +21,8 @@
 
 #pragma once
 
+//#define ENABLE_STD_THREAD
+
 //#define ENABLE_VTUNE
 
 #define ENABLE_JIT_RASTERIZER
