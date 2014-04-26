@@ -22,6 +22,10 @@
 #pragma once
 
 #include "GSdx.h"
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
 
 class IGSThread
 {
@@ -244,6 +248,57 @@ public:
     ~GSAutoLock() {m_lock->Unlock();}
 };
 
+#ifdef ENABLE_STD_THREAD
+template<class T> class GSJobQueue
+{
+protected:
+	std::unique_ptr<std::thread> m_thread;
+	std::unique_lock<std::mutex> m_mutex;
+	std::condition_variable m_empty;
+	queue<T> m_queue;
+
+	void ThreadProc()
+	{
+		m_mutex.lock();
+		while(true)
+		{
+			Wait();
+			T& item = m_queue.front();
+			m_mutex.unlock();
+			Process(item);
+			m_mutex.lock();
+			m_queue.pop();
+		}
+	}
+
+public:
+	GSJobQueue()
+	{
+		m_thread.reset(new std::thread(&GSJobQueue::ThreadProc, this));
+	}
+
+	bool IsEmpty() const
+	{
+		return m_queue.empty();
+	}
+
+	void Push(const T& item)
+	{
+		m_mutex.lock();	
+		m_queue.push(item);
+		m_empty.notify_one();
+		m_mutex.unlock();
+	}
+
+	void Wait()
+	{	
+		m_empty.wait(m_mutex,[this]{return !m_queue.empty();});
+	}
+
+	virtual void Process(T& item) = 0;
+};
+
+#else
 template<class T> class GSJobQueue : private GSThread
 {
 protected:
@@ -369,6 +424,7 @@ public:
 
 	virtual void Process(T& item) = 0;
 };
+#endif
 
 // http://software.intel.com/en-us/blogs/2012/11/06/exploring-intel-transactional-synchronization-extensions-with-intel-software
 
