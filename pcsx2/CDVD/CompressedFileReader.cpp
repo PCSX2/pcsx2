@@ -104,12 +104,21 @@ static void WriteIndexToFile(Access* index, const wxString filename) {
 
 class ChunksCache {
 public:
-	ChunksCache() : m_size(0), m_entries(0) { SetSize(1); };
-	~ChunksCache() { Drop(); };
-	void SetSize(int numChunks);
+	ChunksCache(uint initialLimitMb) : m_size(0), m_entries(0), m_limit(initialLimitMb * 1024 * 1024) {};
+	~ChunksCache() { SetLimit(0); };
+	void SetLimit(uint megabytes);
 
 	void Take(void* pMallocedSrc, PX_off_t offset, int length, int coverage);
 	int  Read(void* pDest,        PX_off_t offset, int length);
+
+	static int CopyAvailable(void* pSrc, PX_off_t srcOffset, int srcSize,
+							 void* pDst, PX_off_t dstOffset, int maxCopySize) {
+		int available = std::min(maxCopySize, (int)(srcOffset + srcSize - dstOffset));
+		if (available < 0)
+			available = 0;
+		memcpy(pDst, (char*)pSrc + (dstOffset - srcOffset), available);
+		return available;
+	};
 private:
 	class CacheEntry {
 	public:
@@ -128,60 +137,41 @@ private:
 		int size;
 	};
 
-	void Drop();
-	CacheEntry** m_entries;
-	int m_size;
+	std::list<CacheEntry*> m_entries;
+	void MatchLimit();
+	PX_off_t m_size;
+	PX_off_t m_limit;
 };
 
-// Deallocate everything
-void ChunksCache::Drop() {
-	if (!m_size)
-		return;
-
-	for (int i = 0; i < m_size; i++)
-		if (m_entries[i])
-			delete m_entries[i];
-
-	delete[] m_entries;
-	m_entries = 0;
-	m_size = 0;
+void ChunksCache::SetLimit(uint megabytes) {
+	m_limit = (PX_off_t)megabytes * 1024 * 1024;
+	MatchLimit();
 }
 
-// Discarding the cache is OK for now
-void ChunksCache::SetSize(int numChunks) {
-	Drop();
-	if (numChunks <= 0)
-		return;
-	m_size = numChunks;
-	m_entries = new CacheEntry*[m_size];
-	for (int i = 0; i < m_size; i++)
-		m_entries[i] = 0;
+void ChunksCache::MatchLimit() {
+	std::list<CacheEntry*>::reverse_iterator rit;
+	while (m_entries.size() && m_size > m_limit) {
+		rit = m_entries.rbegin();
+		m_size -= (*rit)->size;
+		delete(*rit);
+		m_entries.pop_back();
+	}
 }
 
 void ChunksCache::Take(void* pMallocedSrc, PX_off_t offset, int length, int coverage) {
-	if (!m_size)
-		return;
-
-	if (m_entries[m_size - 1])
-		delete m_entries[m_size - 1];
-
-	for (int i = m_size - 1; i > 0; i--)
-		m_entries[i] = m_entries[i - 1];
-
-	m_entries[0] = new CacheEntry(pMallocedSrc, offset, length, coverage);
+	m_entries.push_front(new CacheEntry(pMallocedSrc, offset, length, coverage));
+	m_size += length;
+	MatchLimit();
 }
 
+// By design, succeed only if the entire request is in a single cached chunk
 int ChunksCache::Read(void* pDest, PX_off_t offset, int length) {
-	for (int i = 0; i < m_size; i++) {
-		CacheEntry* e = m_entries[i];
+	for (std::list<CacheEntry*>::iterator it = m_entries.begin(); it != m_entries.end(); it++) {
+		CacheEntry* e = *it;
 		if (e && offset >= e->offset && (offset + length) <= (e->offset + e->coverage)) {
-			int available = std::min((PX_off_t)length, e->offset + e->size - offset);
-			memcpy(pDest, (char*)e->data + offset - e->offset, available);
-			// Move to the top of the list (MRU)
-			for (int j = i; j > 0; j--)
-				m_entries[j] = m_entries[j - 1];
-			m_entries[0] = e;
-			return available;
+			if (it != m_entries.begin())
+				m_entries.splice(m_entries.begin(), m_entries, it); // Move to top (MRU)
+			return CopyAvailable(e->data, e->offset, e->size, pDest, offset, length);
 		}
 	}
 	return -1;
@@ -199,17 +189,17 @@ static void WarnOldIndex(const wxString& filename) {
 	}
 }
 
-#define SPAN_DEFAULT (1048576L * 4)   /* distance between access points when creating a new index */
-#define CACHED_CHUNKS 50              /* how many span chunks to cache */
+#define SPAN_DEFAULT (1048576L * 4)   /* distance between direct access points when creating a new index */
+#define CACHE_SIZE_MB 200             /* max cache size for extracted data */
 
 class GzippedFileReader : public AsyncFileReader
 {
 	DeclareNoncopyableObject(GzippedFileReader);
 public:
 	GzippedFileReader(void) :
-		m_pIndex(0) {
+		m_pIndex(0),
+		m_cache(CACHE_SIZE_MB) {
 		m_blocksize = 2048;
-		m_cache.SetSize(CACHED_CHUNKS);
 	};
 
 	virtual ~GzippedFileReader(void) { Close(); };
@@ -236,6 +226,8 @@ public:
 	virtual void SetDataOffset(uint bytes) { m_dataoffset = bytes; }
 private:
 	bool	OkIndex();  // Verifies that we have an index, or try to create one
+	void	GetOptimalChunkForExtraction(PX_off_t offset, PX_off_t& out_chunkStart, int& out_chunkLen);
+	int     _ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead);
 	int		mBytesRead; // Temp sync read result when simulating async read
 	Access* m_pIndex;   // Quick access index
 	ChunksCache m_cache;
@@ -312,32 +304,67 @@ int GzippedFileReader::FinishRead(void) {
 #define NOW() (clock() / (CLOCKS_PER_SEC / 1000))
 
 int GzippedFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
+	PX_off_t offset = (s64)sector * m_blocksize + m_dataoffset;
+	int bytesToRead = count * m_blocksize;
+	return _ReadSync(pBuffer, offset, bytesToRead);
+}
+
+void GzippedFileReader::GetOptimalChunkForExtraction(PX_off_t offset, PX_off_t& out_chunkStart, int& out_chunkLen) {
+	// The optimal extraction size is m_pIndex->span for minimal extraction on continuous access.
+	// However, if span is big (e.g. 4M) then each extraction could be too slow for the game to like.
+	// As a tradeoff, we can extract in smaller chunks, but some data will be extracted more than required.
+	// Empirical examination suggests that span==4M and extraction-unit==1M results in the following:
+	// - On continuous access: overall extraction time ->200%, average single extract -> 30%, max extract -> 60%
+	// So on continuous we spends 2x cpu time on extraction, but the games like it better due to shorter pauses.
+	// On completely random access from all over the disk - it's a clear win (e.g. SoTC).
+	int size = std::min(m_pIndex->span, 1 * 1024 * 1024);
+	out_chunkStart = (PX_off_t)size * (offset / size);
+	out_chunkLen = size;
+}
+
+int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead) {
 	if (!OkIndex())
 		return -1;
 
-	PX_off_t offset = (s64)sector * m_blocksize + m_dataoffset;
-	int bytesToRead = count * m_blocksize;
+	//Make sure the request is inside a single optimal span, or split it otherwise to make it so
+	PX_off_t chunkStart; int chunkLen;
+	GetOptimalChunkForExtraction(offset, chunkStart, chunkLen);
+	uint maxInChunk = chunkStart + chunkLen - offset;
+	if (bytesToRead > maxInChunk) {
+		int res1 = _ReadSync(pBuffer, offset, maxInChunk);
+		if (res1 != maxInChunk)
+			return res1; // failure or EOF
+
+		int res2 = _ReadSync((char*)pBuffer + maxInChunk, offset + maxInChunk, bytesToRead - maxInChunk);
+		if (res2 < 0)
+			return res2;
+
+		return res1 + res2;
+	}
+
+	// From here onwards it's guarenteed that the request is inside a single optimal extractable/cacheable span
 
 	int res = m_cache.Read(pBuffer, offset, bytesToRead);
 	if (res >= 0)
 		return res;
 
-	// Not available from cache. Decompress a chunk which is a multiple of span
-	// and at span boundaries, and contains the request.
-	s32 span = m_pIndex->span;
-	PX_off_t start = span * (offset / span);
-	PX_off_t end = span * (1 + (offset + bytesToRead - 1) / span);
-	void* chunk = malloc(end - start);
+	// Not available from cache. Decompress a chunk with optimal boundaries
+	// which contains the request.
+	char* chunk = (char*)malloc(chunkLen);
 
 	PTT s = NOW();
 	FILE* in = fopen(m_filename.ToUTF8(), "rb");
-	res = extract(in, m_pIndex, start, (unsigned char*)chunk, end - start);
-	m_cache.Take(chunk, start, res, end - start);
+	res = extract(in, m_pIndex, chunkStart, (unsigned char*)chunk, chunkLen);
 	fclose(in);
-	Console.WriteLn("gzip: extracting %1.1f MB -> %d ms", (float)(end - start) / 1024 / 1024, (int)(NOW()- s));
+	Console.WriteLn(Color_Gray, "gunzip: %1.1f MB - %d ms", (float)(chunkLen) / 1024 / 1024, (int)(NOW() - s));
 
-	// The cache now has a chunk which satisfies this request. Recurse (once)
-	return ReadSync(pBuffer, sector, count);
+	if (res < 0)
+		return res;
+
+	int available = ChunksCache::CopyAvailable(chunk, chunkStart, res, pBuffer, offset, bytesToRead);
+	m_cache.Take(chunk, chunkStart, res, chunkLen);
+
+	return available;
 }
 
 void GzippedFileReader::Close() {
