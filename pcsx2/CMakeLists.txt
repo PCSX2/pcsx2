@@ -231,14 +231,14 @@ set(pcsx2Headers
 
 # CDVD sources
 set(pcsx2CDVDSources
-    CDVD/BlockdumpFileReader.cpp
+	CDVD/BlockdumpFileReader.cpp
 	CDVD/CdRom.cpp
 	CDVD/CDVDaccess.cpp
 	CDVD/CDVD.cpp
 	CDVD/CDVDisoReader.cpp
-    CDVD/InputIsoFile.cpp
-    CDVD/OutputIsoFile.cpp
-    CDVD/CompressedFileReader.cpp
+	CDVD/InputIsoFile.cpp
+	CDVD/OutputIsoFile.cpp
+	CDVD/CompressedFileReader.cpp
 	CDVD/IsoFS/IsoFile.cpp
 	CDVD/IsoFS/IsoFSCDVD.cpp
 	CDVD/IsoFS/IsoFS.cpp
@@ -251,6 +251,7 @@ set(pcsx2CDVDHeaders
 	CDVD/CDVD.h
 	CDVD/CDVD_internal.h
 	CDVD/CDVDisoReader.h
+	CDVD/zlib_indexed.h
 	CDVD/IsoFileFormats.h
 	CDVD/IsoFS/IsoDirectory.h
 	CDVD/IsoFS/IsoFileDescriptor.h

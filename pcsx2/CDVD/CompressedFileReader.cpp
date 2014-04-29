@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 
-#include "zlib_indexed.c"
+#include "zlib_indexed.h"
 
 /////////// Some complementary utilities for zlib_indexed.c //////////
 

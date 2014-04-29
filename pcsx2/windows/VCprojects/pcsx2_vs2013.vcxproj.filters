@@ -856,9 +856,6 @@
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\CDVD\zlib_indexed.c">
-      <Filter>System\ISO</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1269,6 +1266,9 @@
     </ClInclude>
     <ClInclude Include="..\..\gui\Debugger\DebuggerLists.h">
       <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\zlib_indexed.h">
+      <Filter>System\ISO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
