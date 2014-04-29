@@ -200,6 +200,7 @@ public:
 		m_pIndex(0),
 		m_cache(CACHE_SIZE_MB) {
 		m_blocksize = 2048;
+		m_zstate.isValid = 0;
 	};
 
 	virtual ~GzippedFileReader(void) { Close(); };
@@ -230,6 +231,8 @@ private:
 	int     _ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead);
 	int		mBytesRead; // Temp sync read result when simulating async read
 	Access* m_pIndex;   // Quick access index
+	Zstate  m_zstate;
+
 	ChunksCache m_cache;
 };
 
@@ -309,17 +312,18 @@ int GzippedFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
 	return _ReadSync(pBuffer, offset, bytesToRead);
 }
 
+#define SEQUENTIAL_CHUNK (256 * 1024)
 void GzippedFileReader::GetOptimalChunkForExtraction(PX_off_t offset, PX_off_t& out_chunkStart, int& out_chunkLen) {
 	// The optimal extraction size is m_pIndex->span for minimal extraction on continuous access.
-	// However, if span is big (e.g. 4M) then each extraction could be too slow for the game to like.
-	// As a tradeoff, we can extract in smaller chunks, but some data will be extracted more than required.
-	// Empirical examination suggests that span==4M and extraction-unit==1M results in the following:
-	// - On continuous access: overall extraction time ->200%, average single extract -> 30%, max extract -> 60%
-	// So on continuous we spends 2x cpu time on extraction, but the games like it better due to shorter pauses.
-	// On completely random access from all over the disk - it's a clear win (e.g. SoTC).
-	int size = std::min(m_pIndex->span, 1 * 1024 * 1024);
-	out_chunkStart = (PX_off_t)size * (offset / size);
-	out_chunkLen = size;
+	// However, to keep the index small, span has to be relatively big (e.g. 4M) and extracting it
+	// in one go is sometimes more than games are willing to accept nicely.
+	// But since sequential access is practically free (regardless of span) due to storing the state of the
+	// decompressor (m_zstate), we're always setting the extract chunk to significantly smaller than span
+	// (e.g. span = 4M and extract = 256k).
+	// This results is quickest possible sequential extraction and minimal time for random access.
+	// TODO: cache also the extracted data between span boundary and SEQUENTIAL_CHUNK boundary on random.
+	out_chunkStart = (PX_off_t)SEQUENTIAL_CHUNK * (offset / SEQUENTIAL_CHUNK);
+	out_chunkLen = SEQUENTIAL_CHUNK;
 }
 
 int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead) {
@@ -354,9 +358,11 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 
 	PTT s = NOW();
 	FILE* in = fopen(m_filename.ToUTF8(), "rb");
-	res = extract(in, m_pIndex, chunkStart, (unsigned char*)chunk, chunkLen);
+	res = extract(in, m_pIndex, chunkStart, (unsigned char*)chunk, chunkLen, &m_zstate);
 	fclose(in);
-	Console.WriteLn(Color_Gray, "gunzip: %1.1f MB - %d ms", (float)(chunkLen) / 1024 / 1024, (int)(NOW() - s));
+	int duration = NOW() - s;
+	if (duration > 10)
+		Console.WriteLn(Color_Gray, "gunzip: %1.2f MB - %d ms", (float)(chunkLen) / 1024 / 1024, duration);
 
 	if (res < 0)
 		return res;
@@ -372,6 +378,11 @@ void GzippedFileReader::Close() {
 	if (m_pIndex) {
 		free_index((Access*)m_pIndex);
 		m_pIndex = 0;
+	}
+
+	if (m_zstate.isValid) {
+		(void)inflateEnd(&m_zstate.strm);
+		m_zstate.isValid = false;
 	}
 }
 

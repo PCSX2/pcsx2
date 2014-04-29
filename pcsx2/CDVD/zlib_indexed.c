@@ -45,6 +45,8 @@ Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
   - access: added members span and uncompressed_size which are filled by build_index.
   - point and access packed for safety since they go to disk as is (but no endian-ness handling).
       But they're still aligned since each member size is multiple of 4, so no perf issues.
+  - extract: added state import/export for instant sequential access regardless of index
+      (Thanks to Mark Adler for suggesting the approach)
   - build_index(...) - added progress prints
   - CHUNK changed from 16k to 512k
  */
@@ -108,17 +110,19 @@ Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
 #include <Pcsx2Types.h>
 #ifdef WIN32
 #	define PX_fseeko _fseeki64
+#   define PX_ftello _ftelli64
 #	define PX_off_t  s64        /* __int64 */
 #else
 #	define PX_fseeko fseeko
+#   define PX_ftello ftello
 #	define PX_off_t  off_t
 #endif
 
 #define local static
 
-//#define SPAN (1048576L*2)   /* desired distance between access points */
-#define WINSIZE 32768U      /* sliding window size */
-#define CHUNK (512 * 1024)  /* file input buffer size */
+//#define SPAN (1048576L)  /* desired distance between access points */
+#define WINSIZE 32768U     /* sliding window size */
+#define CHUNK (64 * 1024)  /* file input buffer size */
 
 #ifdef WIN32
 #    pragma pack(push, indexData, 1)
@@ -325,6 +329,14 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
     return ret;
 }
 
+typedef struct zstate {
+    PX_off_t lastChunkFilepos;
+    PX_off_t nextOffset;
+    uint next_in_offset;
+    z_stream strm;
+    int isValid;
+} Zstate;
+
 /* Use the index to read len bytes from offset into buf, return bytes read or
    negative for error (Z_DATA_ERROR or Z_MEM_ERROR).  If data is requested past
    the end of the uncompressed data, then extract() will return a value less
@@ -333,50 +345,67 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
    was generated.  extract() may also return Z_ERRNO if there is an error on
    reading or seeking the input file. */
 local int extract(FILE *in, struct access *index, PX_off_t offset,
-                  unsigned char *buf, int len)
+                  unsigned char *buf, int len, zstate *state = 0)
 {
     int ret, skip;
     z_stream strm;
     struct point *here;
     unsigned char input[CHUNK];
     unsigned char discard[WINSIZE];
+    PX_off_t orig_offset = offset;
 
     /* proceed only if something reasonable to do */
     if (len < 0)
         return 0;
 
-    /* find where in stream to start */
-    here = index->list;
-    ret = index->have;
-    while (--ret && here[1].out <= offset)
-        here++;
-
-    /* initialize file and inflate state to start there */
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.avail_in = 0;
-    strm.next_in = Z_NULL;
-    ret = inflateInit2(&strm, -15);         /* raw inflate */
-    if (ret != Z_OK)
-        return ret;
-    ret = PX_fseeko(in, here->in - (here->bits ? 1 : 0), SEEK_SET);
-    if (ret == -1)
-        goto extract_ret;
-    if (here->bits) {
-        ret = getc(in);
-        if (ret == -1) {
-            ret = ferror(in) ? Z_ERRNO : Z_DATA_ERROR;
-            goto extract_ret;
-        }
-        (void)inflatePrime(&strm, here->bits, ret >> (8 - here->bits));
+    if (state && state->isValid && offset != state->nextOffset) {
+        // state doesn't match offset, free allocations before strm is overwritten
+        (void)inflateEnd(&state->strm);
+        state->isValid = 0;
     }
-    (void)inflateSetDictionary(&strm, here->window, WINSIZE);
 
-    /* skip uncompressed bytes until offset reached, then satisfy request */
-    offset -= here->out;
-    strm.avail_in = 0;
-    skip = 1;                               /* while skipping to offset */
+    if (state && state->isValid && offset == state->nextOffset) {
+        strm = state->strm;
+        state->isValid = 0; // we took control over strm. revalidate when/if we give it back
+        PX_fseeko(in, state->lastChunkFilepos + state->next_in_offset, SEEK_SET);
+        strm.avail_in = 0;
+        offset = 0;
+        skip = 1;
+    } else {
+        /* find where in stream to start */
+        here = index->list;
+        ret = index->have;
+        while (--ret && here[1].out <= offset)
+            here++;
+
+        /* initialize file and inflate state to start there */
+        strm.zalloc = Z_NULL;
+        strm.zfree = Z_NULL;
+        strm.opaque = Z_NULL;
+        strm.avail_in = 0;
+        strm.next_in = Z_NULL;
+        ret = inflateInit2(&strm, -15);         /* raw inflate */
+        if (ret != Z_OK)
+            return ret;
+        ret = PX_fseeko(in, here->in - (here->bits ? 1 : 0), SEEK_SET);
+        if (ret == -1)
+            goto extract_ret;
+        if (here->bits) {
+            ret = getc(in);
+            if (ret == -1) {
+                ret = ferror(in) ? Z_ERRNO : Z_DATA_ERROR;
+                goto extract_ret;
+            }
+            (void)inflatePrime(&strm, here->bits, ret >> (8 - here->bits));
+        }
+        (void)inflateSetDictionary(&strm, here->window, WINSIZE);
+
+        /* skip uncompressed bytes until offset reached, then satisfy request */
+        offset -= here->out;
+        strm.avail_in = 0;
+        skip = 1;                               /* while skipping to offset */
+    }
+
     do {
         /* define where to put uncompressed data, and how much */
         if (offset == 0 && skip) {          /* at offset now */
@@ -398,6 +427,7 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
         /* uncompress until avail_out filled, or end of stream */
         do {
             if (strm.avail_in == 0) {
+                state && (state->lastChunkFilepos = PX_ftello(in));
                 strm.avail_in = fread(input, 1, CHUNK, in);
                 if (ferror(in)) {
                     ret = Z_ERRNO;
@@ -410,6 +440,7 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
                 strm.next_in = input;
             }
             ret = inflate(&strm, Z_NO_FLUSH);       /* normal inflate */
+            state && (state->next_in_offset = strm.next_in - input);
             if (ret == Z_NEED_DICT)
                 ret = Z_DATA_ERROR;
             if (ret == Z_MEM_ERROR || ret == Z_DATA_ERROR)
@@ -425,12 +456,19 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
         /* do until offset reached and requested data read, or stream ends */
     } while (skip);
 
+    int isEnd = ret == Z_STREAM_END;
     /* compute number of uncompressed bytes read after offset */
     ret = skip ? 0 : len - strm.avail_out;
 
     /* clean up and return bytes read or error */
   extract_ret:
-    (void)inflateEnd(&strm);
+    if (state && ret == len && !isEnd) {
+        state->nextOffset = orig_offset + len;
+        state->strm = strm;
+        state->isValid = 1;
+    } else
+        (void)inflateEnd(&strm);
+
     return ret;
 }
 
