@@ -353,6 +353,7 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
     unsigned char input[CHUNK];
     unsigned char discard[WINSIZE];
     PX_off_t orig_offset = offset;
+    int isEnd = 0;
 
     /* proceed only if something reasonable to do */
     if (len < 0)
@@ -456,7 +457,7 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
         /* do until offset reached and requested data read, or stream ends */
     } while (skip);
 
-    int isEnd = ret == Z_STREAM_END;
+    isEnd = ret == Z_STREAM_END;
     /* compute number of uncompressed bytes read after offset */
     ret = skip ? 0 : len - strm.avail_out;
 
