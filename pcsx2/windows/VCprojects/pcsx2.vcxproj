@@ -178,6 +178,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
     </CustomBuild>
+    <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
     <None Include="..\..\gui\Debugger\DebuggerLists.h" />
     <None Include="..\..\Utilities\folderdesc.txt" />
@@ -708,6 +709,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\AsyncFileReader.h" />
+    <ClInclude Include="..\..\CDVD\zlib_indexed.h" />
     <ClInclude Include="..\..\DebugTools\Breakpoints.h" />
     <ClInclude Include="..\..\DebugTools\DebugInterface.h" />
     <ClInclude Include="..\..\DebugTools\DisassemblyManager.h" />
