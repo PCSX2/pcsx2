@@ -67,8 +67,9 @@ void vif1TransferToMemory()
 		pxAssert(p3.isDone() || !p3.gifTag.isValid);
 	}
 
-	GetMTGS().SendPointerPacket(GS_RINGTYPE_READ_FIFO2, size, pMem);
 	GetMTGS().WaitGS();
+	GetMTGS().SendPointerPacket(GS_RINGTYPE_READ_FIFO2, size, pMem);
+	GetMTGS().WaitGS(false); // wait without reg sync
 	pMem += size;
 
 	if(pMem < pMemEnd) {
