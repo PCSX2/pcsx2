@@ -23,6 +23,7 @@
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
 
+#include "DebugTools/SifRpc.h" // for sif_tracer
 
 static __fi bool _add64_Overflow( s64 x, s64 y, s64 &ret )
 {
@@ -107,11 +108,11 @@ const char * const R5900::bios[256]=
 	"ReferThreadStatus","iReferThreadStatus",	"SleepThread",		"WakeupThread",
 	"_iWakeupThread",   "CancelWakeupThread",	"iCancelWakeupThread",	"SuspendThread",
 	"iSuspendThread",   "ResumeThread",		"iResumeThread",	"JoinThread",
-	"RFU060",	    "RFU061",			"EndOfHeap",		 "RFU063",
+	"InitMainThread",	    "SetHeap",			"EndOfHeap",		 "RFU063",
 //0x40
 	"CreateSema",	    "DeleteSema",	"SignalSema",		"iSignalSema",
 	"WaitSema",	    "PollSema",		"iPollSema",		"ReferSemaStatus",
-	"iReferSemaStatus", "RFU073",		"SetOsdConfigParam", 	"GetOsdConfigParam",
+	"iReferSemaStatus", "iDeleteSema",		"SetOsdConfigParam", 	"GetOsdConfigParam",
 	"GetGsHParam",	    "GetGsVParam",	"SetGsHParam",		"SetGsVParam",
 //0x50
 	"RFU080_CreateEventFlag",	"RFU081_DeleteEventFlag",
@@ -915,6 +916,9 @@ void SYSCALL()
 				dmat->size, dmat->attr,
 				dmat->dest, dmat->src);
 		}
+	}
+	if (call == 0x77) {
+		sif_tracer::analyze_dma_transfer(1, cpuRegs.GPR.n.a0.UL[0], cpuRegs.GPR.n.a1.UL[0]);
 	}
 
 	cpuRegs.pc -= 4;

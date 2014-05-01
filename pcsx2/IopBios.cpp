@@ -17,6 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 #include "R5900.h" // for g_GameStarted
+#include "DebugTools/SifRpc.h" // for sif_tracer
 
 #include <ctype.h>
 #include <string.h>
@@ -585,7 +586,30 @@ namespace intrman {
 namespace sifcmd {
 	void sceSifRegisterRpc_DEBUG()
 	{
-		DevCon.WriteLn( Color_Gray, "sifcmd sceSifRegisterRpc: rpc_id %x", a1);
+		DevCon.WriteLn( Color_Gray, "sifcmd sceSifRegisterRpc: server add %x, rpc_id %x. Func_ptr %x with buffer %x. Cancel Func_ptr %x with buffer %x. Queue %x",
+				a0, a1, a2, a3, iopVirtMemR<char>(sp + 4), iopVirtMemR<char>(sp+8), iopVirtMemR<char>(sp+12));
+	}
+
+	void sceSifSetRpcQueue_DEBUG()
+	{
+		DevCon.WriteLn( Color_Gray, "sifcmd sceSifSetRpcQueue: %x", a0);
+	}
+
+	void sceSifRpcLoop_DEBUG()
+	{
+		DevCon.WriteLn( Color_Gray, "sifcmd sceSifRpcLoop on current thread (???)");
+	}
+
+	void sceSifInitRpc_DEBUG()
+	{
+		DevCon.WriteLn( Color_Gray, "sifcmd sceSifInitRpc on current thread (???)");
+	}
+}
+
+namespace sifman {
+	void sceSifSetDma_DEBUG()
+	{
+		sif_tracer::analyze_dma_transfer(0, a0, a1);
 	}
 }
 
@@ -647,6 +671,9 @@ irxDEBUG irxImportDebug(const char libname[8], u16 index)
 	END_MODULE
 	MODULE(sifcmd)
 		EXPORT_D( 17, sceSifRegisterRpc)
+	END_MODULE
+	MODULE(sifman)
+		EXPORT_D( 7, sceSifSetDma)
 	END_MODULE
 
 	return 0;

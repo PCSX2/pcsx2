@@ -270,7 +270,9 @@ set(pcsx2DebugToolsSources
 	DebugTools/DisR5900asm.cpp
 	DebugTools/DisR5900.cpp
 	DebugTools/DisVU0Micro.cpp
-	DebugTools/DisVU1Micro.cpp)
+	DebugTools/DisVU1Micro.cpp
+	DebugTools/SifRpc.cpp
+	)
 
 # DebugTools headers
 set(pcsx2DebugToolsHeaders
