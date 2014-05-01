@@ -95,8 +95,8 @@ Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
    index in a file.
  */
 
-#ifndef __ZLIB_INDEXED_C__
-#define __ZLIB_INDEXED_C__
+#ifndef __ZLIB_INDEXED_H__
+#define __ZLIB_INDEXED_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -330,9 +330,8 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
 }
 
 typedef struct zstate {
-    PX_off_t lastChunkFilepos;
-    PX_off_t nextOffset;
-    uint next_in_offset;
+    PX_off_t out_offset;
+    PX_off_t in_offset;
     z_stream strm;
     int isValid;
 } Zstate;
@@ -352,23 +351,25 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
     struct point *here;
     unsigned char input[CHUNK];
     unsigned char discard[WINSIZE];
-    PX_off_t orig_offset = offset;
     int isEnd = 0;
 
     /* proceed only if something reasonable to do */
     if (len < 0)
         return 0;
 
-    if (state && state->isValid && offset != state->nextOffset) {
-        // state doesn't match offset, free allocations before strm is overwritten
-        (void)inflateEnd(&state->strm);
-        state->isValid = 0;
+    if (state) {
+        if (state->isValid && offset != state->out_offset) {
+            // state doesn't match offset, free allocations before strm is overwritten
+            (void)inflateEnd(&state->strm);
+            state->isValid = 0;
+        }
+        state->out_offset = offset;
     }
 
-    if (state && state->isValid && offset == state->nextOffset) {
+    if (state && state->isValid) {
         strm = state->strm;
         state->isValid = 0; // we took control over strm. revalidate when/if we give it back
-        PX_fseeko(in, state->lastChunkFilepos + state->next_in_offset, SEEK_SET);
+        PX_fseeko(in, state->in_offset, SEEK_SET);
         strm.avail_in = 0;
         offset = 0;
         skip = 1;
@@ -428,7 +429,7 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
         /* uncompress until avail_out filled, or end of stream */
         do {
             if (strm.avail_in == 0) {
-                state && (state->lastChunkFilepos = PX_ftello(in));
+                state && (state->in_offset = PX_ftello(in));
                 strm.avail_in = fread(input, 1, CHUNK, in);
                 if (ferror(in)) {
                     ret = Z_ERRNO;
@@ -440,8 +441,9 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
                 }
                 strm.next_in = input;
             }
+            uint prev_in = strm.avail_in;
             ret = inflate(&strm, Z_NO_FLUSH);       /* normal inflate */
-            state && (state->next_in_offset = strm.next_in - input);
+            state && (state->in_offset += (prev_in - strm.avail_in));
             if (ret == Z_NEED_DICT)
                 ret = Z_DATA_ERROR;
             if (ret == Z_MEM_ERROR || ret == Z_DATA_ERROR)
@@ -462,9 +464,9 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
     ret = skip ? 0 : len - strm.avail_out;
 
     /* clean up and return bytes read or error */
-  extract_ret:
+extract_ret:
     if (state && ret == len && !isEnd) {
-        state->nextOffset = orig_offset + len;
+        state->out_offset += len;
         state->strm = strm;
         state->isValid = 1;
     } else
@@ -473,4 +475,4 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
     return ret;
 }
 
-#endif   /* __ZLIB_INDEXED_C__ */
+#endif   /* __ZLIB_INDEXED_H__ */
