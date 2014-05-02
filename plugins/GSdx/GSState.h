@@ -122,6 +122,7 @@ class GSState : public GSAlignedClass<32>
 	bool m_mt;
 	void (*m_irq)();
 	bool m_path3hack;
+	bool m_init_read_fifo_supported;
 
 	struct GSTransferBuffer
 	{
@@ -232,6 +233,7 @@ public:
 	void Move();
 	void Write(const uint8* mem, int len);
 	void Read(uint8* mem, int len);
+	void InitReadFIFO(uint8* mem, int len);
 
 	void SoftReset(uint32 mask);
 	void WriteCSR(uint32 csr) {m_regs->CSR.u32[1] = csr;}

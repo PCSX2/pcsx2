@@ -68,8 +68,11 @@ void vif1TransferToMemory()
 	}
 
 	GetMTGS().WaitGS();
-	GetMTGS().SendPointerPacket(GS_RINGTYPE_READ_FIFO2, size, pMem);
-	GetMTGS().WaitGS(false); // wait without reg sync
+	if (GSinitReadFIFO2) {
+		GetMTGS().SendPointerPacket(GS_RINGTYPE_INIT_READ_FIFO2, size, pMem);
+		GetMTGS().WaitGS(false); // wait without reg sync
+	}
+	GSreadFIFO2((u64*)pMem, size);
 	pMem += size;
 
 	if(pMem < pMemEnd) {

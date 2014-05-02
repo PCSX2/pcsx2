@@ -255,7 +255,9 @@ void CALLBACK GSgifTransfer3(u32 *pMem, u32 size);
 void CALLBACK GSgetLastTag(u64* ptag); // returns the last tag processed (64 bits)
 void CALLBACK GSgifSoftReset(u32 mask);
 void CALLBACK GSreadFIFO(u64 *mem);
+void CALLBACK GSinitReadFIFO(u64 *mem);
 void CALLBACK GSreadFIFO2(u64 *mem, int qwc);
+void CALLBACK GSinitReadFIFO2(u64 *mem, int qwc);
 
 // extended funcs
 
@@ -580,6 +582,8 @@ typedef void (CALLBACK* _GSgifTransfer3)(u32 *pMem, u32 size);
 typedef void (CALLBACK* _GSgifSoftReset)(u32 mask);
 typedef void (CALLBACK* _GSreadFIFO)(u64 *pMem);
 typedef void (CALLBACK* _GSreadFIFO2)(u64 *pMem, int qwc);
+typedef void (CALLBACK* _GSinitReadFIFO)(u64 *pMem);
+typedef void (CALLBACK* _GSinitReadFIFO2)(u64 *pMem, int qwc);
 
 typedef void (CALLBACK* _GSchangeSaveState)(int, const char* filename);
 typedef void (CALLBACK* _GSgetTitleInfo2)(char* dest, size_t length);
@@ -734,7 +738,9 @@ extern _GSgifTransfer2    GSgifTransfer2;
 extern _GSgifTransfer3    GSgifTransfer3;
 extern _GSgifSoftReset    GSgifSoftReset;
 extern _GSreadFIFO        GSreadFIFO;
+extern _GSinitReadFIFO    GSinitReadFIFO;
 extern _GSreadFIFO2       GSreadFIFO2;
+extern _GSinitReadFIFO2   GSinitReadFIFO2;
 
 extern _GSchangeSaveState GSchangeSaveState;
 extern _GSgetTitleInfo2   GSgetTitleInfo2;

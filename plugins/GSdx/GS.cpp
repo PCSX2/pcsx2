@@ -542,11 +542,33 @@ EXPORT_C GSwriteCSR(uint32 csr)
 	}
 }
 
+EXPORT_C GSinitReadFIFO(uint8* mem)
+{
+	try
+	{
+		s_gs->InitReadFIFO(mem, 1);
+	}
+	catch (GSDXRecoverableError)
+	{
+	}
+}
+
 EXPORT_C GSreadFIFO(uint8* mem)
 {
 	try
 	{
 		s_gs->ReadFIFO(mem, 1);
+	}
+	catch (GSDXRecoverableError)
+	{
+	}
+}
+
+EXPORT_C GSinitReadFIFO2(uint8* mem, uint32 size)
+{
+	try
+	{
+		s_gs->InitReadFIFO(mem, size);
 	}
 	catch (GSDXRecoverableError)
 	{
