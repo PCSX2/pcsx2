@@ -30,6 +30,7 @@ GSState::GSState()
 	, m_mt(false)
 	, m_irq(NULL)
 	, m_path3hack(0)
+	, m_init_read_fifo_supported(false)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
@@ -1509,9 +1510,12 @@ void GSState::Write(const uint8* mem, int len)
 	m_mem.m_clut.Invalidate();
 }
 
-void GSState::Read(uint8* mem, int len)
+void GSState::InitReadFIFO(uint8* mem, int len)
 {
 	if(len <= 0) return;
+
+	// Allow to keep compatibility with older PCSX2
+	m_init_read_fifo_supported = true;
 
 	int sx = m_env.TRXPOS.SSAX;
 	int sy = m_env.TRXPOS.SSAY;
@@ -1528,6 +1532,30 @@ void GSState::Read(uint8* mem, int len)
 	if(m_tr.x == sx && m_tr.y == sy)
 	{
 		InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
+	}
+}
+
+void GSState::Read(uint8* mem, int len)
+{
+	if(len <= 0) return;
+
+	int sx = m_env.TRXPOS.SSAX;
+	int sy = m_env.TRXPOS.SSAY;
+	int w = m_env.TRXREG.RRW;
+	int h = m_env.TRXREG.RRH;
+
+	// printf("Read len=%d SBP=%05x SBW=%d SPSM=%d SSAX=%d SSAY=%d RRW=%d RRH=%d\n", len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM, sx, sy, w, h);
+
+	if(!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp, len))
+	{
+		return;
+	}
+
+	if (!m_init_read_fifo_supported) {
+		if(m_tr.x == sx && m_tr.y == sy)
+		{
+			InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
+		}
 	}
 
 	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);

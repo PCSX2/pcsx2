@@ -495,14 +495,16 @@ void SysMtgsThread::ExecuteTaskInThread()
 							GSsetGameCRC( tag.data[0], 0 );
 						break;
 
-						case GS_RINGTYPE_READ_FIFO1:
+						case GS_RINGTYPE_INIT_READ_FIFO1:
 							MTGS_LOG( "(MTGS Packet Read) ringtype=Fifo1" );
-							GSreadFIFO( (u64*)tag.data[1]);
+							if (GSinitReadFIFO)
+								GSinitReadFIFO( (u64*)tag.data[1]);
 						break;
 
-						case GS_RINGTYPE_READ_FIFO2:
+						case GS_RINGTYPE_INIT_READ_FIFO2:
 							MTGS_LOG( "(MTGS Packet Read) ringtype=Fifo2, size=%d", tag.data[0] );
-							GSreadFIFO2( (u64*)tag.data[1], tag.data[0]);
+							if (GSinitReadFIFO2)
+								GSinitReadFIFO2( (u64*)tag.data[1], tag.data[0]);
 						break;
 
 #ifdef PCSX2_DEVBUILD
