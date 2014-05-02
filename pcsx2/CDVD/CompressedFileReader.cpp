@@ -101,21 +101,21 @@ static void WriteIndexToFile(Access* index, const wxString filename) {
 }
 
 /////////// End of complementary utilities for zlib_indexed.c //////////
+#define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))
 
 class ChunksCache {
 public:
 	ChunksCache(uint initialLimitMb) : m_size(0), m_entries(0), m_limit(initialLimitMb * 1024 * 1024) {};
-	~ChunksCache() { SetLimit(0); };
+	~ChunksCache() { Clear(); };
 	void SetLimit(uint megabytes);
+	void Clear() { MatchLimit(true); };
 
 	void Take(void* pMallocedSrc, PX_off_t offset, int length, int coverage);
 	int  Read(void* pDest,        PX_off_t offset, int length);
 
 	static int CopyAvailable(void* pSrc, PX_off_t srcOffset, int srcSize,
 							 void* pDst, PX_off_t dstOffset, int maxCopySize) {
-		int available = std::min(maxCopySize, (int)(srcOffset + srcSize - dstOffset));
-		if (available < 0)
-			available = 0;
+		int available = CLAMP(maxCopySize, 0, (int)(srcOffset + srcSize - dstOffset));
 		memcpy(pDst, (char*)pSrc + (dstOffset - srcOffset), available);
 		return available;
 	};
@@ -127,7 +127,7 @@ private:
 			offset(offset),
 			size(length),
 			coverage(coverage)
-			{};
+		{};
 
 		~CacheEntry() { if (data) free(data); };
 
@@ -138,7 +138,7 @@ private:
 	};
 
 	std::list<CacheEntry*> m_entries;
-	void MatchLimit();
+	void MatchLimit(bool removeAll = false);
 	PX_off_t m_size;
 	PX_off_t m_limit;
 };
@@ -148,9 +148,9 @@ void ChunksCache::SetLimit(uint megabytes) {
 	MatchLimit();
 }
 
-void ChunksCache::MatchLimit() {
+void ChunksCache::MatchLimit(bool removeAll) {
 	std::list<CacheEntry*>::reverse_iterator rit;
-	while (m_entries.size() && m_size > m_limit) {
+	while (m_entries.size() && (removeAll || m_size > m_limit)) {
 		rit = m_entries.rbegin();
 		m_size -= (*rit)->size;
 		delete(*rit);
@@ -190,7 +190,8 @@ static void WarnOldIndex(const wxString& filename) {
 }
 
 #define SPAN_DEFAULT (1048576L * 4)   /* distance between direct access points when creating a new index */
-#define CACHE_SIZE_MB 200             /* max cache size for extracted data */
+#define READ_CHUNK_SIZE (256 * 1024)  /* zlib extraction chunks size (at 0-based boundaries) */
+#define CACHE_SIZE_MB 200             /* cache size for extracted data. must be at least READ_CHUNK_SIZE (in MB)*/
 
 class GzippedFileReader : public AsyncFileReader
 {
@@ -198,9 +199,10 @@ class GzippedFileReader : public AsyncFileReader
 public:
 	GzippedFileReader(void) :
 		m_pIndex(0),
-		m_cache(CACHE_SIZE_MB) {
+		m_cache(CACHE_SIZE_MB),
+		m_src(0),
+		m_zstates(0) {
 		m_blocksize = 2048;
-		m_zstate.isValid = 0;
 	};
 
 	virtual ~GzippedFileReader(void) { Close(); };
@@ -222,20 +224,46 @@ public:
 		return (int)((m_pIndex ? m_pIndex->uncompressed_size : 0) / m_blocksize);
 	};
 
-	// Same as FlatFileReader, but in case it changes
 	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
 	virtual void SetDataOffset(uint bytes) { m_dataoffset = bytes; }
 private:
+	class Czstate {
+	public:
+		Czstate() { state.isValid = 0; };
+		~Czstate() { Kill(); };
+		void Kill() {
+			if (state.isValid)
+				inflateEnd(&state.strm);
+			state.isValid = 0;
+		}
+		Zstate state;
+	};
+
 	bool	OkIndex();  // Verifies that we have an index, or try to create one
-	void	GetOptimalChunkForExtraction(PX_off_t offset, PX_off_t& out_chunkStart, int& out_chunkLen);
+	PX_off_t GetOptimalExtractionStart(PX_off_t offset);
 	int     _ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead);
+	void	InitZstates();
+
 	int		mBytesRead; // Temp sync read result when simulating async read
 	Access* m_pIndex;   // Quick access index
-	Zstate  m_zstate;
+	Czstate* m_zstates;
+	FILE*	m_src;
 
 	ChunksCache m_cache;
 };
 
+void GzippedFileReader::InitZstates() {
+	if (m_zstates) {
+		delete[] m_zstates;
+		m_zstates = 0;
+	}
+	if (!m_pIndex)
+		return;
+
+	// having another extra element helps avoiding logic for last (so 2+ instead of 1+)
+	int size = 2 + m_pIndex->uncompressed_size / m_pIndex->span;
+	m_zstates = new Czstate[size]();
+}
 
 // TODO: do better than just checking existance and extension
 bool GzippedFileReader::CanHandle(const wxString& fileName) {
@@ -257,6 +285,7 @@ bool GzippedFileReader::OkIndex() {
 			Console.Warning("It will work fine, but if you want to generate a new index with default intervals, delete this index file.");
 			Console.Warning("(smaller intervals mean bigger index file and quicker but more frequent decompressions)");
 		}
+		InitZstates();
 		return true;
 	}
 
@@ -274,16 +303,18 @@ bool GzippedFileReader::OkIndex() {
 		WriteIndexToFile((Access*)m_pIndex, indexfile);
 	} else {
 		Console.Error("ERROR (%d): index could not be generated for file '%s'", len, (const char*)m_filename.To8BitData());
+		InitZstates();
 		return false;
 	}
 
+	InitZstates();
 	return true;
 }
 
 bool GzippedFileReader::Open(const wxString& fileName) {
 	Close();
 	m_filename = fileName;
-	if (!CanHandle(fileName) || !OkIndex()) {
+	if (!(m_src = fopen(m_filename.ToUTF8(), "rb")) || !CanHandle(fileName) || !OkIndex()) {
 		Close();
 		return false;
 	};
@@ -309,68 +340,102 @@ int GzippedFileReader::FinishRead(void) {
 int GzippedFileReader::ReadSync(void* pBuffer, uint sector, uint count) {
 	PX_off_t offset = (s64)sector * m_blocksize + m_dataoffset;
 	int bytesToRead = count * m_blocksize;
-	return _ReadSync(pBuffer, offset, bytesToRead);
+	int res = _ReadSync(pBuffer, offset, bytesToRead);
+	if (res < 0)
+		Console.Error("Error: iso-gzip read unsuccessful.");
+	return res;
 }
 
-#define SEQUENTIAL_CHUNK (256 * 1024)
-void GzippedFileReader::GetOptimalChunkForExtraction(PX_off_t offset, PX_off_t& out_chunkStart, int& out_chunkLen) {
-	// The optimal extraction size is m_pIndex->span for minimal extraction on continuous access.
-	// However, to keep the index small, span has to be relatively big (e.g. 4M) and extracting it
-	// in one go is sometimes more than games are willing to accept nicely.
-	// But since sequential access is practically free (regardless of span) due to storing the state of the
-	// decompressor (m_zstate), we're always setting the extract chunk to significantly smaller than span
-	// (e.g. span = 4M and extract = 256k).
-	// This results is quickest possible sequential extraction and minimal time for random access.
-	// TODO: cache also the extracted data between span boundary and SEQUENTIAL_CHUNK boundary on random.
-	out_chunkStart = (PX_off_t)SEQUENTIAL_CHUNK * (offset / SEQUENTIAL_CHUNK);
-	out_chunkLen = SEQUENTIAL_CHUNK;
+// If we have a valid and adequate zstate for this span, use it, else, use the index
+PX_off_t GzippedFileReader::GetOptimalExtractionStart(PX_off_t offset) {
+	int span = m_pIndex->span;
+	Czstate& cstate = m_zstates[offset / span];
+	PX_off_t stateOffset = cstate.state.isValid ? cstate.state.out_offset : 0;
+	if (stateOffset && stateOffset <= offset)
+		return stateOffset; // state is faster than indexed
+
+	// If span is not exact multiples of READ_CHUNK_SIZE (because it was configured badly),
+	// we fallback to always READ_CHUNK_SIZE boundaries
+	if (span % READ_CHUNK_SIZE)
+		return offset / READ_CHUNK_SIZE * READ_CHUNK_SIZE;
+
+	return span * (offset / span); // index direct access boundaries
 }
 
 int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead) {
 	if (!OkIndex())
 		return -1;
 
-	//Make sure the request is inside a single optimal span, or split it otherwise to make it so
-	PX_off_t chunkStart; int chunkLen;
-	GetOptimalChunkForExtraction(offset, chunkStart, chunkLen);
-	uint maxInChunk = chunkStart + chunkLen - offset;
+	// Without all the caching, chunking and states, this would be enough:
+	// return extract(m_src, m_pIndex, offset, (unsigned char*)pBuffer, bytesToRead);
+
+	// Split request to READ_CHUNK_SIZE chunks at READ_CHUNK_SIZE boundaries
+	uint maxInChunk = READ_CHUNK_SIZE - offset % READ_CHUNK_SIZE;
 	if (bytesToRead > maxInChunk) {
-		int res1 = _ReadSync(pBuffer, offset, maxInChunk);
-		if (res1 != maxInChunk)
-			return res1; // failure or EOF
+		int first = _ReadSync(pBuffer, offset, maxInChunk);
+		if (first != maxInChunk)
+			return first; // EOF or failure
 
-		int res2 = _ReadSync((char*)pBuffer + maxInChunk, offset + maxInChunk, bytesToRead - maxInChunk);
-		if (res2 < 0)
-			return res2;
+		int rest = _ReadSync((char*)pBuffer + maxInChunk, offset + maxInChunk, bytesToRead - maxInChunk);
+		if (rest < 0)
+			return rest;
 
-		return res1 + res2;
+		return first + rest;
 	}
 
-	// From here onwards it's guarenteed that the request is inside a single optimal extractable/cacheable span
+	// From here onwards it's guarenteed that the request is inside a single READ_CHUNK_SIZE boundaries
 
 	int res = m_cache.Read(pBuffer, offset, bytesToRead);
 	if (res >= 0)
 		return res;
 
-	// Not available from cache. Decompress a chunk with optimal boundaries
-	// which contains the request.
-	char* chunk = (char*)malloc(chunkLen);
-
+	// Not available from cache. Decompress from optimal starting
+	// point in READ_CHUNK_SIZE chunks and cache each chunk.
 	PTT s = NOW();
-	FILE* in = fopen(m_filename.ToUTF8(), "rb");
-	res = extract(in, m_pIndex, chunkStart, (unsigned char*)chunk, chunkLen, &m_zstate);
-	fclose(in);
+	PX_off_t extractOffset = GetOptimalExtractionStart(offset); // guaranteed in READ_CHUNK_SIZE boundaries
+	int size = offset + maxInChunk - extractOffset;
+	unsigned char* extracted = (unsigned char*)malloc(size);
+
+	int span = m_pIndex->span;
+	int spanix = extractOffset / span;
+	res = extract(m_src, m_pIndex, extractOffset, extracted, size, &(m_zstates[spanix].state));
+	if (res < 0) {
+		free(extracted);
+		return res;
+	}
+	int copied = ChunksCache::CopyAvailable(extracted, extractOffset, res, pBuffer, offset, bytesToRead);
+
+	if (m_zstates[spanix].state.isValid && (extractOffset + res) / span != offset / span) {
+		// The state no longer matches this span.
+		// move the state to the appropriate span because it will be faster than using the index
+		int targetix = (extractOffset + res) / span;
+		m_zstates[targetix].Kill();
+		m_zstates[targetix] = m_zstates[spanix]; // We have elements for the entire file, and another one.
+		m_zstates[spanix].state.isValid = 0; // Not killing because we need the state.
+	}
+
+	if (size <= READ_CHUNK_SIZE)
+		m_cache.Take(extracted, extractOffset, res, size);
+	else { // split into cacheable chunks
+		for (int i = 0; i < size; i += READ_CHUNK_SIZE) {
+			int available = CLAMP(res - i, 0, READ_CHUNK_SIZE);
+			void* chunk = available ? malloc(available) : 0;
+			if (available)
+				memcpy(chunk, extracted + i, available);
+			m_cache.Take(chunk, extractOffset + i, available, std::min(size - i, READ_CHUNK_SIZE));
+		}
+		free(extracted);
+	}
+
 	int duration = NOW() - s;
 	if (duration > 10)
-		Console.WriteLn(Color_Gray, "gunzip: %1.2f MB - %d ms", (float)(chunkLen) / 1024 / 1024, duration);
+		Console.WriteLn(Color_Gray, "gunzip: chunk #%5d-%2d : %1.2f MB - %d ms",
+			(int)(offset / 4 / 1024 / 1024),
+			(int)(offset % (4 * 1024 * 1024) / READ_CHUNK_SIZE),
+			(float)size / 1024 / 1024,
+			duration);
 
-	if (res < 0)
-		return res;
-
-	int available = ChunksCache::CopyAvailable(chunk, chunkStart, res, pBuffer, offset, bytesToRead);
-	m_cache.Take(chunk, chunkStart, res, chunkLen);
-
-	return available;
+	return copied;
 }
 
 void GzippedFileReader::Close() {
@@ -380,9 +445,12 @@ void GzippedFileReader::Close() {
 		m_pIndex = 0;
 	}
 
-	if (m_zstate.isValid) {
-		(void)inflateEnd(&m_zstate.strm);
-		m_zstate.isValid = false;
+	InitZstates(); // results in delete because no index
+	m_cache.Clear();
+
+	if (m_src) {
+		fclose(m_src);
+		m_src = 0;
 	}
 }
 
