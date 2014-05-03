@@ -228,7 +228,7 @@ public:
 	}
 
 	void Set() {pthread_cond_signal(&m_cv);}
-	bool Wait(IGSLock* l) {pthread_cond_wait(&m_cv, *(GSCondVarLock*)l) == 0; return true;}
+	bool Wait(IGSLock* l) {return pthread_cond_wait(&m_cv, *(GSCondVarLock*)l) == 0;}
 
 	operator pthread_cond_t* () {return &m_cv;}
 };

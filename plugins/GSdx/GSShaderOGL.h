@@ -35,8 +35,8 @@ class GSShaderOGL {
 	void SetupUniform();
 	void SetupRessources();
 
-	void SetUniformBinding(GLuint prog, GLchar* name, GLuint binding);
-	void SetSamplerBinding(GLuint prog, GLchar* name, GLuint binding);
+	void SetUniformBinding(GLuint prog, const GLchar* name, GLuint binding);
+	void SetSamplerBinding(GLuint prog, const GLchar* name, GLuint binding);
 
 	bool ValidateShader(GLuint p);
 	bool ValidateProgram(GLuint p);

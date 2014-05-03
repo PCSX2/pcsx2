@@ -195,7 +195,7 @@ void GPURendererSW::VertexKick()
 
 	int count = 0;
 
-	if(GSVertexSW* v = DrawingKick(count))
+	if(DrawingKick(count))
 	{
 		// TODO
 

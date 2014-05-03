@@ -129,7 +129,7 @@ static u32 eeScaleBlockCycles();
 
 void _eeFlushAllUnused()
 {
-	int i;
+	u32 i;
 	for(i = 0; i < 34; ++i) {
 		if( pc < s_nEndBlock ) {
 			if( (g_pCurInstInfo[1].regs[i]&EEINST_USED) )
@@ -241,7 +241,7 @@ void eeSignExtendTo(int gpr, bool onlyupper)
 
 int _flushXMMunused()
 {
-	int i;
+	u32 i;
 	for (i=0; i<iREGCNT_XMM; i++) {
 		if (!xmmregs[i].inuse || xmmregs[i].needed || !(xmmregs[i].mode&MODE_WRITE) ) continue;
 
@@ -260,7 +260,7 @@ int _flushXMMunused()
 
 int _flushMMXunused()
 {
-	int i;
+	u32 i;
 	for (i=0; i<iREGCNT_MMX; i++) {
 		if (!mmxregs[i].inuse || mmxregs[i].needed || !(mmxregs[i].mode&MODE_WRITE) ) continue;
 
@@ -1358,7 +1358,8 @@ void recMemcheck(u32 bits, bool store)
 void recompileNextInstruction(int delayslot)
 {
 	static u8 s_bFlushReg = 1;
-	int i, count;
+	u32 i;
+	int count;
 
 	// add breakpoint
 	if (CBreakPoints::IsAddressBreakPoint(pc))

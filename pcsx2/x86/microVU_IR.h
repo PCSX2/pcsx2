@@ -200,7 +200,7 @@ struct microMapXMM {
 
 class microRegAlloc {
 protected:
-	static const u32   xmmTotal = 7; // Don't allocate PQ?
+	static const int   xmmTotal = 7; // Don't allocate PQ?
 	microMapXMM	xmmMap[xmmTotal];
 	int			counter; // Current allocation count
 	int			index;   // VU0 or VU1

@@ -93,8 +93,8 @@ ZZshProgram	ZZshMainProgram;
 char*		ZZshSource;			// Shader's source data.	
 off_t		ZZshSourceSize;
 
-extern char* EFFECT_NAME;				// All this variables used for testing and set manually
-extern char* EFFECT_DIR;
+extern char EFFECT_NAME[256];				// All this variables used for testing and set manually
+extern char EFFECT_DIR[256];
 
 bool g_bCRTCBilinear = true;
 

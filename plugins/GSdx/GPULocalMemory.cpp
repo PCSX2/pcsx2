@@ -161,22 +161,22 @@ const void* GPULocalMemory::GetTexture(int tp, int tx, int ty)
 
 	if((m_texture.valid[tp][ty] & flag) == 0)
 	{
-		int bpp = 0;
+		// int bpp = 0;
 
 		switch(tp)
 		{
 		case 0:
 			ReadPage4(tx, ty, (uint8*)buff);
-			bpp = 4;
+			// bpp = 4;
 			break;
 		case 1:
 			ReadPage8(tx, ty, (uint8*)buff);
-			bpp = 8;
+			// bpp = 8;
 			break;
 		case 2:
 		case 3:
 			ReadPage16(tx, ty, (uint16*)buff);
-			bpp = 16;
+			// bpp = 16;
 		default:
 			// FIXME: __assume(0); // vc9 generates bogus code in release mode
 			break;

@@ -1471,17 +1471,22 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		if (s_gs->m_wnd == NULL) return;
 
 		uint32 crc;
-		fread(&crc, 4, 1, fp);
+		err = fread(&crc, 4, 1, fp);
 		GSsetGameCRC(crc, 0);
 
 		GSFreezeData fd;
-		fread(&fd.size, 4, 1, fp);
+		err = fread(&fd.size, 4, 1, fp);
 		fd.data = new uint8[fd.size];
-		fread(fd.data, fd.size, 1, fp);
+		err = fread(fd.data, fd.size, 1, fp);
 		GSfreeze(FREEZE_LOAD, &fd);
 		delete [] fd.data;
 
-		fread(regs, 0x2000, 1, fp);
+		err = fread(regs, 0x2000, 1, fp);
+
+		if (!err) {
+			fprintf(stderr, "Failed to read %s. Wrong format?\n", lpszCmdLine);
+			return;
+		}
 
 		GSvsync(1);
 
@@ -1503,20 +1508,20 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 				p->param = (uint8)fgetc(fp);
 
-				fread(&p->size, 4, 1, fp);
+				err = fread(&p->size, 4, 1, fp);
 
 				switch(p->param)
 				{
 				case 0:
 					p->buff.resize(0x4000);
 					p->addr = 0x4000 - p->size;
-					fread(&p->buff[p->addr], p->size, 1, fp);
+					err = fread(&p->buff[p->addr], p->size, 1, fp);
 					break;
 				case 1:
 				case 2:
 				case 3:
 					p->buff.resize(p->size);
-					fread(&p->buff[0], p->size, 1, fp);
+					err = fread(&p->buff[0], p->size, 1, fp);
 					break;
 				}
 
@@ -1530,7 +1535,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 			case 2:
 
-				fread(&p->size, 4, 1, fp);
+				err = fread(&p->size, 4, 1, fp);
 
 				break;
 
@@ -1538,12 +1543,14 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 				p->buff.resize(0x2000);
 
-				fread(&p->buff[0], 0x2000, 1, fp);
+				err = fread(&p->buff[0], 0x2000, 1, fp);
 
 				break;
 			}
 
 			packets.push_back(p);
+			if (!err)
+				fprintf(stderr, "Failed to read %s. corrupted file?\n", lpszCmdLine);
 		}
 
 		sleep(1);

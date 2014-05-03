@@ -75,9 +75,6 @@ extern HINSTANCE hInst;
 // Used in a logarithmic Z-test, as (1-o(1))/log(MAX_U32).
 const float g_filog32 = 0.999f / (32.0f * logf(2.0f));
 
-#ifdef _DEBUG
-const static char* g_pTexTypes[] = { "32", "tex32", "clut32", "tex32to16", "tex16to8h" };
-#endif
 const char* g_pShaders[4] = { "full", "reduced", "accurate", "accurate-reduced" };
 
 // ----------------- Global Variables
@@ -91,8 +88,8 @@ ZZshProgram 	g_vsprog = 0, g_psprog = 0;							// 2 -- ZZ
 ZZshParameter 	g_vparamPosXY[2] = {0}, g_fparamFogColor = 0;
 
 //#ifdef DEVBUILD
-extern char* EFFECT_NAME;		// All this variables used for testing and set manually
-extern char* EFFECT_DIR;
+extern char EFFECT_NAME[256];		// All this variables used for testing and set manually
+extern char EFFECT_DIR[256];
 //#endif
 
 bool g_bCRTCBilinear = true;
@@ -224,7 +221,8 @@ bool ZZshCreateOpenShadersFile() {
 	size_t s = ftell(fres);
 	s_lpShaderResources = new u8[s+1];
 	fseek(fres, 0, SEEK_SET);
-	fread(s_lpShaderResources, s, 1, fres);
+	if (fread(s_lpShaderResources, s, 1, fres) == 0)
+			ZZLog::Error_Log("Cannot read ps2hw.dat in working directory.");
 	s_lpShaderResources[s] = 0;
 #	endif // _WIN32
 #else // NOT RELEASE_TO_PUBLIC
@@ -602,7 +600,7 @@ bool ZZshLoadExtraEffects()
 	SHADERHEADER* header;
 	bool bLoadSuccess = true;
 
-	const int vsshaders[4] = { SH_REGULARVS, SH_TEXTUREVS, SH_REGULARFOGVS, SH_TEXTUREFOGVS };
+	const u32 vsshaders[4] = { SH_REGULARVS, SH_TEXTUREVS, SH_REGULARFOGVS, SH_TEXTUREFOGVS };
 
 	for(int i = 0; i < 4; ++i) {
 		LOAD_VS(vsshaders[i], pvs[2*i]);
@@ -690,7 +688,7 @@ FRAGMENTSHADER* ZZshLoadShadeEffect(int type, int texfilter, int fog, int testae
 	else
 		texwrap = TEXWRAP_REPEAT_CLAMP;
 
-	int index = GET_SHADER_INDEX(type, texfilter, texwrap, fog, s_bWriteDepth, testaem, exactcolor, context, 0);
+	u32 index = GET_SHADER_INDEX(type, texfilter, texwrap, fog, s_bWriteDepth, testaem, exactcolor, context, 0);
 
 	assert( index < ArraySize(ppsTexture) );
 	FRAGMENTSHADER* pf = ppsTexture+index;
@@ -905,6 +903,7 @@ FRAGMENTSHADER* ZZshLoadShadeEffect(int type, int texfilter, int fog, int testae
 	if( pf->prog != NULL ) {
 #ifdef _DEBUG
 		char str[255];
+		const static char* g_pTexTypes[] = { "32", "tex32", "clut32", "tex32to16", "tex16to8h" };
 		sprintf(str, "Texture%s%d_%sPS", fog?"Fog":"", texfilter, g_pTexTypes[type]);
 		pf->filename = str;
 #endif

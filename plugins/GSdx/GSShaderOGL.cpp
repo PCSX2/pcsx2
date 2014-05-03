@@ -128,7 +128,7 @@ void GSShaderOGL::GS(GLuint s)
 	}
 }
 
-void GSShaderOGL::SetUniformBinding(GLuint prog, GLchar* name, GLuint binding)
+void GSShaderOGL::SetUniformBinding(GLuint prog, const GLchar* name, GLuint binding)
 {
 	GLuint index;
 	index = gl_GetUniformBlockIndex(prog, name);
@@ -137,7 +137,7 @@ void GSShaderOGL::SetUniformBinding(GLuint prog, GLchar* name, GLuint binding)
 	}
 }
 
-void GSShaderOGL::SetSamplerBinding(GLuint prog, GLchar* name, GLuint binding)
+void GSShaderOGL::SetSamplerBinding(GLuint prog, const GLchar* name, GLuint binding)
 {
 	GLint loc = gl_GetUniformLocation(prog, name);
 	if (loc != -1) {

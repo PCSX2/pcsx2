@@ -86,8 +86,8 @@ extern u8* s_lpShaderResources;
 
 // String's for shader file in developer mode
 //#ifdef ZEROGS_DEVBUILD
-char* EFFECT_NAME = "";
-char* EFFECT_DIR = "";
+char EFFECT_NAME[256];
+char EFFECT_DIR[256];
 //#endif
 
 /////////////////////
@@ -270,7 +270,9 @@ __forceinline bool LoadShadersFromDat()
 	size_t s = ftell(fres);
 	s_lpShaderResources = new u8[s+1];
 	fseek(fres, 0, SEEK_SET);
-	fread(s_lpShaderResources, s, 1, fres);
+	if (fread(s_lpShaderResources, s, 1, fres) == 0)
+		fprintf(stderr, "Failed to read ps2hw.dat. Corrupted file?\n");
+
 	s_lpShaderResources[s] = 0;
 	
 	return true;

@@ -764,7 +764,7 @@ list<VuInstruction>::iterator VuBaseBlock::GetInstIterAtPc(int instpc)
 {
 	pxAssert(instpc >= 0);
 
-	u32 curpc = startpc;
+	int curpc = startpc;
 	list<VuInstruction>::iterator it;
 	for (it = insts.begin(); it != insts.end(); ++it)
 	{
@@ -785,7 +785,7 @@ void VuBaseBlock::GetInstsAtPc(int instpc, list<VuInstruction*>& listinsts)
 
 	listinsts.clear();
 
-	u32 curpc = startpc;
+	int curpc = startpc;
 	list<VuInstruction>::iterator it;
 	for (it = insts.begin(); it != insts.end(); ++it)
 	{
@@ -2023,7 +2023,6 @@ static void SuperVUEliminateDeadCode()
 
 void VuBaseBlock::AssignVFRegs()
 {
-	int i;
 	VuBaseBlock::LISTBLOCKS::iterator itchild;
 	list<VuBaseBlock*>::iterator itblock;
 	list<VuInstruction>::iterator itinst, itnext, itinst2;
@@ -2034,6 +2033,7 @@ void VuBaseBlock::AssignVFRegs()
 
 	if (type & BLOCKTYPE_ANALYZED)
 	{
+		u32 i;
 		// check if changed
 		for (i = 0; i < iREGCNT_XMM; ++i)
 		{
@@ -2056,13 +2056,13 @@ void VuBaseBlock::AssignVFRegs()
 		// reserve, go from upper to lower
 		int lastwrite = -1;
 
-		for (i = 1; i >= 0; --i)
+		for (int i = 1; i >= 0; --i)
 		{
 			_VURegsNum* regs = itinst->regs + i;
 
 
 			// redo the counters so that the proper regs are released
-			for (int j = 0; j < iREGCNT_XMM; ++j)
+			for (u32 j = 0; j < iREGCNT_XMM; ++j)
 			{
 				if (xmmregs[j].inuse)
 				{
@@ -2795,7 +2795,7 @@ static void  __fastcall svudispfn( int g_curdebugvu )
 // frees all regs taking into account the livevars
 void SuperVUFreeXMMregs(u32* livevars)
 {
-	for (int i = 0; i < iREGCNT_XMM; ++i)
+	for (u32 i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse)
 		{
@@ -3040,7 +3040,7 @@ void VuBaseBlock::Recompile()
 			if (!x86regs[s_JumpX86].inuse)
 			{
 				pxAssert(x86regs[s_JumpX86].type == X86TYPE_VUJUMP);
-				s_JumpX86 = 0xffffffff; // notify to jump from g_recWriteback
+				s_JumpX86 = -1; // notify to jump from g_recWriteback
 			}
 		}
 
@@ -3113,7 +3113,7 @@ void VuBaseBlock::Recompile()
 
 				SuperVUTestVU0Condition(0);
 
-				if (s_JumpX86 == 0xffffffff)
+				if (s_JumpX86 == -1)
 					JMP32M((uptr)&g_recWriteback);
 				else
 					JMPR(s_JumpX86);
@@ -3969,7 +3969,7 @@ void recVUMI_IBQ_prep()
 	if (_Is_ == 0)
 	{
 #ifdef SUPERVU_VIBRANCHDELAY
-		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _It_)
+		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_It_)
 		{
 			itreg = -1;
 		}
@@ -3990,7 +3990,7 @@ void recVUMI_IBQ_prep()
 	else if (_It_ == 0)
 	{
 #ifdef SUPERVU_VIBRANCHDELAY
-		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _Is_)
+		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 		{
 			isreg = -1;
 		}
@@ -4014,7 +4014,7 @@ void recVUMI_IBQ_prep()
 		_addNeededX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_);
 
 #ifdef SUPERVU_VIBRANCHDELAY
-		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _Is_)
+		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 		{
 			isreg = -1;
 		}
@@ -4025,14 +4025,14 @@ void recVUMI_IBQ_prep()
 		}
 
 #ifdef SUPERVU_VIBRANCHDELAY
-		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _It_)
+		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_It_)
 		{
 			itreg = -1;
 
 			if (isreg <= 0)
 			{
 				// allocate fsreg
-				if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _Is_)
+				if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 				{
 					isreg = _allocX86reg(-1, X86TYPE_TEMP, 0, MODE_READ | MODE_WRITE);
 					MOV32MtoR(isreg, SuperVUGetVIAddr(_Is_, 1));
@@ -4082,7 +4082,7 @@ void recVUMI_IBGEZ(VURegs* vuu, s32 info)
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
-	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _Is_)
+	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 	{
 		isreg = -1;
 	}
@@ -4112,7 +4112,7 @@ void recVUMI_IBGTZ(VURegs* vuu, s32 info)
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
-	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _Is_)
+	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 	{
 		isreg = -1;
 	}
@@ -4141,7 +4141,7 @@ void recVUMI_IBLEZ(VURegs* vuu, s32 info)
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
-	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _Is_)
+	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 	{
 		isreg = -1;
 	}
@@ -4170,7 +4170,7 @@ void recVUMI_IBLTZ(VURegs* vuu, s32 info)
 	s_JumpX86 = _allocX86reg(-1, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
-	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == _Is_)
+	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 	{
 		isreg = -1;
 	}

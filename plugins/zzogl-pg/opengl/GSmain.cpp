@@ -65,11 +65,11 @@ unsigned char zgsbuild	= VER;
 unsigned char zgsminor = 0;
 
 #ifdef _DEBUG
-char *libraryName	 = "ZZ Ogl PG (Debug) ";
+const char *libraryName	 = "ZZ Ogl PG (Debug) ";
 #elif defined(ZEROGS_DEVBUILD)
-char *libraryName	 = "ZZ Ogl PG (Dev)";
+const char *libraryName	 = "ZZ Ogl PG (Dev)";
 #else
-char *libraryName	 = "ZZ Ogl PG ";
+const char *libraryName	 = "ZZ Ogl PG ";
 #endif
 
 extern int g_nPixelShaderVer, g_nFrameRender, g_nFramesSkipped;
@@ -99,7 +99,7 @@ EXPORT_C_(u32) PS2EgetLibType()
 
 EXPORT_C_(char*) PS2EgetLibName()
 {
-	return libraryName;
+	return (char*) libraryName;
 }
 
 EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
@@ -187,7 +187,7 @@ EXPORT_C_(void) GSsetGameCRC(int crc, int options)
 	{
 		for (u32 i = 0; i < GAME_INFO_INDEX; i++)
 		{
-			if (crc_game_list[i].crc == crc)
+			if (crc_game_list[i].crc == (u32)crc)
 			{
 				ZZLog::WriteLn("Found CRC[%x] in crc game list.", crc);
 				
@@ -393,7 +393,7 @@ EXPORT_C_(void) GSchangeSaveState(int newstate, const char* filename)
 	SaveStateExists = (access(SaveStateFile, 0) == 0);
 }
 
-static bool get_snapshot_filename(char *filename, char* path, const char* extension)
+static bool get_snapshot_filename(char *filename, const char* path, const char* extension)
 {
 	FUNCLOG
 
@@ -440,7 +440,7 @@ EXPORT_C_(void) GSmakeSnapshot(char *path)
 	FUNCLOG
 
 	char filename[256];
-	if (get_snapshot_filename(filename, path, (conf.zz_options.tga_snap) ? "bmp" : "jpg"))
+	if (get_snapshot_filename(filename, (const char*)path, (conf.zz_options.tga_snap) ? "bmp" : "jpg"))
 		SaveSnapshot(filename);
 }
 
@@ -664,21 +664,27 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 		void* hWnd = NULL;
 
-		//_GSopen((void**)&hWnd, "", renderer);
-		GSopen((void**)&hWnd, "", 0);
+		const char* title = "replayer";
+		GSopen((void**)&hWnd, (char*)title, 0);
 
 		u32 crc;
-		fread(&crc, 4, 1, fp);
+		size_t err;
+		err = fread(&crc, 4, 1, fp);
 		GSsetGameCRC(crc, 0);
 
 		freezeData fd;
-		fread(&fd.size, 4, 1, fp);
+		err = fread(&fd.size, 4, 1, fp);
 		fd.data = new s8[fd.size];
-		fread(fd.data, fd.size, 1, fp);
+		err = fread(fd.data, fd.size, 1, fp);
 		GSfreeze(FREEZE_LOAD, &fd);
 		delete [] fd.data;
 
-		fread(regs, 0x2000, 1, fp);
+		err = fread(regs, 0x2000, 1, fp);
+
+		if (!err) {
+			fprintf(stderr, "Failed to read %s. Wrong format?\n", lpszCmdLine);
+			return;
+		}
 
 		GSvsync(1);
 
@@ -698,8 +704,8 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 				p->param = (u8)fgetc(fp);
 
-				fread(&p->size, 4, 1, fp);
-				fread(&p->real_size, 4, 1, fp);
+				err = fread(&p->size, 4, 1, fp);
+				err = fread(&p->real_size, 4, 1, fp);
 
 				switch(p->param)
 				{
@@ -707,13 +713,13 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 					p->buff.resize(0x4000);
 					//p->addr = 0x4000 - p->size;
 					//fread(&p->buff[p->addr], p->size, 1, fp);
-					fread(&p->buff[0], p->size, 1, fp);
+					err = fread(&p->buff[0], p->size, 1, fp);
 					break;
 				case 1:
 				case 2:
 				case 3:
 					p->buff.resize(p->size);
-					fread(&p->buff[0], p->size, 1, fp);
+					err = fread(&p->buff[0], p->size, 1, fp);
 					break;
 				}
 
@@ -721,14 +727,14 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 			case 1:
 
-				fread(&p->param, 4, 1, fp);
+				err = fread(&p->param, 4, 1, fp);
 				//p->param = (u8)fgetc(fp);
 
 				break;
 
 			case 2:
 
-				fread(&p->size, 4, 1, fp);
+				err = fread(&p->size, 4, 1, fp);
 
 				break;
 
@@ -736,7 +742,7 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 
 				p->buff.resize(0x2000);
 
-				fread(&p->buff[0], 0x2000, 1, fp);
+				err = fread(&p->buff[0], 0x2000, 1, fp);
 
 				break;
 
@@ -744,6 +750,8 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 			}
 
 			packets.push_back(p);
+			if (!err)
+				fprintf(stderr, "Failed to read %s. corrupted file?\n", lpszCmdLine);
 		}
 
 		sleep(1);
@@ -767,7 +775,7 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 					switch(p->param)
 					{
 					//case 0: GSgifTransfer1((u32*)&p->buff[0], p->addr); break;
-					case 0: _GSgifTransfer<0>((u32*)&p->buff[0], p->real_size); break;
+					case 0: GSgifTransfer0((u32*)&p->buff[0], p->real_size); break;
 					case 1: GSgifTransfer2((u32*)&p->buff[0], p->real_size); break;
 					case 2: GSgifTransfer3((u32*)&p->buff[0], p->real_size); break;
 					case 3: GSgifTransfer((u32*)&p->buff[0], p->real_size); break;

@@ -27,7 +27,7 @@
 // - buffer_size must be power of 2
 // - ring-buffer has no complete pending packets when read_pos==write_pos
 class VU_Thread : public pxThread {
-	static const u32 buffer_size = (_1mb * 16) / sizeof(u32);
+	static const s32 buffer_size = (_1mb * 16) / sizeof(s32);
 	static const u32 buffer_mask = buffer_size - 1;
 	__aligned(4) u32 buffer[buffer_size];
 	__aligned(4) volatile s32  read_pos; // Only modified by VU thread
@@ -83,8 +83,8 @@ private:
 	void WaitOnSize(s32 size);
 	void ReserveSpace(s32 size);
 
-	volatile s32 GetReadPos();
-	volatile s32 GetWritePos();
+	s32 GetReadPos();
+	s32 GetWritePos();
 	u32* GetWritePtr();
 
 	void incReadPos(s32 offset);

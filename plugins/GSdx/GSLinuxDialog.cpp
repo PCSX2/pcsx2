@@ -29,23 +29,6 @@ GtkWidget *shadeboost_check, *paltex_check, *fba_check, *aa_check,  *native_res_
 GtkWidget *sb_contrast, *sb_brightness, *sb_saturation;
 GtkWidget *resx_spin, *resy_spin;
 
-static void SysMessage(const char *fmt, ...)
-{
-	va_list list;
-	char msg[512];
-
-	va_start(list, fmt);
-	vsprintf(msg, fmt, list);
-	va_end(list);
-
-	if (msg[strlen(msg)-1] == '\n') msg[strlen(msg) - 1] = 0;
-
-	GtkWidget *dialog;
-	dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s", msg);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
-}
-
 GtkWidget* CreateRenderComboBox()
 {
 	GtkWidget  *render_combo_box;

@@ -71,7 +71,7 @@ REC_FUNC(SQC2);
 
 __aligned16 u64 retValues[2];
 
-void _eeOnLoadWrite(int reg)
+void _eeOnLoadWrite(u32 reg)
 {
 	int regt;
 

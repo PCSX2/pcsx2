@@ -106,7 +106,7 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 		_addNeededGPRtoXMMreg(_Rt_);
 
 		if( GPR_IS_CONST1(_Rs_) || GPR_IS_CONST1(_Rt_) ) {
-			int creg = GPR_IS_CONST1(_Rs_) ? _Rs_ : _Rt_;
+			u32 creg = GPR_IS_CONST1(_Rs_) ? _Rs_ : _Rt_;
 			int vreg = creg == _Rs_ ? _Rt_ : _Rs_;
 
 //			if(g_pCurInstInfo->regs[vreg]&EEINST_XMM) {

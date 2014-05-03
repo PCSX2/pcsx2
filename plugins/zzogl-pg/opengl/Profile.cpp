@@ -206,7 +206,7 @@ u64 DVProfWriteStruct(FILE* f, DVPROFSTRUCT* p, int ident)
 	return utime;
 }
 
-void DVProfWrite(char* pfilename, u32 frames)
+void DVProfWrite(const char* pfilename, u32 frames)
 {
 	assert(pfilename != NULL);
 	FILE* f = fopen(pfilename, "wb");

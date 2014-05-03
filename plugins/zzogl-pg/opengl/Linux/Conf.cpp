@@ -80,20 +80,21 @@ void LoadConfig()
 		return;
 	}
 
-	err = fscanf(f, "interlace = %hhx\n", &conf.interlace);
+	err |= fscanf(f, "interlace = %hhx\n", &conf.interlace);
 
-	err = fscanf(f, "mrtdepth = %hhx\n", &conf.mrtdepth);
-	err = fscanf(f, "zzoptions = %x\n", &conf.zz_options._u32);
-	err = fscanf(f, "options = %x\n", &conf.hacks._u32);
-	err = fscanf(f, "bilinear = %hhx\n", &conf.bilinear);
-	err = fscanf(f, "aliasing = %hhx\n", &conf.aa);
-	err = fscanf(f, "width = %x\n", &conf.width);
-	err = fscanf(f, "height = %x\n", &conf.height);
-	err = fscanf(f, "x = %x\n", &conf.x);
-	err = fscanf(f, "y = %x\n", &conf.y);
-	err = fscanf(f, "log = %x\n", &conf.log);
-	err = fscanf(f, "skipdraw = %x\n", &conf.SkipDraw);
-	err = fscanf(f, "disablehacks = %x\n", &conf.disableHacks);
+	err |= fscanf(f, "mrtdepth = %hhx\n", &conf.mrtdepth);
+	err |= fscanf(f, "zzoptions = %x\n", &conf.zz_options._u32);
+	err |= fscanf(f, "options = %x\n", &conf.hacks._u32);
+	err |= fscanf(f, "bilinear = %hhx\n", &conf.bilinear);
+	err |= fscanf(f, "aliasing = %hhx\n", &conf.aa);
+	err |= fscanf(f, "width = %x\n", &conf.width);
+	err |= fscanf(f, "height = %x\n", &conf.height);
+	err |= fscanf(f, "x = %x\n", &conf.x);
+	err |= fscanf(f, "y = %x\n", &conf.y);
+	err |= fscanf(f, "log = %x\n", &conf.log);
+	err |= fscanf(f, "skipdraw = %x\n", &conf.SkipDraw);
+	err |= fscanf(f, "disablehacks = %x\n", &conf.disableHacks);
+	if (err < 0) ZZLog::Error_Log("Failed to read zzogl option");
 	fclose(f);
 
 	// turn off all hacks by default
