@@ -132,13 +132,6 @@ public:
 	static void ChangeMemCheck(u32 start, u32 end, MemCheckCondition cond, MemCheckResult result);
 	static void ClearAllMemChecks();
 
-	static MemCheck *GetMemCheck(u32 address, int size);
-	static void ExecMemCheck(u32 address, bool write, int size, u32 pc);
-
-	// Executes memchecks but used by the jit.  Cleanup finalizes after jit is done.
-	static void ExecMemCheckJitBefore(u32 address, bool write, int size, u32 pc);
-	static void ExecMemCheckJitCleanup();
-
 	static void SetSkipFirst(u32 pc);
 	static u32 CheckSkipFirst(u32 pc);
 
@@ -168,3 +161,5 @@ private:
 };
 
 
+// called from the dynarec
+u32 __fastcall standardizeBreakpointAddress(u32 addr);

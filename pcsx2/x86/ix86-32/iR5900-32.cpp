@@ -1314,7 +1314,9 @@ void recMemcheck(u32 bits, bool store)
 	if (bits == 128)
 		xAND(ecx, ~0x0F);
 
-	xMOV(edx,ecx);
+	xCALL(standardizeBreakpointAddress);
+	xMOV(ecx,eax);
+	xMOV(edx,eax);
 	xADD(edx,bits/8);
 	
 	// ecx = access address
@@ -1332,11 +1334,11 @@ void recMemcheck(u32 bits, bool store)
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
 		
-		xMOV(eax,checks[i].end);
+		xMOV(eax,standardizeBreakpointAddress(checks[i].end));
 		xCMP(ecx,eax);				// address < end
 		xForwardJGE8 next1;			// if address >= end then goto next1
 		
-		xMOV(eax,checks[i].start);
+		xMOV(eax,standardizeBreakpointAddress(checks[i].start));
 		xCMP(eax,edx);				// start < address+size
 		xForwardJGE8 next2;			// if start >= address+size then goto next2
 

@@ -483,12 +483,26 @@ std::string R5900DebugInterface::disasm(u32 address)
 
 bool R5900DebugInterface::isValidAddress(u32 addr)
 {
+	// ee can't access the first part of memory.
 	if (addr < 0x80000)
 		return false;
+
+	if (addr >= 0xFFFF8000)
+		return true;
+
+	addr &= 0x7FFFFFFF;
+
+	// get rid of ee ram mirrors
+	if ((addr >> 28) == 2 || (addr >> 28) == 3)
+		addr &= ~(0xF << 28);
+	
+	// registers
 	if (addr >= 0x10000000 && addr < 0x10010000)
 		return true;
 	if (addr >= 0x12000000 && addr < 0x12001100)
 		return true;
+
+	// scratchpad
 	if (addr >= 0x70000000 && addr < 0x70004000)
 		return true;
 

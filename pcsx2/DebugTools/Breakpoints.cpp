@@ -28,7 +28,22 @@ std::vector<MemCheck> CBreakPoints::memChecks_;
 std::vector<MemCheck *> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
 
-int addressMask = 0x1FFFFFFF;
+// called from the dynarec
+u32 __fastcall standardizeBreakpointAddress(u32 addr)
+{
+	if (addr >= 0xFFFF8000)
+		return addr;
+
+	if (addr >= 0xBFC00000 && addr <= 0xBFFFFFFF)
+		addr &= 0x1FFFFFFF;
+
+	addr &= 0x7FFFFFFF;
+	
+	if ((addr >> 28) == 2 || (addr >> 28) == 3)
+		addr &= ~(0xF << 28);
+	
+	return addr;
+}
 
 MemCheck::MemCheck()
 {
@@ -100,11 +115,12 @@ void MemCheck::JitCleanup()
 
 size_t CBreakPoints::FindBreakpoint(u32 addr, bool matchTemp, bool temp)
 {
-	addr &= addressMask;
+	addr = standardizeBreakpointAddress(addr);
 
 	for (size_t i = 0; i < breakPoints_.size(); ++i)
 	{
-		if ((breakPoints_[i].addr & addressMask) == addr && (!matchTemp || breakPoints_[i].temporary == temp))
+		u32 cmp = standardizeBreakpointAddress(breakPoints_[i].addr);
+		if (cmp == addr && (!matchTemp || breakPoints_[i].temporary == temp))
 			return i;
 	}
 
@@ -113,11 +129,14 @@ size_t CBreakPoints::FindBreakpoint(u32 addr, bool matchTemp, bool temp)
 
 size_t CBreakPoints::FindMemCheck(u32 start, u32 end)
 {
-	start &= addressMask;
-	end &= addressMask;
+	start = standardizeBreakpointAddress(start);
+	end = standardizeBreakpointAddress(end);
+
 	for (size_t i = 0; i < memChecks_.size(); ++i)
 	{
-		if ((memChecks_[i].start & addressMask) == start && (memChecks_[i].end & addressMask) == end)
+		u32 cmpStart = standardizeBreakpointAddress(memChecks_[i].start);
+		int cmpEnd = standardizeBreakpointAddress(memChecks_[i].end);
+		if (cmpStart == start && cmpEnd == end)
 			return i;
 	}
 
@@ -305,70 +324,15 @@ void CBreakPoints::ClearAllMemChecks()
 	}
 }
 
-static inline u32 NotCached(u32 val)
-{
-	// Remove the cached part of the address.
-	return val & ~0x40000000;
-}
-
-MemCheck *CBreakPoints::GetMemCheck(u32 address, int size)
-{
-	address &= addressMask;
-
-	std::vector<MemCheck>::iterator iter;
-	for (iter = memChecks_.begin(); iter != memChecks_.end(); ++iter)
-	{
-		MemCheck &check = *iter;
-		if (check.end != 0)
-		{
-			if (NotCached(address + size) > NotCached(check.start) && NotCached(address) < NotCached(check.end))
-				return &check;
-		}
-		else
-		{
-			if (NotCached(check.start) == NotCached(address))
-				return &check;
-		}
-	}
-
-	//none found
-	return 0;
-}
-
-void CBreakPoints::ExecMemCheck(u32 address, bool write, int size, u32 pc)
-{
-	auto check = GetMemCheck(address, size);
-	if (check)
-		check->Action(address, write, size, pc);
-}
-
-void CBreakPoints::ExecMemCheckJitBefore(u32 address, bool write, int size, u32 pc)
-{
-	auto check = GetMemCheck(address, size);
-	if (check) {
-		check->JitBefore(address, write, size, pc);
-		cleanupMemChecks_.push_back(check);
-	}
-}
-
-void CBreakPoints::ExecMemCheckJitCleanup()
-{
-	for (auto it = cleanupMemChecks_.begin(), end = cleanupMemChecks_.end(); it != end; ++it) {
-		auto check = *it;
-		check->JitCleanup();
-	}
-	cleanupMemChecks_.clear();
-}
-
 void CBreakPoints::SetSkipFirst(u32 pc)
 {
-	breakSkipFirstAt_ = pc & addressMask;
+	breakSkipFirstAt_ = standardizeBreakpointAddress(pc);
 	breakSkipFirstTicks_ = r5900Debug.getCycles();
 }
 
 u32 CBreakPoints::CheckSkipFirst(u32 cmpPc)
 {
-	cmpPc &= addressMask;
+	cmpPc = standardizeBreakpointAddress(cmpPc);
 	u32 pc = breakSkipFirstAt_;
 	if (breakSkipFirstTicks_ == r5900Debug.getCycles())
 		return pc;
