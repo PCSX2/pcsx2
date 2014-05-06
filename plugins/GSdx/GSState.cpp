@@ -1512,7 +1512,8 @@ void GSState::Write(const uint8* mem, int len)
 
 void GSState::InitReadFIFO(uint8* mem, int len)
 {
-	if(len <= 0) return;
+	// Allow to keep compatibility with older PCSX2
+	m_init_read_fifo_supported = true;
 
 	// Allow to keep compatibility with older PCSX2
 	m_init_read_fifo_supported = true;
