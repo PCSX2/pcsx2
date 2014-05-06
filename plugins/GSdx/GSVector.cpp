@@ -202,7 +202,7 @@ GSVector4i GSVector4i::fit(int preset) const
 {
 	GSVector4i r;
 
-	if(preset > 0 && preset < countof(s_ar))
+	if(preset > 0 && preset < (int)countof(s_ar))
 	{
 		r = fit(s_ar[preset][0], s_ar[preset][1]);
 	}

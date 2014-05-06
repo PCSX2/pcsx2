@@ -135,7 +135,7 @@ size_t CBreakPoints::FindMemCheck(u32 start, u32 end)
 	for (size_t i = 0; i < memChecks_.size(); ++i)
 	{
 		u32 cmpStart = standardizeBreakpointAddress(memChecks_[i].start);
-		int cmpEnd = standardizeBreakpointAddress(memChecks_[i].end);
+		u32 cmpEnd = standardizeBreakpointAddress(memChecks_[i].end);
 		if (cmpStart == start && cmpEnd == end)
 			return i;
 	}
