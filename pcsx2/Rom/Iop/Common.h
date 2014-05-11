@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2014  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,24 +15,4 @@
 
 #pragma once
 
-#include "R3000A.h"
-#include "Common.h"
-
-#include "CDVD/CDVD.h"
-#include "CDVD/CdRom.h"
-
-#include "IopDma.h"
-#include "IopMem.h"
-#include "IopHw.h"
-#include "IopBios.h"
-#include "IopCounters.h"
-#include "IopSio2.h"
-#include "Gte.h"
-static const s64 PSXCLK = 36864000;	/* 36.864 Mhz */
-//#define PSXCLK	 9216000	/* 36.864 Mhz */
-//#define PSXCLK	186864000	/* 36.864 Mhz */
-
-// Uncomment to make pcsx2 print each spu2 interrupt it receives
-//#define SPU2IRQTEST
-
-#include "Rom/Iop/Common.h"
+#include "Rom/Iop/Sysmem.h"

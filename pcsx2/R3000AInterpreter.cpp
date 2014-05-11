@@ -22,6 +22,7 @@ using namespace R3000A;
 // Used to flag delay slot instructions when throwig exceptions.
 bool iopIsDelaySlot = false;
 
+static u32 library_return = 0;
 static bool branch2 = 0;
 static u32 branchPC;
 
@@ -95,6 +96,9 @@ void psxJ()
 	if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportLibname(psxRegs.pc), delayslot & 0xffff))
 		return;
 
+	if (delayslot >> 16 == 0x2400)
+		library_return = psxRegs.GPR.n.ra;
+
 	doBranch(_JumpTarget_);
 }
 
@@ -128,8 +132,18 @@ void psxJALR()
 static __fi void execI()
 {
 	psxRegs.code = iopMemRead32(psxRegs.pc);
+#ifdef HLE_SYSMEM_MODULE
+	if (psxRegs.pc == 0x930) {
+		sysmem::Reset();
+	}
+#endif
 
-		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
+	if (psxRegs.pc == library_return) {
+		library_return = 0;
+		PSXBIOS_LOG("Return 0x%x", psxRegs.GPR.n.v0);
+	}
+
+	PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
 
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;

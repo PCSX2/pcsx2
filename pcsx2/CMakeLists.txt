@@ -394,6 +394,10 @@ set(pcsx2GuiHeaders
 	gui/RecentIsoList.h
 	)
 
+set(RomCode
+    Rom/Iop/Sysmem.cpp
+    )
+
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation
 # from the bin2cpp tools at the good moment (ie .h must be created before the pcsx2 compilation)
 # Gui resources headers
@@ -637,7 +641,9 @@ set(Common
 	${pcsx2x86Headers}
 	${pcsx2ZipToolsSources}
 	${pcsx2ZipToolsHeaders}
-	${pcsx2SSources})
+	${pcsx2SSources}
+    ${RomCode}
+    )
 
 # platform sources
 # Linux

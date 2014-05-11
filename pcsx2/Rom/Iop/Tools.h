@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2014  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,24 +15,30 @@
 
 #pragma once
 
-#include "R3000A.h"
-#include "Common.h"
+namespace R3000A {
 
-#include "CDVD/CDVD.h"
-#include "CDVD/CdRom.h"
+#define v0 (psxRegs.GPR.n.v0)
+#define a0 (psxRegs.GPR.n.a0)
+#define a1 (psxRegs.GPR.n.a1)
+#define a2 (psxRegs.GPR.n.a2)
+#define a3 (psxRegs.GPR.n.a3)
+#define sp (psxRegs.GPR.n.sp)
+#define ra (psxRegs.GPR.n.ra)
+#define pc (psxRegs.pc)
 
-#include "IopDma.h"
-#include "IopMem.h"
-#include "IopHw.h"
-#include "IopBios.h"
-#include "IopCounters.h"
-#include "IopSio2.h"
-#include "Gte.h"
-static const s64 PSXCLK = 36864000;	/* 36.864 Mhz */
-//#define PSXCLK	 9216000	/* 36.864 Mhz */
-//#define PSXCLK	186864000	/* 36.864 Mhz */
+#define Ra0 (iopVirtMemR<char>(a0))
+#define Ra1 (iopVirtMemR<char>(a1))
+#define Ra2 (iopVirtMemR<char>(a2))
+#define Ra3 (iopVirtMemR<char>(a3))
 
-// Uncomment to make pcsx2 print each spu2 interrupt it receives
-//#define SPU2IRQTEST
+	// Do it by module to get a return message control by module
+#if 0
+	__fi int return_hle(u32 ret) {
+		v0 = ret;
+		pc = ra;
+		DevCon.WriteLn("return 0x%x", ret);
+		return 1;
+	}
+#endif
 
-#include "Rom/Iop/Common.h"
+}

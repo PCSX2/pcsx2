@@ -645,8 +645,17 @@ const char* irxImportFuncname(const char libname[8], u16 index)
 
 irxHLE irxImportHLE(const char libname[8], u16 index)
 {
-	// debugging output
 	MODULE(sysmem)
+#ifdef HLE_SYSMEM_MODULE
+		EXPORT_H(  4, AllocSysMemory)
+		EXPORT_H(  5, FreeSysMemory)
+		EXPORT_H(  6, QueryMemSize)
+		EXPORT_H(  7, QueryMaxFreeMemSize)
+		EXPORT_H(  8, QueryTotalFreeMemSize)
+		EXPORT_H(  9, QueryBlockTopAddress)
+		EXPORT_H( 10, QueryBlockSize)
+#endif
+		// debugging output
 		EXPORT_H( 14, Kprintf)
 	END_MODULE
 
