@@ -181,6 +181,20 @@ public:
 	wxString GetCategory() const { return _parent::GetCategory() + L".Events"; }
 };
 
+class SysTraceLog_EE_HLE : public SysTraceLog_EE
+{
+	typedef SysTraceLog_EE _parent;
+
+public:
+	SysTraceLog_EE_HLE( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
+
+	bool IsActive() const
+	{
+		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableHLE;
+	}
+
+	wxString GetCategory() const { return _parent::GetCategory() + L".HLE"; }
+};
 
 class SysTraceLog_IOP : public SysTraceLog
 {
@@ -238,6 +252,20 @@ public:
 	}
 
 	wxString GetCategory() const { return _parent::GetCategory() + L".Events"; }
+};
+
+class SysTraceLog_IOP_HLE : public SysTraceLog_IOP
+{
+	typedef SysTraceLog_IOP _parent;
+
+public:
+	SysTraceLog_IOP_HLE( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
+	bool IsActive() const
+	{
+		return _parent::IsActive() && EmuConfig.Trace.IOP.m_EnableHLE;
+	}
+
+	wxString GetCategory() const { return _parent::GetCategory() + L".HLE"; }
 };
 
 // --------------------------------------------------------------------------------------
@@ -309,6 +337,11 @@ struct SysTraceLogPack
 		SysTraceLog_EE_Events		VIF;
 		SysTraceLog_EE_Events		GIF;
 
+		SysTraceLog_EE_HLE          Irq;
+		SysTraceLog_EE_HLE          Thread;
+		SysTraceLog_EE_HLE          Sema;
+		SysTraceLog_EE_HLE          Sif;
+
 		EE_PACK();
 	} EE;
 	
@@ -334,6 +367,9 @@ struct SysTraceLogPack
 		SysTraceLog_IOP_Events		DMAC;
 		SysTraceLog_IOP_Events		Counters;
 		SysTraceLog_IOP_Events		CDVD;
+
+		SysTraceLog_IOP_HLE			Sysmem;
+		SysTraceLog_IOP_HLE			Sif;
 
 		IOP_PACK();
 	} IOP;
@@ -390,7 +426,10 @@ extern void __Log( const char* fmt, ... );
 #define EECNT_LOG		macTrace(EE.Counters)
 #define VifCodeLog		macTrace(EE.VIFcode)
 #define GifTagLog		macTrace(EE.GIFtag)
-
+#define HLE_IRQ			macTrace(EE.Irq)
+#define HLE_THREAD		macTrace(EE.Thread)
+#define HLE_SEMA		macTrace(EE.Sema)
+#define HLE_SIF			macTrace(EE.Sif)
 
 #define PSXBIOS_LOG		macTrace(IOP.Bios)
 #define PSXCPU_LOG		macTrace(IOP.R3000A)
@@ -403,6 +442,9 @@ extern void __Log( const char* fmt, ... );
 #define PAD_LOG			macTrace(IOP.PAD)
 #define GPU_LOG			macTrace(IOP.GPU)
 #define CDVD_LOG		macTrace(IOP.CDVD)
+// IOP module log
+#define SYSMEM_LOG		macTrace(IOP.Sysmem)
+#define MSIF_LOG		macTrace(IOP.Sif)
 
 
 #define ELF_LOG			SysConsole.ELF.IsActive()		&& SysConsole.ELF.Write

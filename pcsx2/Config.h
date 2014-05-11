@@ -77,7 +77,8 @@ struct TraceFiltersEE
 		m_EnableAll		:1,		// Master Enable switch (if false, no logs at all)
 		m_EnableDisasm	:1,
 		m_EnableRegisters:1,
-		m_EnableEvents	:1;		// Enables logging of event-driven activity -- counters, DMAs, etc.
+		m_EnableEvents	:1,		// Enables logging of event-driven activity -- counters, DMAs, etc.
+		m_EnableHLE 	:1;
 	BITFIELD_END
 
 	TraceFiltersEE()
@@ -106,7 +107,8 @@ struct TraceFiltersIOP
 		m_EnableAll		:1,		// Master Enable switch (if false, no logs at all)
 		m_EnableDisasm	:1,
 		m_EnableRegisters:1,
-		m_EnableEvents	:1;		// Enables logging of event-driven activity -- counters, DMAs, etc.
+		m_EnableEvents	:1,		// Enables logging of event-driven activity -- counters, DMAs, etc.
+		m_EnableHLE 	:1;
 	BITFIELD_END
 
 	TraceFiltersIOP()

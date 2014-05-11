@@ -252,6 +252,30 @@ TLD_EE_GIF = {
 	L"GIF",			L"GIF",
 	pxDt("Dumps various GIF and GIFtag parsing data."),
 	"GIF"
+},
+
+TLD_EE_HLE_IRQ = {
+	L"IRQ", L"Irq",
+	pxDt("All HLE info related to kernel irq."),
+	"hleIrq"
+},
+
+TLD_EE_HLE_THREAD = {
+	L"Thread", L"Thread",
+	pxDt("All HLE info related to kernel thread management."),
+	"hleThread"
+},
+
+TLD_EE_HLE_SEMA = {
+	L"Sema", L"sema",
+	pxDt("All HLE info related to kernel semaphore management."),
+	"hleSema"
+},
+
+TLD_EE_HLE_SIF = {
+	L"Sif", L"Sif",
+	pxDt("All HLE info related to sif transaction and RPC decoding"),
+	"hleSif"
 };
 
 // ----------------------------------
@@ -329,6 +353,18 @@ TLD_IOP_CDVD = {
 	L"CDVD",			L"CDVD",
 	pxDt("Detailed logging of CDVD hardware."),
 	"CDVD"
+},
+
+TLD_IOP_SYSMEM = {
+	L"Sysmem",			L"Sysmem",
+	pxDt("Detailed logging of Sysmem module."),
+	"iSysmem"
+},
+
+TLD_IOP_SIF = {
+	L"Sif",			L"Sif",
+	pxDt("Detailed logging of Sif module and RPC decoding"),
+	"iSif"
 };
 
 SysTraceLogPack::SysTraceLogPack()
@@ -360,6 +396,11 @@ SysTraceLogPack::EE_PACK::EE_PACK()
 
 	, VIF		(&TLD_EE_VIF)
 	, GIF		(&TLD_EE_GIF)
+
+	, Irq		(&TLD_EE_HLE_IRQ)
+	, Thread	(&TLD_EE_HLE_THREAD)
+	, Sema		(&TLD_EE_HLE_SEMA)
+	, Sif		(&TLD_EE_HLE_SIF)
 {
 }
 
@@ -379,5 +420,8 @@ SysTraceLogPack::IOP_PACK::IOP_PACK()
 	, DMAC		(&TLD_IOP_DMAC)
 	, Counters	(&TLD_IOP_Counters)
 	, CDVD		(&TLD_IOP_CDVD)
+
+	, Sysmem	(&TLD_IOP_SYSMEM)
+	, Sif		(&TLD_IOP_SIF)
 {
 }

@@ -34,6 +34,7 @@ Panels::eeLogOptionsPanel::eeLogOptionsPanel( LogOptionsPanel* parent )
 	m_disasmPanel	= new CheckedStaticBox( this, wxVERTICAL, L"Disasm" );
 	m_hwPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Registers" );
 	m_evtPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Events" );
+	m_hlePanel		= new CheckedStaticBox( this, wxVERTICAL, L"Hle" );
 
 	wxFlexGridSizer& eeTable( *new wxFlexGridSizer( 2, 5, 0 ) );
 
@@ -44,6 +45,7 @@ Panels::eeLogOptionsPanel::eeLogOptionsPanel( LogOptionsPanel* parent )
 	eeTable += m_hwPanel		| SubGroup();
 	eeTable += m_evtPanel		| SubGroup();
 	eeTable += m_disasmPanel	| SubGroup();
+	eeTable += m_hlePanel		| SubGroup();
 
 	ThisSizer	+= 4;
 	ThisSizer	+= eeTable | pxExpand;
@@ -61,6 +63,7 @@ Panels::iopLogOptionsPanel::iopLogOptionsPanel( LogOptionsPanel* parent )
 	m_disasmPanel	= new CheckedStaticBox( this, wxVERTICAL, L"Disasm" );
 	m_hwPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Registers" );
 	m_evtPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Events" );
+	m_hlePanel		= new CheckedStaticBox( this, wxVERTICAL, L"Hle" );
 
 	wxFlexGridSizer& iopTable( *new wxFlexGridSizer( 2, 5, 0 ) );
 
@@ -71,6 +74,7 @@ Panels::iopLogOptionsPanel::iopLogOptionsPanel( LogOptionsPanel* parent )
 	iopTable	+= m_hwPanel		| SubGroup();
 	iopTable	+= m_evtPanel		| SubGroup();
 	iopTable	+= m_disasmPanel	| SubGroup();
+	iopTable	+= m_hlePanel		| SubGroup();
 
 	ThisSizer	+= 4;
 	ThisSizer	+= iopTable	| pxExpand;
@@ -83,6 +87,7 @@ CheckedStaticBox* Panels::eeLogOptionsPanel::GetStaticBox( const wxString& subgr
 	if (0 == subgroup.CmpNoCase( L"Disasm" ))		return m_disasmPanel;
 	if (0 == subgroup.CmpNoCase( L"Registers" ))	return m_hwPanel;
 	if (0 == subgroup.CmpNoCase( L"Events" ))		return m_evtPanel;
+	if (0 == subgroup.CmpNoCase( L"HLE" ))		    return m_hlePanel;
 
 	return NULL;
 }
@@ -92,6 +97,7 @@ CheckedStaticBox* Panels::iopLogOptionsPanel::GetStaticBox( const wxString& subg
 	if (0 == subgroup.CmpNoCase( L"Disasm" ))		return m_disasmPanel;
 	if (0 == subgroup.CmpNoCase( L"Registers" ))	return m_hwPanel;
 	if (0 == subgroup.CmpNoCase( L"Events" ))		return m_evtPanel;
+	if (0 == subgroup.CmpNoCase( L"HLE" ))		    return m_hlePanel;
 
 	return NULL;
 }
@@ -106,6 +112,7 @@ void Panels::eeLogOptionsPanel::OnSettingsChanged()
 	m_disasmPanel	->SetValue( conf.EE.m_EnableDisasm );
 	m_evtPanel		->SetValue( conf.EE.m_EnableEvents );
 	m_hwPanel		->SetValue( conf.EE.m_EnableRegisters );
+	m_hlePanel		->SetValue( conf.EE.m_EnableHLE );
 }
 
 void Panels::iopLogOptionsPanel::OnSettingsChanged()
@@ -117,6 +124,7 @@ void Panels::iopLogOptionsPanel::OnSettingsChanged()
 	m_disasmPanel	->SetValue( conf.IOP.m_EnableDisasm );
 	m_evtPanel		->SetValue( conf.IOP.m_EnableEvents );
 	m_hwPanel		->SetValue( conf.IOP.m_EnableRegisters );
+	m_hlePanel		->SetValue( conf.IOP.m_EnableHLE );
 }
 
 static SysTraceLog * const traceLogList[] =
@@ -146,6 +154,10 @@ static SysTraceLog * const traceLogList[] =
 	&SysTrace.EE.VIF,
 	&SysTrace.EE.GIF,
 
+	&SysTrace.EE.Irq,
+	&SysTrace.EE.Thread,
+	&SysTrace.EE.Sema,
+	&SysTrace.EE.Sif,
 
 	// IOP Section
 
@@ -163,6 +175,9 @@ static SysTraceLog * const traceLogList[] =
 	&SysTrace.IOP.DMAC,
 	&SysTrace.IOP.Counters,
 	&SysTrace.IOP.CDVD,
+
+	&SysTrace.IOP.Sysmem,
+	&SysTrace.IOP.Sif,
 };
 
 static const uint traceLogCount = ArraySize(traceLogList);
@@ -335,6 +350,7 @@ void Panels::eeLogOptionsPanel::Apply()
 	conf.m_EnableDisasm		= m_disasmPanel->GetValue();
 	conf.m_EnableRegisters	= m_hwPanel->GetValue();
 	conf.m_EnableEvents		= m_evtPanel->GetValue();
+	conf.m_EnableHLE		= m_hlePanel->GetValue();
 }
 
 void Panels::iopLogOptionsPanel::Apply()
@@ -345,5 +361,6 @@ void Panels::iopLogOptionsPanel::Apply()
 	conf.m_EnableDisasm		= m_disasmPanel->GetValue();
 	conf.m_EnableRegisters	= m_hwPanel->GetValue();
 	conf.m_EnableEvents		= m_evtPanel->GetValue();
+	conf.m_EnableHLE		= m_hlePanel->GetValue();
 }
 

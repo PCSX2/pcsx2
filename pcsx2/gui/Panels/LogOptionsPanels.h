@@ -41,6 +41,7 @@ namespace Panels
 		CheckedStaticBox*	m_disasmPanel;
 		CheckedStaticBox*	m_hwPanel;
 		CheckedStaticBox*	m_evtPanel;
+		CheckedStaticBox*	m_hlePanel;
 
 	public:
 		eeLogOptionsPanel( LogOptionsPanel* parent );
@@ -59,6 +60,7 @@ namespace Panels
 		CheckedStaticBox*	m_disasmPanel;
 		CheckedStaticBox*	m_hwPanel;
 		CheckedStaticBox*	m_evtPanel;
+		CheckedStaticBox*	m_hlePanel;
 
 	public:
 		iopLogOptionsPanel( LogOptionsPanel* parent );
