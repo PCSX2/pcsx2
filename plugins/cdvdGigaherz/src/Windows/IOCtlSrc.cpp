@@ -626,13 +626,13 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 	rri.TrackMode=(TRACK_MODE_TYPE)last_read_mode;
 	if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 	{
-		rri.TrackMode=CDDA;
+		rri.TrackMode=YellowMode2;
 		if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 		{
 			rri.TrackMode=XAForm2;
 			if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 			{
-				rri.TrackMode=YellowMode2;
+				rri.TrackMode=CDDA;
 				if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 				{
 					return -1;

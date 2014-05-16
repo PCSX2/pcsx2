@@ -243,7 +243,7 @@ s32  CALLBACK CDVDgetDualInfo(s32* dualType, u32* _layer1start)
 }
 
 int lastReadInNewDiskCB=0;
-char fuckThisSector[2352];
+char directReadSectorBuffer[2448];
 
 s32  CALLBACK CDVDreadSector(u8* buffer, s32 lsn, int mode)
 {
@@ -257,7 +257,7 @@ s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
 
 	if(weAreInNewDiskCB)
 	{
-		int ret = cdvdDirectReadSector(lsn,mode,fuckThisSector);
+		int ret = cdvdDirectReadSector(lsn,mode,directReadSectorBuffer);
 		if(ret==0) lastReadInNewDiskCB=1;
 		return ret;
 	}
@@ -276,7 +276,7 @@ u8*  CALLBACK CDVDgetBuffer()
 	if(lastReadInNewDiskCB)
 	{
 		lastReadInNewDiskCB=0;
-		return (u8*)fuckThisSector;
+		return (u8*)directReadSectorBuffer;
 	}
 
 	u8 *s = (u8*)cdvdGetSector(csector,cmode);
@@ -299,7 +299,7 @@ int CALLBACK CDVDgetBuffer2(u8* dest)
 	{
 		lastReadInNewDiskCB=0;
 
-		memcpy(dest, fuckThisSector, csize);
+		memcpy(dest, directReadSectorBuffer, csize);
 		return 0;
 	}
 
