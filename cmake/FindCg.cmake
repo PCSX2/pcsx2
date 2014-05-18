@@ -52,6 +52,7 @@ else(WIN32) # Unix based OS
 				 /usr/include
 				 /usr/local/lib
 				 /opt/nvidia-cg-toolkit/lib	
+				 /opt/nvidia-cg-toolkit/lib32
 				 DOC "Path to the Cg library.")
 
 	# Cg GL library
@@ -59,6 +60,7 @@ else(WIN32) # Unix based OS
 				 /usr/include
 				 /usr/local/lib
 				 /opt/nvidia-cg-toolkit/lib
+				 /opt/nvidia-cg-toolkit/lib32
 				 DOC "Path to the CgGL library.")
 
 	set(CG_LIBRARIES ${CG_LIBRARY} ${CG_GL_LIBRARY})
