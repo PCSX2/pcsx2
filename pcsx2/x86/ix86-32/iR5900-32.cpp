@@ -1303,14 +1303,14 @@ void __fastcall dynarecMemLogcheck(u32 start, bool store)
 		DevCon.WriteLn("Hit load breakpoint @0x%x", start);
 }
 
-void recMemcheck(u32 bits, bool store)
+void recMemcheck(u32 op, u32 bits, bool store)
 {
 	iFlushCall(FLUSH_INTERPRETER);
 
 	// compute accessed address
-	_eeMoveGPRtoR(ECX, _Rs_);
-	if (_Imm_ != 0)
-		xADD(ecx, _Imm_);
+	_eeMoveGPRtoR(ECX, (op >> 21) & 0x1F);
+	if ((s16)op != 0)
+		xADD(ecx, (s16)op);
 	if (bits == 128)
 		xAND(ecx, ~0x0F);
 
@@ -1356,6 +1356,166 @@ void recMemcheck(u32 bits, bool store)
 	}
 }
 
+inline bool isBranchOrJump(u32 addr)
+{
+	u32 op = memRead32(addr);
+
+	switch (op >> 26)
+	{
+	case 0x02:	// j
+	case 0x03:	// jal
+	case 0x04:	// beq
+	case 0x05:	// bne
+	case 0x06:	// blez
+	case 0x07:	// bgtz
+	case 0x14:	// beql
+	case 0x15:	// bnel
+	case 0x16:	// blezl
+	case 0x17:	// bgtzl
+		return true;
+	case 0x00:	// special
+		switch (op & 0x3F)
+		{
+		case 0x08:	// jr
+		case 0x09:	// jalr
+			return true;
+		}
+		break;
+	case 0x01:	// regimm
+		switch ((op >> 16) & 0x1F)
+		{
+		case 0x00:	// bltz
+		case 0x01:	// bgez
+		case 0x02:	// bltzl
+		case 0x03:	// bgezl
+		case 0x10:	// bltzal
+		case 0x11:	// bgezal
+		case 0x12:	// bltzall
+		case 0x13:	// bgezall
+			return true;
+		}
+		break;
+	}
+
+	return false;
+}
+
+// The next two functions return 0 if no breakpoint is needed,
+// 1 if it's needed on the current pc, 2 if it's needed in the delay slot
+
+int isBreakpointNeeded(u32 addr)
+{
+	if (CBreakPoints::IsAddressBreakPoint(addr))
+		return 1;
+
+	// there may be a breakpoint in the delay slot
+	if (isBranchOrJump(addr) && CBreakPoints::IsAddressBreakPoint(addr+4))
+		return 2;
+
+	return 0;
+}
+
+int isMemcheckNeeded(u32 pc)
+{
+	if (CBreakPoints::GetMemChecks().size() == 0)
+		return 0;
+
+	u32 addr = pc;
+	if (isBranchOrJump(addr))
+		addr += 4;
+
+	u32 op = memRead32(addr);
+
+	switch (op >> 26)
+	{
+	case 0x20:		// lb
+	case 0x21:		// lh
+	case 0x22:		// lwl
+	case 0x23:		// lw
+	case 0x24:		// lbu
+	case 0x25:		// lhu
+	case 0x26:		// lwr
+	case 0x28:		// sb
+	case 0x29:		// sh
+	case 0x2A:		// swl
+	case 0x2B:		// sw
+	case 0x2E:		// swr
+	case 0x37:		// ld
+	case 0x1B:		// ldr
+	case 0x3F:		// sd
+	case 0x3D:		// sdr
+	case 0x1A:		// ldl
+	case 0x2C:		// sdl
+	case 0x1E:		// lq
+	case 0x1F:		// sq
+		return addr == pc ? 1 : 2;
+	default:
+		return 0;
+	}
+}
+
+void encodeBreakpoint()
+{
+	if (isBreakpointNeeded(pc) != 0)
+	{
+		iFlushCall(FLUSH_EVERYTHING);
+		xCALL(&dynarecCheckBreakpoint);
+	}
+}
+
+void encodeMemcheck()
+{
+	int needed = isMemcheckNeeded(pc);
+	if (needed == 0)
+		return;
+
+	u32 op = memRead32(needed == 2 ? pc+4 : pc);
+	switch (cpuRegs.code >> 26)
+	{
+	case 0x20:		// lb
+	case 0x24:		// lbu
+		recMemcheck(op,8,false);
+		break;
+	case 0x28:		// sb
+		recMemcheck(op,8,true);
+		break;
+	case 0x21:		// lh
+	case 0x25:		// lhu
+		recMemcheck(op,16,false);
+		break;
+	case 0x22:		// lwl
+	case 0x23:		// lw
+	case 0x26:		// lwr
+		recMemcheck(op,32,false);
+		break;
+	case 0x29:		// sh
+		recMemcheck(op,16,true);
+		break;
+	case 0x2A:		// swl
+	case 0x2B:		// sw
+	case 0x2E:		// swr
+		recMemcheck(op,32,true);
+		break;
+	case 0x37:		// ld
+	case 0x1B:		// ldr
+	case 0x1A:		// ldl
+		recMemcheck(op,64,false);
+		break;
+	case 0x3F:		// sd
+	case 0x3D:		// sdr
+	case 0x2C:		// sdl
+		recMemcheck(op,64,true);
+		break;
+	case 0x1E:		// lq
+		recMemcheck(op,128,false);
+		break;
+	case 0x1F:		// sq
+		recMemcheck(op,128,true);
+		break;
+	}
+
+}
+
 
 void recompileNextInstruction(int delayslot)
 {
@@ -1364,12 +1524,12 @@ void recompileNextInstruction(int delayslot)
 	int count;
 
 	// add breakpoint
-	if (CBreakPoints::IsAddressBreakPoint(pc))
+	if (!delayslot)
 	{
-		iFlushCall(FLUSH_EVERYTHING);
-		xCALL(&dynarecCheckBreakpoint);
+		encodeBreakpoint();
+		encodeMemcheck();
 	}
-	
+
 	s_pCode = (int *)PSM( pc );
 	pxAssert(s_pCode);
 	
@@ -1377,53 +1537,6 @@ void recompileNextInstruction(int delayslot)
 		MOV32ItoR(EAX, pc);		// acts as a tag for delimiting recompiled instructions when viewing x86 disasm.
 
 	cpuRegs.code = *(int *)s_pCode;
-
-	if (CBreakPoints::GetMemChecks().size() != 0)
-	{
-		switch (cpuRegs.code >> 26)
-		{
-		case 0x20:		// lb
-		case 0x24:		// lbu
-			recMemcheck(8,false);
-			break;
-		case 0x28:		// sb
-			recMemcheck(8,true);
-			break;
-		case 0x21:		// lh
-		case 0x25:		// lhu
-			recMemcheck(16,false);
-			break;
-		case 0x22:		// lwl
-		case 0x23:		// lw
-		case 0x26:		// lwr
-			recMemcheck(32,false);
-			break;
-		case 0x29:		// sh
-			recMemcheck(16,true);
-			break;
-		case 0x2A:		// swl
-		case 0x2B:		// sw
-		case 0x2E:		// swr
-			recMemcheck(32,true);
-			break;
-		case 0x37:		// ld
-		case 0x1B:		// ldr
-		case 0x1A:		// ldl
-			recMemcheck(64,false);
-			break;
-		case 0x3F:		// sd
-		case 0x3D:		// sdr
-		case 0x2C:		// sdl
-			recMemcheck(64,true);
-			break;
-		case 0x1E:		// lq
-			recMemcheck(128,false);
-			break;
-		case 0x1F:		// sq
-			recMemcheck(128,true);
-			break;
-		}
-	}
 
 	if (!delayslot) {
 		pc += 4;
@@ -1675,44 +1788,6 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 	return 0;
 }
 
-inline bool needsBreakpoint(u32 pc)
-{
-	if (CBreakPoints::IsAddressBreakPoint(pc))
-		return true;
-
-	if (CBreakPoints::GetMemChecks().size() == 0)
-		return false;
-
-	u32 op = memRead32(pc);
-
-	switch (op >> 26)
-	{
-	case 0x20:		// lb
-	case 0x21:		// lh
-	case 0x22:		// lwl
-	case 0x23:		// lw
-	case 0x24:		// lbu
-	case 0x25:		// lhu
-	case 0x26:		// lwr
-	case 0x28:		// sb
-	case 0x29:		// sh
-	case 0x2A:		// swl
-	case 0x2B:		// sw
-	case 0x2E:		// swr
-	case 0x37:		// ld
-	case 0x1B:		// ldr
-	case 0x3F:		// sd
-	case 0x3D:		// sdr
-	case 0x1A:		// ldl
-	case 0x2C:		// sdl
-	case 0x1E:		// lq
-	case 0x1F:		// sq
-		return true;
-	default:
-		return false;
-	}
-}
-
 static void __fastcall recRecompile( const u32 startpc )
 {
 	u32 i = 0;
@@ -1793,9 +1868,12 @@ static void __fastcall recRecompile( const u32 startpc )
 	s_branchTo = -1;
 
 	// compile breakpoints as individual blocks
-	if (needsBreakpoint(i))
+	int n1 = isBreakpointNeeded(i);
+	int n2 = isMemcheckNeeded(i);
+	int n = std::max<int>(n1,n2);
+	if (n != 0)
 	{
-		s_nEndBlock = i + 4;
+		s_nEndBlock = i + n*4;
 		goto StartRecomp;
 	}
 
@@ -1803,7 +1881,7 @@ static void __fastcall recRecompile( const u32 startpc )
 		BASEBLOCK* pblock = PC_GETBLOCK(i);
 		
 		// stop before breakpoints
-		if (needsBreakpoint(i))
+		if (isBreakpointNeeded(i) != 0 || isMemcheckNeeded(i) != 0)
 		{
 			s_nEndBlock = i;
 			break;
