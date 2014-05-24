@@ -57,10 +57,13 @@ void InitNet(NetAdapter* ad)
 }
 void TermNet()
 {
-	RxRunning=false;
-	emu_printf("Waiting for RX-net thread to terminate..");
-	WaitForSingleObject(rx_thread,-1);
-	emu_printf(".done\n");
+	if(RxRunning)
+	{
+		RxRunning = false;
+		emu_printf("Waiting for RX-net thread to terminate..");
+		WaitForSingleObject(rx_thread, -1);
+		emu_printf(".done\n");
 
-	delete nif;
+		delete nif;
+	}
 }

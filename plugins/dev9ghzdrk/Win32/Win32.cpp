@@ -171,8 +171,13 @@ s32  _DEV9open()
 	//ResumeThread (handleDEV9Thread);
 	NetAdapter* na=GetNetAdapter();
 	if (!na)
+	{
 		emu_printf("Failed to GetNetAdapter()\n");
-	InitNet( na);
+	}
+	else
+	{
+		InitNet(na);
+	}
 	return 0;
 }
 
