@@ -316,12 +316,14 @@ IOCtlSrc::IOCtlSrc(const char* fileName)
 	strcpy_s(fName,256,fileName);
 
 	Reopen();
+	SetSpindleSpeed(false);
 }
 
 IOCtlSrc::~IOCtlSrc()
 {
 	if(OpenOK)
 	{
+		SetSpindleSpeed( true );
 		DWORD size;
 		DeviceIoControl(device,IOCTL_DVD_END_SESSION,&sessID,sizeof(DVD_SESSION_ID),NULL,0,&size, NULL);
 
@@ -485,6 +487,51 @@ s32 IOCtlSrc::GetLayerBreakAddress()
 	return 0;
 }
 
+void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) { 
+	
+	DWORD dontcare;
+	int speed = 0;
+	
+	if (GetMediaType() < 0 ) speed = 4800; // CD-ROM to ~32x (PS2 has 24x (3600 KB/s))
+	else speed = 11080;	// DVD-ROM to  ~8x (PS2 has 4x (5540 KB/s))
+	
+	if (!restore_defaults) {
+		CDROM_SET_SPEED s;
+		s.RequestType = CdromSetSpeed;
+		s.RotationControl = CdromDefaultRotation;
+		s.ReadSpeed = speed;
+		s.WriteSpeed = speed;
+
+		if (DeviceIoControl(device,
+			IOCTL_CDROM_SET_SPEED,	//operation to perform
+			&s, sizeof(s),	//no input buffer
+			NULL, 0,	//output buffer
+			&dontcare,	//#bytes returned
+			(LPOVERLAPPED)NULL))	//synchronous I/O == 0)
+		{
+			printf(" * CDVD: setSpindleSpeed success (%dKB/s)\n", speed);
+		}
+		else
+		{
+			printf(" * CDVD: setSpindleSpeed failed! \n");
+		}
+	}
+	else {
+		CDROM_SET_SPEED s;
+		s.RequestType = CdromSetSpeed;
+		s.RotationControl = CdromDefaultRotation;
+		s.ReadSpeed = 0xffff; // maximum ?
+		s.WriteSpeed = 0xffff;
+
+		DeviceIoControl(device,
+			IOCTL_CDROM_SET_SPEED,	//operation to perform
+			&s, sizeof(s),	//no input buffer
+			NULL, 0,	//output buffer
+			&dontcare,	//#bytes returned
+			(LPOVERLAPPED)NULL);	//synchronous I/O == 0)
+	}
+}
+
 s32 IOCtlSrc::GetMediaType()
 {
 	DWORD size;
@@ -626,15 +673,20 @@ s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
 	rri.TrackMode=(TRACK_MODE_TYPE)last_read_mode;
 	if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 	{
-		rri.TrackMode=YellowMode2;
+		rri.TrackMode = XAForm2;
+		printf(" * CDVD: CD-ROM read mode change\n");
+		printf(" * CDVD: Trying XAForm2\n");
 		if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 		{
-			rri.TrackMode=XAForm2;
+			rri.TrackMode = YellowMode2;
+			printf(" * CDVD: Trying YellowMode2\n");
 			if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 			{
-				rri.TrackMode=CDDA;
+				rri.TrackMode = CDDA;
+				printf(" * CDVD: Trying CDDA\n");
 				if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
 				{
+					printf(" * CDVD: Failed to read this CD-ROM with error code: %d\n", GetLastError());
 					return -1;
 				}
 			}

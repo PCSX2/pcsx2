@@ -128,6 +128,7 @@ public:
 	virtual s32 GetLayerBreakAddress();
 
 	virtual s32 GetMediaType();
+	virtual void SetSpindleSpeed(bool restore_defaults);
 
 	virtual s32 IsOK();
 	virtual s32 Reopen();
@@ -160,6 +161,7 @@ void CfgSetSettingsDir( const char* dir );
 
 extern char csrc[];
 extern BOOL cdvd_is_open;
+extern BOOL cdvdKeepAlive_is_open;
 extern int weAreInNewDiskCB;
 
 extern void (*newDiscCB)();

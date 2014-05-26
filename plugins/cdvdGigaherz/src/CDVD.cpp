@@ -25,6 +25,10 @@
 
 void (*newDiscCB)();
 
+HANDLE hThread_keepAlive = INVALID_HANDLE_VALUE;
+HANDLE hNotify_keepAlive = INVALID_HANDLE_VALUE;
+DWORD  pidThreadKeepAlive = 0;
+
 #define STRFY(x) #x
 #define TOSTR(x) STRFY(x)
 
@@ -59,7 +63,7 @@ char *LibName       = "cdvdGigaherz "
 
 const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 8;
+const unsigned char build = 9;
 
 HINSTANCE hinst;
 
@@ -129,6 +133,7 @@ void __inline lba_to_msf(s32 lba, u8* m, u8* s, u8* f) {
 char csrc[20];
 
 BOOL cdvd_is_open=FALSE;
+BOOL cdvdKeepAlive_is_open = false;
 
 Source *src;
 
@@ -137,6 +142,65 @@ s32 disc_has_changed=0;
 int weAreInNewDiskCB=0;
 
 char bfr[2352];
+char throwaway[2352];
+extern s32 prefetch_last_lba;
+extern s32 prefetch_last_mode;
+
+///////////////////////////////////////////////////////////////////////////////
+// keepAliveThread throws a read event regularly to prevent drive spin down  //
+
+DWORD CALLBACK keepAliveThread(PVOID param)
+{
+	printf(" * CDVD: KeepAlive thread started...\n");
+
+	while (cdvdKeepAlive_is_open)
+	{
+		// Sleep 30 seconds with thread abort check
+        if (WaitForSingleObject(hNotify_keepAlive, 30000) != WAIT_TIMEOUT) break;
+        if (!cdvdKeepAlive_is_open) {
+            break;
+        }
+
+		//printf(" * keepAliveThread: polling drive.\n");
+		//if (prefetch_last_mode == CDVD_MODE_2048)
+			src->ReadSectors2048(prefetch_last_lba, 1, throwaway);
+		//else
+		//	src->ReadSectors2352(prefetch_last_lba, 1, throwaway);
+	}
+
+	printf(" * CDVD: KeepAlive thread finished.\n");
+	
+	return 0;
+}
+
+s32 StartKeepAliveThread()
+{
+    hNotify_keepAlive = CreateEvent(NULL, FALSE, FALSE, NULL);
+    if (hNotify_keepAlive == INVALID_HANDLE_VALUE)
+        return -1;
+
+	cdvdKeepAlive_is_open = true;
+	hThread_keepAlive = CreateThread(NULL, 0, keepAliveThread, NULL, 0, &pidThreadKeepAlive);
+	if (hThread_keepAlive == INVALID_HANDLE_VALUE) {
+		cdvdKeepAlive_is_open = false;
+		return -1;
+	}
+
+	SetThreadPriority(hThread_keepAlive, THREAD_PRIORITY_NORMAL);
+
+	return 0;
+}
+
+void StopKeepAliveThread()
+{
+	cdvdKeepAlive_is_open = false;
+	PulseEvent(hNotify_keepAlive);
+	if (WaitForSingleObject(hThread_keepAlive, 5000) == WAIT_TIMEOUT)
+	{
+		TerminateThread(hThread_keepAlive, 0);
+	}
+	CloseHandle(hThread_keepAlive);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -204,14 +268,15 @@ s32 CALLBACK CDVDopen(const char* pTitleFilename)
 
 	//setup threading manager
 	cdvdStartThread();
+	StartKeepAliveThread();
 
 	return cdvdRefreshData();
 }
 
 void CALLBACK CDVDclose()
 {
+	StopKeepAliveThread();
 	cdvdStopThread();
-
 	//close device
 	delete src;
 	src=NULL;

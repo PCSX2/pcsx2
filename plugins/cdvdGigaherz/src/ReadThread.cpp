@@ -43,8 +43,8 @@ typedef struct
 	char data[2352*16]; //we will read in blocks of 16 sectors
 } SectorInfo;
 
-//bits: 8 would use 1<<8 entries, or 256*16 sectors
-#define CACHE_SIZE 10
+//bits: 12 would use 1<<12 entries, or 4096*16 sectors ~ 128MB
+#define CACHE_SIZE 12
 
 const s32 CacheSize=(1<<CACHE_SIZE);
 SectorInfo Cache[CacheSize];
@@ -92,7 +92,7 @@ bool cdvdCacheFetch(int lsn, int mode, char* data)
 		LeaveCriticalSection( &CacheMutex );
 		return true;
 	}
-
+	//printf("NOT IN CACHE\n");
 	LeaveCriticalSection( &CacheMutex );
 	return false;
 }

@@ -342,6 +342,25 @@ typedef struct __RAW_READ_INFO {
 	TRACK_MODE_TYPE  TrackMode;
 } RAW_READ_INFO, *PRAW_READ_INFO;
 
+typedef enum _CDROM_SPEED_REQUEST {
+	CdromSetSpeed,
+	CdromSetStreaming
+} CDROM_SPEED_REQUEST, *PCDROM_SPEED_REQUEST;
+
+typedef enum _WRITE_ROTATION {
+	CdromDefaultRotation,
+	CdromCAVRotation
+} WRITE_ROTATION, *PWRITE_ROTATION;
+
+typedef struct _CDROM_SET_SPEED {
+	CDROM_SPEED_REQUEST RequestType;
+	USHORT ReadSpeed;
+	USHORT WriteSpeed;
+	WRITE_ROTATION RotationControl;
+} CDROM_SET_SPEED, *PCDROM_SET_SPEED;
+
+#define IOCTL_CDROM_SET_SPEED             CTL_CODE(IOCTL_CDROM_BASE, 0x0018, METHOD_BUFFERED, FILE_READ_ACCESS)
+
 #ifdef __cplusplus
 }
 #endif
