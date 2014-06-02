@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:47+0200\n"
-"PO-Revision-Date: 2014-02-05 18:05+0100\n"
-"Last-Translator: Víctor González Fraile <victor.gonfraile@hotmail.es>\n"
+"POT-Creation-Date: 2014-04-06 11:49+0200\n"
+"PO-Revision-Date: 2014-06-02 16:12+0100\n"
+"Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.6.3\n"
+"X-Generator: Poedit 1.6.4\n"
 
 #: common/include/Utilities/Exceptions.h:187
 msgid "No reason given."
@@ -845,7 +845,7 @@ msgstr "&Fuentes"
 
 #: pcsx2/gui/Debugger/DisassemblyDialog.cpp:112
 msgid "panel"
-msgstr ""
+msgstr "panel"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
@@ -889,9 +889,8 @@ msgid "PCSX2 Official Website and Forums"
 msgstr "Página web oficial y foros de PCSX2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
-#, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "Repositorio SVN oficial de PCSX2 en GitHub"
+msgstr "Repositorio Git oficial de PCSX2 en GitHub"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
@@ -1338,9 +1337,9 @@ msgid "%s  %d.%d.%d"
 msgstr "%s  %d.%d.%d"
 
 #: pcsx2/gui/MainFrame.cpp:365
-#, fuzzy, c-format
+#, c-format
 msgid "%s  %d.%d.%d-%lld%s (git)  %s"
-msgstr "%s  %d.%d.%d.%d%s (svn)  %s"
+msgstr "%s  %d.%d.%d-%lld%s (git)  %s"
 
 #: pcsx2/gui/MainFrame.cpp:402 pcsx2/gui/MainFrame.cpp:404
 #: pcsx2/gui/MainFrame.cpp:410
@@ -1495,7 +1494,7 @@ msgstr "Acerca de..."
 
 #: pcsx2/gui/MainFrame.cpp:519
 msgid "Open Debug Window..."
-msgstr ""
+msgstr "Abrir ventana de depuración..."
 
 #: pcsx2/gui/MainFrame.cpp:521
 msgid "Logging..."
