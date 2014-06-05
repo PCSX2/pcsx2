@@ -17,6 +17,7 @@ _ReSharper.*
 postBuild.inc.cmd
 postBuild.cmd
 svnrev.h
+.DS_Store
 
 Debug
 Release
