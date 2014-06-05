@@ -127,24 +127,11 @@ u32 wswap(u32 d)
 	return (d>>16)|(d<<16);
 }
 
-extern bool tx_p_first;
 void tx_process()
 {
 	//we loop based on count ? or just *use* it ?
 	u32 cnt=dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
 	//spams// printf("tx_process : %d cnt frames !\n",cnt);
-
-	//Hack needed for GT4. Game fails to init the adapter otherwise (and notices about that via IOP kprintf on bootup).
-	//Reseting SMAP_R_TXFIFO_FRAME_CNT to 0 however breaks OPL. Thankfully not doing that fixes the problem while GT4 still works. 
-	if (!tx_p_first)
-	{
-		//dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)=0;
-		tx_p_first=true;
-		//THIS IS A HACK.without that the stack wont init, i guess its missing e3/emac emulation ..
-		emu_printf("WARN : First packet interrupt hack ..\n");
-		_DEV9irq(SMAP_INTR_RXEND|SMAP_INTR_TXEND|SMAP_INTR_TXDNV,100);
-		return;
-	}
 
 	NetPacket pk;
 	int fc=0;
@@ -273,12 +260,14 @@ void emac3_write(u32 addr)
 		if (value)
 			emu_printf("SMAP_R_EMAC3_TxMODE0_L: extra bits set !\n");
 		break;
-
 	case SMAP_R_EMAC3_TxMODE1_L:
 		emu_printf("SMAP_R_EMAC3_TxMODE1_L 32bit write %x\n", value);
+		if (value == 0x380f0000)
+		{
+			emu_printf("Adapter Detection Hack - Resetting RX/TX\n");
+			_DEV9irq(SMAP_INTR_RXEND | SMAP_INTR_TXEND | SMAP_INTR_TXDNV, 5);
+		}
 		break;
-
-
 	case SMAP_R_EMAC3_STA_CTRL_L:
 		DEV9_LOG("SMAP: SMAP_R_EMAC3_STA_CTRL write %x\n", value);
 		{
