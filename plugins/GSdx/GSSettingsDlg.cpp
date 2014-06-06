@@ -603,13 +603,13 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case IDC_SPRITEHACK:
 				helpstr = "Sprite Hack\n\nHelps getting rid of black inner lines in some filtered sprites."
-						  " Half option is the preferred one. Use it for Mana Khemia or ArTonelico for example."
+						  " Half option is the preferred one. Use it for Mana Khemia or Ar tonelico for example."
 						  " Full can be used for Tales of Destiny.";
 				break;
 			case IDC_WILDHACK:
 				helpstr = "WildArms\n\nLowers the GS precision to avoid gaps between pixels when"
 						  " upscaling. Full option fixes the text on WildArms games, while Half option might improve portraits"
-						  " in ArTonelico.";
+						  " in Ar tonelico.";
 				break;
 			case IDC_MSAACB:
 			case IDC_STATIC_MSAA:
