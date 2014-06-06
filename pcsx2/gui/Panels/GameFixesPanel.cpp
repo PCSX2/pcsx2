@@ -89,7 +89,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			)
 		},
 		{
-			_("Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD."),
+			_("Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."),
 			wxEmptyString
 		},
 		{

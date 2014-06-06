@@ -42,7 +42,7 @@ _vifT void vifTransferLoop(u32* &data) {
 				if(vifX.irq && !CHECK_VIF1STALLHACK) 
 					break;
 
-				vifX.irq      = data[0] >> 31;
+				vifX.irq      |= data[0] >> 31;
 			}
 
 			vifXRegs.code = data[0];
