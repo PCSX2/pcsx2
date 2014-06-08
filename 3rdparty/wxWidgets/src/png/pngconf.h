@@ -848,7 +848,7 @@
 */
 
 /* Any chunks you are not interested in, you can undef here.  The
- * ones that allocate memory may be expecially important (hIST,
+ * ones that allocate memory may be especially important (hIST,
  * tEXt, zTXt, tRNS, pCAL).  Others will just save time and make png_info
  * a bit smaller.
  */

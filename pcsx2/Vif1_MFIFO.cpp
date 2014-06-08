@@ -368,7 +368,7 @@ void vifMFIFOInterrupt()
 				vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
 				
 			case 1: //Transfer data
-				if(vif1.inprogress & 0x1) //Just in case the tag breaks early (or something wierd happens)!
+				if(vif1.inprogress & 0x1) //Just in case the tag breaks early (or something weird happens)!
 					mfifo_VIF1chain();
 				//Sanity check! making sure we always have non-zero values
 				if(!(vif1Regs.stat.VGW && gifUnit.gifPath[GIF_PATH_3].state != GIF_PATH_IDLE)) //If we're waiting on GIF, stop looping, (can be over 1000 loops!)

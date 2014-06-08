@@ -846,7 +846,7 @@ ZEXTERN int ZEXPORT inflateSync OF((z_streamp strm));
    available input is skipped.  No output is provided.
 
      inflateSync searches for a 00 00 FF FF pattern in the compressed data.
-   All full flush points have this pattern, but not all occurences of this
+   All full flush points have this pattern, but not all occurrences of this
    pattern are full flush points.
 
      inflateSync returns Z_OK if a possible full flush point has been found,

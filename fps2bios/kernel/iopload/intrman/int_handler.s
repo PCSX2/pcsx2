@@ -182,7 +182,7 @@ $L_SoftwareInt:
 $L2:
     mfc0 $a1, $13               # cause
     nor $a2, $a0, $0
-    and $a1, $a1, $a2           # reset the relevent cause bit
+    and $a1, $a1, $a2           # reset the relevant cause bit
     mtc0 $a1, $13
    
     srl $a0, $a0, 8

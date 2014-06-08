@@ -52,7 +52,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
 	//m_check_ExclusiveFS = new pxCheckBox( this, _("Use exclusive fullscreen mode (if available)") );
 
-	m_text_Zoom->SetToolTip( pxEt( L"Zoom = 100: Fit the entire image to the window without any cropping.\nAbove/Below 100: Zoom In/Out\n0: Automatic-Zoom-In untill the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n  NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\nKeyboard: CTRL + NUMPAD-PLUS: Zoom-In, CTRL + NUMPAD-MINUS: Zoom-Out, CTRL + NUMPAD-*: Toggle 100/0"
+	m_text_Zoom->SetToolTip( pxEt( L"Zoom = 100: Fit the entire image to the window without any cropping.\nAbove/Below 100: Zoom In/Out\n0: Automatic-Zoom-In until the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n  NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\nKeyboard: CTRL + NUMPAD-PLUS: Zoom-In, CTRL + NUMPAD-MINUS: Zoom-Out, CTRL + NUMPAD-*: Toggle 100/0"
 	) );
 
 	m_check_VsyncEnable->SetToolTip( pxEt( L"Vsync eliminates screen tearing but typically has a big performance hit. It usually only applies to fullscreen mode, and may not work with all GS plugins."

@@ -789,7 +789,7 @@ inline void AfterRendererUnimportantJob()
 	maxmin = 608;
 }
 
-// Swich Framebuffers
+// Switch Framebuffers
 inline void AfterRendererSwitchBackToTextures()
 {
 	FB::Bind();

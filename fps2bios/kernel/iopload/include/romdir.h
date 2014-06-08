@@ -83,7 +83,7 @@ Description: the code indicated by <HEXNUMBER> will be run on kernel loading
 Format: !include <NAME>
 Description: allow to have another file with same format to be loaded
  recursively; support for this is limited because of the BUGGY parsing;
-Note: you can have such option only at the begining of IOPBTCONF and the
+Note: you can have such option only at the beginning of IOPBTCONF and the
  inclusion can be made without getting stucked in recursion like this:
 
 ioprp1.img contains IOPBTCONF1 (!include IOPBTCON2) and IOPBTCONF11
@@ -104,7 +104,7 @@ Description: you can have comments on a line that starts with #
 5. modules that have to be loaded after a reset
 Format: <MODULENAME>
 Example: SYSMEM
-Description: each line of IOPBTCONF usualy have a module name; the order the
+Description: each line of IOPBTCONF usually have a module name; the order the
  modules appear in the list is the order they are loaded as IOP kernel
 --------------------------------
 Notes:

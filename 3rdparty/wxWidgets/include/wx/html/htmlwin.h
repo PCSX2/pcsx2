@@ -161,7 +161,7 @@ protected:
     /**
         Call this from EVT_LEFT_UP handler (or, alternatively, EVT_LEFT_DOWN).
 
-        @param rootCell HTML cell inside which the click occured. This doesn't
+        @param rootCell HTML cell inside which the click occurred. This doesn't
                         have to be the leaf cell, it can be e.g. toplevel
                         container, but the mouse must be inside the container's
                         area, otherwise the event would be ignored.
@@ -175,7 +175,7 @@ protected:
         Call this from OnInternalIdle of the HTML displaying window. Handles
         mouse movements and must be used together with HandleMouseMoved.
 
-        @param rootCell HTML cell inside which the click occured. This doesn't
+        @param rootCell HTML cell inside which the click occurred. This doesn't
                         have to be the leaf cell, it can be e.g. toplevel
                         container, but the mouse must be inside the container's
                         area, otherwise the event would be ignored.
@@ -470,11 +470,11 @@ protected:
     // Each wxHtmlWindow has it's own parser because sharing one global
     // parser would be problematic (because of reentrancy)
     wxHtmlWinParser *m_Parser;
-    // contains name of actualy opened page or empty string if no page opened
+    // contains name of actually opened page or empty string if no page opened
     wxString m_OpenedPage;
     // contains name of current anchor within m_OpenedPage
     wxString m_OpenedAnchor;
-    // contains title of actualy opened page or empty string if no <TITLE> tag
+    // contains title of actually opened page or empty string if no <TITLE> tag
     wxString m_OpenedPageTitle;
     // class for opening files (file system)
     wxFileSystem* m_FS;

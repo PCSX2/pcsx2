@@ -124,7 +124,7 @@ GSBlendStateOGL* GSDeviceOGL::CreateBlend(OMBlendSelector bsel, uint8 afix)
 			fprintf(stderr, "Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
 		}
 
-		// Not very good but I don't wanna write another 81 row table
+		// Not very good but I don't want to write another 81 row table
 		if(bsel.negative) bs->RevertOp();
 	}
 

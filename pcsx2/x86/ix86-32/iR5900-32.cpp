@@ -1906,7 +1906,7 @@ static void __fastcall recRecompile( const u32 startpc )
 			}
 		}
 
-		//HUH ? PSM ? whut ? THIS IS VIRTUAL ACCESS GOD DAMMIT
+		//HUH ? PSM ? THIS IS VIRTUAL ACCESS
 		cpuRegs.code = *(int *)PSM(i);
 
 		switch(cpuRegs.code >> 26) {

@@ -286,7 +286,7 @@ inline float4 RenderGetForClip(u32 bInterlace, int interlace, int psm, FRAGMENTS
 }
 
 // Put interlaced texture in use for shader prog.
-// Note: if frame interlaced it's th is halved, so we should x2 it.
+// Note: if frame interlaced its th is halved, so we should x2 it.
 inline void RenderCreateInterlaceTex(u32 bInterlace, int th, FRAGMENTSHADER* prog)
 {
 	if (!bInterlace) return;
@@ -761,7 +761,7 @@ inline void AfterRendererUnimportantJob()
 
 extern u32 s_uFramebuffer;
 
-// Swich Framebuffers
+// Switch Framebuffers
 inline void AfterRendererSwitchBackToTextures()
 {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, s_uFramebuffer);

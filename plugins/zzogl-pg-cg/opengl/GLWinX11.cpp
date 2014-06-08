@@ -445,7 +445,7 @@ void GLWindow::ResizeCheck()
         if (!fullScreen) {
             if ((event.xconfigure.x != conf.x) || (event.xconfigure.y != conf.y))
             {
-                // Fixme; x&y occassionally gives values near the top left corner rather then the real values,
+                // Fixme; x&y occasionally gives values near the top left corner rather then the real values,
                 // causing the window to change positions when adjusting ZZOgl's settings.
                 conf.x = event.xconfigure.x;
                 conf.y = event.xconfigure.y;

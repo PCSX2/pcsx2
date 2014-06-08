@@ -268,7 +268,7 @@ Rr = Release rate is the rate at which the volume of the note decreases
                                   ->time
 
 The overal volume can also be set to sweep up or down lineairly or
-exponentially from it's current value. This can be done seperately
+exponentially from it's current value. This can be done separately
 for left and right.
 
 Relevant SPU registers:

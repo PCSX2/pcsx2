@@ -630,7 +630,7 @@ struct Gif_Unit {
 
 	bool CanDoP3Slice() { return stat.IMT == 1 && gifPath[GIF_PATH_3].state == GIF_PATH_IMAGE; }
 	bool CanDoGif()		{ return stat.PSE == 0 && (CHECK_GIFREVERSEHACK ? 1 : stat.DIR == 0) && gsSIGNAL.queued == 0; }
-	//Mask stops the next packet which hasnt started from transferring
+	//Mask stops the next packet which hasn't started from transferring
 	bool Path3Masked()  { return ((stat.M3R || stat.M3P) && (gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)); }
 
 	void PrintInfo(bool printP1=1, bool printP2=1, bool printP3=1) {

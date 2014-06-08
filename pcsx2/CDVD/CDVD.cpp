@@ -46,7 +46,7 @@ static __fi void SetResultSize(u8 size)
 
 static void CDVDREAD_INT(u32 eCycle)
 {
-	// Give it an arbitary FAST value. Good for ~5000kb/s in ULE when copying a file from CDVD to HDD
+	// Give it an arbitrary FAST value. Good for ~5000kb/s in ULE when copying a file from CDVD to HDD
 	// Keep long seeks out though, as games may try to push dmas while seeking. (Tales of the Abyss)
 	if (EmuConfig.Speedhacks.fastCDVD) {
 		if(eCycle < Cdvd_FullSeek_Cycles)
@@ -93,7 +93,7 @@ FILE *_cdvdOpenMechaVer()
 	mecfile.SetExt( L"mec" );
 	const wxString fname( mecfile.GetFullPath() );
 
-	// if file doesnt exist, create empty one
+	// if file doesn't exist, create empty one
 	FILE* fd = wxFopen(fname, L"r+b");
 	if (fd == NULL)
 	{

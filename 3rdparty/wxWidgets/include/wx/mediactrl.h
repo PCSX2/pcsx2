@@ -246,7 +246,7 @@ protected:
 // for wxMediaCtrl.  Backends are searched alphabetically -
 // the one with the earliest letter is tried first.
 //
-// Note that this is currently not API or ABI compatable -
+// Note that this is currently not API or ABI compatible -
 // so statically link or make the client compile on-site.
 //
 // ----------------------------------------------------------------------------

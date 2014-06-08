@@ -98,7 +98,7 @@ int  _SPR0chain()
 	else
 	{
 			
-			//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
+			//Taking an arbitrary small value for games which like to check the QWC/MADR instead of STR, so get most of
 			//the cycle delay out of the way before the end.
 			partialqwc = spr0ch.qwc;
 			memcpy_qwc(pMem, &psSu128(spr0ch.sadr), partialqwc);
@@ -312,7 +312,7 @@ void dmaSPR0()   // fromSPR
 	{
 		//DevCon.Warning(L"SPR0 QWC on Chain " + spr0ch.chcr.desc());
 		if (spr0ch.chcr.tag().ID == TAG_END) // but not TAG_REFE?
-		{									 // Correct not REFE, Destination Chain doesnt have REFE!
+		{									 // Correct not REFE, Destination Chain doesn't have REFE!
 			spr0finished = true;
 		}
 	}
@@ -342,7 +342,7 @@ int  _SPR1chain()
 	pMem = SPRdmaGetAddr(spr1ch.madr, false);
 	if (pMem == NULL) return -1;
 	int partialqwc = 0;
-	//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
+	//Taking an arbitrary small value for games which like to check the QWC/MADR instead of STR, so get most of
 	//the cycle delay out of the way before the end.
 	partialqwc = spr1ch.qwc;
 

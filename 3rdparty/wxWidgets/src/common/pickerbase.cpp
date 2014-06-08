@@ -86,7 +86,7 @@ bool wxPickerBase::CreateBase(wxWindow *parent,
             return false;
         }
 
-        // set the maximum lenght allowed for this textctrl.
+        // set the maximum length allowed for this textctrl.
         // This is very important since any change to it will trigger an update in
         // the m_picker; for very long strings, this real-time synchronization could
         // become a CPU-blocker and thus should be avoided.

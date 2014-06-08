@@ -1,4 +1,4 @@
-PCSX2 is an open source Playstation 2 emulator. It's purpose is to mimic the the PS2 hardware, using a combination MIPS CPU [Interpreters](http://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](http://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](http://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory.
+PCSX2 is an open source PlayStation 2 emulator. Its purpose is to mimic the the PS2 hardware, using a combination MIPS CPU [Interpreters](http://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](http://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](http://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory.
 
 # Project Details
 
@@ -24,7 +24,7 @@ Installers and binaries for both Windows and Linux are available from **[our hom
 * GPU: 8800gt or better (for Direct3D10 support)
 * RAM: 1GB on Linux/Windows XP, 2GB or more on Vista
 
-**Note**: Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately owned Playstation 2 console to use the emulator.
+**Note**: Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately owned PlayStation 2 console to use the emulator.
 
 **Note:** PCSX2 mainly takes advantage of 2 CPU cores. As of r4865 PCSX2 can now take advantage of a 3rd core using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS limited games (or on dual core CPUs) it may be a slowdown.
 

@@ -79,7 +79,7 @@ UsbGetDevicePrivateData:
 
 	/* 
 	 * This function returns an endpoint ID for the device ID and endpoint descriptor 
-	 * passed in.  This endpoint ID is then used when transfering data to the device, 
+	 * passed in.  This endpoint ID is then used when transferring data to the device, 
 	 * and to close the endpoint.
 	 */
 	.globl	UsbOpenEndpoint

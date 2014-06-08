@@ -260,7 +260,7 @@ u32 g_pageTable4[128][128];
 // 1, 2 -- the number (1 << [psm][1]) and (1 << [psm[2]]) is also size of pageTable. So [psm][3] = (1 << [psm][1]) - 1
 //	Also note, that [psm][1] =  5 + ([psm][0] + 1) / 2, and [psm][2] = 6 + [psm][0] / 2.
 // 6 -- pixel mask, (1 << [psm][5]) - 1, if be used to word, it leave only bytes for pixel formay
-// 7 -- starting position of data in word, PSMT8H, 4HL, 4HH are stored data not from the begining.
+// 7 -- starting position of data in word, PSMT8H, 4HL, 4HH are stored data not from the beginning.
 u32 ZZ_DT[MAX_PSM][TABLE_WIDTH] = {
 	{0, 5, 6,  31,  63, 3, 0xffffffff, 0}, // 0 PSMCT32	
 	{0, 5, 6,  31,  63, 3, 0x00ffffff, 0}, // 1 PSMCT24

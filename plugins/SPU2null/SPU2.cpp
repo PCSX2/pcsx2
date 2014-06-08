@@ -1083,7 +1083,7 @@ EXPORT_C_(void) SPU2write(u32 mem, u16 value)
 			SoundOff(40, 48, value);
 			break;
 
-			// According to manual all bits are cleared by writing an arbitary value
+			// According to manual all bits are cleared by writing an arbitrary value
 		case REG_C0_END1:
 			dwEndChannel2[0] = 0;
 			break;

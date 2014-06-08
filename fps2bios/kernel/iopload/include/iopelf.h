@@ -167,7 +167,7 @@ typedef struct {
 	u32	sh_size;        //+14 Size of section
 	u32	sh_link;        //+18 Section header table index link
 	u32	sh_info;        //+1C Info
-	u32	sh_addralign;   //+20 Alignment. The adress of 0x0C must fit this alignment. 0=no alignment.
+	u32	sh_addralign;   //+20 Alignment. The address of 0x0C must fit this alignment. 0=no alignment.
 	u32	sh_entsize;     //+24 Fixed size entries.
 } ELF_SHR;
 

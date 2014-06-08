@@ -63,7 +63,7 @@ Please feel free to join. See http://www.portaudio.com for details.
 
 Important Files and Folders:
     include/portaudio.h     = header file for PortAudio API. Specifies API.	
-    src/common/             = platform independant code, host independant 
+    src/common/             = platform independent code, host independent 
                               code for all implementations.
     src/os                  = os specific (but host api neutral) code
     src/hostapi             = implementations for different host apis
@@ -94,5 +94,5 @@ Test Programs:
     test/patest_record.c   = record and playback some audio
     test/patest_maxsines.c = how many sine waves can we play? Tests Pa_GetCPULoad().
     test/patest_sine.c     = output a sine wave in a simple PA app
-    test/patest_sync.c     = test syncronization of audio and video
+    test/patest_sync.c     = test synchronization of audio and video
     test/patest_wire.c     = pass input to output, wire simulator

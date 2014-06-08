@@ -237,7 +237,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // wxHtmlWinTagHandler
-//                  This is basicly wxHtmlTagHandler except
+//                  This is basically wxHtmlTagHandler except
 //                  it is extended with protected member m_Parser pointing to
 //                  the wxHtmlWinParser object
 //-----------------------------------------------------------------------------

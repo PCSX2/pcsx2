@@ -565,7 +565,7 @@ void GSTextureCache::IncAge()
 	}
 }
 
-//Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
+//Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesn't work.
 GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];

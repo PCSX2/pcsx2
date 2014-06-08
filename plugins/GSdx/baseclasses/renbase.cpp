@@ -315,7 +315,7 @@ void CBaseRenderer::WaitForReceiveToComplete()
 // If while we are waiting we receive an end of stream notification from the
 // source filter then we know no data is imminent so we can reset the event
 // This means that when we transition to paused the source filter must call
-// end of stream on us or send us an image otherwise we'll hang indefinately
+// end of stream on us or send us an image otherwise we'll hang indefinitely
 
 
 // Simple internal way of getting the real state
@@ -2706,7 +2706,7 @@ STDMETHODIMP CBaseVideoRenderer::get_AvgSyncOffset( int *piAvg)
 // (error is about +0.008883 and then one NR will give error .0000something
 // (Of course these are integers, so you can't just multiply by 0.41421
 // you'd have to do some sort of MulDiv).
-// Anyone wanna check my maths?  (This is only for a property display!)
+// Anyone want to check my maths?  (This is only for a property display!)
 
 int isqrt(int x)
 {

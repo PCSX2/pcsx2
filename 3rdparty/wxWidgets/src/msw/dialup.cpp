@@ -1288,7 +1288,7 @@ static DWORD wxRasMonitorThread(wxRasThreadData *data)
     }
 
     // we don't need it any more now and if this thread ran, it is our
-    // responsability to free the data
+    // responsibility to free the data
     delete data;
 
     return 0;

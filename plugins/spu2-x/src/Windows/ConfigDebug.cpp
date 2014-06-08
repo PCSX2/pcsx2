@@ -145,7 +145,7 @@ void WriteSettings()
 
 	CfgWriteBool(Section,L"Visual_Debug_Enabled", _visual_debug_enabled);
 
-	// None of the logs strings are changable via GUI, so no point in bothering to
+	// None of the logs strings are changeable via GUI, so no point in bothering to
 	// write them back out.
 	CfgWriteStr(Section,L"Logs_Folder", CfgLogsFolder);
 	CfgWriteStr(Section,L"Dumps_Folder",CfgDumpsFolder);

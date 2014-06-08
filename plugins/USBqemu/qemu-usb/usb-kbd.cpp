@@ -1348,7 +1348,7 @@ void ps2kbd_getkeys(u8 keyMods, u8 ledStatus, const u8 *keys, kbd_dev *dev)
 		      currChars[0] = PS2KBD_ESCAPE_KEY;
 		      currChars[1] = special_keys[currKey];
 		    }
-		  else if(keymap[currKey] != '5') /* Make sure this isnt a 5 key :) */
+		  else if(keymap[currKey] != '5') /* Make sure this isn't a 5 key :) */
 		    {
 		      currChars[0] = keymap[currKey];
 		    }
@@ -1971,7 +1971,7 @@ void repeat_thread(void *arg)
   for(;;)
     {
       WaitEventFlag(eventid, 0xFFFFFFFF, 0x01 | 0x10, &eventmask);
-      //printf("Recieved event %08X\n", eventmask);
+      //printf("Received event %08X\n", eventmask);
       for(devLoop = 0; devLoop < PS2KBD_MAXDEV; devLoop++)
 	{
 	  if((eventmask & (1 << devLoop)) && (devices[devLoop]))

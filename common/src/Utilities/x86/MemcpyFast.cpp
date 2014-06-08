@@ -283,7 +283,7 @@ $memcpy_qwc_loop2:				; 32-byte blocks, uncached copy
 
 ; 32-byte blocks, cached!
 ; This *is* important.  Removing this and using exclusively non-temporal stores
-; results in noticable speed loss!
+; results in noticeable speed loss!
 
 $memcpy_qwc_loop1:				
 	prefetchnta [edx + 568]		; start reading ahead (tested: it helps! --air)

@@ -287,7 +287,7 @@ __ri bool hwDmacSrcChainWithStack(DMACh& dma, int id) {
 
 /********TADR NOTES***********
 From what i've gathered from testing tadr increment stuff (with CNT) is that we might not be 100% accurate in what
-increments it and what doesnt. Previously we presumed REFE and END didn't increment the tag, but SIF and IPU never
+increments it and what doesn't. Previously we presumed REFE and END didn't increment the tag, but SIF and IPU never
 liked this.
 
 From what i've deduced, REFE does in fact increment, but END doesn't, after much testing, i've concluded this is how
@@ -297,7 +297,7 @@ can probably be modified to do so now.
 
 Reason for this:- Many games  (such as clock tower 3 and FFX Videos) watched the TADR to see when a transfer has finished, 
 so we need to simulate this wherever we can!  Even the FFX video gets corruption and tries to fire multiple DMA Kicks 
-if this doesnt happen, which was the reasoning for the hacked up SPR timing we had, that is no longer required.
+if this doesn't happen, which was the reasoning for the hacked up SPR timing we had, that is no longer required.
 
 -Refraction
 ******************************/

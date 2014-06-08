@@ -383,7 +383,7 @@ HRESULT CSourceStream::Inactive(void) {
 // ThreadProc
 //
 // When this returns the thread exits
-// Return codes > 0 indicate an error occured
+// Return codes > 0 indicate an error occurred
 DWORD CSourceStream::ThreadProc(void) {
 
     HRESULT hr;  // the return code from calls

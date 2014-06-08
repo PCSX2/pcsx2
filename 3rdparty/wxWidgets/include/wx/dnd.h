@@ -66,7 +66,7 @@ public:
         { m_data = (wxDataObject *)NULL; }
     virtual ~wxDropSourceBase() { }
 
-    // set the data which is transfered by drag and drop
+    // set the data which is transferred by drag and drop
     void SetData(wxDataObject& data)
       { m_data = &data; }
 

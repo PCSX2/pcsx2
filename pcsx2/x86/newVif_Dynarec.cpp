@@ -223,7 +223,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 			if (++vCL == blockSize) vCL = 0;
 		}
 		else if (isFill) {
-			//Filling doesn't need anything fancy, it's pretty much a normal write, just doesnt increment the source.
+			//Filling doesn't need anything fancy, it's pretty much a normal write, just doesn't increment the source.
 			//DevCon.WriteLn("filling mode!");
 			xUnpack(upkNum);
 			xMovDest();

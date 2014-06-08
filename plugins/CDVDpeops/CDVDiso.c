@@ -519,7 +519,7 @@ int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_d
 
 	// use strtok to get the next dir name
 
-	// if there isnt one, then assume we want the LBA
+	// if there isn't one, then assume we want the LBA
 	// for the current one, and exit the while loop
 
 	// if there is another dir name then increment dir_depth
@@ -688,7 +688,7 @@ int CDVD_GetDir_RPC_request(char* pathname, char* extensions, unsigned int inc_d
 
 
 	// THIS SHOULD BE UNREACHABLE -
-	// since we are trying to count ALL matching entries, rather than upto a limit
+	// since we are trying to count ALL matching entries, rather than up to a limit
 
 
 	// STORE total number of TOC entries
@@ -760,7 +760,7 @@ int CDVD_GetDir_RPC_get_entries(struct TocEntry tocEntry[], int req_entries){
 			}
 		}
 
-		// This must be incremented even if the filename doesnt match extension list
+		// This must be incremented even if the filename doesn't match extension list
 		getDirTocData.current_entry++;
 
 		// We've found a file in this directory

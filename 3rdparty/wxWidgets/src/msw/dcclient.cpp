@@ -197,7 +197,7 @@ void wxClientDC::DoGetSize(int *width, int *height) const
 //
 //     So we store a list of windows for which we already have the DC and not
 //     just one single hDC. This seems to work, but I'm really not sure about
-//     the usefullness of the whole idea - IMHO it's much better to not call
+//     the usefulness of the whole idea - IMHO it's much better to not call
 //     base class OnPaint() at all, or, if we really want to allow it, add a
 //     "wxPaintDC *" parameter to wxPaintEvent which should be used if it's
 //     !NULL instead of creating a new DC.

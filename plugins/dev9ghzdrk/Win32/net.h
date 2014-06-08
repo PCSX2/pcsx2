@@ -15,7 +15,7 @@
 
 #pragma once
 #include <stdlib.h>
-#include <string.h>  //uh isnt memcpy @ stdlib ?
+#include <string.h>  //uh isn't memcpy @ stdlib ?
 
 struct NetPacket
 {
@@ -23,7 +23,7 @@ struct NetPacket
 	NetPacket(void* ptr,int sz) {size=sz;memcpy(buffer,ptr,sz);}
 
 	int size;
-	char buffer[2048-sizeof(int)];//1536 is realy needed, just pad up to 2048 bytes :)
+	char buffer[2048-sizeof(int)];//1536 is really needed, just pad up to 2048 bytes :)
 };
 /*
 extern mtfifo<NetPacket*> rx_fifo;

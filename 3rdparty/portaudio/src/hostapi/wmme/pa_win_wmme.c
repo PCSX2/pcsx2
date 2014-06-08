@@ -2842,7 +2842,7 @@ PA_THREAD_FUNC ProcessingThreadProc( void *pArg )
         if( waitResult == WAIT_FAILED )
         {
             result = paUnanticipatedHostError;
-            /** @todo FIXME/REVIEW: can't return host error info from an asyncronous thread. see http://www.portaudio.com/trac/ticket/143 */
+            /** @todo FIXME/REVIEW: can't return host error info from an asynchronous thread. see http://www.portaudio.com/trac/ticket/143 */
             done = 1;
         }
         else if( waitResult == WAIT_TIMEOUT )
@@ -3117,7 +3117,7 @@ PA_THREAD_FUNC ProcessingThreadProc( void *pArg )
                             if( outputUnderflow && !done && !stream->stopProcessing )
                             {
                                 /* Recover from underflow in the case where the
-                                    underflow occured while processing the buffer
+                                    underflow occurred while processing the buffer
                                     we just finished */
 
                                 result = CatchUpOutputBuffers( stream );
@@ -3315,7 +3315,7 @@ static PaError StartStream( PaStream *s )
                 }
             }   
 
-            /* we queue all channels of a single buffer frame (accross all
+            /* we queue all channels of a single buffer frame (across all
                 devices, because some multidevice multichannel drivers work
                 better this way */
             for( j=0; j<stream->output.deviceCount; ++j )

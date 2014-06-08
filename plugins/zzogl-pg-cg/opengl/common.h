@@ -210,7 +210,7 @@ inline void dprintf(const char* fmt,...) {}
 
 #	define av_abort()	  do { fprintf(stderr, "Abort at %s:%d\n", __FILE__, __LINE__); abort(); } while (0)
 
-//rounded divison & shift
+//rounded division & shift
 #define RSHIFT(a,b) ((a) > 0 ? ((a) + (1<<((b)-1)))>>(b) : ((a) + (1<<((b)-1))-1)>>(b))
 /* assume b>0 */
 #define ROUNDED_DIV(a,b) (((a)>0 ? (a) + ((b)>>1) : (a) - ((b)>>1))/(b))
@@ -731,7 +731,7 @@ static inline int get_sbits(GetBitContext *s, int n){
 
 /**
  * reads 0-17 bits.
- * Note, the alt bitstream reader can read upto 25 bits, but the libmpeg2 reader cant
+ * Note, the alt bitstream reader can read up to 25 bits, but the libmpeg2 reader cant
  */
 static inline unsigned int get_bits(GetBitContext *s, int n){
 	register int tmp;
@@ -747,7 +747,7 @@ unsigned int get_bits_long(GetBitContext *s, int n);
 
 /**
  * shows 0-17 bits.
- * Note, the alt bitstream reader can read upto 25 bits, but the libmpeg2 reader cant
+ * Note, the alt bitstream reader can read up to 25 bits, but the libmpeg2 reader cant
  */
 static inline unsigned int show_bits(GetBitContext *s, int n){
 	register int tmp;

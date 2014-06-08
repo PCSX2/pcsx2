@@ -1701,7 +1701,7 @@ CBasePin::AttemptConnection(
     const CMediaType* pmt   // using this type
 )
 {
-    // The caller should hold the filter lock becasue this function
+    // The caller should hold the filter lock because this function
     // uses m_Connected.  The caller should also hold the filter lock
     // because this function calls SetMediaType(), IsStopped() and
     // CompleteConnect().
@@ -4102,7 +4102,7 @@ HRESULT CDynamicOutputPin::StartUsingOutputPin(void)
             return AmGetLastErrorToHResult();
 
         default:
-            DbgBreak( "An Unexpected case occured in CDynamicOutputPin::StartUsingOutputPin()." );
+            DbgBreak( "An Unexpected case occurred in CDynamicOutputPin::StartUsingOutputPin()." );
             return E_UNEXPECTED;
         }
     }
@@ -4300,7 +4300,7 @@ HRESULT CDynamicOutputPin::ChangeMediaTypeHelper(const CMediaType *pmt)
 
         m_pInputPin->GetAllocatorRequirements(&apInputPinRequirements);
 
-        // A zero allignment does not make any sense.
+        // A zero alignment does not make any sense.
         if(0 == apInputPinRequirements.cbAlign) {
             apInputPinRequirements.cbAlign = 1;
         }
@@ -4420,7 +4420,7 @@ HRESULT CDynamicOutputPin::WaitEvent(HANDLE hEvent)
         return AmGetLastErrorToHResult();
 
     default:
-        DbgBreak( "An Unexpected case occured in CDynamicOutputPin::WaitEvent()." );
+        DbgBreak( "An Unexpected case occurred in CDynamicOutputPin::WaitEvent()." );
         return E_UNEXPECTED;
     }
 }

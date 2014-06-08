@@ -405,7 +405,7 @@ void wxPanelWithHelpers::Init()
 
 // Creates a Static Box container for this panel.  the static box sizer becomes the default
 // sizer for this panel.  If the panel already has a sizer set, then that sizer will be
-// transfered to the new StaticBoxSizer (and will be the first item in it's list, retaining
+// transferred to the new StaticBoxSizer (and will be the first item in it's list, retaining
 // consistent and expected layout)
 wxPanelWithHelpers* wxPanelWithHelpers::AddFrame( const wxString& label, wxOrientation orient )
 {

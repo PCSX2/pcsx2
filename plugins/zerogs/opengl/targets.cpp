@@ -2438,7 +2438,7 @@ void FlushTransferRanges(const tex0Info* ptex)
 
 						if( ptarg->fbp != vb[1].gsfb.fbp ) { //&& (vb[1].prndr == NULL || ptarg->fbp != vb[1].prndr->fbp) ) {
 							// this render target currently isn't used and is not in the texture's way, so can safely ignore
-							// resolving it. Also the range has to be big enough compared to the target to really call it resolved
+							// resolving it. Also the range has to be big enough compared to the target to realy call it resolved
 							// (ffx changing screens, shadowhearts)
 							// start == ptarg->start, used for kh to transfer text
 							if( ptarg->IsDepth() || end-start > 0x50000 || ((g_GameSettings&GAME_QUICKRESOLVE1)&&start == ptarg->start) )
@@ -2460,7 +2460,7 @@ void FlushTransferRanges(const tex0Info* ptex)
 			// so detect that condition
 			if( ptarg->fbh % m_Blocks[ptarg->psm].height ) {
 
-				// get start of left-most boundry page
+				// get start of left-most boundary page
 				int targstart, targend;
 				ZeroGS::GetRectMemAddress(targstart, targend, ptarg->psm, 0, 0, ptarg->fbw, ptarg->fbh & ~(m_Blocks[ptarg->psm].height-1), ptarg->fbp, ptarg->fbw);
 

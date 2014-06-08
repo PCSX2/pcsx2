@@ -161,7 +161,7 @@ __fi void vif1FBRST(u32 value) {
 		u128 SaveCol;
 		u128 SaveRow;
 		//if(vif1ch.chcr.STR == true) DevCon.Warning("FBRST While Vif1 active");
-		//Must Preserve Row/Col registers! (Downhill Domination for testing) - Really shouldnt be part of the vifstruct.
+		//Must Preserve Row/Col registers! (Downhill Domination for testing) - Really shouldn't be part of the vifstruct.
 		SaveCol._u64[0] = vif1.MaskCol._u64[0];
 		SaveCol._u64[1] = vif1.MaskCol._u64[1];
 		SaveRow._u64[0] = vif1.MaskRow._u64[0];
@@ -180,7 +180,7 @@ __fi void vif1FBRST(u32 value) {
 		vif1.done = true;
 		vif1ch.chcr.STR = false;
 
-		//HACK!! Dynasty Warriors 5 Empires has some sort of wierd packet alignment thing going off, meaning
+		//HACK!! Dynasty Warriors 5 Empires has some sort of weird packet alignment thing going off, meaning
 		//the packet ends before the DirectHL in progress has finished. Not sure what causes that, but the GIF
 		//Unit is still waiting for more data, so we have to "pretend" it is finished when the game issues a reset
 		//which it does without causing any pauses.
@@ -304,7 +304,7 @@ __fi void vif1STAT(u32 value) {
 		//then proceeds to reverse the dma before we have even done it ourselves. So lets just make sure VIF is ready :)
 		vif1ch.chcr.STR = false;
 		cpuRegs.interrupt &= ~((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF));
-		//This is actually more important for our handling, else the DMA for reverse fifo doesnt start properly.
+		//This is actually more important for our handling, else the DMA for reverse fifo doesn't start properly.
 	}
 
 	vif1Regs.stat.FDR = VIF_STAT(value).FDR;

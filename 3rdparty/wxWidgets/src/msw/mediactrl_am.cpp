@@ -1538,14 +1538,14 @@ wxString wxAMMediaBackend::GetErrorString(HRESULT hrdsv)
     {
         return wxString::Format(wxT("DirectShow error \"%s\" \n")
                                      wxT("(numeric %X)\n")
-                                     wxT("occured"),
+                                     wxT("occurred"),
                                      szError, (int)hrdsv);
     }
     else
     {
         return wxString::Format(wxT("Unknown error \n")
                                      wxT("(numeric %X)\n")
-                                     wxT("occured"),
+                                     wxT("occurred"),
                                      (int)hrdsv);
     }
 }

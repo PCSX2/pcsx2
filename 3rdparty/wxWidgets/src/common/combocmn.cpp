@@ -797,7 +797,7 @@ bool wxComboCtrlBase::Create(wxWindow *parent,
     m_iFlags |= wxCC_IFLAG_CREATED;
 
     // If x and y indicate valid size, wxSizeEvent won't be
-    // emitted automatically, so we need to add artifical one.
+    // emitted automatically, so we need to add artificial one.
     if ( size.x > 0 && size.y > 0 )
     {
         wxSizeEvent evt(size,GetId());
@@ -1066,7 +1066,7 @@ wxSize wxComboCtrlBase::DoGetBestSize() const
     else
         fhei = sizeText.y + 4;
 
-    // Need to force height to accomodate bitmap?
+    // Need to force height to accommodate bitmap?
     int btnSizeY = m_btnSize.y;
     if ( m_bmpNormal.Ok() && fhei < btnSizeY )
         fhei = btnSizeY;

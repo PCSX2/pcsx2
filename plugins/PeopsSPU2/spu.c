@@ -872,7 +872,7 @@ ENDX:   ;
 
   //////////////////////////////////////////////////////
   // feed the sound
-  // wanna have around 1/60 sec (16.666 ms) updates
+  // want to have around 1/60 sec (16.666 ms) updates
 
   if(iCycle++>16)
    {

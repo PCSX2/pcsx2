@@ -239,7 +239,7 @@ struct FRAGMENTSHADER
 		fTexAlpha2(pZero), fTexOffset(pZero), fTexDims(pZero), fTexBlock(pZero), fClampExts(pZero), fTexWrapMode(pZero),
 		fRealTexDims(pZero), fTestBlack(pZero), fPageOffset(pZero), fTexAlpha(pZero)  {}
 	
-	ZZshShaderLink prog;						// it link to FRAGMENTSHADER structure, for compability between GLSL and CG
+	ZZshShaderLink prog;						// it link to FRAGMENTSHADER structure, for compatibility between GLSL and CG
 	ZZshShader Shader;						// GLSL store shader's not as ready programs, but as shaders compilated object. VS and PS should be linked together to
 									// made a program.
 	ZZshShaderType ShaderType;					// Not every PS and VS are used together, only compatible ones.
@@ -418,7 +418,7 @@ struct FRAGMENTSHADER
 		prog.link		= (void*)this;
 	}
 
-	ZZshShaderLink prog;						// it link to FRAGMENTSHADER structure, for compability between GLSL and CG
+	ZZshShaderLink prog;						// it link to FRAGMENTSHADER structure, for compatibility between GLSL and CG
 	ZZshProgram program;
 	uint context;
 
@@ -758,7 +758,7 @@ extern FRAGMENTSHADER* ZZshLoadShadeEffect(int type, int texfilter, int fog, int
 void SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0, bool CheckVB, FRAGMENTSHADER* pfragment, int force);
 
 extern u32 ptexBlocks;		// holds information on block tiling. It's texture number in OpenGL -- if 0 than such texture
-extern u32 ptexConv16to32;	// does not exists. This textures should be created on start and released on finish.
+extern u32 ptexConv16to32;	// does not exists. These textures should be created on start and released on finish.
 extern u32 ptexBilinearBlocks;
 extern u32 ptexConv32to16;
 

@@ -222,7 +222,7 @@ void V_Core::AnalyzeReverbPreset()
 }
 s32 V_Core::EffectsBufferIndexer( s32 offset ) const
 {
-	// Should offsets be multipled by 4 or not?  Reverse-engineering of IOP code reveals
+	// Should offsets be multiplied by 4 or not?  Reverse-engineering of IOP code reveals
 	// that it *4's all addresses before upping them to the SPU2 -- so our buffers are
 	// already x4'd.  It doesn't really make sense that we should x4 them again, and this
 	// seems to work. (feedback-free in bios and DDS)  --air

@@ -324,7 +324,7 @@ void wxTypeInfo::Unregister()
         ms_typeTable->erase(m_name);
 }
 
-// removing header dependancy on string tokenizer
+// removing header dependency on string tokenizer
 
 void wxSetStringToArray( const wxString &s , wxArrayString &array )
 {

@@ -109,7 +109,7 @@ typedef struct PaWinMmeStreamInfo{
         If devices are specified here, the corresponding device parameter
         to Pa_OpenStream() should be set to paUseHostApiSpecificDeviceSpecification,
         otherwise an paInvalidDevice error will result.
-        The total number of channels accross all specified devices
+        The total number of channels across all specified devices
         must agree with the corresponding channelCount parameter to
         Pa_OpenStream() otherwise a paInvalidChannelCount error will result.
     */

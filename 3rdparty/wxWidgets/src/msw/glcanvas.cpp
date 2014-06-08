@@ -112,7 +112,7 @@ bool wxGLModule::RegisterClasses()
   Here are two snips from a dicussion in the OpenGL Gamedev list that explains
   how this problem can be fixed:
 
-  "There are 5 common DCs available in Win95. These are aquired when you call
+  "There are 5 common DCs available in Win95. These are acquired when you call
   GetDC or GetDCEx from a window that does _not_ have the OWNDC flag.
   OWNDC flagged windows do not get their DC from the common DC pool, the issue
   is they require 800 bytes each from the limited 64Kb local heap for GDI."

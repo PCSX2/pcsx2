@@ -337,7 +337,7 @@ bool wxComboBox::MSWCommand(WXUINT param, WXWORD id)
                 ProcessCommand(event);
             }
 
-            // fall through: for compability with wxGTK, also send the text
+            // fall through: for compatibility with wxGTK, also send the text
             // update event when the selection changes (this also seems more
             // logical as the text does change)
 
@@ -394,7 +394,7 @@ bool wxComboBox::MSWShouldPreProcessMessage(WXMSG *pMsg)
 WXHWND wxComboBox::GetEditHWND() const
 {
     // this function should not be called for wxCB_READONLY controls, it is
-    // the callers responsability to check this
+    // the callers responsibility to check this
     wxASSERT_MSG( !(GetWindowStyle() & wxCB_READONLY),
                   _T("read-only combobox doesn't have any edit control") );
 

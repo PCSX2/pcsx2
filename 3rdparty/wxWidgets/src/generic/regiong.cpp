@@ -1628,7 +1628,7 @@ miSubtractO (
         else if (r2->x1 <= x1)
         {
             /*
-             * Subtrahend preceeds minuend: nuke left edge of minuend.
+             * Subtrahend precedes minuend: nuke left edge of minuend.
              */
             x1 = r2->x2;
             if (x1 >= r1->x2)

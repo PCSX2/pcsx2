@@ -252,7 +252,7 @@
 #endif /* wxUSE_UNICODE */
 
 #if defined( __MWERKS__ ) && !defined(__INTEL__)
-/* otherwise MSL headers bring in WIN32 dependant APIs */
+/* otherwise MSL headers bring in WIN32 dependent APIs */
 #undef UNICODE
 #endif
 

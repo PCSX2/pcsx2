@@ -330,7 +330,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 						psxHu32(HW_PS1_GPU_STATUS) = (psxHu32(HW_PS1_GPU_STATUS) & ~0x2000000) | ((psxHu32(HW_PS1_GPU_STATUS) & 0x8000000) >> 2);
 						break;
 				}*/
-				ret = psxHu32(addr); //Idle & Ready to recieve command.
+				ret = psxHu32(addr); //Idle & Ready to receive command.
 				//psxHu32(addr) = psHu32(0x1000f300);
 #if PSX_EXTRALOGS
 			DevCon.Warning("GPU Status Read %x Sif fifo size %x", ret, sif2fifosize);

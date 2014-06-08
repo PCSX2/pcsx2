@@ -2629,7 +2629,7 @@ void FlushTransferRanges(const tex0Info* ptex)
 			// so detect that condition
 			if( ptarg->fbh % m_Blocks[ptarg->psm].height ) {
 
-				// get start of left-most boundry page
+				// get start of left-most boundary page
 				int targstart, targend;
 				ZeroGS::GetRectMemAddress(targstart, targend, ptarg->psm, 0, 0, ptarg->fbw, ptarg->fbh & ~(m_Blocks[ptarg->psm].height-1), ptarg->fbp, ptarg->fbw);
 

@@ -165,7 +165,7 @@ static HMODULE gs_wsock32dll = 0;
 
 #ifdef __WXWINCE__
 /* This thread handles socket events on WinCE using WSAEventSelect() as WSAAsyncSelect is not supported.
-*  When an event occures for the socket, it is checked what kind of event happend and the correct message gets posted
+*  When an event occures for the socket, it is checked what kind of event happened and the correct message gets posted
 *  so that the hidden window can handle it as it would in other MSW builds.
 */
 DWORD WINAPI SocketThread(LPVOID data)
@@ -426,7 +426,7 @@ LRESULT CALLBACK _GSocket_Internal_WinProc(HWND hWnd,
 /* _GSocket_Enable_Events:
  *  Enable all event notifications; we need to be notified of all
  *  events for internal processing, but we will only notify users
- *  when an appropiate callback function has been installed.
+ *  when an appropriate callback function has been installed.
  */
 void GSocketGUIFunctionsTableConcrete::Enable_Events(GSocket *socket)
 {

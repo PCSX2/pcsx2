@@ -813,7 +813,7 @@ wxDbGetDataSource(HENV henv, wxChar *Dsn, SWORD DsnMaxLength, wxChar *DsDesc,
 //############### DEPRECATED functions for backward compatibility #################
 //#################################################################################
 
-// Backward compability structures/classes.  This will eventually go away
+// Backward compatibility structures/classes.  This will eventually go away
 const int DB_PATH_MAX      = wxDB_PATH_MAX;
 
 typedef wxDb                 wxDB;

@@ -997,7 +997,7 @@ void wxURI::Normalize(wxChar* s, bool bIgnoreLeads)
 // ParseH16
 //
 // Parses 1 to 4 hex values.  Returns true if the first character of the input
-// string is a valid hex character.  It is the caller's responsability to move
+// string is a valid hex character.  It is the caller's responsibility to move
 // the input string back to its original position on failure.
 // ---------------------------------------------------------------------------
 
@@ -1018,7 +1018,7 @@ bool wxURI::ParseH16(const wxChar*& uri)
 //
 // Parses a certain version of an IP address and moves the input string past
 // it.  Returns true if the input  string contains the proper version of an ip
-// address.  It is the caller's responsability to move the input string back
+// address.  It is the caller's responsibility to move the input string back
 // to its original position on failure.
 // ---------------------------------------------------------------------------
 

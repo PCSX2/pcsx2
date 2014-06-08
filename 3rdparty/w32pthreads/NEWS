@@ -111,7 +111,7 @@ back-ported in release 1.9.0.
 Bugs fixed
 ----------
 
-* Thread Specific Data (TSD) key management has been ammended to
+* Thread Specific Data (TSD) key management has been amended to
 eliminate a source of (what was effectively) resource leakage (a HANDLE
 plus memory for each key destruct routine/thread association). This was
 not a true leak because these resources were eventually reclaimed when
@@ -119,7 +119,7 @@ pthread_key_delete was run AND each thread referencing the key had exited.
 The problem was that these two conditions are often not met until very
 late, and often not until the process is about to exit.
 
-The ammended implementation avoids the need for the problematic HANDLE
+The amended implementation avoids the need for the problematic HANDLE
 and reclaims the memory as soon as either the key is deleted OR the
 thread exits, whichever is first.
 
@@ -709,7 +709,7 @@ Bug fixes
 
 * pthread_mutex_trylock() now returns correct error values.
 pthread_mutex_destroy() will no longer destroy a recursively locked mutex.
-pthread_mutex_lock() is no longer inadvertantly behaving as a cancelation point.
+pthread_mutex_lock() is no longer inadvertently behaving as a cancelation point.
 - Thomas Pfaff  <tpfaff@gmx.net>
 
 * pthread_mutex_timedlock() no longer occasionally sets incorrect mutex

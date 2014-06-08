@@ -370,7 +370,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch)
 
 #else
 
-	// pitch is in byte wherease GL_UNPACK_ROW_LENGTH is in pixel
+	// pitch is in byte whereas GL_UNPACK_ROW_LENGTH is in pixel
 	glPixelStorei(GL_UNPACK_ALIGNMENT, m_int_alignment);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 

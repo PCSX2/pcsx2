@@ -381,7 +381,7 @@ void sio2_basicThread(void* data) {
 		WaitEventFlag(common.evid, 0x80, 0, NULL);
 		ClearEventFlag(common.evid, ~0x80);
 
-// Recieve the reply packet
+// Receive the reply packet
 		sio2_recvPacket(packetAddr);
 
 		SetEventFlag(common.evid, 0x20);

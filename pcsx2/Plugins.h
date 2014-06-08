@@ -134,7 +134,7 @@ namespace Exception
 	};
 	
 	// This exception is thrown when a plugin returns an error while trying to save itself.
-	// Typically this should be a very rare occurance since a plugin typically shoudn't
+	// Typically this should be a very rare occurrence since a plugin typically shoudn't
 	// be doing memory allocations or file access during state saving.
 	//
 	class FreezePluginFailure : public PluginError

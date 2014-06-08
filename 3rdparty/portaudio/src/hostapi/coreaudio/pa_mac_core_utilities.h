@@ -91,7 +91,7 @@
 # define DBUG(MSG)
 #endif
 
-/* Verbose Debugging: useful for developement */
+/* Verbose Debugging: useful for development */
 /*
 #define MAC_CORE_VERBOSE_DEBUG
 */
@@ -183,7 +183,7 @@ PaError setBestSampleRateForDevice( const AudioDeviceID device,
    is available, it uses the smallest available size.
    actualFramesPerBuffer will be set to the actual value on successful return.
    OK to pass NULL to actualFramesPerBuffer.
-   The logic is very simmilar too setBestSampleRate only failure here is
+   The logic is very similar too setBestSampleRate only failure here is
    not usually catastrophic.
 */
 PaError setBestFramesPerBuffer( const AudioDeviceID device,

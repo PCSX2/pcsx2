@@ -39,7 +39,7 @@
 #endif
 
 #ifdef __WXGTK__
-// Need to tranform the GSPanel to a X11 window/display for the GS plugins
+// Need to transform the GSPanel to a X11 window/display for the GS plugins
 #include <wx/gtk/win_gtk.h> // GTK_PIZZA interface
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>

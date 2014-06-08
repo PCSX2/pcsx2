@@ -304,7 +304,7 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	}
 	else
 	{
-	//The compare is pretty much a waste of time, likelyhood is that the program isnt there, thats why its copying it.
+	//The compare is pretty much a waste of time, likelihood is that the program isn't there, thats why its copying it.
 	//Faster without.
 	//if (memcmp_mmx(VUx.Micro + addr, data, size*4)) {
 		// Clear VU memory before writing!

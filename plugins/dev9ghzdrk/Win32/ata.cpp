@@ -1678,7 +1678,7 @@ static void ide_ioport_write(void *opaque, uint32_t addr, uint32_t val)
         printf("ide: CMD=%02x\n", val);
 #endif
         s = ide_if->cur_drive;
-        /* ignore commands to non existant slave */
+        /* ignore commands to non existent slave */
         if (s != ide_if && !s->bs) 
             break;
 
@@ -3087,7 +3087,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_DATA:
 		if (sz==1)
 		{
-			emu_printf("ATA: Invalid ATA_R_DATA size: register cannot be writen using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_DATA size: register cannot be written using 8 bit\n");
 		}
 		else if (sz==2)
 		{
@@ -3101,7 +3101,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_ERROR:
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_ERROR(feature) size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_ERROR(feature) size: register cannot be written w/o using 8 bit\n");
 		}
 		//else
 		{
@@ -3111,7 +3111,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_NSECTOR:
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_NSECTOR size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_NSECTOR size: register cannot be written w/o using 8 bit\n");
 		}
 		//else
 		{
@@ -3121,7 +3121,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_SECTOR:
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_SECTOR size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_SECTOR size: register cannot be written w/o using 8 bit\n");
 		}
 		//else
 		{
@@ -3131,7 +3131,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_LCYL:
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_LCYL size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_LCYL size: register cannot be written w/o using 8 bit\n");
 		}
 		//else
 		{
@@ -3141,7 +3141,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_HCYL:
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_HCYL size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_HCYL size: register cannot be written w/o using 8 bit\n");
 		}
 		//else
 		{
@@ -3151,7 +3151,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_SELECT:
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_SELECT size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_SELECT size: register cannot be written w/o using 8 bit\n");
 		}
 		//else
 		{
@@ -3162,7 +3162,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 	case ATA_R_STATUS:
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_STATUS(command) size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_STATUS(command) size: register cannot be written w/o using 8 bit\n");
 		}
 		//else
 		{
@@ -3173,7 +3173,7 @@ void CALLBACK ata_write(u32 addr, u32 value)
 		//ide_cmd -> seems to be control
 		if (sz!=1 && LOG_IWS)
 		{
-			emu_printf("ATA: Invalid ATA_R_CONTROL size: register cannot be writen w/o using 8 bit\n");
+			emu_printf("ATA: Invalid ATA_R_CONTROL size: register cannot be written w/o using 8 bit\n");
 		}
 	//	else
 		{

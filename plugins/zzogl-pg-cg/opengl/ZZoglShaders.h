@@ -77,7 +77,7 @@ struct FRAGMENTSHADER
 		fTexAlpha2(pZero), fTexOffset(pZero), fTexDims(pZero), fTexBlock(pZero), fClampExts(pZero), fTexWrapMode(pZero),
 		fRealTexDims(pZero), fTestBlack(pZero), fPageOffset(pZero), fTexAlpha(pZero)  {}
 	
-	ZZshShaderLink prog;						// it link to FRAGMENTSHADER structure, for compability between GLSL and CG
+	ZZshShaderLink prog;						// it link to FRAGMENTSHADER structure, for compatibility between GLSL and CG
 	ZZshShader Shader;						// GLSL store shader's not as ready programs, but as shaders compilated object. VS and PS should be linked together to
 									// made a program.
 	ZZshShaderType ShaderType;					// Not every PS and VS are used together, only compatible ones.

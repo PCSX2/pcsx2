@@ -71,7 +71,7 @@ wxIsWild (const char *pattern)
 //
 // Pattern        Function
 // -----------------------------------------------------
-//  '*'         = match 0 or more occurances of anything
+//  '*'         = match 0 or more occurrences of anything
 // "[abc]"      = match anyof "abc" (ranges supported)
 // "{xx,yy,zz}" = match anyof "xx", "yy", or "zz"
 // '?'          = match any character

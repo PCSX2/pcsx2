@@ -131,16 +131,16 @@ public:
     // pattern match
     //
     // maxMatches may be used to limit the number of replacements made, setting
-    // it to 1, for example, will only replace first occurence (if any) of the
+    // it to 1, for example, will only replace first occurrence (if any) of the
     // pattern in the text while default value of 0 means replace all
     int Replace(wxString *text, const wxString& replacement,
                 size_t maxMatches = 0) const;
 
-    // replace the first occurence
+    // replace the first occurrence
     int ReplaceFirst(wxString *text, const wxString& replacement) const
         { return Replace(text, replacement, 1); }
 
-    // replace all occurences: this is actually a synonym for Replace()
+    // replace all occurrences: this is actually a synonym for Replace()
     int ReplaceAll(wxString *text, const wxString& replacement) const
         { return Replace(text, replacement, 0); }
 

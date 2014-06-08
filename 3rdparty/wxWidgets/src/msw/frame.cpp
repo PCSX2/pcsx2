@@ -712,7 +712,7 @@ void wxFrame::PositionToolBar()
             desiredW = width;
         }
 
-        // use the 'real' MSW position here, don't offset relativly to the
+        // use the 'real' MSW position here, don't offset relatively to the
         // client area origin
 
         // Optimise such that we don't have to always resize the toolbar

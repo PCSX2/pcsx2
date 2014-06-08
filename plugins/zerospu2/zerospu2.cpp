@@ -1006,7 +1006,7 @@ void CALLBACK SPU2write(u32 mem, u16 value)
 		case REG_C1_SPUOFF1: SoundOff(24,40,value); break;
 		case REG_C1_SPUOFF2: SoundOff(40,48,value); break;
 
-		// According to manual all bits are cleared by writing an arbitary value
+		// According to manual all bits are cleared by writing an arbitrary value
 		case REG_C0_END1: dwEndChannel2[0] &= 0x00ff0000; break;
 		case REG_C0_END2: dwEndChannel2[0] &= 0x0000ffff; break;
 		case REG_C1_END1: dwEndChannel2[1] &= 0x00ff0000; break;

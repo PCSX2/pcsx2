@@ -131,7 +131,7 @@ void FIFOSampleBuffer::putSamples(uint nSamples)
 //
 // Parameter 'slackCapacity' tells the function how much free capacity (in
 // terms of samples) there _at least_ should be, in order to the caller to
-// succesfully insert all the required samples to the buffer. When necessary, 
+// successfully insert all the required samples to the buffer. When necessary, 
 // the function grows the buffer size to comply with this requirement.
 //
 // When using this function as means for inserting new samples, also remember 

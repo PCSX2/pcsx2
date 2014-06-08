@@ -204,7 +204,7 @@ private :
 //
 // ----------------------------------------------------------------------------
 
-// in order to remove dependancy on string tokenizer
+// in order to remove dependency on string tokenizer
 void WXDLLIMPEXP_BASE wxSetStringToArray( const wxString &s , wxArrayString &array ) ;
 
 template<typename e>

@@ -402,7 +402,7 @@ local void examine(int syms, int len, int left, int mem, int rem)
    requires that maximum.  Uses the globals max, root, and num. */
 local void enough(int syms)
 {
-    int n;              /* number of remaing symbols for this node */
+    int n;              /* number of remaining symbols for this node */
     int left;           /* number of unused bit patterns at this length */
     size_t index;       /* index of this case in *num */
 

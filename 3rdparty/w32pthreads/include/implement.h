@@ -446,7 +446,7 @@ struct ThreadKeyAssoc
  *      This macro constructs a software exception code following
  *      the same format as the standard Win32 error codes as defined
  *      in WINERROR.H
- *  Values are 32 bit values layed out as follows:
+ *  Values are 32 bit values laid out as follows:
  *
  *   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
  *  +---+-+-+-----------------------+-------------------------------+

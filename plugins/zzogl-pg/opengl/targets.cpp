@@ -390,7 +390,7 @@ void FlushTransferRange(CRenderTarget* ptarg, int start, int end, int texstart, 
 	// so detect that condition
 	if (ptarg->fbh % m_Blocks[ptarg->psm].height)
 	{
-		// get start of left-most boundry page
+		// get start of left-most boundary page
 		int targstart, targend;
 		GetRectMemAddressZero(targstart, targend, ptarg->psm, ptarg->fbw, ptarg->fbh & ~(m_Blocks[ptarg->psm].height - 1), ptarg->fbp, ptarg->fbw);
 
@@ -558,7 +558,7 @@ inline void Resolve_32_Bit(const void* psrc, int fbp, int fbw, int fbh, const in
                 dsrc = (Tdst)src[RW(j)];
             }
             // They are 3 methods to call the functions
-            // macro (compact, inline) but need a nice psm ; swich (inline) ; function pointer (compact)
+            // macro (compact, inline) but need a nice psm ; switch (inline) ; function pointer (compact)
             // Use a switch to allow inlining of the getPixel function.
             // Note: psm is const so the switch is completely optimized
             // Function method example:
@@ -863,7 +863,7 @@ void Resolve_32_Bit_sse2(const void* psrc, int fbp, int fbw, int fbh, u32 fbm)
 #endif
 
     // Start the src array at the end to reduce testing in loop
-    // If maxfbh is odd, proces maxfbh -1 alone and then go back to maxfbh -3
+    // If maxfbh is odd, process maxfbh -1 alone and then go back to maxfbh -3
     u32 raw_size = RH(Pitch(fbw))/sizeof(u32);
     u32* src;
     if (maxfbh&0x1) {

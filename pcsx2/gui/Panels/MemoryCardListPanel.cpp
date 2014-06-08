@@ -1201,7 +1201,7 @@ int Panels::MemoryCardListPanel_Simple::GetLength() const
 //
 //however, the list-view doesn't show MT slots when this MT is disabled,
 //  so the view-index should "shift" to point at the real card slot.
-//While we're at it, we can alternatively enforce any other arrangment of the view by
+//While we're at it, we can alternatively enforce any other arrangement of the view by
 //  using any other set of 'view-index-to-card-slot' translating that we'd like.
 int Panels::MemoryCardListPanel_Simple::GetSlotIndexForViewIndex( int listViewIndex )
 {

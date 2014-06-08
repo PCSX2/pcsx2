@@ -274,9 +274,9 @@ public:
     void Add(wxDataObjectSimple *dataObject, bool preferred = false);
 
     // Report the format passed to the SetData method.  This should be the
-    // format of the data object within the composite that recieved data from
+    // format of the data object within the composite that received data from
     // the clipboard or the DnD operation.  You can use this method to find
-    // out what kind of data object was recieved.
+    // out what kind of data object was received.
     wxDataFormat GetReceivedFormat() const;
 
     // implement base class pure virtuals

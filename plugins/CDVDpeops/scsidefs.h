@@ -524,7 +524,7 @@ typedef struct _DISK_CACHE_INFORMATION {
     BOOLEAN WriteCacheEnabled;
 
     //
-    // Controls the likelyhood of data remaining in the cache depending on how
+    // Controls the likelihood of data remaining in the cache depending on how
     // it got there.  Data cached from a READ or WRITE operation may be given
     // higher, lower or equal priority to data entered into the cache for other
     // means (like prefetch)

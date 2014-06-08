@@ -1135,7 +1135,7 @@ wxColour wxWindowBase::GetBackgroundColour() const
         wxColour colBg = GetDefaultAttributes().colBg;
 
         // we must return some valid colour to avoid redoing this every time
-        // and also to avoid surprizing the applications written for older
+        // and also to avoid surprising the applications written for older
         // wxWidgets versions where GetBackgroundColour() always returned
         // something -- so give them something even if it doesn't make sense
         // for this window (e.g. it has a themed background)

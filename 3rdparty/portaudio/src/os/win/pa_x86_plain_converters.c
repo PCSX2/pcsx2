@@ -134,7 +134,7 @@ static const float const_float_dither_scale_ = PA_FLOAT_DITHER_SCALE_;
 
 /*
 	-EMT64/AMD64 uses different asm
-	-VC2005 doesnt allow _WIN64 with inline assembly either!
+	-VC2005 doesn't allow _WIN64 with inline assembly either!
  */
 void PaUtil_InitializeX86PlainConverters( void )
 {

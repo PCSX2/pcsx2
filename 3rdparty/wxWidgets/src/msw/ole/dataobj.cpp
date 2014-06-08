@@ -675,7 +675,7 @@ void wxDataObject::SetAutoDelete()
     ((wxIDataObject *)m_pIDataObject)->SetDeleteFlag();
     m_pIDataObject->Release();
 
-    // so that the dtor doesnt' crash
+    // so that the dtor doesn't crash
     m_pIDataObject = NULL;
 }
 
@@ -1076,7 +1076,7 @@ size_t wxFileDataObject::GetDataSize() const
     static const size_t sizeOfChar = sizeof(wxChar);
 #endif // wxUSE_UNICODE_MSLU/!wxUSE_UNICODE_MSLU
 
-    // inital size of DROPFILES struct + null byte
+    // initial size of DROPFILES struct + null byte
     size_t sz = sizeof(DROPFILES) + sizeOfChar;
 
     const size_t count = m_filenames.size();
@@ -1220,7 +1220,7 @@ public:
 
 wxURLDataObject::wxURLDataObject(const wxString& url)
 {
-    // we support CF_TEXT and CFSTR_SHELLURL formats which are basicly the same
+    // we support CF_TEXT and CFSTR_SHELLURL formats which are basically the same
     // but it seems that some browsers only provide one of them so we have to
     // support both
     Add(new wxTextDataObject);

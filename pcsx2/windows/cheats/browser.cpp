@@ -34,7 +34,7 @@ void CreateListBox(HWND hWnd)
 	LRESULT lStyle = SendMessage(GetDlgItem(hWnd,IDC_PATCHES), LVM_GETEXTENDEDLISTVIEWSTYLE, 0, 0);
 	SendMessage(GetDlgItem(hWnd,IDC_PATCHES), LVM_SETEXTENDEDLISTVIEWSTYLE, 0, lStyle | LVS_EX_FULLROWSELECT);
 
-	// Adding colummns to the ListView
+	// Adding columns to the ListView
 	LVCOLUMN cols[7]={
 		{LVCF_TEXT|LVCF_WIDTH|LVCF_SUBITEM,0,70,"Address",0,0,0},
 		{LVCF_TEXT|LVCF_WIDTH|LVCF_SUBITEM,0,35,"CPU",1,0,0},

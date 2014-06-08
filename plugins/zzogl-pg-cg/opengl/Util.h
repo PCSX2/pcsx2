@@ -134,7 +134,7 @@ typedef struct
 	gameHacks hacks; // game options -- different hacks.
 	gameHacks def_hacks;// default game settings
 	int width, height; // View target size, has no impact towards speed
-	int x, y; // Lets try for a persistant window position.
+	int x, y; // Lets try for a persistent window position.
 	bool isWideScreen; // Widescreen support
 	u32 SkipDraw;
 	u32 log;

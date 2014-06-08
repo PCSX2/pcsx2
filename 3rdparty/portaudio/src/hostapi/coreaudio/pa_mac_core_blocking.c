@@ -210,7 +210,7 @@ PaError blioSetIsInputEmpty( PaMacBlio *blio, bool isEmpty )
       goto done;
 
    /* we need to update the value. Here's what we do:
-    * - Lock the mutex, so noone else can write.
+    * - Lock the mutex, so no one else can write.
     * - update the value.
     * - unlock.
     * - broadcast to all listeners.
@@ -236,7 +236,7 @@ PaError blioSetIsOutputFull( PaMacBlio *blio, bool isFull )
       goto done;
 
    /* we need to update the value. Here's what we do:
-    * - Lock the mutex, so noone else can write.
+    * - Lock the mutex, so no one else can write.
     * - update the value.
     * - unlock.
     * - broadcast to all listeners.
@@ -334,7 +334,7 @@ PaError destroyBlioRingBuffers( PaMacBlio *blio )
 }
 
 /*
- * this is the BlioCallback function. It expects to recieve a PaMacBlio Object
+ * this is the BlioCallback function. It expects to receive a PaMacBlio Object
  * pointer as userData.
  *
  */

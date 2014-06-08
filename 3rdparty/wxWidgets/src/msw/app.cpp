@@ -566,7 +566,7 @@ void wxApp::WakeUpIdle()
 }
 
 // ----------------------------------------------------------------------------
-// other wxApp event hanlders
+// other wxApp event handlers
 // ----------------------------------------------------------------------------
 
 void wxApp::OnEndSession(wxCloseEvent& WXUNUSED(event))
@@ -604,7 +604,7 @@ int wxApp::GetComCtl32Version()
 
     if ( s_verComCtl32 == -1 )
     {
-        // initally assume no comctl32.dll at all
+        // initially assume no comctl32.dll at all
         s_verComCtl32 = 0;
 
         // we're prepared to handle the errors

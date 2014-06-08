@@ -130,7 +130,7 @@ void DisplayDialog()
     gtk_widget_set_tooltip_text(time_scaling_check, "Slows down or speeds up sound with respect to the game's real speed.\nEnabling this produces higher quality sound with less cracking, but can reduce speed.");
     
     real_time_check = gtk_check_button_new_with_label("Real Time Mode");
-    gtk_widget_set_tooltip_text(real_time_check, "Tries to reduce delays in music as much as possible.\nUse when a game is already fast, and needs sound tightly syncronized. (like in DDR, Guitar Hero, & Guitaroo Man)");
+    gtk_widget_set_tooltip_text(real_time_check, "Tries to reduce delays in music as much as possible.\nUse when a game is already fast, and needs sound tightly synchronized. (like in DDR, Guitar Hero, & Guitaroo Man)");
     
     recording_check = gtk_check_button_new_with_label("Recording");
     gtk_widget_set_tooltip_text(recording_check, "Saves the raw 16 bit stereo wave data to zerospu2.wav. Timed to ps2 time.");

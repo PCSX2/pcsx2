@@ -446,7 +446,7 @@ wxImage wxImage::Scale( int width, int height, int quality ) const
         }
         else
         {
-            // For upsampling or other random/wierd image dimensions we'll use
+            // For upsampling or other random/weird image dimensions we'll use
             // a bicubic b-spline scaling method
             image = ResampleBicubic(width, height);
         }

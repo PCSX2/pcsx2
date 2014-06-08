@@ -442,7 +442,7 @@ extern GLuint vboRect;
 #define PSMPOSITION 28
 
 // Code width and height of frame into key, that used in targetmanager
-// This is 3 variants of one function, Key dependant on fbp and fbw.
+// This is 3 variants of one function, Key dependent on fbp and fbw.
 inline u32 GetFrameKey(const frameInfo& frame)
 {
 	return (((frame.fbw) << 16) | (frame.fbp));

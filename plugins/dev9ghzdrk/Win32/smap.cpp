@@ -57,7 +57,7 @@ void test()
 	printf ("EMAC3R 0x%08X raw read 0x%08X\n",EMAC3REG_READ(SMAP_EMAC3_STA_CTRL),SMAP_REG32(SMAP_EMAC3_STA_CTRL));
 }*/
 
-//this can return a false positive, but its not problem since it may say it cant recv while it can (no harm done, just delay on packets)
+//this can return a false positive, but its not problem since it may say it can't recv while it can (no harm done, just delay on packets)
 bool rx_fifo_can_rx()
 {
 	//check if RX is on & stuff like that here
@@ -146,7 +146,7 @@ void tx_process()
 		}
 		if (pbd->length&3)
 		{
-			//spams// emu_printf("WARN : pbd->length not alligned %d\n",pbd->length);
+			//spams// emu_printf("WARN : pbd->length not aligned %d\n",pbd->length);
 		}
 
 		if(pbd->length>1514)
@@ -232,7 +232,7 @@ void tx_process()
 		printf("WARN : (fc!=cnt || cnt==0) but packet send request was made oO..\n");
 		_DEV9irq(SMAP_INTR_TXDNV,0);
 	}
-	//if we actualy send something send TXEND
+	//if we actually send something send TXEND
 	if(fc!=0)
 		_DEV9irq(SMAP_INTR_TXEND,100);//now ? or when the fifo is empty ? i guess now atm
 }
@@ -558,7 +558,7 @@ void CALLBACK smap_write8(u32 addr, u8 value)
 		{
 			dev9.txbdi=0;
 			dev9.txfifo_rd_ptr=0;
-			dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)=0;	//this actualy needs to be atomic (lock mov ...)
+			dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)=0;	//this actually needs to be atomic (lock mov ...)
 			dev9Ru32(SMAP_R_TXFIFO_WR_PTR)=0;
 			dev9Ru32(SMAP_R_TXFIFO_SIZE)=16384;
 		}

@@ -626,7 +626,7 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 		{
 			// Update counters using the hblank as the clock.  This keeps the hblank source
 			// nicely in sync with the counters and serves as an optimization also, since these
-			// counter won't recieve special rcntUpdate scheduling.
+			// counter won't receive special rcntUpdate scheduling.
 
 			// Note: Target and overflow tests must be done here since they won't be done
 			// currectly by rcntUpdate (since it's not being scheduled for these counters)

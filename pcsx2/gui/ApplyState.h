@@ -214,7 +214,7 @@ class BaseApplicableConfigPanel_SpecificConfig : public BaseApplicableConfigPane
     //from a specific config (used by the presets system to trash not g_Conf in case the user pressed "Cancel").
     //Every panel that the Presets affect should be derived from this and not from BaseApplicableConfigPanel.
     //
-    //Multiple inheritance would have been better (also for cases of non BaseApplicableConfigPanel which are effected by presets),
+    //Multiple inheritance would have been better (also for cases of non BaseApplicableConfigPanel which are affected by presets),
     //but multiple inheritance sucks. So, subclass.
     //NOTE: because ApplyConfigToGui is called manually and not via an event, it must consider manuallyPropagate and call sub panels.
 public:
