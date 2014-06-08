@@ -54,7 +54,7 @@ public:
 
 	virtual void DispatchEvent( const PageFaultInfo& evtinfo )
 	{
-		pxFailRel( "Don't call me, damnit.  Use DispatchException instead." );
+		pxFailRel( "Don't call me.  Use DispatchException instead." );
 	}
 
 	virtual void OnPageFaultEvent( const PageFaultInfo& evtinfo, bool& handled ) {}

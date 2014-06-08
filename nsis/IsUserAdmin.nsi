@@ -36,7 +36,7 @@ Function IsUserAdmin
     Goto done
 
   StrCmp $1 "Guest" 0 +3
-    ; Guest account?  Probably doomed to failure, but might as well try, just in case some shit
+    ; Guest account?  Probably doomed to failure, but might as well try, just in case something
     ; is being mis-reported.
     DetailPrint '(UAC) User "$0" is a guest -- this installer is probably going to fail.  Good luck.'
     Goto done

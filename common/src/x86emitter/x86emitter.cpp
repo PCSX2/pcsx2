@@ -610,7 +610,7 @@ xIndirectVoid::xIndirectVoid( xAddressReg base, xAddressReg index, int scale, s3
 // followed by an InvalidParameter Exception will be tossed around in haphazard
 // fashion.
 //
-// Optimization Note: Currently VC does a piss poor job of inlining this, even though
+// Optimization Note: Currently VC does a poor job of inlining this, even though
 // constant propagation *should* resove it to little or no code (VC's constprop fails
 // on C++ class initializers).  There is a work around [using array initializers instead]
 // but it's too much trouble for code that isn't performance critical anyway.

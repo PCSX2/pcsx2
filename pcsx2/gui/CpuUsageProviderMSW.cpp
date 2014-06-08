@@ -17,9 +17,9 @@
 #include "CpuUsageProvider.h"
 
 // undef this for compiler errors, code errors, security denies, and total fail.
-#define _COM_SUCKS_SHIT_
+#define _COM_HACK_
 
-#ifndef _COM_SUCKS_SHIT_
+#ifndef _COM_HACK_
 
 #include "MswStuff.h"
 #include "System.h"

@@ -1016,7 +1016,7 @@ int ps2kbd_probe(int devId)
      (intf->bInterfaceProtocol != USB_HIDPROTO_KEYBOARD) || (intf->bNumEndpoints < 1))
 
     {
-      //printf("We came, we saw, we told it to fuck off\n");
+      //printf("We came, we saw, we told conquered\n");
       return 0;
     }
 
