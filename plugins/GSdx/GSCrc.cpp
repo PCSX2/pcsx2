@@ -83,7 +83,7 @@ CRC::Game CRC::m_games[] =
 	{0x5E31EA42, MetalGearSolid3, EU, 0},
 	{0xD7ED797D, MetalGearSolid3, EU, 0},
 	{0x053D2239, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc1
-	{0x01B2FA7F, MetalGearSolid3, US  0}, //Metal Gear Solid 3 Subsistence disc2
+	{0x01B2FA7F, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc2
 	{0xAA31B5BF, MetalGearSolid3, US, 0},
 	{0x86BC3040, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc1
 	{0x0481AD8A, MetalGearSolid3, JP, 0},
