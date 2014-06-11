@@ -1516,6 +1516,30 @@ void encodeMemcheck()
 
 }
 
+void __fastcall GoemonPreloadTlb()
+{
+	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+
+	// FIXME to avoid spamming: I only populate latest entry. It would be
+	// better to check if the memory is alredy mapped.
+//	for (u32 i = 0; i < 150; i++) {
+	for (s32 i = 149; i >= 0; i--) {
+		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add) {
+
+			u32 size  = tlb[i].high_add - tlb[i].low_add;
+			u32 vaddr = tlb[i].low_add;
+			u32 paddr = tlb[i].physical_add;
+
+			if (1/*|| vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] != 0x80000000*/) {
+				DevCon.WriteLn("Preload TLB[%d]: From V:0x%8.8x to P:0x%8.8x (%d pages)", i, vaddr, paddr, size >> vtlb_private::VTLB_PAGE_BITS);
+				vtlb_VMap(           vaddr , paddr, size);
+				vtlb_VMap(0x20000000|vaddr , paddr, size);
+				break;
+			}
+		}
+	}
+	//recResetEE();
+}
 
 void recompileNextInstruction(int delayslot)
 {
@@ -1860,6 +1884,11 @@ static void __fastcall recRecompile( const u32 startpc )
 
 		xMOV(ecx, pc);
 		xCALL(PreBlockCheck);
+	}
+
+	if (pc == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
+		iFlushCall(FLUSH_EVERYTHING);
+		xCALL(GoemonPreloadTlb);
 	}
 
 	// go until the next branch

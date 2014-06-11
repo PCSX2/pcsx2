@@ -47,6 +47,10 @@ static void debugI()
 
 static void execI()
 {
+	if (cpuRegs.pc == 0x3563B0 && EmuConfig.Gamefixes.GoemonTlbHack) {
+		GoemonPreloadTlb();
+	}
+
 	cpuRegs.code = memRead32( cpuRegs.pc );
 	if( IsDebugBuild )
 		debugI();
