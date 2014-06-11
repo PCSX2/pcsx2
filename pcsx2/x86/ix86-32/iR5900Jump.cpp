@@ -22,6 +22,8 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 
+using namespace x86Emitter;
+
 namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl
@@ -48,7 +50,10 @@ void recJ( void )
 	// SET_FPUSTATE;
 	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
 	recompileNextInstruction(1);
-	SetBranchImm(newpc);
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		SetBranchImm(vtlb_V2P(newpc));
+	else
+		SetBranchImm(newpc);
 }
 
 ////////////////////////////////////////////////////
@@ -69,7 +74,10 @@ void recJAL( void )
 	}
 
 	recompileNextInstruction(1);
-	SetBranchImm(newpc);
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		SetBranchImm(vtlb_V2P(newpc));
+	else
+		SetBranchImm(newpc);
 }
 
 /*********************************************************
@@ -89,6 +97,12 @@ void recJALR( void )
 	int newpc = pc + 4;
 	_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 	_eeMoveGPRtoR(ESI, _Rs_);
+
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+		xMOV(ecx, esi);
+		vtlb_DynV2P();
+		xMOV(esi, eax);
+	}
 	// uncomment when there are NO instructions that need to call interpreter
 //	int mmreg;
 //	if( GPR_IS_CONST1(_Rs_) )

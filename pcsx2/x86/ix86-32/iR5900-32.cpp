@@ -971,6 +971,12 @@ void SetBranchReg( u32 reg )
 		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 		_eeMoveGPRtoR(ESI, reg);
 
+		if (EmuConfig.Gamefixes.GoemonTlbHack) {
+			xMOV(ecx, esi);
+			vtlb_DynV2P();
+			xMOV(esi, eax);
+		}
+
 		recompileNextInstruction(1);
 
 		if( x86regs[ESI].inuse ) {
