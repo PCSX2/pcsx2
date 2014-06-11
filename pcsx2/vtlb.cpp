@@ -342,6 +342,26 @@ static void GoemonTlbMissDebug()
 	}
 }
 
+void __fastcall GoemonPreloadTlb()
+{
+	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+
+	for (u32 i = 0; i < 150; i++) {
+		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add) {
+
+			u32 size  = tlb[i].high_add - tlb[i].low_add;
+			u32 vaddr = tlb[i].low_add;
+			u32 paddr = tlb[i].physical_add;
+
+			if ((u32)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == 0x80000000u) {
+				DevCon.WriteLn("Preload TLB[%d]: From V:0x%8.8x to P:0x%8.8x (%d pages)", i, vaddr, paddr, size >> VTLB_PAGE_BITS);
+				vtlb_VMap(           vaddr , paddr, size);
+				vtlb_VMap(0x20000000|vaddr , paddr, size);
+			}
+		}
+	}
+}
+
 // Generates a tlbMiss Exception
 static __ri void vtlb_Miss(u32 addr,u32 mode)
 {
