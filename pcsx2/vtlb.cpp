@@ -617,6 +617,13 @@ __fi void* vtlb_GetPhyPtr(u32 paddr)
 		return reinterpret_cast<void*>(vtlbdata.pmap[paddr>>VTLB_PAGE_BITS]+(paddr&VTLB_PAGE_MASK));
 }
 
+__fi u32 vtlb_V2P(u32 vaddr)
+{
+	u32 paddr = vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
+	paddr    |= vaddr & VTLB_PAGE_MASK;
+	return paddr;
+}
+
 //virtual mappings
 //TODO: Add invalid paddr checks
 void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
@@ -644,6 +651,10 @@ void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
 		}
 
 		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = pme-vaddr;
+		if (vtlbdata.ppmap)
+			if (!(vaddr & 0x80000000)) // those address are already physical don't change them
+				vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS] = paddr & ~VTLB_PAGE_MASK;
+
 		vaddr += VTLB_PAGE_SIZE;
 		paddr += VTLB_PAGE_SIZE;
 		size -= VTLB_PAGE_SIZE;
@@ -722,6 +733,12 @@ void vtlb_Init()
 	//yeah i know, its stupid .. but this code has to be here for now ;p
 	vtlb_VMapUnmap((VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE,VTLB_PAGE_SIZE);
 
+	// By default a 1:1 virtual to physical mapping
+	if (vtlbdata.ppmap) {
+		for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
+			vtlbdata.ppmap[i] = i<<VTLB_PAGE_BITS;
+	}
+
 	extern void vtlb_dynarec_init();
 	vtlb_dynarec_init();
 }
@@ -752,11 +769,20 @@ void vtlb_Core_Alloc()
 				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
 			);
 	}
+	if (!vtlbdata.ppmap && EmuConfig.Gamefixes.GoemonTlbHack)
+	{
+		vtlbdata.ppmap = (u32*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap), 16 );
+		if (!vtlbdata.ppmap)
+			throw Exception::OutOfMemory( L"VTLB PS2 Virtual Address Translation LUT" )
+				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap) / _1mb)
+			);
+	}
 }
 
 void vtlb_Core_Free()
 {
 	safe_aligned_free( vtlbdata.vmap );
+	safe_aligned_free( vtlbdata.ppmap );
 }
 
 static wxString GetHostVmErrorMsg()
