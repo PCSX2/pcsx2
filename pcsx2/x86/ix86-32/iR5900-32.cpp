@@ -971,6 +971,12 @@ void SetBranchReg( u32 reg )
 		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 		_eeMoveGPRtoR(ESI, reg);
 
+		if (EmuConfig.Gamefixes.GoemonTlbHack) {
+			xMOV(ecx, esi);
+			vtlb_DynV2P();
+			xMOV(esi, eax);
+		}
+
 		recompileNextInstruction(1);
 
 		if( x86regs[ESI].inuse ) {
@@ -1516,7 +1522,6 @@ void encodeMemcheck()
 
 }
 
-
 void recompileNextInstruction(int delayslot)
 {
 	static u8 s_bFlushReg = 1;
@@ -1860,6 +1865,11 @@ static void __fastcall recRecompile( const u32 startpc )
 
 		xMOV(ecx, pc);
 		xCALL(PreBlockCheck);
+	}
+
+	// 0x33ad48 is the return address of the function that populate the TLB cache
+	if (pc == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
+		xCALL(GoemonPreloadTlb);
 	}
 
 	// go until the next branch

@@ -345,6 +345,10 @@ void BGEZALL()   // Branch if Rs >= 0 and link
 *********************************************************/
 void JR()
 {
+	// 0x33ad48 is the return address of the function that populate the TLB cache
+	if (cpuRegs.GPR.r[_Rs_].UL[0] == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
+		GoemonPreloadTlb();
+	}
 	doBranch(cpuRegs.GPR.r[_Rs_].UL[0]);
 }
 

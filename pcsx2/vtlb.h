@@ -211,3 +211,18 @@ namespace vtlb_private
 
 	extern __aligned(64) MapData vtlbdata;
 }
+
+// --------------------------------------------------------------------------------------
+//  Goemon game fix
+// --------------------------------------------------------------------------------------
+struct GoemonTlb {
+	u32 valid;
+	u32 unk1; // could be physical address also
+	u32 unk2;
+	u32 low_add;
+	u32 physical_add;
+	u32 unk3; // likely the size
+	u32 high_add;
+	u32 unk4;
+	u32 unk5;
+};
