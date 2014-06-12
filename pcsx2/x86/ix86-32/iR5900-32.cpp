@@ -1867,6 +1867,7 @@ static void __fastcall recRecompile( const u32 startpc )
 		xCALL(PreBlockCheck);
 	}
 
+	// 0x33ad48 is the return address of the function that populate the TLB cache
 	if (pc == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
 		xCALL(GoemonPreloadTlb);
 	}
