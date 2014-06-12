@@ -39,6 +39,7 @@ typedef u32 vtlbHandler;
 
 extern void vtlb_Core_Alloc();
 extern void vtlb_Core_Free();
+extern void vtlb_Alloc_Ppmap();
 extern void vtlb_Init();
 extern void vtlb_Reset();
 extern void vtlb_Term();

@@ -675,6 +675,7 @@ void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 size)
 		size -= VTLB_PAGE_SIZE;
 	}
 }
+
 void vtlb_VMapUnmap(u32 vaddr,u32 size)
 {
 	verify(0==(vaddr&VTLB_PAGE_MASK));
@@ -733,11 +734,9 @@ void vtlb_Init()
 	//yeah i know, its stupid .. but this code has to be here for now ;p
 	vtlb_VMapUnmap((VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE,VTLB_PAGE_SIZE);
 
-	// By default a 1:1 virtual to physical mapping
-	if (vtlbdata.ppmap) {
-		for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
-			vtlbdata.ppmap[i] = i<<VTLB_PAGE_BITS;
-	}
+	// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		vtlb_Alloc_Ppmap();
 
 	extern void vtlb_dynarec_init();
 	vtlb_dynarec_init();
@@ -769,14 +768,22 @@ void vtlb_Core_Alloc()
 				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
 			);
 	}
-	if (!vtlbdata.ppmap && EmuConfig.Gamefixes.GoemonTlbHack)
-	{
-		vtlbdata.ppmap = (u32*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap), 16 );
-		if (!vtlbdata.ppmap)
-			throw Exception::OutOfMemory( L"VTLB PS2 Virtual Address Translation LUT" )
-				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap) / _1mb)
-			);
-	}
+}
+
+// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+// However automatic gamefix is done after the standard init so a new init function was done.
+void vtlb_Alloc_Ppmap()
+{
+	if (vtlbdata.ppmap) return;
+
+	vtlbdata.ppmap = (u32*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap), 16 );
+	if (!vtlbdata.ppmap)
+		throw Exception::OutOfMemory( L"VTLB PS2 Virtual Address Translation LUT" )
+			.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap) / _1mb));
+
+	// By default a 1:1 virtual to physical mapping
+	for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
+		vtlbdata.ppmap[i] = i<<VTLB_PAGE_BITS;
 }
 
 void vtlb_Core_Free()
