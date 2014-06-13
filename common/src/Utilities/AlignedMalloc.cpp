@@ -30,6 +30,9 @@ void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align)
 {
 	pxAssert( align < 0x10000 );
 
+#ifdef __USE_ISOC11
+	return aligned_alloc(align, size);
+#else
 	u8* p = (u8*)malloc(size+align+headsize);
 
 	// start alignment calculations from past the header.
@@ -43,6 +46,7 @@ void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align)
 	header->size = size;
 
 	return (void*)aligned;
+#endif
 }
 
 void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align)
@@ -53,18 +57,27 @@ void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align)
 
 	if( handle != NULL )
 	{
+#ifdef __USE_ISOC11
+		memcpy_fast( newbuf, handle, size );
+		free( handle );
+#else
 		AlignedMallocHeader* header = (AlignedMallocHeader*)((uptr)handle - headsize);
 		memcpy_fast( newbuf, handle, std::min( size, header->size ) );
 		free( header->baseptr );
+#endif
 	}
 	return newbuf;
 }
 
 __fi void pcsx2_aligned_free(void* pmem)
 {
+#ifdef __USE_ISOC11
+	free(pmem);
+#else
 	if( pmem == NULL ) return;
 	AlignedMallocHeader* header = (AlignedMallocHeader*)((uptr)pmem - headsize);
 	free( header->baseptr );
+#endif
 }
 
 // ----------------------------------------------------------------------------

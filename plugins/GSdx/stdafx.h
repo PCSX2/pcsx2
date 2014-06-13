@@ -71,6 +71,7 @@ typedef uint32 uptr;
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <math.h>
 #include <float.h>
 #include <time.h>
@@ -184,8 +185,6 @@ using namespace std;
 	#define DIRECTORY_SEPARATOR '\\'
 
 #else
-
-	#define _BACKWARD_BACKWARD_WARNING_H
 
 	#define hash_map map
 	#define hash_set set
@@ -359,7 +358,12 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 #if !defined(_MSC_VER)
 
-	#if !defined(HAVE_ALIGNED_MALLOC)
+	#if defined(__USE_ISOC11)
+
+	#define _aligned_malloc(size, a) aligned_alloc(a, size)
+	static void _aligned_free(void* p) { free(p); }
+
+	#elif !defined(HAVE_ALIGNED_MALLOC)
 
 	extern void* _aligned_malloc(size_t size, size_t alignment);
 	extern void _aligned_free(void* p);
