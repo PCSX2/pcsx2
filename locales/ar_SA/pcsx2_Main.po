@@ -595,7 +595,7 @@ msgstr "تحذير لم يتم تشغيل ملحقات النظام . ربما P
 #: pcsx2/gui/AppMain.cpp:311
 #, c-format
 msgid "%s Commandline Options"
-msgstr "%s إختيارات سطر الأوامر %"
+msgstr "%s إختيارات سطر الأوامر"
 
 #: pcsx2/gui/AppMain.cpp:609
 msgid "PS2 BIOS Error"
@@ -653,7 +653,7 @@ msgstr "حوّل غلى وضع مستندات المستخدم"
 #: pcsx2/gui/AppUserMode.cpp:174
 #, c-format
 msgid "%s is switching to local install mode."
-msgstr "%s يغّير لوضع التنصيب المحلي %"
+msgstr "%s يغّير لوضع التنصيب المحلي"
 
 #: pcsx2/gui/AppUserMode.cpp:175
 msgid ""
@@ -1032,7 +1032,7 @@ msgstr "إقرأني / أسئلة يتكرر سؤالها [ أوفلاين ( ل�
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:109
 #, c-format
 msgid "%s First Time Configuration"
-msgstr "%s معالج الضبط لأول مرّة %"
+msgstr "%s معالج الضبط لأول مرّة"
 
 #: pcsx2/gui/Dialogs/GameDatabaseDialog.cpp:24
 #, c-format
@@ -1283,12 +1283,12 @@ msgstr "تصحيح"
 #: pcsx2/gui/MainFrame.cpp:360
 #, fuzzy, c-format
 msgid "%s  %d.%d.%d"
-msgstr "%s  %d.%d.%d %s"
+msgstr "%s  %d.%d.%d"
 
 #: pcsx2/gui/MainFrame.cpp:365
 #, fuzzy, c-format
 msgid "%s  %d.%d.%d-%lld%s (git)  %s"
-msgstr "%s  %d.%d.%d.%d%s (نسح فرعية)  %s"
+msgstr "%s  %d.%d.%d.%lld%s (نسح فرعية)  %s"
 
 #: pcsx2/gui/MainFrame.cpp:402 pcsx2/gui/MainFrame.cpp:404
 #: pcsx2/gui/MainFrame.cpp:410
