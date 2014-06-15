@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-04-06 11:47+0200\n"
-"PO-Revision-Date: 2014-04-01 21:11+0900\n"
+"PO-Revision-Date: 2014-06-15 12:24+0900\n"
 "Last-Translator: nrusef <nrusef@gmail.com>\n"
 "Language-Team: DeltaHF\n"
 "Language: ja_JP\n"
@@ -18,13 +18,13 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: trunk\\\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.5.7\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
 #: common/include/Utilities/Exceptions.h:187
 msgid "No reason given."
-msgstr "原因不明なエラー"
+msgstr "原因不明のエラー"
 
 #: common/include/Utilities/Exceptions.h:226
 msgid "Parse error"
@@ -37,7 +37,7 @@ msgstr ""
 
 #: common/src/Utilities/Exceptions.cpp:219
 msgid "Oh noes! Out of memory!"
-msgstr "おっと、メモリー不足です！"
+msgstr "おっと、メモリ不足です！"
 
 #: common/src/Utilities/Exceptions.cpp:234
 msgid ""
@@ -45,8 +45,8 @@ msgid ""
 "drivers, services, or may simply have insufficient memory or resources to "
 "meet PCSX2's lofty needs."
 msgstr ""
-"仮想メモリマッピングエラー。システムに競合しているドライバやサービス或いは"
-"PCSX2の高レベルな要求に応えられるメモリーやリソースが不足しています。"
+"仮想メモリマッピングエラー。システムに競合しているドライバやサービス、もしく"
+"はPCSX2の高レベルな要求に応えられるメモリやリソースが不足しています。"
 
 #: common/src/Utilities/Exceptions.cpp:307
 msgid "Path: "
@@ -54,7 +54,7 @@ msgstr "パス："
 
 #: common/src/Utilities/Exceptions.cpp:311
 msgid "[Unnamed or unknown]"
-msgstr "[不明又は未知]"
+msgstr "[不明または未知]"
 
 #: common/src/Utilities/Exceptions.cpp:331
 msgid "A file could not be created."
@@ -77,8 +77,8 @@ msgid ""
 "Unexpected end of file or stream encountered.  File is probably truncated or "
 "corrupted."
 msgstr ""
-"予期しないEOF又はストリームを検出しました。切り詰められているか、破損したファ"
-"イルです。"
+"予期しないEOFもしくはストリームを検出しました。切り詰められているか、破損した"
+"ファイルです。"
 
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
@@ -94,7 +94,7 @@ msgstr "タスク待機状態..."
 
 #: common/src/Utilities/wxAppWithHelpers.cpp:36
 msgid "Includes idle event processing and some other uncommon event usages."
-msgstr "アイドルイベント処理及びその他例外イベントを用途に含みます。"
+msgstr "アイドルイベント処理およびその他例外イベントを用途に含みます。"
 
 #: pcsx2/CDVD/InputIsoFile.cpp:231
 msgid "Unrecognized ISO image file format"
@@ -102,7 +102,8 @@ msgstr "認識できないISOイメージファイル形式です。"
 
 #: pcsx2/Elfheader.cpp:280
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
-msgstr "ELFバイナリイメージを読み込めません。破損又は不完全なファイルです。"
+msgstr ""
+"ELFバイナリイメージを読み込めません。破損しているか、不完全なファイルです。"
 
 #: pcsx2/Elfheader.cpp:282
 msgid ""
@@ -130,7 +131,7 @@ msgid ""
 "incompatible hardware/drivers."
 msgstr ""
 "[%s]プラグインがロードに失敗しました。システムのリソースが不足しているか、互"
-"換性の無いハードウェア又はドライバーがあります。"
+"換性の無いハードウェアやドライバーがあります。"
 
 #: pcsx2/PluginManager.cpp:729
 #, c-format
@@ -138,7 +139,7 @@ msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
 "resources needed."
 msgstr ""
-"[%s]プラグインが初期化に失敗しました。システムのメモリー又はリソースが不足し"
+"[%s]プラグインが初期化に失敗しました。システムのメモリまたはリソースが不足し"
 "ています。"
 
 #: pcsx2/PluginManager.cpp:835
@@ -164,8 +165,8 @@ msgstr ""
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
-"ハードウェアまたはソフトウェア、ドライバーがプラグインではサポートされていま"
-"せん。"
+"このプラグインではあなたのハードウェアもしくはソフトウェア、ドライバーはサ"
+"ポートされていません。"
 
 #: pcsx2/PluginManager.cpp:903
 msgid ""
@@ -195,7 +196,7 @@ msgstr "プラグインがロードされていません。"
 #: pcsx2/SaveState.cpp:342
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr ""
-"セーブステートをロードできません。未知又はサポートされないバージョンです。"
+"セーブステートをロードできません。不明またはサポートされないバージョンです。"
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
@@ -227,7 +228,7 @@ msgstr "SYSCALLとDECI2のアクティビティ。"
 
 #: pcsx2/SourceLog.cpp:151
 msgid "Direct memory accesses to unknown or unmapped EE memory space."
-msgstr "未知又はマップされていないEEメモリに対するDMA。"
+msgstr "未知またはマップされていないEEメモリに対するDMA。"
 
 #: pcsx2/SourceLog.cpp:157 pcsx2/SourceLog.cpp:276
 msgid "Disasm of executing core instructions (excluding COPs and CACHE)."
@@ -311,7 +312,7 @@ msgstr "SYSCALLとIRXのアクティビティ。"
 
 #: pcsx2/SourceLog.cpp:270
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
-msgstr "未知又はマップされていないIOPメモリに対するDMA。"
+msgstr "未知またはマップされていないIOPメモリに対するDMA。"
 
 #: pcsx2/SourceLog.cpp:282
 msgid "Disasm of the IOP's GPU co-processor instructions."
@@ -327,7 +328,7 @@ msgstr ""
 #: pcsx2/SourceLog.cpp:306
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
 msgstr ""
-"メモリーカードの読み込み、書き込み、消去、終止、及びその他プロセシング。"
+"メモリーカードの読み込み、書き込み、消去、終止、およびその他プロセッシング。"
 
 #: pcsx2/SourceLog.cpp:312
 msgid "Gamepad activity on the SIO."
@@ -451,7 +452,7 @@ msgstr "スピードハックを全て無効にする"
 
 #: pcsx2/gui/AppInit.cpp:262
 msgid "use the specified comma or pipe-delimited list of gamefixes."
-msgstr "カンマ又はハイフン区切りのゲームフィックスリストを使用する。"
+msgstr "カンマまたはハイフン区切りのゲームフィックスリストを使用する。"
 
 #: pcsx2/gui/AppInit.cpp:263
 msgid "disables fast booting"
@@ -855,9 +856,8 @@ msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2公式ウェブサイトとフォーラム"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
-#, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "PCSX2公式SVNレポジトリ - グーグルコード"
+msgstr "PCSX2公式Gitリポジトリ - GitHub"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
@@ -1093,7 +1093,8 @@ msgstr "PCSX2初回起動設定"
 #, c-format
 msgid "%s is starting from a new or unknown folder and needs to be configured."
 msgstr ""
-"%sは別の又は未知のフォルダーから起動しています。設定する必要があります。"
+"%sは別のフォルダーまたは未知のフォルダーから起動しています。設定する必要があ"
+"ります。"
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:28
 msgid "PCSX2 Thread is not responding"
@@ -1297,9 +1298,9 @@ msgid "%s  %d.%d.%d"
 msgstr "%s  %d.%d.%d"
 
 #: pcsx2/gui/MainFrame.cpp:365
-#, fuzzy, c-format
+#, c-format
 msgid "%s  %d.%d.%d-%lld%s (git)  %s"
-msgstr "%s  %d.%d.%d.%d%s (svn)  %s"
+msgstr "%s  %d.%d.%d-%lld%s (git)  %s"
 
 #: pcsx2/gui/MainFrame.cpp:402 pcsx2/gui/MainFrame.cpp:404
 #: pcsx2/gui/MainFrame.cpp:410
@@ -2010,7 +2011,8 @@ msgstr "ゲームフィックスを手動で設定する[非推奨]"
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:114
 msgid ""
 "The safest way to make sure that all game fixes are completely disabled."
-msgstr "ゲームフィックスが全て無効化されている事を確認する為の最善な方法です。"
+msgstr ""
+"ゲームフィックスが全て無効化されている事を確認するための最善な方法です。"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:249
 msgid "Enable Trace Logging"
@@ -2382,7 +2384,8 @@ msgstr "スピードハック有効化"
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
-msgstr "ゲームフィックスが全て無効化されている事を確認する為の最善な方法です。"
+msgstr ""
+"ゲームフィックスが全て無効化されている事を確認するための最善な方法です。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
 msgid ""
@@ -2514,8 +2517,8 @@ msgid ""
 "Error while parsing either NTSC or PAL framerate settings.  Settings must be "
 "valid floating point numerics."
 msgstr ""
-"NTSC又はPAL方式のフレームレート設定のパースエラー。設定は有効な浮動小数点数で"
-"なければいけません。"
+"NTSCまたはPAL方式のフレームレート設定のパースエラー。設定は有効な浮動小数点数"
+"でなければいけません。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:182
 msgid "Disabled [default]"
@@ -2534,7 +2537,7 @@ msgid ""
 "Normal and Turbo limit rates skip frames.  Slow motion mode will still "
 "disable frameskipping."
 msgstr ""
-"平常及びターボ時にフレームスキップします。\n"
+"通常時またはターボ時にフレームスキップします。\n"
 "スローモーション時にはフレームスキップは無効になります。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:215
@@ -2611,8 +2614,8 @@ msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
 msgstr ""
-"セーブステートは重要な構成に欠けている為、ロードできません。詳細はログファイ"
-"ルを参照してください。"
+"セーブステートの重要な構成が欠けていたため、ロードできません。詳細はログファ"
+"イルを参照してください。"
 
 #: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
