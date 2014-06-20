@@ -423,7 +423,7 @@ extern void cpuTlbMissR(u32 addr, u32 bd);
 extern void cpuTlbMissW(u32 addr, u32 bd);
 extern void cpuTestHwInts();
 extern void cpuClearInt(uint n);
-extern __fastcall void GoemonPreloadTlb();
+extern void __fastcall GoemonPreloadTlb();
 
 extern void cpuSetNextEvent( u32 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
