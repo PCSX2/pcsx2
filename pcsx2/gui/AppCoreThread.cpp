@@ -277,6 +277,10 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game, bool verbo
 			dest.Gamefixes.Set(id, enableIt);
 			if(verbose) Console.WriteLn(L"(GameDB) %s Gamefix: " + key, enableIt ? L"Enabled" : L"Disabled" );
 			gf++;
+
+			// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+			if (id == Fix_GoemonTlbMiss && enableIt)
+				vtlb_Alloc_Ppmap();
 		}
 	}
 

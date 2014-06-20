@@ -39,6 +39,7 @@ typedef u32 vtlbHandler;
 
 extern void vtlb_Core_Alloc();
 extern void vtlb_Core_Free();
+extern void vtlb_Alloc_Ppmap();
 extern void vtlb_Init();
 extern void vtlb_Reset();
 extern void vtlb_Term();
@@ -61,6 +62,8 @@ extern void vtlb_MapHandler(vtlbHandler handler,u32 start,u32 size);
 extern void vtlb_MapBlock(void* base,u32 start,u32 size,u32 blocksize=0);
 extern void* vtlb_GetPhyPtr(u32 paddr);
 //extern void vtlb_Mirror(u32 new_region,u32 start,u32 size); // -> not working yet :(
+extern u32  vtlb_V2P(u32 vaddr);
+extern void vtlb_DynV2P();
 
 //virtual mappings
 extern void vtlb_VMap(u32 vaddr,u32 paddr,u32 sz);
@@ -194,9 +197,11 @@ namespace vtlb_private
 		// third indexer -- 128 possible handlers!
 		void* RWFT[5][2][VTLB_HANDLER_ITEMS];
 
-		s32 pmap[VTLB_PMAP_ITEMS];	//512KB
+		s32 pmap[VTLB_PMAP_ITEMS];	//512KB // PS2 physical to x86 physical
 
-		s32* vmap;				//4MB (allocated by vtlb_init)
+		s32* vmap;				//4MB (allocated by vtlb_init) // PS2 virtual to x86 physical
+
+		u32* ppmap;				//4MB (allocated by vtlb_init) // PS2 virtual to PS2 physical
 
 		MapData()
 		{
@@ -206,3 +211,18 @@ namespace vtlb_private
 
 	extern __aligned(64) MapData vtlbdata;
 }
+
+// --------------------------------------------------------------------------------------
+//  Goemon game fix
+// --------------------------------------------------------------------------------------
+struct GoemonTlb {
+	u32 valid;
+	u32 unk1; // could be physical address also
+	u32 unk2;
+	u32 low_add;
+	u32 physical_add;
+	u32 unk3; // likely the size
+	u32 high_add;
+	u32 unk4;
+	u32 unk5;
+};

@@ -557,3 +557,18 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//							Extra Implementations
+
+//   ecx - virtual address
+//   Returns physical address in eax.
+void vtlb_DynV2P()
+{
+	xMOV(eax, ecx);
+	xAND(ecx, VTLB_PAGE_MASK); // vaddr & VTLB_PAGE_MASK
+
+	xSHR(eax, VTLB_PAGE_BITS);
+	xMOV(eax, ptr[(eax*4) + vtlbdata.ppmap]); //vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
+
+	xOR(eax, ecx);
+}
