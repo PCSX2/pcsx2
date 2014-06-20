@@ -334,10 +334,10 @@ namespace COP0 {
 
 	void TLBR() {
 DevCon.Warning("COP0_TLBR %d:%x,%x,%x,%x\n",
-			cpuRegs.CP0.n.Random,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
+			cpuRegs.CP0.n.Index,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
-	int i = cpuRegs.CP0.n.Index&0x1f;
+	int i = cpuRegs.CP0.n.Index & 0x3f;
 
 	cpuRegs.CP0.n.PageMask = tlb[i].PageMask;
 	cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi&~(tlb[i].PageMask|0x1f00);

@@ -197,6 +197,7 @@ void cpuTlbMiss(u32 addr, u32 bd, u32 excode)
 	cpuRegs.CP0.n.EntryHi = (addr & 0xFFFFE000) | (cpuRegs.CP0.n.EntryHi & 0x1FFF);
 
 	// Don't reinvent the wheel ;)
+	cpuRegs.pc -= 4;
 	cpuException(excode, bd);
 #if 0
 	cpuRegs.CP0.n.Cause = excode;
