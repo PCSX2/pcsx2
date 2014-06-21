@@ -13,10 +13,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2012-11-08 16:53:01 -0200 (qui, 08 nov 2012) $
+// Last changed  : $Date: 2013-06-14 17:34:33 +0000 (Fri, 14 Jun 2013) $
 // File revision : $Revision: 1.12 $
 //
-// $Id: TDStretch.cpp 160 2012-11-08 18:53:01Z oparviai $
+// $Id: TDStretch.cpp 172 2013-06-14 17:34:33Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -50,8 +50,6 @@
 #include "STTypes.h"
 #include "cpu_detect.h"
 #include "TDStretch.h"
-
-#include <stdio.h>
 
 using namespace soundtouch;
 
@@ -159,7 +157,6 @@ void TDStretch::setParameters(int aSampleRate, int aSequenceMS,
 
     // set tempo to recalculate 'sampleReq'
     setTempo(tempo);
-
 }
 
 
@@ -212,7 +209,7 @@ void TDStretch::overlapMono(SAMPLETYPE *pOutput, const SAMPLETYPE *pInput) const
 
 void TDStretch::clearMidBuffer()
 {
-    memset(pMidBuffer, 0, 2 * sizeof(SAMPLETYPE) * overlapLength);
+    memset(pMidBuffer, 0, channels * sizeof(SAMPLETYPE) * overlapLength);
 }
 
 
@@ -265,13 +262,22 @@ int TDStretch::seekBestOverlapPosition(const SAMPLETYPE *refPos)
 // of 'ovlPos'.
 inline void TDStretch::overlap(SAMPLETYPE *pOutput, const SAMPLETYPE *pInput, uint ovlPos) const
 {
-    if (channels == 2) 
+#ifndef USE_MULTICH_ALWAYS
+    if (channels == 1)
+    {
+        // mono sound.
+        overlapMono(pOutput, pInput + ovlPos);
+    }
+    else if (channels == 2)
     {
         // stereo sound
         overlapStereo(pOutput, pInput + 2 * ovlPos);
-    } else {
-        // mono sound.
-        overlapMono(pOutput, pInput + ovlPos);
+    } 
+    else 
+#endif // USE_MULTICH_ALWAYS
+    {
+        assert(channels > 0);
+        overlapMulti(pOutput, pInput + channels * ovlPos);
     }
 }
 
@@ -458,11 +464,15 @@ void TDStretch::setChannels(int numChannels)
 {
     assert(numChannels > 0);
     if (channels == numChannels) return;
-    assert(numChannels == 1 || numChannels == 2);
+//    assert(numChannels == 1 || numChannels == 2);
 
     channels = numChannels;
     inputBuffer.setChannels(channels);
     outputBuffer.setChannels(channels);
+
+    // re-init overlap/buffer
+    overlapLength=0;
+    setParameters(sampleRate);
 }
 
 
@@ -498,7 +508,6 @@ void TDStretch::processNominalTempo()
 }
 */
 
-#include <stdio.h>
 
 // Processes as many processing frames of the samples 'inputBuffer', store
 // the result into 'outputBuffer'
@@ -588,7 +597,7 @@ void TDStretch::acceptNewOverlapLength(int newOverlapLength)
     {
         delete[] pMidBufferUnaligned;
 
-        pMidBufferUnaligned = new SAMPLETYPE[overlapLength * 2 + 16 / sizeof(SAMPLETYPE)];
+        pMidBufferUnaligned = new SAMPLETYPE[overlapLength * channels + 16 / sizeof(SAMPLETYPE)];
         // ensure that 'pMidBuffer' is aligned to 16 byte boundary for efficiency
         pMidBuffer = (SAMPLETYPE *)SOUNDTOUCH_ALIGN_POINTER_16(pMidBufferUnaligned);
 
@@ -663,6 +672,27 @@ void TDStretch::overlapStereo(short *poutput, const short *input) const
         cnt2 = 2 * i;
         poutput[cnt2] = (input[cnt2] * i + pMidBuffer[cnt2] * temp )  / overlapLength;
         poutput[cnt2 + 1] = (input[cnt2 + 1] * i + pMidBuffer[cnt2 + 1] * temp ) / overlapLength;
+    }
+}
+
+
+// Overlaps samples in 'midBuffer' with the samples in 'input'. The 'Multi'
+// version of the routine.
+void TDStretch::overlapMulti(SAMPLETYPE *poutput, const SAMPLETYPE *input) const
+{
+    SAMPLETYPE m1=(SAMPLETYPE)0;
+    SAMPLETYPE m2;
+    int i=0;
+
+    for (m2 = (SAMPLETYPE)overlapLength; m2; m2 --)
+    {
+        for (int c = 0; c < channels; c ++)
+        {
+            poutput[i] = (input[i] * m1 + pMidBuffer[i] * m2)  / overlapLength;
+            i++;
+        }
+
+        m1++;
     }
 }
 
@@ -754,6 +784,34 @@ void TDStretch::overlapStereo(float *pOutput, const float *pInput) const
         pOutput[i + 0] = pInput[i + 0] * f1 + pMidBuffer[i + 0] * f2;
         pOutput[i + 1] = pInput[i + 1] * f1 + pMidBuffer[i + 1] * f2;
 
+        f1 += fScale;
+        f2 -= fScale;
+    }
+}
+
+
+// Overlaps samples in 'midBuffer' with the samples in 'input'. 
+void TDStretch::overlapMulti(float *pOutput, const float *pInput) const
+{
+    int i;
+    float fScale;
+    float f1;
+    float f2;
+
+    fScale = 1.0f / (float)overlapLength;
+
+    f1 = 0;
+    f2 = 1.0f;
+
+    i=0;
+    for (int i2 = 0; i2 < overlapLength; i2 ++)
+    {
+        // note: Could optimize this slightly by taking into account that always channels > 2
+        for (int c = 0; c < channels; c ++)
+        {
+            pOutput[i] = pInput[i] * f1 + pMidBuffer[i] * f2;
+            i++;
+        }
         f1 += fScale;
         f2 -= fScale;
     }

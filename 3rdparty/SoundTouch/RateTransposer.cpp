@@ -10,10 +10,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2011-09-02 15:56:11 -0300 (sex, 02 set 2011) $
+// Last changed  : $Date: 2013-06-14 17:34:33 +0000 (Fri, 14 Jun 2013) $
 // File revision : $Revision: 4 $
 //
-// $Id: RateTransposer.cpp 131 2011-09-02 18:56:11Z oparviai $
+// $Id: RateTransposer.cpp 172 2013-06-14 17:34:33Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -55,17 +55,17 @@ class RateTransposerInteger : public RateTransposer
 protected:
     int iSlopeCount;
     int iRate;
-    SAMPLETYPE sPrevSampleL, sPrevSampleR;
+    SAMPLETYPE *sPrevSample;
 
     virtual void resetRegisters();
 
-    virtual uint transposeStereo(SAMPLETYPE *dest, 
+    virtual int transposeStereo(SAMPLETYPE *dest, 
                          const SAMPLETYPE *src, 
                          uint numSamples);
-    virtual uint transposeMono(SAMPLETYPE *dest, 
+    virtual int transposeMono(SAMPLETYPE *dest, 
                        const SAMPLETYPE *src, 
                        uint numSamples);
-
+    virtual int transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples);
 public:
     RateTransposerInteger();
     virtual ~RateTransposerInteger();
@@ -83,16 +83,17 @@ class RateTransposerFloat : public RateTransposer
 {
 protected:
     float fSlopeCount;
-    SAMPLETYPE sPrevSampleL, sPrevSampleR;
+    SAMPLETYPE *sPrevSample;
 
     virtual void resetRegisters();
 
-    virtual uint transposeStereo(SAMPLETYPE *dest, 
+    virtual int transposeStereo(SAMPLETYPE *dest, 
                          const SAMPLETYPE *src, 
                          uint numSamples);
-    virtual uint transposeMono(SAMPLETYPE *dest, 
+    virtual int transposeMono(SAMPLETYPE *dest, 
                        const SAMPLETYPE *src, 
                        uint numSamples);
+    virtual int transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples);
 
 public:
     RateTransposerFloat();
@@ -260,7 +261,7 @@ void RateTransposer::downsample(const SAMPLETYPE *src, uint nSamples)
     count = pAAFilter->evaluate(tempBuffer.ptrEnd(sizeTemp), 
         storeBuffer.ptrBegin(), sizeTemp, (uint)numChannels);
 
-	if (count == 0) return;
+    if (count == 0) return;
 
     // Remove the filtered samples from 'storeBuffer'
     storeBuffer.receiveSamples(count);
@@ -308,15 +309,22 @@ void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples)
 
 // Transposes the sample rate of the given samples using linear interpolation. 
 // Returns the number of samples returned in the "dest" buffer
-inline uint RateTransposer::transpose(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
+inline int RateTransposer::transpose(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
 {
-    if (numChannels == 2) 
+#ifndef USE_MULTICH_ALWAYS
+    if (numChannels == 1)
+    {
+        return transposeMono(dest, src, nSamples);
+    }
+    else if (numChannels == 2) 
     {
         return transposeStereo(dest, src, nSamples);
     } 
     else 
+#endif // USE_MULTICH_ALWAYS
     {
-        return transposeMono(dest, src, nSamples);
+        assert(numChannels > 0);
+        return transposeMulti(dest, src, nSamples);
     }
 }
 
@@ -327,7 +335,7 @@ void RateTransposer::setChannels(int nChannels)
     assert(nChannels > 0);
     if (numChannels == nChannels) return;
 
-    assert(nChannels == 1 || nChannels == 2);
+//    assert(nChannels == 1 || nChannels == 2);
     numChannels = nChannels;
 
     storeBuffer.setChannels(numChannels);
@@ -371,6 +379,7 @@ RateTransposerInteger::RateTransposerInteger() : RateTransposer()
 {
     // Notice: use local function calling syntax for sake of clarity, 
     // to indicate the fact that C++ constructor can't call virtual functions.
+    sPrevSample=0;
     RateTransposerInteger::resetRegisters();
     RateTransposerInteger::setRate(1.0f);
 }
@@ -378,14 +387,16 @@ RateTransposerInteger::RateTransposerInteger() : RateTransposer()
 
 RateTransposerInteger::~RateTransposerInteger()
 {
+    if (sPrevSample) delete[] sPrevSample;
 }
 
 
 void RateTransposerInteger::resetRegisters()
 {
     iSlopeCount = 0;
-    sPrevSampleL = 
-    sPrevSampleR = 0;
+    delete[] sPrevSample;
+    sPrevSample = new SAMPLETYPE[numChannels];
+    memset(sPrevSample, 0, numChannels * sizeof(SAMPLETYPE));
 }
 
 
@@ -393,21 +404,21 @@ void RateTransposerInteger::resetRegisters()
 // Transposes the sample rate of the given samples using linear interpolation. 
 // 'Mono' version of the routine. Returns the number of samples returned in 
 // the "dest" buffer
-uint RateTransposerInteger::transposeMono(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
+int RateTransposerInteger::transposeMono(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
 {
-    unsigned int i, used;
+    int i, remain;
     LONG_SAMPLETYPE temp, vol1;
 
     if (nSamples == 0) return 0;  // no samples, no work
 
-	used = 0;    
+    remain = nSamples - 1;
     i = 0;
 
     // Process the last sample saved from the previous call first...
     while (iSlopeCount <= SCALE) 
     {
         vol1 = (LONG_SAMPLETYPE)(SCALE - iSlopeCount);
-        temp = vol1 * sPrevSampleL + iSlopeCount * src[0];
+        temp = vol1 * sPrevSample[0] + iSlopeCount * src[0];
         dest[i] = (SAMPLETYPE)(temp / SCALE);
         i++;
         iSlopeCount += iRate;
@@ -420,11 +431,12 @@ uint RateTransposerInteger::transposeMono(SAMPLETYPE *dest, const SAMPLETYPE *sr
         while (iSlopeCount > SCALE) 
         {
             iSlopeCount -= SCALE;
-            used ++;
-            if (used >= nSamples - 1) goto end;
+            src ++;
+            remain --;
+            if (remain == 0) goto end;
         }
         vol1 = (LONG_SAMPLETYPE)(SCALE - iSlopeCount);
-        temp = src[used] * vol1 + iSlopeCount * src[used + 1];
+        temp = src[0] * vol1 + iSlopeCount * src[1];
         dest[i] = (SAMPLETYPE)(temp / SCALE);
 
         i++;
@@ -432,7 +444,7 @@ uint RateTransposerInteger::transposeMono(SAMPLETYPE *dest, const SAMPLETYPE *sr
     }
 end:
     // Store the last sample for the next round
-    sPrevSampleL = src[nSamples - 1];
+    sPrevSample[0] = src[0];
 
     return i;
 }
@@ -441,23 +453,23 @@ end:
 // Transposes the sample rate of the given samples using linear interpolation. 
 // 'Stereo' version of the routine. Returns the number of samples returned in 
 // the "dest" buffer
-uint RateTransposerInteger::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
+int RateTransposerInteger::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
 {
-    unsigned int srcPos, i, used;
+    int i, remain;
     LONG_SAMPLETYPE temp, vol1;
 
     if (nSamples == 0) return 0;  // no samples, no work
 
-    used = 0;    
+    remain = nSamples - 1;
     i = 0;
 
     // Process the last sample saved from the sPrevSampleLious call first...
     while (iSlopeCount <= SCALE) 
     {
         vol1 = (LONG_SAMPLETYPE)(SCALE - iSlopeCount);
-        temp = vol1 * sPrevSampleL + iSlopeCount * src[0];
+        temp = vol1 * sPrevSample[0] + iSlopeCount * src[0];
         dest[2 * i] = (SAMPLETYPE)(temp / SCALE);
-        temp = vol1 * sPrevSampleR + iSlopeCount * src[1];
+        temp = vol1 * sPrevSample[1] + iSlopeCount * src[1];
         dest[2 * i + 1] = (SAMPLETYPE)(temp / SCALE);
         i++;
         iSlopeCount += iRate;
@@ -470,14 +482,14 @@ uint RateTransposerInteger::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *
         while (iSlopeCount > SCALE) 
         {
             iSlopeCount -= SCALE;
-            used ++;
-            if (used >= nSamples - 1) goto end;
+            remain --;
+            src += 2;
+            if (remain == 0) goto end;
         }
-        srcPos = 2 * used;
         vol1 = (LONG_SAMPLETYPE)(SCALE - iSlopeCount);
-        temp = src[srcPos] * vol1 + iSlopeCount * src[srcPos + 2];
+        temp = src[0] * vol1 + iSlopeCount * src[2];
         dest[2 * i] = (SAMPLETYPE)(temp / SCALE);
-        temp = src[srcPos + 1] * vol1 + iSlopeCount * src[srcPos + 3];
+        temp = src[1] * vol1 + iSlopeCount * src[3];
         dest[2 * i + 1] = (SAMPLETYPE)(temp / SCALE);
 
         i++;
@@ -485,12 +497,67 @@ uint RateTransposerInteger::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *
     }
 end:
     // Store the last sample for the next round
-    sPrevSampleL = src[2 * nSamples - 2];
-    sPrevSampleR = src[2 * nSamples - 1];
+    sPrevSample[0] = src[0];
+    sPrevSample[1] = src[1];
 
     return i;
 }
 
+
+int RateTransposerInteger::transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
+{
+    int i, remaining;
+    LONG_SAMPLETYPE temp, vol1;
+
+    if (nSamples == 0) return 0;  // no samples, no work
+
+    remaining = nSamples - 1;
+    i = 0;
+
+    // Process the last sample saved from the sPrevSampleLious call first...
+    while (iSlopeCount <= SCALE)
+    {
+        for (int c = 0; c < numChannels; c ++)
+        {
+            vol1 = (SCALE - iSlopeCount);
+            temp = vol1 * sPrevSample[c] + iSlopeCount * src[c];
+            *dest = (SAMPLETYPE)(temp / SCALE);
+            dest ++;
+        }
+        i++;
+
+        iSlopeCount += iRate;
+    }
+    // now always (iSlopeCount > SCALE)
+    iSlopeCount -= SCALE;
+
+    while (1)
+    {
+        while (iSlopeCount > SCALE) 
+        {
+            iSlopeCount -= SCALE;
+            src += numChannels;
+            remaining --;
+            if (remaining == 0) goto end;
+        }
+
+        for (int c = 0; c < numChannels; c ++)
+        {
+            vol1 = (SCALE - iSlopeCount);
+            temp = src[c] * vol1 + iSlopeCount * src[c + numChannels];
+            *dest = (SAMPLETYPE)(temp / SCALE);
+            dest++;
+        }
+
+        i++;
+        iSlopeCount += iRate;
+    }
+end:
+    // Store the last sample for the next round
+    memcpy(sPrevSample, src, numChannels * sizeof(SAMPLETYPE));
+
+    return i;
+}
 
 // Sets new target iRate. Normal iRate = 1.0, smaller values represent slower 
 // iRate, larger faster iRates.
@@ -512,6 +579,7 @@ RateTransposerFloat::RateTransposerFloat() : RateTransposer()
 {
     // Notice: use local function calling syntax for sake of clarity, 
     // to indicate the fact that C++ constructor can't call virtual functions.
+    sPrevSample = NULL;
     RateTransposerFloat::resetRegisters();
     RateTransposerFloat::setRate(1.0f);
 }
@@ -519,14 +587,16 @@ RateTransposerFloat::RateTransposerFloat() : RateTransposer()
 
 RateTransposerFloat::~RateTransposerFloat()
 {
+    delete[] sPrevSample;
 }
 
 
 void RateTransposerFloat::resetRegisters()
 {
     fSlopeCount = 0;
-    sPrevSampleL = 
-    sPrevSampleR = 0;
+    delete[] sPrevSample;
+    sPrevSample = new SAMPLETYPE[numChannels];
+    memset(sPrevSample, 0, numChannels * sizeof(SAMPLETYPE));
 }
 
 
@@ -534,17 +604,17 @@ void RateTransposerFloat::resetRegisters()
 // Transposes the sample rate of the given samples using linear interpolation. 
 // 'Mono' version of the routine. Returns the number of samples returned in 
 // the "dest" buffer
-uint RateTransposerFloat::transposeMono(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
+int RateTransposerFloat::transposeMono(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
 {
-    unsigned int i, used;
+    int i, remain;
 
-    used = 0;    
+    remain = 0;
     i = 0;
 
     // Process the last sample saved from the previous call first...
     while (fSlopeCount <= 1.0f) 
     {
-        dest[i] = (SAMPLETYPE)((1.0f - fSlopeCount) * sPrevSampleL + fSlopeCount * src[0]);
+        dest[i] = (SAMPLETYPE)((1.0f - fSlopeCount) * sPrevSample[0] + fSlopeCount * src[0]);
         i++;
         fSlopeCount += fRate;
     }
@@ -557,17 +627,18 @@ uint RateTransposerFloat::transposeMono(SAMPLETYPE *dest, const SAMPLETYPE *src,
             while (fSlopeCount > 1.0f) 
             {
                 fSlopeCount -= 1.0f;
-                used ++;
-                if (used >= nSamples - 1) goto end;
+                src ++;
+                remain --;
+                if (remain == 0) goto end;
             }
-            dest[i] = (SAMPLETYPE)((1.0f - fSlopeCount) * src[used] + fSlopeCount * src[used + 1]);
+            dest[i] = (SAMPLETYPE)((1.0f - fSlopeCount) * src[0] + fSlopeCount * src[1]);
             i++;
             fSlopeCount += fRate;
         }
     }
 end:
     // Store the last sample for the next round
-    sPrevSampleL = src[nSamples - 1];
+    sPrevSample[0] = src[0];
 
     return i;
 }
@@ -576,20 +647,20 @@ end:
 // Transposes the sample rate of the given samples using linear interpolation. 
 // 'Mono' version of the routine. Returns the number of samples returned in 
 // the "dest" buffer
-uint RateTransposerFloat::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
+int RateTransposerFloat::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
 {
-    unsigned int srcPos, i, used;
+    int i, remain;
 
     if (nSamples == 0) return 0;  // no samples, no work
 
-    used = 0;    
+    remain = nSamples - 1;
     i = 0;
 
     // Process the last sample saved from the sPrevSampleLious call first...
     while (fSlopeCount <= 1.0f) 
     {
-        dest[2 * i] = (SAMPLETYPE)((1.0f - fSlopeCount) * sPrevSampleL + fSlopeCount * src[0]);
-        dest[2 * i + 1] = (SAMPLETYPE)((1.0f - fSlopeCount) * sPrevSampleR + fSlopeCount * src[1]);
+        dest[2 * i] = (SAMPLETYPE)((1.0f - fSlopeCount) * sPrevSample[0] + fSlopeCount * src[0]);
+        dest[2 * i + 1] = (SAMPLETYPE)((1.0f - fSlopeCount) * sPrevSample[1] + fSlopeCount * src[1]);
         i++;
         fSlopeCount += fRate;
     }
@@ -603,15 +674,15 @@ uint RateTransposerFloat::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *sr
             while (fSlopeCount > 1.0f) 
             {
                 fSlopeCount -= 1.0f;
-                used ++;
-                if (used >= nSamples - 1) goto end;
+                remain --;
+                src += 2;
+                if (remain == 0) goto end;
             }
-            srcPos = 2 * used;
 
-            dest[2 * i] = (SAMPLETYPE)((1.0f - fSlopeCount) * src[srcPos] 
-                + fSlopeCount * src[srcPos + 2]);
-            dest[2 * i + 1] = (SAMPLETYPE)((1.0f - fSlopeCount) * src[srcPos + 1] 
-                + fSlopeCount * src[srcPos + 3]);
+            dest[2 * i] = (SAMPLETYPE)((1.0f - fSlopeCount) * src[0] 
+                + fSlopeCount * src[2]);
+            dest[2 * i + 1] = (SAMPLETYPE)((1.0f - fSlopeCount) * src[1] 
+                + fSlopeCount * src[3]);
 
             i++;
             fSlopeCount += fRate;
@@ -619,8 +690,59 @@ uint RateTransposerFloat::transposeStereo(SAMPLETYPE *dest, const SAMPLETYPE *sr
     }
 end:
     // Store the last sample for the next round
-    sPrevSampleL = src[2 * nSamples - 2];
-    sPrevSampleR = src[2 * nSamples - 1];
+    sPrevSample[0] = src[0];
+    sPrevSample[1] = src[1];
+
+    return i;
+}
+
+int RateTransposerFloat::transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples)
+{
+    int i, remaining;
+
+    if (nSamples == 0) return 0;  // no samples, no work
+
+    remaining = nSamples - 1;
+    i = 0;
+
+    // Process the last sample saved from the sPrevSampleLious call first...
+    while (fSlopeCount <= 1.0f) 
+    {
+        for (int c = 0; c < numChannels; c ++)
+        {
+            *dest = (SAMPLETYPE)((1.0f - fSlopeCount) * sPrevSample[c] + fSlopeCount * src[c]);
+            dest ++;
+        }
+        i++;
+        fSlopeCount += fRate;
+    }
+    // now always (iSlopeCount > 1.0f)
+    fSlopeCount -= 1.0f;
+
+    while (remaining > 0)
+    {
+        while (fSlopeCount > 1.0f) 
+        {
+            fSlopeCount -= 1.0f;
+            src += numChannels;
+            remaining --;
+            if (remaining == 0) goto end;
+        }
+
+        for (int c = 0; c < numChannels; c ++)
+        {
+            *dest = (SAMPLETYPE)((1.0f - fSlopeCount) * src[c] 
+                + fSlopeCount * src[c + numChannels]);
+            dest++;
+        }
+
+        i++;
+        fSlopeCount += fRate;
+    }
+
+end:
+    // Store the last sample for the next round
+    memcpy(sPrevSample, src, numChannels * sizeof(SAMPLETYPE));
 
     return i;
 }

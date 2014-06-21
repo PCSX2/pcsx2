@@ -14,10 +14,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2009-02-21 13:00:14 -0300 (sáb, 21 fev 2009) $
+// Last changed  : $Date: 2013-06-12 15:24:44 +0000 (Wed, 12 Jun 2013) $
 // File revision : $Revision: 4 $
 //
-// $Id: RateTransposer.h 63 2009-02-21 16:00:14Z oparviai $
+// $Id: RateTransposer.h 171 2013-06-12 15:24:44Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -85,13 +85,14 @@ protected:
 
     virtual void resetRegisters() = 0;
 
-    virtual uint transposeStereo(SAMPLETYPE *dest, 
+    virtual int transposeStereo(SAMPLETYPE *dest, 
                          const SAMPLETYPE *src, 
                          uint numSamples) = 0;
-    virtual uint transposeMono(SAMPLETYPE *dest, 
+    virtual int transposeMono(SAMPLETYPE *dest, 
                        const SAMPLETYPE *src, 
                        uint numSamples) = 0;
-    inline uint transpose(SAMPLETYPE *dest, 
+    virtual int transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint nSamples) = 0;
+    inline int transpose(SAMPLETYPE *dest, 
                    const SAMPLETYPE *src, 
                    uint numSamples);
 

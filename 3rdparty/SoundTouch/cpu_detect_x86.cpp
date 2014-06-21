@@ -11,7 +11,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2012-11-08 16:44:37 -0200 (qui, 08 nov 2012) $
+// Last changed  : $Date: 2012-11-08 18:44:37 +0000 (Thu, 08 Nov 2012) $
 // File revision : $Revision: 4 $
 //
 // $Id: cpu_detect_x86.cpp 159 2012-11-08 18:44:37Z oparviai $
@@ -50,6 +50,9 @@
     #elif defined(_M_IX86)
         // windows non-gcc
         #include <intrin.h>
+    #endif
+    #ifndef bit_MMX
+        #define bit_MMX     (1 << 23)
         #define bit_MMX     (1 << 23)
         #define bit_SSE     (1 << 25)
         #define bit_SSE2    (1 << 26)

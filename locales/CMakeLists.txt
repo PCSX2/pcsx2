@@ -4,7 +4,7 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
-
+find_package(Gettext)
 if (GETTEXT_FOUND)
     include(Translation)
 
