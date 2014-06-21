@@ -41,10 +41,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2012-06-13 16:29:53 -0300 (qua, 13 jun 2012) $
+// Last changed  : $Date: 2013-06-12 15:24:44 +0000 (Wed, 12 Jun 2013) $
 // File revision : $Revision: 4 $
 //
-// $Id: SoundTouch.cpp 143 2012-06-13 19:29:53Z oparviai $
+// $Id: SoundTouch.cpp 171 2013-06-12 15:24:44Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -143,10 +143,11 @@ uint SoundTouch::getVersionId()
 // Sets the number of channels, 1 = mono, 2 = stereo
 void SoundTouch::setChannels(uint numChannels)
 {
-    if (numChannels != 1 && numChannels != 2) 
+    /*if (numChannels != 1 && numChannels != 2) 
     {
-        ST_THROW_RT_ERROR("Illegal number of channels");
-    }
+        //ST_THROW_RT_ERROR("Illegal number of channels");
+		return;
+    }*/
     channels = numChannels;
     pRateTransposer->setChannels((int)numChannels);
     pTDStretch->setChannels((int)numChannels);
@@ -347,7 +348,7 @@ void SoundTouch::flush()
     int i;
     int nUnprocessed;
     int nOut;
-    SAMPLETYPE buff[64*2];   // note: allocate 2*64 to cater 64 sample frames of stereo sound
+    SAMPLETYPE *buff=(SAMPLETYPE*)malloc(64*channels*sizeof(SAMPLETYPE));
 
     // check how many samples still await processing, and scale
     // that by tempo & rate to get expected output sample count
@@ -382,6 +383,7 @@ void SoundTouch::flush()
     pTDStretch->clearInput();
     // yet leave the 'tempoChanger' output intouched as that's where the
     // flushed samples are!
+    free(buff);
 }
 
 

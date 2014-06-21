@@ -1,27 +1,52 @@
-# Try to find PortAudio
-# Once done, this will define
+# - Try to find Portaudio
+# Once done this will define
 #
-# PORTAUDIO_FOUND - system has PortAudio
-# PORTAUDIO_INCLUDE_DIR - the PortAudio include directories
-# PORTAUDIO_LIBRARIES - link these to use PortAudio
+#  PORTAUDIO_FOUND - system has Portaudio
+#  PORTAUDIO_INCLUDE_DIRS - the Portaudio include directory
+#  PORTAUDIO_LIBRARIES - Link these to use Portaudio
 
-if(PORTAUDIO_INCLUDE_DIR AND PORTAUDIO_LIBRARIES)
-    set(PORTAUDIO_FIND_QUIETLY TRUE)
-endif(PORTAUDIO_INCLUDE_DIR AND PORTAUDIO_LIBRARIES)
+include(FindPkgConfig)
+pkg_check_modules(PC_PORTAUDIO portaudio-2.0)
 
-# Search both portaudio.h and pa_linux_alsa.h to ensure the user gets
-# the include of the V2 API (V1 have only portaudio.h)
-find_path(PORTAUDIO_INCLUDE_DIR NAMES portaudio.h pa_linux_alsa.h)
+find_path(PORTAUDIO_INCLUDE_DIRS
+  NAMES
+    portaudio.h
+  PATHS
+      /usr/local/include
+      /usr/include
+  HINTS
+    ${PC_PORTAUDIO_INCLUDEDIR}
+)
 
-# finally the library itself
-find_library(libPortAudio NAMES portaudio)
-# Run OK without libportaudiocpp so do not pull additional dependency
-set(PORTAUDIO_LIBRARIES ${libPortAudio})
+find_library(PORTAUDIO_LIBRARIES
+  NAMES
+    portaudio
+  PATHS
+      /usr/local/lib
+      /usr/lib
+      /usr/lib64
+  HINTS
+    ${PC_PORTAUDIO_LIBDIR}
+)
 
-# handle the QUIETLY and REQUIRED arguments and set PORTAUDIO_FOUND to TRUE if 
-# all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(PortAudio DEFAULT_MSG PORTAUDIO_LIBRARIES PORTAUDIO_INCLUDE_DIR)
+mark_as_advanced(PORTAUDIO_INCLUDE_DIRS PORTAUDIO_LIBRARIES)
 
-mark_as_advanced(PORTAUDIO_LIBRARIES PORTAUDIO_INCLUDE_DIR)
-
+# Found PORTAUDIO, but it may be version 18 which is not acceptable.
+if(EXISTS ${PORTAUDIO_INCLUDE_DIRS}/portaudio.h)
+  include(CheckCXXSourceCompiles)
+  include(CMakePushCheckState)
+  cmake_push_check_state()
+  set(CMAKE_REQUIRED_INCLUDES ${PORTAUDIO_INCLUDE_DIRS})
+  CHECK_CXX_SOURCE_COMPILES(
+    "#include <portaudio.h>\nPaDeviceIndex pa_find_device_by_name(const char *name); int main () {return 0;}"
+    PORTAUDIO2_FOUND)
+  cmake_pop_check_state()
+  if(PORTAUDIO2_FOUND)
+    INCLUDE(FindPackageHandleStandardArgs)
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS(PORTAUDIO DEFAULT_MSG PORTAUDIO_INCLUDE_DIRS PORTAUDIO_LIBRARIES)
+  else(PORTAUDIO2_FOUND)
+    message(STATUS
+      "  portaudio.h not compatible (requires API 2.0)")
+    set(PORTAUDIO_FOUND FALSE)
+  endif(PORTAUDIO2_FOUND)
+endif()

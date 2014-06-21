@@ -11,10 +11,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2011-09-02 15:56:11 -0300 (sex, 02 set 2011) $
+// Last changed  : $Date: 2013-06-12 15:24:44 +0000 (Wed, 12 Jun 2013) $
 // File revision : $Revision: 4 $
 //
-// $Id: FIRFilter.cpp 131 2011-09-02 18:56:11Z oparviai $
+// $Id: FIRFilter.cpp 171 2013-06-12 15:24:44Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -167,6 +167,61 @@ uint FIRFilter::evaluateFilterMono(SAMPLETYPE *dest, const SAMPLETYPE *src, uint
 }
 
 
+uint FIRFilter::evaluateFilterMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples, uint numChannels) const
+{
+    uint i, j, end, c;
+    LONG_SAMPLETYPE *sum=(LONG_SAMPLETYPE*)malloc(numChannels*sizeof(*sum));
+#ifdef SOUNDTOUCH_FLOAT_SAMPLES
+    // when using floating point samples, use a scaler instead of a divider
+    // because division is much slower operation than multiplying.
+    double dScaler = 1.0 / (double)resultDivider;
+#endif
+
+    assert(length != 0);
+    assert(src != NULL);
+    assert(dest != NULL);
+    assert(filterCoeffs != NULL);
+
+    end = numChannels * (numSamples - length);
+
+    for (c = 0; c < numChannels; c ++)
+    {
+        sum[c] = 0;
+    }
+
+    for (j = 0; j < end; j += numChannels)
+    {
+        const SAMPLETYPE *ptr;
+
+        ptr = src + j;
+
+        for (i = 0; i < length; i ++)
+        {
+            SAMPLETYPE coef=filterCoeffs[i];
+            for (c = 0; c < numChannels; c ++)
+            {
+                sum[c] += ptr[0] * coef;
+                ptr ++;
+            }
+        }
+        
+        for (c = 0; c < numChannels; c ++)
+        {
+#ifdef SOUNDTOUCH_INTEGER_SAMPLES
+            sum[c] >>= resultDivFactor;
+#else
+            sum[c] *= dScaler;
+#endif // SOUNDTOUCH_INTEGER_SAMPLES
+            *dest = (SAMPLETYPE)sum[c];
+            dest++;
+            sum[c] = 0;
+        }
+    }
+    free(sum);
+    return numSamples - length;
+}
+
+
 // Set filter coeffiecients and length.
 //
 // Throws an exception if filter length isn't divisible by 8
@@ -201,16 +256,25 @@ uint FIRFilter::getLength() const
 // smaller than the amount of input samples.
 uint FIRFilter::evaluate(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples, uint numChannels) const
 {
-    assert(numChannels == 1 || numChannels == 2);
-
     assert(length > 0);
     assert(lengthDiv8 * 8 == length);
+
     if (numSamples < length) return 0;
-    if (numChannels == 2) 
+
+#ifndef USE_MULTICH_ALWAYS
+    if (numChannels == 1)
+    {
+        return evaluateFilterMono(dest, src, numSamples);
+    } 
+    else if (numChannels == 2)
     {
         return evaluateFilterStereo(dest, src, numSamples);
-    } else {
-        return evaluateFilterMono(dest, src, numSamples);
+    }
+    else
+#endif // USE_MULTICH_ALWAYS
+    {
+        assert(numChannels > 0);
+        return evaluateFilterMulti(dest, src, numSamples, numChannels);
     }
 }
 

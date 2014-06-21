@@ -8,10 +8,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2012-12-28 12:53:56 -0200 (sex, 28 dez 2012) $
+// Last changed  : $Date: 2013-06-12 15:24:44 +0000 (Wed, 12 Jun 2013) $
 // File revision : $Revision: 3 $
 //
-// $Id: STTypes.h 162 2012-12-28 14:53:56Z oparviai $
+// $Id: STTypes.h 171 2013-06-12 15:24:44Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -57,7 +57,7 @@ typedef unsigned long   ulong;
 #if (defined(__GNUC__) && !defined(ANDROID))
     // In GCC, include soundtouch_config.h made by config scritps.
     // Skip this in Android compilation that uses GCC but without configure scripts.
-    #include "soundtouch_config.h"
+    //#include "soundtouch_config.h"
 #endif
 
 #ifndef _WINDEF_
@@ -75,8 +75,15 @@ namespace soundtouch
 {
     /// Activate these undef's to overrule the possible sampletype 
     /// setting inherited from some other header file:
-    //#undef SOUNDTOUCH_INTEGER_SAMPLES
-    //#undef SOUNDTOUCH_FLOAT_SAMPLES
+    #undef SOUNDTOUCH_INTEGER_SAMPLES
+    #undef SOUNDTOUCH_FLOAT_SAMPLES
+
+    /// If following flag is defined, always uses multichannel processing 
+    /// routines also for mono and stero sound. This is for routine testing 
+    /// purposes; output should be same with either routines, yet disabling 
+    /// the dedicated mono/stereo processing routines will result in slower 
+    /// runtime performance so recommendation is to keep this off.
+    // #define USE_MULTICH_ALWAYS
 
     #if (defined(__SOFTFP__))
         // For Android compilation: Force use of Integer samples in case that
@@ -167,7 +174,7 @@ namespace soundtouch
 };
 
 // define ST_NO_EXCEPTION_HANDLING switch to disable throwing std exceptions:
-// #define ST_NO_EXCEPTION_HANDLING    1
+   #define ST_NO_EXCEPTION_HANDLING    1
 #ifdef ST_NO_EXCEPTION_HANDLING
     // Exceptions disabled. Throw asserts instead if enabled.
     #include <assert.h>
