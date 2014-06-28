@@ -5,98 +5,9 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
-
-# set common flags
-set(CommonFlags 
-    # GCC-4.6 crash pcsx2 during the binding of plugins at startup...
-    # Disable this optimization for the moment
-    -fno-omit-frame-pointer 
-    # END GCC-4.6
-	-pthread
-    -fvisibility=hidden
-	-fno-guess-branch-probability
-	-fno-dse
-	-fno-tree-dse
-	-fno-strict-aliasing
-    -Wstrict-aliasing # Allow to track strict aliasing issue.
-    -std=c++0x
-	-pipe)
-
-# set warning flags
-set(DebugFlags
-	-W
-	-g)
-
-# set optimization flags
-set(OptimizationFlags
-	-falign-functions
-	-falign-jumps
-	-falign-labels
-	-falign-loops
-	-fcaller-saves
-	-fcprop-registers
-	-fcrossjumping
-	-fcse-follow-jumps
-	-fcse-skip-blocks
-	-fdefer-pop
-	-fdelete-null-pointer-checks
-	-fgcse
-	-fgcse-lm
-	-fif-conversion
-	-fif-conversion2
-	-fmerge-constants
-	-foptimize-sibling-calls
-	-fpeephole2
-	-fregmove
-	-freorder-blocks
-	-freorder-functions 
-	-frerun-cse-after-loop
-	-fsched-interblock
-	-fsched-spec
-	-fstrict-overflow
-	-fthread-jumps
-	-ftree-ccp
-	-ftree-ch
-	-ftree-copyrename
-	-ftree-dce
-	-ftree-dominator-opts
-	-ftree-fre
-	-ftree-lrs
-	-ftree-pre
-	-ftree-sra
-	-ftree-ter
-	-ftree-vrp
-	-funit-at-a-time)
-
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(Output pcsx2-dbg)
-
-	add_definitions(${CommonFlags} ${DebugFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(Output pcsx2-dev)
-
-	add_definitions(${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD -DWX_PRECOMP -DNDEBUG)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(Output pcsx2)
-
-	add_definitions(${CommonFlags} ${OptimizationFlags} -DWX_PRECOMP -DNDEBUG)
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
-
 if(XDG_STD)
     add_definitions(-DXDG_STD)
 endif(XDG_STD)
-
-# In package mode always use pcsx2
-if(PACKAGE_MODE)
-    set(Output pcsx2)
-endif(PACKAGE_MODE)
 
 # Main pcsx2 source
 set(pcsx2Sources
@@ -173,62 +84,6 @@ set(pcsx2Sources
 	VUmicroMem.cpp
 	VUops.cpp)
 
-# Main pcsx2 header
-set(pcsx2Headers
-	Cache.h
-	cheatscpp.h
-	Common.h
-	Config.h
-	COP0.h
-	Counters.h
-	Dmac.h
-	Dump.h
-	GameDatabase.h
-	Elfheader.h
-	Gif.h
-	Gif_Unit.h
-	GS.h
-	Hardware.h
-	Hw.h
-	IopBios.h
-	IopCommon.h
-	IopCounters.h
-	IopDma.h
-	IopHw.h
-	IopMem.h
-	IopSio2.h
-#	Mdec.h
-    MTVU.h
-	Memory.h
-	MemoryTypes.h
-	NakedAsm.h
-	Patch.h
-	Patch_Obsolete.h
-	PathDefs.h
-	Plugins.h
-	PrecompiledHeader.h
-	R3000A.h
-	R5900Exceptions.h
-	R5900.h
-	R5900OpcodeTables.h
-	SamplProf.h
-	SaveState.h
-	Sifcmd.h
-	Sif.h
-	Sio.h
-	sio_internal.h
-	SPR.h
-	Stats.h
-	SysForwardDefs.h
-	System.h
-	Vif_Dma.h
-	Vif.h
-	Vif_Unpack.h
-	vtlb.h
-	VUflags.h
-	VUmicro.h
-	VUops.h)
-
 # CDVD sources
 set(pcsx2CDVDSources
 	CDVD/BlockdumpFileReader.cpp
@@ -244,22 +99,6 @@ set(pcsx2CDVDSources
 	CDVD/IsoFS/IsoFS.cpp
     )
 
-# CDVD headers
-set(pcsx2CDVDHeaders
-	CDVD/CdRom.h
-	CDVD/CDVDaccess.h
-	CDVD/CDVD.h
-	CDVD/CDVD_internal.h
-	CDVD/CDVDisoReader.h
-	CDVD/zlib_indexed.h
-	CDVD/IsoFileFormats.h
-	CDVD/IsoFS/IsoDirectory.h
-	CDVD/IsoFS/IsoFileDescriptor.h
-	CDVD/IsoFS/IsoFile.h
-	CDVD/IsoFS/IsoFSCDVD.h
-	CDVD/IsoFS/IsoFS.h
-	CDVD/IsoFS/SectorSource.h)
-
 # DebugTools sources
 set(pcsx2DebugToolsSources
 	DebugTools/DebugInterface.cpp
@@ -273,19 +112,6 @@ set(pcsx2DebugToolsSources
 	DebugTools/DisR5900.cpp
 	DebugTools/DisVU0Micro.cpp
 	DebugTools/DisVU1Micro.cpp)
-
-# DebugTools headers
-set(pcsx2DebugToolsHeaders
-	DebugTools/DebugInterface.h
-	DebugTools/DisassemblyManager.h
-	DebugTools/ExpressionParser.h
-	DebugTools/MIPSAnalyst.h
-	DebugTools/Breakpoints.h
-	DebugTools/SymbolMap.h
-	DebugTools/Debug.h
-	DebugTools/DisASm.h
-	DebugTools/DisVUmicro.h
-	DebugTools/DisVUops.h)
 
 # gui sources
 set(pcsx2GuiSources
@@ -359,41 +185,6 @@ set(pcsx2GuiSources
 	gui/UpdateUI.cpp
 	)
 
-# gui headers
-set(pcsx2GuiHeaders
-	gui/App.h
-	gui/ApplyState.h
-	gui/AppAccelerators.h
-	gui/AppCommon.h
-	gui/AppConfig.h
-	gui/AppCorePlugins.h
-	gui/AppEventListeners.h
-	gui/AppForwardDefs.h
-	gui/AppGameDatabase.h
-	gui/ConsoleLogger.h
-	gui/CpuUsageProvider.h
-	gui/Dialogs/BaseConfigurationDialog.inl
-	gui/Dialogs/ConfigurationDialog.h
-	gui/Dialogs/LogOptionsDialog.h
-	gui/Dialogs/ModalPopups.h
-	gui/Debugger/BreakpointWindow.h
-	gui/Debugger/CtrlDisassemblyView.h
-	gui/Debugger/CtrlRegisterList.h
-	gui/Debugger/CtrlMemView.h
-	gui/Debugger/DebuggerLists.h
-	gui/Debugger/DisassemblyDialog.h
-	gui/Debugger/DebugEvents.h
-	gui/i18n.h
-	gui/IsoDropTarget.h
-	gui/MainFrame.h
-	gui/MemoryCardFile.h
-	gui/MSWstuff.h
-	gui/Panels/ConfigurationPanels.h
-	gui/Panels/LogOptionsPanels.h
-	gui/Panels/MemoryCardPanels.h
-	gui/RecentIsoList.h
-	)
-
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation
 # from the bin2cpp tools at the good moment (ie .h must be created before the pcsx2 compilation)
 # Gui resources headers
@@ -427,22 +218,11 @@ set(pcsx2IPUSources
 	IPU/mpeg2lib/Mpeg.cpp
 	IPU/yuv2rgb.cpp)
 
-# IPU headers
-set(pcsx2IPUHeaders
-	IPU/IPU.h
-	IPU/IPU_Fifo.h
-	IPU/IPUdma.h
-	IPU/yuv2rgb.h)
-
 # Linux sources
 set(pcsx2LinuxSources
 	Linux/LnxKeyCodes.cpp
     Linux/LnxFlatFileReader.cpp
     )
-
-# Linux headers
-set(pcsx2LinuxHeaders
-	)
 
 # ps2 sources
 set(pcsx2ps2Sources
@@ -450,13 +230,6 @@ set(pcsx2ps2Sources
 	ps2/LegacyDmac.cpp
 	ps2/Iop/IopHwRead.cpp
 	ps2/Iop/IopHwWrite.cpp)
-
-# ps2 headers
-set(pcsx2ps2Headers
-	ps2/BiosTools.h
-	ps2/eeHwTraceLog.inl
-	ps2/HwInternal.h
-	ps2/Iop/IopHw_Internal.h)
 
 # RDebug sources
 set(pcsx2RDebugSources
@@ -468,43 +241,19 @@ set(pcsx2RDebugSources
 	RDebug/deci2_netmp.cpp
 	RDebug/deci2_ttyp.cpp)
 
-# RDebug headers
-set(pcsx2RDebugHeaders
-	RDebug/deci2_dbgp.h
-	RDebug/deci2_dcmp.h
-	RDebug/deci2_drfp.h
-	RDebug/deci2.h
-	RDebug/deci2_iloadp.h
-	RDebug/deci2_netmp.h
-	RDebug/deci2_ttyp.h)
-
 # System sources
 set(pcsx2SystemSources
 	System/SysCoreThread.cpp
 	System/SysThreadBase.cpp)
 
-# System headers
-set(pcsx2SystemHeaders
-	System/RecTypes.h
-	System/SysThreads.h)
-
 # Utilities sources
 set(pcsx2UtilitiesSources
 	Utilities/FileUtils.cpp)
-
-# Utilities headers
-set(pcsx2UtilitiesHeaders
-	Utilities/AsciiFile.h)
 
 # Zip tools utilies sources
 set(pcsx2ZipToolsSources
     ZipTools/thread_gzip.cpp
     ZipTools/thread_lzma.cpp)
-
-# Zip tools utilies headers
-set(pcsx2ZipToolsHeaders
-    ZipTools/ThreadedZipTools.h)
-
 
 # Windows sources
 set(pcsx2WindowsSources
@@ -517,12 +266,6 @@ set(pcsx2WindowsSources
 	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinSysExec.cpp)
-
-# Windows headers
-set(pcsx2WindowsHeaders
-	windows/cheats/cheats.h
-	windows/resource.h
-	windows/Win32.h)
 
 # x86 sources
 set(pcsx2x86Sources
@@ -559,7 +302,6 @@ set(pcsx2x86Sources
 	x86/sVU_Upper.cpp
 	x86/sVU_zerorec.cpp
 	)
-
 # x86 headers
 set(pcsx2x86Headers
 	x86/BaseblockEx.h
@@ -618,59 +360,53 @@ set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
 # common Sources
 set(Common
 	${pcsx2Sources}
-	${pcsx2Headers}
 	${pcsx2CDVDSources}
-	${pcsx2CDVDHeaders}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
     ${pcsx2GuiResources}
-	${pcsx2GuiHeaders}
 	${pcsx2IPUSources}
-	${pcsx2IPUHeaders}
 	${pcsx2ps2Sources}
-	${pcsx2ps2Headers}
 	${pcsx2SystemSources}
-	${pcsx2SystemHeaders}
 	${pcsx2UtilitiesSources}
-	${pcsx2UtilitiesHeaders}
 	${pcsx2x86Sources}
-	${pcsx2x86Headers}
 	${pcsx2ZipToolsSources}
-	${pcsx2ZipToolsHeaders}
-	${pcsx2SSources})
+	${pcsx2SSources}
+	${pcsx2x86Headers}
+	)
 
 # platform sources
 # Linux
 if(Linux)
 	set(Platform
-		${pcsx2LinuxSources}
-		${pcsx2LinuxHeaders})
+		${pcsx2LinuxSources})
 endif(Linux)		
 
 # Windows
 if(Windows)
 	set(Platform
-		${pcsx2WindowsSources}
-		${pcsx2WindowsHeaders})
+		${pcsx2WindowsSources})
 endif(Windows)
 
-# MacOSX
-if(MacOSX)
-	set(PlatformSources
-		)
-endif(MacOSX)	
-
 # additonal include directories
-include_directories(.
+include_directories(
 					gui
 					x86
                     ${CMAKE_BINARY_DIR}/pcsx2/gui
                     )
+set(pcsx2FinalSources 
+	${Common} 
+	${Platform})
+set(pcsx2FinalLibs
+Utilities 
+x86emitter 
+aio
+${wxWidgets_LIBRARIES} 
+${GTK2_LIBRARIES} 
+${ZLIB_LIBRARIES} 
+${CMAKE_THREAD_LIBS_INIT}
+	)
 
-# add executable
-add_executable(${Output}
-			   ${Common}
-			   ${Platform})
+add_pcsx2_executable(pcsx2 "${pcsx2FinalSources}" "${pcsx2FinalLibs}")
 
 ### Generate the resources files
 file(MAKE_DIRECTORY ${res_bin})
@@ -691,29 +427,3 @@ if(PACKAGE_MODE)
 	SET_SOURCE_FILES_PROPERTIES(gui/AppConfig.cpp PROPERTIES COMPILE_FLAGS "-Wp,-ansi,-U__STRICT_ANSI__")
 endif(PACKAGE_MODE)    
 
-# link target with project internal libraries
-target_link_libraries(${Output} Utilities x86emitter)
-					
-# link target with wx
-target_link_libraries(${Output} ${wxWidgets_LIBRARIES})
-
-if(Linux)
-	# link target with gtk2
-	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
-
-# link target with zlib
-target_link_libraries(${Output} ${ZLIB_LIBRARIES})
-
-target_link_libraries(${Output} ${AIO_LIBRARIES})
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION bin)
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
-endif(PACKAGE_MODE)
