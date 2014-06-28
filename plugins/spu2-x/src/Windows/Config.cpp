@@ -17,6 +17,7 @@
 
 #include "Global.h"
 #include "Dialogs.h"
+#include <math.h>
 
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
@@ -38,7 +39,26 @@ int Interpolation = 4;
 */
 
 bool EffectsDisabled = false;
-float FinalVolume;
+
+float FinalVolume; // Global
+bool AdvancedVolumeControl;
+float VolumeAdjustFLdb; // decibels settings, cos audiophiles love that
+float VolumeAdjustCdb;
+float VolumeAdjustFRdb;
+float VolumeAdjustBLdb;
+float VolumeAdjustBRdb;
+float VolumeAdjustSLdb;
+float VolumeAdjustSRdb;
+float VolumeAdjustLFEdb;
+float VolumeAdjustFL;   // linear coefs calcualted from decibels,
+float VolumeAdjustC;
+float VolumeAdjustFR;
+float VolumeAdjustBL;
+float VolumeAdjustBR;
+float VolumeAdjustSL;
+float VolumeAdjustSR;
+float VolumeAdjustLFE;
+
 bool postprocess_filter_enabled = 1;
 bool postprocess_filter_dealias = false;
 
@@ -80,11 +100,30 @@ void ReadSettings()
 {
 	Interpolation = CfgReadInt( L"MIXING",L"Interpolation", 4 );
 
-	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
 	EffectsDisabled = CfgReadBool( L"MIXING", L"Disable_Effects", false );
 	postprocess_filter_dealias = CfgReadBool( L"MIXING", L"DealiasFilter", false );
 	FinalVolume = ((float)CfgReadInt( L"MIXING", L"FinalVolume", 100 )) / 100;
 		if ( FinalVolume > 1.0f) FinalVolume = 1.0f;
+
+	AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
+	VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);
+	VolumeAdjustFLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFL(dB)", 0);
+	VolumeAdjustFRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFR(dB)", 0);
+	VolumeAdjustBLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBL(dB)", 0);
+	VolumeAdjustBRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBR(dB)", 0);
+	VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
+	VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
+	VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
+	VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
+	VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
+	VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);
+	VolumeAdjustBL = powf(10, VolumeAdjustBLdb / 10);
+	VolumeAdjustBR = powf(10, VolumeAdjustBRdb / 10);
+	VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
+	VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
+	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
+
+	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
 	numSpeakers = CfgReadInt( L"OUTPUT", L"SpeakerConfiguration", 0);
 	dplLevel = CfgReadInt( L"OUTPUT", L"DplDecodingLevel", 0);
 	SndOutLatencyMS = CfgReadInt(L"OUTPUT",L"Latency", 100);
@@ -143,6 +182,16 @@ void WriteSettings()
 	CfgWriteBool(L"MIXING",L"Disable_Effects",EffectsDisabled);
 	CfgWriteBool(L"MIXING",L"DealiasFilter",postprocess_filter_dealias);
 	CfgWriteInt(L"MIXING",L"FinalVolume",(int)(FinalVolume * 100 + 0.5f));
+
+	CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustFL(dB)", VolumeAdjustFLdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustFR(dB)", VolumeAdjustFRdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustBL(dB)", VolumeAdjustBLdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustBR(dB)", VolumeAdjustBRdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustSL(dB)", VolumeAdjustSLdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustSR(dB)", VolumeAdjustSRdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustLFE(dB)", VolumeAdjustLFEdb);
 
 	CfgWriteStr(L"OUTPUT",L"Output_Module", mods[OutputModule]->GetIdent() );
 	CfgWriteInt(L"OUTPUT",L"Latency", SndOutLatencyMS);

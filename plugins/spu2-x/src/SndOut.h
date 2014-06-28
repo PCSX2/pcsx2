@@ -36,6 +36,16 @@ static const int SampleRate = 48000;
 
 extern int FindOutputModuleById( const wchar_t* omodid );
 
+// Implemented in Config.cpp
+extern float VolumeAdjustFL;
+extern float VolumeAdjustC;
+extern float VolumeAdjustFR;
+extern float VolumeAdjustBL;
+extern float VolumeAdjustBR;
+extern float VolumeAdjustSL;
+extern float VolumeAdjustSR;
+extern float VolumeAdjustLFE;
+
 struct Stereo51Out16DplII;
 struct Stereo51Out32DplII;
 
@@ -77,6 +87,14 @@ struct StereoOut16
 	{
 		// Use StereoOut32's built in conversion
 		*this = src.DownSample();
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s16) (Left * VolumeAdjustFL);
+		Right = (s16) (Right * VolumeAdjustFR);
 	}
 };
 
@@ -122,6 +140,15 @@ struct Stereo21Out16
 		Right = src.Right >> SndOutVolumeShift;
 		LFE = (src.Left + src.Right) >> (SndOutVolumeShift + 1);
 	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s16) (Left * VolumeAdjustFL);
+		Right = (s16) (Right * VolumeAdjustFR);
+		LFE = (s16) (LFE * VolumeAdjustLFE);
+	}
 };
 
 struct Stereo40Out16
@@ -138,6 +165,16 @@ struct Stereo40Out16
 		LeftBack = src.Left >> SndOutVolumeShift;
 		RightBack = src.Right >> SndOutVolumeShift;
 	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s16) (Left * VolumeAdjustFL);
+		Right = (s16) (Right * VolumeAdjustFR);
+		LeftBack = (s16) (LeftBack * VolumeAdjustBL);
+		RightBack = (s16) (RightBack * VolumeAdjustBR);
+	}
 };
 
 struct Stereo40Out32
@@ -153,6 +190,16 @@ struct Stereo40Out32
 		Right = src.Right << SndOutVolumeShift32;
 		LeftBack = src.Left << SndOutVolumeShift32;
 		RightBack = src.Right << SndOutVolumeShift32;
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
 	}
 };
 
@@ -171,6 +218,17 @@ struct Stereo41Out16
 		LFE = (src.Left + src.Right) >> (SndOutVolumeShift + 1);
 		LeftBack = src.Left >> SndOutVolumeShift;
 		RightBack = src.Right >> SndOutVolumeShift;
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
 	}
 };
 
@@ -197,6 +255,18 @@ struct Stereo51Out16
 		LeftBack = src.Left >> SndOutVolumeShift;
 		RightBack = src.Right >> SndOutVolumeShift;
 	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s16) (Left * VolumeAdjustFL);
+		Right = (s16) (Right * VolumeAdjustFR);
+		LeftBack = (s16) (LeftBack * VolumeAdjustBL);
+		RightBack = (s16) (RightBack * VolumeAdjustBR);
+		Center = (s16) (Center * VolumeAdjustC);
+		LFE = (s16) (LFE * VolumeAdjustLFE);
+	}
 };
 
 struct Stereo51Out16DplII
@@ -211,6 +281,18 @@ struct Stereo51Out16DplII
 	void ResampleFrom( const StereoOut32& src )
 	{
 		ProcessDplIISample16(src, this);
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		Center = (s32) (Center * VolumeAdjustC);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
 	}
 };
 
@@ -227,8 +309,19 @@ struct Stereo51Out32DplII
 	{
 		ProcessDplIISample32(src, this);
 	}
-};
 
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		Center = (s32) (Center * VolumeAdjustC);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
+	}
+};
 
 struct Stereo51Out16Dpl
 {
@@ -242,6 +335,18 @@ struct Stereo51Out16Dpl
 	void ResampleFrom( const StereoOut32& src )
 	{
 		ProcessDplSample16(src, this);
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		Center = (s32) (Center * VolumeAdjustC);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
 	}
 };
 
@@ -257,6 +362,18 @@ struct Stereo51Out32Dpl
 	void ResampleFrom( const StereoOut32& src )
 	{
 		ProcessDplSample32(src, this);
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		Center = (s32) (Center * VolumeAdjustC);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
 	}
 };
 
@@ -283,6 +400,20 @@ struct Stereo71Out16
 		LeftSide = src.Left >> (SndOutVolumeShift+1);
 		RightSide = src.Right >> (SndOutVolumeShift+1);
 	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s16) (Left * VolumeAdjustFL);
+		Right = (s16) (Right * VolumeAdjustFR);
+		LeftBack = (s16) (LeftBack * VolumeAdjustBL);
+		RightBack = (s16) (RightBack * VolumeAdjustBR);
+		LeftSide = (s16) (LeftBack * VolumeAdjustSL);
+		RightSide = (s16) (RightBack * VolumeAdjustSR);
+		Center = (s16) (Center * VolumeAdjustC);
+		LFE = (s16) (LFE * VolumeAdjustLFE);
+	}
 };
 
 struct Stereo71Out32
@@ -308,17 +439,39 @@ struct Stereo71Out32
 		LeftSide = src.Left << (SndOutVolumeShift32 - 1);
 		RightSide = src.Right << (SndOutVolumeShift32 - 1);
 	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		LeftSide = (s32) (LeftBack * VolumeAdjustSL);
+		RightSide = (s32) (RightBack * VolumeAdjustSR);
+		Center = (s32) (Center * VolumeAdjustC);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
+	}
 };
 
 struct Stereo20Out32
 {
 	s32 Left;
 	s32 Right;
-	
+
 	void ResampleFrom( const StereoOut32& src )
 	{
 		Left = src.Left << SndOutVolumeShift32;
 		Right = src.Right << SndOutVolumeShift32;
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
 	}
 };
 
@@ -327,12 +480,21 @@ struct Stereo21Out32
 	s32 Left;
 	s32 Right;
 	s32 LFE;
-	
+
 	void ResampleFrom( const StereoOut32& src )
 	{
 		Left = src.Left << SndOutVolumeShift32;
 		Right = src.Right << SndOutVolumeShift32;
 		LFE = (src.Left + src.Right) << (SndOutVolumeShift32 - 1);
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
 	}
 };
 
@@ -343,7 +505,7 @@ struct Stereo41Out32
 	s32 LFE;
 	s32 LeftBack;
 	s32 RightBack;
-	
+
 	void ResampleFrom( const StereoOut32& src )
 	{
 		Left = src.Left << SndOutVolumeShift32;
@@ -352,6 +514,17 @@ struct Stereo41Out32
 
 		LeftBack = src.Left << SndOutVolumeShift32;
 		RightBack = src.Right << SndOutVolumeShift32;
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
 	}
 };
 
@@ -372,6 +545,18 @@ struct Stereo51Out32
 		LFE = Center;
 		LeftBack = src.Left << SndOutVolumeShift32;
 		RightBack = src.Right << SndOutVolumeShift32;
+	}
+
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+		LeftBack = (s32) (LeftBack * VolumeAdjustBL);
+		RightBack = (s32) (RightBack * VolumeAdjustBR);
+		Center = (s32) (Center * VolumeAdjustC);
+		LFE = (s32) (LFE * VolumeAdjustLFE);
 	}
 };
 
@@ -479,7 +664,6 @@ public:
 	// (which is effectively the amount of data played since the last update)
 	virtual int GetEmptySampleCount() =0;
 };
-
 
 #ifdef _MSC_VER
 //internal

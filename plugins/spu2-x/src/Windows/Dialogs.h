@@ -54,12 +54,14 @@ extern bool		CfgFindName( const TCHAR *Section, const TCHAR* Name);
 
 extern void		CfgWriteBool(const TCHAR* Section, const TCHAR* Name, bool Value);
 extern void		CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value);
+extern void		CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value);
 extern void		CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const wxString& Data);
 
 extern bool		CfgReadBool(const TCHAR *Section,const TCHAR* Name, bool Default);
 extern void		CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const TCHAR* Default);
 extern void		CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default);
-extern int		CfgReadInt(const TCHAR* Section, const TCHAR* Name,int Default);
+extern int		CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default);
+extern float	CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default);
 
 // Items Specific to DirectSound
 #define STRFY(x) #x
