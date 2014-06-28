@@ -87,6 +87,13 @@ void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value)
 	WritePrivateProfileString(Section,Name,Data,CfgFile);
 }
 
+void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value)
+{
+	TCHAR Data[32];
+	_swprintf(Data, L"%f", Value);
+	WritePrivateProfileString(Section, Name, Data, CfgFile);
+}
+
 /*void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const TCHAR *Data)
 {
 WritePrivateProfileString( Section, Name, Data, CfgFile );
@@ -131,6 +138,20 @@ int CfgReadInt(const TCHAR* Section, const TCHAR* Name,int Default)
 	}
 
 	return _wtoi(Data);
+}
+
+int CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
+{
+	TCHAR Data[255] = { 0 };
+	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
+	Data[254] = 0;
+
+	if (wcslen(Data) == 0) {
+		CfgWriteFloat(Section, Name, Default);
+		return Default;
+	}
+
+	return (float)_wtof(Data);
 }
 
 void CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default)

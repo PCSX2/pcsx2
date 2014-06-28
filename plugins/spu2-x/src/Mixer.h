@@ -18,6 +18,10 @@
 
 #pragma once
 
+// Implemented in Config.cpp
+extern float VolumeAdjustFL;
+extern float VolumeAdjustFR;
+
 struct StereoOut32
 {
 	static StereoOut32 Empty;
@@ -76,6 +80,13 @@ struct StereoOut32
 		this->Right = src.Right << 2;
 	}
 
+	void AdjustFrom(const StereoOut32& src)
+	{
+		ResampleFrom(src);
+
+		Left = (s32) (Left * VolumeAdjustFL);
+		Right = (s32) (Right * VolumeAdjustFR);
+	}
 };
 
 struct FrequencyResponseFilter
