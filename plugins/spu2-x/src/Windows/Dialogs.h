@@ -61,7 +61,7 @@ extern bool		CfgReadBool(const TCHAR *Section,const TCHAR* Name, bool Default);
 extern void		CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const TCHAR* Default);
 extern void		CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default);
 extern int		CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default);
-extern int		CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default);
+extern float	CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default);
 
 // Items Specific to DirectSound
 #define STRFY(x) #x

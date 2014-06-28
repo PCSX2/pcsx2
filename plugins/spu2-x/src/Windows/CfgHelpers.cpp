@@ -140,7 +140,7 @@ int CfgReadInt(const TCHAR* Section, const TCHAR* Name,int Default)
 	return _wtoi(Data);
 }
 
-int CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
+float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
 {
 	TCHAR Data[255] = { 0 };
 	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);

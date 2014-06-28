@@ -33,11 +33,13 @@ extern void CfgSetLogDir(const char* dir);
 
 extern void		CfgWriteBool(const wchar_t* Section, const wchar_t* Name, bool Value);
 extern void		CfgWriteInt(const wchar_t* Section, const wchar_t* Name, int Value);
+extern void		CfgWriteFloat(const wchar_t* Section, const wchar_t* Name, float Value);
 extern void		CfgWriteStr(const wchar_t* Section, const wchar_t* Name, const wxString& Data);
 
 extern bool		CfgReadBool(const wchar_t *Section,const wchar_t* Name, bool Default);
 extern void		CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default);
 //extern void		CfgReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, int DataSize, const wchar_t* Default);
-extern int		CfgReadInt(const wchar_t* Section, const wchar_t* Name,int Default);
+extern int		CfgReadInt(const wchar_t* Section, const wchar_t* Name,int Default)	;
+extern float	CfgReadFloat(const wchar_t* Section, const wchar_t* Name, float Default);
 
 #endif
