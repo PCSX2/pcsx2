@@ -1138,6 +1138,11 @@ protected:
 
 	virtual bool DoWriteString(const wxString& , const wxString& )  { return false; }
 	virtual bool DoWriteLong(const wxString& , long )  { return false; }
+
+#if wxUSE_BASE64
+	virtual bool DoReadBinary(const wxString& key, wxMemoryBuffer* buf) const { return false; }
+	virtual bool DoWriteBinary(const wxString& key, const wxMemoryBuffer& buf) { return false; }
+#endif
 };
 
 static pxDudConfig _dud_config;
