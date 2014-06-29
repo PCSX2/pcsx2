@@ -217,11 +217,13 @@ void FileMemoryCard::Close()
 {
 	for( int slot=0; slot<8; ++slot )
 	{
-		// Store checksum
-		if(!m_ispsx[slot] && !!m_file[slot].Seek(  m_chkaddr ))
-			m_file[slot].Write( &m_chksum[slot], 8 );
+		if (m_file[slot].IsOpened()) {
+			// Store checksum
+			if(!m_ispsx[slot] && !!m_file[slot].Seek(  m_chkaddr ))
+				m_file[slot].Write( &m_chksum[slot], 8 );
 
-		m_file[slot].Close();
+			m_file[slot].Close();
+		}
 	}
 }
 

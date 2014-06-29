@@ -34,7 +34,7 @@ void insertListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int
 
 void resizeListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int count, int totalWidth)
 {
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < std::min(list->GetColumnCount(), count); i++)
 	{
 		list->SetColumnWidth(i,totalWidth*columns[i].size);
 	}
