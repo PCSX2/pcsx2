@@ -438,10 +438,17 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 
 		// combine the lower 7 bits of each char
 		// to make the 4 letters fit into a single u32
+#if wxMAJOR_VERSION >= 3
+		letters =	(s32)((DiscSerial[3].GetValue()&0x7F)<< 0) |
+					(s32)((DiscSerial[2].GetValue()&0x7F)<< 7) |
+					(s32)((DiscSerial[1].GetValue()&0x7F)<<14) |
+					(s32)((DiscSerial[0].GetValue()&0x7F)<<21);
+#else
 		letters =	(s32)((DiscSerial[3]&0x7F)<< 0) |
 					(s32)((DiscSerial[2]&0x7F)<< 7) |
 					(s32)((DiscSerial[1]&0x7F)<<14) |
 					(s32)((DiscSerial[0]&0x7F)<<21);
+#endif
 	}
 
 	// calculate magic numbers
