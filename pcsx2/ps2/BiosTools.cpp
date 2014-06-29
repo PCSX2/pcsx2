@@ -129,7 +129,7 @@ static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& descript
 			version = strtol(vermaj, (char**)NULL, 0) << 8;
 			version|= strtol(vermin, (char**)NULL, 0);
 
-			Console.WriteLn(L"Bios Found: %s", result.c_str());
+			Console.WriteLn(L"Bios Found: %ls", result.c_str());
 
 			description = result.c_str();
 			zoneStr = fromUTF8(zone);
