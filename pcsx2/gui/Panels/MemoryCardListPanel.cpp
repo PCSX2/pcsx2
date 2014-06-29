@@ -594,7 +594,7 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 		if( g_Conf->Mcd[slot].Enabled )
 		{
 			used++;
-			Console.WriteLn( L"slot[%d]='%s'", slot, g_Conf->Mcd[slot].Filename.GetFullName().c_str() );
+			Console.WriteLn( L"slot[%d]='%s'", slot, WX_STR(g_Conf->Mcd[slot].Filename.GetFullName()) );
 		}
 	}
 	if( !used )
@@ -619,13 +619,13 @@ void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 			if (isValidNewFilename(m_Cards[slot].Filename.GetFullName(), GetMcdPath(), errMsg, 5))
 			{
 				if ( !Dialogs::CreateMemoryCardDialog::CreateIt(targetFile, 8) )
-					Console.Error( L"Automatic createion of MCD '%s' failed. Hope for the best...", targetFile.c_str() );
+					Console.Error( L"Automatic createion of MCD '%s' failed. Hope for the best...", WX_STR(targetFile) );
 				else
-					Console.WriteLn( L"memcard created: '%s'.", targetFile.c_str() );
+					Console.WriteLn( L"memcard created: '%s'.", WX_STR(targetFile) );
 			}
 			else
 			{
-				Console.Error( L"memcard was enabled but had an invalid file name. Aborting automatic creation. Hope for the best... (%s)", errMsg.c_str() );
+				Console.Error( L"memcard was enabled but had an invalid file name. Aborting automatic creation. Hope for the best... (%s)", WX_STR(errMsg) );
 			}
 		}
 
@@ -706,9 +706,9 @@ void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
 		card.Filename  = dialog.result_createdMcdFilename;
 		card.IsPresent = true;
 		if ( card.Slot >= 0)
-			Console.WriteLn(L"setting new card to slot %u: '%s'", card.Slot, card.Filename.GetFullName().c_str());
+			Console.WriteLn(L"setting new card to slot %u: '%s'", card.Slot, WX_STR(card.Filename.GetFullName()));
 		else
-			Console.WriteLn(L"Created a new unassigned card file: '%s'", card.Filename.GetFullName().c_str() );
+			Console.WriteLn(L"Created a new unassigned card file: '%s'", WX_STR(card.Filename.GetFullName()) );
 	}
 	else
 		card.IsEnabled=false;
@@ -733,7 +733,7 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 		wxString content;
 		content.Printf(
 			pxE( L"You are about to delete the formatted memory card '%s'. All data on this card will be lost!  Are you absolutely and quite positively sure?"
-				), card.Filename.GetFullName().c_str()
+				), WX_STR(card.Filename.GetFullName())
 		);
 
 		result = Msgbox::YesNo( content, _("Delete memory file?") );
@@ -791,7 +791,7 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 			if( !isValidNewFilename( newFilename, basepath, errMsg, 5 ) )
 			{
 				wxString message;
-				message.Printf(_("Failed: %s"), errMsg.c_str());
+				message.Printf(_("Failed: %s"), WX_STR(errMsg));
 				Msgbox::Alert( message, _("Duplicate memory card") );
 				continue;
 			}
@@ -811,7 +811,7 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 		{
 			wxString heading;
 			heading.Printf( pxE( L"Failed: Destination memory card '%s' is in use." ),
-				dest.Filename.GetFullName().c_str(), dest.Slot
+				WX_STR(dest.Filename.GetFullName()), dest.Slot
 			);
 
 			wxString content;
@@ -825,8 +825,8 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 		// Destination memcard isEnabled state is the same now as the source's
 		wxString success;
 		success.Printf(_("Memory card '%s' duplicated to '%s'."),
-			src.Filename.GetFullName().c_str(),
-			dest.Filename.GetFullName().c_str()
+			WX_STR(src.Filename.GetFullName()),
+			WX_STR(dest.Filename.GetFullName())
 			);
 		Msgbox::Alert(success, _("Success"));
 		dest.IsPresent=true;
@@ -850,7 +850,7 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 	while (1){
 		wxString title;
 		title.Printf(_("Select a new name for the memory card '%s'\n( '.ps2' will be added automatically)"),
-						card.Filename.GetFullName().c_str()
+						WX_STR(card.Filename.GetFullName())
 						);
 		newFilename = wxGetTextFromUser(title, _("Rename memory card"));
 		if( newFilename==L"" )
@@ -863,7 +863,7 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 		if( !isValidNewFilename( newFilename, basepath, errMsg, 5 ) )
 		{
 			wxString message;
-			message.Printf(_("Error (%s)"), errMsg.c_str());
+			message.Printf(_("Error (%s)"), WX_STR(errMsg));
 			Msgbox::Alert( message, _("Rename memory card") );
 			continue;
 		}
@@ -1002,7 +1002,7 @@ void Panels::MemoryCardListPanel_Simple::UiAssignUnassignFile(McdSlotItem &card)
 			selections.Add(sel);
 		}
 		wxString title;
-		title.Printf(_("Select a target port for '%s'"), card.Filename.GetFullName().c_str());
+		title.Printf(_("Select a target port for '%s'"), WX_STR(card.Filename.GetFullName()));
 		int res=wxGetSingleChoiceIndex(title, _("Insert card"), selections, this);
 		if( res<0 )
 			return;
@@ -1108,10 +1108,10 @@ void Panels::MemoryCardListPanel_Simple::ReadFilesAtMcdFolder(){
 			currentCardFile.Slot		= -1;
 			currentCardFile.IsEnabled	= false;
 			m_allFilesystemCards.push_back(currentCardFile);
-			//DevCon.WriteLn(L"Enumerated file: '%s'", currentCardFile.Filename.GetFullName().c_str() );
+			//DevCon.WriteLn(L"Enumerated file: '%s'", WX_STR(currentCardFile.Filename.GetFullName()) );
 		}
 		/*else
-			DevCon.WriteLn(L"MCD folder card file skipped: '%s'", memcardList[i].c_str() );*/
+			DevCon.WriteLn(L"MCD folder card file skipped: '%s'", WX_STR(memcardList[i]) );*/
 	}
 }
 
