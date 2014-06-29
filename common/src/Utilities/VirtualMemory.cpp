@@ -129,7 +129,7 @@ void* VirtualMemoryReserve::Reserve( size_t size, uptr base, uptr upper_bounds )
 
 	if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
 	{
-		DevCon.Warning( L"%s: host memory @ %s -> %s is unavailable; attempting to map elsewhere...",
+		DevCon.Warning( L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
 			WX_STR(m_name), pxsPtr(base), pxsPtr(base + size) );
 
 		SafeSysMunmap(m_baseptr, reserved_bytes);
@@ -157,7 +157,7 @@ void* VirtualMemoryReserve::Reserve( size_t size, uptr base, uptr upper_bounds )
 	else
 		mbkb.Write( "[%ukb]", reserved_bytes / 1024 );
 
-	DevCon.WriteLn( Color_Gray, L"%-32s @ %s -> %s %s", WX_STR(m_name),
+	DevCon.WriteLn( Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
 		pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr+reserved_bytes), mbkb.c_str());
 
 	return m_baseptr;
@@ -295,7 +295,7 @@ void BaseVmReserveListener::OnPageFaultEvent(const PageFaultInfo& info, bool& ha
 	if (!m_allow_writes)
 	{
 		pxFailRel( pxsFmt(
-			L"Memory Protection Fault @ %s (%s)\n"
+			L"Memory Protection Fault @ %ls (%s)\n"
 			L"Modification of this reserve has been disabled (m_allow_writes == false).",
 			pxsPtr(info.addr), WX_STR(m_name))
 		);
