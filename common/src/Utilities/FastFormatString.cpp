@@ -265,7 +265,7 @@ FastFormatUnicode& FastFormatUnicode::WriteV( const char* fmt, va_list argptr )
 	const uint inspos = m_Length;
 	const uint convLen = converted.Length();
 	m_dest->MakeRoomFor((inspos + convLen + 64) * sizeof(wxChar));
-	memcpy_fast( &((wxChar*)m_dest->GetPtr())[inspos], converted, (convLen+1)*sizeof(wxChar) );
+	memcpy_fast( &((wxChar*)m_dest->GetPtr())[inspos], converted.wc_str(), (convLen+1)*sizeof(wxChar) );
 	m_Length += convLen;
 
 	return *this;
