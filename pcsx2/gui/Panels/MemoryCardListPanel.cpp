@@ -252,7 +252,7 @@ protected:
 
 public:
 	McdDataObject(int viewIndex = -1)
-		: wxDataObjectSimple( wxDF_PRIVATE )
+		: wxDataObjectSimple( /*wxDF_PRIVATE*/ )
 	{
 		m_viewIndex = viewIndex;
 	}
