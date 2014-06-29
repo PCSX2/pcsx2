@@ -584,7 +584,7 @@ bool ConsoleLogFrame::Write( ConsoleColors color, const wxString& text )
 
 	int endpos = m_CurQueuePos + text.Length();
 	m_QueueBuffer.MakeRoomFor( endpos + 1 );		// and the null!!
-	memcpy_fast( &m_QueueBuffer[m_CurQueuePos], text.c_str(), sizeof(wxChar) * text.Length() );
+	memcpy_fast( &m_QueueBuffer[m_CurQueuePos], text.wc_str(), sizeof(wxChar) * text.Length() );
 	m_CurQueuePos = endpos;
 
 	// this NULL may be overwritten if the next message sent doesn't perform a color change.

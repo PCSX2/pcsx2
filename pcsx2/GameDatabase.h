@@ -32,7 +32,7 @@ public:
 
 	HashTools::hash_key_t operator()( const wxString& src ) const
 	{
-		return HashTools::Hash( (const char *)src.Lower().data(), src.length() * sizeof( wxChar ) );
+		return HashTools::Hash( (const char *)src.Lower().wc_str(), src.length() * sizeof( wxChar ) );
 	}
 };
 
