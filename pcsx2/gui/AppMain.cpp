@@ -299,7 +299,7 @@ void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 
 	FastFormatUnicode isoFormatted;
 	isoFormatted.Write( L"[%s]", _("IsoFile") );
-	int pos = out.Find( isoFormatted );
+	int pos = out.Find( isoFormatted.c_str() );
 	
 	if(pos == wxNOT_FOUND)
 	{
@@ -1088,7 +1088,7 @@ __fi bool SysHasValidState()
 void SysStatus( const wxString& text )
 {
 	// mirror output to the console!
-	Console.WriteLn( text.c_str() );
+	Console.WriteLn( WX_STR(text) );
 	sMainFrame.SetStatusText( text );
 }
 

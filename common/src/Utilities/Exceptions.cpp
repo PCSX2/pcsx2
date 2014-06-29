@@ -26,11 +26,6 @@
 // for lack of a better place...
 Fnptr_OutOfMemory pxDoOutOfMemory = NULL;
 
-static wxString GetTranslation( const wxChar* msg )
-{
-	return msg ? wxGetTranslation( msg ) : wxEmptyString;
-}
-
 // ------------------------------------------------------------------------
 // Force DevAssert to *not* inline for devel builds (allows using breakpoints to trap assertions,
 // and force it to inline for release builds (optimizes it out completely since IsDevBuild is a
@@ -57,15 +52,15 @@ wxString DiagnosticOrigin::ToString( const wxChar* msg ) const
 	message.Write( L"%s(%d) : assertion failed:\n", srcfile, line );
 
 	if( function != NULL )
-		message.Write( "    Function:  %s\n", function );
+		message.Write( "    Function:  %S\n", function );
 
-		message.Write(L"    Thread:    %s\n", Threading::pxGetCurrentThreadName().c_str() );
+		message.Write(L"    Thread:    %s\n", WX_STR(Threading::pxGetCurrentThreadName()) );
 
 	if( condition != NULL )
-		message.Write(L"    Condition: %s\n", condition);
+		message.Write(L"    Condition: %S\n", condition);
 
 	if( msg != NULL )
-		message.Write(L"    Message:   %s\n", msg);
+		message.Write(L"    Message:   %S\n", msg);
 
 	return message;
 }
@@ -137,7 +132,7 @@ __fi void pxOnAssert( const DiagnosticOrigin& origin, const char* msg)
 #if wxMAJOR_VERSION >= 3
 __fi void pxOnAssert( const DiagnosticOrigin& origin, const wxString& msg)
 {
-	pxOnAssert( origin, msg.wx_str() ); // wc_str ???
+	pxOnAssert( origin, WX_STR(msg) ); // wc_str ???
 }
 
 __fi void pxOnAssert( const DiagnosticOrigin& origin, const FastFormatUnicode& msg)
@@ -154,7 +149,11 @@ BaseException::~BaseException() throw() {}
 
 BaseException& BaseException::SetBothMsgs( const wxChar* msg_diag )
 {
-	m_message_user = GetTranslation( msg_diag );
+#if wxMAJOR_VERSION >= 3
+	m_message_user = msg_diag ? wxString(wxGetTranslation( msg_diag )) : wxString("");
+#else
+	m_message_user = msg_diag ? wxGetTranslation( msg_diag ) : wxEmptyString;
+#endif
 	return SetDiagMsg( msg_diag );
 }
 
@@ -188,8 +187,8 @@ Exception::RuntimeError::RuntimeError( const std::runtime_error& ex, const wxStr
 	IsSilent = false;
 
 	SetDiagMsg( pxsFmt( L"STL Runtime Error%s: %s",
-		(prefix.IsEmpty() ? prefix.c_str() : pxsFmt(L" (%s)", prefix.c_str()).c_str()),
-		fromUTF8( ex.what() ).c_str()
+		(prefix.IsEmpty() ? L"" : pxsFmt(L" (%s)", WX_STR(prefix)).c_str()),
+		WX_STR(fromUTF8( ex.what() ))
 	) );
 }
 
@@ -198,8 +197,8 @@ Exception::RuntimeError::RuntimeError( const std::exception& ex, const wxString&
 	IsSilent = false;
 
 	SetDiagMsg( pxsFmt( L"STL Exception%s: %s",
-		(prefix.IsEmpty() ? prefix.c_str() : pxsFmt(L" (%s)", prefix.c_str()).c_str()),
-		fromUTF8( ex.what() ).c_str()
+		(prefix.IsEmpty() ? L"" : pxsFmt(L" (%s)", WX_STR(prefix)).c_str()),
+		WX_STR(fromUTF8( ex.what() ))
 	) );
 }
 
@@ -216,10 +215,10 @@ wxString Exception::OutOfMemory::FormatDiagnosticMessage() const
 	FastFormatUnicode retmsg;
 	retmsg.Write(L"Out of memory");
 	if (!AllocDescription.IsEmpty())
-		retmsg.Write(L" while allocating '%s'", AllocDescription.c_str());
+		retmsg.Write(L" while allocating '%s'", WX_STR(AllocDescription));
 
 	if (!m_message_diag.IsEmpty())
-		retmsg.Write(L":\n%s", m_message_diag.c_str());
+		retmsg.Write(L":\n%s", WX_STR(m_message_diag));
 	
 	return retmsg;
 }
@@ -230,7 +229,7 @@ wxString Exception::OutOfMemory::FormatDisplayMessage() const
 	retmsg.Write( L"%s", _("Oh noes! Out of memory!") );
 
 	if (!m_message_user.IsEmpty())
-		retmsg.Write(L"\n\n%s", m_message_user.c_str());
+		retmsg.Write(L"\n\n%s", WX_STR(m_message_user));
 
 	return retmsg;
 }
@@ -250,10 +249,10 @@ wxString Exception::VirtualMemoryMapConflict::FormatDiagnosticMessage() const
 	FastFormatUnicode retmsg;
 	retmsg.Write(L"Virtual memory map failed");
 	if (!AllocDescription.IsEmpty())
-		retmsg.Write(L" while reserving '%s'", AllocDescription.c_str());
+		retmsg.Write(L" while reserving '%s'", WX_STR(AllocDescription));
 
 	if (!m_message_diag.IsEmpty())
-		retmsg.Write(L":\n%s", m_message_diag.c_str());
+		retmsg.Write(L":\n%s", WX_STR(m_message_diag));
 		
 	return retmsg;
 }
@@ -267,7 +266,7 @@ wxString Exception::VirtualMemoryMapConflict::FormatDisplayMessage() const
 	);
 
 	if (!m_message_diag.IsEmpty())
-		retmsg.Write(L"\n\n%s", m_message_diag.c_str());
+		retmsg.Write(L"\n\n%s", WX_STR(m_message_diag));
 
 	return retmsg;
 }
@@ -305,24 +304,24 @@ void Exception::BadStream::_formatDiagMsg( FastFormatUnicode& dest ) const
 {
 	dest.Write( L"Path: " );
 	if (!StreamName.IsEmpty())
-		dest.Write( L"%s", StreamName.c_str() );
+		dest.Write( L"%s", WX_STR(StreamName) );
 	else
 		dest.Write( L"[Unnamed or unknown]" );
 
 	if (!m_message_diag.IsEmpty())
-		dest.Write(L"\n%s", m_message_diag.c_str());
+		dest.Write(L"\n%s", WX_STR(m_message_diag));
 }
 
 void Exception::BadStream::_formatUserMsg( FastFormatUnicode& dest ) const
 {
 	dest.Write( _("Path: ") );
 	if (!StreamName.IsEmpty())
-		dest.Write( L"%s", StreamName.c_str() );
+		dest.Write( L"%s", WX_STR(StreamName) );
 	else
 		dest.Write( _("[Unnamed or unknown]") );
 
 	if (!m_message_user.IsEmpty())
-		dest.Write(L"\n%s", m_message_user.c_str());
+		dest.Write(L"\n%s", WX_STR(m_message_user));
 }
 
 // --------------------------------------------------------------------------------------

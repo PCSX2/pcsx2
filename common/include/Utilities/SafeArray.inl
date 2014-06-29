@@ -95,7 +95,7 @@ void SafeArray<T>::Dispose()
 template< typename T >
 T* SafeArray<T>::_getPtr( uint i ) const
 {
-	IndexBoundsAssumeDev( Name.c_str(), i, m_size );
+	IndexBoundsAssumeDev( WX_STR(Name), i, m_size );
 	return &m_ptr[i];
 }
 
@@ -213,7 +213,7 @@ SafeList<T>::SafeList( int initialSize, const wxChar* name )
 template< typename T >
 T* SafeList<T>::_getPtr( uint i ) const
 {
-	IndexBoundsAssumeDev( Name.c_str(), i, m_length );
+	IndexBoundsAssumeDev( WX_STR(Name), i, m_length );
 	return &m_ptr[i];
 }
 

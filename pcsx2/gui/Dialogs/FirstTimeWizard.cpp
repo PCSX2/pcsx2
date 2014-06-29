@@ -71,7 +71,7 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 
 	FastFormatUnicode faqFile;
 	faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf",
-		InstallFolder.ToString().c_str() );
+		WX_STR(InstallFolder.ToString()) );
 
 	wxStaticBoxSizer& langSel	= *new wxStaticBoxSizer( wxVERTICAL, this, _("Language selector") );
 

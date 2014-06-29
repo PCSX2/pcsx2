@@ -331,7 +331,7 @@ FastFormatUnicode& FastFormatUnicode::ToLower()
 
 FastFormatUnicode& FastFormatUnicode::operator+=(const char* psz )
 {
-	Write( L"%s", fromUTF8(psz).c_str() );
+	Write( L"%s", WX_STR(fromUTF8(psz)) );
 	return *this;
 }
 

@@ -123,7 +123,7 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 		if (Startup.PortableMode)
 			Console.WriteLn( L"(UserMode) Portable mode requested via commandline switch!" );
 		else
-			Console.WriteLn( L"(UserMode) Found portable install ini @ %s", FilenameStr.c_str() );
+			Console.WriteLn( L"(UserMode) Found portable install ini @ %s", WX_STR(FilenameStr) );
 
 		// Just because the portable ini file exists doesn't mean we can actually run in portable
 		// mode.  In order to determine our read/write permissions to the PCSX2, we must try to

@@ -66,12 +66,12 @@ protected:
 			return;
 		}*/
 
-		m_stackTrace.Write(pxsFmt( L"[%02d]", frame.GetLevel()-m_skipped));
+		m_stackTrace.Write(pxsFmt( L"[%02d]", frame.GetLevel()-m_skipped).c_str());
 		
 		if (!frame.GetName().IsEmpty())
-			m_stackTrace.Write(pxsFmt( L" %-44s", frame.GetName().c_str() ));
+			m_stackTrace.Write(pxsFmt( L" %-44s", WX_STR(frame.GetName()) ).c_str());
 		else
-			m_stackTrace.Write(pxsFmt( L" 0x%-42p", frame.GetAddress() ));
+			m_stackTrace.Write(pxsFmt( L" 0x%-42p", frame.GetAddress() ).c_str());
 
 		if( frame.HasSourceLocation() )
 		{
@@ -81,7 +81,7 @@ protected:
 			for( int i=0; i<2; ++i )
 				wxfn.RemoveDir(0);
 
-			m_stackTrace.Write( L" %s:%d", wxfn.GetFullPath().c_str(), frame.GetLine() );
+			m_stackTrace.Write( L" %s:%d", WX_STR(wxfn.GetFullPath()), frame.GetLine() );
 		}
 		
 		m_stackTrace.Write(L"\n");
@@ -125,10 +125,10 @@ bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
 	wxString trace( pxGetStackTrace(origin.function) );
 	wxString dbgmsg( origin.ToString( msg ) );
 
-	wxMessageOutputDebug().Printf( L"%s", dbgmsg.c_str() );
+	wxMessageOutputDebug().Printf( L"%s", WX_STR(dbgmsg) );
 
-	Console.Error( L"%s", dbgmsg.c_str() );
-	Console.WriteLn( L"%s", trace.c_str() );
+	Console.Error( L"%s", WX_STR(dbgmsg) );
+	Console.WriteLn( L"%s", WX_STR(trace) );
 
 	wxString windowmsg( L"Assertion failed: " );
 	if( msg != NULL )

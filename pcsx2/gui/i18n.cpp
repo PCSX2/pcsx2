@@ -301,7 +301,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 		{
 			info = wxLocale::FindLanguageInfo(langCode);
 			if (!info)
-				Console.Warning( "Unrecognized language canonical name '%ls'", langCode.c_str() );
+				Console.Warning( "Unrecognized language canonical name '%ls'", WX_STR(langCode) );
 		}
 	}
 
@@ -313,7 +313,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 	if( !locale->IsOk() )
 	{
 		Console.Warning( L"SetLanguage: '%s' [%s] is not supported by the operating system",
-			i18n_GetBetterLanguageName(info).c_str(), locale->GetCanonicalName().c_str()
+			WX_STR(i18n_GetBetterLanguageName(info)), WX_STR(locale->GetCanonicalName())
 		);
 		return false;
 	}
@@ -334,7 +334,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 	}
 	
 	Console.WriteLn( L"Loading language translation databases for '%s' [%s]",
-		i18n_GetBetterLanguageName(info).c_str(), locale->GetCanonicalName().c_str()
+		WX_STR(i18n_GetBetterLanguageName(info)), WX_STR(locale->GetCanonicalName())
 	);
 
 	static const wxChar* dictFiles[] =

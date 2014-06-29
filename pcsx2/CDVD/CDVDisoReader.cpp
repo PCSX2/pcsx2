@@ -166,7 +166,7 @@ static void FindLayer1Start()
 	wxFileConfig layerCacheIni( wxEmptyString, wxEmptyString, layerCacheFile, wxEmptyString, wxCONFIG_USE_RELATIVE_PATH );
 
 	FastFormatUnicode cacheKey;
-	cacheKey.Write( L"%X", HashTools::Hash( (s8*)iso.GetFilename().c_str(), iso.GetFilename().Length() * sizeof(wxChar) ) );
+	cacheKey.Write( L"%X", HashTools::Hash( (s8*)iso.GetFilename().wx_str(), iso.GetFilename().Length() * sizeof(wxChar) ) );
 
 	blockresult = layerCacheIni.Read( cacheKey, -1 );
 	if( blockresult != -1 )

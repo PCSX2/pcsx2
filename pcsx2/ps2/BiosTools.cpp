@@ -188,7 +188,7 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 
 	// Try first a basic extension concatenation (normally results in something like name.bin.rom1)
 	const wxString Bios( g_Conf->FullpathToBios() );
-	Bios1.Printf( L"%s.%s", Bios.c_str(), ext);
+	Bios1.Printf( L"%s.%s", WX_STR(Bios), ext);
 
 	try
 	{
@@ -216,7 +216,7 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 		// still work fine.
 
 		Console.Warning(L"BIOS Warning: %s could not be read (permission denied?)", ext);
-		Console.Indent().WriteLn(L"Details: %s", ex.FormatDiagnosticMessage().c_str());
+		Console.Indent().WriteLn(L"Details: %s", WX_STR(ex.FormatDiagnosticMessage()));
 		Console.Indent().WriteLn(L"File size: %llu", filesize);
 	}
 }
@@ -263,7 +263,7 @@ void LoadBIOS()
 		LoadBiosVersion( memfp, BiosVersion, BiosDescription, biosZone );
 		
 		Console.SetTitle( pxsFmt( L"Running BIOS (%s v%u.%u)",
-			biosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff
+			WX_STR(biosZone), BiosVersion >> 8, BiosVersion & 0xff
 		));
 
 		//injectIRX("host.irx");	//not fully tested; still buggy

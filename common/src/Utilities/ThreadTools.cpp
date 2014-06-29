@@ -210,7 +210,7 @@ bool Threading::pxThread::AffinityAssert_AllowFromSelf( const DiagnosticOrigin& 
 	if( IsSelf() ) return true;
 
 	if( IsDevBuild )
-		pxOnAssert( origin, pxsFmt( L"Thread affinity violation: Call allowed from '%s' thread only.", GetName().c_str() ) );
+		pxOnAssert( origin, pxsFmt( L"Thread affinity violation: Call allowed from '%s' thread only.", WX_STR(GetName()) ) );
 
 	return false;
 }
@@ -220,7 +220,7 @@ bool Threading::pxThread::AffinityAssert_DisallowFromSelf( const DiagnosticOrigi
 	if( !IsSelf() ) return true;
 
 	if( IsDevBuild )
-		pxOnAssert( origin, pxsFmt( L"Thread affinity violation: Call is *not* allowed from '%s' thread.", GetName().c_str() ) );
+		pxOnAssert( origin, pxsFmt( L"Thread affinity violation: Call is *not* allowed from '%s' thread.", WX_STR(GetName()) ) );
 
 	return false;
 }
@@ -436,7 +436,7 @@ void Threading::pxThread::_selfRunningTest( const wxChar* name ) const
 	{
 		throw Exception::CancelEvent( pxsFmt(
 			L"Blocking thread %s was terminated while another thread was waiting on a %s.",
-			GetName().c_str(), name )
+			WX_STR(GetName()), name )
 		);
 	}
 
@@ -550,14 +550,14 @@ void Threading::pxThread::_try_virtual_invoke( void (pxThread::*method)() )
 	//
 	catch( std::runtime_error& ex )
 	{
-		m_except = new Exception::RuntimeError( ex, GetName().c_str() );
+		m_except = new Exception::RuntimeError( ex, WX_STR(GetName()) );
 	}
 
 	// ----------------------------------------------------------------------------
 	catch( Exception::RuntimeError& ex )
 	{
 		BaseException* woot = ex.Clone();
-		woot->DiagMsg() += pxsFmt( L"(thread:%s)", GetName().c_str() );
+		woot->DiagMsg() += pxsFmt( L"(thread:%s)", WX_STR(GetName()) );
 		m_except = woot;
 	}
 #ifndef PCSX2_DEVBUILD
@@ -568,13 +568,13 @@ void Threading::pxThread::_try_virtual_invoke( void (pxThread::*method)() )
 	/*catch( std::logic_error& ex )
 	{
 		throw BaseException( pxsFmt( L"STL Logic Error (thread:%s): %s",
-			GetName().c_str(), fromUTF8( ex.what() ).c_str() )
+			WX_STR(GetName()), WX_STR(fromUTF8( ex.what() )) )
 		);
 	}
 	catch( std::exception& ex )
 	{
 		throw BaseException( pxsFmt( L"STL exception (thread:%s): %s",
-			GetName().c_str(), fromUTF8( ex.what() ).c_str() )
+			WX_STR(GetName()), WX_STR(fromUTF8( ex.what() )) )
 		);
 	}*/
 	// ----------------------------------------------------------------------------
@@ -583,7 +583,7 @@ void Threading::pxThread::_try_virtual_invoke( void (pxThread::*method)() )
 	catch( BaseException& ex )
 	{
 		BaseException* woot = ex.Clone();
-		woot->DiagMsg() += pxsFmt( L"(thread:%s)", GetName().c_str() );
+		woot->DiagMsg() += pxsFmt( L"(thread:%s)", WX_STR(GetName()) );
 		m_except = woot;
 	}
 #endif
@@ -688,7 +688,7 @@ void* Threading::pxThread::_internal_callback( void* itsme )
 
 void Threading::pxThread::_DoSetThreadName( const wxString& name )
 {
-	_DoSetThreadName( name.ToUTF8() );
+	_DoSetThreadName( static_cast<const char*>(name.ToUTF8()) );
 }
 
 // --------------------------------------------------------------------------------------
@@ -859,12 +859,14 @@ __fi void* Threading::_AtomicCompareExchangePointer(volatile uptr& target, uptr 
 
 wxString Exception::BaseThreadError::FormatDiagnosticMessage() const
 {
-    return pxsFmt( m_message_diag, (m_thread==NULL) ? L"Null Thread Object" : m_thread->GetName().c_str());
+	wxString null_str(L"Null Thread Object");
+    return pxsFmt( m_message_diag, (m_thread==NULL) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
 }
 
 wxString Exception::BaseThreadError::FormatDisplayMessage() const
 {
-    return pxsFmt( m_message_user, (m_thread==NULL) ? L"Null Thread Object" : m_thread->GetName().c_str());
+	wxString null_str(L"Null Thread Object");
+    return pxsFmt( m_message_user, (m_thread==NULL) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
 }
 
 pxThread& Exception::BaseThreadError::Thread()

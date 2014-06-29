@@ -41,7 +41,7 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
-		Console.Error(msg);
+		Console.Error(msg.c_str());
 		return -1;
 	}
 
@@ -56,7 +56,7 @@ void InputIsoFile::BeginRead2(uint lsn)
 		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
-		Console.Error(msg);
+		Console.Error(msg.c_str());
 
 		// [TODO] : Throw exception?
 		//  Typically an error like this is bad; indicating an invalid dump or corrupted
@@ -248,7 +248,7 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 
 	m_blocks = m_reader->GetBlockCount();
 
-	Console.WriteLn(Color_StrongBlue, L"isoFile open ok: %s", m_filename.c_str());
+	Console.WriteLn(Color_StrongBlue, L"isoFile open ok: %s", WX_STR(m_filename));
 
 	ConsoleIndentScope indent;
 
