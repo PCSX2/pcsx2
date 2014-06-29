@@ -29,7 +29,7 @@ Dialogs::ImportSettingsDialog::ImportSettingsDialog( wxWindow* parent )
 
 		/// (%s is the app name, normally PCSX2 -- omitting one or both %s is allowed)
 		pxE( L"Existing %s settings have been found in the configured settings folder.  Would you like to import these settings or overwrite them with %s default values?\n\n(or press Cancel to select a different settings folder)"
-		), pxGetAppName().c_str(), pxGetAppName().c_str()
+		), WX_STR(pxGetAppName()), WX_STR(pxGetAppName())
 	)));
 
 	wxBoxSizer& s_buttons = *new wxBoxSizer( wxHORIZONTAL );

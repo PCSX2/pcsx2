@@ -97,7 +97,7 @@ void MemorySavestateEntry::FreezeIn( pxInputStream& reader ) const
 	if (entrySize < expectedSize)
 	{
 		Console.WriteLn( Color_Yellow, " '%s' is incomplete (expected 0x%x bytes, loading only 0x%x bytes)",
-			GetFilename().c_str(), expectedSize, entrySize );
+			WX_STR(GetFilename()), expectedSize, entrySize );
 	}
 
 	uint copylen = std::min(entrySize, expectedSize);
@@ -564,7 +564,7 @@ protected:
 			{
 				if (entry->GetName().CmpNoCase(SavestateEntries[i]->GetFilename()) == 0)
 				{
-					DevCon.WriteLn( Color_Green, L" ... found '%s'", SavestateEntries[i]->GetFilename().c_str() );
+					DevCon.WriteLn( Color_Green, L" ... found '%s'", WX_STR(SavestateEntries[i]->GetFilename()) );
 					foundEntry[i] = entry.DetachPtr();
 					break;
 				}
@@ -588,7 +588,7 @@ protected:
 			if (SavestateEntries[i]->IsRequired())
 			{
 				throwIt = true;
-				Console.WriteLn( Color_Red, " ... not found '%s'!", SavestateEntries[i]->GetFilename().c_str() );
+				Console.WriteLn( Color_Red, " ... not found '%s'!", WX_STR(SavestateEntries[i]->GetFilename()) );
 			}
 		}
 
@@ -665,7 +665,7 @@ void StateCopy_SaveToSlot( uint num )
 	}
 
 	Console.WriteLn( Color_StrongGreen, "Saving savestate to slot %d...", num );
-	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", file.c_str() );
+	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_SaveToFile( file );
 }
@@ -680,8 +680,8 @@ void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
 		return;
 	}
 
-	Console.WriteLn( Color_StrongGreen, L"Loading savestate from slot %d...%s", slot, wxString( isFromBackup?L" (backup)":L"" ).c_str() );
-	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", file.c_str() );
+	Console.WriteLn( Color_StrongGreen, L"Loading savestate from slot %d...%s", slot, WX_STR(wxString( isFromBackup?L" (backup)":L"" )) );
+	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_LoadFromFile( file );
 }

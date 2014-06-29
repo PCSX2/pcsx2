@@ -23,13 +23,13 @@ using namespace pxSizerFlags;
 // --------------------------------------------------------------------------------------
 
 bool ConsoleLogSource_Event::Write( const pxEvtQueue* evtHandler, const SysExecEvent* evt, const wxChar* msg ) {
-	return _parent::Write( pxsFmt(L"(%s:%s) ", evtHandler->GetEventHandlerName().c_str(), evt->GetEventName().c_str()) + msg );
+	return _parent::Write( pxsFmt(L"(%s:%s) ", WX_STR(evtHandler->GetEventHandlerName()), WX_STR(evt->GetEventName())) + msg );
 }
 bool ConsoleLogSource_Event::Warn( const pxEvtQueue* evtHandler, const SysExecEvent* evt, const wxChar* msg )	{
-	return _parent::Write( pxsFmt(L"(%s:%s) ", evtHandler->GetEventHandlerName().c_str(), evt->GetEventName().c_str()) + msg );
+	return _parent::Write( pxsFmt(L"(%s:%s) ", WX_STR(evtHandler->GetEventHandlerName()), WX_STR(evt->GetEventName())) + msg );
 }
 bool ConsoleLogSource_Event::Error( const pxEvtQueue* evtHandler, const SysExecEvent* evt, const wxChar* msg ) {
-	return _parent::Write( pxsFmt(L"(%s:%s) ", evtHandler->GetEventHandlerName().c_str(), evt->GetEventName().c_str()) + msg );
+	return _parent::Write( pxsFmt(L"(%s:%s) ", WX_STR(evtHandler->GetEventHandlerName()), WX_STR(evt->GetEventName())) + msg );
 }
 
 ConsoleLogSource_Event::ConsoleLogSource_Event()
@@ -84,7 +84,7 @@ void SysExecEvent::SetException( BaseException* ex )
 {
 	if( !ex ) return;
 
-	ex->DiagMsg() += pxsFmt(L"(%s) ", GetEventName().c_str());
+	ex->DiagMsg() += pxsFmt(L"(%s) ", WX_STR(GetEventName()));
 	//ex->UserMsg() = prefix + ex->UserMsg();
 
 	if( m_sync )

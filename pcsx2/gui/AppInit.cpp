@@ -269,7 +269,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		parser.AddOption( wxEmptyString, pi->GetShortname().Lower(),
-			pxsFmt( _("specify the file to use as the %s plugin"), pi->GetShortname().c_str() )
+			pxsFmt( _("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname()) )
 		);
 	} while( ++pi, pi->shortname != NULL );
 
@@ -746,12 +746,12 @@ void Pcsx2App::CleanUp()
 
 __fi wxString AddAppName( const wxChar* fmt )
 {
-	return pxsFmt( fmt, pxGetAppName().c_str() );
+	return pxsFmt( fmt, WX_STR(pxGetAppName()) );
 }
 
 __fi wxString AddAppName( const char* fmt )
 {
-	return pxsFmt( fromUTF8(fmt), pxGetAppName().c_str() );
+	return pxsFmt( fromUTF8(fmt), WX_STR(pxGetAppName()) );
 }
 
 // ------------------------------------------------------------------------------------------

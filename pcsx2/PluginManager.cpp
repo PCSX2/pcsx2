@@ -740,24 +740,24 @@ Exception::PluginLoadError::PluginLoadError( PluginsEnum_t pid )
 
 wxString Exception::PluginLoadError::FormatDiagnosticMessage() const
 {
-	return pxsFmt( m_message_diag, tbl_PluginInfo[PluginId].GetShortname().c_str() ) +
+	return pxsFmt( m_message_diag, WX_STR(tbl_PluginInfo[PluginId].GetShortname()) ) +
 		L"\n\n" + StreamName;
 }
 
 wxString Exception::PluginLoadError::FormatDisplayMessage() const
 {
-	return pxsFmt( m_message_user, tbl_PluginInfo[PluginId].GetShortname().c_str() ) +
+	return pxsFmt( m_message_user, WX_STR(tbl_PluginInfo[PluginId].GetShortname()) ) +
 		L"\n\n" + StreamName;
 }
 
 wxString Exception::PluginError::FormatDiagnosticMessage() const
 {
-	return pxsFmt( m_message_diag, tbl_PluginInfo[PluginId].GetShortname().c_str() );
+	return pxsFmt( m_message_diag, WX_STR(tbl_PluginInfo[PluginId].GetShortname()) );
 }
 
 wxString Exception::PluginError::FormatDisplayMessage() const
 {
-	return pxsFmt( m_message_user, tbl_PluginInfo[PluginId].GetShortname().c_str() );
+	return pxsFmt( m_message_user, WX_STR(tbl_PluginInfo[PluginId].GetShortname()) );
 }
 
 wxString Exception::FreezePluginFailure::FormatDiagnosticMessage() const
@@ -903,7 +903,7 @@ void SysCorePlugins::PluginStatus_t::BindCommon( PluginsEnum_t pid )
 		if( *target == NULL )
 		{
 			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
-				.SetDiagMsg(wxsFormat( L"\nMethod binding failure on: %s\n", current->GetMethodName( pid ).c_str() ))
+				.SetDiagMsg(wxsFormat( L"\nMethod binding failure on: %s\n", WX_STR(current->GetMethodName( pid )) ))
 				.SetUserMsg(_("Configured plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
 		}
 
@@ -929,7 +929,7 @@ void SysCorePlugins::PluginStatus_t::BindRequired( PluginsEnum_t pid )
 		if( *(current->Dest) == NULL )
 		{
 			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
-				.SetDiagMsg(wxsFormat( L"\n%s plugin init error; Method binding failed: %s\n", current->GetMethodName().c_str() ))
+				.SetDiagMsg(wxsFormat( L"\n%s plugin init error; Method binding failed: %s\n", WX_STR(current->GetMethodName()) ))
 				.SetUserMsg(_( "Configured %s plugin is not a valid PCSX2 plugin, or is for an older unsupported version of PCSX2."));
 		}
 
@@ -974,7 +974,7 @@ void SysCorePlugins::Load( PluginsEnum_t pid, const wxString& srcfile )
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 	pxAssert( (uint)pid < PluginId_Count );
-	Console.Indent().WriteLn( L"Binding %4s: %s ", tbl_PluginInfo[pid].GetShortname().c_str(), srcfile.c_str() );
+	Console.Indent().WriteLn( L"Binding %4s: %s ", WX_STR(tbl_PluginInfo[pid].GetShortname()), WX_STR(srcfile) );
 	m_info[pid] = new PluginStatus_t( pid, srcfile );
 }
 
