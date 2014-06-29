@@ -330,7 +330,8 @@ void Panels::PluginSelectorPanel::StatusPanel::SetGaugeLength( int len )
 void Panels::PluginSelectorPanel::StatusPanel::AdvanceProgress( const wxString& msg )
 {
 	m_label.SetLabel( msg );
-	m_gauge.SetValue( ++m_progress );
+	if (m_progress < m_gauge.GetRange())
+		m_gauge.SetValue( ++m_progress );
 }
 
 void Panels::PluginSelectorPanel::StatusPanel::Reset()

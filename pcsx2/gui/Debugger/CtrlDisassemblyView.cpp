@@ -77,7 +77,7 @@ inline wxIcon _wxGetIconFromMemory(const unsigned char *data, int length) {
 }
 
 CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER), cpu(_cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER|wxVSCROLL), cpu(_cpu)
 {
 	manager.setCpu(cpu);
 	windowStart = 0x100000;
@@ -390,7 +390,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 
 	int width,height;
 	dc.GetSize(&width,&height);
-	dc.DrawRectangle(0,0,width,height);
+	dc.DrawRectangle(0, 0, width, height);
 
 	if (!cpu->isAlive())
 		return;
