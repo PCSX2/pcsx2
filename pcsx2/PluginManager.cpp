@@ -853,7 +853,11 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 
 	_PS2EgetLibName		GetLibName		= (_PS2EgetLibName)		Lib.GetSymbol( L"PS2EgetLibName" );
 	_PS2EgetLibVersion2	GetLibVersion2	= (_PS2EgetLibVersion2)	Lib.GetSymbol( L"PS2EgetLibVersion2" );
+#ifdef __LINUX__
+	_PS2EsetEmuVersion	SetEmuVersion	= NULL;
+#else
 	_PS2EsetEmuVersion	SetEmuVersion	= (_PS2EsetEmuVersion)	Lib.GetSymbol( L"PS2EsetEmuVersion" );
+#endif
 
 	if( GetLibName == NULL || GetLibVersion2 == NULL )
 		throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
