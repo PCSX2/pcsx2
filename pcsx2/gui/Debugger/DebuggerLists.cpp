@@ -97,7 +97,7 @@ int BreakpointList::getTotalBreakpointCount()
 
 wxString BreakpointList::OnGetItemText(long item, long col) const
 {
-	wchar_t dest[256];
+	FastFormatUnicode dest;
 	bool isMemory;
 	int index = getBreakpointIndex(item,isMemory);
 	if (index == -1) return L"Invalid";
@@ -109,32 +109,32 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 			if (isMemory) {
 				switch ((int)displayedMemChecks_[index].cond) {
 				case MEMCHECK_READ:
-					wcscpy(dest,L"Read");
+					dest.Write(L"Read");
 					break;
 				case MEMCHECK_WRITE:
-					wcscpy(dest,L"Write");
+					dest.Write(L"Write");
 					break;
 				case MEMCHECK_READWRITE:
-					wcscpy(dest,L"Read/Write");
+					dest.Write(L"Read/Write");
 					break;
 				case MEMCHECK_WRITE | MEMCHECK_WRITE_ONCHANGE:
-					wcscpy(dest,L"Write Change");
+					dest.Write(L"Write Change");
 					break;
 				case MEMCHECK_READWRITE | MEMCHECK_WRITE_ONCHANGE:
-					wcscpy(dest,L"Read/Write Change");
+					dest.Write(L"Read/Write Change");
 					break;
 				}
 			} else {
-				wcscpy(dest,L"Execute");
+				dest.Write(L"Execute");
 			}
 		}
 		break;
 	case BPL_OFFSET:
 		{
 			if (isMemory) {
-				swprintf(dest,256,L"0x%08X",displayedMemChecks_[index].start);
+				dest.Write(L"0x%08X",displayedMemChecks_[index].start);
 			} else {
-				swprintf(dest,256,L"0x%08X",displayedBreakPoints_[index].addr);
+				dest.Write(L"0x%08X",displayedBreakPoints_[index].addr);
 			}
 		}
 		break;
@@ -143,20 +143,16 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 			if (isMemory) {
 				auto mc = displayedMemChecks_[index];
 				if (mc.end == 0)
-					swprintf(dest,256,L"0x%08X",1);
+					dest.Write(L"0x%08X",1);
 				else
-					swprintf(dest,256,L"0x%08X",mc.end-mc.start);
+					dest.Write(L"0x%08X",mc.end-mc.start);
 			} else {
 				const std::string sym = symbolMap.GetLabelString(displayedBreakPoints_[index].addr);
 				if (!sym.empty())
 				{
-#ifdef __LINUX__
-					swprintf(dest,256,L"%s",sym.c_str());
-#else
-					swprintf(dest,256,L"%S",sym.c_str());
-#endif
+					dest.Write(L"%s",sym.c_str());
 				} else {
-					wcscpy(dest,L"-");
+					dest.Write(L"-");
 				}
 			}
 		}
@@ -164,54 +160,38 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 	case BPL_OPCODE:
 		{
 			if (isMemory) {
-				wcscpy(dest,L"-");
+				dest.Write(L"-");
 			} else {
 				char temp[256];
 				disasm->getOpcodeText(displayedBreakPoints_[index].addr, temp);
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",temp);
-#else
-				swprintf(dest,256,L"%S",temp);
-#endif
+				dest.Write(L"%s",temp);
 			}
 		}
 		break;
 	case BPL_CONDITION:
 		{
 			if (isMemory || displayedBreakPoints_[index].hasCond == false) {
-				wcscpy(dest,L"-");
+				dest.Write(L"-");
 			} else {
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",displayedBreakPoints_[index].cond.expressionString);
-#else
-				swprintf(dest,256,L"%S",displayedBreakPoints_[index].cond.expressionString);
-#endif
+				dest.Write(L"%s",displayedBreakPoints_[index].cond.expressionString);
 			}
 		}
 		break;
 	case BPL_HITS:
 		{
 			if (isMemory) {
-				swprintf(dest,256,L"%d",displayedMemChecks_[index].numHits);
+				dest.Write(L"%d",displayedMemChecks_[index].numHits);
 			} else {
-				swprintf(dest,256,L"-");
+				dest.Write(L"-");
 			}
 		}
 		break;
 	case BPL_ENABLED:
 		{
 			if (isMemory) {
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",displayedMemChecks_[index].cond & MEMCHECK_BREAK ? "true" : "false");
-#else
-				swprintf(dest,256,L"%S",displayedMemChecks_[index].cond & MEMCHECK_BREAK ? "true" : "false");
-#endif
+				dest.Write(L"%s",displayedMemChecks_[index].cond & MEMCHECK_BREAK ? "true" : "false");
 			} else {
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",displayedBreakPoints_[index].enabled ? "true" : "false");
-#else
-				swprintf(dest,256,L"%S",displayedBreakPoints_[index].enabled ? "true" : "false");
-#endif
+				dest.Write(L"%s",displayedBreakPoints_[index].enabled ? "true" : "false");
 			}
 		}
 		break;
