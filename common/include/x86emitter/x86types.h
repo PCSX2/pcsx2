@@ -366,13 +366,15 @@ template< typename T > void xWrite( T val );
 
 		xRegisterSSE& operator++()
 		{
-			++Id &= (iREGCNT_XMM-1);
+			++Id;
+			Id &= (iREGCNT_XMM - 1);
 			return *this;
 		}
 
 		xRegisterSSE& operator--()
 		{
-			--Id &= (iREGCNT_XMM-1);
+			--Id;
+			Id &= (iREGCNT_XMM - 1);
 			return *this;
 		}
 
