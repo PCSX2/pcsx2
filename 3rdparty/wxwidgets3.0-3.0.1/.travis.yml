@@ -1,0 +1,38 @@
+# This is the control file for Travis continuous integration system.
+#
+# It is used automatically for the repositories on Github if it's found in the
+# root directory of the project.
+language: cpp
+
+compiler: gcc
+
+branches:
+    only:
+        - master
+
+notifications:
+    email:
+        recipients:
+            - vadim@wxwidgets.org
+        on_success: change
+        on_failure: change
+
+before_install:
+    - sudo apt-get install -y libcppunit-dev
+
+env:
+    - wxCONFIGURE_FLAGS=
+    - wxCONFIGURE_FLAGS="--disable-shared"
+    - wxCONFIGURE_FLAGS="--disable-precomp-headers --enable-monolithic"
+    - wxCONFIGURE_FLAGS="--enable-stl" CXXFLAGS=-std=c++0x
+
+script:
+    - ./configure --disable-optimise $wxCONFIGURE_FLAGS
+    - make
+    - make -C tests
+    - pushd tests
+    - ./test -t
+    - popd
+    - make samples
+    - sudo make install
+    - make -C samples/minimal -f makefile.unx
