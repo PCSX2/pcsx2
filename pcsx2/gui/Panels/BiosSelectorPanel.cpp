@@ -54,7 +54,11 @@ Panels::BaseSelectorPanel::~BaseSelectorPanel() throw()
 void Panels::BaseSelectorPanel::OnShow(wxShowEvent& evt)
 {
 	evt.Skip();
+#if defined (_MSC_VER) && (wxMAJOR_VERSION < 3)
 	if( !evt.GetShow() ) return;
+#else
+	if( !evt.IsShown() ) return;
+#endif
 	OnShown();
 }
 
