@@ -52,12 +52,12 @@ public:
 		OnPageFaultEvent( evtinfo, handled );
 	}
 
-	virtual void DispatchEvent( const PageFaultInfo& evtinfo )
+	virtual void DispatchEvent( const PageFaultInfo& )
 	{
 		pxFailRel( "Don't call me, damnit.  Use DispatchException instead." );
 	}
 
-	virtual void OnPageFaultEvent( const PageFaultInfo& evtinfo, bool& handled ) {}
+	virtual void OnPageFaultEvent( const PageFaultInfo& , bool&  ) {}
 };
 
 // --------------------------------------------------------------------------------------

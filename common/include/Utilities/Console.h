@@ -129,32 +129,32 @@ struct IConsoleWriter
 //
 struct NullConsoleWriter
 {
-	void WriteRaw( const wxString& fmt ) {}
-	void DoWriteLn( const wxString& fmt ) {}
-	void DoSetColor( ConsoleColors color ) {}
-	void DoWriteFromStdout( const wxString& fmt ) {}
+	void WriteRaw( const wxString& ) {}
+	void DoWriteLn( const wxString& ) {}
+	void DoSetColor( ConsoleColors ) {}
+	void DoWriteFromStdout( const wxString& ) {}
 	void Newline() {}
-	void SetTitle( const wxString& title ) {}
+	void SetTitle( const wxString& ) {}
 
 
 	ConsoleColors GetColor() const { return Color_Current; }
-	const NullConsoleWriter& SetColor( ConsoleColors color ) const { return *this; }
+	const NullConsoleWriter& SetColor( ConsoleColors ) const { return *this; }
 	const NullConsoleWriter& ClearColor() const { return *this; }
-	const NullConsoleWriter& SetIndent( int tabcount=1 ) const { return *this; }
+	const NullConsoleWriter& SetIndent( int =1 ) const { return *this; }
 
-	NullConsoleWriter Indent( int tabcount=1 ) const { return NullConsoleWriter(); }
+	NullConsoleWriter Indent( int =1 ) const { return NullConsoleWriter(); }
 
-	bool FormatV( const char* fmt, va_list args ) const				{ return false; }
-	bool WriteLn( ConsoleColors color, const char* fmt, ... ) const	{ return false; }
-	bool WriteLn( const char* fmt, ... ) const						{ return false; }
-	bool Error( const char* fmt, ... ) const						{ return false; }
-	bool Warning( const char* fmt, ... ) const						{ return false; }
+	bool FormatV( const char* , va_list ) const				{ return false; }
+	bool WriteLn( ConsoleColors , const char* , ... ) const	{ return false; }
+	bool WriteLn( const char* , ... ) const						{ return false; }
+	bool Error( const char* , ... ) const						{ return false; }
+	bool Warning( const char* , ... ) const						{ return false; }
 
-	bool FormatV( const wxChar* fmt, va_list args ) const			{ return false; }
-	bool WriteLn( ConsoleColors color, const wxChar* fmt, ... ) const { return false; }
-	bool WriteLn( const wxChar* fmt, ... ) const					{ return false; }
-	bool Error( const wxChar* fmt, ... ) const						{ return false; }
-	bool Warning( const wxChar* fmt, ... ) const					{ return false; }
+	bool FormatV( const wxChar* , va_list ) const			{ return false; }
+	bool WriteLn( ConsoleColors , const wxChar* , ... ) const { return false; }
+	bool WriteLn( const wxChar* , ... ) const					{ return false; }
+	bool Error( const wxChar* , ... ) const						{ return false; }
+	bool Warning( const wxChar* , ... ) const					{ return false; }
 };
 
 // --------------------------------------------------------------------------------------

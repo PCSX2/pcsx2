@@ -91,7 +91,7 @@ struct pxAlignmentType
 		return Apply().Border( dir, padding );
 	}
 
-	wxSizerFlags Proportion( int prop ) const
+	wxSizerFlags Proportion() const
 	{
 		return Apply().Proportion( intval );
 	}
@@ -127,7 +127,7 @@ struct pxStretchType
 		return Apply().Border( dir, padding );
 	}
 
-	wxSizerFlags Proportion( int prop ) const
+	wxSizerFlags Proportion() const
 	{
 		return Apply().Proportion( intval );
 	}
@@ -438,7 +438,7 @@ public:
 
 	// NOTE: Enabling system menu on dialogs usually doesn't work, and might cause
 	// other unwanted behavior, such as a missing close button.
-	pxDialogCreationFlags SystemMenu( bool enable=true ) const
+	pxDialogCreationFlags SystemMenu( bool =true ) const
 	{
 		return pxDialogCreationFlags(*this).SetSystemMenu( false );
 	}
@@ -648,7 +648,7 @@ public:
 
 protected:
     // line may be empty
-    virtual void OnOutputLine(const wxString& line) { }
+    virtual void OnOutputLine(const wxString&) { }
 
     // called at the start of every new line (except the very first one)
     virtual void OnNewLine() { }

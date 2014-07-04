@@ -42,9 +42,9 @@ public:
 
 	virtual void close() = 0;
 
-	virtual int lseek(s32 offset, s32 whence) { return -IOP_EIO; }
-	virtual int read(void *buf, u32 count) { return -IOP_EIO; }
-	virtual int write(void *buf, u32 count) { return -IOP_EIO; }
+	virtual int lseek(s32 , s32 ) { return -IOP_EIO; }
+	virtual int read(void *, u32 ) { return -IOP_EIO; }
+	virtual int write(void *, u32 ) { return -IOP_EIO; }
 };
 
 class IOManDir {
