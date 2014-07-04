@@ -15,7 +15,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 flags="-DCMAKE_BUILD_PO=FALSE"
-clean_build=false
+clean_build=0
+use_clang=0;
 
 for f in $*
 do
@@ -28,7 +29,8 @@ do
         --gles        ) flags="$flags -DGLES_API=TRUE" ;;
         --sdl2        ) flags="$flags -DSDL2_API=TRUE" ;;
         --extra       ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
-        --clean       ) clean_build=true ;;
+        --clang       ) use_clang=1; flags="$flags -DUSE_CLANG=TRUE" ;;
+        --clean       ) clean_build=1 ;;
 
         *)
             # unknown option
@@ -47,24 +49,19 @@ do
     esac
 done
 
-rm -f install_log.txt
+[ $clean_build -eq 1 ] && (echo "Doing a clean build."; rm -fr build )
 
-if [ "$flags" != "" ]; then
-    echo "Building pcsx2 with $flags"
-    echo "Building pcsx2 with $flags" > install_log.txt
-fi
-
-if [ "$clean_build" = true ]; then
-    echo "Doing a clean build."
-    rm -fr build
-    # make clean 2>&1 | tee -a ../install_log.txt
-fi
-
+echo "Building pcsx2 with $flags\n" | tee install_log.txt
 
 mkdir -p build
 cd build
 
-cmake $flags .. 2>&1 | tee -a ../install_log.txt
+if [ $use_clang -eq 1 ]
+then
+    CC=clang CXX=clang++ cmake $flags .. 2>&1 | tee -a ../install_log.txt
+else
+    cmake $flags .. 2>&1 | tee -a ../install_log.txt
+fi
 
 CORE=`grep -w -c processor /proc/cpuinfo`
 make -j $CORE 2>&1 | tee -a ../install_log.txt
