@@ -118,3 +118,7 @@ Devel
 /tools/bin
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
+
+/build/
+.DS_Store
+
