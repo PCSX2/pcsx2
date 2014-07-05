@@ -1,16 +1,10 @@
-### TODO 
+### TODO
 # Hardcode GAMEINDEX_DIR, if default is fine for everybody
 
 ### Select the build type
 # Use Release/Devel/Debug      : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
 # Enable/disable the stripping : -DCMAKE_BUILD_STRIP=TRUE|FALSE
 # generation .po based on src  : -DCMAKE_BUILD_PO=TRUE|FALSE
-# Rebuild the ps2hw.dat file   : -DREBUILD_SHADER=TRUE
-# Build the Replay Loaders     : -DBUILD_REPLAY_LOADERS=TRUE|FALSE
-# Use GLSL API(else NVIDIA_CG): -DGLSL_API=TRUE|FALSE
-# Use EGL (vs GLX)            : -DEGL_API=TRUE|FALSE
-# Use SDL2                    : -DSDL2_API=TRUE|FALSE
-# Build all plugins           : -DEXTRA_PLUGINS=TRUE|FALSE
 
 ### GCC optimization options
 # control C flags             : -DUSER_CMAKE_C_FLAGS="cflags"
@@ -18,12 +12,109 @@
 # control link flags          : -DUSER_CMAKE_LD_FLAGS="ldflags"
 
 ### Packaging options
-# Installation path           : -DPACKAGE_MODE=TRUE(follow FHS)|FALSE(local bin/)
 # Plugin installation path    : -DPLUGIN_DIR="/usr/lib/pcsx2"
 # GL Shader installation path : -DGLSL_SHADER_DIR="/usr/share/games/pcsx2"
 # Game DB installation path   : -DGAMEINDEX_DIR="/usr/share/games/pcsx2"
-# Follow XDG standard         : -DXDG_STD=TRUE|FALSE
 #-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Graphical option
+#-------------------------------------------------------------------------------
+option(GLSL_API "Replace zzogl CG backend by GLSL (experimental option)")
+option(EGL_API "Use EGL on zzogl (experimental/developer option)")
+option(GLES_API "Use GLES on GSdx (experimental/developer option)")
+option(REBUILD_SHADER "Rebuild glsl/cg shader (developer option)")
+option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
+
+#-------------------------------------------------------------------------------
+# Path and lib option
+#-------------------------------------------------------------------------------
+option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
+option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
+option(EXTRA_PLUGINS "Build various 'extra' plugins")
+# FIXME do a proper detection
+set(SDL2_LIBRARY "-lSDL2")
+option(SDL2_LIBRARY "Use SDL2 on spu2x and onepad")
+
+if(PACKAGE_MODE)
+    if(NOT DEFINED PLUGIN_DIR)
+        set(PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/lib/games/pcsx2")
+    endif(NOT DEFINED PLUGIN_DIR)
+
+    if(NOT DEFINED GAMEINDEX_DIR)
+        set(GAMEINDEX_DIR "${CMAKE_INSTALL_PREFIX}/share/games/pcsx2")
+    endif(NOT DEFINED GAMEINDEX_DIR)
+
+    # Compile all source codes with these 2 defines
+    add_definitions(-DPLUGIN_DIR_COMPILATION=${PLUGIN_DIR} -DGAMEINDEX_DIR_COMPILATION=${GAMEINDEX_DIR})
+endif(PACKAGE_MODE)
+
+#-------------------------------------------------------------------------------
+# Select the architecture
+#-------------------------------------------------------------------------------
+option(64BIT_BUILD "Enable a x86_64 build instead of cross compiling (developer option)" OFF)
+
+# Architecture bitness detection
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(_ARCH_64 1)
+else()
+	set(_ARCH_32 1)
+endif()
+
+# Print a clear message that 64bits is not supported
+if(_ARCH_64)
+    message(WARNING "
+    PCSX2 does not support a 64-bits environment and has no plan to support a 64-bits architecture in the future.
+    It would need a complete rewrite of the core emulator and a lot of time.
+
+    You can still run a 32-bits binary if you install all 32-bits libraries (runtime and dev).")
+endif()
+
+# 64 bits cross-compile specific configuration
+if(_ARCH_64 AND 64BIT_BUILD)
+    message("Compiling 64bit build on 64bit architecture")
+    # Search library in /usr/lib64
+    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+    # Probably useless but it will not harm
+    SET_PROPERTY(GLOBAL PROPERTY COMPILE_DEFINITIONS "-m64")
+
+    # Force the search on 64-bits path.
+    if(EXISTS "/usr/lib64")
+        set(CMAKE_LIBRARY_ARCHITECTURE "../lib64")
+    endif()
+    # For Debian/ubuntu multiarch
+    if(EXISTS "/usr/lib/x86_64-linux-gnu")
+        set(CMAKE_LIBRARY_ARCHITECTURE "x86_64-linux-gnu")
+    endif()
+
+    set(ARCH_FLAG "-m64 -msse -msse2 -march=pentium4")
+	add_definitions(-D_ARCH_64=1)
+else()
+    message("Compiling 32bit build on 32/64bit architecture")
+    # Do not search library in /usr/lib64
+    SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+    # Probably useless but it will not harm
+    SET_PROPERTY(GLOBAL PROPERTY COMPILE_DEFINITIONS "-m32")
+
+    # Force the search on 32-bits path.
+    if(EXISTS "/usr/lib32")
+        set(CMAKE_LIBRARY_ARCHITECTURE "../lib32")
+    endif()
+    # Debian/ubuntu drop /usr/lib32 and move /usr/lib to /usr/lib/i386-linux-gnu
+    if(EXISTS "/usr/lib/i386-linux-gnu")
+        set(CMAKE_LIBRARY_ARCHITECTURE "i386-linux-gnu")
+    endif()
+
+    set(ARCH_FLAG "-m32 -msse -msse2 -march=i686")
+	add_definitions(-D_ARCH_32=1)
+endif()
+
+# * -fPIC option was removed for multiple reasons.
+#     - Code only supports the x86 architecture.
+#     - code uses the ebx register so it's not compliant with PIC.
+#     - Impacts the performance too much.
+#     - Only plugins. No package will link to them.
+set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
 #-------------------------------------------------------------------------------
 # if no build type is set, use Devel as default
@@ -35,7 +126,7 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
 	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
 endif(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
 
-# Initially stip was disabled on release build but it is not stackstrace friendly!
+# Initially strip was disabled on release build but it is not stackstrace friendly!
 # It only cost several MB so disbable it by default
 if(NOT DEFINED CMAKE_BUILD_STRIP)
     set(CMAKE_BUILD_STRIP FALSE)
@@ -51,6 +142,7 @@ if(NOT DEFINED CMAKE_BUILD_PO)
     endif(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif(NOT DEFINED CMAKE_BUILD_PO)
 
+
 #-------------------------------------------------------------------------------
 # Control GCC flags
 #-------------------------------------------------------------------------------
@@ -58,7 +150,7 @@ endif(NOT DEFINED CMAKE_BUILD_PO)
 ### Here the list of default value for documentation purpose
 # ${CMAKE_SHARED_LIBRARY_CXX_FLAGS} = "-fPIC"
 # ${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} = "-rdynamic"
-# 
+#
 # ${CMAKE_C_FLAGS} = "-g -O2"
 # ${CMAKE_CXX_FLAGS} = "-g -O2"
 # Use in debug mode
@@ -91,18 +183,13 @@ set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "")
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-#set(DEFAULT_WARNINGS "-Wno-write-strings -Wno-format -Wno-unused-parameter  -Wno-unused-function -Wno-unused-result  -Wno-unused-local-typedefs -Wno-parentheses")
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
 # -Wstrict-aliasing: to fix one day aliasing issue
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
 # -Wno-unused-function: warn for function not used in release build
 set(DEFAULT_WARNINGS "-Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function")
 set(HARDEING_OPT "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
-if(_ARCH_64 AND !64BIT_BUILD)
-	set(DEFAULT_GCC_FLAG "-m32 -msse -msse2 -march=i686 -pthread ${DEFAULT_WARNINGS} ${HARDEING_OPT}")
-else()
-	set(DEFAULT_GCC_FLAG "-msse -msse2 -pthread ${DEFAULT_WARNINGS} ${HARDEING_OPT}")
-endif()
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} -pthread ${DEFAULT_WARNINGS} ${HARDEING_OPT}")
 if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
     set(DEFAULT_GCC_FLAG "-g ${DEFAULT_GCC_FLAG}")
 endif()
@@ -113,6 +200,7 @@ set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 # Note: string STRIP must be used to remove trailing and leading spaces.
 #       See policy CMP0004
 #-------------------------------------------------------------------------------
+# TODO: once we completely clean all flags management, this mess could be cleaned ;)
 ### linker flags
 if(DEFINED USER_CMAKE_LD_FLAGS)
     message(STATUS "Pcsx2 is very sensible with gcc flags, so use USER_CMAKE_LD_FLAGS at your own risk !!!")
@@ -122,9 +210,9 @@ else(DEFINED USER_CMAKE_LD_FLAGS)
 endif(DEFINED USER_CMAKE_LD_FLAGS)
 
 # ask the linker to strip the binary
-if(CMAKE_BUILD_STRIP) 
+if(CMAKE_BUILD_STRIP)
     string(STRIP "${USER_CMAKE_LD_FLAGS} -s" USER_CMAKE_LD_FLAGS)
-endif(CMAKE_BUILD_STRIP) 
+endif(CMAKE_BUILD_STRIP)
 
 
 ### c flags
@@ -147,83 +235,3 @@ if(DEFINED USER_CMAKE_CXX_FLAGS)
 endif(DEFINED USER_CMAKE_CXX_FLAGS)
 # Use some default machine flags
 string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
-
-#-------------------------------------------------------------------------------
-# Default package option
-#-------------------------------------------------------------------------------
-if(NOT DEFINED PACKAGE_MODE)
-    set(PACKAGE_MODE FALSE)
-endif(NOT DEFINED PACKAGE_MODE)
-
-if(PACKAGE_MODE)
-    if(NOT DEFINED PLUGIN_DIR)
-        set(PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/lib/games/pcsx2")
-    endif(NOT DEFINED PLUGIN_DIR)
-
-    if(NOT DEFINED GAMEINDEX_DIR)
-        set(GAMEINDEX_DIR "${CMAKE_INSTALL_PREFIX}/share/games/pcsx2")
-    endif(NOT DEFINED GAMEINDEX_DIR)
-
-    # Compile all source codes with these 3 defines
-    add_definitions(-DPLUGIN_DIR_COMPILATION=${PLUGIN_DIR} -DGAMEINDEX_DIR_COMPILATION=${GAMEINDEX_DIR})
-endif(PACKAGE_MODE)
-
-#-------------------------------------------------------------------------------
-# Select nvidia cg shader api by default (zzogl only)
-#-------------------------------------------------------------------------------
-if(NOT DEFINED GLSL_API)
-	set(GLSL_API FALSE)
-endif(NOT DEFINED GLSL_API)
-
-#-------------------------------------------------------------------------------
-# Select GLX API by default (zzogl only)
-#-------------------------------------------------------------------------------
-if(NOT DEFINED EGL_API)
-    set(EGL_API FALSE)
-else()
-    message(STATUS "EGL is experimental and not expected to work yet!!!")
-endif()
-
-#-------------------------------------------------------------------------------
-# Select opengl api by default (gsdx)
-#-------------------------------------------------------------------------------
-if(NOT DEFINED GLES_API)
-    set(GLES_API FALSE)
-endif()
-
-#-------------------------------------------------------------------------------
-# Select SDL1 by default (spu2x and onepad)
-#-------------------------------------------------------------------------------
-# FIXME do a proper detection
-set(SDL2_LIBRARY "-lSDL2")
-if(NOT DEFINED SDL2_API)
-    set(SDL2_API FALSE)
-endif()
-
-#-------------------------------------------------------------------------------
-# Use the precompiled shader file by default (both zzogl&gsdx)
-#-------------------------------------------------------------------------------
-if(NOT DEFINED REBUILD_SHADER)
-	set(REBUILD_SHADER FALSE)
-endif(NOT DEFINED REBUILD_SHADER)
-
-#-------------------------------------------------------------------------------
-# Build the replay loaders by default
-#-------------------------------------------------------------------------------
-if(NOT DEFINED BUILD_REPLAY_LOADERS)
-	set(BUILD_REPLAY_LOADERS TRUE)
-endif(NOT DEFINED BUILD_REPLAY_LOADERS)
-
-#-------------------------------------------------------------------------------
-# Use PCSX2 default path (not XDG)
-#-------------------------------------------------------------------------------
-if (NOT DEFINED XDG_STD)
-    set(XDG_STD FALSE)
-endif (NOT DEFINED XDG_STD)
-
-#-------------------------------------------------------------------------------
-# Use only main plugin (faster compilation time)
-#-------------------------------------------------------------------------------
-if (NOT DEFINED EXTRA_PLUGINS)
-    set(EXTRA_PLUGINS FALSE)
-endif()
