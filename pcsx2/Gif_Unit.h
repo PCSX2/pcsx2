@@ -648,6 +648,7 @@ struct Gif_Unit {
 	}
 
 	void PrintPathInfo(GIF_PATH path) {
+		(void)path; // avoid silly warning
 		GUNIT_LOG("Gif Path %d - [hasData = %d][state = %d]", path,
 			       gifPath[path].hasDataRemaining(), gifPath[path].state);
 	}

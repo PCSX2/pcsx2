@@ -179,25 +179,24 @@ void writeCache128(u32 mem, const mem128_t* value){
 }
 
 u8 readCache8(u32 mem) {
-	int i, number;
+	int number;
 	
-	i = getFreeCache(mem,0,&number);
-	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u8 part %x Really Reading %x", mem, i,number, (mem >> 4) & 0x3, (mem&0xf)>>2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u8[(mem&0xf)]);
+	int i = getFreeCache(mem,0,&number);
 	if(i == -1)
 	{
 		u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 		s32 ppf=mem+vmv;
 		return *(u8*)ppf;
 	}
+
+	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u8 part %x Really Reading %x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u8[(mem & 0xf)]);
 	return pCache[i].data[number][(mem >> 4) & 0x3].b8._u8[(mem&0xf)];
 }
 
 u16 readCache16(u32 mem) {
-	int i, number;
+	int number;
 	
-	i = getFreeCache(mem,0,&number);
-	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u16 part %x Really Reading %x", mem, i,number, (mem >> 4) & 0x3, (mem&0xf)>>2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u16[(mem&0xf)>>1]);
-
+	int i = getFreeCache(mem,0,&number);
 	if(i == -1)
 	{
 		u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
@@ -205,34 +204,37 @@ u16 readCache16(u32 mem) {
 		return *(u16*)ppf;
 	}
 
+	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u16 part %x Really Reading %x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u16[(mem & 0xf) >> 1]);
 	return pCache[i].data[number][(mem >> 4) & 0x3].b8._u16[(mem&0xf)>>1];
 }
 
 u32 readCache32(u32 mem) {
-	int i, number;
+	int number;
 	
-	i = getFreeCache(mem,0,&number);
-	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u32 part %x Really Reading %x", mem, i,number, (mem >> 4) & 0x3, (mem&0xf)>>2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u32[(mem&0xf)>>2]);
+	int i = getFreeCache(mem,0,&number);
 	if(i == -1)
 	{
 		u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 		s32 ppf=mem+vmv;
 		return *(u32*)ppf;
 	}
+
+	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u32 part %x Really Reading %x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u32[(mem & 0xf) >> 2]);
 	return pCache[i].data[number][(mem >> 4) & 0x3].b8._u32[(mem&0xf)>>2];
 }
 
 u64 readCache64(u32 mem) {
-	int i, number;
+	int number;
 	
-	i = getFreeCache(mem,0,&number);
-	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u64 part %x Really Reading %x_%x", mem, i,number, (mem >> 4) & 0x3, (mem&0xf)>>2, pCache[i].data[number][(mem >> 4) & 0x3].b8._u64[(mem&0xf)>>3]);
+	int i = getFreeCache(mem,0,&number);
 	if(i == -1)
 	{
 		u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 		s32 ppf=mem+vmv;
 		return *(u64*)ppf;
 	}
+
+	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u64 part %x Really Reading %x_%x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, pCache[i].data[number][(mem >> 4) & 0x3].b8._u64[(mem & 0xf) >> 3]);
 	return pCache[i].data[number][(mem >> 4) & 0x3].b8._u64[(mem&0xf)>>3];
 }
 

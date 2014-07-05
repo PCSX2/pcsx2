@@ -177,10 +177,10 @@ public:
 
 	void Step();
 	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size) {}
+	void Clear(u32 , u32 ) {}
 
 	uint GetCacheReserve() const { return 0; }
-	void SetCacheReserve( uint reserveInMegs ) const {}
+	void SetCacheReserve( uint ) const {}
 };
 
 class InterpVU1 : public BaseVUmicroCPU
@@ -198,11 +198,11 @@ public:
 
 	void Step();
 	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size) {}
+	void Clear(u32 , u32 ) {}
 	void ResumeXGkick() {}
 
 	uint GetCacheReserve() const { return 0; }
-	void SetCacheReserve( uint reserveInMegs ) const {}
+	void SetCacheReserve( uint ) const {}
 };
 
 // --------------------------------------------------------------------------------------

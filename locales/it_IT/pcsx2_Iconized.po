@@ -1,11 +1,11 @@
-# Copyright (C) 2013 PCSX2 Team
+# Copyright (C) 2014 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.2.0\n"
+"Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:47+0200\n"
-"PO-Revision-Date: 2013-12-31 16:22+0100\n"
+"POT-Creation-Date: 2014-06-23 21:24+0100\n"
+"PO-Revision-Date: 2014-06-27 09:57+0100\n"
 "Last-Translator: Leucos\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
 "Language: it_IT\n"
@@ -14,8 +14,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-Basepath: ..\\..\\..\\PCSX2 Checkout\n"
-"X-Generator: Poedit 1.5.5\n"
+"X-Poedit-Basepath: ..\\..\n"
+"X-Generator: Poedit 1.6.5\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -444,7 +444,7 @@ msgstr ""
 "automaticamente \n"
 "quando si preme ESC o si mette in pausa l'emulazione."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -456,7 +456,7 @@ msgstr ""
 " * SSX (corregge errori nella grafica e crash)\n"
 " * Resident Evil: Dead Aim (causa texture alterate)"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -468,7 +468,7 @@ msgstr ""
 " * Growlanser II e III\n"
 " * Wizardry"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
@@ -476,7 +476,7 @@ msgstr ""
 "Ha effetto in questi giochi:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
@@ -486,23 +486,29 @@ msgstr ""
 " * Test Drive Unlimited\n"
 " * Transformers"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+msgid ""
+"It's better to enable 'Automatic game fixes' at the main menu instead, and "
+"leave this page empty. ('Automatic' means: selectively use specific tested "
+"fixes for specific games)"
+msgstr ""
+"È preferibile attivare l'opzione 'GameFix automatici' nel menu principale, e "
+"lasciare quindi le opzioni di questa pagina non selezionate.\n"
+"('automatici' significa un'attivazione selettiva di GameFix specifici e "
+"testati per specifici giochi)"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues. \n"
+"They may also cause compatibility or performance issues.\n"
 "\n"
-"It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. \n"
-"('Automatic' means: selectively use specific tested fixes for specific games)"
+"The safest way to make sure that all game fixes are completely disabled."
 msgstr ""
-"I GameFix possono correggere i problemi di emulazione in alcuni giochi.\n"
-"Possono tuttavia causare problemi di compatibilità e di prestazioni in altri "
-"giochi.\n"
+"I GameFix possono aggirare problemi nell'emulazione di alcuni titoli.\n"
+"Possono tuttavia causare problemi di compatibilità o prestazioni.\n"
 "\n"
-"È consigliato attivare l'opzione 'GameFix automatici' nel menu 'Sistema', "
-"lasciando quindi le opzioni di questo pannello non selezionate.\n"
-"('automatici' significa: uso selettivo di GameFix specifici per specifici "
-"giochi)"
+"Il modo più sicuro per accertarsi che tutti i GameFix siano completamente "
+"disabilitati."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
 #, c-format
@@ -801,7 +807,7 @@ msgstr ""
 "disattivata (la schermata visualizzata sarà in pratica spazzatura "
 "poligonale)."
 
-#: pcsx2/vtlb.cpp:731
+#: pcsx2/vtlb.cpp:800
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "

@@ -143,7 +143,7 @@ public:
 		return false;
 	}
 
-	virtual void ApplyPrefix( FastFormatAscii& ascii ) const {}
+	virtual void ApplyPrefix( FastFormatAscii& ) const {}
 	virtual void DoWrite( const char* fmt ) const=0;
 };
 

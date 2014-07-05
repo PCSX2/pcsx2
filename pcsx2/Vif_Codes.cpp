@@ -443,7 +443,12 @@ vifOp(vifCode_Nop) {
 		GetVifX.cmd = 0;
 		GetVifX.pass = 0;
 		vifExecQueue(idx);
-		if(GetVifX.vifpacketsize > 1)
+
+		//If the top bit was set to interrupt, we don't want it to take commands from a bad code if it's interpreted as a nop by us.
+		//Onimusha - Blade Warriors
+		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFFFFF) != 0) GetVifX.irq = 0;
+
+		if (GetVifX.vifpacketsize > 1)
 		{
 			if(((data[1] >> 24) & 0x7f) == 0x6) //is mskpath3 next
 			{ 
@@ -470,6 +475,9 @@ vifOp(vifCode_Null) {
 		}
 		vifX.cmd = 0;
 		vifX.pass = 0;
+
+		//If the top bit was set to interrupt, we don't want it to take commands from a bad code
+		if (vifXRegs.code & 0x80000000) vifX.irq = 0;
 	}
 	pass2 { Console.Error("Vif%d bad vifcode! [CMD = %x]", idx, vifX.cmd); }
 	pass3 { VifCodeLog("Null"); }

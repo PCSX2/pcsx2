@@ -44,7 +44,7 @@ namespace Threading
 		void SetThread( pxThread& thr ) { m_thread = &thr; }
 		void SetThread( pxThread* thr ) { m_thread = thr; }
 
-		void DispatchEvent( const int& params )
+		void DispatchEvent( const int& )
 		{
 			OnThreadCleanup();
 		}

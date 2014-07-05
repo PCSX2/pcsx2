@@ -417,8 +417,8 @@ s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
 	}
 	if( conf.aa ) {
 		char strtitle[64];
-		sprintf(strtitle, "anti-aliasing - %s", s_aa[conf.aa], 1000);
-		ZeroGS::AddMessage(strtitle);
+		sprintf(strtitle, "anti-aliasing - %s", s_aa[conf.aa]);
+		ZeroGS::AddMessage(strtitle, 1000);
 	}
 	if( conf.options & GSOPTION_WIDESCREEN ) {
 		ZeroGS::AddMessage("16:9 widescreen - on", 1000);

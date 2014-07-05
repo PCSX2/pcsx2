@@ -463,7 +463,7 @@ __ri int mVUbranchCheck(mV) {
 
 			if(mVUlow.branch == 2 || mVUlow.branch == 10) //Needs linking, we can only guess this if the next is not conditional
 			{
-				if(branchType <= 2 && branchType >= 9) //First branch is not conditional so we know what the link will be
+				if(branchType <= 2 || branchType >= 9) //First branch is not conditional so we know what the link will be
 				{								       //So we can let the existing evil block do its thing! We know where to get the addr :)
 					DevCon.Warning("yo");
 					DevCon.Warning("yo");
