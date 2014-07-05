@@ -78,10 +78,8 @@ if(_ARCH_64 AND 64BIT_BUILD)
     # Probably useless but it will not harm
     SET_PROPERTY(GLOBAL PROPERTY COMPILE_DEFINITIONS "-m64")
 
-    # Force the search on 64-bits path.
-    if(EXISTS "/usr/lib64")
-        set(CMAKE_LIBRARY_ARCHITECTURE "../lib64")
-    endif()
+    # Note: /usr/lib64 is already taken care above
+
     # For Debian/ubuntu multiarch
     if(EXISTS "/usr/lib/x86_64-linux-gnu")
         set(CMAKE_LIBRARY_ARCHITECTURE "x86_64-linux-gnu")
@@ -128,19 +126,17 @@ endif(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
 
 # Initially strip was disabled on release build but it is not stackstrace friendly!
 # It only cost several MB so disbable it by default
-if(NOT DEFINED CMAKE_BUILD_STRIP)
-    set(CMAKE_BUILD_STRIP FALSE)
-endif(NOT DEFINED CMAKE_BUILD_STRIP)
+option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
 
 if(NOT DEFINED CMAKE_BUILD_PO)
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
         set(CMAKE_BUILD_PO TRUE)
         message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    else(CMAKE_BUILD_TYPE STREQUAL "Release")
+    else()
         set(CMAKE_BUILD_PO FALSE)
         message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    endif(CMAKE_BUILD_TYPE STREQUAL "Release")
-endif(NOT DEFINED CMAKE_BUILD_PO)
+    endif()
+endif()
 
 
 #-------------------------------------------------------------------------------
@@ -193,6 +189,7 @@ set(DEFAULT_GCC_FLAG "${ARCH_FLAG} -pthread ${DEFAULT_WARNINGS} ${HARDEING_OPT}"
 if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
     set(DEFAULT_GCC_FLAG "-g ${DEFAULT_GCC_FLAG}")
 endif()
+# c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 
 #-------------------------------------------------------------------------------
@@ -205,14 +202,14 @@ set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 if(DEFINED USER_CMAKE_LD_FLAGS)
     message(STATUS "Pcsx2 is very sensible with gcc flags, so use USER_CMAKE_LD_FLAGS at your own risk !!!")
     string(STRIP "${USER_CMAKE_LD_FLAGS}" USER_CMAKE_LD_FLAGS)
-else(DEFINED USER_CMAKE_LD_FLAGS)
+else()
     set(USER_CMAKE_LD_FLAGS "")
-endif(DEFINED USER_CMAKE_LD_FLAGS)
+endif()
 
 # ask the linker to strip the binary
 if(CMAKE_BUILD_STRIP)
     string(STRIP "${USER_CMAKE_LD_FLAGS} -s" USER_CMAKE_LD_FLAGS)
-endif(CMAKE_BUILD_STRIP)
+endif()
 
 
 ### c flags
@@ -221,7 +218,7 @@ endif(CMAKE_BUILD_STRIP)
 if(DEFINED USER_CMAKE_C_FLAGS)
     message(STATUS "Pcsx2 is very sensible with gcc flags, so use USER_CMAKE_C_FLAGS at your own risk !!!")
     string(STRIP "${USER_CMAKE_C_FLAGS}" CMAKE_C_FLAGS)
-endif(DEFINED USER_CMAKE_C_FLAGS)
+endif()
 # Use some default machine flags
 string(STRIP "${CMAKE_C_FLAGS} ${DEFAULT_GCC_FLAG}" CMAKE_C_FLAGS)
 
@@ -232,6 +229,6 @@ string(STRIP "${CMAKE_C_FLAGS} ${DEFAULT_GCC_FLAG}" CMAKE_C_FLAGS)
 if(DEFINED USER_CMAKE_CXX_FLAGS)
     message(STATUS "Pcsx2 is very sensible with gcc flags, so use USER_CMAKE_CXX_FLAGS at your own risk !!!")
     string(STRIP "${USER_CMAKE_CXX_FLAGS}" CMAKE_CXX_FLAGS)
-endif(DEFINED USER_CMAKE_CXX_FLAGS)
+endif()
 # Use some default machine flags
 string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
