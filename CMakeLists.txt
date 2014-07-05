@@ -1,3 +1,6 @@
+# CMake options
+option(64BIT_BUILD "Enable a x86_64 build instead of cross compiling (developer option)" OFF)
+
 # Project Name
 project(Pcsx2)
 
@@ -40,6 +43,16 @@ if(POLICY CMP0022)
     cmake_policy(SET CMP0022 OLD)
 endif()
 
+# Architecture bitness detection
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(_ARCH_64 1)
+	add_definitions(-D_ARCH_64=1)
+else()
+	set(_ARCH_32 1)
+	add_definitions(-D_ARCH_32=1)
+endif()
+
+
 # Variable to check that people use the good file
 set(TOP_CMAKE_WAS_SOURCED TRUE)
 
@@ -47,17 +60,18 @@ set(TOP_CMAKE_WAS_SOURCED TRUE)
 # It would avoid compilation failure later.
 # Note: disable the failure in package mode
 if(NOT PACKAGE_MODE)
-    if(CMAKE_SIZEOF_VOID_P MATCHES "8")
+    if(_ARCH_64 AND !64BIT_BUILD)
         message(WARNING "
         PCSX2 does not support a 64-bits environment and has no plan to support a 64-bits architecture in the future.
         It would need a complete rewrite of the core emulator and a lot of time.
 
         You can still run a 32-bits binary if you install all 32-bits libraries (runtime and dev).")
-    endif(CMAKE_SIZEOF_VOID_P MATCHES "8")
+    endif()
 endif(NOT PACKAGE_MODE)
 
-# 64 bits specific configuration
-if(CMAKE_SIZEOF_VOID_P MATCHES "8")
+# 64 bits cross-compile specific configuration
+if(_ARCH_64 AND !64BIT_BUILD)
+    message("Compiling 32bit build on 64bit architecture")
     # Do not search library in /usr/lib64
     SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
     # Probably useless but it will not harm
@@ -67,13 +81,11 @@ if(CMAKE_SIZEOF_VOID_P MATCHES "8")
     if(EXISTS "/usr/lib32")
         set(CMAKE_LIBRARY_ARCHITECTURE "../lib32")
     endif()
-endif(CMAKE_SIZEOF_VOID_P MATCHES "8")
-
-# Debian/ubuntu drop /usr/lib32 and move /usr/lib to /usr/lib/i386-linux-gnu
-if(EXISTS "/usr/lib/i386-linux-gnu")
-    set(CMAKE_LIBRARY_ARCHITECTURE "i386-linux-gnu")
+    # Debian/ubuntu drop /usr/lib32 and move /usr/lib to /usr/lib/i386-linux-gnu
+    if(EXISTS "/usr/lib/i386-linux-gnu")
+        set(CMAKE_LIBRARY_ARCHITECTURE "i386-linux-gnu")
+    endif()
 endif()
-
 
 # * -fPIC option was removed for multiple reasons.
 #     - Code only supports the x86 architecture.

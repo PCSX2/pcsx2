@@ -143,7 +143,7 @@ if(wxWidgets_FOUND)
     if(Linux)
         # Force the use of 32 bit library configuration on
         # 64 bits machine with 32 bits library in /usr/lib32
-        if(CMAKE_SIZEOF_VOID_P MATCHES "8")
+        if(_ARCH_64 AND !64BIT_BUILD)
             ## There is no guarantee that wx-config is a link to a 32 bits library. So you need to force the destinity
             # Library can go into 3 path major paths (+ multiarch but you will see that later when implementation is done)
             # 1/ /usr/lib32 (32 bits only)
