@@ -502,7 +502,6 @@ s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 
 static void cdvdDetectDisk()
 {
-	wxString str;
 	cdvd.Type = DoCDVDdetectDiskType();
 	cdvdReloadElfInfo();
 }
