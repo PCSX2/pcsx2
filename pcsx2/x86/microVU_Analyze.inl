@@ -465,6 +465,13 @@ __ri int mVUbranchCheck(mV) {
 			{
 				if(branchType <= 2 && branchType >= 9) //First branch is not conditional so we know what the link will be
 				{								       //So we can let the existing evil block do its thing! We know where to get the addr :)
+					DevCon.Warning("yo");
+					DevCon.Warning("yo");
+					DevCon.Warning("yo");
+					DevCon.Warning("yo");
+					DevCon.Warning("yo");
+					DevCon.Warning("----");
+					
 					mVUregs.blockType = 2;
 				} //Else it is conditional, so we need to do some nasty processing later in microVU_Branch.inl
 			}
