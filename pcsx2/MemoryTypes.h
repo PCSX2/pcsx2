@@ -25,7 +25,7 @@ namespace Ps2MemSize
 	static const uint Hardware	= _64kb;
 	static const uint Scratch	= _16kb;
 
-	static const uint IopRam	= _1mb * 2;			// 2MB main ram on the IOP.
+	static const uint IopRam	= _1mb * 16;			// 2MB main ram on the IOP.Added more cache from 2 to 16 mb,maybe can be helpful. By Axlffx2forever
 	static const uint IopHardware = _64kb;
 
 	static const uint GSregs = 0x00002000;			// 8k for the GS registers and stuff.
