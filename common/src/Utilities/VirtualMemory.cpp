@@ -455,7 +455,7 @@ SpatialArrayReserve& SpatialArrayReserve::SetBlockSizeInPages( uint pages )
 //
 // This method must be called prior to accessing or modifying the array contents.  Calls to
 // a modified buffer will be ignored (and generate an assertion in dev/debug modes).
-uint SpatialArrayReserve::SetBlockSize( uint bytes )
+uptr SpatialArrayReserve::SetBlockSize( uptr bytes )
 {
 	SetBlockSizeInPages((bytes + __pagesize - 1) / __pagesize);
 	return m_blocksize * __pagesize;

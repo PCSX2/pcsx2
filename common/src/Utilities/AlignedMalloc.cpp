@@ -95,7 +95,7 @@ __fi void _memset16_unaligned( void* dest, u16 data, size_t size )
 		*dst = data;
 }
 
-__fi void HostSys::Munmap( void* base, u32 size )
+__fi void HostSys::Munmap( void* base, size_t size )
 {
 	Munmap( (uptr)base, size );
 }
