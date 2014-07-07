@@ -607,9 +607,6 @@ void (*COP2SPECIAL2PrintTable[128])( string& output ) =
 
 void disR5900Fasm( string& output, u32 code, u32 pc )
 {
-	string dbuf;
-	char obuf[48];
-
 	opcode_addr = pc;
 	disasmOpcode = code;
 
