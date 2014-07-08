@@ -17,7 +17,7 @@ Section "Start Menu Shortcuts" SEC_STARTMENU
     "" "" 0 "" "" "Common answers to common problems and inquiries."
 
   ;IfFileExists ..\bin\pcsx2-dev.exe 0 +2
-  ;  CreateShortCut "PCSX2\pcsx2-dev-r${SVNREV}.lnk"  "$INSTDIR\pcsx2-dev-r${SVNREV}.exe"  "" "$INSTDIR\pcsx2-dev-r${SVNREV}.exe" 0 "" "" \
+  ;  CreateShortCut "PCSX2\pcsx2-dev.lnk"  "$INSTDIR\pcsx2-dev.exe"  "" "$INSTDIR\pcsx2-dev.exe" 0 "" "" \
   ;    "PCSX2 Devel (has additional logging support)"
 
 SectionEnd
