@@ -48,7 +48,8 @@ void BaseCompressThread::ExecuteTaskInThread()
  struct sched_param param;
     param.sched_priority = 1;
     pthread_setschedparam(pthread_self(), 1,&param); //this gonna make priority below normal
-
+    if (pthread_setschedparam(pthread_self(), 1, &param)) Console.WriteLn("(gzipThread) Priority set to 1 succesfully ");
+	return;
 
 	// Notes:
 	//  * Safeguard against corruption by writing to a temp file, and then copying the final
