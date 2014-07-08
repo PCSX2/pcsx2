@@ -59,19 +59,19 @@ Section "!${APP_NAME} (required)" SEC_CORE
   SetOutPath "$INSTDIR\Plugins"
   !insertmacro UNINSTALL.LOG_OPEN_INSTALL
 
-    File /nonfatal /oname=gsdx32-sse2-r${SVNREV_GSDX}.dll    ..\bin\Plugins\gsdx32-sse2.dll
-    File /nonfatal /oname=gsdx32-ssse3-r${SVNREV_GSDX}.dll   ..\bin\Plugins\gsdx32-ssse3.dll 
-    File /nonfatal /oname=gsdx32-sse4-r${SVNREV_GSDX}.dll    ..\bin\Plugins\gsdx32-sse4.dll
-    File /nonfatal /oname=gsdx32-avx-r${SVNREV_GSDX}.dll     ..\bin\Plugins\gsdx32-avx.dll
-    File /nonfatal /oname=zerogs-r${SVNREV_ZEROGS}.dll       ..\bin\Plugins\zerogs.dll
+    File /nonfatal /oname=gsdx32-sse2.dll    ..\bin\Plugins\gsdx32-sse2.dll
+    File /nonfatal /oname=gsdx32-ssse3.dll   ..\bin\Plugins\gsdx32-ssse3.dll 
+    File /nonfatal /oname=gsdx32-sse4.dll    ..\bin\Plugins\gsdx32-sse4.dll
+    File /nonfatal /oname=gsdx32-avx.dll     ..\bin\Plugins\gsdx32-avx.dll
+    File /nonfatal /oname=zerogs.dll       ..\bin\Plugins\zerogs.dll
   
-    File /nonfatal /oname=spu2-x-r${SVNREV_SPU2X}.dll      ..\bin\Plugins\spu2-x.dll
-    File /nonfatal /oname=zerospu2-r${SVNREV_ZEROSPU2}.dll ..\bin\Plugins\zerospu2.dll
+    File /nonfatal /oname=spu2-x.dll      ..\bin\Plugins\spu2-x.dll
+    File /nonfatal /oname=zerospu2.dll ..\bin\Plugins\zerospu2.dll
   
-    File /nonfatal /oname=cdvdiso-r${SVNREV_CDVDISO}.dll   ..\bin\Plugins\cdvdiso.dll
+    File /nonfatal /oname=cdvdiso.dll   ..\bin\Plugins\cdvdiso.dll
     File                                                   ..\bin\Plugins\cdvdGigaherz.dll
   
-    File /nonfatal /oname=lilypad-r${SVNREV_LILYPAD}.dll   ..\bin\Plugins\lilypad.dll
+    File /nonfatal /oname=lilypad.dll   ..\bin\Plugins\lilypad.dll
     File                                                   ..\bin\Plugins\PadSSSPSX.dll
     File /nonfatal                                         ..\bin\Plugins\padPokopom.dll
 	
@@ -88,7 +88,7 @@ Section "ZZogl Plugin (requires OpenGL)"
 
   SetOutPath "$INSTDIR\Plugins"
   !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    File /oname=zzogl-pg-r${SVNREV_ZZOGL}.dll     ..\bin\Plugins\zzogl-pg.dll
+    File /oname=zzogl-pg.dll     ..\bin\Plugins\zzogl-pg.dll
   !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
 
 SectionEnd
