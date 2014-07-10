@@ -23,6 +23,7 @@ do
     case $f in
         --dev|--devel ) flags="$flags -DCMAKE_BUILD_TYPE=Devel" ;;
         --dbg|--debug ) flags="$flags -DCMAKE_BUILD_TYPE=Debug" ;;
+        --strip       ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
         --release     ) flags="$flags -DCMAKE_BUILD_TYPE=Release" ;;
         --glsl        ) flags="$flags -DGLSL_API=TRUE" ;;
         --egl         ) flags="$flags -DEGL_API=TRUE" ;;
