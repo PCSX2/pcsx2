@@ -34,7 +34,7 @@ option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
 # FIXME do a proper detection
 set(SDL2_LIBRARY "-lSDL2")
-option(SDL2_LIBRARY "Use SDL2 on spu2x and onepad")
+option(SDL2_API "Use SDL2 on spu2x and onepad")
 
 if(PACKAGE_MODE)
     if(NOT DEFINED PLUGIN_DIR)
@@ -183,12 +183,17 @@ set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "")
 # -Wstrict-aliasing: to fix one day aliasing issue
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
 # -Wno-unused-function: warn for function not used in release build
-set(DEFAULT_WARNINGS "-Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function")
-set(HARDEING_OPT "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} -pthread ${DEFAULT_WARNINGS} ${HARDEING_OPT}")
+# -Wno-unused-variable: just annoying to manage different level of logging, a couple of extra var won't kill any serious compiler.
+set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable")
+set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
+set(COMMON_FLAG "-pipe -std=c++0x -fvisibility=hidden -pthread")
 if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
-    set(DEFAULT_GCC_FLAG "-g ${DEFAULT_GCC_FLAG}")
+    set(DEBUG_FLAG "-g")
+else()
+    set(DEBUG_FLAG "")
 endif()
+
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${HARDENING_FLAG} ${DEBUG_FLAG}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 
