@@ -343,14 +343,17 @@ public:
 	///   This method has been optimized to give typical 32 bit pointers a reasonably
 	///   wide spread across the integer spectrum.
 	///   Note:
-	///   This method is optimized for 32 bit pointers only.  64 bit pointer support
-	///   has not been implemented, and thus on 64 bit platforms performance could be poor or,
-	///   worse yet, results may not have a high degree of uniqueness.
+	///   This method is optimized for 32 bit pointers only.
+	///   64 bit pointer support is implemented but not optimized.
 	/// </remarks>
 	hash_key_t operator()( const void* addr ) const
 	{
+#ifdef _ARCH_64
+		return GetCommonHash((u64)addr);
+#else
 		hash_key_t key = (hash_key_t) addr;
 		return (hash_key_t)((key >> 3) * 2654435761ul);
+#endif
 	}
 	
 	
