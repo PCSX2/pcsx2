@@ -30,8 +30,9 @@ const wxChar* EnumToString( SSE_RoundMode sse )
 		case SSEround_NegInf:	return L"NegativeInfinity";
 		case SSEround_PosInf:	return L"PositiveInfinity";
 		case SSEround_Chop:		return L"Chop";
+		default:				return L"Invalid";
 	}
-	
+
 	return L"Invalid";
 }
 

@@ -291,6 +291,8 @@ namespace MIPSAnalyst
 		case BRANCH:
 			info.branchTarget = info.opcodeAddress + 4 + ((signed short)(op&0xFFFF)<<2);
 			break;
+		case NONE:
+			return false;
 		}
 
 		return true;
