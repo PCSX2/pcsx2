@@ -19,6 +19,7 @@ set(CommonFlags
     -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wno-char-subscripts # only impact svu which is deprecated
+    -Wno-missing-braces
 	)
 
 # set optimization flags

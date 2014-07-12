@@ -397,7 +397,7 @@ s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 
 	
 	u8 *pbuffer = cdbuffer;
-	int psize;
+	int psize = 0;
 
 	switch (mode)
 	{

@@ -358,10 +358,10 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 #if !defined(_MSC_VER)
 
-	#if defined(__USE_ISOC11)
+	#if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 
 	#define _aligned_malloc(size, a) aligned_alloc(a, size)
-	static void _aligned_free(void* p) { free(p); }
+	static inline void _aligned_free(void* p) { free(p); }
 
 	#elif !defined(HAVE_ALIGNED_MALLOC)
 

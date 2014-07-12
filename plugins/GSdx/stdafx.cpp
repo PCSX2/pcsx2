@@ -107,7 +107,7 @@ void vmfree(void* ptr, size_t size)
 
 // declare linux equivalents (alignment must be power of 2 (1,2,4...2^15)
 
-#if !defined(__USE_ISOC11)
+#if !defined(__USE_ISOC11) || defined(ASAN_WORKAROUND)
 
 void* _aligned_malloc(size_t size, size_t alignment)
 {

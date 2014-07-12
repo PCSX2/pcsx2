@@ -265,7 +265,7 @@ static u8* GetIndirectDispatcherPtr( int mode, int operandsize, int sign = 0 )
 //
 static void DynGen_IndirectDispatch( int mode, int bits, bool sign = false )
 {
-	int szidx;
+	int szidx = 0;
 	switch( bits )
 	{
 		case 8:		szidx=0;	break;

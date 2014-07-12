@@ -30,6 +30,7 @@ do
         --gles        ) flags="$flags -DGLES_API=TRUE" ;;
         --sdl2        ) flags="$flags -DSDL2_API=TRUE" ;;
         --extra       ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
+        --asan        ) flags="$flags -DUSE_ASAN=TRUE";;
         --clang       ) use_clang=1; flags="$flags -DUSE_CLANG=TRUE" ;;
         --clean       ) clean_build=1 ;;
 
@@ -40,8 +41,11 @@ do
             echo "--debug         : Build PCSX2 as a Debug build."
             echo "--release       : Build PCSX2 as a Release build."
             echo "--clean         : Do a clean build."
-            echo "--extra         : Build all plugins"
             echo "** Developper option **"
+            echo "--clang         : Build with Clang/llvm"
+            echo "--extra         : Build all plugins"
+            echo "--asan          : Enable with Address sanitizer"
+            echo ""
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
             echo "--sdl2          : Build with SDL2 (crash if wx is linked to SDL1)"

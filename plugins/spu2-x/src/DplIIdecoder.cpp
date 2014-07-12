@@ -82,8 +82,8 @@ void ProcessDplIISample32( const StereoOut32& src, Stereo51Out32DplII * s)
 	float R = IR - C;
 
 	// Peak L/R
-	float PL = abs(L);
-	float PR = abs(R);
+	float PL = std::abs(L);
+	float PR = std::abs(R);
 
 	AccL += (PL-AccL)*0.1f;
 	AccR += (PR-AccR)*0.1f;
@@ -92,7 +92,7 @@ void ProcessDplIISample32( const StereoOut32& src, Stereo51Out32DplII * s)
 	float Balance = (AccR-AccL); // -1 .. 1
 
 	// If the power levels are different, then the audio is meant for the front speakers
-	float Frontness = abs(Balance);
+	float Frontness = std::abs(Balance);
 	float Rearness = 1-Frontness; // And the other way around
 
 	// Equalize the power levels for L/R

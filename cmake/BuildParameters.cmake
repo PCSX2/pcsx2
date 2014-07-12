@@ -50,6 +50,12 @@ if(PACKAGE_MODE)
 endif(PACKAGE_MODE)
 
 #-------------------------------------------------------------------------------
+# Compiler extra
+#-------------------------------------------------------------------------------
+option(USE_CLANG "Use llvm/clang to build PCSX2 (developer option)")
+option(USE_ASAN "Enable address sanitizer")
+
+#-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
 option(64BIT_BUILD "Enable a x86_64 build instead of cross compiling (developer option)" OFF)
@@ -184,16 +190,28 @@ set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "")
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
 # -Wno-unused-function: warn for function not used in release build
 # -Wno-unused-variable: just annoying to manage different level of logging, a couple of extra var won't kill any serious compiler.
+# -Wno-deprecated-register: glib issue...
 set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable")
+if (USE_CLANG)
+    set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register")
+endif()
+
 set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 set(COMMON_FLAG "-pipe -std=c++0x -fvisibility=hidden -pthread")
+
 if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
     set(DEBUG_FLAG "-g")
 else()
     set(DEBUG_FLAG "")
 endif()
 
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${HARDENING_FLAG} ${DEBUG_FLAG}")
+if (USE_ASAN)
+    set(ASAN_FLAG "-fsanitize=address -fno-omit-frame-pointer -g -mpreferred-stack-boundary=4 -mincoming-stack-boundary=2 -DASAN_WORKAROUND")
+else()
+    set(ASAN_FLAG "")
+endif()
+
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 
