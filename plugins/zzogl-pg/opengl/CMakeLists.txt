@@ -16,7 +16,6 @@ set(Output zzogl-0.4.0)
 set(CommonFlags
     -pthread
     -DZEROGS_SSE2
-    -fno-regmove
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wunused-variable
@@ -26,6 +25,11 @@ set(OptimizationFlags
     -O2
     -DNDEBUG
     )
+
+#Clang doesn't support a few common flags that GCC does.
+if(NOT USE_CLANG)
+	add_definitions(${CommonFlags} -fno-regmove)
+endif(NOT USE_CLANG) 
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
