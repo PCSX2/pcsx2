@@ -77,8 +77,8 @@ Threading::MutexRecursive::MutexRecursive() : Mutex( false )
 		pthread_mutexattr_settype( &_attr_recursive, PTHREAD_MUTEX_RECURSIVE );
 	}
 
-	int err = 0;
-	err = pthread_mutex_init( &m_mutex, &_attr_recursive );
+	if (pthread_mutex_init( &m_mutex, &_attr_recursive ));
+		Console.Error( "(Thread Log) Failed to initialize mutex.");
 }
 
 Threading::MutexRecursive::~MutexRecursive() throw()

@@ -51,8 +51,10 @@ static __fi void memset8( T& obj )
 	// Aligned sizes use the optimized 32 bit inline memset.  Unaligned sizes use memset.
 	if( (sizeof(T) & 0x3) != 0 )
 		memset( &obj, data, sizeof( T ) );
-	else
-		memset32<data + (data<<8) + (data<<16) + (data<<24)>( obj );
+	else {
+		const u32 data32 = data + (data<<8) + (data<<16) + (data<<24);
+		memset32<data32>( obj );
+	}
 }
 
 template< u16 data, typename T >
@@ -60,8 +62,10 @@ static __fi void memset16( T& obj )
 {
 	if( (sizeof(T) & 0x3) != 0 )
 		_memset16_unaligned( &obj, data, sizeof( T ) );
-	else
-		memset32<data + (data<<16)>( obj );
+	else {
+		const u32 data32 = data + (data<<16);
+		memset32<data32>( obj );
+	}
 }
 
 
@@ -92,6 +96,7 @@ static __fi void memset_8( void *dest )
 	// macro to execute the x86/32 "stosd" copies.
 	switch( remdat )
 	{
+#if 0
 		case 1:
 			*(u32*)dest = data32;
 		return;
@@ -157,6 +162,7 @@ static __fi void memset_8( void *dest )
 
 			);
 		return;
+#endif
 
 		default:
 			__asm__ volatile
