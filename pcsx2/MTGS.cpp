@@ -34,7 +34,7 @@ using namespace Threading;
 #if 0 //PCSX2_DEBUG
 #	define MTGS_LOG Console.WriteLn
 #else
-#	define MTGS_LOG 0&&
+#	define MTGS_LOG(...) do {} while (0)
 #endif
 
 // forces the compiler to treat a non-volatile value as volatile.

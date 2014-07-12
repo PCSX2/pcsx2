@@ -339,7 +339,7 @@ static void SuperVUEliminateDeadCode();
 static void SuperVUAssignRegs();
 
 //void SuperVUFreeXMMreg(int xmmreg, int xmmtype, int reg);
-#define SuperVUFreeXMMreg 0&&
+#define SuperVUFreeXMMreg(...) (void)0
 void SuperVUFreeXMMregs(u32* livevars);
 
 static u32* SuperVUStaticAlloc(u32 size);
