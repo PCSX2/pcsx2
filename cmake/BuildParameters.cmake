@@ -85,7 +85,7 @@ if(_ARCH_64 AND 64BIT_BUILD)
         set(CMAKE_LIBRARY_ARCHITECTURE "x86_64-linux-gnu")
     endif()
 
-    set(ARCH_FLAG "-m64 -msse -msse2 -march=pentium4")
+    set(ARCH_FLAG "-m64 -msse -msse2")
 	add_definitions(-D_ARCH_64=1)
 else()
     message("Compiling 32bit build on 32/64bit architecture")
