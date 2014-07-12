@@ -53,6 +53,7 @@ endif(PACKAGE_MODE)
 # Compiler extra
 #-------------------------------------------------------------------------------
 option(USE_CLANG "Use llvm/clang to build PCSX2 (developer option)")
+option(USE_ASAN "Enable address sanitizer")
 
 #-------------------------------------------------------------------------------
 # Select the architecture
@@ -204,7 +205,13 @@ else()
     set(DEBUG_FLAG "")
 endif()
 
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${HARDENING_FLAG} ${DEBUG_FLAG}")
+if (USE_ASAN)
+    set(ASAN_FLAG "-fsanitize=address -fno-omit-frame-pointer -g -mpreferred-stack-boundary=4 -mincoming-stack-boundary=2 -DASAN_WORKAROUND")
+else()
+    set(ASAN_FLAG "")
+endif()
+
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 
