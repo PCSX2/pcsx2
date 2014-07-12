@@ -264,9 +264,6 @@ namespace ioman {
 
 		void close()
 		{
-			if (type == FILE_FREE)
-				return;
-
 			switch (type)
 			{
 				case FILE_FILE:
@@ -277,6 +274,8 @@ namespace ioman {
 					dir->close();
 					dir = NULL;
 					break;
+				case FILE_FREE:
+					return;
 			}
 
 			type = FILE_FREE;

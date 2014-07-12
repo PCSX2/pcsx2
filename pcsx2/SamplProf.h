@@ -42,9 +42,9 @@ void ProfilerTerminateSource( const wxString& Name );
 
 #define ProfilerInit() (void)0
 #define ProfilerTerm() (void)0
-#define ProfilerSetEnabled 0&&
-#define ProfilerRegisterSource 0&&
-#define ProfilerTerminateSource 0&&
+#define ProfilerSetEnabled(...) (void)0
+#define ProfilerRegisterSource(...) (void)0
+#define ProfilerTerminateSource(...) (void)0
 
 #endif
 

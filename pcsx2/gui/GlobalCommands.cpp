@@ -182,6 +182,7 @@ namespace Implementations
 			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = L"AspectRatio_4_3"; break;
 			case AspectRatio_4_3:		art = AspectRatio_16_9; arts = L"AspectRatio_16:9"; break;
 			case AspectRatio_16_9:		art = AspectRatio_Stretch; arts = L"AspectRatio_Stretch";break;
+			default: break;
 		}
 
 		Console.WriteLn(L"(GSwindow) Aspect ratio: %s.", arts.c_str());

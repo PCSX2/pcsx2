@@ -26,7 +26,7 @@ static VURegs& vu0Regs = vuRegs[0];
 
 using namespace R5900::Dynarec;
 
-#define printCOP2 0&&
+#define printCOP2(...) (void)0
 //#define printCOP2 DevCon.Status
 
 void setupMacroOp(int mode, const char* opName) {

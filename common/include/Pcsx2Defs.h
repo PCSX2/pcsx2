@@ -77,7 +77,11 @@ extern "C" unsigned __int64 __xgetbv(int);
 //  restaints must be enforced).
 //
 #ifndef C_ASSERT
-#	define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
+	#ifdef __LINUX__
+	#	define C_ASSERT(e) static_assert(e, "this is a nice message to explain the failure ;)")
+	#else
+	#	define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
+	#endif
 #endif
 
 // --------------------------------------------------------------------------------------

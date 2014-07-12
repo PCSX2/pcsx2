@@ -12,20 +12,14 @@ set(CommonFlags
     # Disable this optimization for the moment
     -fno-omit-frame-pointer 
     # END GCC-4.6
-	-pthread
-    -fvisibility=hidden
 	-fno-guess-branch-probability
 	-fno-dse
 	-fno-tree-dse
 	-fno-strict-aliasing
+    -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
-    -std=c++0x
-	-pipe)
-
-# set warning flags
-set(DebugFlags
-	-W
-	-g)
+    -Wno-char-subscripts # only impact svu which is deprecated
+	)
 
 # set optimization flags
 set(OptimizationFlags
@@ -72,7 +66,7 @@ set(OptimizationFlags
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(Output pcsx2-dbg)
 
-	add_definitions(${CommonFlags} ${DebugFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP)
+	add_definitions(${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build

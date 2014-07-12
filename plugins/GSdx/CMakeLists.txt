@@ -19,6 +19,7 @@ set(CommonFlags
     -fno-strict-aliasing
     -Wno-unknown-pragmas
     -Wno-parentheses
+    -Wunused-variable # __dummy variable need to be investigated
     )
 
 set(OptimizationFlags

@@ -132,6 +132,9 @@ void Pcsx2App::DispatchEvent( CoreThreadStatus evt )
 {
 	switch( evt )
 	{
+		// FIXME what to do for this case
+		// case CoreThread_Indeterminate:
+
 		case CoreThread_Started:
 		case CoreThread_Reset:
 		case CoreThread_Stopped:

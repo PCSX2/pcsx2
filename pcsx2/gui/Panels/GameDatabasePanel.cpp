@@ -244,8 +244,7 @@ GameDatabaseListView& GameDatabaseListView::SortBy( GameDataColumnId column )
 		case GdbCol_Compat:		std::sort(begin, end, GLSort_byCompat(isDescending));	break;
 		case GdbCol_Patches:	std::sort(begin, end, GLSort_byPatches(isDescending));	break;
 
-		// do not use jNO_DEFAULT here -- keeps release builds from crashing (it'll just
-		// ignore the sort request!)
+		default: break; // for GdbCol_Count
 	}
 	//m_GamesInView.(  );
 	

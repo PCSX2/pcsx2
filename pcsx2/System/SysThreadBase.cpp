@@ -93,6 +93,9 @@ void SysThreadBase::Suspend( bool isBlocking )
 
 		switch( m_ExecMode )
 		{
+			// FIXME what to do for this case
+			// case ExecMode_NoThreadYet:
+
 			// Check again -- status could have changed since above.
 			case ExecMode_Closed: return;
 
@@ -108,6 +111,9 @@ void SysThreadBase::Suspend( bool isBlocking )
 	
 			case ExecMode_Opened:
 				m_ExecMode = ExecMode_Closing;
+			break;
+
+			case ExecMode_Closing:
 			break;
 		}
 
@@ -213,6 +219,10 @@ void SysThreadBase::Resume()
 			if( !m_running ) return;
 			if( (m_ExecMode != ExecMode_Closed) && (m_ExecMode != ExecMode_Paused) ) return;
 			if( !GetCorePlugins().AreLoaded() ) return;
+		break;
+
+		case ExecMode_Paused:
+		case ExecMode_Closed:
 		break;
 	}
 
