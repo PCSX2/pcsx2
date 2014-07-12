@@ -438,7 +438,7 @@ public:
 
 	// NOTE: Enabling system menu on dialogs usually doesn't work, and might cause
 	// other unwanted behavior, such as a missing close button.
-	pxDialogCreationFlags SystemMenu( bool =true ) const
+	pxDialogCreationFlags SystemMenu( bool enable=true ) const
 	{
 		return pxDialogCreationFlags(*this).SetSystemMenu( false );
 	}
@@ -648,7 +648,7 @@ public:
 
 protected:
     // line may be empty
-    virtual void OnOutputLine(const wxString&) { }
+    virtual void OnOutputLine(const wxString& line) { }
 
     // called at the start of every new line (except the very first one)
     virtual void OnNewLine() { }
