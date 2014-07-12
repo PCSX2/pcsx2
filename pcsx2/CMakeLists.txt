@@ -12,14 +12,12 @@ set(CommonFlags
     # Disable this optimization for the moment
     -fno-omit-frame-pointer 
     # END GCC-4.6
-	-fno-guess-branch-probability
-	-fno-dse
-	-fno-tree-dse
-	-fno-strict-aliasing
+    -fno-strict-aliasing
     -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wno-char-subscripts # only impact svu which is deprecated
     -Wno-missing-braces
+    -Wno-ignored-attributes
 	)
 
 # set optimization flags
@@ -62,6 +60,11 @@ set(OptimizationFlags
 	-ftree-ter
 	-ftree-vrp
 	-funit-at-a-time)
+
+#Clang doesn't support a few common flags that GCC does.
+if(NOT USE_CLANG)
+	add_definitions(${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
+endif(NOT USE_CLANG) 
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
