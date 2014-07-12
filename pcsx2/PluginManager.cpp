@@ -1016,7 +1016,7 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 		(int)x86caps.LogicalCores,
 		sizeof(wchar_t),
 
-		0,0,0,0,0,0,
+		{ 0,0,0,0,0,0 },
 
 		pcsx2_GetInt,
 		pcsx2_GetBoolean,
