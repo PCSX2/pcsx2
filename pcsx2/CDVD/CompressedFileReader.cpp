@@ -105,7 +105,7 @@ static void WriteIndexToFile(Access* index, const wxString filename) {
 
 class ChunksCache {
 public:
-	ChunksCache(uint initialLimitMb) : m_size(0), m_entries(0), m_limit(initialLimitMb * 1024 * 1024) {};
+	ChunksCache(uint initialLimitMb) : m_entries(0), m_size(0), m_limit(initialLimitMb * 1024 * 1024) {};
 	~ChunksCache() { Clear(); };
 	void SetLimit(uint megabytes);
 	void Clear() { MatchLimit(true); };
@@ -125,8 +125,8 @@ private:
 		CacheEntry(void* pMallocedSrc, PX_off_t offset, int length, int coverage) :
 			data(pMallocedSrc),
 			offset(offset),
-			size(length),
-			coverage(coverage)
+			coverage(coverage),
+			size(length)
 		{};
 
 		~CacheEntry() { if (data) free(data); };
@@ -199,9 +199,9 @@ class GzippedFileReader : public AsyncFileReader
 public:
 	GzippedFileReader(void) :
 		m_pIndex(0),
-		m_cache(CACHE_SIZE_MB),
+		m_zstates(0),
 		m_src(0),
-		m_zstates(0) {
+		m_cache(CACHE_SIZE_MB) {
 		m_blocksize = 2048;
 	};
 
