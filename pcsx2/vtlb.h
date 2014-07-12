@@ -105,7 +105,7 @@ public:
 		m_reserve.Release();
 	}
 
-	virtual void Reserve( sptr hostptr );
+	void Reserve( sptr hostptr );
 	virtual void Release();
 
 	virtual void Commit();
@@ -172,8 +172,8 @@ public:
 		Release();
 	}
 
-	virtual void Reserve();
-	virtual void Release();
+	void Reserve();
+	void Release();
 
 	void Reset();
 };
