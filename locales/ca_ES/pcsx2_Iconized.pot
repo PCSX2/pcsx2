@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-04-06 11:49+0200\n"
-"PO-Revision-Date: 2014-07-13 16:43+0100\n"
+"PO-Revision-Date: 2014-07-13 20:57+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language-Team: ca_ES <LL@li.org>\n"
 "Language: ca_ES\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -244,10 +244,11 @@ msgstr ""
 #: pcsx2/gui/Panels/CpuPanel.cpp:111
 msgid "Notice: Most games are fine with the default options. "
 msgstr ""
+"Avís: La gran majoria de jocs funcionen bé amb les opcions per defecte."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:177
 msgid "Notice: Most games are fine with the default options."
-msgstr ""
+msgstr "Avís: La majoria dels jocs funcionen bé amb les opcions per defecte."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:69
 msgid ""
@@ -523,18 +524,24 @@ msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
 msgstr ""
+"Tingueu en compte que quan limitació de frames està desactivada, Els modes "
+"turbo i slowmotion no estaran disponibles tampoc."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:225
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
 msgstr ""
+"Avís: A causa del disseny de maquinari de PS2, saltar els frames exactes és "
+"impossible. L'habilitació causarà greus errors gràfics en alguns jocs."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:302
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
 msgstr ""
+"Activeu aquesta opció si pensa que sincronització de fil MTGS està causant "
+"accidents o errors gràfics."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:305
 msgid ""

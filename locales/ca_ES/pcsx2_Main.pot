@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-04-06 11:49+0200\n"
-"PO-Revision-Date: 2014-07-13 19:20+0100\n"
+"PO-Revision-Date: 2014-07-13 21:00+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language-Team: ca_ES <LL@li.org>\n"
 "Language: ca_ES\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -598,7 +598,7 @@ msgstr ""
 
 #: pcsx2/gui/AppRes.cpp:72
 msgid "Browse..."
-msgstr ""
+msgstr "Explora..."
 
 #: pcsx2/gui/AppUserMode.cpp:95
 msgid "The following folders exist, but are not writable:"
@@ -1060,7 +1060,7 @@ msgstr ""
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:212
 #, c-format
 msgid "Emulation Settings - %s"
-msgstr ""
+msgstr "Opcions d'Emulació - %s"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:221
 msgid "EE/IOP"
@@ -1080,16 +1080,16 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:225
 msgid "Speedhacks"
-msgstr ""
+msgstr "Hacks de velocitat"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:226
 msgid "Game Fixes"
-msgstr ""
+msgstr "Correccions de jocs"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:237
 #, c-format
 msgid "Components Selectors - %s"
-msgstr ""
+msgstr "Selector de components - %s"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:244
 msgid "Plugins"
@@ -1106,7 +1106,7 @@ msgstr ""
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:257
 #, c-format
 msgid "Appearance/Themes - %s"
-msgstr ""
+msgstr "Apariència/Temes - %s"
 
 #: pcsx2/gui/ExecutorThread.cpp:40
 msgid "Logs events as they are passed to the PS2 virtual machine."
@@ -1223,7 +1223,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:340
 msgid "&Config"
-msgstr ""
+msgstr "&Configuració"
 
 #: pcsx2/gui/MainFrame.cpp:341
 msgid "&Misc"
@@ -1301,11 +1301,11 @@ msgstr "Tancar el %s pot ser perillós per la teva salut"
 
 #: pcsx2/gui/MainFrame.cpp:449
 msgid "Iso Selector"
-msgstr ""
+msgstr "Selector de ISO"
 
 #: pcsx2/gui/MainFrame.cpp:450
 msgid "Plugin Menu"
-msgstr ""
+msgstr "Menú del plugin"
 
 #: pcsx2/gui/MainFrame.cpp:453
 msgid "Iso"
@@ -1313,7 +1313,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:453
 msgid "Makes the specified ISO image the CDVD source."
-msgstr ""
+msgstr "Fa que la imatge ISO sigui el CDVD."
 
 #: pcsx2/gui/MainFrame.cpp:454
 msgid "Plugin"
@@ -1322,18 +1322,22 @@ msgstr ""
 #: pcsx2/gui/MainFrame.cpp:454
 msgid "Uses an external plugin as the CDVD source."
 msgstr ""
+"Fa servir un plugin extern per a reconèixer des de un lector/gravadora el "
+"CDVD."
 
 #: pcsx2/gui/MainFrame.cpp:455
 msgid "No disc"
-msgstr ""
+msgstr "Sense Disc"
 
 #: pcsx2/gui/MainFrame.cpp:455
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
 msgstr ""
+"Fes servir això per a entrar a una màquina virtual de la Playstation 2 per a "
+"configurar la BIOS."
 
 #: pcsx2/gui/MainFrame.cpp:463
 msgid "Emulation &Settings"
-msgstr ""
+msgstr "Opcions de &Emulació"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "&Memory cards"
@@ -2375,28 +2379,29 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:34
 msgid "Disable Framelimiting"
-msgstr ""
+msgstr "Desactiva la Limitació de Frames"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
 "Useful for running benchmarks. Toggle this option in-game by pressing F4."
 msgstr ""
+"Molt útil per a fer Probes de rendiment. Activa aquesta opció apretant F4."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:59
 msgid "Base Framerate Adjust:"
-msgstr ""
+msgstr "Ajustament de velocitat de Frames:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:65
 msgid "Slow Motion Adjust:"
-msgstr ""
+msgstr "Ajustament a càmera lenta:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:71
 msgid "Turbo Adjust:"
-msgstr ""
+msgstr "Ajustament de Turbo:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:86
 msgid "NTSC Framerate:"
-msgstr ""
+msgstr "Limit de frames en NTSC:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:89 pcsx2/gui/Panels/VideoPanel.cpp:95
 msgid "FPS"
@@ -2404,7 +2409,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:92
 msgid "PAL Framerate:"
-msgstr ""
+msgstr "Limit de Frames en PAL:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:164
 msgid ""
@@ -2414,15 +2419,15 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:182
 msgid "Disabled [default]"
-msgstr ""
+msgstr "Desactivat [Per defecte]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:186
 msgid "Skip when on Turbo only (TAB to enable)"
-msgstr ""
+msgstr "Omissió només amb mode Turbo (Tabulació per a activar)"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:190
 msgid "Constant skipping"
-msgstr ""
+msgstr "Omissió constant"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:192
 msgid ""
@@ -2432,21 +2437,23 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:215
 msgid "Frames to Draw"
-msgstr ""
+msgstr "Frames a Dibuixar"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:220
 msgid "Frames to Skip"
-msgstr ""
+msgstr "Frames a Omitir"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Use Synchronized MTGS"
-msgstr ""
+msgstr "Utilitza la MTGS Sincronitzada"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:295
 msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
 msgstr ""
+"Per a la solució de problemes potencials, errors en els MTGS només, ja que "
+"és potencialment molt lent."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:298
 msgid "Disable all GS output"
@@ -2460,11 +2467,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:314
 msgid "Frame Skipping"
-msgstr ""
+msgstr "Omissió de Frames"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:317
 msgid "Framelimiter"
-msgstr ""
+msgstr "Limitador de Frames"
 
 #: pcsx2/gui/SysState.cpp:283
 msgid "Cannot load this savestate.  The state is an unsupported version."
