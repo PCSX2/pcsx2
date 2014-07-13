@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR PCSX2 Dev Team
+# Copyright (C) 2014 PCSX2 Dev Team
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+Sergi Canaleta (Dokman) <Chaoticanthrim@hotmail.com>, 2014.
 #
 msgid ""
 msgstr ""
