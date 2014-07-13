@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-04-06 11:49+0200\n"
-"PO-Revision-Date: 2014-07-13 21:18+0100\n"
+"PO-Revision-Date: 2014-07-13 22:00+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
 "Language-Team: ca_ES <LL@li.org>\n"
 "Language: ca_ES\n"
@@ -1798,7 +1798,7 @@ msgstr "Pantalla amplia (16:9)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
-msgstr "Desactiva el re-midament de els costats de la finestra"
+msgstr "Desactiva la vora redimensionadora de la finestra."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Always hide mouse cursor"
@@ -1814,15 +1814,17 @@ msgstr "Per defecte obrir en finestra complerta"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
-msgstr ""
+msgstr "Espera per la sincronització vertical en referescar"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
 msgstr ""
+"Activa dinàmicament la sincronització vertical depenent del framerate "
+"(Llegeix el consell!)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 msgid "Double-click toggles fullscreen mode"
-msgstr ""
+msgstr "Doble click entra en pantalla complerta"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:89
 msgid "Aspect Ratio:"
