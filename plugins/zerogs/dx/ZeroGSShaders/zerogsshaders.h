@@ -70,7 +70,7 @@ static HRESULT LoadShaderFromType(const char* srcfile, int type, int texfilter, 
 
 	if( FAILED(hr) )
 	{
-		printf("Failed to load %s\n%s\n", str, pError->GetBufferPointer());
+		DEBUG_LOG("Failed to load %s\n%s\n", str, reinterpret_cast<const char*>(pError->GetBufferPointer()));
 		SAFE_RELEASE(pShader);
 		SAFE_RELEASE(pError);
 		return hr;
