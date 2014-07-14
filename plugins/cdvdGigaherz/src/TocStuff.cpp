@@ -37,12 +37,12 @@ s32 cdvdParseTOC()
 		return 0;
 	}
 
-    s32 lastaddr = src->GetLayerBreakAddress();
+	s32 lastaddr = src->GetLayerBreakAddress();
 
 
 	if(lastaddr>=0)
 	{
-        if((lastaddr > 0)&&(tracks[0].length>lastaddr))
+		if((lastaddr > 0)&&(tracks[0].length>lastaddr))
 		{
 			tracks[1].length=lastaddr+1;
 			tracks[1].type=0;
@@ -54,14 +54,14 @@ s32 cdvdParseTOC()
 			strack=1;
 			etrack=2;
 		}
-        else
+		else
 		{
 			tracks[1].length=tracks[0].length;
 			tracks[1].type=0;
 
 			strack=1;
 			etrack=1;
-        }
+		}
 	}
 	else
 	{
