@@ -136,7 +136,7 @@ s32 cdvdParseTOC()
 
 					if((cdtoc.Descriptors[i].Control&4)==0)
 					{
-						tracks[tn].type = 1;
+						tracks[tn].type = CDVD_AUDIO_TRACK;
 					}
 					else if((cdtoc.Descriptors[i].Control&0xE)==4)
 					{
