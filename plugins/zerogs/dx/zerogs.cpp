@@ -2070,7 +2070,7 @@ void ZeroGS::Flush(int context)
 #ifdef PCSX2_DEBUG
 	if( g_bSaveFlushedFrame & 0x80000000 ) {
 		char str[255];
-		sprintf(str, "rndr.tga", g_SaveFrameNum);
+		sprintf(str, "rndr%u.tga", g_SaveFrameNum);
 		D3DXSaveSurfaceToFile(str, D3DXIFF_TGA, curvb.prndr->psurf, NULL, NULL);
 	}
 #endif

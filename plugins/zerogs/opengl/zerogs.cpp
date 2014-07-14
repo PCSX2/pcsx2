@@ -2529,7 +2529,7 @@ void ZeroGS::Flush(int context)
 #ifdef _DEBUG
 	if( g_bSaveFlushedFrame & 0x80000000 ) {
 		char str[255];
-		sprintf(str, "rndr.tga", g_SaveFrameNum);
+		sprintf(str, "rndr%u.tga", g_SaveFrameNum);
 		SaveRenderTarget(str, curvb.prndr->fbw, curvb.prndr->fbh, 0);
 	}
 #endif
