@@ -371,7 +371,6 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 	#endif
 
 	// http://svn.reactos.org/svn/reactos/trunk/reactos/include/crt/mingw32/intrin_x86.h?view=markup
-	// - the other intrin_x86.h of pcsx2 is not up to date, its _interlockedbittestandreset simply does not work.
 
 	__forceinline unsigned char _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 	{
@@ -384,7 +383,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 	{
 		unsigned char retval;
 		
-		__asm__("lock; btrl %[b], %[a]; setb %b[retval]" : [retval] "=q" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
+		__asm__("lock; btrl %k[b], %[a]; setb %b[retval]" : [retval] "=q" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
 		
 		return retval;
 	}
@@ -393,7 +392,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 	{
 		unsigned char retval;
 		
-		__asm__("lock; btsl %[b], %[a]; setc %b[retval]" : [retval] "=q" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
+		__asm__("lock; btsl %k[b], %[a]; setc %b[retval]" : [retval] "=q" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
 		
 		return retval;
 	}
