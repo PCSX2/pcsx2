@@ -193,7 +193,7 @@ void FirstTimeWizard::OnPageChanging( wxWizardEvent& evt )
 {
 	if( evt.GetPage() == NULL ) return;		// safety valve!
 
-	int page = (int)evt.GetPage()->GetClientData();
+	sptr page = (sptr)evt.GetPage()->GetClientData();
 
 	if( evt.GetDirection() )
 	{
