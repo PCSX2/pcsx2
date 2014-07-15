@@ -131,10 +131,10 @@ void tx_process()
 {
 	//we loop based on count ? or just *use* it ?
 	u32 cnt=dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
-	//spams// printf("tx_process : %d cnt frames !\n",cnt);
+	//spams// printf("tx_process : %u cnt frames !\n",cnt);
 
 	NetPacket pk;
-	int fc=0;
+	u32 fc=0;
 	for (fc=0;fc<cnt;fc++)
 	{
 		smap_bd_t *pbd= ((smap_bd_t *)&dev9.dev9R[SMAP_BD_TX_BASE & 0xffff])+dev9.txbdi;
@@ -146,7 +146,7 @@ void tx_process()
 		}
 		if (pbd->length&3)
 		{
-			//spams// emu_printf("WARN : pbd->length not alligned %d\n",pbd->length);
+			//spams// emu_printf("WARN : pbd->length not aligned %u\n",pbd->length);
 		}
 
 		if(pbd->length>1514)
@@ -157,13 +157,13 @@ void tx_process()
 		{
 			u32 base=(pbd->pointer-0x1000)&16383;
 			DEV9_LOG("Sending Packet from base %x, size %d\n", base, pbd->length);
-			//spams// emu_printf("Sending Packet from base %x, size %d\n", base, pbd->length);
+			//spams// emu_printf("Sending Packet from base %x, size %u\n", base, pbd->length);
 			
 			pk.size=pbd->length;
 			
 			if (!(pbd->pointer>=0x1000))
 			{
-				emu_printf("ERROR: odd , !pbd->pointer>0x1000 | 0x%X %d\n", pbd->pointer, pbd->length);
+				emu_printf("ERROR: odd , !pbd->pointer>0x1000 | 0x%X %u\n", pbd->pointer, pbd->length);
 			}
 			//increase fifo pointer(s)
 			//uh does that even exist on real h/w ?
@@ -205,7 +205,7 @@ void tx_process()
 				u32 was=16384-base;
 				memcpy(pk.buffer,dev9.txfifo+base,was);
 				memcpy(pk.buffer,dev9.txfifo,pbd->length-was);
-				printf("Warped read, was=%d, sz=%d, sz-was=%d\n",was,pbd->length,pbd->length-was);
+				printf("Warped read, was=%u, sz=%u, sz-was=%u\n", was, pbd->length, pbd->length-was);
 			}
 			else
 			{
@@ -225,7 +225,7 @@ void tx_process()
 		dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)--;
 	}
 
-	//spams// emu_printf("processed %d frames, %d count, cnt = %d\n",fc,dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT),cnt);
+	//spams// emu_printf("processed %u frames, %u count, cnt = %u\n",fc,dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT),cnt);
 	//if some error/early exit signal TXDNV
 	if (fc!=cnt || cnt==0)
 	{
