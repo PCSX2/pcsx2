@@ -395,7 +395,7 @@ void DestroyVUHeaders(int vuindex)
 // destroy VU resources
 void SuperVUDestroy(int vuindex)
 {
-	pxAssertDev(vuindex >= 0 && vuindex <= 2, "Invalid VU index parameter!");
+	pxAssertDev(vuindex == 0 || vuindex == 1, "Invalid VU index parameter!");
 
 	safe_delete_array(recVUHeaders[vuindex]);
 	safe_delete_array(recVUBlocks[vuindex]);
@@ -417,7 +417,7 @@ void SuperVUDestroy(int vuindex)
 // reset VU
 void SuperVUReset(int vuindex)
 {
-	pxAssertDev(vuindex >= 0 && vuindex <= 2, "Invalid VU index parameter!");
+	pxAssertDev(vuindex == 0 || vuindex == 1, "Invalid VU index parameter!");
 
 #ifdef PCSX2_DEBUG
 	s_vucount = 0;
@@ -816,7 +816,7 @@ void VuBaseBlock::GetInstsAtPc(int instpc, list<VuInstruction*>& listinsts)
 
 static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 {
-	pxAssert(vuindex < 2);
+	pxAssert(vuindex == 0 || vuindex == 1);
 	pxAssert(s_recVUPtr[vuindex] != NULL);
 	//Console.WriteLn("svu%c rec: %x", '0'+vuindex, startpc);
 
