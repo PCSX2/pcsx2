@@ -98,20 +98,17 @@ int FileStream::read(byte* b, int len)
 string FileStream::readLine()
 {
 	string s;
-	char c;
 
 	s.clear();
-	do {
-		if(eof())
+	while (!eof())
+	{
+		char c = read();
+
+		if ((c == '\n') || (c == '\r') || (c == '\0'))
 			break;
 
-		c = read();
-
-		if((c=='\n')||(c=='\r')||(c==0))
-			break;
-
-		s.append(1,c);
-	} while(true);
+		s.append(1, c);
+	}
 
 	return s;
 }
@@ -119,20 +116,17 @@ string FileStream::readLine()
 wstring FileStream::readLineW()
 {
 	wstring s;
-	wchar_t c;
 
 	s.clear();
-	do {
-		if(eof())
+	while (!eof())
+	{
+		wchar_t c = read<wchar_t>();
+
+		if ((c == L'\n') || (c == L'\r') || (c == L'\0'))
 			break;
 
-		c = read<wchar_t>();
-
-		if((c==L'\n')||(c==L'\r')||(c==0))
-			break;
-
-		s.append(1,c);
-	} while(true);
+		s.append(1, c);
+	}
 
 	return s;
 }
