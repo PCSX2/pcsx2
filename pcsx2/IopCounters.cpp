@@ -752,7 +752,7 @@ void SaveStateBase::psxRcntFreeze()
 {
 	FreezeTag( "iopCounters" );
 
-    Freeze(psxCounters);
+	Freeze(psxCounters);
 	Freeze(psxNextCounter);
 	Freeze(psxNextsCounter);
 

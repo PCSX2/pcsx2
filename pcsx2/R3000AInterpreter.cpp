@@ -173,7 +173,7 @@ static s32 intExecuteBlock( s32 eeCycles )
 		branch2 = 0;
 		while (!branch2) {
 			execI();
-        }
+		}
 	}
 	return iopBreak + iopCycleEE;
 }

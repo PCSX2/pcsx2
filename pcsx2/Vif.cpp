@@ -268,19 +268,18 @@ __fi void vif1FBRST(u32 value) {
 				// loop necessary for spiderman
 				switch(dmacRegs.ctrl.MFD)
 				{
-				    case MFD_VIF1:
-                        //Console.WriteLn("MFIFO Stall");
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
-                        break;
+					case MFD_VIF1:
+						//Console.WriteLn("MFIFO Stall");
+						if(vif1ch.chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
+						break;
 
-                    case NO_MFD:
-                    case MFD_RESERVED:
-                    case MFD_GIF: // Wonder if this should be with VIF?
-                        // Gets the timing right - Flatout
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_VIF1, 0);
-                        break;
+					case NO_MFD:
+					case MFD_RESERVED:
+					case MFD_GIF: // Wonder if this should be with VIF?
+						// Gets the timing right - Flatout
+						if(vif1ch.chcr.STR == true) CPU_INT(DMAC_VIF1, 0);
+						break;
 				}
-
 				//vif1ch.chcr.STR = true;
 			}
 		}

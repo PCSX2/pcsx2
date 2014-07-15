@@ -424,20 +424,20 @@ void MainEmuFrame::Menu_EnableBackupStates_Click( wxCommandEvent& )
 	//  (1st save after the toggle keeps the old pre-toggle value)..
 	//  wonder what that means for all the other menu checkboxes which only use AppSaveSettings... (avih)
 	AppApplySettings();
-    
+
 	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_EnablePatches_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnablePatches = GetMenuBar()->IsChecked( MenuId_EnablePatches );
-    AppSaveSettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_EnableCheats_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnableCheats  = GetMenuBar()->IsChecked( MenuId_EnableCheats );
-    AppSaveSettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
@@ -449,7 +449,7 @@ void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
 void MainEmuFrame::Menu_EnableHostFs_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.HostFs = GetMenuBar()->IsChecked( MenuId_EnableHostFs );
-    AppSaveSettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
@@ -484,12 +484,12 @@ void MainEmuFrame::Menu_SaveStates_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_LoadStateOther_Click(wxCommandEvent &event)
 {
-   Console.WriteLn("If this were hooked up, it would load a savestate file.");
+	Console.WriteLn("If this were hooked up, it would load a savestate file.");
 }
 
 void MainEmuFrame::Menu_SaveStateOther_Click(wxCommandEvent &event)
 {
-   Console.WriteLn("If this were hooked up, it would save a savestate file.");
+	Console.WriteLn("If this were hooked up, it would save a savestate file.");
 }
 
 void MainEmuFrame::Menu_Exit_Click(wxCommandEvent &event)

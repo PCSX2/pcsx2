@@ -22,15 +22,15 @@
 
 static const char* nameFromType(int type)
 {
-    switch(type)
-    {
-        case ISOTYPE_CD:		return "CD";
-        case ISOTYPE_DVD:		return "DVD";
-        case ISOTYPE_AUDIO:		return "Audio CD";
-        case ISOTYPE_DVDDL:		return "DVD9 (dual-layer)";
-        case ISOTYPE_ILLEGAL:	return "Illegal media";
-        default:				return "Unknown or corrupt";
-    }
+	switch(type)
+	{
+		case ISOTYPE_CD:		return "CD";
+		case ISOTYPE_DVD:		return "DVD";
+		case ISOTYPE_AUDIO:		return "Audio CD";
+		case ISOTYPE_DVDDL:		return "DVD9 (dual-layer)";
+		case ISOTYPE_ILLEGAL:	return "Illegal media";
+		default:				return "Unknown or corrupt";
+	}
 }
 
 int InputIsoFile::ReadSync(u8* dst, uint lsn)

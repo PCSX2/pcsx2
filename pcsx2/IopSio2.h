@@ -22,28 +22,28 @@
 //from sio2man.c
 
 struct SIO2_packet {
-    unsigned int recvVal1; // 0x00
-    unsigned int sendArray1[4]; // 0x04-0x10
-    unsigned int sendArray2[4]; // 0x14-0x20
+	unsigned int recvVal1; // 0x00
+	unsigned int sendArray1[4]; // 0x04-0x10
+	unsigned int sendArray2[4]; // 0x14-0x20
 
-    unsigned int recvVal2; // 0x24
+	unsigned int recvVal2; // 0x24
 
-    unsigned int sendArray3[16]; // 0x28-0x64
+	unsigned int sendArray3[16]; // 0x28-0x64
 
-    unsigned int recvVal3; // 0x68
+	unsigned int recvVal3; // 0x68
 
-    int sendSize; // 0x6C
-    int recvSize; // 0x70
+	int sendSize; // 0x6C
+	int recvSize; // 0x70
 
-    unsigned char *sendBuf; // 0x74
-    unsigned char *recvBuf; // 0x78
+	unsigned char *sendBuf; // 0x74
+	unsigned char *recvBuf; // 0x78
 
-    unsigned int dmacAddress1;
-    unsigned int dmacSize1;
-    unsigned int dmacCount1;
-    unsigned int dmacAddress2;
-    unsigned int dmacSize2;
-    unsigned int dmacCount2;
+	unsigned int dmacAddress1;
+	unsigned int dmacSize1;
+	unsigned int dmacCount1;
+	unsigned int dmacAddress2;
+	unsigned int dmacSize2;
+	unsigned int dmacCount2;
 };
 
 struct sio2Struct {

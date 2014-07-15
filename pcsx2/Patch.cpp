@@ -117,7 +117,7 @@ void inifile_command(bool isCheat, const wxString& cmd)
 
 	// Is this really what we want to be doing here? Seems like just leaving it empty/blank
 	// would make more sense... --air
-    if (set.rvalue.IsEmpty()) set.rvalue = set.lvalue;
+	if (set.rvalue.IsEmpty()) set.rvalue = set.lvalue;
 
 	/*int code = */PatchTableExecute(set, isCheat ? commands_cheat : commands_patch);
 }
@@ -128,7 +128,7 @@ void TrimPatches(wxString& s)
 {
 	wxStringTokenizer tkn( s, L"\n" );
 	
-    while(tkn.HasMoreTokens()) {
+	while(tkn.HasMoreTokens()) {
 		inifile_command(0, tkn.GetNextToken());
 	}
 }
@@ -160,19 +160,19 @@ int InitPatches(const wxString& crc, const Game_Data& game)
 
 void inifile_processString(const wxString& inStr)
 {
-  wxString str(inStr);
-  inifile_trim(str);
-  if (!str.IsEmpty()) inifile_command(1, str);
+	wxString str(inStr);
+	inifile_trim(str);
+	if (!str.IsEmpty()) inifile_command(1, str);
 }
 
 // This routine receives a file from inifile_read, trims it,
 // Then sends the command to be parsed.
 void inifile_process(wxTextFile &f1 )
 {
-    for (uint i = 0; i < f1.GetLineCount(); i++)
-    {
-        inifile_processString(f1[i]);
-    }
+	for (uint i = 0; i < f1.GetLineCount(); i++)
+	{
+		inifile_processString(f1[i]);
+	}
 }
 
 void ResetCheatsCount()
@@ -213,28 +213,28 @@ static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, cons
 // Note: Should be called after InitPatches()
 // Note: only load cheats from the root folder of the zip
 int LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename) {
-  gameCRC.MakeUpper();
+	gameCRC.MakeUpper();
 
-  int before = cheatnumber;
+	int before = cheatnumber;
 
-  std::auto_ptr<wxZipEntry> entry;
-  wxFFileInputStream in(cheatsArchiveFilename);
-  wxZipInputStream zip(in);
-  while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)
-  {
-    wxString name = entry->GetName();
-    name.MakeUpper();
-    if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
-      Console.WriteLn(Color_Gray, L"Loading patch '%s' from archive '%s'",
-                      entry->GetName().c_str(), cheatsArchiveFilename.c_str());
-      wxTextInputStream pnach(zip);
-      while (!zip.Eof()) {
-        inifile_processString(pnach.ReadLine());
-      }
-    }
-  }
+	std::auto_ptr<wxZipEntry> entry;
+	wxFFileInputStream in(cheatsArchiveFilename);
+	wxZipInputStream zip(in);
+	while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)
+	{
+		wxString name = entry->GetName();
+		name.MakeUpper();
+		if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
+			Console.WriteLn(Color_Gray, L"Loading patch '%s' from archive '%s'",
+							entry->GetName().c_str(), cheatsArchiveFilename.c_str());
+			wxTextInputStream pnach(zip);
+			while (!zip.Eof()) {
+			inifile_processString(pnach.ReadLine());
+			}
+		}
+	}
 
-  return cheatnumber - before;
+	return cheatnumber - before;
 }
 
 
@@ -254,28 +254,28 @@ int LoadCheats(wxString name, const wxDirName& folderName, const wxString& frien
 
 static u32 StrToU32(const wxString& str, int base = 10)
 {
-    unsigned long l;
-    str.ToULong(&l, base);
-    return l;
+	unsigned long l;
+	str.ToULong(&l, base);
+	return l;
 }
 
 static u64 StrToU64(const wxString& str, int base = 10)
 {
-    wxULongLong_t l;
-    str.ToULongLong(&l, base);
-    return l;
+	wxULongLong_t l;
+	str.ToULongLong(&l, base);
+	return l;
 }
 
 // PatchFunc Functions.
 namespace PatchFunc
 {
-    void comment( const wxString& text1, const wxString& text2 )
-    {
-        Console.WriteLn( L"comment: " + text2 );
-    }
+	void comment( const wxString& text1, const wxString& text2 )
+	{
+		Console.WriteLn( L"comment: " + text2 );
+	}
 
-    struct PatchPieces
-    {
+	struct PatchPieces
+	{
 		wxArrayString m_pieces;
 
 		PatchPieces( const wxString& param )
@@ -290,7 +290,7 @@ namespace PatchFunc
 		const wxString& MemAddr() const			{ return m_pieces[2]; }
 		const wxString& OperandSize() const		{ return m_pieces[3]; }
 		const wxString& WriteValue() const		{ return m_pieces[4]; }
-    };
+	};
 
 	template<bool isCheat> 
 	void patchHelper(const wxString& cmd, const wxString& param) {
@@ -299,7 +299,7 @@ namespace PatchFunc
 		// (translated) messages for display in a popup window then we'll have to upgrade the
 		// exception a little bit.
 
-        DevCon.WriteLn(cmd + L" " + param);
+		DevCon.WriteLn(cmd + L" " + param);
 
 		try
 		{
@@ -345,8 +345,8 @@ void ApplyPatch(int place)
 {
 	for (int i = 0; i < patchnumber; i++)
 	{
-	    if (Patch[i].placetopatch == place)
-            _ApplyPatch(&Patch[i]);
+		if (Patch[i].placetopatch == place)
+			_ApplyPatch(&Patch[i]);
 	}
 }
 
@@ -355,7 +355,7 @@ void ApplyCheat(int place)
 {
 	for (int i = 0; i < cheatnumber; i++)
 	{
-	    if (Cheat[i].placetopatch == place)
-            _ApplyPatch(&Cheat[i]);
+		if (Cheat[i].placetopatch == place)
+			_ApplyPatch(&Cheat[i]);
 	}
 }

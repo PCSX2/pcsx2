@@ -82,8 +82,8 @@ u16 ba0R16(u32 mem)
 
 void MyMemCheck(u32 mem)
 {
-    if( mem == 0x1c02f2a0 )
-        Console.WriteLn("yo; (mem == 0x1c02f2a0) in MyMemCheck...");
+	if( mem == 0x1c02f2a0 )
+		Console.WriteLn("yo; (mem == 0x1c02f2a0) in MyMemCheck...");
 }
 
 /////////////////////////////

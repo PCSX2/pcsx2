@@ -147,25 +147,25 @@ void iDumpVU0Registers()
 		__Log("v%d: %x %x %x %x, vi: ", i, VF_VAL(VU0.VF[i].UL[3]), VF_VAL(VU0.VF[i].UL[2]),
 			VF_VAL(VU0.VF[i].UL[1]), VF_VAL(VU0.VF[i].UL[0]));
 
-        switch (i)
-        {
-            case REG_Q:
-            case REG_P:
-                __Log("%f", VU0.VI[i].F);
-                break;
-            case REG_MAC_FLAG:
-                __Log("%x", 0);//VU0.VI[i].UL&0xff);
-                break;
-            case REG_STATUS_FLAG:
-                __Log("%x", 0);//VU0.VI[i].UL&0x03);
-                break;
-            case REG_CLIP_FLAG:
-                __Log("0");
-                break;
-            default:
-                __Log("%x", VU0.VI[i].UL);
-                break;
-        }
+		switch (i)
+		{
+			case REG_Q:
+			case REG_P:
+				__Log("%f", VU0.VI[i].F);
+				break;
+			case REG_MAC_FLAG:
+				__Log("%x", 0);//VU0.VI[i].UL&0xff);
+				break;
+			case REG_STATUS_FLAG:
+				__Log("%x", 0);//VU0.VI[i].UL&0x03);
+				break;
+			case REG_CLIP_FLAG:
+				__Log("0");
+				break;
+			default:
+				__Log("%x", VU0.VI[i].UL);
+				break;
+		}
 	}
 	__Log("vfACC: %f %f %f %f\n", VU0.ACC.F[3], VU0.ACC.F[2], VU0.ACC.F[1], VU0.ACC.F[0]);
 #endif

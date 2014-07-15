@@ -77,16 +77,16 @@ enum vif_stat_flags
 
 enum vif_status
 {
-    VPS_IDLE		 = 0,
-    VPS_WAITING		 = 1,
-    VPS_DECODING	 = 2,
-    VPS_TRANSFERRING = 3 // And decompressing.
+	VPS_IDLE		 = 0,
+	VPS_WAITING		 = 1,
+	VPS_DECODING	 = 2,
+	VPS_TRANSFERRING = 3 // And decompressing.
 };
 
 enum vif_stallreasons
 {
-    VIF_TIMING_BREAK  = 1,
-    VIF_IRQ_STALL	 = 2
+	VIF_TIMING_BREAK  = 1,
+	VIF_IRQ_STALL	 = 2
 };
 
 //

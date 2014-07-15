@@ -433,9 +433,9 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 	const char* filenamea = buf.data();
 	sprintf( command, "objdump -D --target=binary --architecture=i386 -M intel mydump1 | cat %s - > tempdump", filenamea );
 	system( command );
-    sprintf( command, "mv tempdump %s", filenamea );
-    system( command );
-    //f = fopen( filename.c_str(), "a+" );
+	sprintf( command, "mv tempdump %s", filenamea );
+	system( command );
+	//f = fopen( filename.c_str(), "a+" );
 #endif
 }
 
@@ -652,9 +652,9 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 {
-    if ( ! _Rt_ ) {
+	if ( ! _Rt_ ) {
 		// check for iop module import table magic
-        if (psxRegs.code >> 16 == 0x2400) {
+		if (psxRegs.code >> 16 == 0x2400) {
 			MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
 			MOV32ItoM( (uptr)&psxRegs.pc, psxpc );
 			_psxFlushCall(FLUSH_NODESTROY);
@@ -682,8 +682,8 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 				xJNE(iopDispatcherReg);
 			}
 		}
-        return;
-    }
+		return;
+	}
 
 	// for now, don't support xmm
 
@@ -1096,7 +1096,7 @@ static void checkcodefn()
 #ifdef _MSC_VER
 	__asm mov pctemp, eax;
 #else
-    __asm__ __volatile__("movl %%eax, %[pctemp]" : [pctemp]"m="(pctemp) );
+	__asm__ __volatile__("movl %%eax, %[pctemp]" : [pctemp]"m="(pctemp) );
 #endif
 	Console.WriteLn("iop code changed! %x", pctemp);
 }
@@ -1186,10 +1186,10 @@ static void __fastcall  PreBlockCheck( u32 blockpc )
 	static int curcount = 0;
 	const int skip = 0;
 
-    //*(int*)PSXM(0x27990) = 1; // enables cdvd bios output for scph10000
+	//*(int*)PSXM(0x27990) = 1; // enables cdvd bios output for scph10000
 
-    if( (psxdump&2) && lastrec != blockpc )
-    {
+	if( (psxdump&2) && lastrec != blockpc )
+	{
 		curcount++;
 
 		if( curcount > skip ) {

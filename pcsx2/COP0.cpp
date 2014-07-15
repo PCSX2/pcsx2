@@ -40,8 +40,8 @@ void __fastcall WriteCP0Status(u32 value) {
 	//DMA_LOG("COP0 Status write = 0x%08x", value);
 
 	cpuRegs.CP0.n.Status.val = value;
-    cpuUpdateOperationMode();
-    cpuSetNextEventDelta(4);
+	cpuUpdateOperationMode();
+	cpuSetNextEventDelta(4);
 }
 
 
@@ -350,7 +350,7 @@ void TLBWI() {
 
 	//if (j > 48) return;
 
-DbgCon.Warning("COP0_TLBWI %d:%x,%x,%x,%x\n",
+	DbgCon.Warning("COP0_TLBWI %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Index,    cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
@@ -367,7 +367,7 @@ void TLBWR() {
 
 	//if (j > 48) return;
 
-DevCon.Warning("COP0_TLBWR %d:%x,%x,%x,%x\n",
+	DevCon.Warning("COP0_TLBWR %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Random,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
@@ -421,24 +421,24 @@ void MFC0()
 		break;
 
 		case 25:
-		    switch(_Imm_ & 0x3F)
-		    {
-			    case 0:		// MFPS  [LSB is clear]
+			switch(_Imm_ & 0x3F)
+			{
+				case 0:		// MFPS  [LSB is clear]
 					cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pccr.val;
 				break;
 
-			    case 1:		// MFPC [LSB is set] - read PCR0
+				case 1:		// MFPC [LSB is set] - read PCR0
 					COP0_UpdatePCCR();
-                    cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr0;
+					cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr0;
 				break;
 
-			    case 3:		// MFPC [LSB is set] - read PCR1
+				case 3:		// MFPC [LSB is set] - read PCR1
 					COP0_UpdatePCCR();
 					cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr1;
 				break;
-		    }
-		    /*Console.WriteLn("MFC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x",  params
-		    cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);*/
+			}
+			/*Console.WriteLn("MFC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x",  params
+			cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);*/
 		break;
 
 		case 24:

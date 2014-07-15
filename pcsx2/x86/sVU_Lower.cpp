@@ -605,7 +605,7 @@ void recVUMI_MR32( VURegs *VU, int info )
 //------------------------------------------------------------------
 void _loadEAX(VURegs *VU, int x86reg, uptr offset, int info)
 {
-    pxAssert( offset < 0x80000000 );
+	pxAssert( offset < 0x80000000 );
 
 	if( x86reg >= 0 ) {
 		switch(_X_Y_Z_W) {
@@ -774,14 +774,14 @@ void recVUMI_LQI(VURegs *VU, int info)
 		return;
 	}
 
-    if (_Is_ == 0) {
+	if (_Is_ == 0) {
 		_loadEAX(VU, -1, (uptr)VU->Mem, info);
-    }
+	}
 	else {
 		isreg = ALLOCVI(_Is_, MODE_READ|MODE_WRITE);
 		_loadEAX(VU, recVUTransformAddr(isreg, VU, _Is_, 0), (uptr)VU->Mem, info);
 		ADD16ItoR( isreg, 1 );
-    }
+	}
 }
 //------------------------------------------------------------------
 
@@ -1329,15 +1329,15 @@ void recVUMI_FSSET(VURegs *VU, int info)
 	//Console.WriteLn("recVUMI_FSSET");
 	imm = (((VU->code >> 21 ) & 0x1) << 11) | (VU->code & 0x7FF);
 
-    // keep the low 6 bits ONLY if the upper instruction is an fmac instruction (otherwise rewrite) - metal gear solid 3
-    //if( (info & PROCESS_VU_SUPER) && VUREC_FMAC ) {
-        MOV32MtoR(EAX, prevaddr);
-	    AND32ItoR(EAX, 0x3f);
-	    if ((imm&0xfc0) != 0) OR32ItoR(EAX, imm & 0xFC0);
-        MOV32RtoM(writeaddr ? writeaddr : prevaddr, EAX);
-    //}
-    //else {
-    //    MOV32ItoM(writeaddr ? writeaddr : prevaddr, imm&0xfc0);
+	// keep the low 6 bits ONLY if the upper instruction is an fmac instruction (otherwise rewrite) - metal gear solid 3
+	//if( (info & PROCESS_VU_SUPER) && VUREC_FMAC ) {
+		MOV32MtoR(EAX, prevaddr);
+		AND32ItoR(EAX, 0x3f);
+		if ((imm&0xfc0) != 0) OR32ItoR(EAX, imm & 0xFC0);
+		MOV32RtoM(writeaddr ? writeaddr : prevaddr, EAX);
+	//}
+	//else {
+	//    MOV32ItoM(writeaddr ? writeaddr : prevaddr, imm&0xfc0);
 	//}
 }
 //------------------------------------------------------------------

@@ -396,16 +396,16 @@ void CACHE() {
 
 			pCache[index].tag[way] &= LRF_FLAG;
 
-		    pCache[index].data[way][0].b8._u64[0] = 0;
-		    pCache[index].data[way][0].b8._u64[1] = 0;
-		    pCache[index].data[way][1].b8._u64[0] = 0;
-		    pCache[index].data[way][1].b8._u64[1] = 0;
-		    pCache[index].data[way][2].b8._u64[0] = 0;
-		    pCache[index].data[way][2].b8._u64[1] = 0;
-		    pCache[index].data[way][3].b8._u64[0] = 0;
-		    pCache[index].data[way][3].b8._u64[1] = 0;
-			
-		   break;
+			pCache[index].data[way][0].b8._u64[0] = 0;
+			pCache[index].data[way][0].b8._u64[1] = 0;
+			pCache[index].data[way][1].b8._u64[0] = 0;
+			pCache[index].data[way][1].b8._u64[1] = 0;
+			pCache[index].data[way][2].b8._u64[0] = 0;
+			pCache[index].data[way][2].b8._u64[1] = 0;
+			pCache[index].data[way][3].b8._u64[0] = 0;
+			pCache[index].data[way][3].b8._u64[1] = 0;
+
+			break;
 		}
 		case 0x11: //DXLDT (Data Cache Load Data into TagLo)
 		{
