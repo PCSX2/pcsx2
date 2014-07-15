@@ -58,6 +58,7 @@ void yuv2rgb_reference(void)
 		}
 }
 
+#ifdef _M_X86_32
 // Everything below is bit accurate to the IPU specification (except maybe rounding).
 // Know the specification before you touch it.
 #define SSE_BYTES(x) {x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x}
@@ -403,3 +404,4 @@ ihatemsvc:
 #	error Unsupported compiler
 #endif
 }
+#endif

@@ -15,7 +15,10 @@
 
 #pragma once
 
-#define yuv2rgb yuv2rgb_sse2
-
 extern void yuv2rgb_reference();
+#ifdef _M_X86_32
+#define yuv2rgb yuv2rgb_sse2
 extern void yuv2rgb_sse2();
+#else
+#define yuv2rgb yuv2rgb_reference
+#endif
