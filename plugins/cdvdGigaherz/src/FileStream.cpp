@@ -35,7 +35,7 @@ void FileStream::seek(s64 offset)
 
 void FileStream::seek(s64 offset, int ref_position)
 {
-	int ret = _fseeki64(handle, offset, SEEK_SET);
+	int ret = _fseeki64(handle, offset, ref_position);
 #ifdef __LINUX__
 	if (ret) throw "Seek offset out of bounds.";
 #else
