@@ -20,17 +20,11 @@
   !define INC_CRT_2013  1
 !endif
 
-!ifndef INC_AVG
-  ; We are including the AVG SafeGuard with the full installer.
-  !define INC_AVG	    1
-!endif
-
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
 !define OUTFILE_POSTFIX "setup"
 !include "SharedBase.nsh"
-!include "AVGPage.nsdinc"
 !include "x64.nsh"
 
 ; Reserve features for improved performance with solid archiving.
@@ -39,7 +33,6 @@ ShowUninstDetails nevershow
 ;!insertmacro MUI_RESERVEFILE_LANGDLL
 
 !insertmacro MUI_PAGE_COMPONENTS 
-Page custom fnc_AVGPage_Show
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
   
