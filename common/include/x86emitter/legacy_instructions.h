@@ -442,7 +442,7 @@ extern void AND8RtoR( x86IntRegType to, x86IntRegType from );
 // not r32
 extern void NOT32R( x86IntRegType from );
 // not m32
-extern void NOT32M( u32 from );
+extern void NOT32M( uptr from );
 // neg r32
 extern void NEG32R( x86IntRegType from );
 // neg m32
