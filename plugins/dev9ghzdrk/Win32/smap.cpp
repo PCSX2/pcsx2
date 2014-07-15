@@ -486,10 +486,6 @@ u16 CALLBACK smap_read16(u32 addr)
 			DEV9_LOG("SMAP : Unknown 16 bit read @ %X,v=%X\n",addr,dev9Ru16(addr));
 			return dev9Ru16(addr);
 	}
-	
-	DEV9_LOG("SMAP : error , 16 bit read @ %X,v=%X\n",addr,dev9Ru16(addr));
-	return dev9Ru16(addr);
-
 }
 u32 CALLBACK smap_read32(u32 addr)
 {
@@ -529,9 +525,6 @@ u32 CALLBACK smap_read32(u32 addr)
 		DEV9_LOG("SMAP : Unknown 32 bit read @ %X,v=%X\n",addr,dev9Ru32(addr));
 		return dev9Ru32(addr);
 	}
-	
-	DEV9_LOG("SMAP : error , 32 bit read @ %X,v=%X\n",addr,dev9Ru32(addr));
-	return dev9Ru32(addr);
 }
 void CALLBACK smap_write8(u32 addr, u8 value)
 {
@@ -599,9 +592,6 @@ void CALLBACK smap_write8(u32 addr, u8 value)
 		dev9Ru8(addr) = value;
 		return;
 	}
-
-	DEV9_LOG("SMAP : error , 8 bit write @ %X,v=%X\n",addr,value);
-	dev9Ru8(addr) = value;
 }
 void CALLBACK smap_write16(u32 addr, u16 value)
 {
@@ -782,9 +772,6 @@ void CALLBACK smap_write16(u32 addr, u16 value)
 		dev9Ru16(addr) = value;
 		return;
 	}
-
-	DEV9_LOG("SMAP : error , 16 bit write @ %X,v=%X\n",addr,value);
-	dev9Ru16(addr) = value;
 }
 void CALLBACK smap_write32(u32 addr, u32 value)
 {
@@ -809,9 +796,6 @@ void CALLBACK smap_write32(u32 addr, u32 value)
 		dev9Ru32(addr) = value;
 		return;
 	}
-
-	DEV9_LOG("SMAP : error , 32 bit write @ %X,v=%X\n",addr,value);
-	dev9Ru32(addr) = value;
 }
 void CALLBACK smap_readDMA8Mem(u32 *pMem, int size)
 {
