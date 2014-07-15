@@ -96,8 +96,8 @@ template< typename DataType >
 DataType __fastcall vtlb_memRead(u32 addr)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
-	u32 vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
-	s32 ppf=addr+vmv;
+	uptr vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
+	sptr ppf=addr+vmv;
 
 	if (!(ppf<0))
 	{
@@ -151,8 +151,8 @@ DataType __fastcall vtlb_memRead(u32 addr)
 
 void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 
 	if (!(ppf<0))
 	{
@@ -178,8 +178,8 @@ void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 }
 void __fastcall vtlb_memRead128(u32 mem, mem128_t *out)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 
 	if (!(ppf<0))
 	{
@@ -211,8 +211,8 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
 
-	u32 vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
-	s32 ppf=addr+vmv;
+	uptr vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
+	sptr ppf=addr+vmv;
 	if (!(ppf<0))
 	{		
 		if (!CHECK_EEREC) 
@@ -259,8 +259,8 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 
 void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 	if (!(ppf<0))
 	{		
 		if (!CHECK_EEREC) 
@@ -287,8 +287,8 @@ void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 
 void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 	if (!(ppf<0))
 	{
 		if (!CHECK_EEREC) 
@@ -573,14 +573,14 @@ void vtlb_MapBlock(void* base, u32 start, u32 size, u32 blocksize)
 	verify(0==(blocksize&VTLB_PAGE_MASK) && blocksize>0);
 	verify(0==(size%blocksize));
 
-	s32 baseint = (s32)base;
+	sptr baseint = (sptr)base;
 	u32 end = start + (size - VTLB_PAGE_SIZE);
 	verify((end>>VTLB_PAGE_BITS) < ArraySize(vtlbdata.pmap));
 
 	while (start <= end)
 	{
 		u32 loopsz = blocksize;
-		s32 ptr = baseint;
+		sptr ptr = baseint;
 
 		while (loopsz > 0)
 		{
@@ -668,7 +668,7 @@ void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 size)
 	verify(0==(vaddr&VTLB_PAGE_MASK));
 	verify(0==(size&VTLB_PAGE_MASK) && size>0);
 
-	u32 bu8 = (u32)buffer;
+	uptr bu8 = (uptr)buffer;
 	while (size > 0)
 	{
 		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = bu8-vaddr;
@@ -764,7 +764,7 @@ void vtlb_Core_Alloc()
 {
 	if (!vtlbdata.vmap)
 	{
-		vtlbdata.vmap = (s32*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap), 16 );
+		vtlbdata.vmap = (sptr*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap), 16 );
 		if (!vtlbdata.vmap)
 			throw Exception::OutOfMemory( L"VTLB Virtual Address Translation LUT" )
 				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
