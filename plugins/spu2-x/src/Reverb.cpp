@@ -140,7 +140,7 @@ StereoOut32 V_Core::DoReverb( const StereoOut32& Input )
 		// within that zone then the "bulk" of the test is skipped, so this should only
 		// be a slowdown on a few evil games.
 
-		for( uint i=0; i<2; i++ )
+		for( int i=0; i<2; i++ )
 		{
 			if( Cores[i].IRQEnable && ((Cores[i].IRQA >= EffectsStartA) && (Cores[i].IRQA <= EffectsEndA)) )
 			{

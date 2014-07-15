@@ -131,10 +131,10 @@ void tx_process()
 {
 	//we loop based on count ? or just *use* it ?
 	u32 cnt=dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
-	//spams// printf("tx_process : %d cnt frames !\n",cnt);
+	//spams// printf("tx_process : %u cnt frames !\n",cnt);
 
 	NetPacket pk;
-	int fc=0;
+	u32 fc=0;
 	for (fc=0;fc<cnt;fc++)
 	{
 		smap_bd_t *pbd= ((smap_bd_t *)&dev9.dev9R[SMAP_BD_TX_BASE & 0xffff])+dev9.txbdi;
@@ -146,7 +146,7 @@ void tx_process()
 		}
 		if (pbd->length&3)
 		{
-			//spams// emu_printf("WARN : pbd->length not alligned %d\n",pbd->length);
+			//spams// emu_printf("WARN : pbd->length not aligned %u\n",pbd->length);
 		}
 
 		if(pbd->length>1514)
@@ -157,13 +157,13 @@ void tx_process()
 		{
 			u32 base=(pbd->pointer-0x1000)&16383;
 			DEV9_LOG("Sending Packet from base %x, size %d\n", base, pbd->length);
-			//spams// emu_printf("Sending Packet from base %x, size %d\n", base, pbd->length);
+			//spams// emu_printf("Sending Packet from base %x, size %u\n", base, pbd->length);
 			
 			pk.size=pbd->length;
 			
 			if (!(pbd->pointer>=0x1000))
 			{
-				emu_printf("ERROR: odd , !pbd->pointer>0x1000 | 0x%X %d\n", pbd->pointer, pbd->length);
+				emu_printf("ERROR: odd , !pbd->pointer>0x1000 | 0x%X %u\n", pbd->pointer, pbd->length);
 			}
 			//increase fifo pointer(s)
 			//uh does that even exist on real h/w ?
@@ -205,7 +205,7 @@ void tx_process()
 				u32 was=16384-base;
 				memcpy(pk.buffer,dev9.txfifo+base,was);
 				memcpy(pk.buffer,dev9.txfifo,pbd->length-was);
-				printf("Warped read, was=%d, sz=%d, sz-was=%d\n",was,pbd->length,pbd->length-was);
+				printf("Warped read, was=%u, sz=%u, sz-was=%u\n", was, pbd->length, pbd->length-was);
 			}
 			else
 			{
@@ -225,7 +225,7 @@ void tx_process()
 		dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)--;
 	}
 
-	//spams// emu_printf("processed %d frames, %d count, cnt = %d\n",fc,dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT),cnt);
+	//spams// emu_printf("processed %u frames, %u count, cnt = %u\n",fc,dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT),cnt);
 	//if some error/early exit signal TXDNV
 	if (fc!=cnt || cnt==0)
 	{
@@ -252,7 +252,7 @@ void emac3_write(u32 addr)
 		DEV9_LOG("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
 		//spams// emu_printf("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
 		//Process TX  here ?
-		if (!value&SMAP_E3_TX_GNP_0)
+		if (!(value & SMAP_E3_TX_GNP_0))
 			emu_printf("SMAP_R_EMAC3_TxMODE0_L: SMAP_E3_TX_GNP_0 not set\n");
 
 		tx_process();
@@ -486,10 +486,6 @@ u16 CALLBACK smap_read16(u32 addr)
 			DEV9_LOG("SMAP : Unknown 16 bit read @ %X,v=%X\n",addr,dev9Ru16(addr));
 			return dev9Ru16(addr);
 	}
-	
-	DEV9_LOG("SMAP : error , 16 bit read @ %X,v=%X\n",addr,dev9Ru16(addr));
-	return dev9Ru16(addr);
-
 }
 u32 CALLBACK smap_read32(u32 addr)
 {
@@ -529,9 +525,6 @@ u32 CALLBACK smap_read32(u32 addr)
 		DEV9_LOG("SMAP : Unknown 32 bit read @ %X,v=%X\n",addr,dev9Ru32(addr));
 		return dev9Ru32(addr);
 	}
-	
-	DEV9_LOG("SMAP : error , 32 bit read @ %X,v=%X\n",addr,dev9Ru32(addr));
-	return dev9Ru32(addr);
 }
 void CALLBACK smap_write8(u32 addr, u8 value)
 {
@@ -599,9 +592,6 @@ void CALLBACK smap_write8(u32 addr, u8 value)
 		dev9Ru8(addr) = value;
 		return;
 	}
-
-	DEV9_LOG("SMAP : error , 8 bit write @ %X,v=%X\n",addr,value);
-	dev9Ru8(addr) = value;
 }
 void CALLBACK smap_write16(u32 addr, u16 value)
 {
@@ -782,9 +772,6 @@ void CALLBACK smap_write16(u32 addr, u16 value)
 		dev9Ru16(addr) = value;
 		return;
 	}
-
-	DEV9_LOG("SMAP : error , 16 bit write @ %X,v=%X\n",addr,value);
-	dev9Ru16(addr) = value;
 }
 void CALLBACK smap_write32(u32 addr, u32 value)
 {
@@ -809,9 +796,6 @@ void CALLBACK smap_write32(u32 addr, u32 value)
 		dev9Ru32(addr) = value;
 		return;
 	}
-
-	DEV9_LOG("SMAP : error , 32 bit write @ %X,v=%X\n",addr,value);
-	dev9Ru32(addr) = value;
 }
 void CALLBACK smap_readDMA8Mem(u32 *pMem, int size)
 {

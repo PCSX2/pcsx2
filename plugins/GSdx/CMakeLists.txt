@@ -12,7 +12,6 @@ set(Output GSdx-0.1.16)
 set(CommonFlags
     -D_LINUX
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function
-    -mpreferred-stack-boundary=2
     -mfpmath=sse
     #-Wstrict-aliasing # Allow to track strict aliasing issue.
     -std=c++0x
@@ -26,6 +25,11 @@ set(OptimizationFlags
     -O2
     -DNDEBUG
     )
+
+#Clang doesn't support a few common flags that GCC does.
+if(NOT USE_CLANG)
+	add_definitions(${CommonFlags} -mpreferred-stack-boundary=2)
+endif(NOT USE_CLANG)
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
