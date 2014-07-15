@@ -99,7 +99,7 @@ EXPORT_C_(void) PS2EsetEmuVersion(const char* emuId, uint32 version)
 
 EXPORT_C_(uint32) PS2EgetCpuPlatform()
 {
-#if _M_AMD64
+#ifdef _M_AMD64
 
 	return PS2E_X86_64;
 

@@ -33,10 +33,6 @@ GPUDrawScanlineCodeGenerator::GPUDrawScanlineCodeGenerator(void* param, uint32 k
 	: GSCodeGenerator(code, maxsize)
 	, m_local(*(GPUScanlineLocalData*)param)
 {
-	#if _M_AMD64
-	//#error TODO
-	#endif
-
 	m_sel.key = key;
 
 	Generate();

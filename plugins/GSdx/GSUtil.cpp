@@ -46,7 +46,7 @@ const char* GSUtil::GetLibName()
 		if(SVN_MODS) str += "m";
 		#endif
 
-		#if _M_AMD64
+		#ifdef _M_AMD64
 		str += " 64-bit";
 		#endif
 
