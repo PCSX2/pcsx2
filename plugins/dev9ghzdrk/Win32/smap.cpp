@@ -252,7 +252,7 @@ void emac3_write(u32 addr)
 		DEV9_LOG("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
 		//spams// emu_printf("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
 		//Process TX  here ?
-		if (!value&SMAP_E3_TX_GNP_0)
+		if (!(value & SMAP_E3_TX_GNP_0))
 			emu_printf("SMAP_R_EMAC3_TxMODE0_L: SMAP_E3_TX_GNP_0 not set\n");
 
 		tx_process();
