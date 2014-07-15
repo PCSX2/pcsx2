@@ -388,7 +388,7 @@ class two_d_iterator {
   pointer operator->() const     { return &(operator*()); }
 
   // Arithmetic: we just do arithmetic on pos.  We don't even need to
-  // do bounds checking, since STL doesn't consider that it's job.  :-)
+  // do bounds checking, since STL doesn't consider that its job.  :-)
   // NOTE: this is not amortized constant time!  What do we do about it?
   void advance_past_end() {          // used when col_current points to end()
     while ( col_current == row_current->TWOD_END_() ) {  // end of current row

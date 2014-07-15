@@ -22,7 +22,7 @@
 //  DESTRUCTOR_CATCHALL - safe destructor helper
 // --------------------------------------------------------------------------------------
 // In C++ destructors *really* need to be "nothrow" garaunteed, otherwise you can have
-// disasterous nested exception throws during the unwinding process of an originating
+// disastrous nested exception throws during the unwinding process of an originating
 // exception.  Use this macro to dispose of these dangerous exceptions, and generate a
 // friendly error log in their wake.
 //
@@ -127,7 +127,7 @@ namespace Exception
 //  classname - Yeah, the name of this class being defined. :)
 //
 //  defmsg - default message (in english), which will be used for both english and i18n messages.
-//     The text string will be passed through the translator, so if it's int he gettext database
+//     The text string will be passed through the translator, so if it's in the gettext database
 //     it will be optionally translated.
 //
 // BUGZ??  I'd rather use 'classname' on the Clone() prototype, but for some reason it generates

@@ -39,7 +39,7 @@ public:
 	}
 	~mtfifo()
 	{
-		//no need to destroy the CS? i cant remember realy .. ;p
+		//no need to destroy the CS? I can't remember really .. ;p
 	}
 	void put(T data)
 	{
@@ -54,7 +54,7 @@ public:
 		}
 		LeaveCriticalSection(&cs);
 	}
-	//Note, this is partialy mt-safe, the get may fail even if that returned false
+	//Note, this is partially mt-safe, the get may fail even if that returned false
 	bool empty(){ return start==0;}
 	bool get(T& rvi)
 	{

@@ -58,7 +58,7 @@
 
 
 /*
-  Use the earliest version of DX required, no need to polute the namespace
+  Use the earliest version of DX required, no need to pollute the namespace
 */
 #ifdef PAWIN_USE_DIRECTSOUNDFULLDUPLEXCREATE
 #define DIRECTSOUND_VERSION 0x0800
@@ -729,7 +729,7 @@ static double defaultSampleRateSearchOrder_[] =
 /************************************************************************************
 ** Extract capabilities from an output device, and add it to the device info list
 ** if successful. This function assumes that there is enough room in the
-** device info list to accomodate all entries.
+** device info list to accommodate all entries.
 **
 ** The device will not be added to the device list if any errors are encountered.
 */
@@ -983,7 +983,7 @@ static PaError AddOutputDeviceInfoFromDirectSound(
 /************************************************************************************
 ** Extract capabilities from an input device, and add it to the device info list
 ** if successful. This function assumes that there is enough room in the
-** device info list to accomodate all entries.
+** device info list to accommodate all entries.
 **
 ** The device will not be added to the device list if any errors are encountered.
 */
@@ -2224,7 +2224,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
 
         /*  create half duplex buffers. also used for full-duplex streams which didn't 
             succeed when using the full duplex API. that could happen because
-            DX8 or greater isnt installed, the i/o devices aren't the same 
+            DX8 or greater isn't installed, the i/o devices aren't the same 
             physical device. etc.
         */
 

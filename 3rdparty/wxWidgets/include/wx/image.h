@@ -304,7 +304,7 @@ public:
     // (actually shades of grey) typically when you draw anti-
     // aliased text into a bitmap. The DC drawinf routines
     // draw grey values on the black background although they
-    // actually mean to draw white with differnt alpha values.
+    // actually mean to draw white with different alpha values.
     // This method reverses it, assuming a black (!) background
     // and white text (actually only the red channel is read).
     // The method will then fill up the whole image with the

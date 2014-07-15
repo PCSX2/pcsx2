@@ -863,7 +863,7 @@ void __gifCall GIFRegHandlerBITBLTBUF(const u32* data)
 
 	if((gs.dstbufnew.bw & 1) && (gs.dstbufnew.psm == PSM_PSMT8 || gs.dstbufnew.psm == PSM_PSMT4))
 	{
-		gs.dstbufnew.bw &= ~1; // namcoXcapcom: 5, 11, refered to as 4, 10 in TEX0.TBW later
+		gs.dstbufnew.bw &= ~1; // namcoXcapcom: 5, 11, referred to as 4, 10 in TEX0.TBW later
 	}*/
 }
 

@@ -50,7 +50,7 @@ bool _test_instruction( void* pfnCall )
 	return true;
 }
 
-bool CanEmitShit()
+bool CanEmit()
 {
 	// Under Windows, pre 0.9.6 versions of PCSX2 may not initialize the TLS
 	// register (FS register), so plugins (DLLs) using our x86emitter in multithreaded
@@ -67,7 +67,7 @@ bool CanEmitShit()
 
 bool CanTestInstructionSets()
 {
-	return CanEmitShit();
+	return CanEmit();
 }
 
 SingleCoreAffinity::SingleCoreAffinity()

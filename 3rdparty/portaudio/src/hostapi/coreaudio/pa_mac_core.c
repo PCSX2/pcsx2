@@ -1330,7 +1330,7 @@ static PaError OpenAndSetupOneAudioUnit(
     /*  set device format first, but only touch the device if the user asked */
     if( inStreamParams ) {
        /*The callback never calls back if we don't set the FPB */
-       /*This seems wierd, because I would think setting anything on the device
+       /*This seems weird, because I would think setting anything on the device
          would be disruptive.*/
        paResult = setBestFramesPerBuffer( *audioDevice, FALSE,
                                           requestedFramesPerBuffer,
@@ -1348,7 +1348,7 @@ static PaError OpenAndSetupOneAudioUnit(
     }
     if( outStreamParams && !inStreamParams ) {
        /*The callback never calls back if we don't set the FPB */
-       /*This seems wierd, because I would think setting anything on the device
+       /*This seems weird, because I would think setting anything on the device
          would be disruptive.*/
        paResult = setBestFramesPerBuffer( *audioDevice, TRUE,
                                           requestedFramesPerBuffer,
@@ -1725,7 +1725,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         inputChannelCount = 0;
-        inputSampleFormat = hostInputSampleFormat = paFloat32; /* Surpress 'uninitialised var' warnings. */
+        inputSampleFormat = hostInputSampleFormat = paFloat32; /* Suppress 'uninitialised var' warnings. */
     }
 
     if( outputParameters )
@@ -1755,7 +1755,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         outputChannelCount = 0;
-        outputSampleFormat = hostOutputSampleFormat = paFloat32; /* Surpress 'uninitialized var' warnings. */
+        outputSampleFormat = hostOutputSampleFormat = paFloat32; /* Suppress 'uninitialized var' warnings. */
     }
 
     /* validate platform specific flags */
@@ -2143,7 +2143,7 @@ static OSStatus AudioIOProc( void *inRefCon,
     
    /* -----------------------------------------------------------------*\
       This output may be useful for debugging,
-      But printing durring the callback is a bad enough idea that
+      But printing during the callback is a bad enough idea that
       this is not enabled by enableing the usual debugging calls.
    \* -----------------------------------------------------------------*/
    /*
@@ -2572,7 +2572,7 @@ static OSStatus AudioIOProc( void *inRefCon,
 static PaError CloseStream( PaStream* s )
 {
     /* This may be called from a failed OpenStream.
-       Therefore, each piece of info is treated seperately. */
+       Therefore, each piece of info is treated separately. */
     PaError result = paNoError;
     PaMacCoreStream *stream = (PaMacCoreStream*)s;
 

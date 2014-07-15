@@ -84,10 +84,10 @@ bool SymbolMap::LoadNocashSym(const char *filename) {
 			}
 		} else {				// labels
 			int size = 1;
-			char* seperator = strchr(value, ',');
-			if (seperator != NULL) {
-				*seperator = 0;
-				sscanf(seperator+1,"%08X",&size);
+			char* separator = strchr(value, ',');
+			if (separator != NULL) {
+				*separator = 0;
+				sscanf(separator+1,"%08X",&size);
 			}
 
 			if (size != 1) {

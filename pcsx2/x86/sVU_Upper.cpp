@@ -200,11 +200,11 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 		//SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
 		//SSE_MINPS_M128_to_XMM(t1reg, (uptr)g_maxvals);
 		//SSE_MAXPS_M128_to_XMM(t1reg, (uptr)g_minvals);
-		//SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occured
+		//SSE_CMPNEPS_XMM_to_XMM(t1reg, reg); // If they're not equal, then overflow has occurred
 
 		SSE_MOVAPS_XMM_to_XMM(t1reg, reg);
 		SSE_ANDPS_M128_to_XMM(t1reg, (uptr)VU_Zero_Helper_Mask);
-		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)VU_Pos_Infinity); // If infinity, then overflow has occured (NaN's don't report as overflow)
+		SSE_CMPEQPS_M128_to_XMM(t1reg, (uptr)VU_Pos_Infinity); // If infinity, then overflow has occurred (NaN's don't report as overflow)
 
 		SSE_MOVMSKPS_XMM_to_R32(x86macflag, t1reg); // Move the sign bits of the previous calculation
 
@@ -1416,7 +1416,7 @@ void recVUMI_MUL_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 	if (CHECK_VU_EXTRA_OVERFLOW) {
 		if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
 	}
-	if (_Fs_) { // This is needed for alot of games; so always clamp this operand
+	if (_Fs_) { // This is needed for a lot of games; so always clamp this operand
 		if (CHECK_VU_SIGN_OVERFLOW) vFloats4_useEAX[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
 		else vFloats2[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
 	}
@@ -1721,7 +1721,7 @@ void recVUMI_MADD_xyzw_toD(VURegs *VU, int xyzw, int regd, int info)
 		if (_Ft_) vuFloat5_useEAX( EEREC_T, EEREC_TEMP, ( 1 << (3 - xyzw) ) );
 		vuFloat5_useEAX( EEREC_ACC, EEREC_TEMP, _X_Y_Z_W );
 	}
-	if (_Fs_) { // This is needed for alot of games; so always clamp this operand
+	if (_Fs_) { // This is needed for a lot of games; so always clamp this operand
 		if (CHECK_VU_SIGN_OVERFLOW) vFloats4_useEAX[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
 		else vFloats2[_X_Y_Z_W]( EEREC_S, EEREC_TEMP ); // Always clamp EEREC_S, regardless if CHECK_VU_OVERFLOW is set
 	}
@@ -2395,7 +2395,7 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
-			//If VF0.w isnt chosen as the constant, then its going to be MAX( 0, VF0 ), so the result is VF0
+			//If VF0.w isn't chosen as the constant, then its going to be MAX( 0, VF0 ), so the result is VF0
 			if( xyzw < 3 ) { SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)&VU->VF[0].UL[0]); }
 			else SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)s_fones);
 		}

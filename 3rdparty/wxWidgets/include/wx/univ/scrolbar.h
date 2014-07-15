@@ -132,7 +132,7 @@ protected:
     virtual void DoDraw(wxControlRenderer *renderer);
     virtual wxBorder GetDefaultBorder() const { return wxBORDER_NONE; }
 
-    // forces update of thumb's visual appearence (does nothing if m_dirty=false)
+    // forces update of thumb's visual appearance (does nothing if m_dirty=false)
     void UpdateThumb();
 
     // SetThumbPosition() helper

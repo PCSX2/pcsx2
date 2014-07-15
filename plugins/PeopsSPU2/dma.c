@@ -163,7 +163,7 @@ int ADMAS4Write()
  if(iDebugMode==1)
   {
    logprintf("ADMAWRITE4 %X - %X\r\n",spuAddr2[0],Adma4.AmountLeft);
-   if(Adma4.AmountLeft<512) logprintf("FUCK YOU %X\r\n",Adma4.AmountLeft);
+   if(Adma4.AmountLeft<512) logprintf("DEBUG %X\r\n",Adma4.AmountLeft);
   }
 #endif
 
@@ -207,7 +207,7 @@ int ADMAS7Write()
  if(iDebugMode==1)
   {
    logprintf("ADMAWRITE7 %X - %X\r\n",spuAddr2[1],Adma7.AmountLeft);
-   if(Adma7.AmountLeft<512) logprintf("FUCK YOU %X\r\n",Adma7.AmountLeft);
+   if(Adma7.AmountLeft<512) logprintf("DEBUG %X\r\n",Adma7.AmountLeft);
   }
 #endif
 

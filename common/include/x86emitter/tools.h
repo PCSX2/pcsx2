@@ -138,7 +138,7 @@ ImplementEnumOperators( SSE_RoundMode );
 //  SSE_MXCSR  -  Control/Status Register (bitfield)
 // --------------------------------------------------------------------------------------
 // Bits 0-5 are exception flags; used only if SSE exceptions have been enabled.
-//   Bits in this field are "sticky" and, once an exception has occured, must be manually
+//   Bits in this field are "sticky" and, once an exception has occurred, must be manually
 //   cleared using LDMXCSR or FXRSTOR.
 //
 // Bits 7-12 are the masks for disabling the exceptions in bits 0-5.  Cleared bits allow

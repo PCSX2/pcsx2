@@ -63,7 +63,7 @@ void VB::Destroy()
 
 int ConstraintReason;
 
-// Return number of 64-pixels block, that guaranted could be hold in memory
+// Return number of 64-pixels block, that guaranteed could be hold in memory
 // from gsfb.fbp and tbp (textrure pase), zbuf.zbp (Z-buffer), frame.fbp
 // (previous frame).
 inline int VB::FindMinimalMemoryConstrain(int tbp, int maxpos)
@@ -455,7 +455,7 @@ inline void VB::FlushTexSetNewVars(u32 psm)
 }
 
 // Flush == draw on screen
-// This function made VB state consistant before real Flush.
+// This function made VB state consistent before real Flush.
 void VB::FlushTexData()
 {
 	GL_REPORT_ERRORD();

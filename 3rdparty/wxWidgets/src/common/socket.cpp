@@ -426,7 +426,7 @@ wxSocketBase& wxSocketBase::ReadMsg(void* buffer, wxUint32 nbytes)
   else
     len2 = 0;
 
-  // Don't attemp to read if the msg was zero bytes long.
+  // Don't attempt to read if the msg was zero bytes long.
   if (len)
   {
     total = _Read(buffer, len);

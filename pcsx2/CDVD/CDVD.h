@@ -108,7 +108,7 @@ struct cdvdStruct {
 	int Readed; // change to bool. --arcum42
 	int Reading; // same here.
 	int ReadMode;
-	int BlockSize; // Total bytes transfered at 1x speed
+	int BlockSize; // Total bytes transferred at 1x speed
 	int Speed;
 	int RetryCnt;
 	int RetryCntP;

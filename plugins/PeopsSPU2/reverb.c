@@ -372,7 +372,7 @@ Reverb steady-state
 -------------------
 
 The reverb steady-state algorithm is fairly clever, and of course by
-"clever" I mean "batshit insane".
+"clever" I mean "insane".
 
 buffer[x] is relative to the current buffer position, not the beginning of
 the buffer.  Note that all buffer offsets must wrap around so they're

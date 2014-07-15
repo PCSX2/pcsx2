@@ -133,7 +133,7 @@ struct TraceLogFilters
 	// Enabled - global toggle for high volume logging.  This is effectively the equivalent to
 	// (EE.Enabled() || IOP.Enabled() || SIF) -- it's cached so that we can use the macros
 	// below to inline the conditional check.  This is desirable because these logs are
-	// *very* high volume, and debug builds get noticably slower if they have to invoke
+	// *very* high volume, and debug builds get noticeably slower if they have to invoke
 	// methods/accessors to test the log enable bits.  Debug builds are slow enough already,
 	// so I prefer this to help keep them usable.
 	bool	Enabled;

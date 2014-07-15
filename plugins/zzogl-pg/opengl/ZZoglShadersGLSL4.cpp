@@ -267,10 +267,10 @@ static bool ValidateProgram(ZZshProgram Prog) {
 	glGetProgramiv(Prog, GL_VALIDATE_STATUS, &isValid);
 
 	if (!isValid) {
-		int lenght, infologlength;
+		int length, infologlength;
 		glGetProgramiv(Prog, GL_INFO_LOG_LENGTH, &infologlength);
 		char* InfoLog = new char[infologlength];
-		glGetProgramInfoLog(Prog, infologlength, &lenght, InfoLog);
+		glGetProgramInfoLog(Prog, infologlength, &length, InfoLog);
 		ZZLog::Error_Log("Validation %d... %d:\t %s", Prog, infologlength, InfoLog);
 		delete[] InfoLog;
 	}
@@ -282,10 +282,10 @@ static void ValidatePipeline(GLuint pipeline) {
 	GLint isValid;
 	glGetProgramPipelineiv(pipeline, GL_VALIDATE_STATUS, &isValid);
 	if (!isValid) {
-		int lenght, infologlength;
+		int length, infologlength;
 		glGetProgramPipelineiv(pipeline, GL_INFO_LOG_LENGTH, &infologlength);
 		char* InfoLog = new char[infologlength];
-		glGetProgramPipelineInfoLog(pipeline, infologlength, &lenght, InfoLog);
+		glGetProgramPipelineInfoLog(pipeline, infologlength, &length, InfoLog);
 		ZZLog::Error_Log("Validation %d... %d:\t %s", pipeline, infologlength, InfoLog);
 		delete[] InfoLog;
 	}

@@ -36,7 +36,7 @@
 //      passed along with every callback defined in the structure.
 //
 //   3. All plugin callbacks use __fastcall calling convention (which passes the first
-//      two parameters int he ECX and EDX registers).  Most compilers support this, and
+//      two parameters in the ECX and EDX registers).  Most compilers support this, and
 //      register parameter passing is actually the standard convention on x86/64.
 //
 // Rationale: This design improves code generation efficiency, especially when using

@@ -634,7 +634,7 @@ bool wxDb::determineDataTypes(bool failOnDataTypeUnsupported)
         SQL_NUMERIC
     };
 
-    // These are the possible SQL types we check for use agains the datasource we are connected
+    // These are the possible SQL types we check for use against the datasource we are connected
     // to for the purpose of determining which data type to use for the date/time column types
     //
     // NOTE: The first type in this enumeration that is determined to be supported by the
@@ -647,7 +647,7 @@ bool wxDb::determineDataTypes(bool failOnDataTypeUnsupported)
 #endif
     };
 
-    // These are the possible SQL types we check for use agains the datasource we are connected
+    // These are the possible SQL types we check for use against the datasource we are connected
     // to for the purpose of determining which data type to use for the BLOB column types.
     //
     // NOTE: The first type in this enumeration that is determined to be supported by the
@@ -657,7 +657,7 @@ bool wxDb::determineDataTypes(bool failOnDataTypeUnsupported)
         SQL_VARBINARY
     };
 
-    // These are the possible SQL types we check for use agains the datasource we are connected
+    // These are the possible SQL types we check for use against the datasource we are connected
     // to for the purpose of determining which data type to use for the MEMO column types
     // (a type which allow to store large strings; like VARCHAR just with a bigger precision)
     //

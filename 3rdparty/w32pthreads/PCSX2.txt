@@ -7,7 +7,7 @@ some vaugeness that the pthreads dll is a modified non-standard implementation (
 for details); just in case pthreads-win32 dlls in another universe were to be conflicting
 interests.
 
-I created a subfolder for pthreads' publically exposed header files, since "config.h" was
+I created a subfolder for pthreads' publicly exposed header files, since "config.h" was
 rather brutal include file namespace pollution. >_<
 
 Important: pthread_cond is an inherently flawed concept, and is quite incredibly slow

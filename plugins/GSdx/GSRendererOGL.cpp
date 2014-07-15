@@ -250,7 +250,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			dev->SetupDATE(rt, ds, vertices, m_context->TEST.DATM);
 		}
 
-		// Must be done here to avoid any GL state pertubation (clear function...)
+		// Must be done here to avoid any GL state perturbation (clear function...)
 		// Create an r32ui image that will containt primitive ID
 		if (advance_DATE)
 			dev->InitPrimDateTexture(rtsize.x, rtsize.y);

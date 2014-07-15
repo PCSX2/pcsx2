@@ -1205,7 +1205,7 @@ GSocket *GSocket_new(void)
 /* CHECK_ADDRESS verifies that the current address family is either
  * GSOCK_NOFAMILY or GSOCK_*family*, and if it is GSOCK_NOFAMILY, it
  * initalizes it to be a GSOCK_*family*. In other cases, it returns
- * an appropiate error code.
+ * an appropriate error code.
  *
  * CHECK_ADDRESS_RETVAL does the same but returning 'retval' on error.
  */

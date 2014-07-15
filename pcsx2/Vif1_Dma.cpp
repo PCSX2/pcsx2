@@ -355,7 +355,7 @@ __fi void vif1Interrupt()
     {
             _VIF1chain();
             // VIF_NORMAL_FROM_MEM_MODE is a very slow operation.
-            // Timesplitters 2 depends on this beeing a bit higher than 128.
+            // Timesplitters 2 depends on this being a bit higher than 128.
             if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
 		
 			if(!(vif1Regs.stat.VGW && gifUnit.gifPath[GIF_PATH_3].state != GIF_PATH_IDLE)) //If we're waiting on GIF, stop looping, (can be over 1000 loops!)

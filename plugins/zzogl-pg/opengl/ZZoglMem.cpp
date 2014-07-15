@@ -160,7 +160,7 @@ void FillNewPageTable() {
 
 BLOCK m_Blocks[MAX_PSM]; // Do so that blocks are indexable.
 
-// At the begining and the end of each string we should made unaligned writes, with nSize checks. We should be sure that all
+// At the beginning and the end of each string we should made unaligned writes, with nSize checks. We should be sure that all
 // these pixels are inside one widthlimit space.
 template <int psm>
 inline bool DoOneTransmitStep(void* pstart, int& nSize, int endj, const void* pbuf, int& k, int& i, int& j, int widthlimit) {
@@ -172,12 +172,12 @@ inline bool DoOneTransmitStep(void* pstart, int& nSize, int endj, const void* pb
 }
 
 // FFX has PSMT8 transmit (starting intro -- sword and hairs).
-// Persona 4 texts at start are PSMCT32 (and there is also PSMCT16 transmit somwhere after that).
+// Persona 4 texts at start are PSMCT32 (and there is also PSMCT16 transmit somewhere after that).
 // Tekken V has PSMCT24 and PSMT4 transfers
 
 // This function transfers "Y" block pixels. I use little another code than Zerofrog. My code often uses widthmult != 1 addition (Zerofrog's code
 // have an strict condition for fast path: width of transferred data should be widthlimit multiplied by j; EndY also should be multiplied. But
-// the usual data block of 255 pixels becomes transfered by 1.
+// the usual data block of 255 pixels becomes transferred by 1.
 // I should check, maybe Unaligned_Start and Unaligned_End often == 0, and I could try a fastpath -- with this block off.
 template <int psm, int widthlimit>
 inline bool TRANSMIT_HOSTLOCAL_Y(u32* pbuf, int& nSize, u8* pstart, int endY, int& i, int& j, int& k) {

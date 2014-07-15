@@ -147,7 +147,7 @@ public:
     // code for all controls used within the resource.
     void AddHandler(wxXmlResourceHandler *handler);
 
-    // Add a new handler at the begining of the handler list
+    // Add a new handler at the beginning of the handler list
     void InsertHandler(wxXmlResourceHandler *handler);
 
     // Removes all handlers

@@ -98,7 +98,7 @@ public:
     // hKey should be opened and will be closed in wxRegKey dtor
   void  SetHkey(WXHKEY hKey);
 
-  // get infomation about the key
+  // get information about the key
     // get the (full) key name. Abbreviate std root keys if bShortPrefix.
   wxString GetName(bool bShortPrefix = true) const;
     // return true if the key exists

@@ -2064,7 +2064,7 @@ void recPMSUBH()
 
 ////////////////////////////////////////////////////
 //upper word of each doubleword in LO and HI is undocumented/undefined
-//it contains the NOT of the upper multiplication result (before the substraction of the lower multiplication result)
+//it contains the NOT of the upper multiplication result (before the subtraction of the lower multiplication result)
 void recPHMSBH()
 {
 	int info = eeRecompileCodeXMM( (_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI );

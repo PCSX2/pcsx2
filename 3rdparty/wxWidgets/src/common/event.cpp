@@ -1089,7 +1089,7 @@ wxEvtHandler::~wxEvtHandler()
         wxENTER_CRIT_SECT(*wxPendingEventsLocker);
     if ( wxPendingEvents )
     {
-        // Delete all occurences of this from the list of pending events
+        // Delete all occurrences of this from the list of pending events
         while (wxPendingEvents->DeleteObject(this)) { } // Do nothing
     }
     if(wxPendingEventsLocker)

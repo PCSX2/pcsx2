@@ -111,7 +111,7 @@ __aligned(struct, 32) GSScanlineGlobalData // per batch variables, this is like 
 
 	// - the data of vm, tex may change, multi-threaded drawing must be finished before that happens, clut and dimx are copies
 	// - tex is a cached texture, it may be recycled to free up memory, its absolute address cannot be compiled into code
-	// - row and column pointers are allocated once and never change or freed, thier address can be used directly
+	// - row and column pointers are allocated once and never change or freed, their address can be used directly
 
 	void* vm;
 	const void* tex[7];

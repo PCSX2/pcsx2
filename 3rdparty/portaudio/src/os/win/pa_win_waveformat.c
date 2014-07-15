@@ -144,7 +144,7 @@ PaWinWaveFormatChannelMask PaWin_DefaultChannelMask( int numChannels )
     /* Note that Alec Rogers proposed the following as an alternate method to 
         generate the default channel mask, however it doesn't seem to be an improvement
         over the above, since some drivers will matrix outputs mapping to non-present
-        speakers accross multiple physical speakers.
+        speakers across multiple physical speakers.
 
         if(nChannels==1) {
             pwfFormat->dwChannelMask = SPEAKER_FRONT_CENTER;

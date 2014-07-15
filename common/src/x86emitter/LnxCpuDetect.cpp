@@ -28,7 +28,7 @@ void x86capabilities::CountLogicalCores()
 	LogicalCores = wxThread::GetCPUCount();
 }
 
-bool CanEmitShit()
+bool CanEmit()
 {
 	// In Linux I'm pretty sure TLS always works, none of the funny business that Windows
 	// has involving DLLs. >_<

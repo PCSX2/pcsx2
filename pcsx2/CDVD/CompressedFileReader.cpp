@@ -265,7 +265,7 @@ void GzippedFileReader::InitZstates() {
 	m_zstates = new Czstate[size]();
 }
 
-// TODO: do better than just checking existance and extension
+// TODO: do better than just checking existence and extension
 bool GzippedFileReader::CanHandle(const wxString& fileName) {
 	return wxFileName::FileExists(fileName) && fileName.Lower().EndsWith(L".gz");
 }
@@ -383,7 +383,7 @@ int GzippedFileReader::_ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRea
 		return first + rest;
 	}
 
-	// From here onwards it's guarenteed that the request is inside a single READ_CHUNK_SIZE boundaries
+	// From here onwards it's guaranteed that the request is inside a single READ_CHUNK_SIZE boundaries
 
 	int res = m_cache.Read(pBuffer, offset, bytesToRead);
 	if (res >= 0)

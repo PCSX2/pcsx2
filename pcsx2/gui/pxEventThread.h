@@ -67,8 +67,8 @@ extern ConsoleLogSource_Event pxConLog_Event;
 //    awaking the invoking thread as soon as the queue has caught up to and processed
 //    the event.
 //
-//  * Avoid using virtual class inheritence to 'cleverly' bind a SysExecEvent to another
-//    existing class.  Multiple inheritence is unreliable at best, and virtual inheritence
+//  * Avoid using virtual class inheritance to 'cleverly' bind a SysExecEvent to another
+//    existing class.  Multiple inheritance is unreliable at best, and virtual inheritence
 //    is even worse.  Create a SysExecEvent wrapper class instead, and embed an instance of
 //    the other class you want to turn into an event within it.  It might feel like more work
 //    but it *will* be less work in the long run.

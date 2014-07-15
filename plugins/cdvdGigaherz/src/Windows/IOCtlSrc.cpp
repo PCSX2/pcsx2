@@ -331,14 +331,14 @@ IOCtlSrc::~IOCtlSrc()
 	}
 }
 
-struct mycrap
+struct mystruct
 {
-	DWORD shit;
+	DWORD d;
 	DVD_LAYER_DESCRIPTOR ld;
 };
 
 DVD_READ_STRUCTURE dvdrs;
-mycrap dld;
+mystruct dld;
 DISK_GEOMETRY dg;
 CDROM_READ_TOC_EX tocrq={0};
 

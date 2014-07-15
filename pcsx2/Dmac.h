@@ -76,7 +76,7 @@ enum LogicalTransferMode
 
 // Doing double duty as both the top 32 bits *and* the lower 32 bits of a chain tag.
 // Theoretically should probably both be in a u64 together, but with the way the
-// code is layed out, this is easier for the moment.
+// code is laid out, this is easier for the moment.
 
 union tDMA_TAG {
 	struct {

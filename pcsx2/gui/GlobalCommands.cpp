@@ -165,7 +165,7 @@ namespace Implementations
 
 	void UpdateImagePosition()
 	{
-		//AppApplySettings() would have been nicer, since it also immidiately affects the GUI (if open).
+		//AppApplySettings() would have been nicer, since it also immediately affects the GUI (if open).
 		//However, the events sequence it generates also "depresses" Shift/CTRL/etc, so consecutive zoom with CTRL down breaks.
 		//Since zoom only affects the window viewport anyway, we can live with directly calling it.
 		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())

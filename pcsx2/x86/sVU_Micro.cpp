@@ -1732,7 +1732,7 @@ void testPrintOverflow() {
 		Console.Warning( "VU OVERFLOW!: Changing to -Fmax!!!!!!!!!!!!" );
 }
 
-// Outputs to the console when overflow has occured.
+// Outputs to the console when overflow has occurred.
 void testWhenOverflow(int info, int regd, int t0reg) {
 	SSE_MOVAPS_XMM_to_M128((uptr)tempRegX, regd);
 	CALLFunc((uptr)testPrintOverflow);

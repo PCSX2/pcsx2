@@ -301,7 +301,7 @@ long computeRingBufferSize( const PaStreamParameters *inputParameters,
  * succession. The function below could be used to with a condition variable.
  * to prevent propertychanges from happening until the last property
  * change is acknowledged. Instead, I implemented a busy-wait, which is simpler
- * to implement b/c in second round of testing (nov '09) property changes occured
+ * to implement b/c in second round of testing (nov '09) property changes occurred
  * quickly and so there was no real way to test the condition variable implementation.
  * therefore, this function is not used, but it is aluded to in commented code below,
  * since it represents a theoretically better implementation.
@@ -505,7 +505,7 @@ PaError setBestSampleRateForDevice( const AudioDeviceID device,
    if( err )
       return ERR( err );
 
-   /* -- otherwise, something wierd happened: we didn't set the rate, and we got no errors. Just bail. */
+   /* -- otherwise, something weird happened: we didn't set the rate, and we got no errors. Just bail. */
    return paInternalError;
 }
 
@@ -516,7 +516,7 @@ PaError setBestSampleRateForDevice( const AudioDeviceID device,
    is available, it uses the smallest available size.
    actualFramesPerBuffer will be set to the actual value on successful return.
    OK to pass NULL to actualFramesPerBuffer.
-   The logic is very simmilar too setBestSampleRate only failure here is
+   The logic is very similar too setBestSampleRate only failure here is
    not usually catastrophic.
 */
 PaError setBestFramesPerBuffer( const AudioDeviceID device,

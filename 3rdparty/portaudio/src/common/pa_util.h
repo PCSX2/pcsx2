@@ -65,7 +65,7 @@ struct PaUtilHostApiRepresentation;
  host api specific extension functions which aren't passed a rep pointer
  by pa_front.c.
 
- @param hostApi A pointer to a host API represenation pointer. Apon success
+ @param hostApi A pointer to a host API represenation pointer. Upon success
  this will receive the requested representation pointer.
 
  @param type A valid host API type identifier.
@@ -79,7 +79,7 @@ PaError PaUtil_GetHostApiRepresentation( struct PaUtilHostApiRepresentation **ho
 
 
 /** Convert a PortAudio device index into a host API specific device index.
- @param hostApiDevice Pointer to a device index, on success this will recieve the
+ @param hostApiDevice Pointer to a device index, on success this will receive the
  converted device index value.
  @param device The PortAudio device index to convert.
  @param hostApi The host api which the index should be converted for.

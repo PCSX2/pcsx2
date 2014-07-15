@@ -658,7 +658,7 @@ if(MacOSX)
 		)
 endif(MacOSX)	
 
-# additonal include directories
+# additional include directories
 include_directories(.
 					gui
 					x86

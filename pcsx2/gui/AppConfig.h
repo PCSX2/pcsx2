@@ -73,7 +73,7 @@ enum InstallationModeType
 	// Use the user defined folder selections.  These can be anywhere on a user's hard drive,
 	// though by default the binaries (plugins, themes) are located in Install_Dir (registered
 	// by the installer), and the user files (screenshots, inis) are in the user's documents
-	// folder.  All folders are changable within the GUI.
+	// folder.  All folders are changeable within the GUI.
 	InstallMode_Registered,
 
 	// In this mode, both Install_Dir and UserDocuments folders default the directory containing

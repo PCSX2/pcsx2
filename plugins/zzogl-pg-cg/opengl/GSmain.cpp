@@ -49,7 +49,7 @@ void (*GSirq)();
 u8* g_pBasePS2Mem = NULL;
 wxString s_strIniPath(L"inis");  	// Air's new ini path (r2361)
 
-bool SaveStateExists = true;		// We could not know save slot status before first change occured
+bool SaveStateExists = true;		// We could not know save slot status before first change occurred
 const char* SaveStateFile = NULL;	// Name of SaveFile for access check.
 
 extern const char* s_aa[5];

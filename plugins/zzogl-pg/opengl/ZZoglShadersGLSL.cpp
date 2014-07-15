@@ -374,10 +374,10 @@ inline bool GetCompilationLog(GLuint shader) {
 	if (CompileStatus == GL_TRUE)
 		return true;
 
-	int* lenght, infologlength;
+	int* length, infologlength;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infologlength);
 	char* InfoLog = new char[infologlength];
-	glGetShaderInfoLog(shader, infologlength, lenght, InfoLog);
+	glGetShaderInfoLog(shader, infologlength, length, InfoLog);
 	ZZLog::Error_Log("Compiling... %d:\t %s", shader, InfoLog);
 
 	return false;
@@ -427,10 +427,10 @@ inline bool GetLinkLog(ZZshProgram prog) {
 	if (LinkStatus == GL_TRUE && glIsProgram(prog)) return true;
 
 #if	defined(DEVBUILD) || defined(_DEBUG)
-	int* lenght, infologlength;
+	int* length, infologlength;
 	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &infologlength);
 	char* InfoLog = new char[infologlength];
-	glGetProgramInfoLog(prog, infologlength, lenght, InfoLog);
+	glGetProgramInfoLog(prog, infologlength, length, InfoLog);
 	if (!infologlength == 0)
 		ZZLog::Error_Log("Linking %d... %d:\t %s", prog, infologlength, InfoLog);
 #endif
@@ -526,10 +526,10 @@ static bool ValidateProgram(ZZshProgram Prog) {
 
 	if (!isValid) {
 		glValidateProgram(Prog);
-		int* lenght, infologlength;
+		int* length, infologlength;
 		glGetProgramiv(Prog, GL_INFO_LOG_LENGTH, &infologlength);
 		char* InfoLog = new char[infologlength];
-		glGetProgramInfoLog(Prog, infologlength, lenght, InfoLog);
+		glGetProgramInfoLog(Prog, infologlength, length, InfoLog);
 		ZZLog::Error_Log("Validation %d... %d:\t %s", Prog, infologlength, InfoLog);
 	}
 	return (isValid != 0); 

@@ -395,7 +395,7 @@ struct pcap_samp
 
 
 
-//! Maximum lenght of an host name (needed for the RPCAP active mode)
+//! Maximum length of an host name (needed for the RPCAP active mode)
 #define RPCAP_HOSTLIST_SIZE 1024
 
 

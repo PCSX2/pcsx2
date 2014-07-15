@@ -66,7 +66,7 @@ set(USBnullWindowsSources
 set(USBnullWindowsHeaders
 	Windows/resource.h)
 
-# additonal include directories
+# additional include directories
 include_directories(.)
 
 # add library

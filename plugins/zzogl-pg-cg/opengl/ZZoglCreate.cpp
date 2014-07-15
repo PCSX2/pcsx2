@@ -637,7 +637,7 @@ bool ZZCreate(int _width, int _height)
 		BLOCK::FillBlocks(vBlockData, vBilinearData, 0);
 		g_internalFloatFmt = GL_ALPHA16;
 		
-		// We store block data on u16 rather float numbers. It's not so preciese, but ALPHA16 is OpenGL 2.0 standart
+		// We store block data on u16 rather float numbers. It's not so precise, but ALPHA16 is OpenGL 2.0 standard
 		// and use only 16 bit. Old zerogs use red channel, but it does not work.
 		
 		glTexImage2D(GL_TEXTURE_2D, 0, g_internalFloatFmt, BLOCK_TEXWIDTH, BLOCK_TEXHEIGHT, 0, GL_ALPHA, GL_UNSIGNED_SHORT, &vBlockData[0]);

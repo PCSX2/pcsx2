@@ -531,7 +531,7 @@ void ExecutorThread::OnStart()
 
 void ExecutorThread::ExecuteTaskInThread()
 {
-	if( !pxAssertDev( m_EvtHandler, "Gimme a damn Event Handler first, object whore." ) ) return;
+	if( !pxAssertDev( m_EvtHandler, "Give me an Event Handler first." ) ) return;
 
 	m_EvtHandler->SetActiveThread();
 

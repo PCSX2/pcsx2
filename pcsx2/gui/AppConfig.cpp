@@ -924,7 +924,7 @@ bool AppConfig::isOkGetPresetTextAndColor( int n, wxString& label, wxColor& c )
 
 
 //Apply one of several (currently 6) configuration subsets.
-//The scope of the subset which each preset controlls is hardcoded here.
+//The scope of the subset which each preset controls is hardcoded here.
 bool AppConfig::IsOkApplyPreset(int n)
 {
 	if (n < 0 || n > GetMaxPresetIndex() )

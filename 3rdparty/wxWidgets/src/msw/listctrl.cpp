@@ -1604,7 +1604,7 @@ long wxListCtrl::InsertItem(const wxListItem& info)
         m_AnyInternalData = true;
         item.mask |= LVIF_PARAM;
 
-        // internal stucture that manages data
+        // internal structure that manages data
         wxListItemInternalData *data = new wxListItemInternalData();
         item.lParam = (LPARAM) data;
 
@@ -2088,7 +2088,7 @@ bool wxListCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
 
                 eventType = wxEVT_COMMAND_LIST_DELETE_ITEM;
                 event.m_itemIndex = iItem;
-                // delete the assoicated internal data
+                // delete the associated internal data
                 wxDeleteInternalData(this, iItem);
                 break;
 

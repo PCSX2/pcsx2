@@ -19,7 +19,7 @@ pthread_win32_test_features_np(int mask)
 			Return TRUE is the QueueUserAPCEx package
 			QUSEREX.DLL is available and the AlertDrv.sys
 			driver is loaded into Windows, providing
-			alertable (pre-emptive) asyncronous threads
+			alertable (pre-emptive) asynchronous threads
 			cancelation. If this feature returns FALSE
 			then the default async cancel scheme is in
 			use, which cannot cancel blocked threads.

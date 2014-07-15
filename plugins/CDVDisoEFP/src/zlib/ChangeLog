@@ -407,7 +407,7 @@ Changes in 1.0.7 (20 Jan 1998)
 Changes in 1.0.6 (19 Jan 1998)
 - add functions gzprintf, gzputc, gzgetc, gztell, gzeof, gzseek, gzrewind and
   gzsetparams (thanks to Roland Giersig and Kevin Ruland for some of this code)
-- Fix a deflate bug occuring only with compression level 0 (thanks to
+- Fix a deflate bug occurring only with compression level 0 (thanks to
   Andy Buckler for finding this one).
 - In minigzip, pass transparently also the first byte for .Z files.
 - return Z_BUF_ERROR instead of Z_OK if output buffer full in uncompress()

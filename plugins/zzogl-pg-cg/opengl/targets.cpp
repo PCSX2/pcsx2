@@ -1996,7 +1996,7 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
         if(targ->clut == NULL)
             targ->clut = (u8*)_aligned_malloc(clutsize, 16);
         else {
-            // In case it could occured
+            // In case it could occurred
             // realloc would be better but you need to get it from libutilies first
             // _aligned_realloc is brought in from ScopedAlloc.h now. --arcum42
             _aligned_free(targ->clut);
@@ -2657,7 +2657,7 @@ void FlushTransferRanges(const tex0Info* ptex)
 			if (ptarg->fbh % m_Blocks[ptarg->psm].height)
 			{
 
-				// get start of left-most boundry page
+				// get start of left-most boundary page
 				int targstart, targend;
 				GetRectMemAddress(targstart, targend, ptarg->psm, 0, 0, ptarg->fbw, ptarg->fbh & ~(m_Blocks[ptarg->psm].height - 1), ptarg->fbp, ptarg->fbw);
 
@@ -2788,7 +2788,7 @@ inline void Resolve_32_Bit(const void* psrc, int fbp, int fbw, int fbh, const in
                 dsrc = (Tdst)src[RW(j)];
             }
             // They are 3 methods to call the functions
-            // macro (compact, inline) but need a nice psm ; swich (inline) ; function pointer (compact)
+            // macro (compact, inline) but need a nice psm ; switch (inline) ; function pointer (compact)
             // Use a switch to allow inlining of the getPixel function.
             // Note: psm is const so the switch is completely optimized
             // Function method example:
@@ -3093,7 +3093,7 @@ void Resolve_32_Bit_sse2(const void* psrc, int fbp, int fbw, int fbh, u32 fbm)
 #endif
 
     // Start the src array at the end to reduce testing in loop
-    // If maxfbh is odd, proces maxfbh -1 alone and then go back to maxfbh -3
+    // If maxfbh is odd, process maxfbh -1 alone and then go back to maxfbh -3
     u32 raw_size = RH(Pitch(fbw))/sizeof(u32);
     u32* src;
     if (maxfbh&0x1) {

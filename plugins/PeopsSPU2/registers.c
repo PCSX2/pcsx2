@@ -594,7 +594,7 @@ EXPORT_GCC void CALLBACK SPU2write(unsigned long reg, unsigned short val)
       break;
     //-------------------------------------------------//
     case PS2_C0_SPUend1:
-	  dwEndChannel2[0] &= 0xff0000; // According to manual all bits are cleared by writing an arbitary value
+	  dwEndChannel2[0] &= 0xff0000; // According to manual all bits are cleared by writing an arbitrary value
 #ifdef _WINDOWS
 			if(iDebugMode==1) logprintf("W_REG ENDX0 - Core 0 Addr %X Val %X\r\n", reg&0xFFFF, val);
 #endif

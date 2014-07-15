@@ -247,7 +247,7 @@ public:
     /// Changes a setting controlling the processing system behaviour. See the
     /// 'SETTING_...' defines for available setting ID's.
     /// 
-    /// \return 'TRUE' if the setting was succesfully changed
+    /// \return 'TRUE' if the setting was successfully changed
     BOOL setSetting(int settingId,   ///< Setting ID number. see SETTING_... defines.
                     int value        ///< New setting value.
                     );

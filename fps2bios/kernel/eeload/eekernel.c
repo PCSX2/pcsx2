@@ -457,7 +457,7 @@ void __attribute__((noreturn)) _start()
 	SetVSyncFlag(0, 0);
 
     // call directly instread of loading module, might need to
-    // set thread0 as used since soem code assumes thread 0 is always
+    // set thread0 as used since some code assumes thread 0 is always
     // main thread
 	//eeload_start();
     //launch_thread(__load_module("EELOAD", 0x82000, 0x81000, 0));

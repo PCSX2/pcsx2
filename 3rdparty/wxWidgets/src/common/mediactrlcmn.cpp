@@ -549,7 +549,7 @@ void wxMediaBackendCommonBase::QueueStopEvent()
 //
 #include "wx/html/forcelnk.h"
 
-#ifdef __WXMSW__ // MSW has huge backends so we do it seperately
+#ifdef __WXMSW__ // MSW has huge backends so we do it separately
 FORCE_LINK(wxmediabackend_am)
 FORCE_LINK(wxmediabackend_wmp10)
 #else

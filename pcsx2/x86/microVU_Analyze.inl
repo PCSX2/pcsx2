@@ -349,7 +349,7 @@ __fi void mVUanalyzeXGkick(mV, int Fs, int xCycles) {
 	// this code stalls on the same instruction. The only case where this
 	// will be a problem with, is if you have very-specifically placed
 	// FMxxx or FSxxx opcodes checking flags near this instruction AND
-	// the XGKICK instruction stalls. No-game should be effected by 
+	// the XGKICK instruction stalls. No-game should be affected by
 	// this minor difference.
 }
 

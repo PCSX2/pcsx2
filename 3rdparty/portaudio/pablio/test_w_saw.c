@@ -107,7 +107,7 @@ int main(void)
     return 0;
 
 error:
-    fprintf( stderr, "An error occured while using PABLIO\n" );
+    fprintf( stderr, "An error occurred while using PABLIO\n" );
     fprintf( stderr, "Error number: %d\n", err );
     fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
     return -1;

@@ -128,7 +128,7 @@ Dialogs::McdConfigDialog::McdConfigDialog( wxWindow* parent )
 */
 	AddOkCancel(s_bottom);
 
-	//make this dialog fit to current elements (else can be shrinked too much)
+	//make this dialog fit to current elements (else can be shrunk too much)
 	// [There seem to be a bug in wxWidgets which prevents Fit() to succeed by itself,
 	//    So using the "bigger" method: SetSizerAndFit, with existing sizer (set earlier to s_flex) - avih]
 	SetSizerAndFit(GetSizer());

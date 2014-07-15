@@ -73,7 +73,7 @@
 
 //****************************************************************
 
-// If we have an infinity value, then Overflow has occured.
+// If we have an infinity value, then Overflow has occurred.
 #define checkOverflow(xReg, cFlagsToSet, shouldReturn) {  \
 	if ( ( xReg & ~0x80000000 ) == PosInfinity ) {  \
 		/*Console.Warning( "FPU OVERFLOW!: Changing to +/-Fmax!!!!!!!!!!!!\n" );*/  \
@@ -83,7 +83,7 @@
 	}  \
 }
 
-// If we have a denormal value, then Underflow has occured.
+// If we have a denormal value, then Underflow has occurred.
 #define checkUnderflow(xReg, cFlagsToSet, shouldReturn) {  \
 	if ( ( ( xReg & 0x7F800000 ) == 0 ) && ( ( xReg & 0x007FFFFF ) != 0 ) ) {  \
 		/*Console.Warning( "FPU UNDERFLOW!: Changing to +/-0!!!!!!!!!!!!\n" );*/  \

@@ -54,7 +54,7 @@ my $wx_img_extension = get_wx_ext($ext);
 my $filesize = -s $input;
 
 ### Collect binary data
-my $lenght = 1;
+my $length = 1;
 my $binary = "\t\t";
 my $data;
 my $byte;
@@ -64,16 +64,16 @@ binmode IN;
 while (($byte = read IN, $data, 1) != 0) {
     my $hex = ascii_to_hex($data);
     $binary .= "0x$hex";
-    if ($lenght % 17 == 0 && $lenght > 1) {
+    if ($length % 17 == 0 && $length > 1) {
         # End of line
         $binary .= ",\n\t\t";
-    } elsif ($filesize == $lenght) {
+    } elsif ($filesize == $length) {
         # End of file
         $binary .= "\n";
     } else {
         $binary .= ",";
     }
-    $lenght++;
+    $length++;
 }
 close(IN);
 

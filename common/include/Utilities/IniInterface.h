@@ -23,7 +23,7 @@
 // --------------------------------------------------------------------------------------
 //  IniInterface (abstract base class) 
 // --------------------------------------------------------------------------------------
-// This is used as an interchangable interface for both loading and saving options from an
+// This is used as an interchangeable interface for both loading and saving options from an
 // ini/configuration file.  The LoadSave code takes an IniInterface, and the interface
 // implementation defines whether the options are read or written.
 //

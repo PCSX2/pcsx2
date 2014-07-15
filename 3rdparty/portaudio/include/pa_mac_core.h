@@ -158,7 +158,7 @@ PaError PaMacCore_GetBufferSizeRange( PaDeviceIndex device,
  * are supported by the device. */
 #define paMacCoreFailIfConversionRequired (0x02)
 
-/** These flags set the SR conversion quality, if required. The wierd ordering
+/** These flags set the SR conversion quality, if required. The weird ordering
  * allows Maximum Quality to be the default.*/
 #define paMacCoreConversionQualityMin    (0x0100)
 #define paMacCoreConversionQualityMedium (0x0200)

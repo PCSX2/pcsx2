@@ -2466,7 +2466,7 @@ void wxGridCellAttr::SetSize(int num_rows, int num_cols)
     wxASSERT_MSG( (!((num_rows > 0) && (num_cols <= 0)) ||
                   !((num_rows <= 0) && (num_cols > 0)) ||
                   !((num_rows == 0) && (num_cols == 0))),
-                  wxT("wxGridCellAttr::SetSize only takes two postive values or negative/zero values"));
+                  wxT("wxGridCellAttr::SetSize only takes two positive values or negative/zero values"));
 
     m_sizeRows = num_rows;
     m_sizeCols = num_cols;

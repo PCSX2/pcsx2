@@ -1243,7 +1243,7 @@ void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
 
 	if((m_env.BITBLTBUF.DBW & 1) && (m_env.BITBLTBUF.DPSM == PSM_PSMT8 || m_env.BITBLTBUF.DPSM == PSM_PSMT4))
 	{
-		m_env.BITBLTBUF.DBW &= ~1; // namcoXcapcom: 5, 11, refered to as 4, 10 in TEX0.TBW later
+		m_env.BITBLTBUF.DBW &= ~1; // namcoXcapcom: 5, 11, referred to as 4, 10 in TEX0.TBW later
 	}
 }
 
@@ -5226,8 +5226,8 @@ public:
 	// If timeout has ellapsed, probe the dll for change, and reload if it was changed.
 	// If it returns true, then the dll was freed/reloaded, and any symbol addresse previously obtained is now invalid and needs to be re-obtained.
 	// Overhead is very low when when probe timeout has not ellapsed, and especially if current timestamp is supplied as argument.
-	// Note: there's no relation between the file modification date and currentMs value, so it need'nt neccessarily be an actual timestamp.
-	// Note: isChanged is guarenteed to return true at least once
+	// Note: there's no relation between the file modification date and currentMs value, so it needn't necessarily be an actual timestamp.
+	// Note: isChanged is guaranteed to return true at least once
 	//       (even if the file doesn't exist, at which case the following GetSymbolAddress will return NULL)
 	bool isChanged( const DWORD currentMs=0 )
 	{

@@ -36,7 +36,7 @@ static int kstrlen(const char* src);
 // args:	total size of IOP ram in MegaBytes
 //			bootinfo flags
 //			string containing the reboot image filepath
-//			? doesnt seem to be used
+//			? doesn't seem to be used
 void _start(int ramMBSize, int bootInfo, char* udnlString, int unk)
 {
 	ROMFS ri;
@@ -78,7 +78,7 @@ void _start(int ramMBSize, int bootInfo, char* udnlString, int unk)
     if( searchRomDir((u32*)0xBFC00000, (u32*)0xBFC10000, &romdir_info) == NULL )
 	{
         __printf("IOPBOOT: failed to find start of rom!\n");
-		// error - cant find romdir!
+		// error - can't find romdir!
 		while(1) *(u8*)0x80000000 = 0;
 	}
 
@@ -91,7 +91,7 @@ void _start(int ramMBSize, int bootInfo, char* udnlString, int unk)
 		if( !searchFileInRom(&romdir_info, conf_filename, &romfile_info) )
 		{
             __printf("IOPBTCONF file not found!\n");
-			// error - cant find conf file!
+			// error - can't find conf file!
 			while(1) *(u8*)0x80000000 = 1;
 		}
 	}
@@ -225,7 +225,7 @@ void _start(int ramMBSize, int bootInfo, char* udnlString, int unk)
 
 	__printf("iopboot error\n");
 
-    // error - loadcore shouldnt ever return
+    // error - loadcore shouldn't ever return
 	while(1) *(u8*)0x80000000 = 2;
 }
 

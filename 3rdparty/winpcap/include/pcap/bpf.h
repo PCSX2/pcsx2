@@ -446,7 +446,7 @@ struct bpf_version {
  * interface (irdaX), but not on a raw serial port.
  * Note the capture is done in "Linux-cooked" mode, so each packet include
  * a fake packet header (struct sll_header). This is because IrDA packet
- * decoding is dependant on the direction of the packet (incomming or
+ * decoding is dependent on the direction of the packet (incomming or
  * outgoing).
  * When/if other platform implement IrDA capture, we may revisit the
  * issue and define a real DLT_IRDA...

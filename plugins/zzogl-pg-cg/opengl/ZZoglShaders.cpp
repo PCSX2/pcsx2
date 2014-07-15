@@ -100,7 +100,7 @@ FRAGMENTSHADER ppsCRTC[2], ppsCRTC24[2], ppsCRTCTarg[2];
 VERTEXSHADER pvsBitBlt;
 
 extern u32 ptexBlocks;		// holds information on block tiling. It's texture number in OpenGL -- if 0 than such texture
-extern u32 ptexConv16to32;	// does not exists. This textures should be created on start and released on finish.  
+extern u32 ptexConv16to32;	// does not exists. These textures should be created on start and released on finish.  
 extern u32 ptexBilinearBlocks;
 extern u32 ptexConv32to16;
 

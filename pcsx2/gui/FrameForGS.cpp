@@ -166,7 +166,7 @@ void GSPanel::DoResize()
 		viewport.y = (int)( (double)viewport.y/arr + 0.5);
 
 	float zoom = g_Conf->GSWindow.Zoom.ToFloat()/100.0;
-	if( zoom == 0 )//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
+	if( zoom == 0 )//auto zoom in until black-bars are gone (while keeping the aspect ratio).
 		zoom = max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );

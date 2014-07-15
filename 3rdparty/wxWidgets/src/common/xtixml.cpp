@@ -318,7 +318,7 @@ int wxXmlReader::ReadComponent(wxXmlNode *node, wxDepersister *callbacks)
         const wxPropertyInfo* pi = classInfo->FindPropertyInfo( paramName ) ;
         if ( pi == 0 )
         {
-            wxLogError( wxString::Format(_("Unkown Property %s"),paramName) ) ;
+            wxLogError( wxString::Format(_("Unknown Property %s"),paramName) ) ;
         }
         // if we don't have the value of a create param set in the xml
         // we use the default value

@@ -73,7 +73,7 @@ _vifT static __fi bool vifTransfer(u32 *data, int size, bool TTE) {
 
 	transferred += size - vifX.vifpacketsize;
 
-	//Make this a minimum of 1 cycle so if it's the end of the packet it doesnt just fall through.
+	//Make this a minimum of 1 cycle so if it's the end of the packet it doesn't just fall through.
 	//Metal Saga can do this, just to be safe :)
 	if (!idx) g_vif0Cycles += max(1, (int)((transferred * BIAS) >> 2));
 	else	  g_vif1Cycles += max(1, (int)((transferred * BIAS) >> 2));

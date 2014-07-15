@@ -98,7 +98,7 @@ void Dialogs::SysConfigDialog::UpdateGuiForPreset ( int presetIndex, bool preset
 	//1. As long as preset-related values were not changed at SysConfigDialog, menus behave normally.
 	//2. After the first preset-related change at SysConfigDialog (this function) and before Apply/Ok/Cancel:
 	//	- The menus reflect the temporary pending values, but these preset-controlled items are grayed out even if temporarily presets is unchecked.
-	//3. When clicking Ok/Apply/Cancel at SysConfigDialog, the menus are re-alligned with g_Conf (including gray out or not as needed).
+	//3. When clicking Ok/Apply/Cancel at SysConfigDialog, the menus are re-aligned with g_Conf (including gray out or not as needed).
 	//NOTE: Enabling the presets and disabling them wihout clicking Apply leaves the pending menu config at last preset values
 	//		(consistent with SysConfigDialog behavior). But unlike SysConfigDialog, the menu items stay grayed out.
 	//		Clicking cancel will revert all pending changes, but clicking apply will commit them, and this includes the menus.

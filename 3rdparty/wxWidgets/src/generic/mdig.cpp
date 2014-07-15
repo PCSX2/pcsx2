@@ -732,10 +732,10 @@ int wxGenericMDIClientWindow::SetSelection(size_t nPage)
 
 void wxGenericMDIClientWindow::PageChanged(int OldSelection, int newSelection)
 {
-    // Don't do to much work, only when something realy should change!
+    // Don't do to much work, only when something really should change!
     if (OldSelection == newSelection)
         return;
-    // Again check if we realy need to do this...
+    // Again check if we really need to do this...
     if (newSelection != -1)
     {
         wxGenericMDIChildFrame* child = (wxGenericMDIChildFrame *)GetPage(newSelection);

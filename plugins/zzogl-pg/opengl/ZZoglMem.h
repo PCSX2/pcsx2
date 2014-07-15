@@ -376,9 +376,9 @@ Def_getPixelAddress(16SZ, PSMT16SZ)
 #define getPixelAddress24Z getPixelAddress32Z
 #define getPixelAddress24Z_0 getPixelAddress32Z_0
 
-// Check FFX-1 (very begining) for PSMT8
+// Check FFX-1 (very beginning) for PSMT8
 // Check Tekken menu for PSMT4
-// ZZ_DT[7] is needed only for PSMT8H, PSMT4HL and PSMT4HH -- at this case word contain data not from a begining.
+// ZZ_DT[7] is needed only for PSMT8H, PSMT4HL and PSMT4HH -- at this case word contain data not from a beginning.
 
 // This function return shift from 32-bit aligned address and shift -- number of byte in u32 order.
 // so if ((u32*)mem + getPixelAddress_Aligned32) is exact location of u32, where our pixel data stored. 
@@ -446,7 +446,7 @@ static __forceinline u32* getClutAddress(u8* pmem, const tex0Info& tex0) {
 }
 
 //--------------------------------------------- Write Pixel -----------------------------------------------------------
-// Set proper mask for transfering multiple bytes per word.
+// Set proper mask for transferring multiple bytes per word.
 template <int psm>
 inline u32 HandleWritemask(u32 Writemask) {
 	u8 G = PSM_BITS_PER_PIXEL<psm>();

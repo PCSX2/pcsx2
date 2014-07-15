@@ -103,7 +103,7 @@
 
 #include "pa_win_coinitialize.h"
 
-/* This version of pa_asio.cpp is currently only targetted at Win32,
+/* This version of pa_asio.cpp is currently only targeted at Win32,
    It would require a few tweaks to work with pre-OS X Macintosh.
    To make configuration easier, we define WIN32 here to make sure
    that the ASIO SDK knows this is Win32.
@@ -2520,7 +2520,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
                enough to store at least two complete data blocks.
 
                1) Determine the amount of latency to be added to the
-                  prefered ASIO latency.
+                  preferred ASIO latency.
                2) Make sure we have at lest one additional latency frame.
                3) Divide the number of frames by the desired block size to
                   get the number (rounded up to pure integer) of blocks to
@@ -2606,7 +2606,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
                enough to store at least two complete data blocks.
 
                1) Determine the amount of latency to be added to the
-                  prefered ASIO latency.
+                  preferred ASIO latency.
                2) Make sure we have at lest one additional latency frame.
                3) Divide the number of frames by the desired block size to
                   get the number (rounded up to pure integer) of blocks to
@@ -2843,7 +2843,7 @@ static void bufferSwitch(long index, ASIOBool directProcess)
 //TAKEN FROM THE ASIO SDK
 
     // the actual processing callback.
-    // Beware that this is normally in a seperate thread, hence be sure that
+    // Beware that this is normally in a separate thread, hence be sure that
     // you take care about thread synchronization. This is omitted here for
     // simplicity.
 
@@ -2875,7 +2875,7 @@ static void bufferSwitch(long index, ASIOBool directProcess)
 static ASIOTime *bufferSwitchTimeInfo( ASIOTime *timeInfo, long index, ASIOBool directProcess )
 {
     // the actual processing callback.
-    // Beware that this is normally in a seperate thread, hence be sure that
+    // Beware that this is normally in a separate thread, hence be sure that
     // you take care about thread synchronization.
 
 
@@ -3733,7 +3733,7 @@ static PaError WriteStream( PaStream      *s     ,
     unsigned int i; /* Just a counter. */
 
 
-    /* Check if the stream ist still available ready to recieve new data. */
+    /* Check if the stream ist still available ready to receive new data. */
     if( blockingState->stopFlag || !stream->isActive )
     {
         PA_DEBUG(("Warning! Stream no longer available for writing in WriteStream()\n"));

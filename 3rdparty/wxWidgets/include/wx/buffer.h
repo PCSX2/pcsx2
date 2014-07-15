@@ -169,7 +169,7 @@ public:
 
     friend class wxMemoryBuffer;
 
-    // everyting is private as it can only be used by wxMemoryBuffer
+    // everything is private as it can only be used by wxMemoryBuffer
 private:
     wxMemoryBufferData(size_t size = wxMemoryBufferData::DefBufSize)
         : m_data(size ? _allocHeap_wxObject(size) : NULL), m_size(size), m_len(0), m_ref(0)

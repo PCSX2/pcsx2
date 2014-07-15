@@ -120,7 +120,7 @@ using namespace std;
 
 	using namespace stdext;
 
-	// hashing algoritms at: http://www.cris.com/~Ttwang/tech/inthash.htm
+	// hashing algorithms at: http://www.cris.com/~Ttwang/tech/inthash.htm
 	// default hash_compare does ldiv and other crazy stuff to reduce speed
 
 	template<> class hash_compare<uint32>

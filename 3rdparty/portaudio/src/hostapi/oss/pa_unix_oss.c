@@ -1778,7 +1778,7 @@ static PaError CloseStream( PaStream* s )
  *
  * Aspect StreamState: After returning, the stream shall be in the Active state, implying that an eventual
  * callback will be repeatedly called in a separate thread. If a separate thread is started this function
- * will block untill it has started processing audio, otherwise audio processing is started directly.
+ * will block until it has started processing audio, otherwise audio processing is started directly.
  */
 static PaError StartStream( PaStream *s )
 {

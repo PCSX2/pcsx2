@@ -157,7 +157,7 @@ void Threading::BaseTlsVariable<T>::KillKey()
 	// Delete the handle for the current thread (which should always be the main/UI thread!)
 	// This is needed because pthreads does *not* clean up the dangling objects when you delete
 	// the key.  The TLS for the process main thread will only be deleted when the process
-	// ends; which is too damn late (it shows up int he leaked memory blocks).
+	// ends; which is too late (it shows up in the leaked memory blocks).
 
 	BaseTlsVariable<T>::_aligned_delete_and_free( pthread_getspecific(m_thread_key) );
 

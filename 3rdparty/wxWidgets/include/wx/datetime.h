@@ -688,7 +688,7 @@ public:
         // default assignment operator is ok
 
     // calendar calculations (functions which set the date only leave the time
-    // unchanged, e.g. don't explictly zero it): SetXXX() functions modify the
+    // unchanged, e.g. don't explicitly zero it): SetXXX() functions modify the
     // object itself, GetXXX() ones return a new object.
     // ------------------------------------------------------------------------
 
@@ -706,7 +706,7 @@ public:
     wxDateTime& SetToPrevWeekDay(WeekDay weekday);
     inline wxDateTime GetPrevWeekDay(WeekDay weekday) const;
 
-        // set to Nth occurence of given weekday in the given month of the
+        // set to Nth occurrence of given weekday in the given month of the
         // given year (time is set to 0), return true on success and false on
         // failure. n may be positive (1..5) or negative to count from the end
         // of the month (see helper function SetToLastWeekDay())

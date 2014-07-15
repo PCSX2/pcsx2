@@ -377,7 +377,7 @@ typedef struct
     //in case we later need the synch
     IMMDeviceEnumerator *enumerator;
 
-    //this is the REAL number of devices, whether they are usefull to PA or not!
+    //this is the REAL number of devices, whether they are useful to PA or not!
     UINT32 deviceCount;
 
     WCHAR defaultRenderer [MAX_STR_LEN];
@@ -582,7 +582,7 @@ static PaError __LogPaError(PaError err, const char *func, const char *file, int
 // ------------------------------------------------------------------------------------------
 /*! \class ThreadSleepScheduler
            Allows to emulate thread sleep of less than 1 millisecond under Windows. Scheduler
-		   calculates number of times the thread must run untill next sleep of 1 millisecond.
+		   calculates number of times the thread must run until next sleep of 1 millisecond.
 		   It does not make thread sleeping for real number of microseconds but rather controls
 		   how many of imaginary microseconds the thread task can allow thread to sleep.
 */
@@ -2468,7 +2468,7 @@ static HRESULT CreateAudioClient(PaWasapiStream *pStream, PaWasapiSubStream *pSu
 		MakeFramesFromHns(pSub->period, pSub->wavex.Format.nSamplesPerSec),
 		fullDuplex);
 
-	// No error, client is succesfully created
+	// No error, client is successfully created
 	(*pa_error) = paNoError;
 
 done:
@@ -2804,7 +2804,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         inputChannelCount = 0;
-        inputSampleFormat = hostInputSampleFormat = paInt16; /* Surpress 'uninitialised var' warnings. */
+        inputSampleFormat = hostInputSampleFormat = paInt16; /* Suppress 'uninitialised var' warnings. */
     }
 
 	// Try create device: Output
@@ -2893,7 +2893,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         outputChannelCount = 0;
-        outputSampleFormat = hostOutputSampleFormat = paInt16; /* Surpress 'uninitialized var' warnings. */
+        outputSampleFormat = hostOutputSampleFormat = paInt16; /* Suppress 'uninitialized var' warnings. */
     }
 
 	// log full-duplex
@@ -2951,7 +2951,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
 
 		// serious problem #2 - No, Not a problem, as framesPerHostCallback take into account
 		// sample size while it is not a problem for PA full-duplex, we must care of
-		// preriod only!
+		// period only!
 		/*if (stream->out.framesPerHostCallback != stream->in.framesPerHostCallback)
 		{
 			PRINT(("WASAPI: OpenStream: framesPerHostCallback discrepancy\n"));
@@ -3654,7 +3654,7 @@ static PaError WriteStream( PaStream* s, const void *_buffer, unsigned long fram
             ((const BYTE **)user_buffer)[i] = ((const BYTE **)_buffer)[i];
     }
 
-	// Blocking (potentially, untill 'frames' are consumed) loop
+	// Blocking (potentially, until 'frames' are consumed) loop
 	while (frames != 0)
 	{
 		// Check if blocking call must be interrupted
@@ -4877,10 +4877,10 @@ PA_THREAD_FUNC ProcThreadPoll(void *param)
 				break;
 			}
 
-			// process equal ammount of frames
+			// process equal amount of frames
 			if (o_frames >= i_frames)
 			{
-				// process input ammount of frames
+				// process input amount of frames
 				UINT32 o_processed = i_frames;
 
 				// get host output buffer
@@ -5001,10 +5001,10 @@ PA_THREAD_FUNC ProcThreadPoll(void *param)
 					break;
 				}
 
-				// process equal ammount of frames
+				// process equal amount of frames
 				if (o_frames >= i_frames)
 				{
-					// process input ammount of frames
+					// process input amount of frames
 					UINT32 o_processed = i_frames;
 
 					// get host output buffer

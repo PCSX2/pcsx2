@@ -52,7 +52,7 @@ by the user, and can be limited in functionality or difficult to use.
 
 This is where the PortAudio "WDM-KS" host implementation comes in.
 It directly connects PortAudio to the same Kernel Streaming API which
-those ASIO bridges use. This avoids the mixing penatly of DirectX, 
+those ASIO bridges use. This avoids the mixing penalty of DirectX, 
 giving at least as good latency as any ASIO driver, but it has the
 advantage of working with ANY Windows audio hardware which is available
 through the normal MME/DirectX routes without the user requiring 

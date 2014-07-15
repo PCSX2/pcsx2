@@ -308,7 +308,7 @@ msgstr "选中时此文件夹将自动反映当前 PCSX2 用户设置选项相�
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
-"0: Automatic-Zoom-In untill the black-bars are gone (Aspect ratio is kept, "
+"0: Automatic-Zoom-In until the black-bars are gone (Aspect ratio is kept, "
 "some of the image goes out of screen).\n"
 "  NOTE: Some games draw their own black-bars, which will not be removed with "
 "'0'.\n"

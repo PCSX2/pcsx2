@@ -2596,7 +2596,7 @@ wxWindowCreationHook::~wxWindowCreationHook()
 LRESULT WXDLLEXPORT APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     // trace all messages - useful for the debugging
-	// PCSX2: Not really!  Trace logging is shit slow, and is only really useful to devs of
+	// PCSX2: Not really!  Trace logging is slow, and is only really useful to devs of
     // wxWidgets itself so I disabled it. -- air
 
 #if 0 //def __WXDEBUG__
@@ -3422,7 +3422,7 @@ WXLRESULT wxWindowMSW::MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM l
 
     if ( !processed )
     {
-// PCSX2: Trace logging is shit slow, and is only really useful to devs of wxWidgets itself
+// PCSX2: Trace logging is slow, and is only really useful to devs of wxWidgets itself
 // so I disabled it. -- air
 #if 0 //def __WXDEBUG__
         wxLogTrace(wxTraceMessages, wxT("Forwarding %s to DefWindowProc."),

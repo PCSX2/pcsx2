@@ -122,7 +122,7 @@ emitterT void FSUB320toR( x86IntRegType src )
    xWrite8( 0xE8 + src );
 }
 
-/* fsubp -> substract ST(0) from ST(1), store in ST(1) and POP stack */
+/* fsubp -> subtract ST(0) from ST(1), store in ST(1) and POP stack */
 emitterT void FSUBP( void )
 {
    xWrite8( 0xDE );

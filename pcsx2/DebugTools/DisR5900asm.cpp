@@ -666,7 +666,7 @@ void COP2( string& output )
 	COP2PrintTable[DECODE_RS]( output );
 }
 
-// Unkown Opcode!
+// Unknown Opcode!
 void Unknown( string& output )
 {
 	output += "?????";

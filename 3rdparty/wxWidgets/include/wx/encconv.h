@@ -76,7 +76,7 @@ class WXDLLIMPEXP_BASE wxEncodingConverter : public wxObject
             //              try some (lossy) substitutions - e.g. replace
             //              unconvertable latin capitals with acute by ordinary
             //              capitals, replace en-dash or em-dash by '-' etc.
-            //     both modes gurantee that output string will have same length
+            //     both modes guarantee that output string will have same length
             //     as input string
             //
             // Returns false if given conversion is impossible, true otherwise
@@ -110,7 +110,7 @@ class WXDLLIMPEXP_BASE wxEncodingConverter : public wxObject
             //
             // Equivalence is defined in terms of convertibility:
             // 2 encodings are equivalent if you can convert text between
-            // then without loosing information (it may - and will - happen
+            // then without losing information (it may - and will - happen
             // that you loose special chars like quotation marks or em-dashes
             // but you shouldn't loose any diacritics and language-specific
             // characters when converting between equivalent encodings).

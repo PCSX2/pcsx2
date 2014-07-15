@@ -371,7 +371,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 				bd.RenderTarget[0].DestBlend = (D3D11_BLEND)((int)bd.RenderTarget[0].DestBlend + 13);
 			}
 
-			// Not very good but I don't wanna write another 81 row table
+			// Not very good but I don't want to write another 81 row table
 
 			if(bsel.negative)
 			{

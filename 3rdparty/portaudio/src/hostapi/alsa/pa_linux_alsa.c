@@ -2119,7 +2119,7 @@ static PaError PaAlsaStream_Initialize( PaAlsaStream *self, PaAlsaHostApiReprese
 
     self->framesPerUserBuffer = framesPerUserBuffer;
     self->neverDropInput = streamFlags & paNeverDropInput;
-    /* XXX: Ignore paPrimeOutputBuffersUsingStreamCallback untill buffer priming is fully supported in pa_process.c */
+    /* XXX: Ignore paPrimeOutputBuffersUsingStreamCallback until buffer priming is fully supported in pa_process.c */
     /*
     if( outParams & streamFlags & paPrimeOutputBuffersUsingStreamCallback )
         self->primeBuffers = 1;
@@ -4133,7 +4133,7 @@ error:
  * directly is obtained from ALSA, we then request as much directly accessible memory as possible within this amount
  * from ALSA. The buffer memory is registered with the PA buffer processor and processing is carried out with
  * PaUtil_EndBufferProcessing. Finally, the number of processed frames is reported to ALSA. The processing can
- * happen in several iterations untill we have consumed the known number of available frames (or an xrun is detected).
+ * happen in several iterations until we have consumed the known number of available frames (or an xrun is detected).
  */
 static void *CallbackThreadFunc( void *userData )
 {
@@ -4213,7 +4213,7 @@ static void *CallbackThreadFunc( void *userData )
             /* There is still buffered output that needs to be processed */
         }
 
-        /* Wait for data to become available, this comes down to polling the ALSA file descriptors untill we have
+        /* Wait for data to become available, this comes down to polling the ALSA file descriptors until we have
          * a number of available frames.
          */
         PA_ENSURE( PaAlsaStream_WaitForFrames( stream, &framesAvail, &xrun ) );

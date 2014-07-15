@@ -26,7 +26,7 @@
 //
 // Warning: This program is full of stack overflow holes and other mess.  Maybe we'll
 // rewrite it in C# someday and fix all that stuff, but for now it serves its purpose
-// and accomplishes its menial tasks with sufficent effectiveness.
+// and accomplishes its menial tasks with sufficient effectiveness.
 //
 
 #include <cstdio>

@@ -57,7 +57,7 @@ enum vif1_stat_flags
 };
 
 // These are the stat flags that are the same for vif0 & vif1,
-// for occassions where we don't neccessarily know which we are using.
+// for occasions where we don't necessarily know which we are using.
 enum vif_stat_flags
 {
 	VIF_STAT_VPS_W		= (1),

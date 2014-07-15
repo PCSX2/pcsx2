@@ -784,7 +784,7 @@ void wxWizard::OnBackOrNext(wxCommandEvent& event)
     wxCHECK_RET( m_page, _T("should have a valid current page") );
 
     // ask the current page first: notice that we do it before calling
-    // GetNext/Prev() because the data transfered from the controls of the page
+    // GetNext/Prev() because the data transferred from the controls of the page
     // may change the value returned by these methods
     if ( !m_page->Validate() || !m_page->TransferDataFromWindow() )
     {

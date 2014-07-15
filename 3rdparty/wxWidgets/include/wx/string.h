@@ -573,7 +573,7 @@ public:
     // find first n characters of sz
   size_t find(const wxChar* sz, size_t nStart = 0, size_t n = npos) const;
 
-    // find the first occurence of character ch after nStart
+    // find the first occurrence of character ch after nStart
   size_t find(wxChar ch, size_t nStart = 0) const;
 
     // rfind() family is exactly like find() but works right to left
@@ -587,7 +587,7 @@ public:
     // as find, but from the end
   size_t rfind(wxChar ch, size_t nStart = npos) const;
 
-    // find first/last occurence of any character in the set
+    // find first/last occurrence of any character in the set
 
     // as strpbrk() but starts at nStart, returns npos if not found
   size_t find_first_of(const wxStringBase& str, size_t nStart = 0) const
@@ -608,7 +608,7 @@ public:
   size_t find_last_of(wxChar c, size_t nStart = npos) const
     { return rfind(c, nStart); }
 
-    // find first/last occurence of any character not in the set
+    // find first/last occurrence of any character not in the set
 
     // as strspn() (starting from nStart), returns npos on failure
   size_t find_first_not_of(const wxStringBase& str, size_t nStart = 0) const
@@ -1136,16 +1136,16 @@ public:
   wxString Left(size_t nCount) const;
       // get last nCount characters
   wxString Right(size_t nCount) const;
-      // get all characters before the first occurance of ch
+      // get all characters before the first occurrence of ch
       // (returns the whole string if ch not found)
   wxString BeforeFirst(wxChar ch) const;
-      // get all characters before the last occurence of ch
+      // get all characters before the last occurrence of ch
       // (returns empty string if ch not found)
   wxString BeforeLast(wxChar ch) const;
-      // get all characters after the first occurence of ch
+      // get all characters after the first occurrence of ch
       // (returns empty string if ch not found)
   wxString AfterFirst(wxChar ch) const;
-      // get all characters after the last occurence of ch
+      // get all characters after the last occurrence of ch
       // (returns the whole string if ch not found)
   wxString AfterLast(wxChar ch) const;
 
@@ -1175,7 +1175,7 @@ public:
   int Find(wxChar ch, bool bFromEnd = false) const;   // like strchr/strrchr
       // searching (return starting index, or -1 if not found)
   int Find(const wxChar *pszSub) const;               // like strstr
-      // replace first (or all of bReplaceAll) occurences of substring with
+      // replace first (or all of bReplaceAll) occurrences of substring with
       // another string, returns the number of replacements made
   size_t Replace(const wxChar *szOld,
                  const wxChar *szNew,

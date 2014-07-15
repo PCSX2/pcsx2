@@ -323,7 +323,7 @@ Q 9	Cancelation doesn't work for me, why?
 >
 > 1) is this normal behaviour?
 >
-> 2) if not, how does the cancel mechanism work? I'm not very familliar to
+> 2) if not, how does the cancel mechanism work? I'm not very familiar to
 > win32 programming, so I don't really understand how the *Event() family of
 > calls work.
 

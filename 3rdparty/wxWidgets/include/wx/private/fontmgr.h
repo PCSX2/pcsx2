@@ -71,7 +71,7 @@ public:
 
         @param ptSize   point size of the font to create; note that this is
                         a float and not integer, it should be wxFont's point
-                        size multipled by wxDC's scale factor
+                        size multiplied by wxDC's scale factor
         @param aa       should the font be antialiased?
      */
     virtual wxFontInstance *GetFontInstance(float ptSize, bool aa);

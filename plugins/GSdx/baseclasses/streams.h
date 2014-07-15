@@ -53,7 +53,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 // The following definitions come from the Platform SDK and are required if
-// the applicaiton is being compiled with the headers from Visual C++ 6.0.
+// the application is being compiled with the headers from Visual C++ 6.0.
 ///////////////////////////////////////////////////////////////////////////
 #ifndef InterlockedExchangePointer
 	#define InterlockedExchangePointer(Target, Value) \
