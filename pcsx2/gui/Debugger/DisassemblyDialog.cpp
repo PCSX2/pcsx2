@@ -170,7 +170,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	SetMinSize(wxSize(1000,600));
 	panel->GetSizer()->Fit(this);
 
-	setDebugMode(true);
+	setDebugMode(true,true);
 }
 
 #ifdef WIN32
@@ -212,8 +212,10 @@ void DisassemblyDialog::onBreakRunClicked(wxCommandEvent& evt)
 		// If the current PC is on a breakpoint, the user doesn't want to do nothing.
 		CBreakPoints::SetSkipFirst(r5900Debug.getPC());
 		r5900Debug.resumeCpu();
-	} else
+	} else {
 		r5900Debug.pauseCpu();
+		gotoPc();
+	}
 }
 
 void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
@@ -352,7 +354,9 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	wxEventType type = evt.GetEventType();
 	if (type == debEVT_SETSTATUSBARTEXT)
 	{
-		GetStatusBar()->SetLabel(evt.GetString());
+		CtrlDisassemblyView* view = reinterpret_cast<CtrlDisassemblyView*>(evt.GetEventObject());
+		if (view != NULL && view == currentCpu->getDisassembly())
+			GetStatusBar()->SetLabel(evt.GetString());
 	} else if (type == debEVT_UPDATELAYOUT)
 	{
 		if (currentCpu != NULL)
@@ -420,7 +424,13 @@ void DisassemblyDialog::reset()
 	iopTab->getDisassembly()->clearFunctions();
 };
 
-void DisassemblyDialog::setDebugMode(bool debugMode)
+void DisassemblyDialog::gotoPc()
+{
+	eeTab->getDisassembly()->gotoPc();
+	iopTab->getDisassembly()->gotoPc();
+}
+
+void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 {
 	bool running = r5900Debug.isAlive();
 	
@@ -437,8 +447,8 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 			stepOverButton->Enable(true);
 			stepIntoButton->Enable(true);
 
-			eeTab->getDisassembly()->gotoPc();
-			iopTab->getDisassembly()->gotoPc();
+			if (switchPC || CBreakPoints::GetBreakpointTriggered())
+				gotoPc();
 			
 			if (CBreakPoints::GetBreakpointTriggered())
 			{

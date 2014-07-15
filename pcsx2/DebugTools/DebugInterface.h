@@ -84,6 +84,8 @@ public:
 	virtual std::string disasm(u32 address);
 	virtual bool isValidAddress(u32 address);
 	virtual u32 getCycles();
+private:
+	u32 readMemory(u32 address, u32 size);
 };
 
 

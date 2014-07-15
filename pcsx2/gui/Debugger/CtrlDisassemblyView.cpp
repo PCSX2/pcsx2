@@ -811,7 +811,7 @@ void CtrlDisassemblyView::updateStatusBarText()
 					}
 				case 16:
 					{
-						u128 data = cpu->read128(line.info.dataAddress);
+						__aligned16 u128 data = cpu->read128(line.info.dataAddress);
 						sprintf(text,"[%08X] = %016llX%016llX",line.info.dataAddress,data._u64[1],data._u64[0]);
 						break;
 					}

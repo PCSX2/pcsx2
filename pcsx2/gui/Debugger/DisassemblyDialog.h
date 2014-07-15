@@ -62,7 +62,7 @@ public:
 	
 	void update();
 	void reset();
-	void setDebugMode(bool debugMode);
+	void setDebugMode(bool debugMode, bool switchPC);
 	
 #ifdef WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
@@ -79,6 +79,7 @@ protected:
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
 	void stepInto();
+	void gotoPc();
 private:
 	CpuTabPage* eeTab;
 	CpuTabPage* iopTab;
