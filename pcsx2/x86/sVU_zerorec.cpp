@@ -2550,6 +2550,7 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
 	// _initX86regs();
 }
 
+#ifdef _M_X86_32
 #if defined(_MSC_VER)
 
 // entry point of all vu programs from emulator calls
@@ -2607,6 +2608,19 @@ __declspec(naked) static void SuperVUEndProgram()
 		jmp s_callstack // so returns correctly
 	}
 }
+#endif
+
+#else
+// entry point of all vu programs from emulator calls
+void SuperVUExecuteProgram(u32 startpc, int vuindex)
+{
+}
+
+// exit point of all vu programs
+void SuperVUEndProgram()
+{
+}
+
 
 #endif
 
