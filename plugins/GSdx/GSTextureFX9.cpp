@@ -220,7 +220,7 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 			ss->AddressU = ssel.tau ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
 			ss->AddressV = ssel.tav ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
 			ss->MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
-			ss->MaxLOD = FLT_MAX;
+			ss->MaxLOD = ULONG_MAX;
 
 
 			m_ps_ss[ssel] = ss;
