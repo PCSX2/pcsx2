@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-04-06 11:49+0200\n"
-"PO-Revision-Date: 2014-07-13 22:05+0100\n"
+"PO-Revision-Date: 2014-07-15 20:56+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ca_ES\n"
@@ -445,40 +445,54 @@ msgid ""
 "1 - Default cyclerate. This closely matches the actual speed of a real PS2 "
 "EmotionEngine."
 msgstr ""
+"1 - velocitat de cicles per defecte. S'acosta molt a la velocitat de "
+"l'Emotion Engine de la PS2."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:31
 msgid ""
 "2 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
+"2 - Redueix la velocitat de cicles de l'Emotion Engine aproximadament un "
+"33%. S'incrementa lleument la velocitat amb els jocs i té una gran "
+"comptabilitat."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 msgid ""
 "3 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but *will* "
 "cause stuttering audio on many FMVs."
 msgstr ""
+"3 - Redueix la velocitat de cicles de l'Emotion Engine aproximadament un "
+"50%. Incrementa moderadament la velocitat, però pot causar pampallugues a "
+"sons i en bastantes cinemàtiques."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
-msgstr ""
+msgstr "0 - Desactiva el robament de cicles a la VU. La opció més compatible!"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:54
 msgid ""
 "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
 "games."
 msgstr ""
+"1 - Lleu robatori de cicles a la VU. Poca compatibilitat , però amb "
+"increments de velocitat en molts jocs."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:58
 msgid ""
 "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
 "speedups in some games."
 msgstr ""
+"2 - Robatori moderat de cicles a la VU. Encara menys compatibilitat, però te "
+"significants increments de velocitat en alguns jocs."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:63
 msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
 msgstr ""
+"3 - Robatori màxim de cicles a la VU. Casi sense ús, està limitat, si poses "
+"això pot causar parpelleig  o baixades de velocitat en la majoria de jocs."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:88
 msgid ""
@@ -486,6 +500,10 @@ msgid ""
 "audio, and false FPS readings.  When having emulation problems, disable this "
 "panel first."
 msgstr ""
+"Els hacks de velocitat normalment milloren la velocitat de emulació, però "
+"poden causar errors, sons que s'escolten malament i falses lectures de "
+"frames. Si et trobes amb aquest problemes de emulació, desactiva el panell "
+"primer."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
 msgid ""
@@ -522,6 +540,10 @@ msgid ""
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
 "this method of vsync will see little or no speedup from this hack."
 msgstr ""
+"Aquest hack funciona millor per a jocs que utilitzen el registre INTC per "
+"esperar VSync, que inclou principalment els títols que  no son 3D RPG. Els "
+"jocs que no utilitzen aquest mètode de VSync veuran poc o cap augment de "
+"velocitat amb aquest hack."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
 msgid ""

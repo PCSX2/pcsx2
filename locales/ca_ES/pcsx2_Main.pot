@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-04-06 11:49+0200\n"
-"PO-Revision-Date: 2014-07-13 22:00+0100\n"
+"PO-Revision-Date: 2014-07-15 20:52+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
 "Language-Team: ca_ES <LL@li.org>\n"
 "Language: ca_ES\n"
@@ -144,12 +144,12 @@ msgstr ""
 #: pcsx2/PluginManager.cpp:835
 #, c-format
 msgid "The configured %s plugin file was not found"
-msgstr ""
+msgstr "El plugin de %s no ha estat trobat"
 
 #: pcsx2/PluginManager.cpp:839
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
-msgstr ""
+msgstr "El plugin de %s no es una llibreria dinàmica vàlida"
 
 #: pcsx2/PluginManager.cpp:857
 #, c-format
@@ -162,6 +162,8 @@ msgstr ""
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
+"El plugin reporta que el teu \"Hardware\" o \"Software\" o els seus \"Drivers"
+"\" no estan suportats."
 
 #: pcsx2/PluginManager.cpp:903
 msgid ""
@@ -423,7 +425,7 @@ msgstr ""
 
 #: pcsx2/gui/AppInit.cpp:261
 msgid "disables all speedhacks"
-msgstr ""
+msgstr "Desactiva tots els hacks de velocitat"
 
 #: pcsx2/gui/AppInit.cpp:262
 msgid "use the specified comma or pipe-delimited list of gamefixes."
@@ -1072,11 +1074,11 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:223
 msgid "GS"
-msgstr ""
+msgstr "Gràfics"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:224
 msgid "GS Window"
-msgstr ""
+msgstr "Finestra dels Gràfics"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:225
 msgid "Speedhacks"
@@ -1093,15 +1095,15 @@ msgstr "Selector de components - %s"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:244
 msgid "Plugins"
-msgstr ""
+msgstr "Plugins"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:245
 msgid "BIOS"
-msgstr ""
+msgstr "BIOS"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:246
 msgid "Folders"
-msgstr ""
+msgstr "Carpetes"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:257
 #, c-format
@@ -1337,7 +1339,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:463
 msgid "Emulation &Settings"
-msgstr "Opcions de &Emulació"
+msgstr "Opcions d'&emulació"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "&Memory cards"
@@ -1675,7 +1677,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:85
 msgid "EE/FPU Advanced Recompiler Options"
-msgstr ""
+msgstr "Opcions avançades del Recompilador de Emotion Engine / FPU"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:87 pcsx2/gui/Panels/CpuPanel.cpp:102
 msgid "Extra + Preserve Sign"
@@ -1696,39 +1698,43 @@ msgstr ""
 #: pcsx2/gui/Panels/CpuPanel.cpp:116 pcsx2/gui/Panels/CpuPanel.cpp:125
 #: pcsx2/gui/Panels/CpuPanel.cpp:182
 msgid "Interpreter"
-msgstr ""
+msgstr "Intepretador"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:117
 msgid "Quite possibly the slowest thing in the universe."
-msgstr ""
+msgstr "Molt possiblement la cosa més lenta de l'univers."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:119 pcsx2/gui/Panels/CpuPanel.cpp:128
 msgid "Recompiler"
-msgstr ""
+msgstr "Recompilador"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:120
 msgid ""
 "Performs just-in-time binary translation of 64-bit MIPS-IV machine code to "
 "x86."
 msgstr ""
+"Realitza una traducció binaria en cada moment d'el codi maquinari de 64 bits "
+"MIPS-IV a x86 (32 bits)."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:126
 msgid "Pretty slow; provided for diagnostic purposes only."
-msgstr ""
+msgstr "Molt lent; per a fer proves de diagnòstic només."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:129
 msgid ""
 "Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
 "x86."
 msgstr ""
+"Realitza una traducció binaria en cada moment d'el codi maquinari de 32 bits "
+"MIPS-IV a x86 (32 bits)."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:153
 msgid "Enable EE Cache (Slower)"
-msgstr ""
+msgstr "Activa la memòria cau per a Emotion Engine (Lent)"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:153
 msgid "Interpreter only; provided for diagnostic"
-msgstr ""
+msgstr "Només interpretador; fet servir per a diagnòstic"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:169 pcsx2/gui/Panels/CpuPanel.cpp:221
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
@@ -1740,6 +1746,8 @@ msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
 msgstr ""
+"Interpretador de Unitat Vectorial. Lent i no gaire compatible. Només a "
+"utilitzar per a diagnòstics."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:185
 msgid "microVU Recompiler"
@@ -1749,6 +1757,8 @@ msgstr ""
 msgid ""
 "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr ""
+"Nou recompilador de unitat vectorial amb una compatibilitat molt millorada. "
+"Recomanat."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid "superVU Recompiler [legacy]"
@@ -1758,6 +1768,8 @@ msgstr ""
 msgid ""
 "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr ""
+"Útil per a diagnosticar errors o notificacions en el nou recompilador "
+"microVU."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
 msgid "Path does not exist"
@@ -2286,12 +2298,14 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid "Enable speedhacks"
-msgstr ""
+msgstr "Activa els hacks de velocitat"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
+"Una manera fàcil i segura de que tots els hacks de velocitat estan "
+"completament desactivats"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
 msgid ""
@@ -2301,11 +2315,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
 msgid "EE Cyclerate [Not Recommended]"
-msgstr ""
+msgstr "Velocitat de cicles de Emotion Engine [No Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
 msgid "VU Cycle Stealing [Not Recommended]"
-msgstr ""
+msgstr "Robatori de cicles a la VU [No Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
 msgid "microVU Hacks"
@@ -2332,11 +2346,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
 msgid "Other Hacks"
-msgstr ""
+msgstr "Altres Hacks"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
 msgid "Enable INTC Spin Detection"
-msgstr ""
+msgstr "Activa la detecció de voltes de INTC"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
 msgid ""
