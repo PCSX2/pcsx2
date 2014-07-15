@@ -139,7 +139,7 @@ void Panels::BiosSelectorPanel::Apply()
 			) );
 	}
 
-	g_Conf->BaseFilenames.Bios = (*m_BiosList)[(int)m_ComboBox->GetClientData(sel)];
+	g_Conf->BaseFilenames.Bios = (*m_BiosList)[(sptr)m_ComboBox->GetClientData(sel)];
 }
 
 void Panels::BiosSelectorPanel::AppStatusEvent_OnSettingsApplied()
