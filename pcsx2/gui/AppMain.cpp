@@ -757,14 +757,14 @@ void Pcsx2App::enterDebugMode()
 {
 	DisassemblyDialog* dlg = GetDisassemblyPtr();
 	if (dlg)
-		dlg->setDebugMode(true);
+		dlg->setDebugMode(true,false);
 }
 	
 void Pcsx2App::leaveDebugMode()
 {
 	DisassemblyDialog* dlg = GetDisassemblyPtr();
 	if (dlg)
-		dlg->setDebugMode(false);
+		dlg->setDebugMode(false,false);
 }
 
 void Pcsx2App::resetDebugger()
