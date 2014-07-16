@@ -312,6 +312,69 @@ int getBackgroundColor(unsigned int address)
 	return colors[n%6];
 }
 
+std::set<std::string> CtrlDisassemblyView::getSelectedLineArguments() {
+	std::set<std::string> args;
+
+	DisassemblyLineInfo line;
+	for (u32 addr = selectRangeStart; addr < selectRangeEnd; addr += 4) {
+		manager.getLine(addr, displaySymbols, line);
+		size_t p = 0, nextp = line.params.find(',');
+		while (nextp != line.params.npos) {
+			args.insert(line.params.substr(p, nextp - p));
+			p = nextp + 1;
+			nextp = line.params.find(',', p);
+		}
+		if (p < line.params.size()) {
+			args.insert(line.params.substr(p));
+		}
+	}
+
+	return args;
+}
+
+void CtrlDisassemblyView::drawArguments(wxDC& dc, const DisassemblyLineInfo &line, int x, int y, wxColor& textColor,
+	const std::set<std::string> &currentArguments)
+{
+	if (line.params.empty())
+		return;
+
+	// Don't highlight the selected lines.
+	if (isInInterval(selectRangeStart, selectRangeEnd - selectRangeStart, line.info.opcodeAddress))
+	{
+		dc.DrawText(wxString(line.params.c_str(),wxConvUTF8),x,y);
+		return;
+	}
+
+	wxColor highlightedColor = wxColor(textColor == 0xFF0000FF ? 0xFFAABB77 : 0xFFAABB00);
+
+	size_t p = 0, nextp = line.params.find(',');
+	while (nextp != line.params.npos) {
+		const std::string arg = line.params.substr(p, nextp - p);
+		if (currentArguments.find(arg) != currentArguments.end() && textColor != 0xFFFFFFFF)
+		{
+			dc.SetTextForeground(highlightedColor);
+		}
+		dc.DrawText(wxString(arg.c_str(),wxConvUTF8),x,y);
+		x += arg.size()*charWidth;
+
+		p = nextp + 1;
+		nextp = line.params.find(',', p);
+
+		dc.SetTextForeground(textColor);
+		dc.DrawText(L",",x,y);
+		x += charWidth;
+	}
+	if (p < line.params.size()) {
+		const std::string arg = line.params.substr(p);
+		if (currentArguments.find(arg) != currentArguments.end() && textColor != 0xFFFFFFFF)
+		{
+			dc.SetTextForeground(highlightedColor);
+		}
+		dc.DrawText(wxString(arg.c_str(),wxConvUTF8),x,y);
+		dc.SetTextForeground(textColor);
+	}
+}
+
 void CtrlDisassemblyView::render(wxDC& dc)
 {
 	// init stuff
@@ -347,6 +410,8 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	std::map<u32,int> addressPositions;
 
 	unsigned int address = windowStart;
+
+	const std::set<std::string> currentArguments = getSelectedLineArguments();
 	DisassemblyLineInfo line;
 	for (int i = 0; i < visibleRows+1; i++)
 	{
@@ -404,7 +469,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 
 		dc.SetFont(font);
 		dc.DrawText(wxString(addressText,wxConvUTF8),pixelPositions.addressStart,rowY1+2);
-		dc.DrawText(wxString(line.params.c_str(),wxConvUTF8),pixelPositions.argumentsStart,rowY1+2);
+		drawArguments(dc, line, pixelPositions.argumentsStart, rowY1 + 2, textColor, currentArguments);
 		
 		if (isInInterval(address,line.totalSize,cpu->getPC()))
 			dc.DrawText(L"■",pixelPositions.opcodeStart-(charWidth+1),rowY1);
