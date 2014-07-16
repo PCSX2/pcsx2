@@ -682,15 +682,3 @@ public:
 };
 
 }
-
-template< class T, class HashFunctor=HashTools::CommonHashClass >
-class pxDictionary : public HashTools::HashMap<wxString, T, HashFunctor>
-{
-public:
-	virtual ~pxDictionary() {}
-
-	pxDictionary( int initialCapacity=33, const wxString& emptyKey = L"@@-EMPTY-@@", const wxString& deletedKey = L"@@-DELETED-@@" )
-		: HashTools::HashMap<wxString, T, HashFunctor>( emptyKey, deletedKey, initialCapacity)
-	{
-	}
-};
