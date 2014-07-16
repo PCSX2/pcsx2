@@ -294,10 +294,11 @@ void GSPanel::DirectKeyCommand( const KeyAcceleratorCode& kac )
 {
 	const GlobalCommandDescriptor* cmd = NULL;
 
-	if (m_Accels->find(kac.val32) == m_Accels->end())
+	std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(m_Accels->find(kac.val32));
+	if (iter == m_Accels->end())
 		return;
 
-	cmd = m_Accels->at(kac.val32);
+	cmd = iter->second;
 
 	DbgCon.WriteLn( "(gsFrame) Invoking command: %s", cmd->Id );
 	cmd->Invoke();
