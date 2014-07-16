@@ -519,15 +519,7 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 	{ NULL }
 };
 
-CommandDictionary::CommandDictionary() {}
-
 CommandDictionary::~CommandDictionary() throw() {}
-
-
-AcceleratorDictionary::AcceleratorDictionary()
-	: _parent( 0, 0xffffffff )
-{
-}
 
 AcceleratorDictionary::~AcceleratorDictionary() throw() {}
 
@@ -552,7 +544,10 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	// End of overrides section
 
 	const GlobalCommandDescriptor* result = NULL;
-	TryGetValue( acode.val32, result );
+
+	std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(find(acode.val32));
+	if (iter != end())
+		result = iter->second;
 
 	if( result != NULL )
 	{
@@ -563,7 +558,10 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 		);
 	}
 
-	wxGetApp().GlobalCommands->TryGetValue( searchfor, result );
+	std::unordered_map<std::string, const GlobalCommandDescriptor*>::const_iterator acceleratorIter(wxGetApp().GlobalCommands->find(searchfor));
+
+	if (acceleratorIter != wxGetApp().GlobalCommands->end())
+		result = acceleratorIter->second;
 
 	if( result == NULL )
 	{

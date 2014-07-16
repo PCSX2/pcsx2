@@ -293,8 +293,12 @@ void GSPanel::OnKeyDown( wxKeyEvent& evt )
 void GSPanel::DirectKeyCommand( const KeyAcceleratorCode& kac )
 {
 	const GlobalCommandDescriptor* cmd = NULL;
-	m_Accels->TryGetValue( kac.val32, cmd );
-	if( cmd == NULL ) return;
+
+	std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(m_Accels->find(kac.val32));
+	if (iter == m_Accels->end())
+		return;
+
+	cmd = iter->second;
 
 	DbgCon.WriteLn( "(gsFrame) Invoking command: %s", cmd->Id );
 	cmd->Invoke();

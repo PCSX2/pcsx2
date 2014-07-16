@@ -16,7 +16,9 @@
 #pragma once
 
 #include "AppCommon.h"
-#include "Utilities/HashMap.h"
+
+#include <string>
+#include <unordered_map>
 
 // --------------------------------------------------------------------------------------
 //  KeyAcceleratorCode
@@ -105,31 +107,29 @@ struct GlobalCommandDescriptor
 // --------------------------------------------------------------------------------------
 //  CommandDictionary
 // --------------------------------------------------------------------------------------
-class CommandDictionary : public HashTools::Dictionary<const GlobalCommandDescriptor*>
+class CommandDictionary : public std::unordered_map<std::string, const GlobalCommandDescriptor*>
 {
-	typedef HashTools::Dictionary<const GlobalCommandDescriptor*> _parent;
+	typedef std::unordered_map<std::string, const GlobalCommandDescriptor*> _parent;
 
 protected:
 
 public:
 	using _parent::operator[];
-	CommandDictionary();
 	virtual ~CommandDictionary() throw();
 };
 
 // --------------------------------------------------------------------------------------
 //  
 // --------------------------------------------------------------------------------------
-class AcceleratorDictionary : public HashTools::HashMap<int, const GlobalCommandDescriptor*>
+class AcceleratorDictionary : public std::unordered_map<int, const GlobalCommandDescriptor*>
 {
-	typedef HashTools::HashMap<int, const GlobalCommandDescriptor*> _parent;
+	typedef std::unordered_map<int, const GlobalCommandDescriptor*> _parent;
 
 protected:
 
 public:
 	using _parent::operator[];
 
-	AcceleratorDictionary();
 	virtual ~AcceleratorDictionary() throw();
 	void Map( const KeyAcceleratorCode& acode, const char *searchfor );
 };

@@ -565,7 +565,12 @@ void Pcsx2App::LogicalVsync()
 void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 {
 	const GlobalCommandDescriptor* cmd = NULL;
-	if( GlobalAccels ) GlobalAccels->TryGetValue( KeyAcceleratorCode( evt ).val32, cmd );
+	if (GlobalAccels)
+	{
+		std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(GlobalAccels->find(KeyAcceleratorCode(evt).val32));
+		if (iter != GlobalAccels->end())
+			cmd = iter->second;
+	}
 
 	if( cmd == NULL )
 	{
