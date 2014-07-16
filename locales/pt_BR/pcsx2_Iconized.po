@@ -1,14 +1,14 @@
 # Brazilian Portuguese Translation for pcsx2 (Iconized)
-# Copyright (C) 2013 PCSX2_Dev_Team
+# Copyright (C) 2014 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
-# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011, 2012, 2013.
+# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011, 2012, 2013, 2014.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 trunk (r5789)\n"
+"Project-Id-Version: pcsx2 iconized master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:47+0200\n"
-"PO-Revision-Date: 2013-12-31 05:02-0300\n"
+"POT-Creation-Date: 2014-07-16 11:36-0300\n"
+"PO-Revision-Date: 2014-07-16 11:59-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.6.3\n"
+"X-Generator: Poedit 1.6.5\n"
 
 #: common/src/Utilities/Exceptions.cpp:254
 msgid ""
@@ -427,7 +427,7 @@ msgstr ""
 "Fecha completamente a janela do GS, normalmente grande e volumosa, quando "
 "pressionado ESC ou suspendido o emulador."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -439,7 +439,7 @@ msgstr ""
 " * SSX (Conserta gráficos ruins e travamentos)\n"
 " * Resident Evil: Dead Aim (Causa texturas confusas)"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -451,7 +451,7 @@ msgstr ""
 " * Growlanser II e III\n"
 " * Wizardry"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
@@ -459,7 +459,7 @@ msgstr ""
 "Sabe-se que afeta os seguintes jogos:\n"
 " * Mana Khemia 1 (\"off campus\")\n"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
@@ -469,22 +469,28 @@ msgstr ""
 "* Test Drive Unlimited\n"
 "* Transformers"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+msgid ""
+"It's better to enable 'Automatic game fixes' at the main menu instead, and "
+"leave this page empty. ('Automatic' means: selectively use specific tested "
+"fixes for specific games)"
+msgstr ""
+"É melhor habilitar 'Correções de Jogos Automáticas' no menu principal, e "
+"deixar esta página vazia. ('Automáticas' significa: uso seletivo testado "
+"especificamente para jogos específicos)"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues. \n"
+"They may also cause compatibility or performance issues.\n"
 "\n"
-"It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. \n"
-"('Automatic' means: selectively use specific tested fixes for specific games)"
+"The safest way to make sure that all game fixes are completely disabled."
 msgstr ""
-"Correções de Jogos podem contornar problemas de emulação de alguns jogos, \n"
-"Podem também causar problemas de compatibilidade ou performance. \n"
+"Correções de Jogos podem contornar problemas de emulação de alguns jogos. \n"
+"Podem também causar problemas de compatibilidade ou performance.\n"
 "\n"
-"É melhor habilitar 'Correções de Jogos Automáticas' no menu principal, e "
-"deixar esta página vazia. \n"
-"('Automáticas' significa: uso seletivo testado especificamente para jogos "
-"específicos)"
+"O mais seguro é garantir que todas as correções de jogos estejam "
+"desabilitadas."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
 #, c-format
@@ -768,7 +774,7 @@ msgstr ""
 "Aviso: Essa opção pode ser ativada durante o jogo, mas normalmente não pode "
 "ser desativada durante o jogo (o vídeo normalmente ficará estragado)"
 
-#: pcsx2/vtlb.cpp:731
+#: pcsx2/vtlb.cpp:800
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
@@ -796,23 +802,10 @@ msgstr ""
 #~ "de instâncias de sinalizadores antigos. Isso pode ser bem seguro. Não se "
 #~ "sabe se isso quebra algum jogo..."
 
-#~ msgid ""
-#~ "The MTGS thread has become unresponsive while waiting for the GS plugin "
-#~ "to open."
+#~ msgid "16 and 32 MB cards have roughly the same compatibility factor."
 #~ msgstr ""
-#~ "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir."
-
-#~ msgid "Internal Memorycard Plugin failed to initialize."
-#~ msgstr "Plug-in de  Cartão de Memória interno falhou em inicializar."
-
-#~ msgid "Safest"
-#~ msgstr "Mais seguro"
-
-#~ msgid "Safe (faster)"
-#~ msgstr "Seguro (+ rápido)"
-
-#~ msgid "Balanced"
-#~ msgstr "Balanceado"
+#~ "Cartões de 16 e 32 MB têm aproximadamente o mesmo fator de "
+#~ "compatibilidade."
 
 #~ msgid "Aggressive"
 #~ msgstr "Agressivo"
@@ -820,24 +813,15 @@ msgstr ""
 #~ msgid "Aggressive plus"
 #~ msgstr "Agressivo plus"
 
-#~ msgid "Mostly Harmful"
-#~ msgstr "Prejudicial"
-
-#~ msgid "Fits a lot of log in a microcosmically small area."
+#~ msgid ""
+#~ "Always use this option if you want the safest and surest memory card "
+#~ "behavior."
 #~ msgstr ""
-#~ "Armazena um muito conteúdo de log em uma área microscopicamente pequena."
+#~ "Sempre use essa opção caso você queira o mais seguro e certo dos "
+#~ "comportamentos de cartão de memória."
 
-#~ msgid "It's what I use (the programmer guy)."
-#~ msgstr "É o que eu uso (o programador)."
-
-#~ msgid "Its nice and readable."
-#~ msgstr "É bom e legível."
-
-#~ msgid "In case you have a really high res display."
-#~ msgstr "Para o caso de você ter um monitor de realmente alta resolução."
-
-#~ msgid "Default soft-tone color scheme."
-#~ msgstr "Esquema padrão de cores em tons suaves."
+#~ msgid "Balanced"
+#~ msgstr "Balanceado"
 
 #~ msgid ""
 #~ "Classic black color scheme for people who enjoy having text seared into "
@@ -847,27 +831,76 @@ msgstr ""
 #~ "cauterizado nos seus nervos ópticos."
 
 #~ msgid ""
-#~ "When checked the log window will be visible over other foreground windows."
+#~ "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
+#~ "components."
 #~ msgstr ""
-#~ "Quando marcado, a janela de registro estará visível sobre outras janelas "
-#~ "de primeiro plano."
+#~ "Desabilita completamente toda atividade do plug-in de GS; ideal para "
+#~ "avaliar a performance dos componentes centrais do EE."
+
+#~ msgid "Default soft-tone color scheme."
+#~ msgstr "Esquema padrão de cores em tons suaves."
+
+#~ msgid ""
+#~ "Error while parsing either NTSC or PAL framerate settings.  Settings must "
+#~ "be valid floating point numerics."
+#~ msgstr ""
+#~ "Erro enquanto analisava as configurações de taxas de frame de NTSC ou "
+#~ "PAL. As cofigurações devem ser pontos flutuantes numéricos válidos."
+
+#~ msgid "Fits a lot of log in a microcosmically small area."
+#~ msgstr ""
+#~ "Armazena um muito conteúdo de log em uma área microscopicamente pequena."
+
+#~ msgid ""
+#~ "For troubleshooting potential bugs in the MTGS only, as it is potentially "
+#~ "very slow."
+#~ msgstr ""
+#~ "Para solucionar problemas de bugs em potencial no MTGS somente, uma vez "
+#~ "que esse é potencialmente muito lento."
+
+#~ msgid "In case you have a really high res display."
+#~ msgstr "Para o caso de você ter um monitor de realmente alta resolução."
+
+#~ msgid "Includes idle event processing and some other uncommon event usages."
+#~ msgstr ""
+#~ "Inclui eventos ociosos de processamento e alguns outros usos de eventos "
+#~ "incomuns."
+
+#~ msgid "Internal Memorycard Plugin failed to initialize."
+#~ msgstr "Plug-in de  Cartão de Memória interno falhou em inicializar."
+
+#~ msgid "It's what I use (the programmer guy)."
+#~ msgstr "É o que eu uso (o programador)."
+
+#~ msgid "Its nice and readable."
+#~ msgstr "É bom e legível."
 
 #~ msgid "Logs events as they are passed to the PS2 virtual machine."
 #~ msgstr ""
 #~ "Registra eventos assim que eles são passados para a máquina virtual do "
 #~ "PS2."
 
-#~ msgid ""
-#~ "Always use this option if you want the safest and surest memory card "
-#~ "behavior."
-#~ msgstr ""
-#~ "Sempre use essa opção caso você queira o mais seguro e certo dos "
-#~ "comportamentos de cartão de memória."
+#~ msgid "Mostly Harmful"
+#~ msgstr "Prejudicial"
 
-#~ msgid "16 and 32 MB cards have roughly the same compatibility factor."
+#~ msgid "No reason given."
+#~ msgstr "Nenhuma razão dada."
+
+#~ msgid "Safe (faster)"
+#~ msgstr "Seguro (+ rápido)"
+
+#~ msgid "Safest"
+#~ msgstr "Mais seguro"
+
+#~ msgid ""
+#~ "The MTGS thread has become unresponsive while waiting for the GS plugin "
+#~ "to open."
 #~ msgstr ""
-#~ "Cartões de 16 e 32 MB têm aproximadamente o mesmo fator de "
-#~ "compatibilidade."
+#~ "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir."
+
+#~ msgid "Threading activity: start, detach, sync, deletion, etc."
+#~ msgstr ""
+#~ "Manipulação de threads: iniciar, desanexar, sincronizar, exclusão, etc."
 
 #~ msgid ""
 #~ "Use at your own risk.  Erratic memory card behavior is possible (though "
@@ -877,34 +910,7 @@ msgstr ""
 #~ "irregular do cartão memória (apesar de ser improvável)."
 
 #~ msgid ""
-#~ "Error while parsing either NTSC or PAL framerate settings.  Settings must "
-#~ "be valid floating point numerics."
+#~ "When checked the log window will be visible over other foreground windows."
 #~ msgstr ""
-#~ "Erro enquanto analisava as configurações de taxas de frame de NTSC ou "
-#~ "PAL. As cofigurações devem ser pontos flutuantes numéricos válidos."
-
-#~ msgid ""
-#~ "For troubleshooting potential bugs in the MTGS only, as it is potentially "
-#~ "very slow."
-#~ msgstr ""
-#~ "Para solucionar problemas de bugs em potencial no MTGS somente, uma vez "
-#~ "que esse é potencialmente muito lento."
-
-#~ msgid ""
-#~ "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
-#~ "components."
-#~ msgstr ""
-#~ "Desabilita completamente toda atividade do plug-in de GS; ideal para "
-#~ "avaliar a performance dos componentes centrais do EE."
-
-#~ msgid "Threading activity: start, detach, sync, deletion, etc."
-#~ msgstr ""
-#~ "Manipulação de threads: iniciar, desanexar, sincronizar, exclusão, etc."
-
-#~ msgid "Includes idle event processing and some other uncommon event usages."
-#~ msgstr ""
-#~ "Inclui eventos ociosos de processamento e alguns outros usos de eventos "
-#~ "incomuns."
-
-#~ msgid "No reason given."
-#~ msgstr "Nenhuma razão dada."
+#~ "Quando marcado, a janela de registro estará visível sobre outras janelas "
+#~ "de primeiro plano."
