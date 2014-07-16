@@ -197,11 +197,11 @@ namespace vtlb_private
 		// third indexer -- 128 possible handlers!
 		void* RWFT[5][2][VTLB_HANDLER_ITEMS];
 
-		s32 pmap[VTLB_PMAP_ITEMS];	//512KB // PS2 physical to x86 physical
+		sptr pmap[VTLB_PMAP_ITEMS]; //512KB // PS2 physical to x86 physical
 
-		s32* vmap;				//4MB (allocated by vtlb_init) // PS2 virtual to x86 physical
+		sptr* vmap;                //4MB (allocated by vtlb_init) // PS2 virtual to x86 physical
 
-		u32* ppmap;				//4MB (allocated by vtlb_init) // PS2 virtual to PS2 physical
+		u32* ppmap;               //4MB (allocated by vtlb_init) // PS2 virtual to PS2 physical
 
 		MapData()
 		{

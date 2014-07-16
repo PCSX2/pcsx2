@@ -332,8 +332,8 @@ namespace Interpreter {
 namespace OpcodeImpl {
 namespace COP0 {
 
-	void TLBR() {
-DevCon.Warning("COP0_TLBR %d:%x,%x,%x,%x\n",
+void TLBR() {
+	DevCon.Warning("COP0_TLBR %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Index,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 

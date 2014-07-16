@@ -92,7 +92,10 @@ if(_ARCH_64 AND 64BIT_BUILD)
     endif()
 
     set(ARCH_FLAG "-m64 -msse -msse2")
-	add_definitions(-D_ARCH_64=1)
+    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
+    set(_ARCH_64 1)
+    set(_M_X86 1)
+    set(_M_X86_64 1)
 else()
     message("Compiling 32bit build on 32/64bit architecture")
     # Do not search library in /usr/lib64
@@ -110,7 +113,10 @@ else()
     endif()
 
     set(ARCH_FLAG "-m32 -msse -msse2 -march=i686")
-	add_definitions(-D_ARCH_32=1)
+    add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
+    set(_ARCH_32 1)
+    set(_M_X86 1)
+    set(_M_X86_32 1)
 endif()
 
 # * -fPIC option was removed for multiple reasons.

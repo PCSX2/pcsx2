@@ -337,6 +337,9 @@ namespace MIPSAnalyst
 		case 0x2C:		// sdl
 			size = 8;
 			off = -7;
+		case 0x1E:		// lq
+		case 0x1F:		// sq
+			size = 16;
 			break;
 		}
 

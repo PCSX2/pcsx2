@@ -126,7 +126,12 @@ __emitinline void xJccKnownTarget( JccComparisonType comparison, const void* tar
 	{
 		// Perform a 32 bit jump instead. :(
 		s32* bah = xJcc32( comparison );
-		*bah = (s32)target - (s32)xGetPtr();
+		sptr distance = (sptr)target - (sptr)xGetPtr();
+
+		// This assert won't physically happen on x86 targets
+		pxAssertDev(distance >= -0x80000000LL && distance < 0x80000000LL, "Jump target is too far away, needs an indirect register");
+
+		*bah = (s32)distance;
 	}
 }
 

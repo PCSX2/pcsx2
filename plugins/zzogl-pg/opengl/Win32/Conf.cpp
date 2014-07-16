@@ -39,7 +39,7 @@ void SaveConfig()
 	WritePrivateProfileString(L"Settings", L"Bilinear", szValue, iniFile);
 	wxSprintf(szValue, L"%u", conf.zz_options);
 	WritePrivateProfileString(L"Settings", L"ZZOptions", szValue, iniFile);
-	wxSprintf(szValue, L"%u", conf.hacks);
+	wxSprintf(szValue, L"%u", conf.hacks._u32);
 	WritePrivateProfileString(L"Settings", L"AdvancedOptions", szValue, iniFile);
 	wxSprintf(szValue, L"%u", conf.width);
 	WritePrivateProfileString(L"Settings", L"Width", szValue, iniFile);
