@@ -1,14 +1,14 @@
 # Brazilian Portuguese Translation for pcsx2 (Main)
-# Copyright (C) 2013 PCSX2_Dev_Team
+# Copyright (C) 2014 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
-# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011, 2012, 2013.
+# Rafael Ferreira <rafael.f.f1@gmail.com>, 2011, 2012, 2013, 2014.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 trunk (r5789)\n"
+"Project-Id-Version: pcsx2 main master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:47+0200\n"
-"PO-Revision-Date: 2013-12-31 05:07-0300\n"
+"POT-Creation-Date: 2014-07-16 11:36-0300\n"
+"PO-Revision-Date: 2014-07-16 11:59-0300\n"
 "Last-Translator: Rafael Ferreira <rafael.f.f1@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.6.3\n"
+"X-Generator: Poedit 1.6.5\n"
 
 #: common/include/Utilities/Exceptions.h:187
 msgid "No reason given."
@@ -98,7 +98,7 @@ msgstr ""
 "Inclui processamento de eventos ociosos e alguns outros usos de eventos "
 "incomuns."
 
-#: pcsx2/CDVD/InputIsoFile.cpp:231
+#: pcsx2/CDVD/InputIsoFile.cpp:235
 msgid "Unrecognized ISO image file format"
 msgstr "Formato de arquivo de imagem ISO não reconhecido."
 
@@ -117,20 +117,20 @@ msgstr ""
 "causado por um tipo de imagem ISO sem suporte ou um bug do PCSX2 no suporte "
 "de imagem ISO."
 
-#: pcsx2/MTGS.cpp:867
+#: pcsx2/MTGS.cpp:871
 msgid ""
 "The MTGS thread has become unresponsive while waiting for the GS plugin to "
 "open."
 msgstr "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir."
 
-#: pcsx2/PluginManager.cpp:712
+#: pcsx2/PluginManager.cpp:716
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
 "O savestate não pôde ser carregado, pois parece estar corrompido ou "
 "incompleto."
 
-#: pcsx2/PluginManager.cpp:722
+#: pcsx2/PluginManager.cpp:726
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -139,7 +139,7 @@ msgstr ""
 "Plug-in de %s falhou em carregar. Seu computador deve ter recursos "
 "insuficientes, ou hardware/drivers incompatíveis."
 
-#: pcsx2/PluginManager.cpp:729
+#: pcsx2/PluginManager.cpp:733
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
@@ -148,18 +148,18 @@ msgstr ""
 "Plug-in de %s falhou em inicializar. Seu sistema deve ter memória "
 "insuficiente ou recursos faltando."
 
-#: pcsx2/PluginManager.cpp:835
+#: pcsx2/PluginManager.cpp:839
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "O arquivo do plug-in de %s configurado não foi encontrado"
 
-#: pcsx2/PluginManager.cpp:839
+#: pcsx2/PluginManager.cpp:843
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr ""
 "O arquivo do plug-in de %s configurado não é uma biblioteca dinâmica válida"
 
-#: pcsx2/PluginManager.cpp:857
+#: pcsx2/PluginManager.cpp:861
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
@@ -168,13 +168,13 @@ msgstr ""
 "O plug-in de %s configurado não é um plug-in de PCSX2, ou é para uma versão "
 "antiga e sem suporte do PCSX2."
 
-#: pcsx2/PluginManager.cpp:882
+#: pcsx2/PluginManager.cpp:886
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
 "O plug-in relata que seu hardware ou seus software/drivers são suportados."
 
-#: pcsx2/PluginManager.cpp:903
+#: pcsx2/PluginManager.cpp:907
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
@@ -182,7 +182,7 @@ msgstr ""
 "O plug-in definido não é um plug-in de PCSX2, ou é para uma versão antiga e "
 "sem suporte do PCSX2."
 
-#: pcsx2/PluginManager.cpp:929
+#: pcsx2/PluginManager.cpp:933
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -191,15 +191,15 @@ msgstr ""
 "O Plug-in de %s definido não é um plug-in válido de PCSX2, ou é para uma "
 "versão antiga ou sem suporte do PCSX2."
 
-#: pcsx2/PluginManager.cpp:1358
+#: pcsx2/PluginManager.cpp:1362
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "O plug-in de Cartão de Memória interno falhou na inicialização."
 
-#: pcsx2/PluginManager.cpp:1755
+#: pcsx2/PluginManager.cpp:1759
 msgid "Unloaded Plugin"
 msgstr "Plug-in descarregado"
 
-#: pcsx2/SaveState.cpp:342
+#: pcsx2/SaveState.cpp:343
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr ""
 "Não foi possível carregar o savestate. Ele é de uma versão desconhecida ou "
@@ -844,9 +844,9 @@ msgstr "&Log"
 msgid "&Sources"
 msgstr "Fonte&s"
 
-#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:112
+#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:127
 msgid "panel"
-msgstr ""
+msgstr "painel"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
@@ -890,9 +890,8 @@ msgid "PCSX2 Official Website and Forums"
 msgstr "Website e Fóruns Oficiais do PCSX2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
-#, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "Repositório Svn Oficial do PCSX2 no GitHub"
+msgstr "Repositório git Oficial do PCSX2 no GitHub"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
@@ -1227,43 +1226,43 @@ msgstr "Terminar Aplicativo"
 msgid "GS Output is Disabled!"
 msgstr "Saída do GS está Desativada!"
 
-#: pcsx2/gui/GlobalCommands.cpp:387 pcsx2/gui/MainFrame.cpp:417
+#: pcsx2/gui/GlobalCommands.cpp:388 pcsx2/gui/MainFrame.cpp:417
 msgid "Save state"
 msgstr "Salvar estado"
 
-#: pcsx2/gui/GlobalCommands.cpp:388
+#: pcsx2/gui/GlobalCommands.cpp:389
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Salva o estado da máquina virtual para o slot atual."
 
-#: pcsx2/gui/GlobalCommands.cpp:393 pcsx2/gui/MainFrame.cpp:416
+#: pcsx2/gui/GlobalCommands.cpp:394 pcsx2/gui/MainFrame.cpp:416
 msgid "Load state"
 msgstr "Carregar estado"
 
-#: pcsx2/gui/GlobalCommands.cpp:394
+#: pcsx2/gui/GlobalCommands.cpp:395
 msgid "Loads a virtual machine state from the current slot."
 msgstr "Carrega um estado de máquina virtual do slot atual."
 
-#: pcsx2/gui/GlobalCommands.cpp:399
+#: pcsx2/gui/GlobalCommands.cpp:400
 msgid "Load State Backup"
 msgstr "Carregar estado backup"
 
-#: pcsx2/gui/GlobalCommands.cpp:400
+#: pcsx2/gui/GlobalCommands.cpp:401
 msgid "Loads virtual machine state backup for current slot."
 msgstr "Carrega estado backup da máquina virtual no slot atual."
 
-#: pcsx2/gui/GlobalCommands.cpp:405
+#: pcsx2/gui/GlobalCommands.cpp:406
 msgid "Cycle to next slot"
 msgstr "Muda para o slot seguinte."
 
-#: pcsx2/gui/GlobalCommands.cpp:406
+#: pcsx2/gui/GlobalCommands.cpp:407
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "Altera o slot de save atual num estilo +1!"
 
-#: pcsx2/gui/GlobalCommands.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:412
 msgid "Cycle to prev slot"
 msgstr "Muda para o slot anterior"
 
-#: pcsx2/gui/GlobalCommands.cpp:412
+#: pcsx2/gui/GlobalCommands.cpp:413
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "Altera o slot de save atual num estilo -1!"
 
@@ -1280,7 +1279,7 @@ msgstr ""
 "É um erro arrastar múltiplos arquivos para a janela de %s. Um por vez por "
 "favor, obrigado."
 
-#: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:339
+#: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:342
 msgid "Confirm PS2 Reset"
 msgstr "Confirmar reset do PS2"
 
@@ -1336,14 +1335,14 @@ msgid "&Debug"
 msgstr "&Debug"
 
 #: pcsx2/gui/MainFrame.cpp:360
-#, fuzzy, c-format
+#, c-format
 msgid "%s  %d.%d.%d"
-msgstr "%s  %d.%d.%d %s"
+msgstr "%s  %d.%d.%d"
 
 #: pcsx2/gui/MainFrame.cpp:365
-#, fuzzy, c-format
+#, c-format
 msgid "%s  %d.%d.%d-%lld%s (git)  %s"
-msgstr "%s  %d.%d.%d.%d%s (svn)  %s"
+msgstr "%s  %d.%d.%d-%lld%s (git)  %s"
 
 #: pcsx2/gui/MainFrame.cpp:402 pcsx2/gui/MainFrame.cpp:404
 #: pcsx2/gui/MainFrame.cpp:410
@@ -1377,7 +1376,6 @@ msgid "Enable Cheats"
 msgstr "Habilitar Cheats"
 
 #: pcsx2/gui/MainFrame.cpp:430
-#, fuzzy
 msgid "Enable Widescreen Patches"
 msgstr "Habilitar Patches de Tela Cheia"
 
@@ -1446,7 +1444,7 @@ msgstr "Cartões de &Memória"
 msgid "&Plugin/BIOS Selector"
 msgstr "Seleção de &Plug-in/BIOS"
 
-#: pcsx2/gui/MainFrame.cpp:466 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
+#: pcsx2/gui/MainFrame.cpp:466 pcsx2/gui/Panels/GameDatabasePanel.cpp:345
 msgid "Game Database Editor"
 msgstr "Editor de Banco de Dados de Jogos"
 
@@ -1499,7 +1497,7 @@ msgstr "Sobre..."
 
 #: pcsx2/gui/MainFrame.cpp:519
 msgid "Open Debug Window..."
-msgstr ""
+msgstr "Abrir janela de depuração..."
 
 #: pcsx2/gui/MainFrame.cpp:521
 msgid "Logging..."
@@ -1655,27 +1653,32 @@ msgstr "Imagens de Disco (%s)"
 msgid "Blockdumps (%s)"
 msgstr "Blocos de Extração (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:267 pcsx2/gui/MainMenuClicks.cpp:288
+#: pcsx2/gui/MainMenuClicks.cpp:267
+#, c-format
+msgid "Compressed (%s)"
+msgstr "Comprimidos (%s)"
+
+#: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
 msgid "All Files (*.*)"
 msgstr "Todos Arquivos (*.*)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:270
+#: pcsx2/gui/MainMenuClicks.cpp:273
 msgid "Select CDVD source iso..."
 msgstr "Selecione a fonte Iso de CDVD..."
 
-#: pcsx2/gui/MainMenuClicks.cpp:287
+#: pcsx2/gui/MainMenuClicks.cpp:290
 msgid "Select ELF file..."
 msgstr "Selecione o arquivo ELF..."
 
-#: pcsx2/gui/MainMenuClicks.cpp:313
+#: pcsx2/gui/MainMenuClicks.cpp:316
 msgid "ISO file not found!"
 msgstr "Arquivo ISO não encontrado!"
 
-#: pcsx2/gui/MainMenuClicks.cpp:315
+#: pcsx2/gui/MainMenuClicks.cpp:318
 msgid "An error occurred while trying to open the file:"
 msgstr "Ocorreu um arquivo ao tentar abrir o arquivo:"
 
-#: pcsx2/gui/MainMenuClicks.cpp:316
+#: pcsx2/gui/MainMenuClicks.cpp:319
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
@@ -1683,7 +1686,7 @@ msgstr ""
 "Erro: O arquivo ISO configurado não existe. Clique OK para selecionar uma "
 "nova fonte ISO para CDVD."
 
-#: pcsx2/gui/MainMenuClicks.cpp:387
+#: pcsx2/gui/MainMenuClicks.cpp:390
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
@@ -1974,20 +1977,20 @@ msgstr ""
 "Especificadas dimensões inválidas de janela: Tamanho não pode conter dígitos "
 "não-numéricos! >_<"
 
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:333
 msgid "Search"
 msgstr "Pesquisar"
 
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:368
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:367
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
 msgstr "Correções de Jogos"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:38
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:40
 msgid "VU Add Hack - Fixes Tri-Ace games boot crash."
 msgstr "VU Add Hack - Corrige travamentos ao iniciar jogos da Tri-Ace."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:39
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:41
 msgid ""
 "Games that need this hack to boot:\n"
 " * Star Ocean 3\n"
@@ -1999,85 +2002,86 @@ msgstr ""
 " * Radiata Sotries\n"
 " * Valkyrie Profile 2"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:42
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:44
 msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
 msgstr ""
 "Hack de Sinalizador de Recorte do VU - Para jogos Persona (somente "
 "recompilador SuperVU!)"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:46
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:48
 msgid "FPU Compare Hack - For Digimon Rumble Arena 2."
 msgstr "Hack de Comparação de FPU - Para Digimon Rumble Arena 2."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:50
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:52
 msgid "FPU Multiply Hack - For Tales of Destiny."
 msgstr "Hack de Multiplicação de FPU - Para Tales of Destiny."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:54
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:56
 msgid "FPU Negative Div Hack - For Gundam games."
 msgstr "Hack de Divisão negativa de FPU - Para jogos de Gundam."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:58
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:60
 msgid "VU XGkick Hack - For Erementar Gerad."
 msgstr "Hack de XGkick do VU - Para Erementar Gerad."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:62
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:64
 msgid "FFX videos fix - Fixes bad graphics overlay in FFX videos."
 msgstr ""
 "Correção para vídeos FFX - Corrige má sobreposição de gráficos nos vídeos do "
 "FFX."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:66
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:68
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
 msgstr ""
 "Hack de tempo do EE - hack com múltiplos propósitos. Tente se tudo mais der "
 "errado."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:71
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:73
 msgid ""
 "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
 msgstr ""
 "Hack para pular MPEG - Pula vídeos/FMVs nos jogos para evitar travamentos/"
 "congelamentos nos jogos."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:75
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:77
 msgid "OPH Flag hack - Try if your game freezes showing the same frame."
 msgstr ""
 "Hack de flag de OPH - Tente se seu jogo congelar exibindo o mesmo quadro."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:80
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:82
 msgid "Ignore DMAC writes when it is busy."
 msgstr "Ignorar alterações no DMAC quando estiver ocupado."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:85
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:87
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
 msgstr ""
 "Simula leitura à frente no V1F1 FIFO. Corrige jogos de carregamento lento."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:90
-msgid "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD."
-msgstr "Atrasar obstruções do V1F1 (V1F1 FIFO) - Para SOCOM 2 HUD."
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:92
+msgid ""
+"Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
+msgstr ""
+"Atrasar obstruções do V1F1 (V1F1 FIFO) - Para travamentos ao carregar SOCOM "
+"2 HUD & Spy Hunter."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:94
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
 msgstr ""
 "Ignorar Direção de Barramento na Transferência Path3 - Usado para Hotwheels"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:98
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when a FMV plays"
 msgstr ""
 "Trocar para renderização por software do GSdx quando um FMV é reproduzido"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:109
+# Lembrete: TLB = Translation Lookaside Buffer
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:104
+msgid "Preload TLB hack to avoid tlb miss on Goemon"
+msgstr "Pré-carregar hack TLB para evitar perda de tlb no Goemon"
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:115
 msgid "Enable manual game fixes [Not recommended]"
 msgstr "Habilitar correções de jogos manuais [Não Recomendado]"
-
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:114
-msgid ""
-"The safest way to make sure that all game fixes are completely disabled."
-msgstr ""
-"A forma mais segura de ter certeza que todas correções de jogos estão "
-"completamento desabilitadas."
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:249
 msgid "Enable Trace Logging"
@@ -2739,6 +2743,12 @@ msgstr ""
 "Extensões %s não encontradas. O microVU requer uma máquina com processador "
 "que tenha extensões MMX, SSE e SSE2."
 
+#~ msgid ""
+#~ "The safest way to make sure that all game fixes are completely disabled."
+#~ msgstr ""
+#~ "A forma mais segura de ter certeza que todas correções de jogos estão "
+#~ "completamento desabilitadas."
+
 #~ msgid "(modded)"
 #~ msgstr "(modulado)"
 
@@ -2757,11 +2767,11 @@ msgstr ""
 #~ "Não foi possível carregar o savestate. O estado é uma versão não "
 #~ "suportada, provavelmente criado por uma edição mais nova do PCSX2."
 
-#~ msgid "mVU Block Hack"
-#~ msgstr "Hack de Bloco mVU"
-
 #~ msgid ""
 #~ "Good Speedup and High Compatibility; may cause bad graphics, SPS, etc..."
 #~ msgstr ""
 #~ "Boa Aceleração e Alta Compatibilidade; pode ocasionar gráficos ruins, "
 #~ "SPS, etc."
+
+#~ msgid "mVU Block Hack"
+#~ msgstr "Hack de Bloco mVU"
