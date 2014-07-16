@@ -659,26 +659,5 @@ public:
 	}
 };
 
-/// <summary>
-///   A shortcut class for easy implementation of string-based hash maps.
-/// </summary>
-/// <remarks>
-///   Note:
-///   This class does incur some amount of additional overhead over <see cref="Dictionary"/>, as it
-///   requires twice as much memory and much hash twice as much data.
-///   If you're only using the hash for friendly named array access (via string constants)
-///   then you should probably just stick to using the regular dictionary.
-/// </remarks>
-template< class T >
-class UnicodeDictionary : public HashMap<std::wstring, T>
-{
-public:
-	virtual ~UnicodeDictionary() {}
-
-	UnicodeDictionary( int initialCapacity=33, const std::wstring& emptyKey = L"@@-EMPTY-@@", const std::wstring& deletedKey = L"@@-DELETED-@@" )
-		: HashMap<std::wstring, T>( emptyKey, deletedKey, initialCapacity)
-	{
-	}
-};
-
 }
+
