@@ -1428,7 +1428,7 @@ public:
 	V(D3DXCompileShaderFromFile(EFFECT_NAME"ps2hw.fx", pmacros, pInclude, name, shaderver, ShaderFlagsVS, &pShader, &pError, NULL)); \
 	if( FAILED(hr) ) \
 	{ \
-		DEBUG_LOG("Failed to load vs %s: \n%s\n", name, pError->GetBufferPointer()); \
+		DEBUG_LOG("Failed to load vs %s: \n%s\n", name, reinterpret_cast<const char*>(pError->GetBufferPointer())); \
 		SAFE_RELEASE(pShader); \
 		SAFE_RELEASE(pError); \
 		return hr; \
@@ -1444,7 +1444,7 @@ public:
 	V(D3DXCompileShaderFromFile(EFFECT_NAME"ps2hw.fx", pmacros, pInclude, name, shmodel, ShaderFlagsPS, &pShader, &pError, NULL)); \
 	if( FAILED(hr) ) \
 	{ \
-		DEBUG_LOG("Failed to load ps %s: \n%s\n", name, pError->GetBufferPointer()); \
+		DEBUG_LOG("Failed to load ps %s: \n%s\n", name, reinterpret_cast<const char*>(pError->GetBufferPointer())); \
 		SAFE_RELEASE(pShader); \
 		SAFE_RELEASE(pError); \
 		return hr; \
@@ -2070,7 +2070,7 @@ void ZeroGS::Flush(int context)
 #ifdef PCSX2_DEBUG
 	if( g_bSaveFlushedFrame & 0x80000000 ) {
 		char str[255];
-		sprintf(str, "rndr.tga", g_SaveFrameNum);
+		sprintf(str, "rndr%u.tga", g_SaveFrameNum);
 		D3DXSaveSurfaceToFile(str, D3DXIFF_TGA, curvb.prndr->psurf, NULL, NULL);
 	}
 #endif
