@@ -274,6 +274,9 @@ void operator+=( wxSizer& target, const pxWindowAndFlags<WinType>& src )
 // Pointer Versions!  (note that C++ requires one of the two operator params be a
 // "proper" object type (non-pointer), so that's why some of these are missing.
 
+// clang dies on this because of template stuff... The only usage has been fixed, so this
+// is most likely not necessary at all
+#ifndef __clang__
 template< typename WinType >
 void operator+=( wxWindow* target, WinType& src )
 {
@@ -281,6 +284,7 @@ void operator+=( wxWindow* target, WinType& src )
 	if( !pxAssert( target->GetSizer() != NULL ) ) return;
 	*target->GetSizer() += src;
 }
+#endif
 
 template< typename WinType >
 void operator+=( wxWindow* target, const pxWindowAndFlags<WinType>& src )

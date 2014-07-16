@@ -21,7 +21,7 @@ CheckedStaticBox::CheckedStaticBox( wxWindow* parent, int orientation, const wxS
 	, ThisSizer( *new wxStaticBoxSizer( orientation, this ) )
 	, ThisToggle( *new wxCheckBox( this, wxID_ANY, title, wxPoint( 8, 0 ) ) )
 {
-	this += ThisToggle;
+	*this += ThisToggle;
 	this += ThisSizer | pxExpand;
 
 	// Ensure that the right-side of the static group box isn't too cozy:
