@@ -13,11 +13,6 @@
   !define INC_ZZOGL	    0
 !endif
 
-!ifndef INC_AVG
-  ; We aren't including the AVG installer with the web setup, so we need to tell it that.
-  !define INC_AVG	    0
-!endif
-
 !define OUTFILE_POSTFIX "websetup"
 !include "SharedBase.nsh"
 !include "x64.nsh"
