@@ -440,24 +440,5 @@ public:
 	}
 };
 
-template< typename Key >
-class HashSet : public google::dense_hash_set< Key, CommonHashClass >
-{
-public:
-	/// <summary>
-	///   Constructor.
-	/// </summary>
-	/// <remarks>
-	///   Both the <c>emptyKey</c>a nd c>deletedKey</c> parameters must be unique values that
-	///   are *not* used as actual values in the set.
-	/// </remarks>
-	HashSet( Key emptyKey, Key deletedKey, int initialCapacity=33 ) :
-		google::dense_hash_set<Key, CommonHashClass>( initialCapacity )
-	{
-		set_empty_key( emptyKey );
-		set_deleted_key( deletedKey );
-	}
-};
-
 }
 
