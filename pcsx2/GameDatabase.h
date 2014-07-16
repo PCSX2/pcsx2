@@ -18,8 +18,8 @@
 //#include "Common.h"
 #include "AppConfig.h"
 #include "Utilities/HashMap.h"
-#include "Utilities/SafeArray.h"
 
+#include <unordered_map>
 #include <wx/wfstream.h>
 
 struct	key_pair;
@@ -176,7 +176,7 @@ public:
 	virtual void updateGame(const Game_Data& game)=0;
 };
 
-typedef pxDictionary<Game_Data*,StringHashNoCase>	GameDataHash;
+typedef std::unordered_map<wxString, Game_Data*, StringHashNoCase> GameDataHash;
 
 // --------------------------------------------------------------------------------------
 //  BaseGameDatabaseImpl 
