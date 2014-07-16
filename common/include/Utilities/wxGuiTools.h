@@ -270,32 +270,6 @@ void operator+=( wxSizer& target, const pxWindowAndFlags<WinType>& src )
 	target.Add( src.window, src.flags );
 }
 
-// ----------------------------------------------------------------------------
-// Pointer Versions!  (note that C++ requires one of the two operator params be a
-// "proper" object type (non-pointer), so that's why some of these are missing.
-
-template< typename WinType >
-void operator+=( wxWindow* target, WinType& src )
-{
-	if( !pxAssert( target != NULL ) ) return;
-	if( !pxAssert( target->GetSizer() != NULL ) ) return;
-	*target->GetSizer() += src;
-}
-
-template< typename WinType >
-void operator+=( wxWindow* target, const pxWindowAndFlags<WinType>& src )
-{
-	if( !pxAssert( target != NULL ) ) return;
-	if( !pxAssert( target->GetSizer() != NULL ) ) return;
-	*target->GetSizer() += src;
-}
-
-template< typename WinType >
-void operator+=( wxSizer* target, const pxWindowAndFlags<WinType>& src )
-{
-	if( !pxAssert( target != NULL ) ) return;
-	target->Add( src.window, src.flags );
-}
 
 
 BEGIN_DECLARE_EVENT_TYPES()

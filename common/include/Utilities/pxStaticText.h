@@ -38,7 +38,7 @@ class pxStaticText : public wxControl
 protected:
 	wxString		m_label;
 	wxString		m_wrappedLabel;
-	
+
 	wxAlignment		m_align;
 	bool			m_autowrap;
 	int				m_wrappedWidth;
@@ -56,7 +56,7 @@ protected:
 	bool AcceptsFocus() const { return false; }
 	bool HasTransparentBackground() { return true; }
 	void DoSetSize(int x, int y, int w, int h, int sizeFlags = wxSIZE_AUTO);
-	
+
 public:
 	pxStaticText( wxWindow* parent, const wxString& label, wxAlignment align=wxALIGN_CENTRE_HORIZONTAL );
 	pxStaticText( wxWindow* parent, int heightInLines, const wxString& label, wxAlignment align=wxALIGN_CENTRE_HORIZONTAL );
@@ -115,9 +115,7 @@ protected:
 	void SetPaddingDefaults();
 };
 
-extern void operator+=( wxSizer& target, pxStaticText* src );
 extern void operator+=( wxSizer& target, pxStaticText& src );
-extern void operator+=( wxSizer* target, pxStaticText& src );
 
 template<>
 inline void operator+=( wxSizer& target, const pxWindowAndFlags<pxStaticText>& src )
@@ -125,8 +123,3 @@ inline void operator+=( wxSizer& target, const pxWindowAndFlags<pxStaticText>& s
 	target.Add( src.window, src.flags );
 }
 
-template<>
-inline void operator+=( wxSizer* target, const pxWindowAndFlags<pxStaticText>& src )
-{
-	target->Add( src.window, src.flags );
-}

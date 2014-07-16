@@ -57,7 +57,7 @@ public:
 	{
 		m_parent = parent;
 		m_parent->AllowApplyActivation( false );
-		
+
 		m_apply		= m_parent->FindWindow( wxID_APPLY );
 		m_ok		= m_parent->FindWindow( wxID_OK );
 		m_cancel	= m_parent->FindWindow( wxID_CANCEL );
@@ -77,7 +77,7 @@ public:
 	{
 		m_apply = m_ok = m_cancel = NULL;
 	}
-	
+
 	virtual ~ScopedOkButtonDisabler() throw()
 	{
 		if (m_apply)	m_apply	->Enable();
@@ -137,7 +137,7 @@ Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, con
 	SetMinWidth( idealWidth );
 	m_listbook = NULL;
 	m_allowApplyActivation = true;
-	
+
 	Connect( wxID_OK,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnOk_Click ) );
 	Connect( wxID_CANCEL,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnCancel_Click ) );
 	Connect( wxID_APPLY,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnApply_Click ) );
@@ -166,14 +166,14 @@ Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, con
 	ConnectSomethingChanged( SPINCTRL_UPDATED );
 	ConnectSomethingChanged( SLIDER_UPDATED );
 	ConnectSomethingChanged( DIRPICKER_CHANGED );
-	
+
 	Connect( pxEvt_SomethingChanged, wxCommandEventHandler( BaseConfigurationDialog::OnSomethingChanged ) );
 }
 
 void Dialogs::BaseConfigurationDialog::AddListbook( wxSizer* sizer )
 {
 	if( !sizer ) sizer = GetSizer();
-	sizer += m_listbook	| pxExpand.Border( wxLEFT | wxRIGHT, 2 );
+	*sizer += m_listbook	| pxExpand.Border( wxLEFT | wxRIGHT, 2 );
 }
 
 void Dialogs::BaseConfigurationDialog::CreateListbook( wxImageList& bookicons )
@@ -202,9 +202,9 @@ Dialogs::BaseConfigurationDialog::~BaseConfigurationDialog() throw()
 void Dialogs::BaseConfigurationDialog::OnSetSettingsPage( wxCommandEvent& evt )
 {
 	if( !m_listbook ) return;
-	
+
 	size_t pages = m_labels.GetCount();
-	
+
 	for( size_t i=0; i<pages; ++i )
 	{
 		if( evt.GetString() == m_labels[i] )
@@ -275,7 +275,7 @@ void Dialogs::BaseConfigurationDialog::OnApply_Click( wxCommandEvent& evt )
 
 	if( m_listbook ) GetConfSettingsTabName() = m_labels[m_listbook->GetSelection()];
 	AppSaveSettings();
-	
+
 	SomethingChanged_StateModified_IsChanged();
 }
 
