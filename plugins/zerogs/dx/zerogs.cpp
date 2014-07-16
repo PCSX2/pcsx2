@@ -3243,9 +3243,7 @@ void ZeroGS::RenderCRTC(int interlace)
 
 					if( ptarg->fbh - dby < texframe.th-movy && !bUsingStencil ) {
 
-						if( !bUsingStencil ) {
-							pd3dDevice->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 1, 0);
-						}
+						pd3dDevice->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 1, 0);
 						bUsingStencil = 1;
 						SETRS(D3DRS_STENCILENABLE, TRUE);
 						SETRS(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
