@@ -519,15 +519,7 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 	{ NULL }
 };
 
-CommandDictionary::CommandDictionary() {}
-
 CommandDictionary::~CommandDictionary() throw() {}
-
-
-AcceleratorDictionary::AcceleratorDictionary()
-	: _parent( 0, 0xffffffff )
-{
-}
 
 AcceleratorDictionary::~AcceleratorDictionary() throw() {}
 
@@ -552,7 +544,9 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	// End of overrides section
 
 	const GlobalCommandDescriptor* result = NULL;
-	TryGetValue( acode.val32, result );
+
+	if (find(acode.val32) != end())
+		result = at(acode.val32);
 
 	if( result != NULL )
 	{
@@ -563,7 +557,8 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 		);
 	}
 
-	wxGetApp().GlobalCommands->TryGetValue( searchfor, result );
+	if (wxGetApp().GlobalCommands->find(searchfor) != wxGetApp().GlobalCommands->end())
+		result = wxGetApp().GlobalCommands->at(searchfor);
 
 	if( result == NULL )
 	{

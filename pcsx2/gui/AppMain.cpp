@@ -565,7 +565,11 @@ void Pcsx2App::LogicalVsync()
 void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 {
 	const GlobalCommandDescriptor* cmd = NULL;
-	if( GlobalAccels ) GlobalAccels->TryGetValue( KeyAcceleratorCode( evt ).val32, cmd );
+	if (GlobalAccels)
+	{
+		if (GlobalAccels->find(KeyAcceleratorCode(evt).val32) != GlobalAccels->end())
+			cmd = GlobalAccels->at(KeyAcceleratorCode(evt).val32);
+	}
 
 	if( cmd == NULL )
 	{
