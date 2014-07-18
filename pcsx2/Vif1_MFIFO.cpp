@@ -80,12 +80,12 @@ static __fi bool mfifoVIF1rbTransfer()
 		if (ret)
 		{
 			if(vif1.irqoffset.value != 0) DevCon.Warning("VIF1 MFIFO Offest != 0! vifoffset=%x", vif1.irqoffset.value);
-            /* and second copy 's2' bytes from 'maddr' to '&data[s1]' */
-            vif1ch.madr = maddr;
+			/* and second copy 's2' bytes from 'maddr' to '&data[s1]' */
+			vif1ch.madr = maddr;
 
-            src = (u32*)PSM(maddr);
-            if (src == NULL) return false;
-            VIF1transfer(src, ((mfifoqwc << 2) - s1));
+			src = (u32*)PSM(maddr);
+			if (src == NULL) return false;
+			VIF1transfer(src, ((mfifoqwc << 2) - s1));
 		}
 		
 	}
@@ -116,8 +116,8 @@ static __fi void mfifo_VIF1chain()
 	}
 
 	if (vif1ch.madr >= dmacRegs.rbor.ADDR &&
-	        vif1ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
-	{		
+	    vif1ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
+	{
 		//if(vif1ch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16)) DevCon.Warning("Edge VIF1");
 		
 		vif1ch.madr = qwctag(vif1ch.madr);
@@ -209,7 +209,7 @@ void mfifoVIF1transfer(int qwc)
 
 		if (vif1ch.chcr.TTE)
 		{
-            bool ret;
+			bool ret;
 
 			static __aligned16 u128 masked_tag;
 
@@ -243,14 +243,14 @@ void mfifoVIF1transfer(int qwc)
 		vif1.irqoffset.value = 0;
 		vif1.irqoffset.enabled = false;
 
-        vif1ch.unsafeTransfer(ptag);
+		vif1ch.unsafeTransfer(ptag);
 
 		vif1ch.madr = ptag[1]._u32;
 
 		//vifqwc--;
 
 		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx mfifo qwc = %x spr0 madr = %x",
-        ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, vifqwc, spr0ch.madr);
+		ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, vifqwc, spr0ch.madr);
 
 		vif1.done |= hwDmacSrcChainWithStack(vif1ch, ptag->ID);
 
@@ -364,7 +364,7 @@ void vifMFIFOInterrupt()
 					return;
 				}
 				
-                mfifoVIF1transfer(0);
+				mfifoVIF1transfer(0);
 				vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
 				
 			case 1: //Transfer data

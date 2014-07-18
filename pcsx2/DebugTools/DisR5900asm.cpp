@@ -742,10 +742,10 @@ void LQC2( string& output )   { _sap("lqc2\t%s, 0x%04X(%s)")   COP2_REG_FP[DECOD
 
 void SLL( string& output )
 {
-   if (disasmOpcode == 0x00000000)
-        output += "nop";
-    else
-        _sap("sll\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA);
+	if (disasmOpcode == 0x00000000)
+		output += "nop";
+	else
+		_sap("sll\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA);
 }
 
 void SRL( string& output )    { _sap("srl\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
@@ -757,12 +757,12 @@ void JR( string& output )     { _sap("jr\t->%s")            GPR_REG[DECODE_RS]);
 
 void JALR( string& output )
 {
-    int rd = DECODE_RD;
+	int rd = DECODE_RD;
 
-    if (rd == 31)
-        _sap("jalr\t->%s") GPR_REG[DECODE_RS]);
-    else
-        _sap("jalr\t%s, ->%s") GPR_REG[rd], GPR_REG[DECODE_RS]);
+	if (rd == 31)
+		_sap("jalr\t->%s") GPR_REG[DECODE_RS]);
+	else
+		_sap("jalr\t%s, ->%s") GPR_REG[rd], GPR_REG[DECODE_RS]);
 }
 
 

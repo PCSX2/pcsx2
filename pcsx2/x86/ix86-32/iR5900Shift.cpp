@@ -206,7 +206,7 @@ void recDSRAs_(int info, int sa)
 
 	if( rtreg != rdreg ) MOVQRtoR(rdreg, rtreg);
 
-    if ( sa != 0 ) {
+	if ( sa != 0 ) {
 		t0reg = _allocMMXreg(-1, MMX_TEMP, 0);
 		MOVQRtoR(t0reg, rtreg);
 

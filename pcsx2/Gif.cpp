@@ -187,7 +187,7 @@ static __fi tDMA_TAG* ReadTag2()
 {
 	tDMA_TAG* ptag = dmaGetAddr(gifch.tadr, false);  //Set memory pointer to TADR
 
-    gifch.unsafeTransfer(ptag);
+	gifch.unsafeTransfer(ptag);
 	gifch.madr = ptag[1]._u32;
 
 	gspath3done = hwDmacSrcChainWithStack(gifch, ptag->ID);
@@ -512,7 +512,7 @@ void mfifoGIFtransfer(int qwc)
 
 void gifMFIFOInterrupt()
 {
-    GIF_LOG("gifMFIFOInterrupt");
+	GIF_LOG("gifMFIFOInterrupt");
 	mfifocycles = 0;
 
 	if( gifRegs.stat.APATH == 3 )

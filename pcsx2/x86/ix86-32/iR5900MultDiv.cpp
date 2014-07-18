@@ -491,9 +491,9 @@ void recDIVconst(int upper)
 	}
 	else if (g_cpuConstRegs[_Rt_].SL[0] != 0)
 	{
-        quot = g_cpuConstRegs[_Rs_].SL[0] / g_cpuConstRegs[_Rt_].SL[0];
-        rem = g_cpuConstRegs[_Rs_].SL[0] % g_cpuConstRegs[_Rt_].SL[0];
-    }
+		quot = g_cpuConstRegs[_Rs_].SL[0] / g_cpuConstRegs[_Rt_].SL[0];
+		rem = g_cpuConstRegs[_Rs_].SL[0] % g_cpuConstRegs[_Rt_].SL[0];
+	}
 	else
 	{
 		quot = (g_cpuConstRegs[_Rs_].SL[0] < 0) ? 1 : -1;

@@ -138,15 +138,15 @@ void recMFC0( void )
 	if( _Rd_ == 9 )
 	{
 		// This case needs to be handled even if the write-back is ignored (_Rt_ == 0 )
-        MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
-        MOV32RtoR(EAX, ECX);
+		MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
+		MOV32RtoR(EAX, ECX);
 		SUB32MtoR(EAX, (uptr)&s_iLastCOP0Cycle);
 		u8* skipInc = JNZ8( 0 );
 		INC32R(EAX);
 		x86SetJ8( skipInc );
-        ADD32RtoM((uptr)&cpuRegs.CP0.n.Count, EAX);
+		ADD32RtoM((uptr)&cpuRegs.CP0.n.Count, EAX);
 		MOV32RtoM((uptr)&s_iLastCOP0Cycle, ECX);
-        MOV32MtoR( EAX, (uptr)&cpuRegs.CP0.r[ _Rd_ ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.CP0.r[ _Rd_ ] );
 
 		if( !_Rt_ ) return;
 
@@ -189,7 +189,7 @@ void recMFC0( void )
 	}
 	else if(_Rd_ == 24){
 		COP0_LOG("MFC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
-        return;
+		return;
 	}
 	_eeOnWriteReg(_Rt_, 1);
 	_deleteEEreg(_Rt_, 0);

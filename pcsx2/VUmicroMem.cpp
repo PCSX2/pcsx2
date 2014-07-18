@@ -61,7 +61,7 @@ void vuMemoryReserve::Reset()
 	memzero(VU0.ACC);
 	memzero(VU0.VF);
 	memzero(VU0.VI);
-    VU0.VF[0].f.x = 0.0f;
+	VU0.VF[0].f.x = 0.0f;
 	VU0.VF[0].f.y = 0.0f;
 	VU0.VF[0].f.z = 0.0f;
 	VU0.VF[0].f.w = 1.0f;

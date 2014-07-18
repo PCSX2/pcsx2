@@ -556,12 +556,12 @@ void Panels::MemoryCardListPanel_Simple::UpdateUI()
 	//m_button_Create->Enable( card.Slot>=0 || card.IsPresent);
 	m_button_Create->SetLabel( card.IsPresent ? _("Delete") : _("Create ...") );
 
-    if (card.IsPresent)
-        pxSetToolTip( m_button_Create, _("Permanently delete this memory card from disk (all contents are lost)"));
+	if (card.IsPresent)
+		pxSetToolTip( m_button_Create, _("Permanently delete this memory card from disk (all contents are lost)"));
 	else if( card.Slot >= 0 )
-        pxSetToolTip( m_button_Create, _("Create a new memory card and assign it to this Port." ));
+		pxSetToolTip( m_button_Create, _("Create a new memory card and assign it to this Port." ));
 	else
-        pxSetToolTip( m_button_Create, _("Create a new memory card." ));
+		pxSetToolTip( m_button_Create, _("Create a new memory card." ));
 
 /*
 	m_button_Mount->Enable( card.IsPresent && card.Slot>=0);

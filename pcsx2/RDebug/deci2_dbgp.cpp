@@ -125,10 +125,10 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				}
 			break;
 		case 0x02://ok
-            sprintf(line, "%s/2", in->id==0?"CPU":in->id==1?"VU0":"VU1");
+			sprintf(line, "%s/2", in->id==0?"CPU":in->id==1?"VU0":"VU1");
 			break;
 		case 0x04://ok
-            sprintf(line, "%s/GETREG count=%d kind[0]=%d number[0]=%d",
+			sprintf(line, "%s/GETREG count=%d kind[0]=%d number[0]=%d",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", in->count, eregs[0].kind, eregs[0].number);
 			if (in->h.destination=='I'){
 				for (i=0; i<in->count; i++)
@@ -136,8 +136,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 					case 1:switch (iregs[i].number){
 							case 0:iregs[i].value=psxRegs.GPR.n.lo;break;
 							case 1:iregs[i].value=psxRegs.GPR.n.hi;break;
-						   }
-						   break;
+							}
+							break;
 					case 2:iregs[i].value=psxRegs.GPR.r[iregs[i].number]; break;
 					case 3:
 						if (iregs[i].number==14) psxRegs.CP0.n.EPC=psxRegs.pc;
@@ -177,7 +177,7 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 					}
 			break;
 		case 0x06://ok
-            sprintf(line, "%s/PUTREG count=%d kind[0]=%d number[0]=%d value=%016I64X_%016I64X",
+			sprintf(line, "%s/PUTREG count=%d kind[0]=%d number[0]=%d value=%016I64X_%016I64X",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", in->count, eregs[0].kind, eregs[0].number, eregs[0].value[1], eregs[0].value[0]);
 			if (in->h.destination=='I'){
 				for (i=0; i<in->count; i++)
@@ -185,8 +185,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 					case 1:switch (iregs[i].number){
 							case 0:psxRegs.GPR.n.lo=iregs[i].value;break;
 							case 1:psxRegs.GPR.n.hi=iregs[i].value;break;
-						   }
-						   break;
+							}
+							break;
 					case 2:psxRegs.GPR.r[iregs[i].number]=iregs[i].value; break;
 					case 3:
 						psxRegs.CP0.r[iregs[i].number]=iregs[i].value;
@@ -418,7 +418,7 @@ void sendBREAK(u8 source, u16 id, u8 code, u8 result, u8 count){
 	tmp.h.destination='H';
 	tmp.id			=id;
 	tmp.type		=0x15;
-    tmp.code		=code;
+	tmp.code		=code;
 	tmp.result		=result;
 	tmp.count		=count;
 	tmp._pad		=0;

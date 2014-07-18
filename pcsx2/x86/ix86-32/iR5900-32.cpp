@@ -1716,7 +1716,7 @@ static void __fastcall PreBlockCheck( u32 blockpc )
 	static int curcount = 0;
 	const int skip = 0;
 
-    if( blockpc != 0x81fc0 ) {//&& lastrec != g_lastpc ) {
+	if( blockpc != 0x81fc0 ) {//&& lastrec != g_lastpc ) {
 		curcount++;
 
 		if( curcount > skip ) {
@@ -2156,17 +2156,17 @@ StartRecomp:
 	//const u32 pgsz = std::min(0x1000 - inpage_offs, inpage_sz);
 	const u32 pgsz = inpage_sz;
 
-    switch (PageType)
-    {
-        case -1:
-            break;
+	switch (PageType)
+	{
+		case -1:
+			break;
 
-        case 0:
+		case 0:
 			mmap_MarkCountedRamPage( inpage_ptr );
 			manual_page[inpage_ptr >> 12] = 0;
 			break;
 
-        default:
+		default:
 			xMOV( ecx, inpage_ptr );
 			xMOV( edx, pgsz / 4 );
 			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
@@ -2222,7 +2222,7 @@ StartRecomp:
 				eeRecPerfLog.Write( "Uncounted Manual block @ 0x%08X : size =%3d page/offs = 0x%05X/0x%03X  inpgsz = %d",
 					startpc, sz, inpage_ptr>>12, inpage_ptr&0xfff, pgsz, inpage_sz );
 			}
-            break;
+			break;
 	}
 
 	// Skip Recompilation if sceMpegIsEnd Pattern detected

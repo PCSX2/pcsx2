@@ -133,11 +133,11 @@ namespace PathDefs
 		return dotFail;
 	}
 
-    // Specifies the main configuration folder.
-    wxDirName GetUserLocalDataDir()
-    {
-        return wxDirName(wxStandardPaths::Get().GetUserLocalDataDir());
-    }
+	// Specifies the main configuration folder.
+	wxDirName GetUserLocalDataDir()
+	{
+		return wxDirName(wxStandardPaths::Get().GetUserLocalDataDir());
+	}
 
 	// Fetches the path location for user-consumable documents -- stuff users are likely to want to
 	// share with other programs: screenshots, memory cards, and savestates.

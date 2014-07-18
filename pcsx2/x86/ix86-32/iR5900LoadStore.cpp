@@ -193,46 +193,46 @@ void recLoad32( u32 bits, bool sign )
 
 void recStore(u32 bits)
 {
-        // Performance note: Const prop for the store address is good, always.
-        // Constprop for the value being stored is not really worthwhile (better to use register
-        // allocation -- simpler code and just as fast)
+	// Performance note: Const prop for the store address is good, always.
+	// Constprop for the value being stored is not really worthwhile (better to use register
+	// allocation -- simpler code and just as fast)
 
-        // Load EDX first with the value being written, or the address of the value
-        // being written (64/128 bit modes).
+	// Load EDX first with the value being written, or the address of the value
+	// being written (64/128 bit modes).
 
-        if (bits < 64)
-        {
-                _eeMoveGPRtoR(EDX, _Rt_);
-        }
-        else if (bits == 128 || bits == 64)
-        {
-                _flushEEreg(_Rt_);          // flush register to mem
-                xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
-        }
+	if (bits < 64)
+	{
+		_eeMoveGPRtoR(EDX, _Rt_);
+	}
+	else if (bits == 128 || bits == 64)
+	{
+		_flushEEreg(_Rt_);          // flush register to mem
+		xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+	}
 
-        // Load ECX with the destination address, or issue a direct optimized write
-        // if the address is a constant propagation.
+	// Load ECX with the destination address, or issue a direct optimized write
+	// if the address is a constant propagation.
 
-        if (GPR_IS_CONST1(_Rs_))
-        {
-                u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-                if (bits == 128)
-					dstadr &= ~0x0f;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		if (bits == 128)
+			dstadr &= ~0x0f;
 
-                vtlb_DynGenWrite_Const( bits, dstadr );
-        }
-        else
-        {
-                _eeMoveGPRtoR(ECX, _Rs_);
-                if (_Imm_ != 0)
-                        xADD(ecx, _Imm_);
-                if (bits == 128)
-                        xAND(ecx, ~0x0F);
+		vtlb_DynGenWrite_Const( bits, dstadr );
+	}
+	else
+	{
+		_eeMoveGPRtoR(ECX, _Rs_);
+		if (_Imm_ != 0)
+			xADD(ecx, _Imm_);
+		if (bits == 128)
+			xAND(ecx, ~0x0F);
 
-                iFlushCall(FLUSH_FULLVTLB);
+		iFlushCall(FLUSH_FULLVTLB);
 
-				vtlb_DynGenWrite(bits);
-        }
+		vtlb_DynGenWrite(bits);
+	}
 }
 
 

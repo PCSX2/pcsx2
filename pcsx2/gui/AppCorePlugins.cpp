@@ -301,7 +301,7 @@ bool AppCorePlugins::Init()
 {
 	if( !NeedsInit() ) return false;
 
-    _SetLogFolder();
+	_SetLogFolder();
 	SendLogFolder();
 
 	_SetSettingsFolder();
@@ -346,7 +346,7 @@ void AppCorePlugins::Open()
 		return;
 	}*/
 
-    SetLogFolder( GetLogFolder().ToString() );
+	SetLogFolder( GetLogFolder().ToString() );
 	SetSettingsFolder( GetSettingsFolder().ToString() );
 
 	if( !NeedsOpen() ) return;

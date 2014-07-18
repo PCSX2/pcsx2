@@ -427,7 +427,7 @@ bool Pcsx2App::OnInit()
 	pxDoOutOfMemory	= SysOutOfMemory_EmergencyResponse;
 
 	g_Conf = new AppConfig();
-    wxInitAllImageHandlers();
+	wxInitAllImageHandlers();
 
 	Console.WriteLn("Applying operating system default language...");
 	i18n_SetLanguage( wxLANGUAGE_DEFAULT );

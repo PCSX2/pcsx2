@@ -23,10 +23,10 @@ extern __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 enum CSR_FifoState
 {
-    CSR_FIFO_NORMAL = 0,	// Somwhere in between (Neither empty or almost full).
-    CSR_FIFO_EMPTY,			// Empty
-    CSR_FIFO_FULL,			// Almost Full
-    CSR_FIFO_RESERVED		// Reserved / Unused.
+	CSR_FIFO_NORMAL = 0,	// Somwhere in between (Neither empty or almost full).
+	CSR_FIFO_EMPTY,			// Empty
+	CSR_FIFO_FULL,			// Almost Full
+	CSR_FIFO_RESERVED		// Reserved / Unused.
 };
 
 // --------------------------------------------------------------------------------------
@@ -127,38 +127,38 @@ union tGS_CSR
 		u64 ID		:8;
 	};
 
-    u64 _u64;
-    
-    struct  
-    {
+	u64 _u64;
+
+	struct
+	{
 		u32	_u32;			// lower 32 bits (all useful content!)
 		u32	_unused32;		// upper 32 bits (unused -- should probably be 0)
-    };
+	};
 
 	void SwapField()
 	{
 		_u32 ^= 0x2000;
 	}
 
-    void Reset()
-    {
-        _u64	= 0;
-        FIFO	= CSR_FIFO_EMPTY;
-        REV		= 0x1B; // GS Revision
-        ID		= 0x55; // GS ID
-    }
+	void Reset()
+	{
+		_u64	= 0;
+		FIFO	= CSR_FIFO_EMPTY;
+		REV		= 0x1B; // GS Revision
+		ID		= 0x55; // GS ID
+	}
 
-    bool HasAnyInterrupts() const { return (SIGNAL || FINISH || HSINT || VSINT || EDWINT); }
+	bool HasAnyInterrupts() const { return (SIGNAL || FINISH || HSINT || VSINT || EDWINT); }
 
 	u32 GetInterruptMask() const
 	{
 		return _u32 & 0x1f;
 	}
 
-    void SetAllInterrupts(bool value=true)
-    {
-        SIGNAL = FINISH = HSINT = VSINT = EDWINT = value;
-    }
+	void SetAllInterrupts(bool value=true)
+	{
+		SIGNAL = FINISH = HSINT = VSINT = EDWINT = value;
+	}
 
 	tGS_CSR(u64 val) { _u64 = val; }
 	tGS_CSR(u32 val) { _u32 = val; }
@@ -170,32 +170,32 @@ union tGS_CSR
 // --------------------------------------------------------------------------------------
 union tGS_IMR
 {
-    struct
-    {
-        u32 _reserved1	: 8;
-        u32 SIGMSK		: 1;
-        u32 FINISHMSK	: 1;
-        u32 HSMSK		: 1;
-        u32 VSMSK		: 1;
-        u32 EDWMSK		: 1;
-        u32 _undefined	: 2; // Should both be set to 1.
-        u32 _reserved2	: 17;
-    };
-    u32 _u32;
+	struct
+	{
+		u32 _reserved1	: 8;
+		u32 SIGMSK		: 1;
+		u32 FINISHMSK	: 1;
+		u32 HSMSK		: 1;
+		u32 VSMSK		: 1;
+		u32 EDWMSK		: 1;
+		u32 _undefined	: 2; // Should both be set to 1.
+		u32 _reserved2	: 17;
+	};
+	u32 _u32;
 
-    void reset()
-    {
-        _u32 = 0;
-        SIGMSK = FINISHMSK = HSMSK = VSMSK = EDWMSK = true;
-        _undefined = 0x3;
-    }
-    void set(u32 value)
-    {
-        _u32 = (value & 0x1f00); // Set only the interrupt mask fields.
-        _undefined = 0x3; // These should always be set.
-    }
+	void reset()
+	{
+		_u32 = 0;
+		SIGMSK = FINISHMSK = HSMSK = VSMSK = EDWMSK = true;
+		_undefined = 0x3;
+	}
+	void set(u32 value)
+	{
+		_u32 = (value & 0x1f00); // Set only the interrupt mask fields.
+		_undefined = 0x3; // These should always be set.
+	}
 
-    bool masked() const { return (SIGMSK || FINISHMSK || HSMSK || VSMSK || EDWMSK); }
+	bool masked() const { return (SIGMSK || FINISHMSK || HSMSK || VSMSK || EDWMSK); }
 };
 
 // --------------------------------------------------------------------------------------

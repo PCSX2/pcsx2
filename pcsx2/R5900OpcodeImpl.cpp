@@ -392,11 +392,11 @@ void DIV()
 		cpuRegs.LO.SD[0] = (s32)0x80000000;
 		cpuRegs.HI.SD[0] = (s32)0x0;
 	}
-    else if (cpuRegs.GPR.r[_Rt_].SL[0] != 0)
-    {
-        cpuRegs.LO.SD[0] = cpuRegs.GPR.r[_Rs_].SL[0] / cpuRegs.GPR.r[_Rt_].SL[0];
-        cpuRegs.HI.SD[0] = cpuRegs.GPR.r[_Rs_].SL[0] % cpuRegs.GPR.r[_Rt_].SL[0];
-    }
+	else if (cpuRegs.GPR.r[_Rt_].SL[0] != 0)
+	{
+		cpuRegs.LO.SD[0] = cpuRegs.GPR.r[_Rs_].SL[0] / cpuRegs.GPR.r[_Rt_].SL[0];
+		cpuRegs.HI.SD[0] = cpuRegs.GPR.r[_Rs_].SL[0] % cpuRegs.GPR.r[_Rt_].SL[0];
+	}
 	else
 	{
 		cpuRegs.LO.SD[0] = (cpuRegs.GPR.r[_Rs_].SL[0] < 0) ? 1 : -1;
@@ -657,7 +657,7 @@ static GPR_reg* gpr_GetWritePtr( uint gpr )
 
 void LD()
 {
-    s32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
+	s32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
 	if( addr & 7 )
 		throw R5900Exception::AddressError( addr, false );
@@ -736,7 +736,7 @@ void SW()
 	if( addr & 3 )
 		throw R5900Exception::AddressError( addr, true );
 
-    memWrite32(addr, cpuRegs.GPR.r[_Rt_].UL[0]);
+	memWrite32(addr, cpuRegs.GPR.r[_Rt_].UL[0]);
 }
 
 static const u32 SWL_MASK[4] = { 0xffffff00, 0xffff0000, 0xff000000, 0x00000000 };
@@ -793,7 +793,7 @@ void SD()
 	if( addr & 7 )
 		throw R5900Exception::AddressError( addr, true );
 
-    memWrite64(addr,&cpuRegs.GPR.r[_Rt_].UD[0]);
+	memWrite64(addr,&cpuRegs.GPR.r[_Rt_].UD[0]);
 }
 
 static const u64 SDL_MASK[8] =
@@ -992,7 +992,7 @@ void MTSAB() {
 }
 
 void MTSAH() {
-    cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1;
+	cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1;
 }
 
 } }	} // end namespace R5900::Interpreter::OpcodeImpl

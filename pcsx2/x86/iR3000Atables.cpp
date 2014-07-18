@@ -85,8 +85,8 @@ void rpsxSLTI_const()
 void rpsxSLTconst(int info, int dreg, int sreg, int imm)
 {
 	XOR32RtoR(EAX, EAX);
-    CMP32ItoM((uptr)&psxRegs.GPR.r[sreg], imm);
-    SETL8R(EAX);
+	CMP32ItoM((uptr)&psxRegs.GPR.r[sreg], imm);
+	SETL8R(EAX);
 	MOV32RtoM((uptr)&psxRegs.GPR.r[dreg], EAX);
 }
 
@@ -104,7 +104,7 @@ void rpsxSLTUconst(int info, int dreg, int sreg, int imm)
 {
 	XOR32RtoR(EAX, EAX);
 	CMP32ItoM((uptr)&psxRegs.GPR.r[sreg], imm);
-    SETB8R(EAX);
+	SETB8R(EAX);
 	MOV32RtoM((uptr)&psxRegs.GPR.r[dreg], EAX);
 }
 
@@ -381,8 +381,8 @@ void rpsxSLT_const()
 void rpsxSLT_consts(int info)
 {
 	XOR32RtoR(EAX, EAX);
-    CMP32ItoM((uptr)&psxRegs.GPR.r[_Rt_], g_psxConstRegs[_Rs_]);
-    SETG8R(EAX);
+	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rt_], g_psxConstRegs[_Rs_]);
+	SETG8R(EAX);
 	MOV32RtoM((uptr)&psxRegs.GPR.r[_Rd_], EAX);
 }
 
@@ -390,9 +390,9 @@ void rpsxSLT_constt(int info) { rpsxSLTconst(info, _Rd_, _Rs_, g_psxConstRegs[_R
 void rpsxSLT_(int info)
 {
 	MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[_Rs_]);
-    CMP32MtoR(EAX, (uptr)&psxRegs.GPR.r[_Rt_]);
-    SETL8R   (EAX);
-    AND32ItoR(EAX, 0xff);
+	CMP32MtoR(EAX, (uptr)&psxRegs.GPR.r[_Rt_]);
+	SETL8R   (EAX);
+	AND32ItoR(EAX, 0xff);
 	MOV32RtoM((uptr)&psxRegs.GPR.r[_Rd_], EAX);
 }
 

@@ -580,7 +580,7 @@ static void (*recComOpXMM_to_XMM_REV[] )(x86SSERegType, x86SSERegType) = { //rev
 int recCommutativeOp(int info, int regd, int op)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    //if (t0reg == -1) {Console.WriteLn("FPU: CommutativeOp Allocation Error!");}
+	//if (t0reg == -1) {Console.WriteLn("FPU: CommutativeOp Allocation Error!");}
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -639,7 +639,7 @@ int recCommutativeOp(int info, int regd, int op)
 void recADD_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_D, 0));
+	ClampValues(recCommutativeOp(info, EEREC_D, 0));
 	//REC_FPUOP(ADD_S);
 }
 
@@ -648,7 +648,7 @@ FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 void recADDA_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_ACC, 0));
+	ClampValues(recCommutativeOp(info, EEREC_ACC, 0));
 }
 
 FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
@@ -1040,8 +1040,8 @@ void recDIV_S_xmm(int info)
 {
 	bool roundmodeFlag = false;
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    //if (t0reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
-    //Console.WriteLn("DIV");
+	//if (t0reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
+	//Console.WriteLn("DIV");
 
 	if( CHECK_FPUNEGDIVHACK )
 	{
@@ -1285,8 +1285,8 @@ void recMADDtemp(int info, int regd)
 			break;
 	}
 
-     ClampValues(regd);
-	 _freeXMMreg(t0reg);
+	ClampValues(regd);
+	_freeXMMreg(t0reg);
 }
 
 void recMADD_S_xmm(int info)
@@ -1313,7 +1313,7 @@ FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|X
 void recMAX_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    recCommutativeOp(info, EEREC_D, 2);
+	recCommutativeOp(info, EEREC_D, 2);
 }
 
 FPURECOMPILE_CONSTCODE(MAX_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -1321,7 +1321,7 @@ FPURECOMPILE_CONSTCODE(MAX_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 void recMIN_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    recCommutativeOp(info, EEREC_D, 3);
+	recCommutativeOp(info, EEREC_D, 3);
 }
 
 FPURECOMPILE_CONSTCODE(MIN_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -1471,9 +1471,8 @@ int t1reg;
 			break;
 	}
 
-     ClampValues(regd);
-	 _freeXMMreg(t0reg);
-
+	ClampValues(regd);
+	_freeXMMreg(t0reg);
 }
 
 void recMSUB_S_xmm(int info)
@@ -1500,7 +1499,7 @@ FPURECOMPILE_CONSTCODE(MSUBA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|X
 void recMUL_S_xmm(int info)
 {
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_D, 1));
+	ClampValues(recCommutativeOp(info, EEREC_D, 1));
 }
 
 FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -1543,7 +1542,7 @@ void recSUBhelper(int regd, int regt)
 void recSUBop(int info, int regd)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    //if (t0reg == -1) {Console.Error("FPU: SUB Allocation Error!");}
+	//if (t0reg == -1) {Console.Error("FPU: SUB Allocation Error!");}
 
 	//AND32ItoM((uptr)&fpuRegs.fprc[31], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 

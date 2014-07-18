@@ -190,12 +190,12 @@ struct DMACh {
 
 	void chcrTransfer(tDMA_TAG* ptag)
 	{
-	    chcr.TAG = ptag[0].upper();
+		chcr.TAG = ptag[0].upper();
 	}
 
 	void qwcTransfer(tDMA_TAG* ptag)
 	{
-	    qwc = ptag[0].QWC;
+		qwc = ptag[0].QWC;
 	}
 
 	bool transfer(const char *s, tDMA_TAG* ptag);
@@ -258,19 +258,19 @@ union tDMAC_QUEUE
 {
 	struct
 	{
-	    u16 VIF0 : 1;
-	    u16 VIF1 : 1;
-	    u16 GIF  : 1;
-	    u16 IPU0 : 1;
-	    u16 IPU1 : 1;
-	    u16 SIF0 : 1;
-	    u16 SIF1 : 1;
-	    u16 SIF2 : 1;
-	    u16 SPR0 : 1;
-        u16 SPR1 : 1;
-	    u16 SIS  : 1;
-	    u16 MEIS : 1;
-	    u16 BEIS : 1;
+		u16 VIF0 : 1;
+		u16 VIF1 : 1;
+		u16 GIF  : 1;
+		u16 IPU0 : 1;
+		u16 IPU1 : 1;
+		u16 SIF0 : 1;
+		u16 SIF1 : 1;
+		u16 SIF2 : 1;
+		u16 SPR0 : 1;
+		u16 SPR1 : 1;
+		u16 SIS  : 1;
+		u16 MEIS : 1;
+		u16 BEIS : 1;
 	};
 	u16 _u16;
 
@@ -281,43 +281,43 @@ union tDMAC_QUEUE
 
 static __fi const wxChar* ChcrName(u32 addr)
 {
-    switch (addr)
-    {
-        case D0_CHCR: return L"Vif 0";
-        case D1_CHCR: return L"Vif 1";
-        case D2_CHCR: return L"GIF";
-        case D3_CHCR: return L"Ipu 0";
-        case D4_CHCR: return L"Ipu 1";
-        case D5_CHCR: return L"Sif 0";
-        case D6_CHCR: return L"Sif 1";
-        case D7_CHCR: return L"Sif 2";
-        case D8_CHCR: return L"SPR 0";
-        case D9_CHCR: return L"SPR 1";
-        default: return L"???";
-    }
+	switch (addr)
+	{
+		case D0_CHCR: return L"Vif 0";
+		case D1_CHCR: return L"Vif 1";
+		case D2_CHCR: return L"GIF";
+		case D3_CHCR: return L"Ipu 0";
+		case D4_CHCR: return L"Ipu 1";
+		case D5_CHCR: return L"Sif 0";
+		case D6_CHCR: return L"Sif 1";
+		case D7_CHCR: return L"Sif 2";
+		case D8_CHCR: return L"SPR 0";
+		case D9_CHCR: return L"SPR 1";
+		default: return L"???";
+	}
 }
 
 // Believe it or not, making this const can generate compiler warnings in gcc.
 static __fi int ChannelNumber(u32 addr)
 {
-    switch (addr)
-    {
-        case D0_CHCR: return 0;
-        case D1_CHCR: return 1;
-        case D2_CHCR: return 2;
-        case D3_CHCR: return 3;
-        case D4_CHCR: return 4;
-        case D5_CHCR: return 5;
-        case D6_CHCR: return 6;
-        case D7_CHCR: return 7;
-        case D8_CHCR: return 8;
-        case D9_CHCR: return 9;
+	switch (addr)
+	{
+		case D0_CHCR: return 0;
+		case D1_CHCR: return 1;
+		case D2_CHCR: return 2;
+		case D3_CHCR: return 3;
+		case D4_CHCR: return 4;
+		case D5_CHCR: return 5;
+		case D6_CHCR: return 6;
+		case D7_CHCR: return 7;
+		case D8_CHCR: return 8;
+		case D9_CHCR: return 9;
 		default:
 		{
 			pxFailDev("Invalid DMA channel number");
 			return 51; // some value
 		}
-    }
+	}
 }
 
 union tDMAC_CTRL {
@@ -515,8 +515,8 @@ union tINTC_STAT {
 
 union tINTC_MASK {
 	struct {
-	    u32 int_mask : 10;
-	    u32 _placeholder:22;
+		u32 int_mask : 10;
+		u32 _placeholder:22;
 	};
 	u32 _u32;
 

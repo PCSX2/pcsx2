@@ -193,11 +193,11 @@ struct ScopedThreadCancelDisable
 void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 {
 	ScopedLock synclock( m_mtx_pending );
-    
-    pxEvtList::iterator node;
-    while( node = list.begin(), node != list.end() )
-    {
-        ScopedPtr<SysExecEvent> deleteMe(*node);
+
+	pxEvtList::iterator node;
+	while( node = list.begin(), node != list.end() )
+	{
+		ScopedPtr<SysExecEvent> deleteMe(*node);
 
 		list.erase( node );
 		if( !m_Quitting || deleteMe->IsCriticalEvent() )

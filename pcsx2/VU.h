@@ -18,20 +18,20 @@
 
 enum VURegFlags
 {
-    REG_STATUS_FLAG	= 16,
-    REG_MAC_FLAG	= 17,
-    REG_CLIP_FLAG	= 18,
-    REG_ACC_FLAG	= 19, // dummy flag that indicates that VFACC is written/read (nothing to do with VI[19])
-    REG_R			= 20,
-    REG_I			= 21,
-    REG_Q			= 22,
-    REG_P           = 23, // only exists in micromode
-    REG_VF0_FLAG	= 24, // dummy flag that indicates VF0 is read (nothing to do with VI[24])
-    REG_TPC			= 26,
-    REG_CMSAR0		= 27,
-    REG_FBRST		= 28,
-    REG_VPU_STAT	= 29,
-    REG_CMSAR1		= 31
+	REG_STATUS_FLAG = 16,
+	REG_MAC_FLAG    = 17,
+	REG_CLIP_FLAG   = 18,
+	REG_ACC_FLAG    = 19, // dummy flag that indicates that VFACC is written/read (nothing to do with VI[19])
+	REG_R           = 20,
+	REG_I           = 21,
+	REG_Q           = 22,
+	REG_P           = 23, // only exists in micromode
+	REG_VF0_FLAG    = 24, // dummy flag that indicates VF0 is read (nothing to do with VI[24])
+	REG_TPC         = 26,
+	REG_CMSAR0      = 27,
+	REG_FBRST       = 28,
+	REG_VPU_STAT    = 29,
+	REG_CMSAR1      = 31
 };
 
 //interpreter hacks, WIP
@@ -180,13 +180,13 @@ struct __aligned16 VURegs {
 
 enum VUPipeState
 {
-    VUPIPE_NONE = 0,
-    VUPIPE_FMAC,
-    VUPIPE_FDIV,
-    VUPIPE_EFU,
-    VUPIPE_IALU,
-    VUPIPE_BRANCH,
-    VUPIPE_XGKICK
+	VUPIPE_NONE = 0,
+	VUPIPE_FMAC,
+	VUPIPE_FDIV,
+	VUPIPE_EFU,
+	VUPIPE_IALU,
+	VUPIPE_BRANCH,
+	VUPIPE_XGKICK
 };
 
 extern __aligned16 VURegs vuRegs[2];

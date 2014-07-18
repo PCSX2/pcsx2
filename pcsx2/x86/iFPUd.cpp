@@ -465,14 +465,14 @@ void recFPUOp(int info, int regd, int op, bool acc)
 //------------------------------------------------------------------
 void recADD_S_xmm(int info)
 {
-    recFPUOp(info, EEREC_D, 0, false);
+	recFPUOp(info, EEREC_D, 0, false);
 }
 
 FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 
 void recADDA_S_xmm(int info)
 {
-    recFPUOp(info, EEREC_ACC, 0, true);
+	recFPUOp(info, EEREC_ACC, 0, true);
 }
 
 FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
@@ -649,8 +649,8 @@ static __aligned16 SSE_MXCSR roundmode_nearest, roundmode_neg;
 void recDIV_S_xmm(int info)
 {
 	bool roundmodeFlag = false;
-    //if (t0reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
-    //Console.WriteLn("DIV");
+	//if (t0reg == -1) {Console.Error("FPU: DIV Allocation Error!");}
+	//Console.WriteLn("DIV");
 
 	if( CHECK_FPUNEGDIVHACK )
 	{

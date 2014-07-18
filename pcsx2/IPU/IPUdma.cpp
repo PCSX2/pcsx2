@@ -264,7 +264,7 @@ __fi void dmaIPU0() // fromIPU
 	{
 		// Note: pad is the padding right above qwc, so we're testing whether qwc
 		// has overflowed into pad.
-	    DevCon.Warning(L"IPU0dma's upper 16 bits set to %x", ipu0ch.pad);
+		DevCon.Warning(L"IPU0dma's upper 16 bits set to %x", ipu0ch.pad);
 		ipu0ch.qwc = ipu0ch.pad = 0;
 		//If we are going to clear down IPU0, we should end it too. Going to test this scenario on the PS2 mind - Refraction
 		ipu0ch.chcr.STR = false;
@@ -285,7 +285,7 @@ __fi void dmaIPU1() // toIPU
 	{
 		// Note: pad is the padding right above qwc, so we're testing whether qwc
 		// has overflowed into pad.
-	    DevCon.Warning(L"IPU1dma's upper 16 bits set to %x\n", ipu1ch.pad);
+		DevCon.Warning(L"IPU1dma's upper 16 bits set to %x\n", ipu1ch.pad);
 		ipu1ch.qwc = ipu1ch.pad = 0;
 		// If we are going to clear down IPU1, we should end it too.
 		// Going to test this scenario on the PS2 mind - Refraction

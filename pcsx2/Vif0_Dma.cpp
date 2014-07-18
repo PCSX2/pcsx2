@@ -64,7 +64,7 @@ bool _VIF0chain()
 
 __fi void vif0SetupTransfer()
 {
-    tDMA_TAG *ptag;
+	tDMA_TAG *ptag;
 
 	ptag = dmaGetAddr(vif0ch.tadr, false); //Set memory pointer to TADR
 
@@ -126,7 +126,7 @@ __fi void vif0SetupTransfer()
 	{
 		VIF_LOG("dmaIrq Set");
 
-        //End Transfer
+		//End Transfer
 		vif0.done = true;
 		return;
 	}

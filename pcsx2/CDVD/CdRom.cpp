@@ -24,41 +24,41 @@
 
 enum cdrom_registers
 {
-    CdlSync         = 0,
-    CdlNop	        = 1,
-    CdlSetloc		= 2,
-    CdlPlay	        = 3,
-    CdlForward		= 4,
-    CdlBackward		= 5,
-    CdlReadN		= 6,
-    CdlStandby		= 7,
-    CdlStop	        = 8,
-    CdlPause        = 9,
-    CdlInit 		= 10,
-    CdlMute	        = 11,
-    CdlDemute		= 12,
-    CdlSetfilter	= 13,
-    CdlSetmode		= 14,
-    CdlGetmode      = 15,
-    CdlGetlocL		= 16,
-    CdlGetlocP		= 17,
-    Cdl18     		= 18,
-    CdlGetTN		= 19,
-    CdlGetTD		= 20,
-    CdlSeekL		= 21,
-    CdlSeekP		= 22,
-    CdlTest 		= 25,
-    CdlID   		= 26,
-    CdlReadS		= 27,
-    CdlReset		= 28,
-    CdlReadToc      = 30,
+	CdlSync         = 0,
+	CdlNop          = 1,
+	CdlSetloc       = 2,
+	CdlPlay         = 3,
+	CdlForward      = 4,
+	CdlBackward     = 5,
+	CdlReadN        = 6,
+	CdlStandby      = 7,
+	CdlStop         = 8,
+	CdlPause        = 9,
+	CdlInit         = 10,
+	CdlMute         = 11,
+	CdlDemute       = 12,
+	CdlSetfilter    = 13,
+	CdlSetmode      = 14,
+	CdlGetmode      = 15,
+	CdlGetlocL      = 16,
+	CdlGetlocP      = 17,
+	Cdl18           = 18,
+	CdlGetTN        = 19,
+	CdlGetTD        = 20,
+	CdlSeekL        = 21,
+	CdlSeekP        = 22,
+	CdlTest         = 25,
+	CdlID           = 26,
+	CdlReadS        = 27,
+	CdlReset        = 28,
+	CdlReadToc      = 30,
 
-    AUTOPAUSE		= 249,
-    READ_ACK		= 250,
-    READ			= 251,
-    REPPLAY_ACK		= 252,
-    REPPLAY			= 253,
-    ASYNC			= 254
+	AUTOPAUSE       = 249,
+	READ_ACK        = 250,
+	READ            = 251,
+	REPPLAY_ACK     = 252,
+	REPPLAY         = 253,
+	ASYNC           = 254
 /* don't set 255, it's reserved */
 };
 
@@ -116,7 +116,7 @@ static __fi void StopCdda() {
 }
 
 static __fi void SetResultSize(u8 size) {
-    cdr.ResultP = 0;
+	cdr.ResultP = 0;
 	cdr.ResultC = size;
 	cdr.ResultReady = 1;
 }
@@ -133,12 +133,12 @@ static void ReadTrack() {
 // cdr.Stat:
 enum cdr_stat_values
 {
-    NoIntr = 0,
-    DataReady,
-    Complete,
-    Acknowledge,
-    DataEnd,
-    DiskError
+	NoIntr = 0,
+	DataReady,
+	Complete,
+	Acknowledge,
+	DataEnd,
+	DiskError
 };
 
 static void AddIrqQueue(u8 irq, u32 ecycle) {
@@ -223,7 +223,7 @@ void  cdrInterrupt() {
 			cdr.StatP&=~0x2;
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Complete;
-        		// cdr.Stat = Acknowledge;
+			// cdr.Stat = Acknowledge;
 			break;
 
 		case CdlPause:
@@ -247,7 +247,7 @@ void  cdrInterrupt() {
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
 			AddIrqQueue(CdlInit + 0x20, 0x800);
-        	break;
+			break;
 
 		case CdlInit + 0x20:
 			SetResultSize(1);
@@ -410,7 +410,7 @@ void  cdrInterrupt() {
 
 		case CdlID + 0x20:
 			SetResultSize(8);
-        		cdr.Result[0] = 0x00; // 0x08 and cdr.Result[1]|0x10 : audio cd, enters cd player
+			cdr.Result[0] = 0x00; // 0x08 and cdr.Result[1]|0x10 : audio cd, enters cd player
 			cdr.Result[1] = 0x00; // 0x80 leads to the menu in the bios, else loads CD
 
 			if (!LoadCdBios) cdr.Result[1] |= 0x80;
@@ -822,7 +822,7 @@ void cdrWrite1(u8 rt) {
 		default:
 			CDVD_LOG("Unknown Cmd: %x\n", cdr.Cmd);
 			return;
-    }
+	}
 	if (cdr.Stat != NoIntr)
 		iopIntcIrq( 2 );
 }
@@ -846,7 +846,7 @@ void cdrWrite2(u8 rt) {
 	if (cdr.Ctrl & 0x1) {
 		switch (rt) {
 			case 0x07:
-	    		cdr.ParamP = 0;
+				cdr.ParamP = 0;
 				cdr.ParamC = 0;
 				cdr.ResultReady = 0;
 				cdr.Ctrl = 0;
