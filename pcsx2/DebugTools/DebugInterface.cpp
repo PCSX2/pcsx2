@@ -208,48 +208,19 @@ bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
 // R5900DebugInterface
 //
 
-u32 R5900DebugInterface::readMemory(u32 address, u32 size)
-{
-	if (!isValidAddress(address))
-		return -1;
-	
-	// TODO: Add linux variant of the following __try/__except
-#if defined(_MSC_VER)
-	__try
-	{
-#endif
-		switch (size)
-		{
-		case 1:
-			return memRead8(address);
-		case 2:
-			return memRead16(address);
-		case 4:
-			return memRead32(address);
-		default:
-			return -1;
-		}
-#if defined(_MSC_VER)
-	} __except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
-	{
-		return -1;
-	}
-#endif
-}
-
 u32 R5900DebugInterface::read8(u32 address)
 {
-	return readMemory(address,1);
+	return memRead8(address);
 }
 
 u32 R5900DebugInterface::read16(u32 address)
 {
-	return readMemory(address,2);
+	return memRead16(address);
 }
 
 u32 R5900DebugInterface::read32(u32 address)
 {
-	return readMemory(address,4);
+	return memRead32(address);
 }
 
 u64 R5900DebugInterface::read64(u32 address)
@@ -258,19 +229,7 @@ u64 R5900DebugInterface::read64(u32 address)
 		return -1;
 
 	u64 result;
-	
-	// TODO: Add linux variant of the following __try/__except
-#if defined(_MSC_VER)
-	__try {
-#endif
-		memRead64(address,result);
-#if defined(_MSC_VER)
-	} __except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
-	{
-		result = -1;
-	}
-#endif
-
+	memRead64(address,result);
 	return result;
 }
 
@@ -280,19 +239,7 @@ u128 R5900DebugInterface::read128(u32 address)
 		return u128::From32(-1);
 
 	__aligned16 u128 result;
-	
-	// TODO: Add linux variant of the following __try/__except
-#if defined(_MSC_VER)
-	__try {
-#endif
-		memRead128(address,result);
-#if defined(_MSC_VER)
-	} __except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
-	{
-		result.hi = result.lo = -1;
-	}
-#endif
-
+	memRead128(address,result);
 	return result;
 }
 
