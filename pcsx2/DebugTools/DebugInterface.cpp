@@ -206,22 +206,31 @@ bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
 
 u32 R5900DebugInterface::read8(u32 address)
 {
+	if (!isValidAddress(address))
+		return -1;
+
 	return memRead8(address);
 }
 
 u32 R5900DebugInterface::read16(u32 address)
 {
+	if (!isValidAddress(address) || address % 2)
+		return -1;
+
 	return memRead16(address);
 }
 
 u32 R5900DebugInterface::read32(u32 address)
 {
+	if (!isValidAddress(address) || address % 4)
+		return -1;
+
 	return memRead32(address);
 }
 
 u64 R5900DebugInterface::read64(u32 address)
 {
-	if (!isValidAddress(address))
+	if (!isValidAddress(address) || address % 8)
 		return -1;
 
 	u64 result;
@@ -231,10 +240,13 @@ u64 R5900DebugInterface::read64(u32 address)
 
 u128 R5900DebugInterface::read128(u32 address)
 {
-	if (!isValidAddress(address))
-		return u128::From32(-1);
-
 	__aligned16 u128 result;
+	if (!isValidAddress(address) || address % 16)
+	{
+		result.hi = result.lo = -1;
+		return result;
+	}
+
 	memRead128(address,result);
 	return result;
 }

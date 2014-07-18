@@ -847,6 +847,9 @@ void CtrlDisassemblyView::updateStatusBarText()
 			if (!cpu->isValidAddress(line.info.dataAddress))
 			{
 				sprintf(text,"Invalid address %08X",line.info.dataAddress);
+			} else if (line.info.lrType == MIPSAnalyst::LOADSTORE_NORMAL && line.info.dataAddress % line.info.dataSize)
+			{
+				sprintf(text,"Unaligned address %08X",line.info.dataAddress);
 			} else {
 				switch (line.info.dataSize)
 				{
@@ -858,7 +861,16 @@ void CtrlDisassemblyView::updateStatusBarText()
 					break;
 				case 4:
 					{
-						u32 data = cpu->read32(line.info.dataAddress);
+						u32 data;
+						if (line.info.lrType != MIPSAnalyst::LOADSTORE_NORMAL)
+						{
+							u32 address = line.info.dataAddress;
+							data = cpu->read32(address & ~3) >> (address & 3) * 8;
+							data |= cpu->read32((address + 3) & ~3) << (4 - (address & 3)) * 8;
+						} else {
+							data = cpu->read32(line.info.dataAddress);
+						}
+
 						const std::string addressSymbol = symbolMap.GetLabelString(data);
 						if (!addressSymbol.empty())
 						{
@@ -870,7 +882,16 @@ void CtrlDisassemblyView::updateStatusBarText()
 					}
 				case 8:
 					{
-						u64 data = cpu->read64(line.info.dataAddress);
+						u64 data;
+						if (line.info.lrType != MIPSAnalyst::LOADSTORE_NORMAL)
+						{
+							u32 address = line.info.dataAddress;
+							data = cpu->read64(address & ~7) >> (address & 7) * 8;
+							data |= cpu->read64((address + 7) & ~7) << (8 - (address & 7)) * 8;
+						} else {
+							data = cpu->read64(line.info.dataAddress);
+						}
+
 						sprintf(text,"[%08X] = %016llX",line.info.dataAddress,data);
 						break;
 					}
