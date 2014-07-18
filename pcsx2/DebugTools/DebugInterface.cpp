@@ -27,10 +27,6 @@
 #include "../IopMem.h"
 #include "SymbolMap.h"
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 extern AppCoreThread CoreThread;
 
 R5900DebugInterface r5900Debug;
