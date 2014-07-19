@@ -426,7 +426,7 @@ void VifUnpackSSE_Init()
 
 	DevCon.WriteLn( "Unpack function generation complete.  Generated function statistics:" );
 	DevCon.Indent().WriteLn(
-		L"Reserved buffer    : %u bytes @ %s\n"
+		L"Reserved buffer    : %u bytes @ %ls\n"
 		L"x86 code generated : %u bytes\n",
 		(uint)nVifUpkExec->GetCommittedBytes(),
 		pxsPtr(nVifUpkExec->GetPtr()),

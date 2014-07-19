@@ -33,7 +33,7 @@ bool pxFileExists_WithExt( const wxFileName& filename, const wxString& ext )
 AsyncFileReader* MultipartFileReader::DetectMultipart(AsyncFileReader* reader)
 {
 	MultipartFileReader* multi = new MultipartFileReader(reader);
-	
+
 	multi->FindParts();
 	if (multi->m_numparts > 1)
 	{
@@ -52,7 +52,7 @@ MultipartFileReader::MultipartFileReader(AsyncFileReader* firstPart)
 	memset(m_parts,0,sizeof(m_parts));
 
 	m_filename = firstPart->GetFilename();
-	
+
 	m_numparts = 1;
 
 	m_parts[0].reader = firstPart;
@@ -91,9 +91,9 @@ void MultipartFileReader::FindParts()
 	if (!pxFileExists_WithExt(nameparts, extbuf))
 		return;
 
-	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", curext.Upper().c_str() );
+	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", WX_STR(curext.Upper()) );
 	ConsoleIndentScope indent;
-	
+
 	int bsize = m_parts[0].reader->GetBlockSize();
 	int blocks = m_parts[0].end;
 
@@ -124,7 +124,7 @@ void MultipartFileReader::FindParts()
 
 		DevCon.WriteLn( Color_Blue, L"\tblocks %u - %u in: %s",
 			thispart->start, thispart->end,
-			nameparts.GetFullPath().c_str()
+			WX_STR(nameparts.GetFullPath())
 		);
 
 		++m_numparts;
@@ -144,7 +144,7 @@ uint MultipartFileReader::GetFirstPart(uint lsn)
 {
 	pxAssertMsg(lsn < GetBlockCount(),	"Invalid lsn passed into MultipartFileReader::GetFirstPart.");
 	pxAssertMsg(m_numparts, "Invalid object state; multi-part iso file needs at least one part!");
-	
+
 	for (uint i = 0; i < m_numparts; ++i)
 	{
 		if (lsn < m_parts[i].end)
@@ -171,7 +171,7 @@ void MultipartFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 
 		m_parts[i].reader->BeginRead(lBuffer, sector - m_parts[i].start, num);
 		m_parts[i].isReading = true;
-		
+
 		lBuffer += num * m_blocksize;
 		sector += num;
 		count -= num;
@@ -231,9 +231,9 @@ uint MultipartFileReader::GetBlockCount(void) const
 void MultipartFileReader::SetBlockSize(uint bytes)
 {
 	uint last_end = 0;
-	for(uint i=0;i<m_numparts;i++) 
+	for(uint i=0;i<m_numparts;i++)
 	{
-		m_parts[i].reader->SetBlockSize(bytes); 
+		m_parts[i].reader->SetBlockSize(bytes);
 		uint count = m_parts[i].reader->GetBlockCount();
 
 		m_parts[i].start = last_end;

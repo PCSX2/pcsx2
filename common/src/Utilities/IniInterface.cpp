@@ -246,7 +246,7 @@ void IniLoader::_EnumEntry( const wxString& var, int& value, const wxChar* const
 	if( enumArray[i] == NULL )
 	{
 		Console.Warning( L"(LoadSettings) Warning: Unrecognized value '%s' on key '%s'\n\tUsing the default setting of '%s'.",
-			retval.c_str(), var.c_str(), enumArray[defvalue]
+			WX_STR(retval), WX_STR(var), enumArray[defvalue]
 		);
 		value = defvalue;
 	}
@@ -377,7 +377,7 @@ void IniSaver::_EnumEntry( const wxString& var, int& value, const wxChar* const*
 
 	if( value >= cnt )
 	{
-		Console.Warning(  L"(SaveSettings) An illegal enumerated index was detected when saving '%s'", var.c_str() );
+		Console.Warning(  L"(SaveSettings) An illegal enumerated index was detected when saving '%s'", WX_STR(var) );
 		Console.Indent().Warning(
 			L"Illegal Value: %d\n"
 			L"Using Default: %d (%s)\n",

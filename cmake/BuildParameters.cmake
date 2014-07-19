@@ -35,6 +35,7 @@ option(EXTRA_PLUGINS "Build various 'extra' plugins")
 # FIXME do a proper detection
 set(SDL2_LIBRARY "-lSDL2")
 option(SDL2_API "Use SDL2 on spu2x and onepad")
+option(WX28_API "Force wxWidget 2.8 lib. Default:ON" ON)
 
 if(PACKAGE_MODE)
     if(NOT DEFINED PLUGIN_DIR)

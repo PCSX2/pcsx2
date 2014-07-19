@@ -1037,7 +1037,7 @@ void RelocateLogfile()
 
 	if( (emuLog != NULL) && (emuLogName != newlogname) )
 	{
-		Console.WriteLn( L"\nRelocating Logfile...\n\tFrom: %s\n\tTo  : %s\n", emuLogName.c_str(), newlogname.c_str() );
+		Console.WriteLn( L"\nRelocating Logfile...\n\tFrom: %s\n\tTo  : %s\n", WX_STR(emuLogName), WX_STR(newlogname) );
 		wxGetApp().DisableDiskLogging();
 
 		fclose( emuLog );
@@ -1138,6 +1138,11 @@ protected:
 
 	virtual bool DoWriteString(const wxString& , const wxString& )  { return false; }
 	virtual bool DoWriteLong(const wxString& , long )  { return false; }
+
+#if wxUSE_BASE64
+	virtual bool DoReadBinary(const wxString& key, wxMemoryBuffer* buf) const { return false; }
+	virtual bool DoWriteBinary(const wxString& key, const wxMemoryBuffer& buf) { return false; }
+#endif
 };
 
 static pxDudConfig _dud_config;

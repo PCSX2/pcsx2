@@ -35,7 +35,7 @@ Panels::eeLogOptionsPanel::eeLogOptionsPanel( LogOptionsPanel* parent )
 	m_hwPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Registers" );
 	m_evtPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Events" );
 
-	wxFlexGridSizer& eeTable( *new wxFlexGridSizer( 2, 5 ) );
+	wxFlexGridSizer& eeTable( *new wxFlexGridSizer( 2, 5, 0 ) );
 
 	eeTable.AddGrowableCol(0);
 	eeTable.AddGrowableCol(1);
@@ -62,7 +62,7 @@ Panels::iopLogOptionsPanel::iopLogOptionsPanel( LogOptionsPanel* parent )
 	m_hwPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Registers" );
 	m_evtPanel		= new CheckedStaticBox( this, wxVERTICAL, L"Events" );
 
-	wxFlexGridSizer& iopTable( *new wxFlexGridSizer( 2, 5 ) );
+	wxFlexGridSizer& iopTable( *new wxFlexGridSizer( 2, 5, 0 ) );
 
 	iopTable.AddGrowableCol(0);
 	iopTable.AddGrowableCol(1);

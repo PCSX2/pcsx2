@@ -159,7 +159,7 @@ void Panels::FramelimiterPanel::Apply()
 		throw Exception::CannotApplySettings( this )
 			.SetDiagMsg(pxsFmt(
 				L"Error while parsing either NTSC or PAL framerate settings.\n\tNTSC Input = %s\n\tPAL Input  = %s",
-				m_text_BaseNtsc->GetValue().c_str(), m_text_BasePal->GetValue().c_str()
+				WX_STR(m_text_BaseNtsc->GetValue()), WX_STR(m_text_BasePal->GetValue())
 			) )
 			.SetUserMsg(_t("Error while parsing either NTSC or PAL framerate settings.  Settings must be valid floating point numerics."));
 	}

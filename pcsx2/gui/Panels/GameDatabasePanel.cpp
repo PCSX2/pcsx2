@@ -346,7 +346,7 @@ Panels::GameDatabasePanel::GameDatabasePanel( wxWindow* parent )
 
 	*this	+= new GameDatabaseListView( this ) | StdExpand();
 
-	wxFlexGridSizer& sizer1(*new wxFlexGridSizer(5, StdPadding));
+	wxFlexGridSizer& sizer1(*new wxFlexGridSizer(5, StdPadding, 0));
 	sizer1.AddGrowableCol(0);
 
 	blankLine();

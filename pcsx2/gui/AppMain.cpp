@@ -39,8 +39,6 @@
 #endif
 
 #ifdef __WXGTK__
-// Need to tranform the GSPanel to a X11 window/display for the GS plugins
-#include <wx/gtk/win_gtk.h> // GTK_PIZZA interface
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #endif
@@ -299,7 +297,7 @@ void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 
 	FastFormatUnicode isoFormatted;
 	isoFormatted.Write( L"[%s]", _("IsoFile") );
-	int pos = out.Find( isoFormatted );
+	int pos = out.Find( isoFormatted.c_str() );
 	
 	if(pos == wxNOT_FOUND)
 	{
@@ -350,11 +348,7 @@ wxMessageOutput* Pcsx2AppTraits::CreateMessageOutput()
 class Pcsx2StandardPaths : public wxStandardPaths
 {
 public:
-	wxString GetResourcesDir() const
-	{
-		return Path::Combine( GetDataDir(), L"Langs" );
-	}
-
+	// TODO check 3.0 behavior. I'm not sure code will be executed
 #ifdef __LINUX__
 	wxString GetUserLocalDataDir() const
 	{
@@ -385,12 +379,6 @@ public:
 	}
 #endif
 };
-
-wxStandardPathsBase& Pcsx2AppTraits::GetStandardPaths()
-{
-	static Pcsx2StandardPaths stdPaths;
-	return stdPaths;
-}
 #endif
 
 wxAppTraits* Pcsx2App::CreateTraits()
@@ -936,12 +924,13 @@ void Pcsx2App::OpenGsPanel()
 	// Unfortunately there is a race condition between gui and gs threads when you called the
 	// GDK_WINDOW_* macro. To be safe I think it is best to do here. It only cost a slight
 	// extension (fully compatible) of the plugins API. -- Gregory
-	GtkWidget *child_window = gtk_bin_get_child(GTK_BIN(gsFrame->GetViewport()->GetHandle()));
+	GtkWidget *child_window = (GtkWidget*)GTK_BIN(gsFrame->GetViewport()->GetHandle());
 
 	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
 	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
 
-	GdkWindow* draw_window = GTK_PIZZA(child_window)->bin_window;
+	GdkWindow* draw_window = gtk_widget_get_window(child_window);
+
 	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
 	Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
 
@@ -1093,7 +1082,7 @@ __fi bool SysHasValidState()
 void SysStatus( const wxString& text )
 {
 	// mirror output to the console!
-	Console.WriteLn( text.c_str() );
+	Console.WriteLn( WX_STR(text) );
 	sMainFrame.SetStatusText( text );
 }
 

@@ -21,6 +21,12 @@
 
 #include <wx/tokenzr.h>
 
+// Stupid wx3.0 doesn't support c_str for vararg function
+#if wxMAJOR_VERSION >= 3
+	#define WX_STR(str) (static_cast<const char*>(str.c_str()))
+#else
+	#define WX_STR(str) (str.c_str())
+#endif
 
 // --------------------------------------------------------------------------------------
 //  pxToUTF8
@@ -155,7 +161,7 @@ public:
 
 	FastFormatAscii& operator+=(const wxString& s)
 	{
-		Write( "%ls", s.c_str() );
+		Write( "%s", WX_STR(s) );
 		return *this;
 	}
 
@@ -188,6 +194,9 @@ public:
 
 	FastFormatUnicode& Write( const char* fmt, ... );
 	FastFormatUnicode& Write( const wxChar* fmt, ... );
+#if wxMAJOR_VERSION >= 3
+	FastFormatUnicode& Write( const wxString& fmt, ... );
+#endif
 	FastFormatUnicode& WriteV( const char* fmt, va_list argptr );
 	FastFormatUnicode& WriteV( const wxChar* fmt, va_list argptr );
 
@@ -204,7 +213,7 @@ public:
 
 	FastFormatUnicode& operator+=(const wxString& s)
 	{
-		Write( L"%s", s.c_str() );
+		Write( L"%s", WX_STR(s) );
 		return *this;
 	}
 

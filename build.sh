@@ -33,6 +33,8 @@ do
         --asan        ) flags="$flags -DUSE_ASAN=TRUE";;
         --clang       ) use_clang=1; flags="$flags -DUSE_CLANG=TRUE" ;;
         --clean       ) clean_build=1 ;;
+        --wx28        ) flags="$flags -DWX28_API=TRUE" ;;
+        --wx30        ) flags="$flags -DWX28_API=FALSE" ;;
 
         *)
             # unknown option
@@ -46,6 +48,8 @@ do
             echo "--extra         : Build all plugins"
             echo "--asan          : Enable with Address sanitizer"
             echo ""
+            echo "--wx28          : Force wxWidget 2.8"
+            echo "--wx30          : Allow to use wxWidget 3.0"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
             echo "--sdl2          : Build with SDL2 (crash if wx is linked to SDL1)"

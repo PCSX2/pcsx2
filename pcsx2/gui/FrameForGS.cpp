@@ -567,8 +567,8 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 
-	SetTitle( pxsFmt( L"%s | %s (%s) | Limiter: %s | fps: %6.02f%s | State %d",
-		fromUTF8(gsDest).c_str(),
+	SetTitle( pxsFmt( L"%s | %ls (%ls) | Limiter: %ls | fps: %6.02f%ls | State %d",
+		WX_STR(fromUTF8(gsDest)),
 		(smode2 & 1) ? L"Interlaced" : L"Progressive",
 		(smode2 & 2) ? L"frame" : L"field",
 		limiterStr, fps, cpuUsage.c_str(), States_GetCurrentSlot() )

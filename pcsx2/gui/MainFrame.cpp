@@ -596,7 +596,7 @@ void MainEmuFrame::ApplyCoreStatus()
 		if( !CoreThread.IsClosing() )
 		{
 			susres->Enable();
-			susres->SetText(_("Pause"));
+			susres->SetItemLabel(_("Pause"));
 			susres->SetHelp(_("Safely pauses emulation and preserves the PS2 state."));
 		}
 		else
@@ -604,12 +604,12 @@ void MainEmuFrame::ApplyCoreStatus()
 			susres->Enable(vm);
 			if( vm )
 			{
-				susres->SetText(_("Resume"));
+				susres->SetItemLabel(_("Resume"));
 				susres->SetHelp(_("Resumes the suspended emulation state."));
 			}
 			else
 			{
-				susres->SetText(_("Pause/Resume"));
+				susres->SetItemLabel(_("Pause/Resume"));
 				susres->SetHelp(_("No emulation state is active; cannot suspend or resume."));
 			}
 		}
@@ -619,7 +619,7 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )	
 		{
-			restart->SetText(_("Restart"));
+			restart->SetItemLabel(_("Restart"));
 			restart->SetHelp(_("Simulates hardware reset of the PS2 virtual machine."));
 		}
 		else
@@ -633,12 +633,12 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )
 		{
-			cdvd->SetText(_("Reboot CDVD (full)"));
+			cdvd->SetItemLabel(_("Reboot CDVD (full)"));
 			cdvd->SetHelp(_("Hard reset of the active VM."));
 		}
 		else
 		{
-			cdvd->SetText(_("Boot CDVD (full)"));
+			cdvd->SetItemLabel(_("Boot CDVD (full)"));
 			cdvd->SetHelp(_("Boot the VM using the current DVD or Iso source media"));
 		}	
 	}
@@ -647,12 +647,12 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )
 		{
-			cdvd2->SetText(_("Reboot CDVD (fast)"));
+			cdvd2->SetItemLabel(_("Reboot CDVD (fast)"));
 			cdvd2->SetHelp(_("Reboot using fast BOOT (skips splash screens)"));
 		}
 		else
 		{
-			cdvd2->SetText(_("Boot CDVD (fast)"));
+			cdvd2->SetItemLabel(_("Boot CDVD (fast)"));
 			cdvd2->SetHelp(_("Use fast boot to skip PS2 startup and splash screens"));
 		}
 	}

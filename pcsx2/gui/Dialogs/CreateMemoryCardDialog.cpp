@@ -115,7 +115,7 @@ bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint si
 	u8	m_effeffs[528*16];
 	memset8<0xff>( m_effeffs );
 
-	Console.WriteLn( L"(FileMcd) Creating new %uMB memory card: '%s'", sizeInMB, mcdFile.c_str() );
+	Console.WriteLn( L"(FileMcd) Creating new %uMB memory card: '%s'", sizeInMB, WX_STR(mcdFile) );
 
 	wxFFile fp( mcdFile, L"wb" );
 	if( !fp.IsOpened() ) return false;

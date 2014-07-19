@@ -214,7 +214,7 @@ void SysLogMachineCaps()
 		L"Operating System =  %s\n"
 		L"Physical RAM     =  %u MB",
 
-		GetOSVersionString().c_str(),
+		WX_STR(GetOSVersionString()),
 		(u32)(GetPhysicalMemory() / _1mb)
 	);
 
@@ -227,11 +227,11 @@ void SysLogMachineCaps()
 		L"x86PType         =  %s\n"
 		L"x86Flags         =  %08x %08x\n"
 		L"x86EFlags        =  %08x",
-			fromUTF8( x86caps.FamilyName ).Trim().Trim(false).c_str(),
-			fromUTF8( x86caps.VendorName ).c_str(), x86caps.StepID,
+			WX_STR(fromUTF8( x86caps.FamilyName ).Trim().Trim(false)),
+			WX_STR(fromUTF8( x86caps.VendorName )), x86caps.StepID,
 			speed / 1000, speed % 1000,
 			x86caps.LogicalCores, (x86caps.LogicalCores==1) ? L"" : L"s",
-			x86caps.GetTypeName().c_str(),
+			WX_STR(x86caps.GetTypeName()),
 			x86caps.Flags, x86caps.Flags2,
 			x86caps.EFlags
 	);

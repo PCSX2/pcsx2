@@ -362,7 +362,7 @@ static __fi void _reloadElfInfo(wxString elfpath)
 	ElfCRC = elfptr->getCRC();
 	ElfEntry = elfptr->header.e_entry;
 	ElfTextRange = elfptr->getTextRange();
-	Console.WriteLn( Color_StrongBlue, L"ELF (%s) Game CRC = 0x%08X, EntryPoint = 0x%08X", elfpath.c_str(), ElfCRC, ElfEntry);
+	Console.WriteLn( Color_StrongBlue, L"ELF (%s) Game CRC = 0x%08X, EntryPoint = 0x%08X", WX_STR(elfpath), ElfCRC, ElfEntry);
 
 	// Note: Do not load game database info here.  This code is generic and called from
 	// BIOS key encryption as well as eeloadReplaceOSDSYS.  The first is actually still executing
@@ -438,10 +438,17 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 
 		// combine the lower 7 bits of each char
 		// to make the 4 letters fit into a single u32
+#if wxMAJOR_VERSION >= 3
+		letters =	(s32)((DiscSerial[3].GetValue()&0x7F)<< 0) |
+					(s32)((DiscSerial[2].GetValue()&0x7F)<< 7) |
+					(s32)((DiscSerial[1].GetValue()&0x7F)<<14) |
+					(s32)((DiscSerial[0].GetValue()&0x7F)<<21);
+#else
 		letters =	(s32)((DiscSerial[3]&0x7F)<< 0) |
 					(s32)((DiscSerial[2]&0x7F)<< 7) |
 					(s32)((DiscSerial[1]&0x7F)<<14) |
 					(s32)((DiscSerial[0]&0x7F)<<21);
+#endif
 	}
 
 	// calculate magic numbers
