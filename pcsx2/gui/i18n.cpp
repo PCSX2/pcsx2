@@ -79,7 +79,11 @@ static void i18n_DoPackageCheck( wxLanguage wxLangId, LangPackList& langs, bool&
 
 	// note: wx preserves the current locale for us, so creating a new locale and deleting
 	// will not affect program status.
+#if wxMAJOR_VERSION < 3
+	ScopedPtr<wxLocale> locale( new wxLocale( wxLangId, wxLOCALE_CONV_ENCODING ) );
+#else
 	ScopedPtr<wxLocale> locale( new wxLocale( wxLangId, 0 ) );
+#endif
 
 	// Force the msgIdLanguage param to wxLANGUAGE_UNKNOWN to disable wx's automatic english
 	// matching logic, which will bypass the catalog loader for all english-based dialects, and

@@ -325,9 +325,9 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	dc.SetBrush(wxBrush(white));
 	dc.SetPen(wxPen(white));
 
-	//int width,height;
-	//dc.GetSize(&width,&height);
-	dc.DrawRectangle(0, 0, totalWidth, totalHeight);
+	int width,height;
+	dc.GetSize(&width,&height);
+	dc.DrawRectangle(0, 0, width, height);
 
 	if (!cpu->isAlive())
 		return;

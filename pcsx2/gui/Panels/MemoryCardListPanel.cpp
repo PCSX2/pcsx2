@@ -252,7 +252,17 @@ protected:
 
 public:
 	McdDataObject(int viewIndex = -1)
-		: wxDataObjectSimple( /*wxDF_PRIVATE*/ )
+#ifdef __LINUX__
+		// XXX: On linux drag and drop doesn't work. I think wxDF_PRIVATE is a MS extension.
+		// Besides it will raise on assertion on wx3.0.
+		//
+		// wxDF_FILENAME returns the filename of the memory card dropped. Maybe code can be updated
+		// to use it. However Model/view stuff is not my cup of tea so I will
+		// let others improve it on linux. --Greg
+		: wxDataObjectSimple( /*wxDF_FILENAME*/ )
+#else
+		: wxDataObjectSimple( wxDF_PRIVATE )
+#endif
 	{
 		m_viewIndex = viewIndex;
 	}
