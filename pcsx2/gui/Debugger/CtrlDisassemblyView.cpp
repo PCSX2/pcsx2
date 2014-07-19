@@ -145,6 +145,7 @@ void CtrlDisassemblyView::postEvent(wxEventType type, wxString text)
 {
    wxCommandEvent event( type, GetId() );
    event.SetEventObject(this);
+   event.SetClientData(cpu);
    event.SetString(text);
    wxPostEvent(this,event);
 }
@@ -153,6 +154,7 @@ void CtrlDisassemblyView::postEvent(wxEventType type, int value)
 {
    wxCommandEvent event( type, GetId() );
    event.SetEventObject(this);
+   event.SetClientData(cpu);
    event.SetInt(value);
    wxPostEvent(this,event);
 }

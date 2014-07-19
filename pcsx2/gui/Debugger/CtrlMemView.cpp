@@ -94,6 +94,7 @@ void CtrlMemView::postEvent(wxEventType type, wxString text)
 {
    wxCommandEvent event( type, GetId() );
    event.SetEventObject(this);
+   event.SetClientData(cpu);
    event.SetString(text);
    wxPostEvent(this,event);
 }
@@ -102,6 +103,7 @@ void CtrlMemView::postEvent(wxEventType type, int value)
 {
    wxCommandEvent event( type, GetId() );
    event.SetEventObject(this);
+   event.SetClientData(cpu);
    event.SetInt(value);
    wxPostEvent(this,event);
 }
@@ -235,6 +237,19 @@ void CtrlMemView::render(wxDC& dc)
 				dc.DrawText(temp,hexStart+j*3*charWidth,rowY);
 				dc.DrawText(text,asciiStart+j*(charWidth+2),rowY);
 			}
+		}
+	}
+
+	// TODO: make optional?
+	if (true)
+	{
+		dc.SetPen(wxColor(0xFFC0C0C0));
+		dc.SetBrush(wxColor(0xFFC0C0C0));
+		for (int i = 4; i < rowSize; i += 4)
+		{
+			int x = hexStart+i*3*charWidth-charWidth/2;
+			int y = (visibleRows+1)*rowHeight;
+			dc.DrawLine(x,0,x,y);
 		}
 	}
 }

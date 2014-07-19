@@ -354,8 +354,8 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	wxEventType type = evt.GetEventType();
 	if (type == debEVT_SETSTATUSBARTEXT)
 	{
-		CtrlDisassemblyView* view = reinterpret_cast<CtrlDisassemblyView*>(evt.GetEventObject());
-		if (view != NULL && view == currentCpu->getDisassembly())
+		DebugInterface* cpu = reinterpret_cast<DebugInterface*>(evt.GetClientData());
+		if (cpu != NULL && cpu == currentCpu->getCpu())
 			GetStatusBar()->SetLabel(evt.GetString());
 	} else if (type == debEVT_UPDATELAYOUT)
 	{
