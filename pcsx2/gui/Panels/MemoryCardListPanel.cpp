@@ -374,7 +374,7 @@ public:
 		if ( !GetData() )
 			return wxDragNone;
 
-		McdDataObject *dobj = (McdDataObject *)m_dataObject;
+		McdDataObject *dobj = (McdDataObject *)GetDataObject();
 		int sourceViewIndex = dobj->GetViewIndex();
 
 		wxDragResult result = OnDropMcd(
