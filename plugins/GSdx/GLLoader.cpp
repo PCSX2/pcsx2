@@ -243,7 +243,7 @@ namespace GLLoader {
 			for (GLint i = 0; i < max_ext; i++) {
 				string ext((const char*)gl_GetStringi(GL_EXTENSIONS, i));
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) {
-					if (!fglrx_buggy_driver) found_GL_ARB_separate_shader_objects = true;
+					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver) found_GL_ARB_separate_shader_objects = true;
 					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n");
 				}
 				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
