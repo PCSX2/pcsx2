@@ -22,19 +22,25 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    add_definitions(${CommonFlags} -g)
+    set(USBnullFinalFlags 
+    	${CommonFlags} -g
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	set(USBnullFinalFlags 
+		${CommonFlags} ${OptimizationFlags}
+	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	set(USBnullFinalFlags 
+		${CommonFlags} ${OptimizationFlags}
+	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # USBnull sources
@@ -66,28 +72,15 @@ set(USBnullWindowsSources
 set(USBnullWindowsHeaders
 	Windows/resource.h)
 
-# additonal include directories
-include_directories(.)
+set(USBnullFinalSources 
+	${USBnullSources}
+	${USBnullHeaders}
+	${USBnullLinuxSources}
+	${USBnullLinuxHeaders}
+)
 
-# add library
-add_library(${Output} SHARED
-			${USBnullSources}
-			${USBnullHeaders}
-			${USBnullLinuxSources}
-			${USBnullLinuxHeaders})
+set(USBnullFinalLibs 
+	${GTK2_LIBRARIES}
+)
 
-if(Linux)
-	# link target with gtk2
-	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
-endif(PACKAGE_MODE)
+add_pcsx2_plugin(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")

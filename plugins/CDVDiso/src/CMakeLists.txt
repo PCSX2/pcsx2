@@ -22,19 +22,25 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    add_definitions(${CommonFlags} -g)
+    set(CDVDisoFinalFlags 
+        ${CommonFlags} -g
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	set(CDVDisoFinalFlags 
+        ${CommonFlags} ${OptimizationFlags}
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	set(CDVDisoFinalFlags 
+        ${CommonFlags} ${OptimizationFlags}
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # CDVDiso sources
@@ -61,28 +67,19 @@ set(CDVDisoLinuxHeaders
     Linux/interface.h
     Linux/support.h)
 
+set(CDVDisoFinalSources
+    ${CDVDisoSources}
+    ${CDVDisoHeaders}
+    ${CDVDisoLinuxSources}
+    ${CDVDisoLinuxHeaders}
+)
+
+set(CDVDisoFinalLibs
+    ${BZIP2_LIBRARIES}
+)
 
 # add additional include directories
-include_directories(.
-    Linux)
+include_directories(Linux)
 
-# add library
-add_library(${Output} SHARED
-			${CDVDisoSources}
-			${CDVDisoHeaders}
-			${CDVDisoLinuxSources}
-			${CDVDisoLinuxHeaders})
+add_pcsx2_plugin(${Output} "${CDVDisoFinalSources}" "${CDVDisoFinalLibs}" "${CDVDisoFinalFlags}")
 
-# Link with bz2
-target_link_libraries(${Output} ${BZIP2_LIBRARIES})
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
-endif(PACKAGE_MODE)
