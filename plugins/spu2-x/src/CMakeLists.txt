@@ -141,7 +141,7 @@ set(spu2xFinalSources
 set(spu2xFinalLibs 
     Utilities
     ${ALSA_LIBRARIES}
-    ${PORTAUDIO_LIBRARIES}
+    PortAudio
 )
 
 if (SDL2_API)
@@ -158,7 +158,7 @@ endif()
 
 set(spu2xFinalLibs 
     ${spu2xFinalLibs}
-    ${SOUNDTOUCH_LIBRARIES}
+    SoundTouch
     ${GTK2_LIBRARIES}
 )
 
