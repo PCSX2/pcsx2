@@ -30,8 +30,6 @@
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
 
-using namespace HashTools;
-
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
 

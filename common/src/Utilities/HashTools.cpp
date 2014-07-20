@@ -18,17 +18,6 @@
 
 namespace HashTools {
 
-/// <summary>
-///   Provides access to a set of common hash methods for C fundamental types.
-/// </summary>
-/// <remarks>
-///   The CommonHashClass is implemented using the () operator (sometimes referred to
-///   as a predicate), which means that an instance of <see cref="CommonHashClass" />
-///   is required to use the methods.  This public global variable provides that instance.
-/// </remarks>
-/// <seealso cref="CommonHashClass"/>
-const CommonHashClass GetCommonHash;
-
 #define get16bits(d) (*((const u16 *) (d)))
 
 /// <summary>
