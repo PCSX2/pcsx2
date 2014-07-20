@@ -21,6 +21,7 @@
 #include "Patch.h"
 #include "GameDatabase.h"
 
+#include <memory>
 #include <wx/textfile.h>
 #include <wx/dir.h>
 #include <wx/txtstrm.h>
