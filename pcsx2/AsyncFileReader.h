@@ -23,7 +23,7 @@
 #endif
 
 class AsyncFileReader
-{	
+{
 protected:
 	AsyncFileReader(void) {m_dataoffset=0;}
 
@@ -46,7 +46,7 @@ public:
 	virtual void Close(void)=0;
 
 	virtual uint GetBlockCount(void) const=0;
-	
+
 	virtual void SetBlockSize(uint bytes) {}
 	virtual void SetDataOffset(uint bytes) {}
 
@@ -116,7 +116,7 @@ class MultipartFileReader : public AsyncFileReader
 	DeclareNoncopyableObject( MultipartFileReader );
 
 	static const int MaxParts = 8;
-	
+
 	struct Part {
 		uint start;
 		uint end; // exclusive
@@ -124,7 +124,7 @@ class MultipartFileReader : public AsyncFileReader
 		AsyncFileReader* reader;
 	} m_parts[MaxParts];
 	uint m_numparts;
-	
+
 	uint GetFirstPart(uint lsn);
 	void FindParts();
 
@@ -143,7 +143,7 @@ public:
 	virtual void Close(void);
 
 	virtual uint GetBlockCount(void) const;
-	
+
 	virtual void SetBlockSize(uint bytes);
 
 	static AsyncFileReader* DetectMultipart(AsyncFileReader* reader);
@@ -154,9 +154,9 @@ class BlockdumpFileReader : public AsyncFileReader
 	DeclareNoncopyableObject( BlockdumpFileReader );
 
 	wxFileInputStream* m_file;
-	
+
 	// total number of blocks in the ISO image (including all parts)
-	u32			m_blocks;	
+	u32			m_blocks;
 	s32			m_blockofs;
 
 	// index table
