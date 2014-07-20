@@ -61,7 +61,6 @@ include(FindGlew)
 include(FindLibc)
 include(FindPortAudio)
 include(FindSoundTouch)
-include(FindSparseHash)
 
 # Note for include_directory: The order is important to avoid a mess between include file from your system and the one of pcsx2
 # If you include first 3rdparty, all 3rdpary include will have a higer priority...
@@ -133,10 +132,6 @@ endif()
 
 if(SOUNDTOUCH_FOUND)
 	include_directories(${SOUNDTOUCH_INCLUDE_DIR})
-endif()
-
-if(SPARSEHASH_FOUND)
-	include_directories(${SPARSEHASH_INCLUDE_DIR})
 endif()
 
 if(wxWidgets_FOUND)
