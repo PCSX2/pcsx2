@@ -18,6 +18,7 @@
 #include "AppGameDatabase.h"
 #include "ConfigurationPanels.h"
 
+#include <algorithm>
 #include <wx/listctrl.h>
 
 extern wxString DiscSerial;
