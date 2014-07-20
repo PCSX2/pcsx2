@@ -25,11 +25,11 @@
 class AsyncFileReader
 {	
 protected:
-	AsyncFileReader(void) {m_dataoffset=0;}
+	AsyncFileReader() : m_dataoffset(0) {}
 
 	wxString m_filename;
 
-	uint m_dataoffset;
+	int m_dataoffset;
 	uint m_blocksize;
 
 public:
@@ -47,8 +47,8 @@ public:
 
 	virtual uint GetBlockCount(void) const=0;
 	
-	virtual void SetBlockSize(uint bytes) {}
-	virtual void SetDataOffset(uint bytes) {}
+	virtual void SetBlockSize(uint bytes) {};
+	virtual void SetDataOffset(int bytes) {};
 
 	uint GetBlockSize() const { return m_blocksize; }
 
@@ -92,7 +92,7 @@ public:
 	virtual uint GetBlockCount(void) const;
 
 	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
-	virtual void SetDataOffset(uint bytes) { m_dataoffset = bytes; }
+	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
 };
 
 // Factory - creates an AsyncFileReader derived instance which can read a compressed file

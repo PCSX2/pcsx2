@@ -225,7 +225,7 @@ public:
 	};
 
 	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
-	virtual void SetDataOffset(uint bytes) { m_dataoffset = bytes; }
+	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
 private:
 	class Czstate {
 	public:
