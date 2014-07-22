@@ -26,5 +26,6 @@ DECLARE_LOCAL_EVENT_TYPE( debEVT_MAPLOADED, wxNewEventType() )
 DECLARE_LOCAL_EVENT_TYPE( debEVT_STEPOVER, wxNewEventType() )
 DECLARE_LOCAL_EVENT_TYPE( debEVT_STEPINTO, wxNewEventType() )
 DECLARE_LOCAL_EVENT_TYPE( debEVT_UPDATE, wxNewEventType() )
+DECLARE_LOCAL_EVENT_TYPE( debEVT_BREAKPOINTWINDOW, wxNewEventType() )
 
 bool executeExpressionWindow(wxWindow* parent, DebugInterface* cpu, u64& dest, const wxString& defaultValue = wxEmptyString);

@@ -35,6 +35,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_STEPOVER, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPINTO, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_BREAKPOINTWINDOW, DisassemblyDialog::onDebuggerEvent )
    EVT_CLOSE( DisassemblyDialog::onClose )
 END_EVENT_TABLE()
 
@@ -414,6 +415,10 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	} else if (type == debEVT_UPDATE)
 	{
 		update();
+	} else if (type == debEVT_BREAKPOINTWINDOW)
+	{
+		wxCommandEvent evt;
+		onBreakpointClick(evt);
 	}
 }
 

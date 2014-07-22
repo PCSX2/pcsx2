@@ -47,9 +47,20 @@ void resizeListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int
 BEGIN_EVENT_TABLE(BreakpointList, wxWindow)
 	EVT_SIZE(BreakpointList::sizeEvent)
 	EVT_KEY_DOWN(BreakpointList::keydownEvent)
+	EVT_RIGHT_DOWN(BreakpointList::mouseEvent)
+	EVT_RIGHT_UP(BreakpointList::mouseEvent)
+	EVT_LIST_ITEM_RIGHT_CLICK(wxID_ANY,BreakpointList::listEvent)
 END_EVENT_TABLE()
 
 enum { BPL_TYPE, BPL_OFFSET, BPL_SIZELABEL, BPL_OPCODE, BPL_CONDITION, BPL_HITS, BPL_ENABLED, BPL_COLUMNCOUNT };
+
+enum BreakpointListMenuIdentifiers
+{
+	ID_BREAKPOINTLIST_ENABLE = 1,
+	ID_BREAKPOINTLIST_EDIT,
+	ID_BREAKPOINTLIST_ADDNEW,
+};
+
 
 GenericListViewColumn breakpointColumns[BPL_COLUMNCOUNT] = {
 	{ L"Type",			0.12f },
@@ -189,7 +200,7 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 	case BPL_ENABLED:
 		{
 			if (isMemory) {
-				dest.Write(L"%s",displayedMemChecks_[index].cond & MEMCHECK_BREAK ? "true" : "false");
+				dest.Write(L"%s",displayedMemChecks_[index].result & MEMCHECK_BREAK ? "true" : "false");
 			} else {
 				dest.Write(L"%s",displayedBreakPoints_[index].enabled ? "true" : "false");
 			}
@@ -351,4 +362,71 @@ void BreakpointList::postEvent(wxEventType type, int value)
    event.SetEventObject(this);
    event.SetInt(value);
    wxPostEvent(this,event);
+}
+
+void BreakpointList::onPopupClick(wxCommandEvent& evt)
+{
+	int index = GetFirstSelected();
+	switch (evt.GetId())
+	{
+	case ID_BREAKPOINTLIST_ENABLE:
+		toggleEnabled(index);
+		break;
+	case ID_BREAKPOINTLIST_EDIT:
+		editBreakpoint(index);
+		break;
+	case ID_BREAKPOINTLIST_ADDNEW:
+		postEvent(debEVT_BREAKPOINTWINDOW,0);
+		break;
+	default:
+		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
+		break;
+	}
+}
+
+void BreakpointList::showMenu(wxPoint& pos)
+{
+	bool isMemory;
+	int index = getBreakpointIndex(GetFirstSelected(),isMemory);
+
+	wxMenu menu;
+	if (index != -1)
+	{
+		menu.AppendCheckItem(ID_BREAKPOINTLIST_ENABLE,	L"Enable");
+		menu.Append(ID_BREAKPOINTLIST_EDIT,				L"Edit");
+		menu.AppendSeparator();
+			
+		// check if the breakpoint is enabled
+		bool enabled;
+		if (isMemory)
+			enabled = (displayedMemChecks_[index].result & MEMCHECK_BREAK) != 0;
+		else 
+			enabled = displayedBreakPoints_[index].enabled;
+
+		menu.Check(ID_BREAKPOINTLIST_ENABLE,enabled);
+	}
+
+	menu.Append(ID_BREAKPOINTLIST_ADDNEW,			L"Add new");
+
+	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&BreakpointList::onPopupClick, NULL, this);
+	PopupMenu(&menu,pos);
+}
+
+void BreakpointList::mouseEvent(wxMouseEvent& evt)
+{
+	wxEventType type = evt.GetEventType();
+
+	if (type == wxEVT_RIGHT_DOWN)
+	{
+		clickPos = evt.GetPosition();
+		evt.Skip();
+	} else if (type == wxEVT_RIGHT_UP)
+	{
+		showMenu(evt.GetPosition());
+	}
+}
+
+void BreakpointList::listEvent(wxListEvent& evt)
+{
+	showMenu(clickPos);
 }
