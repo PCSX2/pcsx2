@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
 
 	extinfo = fopen("EXTINFO", "wb");
 	if (extinfo == NULL) {
+		/* Don't leak the opened romdir */
+		fclose(romdir);
 		printf("failed to create EXTINFO\n");
 		return 1;
 	}
