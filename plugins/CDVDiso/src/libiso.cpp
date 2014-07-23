@@ -549,6 +549,7 @@ isoFile *isoOpen(const char *filename)
 	if (iso->handle == NULL)
 	{
 		printf("Error loading %s\n", iso->filename);
+		free(iso);
 		return NULL;
 	}
 
@@ -622,6 +623,7 @@ isoFile *isoCreate(const char *filename, int flags)
 		iso->htable = _openfile(Zfile, O_WRONLY);
 		if (iso->htable == NULL)
 		{
+			free(iso);
 			return NULL;
 		}
 	}
@@ -629,6 +631,7 @@ isoFile *isoCreate(const char *filename, int flags)
 	iso->handle = _openfile(iso->filename, O_WRONLY | O_CREAT);
 	if (iso->handle == NULL)
 	{
+		free(iso);
 		printf("Error loading %s\n", iso->filename);
 		return NULL;
 	}
@@ -1050,4 +1053,3 @@ void isoClose(isoFile *iso)
 
 	free(iso);
 }
-
