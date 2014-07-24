@@ -606,9 +606,11 @@ set(pcsx2AsmFiles
 	IPU/yuv2rgb.asm
 	x86/ix86-32/aVif_proc-32.asm)
 
-# collect .S files
-set(pcsx2SSources
-	x86/aVUzerorec.S)
+if (_M_X86_32)
+	# collect .S files
+	set(pcsx2SSources
+	    x86/aVUzerorec.S)
+endif()
 
 # change language of .S-files to c++
 set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
