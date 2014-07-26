@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-04-06 11:49+0200\n"
-"PO-Revision-Date: 2014-07-15 20:52+0100\n"
+"PO-Revision-Date: 2014-07-27 01:15+0100\n"
 "Last-Translator: Sergi Canaleta <chaoticanthrim@hotmail.com>\n"
 "Language-Team: ca_ES <LL@li.org>\n"
 "Language: ca_ES\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: trunk\\\n"
-"X-Generator: Poedit 1.6.6\n"
+"X-Generator: Poedit 1.6.7\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -802,27 +802,27 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
 msgid "Developers"
-msgstr ""
+msgstr "Programadors"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
 msgid "Contributors"
-msgstr ""
+msgstr "Contribuents"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "A Playstation 2 Emulator"
-msgstr ""
+msgstr "Un emulador de la Playstation 2"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
 msgid "PCSX2 Official Website and Forums"
-msgstr ""
+msgstr "Lloc oficial de PCSX2 i fòrums."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
 msgid "PCSX2 Official Git Repository at GitHub"
-msgstr ""
+msgstr "Repositori oficial de PCSX2 a Github."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
 msgid "I've seen enough"
-msgstr ""
+msgstr "Ja n'he vist prou"
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
 msgid "Assertion Failure - "
@@ -842,7 +842,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:193
 msgid "Do not show this dialog again."
-msgstr ""
+msgstr "No ensenyis mes aquesta opció."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:199
 msgid ""
@@ -863,7 +863,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:278
 msgid "Reset"
-msgstr ""
+msgstr "Reinicia"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:40
 msgid "Create a new memory card"
@@ -1209,7 +1209,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:324
 msgid "Show Console"
-msgstr ""
+msgstr "Ensenya la consola"
 
 #: pcsx2/gui/MainFrame.cpp:325
 msgid "Console to Stdio"
@@ -1229,7 +1229,7 @@ msgstr "&Configuració"
 
 #: pcsx2/gui/MainFrame.cpp:341
 msgid "&Misc"
-msgstr ""
+msgstr "&Altres"
 
 #: pcsx2/gui/MainFrame.cpp:347
 msgid "&Debug"
@@ -1311,7 +1311,7 @@ msgstr "Menú del plugin"
 
 #: pcsx2/gui/MainFrame.cpp:453
 msgid "Iso"
-msgstr ""
+msgstr "ISO"
 
 #: pcsx2/gui/MainFrame.cpp:453
 msgid "Makes the specified ISO image the CDVD source."
@@ -1347,7 +1347,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:465
 msgid "&Plugin/BIOS Selector"
-msgstr ""
+msgstr "&Selector de Plugin/BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:466 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
 msgid "Game Database Editor"
@@ -1359,11 +1359,11 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:473
 msgid "&Audio (SPU2)"
-msgstr ""
+msgstr "&Sons (SPU2)"
 
 #: pcsx2/gui/MainFrame.cpp:474
 msgid "&Controllers (PAD)"
-msgstr ""
+msgstr "&Controladors (PAD)"
 
 #: pcsx2/gui/MainFrame.cpp:475
 msgid "Dev9"
@@ -1387,16 +1387,16 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:487
 msgid "Clear all settings..."
-msgstr ""
+msgstr "Reinicia totes les opcions..."
 
 #: pcsx2/gui/MainFrame.cpp:488
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
-msgstr ""
+msgstr "Neteja totes les opcions del %s i torna a engegar el configurador."
 
 #: pcsx2/gui/MainFrame.cpp:510
 msgid "About..."
-msgstr ""
+msgstr "Sobre PCSX2..."
 
 #: pcsx2/gui/MainFrame.cpp:519
 msgid "Open Debug Window..."
@@ -1482,7 +1482,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:723
 msgid "Core GS Settings..."
-msgstr ""
+msgstr "Opcions del nucli gràfic"
 
 #: pcsx2/gui/MainFrame.cpp:724
 msgid ""
@@ -1492,7 +1492,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:726
 msgid "Window Settings..."
-msgstr ""
+msgstr "Opcions de finestra"
 
 #: pcsx2/gui/MainFrame.cpp:727
 msgid "Modify window and appearance options, including aspect ratio."
@@ -1500,7 +1500,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:734
 msgid "Plugin Settings..."
-msgstr ""
+msgstr "Opcions del plugin..."
 
 #: pcsx2/gui/MainFrame.cpp:735
 #, c-format
@@ -1513,15 +1513,16 @@ msgstr ""
 
 #: pcsx2/gui/MainMenuClicks.cpp:137
 msgid "Confirm ISO image change"
-msgstr ""
+msgstr "Confirma el canvi de imatge ISO"
 
 #: pcsx2/gui/MainMenuClicks.cpp:143
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr ""
+"Voleu canviar de disc o inicar amb la nova imatge (via reinicia del sistema)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:145 pcsx2/gui/MainMenuClicks.cpp:191
 msgid "Swap Disc"
-msgstr ""
+msgstr "Canvia el disc"
 
 #: pcsx2/gui/MainMenuClicks.cpp:181
 msgid "Confirm CDVD source change"
@@ -1582,6 +1583,8 @@ msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
 msgstr ""
+"Tens seleccionada la següent imatge ISO en el PCSX2:\n"
+"\n"
 
 #: pcsx2/gui/MemoryCardFile.cpp:183
 #, c-format
@@ -1739,7 +1742,7 @@ msgstr "Només interpretador; fet servir per a diagnòstic"
 #: pcsx2/gui/Panels/CpuPanel.cpp:169 pcsx2/gui/Panels/CpuPanel.cpp:221
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
 msgid "Restore Defaults"
-msgstr ""
+msgstr "Restaura els valors per defecte"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:183
 msgid ""
@@ -1966,25 +1969,25 @@ msgstr ""
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:548
 msgid "Eject"
-msgstr ""
+msgstr "Extreu"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:464
 msgid "Duplicate ..."
-msgstr ""
+msgstr "Duplica ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:465
 msgid "Rename ..."
-msgstr ""
+msgstr "Re nombra ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:466
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:530
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:557
 msgid "Create ..."
-msgstr ""
+msgstr "Crea ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:478
 msgid "Card: "
-msgstr ""
+msgstr "Targetes:"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:531
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:564
@@ -2135,31 +2138,31 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:106
 msgid "PS2 Port"
-msgstr ""
+msgstr "Port de la PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:108
 msgid "Card (file) name"
-msgstr ""
+msgstr " Nom de la targeta (arxiu)"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:109
 msgid "Card size"
-msgstr ""
+msgstr "Mida de la Targeta"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:110
 msgid "Formatted"
-msgstr ""
+msgstr "Formatada"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:111
 msgid "Type"
-msgstr ""
+msgstr "Tipus"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:112
 msgid "Last Modified"
-msgstr ""
+msgstr "Ultima modificació"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:113
 msgid "Created on"
-msgstr ""
+msgstr "Creada el dia"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:158
 msgid "No"
@@ -2327,12 +2330,14 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:147
 msgid "mVU Flag Hack"
-msgstr ""
+msgstr "Hack de flag de MicroVU"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
+"Bon augment de velocitat i alta compatibilitat, però pot causar mals gràfics "
+"a vegades... [Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
 msgid "MTVU (Multi-Threaded microVU1)"
@@ -2343,6 +2348,8 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
+"Bon augment de velocitat i alta compatibilitat; pot causar penjaments al "
+"PCSX2... [Recomanat si tens més de 3 Nuclis]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
 msgid "Other Hacks"
@@ -2357,23 +2364,27 @@ msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
 msgstr ""
+"Enorme augment de velocitat en alguns jocs, amb la gran majoria no te "
+"efectes interiors negatius. [Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
 msgid "Enable Wait Loop Detection"
-msgstr ""
+msgstr "Activa la detecció de bucles d'espera"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
+"Augment de velocitat moderat en alguns jocs, no es coneix cap problemàtica. "
+"[Recomanat]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
 msgid "Enable fast CDVD"
-msgstr ""
+msgstr "Activa CDVD rapid"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "Fast disc access, less loading times. [Not Recommended]"
-msgstr ""
+msgstr "Accés a disc més ràpid, menys temps de càrrega. [No Recomanat]"
 
 #: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:37
 msgid "Themes Search Path:"
