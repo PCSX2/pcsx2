@@ -50,18 +50,20 @@ find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
 
 ## Use pcsx2 package to find module
-include(FindAio)
+#include(FindAio)
+#include(FindEGL)
+#include(FindGLES2)
+#include(FindPortAudio)
+#include(FindSoundTouch)
 ## Include cg because of zzogl-cg and zerogs
 #if(NOT GLSL_API)
 	include(FindCg)
 #endif()
-include(FindEGL)
-include(FindGLES2)
 include(FindGlew)
 include(FindLibc)
-include(FindPortAudio)
-include(FindSoundTouch)
 include(FindSparseHash)
+
+include(CheckLib)
 
 # Note for include_directory: The order is important to avoid a mess between include file from your system and the one of pcsx2
 # If you include first 3rdparty, all 3rdpary include will have a higer priority...
@@ -77,6 +79,11 @@ include(FindSparseHash)
 #----------------------------------------
 #		    Use system include (if not 3rdparty one)
 #----------------------------------------
+check_lib(AIO aio aio.h)
+check_lib(EGL egl EGL/egl.h)
+check_lib(GLESV2 GLESv2 GLES2/gl2.h)
+check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
+check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 if(Linux)
 	if(GTK2_FOUND)
 		include_directories(${GTK2_INCLUDE_DIRS})
@@ -87,9 +94,9 @@ if(Linux)
 	endif()
 endif()
 
-if(AIO_FOUND)
-    include_directories(${AIO_INCLUDE_DIR})
-endif()
+# if(AIO_FOUND)
+#     include_directories(${AIO_INCLUDE_DIR})
+# endif()
 
 if(ALSA_FOUND)
 	include_directories(${ALSA_INCLUDE_DIRS})
@@ -103,9 +110,9 @@ if(CG_FOUND)
 	include_directories(${CG_INCLUDE_DIRS})
 endif()
 
-if (EGL_FOUND)
-    include_directories(${EGL_INCLUDE_DIR})
-endif()
+# if (EGL_FOUND)
+#     include_directories(${EGL_INCLUDE_DIR})
+# endif()
 
 if(JPEG_FOUND)
 	include_directories(${JPEG_INCLUDE_DIR})
@@ -115,25 +122,25 @@ if(GLEW_FOUND)
     include_directories(${GLEW_INCLUDE_DIR})
 endif()
 
-if(GLESV2_FOUND)
-    include_directories(${GLESV2_INCLUDE_DIR})
-endif()
+# if(GLESV2_FOUND)
+#     include_directories(${GLESV2_INCLUDE_DIR})
+# endif()
 
 if(OPENGL_FOUND)
 	include_directories(${OPENGL_INCLUDE_DIR})
 endif()
 
-if(PORTAUDIO_FOUND)
-	include_directories(${PORTAUDIO_INCLUDE_DIR})
-endif()
+# if(PORTAUDIO_FOUND)
+# 	include_directories(${PORTAUDIO_INCLUDE_DIR})
+# endif()
 
 if(SDL_FOUND)
 	include_directories(${SDL_INCLUDE_DIR})
 endif()
 
-if(SOUNDTOUCH_FOUND)
-	include_directories(${SOUNDTOUCH_INCLUDE_DIR})
-endif()
+# if(SOUNDTOUCH_FOUND)
+# 	include_directories(${SOUNDTOUCH_INCLUDE_DIR})
+# endif()
 
 if(SPARSEHASH_FOUND)
 	include_directories(${SPARSEHASH_INCLUDE_DIR})
