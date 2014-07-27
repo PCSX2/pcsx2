@@ -21,28 +21,19 @@ set(OptimizationFlags
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(onepadFinalFlags 
-    	${CommonFlags} -g
-    )
+    add_definitions(${CommonFlags} -g)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(onepadFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(onepadFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 if (SDL2_API)
-    set(onepadFinalFlags 
-    	${onepadFinalFlags}
-    	-DONEPAD_SDL2
-    )
+    add_definitions(-DONEPAD_SDL2)
 endif()
 
 # onepad sources
@@ -80,27 +71,37 @@ set(onepadWindowsSources
 set(onepadWindowsHeaders
 	)
 
+# add additional include directories
+include_directories(.)
+
+# add library
+add_library(${Output} SHARED
+			${onepadSources}
+			${onepadHeaders}
+			${onepadLinuxSources}
+			${onepadLinuxHeaders})
+
 if (SDL2_API)
-	set(onepadFinalLibs 
-		${SDL2_LIBRARY}
-	)
+    target_link_libraries(${Output} ${SDL2_LIBRARY})
 else()
-	set(onepadFinalLibs 
-		${SDL_LIBRARY}
-	)
+    target_link_libraries(${Output} ${SDL_LIBRARY})
 endif()
 
-set(onepadFinalLibs 
-	${onepadFinalLibs}
-	${GTK2_LIBRARIES}
-	${X11_LIBRARIES}
-)
+if(Linux)
+	# link target with gtk2
+	target_link_libraries(${Output} ${GTK2_LIBRARIES})
+endif(Linux)
 
-set(onepadFinalSources 
-	${onepadSources}
-	${onepadHeaders}
-	${onepadLinuxSources}
-	${onepadLinuxHeaders}
-)
+# link target with X11
+target_link_libraries(${Output} ${X11_LIBRARIES})
 
-add_pcsx2_plugin(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+
+if(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
+else(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+endif(PACKAGE_MODE)

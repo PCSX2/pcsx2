@@ -17,25 +17,19 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    set(CDVDlinuzFinalFlags 
-        ${CommonFlags} -g
-    )
+    add_definitions(${CommonFlags} -g)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-	set(CDVDlinuzFinalFlags 
-        ${CommonFlags} ${OptimizationFlags}
-    )
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-	set(CDVDlinuzFinalFlags 
-        ${CommonFlags} ${OptimizationFlags}
-    )
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # CDVDlinuz sources
@@ -82,17 +76,24 @@ set(CDVDlinuzLinuxHeaders
     Linux/logfile.h
     Linux/mainbox.h)
 
-set(CDVDlinuzFinalSources 
+# add additional include directories
+include_directories(.
+    Linux)
+
+# add library
+add_library(${Output} SHARED
     ${CDVDlinuzSources}
     ${CDVDlinuzHeaders}
     ${CDVDlinuzLinuxSources}
-    ${CDVDlinuzLinuxHeaders}
-)
+    ${CDVDlinuzLinuxHeaders})
 
-set(CDVDlinuzFinalLibs 
-)
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
 
-# add additional include directories
-include_directories(Linux)
-
-add_pcsx2_plugin(${Output} "${CDVDlinuzFinalSources}" "${CDVDlinuzFinalLibs}" "${CDVDlinuzFinalFlags}")
+if(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
+else(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+endif(PACKAGE_MODE)

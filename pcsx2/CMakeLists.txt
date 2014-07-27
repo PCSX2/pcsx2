@@ -63,46 +63,32 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
-	set(pcsx2FinalFlags 
-		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
-	)
+	add_definitions(${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
 endif(NOT USE_CLANG) 
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(Output pcsx2-dbg)
 
-	set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
-		${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP
-	)
+	add_definitions(${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	set(Output pcsx2-dev)
 
-	set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
-		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD -DWX_PRECOMP -DNDEBUG
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD -DWX_PRECOMP -DNDEBUG)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	set(Output pcsx2)
 
-	set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
-		${CommonFlags} ${OptimizationFlags} -DWX_PRECOMP -DNDEBUG
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags} -DWX_PRECOMP -DNDEBUG)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 if(XDG_STD)
-    set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
-		-DXDG_STD
-	)
+    add_definitions(-DXDG_STD)
 endif(XDG_STD)
 
 # In package mode always use pcsx2
@@ -668,30 +654,21 @@ endif(Windows)
 
 # MacOSX
 if(MacOSX)
-	set(Platform
+	set(PlatformSources
 		)
 endif(MacOSX)	
 
-set(pcsx2FinalSources 
-	${Common}
-	${Platform}
-)
-
-set(pcsx2FinalLibs 
-	Utilities 
-	x86emitter
-	${wxWidgets_LIBRARIES}
-	${GTK2_LIBRARIES}
-	${ZLIB_LIBRARIES}
-	aio
-)
-
 # additonal include directories
-include_directories(
+include_directories(.
 					gui
 					x86
                     ${CMAKE_BINARY_DIR}/pcsx2/gui
-)
+                    )
+
+# add executable
+add_executable(${Output}
+			   ${Common}
+			   ${Platform})
 
 ### Generate the resources files
 file(MAKE_DIRECTORY ${res_bin})
@@ -712,4 +689,29 @@ if(PACKAGE_MODE)
 	SET_SOURCE_FILES_PROPERTIES(gui/AppConfig.cpp PROPERTIES COMPILE_FLAGS "-Wp,-ansi,-U__STRICT_ANSI__")
 endif(PACKAGE_MODE)    
 
-add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
+# link target with project internal libraries
+target_link_libraries(${Output} Utilities x86emitter)
+					
+# link target with wx
+target_link_libraries(${Output} ${wxWidgets_LIBRARIES})
+
+if(Linux)
+	# link target with gtk2
+	target_link_libraries(${Output} ${GTK2_LIBRARIES})
+endif(Linux)
+
+# link target with zlib
+target_link_libraries(${Output} ${ZLIB_LIBRARIES})
+
+target_link_libraries(${Output} ${AIO_LIBRARIES})
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+
+if(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION bin)
+else(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+endif(PACKAGE_MODE)

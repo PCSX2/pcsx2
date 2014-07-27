@@ -28,42 +28,30 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG AND _M_X86_32)
-	set(GSdxFinalFlags 
-        ${GSdxFinalFlags} ${CommonFlags} -mpreferred-stack-boundary=2
-    )
+	add_definitions(${CommonFlags} -mpreferred-stack-boundary=2)
 endif()
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(GSdxFinalFlags 
-        ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG -g -Wall
-    )
+    add_definitions(${CommonFlags} -D_DEBUG -g -Wall)
 endif()
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    set(GSdxFinalFlags 
-        ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL -g
-    )
+    add_definitions(${CommonFlags} ${OptimizationFlags} -D_DEVEL -g)
 endif()
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GSdxFinalFlags 
-        ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -W
-    )
+    add_definitions(${CommonFlags} ${OptimizationFlags} -W)
 endif()
 
 if(XDG_STD)
-    set(GSdxFinalFlags 
-        ${GSdxFinalFlags} -DXDG_STD
-    )
+    add_definitions(-DXDG_STD)
 endif()
 
 if(GLES_API AND GLESV2_FOUND)
-    set(GSdxFinalFlags 
-        ${GSdxFinalFlags} -DENABLE_GLES
-    )
+    add_definitions(-DENABLE_GLES)
 endif()
 
 set(GSdxSources
@@ -202,42 +190,54 @@ set(GSdxHeaders
     xbyak/xbyak_util.h
     )
 
-set(GSdxFinalSources 
-    ${GSdxSources} 
-    ${GSdxHeaders}
-)
-
-set(GSdxFinalLibs 
-    ${X11_LIBRARIES}
-)
-
-if(GLES_API AND GLESV2_FOUND)
-    set(GSdxFinalLibs 
-        ${GSdxFinalLibs} 
-        ${GLESV2_LIBRARIES}
-    )
-else()
-    set(GSdxFinalLibs 
-        ${GSdxFinalLibs} 
-        ${OPENGL_LIBRARIES}
-    )
-endif()
-
-set(GSdxFinalLibs 
-    ${GSdxFinalLibs} 
-    ${EGL_LIBRARIES}
-    ${GTK2_LIBRARIES}
-)
+include_directories(.)
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
 if (REBUILD_SHADER)
     add_custom_command(OUTPUT res/glsl_source.h COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/glsl2h.pl)
 endif()
 
-add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+add_library(${Output} SHARED ${GSdxSources} ${GSdxHeaders})
+
+target_link_libraries(${Output} ${X11_LIBRARIES})
+
+if(GLES_API AND GLESV2_FOUND)
+    target_link_libraries(${Output} ${GLESV2_LIBRARIES})
+else()
+    target_link_libraries(${Output} ${OPENGL_LIBRARIES})
+endif()
+
+target_link_libraries(${Output} ${EGL_LIBRARIES})
+
+if(Linux)
+	target_link_libraries(${Output} ${GTK2_LIBRARIES})
+endif(Linux)
+
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+
+if(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
+else(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+endif(PACKAGE_MODE)
 
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
 	set(Replay pcsx2_GSReplayLoader)
-    add_pcsx2_executable(${Replay} "linux_replay.cpp" "" "")
+
+	add_executable(${Replay} linux_replay.cpp)
+
+    target_link_libraries(${Replay} ${LIBC_LIBRARIES})
+
+	if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+	    target_link_libraries(${Replay} "${USER_CMAKE_LD_FLAGS}")
+	endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+
+	if(PACKAGE_MODE)
+	    install(TARGETS ${Replay} DESTINATION bin)
+	else(PACKAGE_MODE)
+	    install(TARGETS ${Replay} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+	endif(PACKAGE_MODE)
 endif(BUILD_REPLAY_LOADERS)

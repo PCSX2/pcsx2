@@ -22,25 +22,19 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(CDVDnullFinalFlags 
-    	${CommonFlags} -g
-    )
+    add_definitions(${CommonFlags} -g)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(CDVDnullFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(CDVDnullFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # CDVDnull sources
@@ -60,13 +54,27 @@ set(CDVDnullWindowsSources
 set(CDVDnullWindowsHeaders
 	)
 
-set(CDVDnullFinalSources 
-	${CDVDnullSources}
-	${CDVDnullHeaders}
-)
+# add additional include directories
+include_directories(.)
 
-set(CDVDnullFinalLibs 
-	${GTK2_LIBRARIES}
-)
+# add library
+add_library(${Output} SHARED
+			${CDVDnullSources}
+			${CDVDnullHeaders}
+            )
 
-add_pcsx2_plugin(${Output} "${CDVDnullFinalSources}" "${CDVDnullFinalLibs}" "${CDVDnullFinalFlags}")
+if(Linux)
+	# link target with gtk2
+	target_link_libraries(${Output} ${GTK2_LIBRARIES})
+endif(Linux)
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+
+if(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
+else(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+endif(PACKAGE_MODE)

@@ -21,25 +21,19 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(PadNullFinalFlags 
-    	${CommonFlags} -g
-    )
+    add_definitions(${CommonFlags} -g)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(PadNullFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(PadNullFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # PadNull sources
@@ -73,18 +67,31 @@ set(PadNullWindowsHeaders
 	Windows/resource.h)
 
 # add additional include directories
-include_directories(Linux)
+include_directories(.
+					Linux)
 
-set(PadNullFinalSources 
-	${PadNullSources}
-	${PadNullHeaders}
-	${PadNullLinuxSources}
-	${PadNullLinuxHeaders}
-)
+# add library
+add_library(${Output} SHARED
+			${PadNullSources}
+			${PadNullHeaders}
+			${PadNullLinuxSources}
+			${PadNullLinuxHeaders})
 
-set(PadNullFinalLibs 
-	${GTK2_LIBRARIES}
-	${X11_LIBRARIES}
-)
+if(Linux)
+	# link target with gtk2
+	target_link_libraries(${Output} ${GTK2_LIBRARIES})
+endif(Linux)
 
-add_pcsx2_plugin(${Output} "${PadNullFinalSources}" "${PadNullFinalLibs}" "${PadNullFinalFlags}")
+# link target with X11
+target_link_libraries(${Output} ${X11_LIBRARIES})
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+
+if(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
+else(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+endif(PACKAGE_MODE)

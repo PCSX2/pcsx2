@@ -21,25 +21,19 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(FWnullFinalFlags 
-    	${CommonFlags} -g
-    )
+    add_definitions(${CommonFlags} -g)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(FWnullFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(FWnullFinalFlags 
-		${CommonFlags} ${OptimizationFlags}
-	)
+	add_definitions(${CommonFlags} ${OptimizationFlags})
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # FWnull sources
@@ -71,15 +65,28 @@ set(FWnullWindowsSources
 set(FWnullWindowsHeaders
 	Windows/resource.h)
 
-set(FWnullFinalSources 
-	${FWnullSources}
-	${FWnullHeaders}
-	${FWnullLinuxSources}
-	${FWnullLinuxHeaders}
-)
+# add additional include directories
+include_directories(.)
 
-set(FWnullFinalLibs
-	${GTK2_LIBRARIES}
-)
+# add library
+add_library(${Output} SHARED
+			${FWnullSources}
+			${FWnullHeaders}
+			${FWnullLinuxSources}
+			${FWnullLinuxHeaders})
 
-add_pcsx2_plugin(${Output} "${FWnullFinalSources}" "${FWnullFinalLibs}" "${FWnullFinalFlags}")
+if(Linux)
+	# link target with gtk2
+	target_link_libraries(${Output} ${GTK2_LIBRARIES})
+endif(Linux)
+
+# User flags options
+if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
+endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+
+if(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
+else(PACKAGE_MODE)
+    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+endif(PACKAGE_MODE)
