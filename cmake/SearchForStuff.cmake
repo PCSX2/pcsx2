@@ -1,26 +1,9 @@
 #-------------------------------------------------------------------------------
 #						Search all libraries on the system
 #-------------------------------------------------------------------------------
-# Do not search Lib in /usr/lib64. Hope it is not overwritten in find_package or others macro
-SET(FIND_LIBRARY_USE_LIB64_PATHS FALSE)
-
-## Linux only libraries
 if(Linux)
     # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
     find_package(GTK2 REQUIRED gtk)
-    if(GTK2_FOUND)
-        # From version 2.21.3 gtk moved gdk-pixbuf into a separate module
-        # Cmake need to be fixed. For the moment uses a manual detection.
-        find_path(GDK_PIXBUF_INCLUDE_DIRS NAMES gdk-pixbuf/gdk-pixbuf.h PATHS
-            /usr/include/gdk-pixbuf-2.0
-            /usr/include)
-        if (GDK_PIXBUF_INCLUDE_DIRS)
-            set(GTK2_INCLUDE_DIRS "${GDK_PIXBUF_INCLUDE_DIRS}" "${GTK2_INCLUDE_DIRS}")
-            # Remove duplicates when cmake will be fixed
-            list(REMOVE_DUPLICATES GTK2_INCLUDE_DIRS)
-        endif()
-    endif()
-
     find_package(X11)
 endif()
 
