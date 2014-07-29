@@ -631,8 +631,8 @@ isoFile *isoCreate(const char *filename, int flags)
 	iso->handle = _openfile(iso->filename, O_WRONLY | O_CREAT);
 	if (iso->handle == NULL)
 	{
-		free(iso);
 		printf("Error loading %s\n", iso->filename);
+		free(iso);
 		return NULL;
 	}
 	printf("isoCreate: %s ok\n", iso->filename);
