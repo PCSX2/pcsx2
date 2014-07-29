@@ -34,6 +34,10 @@ BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_CHAR(CtrlMemView::charEvent)
 	EVT_SET_FOCUS(CtrlMemView::focusEvent)
 	EVT_KILL_FOCUS(CtrlMemView::focusEvent)
+	EVT_SCROLLWIN_LINEUP(CtrlMemView::scrollbarEvent)
+	EVT_SCROLLWIN_LINEDOWN(CtrlMemView::scrollbarEvent)
+	EVT_SCROLLWIN_PAGEUP(CtrlMemView::scrollbarEvent)
+	EVT_SCROLLWIN_PAGEDOWN(CtrlMemView::scrollbarEvent)
 END_EVENT_TABLE()
 
 enum MemoryViewMenuIdentifiers
@@ -449,6 +453,26 @@ void CtrlMemView::charEvent(wxKeyEvent& evt)
 
 	if (active)
 		cpu->resumeCpu();
+	redraw();
+}
+
+void CtrlMemView::scrollbarEvent(wxScrollWinEvent& evt)
+{
+	int type = evt.GetEventType();
+	if (type == wxEVT_SCROLLWIN_LINEUP)
+	{
+		scrollCursor(-rowSize);
+	} else if (type == wxEVT_SCROLLWIN_LINEDOWN)
+	{
+		scrollCursor(rowSize);
+	} else if (type == wxEVT_SCROLLWIN_PAGEUP)
+	{
+		scrollWindow(-GetClientSize().y/rowHeight);
+	} else if (type == wxEVT_SCROLLWIN_PAGEDOWN)
+	{
+		scrollWindow(GetClientSize().y/rowHeight);
+	}
+	
 	redraw();
 }
 

@@ -77,7 +77,7 @@ inline wxIcon _wxGetIconFromMemory(const unsigned char *data, int length) {
 }
 
 CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER|wxVSCROLL), cpu(_cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS||wxBORDER_SIMPLE|wxVSCROLL), cpu(_cpu)
 {
 	manager.setCpu(cpu);
 	windowStart = 0x100000;

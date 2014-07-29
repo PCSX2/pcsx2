@@ -36,9 +36,13 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_STEPINTO, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_BREAKPOINTWINDOW, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_MAPLOADED, DisassemblyDialog::onDebuggerEvent )
    EVT_CLOSE( DisassemblyDialog::onClose )
 END_EVENT_TABLE()
 
+BEGIN_EVENT_TABLE(CpuTabPage, wxPanel)
+	EVT_LISTBOX_DCLICK( wxID_ANY, CpuTabPage::listBoxHandler)
+END_EVENT_TABLE()
 
 DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 	: wxDialog(parent,wxID_ANY,L"Help")
@@ -73,9 +77,11 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(mainSizer);
 	
+	leftTabs = new wxNotebook(this,wxID_ANY);
 	bottomTabs = new wxNotebook(this,wxID_ANY);
 	disassembly = new CtrlDisassemblyView(this,cpu);
-	registerList = new CtrlRegisterList(this,cpu);
+	registerList = new CtrlRegisterList(leftTabs,cpu);
+	functionList = new wxListBox(leftTabs,wxID_ANY,wxDefaultPosition,wxDefaultSize,0,NULL,wxBORDER_NONE|wxLB_SORT);
 	memory = new CtrlMemView(bottomTabs,cpu);
 
 	// create register list and disassembly section
@@ -84,10 +90,13 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	wxBoxSizer* miscStuffSizer = new wxBoxSizer(wxHORIZONTAL);
 	cyclesText = new wxStaticText(this,wxID_ANY,L"");
 	miscStuffSizer->Add(cyclesText,0,wxLEFT|wxTOP|wxBOTTOM,2);
+	
+	leftTabs->AddPage(registerList,L"Registers");
+	leftTabs->AddPage(functionList,L"Functions");
 
 	wxBoxSizer* registerSizer = new wxBoxSizer(wxVERTICAL);
 	registerSizer->Add(miscStuffSizer,0);
-	registerSizer->Add(registerList,1);
+	registerSizer->Add(leftTabs,1);
 	
 	middleSizer->Add(registerSizer,0,wxEXPAND|wxRIGHT,2);
 	middleSizer->Add(disassembly,2,wxEXPAND);
@@ -105,6 +114,37 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 
 	lastCycles = 0;
 	loadCycles();
+}
+
+void CpuTabPage::reloadSymbolMap()
+{
+	functionList->Clear();
+
+	auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
+	for (size_t i = 0; i < funcs.size(); i++)
+	{
+		wxString name = wxString(funcs[i].name.c_str(),wxConvUTF8);
+		functionList->Append(name,(void*)funcs[i].address);
+	}
+}
+
+void CpuTabPage::listBoxHandler(wxCommandEvent& event)
+{
+	int index = functionList->GetSelection();
+	if (event.GetEventObject() == functionList && index >= 0)
+	{
+		u32 pos = (u32) functionList->GetClientData(index);
+		postEvent(debEVT_GOTOINDISASM,pos);
+	}
+}
+
+void CpuTabPage::postEvent(wxEventType type, int value)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetClientData(cpu);
+   event.SetInt(value);
+   wxPostEvent(this,event);
 }
 
 void CpuTabPage::setBottomTabPage(wxWindow* win)
@@ -400,7 +440,8 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	{
 		if (currentCpu != NULL)
 		{
-			currentCpu->getDisassembly()->gotoAddress(r5900Debug.getPC());
+			u32 pos = evt.GetInt();
+			currentCpu->getDisassembly()->gotoAddress(pos);
 			currentCpu->getDisassembly()->SetFocus();
 			update();
 		}
@@ -419,6 +460,10 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	{
 		wxCommandEvent evt;
 		onBreakpointClick(evt);
+	} else if (type == debEVT_MAPLOADED)
+	{
+		eeTab->reloadSymbolMap();
+		iopTab->reloadSymbolMap();
 	}
 }
 
@@ -443,8 +488,10 @@ void DisassemblyDialog::update()
 void DisassemblyDialog::reset()
 {
 	eeTab->getDisassembly()->clearFunctions();
+	eeTab->reloadSymbolMap();
 	iopTab->getDisassembly()->clearFunctions();
-};
+	iopTab->reloadSymbolMap();
+}
 
 void DisassemblyDialog::gotoPc()
 {
