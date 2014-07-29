@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 0.9.9\n"
+"Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:49+0200\n"
+"POT-Creation-Date: 2014-07-29 21:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:254
+#: common/src/Utilities/Exceptions.cpp:264
 msgid "There is not enough virtual memory available, or necessary virtual memory mappings have already been reserved by other processes, services, or DLLs."
 msgstr ""
 
@@ -50,11 +50,11 @@ msgstr ""
 msgid "Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors."
 msgstr ""
 
-#: pcsx2/gui/AppMain.cpp:585
+#: pcsx2/gui/AppMain.cpp:588
 msgid "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
 msgstr ""
 
-#: pcsx2/gui/AppMain.cpp:665
+#: pcsx2/gui/AppMain.cpp:668
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -159,7 +159,7 @@ msgid ""
 "and re-enable it at any time using Config:Memory cards from the main menu."
 msgstr ""
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid "Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."
 msgstr ""
 
@@ -209,7 +209,7 @@ msgstr ""
 msgid "Completely closes the often large and bulky GS window when pressing ESC or pausing the emulator."
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -217,7 +217,7 @@ msgid ""
 " * Resident Evil: Dead Aim (Causes garbled textures)"
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -225,38 +225,41 @@ msgid ""
 " * Wizardry"
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
 " * Transformers"
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
-msgid ""
-"Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues. \n"
-"\n"
-"It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty. \n"
-"('Automatic' means: selectively use specific tested fixes for specific games)"
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+msgid "It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty. ('Automatic' means: selectively use specific tested fixes for specific games)"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+msgid ""
+"Gamefixes can work around wrong emulation in some titles. \n"
+"They may also cause compatibility or performance issues.\n"
+"\n"
+"The safest way to make sure that all game fixes are completely disabled."
+msgstr ""
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
 msgid "You are about to delete the formatted memory card '%s'. All data on this card will be lost!  Are you absolutely and quite positively sure?"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr ""
@@ -288,7 +291,7 @@ msgid ""
 "Are you sure you want to apply settings now?"
 msgstr ""
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
 #, c-format
 msgid "All plugins must have valid selections for %s to run.  If you are unable to make a valid selection due to missing plugins or an incomplete install of %s, then press Cancel to close the Configuration panel."
 msgstr ""
@@ -372,7 +375,7 @@ msgid ""
 "Warning: This option can be enabled on-the-fly but typically cannot be disabled on-the-fly (video will typically be garbage)."
 msgstr ""
 
-#: pcsx2/vtlb.cpp:731
+#: pcsx2/vtlb.cpp:800
 msgid "Your system is too low on virtual resources for PCSX2 to run. This can be caused by having a small or disabled swapfile, or by other programs that are hogging resources."
 msgstr ""
 
