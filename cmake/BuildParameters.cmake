@@ -92,6 +92,9 @@ if(_ARCH_64 AND 64BIT_BUILD)
         set(CMAKE_LIBRARY_ARCHITECTURE "x86_64-linux-gnu")
     endif()
 
+    # x86_64 requires -fPIC
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
     set(ARCH_FLAG "-m64 -msse -msse2")
     add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
     set(_ARCH_64 1)
@@ -113,19 +116,19 @@ else()
         set(CMAKE_LIBRARY_ARCHITECTURE "i386-linux-gnu")
     endif()
 
+    # * -fPIC option was removed for multiple reasons.
+    #     - Code only supports the x86 architecture.
+    #     - code uses the ebx register so it's not compliant with PIC.
+    #     - Impacts the performance too much.
+    #     - Only plugins. No package will link to them.
+    set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+
     set(ARCH_FLAG "-m32 -msse -msse2 -march=i686")
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
     set(_M_X86_32 1)
 endif()
-
-# * -fPIC option was removed for multiple reasons.
-#     - Code only supports the x86 architecture.
-#     - code uses the ebx register so it's not compliant with PIC.
-#     - Impacts the performance too much.
-#     - Only plugins. No package will link to them.
-set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
 #-------------------------------------------------------------------------------
 # if no build type is set, use Devel as default
@@ -183,11 +186,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "")
 # Remove -rdynamic option that can some segmentation fault when openining pcsx2 plugins
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-# Remove -fPIC option. No good reason to use it for plugins. Moreover we
-# only support x86 architecture. And last but not least it impact the performance.
-# Long term future note :), amd64 build will need the -fPIC flags
-set(CMAKE_SHARED_LIBRARY_C_FLAGS "")
-set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "")
+if(_ARCH_32)
+	# Remove -fPIC option on 32bit architectures.
+	# No good reason to use it for plugins, also it impacts performance.
+	set(CMAKE_SHARED_LIBRARY_C_FLAGS "")
+	set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "")
+endif()
 
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
