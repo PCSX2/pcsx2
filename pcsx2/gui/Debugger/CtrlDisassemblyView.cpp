@@ -77,7 +77,7 @@ inline wxIcon _wxGetIconFromMemory(const unsigned char *data, int length) {
 }
 
 CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS||wxBORDER_SIMPLE|wxVSCROLL), cpu(_cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_SIMPLE|wxVSCROLL), cpu(_cpu)
 {
 	manager.setCpu(cpu);
 	windowStart = 0x100000;
@@ -326,9 +326,18 @@ std::set<std::string> CtrlDisassemblyView::getSelectedLineArguments() {
 			p = nextp + 1;
 			nextp = line.params.find(',', p);
 		}
+
 		if (p < line.params.size()) {
 			args.insert(line.params.substr(p));
 		}
+
+		// check for registers in memory opcodes
+		p = line.params.find('(');
+		nextp = line.params.find(')');
+		if (p != line.params.npos && nextp != line.params.npos && nextp > p) {
+			args.insert(line.params.substr(p+1, nextp - p - 1));
+		}
+
 	}
 
 	return args;
