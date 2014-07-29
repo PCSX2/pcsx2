@@ -384,7 +384,7 @@ void BreakpointList::onPopupClick(wxCommandEvent& evt)
 	}
 }
 
-void BreakpointList::showMenu(wxPoint& pos)
+void BreakpointList::showMenu(const wxPoint& pos)
 {
 	bool isMemory;
 	int index = getBreakpointIndex(GetFirstSelected(),isMemory);

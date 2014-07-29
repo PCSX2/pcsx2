@@ -49,7 +49,7 @@ private:
 	void gotoBreakpointAddress(int itemIndex);
 	void removeBreakpoint(int itemIndex);
 	void postEvent(wxEventType type, int value);
-	void showMenu(wxPoint& pos);
+	void showMenu(const wxPoint& pos);
 
 	std::vector<BreakPoint> displayedBreakPoints_;
 	std::vector<MemCheck> displayedMemChecks_;
