@@ -94,13 +94,15 @@ sed --in-place $ICO_POT --expression=s/'\"Content-Transfer-Encoding: 8bit\\n\"'/
 echo "Update pcsx2_Main.po files"
 for po_file in `find ./locales -iname pcsx2_Main.po`
 do
-    msgmerge --previous --update $po_file $MAIN_POT
+    # Note: --previous corrupt po file
+    msgmerge --update $po_file $MAIN_POT
 done
 
 echo "Update pcsx2_Iconized.po files"
 for po_file in `find ./locales -iname pcsx2_Iconized.po`
 do
-    msgmerge --previous --update $po_file $ICO_POT
+    # Note: --previous corrupt po file
+    msgmerge --update $po_file $ICO_POT
 done
 
 ######################################################################

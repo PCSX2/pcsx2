@@ -357,12 +357,12 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	if( PCSX2_isReleaseVersion )
 	{
 		// stable releases, with a simple title.
-		wintitle.Printf( _("%s  %d.%d.%d"), pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo );
+		wintitle.Printf( "%s  %d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo );
 	}
 	else
 	{
 		// beta / development editions, which feature revision number and compile date.
-		wintitle.Printf( _("%s  %d.%d.%d-%lld%s (git)  %s"), pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+		wintitle.Printf( "%s  %d.%d.%d-%lld%s (git)  %s", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
 			SVN_REV, SVN_MODS ? L"m" : wxEmptyString, fromUTF8(__DATE__).c_str() );
 	}
 

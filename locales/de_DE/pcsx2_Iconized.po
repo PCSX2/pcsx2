@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:47+0200\n"
+"POT-Creation-Date: 2014-07-30 09:16+0200\n"
 "PO-Revision-Date: 2014-01-06 09:06+0100\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:254
+#: common/src/Utilities/Exceptions.cpp:264
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -79,7 +79,7 @@ msgstr ""
 "wichtig um akzeptable FPS Raten zu erreichen. Du kannst versuchen die "
 "Recompiler über die Konfigurationseinstellungen zu reaktivieren."
 
-#: pcsx2/gui/AppMain.cpp:585
+#: pcsx2/gui/AppMain.cpp:588
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -89,7 +89,7 @@ msgstr ""
 "dürfen wir dieses nicht mit PCSX2 vertreiben. Du musst daher das BIOS Abbild "
 "deiner eigenen PS2 benutzen! Näheres dazu in der FAQ."
 
-#: pcsx2/gui/AppMain.cpp:665
+#: pcsx2/gui/AppMain.cpp:668
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -276,7 +276,7 @@ msgstr ""
 "Die Memory Card in Slot %d wurde automatisch deaktiviert. Du kannst dieses "
 "Problem via Konfiguration > Memory Card beheben."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -358,7 +358,7 @@ msgid ""
 "pausing the emulator."
 msgstr "Versteckt das GS Fenster wenn man mit ESC die Emulation pausiert."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -368,7 +368,7 @@ msgstr ""
 "Ändert das wichtige Timing für alle DMA Komponenten auf einen festen, "
 "schnellen Wert. Hat diversen Einfluss auf die Kompatibilität."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -376,32 +376,41 @@ msgid ""
 " * Wizardry"
 msgstr "Veraltet"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
 msgstr "DMA Busy hack\n"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
 " * Transformers"
 msgstr "VIF1 Fifo hack."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+#, fuzzy
 msgid ""
-"Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues. \n"
-"\n"
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. \n"
-"('Automatic' means: selectively use specific tested fixes for specific games)"
+"leave this page empty. ('Automatic' means: selectively use specific tested "
+"fixes for specific games)"
 msgstr ""
 "Spielefixes können spezifische, bekannte Fehler in einigen Spielen beheben. "
 "Sie sollten aber nur für diese Spiele aktiviert werden."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+#, fuzzy
+msgid ""
+"Gamefixes can work around wrong emulation in some titles. \n"
+"They may also cause compatibility or performance issues.\n"
+"\n"
+"The safest way to make sure that all game fixes are completely disabled."
+msgstr ""
+"Spielefixes können spezifische, bekannte Fehler in einigen Spielen beheben. "
+"Sie sollten aber nur für diese Spiele aktiviert werden."
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -410,14 +419,14 @@ msgstr ""
 "Hiermit wird die komplette Memory Card in Slot %s gelöscht. Bist du dir "
 "absolut sicher?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Fehler: Duplizieren ist nur in einen leeren PS2 Port oder in das Dateisystem "
 "erlaubt."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr ""
@@ -480,7 +489,7 @@ msgstr ""
 "\n"
 "Bist du dir sicher das du die Änderung jetzt anwenden möchtest?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -638,7 +647,7 @@ msgstr ""
 "Entfernt störende Faktoren von der Grafikkarte oder Treiberproblemen. Nur "
 "für PCSX2 Benchmarks interressant."
 
-#: pcsx2/vtlb.cpp:731
+#: pcsx2/vtlb.cpp:800
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "

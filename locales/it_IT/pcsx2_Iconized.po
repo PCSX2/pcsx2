@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-06-23 21:24+0100\n"
+"POT-Creation-Date: 2014-07-30 09:16+0200\n"
 "PO-Revision-Date: 2014-06-27 09:57+0100\n"
 "Last-Translator: Leucos\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:254
+#: common/src/Utilities/Exceptions.cpp:264
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -87,7 +87,7 @@ msgstr ""
 "risolvere gli errori, sarà necessario riabilitare i ricompilatori elencati "
 "qui sopra manualmente."
 
-#: pcsx2/gui/AppMain.cpp:585
+#: pcsx2/gui/AppMain.cpp:588
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -98,7 +98,7 @@ msgstr ""
 "prestito non conta). Per favore consulta le FAQ e le guide per ulteriori "
 "istruzioni."
 
-#: pcsx2/gui/AppMain.cpp:665
+#: pcsx2/gui/AppMain.cpp:668
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -321,7 +321,7 @@ msgstr ""
 "problema\n"
 "e riabilitarlo utilizzando Configurazione -> Memory Card dai menù principali."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -510,7 +510,7 @@ msgstr ""
 "Il modo più sicuro per accertarsi che tutti i GameFix siano completamente "
 "disabilitati."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -519,14 +519,14 @@ msgstr ""
 "Stai per cancellare la memory card formattata '%s'. Tutti i dati di questa "
 "scheda saranno perduti! Sei assolutamente e positivamente sicuro?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Fallita: La copia è permessa solamente verso una Porta-PS2 non occupata o "
 "verso il file system."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Fallita! La memory card di destinazione '%s' è in uso"
@@ -599,7 +599,7 @@ msgstr ""
 "\n"
 "Sei sicuro di voler applicare adesso le impostazioni?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
