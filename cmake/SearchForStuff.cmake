@@ -49,16 +49,7 @@ endif()
 find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
 
-## Use pcsx2 package to find module
-#include(FindAio)
-#include(FindEGL)
-#include(FindGLES2)
-#include(FindPortAudio)
-#include(FindSoundTouch)
-## Include cg because of zzogl-cg and zerogs
-#if(NOT GLSL_API)
-	include(FindCg)
-#endif()
+include(FindCg)
 include(FindGlew)
 include(FindLibc)
 include(FindSparseHash)
@@ -94,10 +85,6 @@ if(Linux)
 	endif()
 endif()
 
-# if(AIO_FOUND)
-#     include_directories(${AIO_INCLUDE_DIR})
-# endif()
-
 if(ALSA_FOUND)
 	include_directories(${ALSA_INCLUDE_DIRS})
 endif()
@@ -110,10 +97,6 @@ if(CG_FOUND)
 	include_directories(${CG_INCLUDE_DIRS})
 endif()
 
-# if (EGL_FOUND)
-#     include_directories(${EGL_INCLUDE_DIR})
-# endif()
-
 if(JPEG_FOUND)
 	include_directories(${JPEG_INCLUDE_DIR})
 endif()
@@ -122,25 +105,13 @@ if(GLEW_FOUND)
     include_directories(${GLEW_INCLUDE_DIR})
 endif()
 
-# if(GLESV2_FOUND)
-#     include_directories(${GLESV2_INCLUDE_DIR})
-# endif()
-
 if(OPENGL_FOUND)
 	include_directories(${OPENGL_INCLUDE_DIR})
 endif()
 
-# if(PORTAUDIO_FOUND)
-# 	include_directories(${PORTAUDIO_INCLUDE_DIR})
-# endif()
-
 if(SDL_FOUND)
 	include_directories(${SDL_INCLUDE_DIR})
 endif()
-
-# if(SOUNDTOUCH_FOUND)
-# 	include_directories(${SOUNDTOUCH_INCLUDE_DIR})
-# endif()
 
 if(SPARSEHASH_FOUND)
 	include_directories(${SPARSEHASH_INCLUDE_DIR})
