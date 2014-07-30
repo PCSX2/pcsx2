@@ -28,7 +28,7 @@ function(detectOperatingSystem)
 
     # check if we are on MacOSX
     if(APPLE)
-        message(FATAL_ERROR "Mac OS X isn't supported")
+        message(WARNING "Mac OS X isn't supported, build will most likely fail")
         set(MacOSX TRUE PARENT_SCOPE)
     endif(APPLE)
 
