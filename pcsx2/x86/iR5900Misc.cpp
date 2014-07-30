@@ -102,7 +102,7 @@ void recMFSA( void )
 		SetMMXstate();
 	}
 	else {
-		MOV32MtoR(EAX, (u32)&cpuRegs.sa);
+		MOV32MtoR(EAX, (uptr)&cpuRegs.sa);
 		_deleteEEreg(_Rd_, 0);
 		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
 		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);

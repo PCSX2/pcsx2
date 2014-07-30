@@ -54,8 +54,8 @@ REC_FUNC_DEL( MADDU1 , _Rd_ );
 void recWritebackHILO(int info, int writed, int upper)
 {
 	int regd, reglo = -1, reghi, savedlo = 0;
-	u32 loaddr = (int)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
-	u32 hiaddr = (int)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
+	uptr loaddr = (uptr)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
+	uptr hiaddr = (uptr)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
 	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
 
 	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive )
@@ -100,8 +100,8 @@ void recWritebackHILO(int info, int writed, int upper)
 			_deleteEEreg(_Rd_, 0);
 
 			if( !savedlo ) CDQ();
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 		}
 	}
 
@@ -127,8 +127,8 @@ void recWritebackHILO(int info, int writed, int upper)
 void recWritebackHILOMMX(int info, int regsource, int writed, int upper)
 {
 	int regd, t0reg, t1reg = -1;
-	u32 loaddr = (int)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
-	u32 hiaddr = (int)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
+	uptr loaddr = (uptr)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
+	uptr hiaddr = (uptr)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
 	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
 
 	SetMMXstate();
@@ -190,17 +190,17 @@ void recWritebackHILOMMX(int info, int regsource, int writed, int upper)
 					xmmregs[regd].mode |= MODE_WRITE;
 				}
 				else {
-					MOVQRtoM((int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], regsource);
+					MOVQRtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], regsource);
 
 					if( xmmregs[regd].mode & MODE_WRITE ) {
-						SSE_MOVHPS_XMM_to_M64((int)&cpuRegs.GPR.r[_Rd_].UL[2], regd);
+						SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[_Rd_].UL[2], regd);
 					}
 
 					xmmregs[regd].inuse = 0;
 				}
 			}
 			else {
-				MOVQRtoM((int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], regsource);
+				MOVQRtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], regsource);
 			}
 		}
 	}
@@ -247,8 +247,8 @@ void recWritebackHILOMMX(int info, int regsource, int writed, int upper)
 void recWritebackConstHILO(u64 res, int writed, int upper)
 {
 	int reglo, reghi;
-	u32 loaddr = (int)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
-	u32 hiaddr = (int)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
+	uptr loaddr = (uptr)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
+	uptr hiaddr = (uptr)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
 	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
 
 	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
@@ -280,8 +280,8 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 
 			if( reghi >= 0 ) {
 				u32* ptr = recGetImm64(res >> 63 ? -1 : 0, res >> 32);
-				if( upper ) SSE_MOVHPS_M64_to_XMM(reghi, (u32)ptr);
-				else SSE_MOVLPS_M64_to_XMM(reghi, (u32)ptr);
+				if( upper ) SSE_MOVHPS_M64_to_XMM(reghi, (uptr)ptr);
+				else SSE_MOVLPS_M64_to_XMM(reghi, (uptr)ptr);
 			}
 			else {
 				_deleteEEreg(XMMGPR_HI, 0);
@@ -308,15 +308,15 @@ void recMULTsuper(int info, int upper, int process)
 {
 	if( process & PROCESS_CONSTS ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rs_].UL[0] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 	else if( process & PROCESS_CONSTT) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	}
 	else {
-		MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 
 	recWritebackHILO(info, 1, upper);
@@ -397,15 +397,15 @@ void recMULTUsuper(int info, int upper, int process)
 {
 	if( process & PROCESS_CONSTS ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rs_].UL[0] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 	else if( process & PROCESS_CONSTT) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	}
 	else {
-		MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 
 	recWritebackHILO(info, 1, upper);
@@ -512,12 +512,12 @@ void recDIVsuper(int info, int sign, int upper, int process)
 	if( process & PROCESS_CONSTT )
 		MOV32ItoR( ECX, g_cpuConstRegs[_Rt_].UL[0] );
 	else
-		MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 
 	if( process & PROCESS_CONSTS )
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rs_].UL[0] );
 	else
-		MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 
 	u8 *end1;
 	if (sign)  //test for overflow (x86 will just throw an exception)
@@ -673,25 +673,25 @@ void recMADD()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		MOV32MtoR( EAX, (int)&cpuRegs.LO.UL[ 0 ] );
-		MOV32MtoR( ECX, (int)&cpuRegs.HI.UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.LO.UL[ 0 ] );
+		MOV32MtoR( ECX, (uptr)&cpuRegs.HI.UL[ 0 ] );
 		ADD32ItoR( EAX, (u32)result&0xffffffff );
 		ADC32ItoR( ECX, (u32)(result>>32) );
 		CDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 		}
 
-		MOV32RtoM( (int)&cpuRegs.LO.UL[0], EAX );
-		MOV32RtoM( (int)&cpuRegs.LO.UL[1], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[0], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[1], EDX );
 
-		MOV32RtoM( (int)&cpuRegs.HI.UL[0], ECX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[0], ECX );
 		MOV32RtoR(EAX, ECX);
 		CDQ();
-		MOV32RtoM( (int)&cpuRegs.HI.UL[1], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[1], EDX );
 		return;
 	}
 
@@ -704,35 +704,35 @@ void recMADD()
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rs_].UL[0] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	}
 	else {
-		MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 
 	MOV32RtoR( ECX, EDX );
-	ADD32MtoR( EAX, (u32)&cpuRegs.LO.UL[0] );
-	ADC32MtoR( ECX, (u32)&cpuRegs.HI.UL[0] );
+	ADD32MtoR( EAX, (uptr)&cpuRegs.LO.UL[0] );
+	ADC32MtoR( ECX, (uptr)&cpuRegs.HI.UL[0] );
 	CDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 	}
 
-	MOV32RtoM( (int)&cpuRegs.LO.UL[0], EAX );
-	MOV32RtoM( (int)&cpuRegs.LO.UL[1], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[0], EAX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[1], EDX );
 
-	MOV32RtoM( (int)&cpuRegs.HI.UL[0], ECX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[0], ECX );
 	MOV32RtoR(EAX, ECX);
 	CDQ();
-	MOV32RtoM( (int)&cpuRegs.HI.UL[1], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[1], EDX );
 }
 
 //static PCSX2_ALIGNED16(u32 s_MaddMask[]) = { 0x80000000, 0, 0x80000000, 0 };
@@ -745,25 +745,25 @@ void recMADDU()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		MOV32MtoR( EAX, (int)&cpuRegs.LO.UL[ 0 ] );
-		MOV32MtoR( ECX, (int)&cpuRegs.HI.UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.LO.UL[ 0 ] );
+		MOV32MtoR( ECX, (uptr)&cpuRegs.HI.UL[ 0 ] );
 		ADD32ItoR( EAX, (u32)result&0xffffffff );
 		ADC32ItoR( ECX, (u32)(result>>32) );
 		CDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 		}
 
-		MOV32RtoM( (int)&cpuRegs.LO.UL[0], EAX );
-		MOV32RtoM( (int)&cpuRegs.LO.UL[1], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[0], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[1], EDX );
 
-		MOV32RtoM( (int)&cpuRegs.HI.UL[0], ECX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[0], ECX );
 		MOV32RtoR(EAX, ECX);
 		CDQ();
-		MOV32RtoM( (int)&cpuRegs.HI.UL[1], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[1], EDX );
 		return;
 	}
 
@@ -776,35 +776,35 @@ void recMADDU()
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rs_].UL[0] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	}
 	else {
-		MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 
 	MOV32RtoR( ECX, EDX );
-	ADD32MtoR( EAX, (u32)&cpuRegs.LO.UL[0] );
-	ADC32MtoR( ECX, (u32)&cpuRegs.HI.UL[0] );
+	ADD32MtoR( EAX, (uptr)&cpuRegs.LO.UL[0] );
+	ADC32MtoR( ECX, (uptr)&cpuRegs.HI.UL[0] );
 	CDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 	}
 
-	MOV32RtoM( (int)&cpuRegs.LO.UL[0], EAX );
-	MOV32RtoM( (int)&cpuRegs.LO.UL[1], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[0], EAX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[1], EDX );
 
-	MOV32RtoM( (int)&cpuRegs.HI.UL[0], ECX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[0], ECX );
 	MOV32RtoR(EAX, ECX);
 	CDQ();
-	MOV32RtoM( (int)&cpuRegs.HI.UL[1], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[1], EDX );
 }
 
 void recMADD1()
@@ -815,25 +815,25 @@ void recMADD1()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		MOV32MtoR( EAX, (int)&cpuRegs.LO.UL[ 2 ] );
-		MOV32MtoR( ECX, (int)&cpuRegs.HI.UL[ 2 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.LO.UL[ 2 ] );
+		MOV32MtoR( ECX, (uptr)&cpuRegs.HI.UL[ 2 ] );
 		ADD32ItoR( EAX, (u32)result&0xffffffff );
 		ADC32ItoR( ECX, (u32)(result>>32) );
 		CDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 		}
 
-		MOV32RtoM( (int)&cpuRegs.LO.UL[2], EAX );
-		MOV32RtoM( (int)&cpuRegs.LO.UL[3], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[2], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[3], EDX );
 
-		MOV32RtoM( (int)&cpuRegs.HI.UL[2], ECX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[2], ECX );
 		MOV32RtoR(EAX, ECX);
 		CDQ();
-		MOV32RtoM( (int)&cpuRegs.HI.UL[3], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[3], EDX );
 		return;
 	}
 
@@ -846,35 +846,35 @@ void recMADD1()
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rs_].UL[0] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	}
 	else {
-		MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		IMUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		IMUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 
 	MOV32RtoR( ECX, EDX );
-	ADD32MtoR( EAX, (u32)&cpuRegs.LO.UL[2] );
-	ADC32MtoR( ECX, (u32)&cpuRegs.HI.UL[2] );
+	ADD32MtoR( EAX, (uptr)&cpuRegs.LO.UL[2] );
+	ADC32MtoR( ECX, (uptr)&cpuRegs.HI.UL[2] );
 	CDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 	}
 
-	MOV32RtoM( (int)&cpuRegs.LO.UL[2], EAX );
-	MOV32RtoM( (int)&cpuRegs.LO.UL[3], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[2], EAX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[3], EDX );
 
-	MOV32RtoM( (int)&cpuRegs.HI.UL[2], ECX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[2], ECX );
 	MOV32RtoR(EAX, ECX);
 	CDQ();
-	MOV32RtoM( (int)&cpuRegs.HI.UL[3], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[3], EDX );
 }
 
 //static PCSX2_ALIGNED16(u32 s_MaddMask[]) = { 0x80000000, 0, 0x80000000, 0 };
@@ -887,25 +887,25 @@ void recMADDU1()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		MOV32MtoR( EAX, (int)&cpuRegs.LO.UL[ 2 ] );
-		MOV32MtoR( ECX, (int)&cpuRegs.HI.UL[ 2 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.LO.UL[ 2 ] );
+		MOV32MtoR( ECX, (uptr)&cpuRegs.HI.UL[ 2 ] );
 		ADD32ItoR( EAX, (u32)result&0xffffffff );
 		ADC32ItoR( ECX, (u32)(result>>32) );
 		CDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-			MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 		}
 
-		MOV32RtoM( (int)&cpuRegs.LO.UL[2], EAX );
-		MOV32RtoM( (int)&cpuRegs.LO.UL[3], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[2], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.LO.UL[3], EDX );
 
-		MOV32RtoM( (int)&cpuRegs.HI.UL[2], ECX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[2], ECX );
 		MOV32RtoR(EAX, ECX);
 		CDQ();
-		MOV32RtoM( (int)&cpuRegs.HI.UL[3], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.HI.UL[3], EDX );
 		return;
 	}
 
@@ -918,35 +918,35 @@ void recMADDU1()
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rs_].UL[0] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
 		MOV32ItoR( EAX, g_cpuConstRegs[_Rt_].UL[0] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
 	}
 	else {
-		MOV32MtoR( EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		MUL32M( (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MUL32M( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	}
 
 	MOV32RtoR( ECX, EDX );
-	ADD32MtoR( EAX, (u32)&cpuRegs.LO.UL[2] );
-	ADC32MtoR( ECX, (u32)&cpuRegs.HI.UL[2] );
+	ADD32MtoR( EAX, (uptr)&cpuRegs.LO.UL[2] );
+	ADC32MtoR( ECX, (uptr)&cpuRegs.HI.UL[2] );
 	CDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
-		MOV32RtoM( (int)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], EDX );
 	}
 
-	MOV32RtoM( (int)&cpuRegs.LO.UL[2], EAX );
-	MOV32RtoM( (int)&cpuRegs.LO.UL[3], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[2], EAX );
+	MOV32RtoM( (uptr)&cpuRegs.LO.UL[3], EDX );
 
-	MOV32RtoM( (int)&cpuRegs.HI.UL[2], ECX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[2], ECX );
 	MOV32RtoR(EAX, ECX);
 	CDQ();
-	MOV32RtoM( (int)&cpuRegs.HI.UL[3], EDX );
+	MOV32RtoM( (uptr)&cpuRegs.HI.UL[3], EDX );
 }
 
 
