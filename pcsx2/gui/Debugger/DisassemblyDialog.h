@@ -41,6 +41,7 @@ public:
 	wxNotebook* getBottomTabs() { return bottomTabs; };
 	void update();
 	void showMemoryView() { setBottomTabPage(memory); };
+	void loadCycles();
 private:
 	void setBottomTabPage(wxWindow* win);
 	DebugInterface* cpu;
@@ -49,6 +50,8 @@ private:
 	CtrlMemView* memory;
 	wxNotebook* bottomTabs;
 	BreakpointList* breakpointList;
+	wxStaticText* cyclesText;
+	u32 lastCycles;
 };
 
 class DisassemblyDialog : public wxFrame

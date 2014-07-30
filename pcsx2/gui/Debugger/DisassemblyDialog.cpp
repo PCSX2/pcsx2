@@ -80,7 +80,12 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	// create register list and disassembly section
 	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
 
+	wxBoxSizer* miscStuffSizer = new wxBoxSizer(wxHORIZONTAL);
+	cyclesText = new wxStaticText(this,wxID_ANY,L"");
+	miscStuffSizer->Add(cyclesText,0,wxLEFT|wxTOP|wxBOTTOM,2);
+
 	wxBoxSizer* registerSizer = new wxBoxSizer(wxVERTICAL);
+	registerSizer->Add(miscStuffSizer,0);
 	registerSizer->Add(registerList,1);
 	
 	middleSizer->Add(registerSizer,0,wxEXPAND|wxRIGHT,2);
@@ -96,6 +101,9 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	mainSizer->Add(bottomTabs,1,wxEXPAND);
 
 	mainSizer->Layout();
+
+	lastCycles = 0;
+	loadCycles();
 }
 
 void CpuTabPage::setBottomTabPage(wxWindow* win)
@@ -116,6 +124,15 @@ void CpuTabPage::update()
 	Refresh();
 }
 
+void CpuTabPage::loadCycles()
+{
+	u32 cycles = cpu->getCycles();
+
+	wchar_t str[64];
+	swprintf(str,64,L"Ctr:  %u",cycles-lastCycles);
+	cyclesText->SetLabel(str);
+	lastCycles = cycles;
+}
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
@@ -456,6 +473,9 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 					currentCpu->getDisassembly()->SetFocus();
 				CBreakPoints::SetBreakpointTriggered(false);
 			}
+
+			if (currentCpu != NULL)
+				currentCpu->loadCycles();
 		} else {
 			breakRunButton->SetLabel(L"Break");
 
