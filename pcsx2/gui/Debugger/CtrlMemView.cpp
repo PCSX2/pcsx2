@@ -34,6 +34,10 @@ BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_CHAR(CtrlMemView::charEvent)
 	EVT_SET_FOCUS(CtrlMemView::focusEvent)
 	EVT_KILL_FOCUS(CtrlMemView::focusEvent)
+	EVT_SCROLLWIN_LINEUP(CtrlMemView::scrollbarEvent)
+	EVT_SCROLLWIN_LINEDOWN(CtrlMemView::scrollbarEvent)
+	EVT_SCROLLWIN_PAGEUP(CtrlMemView::scrollbarEvent)
+	EVT_SCROLLWIN_PAGEDOWN(CtrlMemView::scrollbarEvent)
 END_EVENT_TABLE()
 
 enum MemoryViewMenuIdentifiers
@@ -94,6 +98,7 @@ void CtrlMemView::postEvent(wxEventType type, wxString text)
 {
    wxCommandEvent event( type, GetId() );
    event.SetEventObject(this);
+   event.SetClientData(cpu);
    event.SetString(text);
    wxPostEvent(this,event);
 }
@@ -102,6 +107,7 @@ void CtrlMemView::postEvent(wxEventType type, int value)
 {
    wxCommandEvent event( type, GetId() );
    event.SetEventObject(this);
+   event.SetClientData(cpu);
    event.SetInt(value);
    wxPostEvent(this,event);
 }
@@ -235,6 +241,19 @@ void CtrlMemView::render(wxDC& dc)
 				dc.DrawText(temp,hexStart+j*3*charWidth,rowY);
 				dc.DrawText(text,asciiStart+j*(charWidth+2),rowY);
 			}
+		}
+	}
+
+	// TODO: make optional?
+	if (true)
+	{
+		dc.SetPen(wxColor(0xFFC0C0C0));
+		dc.SetBrush(wxColor(0xFFC0C0C0));
+		for (int i = 4; i < rowSize; i += 4)
+		{
+			int x = hexStart+i*3*charWidth-charWidth/2;
+			int y = (visibleRows+1)*rowHeight;
+			dc.DrawLine(x,0,x,y);
 		}
 	}
 }
@@ -434,6 +453,26 @@ void CtrlMemView::charEvent(wxKeyEvent& evt)
 
 	if (active)
 		cpu->resumeCpu();
+	redraw();
+}
+
+void CtrlMemView::scrollbarEvent(wxScrollWinEvent& evt)
+{
+	int type = evt.GetEventType();
+	if (type == wxEVT_SCROLLWIN_LINEUP)
+	{
+		scrollCursor(-rowSize);
+	} else if (type == wxEVT_SCROLLWIN_LINEDOWN)
+	{
+		scrollCursor(rowSize);
+	} else if (type == wxEVT_SCROLLWIN_PAGEUP)
+	{
+		scrollWindow(-GetClientSize().y/rowHeight);
+	} else if (type == wxEVT_SCROLLWIN_PAGEDOWN)
+	{
+		scrollWindow(GetClientSize().y/rowHeight);
+	}
+	
 	redraw();
 }
 

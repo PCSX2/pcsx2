@@ -41,7 +41,7 @@ enum DisassemblyMenuIdentifiers
 
 
 CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
-	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER), cpu(_cpu)
+	: wxWindow(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxWANTS_CHARS|wxBORDER_NONE), cpu(_cpu)
 {
 	rowHeight = g_Conf->EmuOptions.Debugger.FontHeight+2;
 	charWidth = g_Conf->EmuOptions.Debugger.FontWidth;
@@ -194,12 +194,15 @@ void CtrlRegisterList::render(wxDC& dc)
 			dc.SetBrush(wxBrush(wxColor(0xFFFFEFE8)));
 			dc.SetPen(wxPen(wxColor(0xFF000000)));
 		}
+
+		if (i == cpu->getRegisterCategoryCount()-1)
+			piece += size.x-piece*cpu->getRegisterCategoryCount()-1;
 		
-		dc.DrawRectangle(x-1,-1,piece+1,rowHeight+1);
+		dc.DrawRectangle(x,0,piece+1,rowHeight);
 
 		// center text
 		x += (piece-strlen(name)*charWidth)/2;
-		dc.DrawText(wxString(name,wxConvUTF8),x,1);
+		dc.DrawText(wxString(name,wxConvUTF8),x,2);
 	}
 
 	int nameStart = 17;
@@ -484,7 +487,7 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 		if (y < rowHeight)
 		{
 			int piece = GetSize().x/cpu->getRegisterCategoryCount();
-			int cat = x/piece;
+			int cat = std::min<int>(x/piece,cpu->getRegisterCategoryCount()-1);
 
 			if (cat != category)
 			{

@@ -35,9 +35,12 @@ public:
 	DECLARE_EVENT_TABLE()
 protected:
 	wxString OnGetItemText(long item, long col) const;
+	void onPopupClick(wxCommandEvent& evt);
 
 	void sizeEvent(wxSizeEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);
+	void mouseEvent(wxMouseEvent& evt);
+	void listEvent(wxListEvent& evt);
 private:
 	int getBreakpointIndex(int itemIndex, bool& isMemory) const;
 	int getTotalBreakpointCount();
@@ -46,9 +49,11 @@ private:
 	void gotoBreakpointAddress(int itemIndex);
 	void removeBreakpoint(int itemIndex);
 	void postEvent(wxEventType type, int value);
+	void showMenu(const wxPoint& pos);
 
 	std::vector<BreakPoint> displayedBreakPoints_;
 	std::vector<MemCheck> displayedMemChecks_;
 	DebugInterface* cpu;
 	CtrlDisassemblyView* disasm;
+	wxPoint clickPos;
 };
