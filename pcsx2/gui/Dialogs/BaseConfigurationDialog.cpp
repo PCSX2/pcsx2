@@ -28,6 +28,7 @@
 #include <wx/artprov.h>
 #include <wx/filepicker.h>
 #include <wx/listbook.h>
+#include <wx/spinctrl.h>
 
 DEFINE_EVENT_TYPE( pxEvt_ApplySettings )
 DEFINE_EVENT_TYPE( pxEvt_SetSettingsPage )
@@ -306,7 +307,7 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 	filenameDefault.Replace( L"/", L"-" );
 
 	wxString filename( wxFileSelector( _("Save dialog screenshots to..."), g_Conf->Folders.Snapshots.ToString(),
-		filenameDefault, L"png", NULL, wxFD_SAVE | wxFD_OVERWRITE_PROMPT, this ) );
+		filenameDefault, L"png", wxEmptyString, wxFD_SAVE | wxFD_OVERWRITE_PROMPT, this ) );
 
 	if( !filename.IsEmpty() )
 	{

@@ -70,15 +70,15 @@ void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 			// fallthrough!
 
 		case wxLOG_Message:
-			Console.WriteLn( L"[wx] %s", szString );
+			Console.WriteLn( L"[wx] %ls", szString );
 		break;
 
 		case wxLOG_Error:
-			Console.Error( L"[wx] %s", szString );
+			Console.Error( L"[wx] %ls", szString );
 		break;
 
 		case wxLOG_Warning:
-			Console.Warning( L"[wx] %s", szString );
+			Console.Warning( L"[wx] %ls", szString );
 		break;
 	}
 }
@@ -584,7 +584,7 @@ bool ConsoleLogFrame::Write( ConsoleColors color, const wxString& text )
 
 	int endpos = m_CurQueuePos + text.Length();
 	m_QueueBuffer.MakeRoomFor( endpos + 1 );		// and the null!!
-	memcpy_fast( &m_QueueBuffer[m_CurQueuePos], text.c_str(), sizeof(wxChar) * text.Length() );
+	memcpy_fast( &m_QueueBuffer[m_CurQueuePos], text.wc_str(), sizeof(wxChar) * text.Length() );
 	m_CurQueuePos = endpos;
 
 	// this NULL may be overwritten if the next message sent doesn't perform a color change.

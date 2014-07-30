@@ -1,0 +1,34 @@
+DLGINCLUDE  1   \dev\wx2\wxwindows\include\wx\os2\wxrsc.h
+
+DLGTEMPLATE ID_RESIZEABLEDIALOG   PRELOAD MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "" ID_RESIZEABLEDIALOG   34, 22, 144, 75
+            WS_SAVEBITS | FS_SIZEBORDER | FS_NOMOVEWITHOWNER,
+            FCF_SIZEBORDER | FCF_TITLEBAR | FCF_SYSMENU
+    BEGIN
+    END
+END
+
+DLGTEMPLATE ID_CAPTIONDIALOG   PRELOAD MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Dummy Dialog"  ID_CAPTIONDIALOG   34, 22, 144, 75
+            WS_SAVEBITS | FS_DLGBORDER | FS_NOMOVEWITHOWNER,
+            FCF_DLGBORDER | FCF_TITLEBAR | FCF_SYSMENU
+    BEGIN
+    END
+END
+
+/*
+//////////////////////////////////////////////////////////////////////////////
+// Dummy dialog for dialog boxes without caption & with thin frame
+//////////////////////////////////////////////////////////////////////////////
+*/
+DLGTEMPLATE ID_NOCAPTIONDIALOG   PRELOAD MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  ""  ID_NOCAPTIONDIALOG   34, 22, 144, 75
+            WS_SAVEBITS | FS_NOMOVEWITHOWNER,
+            FCF_BORDER
+    BEGIN
+    END
+END
+

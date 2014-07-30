@@ -237,7 +237,7 @@ bool GLWindow::CreateContextGL(int major, int minor)
 	// Only keep for older card but NVIDIA and AMD both drop the support of those cards
 	if (major <= 2) {
 		XVisualInfo *vi = glXChooseVisual(NativeDisplay, DefaultScreen(NativeDisplay), attrListDbl_2_0);
-		if (vi == NULL) return NULL;
+		if (vi == NULL) return false;
 
 		glxContext = glXCreateContext(NativeDisplay, vi, NULL, GL_TRUE);
         XFree(vi);

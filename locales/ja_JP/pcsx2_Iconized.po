@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:47+0200\n"
+"POT-Creation-Date: 2014-07-29 21:24+0200\n"
 "PO-Revision-Date: 2014-06-15 12:29+0900\n"
 "Last-Translator: nrusef <nrusef@gmail.com>\n"
 "Language-Team: DeltaHF\n"
@@ -22,7 +22,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:254
+#: common/src/Utilities/Exceptions.cpp:264
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -91,7 +91,7 @@ msgstr ""
 "エラーを解決した後に、上記リストのリコンパイラーを手動で有効化しなおす必要が"
 "あるかもしれません。"
 
-#: pcsx2/gui/AppMain.cpp:585
+#: pcsx2/gui/AppMain.cpp:588
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -101,7 +101,7 @@ msgstr ""
 "す）PS2の実機から \n"
 "「合法的に」手に入れてください。詳しい方法はFAQやガイドを参照してください。"
 
-#: pcsx2/gui/AppMain.cpp:665
+#: pcsx2/gui/AppMain.cpp:668
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -311,7 +311,7 @@ msgstr ""
 "PS2スロット[%d]は自動的に無効にされました。この問題を解決するには\n"
 "メインメニューから [設定→メモリーカード] で再度有効化してください。"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -416,7 +416,7 @@ msgstr ""
 "す。\n"
 "ウィンドウが大きいと作業の邪魔になりやすいので、このオプションは便利です。"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -429,7 +429,7 @@ msgstr ""
 " * ガンサバイバー４ バイオハザードヒーローズネバーダイ（グラフィックがおかし"
 "くなります）"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -441,7 +441,7 @@ msgstr ""
 " * グローランサーII、III\n"
 " * ウィザードリィ"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
@@ -450,7 +450,7 @@ msgstr ""
 " * マナケミア～学園の錬金術士たち～\n"
 " * メタルサーガ\n"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
@@ -460,14 +460,20 @@ msgstr ""
 " * テストドライブ アンリミテッド\n"
 " * Transformers"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+#, fuzzy
+#| msgid ""
+#| "Gamefixes can work around wrong emulation in some titles. \n"
+#| "They may also cause compatibility or performance issues. \n"
+#| "\n"
+#| "It's better to enable 'Automatic game fixes' at the main menu instead, "
+#| "and leave this page empty. \n"
+#| "('Automatic' means: selectively use specific tested fixes for specific "
+#| "games)"
 msgid ""
-"Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues. \n"
-"\n"
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. \n"
-"('Automatic' means: selectively use specific tested fixes for specific games)"
+"leave this page empty. ('Automatic' means: selectively use specific tested "
+"fixes for specific games)"
 msgstr ""
 "ゲームフィックスはいくつかのゲームタイトルでの不正なエミュレーションを修正し"
 "ますが、\n"
@@ -478,7 +484,32 @@ msgstr ""
 "（[自動ゲームフィックス]は特定のゲームに対しテスト済みの項目だけを適用させま"
 "す）"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+#, fuzzy
+#| msgid ""
+#| "Gamefixes can work around wrong emulation in some titles. \n"
+#| "They may also cause compatibility or performance issues. \n"
+#| "\n"
+#| "It's better to enable 'Automatic game fixes' at the main menu instead, "
+#| "and leave this page empty. \n"
+#| "('Automatic' means: selectively use specific tested fixes for specific "
+#| "games)"
+msgid ""
+"Gamefixes can work around wrong emulation in some titles. \n"
+"They may also cause compatibility or performance issues.\n"
+"\n"
+"The safest way to make sure that all game fixes are completely disabled."
+msgstr ""
+"ゲームフィックスはいくつかのゲームタイトルでの不正なエミュレーションを修正し"
+"ますが、\n"
+"互換性やパフォーマンスに悪影響を及ぼすことがあります。\n"
+"\n"
+"以下の項目は空欄のままにし、[自動ゲームフィックス]を有効にする事を推奨しま"
+"す。\n"
+"（[自動ゲームフィックス]は特定のゲームに対しテスト済みの項目だけを適用させま"
+"す）"
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -487,14 +518,14 @@ msgstr ""
 "フォーマットされたメモリーカード[%s]を削除しようとしています。\n"
 "メモリーカードのデータは全て失われます。本当に削除してもよろしいですか？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "コピーに失敗しました。コピーは空のPS2ポートやファイルシステムに対してのみ許可"
 "されています。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "コピーに失敗しました。コピー先のメモリーカード[%s]は使用中です。"
@@ -569,7 +600,7 @@ msgstr ""
 "\n"
 "本当に設定を適用してもよろしいですか？"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -755,7 +786,7 @@ msgstr ""
 "警告：　このオプションはゲーム実行中に有効化できますが、無効化する事はできま"
 "せん（映像出力内容の判別ができなくなります）。"
 
-#: pcsx2/vtlb.cpp:731
+#: pcsx2/vtlb.cpp:800
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "

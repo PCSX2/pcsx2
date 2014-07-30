@@ -32,7 +32,7 @@ public:
 
 	HashTools::hash_key_t operator()( const wxString& src ) const
 	{
-		return HashTools::Hash( (const char *)src.Lower().data(), src.length() * sizeof( wxChar ) );
+		return HashTools::Hash( (const char *)src.Lower().wc_str(), src.length() * sizeof( wxChar ) );
 	}
 };
 
@@ -119,11 +119,11 @@ struct Game_Data
 	}
 
 	bool sectionExists(const wxChar* key, const wxString& value) const {
-		return keyExists(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", value.c_str()));
+		return keyExists(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", WX_STR(value)));
 	}
 
 	wxString getSection(const wxChar* key, const wxString& value) const {
-		return getString(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", value.c_str()));
+		return getString(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", WX_STR(value)).wx_str());
 	}
 
 	// Gets an integer representation of the 'value' for the given key
@@ -142,23 +142,31 @@ struct Game_Data
 	}
 
 	bool keyExists(const char* key) const {
-		return keyExists(fromUTF8(key));
+		return keyExists(fromUTF8(key).wx_str());
+	}
+
+	bool keyExists(const wxString& key) const {
+		return keyExists(key.wx_str());
 	}
 
 	wxString getString(const char* key) const {
-		return getString(fromUTF8(key));
+		return getString(fromUTF8(key).wx_str());
 	}
 
 	int getInt(const char* key) const {
-		return getInt(fromUTF8(key));
+		return getInt(fromUTF8(key).wx_str());
 	}
 
 	u8 getU8(const char* key) const {
-		return getU8(fromUTF8(key));
+		return getU8(fromUTF8(key).wx_str());
 	}
 
 	bool getBool(const char* key) const {
-		return getBool(fromUTF8(key));
+		return getBool(fromUTF8(key).wx_str());
+	}
+
+	bool getBool(const wxString& key) const {
+		return getBool(key.wx_str());
 	}
 };
 

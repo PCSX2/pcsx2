@@ -231,7 +231,7 @@ public:
 		}
 
 		// Returns the amount of free buffer space, in samples.
-		uint l = snd_pcm_avail_update(handle);
+		int l = snd_pcm_avail_update(handle);
 		if( l < 0 ) return 0;
 		return (l / 1000) * (SampleRate / 1000);
 	}
