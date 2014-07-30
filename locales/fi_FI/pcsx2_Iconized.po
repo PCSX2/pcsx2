@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-07-29 21:24+0200\n"
+"POT-Creation-Date: 2014-04-06 11:47+0200\n"
 "PO-Revision-Date: 2012-05-20 13:26+0200\n"
 "Last-Translator: kmartimo <kimmo.martimo@gmail.com>\n"
 "Language-Team: kmartimo <kimmo.martimo@gmail.com>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:264
+#: common/src/Utilities/Exceptions.cpp:254
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -93,7 +93,7 @@ msgstr ""
 "manuaalisesti ottamaan käyttöön yllä listatut uudelleenkääntäjät, jos saat "
 "virheet ratkaistua."
 
-#: pcsx2/gui/AppMain.cpp:588
+#: pcsx2/gui/AppMain.cpp:585
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -103,7 +103,7 @@ msgstr ""
 "*täytyy* hankkia BIOS-tiedosto omistamastasi PS2-järjestelmästä (lainaamista "
 "ei lasketa). Lisätietoja löydät UKK:sta (FAQ) ja oppaista."
 
-#: pcsx2/gui/AppMain.cpp:668
+#: pcsx2/gui/AppMain.cpp:665
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -324,7 +324,7 @@ msgstr ""
 "ja ottaa se uudestaan käyttöön milloin tahansa valikosta Asetukset: "
 "Muistikortit."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -432,7 +432,7 @@ msgstr ""
 "Sulkee täydellisesti usein suuren ja tilaavievän GS-ikkunan painessa ESCiä "
 "tai keskeyttäessä emulaation."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -444,7 +444,7 @@ msgstr ""
 "* SSX (Korjaa grafiikkavirheet ja kaatumiset)\n"
 "* Resident Evil: Dead Aim (Aiheuttaa vääristyneitä tekstuureita)"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -456,7 +456,7 @@ msgstr ""
 "* Growlanser II ja III\n"
 "* Wizardry"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
@@ -464,7 +464,7 @@ msgstr ""
 "Tiedetään vaikuttavan seuraaviin peleihin:\n"
 "* Mana Khemia 1 (Mennessä 'pois kampukselta')\n"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
@@ -474,45 +474,14 @@ msgstr ""
 "* Test Drive Unlimited\n"
 "* Transformers"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
-#, fuzzy
-#| msgid ""
-#| "Gamefixes can work around wrong emulation in some titles. \n"
-#| "They may also cause compatibility or performance issues. \n"
-#| "\n"
-#| "It's better to enable 'Automatic game fixes' at the main menu instead, "
-#| "and leave this page empty. \n"
-#| "('Automatic' means: selectively use specific tested fixes for specific "
-#| "games)"
-msgid ""
-"It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
-msgstr ""
-"Pelikorjaukset voivat kiertää virheellisen emulaation vaikutuksia joissakin "
-"peleissä.\n"
-"Ne voivat myös aiheuttaa yhteensopivuus- ja suorituskykyongelmia.\n"
-"\n"
-"On parempi ottaa käyttöön 'Automaattiset pelikorjaukset' päävalikossa tämän "
-"sijaan, ja jättää tämä sivu tyhjäksi.\n"
-"('Automaattinen' tarkoittaa: valikoivasti käytä tiettyjä testattuja "
-"korjauksia tietyille peleille)"
-
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
-#| msgid ""
-#| "Gamefixes can work around wrong emulation in some titles. \n"
-#| "They may also cause compatibility or performance issues. \n"
-#| "\n"
-#| "It's better to enable 'Automatic game fixes' at the main menu instead, "
-#| "and leave this page empty. \n"
-#| "('Automatic' means: selectively use specific tested fixes for specific "
-#| "games)"
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues.\n"
+"They may also cause compatibility or performance issues. \n"
 "\n"
-"The safest way to make sure that all game fixes are completely disabled."
+"It's better to enable 'Automatic game fixes' at the main menu instead, and "
+"leave this page empty. \n"
+"('Automatic' means: selectively use specific tested fixes for specific games)"
 msgstr ""
 "Pelikorjaukset voivat kiertää virheellisen emulaation vaikutuksia joissakin "
 "peleissä.\n"
@@ -523,7 +492,7 @@ msgstr ""
 "('Automaattinen' tarkoittaa: valikoivasti käytä tiettyjä testattuja "
 "korjauksia tietyille peleille)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -532,14 +501,14 @@ msgstr ""
 "Olet poistamassa alustettua muistikorttia '%s'. Kaikki tämän kortin "
 "sisältämät tiedot menetetään!  Oletko aivan varma?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Epäonnistui: Kopiointi sallitaan vain tyhjään PS2-muistikorttipaikkaan tai "
 "tiedostojärjestelmään."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Epäonnistui: Kohdemuistikortti '%s' on käytössä."
@@ -612,7 +581,7 @@ msgstr ""
 "\n"
 "Oletko varma, että haluat ottaa asetukset käyttöön nyt?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -810,7 +779,7 @@ msgstr ""
 "Varoitus: Tämän valinnan voi ottaa käyttöön lennosta, mutta yleensä ei voi "
 "poistaa käytöstä lennosta (pelikuvan tilalla on yleensä roskaa)."
 
-#: pcsx2/vtlb.cpp:800
+#: pcsx2/vtlb.cpp:731
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "

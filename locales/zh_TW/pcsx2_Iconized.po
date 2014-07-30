@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.1.0 Rev 5863\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-07-29 21:24+0200\n"
+"POT-Creation-Date: 2014-04-06 11:47+0200\n"
 "PO-Revision-Date: 2014-03-04 08:55+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:264
+#: common/src/Utilities/Exceptions.cpp:254
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -78,7 +78,7 @@ msgstr ""
 "注意：反編譯裝置並非執行 PCSX2 所必須的，但反編譯裝置大幅提升遊戲速度。\n"
 "若錯誤已經解決，您可能必須手動重新啟用上面列出的反編譯裝置。"
 
-#: pcsx2/gui/AppMain.cpp:588
+#: pcsx2/gui/AppMain.cpp:585
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -87,7 +87,7 @@ msgstr ""
 "PCSX2 需要 PS2 BIOS 才能運行遊戲。出於法律上的原因，您「必須」從您自己的 PS2 "
 "真實遊戲主機獲取 BIOS（借的 PS2 不算）。進一步的說明請洽 FAQ 和指南。"
 
-#: pcsx2/gui/AppMain.cpp:668
+#: pcsx2/gui/AppMain.cpp:665
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -282,7 +282,7 @@ msgstr ""
 "您可以在任何時候，透過「PCSX2 主選單 => 設定 => 記憶卡」糾正這一問題並重新啟"
 "用記憶卡。"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -383,7 +383,7 @@ msgstr ""
 "當按 ESC 或透過選單「檔案 -> 暫停遊戲」暫停模擬器的模擬時，\n"
 "暫時徹底關閉又大又笨重的遊戲視窗。"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -395,7 +395,7 @@ msgstr ""
 " * SSX（修正糟糕的圖形和遊戲當掉）\n"
 " * 惡靈古堡：英雄不死（Resident Evil: Dead Aim）（導致混亂的紋理）"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -407,7 +407,7 @@ msgstr ""
 " * 夢幻騎士（Growlancer）II 和 III\n"
 " * 巫術（Wizardry）"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
@@ -415,7 +415,7 @@ msgstr ""
 "已知影響下列遊戲：\n"
 " * Mana Khemia 1 離開校園（Off Campus）\n"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
@@ -425,45 +425,14 @@ msgstr ""
 " * 車魂：無限賽\n"
 " * 變形金剛"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
-#, fuzzy
-#| msgid ""
-#| "Gamefixes can work around wrong emulation in some titles. \n"
-#| "They may also cause compatibility or performance issues. \n"
-#| "\n"
-#| "It's better to enable 'Automatic game fixes' at the main menu instead, "
-#| "and leave this page empty. \n"
-#| "('Automatic' means: selectively use specific tested fixes for specific "
-#| "games)"
-msgid ""
-"It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. ('Automatic' means: selectively use specific tested "
-"fixes for specific games)"
-msgstr ""
-"因為預設勾選『 主選單 -> 檔案 -> 自動使用遊戲修正 』，在運行相應的遊戲時會自"
-"動套用相應的遊戲修正，\n"
-"所以不推薦手動設定遊戲修正。\n"
-"\n"
-"遊戲修正能夠修復在一些遊戲裡不正確的模擬。但會引起其他遊戲出現相容性或效能問"
-"題。\n"
-"如果是手動設定遊戲修正，變更所玩的遊戲後，您需要手動關閉已啟用的遊戲修正、或"
-"乾脆關閉手動設定遊戲修正。"
-
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
-#| msgid ""
-#| "Gamefixes can work around wrong emulation in some titles. \n"
-#| "They may also cause compatibility or performance issues. \n"
-#| "\n"
-#| "It's better to enable 'Automatic game fixes' at the main menu instead, "
-#| "and leave this page empty. \n"
-#| "('Automatic' means: selectively use specific tested fixes for specific "
-#| "games)"
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues.\n"
+"They may also cause compatibility or performance issues. \n"
 "\n"
-"The safest way to make sure that all game fixes are completely disabled."
+"It's better to enable 'Automatic game fixes' at the main menu instead, and "
+"leave this page empty. \n"
+"('Automatic' means: selectively use specific tested fixes for specific games)"
 msgstr ""
 "因為預設勾選『 主選單 -> 檔案 -> 自動使用遊戲修正 』，在運行相應的遊戲時會自"
 "動套用相應的遊戲修正，\n"
@@ -474,7 +443,7 @@ msgstr ""
 "如果是手動設定遊戲修正，變更所玩的遊戲後，您需要手動關閉已啟用的遊戲修正、或"
 "乾脆關閉手動設定遊戲修正。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -483,12 +452,12 @@ msgstr ""
 "您即將刪除已格式化的記憶卡 %s。\n"
 "該記憶卡的全部資料將會丟失！您真的確定嗎？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr "失敗：僅允許建立副本至空的記憶卡插口或檔案系統。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "失敗：目標記憶卡 %s 使用中。"
@@ -556,7 +525,7 @@ msgstr ""
 "\n"
 "您確定您想要現在套用變更嗎？"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -746,7 +715,7 @@ msgstr ""
 "警告：這個選項在遊戲運行時啟用即可生效，但無法在遊戲運行時停用（圖像變得垃"
 "圾）。"
 
-#: pcsx2/vtlb.cpp:800
+#: pcsx2/vtlb.cpp:731
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
