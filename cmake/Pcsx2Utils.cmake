@@ -75,6 +75,7 @@ function(check_no_parenthesis_in_path)
     endif()
 endfunction()
 
+#NOTE: this macro is used to get rid of whitespace and newlines.
 macro(append_flags target flags)
     if(flags STREQUAL "")
         set(flags " ") # set to space to avoid error
@@ -95,7 +96,6 @@ macro(append_flags target flags)
     set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${TEMP2}")
 endmacro(append_flags)
 
-#add_pcsx2_plugin(common "${SRCS}" "${LIBS}" "${FLAGS}")
 macro(add_pcsx2_plugin lib srcs libs flags)
     include_directories(.)
     add_library(${lib} MODULE ${srcs})
@@ -110,7 +110,7 @@ macro(add_pcsx2_plugin lib srcs libs flags)
         install(TARGETS ${lib} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
     endif(PACKAGE_MODE)
 endmacro(add_pcsx2_plugin)
-#add_pcsx2_lib(common "${SRCS}" "${LIBS}" "${FLAGS}")
+
 macro(add_pcsx2_lib lib srcs libs flags)
     include_directories(.)
     add_library(${lib} STATIC ${srcs})
@@ -120,7 +120,7 @@ macro(add_pcsx2_lib lib srcs libs flags)
         target_link_libraries(${lib} "${USER_CMAKE_LD_FLAGS}")
     endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
 endmacro(add_pcsx2_lib)
-#add_pcsx2_executable(common "${SRCS}" "${LIBS}" "${FLAGS}")
+
 macro(add_pcsx2_executable exe srcs libs flags)
     add_definitions(${flags})
     include_directories(.)
