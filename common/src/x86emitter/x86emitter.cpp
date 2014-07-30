@@ -226,7 +226,14 @@ static __fi void SibSB( u32 ss, u32 index, u32 base )
 void EmitSibMagic( uint regfield, const void* address )
 {
 	ModRM( 0, regfield, ModRm_UseDisp32 );
-	xWrite<s32>( (s32)address );
+
+	// SIB encoding only supports 32bit offsets, even on x86_64
+	// We must make sure that the displacement is within the 32bit range
+	// Else we will fail out in a spectacular fashion
+	sptr displacement = (sptr)address;
+	pxAssertDev(displacement >= -0x80000000LL && displacement < 0x80000000LL, "SIB target is too far away, needs an indirect register");
+
+	xWrite<s32>( (s32)displacement );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -461,7 +468,7 @@ xAddressVoid xAddressReg::operator-( s32 right ) const
 xAddressVoid xAddressReg::operator-( const void* right ) const
 {
 	pxAssertMsg( Id != -1, "Uninitialized x86 register." );
-	return xAddressVoid( *this, -(s32)right );
+	return xAddressVoid( *this, -(sptr)right );
 }
 
 xAddressVoid xAddressReg::operator*( u32 factor ) const
@@ -483,10 +490,10 @@ xAddressVoid xAddressReg::operator<<( u32 shift ) const
 
 xAddressVoid::xAddressVoid( const xAddressReg& base, const xAddressReg& index, int factor, s32 displacement )
 {
-	Base		= base;
-	Index		= index;
-	Factor		= factor;
-	Displacement= displacement;
+	Base         = base;
+	Index        = index;
+	Factor       = factor;
+	Displacement = displacement;
 
 	pxAssertMsg( base.Id != xRegId_Invalid, "Uninitialized x86 register." );
 	pxAssertMsg( index.Id != xRegId_Invalid, "Uninitialized x86 register." );
@@ -494,28 +501,28 @@ xAddressVoid::xAddressVoid( const xAddressReg& base, const xAddressReg& index, i
 
 xAddressVoid::xAddressVoid( const xAddressReg& index, int displacement )
 {
-	Base		= xEmptyReg;
-	Index		= index;
-	Factor		= 0;
-	Displacement= displacement;
+	Base         = xEmptyReg;
+	Index        = index;
+	Factor       = 0;
+	Displacement = displacement;
 
 	pxAssertMsg( index.Id != xRegId_Invalid, "Uninitialized x86 register." );
 }
 
 xAddressVoid::xAddressVoid( s32 displacement )
 {
-	Base		= xEmptyReg;
-	Index		= xEmptyReg;
-	Factor		= 0;
-	Displacement= displacement;
+	Base         = xEmptyReg;
+	Index        = xEmptyReg;
+	Factor       = 0;
+	Displacement = displacement;
 }
 
 xAddressVoid::xAddressVoid( const void* displacement )
 {
-	Base		= xEmptyReg;
-	Index		= xEmptyReg;
-	Factor		= 0;
-	Displacement= (s32)displacement;
+	Base         = xEmptyReg;
+	Index        = xEmptyReg;
+	Factor       = 0;
+	Displacement = (sptr)displacement;
 }
 
 xAddressVoid& xAddressVoid::Add( const xAddressReg& src )
