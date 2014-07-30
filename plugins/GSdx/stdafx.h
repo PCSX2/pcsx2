@@ -374,7 +374,7 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 	__forceinline unsigned char _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 	{
-		__asm__("bsfl %[Mask], %[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask));
+		__asm__("bsfl %k[Mask], %k[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask));
 		
 		return Mask ? 1 : 0;
 	}
