@@ -133,7 +133,7 @@ void CpuTabPage::listBoxHandler(wxCommandEvent& event)
 	int index = functionList->GetSelection();
 	if (event.GetEventObject() == functionList && index >= 0)
 	{
-		u32 pos = (u32) functionList->GetClientData(index);
+		uptr pos = (uptr) functionList->GetClientData(index);
 		postEvent(debEVT_GOTOINDISASM,pos);
 	}
 }

@@ -364,7 +364,7 @@ Panels::PluginSelectorPanel::ComboBoxPanel::ComboBoxPanel( PluginSelectorPanel* 
 		m_combobox[pid] = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY );
 
 		m_configbutton[pid] = new wxButton( this, ButtonId_Configure, _("Configure...") );
-		m_configbutton[pid]->SetClientData( (void*)(int)pid );
+		m_configbutton[pid]->SetClientData( (void*)pid );
 
 		s_plugin	+= Label( pi->GetShortname() )	| pxBorder( wxTOP | wxLEFT, 2 );
 		s_plugin	+= m_combobox[pid]				| pxExpand;
@@ -405,7 +405,7 @@ void Panels::PluginSelectorPanel::DispatchEvent( const PluginEventType& evt )
 
 		m_ComponentBoxes->GetConfigButton(pi->id).Enable(
 			(m_FileList==NULL || m_FileList->Count() == 0) ? false :
-			g_Conf->FullpathMatchTest( pi->id,(*m_FileList)[((int)box.GetClientData(sel))] )
+			g_Conf->FullpathMatchTest( pi->id,(*m_FileList)[((uptr)box.GetClientData(sel))] )
 		);
 	} while( ++pi, pi->shortname != NULL );
 
@@ -474,7 +474,7 @@ void Panels::PluginSelectorPanel::Apply()
 				.SetUserMsg(pxsFmt( _("Please select a valid plugin for the %s."), WX_STR(plugname) ) + L"\n\n" + GetApplyFailedMsg() );
 		}
 
-		g_Conf->BaseFilenames.Plugins[pid] = GetFilename((int)m_ComponentBoxes->Get(pid).GetClientData(sel));
+		g_Conf->BaseFilenames.Plugins[pid] = GetFilename((uptr)m_ComponentBoxes->Get(pid).GetClientData(sel));
 	} while( ++pi, pi->shortname != NULL );
 
 	// ----------------------------------------------------------------------------
@@ -602,7 +602,7 @@ void Panels::PluginSelectorPanel::OnPluginSelected( wxCommandEvent& evt )
 			//   (a) plugins aren't even loaded yet.
 			//   (b) current selection matches exactly the currently configured/loaded plugin.
 
-			bool isSame = (!CorePlugins.AreLoaded()) || g_Conf->FullpathMatchTest( pi->id, (*m_FileList)[(int)box.GetClientData(box.GetSelection())] );
+			bool isSame = (!CorePlugins.AreLoaded()) || g_Conf->FullpathMatchTest( pi->id, (*m_FileList)[(uptr)box.GetClientData(box.GetSelection())] );
 			m_ComponentBoxes->GetConfigButton( pi->id ).Enable( isSame );
 			
 			if( !isSame ) evt.Skip();		// enabled Apply button! :D
@@ -615,7 +615,7 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 {
 	if( IsBeingDeleted() ) return;
 
-	PluginsEnum_t pid = (PluginsEnum_t)(int)((wxEvtHandler*)evt.GetEventObject())->GetClientData();
+	PluginsEnum_t pid = (PluginsEnum_t)(uptr)((wxEvtHandler*)evt.GetEventObject())->GetClientData();
 
 	int sel = m_ComponentBoxes->Get(pid).GetSelection();
 	if( sel == wxNOT_FOUND ) return;
@@ -624,7 +624,7 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 	// Otherwise who knows what sort of funny business could happen configuring a plugin while
 	// another instance/version is running. >_<
 
-	const wxString filename( (*m_FileList)[(int)m_ComponentBoxes->Get(pid).GetClientData(sel)] );
+	const wxString filename( (*m_FileList)[(uptr)m_ComponentBoxes->Get(pid).GetClientData(sel)] );
 
 	if( CorePlugins.AreLoaded() && !g_Conf->FullpathMatchTest( pid, filename ) )
 	{
