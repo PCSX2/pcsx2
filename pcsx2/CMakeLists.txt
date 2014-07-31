@@ -264,6 +264,8 @@ set(pcsx2DebugToolsSources
 	DebugTools/DisassemblyManager.cpp
 	DebugTools/ExpressionParser.cpp
 	DebugTools/MIPSAnalyst.cpp
+	DebugTools/MipsAssembler.cpp
+	DebugTools/MipsAssemblerTables.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
 	DebugTools/DisR3000A.cpp
@@ -278,6 +280,8 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisassemblyManager.h
 	DebugTools/ExpressionParser.h
 	DebugTools/MIPSAnalyst.h
+	DebugTools/MipsAssembler.h
+	DebugTools/MipsAssemblerTables.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h
