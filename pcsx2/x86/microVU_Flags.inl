@@ -368,7 +368,7 @@ void mVUsetFlagInfo(mV) {
 			mVUregs.flagInfo |= 1;
 		}
 	}
-	elif(mVUbranch <= 8) { // Conditional Branch
+	else if (mVUbranch <= 8) { // Conditional Branch
 		incPC(-1); // Branch Taken
 		mVUflagPass (mVU, branchAddr);
 		checkFFblock(mVU, branchAddr, ffOpt);

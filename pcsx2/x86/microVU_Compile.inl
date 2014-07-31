@@ -55,7 +55,10 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 			}
 		}
 	}
-	elif (mVUrange.end != -1) return; // Above case was true
+	else if (mVUrange.end != -1) {
+		// Above case was true
+		return;
+	}
 
 	mVUcheckIsSame(mVU);
 
@@ -75,7 +78,7 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 				it[0].end   = max(it[0].end, rEnd);
 				mergedRange = 1;
 			}
-			elif((it[0].end >= rStart) && (it[0].end <= rEnd)) {
+			else if ((it[0].end >= rStart) && (it[0].end <= rEnd)) {
 				it[0].start = min(it[0].start, rStart);
 				mergedRange = 1;
 			}
@@ -148,9 +151,22 @@ void doSwapOp(mV) {
 }
 
 void mVUexecuteInstruction(mV) {
-	if   (mVUlow.isNOP)	   { incPC(1); doUpperOp(mVU); flushRegs(mVU); doIbit(mVU);    }
-	elif(!mVUinfo.swapOps) { incPC(1); doUpperOp(mVU); flushRegs(mVU); doLowerOp(mVU); }
-	else doSwapOp(mVU);
+	if (mVUlow.isNOP) {
+		incPC(1);
+		doUpperOp(mVU);
+		flushRegs(mVU);
+		doIbit(mVU);
+	}
+	else if (!mVUinfo.swapOps) {
+		incPC(1);
+		doUpperOp(mVU);
+		flushRegs(mVU);
+		doLowerOp(mVU);
+	}
+	else {
+		doSwapOp(mVU);
+	}
+
 	flushRegs(mVU);
 }
 
@@ -543,10 +559,31 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 		mVUinfo.readP  =  mVU.p;
 		mVUinfo.writeP = !mVU.p;
 		mVUcount++;
-		if   (branch >= 2)  { mVUinfo.isEOB = 1; if (branch == 3) { mVUinfo.isBdelay = 1; } branchWarning(mVU); break; }
-		elif (branch == 1)  { branch = 2; }
-		if   (mVUbranch)    { mVUsetFlagInfo(mVU); eBitWarning(mVU); branch = 3; mVUbranch = 0; }
-		if   (mVUinfo.isEOB) break;
+
+		if (branch >= 2) {
+			mVUinfo.isEOB = true;
+
+			if (branch == 3) {
+				mVUinfo.isBdelay = true;
+			}
+
+			branchWarning(mVU);
+			break;
+		}
+		else if (branch == 1) {
+			branch = 2;
+		}
+
+		if (mVUbranch) {
+			mVUsetFlagInfo(mVU);
+			eBitWarning(mVU);
+			branch = 3;
+			mVUbranch = 0;
+		}
+
+		if (mVUinfo.isEOB)
+			break;
+
 		incPC(1);
 	}
 

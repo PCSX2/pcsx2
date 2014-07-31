@@ -587,11 +587,31 @@ struct Gif_Unit {
 				//DevCon.WriteLn("Adding GS Packet for path %d", stat.APATH);
 				AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH-1));
 			}
-			if   (!gsSIGNAL.queued && !gifPath[0].isDone()) { stat.APATH = 1; stat.P1Q = 0; curPath = 0; }
-			elif (!gsSIGNAL.queued && !gifPath[1].isDone()) { stat.APATH = 2; stat.P2Q = 0; curPath = 1; }
-			elif (!gsSIGNAL.queued && !gifPath[2].isDone() && !Path3Masked())
-				 { stat.APATH = 3; stat.P3Q = 0; stat.IP3 = 0; curPath = 2; }
-			else { if(isResume || curPath == 0) { stat.APATH = 0; stat.OPH = 0; } break; }
+
+			if (!gsSIGNAL.queued && !gifPath[0].isDone()) {
+				stat.APATH = 1;
+				stat.P1Q = 0;
+				curPath = 0;
+			}
+			else if (!gsSIGNAL.queued && !gifPath[1].isDone()) {
+				stat.APATH = 2;
+				stat.P2Q = 0;
+				curPath = 1;
+			}
+			else if (!gsSIGNAL.queued && !gifPath[2].isDone() && !Path3Masked()) {
+				stat.APATH = 3;
+				stat.P3Q = 0;
+				stat.IP3 = 0;
+				curPath = 2;
+			}
+			else {
+				if(isResume || curPath == 0) {
+					stat.APATH = 0;
+					stat.OPH = 0;
+				}
+
+				break;
+			}
 		}
 
 		//Some loaders/Refresh Rate selectors and things dont issue "End of Packet" commands

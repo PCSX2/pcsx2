@@ -47,10 +47,26 @@ __ri void analyzeReg2(mV, int xReg, microVFreg& vfWrite, bool isLowOp) {
 // Read a VF reg (BC opcodes)
 __ri void analyzeReg3(mV, int xReg, microVFreg& vfRead) {
 	if (xReg) {
-		if   (_bc_x) { mVUstall = max(mVUstall, mVUregs.VF[xReg].x); vfRead.reg = xReg; vfRead.x = 1; }
-		elif (_bc_y) { mVUstall = max(mVUstall, mVUregs.VF[xReg].y); vfRead.reg = xReg; vfRead.y = 1; }
-		elif (_bc_z) { mVUstall = max(mVUstall, mVUregs.VF[xReg].z); vfRead.reg = xReg; vfRead.z = 1; }
-		else		 { mVUstall = max(mVUstall, mVUregs.VF[xReg].w); vfRead.reg = xReg; vfRead.w = 1; }
+		if (_bc_x) {
+			mVUstall = max(mVUstall, mVUregs.VF[xReg].x);
+			vfRead.reg = xReg;
+			vfRead.x = 1;
+		}
+		else if (_bc_y) {
+			mVUstall = max(mVUstall, mVUregs.VF[xReg].y);
+			vfRead.reg = xReg;
+			vfRead.y = 1;
+		}
+		else if (_bc_z) {
+			mVUstall = max(mVUstall, mVUregs.VF[xReg].z);
+			vfRead.reg = xReg;
+			vfRead.z = 1;
+		}
+		else {
+			mVUstall = max(mVUstall, mVUregs.VF[xReg].w);
+			vfRead.reg = xReg;
+			vfRead.w = 1;
+		}
 	}
 }
 
@@ -395,7 +411,9 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 			}
 			j = i;
 		}
-		elif (i == 0) break;
+		else if (i == 0) {
+			break;
+		}
 		cyc += mVUstall + 1;
 		incPC2(-2);
 	}

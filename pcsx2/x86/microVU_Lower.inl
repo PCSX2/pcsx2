@@ -1214,8 +1214,15 @@ static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {
 mVUop(mVU_XGKICK) {
 	pass1 { mVUanalyzeXGkick(mVU, _Is_, mVU_XGKICK_CYCLES); }
 	pass2 {
-		if (!mVU_XGKICK_CYCLES)	{ mVU_XGKICK_DELAY(mVU, 0); return; }
-		elif (mVUinfo.doXGKICK)	{ mVU_XGKICK_DELAY(mVU, 1); mVUinfo.doXGKICK = 0; }
+		if (!mVU_XGKICK_CYCLES) {
+			mVU_XGKICK_DELAY(mVU, false);
+			return;
+		}
+		else if (mVUinfo.doXGKICK) {
+			mVU_XGKICK_DELAY(mVU, true);
+			mVUinfo.doXGKICK = false;
+		}
+
 		mVUallocVIa(mVU, gprT1, _Is_);
 		xMOV(ptr32[&mVU.VIxgkick], gprT1);
 		mVU.profiler.EmitOp(opXGKICK);
