@@ -159,8 +159,8 @@ bool ZZshStartUsingShaders() {
 	bool bFailed;
 	FRAGMENTSHADER* pfrag = ZZshLoadShadeEffect(0, 1, 1, 1, 1, temp, 0, &bFailed);
 	if( bFailed || pfrag == NULL ) {
-		return false;
 		ZZLog::Error_Log("Shader test failed.");
+		return false;
 	}
 
 	ZZLog::Error_Log("Creating extra effects.");
