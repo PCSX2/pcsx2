@@ -548,7 +548,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		drawArguments(dc, line, pixelPositions.argumentsStart, rowY1 + 2, textColor, currentArguments);
 		
 		if (isInInterval(address,line.totalSize,cpu->getPC()))
-			dc.DrawText(L"■",pixelPositions.opcodeStart-(charWidth+1),rowY1);
+			dc.DrawText(L"\u25A0",pixelPositions.opcodeStart-(charWidth+1),rowY1);
 
 		dc.SetFont(boldFont);
 		dc.DrawText(wxString(line.name.c_str(),wxConvUTF8),pixelPositions.opcodeStart,rowY1+2);
