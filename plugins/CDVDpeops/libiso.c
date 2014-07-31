@@ -220,6 +220,7 @@ int _isoReadZtable(isoFile *iso) {
 	size = (int)_tellfile(handle);
 	iso->Ztable = (char*)malloc(size);
 	if (iso->Ztable == NULL) {
+		_closefile(handle);
 		return -1;
 	}
 
@@ -251,6 +252,7 @@ int _isoReadZ2table(isoFile *iso) {
 	size = (int)_tellfile(handle);
 	Ztable = (u32*)malloc(size);
 	if (Ztable == NULL) {
+		_closefile(handle);
 		return -1;
 	}
 
@@ -260,6 +262,7 @@ int _isoReadZ2table(isoFile *iso) {
 
 	iso->Ztable = (char*)malloc(iso->blocks*8);
 	if (iso->Ztable == NULL) {
+		free(Ztable);
 		return -1;
 	}
 
@@ -390,6 +393,7 @@ isoFile *isoOpen(const char *filename) {
 	iso->handle = _openfile(iso->filename, O_RDONLY);
 	if (iso->handle == NULL) {
 		printf("Error loading %s\n", iso->filename);
+		free(iso);
 		return NULL;
 	}
 
@@ -459,6 +463,7 @@ isoFile *isoCreate(const char *filename, int flags) {
 		sprintf(Zfile, "%s.table", iso->filename);
 		iso->htable = _openfile(Zfile, O_WRONLY);
 		if (iso->htable == NULL) {
+			free(iso);
 			return NULL;
 		}
 	}
@@ -466,6 +471,7 @@ isoFile *isoCreate(const char *filename, int flags) {
 	iso->handle = _openfile(iso->filename, O_WRONLY);
 	if (iso->handle == NULL) {
 		printf("Error loading %s\n", iso->filename);
+		free(iso);
 		return NULL;
 	}
 	printf("isoCreate: %s ok\n", iso->filename);
