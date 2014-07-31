@@ -323,6 +323,7 @@ int _isoReadZ2table(isoFile *iso)
 
 	if (iso->Ztable == NULL)
 	{
+		free(Ztable);
 		return -1;
 	}
 
@@ -367,7 +368,11 @@ int _isoReadBZ2table(isoFile *iso)
 	_closefile(handle);
 
 	iso->Ztable = (char*)malloc(iso->blocks * 8);
-	if (iso->Ztable == NULL) return -1;
+	if (iso->Ztable == NULL){
+		free(Ztable);
+		return -1;
+	}
+
 
 	ofs = 16;
 
