@@ -249,7 +249,7 @@ bool GSRenderer::Merge(int field)
 
 	if(tex[0] || tex[1])
 	{
-		if(tex[0] == tex[1] && !slbg && (src[0] == src[1] & dst[0] == dst[1]).alltrue())
+		if(tex[0] == tex[1] && !slbg && (src[0] == src[1] && dst[0] == dst[1]).alltrue())
 		{
 			// the two outputs are identical, skip drawing one of them (the one that is alpha blended)
 
