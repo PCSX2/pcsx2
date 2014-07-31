@@ -41,21 +41,21 @@ void _initX86regs() {
 	g_x86checknext = 0;
 }
 
-u32 _x86GetAddr(int type, int reg)
+uptr _x86GetAddr(int type, int reg)
 {
-	u32 ret = 0;
+	uptr ret = 0;
 
 	switch(type&~X86TYPE_VU1)
 	{
 		case X86TYPE_GPR:
-			ret = (u32)&cpuRegs.GPR.r[reg];
+			ret = (uptr)&cpuRegs.GPR.r[reg];
 			break;
 
 		case X86TYPE_VI:
 			if (type & X86TYPE_VU1)
-				ret = (u32)&VU1.VI[reg];
+				ret = (uptr)&VU1.VI[reg];
 			else
-				ret = (u32)&VU0.VI[reg];
+				ret = (uptr)&VU0.VI[reg];
 			break;
 
 		case X86TYPE_MEMOFFSET:
@@ -68,42 +68,42 @@ u32 _x86GetAddr(int type, int reg)
 
 		case X86TYPE_VUQREAD:
 			if  (type & X86TYPE_VU1)
-				ret = (u32)&VU1.VI[REG_Q];
+				ret = (uptr)&VU1.VI[REG_Q];
 			else
-				ret = (u32)&VU0.VI[REG_Q];
+				ret = (uptr)&VU0.VI[REG_Q];
 			break;
 
 		case X86TYPE_VUPREAD:
 			if  (type & X86TYPE_VU1)
-				ret = (u32)&VU1.VI[REG_P];
+				ret = (uptr)&VU1.VI[REG_P];
 			else
-				ret = (u32)&VU0.VI[REG_P];
+				ret = (uptr)&VU0.VI[REG_P];
 			break;
 
 		case X86TYPE_VUQWRITE:
 			if  (type & X86TYPE_VU1)
-				ret = (u32)&VU1.q;
+				ret = (uptr)&VU1.q;
 			else
-				ret = (u32)&VU0.q;
+				ret = (uptr)&VU0.q;
 			break;
 
 		case X86TYPE_VUPWRITE:
 			if  (type & X86TYPE_VU1)
-				ret = (u32)&VU1.p;
+				ret = (uptr)&VU1.p;
 			else
-				ret = (u32)&VU0.p;
+				ret = (uptr)&VU0.p;
 			break;
 
 		case X86TYPE_PSX:
-			ret = (u32)&psxRegs.GPR.r[reg];
+			ret = (uptr)&psxRegs.GPR.r[reg];
 			break;
 
 		case X86TYPE_PCWRITEBACK:
-			ret = (u32)&g_recWriteback;
+			ret = (uptr)&g_recWriteback;
 			break;
 
 		case X86TYPE_VUJUMP:
-			ret = (u32)&g_recWriteback;
+			ret = (uptr)&g_recWriteback;
 			break;
 
 		jNO_DEFAULT;
@@ -169,8 +169,8 @@ void _flushCachedRegs()
 void _flushConstReg(int reg)
 {
 	if( GPR_IS_CONST1( reg ) && !(g_cpuFlushedConstReg&(1<<reg)) ) {
-		MOV32ItoM((int)&cpuRegs.GPR.r[reg].UL[0], g_cpuConstRegs[reg].UL[0]);
-		MOV32ItoM((int)&cpuRegs.GPR.r[reg].UL[1], g_cpuConstRegs[reg].UL[1]);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[reg].UL[0], g_cpuConstRegs[reg].UL[0]);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[reg].UL[1], g_cpuConstRegs[reg].UL[1]);
 		g_cpuFlushedConstReg |= (1<<reg);
 		if (reg == 0) DevCon.Warning("Flushing r0!");
 	}
@@ -569,9 +569,9 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 				else {
 					if( MMX_ISGPR(reg) ) _flushConstReg(reg-MMX_GPR);
 					if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) )
-						MOVDMtoMMX(i, (u32)_MMXGetAddr(reg));
+						MOVDMtoMMX(i, (uptr)_MMXGetAddr(reg));
 					else
-						MOVQMtoR(i, (u32)_MMXGetAddr(reg));
+						MOVQMtoR(i, (uptr)_MMXGetAddr(reg));
 				}
 
 				mmxregs[i].mode |= MODE_READ;
@@ -599,7 +599,7 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 	else {
 		int xmmreg;
 		if( MMX_ISGPR(reg) && (xmmreg = _checkXMMreg(XMMTYPE_GPRREG, reg-MMX_GPR, 0)) >= 0 ) {
-			SSE_MOVHPS_XMM_to_M64((u32)_MMXGetAddr(reg)+8, xmmreg);
+			SSE_MOVHPS_XMM_to_M64((uptr)_MMXGetAddr(reg)+8, xmmreg);
 			if( mode & MODE_READ )
 				SSE2_MOVDQ2Q_XMM_to_MM(mmxreg, xmmreg);
 
@@ -615,10 +615,10 @@ int _allocMMXreg(int mmxreg, int reg, int mode)
 			}
 
 			if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) ) {
-				MOVDMtoMMX(mmxreg, (u32)_MMXGetAddr(reg));
+				MOVDMtoMMX(mmxreg, (uptr)_MMXGetAddr(reg));
 			}
 			else if( mode & MODE_READ ) {
-				MOVQMtoR(mmxreg, (u32)_MMXGetAddr(reg));
+				MOVQMtoR(mmxreg, (uptr)_MMXGetAddr(reg));
 			}
 		}
 	}
@@ -641,9 +641,9 @@ int _checkMMXreg(int reg, int mode)
 				else {
 					if (MMX_ISGPR(reg) && (mode&(MODE_READHALF|MODE_READ))) _flushConstReg(reg-MMX_GPR);
 					if( (mode & MODE_READHALF) || (MMX_IS32BITS(reg)&&(mode&MODE_READ)) )
-						MOVDMtoMMX(i, (u32)_MMXGetAddr(reg));
+						MOVDMtoMMX(i, (uptr)_MMXGetAddr(reg));
 					else
-						MOVQMtoR(i, (u32)_MMXGetAddr(reg));
+						MOVQMtoR(i, (uptr)_MMXGetAddr(reg));
 				}
 				SetMMXstate();
 			}
@@ -701,9 +701,9 @@ void _deleteMMXreg(int reg, int flush)
 						pxAssert( mmxregs[i].reg != MMX_GPR );
 
 						if( MMX_IS32BITS(reg) )
-							MOVDMMXtoM((u32)_MMXGetAddr(mmxregs[i].reg), i);
+							MOVDMMXtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
 						else
-							MOVQRtoM((u32)_MMXGetAddr(mmxregs[i].reg), i);
+							MOVQRtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
 						SetMMXstate();
 
 						// get rid of MODE_WRITE since don't want to flush again
@@ -773,9 +773,9 @@ void _freeMMXreg(u32 mmxreg)
 		pxAssert( mmxregs[mmxreg].reg != MMX_GPR );
 
 		if( MMX_IS32BITS(mmxregs[mmxreg].reg) )
-			MOVDMMXtoM((u32)_MMXGetAddr(mmxregs[mmxreg].reg), mmxreg);
+			MOVDMMXtoM((uptr)_MMXGetAddr(mmxregs[mmxreg].reg), mmxreg);
 		else
-			MOVQRtoM((u32)_MMXGetAddr(mmxregs[mmxreg].reg), mmxreg);
+			MOVQRtoM((uptr)_MMXGetAddr(mmxregs[mmxreg].reg), mmxreg);
 
 		SetMMXstate();
 	}
@@ -820,9 +820,9 @@ void _flushMMXregs()
 			pxAssert( mmxregs[i].reg != MMX_GPR );
 
 			if( MMX_IS32BITS(mmxregs[i].reg) )
-				MOVDMMXtoM((u32)_MMXGetAddr(mmxregs[i].reg), i);
+				MOVDMMXtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
 			else
-				MOVQRtoM((u32)_MMXGetAddr(mmxregs[i].reg), i);
+				MOVQRtoM((uptr)_MMXGetAddr(mmxregs[i].reg), i);
 			SetMMXstate();
 
 			mmxregs[i].mode &= ~MODE_WRITE;
@@ -895,9 +895,9 @@ int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32
 	SetMMXstate();
 
 	MOVQRtoR(to, from);
-	MOVDMMXtoM((u32)&cpuRegs.GPR.r[gprreg].UL[0], from);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], from);
 	PSRADItoR(from, 31);
-	MOVDMMXtoM((u32)&cpuRegs.GPR.r[gprreg].UL[1], from);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[1], from);
 	mmxregs[to].inuse = 0;
 
 	return -1;
@@ -910,9 +910,9 @@ int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift)
 	SetMMXstate();
 
 	if( shift > 0 ) PSRADItoR(to, shift);
-	MOVDMMXtoM((u32)&cpuRegs.GPR.r[gprreg].UL[0], to);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], to);
 	PSRADItoR(to, 31);
-	MOVDMMXtoM((u32)&cpuRegs.GPR.r[gprreg].UL[1], to);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[1], to);
 	mmxregs[to].inuse = 0;
 
 	return -1;
@@ -973,12 +973,12 @@ void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op)
 		case 2: PXORRtoR(to, from); break;
 		case 3:
 			PORRtoR(to, from);
-			PXORMtoR(to, (u32)&s_ones[0]);
+			PXORMtoR(to, (uptr)&s_ones[0]);
 			break;
 	}
 }
 
-void LogicalOpMtoR(x86MMXRegType to, u32 from, int op)
+void LogicalOpMtoR(x86MMXRegType to, uptr from, int op)
 {
 	switch(op) {
 		case 0: PANDMtoR(to, from); break;
@@ -986,12 +986,12 @@ void LogicalOpMtoR(x86MMXRegType to, u32 from, int op)
 		case 2: PXORMtoR(to, from); break;
 		case 3:
 			PORRtoR(to, from);
-			PXORMtoR(to, (u32)&s_ones[0]);
+			PXORMtoR(to, (uptr)&s_ones[0]);
 			break;
 	}
 }
 
-void LogicalOp32RtoM(u32 to, x86IntRegType from, int op)
+void LogicalOp32RtoM(uptr to, x86IntRegType from, int op)
 {
 	switch(op) {
 		case 0: AND32RtoM(to, from); break;
@@ -1001,7 +1001,7 @@ void LogicalOp32RtoM(u32 to, x86IntRegType from, int op)
 	}
 }
 
-void LogicalOp32MtoR(x86IntRegType to, u32 from, int op)
+void LogicalOp32MtoR(x86IntRegType to, uptr from, int op)
 {
 	switch(op) {
 		case 0: AND32MtoR(to, from); break;
@@ -1021,7 +1021,7 @@ void LogicalOp32ItoR(x86IntRegType to, u32 from, int op)
 	}
 }
 
-void LogicalOp32ItoM(u32 to, u32 from, int op)
+void LogicalOp32ItoM(uptr to, u32 from, int op)
 {
 	switch(op) {
 		case 0: AND32ItoM(to, from); break;

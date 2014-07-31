@@ -84,9 +84,9 @@ void _eeOnLoadWrite(u32 reg)
 		if( xmmregs[regt].mode & MODE_WRITE ) {
 			if( reg != _Rs_ ) {
 				SSE2_PUNPCKHQDQ_XMM_to_XMM(regt, regt);
-				SSE2_MOVQ_XMM_to_M64((u32)&cpuRegs.GPR.r[reg].UL[2], regt);
+				SSE2_MOVQ_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
 			}
-			else SSE_MOVHPS_XMM_to_M64((u32)&cpuRegs.GPR.r[reg].UL[2], regt);
+			else SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
 		}
 		xmmregs[regt].inuse = 0;
 	}

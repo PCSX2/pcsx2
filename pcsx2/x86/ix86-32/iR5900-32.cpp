@@ -184,7 +184,7 @@ void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(to, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(to, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
 		}
 	}
 }
@@ -204,7 +204,7 @@ void _eeMoveGPRtoM(u32 to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
 			MOV32RtoM(to, EAX );
 		}
 	}
@@ -225,7 +225,7 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
 			MOV32RtoRm( to, EAX );
 		}
 	}
@@ -981,12 +981,12 @@ void SetBranchReg( u32 reg )
 
 		if( x86regs[ESI].inuse ) {
 			pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-			MOV32RtoM((int)&cpuRegs.pc, ESI);
+			MOV32RtoM((uptr)&cpuRegs.pc, ESI);
 			x86regs[ESI].inuse = 0;
 		}
 		else {
-			MOV32MtoR(EAX, (u32)&g_recWriteback);
-			MOV32RtoM((int)&cpuRegs.pc, EAX);
+			MOV32MtoR(EAX, (uptr)&g_recWriteback);
+			MOV32RtoM((uptr)&cpuRegs.pc, EAX);
 		}
 	}
 

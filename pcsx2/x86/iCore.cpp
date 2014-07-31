@@ -409,7 +409,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 				SetMMXstate();
 				SSE2_MOVQ2DQ_MM_to_XMM(xmmreg, mmxreg);
 				SSE2_PUNPCKLQDQ_XMM_to_XMM(xmmreg, xmmreg);
-				SSE2_PUNPCKHQDQ_M128_to_XMM(xmmreg, (u32)&cpuRegs.GPR.r[gprreg].UL[0]);
+				SSE2_PUNPCKHQDQ_M128_to_XMM(xmmreg, (uptr)&cpuRegs.GPR.r[gprreg].UL[0]);
 
 				if (mmxregs[mmxreg].mode & MODE_WRITE )
 				{
@@ -417,7 +417,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 					if  (!(mode & MODE_WRITE))
 					{
 						SetMMXstate();
-						MOVQRtoM((u32)&cpuRegs.GPR.r[gprreg].UL[0], mmxreg);
+						MOVQRtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], mmxreg);
 					}
 					//xmmregs[xmmreg].mode |= MODE_WRITE;
 				}
