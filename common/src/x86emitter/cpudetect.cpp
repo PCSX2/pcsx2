@@ -53,11 +53,21 @@ void x86capabilities::SIMD_EstablishMXCSRmask()
 
 		MXCSR_Mask.bitmask = 0xFFFF;	// SSE2 features added
 	}
-
-	if( !CanEmitShit() ) return;
-
+#ifdef _M_X86_64
+#ifdef _MSC_VER
+	// Use the intrinsic that is provided with MSVC 2012
+	_fxsave(&targetFXSAVE);
+#else
+	// GCC path is supported since GCC 4.6.x
+	__asm __volatile ("fxsave %0" : "+m" (targetFXSAVE));
+#endif
+#else
+	// Grab the MXCSR mask the x86_32 way.
+	//
 	// the fxsave buffer must be 16-byte aligned to avoid GPF.  I just save it to an
 	// unused portion of recSSE, since it has plenty of room to spare.
+
+	if( !CanEmitShit() ) return;
 
 	HostSys::MemProtectStatic( recSSE, PageAccess_ReadWrite() );
 
@@ -68,6 +78,7 @@ void x86capabilities::SIMD_EstablishMXCSRmask()
 	HostSys::MemProtectStatic( recSSE, PageAccess_ExecOnly() );
 
 	CallAddress( recSSE );
+#endif
 
 	u32 result = (u32&)targetFXSAVE[28];			// bytes 28->32 are the MXCSR_Mask.
 	if( result != 0 )
