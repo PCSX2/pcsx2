@@ -45,12 +45,12 @@ void setupMacroOp(int mode, const char* opName) {
 		microVU0.prog.IRinfo.info[0].cFlag.lastWrite = 0xff;
 	}
 	if (mode & 0x10) { // Update Status/Mac Flags
-		microVU0.prog.IRinfo.info[0].sFlag.doFlag		= 1;
-		microVU0.prog.IRinfo.info[0].sFlag.doNonSticky	= 1;
-		microVU0.prog.IRinfo.info[0].sFlag.write		= 0;
-		microVU0.prog.IRinfo.info[0].sFlag.lastWrite	= 0;
-		microVU0.prog.IRinfo.info[0].mFlag.doFlag		= 1;
-		microVU0.prog.IRinfo.info[0].mFlag.write		= 0xff;
+		microVU0.prog.IRinfo.info[0].sFlag.doFlag      = true;
+		microVU0.prog.IRinfo.info[0].sFlag.doNonSticky = true;
+		microVU0.prog.IRinfo.info[0].sFlag.write       = 0;
+		microVU0.prog.IRinfo.info[0].sFlag.lastWrite   = 0;
+		microVU0.prog.IRinfo.info[0].mFlag.doFlag      = true;
+		microVU0.prog.IRinfo.info[0].mFlag.write       = 0xff;
 		
 		xMOV(gprF0, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
 	}
@@ -266,7 +266,7 @@ static void recCFC2() {
 
 	printCOP2("CFC2");
 
-	COP2_Interlock(0);
+	COP2_Interlock(false);
 	if (!_Rt_) return;
 	iFlushCall(FLUSH_EVERYTHING);
 
@@ -345,7 +345,7 @@ static void recCTC2() {
 static void recQMFC2() {
 
 	printCOP2("QMFC2");
-	COP2_Interlock(0);
+	COP2_Interlock(false);
 	if (!_Rt_) return;
 	iFlushCall(FLUSH_EVERYTHING);
 
@@ -359,7 +359,7 @@ static void recQMFC2() {
 static void recQMTC2() {
 
 	printCOP2("QMTC2");
-	COP2_Interlock(1);
+	COP2_Interlock(true);
 	if (!_Rd_) return;
 	iFlushCall(FLUSH_EVERYTHING);
 

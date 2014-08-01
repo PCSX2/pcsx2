@@ -393,12 +393,18 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 			DevCon.Warning("microVU%d: Branch VI-Delay with %d cycle stall (%d) [%04x]", getIndex, mVUstall, i, xPC);
 		}
 		if (i == mVUcount) {
-			bool warn = 0;
-			if (i == 1) warn = 1;
+			bool warn = false;
+
+			if (i == 1)
+				warn = true;
+
 			if (mVUpBlock->pState.viBackUp == xReg) {
 				DevCon.WriteLn(Color_Green, "microVU%d: Loading Branch VI value from previous block", getIndex);
-				if (i == 0) warn = 1;
-				infoVar = 1;
+
+				if (i == 0)
+					warn = true;
+
+				infoVar = true;
 				j = i; i++;
 			}
 			if (warn) DevCon.Warning("microVU%d: Branch VI-Delay with small block (%d) [%04x]", getIndex, i, xPC);
@@ -417,17 +423,20 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 		cyc += mVUstall + 1;
 		incPC2(-2);
 	}
+
 	if (i) {
 		if (!infoVar) {
 			iPC = bPC;
 			incPC2(-2*(j+1));
-			mVUlow.backupVI = 1;
-			infoVar = 1;
+			mVUlow.backupVI = true;
+			infoVar = true;
 		}
 		iPC = bPC;
 		DevCon.WriteLn(Color_Green, "microVU%d: Branch VI-Delay (%d) [%04x][%03d]", getIndex, j+1, xPC, mVU.prog.cur->idx);
 	}
-	else iPC = bPC;
+	else {
+		iPC = bPC;
+	}
 }
 
 /*
@@ -470,14 +479,17 @@ __fi void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 
 // Branch in Branch Delay-Slots
 __ri int mVUbranchCheck(mV) {
-	if (!mVUcount) return 0;
+	if (!mVUcount)
+		return 0;
+
 	incPC(-2);
+
 	if (mVUlow.branch) {
 		u32 branchType = mVUlow.branch;
 		if (doBranchInDelaySlot) {
-			mVUlow.badBranch  = 1;
+			mVUlow.badBranch  = true;
 			incPC(2);
-			mVUlow.evilBranch = 1;
+			mVUlow.evilBranch = true;
 
 			if(mVUlow.branch == 2 || mVUlow.branch == 10) //Needs linking, we can only guess this if the next is not conditional
 			{
@@ -493,7 +505,9 @@ __ri int mVUbranchCheck(mV) {
 					mVUregs.blockType = 2;
 				} //Else it is conditional, so we need to do some nasty processing later in microVU_Branch.inl
 			}
-			else mVUregs.blockType = 2;  //Second branch doesn't need linking, so can let it run its evil block course (MGS2 for testing)
+			else {
+				mVUregs.blockType = 2;  //Second branch doesn't need linking, so can let it run its evil block course (MGS2 for testing)
+			}
 
 			mVUregs.needExactMatch |= 7; // This might not be necessary, but w/e...
 			mVUregs.flagInfo   = 0;
@@ -505,7 +519,7 @@ __ri int mVUbranchCheck(mV) {
 		}
 		else {
 			incPC(2);
-			mVUlow.isNOP = 1;
+			mVUlow.isNOP = true;
 			DevCon.Warning("microVU%d: %s in %s delay slot! [%04x]", mVU.index,
 							branchSTR[mVUlow.branch&0xf], branchSTR[branchType&0xf], xPC);
 			return 0;
