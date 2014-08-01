@@ -11,6 +11,7 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
 - There should be no tab characters anywhere in your commits. Always use spaces, both for left alignment and for alignment within a line.
 - An indentation should always be four spaces: no more, no less.
 - Always align separate lines of code if it would make said code more readable. An example:
+
   ```cpp
   int m_FirstField    = 0;
   int m_SecondField   = 0;
@@ -36,6 +37,7 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
 
 - All curly braces (`{ }`) should be placed on newlines. The only exception to this is **short** inline functions in class header files (getters, setters).
 - Braces are **mandatory** after conditions. This should never occur in your code:
+
   ```cpp
   if (SomeCondition)
       DoSomething();
@@ -52,6 +54,7 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
 - All functions and variables that do not override another should be documented. At the very least, write a couple words about **why it's there**.
 - Documentation doesn't exist to explain how something works (your code should be obvious enough for that). Documentation exists to explain why that code is there.
 - Use doxygen comments for all kinds of documentation. An example:
+
   ```cpp
   /** The explanation of what and why this function does.
   @param Param1 Why Param1 needs to be passed.
