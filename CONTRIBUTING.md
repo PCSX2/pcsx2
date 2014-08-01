@@ -1,12 +1,12 @@
-## CONTRIBUTING
+# CONTRIBUTING
 
-### Overview
+## Overview
 
 This is the contributor's guide for the PCSX2 emulator. In order to expedite any code contribution, these guidelines should be thoroughly read and followed.
 
-### Style
+## Style
 
-#### Alignment
+### Alignment
 
 - There should be no tab characters anywhere in your commits. Always use spaces, both for left alignment and for alignment within a line.
 - An indentation should always be four spaces: no more, no less.
@@ -18,14 +18,14 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
   int m_EleventhField = 0;
   ```
 
-#### Naming
+### Naming
 
-##### Case
+#### Case
 
 - CamelCase for variable fields, functions, methods, and classnames.
 - ALL_CAPS for constants and defines.
 
-##### Prefixes
+#### Prefixes
 
 - Do not use hungarian notation (or any other notation for that matter).
   - An exeption to this is prefixes for global or member variables.
@@ -33,7 +33,7 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
     - Member: `m_SomeField`
 - All variables that are not global and not members should have no prefixes whatsoever.
 
-#### Braces/Brackets
+### Braces/Brackets
 
 - All curly braces (`{ }`) should be placed on newlines. The only exception to this is **short** inline functions in class header files (getters, setters).
 - Braces are **mandatory** after conditions. This should never occur in your code:
@@ -44,12 +44,12 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
   ```
   - This is because these kinds of conditions are a breeding ground for bugs. A careless programmer can add one more statement after `DoSomething();` and not realize that it won't be executed as part of the condition.
 
-#### Whitespace
+### Whitespace
 
 - Files always need at **one** empty line at the end.
 - Always add two blank lines between different functions in a cpp file.
 
-### Documentation
+## Documentation
 
 - All functions and variables that do not override another should be documented. At the very least, write a couple words about **why it's there**.
 - Documentation doesn't exist to explain how something works (your code should be obvious enough for that). Documentation exists to explain why that code is there.
