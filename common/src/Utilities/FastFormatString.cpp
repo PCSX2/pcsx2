@@ -296,7 +296,7 @@ FastFormatUnicode& FastFormatUnicode::Write( const wxChar* fmt, ... )
 }
 
 #if wxMAJOR_VERSION >= 3
-FastFormatUnicode& FastFormatUnicode::Write( const wxString& fmt, ... )
+FastFormatUnicode& FastFormatUnicode::Write( const wxString fmt, ... )
 {
 	va_list list;
 	va_start(list, fmt);

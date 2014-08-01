@@ -195,7 +195,7 @@ public:
 	FastFormatUnicode& Write( const char* fmt, ... );
 	FastFormatUnicode& Write( const wxChar* fmt, ... );
 #if wxMAJOR_VERSION >= 3
-	FastFormatUnicode& Write( const wxString& fmt, ... );
+	FastFormatUnicode& Write( const wxString fmt, ... );
 #endif
 	FastFormatUnicode& WriteV( const char* fmt, va_list argptr );
 	FastFormatUnicode& WriteV( const wxChar* fmt, va_list argptr );

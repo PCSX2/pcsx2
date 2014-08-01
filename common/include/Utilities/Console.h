@@ -122,10 +122,10 @@ struct IConsoleWriter
 	bool Warning( const wxChar* fmt, ... ) const;
 
 #if wxMAJOR_VERSION >= 3
-	bool WriteLn( ConsoleColors color, const wxString& fmt, ... ) const;
-	bool WriteLn( const wxString& fmt, ... ) const;
-	bool Error( const wxString& fmt, ... ) const;
-	bool Warning( const wxString& fmt, ... ) const;
+	bool WriteLn( ConsoleColors color, const wxString fmt, ... ) const;
+	bool WriteLn( const wxString fmt, ... ) const;
+	bool Error( const wxString fmt, ... ) const;
+	bool Warning( const wxString fmt, ... ) const;
 #endif
 };
 
@@ -164,10 +164,10 @@ struct NullConsoleWriter
 	bool Warning( const wxChar* fmt, ... ) const					{ return false; }
 
 #if wxMAJOR_VERSION >= 3
-	bool WriteLn( ConsoleColors color, const wxString& fmt, ... ) const { return false; }
-	bool WriteLn( const wxString& fmt, ... ) const					{ return false; }
-	bool Error( const wxString& fmt, ... ) const					{ return false; }
-	bool Warning( const wxString& fmt, ... ) const					{ return false; }
+	bool WriteLn( ConsoleColors color, const wxString fmt, ... ) const { return false; }
+	bool WriteLn( const wxString fmt, ... ) const					{ return false; }
+	bool Error( const wxString fmt, ... ) const					{ return false; }
+	bool Warning( const wxString fmt, ... ) const					{ return false; }
 #endif
 };
 

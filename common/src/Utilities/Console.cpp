@@ -472,7 +472,7 @@ bool IConsoleWriter::Warning( const wxChar* fmt, ... ) const
 // --------------------------------------------------------------------------------------
 //  Write Variants - Unknown style
 // --------------------------------------------------------------------------------------
-bool IConsoleWriter::WriteLn( const wxString& fmt, ... ) const
+bool IConsoleWriter::WriteLn( const wxString fmt, ... ) const
 {
 	va_list args;
 	va_start(args,fmt);
@@ -482,7 +482,7 @@ bool IConsoleWriter::WriteLn( const wxString& fmt, ... ) const
 	return false;
 }
 
-bool IConsoleWriter::WriteLn( ConsoleColors color, const wxString& fmt, ... ) const
+bool IConsoleWriter::WriteLn( ConsoleColors color, const wxString fmt, ... ) const
 {
 	va_list args;
 	va_start(args,fmt);
@@ -493,7 +493,7 @@ bool IConsoleWriter::WriteLn( ConsoleColors color, const wxString& fmt, ... ) co
 	return false;
 }
 
-bool IConsoleWriter::Error( const wxString& fmt, ... ) const
+bool IConsoleWriter::Error( const wxString fmt, ... ) const
 {
 	va_list args;
 	va_start(args,fmt);
@@ -504,7 +504,7 @@ bool IConsoleWriter::Error( const wxString& fmt, ... ) const
 	return false;
 }
 
-bool IConsoleWriter::Warning( const wxString& fmt, ... ) const
+bool IConsoleWriter::Warning( const wxString fmt, ... ) const
 {
 	va_list args;
 	va_start(args,fmt);

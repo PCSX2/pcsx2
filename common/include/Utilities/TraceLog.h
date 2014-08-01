@@ -194,7 +194,7 @@ public:
 	}
 
 #if wxMAJOR_VERSION >= 3
-	bool Write( const wxString& fmt, ... ) const
+	bool Write( const wxString fmt, ... ) const
 	{
 		va_list list;
 		va_start( list, fmt );
@@ -240,7 +240,7 @@ public:
 	}
 
 #if wxMAJOR_VERSION >= 3
-	bool Warn( const wxString& fmt, ... ) const
+	bool Warn( const wxString fmt, ... ) const
 	{
 		va_list list;
 		va_start( list, fmt );
@@ -264,7 +264,7 @@ public:
 	}
 
 #if wxMAJOR_VERSION >= 3
-	bool Error( const wxString& fmt, ... ) const
+	bool Error( const wxString fmt, ... ) const
 	{
 		va_list list;
 		va_start( list, fmt );
