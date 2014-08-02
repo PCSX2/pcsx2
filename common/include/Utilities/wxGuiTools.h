@@ -677,6 +677,9 @@ protected:
 	int			m_leading;
 
 	virtual void _DoWriteLn( const wxChar* msg );
+#if wxMAJOR_VERSION >= 3
+	void _DoWriteLn( const wxString msg );
+#endif
 	void _DoWrite( const wxChar* msg );
 
 public:
@@ -690,6 +693,9 @@ public:
 	pxWindowTextWriter& WriteLn( const wxChar* fmt );
 	pxWindowTextWriter& SetFont( const wxFont& font );
 	pxWindowTextWriter& Align( const wxAlignment& align );
+#if wxMAJOR_VERSION >= 3
+	pxWindowTextWriter& WriteLn( const wxString fmt );
+#endif
 		
 	pxWindowTextWriter& SetLeading( int lead )
 	{

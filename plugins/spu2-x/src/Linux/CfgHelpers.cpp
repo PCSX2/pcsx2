@@ -97,7 +97,7 @@ float CfgReadFloat(const wchar_t* Section, const wchar_t* Name, float Default)
 void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, int DataSize, const wchar_t* Default)
 {
 	setIni(Section);
-	wcscpy(Data, spuConfig->Read(Name, Default));
+	wcscpy(Data, spuConfig->Read(Name, Default).wc_str());
 }
 
 void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default)

@@ -445,9 +445,9 @@ bool Panels::GameDatabasePanel::WriteFieldsToDB() {
 		wxString keyName (EnumToString(i)); keyName += L"Hack";
 
 		if (gameFixes[i]->IsIndeterminate())
-			game.deleteKey(keyName);
+			game.deleteKey(keyName.wc_str());
 		else
-			game.writeBool(keyName, gameFixes[i]->GetValue());
+			game.writeBool(keyName.wc_str(), gameFixes[i]->GetValue());
 	}
 	GameDB->updateGame(game);
 	return true;

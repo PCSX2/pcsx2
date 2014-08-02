@@ -211,7 +211,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 			synclock.Release();
 
 			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Executing... [%s]%s",
-				deleteMe->AllowCancelOnExit() ? L"Cancelable" : L"Noncancelable", isIdle ? L"(Idle)" : wxEmptyString)
+				deleteMe->AllowCancelOnExit() ? L"Cancelable" : L"Noncancelable", isIdle ? L"(Idle)" : wxEmptyString).wc_str()
 			);
 
 			if( deleteMe->AllowCancelOnExit() )
@@ -224,7 +224,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 
 			u64 qpc_end = GetCPUTicks();
 			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Event completed in %ums",
-				(u32)(((qpc_end-m_qpc_Start)*1000) / GetTickFrequency()))
+				(u32)(((qpc_end-m_qpc_Start)*1000) / GetTickFrequency())).wc_str()
 			);
 
 			synclock.Acquire();
