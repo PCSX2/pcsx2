@@ -8,8 +8,8 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
 
 ### Alignment
 
-- There should be no tab characters anywhere in your commits. Always use spaces, both for left alignment and for alignment within a line.
-- An indentation should always be four spaces: no more, no less.
+- For left-alignment (indentation), use tabs.
+- For alignment within a line, use spaces.
 - Always align separate lines of code if it would make said code more readable. An example:
 
   ```cpp
