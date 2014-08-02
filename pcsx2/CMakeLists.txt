@@ -17,7 +17,7 @@ set(CommonFlags
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wno-char-subscripts # only impact svu which is deprecated
     -Wno-missing-braces
-    -Wno-ignored-attributes
+    #-Wno-ignored-attributes # don't remember why I put here but it is pure C option, therefore it complains for nothings on cpp files
 	)
 
 # set optimization flags

@@ -203,7 +203,8 @@ set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
 # -Wno-unused-function: warn for function not used in release build
 # -Wno-unused-variable: just annoying to manage different level of logging, a couple of extra var won't kill any serious compiler.
-set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable")
+# -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
+set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value")
 
 if (USE_CLANG)
     # -Wno-deprecated-register: glib issue...
