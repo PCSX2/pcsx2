@@ -348,6 +348,11 @@ wxMessageOutput* Pcsx2AppTraits::CreateMessageOutput()
 class Pcsx2StandardPaths : public wxStandardPaths
 {
 public:
+	wxString GetResourcesDir() const
+	{
+		return Path::Combine( GetDataDir(), L"Langs" );
+	}
+
 #ifdef __LINUX__
 	wxString GetUserLocalDataDir() const
 	{
