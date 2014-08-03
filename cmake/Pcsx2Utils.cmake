@@ -28,6 +28,7 @@ function(detectOperatingSystem)
 
     # check if we are on MacOSX
     if(APPLE)
+        message(WARNING "Mac OS X isn't supported, build will most likely fail")
         set(MacOSX TRUE PARENT_SCOPE)
     endif(APPLE)
 
@@ -38,23 +39,18 @@ function(detectOperatingSystem)
 endfunction(detectOperatingSystem)
 
 function(write_svnrev_h)
+    find_package(Git)
     if (GIT_FOUND)
-        execute_process(COMMAND git -C ${CMAKE_SOURCE_DIR} show  -s --format=%ci HEAD
-            OUTPUT_VARIABLE tmpvar_WC_INFO
+        EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
+            OUTPUT_VARIABLE PCSX2_WC_TIME
             OUTPUT_STRIP_TRAILING_WHITESPACE)
-        # %2014-03-25 16:36:29 +0100
-        string(REGEX REPLACE "[%:\\-]" "" tmpvar_WC_INFO "${tmpvar_WC_INFO}")
-        string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" tmpvar_WC_INFO "${tmpvar_WC_INFO}")
-
-        if ("${tmpvar_WC_INFO}" STREQUAL "")
-            # For people with an older GIT version that migth not support '-C'
-            file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV 0ll \n#define SVN_MODS 0")
-        else()
-            file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${tmpvar_WC_INFO}ll \n#define SVN_MODS 0")
-        endif()
+        # Output: "YYYY-MM-DD HH:MM:SS +HHMM" (last part is time zone, offset from UTC)
+        string(REGEX REPLACE "[%:\\-]" "" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
+        string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
     else()
-        file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV_UNKNOWN\n#define SVN_REV 0ll \n#define SVN_MODS 0")
+        set(PCSX2_WC_TIME 0)
     endif()
+    file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0")
 endfunction()
 
 function(check_compiler_version version_warn version_err)
@@ -78,3 +74,65 @@ function(check_no_parenthesis_in_path)
         message(FATAL_ERROR "Your path contains some parenthesis. Unfortunately Cmake doesn't support them correctly.\nPlease rename your directory to avoid '(' and ')' characters\n")
     endif()
 endfunction()
+
+#NOTE: this macro is used to get rid of whitespace and newlines.
+macro(append_flags target flags)
+    if(flags STREQUAL "")
+        set(flags " ") # set to space to avoid error
+    endif()
+    get_target_property(TEMP ${target} COMPILE_FLAGS)
+    if(TEMP STREQUAL "TEMP-NOTFOUND")
+        set(TEMP "") # set to empty string
+    else()
+        set(TEMP "${TEMP} ") # a space to cleanly separate from existing content
+    endif()
+    # append our values
+    set(TEMP "${TEMP}${flags}")
+    # fix arg list
+    set(TEMP2 "")
+    foreach(_arg ${TEMP})
+        set(TEMP2 "${TEMP2} ${_arg}")
+    endforeach()
+    set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${TEMP2}")
+endmacro(append_flags)
+
+macro(add_pcsx2_plugin lib srcs libs flags)
+    include_directories(.)
+    add_library(${lib} MODULE ${srcs})
+    target_link_libraries(${lib} ${libs})
+    append_flags(${lib} "${flags}")
+    if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+        target_link_libraries(${lib} "${USER_CMAKE_LD_FLAGS}")
+    endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    if(PACKAGE_MODE)
+        install(TARGETS ${lib} DESTINATION ${PLUGIN_DIR})
+    else(PACKAGE_MODE)
+        install(TARGETS ${lib} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+    endif(PACKAGE_MODE)
+endmacro(add_pcsx2_plugin)
+
+macro(add_pcsx2_lib lib srcs libs flags)
+    include_directories(.)
+    add_library(${lib} STATIC ${srcs})
+    target_link_libraries(${lib} ${libs})
+    append_flags(${lib} "${flags}")
+    if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+        target_link_libraries(${lib} "${USER_CMAKE_LD_FLAGS}")
+    endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+endmacro(add_pcsx2_lib)
+
+macro(add_pcsx2_executable exe srcs libs flags)
+    add_definitions(${flags})
+    include_directories(.)
+    add_executable(${exe} ${srcs})
+    target_link_libraries(${exe} ${libs})
+    append_flags(${exe} "${flags}")
+    if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+        target_link_libraries(${lib} "${USER_CMAKE_LD_FLAGS}")
+    endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+    if(PACKAGE_MODE)
+        install(TARGETS ${exe} DESTINATION bin)
+    else(PACKAGE_MODE)
+        install(TARGETS ${exe} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+    endif(PACKAGE_MODE)
+endmacro(add_pcsx2_executable)

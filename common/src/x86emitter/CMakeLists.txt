@@ -57,28 +57,40 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
-	add_definitions(${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
-endif(NOT USE_CLANG)
+	set(x86emitterFinalFlags 
+		${x86emitterFinalFlags}
+		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
+	)
+endif(NOT USE_CLANG) 
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-
+	
 	# add defines
-	add_definitions(${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
+	set(x86emitterFinalFlags 
+		${x86emitterFinalFlags}
+		${CommonFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD
+	)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-
+	
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD)
+	set(x86emitterFinalFlags
+		${x86emitterFinalFlags} 
+		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD
+	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	set(x86emitterFinalFlags 
+		${x86emitterFinalFlags}
+		${CommonFlags} ${OptimizationFlags}
+	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # variable with all sources of this library
@@ -127,13 +139,13 @@ set(x86emitterHeaders
 	../../include/x86emitter/x86types.h
 	PrecompiledHeader.h)
 
-# add library
-add_library(${Output} STATIC ${x86emitterSources} ${x86emitterHeaders})
+set(x86emitterFinalSources 
+	${x86emitterSources} 
+	${x86emitterHeaders}
+)
 
-# link target with wx
-target_link_libraries(${Output} ${wxWidgets_LIBRARIES})
+set(x86emitterFinalLibs 
+	${wxWidgets_LIBRARIES}
+)
 
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+add_pcsx2_lib(${Output} "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")
