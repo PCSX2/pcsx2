@@ -15,7 +15,7 @@
 
 #pragma once
 
-#ifdef __LINUX__
+#ifdef __linux__
 #include <signal.h>
 #endif
 

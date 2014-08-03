@@ -19,7 +19,7 @@
 #include "Threading.h"
 #include "IniInterface.h"
 
-#ifdef __LINUX__
+#ifdef __linux__
 // I do not know if it is a GCC issue or a bug in wxwidget !
 // Anyway the code isn't used (m_hasContextHelp always false) so I remove
 // it for linux. The 'vtable' issue appears with the include of 
@@ -474,7 +474,7 @@ int pxGetCharHeight( const wxWindow* wind, int rows )
 	if( !wind ) return 0;
 	wxClientDC dc(wx_const_cast(wxWindow*, wind));
 	dc.SetFont( wind->GetFont() );
-#ifdef __LINUX__
+#ifdef __linux__
 	// It seems there is a bad detection of the size of the font (non standard dpi ???). Font are cut in top or bottom.
 	// Add a correction factor to leave enough room. Visualy 1.7 seems fine but feel free to tune it -- Gregory
 	return (dc.GetCharHeight() * 1.7 + 1 ) * rows;

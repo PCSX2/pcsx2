@@ -41,11 +41,6 @@
 #include <gtk/gtkvbox.h> // gtk_vbox_new()
 #include <gtk/gtkwindow.h> // gtk_window_new()
 
-#ifndef __LINUX__
-#ifdef __linux__
-#define __LINUX__
-#endif /* __linux__ */
-#endif /* No __LINUX__ */
 #define CDVDdefs
 #include "PS2Edefs.h"
 

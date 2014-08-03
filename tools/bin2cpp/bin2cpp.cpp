@@ -36,10 +36,6 @@
 #include <sys/stat.h>
 #include <string.h>
 
-#if defined (__linux__) && !defined(__LINUX__)  // some distributions are lower case
-#define __LINUX__
-#endif
-
 #if _MSC_VER
 #	pragma warning(disable:4996)	// The POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name.
 #endif

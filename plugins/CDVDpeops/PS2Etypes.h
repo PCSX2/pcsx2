@@ -20,7 +20,7 @@ typedef u64 uptr;
 typedef u32 uptr;
 #endif
 
-#elif defined(__LINUX__) || defined(__MINGW32__)
+#elif defined(__linux__) || defined(__MINGW32__)
 
 typedef char s8;
 typedef short s16;

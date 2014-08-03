@@ -18,19 +18,15 @@
 #ifndef __PS2ETYPES_H__
 #define __PS2ETYPES_H__
 
-#if defined (__linux__) && !defined(__LINUX__)  // some distributions are lower case
-#define __LINUX__
-#endif
-
 #ifdef __CYGWIN__
-#define __LINUX__
+#define __linux__
 #endif
 
 #ifndef ArraySize
 #define ArraySize(x) (sizeof(x)/sizeof((x)[0]))
 #endif
 
-#ifdef __LINUX__
+#ifdef __linux__
 #define CALLBACK
 #else
 #define CALLBACK    __stdcall
@@ -91,7 +87,7 @@ typedef unsigned int uint;
 
 #else // _MSC_VER
 
-#ifdef __LINUX__
+#ifdef __linux__
 
 #ifdef HAVE_STDINT_H
 #include "stdint.h"
@@ -137,7 +133,7 @@ typedef union _LARGE_INTEGER
 #define __forceinline __attribute__((always_inline,unused))
 #define __naked		// GCC lacks the naked specifier
 
-#endif  // __LINUX__
+#endif  // __linux__
 
 #define PCSX2_ALIGNED(alig,x) x __attribute((aligned(alig)))
 #define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
@@ -146,7 +142,7 @@ typedef union _LARGE_INTEGER
 
 #endif // _MSC_VER
 
-#if !defined(__LINUX__) || !defined(HAVE_STDINT_H)
+#if !defined(__linux__) || !defined(HAVE_STDINT_H)
 #if defined(__x86_64__)
 typedef u64 uptr;
 typedef s64 sptr;

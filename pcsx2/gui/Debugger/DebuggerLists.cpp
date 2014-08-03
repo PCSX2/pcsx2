@@ -75,7 +75,7 @@ GenericListViewColumn breakpointColumns[BPL_COLUMNCOUNT] = {
 BreakpointList::BreakpointList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly)
 	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER), cpu(_cpu), disasm(_disassembly)
 {
-#ifdef __LINUX__
+#ifdef __linux__
 	// On linux wx failed to resize properly the page. I don't know why so for the moment I just create a static size page
 	// Far from ideal but at least I can use the memory window!
 	this->SetSize(wxSize(1000, 200));

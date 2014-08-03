@@ -21,12 +21,6 @@
 #ifndef MULTIFILE_H
 #define MULTIFILE_H
 
-// #ifndef __LINUX__
-// #ifdef __linux__
-// #define __LINUX__
-// #endif /* __linux__ */
-// #endif /* No __LINUX__ */
-
 // #define CDVDdefs
 // #include "PS2Edefs.h"
 #include "isofile.h"

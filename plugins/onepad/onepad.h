@@ -47,7 +47,7 @@ using namespace std;
 #define PADdefs
 #include "PS2Edefs.h"
 
-#ifdef __LINUX__
+#ifdef __linux__
 #include "joystick.h"
 #endif
 #include "bitwise.h"

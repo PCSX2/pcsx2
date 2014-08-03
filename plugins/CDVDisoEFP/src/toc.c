@@ -19,11 +19,6 @@
  */
 #include <stddef.h> // NULL
 #include <sys/types.h> // off64_t
-#ifndef __LINUX__
-#ifdef __linux__
-#define __LINUX__
-#endif /* __linux__ */
-#endif /* No __LINUX__ */
 #define CDVDdefs
 #include "PS2Edefs.h"
 #include "logfile.h"

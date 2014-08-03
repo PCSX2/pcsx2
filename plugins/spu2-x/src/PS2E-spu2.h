@@ -20,7 +20,7 @@
 #include "Pcsx2Defs.h"
 #include "PS2Edefs.h"
 
-#ifdef __LINUX__
+#ifdef __linux__
 //Until I get around to putting in Linux svn code, this is an unknown svn version.
 #define SVN_REV_UNKNOWN
 #endif
@@ -51,7 +51,7 @@ EXPORT_C_(void) SPU2irqCallback(void (*SPU2callback)());
 #else
 // These defines are useless and gcc-4.6 complain about redefinition
 // so we remove them on linux
-#ifndef __LINUX__
+#ifndef __linux__
 EXPORT_C_(void) SPU2readDMA4Mem(u16 *pMem, u32 size);
 EXPORT_C_(void) SPU2writeDMA4Mem(u16 *pMem, u32 size);
 EXPORT_C_(void) SPU2interruptDMA4();
