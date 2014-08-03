@@ -36,13 +36,17 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
 ### Braces/Brackets
 
 - All curly braces (`{ }`) should be placed on newlines. The only exception to this is **short** inline functions in class header files (getters, setters).
-- Braces are **mandatory** after conditions. This should never occur in your code:
+- Newlines are **mandatory** after conditions. This should never occur in your code:
 
+  ```cpp
+  if (SomeCondition) DoSomething();
+  ```
+  - This is because it is impossible to place a breakpoint on `DoSomething()`, only on the entire line of code. Keeping things nicely separated makes debugging much easier:
+  
   ```cpp
   if (SomeCondition)
       DoSomething();
   ```
-  - This is because these kinds of conditions are a breeding ground for bugs. A careless programmer can add one more statement after `DoSomething();` and not realize that it won't be executed as part of the condition.
 
 ### Whitespace
 
