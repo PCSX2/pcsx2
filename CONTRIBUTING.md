@@ -58,7 +58,7 @@ This is the contributor's guide for the PCSX2 emulator. In order to expedite any
 - All functions and variables that do not override another should be documented. At the very least, write a couple words about **why it's there**.
 - The difference between an evil or a good magic constant is that the good ones are well-documented. All constants in your code should have their meaning instantly apparent to a reader.
 - Documentation doesn't exist to explain how something works (your code should be obvious enough for that). Documentation exists to explain why that code is there.
-- Use doxygen comments for all kinds of documentation. An example:
+- Use doxygen comments for all kinds of documentation of functions and members. Note that **comments within blocks of code do not need use doxygen**. An example:
 
   ```cpp
   /** The explanation of what and why this function does.
