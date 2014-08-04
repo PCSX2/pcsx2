@@ -33,16 +33,9 @@ find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
 
 ## Use pcsx2 package to find module
-#include(FindAio)
-## Include cg because of zzogl-cg and zerogs
-#if(NOT GLSL_API)
 include(FindCg)
-#include(FindEGL)
-#include(FindGLES2)
 include(FindGlew)
 include(FindLibc)
-#include(FindPortAudio)
-#include(FindSoundTouch)
 
 ## Use CheckLib package to find module
 include(CheckLib)
