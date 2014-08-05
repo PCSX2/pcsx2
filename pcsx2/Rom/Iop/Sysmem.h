@@ -15,7 +15,7 @@
 
 #pragma once
 
-#define HLE_SYSMEM_MODULE
+//#define HLE_SYSMEM_MODULE
 
 namespace R3000A {
 

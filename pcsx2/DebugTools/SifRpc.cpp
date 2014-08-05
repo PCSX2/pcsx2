@@ -52,7 +52,7 @@ namespace sif_tracer {
 
 	static void print_bind_info(const u32 sif, SifBind* bind) {
 		// In case we want to print more info of the client data structure
-		DevCon.WriteLn("\t\t???:%x. Packet src:0x%x. Packet ID:%d. ClientData:0x%x. ServerId:0x%x\n", 
+		DevCon.WriteLn("\t\t???:%x. Packet src:0x%x. Packet ID:%d. ClientData:0x%x. ServerId:0x%x\n",
 				bind->unknown1, bind->p_src, bind->p_id, bind->client_data_ptr, bind->server_id);
 	}
 
@@ -64,7 +64,7 @@ namespace sif_tracer {
 
 	static void print_call_info(const u32 sif, SifCall* call) {
 		// In case we want to print more info of the server/client data structure
-		DevCon.WriteLn("\t\t???:%x. Packet src:0x%x. Packet ID:%d. ClientData:0x%x. rpc service:0x%x.", 
+		DevCon.WriteLn("\t\t???:%x. Packet src:0x%x. Packet ID:%d. ClientData:0x%x. rpc service:0x%x.",
 				call->unknown1, call->p_src, call->p_id, call->client_data_ptr, call->fno);
 		DevCon.WriteLn("\t\tArg Size:%d B. Ret Add:0x%x. Ret Size:%d B. Ret Mode:%x. ServerData:0x%x\n",
 				call->size, call->rsp_add, call->rsp_size, call->rsp_mode, call->server_data_ptr);
@@ -88,7 +88,7 @@ namespace sif_tracer {
 		}
 
 		switch (cmd) {
-			case SIF_CMD_INIT: 
+			case SIF_CMD_INIT:
 				DevCon.WriteLn("\t\treceiver address: 0x%x\n", read(sif, src+16));
 				return;
 			case SIF_CMD_SREG:
