@@ -59,26 +59,34 @@ for ARG in "$@"; do
     esac
 done
 
-cd "$(dirname "$0")" # Navigate to script's directory
+root=$PWD/$(dirname "$0")
+log=$root/install_log.txt
+build=$root/build
 
 if [[ "$cleanBuild" -eq 1 ]]; then
     echo "Doing a clean build."
-    rm -fr build
+    # allow to keep build as a symlink
+    rm -fr $build/*
 fi
 
-echo "Building pcsx2 with ${flags[*]}" | tee install_log.txt
+# Resolve the symlink otherwise cmake is lost
 
-mkdir -p build
-cd build
+echo "Building pcsx2 with ${flags[*]}" | tee $log
+if [[ -L $build  ]]; then
+    build=`readlink $build`
+fi
+
+mkdir -p $build
+# Cmake will generate file inside $CWD
+cd $build
 
 if [[ "$useClang" -eq 1 ]]; then
-    CC=clang CXX=clang++ cmake "${flags[@]}" .. 2>&1 | tee -a ../install_log.txt
+    CC=clang CXX=clang++ cmake "${flags[@]}" $root 2>&1 | tee -a $log
 else
-    cmake "${flags[@]}" .. 2>&1 | tee -a ../install_log.txt
+    cmake "${flags[@]}" $root 2>&1 | tee -a $log
 fi
 
-make -j "$(grep -w -c processor /proc/cpuinfo)" 2>&1 | tee -a ../install_log.txt
-make install 2>&1 | tee -a ../install_log.txt
+make -j "$(grep -w -c processor /proc/cpuinfo)" 2>&1 | tee -a $log
+make install 2>&1 | tee -a $log
 
-cd ..
 exit 0
