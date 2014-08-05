@@ -51,7 +51,7 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
         GET_FILENAME_COMPONENT(_abs_PATH ${_absFile} PATH)
         GET_FILENAME_COMPONENT(_gmoBase ${_absFile} NAME_WE)
         GET_FILENAME_COMPONENT(_lang ${_abs_PATH} NAME_WE)
-        SET(_gmoFile ${CMAKE_CURRENT_BINARY_DIR}/${_lang}__${_gmoBase}.gmo)
+        SET(_gmoFile ${CMAKE_BINARY_DIR}/${_lang}__${_gmoBase}.gmo)
 
         IF (CMAKE_BUILD_PO)
             ADD_CUSTOM_COMMAND( OUTPUT ${_gmoFile}
