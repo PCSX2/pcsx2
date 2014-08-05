@@ -18,9 +18,24 @@
 #include "BreakpointWindow.h"
 #include "DebugEvents.h"
 
-void insertListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int count)
+BEGIN_EVENT_TABLE(GenericListView, wxWindow)
+	EVT_SIZE(GenericListView::sizeEvent)
+	EVT_KEY_DOWN(GenericListView::keydownEvent)
+	EVT_RIGHT_DOWN(GenericListView::mouseEvent)
+	EVT_RIGHT_UP(GenericListView::mouseEvent)
+	EVT_LEFT_DCLICK(GenericListView::mouseEvent)
+	EVT_LIST_ITEM_RIGHT_CLICK(wxID_ANY,GenericListView::listEvent)
+END_EVENT_TABLE()
+
+GenericListView::GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount)
+	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER)
 {
-	int totalWidth = list->GetSize().x;
+	insertColumns(columns,columnCount);
+}
+
+void GenericListView::insertColumns(GenericListViewColumn* columns, int count)
+{
+	int totalWidth = GetSize().x;
 
 	for (int i = 0; i < count; i++)
 	{
@@ -28,29 +43,92 @@ void insertListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int
 		column.SetText(columns[i].name);
 		column.SetWidth(totalWidth * columns[i].size);
 
-		list->InsertColumn(i,column);
+		InsertColumn(i,column);
+	}
+
+	this->columns = columns;
+}
+
+void GenericListView::resizeColumns(int totalWidth)
+{
+	for (int i = 0; i < GetColumnCount(); i++)
+	{
+		SetColumnWidth(i,totalWidth*columns[i].size);
 	}
 }
 
-void resizeListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int count, int totalWidth)
+void GenericListView::sizeEvent(wxSizeEvent& evt)
 {
-	for (int i = 0; i < std::min(list->GetColumnCount(), count); i++)
+	resizeColumns(evt.GetSize().x);
+}
+
+void GenericListView::keydownEvent(wxKeyEvent& evt)
+{
+	int sel = GetFirstSelected();
+	switch (evt.GetKeyCode())
 	{
-		list->SetColumnWidth(i,totalWidth*columns[i].size);
+	case WXK_DELETE:
+		if (sel+1 == GetItemCount())
+			Select(sel-1);
+		break;
+	case WXK_UP:
+		if (sel > 0)
+			Select(sel-1);
+		break;
+	case WXK_DOWN:
+		if (sel+1 < GetItemCount())
+			Select(sel+1);
+		break;
 	}
+
+	onKeyDown(evt.GetKeyCode());
+}
+
+void GenericListView::update()
+{
+	int newRows = getRowCount();
+	SetItemCount(newRows);
+	Refresh();
+}
+
+wxString GenericListView::OnGetItemText(long item, long col) const
+{
+	return getColumnText(item,col);
+}
+
+void GenericListView::postEvent(wxEventType type, int value)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetInt(value);
+   wxPostEvent(this,event);
+}
+
+void GenericListView::mouseEvent(wxMouseEvent& evt)
+{
+	wxEventType type = evt.GetEventType();
+
+	if (type == wxEVT_RIGHT_DOWN)
+	{
+		clickPos = evt.GetPosition();
+		evt.Skip();
+	} else if (type == wxEVT_RIGHT_UP)
+	{
+		onRightClick(GetFirstSelected(),evt.GetPosition());
+	} else if (type == wxEVT_LEFT_DCLICK)
+	{
+		onDoubleClick(GetFirstSelected(),evt.GetPosition());
+	}
+}
+
+void GenericListView::listEvent(wxListEvent& evt)
+{
+	onRightClick(GetFirstSelected(),clickPos);
 }
 
 //
 // BreakpointList
 //
-
-BEGIN_EVENT_TABLE(BreakpointList, wxWindow)
-	EVT_SIZE(BreakpointList::sizeEvent)
-	EVT_KEY_DOWN(BreakpointList::keydownEvent)
-	EVT_RIGHT_DOWN(BreakpointList::mouseEvent)
-	EVT_RIGHT_UP(BreakpointList::mouseEvent)
-	EVT_LIST_ITEM_RIGHT_CLICK(wxID_ANY,BreakpointList::listEvent)
-END_EVENT_TABLE()
 
 enum { BPL_TYPE, BPL_OFFSET, BPL_SIZELABEL, BPL_OPCODE, BPL_CONDITION, BPL_HITS, BPL_ENABLED, BPL_COLUMNCOUNT };
 
@@ -60,7 +138,6 @@ enum BreakpointListMenuIdentifiers
 	ID_BREAKPOINTLIST_EDIT,
 	ID_BREAKPOINTLIST_ADDNEW,
 };
-
 
 GenericListViewColumn breakpointColumns[BPL_COLUMNCOUNT] = {
 	{ L"Type",			0.12f },
@@ -73,29 +150,16 @@ GenericListViewColumn breakpointColumns[BPL_COLUMNCOUNT] = {
 };
 
 BreakpointList::BreakpointList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly)
-	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER), cpu(_cpu), disasm(_disassembly)
+	: GenericListView(parent,breakpointColumns,BPL_COLUMNCOUNT), cpu(_cpu),disasm(_disassembly)
 {
 #ifdef __linux__
 	// On linux wx failed to resize properly the page. I don't know why so for the moment I just create a static size page
 	// Far from ideal but at least I can use the memory window!
 	this->SetSize(wxSize(1000, 200));
 #endif
-	insertListViewColumns(this,breakpointColumns,BPL_COLUMNCOUNT);
 }
 
-void BreakpointList::sizeEvent(wxSizeEvent& evt)
-{
-	resizeListViewColumns(this,breakpointColumns,BPL_COLUMNCOUNT,evt.GetSize().x);
-}
-
-void BreakpointList::update()
-{
-	int newRows = getTotalBreakpointCount();
-	SetItemCount(newRows);
-	Refresh();
-}
-
-int BreakpointList::getTotalBreakpointCount()
+int BreakpointList::getRowCount()
 {
 	int count = (int)CBreakPoints::GetMemChecks().size();
 	for (size_t i = 0; i < CBreakPoints::GetBreakpoints().size(); i++)
@@ -106,7 +170,7 @@ int BreakpointList::getTotalBreakpointCount()
 	return count;
 }
 
-wxString BreakpointList::OnGetItemText(long item, long col) const
+wxString BreakpointList::getColumnText(int item, int col) const
 {
 	FastFormatUnicode dest;
 	bool isMemory;
@@ -213,23 +277,13 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 	return dest;
 }
 
-void BreakpointList::keydownEvent(wxKeyEvent& evt)
+void BreakpointList::onKeyDown(int key)
 {
 	int sel = GetFirstSelected();
-	switch (evt.GetKeyCode())
+	switch (key)
 	{
 	case WXK_DELETE:
-		if (sel+1 == GetItemCount())
-			Select(sel-1);
 		removeBreakpoint(sel);
-		break;
-	case WXK_UP:
-		if (sel > 0)
-			Select(sel-1);
-		break;
-	case WXK_DOWN:
-		if (sel+1 < GetItemCount())
-			Select(sel+1);
 		break;
 	case WXK_RETURN:
 		editBreakpoint(sel);
@@ -412,21 +466,12 @@ void BreakpointList::showMenu(const wxPoint& pos)
 	PopupMenu(&menu,pos);
 }
 
-void BreakpointList::mouseEvent(wxMouseEvent& evt)
+void BreakpointList::onRightClick(int itemIndex, const wxPoint& point)
 {
-	wxEventType type = evt.GetEventType();
-
-	if (type == wxEVT_RIGHT_DOWN)
-	{
-		clickPos = evt.GetPosition();
-		evt.Skip();
-	} else if (type == wxEVT_RIGHT_UP)
-	{
-		showMenu(evt.GetPosition());
-	}
+	showMenu(point);
 }
 
-void BreakpointList::listEvent(wxListEvent& evt)
+void BreakpointList::onDoubleClick(int itemIndex, const wxPoint& point)
 {
-	showMenu(clickPos);
+	gotoBreakpointAddress(itemIndex);
 }
