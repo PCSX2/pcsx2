@@ -104,7 +104,7 @@ const IConsoleWriter ConsoleWriter_Null =
 //  Console_Stdout
 // --------------------------------------------------------------------------------------
 
-#ifdef __LINUX__
+#ifdef __linux__
 static __fi const wxChar* GetLinuxConsoleColor(ConsoleColors color)
 {
     switch(color)
@@ -165,15 +165,15 @@ static void __concall ConsoleStdout_Newline()
 
 static void __concall ConsoleStdout_DoSetColor( ConsoleColors color )
 {
-#ifdef __LINUX__
+#ifdef __linux__
 	wxPrintf(L"\033[0m");
-    wxPrintf(GetLinuxConsoleColor(color));
+	wxPrintf(GetLinuxConsoleColor(color));
 #endif
 }
 
 static void __concall ConsoleStdout_SetTitle( const wxString& title )
 {
-#ifdef __LINUX__
+#ifdef __linux__
 	wxPrintf(L"\033]0;%s\007", title.c_str());
 #endif
 }

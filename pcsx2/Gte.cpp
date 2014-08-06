@@ -229,7 +229,7 @@ __inline void MTC2(unsigned long value, int reg) {
 		} else {
 			psxRegs.CP2D.r[31] = 32;
 		}
-#elif defined(__LINUX__) || defined(__MINGW32__)
+#elif defined(__linux__) || defined(__MINGW32__)
 		if (a > 0) {
 			__asm__ ("bsrl %1, %0\n" : "=r"(a) : "r"(a) );
 			psxRegs.CP2D.r[31] = 31 - a;

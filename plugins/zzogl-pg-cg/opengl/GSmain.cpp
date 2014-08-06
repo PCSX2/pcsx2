@@ -623,7 +623,7 @@ s32 CALLBACK GSfreeze(int mode, freezeData *data)
 	return 0;
 }
 
-#ifdef __LINUX__
+#ifdef __linux__
 
 struct Packet 
 {

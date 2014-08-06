@@ -30,7 +30,7 @@
 
 // Allows us to force-disable threading for debugging/troubleshooting
 static const bool DisableThreading =
-#ifdef __LINUX__
+#ifdef __linux__
 	true;		// linux appears to have threading issues with loadlibrary.
 #else
 	false;

@@ -16,7 +16,7 @@
 
 #include "PrecompiledHeader.h"
 
-#ifdef __LINUX__
+#ifdef __linux__
 #include <cstdarg>
 #endif
 

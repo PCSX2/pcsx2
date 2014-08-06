@@ -380,7 +380,7 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 
 	// The exception terminate the program on linux which is very annoying
 	// Just disable it for the moment
-#ifdef __LINUX__
+#ifdef __linux__
 	if (0)
 #else
 	if( IsDevBuild )
@@ -401,7 +401,7 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 {
 	// The exception terminate the program on linux which is very annoying
 	// Just disable it for the moment
-#ifdef __LINUX__
+#ifdef __linux__
 	if (0)
 #else
 	if( IsDevBuild )

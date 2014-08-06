@@ -252,7 +252,7 @@ protected:
 
 public:
 	McdDataObject(int viewIndex = -1)
-#ifdef __LINUX__
+#ifdef __linux__
 		// XXX: On linux drag and drop doesn't work. I think wxDF_PRIVATE is a MS extension.
 		// Besides it will raise on assertion on wx3.0.
 		//

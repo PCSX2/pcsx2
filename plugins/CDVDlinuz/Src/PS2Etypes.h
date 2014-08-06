@@ -42,7 +42,7 @@ typedef u32 uptr;
 
 
 
-#elif defined(__LINUX__) || defined(__MINGW32__)
+#elif defined(__linux__) || defined(__MINGW32__)
 
 
 

@@ -19,11 +19,8 @@
 // Indicate that this is the wx port to the plugins.
 #define WX_PCSX2
 
-// some distributions are lower case
-#if defined (__linux__) || defined(__CYGWIN__)
-#if !defined(__LINUX__)
-#	define __LINUX__
-#endif
+#ifdef __CYGWIN__
+#define __linux__
 #endif
 
 #include "Pcsx2Types.h"
@@ -77,7 +74,7 @@ extern "C" unsigned __int64 __xgetbv(int);
 //  restaints must be enforced).
 //
 #ifndef C_ASSERT
-	#ifdef __LINUX__
+	#ifdef __linux__
 	#	define C_ASSERT(e) static_assert(e, "this is a nice message to explain the failure ;)")
 	#else
 	#	define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]

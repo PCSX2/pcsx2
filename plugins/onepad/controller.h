@@ -22,7 +22,7 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
-#ifdef __LINUX__
+#ifdef __linux__
 #define MAX_KEYS 24
 #else
 #define MAX_KEYS 20
