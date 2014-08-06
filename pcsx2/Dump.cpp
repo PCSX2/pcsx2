@@ -25,7 +25,6 @@
 #include "Utilities/AsciiFile.h"
 
 using namespace R5900;
-using std::string;
 
 // fixme: currently should not be uncommented.
 //#define TEST_BROKEN_DUMP_ROUTINES
@@ -219,7 +218,7 @@ void iDumpBlock( int startpc, u8 * ptr )
 
 	for ( uint i = startpc; i < s_nEndBlock; i += 4 )
 	{
-		string output;
+		std::string output;
 		disR5900Fasm( output, memRead32( i ), i );
 		eff.Printf( output.c_str() );
 	}
