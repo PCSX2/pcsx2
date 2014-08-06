@@ -58,13 +58,6 @@
 using std::min;
 using std::max;
 
-typedef int BOOL;
-
-#undef TRUE
-#undef FALSE
-#define TRUE  1
-#define FALSE 0
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Begin Pcsx2 Includes: Add items here that are local to Pcsx2 but stay relatively
