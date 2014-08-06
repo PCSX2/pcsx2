@@ -20,8 +20,6 @@
 #include "R5900.h"
 #include "VU.h"
 
-using std::string;
-
 const char * const disRNameCP2f[] = {
 	"VF00", "VF01", "VF02", "VF03", "VF04", "VF05", "VF06", "VF07",
 	"VF08", "VF09", "VF10", "VF11", "VF12", "VF13", "VF14", "VF15",
@@ -65,8 +63,8 @@ const char * const disRNameCP1c[] = {
 	"*RES*",  "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "*RES*", "FStatus"};
 
 // Type definition of our functions
-#define DisFInterface  (string& output, u32 code)
-#define DisFInterfaceT (string&, u32)
+#define DisFInterface  (std::string& output, u32 code)
+#define DisFInterfaceT (std::string&, u32)
 #define DisFInterfaceN (output, code)
 
 typedef void (*TdisR5900F)DisFInterface;
@@ -223,7 +221,7 @@ const char *disR5900GetUpperSym(u32 addr) {
 	return dSyms[j].name;
 }
 
-void dFindSym( string& output, u32 addr )
+void dFindSym( std::string& output, u32 addr )
 {
 	const char* label = disR5900GetSym( addr );
 	if( label != NULL )
@@ -805,7 +803,7 @@ TdisR5900F disR5900_MMI0[] = { // Subset of disMMI0
     disPADDSB, disPSUBSB, disPEXTLB, disPPACB,
 	disNULL,   disNULL,   disPEXTS,  disPPACS};
 
-static void disMMI0( string& output, u32 code )
+static void disMMI0( std::string& output, u32 code )
 {
 	disR5900_MMI0[_Sa_]( output, code );
 }
@@ -820,7 +818,7 @@ TdisR5900F disR5900_MMI1[] = { // Subset of disMMI1
     disPADDUB, disPSUBUB, disPEXTUB, disQFSRV,
 	disNULL,   disNULL,   disNULL,   disNULL};
 
-static void disMMI1( string& output, u32 code )
+static void disMMI1( std::string& output, u32 code )
 {
 	disR5900_MMI1[_Sa_]( output, code );
 }
@@ -835,7 +833,7 @@ TdisR5900F disR5900_MMI2[] = { // Subset of disMMI2
     disNULL,   disNULL,   disPEXEH,  disPREVH,
 	disPMULTH, disPDIVBW, disPEXEW,  disPROT3W};
 
-static void disMMI2( string& output, u32 code )
+static void disMMI2( std::string& output, u32 code )
 {
 	disR5900_MMI2[_Sa_]( output, code );
 }
@@ -850,7 +848,7 @@ TdisR5900F disR5900_MMI3[] = { // Subset of disMMI3
     disNULL,    disNULL,   disPEXCH,  disPCPYH,
 	disNULL,    disNULL,   disPEXCW,  disNULL};
 
-static void disMMI3( string& output, u32 code )
+static void disMMI3( std::string& output, u32 code )
 {
 	disR5900_MMI3[_Sa_]( output, code );
 }
@@ -865,7 +863,7 @@ TdisR5900F disR5900_MMI[] = { // Subset of disMMI
     disNULL,  disNULL,   disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
     disNULL,  disNULL,   disNULL, disNULL, disNULL, disNULL, disNULL, disNULL};
 
-static void disMMI( string& output, u32 code )
+static void disMMI( std::string& output, u32 code )
 {
 	disR5900_MMI[_Funct_]( output, code );
 }
@@ -878,7 +876,7 @@ TdisR5900F disR5900_COP0_BC0[] = { //subset of disCOP0 BC
     disNULL, disNULL, disNULL , disNULL , disNULL, disNULL, disNULL, disNULL,
 };
 
-static void disCOP0_BC0( string& output, u32 code )
+static void disCOP0_BC0( std::string& output, u32 code )
 {
 	disR5900_COP0_BC0[_Rt_]( output, code );
 }
@@ -893,7 +891,7 @@ TdisR5900F disR5900_COP0_Func[] = { //subset of disCOP0 Function
     disNULL, disNULL, disNULL , disNULL, disNULL, disNULL, disNULL , disNULL,
     disEI  , disDI  , disNULL , disNULL, disNULL, disNULL, disNULL , disNULL
 };
-static void disCOP0_Func( string& output, u32 code )
+static void disCOP0_Func( std::string& output, u32 code )
 {
 	disR5900_COP0_Func[_Funct_]( output, code );
 }
@@ -904,7 +902,7 @@ TdisR5900F disR5900_COP0[] = { // Subset of disCOP0
     disCOP0_Func, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
     disNULL,      disNULL, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL};
 
-static void disCOP0( string& output, u32 code )
+static void disCOP0( std::string& output, u32 code )
 {
 	disR5900_COP0[_Rs_]( output, code );
 }
@@ -920,7 +918,7 @@ TdisR5900F disR5900_COP1_S[] = { //subset of disCOP1 S
     disNULL,  disNULL,  disNULL,  disNULL, disNULL,  disNULL,  disNULL,   disNULL,
 };
 
-static void disCOP1_S( string& output, u32 code )
+static void disCOP1_S( std::string& output, u32 code )
 {
 	disR5900_COP1_S[_Funct_]( output, code );
 }
@@ -936,7 +934,7 @@ TdisR5900F disR5900_COP1_W[] = { //subset of disCOP1 W
     disNULL,  disNULL, disNULL, disNULL, disNULL, disNULL, disNULL, disNULL,
 };
 
-static void disCOP1_W( string& output, u32 code )
+static void disCOP1_W( std::string& output, u32 code )
 {
 	disR5900_COP1_W[_Funct_]( output, code );
 }
@@ -948,7 +946,7 @@ TdisR5900F disR5900_COP1_BC1[] = { //subset of disCOP1 BC
     disNULL, disNULL, disNULL , disNULL , disNULL, disNULL, disNULL, disNULL,
 };
 
-static void disCOP1_BC1( string& output, u32 code )
+static void disCOP1_BC1( std::string& output, u32 code )
 {
 	disR5900_COP1_BC1[_Rt_]( output, code );
 }
@@ -959,7 +957,7 @@ TdisR5900F disR5900_COP1[] = { // Subset of disCOP1
     disCOP1_S,   disNULL, disNULL, disNULL, disCOP1_W, disNULL, disNULL, disNULL,
     disNULL,     disNULL, disNULL, disNULL, disNULL,   disNULL, disNULL, disNULL};
 
-static void disCOP1( string& output, u32 code )
+static void disCOP1( std::string& output, u32 code )
 {
 	disR5900_COP1[_Rs_]( output, code );
 }
@@ -983,7 +981,7 @@ TdisR5900F disR5900_COP2_SPEC2[] = { //subset of disCOP2 SPEC2
     disNULL,    disNULL,    disNULL,    disNULL,    disNULL, disNULL, disNULL, disNULL,
 };
 
-static void disCOP2_SPEC2( string& output, u32 code )
+static void disCOP2_SPEC2( std::string& output, u32 code )
 {
 	disR5900_COP2_SPEC2[(code & 0x3) | ((code >> 4) & 0x7c)]( output, code );
 }
@@ -999,7 +997,7 @@ TdisR5900F disR5900_COP2_SPEC1[] = { //subset of disCOP2 SPEC1
     disVCALLMS, disVCALLMSR, disNULL,   disNULL,   disCOP2_SPEC2,   disCOP2_SPEC2,   disCOP2_SPEC2,    disCOP2_SPEC2,
 };
 
-static void disCOP2_SPEC1( string& output, u32 code )
+static void disCOP2_SPEC1( std::string& output, u32 code )
 {
 	disR5900_COP2_SPEC1[_Funct_]( output, code );
 }
@@ -1011,7 +1009,7 @@ TdisR5900F disR5900_COP2_BC2[] = { //subset of disCOP2 BC
     disNULL, disNULL, disNULL , disNULL , disNULL, disNULL, disNULL, disNULL,
 };
 
-static void disCOP2_BC2( string& output, u32 code )
+static void disCOP2_BC2( std::string& output, u32 code )
 {
 	disR5900_COP2_BC2[_Rt_]( output, code );
 }
@@ -1022,7 +1020,7 @@ TdisR5900F disR5900_COP2[] = { // Subset of disCOP2
 	disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1,
 	disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1, disCOP2_SPEC1};
 
-static void disCOP2( string& output, u32 code )
+static void disCOP2( std::string& output, u32 code )
 {
 	disR5900_COP2[_Rs_]( output, code );
 }
@@ -1033,7 +1031,7 @@ TdisR5900F disR5900_REGIMM[] = { // Subset of disREGIMM
     disBLTZAL, disBGEZAL, disBLTZALL, disBGEZALL, disNULL, disNULL, disNULL, disNULL,
     disMTSAB,  disMTSAH , disNULL,    disNULL,    disNULL, disNULL, disNULL, disNULL};
 
-static void disREGIMM( string& output, u32 code )
+static void disREGIMM( std::string& output, u32 code )
 {
 	disR5900_REGIMM[_Rt_]( output, code );
 }
@@ -1048,7 +1046,7 @@ TdisR5900F disR5900_SPECIAL[] = {
     disTGE,    disTGEU, disTLT,    disTLTU,  disTEQ,     disNULL, disTNE,   disNULL,
     disDSLL,   disNULL, disDSRL,   disDSRA,  disDSLL32,  disNULL, disDSRL32,disDSRA32 };
 
-static void disSPECIAL( string& output, u32 code )
+static void disSPECIAL( std::string& output, u32 code )
 {
 	disR5900_SPECIAL[_Funct_]( output, code );
 }
@@ -1063,14 +1061,14 @@ TdisR5900F disR5900[] = {
     disNULL   , disLWC1  , disNULL, disPREF , disNULL, disNULL, disLQC2 , disLD   ,
     disNULL   , disSWC1  , disNULL, disNULL  , disNULL, disNULL, disSQC2 , disSD  };
 
-void disR5900F( string& output, u32 code )
+void disR5900F( std::string& output, u32 code )
 {
 	disR5900[code >> 26]( output, code );
 }
 
 // returns a string representation of the cpuRegs current instruction.
 // The return value of this method is *not* thread safe!
-const string& DisR5900CurrentState::getString()
+const std::string& DisR5900CurrentState::getString()
 {
 	result.clear();
 	disR5900F( result, cpuRegs.code );
