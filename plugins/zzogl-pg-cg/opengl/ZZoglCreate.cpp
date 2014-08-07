@@ -323,7 +323,8 @@ __forceinline bool LoadShadersFromDat()
 	fseek(fres, 0, SEEK_SET);
 	fread(s_lpShaderResources, s, 1, fres);
 	s_lpShaderResources[s] = 0;
-	
+	fclose(fres);
+
 	return true;
 }
 

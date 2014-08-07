@@ -224,6 +224,7 @@ bool ZZshCreateOpenShadersFile() {
 	if (fread(s_lpShaderResources, s, 1, fres) == 0)
 			ZZLog::Error_Log("Cannot read ps2hw.dat in working directory.");
 	s_lpShaderResources[s] = 0;
+	fclose(fres);
 #	endif // _WIN32
 #else // NOT RELEASE_TO_PUBLIC
 #	ifndef _WIN32 // NOT WINDOWS

@@ -222,6 +222,7 @@ bool ZZshCreateOpenShadersFile() {
 	fseek(fres, 0, SEEK_SET);
 	fread(s_lpShaderResources, s, 1, fres);
 	s_lpShaderResources[s] = 0;
+	fclose(fres);
 #	endif // _WIN32
 #else // NOT RELEASE_TO_PUBLIC
 #	ifndef _WIN32 // NOT WINDOWS
