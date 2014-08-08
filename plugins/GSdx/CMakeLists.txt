@@ -227,6 +227,7 @@ set(GSdxFinalLibs
     ${GSdxFinalLibs} 
     ${EGL_LIBRARIES}
     ${GTK2_LIBRARIES}
+    ${LIBC_LIBRARIES}
 )
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
@@ -239,5 +240,9 @@ add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinal
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
 	set(Replay pcsx2_GSReplayLoader)
-    add_pcsx2_executable(${Replay} "linux_replay.cpp" "" "")
+    set(GSdxReplayLoaderFinalSources 
+        ${GSdxFinalSources}
+        linux_replay.cpp
+    )
+    add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
 endif(BUILD_REPLAY_LOADERS)

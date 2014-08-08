@@ -217,6 +217,7 @@ set(zzoglFinalLibs
     ${JPEG_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${ZLIB_LIBRARIES}
+    ${LIBC_LIBRARIES}
 )
 
 add_pcsx2_plugin(${Output} "${zzoglFinalSources}" "${zzoglFinalLibs}" "${zzoglFinalFlags}")

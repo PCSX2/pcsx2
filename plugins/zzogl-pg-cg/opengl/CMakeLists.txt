@@ -170,5 +170,6 @@ if(BUILD_REPLAY_LOADERS)
         ${zzoglFinalSources}
         linux_replay.cpp
     )
-    add_pcsx2_executable(${Replay} "${zzoglReplayLoaderFinalSources}" "${zzoglFinalLibs}" "${zzoglFinalFlags}")
+    # Broken for now
+    #add_pcsx2_executable(${Replay} "${zzoglReplayLoaderFinalSources}" "${zzoglFinalLibs}" "${zzoglFinalFlags}")
 endif(BUILD_REPLAY_LOADERS)
