@@ -338,7 +338,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 }
 
 // Scan through instructions and check if flags are read (FSxxx, FMxxx, FCxxx opcodes)
-void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, vector<u32>& v) {
+void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, std::vector<u32>& v) {
 
 	for (u32 i = 0; i < v.size(); i++) {
 		if (v[i] == startPC) return; // Prevent infinite recursion
@@ -375,7 +375,7 @@ void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, vector<u32>& v) {
 }
 
 void mVUflagPass(mV, u32 startPC, u32 sCount = 0, u32 found = 0) {
-	vector<u32> v;
+	std::vector<u32> v;
 	_mVUflagPass(mVU, startPC, sCount, found, v);
 }
 
