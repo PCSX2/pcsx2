@@ -20,8 +20,6 @@
 #include <map>
 #include <algorithm>
 
-using namespace std;
-
 DWORD GetModuleFromPtr(IN void* ptr,OUT LPWSTR lpFilename,IN DWORD nSize)
 {
 	MEMORY_BASIC_INFORMATION mbi;
@@ -108,9 +106,9 @@ struct Module
 	}
 };
 
-typedef map<wxString,Module> MapType;
+typedef std::map<wxString,Module> MapType;
 
-static vector<Module> ProfModules;
+static std::vector<Module> ProfModules;
 static MapType ProfUnknownHash;
 
 static HANDLE hEmuThread = NULL;
@@ -123,7 +121,7 @@ static volatile bool ProfRunning=false;
 
 static bool _registeredName( const wxString& name )
 {
-	for( vector<Module>::const_iterator
+	for( std::vector<Module>::const_iterator
 		iter = ProfModules.begin(),
 		end = ProfModules.end(); iter<end; ++iter )
 	{
@@ -169,7 +167,7 @@ void ProfilerRegisterSource(const char* Name, const void* function)
 
 void ProfilerTerminateSource( const wxString& Name )
 {
-	for( vector<Module>::const_iterator
+	for( std::vector<Module>::const_iterator
 		iter = ProfModules.begin(),
 		end = ProfModules.end(); iter<end; ++iter )
 	{
@@ -211,7 +209,7 @@ static void MapUnknownSource( uint Eip )
 	DWORD sz=GetModuleFromPtr((void*)Eip,modulename,512);
 	wxString modulenam( (sz==0) ? L"[Unknown]" : modulename );
 
-	map<wxString,Module>::iterator iter = ProfUnknownHash.find(modulenam);
+	std::map<wxString,Module>::iterator iter = ProfUnknownHash.find(modulenam);
 	if (iter!=ProfUnknownHash.end())
 	{
 		iter->second.ticks++;
@@ -254,7 +252,7 @@ int __stdcall ProfilerThread(void* nada)
 			}
 
 			rT += wxsFormat( L"| Recs Total: %2.2f%% |", (float)(((double)subtotal*100.0) / (double)tick_count));
-			vector<MapType::mapped_type> lst;
+			std::vector<MapType::mapped_type> lst;
 			for (MapType::iterator i=ProfUnknownHash.begin();i!=ProfUnknownHash.end();i++)
 			{
 				lst.push_back(i->second);
