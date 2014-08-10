@@ -166,7 +166,7 @@ void ChunksCache::Take(void* pMallocedSrc, PX_off_t offset, int length, int cove
 
 // By design, succeed only if the entire request is in a single cached chunk
 int ChunksCache::Read(void* pDest, PX_off_t offset, int length) {
-	for (std::list<CacheEntry*>::iterator it = m_entries.begin(); it != m_entries.end(); it++) {
+	for (auto it = m_entries.begin(); it != m_entries.end(); it++) {
 		CacheEntry* e = *it;
 		if (e && offset >= e->offset && (offset + length) <= (e->offset + e->coverage)) {
 			if (it != m_entries.begin())

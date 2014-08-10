@@ -212,8 +212,8 @@ void AppGameDatabase::SaveToFile(const wxString& file) {
 		for( uint gameidx=0; gameidx<=endidx; ++gameidx )
 		{
 			const Game_Data& game( m_BlockTable[blockidx][gameidx] );
-			KeyPairArray::const_iterator i(game.kList.begin());
-			for ( ; i != game.kList.end(); ++i) {
+
+			for (auto i = game.kList.begin(); i != game.kList.end(); ++i) {
 				pxWriteMultiline(writer, i->toString() );
 			}
 
