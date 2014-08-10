@@ -45,7 +45,6 @@
 // Needed in gcc for find.
 #include <algorithm>
 
-using namespace std;
 using namespace x86Emitter;
 
 // temporary externs
@@ -151,7 +150,7 @@ struct VuFunctionHeader
 	VuFunctionHeader() : startpc(0xffffffff), pprogfunc(NULL) {}
 	~VuFunctionHeader()
 	{
-		for (vector<RANGE>::iterator it = ranges.begin(); it != ranges.end(); ++it)
+		for (std::vector<RANGE>::iterator it = ranges.begin(); it != ranges.end(); ++it)
 		{
 			free(it->pmem);
 		}
@@ -163,7 +162,7 @@ struct VuFunctionHeader
 	u32 startpc;
 	void* pprogfunc;
 
-	vector<RANGE> ranges;
+	std::vector<RANGE> ranges;
 };
 
 struct VuBlockHeader
@@ -203,7 +202,7 @@ class VuInstruction
 		VuInstruction *pPrevInst;
 
 		int SetCachedRegs(int upper, u32 vuxyz);
-		void Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz);
+		void Recompile(std::list<VuInstruction>::iterator& itinst, u32 vuxyz);
 };
 
 enum BlockType
@@ -221,7 +220,7 @@ enum BlockType
 class VuBaseBlock
 {
 	public:
-		typedef list<VuBaseBlock*> LISTBLOCKS;
+		typedef std::list<VuBaseBlock*> LISTBLOCKS;
 
 		VuBaseBlock();
 
@@ -229,8 +228,8 @@ class VuBaseBlock
 		void AssignVFRegs();
 		void AssignVIRegs(int parent);
 
-		list<VuInstruction>::iterator GetInstIterAtPc(int instpc);
-		void GetInstsAtPc(int instpc, list<VuInstruction*>& listinsts);
+		std::list<VuInstruction>::iterator GetInstIterAtPc(int instpc);
+		void GetInstsAtPc(int instpc, std::list<VuInstruction*>& listinsts);
 
 		void Recompile();
 
@@ -241,8 +240,8 @@ class VuBaseBlock
 		void* pcode; // x86 code pointer
 		void* pendcode; // end of the x86 code pointer
 		int cycles;
-		list<VuInstruction> insts;
-		list<VuBaseBlock*> parents;
+		std::list<VuInstruction> insts;
+		std::list<VuBaseBlock*> parents;
 		LISTBLOCKS blocks; // blocks branches to
 		u32* pChildJumps[4]; // addrs that need to be filled with the children's start addrs
 		// if highest bit is set, addr needs to be relational
@@ -297,7 +296,7 @@ struct VUPIPELINES
 	fdivPipe fdiv;
 	efuPipe efu;
 	ialuPipe ialu[8];
-	list< WRITEBACK > listWritebacks;
+	std::list< WRITEBACK > listWritebacks;
 };
 
 VuBaseBlock::VuBaseBlock()
@@ -316,17 +315,17 @@ VuBaseBlock::VuBaseBlock()
 
 #define SUPERVU_STACKSIZE 0x1000
 
-static list<VuFunctionHeader*> s_listVUHeaders[2];
-static list<VuFunctionHeader*>* s_plistCachedHeaders[2] = {NULL, NULL};
+static std::list<VuFunctionHeader*> s_listVUHeaders[2];
+static std::list<VuFunctionHeader*>* s_plistCachedHeaders[2] = {NULL, NULL};
 static VuFunctionHeader** recVUHeaders[2]	= { NULL, NULL };
 static VuBlockHeader* recVUBlocks[2]		= { NULL, NULL };
 static u8* recVUStack[2]					= { NULL, NULL };
 static u8* recVUStackPtr[2]					= { NULL, NULL };
 
-static vector<_x86regs> s_vecRegArray(128);
+static std::vector<_x86regs> s_vecRegArray(128);
 
 static VURegs* VU = NULL;
-static list<VuBaseBlock*> s_listBlocks;
+static std::list<VuBaseBlock*> s_listBlocks;
 static u32 s_vu = 0;
 static u32 s_UnconditionalDelay = 0; // 1 if there are two sequential branches and the last is unconditional
 static u32 g_nLastBlockExecuted = 0;
@@ -368,7 +367,7 @@ static void SuperVUAlloc(int vuindex)
 
 void DestroyCachedHeaders(int vuindex, int j)
 {
-	list<VuFunctionHeader*>::iterator it = s_plistCachedHeaders[vuindex][j].begin();
+	std::list<VuFunctionHeader*>::iterator it = s_plistCachedHeaders[vuindex][j].begin();
 
 	while (it != s_plistCachedHeaders[vuindex][j].end())
 	{
@@ -381,7 +380,7 @@ void DestroyCachedHeaders(int vuindex, int j)
 
 void DestroyVUHeaders(int vuindex)
 {
-	list<VuFunctionHeader*>::iterator it = s_listVUHeaders[vuindex].begin();
+	std::list<VuFunctionHeader*>::iterator it = s_listVUHeaders[vuindex].begin();
 
 		while (it != s_listVUHeaders[vuindex].end())
 		{
@@ -458,8 +457,8 @@ void SuperVUReset(int vuindex)
 // clear the block and any joining blocks (size given in bytes)
 static void __fastcall SuperVUClear(u32 startpc, u32 size, int vuindex)
 {
-	vector<VuFunctionHeader::RANGE>::iterator itrange;
-	list<VuFunctionHeader*>::iterator it = s_listVUHeaders[vuindex].begin();
+	std::vector<VuFunctionHeader::RANGE>::iterator itrange;
+	std::list<VuFunctionHeader*>::iterator it = s_listVUHeaders[vuindex].begin();
 	u32 endpc = startpc + ((size + 7) & ~7); // Ensure size is a multiple of u64 (round up)
 	while (it != s_listVUHeaders[vuindex].end())
 	{
@@ -474,7 +473,7 @@ static void __fastcall SuperVUClear(u32 startpc, u32 size, int vuindex)
 		{
 			recVUHeaders[vuindex][(*it)->startpc/8] = NULL;
 #ifdef SUPERVU_CACHING
-			list<VuFunctionHeader*>* plist = &s_plistCachedHeaders[vuindex][(*it)->startpc/8];
+			std::list<VuFunctionHeader*>* plist = &s_plistCachedHeaders[vuindex][(*it)->startpc / 8];
 			plist->push_back(*it);
 			if (plist->size() > 30)
 			{
@@ -547,7 +546,7 @@ u32 SuperVUGetVIAddr(int reg, int read)
 	return (uptr)&VU->VI[reg];
 }
 
-void SuperVUDumpBlock(list<VuBaseBlock*>& blocks, int vuindex)
+void SuperVUDumpBlock(std::list<VuBaseBlock*>& blocks, int vuindex)
 {
 	u32 *mem;
 	u32 i;
@@ -563,8 +562,8 @@ void SuperVUDumpBlock(list<VuBaseBlock*>& blocks, int vuindex)
 		INST_Q_READ, INST_P_READ, INST_CLIP_WRITE, INST_STATUS_WRITE, INST_MAC_WRITE, INST_Q_WRITE);
 	eff.Printf("XMM: Upper: read0 read1 write acc temp; Lower: read0 read1 write acc temp\n\n");
 
-	list<VuBaseBlock*>::iterator itblock;
-	list<VuInstruction>::iterator itinst;
+	std::list<VuBaseBlock*>::iterator itblock;
+	std::list<VuInstruction>::iterator itinst;
 	VuBaseBlock::LISTBLOCKS::iterator itchild;
 
 	for(itblock = blocks.begin(); itblock != blocks.end(); itblock++)
@@ -710,7 +709,7 @@ void* SuperVUGetProgram(u32 startpc, int vuindex)
 #ifdef SUPERVU_CACHING
 		void* pmem = (vuindex & 1) ? VU1.Micro : VU0.Micro;
 		// check if program exists in cache
-		list<VuFunctionHeader*>::iterator it;
+		std::list<VuFunctionHeader*>::iterator it;
 		for(it = s_plistCachedHeaders[vuindex][startpc/8].begin(); it != s_plistCachedHeaders[vuindex][startpc/8].end(); it++)
 		{
 			if ((*it)->IsSame(pmem))
@@ -750,7 +749,7 @@ void* SuperVUGetProgram(u32 startpc, int vuindex)
 bool VuFunctionHeader::IsSame(void* pmem)
 {
 #ifdef SUPERVU_CACHING
-	vector<RANGE>::iterator it;
+	std::vector<RANGE>::iterator it;
 	for(it = ranges.begin(); it != ranges.end(); it++)
 	{
 		if (memcmp_mmx((u8*)pmem + it->start, it->pmem, it->size))
@@ -760,12 +759,12 @@ bool VuFunctionHeader::IsSame(void* pmem)
 	return true;
 }
 
-list<VuInstruction>::iterator VuBaseBlock::GetInstIterAtPc(int instpc)
+std::list<VuInstruction>::iterator VuBaseBlock::GetInstIterAtPc(int instpc)
 {
 	pxAssert(instpc >= 0);
 
 	int curpc = startpc;
-	list<VuInstruction>::iterator it;
+	std::list<VuInstruction>::iterator it;
 	for (it = insts.begin(); it != insts.end(); ++it)
 	{
 		if (it->type & INST_DUMMY) continue;
@@ -779,14 +778,14 @@ list<VuInstruction>::iterator VuBaseBlock::GetInstIterAtPc(int instpc)
 	return insts.begin();
 }
 
-void VuBaseBlock::GetInstsAtPc(int instpc, list<VuInstruction*>& listinsts)
+void VuBaseBlock::GetInstsAtPc(int instpc, std::list<VuInstruction*>& listinsts)
 {
 	pxAssert(instpc >= 0);
 
 	listinsts.clear();
 
 	int curpc = startpc;
-	list<VuInstruction>::iterator it;
+	std::list<VuInstruction>::iterator it;
 	for (it = insts.begin(); it != insts.end(); ++it)
 	{
 		if (it->type & INST_DUMMY) continue;
@@ -801,7 +800,7 @@ void VuBaseBlock::GetInstsAtPc(int instpc, list<VuInstruction*>& listinsts)
 	}
 
 	// look for the pc in other blocks
-	for (list<VuBaseBlock*>::iterator itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); ++itblock)
+	for (std::list<VuBaseBlock*>::iterator itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); ++itblock)
 	{
 		if (*itblock == this) continue;
 
@@ -833,7 +832,7 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 		}
 	}
 
-	list<VuBaseBlock*>::iterator itblock;
+	std::list<VuBaseBlock*>::iterator itblock;
 
 	s_vu = vuindex;
 	VU = s_vu ? &VU1 : &VU0;
@@ -910,7 +909,7 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 #endif
 
 	// destroy
-	for (list<VuBaseBlock*>::iterator itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); ++itblock)
+	for (std::list<VuBaseBlock*>::iterator itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); ++itblock)
 	{
 		delete *itblock;
 	}
@@ -943,12 +942,12 @@ static VuInstruction SuperVUFlushInst()
 	return inst;
 }
 
-void SuperVUAddWritebacks(VuBaseBlock* pblock, const list<WRITEBACK>& listWritebacks)
+void SuperVUAddWritebacks(VuBaseBlock* pblock, const std::list<WRITEBACK>& listWritebacks)
 {
 #ifdef SUPERVU_WRITEBACKS
 	// regardless of repetition, add the pipes (for selfloops)
-	list<WRITEBACK>::const_iterator itwriteback = listWritebacks.begin();
-	list<VuInstruction>::iterator itinst = pblock->insts.begin(), itinst2;
+	std::list<WRITEBACK>::const_iterator itwriteback = listWritebacks.begin();
+	std::list<VuInstruction>::iterator itinst = pblock->insts.begin(), itinst2;
 
 	while (itwriteback != listWritebacks.end())
 	{
@@ -1028,7 +1027,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 	{
 
 		VuBaseBlock* pblock = pbh->pblock;
-		list<VuInstruction>::iterator itinst;
+		std::list<VuInstruction>::iterator itinst;
 
 		if (pblock->startpc == startpc)
 		{
@@ -1139,9 +1138,9 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 
 	u8 macflags = 0;
 
-	list< WRITEBACK > listWritebacks;
-	list< WRITEBACK >::iterator itwriteback;
-	list<VuInstruction>::iterator itinst;
+	std::list< WRITEBACK > listWritebacks;
+	std::list< WRITEBACK >::iterator itwriteback;
+	std::list<VuInstruction>::iterator itinst;
 	u32 hasSecondBranch = 0;
 	u32 needFullStatusFlag = 0;
 
@@ -1621,7 +1620,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 
 static void SuperVUInitLiveness(VuBaseBlock* pblock)
 {
-	list<VuInstruction>::iterator itinst, itnext;
+	std::list<VuInstruction>::iterator itinst, itnext;
 
 	pxAssert(pblock->insts.size() > 0);
 
@@ -1704,8 +1703,8 @@ u32 COMPUTE_LIVE(u32 R, u32 K, u32 L)
 static void SuperVULivenessAnalysis()
 {
 	BOOL changed;
-	list<VuBaseBlock*>::reverse_iterator itblock;
-	list<VuInstruction>::iterator itinst, itnext;
+	std::list<VuBaseBlock*>::reverse_iterator itblock;
+	std::list<VuInstruction>::iterator itinst, itnext;
 	VuBaseBlock::LISTBLOCKS::iterator itchild;
 
 	u32 livevars[2];
@@ -1816,11 +1815,11 @@ static void SuperVULivenessAnalysis()
 
 static void SuperVUEliminateDeadCode()
 {
-	list<VuBaseBlock*>::iterator itblock;
+	std::list<VuBaseBlock*>::iterator itblock;
 	VuBaseBlock::LISTBLOCKS::iterator itchild;
-	list<VuInstruction>::iterator itinst, itnext;
-	list<VuInstruction*> listParents;
-	list<VuInstruction*>::iterator itparent;
+	std::list<VuInstruction>::iterator itinst, itnext;
+	std::list<VuInstruction*> listParents;
+	std::list<VuInstruction*>::iterator itparent;
 
 	for(itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); itblock++)
 	{
@@ -1840,7 +1839,7 @@ static void SuperVUEliminateDeadCode()
 				if (itinst->nParentPc >= 0 && itnext->nParentPc >= 0 && itinst->nParentPc != itnext->nParentPc)    // superman returns
 				{
 					// take the live vars from the next next inst
-					list<VuInstruction>::iterator itnextnext = itnext;
+					std::list<VuInstruction>::iterator itnextnext = itnext;
 					++itnextnext;
 					if (itnextnext != (*itblock)->insts.end())
 					{
@@ -2024,8 +2023,8 @@ static void SuperVUEliminateDeadCode()
 void VuBaseBlock::AssignVFRegs()
 {
 	VuBaseBlock::LISTBLOCKS::iterator itchild;
-	list<VuBaseBlock*>::iterator itblock;
-	list<VuInstruction>::iterator itinst, itnext, itinst2;
+	std::list<VuBaseBlock*>::iterator itblock;
+	std::list<VuInstruction>::iterator itinst, itnext, itinst2;
 
 	// init the start regs
 	if (type & BLOCKTYPE_ANALYZED) return;  // nothing changed
@@ -2292,8 +2291,8 @@ void VuBaseBlock::AssignVFRegs()
 
 struct MARKOVBLANKET
 {
-	list<VuBaseBlock*> parents;
-	list<VuBaseBlock*> children;
+	std::list<VuBaseBlock*> parents;
+	std::list<VuBaseBlock*> children;
 };
 
 static MARKOVBLANKET s_markov;
@@ -2329,7 +2328,7 @@ void VuBaseBlock::AssignVIRegs(int parent)
 
 	pxAssert(parents.size() > 0);
 
-	list<VuBaseBlock*>::iterator itparent;
+	std::list<VuBaseBlock*>::iterator itparent;
 	u32 usedvars = insts.front().usedvars[0];
 	u32 livevars = insts.front().livevars[0];
 
@@ -2397,7 +2396,7 @@ void VuBaseBlock::AssignVIRegs(int parent)
 
 static void SuperVUAssignRegs()
 {
-	list<VuBaseBlock*>::iterator itblock, itblock2;
+	std::list<VuBaseBlock*>::iterator itblock, itblock2;
 
 	for(itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); itblock++)
 	{
@@ -2681,7 +2680,7 @@ static void SuperVURecompile()
 
 	_initXMMregs();
 
-	list<VuBaseBlock*>::iterator itblock;
+	std::list<VuBaseBlock*>::iterator itblock;
 
 	for(itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); itblock++)
 	{
@@ -2878,7 +2877,7 @@ void VuBaseBlock::Recompile()
 	MOV32ItoM((uptr)&VU->VI[REG_TPC], startpc);
 	MOV32ItoM((uptr)&s_svulast, startpc);
 
-	list<VuBaseBlock*>::iterator itparent;
+	std::list<VuBaseBlock*>::iterator itparent;
 	for (itparent = parents.begin(); itparent != parents.end(); ++itparent)
 	{
 		if ((*itparent)->blocks.size() == 1 && (*itparent)->blocks.front()->startpc == startpc &&
@@ -2920,7 +2919,7 @@ void VuBaseBlock::Recompile()
 	_initX86regs();
 #endif
 
-	list<VuInstruction>::iterator itinst;
+	std::list<VuInstruction>::iterator itinst;
 	for(itinst = insts.begin(); itinst != insts.end(); itinst++)
 	{
 		s_pCurInst = &(*itinst);
@@ -3003,7 +3002,7 @@ void VuBaseBlock::Recompile()
 
 		u32 livevars[2] = {0};
 
-		list<VuInstruction>::iterator lastinst = GetInstIterAtPc(endpc - 8);
+		std::list<VuInstruction>::iterator lastinst = GetInstIterAtPc(endpc - 8);
 		lastinst++;
 
 		if (lastinst != insts.end())
@@ -3263,7 +3262,7 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 	return info;
 }
 
-void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
+void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vuxyz)
 {
 	//static PCSX2_ALIGNED16(VECTOR _VF);
 	//static PCSX2_ALIGNED16(VECTOR _VFc);
@@ -3306,7 +3305,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 //					}
 //				}
 
-			list<VuBaseBlock*>::iterator itblock;
+			std::list<VuBaseBlock*>::iterator itblock;
 			for(itblock = s_listBlocks.begin(); itblock != s_listBlocks.end(); itblock++)
 			{
 				if (nParentPc >= (*itblock)->startpc && nParentPc < (*itblock)->endpc)
@@ -3536,7 +3535,7 @@ void VuInstruction::Recompile(list<VuInstruction>::iterator& itinst, u32 vuxyz)
 	pxAssert(!(type & (INST_CLIP_WRITE | INST_STATUS_WRITE | INST_MAC_WRITE)));
 	pc += 8;
 
-	list<VuInstruction>::const_iterator itinst2;
+	std::list<VuInstruction>::const_iterator itinst2;
 
 	if ((regs[0].VIwrite | regs[1].VIwrite) & ((1 << REG_MAC_FLAG) | (1 << REG_STATUS_FLAG)))
 	{
