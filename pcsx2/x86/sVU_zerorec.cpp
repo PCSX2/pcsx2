@@ -177,10 +177,11 @@ class VuInstruction
 {
 	public:
 		VuInstruction()
+		    : nParentPc(-1), info(), regs(), livevars(), addvars(), usedvars(), keepvars(),
+		      pqcycles(0), type(0), pClipWrite(0), pMACWrite(0), pStatusWrite(0),
+		      vffree(), vfwrite(), vfread0(), vfread1(), vfacc(), vfflush(), vicached(-1),
+		      pPrevInst(NULL)
 		{
-			memzero(*this);
-			nParentPc = -1;
-			vicached = -1;
 		}
 
 		int nParentPc; // used for syncing with flag writes, -1 for no parent
