@@ -201,7 +201,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	FrameLimitEnable		= true;
 	FrameSkipEnable			= false;
 	VsyncEnable				= false;
-	ManagedVsync			= false;
 
 	SynchronousMTGS			= false;
 	DisableOutput			= false;
@@ -227,7 +226,6 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 	IniEntry( FrameLimitEnable );
 	IniEntry( FrameSkipEnable );
 	IniEntry( VsyncEnable );
-	IniEntry( ManagedVsync );
 
 	IniEntry( LimitScalar );
 	IniEntry( FramerateNTSC );

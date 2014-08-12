@@ -285,7 +285,6 @@ struct Pcsx2Config
 		bool	FrameLimitEnable;
 		bool	FrameSkipEnable;
 		bool	VsyncEnable;
-		bool	ManagedVsync;
 
 		// The region mode controls the default Maximum/Minimum FPS settings and also
 		// regulates the vsync rates (which in turn control the IOP's SPU2 tick sync and ensure
@@ -312,7 +311,6 @@ struct Pcsx2Config
 				OpEqu( FrameSkipEnable )		&&
 				OpEqu( FrameLimitEnable )		&&
 				OpEqu( VsyncEnable )			&&
-				OpEqu( ManagedVsync )			&&
 
 				OpEqu( LimitScalar )			&&
 				OpEqu( FramerateNTSC )			&&
