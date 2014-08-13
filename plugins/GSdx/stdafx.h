@@ -89,23 +89,7 @@ typedef uint32 uptr;
 
 using namespace std;
 
-#ifdef _MSC_VER
-
-#if _MSC_VER >= 1500
-	#include <memory>
-#if _MSC_VER < 1600
-	using namespace std::tr1;
-#else
-	using namespace std;
-#endif
-#endif
-#endif
-
-#ifdef __GNUC__
-
-	#include <memory>
-
-#endif
+#include <memory>
 
 #ifdef _WINDOWS
 
@@ -126,11 +110,7 @@ using namespace std;
 	template<> class hash_compare<uint32>
 	{
 	public:
-		#if _MSC_VER >= 1500 && _MSC_VER < 1600
-		enum {bucket_size = 4, min_buckets = 8};
-		#else
 		enum {bucket_size = 1};
-		#endif
 
 		size_t operator()(uint32 key) const
 		{
@@ -153,11 +133,7 @@ using namespace std;
 	template<> class hash_compare<uint64>
 	{
 	public:
-		#if _MSC_VER >= 1500 && _MSC_VER < 1600
-		enum {bucket_size = 4, min_buckets = 8};
-		#else
 		enum {bucket_size = 1};
-		#endif
 
 		size_t operator()(uint64 key) const
 		{
@@ -253,11 +229,11 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
         #define RESTRICT restrict
 
-    #elif _MSC_VER >= 1400
+    #elif defined(_MSC_VER)
 
         #define RESTRICT __restrict
 
-	#elif defined(__GNUC__)
+    #elif defined(__GNUC__)
 
         #define RESTRICT __restrict__
 
@@ -304,17 +280,6 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 	#endif
 
 	#define MXCSR (_MM_DENORMALS_ARE_ZERO | _MM_MASK_MASK | _MM_ROUND_NEAREST | _MM_FLUSH_ZERO_ON)
-
-	#if defined(_MSC_VER) && _MSC_VER < 1500
-
-	__forceinline __m128i _mm_castps_si128(__m128 a) {return *(__m128i*)&a;}
-	__forceinline __m128 _mm_castsi128_ps(__m128i a) {return *(__m128*)&a;}
-	__forceinline __m128i _mm_castpd_si128(__m128d a) {return *(__m128i*)&a;}
-	__forceinline __m128d _mm_castsi128_pd(__m128i a) {return *(__m128d*)&a;}
-	__forceinline __m128d _mm_castps_pd(__m128 a) {return *(__m128d*)&a;}
-	__forceinline __m128 _mm_castpd_ps(__m128d a) {return *(__m128*)&a;}
-
-	#endif
 
 	#define _MM_TRANSPOSE4_SI128(row0, row1, row2, row3) \
 	{ \

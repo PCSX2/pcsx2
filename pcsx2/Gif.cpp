@@ -32,8 +32,7 @@ static u32 gifqwc = 0;
 static bool gifmfifoirq = false;
 
 static __fi void clearFIFOstuff(bool full) {
-	if (full) CSRreg.FIFO = CSR_FIFO_FULL;
-	else      CSRreg.FIFO = CSR_FIFO_EMPTY;
+	CSRreg.FIFO = full ? CSR_FIFO_FULL : CSR_FIFO_EMPTY;
 }
 
 void incGifChAddr(u32 qwc) {
@@ -155,7 +154,8 @@ static __fi void GIFchain() {
 	// qwc check now done outside this function
 	// Voodoocycles
 	// >> 2 so Drakan and Tekken 5 don't mess up in some PATH3 transfer. Cycles to interrupt were getting huge..
-	/*if (gifch.qwc)*/ gscycles+= ( _GIFchain() * BIAS); /* guessing */
+	/*if (gifch.qwc)*/
+	gscycles+= _GIFchain() * BIAS; /* guessing */
 }
 
 static __fi bool checkTieBit(tDMA_TAG* &ptag)
@@ -185,7 +185,7 @@ static __fi tDMA_TAG* ReadTag2()
 {
 	tDMA_TAG* ptag = dmaGetAddr(gifch.tadr, false);  //Set memory pointer to TADR
 
-    gifch.unsafeTransfer(ptag);
+	gifch.unsafeTransfer(ptag);
 	gifch.madr = ptag[1]._u32;
 
 	gspath3done = hwDmacSrcChainWithStack(gifch, ptag->ID);
