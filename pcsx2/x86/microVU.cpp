@@ -239,9 +239,9 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg) 
 		mVU.prog.cleared =  0;
 		mVU.prog.cur	 = &prog;
 		mVU.prog.isSame  =  cmpWholeProg ? 1 : -1;
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 // Searches for Cached Micro Program and sets prog.cur to it (returns entry-point to program)

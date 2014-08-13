@@ -48,12 +48,14 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		qInst = mVU.q;
 		pInst = mVU.p;
 		if (mVUinfo.doDivFlag) {
-			sFLAG.doFlag = 1;
+			sFLAG.doFlag = true;
 			sFLAG.write  = fStatus;
 			mVUdivSet(mVU);
 		}
 		//Run any pending XGKick, providing we've got to it.
-		if (mVUinfo.doXGKICK && xPC >= mVUinfo.XGKICKPC) { mVU_XGKICK_DELAY(mVU, 1); }
+		if (mVUinfo.doXGKICK && xPC >= mVUinfo.XGKICKPC) {
+			mVU_XGKICK_DELAY(mVU, true);
+		}
 		if (doEarlyExit(mVU)) {
 			if (!isVU1) xCALL(mVU0clearlpStateJIT);
 			else		xCALL(mVU1clearlpStateJIT);
@@ -106,14 +108,18 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		qInst = mVU.q;
 		pInst = mVU.p;
 		if (mVUinfo.doDivFlag) {
-			sFLAG.doFlag = 1;
+			sFLAG.doFlag = true;
 			sFLAG.write  = fStatus;
 			mVUdivSet(mVU);
 		}
-		if (mVUinfo.doXGKICK) { mVU_XGKICK_DELAY(mVU, 1); }
+		if (mVUinfo.doXGKICK) {
+			mVU_XGKICK_DELAY(mVU, true);
+		}
 		if (doEarlyExit(mVU)) {
-			if (!isVU1) xCALL(mVU0clearlpStateJIT);
-			else		xCALL(mVU1clearlpStateJIT);
+			if (!isVU1)
+				xCALL(mVU0clearlpStateJIT);
+			else
+				xCALL(mVU1clearlpStateJIT);
 		}
 	}
 
@@ -451,5 +457,7 @@ void normJump(mV, microFlagCycles& mFC) {
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], gprT1);
 		xJMP(mVU.exitFunct);
 	}
-	else normJumpCompile(mVU, mFC, 0);
+	else {
+		normJumpCompile(mVU, mFC, false);
+	}
 }
