@@ -46,7 +46,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPU2-X", "plugins\spu2-x\sr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GSdx", "plugins\GSdx\GSdx_vs2012.vcxproj", "{18E42F6F-3A62-41EE-B42F-79366C4F1E95}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\SoundTouch\SoundTouch_vs2012.vcxproj", "{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\soundtouch\SoundTouch_vs2012.vcxproj", "{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "3rdparty\zlib\zlib_vs2012.vcxproj", "{2F6C0388-20CB-4242-9F6C-A6EBB6A83F47}"
 EndProject
