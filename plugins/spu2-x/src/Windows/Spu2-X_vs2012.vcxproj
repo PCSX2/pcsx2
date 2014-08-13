@@ -453,7 +453,7 @@
       <Project>{0a18a071-125e-442f-aff7-a3f68abecf99}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\SoundTouch\SoundTouch_vs2012.vcxproj">
+    <ProjectReference Include="..\..\..\..\3rdparty\soundtouch\SoundTouch_vs2012.vcxproj">
       <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

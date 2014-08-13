@@ -40,7 +40,7 @@ Devel
 /ipch
 /nsis/output/
 
-/3rdparty/SoundTouch/Win32
+/3rdparty/soundtouch/Win32
 /3rdparty/bzip2/Win32
 /3rdparty/libjpeg/Win32
 /3rdparty/portaudio/portaudio-2.0.pc
