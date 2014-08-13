@@ -86,7 +86,7 @@ public:
 				wxsFormat(L"HashBucket Chain (bucket size=%d)", bucket.Size+1)
 			);
 		}
-		memcpy_const(&bucket.Chain[bucket.Size++], &dataPtr, sizeof(T));
+		memcpy(&bucket.Chain[bucket.Size++], &dataPtr, sizeof(T));
 	}
 	void clear() {
 		for (int i = 0; i < hSize; i++) {

@@ -92,7 +92,7 @@ public:
 				blockEnd = blockList = newBlock;
 			}
 
-			memcpy_const(&newBlock->block, pBlock, sizeof(microBlock));
+			memcpy(&newBlock->block, pBlock, sizeof(microBlock));
 			thisBlock =  &newBlock->block;
 		}
 		return thisBlock;

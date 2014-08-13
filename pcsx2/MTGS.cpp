@@ -181,7 +181,7 @@ void SysMtgsThread::OpenPlugin()
 {
 	if( m_PluginOpened ) return;
 
-	memcpy_aligned( RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS) );
+	memcpy( RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS) );
 	GSsetBaseMem( RingBuffer.Regs );
 	GSirqCallback( dummyIrqCallback );
 

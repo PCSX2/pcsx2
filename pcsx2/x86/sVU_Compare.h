@@ -131,15 +131,15 @@ void recSuperVU1::Execute(u32 cycles) {
 #endif
 
 	runCount++;
-	memcpy_const((u8*)backVUregs,	(u8*)&VU1,		sizeof(VURegs));
-	memcpy_const((u8*)backVUmem,	(u8*) VU1.Mem,	0x4000);
+	memcpy((u8*)backVUregs,	(u8*)&VU1,		sizeof(VURegs));
+	memcpy((u8*)backVUmem,	(u8*) VU1.Mem,	0x4000);
 
 	runMVU1(cycles);
 
-	memcpy_const((u8*)cmpVUregs,(u8*)&VU1,			sizeof(VURegs));
-	memcpy_const((u8*)cmpVUmem,	(u8*)VU1.Mem,		0x4000);
-	memcpy_const((u8*)&VU1,		(u8*)backVUregs,	sizeof(VURegs));
-	memcpy_const((u8*)VU1.Mem,	(u8*)backVUmem,		0x4000);
+	memcpy((u8*)cmpVUregs,(u8*)&VU1,			sizeof(VURegs));
+	memcpy((u8*)cmpVUmem,	(u8*)VU1.Mem,		0x4000);
+	memcpy((u8*)&VU1,		(u8*)backVUregs,	sizeof(VURegs));
+	memcpy((u8*)VU1.Mem,	(u8*)backVUmem,		0x4000);
 
 	runSVU1(cycles);
 	if ((memcmp((u8*)cmpVUregs, (u8*)&VU1, (16*32) + (16*16))) || (memcmp((u8*)cmpVUmem, (u8*)VU1.Mem, 0x4000))) {
@@ -230,8 +230,8 @@ void recSuperVU1::Execute(u32 cycles) {
 
 			resetMVU1();
 			
-			memcpy_const((u8*)&VU1,		(u8*)backVUregs,	sizeof(VURegs));
-			memcpy_const((u8*)VU1.Mem,	(u8*)backVUmem,		0x4000);
+			memcpy((u8*)&VU1,		(u8*)backVUregs,	sizeof(VURegs));
+			memcpy((u8*)VU1.Mem,	(u8*)backVUmem,		0x4000);
 			
 			runMVU1(cycles);
 
