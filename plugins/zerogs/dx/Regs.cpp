@@ -70,7 +70,7 @@ GIFRegHandler g_GIFRegHandlers[] = {
 	GIFRegHandlerNull,		GIFRegHandlerNull,		GIFRegHandlerNull,		GIFRegHandlerNull,
 	GIFRegHandlerSIGNAL,	GIFRegHandlerFINISH,	GIFRegHandlerLABEL,		GIFRegHandlerNull };
 
-C_ASSERT(sizeof(g_GIFRegHandlers)/sizeof(g_GIFRegHandlers[0]) == 100 );
+static_assert(sizeof(g_GIFRegHandlers)/sizeof(g_GIFRegHandlers[0]) == 100, "Regs not equal 100");
 
 // values for keeping track of changes
 u32 s_uTex1Data[2][2] = {0}, s_uClampData[2] = {0};

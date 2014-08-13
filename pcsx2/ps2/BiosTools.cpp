@@ -47,7 +47,7 @@ struct romdir
 #	pragma pack()
 #endif
 
-C_ASSERT( sizeof(romdir) == DIRENTRY_SIZE );
+static_assert( sizeof(romdir) == DIRENTRY_SIZE, "romdir struct not packed to 16 bytes" );
 
 u32 BiosVersion;
 u32 BiosChecksum;
