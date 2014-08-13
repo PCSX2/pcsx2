@@ -487,67 +487,6 @@ void Pcsx2App::LogicalVsync()
 		}
 	}
 
-	if (EmuConfig.GS.ManagedVsync && EmuConfig.GS.VsyncEnable)
-	{
-		static bool last_enabled = true; // Avoids locking it in some scenarios
-		static int too_slow = 0;
-		static int fast_enough = 0;
-
-		if ( g_LimiterMode == Limit_Nominal && EmuConfig.GS.VsyncEnable && g_Conf->EmuOptions.GS.FrameLimitEnable )
-		{
-			float fps = (float)FpsManager.GetFramerate();
-			
-			if( gsRegionMode == Region_NTSC )
-			{
-				if (fps < 59.0f ) {
-					too_slow++;
-					fast_enough = 0;
-					if (too_slow > 4 && last_enabled == true)
-					{
-						last_enabled = false;
-						GSsetVsync( 0 );
-					}
-				}
-				else {
-					fast_enough++;
-					too_slow = 0;
-					if (fast_enough > 12 && last_enabled == false)
-					{
-						last_enabled = true;
-						GSsetVsync( 1 );
-					}
-				}
-			}
-			else
-			{
-				if (fps < 49.2f ) {
-					too_slow++;
-					fast_enough = 0;
-					if (too_slow > 3 && last_enabled == true)
-					{
-						last_enabled = false;
-						GSsetVsync( 0 );
-					}
-				}
-				else {
-					fast_enough++;
-					too_slow = 0;
-					if (fast_enough > 15 && last_enabled == false)
-					{
-						last_enabled = true;
-						GSsetVsync( 1 );
-					}
-				}
-			}
-		}
-		else
-		{
-			last_enabled = true; // Avoids locking it in some scenarios
-			too_slow = 0;
-			fast_enough = 0;
-			GSsetVsync( 0 );
-		}
-	}
 	// Only call PADupdate here if we're using GSopen2.  Legacy GSopen plugins have the
 	// GS window belonging to the MTGS thread.
 	if( (PADupdate != NULL) && (GSopen2 != NULL) && (wxGetApp().GetGsFramePtr() != NULL) )
