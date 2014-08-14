@@ -290,7 +290,7 @@ void recPMTHL()
 } \*/
 
 ////////////////////////////////////////////////////
-void recPSRLH( void )
+void recPSRLH()
 {
 	if ( !_Rd_ ) return;
 
@@ -306,7 +306,7 @@ void recPSRLH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSRLW( void )
+void recPSRLW()
 {
 	if( !_Rd_ ) return;
 
@@ -322,7 +322,7 @@ void recPSRLW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSRAH( void )
+void recPSRAH()
 {
 	if ( !_Rd_ ) return;
 
@@ -338,7 +338,7 @@ void recPSRAH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSRAW( void )
+void recPSRAW()
 {
 	if ( !_Rd_ ) return;
 
@@ -354,7 +354,7 @@ void recPSRAW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSLLH( void )
+void recPSLLH()
 {
 	if ( !_Rd_ ) return;
 
@@ -370,7 +370,7 @@ void recPSLLH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSLLW( void )
+void recPSLLW()
 {
 	if ( !_Rd_ ) return;
 
@@ -386,15 +386,15 @@ void recPSLLW( void )
 }
 
 /*
-void recMADD( void )
+void recMADD()
 {
 }
 
-void recMADDU( void )
+void recMADDU()
 {
 }
 
-void recPLZCW( void )
+void recPLZCW()
 {
 }
 */
@@ -523,7 +523,7 @@ void recPPACW()
 	_clearNeededXMMregs();
 }
 
-void recPPACH( void )
+void recPPACH()
 {
 	if (!_Rd_) return;
 
@@ -665,7 +665,7 @@ void recPPAC5()
 }
 
 ////////////////////////////////////////////////////
-void recPMAXH( void )
+void recPMAXH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -680,7 +680,7 @@ void recPMAXH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCGTB( void )
+void recPCGTB()
 {
 	if ( ! _Rd_ ) return;
 
@@ -700,7 +700,7 @@ void recPCGTB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCGTH( void )
+void recPCGTH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -720,7 +720,7 @@ void recPCGTH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCGTW( void )
+void recPCGTW()
 {
 	//TODO:optimize RS | RT== 0
 	if ( ! _Rd_ ) return;
@@ -741,7 +741,7 @@ void recPCGTW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPADDSB( void )
+void recPADDSB()
 {
 	if ( ! _Rd_ ) return;
 
@@ -756,7 +756,7 @@ void recPADDSB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPADDSH( void )
+void recPADDSH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -772,7 +772,7 @@ void recPADDSH( void )
 
 ////////////////////////////////////////////////////
 //NOTE: check kh2 movies if changing this
-void recPADDSW( void )
+void recPADDSW()
 {
 	if ( ! _Rd_ ) return;
 
@@ -822,7 +822,7 @@ void recPADDSW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSUBSB( void )
+void recPSUBSB()
 {
    if ( ! _Rd_ ) return;
 
@@ -843,7 +843,7 @@ void recPSUBSB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSUBSH( void )
+void recPSUBSH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -865,7 +865,7 @@ void recPSUBSH( void )
 
 ////////////////////////////////////////////////////
 //NOTE: check kh2 movies if changing this
-void recPSUBSW( void )
+void recPSUBSW()
 {
 	if ( ! _Rd_ ) return;
 
@@ -920,7 +920,7 @@ void recPSUBSW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPADDB( void )
+void recPADDB()
 {
 	if ( ! _Rd_ ) return;
 
@@ -935,7 +935,7 @@ void recPADDB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPADDH( void )
+void recPADDH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -959,7 +959,7 @@ void recPADDH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPADDW( void )
+void recPADDW()
 {
 	if ( ! _Rd_ ) return;
 
@@ -983,7 +983,7 @@ void recPADDW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSUBB( void )
+void recPSUBB()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1004,7 +1004,7 @@ void recPSUBB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSUBH( void )
+void recPSUBH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1025,7 +1025,7 @@ void recPSUBH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPSUBW( void )
+void recPSUBW()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1046,7 +1046,7 @@ void recPSUBW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPEXTLW( void )
+void recPEXTLW()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1072,7 +1072,7 @@ void recPEXTLW( void )
 	_clearNeededXMMregs();
 }
 
-void recPEXTLB( void )
+void recPEXTLB()
 {
 	if (!_Rd_) return;
 
@@ -1098,7 +1098,7 @@ void recPEXTLB( void )
 	_clearNeededXMMregs();
 }
 
-void recPEXTLH( void )
+void recPEXTLH()
 {
 	if (!_Rd_) return;
 
@@ -1492,7 +1492,7 @@ void recQFSRV()
 }
 
 
-void recPEXTUB( void )
+void recPEXTUB()
 {
 	if (!_Rd_) return;
 
@@ -1520,7 +1520,7 @@ void recPEXTUB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPEXTUW( void )
+void recPEXTUW()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1547,7 +1547,7 @@ void recPEXTUW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPMINH( void )
+void recPMINH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1562,7 +1562,7 @@ void recPMINH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCEQB( void )
+void recPCEQB()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1577,7 +1577,7 @@ void recPCEQB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCEQH( void )
+void recPCEQH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1592,7 +1592,7 @@ void recPCEQH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCEQW( void )
+void recPCEQW()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1607,7 +1607,7 @@ void recPCEQW( void )
 }
 
 ////////////////////////////////////////////////////
-void recPADDUB( void )
+void recPADDUB()
 {
 	if ( ! _Rd_ ) return;
 
@@ -1625,7 +1625,7 @@ void recPADDUB( void )
 }
 
 ////////////////////////////////////////////////////
-void recPADDUH( void )
+void recPADDUH()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2098,7 +2098,7 @@ void recPHMSBH()
 }
 
 ////////////////////////////////////////////////////
-void recPEXEH( void )
+void recPEXEH()
 {
 	if (!_Rd_) return;
 
@@ -2109,7 +2109,7 @@ void recPEXEH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPREVH( void )
+void recPREVH()
 {
 	if (!_Rd_) return;
 
@@ -2121,7 +2121,7 @@ void recPREVH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPINTH( void )
+void recPINTH()
 {
 	if (!_Rd_) return;
 
@@ -2140,7 +2140,7 @@ void recPINTH( void )
 	_clearNeededXMMregs();
 }
 
-void recPEXEW( void )
+void recPEXEW()
 {
 	if (!_Rd_) return;
 
@@ -2149,7 +2149,7 @@ void recPEXEW( void )
 	_clearNeededXMMregs();
 }
 
-void recPROT3W( void )
+void recPROT3W()
 {
 	if (!_Rd_) return;
 
@@ -2158,7 +2158,7 @@ void recPROT3W( void )
 	_clearNeededXMMregs();
 }
 
-void recPMULTH( void )
+void recPMULTH()
 {
 	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI );
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -2193,7 +2193,7 @@ void recPMULTH( void )
 	_clearNeededXMMregs();
 }
 
-void recPMFHI( void )
+void recPMFHI()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2203,7 +2203,7 @@ void recPMFHI( void )
 }
 
 ////////////////////////////////////////////////////
-void recPMFLO( void )
+void recPMFLO()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2213,7 +2213,7 @@ void recPMFLO( void )
 }
 
 ////////////////////////////////////////////////////
-void recPAND( void )
+void recPAND()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2232,7 +2232,7 @@ void recPAND( void )
 }
 
 ////////////////////////////////////////////////////
-void recPXOR( void )
+void recPXOR()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2251,7 +2251,7 @@ void recPXOR( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCPYLD( void )
+void recPCPYLD()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2274,7 +2274,7 @@ void recPCPYLD( void )
 	_clearNeededXMMregs();
 }
 
-void recPMADDH( void )
+void recPMADDH()
 {
 	int info = eeRecompileCodeXMM( (_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI );
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -2594,7 +2594,7 @@ void recPEXCW()
 }
 
 ////////////////////////////////////////////////////
-void recPEXCH( void )
+void recPEXCH()
 {
 	if (!_Rd_) return;
 
@@ -2605,7 +2605,7 @@ void recPEXCH( void )
 }
 
 ////////////////////////////////////////////////////
-void recPNOR( void )
+void recPNOR()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2658,7 +2658,7 @@ void recPNOR( void )
 }
 
 ////////////////////////////////////////////////////
-void recPMTHI( void )
+void recPMTHI()
 {
 	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_WRITEHI );
 	SSEX_MOVDQA_XMM_to_XMM(EEREC_HI, EEREC_S);
@@ -2666,7 +2666,7 @@ void recPMTHI( void )
 }
 
 ////////////////////////////////////////////////////
-void recPMTLO( void )
+void recPMTLO()
 {
 	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_WRITELO );
 	SSEX_MOVDQA_XMM_to_XMM(EEREC_LO, EEREC_S);
@@ -2674,7 +2674,7 @@ void recPMTLO( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCPYUD( void )
+void recPCPYUD()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2711,7 +2711,7 @@ void recPCPYUD( void )
 }
 
 ////////////////////////////////////////////////////
-void recPOR( void )
+void recPOR()
 {
 	if ( ! _Rd_ ) return;
 
@@ -2744,7 +2744,7 @@ void recPOR( void )
 }
 
 ////////////////////////////////////////////////////
-void recPCPYH( void )
+void recPCPYH()
 {
 	if ( ! _Rd_ ) return;
 

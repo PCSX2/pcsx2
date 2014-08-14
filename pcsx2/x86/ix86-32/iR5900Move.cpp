@@ -281,22 +281,22 @@ void recMTHILO(int hi)
 	}
 }
 
-void recMFHI( void )
+void recMFHI()
 {
 	recMFHILO(1);
 }
 
-void recMFLO( void )
+void recMFLO()
 {
 	recMFHILO(0);
 }
 
-void recMTHI( void )
+void recMTHI()
 {
 	recMTHILO(1);
 }
 
-void recMTLO( void )
+void recMTLO()
 {
 	recMTHILO(0);
 }
@@ -403,22 +403,22 @@ void recMTHILO1(int hi)
 	}
 }
 
-void recMFHI1( void )
+void recMFHI1()
 {
 	recMFHILO1(1);
 }
 
-void recMFLO1( void )
+void recMFLO1()
 {
 	recMFHILO1(0);
 }
 
-void recMTHI1( void )
+void recMTHI1()
 {
 	recMTHILO1(1);
 }
 
-void recMTLO1( void )
+void recMTLO1()
 {
 	recMTHILO1(0);
 }

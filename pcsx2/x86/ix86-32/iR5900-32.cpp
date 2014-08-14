@@ -759,7 +759,7 @@ static void recResetEE()
 	recResetRaw();
 }
 
-void recStep( void )
+void recStep()
 {
 }
 
@@ -842,7 +842,7 @@ static void recExecute()
 }
 
 ////////////////////////////////////////////////////
-void R5900::Dynarec::OpcodeImpl::recSYSCALL( void )
+void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::SYSCALL);
 
@@ -855,7 +855,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL( void )
 }
 
 ////////////////////////////////////////////////////
-void R5900::Dynarec::OpcodeImpl::recBREAK( void )
+void R5900::Dynarec::OpcodeImpl::recBREAK()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::BREAK);
 

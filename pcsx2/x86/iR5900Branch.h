@@ -25,22 +25,22 @@ namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
 
-	void recBEQ( void );
-	void recBEQL( void );
-	void recBNE( void );
-	void recBNEL( void );
-	void recBLTZ( void );
-	void recBLTZL( void );
-	void recBLTZAL( void );
-	void recBLTZALL( void );
-	void recBGTZ( void );
-	void recBGTZL( void );
-	void recBLEZ( void );
-	void recBLEZL( void );
-	void recBGEZ( void );
-	void recBGEZL( void );
-	void recBGEZAL( void );
-	void recBGEZALL( void );
+	void recBEQ();
+	void recBEQL();
+	void recBNE();
+	void recBNEL();
+	void recBLTZ();
+	void recBLTZL();
+	void recBLTZAL();
+	void recBLTZALL();
+	void recBGTZ();
+	void recBGTZL();
+	void recBLEZ();
+	void recBLEZL();
+	void recBGEZ();
+	void recBGEZL();
+	void recBGEZAL();
+	void recBGEZALL();
 } } }
 
 #endif
