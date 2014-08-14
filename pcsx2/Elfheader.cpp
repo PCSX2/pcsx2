@@ -19,8 +19,6 @@
 #include "GS.h"			// for sending game crc to mtgs
 #include "Elfheader.h"
 
-using namespace std;
-
 u32 ElfCRC;
 u32 ElfEntry;
 std::pair<u32,u32> ElfTextRange;

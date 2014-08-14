@@ -104,10 +104,10 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 
 	for(u32 i = 0; i < (mVU.progSize / 2); i++) {
 		if(!mVU.prog.prog[i]) {
-			mVU.prog.prog[i] = new deque<microProgram*>();
+			mVU.prog.prog[i] = new std::deque<microProgram*>();
 			continue;
 		}
-		deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
+		std::deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
 		for ( ; it != mVU.prog.prog[i]->end(); ++it) {
 			mVUdeleteProg(mVU, it[0]);
 		}
@@ -126,7 +126,7 @@ void mVUclose(microVU& mVU) {
 	// Delete Programs and Block Managers
 	for (u32 i = 0; i < (mVU.progSize / 2); i++) {
 		if (!mVU.prog.prog[i]) continue;
-		deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
+		std::deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
 		for ( ; it != mVU.prog.prog[i]->end(); ++it) {
 			mVUdeleteProg(mVU, it[0]);
 		}
@@ -169,7 +169,7 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC) {
 	microProgram* prog = (microProgram*)_aligned_malloc(sizeof(microProgram), 64);
 	memzero_ptr<sizeof(microProgram)>(prog);
 	prog->idx     = mVU.prog.total++;
-	prog->ranges  = new deque<microRange>();
+	prog->ranges  = new std::deque<microRange>();
 	prog->startPC = startPC;
 	mVUcacheProg(mVU, *prog); // Cache Micro Program
 	double cacheSize = (double)((uptr)mVU.prog.x86end - (uptr)mVU.prog.x86start);
@@ -191,7 +191,7 @@ __ri void mVUcacheProg(microVU& mVU, microProgram& prog) {
 // Generate Hash for partial program based on compiled ranges...
 u64 mVUrangesHash(microVU& mVU, microProgram& prog) {
 	u32 hash[2] = {0, 0};
-	deque<microRange>::const_iterator it(prog.ranges->begin());
+	std::deque<microRange>::const_iterator it(prog.ranges->begin());
 	for ( ; it != prog.ranges->end(); ++it) {
 		if((it[0].start<0)||(it[0].end<0))  { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end); }
 		for(int i = it[0].start/4; i < it[0].end/4; i++) {
@@ -204,11 +204,11 @@ u64 mVUrangesHash(microVU& mVU, microProgram& prog) {
 
 // Prints the ratio of unique programs to total programs
 void mVUprintUniqueRatio(microVU& mVU) {
-	vector<u64> v;
+	std::vector<u64> v;
 	for(u32 pc = 0; pc < mProgSize/2; pc++) {
 		microProgramList* list = mVU.prog.prog[pc];
 		if (!list) continue;
-		deque<microProgram*>::iterator it(list->begin());
+		std::deque<microProgram*>::iterator it(list->begin());
 		for ( ; it != list->end(); ++it) {
 			v.push_back(mVUrangesHash(mVU, *it[0]));
 		}
@@ -222,7 +222,7 @@ void mVUprintUniqueRatio(microVU& mVU) {
 
 // Compare partial program by only checking compiled ranges...
 __ri bool mVUcmpPartial(microVU& mVU, microProgram& prog) {
-	deque<microRange>::const_iterator it(prog.ranges->begin());
+	std::deque<microRange>::const_iterator it(prog.ranges->begin());
 	for ( ; it != prog.ranges->end(); ++it) {
 		if((it[0].start<0)||(it[0].end<0))  { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end); }
 		if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), ((it[0].end + 8)  -  it[0].start))) {
@@ -250,7 +250,7 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 	microProgramQuick& quick = mVU.prog.quick[startPC/8];
 	microProgramList*  list  = mVU.prog.prog [startPC/8];
 	if(!quick.prog) { // If null, we need to search for new program
-		deque<microProgram*>::iterator it(list->begin());
+		std::deque<microProgram*>::iterator it(list->begin());
 		for ( ; it != list->end(); ++it) {
 			if (mVUcmpProg(mVU, *it[0], 0)) {
 				quick.block = it[0]->block[startPC/8];
