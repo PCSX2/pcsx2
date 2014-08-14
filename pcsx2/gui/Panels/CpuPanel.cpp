@@ -237,10 +237,7 @@ void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
 }
 
 void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags ){
-	m_panel_RecEE->Enable( x86caps.hasStreamingSIMD2Extensions );
-
-	// IOP rec should work fine on any CPU. :D
-	//m_panel_RecIOP->Enable( x86caps.hasStreamingSIMD2Extensions );
+	m_panel_RecEE->Enable(true);
 
 	const Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
 	m_panel_RecEE->SetSelection( (int)recOps.EnableEE );
@@ -288,14 +285,14 @@ void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
 
 void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	m_panel_VU0->Enable( x86caps.hasStreamingSIMD2Extensions );
-	m_panel_VU1->Enable( x86caps.hasStreamingSIMD2Extensions );
+	m_panel_VU0->Enable(true);
+	m_panel_VU1->Enable(true);
 
-	m_panel_VU0->EnableItem( 1, x86caps.hasStreamingSIMD2Extensions );
-	m_panel_VU0->EnableItem( 2, x86caps.hasStreamingSIMD2Extensions );
+	m_panel_VU0->EnableItem( 1, true);
+	m_panel_VU0->EnableItem( 2, true);
 
-	m_panel_VU1->EnableItem( 1, x86caps.hasStreamingSIMD2Extensions );
-	m_panel_VU1->EnableItem( 2, x86caps.hasStreamingSIMD2Extensions );
+	m_panel_VU1->EnableItem( 1, true);
+	m_panel_VU1->EnableItem( 2, true);
 
 	Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
 	if( recOps.UseMicroVU0 )

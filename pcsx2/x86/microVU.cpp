@@ -25,7 +25,7 @@
 static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex) {
 	throw Exception::HardwareDeficiency()
 		.SetDiagMsg(pxsFmt(L"microVU%d recompiler init failed: %s is not available.", vuIndex, extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with MMX, SSE, and SSE2 extensions."), extFail));
+		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."), extFail));
 }
 
 void mVUreserveCache(microVU& mVU) {
@@ -43,8 +43,6 @@ void mVUreserveCache(microVU& mVU) {
 // Only run this once per VU! ;)
 void mVUinit(microVU& mVU, uint vuIndex) {
 
-	if(!x86caps.hasMultimediaExtensions)	 mVUthrowHardwareDeficiency( L"MMX",  vuIndex );
-	if(!x86caps.hasStreamingSIMDExtensions)	 mVUthrowHardwareDeficiency( L"SSE",  vuIndex );
 	if(!x86caps.hasStreamingSIMD2Extensions) mVUthrowHardwareDeficiency( L"SSE2", vuIndex );
 
 	memzero(mVU.prog);
