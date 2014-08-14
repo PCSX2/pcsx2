@@ -117,7 +117,7 @@
 #define CALLBACK
 #endif
 
-#define Sleep(x) sleep((x)*1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 
 ////////////////////////////////////////////////////////////////////////
