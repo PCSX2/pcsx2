@@ -26,21 +26,47 @@ struct GenericListViewColumn
 	int flags;
 };
 
-class BreakpointList: public wxListView
+class GenericListView: public wxListView
+{
+public:
+	GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount);
+	void update();
+
+	DECLARE_EVENT_TABLE()
+protected:
+	void sizeEvent(wxSizeEvent& evt);
+	void keydownEvent(wxKeyEvent& evt);
+	void postEvent(wxEventType type, int value);
+	void mouseEvent(wxMouseEvent& evt);
+	void listEvent(wxListEvent& evt);
+
+	virtual wxString getColumnText(int row, int col) const = 0;
+	virtual int getRowCount() = 0;
+	virtual void onDoubleClick(int itemIndex, const wxPoint& point) { };
+	virtual void onRightClick(int itemIndex, const wxPoint& point) { };
+	virtual void onKeyDown(int key) { };
+private:
+	void insertColumns(GenericListViewColumn* columns, int count);
+	void resizeColumns(int totalWidth);
+	wxString OnGetItemText(long item, long col) const;
+
+	GenericListViewColumn* columns;
+	wxPoint clickPos;
+};
+
+class BreakpointList: public GenericListView
 {
 public:
 	BreakpointList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly);
 	void reloadBreakpoints();
-	void update();
-	DECLARE_EVENT_TABLE()
 protected:
-	wxString OnGetItemText(long item, long col) const;
 	void onPopupClick(wxCommandEvent& evt);
-
-	void sizeEvent(wxSizeEvent& evt);
-	void keydownEvent(wxKeyEvent& evt);
-	void mouseEvent(wxMouseEvent& evt);
-	void listEvent(wxListEvent& evt);
+	
+	virtual wxString getColumnText(int row, int col) const;
+	virtual int getRowCount();
+	virtual void onDoubleClick(int itemIndex, const wxPoint& point);
+	virtual void onRightClick(int itemIndex, const wxPoint& point);
+	virtual void onKeyDown(int key);
 private:
 	int getBreakpointIndex(int itemIndex, bool& isMemory) const;
 	int getTotalBreakpointCount();
@@ -55,5 +81,4 @@ private:
 	std::vector<MemCheck> displayedMemChecks_;
 	DebugInterface* cpu;
 	CtrlDisassemblyView* disasm;
-	wxPoint clickPos;
 };
