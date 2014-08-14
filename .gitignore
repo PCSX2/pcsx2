@@ -14,10 +14,12 @@
 *.mo
 
 _ReSharper.*
+pcsx2.snapshot_*
 postBuild.inc.cmd
 postBuild.cmd
 svnrev.h
 
+build
 Debug
 Release
 Devel
