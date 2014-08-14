@@ -259,6 +259,15 @@ void R5900DebugInterface::write8(u32 address, u8 value)
 	memWrite8(address,value);
 }
 
+void R5900DebugInterface::write32(u32 address, u32 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	memWrite32(address,value);
+}
+
+
 int R5900DebugInterface::getRegisterCategoryCount()
 {
 	return EECAT_COUNT;
@@ -563,6 +572,14 @@ void R3000DebugInterface::write8(u32 address, u8 value)
 		return;
 
 	iopMemWrite8(address,value);
+}
+
+void R3000DebugInterface::write32(u32 address, u32 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address,value);
 }
 
 int R3000DebugInterface::getRegisterCategoryCount()

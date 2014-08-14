@@ -28,6 +28,7 @@ public:
 	virtual u64 read64(u32 address) = 0;
 	virtual u128 read128(u32 address) = 0;
 	virtual void write8(u32 address, u8 value) = 0;
+	virtual void write32(u32 address, u32 value) = 0;
 
 	// register stuff
 	virtual int getRegisterCategoryCount() = 0;
@@ -65,6 +66,7 @@ public:
 	virtual u64 read64(u32 address);
 	virtual u128 read128(u32 address);
 	virtual void write8(u32 address, u8 value);
+	virtual void write32(u32 address, u32 value);
 
 	// register stuff
 	virtual int getRegisterCategoryCount();
@@ -96,6 +98,7 @@ public:
 	virtual u64 read64(u32 address);
 	virtual u128 read128(u32 address);
 	virtual void write8(u32 address, u8 value);
+	virtual void write32(u32 address, u32 value);
 
 	// register stuff
 	virtual int getRegisterCategoryCount();

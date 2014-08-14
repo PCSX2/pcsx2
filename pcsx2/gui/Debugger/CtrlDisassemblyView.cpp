@@ -17,10 +17,12 @@
 #include "CtrlDisassemblyView.h"
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/Debug.h"
+#include "DebugTools/MipsAssembler.h"
 
 #include "DebugEvents.h"
 #include "BreakpointWindow.h"
 #include "AppConfig.h"
+#include "System.h"
 
 #include <wx/mstream.h>
 #include <wx/clipbrd.h>
@@ -66,7 +68,71 @@ enum DisassemblyMenuIdentifiers
 	ID_DISASM_ADDFUNCTION
 };
 
+class NonAutoSelectTextCtrl: public wxTextCtrl
+{
+public:
+	NonAutoSelectTextCtrl(wxWindow *parent, wxWindowID id,
+		const wxString& value = wxEmptyString,
+		const wxPoint& pos = wxDefaultPosition,
+		const wxSize& size = wxDefaultSize,
+		long style = 0,
+		const wxValidator& validator = wxDefaultValidator,
+		const wxString& name = wxTextCtrlNameStr)
+		 : wxTextCtrl(parent,id,value,pos,size,style,validator,name)
+	{
 
+	}
+#ifdef _WIN32
+
+#define WM_GETDLGCODE		0x0087
+#define DLGC_HASSETSEL		0x0008
+
+	virtual WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
+	{
+		WXLRESULT result = wxTextCtrl::MSWWindowProc(nMsg,wParam,lParam);
+		if (nMsg == WM_GETDLGCODE)
+			result &= ~DLGC_HASSETSEL;
+		return result;
+	}
+#endif
+};
+
+class TextEntryDialog: public wxDialog
+{
+public:
+	TextEntryDialog(wxWindow* parent, wxString title, wxString defaultText)
+		: wxDialog(parent,wxID_ANY,title)
+	{
+		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	
+		textControl = new NonAutoSelectTextCtrl(this,wxID_ANY,L"",wxDefaultPosition,wxDefaultSize,0);
+		textControl->SetValue(defaultText);
+		textControl->SetSelection(textControl->GetLastPosition(),textControl->GetLastPosition());
+		sizer->Add(textControl,0,wxEXPAND);
+
+		wxBoxSizer* buttons = new wxBoxSizer(wxHORIZONTAL);
+		okButton = new wxButton(this,wxID_OK,L"OK");
+		okButton->SetDefault();
+		cancelButton = new wxButton(this,wxID_CANCEL,L"Cancel");
+
+		buttons->Add(okButton);
+		buttons->Add(cancelButton);
+		sizer->Add(buttons,0,wxEXPAND);
+	
+		SetSizer(sizer);
+		sizer->Layout();
+		sizer->Fit(this);
+
+		textControl->SetFocus();
+		textControl->SetFocusFromKbd();
+	}
+	wxString getText() { return textControl->GetLabel(); }
+
+private:
+	NonAutoSelectTextCtrl* textControl;
+	wxButton* okButton;
+	wxButton* cancelButton;
+};
 
 inline wxIcon _wxGetIconFromMemory(const unsigned char *data, int length) {
    wxMemoryInputStream is(data, length);
@@ -95,7 +161,6 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_DISASM_DISASSEMBLETOFILE,		L"Disassemble to File");
 	menu.AppendSeparator();
 	menu.Append(ID_DISASM_ASSEMBLE,					L"Assemble Opcode");
-	menu.Enable(ID_DISASM_ASSEMBLE,false);
 	menu.AppendSeparator();
 	menu.Append(ID_DISASM_RUNTOHERE,				L"Run to Cursor");
 	menu.Append(ID_DISASM_SETPCTOHERE,				L"Jump to Cursor");
@@ -483,7 +548,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		drawArguments(dc, line, pixelPositions.argumentsStart, rowY1 + 2, textColor, currentArguments);
 		
 		if (isInInterval(address,line.totalSize,cpu->getPC()))
-			dc.DrawText(L"■",pixelPositions.opcodeStart-(charWidth+1),rowY1);
+			dc.DrawText(L"\u25A0",pixelPositions.opcodeStart-(charWidth+1),rowY1);
 
 		dc.SetFont(boldFont);
 		dc.DrawText(wxString(line.name.c_str(),wxConvUTF8),pixelPositions.opcodeStart,rowY1+2);
@@ -557,6 +622,40 @@ void CtrlDisassemblyView::followBranch()
 		postEvent(debEVT_GOTOINMEMORYVIEW,curAddress);
 	}
 }
+
+void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
+{
+	u32 encoded;
+
+	if (cpu->isCpuPaused() == false)
+	{
+		wxMessageBox( L"Cannot change code while the core is running",  L"Error.", wxICON_ERROR);
+		return;
+	}
+
+	TextEntryDialog entry(this,L"Assemble opcode",wxString(defaultText.c_str(),wxConvUTF8));
+	entry.Layout();
+
+	if (entry.ShowModal() != wxID_OK)
+		return;
+
+	wxString op = entry.getText();
+	std::string errorText;
+	bool result = MipsAssembleOpcode(op.To8BitData(),cpu,address,encoded,errorText);
+	if (result == true)
+	{
+		SysClearExecutionCache();
+		cpu->write32(address,encoded);
+
+		if (address == curAddress)
+			gotoAddress(manager.getNthNextAddress(curAddress,1));
+
+		redraw();
+	} else {
+		wxMessageBox( wxString(errorText.c_str(),wxConvUTF8), L"Error.", wxICON_ERROR);
+	}
+}
+
 
 void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 {
@@ -684,6 +783,9 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 			redraw();
 			break;
 		}
+	case ID_DISASM_ASSEMBLE:
+		assembleOpcode(curAddress,"");
+		break;
 	default:
 		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
 		break;
@@ -730,6 +832,15 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 			break;
 		}
 	} else {
+		if (evt.GetEventType() == wxEVT_CHAR && evt.GetKeyCode() >= 0x20 && evt.GetKeyCode() < 0x80)
+		{
+			std::string str;
+			str += (char) evt.GetKeyCode();
+
+			assembleOpcode(curAddress,str);
+			return;
+		}
+
 		switch (evt.GetKeyCode())
 		{
 		case WXK_LEFT:
