@@ -67,21 +67,14 @@ void recPLZCW()
 		GPR_SET_CONST(_Rd_);
 
 		for(regs = 0; regs < 2; ++regs) {
-			u32 val = g_cpuConstRegs[_Rs_].UL[regs];
-
-			if( val != 0 ) {
-				u32 setbit = val&0x80000000;
-				g_cpuConstRegs[_Rd_].UL[regs] = 0;
-				val <<= 1;
-
-				while((val & 0x80000000) == setbit) {
-					g_cpuConstRegs[_Rd_].UL[regs]++;
-					val <<= 1;
-				}
-			}
-			else {
-				g_cpuConstRegs[_Rd_].UL[regs] = 31;
-			}
+			s32 val = g_cpuConstRegs[_Rs_].SL[regs];
+			// Find the number of leading same (as sign) bits. We make sure the bits we want are zero.
+			// This is the same as __builtin__clrsb() in GCC > 4.7
+#ifdef _MSC_VER
+			g_cpuConstRegs[_Rd_].UL[regs] = __lzcnt(val < 0 ? ~val : val) - 1;
+#else
+			g_cpuConstRegs[_Rd_].UL[regs] = __builtin_clz(val < 0 ? ~val : val) - 1;
+#endif
 		}
 		return;
 	}

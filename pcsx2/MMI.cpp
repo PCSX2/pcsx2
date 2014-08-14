@@ -147,25 +147,23 @@ namespace MMI {
 
 static __fi void _PLZCW(int n)
 {
-	// This function counts the number of "like" bits in the source register, starting
-	// with the MSB and working its way down, and returns the result MINUS ONE.
-	// So 0xff00 would return 7, not 8.
+	// Find the number of leading same (as sign) bits. We make sure the bits we want are zero.
+	// This is the same as __builtin__clrsb() in GCC > 4.7
 
-	int c = 0;
 	s32 i = cpuRegs.GPR.r[_Rs_].SL[n];
 
-	// Negate the source based on the sign bit.  This allows us to use a simple
-	// unified bit test of the MSB for either condition.
-	if( i >= 0 ) i = ~i;
-
-	// shift first, compare, then increment.  This excludes the sign bit from our final count.
-	while( i <<= 1, i < 0 ) c++;
-
-	cpuRegs.GPR.r[_Rd_].UL[n] = c;
+	// Negate the source based on the sign bit.  This allows us to use a simple clz.
+	// Don't count the original sign bit (so extract 1).
+#ifdef _MSC_VER
+	cpuRegs.GPR.r[_Rd_].UL[n] = __lzcnt(i < 0 ? ~i : i) - 1;
+#else
+	cpuRegs.GPR.r[_Rd_].UL[n] = __builtin_clz(i < 0 ? ~i : i) - 1;
+#endif
 }
 
 void PLZCW() {
-    if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	_PLZCW (0);
 	_PLZCW (1);
