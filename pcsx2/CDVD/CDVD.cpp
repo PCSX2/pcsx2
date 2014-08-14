@@ -782,8 +782,8 @@ __fi void cdvdActionInterrupt()
 		case cdvdAction_Break:
 			// Make sure the cdvd action state is pretty well cleared:
 			DevCon.WriteLn("CDVD Break Call");
-			cdvd.Reading = 0;
-			cdvd.Readed = 0;
+			cdvd.Reading = false;
+			cdvd.Readed = false;
 			cdvd.Ready  = CDVD_READY2;		// should be CDVD_READY1 or something else?
 			cdvd.Status = CDVD_STATUS_STOP;
 			cdvd.RErr = 0;
@@ -812,8 +812,8 @@ __fi void cdvdReadInterrupt()
 
 		cdvd.Spinning = true;
 		cdvd.RetryCntP = 0;
-		cdvd.Reading = 1;
-		cdvd.Readed = 1;
+		cdvd.Reading = true;
+		cdvd.Readed = true;
 		//cdvd.Status = CDVD_STATUS_PAUSE; // check (rama)
 		cdvd.Status = CDVD_STATUS_READ | CDVD_STATUS_SPIN; // Time Crisis 2
 
@@ -892,7 +892,7 @@ __fi void cdvdReadInterrupt()
 	}
 
 	cdvd.RetryCntP = 0;
-	cdvd.Reading = 1;
+	cdvd.Reading = true;
 	cdvd.RErr = DoCDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
 	CDVDREAD_INT(cdvd.ReadTime);
 
@@ -908,8 +908,8 @@ static uint cdvdStartSeek( uint newsector, CDVD_MODE_TYPE mode )
 	uint seektime;
 
 	cdvd.Ready = CDVD_NOTREADY;
-	cdvd.Reading = 0;
-	cdvd.Readed = 0;
+	cdvd.Reading = false;
+	cdvd.Readed = false;
 	//cdvd.Status = CDVD_STATUS_STOP; // before r4961
     //cdvd.Status = CDVD_STATUS_SEEK | CDVD_STATUS_SPIN; // Time Crisis 2 // but breaks ICO NTSC
 	cdvd.Status = CDVD_STATUS_PAUSE; // best so far in my tests (rama)
@@ -947,10 +947,10 @@ static uint cdvdStartSeek( uint newsector, CDVD_MODE_TYPE mode )
 		{
 			//cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvd.Status = CDVD_STATUS_READ | CDVD_STATUS_SPIN; // Time Crisis 2
-			cdvd.Readed = 1; // Note: 1, not 0, as implied by the next comment. Need to look into this. --arcum42
+			cdvd.Readed = true; // Note: true, not false, as implied by the next comment. Need to look into this. --arcum42
 			cdvd.RetryCntP = 0;
 
-			// setting Readed to 0 skips the seek logic, which means the next call to
+			// setting Readed to false skips the seek logic, which means the next call to
 			// cdvdReadInterrupt will load a block.  So make sure it's properly scheduled
 			// based on sector read speeds:
 
@@ -1245,7 +1245,7 @@ static void cdvdWrite04(u8 rt) { // NCOMMAND
 			// Set the reading block flag.  If a seek is pending then Readed will
 			// take priority in the handler anyway.  If the read is contiguous then
 			// this'll skip the seek delay.
-			cdvd.Reading = 1;
+			cdvd.Reading = true;
 			break;
 
 		case N_CD_READ_CDDA: // CdReadCDDA
@@ -1293,7 +1293,7 @@ static void cdvdWrite04(u8 rt) { // NCOMMAND
 			// Set the reading block flag.  If a seek is pending then Readed will
 			// take priority in the handler anyway.  If the read is contiguous then
 			// this'll skip the seek delay.
-			cdvd.Reading = 1;
+			cdvd.Reading = true;
 		break;
 
 		case N_DVD_READ: // DvdRead
@@ -1329,7 +1329,7 @@ static void cdvdWrite04(u8 rt) { // NCOMMAND
 			// Set the reading block flag.  If a seek is pending then Readed will
 			// take priority in the handler anyway.  If the read is contiguous then
 			// this'll skip the seek delay.
-			cdvd.Reading = 1;
+			cdvd.Reading = true;
 		break;
 
 		case N_CD_GET_TOC: // CdGetToc & cdvdman_call19
@@ -1403,8 +1403,8 @@ static __fi void cdvdWrite07(u8 rt)		// BREAK
 	CDVD_INT( 64 );
 
 	// Clear the cdvd status:
-	cdvd.Readed = 0;
-	cdvd.Reading = 0;
+	cdvd.Readed = false;
+	cdvd.Reading = false;
 	cdvd.Status = CDVD_STATUS_STOP;
 	//cdvd.nCommand = 0;
 }

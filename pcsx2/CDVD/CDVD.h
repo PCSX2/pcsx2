@@ -105,8 +105,8 @@ struct cdvdStruct {
 
 	u32 Sector;
 	int nSectors;
-	int Readed; // change to bool. --arcum42
-	int Reading; // same here.
+	bool Readed;
+	bool Reading;
 	int ReadMode;
 	int BlockSize; // Total bytes transfered at 1x speed
 	int Speed;
