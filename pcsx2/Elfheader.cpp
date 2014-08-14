@@ -376,7 +376,7 @@ void ElfObject::loadSectionHeaders()
 
 		// used by parseCommandLine
 		//if ( secthead[i].sh_flags & 0x2 )
-		//	args_ptr = min( args_ptr, secthead[ i ].sh_addr & 0x1ffffff );
+		//	args_ptr = std::min( args_ptr, secthead[ i ].sh_addr & 0x1ffffff );
 
 		ELF_LOG("\n");
 

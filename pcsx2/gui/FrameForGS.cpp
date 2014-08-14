@@ -167,7 +167,7 @@ void GSPanel::DoResize()
 
 	float zoom = g_Conf->GSWindow.Zoom.ToFloat()/100.0;
 	if( zoom == 0 )//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
-		zoom = max( (float)arr, (float)(1.0/arr) );
+		zoom = std::max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
 	SetSize( viewport );
@@ -175,7 +175,7 @@ void GSPanel::DoResize()
 	
 	int cx, cy;
 	GetPosition(&cx, &cy);
-	float unit = .01*(float)min(viewport.x, viewport.y);
+	float unit = .01*(float)std::min(viewport.x, viewport.y);
 	SetPosition( wxPoint( cx + unit*g_Conf->GSWindow.OffsetX.ToFloat(), cy + unit*g_Conf->GSWindow.OffsetY.ToFloat() ) );
 #ifdef GSWindowScaleDebug
 	Console.WriteLn(Color_Yellow, "GSWindowScaleDebug: zoom %f, viewport.x %d, viewport.y %d", zoom, viewport.GetX(), viewport.GetY());

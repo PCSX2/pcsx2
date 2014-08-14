@@ -53,7 +53,7 @@ static __fi bool mfifoVIF1rbTransfer()
 {
 	u32 maddr = dmacRegs.rbor.ADDR;
 	u32 msize = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
-	u16 mfifoqwc = min(QWCinVIFMFIFO(vif1ch.madr), vif1ch.qwc);
+	u16 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr), vif1ch.qwc);
 	u32 *src;
 	bool ret;
 
@@ -332,7 +332,7 @@ void vifMFIFOInterrupt()
 		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
 			//vif1Regs.stat.FQC = 0; // FQC=0
 			//vif1ch.chcr.STR = false;
-			vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
+			vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 			if((vif1ch.qwc > 0 || !vif1.done) && !(vif1.inprogress & 0x10)) {
 				VIF_LOG("VIF1 MFIFO Stalled");
 				return;
@@ -365,7 +365,7 @@ void vifMFIFOInterrupt()
 				}
 				
                 mfifoVIF1transfer(0);
-				vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
+				vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 				
 			case 1: //Transfer data
 				if(vif1.inprogress & 0x1) //Just in case the tag breaks early (or something wierd happens)!
@@ -374,7 +374,7 @@ void vifMFIFOInterrupt()
 				if(!(vif1Regs.stat.VGW && gifUnit.gifPath[GIF_PATH_3].state != GIF_PATH_IDLE)) //If we're waiting on GIF, stop looping, (can be over 1000 loops!)
 					CPU_INT(DMAC_MFIFO_VIF, (g_vif1Cycles == 0 ? 4 : g_vif1Cycles) );	
 
-				vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
+				vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 				return;
 		}
 		return;
@@ -384,7 +384,7 @@ void vifMFIFOInterrupt()
 	vif1.irqoffset.enabled = false;
 	vif1.done = 1;
 	g_vif1Cycles = 0;
-	vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
+	vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 	vif1ch.chcr.STR = false;
 	hwDmacIrq(DMAC_VIF1);
 	DMA_LOG("VIF1 MFIFO DMA End");

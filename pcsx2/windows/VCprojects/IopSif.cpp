@@ -100,7 +100,7 @@ s32 DoSifRead(u32 iopAvailable)
 {
 	u32 eeAvailable = PrepareEERead();
 
-	u32 transferSizeBytes = min(min(iopAvailable,eeAvailable),fifoSize);
+	u32 transferSizeBytes = std::min(std::min(iopAvailable,eeAvailable),fifoSize);
 	u32 transferSizeWords = transferSizeBytes >> 2;
 	u32 transferSizeQWords = transferSizeBytes >> 4;
 

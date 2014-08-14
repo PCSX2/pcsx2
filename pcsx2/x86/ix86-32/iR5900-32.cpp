@@ -901,12 +901,12 @@ void recClear(u32 addr, u32 size)
 		}
 
 		if (blockend <= addr) {
-			lowerextent = max(lowerextent, blockend);
+			lowerextent = std::max(lowerextent, blockend);
 			break;
 		}
 
-		lowerextent = min(lowerextent, blockstart);
-		upperextent = max(upperextent, blockend);
+		lowerextent = std::min(lowerextent, blockstart);
+		upperextent = std::max(upperextent, blockend);
 		// This might end up inside a block that doesn't contain the clearing range,
 		// so set it to recompile now.  This will become JITCompile if we clear it.
 		pblock->SetFnptr((uptr)JITCompileInBlock);
@@ -918,7 +918,7 @@ void recClear(u32 addr, u32 size)
 		recBlocks.Remove((blockidx + 1), toRemoveLast);
 	}
 
-	upperextent = min(upperextent, ceiling);
+	upperextent = std::min(upperextent, ceiling);
 
 	for (int i = 0; pexblock = recBlocks[i]; i++) {
 		if (s_pCurBlock == PC_GETBLOCK(pexblock->startpc))

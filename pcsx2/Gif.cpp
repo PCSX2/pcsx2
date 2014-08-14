@@ -232,7 +232,7 @@ void GIFdma()
         if (ptag == NULL) return;
 		//DevCon.Warning("GIF Reading Tag MSK = %x", vif1Regs.mskpath3);
 		GIF_LOG("gifdmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx tadr=%lx", ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr);
-		gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+		gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 		if (dmacRegs.ctrl.STD == STD_GIF)
 		{
 			// there are still bugs, need to also check if gifch.madr +16*qwc >= stadr, if not, stall
@@ -259,7 +259,7 @@ void GIFdma()
 	}
 
 	clearFIFOstuff(true);
-	gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+	gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 
 #if USE_OLD_GIF == 1 // ...
 	if (vif1Regs.mskpath3 || gifRegs.mode.M3R) {	
@@ -276,7 +276,7 @@ void GIFdma()
 	// Transfer Dn_QWC from Dn_MADR to GIF
 	if (gifch.qwc > 0) // Normal Mode
 	{
-		gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+		gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 
 		if (CheckPaths(DMAC_GIF) == false) return;
 
@@ -287,7 +287,7 @@ void GIFdma()
 
 	prevcycles = 0;
 	CPU_INT(DMAC_GIF, gscycles);
-	gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // OPH=1 | APATH=3]
+	gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // OPH=1 | APATH=3]
 }
 
 void dmaGIF()
@@ -338,7 +338,7 @@ static u16 QWCinGIFMFIFO(u32 DrainADDR)
 
 static __fi bool mfifoGIFrbTransfer()
 {
-	u16 mfifoqwc = min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
+	u16 mfifoqwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
 	if (mfifoqwc == 0) return true; //Lets skip all this, we don't have the data
 
 	if(!gifUnit.CanDoPath3()) {

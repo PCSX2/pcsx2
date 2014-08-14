@@ -75,11 +75,11 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 		std::deque<microRange>::iterator it(ranges->begin());
 		for (++it; it != ranges->end(); ++it) {
 			if((it[0].start >= rStart) && (it[0].start <= rEnd)) {
-				it[0].end   = max(it[0].end, rEnd);
+				it[0].end   = std::max(it[0].end, rEnd);
 				mergedRange = true;
 			}
 			else if ((it[0].end >= rStart) && (it[0].end <= rEnd)) {
-				it[0].start = min(it[0].start, rStart);
+				it[0].start = std::min(it[0].start, rStart);
 				mergedRange = true;
 			}
 		}
@@ -243,7 +243,7 @@ __ri void eBitWarning(mV) {
 //------------------------------------------------------------------
 __fi void optimizeReg(u8& rState)	 { rState = (rState==1) ? 0 : rState; }
 __fi void calcCycles(u8& reg, u8 x)	 { reg = ((reg > x) ? (reg - x) : 0); }
-__fi void tCycles(u8& dest, u8& src) { dest = max(dest, src); }
+__fi void tCycles(u8& dest, u8& src) { dest = std::max(dest, src); }
 __fi void incP(mV)					 { mVU.p ^= 1; }
 __fi void incQ(mV)					 { mVU.q ^= 1; }
 

@@ -4338,7 +4338,7 @@ void recVUMI_XGKICK(VURegs *VU, int info)
 		recVUMI_XGKICK_(VU);
 	}
 	else {
-		s_ScheduleXGKICK = (CHECK_XGKICKHACK) ? (min((u32)4, (s_pCurBlock->endpc-pc)/8)) : 2;
+		s_ScheduleXGKICK = (CHECK_XGKICKHACK) ? (std::min((u32)4, (s_pCurBlock->endpc-pc)/8)) : 2;
 	}
 }
 

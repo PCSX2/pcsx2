@@ -1147,13 +1147,13 @@ mVUop(mVU_RXOR) {
 //------------------------------------------------------------------
 
 mVUop(mVU_WAITP) {
-	pass1 { mVUstall = max(mVUstall, (u8)((mVUregs.p) ? (mVUregs.p - 1) : 0)); }
+	pass1 { mVUstall = std::max(mVUstall, (u8)((mVUregs.p) ? (mVUregs.p - 1) : 0)); }
 	pass2 { mVU.profiler.EmitOp(opWAITP); }
 	pass3 { mVUlog("WAITP"); }
 }
 
 mVUop(mVU_WAITQ) {
-	pass1 { mVUstall = max(mVUstall, mVUregs.q); }
+	pass1 { mVUstall = std::max(mVUstall, mVUregs.q); }
 	pass2 { mVU.profiler.EmitOp(opWAITQ); }
 	pass3 { mVUlog("WAITQ"); }
 }

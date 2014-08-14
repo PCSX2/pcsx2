@@ -172,7 +172,7 @@ __fi void vif1FBRST(u32 value) {
 		vif1.MaskRow._u64[0] = SaveRow._u64[0];
 		vif1.MaskRow._u64[1] = SaveRow._u64[1];
 		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-		///vif1ch.qwc -= min((int)vif1ch.qwc, 16); //not sure if the dma should stop, FFWDing could be tricky
+		///vif1ch.qwc -= std::min((int)vif1ch.qwc, 16); //not sure if the dma should stop, FFWDing could be tricky
 		vif1ch.qwc = 0;
 
 		psHu64(VIF1_FIFO) = 0;
@@ -318,7 +318,7 @@ __fi void vif1STAT(u32 value) {
 		// As far as the GS is concerned, the transfer starts as soon as TRXDIR is accessed, which is why fatal frame
 		// was expecting data, the GS should already be sending it over (buffering in the FIFO)
 
-		vif1Regs.stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
+		vif1Regs.stat.FQC = std::min((u32)16, vif1.GSLastDownloadSize);
 		//Console.Warning("Reversing VIF Transfer for %x QWC", vif1.GSLastDownloadSize);
 
 	}

@@ -365,13 +365,13 @@ uint recMicroVU1::GetCacheReserve() const {
 
 void recMicroVU0::SetCacheReserve(uint reserveInMegs) const {
 	DevCon.WriteLn("microVU0: Changing cache size [%dmb]", reserveInMegs);
-	microVU0.cacheSize = min(reserveInMegs, mVU0cacheReserve);
+	microVU0.cacheSize = std::min(reserveInMegs, mVU0cacheReserve);
 	safe_delete(microVU0.cache_reserve); // I assume this unmaps the memory
 	mVUreserveCache(microVU0); // Need rec-reset after this
 }
 void recMicroVU1::SetCacheReserve(uint reserveInMegs) const {
 	DevCon.WriteLn("microVU1: Changing cache size [%dmb]", reserveInMegs);
-	microVU1.cacheSize = min(reserveInMegs, mVU1cacheReserve);
+	microVU1.cacheSize = std::min(reserveInMegs, mVU1cacheReserve);
 	safe_delete(microVU1.cache_reserve); // I assume this unmaps the memory
 	mVUreserveCache(microVU1); // Need rec-reset after this
 }
