@@ -1212,7 +1212,6 @@
     <ClInclude Include="..\..\gui\pxEventThread.h" />
     <ClInclude Include="..\..\ZipTools\ThreadedZipTools.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
-    <ClInclude Include="..\..\Patch_Obsolete.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>

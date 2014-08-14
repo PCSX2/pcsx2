@@ -201,7 +201,6 @@ set(pcsx2Headers
 	MemoryTypes.h
 	NakedAsm.h
 	Patch.h
-	Patch_Obsolete.h
 	PathDefs.h
 	Plugins.h
 	PrecompiledHeader.h
