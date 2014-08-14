@@ -133,7 +133,7 @@ REC_SYS( MTC0 );
 
 #else
 
-void recMFC0( void )
+void recMFC0()
 {
 	if( _Rd_ == 9 )
 	{

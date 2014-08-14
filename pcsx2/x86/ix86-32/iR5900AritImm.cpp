@@ -76,13 +76,13 @@ void recADDI_(int info)
 EERECOMPILE_CODEX(eeRecompileCode1, ADDI);
 
 ////////////////////////////////////////////////////
-void recADDIU( void )
+void recADDIU()
 {
-	recADDI( );
+	recADDI();
 }
 
 ////////////////////////////////////////////////////
-void recDADDI_const( void )
+void recDADDI_const()
 {
 	g_cpuConstRegs[_Rt_].SD[0] = g_cpuConstRegs[_Rs_].SD[0] + (s64)_Imm_;
 }
@@ -115,9 +115,9 @@ void recDADDI_(int info)
 EERECOMPILE_CODEX(eeRecompileCode1, DADDI);
 
 //// DADDIU
-void recDADDIU( void )
+void recDADDIU()
 {
-	recDADDI( );
+	recDADDI();
 }
 
 //// SLTIU

@@ -45,7 +45,7 @@ REC_SYS_DEL(JALR, _Rd_);
 #else
 
 ////////////////////////////////////////////////////
-void recJ( void )
+void recJ()
 {
 	// SET_FPUSTATE;
 	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
@@ -57,7 +57,7 @@ void recJ( void )
 }
 
 ////////////////////////////////////////////////////
-void recJAL( void )
+void recJAL()
 {
 	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
 	_deleteEEreg(31, 0);
@@ -86,13 +86,13 @@ void recJAL( void )
 *********************************************************/
 
 ////////////////////////////////////////////////////
-void recJR( void )
+void recJR()
 {
 	SetBranchReg( _Rs_);
 }
 
 ////////////////////////////////////////////////////
-void recJALR( void )
+void recJALR()
 {
 	int newpc = pc + 4;
 	_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
