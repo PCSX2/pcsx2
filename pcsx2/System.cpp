@@ -240,8 +240,6 @@ void SysLogMachineCaps()
 
 	wxArrayString features[2];	// 2 lines, for readability!
 
-	if( x86caps.hasMultimediaExtensions )			features[0].Add( L"MMX" );
-	if( x86caps.hasStreamingSIMDExtensions )		features[0].Add( L"SSE" );
 	if( x86caps.hasStreamingSIMD2Extensions )		features[0].Add( L"SSE2" );
 	if( x86caps.hasStreamingSIMD3Extensions )		features[0].Add( L"SSE3" );
 	if( x86caps.hasSupplementalStreamingSIMD3Extensions ) features[0].Add( L"SSSE3" );

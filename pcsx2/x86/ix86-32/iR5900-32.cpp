@@ -577,7 +577,7 @@ static void recThrowHardwareDeficiency( const wxChar* extFail )
 {
 	throw Exception::HardwareDeficiency()
 		.SetDiagMsg(pxsFmt( L"R5900-32 recompiler init failed: %s is not available.", extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with MMX, SSE, and SSE2 extensions."), extFail ));
+		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions."), extFail ));
 }
 
 static void recReserveCache()
@@ -600,12 +600,6 @@ static void recReserveCache()
 static void recReserve()
 {
 	// Hardware Requirements Check...
-
-	if ( !x86caps.hasMultimediaExtensions )
-		recThrowHardwareDeficiency( L"MMX" );
-
-	if ( !x86caps.hasStreamingSIMDExtensions )
-		recThrowHardwareDeficiency( L"SSE" );
 
 	if ( !x86caps.hasStreamingSIMD2Extensions )
 		recThrowHardwareDeficiency( L"SSE2" );
