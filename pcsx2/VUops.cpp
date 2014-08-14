@@ -117,7 +117,6 @@ void _vuFlushAll(VURegs* VU)
 			if ((VU->cycle - VU->fdiv.sCycle) >= VU->fdiv.Cycle) {
 				VUM_LOG("flushing FDIV pipe");
 
-				nRepeat = 1;
 				VU->fdiv.enable = 0;
 				VU->VI[REG_Q].UL = VU->fdiv.reg.UL;
 				VU->VI[REG_STATUS_FLAG].UL = VU->fdiv.statusflag;
@@ -131,7 +130,6 @@ void _vuFlushAll(VURegs* VU)
 			if ((VU->cycle - VU->efu.sCycle) >= VU->efu.Cycle) {
 	//			VUM_LOG("flushing EFU pipe");
 
-				nRepeat = 1;
 				VU->efu.enable = 0;
 				VU->VI[REG_P].UL = VU->efu.reg.UL;
 			}
@@ -160,14 +158,13 @@ static void __fastcall _vuFMACTestStall(VURegs * VU, int reg, int xyzw) {
 
 	if (i == 8) return;
 
-	cycle = VU->fmac[i].Cycle - (VU->cycle - VU->fmac[i].sCycle) + 1; // add 1 delay! (fixes segaclassics bad geom)
 	VU->fmac[i].enable = 0;
 	VU->VI[REG_MAC_FLAG].UL = VU->fmac[i].macflag;
 	VU->VI[REG_STATUS_FLAG].UL = VU->fmac[i].statusflag;
 	VU->VI[REG_CLIP_FLAG].UL = VU->fmac[i].clipflag;
-	VUM_LOG("FMAC[%d] stall %d", i, cycle);
+	VUM_LOG("FMAC[%d] stall %d", i, VU->fmac[i].Cycle - (VU->cycle - VU->fmac[i].sCycle) + 1);
 
-	VU->cycle+= cycle;
+	VU->cycle = VU->fmac[i].Cycle + VU->fmac[i].sCycle + 1; // HACK: add 1 delay (fixes segaclassics bad geom)
 	_vuTestPipes(VU);
 }
 
@@ -216,27 +213,24 @@ static __ri void __fastcall _vuEFUAdd(VURegs * VU, int cycles) {
 static __ri void __fastcall _vuFlushFDIV(VURegs * VU) {
 	int cycle;
 
-	if (VU->fdiv.enable == 0) return;
+	if (VU->fdiv.enable == 0)
+		return;
 
-	cycle = VU->fdiv.Cycle - (VU->cycle - VU->fdiv.sCycle);
-	VUM_LOG("waiting FDIV pipe %d", cycle);
+	VUM_LOG("waiting FDIV pipe %d", VU->fdiv.Cycle - (VU->cycle - VU->fdiv.sCycle));
 
 	VU->fdiv.enable = 0;
-	VU->cycle+= cycle;
+	VU->cycle = VU->fdiv.Cycle + VU->fdiv.sCycle;
+
 	VU->VI[REG_Q].UL = VU->fdiv.reg.UL;
 	VU->VI[REG_STATUS_FLAG].UL = VU->fdiv.statusflag;
 }
 
 static __ri void __fastcall _vuFlushEFU(VURegs * VU) {
-	int cycle;
-
-	if (VU->efu.enable == 0) return;
-
-	cycle = VU->efu.Cycle - (VU->cycle - VU->efu.sCycle);
-//	VUM_LOG("waiting EFU pipe %d", cycle);
+	if (VU->efu.enable == 0)
+		return;
 
 	VU->efu.enable = 0;
-	VU->cycle+= cycle;
+	VU->cycle = VU->efu.Cycle + VU->efu.sCycle;
 	VU->VI[REG_P].UL = VU->efu.reg.UL;
 }
 
