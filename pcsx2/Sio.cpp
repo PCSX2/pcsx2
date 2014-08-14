@@ -132,7 +132,7 @@ SIO_WRITE sioWriteStart(u8 data)
 	
 	// On mismatch, sio2.cmdlength (size1) is smaller than what it should (Persona 3)
 	// while size2 is the proper length. -KrossX
-	sio.bufSize = size2; //max(size1, size2);
+	sio.bufSize = size2; //std::max(size1, size2);
 
 	if(sio.bufSize)
 		sio.bufSize--;

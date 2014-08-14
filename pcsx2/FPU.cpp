@@ -269,7 +269,7 @@ void MADDA_S() {
 }
 
 void MAX_S() {
-	_FdValf_  = max( _FsValf_, _FtValf_ );
+	_FdValf_  = std::max( _FsValf_, _FtValf_ );
 	clearFPUFlags( FPUflagO | FPUflagU );
 }
 
@@ -279,7 +279,7 @@ void MFC1() {
 }
 
 void MIN_S() {
-	_FdValf_  = min( _FsValf_, _FtValf_ );
+	_FdValf_  = std::min( _FsValf_, _FtValf_ );
 	clearFPUFlags( FPUflagO | FPUflagU );
 }
 

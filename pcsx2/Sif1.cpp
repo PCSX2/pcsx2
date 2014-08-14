@@ -38,7 +38,7 @@ static __fi bool WriteEEtoFifo()
 	// There's some data ready to transfer into the fifo..
 
 	SIF_LOG("Sif 1: Write EE to Fifo");
-	const int writeSize = min((s32)sif1ch.qwc, sif1.fifo.sif_free() >> 2);
+	const int writeSize = std::min((s32)sif1ch.qwc, sif1.fifo.sif_free() >> 2);
 
 	tDMA_TAG *ptag;
 
@@ -65,7 +65,7 @@ static __fi bool WriteFifoToIOP()
 	// If we're reading something, continue to do so.
 
 	SIF_LOG("Sif1: Write Fifo to IOP");
-	const int readSize = min (sif1.iop.counter, sif1.fifo.size);
+	const int readSize = std::min(sif1.iop.counter, sif1.fifo.size);
 
 	SIF_LOG("Sif 1 IOP doing transfer %04X to %08X", readSize, HW_DMA10_MADR);
 
@@ -148,7 +148,7 @@ static __fi void EndEE()
 	}
 
 
-	CPU_INT(DMAC_SIF1, /*min((int)(*/sif1.ee.cycles*BIAS/*), 384)*/);
+	CPU_INT(DMAC_SIF1, /*std::min((int)(*/sif1.ee.cycles*BIAS/*), 384)*/);
 }
 
 // Stop processing IOP, and signal an interrupt.
@@ -169,7 +169,7 @@ static __fi void EndIOP()
 		sif1.iop.cycles = 1;
 	}
 	// iop is 1/8th the clock rate of the EE and psxcycles is in words (not quadwords)
-	PSX_INT(IopEvt_SIF1, /*min((*/sif1.iop.cycles/* * 26*//*), 1024)*/);
+	PSX_INT(IopEvt_SIF1, /*std::min((*/sif1.iop.cycles/* * 26*//*), 1024)*/);
 }
 
 // Handle the EE transfer.

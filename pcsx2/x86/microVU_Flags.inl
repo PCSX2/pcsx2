@@ -85,7 +85,7 @@ int sortFlag(int* fFlag, int* bFlag, int cycles) {
 }
 
 void sortFullFlag(int* fFlag, int* bFlag) {
-	int m = max(max(fFlag[0], fFlag[1]), max(fFlag[2], fFlag[3]));
+	int m = std::max(std::max(fFlag[0], fFlag[1]), std::max(fFlag[2], fFlag[3]));
 	for(int i = 0; i < 4; i++) {
 		int t = 3 - (m - fFlag[i]);
 		bFlag[i] = (t < 0) ? 0 : t+1;

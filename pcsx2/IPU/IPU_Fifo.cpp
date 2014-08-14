@@ -67,7 +67,7 @@ wxString IPU_Fifo_Output::desc() const
 int IPU_Fifo_Input::write(u32* pMem, int size)
 {
 	int transsize;
-	int firsttrans = min(size, 8 - (int)g_BP.IFC);
+	int firsttrans = std::min(size, 8 - (int)g_BP.IFC);
 
 	g_BP.IFC += firsttrans;
 	transsize = firsttrans;
@@ -112,7 +112,7 @@ int IPU_Fifo_Output::write(const u32 *value, uint size)
 	/*do {*/
 		//IPU0dma();
 	
-		uint transsize = min(size, 8 - (uint)ipuRegs.ctrl.OFC);
+		uint transsize = std::min(size, 8 - (uint)ipuRegs.ctrl.OFC);
 		if(!transsize) return 0;
 
 		ipuRegs.ctrl.OFC += transsize;

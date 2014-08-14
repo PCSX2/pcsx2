@@ -53,9 +53,6 @@
 #include <sys/stat.h>
 #include <pthread.h>
 
-using std::min;
-using std::max;
-
 
 // As plugins which use C have to be used with PCSX2, the BOOL type is redefined
 // to prevent any C/C++ compatibility issues.

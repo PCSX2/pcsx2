@@ -219,7 +219,7 @@ void IPU0dma()
 
 	pMem = dmaGetAddr(ipu0ch.madr, true);
 
-	readsize = min(ipu0ch.qwc, (u16)ipuRegs.ctrl.OFC);
+	readsize = std::min(ipu0ch.qwc, (u16)ipuRegs.ctrl.OFC);
 	ipu_fifo.out.read(pMem, readsize);
 
 	ipu0ch.madr += readsize << 4;

@@ -276,9 +276,9 @@ wxColor scaleColor(wxColor color, float factor)
 	unsigned char b = color.Blue();
 	unsigned char a = color.Alpha();
 
-	r = min(255,max((int)(r*factor),0));
-	g = min(255,max((int)(g*factor),0));
-	b = min(255,max((int)(b*factor),0));
+	r = std::min(255,std::max((int)(r*factor),0));
+	g = std::min(255,std::max((int)(g*factor),0));
+	b = std::min(255,std::max((int)(b*factor),0));
 
 	return wxColor(r,g,b,a);
 }
@@ -534,7 +534,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		{
 			if (enabled)
 				textColor = 0x0000FF;
-			int yOffset = max(-1,(rowHeight-14+1)/2);
+			int yOffset = std::max(-1,(rowHeight-14+1)/2);
 			dc.DrawIcon(enabled ? bpEnabled : bpDisabled,2,rowY1+1+yOffset);
 		}
 		

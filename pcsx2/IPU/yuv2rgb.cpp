@@ -45,15 +45,15 @@ void yuv2rgb_reference(void)
 	for (int y = 0; y < 16; y++)
 		for (int x = 0; x < 16; x++)
 		{
-			s32 lum = (IPU_Y_COEFF * (max(0, (s32)mb8.Y[y][x] - IPU_Y_BIAS))) >> 6;
+			s32 lum = (IPU_Y_COEFF * (std::max(0, (s32)mb8.Y[y][x] - IPU_Y_BIAS))) >> 6;
 			s32 rcr = (IPU_RCR_COEFF * ((s32)mb8.Cr[y>>1][x>>1] - 128)) >> 6;
 			s32 gcr = (IPU_GCR_COEFF * ((s32)mb8.Cr[y>>1][x>>1] - 128)) >> 6;
 			s32 gcb = (IPU_GCB_COEFF * ((s32)mb8.Cb[y>>1][x>>1] - 128)) >> 6;
 			s32 bcb = (IPU_BCB_COEFF * ((s32)mb8.Cb[y>>1][x>>1] - 128)) >> 6;
 
-			rgb32.c[y][x].r = max(0, min(255, (lum + rcr + 1) >> 1));
-			rgb32.c[y][x].g = max(0, min(255, (lum + gcr + gcb + 1) >> 1));
-			rgb32.c[y][x].b = max(0, min(255, (lum + bcb + 1) >> 1));
+			rgb32.c[y][x].r = std::max(0, std::min(255, (lum + rcr + 1) >> 1));
+			rgb32.c[y][x].g = std::max(0, std::min(255, (lum + gcr + gcb + 1) >> 1));
+			rgb32.c[y][x].b = std::max(0, std::min(255, (lum + bcb + 1) >> 1));
 			rgb32.c[y][x].a = 0x80; // the norm to save doing this on the alpha pass
 		}
 }
