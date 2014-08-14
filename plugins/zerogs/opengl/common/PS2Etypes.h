@@ -83,8 +83,6 @@ typedef unsigned int uint;
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
 #define PCSX2_ALIGNED16_DECL(x) __declspec(align(16)) x
 
-#define __naked __declspec(naked)
-
 #else // _MSC_VER
 
 #ifdef __linux__
@@ -131,7 +129,6 @@ typedef union _LARGE_INTEGER
 #define __unused __attribute__((unused))
 #define _inline __inline__ __attribute__((unused))
 #define __forceinline __attribute__((always_inline,unused))
-#define __naked		// GCC lacks the naked specifier
 
 #endif  // __linux__
 
@@ -206,10 +203,5 @@ typedef struct {
 	int size;
 	s8 *data;
 } freezeData;
-
-/* common defines */
-#ifndef C_ASSERT
-#define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
-#endif
 
 #endif /* __PS2ETYPES_H__ */

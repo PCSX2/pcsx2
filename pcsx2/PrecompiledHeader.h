@@ -16,8 +16,6 @@
 #ifndef PCSX2_PRECOMPILED_HEADER
 #define PCSX2_PRECOMPILED_HEADER
 
-//#pragma once		// no dice, causes problems in GCC PCH (which doesn't really work very well anyway)
-
 // Disable some pointless warnings...
 #ifdef _MSC_VER
 #	pragma warning(disable:4250) //'class' inherits 'method' via dominance
@@ -99,7 +97,7 @@ typedef FnType_Void* Fnptr_Void;
 #	define strnicmp _strnicmp
 #	define stricmp _stricmp
 
-#else	// must be GCC...
+#else	// must be GCC or Clang
 
 #	include <sys/types.h>
 #	include <sys/timeb.h>
@@ -109,6 +107,6 @@ typedef FnType_Void* Fnptr_Void;
 #		define __declspec(x)
 #	endif
 
-#endif		// end GCC/Linux stuff
+#endif
 
 #endif

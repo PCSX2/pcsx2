@@ -262,4 +262,4 @@ static void recLUT_SetPage(uptr reclut[0x10000], uptr hwlut[0x10000],
 		hwlut[page] = 0u - (pagebase << 16);
 }
 
-C_ASSERT( sizeof(BASEBLOCK) == 4 );
+static_assert( sizeof(BASEBLOCK) == 4, "BASEBLOCK is not 4 bytes" );

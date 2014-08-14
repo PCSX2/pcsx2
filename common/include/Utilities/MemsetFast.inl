@@ -73,13 +73,13 @@ static __fi void memzero_sse_a( void* dest, const size_t size )
 template< u8 data, typename T >
 __noinline void memset_sse_a( T& dest )
 {
-	C_ASSERT( (sizeof(dest) & 0xf) == 0 );
+	static_assert( (sizeof(dest) & 0xf) == 0, "Bad size for SSE memset" );
 	memset_sse_a<data>( &dest, sizeof(dest) );
 }
 
 template< typename T >
 void memzero_sse_a( T& dest )
 {
-	C_ASSERT( (sizeof(dest) & 0xf) == 0 );
+	static_assert( (sizeof(dest) & 0xf) == 0, "Bad size for SSE memset" );
 	memset_sse_a<0>( &dest, sizeof(dest) );
 }
