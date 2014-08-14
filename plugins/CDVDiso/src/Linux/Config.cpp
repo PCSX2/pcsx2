@@ -34,15 +34,15 @@ void LoadConf()
 	if (f == NULL)
 	{
 		printf("Unable to load %s\n", cfg);
-		strcpy(IsoFile, DEV_DEF);
-		strcpy(CdDev, CDDEV_DEF);
+		strncpy(IsoFile, DEV_DEF, sizeof(IsoFile));
+		strncpy(CdDev, CDDEV_DEF, sizeof(CdDev));
 		BlockDump = 0;
 		SaveConf();
 		return;
 	}
 
-	fscanf(f, "IsoFile = %[^\n]\n", IsoFile);
-	fscanf(f, "CdDev   = %[^\n]\n", CdDev);
+	fscanf(f, "IsoFile = %255[^\n]\n", IsoFile);
+	fscanf(f, "CdDev   = %255[^\n]\n", CdDev);
 	fscanf(f, "BlockDump   = %d\n", &BlockDump);
 
 	if (!strncmp(IsoFile, "CdDev   =", 9)) *IsoFile = 0; // quick fix
