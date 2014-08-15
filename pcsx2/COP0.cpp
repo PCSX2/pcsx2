@@ -411,7 +411,6 @@ void MFC0()
 {
 	// Note on _Rd_ Condition 9: CP0.Count should be updated even if _Rt_ is 0.
 	if ((_Rd_ != 9) && !_Rt_ ) return;
-	if (_Rd_ != 9) { COP0_LOG("%s", disR5900Current.getCString() ); }
 
 	//if(bExecBIOS == FALSE && _Rd_ == 25) Console.WriteLn("MFC0 _Rd_ %x = %x", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_)
@@ -461,7 +460,6 @@ void MFC0()
 
 void MTC0()
 {
-	COP0_LOG("%s\n", disR5900Current.getCString());
 	//if(bExecBIOS == FALSE && _Rd_ == 25) Console.WriteLn("MTC0 _Rd_ %x = %x", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_)
 	{

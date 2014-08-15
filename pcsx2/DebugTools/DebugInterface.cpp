@@ -353,16 +353,16 @@ const char* R5900DebugInterface::getRegisterName(int cat, int num)
 		case 34:	// lo
 			return "lo";
 		default:
-			return R5900::disRNameGPR[num];
+			return R5900::GPR_REG[num];
 		}
 	case EECAT_CP0:
-		return R5900::disRNameCP0[num];
+		return R5900::COP0_REG[num];
 	case EECAT_CP1:
-		return R5900::disRNameCP1[num];
+		return R5900::COP1_REG_FP[num];
 	case EECAT_CP2F:
-		return disRNameCP2f[num];
+		return R5900::COP2_REG_FP[num];
 	case EECAT_CP2I:
-		return disRNameCP2i[num];
+		return R5900::COP2_REG_CTL[num];
 	default:
 		return "Invalid";
 	}
@@ -644,7 +644,7 @@ const char* R3000DebugInterface::getRegisterName(int cat, int num)
 		case 34:	// lo
 			return "lo";
 		default:
-			return R5900::disRNameGPR[num];
+			return R5900::GPR_REG[num];
 		}
 	default:
 		return "Invalid";

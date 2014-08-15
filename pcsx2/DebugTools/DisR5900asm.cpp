@@ -99,6 +99,8 @@ static const char * const COP2_REG_CTL[32] ={
 	"c2c24","c2c25","TPC","CMSAR0","FBRST","VPU-STAT","c2c30","CMSAR1"
 };
 
+const char * const R5900::COP2_VFnames[4] = { "x", "y", "z", "w" };
+
 void P_COP2_Unknown( std::string& output );
 void P_COP2_SPECIAL2( std::string& output );
 void P_COP2_SPECIAL( std::string& output );

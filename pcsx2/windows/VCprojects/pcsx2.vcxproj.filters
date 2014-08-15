@@ -545,9 +545,6 @@
     <ClCompile Include="..\..\DebugTools\DisR3000A.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\DebugTools\DisR5900.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\DebugTools\DisR5900asm.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>

@@ -569,7 +569,6 @@
     <ClCompile Include="..\..\GSState.cpp" />
     <ClCompile Include="..\..\MTGS.cpp" />
     <ClCompile Include="..\..\DebugTools\DisR3000A.cpp" />
-    <ClCompile Include="..\..\DebugTools\DisR5900.cpp" />
     <ClCompile Include="..\..\DebugTools\DisR5900asm.cpp" />
     <ClCompile Include="..\..\DebugTools\DisVU0Micro.cpp" />
     <ClCompile Include="..\..\DebugTools\DisVU1Micro.cpp" />
