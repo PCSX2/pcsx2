@@ -408,7 +408,6 @@ struct Pcsx2Config
 	{
 		BITFIELD32()
 			bool
-				EnableDebugger		:1,
 				ShowDebuggerOnStart	:1;
 		BITFIELD_END
 
