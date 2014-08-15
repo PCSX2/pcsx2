@@ -105,7 +105,7 @@ void SetFastMemory(int bSetFast)
 //
 void recLoad64( u32 bits, bool sign )
 {
-	jASSUME( bits == 64 || bits == 128 );
+	pxAssume( bits == 64 || bits == 128 );
 
 	// Load EDX with the destination.
 	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
@@ -147,7 +147,7 @@ void recLoad64( u32 bits, bool sign )
 //
 void recLoad32( u32 bits, bool sign )
 {
-	jASSUME( bits <= 32 );
+	pxAssume( bits <= 32 );
 
 	// 8/16/32 bit modes return the loaded value in EAX.
 

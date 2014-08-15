@@ -54,14 +54,14 @@ extern "C" unsigned __int64 __xgetbv(int);
 #		ifdef _MSC_VER
 #			define jASSUME(exp) (__assume(exp))
 #		else
-#			define jASSUME(exp) ((void) sizeof(exp))
+#			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
 #		endif
 #	else
 #		define jBREAKPOINT() __debugbreak();
 #		ifdef wxASSERT
 #			define jASSUME(exp) wxASSERT(exp)
 #		else
-#			define jASSUME(exp) do { if(exp) ; else jBREAKPOINT(); } while(0);
+#			define jASSUME(exp) do { if(!(exp)) jBREAKPOINT(); } while(0)
 #		endif
 #	endif
 #endif

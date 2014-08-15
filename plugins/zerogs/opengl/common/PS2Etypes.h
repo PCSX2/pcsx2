@@ -32,25 +32,10 @@
 #define CALLBACK    __stdcall
 #endif
 
-
-// jASSUME - give hints to the optimizer
-//  This is primarily useful for the default case switch optimizer, which enables VC to
-//  generate more compact switches.
-
-#ifdef NDEBUG
-#	define jBREAKPOINT() ((void) 0)
-#	ifdef _MSC_VER
-#		define jASSUME(exp) (__assume(exp))
-#	else
-#		define jASSUME(exp) ((void) sizeof(exp))
-#	endif
+#ifdef _MSC_VER
+#define UNREACHABLE_CODE __assume(0)
 #else
-#	if defined(_MSC_VER)
-#		define jBREAKPOINT() do { __asm int 3 } while(0)
-#	else
-#		define jBREAKPOINT() ((void) *(volatile char *) 0)
-#	endif
-#	define jASSUME(exp) if(exp) ; else jBREAKPOINT()
+#define UNREACHABLE_CODE __builtin_unreachable()
 #endif
 
 // disable the default case in a switch
@@ -59,7 +44,7 @@
 	break; \
 	\
 default: \
-	jASSUME(0); \
+	UNREACHABLE_CODE; \
 	break; \
 }
 
