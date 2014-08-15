@@ -2,7 +2,6 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
-    <_PropertySheetDisplayName>w32pthreads</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -10,16 +9,20 @@
       <PreprocessorDefinitions>WIN32_PTHREADS;__CLEANUP_SEH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
-    <Link Condition="'$(Configuration)'=='Release' 
-				  or '$(Configuration)'=='Release SSE2'
-				  or '$(Configuration)'=='Release SSE4'
-				  or '$(Configuration)'=='Release SSSE3'">
+    <Link Condition="'$(Configuration)'=='Release'
+                  or '$(Configuration)'=='Release SSE2'
+                  or '$(Configuration)'=='Release SSE4'
+                  or '$(Configuration)'=='Release SSSE3'
+                  or '$(Configuration)'=='Release AVX'
+                  or '$(Configuration)'=='Release AVX2'">
       <AdditionalDependencies>w32pthreads_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Link Condition="'$(Configuration)'=='Debug' 
-				  or '$(Configuration)'=='Debug SSE2'
-				  or '$(Configuration)'=='Debug SSE4'
-				  or '$(Configuration)'=='Debug SSSE3'">
+    <Link Condition="'$(Configuration)'=='Release'
+                  or '$(Configuration)'=='Release SSE2'
+                  or '$(Configuration)'=='Release SSE4'
+                  or '$(Configuration)'=='Release SSSE3'
+                  or '$(Configuration)'=='Release AVX'
+                  or '$(Configuration)'=='Release AVX2'">
       <AdditionalDependencies>w32pthreads_lib-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link Condition="'$(Configuration)'=='Devel'">
