@@ -324,29 +324,6 @@ void ElfObject::loadProgramHeaders()
 			case 0x1:
 			{
 				ELF_LOG("load");
-				const uint elfsize = data.GetLength();
-
-				if (proghead[ i ].p_offset < elfsize)
-				{
-					int size;
-
-					if ((proghead[ i ].p_filesz + proghead[ i ].p_offset) > elfsize)
-						size = elfsize - proghead[ i ].p_offset;
-					else
-						size = proghead[ i ].p_filesz;
-
-					if (proghead[ i ].p_vaddr != proghead[ i ].p_paddr)
-						Console.Warning( "ElfProgram different load addrs: paddr=0x%8.8x, vaddr=0x%8.8x",
-							proghead[ i ].p_paddr, proghead[ i ].p_vaddr);
-
-					// used to be paddr
-					memcpy_fast(
-						&eeMem->Main[proghead[ i ].p_vaddr & 0x1ffffff],
-						data.GetPtr(proghead[ i ].p_offset), size
-					);
-
-					ELF_LOG("\t*LOADED*");
-				}
 			}
 			break;
 		}
