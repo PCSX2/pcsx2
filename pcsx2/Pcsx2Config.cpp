@@ -376,7 +376,6 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 
 Pcsx2Config::DebugOptions::DebugOptions()
 {
-	EnableDebugger = false;
 	ShowDebuggerOnStart = false;
 	FontWidth = 8;
 	FontHeight = 12;
@@ -386,7 +385,6 @@ void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
 {
 	ScopedIniGroup path( ini, L"Debugger" );
 
-	IniBitBool( EnableDebugger );
 	IniBitBool( ShowDebuggerOnStart );
 	IniBitfield(FontWidth);
 	IniBitfield(FontHeight);
