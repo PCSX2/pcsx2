@@ -311,24 +311,16 @@ void psxCOP0() {
 	psxCP0[_Rs_]();
 }
 
-void psxCOP2() {
-	psxCP2[_Funct_]();
-}
-
-void psxBASIC() {
-	psxCP2BSC[_Rs_]();
-}
-
 
 void (*psxBSC[64])() = {
 	psxSPECIAL, psxREGIMM, psxJ   , psxJAL  , psxBEQ , psxBNE , psxBLEZ, psxBGTZ, //7
 	psxADDI   , psxADDIU , psxSLTI, psxSLTIU, psxANDI, psxORI , psxXORI, psxLUI , //15
-	psxCOP0   , psxNULL  , psxCOP2, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //23
+	psxCOP0   , psxNULL  , psxNULL, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //23
 	psxNULL   , psxNULL  , psxNULL, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //31
 	psxLB     , psxLH    , psxLWL , psxLW   , psxLBU , psxLHU , psxLWR , psxNULL, //39
 	psxSB     , psxSH    , psxSWL , psxSW   , psxNULL, psxNULL, psxSWR , psxNULL, //47
-	psxNULL   , psxNULL  , gteLWC2, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //55
-	psxNULL   , psxNULL  , gteSWC2, psxNULL  , psxNULL, psxNULL, psxNULL, psxNULL //63
+	psxNULL   , psxNULL  , psxNULL, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //55
+	psxNULL   , psxNULL  , psxNULL, psxNULL  , psxNULL, psxNULL, psxNULL, psxNULL //63
 };
 
 
@@ -354,23 +346,5 @@ void (*psxCP0[32])() = {
 	psxMFC0, psxNULL, psxCFC0, psxNULL, psxMTC0, psxNULL, psxCTC0, psxNULL,
 	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 	psxRFE , psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
-	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
-};
-
-void (*psxCP2[64])() = {
-	psxBASIC, gteRTPS, psxNULL , psxNULL, psxNULL, psxNULL , gteNCLIP, psxNULL, // 00
-	psxNULL , psxNULL , psxNULL , psxNULL, gteOP, psxNULL , psxNULL , psxNULL, // 08
-	gteDPCS, gteINTPL, gteMVMVA, gteNCDS, gteCDP, psxNULL , gteNCDT, psxNULL, // 10
-	psxNULL , psxNULL , psxNULL , gteNCCS, gteCC, psxNULL , gteNCS, psxNULL, // 18
-	gteNCT, psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 20
-	gteSQR, gteDCPL, gteDPCT, psxNULL, psxNULL, gteAVSZ3, gteAVSZ4, psxNULL, // 28
-	psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 30
-	psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL  , psxNULL  , psxNULL  // 38
-};
-
-void (*psxCP2BSC[32])() = {
-	gteMFC2, psxNULL, gteCFC2, psxNULL, gteMTC2, psxNULL, gteCTC2, psxNULL,
-	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
-	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
 };

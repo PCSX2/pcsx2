@@ -434,7 +434,6 @@
     <ClCompile Include="..\..\GameDatabase.cpp" />
     <ClCompile Include="..\..\Gif_Logger.cpp" />
     <ClCompile Include="..\..\Gif_Unit.cpp" />
-    <ClCompile Include="..\..\Gte.cpp" />
     <ClCompile Include="..\..\gui\AppGameDatabase.cpp" />
     <ClCompile Include="..\..\gui\AppUserMode.cpp" />
     <ClCompile Include="..\..\gui\Debugger\BreakpointWindow.cpp" />
@@ -721,7 +720,6 @@
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />
-    <ClInclude Include="..\..\Gte.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />

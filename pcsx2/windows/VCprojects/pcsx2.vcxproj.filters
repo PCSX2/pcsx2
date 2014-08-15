@@ -151,9 +151,6 @@
     <Filter Include="AppHost\Debugger">
       <UniqueIdentifier>{02398f88-aadb-4183-be7e-68f0cacdf620}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\Iop\PS1 Components">
-      <UniqueIdentifier>{143f5ca8-0030-48eb-bc5c-ad9bfec9fb94}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -853,9 +850,6 @@
     <ClCompile Include="..\..\sif2.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Gte.cpp">
-      <Filter>System\Ps2\Iop\PS1 Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp">
       <Filter>AppHost\Debugger</Filter>
     </ClCompile>
@@ -1268,9 +1262,6 @@
     </ClInclude>
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h">
       <Filter>AppHost\Debugger</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Gte.h">
-      <Filter>System\Ps2\Iop\PS1 Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\CDVD\zlib_indexed.h">
       <Filter>System\ISO</Filter>
