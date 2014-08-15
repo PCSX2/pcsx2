@@ -369,34 +369,5 @@ int GetPS2ElfName( wxString& name )
 		return 0;		// ISO error
 	}
 
-#ifdef PCSX2_DEVBUILD
-	FILE *fp;
-	int i;
-	char buffer[512];
-
-	fp = fopen("System.map", "r");
-	if( fp == NULL ) return 2;
-
-	u32 addr;
-
-	Console.WriteLn("Loading System.map...");
-	while (!feof(fp)) {
-		fseek(fp, 8, SEEK_CUR);
-		buffer[0] = '0'; buffer[1] = 'x';
-		for (i=2; i<10; i++) buffer[i] = fgetc(fp); buffer[i] = 0;
-		addr = strtoul(buffer, (char**)NULL, 0);
-		fseek(fp, 3, SEEK_CUR);
-		for (i=0; i<512; i++) {
-			buffer[i] = fgetc(fp);
-			if (buffer[i] == '\n' || buffer[i] == 0) break;
-		}
-		if (buffer[i] == 0) break;
-		buffer[i] = 0;
-
-		symbolMap.AddLabel(buffer,addr);
-	}
-	fclose(fp);
-#endif
-
 	return retype;
 }
