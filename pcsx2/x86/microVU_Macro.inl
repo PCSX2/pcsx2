@@ -258,7 +258,7 @@ void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex) {
 	xTEST(eax, (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;
 		xCALL(resetFunct);
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		xMOV(eax, ptr32[&cpuRegs.GPR[_Rt_].UL[0]]);
 	skip.SetTarget();
 }
 
@@ -277,13 +277,13 @@ static void recCFC2() {
 	else xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
 
 	// FixMe: Should R-Reg have upper 9 bits 0?
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+	xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[0]], eax);
 
 	if (_Rd_ >= 16) {
 		xCDQ(); // Sign Extend
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+		xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[1]], edx);
 	}
-	else xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
+	else xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[1]], 0);
 
 	// FixMe: I think this is needed, but not sure how it works
 	_eeOnWriteReg(_Rt_, 1);
@@ -300,20 +300,20 @@ static void recCTC2() {
 		case REG_MAC_FLAG: case REG_TPC:
 		case REG_VPU_STAT: break; // Read Only Regs
 		case REG_R:
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			xMOV(eax, ptr32[&cpuRegs.GPR[_Rt_].UL[0]]);
 			xOR (eax, 0x3f800000);
 			xMOV(ptr32[&vu0Regs.VI[REG_R].UL], eax);
 			break;
 		case REG_STATUS_FLAG:
 			if (_Rt_) { // Denormalizes flag into eax (gprT1)
-				mVUallocSFLAGd(&cpuRegs.GPR.r[_Rt_].UL[0]);
+				mVUallocSFLAGd(&cpuRegs.GPR[_Rt_].UL[0]);
 				xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], eax);
 			}
 			else xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], 0);
 			break;
 		case REG_CMSAR1:	// Execute VU1 Micro SubRoutine
 			if (_Rt_) {
-				xMOV(ecx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				xMOV(ecx, ptr32[&cpuRegs.GPR[_Rt_].UL[0]]);
 			}
 			else xXOR(ecx, ecx);
 			xCALL(vu1ExecMicro);
@@ -324,7 +324,7 @@ static void recCTC2() {
 				xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], 0); 
 				return;
 			}
-			else xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			else xMOV(eax, ptr32[&cpuRegs.GPR[_Rt_].UL[0]]);
 
 			TEST_FBRST_RESET(vu0ResetRegs, 0);
 			TEST_FBRST_RESET(vu1ResetRegs, 1);
@@ -353,7 +353,7 @@ static void recQMFC2() {
 	_eeOnWriteReg(_Rt_, 0);
 
 	xMOVAPS(xmmT1, ptr128[&vu0Regs.VF[_Rd_]]);
-	xMOVAPS(ptr128[&cpuRegs.GPR.r[_Rt_]], xmmT1);
+	xMOVAPS(ptr128[&cpuRegs.GPR[_Rt_]], xmmT1);
 }
 
 static void recQMTC2() {
@@ -363,7 +363,7 @@ static void recQMTC2() {
 	if (!_Rd_) return;
 	iFlushCall(FLUSH_EVERYTHING);
 
-	xMOVAPS(xmmT1, ptr128[&cpuRegs.GPR.r[_Rt_]]);
+	xMOVAPS(xmmT1, ptr128[&cpuRegs.GPR[_Rt_]]);
 	xMOVAPS(ptr128[&vu0Regs.VF[_Rd_]], xmmT1);
 }
 

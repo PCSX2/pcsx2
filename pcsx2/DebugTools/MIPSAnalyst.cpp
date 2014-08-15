@@ -423,10 +423,10 @@ namespace MIPSAnalyst
 					info.isConditional = false;
 
 					// probably shouldn't be hard coded like this...
-					if (cpuRegs.CP0.n.Status.b.ERL) {
-						info.branchTarget = cpuRegs.CP0.n.ErrorEPC;
+					if (cpuRegs.Status.b.ERL) {
+						info.branchTarget = cpuRegs.ErrorEPC;
 					} else {
-						info.branchTarget = cpuRegs.CP0.n.EPC;
+						info.branchTarget = cpuRegs.EPC;
 					}
 					break;
 				}

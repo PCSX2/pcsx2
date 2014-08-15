@@ -82,13 +82,13 @@ void Hle_SetElfPath(const char* elfFileName)
 
 namespace R3000A {
 
-#define v0 (psxRegs.GPR.n.v0)
-#define a0 (psxRegs.GPR.n.a0)
-#define a1 (psxRegs.GPR.n.a1)
-#define a2 (psxRegs.GPR.n.a2)
-#define a3 (psxRegs.GPR.n.a3)
-#define sp (psxRegs.GPR.n.sp)
-#define ra (psxRegs.GPR.n.ra)
+#define v0 (psxRegs.v0)
+#define a0 (psxRegs.a0)
+#define a1 (psxRegs.a1)
+#define a2 (psxRegs.a2)
+#define a3 (psxRegs.a3)
+#define sp (psxRegs.sp)
+#define ra (psxRegs.ra)
 #define pc (psxRegs.pc)
 
 #define Ra0 (iopVirtMemR<char>(a0))

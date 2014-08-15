@@ -84,9 +84,9 @@ void _eeOnLoadWrite(u32 reg)
 		if( xmmregs[regt].mode & MODE_WRITE ) {
 			if( reg != _Rs_ ) {
 				SSE2_PUNPCKHQDQ_XMM_to_XMM(regt, regt);
-				SSE2_MOVQ_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
+				SSE2_MOVQ_XMM_to_M64((uptr)&cpuRegs.GPR[reg].UL[2], regt);
 			}
-			else SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
+			else SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR[reg].UL[2], regt);
 		}
 		xmmregs[regt].inuse = 0;
 	}
@@ -111,7 +111,7 @@ void recLoad64( u32 bits, bool sign )
 	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
 
 	if (_Rt_)
-		xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+		xMOV(edx, (uptr)&cpuRegs.GPR[_Rt_].UL[0]);
 	else
 		xMOV(edx, (uptr)&dummyValue[0]);
 
@@ -180,11 +180,11 @@ void recLoad32( u32 bits, bool sign )
 		if (sign)
 			xCDQ();
 
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+		xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[0]], eax);
 		if (sign)
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+			xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[1]], edx);
 		else
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
+			xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[1]], 0);
 	}
 }
 
@@ -207,7 +207,7 @@ void recStore(u32 bits)
         else if (bits == 128 || bits == 64)
         {
                 _flushEEreg(_Rt_);          // flush register to mem
-                xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+                xMOV(edx, (uptr)&cpuRegs.GPR[_Rt_].UL[0]);
         }
 
         // Load ECX with the destination address, or issue a direct optimized write
@@ -280,17 +280,17 @@ void recLWL()
 	xMOV(ecx, edi);
 	xMOV(edx, 0xffffff);
 	xSHR(edx, cl);
-	xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
+	xAND(ptr32[&cpuRegs.GPR[_Rt_].UL[0]], edx);
 
 	// OR in bytes loaded
 	xMOV(ecx, 24);
 	xSUB(ecx, edi);
 	xSHL(eax, cl);
-	xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+	xOR(ptr32[&cpuRegs.GPR[_Rt_].UL[0]], eax);
 
 	// eax will always have the sign bit
 	xCDQ();
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+	xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[1]], edx);
 #else
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -327,18 +327,18 @@ void recLWR()
 	xSUB(ecx, edi);
 	xMOV(edx, 0xffffff00);
 	xSHL(edx, cl);
-	xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
+	xAND(ptr32[&cpuRegs.GPR[_Rt_].UL[0]], edx);
 
 	// OR in bytes loaded
 	xMOV(ecx, edi);
 	xSHR(eax, cl);
-	xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+	xOR(ptr32[&cpuRegs.GPR[_Rt_].UL[0]], eax);
 
 	xCMP(edi, 0);
 	xForwardJump8 nosignextend(Jcc_NotEqual);
 	// if ((addr & 3) == 0)
 	xCDQ();
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+	xMOV(ptr32[&cpuRegs.GPR[_Rt_].UL[1]], edx);
 	nosignextend.SetTarget();
 #else
 	iFlushCall(FLUSH_INTERPRETER);

@@ -69,8 +69,8 @@ void recJAL()
 	}
 	else
 	{
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc + 4);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
+		MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[0], pc + 4);
+		MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[1], 0);
 	}
 
 	recompileNextInstruction(1);
@@ -118,7 +118,7 @@ void recJALR()
 //			SetMMXstate();
 //		}
 //		else {
-//			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+//			MOV32MtoR(EAX, (int)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ] );
 //			MOV32RtoM((u32)&cpuRegs.pc, EAX);
 //		}
 //	}
@@ -135,8 +135,8 @@ void recJALR()
 		}
 		else
 		{
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], newpc);
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
+			MOV32ItoM((uptr)&cpuRegs.GPR[_Rd_].UL[0], newpc);
+			MOV32ItoM((uptr)&cpuRegs.GPR[_Rd_].UL[1], 0);
 		}
 	}
 

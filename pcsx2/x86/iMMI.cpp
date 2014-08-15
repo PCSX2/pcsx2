@@ -98,7 +98,7 @@ void recPLZCW()
 		regs |= MEM_MMXTAG;
 	}
 	else {
-		MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
+		MOV32MtoR(EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ]);
 		regs = 0;
 	}
 
@@ -126,7 +126,7 @@ void recPLZCW()
 	DEC32R(ECX);			// PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ], ECX);
+	MOV32RtoM((uptr)&cpuRegs.GPR[ _Rd_ ].UL[ 0 ], ECX);
 
 	// second word
 
@@ -141,7 +141,7 @@ void recPLZCW()
 		PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
 		SetMMXstate();
 	}
-	else MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]);
+	else MOV32MtoR(EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ]);
 
 	MOV32ItoR(ECX, 31);
 	TEST32RtoR(EAX, EAX);		// TEST sets the sign flag accordingly.
@@ -155,7 +155,7 @@ void recPLZCW()
 	DEC32R(ECX);			// PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ], ECX);
+	MOV32RtoM((uptr)&cpuRegs.GPR[ _Rd_ ].UL[ 1 ], ECX);
 
 	GPR_DEL_CONST(_Rd_);
 }
@@ -1477,7 +1477,7 @@ void recQFSRV()
 		int info = eeRecompileCodeXMM(XMMINFO_WRITED);
 
 		xMOV(eax, ptr32[&cpuRegs.sa]);
-		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &cpuRegs.GPR.r[_Rt_]]);
+		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &cpuRegs.GPR[_Rt_]]);
 		return;
 	}
 		

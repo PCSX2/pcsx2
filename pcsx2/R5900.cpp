@@ -66,9 +66,9 @@ void cpuReset()
 	memzero(tlb);
 
 	cpuRegs.pc				= 0xbfc00000; //set pc reg to stack
-	cpuRegs.CP0.n.Config	= 0x440;
-	cpuRegs.CP0.n.Status.val= 0x70400004; //0x10900000 <-- wrong; // COP0 enabled | BEV = 1 | TS = 1
-	cpuRegs.CP0.n.PRid		= 0x00002e20; // PRevID = Revision ID, same as R5900
+	cpuRegs.Config	= 0x440;
+	cpuRegs.Status.val= 0x70400004; //0x10900000 <-- wrong; // COP0 enabled | BEV = 1 | TS = 1
+	cpuRegs.PRid		= 0x00002e20; // PRevID = Revision ID, same as R5900
 	fpuRegs.fprc[0]			= 0x00002e00; // fpu Revision..
 	fpuRegs.fprc[31]		= 0x01000001; // fpu Status/Control
 
@@ -113,13 +113,13 @@ __ri void cpuException(u32 code, u32 bd)
 	u32 offset;
 
     cpuRegs.branch = 0;		// Tells the interpreter that an exception occurred during a branch.
-	cpuRegs.CP0.n.Cause = code & 0xffff;
+	cpuRegs.Cause = code & 0xffff;
 
-	if(cpuRegs.CP0.n.Status.b.ERL == 0)
+	if(cpuRegs.Status.b.ERL == 0)
 	{
 		//Error Level 0-1
 		errLevel2 = FALSE;
-		checkStatus = (cpuRegs.CP0.n.Status.b.BEV == 0); //  for TLB/general exceptions
+		checkStatus = (cpuRegs.Status.b.BEV == 0); //  for TLB/general exceptions
 
 		if (((code & 0x7C) >= 0x8) && ((code & 0x7C) <= 0xC))
 			offset = 0x0; //TLB Refill
@@ -132,7 +132,7 @@ __ri void cpuException(u32 code, u32 bd)
 	{
 		//Error Level 2
 		errLevel2 = TRUE;
-		checkStatus = (cpuRegs.CP0.n.Status.b.DEV == 0); // for perf/debug exceptions
+		checkStatus = (cpuRegs.Status.b.DEV == 0); // for perf/debug exceptions
 
 		Console.Error("*PCSX2* FIX ME: Level 2 cpuException");
 		if ((code & 0x38000) <= 0x8000 )
@@ -151,19 +151,19 @@ __ri void cpuException(u32 code, u32 bd)
 			Console.Error("Unknown Level 2 Exception!! Cause %x", code);
 	}
 
-	if (cpuRegs.CP0.n.Status.b.EXL == 0)
+	if (cpuRegs.Status.b.EXL == 0)
 	{
-		cpuRegs.CP0.n.Status.b.EXL = 1;
+		cpuRegs.Status.b.EXL = 1;
 		if (bd)
 		{
 			Console.Warning("branch delay!!");
-			cpuRegs.CP0.n.EPC = cpuRegs.pc - 4;
-			cpuRegs.CP0.n.Cause |= 0x80000000;
+			cpuRegs.EPC = cpuRegs.pc - 4;
+			cpuRegs.Cause |= 0x80000000;
 		}
 		else
 		{
-			cpuRegs.CP0.n.EPC = cpuRegs.pc;
-			cpuRegs.CP0.n.Cause &= ~0x80000000;
+			cpuRegs.EPC = cpuRegs.pc;
+			cpuRegs.Cause &= ~0x80000000;
 		}
 	}
 	else
@@ -183,7 +183,7 @@ __ri void cpuException(u32 code, u32 bd)
 void cpuTlbMiss(u32 addr, u32 bd, u32 excode)
 {
 	Console.Error("cpuTlbMiss pc:%x, cycl:%x, addr: %x, status=%x, code=%x",
-		cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
+		cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.Status.val, excode);
 
 #if 0
 	if (bd) Console.Warning("branch delay!!");
@@ -191,27 +191,27 @@ void cpuTlbMiss(u32 addr, u32 bd, u32 excode)
 	pxFail( "TLB Miss handler is uninished code." ); // temporary
 #endif
 
-	cpuRegs.CP0.n.BadVAddr = addr;
-	cpuRegs.CP0.n.Context &= 0xFF80000F;
-	cpuRegs.CP0.n.Context |= (addr >> 9) & 0x007FFFF0;
-	cpuRegs.CP0.n.EntryHi = (addr & 0xFFFFE000) | (cpuRegs.CP0.n.EntryHi & 0x1FFF);
+	cpuRegs.BadVAddr = addr;
+	cpuRegs.Context &= 0xFF80000F;
+	cpuRegs.Context |= (addr >> 9) & 0x007FFFF0;
+	cpuRegs.EntryHi = (addr & 0xFFFFE000) | (cpuRegs.EntryHi & 0x1FFF);
 
 	// Don't reinvent the wheel ;)
 	cpuRegs.pc -= 4;
 	cpuException(excode, bd);
 #if 0
-	cpuRegs.CP0.n.Cause = excode;
-	if (!(cpuRegs.CP0.n.Status.val & 0x2)) { // EXL bit
-		cpuRegs.CP0.n.EPC = cpuRegs.pc - 4;
+	cpuRegs.Cause = excode;
+	if (!(cpuRegs.Status.val & 0x2)) { // EXL bit
+		cpuRegs.EPC = cpuRegs.pc - 4;
 	}
 
-	if (!cpuRegs.CP0.n.Status.b.IE) {
+	if (!cpuRegs.Status.b.IE) {
 		cpuRegs.pc = 0x80000000;
 	} else {
 		cpuRegs.pc = 0x80000180;
 	}
 
-	cpuRegs.CP0.n.Status.b.EXL = 1;
+	cpuRegs.Status.b.EXL = 1;
 	cpuUpdateOperationMode();
 //	Log=1; varLog|= 0x40000000;
 #endif
@@ -319,7 +319,7 @@ static __fi void _cpuTestInterrupts()
 
 static __fi void _cpuTestTIMR()
 {
-	cpuRegs.CP0.n.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
+	cpuRegs.Count += cpuRegs.cycle-s_iLastCOP0Cycle;
 	s_iLastCOP0Cycle = cpuRegs.cycle;
 
 	// fixme: this looks like a hack to make up for the fact that the TIMR
@@ -327,10 +327,10 @@ static __fi void _cpuTestTIMR()
 	// A proper fix would schedule the TIMR to trigger at a specific cycle anytime
 	// the Count or Compare registers are modified.
 
-	if ( (cpuRegs.CP0.n.Status.val & 0x8000) &&
-		cpuRegs.CP0.n.Count >= cpuRegs.CP0.n.Compare && cpuRegs.CP0.n.Count < cpuRegs.CP0.n.Compare+1000 )
+	if ( (cpuRegs.Status.val & 0x8000) &&
+		cpuRegs.Count >= cpuRegs.Compare && cpuRegs.Count < cpuRegs.Compare+1000 )
 	{
-		Console.WriteLn( Color_Magenta, "timr intr: %x, %x", cpuRegs.CP0.n.Count, cpuRegs.CP0.n.Compare);
+		Console.WriteLn( Color_Magenta, "timr intr: %x, %x", cpuRegs.Count, cpuRegs.Compare);
 		cpuException(0x808000, cpuRegs.branch);
 	}
 }
@@ -352,10 +352,10 @@ static __fi void _cpuTestPERF()
 
 static bool cpuIntsEnabled(int Interrupt)
 {
-	bool IntType = !!(cpuRegs.CP0.n.Status.val & Interrupt); //Choose either INTC or DMAC, depending on what called it
+	bool IntType = !!(cpuRegs.Status.val & Interrupt); //Choose either INTC or DMAC, depending on what called it
 
-	return IntType && cpuRegs.CP0.n.Status.b.EIE && cpuRegs.CP0.n.Status.b.IE &&
-		!cpuRegs.CP0.n.Status.b.EXL && (cpuRegs.CP0.n.Status.b.ERL == 0);
+	return IntType && cpuRegs.Status.b.EIE && cpuRegs.Status.b.IE &&
+		!cpuRegs.Status.b.EXL && (cpuRegs.Status.b.ERL == 0);
 }
 
 // if cpuRegs.cycle is greater than this cycle, should check cpuEventTest for updates
@@ -490,7 +490,7 @@ __fi void cpuTestDMACInts()
 }
 
 __fi void cpuTestTIMRInts() {
-	if ((cpuRegs.CP0.n.Status.val & 0x10007) == 0x10001) {
+	if ((cpuRegs.Status.val & 0x10007) == 0x10001) {
 		_cpuTestPERF();
 		_cpuTestTIMR();
 	}

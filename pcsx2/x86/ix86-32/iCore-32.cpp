@@ -48,7 +48,7 @@ uptr _x86GetAddr(int type, int reg)
 	switch(type&~X86TYPE_VU1)
 	{
 		case X86TYPE_GPR:
-			ret = (uptr)&cpuRegs.GPR.r[reg];
+			ret = (uptr)&cpuRegs.GPR[reg];
 			break;
 
 		case X86TYPE_VI:
@@ -95,7 +95,7 @@ uptr _x86GetAddr(int type, int reg)
 			break;
 
 		case X86TYPE_PSX:
-			ret = (uptr)&psxRegs.GPR.r[reg];
+			ret = (uptr)&psxRegs.GPR[reg];
 			break;
 
 		case X86TYPE_PCWRITEBACK:
@@ -169,8 +169,8 @@ void _flushCachedRegs()
 void _flushConstReg(int reg)
 {
 	if( GPR_IS_CONST1( reg ) && !(g_cpuFlushedConstReg&(1<<reg)) ) {
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[reg].UL[0], g_cpuConstRegs[reg].UL[0]);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[reg].UL[1], g_cpuConstRegs[reg].UL[1]);
+		MOV32ItoM((uptr)&cpuRegs.GPR[reg].UL[0], g_cpuConstRegs[reg].UL[0]);
+		MOV32ItoM((uptr)&cpuRegs.GPR[reg].UL[1], g_cpuConstRegs[reg].UL[1]);
 		g_cpuFlushedConstReg |= (1<<reg);
 		if (reg == 0) DevCon.Warning("Flushing r0!");
 	}
@@ -193,7 +193,7 @@ void _flushConstRegs()
 
 		if (eaxval != 0) XOR32RtoR(EAX, EAX), eaxval = 0;
 
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[i].SL[j], EAX);
+		MOV32RtoM((uptr)&cpuRegs.GPR[i].SL[j], EAX);
 		done[j] |= 1<<i;
 		zero_cnt++;
 	}
@@ -207,7 +207,7 @@ void _flushConstRegs()
 		if (eaxval > 0) XOR32RtoR(EAX, EAX), eaxval = 0;
 		if (eaxval == 0) NOT32R(EAX), eaxval = -1;
 
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[i].SL[j], EAX);
+		MOV32RtoM((uptr)&cpuRegs.GPR[i].SL[j], EAX);
 		done[j + 2] |= 1<<i;
 		minusone_cnt++;
 	}
@@ -223,9 +223,9 @@ void _flushConstRegs()
 		if (GPR_IS_CONST1(i)) {
 			if (!(g_cpuFlushedConstReg&(1<<i))) {
 				if (!(done[0] & (1<<i)))
-					MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
+					MOV32ItoM((uptr)&cpuRegs.GPR[i].UL[0], g_cpuConstRegs[i].UL[0]);
 				if (!(done[1] & (1<<i)))
-					MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+					MOV32ItoM((uptr)&cpuRegs.GPR[i].UL[1], g_cpuConstRegs[i].UL[1]);
 
 				g_cpuFlushedConstReg |= 1<<i;
 			}
@@ -475,9 +475,9 @@ __fi void* _MMXGetAddr(int reg)
 	if( reg == MMX_HI ) return &cpuRegs.HI;
 	if( reg == MMX_FPUACC ) return &fpuRegs.ACC;
 
-	if( reg >= MMX_GPR && reg < MMX_GPR+32 ) return &cpuRegs.GPR.r[reg&31];
+	if( reg >= MMX_GPR && reg < MMX_GPR+32 ) return &cpuRegs.GPR[reg&31];
 	if( reg >= MMX_FPU && reg < MMX_FPU+32 ) return &fpuRegs.fpr[reg&31];
-	if( reg >= MMX_COP0 && reg < MMX_COP0+32 ) return &cpuRegs.CP0.r[reg&31];
+	if( reg >= MMX_COP0 && reg < MMX_COP0+32 ) return &cpuRegs.CP0[reg&31];
 
 	pxAssume( false );
 	return NULL;
@@ -895,9 +895,9 @@ int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32
 	SetMMXstate();
 
 	MOVQRtoR(to, from);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], from);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR[gprreg].UL[0], from);
 	PSRADItoR(from, 31);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[1], from);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR[gprreg].UL[1], from);
 	mmxregs[to].inuse = 0;
 
 	return -1;
@@ -910,9 +910,9 @@ int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift)
 	SetMMXstate();
 
 	if( shift > 0 ) PSRADItoR(to, shift);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], to);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR[gprreg].UL[0], to);
 	PSRADItoR(to, 31);
-	MOVDMMXtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[1], to);
+	MOVDMMXtoM((uptr)&cpuRegs.GPR[gprreg].UL[1], to);
 	mmxregs[to].inuse = 0;
 
 	return -1;

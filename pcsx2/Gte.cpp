@@ -22,10 +22,10 @@
 #include "IopCommon.h"
 #ifdef GTE_DUMP
 #define G_OP(name,delay) fprintf(gteLog, "* : %08X : %02d : %s\n", psxRegs.code, delay, name);
-#define G_SD(reg)  fprintf(gteLog, "+D%02d : %08X\n", reg, psxRegs.CP2D.r[reg]);
-#define G_SC(reg)  fprintf(gteLog, "+C%02d : %08X\n", reg, psxRegs.CP2C.r[reg]);
-#define G_GD(reg)  fprintf(gteLog, "-D%02d : %08X\n", reg, psxRegs.CP2D.r[reg]);
-#define G_GC(reg)  fprintf(gteLog, "-C%02d : %08X\n", reg, psxRegs.CP2C.r[reg]);
+#define G_SD(reg)  fprintf(gteLog, "+D%02d : %08X\n", reg, psxRegs.CP2D[reg]);
+#define G_SC(reg)  fprintf(gteLog, "+C%02d : %08X\n", reg, psxRegs.CP2C[reg]);
+#define G_GD(reg)  fprintf(gteLog, "-D%02d : %08X\n", reg, psxRegs.CP2D[reg]);
+#define G_GC(reg)  fprintf(gteLog, "-C%02d : %08X\n", reg, psxRegs.CP2C[reg]);
 #else
 #define G_OP(name,delay)
 #define G_SD(reg)
@@ -41,119 +41,119 @@
 #pragma warning(disable:4761)
 #endif
 
-#define gteVX0     ((s16*)psxRegs.CP2D.r)[0]
-#define gteVY0     ((s16*)psxRegs.CP2D.r)[1]
-#define gteVZ0     ((s16*)psxRegs.CP2D.r)[2]
-#define gteVX1     ((s16*)psxRegs.CP2D.r)[4]
-#define gteVY1     ((s16*)psxRegs.CP2D.r)[5]
-#define gteVZ1     ((s16*)psxRegs.CP2D.r)[6]
-#define gteVX2     ((s16*)psxRegs.CP2D.r)[8]
-#define gteVY2     ((s16*)psxRegs.CP2D.r)[9]
-#define gteVZ2     ((s16*)psxRegs.CP2D.r)[10]
-#define gteRGB     psxRegs.CP2D.r[6]
-#define gteOTZ     ((s16*)psxRegs.CP2D.r)[7*2]
-#define gteIR0     ((s32*)psxRegs.CP2D.r)[8]
-#define gteIR1     ((s32*)psxRegs.CP2D.r)[9]
-#define gteIR2     ((s32*)psxRegs.CP2D.r)[10]
-#define gteIR3     ((s32*)psxRegs.CP2D.r)[11]
-#define gteSXY0    ((s32*)psxRegs.CP2D.r)[12]
-#define gteSXY1    ((s32*)psxRegs.CP2D.r)[13]
-#define gteSXY2    ((s32*)psxRegs.CP2D.r)[14]
-#define gteSXYP    ((s32*)psxRegs.CP2D.r)[15]
-#define gteSX0     ((s16*)psxRegs.CP2D.r)[12*2]
-#define gteSY0     ((s16*)psxRegs.CP2D.r)[12*2+1]
-#define gteSX1     ((s16*)psxRegs.CP2D.r)[13*2]
-#define gteSY1     ((s16*)psxRegs.CP2D.r)[13*2+1]
-#define gteSX2     ((s16*)psxRegs.CP2D.r)[14*2]
-#define gteSY2     ((s16*)psxRegs.CP2D.r)[14*2+1]
-#define gteSXP     ((s16*)psxRegs.CP2D.r)[15*2]
-#define gteSYP     ((s16*)psxRegs.CP2D.r)[15*2+1]
-#define gteSZx     ((u16*)psxRegs.CP2D.r)[16*2]
-#define gteSZ0     ((u16*)psxRegs.CP2D.r)[17*2]
-#define gteSZ1     ((u16*)psxRegs.CP2D.r)[18*2]
-#define gteSZ2     ((u16*)psxRegs.CP2D.r)[19*2]
-#define gteRGB0    psxRegs.CP2D.r[20]
-#define gteRGB1    psxRegs.CP2D.r[21]
-#define gteRGB2    psxRegs.CP2D.r[22]
-#define gteMAC0    psxRegs.CP2D.r[24]
-#define gteMAC1    ((s32*)psxRegs.CP2D.r)[25]
-#define gteMAC2    ((s32*)psxRegs.CP2D.r)[26]
-#define gteMAC3    ((s32*)psxRegs.CP2D.r)[27]
-#define gteIRGB    psxRegs.CP2D.r[28]
-#define gteORGB    psxRegs.CP2D.r[29]
-#define gteLZCS    psxRegs.CP2D.r[30]
-#define gteLZCR    psxRegs.CP2D.r[31]
+#define gteVX0     ((s16*)psxRegs.CP2D)[0]
+#define gteVY0     ((s16*)psxRegs.CP2D)[1]
+#define gteVZ0     ((s16*)psxRegs.CP2D)[2]
+#define gteVX1     ((s16*)psxRegs.CP2D)[4]
+#define gteVY1     ((s16*)psxRegs.CP2D)[5]
+#define gteVZ1     ((s16*)psxRegs.CP2D)[6]
+#define gteVX2     ((s16*)psxRegs.CP2D)[8]
+#define gteVY2     ((s16*)psxRegs.CP2D)[9]
+#define gteVZ2     ((s16*)psxRegs.CP2D)[10]
+#define gteRGB     psxRegs.CP2D[6]
+#define gteOTZ     ((s16*)psxRegs.CP2D)[7*2]
+#define gteIR0     ((s32*)psxRegs.CP2D)[8]
+#define gteIR1     ((s32*)psxRegs.CP2D)[9]
+#define gteIR2     ((s32*)psxRegs.CP2D)[10]
+#define gteIR3     ((s32*)psxRegs.CP2D)[11]
+#define gteSXY0    ((s32*)psxRegs.CP2D)[12]
+#define gteSXY1    ((s32*)psxRegs.CP2D)[13]
+#define gteSXY2    ((s32*)psxRegs.CP2D)[14]
+#define gteSXYP    ((s32*)psxRegs.CP2D)[15]
+#define gteSX0     ((s16*)psxRegs.CP2D)[12*2]
+#define gteSY0     ((s16*)psxRegs.CP2D)[12*2+1]
+#define gteSX1     ((s16*)psxRegs.CP2D)[13*2]
+#define gteSY1     ((s16*)psxRegs.CP2D)[13*2+1]
+#define gteSX2     ((s16*)psxRegs.CP2D)[14*2]
+#define gteSY2     ((s16*)psxRegs.CP2D)[14*2+1]
+#define gteSXP     ((s16*)psxRegs.CP2D)[15*2]
+#define gteSYP     ((s16*)psxRegs.CP2D)[15*2+1]
+#define gteSZx     ((u16*)psxRegs.CP2D)[16*2]
+#define gteSZ0     ((u16*)psxRegs.CP2D)[17*2]
+#define gteSZ1     ((u16*)psxRegs.CP2D)[18*2]
+#define gteSZ2     ((u16*)psxRegs.CP2D)[19*2]
+#define gteRGB0    psxRegs.CP2D[20]
+#define gteRGB1    psxRegs.CP2D[21]
+#define gteRGB2    psxRegs.CP2D[22]
+#define gteMAC0    psxRegs.CP2D[24]
+#define gteMAC1    ((s32*)psxRegs.CP2D)[25]
+#define gteMAC2    ((s32*)psxRegs.CP2D)[26]
+#define gteMAC3    ((s32*)psxRegs.CP2D)[27]
+#define gteIRGB    psxRegs.CP2D[28]
+#define gteORGB    psxRegs.CP2D[29]
+#define gteLZCS    psxRegs.CP2D[30]
+#define gteLZCR    psxRegs.CP2D[31]
 
-#define gteR       ((u8 *)psxRegs.CP2D.r)[6*4]
-#define gteG       ((u8 *)psxRegs.CP2D.r)[6*4+1]
-#define gteB       ((u8 *)psxRegs.CP2D.r)[6*4+2]
-#define gteCODE    ((u8 *)psxRegs.CP2D.r)[6*4+3]
+#define gteR       ((u8 *)psxRegs.CP2D)[6*4]
+#define gteG       ((u8 *)psxRegs.CP2D)[6*4+1]
+#define gteB       ((u8 *)psxRegs.CP2D)[6*4+2]
+#define gteCODE    ((u8 *)psxRegs.CP2D)[6*4+3]
 #define gteC       gteCODE
 
-#define gteR0      ((u8 *)psxRegs.CP2D.r)[20*4]
-#define gteG0      ((u8 *)psxRegs.CP2D.r)[20*4+1]
-#define gteB0      ((u8 *)psxRegs.CP2D.r)[20*4+2]
-#define gteCODE0   ((u8 *)psxRegs.CP2D.r)[20*4+3]
+#define gteR0      ((u8 *)psxRegs.CP2D)[20*4]
+#define gteG0      ((u8 *)psxRegs.CP2D)[20*4+1]
+#define gteB0      ((u8 *)psxRegs.CP2D)[20*4+2]
+#define gteCODE0   ((u8 *)psxRegs.CP2D)[20*4+3]
 #define gteC0      gteCODE0
 
-#define gteR1      ((u8 *)psxRegs.CP2D.r)[21*4]
-#define gteG1      ((u8 *)psxRegs.CP2D.r)[21*4+1]
-#define gteB1      ((u8 *)psxRegs.CP2D.r)[21*4+2]
-#define gteCODE1   ((u8 *)psxRegs.CP2D.r)[21*4+3]
+#define gteR1      ((u8 *)psxRegs.CP2D)[21*4]
+#define gteG1      ((u8 *)psxRegs.CP2D)[21*4+1]
+#define gteB1      ((u8 *)psxRegs.CP2D)[21*4+2]
+#define gteCODE1   ((u8 *)psxRegs.CP2D)[21*4+3]
 #define gteC1      gteCODE1
 
-#define gteR2      ((u8 *)psxRegs.CP2D.r)[22*4]
-#define gteG2      ((u8 *)psxRegs.CP2D.r)[22*4+1]
-#define gteB2      ((u8 *)psxRegs.CP2D.r)[22*4+2]
-#define gteCODE2   ((u8 *)psxRegs.CP2D.r)[22*4+3]
+#define gteR2      ((u8 *)psxRegs.CP2D)[22*4]
+#define gteG2      ((u8 *)psxRegs.CP2D)[22*4+1]
+#define gteB2      ((u8 *)psxRegs.CP2D)[22*4+2]
+#define gteCODE2   ((u8 *)psxRegs.CP2D)[22*4+3]
 #define gteC2      gteCODE2
 
 
 
-#define gteR11  ((s16*)psxRegs.CP2C.r)[0]
-#define gteR12  ((s16*)psxRegs.CP2C.r)[1]
-#define gteR13  ((s16*)psxRegs.CP2C.r)[2]
-#define gteR21  ((s16*)psxRegs.CP2C.r)[3]
-#define gteR22  ((s16*)psxRegs.CP2C.r)[4]
-#define gteR23  ((s16*)psxRegs.CP2C.r)[5]
-#define gteR31  ((s16*)psxRegs.CP2C.r)[6]
-#define gteR32  ((s16*)psxRegs.CP2C.r)[7]
-#define gteR33  ((s16*)psxRegs.CP2C.r)[8]
-#define gteTRX  ((s32*)psxRegs.CP2C.r)[5]
-#define gteTRY  ((s32*)psxRegs.CP2C.r)[6]
-#define gteTRZ  ((s32*)psxRegs.CP2C.r)[7]
-#define gteL11  ((s16*)psxRegs.CP2C.r)[16]
-#define gteL12  ((s16*)psxRegs.CP2C.r)[17]
-#define gteL13  ((s16*)psxRegs.CP2C.r)[18]
-#define gteL21  ((s16*)psxRegs.CP2C.r)[19]
-#define gteL22  ((s16*)psxRegs.CP2C.r)[20]
-#define gteL23  ((s16*)psxRegs.CP2C.r)[21]
-#define gteL31  ((s16*)psxRegs.CP2C.r)[22]
-#define gteL32  ((s16*)psxRegs.CP2C.r)[23]
-#define gteL33  ((s16*)psxRegs.CP2C.r)[24]
-#define gteRBK  ((s32*)psxRegs.CP2C.r)[13]
-#define gteGBK  ((s32*)psxRegs.CP2C.r)[14]
-#define gteBBK  ((s32*)psxRegs.CP2C.r)[15]
-#define gteLR1  ((s16*)psxRegs.CP2C.r)[32]
-#define gteLR2  ((s16*)psxRegs.CP2C.r)[33]
-#define gteLR3  ((s16*)psxRegs.CP2C.r)[34]
-#define gteLG1  ((s16*)psxRegs.CP2C.r)[35]
-#define gteLG2  ((s16*)psxRegs.CP2C.r)[36]
-#define gteLG3  ((s16*)psxRegs.CP2C.r)[37]
-#define gteLB1  ((s16*)psxRegs.CP2C.r)[38]
-#define gteLB2  ((s16*)psxRegs.CP2C.r)[39]
-#define gteLB3  ((s16*)psxRegs.CP2C.r)[40]
-#define gteRFC  ((s32*)psxRegs.CP2C.r)[21]
-#define gteGFC  ((s32*)psxRegs.CP2C.r)[22]
-#define gteBFC  ((s32*)psxRegs.CP2C.r)[23]
-#define gteOFX  ((s32*)psxRegs.CP2C.r)[24]
-#define gteOFY  ((s32*)psxRegs.CP2C.r)[25]
-#define gteH    ((u16*)psxRegs.CP2C.r)[52]
-#define gteDQA  ((s16*)psxRegs.CP2C.r)[54]
-#define gteDQB  ((s32*)psxRegs.CP2C.r)[28]
-#define gteZSF3 ((s16*)psxRegs.CP2C.r)[58]
-#define gteZSF4 ((s16*)psxRegs.CP2C.r)[60]
-#define gteFLAG psxRegs.CP2C.r[31]
+#define gteR11  ((s16*)psxRegs.CP2C)[0]
+#define gteR12  ((s16*)psxRegs.CP2C)[1]
+#define gteR13  ((s16*)psxRegs.CP2C)[2]
+#define gteR21  ((s16*)psxRegs.CP2C)[3]
+#define gteR22  ((s16*)psxRegs.CP2C)[4]
+#define gteR23  ((s16*)psxRegs.CP2C)[5]
+#define gteR31  ((s16*)psxRegs.CP2C)[6]
+#define gteR32  ((s16*)psxRegs.CP2C)[7]
+#define gteR33  ((s16*)psxRegs.CP2C)[8]
+#define gteTRX  ((s32*)psxRegs.CP2C)[5]
+#define gteTRY  ((s32*)psxRegs.CP2C)[6]
+#define gteTRZ  ((s32*)psxRegs.CP2C)[7]
+#define gteL11  ((s16*)psxRegs.CP2C)[16]
+#define gteL12  ((s16*)psxRegs.CP2C)[17]
+#define gteL13  ((s16*)psxRegs.CP2C)[18]
+#define gteL21  ((s16*)psxRegs.CP2C)[19]
+#define gteL22  ((s16*)psxRegs.CP2C)[20]
+#define gteL23  ((s16*)psxRegs.CP2C)[21]
+#define gteL31  ((s16*)psxRegs.CP2C)[22]
+#define gteL32  ((s16*)psxRegs.CP2C)[23]
+#define gteL33  ((s16*)psxRegs.CP2C)[24]
+#define gteRBK  ((s32*)psxRegs.CP2C)[13]
+#define gteGBK  ((s32*)psxRegs.CP2C)[14]
+#define gteBBK  ((s32*)psxRegs.CP2C)[15]
+#define gteLR1  ((s16*)psxRegs.CP2C)[32]
+#define gteLR2  ((s16*)psxRegs.CP2C)[33]
+#define gteLR3  ((s16*)psxRegs.CP2C)[34]
+#define gteLG1  ((s16*)psxRegs.CP2C)[35]
+#define gteLG2  ((s16*)psxRegs.CP2C)[36]
+#define gteLG3  ((s16*)psxRegs.CP2C)[37]
+#define gteLB1  ((s16*)psxRegs.CP2C)[38]
+#define gteLB2  ((s16*)psxRegs.CP2C)[39]
+#define gteLB3  ((s16*)psxRegs.CP2C)[40]
+#define gteRFC  ((s32*)psxRegs.CP2C)[21]
+#define gteGFC  ((s32*)psxRegs.CP2C)[22]
+#define gteBFC  ((s32*)psxRegs.CP2C)[23]
+#define gteOFX  ((s32*)psxRegs.CP2C)[24]
+#define gteOFY  ((s32*)psxRegs.CP2C)[25]
+#define gteH    ((u16*)psxRegs.CP2C)[52]
+#define gteDQA  ((s16*)psxRegs.CP2C)[54]
+#define gteDQB  ((s32*)psxRegs.CP2C)[28]
+#define gteZSF3 ((s16*)psxRegs.CP2C)[58]
+#define gteZSF4 ((s16*)psxRegs.CP2C)[60]
+#define gteFLAG psxRegs.CP2C[31]
 
 __inline unsigned long MFC2(int reg) {
 	switch (reg) {
@@ -170,7 +170,7 @@ __inline unsigned long MFC2(int reg) {
 		return gteORGB;
 
 	default:
-		return psxRegs.CP2D.r[reg];
+		return psxRegs.CP2D[reg];
 	}
 }
 
@@ -179,7 +179,7 @@ __inline void MTC2(unsigned long value, int reg) {
 
 	switch (reg) {
 	case 8: case 9: case 10: case 11:
-		psxRegs.CP2D.r[reg] = (short)value;
+		psxRegs.CP2D[reg] = (short)value;
 		break;
 
 	case 15:
@@ -190,11 +190,11 @@ __inline void MTC2(unsigned long value, int reg) {
 		break;
 
 	case 16: case 17: case 18: case 19:
-		psxRegs.CP2D.r[reg] = (value & 0xffff);
+		psxRegs.CP2D[reg] = (value & 0xffff);
 		break;
 
 	case 28:
-		psxRegs.CP2D.r[28] = value;
+		psxRegs.CP2D[28] = value;
 		gteIR1 = ((value)& 0x1f) << 7;
 		gteIR2 = ((value >> 5) & 0x1f) << 7;
 		gteIR3 = ((value >> 10) & 0x1f) << 7;
@@ -207,9 +207,9 @@ __inline void MTC2(unsigned long value, int reg) {
 		break;
 
 	case 30:
-		psxRegs.CP2D.r[30] = value;
+		psxRegs.CP2D[30] = value;
 
-		a = psxRegs.CP2D.r[30];
+		a = psxRegs.CP2D[30];
 #if defined(_MSC_VER_)
 		if (a > 0) {
 			__asm {
@@ -217,7 +217,7 @@ __inline void MTC2(unsigned long value, int reg) {
 				bsr eax, eax;
 				mov a, eax;
 			}
-			psxRegs.CP2D.r[31] = 31 - a;
+			psxRegs.CP2D[31] = 31 - a;
 		} else if (a < 0) {
 			__asm {
 				mov eax, a;
@@ -225,63 +225,63 @@ __inline void MTC2(unsigned long value, int reg) {
 				bsr eax, eax;
 				mov a, eax;
 			}
-			psxRegs.CP2D.r[31] = 31 - a;
+			psxRegs.CP2D[31] = 31 - a;
 		} else {
-			psxRegs.CP2D.r[31] = 32;
+			psxRegs.CP2D[31] = 32;
 		}
 #elif defined(__linux__) || defined(__MINGW32__)
 		if (a > 0) {
 			__asm__ ("bsrl %1, %0\n" : "=r"(a) : "r"(a) );
-			psxRegs.CP2D.r[31] = 31 - a;
+			psxRegs.CP2D[31] = 31 - a;
 		} else if (a < 0) {
 			a^= 0xffffffff;
 			__asm__ ("bsrl %1, %0\n" : "=r"(a) : "r"(a) );
-			psxRegs.CP2D.r[31] = 31 - a;
+			psxRegs.CP2D[31] = 31 - a;
 		} else {
-			psxRegs.CP2D.r[31] = 32;
+			psxRegs.CP2D[31] = 32;
 		}
 #else
 		if (a > 0) {
 			int i;
 			for (i = 31; (a & (1 << i)) == 0 && i >= 0; i--);
-			psxRegs.CP2D.r[31] = 31 - i;
+			psxRegs.CP2D[31] = 31 - i;
 		}
 		else if (a < 0) {
 			int i;
 			a ^= 0xffffffff;
 			for (i = 31; (a & (1 << i)) == 0 && i >= 0; i--);
-			psxRegs.CP2D.r[31] = 31 - i;
+			psxRegs.CP2D[31] = 31 - i;
 		}
 		else {
-			psxRegs.CP2D.r[31] = 32;
+			psxRegs.CP2D[31] = 32;
 		}
 #endif
 		break;
 
 	default:
-		psxRegs.CP2D.r[reg] = value;
+		psxRegs.CP2D[reg] = value;
 	}
 }
 
 void gteMFC2() {
 	if (!_Rt_) return;
-	psxRegs.GPR.r[_Rt_] = MFC2(_Rd_);
+	psxRegs.GPR[_Rt_] = MFC2(_Rd_);
 }
 
 void gteCFC2() {
 	if (!_Rt_) return;
-	psxRegs.GPR.r[_Rt_] = psxRegs.CP2C.r[_Rd_];
+	psxRegs.GPR[_Rt_] = psxRegs.CP2C[_Rd_];
 }
 
 void gteMTC2() {
-	MTC2(psxRegs.GPR.r[_Rt_], _Rd_);
+	MTC2(psxRegs.GPR[_Rt_], _Rd_);
 }
 
 void gteCTC2() {
-	psxRegs.CP2C.r[_Rd_] = psxRegs.GPR.r[_Rt_];
+	psxRegs.CP2C[_Rd_] = psxRegs.GPR[_Rt_];
 }
 
-#define _oB_ (psxRegs.GPR.r[_Rs_] + _Imm_)
+#define _oB_ (psxRegs.GPR[_Rs_] + _Imm_)
 
 void gteLWC2() {
 	MTC2(iopMemRead32(_oB_), _Rt_);
@@ -699,8 +699,8 @@ void gteRTPS() {
 		gteSZ2  = gteSZx;
 		gteSZx  = (unsigned short)float2int(SZ);
 
-		psxRegs.CP2D.r[12]= psxRegs.CP2D.r[13];
-		psxRegs.CP2D.r[13]= psxRegs.CP2D.r[14];
+		psxRegs.CP2D[12]= psxRegs.CP2D[13];
+		psxRegs.CP2D[13]= psxRegs.CP2D[14];
 
 		gteSX2  = (signed short)float2int(LIMIT((double)(gteOFX)/65536.0f + (LimitAS(SSX0,24)*DSZ),(double)-1024,(double)1024,14));
 		gteSY2  = (signed short)float2int(LIMIT((double)(gteOFY)/65536.0f + (LimitAS(SSY0,23)*DSZ),(double)-1024,(double)1024,13));
@@ -1142,13 +1142,13 @@ void gteAVSZ3() {
 
 	/*	gteFLAG = 0;
 
-		SS = psxRegs.CP2D.r[17] & 0xffff; SZ1  = (double)SS;
-		SS = psxRegs.CP2D.r[18] & 0xffff; SZ2  = (double)SS;
-		SS = psxRegs.CP2D.r[19] & 0xffff; SZ3  = (double)SS;
-		SS = psxRegs.CP2C.r[29] & 0xffff; ZSF3 = (double)SS/(double)4096;
+		SS = psxRegs.CP2D[17] & 0xffff; SZ1  = (double)SS;
+		SS = psxRegs.CP2D[18] & 0xffff; SZ2  = (double)SS;
+		SS = psxRegs.CP2D[19] & 0xffff; SZ3  = (double)SS;
+		SS = psxRegs.CP2C[29] & 0xffff; ZSF3 = (double)SS/(double)4096;
 
-		psxRegs.CP2D.r[24] = (signed long)float2int(EDETEC4(((SZ1+SZ2+SZ3)*ZSF3)));
-		psxRegs.CP2D.r[7]  = (unsigned short)float2int(LimitC(((SZ1+SZ2+SZ3)*ZSF3),18));
+		psxRegs.CP2D[24] = (signed long)float2int(EDETEC4(((SZ1+SZ2+SZ3)*ZSF3)));
+		psxRegs.CP2D[7]  = (unsigned short)float2int(LimitC(((SZ1+SZ2+SZ3)*ZSF3),18));
 
 		if (gteFLAG & 0x7f87e000) gteFLAG|=0x80000000;*/
 
@@ -1207,14 +1207,14 @@ void gteAVSZ4() {
 
 	/*	gteFLAG = 0;
 
-		SS = psxRegs.CP2D.r[16] & 0xffff; SZ0  = (double)SS;
-		SS = psxRegs.CP2D.r[17] & 0xffff; SZ1  = (double)SS;
-		SS = psxRegs.CP2D.r[18] & 0xffff; SZ2  = (double)SS;
-		SS = psxRegs.CP2D.r[19] & 0xffff; SZ3  = (double)SS;
-		SS = psxRegs.CP2C.r[30] & 0xffff; ZSF4 = (double)SS/(double)4096;
+		SS = psxRegs.CP2D[16] & 0xffff; SZ0  = (double)SS;
+		SS = psxRegs.CP2D[17] & 0xffff; SZ1  = (double)SS;
+		SS = psxRegs.CP2D[18] & 0xffff; SZ2  = (double)SS;
+		SS = psxRegs.CP2D[19] & 0xffff; SZ3  = (double)SS;
+		SS = psxRegs.CP2C[30] & 0xffff; ZSF4 = (double)SS/(double)4096;
 
-		psxRegs.CP2D.r[24] = (signed long)float2int(EDETEC4(((SZ0+SZ1+SZ2+SZ3)*ZSF4)));
-		psxRegs.CP2D.r[7]  = (unsigned short)float2int(LimitC(((SZ0+SZ1+SZ2+SZ3)*ZSF4),18));
+		psxRegs.CP2D[24] = (signed long)float2int(EDETEC4(((SZ0+SZ1+SZ2+SZ3)*ZSF4)));
+		psxRegs.CP2D[7]  = (unsigned short)float2int(LimitC(((SZ0+SZ1+SZ2+SZ3)*ZSF4),18));
 
 		if (gteFLAG & 0x7f87e000) gteFLAG|=0x80000000;*/
 	gteFLAG = 0;

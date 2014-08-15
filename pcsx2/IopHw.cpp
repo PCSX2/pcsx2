@@ -57,7 +57,7 @@ void psxDmaInterrupt(int n)
 	if (HW_DMA_ICR & (1 << (16 + n)))
 	{
 		HW_DMA_ICR|= (1 << (24 + n));
-		psxRegs.CP0.n.Cause |= 1 << (9 + n);
+		psxRegs.Cause |= 1 << (9 + n);
 		iopIntcIrq( 3 );
 	}
 }
@@ -73,7 +73,7 @@ void psxDmaInterrupt2(int n)
 			Console.WriteLn("*PCSX2*: psxHu32(0x1070) 8 already set (n=%d)", n);
 		}*/
 		HW_DMA_ICR2|= (1 << (24 + n));
-		psxRegs.CP0.n.Cause |= 1 << (16 + n);
+		psxRegs.Cause |= 1 << (16 + n);
 		iopIntcIrq( 3 );
 	}
 }

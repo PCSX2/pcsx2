@@ -93,17 +93,17 @@ typedef void (*TdisR5900F)DisFInterface;
 #define _Im_     ( code & 0xFFFF)      // The immediate part of the instruction register
 
 
-#define _rRs_   cpuRegs.GPR.r[_Rs_].UL[1], cpuRegs.GPR.r[_Rs_].UL[0]   // Rs register
-#define _rRt_   cpuRegs.GPR.r[_Rt_].UL[1], cpuRegs.GPR.r[_Rt_].UL[0]   // Rt register
-#define _rRd_   cpuRegs.GPR.r[_Rd_].UL[1], cpuRegs.GPR.r[_Rd_].UL[0]   // Rd register
-#define _rSa_   cpuRegs.GPR.r[_Sa_].UL[1], cpuRegs.GPR.r[_Sa_].UL[0]   // Sa register
+#define _rRs_   cpuRegs.GPR[_Rs_].UL[1], cpuRegs.GPR[_Rs_].UL[0]   // Rs register
+#define _rRt_   cpuRegs.GPR[_Rt_].UL[1], cpuRegs.GPR[_Rt_].UL[0]   // Rt register
+#define _rRd_   cpuRegs.GPR[_Rd_].UL[1], cpuRegs.GPR[_Rd_].UL[0]   // Rd register
+#define _rSa_   cpuRegs.GPR[_Sa_].UL[1], cpuRegs.GPR[_Sa_].UL[0]   // Sa register
 
-#define _rFs_   cpuRegs.CP0.r[_Rd_]   // Fs register
+#define _rFs_   cpuRegs.CP0[_Rd_]   // Fs register
 
-#define _rRs32_   cpuRegs.GPR.r[_Rs_].UL[0]   // Rs register
-#define _rRt32_   cpuRegs.GPR.r[_Rt_].UL[0]   // Rt register
-#define _rRd32_   cpuRegs.GPR.r[_Rd_].UL[0]   // Rd register
-#define _rSa32_   cpuRegs.GPR.r[_Sa_].UL[0]   // Sa register
+#define _rRs32_   cpuRegs.GPR[_Rs_].UL[0]   // Rs register
+#define _rRt32_   cpuRegs.GPR[_Rt_].UL[0]   // Rt register
+#define _rRd32_   cpuRegs.GPR[_Rd_].UL[0]   // Rd register
+#define _rSa32_   cpuRegs.GPR[_Sa_].UL[0]   // Sa register
 
 
 #define _nRs_ _rRs_, disRNameGPR[_Rs_]
@@ -130,12 +130,12 @@ typedef void (*TdisR5900F)DisFInterface;
 #define _sap( str ) ssappendf( output, str,
 
 #define dName(i)	_sap("%-7s\t") i);
-#define dGPR128(i)	_sap("%8.8x_%8.8x_%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
-#define dGPR64(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
-#define dGPR64U(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], disRNameGPR[i])
-#define dGPR32(i)	_sap("%8.8x (%s),") cpuRegs.GPR.r[i].UL[0], disRNameGPR[i])
+#define dGPR128(i)	_sap("%8.8x_%8.8x_%8.8x_%8.8x (%s),") cpuRegs.GPR[i].UL[3], cpuRegs.GPR[i].UL[2], cpuRegs.GPR[i].UL[1], cpuRegs.GPR[i].UL[0], disRNameGPR[i])
+#define dGPR64(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR[i].UL[1], cpuRegs.GPR[i].UL[0], disRNameGPR[i])
+#define dGPR64U(i)	_sap("%8.8x_%8.8x (%s),") cpuRegs.GPR[i].UL[3], cpuRegs.GPR[i].UL[2], disRNameGPR[i])
+#define dGPR32(i)	_sap("%8.8x (%s),") cpuRegs.GPR[i].UL[0], disRNameGPR[i])
 
-#define dCP032(i)	_sap("%8.8x (%s),") cpuRegs.CP0.r[i], disRNameCP0[i])
+#define dCP032(i)	_sap("%8.8x (%s),") cpuRegs.CP0[i], disRNameCP0[i])
 
 #define dCP132(i)	_sap("%f (%s),") fpuRegs.fpr[i].f, disRNameCP1[i])
 #define dCP1c32(i)	_sap("%8.8x (%s),") fpuRegs.fprc[i], disRNameCP1c[i])
@@ -157,7 +157,7 @@ typedef void (*TdisR5900F)DisFInterface;
 #define dTarget()	_sap("%8.8x,") _Target_)
 #define dSa()		_sap("%2.2x (%d),") _Sa_, _Sa_)
 #define dSa32()		_sap("%2.2x (%d),") _Sa_+32, _Sa_+32)
-#define dOfB()		_sap("%4.4x (%8.8x (%s)),") _Im_, cpuRegs.GPR.r[_Rs_].UL[0], disRNameGPR[_Rs_])
+#define dOfB()		_sap("%4.4x (%8.8x (%s)),") _Im_, cpuRegs.GPR[_Rs_].UL[0], disRNameGPR[_Rs_])
 #define dOffset()	_sap("%8.8x,") _Branch_)
 #define dCode()		_sap("%8.8x,") (code >> 6) & 0xffffff)
 #define dSaR()		_sap("%8.8x,") cpuRegs.sa)
@@ -274,8 +274,8 @@ MakeDisF(disJAL,		dName("JAL"); dTarget(); dGPR32(31); dAppendSym(_Target_);)
 * Register jump                                          *
 * Format:  OP rs, rd                                     *
 *********************************************************/
-MakeDisF(disJR,			dName("JR");   dGPR32(_Rs_); dAppendSym(cpuRegs.GPR.r[_Rs_].UL[0]);)
-MakeDisF(disJALR,		dName("JALR"); dGPR32(_Rs_); dGPR32(_Rd_); dAppendSym(cpuRegs.GPR.r[_Rs_].UL[0]);)
+MakeDisF(disJR,			dName("JR");   dGPR32(_Rs_); dAppendSym(cpuRegs.GPR[_Rs_].UL[0]);)
+MakeDisF(disJALR,		dName("JALR"); dGPR32(_Rs_); dGPR32(_Rd_); dAppendSym(cpuRegs.GPR[_Rs_].UL[0]);)
 
 /*********************************************************
 * Register mult/div & Register trap logic                *

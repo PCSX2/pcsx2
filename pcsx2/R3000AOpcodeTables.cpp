@@ -87,15 +87,15 @@ void psxDIVU() {
 void psxMULT() {
 	u64 res = (s64)((s64)_i32(_rRs_) * (s64)_i32(_rRt_));
 
-	psxRegs.GPR.n.lo = (u32)(res & 0xffffffff);
-	psxRegs.GPR.n.hi = (u32)((res >> 32) & 0xffffffff);
+	psxRegs.lo = (u32)(res & 0xffffffff);
+	psxRegs.hi = (u32)((res >> 32) & 0xffffffff);
 }
 
 void psxMULTU() {
 	u64 res = (u64)((u64)_u32(_rRs_) * (u64)_u32(_rRt_));
 
-	psxRegs.GPR.n.lo = (u32)(res & 0xffffffff);
-	psxRegs.GPR.n.hi = (u32)((res >> 32) & 0xffffffff);
+	psxRegs.lo = (u32)(res & 0xffffffff);
+	psxRegs.hi = (u32)((res >> 32) & 0xffffffff);
 }
 
 /*********************************************************
@@ -152,8 +152,8 @@ void psxSYSCALL() {
 
 void psxRFE() {
 //	Console.WriteLn("RFE\n");
-	psxRegs.CP0.n.Status = (psxRegs.CP0.n.Status & 0xfffffff0) |
-						  ((psxRegs.CP0.n.Status & 0x3c) >> 2);
+	psxRegs.Status = (psxRegs.Status & 0xfffffff0) |
+						  ((psxRegs.Status & 0x3c) >> 2);
 //	Log=0;
 }
 

@@ -59,17 +59,17 @@ void recADDI_(int info)
 
 	if ( _Rt_ == _Rs_ ) {
 		// must perform the ADD unconditionally, to maintain flags status:
-		ADD32ItoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _Imm_);
-		_signExtendSFtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
+		ADD32ItoM((uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], _Imm_);
+		_signExtendSFtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ]);
 	}
 	else {
-		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ] );
 
 		if ( _Imm_ != 0 ) ADD32ItoR( EAX, _Imm_ );
 
 		CDQ( );
-		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], EDX );
 	}
 }
 
@@ -92,13 +92,13 @@ void recDADDI_(int info)
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
 	if( _Rt_ == _Rs_ ) {
-		ADD32ItoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _Imm_);
-		ADC32ItoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], _Imm_<0?0xffffffff:0);
+		ADD32ItoM((uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], _Imm_);
+		ADC32ItoM((uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], _Imm_<0?0xffffffff:0);
 	}
 	else {
-		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+		MOV32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ] );
 
-		MOV32MtoR( EDX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
+		MOV32MtoR( EDX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ] );
 
 		if ( _Imm_ != 0 )
 		{
@@ -106,9 +106,9 @@ void recDADDI_(int info)
 			ADC32ItoR( EDX, _Imm_ < 0?0xffffffff:0);
 		}
 
-		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], EAX );
 
-		MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+		MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], EDX );
 	}
 }
 
@@ -133,11 +133,11 @@ void recSLTIU_(int info)
 {
 	MOV32ItoR(EAX, 1);
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], _Imm_ >= 0 ? 0 : 0xffffffff);
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], _Imm_ >= 0 ? 0 : 0xffffffff);
 	j8Ptr[0] = JB8( 0 );
 	j8Ptr[2] = JA8( 0 );
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], (s32)_Imm_ );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], (s32)_Imm_ );
 	j8Ptr[1] = JB8(0);
 
 	x86SetJ8(j8Ptr[2]);
@@ -146,8 +146,8 @@ void recSLTIU_(int info)
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-	MOV32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
+	MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], EAX );
+	MOV32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], 0 );
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, SLTIU);
@@ -163,11 +163,11 @@ void recSLTI_(int info)
 	// test silent hill if modding
 	MOV32ItoR(EAX, 1);
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], _Imm_ >= 0 ? 0 : 0xffffffff);
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], _Imm_ >= 0 ? 0 : 0xffffffff);
 	j8Ptr[0] = JL8( 0 );
 	j8Ptr[2] = JG8( 0 );
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], (s32)_Imm_ );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], (s32)_Imm_ );
 	j8Ptr[1] = JB8(0);
 
 	x86SetJ8(j8Ptr[2]);
@@ -176,8 +176,8 @@ void recSLTI_(int info)
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-	MOV32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
+	MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], EAX );
+	MOV32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], 0 );
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, SLTI);
@@ -193,34 +193,34 @@ void recLogicalOpI(int info, int op)
 	if ( _ImmU_ != 0 )
 	{
 		if( _Rt_ == _Rs_ ) {
-			LogicalOp32ItoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], _ImmU_, op);
+			LogicalOp32ItoM((uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], _ImmU_, op);
 		}
 		else {
-			MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+			MOV32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ] );
 			if( op != 0 )
-				MOV32MtoR( EDX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
+				MOV32MtoR( EDX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ] );
 			LogicalOp32ItoR( EAX, _ImmU_, op);
 			if( op != 0 )
-				MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
-			MOV32RtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
+				MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], EDX );
+			MOV32RtoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], EAX );
 		}
 
 		if( op == 0 ) {
-			MOV32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
+			MOV32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], 0 );
 		}
 	}
 	else
 	{
 		if( op == 0 ) {
-			MOV32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], 0 );
-			MOV32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], 0 );
+			MOV32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], 0 );
+			MOV32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], 0 );
 		}
 		else {
 			if( _Rt_ != _Rs_ ) {
-				MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-				MOV32MtoR(EDX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
-				MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], EAX );
-				MOV32RtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], EDX );
+				MOV32MtoR(EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ] );
+				MOV32MtoR(EDX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ] );
+				MOV32RtoM((uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], EAX );
+				MOV32RtoM((uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], EDX );
 			}
 		}
 	}

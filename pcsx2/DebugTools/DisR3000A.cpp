@@ -69,14 +69,14 @@ typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 #define _OfB_     _Im_, _nRs_
 
 #define dName(i)	sprintf(ostr + strlen(ostr), " %-7s,", i)
-#define dGPR(i)		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.r[i], disRNameGPR[i])
-#define dCP0(i)		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.CP0.r[i], disRNameCP0[i])
-#define dHI()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.hi, "hi")
-#define dLO()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.lo, "lo")
+#define dGPR(i)		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR[i], disRNameGPR[i])
+#define dCP0(i)		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.CP0[i], disRNameCP0[i])
+#define dHI()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.hi, "hi")
+#define dLO()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.lo, "lo")
 #define dImm()		sprintf(ostr + strlen(ostr), " %4.4x (%d),", _Im_, _Im_)
 #define dTarget()	sprintf(ostr + strlen(ostr), " %8.8x,", _Target_)
 #define dSa()		sprintf(ostr + strlen(ostr), " %2.2x (%d),", _Sa_, _Sa_)
-#define dOfB()		sprintf(ostr + strlen(ostr), " %4.4x (%8.8x (%s)),", _Im_, psxRegs.GPR.r[_Rs_], disRNameGPR[_Rs_])
+#define dOfB()		sprintf(ostr + strlen(ostr), " %4.4x (%8.8x (%s)),", _Im_, psxRegs.GPR[_Rs_], disRNameGPR[_Rs_])
 #define dOffset()	sprintf(ostr + strlen(ostr), " %8.8x,", _Branch_)
 #define dCode()		sprintf(ostr + strlen(ostr), " %8.8x,", (code >> 6) & 0xffffff)
 
