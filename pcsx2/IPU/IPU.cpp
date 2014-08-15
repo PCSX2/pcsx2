@@ -67,23 +67,16 @@ __fi void IPUProcessInterrupt()
 
 /////////////////////////////////////////////////////////
 // Register accesses (run on EE thread)
-int ipuInit()
-{
-	memzero(ipuRegs);
-	memzero(g_BP);
-	memzero(decoder);
-
-	decoder.picture_structure = FRAME_PICTURE;	//default: progressive...my guess:P
-
-	ipu_fifo.init();
-	ipu_cmd.clear();
-	
-	return 0;
-}
 
 void ipuReset()
 {
-	ipuInit();
+	memzero(g_BP);
+	memzero(decoder);
+	memzero(ipuRegs);
+	decoder.picture_structure = FRAME_PICTURE;      //default: progressive...my guess:P
+
+	ipu_fifo.init();
+	ipu_cmd.clear();
 }
 
 void ReportIPU()

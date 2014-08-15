@@ -359,7 +359,6 @@ extern SysMtgsThread& GetMTGS();
 /////////////////////////////////////////////////////////////////////////////
 // Generalized GS Functions and Stuff
 
-extern void gsInit();
 extern s32 gsOpen();
 extern void gsClose();
 extern void gsReset();

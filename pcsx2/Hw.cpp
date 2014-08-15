@@ -39,10 +39,9 @@ void hwInit()
 
 	VifUnpackSSE_Init();
 
-	gsInit();
-	sifInit();
-	sprInit();
-	ipuInit();
+	// From ipuInit
+	decoder.picture_structure = FRAME_PICTURE;      //default: progressive...my guess:P
+	ipu_cmd.current = 0xffffffff;
 
 	hwInitialized = true;
 }
@@ -70,8 +69,7 @@ void hwReset()
 
 	SPU2reset();
 
-	sifInit();
-	sprInit();
+	sifReset();
 
 	gsReset();
 	gifUnit.Reset();
@@ -87,7 +85,7 @@ __fi uint intcInterrupt()
 {
 	if ((psHu32(INTC_STAT)) == 0) {
 		//DevCon.Warning("*PCSX2*: intcInterrupt already cleared");
-        return 0;
+		return 0;
 	}
 	if ((psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0) 
 	{
