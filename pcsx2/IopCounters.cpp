@@ -542,7 +542,7 @@ __fi void psxRcntWmode16( int index, u32 value )
 {
 	PSXCNT_LOG( "IOP Counter[%d] writeMode = 0x%04X", index, value );
 
-	jASSUME( index >= 0 && index < 3 );
+	pxAssume( index >= 0 && index < 3 );
 	psxCounter& counter = psxCounters[index];
 
 	counter.mode  = value;
@@ -603,7 +603,7 @@ __fi void psxRcntWmode32( int index, u32 value )
 {
 	PSXCNT_LOG( "IOP Counter[%d] writeMode = 0x%04x", index, value );
 
-	jASSUME( index >= 3 && index < 6 );
+	pxAssume( index >= 3 && index < 6 );
 	psxCounter& counter = psxCounters[index];
 
 	counter.mode  = value;

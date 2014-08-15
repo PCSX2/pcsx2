@@ -261,7 +261,7 @@ __fi void cpuSetEvent()
 
 __fi void cpuClearInt( uint i )
 {
-	jASSUME( i < 32 );
+	pxAssume( i < 32 );
 	cpuRegs.interrupt &= ~(1 << i);
 }
 

@@ -68,7 +68,7 @@ void rcntReset(int index) {
 static __fi void _rcntSet( int cntidx )
 {
 	s32 c;
-	jASSUME( cntidx <= 4 );		// rcntSet isn't valid for h/vsync counters.
+	pxAssume( cntidx <= 4 );		// rcntSet isn't valid for h/vsync counters.
 
 	const Counter& counter = counters[cntidx];
 
