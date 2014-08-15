@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="..\..\..\common\vsprops\directx.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <TargetName>$(ProjectName)$(PlatformArchitecture)-$(SSEtype)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <DisableSpecificWarnings>4456;4458;4996;4995;4324;4100;4101;4201;4556;4127;4512;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <AdditionalIncludeDirectories>$(VTUNE_AMPLIFIER_XE_2015_DIR)include;$(SvnRootDir)\3rdparty\opencl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(ProjectDir)vtune\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(ProjectDir)vtune\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DelayLoadDLLs>d3d9.dll;d3dx9_43.dll;d3d11.dll;d3dx11_43.dll;dxgi.dll;opengl32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

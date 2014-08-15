@@ -77,43 +77,51 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release No CRT|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\common\vsprops\BaseProperties.props" />
+    <Import Project="..\..\common\vsprops\directx.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\common\vsprops\BaseProperties.props" />
+    <Import Project="..\..\common\vsprops\directx.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\common\vsprops\BaseProperties.props" />
+    <Import Project="..\..\common\vsprops\directx.props" />
     <Import Project="..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release No CRT|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\common\vsprops\plugin_svnroot.props" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\common\vsprops\directx.props" />
+    <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\common\vsprops\plugin_svnroot.props" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\common\vsprops\directx.props" />
+    <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\common\vsprops\plugin_svnroot.props" />
-    <Import Project="ProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\common\vsprops\directx.props" />
+    <Import Project="..\..\common\vsprops\CodeGen_Debug.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -146,9 +154,6 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-    <LibraryPath Condition="'$(Platform)'=='Win32'">$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Platform)'=='x64'">$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(DXSDK_DIR)include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>

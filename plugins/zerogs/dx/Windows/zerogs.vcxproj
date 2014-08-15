@@ -44,26 +44,27 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
+    <Import Project="..\..\..\..\common\vsprops\directx.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\..\..\common\vsprops\directx.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
+    <Import Project="..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\common\vsprops\plugin_common.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
+    <Import Project="..\..\..\..\common\vsprops\directx.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -82,7 +83,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;..\x86\;..\..\ZeroGSShaders\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\x86\;..\..\ZeroGSShaders\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_USRDLL;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderOutputFile>.\Release/GSsoftdx.pch</PrecompiledHeaderOutputFile>
       <CompileAs>Default</CompileAs>
@@ -92,10 +93,9 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>dxerr.lib;dxguid.lib;d3dx9.lib;d3d9.lib;odbc32.lib;odbccp32.lib;winmm.lib;Vfw32.lib;comctl32.lib;RpcRT4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxerr.lib;odbc32.lib;odbccp32.lib;winmm.lib;Vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\;$(DXSDK_DIR)lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\GSsoftdx.def</ModuleDefinitionFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <TargetMachine>MachineX86</TargetMachine>
@@ -104,14 +104,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;..\x86\;..\..\ZeroGSShaders\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\x86\;..\..\ZeroGSShaders\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>D3D_DEBUG_INFO;_USRDLL;__i386__;ZEROGS_DEVBUILD;ZEROGS_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>dxerr.lib;dxguid.lib;d3dx9.lib;d3d9.lib;odbc32.lib;odbccp32.lib;winmm.lib;Vfw32.lib;comctl32.lib;RpcRT4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxerr.lib;odbc32.lib;odbccp32.lib;winmm.lib;Vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\;$(DXSDK_DIR)lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\GSsoftdx.def</ModuleDefinitionFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -129,7 +128,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;..\x86\;..\..\ZeroGSShaders\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\x86\;..\..\ZeroGSShaders\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;__i386__;RELEASE_TO_PUBLIC;ZEROGS_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
@@ -140,10 +139,9 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>dxerr.lib;dxguid.lib;d3dx9.lib;d3d9.lib;odbc32.lib;odbccp32.lib;winmm.lib;Vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxerr.lib;odbc32.lib;odbccp32.lib;winmm.lib;Vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\;$(DXSDK_DIR)lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\GSsoftdx.def</ModuleDefinitionFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <TargetMachine>MachineX86</TargetMachine>
