@@ -18,6 +18,7 @@
 
 #include "GS.h"			// for sending game crc to mtgs
 #include "Elfheader.h"
+#include "DebugTools/SymbolMap.h"
 
 u32 ElfCRC;
 u32 ElfEntry;
@@ -426,7 +427,7 @@ void ElfObject::loadSectionHeaders()
 		for(uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); i++) {
 			if ((eS[i].st_value != 0) && (ELF32_ST_TYPE(eS[i].st_info) == 2))
 			{
-				R5900::disR5900AddSym(eS[i].st_value, &SymNames[eS[i].st_name]);
+				symbolMap.AddLabel(&SymNames[eS[i].st_name],eS[i].st_value);
 			}
 		}
 	}
@@ -529,7 +530,7 @@ int GetPS2ElfName( wxString& name )
 		if (buffer[i] == 0) break;
 		buffer[i] = 0;
 
-		R5900::disR5900AddSym(addr, buffer);
+		symbolMap.AddLabel(buffer,addr);
 	}
 	fclose(fp);
 #endif

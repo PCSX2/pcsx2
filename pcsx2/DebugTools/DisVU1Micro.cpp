@@ -52,28 +52,28 @@ typedef char* (*TdisR5900F)DisFInterface;
 }
 
 #define dCP2128f(i) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, disRNameCP2f[i]); \
-	else sprintf(ostr, "%s w=%f (%8.8x) z=%f (%8.8x) y=%f (%8.8xl) x=%f (%8.8x) (%s),", ostr, VU1.VF[i].f.w, VU1.VF[i].UL[3], VU1.VF[i].f.z, VU1.VF[i].UL[2], VU1.VF[i].f.y, VU1.VF[i].UL[1], VU1.VF[i].f.x, VU1.VF[i].UL[0], disRNameCP2f[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, R5900::COP2_REG_FP[i]); \
+	else sprintf(ostr, "%s w=%f (%8.8x) z=%f (%8.8x) y=%f (%8.8xl) x=%f (%8.8x) (%s),", ostr, VU1.VF[i].f.w, VU1.VF[i].UL[3], VU1.VF[i].f.z, VU1.VF[i].UL[2], VU1.VF[i].f.y, VU1.VF[i].UL[1], VU1.VF[i].f.x, VU1.VF[i].UL[0], R5900::COP2_REG_FP[i]); \
 } \
 
 #define dCP232x(i) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, disRNameCP2f[i]); \
-	else sprintf(ostr, "%s x=%f (%s),", ostr, VU1.VF[i].f.x, disRNameCP2f[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, R5900::COP2_REG_FP[i]); \
+	else sprintf(ostr, "%s x=%f (%s),", ostr, VU1.VF[i].f.x, R5900::COP2_REG_FP[i]); \
 } \
 
 #define dCP232y(i) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, disRNameCP2f[i]); \
-	else sprintf(ostr, "%s y=%f (%s),", ostr, VU1.VF[i].f.y, disRNameCP2f[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, R5900::COP2_REG_FP[i]); \
+	else sprintf(ostr, "%s y=%f (%s),", ostr, VU1.VF[i].f.y, R5900::COP2_REG_FP[i]); \
 } \
 
 #define dCP232z(i) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, disRNameCP2f[i]); \
-	else sprintf(ostr, "%s z=%f (%s),", ostr, VU1.VF[i].f.z, disRNameCP2f[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, R5900::COP2_REG_FP[i]); \
+	else sprintf(ostr, "%s z=%f (%s),", ostr, VU1.VF[i].f.z, R5900::COP2_REG_FP[i]); \
 }
 
 #define dCP232w(i) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, disRNameCP2f[i]); \
-	else sprintf(ostr, "%s w=%f (%s),", ostr, VU1.VF[i].f.w, disRNameCP2f[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, R5900::COP2_REG_FP[i]); \
+	else sprintf(ostr, "%s w=%f (%s),", ostr, VU1.VF[i].f.w, R5900::COP2_REG_FP[i]); \
 }
 
 #define dCP2ACCf() { \
@@ -82,18 +82,18 @@ typedef char* (*TdisR5900F)DisFInterface;
 } \
 
 #define dCP232i(i) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, disRNameCP2i[i]); \
-	else sprintf(ostr, "%s %8.8x (%s),", ostr, VU1.VI[i].UL, disRNameCP2i[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, R5900::COP2_REG_CTL[i]); \
+	else sprintf(ostr, "%s %8.8x (%s),", ostr, VU1.VI[i].UL, R5900::COP2_REG_CTL[i]); \
 }
 
 #define dCP232iF(i) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, disRNameCP2i[i]); \
-	else sprintf(ostr, "%s %f (%s),", ostr, VU1.VI[i].F, disRNameCP2i[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s,", ostr, R5900::COP2_REG_CTL[i]); \
+	else sprintf(ostr, "%s %f (%s),", ostr, VU1.VI[i].F, R5900::COP2_REG_CTL[i]); \
 }
 
 #define dCP232f(i, j) { \
-	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s%s,", ostr, disRNameCP2f[i], CP2VFnames[j]); \
-	else sprintf(ostr, "%s %s=%f (%s),", ostr, CP2VFnames[j], VU1.VF[i].F[j], disRNameCP2f[i]); \
+	if( !CpuVU1->IsInterpreter ) sprintf(ostr, "%s %s%s,", ostr, R5900::COP2_REG_FP[i], R5900::COP2_VFnames[j]); \
+	else sprintf(ostr, "%s %s=%f (%s),", ostr, R5900::COP2_VFnames[j], VU1.VF[i].F[j], R5900::COP2_REG_FP[i]); \
 }
 
 #define dImm5()			sprintf(ostr, "%s %d,", ostr, (s16)((code >> 6) & 0x10 ? 0xfff0 | ((code >> 6) & 0xf) : (code >> 6) & 0xf))

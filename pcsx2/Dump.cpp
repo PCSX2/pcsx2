@@ -20,6 +20,7 @@
 #include "iCore.h"
 #include "iR5900.h"
 #include "IPU/IPU.h"
+#include "DebugTools/SymbolMap.h"
 
 #include "AppConfig.h"
 #include "Utilities/AsciiFile.h"
@@ -210,9 +211,9 @@ void iDumpBlock( int startpc, u8 * ptr )
 		Path::Combine( g_Conf->Folders.Logs, wxsFormat(L"R5900dump%.8X.txt", startpc) ), L"w"
 	);
 
-	if( disR5900GetSym(startpc) != NULL )
+	if (!symbolMap.GetLabelString(startpc).empty())
 	{
-		eff.Printf( disR5900GetSym( startpc ) );
+		eff.Printf( symbolMap.GetLabelString(startpc).c_str() );
 		eff.Printf( "\n" );
 	}
 

@@ -26,42 +26,17 @@ extern char* disVU0MicroLF(u32 code, u32 pc);
 extern char* disVU1MicroUF(u32 code, u32 pc);
 extern char* disVU1MicroLF(u32 code, u32 pc);
 
-extern const char * const CP2VFnames[];
-extern const char * const disRNameCP2f[];
-extern const char * const disRNameCP2i[];
-
-extern const char * const disRNameCP2f[];
-extern const char * const disRNameCP2i[];
-
 namespace R5900
 {
-	// [TODO] : These function names can be de-obfuscated with the help of a little namespace love.
-
-	void disR5900F( std::string& output, u32 code );
 	void disR5900Fasm( std::string& output, u32 code, u32 pc);
-	void disR5900AddSym(u32 addr, const char *name);
-	const char* disR5900GetSym(u32 addr);
-	const char* disR5900GetUpperSym(u32 addr);
-	void disR5900FreeSyms();
-	void dFindSym( std::string& output, u32 addr );
 
-	extern const char * const disRNameGPR[];
-	extern const char * const disRNameCP0[];
-	extern const char * const disRNameCP1[];
-
-	// A helper class for getting a quick and efficient string representation of the
-	// R5900's current instruction.  This class is *not* thread safe!
-	class DisR5900CurrentState
-	{
-	protected:
-		std::string result;
-
-	public:
-		const std::string& getString();
-		const char* getCString();
-	};
-
-	extern DisR5900CurrentState disR5900Current;
+	extern const char * const GPR_REG[32];
+	extern const char * const COP0_REG[32];
+	extern const char * const COP1_REG_FP[32];
+	extern const char * const COP1_REG_FCR[32];
+	extern const char * const COP2_REG_FP[32];
+	extern const char * const COP2_REG_CTL[32];
+	extern const char * const COP2_VFnames[4];
 }
 
 namespace R3000A
