@@ -213,15 +213,14 @@ void iDumpBlock( int startpc, u8 * ptr )
 
 	if (!symbolMap.GetLabelString(startpc).empty())
 	{
-		eff.Printf( symbolMap.GetLabelString(startpc).c_str() );
-		eff.Printf( "\n" );
+		eff.Printf( "%s\n", symbolMap.GetLabelString(startpc).c_str() );
 	}
 
 	for ( uint i = startpc; i < s_nEndBlock; i += 4 )
 	{
 		std::string output;
 		disR5900Fasm( output, memRead32( i ), i );
-		eff.Printf( output.c_str() );
+		eff.Printf( "%s\n", output.c_str() );
 	}
 
 	// write the instruction info
