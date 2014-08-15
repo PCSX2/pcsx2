@@ -20,7 +20,7 @@
 #include "IopCommon.h"
 #include "Sif.h"
 
-void sifInit()
+void sifReset()
 {
 	memzero(sif0);
 	memzero(sif1);

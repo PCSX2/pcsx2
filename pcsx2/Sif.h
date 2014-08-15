@@ -124,7 +124,7 @@ struct _sif
 
 extern _sif sif0, sif1, sif2;
 
-extern void sifInit();
+extern void sifReset();
 
 extern void SIF0Dma();
 extern void SIF1Dma();

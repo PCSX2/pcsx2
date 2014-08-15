@@ -25,7 +25,7 @@
 using namespace Threading;
 using namespace R5900;
 
-__aligned16 u8 g_RealGSMem[0x2000];
+__aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
 {
@@ -46,11 +46,6 @@ void gsSetRegionMode( GS_RegionMode region )
 
 
 // Make sure framelimiter options are in sync with the plugin's capabilities.
-void gsInit()
-{
-	memzero(g_RealGSMem);
-}
-
 void gsReset()
 {
 	GetMTGS().ResetGS();
