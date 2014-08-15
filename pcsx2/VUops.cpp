@@ -147,7 +147,6 @@ __fi void _vuTestPipes(VURegs * VU) {
 }
 
 static void __fastcall _vuFMACTestStall(VURegs * VU, int reg, int xyzw) {
-	int cycle;
 	int i;
 
 	for (i=0; i<8; i++) {
@@ -212,8 +211,6 @@ static __ri void __fastcall _vuEFUAdd(VURegs * VU, int cycles) {
 }
 
 static __ri void __fastcall _vuFlushFDIV(VURegs * VU) {
-	int cycle;
-
 	if (VU->fdiv.enable == 0)
 		return;
 
