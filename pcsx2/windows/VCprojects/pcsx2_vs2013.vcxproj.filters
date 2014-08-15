@@ -242,9 +242,6 @@
     <ClCompile Include="..\..\SourceLog.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Stats.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\System\SysCoreThread.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -901,9 +898,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SaveState.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Stats.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\System.h">
