@@ -433,6 +433,7 @@ struct Pcsx2Config
 		bool
 			CdvdVerboseReads	:1,		// enables cdvd read activity verbosely dumped to the console
 			CdvdDumpBlocks		:1,		// enables cdvd block dumping
+			CdvdShareWrite		:1,		// allows the iso to be modified while it's loaded
 			EnablePatches		:1,		// enables patch detection and application
 			EnableCheats		:1,		// enables cheat detection and application
 			EnableWideScreenPatches		:1,

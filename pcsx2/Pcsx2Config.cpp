@@ -410,6 +410,7 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 
 	IniBitBool( CdvdVerboseReads );
 	IniBitBool( CdvdDumpBlocks );
+	IniBitBool( CdvdShareWrite );
 	IniBitBool( EnablePatches );
 	IniBitBool( EnableCheats );
 	IniBitBool( EnableWideScreenPatches );

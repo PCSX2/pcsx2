@@ -75,8 +75,10 @@ class FlatFileReader : public AsyncFileReader
 	io_context_t m_aio_context;
 #endif
 
+	bool shareWrite;
+
 public:
-	FlatFileReader(void);
+	FlatFileReader(bool shareWrite = false);
 	virtual ~FlatFileReader(void);
 
 	virtual bool Open(const wxString& fileName);
