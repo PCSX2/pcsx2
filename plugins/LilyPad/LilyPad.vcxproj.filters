@@ -119,9 +119,6 @@
     <ClInclude Include="WindowsMouse.h">
       <Filter>InputAPIs</Filter>
     </ClInclude>
-    <ClInclude Include="XInput.h">
-      <Filter>InputAPIs</Filter>
-    </ClInclude>
     <ClInclude Include="DeviceEnumerator.h">
       <Filter>Input</Filter>
     </ClInclude>
@@ -133,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="WndProcEater.h">
       <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="XInput_pcsx2.h">
+      <Filter>InputAPIs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
