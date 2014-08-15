@@ -70,9 +70,10 @@ __fi void IPUProcessInterrupt()
 
 void ipuReset()
 {
+	memzero(ipuRegs);
 	memzero(g_BP);
 	memzero(decoder);
-	memzero(ipuRegs);
+
 	decoder.picture_structure = FRAME_PICTURE;      //default: progressive...my guess:P
 
 	ipu_fifo.init();

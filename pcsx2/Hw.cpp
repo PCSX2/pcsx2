@@ -39,10 +39,6 @@ void hwInit()
 
 	VifUnpackSSE_Init();
 
-	// From ipuInit
-	decoder.picture_structure = FRAME_PICTURE;      //default: progressive...my guess:P
-	ipu_cmd.current = 0xffffffff;
-
 	hwInitialized = true;
 }
 
