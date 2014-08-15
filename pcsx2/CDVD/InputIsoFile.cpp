@@ -201,7 +201,10 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 	Close();
 	m_filename = srcfile;
 	
-	m_reader = new FlatFileReader();
+	// Allow write sharing of the iso based on the ini settings.
+	// Mostly useful for romhacking, where the disc is frequently
+	// changed and the emulator would block modifications
+	m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
 	m_reader->Open(m_filename);
 
 	bool isBlockdump, isCompressed = false;

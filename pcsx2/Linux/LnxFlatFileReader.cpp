@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 
-FlatFileReader::FlatFileReader(void)
+FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
 	m_blocksize = 2048;
 	m_fd = 0;
