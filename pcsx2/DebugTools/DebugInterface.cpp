@@ -386,12 +386,12 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 			result = cpuRegs.LO.UQ;
 			break;
 		default:
-			result = cpuRegs.GPR.r[num].UQ;
+			result = cpuRegs.GPR[num].UQ;
 			break;
 		}
 		break;
 	case EECAT_CP0:
-		result = u128::From32(cpuRegs.CP0.r[num]);
+		result = u128::From32(cpuRegs.CP0[num]);
 		break;
 	case EECAT_CP1:
 		result = u128::From32(fpuRegs.fpr[num].UL);
@@ -466,12 +466,12 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 			cpuRegs.LO.UQ = newValue;
 			break;
 		default:
-			cpuRegs.GPR.r[num].UQ = newValue;
+			cpuRegs.GPR[num].UQ = newValue;
 			break;
 		}
 		break;
 	case EECAT_CP0:
-		cpuRegs.CP0.r[num] = newValue._u32[0];
+		cpuRegs.CP0[num] = newValue._u32[0];
 		break;
 	case EECAT_CP1:
 		fpuRegs.fpr[num].UL = newValue._u32[0];
@@ -664,13 +664,13 @@ u128 R3000DebugInterface::getRegister(int cat, int num)
 			value = psxRegs.pc;
 			break;
 		case 33:	// hi
-			value = psxRegs.GPR.n.hi;
+			value = psxRegs.hi;
 			break;
 		case 34:	// lo
-			value = psxRegs.GPR.n.lo;
+			value = psxRegs.lo;
 			break;
 		default:
-			value = psxRegs.GPR.r[num];
+			value = psxRegs.GPR[num];
 			break;
 		}
 		break;
@@ -695,12 +695,12 @@ wxString R3000DebugInterface::getRegisterString(int cat, int num)
 
 u128 R3000DebugInterface::getHI()
 {
-	return u128::From32(psxRegs.GPR.n.hi);
+	return u128::From32(psxRegs.hi);
 }
 
 u128 R3000DebugInterface::getLO()
 {
-	return u128::From32(psxRegs.GPR.n.lo);
+	return u128::From32(psxRegs.lo);
 }
 
 u32 R3000DebugInterface::getPC()
@@ -724,13 +724,13 @@ void R3000DebugInterface::setRegister(int cat, int num, u128 newValue)
 			psxRegs.pc = newValue._u32[0];
 			break;
 		case 33:	// hi
-			psxRegs.GPR.n.hi = newValue._u32[0];
+			psxRegs.hi = newValue._u32[0];
 			break;
 		case 34:	// lo
-			psxRegs.GPR.n.lo = newValue._u32[0];
+			psxRegs.lo = newValue._u32[0];
 			break;
 		default:
-			psxRegs.GPR.r[num] = newValue._u32[0];
+			psxRegs.GPR[num] = newValue._u32[0];
 			break;
 		}
 		break;

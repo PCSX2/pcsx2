@@ -40,7 +40,7 @@ static void intEventTest();
 static void debugI()
 {
 	if( !IsDevBuild ) return;
-	if( cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1] ) Console.Error("R0 is not zero!!!!");
+	if( cpuRegs.r0.UD[0] || cpuRegs.r0.UD[1] ) Console.Error("R0 is not zero!!!!");
 }
 
 //long int runs=0;
@@ -155,7 +155,7 @@ void JAL()
 
 void BEQ()  // Branch if Rs == Rt
 {
-	if (cpuRegs.GPR.r[_Rs_].SD[0] == cpuRegs.GPR.r[_Rt_].SD[0])
+	if (cpuRegs.GPR[_Rs_].SD[0] == cpuRegs.GPR[_Rt_].SD[0])
 		doBranch(_BranchTarget_);
 	else
 		intEventTest();
@@ -163,7 +163,7 @@ void BEQ()  // Branch if Rs == Rt
 
 void BNE()  // Branch if Rs != Rt
 {
-	if (cpuRegs.GPR.r[_Rs_].SD[0] != cpuRegs.GPR.r[_Rt_].SD[0])
+	if (cpuRegs.GPR[_Rs_].SD[0] != cpuRegs.GPR[_Rt_].SD[0])
 		doBranch(_BranchTarget_);
 	else
 		intEventTest();
@@ -176,7 +176,7 @@ void BNE()  // Branch if Rs != Rt
 
 void BGEZ()    // Branch if Rs >= 0
 {
-	if(cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
+	if(cpuRegs.GPR[_Rs_].SD[0] >= 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -185,7 +185,7 @@ void BGEZ()    // Branch if Rs >= 0
 void BGEZAL() // Branch if Rs >= 0 and link
 {
 
-	if (cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
+	if (cpuRegs.GPR[_Rs_].SD[0] >= 0)
 	{
 		_SetLink(31);
 		doBranch(_BranchTarget_);
@@ -194,7 +194,7 @@ void BGEZAL() // Branch if Rs >= 0 and link
 
 void BGTZ()    // Branch if Rs >  0
 {
-	if (cpuRegs.GPR.r[_Rs_].SD[0] > 0)
+	if (cpuRegs.GPR[_Rs_].SD[0] > 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -202,7 +202,7 @@ void BGTZ()    // Branch if Rs >  0
 
 void BLEZ()   // Branch if Rs <= 0
 {
-	if (cpuRegs.GPR.r[_Rs_].SD[0] <= 0)
+	if (cpuRegs.GPR[_Rs_].SD[0] <= 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -210,7 +210,7 @@ void BLEZ()   // Branch if Rs <= 0
 
 void BLTZ()    // Branch if Rs <  0
 {
-	if (cpuRegs.GPR.r[_Rs_].SD[0] < 0)
+	if (cpuRegs.GPR[_Rs_].SD[0] < 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -218,7 +218,7 @@ void BLTZ()    // Branch if Rs <  0
 
 void BLTZAL()  // Branch if Rs <  0 and link
 {
-	if (cpuRegs.GPR.r[_Rs_].SD[0] < 0)
+	if (cpuRegs.GPR[_Rs_].SD[0] < 0)
 	{
 		_SetLink(31);
 		doBranch(_BranchTarget_);
@@ -233,7 +233,7 @@ void BLTZAL()  // Branch if Rs <  0 and link
 
 void BEQL()    // Branch if Rs == Rt
 {
-	if(cpuRegs.GPR.r[_Rs_].SD[0] == cpuRegs.GPR.r[_Rt_].SD[0])
+	if(cpuRegs.GPR[_Rs_].SD[0] == cpuRegs.GPR[_Rt_].SD[0])
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -246,7 +246,7 @@ void BEQL()    // Branch if Rs == Rt
 
 void BNEL()     // Branch if Rs != Rt
 {
-	if(cpuRegs.GPR.r[_Rs_].SD[0] != cpuRegs.GPR.r[_Rt_].SD[0])
+	if(cpuRegs.GPR[_Rs_].SD[0] != cpuRegs.GPR[_Rt_].SD[0])
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -259,7 +259,7 @@ void BNEL()     // Branch if Rs != Rt
 
 void BLEZL()    // Branch if Rs <= 0
 {
-	if(cpuRegs.GPR.r[_Rs_].SD[0] <= 0)
+	if(cpuRegs.GPR[_Rs_].SD[0] <= 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -272,7 +272,7 @@ void BLEZL()    // Branch if Rs <= 0
 
 void BGTZL()     // Branch if Rs >  0
 {
-	if(cpuRegs.GPR.r[_Rs_].SD[0] > 0)
+	if(cpuRegs.GPR[_Rs_].SD[0] > 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -285,7 +285,7 @@ void BGTZL()     // Branch if Rs >  0
 
 void BLTZL()     // Branch if Rs <  0
 {
-	if(cpuRegs.GPR.r[_Rs_].SD[0] < 0)
+	if(cpuRegs.GPR[_Rs_].SD[0] < 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -298,7 +298,7 @@ void BLTZL()     // Branch if Rs <  0
 
 void BGEZL()     // Branch if Rs >= 0
 {
-	if(cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
+	if(cpuRegs.GPR[_Rs_].SD[0] >= 0)
 	{
 		doBranch(_BranchTarget_);
 	}
@@ -312,7 +312,7 @@ void BGEZL()     // Branch if Rs >= 0
 void BLTZALL()   // Branch if Rs <  0 and link
 {
 
-	if(cpuRegs.GPR.r[_Rs_].SD[0] < 0)
+	if(cpuRegs.GPR[_Rs_].SD[0] < 0)
 	{
 		_SetLink(31);
 		doBranch(_BranchTarget_);
@@ -327,7 +327,7 @@ void BLTZALL()   // Branch if Rs <  0 and link
 void BGEZALL()   // Branch if Rs >= 0 and link
 {
 
-	if(cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
+	if(cpuRegs.GPR[_Rs_].SD[0] >= 0)
 	{
 		_SetLink(31);
 		doBranch(_BranchTarget_);
@@ -346,15 +346,15 @@ void BGEZALL()   // Branch if Rs >= 0 and link
 void JR()
 {
 	// 0x33ad48 is the return address of the function that populate the TLB cache
-	if (cpuRegs.GPR.r[_Rs_].UL[0] == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
+	if (cpuRegs.GPR[_Rs_].UL[0] == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
 		GoemonPreloadTlb();
 	}
-	doBranch(cpuRegs.GPR.r[_Rs_].UL[0]);
+	doBranch(cpuRegs.GPR[_Rs_].UL[0]);
 }
 
 void JALR()
 {
-	u32 temp = cpuRegs.GPR.r[_Rs_].UL[0];
+	u32 temp = cpuRegs.GPR[_Rs_].UL[0];
 
 	if (_Rd_)  _SetLink(_Rd_);
 

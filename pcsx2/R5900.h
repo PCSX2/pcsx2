@@ -236,7 +236,7 @@ struct tlbs
 #define _BranchTarget_   (((s32)(s16)_Im_ * 4) + _PC_)                 // Calculates the target during a branch instruction
 #define _TrapCode_       ((u16)cpuRegs.code >> 6)	// error code for non-immediate trap instructions.
 
-#define _SetLink(x)     (cpuRegs.GPR.r[x].UD[0] = _PC_ + 4)       // Sets the return address in the link register
+#define _SetLink(x)     (cpuRegs.GPR[x].UD[0] = _PC_ + 4)       // Sets the return address in the link register
 
 #endif
 

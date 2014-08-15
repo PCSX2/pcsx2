@@ -41,7 +41,7 @@ static void PreLoadPrep()
 static void PostLoadPrep()
 {
 	memzero(pCache);
-//	WriteCP0Status(cpuRegs.CP0.n.Status.val);
+//	WriteCP0Status(cpuRegs.Status.val);
 	for(int i=0; i<48; i++) MapTLB(i);
 	if (EmuConfig.Gamefixes.GoemonTlbHack) GoemonPreloadTlb();
 

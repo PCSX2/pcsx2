@@ -63,7 +63,7 @@ __fi void* _XMMGetAddr(int type, int reg, VURegs *VU)
 		case XMMTYPE_GPRREG:
 			if( reg < 32 )
 				pxAssert( !(g_cpuHasConstReg & (1<<reg)) || (g_cpuFlushedConstReg & (1<<reg)) );
-			return &cpuRegs.GPR.r[reg].UL[0];
+			return &cpuRegs.GPR[reg].UL[0];
 
 		case XMMTYPE_FPREG:
 			return &fpuRegs.fpr[reg];
@@ -353,7 +353,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 			{
 				//pxAssert( !(g_cpuHasConstReg & (1<<gprreg)) || (g_cpuFlushedConstReg & (1<<gprreg)) );
 				_flushConstReg(gprreg);
-				SSEX_MOVDQA_M128_to_XMM(i, (uptr)&cpuRegs.GPR.r[gprreg].UL[0]);
+				SSEX_MOVDQA_M128_to_XMM(i, (uptr)&cpuRegs.GPR[gprreg].UL[0]);
 			}
 			xmmregs[i].mode |= MODE_READ;
 		}
@@ -409,7 +409,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 				SetMMXstate();
 				SSE2_MOVQ2DQ_MM_to_XMM(xmmreg, mmxreg);
 				SSE2_PUNPCKLQDQ_XMM_to_XMM(xmmreg, xmmreg);
-				SSE2_PUNPCKHQDQ_M128_to_XMM(xmmreg, (uptr)&cpuRegs.GPR.r[gprreg].UL[0]);
+				SSE2_PUNPCKHQDQ_M128_to_XMM(xmmreg, (uptr)&cpuRegs.GPR[gprreg].UL[0]);
 
 				if (mmxregs[mmxreg].mode & MODE_WRITE )
 				{
@@ -417,7 +417,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 					if  (!(mode & MODE_WRITE))
 					{
 						SetMMXstate();
-						MOVQRtoM((uptr)&cpuRegs.GPR.r[gprreg].UL[0], mmxreg);
+						MOVQRtoM((uptr)&cpuRegs.GPR[gprreg].UL[0], mmxreg);
 					}
 					//xmmregs[xmmreg].mode |= MODE_WRITE;
 				}
@@ -426,7 +426,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 				mmxregs[mmxreg].inuse = 0;
 			}
 			else
-				SSEX_MOVDQA_M128_to_XMM(xmmreg, (uptr)&cpuRegs.GPR.r[gprreg].UL[0]);
+				SSEX_MOVDQA_M128_to_XMM(xmmreg, (uptr)&cpuRegs.GPR[gprreg].UL[0]);
 		}
 	}
 	else
@@ -711,7 +711,7 @@ void _deleteGPRtoXMMreg(int reg, int flush)
 						pxAssert( reg != 0 );
 
 						//pxAssert( g_xmmtypes[i] == XMMT_INT );
-						SSEX_MOVDQA_XMM_to_M128((uptr)&cpuRegs.GPR.r[reg].UL[0], i);
+						SSEX_MOVDQA_XMM_to_M128((uptr)&cpuRegs.GPR[reg].UL[0], i);
 
 						// get rid of MODE_WRITE since don't want to flush again
 						xmmregs[i].mode &= ~MODE_WRITE;
@@ -849,7 +849,7 @@ void _freeXMMreg(u32 xmmreg)
 		case XMMTYPE_GPRREG:
 			pxAssert( xmmregs[xmmreg].reg != 0 );
 			//pxAssert( g_xmmtypes[xmmreg] == XMMT_INT );
-			SSEX_MOVDQA_XMM_to_M128((uptr)&cpuRegs.GPR.r[xmmregs[xmmreg].reg].UL[0], xmmreg);
+			SSEX_MOVDQA_XMM_to_M128((uptr)&cpuRegs.GPR[xmmregs[xmmreg].reg].UL[0], xmmreg);
 			break;
 
 		case XMMTYPE_FPREG:

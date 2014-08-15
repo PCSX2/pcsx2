@@ -50,9 +50,9 @@ void iDumpPsxRegisters(u32 startpc, u32 temp)
 	const char* pstr = temp ? "t" : "";
 
 	// fixme: PSXM doesn't exist any more.
-	//__Log("%spsxreg: %x %x ra:%x k0: %x %x", pstr, startpc, psxRegs.cycle, psxRegs.GPR.n.ra, psxRegs.GPR.n.k0, *(int*)PSXM(0x13c128));
+	//__Log("%spsxreg: %x %x ra:%x k0: %x %x", pstr, startpc, psxRegs.cycle, psxRegs.ra, psxRegs.k0, *(int*)PSXM(0x13c128));
 
-	for(i = 0; i < 34; i+=2) __Log("%spsx%s: %x %x", pstr, disRNameGPR[i], psxRegs.GPR.r[i], psxRegs.GPR.r[i+1]);
+	for(i = 0; i < 34; i+=2) __Log("%spsx%s: %x %x", pstr, disRNameGPR[i], psxRegs.GPR[i], psxRegs.GPR[i+1]);
 
 	DbgCon.WriteLn("%scycle: %x %x %x; counters %x %x", pstr, psxRegs.cycle, g_iopNextEventCycle, EEsCycle,
 		psxNextsCounter, psxNextCounter);
@@ -96,9 +96,9 @@ void iDumpRegisters(u32 startpc, u32 temp)
 	else
 		__Log("%sreg: %x %x c:%x", pstr, startpc, cpuRegs.interrupt, cpuRegs.cycle);
 
-	for(i = 1; i < 32; ++i) __Log("%s: %x_%x_%x_%x", disRNameGPR[i], cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0]);
+	for(i = 1; i < 32; ++i) __Log("%s: %x_%x_%x_%x", disRNameGPR[i], cpuRegs.GPR[i].UL[3], cpuRegs.GPR[i].UL[2], cpuRegs.GPR[i].UL[1], cpuRegs.GPR[i].UL[0]);
 
-	//for(i = 0; i < 32; i+=4) __Log("cp%d: %x_%x_%x_%x", i, cpuRegs.CP0.r[i], cpuRegs.CP0.r[i+1], cpuRegs.CP0.r[i+2], cpuRegs.CP0.r[i+3]);
+	//for(i = 0; i < 32; i+=4) __Log("cp%d: %x_%x_%x_%x", i, cpuRegs.CP0[i], cpuRegs.CP0[i+1], cpuRegs.CP0[i+2], cpuRegs.CP0[i+3]);
 	//for(i = 0; i < 32; ++i) __Log("%sf%d: %f %x", pstr, i, fpuRegs.fpr[i].f, fpuRegs.fprc[i]);
 	//for(i = 1; i < 32; ++i) __Log("%svf%d: %f %f %f %f, vi: %x", pstr, i, VU0.VF[i].F[3], VU0.VF[i].F[2], VU0.VF[i].F[1], VU0.VF[i].F[0], VU0.VI[i].UL);
 
@@ -108,7 +108,7 @@ void iDumpRegisters(u32 startpc, u32 temp)
 	__Log("%svfACC: %x %x %x %x", pstr, VU0.ACC.UL[3], VU0.ACC.UL[2], VU0.ACC.UL[1], VU0.ACC.UL[0]);
 	__Log("%sLO: %x_%x_%x_%x, HI: %x_%x_%x_%x", pstr, cpuRegs.LO.UL[3], cpuRegs.LO.UL[2], cpuRegs.LO.UL[1], cpuRegs.LO.UL[0],
 	cpuRegs.HI.UL[3], cpuRegs.HI.UL[2], cpuRegs.HI.UL[1], cpuRegs.HI.UL[0]);
-	__Log("%sCycle: %x %x, Count: %x", pstr, cpuRegs.cycle, g_nextEventCycle, cpuRegs.CP0.n.Count);
+	__Log("%sCycle: %x %x, Count: %x", pstr, cpuRegs.cycle, g_nextEventCycle, cpuRegs.Count);
 
 	iDumpPsxRegisters(psxRegs.pc, temp);
 

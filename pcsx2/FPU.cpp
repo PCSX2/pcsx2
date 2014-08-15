@@ -224,12 +224,12 @@ void C_LT() {
 
 void CFC1() {
 	if ( !_Rt_ || ( (_Fs_ != 0) && (_Fs_ != 31) ) ) return;
-	cpuRegs.GPR.r[_Rt_].SD[0] = (s32)fpuRegs.fprc[_Fs_];	// force sign extension to 64 bit
+	cpuRegs.GPR[_Rt_].SD[0] = (s32)fpuRegs.fprc[_Fs_];	// force sign extension to 64 bit
 }
 
 void CTC1() {
 	if ( _Fs_ != 31 ) return;
-	fpuRegs.fprc[_Fs_] = cpuRegs.GPR.r[_Rt_].UL[0];
+	fpuRegs.fprc[_Fs_] = cpuRegs.GPR[_Rt_].UL[0];
 }
 
 void CVT_S() {
@@ -275,7 +275,7 @@ void MAX_S() {
 
 void MFC1() {
 	if ( !_Rt_ ) return;
-	cpuRegs.GPR.r[_Rt_].SD[0] = _FsValSl_;		// sign extension into 64bit
+	cpuRegs.GPR[_Rt_].SD[0] = _FsValSl_;		// sign extension into 64bit
 }
 
 void MIN_S() {
@@ -302,7 +302,7 @@ void MSUBA_S() {
 }
 
 void MTC1() {
-	_FsValUl_ = cpuRegs.GPR.r[_Rt_].UL[0];
+	_FsValUl_ = cpuRegs.GPR[_Rt_].UL[0];
 }
 
 void MUL_S() {
@@ -372,14 +372,14 @@ void SUBA_S() {
 
 void LWC1() {
 	u32 addr;
-	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)(cpuRegs.code & 0xffff);	// force sign extension to 32bit
+	addr = cpuRegs.GPR[_Rs_].UL[0] + (s16)(cpuRegs.code & 0xffff);	// force sign extension to 32bit
 	if (addr & 0x00000003) { Console.Error( "FPU (LWC1 Opcode): Invalid Unaligned Memory Address" ); return; }  // Should signal an exception?
 	fpuRegs.fpr[_Rt_].UL = memRead32(addr);
 }
 
 void SWC1() {
 	u32 addr;
-	addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)(cpuRegs.code & 0xffff);	// force sign extension to 32bit
+	addr = cpuRegs.GPR[_Rs_].UL[0] + (s16)(cpuRegs.code & 0xffff);	// force sign extension to 32bit
 	if (addr & 0x00000003) { Console.Error( "FPU (SWC1 Opcode): Invalid Unaligned Memory Address" ); return; }  // Should signal an exception?
 	memWrite32(addr, fpuRegs.fpr[_Rt_].UL);
 }

@@ -55,8 +55,8 @@ void psxReset()
 	memzero(psxRegs);
 
 	psxRegs.pc = 0xbfc00000; // Start in bootstrap
-	psxRegs.CP0.n.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1
-	psxRegs.CP0.n.PRid   = 0x0000001f; // PRevID = Revision ID, same as the IOP R3000A
+	psxRegs.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1
+	psxRegs.PRid   = 0x0000001f; // PRevID = Revision ID, same as the IOP R3000A
 
 	iopBreak = 0;
 	iopCycleEE = -1;
@@ -76,34 +76,34 @@ void __fastcall psxException(u32 code, u32 bd)
 //	PSXCPU_LOG("psxException %x: %x, %x", code, psxHu32(0x1070), psxHu32(0x1074));
 	//Console.WriteLn("!! psxException %x: %x, %x", code, psxHu32(0x1070), psxHu32(0x1074));
 	// Set the Cause
-	psxRegs.CP0.n.Cause &= ~0x7f;
-	psxRegs.CP0.n.Cause |= code;
+	psxRegs.Cause &= ~0x7f;
+	psxRegs.Cause |= code;
 
 	// Set the EPC & PC
 	if (bd)
 	{
 		PSXCPU_LOG("bd set");
-		psxRegs.CP0.n.Cause|= 0x80000000;
-		psxRegs.CP0.n.EPC = (psxRegs.pc - 4);
+		psxRegs.Cause|= 0x80000000;
+		psxRegs.EPC = (psxRegs.pc - 4);
 	}
 	else
-		psxRegs.CP0.n.EPC = (psxRegs.pc);
+		psxRegs.EPC = (psxRegs.pc);
 
-	if (psxRegs.CP0.n.Status & 0x400000)
+	if (psxRegs.Status & 0x400000)
 		psxRegs.pc = 0xbfc00180;
 	else
 		psxRegs.pc = 0x80000080;
 
 	// Set the Status
-	psxRegs.CP0.n.Status = (psxRegs.CP0.n.Status &~0x3f) |
-						  ((psxRegs.CP0.n.Status & 0xf) << 2);
+	psxRegs.Status = (psxRegs.Status &~0x3f) |
+						  ((psxRegs.Status & 0xf) << 2);
 
-	/*if ((((PSXMu32(psxRegs.CP0.n.EPC) >> 24) & 0xfe) == 0x4a)) {
+	/*if ((((PSXMu32(psxRegs.EPC) >> 24) & 0xfe) == 0x4a)) {
 		// "hokuto no ken" / "Crash Bandicot 2" ... fix
-		PSXMu32(psxRegs.CP0.n.EPC)&= ~0x02000000;
+		PSXMu32(psxRegs.EPC)&= ~0x02000000;
 	}*/
 
-	/*if (psxRegs.CP0.n.Cause == 0x400 && (!(psxHu32(0x1450) & 0x8))) {
+	/*if (psxRegs.Cause == 0x400 && (!(psxHu32(0x1450) & 0x8))) {
 		hwIntcIrq(INTC_SBUS);
 	}*/
 }
@@ -216,7 +216,7 @@ __ri void iopEventTest()
 
 	if( (psxHu32(0x1078) != 0) && ((psxHu32(0x1070) & psxHu32(0x1074)) != 0) )
 	{
-		if( (psxRegs.CP0.n.Status & 0xFE01) >= 0x401 )
+		if( (psxRegs.Status & 0xFE01) >= 0x401 )
 		{
 			PSXCPU_LOG("Interrupt: %x  %x", psxHu32(0x1070), psxHu32(0x1074));
 			psxException(0, 0);

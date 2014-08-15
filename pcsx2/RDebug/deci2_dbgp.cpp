@@ -134,24 +134,24 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				for (i=0; i<in->count; i++)
 					switch (iregs[i].kind){
 					case 1:switch (iregs[i].number){
-							case 0:iregs[i].value=psxRegs.GPR.n.lo;break;
-							case 1:iregs[i].value=psxRegs.GPR.n.hi;break;
+							case 0:iregs[i].value=psxRegs.lo;break;
+							case 1:iregs[i].value=psxRegs.hi;break;
 						   }
 						   break;
-					case 2:iregs[i].value=psxRegs.GPR.r[iregs[i].number]; break;
+					case 2:iregs[i].value=psxRegs.GPR[iregs[i].number]; break;
 					case 3:
-						if (iregs[i].number==14) psxRegs.CP0.n.EPC=psxRegs.pc;
-						iregs[i].value=psxRegs.CP0.r[iregs[i].number];
+						if (iregs[i].number==14) psxRegs.EPC=psxRegs.pc;
+						iregs[i].value=psxRegs.CP0[iregs[i].number];
 						break;
-					case 6:iregs[i].value=psxRegs.CP2D.r[iregs[i].number]; break;
-					case 7:iregs[i].value=psxRegs.CP2C.r[iregs[i].number]; break;
+					case 6:iregs[i].value=psxRegs.CP2D[iregs[i].number]; break;
+					case 7:iregs[i].value=psxRegs.CP2C[iregs[i].number]; break;
 					default:
 						iregs[0].value++;//dummy; might be assert(0)
 					}
 			}else
 				for (i=0; i<in->count; i++)
 					switch (eregs[i].kind){
-					case  0:memcpy(eregs[i].value, &cpuRegs.GPR.r[eregs[i].number], 16);break;
+					case  0:memcpy(eregs[i].value, &cpuRegs.GPR[eregs[i].number], 16);break;
 					case  1:
 						switch(eregs[i].number){
 						case 0:memcpy(eregs[i].value, &cpuRegs.HI.UD[0], 8);break;
@@ -161,8 +161,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 						case 4:memcpy(eregs[i].value, &cpuRegs.sa, 4);		break;
 						}
 					case  2:
-						if (eregs[i].number==14) cpuRegs.CP0.n.EPC=cpuRegs.pc;
-						memcpy(eregs[i].value, &cpuRegs.CP0.r[eregs[i].number], 4);
+						if (eregs[i].number==14) cpuRegs.EPC=cpuRegs.pc;
+						memcpy(eregs[i].value, &cpuRegs.CP0[eregs[i].number], 4);
 						break;
 					case  3:break;//performance counter 32x3
 					case  4:break;//hw debug reg 32x8
@@ -183,24 +183,24 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				for (i=0; i<in->count; i++)
 					switch (iregs[i].kind){
 					case 1:switch (iregs[i].number){
-							case 0:psxRegs.GPR.n.lo=iregs[i].value;break;
-							case 1:psxRegs.GPR.n.hi=iregs[i].value;break;
+							case 0:psxRegs.lo=iregs[i].value;break;
+							case 1:psxRegs.hi=iregs[i].value;break;
 						   }
 						   break;
-					case 2:psxRegs.GPR.r[iregs[i].number]=iregs[i].value; break;
+					case 2:psxRegs.GPR[iregs[i].number]=iregs[i].value; break;
 					case 3:
-						psxRegs.CP0.r[iregs[i].number]=iregs[i].value;
-						if (iregs[i].number==14) psxRegs.pc=psxRegs.CP0.n.EPC;
+						psxRegs.CP0[iregs[i].number]=iregs[i].value;
+						if (iregs[i].number==14) psxRegs.pc=psxRegs.EPC;
 						break;
-					case 6:psxRegs.CP2D.r[iregs[i].number]=iregs[i].value; break;
-					case 7:psxRegs.CP2C.r[iregs[i].number]=iregs[i].value; break;
+					case 6:psxRegs.CP2D[iregs[i].number]=iregs[i].value; break;
+					case 7:psxRegs.CP2C[iregs[i].number]=iregs[i].value; break;
 					default:
 						;//dummy; might be assert(0)
 					}
 			}else
 				for (i=0; i<in->count; i++)
 					switch (eregs[i].kind){
-					case  0:memcpy(&cpuRegs.GPR.r[eregs[i].number], eregs[i].value, 16);break;
+					case  0:memcpy(&cpuRegs.GPR[eregs[i].number], eregs[i].value, 16);break;
 					case  1:
 						switch(eregs[i].number){
 						case 0:memcpy(&cpuRegs.HI.UD[0], eregs[i].value, 8);break;
@@ -211,8 +211,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 						}
 						break;
 					case  2:
-						memcpy(&cpuRegs.CP0.r[eregs[i].number], eregs[i].value, 4);
-						if (eregs[i].number==14) cpuRegs.pc=cpuRegs.CP0.n.EPC;
+						memcpy(&cpuRegs.CP0[eregs[i].number], eregs[i].value, 4);
+						if (eregs[i].number==14) cpuRegs.pc=cpuRegs.EPC;
 						break;
 					case  3:break;//performance counter 32x3
 					case  4:break;//hw debug reg 32x8
@@ -383,8 +383,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 			sprintf(line, "%s/RUN code=%d count=%d entry=0x%08X gp=0x%08X argc=%d",
 				in->id==0?"CPU":in->id==1?"VU0":"VU1", in->code, in->count,
 				run->entry, run->gp, run->argc);
-			cpuRegs.CP0.n.EPC=cpuRegs.pc=run->entry;
-			cpuRegs.GPR.n.gp.UL[0]=run->gp;
+			cpuRegs.EPC=cpuRegs.pc=run->entry;
+			cpuRegs.gp.UL[0]=run->gp;
 //			threads_array[0].argc = run->argc;
 			u32* argv = (u32*)&run[1];
 			for (i=0, s=0; i<(int)run->argc; i++, argv++)	s+=argv[i];

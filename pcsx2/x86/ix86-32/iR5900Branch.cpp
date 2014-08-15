@@ -71,7 +71,7 @@ void recSetBranchEQ(int info, int bne, int process)
 			}
 
 			_flushConstReg(_Rs_);
-			SSE2_PCMPEQD_M128_to_XMM(t0reg, (uptr)&cpuRegs.GPR.r[_Rs_].UL[0]);
+			SSE2_PCMPEQD_M128_to_XMM(t0reg, (uptr)&cpuRegs.GPR[_Rs_].UL[0]);
 
 
 			if( t0reg != EEREC_T ) _freeXMMreg(t0reg);
@@ -88,7 +88,7 @@ void recSetBranchEQ(int info, int bne, int process)
 			}
 
 			_flushConstReg(_Rt_);
-			SSE2_PCMPEQD_M128_to_XMM(t0reg, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+			SSE2_PCMPEQD_M128_to_XMM(t0reg, (uptr)&cpuRegs.GPR[_Rt_].UL[0]);
 
 			if( t0reg != EEREC_S ) _freeXMMreg(t0reg);
 		}
@@ -131,26 +131,26 @@ void recSetBranchEQ(int info, int bne, int process)
 
 		if( bne ) {
 			if( process & PROCESS_CONSTS ) {
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], g_cpuConstRegs[_Rs_].UL[0] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], g_cpuConstRegs[_Rs_].UL[0] );
 				j8Ptr[ 0 ] = JNE8( 0 );
 
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], g_cpuConstRegs[_Rs_].UL[1] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], g_cpuConstRegs[_Rs_].UL[1] );
 				j32Ptr[ 1 ] = JE32( 0 );
 			}
 			else if( process & PROCESS_CONSTT ) {
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], g_cpuConstRegs[_Rt_].UL[0] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], g_cpuConstRegs[_Rt_].UL[0] );
 				j8Ptr[ 0 ] = JNE8( 0 );
 
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], g_cpuConstRegs[_Rt_].UL[1] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], g_cpuConstRegs[_Rt_].UL[1] );
 				j32Ptr[ 1 ] = JE32( 0 );
 			}
 			else {
-				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ] );
+				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ] );
 				j8Ptr[ 0 ] = JNE8( 0 );
 
-				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
-				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] );
+				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ] );
+				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ] );
 				j32Ptr[ 1 ] = JE32( 0 );
 			}
 
@@ -159,26 +159,26 @@ void recSetBranchEQ(int info, int bne, int process)
 		else {
 			// beq
 			if( process & PROCESS_CONSTS ) {
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], g_cpuConstRegs[_Rs_].UL[0] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ], g_cpuConstRegs[_Rs_].UL[0] );
 				j32Ptr[ 0 ] = JNE32( 0 );
 
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ], g_cpuConstRegs[_Rs_].UL[1] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ], g_cpuConstRegs[_Rs_].UL[1] );
 				j32Ptr[ 1 ] = JNE32( 0 );
 			}
 			else if( process & PROCESS_CONSTT ) {
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], g_cpuConstRegs[_Rt_].UL[0] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], g_cpuConstRegs[_Rt_].UL[0] );
 				j32Ptr[ 0 ] = JNE32( 0 );
 
-				CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], g_cpuConstRegs[_Rt_].UL[1] );
+				CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], g_cpuConstRegs[_Rt_].UL[1] );
 				j32Ptr[ 1 ] = JNE32( 0 );
 			}
 			else {
-				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ] );
+				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 0 ] );
 				j32Ptr[ 0 ] = JNE32( 0 );
 
-				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] );
-				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] );
+				MOV32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ] );
+				CMP32MtoR( EAX, (uptr)&cpuRegs.GPR[ _Rt_ ].UL[ 1 ] );
 				j32Ptr[ 1 ] = JNE32( 0 );
 			}
 		}
@@ -205,7 +205,7 @@ void recSetBranchL(int ltz)
 		return;
 	}
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], 0 );
 	if( ltz ) j32Ptr[ 0 ] = JGE32( 0 );
 	else j32Ptr[ 0 ] = JL32( 0 );
 
@@ -409,8 +409,8 @@ void recBLTZAL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc+4);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[0], pc+4);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[1], 0);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		if( !(g_cpuConstRegs[_Rs_].SD[0] < 0) )
@@ -448,8 +448,8 @@ void recBGEZAL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc+4);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[0], pc+4);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[1], 0);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		if( !(g_cpuConstRegs[_Rs_].SD[0] >= 0) )
@@ -487,8 +487,8 @@ void recBLTZALL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc+4);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[0], pc+4);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[1], 0);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		if( !(g_cpuConstRegs[_Rs_].SD[0] < 0) )
@@ -521,8 +521,8 @@ void recBGEZALL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc+4);
-	MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[0], pc+4);
+	MOV32ItoM((uptr)&cpuRegs.GPR[31].UL[1], 0);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
 		if( !(g_cpuConstRegs[_Rs_].SD[0] >= 0) )
@@ -565,11 +565,11 @@ void recBLEZ()
 
 	_flushEEreg(_Rs_);
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], 0 );
 	j8Ptr[ 0 ] = JL8( 0 );
 	j32Ptr[ 1 ] = JG32( 0 );
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], 0 );
 	j32Ptr[ 2 ] = JNZ32( 0 );
 
 	x86SetJ8( j8Ptr[ 0 ] );
@@ -611,11 +611,11 @@ void recBGTZ()
 
 	_flushEEreg(_Rs_);
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], 0 );
 	j8Ptr[ 0 ] = JG8( 0 );
 	j32Ptr[ 1 ] = JL32( 0 );
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], 0 );
 	j32Ptr[ 2 ] = JZ32( 0 );
 
 	x86SetJ8( j8Ptr[ 0 ] );
@@ -793,11 +793,11 @@ void recBLEZL()
 
 	_flushEEreg(_Rs_);
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], 0 );
 	j32Ptr[ 0 ] = JL32( 0 );
 	j32Ptr[ 1 ] = JG32( 0 );
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], 0 );
 	j32Ptr[ 2 ] = JNZ32( 0 );
 
 	x86SetJ32( j32Ptr[ 0 ] );
@@ -837,11 +837,11 @@ void recBGTZL()
 
 	_flushEEreg(_Rs_);
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 1 ], 0 );
 	j32Ptr[ 0 ] = JG32( 0 );
 	j32Ptr[ 1 ] = JL32( 0 );
 
-	CMP32ItoM( (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ], 0 );
+	CMP32ItoM( (uptr)&cpuRegs.GPR[ _Rs_ ].UL[ 0 ], 0 );
 	j32Ptr[ 2 ] = JZ32( 0 );
 
 	x86SetJ32( j32Ptr[ 0 ] );

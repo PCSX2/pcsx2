@@ -85,7 +85,7 @@ namespace Interpreter{
 namespace OpcodeImpl
 {
 	void LQC2() {
-		u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)cpuRegs.code;
+		u32 addr = cpuRegs.GPR[_Rs_].UL[0] + (s16)cpuRegs.code;
 		if (_Ft_) {
 			memRead128(addr, VU0.VF[_Ft_].UQ);
 		} else {
@@ -98,7 +98,7 @@ namespace OpcodeImpl
 	//TODO: check this
 	// HUH why ? doesn't make any sense ...
 	void SQC2() {
-		u32 addr = _Imm_ + cpuRegs.GPR.r[_Rs_].UL[0];
+		u32 addr = _Imm_ + cpuRegs.GPR[_Rs_].UL[0];
 		memWrite128(addr, VU0.VF[_Ft_].UQ);
 	}
 }}}
@@ -109,8 +109,8 @@ void QMFC2() {
 		_vu0WaitMicro();
 	}
 	if (_Rt_ == 0) return;
-	cpuRegs.GPR.r[_Rt_].UD[0] = VU0.VF[_Fs_].UD[0];
-	cpuRegs.GPR.r[_Rt_].UD[1] = VU0.VF[_Fs_].UD[1];
+	cpuRegs.GPR[_Rt_].UD[0] = VU0.VF[_Fs_].UD[0];
+	cpuRegs.GPR[_Rt_].UD[1] = VU0.VF[_Fs_].UD[1];
 }
 
 void QMTC2() {
@@ -118,8 +118,8 @@ void QMTC2() {
 		_vu0WaitMicro();
 	}
 	if (_Fs_ == 0) return;
-	VU0.VF[_Fs_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0];
-	VU0.VF[_Fs_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
+	VU0.VF[_Fs_].UD[0] = cpuRegs.GPR[_Rt_].UD[0];
+	VU0.VF[_Fs_].UD[1] = cpuRegs.GPR[_Rt_].UD[1];
 }
 
 void CFC2() {
@@ -127,11 +127,11 @@ void CFC2() {
 		_vu0WaitMicro();
 	}
 	if (_Rt_ == 0) return;
-	cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
+	cpuRegs.GPR[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
 	if(VU0.VI[_Fs_].UL & 0x80000000)
-		cpuRegs.GPR.r[_Rt_].UL[1] = 0xffffffff;
+		cpuRegs.GPR[_Rt_].UL[1] = 0xffffffff;
 	else
-		cpuRegs.GPR.r[_Rt_].UL[1] = 0;
+		cpuRegs.GPR[_Rt_].UL[1] = 0;
 }
 
 void CTC2() {
@@ -146,30 +146,30 @@ void CTC2() {
 		case REG_VPU_STAT: // read-only
 			break;
 		case REG_FBRST:
-			VU0.VI[REG_FBRST].UL = cpuRegs.GPR.r[_Rt_].UL[0] & 0x0C0C;
-			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x1) { // VU0 Force Break
+			VU0.VI[REG_FBRST].UL = cpuRegs.GPR[_Rt_].UL[0] & 0x0C0C;
+			if (cpuRegs.GPR[_Rt_].UL[0] & 0x1) { // VU0 Force Break
 				Console.Error("fixme: VU0 Force Break");
 			}
-			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x2) { // VU0 Reset
+			if (cpuRegs.GPR[_Rt_].UL[0] & 0x2) { // VU0 Reset
 				//Console.WriteLn("fixme: VU0 Reset");
 				vu0ResetRegs();
 			}
-			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x100) { // VU1 Force Break
+			if (cpuRegs.GPR[_Rt_].UL[0] & 0x100) { // VU1 Force Break
 				Console.Error("fixme: VU1 Force Break");
 			}
-			if (cpuRegs.GPR.r[_Rt_].UL[0] & 0x200) { // VU1 Reset
+			if (cpuRegs.GPR[_Rt_].UL[0] & 0x200) { // VU1 Reset
 //				Console.WriteLn("fixme: VU1 Reset");
 				vu1ResetRegs();
 			}
 			break;
 		case REG_CMSAR1: // REG_CMSAR1
 			if (!(VU0.VI[REG_VPU_STAT].UL & 0x100) ) {
-				vu1ExecMicro(cpuRegs.GPR.r[_Rt_].US[0]);	// Execute VU1 Micro SubRoutine
+				vu1ExecMicro(cpuRegs.GPR[_Rt_].US[0]);	// Execute VU1 Micro SubRoutine
 				vif1VUFinish();
 			}
 			break;
 		default:
-			VU0.VI[_Fs_].UL = cpuRegs.GPR.r[_Rt_].UL[0];
+			VU0.VI[_Fs_].UL = cpuRegs.GPR[_Rt_].UL[0];
 			break;
 	}
 }

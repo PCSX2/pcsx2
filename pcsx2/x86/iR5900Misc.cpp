@@ -104,8 +104,8 @@ void recMFSA()
 	else {
 		MOV32MtoR(EAX, (uptr)&cpuRegs.sa);
 		_deleteEEreg(_Rd_, 0);
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
-		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
+		MOV32RtoM((uptr)&cpuRegs.GPR[_Rd_].UL[0], EAX);
+		MOV32ItoM((uptr)&cpuRegs.GPR[_Rd_].UL[1], 0);
 	}
 }
 
@@ -126,7 +126,7 @@ void recMTSA()
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[_Rs_].UL[0]);
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR[_Rs_].UL[0]);
 			MOV32RtoM((uptr)&cpuRegs.sa, EAX);
 		}
 		AND32ItoM((uptr)&cpuRegs.sa, 0xf);

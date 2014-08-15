@@ -157,14 +157,14 @@ u32* _eeGetConstReg(int reg)
 	pxAssert( GPR_IS_CONST1( reg ) );
 
 	if( g_cpuFlushedConstReg & (1<<reg) )
-		return &cpuRegs.GPR.r[ reg ].UL[0];
+		return &cpuRegs.GPR[ reg ].UL[0];
 
 	// if written in the future, don't flush
 	if( _recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, reg) )
 		return recGetImm64(g_cpuConstRegs[reg].UL[1], g_cpuConstRegs[reg].UL[0]);
 
 	_flushConstReg(reg);
-	return &cpuRegs.GPR.r[ reg ].UL[0];
+	return &cpuRegs.GPR[ reg ].UL[0];
 }
 
 void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
@@ -184,7 +184,7 @@ void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(to, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(to, (uptr)&cpuRegs.GPR[ fromgpr ].UL[ 0 ] );
 		}
 	}
 }
@@ -204,7 +204,7 @@ void _eeMoveGPRtoM(u32 to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR[ fromgpr ].UL[ 0 ] );
 			MOV32RtoM(to, EAX );
 		}
 	}
@@ -225,7 +225,7 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR[ fromgpr ].UL[ 0 ] );
 			MOV32RtoRm( to, EAX );
 		}
 	}
@@ -235,8 +235,8 @@ void eeSignExtendTo(int gpr, bool onlyupper)
 {
 	xCDQ();
 	if (!onlyupper)
-		xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[1]], edx);
+		xMOV(ptr32[&cpuRegs.GPR[gpr].UL[0]], eax);
+	xMOV(ptr32[&cpuRegs.GPR[gpr].UL[1]], edx);
 }
 
 int _flushXMMunused()
@@ -285,8 +285,8 @@ int _flushUnusedConstReg()
 			!_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, i) ) {
 
 			// check if will be written in the future
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[0], g_cpuConstRegs[i].UL[0]);
-			MOV32ItoM((uptr)&cpuRegs.GPR.r[i].UL[1], g_cpuConstRegs[i].UL[1]);
+			MOV32ItoM((uptr)&cpuRegs.GPR[i].UL[0], g_cpuConstRegs[i].UL[0]);
+			MOV32ItoM((uptr)&cpuRegs.GPR[i].UL[1], g_cpuConstRegs[i].UL[1]);
 			g_cpuFlushedConstReg |= 1<<i;
 			return 1;
 		}
@@ -958,7 +958,7 @@ void SetBranchReg( u32 reg )
 //				SetMMXstate();
 //			}
 //			else {
-//				MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ reg ].UL[ 0 ] );
+//				MOV32MtoR(EAX, (int)&cpuRegs.GPR[ reg ].UL[ 0 ] );
 //				MOV32RtoM((u32)&cpuRegs.pc, EAX);
 //			}
 //		}
@@ -1054,7 +1054,7 @@ void iFlushCall(int flushtype)
 
 	if ((flushtype == FLUSH_CAUSE) && !g_maySignalException) {
 		if (g_recompilingDelaySlot)
-			xOR(ptr32[&cpuRegs.CP0.n.Cause], 1 << 31); // BD
+			xOR(ptr32[&cpuRegs.Cause], 1 << 31); // BD
 		g_maySignalException = true;
 	}
 
@@ -1594,11 +1594,11 @@ void recompileNextInstruction(int delayslot)
 	// Check for NOP
 	if (cpuRegs.code == 0x00000000) {
 		// Note: Tests on a ps2 suggested more like 5 cycles for a NOP. But there's many factors in this..
-		s_nBlockCycles +=9 * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
+		s_nBlockCycles +=9 * (2 - ((cpuRegs.Config >> 18) & 0x1));
 	}
 	else {
 		//If the COP0 DIE bit is disabled, cycles should be doubled.
-		s_nBlockCycles += opcode.cycles * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
+		s_nBlockCycles += opcode.cycles * (2 - ((cpuRegs.Config >> 18) & 0x1));
 		opcode.recompile();
 	}
 
@@ -1631,7 +1631,7 @@ void recompileNextInstruction(int delayslot)
 		g_cpuFlushedPC = false;
 		g_cpuFlushedCode = false;
 		if (g_maySignalException)
-			xAND(ptr32[&cpuRegs.CP0.n.Cause], ~(1 << 31)); // BD
+			xAND(ptr32[&cpuRegs.Cause], ~(1 << 31)); // BD
 		g_recompilingDelaySlot = false;
 	}
 
@@ -1774,9 +1774,9 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 		u32 p2	 = 0x8c020000 | (code & 0x1f0000) << 5;
 		if ((code & 0xffe0ffff)   != p1) return 0;
 		if (memRead32(sPC+8) != p2) return 0;
-		xMOV(ptr32[&cpuRegs.GPR.n.v0.UL[0]], 1);
-		xMOV(ptr32[&cpuRegs.GPR.n.v0.UL[1]], 0);
-		xMOV(eax, ptr32[&cpuRegs.GPR.n.ra.UL[0]]);
+		xMOV(ptr32[&cpuRegs.v0.UL[0]], 1);
+		xMOV(ptr32[&cpuRegs.v0.UL[1]], 0);
+		xMOV(eax, ptr32[&cpuRegs.ra.UL[0]]);
 		xMOV(ptr32[&cpuRegs.pc], eax);
 		iBranchTest();
 		branch = 1;

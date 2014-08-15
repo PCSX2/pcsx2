@@ -485,7 +485,7 @@ int _psxFlushUnusedConstReg()
 			!_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-psxpc)/4, XMMTYPE_GPRREG, i) ) {
 
 			// check if will be written in the future
-			MOV32ItoM((uptr)&psxRegs.GPR.r[i], g_psxConstRegs[i]);
+			MOV32ItoM((uptr)&psxRegs.GPR[i], g_psxConstRegs[i]);
 			g_psxFlushedConstReg |= 1<<i;
 			return 1;
 		}
@@ -502,7 +502,7 @@ void _psxFlushCachedRegs()
 void _psxFlushConstReg(int reg)
 {
 	if( PSX_IS_CONST1( reg ) && !(g_psxFlushedConstReg&(1<<reg)) ) {
-		MOV32ItoM((uptr)&psxRegs.GPR.r[reg], g_psxConstRegs[reg]);
+		MOV32ItoM((uptr)&psxRegs.GPR[reg], g_psxConstRegs[reg]);
 		g_psxFlushedConstReg |= (1<<reg);
 	}
 }
@@ -518,7 +518,7 @@ void _psxFlushConstRegs()
 		if( g_psxHasConstReg & (1<<i) ) {
 
 			if( !(g_psxFlushedConstReg&(1<<i)) ) {
-				MOV32ItoM((uptr)&psxRegs.GPR.r[i], g_psxConstRegs[i]);
+				MOV32ItoM((uptr)&psxRegs.GPR[i], g_psxConstRegs[i]);
 				g_psxFlushedConstReg |= 1<<i;
 			}
 
@@ -545,7 +545,7 @@ void _psxMoveGPRtoR(x86IntRegType to, int fromgpr)
 		MOV32ItoR( to, g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(to, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+		MOV32MtoR(to, (uptr)&psxRegs.GPR[ fromgpr ] );
 	}
 }
 
@@ -555,7 +555,7 @@ void _psxMoveGPRtoM(u32 to, int fromgpr)
 		MOV32ItoM( to, g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+		MOV32MtoR(EAX, (uptr)&psxRegs.GPR[ fromgpr ] );
 		MOV32RtoM(to, EAX );
 	}
 }
@@ -566,7 +566,7 @@ void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 		MOV32ItoRm( to, g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+		MOV32MtoR(EAX, (uptr)&psxRegs.GPR[ fromgpr ] );
 		MOV32RtoRm(to, EAX );
 	}
 }

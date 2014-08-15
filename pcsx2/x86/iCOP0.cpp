@@ -114,14 +114,14 @@ void recDI()
 
 	//CALLFunc( (uptr)Interp::DI );
 
-	xMOV(eax, ptr[&cpuRegs.CP0.n.Status]);
+	xMOV(eax, ptr[&cpuRegs.Status]);
 	xTEST(eax, 0x20006); // EXL | ERL | EDI
 	xForwardJNZ8 iHaveNoIdea;
 	xTEST(eax, 0x18); // KSU
 	xForwardJNZ8 inUserMode;
 	iHaveNoIdea.SetTarget();
 	xAND(eax, ~(u32)0x10000); // EIE
-	xMOV(ptr[&cpuRegs.CP0.n.Status], eax);
+	xMOV(ptr[&cpuRegs.Status], eax);
 	inUserMode.SetTarget();
 }
 
@@ -144,17 +144,17 @@ void recMFC0()
 		u8* skipInc = JNZ8( 0 );
 		INC32R(EAX);
 		x86SetJ8( skipInc );
-        ADD32RtoM((uptr)&cpuRegs.CP0.n.Count, EAX);
+        ADD32RtoM((uptr)&cpuRegs.Count, EAX);
 		MOV32RtoM((uptr)&s_iLastCOP0Cycle, ECX);
-        MOV32MtoR( EAX, (uptr)&cpuRegs.CP0.r[ _Rd_ ] );
+        MOV32MtoR( EAX, (uptr)&cpuRegs.CP0[ _Rd_ ] );
 
 		if( !_Rt_ ) return;
 
 		_deleteEEreg(_Rt_, 0);
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[0],EAX);
+		MOV32RtoM((uptr)&cpuRegs.GPR[_Rt_].UL[0],EAX);
 
 		CDQ();
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[1], EDX);
+		MOV32RtoM((uptr)&cpuRegs.GPR[_Rt_].UL[1], EDX);
 		return;
 	}
 
@@ -180,10 +180,10 @@ void recMFC0()
 			break;
 		}
 		_deleteEEreg(_Rt_, 0);
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[0],EAX);
+		MOV32RtoM((uptr)&cpuRegs.GPR[_Rt_].UL[0],EAX);
 
 		CDQ();
-		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[1], EDX);
+		MOV32RtoM((uptr)&cpuRegs.GPR[_Rt_].UL[1], EDX);
 
 		return;
 	}
@@ -193,10 +193,10 @@ void recMFC0()
 	}
 	_eeOnWriteReg(_Rt_, 1);
 	_deleteEEreg(_Rt_, 0);
-	MOV32MtoR(EAX, (uptr)&cpuRegs.CP0.r[ _Rd_ ]);
+	MOV32MtoR(EAX, (uptr)&cpuRegs.CP0[ _Rd_ ]);
 	CDQ();
-	MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[0], EAX);
-	MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[1], EDX);
+	MOV32RtoM((uptr)&cpuRegs.GPR[_Rt_].UL[0], EAX);
+	MOV32RtoM((uptr)&cpuRegs.GPR[_Rt_].UL[1], EDX);
 }
 
 void recMTC0()
@@ -214,7 +214,7 @@ void recMTC0()
 			case 9:
 				MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
 				MOV32RtoM((uptr)&s_iLastCOP0Cycle, ECX);
-				MOV32ItoM((uptr)&cpuRegs.CP0.r[9], g_cpuConstRegs[_Rt_].UL[0]);
+				MOV32ItoM((uptr)&cpuRegs.CP0[9], g_cpuConstRegs[_Rt_].UL[0]);
 			break;
 
 			case 25:
@@ -246,7 +246,7 @@ void recMTC0()
 			break;
 
 			default:
-				MOV32ItoM((uptr)&cpuRegs.CP0.r[_Rd_], g_cpuConstRegs[_Rt_].UL[0]);
+				MOV32ItoM((uptr)&cpuRegs.CP0[_Rd_], g_cpuConstRegs[_Rt_].UL[0]);
 			break;
 		}
 	}
@@ -262,7 +262,7 @@ void recMTC0()
 
 			case 9:
 				MOV32MtoR(ECX, (uptr)&cpuRegs.cycle);
-				_eeMoveGPRtoM((uptr)&cpuRegs.CP0.r[9], _Rt_);
+				_eeMoveGPRtoM((uptr)&cpuRegs.CP0[9], _Rt_);
 				MOV32RtoM((uptr)&s_iLastCOP0Cycle, ECX);
 			break;
 
@@ -295,7 +295,7 @@ void recMTC0()
 			break;
 
 			default:
-				_eeMoveGPRtoM((uptr)&cpuRegs.CP0.r[_Rd_], _Rt_);
+				_eeMoveGPRtoM((uptr)&cpuRegs.CP0[_Rd_], _Rt_);
 			break;
 		}
 	}

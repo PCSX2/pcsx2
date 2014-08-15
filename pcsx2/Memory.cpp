@@ -316,7 +316,7 @@ static mem32_t __fastcall _ext_memRead32(u32 mem)
 		default: break;
 	}
 
-	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)", mem, cpuRegs.CP0.n.Status.val);
+	MEM_LOG("Unknown Memory read32  from address %8.8x (Status=%8.8x)", mem, cpuRegs.Status.val);
 	cpuTlbMissR(mem, cpuRegs.branch);
 	return 0;
 }

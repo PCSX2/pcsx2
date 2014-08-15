@@ -60,9 +60,9 @@ __inline int CheckCache(u32 addr)
 {
 	u32 mask;
 
-	if(((cpuRegs.CP0.n.Config >> 16) & 0x1) == 0) 
+	if(((cpuRegs.Config >> 16) & 0x1) == 0) 
 	{
-		//DevCon.Warning("Data Cache Disabled! %x", cpuRegs.CP0.n.Config);
+		//DevCon.Warning("Data Cache Disabled! %x", cpuRegs.Config);
 		return false;//
 	}
 

@@ -39,7 +39,7 @@ int getFreeCache(u32 mem, int mode, int * way ) {
 	u32 hand=(u8)vmv;
 	u32 paddr=ppf-hand+0x80000000;
 
-	if((cpuRegs.CP0.n.Config & 0x10000)  == 0) CACHE_LOG("Cache off!");
+	if((cpuRegs.Config & 0x10000)  == 0) CACHE_LOG("Cache off!");
 	
 	if ((pCache[i].tag[0] & ~0xFFF) == (paddr & ~0xFFF) && (pCache[i].tag[0] & VALID_FLAG))
 	{
@@ -248,8 +248,8 @@ extern int Dcache;
 void CACHE() {
     u32 addr;
 
-   addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
-  // CACHE_LOG("cpuRegs.GPR.r[_Rs_].UL[0] = %x, IMM = %x RT = %x", cpuRegs.GPR.r[_Rs_].UL[0], _Imm_, _Rt_);
+   addr = cpuRegs.GPR[_Rs_].UL[0] + _Imm_;
+  // CACHE_LOG("cpuRegs.GPR[_Rs_].UL[0] = %x, IMM = %x RT = %x", cpuRegs.GPR[_Rs_].UL[0], _Imm_, _Rt_);
 	switch (_Rt_) 
 	{
 		case 0x1a: //DHIN (Data Cache Hit Invalidate)
@@ -412,9 +412,9 @@ void CACHE() {
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
 
-			cpuRegs.CP0.n.TagLo = pCache[index].data[way][(addr>>4) & 0x3].b8._u32[(addr&0xf)>>2];
+			cpuRegs.TagLo = pCache[index].data[way][(addr>>4) & 0x3].b8._u32[(addr&0xf)>>2];
 
-			CACHE_LOG("CACHE DXLDT addr %x, index %d, way %d, DATA %x OP %x",addr,index,way,cpuRegs.CP0.r[28], cpuRegs.code);
+			CACHE_LOG("CACHE DXLDT addr %x, index %d, way %d, DATA %x OP %x",addr,index,way,cpuRegs.CP0[28], cpuRegs.code);
 
 			break;
 		}
@@ -423,9 +423,9 @@ void CACHE() {
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
 			
-			cpuRegs.CP0.n.TagLo = pCache[index].tag[way];
+			cpuRegs.TagLo = pCache[index].tag[way];
 
-			CACHE_LOG("CACHE DXLTG addr %x, index %d, way %d, DATA %x OP %x ",addr,index,way,cpuRegs.CP0.r[28], cpuRegs.code);
+			CACHE_LOG("CACHE DXLTG addr %x, index %d, way %d, DATA %x OP %x ",addr,index,way,cpuRegs.CP0[28], cpuRegs.code);
 
 			break;
 		}
@@ -434,9 +434,9 @@ void CACHE() {
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
 
-			pCache[index].data[way][(addr>>4) & 0x3].b8._u32[(addr&0xf)>>2] = cpuRegs.CP0.n.TagLo;
+			pCache[index].data[way][(addr>>4) & 0x3].b8._u32[(addr&0xf)>>2] = cpuRegs.TagLo;
 
-			CACHE_LOG("CACHE DXSDT addr %x, index %d, way %d, DATA %x OP %x",addr,index,way,cpuRegs.CP0.r[28], cpuRegs.code);
+			CACHE_LOG("CACHE DXSDT addr %x, index %d, way %d, DATA %x OP %x",addr,index,way,cpuRegs.CP0[28], cpuRegs.code);
 
 			break;
 		}
@@ -444,9 +444,9 @@ void CACHE() {
 		{
 			int index = (addr >> 6) & 0x3F;
 			int way = addr & 0x1;
-			pCache[index].tag[way] = cpuRegs.CP0.n.TagLo; 
+			pCache[index].tag[way] = cpuRegs.TagLo; 
 
-			CACHE_LOG("CACHE DXSTG addr %x, index %d, way %d, DATA %x OP %x",addr,index,way,cpuRegs.CP0.r[28] & 0x6F, cpuRegs.code);
+			CACHE_LOG("CACHE DXSTG addr %x, index %d, way %d, DATA %x OP %x",addr,index,way,cpuRegs.CP0[28] & 0x6F, cpuRegs.code);
 
 			break;
 		}
