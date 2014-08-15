@@ -151,7 +151,6 @@ set(pcsx2Sources
 	Sio.cpp
 	SourceLog.cpp
 	SPR.cpp
-	Stats.cpp
 	System.cpp
 	Vif0_Dma.cpp
 	Vif1_Dma.cpp
@@ -215,7 +214,6 @@ set(pcsx2Headers
 	Sio.h
 	sio_internal.h
 	SPR.h
-	Stats.h
 	SysForwardDefs.h
 	System.h
 	Vif_Dma.h

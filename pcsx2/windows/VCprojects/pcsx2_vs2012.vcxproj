@@ -454,7 +454,6 @@
     <ClCompile Include="..\SamplProf.cpp" />
     <ClCompile Include="..\..\SaveState.cpp" />
     <ClCompile Include="..\..\SourceLog.cpp" />
-    <ClCompile Include="..\..\Stats.cpp" />
     <ClCompile Include="..\..\System\SysCoreThread.cpp" />
     <ClCompile Include="..\..\System.cpp" />
     <ClCompile Include="..\..\System\SysThreadBase.cpp" />
@@ -732,7 +731,6 @@
     <ClInclude Include="..\..\Plugins.h" />
     <ClInclude Include="..\..\SamplProf.h" />
     <ClInclude Include="..\..\SaveState.h" />
-    <ClInclude Include="..\..\Stats.h" />
     <ClInclude Include="..\..\System.h" />
     <ClInclude Include="..\..\System\SysThreads.h" />
     <ClInclude Include="..\..\Counters.h" />
