@@ -359,6 +359,7 @@ static __fi void _reloadElfInfo(wxString elfpath)
 
 	elfptr = loadElf(elfpath);
 
+	elfptr->loadHeaders();
 	ElfCRC = elfptr->getCRC();
 	ElfEntry = elfptr->header.e_entry;
 	ElfTextRange = elfptr->getTextRange();
