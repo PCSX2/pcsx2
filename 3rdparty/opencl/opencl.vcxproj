@@ -55,23 +55,27 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
+    <Import Project="..\..\common\vsprops\CodeGen_Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
+    <Import Project="..\..\common\vsprops\CodeGen_Debug.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
+    <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\DefaultProjectRootDir.props" />
-    <Import Project="..\3rdparty.props" />
+    <Import Project="..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\3rdparty_common.props" />
+    <Import Project="..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />

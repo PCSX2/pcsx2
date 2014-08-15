@@ -42,19 +42,20 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\3rdparty.props" />
+    <Import Project="..\..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\3rdparty.props" />
+    <Import Project="..\..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\..\..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\3rdparty.props" />
-    <Import Project="..\..\..\..\..\common\vsprops\IncrementalLinking.props" />
+    <Import Project="..\..\..\..\..\common\vsprops\DefaultProjectRootDir.props" />
+    <Import Project="..\..\..\..\..\common\vsprops\3rdparty_common.props" />
     <Import Project="..\..\..\..\..\common\vsprops\CodeGen_Devel.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -62,18 +63,15 @@
     <LinkIncremental>false</LinkIncremental>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
-    <OutDir>$(SolutionDir)\deps\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
-    <OutDir>$(SolutionDir)\deps\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <CustomBuildBeforeTargets />
-    <OutDir>$(SolutionDir)\deps\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -86,7 +84,7 @@
       <PrecompiledHeaderFile>pngpriv.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsC</CompileAs>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <Optimization>Disabled</Optimization>
     </ClCompile>
@@ -109,7 +107,7 @@
       <PrecompiledHeaderFile>pngpriv.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsC</CompileAs>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <Optimization>Full</Optimization>
     </ClCompile>
@@ -134,7 +132,7 @@
       <PrecompiledHeaderFile>pngpriv.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsC</CompileAs>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <Optimization>Full</Optimization>
     </ClCompile>
@@ -168,6 +166,11 @@
     <ClCompile Include="..\..\..\pngwrite.c" />
     <ClCompile Include="..\..\..\pngwtran.c" />
     <ClCompile Include="..\..\..\pngwutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\zlib\zlib.vcxproj">
+      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,14 +2,19 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
-    <TargetName>$(ProjectName)-dbg</TargetName>
+    <TargetName>$(TargetName)-dbg</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <MinimalRebuild>true</MinimalRebuild>
+      <StringPooling>true</StringPooling>
     </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
   </ItemDefinitionGroup>
 </Project>
