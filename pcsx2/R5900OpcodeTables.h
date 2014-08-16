@@ -79,6 +79,9 @@ namespace R5900
 		// Number of cycles this instruction normally uses.
 		u8 cycles;
 
+		// Information about the opcode
+		u32 flags;
+
 		const OPCODE& (*getsubclass)(u32 op);
 
 		// Process the instruction using the interpreter.
