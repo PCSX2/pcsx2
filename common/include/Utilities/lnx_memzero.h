@@ -33,12 +33,6 @@ static __fi void memset32( T& obj )
 		*dest = data;
 }
 
-template< uint size >
-static __fi void memzero_ptr( void* dest )
-{
-	memset( dest, 0, size );
-}
-
 template< typename T >
 static __fi void memzero( T& obj )
 {
