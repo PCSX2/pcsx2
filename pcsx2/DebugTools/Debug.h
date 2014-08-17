@@ -30,6 +30,7 @@ namespace R5900
 {
 	void disR5900Fasm( std::string& output, u32 code, u32 pc);
 
+#ifndef PCSX2_DEBUG_INTERNAL
 	extern const char * const GPR_REG[32];
 	extern const char * const COP0_REG[32];
 	extern const char * const COP1_REG_FP[32];
@@ -37,6 +38,7 @@ namespace R5900
 	extern const char * const COP2_REG_FP[32];
 	extern const char * const COP2_REG_CTL[32];
 	extern const char * const COP2_VFnames[4];
+#endif
 }
 
 namespace R3000A
