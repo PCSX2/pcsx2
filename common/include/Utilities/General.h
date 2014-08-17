@@ -235,7 +235,7 @@ namespace HostSys
 
 	extern void MemProtect( void* baseaddr, size_t size, const PageProtectionMode& mode );
 
-	extern void Munmap( void* base, size_t size );
+	extern void Munmap( void* base, size_t size ) { Munmap( (uptr)base, size); }
 
 	template< uint size >
 	void MemProtectStatic( u8 (&arr)[size], const PageProtectionMode& mode )

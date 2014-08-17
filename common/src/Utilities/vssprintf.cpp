@@ -815,22 +815,3 @@ void ssprintf(std::string& str, const char* fmt, ...)
 	vssprintf(str, fmt, args);
 	va_end(args);
 }
-
-// See ssprintf for usage details and differences from sprintf formatting.
-std::string fmt_string( const char* fmt, ... )
-{
-	std::string retval;
-	va_list args;
-	va_start( args, fmt );
-	vssprintf( retval, fmt, args );
-	va_end( args );
-
-	return retval;
-}
-
-std::string vfmt_string( const char* fmt, va_list args )
-{
-	std::string retval;
-	vssprintf( retval, fmt, args );
-	return retval;
-}

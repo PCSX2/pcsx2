@@ -250,6 +250,3 @@ extern void ssprintf(std::string& dest, const char* fmt, ...);
 extern void ssappendf(std::string& dest, const char* format, ...);
 extern void vssprintf(std::string& dest, const char* format, va_list args);
 extern void vssappendf(std::string& dest, const char* format, va_list args);
-
-extern std::string fmt_string( const char* fmt, ... );
-extern std::string vfmt_string( const char* fmt, va_list args );

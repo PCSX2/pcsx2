@@ -48,16 +48,31 @@
 #define safe_aligned_free( ptr ) \
 	((void) ( _aligned_free( ptr ), (ptr) = NULL ))
 
+#if !defined(_MSC_VER)
+// declare linux equivalents (alignment must be power of 2 (1,2,4...2^15)
+static __forceinline void* _aligned_malloc(size_t size, size_t alignment) {
+	void *result=0;
+	posix_memalign(&result, alignment, size);
+	return result;
+}
 
-extern void* __fastcall pcsx2_aligned_malloc(size_t size, size_t align);
-extern void* __fastcall pcsx2_aligned_realloc(void* handle, size_t size, size_t align);
-extern void pcsx2_aligned_free(void* pmem);
+void* __fastcall _aligned_realloc(void* handle, size_t size, size_t align)
+{
+	pxAssert( align < 0x10000 );
 
-// aligned_malloc: Implement/declare linux equivalents here!
-#if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
-#	define _aligned_malloc	pcsx2_aligned_malloc
-#	define _aligned_free	pcsx2_aligned_free
-# 	define _aligned_realloc	pcsx2_aligned_realloc
+	void* newbuf = _aligned_malloc( size, align );
+
+	if( handle != NULL )
+	{
+		memcpy_fast( newbuf, handle, size );
+		free( handle );
+	}
+	return newbuf;
+}
+
+static __forceinline void _aligned_free(void* p) {
+	free(p);
+}
 #endif
 
 // --------------------------------------------------------------------------------------

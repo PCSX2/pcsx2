@@ -103,28 +103,3 @@ void vmfree(void* ptr, size_t size)
 
 #endif
 
-#if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
-
-// declare linux equivalents (alignment must be power of 2 (1,2,4...2^15)
-
-#if !defined(__USE_ISOC11) || defined(ASAN_WORKAROUND)
-
-void* _aligned_malloc(size_t size, size_t alignment)
-{
-	ASSERT(alignment <= 0x8000);
-	size_t r = (size_t)malloc(size + --alignment + 2);
-	size_t o = (r + 2 + alignment) & ~(size_t)alignment;
-	if(!r) return NULL;
-	((uint16*)o)[-1] = (uint16)(o-r);
-	return (void*)o;
-}
-
-void _aligned_free(void* p)
-{
-	if(!p) return;
-	free((void*)((size_t)p-((uint16*)p)[-1]));
-}
-
-#endif
-
-#endif

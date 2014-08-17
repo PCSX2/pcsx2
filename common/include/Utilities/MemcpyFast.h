@@ -35,9 +35,6 @@
 
 #endif
 
-// Only used in the Windows version of memzero.h. But it's in Misc.cpp for some reason.
-void _memset16_unaligned( void* dest, u16 data, size_t size );
-
 // MemcpyVibes.cpp functions
 extern void memcpy_vibes(void * dest, const void * src, int size);
 extern void gen_memcpy_vibes();

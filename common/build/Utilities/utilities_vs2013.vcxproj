@@ -99,7 +99,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp" />
     <ClCompile Include="..\..\src\Utilities\CheckedStaticBox.cpp" />
     <ClCompile Include="..\..\src\Utilities\Console.cpp" />
     <ClCompile Include="..\..\src\Utilities\Exceptions.cpp" />
