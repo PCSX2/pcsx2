@@ -17,6 +17,9 @@
 #include "MemoryTypes.h"
 #include "ExpressionParser.h"
 
+enum { EECAT_GPR, EECAT_CP0, EECAT_FPR, EECAT_FCR, EECAT_VU0F, EECAT_VU0I, EECAT_COUNT };
+enum { IOPCAT_GPR, IOPCAT_COUNT };
+
 class DebugInterface
 {
 public:
