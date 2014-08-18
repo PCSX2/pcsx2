@@ -1052,14 +1052,14 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
+				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[4]);
 				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 				VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 			}
 		}
 		else {
 			if( EEREC_D == EEREC_TEMP ) {
-				SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&const_clip[4]);
+				SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&g_clip[4]);
 				SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
 			}
 			else {
@@ -1118,14 +1118,14 @@ void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
+				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[4]);
 				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 				VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 			}
 		}
 		else {
 			if( EEREC_D == EEREC_TEMP ) {
-				SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&const_clip[4]);
+				SSE_XORPS_M128_to_XMM(EEREC_D, (uptr)&g_clip[4]);
 				SSE_ADDPS_XMM_to_XMM(EEREC_D, EEREC_S);
 			}
 			else {
@@ -1241,7 +1241,7 @@ void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
+				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[4]);
 				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 				VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 			}
@@ -1288,7 +1288,7 @@ void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
 			}
 			else {
 				// negate
-				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
+				SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[4]);
 				SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
 				VU_MERGE_REGS(EEREC_ACC, EEREC_TEMP);
 			}
@@ -1942,7 +1942,7 @@ void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 			_freeXMMreg(t1reg);
 		}
 		else {
-			SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
+			SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[4]);
 			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
@@ -1953,21 +1953,21 @@ void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 			SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
 			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			SSE_XORPS_M128_to_XMM(regd, (uptr)&g_clip[4]);
 		}
 		else if( regd == EEREC_T ) {
 			assert( regd != EEREC_ACC );
 			SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
 			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			SSE_XORPS_M128_to_XMM(regd, (uptr)&g_clip[4]);
 		}
 		else if( regd == EEREC_TEMP ) {
 			SSE_MOVAPS_XMM_to_XMM(regd, EEREC_S);
 			SSE_MULPS_XMM_to_XMM(regd, EEREC_T);
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
 			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			SSE_XORPS_M128_to_XMM(regd, (uptr)&g_clip[4]);
 		}
 		else {
 			SSE_MOVAPS_XMM_to_XMM(EEREC_TEMP, EEREC_S);
@@ -1999,7 +1999,7 @@ void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 			_freeXMMreg(t1reg);
 		}
 		else {
-			SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
+			SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[4]);
 			SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
 			VU_MERGE_REGS(regd, EEREC_TEMP);
 		}
@@ -2014,13 +2014,13 @@ void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 			SSE_MULPS_XMM_to_XMM(regd, EEREC_TEMP);
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
 			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			SSE_XORPS_M128_to_XMM(regd, (uptr)&g_clip[4]);
 		}
 		else if( regd == EEREC_TEMP ) {
 			SSE_MULPS_XMM_to_XMM(regd, EEREC_S);
 			if (CHECK_VU_EXTRA_OVERFLOW) { vuFloat_useEAX( info, regd, _X_Y_Z_W ); }
 			SSE_SUBPS_XMM_to_XMM(regd, EEREC_ACC);
-			SSE_XORPS_M128_to_XMM(regd, (uptr)&const_clip[4]);
+			SSE_XORPS_M128_to_XMM(regd, (uptr)&g_clip[4]);
 		}
 		else {
 			SSE_MOVAPS_XMM_to_XMM(regd, EEREC_ACC);
@@ -2382,7 +2382,7 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
 			}
 			else {
-				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)s_fones);
+				SSE_MOVSS_M32_to_XMM(EEREC_TEMP, (uptr)g_fones);
 				SSE_MOVSS_XMM_to_XMM(EEREC_D, EEREC_TEMP);
 			}
 		}
@@ -2391,13 +2391,13 @@ void recVUMI_MAX_xyzw(VURegs *VU, int xyzw, int info)
 				if( _X_Y_Z_W & 1 ) SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&VU->VF[0].UL[0]); // w included, so insert the whole reg
 				else SSE_XORPS_XMM_to_XMM(EEREC_TEMP, EEREC_TEMP); // w not included, can zero out
 			}
-			else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)s_fones);
+			else SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)g_fones);
 			VU_MERGE_REGS(EEREC_D, EEREC_TEMP);
 		}
 		else {
 			//If VF0.w isnt chosen as the constant, then its going to be MAX( 0, VF0 ), so the result is VF0
 			if( xyzw < 3 ) { SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)&VU->VF[0].UL[0]); }
-			else SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)s_fones);
+			else SSE_MOVAPS_M128_to_XMM(EEREC_D, (uptr)g_fones);
 		}
 		return;
 	}
@@ -2676,7 +2676,7 @@ void recVUMI_OPMSUB( VURegs *VU, int info )
 	SSE_MULPS_XMM_to_XMM(EEREC_TEMP, EEREC_T);
 
 	// negate and add
-	SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[4]);
+	SSE_XORPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[4]);
 	SSE_ADDPS_XMM_to_XMM(EEREC_TEMP, EEREC_ACC);
 	VU_MERGE_REGS_CUSTOM(EEREC_D, EEREC_TEMP, 14);
 
@@ -2711,12 +2711,12 @@ void recVUMI_FTOI_Saturate(int rec_s, int rec_t, int rec_tmp1, int rec_tmp2)
 	//Duplicate the xor'd sign bit to the whole value
 	//FFFF FFFF for positive,  0 for negative
 	SSE_MOVAPS_XMM_to_XMM(rec_tmp1, rec_s);
-	SSE2_PXOR_M128_to_XMM(rec_tmp1, (uptr)&const_clip[4]);
+	SSE2_PXOR_M128_to_XMM(rec_tmp1, (uptr)&g_clip[4]);
 	SSE2_PSRAD_I8_to_XMM(rec_tmp1, 31);
 
 	//Create mask: 0 where !=8000 0000
 	SSE_MOVAPS_XMM_to_XMM(rec_tmp2, rec_t);
-	SSE2_PCMPEQD_M128_to_XMM(rec_tmp2, (uptr)&const_clip[4]);
+	SSE2_PCMPEQD_M128_to_XMM(rec_tmp2, (uptr)&g_clip[4]);
 
 	//AND the mask w/ the edit values
 	SSE_ANDPS_XMM_to_XMM(rec_tmp1, rec_tmp2);
@@ -3027,14 +3027,14 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	_freeXMMreg(t2reg); // but if they've been used since then, then free them. (just doing this incase :p (cottonvibes))
 
 	if( _Ft_ == 0 ) {
-		SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&s_fones[0]); // all 1s
-		SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)&s_fones[4]);
+		SSE_MOVAPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_fones[0]); // all 1s
+		SSE_MOVAPS_M128_to_XMM(t1reg, (uptr)&g_fones[4]);
 	}
 	else {
 		_unpackVF_xyzw(EEREC_TEMP, EEREC_T, 3);
-		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&const_clip[0]);
+		SSE_ANDPS_M128_to_XMM(EEREC_TEMP, (uptr)&g_clip[0]);
 		SSE_MOVAPS_XMM_to_XMM(t1reg, EEREC_TEMP);
-		SSE_ORPS_M128_to_XMM(t1reg, (uptr)&const_clip[4]);
+		SSE_ORPS_M128_to_XMM(t1reg, (uptr)&g_clip[4]);
 	}
 
 	MOV32MtoR(EAX, prevclipaddr);

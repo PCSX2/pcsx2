@@ -879,6 +879,9 @@
     <ClInclude Include="..\..\Dump.h">
       <Filter>System\Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\FP_Consts.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\IopCommon.h">
       <Filter>System\Include</Filter>
     </ClInclude>

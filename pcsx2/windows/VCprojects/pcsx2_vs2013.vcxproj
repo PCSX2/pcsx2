@@ -723,6 +723,7 @@
     <ClInclude Include="..\..\Common.h" />
     <ClInclude Include="..\..\Config.h" />
     <ClInclude Include="..\..\Dump.h" />
+    <ClInclude Include="..\..\FP_Consts.h" />
     <ClInclude Include="..\..\IopCommon.h" />
     <ClInclude Include="..\..\NakedAsm.h" />
     <ClInclude Include="..\..\Plugins.h" />
