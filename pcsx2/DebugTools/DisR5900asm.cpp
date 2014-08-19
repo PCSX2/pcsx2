@@ -27,6 +27,7 @@
 
 unsigned long opcode_addr;
 u32 disasmOpcode;
+bool disSimplify;
 
 namespace R5900
 {
@@ -605,10 +606,11 @@ void (*COP2SPECIAL2PrintTable[128])( std::string& output ) =
 //**************************TABLES CALLS***********************
 
 
-void disR5900Fasm( std::string& output, u32 code, u32 pc )
+void disR5900Fasm( std::string& output, u32 code, u32 pc, bool simplify )
 {
 	opcode_addr = pc;
 	disasmOpcode = code;
+	disSimplify = simplify;
 
 	GetInstruction(code).disasm( output );
 }
@@ -695,6 +697,13 @@ const char* signedImmediate(s16 imm, int len = 0)
 {
 	static char buffer[32];
 
+	if (!disSimplify)
+	{
+		u16 uimm = imm;
+		sprintf(buffer,"0x%*X",len,uimm);
+		return buffer;
+	}
+
 	if (imm >= 0)
 		sprintf(buffer,"0x%*X",len,imm);
 	else
@@ -712,11 +721,11 @@ void BEQ( std::string& output )
 	int rs = DECODE_RS;
 	int rt = DECODE_RT;
 
-	if (rs == rt)
+	if (disSimplify && rs == rt)
 		ssappendf(output, "b\t");
-	else if (rs == 0 && rt != 0)
+	else if (disSimplify && rs == 0 && rt != 0)
 		ssappendf(output, "beqz\t%s, ",GPR_REG[rt]);
-	else if (rs != 0 && rt == 0)
+	else if (disSimplify && rs != 0 && rt == 0)
 		ssappendf(output, "beqz\t%s, ",GPR_REG[rs]);
 	else
 		ssappendf(output, "beq\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
@@ -729,9 +738,9 @@ void BNE( std::string& output )
 	int rs = DECODE_RS;
 	int rt = DECODE_RT;
 
-	if (rs == 0 && rt != 0)
+	if (disSimplify && rs == 0 && rt != 0)
 		ssappendf(output, "bnez\t%s, ",GPR_REG[rt]);
-	else if (rs != 0 && rt == 0)
+	else if (disSimplify && rs != 0 && rt == 0)
 		ssappendf(output, "bnez\t%s, ",GPR_REG[rs]);
 	else
 		ssappendf(output, "bne\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
@@ -749,7 +758,7 @@ void ADDIU( std::string& output )
 	int rs = DECODE_RS;
 	s16 imm = DECODE_IMMED;
 
-	if (rs == 0)
+	if (disSimplify && rs == 0)
 		ssappendf(output, "li\t%s, %s",GPR_REG[rt],signedImmediate(imm));
 	else
 		ssappendf(output, "addiu\t%s, %s, %s",GPR_REG[rt],GPR_REG[rs],signedImmediate(imm));
@@ -766,7 +775,7 @@ void ORI( std::string& output )
 
 	u32 unsignedImm = (u16) DECODE_IMMED;
 
-	if (rs == 0)
+	if (disSimplify && rs == 0)
 		ssappendf(output, "li\t%s, 0x%X",GPR_REG[rt],unsignedImm);
 	else
 		ssappendf(output, "ori\t%s, %s, 0x%X",GPR_REG[rt],GPR_REG[rs],unsignedImm);
@@ -780,11 +789,11 @@ void BEQL( std::string& output )
 	int rs = DECODE_RS;
 	int rt = DECODE_RT;
 
-	if (rs == rt)
+	if (disSimplify && rs == rt)
 		ssappendf(output, "b\t");
-	else if (rs == 0 && rt != 0)
+	else if (disSimplify && rs == 0 && rt != 0)
 		ssappendf(output, "beqzl\t%s, ",GPR_REG[rt]);
-	else if (rs != 0 && rt == 0)
+	else if (disSimplify && rs != 0 && rt == 0)
 		ssappendf(output, "beqzl\t%s, ",GPR_REG[rs]);
 	else
 		ssappendf(output, "beql\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
@@ -797,9 +806,9 @@ void BNEL( std::string& output )
 	int rs = DECODE_RS;
 	int rt = DECODE_RT;
 
-	if (rs == 0 && rt != 0)
+	if (disSimplify && rs == 0 && rt != 0)
 		ssappendf(output, "bnezl\t%s, ",GPR_REG[rt]);
-	else if (rs != 0 && rt == 0)
+	else if (disSimplify && rs != 0 && rt == 0)
 		ssappendf(output, "bnezl\t%s, ",GPR_REG[rs]);
 	else
 		ssappendf(output, "bnel\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
@@ -883,9 +892,9 @@ void disAddAddu( std::string& output, const char* name )
 	int rs = DECODE_RS;
 	int rt = DECODE_RT;
 
-	if (rs == 0)
+	if (disSimplify && rs == 0)
 		ssappendf(output,"move\t%s, %s",GPR_REG[rd],GPR_REG[rt]);
-	else if (rt == 0)
+	else if (disSimplify && rt == 0)
 		ssappendf(output,"move\t%s, %s",GPR_REG[rd],GPR_REG[rs]);
 	else
 		ssappendf(output, "%s\t%s, %s, %s",name,GPR_REG[rd], GPR_REG[rs], GPR_REG[rt]);
@@ -909,9 +918,9 @@ void disDaddDaddu( std::string& output, const char* name )
 	int rs = DECODE_RS;
 	int rt = DECODE_RT;
 
-	if (rs == 0)
+	if (disSimplify && rs == 0)
 		ssappendf(output,"dmove\t%s, %s",GPR_REG[DECODE_RD],GPR_REG[DECODE_RT]);
-	else if (rt == 0)
+	else if (disSimplify && rt == 0)
 		ssappendf(output,"dmove\t%s, %s",GPR_REG[DECODE_RD],GPR_REG[DECODE_RS]);
 	else
 		ssappendf(output, "%s\t%s, %s, %s",name,GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);

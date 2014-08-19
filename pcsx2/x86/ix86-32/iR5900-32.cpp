@@ -1678,7 +1678,7 @@ void recompileNextInstruction(int delayslot)
 						DevCon.Warning("Possible old value used in COP2 code");
 						for (u32 i = s_pCurBlockEx->startpc; i < s_nEndBlock; i += 4)
 						{
-							disR5900Fasm(disasm, memRead32(i), i);
+							disR5900Fasm(disasm, memRead32(i), i,false);
 							DevCon.Warning("%s%08X %s", i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
 						}
 						break;

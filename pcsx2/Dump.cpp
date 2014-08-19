@@ -219,7 +219,7 @@ void iDumpBlock( int startpc, u8 * ptr )
 	for ( uint i = startpc; i < s_nEndBlock; i += 4 )
 	{
 		std::string output;
-		disR5900Fasm( output, memRead32( i ), i );
+		disR5900Fasm( output, memRead32( i ), i, false );
 		eff.Printf( "%s\n", output.c_str() );
 	}
 

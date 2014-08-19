@@ -691,7 +691,7 @@ bool DisassemblyOpcode::disassemble(u32 address, DisassemblyLineInfo& dest, bool
 {
 	char opcode[64],arguments[256];
 	
-	std::string dis = cpu->disasm(address);
+	std::string dis = cpu->disasm(address,insertSymbols);
 	parseDisasm(dis.c_str(),opcode,arguments,insertSymbols);
 	dest.type = DISTYPE_OPCODE;
 	dest.name = opcode;

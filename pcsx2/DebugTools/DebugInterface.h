@@ -45,7 +45,7 @@ public:
 	virtual void setPc(u32 newPc) = 0;
 	virtual void setRegister(int cat, int num, u128 newValue) = 0;
 	
-	virtual std::string disasm(u32 address) = 0;
+	virtual std::string disasm(u32 address, bool simplify) = 0;
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
 	
@@ -83,7 +83,7 @@ public:
 	virtual void setPc(u32 newPc);
 	virtual void setRegister(int cat, int num, u128 newValue);
 
-	virtual std::string disasm(u32 address);
+	virtual std::string disasm(u32 address, bool simplify);
 	virtual bool isValidAddress(u32 address);
 	virtual u32 getCycles();
 };
@@ -115,7 +115,7 @@ public:
 	virtual void setPc(u32 newPc);
 	virtual void setRegister(int cat, int num, u128 newValue);
 
-	virtual std::string disasm(u32 address);
+	virtual std::string disasm(u32 address, bool simplify);
 	virtual bool isValidAddress(u32 address);
 	virtual u32 getCycles();
 };
