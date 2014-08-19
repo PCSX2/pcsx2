@@ -706,8 +706,39 @@ const char* signedImmediate(s16 imm, int len = 0)
 //********************* Standard Opcodes***********************
 void J( std::string& output )      { output += "j\t";        jump_decode(output);}
 void JAL( std::string& output )    { output += "jal\t";      jump_decode(output);}
-void BEQ( std::string& output )    { _sap("beq\t%s, %s, ")          GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
-void BNE( std::string& output )    { _sap("bne\t%s, %s, ")          GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
+
+void BEQ( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (rs == rt)
+		ssappendf(output, "b\t");
+	else if (rs == 0 && rt != 0)
+		ssappendf(output, "beqz\t%s, ",GPR_REG[rt]);
+	else if (rs != 0 && rt == 0)
+		ssappendf(output, "beqz\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "beq\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
+void BNE( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (rs == 0 && rt != 0)
+		ssappendf(output, "bnez\t%s, ",GPR_REG[rt]);
+	else if (rs != 0 && rt == 0)
+		ssappendf(output, "bnez\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "bne\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
 void BLEZ( std::string& output )   { _sap("blez\t%s, ")             GPR_REG[DECODE_RS]); offset_decode(output); }
 void BGTZ( std::string& output )   { _sap("bgtz\t%s, ")             GPR_REG[DECODE_RS]); offset_decode(output); }
 void ADDI( std::string& output )   { _sap("addi\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED);}
@@ -743,8 +774,39 @@ void ORI( std::string& output )
 
 void XORI( std::string& output )   { _sap("xori\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
 void LUI( std::string& output )    { _sap("lui\t%s, 0x%04X")        GPR_REG[DECODE_RT], DECODE_IMMED); }
-void BEQL( std::string& output )   { _sap("beql\t%s, %s, ")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
-void BNEL( std::string& output )   { _sap("bnel\t%s, %s, ")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
+
+void BEQL( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (rs == rt)
+		ssappendf(output, "b\t");
+	else if (rs == 0 && rt != 0)
+		ssappendf(output, "beqzl\t%s, ",GPR_REG[rt]);
+	else if (rs != 0 && rt == 0)
+		ssappendf(output, "beqzl\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "beql\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
+void BNEL( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (rs == 0 && rt != 0)
+		ssappendf(output, "bnezl\t%s, ",GPR_REG[rt]);
+	else if (rs != 0 && rt == 0)
+		ssappendf(output, "bnezl\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "bnel\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
 void BLEZL( std::string& output )  { _sap("blezl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
 void BGTZL( std::string& output )  { _sap("bgtzl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
 void DADDI( std::string& output )  { _sap("daddi\t%s, %s, 0x%04X")  GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
