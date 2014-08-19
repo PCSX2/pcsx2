@@ -85,54 +85,6 @@
 //------------------------------------------------------------------
 int vucycle;
 
-const __aligned16 float s_fones[8]	= {1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
-const __aligned16 u32 s_mask[4]		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
-const __aligned16 u32 s_expmask[4]	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-const __aligned16 u32 g_minvals[4]	= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
-const __aligned16 u32 g_maxvals[4]	= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
-const __aligned16 u32 const_clip[8]	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
-									   0x80000000, 0x80000000, 0x80000000, 0x80000000};
-
-const __aligned(64) u32 g_ones[4]	= {0x00000001, 0x00000001, 0x00000001, 0x00000001};
-
-const __aligned16 u32 g_minvals_XYZW[16][4] =
-{
-   { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff }, //0000
-   { 0xffffffff, 0xffffffff, 0xffffffff, 0xff7fffff }, //0001
-   { 0xffffffff, 0xffffffff, 0xff7fffff, 0xffffffff }, //0010
-   { 0xffffffff, 0xffffffff, 0xff7fffff, 0xff7fffff }, //0011
-   { 0xffffffff, 0xff7fffff, 0xffffffff, 0xffffffff }, //0100
-   { 0xffffffff, 0xff7fffff, 0xffffffff, 0xff7fffff }, //0101
-   { 0xffffffff, 0xff7fffff, 0xff7fffff, 0xffffffff }, //0110
-   { 0xffffffff, 0xff7fffff, 0xff7fffff, 0xff7fffff }, //0111
-   { 0xff7fffff, 0xffffffff, 0xffffffff, 0xffffffff }, //1000
-   { 0xff7fffff, 0xffffffff, 0xffffffff, 0xff7fffff }, //1001
-   { 0xff7fffff, 0xffffffff, 0xff7fffff, 0xffffffff }, //1010
-   { 0xff7fffff, 0xffffffff, 0xff7fffff, 0xff7fffff }, //1011
-   { 0xff7fffff, 0xff7fffff, 0xffffffff, 0xffffffff }, //1100
-   { 0xff7fffff, 0xff7fffff, 0xffffffff, 0xff7fffff }, //1101
-   { 0xff7fffff, 0xff7fffff, 0xff7fffff, 0xffffffff }, //1110
-   { 0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff }, //1111
-};
-const __aligned16 u32 g_maxvals_XYZW[16][4] =
-{
-   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //0000
-   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7f7fffff }, //0001
-   { 0x7fffffff, 0x7fffffff, 0x7f7fffff, 0x7fffffff }, //0010
-   { 0x7fffffff, 0x7fffffff, 0x7f7fffff, 0x7f7fffff }, //0011
-   { 0x7fffffff, 0x7f7fffff, 0x7fffffff, 0x7fffffff }, //0100
-   { 0x7fffffff, 0x7f7fffff, 0x7fffffff, 0x7f7fffff }, //0101
-   { 0x7fffffff, 0x7f7fffff, 0x7f7fffff, 0x7fffffff }, //0110
-   { 0x7fffffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff }, //0111
-   { 0x7f7fffff, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //1000
-   { 0x7f7fffff, 0x7fffffff, 0x7fffffff, 0x7f7fffff }, //1001
-   { 0x7f7fffff, 0x7fffffff, 0x7f7fffff, 0x7fffffff }, //1010
-   { 0x7f7fffff, 0x7fffffff, 0x7f7fffff, 0x7f7fffff }, //1011
-   { 0x7f7fffff, 0x7f7fffff, 0x7fffffff, 0x7fffffff }, //1100
-   { 0x7f7fffff, 0x7f7fffff, 0x7fffffff, 0x7f7fffff }, //1101
-   { 0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7fffffff }, //1110
-   { 0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff }, //1111
-};
 //------------------------------------------------------------------
 
 //------------------------------------------------------------------
@@ -1008,7 +960,7 @@ void vFloat1c(int regd, int regTemp) { //1000
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1028,7 +980,7 @@ void vFloat2c(int regd, int regTemp) { //0100
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1057,7 +1009,7 @@ void vFloat3c(int regd, int regTemp) { //1100
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1080,7 +1032,7 @@ void vFloat4c(int regd, int regTemp) { //0010
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1117,7 +1069,7 @@ void vFloat5c(int regd, int regTemp) { //1010
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1157,7 +1109,7 @@ void vFloat6c(int regd, int regTemp) { //0110
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1204,7 +1156,7 @@ void vFloat7c(int regd, int regTemp) { //1110
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
@@ -1225,7 +1177,7 @@ void vFloat7c_useEAX(int regd, int regTemp) { //1110 //EAX is Modified
 	else {
 		SSE2_MOVD_XMM_to_R(EAX, regd);
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
 		SSE_ORPS_XMM_to_XMM(regd, regTemp);
@@ -1243,7 +1195,7 @@ void vFloat8c(int regd, int regTemp) { //0001
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 		SSE_ORPS_XMM_to_XMM(regd, regTemp);
@@ -1276,7 +1228,7 @@ void vFloat9c(int regd, int regTemp) { //1001
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 		SSE_SHUFPS_XMM_to_XMM(regd, regd, 0x27);
@@ -1313,7 +1265,7 @@ void vFloat10c(int regd, int regTemp) { //0101
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 		SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
@@ -1361,7 +1313,7 @@ void vFloat11c(int regd, int regTemp) { //1101
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 		SSE_SHUFPS_XMM_to_XMM(regd, regd, 0xc6);
@@ -1382,7 +1334,7 @@ void vFloat11c_useEAX(int regd, int regTemp) { //1101 // EAX is modified
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
 		SSE2_MOVD_XMM_to_R(EAX, regd);
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
 		SSE_ORPS_XMM_to_XMM(regd, regTemp);
@@ -1411,7 +1363,7 @@ void vFloat12c(int regd, int regTemp) { //0011
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
@@ -1459,7 +1411,7 @@ void vFloat13c(int regd, int regTemp) { //1011
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
@@ -1480,7 +1432,7 @@ void vFloat13c_useEAX(int regd, int regTemp) { //1011 // EAX is modified
 		SSE2_PSHUFD_XMM_to_XMM(regd, regd, 0xc6);
 		SSE2_MOVD_XMM_to_R(EAX, regd);
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
 		SSE_ORPS_XMM_to_XMM(regd, regTemp);
@@ -1527,7 +1479,7 @@ void vFloat14c(int regd, int regTemp) { //0111
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINSS_M32_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXSS_M32_to_XMM(regd, (uptr)g_minvals);
 		SSE2_PSHUFLW_XMM_to_XMM(regd, regd, 0x4e);
@@ -1548,7 +1500,7 @@ void vFloat14c_useEAX(int regd, int regTemp) { //0111 // EAX is modified
 		SSE2_PSHUFD_XMM_to_XMM(regd, regd, 0x27);
 		SSE2_MOVD_XMM_to_R(EAX, regd);
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINPS_M128_to_XMM(regd, (uptr)g_maxvals);
 		SSE_MAXPS_M128_to_XMM(regd, (uptr)g_minvals);
 		SSE_ORPS_XMM_to_XMM(regd, regTemp);
@@ -1567,7 +1519,7 @@ void vFloat15c(int regd, int regTemp) { //1111
 	}
 	else {
 		SSE_MOVAPS_XMM_to_XMM(regTemp, regd);
-		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&const_clip[4]);
+		SSE_ANDPS_M128_to_XMM(regTemp, (uptr)&g_clip[4]);
 		SSE_MINPS_M128_to_XMM(regd, (uptr)&g_maxvals[0]);
 		SSE_MAXPS_M128_to_XMM(regd, (uptr)&g_minvals[0]);
 		SSE_ORPS_XMM_to_XMM(regd, regTemp);

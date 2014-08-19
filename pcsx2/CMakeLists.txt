@@ -181,6 +181,7 @@ set(pcsx2Headers
 	Dump.h
 	GameDatabase.h
 	Elfheader.h
+	FP_Consts.h
 	Gif.h
 	Gif_Unit.h
 	GS.h
