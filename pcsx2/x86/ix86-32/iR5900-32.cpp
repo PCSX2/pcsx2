@@ -1289,7 +1289,6 @@ void dynarecMemcheck()
  	if (CBreakPoints::CheckSkipFirst(pc) != 0)
 		return;
 
-	iFlushCall(FLUSH_INTERPRETER);
 	CBreakPoints::SetBreakpointTriggered(true);
 	GetCoreThread().PauseSelf();
 	recExitExecution();
@@ -1305,7 +1304,7 @@ void __fastcall dynarecMemLogcheck(u32 start, bool store)
 
 void recMemcheck(u32 op, u32 bits, bool store)
 {
-	iFlushCall(FLUSH_INTERPRETER);
+	iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
 
 	// compute accessed address
 	_eeMoveGPRtoR(ECX, (op >> 21) & 0x1F);
@@ -1458,7 +1457,7 @@ void encodeBreakpoint()
 {
 	if (isBreakpointNeeded(pc) != 0)
 	{
-		iFlushCall(FLUSH_EVERYTHING);
+		iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
 		xCALL(&dynarecCheckBreakpoint);
 	}
 }
