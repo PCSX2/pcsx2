@@ -355,7 +355,7 @@ void __fastcall GoemonPreloadTlb()
 			u32 vaddr = tlb[i].low_add;
 			u32 paddr = tlb[i].physical_add;
 
-			if ((u32)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == 0x80000000u) {
+			if ((uptr)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == POINTER_SIGN_BIT) {
 				DevCon.WriteLn("Preload TLB[%d]: From V:0x%8.8x to P:0x%8.8x (%d pages)", i, vaddr, paddr, size >> VTLB_PAGE_BITS);
 				vtlb_VMap(           vaddr , paddr, size);
 				vtlb_VMap(0x20000000|vaddr , paddr, size);
@@ -636,13 +636,13 @@ void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
 
 	while (size > 0)
 	{
-		s32 pme;
+		sptr pme;
 		if (paddr >= VTLB_PMAP_SZ)
 		{
 			pme = UnmappedPhyHandler0;
-			if (paddr & 0x80000000)
+			if (paddr & POINTER_SIGN_BIT)
 				pme = UnmappedPhyHandler1;
-			pme |= 0x80000000;
+			pme |= POINTER_SIGN_BIT;
 			pme |= paddr;// top bit is set anyway ...
 		}
 		else
