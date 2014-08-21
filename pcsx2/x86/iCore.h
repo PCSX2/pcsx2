@@ -60,7 +60,6 @@
 #define EEREC_HI (((info)>>24)&0xf)
 #define EEREC_ACC (((info)>>20)&0xf)
 #define EEREC_TEMP (((info)>>24)&0xf)
-#define VUREC_FMAC ((info)&0x80000000)
 
 #define PROCESS_EE_SET_S(reg) ((reg)<<8)
 #define PROCESS_EE_SET_T(reg) ((reg)<<12)
@@ -68,11 +67,6 @@
 #define PROCESS_EE_SET_LO(reg) ((reg)<<20)
 #define PROCESS_EE_SET_HI(reg) ((reg)<<24)
 #define PROCESS_EE_SET_ACC(reg) ((reg)<<20)
-
-#define PROCESS_VU_SET_ACC(reg) PROCESS_EE_SET_ACC(reg)
-#define PROCESS_VU_SET_TEMP(reg) ((reg)<<24)
-
-#define PROCESS_VU_SET_FMAC() 0x80000000
 
 // special info not related to above flags
 #define PROCESS_CONSTS 1
@@ -135,17 +129,17 @@ void _flushConstReg(int reg);
 
 #define XMM_CONV_VU(VU) (VU==&VU1)
 
-#define XMMTYPE_TEMP	0 // has to be 0
-#define XMMTYPE_VFREG	1
-#define XMMTYPE_ACC		2
-#define XMMTYPE_FPREG	3
-#define XMMTYPE_FPACC	4
-#define XMMTYPE_GPRREG	5
+#define XMMTYPE_TEMP    0 // has to be 0
+#define XMMTYPE_VFREG   1
+#define XMMTYPE_ACC     2
+#define XMMTYPE_FPREG   3
+#define XMMTYPE_FPACC   4
+#define XMMTYPE_GPRREG  5
 
 // lo and hi regs
-#define XMMGPR_LO	33
-#define XMMGPR_HI	32
-#define XMMFPU_ACC	32
+#define XMMGPR_LO       33
+#define XMMGPR_HI       32
+#define XMMFPU_ACC      32
 
 struct _xmmregs {
 	u8 inuse;
@@ -216,8 +210,6 @@ struct EEINST
 	// valid if info & EEINSTINFO_COP2
 	int cycle; // cycle of inst (at offset from block)
 	_VURegsNum vuregs;
-
-	u8 numpeeps; // number of peephole optimizations
 };
 
 extern EEINST* g_pCurInstInfo; // info for the cur instruction
@@ -276,11 +268,6 @@ void SetFPUstate();
 static __fi bool MMX_IS32BITS(s32 x)
 {
 	return (((x >= MMX_FPU) && (x < MMX_COP0 + 32)) || (x == MMX_FPUACC));
-}
-
-static __fi bool MMX_ISGPR(s32 x)
-{
-	return ((x >= MMX_GPR) && (x < MMX_GPR + 34));
 }
 
 static __fi bool MMX_ISGPR(u32 x)
@@ -355,12 +342,11 @@ extern u16 x86FpuState;
 #define FLUSH_EVERYTHING	0x1ff
 //#define FLUSH_EXCEPTION		0x1ff   // will probably do this totally differently actually
 #define FLUSH_INTERPRETER	0xfff
-#define FLUSH_FULLVTLB FLUSH_NOCONST
+// used when regs aren't going to be changed by callee
+#define FLUSH_FULLVTLB   (FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
 
 // no freeing, used when callee won't destroy mmx/xmm regs
 #define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_MMX|FLUSH_FLUSH_ALLX86)
-// used when regs aren't going to be changed be callee
-#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -377,10 +363,5 @@ extern void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
 extern void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);
 extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
 extern void LogicalOp32ItoM(uptr to, u32 from, int op);
-
-#ifdef ARITHMETICIMM_RECOMPILE
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-#endif
 
 #endif

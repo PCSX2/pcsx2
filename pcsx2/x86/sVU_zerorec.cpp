@@ -3202,7 +3202,7 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 	int info = PROCESS_VU_SUPER;
 	if (vfread0[upper] >= 0) info |= PROCESS_EE_SET_S(vfread0[upper]);
 	if (vfread1[upper] >= 0) info |= PROCESS_EE_SET_T(vfread1[upper]);
-	if (vfacc[upper] >= 0) info |= PROCESS_VU_SET_ACC(vfacc[upper]);
+	if (vfacc[upper] >= 0) info |= PROCESS_EE_SET_ACC(vfacc[upper]);
 	if (vfwrite[upper] >= 0)
 	{
 		if (regs[upper].VFwrite == _Ft_ && vfread1[upper] < 0)
@@ -3221,7 +3221,7 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 		SuperVUFreeXMMreg(vffree[upper]&0xf, XMMTYPE_TEMP, 0);
 		_allocTempXMMreg(XMMT_FPS, vffree[upper]&0xf);
 	}
-	info |= PROCESS_VU_SET_TEMP(vffree[upper] & 0xf);
+	info |= PROCESS_EE_SET_HI(vffree[upper] & 0xf);
 
 	if (vfflush[upper] >= 0)
 	{
@@ -3836,9 +3836,9 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 			xmmregs[vfflush[0]].mode |= MODE_NOFLUSH | MODE_WRITE; // so that lower inst doesn't flush
 		}
 
-		// notify vuinsts that upper inst is a fmac
+		// notify vuinsts that upper inst is a fmac (unused)
 		if (regs[1].pipe == VUPIPE_FMAC)
-			s_vuInfo |= PROCESS_VU_SET_FMAC();
+			s_vuInfo |= 0x80000000; // FMAC
 
 		if (s_JumpX86 > 0) x86regs[s_JumpX86].needed = 1;
 		if (s_ScheduleXGKICK && s_XGKICKReg > 0) x86regs[s_XGKICKReg].needed = 1;

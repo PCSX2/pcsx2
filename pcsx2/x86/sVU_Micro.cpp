@@ -658,7 +658,7 @@ int eeVURecompileCode(VURegs *VU, _VURegsNum* regs)
 	if( vfread1 >= 0 ) info |= PROCESS_EE_SET_T(vfread1);
 
 	vftemp = _allocTempXMMreg(XMMT_FPS, -1);
-	info |= PROCESS_VU_SET_TEMP(vftemp);
+	info |= PROCESS_EE_SET_HI(vftemp);
 
 	if( regs->VIwrite & (1 << REG_CLIP_FLAG) ) {
 		// CLIP inst, need two extra temp registers, put it EEREC_D and EEREC_ACC
