@@ -56,8 +56,8 @@ REC_FUNC_DEL( PSLLW, _Rd_ );
 
 void recPLZCW()
 {
-	//int regd = -1;
-	int regs = 0;
+	bool isXMMreg = false;
+	int regs = -1;
 
 	if ( ! _Rd_ ) return;
 
@@ -90,16 +90,14 @@ void recPLZCW()
 
 	if( (regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
 		SSE2_MOVD_XMM_to_R(EAX, regs);
-		regs |= MEM_XMMTAG;
+		isXMMreg = true;
 	}
 	else if( (regs = _checkMMXreg(MMX_GPR+_Rs_, MODE_READ)) >= 0 ) {
 		MOVD32MMXtoR(EAX, regs);
 		SetMMXstate();
-		regs |= MEM_MMXTAG;
 	}
 	else {
 		MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]);
-		regs = 0;
 	}
 
 	_deleteEEreg(_Rd_, 0);
@@ -130,18 +128,22 @@ void recPLZCW()
 
 	// second word
 
-	if( regs >= 0 && (regs & MEM_XMMTAG) ) {
-		SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0xe1);
-		SSE2_MOVD_XMM_to_R(EAX, regs&0xf);
-		SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0xe1);
+	if( regs >= 0) {
+		// Check if it was an XMM reg or MMX reg
+		if (isXMMreg) {
+			SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0xe1);
+			SSE2_MOVD_XMM_to_R(EAX, regs&0xf);
+			SSE2_PSHUFD_XMM_to_XMM(regs&0xf, regs&0xf, 0xe1);
+		} else {
+			PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
+			MOVD32MMXtoR(EAX, regs&0xf);
+			PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
+			SetMMXstate();
+		}
 	}
-	else if( regs >= 0 && (regs & MEM_MMXTAG) ) {
-		PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
-		MOVD32MMXtoR(EAX, regs&0xf);
-		PSHUFWRtoR(regs&0xf, regs&0xf, 0x4e);
-		SetMMXstate();
+	else {
+		MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]);
 	}
-	else MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]);
 
 	MOV32ItoR(ECX, 31);
 	TEST32RtoR(EAX, EAX);		// TEST sets the sign flag accordingly.
