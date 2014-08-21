@@ -1356,47 +1356,6 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	}
 }
 
-inline bool isBranchOrJump(u32 addr)
-{
-	u32 op = memRead32(addr);
-	const OPCODE& opcode = GetInstruction(op);
-
-	return (opcode.flags & IS_BRANCH) != 0;
-}
-
-// The next two functions return 0 if no breakpoint is needed,
-// 1 if it's needed on the current pc, 2 if it's needed in the delay slot
-
-int isBreakpointNeeded(u32 addr)
-{
-	if (CBreakPoints::IsAddressBreakPoint(addr))
-		return 1;
-
-	// there may be a breakpoint in the delay slot
-	if (isBranchOrJump(addr) && CBreakPoints::IsAddressBreakPoint(addr+4))
-		return 2;
-
-	return 0;
-}
-
-int isMemcheckNeeded(u32 pc)
-{
-	if (CBreakPoints::GetMemChecks().size() == 0)
-		return 0;
-	
-	u32 addr = pc;
-	if (isBranchOrJump(addr))
-		addr += 4;
-
-	u32 op = memRead32(addr);
-	const OPCODE& opcode = GetInstruction(op);
-
-	if ((opcode.flags & IS_MEMORY) && (opcode.flags & MEMTYPE_MASK) != 0)
-		return addr == pc ? 1 : 2;
-
-	return 0;
-}
-
 void encodeBreakpoint()
 {
 	if (isBreakpointNeeded(pc) != 0)

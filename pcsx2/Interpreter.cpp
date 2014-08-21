@@ -23,6 +23,8 @@
 
 #include "Elfheader.h"
 
+#include "../DebugTools/Breakpoints.h"
+
 #include <float.h>
 
 using namespace R5900;		// for OPCODE and OpcodeImpl
@@ -45,8 +47,93 @@ static void debugI()
 
 //long int runs=0;
 
+void intBreakpoint(bool memcheck)
+{
+	u32 pc = cpuRegs.pc;
+ 	if (CBreakPoints::CheckSkipFirst(pc) != 0)
+		return;
+
+	if (!memcheck)
+	{
+		auto cond = CBreakPoints::GetBreakPointCondition(pc);
+		if (cond && !cond->Evaluate())
+			return;
+	}
+
+	CBreakPoints::SetBreakpointTriggered(true);
+	GetCoreThread().PauseSelf();
+	throw Exception::ExitCpuExecute();
+}
+
+void intMemcheck(u32 op, u32 bits, bool store)
+{
+	// compute accessed address
+	u32 start = cpuRegs.GPR.r[(op >> 21) & 0x1F].UD[0];
+	if ((s16)op != 0)
+		start += (s16)op;
+	if (bits == 128)
+		start &= ~0x0F;
+
+	start = standardizeBreakpointAddress(start);
+	u32 end = start + bits/8;
+	
+	auto checks = CBreakPoints::GetMemChecks();
+	for (size_t i = 0; i < checks.size(); i++)
+	{
+		auto& check = checks[i];
+
+		if (check.result == 0)
+			continue;
+		if ((check.cond & MEMCHECK_WRITE) == 0 && store == true)
+			continue;
+		if ((check.cond & MEMCHECK_READ) == 0 && store == false)
+			continue;
+
+		if (start < check.end && check.start < end)
+			intBreakpoint(true);
+	}
+}
+
+void intCheckMemcheck()
+{
+	u32 pc = cpuRegs.pc;
+	int needed = isMemcheckNeeded(pc);
+	if (needed == 0)
+		return;
+
+	u32 op = memRead32(needed == 2 ? pc+4 : pc);
+	const OPCODE& opcode = GetInstruction(op);
+
+	bool store = (opcode.flags & IS_STORE) != 0;
+	switch (opcode.flags & MEMTYPE_MASK)
+	{
+	case MEMTYPE_BYTE:
+		intMemcheck(op,8,store);
+		break;
+	case MEMTYPE_HALF:
+		intMemcheck(op,16,store);
+		break;
+	case MEMTYPE_WORD:
+		intMemcheck(op,32,store);
+		break;
+	case MEMTYPE_DWORD:
+		intMemcheck(op,64,store);
+		break;
+	case MEMTYPE_QWORD:
+		intMemcheck(op,128,store);
+		break;
+	}
+}
+
 static void execI()
 {
+	// check if any breakpoints or memchecks are triggered by this instruction
+	if (isBreakpointNeeded(cpuRegs.pc))
+		intBreakpoint(false);
+
+	intCheckMemcheck();
+
+	// interprete instruction
 	cpuRegs.code = memRead32( cpuRegs.pc );
 	if( IsDebugBuild )
 		debugI();
