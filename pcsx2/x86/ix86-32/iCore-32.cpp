@@ -844,20 +844,6 @@ void _freeMMXregs()
 	}
 }
 
-void SetFPUstate() {
-	_freeMMXreg(6);
-	_freeMMXreg(7);
-
-	if (x86FpuState == MMX_STATE) {
-		if (x86caps.has3DNOWInstructionExtensions)
-			FEMMS();
-		else
-			EMMS();
-
-		x86FpuState = FPU_STATE;
-	}
-}
-
 void _signExtendSFtoM(u32 mem)
 {
 	LAHF();

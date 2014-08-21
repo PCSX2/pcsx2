@@ -252,7 +252,6 @@ int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode);
 #define MMX_STATE 1
 
 void SetMMXstate();
-void SetFPUstate();
 
 // max is 0x7f, when 0x80 is set, need to flush reg
 //#define MMX_GET_CACHE(ptr, index) ((u8*)ptr)[index]

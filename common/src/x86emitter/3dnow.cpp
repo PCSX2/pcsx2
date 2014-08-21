@@ -20,12 +20,6 @@
 // 3DNOW instructions [Anyone caught dead using these will be re-killed]
 //------------------------------------------------------------------
 
-/* femms */
-emitterT void FEMMS( void )
-{
-	xWrite16( 0x0E0F );
-}
-
 emitterT void PFCMPEQMtoR( x86IntRegType to, uptr from )
 {
 	xWrite16( 0x0F0F );

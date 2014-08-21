@@ -1072,8 +1072,7 @@ void iFlushCall(int flushtype)
 		_flushConstRegs();
 
 	if (x86FpuState==MMX_STATE) {
-		if (x86caps.has3DNOWInstructionExtensions) FEMMS();
-		else EMMS();
+		xEMMS();
 		x86FpuState=FPU_STATE;
 	}
 }

@@ -919,9 +919,6 @@ extern void PSHUFWRtoR(x86MMXRegType to, x86MMXRegType from, u8 imm8);
 extern void PSHUFWMtoR(x86MMXRegType to, uptr from, u8 imm8);
 extern void MASKMOVQRtoR(x86MMXRegType to, x86MMXRegType from);
 
-// emms
-extern void EMMS( void );
-
 extern void PMOVMSKBMMXtoR(x86IntRegType to, x86MMXRegType from);
 
 //*********************
@@ -1365,7 +1362,6 @@ extern void SSE4_PTEST_XMM_to_XMM(x86SSERegType to, x86SSERegType from);
 //*********************
 // 3DNOW instructions *
 //*********************
-extern void FEMMS( void );
 extern void PFCMPEQMtoR( x86IntRegType to, uptr from );
 extern void PFCMPGTMtoR( x86IntRegType to, uptr from );
 extern void PFCMPGEMtoR( x86IntRegType to, uptr from );
