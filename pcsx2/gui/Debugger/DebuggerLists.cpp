@@ -410,14 +410,6 @@ void BreakpointList::removeBreakpoint(int itemIndex)
 	}
 }
 
-void BreakpointList::postEvent(wxEventType type, int value)
-{
-   wxCommandEvent event( type, GetId() );
-   event.SetEventObject(this);
-   event.SetInt(value);
-   wxPostEvent(this,event);
-}
-
 void BreakpointList::onPopupClick(wxCommandEvent& evt)
 {
 	int index = GetFirstSelected();
@@ -474,4 +466,136 @@ void BreakpointList::onRightClick(int itemIndex, const wxPoint& point)
 void BreakpointList::onDoubleClick(int itemIndex, const wxPoint& point)
 {
 	gotoBreakpointAddress(itemIndex);
+}
+
+
+//
+// ThreadList
+//
+
+enum { TL_TID, TL_PROGRAMCOUNTER, TL_ENTRYPOINT, TL_PRIORITY, TL_STATE, TL_WAITTYPE, TL_COLUMNCOUNT };
+
+GenericListViewColumn threadColumns[TL_COLUMNCOUNT] = {
+	{ L"TID",			0.08f },
+	{ L"PC",			0.21f },
+	{ L"Entry Point",	0.21f },
+	{ L"Priority",		0.08f },
+	{ L"State",			0.21f },
+	{ L"Wait type",		0.21f },
+};
+
+ThreadList::ThreadList(wxWindow* parent, DebugInterface* _cpu)
+	: GenericListView(parent,threadColumns,TL_COLUMNCOUNT), cpu(_cpu)
+{
+#ifdef __linux__
+	// On linux wx failed to resize properly the page. I don't know why so for the moment I just create a static size page
+	// Far from ideal but at least I can use the memory window!
+	this->SetSize(wxSize(1000, 200));
+#endif
+}
+
+void ThreadList::reloadThreads()
+{
+	threads = getEEThreads();
+	update();
+}
+
+
+int ThreadList::getRowCount()
+{
+	return threads.size();
+}
+
+wxString ThreadList::getColumnText(int item, int col) const
+{
+	if (item < 0 || item >= (int)threads.size())
+		return L"";
+
+	FastFormatUnicode dest;
+	const EEThread& thread = threads[item];
+
+	switch (col)
+	{
+	case TL_TID:
+		dest.Write("%d",thread.tid);
+		break;
+	case TL_PROGRAMCOUNTER:
+		if (thread.data.status == THS_RUN)
+			dest.Write("0x%08X", cpu->getPC());
+		else
+			dest.Write("0x%08X", thread.data.entry);
+		break;
+	case TL_ENTRYPOINT:
+		dest.Write("0x%08X", thread.data.entry_init);
+		break;
+	case TL_PRIORITY:
+		dest.Write("0x%02X", thread.data.currentPriority);
+		break;
+	case TL_STATE:
+		switch (thread.data.status)
+		{
+		case THS_BAD:
+			dest.Write("Bad");
+			break;
+		case THS_RUN:
+			dest.Write("Running");
+			break;
+		case THS_READY:
+			dest.Write("Ready");
+			break;
+		case THS_WAIT:
+			dest.Write("Waiting");
+			break;
+		case THS_SUSPEND:
+			dest.Write("Suspended");
+			break;
+		case THS_WAIT_SUSPEND:
+			dest.Write("Waiting/Suspended");
+			break;
+		case THS_DORMANT:
+			dest.Write("Dormant");
+			break;
+		}
+		break;
+	case TL_WAITTYPE:
+		switch (thread.data.waitType)
+		{
+		case WAIT_NONE:
+			dest.Write("None");
+			break;
+		case WAIT_WAKEUP_REQ:
+			dest.Write("Wakeup request");
+			break;
+		case WAIT_SEMA:
+			dest.Write("Semaphore");
+			break;
+		}
+		break;
+	default:
+		return L"Invalid";
+	}
+
+	return dest;
+}
+
+void ThreadList::onDoubleClick(int itemIndex, const wxPoint& point)
+{
+	if (itemIndex < 0 || itemIndex >= (int)threads.size())
+		return;
+
+	const EEThread& thread = threads[itemIndex];
+
+	switch (thread.data.status)
+	{
+	case THS_DORMANT:
+	case THS_BAD:
+		postEvent(debEVT_GOTOINDISASM,thread.data.entry_init);
+		break;
+	case THS_RUN:
+		postEvent(debEVT_GOTOINDISASM,cpu->getPC());
+		break;
+	default:
+		postEvent(debEVT_GOTOINDISASM,thread.data.entry);
+		break;
+	}
 }

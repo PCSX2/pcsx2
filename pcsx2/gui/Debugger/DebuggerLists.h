@@ -17,6 +17,7 @@
 #include <wx/listctrl.h>
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/BiosDebugData.h"
 #include "CtrlDisassemblyView.h"
 
 struct GenericListViewColumn
@@ -74,11 +75,26 @@ private:
 	void toggleEnabled(int itemIndex);
 	void gotoBreakpointAddress(int itemIndex);
 	void removeBreakpoint(int itemIndex);
-	void postEvent(wxEventType type, int value);
 	void showMenu(const wxPoint& pos);
 
 	std::vector<BreakPoint> displayedBreakPoints_;
 	std::vector<MemCheck> displayedMemChecks_;
 	DebugInterface* cpu;
 	CtrlDisassemblyView* disasm;
+};
+
+class ThreadList: public GenericListView
+{
+public:
+	ThreadList(wxWindow* parent, DebugInterface* _cpu);
+	void reloadThreads();
+protected:
+	void onPopupClick(wxCommandEvent& evt);
+	
+	virtual wxString getColumnText(int row, int col) const;
+	virtual int getRowCount();
+	virtual void onDoubleClick(int itemIndex, const wxPoint& point);
+private:
+	DebugInterface* cpu;
+	std::vector<EEThread> threads;
 };

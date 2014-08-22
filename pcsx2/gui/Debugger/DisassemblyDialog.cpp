@@ -107,6 +107,13 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 
 	breakpointList = new BreakpointList(bottomTabs,cpu,disassembly);
 	bottomTabs->AddPage(breakpointList,L"Breakpoints");
+	
+	threadList = NULL;
+	if (cpu == &r5900Debug)
+	{
+		threadList = new ThreadList(bottomTabs,cpu);
+		bottomTabs->AddPage(threadList,L"Threads");
+	}
 
 	mainSizer->Add(bottomTabs,1,wxEXPAND);
 
@@ -162,6 +169,10 @@ void CpuTabPage::setBottomTabPage(wxWindow* win)
 void CpuTabPage::update()
 {
 	breakpointList->reloadBreakpoints();
+
+	if (threadList != NULL)
+		threadList->reloadThreads();
+
 	Refresh();
 }
 
