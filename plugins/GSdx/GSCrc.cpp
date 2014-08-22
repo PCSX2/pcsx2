@@ -82,13 +82,14 @@ CRC::Game CRC::m_games[] =
 	{0x79ED26AD, MetalGearSolid3, EU, 0},
 	{0x5E31EA42, MetalGearSolid3, EU, 0},
 	{0xD7ED797D, MetalGearSolid3, EU, 0},
-	{0x053D2239, MetalGearSolid3, US, 0},
+	{0x053D2239, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc1
+	{0x01B2FA7F, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc2
 	{0xAA31B5BF, MetalGearSolid3, US, 0},
-	{0x86BC3040, MetalGearSolid3, US, 0}, //Subsistance disc 1
+	{0x86BC3040, MetalGearSolid3, US, 0}, //Metal Gear Solid 3 Subsistence disc1
 	{0x0481AD8A, MetalGearSolid3, JP, 0},
-	{0xC69ACB6F, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 SnakeEater
-	{0xB0D195EF, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 Substance disc1
-	{0x3EBABC9C, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 Substance disc2
+	{0xC69ACB6F, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 Snake Eater
+	{0xB0D195EF, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 Subsistence disc1
+	{0x3EBABC9C, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 Subsistence disc2
 	{0x8A5C25A7, MetalGearSolid3, ES, 0}, //Metal Gear Solid 3 Subsistence Spanish version
 	{0x278722BF, DBZBT2, US, 0},
 	{0xFE961D28, DBZBT2, US, 0},
@@ -298,6 +299,7 @@ CRC::Game CRC::m_games[] =
 	{0xC818BEC2, LordOfTheRingsTwoTowers, US, 0},
 	{0xDC43F2B8, LordOfTheRingsTwoTowers, EU, 0},
 	{0x9ABF90FB, LordOfTheRingsTwoTowers, ES, 0},
+	{0x5FF407EE, LordOfTheRingsTwoTowers, IT, 0},
 	{0xC0E909E9, LordOfTheRingsTwoTowers, JP, 0},
 	{0x6898435D, LordOfTheRingsTwoTowers, KO, 0},
 	{0xDC2F9B98, LordOfTheRingsTwoTowers, CH, 0}, // cutie comment

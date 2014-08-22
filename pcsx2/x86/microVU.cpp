@@ -25,7 +25,7 @@
 static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex) {
 	throw Exception::HardwareDeficiency()
 		.SetDiagMsg(pxsFmt(L"microVU%d recompiler init failed: %s is not available.", vuIndex, extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with MMX, SSE, and SSE2 extensions."), extFail));
+		.SetUserMsg(pxsFmt(_("%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."), extFail));
 }
 
 void mVUreserveCache(microVU& mVU) {
@@ -43,8 +43,6 @@ void mVUreserveCache(microVU& mVU) {
 // Only run this once per VU! ;)
 void mVUinit(microVU& mVU, uint vuIndex) {
 
-	if(!x86caps.hasMultimediaExtensions)	 mVUthrowHardwareDeficiency( L"MMX",  vuIndex );
-	if(!x86caps.hasStreamingSIMDExtensions)	 mVUthrowHardwareDeficiency( L"SSE",  vuIndex );
 	if(!x86caps.hasStreamingSIMD2Extensions) mVUthrowHardwareDeficiency( L"SSE2", vuIndex );
 
 	memzero(mVU.prog);
@@ -104,10 +102,10 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 
 	for(u32 i = 0; i < (mVU.progSize / 2); i++) {
 		if(!mVU.prog.prog[i]) {
-			mVU.prog.prog[i] = new deque<microProgram*>();
+			mVU.prog.prog[i] = new std::deque<microProgram*>();
 			continue;
 		}
-		deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
+		std::deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
 		for ( ; it != mVU.prog.prog[i]->end(); ++it) {
 			mVUdeleteProg(mVU, it[0]);
 		}
@@ -126,7 +124,7 @@ void mVUclose(microVU& mVU) {
 	// Delete Programs and Block Managers
 	for (u32 i = 0; i < (mVU.progSize / 2); i++) {
 		if (!mVU.prog.prog[i]) continue;
-		deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
+		std::deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
 		for ( ; it != mVU.prog.prog[i]->end(); ++it) {
 			mVUdeleteProg(mVU, it[0]);
 		}
@@ -169,12 +167,12 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC) {
 	microProgram* prog = (microProgram*)_aligned_malloc(sizeof(microProgram), 64);
 	memzero_ptr<sizeof(microProgram)>(prog);
 	prog->idx     = mVU.prog.total++;
-	prog->ranges  = new deque<microRange>();
+	prog->ranges  = new std::deque<microRange>();
 	prog->startPC = startPC;
 	mVUcacheProg(mVU, *prog); // Cache Micro Program
-	double cacheSize = (double)((u32)mVU.prog.x86end - (u32)mVU.prog.x86start);
-	double cacheUsed =((double)((u32)mVU.prog.x86ptr - (u32)mVU.prog.x86start)) / (double)_1mb;
-	double cachePerc =((double)((u32)mVU.prog.x86ptr - (u32)mVU.prog.x86start)) / cacheSize * 100;
+	double cacheSize = (double)((uptr)mVU.prog.x86end - (uptr)mVU.prog.x86start);
+	double cacheUsed =((double)((uptr)mVU.prog.x86ptr - (uptr)mVU.prog.x86start)) / (double)_1mb;
+	double cachePerc =((double)((uptr)mVU.prog.x86ptr - (uptr)mVU.prog.x86start)) / cacheSize * 100;
 	ConsoleColors c = mVU.index ? Color_Orange : Color_Magenta;
 	DevCon.WriteLn(c, "microVU%d: Cached Prog = [%03d] [PC=%04x] [List=%02d] (Cache=%3.3f%%) [%3.1fmb]",
 				   mVU.index, prog->idx, startPC*8, mVU.prog.prog[startPC]->size()+1, cachePerc, cacheUsed);
@@ -191,7 +189,7 @@ __ri void mVUcacheProg(microVU& mVU, microProgram& prog) {
 // Generate Hash for partial program based on compiled ranges...
 u64 mVUrangesHash(microVU& mVU, microProgram& prog) {
 	u32 hash[2] = {0, 0};
-	deque<microRange>::const_iterator it(prog.ranges->begin());
+	std::deque<microRange>::const_iterator it(prog.ranges->begin());
 	for ( ; it != prog.ranges->end(); ++it) {
 		if((it[0].start<0)||(it[0].end<0))  { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end); }
 		for(int i = it[0].start/4; i < it[0].end/4; i++) {
@@ -204,11 +202,11 @@ u64 mVUrangesHash(microVU& mVU, microProgram& prog) {
 
 // Prints the ratio of unique programs to total programs
 void mVUprintUniqueRatio(microVU& mVU) {
-	vector<u64> v;
+	std::vector<u64> v;
 	for(u32 pc = 0; pc < mProgSize/2; pc++) {
 		microProgramList* list = mVU.prog.prog[pc];
 		if (!list) continue;
-		deque<microProgram*>::iterator it(list->begin());
+		std::deque<microProgram*>::iterator it(list->begin());
 		for ( ; it != list->end(); ++it) {
 			v.push_back(mVUrangesHash(mVU, *it[0]));
 		}
@@ -222,7 +220,7 @@ void mVUprintUniqueRatio(microVU& mVU) {
 
 // Compare partial program by only checking compiled ranges...
 __ri bool mVUcmpPartial(microVU& mVU, microProgram& prog) {
-	deque<microRange>::const_iterator it(prog.ranges->begin());
+	std::deque<microRange>::const_iterator it(prog.ranges->begin());
 	for ( ; it != prog.ranges->end(); ++it) {
 		if((it[0].start<0)||(it[0].end<0))  { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end); }
 		if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), ((it[0].end + 8)  -  it[0].start))) {
@@ -239,9 +237,9 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg) 
 		mVU.prog.cleared =  0;
 		mVU.prog.cur	 = &prog;
 		mVU.prog.isSame  =  cmpWholeProg ? 1 : -1;
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 // Searches for Cached Micro Program and sets prog.cur to it (returns entry-point to program)
@@ -250,7 +248,7 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 	microProgramQuick& quick = mVU.prog.quick[startPC/8];
 	microProgramList*  list  = mVU.prog.prog [startPC/8];
 	if(!quick.prog) { // If null, we need to search for new program
-		deque<microProgram*>::iterator it(list->begin());
+		std::deque<microProgram*>::iterator it(list->begin());
 		for ( ; it != list->end(); ++it) {
 			if (mVUcmpProg(mVU, *it[0], 0)) {
 				quick.block = it[0]->block[startPC/8];
@@ -367,13 +365,13 @@ uint recMicroVU1::GetCacheReserve() const {
 
 void recMicroVU0::SetCacheReserve(uint reserveInMegs) const {
 	DevCon.WriteLn("microVU0: Changing cache size [%dmb]", reserveInMegs);
-	microVU0.cacheSize = min(reserveInMegs, mVU0cacheReserve);
+	microVU0.cacheSize = std::min(reserveInMegs, mVU0cacheReserve);
 	safe_delete(microVU0.cache_reserve); // I assume this unmaps the memory
 	mVUreserveCache(microVU0); // Need rec-reset after this
 }
 void recMicroVU1::SetCacheReserve(uint reserveInMegs) const {
 	DevCon.WriteLn("microVU1: Changing cache size [%dmb]", reserveInMegs);
-	microVU1.cacheSize = min(reserveInMegs, mVU1cacheReserve);
+	microVU1.cacheSize = std::min(reserveInMegs, mVU1cacheReserve);
 	safe_delete(microVU1.cache_reserve); // I assume this unmaps the memory
 	mVUreserveCache(microVU1); // Need rec-reset after this
 }

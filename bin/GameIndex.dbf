@@ -17222,7 +17222,8 @@ Compat = 5
 Serial = SLPM-65014
 Name   = Bouken Jidai Katsugeki - Goemon
 Region = NTSC-J
-Compat = 3
+Compat = 4
+GoemonTlbHack = 1
 ---------------------------------------------
 Serial = SLPM-65015
 Name   = Kessen 2

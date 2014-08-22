@@ -332,12 +332,12 @@ namespace Interpreter {
 namespace OpcodeImpl {
 namespace COP0 {
 
-	void TLBR() {
-DevCon.Warning("COP0_TLBR %d:%x,%x,%x,%x\n",
-			cpuRegs.CP0.n.Random,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
+void TLBR() {
+	DevCon.Warning("COP0_TLBR %d:%x,%x,%x,%x\n",
+			cpuRegs.CP0.n.Index,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
-	int i = cpuRegs.CP0.n.Index&0x1f;
+	int i = cpuRegs.CP0.n.Index & 0x3f;
 
 	cpuRegs.CP0.n.PageMask = tlb[i].PageMask;
 	cpuRegs.CP0.n.EntryHi = tlb[i].EntryHi&~(tlb[i].PageMask|0x1f00);
@@ -411,7 +411,6 @@ void MFC0()
 {
 	// Note on _Rd_ Condition 9: CP0.Count should be updated even if _Rt_ is 0.
 	if ((_Rd_ != 9) && !_Rt_ ) return;
-	if (_Rd_ != 9) { COP0_LOG("%s", disR5900Current.getCString() ); }
 
 	//if(bExecBIOS == FALSE && _Rd_ == 25) Console.WriteLn("MFC0 _Rd_ %x = %x", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_)
@@ -461,7 +460,6 @@ void MFC0()
 
 void MTC0()
 {
-	COP0_LOG("%s\n", disR5900Current.getCString());
 	//if(bExecBIOS == FALSE && _Rd_ == 25) Console.WriteLn("MTC0 _Rd_ %x = %x", _Rd_, cpuRegs.CP0.r[_Rd_]);
 	switch (_Rd_)
 	{

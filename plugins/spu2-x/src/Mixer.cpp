@@ -116,7 +116,7 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 	// Important!  Both cores signal IRQ when an address is read, regardless of
 	// which core actually reads the address.
 
-	for( uint i=0; i<2; i++ )
+	for( int i=0; i<2; i++ )
 	{
 		if( Cores[i].IRQEnable && (vc.NextA==Cores[i].IRQA ) )
 		{
@@ -522,7 +522,7 @@ static __forceinline s32 GetNoiseValues( V_Core& thiscore, uint voiceidx )
 static __forceinline void spu2M_WriteFast( u32 addr, s16 value )
 { 
 	// Fixes some of the oldest hangs in pcsx2's history! :p
-	for( uint i=0; i<2; i++ )
+	for( int i=0; i<2; i++ )
 	{
 		if( Cores[i].IRQEnable && Cores[i].IRQA == addr )
 		{
@@ -819,7 +819,7 @@ static int p_cachestat_counter=0;
 
 // Gcc does not want to inline it when lto is enabled because some functions growth too much.
 // The function is big enought to see any speed impact. -- Gregory
-#ifndef __LINUX__
+#ifndef __linux__
 __forceinline
 #endif
 void Mix()

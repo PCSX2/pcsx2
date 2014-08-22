@@ -21,8 +21,8 @@ CheckedStaticBox::CheckedStaticBox( wxWindow* parent, int orientation, const wxS
 	, ThisSizer( *new wxStaticBoxSizer( orientation, this ) )
 	, ThisToggle( *new wxCheckBox( this, wxID_ANY, title, wxPoint( 8, 0 ) ) )
 {
-	this += ThisToggle;
-	this += ThisSizer | pxExpand;
+	*this += ThisToggle;
+	*this += ThisSizer | pxExpand;
 
 	// Ensure that the right-side of the static group box isn't too cozy:
 	SetMinWidth( ThisToggle.GetSize().GetWidth() + 32 );
@@ -72,6 +72,6 @@ bool CheckedStaticBox::Enable( bool enable )
 		if( current != &ThisToggle )
 			current->Enable( val );
 	}
-	
+
 	return true;
 }

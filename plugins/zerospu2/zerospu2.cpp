@@ -28,7 +28,7 @@
 #include <stdlib.h>
 
 #include "soundtouch/SoundTouch.h"
-#ifdef __LINUX__
+#ifdef __linux__
 #include "WavFile.h"
 #else
 #include "soundtouch/WavFile.h"

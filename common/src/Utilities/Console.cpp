@@ -104,7 +104,7 @@ const IConsoleWriter ConsoleWriter_Null =
 //  Console_Stdout
 // --------------------------------------------------------------------------------------
 
-#ifdef __LINUX__
+#ifdef __linux__
 static __fi const wxChar* GetLinuxConsoleColor(ConsoleColors color)
 {
     switch(color)
@@ -165,15 +165,15 @@ static void __concall ConsoleStdout_Newline()
 
 static void __concall ConsoleStdout_DoSetColor( ConsoleColors color )
 {
-#ifdef __LINUX__
+#ifdef __linux__
 	wxPrintf(L"\033[0m");
-    wxPrintf(GetLinuxConsoleColor(color));
+	wxPrintf(GetLinuxConsoleColor(color));
 #endif
 }
 
 static void __concall ConsoleStdout_SetTitle( const wxString& title )
 {
-#ifdef __LINUX__
+#ifdef __linux__
 	wxPrintf(L"\033]0;%s\007", title.c_str());
 #endif
 }
@@ -467,6 +467,55 @@ bool IConsoleWriter::Warning( const wxChar* fmt, ... ) const
 
 	return false;
 }
+
+#if wxMAJOR_VERSION >= 3
+// --------------------------------------------------------------------------------------
+//  Write Variants - Unknown style
+// --------------------------------------------------------------------------------------
+bool IConsoleWriter::WriteLn( const wxString fmt, ... ) const
+{
+	va_list args;
+	va_start(args,fmt);
+	FormatV(fmt.wx_str(),args);
+	va_end(args);
+
+	return false;
+}
+
+bool IConsoleWriter::WriteLn( ConsoleColors color, const wxString fmt, ... ) const
+{
+	va_list args;
+	va_start(args,fmt);
+	ConsoleColorScope cs( color );
+	FormatV(fmt.wx_str(),args);
+	va_end(args);
+
+	return false;
+}
+
+bool IConsoleWriter::Error( const wxString fmt, ... ) const
+{
+	va_list args;
+	va_start(args,fmt);
+	ConsoleColorScope cs( Color_StrongRed );
+	FormatV(fmt.wx_str(),args);
+	va_end(args);
+
+	return false;
+}
+
+bool IConsoleWriter::Warning( const wxString fmt, ... ) const
+{
+	va_list args;
+	va_start(args,fmt);
+	ConsoleColorScope cs( Color_StrongOrange );
+	FormatV(fmt.wx_str(),args);
+	va_end(args);
+
+	return false;
+}
+#endif
+
 
 // --------------------------------------------------------------------------------------
 //  ConsoleColorScope / ConsoleIndentScope

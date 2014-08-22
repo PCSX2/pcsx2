@@ -117,8 +117,8 @@ extern pxDoAssertFnType* pxDoAssert;
 #	define pxAssumeMsg(cond, msg)	pxAssumeRel(cond, msg)
 #	define pxAssumeDev(cond, msg)	pxAssumeRel(cond, msg)
 
-#	define pxFail(msg)				pxAssertMsg(false, msg)
-#	define pxFailDev(msg)			pxAssertDev(false, msg)
+#	define pxFail(msg)              pxAssertMsg(false, msg)
+#	define pxFailDev(msg)           pxAssertDev(false, msg)
 
 #elif defined(PCSX2_DEVBUILD)
 
@@ -141,8 +141,8 @@ extern pxDoAssertFnType* pxDoAssert;
 #	define pxAssumeMsg(cond, msg)	pxAssumeRel(cond, msg) //(__assume(cond))
 #	define pxAssumeDev(cond, msg)	pxAssumeRel(cond, msg)
 
-#	define pxFail(msg)				pxAssertDev(false, msg)
-#	define pxFailDev(msg)			pxAssertDev(false, msg)
+#	define pxFail(msg)              pxAssertDev(false, msg)
+#	define pxFailDev(msg)           pxAssertDev(false, msg)
 
 #else
 
@@ -155,8 +155,8 @@ extern pxDoAssertFnType* pxDoAssert;
 #	define pxAssumeMsg(cond, msg)	(__assume(cond))
 #	define pxAssumeDev(cond, msg)	(__assume(cond))
 
-#	define pxFail(msg)				do{} while(0)
-#	define pxFailDev(msg)			do{} while(0)
+#	define pxFail(msg)              do{} while(0)
+#	define pxFailDev(msg)           do{} while(0)
 
 #endif
 
@@ -184,6 +184,10 @@ extern pxDoAssertFnType* pxDoAssert;
 
 extern void pxOnAssert( const DiagnosticOrigin& origin, const wxChar* msg=NULL );
 extern void pxOnAssert( const DiagnosticOrigin& origin, const char* msg );
+#if wxMAJOR_VERSION >= 3
+extern void pxOnAssert( const DiagnosticOrigin& origin, const wxString& msg);
+extern void pxOnAssert( const DiagnosticOrigin& origin, const FastFormatUnicode& msg);
+#endif
 
 // --------------------------------------------------------------------------------------
 // jNO_DEFAULT -- disables the default case in a switch, which improves switch optimization

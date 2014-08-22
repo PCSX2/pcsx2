@@ -291,6 +291,8 @@ namespace MIPSAnalyst
 		case BRANCH:
 			info.branchTarget = info.opcodeAddress + 4 + ((signed short)(op&0xFFFF)<<2);
 			break;
+		case NONE:
+			return false;
 		}
 
 		return true;
@@ -315,26 +317,38 @@ namespace MIPSAnalyst
 			size = 2;
 			break;
 		case 0x23:		// lw
-		case 0x26:		// lwr
 		case 0x2B:		// sw
+			size = 4;
+			break;
+		case 0x26:		// lwr
 		case 0x2E:		// swr
 			size = 4;
+			info.lrType = LOADSTORE_RIGHT; 
 			break;
 		case 0x22:		// lwl
 		case 0x2A:		// swl
 			size = 4;
 			off = -3;
+			info.lrType = LOADSTORE_LEFT; 
 			break;
 		case 0x37:		// ld
-		case 0x1B:		// ldr
 		case 0x3F:		// sd
+			size = 8;
+			break;
+		case 0x1B:		// ldr
 		case 0x2D:		// sdr
 			size = 8;
+			info.lrType = LOADSTORE_RIGHT; 
 			break;
 		case 0x1A:		// ldl
 		case 0x2C:		// sdl
 			size = 8;
 			off = -7;
+			info.lrType = LOADSTORE_LEFT;
+			break;
+		case 0x1E:		// lq
+		case 0x1F:		// sq
+			size = 16;
 			break;
 		}
 

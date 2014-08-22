@@ -23,13 +23,13 @@ using namespace pxSizerFlags;
 // --------------------------------------------------------------------------------------
 
 bool ConsoleLogSource_Event::Write( const pxEvtQueue* evtHandler, const SysExecEvent* evt, const wxChar* msg ) {
-	return _parent::Write( pxsFmt(L"(%s:%s) ", evtHandler->GetEventHandlerName().c_str(), evt->GetEventName().c_str()) + msg );
+	return _parent::Write( pxsFmt(L"(%s:%s) ", WX_STR(evtHandler->GetEventHandlerName()), WX_STR(evt->GetEventName())) + msg );
 }
 bool ConsoleLogSource_Event::Warn( const pxEvtQueue* evtHandler, const SysExecEvent* evt, const wxChar* msg )	{
-	return _parent::Write( pxsFmt(L"(%s:%s) ", evtHandler->GetEventHandlerName().c_str(), evt->GetEventName().c_str()) + msg );
+	return _parent::Write( pxsFmt(L"(%s:%s) ", WX_STR(evtHandler->GetEventHandlerName()), WX_STR(evt->GetEventName())) + msg );
 }
 bool ConsoleLogSource_Event::Error( const pxEvtQueue* evtHandler, const SysExecEvent* evt, const wxChar* msg ) {
-	return _parent::Write( pxsFmt(L"(%s:%s) ", evtHandler->GetEventHandlerName().c_str(), evt->GetEventName().c_str()) + msg );
+	return _parent::Write( pxsFmt(L"(%s:%s) ", WX_STR(evtHandler->GetEventHandlerName()), WX_STR(evt->GetEventName())) + msg );
 }
 
 ConsoleLogSource_Event::ConsoleLogSource_Event()
@@ -84,7 +84,7 @@ void SysExecEvent::SetException( BaseException* ex )
 {
 	if( !ex ) return;
 
-	ex->DiagMsg() += pxsFmt(L"(%s) ", GetEventName().c_str());
+	ex->DiagMsg() += pxsFmt(L"(%s) ", WX_STR(GetEventName()));
 	//ex->UserMsg() = prefix + ex->UserMsg();
 
 	if( m_sync )
@@ -211,7 +211,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 			synclock.Release();
 
 			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Executing... [%s]%s",
-				deleteMe->AllowCancelOnExit() ? L"Cancelable" : L"Noncancelable", isIdle ? L"(Idle)" : wxEmptyString)
+				deleteMe->AllowCancelOnExit() ? L"Cancelable" : L"Noncancelable", isIdle ? L"(Idle)" : wxEmptyString).wc_str()
 			);
 
 			if( deleteMe->AllowCancelOnExit() )
@@ -224,7 +224,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 
 			u64 qpc_end = GetCPUTicks();
 			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Event completed in %ums",
-				(u32)(((qpc_end-m_qpc_Start)*1000) / GetTickFrequency()))
+				(u32)(((qpc_end-m_qpc_Start)*1000) / GetTickFrequency())).wc_str()
 			);
 
 			synclock.Acquire();

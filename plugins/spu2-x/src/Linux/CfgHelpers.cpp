@@ -52,6 +52,12 @@ void CfgWriteInt(const wchar_t* Section, const wchar_t* Name, int Value)
 	spuConfig->Write(Name, Value);
 }
 
+void CfgWriteFloat(const wchar_t* Section, const wchar_t* Name, float Value)
+{
+	setIni(Section);
+	spuConfig->Write(Name, (double)Value);
+}
+
 void CfgWriteStr(const wchar_t* Section, const wchar_t* Name, const wxString& Data)
 {
 	setIni(Section);
@@ -78,10 +84,20 @@ int CfgReadInt(const wchar_t* Section, const wchar_t* Name,int Default)
 	return ret;
 }
 
+float CfgReadFloat(const wchar_t* Section, const wchar_t* Name, float Default)
+{
+	double ret;
+
+	setIni(Section);
+	spuConfig->Read(Name, &ret, (double)Default);
+
+	return (float)ret;
+}
+
 void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, int DataSize, const wchar_t* Default)
 {
 	setIni(Section);
-	wcscpy(Data, spuConfig->Read(Name, Default));
+	wcscpy(Data, spuConfig->Read(Name, Default).wc_str());
 }
 
 void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default)

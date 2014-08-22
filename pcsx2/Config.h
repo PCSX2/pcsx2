@@ -56,6 +56,7 @@ enum GamefixId
 	Fix_VIF1Stall,
 	Fix_GIFReverse,
 	Fix_FMVinSoftware,
+	Fix_GoemonTlbMiss,
 
 	GamefixId_COUNT
 };
@@ -284,7 +285,6 @@ struct Pcsx2Config
 		bool	FrameLimitEnable;
 		bool	FrameSkipEnable;
 		bool	VsyncEnable;
-		bool	ManagedVsync;
 
 		// The region mode controls the default Maximum/Minimum FPS settings and also
 		// regulates the vsync rates (which in turn control the IOP's SPU2 tick sync and ensure
@@ -311,7 +311,6 @@ struct Pcsx2Config
 				OpEqu( FrameSkipEnable )		&&
 				OpEqu( FrameLimitEnable )		&&
 				OpEqu( VsyncEnable )			&&
-				OpEqu( ManagedVsync )			&&
 
 				OpEqu( LimitScalar )			&&
 				OpEqu( FramerateNTSC )			&&
@@ -349,7 +348,8 @@ struct Pcsx2Config
 				VIFFIFOHack		:1,     // Pretends to fill the non-existant VIF FIFO Buffer.
 				VIF1StallHack   :1,     // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
 				GIFReverseHack  :1,		// Allows PATH3 to continue even if the FIFO is reversed.
-				FMVinSoftwareHack:1;		// Toggle in and out of software rendering when an FMV runs.
+				FMVinSoftwareHack:1,	// Toggle in and out of software rendering when an FMV runs.
+				GoemonTlbHack:1;		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
 		BITFIELD_END
 
 		GamefixOptions();
@@ -408,7 +408,6 @@ struct Pcsx2Config
 	{
 		BITFIELD32()
 			bool
-				EnableDebugger		:1,
 				ShowDebuggerOnStart	:1;
 		BITFIELD_END
 
@@ -433,6 +432,7 @@ struct Pcsx2Config
 		bool
 			CdvdVerboseReads	:1,		// enables cdvd read activity verbosely dumped to the console
 			CdvdDumpBlocks		:1,		// enables cdvd block dumping
+			CdvdShareWrite		:1,		// allows the iso to be modified while it's loaded
 			EnablePatches		:1,		// enables patch detection and application
 			EnableCheats		:1,		// enables cheat detection and application
 			EnableWideScreenPatches		:1,

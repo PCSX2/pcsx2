@@ -35,8 +35,8 @@ void FileStream::seek(s64 offset)
 
 void FileStream::seek(s64 offset, int ref_position)
 {
-	int ret = _fseeki64(handle, offset, SEEK_SET);
-#ifdef __LINUX__
+	int ret = _fseeki64(handle, offset, ref_position);
+#ifdef __linux__
 	if (ret) throw "Seek offset out of bounds.";
 #else
 	if (ret)
@@ -76,7 +76,7 @@ int FileStream::read(byte* b, int len)
 {
 	if (b == NULL)
 	{
-#ifdef __LINUX__
+#ifdef __linux__
 		throw "NULL buffer passed.";
 #else
 		throw new exception("NULL buffer passed.");
@@ -85,7 +85,7 @@ int FileStream::read(byte* b, int len)
 
 	if (len < 0)
 	{
-#ifdef __LINUX__
+#ifdef __linux__
 		throw "off<0 or len<0.";
 #else
 		throw new exception("off<0 or len<0.");
@@ -98,20 +98,17 @@ int FileStream::read(byte* b, int len)
 string FileStream::readLine()
 {
 	string s;
-	char c;
 
 	s.clear();
-	do {
-		if(eof())
+	while (!eof())
+	{
+		char c = read();
+
+		if ((c == '\n') || (c == '\r') || (c == '\0'))
 			break;
 
-		c = read();
-
-		if((c=='\n')||(c=='\r')||(c==0))
-			break;
-
-		s.append(1,c);
-	} while(true);
+		s.append(1, c);
+	}
 
 	return s;
 }
@@ -119,20 +116,17 @@ string FileStream::readLine()
 wstring FileStream::readLineW()
 {
 	wstring s;
-	wchar_t c;
 
 	s.clear();
-	do {
-		if(eof())
+	while (!eof())
+	{
+		wchar_t c = read<wchar_t>();
+
+		if ((c == L'\n') || (c == L'\r') || (c == L'\0'))
 			break;
 
-		c = read<wchar_t>();
-
-		if((c==L'\n')||(c==L'\r')||(c==0))
-			break;
-
-		s.append(1,c);
-	} while(true);
+		s.append(1, c);
+	}
 
 	return s;
 }

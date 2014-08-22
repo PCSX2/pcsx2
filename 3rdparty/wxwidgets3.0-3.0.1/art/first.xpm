@@ -1,0 +1,22 @@
+/* XPM */
+static const char *const first_xpm[] = {
+"16 16 3 1",
+" 	c None",
+".	c Black",
+"X	c Gray100",
+"                ",
+"                ",
+"...    .        ",
+"...   ..        ",
+"...  .X.        ",
+"... .XX........ ",
+"....XXXXXXXXXX. ",
+"...XXXXXXXXXXX. ",
+"...XXXXXXXXXXX. ",
+"....XXXXXXXXXX. ",
+"... .XX........ ",
+"...  .X.        ",
+"...   ..        ",
+"...    .        ",
+"                ",
+"                "};

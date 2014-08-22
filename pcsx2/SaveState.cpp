@@ -43,6 +43,7 @@ static void PostLoadPrep()
 	memzero(pCache);
 //	WriteCP0Status(cpuRegs.CP0.n.Status.val);
 	for(int i=0; i<48; i++) MapTLB(i);
+	if (EmuConfig.Gamefixes.GoemonTlbHack) GoemonPreloadTlb();
 
 	UpdateVSyncRate();
 }
@@ -56,7 +57,7 @@ wxString SaveStateBase::GetFilename( int slot )
 	if (serialName.IsEmpty()) serialName = L"BIOS";
 
 	return (g_Conf->Folders.Savestates +
-		pxsFmt( L"%s (%08X).%02d.p2s", serialName.c_str(), ElfCRC, slot )).GetFullPath();
+		pxsFmt( L"%s (%08X).%02d.p2s", WX_STR(serialName), ElfCRC, slot )).GetFullPath();
 
 	//return (g_Conf->Folders.Savestates +
 	//	pxsFmt( L"%08X.%03d", ElfCRC, slot )).GetFullPath();
@@ -137,7 +138,7 @@ SaveStateBase& SaveStateBase::FreezeBios()
 		Console.Indent(2).Error(
 			"Current BIOS:   %ls (crc=0x%08x)\n"
 			"Savestate BIOS: %s (crc=0x%08x)\n",
-			BiosDescription.c_str(), BiosChecksum,
+			BiosDescription.wx_str(), BiosChecksum,
 			biosdesc, bioscheck
 		);
 	}

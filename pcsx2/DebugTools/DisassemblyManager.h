@@ -32,7 +32,7 @@ struct DisassemblyLineInfo
 	u32 totalSize;
 };
 
-enum LineType { LINE_UP, LINE_DOWN, LINE_RIGHT };
+enum LineType { LINE_UP, LINE_DOWN };
 
 struct BranchLine
 {

@@ -124,7 +124,10 @@ static void setupPass1(microVU& mVU, int opCase, bool isACC, bool noFlagUpdate) 
 	opCase2 { mVUanalyzeFMAC3(mVU, ((isACC) ? 0 : _Fd_), _Fs_, _Ft_); }
 	opCase3 { mVUanalyzeFMAC1(mVU, ((isACC) ? 0 : _Fd_), _Fs_, 0); }
 	opCase4 { mVUanalyzeFMAC1(mVU, ((isACC) ? 0 : _Fd_), _Fs_, 0); }
-	if (noFlagUpdate) { sFLAG.doFlag = 0; }
+
+	if (noFlagUpdate) {
+		sFLAG.doFlag = false;
+	}
 }
 
 // Safer to force 0 as the result for X minus X than to do actual subtraction
@@ -135,10 +138,10 @@ static bool doSafeSub(microVU& mVU, int opCase, int opType, bool isACC) {
 			xPXOR(Fs, Fs); // Set to Positive 0
 			mVUupdateFlags(mVU, Fs);
 			mVU.regAlloc->clearNeeded(Fs);
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 // Sets Up Ft Reg for Normal, BC, I, and Q Cases
@@ -203,13 +206,13 @@ static void mVU_FMACa(microVU& mVU, int recPass, int opCase, int opType, bool is
 
 // MADDA/MSUBA Opcodes
 static void mVU_FMACb(microVU& mVU, int recPass, int opCase, int opType, microOpcode opEnum, int clampType) {
-	pass1 { setupPass1(mVU, opCase, 1, 0); }
+	pass1 { setupPass1(mVU, opCase, true, false); }
 	pass2 {
 		xmm Fs, Ft, ACC, tempFt;
 		setupFtReg(mVU, Ft, tempFt, opCase);
 
 		Fs  = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
-		ACC = mVU.regAlloc->allocReg(32, 32, 0xf, 0);
+		ACC = mVU.regAlloc->allocReg(32, 32, 0xf, false);
 
 		if (_XYZW_SS2) { xPSHUF.D(ACC, ACC, shuffleSS(_X_Y_Z_W)); }
 
@@ -239,13 +242,13 @@ static void mVU_FMACb(microVU& mVU, int recPass, int opCase, int opType, microOp
 		mVU.regAlloc->clearNeeded(Ft);
 		mVU.profiler.EmitOp(opEnum);
 	}
-	pass3 { mVU_printOP(mVU, opCase, opEnum, 1); }
+	pass3 { mVU_printOP(mVU, opCase, opEnum, true); }
 	pass4 { mVUregs.needExactMatch |= 8; }
 }
 
 // MADD Opcodes
 static void mVU_FMACc(microVU& mVU, int recPass, int opCase, microOpcode opEnum, int clampType) {
-	pass1 { setupPass1(mVU, opCase, 0, 0); }
+	pass1 { setupPass1(mVU, opCase, false, false); }
 	pass2 {
 		xmm Fs, Ft, ACC, tempFt;
 		setupFtReg(mVU, Ft, tempFt, opCase);
@@ -271,13 +274,13 @@ static void mVU_FMACc(microVU& mVU, int recPass, int opCase, microOpcode opEnum,
 		mVU.regAlloc->clearNeeded(ACC);
 		mVU.profiler.EmitOp(opEnum);
 	}
-	pass3 { mVU_printOP(mVU, opCase, opEnum, 0); }
+	pass3 { mVU_printOP(mVU, opCase, opEnum, false); }
 	pass4 { mVUregs.needExactMatch |= 8; }
 }
 
 // MSUB Opcodes
 static void mVU_FMACd(microVU& mVU, int recPass, int opCase, microOpcode opEnum, int clampType) {
-	pass1 { setupPass1(mVU, opCase, 0, 0); }
+	pass1 { setupPass1(mVU, opCase, false, false); }
 	pass2 {
 		xmm Fs, Ft, Fd, tempFt;
 		setupFtReg(mVU, Ft, tempFt, opCase);
@@ -299,7 +302,7 @@ static void mVU_FMACd(microVU& mVU, int recPass, int opCase, microOpcode opEnum,
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opEnum);
 	}
-	pass3 { mVU_printOP(mVU, opCase, opEnum, 0); }
+	pass3 { mVU_printOP(mVU, opCase, opEnum, false); }
 	pass4 { mVUregs.needExactMatch |= 8; }
 }
 
@@ -448,94 +451,94 @@ mVUop(mVU_CLIP) {
 // Micro VU Micromode Upper instructions
 //------------------------------------------------------------------
 
-mVUop(mVU_ADD)		{ mVU_FMACa(mVU, recPass, 1, 0, 0,		opADD,    0);  }
-mVUop(mVU_ADDi)		{ mVU_FMACa(mVU, recPass, 3, 5, 0,		opADDi,   0);  }
-mVUop(mVU_ADDq)		{ mVU_FMACa(mVU, recPass, 4, 0, 0,		opADDq,   0);  }
-mVUop(mVU_ADDx)		{ mVU_FMACa(mVU, recPass, 2, 0, 0,		opADDx,   0);  }
-mVUop(mVU_ADDy)		{ mVU_FMACa(mVU, recPass, 2, 0, 0,		opADDy,   0);  }
-mVUop(mVU_ADDz)		{ mVU_FMACa(mVU, recPass, 2, 0, 0,		opADDz,   0);  }
-mVUop(mVU_ADDw)		{ mVU_FMACa(mVU, recPass, 2, 0, 0,		opADDw,   0);  }
-mVUop(mVU_ADDA)		{ mVU_FMACa(mVU, recPass, 1, 0, 1,		opADDA,   0);  }
-mVUop(mVU_ADDAi)	{ mVU_FMACa(mVU, recPass, 3, 0, 1,		opADDAi,  0);  }
-mVUop(mVU_ADDAq)	{ mVU_FMACa(mVU, recPass, 4, 0, 1,		opADDAq,  0);  }
-mVUop(mVU_ADDAx)	{ mVU_FMACa(mVU, recPass, 2, 0, 1,		opADDAx,  0);  }
-mVUop(mVU_ADDAy)	{ mVU_FMACa(mVU, recPass, 2, 0, 1,		opADDAy,  0);  }
-mVUop(mVU_ADDAz)	{ mVU_FMACa(mVU, recPass, 2, 0, 1,		opADDAz,  0);  }
-mVUop(mVU_ADDAw)	{ mVU_FMACa(mVU, recPass, 2, 0, 1,		opADDAw,  0);  }
-mVUop(mVU_SUB)		{ mVU_FMACa(mVU, recPass, 1, 1, 0,		opSUB,  (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
-mVUop(mVU_SUBi)		{ mVU_FMACa(mVU, recPass, 3, 1, 0,		opSUBi, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
-mVUop(mVU_SUBq)		{ mVU_FMACa(mVU, recPass, 4, 1, 0,		opSUBq, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
-mVUop(mVU_SUBx)		{ mVU_FMACa(mVU, recPass, 2, 1, 0,		opSUBx, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
-mVUop(mVU_SUBy)		{ mVU_FMACa(mVU, recPass, 2, 1, 0,		opSUBy, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
-mVUop(mVU_SUBz)		{ mVU_FMACa(mVU, recPass, 2, 1, 0,		opSUBz, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
-mVUop(mVU_SUBw)		{ mVU_FMACa(mVU, recPass, 2, 1, 0,		opSUBw, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
-mVUop(mVU_SUBA)		{ mVU_FMACa(mVU, recPass, 1, 1, 1,		opSUBA,   0);  }
-mVUop(mVU_SUBAi)	{ mVU_FMACa(mVU, recPass, 3, 1, 1,		opSUBAi,  0);  }
-mVUop(mVU_SUBAq)	{ mVU_FMACa(mVU, recPass, 4, 1, 1,		opSUBAq,  0);  }
-mVUop(mVU_SUBAx)	{ mVU_FMACa(mVU, recPass, 2, 1, 1,		opSUBAx,  0);  }
-mVUop(mVU_SUBAy)	{ mVU_FMACa(mVU, recPass, 2, 1, 1,		opSUBAy,  0);  }
-mVUop(mVU_SUBAz)	{ mVU_FMACa(mVU, recPass, 2, 1, 1,		opSUBAz,  0);  }
-mVUop(mVU_SUBAw)	{ mVU_FMACa(mVU, recPass, 2, 1, 1,		opSUBAw,  0);  }
-mVUop(mVU_MUL)		{ mVU_FMACa(mVU, recPass, 1, 2, 0,		opMUL,  (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
-mVUop(mVU_MULi)		{ mVU_FMACa(mVU, recPass, 3, 2, 0,		opMULi, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
-mVUop(mVU_MULq)		{ mVU_FMACa(mVU, recPass, 4, 2, 0,		opMULq, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
-mVUop(mVU_MULx)		{ mVU_FMACa(mVU, recPass, 2, 2, 0,		opMULx, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (vu0))
-mVUop(mVU_MULy)		{ mVU_FMACa(mVU, recPass, 2, 2, 0,		opMULy, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
-mVUop(mVU_MULz)		{ mVU_FMACa(mVU, recPass, 2, 2, 0,		opMULz, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
-mVUop(mVU_MULw)		{ mVU_FMACa(mVU, recPass, 2, 2, 0,		opMULw, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
-mVUop(mVU_MULA)		{ mVU_FMACa(mVU, recPass, 1, 2, 1,		opMULA,   0);  }
-mVUop(mVU_MULAi)	{ mVU_FMACa(mVU, recPass, 3, 2, 1,		opMULAi,  0);  }
-mVUop(mVU_MULAq)	{ mVU_FMACa(mVU, recPass, 4, 2, 1,		opMULAq,  0);  }
-mVUop(mVU_MULAx)	{ mVU_FMACa(mVU, recPass, 2, 2, 1,		opMULAx,  cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MULAy)	{ mVU_FMACa(mVU, recPass, 2, 2, 1,		opMULAy,  cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MULAz)	{ mVU_FMACa(mVU, recPass, 2, 2, 1,		opMULAz,  cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MULAw)	{ mVU_FMACa(mVU, recPass, 2, 2, 1,		opMULAw,  cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADD)		{ mVU_FMACc(mVU, recPass, 1,			opMADD,   0);  }
-mVUop(mVU_MADDi)	{ mVU_FMACc(mVU, recPass, 3,			opMADDi,  0);  }
-mVUop(mVU_MADDq)	{ mVU_FMACc(mVU, recPass, 4,			opMADDq,  0);  }
-mVUop(mVU_MADDx)	{ mVU_FMACc(mVU, recPass, 2,			opMADDx,  cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDy)	{ mVU_FMACc(mVU, recPass, 2,			opMADDy,  cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDz)	{ mVU_FMACc(mVU, recPass, 2,			opMADDz,  cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDw)	{ mVU_FMACc(mVU, recPass, 2,			opMADDw, (isCOP2)?(cACC|cFt|cFs):cFs);} // Clamp (ICO (COP2), TOTA, DoM)
-mVUop(mVU_MADDA)	{ mVU_FMACb(mVU, recPass, 1, 0,			opMADDA,  0);  }
-mVUop(mVU_MADDAi)	{ mVU_FMACb(mVU, recPass, 3, 0,			opMADDAi, 0);  }
-mVUop(mVU_MADDAq)	{ mVU_FMACb(mVU, recPass, 4, 0,			opMADDAq, 0);  }
-mVUop(mVU_MADDAx)	{ mVU_FMACb(mVU, recPass, 2, 0,			opMADDAx, cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDAy)	{ mVU_FMACb(mVU, recPass, 2, 0,			opMADDAy, cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDAz)	{ mVU_FMACb(mVU, recPass, 2, 0,			opMADDAz, cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MADDAw)	{ mVU_FMACb(mVU, recPass, 2, 0,			opMADDAw, cFs);} // Clamp (TOTA, DoM, ...)
-mVUop(mVU_MSUB)		{ mVU_FMACd(mVU, recPass, 1,			opMSUB,   0);  }
-mVUop(mVU_MSUBi)	{ mVU_FMACd(mVU, recPass, 3,			opMSUBi,  0);  }
-mVUop(mVU_MSUBq)	{ mVU_FMACd(mVU, recPass, 4,			opMSUBq,  0);  }
-mVUop(mVU_MSUBx)	{ mVU_FMACd(mVU, recPass, 2,			opMSUBx,  0);  }
-mVUop(mVU_MSUBy)	{ mVU_FMACd(mVU, recPass, 2,			opMSUBy,  0);  }
-mVUop(mVU_MSUBz)	{ mVU_FMACd(mVU, recPass, 2,			opMSUBz,  0);  }
-mVUop(mVU_MSUBw)	{ mVU_FMACd(mVU, recPass, 2,			opMSUBw,  0);  }
-mVUop(mVU_MSUBA)	{ mVU_FMACb(mVU, recPass, 1, 1,			opMSUBA,  0);  }
-mVUop(mVU_MSUBAi)	{ mVU_FMACb(mVU, recPass, 3, 1,			opMSUBAi, 0);  }
-mVUop(mVU_MSUBAq)	{ mVU_FMACb(mVU, recPass, 4, 1,			opMSUBAq, 0);  }
-mVUop(mVU_MSUBAx)	{ mVU_FMACb(mVU, recPass, 2, 1,			opMSUBAx, 0);  }
-mVUop(mVU_MSUBAy)	{ mVU_FMACb(mVU, recPass, 2, 1,			opMSUBAy, 0);  }
-mVUop(mVU_MSUBAz)	{ mVU_FMACb(mVU, recPass, 2, 1,			opMSUBAz, 0);  }
-mVUop(mVU_MSUBAw)	{ mVU_FMACb(mVU, recPass, 2, 1,			opMSUBAw, 0);  }
-mVUop(mVU_MAX)		{ mVU_FMACa(mVU, recPass, 1, 3, 0,		opMAX,    0);  }
-mVUop(mVU_MAXi)		{ mVU_FMACa(mVU, recPass, 3, 3, 0,		opMAXi,   0);  }
-mVUop(mVU_MAXx)		{ mVU_FMACa(mVU, recPass, 2, 3, 0,		opMAXx,   0);  }
-mVUop(mVU_MAXy)		{ mVU_FMACa(mVU, recPass, 2, 3, 0,		opMAXy,   0);  }
-mVUop(mVU_MAXz)		{ mVU_FMACa(mVU, recPass, 2, 3, 0,		opMAXz,   0);  }
-mVUop(mVU_MAXw)		{ mVU_FMACa(mVU, recPass, 2, 3, 0,		opMAXw,   0);  }
-mVUop(mVU_MINI)		{ mVU_FMACa(mVU, recPass, 1, 4, 0,		opMINI,   0);  }
-mVUop(mVU_MINIi)	{ mVU_FMACa(mVU, recPass, 3, 4, 0,		opMINIi,  0);  }
-mVUop(mVU_MINIx)	{ mVU_FMACa(mVU, recPass, 2, 4, 0,		opMINIx,  0);  }
-mVUop(mVU_MINIy)	{ mVU_FMACa(mVU, recPass, 2, 4, 0,		opMINIy,  0);  }
-mVUop(mVU_MINIz)	{ mVU_FMACa(mVU, recPass, 2, 4, 0,		opMINIz,  0);  }
-mVUop(mVU_MINIw)	{ mVU_FMACa(mVU, recPass, 2, 4, 0,		opMINIw,  0);  }
-mVUop(mVU_FTOI0)	{ mVU_FTOIx(mX, NULL,					opFTOI0);      }
-mVUop(mVU_FTOI4)	{ mVU_FTOIx(mX, mVUglob.FTOI_4,			opFTOI4);      }
-mVUop(mVU_FTOI12)	{ mVU_FTOIx(mX, mVUglob.FTOI_12,		opFTOI12);     }
-mVUop(mVU_FTOI15)	{ mVU_FTOIx(mX, mVUglob.FTOI_15,		opFTOI15);     }
-mVUop(mVU_ITOF0)	{ mVU_ITOFx(mX, NULL,					opITOF0);      }
-mVUop(mVU_ITOF4)	{ mVU_ITOFx(mX, mVUglob.ITOF_4,			opITOF4);      }
-mVUop(mVU_ITOF12)	{ mVU_ITOFx(mX, mVUglob.ITOF_12,		opITOF12);     }
-mVUop(mVU_ITOF15)	{ mVU_ITOFx(mX, mVUglob.ITOF_15,		opITOF15);     }
-mVUop(mVU_NOP)		{ pass2 { mVU.profiler.EmitOp(opNOP); } pass3 { mVUlog("NOP"); } }
+mVUop(mVU_ADD)    { mVU_FMACa(mVU, recPass, 1, 0, false, opADD,    0);  }
+mVUop(mVU_ADDi)   { mVU_FMACa(mVU, recPass, 3, 5, false, opADDi,   0);  }
+mVUop(mVU_ADDq)   { mVU_FMACa(mVU, recPass, 4, 0, false, opADDq,   0);  }
+mVUop(mVU_ADDx)   { mVU_FMACa(mVU, recPass, 2, 0, false, opADDx,   0);  }
+mVUop(mVU_ADDy)   { mVU_FMACa(mVU, recPass, 2, 0, false, opADDy,   0);  }
+mVUop(mVU_ADDz)   { mVU_FMACa(mVU, recPass, 2, 0, false, opADDz,   0);  }
+mVUop(mVU_ADDw)   { mVU_FMACa(mVU, recPass, 2, 0, false, opADDw,   0);  }
+mVUop(mVU_ADDA)   { mVU_FMACa(mVU, recPass, 1, 0, true,  opADDA,   0);  }
+mVUop(mVU_ADDAi)  { mVU_FMACa(mVU, recPass, 3, 0, true,  opADDAi,  0);  }
+mVUop(mVU_ADDAq)  { mVU_FMACa(mVU, recPass, 4, 0, true,  opADDAq,  0);  }
+mVUop(mVU_ADDAx)  { mVU_FMACa(mVU, recPass, 2, 0, true,  opADDAx,  0);  }
+mVUop(mVU_ADDAy)  { mVU_FMACa(mVU, recPass, 2, 0, true,  opADDAy,  0);  }
+mVUop(mVU_ADDAz)  { mVU_FMACa(mVU, recPass, 2, 0, true,  opADDAz,  0);  }
+mVUop(mVU_ADDAw)  { mVU_FMACa(mVU, recPass, 2, 0, true,  opADDAw,  0);  }
+mVUop(mVU_SUB)    { mVU_FMACa(mVU, recPass, 1, 1, false, opSUB,  (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
+mVUop(mVU_SUBi)   { mVU_FMACa(mVU, recPass, 3, 1, false, opSUBi, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
+mVUop(mVU_SUBq)   { mVU_FMACa(mVU, recPass, 4, 1, false, opSUBq, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
+mVUop(mVU_SUBx)   { mVU_FMACa(mVU, recPass, 2, 1, false, opSUBx, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
+mVUop(mVU_SUBy)   { mVU_FMACa(mVU, recPass, 2, 1, false, opSUBy, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
+mVUop(mVU_SUBz)   { mVU_FMACa(mVU, recPass, 2, 1, false, opSUBz, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
+mVUop(mVU_SUBw)   { mVU_FMACa(mVU, recPass, 2, 1, false, opSUBw, (_XYZW_PS)?(cFs|cFt):0);   } // Clamp (Kingdom Hearts I (VU0))
+mVUop(mVU_SUBA)   { mVU_FMACa(mVU, recPass, 1, 1, true,  opSUBA,   0);  }
+mVUop(mVU_SUBAi)  { mVU_FMACa(mVU, recPass, 3, 1, true,  opSUBAi,  0);  }
+mVUop(mVU_SUBAq)  { mVU_FMACa(mVU, recPass, 4, 1, true,  opSUBAq,  0);  }
+mVUop(mVU_SUBAx)  { mVU_FMACa(mVU, recPass, 2, 1, true,  opSUBAx,  0);  }
+mVUop(mVU_SUBAy)  { mVU_FMACa(mVU, recPass, 2, 1, true,  opSUBAy,  0);  }
+mVUop(mVU_SUBAz)  { mVU_FMACa(mVU, recPass, 2, 1, true,  opSUBAz,  0);  }
+mVUop(mVU_SUBAw)  { mVU_FMACa(mVU, recPass, 2, 1, true,  opSUBAw,  0);  }
+mVUop(mVU_MUL)    { mVU_FMACa(mVU, recPass, 1, 2, false, opMUL,  (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
+mVUop(mVU_MULi)   { mVU_FMACa(mVU, recPass, 3, 2, false, opMULi, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
+mVUop(mVU_MULq)   { mVU_FMACa(mVU, recPass, 4, 2, false, opMULq, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
+mVUop(mVU_MULx)   { mVU_FMACa(mVU, recPass, 2, 2, false, opMULx, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (vu0))
+mVUop(mVU_MULy)   { mVU_FMACa(mVU, recPass, 2, 2, false, opMULy, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
+mVUop(mVU_MULz)   { mVU_FMACa(mVU, recPass, 2, 2, false, opMULz, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
+mVUop(mVU_MULw)   { mVU_FMACa(mVU, recPass, 2, 2, false, opMULw, (_XYZW_PS)?(cFs|cFt):cFs); } // Clamp (TOTA, DoM, Ice Age (VU0))
+mVUop(mVU_MULA)   { mVU_FMACa(mVU, recPass, 1, 2, true,  opMULA,   0);  }
+mVUop(mVU_MULAi)  { mVU_FMACa(mVU, recPass, 3, 2, true,  opMULAi,  0);  }
+mVUop(mVU_MULAq)  { mVU_FMACa(mVU, recPass, 4, 2, true,  opMULAq,  0);  }
+mVUop(mVU_MULAx)  { mVU_FMACa(mVU, recPass, 2, 2, true,  opMULAx,  cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MULAy)  { mVU_FMACa(mVU, recPass, 2, 2, true,  opMULAy,  cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MULAz)  { mVU_FMACa(mVU, recPass, 2, 2, true,  opMULAz,  cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MULAw)  { mVU_FMACa(mVU, recPass, 2, 2, true,  opMULAw,  cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADD)   { mVU_FMACc(mVU, recPass, 1,           opMADD,   0);  }
+mVUop(mVU_MADDi)  { mVU_FMACc(mVU, recPass, 3,           opMADDi,  0);  }
+mVUop(mVU_MADDq)  { mVU_FMACc(mVU, recPass, 4,           opMADDq,  0);  }
+mVUop(mVU_MADDx)  { mVU_FMACc(mVU, recPass, 2,           opMADDx,  cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDy)  { mVU_FMACc(mVU, recPass, 2,           opMADDy,  cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDz)  { mVU_FMACc(mVU, recPass, 2,           opMADDz,  cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDw)  { mVU_FMACc(mVU, recPass, 2,           opMADDw, (isCOP2)?(cACC|cFt|cFs):cFs);} // Clamp (ICO (COP2), TOTA, DoM)
+mVUop(mVU_MADDA)  { mVU_FMACb(mVU, recPass, 1, 0,        opMADDA,  0);  }
+mVUop(mVU_MADDAi) { mVU_FMACb(mVU, recPass, 3, 0,        opMADDAi, 0);  }
+mVUop(mVU_MADDAq) { mVU_FMACb(mVU, recPass, 4, 0,        opMADDAq, 0);  }
+mVUop(mVU_MADDAx) { mVU_FMACb(mVU, recPass, 2, 0,        opMADDAx, cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDAy) { mVU_FMACb(mVU, recPass, 2, 0,        opMADDAy, cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDAz) { mVU_FMACb(mVU, recPass, 2, 0,        opMADDAz, cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MADDAw) { mVU_FMACb(mVU, recPass, 2, 0,        opMADDAw, cFs);} // Clamp (TOTA, DoM, ...)
+mVUop(mVU_MSUB)   { mVU_FMACd(mVU, recPass, 1,           opMSUB,   0);  }
+mVUop(mVU_MSUBi)  { mVU_FMACd(mVU, recPass, 3,           opMSUBi,  0);  }
+mVUop(mVU_MSUBq)  { mVU_FMACd(mVU, recPass, 4,           opMSUBq,  0);  }
+mVUop(mVU_MSUBx)  { mVU_FMACd(mVU, recPass, 2,           opMSUBx,  0);  }
+mVUop(mVU_MSUBy)  { mVU_FMACd(mVU, recPass, 2,           opMSUBy,  0);  }
+mVUop(mVU_MSUBz)  { mVU_FMACd(mVU, recPass, 2,           opMSUBz,  0);  }
+mVUop(mVU_MSUBw)  { mVU_FMACd(mVU, recPass, 2,           opMSUBw,  0);  }
+mVUop(mVU_MSUBA)  { mVU_FMACb(mVU, recPass, 1, 1,        opMSUBA,  0);  }
+mVUop(mVU_MSUBAi) { mVU_FMACb(mVU, recPass, 3, 1,        opMSUBAi, 0);  }
+mVUop(mVU_MSUBAq) { mVU_FMACb(mVU, recPass, 4, 1,        opMSUBAq, 0);  }
+mVUop(mVU_MSUBAx) { mVU_FMACb(mVU, recPass, 2, 1,        opMSUBAx, 0);  }
+mVUop(mVU_MSUBAy) { mVU_FMACb(mVU, recPass, 2, 1,        opMSUBAy, 0);  }
+mVUop(mVU_MSUBAz) { mVU_FMACb(mVU, recPass, 2, 1,        opMSUBAz, 0);  }
+mVUop(mVU_MSUBAw) { mVU_FMACb(mVU, recPass, 2, 1,        opMSUBAw, 0);  }
+mVUop(mVU_MAX)    { mVU_FMACa(mVU, recPass, 1, 3, false, opMAX,    0);  }
+mVUop(mVU_MAXi)   { mVU_FMACa(mVU, recPass, 3, 3, false, opMAXi,   0);  }
+mVUop(mVU_MAXx)   { mVU_FMACa(mVU, recPass, 2, 3, false, opMAXx,   0);  }
+mVUop(mVU_MAXy)   { mVU_FMACa(mVU, recPass, 2, 3, false, opMAXy,   0);  }
+mVUop(mVU_MAXz)   { mVU_FMACa(mVU, recPass, 2, 3, false, opMAXz,   0);  }
+mVUop(mVU_MAXw)   { mVU_FMACa(mVU, recPass, 2, 3, false, opMAXw,   0);  }
+mVUop(mVU_MINI)   { mVU_FMACa(mVU, recPass, 1, 4, false, opMINI,   0);  }
+mVUop(mVU_MINIi)  { mVU_FMACa(mVU, recPass, 3, 4, false, opMINIi,  0);  }
+mVUop(mVU_MINIx)  { mVU_FMACa(mVU, recPass, 2, 4, false, opMINIx,  0);  }
+mVUop(mVU_MINIy)  { mVU_FMACa(mVU, recPass, 2, 4, false, opMINIy,  0);  }
+mVUop(mVU_MINIz)  { mVU_FMACa(mVU, recPass, 2, 4, false, opMINIz,  0);  }
+mVUop(mVU_MINIw)  { mVU_FMACa(mVU, recPass, 2, 4, false, opMINIw,  0);  }
+mVUop(mVU_FTOI0)  { mVU_FTOIx(mX, NULL,                  opFTOI0);      }
+mVUop(mVU_FTOI4)  { mVU_FTOIx(mX, mVUglob.FTOI_4,        opFTOI4);      }
+mVUop(mVU_FTOI12) { mVU_FTOIx(mX, mVUglob.FTOI_12,       opFTOI12);     }
+mVUop(mVU_FTOI15) { mVU_FTOIx(mX, mVUglob.FTOI_15,       opFTOI15);     }
+mVUop(mVU_ITOF0)  { mVU_ITOFx(mX, NULL,                  opITOF0);      }
+mVUop(mVU_ITOF4)  { mVU_ITOFx(mX, mVUglob.ITOF_4,        opITOF4);      }
+mVUop(mVU_ITOF12) { mVU_ITOFx(mX, mVUglob.ITOF_12,       opITOF12);     }
+mVUop(mVU_ITOF15) { mVU_ITOFx(mX, mVUglob.ITOF_15,       opITOF15);     }
+mVUop(mVU_NOP)    { pass2 { mVU.profiler.EmitOp(opNOP); } pass3 { mVUlog("NOP"); } }

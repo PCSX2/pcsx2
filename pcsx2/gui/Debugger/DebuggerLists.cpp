@@ -18,9 +18,24 @@
 #include "BreakpointWindow.h"
 #include "DebugEvents.h"
 
-void insertListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int count)
+BEGIN_EVENT_TABLE(GenericListView, wxWindow)
+	EVT_SIZE(GenericListView::sizeEvent)
+	EVT_KEY_DOWN(GenericListView::keydownEvent)
+	EVT_RIGHT_DOWN(GenericListView::mouseEvent)
+	EVT_RIGHT_UP(GenericListView::mouseEvent)
+	EVT_LEFT_DCLICK(GenericListView::mouseEvent)
+	EVT_LIST_ITEM_RIGHT_CLICK(wxID_ANY,GenericListView::listEvent)
+END_EVENT_TABLE()
+
+GenericListView::GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount)
+	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER)
 {
-	int totalWidth = list->GetSize().x;
+	insertColumns(columns,columnCount);
+}
+
+void GenericListView::insertColumns(GenericListViewColumn* columns, int count)
+{
+	int totalWidth = GetSize().x;
 
 	for (int i = 0; i < count; i++)
 	{
@@ -28,28 +43,101 @@ void insertListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int
 		column.SetText(columns[i].name);
 		column.SetWidth(totalWidth * columns[i].size);
 
-		list->InsertColumn(i,column);
+		InsertColumn(i,column);
+	}
+
+	this->columns = columns;
+}
+
+void GenericListView::resizeColumns(int totalWidth)
+{
+	for (int i = 0; i < GetColumnCount(); i++)
+	{
+		SetColumnWidth(i,totalWidth*columns[i].size);
 	}
 }
 
-void resizeListViewColumns(wxListCtrl* list, GenericListViewColumn* columns, int count, int totalWidth)
+void GenericListView::sizeEvent(wxSizeEvent& evt)
 {
-	for (int i = 0; i < count; i++)
+	resizeColumns(evt.GetSize().x);
+}
+
+void GenericListView::keydownEvent(wxKeyEvent& evt)
+{
+	int sel = GetFirstSelected();
+	switch (evt.GetKeyCode())
 	{
-		list->SetColumnWidth(i,totalWidth*columns[i].size);
+	case WXK_DELETE:
+		if (sel+1 == GetItemCount())
+			Select(sel-1);
+		break;
+	case WXK_UP:
+		if (sel > 0)
+			Select(sel-1);
+		break;
+	case WXK_DOWN:
+		if (sel+1 < GetItemCount())
+			Select(sel+1);
+		break;
 	}
+
+	onKeyDown(evt.GetKeyCode());
+}
+
+void GenericListView::update()
+{
+	int newRows = getRowCount();
+	SetItemCount(newRows);
+	Refresh();
+}
+
+wxString GenericListView::OnGetItemText(long item, long col) const
+{
+	return getColumnText(item,col);
+}
+
+void GenericListView::postEvent(wxEventType type, int value)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetInt(value);
+   wxPostEvent(this,event);
+}
+
+void GenericListView::mouseEvent(wxMouseEvent& evt)
+{
+	wxEventType type = evt.GetEventType();
+
+	if (type == wxEVT_RIGHT_DOWN)
+	{
+		clickPos = evt.GetPosition();
+		evt.Skip();
+	} else if (type == wxEVT_RIGHT_UP)
+	{
+		onRightClick(GetFirstSelected(),evt.GetPosition());
+	} else if (type == wxEVT_LEFT_DCLICK)
+	{
+		onDoubleClick(GetFirstSelected(),evt.GetPosition());
+	}
+}
+
+void GenericListView::listEvent(wxListEvent& evt)
+{
+	onRightClick(GetFirstSelected(),clickPos);
 }
 
 //
 // BreakpointList
 //
 
-BEGIN_EVENT_TABLE(BreakpointList, wxWindow)
-	EVT_SIZE(BreakpointList::sizeEvent)
-	EVT_KEY_DOWN(BreakpointList::keydownEvent)
-END_EVENT_TABLE()
-
 enum { BPL_TYPE, BPL_OFFSET, BPL_SIZELABEL, BPL_OPCODE, BPL_CONDITION, BPL_HITS, BPL_ENABLED, BPL_COLUMNCOUNT };
+
+enum BreakpointListMenuIdentifiers
+{
+	ID_BREAKPOINTLIST_ENABLE = 1,
+	ID_BREAKPOINTLIST_EDIT,
+	ID_BREAKPOINTLIST_ADDNEW,
+};
 
 GenericListViewColumn breakpointColumns[BPL_COLUMNCOUNT] = {
 	{ L"Type",			0.12f },
@@ -62,29 +150,16 @@ GenericListViewColumn breakpointColumns[BPL_COLUMNCOUNT] = {
 };
 
 BreakpointList::BreakpointList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly)
-	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER), cpu(_cpu), disasm(_disassembly)
+	: GenericListView(parent,breakpointColumns,BPL_COLUMNCOUNT), cpu(_cpu),disasm(_disassembly)
 {
-#ifdef __LINUX__
+#ifdef __linux__
 	// On linux wx failed to resize properly the page. I don't know why so for the moment I just create a static size page
 	// Far from ideal but at least I can use the memory window!
 	this->SetSize(wxSize(1000, 200));
 #endif
-	insertListViewColumns(this,breakpointColumns,BPL_COLUMNCOUNT);
 }
 
-void BreakpointList::sizeEvent(wxSizeEvent& evt)
-{
-	resizeListViewColumns(this,breakpointColumns,BPL_COLUMNCOUNT,evt.GetSize().x);
-}
-
-void BreakpointList::update()
-{
-	int newRows = getTotalBreakpointCount();
-	SetItemCount(newRows);
-	Refresh();
-}
-
-int BreakpointList::getTotalBreakpointCount()
+int BreakpointList::getRowCount()
 {
 	int count = (int)CBreakPoints::GetMemChecks().size();
 	for (size_t i = 0; i < CBreakPoints::GetBreakpoints().size(); i++)
@@ -95,9 +170,9 @@ int BreakpointList::getTotalBreakpointCount()
 	return count;
 }
 
-wxString BreakpointList::OnGetItemText(long item, long col) const
+wxString BreakpointList::getColumnText(int item, int col) const
 {
-	wchar_t dest[256];
+	FastFormatUnicode dest;
 	bool isMemory;
 	int index = getBreakpointIndex(item,isMemory);
 	if (index == -1) return L"Invalid";
@@ -109,32 +184,32 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 			if (isMemory) {
 				switch ((int)displayedMemChecks_[index].cond) {
 				case MEMCHECK_READ:
-					wcscpy(dest,L"Read");
+					dest.Write("Read");
 					break;
 				case MEMCHECK_WRITE:
-					wcscpy(dest,L"Write");
+					dest.Write("Write");
 					break;
 				case MEMCHECK_READWRITE:
-					wcscpy(dest,L"Read/Write");
+					dest.Write("Read/Write");
 					break;
 				case MEMCHECK_WRITE | MEMCHECK_WRITE_ONCHANGE:
-					wcscpy(dest,L"Write Change");
+					dest.Write("Write Change");
 					break;
 				case MEMCHECK_READWRITE | MEMCHECK_WRITE_ONCHANGE:
-					wcscpy(dest,L"Read/Write Change");
+					dest.Write("Read/Write Change");
 					break;
 				}
 			} else {
-				wcscpy(dest,L"Execute");
+				dest.Write(L"Execute");
 			}
 		}
 		break;
 	case BPL_OFFSET:
 		{
 			if (isMemory) {
-				swprintf(dest,256,L"0x%08X",displayedMemChecks_[index].start);
+				dest.Write("0x%08X",displayedMemChecks_[index].start);
 			} else {
-				swprintf(dest,256,L"0x%08X",displayedBreakPoints_[index].addr);
+				dest.Write("0x%08X",displayedBreakPoints_[index].addr);
 			}
 		}
 		break;
@@ -143,20 +218,16 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 			if (isMemory) {
 				auto mc = displayedMemChecks_[index];
 				if (mc.end == 0)
-					swprintf(dest,256,L"0x%08X",1);
+					dest.Write("0x%08X",1);
 				else
-					swprintf(dest,256,L"0x%08X",mc.end-mc.start);
+					dest.Write("0x%08X",mc.end-mc.start);
 			} else {
 				const std::string sym = symbolMap.GetLabelString(displayedBreakPoints_[index].addr);
 				if (!sym.empty())
 				{
-#ifdef __LINUX__
-					swprintf(dest,256,L"%s",sym.c_str());
-#else
-					swprintf(dest,256,L"%S",sym.c_str());
-#endif
+					dest.Write("%s",sym.c_str());
 				} else {
-					wcscpy(dest,L"-");
+					dest.Write("-");
 				}
 			}
 		}
@@ -164,54 +235,38 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 	case BPL_OPCODE:
 		{
 			if (isMemory) {
-				wcscpy(dest,L"-");
+				dest.Write(L"-");
 			} else {
 				char temp[256];
 				disasm->getOpcodeText(displayedBreakPoints_[index].addr, temp);
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",temp);
-#else
-				swprintf(dest,256,L"%S",temp);
-#endif
+				dest.Write("%s",temp);
 			}
 		}
 		break;
 	case BPL_CONDITION:
 		{
 			if (isMemory || displayedBreakPoints_[index].hasCond == false) {
-				wcscpy(dest,L"-");
+				dest.Write("-");
 			} else {
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",displayedBreakPoints_[index].cond.expressionString);
-#else
-				swprintf(dest,256,L"%S",displayedBreakPoints_[index].cond.expressionString);
-#endif
+				dest.Write("%s",displayedBreakPoints_[index].cond.expressionString);
 			}
 		}
 		break;
 	case BPL_HITS:
 		{
 			if (isMemory) {
-				swprintf(dest,256,L"%d",displayedMemChecks_[index].numHits);
+				dest.Write("%d",displayedMemChecks_[index].numHits);
 			} else {
-				swprintf(dest,256,L"-");
+				dest.Write("-");
 			}
 		}
 		break;
 	case BPL_ENABLED:
 		{
 			if (isMemory) {
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",displayedMemChecks_[index].cond & MEMCHECK_BREAK ? "true" : "false");
-#else
-				swprintf(dest,256,L"%S",displayedMemChecks_[index].cond & MEMCHECK_BREAK ? "true" : "false");
-#endif
+				dest.Write("%s",displayedMemChecks_[index].result & MEMCHECK_BREAK ? "true" : "false");
 			} else {
-#ifdef __LINUX__
-				swprintf(dest,256,L"%s",displayedBreakPoints_[index].enabled ? "true" : "false");
-#else
-				swprintf(dest,256,L"%S",displayedBreakPoints_[index].enabled ? "true" : "false");
-#endif
+				dest.Write("%s",displayedBreakPoints_[index].enabled ? "true" : "false");
 			}
 		}
 		break;
@@ -222,23 +277,13 @@ wxString BreakpointList::OnGetItemText(long item, long col) const
 	return dest;
 }
 
-void BreakpointList::keydownEvent(wxKeyEvent& evt)
+void BreakpointList::onKeyDown(int key)
 {
 	int sel = GetFirstSelected();
-	switch (evt.GetKeyCode())
+	switch (key)
 	{
 	case WXK_DELETE:
-		if (sel+1 == GetItemCount())
-			Select(sel-1);
 		removeBreakpoint(sel);
-		break;
-	case WXK_UP:
-		if (sel > 0)
-			Select(sel-1);
-		break;
-	case WXK_DOWN:
-		if (sel+1 < GetItemCount())
-			Select(sel+1);
 		break;
 	case WXK_RETURN:
 		editBreakpoint(sel);
@@ -371,4 +416,62 @@ void BreakpointList::postEvent(wxEventType type, int value)
    event.SetEventObject(this);
    event.SetInt(value);
    wxPostEvent(this,event);
+}
+
+void BreakpointList::onPopupClick(wxCommandEvent& evt)
+{
+	int index = GetFirstSelected();
+	switch (evt.GetId())
+	{
+	case ID_BREAKPOINTLIST_ENABLE:
+		toggleEnabled(index);
+		break;
+	case ID_BREAKPOINTLIST_EDIT:
+		editBreakpoint(index);
+		break;
+	case ID_BREAKPOINTLIST_ADDNEW:
+		postEvent(debEVT_BREAKPOINTWINDOW,0);
+		break;
+	default:
+		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
+		break;
+	}
+}
+
+void BreakpointList::showMenu(const wxPoint& pos)
+{
+	bool isMemory;
+	int index = getBreakpointIndex(GetFirstSelected(),isMemory);
+
+	wxMenu menu;
+	if (index != -1)
+	{
+		menu.AppendCheckItem(ID_BREAKPOINTLIST_ENABLE,	L"Enable");
+		menu.Append(ID_BREAKPOINTLIST_EDIT,				L"Edit");
+		menu.AppendSeparator();
+			
+		// check if the breakpoint is enabled
+		bool enabled;
+		if (isMemory)
+			enabled = (displayedMemChecks_[index].result & MEMCHECK_BREAK) != 0;
+		else 
+			enabled = displayedBreakPoints_[index].enabled;
+
+		menu.Check(ID_BREAKPOINTLIST_ENABLE,enabled);
+	}
+
+	menu.Append(ID_BREAKPOINTLIST_ADDNEW,			L"Add new");
+
+	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&BreakpointList::onPopupClick, NULL, this);
+	PopupMenu(&menu,pos);
+}
+
+void BreakpointList::onRightClick(int itemIndex, const wxPoint& point)
+{
+	showMenu(point);
+}
+
+void BreakpointList::onDoubleClick(int itemIndex, const wxPoint& point)
+{
+	gotoBreakpointAddress(itemIndex);
 }

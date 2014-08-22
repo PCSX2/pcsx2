@@ -425,6 +425,8 @@ void __fastcall _hwWrite128(u32 mem, const mem128_t* srcval)
 			}
 				
 		return;
+
+		default: break;
 	}
 
 	// All upper bits of all non-FIFO 128-bit HW writes are almost certainly disregarded. --air

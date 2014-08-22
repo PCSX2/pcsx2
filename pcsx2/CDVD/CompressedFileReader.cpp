@@ -105,7 +105,7 @@ static void WriteIndexToFile(Access* index, const wxString filename) {
 
 class ChunksCache {
 public:
-	ChunksCache(uint initialLimitMb) : m_size(0), m_entries(0), m_limit(initialLimitMb * 1024 * 1024) {};
+	ChunksCache(uint initialLimitMb) : m_entries(0), m_size(0), m_limit(initialLimitMb * 1024 * 1024) {};
 	~ChunksCache() { Clear(); };
 	void SetLimit(uint megabytes);
 	void Clear() { MatchLimit(true); };
@@ -125,8 +125,8 @@ private:
 		CacheEntry(void* pMallocedSrc, PX_off_t offset, int length, int coverage) :
 			data(pMallocedSrc),
 			offset(offset),
-			size(length),
-			coverage(coverage)
+			coverage(coverage),
+			size(length)
 		{};
 
 		~CacheEntry() { if (data) free(data); };
@@ -166,7 +166,7 @@ void ChunksCache::Take(void* pMallocedSrc, PX_off_t offset, int length, int cove
 
 // By design, succeed only if the entire request is in a single cached chunk
 int ChunksCache::Read(void* pDest, PX_off_t offset, int length) {
-	for (std::list<CacheEntry*>::iterator it = m_entries.begin(); it != m_entries.end(); it++) {
+	for (auto it = m_entries.begin(); it != m_entries.end(); it++) {
 		CacheEntry* e = *it;
 		if (e && offset >= e->offset && (offset + length) <= (e->offset + e->coverage)) {
 			if (it != m_entries.begin())
@@ -199,9 +199,9 @@ class GzippedFileReader : public AsyncFileReader
 public:
 	GzippedFileReader(void) :
 		m_pIndex(0),
-		m_cache(CACHE_SIZE_MB),
+		m_zstates(0),
 		m_src(0),
-		m_zstates(0) {
+		m_cache(CACHE_SIZE_MB) {
 		m_blocksize = 2048;
 	};
 
@@ -225,7 +225,7 @@ public:
 	};
 
 	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
-	virtual void SetDataOffset(uint bytes) { m_dataoffset = bytes; }
+	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
 private:
 	class Czstate {
 	public:

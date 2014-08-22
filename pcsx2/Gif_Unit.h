@@ -188,11 +188,10 @@ struct Gif_Path {
 		gsPack.Reset();
 	}
 
-	bool isMTVU()           { return !idx && THREAD_VU1; }
-	s32 getReadAmount()     { return AtomicRead(readAmount) + gsPack.readAmount; }
-	bool hasDataRemaining() { return curOffset < curSize; }
-	bool isDone()           { return isMTVU() ? !mtvu.fakePackets 
-							: (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
+	bool isMTVU() const           { return !idx && THREAD_VU1; }
+	s32 getReadAmount()           { return AtomicRead(readAmount) + gsPack.readAmount; }
+	bool hasDataRemaining() const { return curOffset < curSize; }
+	bool isDone() const           { return isMTVU() ? !mtvu.fakePackets : (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
 
 	// Waits on the MTGS to process gs packets
 	void mtgsReadWait() {
@@ -588,11 +587,31 @@ struct Gif_Unit {
 				//DevCon.WriteLn("Adding GS Packet for path %d", stat.APATH);
 				AddCompletedGSPacket(gsPack, (GIF_PATH)(stat.APATH-1));
 			}
-			if   (!gsSIGNAL.queued && !gifPath[0].isDone()) { stat.APATH = 1; stat.P1Q = 0; curPath = 0; }
-			elif (!gsSIGNAL.queued && !gifPath[1].isDone()) { stat.APATH = 2; stat.P2Q = 0; curPath = 1; }
-			elif (!gsSIGNAL.queued && !gifPath[2].isDone() && !Path3Masked())
-				 { stat.APATH = 3; stat.P3Q = 0; stat.IP3 = 0; curPath = 2; }
-			else { if(isResume || curPath == 0) { stat.APATH = 0; stat.OPH = 0; } break; }
+
+			if (!gsSIGNAL.queued && !gifPath[0].isDone()) {
+				stat.APATH = 1;
+				stat.P1Q = 0;
+				curPath = 0;
+			}
+			else if (!gsSIGNAL.queued && !gifPath[1].isDone()) {
+				stat.APATH = 2;
+				stat.P2Q = 0;
+				curPath = 1;
+			}
+			else if (!gsSIGNAL.queued && !gifPath[2].isDone() && !Path3Masked()) {
+				stat.APATH = 3;
+				stat.P3Q = 0;
+				stat.IP3 = 0;
+				curPath = 2;
+			}
+			else {
+				if(isResume || curPath == 0) {
+					stat.APATH = 0;
+					stat.OPH = 0;
+				}
+
+				break;
+			}
 		}
 
 		//Some loaders/Refresh Rate selectors and things dont issue "End of Packet" commands
@@ -613,25 +632,26 @@ struct Gif_Unit {
 	}
 
 	// XGkick
-	bool CanDoPath1()	{ return (stat.APATH == 0 || stat.APATH == 1
-							||   (stat.APATH == 3 && CanDoP3Slice()))
-							&&   (CanDoGif() == 1); }
+	bool CanDoPath1() const {
+		return (stat.APATH == 0 || stat.APATH == 1 || (stat.APATH == 3 && CanDoP3Slice())) && CanDoGif();
+	}
 	// Direct
-	bool CanDoPath2()   { return (stat.APATH == 0 || stat.APATH == 2
-							||   (stat.APATH == 3 && CanDoP3Slice()))
-							&&   (CanDoGif() == 1); }
+	bool CanDoPath2() const {
+		return (stat.APATH == 0 || stat.APATH == 2 || (stat.APATH == 3 && CanDoP3Slice())) && CanDoGif();
+	}
 	// DirectHL
-	bool CanDoPath2HL() { return (stat.APATH == 0 || stat.APATH == 2)
-							&&   (CanDoGif() == 1); }
+	bool CanDoPath2HL() const {
+		return (stat.APATH == 0 || stat.APATH == 2) && CanDoGif();
+	}
 	// Gif DMA - CHECK_GIFREVERSEHACK is a hack for Hot Wheels.
-	bool CanDoPath3()   { return((stat.APATH == 0 && !Path3Masked())
-							||	  stat.APATH == 3)
-							&&   (CanDoGif() == 1); }
+	bool CanDoPath3() const {
+		return((stat.APATH == 0 && !Path3Masked()) || stat.APATH == 3) && CanDoGif();
+	}
 
-	bool CanDoP3Slice() { return stat.IMT == 1 && gifPath[GIF_PATH_3].state == GIF_PATH_IMAGE; }
-	bool CanDoGif()		{ return stat.PSE == 0 && (CHECK_GIFREVERSEHACK ? 1 : stat.DIR == 0) && gsSIGNAL.queued == 0; }
+	bool CanDoP3Slice()const { return stat.IMT == 1 && gifPath[GIF_PATH_3].state == GIF_PATH_IMAGE; }
+	bool CanDoGif() const    { return stat.PSE == 0 && (CHECK_GIFREVERSEHACK ? 1 : stat.DIR == 0) && gsSIGNAL.queued == 0; }
 	//Mask stops the next packet which hasnt started from transferring
-	bool Path3Masked()  { return ((stat.M3R || stat.M3P) && (gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)); }
+	bool Path3Masked() const { return ((stat.M3R || stat.M3P) && (gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)); }
 
 	void PrintInfo(bool printP1=1, bool printP2=1, bool printP3=1) {
 		u32 a = checkPaths(1,1,1), b = checkQueued(1,1,1);

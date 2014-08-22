@@ -99,7 +99,7 @@ EXPORT_C_(void) PS2EsetEmuVersion(const char* emuId, uint32 version)
 
 EXPORT_C_(uint32) PS2EgetCpuPlatform()
 {
-#if _M_AMD64
+#ifdef _M_AMD64
 
 	return PS2E_X86_64;
 
@@ -148,6 +148,8 @@ EXPORT_C_(int) GSinit()
 
 EXPORT_C GSshutdown()
 {
+	gsopen_done = false;
+
 	delete s_gs;
 
 	s_gs = NULL;
@@ -164,12 +166,12 @@ EXPORT_C GSshutdown()
 	}
 
 #endif
-
-	gsopen_done = false;
 }
 
 EXPORT_C GSclose()
 {
+	gsopen_done = false;
+
 	if(s_gs == NULL) return;
 
 	s_gs->ResetDevice();
@@ -184,8 +186,6 @@ EXPORT_C GSclose()
 	{
 		s_gs->m_wnd->Detach();
 	}
-
-	gsopen_done = false;
 }
 
 static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
@@ -681,7 +681,8 @@ EXPORT_C GSkeyEvent(GSKeyEventData* e)
 {
 	try
 	{
-		s_gs->KeyEvent(e);
+		if (gsopen_done)
+			s_gs->KeyEvent(e);
 	}
 	catch (GSDXRecoverableError)
 	{

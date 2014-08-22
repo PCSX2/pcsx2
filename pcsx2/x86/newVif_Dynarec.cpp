@@ -273,7 +273,7 @@ _vifT static __fi u8* dVifsetVUptr(uint cl, uint wl, bool isFill) {
 //    it clears the buffer only.
 static __fi void dVifRecLimit(int idx) {
 	if (nVif[idx].recWritePtr > (nVif[idx].recReserve->GetPtrEnd() - _256kb)) {
-		DevCon.WriteLn(L"nVif Recompiler Cache Reset! [%s > %s]",
+		DevCon.WriteLn(L"nVif Recompiler Cache Reset! [%ls > %ls]",
 			pxsPtr(nVif[idx].recWritePtr), pxsPtr(nVif[idx].recReserve->GetPtrEnd())
 		);
 		nVif[idx].recReserve->Reset();

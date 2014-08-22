@@ -27,9 +27,13 @@ Gif_Unit gifUnit;
 bool Gif_HandlerAD(u8* pMem) {
 	u32  reg  = pMem[8];
 	u32* data = (u32*)pMem;
-	if   (reg == 0x50) vif1.BITBLTBUF._u64 = *(u64*)pMem;
-	elif (reg == 0x52) vif1.TRXREG._u64    = *(u64*)pMem;
-	elif (reg == 0x53) { // TRXDIR
+	if (reg == 0x50) {
+		vif1.BITBLTBUF._u64 = *(u64*)pMem;
+	}
+	else if (reg == 0x52) {
+		vif1.TRXREG._u64 = *(u64*)pMem;
+	}
+	else if (reg == 0x53) { // TRXDIR
 		if ((pMem[0] & 3) == 1) { // local -> host
 			u8 bpp = 32; // Onimusha does TRXDIR without BLTDIVIDE first, assume 32bit
 			switch(vif1.BITBLTBUF.SPSM & 7) {
@@ -46,7 +50,7 @@ bool Gif_HandlerAD(u8* pMem) {
 			vif1.GSLastDownloadSize = vif1.TRXREG.RRW * vif1.TRXREG.RRH * bpp >> 7;
 		}
 	}
-	elif (reg == 0x60) { // SIGNAL
+	else if (reg == 0x60) { // SIGNAL
 		if (CSRreg.SIGNAL) { // Time to ignore all subsequent drawing operations.
 			GUNIT_WARN(Color_Orange, "GIF Handler - Stalling SIGNAL");
 			if(!gifUnit.gsSIGNAL.queued) {
@@ -63,15 +67,15 @@ bool Gif_HandlerAD(u8* pMem) {
 			CSRreg.SIGNAL = true;
 		}
 	}
-	elif (reg == 0x61) { // FINISH
+	else if (reg == 0x61) { // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
 		CSRreg.FINISH = true;
 	}
-	elif (reg == 0x62) { // LABEL
+	else if (reg == 0x62) { // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
 		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID&~data[1])|(data[0]&data[1]);
 	}
-	elif (reg >= 0x63 && reg != 0x7f) {
+	else if (reg >= 0x63 && reg != 0x7f) {
 		//DevCon.Warning("GIF Handler - Write to unknown register! [reg=%x]", reg);
 	}
 	return false;
@@ -81,12 +85,12 @@ bool Gif_HandlerAD(u8* pMem) {
 bool Gif_HandlerAD_Debug(u8* pMem) {
 	u32   reg = pMem[8];
 	if   (reg == 0x50) { Console.Error("GIF Handler Debug - BITBLTBUF"); return 1; }
-	elif (reg == 0x52) { Console.Error("GIF Handler Debug - TRXREG");    return 1; }
-	elif (reg == 0x53) { Console.Error("GIF Handler Debug - TRXDIR");    return 1; }
-	elif (reg == 0x60) { Console.Error("GIF Handler Debug - SIGNAL");    return 1; }
-	elif (reg == 0x61) { Console.Error("GIF Handler Debug - FINISH");    return 1; }
-	elif (reg == 0x62) { Console.Error("GIF Handler Debug - LABEL");     return 1; }
-	elif (reg >= 0x63 && reg != 0x7f) {
+	else if (reg == 0x52) { Console.Error("GIF Handler Debug - TRXREG");    return 1; }
+	else if (reg == 0x53) { Console.Error("GIF Handler Debug - TRXDIR");    return 1; }
+	else if (reg == 0x60) { Console.Error("GIF Handler Debug - SIGNAL");    return 1; }
+	else if (reg == 0x61) { Console.Error("GIF Handler Debug - FINISH");    return 1; }
+	else if (reg == 0x62) { Console.Error("GIF Handler Debug - LABEL");     return 1; }
+	else if (reg >= 0x63 && reg != 0x7f) {
 		DevCon.Warning("GIF Handler Debug - Write to unknown register! [reg=%x]", reg);
 	}
 	return 0;

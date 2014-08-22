@@ -28,7 +28,7 @@
 #include "onepad.h"
 #include "svnrev.h"
 
-#ifdef __LINUX__
+#ifdef __linux__
 #include <unistd.h>
 #endif
 #ifdef _MSC_VER
@@ -260,7 +260,7 @@ EXPORT_C_(s32) PADopen(void *pDsp)
 	pthread_spin_init(&mutex_KeyEvent, PTHREAD_PROCESS_PRIVATE);
 	mutex_WasInit = true;
 
-#ifdef __LINUX__
+#ifdef __linux__
 	JoystickInfo::EnumerateJoysticks(s_vjoysticks);
 #endif
 	return _PADopen(pDsp);
@@ -602,7 +602,7 @@ EXPORT_C_(keyEvent*) PADkeyEvent()
 	return &s_event;
 }
 
-#ifdef __LINUX__
+#ifdef __linux__
 EXPORT_C_(void) PADWriteEvent(keyEvent &evt)
 {
 	// This function call be called before PADopen. Therefore we cann't

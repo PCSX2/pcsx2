@@ -24,8 +24,6 @@
 
 #if _M_SSE < 0x500 && (defined(_M_AMD64) || defined(_WIN64))
 
-#error TODO
-
 void GSDrawScanlineCodeGenerator::Generate()
 {
 }
@@ -98,21 +96,21 @@ void GSDrawScanlineCodeGenerator::WriteFrame()
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadPixel(const Xmm& dst, const Reg32& addr)
+void GSDrawScanlineCodeGenerator::ReadPixel(const Xmm& dst, const Reg64& addr)
 {
 }
 
-void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg32& addr, const Reg8& mask, bool fast, int psm, int fz)
+void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg64& addr, const Reg8& mask, bool fast, int psm, int fz)
 {
 }
 
 static const int s_offsets[4] = {0, 2, 8, 10};
 
-void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg32& addr, uint8 i, int psm)
+void GSDrawScanlineCodeGenerator::WritePixel(const Xmm& src, const Reg64& addr, uint8 i, int psm)
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadTexel(const Xmm& dst, const Xmm& addr, const Xmm& temp1, const Xmm& temp2)
+void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 {
 }
 

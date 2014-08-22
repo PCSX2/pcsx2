@@ -17,7 +17,6 @@
 #ifndef __SPR_H__
 #define __SPR_H__
 
-extern void sprInit();
 extern void dmaSPR0();
 extern void dmaSPR1();
 extern void SPRFROMinterrupt();

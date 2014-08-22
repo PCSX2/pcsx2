@@ -274,7 +274,8 @@ __forceinline bool LoadShadersFromDat()
 		fprintf(stderr, "Failed to read ps2hw.dat. Corrupted file?\n");
 
 	s_lpShaderResources[s] = 0;
-	
+	fclose(fres);
+
 	return true;
 }
 
@@ -806,28 +807,19 @@ void ZZDestroy()
 
 	g_nCurVBOIndex = 0;
 	
-	if (pvs != NULL)
+	for (u32 i = 0; i < ArraySize(pvs); ++i)
 	{
-		for (u32 i = 0; i < ArraySize(pvs); ++i)
-		{
-			SAFE_RELEASE_PROG(pvs[i]);
-		}
+		SAFE_RELEASE_PROG(pvs[i]);
 	}
 
-	if (ppsRegular != NULL)
+	for (u32 i = 0; i < ArraySize(ppsRegular); ++i)
 	{
-		for (u32 i = 0; i < ArraySize(ppsRegular); ++i)
-		{
-			SAFE_RELEASE_PROG(ppsRegular[i].prog);
-		}
+		SAFE_RELEASE_PROG(ppsRegular[i].prog);
 	}
 
-	if (ppsTexture != NULL)
+	for (u32 i = 0; i < ArraySize(ppsTexture); ++i)
 	{
-		for (u32 i = 0; i < ArraySize(ppsTexture); ++i)
-		{
-			SAFE_RELEASE_PROG(ppsTexture[i].prog);
-		}
+		SAFE_RELEASE_PROG(ppsTexture[i].prog);
 	}
 
 	SAFE_RELEASE_PROG(pvsBitBlt.prog);

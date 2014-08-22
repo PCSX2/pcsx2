@@ -265,7 +265,7 @@ FastFormatUnicode& FastFormatUnicode::WriteV( const char* fmt, va_list argptr )
 	const uint inspos = m_Length;
 	const uint convLen = converted.Length();
 	m_dest->MakeRoomFor((inspos + convLen + 64) * sizeof(wxChar));
-	memcpy_fast( &((wxChar*)m_dest->GetPtr())[inspos], converted, (convLen+1)*sizeof(wxChar) );
+	memcpy_fast( &((wxChar*)m_dest->GetPtr())[inspos], converted.wc_str(), (convLen+1)*sizeof(wxChar) );
 	m_Length += convLen;
 
 	return *this;
@@ -295,6 +295,17 @@ FastFormatUnicode& FastFormatUnicode::Write( const wxChar* fmt, ... )
 	return *this;
 }
 
+#if wxMAJOR_VERSION >= 3
+FastFormatUnicode& FastFormatUnicode::Write( const wxString fmt, ... )
+{
+	va_list list;
+	va_start(list, fmt);
+	WriteV(fmt.wx_str(),list);
+	va_end(list);
+	return *this;
+}
+#endif
+
 bool FastFormatUnicode::IsEmpty() const
 {
 	return ((wxChar&)(*m_dest)[0]) == 0;
@@ -320,7 +331,7 @@ FastFormatUnicode& FastFormatUnicode::ToLower()
 
 FastFormatUnicode& FastFormatUnicode::operator+=(const char* psz )
 {
-	Write( L"%s", fromUTF8(psz).c_str() );
+	Write( L"%s", WX_STR(fromUTF8(psz)) );
 	return *this;
 }
 

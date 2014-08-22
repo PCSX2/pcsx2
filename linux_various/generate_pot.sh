@@ -19,7 +19,7 @@
 ######################################################################
 # Script configuration
 ######################################################################
-VERSION=0.9.9
+VERSION=1.3.0
 COPYRIGHT="PCSX2 Dev Team"
 BUG_MAIL="https://github.com/PCSX2/pcsx2/issues"
 
@@ -94,12 +94,14 @@ sed --in-place $ICO_POT --expression=s/'\"Content-Transfer-Encoding: 8bit\\n\"'/
 echo "Update pcsx2_Main.po files"
 for po_file in `find ./locales -iname pcsx2_Main.po`
 do
+    # Note: --previous corrupt po file
     msgmerge --update $po_file $MAIN_POT
 done
 
 echo "Update pcsx2_Iconized.po files"
 for po_file in `find ./locales -iname pcsx2_Iconized.po`
 do
+    # Note: --previous corrupt po file
     msgmerge --update $po_file $ICO_POT
 done
 

@@ -5,7 +5,7 @@
  */
 
 #include <string.h>
-#ifdef __LINUX__
+#ifdef __linux__
 #define strnicmp strncasecmp
 #endif
 

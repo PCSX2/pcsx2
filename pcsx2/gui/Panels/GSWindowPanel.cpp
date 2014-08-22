@@ -48,7 +48,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_CloseGS		= new pxCheckBox( this, _("Hide window when paused") );
 	m_check_Fullscreen	= new pxCheckBox( this, _("Default to fullscreen mode on open") );
 	m_check_VsyncEnable	= new pxCheckBox( this, _("Wait for Vsync on refresh") );
-	m_check_ManagedVsync = new pxCheckBox( this, _("Dynamically toggle Vsync depending on frame rate (read tooltip!)") );
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
 	//m_check_ExclusiveFS = new pxCheckBox( this, _("Use exclusive fullscreen mode (if available)") );
 
@@ -56,9 +55,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	) );
 
 	m_check_VsyncEnable->SetToolTip( pxEt( L"Vsync eliminates screen tearing but typically has a big performance hit. It usually only applies to fullscreen mode, and may not work with all GS plugins."
-	) );
-	
-	m_check_ManagedVsync->SetToolTip( pxEt( L"Enables Vsync when the framerate is exactly at full speed. Should it fall below that, Vsync gets disabled to avoid further performance penalties. Note: This currently only works well with GSdx as GS plugin and with it configured to use DX10/11 hardware rendering. Any other plugin or rendering mode will either ignore it or produce a black frame that blinks whenever the mode switches. It also requires Vsync to be enabled."
 	) );
 
 	m_check_HideMouse->SetToolTip( pxEt( L"Check this to force the mouse cursor invisible inside the GS window; useful if using the mouse as a primary control device for gaming.  By default the mouse auto-hides after 2 seconds of inactivity."
@@ -108,7 +104,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	*this += new wxStaticLine( this )	| StdExpand();
 
 	*this += m_check_VsyncEnable;
-	*this += m_check_ManagedVsync;
 
 	wxBoxSizer* centerSizer = new wxBoxSizer( wxVERTICAL );
 	*centerSizer += GetSizer()	| pxCenter;
@@ -144,9 +139,6 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 
 	m_check_VsyncEnable->SetValue( configToApply.EmuOptions.GS.VsyncEnable );
 	m_check_VsyncEnable->Enable  ( !configToApply.EnablePresets );//grayed-out when presets are enabled
-
-	m_check_ManagedVsync->SetValue( configToApply.EmuOptions.GS.ManagedVsync );
-	m_check_ManagedVsync->Enable  ( !configToApply.EnablePresets );//grayed-out when presets are enabled
 }
 
 void Panels::GSWindowSettingsPanel::Apply()
@@ -163,7 +155,6 @@ void Panels::GSWindowSettingsPanel::Apply()
 	appconf.Zoom			= Fixed100::FromString( m_text_Zoom->GetValue() );
 
 	gsconf.VsyncEnable		= m_check_VsyncEnable->GetValue();
-	gsconf.ManagedVsync		= m_check_ManagedVsync->GetValue();
 
 	appconf.IsToggleFullscreenOnDoubleClick = m_check_DclickFullscreen->GetValue();
 

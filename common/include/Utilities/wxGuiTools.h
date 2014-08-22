@@ -91,7 +91,7 @@ struct pxAlignmentType
 		return Apply().Border( dir, padding );
 	}
 
-	wxSizerFlags Proportion( int prop ) const
+	wxSizerFlags Proportion() const
 	{
 		return Apply().Proportion( intval );
 	}
@@ -127,7 +127,7 @@ struct pxStretchType
 		return Apply().Border( dir, padding );
 	}
 
-	wxSizerFlags Proportion( int prop ) const
+	wxSizerFlags Proportion() const
 	{
 		return Apply().Proportion( intval );
 	}
@@ -270,32 +270,6 @@ void operator+=( wxSizer& target, const pxWindowAndFlags<WinType>& src )
 	target.Add( src.window, src.flags );
 }
 
-// ----------------------------------------------------------------------------
-// Pointer Versions!  (note that C++ requires one of the two operator params be a
-// "proper" object type (non-pointer), so that's why some of these are missing.
-
-template< typename WinType >
-void operator+=( wxWindow* target, WinType& src )
-{
-	if( !pxAssert( target != NULL ) ) return;
-	if( !pxAssert( target->GetSizer() != NULL ) ) return;
-	*target->GetSizer() += src;
-}
-
-template< typename WinType >
-void operator+=( wxWindow* target, const pxWindowAndFlags<WinType>& src )
-{
-	if( !pxAssert( target != NULL ) ) return;
-	if( !pxAssert( target->GetSizer() != NULL ) ) return;
-	*target->GetSizer() += src;
-}
-
-template< typename WinType >
-void operator+=( wxSizer* target, const pxWindowAndFlags<WinType>& src )
-{
-	if( !pxAssert( target != NULL ) ) return;
-	target->Add( src.window, src.flags );
-}
 
 
 BEGIN_DECLARE_EVENT_TYPES()
@@ -703,6 +677,9 @@ protected:
 	int			m_leading;
 
 	virtual void _DoWriteLn( const wxChar* msg );
+#if wxMAJOR_VERSION >= 3
+	void _DoWriteLn( const wxString msg );
+#endif
 	void _DoWrite( const wxChar* msg );
 
 public:
@@ -716,6 +693,9 @@ public:
 	pxWindowTextWriter& WriteLn( const wxChar* fmt );
 	pxWindowTextWriter& SetFont( const wxFont& font );
 	pxWindowTextWriter& Align( const wxAlignment& align );
+#if wxMAJOR_VERSION >= 3
+	pxWindowTextWriter& WriteLn( const wxString fmt );
+#endif
 		
 	pxWindowTextWriter& SetLeading( int lead )
 	{

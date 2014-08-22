@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 
-FlatFileReader::FlatFileReader(void)
+FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
 	m_blocksize = 2048;
 	m_fd = 0;
@@ -49,7 +49,7 @@ int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)
 void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 {
 	u64 offset;
-	offset = sector * (u64)m_blocksize + m_dataoffset;
+	offset = sector * (s64)m_blocksize + m_dataoffset;
 
 	u32 bytesToRead = count * m_blocksize;
 

@@ -41,6 +41,8 @@ namespace MIPSAnalyst
 
 	void ScanForFunctions(u32 startAddr, u32 endAddr, bool insertSymbols);
 
+	enum LoadStoreLRType { LOADSTORE_NORMAL, LOADSTORE_LEFT, LOADSTORE_RIGHT };
+
 	typedef struct {
 		DebugInterface* cpu;
 		u32 opcodeAddress;
@@ -61,6 +63,7 @@ namespace MIPSAnalyst
 
 		// data access
 		bool isDataAccess;
+		LoadStoreLRType lrType;
 		int dataSize;
 		u32 dataAddress;
 

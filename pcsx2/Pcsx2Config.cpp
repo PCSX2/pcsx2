@@ -201,7 +201,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	FrameLimitEnable		= true;
 	FrameSkipEnable			= false;
 	VsyncEnable				= false;
-	ManagedVsync			= false;
 
 	SynchronousMTGS			= false;
 	DisableOutput			= false;
@@ -227,7 +226,6 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 	IniEntry( FrameLimitEnable );
 	IniEntry( FrameSkipEnable );
 	IniEntry( VsyncEnable );
-	IniEntry( ManagedVsync );
 
 	IniEntry( LimitScalar );
 	IniEntry( FramerateNTSC );
@@ -258,6 +256,7 @@ const wxChar *const tbl_GamefixNames[] =
 	L"VIF1Stall",
 	L"GIFReverse",
 	L"FMVinSoftware",
+	L"GoemonTlb",
 };
 
 const __fi wxChar* EnumToString( GamefixId id )
@@ -319,6 +318,7 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 		case Fix_VIF1Stall:		VIF1StallHack		= enabled;  break;
 		case Fix_GIFReverse:	GIFReverseHack		= enabled;  break;
 		case Fix_FMVinSoftware:	FMVinSoftwareHack	= enabled;  break;
+		case Fix_GoemonTlbMiss: GoemonTlbHack		= enabled;  break;
 
 		jNO_DEFAULT;
 	}
@@ -344,6 +344,7 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 		case Fix_VIF1Stall:		return VIF1StallHack;
 		case Fix_GIFReverse:	return GIFReverseHack;
 		case Fix_FMVinSoftware:	return FMVinSoftwareHack;
+		case Fix_GoemonTlbMiss: return GoemonTlbHack;
 		
 		jNO_DEFAULT;
 	}
@@ -369,12 +370,12 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	IniBitBool( VIF1StallHack );
 	IniBitBool( GIFReverseHack );
 	IniBitBool( FMVinSoftwareHack );
+	IniBitBool( GoemonTlbHack );
 }
 
 
 Pcsx2Config::DebugOptions::DebugOptions()
 {
-	EnableDebugger = false;
 	ShowDebuggerOnStart = false;
 	FontWidth = 8;
 	FontHeight = 12;
@@ -384,7 +385,6 @@ void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
 {
 	ScopedIniGroup path( ini, L"Debugger" );
 
-	IniBitBool( EnableDebugger );
 	IniBitBool( ShowDebuggerOnStart );
 	IniBitfield(FontWidth);
 	IniBitfield(FontHeight);
@@ -408,6 +408,7 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 
 	IniBitBool( CdvdVerboseReads );
 	IniBitBool( CdvdDumpBlocks );
+	IniBitBool( CdvdShareWrite );
 	IniBitBool( EnablePatches );
 	IniBitBool( EnableCheats );
 	IniBitBool( EnableWideScreenPatches );

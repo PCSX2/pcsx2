@@ -339,13 +339,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menubar.Append( &m_menuCDVD,		_("CD&VD") );
 	m_menubar.Append( &m_menuConfig,	_("&Config") );
 	m_menubar.Append( &m_menuMisc,		_("&Misc") );
-	
-#ifndef PCSX2_DEVBUILD
-	if (g_Conf->EmuOptions.Debugger.EnableDebugger)
-#endif
-	{
-		m_menubar.Append( &m_menuDebug,		_("&Debug") );
-	}
+	m_menubar.Append( &m_menuDebug,		_("&Debug") );
 
 	SetMenuBar( &m_menubar );
 
@@ -357,12 +351,12 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	if( PCSX2_isReleaseVersion )
 	{
 		// stable releases, with a simple title.
-		wintitle.Printf( _("%s  %d.%d.%d"), pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo );
+		wintitle.Printf( L"%s  %d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo );
 	}
 	else
 	{
 		// beta / development editions, which feature revision number and compile date.
-		wintitle.Printf( _("%s  %d.%d.%d-%lld%s (git)  %s"), pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+		wintitle.Printf( L"%s  %d.%d.%d-%lld%s (git)  %s", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
 			SVN_REV, SVN_MODS ? L"m" : wxEmptyString, fromUTF8(__DATE__).c_str() );
 	}
 
@@ -490,7 +484,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// ------------------------------------------------------------------------
 
 	m_menuMisc.Append( &m_MenuItem_Console );
-#ifdef __LINUX__
+#ifdef __linux__
 	m_menuMisc.Append( &m_MenuItem_Console_Stdio );
 #endif
 	//Todo: Though not many people need this one :p
@@ -512,14 +506,11 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuMisc.AppendSeparator();
 	m_menuMisc.Append( MenuId_ChangeLang,		L"Change Language" ); // Always in English
 
-#ifndef PCSX2_DEVBUILD
-	if (g_Conf->EmuOptions.Debugger.EnableDebugger)
+	m_menuDebug.Append(MenuId_Debug_Open,		_("Open Debug Window..."),	wxEmptyString);
+
+#ifdef PCSX2_DEVBUILD
+	m_menuDebug.Append(MenuId_Debug_Logging,	_("Logging..."),			wxEmptyString);
 #endif
-	{
-		m_menuDebug.Append(MenuId_Debug_Open,		_("Open Debug Window..."),	wxEmptyString);
-		//m_menuDebug.Append(MenuId_Debug_MemoryDump,	_("Memory Dump..."),		wxEmptyString);
-		m_menuDebug.Append(MenuId_Debug_Logging,	_("Logging..."),			wxEmptyString);
-	}
 
 	m_MenuItem_Console.Check( g_Conf->ProgLogBox.Visible );
 
@@ -596,7 +587,7 @@ void MainEmuFrame::ApplyCoreStatus()
 		if( !CoreThread.IsClosing() )
 		{
 			susres->Enable();
-			susres->SetText(_("Pause"));
+			susres->SetItemLabel(_("Pause"));
 			susres->SetHelp(_("Safely pauses emulation and preserves the PS2 state."));
 		}
 		else
@@ -604,12 +595,12 @@ void MainEmuFrame::ApplyCoreStatus()
 			susres->Enable(vm);
 			if( vm )
 			{
-				susres->SetText(_("Resume"));
+				susres->SetItemLabel(_("Resume"));
 				susres->SetHelp(_("Resumes the suspended emulation state."));
 			}
 			else
 			{
-				susres->SetText(_("Pause/Resume"));
+				susres->SetItemLabel(_("Pause/Resume"));
 				susres->SetHelp(_("No emulation state is active; cannot suspend or resume."));
 			}
 		}
@@ -619,7 +610,7 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )	
 		{
-			restart->SetText(_("Restart"));
+			restart->SetItemLabel(_("Restart"));
 			restart->SetHelp(_("Simulates hardware reset of the PS2 virtual machine."));
 		}
 		else
@@ -633,12 +624,12 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )
 		{
-			cdvd->SetText(_("Reboot CDVD (full)"));
+			cdvd->SetItemLabel(_("Reboot CDVD (full)"));
 			cdvd->SetHelp(_("Hard reset of the active VM."));
 		}
 		else
 		{
-			cdvd->SetText(_("Boot CDVD (full)"));
+			cdvd->SetItemLabel(_("Boot CDVD (full)"));
 			cdvd->SetHelp(_("Boot the VM using the current DVD or Iso source media"));
 		}	
 	}
@@ -647,12 +638,12 @@ void MainEmuFrame::ApplyCoreStatus()
 	{
 		if( vm )
 		{
-			cdvd2->SetText(_("Reboot CDVD (fast)"));
+			cdvd2->SetItemLabel(_("Reboot CDVD (fast)"));
 			cdvd2->SetHelp(_("Reboot using fast BOOT (skips splash screens)"));
 		}
 		else
 		{
-			cdvd2->SetText(_("Boot CDVD (fast)"));
+			cdvd2->SetItemLabel(_("Boot CDVD (fast)"));
 			cdvd2->SetHelp(_("Use fast boot to skip PS2 startup and splash screens"));
 		}
 	}
@@ -681,7 +672,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check( MenuId_EnableCheats,  configToApply.EmuOptions.EnableCheats );
 		menubar.Check( MenuId_EnableWideScreenPatches,  configToApply.EmuOptions.EnableWideScreenPatches );
 		menubar.Check( MenuId_EnableHostFs,  configToApply.EmuOptions.HostFs );
-#ifdef __LINUX__
+#ifdef __linux__
 		menubar.Check( MenuId_Console_Stdio, configToApply.EmuOptions.ConsoleToStdio );
 #endif
 

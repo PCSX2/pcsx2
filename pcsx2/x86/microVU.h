@@ -18,7 +18,6 @@
 //#define mVUprofileProg // Shows opcode statistics in console
 
 class AsciiFile;
-using namespace std;
 using namespace x86Emitter;
 
 #include <deque>
@@ -145,12 +144,12 @@ struct microRange {
 struct microProgram {
 	u32				   data [mProgSize];   // Holds a copy of the VU microProgram
 	microBlockManager* block[mProgSize/2]; // Array of Block Managers
-	deque<microRange>* ranges;			   // The ranges of the microProgram that have already been recompiled
+	std::deque<microRange>* ranges;			   // The ranges of the microProgram that have already been recompiled
 	u32 startPC; // Start PC of this program
 	int idx;	 // Program index
 };
 
-typedef deque<microProgram*> microProgramList;
+typedef std::deque<microProgram*> microProgramList;
 
 struct microProgramQuick {
 	microBlockManager*    block; // Quick reference to valid microBlockManager for current startPC

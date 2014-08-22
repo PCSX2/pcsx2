@@ -16,7 +16,7 @@
  */
 
 #include "Global.h"
-#ifdef __LINUX__
+#ifdef __linux__
 #include "WavFile.h"
 #else
 #include "soundtouch/WavFile.h"
@@ -53,7 +53,7 @@ namespace WaveDump
 			for( int srcidx=0; srcidx<CoreSrc_Count; srcidx++ )
 			{
 				safe_delete( m_CoreWav[cidx][srcidx] );
-#ifdef __LINUX__
+#ifdef __linux__
 				sprintf( wavfilename, "logs/spu2x-Core%d-%s.wav",
 					cidx, m_tbl_CoreOutputTypeNames[ srcidx ] );
 #else

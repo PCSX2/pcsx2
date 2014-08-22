@@ -189,9 +189,9 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 #endif
 
 	//Algorithm params: (threshold params (hysteresis), etc) 
-	const float hys_ok_factor=1.04;
+	const float hys_ok_factor = 1.04f;
+	const float hys_bad_factor = 1.2f;
 	int hys_min_ok_count = GetClamped((int)(50.0 *(float)targetIPS/750.0), 2, 100); //consecutive iterations within hys_ok before going to 1:1 mode
-	const float hys_bad_factor=1.2;
 	int compensationDivider = GetClamped((int)(100.0 *(float)targetIPS/750), 15, 150);
 
 	float tempoAdjust=bufferFullness/dynamicTargetFullness;

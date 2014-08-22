@@ -11,19 +11,8 @@ set(Output Utilities)
 
 # set common flags
 set(CommonFlags 
-	-pthread
-    -fvisibility=hidden
-	-fno-dse
-	-fno-guess-branch-probability
 	-fno-strict-aliasing
-	-fno-tree-dse
-	-pipe
-	-Wunused-variable)
-
-# set warning flags
-set(DebugFlags
-	-g
-	-W)
+    )
 
 # set optimization flags
 set(OptimizationFlags
@@ -66,11 +55,16 @@ set(OptimizationFlags
 	-ftree-vrp
 	-funit-at-a-time)
 
+#Clang doesn't support a few common flags that GCC does.
+if(NOT USE_CLANG)
+	add_definitions(${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
+endif(NOT USE_CLANG) 
+
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	
 	# add defines
-	add_definitions(${CommonFlags} ${DebugFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD)
+	add_definitions(${CommonFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build

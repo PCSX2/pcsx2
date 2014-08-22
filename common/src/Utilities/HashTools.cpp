@@ -18,27 +18,7 @@
 
 namespace HashTools {
 
-/// <summary>
-///   Provides access to a set of common hash methods for C fundamental types.
-/// </summary>
-/// <remarks>
-///   The CommonHashClass is implemented using the () operator (sometimes referred to
-///   as a predicate), which means that an instance of <see cref="CommonHashClass" />
-///   is required to use the methods.  This public global variable provides that instance.
-/// </remarks>
-/// <seealso cref="CommonHashClass"/>
-const CommonHashClass GetCommonHash;
-
-#undef get16bits
-#if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
-  || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
 #define get16bits(d) (*((const u16 *) (d)))
-#endif
-
-#if !defined (get16bits)
-#define get16bits(d) ((((u32)(((const ubyte *)(d))[1])) << 8)\
-					   +(u32)(((const ubyte *)(d))[0]) )
-#endif
 
 /// <summary>
 ///   Calculates a hash value for an arbitrary set of binary data.

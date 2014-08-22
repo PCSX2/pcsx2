@@ -18,6 +18,7 @@
 #include "AppGameDatabase.h"
 #include "ConfigurationPanels.h"
 
+#include <algorithm>
 #include <wx/listctrl.h>
 
 extern wxString DiscSerial;
@@ -244,8 +245,7 @@ GameDatabaseListView& GameDatabaseListView::SortBy( GameDataColumnId column )
 		case GdbCol_Compat:		std::sort(begin, end, GLSort_byCompat(isDescending));	break;
 		case GdbCol_Patches:	std::sort(begin, end, GLSort_byPatches(isDescending));	break;
 
-		// do not use jNO_DEFAULT here -- keeps release builds from crashing (it'll just
-		// ignore the sort request!)
+		default: break; // for GdbCol_Count
 	}
 	//m_GamesInView.(  );
 	
@@ -347,7 +347,7 @@ Panels::GameDatabasePanel::GameDatabasePanel( wxWindow* parent )
 
 	*this	+= new GameDatabaseListView( this ) | StdExpand();
 
-	wxFlexGridSizer& sizer1(*new wxFlexGridSizer(5, StdPadding));
+	wxFlexGridSizer& sizer1(*new wxFlexGridSizer(5, StdPadding, 0));
 	sizer1.AddGrowableCol(0);
 
 	blankLine();
@@ -445,9 +445,9 @@ bool Panels::GameDatabasePanel::WriteFieldsToDB() {
 		wxString keyName (EnumToString(i)); keyName += L"Hack";
 
 		if (gameFixes[i]->IsIndeterminate())
-			game.deleteKey(keyName);
+			game.deleteKey(keyName.wc_str());
 		else
-			game.writeBool(keyName, gameFixes[i]->GetValue());
+			game.writeBool(keyName.wc_str(), gameFixes[i]->GetValue());
 	}
 	GameDB->updateGame(game);
 	return true;

@@ -2425,6 +2425,8 @@ __forceinline void GSState::VertexKick(uint32 skip)
 			pmin = v2.min_i16(v1.min_i16(v3));
 			pmax = v2.max_i16(v1.max_i16(v3));
 			break;
+		default:
+			break;
 		}
 
 		GSVector4i test = pmax.lt16(m_scissor) | pmin.gt16(m_scissor.zwzwl()); 
@@ -2436,6 +2438,8 @@ __forceinline void GSState::VertexKick(uint32 skip)
 		case GS_TRIANGLEFAN:
 		case GS_SPRITE:
 			test |= m_nativeres ? pmin.eq16(pmax).zwzwl() : pmin.eq16(pmax);
+			break;
+		default:
 			break;
 		}
 
@@ -2459,6 +2463,8 @@ __forceinline void GSState::VertexKick(uint32 skip)
 			test |= GSVector4i::cast(cross == cross.yxwz());
 			*/
 			test = (test | v3 == v1) | (v1 == v2 | v3 == v2); 
+			break;
+		default:
 			break;
 		}
 		

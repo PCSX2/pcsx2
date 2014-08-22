@@ -487,8 +487,12 @@ inline void FlushSetContextTarget(VB& curvb, int context)
 		{
 			if (!curvb.zbuf.zmsk)
 			{
+#ifdef NDEBUG
+				s_DepthRTs.Promote(GetFrameKey(curvb.pdepth));
+#else
 				CRenderTarget* ptemp = s_DepthRTs.Promote(GetFrameKey(curvb.pdepth));
 				assert(ptemp == curvb.pdepth);
+#endif
 			}
 			else
 			{
@@ -1668,8 +1672,12 @@ void SetContextTarget(int context)
 
 		if (!curvb.zbuf.zmsk)
 		{
+#ifdef NDEBUG
+			s_DepthRTs.Promote(curvb.pdepth->fbp | (curvb.pdepth->fbw << 16));
+#else
 			CRenderTarget* ptemp = s_DepthRTs.Promote(curvb.pdepth->fbp | (curvb.pdepth->fbw << 16));
 			assert(ptemp == curvb.pdepth);
+#endif
 		}
 		else
 		{

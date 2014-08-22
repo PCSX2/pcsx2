@@ -97,7 +97,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			if ((mem & 0x1000ff00) == 0x1000f300)
 			{
 				int ret = 0;
-				u32 sif2fifosize = min(sif2.fifo.size, 7);
+				u32 sif2fifosize = std::min(sif2.fifo.size, 7);
 
 				switch (mem & 0xf0)
 				{
@@ -177,6 +177,7 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			}
 		}
 		break;
+		default: break;
 	}
 	//Hack for Transformers and Test Drive Unlimited to simulate filling the VIF FIFO
 	//It actually stalls VIF a few QW before the end of the transfer, so we need to pretend its all gone
@@ -302,6 +303,7 @@ static void _hwRead64(u32 mem, mem64_t* result )
 				}
 			}
 		return;
+		default: break;
 	}
 
 	*result = _hwRead32<page,false>( mem );

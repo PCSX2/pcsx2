@@ -14,10 +14,12 @@
 *.mo
 
 _ReSharper.*
+pcsx2.snapshot_*
 postBuild.inc.cmd
 postBuild.cmd
 svnrev.h
 
+build
 Debug
 Release
 Devel
@@ -40,7 +42,7 @@ Devel
 /ipch
 /nsis/output/
 
-/3rdparty/SoundTouch/Win32
+/3rdparty/soundtouch/Win32
 /3rdparty/bzip2/Win32
 /3rdparty/libjpeg/Win32
 /3rdparty/portaudio/portaudio-2.0.pc

@@ -19,7 +19,7 @@
   SetOutPath "$INSTDIR"
   !insertmacro UNINSTALL.LOG_OPEN_INSTALL
     File           /oname=${APP_EXE}                ..\bin\pcsx2.exe
-    ;File /nonfatal /oname=pcsx2-dev-r${SVNREV}.exe  ..\bin\pcsx2-dev.exe
+    ;File /nonfatal /oname=pcsx2-dev.exe  					..\bin\pcsx2-dev.exe
 
   ; ------------------------------------------
   ;       -- Shared Core Components --
@@ -73,12 +73,12 @@
   ;         -- Registry Section --
   ; ------------------------------------------
 
+  ; Write the installation path into the registry
+  WriteRegStr HKLM Software\PCSX2 "Install_Dir" "$INSTDIR"
+  
   ; Write the uninstall keys for Windows
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayName"      "PCSX2 - Playstation 2 Emulator"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "UninstallString"  "${UNINST_EXE}"
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoModify" 1
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoRepair" 1
   WriteUninstaller "${UNINST_EXE}"
-  !if ${INC_AVG} > 0
- 			Call fnc_AVGPage_InstallBar
-  !endif

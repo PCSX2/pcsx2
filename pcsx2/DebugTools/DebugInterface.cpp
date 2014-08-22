@@ -208,26 +208,29 @@ u32 R5900DebugInterface::read8(u32 address)
 {
 	if (!isValidAddress(address))
 		return -1;
+
 	return memRead8(address);
 }
 
 u32 R5900DebugInterface::read16(u32 address)
 {
-	if (!isValidAddress(address))
+	if (!isValidAddress(address) || address % 2)
 		return -1;
+
 	return memRead16(address);
 }
 
 u32 R5900DebugInterface::read32(u32 address)
 {
-	if (!isValidAddress(address))
+	if (!isValidAddress(address) || address % 4)
 		return -1;
+
 	return memRead32(address);
 }
 
 u64 R5900DebugInterface::read64(u32 address)
 {
-	if (!isValidAddress(address))
+	if (!isValidAddress(address) || address % 8)
 		return -1;
 
 	u64 result;
@@ -237,10 +240,13 @@ u64 R5900DebugInterface::read64(u32 address)
 
 u128 R5900DebugInterface::read128(u32 address)
 {
-	if (!isValidAddress(address))
-		return u128::From32(-1);
+	__aligned16 u128 result;
+	if (!isValidAddress(address) || address % 16)
+	{
+		result.hi = result.lo = -1;
+		return result;
+	}
 
-	u128 result;
 	memRead128(address,result);
 	return result;
 }
@@ -252,6 +258,15 @@ void R5900DebugInterface::write8(u32 address, u8 value)
 
 	memWrite8(address,value);
 }
+
+void R5900DebugInterface::write32(u32 address, u32 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	memWrite32(address,value);
+}
+
 
 int R5900DebugInterface::getRegisterCategoryCount()
 {
@@ -338,16 +353,16 @@ const char* R5900DebugInterface::getRegisterName(int cat, int num)
 		case 34:	// lo
 			return "lo";
 		default:
-			return R5900::disRNameGPR[num];
+			return R5900::GPR_REG[num];
 		}
 	case EECAT_CP0:
-		return R5900::disRNameCP0[num];
+		return R5900::COP0_REG[num];
 	case EECAT_CP1:
-		return R5900::disRNameCP1[num];
+		return R5900::COP1_REG_FP[num];
 	case EECAT_CP2F:
-		return disRNameCP2f[num];
+		return R5900::COP2_REG_FP[num];
 	case EECAT_CP2I:
-		return disRNameCP2i[num];
+		return R5900::COP2_REG_CTL[num];
 	default:
 		return "Invalid";
 	}
@@ -559,6 +574,14 @@ void R3000DebugInterface::write8(u32 address, u8 value)
 	iopMemWrite8(address,value);
 }
 
+void R3000DebugInterface::write32(u32 address, u32 value)
+{
+	if (!isValidAddress(address))
+		return;
+
+	iopMemWrite32(address,value);
+}
+
 int R3000DebugInterface::getRegisterCategoryCount()
 {
 	return IOPCAT_COUNT;
@@ -621,7 +644,7 @@ const char* R3000DebugInterface::getRegisterName(int cat, int num)
 		case 34:	// lo
 			return "lo";
 		default:
-			return R5900::disRNameGPR[num];
+			return R5900::GPR_REG[num];
 		}
 	default:
 		return "Invalid";

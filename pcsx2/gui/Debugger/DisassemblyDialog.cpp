@@ -35,9 +35,14 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_STEPOVER, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPINTO, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_BREAKPOINTWINDOW, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_MAPLOADED, DisassemblyDialog::onDebuggerEvent )
    EVT_CLOSE( DisassemblyDialog::onClose )
 END_EVENT_TABLE()
 
+BEGIN_EVENT_TABLE(CpuTabPage, wxPanel)
+	EVT_LISTBOX_DCLICK( wxID_ANY, CpuTabPage::listBoxHandler)
+END_EVENT_TABLE()
 
 DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 	: wxDialog(parent,wxID_ANY,L"Help")
@@ -72,16 +77,26 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(mainSizer);
 	
+	leftTabs = new wxNotebook(this,wxID_ANY);
 	bottomTabs = new wxNotebook(this,wxID_ANY);
 	disassembly = new CtrlDisassemblyView(this,cpu);
-	registerList = new CtrlRegisterList(this,cpu);
+	registerList = new CtrlRegisterList(leftTabs,cpu);
+	functionList = new wxListBox(leftTabs,wxID_ANY,wxDefaultPosition,wxDefaultSize,0,NULL,wxBORDER_NONE|wxLB_SORT);
 	memory = new CtrlMemView(bottomTabs,cpu);
 
 	// create register list and disassembly section
 	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
 
+	wxBoxSizer* miscStuffSizer = new wxBoxSizer(wxHORIZONTAL);
+	cyclesText = new wxStaticText(this,wxID_ANY,L"");
+	miscStuffSizer->Add(cyclesText,0,wxLEFT|wxTOP|wxBOTTOM,2);
+	
+	leftTabs->AddPage(registerList,L"Registers");
+	leftTabs->AddPage(functionList,L"Functions");
+
 	wxBoxSizer* registerSizer = new wxBoxSizer(wxVERTICAL);
-	registerSizer->Add(registerList,1);
+	registerSizer->Add(miscStuffSizer,0);
+	registerSizer->Add(leftTabs,1);
 	
 	middleSizer->Add(registerSizer,0,wxEXPAND|wxRIGHT,2);
 	middleSizer->Add(disassembly,2,wxEXPAND);
@@ -96,6 +111,40 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	mainSizer->Add(bottomTabs,1,wxEXPAND);
 
 	mainSizer->Layout();
+
+	lastCycles = 0;
+	loadCycles();
+}
+
+void CpuTabPage::reloadSymbolMap()
+{
+	functionList->Clear();
+
+	auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
+	for (size_t i = 0; i < funcs.size(); i++)
+	{
+		wxString name = wxString(funcs[i].name.c_str(),wxConvUTF8);
+		functionList->Append(name,(void*)funcs[i].address);
+	}
+}
+
+void CpuTabPage::listBoxHandler(wxCommandEvent& event)
+{
+	int index = functionList->GetSelection();
+	if (event.GetEventObject() == functionList && index >= 0)
+	{
+		uptr pos = (uptr) functionList->GetClientData(index);
+		postEvent(debEVT_GOTOINDISASM,pos);
+	}
+}
+
+void CpuTabPage::postEvent(wxEventType type, int value)
+{
+   wxCommandEvent event( type, GetId() );
+   event.SetEventObject(this);
+   event.SetClientData(cpu);
+   event.SetInt(value);
+   wxPostEvent(this,event);
 }
 
 void CpuTabPage::setBottomTabPage(wxWindow* win)
@@ -116,6 +165,15 @@ void CpuTabPage::update()
 	Refresh();
 }
 
+void CpuTabPage::loadCycles()
+{
+	u32 cycles = cpu->getCycles();
+
+	wchar_t str[64];
+	swprintf(str,64,L"Ctr:  %u",cycles-lastCycles);
+	cyclesText->SetLabel(str);
+	lastCycles = cycles;
+}
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
@@ -170,7 +228,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	SetMinSize(wxSize(1000,600));
 	panel->GetSizer()->Fit(this);
 
-	setDebugMode(true);
+	setDebugMode(true,true);
 }
 
 #ifdef WIN32
@@ -212,8 +270,10 @@ void DisassemblyDialog::onBreakRunClicked(wxCommandEvent& evt)
 		// If the current PC is on a breakpoint, the user doesn't want to do nothing.
 		CBreakPoints::SetSkipFirst(r5900Debug.getPC());
 		r5900Debug.resumeCpu();
-	} else
+	} else {
 		r5900Debug.pauseCpu();
+		gotoPc();
+	}
 }
 
 void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
@@ -352,7 +412,9 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	wxEventType type = evt.GetEventType();
 	if (type == debEVT_SETSTATUSBARTEXT)
 	{
-		GetStatusBar()->SetLabel(evt.GetString());
+		DebugInterface* cpu = reinterpret_cast<DebugInterface*>(evt.GetClientData());
+		if (cpu != NULL && cpu == currentCpu->getCpu())
+			GetStatusBar()->SetLabel(evt.GetString());
 	} else if (type == debEVT_UPDATELAYOUT)
 	{
 		if (currentCpu != NULL)
@@ -378,7 +440,8 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	{
 		if (currentCpu != NULL)
 		{
-			currentCpu->getDisassembly()->gotoAddress(r5900Debug.getPC());
+			u32 pos = evt.GetInt();
+			currentCpu->getDisassembly()->gotoAddress(pos);
 			currentCpu->getDisassembly()->SetFocus();
 			update();
 		}
@@ -393,6 +456,14 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	} else if (type == debEVT_UPDATE)
 	{
 		update();
+	} else if (type == debEVT_BREAKPOINTWINDOW)
+	{
+		wxCommandEvent evt;
+		onBreakpointClick(evt);
+	} else if (type == debEVT_MAPLOADED)
+	{
+		eeTab->reloadSymbolMap();
+		iopTab->reloadSymbolMap();
 	}
 }
 
@@ -417,10 +488,18 @@ void DisassemblyDialog::update()
 void DisassemblyDialog::reset()
 {
 	eeTab->getDisassembly()->clearFunctions();
+	eeTab->reloadSymbolMap();
 	iopTab->getDisassembly()->clearFunctions();
-};
+	iopTab->reloadSymbolMap();
+}
 
-void DisassemblyDialog::setDebugMode(bool debugMode)
+void DisassemblyDialog::gotoPc()
+{
+	eeTab->getDisassembly()->gotoPc();
+	iopTab->getDisassembly()->gotoPc();
+}
+
+void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 {
 	bool running = r5900Debug.isAlive();
 	
@@ -437,8 +516,8 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 			stepOverButton->Enable(true);
 			stepIntoButton->Enable(true);
 
-			eeTab->getDisassembly()->gotoPc();
-			iopTab->getDisassembly()->gotoPc();
+			if (switchPC || CBreakPoints::GetBreakpointTriggered())
+				gotoPc();
 			
 			if (CBreakPoints::GetBreakpointTriggered())
 			{
@@ -446,6 +525,9 @@ void DisassemblyDialog::setDebugMode(bool debugMode)
 					currentCpu->getDisassembly()->SetFocus();
 				CBreakPoints::SetBreakpointTriggered(false);
 			}
+
+			if (currentCpu != NULL)
+				currentCpu->loadCycles();
 		} else {
 			breakRunButton->SetLabel(L"Break");
 

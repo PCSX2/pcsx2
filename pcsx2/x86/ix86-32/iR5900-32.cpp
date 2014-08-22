@@ -184,7 +184,7 @@ void _eeMoveGPRtoR(x86IntRegType to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(to, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(to, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
 		}
 	}
 }
@@ -204,7 +204,7 @@ void _eeMoveGPRtoM(u32 to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
 			MOV32RtoM(to, EAX );
 		}
 	}
@@ -225,7 +225,7 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 			SetMMXstate();
 		}
 		else {
-			MOV32MtoR(EAX, (int)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
+			MOV32MtoR(EAX, (uptr)&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] );
 			MOV32RtoRm( to, EAX );
 		}
 	}
@@ -577,7 +577,7 @@ static void recThrowHardwareDeficiency( const wxChar* extFail )
 {
 	throw Exception::HardwareDeficiency()
 		.SetDiagMsg(pxsFmt( L"R5900-32 recompiler init failed: %s is not available.", extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with MMX, SSE, and SSE2 extensions."), extFail ));
+		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions."), extFail ));
 }
 
 static void recReserveCache()
@@ -600,12 +600,6 @@ static void recReserveCache()
 static void recReserve()
 {
 	// Hardware Requirements Check...
-
-	if ( !x86caps.hasMultimediaExtensions )
-		recThrowHardwareDeficiency( L"MMX" );
-
-	if ( !x86caps.hasStreamingSIMDExtensions )
-		recThrowHardwareDeficiency( L"SSE" );
 
 	if ( !x86caps.hasStreamingSIMD2Extensions )
 		recThrowHardwareDeficiency( L"SSE2" );
@@ -759,7 +753,7 @@ static void recResetEE()
 	recResetRaw();
 }
 
-void recStep( void )
+void recStep()
 {
 }
 
@@ -842,7 +836,7 @@ static void recExecute()
 }
 
 ////////////////////////////////////////////////////
-void R5900::Dynarec::OpcodeImpl::recSYSCALL( void )
+void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::SYSCALL);
 
@@ -855,7 +849,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL( void )
 }
 
 ////////////////////////////////////////////////////
-void R5900::Dynarec::OpcodeImpl::recBREAK( void )
+void R5900::Dynarec::OpcodeImpl::recBREAK()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::BREAK);
 
@@ -907,12 +901,12 @@ void recClear(u32 addr, u32 size)
 		}
 
 		if (blockend <= addr) {
-			lowerextent = max(lowerextent, blockend);
+			lowerextent = std::max(lowerextent, blockend);
 			break;
 		}
 
-		lowerextent = min(lowerextent, blockstart);
-		upperextent = max(upperextent, blockend);
+		lowerextent = std::min(lowerextent, blockstart);
+		upperextent = std::max(upperextent, blockend);
 		// This might end up inside a block that doesn't contain the clearing range,
 		// so set it to recompile now.  This will become JITCompile if we clear it.
 		pblock->SetFnptr((uptr)JITCompileInBlock);
@@ -924,7 +918,7 @@ void recClear(u32 addr, u32 size)
 		recBlocks.Remove((blockidx + 1), toRemoveLast);
 	}
 
-	upperextent = min(upperextent, ceiling);
+	upperextent = std::min(upperextent, ceiling);
 
 	for (int i = 0; pexblock = recBlocks[i]; i++) {
 		if (s_pCurBlock == PC_GETBLOCK(pexblock->startpc))
@@ -971,16 +965,22 @@ void SetBranchReg( u32 reg )
 		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 		_eeMoveGPRtoR(ESI, reg);
 
+		if (EmuConfig.Gamefixes.GoemonTlbHack) {
+			xMOV(ecx, esi);
+			vtlb_DynV2P();
+			xMOV(esi, eax);
+		}
+
 		recompileNextInstruction(1);
 
 		if( x86regs[ESI].inuse ) {
 			pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-			MOV32RtoM((int)&cpuRegs.pc, ESI);
+			MOV32RtoM((uptr)&cpuRegs.pc, ESI);
 			x86regs[ESI].inuse = 0;
 		}
 		else {
-			MOV32MtoR(EAX, (u32)&g_recWriteback);
-			MOV32RtoM((int)&cpuRegs.pc, EAX);
+			MOV32MtoR(EAX, (uptr)&g_recWriteback);
+			MOV32RtoM((uptr)&cpuRegs.pc, EAX);
 		}
 	}
 
@@ -1516,7 +1516,6 @@ void encodeMemcheck()
 
 }
 
-
 void recompileNextInstruction(int delayslot)
 {
 	static u8 s_bFlushReg = 1;
@@ -1860,6 +1859,11 @@ static void __fastcall recRecompile( const u32 startpc )
 
 		xMOV(ecx, pc);
 		xCALL(PreBlockCheck);
+	}
+
+	// 0x33ad48 is the return address of the function that populate the TLB cache
+	if (pc == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
+		xCALL(GoemonPreloadTlb);
 	}
 
 	// go until the next branch

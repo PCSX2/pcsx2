@@ -211,6 +211,8 @@ void DisassemblyManager::analyze(u32 address, u32 size = 1024)
 				address = info.address+info.size;
 			}
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -985,6 +987,8 @@ void DisassemblyData::createLines()
 						sprintf(buffer,"0x%08X",value);
 					pos += 4;
 				}
+				break;
+			default:
 				break;
 			}
 

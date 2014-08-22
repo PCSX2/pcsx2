@@ -366,13 +366,15 @@ template< typename T > void xWrite( T val );
 
 		xRegisterSSE& operator++()
 		{
-			++Id &= (iREGCNT_XMM-1);
+			++Id;
+			Id &= (iREGCNT_XMM - 1);
 			return *this;
 		}
 
 		xRegisterSSE& operator--()
 		{
-			--Id &= (iREGCNT_XMM-1);
+			--Id;
+			Id &= (iREGCNT_XMM - 1);
 			return *this;
 		}
 
@@ -673,10 +675,10 @@ template< typename T > void xWrite( T val );
 	class xIndirectVoid : public OperandSizedObject
 	{
 	public:
-		xAddressReg		Base;			// base register (no scale)
-		xAddressReg		Index;			// index reg gets multiplied by the scale
-		uint			Scale;			// scale applied to the index register, in scale/shift form
-		s32				Displacement;	// offset applied to the Base/Index registers.
+		xAddressReg Base;         // base register (no scale)
+		xAddressReg Index;        // index reg gets multiplied by the scale
+		uint        Scale;        // scale applied to the index register, in scale/shift form
+		sptr        Displacement; // offset applied to the Base/Index registers.
 
 	public:
 		explicit xIndirectVoid( s32 disp );

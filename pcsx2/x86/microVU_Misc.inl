@@ -474,65 +474,65 @@ void ADD_SS_TriAceHack(microVU& mVU, const xmm& to, const xmm& from)
 void SSE_MAXPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
 	if (CHECK_VU_MINMAXHACK) { xMAX.PS(to, from); }
-	else					 { MIN_MAX_PS(mVU, to, from, t1, t2, 0); }
+	else					 { MIN_MAX_PS(mVU, to, from, t1, t2, false); }
 }
 void SSE_MINPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
 	if (CHECK_VU_MINMAXHACK) { xMIN.PS(to, from); }
-	else					 { MIN_MAX_PS(mVU, to, from, t1, t2, 1); }
+	else					 { MIN_MAX_PS(mVU, to, from, t1, t2, true); }
 }
 void SSE_MAXSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
 	if (CHECK_VU_MINMAXHACK) { xMAX.SS(to, from); }
-	else					 { MIN_MAX_SS(mVU, to, from, t1, 0); }
+	else					 { MIN_MAX_SS(mVU, to, from, t1, false); }
 }
 void SSE_MINSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
 	if (CHECK_VU_MINMAXHACK) { xMIN.SS(to, from); }
-	else					 { MIN_MAX_SS(mVU, to, from, t1, 1); }
+	else					 { MIN_MAX_SS(mVU, to, from, t1, true); }
 }
 void SSE_ADD2SS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	if (!CHECK_VUADDSUBHACK) { clampOp(xADD.SS, 0); }
+	if (!CHECK_VUADDSUBHACK) { clampOp(xADD.SS, false); }
 	else					 { ADD_SS_TriAceHack(mVU, to, from); }
 }
 
 // Does same as SSE_ADDPS since tri-ace games only need SS implementation of VUADDSUBHACK...
 void SSE_ADD2PS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xADD.PS, 1);
+	clampOp(xADD.PS, true);
 }
 void SSE_ADDPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xADD.PS, 1);
+	clampOp(xADD.PS, true);
 }
 void SSE_ADDSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xADD.SS, 0);
+	clampOp(xADD.SS, false);
 }
 void SSE_SUBPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xSUB.PS, 1);
+	clampOp(xSUB.PS, true);
 }
 void SSE_SUBSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xSUB.SS, 0);
+	clampOp(xSUB.SS, false);
 }
 void SSE_MULPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xMUL.PS, 1);
+	clampOp(xMUL.PS, true);
 }
 void SSE_MULSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xMUL.SS, 0);
+	clampOp(xMUL.SS, false);
 }
 void SSE_DIVPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xDIV.PS, 1);
+	clampOp(xDIV.PS, true);
 }
 void SSE_DIVSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	clampOp(xDIV.SS, 0);
+	clampOp(xDIV.SS, false);
 }
 
 //------------------------------------------------------------------

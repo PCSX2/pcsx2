@@ -41,7 +41,7 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
-		Console.Error(msg);
+		Console.Error(msg.c_str());
 		return -1;
 	}
 
@@ -56,7 +56,7 @@ void InputIsoFile::BeginRead2(uint lsn)
 		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
-		Console.Error(msg);
+		Console.Error(msg.c_str());
 
 		// [TODO] : Throw exception?
 		//  Typically an error like this is bad; indicating an invalid dump or corrupted
@@ -81,7 +81,7 @@ void InputIsoFile::BeginRead2(uint lsn)
 	{
 		//m_read_lsn   = lsn - (lsn % ReadUnit);
 
-		m_read_count = min(ReadUnit, m_blocks - m_read_lsn);
+		m_read_count = std::min(ReadUnit, m_blocks - m_read_lsn);
 	}
 
 	m_reader->BeginRead(m_readbuffer, m_read_lsn, m_read_count);
@@ -127,7 +127,7 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 
 	int end1 = m_blockofs + m_blocksize;
 	int end2 = _offset + length;
-	int end = min(end1, end2);
+	int end = std::min(end1, end2);
 
 	int diff = m_blockofs - _offset;
 	int ndiff = 0;
@@ -201,7 +201,10 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 	Close();
 	m_filename = srcfile;
 	
-	m_reader = new FlatFileReader();
+	// Allow write sharing of the iso based on the ini settings.
+	// Mostly useful for romhacking, where the disc is frequently
+	// changed and the emulator would block modifications
+	m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
 	m_reader->Open(m_filename);
 
 	bool isBlockdump, isCompressed = false;
@@ -241,14 +244,17 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 		
 		m_reader->SetDataOffset(m_offset);
 		m_reader->SetBlockSize(m_blocksize);
-	
+
 		// Returns the original reader if single-part or a Multipart reader otherwise
+		AsyncFileReader* m_reader_old = m_reader;
 		m_reader =	MultipartFileReader::DetectMultipart(m_reader);
+		if (m_reader != m_reader_old) // Not the same object the old one need to be deleted
+			delete m_reader_old;
 	}
 
 	m_blocks = m_reader->GetBlockCount();
 
-	Console.WriteLn(Color_StrongBlue, L"isoFile open ok: %s", m_filename.c_str());
+	Console.WriteLn(Color_StrongBlue, L"isoFile open ok: %s", WX_STR(m_filename));
 
 	ConsoleIndentScope indent;
 

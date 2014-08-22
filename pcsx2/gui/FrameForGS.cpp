@@ -167,7 +167,7 @@ void GSPanel::DoResize()
 
 	float zoom = g_Conf->GSWindow.Zoom.ToFloat()/100.0;
 	if( zoom == 0 )//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
-		zoom = max( (float)arr, (float)(1.0/arr) );
+		zoom = std::max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
 	SetSize( viewport );
@@ -175,7 +175,7 @@ void GSPanel::DoResize()
 	
 	int cx, cy;
 	GetPosition(&cx, &cy);
-	float unit = .01*(float)min(viewport.x, viewport.y);
+	float unit = .01*(float)std::min(viewport.x, viewport.y);
 	SetPosition( wxPoint( cx + unit*g_Conf->GSWindow.OffsetX.ToFloat(), cy + unit*g_Conf->GSWindow.OffsetY.ToFloat() ) );
 #ifdef GSWindowScaleDebug
 	Console.WriteLn(Color_Yellow, "GSWindowScaleDebug: zoom %f, viewport.x %d, viewport.y %d", zoom, viewport.GetX(), viewport.GetY());
@@ -206,7 +206,7 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 		DoShowMouse();
 	}
 
-#ifdef __LINUX__
+#ifdef __linux__
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -269,7 +269,7 @@ void GSPanel::OnKeyDown( wxKeyEvent& evt )
 	// to the APP level message handler, which in turn routes them right back here -- yes it's
 	// silly, but oh well).
 
-#ifdef __LINUX__
+#ifdef __linux__
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -293,8 +293,12 @@ void GSPanel::OnKeyDown( wxKeyEvent& evt )
 void GSPanel::DirectKeyCommand( const KeyAcceleratorCode& kac )
 {
 	const GlobalCommandDescriptor* cmd = NULL;
-	m_Accels->TryGetValue( kac.val32, cmd );
-	if( cmd == NULL ) return;
+
+	std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(m_Accels->find(kac.val32));
+	if (iter == m_Accels->end())
+		return;
+
+	cmd = iter->second;
 
 	DbgCon.WriteLn( "(gsFrame) Invoking command: %s", cmd->Id );
 	cmd->Invoke();
@@ -321,7 +325,7 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 	else
 		DoShowMouse();
 
-#ifdef __LINUX__
+#ifdef __linux__
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -337,7 +341,7 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 	evt.Skip();
 	m_HasFocus = false;
 	DoShowMouse();
-#ifdef __LINUX__
+#ifdef __linux__
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
 	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
@@ -523,7 +527,7 @@ GSPanel* GSFrame::GetViewport()
 
 void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 {
-#ifdef __LINUX__
+#ifdef __linux__
 	// Important Linux note: When the title is set in fullscreen the window is redrawn. Unfortunately
 	// an intermediate white screen appears too which leads to a very annoying flickering.
 	if (IsFullScreen()) return;
@@ -563,8 +567,8 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 
-	SetTitle( pxsFmt( L"%s | %s (%s) | Limiter: %s | fps: %6.02f%s | State %d",
-		fromUTF8(gsDest).c_str(),
+	SetTitle( pxsFmt( L"%s | %ls (%ls) | Limiter: %ls | fps: %6.02f%ls | State %d",
+		WX_STR(fromUTF8(gsDest)),
 		(smode2 & 1) ? L"Interlaced" : L"Progressive",
 		(smode2 & 2) ? L"frame" : L"field",
 		limiterStr, fps, cpuUsage.c_str(), States_GetCurrentSlot() )

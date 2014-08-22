@@ -12,20 +12,13 @@ set(CommonFlags
     # Disable this optimization for the moment
     -fno-omit-frame-pointer 
     # END GCC-4.6
-	-pthread
-    -fvisibility=hidden
-	-fno-guess-branch-probability
-	-fno-dse
-	-fno-tree-dse
-	-fno-strict-aliasing
+    -fno-strict-aliasing
+    -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
-    -std=c++0x
-	-pipe)
-
-# set warning flags
-set(DebugFlags
-	-W
-	-g)
+    -Wno-char-subscripts # only impact svu which is deprecated
+    -Wno-missing-braces
+    #-Wno-ignored-attributes # don't remember why I put here but it is pure C option, therefore it complains for nothings on cpp files
+	)
 
 # set optimization flags
 set(OptimizationFlags
@@ -68,11 +61,16 @@ set(OptimizationFlags
 	-ftree-vrp
 	-funit-at-a-time)
 
+#Clang doesn't support a few common flags that GCC does.
+if(NOT USE_CLANG)
+	add_definitions(${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
+endif(NOT USE_CLANG) 
+
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(Output pcsx2-dbg)
 
-	add_definitions(${CommonFlags} ${DebugFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP)
+	add_definitions(${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
@@ -112,7 +110,6 @@ set(pcsx2Sources
 	Gif.cpp
     Gif_Logger.cpp
 	Gif_Unit.cpp
-    Gte.cpp
 	GS.cpp
 	GSState.cpp
 	Hw.cpp
@@ -153,7 +150,6 @@ set(pcsx2Sources
 	Sio.cpp
 	SourceLog.cpp
 	SPR.cpp
-	Stats.cpp
 	System.cpp
 	Vif0_Dma.cpp
 	Vif1_Dma.cpp
@@ -203,7 +199,6 @@ set(pcsx2Headers
 	MemoryTypes.h
 	NakedAsm.h
 	Patch.h
-	Patch_Obsolete.h
 	PathDefs.h
 	Plugins.h
 	PrecompiledHeader.h
@@ -218,7 +213,6 @@ set(pcsx2Headers
 	Sio.h
 	sio_internal.h
 	SPR.h
-	Stats.h
 	SysForwardDefs.h
 	System.h
 	Vif_Dma.h
@@ -266,11 +260,12 @@ set(pcsx2DebugToolsSources
 	DebugTools/DisassemblyManager.cpp
 	DebugTools/ExpressionParser.cpp
 	DebugTools/MIPSAnalyst.cpp
+	DebugTools/MipsAssembler.cpp
+	DebugTools/MipsAssemblerTables.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
 	DebugTools/DisR3000A.cpp
 	DebugTools/DisR5900asm.cpp
-	DebugTools/DisR5900.cpp
 	DebugTools/DisVU0Micro.cpp
 	DebugTools/DisVU1Micro.cpp)
 
@@ -280,6 +275,8 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisassemblyManager.h
 	DebugTools/ExpressionParser.h
 	DebugTools/MIPSAnalyst.h
+	DebugTools/MipsAssembler.h
+	DebugTools/MipsAssemblerTables.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-04-06 11:47+0200\n"
-"PO-Revision-Date: 2014-04-01 21:11+0900\n"
+"POT-Creation-Date: 2014-07-30 09:16+0200\n"
+"PO-Revision-Date: 2014-06-15 12:29+0900\n"
 "Last-Translator: nrusef <nrusef@gmail.com>\n"
 "Language-Team: DeltaHF\n"
 "Language: ja_JP\n"
@@ -18,11 +18,11 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: trunk\\\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.5.7\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:254
+#: common/src/Utilities/Exceptions.cpp:264
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -36,8 +36,8 @@ msgid ""
 "PSX games then you'll have to download a PSX-specific emulator, such as "
 "ePSXe or PCSX."
 msgstr ""
-"プレイステーション1のディスクはPCSX2でサポートされていません。 \n"
-"ePSXeやPCSXなどのPS1向けのエミュレーターをお使い下さい。"
+"PS1のディスクはPCSX2でサポートされていません。 \n"
+"ePSXeやPCSXなどのPS1向けのエミュレーターをお使いください。"
 
 #: pcsx2/System.cpp:114
 msgid ""
@@ -60,7 +60,7 @@ msgid ""
 "out some memory hogging background tasks and try again."
 msgstr ""
 "PCSX2はPS2仮想マシンに必要なメモリを割り当てる事ができませんでした。 \n"
-"バックグラウンドタスクを終了させ、メモリを解放してから再試行して下さい。"
+"バックグラウンドタスクを終了させ、メモリを解放してから再試行してください。"
 
 #: pcsx2/gui/AppInit.cpp:45
 msgid ""
@@ -91,7 +91,7 @@ msgstr ""
 "エラーを解決した後に、上記リストのリコンパイラーを手動で有効化しなおす必要が"
 "あるかもしれません。"
 
-#: pcsx2/gui/AppMain.cpp:585
+#: pcsx2/gui/AppMain.cpp:588
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
@@ -99,9 +99,9 @@ msgid ""
 msgstr ""
 "PCSX2を実行するにはPS2のBIOSが必要です。あなた自身が所有する（借り物はダメで"
 "す）PS2の実機から \n"
-"「合法的に」手に入れて下さい。詳しい吸出し方法はFAQやガイドを参照して下さい。"
+"「合法的に」手に入れてください。詳しい方法はFAQやガイドを参照してください。"
 
-#: pcsx2/gui/AppMain.cpp:665
+#: pcsx2/gui/AppMain.cpp:668
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
@@ -121,11 +121,11 @@ msgid ""
 "below)."
 msgstr ""
 "これらのフォルダーが作成され、使用中のユーザーアカウントに書き込み権限がある"
-"事を確認して下さい。 \n"
+"事を確認してください。 \n"
 "また、PCSX2を管理者権限で再度起動すると、PCSX2が必要なフォルダーを自動的に作"
 "成されます。\n"
 "管理者権限がない場合、ユーザードキュメントモードに切り替える必要があります\n"
-"（下のボタンをクリック）"
+"（下のボタンをクリック）。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:181
 msgid ""
@@ -151,7 +151,8 @@ msgid ""
 msgstr ""
 "PCSX2の設定を保存するディレクトリーを任意に指定する事ができます。指定先のディ"
 "レクトリに\n"
-"PCSX2設定が既にある場合はインポート又は上書きをするオプションが表示されます。"
+"PCSX2設定が既にある場合は、インポートまたは上書きをするオプションが表示されま"
+"す。"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:89
 #, c-format
@@ -161,7 +162,7 @@ msgid ""
 "you view the readme and configuration guide."
 msgstr ""
 "このウィザードではプラグイン、メモリーカード、BIOSの初期設定を行います。\n"
-"%sを初めてインストールした方はReadmeと設定ガイドを始めにお読み下さい。"
+"%sを初めてインストールした方はReadmeと設定ガイドを始めにお読みください。"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:132
 msgid ""
@@ -170,8 +171,8 @@ msgid ""
 "You must dump the BIOS from your *own* Playstation 2 console."
 msgstr ""
 "PCSX2を実行するには「合法的」に入手したPS2 BIOSが必要です。 \n"
-"友人やインターネットから入手したものは使用してはいけません。 \n"
-"「あなた自身が所有する」プレイステーション2本体からBIOSをダンプして下さい。"
+"友人やインターネットから入手したものは使用しないでください。 \n"
+"「あなた自身が所有する」PS2本体からBIOSを吸い出ししてください。"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:31
 #, c-format
@@ -183,8 +184,8 @@ msgid ""
 "(or press Cancel to select a different settings folder)"
 msgstr ""
 "設定フォルダに既存の%s設定が見つかりました。\n"
-"この設定をインポート、又は%sのデフォルト値で上書きしますか？\n"
-"（若しくはキャンセルを押して、別の設定フォルダーを選択して下さい）"
+"この設定をインポート、または%sのデフォルト値で上書きしますか？\n"
+"（または、キャンセルを押して別の設定フォルダーを選択してください）"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:30
 msgid ""
@@ -247,8 +248,8 @@ msgid ""
 "4 -     Some more aggressive hacks.\n"
 "6 -     Too many hacks which will probably slow down most games.\n"
 msgstr ""
-"プリセットは各種スピードハック、リコンパイラー設定及び速度を向上させるゲーム"
-"フィックスを適用させます。\n"
+"プリセットは各種スピードハック、リコンパイラー設定や速度を向上させるゲーム"
+"フィックスを適用します。\n"
 "既知のゲームフィックスは自動的に適用されます。\n"
 "\n"
 "プリセットについて：\n"
@@ -265,8 +266,8 @@ msgid ""
 "\n"
 "--> Uncheck to modify settings manually (with current preset as base)"
 msgstr ""
-"プリセットは各種スピードハック、リコンパイラー設定及び速度を向上させるゲーム"
-"フィックスを適用させます。\n"
+"プリセットは各種スピードハック、リコンパイラー設定や速度を向上させるゲーム"
+"フィックスを適用します。\n"
 "既知のゲームフィックスは自動的に適用されます。\n"
 "\n"
 "チェックをはずすと現在のプリセットを基に手動で設定を変更できます。"
@@ -308,14 +309,14 @@ msgid ""
 "and re-enable it at any time using Config:Memory cards from the main menu."
 msgstr ""
 "PS2スロット[%d]は自動的に無効にされました。この問題を解決するには\n"
-"メインメニューから [設定→メモリーカード] で再度有効化して下さい。"
+"メインメニューから [設定→メモリーカード] で再度有効化してください。"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:138
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:142
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
 msgstr ""
-"有効なBIOSイメージファイルを選択して下さい。\n"
+"有効なBIOSイメージファイルを選択してください。\n"
 "選択できない場合はキャンセルを押して設定パネルを閉じてください。"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:111
@@ -367,8 +368,8 @@ msgid ""
 "usually only applies to fullscreen mode, and may not work with all GS "
 "plugins."
 msgstr ""
-"Vsync （垂直同期）は画面の水平な乱れ（ティアリング）を除去しますが、パフォー"
-"マンスに悪影響を及ぼします。\n"
+"Vsync（垂直同期）は画面の水平な乱れ（ティアリング）を除去しますが、パフォーマ"
+"ンスに悪影響を及ぼします。\n"
 "フルスクリーン時に適用され、全てのGSプラグインで動作しないことがあります。"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:61
@@ -415,7 +416,7 @@ msgstr ""
 "す。\n"
 "ウィンドウが大きいと作業の邪魔になりやすいので、このオプションは便利です。"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:67
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
 msgid ""
 "Known to affect following games:\n"
 " * Digital Devil Saga (Fixes FMV and crashes)\n"
@@ -428,7 +429,7 @@ msgstr ""
 " * ガンサバイバー４ バイオハザードヒーローズネバーダイ（グラフィックがおかし"
 "くなります）"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:76
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
 msgid ""
 "Known to affect following games:\n"
 " * Bleach Blade Battler\n"
@@ -440,7 +441,7 @@ msgstr ""
 " * グローランサーII、III\n"
 " * ウィザードリィ"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:81
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
 msgid ""
 "Known to affect following games:\n"
 " * Mana Khemia 1 (Going \"off campus\")\n"
@@ -449,7 +450,7 @@ msgstr ""
 " * マナケミア～学園の錬金術士たち～\n"
 " * メタルサーガ\n"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:86
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid ""
 "Known to affect following games:\n"
 " * Test Drive Unlimited\n"
@@ -459,14 +460,12 @@ msgstr ""
 " * テストドライブ アンリミテッド\n"
 " * Transformers"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:110
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:116
+#, fuzzy
 msgid ""
-"Gamefixes can work around wrong emulation in some titles. \n"
-"They may also cause compatibility or performance issues. \n"
-"\n"
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. \n"
-"('Automatic' means: selectively use specific tested fixes for specific games)"
+"leave this page empty. ('Automatic' means: selectively use specific tested "
+"fixes for specific games)"
 msgstr ""
 "ゲームフィックスはいくつかのゲームタイトルでの不正なエミュレーションを修正し"
 "ますが、\n"
@@ -477,7 +476,24 @@ msgstr ""
 "（[自動ゲームフィックス]は特定のゲームに対しテスト済みの項目だけを適用させま"
 "す）"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:735
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+#, fuzzy
+msgid ""
+"Gamefixes can work around wrong emulation in some titles. \n"
+"They may also cause compatibility or performance issues.\n"
+"\n"
+"The safest way to make sure that all game fixes are completely disabled."
+msgstr ""
+"ゲームフィックスはいくつかのゲームタイトルでの不正なエミュレーションを修正し"
+"ますが、\n"
+"互換性やパフォーマンスに悪影響を及ぼすことがあります。\n"
+"\n"
+"以下の項目は空欄のままにし、[自動ゲームフィックス]を有効にする事を推奨しま"
+"す。\n"
+"（[自動ゲームフィックス]は特定のゲームに対しテスト済みの項目だけを適用させま"
+"す）"
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -486,14 +502,14 @@ msgstr ""
 "フォーマットされたメモリーカード[%s]を削除しようとしています。\n"
 "メモリーカードのデータは全て失われます。本当に削除してもよろしいですか？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:771
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
-"コピーに失敗しました。コピーは空のPS2ポート又はファイルシステムに対してのみ許"
-"可されています。"
+"コピーに失敗しました。コピーは空のPS2ポートやファイルシステムに対してのみ許可"
+"されています。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:813
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:823
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "コピーに失敗しました。コピー先のメモリーカード[%s]は使用中です。"
@@ -505,7 +521,8 @@ msgid ""
 "folder locations can be overridden at any time using the Plugin/BIOS "
 "Selector panel."
 msgstr ""
-"PCSX2がユーザーレベルドキュメントを保存するディレクトリーを指定して下さい\n"
+"PCSX2がユーザーレベルドキュメントを保存するディレクトリーを指定してくださ"
+"い。\n"
 "（メモリーカード、スクリーンショット、各種設定、セーブステート）\n"
 "保存場所はそれぞれの設定画面でいつでも変更する事ができます。"
 
@@ -528,7 +545,7 @@ msgid ""
 "using menus/toolbars, or by pressing F1/F3 (save/load)."
 msgstr ""
 "PCSX2のセーブステートはこのフォルダーに保存されます。\n"
-"メインメニューのシステムから、又は「F1」（セーブ）と「F3」（ロード）の\n"
+"メインメニューのシステムから、または「F1」（セーブ）と「F3」（ロード）の\n"
 "ショートカットキーでステート操作を行う事ができます。"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
@@ -546,7 +563,7 @@ msgid ""
 "plugins will also adhere to this folder, however some older plugins may "
 "ignore it."
 msgstr ""
-"PCSX2のログ及びダンプファイルはこのフォルダーに保存されます。\n"
+"PCSX2のログやダンプファイルはこのフォルダーに保存されます。\n"
 "プラグインは通常この設定を利用しますが、古いものはこの限りではありません。"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
@@ -567,7 +584,7 @@ msgstr ""
 "\n"
 "本当に設定を適用してもよろしいですか？"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:453
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -578,7 +595,7 @@ msgstr ""
 "ん。\n"
 "プラグインが無かったり、不完全な%sのインストールで、有効な選択ができない場合"
 "は\n"
-"キャンセルを押して設定パネルを閉じて下さい。"
+"キャンセルを押して設定パネルを閉じてください。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:27
 msgid ""
@@ -635,9 +652,9 @@ msgid ""
 "panel first."
 msgstr ""
 "スピードハックはエミュレーション速度を向上させますが、不具合、音声の乱れや不"
-"正確なFPSを表示する事があります。\n"
+"正確なFPSを表示することがあります。\n"
 "エミュレーションについて問題が発生した時は、まずはこのパネルの設定を無効にし"
-"てみて下さい。"
+"てみてください。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
 msgid ""
@@ -684,8 +701,8 @@ msgid ""
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
 "this method of vsync will see little or no speedup from this hack."
 msgstr ""
-"垂直同期を待つ為にINTCステータスレジスタを使用する、主に非3D RPGゲームで使う"
-"と効果が得られます。\n"
+"垂直同期を待つためにINTCステータスレジスタを使用しているゲーム（主に非3D "
+"RPG）で使うと効果が得られます。\n"
 "この手法を使用しないゲームでは、速度向上はわずかです。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
@@ -700,8 +717,8 @@ msgstr ""
 "カーネルの 0x81FC0 アドレスにあるEEアイドルループを主に監視し、別ユニットのエ"
 "ミュレーションが発動するイベントまで、\n"
 "全ての反復でマシンステートが同一である保証があるループの探知を試みます。検出"
-"ループに対し１度の反復後に次のイベントへ、\n"
-"若しくはプロセッサのタイムスライスの末尾へ、どちらか近いほうへ飛びます。"
+"ループに対し一度の反復後に次のイベント、\n"
+"またはプロセッサのタイムスライスの末尾のどちらか近いほうへ飛びます。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:180
 msgid ""
@@ -709,25 +726,24 @@ msgid ""
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"
 msgstr ""
 "「HDLoader compatibility list」を参照し、この機能を《使用できない》ゲームを調"
-"べて下さい（mode 1/slow DVDと表記されています）。"
+"べてください（mode 1/slow DVDと表記されています）。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:37
 msgid ""
 "Note that when Framelimiting is disabled, Turbo and SlowMotion modes will "
 "not be available either."
 msgstr ""
-"フレームレート制限が無効になっている場合、ターボ及びスローモーションモードは"
-"使用できません。"
+"フレームレート制限が無効になっている場合、ターボやスローモーションモードは使"
+"用できません。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:225
 msgid ""
 "Notice: Due to PS2 hardware design, precise frame skipping is impossible. "
 "Enabling it will cause severe graphical errors in some games."
 msgstr ""
-"メモ：PS2のハードウェアの仕様により、\n"
-"正確なフレームスキップは不可能です。\n"
-"有効にすると、ゲームによってはグラフィックに\n"
-"深刻なエラーを発生させる事があります。"
+"メモ：PS2のハードウェアの仕様により、正確なフレームスキップは不可能です。\n"
+"有効にすると、ゲームによってはグラフィックに深刻なエラーを発生させる事があり"
+"ます。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:302
 msgid ""
@@ -735,7 +751,7 @@ msgid ""
 "errors."
 msgstr ""
 "クラッシュやグラフィックエラーの発生原因として、\n"
-"MTGSスレッドの同期が疑わしい場合は有効にして下さい。"
+"MTGSスレッドの同期が疑わしい場合は有効にしてください。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:305
 msgid ""
@@ -746,7 +762,7 @@ msgid ""
 "Warning: This option can be enabled on-the-fly but typically cannot be "
 "disabled on-the-fly (video will typically be garbage)."
 msgstr ""
-"MTGSスレッド又はGPUオーバーヘッドにより発生されるベンチマークノイズを除去しま"
+"MTGSスレッドやGPUのオーバーヘッドにより発生されるベンチマークノイズを除去しま"
 "す。このオプションはセーブステートと併用して利用する事が適切です。\n"
 "都合のつく所でセーブステートを行い、オプションを有効にした後に、セーブステー"
 "トをロードしてください。\n"
@@ -754,14 +770,14 @@ msgstr ""
 "警告：　このオプションはゲーム実行中に有効化できますが、無効化する事はできま"
 "せん（映像出力内容の判別ができなくなります）。"
 
-#: pcsx2/vtlb.cpp:731
+#: pcsx2/vtlb.cpp:800
 msgid ""
 "Your system is too low on virtual resources for PCSX2 to run. This can be "
 "caused by having a small or disabled swapfile, or by other programs that are "
 "hogging resources."
 msgstr ""
-"PCSX2を実行する為の仮想メモリリソースが不足しています。スワップファイルが小さ"
-"すぎるか\n"
+"PCSX2を実行するための仮想メモリリソースが不足しています。スワップファイルが小"
+"さすぎるか\n"
 "無効にされている場合や、他のプログラムがメモリの多くを消費している時に発生し"
 "ます。"
 

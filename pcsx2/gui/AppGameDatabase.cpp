@@ -52,7 +52,7 @@ protected:
 };
 
 void DBLoaderHelper::doError(bool doMsg) {
-	if (doMsg) Console.Error("GameDatabase: Bad file data [%s]", m_dest.c_str());
+	if (doMsg) Console.Error("GameDatabase: Bad file data [%s]", WX_STR(m_dest));
 	m_keyPair.Clear();
 }
 
@@ -172,7 +172,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file, const wxSt
 	
 	if (!wxFileExists(file))
 	{
-		Console.Error(L"(GameDB) Database Not Found! [%s]", file.c_str());
+		Console.Error(L"(GameDB) Database Not Found! [%s]", WX_STR(file));
 		return *this;
 	}
 
@@ -181,7 +181,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file, const wxSt
 	if (!reader.IsOk())
 	{
 		//throw Exception::FileNotFound( file );
-		Console.Error(L"(GameDB) Could not access file (permission denied?) [%s]", file.c_str());
+		Console.Error(L"(GameDB) Could not access file (permission denied?) [%s]", WX_STR(file));
 	}
 
 	DBLoaderHelper loader( reader, *this );
@@ -212,8 +212,8 @@ void AppGameDatabase::SaveToFile(const wxString& file) {
 		for( uint gameidx=0; gameidx<=endidx; ++gameidx )
 		{
 			const Game_Data& game( m_BlockTable[blockidx][gameidx] );
-			KeyPairArray::const_iterator i(game.kList.begin());
-			for ( ; i != game.kList.end(); ++i) {
+
+			for (auto i = game.kList.begin(); i != game.kList.end(); ++i) {
 				pxWriteMultiline(writer, i->toString() );
 			}
 

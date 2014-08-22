@@ -20,12 +20,12 @@
 #include "iCore.h"
 #include "iR5900.h"
 #include "IPU/IPU.h"
+#include "DebugTools/SymbolMap.h"
 
 #include "AppConfig.h"
 #include "Utilities/AsciiFile.h"
 
 using namespace R5900;
-using std::string;
 
 // fixme: currently should not be uncommented.
 //#define TEST_BROKEN_DUMP_ROUTINES
@@ -211,17 +211,16 @@ void iDumpBlock( int startpc, u8 * ptr )
 		Path::Combine( g_Conf->Folders.Logs, wxsFormat(L"R5900dump%.8X.txt", startpc) ), L"w"
 	);
 
-	if( disR5900GetSym(startpc) != NULL )
+	if (!symbolMap.GetLabelString(startpc).empty())
 	{
-		eff.Printf( disR5900GetSym( startpc ) );
-		eff.Printf( "\n" );
+		eff.Printf( "%s\n", symbolMap.GetLabelString(startpc).c_str() );
 	}
 
 	for ( uint i = startpc; i < s_nEndBlock; i += 4 )
 	{
-		string output;
+		std::string output;
 		disR5900Fasm( output, memRead32( i ), i );
-		eff.Printf( output.c_str() );
+		eff.Printf( "%s\n", output.c_str() );
 	}
 
 	// write the instruction info

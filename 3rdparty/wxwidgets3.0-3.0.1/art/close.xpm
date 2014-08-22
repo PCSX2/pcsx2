@@ -1,0 +1,16 @@
+/* XPM */
+static const char * const close_xpm[] = {
+"12 10 2 1",
+"         c None",
+"X        c black",
+"            ",
+"  XX    XX  ",
+"   XX  XX   ",
+"    XXXX    ",
+"     XX     ",
+"    XXXX    ",
+"   XX  XX   ",
+"  XX    XX  ",
+"            ",
+"            "};
+

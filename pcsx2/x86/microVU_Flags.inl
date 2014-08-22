@@ -29,20 +29,32 @@ __fi void mVUdivSet(mV) {
 __fi void mVUstatusFlagOp(mV) {
 	int curPC = iPC;
 	int i = mVUcount;
-	bool runLoop = 1;
-	if (sFLAG.doFlag) { sFLAG.doNonSticky = 1; }
+	bool runLoop = true;
+
+	if (sFLAG.doFlag) {
+		sFLAG.doNonSticky = true;
+	}
 	else {
 		for (; i > 0; i--) {
 			incPC2(-2);
-			if (sFLAG.doNonSticky) { runLoop = 0; break; }
-			else if (sFLAG.doFlag) { sFLAG.doNonSticky = 1; break; }
+			if (sFLAG.doNonSticky) {
+				runLoop = false;
+				break;
+			}
+			else if (sFLAG.doFlag) {
+				sFLAG.doNonSticky = true;
+				break;
+			}
 		}
 	}
 	if (runLoop) {
 		for (; i > 0; i--) {
 			incPC2(-2);
-			if (sFLAG.doNonSticky) break;
-			sFLAG.doFlag = 0;
+
+			if (sFLAG.doNonSticky)
+				break;
+
+			sFLAG.doFlag = false;
 		}
 	}
 	iPC = curPC;
@@ -52,7 +64,9 @@ __fi void mVUstatusFlagOp(mV) {
 int findFlagInst(int* fFlag, int cycles) {
 	int j = 0, jValue = -1;
 	for(int i = 0; i < 4; i++) {
-		if ((fFlag[i] <= cycles) && (fFlag[i] > jValue)) { j = i; jValue = fFlag[i]; }
+		if ((fFlag[i] <= cycles) && (fFlag[i] > jValue)) {
+			j = i; jValue = fFlag[i];
+		}
 	}
 	return j;
 }
@@ -71,7 +85,7 @@ int sortFlag(int* fFlag, int* bFlag, int cycles) {
 }
 
 void sortFullFlag(int* fFlag, int* bFlag) {
-	int m = max(max(fFlag[0], fFlag[1]), max(fFlag[2], fFlag[3]));
+	int m = std::max(std::max(fFlag[0], fFlag[1]), std::max(fFlag[2], fFlag[3]));
 	for(int i = 0; i < 4; i++) {
 		int t = 3 - (m - fFlag[i]);
 		bFlag[i] = (t < 0) ? 0 : t+1;
@@ -90,9 +104,14 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 	// Ensure last ~4+ instructions update mac/status flags (if next block's first 4 instructions will read them)
 	for(int i = mVUcount; i > 0; i--, aCount++) {
 		if (sFLAG.doFlag) { 
-			if (__Mac)    mFLAG.doFlag = 1;
-			if (__Status) sFLAG.doNonSticky = 1; 		
-			if (aCount >= 4) break;
+			if (__Mac)
+				mFLAG.doFlag = true;
+
+			if (__Status)
+				sFLAG.doNonSticky = true;
+
+			if (aCount >= 4)
+				break;
 		}
 		incPC2(-2);
 	}
@@ -176,11 +195,31 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 		mFLAG.lastWrite = doMFlagInsts ? (xM-1) & 3 : 0;
 		cFLAG.lastWrite = doCFlagInsts ? (xC-1) & 3 : 0;
 
-		if (sHackCond)	  { sFLAG.doFlag = 0; }
-		if (sFLAG.doFlag) { if(noFlagOpts){sFLAG.doNonSticky=1;mFLAG.doFlag=1;}}
-		if (sFlagCond)	  { mFC.xStatus[xS] = mFC.cycles + 4; xS = (xS+1) & 3; }
-		if (mFLAG.doFlag) { mFC.xMac   [xM] = mFC.cycles + 4; xM = (xM+1) & 3; }
-		if (cFLAG.doFlag) { mFC.xClip  [xC] = mFC.cycles + 4; xC = (xC+1) & 3; }
+		if (sHackCond)    {
+			sFLAG.doFlag = false;
+		}
+
+		if (sFLAG.doFlag) {
+			if(noFlagOpts) {
+				sFLAG.doNonSticky = true;
+				mFLAG.doFlag = true;
+			}
+		}
+
+		if (sFlagCond) {
+			mFC.xStatus[xS] = mFC.cycles + 4;
+			xS = (xS+1) & 3;
+		}
+
+		if (mFLAG.doFlag) {
+			mFC.xMac[xM] = mFC.cycles + 4;
+			xM = (xM+1) & 3;
+		}
+
+		if (cFLAG.doFlag) {
+			mFC.xClip[xC] = mFC.cycles + 4;
+			xC = (xC+1) & 3;
+		}
 
 		mFC.cycles++;
 		incPC2(2);
@@ -221,7 +260,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 		if (mVUregs.needExactMatch) DevCon.Error("mVU ERROR!!!");
 	}
 
-	const bool pf = 0; // Print Flag Info
+	const bool pf = false; // Print Flag Info
 	if (pf)	DevCon.WriteLn("mVU%d - [#%d][sPC=%04x][bPC=%04x][mVUBranch=%d][branch=%d]",
 			mVU.index, mVU.prog.cur->idx, mVUstartPC/2*8, xPC, mVUbranch, mVUlow.branch);
 
@@ -299,7 +338,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 }
 
 // Scan through instructions and check if flags are read (FSxxx, FMxxx, FCxxx opcodes)
-void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, vector<u32>& v) {
+void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, std::vector<u32>& v) {
 
 	for (u32 i = 0; i < v.size(); i++) {
 		if (v[i] == startPC) return; // Prevent infinite recursion
@@ -336,7 +375,7 @@ void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, vector<u32>& v) {
 }
 
 void mVUflagPass(mV, u32 startPC, u32 sCount = 0, u32 found = 0) {
-	vector<u32> v;
+	std::vector<u32> v;
 	_mVUflagPass(mVU, startPC, sCount, found, v);
 }
 
@@ -368,7 +407,7 @@ void mVUsetFlagInfo(mV) {
 			mVUregs.flagInfo |= 1;
 		}
 	}
-	elif(mVUbranch <= 8) { // Conditional Branch
+	else if (mVUbranch <= 8) { // Conditional Branch
 		incPC(-1); // Branch Taken
 		mVUflagPass (mVU, branchAddr);
 		checkFFblock(mVU, branchAddr, ffOpt);

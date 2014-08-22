@@ -46,7 +46,6 @@ int curTrayStatus;
 int csector;
 int cmode;
 
-#define SFY(x) STRFY(x)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin Interface                                                          //
@@ -55,7 +54,7 @@ char *LibName       = "cdvdGigaherz "
 #ifdef PCSX2_DEBUG
 	" Debug "
 #endif
-	"(" SFY(SVN_REV)
+	"(" TOSTR(SVN_REV)
 #if SVN_MODS
 	"/modded"
 #endif
@@ -132,14 +131,12 @@ void __inline lba_to_msf(s32 lba, u8* m, u8* s, u8* f) {
 
 char csrc[20];
 
-BOOL cdvd_is_open=FALSE;
-BOOL cdvdKeepAlive_is_open = false;
+bool cdvd_is_open = false;
+bool cdvdKeepAlive_is_open = false;
+bool disc_has_changed = false;
+bool weAreInNewDiskCB = false;
 
 Source *src;
-
-s32 disc_has_changed=0;
-
-int weAreInNewDiskCB=0;
 
 char bfr[2352];
 char throwaway[2352];

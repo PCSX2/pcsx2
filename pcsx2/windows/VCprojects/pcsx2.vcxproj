@@ -428,11 +428,12 @@
     <ClCompile Include="..\..\DebugTools\DisassemblyManager.cpp" />
     <ClCompile Include="..\..\DebugTools\ExpressionParser.cpp" />
     <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp" />
+    <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp" />
+    <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="..\..\DebugTools\SymbolMap.cpp" />
     <ClCompile Include="..\..\GameDatabase.cpp" />
     <ClCompile Include="..\..\Gif_Logger.cpp" />
     <ClCompile Include="..\..\Gif_Unit.cpp" />
-    <ClCompile Include="..\..\Gte.cpp" />
     <ClCompile Include="..\..\gui\AppGameDatabase.cpp" />
     <ClCompile Include="..\..\gui\AppUserMode.cpp" />
     <ClCompile Include="..\..\gui\Debugger\BreakpointWindow.cpp" />
@@ -466,7 +467,6 @@
     <ClCompile Include="..\SamplProf.cpp" />
     <ClCompile Include="..\..\SaveState.cpp" />
     <ClCompile Include="..\..\SourceLog.cpp" />
-    <ClCompile Include="..\..\Stats.cpp" />
     <ClCompile Include="..\..\System\SysCoreThread.cpp" />
     <ClCompile Include="..\..\System.cpp" />
     <ClCompile Include="..\..\System\SysThreadBase.cpp" />
@@ -581,7 +581,6 @@
     <ClCompile Include="..\..\GSState.cpp" />
     <ClCompile Include="..\..\MTGS.cpp" />
     <ClCompile Include="..\..\DebugTools\DisR3000A.cpp" />
-    <ClCompile Include="..\..\DebugTools\DisR5900.cpp" />
     <ClCompile Include="..\..\DebugTools\DisR5900asm.cpp" />
     <ClCompile Include="..\..\DebugTools\DisVU0Micro.cpp" />
     <ClCompile Include="..\..\DebugTools\DisVU1Micro.cpp" />
@@ -715,10 +714,11 @@
     <ClInclude Include="..\..\DebugTools\DisassemblyManager.h" />
     <ClInclude Include="..\..\DebugTools\ExpressionParser.h" />
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h" />
+    <ClInclude Include="..\..\DebugTools\MipsAssembler.h" />
+    <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />
-    <ClInclude Include="..\..\Gte.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />
@@ -729,7 +729,6 @@
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
     <ClInclude Include="..\..\Patch.h" />
-    <ClInclude Include="..\..\Patch_Obsolete.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
@@ -742,7 +741,6 @@
     <ClInclude Include="..\..\Plugins.h" />
     <ClInclude Include="..\..\SamplProf.h" />
     <ClInclude Include="..\..\SaveState.h" />
-    <ClInclude Include="..\..\Stats.h" />
     <ClInclude Include="..\..\System.h" />
     <ClInclude Include="..\..\System\SysThreads.h" />
     <ClInclude Include="..\..\Counters.h" />

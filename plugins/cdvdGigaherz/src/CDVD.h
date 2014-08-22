@@ -160,13 +160,12 @@ void WriteSettings();
 void CfgSetSettingsDir( const char* dir );
 
 extern char csrc[];
-extern BOOL cdvd_is_open;
-extern BOOL cdvdKeepAlive_is_open;
-extern int weAreInNewDiskCB;
+extern bool cdvd_is_open;
+extern bool cdvdKeepAlive_is_open;
+extern bool disc_has_changed;
+extern bool weAreInNewDiskCB;
 
 extern void (*newDiscCB)();
-
-extern s32 disc_has_changed;
 
 s32 cdvdStartThread();
 void cdvdStopThread();

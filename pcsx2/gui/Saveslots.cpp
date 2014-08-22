@@ -148,7 +148,7 @@ void Sstates_updateLoadBackupMenuItem( bool isBeforeSave )
 	g_loadBackupMenuItem->Enable( wxFileExists( isBeforeSave && g_Conf->EmuOptions.BackupSavestate ? file : file + L".backup" ) );
 	wxString label;
 	label.Printf(L"%s %d", _("Backup"), slot );
-	g_loadBackupMenuItem->SetText( label );
+	g_loadBackupMenuItem->SetItemLabel( label );
 }
 
 void States_SetCurrentSlot( int slot )

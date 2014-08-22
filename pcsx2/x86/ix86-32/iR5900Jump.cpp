@@ -22,6 +22,8 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 
+using namespace x86Emitter;
+
 namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl
@@ -43,16 +45,19 @@ REC_SYS_DEL(JALR, _Rd_);
 #else
 
 ////////////////////////////////////////////////////
-void recJ( void )
+void recJ()
 {
 	// SET_FPUSTATE;
 	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
 	recompileNextInstruction(1);
-	SetBranchImm(newpc);
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		SetBranchImm(vtlb_V2P(newpc));
+	else
+		SetBranchImm(newpc);
 }
 
 ////////////////////////////////////////////////////
-void recJAL( void )
+void recJAL()
 {
 	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
 	_deleteEEreg(31, 0);
@@ -64,12 +69,15 @@ void recJAL( void )
 	}
 	else
 	{
-		MOV32ItoM((u32)&cpuRegs.GPR.r[31].UL[0], pc + 4);
-		MOV32ItoM((u32)&cpuRegs.GPR.r[31].UL[1], 0);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[0], pc + 4);
+		MOV32ItoM((uptr)&cpuRegs.GPR.r[31].UL[1], 0);
 	}
 
 	recompileNextInstruction(1);
-	SetBranchImm(newpc);
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		SetBranchImm(vtlb_V2P(newpc));
+	else
+		SetBranchImm(newpc);
 }
 
 /*********************************************************
@@ -78,17 +86,23 @@ void recJAL( void )
 *********************************************************/
 
 ////////////////////////////////////////////////////
-void recJR( void )
+void recJR()
 {
 	SetBranchReg( _Rs_);
 }
 
 ////////////////////////////////////////////////////
-void recJALR( void )
+void recJALR()
 {
 	int newpc = pc + 4;
 	_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 	_eeMoveGPRtoR(ESI, _Rs_);
+
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+		xMOV(ecx, esi);
+		vtlb_DynV2P();
+		xMOV(esi, eax);
+	}
 	// uncomment when there are NO instructions that need to call interpreter
 //	int mmreg;
 //	if( GPR_IS_CONST1(_Rs_) )
@@ -121,8 +135,8 @@ void recJALR( void )
 		}
 		else
 		{
-			MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[0], newpc);
-			MOV32ItoM((u32)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], newpc);
+			MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
 		}
 	}
 
@@ -132,12 +146,12 @@ void recJALR( void )
 
 	if( x86regs[ESI].inuse ) {
 		pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-		MOV32RtoM((int)&cpuRegs.pc, ESI);
+		MOV32RtoM((uptr)&cpuRegs.pc, ESI);
 		x86regs[ESI].inuse = 0;
 	}
 	else {
-		MOV32MtoR(EAX, (u32)&g_recWriteback);
-		MOV32RtoM((int)&cpuRegs.pc, EAX);
+		MOV32MtoR(EAX, (uptr)&g_recWriteback);
+		MOV32RtoM((uptr)&cpuRegs.pc, EAX);
 	}
 
 	SetBranchReg(0xffffffff);

@@ -125,7 +125,7 @@ static void recEventTest()
 //      stackframe setup code in this function)
 static void __fastcall StackFrameCheckFailed( int espORebp, int regval )
 {
-	pxFailDev( pxsFmt( L"(R3000A Recompiler Stackframe) Sanity check failed on %s\n\tCurrent=%d; Saved=%d",
+	pxFailDev( pxsFmt( L"(R3000A Recompiler Stackframe) Sanity check failed on %ls\n\tCurrent=%d; Saved=%d",
 		(espORebp==0) ? L"ESP" : L"EBP", regval, (espORebp==0) ? s_store_esp : s_store_ebp )
 	);
 
@@ -422,7 +422,7 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 		f.Printf("\n");
 	}
 
-#ifdef __LINUX__
+#ifdef __linux__
 	char command[256];
 	// dump the asm
 	{
@@ -933,7 +933,7 @@ static __fi u32 psxRecClearMem(u32 pc)
 		if (pexblock->startpc + pexblock->size * 4 <= lowerextent)
 			break;
 
-		lowerextent = min(lowerextent, pexblock->startpc);
+		lowerextent = std::min(lowerextent, pexblock->startpc);
 		blockidx--;
 	}
 
@@ -943,8 +943,8 @@ static __fi u32 psxRecClearMem(u32 pc)
 		if (pexblock->startpc >= upperextent)
 			break;
 
-		lowerextent = min(lowerextent, pexblock->startpc);
-		upperextent = max(upperextent, pexblock->startpc + pexblock->size * 4);
+		lowerextent = std::min(lowerextent, pexblock->startpc);
+		upperextent = std::max(upperextent, pexblock->startpc + pexblock->size * 4);
 
 		blockidx++;
 	}

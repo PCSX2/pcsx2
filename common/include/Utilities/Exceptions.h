@@ -116,7 +116,7 @@ namespace Exception
 
 		virtual u32 GetPc() const=0;
 		virtual bool IsDelaySlot() const=0;
-		virtual wxString Message() const { return m_message; }
+		virtual wxString& Message() { return m_message; }
 
 		virtual void Rethrow() const=0;
 		virtual Ps2Generic* Clone() const=0;

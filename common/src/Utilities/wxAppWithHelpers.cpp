@@ -675,7 +675,7 @@ void wxAppWithHelpers::OnDeleteThread( wxCommandEvent& evt )
 		return;
 	}
 
-	pxThreadLog.Write(thr->GetName(), (wxString)L"Thread object deleted successfully" + (thr->HasPendingException() ? L" [exception pending!]" : wxEmptyString));
+	pxThreadLog.Write(thr->GetName(), wxString(wxString(L"Thread object deleted successfully") + (thr->HasPendingException() ? L" [exception pending!]" : L"")).wc_str() );
 	thr->RethrowException();
 }
 

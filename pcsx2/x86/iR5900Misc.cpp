@@ -66,7 +66,7 @@ void recDoBranchImm_Likely( u32* jmpSkip )
 namespace OpcodeImpl {
 
 ////////////////////////////////////////////////////
-//static void recCACHE( void ) {
+//static void recCACHE() {
 //	MOV32ItoM( (uptr)&cpuRegs.code, cpuRegs.code );
 //	MOV32ItoM( (uptr)&cpuRegs.pc, pc );
 //	iFlushCall(FLUSH_EVERYTHING);
@@ -80,15 +80,15 @@ namespace OpcodeImpl {
 //}
 
 
-void recPREF( void )
+void recPREF()
 {
 }
 
-void recSYNC( void )
+void recSYNC()
 {
 }
 
-void recMFSA( void )
+void recMFSA()
 {
 	int mmreg;
 	if (!_Rd_) return;
@@ -102,7 +102,7 @@ void recMFSA( void )
 		SetMMXstate();
 	}
 	else {
-		MOV32MtoR(EAX, (u32)&cpuRegs.sa);
+		MOV32MtoR(EAX, (uptr)&cpuRegs.sa);
 		_deleteEEreg(_Rd_, 0);
 		MOV32RtoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[0], EAX);
 		MOV32ItoM((uptr)&cpuRegs.GPR.r[_Rd_].UL[1], 0);
@@ -110,7 +110,7 @@ void recMFSA( void )
 }
 
 // SA is 4-bit and contains the amount of bytes to shift
-void recMTSA( void )
+void recMTSA()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
 		MOV32ItoM((uptr)&cpuRegs.sa, g_cpuConstRegs[_Rs_].UL[0] & 0xf );
@@ -133,7 +133,7 @@ void recMTSA( void )
 	}
 }
 
-void recMTSAB( void )
+void recMTSAB()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
 		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) );
@@ -146,7 +146,7 @@ void recMTSAB( void )
 	}
 }
 
-void recMTSAH( void )
+void recMTSAH()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
 		MOV32ItoM((uptr)&cpuRegs.sa, ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1);
@@ -161,7 +161,7 @@ void recMTSAH( void )
 }
 
 	////////////////////////////////////////////////////
-	void recNULL( void )
+	void recNULL()
 	{
 		Console.Error("EE: Unimplemented op %x", cpuRegs.code);
 	}
@@ -206,62 +206,62 @@ void recMTSAH( void )
 	   //branch = 2;
 	}
 
-	void recTGE( void )
+	void recTGE()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TGE );
 	}
 
-	void recTGEU( void )
+	void recTGEU()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEU );
 	}
 
-	void recTLT( void )
+	void recTLT()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TLT );
 	}
 
-	void recTLTU( void )
+	void recTLTU()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTU );
 	}
 
-	void recTEQ( void )
+	void recTEQ()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQ );
 	}
 
-	void recTNE( void )
+	void recTNE()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TNE );
 	}
 
-	void recTGEI( void )
+	void recTGEI()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEI );
 	}
 
-	void recTGEIU( void )
+	void recTGEIU()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEIU );
 	}
 
-	void recTLTI( void )
+	void recTLTI()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTI );
 	}
 
-	void recTLTIU( void )
+	void recTLTIU()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTIU );
 	}
 
-	void recTEQI( void )
+	void recTEQI()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQI );
 	}
 
-	void recTNEI( void )
+	void recTNEI()
 	{
 		recBranchCall( R5900::Interpreter::OpcodeImpl::TNEI );
 	}

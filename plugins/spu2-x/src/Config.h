@@ -64,7 +64,16 @@ extern wxString RegDumpFileName;
 extern int Interpolation;
 extern int numSpeakers;
 extern bool EffectsDisabled;
-extern float FinalVolume;
+extern float FinalVolume; // Global / pre-scale
+extern bool AdvancedVolumeControl;
+extern float VolumeAdjustFLdb;
+extern float VolumeAdjustCdb;
+extern float VolumeAdjustFRdb;
+extern float VolumeAdjustBLdb;
+extern float VolumeAdjustBRdb;
+extern float VolumeAdjustSLdb;
+extern float VolumeAdjustSRdb;
+extern float VolumeAdjustLFEdb;
 extern bool postprocess_filter_enabled;
 extern bool postprocess_filter_dealias;
 
@@ -74,7 +83,7 @@ extern u32 OutputModule;
 extern int SndOutLatencyMS;
 extern int SynchMode;
 
-#ifndef __LINUX__
+#ifndef __linux__
 extern wchar_t dspPlugin[];
 extern int  dspPluginModule;
 

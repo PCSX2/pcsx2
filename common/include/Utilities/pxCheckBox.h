@@ -68,9 +68,7 @@ protected:
 	void OnSubtextClicked( wxCommandEvent& evt );
 };
 
-extern void operator+=( wxSizer& target, pxCheckBox* src );
 extern void operator+=( wxSizer& target, pxCheckBox& src );
-extern void operator+=( wxSizer* target, pxCheckBox& src );
 
 template<>
 inline void operator+=( wxSizer& target, const pxWindowAndFlags<pxCheckBox>& src )
@@ -78,8 +76,3 @@ inline void operator+=( wxSizer& target, const pxWindowAndFlags<pxCheckBox>& src
 	target.Add( src.window, src.flags );
 }
 
-template<>
-inline void operator+=( wxSizer* target, const pxWindowAndFlags<pxCheckBox>& src )
-{
-	target->Add( src.window, src.flags );
-}

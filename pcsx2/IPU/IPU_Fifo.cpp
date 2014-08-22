@@ -67,7 +67,7 @@ wxString IPU_Fifo_Output::desc() const
 int IPU_Fifo_Input::write(u32* pMem, int size)
 {
 	int transsize;
-	int firsttrans = min(size, 8 - (int)g_BP.IFC);
+	int firsttrans = std::min(size, 8 - (int)g_BP.IFC);
 
 	g_BP.IFC += firsttrans;
 	transsize = firsttrans;
@@ -112,7 +112,7 @@ int IPU_Fifo_Output::write(const u32 *value, uint size)
 	/*do {*/
 		//IPU0dma();
 	
-		uint transsize = min(size, 8 - (uint)ipuRegs.ctrl.OFC);
+		uint transsize = std::min(size, 8 - (uint)ipuRegs.ctrl.OFC);
 		if(!transsize) return 0;
 
 		ipuRegs.ctrl.OFC += transsize;
@@ -160,7 +160,7 @@ void __fastcall ReadFIFO_IPUout(mem128_t* out)
 
 void __fastcall WriteFIFO_IPUin(const mem128_t* value)
 {
-	IPU_LOG( "WriteFIFO/IPUin <- %ls", value->ToString().c_str() );
+	IPU_LOG( "WriteFIFO/IPUin <- %ls", WX_STR(value->ToString()) );
 
 	//committing every 16 bytes
 	if( ipu_fifo.in.write((u32*)value, 1) == 0 )

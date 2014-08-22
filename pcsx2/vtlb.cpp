@@ -96,8 +96,8 @@ template< typename DataType >
 DataType __fastcall vtlb_memRead(u32 addr)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
-	u32 vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
-	s32 ppf=addr+vmv;
+	uptr vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
+	sptr ppf=addr+vmv;
 
 	if (!(ppf<0))
 	{
@@ -151,8 +151,8 @@ DataType __fastcall vtlb_memRead(u32 addr)
 
 void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 
 	if (!(ppf<0))
 	{
@@ -178,8 +178,8 @@ void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 }
 void __fastcall vtlb_memRead128(u32 mem, mem128_t *out)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 
 	if (!(ppf<0))
 	{
@@ -211,8 +211,8 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
 
-	u32 vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
-	s32 ppf=addr+vmv;
+	uptr vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
+	sptr ppf=addr+vmv;
 	if (!(ppf<0))
 	{		
 		if (!CHECK_EEREC) 
@@ -259,8 +259,8 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 
 void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 	if (!(ppf<0))
 	{		
 		if (!CHECK_EEREC) 
@@ -287,8 +287,8 @@ void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 
 void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 {
-	u32 vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	s32 ppf=mem+vmv;
+	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+	sptr ppf=mem+vmv;
 	if (!(ppf<0))
 	{
 		if (!CHECK_EEREC) 
@@ -331,9 +331,45 @@ template void vtlb_memWrite<mem32_t>(u32 mem, mem32_t data);
 // Important recompiler note: Mid-block Exception handling isn't reliable *yet* because
 // memory ops don't flush the PC prior to invoking the indirect handlers.
 
+
+static void GoemonTlbMissDebug()
+{
+	// 0x3d5580 is the address of the TLB cache
+	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+
+	for (u32 i = 0; i < 150; i++) {
+		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add)
+			DevCon.WriteLn("Entry %d is valid. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
+	}
+}
+
+void __fastcall GoemonPreloadTlb()
+{
+	// 0x3d5580 is the address of the TLB cache table
+	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+
+	for (u32 i = 0; i < 150; i++) {
+		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add) {
+
+			u32 size  = tlb[i].high_add - tlb[i].low_add;
+			u32 vaddr = tlb[i].low_add;
+			u32 paddr = tlb[i].physical_add;
+
+			if ((u32)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == 0x80000000u) {
+				DevCon.WriteLn("Preload TLB[%d]: From V:0x%8.8x to P:0x%8.8x (%d pages)", i, vaddr, paddr, size >> VTLB_PAGE_BITS);
+				vtlb_VMap(           vaddr , paddr, size);
+				vtlb_VMap(0x20000000|vaddr , paddr, size);
+			}
+		}
+	}
+}
+
 // Generates a tlbMiss Exception
 static __ri void vtlb_Miss(u32 addr,u32 mode)
 {
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		GoemonTlbMissDebug();
+
 	// Hack to handle expected tlb miss by some games.
 	if (Cpu == &intCpu) {
 		if (mode)
@@ -344,7 +380,7 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 
 	// The exception terminate the program on linux which is very annoying
 	// Just disable it for the moment
-#ifdef __LINUX__
+#ifdef __linux__
 	if (0)
 #else
 	if( IsDevBuild )
@@ -365,7 +401,7 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 {
 	// The exception terminate the program on linux which is very annoying
 	// Just disable it for the moment
-#ifdef __LINUX__
+#ifdef __linux__
 	if (0)
 #else
 	if( IsDevBuild )
@@ -537,14 +573,14 @@ void vtlb_MapBlock(void* base, u32 start, u32 size, u32 blocksize)
 	verify(0==(blocksize&VTLB_PAGE_MASK) && blocksize>0);
 	verify(0==(size%blocksize));
 
-	s32 baseint = (s32)base;
+	sptr baseint = (sptr)base;
 	u32 end = start + (size - VTLB_PAGE_SIZE);
 	verify((end>>VTLB_PAGE_BITS) < ArraySize(vtlbdata.pmap));
 
 	while (start <= end)
 	{
 		u32 loopsz = blocksize;
-		s32 ptr = baseint;
+		sptr ptr = baseint;
 
 		while (loopsz > 0)
 		{
@@ -583,6 +619,13 @@ __fi void* vtlb_GetPhyPtr(u32 paddr)
 		return reinterpret_cast<void*>(vtlbdata.pmap[paddr>>VTLB_PAGE_BITS]+(paddr&VTLB_PAGE_MASK));
 }
 
+__fi u32 vtlb_V2P(u32 vaddr)
+{
+	u32 paddr = vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
+	paddr    |= vaddr & VTLB_PAGE_MASK;
+	return paddr;
+}
+
 //virtual mappings
 //TODO: Add invalid paddr checks
 void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
@@ -610,6 +653,10 @@ void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
 		}
 
 		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = pme-vaddr;
+		if (vtlbdata.ppmap)
+			if (!(vaddr & 0x80000000)) // those address are already physical don't change them
+				vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS] = paddr & ~VTLB_PAGE_MASK;
+
 		vaddr += VTLB_PAGE_SIZE;
 		paddr += VTLB_PAGE_SIZE;
 		size -= VTLB_PAGE_SIZE;
@@ -621,7 +668,7 @@ void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 size)
 	verify(0==(vaddr&VTLB_PAGE_MASK));
 	verify(0==(size&VTLB_PAGE_MASK) && size>0);
 
-	u32 bu8 = (u32)buffer;
+	uptr bu8 = (uptr)buffer;
 	while (size > 0)
 	{
 		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = bu8-vaddr;
@@ -630,6 +677,7 @@ void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 size)
 		size -= VTLB_PAGE_SIZE;
 	}
 }
+
 void vtlb_VMapUnmap(u32 vaddr,u32 size)
 {
 	verify(0==(vaddr&VTLB_PAGE_MASK));
@@ -688,6 +736,10 @@ void vtlb_Init()
 	//yeah i know, its stupid .. but this code has to be here for now ;p
 	vtlb_VMapUnmap((VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE,VTLB_PAGE_SIZE);
 
+	// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		vtlb_Alloc_Ppmap();
+
 	extern void vtlb_dynarec_init();
 	vtlb_dynarec_init();
 }
@@ -712,7 +764,7 @@ void vtlb_Core_Alloc()
 {
 	if (!vtlbdata.vmap)
 	{
-		vtlbdata.vmap = (s32*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap), 16 );
+		vtlbdata.vmap = (sptr*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap), 16 );
 		if (!vtlbdata.vmap)
 			throw Exception::OutOfMemory( L"VTLB Virtual Address Translation LUT" )
 				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
@@ -720,9 +772,26 @@ void vtlb_Core_Alloc()
 	}
 }
 
+// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+// However automatic gamefix is done after the standard init so a new init function was done.
+void vtlb_Alloc_Ppmap()
+{
+	if (vtlbdata.ppmap) return;
+
+	vtlbdata.ppmap = (u32*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap), 16 );
+	if (!vtlbdata.ppmap)
+		throw Exception::OutOfMemory( L"VTLB PS2 Virtual Address Translation LUT" )
+			.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap) / _1mb));
+
+	// By default a 1:1 virtual to physical mapping
+	for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
+		vtlbdata.ppmap[i] = i<<VTLB_PAGE_BITS;
+}
+
 void vtlb_Core_Free()
 {
 	safe_aligned_free( vtlbdata.vmap );
+	safe_aligned_free( vtlbdata.ppmap );
 }
 
 static wxString GetHostVmErrorMsg()

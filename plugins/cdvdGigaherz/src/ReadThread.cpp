@@ -110,9 +110,9 @@ void cdvdCacheReset()
 
 void cdvdCallNewDiscCB()
 {
-	weAreInNewDiskCB=1;
+	weAreInNewDiskCB = true;
 	newDiscCB();
-	weAreInNewDiskCB=0;
+	weAreInNewDiskCB = false;
 }
 
 bool cdvdUpdateDiscStatus()
@@ -140,9 +140,9 @@ bool cdvdUpdateDiscStatus()
 	{
 		if(!disc_has_changed)
 		{
-			disc_has_changed=1;
-			curDiskType=CDVD_TYPE_NODISC;
-			curTrayStatus=CDVD_TRAY_OPEN;
+			disc_has_changed = true;
+			curDiskType = CDVD_TYPE_NODISC;
+			curTrayStatus = CDVD_TRAY_OPEN;
 			cdvdCallNewDiscCB();
 		}
 	}
@@ -150,13 +150,13 @@ bool cdvdUpdateDiscStatus()
 	{
 		if(disc_has_changed)
 		{
-			curDiskType=CDVD_TYPE_NODISC;
-			curTrayStatus=CDVD_TRAY_CLOSE;
+			curDiskType = CDVD_TYPE_NODISC;
+			curTrayStatus = CDVD_TRAY_CLOSE;
 
 			// just a test
 			src->Reopen();
 
-			disc_has_changed=0;
+			disc_has_changed = false;
 			cdvdRefreshData();
 			cdvdCallNewDiscCB();
 		}

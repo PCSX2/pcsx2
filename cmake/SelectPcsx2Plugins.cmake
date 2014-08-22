@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 #                              Dependency message print
 #-------------------------------------------------------------------------------
-set(msg_dep_common_libs "check these libraries -> wxWidgets (>=2.8.10), sparsehash (>=1.5), aio")
+set(msg_dep_common_libs "check these libraries -> wxWidgets (>=2.8.10), aio")
 set(msg_dep_pcsx2       "check these libraries -> wxWidgets (>=2.8.10), gtk2 (>=2.16), zlib (>=1.2.4), pcsx2 common libs")
 set(msg_dep_cdvdiso     "check these libraries -> bzip2 (>=1.0.5), gtk2 (>=2.16)")
 set(msg_dep_zerogs      "check these libraries -> glew (>=1.6), opengl, X11, nvidia-cg-toolkit (>=2.1)")
@@ -25,9 +25,8 @@ endif()
 #---------------------------------------
 #			Common libs
 # requires: -wx
-#           -sparsehash
 #---------------------------------------
-if(wxWidgets_FOUND AND SPARSEHASH_FOUND)
+if(wxWidgets_FOUND)
     set(common_libs TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src")
     set(common_libs FALSE)

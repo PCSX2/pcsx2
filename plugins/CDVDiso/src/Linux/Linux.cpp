@@ -537,12 +537,16 @@ void OnCreateZ(GtkButton *button,  gpointer user_data)
 	t = fopen(table, "wb");
 
 	if (t == NULL) return;
-	if (CDR_open() == -1) return;
-
+	if (CDR_open() == -1)
+	{
+		fclose(t);
+		return;
+	}
 	if (CDR_getTD(ftrack, start) == -1)
 	{
 		printf("Error getting TD\n");
 		CDR_close();
+		fclose(t);
 		return;
 	}
 
@@ -550,6 +554,7 @@ void OnCreateZ(GtkButton *button,  gpointer user_data)
 	{
 		printf("Error getting TD\n");
 		CDR_close();
+		fclose(t);
 		return;
 	}
 
@@ -557,6 +562,7 @@ void OnCreateZ(GtkButton *button,  gpointer user_data)
 	if (f == NULL)
 	{
 		CDR_close();
+		fclose(t);
 		printf("Error opening %s", IsoFile);
 		return;
 	}

@@ -41,14 +41,25 @@ public:
 	wxNotebook* getBottomTabs() { return bottomTabs; };
 	void update();
 	void showMemoryView() { setBottomTabPage(memory); };
+	void loadCycles();
+	void reloadSymbolMap();
+
+	void listBoxHandler(wxCommandEvent& event);
+	DECLARE_EVENT_TABLE()
 private:
 	void setBottomTabPage(wxWindow* win);
+	void postEvent(wxEventType type, int value);
+
 	DebugInterface* cpu;
 	CtrlDisassemblyView* disassembly;
 	CtrlRegisterList* registerList;
+	wxListBox* functionList;
 	CtrlMemView* memory;
 	wxNotebook* bottomTabs;
+	wxNotebook* leftTabs;
 	BreakpointList* breakpointList;
+	wxStaticText* cyclesText;
+	u32 lastCycles;
 };
 
 class DisassemblyDialog : public wxFrame
@@ -62,7 +73,7 @@ public:
 	
 	void update();
 	void reset();
-	void setDebugMode(bool debugMode);
+	void setDebugMode(bool debugMode, bool switchPC);
 	
 #ifdef WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
@@ -79,6 +90,7 @@ protected:
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
 	void stepInto();
+	void gotoPc();
 private:
 	CpuTabPage* eeTab;
 	CpuTabPage* iopTab;

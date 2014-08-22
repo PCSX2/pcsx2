@@ -20,17 +20,11 @@
   !define INC_CRT_2013  1
 !endif
 
-!ifndef INC_AVG
-  ; We are including the AVG SafeGuard with the full installer.
-  !define INC_AVG	    1
-!endif
-
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
 !define OUTFILE_POSTFIX "setup"
 !include "SharedBase.nsh"
-!include "AVGPage.nsdinc"
 !include "x64.nsh"
 
 ; Reserve features for improved performance with solid archiving.
@@ -39,7 +33,6 @@ ShowUninstDetails nevershow
 ;!insertmacro MUI_RESERVEFILE_LANGDLL
 
 !insertmacro MUI_PAGE_COMPONENTS 
-Page custom fnc_AVGPage_Show
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
   
@@ -73,20 +66,20 @@ Section "!${APP_NAME} (required)" SEC_CORE
   SetOutPath "$INSTDIR\Plugins"
   !insertmacro UNINSTALL.LOG_OPEN_INSTALL
 
-    File /nonfatal /oname=gsdx32-sse2-r${SVNREV_GSDX}.dll    ..\bin\Plugins\gsdx32-sse2.dll
-    File /nonfatal /oname=gsdx32-ssse3-r${SVNREV_GSDX}.dll   ..\bin\Plugins\gsdx32-ssse3.dll 
-    File /nonfatal /oname=gsdx32-sse4-r${SVNREV_GSDX}.dll    ..\bin\Plugins\gsdx32-sse4.dll
-    File /nonfatal /oname=gsdx32-avx-r${SVNREV_GSDX}.dll     ..\bin\Plugins\gsdx32-avx.dll
-	File /nonfatal /oname=gsdx32-avx2-r${SVNREV_GSDX}.dll    ..\bin\Plugins\gsdx32-avx2.dll
-    File /nonfatal /oname=zerogs-r${SVNREV_ZEROGS}.dll       ..\bin\Plugins\zerogs.dll
+    File /nonfatal /oname=gsdx32-sse2.dll    ..\bin\Plugins\gsdx32-sse2.dll
+    File /nonfatal /oname=gsdx32-ssse3.dll   ..\bin\Plugins\gsdx32-ssse3.dll 
+    File /nonfatal /oname=gsdx32-sse4.dll    ..\bin\Plugins\gsdx32-sse4.dll
+    File /nonfatal /oname=gsdx32-avx.dll     ..\bin\Plugins\gsdx32-avx.dll
+	File /nonfatal /oname=gsdx32-avx2.dll    ..\bin\Plugins\gsdx32-avx2.dll
+    File /nonfatal /oname=zerogs.dll       ..\bin\Plugins\zerogs.dll
   
-    File /nonfatal /oname=spu2-x-r${SVNREV_SPU2X}.dll      ..\bin\Plugins\spu2-x.dll
-    File /nonfatal /oname=zerospu2-r${SVNREV_ZEROSPU2}.dll ..\bin\Plugins\zerospu2.dll
+    File /nonfatal /oname=spu2-x.dll      ..\bin\Plugins\spu2-x.dll
+    File /nonfatal /oname=zerospu2.dll ..\bin\Plugins\zerospu2.dll
   
-    File /nonfatal /oname=cdvdiso-r${SVNREV_CDVDISO}.dll   ..\bin\Plugins\cdvdiso.dll
+    File /nonfatal /oname=cdvdiso.dll   ..\bin\Plugins\cdvdiso.dll
     File                                                   ..\bin\Plugins\cdvdGigaherz.dll
   
-    File /nonfatal /oname=lilypad-r${SVNREV_LILYPAD}.dll   ..\bin\Plugins\lilypad.dll
+    File /nonfatal /oname=lilypad.dll   ..\bin\Plugins\lilypad.dll
     File                                                   ..\bin\Plugins\PadSSSPSX.dll
 	File /nonfatal                                         ..\bin\Plugins\padPokopom.dll
 

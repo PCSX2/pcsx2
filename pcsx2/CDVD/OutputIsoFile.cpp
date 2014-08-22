@@ -25,7 +25,7 @@ void pxStream_OpenCheck( const wxStreamBase& stream, const wxString& fname, cons
 	if (stream.IsOk()) return;
 
 	ScopedExcept ex(Exception::FromErrno(fname, errno));
-	ex->SetDiagMsg( pxsFmt(L"Unable to open the file for %s: %s", mode.c_str(), ex->DiagMsg().c_str()) );
+	ex->SetDiagMsg( pxsFmt(L"Unable to open the file for %s: %s", WX_STR(mode), WX_STR(ex->DiagMsg())) );
 	ex->Rethrow();
 }
 
@@ -65,7 +65,7 @@ void OutputIsoFile::Create(const wxString& filename, int version)
 	m_outstream = new wxFileOutputStream( m_filename );
 	pxStream_OpenCheck( *m_outstream, m_filename, L"writing" );
 
-	Console.WriteLn("isoFile create ok: %s ", m_filename.c_str());
+	Console.WriteLn("isoFile create ok: %s ", WX_STR(m_filename));
 }
 
 // Generates format header information for blockdumps.
@@ -129,7 +129,7 @@ void OutputIsoFile::WriteBuffer( const void* src, size_t size )
 			throw Exception::BadStream(m_filename).SetDiagMsg(pxsFmt(L"An error occurred while writing %u bytes to file", size));
 
 		ScopedExcept ex(Exception::FromErrno(m_filename, err));
-		ex->SetDiagMsg( pxsFmt(L"An error occurred while writing %u bytes to file: %s", size, ex->DiagMsg().c_str()) );
+		ex->SetDiagMsg( pxsFmt(L"An error occurred while writing %u bytes to file: %s", size, WX_STR(ex->DiagMsg())) );
 		ex->Rethrow();
 	}
 }

@@ -435,14 +435,14 @@ static __inline__ __attribute__((always_inline)) long _InterlockedIncrement(vola
 static __inline__ __attribute__((always_inline)) unsigned char _interlockedbittestandreset(volatile long * a, const long b)
 {
 	unsigned char retval;
-	__asm__("lock; btrl %[b], %[a]; setb %b[retval]" : [retval] "=r" (retval), [a] "=m" (a) : [b] "Ir" (b) : "memory");
+	__asm__("lock; btrl %k[b], %[a]; setb %b[retval]" : [retval] "=r" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
 	return retval;
 }
 
 static __inline__ __attribute__((always_inline)) unsigned char _interlockedbittestandset(volatile long * a, const long b)
 {
 	unsigned char retval;
-	__asm__("lock; btsl %[b], %[a]; setc %b[retval]" : [retval] "=r" (retval), [a] "=m" (a) : [b] "Ir" (b) : "memory");
+	__asm__("lock; btsl %k[b], %[a]; setc %b[retval]" : [retval] "=r" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
 	return retval;
 }
 
@@ -591,7 +591,7 @@ static __inline__ __attribute__((always_inline)) void __addfsdword(const unsigne
 /*** Bit manipulation ***/
 static  __inline__ __attribute__((always_inline)) unsigned char _BitScanForward(unsigned long * const Index, const unsigned long Mask)
 {
-	__asm__("bsfl %[Mask], %[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask));
+	__asm__("bsfl %k[Mask], %k[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask));
 	return Mask ? 1 : 0;
 }
 
@@ -845,7 +845,7 @@ static __inline__ __attribute__((always_inline)) unsigned long long __xgetbv(uns
 
 // gcc 4.8 define __rdtsc but unfortunately the compiler crash...
 // The redefine allow to skip the gcc __rdtsc version -- Gregory
-#ifdef __LINUX__
+#ifdef __linux__
 static __inline__ __attribute__((always_inline)) unsigned long long __pcsx2__rdtsc(void)
 #else
 static __inline__ __attribute__((always_inline)) unsigned long long __rdtsc(void)
@@ -858,7 +858,7 @@ static __inline__ __attribute__((always_inline)) unsigned long long __rdtsc(void
 
 
 /*** Interrupts ***/
-#ifndef __LINUX__
+#ifndef __linux__
 static __inline__ __attribute__((always_inline)) void __debugbreak(void)
 {
 	__asm__("int $3");

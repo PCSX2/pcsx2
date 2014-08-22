@@ -42,13 +42,13 @@ public:
 	ConsoleLogSource_Threading();
 
 	bool Write( const wxString& thrname, const wxChar* msg ) {
-		return _parent::Write( wxsFormat(L"(thread:%s) ", thrname.c_str()) + msg );
+		return _parent::Write( wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg );
 	}
 	bool Warn( const wxString& thrname, const wxChar* msg )	{
-		return _parent::Warn( wxsFormat(L"(thread:%s) ", thrname.c_str()) + msg );
+		return _parent::Warn( wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg );
 	}
 	bool Error( const wxString& thrname, const wxChar* msg ) {
-		return _parent::Error( wxsFormat(L"(thread:%s) ", thrname.c_str()) + msg );
+		return _parent::Error( wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg );
 	}
 };
 
@@ -408,7 +408,7 @@ namespace Threading
 		ScopedLock m_lock;
 		volatile __aligned(4) bool& m_bool;
 
-#ifdef __LINUX__
+#ifdef __linux__
 		ScopedLockBool(Mutex& mutexToLock, volatile bool& isLockedBool)
 #else
 		ScopedLockBool(Mutex& mutexToLock, volatile __aligned(4) bool& isLockedBool)

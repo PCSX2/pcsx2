@@ -60,11 +60,11 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 			GUNIT_LOG("ReadFIFO_VIF1");
 			if (vif1.GSLastDownloadSize <= 16)
 				gifRegs.stat.OPH = false;
-			vif1Regs.stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
+			vif1Regs.stat.FQC = std::min((u32)16, vif1.GSLastDownloadSize);
 		}
 	}
 
-	VIF_LOG("ReadFIFO/VIF1 -> %ls", out->ToString().c_str());
+	VIF_LOG("ReadFIFO/VIF1 -> %ls", WX_STR(out->ToString()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 //
 void __fastcall WriteFIFO_VIF0(const mem128_t *value)
 {
-	VIF_LOG("WriteFIFO/VIF0 <- %ls", value->ToString().c_str());
+	VIF_LOG("WriteFIFO/VIF0 <- %ls", WX_STR(value->ToString()));
 
 	vif0ch.qwc += 1;
 	if(vif0.irqoffset.value != 0 && vif0.vifstalled.enabled == true) DevCon.Warning("Offset on VIF0 FIFO start!");
@@ -92,7 +92,7 @@ void __fastcall WriteFIFO_VIF0(const mem128_t *value)
 
 void __fastcall WriteFIFO_VIF1(const mem128_t *value)
 {
-	VIF_LOG("WriteFIFO/VIF1 <- %ls", value->ToString().c_str());
+	VIF_LOG("WriteFIFO/VIF1 <- %ls", WX_STR(value->ToString()));
 
 	if (vif1Regs.stat.FDR) {
 		DevCon.Warning("writing to fifo when fdr is set!");

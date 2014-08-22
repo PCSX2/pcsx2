@@ -39,8 +39,6 @@
 #endif
 
 #ifdef __WXGTK__
-// Need to tranform the GSPanel to a X11 window/display for the GS plugins
-#include <wx/gtk/win_gtk.h> // GTK_PIZZA interface
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #endif
@@ -299,7 +297,7 @@ void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 
 	FastFormatUnicode isoFormatted;
 	isoFormatted.Write( L"[%s]", _("IsoFile") );
-	int pos = out.Find( isoFormatted );
+	int pos = out.Find( isoFormatted.c_str() );
 	
 	if(pos == wxNOT_FOUND)
 	{
@@ -355,7 +353,7 @@ public:
 		return Path::Combine( GetDataDir(), L"Langs" );
 	}
 
-#ifdef __LINUX__
+#ifdef __linux__
 	wxString GetUserLocalDataDir() const
 	{
 		// I got memory corruption inside wxGetEnv when I heavily toggle the GS renderer (F9). It seems wxGetEnv
@@ -384,9 +382,14 @@ public:
 		return cache_dir;
 	}
 #endif
+
 };
 
+#if wxMAJOR_VERSION < 3
 wxStandardPathsBase& Pcsx2AppTraits::GetStandardPaths()
+#else
+wxStandardPaths& Pcsx2AppTraits::GetStandardPaths()
+#endif
 {
 	static Pcsx2StandardPaths stdPaths;
 	return stdPaths;
@@ -484,67 +487,6 @@ void Pcsx2App::LogicalVsync()
 		}
 	}
 
-	if (EmuConfig.GS.ManagedVsync && EmuConfig.GS.VsyncEnable)
-	{
-		static bool last_enabled = true; // Avoids locking it in some scenarios
-		static int too_slow = 0;
-		static int fast_enough = 0;
-
-		if ( g_LimiterMode == Limit_Nominal && EmuConfig.GS.VsyncEnable && g_Conf->EmuOptions.GS.FrameLimitEnable )
-		{
-			float fps = (float)FpsManager.GetFramerate();
-			
-			if( gsRegionMode == Region_NTSC )
-			{
-				if (fps < 59.0f ) {
-					too_slow++;
-					fast_enough = 0;
-					if (too_slow > 4 && last_enabled == true)
-					{
-						last_enabled = false;
-						GSsetVsync( 0 );
-					}
-				}
-				else {
-					fast_enough++;
-					too_slow = 0;
-					if (fast_enough > 12 && last_enabled == false)
-					{
-						last_enabled = true;
-						GSsetVsync( 1 );
-					}
-				}
-			}
-			else
-			{
-				if (fps < 49.2f ) {
-					too_slow++;
-					fast_enough = 0;
-					if (too_slow > 3 && last_enabled == true)
-					{
-						last_enabled = false;
-						GSsetVsync( 0 );
-					}
-				}
-				else {
-					fast_enough++;
-					too_slow = 0;
-					if (fast_enough > 15 && last_enabled == false)
-					{
-						last_enabled = true;
-						GSsetVsync( 1 );
-					}
-				}
-			}
-		}
-		else
-		{
-			last_enabled = true; // Avoids locking it in some scenarios
-			too_slow = 0;
-			fast_enough = 0;
-			GSsetVsync( 0 );
-		}
-	}
 	// Only call PADupdate here if we're using GSopen2.  Legacy GSopen plugins have the
 	// GS window belonging to the MTGS thread.
 	if( (PADupdate != NULL) && (GSopen2 != NULL) && (wxGetApp().GetGsFramePtr() != NULL) )
@@ -565,7 +507,12 @@ void Pcsx2App::LogicalVsync()
 void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 {
 	const GlobalCommandDescriptor* cmd = NULL;
-	if( GlobalAccels ) GlobalAccels->TryGetValue( KeyAcceleratorCode( evt ).val32, cmd );
+	if (GlobalAccels)
+	{
+		std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(GlobalAccels->find(KeyAcceleratorCode(evt).val32));
+		if (iter != GlobalAccels->end())
+			cmd = iter->second;
+	}
 
 	if( cmd == NULL )
 	{
@@ -757,14 +704,14 @@ void Pcsx2App::enterDebugMode()
 {
 	DisassemblyDialog* dlg = GetDisassemblyPtr();
 	if (dlg)
-		dlg->setDebugMode(true);
+		dlg->setDebugMode(true,false);
 }
 	
 void Pcsx2App::leaveDebugMode()
 {
 	DisassemblyDialog* dlg = GetDisassemblyPtr();
 	if (dlg)
-		dlg->setDebugMode(false);
+		dlg->setDebugMode(false,false);
 }
 
 void Pcsx2App::resetDebugger()
@@ -931,12 +878,13 @@ void Pcsx2App::OpenGsPanel()
 	// Unfortunately there is a race condition between gui and gs threads when you called the
 	// GDK_WINDOW_* macro. To be safe I think it is best to do here. It only cost a slight
 	// extension (fully compatible) of the plugins API. -- Gregory
-	GtkWidget *child_window = gtk_bin_get_child(GTK_BIN(gsFrame->GetViewport()->GetHandle()));
+	GtkWidget *child_window = (GtkWidget*)GTK_BIN(gsFrame->GetViewport()->GetHandle());
 
 	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
 	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
 
-	GdkWindow* draw_window = GTK_PIZZA(child_window)->bin_window;
+	GdkWindow* draw_window = gtk_widget_get_window(child_window);
+
 	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
 	Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
 
@@ -1088,7 +1036,7 @@ __fi bool SysHasValidState()
 void SysStatus( const wxString& text )
 {
 	// mirror output to the console!
-	Console.WriteLn( text.c_str() );
+	Console.WriteLn( WX_STR(text) );
 	sMainFrame.SetStatusText( text );
 }
 

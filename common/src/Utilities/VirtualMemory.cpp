@@ -129,8 +129,8 @@ void* VirtualMemoryReserve::Reserve( size_t size, uptr base, uptr upper_bounds )
 
 	if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
 	{
-		DevCon.Warning( L"%s: host memory @ %s -> %s is unavailable; attempting to map elsewhere...",
-			m_name.c_str(), pxsPtr(base), pxsPtr(base + size) );
+		DevCon.Warning( L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
+			WX_STR(m_name), pxsPtr(base), pxsPtr(base + size) );
 
 		SafeSysMunmap(m_baseptr, reserved_bytes);
 
@@ -157,7 +157,7 @@ void* VirtualMemoryReserve::Reserve( size_t size, uptr base, uptr upper_bounds )
 	else
 		mbkb.Write( "[%ukb]", reserved_bytes / 1024 );
 
-	DevCon.WriteLn( Color_Gray, L"%-32s @ %s -> %s %s", m_name.c_str(),
+	DevCon.WriteLn( Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
 		pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr+reserved_bytes), mbkb.c_str());
 
 	return m_baseptr;
@@ -224,7 +224,7 @@ bool VirtualMemoryReserve::TryResize( uint newsize )
 		uint toReservePages = newPages - m_pages_reserved;
 		uint toReserveBytes = toReservePages * __pagesize;
 
-		DevCon.WriteLn( L"%-32s is being expanded by %u pages.", m_name.c_str(), toReservePages);
+		DevCon.WriteLn( L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
 
 		m_baseptr = (void*)HostSys::MmapReserve((uptr)GetPtrEnd(), toReserveBytes);
 
@@ -234,7 +234,7 @@ bool VirtualMemoryReserve::TryResize( uint newsize )
 			Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr+toReserveBytes);
 		}
 
-		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", m_name.c_str(),
+		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
 			m_baseptr, (uptr)m_baseptr+toReserveBytes, toReserveBytes / _1mb);
 	}
 	else if (newPages < m_pages_reserved)
@@ -244,11 +244,11 @@ bool VirtualMemoryReserve::TryResize( uint newsize )
 		uint toRemovePages = m_pages_reserved - newPages;
 		uint toRemoveBytes = toRemovePages * __pagesize;
 
-		DevCon.WriteLn( L"%-32s is being shrunk by %u pages.", m_name.c_str(), toRemovePages);
+		DevCon.WriteLn( L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
 
 		HostSys::MmapResetPtr(GetPtrEnd(), toRemoveBytes);
 
-		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", m_name.c_str(),
+		DevCon.WriteLn( Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
 			m_baseptr, (uptr)m_baseptr+toRemoveBytes, toRemoveBytes / _1mb);
 	}
 
@@ -295,9 +295,9 @@ void BaseVmReserveListener::OnPageFaultEvent(const PageFaultInfo& info, bool& ha
 	if (!m_allow_writes)
 	{
 		pxFailRel( pxsFmt(
-			L"Memory Protection Fault @ %s (%s)\n"
+			L"Memory Protection Fault @ %ls (%s)\n"
 			L"Modification of this reserve has been disabled (m_allow_writes == false).",
-			pxsPtr(info.addr), m_name.c_str())
+			pxsPtr(info.addr), WX_STR(m_name))
 		);
 		return;
 	}
@@ -455,7 +455,7 @@ SpatialArrayReserve& SpatialArrayReserve::SetBlockSizeInPages( uint pages )
 //
 // This method must be called prior to accessing or modifying the array contents.  Calls to
 // a modified buffer will be ignored (and generate an assertion in dev/debug modes).
-uint SpatialArrayReserve::SetBlockSize( uint bytes )
+uptr SpatialArrayReserve::SetBlockSize( uptr bytes )
 {
 	SetBlockSizeInPages((bytes + __pagesize - 1) / __pagesize);
 	return m_blocksize * __pagesize;

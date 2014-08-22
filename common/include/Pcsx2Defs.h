@@ -19,11 +19,8 @@
 // Indicate that this is the wx port to the plugins.
 #define WX_PCSX2
 
-// some distributions are lower case
-#if defined (__linux__) || defined(__CYGWIN__)
-#if !defined(__LINUX__)
-#	define __LINUX__
-#endif
+#ifdef __CYGWIN__
+#define __linux__
 #endif
 
 #include "Pcsx2Types.h"
@@ -57,27 +54,16 @@ extern "C" unsigned __int64 __xgetbv(int);
 #		ifdef _MSC_VER
 #			define jASSUME(exp) (__assume(exp))
 #		else
-#			define jASSUME(exp) ((void) sizeof(exp))
+#			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
 #		endif
 #	else
 #		define jBREAKPOINT() __debugbreak();
 #		ifdef wxASSERT
 #			define jASSUME(exp) wxASSERT(exp)
 #		else
-#			define jASSUME(exp) do { if(exp) ; else jBREAKPOINT(); } while(0);
+#			define jASSUME(exp) do { if(!(exp)) jBREAKPOINT(); } while(0)
 #		endif
 #	endif
-#endif
-
-// --------------------------------------------------------------------------------------
-//  C_ASSERT
-// --------------------------------------------------------------------------------------
-// compile-time assertion; usable at static variable define level.
-// (typically used to confirm the correct sizeof() for struct types where size
-//  restaints must be enforced).
-//
-#ifndef C_ASSERT
-#	define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -203,13 +189,10 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 #	define PCSX2_ALIGNED16(x)			__declspec(align(16)) x
 #	define PCSX2_ALIGNED16_EXTERN(x)	extern __declspec(align(16)) x
 
-#	define __naked			__declspec(naked)
 #	define __noinline		__declspec(noinline)
 #	define __threadlocal	__declspec(thread)
 
 // Don't know if there are Visual C++ equivalents of these.
-#	define __hot
-#	define __cold
 #	define likely(x)		(!!(x))
 #	define unlikely(x)		(!!(x))
 
@@ -233,7 +216,6 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 #	define PCSX2_ALIGNED_EXTERN(alig,x) extern x __attribute((aligned(alig)))
 #	define PCSX2_ALIGNED16_EXTERN(x) extern x __attribute((aligned(16)))
 
-#	define __naked						// GCC lacks the naked specifier
 #	define __assume(cond)	((void)0)	// GCC has no equivalent for __assume
 #	define CALLBACK			__attribute__((stdcall))
 
@@ -249,44 +231,9 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 #		define __forceinline	__attribute__((unused))
 #	endif
 #	define __noinline		__attribute__((noinline))
-#	define __hot			__attribute__((hot))
-#	define __cold			__attribute__((cold))
 #	define __threadlocal	__thread
 #	define likely(x)		__builtin_expect(!!(x), 1)
 #	define unlikely(x)		__builtin_expect(!!(x), 0)
-#endif
-
-// --------------------------------------------------------------------------------------
-//  GNU C/C++ Specific Defines
-// --------------------------------------------------------------------------------------
-#ifdef __GNUC__
-
-// GCC 4.4.0 is a bit nutty, as compilers go. it gets a define to itself.
-#	define GCC_VERSION (	__GNUC__ * 10000 \
-						+	__GNUC_MINOR__ * 100 \
-						+	__GNUC_PATCHLEVEL__)
-
-// Test for GCC > 4.4.0; Should be adjusted when new versions come out
-#	if GCC_VERSION >= 40400
-#		define THE_UNBEARABLE_LIGHTNESS_OF_BEING_GCC_4_4_0
-#		define __nooptimization __attribute__((optimize("O0")))
-#	endif
-
-// This theoretically unoptimizes. Not having much luck so far.
-/*
-#	ifdef THE_UNBEARABLE_LIGHTNESS_OF_BEING_GCC_4_4_0
-#		pragma GCC optimize ("O0")
-#	endif
-
-#	ifdef THE_UNBEARABLE_LIGHTNESS_OF_BEING_GCC_4_4_0
-#		pragma GCC reset_options
-#	endif
-*/
-
-#endif		// end GCC-specific section.
-
-#ifndef THE_UNBEARABLE_LIGHTNESS_OF_BEING_GCC_4_4_0
-#	define __nooptimization		// Pretty sure this is obsolete now, since we fixed __asm contraints and stuff. --air
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -309,7 +256,5 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 #define __ri	__releaseinline
 #define __fi	__forceinline
 #define __fc	__fastcall
-#define elif	else if
-
 
 #endif

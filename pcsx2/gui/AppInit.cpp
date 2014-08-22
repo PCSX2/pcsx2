@@ -31,45 +31,24 @@
 
 using namespace pxSizerFlags;
 
-static void CpuCheckSSE2()
-{
-	if( x86caps.hasStreamingSIMD2Extensions ) return;
-
-	// Only check once per process session:
-	static bool checked = false;
-	if( checked ) return;
-	checked = true;
-
-	wxDialogWithHelpers exconf( NULL, _("PCSX2 - SSE2 Recommended") );
-
-	exconf += exconf.Heading( pxE( L"Warning: Your computer does not support SSE2, which is required by many PCSX2 recompilers and plugins. Your options will be limited and emulation will be *very* slow." )
-	);
-
-	pxIssueConfirmation( exconf, MsgButtons().OK(), L"Error.Startup.NoSSE2" );
-
-	// Auto-disable anything that needs SSE2:
-
-	g_Conf->EmuOptions.Cpu.Recompiler.EnableEE	= false;
-	g_Conf->EmuOptions.Cpu.Recompiler.EnableVU0	= false;
-	g_Conf->EmuOptions.Cpu.Recompiler.EnableVU1	= false;
-}
-
 void Pcsx2App::DetectCpuAndUserMode()
 {
 	AffinityAssert_AllowFrom_MainUI();
 	
+#ifdef _M_X86
 	x86caps.Identify();
 	x86caps.CountCores();
 	x86caps.SIMD_EstablishMXCSRmask();
 
-	if( !x86caps.hasMultimediaExtensions || !x86caps.hasStreamingSIMDExtensions )
+	if(!x86caps.hasStreamingSIMD2Extensions )
 	{
-		// Note: Due to optimizations to GIFpath parsers, memcpy, and possibly other things, we need
-		// a bare minimum of SSE supported by the CPU.
+		// This code will probably never run if the binary was correctly compiled for SSE2
+		// SSE2 is required for any decent speed and is supported by more than decade old x86 CPUs
 		throw Exception::HardwareDeficiency()
-			.SetDiagMsg(L"Critical Failure: SSE Extensions not available.")
-			.SetUserMsg(_("SSE extensions are not available.  PCSX2 requires a cpu that supports the SSE instruction set."));
+			.SetDiagMsg(L"Critical Failure: SSE2 Extensions not available.")
+			.SetUserMsg(_("SSE2 extensions are not available.  PCSX2 requires a cpu that supports the SSE2 instruction set."));
 	}
+#endif
 
 	EstablishAppUserMode();
 
@@ -87,22 +66,12 @@ void Pcsx2App::OpenMainFrame()
 
 	MainEmuFrame* mainFrame = new MainEmuFrame( NULL, pxGetAppName() );
 	m_id_MainFrame = mainFrame->GetId();
-	
-#ifndef PCSX2_DEVBUILD
-	if (g_Conf->EmuOptions.Debugger.EnableDebugger)
-#endif
-	{
-		DisassemblyDialog* disassembly = new DisassemblyDialog( mainFrame );
-		m_id_Disassembler = disassembly->GetId();
 
-		if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)
-			disassembly->Show();
-	}
-#ifndef PCSX2_DEVBUILD
-	else {
-		m_id_Disassembler = 0;
-	}
-#endif
+	DisassemblyDialog* disassembly = new DisassemblyDialog( mainFrame );
+	m_id_Disassembler = disassembly->GetId();
+
+	if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)
+		disassembly->Show();
 
 	PostIdleAppMethod( &Pcsx2App::OpenProgramLog );
 
@@ -148,7 +117,6 @@ void Pcsx2App::AllocateCoreStuffs()
 {
 	if( AppRpc_TryInvokeAsync( &Pcsx2App::AllocateCoreStuffs ) ) return;
 
-	CpuCheckSSE2();
 	SysLogMachineCaps();
 	AppApplySettings();
 
@@ -269,7 +237,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		parser.AddOption( wxEmptyString, pi->GetShortname().Lower(),
-			pxsFmt( _("specify the file to use as the %s plugin"), pi->GetShortname().c_str() )
+			pxsFmt( _("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname()) )
 		);
 	} while( ++pi, pi->shortname != NULL );
 
@@ -746,12 +714,12 @@ void Pcsx2App::CleanUp()
 
 __fi wxString AddAppName( const wxChar* fmt )
 {
-	return pxsFmt( fmt, pxGetAppName().c_str() );
+	return pxsFmt( fmt, WX_STR(pxGetAppName()) );
 }
 
 __fi wxString AddAppName( const char* fmt )
 {
-	return pxsFmt( fromUTF8(fmt), pxGetAppName().c_str() );
+	return pxsFmt( fromUTF8(fmt), WX_STR(pxGetAppName()) );
 }
 
 // ------------------------------------------------------------------------------------------

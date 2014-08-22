@@ -13,11 +13,13 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>./;../../;../../x86;../../x86/ix86-32;../../IPU;../../System;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__i386__;TIXML_USE_STL;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_M_X86;__i386__;TIXML_USE_STL;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>$(IntDir)pcsx2.pch</PrecompiledHeaderOutputFile>
       <CompileAs>Default</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+	<PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_ARCH_64=1;_M_X86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+	<PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">_ARCH_32=1;_M_X86_32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>

@@ -99,6 +99,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("Switch to GSdx software rendering when a FMV plays"),
 			wxEmptyString
+		},
+		{
+			_("Preload TLB hack to avoid tlb miss on Goemon"),
+			wxEmptyString
 		}
 	};
 
@@ -113,7 +117,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		)
 	);
 
-	m_check_Enable->SetToolTip(_("Gamefixes can work around wrong emulation in some titles. \nThey may also cause compatibility or performance issues.\n\nThe safest way to make sure that all game fixes are completely disabled.")).SetSubPadding( 1 );
+	m_check_Enable->SetToolTip(pxE(L"Gamefixes can work around wrong emulation in some titles. \nThey may also cause compatibility or performance issues.\n\nThe safest way is to make sure that all game fixes are completely disabled.")).SetSubPadding( 1 );
 	m_check_Enable->SetValue( g_Conf->EnableGameFixes );
 
 	*this	+= m_check_Enable	| StdExpand();

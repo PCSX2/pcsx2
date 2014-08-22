@@ -292,7 +292,7 @@ void CDVDsys_SetFile( CDVD_SourceType srctype, const wxString& newfile )
 	m_SourceFilename[srctype] = newfile;
 
 	// look for symbol file
-	if (g_Conf->EmuOptions.Debugger.EnableDebugger && symbolMap.IsEmpty())
+	if (symbolMap.IsEmpty())
 	{
 		wxString symName;
 		int n = newfile.Last('.');
@@ -355,7 +355,7 @@ bool DoCDVDopen()
 	// Likely Fix: Force new versions of CDVD plugins to expect UTF8 instead.
 
 	int ret = CDVD->open( !m_SourceFilename[m_CurrentSourceType].IsEmpty() ?
-		m_SourceFilename[m_CurrentSourceType].ToUTF8() : (char*)NULL
+		static_cast<const char*>(m_SourceFilename[m_CurrentSourceType].ToUTF8()) : (char*)NULL
 	);
 
 	if( ret == -1 ) return false;	// error! (handled by caller)

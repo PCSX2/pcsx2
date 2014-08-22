@@ -105,7 +105,7 @@ void MainEmuFrame::Menu_ResetAllSettings_Click(wxCommandEvent &event)
 		ScopedCoreThreadPopup suspender;
 		if( !Msgbox::OkCancel( pxsFmt(
 			pxE( L"This command clears %s settings and allows you to re-run the First-Time Wizard.  You will need to manually restart %s after this operation.\n\nWARNING!!  Click OK to delete *ALL* settings for %s and force-close the app, losing any current emulation progress.  Are you absolutely sure?\n\n(note: settings for plugins are unaffected)"
-			), pxGetAppName().c_str(), pxGetAppName().c_str(), pxGetAppName().c_str() ),
+			), WX_STR(pxGetAppName()), WX_STR(pxGetAppName()), WX_STR(pxGetAppName()) ),
 			_("Reset all settings?") ) )
 		{
 			suspender.AllowResume();
@@ -255,10 +255,10 @@ bool MainEmuFrame::_DoSelectIsoBrowser( wxString& result )
 	
 	wxArrayString isoFilterTypes;
 
-	isoFilterTypes.Add(pxsFmt(_("All Supported (%s)"), (isoSupportedLabel + L" .dump" + L" .gz").c_str()));
+	isoFilterTypes.Add(pxsFmt(_("All Supported (%s)"), WX_STR((isoSupportedLabel + L" .dump" + L" .gz"))));
 	isoFilterTypes.Add(isoSupportedList + L";*.dump" + L";*.gz");
 
-	isoFilterTypes.Add(pxsFmt(_("Disc Images (%s)"), isoSupportedLabel.c_str() ));
+	isoFilterTypes.Add(pxsFmt(_("Disc Images (%s)"), WX_STR(isoSupportedLabel) ));
 	isoFilterTypes.Add(isoSupportedList);
 
 	isoFilterTypes.Add(pxsFmt(_("Blockdumps (%s)"), L".dump" ));

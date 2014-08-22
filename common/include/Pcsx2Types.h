@@ -50,7 +50,7 @@ typedef unsigned int uint;
 
 #else // _MSC_VER*/
 
-#ifdef __LINUX__
+#ifdef __linux__
 
 #ifdef HAVE_STDINT_H
 #include "stdint.h"
@@ -96,10 +96,10 @@ typedef union _LARGE_INTEGER
 	long long QuadPart;
 } LARGE_INTEGER;
 
-#endif // __LINUX__
+#endif // __linux__
 #endif //_MSC_VER
 
-#if !defined(__LINUX__) || !defined(HAVE_STDINT_H)
+#if !defined(__linux__) || !defined(HAVE_STDINT_H)
 #if defined(__x86_64__)
 typedef u64 uptr;
 typedef s64 sptr;

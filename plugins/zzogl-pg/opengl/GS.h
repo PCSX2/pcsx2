@@ -527,23 +527,23 @@ extern char* NamedSaveTex(tex0Info* ptex, int usevid);
 
 typedef struct
 {
-	int lcm;
-	int mxl;
-	int mmag;
-	int mmin;
-	int mtba;
-	int l;
-	int k;
+	u32 lcm;
+	u32 mxl;
+	u32 mmag;
+	u32 mmin;
+	u32 mtba;
+	u32 l;
+	u32 k;
 } tex1Info;
 
 typedef struct
 {
-	int wms;
-	int wmt;
-	int minu;
-	int maxu;
-	int minv;
-	int maxv;
+	u32 wms;
+	u32 wmt;
+	u32 minu;
+	u32 maxu;
+	u32 minv;
+	u32 maxv;
 } clampInfo;
 
 typedef struct

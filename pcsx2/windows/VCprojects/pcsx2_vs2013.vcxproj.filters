@@ -151,9 +151,6 @@
     <Filter Include="AppHost\Debugger">
       <UniqueIdentifier>{7a0a1104-f9ee-4cd1-aaba-f8267eba1658}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\Iop\PS1 Components">
-      <UniqueIdentifier>{a3b47bd4-8c55-4128-9cdf-e44ef4a5efab}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -240,9 +237,6 @@
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SourceLog.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Stats.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="..\..\System\SysCoreThread.cpp">
@@ -540,9 +534,6 @@
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DebugTools\DisR3000A.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\DebugTools\DisR5900.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DebugTools\DisR5900asm.cpp">
@@ -847,14 +838,17 @@
     <ClCompile Include="..\..\sif2.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Gte.cpp">
-      <Filter>System\Ps2\Iop\PS1 Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp">
       <Filter>AppHost\Debugger</Filter>
     </ClCompile>
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp">
       <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp">
+      <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -895,9 +889,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SaveState.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Stats.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\System.h">
@@ -1206,7 +1197,6 @@
     <ClInclude Include="..\..\gui\pxEventThread.h" />
     <ClInclude Include="..\..\ZipTools\ThreadedZipTools.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
-    <ClInclude Include="..\..\Patch_Obsolete.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
@@ -1261,14 +1251,17 @@
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h">
       <Filter>AppHost\Debugger</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Gte.h">
-      <Filter>System\Ps2\Iop\PS1 Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\gui\Debugger\DebuggerLists.h">
       <Filter>AppHost\Debugger</Filter>
     </ClInclude>
     <ClInclude Include="..\..\CDVD\zlib_indexed.h">
       <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\MipsAssembler.h">
+      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

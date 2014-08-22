@@ -1,28 +1,5 @@
 
 ; =======================================================================
-;                             Plugin Includes
-; =======================================================================
-; Note that zzOgl is disabled for now because it requires CG dependencies to be installed.
-
-!if ${INC_PLUGINS} > 0
-  !system 'SubWCRev.exe ..\plugins\gsdx       templates\svnrev_gsdx.nsh     svnrev_gsdx.nsh'
-  !system 'SubWCRev.exe ..\plugins\spu2-x     templates\svnrev_spu2x.nsh    svnrev_spu2x.nsh'
-  !system 'SubWCRev.exe ..\plugins\cdvdiso    templates\svnrev_cdvdiso.nsh  svnrev_cdvdiso.nsh'
-  !system 'SubWCRev.exe ..\plugins\lilypad    templates\svnrev_lilypad.nsh  svnrev_lilypad.nsh'
-  !system 'SubWCRev.exe ..\plugins\zerogs\dx  templates\svnrev_zerogs.nsh   svnrev_zerogs.nsh'
-  ;!system 'SubWCRev.exe ..\plugins\zzogl-pg   templates\svnrev_zzogl.nsh    svnrev_zzogl.nsh'
-  !system 'SubWCRev.exe ..\plugins\zerospu2   templates\svnrev_zerospu2.nsh svnrev_zerospu2.nsh'
- 
-  !include "svnrev_gsdx.nsh"
-  !include "svnrev_spu2x.nsh"
-  !include "svnrev_cdvdiso.nsh"
-  !include "svnrev_lilypad.nsh"
-  !include "svnrev_zerogs.nsh"
-  ;!include "svnrev_zzogl.nsh"
-  !include "svnrev_zerospu2.nsh"
-!endif
-
-; =======================================================================
 ;                         Shared Install Functions
 ; =======================================================================
 
@@ -81,7 +58,7 @@ Function un.removeShorties
 
   Delete "$SMPROGRAMS\PCSX2\Uninstall ${APP_NAME}.lnk"
   Delete "$SMPROGRAMS\PCSX2\${APP_NAME}.lnk"
-  ;Delete "$SMPROGRAMS\PCSX2\pcsx2-dev-r${SVNREV}.lnk"
+  ;Delete "$SMPROGRAMS\PCSX2\pcsx2-dev.lnk"
 
   Delete "$SMPROGRAMS\PCSX2\Readme.lnk"
   Delete "$SMPROGRAMS\PCSX2\Frequently Asked Questions.lnk"

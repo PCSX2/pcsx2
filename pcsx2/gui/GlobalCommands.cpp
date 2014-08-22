@@ -30,8 +30,6 @@
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
 
-using namespace HashTools;
-
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
 
@@ -182,9 +180,10 @@ namespace Implementations
 			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = L"AspectRatio_4_3"; break;
 			case AspectRatio_4_3:		art = AspectRatio_16_9; arts = L"AspectRatio_16:9"; break;
 			case AspectRatio_16_9:		art = AspectRatio_Stretch; arts = L"AspectRatio_Stretch";break;
+			default: break;
 		}
 
-		Console.WriteLn(L"(GSwindow) Aspect ratio: %s.", arts.c_str());
+		Console.WriteLn(L"(GSwindow) Aspect ratio: %s.", WX_STR(arts));
 		UpdateImagePosition();
 	}
 
@@ -334,7 +333,7 @@ namespace Implementations
 			if( !!part2 )
 				name += L"_" + part2;
 
-			gsText.Printf( L"%s.%d.gs", name.c_str(), StatesC );
+			gsText.Printf( L"%s.%d.gs", WX_STR(name), StatesC );
 			Text = Path::Combine( g_Conf->Folders.Savestates, gsText );
 		}
 		else
@@ -518,15 +517,7 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 	{ NULL }
 };
 
-CommandDictionary::CommandDictionary() {}
-
 CommandDictionary::~CommandDictionary() throw() {}
-
-
-AcceleratorDictionary::AcceleratorDictionary()
-	: _parent( 0, 0xffffffff )
-{
-}
 
 AcceleratorDictionary::~AcceleratorDictionary() throw() {}
 
@@ -545,29 +536,35 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 			//ini file contains alternative parsable key combination for current 'searchfor'.
 			acode = codeParser;
 			Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
-				fromUTF8( searchfor ).c_str(), acode.ToString().c_str(), _acode.ToString().c_str());
+				WX_STR(fromUTF8( searchfor )), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
 		}
 	}
 	// End of overrides section
 
 	const GlobalCommandDescriptor* result = NULL;
-	TryGetValue( acode.val32, result );
+
+	std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(find(acode.val32));
+	if (iter != end())
+		result = iter->second;
 
 	if( result != NULL )
 	{
 		Console.Warning(
 			L"Kbd Accelerator '%s' is mapped multiple times.\n"
 			L"\t'Command %s' is being replaced by '%s'",
-			acode.ToString().c_str(), fromUTF8( result->Id ).c_str(), fromUTF8( searchfor ).c_str()
+			WX_STR(acode.ToString()), WX_STR(fromUTF8( result->Id )), WX_STR(fromUTF8( searchfor ))
 		);
 	}
 
-	wxGetApp().GlobalCommands->TryGetValue( searchfor, result );
+	std::unordered_map<std::string, const GlobalCommandDescriptor*>::const_iterator acceleratorIter(wxGetApp().GlobalCommands->find(searchfor));
+
+	if (acceleratorIter != wxGetApp().GlobalCommands->end())
+		result = acceleratorIter->second;
 
 	if( result == NULL )
 	{
 		Console.Warning( L"Kbd Accelerator '%s' is mapped to unknown command '%s'",
-			acode.ToString().c_str(), fromUTF8( searchfor ).c_str()
+			WX_STR(acode.ToString()), WX_STR(fromUTF8( searchfor ))
 		);
 	}
 	else
