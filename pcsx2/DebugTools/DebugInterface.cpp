@@ -32,9 +32,6 @@ extern AppCoreThread CoreThread;
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
-enum { EECAT_GPR, EECAT_CP0, EECAT_CP1, EECAT_CP2F, EECAT_CP2I, EECAT_COUNT };
-enum { IOPCAT_GPR, IOPCAT_COUNT };
-
 #ifdef WIN32
 #define strcasecmp stricmp
 #endif
@@ -281,12 +278,14 @@ const char* R5900DebugInterface::getRegisterCategoryName(int cat)
 		return "GPR";
 	case EECAT_CP0:
 		return "CP0";
-	case EECAT_CP1:
-		return "CP1";
-	case EECAT_CP2F:
-		return "CP2f";
-	case EECAT_CP2I:
-		return "CP2i";
+	case EECAT_FPR:
+		return "FPR";
+	case EECAT_FCR:
+		return "FCR";
+	case EECAT_VU0F:
+		return "VU0f";
+	case EECAT_VU0I:
+		return "VU0i";
 	default:
 		return "Invalid";
 	}
@@ -297,11 +296,12 @@ int R5900DebugInterface::getRegisterSize(int cat)
 	switch (cat)
 	{
 	case EECAT_GPR:
-	case EECAT_CP2F:
+	case EECAT_VU0F:
 		return 128;
 	case EECAT_CP0:
-	case EECAT_CP1:
-	case EECAT_CP2I:
+	case EECAT_FPR:
+	case EECAT_FCR:
+	case EECAT_VU0I:
 		return 32;
 	default:
 		return 0;
@@ -315,9 +315,10 @@ int R5900DebugInterface::getRegisterCount(int cat)
 	case EECAT_GPR:
 		return 35;	// 32 + pc + hi + lo
 	case EECAT_CP0:
-	case EECAT_CP1:
-	case EECAT_CP2F:
-	case EECAT_CP2I:
+	case EECAT_FPR:
+	case EECAT_FCR:
+	case EECAT_VU0F:
+	case EECAT_VU0I:
 		return 32;
 	default:
 		return 0;
@@ -330,11 +331,12 @@ DebugInterface::RegisterType R5900DebugInterface::getRegisterType(int cat)
 	{
 	case EECAT_GPR:
 	case EECAT_CP0:
-	case EECAT_CP2F:
-	case EECAT_CP2I:
+	case EECAT_VU0F:
+	case EECAT_VU0I:
+	case EECAT_FCR:
 	default:
 		return NORMAL;
-	case EECAT_CP1:
+	case EECAT_FPR:
 		return SPECIAL;
 	}
 }
@@ -357,11 +359,13 @@ const char* R5900DebugInterface::getRegisterName(int cat, int num)
 		}
 	case EECAT_CP0:
 		return R5900::COP0_REG[num];
-	case EECAT_CP1:
+	case EECAT_FPR:
 		return R5900::COP1_REG_FP[num];
-	case EECAT_CP2F:
+	case EECAT_FCR:
+		return R5900::COP1_REG_FCR[num];
+	case EECAT_VU0F:
 		return R5900::COP2_REG_FP[num];
-	case EECAT_CP2I:
+	case EECAT_VU0I:
 		return R5900::COP2_REG_CTL[num];
 	default:
 		return "Invalid";
@@ -393,13 +397,16 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 	case EECAT_CP0:
 		result = u128::From32(cpuRegs.CP0.r[num]);
 		break;
-	case EECAT_CP1:
+	case EECAT_FPR:
 		result = u128::From32(fpuRegs.fpr[num].UL);
 		break;
-	case EECAT_CP2F:
+	case EECAT_FCR:
+		result = u128::From32(fpuRegs.fprc[num]);
+		break;
+	case EECAT_VU0F:
 		result = VU1.VF[num].UQ;
 		break;
-	case EECAT_CP2I:
+	case EECAT_VU0I:
 		result = u128::From32(VU1.VI[num].UL);
 		break;
 	default:
@@ -416,8 +423,9 @@ wxString R5900DebugInterface::getRegisterString(int cat, int num)
 	{
 	case EECAT_GPR:
 	case EECAT_CP0:
+	case EECAT_FCR:
 		return getRegister(cat,num).ToString();
-	case EECAT_CP1:
+	case EECAT_FPR:
 		{
 			char str[64];
 			sprintf(str,"%f",fpuRegs.fpr[num].f);
@@ -473,13 +481,16 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 	case EECAT_CP0:
 		cpuRegs.CP0.r[num] = newValue._u32[0];
 		break;
-	case EECAT_CP1:
+	case EECAT_FPR:
 		fpuRegs.fpr[num].UL = newValue._u32[0];
 		break;
-	case EECAT_CP2F:
+	case EECAT_FCR:
+		fpuRegs.fprc[num] = newValue._u32[0];
+		break;
+	case EECAT_VU0F:
 		VU1.VF[num].UQ = newValue;
 		break;
-	case EECAT_CP2I:
+	case EECAT_VU0I:
 		VU1.VI[num].UL = newValue._u32[0];
 		break;
 	default:
