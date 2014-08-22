@@ -190,6 +190,8 @@ namespace vtlb_private
 
 	static const uint VTLB_HANDLER_ITEMS = 128;
 
+	static const uptr POINTER_SIGN_BIT = 1ULL << (sizeof(uptr) * 8 - 1);
+
 	struct MapData
 	{
 		// first indexer -- 8/16/32/64/128 bit tables [values 0-4]
