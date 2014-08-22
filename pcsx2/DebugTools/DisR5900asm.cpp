@@ -27,6 +27,7 @@
 
 unsigned long opcode_addr;
 u32 disasmOpcode;
+bool disSimplify;
 
 namespace R5900
 {
@@ -608,10 +609,11 @@ void (*COP2SPECIAL2PrintTable[128])( std::string& output ) =
 //**************************TABLES CALLS***********************
 
 
-void disR5900Fasm( std::string& output, u32 code, u32 pc )
+void disR5900Fasm( std::string& output, u32 code, u32 pc, bool simplify )
 {
 	opcode_addr = pc;
 	disasmOpcode = code;
+	disSimplify = simplify;
 
 	GetInstruction(code).disasm( output );
 }
@@ -694,53 +696,190 @@ void COP1_Unknown( std::string& output )
 // the copy-paste marathon of code below more readable!
 #define _sap( str ) ssappendf( output, str,
 
+const char* signedImmediate(s32 imm, int len = 0)
+{
+	static char buffer[32];
+
+	if (imm >= 0)
+		sprintf(buffer,"0x%*X",len,imm);
+	else
+		sprintf(buffer,"-0x%*X",len,-imm);
+
+	return buffer;
+}
+
+const char* disDestSource(int dest, int source)
+{
+	static char buffer[32];
+
+	if (disSimplify && dest == source)
+		sprintf(buffer,"%s",GPR_REG[dest]);
+	else
+		sprintf(buffer,"%s,%s",GPR_REG[dest],GPR_REG[source]);
+
+	return buffer;
+}
+
 //********************* Standard Opcodes***********************
 void J( std::string& output )      { output += "j\t";        jump_decode(output);}
 void JAL( std::string& output )    { output += "jal\t";      jump_decode(output);}
-void BEQ( std::string& output )    { _sap("beq\t%s, %s, ")          GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
-void BNE( std::string& output )    { _sap("bne\t%s, %s, ")          GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
+
+void BEQ( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (disSimplify && rs == rt)
+		ssappendf(output, "b\t");
+	else if (disSimplify && rs == 0 && rt != 0)
+		ssappendf(output, "beqz\t%s, ",GPR_REG[rt]);
+	else if (disSimplify && rs != 0 && rt == 0)
+		ssappendf(output, "beqz\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "beq\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
+void BNE( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (disSimplify && rs == 0 && rt != 0)
+		ssappendf(output, "bnez\t%s, ",GPR_REG[rt]);
+	else if (disSimplify && rs != 0 && rt == 0)
+		ssappendf(output, "bnez\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "bne\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
 void BLEZ( std::string& output )   { _sap("blez\t%s, ")             GPR_REG[DECODE_RS]); offset_decode(output); }
 void BGTZ( std::string& output )   { _sap("bgtz\t%s, ")             GPR_REG[DECODE_RS]); offset_decode(output); }
 void ADDI( std::string& output )   { _sap("addi\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED);}
-void ADDIU( std::string& output )  { _sap("addiu\t%s, %s, 0x%04X")  GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED);}
-void SLTI( std::string& output )   { _sap("slti\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
-void SLTIU( std::string& output )  { _sap("sltiu\t%s, %s, 0x%04X")  GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
-void ANDI( std::string& output )   { _sap("andi\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED);}
-void ORI( std::string& output )    { _sap("ori\t%s, %s, 0x%04X")    GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
-void XORI( std::string& output )   { _sap("xori\t%s, %s, 0x%04X")   GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
+
+void ADDIU( std::string& output )
+{
+	int rt = DECODE_RT;
+	int rs = DECODE_RS;
+	s16 imm = DECODE_IMMED;
+
+	if (disSimplify && rs == 0)
+		ssappendf(output, "li\t%s, %s",GPR_REG[rt],signedImmediate(imm));
+	else
+		ssappendf(output, "addiu\t%s, %s",disDestSource(rt,rs),signedImmediate(imm));
+}
+
+void SLTI( std::string& output )   { _sap("slti\t%s, 0x%04X")   disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED); }
+void SLTIU( std::string& output )  { _sap("sltiu\t%s, 0x%04X")  disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED); }
+void ANDI( std::string& output )   { _sap("andi\t%s, 0x%04X")   disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED);}
+
+void ORI( std::string& output )
+{
+	int rt = DECODE_RT;
+	int rs = DECODE_RS;
+
+	u32 unsignedImm = (u16) DECODE_IMMED;
+
+	if (disSimplify && rs == 0)
+		ssappendf(output, "li\t%s, 0x%X",GPR_REG[rt],unsignedImm);
+	else
+		ssappendf(output, "ori\t%s, 0x%X",disDestSource(DECODE_RT, DECODE_RS),unsignedImm);
+}
+
+void XORI( std::string& output )   { _sap("xori\t%s, 0x%04X")       disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED); }
 void LUI( std::string& output )    { _sap("lui\t%s, 0x%04X")        GPR_REG[DECODE_RT], DECODE_IMMED); }
-void BEQL( std::string& output )   { _sap("beql\t%s, %s, ")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
-void BNEL( std::string& output )   { _sap("bnel\t%s, %s, ")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); offset_decode(output); }
+
+void BEQL( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (disSimplify && rs == rt)
+		ssappendf(output, "b\t");
+	else if (disSimplify && rs == 0 && rt != 0)
+		ssappendf(output, "beqzl\t%s, ",GPR_REG[rt]);
+	else if (disSimplify && rs != 0 && rt == 0)
+		ssappendf(output, "beqzl\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "beql\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
+void BNEL( std::string& output )
+{
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (disSimplify && rs == 0 && rt != 0)
+		ssappendf(output, "bnezl\t%s, ",GPR_REG[rt]);
+	else if (disSimplify && rs != 0 && rt == 0)
+		ssappendf(output, "bnezl\t%s, ",GPR_REG[rs]);
+	else
+		ssappendf(output, "bnel\t%s, %s, ",GPR_REG[rs], GPR_REG[rt]);
+
+	offset_decode(output);
+}
+
 void BLEZL( std::string& output )  { _sap("blezl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
 void BGTZL( std::string& output )  { _sap("bgtzl\t%s, ")            GPR_REG[DECODE_RS]); offset_decode(output); }
-void DADDI( std::string& output )  { _sap("daddi\t%s, %s, 0x%04X")  GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
-void DADDIU( std::string& output ) { _sap("daddiu\t%s, %s, 0x%04X") GPR_REG[DECODE_RT], GPR_REG[DECODE_RS], DECODE_IMMED); }
-void LDL( std::string& output )    { _sap("ldl\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LDR( std::string& output )    { _sap("ldr\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LB( std::string& output )     { _sap("lb\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LH( std::string& output )     { _sap("lh\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LWL( std::string& output )    { _sap("lwl\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LW( std::string& output )     { _sap("lw\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LBU( std::string& output )    { _sap("lbu\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LHU( std::string& output )    { _sap("lhu\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LWR( std::string& output )    { _sap("lwr\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LWU( std::string& output )    { _sap("lwu\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SB( std::string& output )     { _sap("sb\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SH( std::string& output )     { _sap("sh\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SWL( std::string& output )    { _sap("swl\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SW( std::string& output )     { _sap("sw\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SDL( std::string& output )    { _sap("sdl\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SDR( std::string& output )    { _sap("sdr\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SWR( std::string& output )    { _sap("swr\t%s, 0x%04X(%s)")    GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LD( std::string& output )     { _sap("ld\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SD( std::string& output )     { _sap("sd\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LQ( std::string& output )     { _sap("lq\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SQ( std::string& output )     { _sap("sq\t%s, 0x%04X(%s)")     GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SWC1( std::string& output )   { _sap("swc1\t%s, 0x%04X(%s)")   COP1_REG_FP[DECODE_FT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void SQC2( std::string& output )   { _sap("sqc2\t%s, 0x%04X(%s)")   COP2_REG_FP[DECODE_FT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
+void DADDI( std::string& output )  { _sap("daddi\t%s, 0x%04X")      disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED); }
+void DADDIU( std::string& output ) { _sap("daddiu\t%s, 0x%04X")     disDestSource(DECODE_RT, DECODE_RS), DECODE_IMMED); }
+
+void disMemAccess( std::string& output, const char* name, int cop = 0)
+{
+	const char* rt;
+	switch (cop)
+	{
+	case 0:
+		rt = GPR_REG[DECODE_RT];
+		break;
+	case 1:
+		rt = COP1_REG_FP[DECODE_FT];
+		break;
+	case 2:
+		rt = COP2_REG_FP[DECODE_FT];
+		break;
+	}
+
+	const char* rs = GPR_REG[DECODE_RS];
+	s16 imm = DECODE_IMMED;
+
+	if (disSimplify && imm == 0)
+		ssappendf(output, "%s\t%s,(%s)",name,rt,rs);
+	else
+		ssappendf(output, "%s\t%s, %s(%s)",name,rt,signedImmediate(imm,4),rs);
+}
+
+void LDL( std::string& output )    { disMemAccess(output,"ldl"); }
+void LDR( std::string& output )    { disMemAccess(output,"ldr"); }
+void LB( std::string& output )     { disMemAccess(output,"lb"); }
+void LH( std::string& output )     { disMemAccess(output,"lh"); }
+void LWL( std::string& output )    { disMemAccess(output,"lwl"); }
+void LW( std::string& output )     { disMemAccess(output,"lw"); }
+void LBU( std::string& output )    { disMemAccess(output,"lbu"); }
+void LHU( std::string& output )    { disMemAccess(output,"lhu"); }
+void LWR( std::string& output )    { disMemAccess(output,"lwr"); }
+void LWU( std::string& output )    { disMemAccess(output,"lwu"); }
+void SB( std::string& output )     { disMemAccess(output,"sb"); }
+void SH( std::string& output )     { disMemAccess(output,"sh"); }
+void SWL( std::string& output )    { disMemAccess(output,"swl"); }
+void SW( std::string& output )     { disMemAccess(output,"sw"); }
+void SDL( std::string& output )    { disMemAccess(output,"sdl"); }
+void SDR( std::string& output )    { disMemAccess(output,"sdr"); }
+void SWR( std::string& output )    { disMemAccess(output,"swr"); }
+void LD( std::string& output )     { disMemAccess(output,"ld"); }
+void SD( std::string& output )     { disMemAccess(output,"sd"); }
+void LQ( std::string& output )     { disMemAccess(output,"lq"); }
+void SQ( std::string& output )     { disMemAccess(output,"sq"); }
+void SWC1( std::string& output )   { disMemAccess(output,"swc1",1); }
+void SQC2( std::string& output )   { disMemAccess(output,"sqc2",2); }
 void PREF( std::string& output )   { output += "pref ---"; /*_sap("PREF\t%s, 0x%04X(%s)")   GPR_REG[DECODE_RT], DECODE_IMMED, GPR_REG[RS]); */}
-void LWC1( std::string& output )   { _sap("lwc1\t%s, 0x%04X(%s)")   COP1_REG_FP[DECODE_FT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
-void LQC2( std::string& output )   { _sap("lqc2\t%s, 0x%04X(%s)")   COP2_REG_FP[DECODE_FT], DECODE_IMMED, GPR_REG[DECODE_RS]); }
+void LWC1( std::string& output )   { disMemAccess(output,"lwc1",1); }
+void LQC2( std::string& output )   { disMemAccess(output,"lqc2",2); }
 //********************END OF STANDARD OPCODES*************************
 
 void SLL( std::string& output )
@@ -751,11 +890,11 @@ void SLL( std::string& output )
         _sap("sll\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA);
 }
 
-void SRL( std::string& output )    { _sap("srl\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
-void SRA( std::string& output )    { _sap("sra\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
-void SLLV( std::string& output )   { _sap("sllv\t%s, %s, %s")    GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]); }
-void SRLV( std::string& output )   { _sap("srlv\t%s, %s, %s")    GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]);}
-void SRAV( std::string& output )   { _sap("srav\t%s, %s, %s")    GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]); }
+void SRL( std::string& output )    { _sap("srl\t%s, 0x%02X")     disDestSource(DECODE_RD, DECODE_RT), DECODE_SA); }
+void SRA( std::string& output )    { _sap("sra\t%s, 0x%02X")     disDestSource(DECODE_RD, DECODE_RT), DECODE_SA); }
+void SLLV( std::string& output )   { _sap("sllv\t%s, %s")        disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
+void SRLV( std::string& output )   { _sap("srlv\t%s, %s")        disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]);}
+void SRAV( std::string& output )   { _sap("srav\t%s, %s")        disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
 void JR( std::string& output )     { _sap("jr\t->%s")            GPR_REG[DECODE_RS]); }
 
 void JALR( std::string& output )
@@ -768,45 +907,84 @@ void JALR( std::string& output )
         _sap("jalr\t%s, ->%s") GPR_REG[rd], GPR_REG[DECODE_RS]);
 }
 
-
 void SYNC( std::string& output )    { output += "SYNC"; }
 void MFHI( std::string& output )    { _sap("mfhi\t%s")          GPR_REG[DECODE_RD]); }
 void MTHI( std::string& output )    { _sap("mthi\t%s")          GPR_REG[DECODE_RS]); }
 void MFLO( std::string& output )    { _sap("mflo\t%s")          GPR_REG[DECODE_RD]); }
 void MTLO( std::string& output )    { _sap("mtlo\t%s")          GPR_REG[DECODE_RS]); }
-void DSLLV( std::string& output )   { _sap("dsllv\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]); }
-void DSRLV( std::string& output )   { _sap("dsrlv\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]); }
-void DSRAV( std::string& output )   { _sap("dsrav\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], GPR_REG[DECODE_RS]); }
+void DSLLV( std::string& output )   { _sap("dsllv\t%s, %s")     disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
+void DSRLV( std::string& output )   { _sap("dsrlv\t%s, %s")     disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
+void DSRAV( std::string& output )   { _sap("dsrav\t%s, %s")     disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
 void MULT( std::string& output )    { _sap("mult\t%s, %s, %s")  GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
 void MULTU( std::string& output )   { _sap("multu\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
 void DIV( std::string& output )     { _sap("div\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void DIVU( std::string& output )    { _sap("divu\t%s, %s")      GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void ADD( std::string& output )     { _sap("add\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void ADDU( std::string& output )    { _sap("addu\t%s, %s, %s")  GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void SUB( std::string& output )     { _sap("sub\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void SUBU( std::string& output )    { _sap("subu\t%s, %s, %s")  GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void AND( std::string& output )     { _sap("and\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void OR( std::string& output )      { _sap("or\t%s, %s, %s")    GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void XOR( std::string& output )     { _sap("xor\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void NOR( std::string& output )     { _sap("nor\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void SLT( std::string& output )     { _sap("slt\t%s, %s, %s")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void SLTU( std::string& output )    { _sap("sltu\t%s, %s, %s")  GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void DADD( std::string& output )    { _sap("dadd\t%s, %s, %s")  GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void DADDU( std::string& output )   { _sap("daddu\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void DSUB( std::string& output )    { _sap("dsub\t%s, %s, %s")  GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void DSUBU( std::string& output )   { _sap("dsubu\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+
+void disAddAddu( std::string& output, const char* name )
+{
+	int rd = DECODE_RD;
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (disSimplify && rs == 0)
+		ssappendf(output,"move\t%s, %s",GPR_REG[rd],GPR_REG[rt]);
+	else if (disSimplify && rt == 0)
+		ssappendf(output,"move\t%s, %s",GPR_REG[rd],GPR_REG[rs]);
+	else if (disSimplify && rd == rs)
+		ssappendf(output, "%s\t%s, %s",name,GPR_REG[rd],GPR_REG[rt]);
+	else if (disSimplify && rd == rt)
+		ssappendf(output, "%s\t%s, %s",name,GPR_REG[rd],GPR_REG[rs]);
+	else
+		ssappendf(output, "%s\t%s, %s, %s",name,GPR_REG[rd], GPR_REG[rs], GPR_REG[rt]);
+}
+
+void ADD( std::string& output )     { disAddAddu(output,"add"); }
+void ADDU( std::string& output )     { disAddAddu(output,"addu"); }
+
+void SUB( std::string& output )     { _sap("sub\t%s, %s")   disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void SUBU( std::string& output )    { _sap("subu\t%s, %s")  disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void AND( std::string& output )     { _sap("and\t%s, %s")   disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void OR( std::string& output )      { _sap("or\t%s, %s")    disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void XOR( std::string& output )     { _sap("xor\t%s, %s")   disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void NOR( std::string& output )     { _sap("nor\t%s, %s")   disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void SLT( std::string& output )     { _sap("slt\t%s, %s")   disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void SLTU( std::string& output )    { _sap("sltu\t%s, %s")  disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+
+void disDaddDaddu( std::string& output, const char* name )
+{
+	int rd = DECODE_RD;
+	int rs = DECODE_RS;
+	int rt = DECODE_RT;
+
+	if (disSimplify && rs == 0)
+		ssappendf(output,"dmove\t%s, %s",GPR_REG[DECODE_RD],GPR_REG[DECODE_RT]);
+	else if (disSimplify && rt == 0)
+		ssappendf(output,"dmove\t%s, %s",GPR_REG[DECODE_RD],GPR_REG[DECODE_RS]);
+	else if (disSimplify && rd == rs)
+		ssappendf(output, "%s\t%s, %s",name,GPR_REG[rd],GPR_REG[rt]);
+	else if (disSimplify && rd == rt)
+		ssappendf(output, "%s\t%s, %s",name,GPR_REG[rd],GPR_REG[rs]);
+	else
+		ssappendf(output, "%s\t%s, %s, %s",name,GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);
+}
+
+void DADD( std::string& output )    { disDaddDaddu(output,"dadd"); }
+void DADDU( std::string& output )    { disDaddDaddu(output,"daddu"); }
+
+void DSUB( std::string& output )    { _sap("dsub\t%s, %s")      disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
+void DSUBU( std::string& output )   { _sap("dsubu\t%s, %s")     disDestSource(DECODE_RD,DECODE_RS), GPR_REG[DECODE_RT]); }
 void TGE( std::string& output )     { _sap("tge\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void TGEU( std::string& output )    { _sap("tgeu\t%s, %s")      GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void TLT( std::string& output )     { _sap("tlt\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void TLTU( std::string& output )    { _sap("tltu\t%s, %s")      GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void TEQ( std::string& output )     { _sap("teq\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void TNE( std::string& output )     { _sap("tne\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
-void DSLL( std::string& output )    { _sap("dsll\t%s, %s, 0x%02X")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
-void DSRL( std::string& output )    { _sap("dsrl\t%s, %s, 0x%02X")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
-void DSRA( std::string& output )    { _sap("dsra\t%s, %s, 0x%02X")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
-void DSLL32( std::string& output )  { _sap("dsll32\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
-void DSRL32( std::string& output )  { _sap("dsrl32\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
-void DSRA32( std::string& output )  { _sap("dsra32\t%s, %s, 0x%02X") GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
+void DSLL( std::string& output )    { _sap("dsll\t%s, 0x%02X")   disDestSource(DECODE_RD,DECODE_RT), DECODE_SA); }
+void DSRL( std::string& output )    { _sap("dsrl\t%s, 0x%02X")   disDestSource(DECODE_RD,DECODE_RT), DECODE_SA); }
+void DSRA( std::string& output )    { _sap("dsra\t%s, 0x%02X")   disDestSource(DECODE_RD,DECODE_RT), DECODE_SA); }
+void DSLL32( std::string& output )  { _sap("dsll32\t%s, 0x%02X") disDestSource(DECODE_RD,DECODE_RT), DECODE_SA); }
+void DSRL32( std::string& output )  { _sap("dsrl32\t%s, 0x%02X") disDestSource(DECODE_RD,DECODE_RT), DECODE_SA); }
+void DSRA32( std::string& output )  { _sap("dsra32\t%s, 0x%02X") disDestSource(DECODE_RD,DECODE_RT), DECODE_SA); }
 void MOVZ( std::string& output )    { _sap("movz\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void MOVN( std::string& output )    { _sap("movn\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void MFSA( std::string& output )    { _sap("mfsa\t%s")          GPR_REG[DECODE_RD]);}

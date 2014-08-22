@@ -498,12 +498,12 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 	}
 }
 
-std::string R5900DebugInterface::disasm(u32 address)
+std::string R5900DebugInterface::disasm(u32 address, bool simplify)
 {
 	std::string out;
 
 	u32 op = read32(address);
-	R5900::disR5900Fasm(out,op,address);
+	R5900::disR5900Fasm(out,op,address,simplify);
 	return out;
 }
 
@@ -750,12 +750,12 @@ void R3000DebugInterface::setRegister(int cat, int num, u128 newValue)
 	}
 }
 
-std::string R3000DebugInterface::disasm(u32 address)
+std::string R3000DebugInterface::disasm(u32 address, bool simplify)
 {
 	std::string out;
 
 	u32 op = read32(address);
-	R5900::disR5900Fasm(out,op,address);
+	R5900::disR5900Fasm(out,op,address,simplify);
 	return out;
 }
 

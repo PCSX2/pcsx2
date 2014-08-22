@@ -28,7 +28,7 @@ extern char* disVU1MicroLF(u32 code, u32 pc);
 
 namespace R5900
 {
-	void disR5900Fasm( std::string& output, u32 code, u32 pc);
+	void disR5900Fasm( std::string& output, u32 code, u32 pc, bool simplify);
 
 	extern const char * const GPR_REG[32];
 	extern const char * const COP0_REG[32];
