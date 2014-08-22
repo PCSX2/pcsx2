@@ -28,6 +28,49 @@ void COP2_SPECIAL();
 void COP2_SPECIAL2();
 void COP2_Unknown();
 
+// reserve the lower 8 bits for opcode specific types
+// which of these are actually used depends on the opcode
+// flags further below
+#define MEMTYPE_MASK         (0x07 << 0)
+#define MEMTYPE_BYTE         (0x01 << 0)
+#define MEMTYPE_HALF         (0x02 << 0)
+#define MEMTYPE_WORD         (0x03 << 0)
+#define MEMTYPE_DWORD        (0x04 << 0)
+#define MEMTYPE_QWORD        (0x05 << 0)
+
+#define CONDTYPE_MASK        (0x07 << 0)
+#define CONDTYPE_EQ          (0x01 << 0)
+#define CONDTYPE_NE          (0x02 << 0)
+#define CONDTYPE_LEZ         (0x03 << 0)
+#define CONDTYPE_GTZ         (0x04 << 0)
+#define CONDTYPE_LTZ         (0x05 << 0)
+#define CONDTYPE_GEZ         (0x06 << 0)
+
+#define BRANCHTYPE_MASK      (0x07 << 3)
+#define BRANCHTYPE_JUMP      (0x01 << 3)
+#define BRANCHTYPE_BRANCH    (0x02 << 3)
+#define BRANCHTYPE_SYSCALL   (0x03 << 3)
+#define BRANCHTYPE_ERET      (0x04 << 3)
+#define BRANCHTYPE_REGISTER  (0x05 << 3)
+#define BRANCHTYPE_BC1       (0x06 << 3)
+
+#define ALUTYPE_MASK         (0x07 << 3)
+#define ALUTYPE_ADD          (0x01 << 3)
+#define ALUTYPE_ADDI         (0x02 << 3)
+#define ALUTYPE_SUB          (0x03 << 3)
+#define ALUTYPE_CONDMOVE     (0x04 << 3)
+
+#define IS_LOAD         0x00000100
+#define IS_STORE        0x00000200
+#define IS_BRANCH       0x00000400
+#define IS_LINKED       0x00001000
+#define IS_LIKELY       0x00002000
+#define IS_MEMORY       0x00004000
+#define IS_CONDMOVE     0x00010000
+#define IS_ALU          0x00020000
+#define IS_64BIT        0x00040000
+#define IS_LEFT         0x00080000
+#define IS_RIGHT        0x00100000
 
 namespace R5900
 {

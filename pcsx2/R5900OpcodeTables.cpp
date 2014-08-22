@@ -144,33 +144,33 @@ namespace R5900
 
 		MakeOpcode( CACHE, Default, 0 );
 		MakeOpcode( PREF, Default, 0 );
-		MakeOpcode( SYSCALL, Default, 0 );
+		MakeOpcode( SYSCALL, Default, IS_BRANCH|BRANCHTYPE_SYSCALL );
 		MakeOpcode( BREAK, Default, 0 );
 		MakeOpcode( SYNC, Default, 0 );
 
 		// Branch/Jump Opcodes
 
-		MakeOpcode( J , Default, 0 );
-		MakeOpcode( JAL, Default, 0 );
-		MakeOpcode( JR, Default, 0 );
-		MakeOpcode( JALR, Default, 0 );
+		MakeOpcode( J ,   Default, IS_BRANCH|BRANCHTYPE_JUMP );
+		MakeOpcode( JAL,  Default, IS_BRANCH|BRANCHTYPE_JUMP|IS_LINKED );
+		MakeOpcode( JR,   Default, IS_BRANCH|BRANCHTYPE_REGISTER );
+		MakeOpcode( JALR, Default, IS_BRANCH|BRANCHTYPE_REGISTER|IS_LINKED );
 
-		MakeOpcode( BEQ, Branch, 0 );
-		MakeOpcode( BNE, Branch, 0 );
-		MakeOpcode( BLEZ, Branch, 0 );
-		MakeOpcode( BGTZ, Branch, 0 );
-		MakeOpcode( BEQL, Branch, 0 );
-		MakeOpcode( BNEL, Branch, 0 );
-		MakeOpcode( BLEZL, Branch, 0 );
-		MakeOpcode( BGTZL, Branch, 0 );
-		MakeOpcode( BLTZ, Branch, 0 );
-		MakeOpcode( BGEZ, Branch, 0 );
-		MakeOpcode( BLTZL, Branch, 0 );
-		MakeOpcode( BGEZL, Branch, 0 );
-		MakeOpcode( BLTZAL, Branch, 0 );
-		MakeOpcode( BGEZAL, Branch, 0 );
-		MakeOpcode( BLTZALL, Branch, 0 );
-		MakeOpcode( BGEZALL, Branch, 0 );
+		MakeOpcode( BEQ,     Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_EQ );
+		MakeOpcode( BNE,     Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_NE );
+		MakeOpcode( BLEZ,    Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_LEZ );
+		MakeOpcode( BGTZ,    Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_GTZ );
+		MakeOpcode( BEQL,    Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_EQ|IS_LIKELY );
+		MakeOpcode( BNEL,    Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_NE|IS_LIKELY );
+		MakeOpcode( BLEZL,   Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_LEZ|IS_LIKELY );
+		MakeOpcode( BGTZL,   Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_GTZ|IS_LIKELY );
+		MakeOpcode( BLTZ,    Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_LTZ );
+		MakeOpcode( BGEZ,    Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_GEZ );
+		MakeOpcode( BLTZL,   Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_LTZ|IS_LIKELY );
+		MakeOpcode( BGEZL,   Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_GEZ|IS_LIKELY );
+		MakeOpcode( BLTZAL,  Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_LTZ|IS_LINKED );
+		MakeOpcode( BGEZAL,  Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_GEZ|IS_LINKED );
+		MakeOpcode( BLTZALL, Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_LTZ|IS_LINKED|IS_LIKELY );
+		MakeOpcode( BGEZALL, Branch, IS_BRANCH|BRANCHTYPE_BRANCH|CONDTYPE_GEZ|IS_LINKED|IS_LIKELY );
 
 		MakeOpcode( TGEI, Branch, 0 );
 		MakeOpcode( TGEIU, Branch, 0 );
@@ -200,18 +200,18 @@ namespace R5900
 		MakeOpcode( DIV1, Div, 0 );
 		MakeOpcode( DIVU1, Div, 0 );
 
-		MakeOpcode( ADDI, Default, 0 );
-		MakeOpcode( ADDIU, Default, 0 );
-		MakeOpcode( DADDI, Default, 0 );
-		MakeOpcode( DADDIU, Default, 0 );
-		MakeOpcode( DADD, Default, 0 );
-		MakeOpcode( DADDU, Default, 0 );
-		MakeOpcode( DSUB, Default, 0 );
-		MakeOpcode( DSUBU, Default, 0 );
-		MakeOpcode( ADD, Default, 0 );
-		MakeOpcode( ADDU, Default, 0 );
-		MakeOpcode( SUB, Default, 0 );
-		MakeOpcode( SUBU, Default, 0 );
+		MakeOpcode( ADDI,   Default, IS_ALU|ALUTYPE_ADDI );
+		MakeOpcode( ADDIU,  Default, IS_ALU|ALUTYPE_ADDI );
+		MakeOpcode( DADDI,  Default, IS_ALU|ALUTYPE_ADDI|IS_64BIT );
+		MakeOpcode( DADDIU, Default, IS_ALU|ALUTYPE_ADDI|IS_64BIT );
+		MakeOpcode( DADD,   Default, IS_ALU|ALUTYPE_ADD|IS_64BIT );
+		MakeOpcode( DADDU,  Default, IS_ALU|ALUTYPE_ADD|IS_64BIT );
+		MakeOpcode( DSUB,   Default, IS_ALU|ALUTYPE_SUB|IS_64BIT );
+		MakeOpcode( DSUBU,  Default, IS_ALU|ALUTYPE_SUB|IS_64BIT );
+		MakeOpcode( ADD,    Default, IS_ALU|ALUTYPE_ADD );
+		MakeOpcode( ADDU,   Default, IS_ALU|ALUTYPE_ADD );
+		MakeOpcode( SUB,    Default, IS_ALU|ALUTYPE_SUB );
+		MakeOpcode( SUBU,   Default, IS_ALU|ALUTYPE_SUB );
 
 		MakeOpcode( ANDI, Default, 0 );
 		MakeOpcode( ORI, Default, 0 );
@@ -231,8 +231,8 @@ namespace R5900
 		MakeOpcode( SLLV, Default, 0 );
 		MakeOpcode( SRLV, Default, 0 );
 		MakeOpcode( SRAV, Default, 0 );
-		MakeOpcode( MOVZ, Default, 0 );
-		MakeOpcode( MOVN, Default, 0 );
+		MakeOpcode( MOVZ, Default, IS_ALU|ALUTYPE_CONDMOVE|CONDTYPE_EQ );
+		MakeOpcode( MOVN, Default, IS_ALU|ALUTYPE_CONDMOVE|CONDTYPE_NE );
 		MakeOpcode( DSLLV, Default, 0 );
 		MakeOpcode( DSRLV, Default, 0 );
 		MakeOpcode( DSRAV, Default, 0 );
@@ -258,34 +258,34 @@ namespace R5900
 
 		// Loads!
 
-		MakeOpcode( LDL, Load, 0 );
-		MakeOpcode( LDR, Load, 0 );
-		MakeOpcode( LQ, Load, 0 );
-		MakeOpcode( LB, Load, 0 );
-		MakeOpcode( LH, Load, 0 );
-		MakeOpcode( LWL, Load, 0 );
-		MakeOpcode( LW, Load, 0 );
-		MakeOpcode( LBU, Load, 0 );
-		MakeOpcode( LHU, Load, 0 );
-		MakeOpcode( LWR, Load, 0 );
-		MakeOpcode( LWU, Load, 0 );
-		MakeOpcode( LWC1, Load, 0 );
-		MakeOpcode( LQC2, Load, 0 );
-		MakeOpcode( LD, Load, 0 );
+		MakeOpcode( LDL,  Load, IS_MEMORY|IS_LOAD|MEMTYPE_DWORD|IS_LEFT );
+		MakeOpcode( LDR,  Load, IS_MEMORY|IS_LOAD|MEMTYPE_DWORD|IS_RIGHT );
+		MakeOpcode( LQ,   Load, IS_MEMORY|IS_LOAD|MEMTYPE_QWORD );
+		MakeOpcode( LB,   Load, IS_MEMORY|IS_LOAD|MEMTYPE_BYTE );
+		MakeOpcode( LH,   Load, IS_MEMORY|IS_LOAD|MEMTYPE_HALF );
+		MakeOpcode( LWL,  Load, IS_MEMORY|IS_LOAD|MEMTYPE_WORD|IS_LEFT );
+		MakeOpcode( LW,   Load, IS_MEMORY|IS_LOAD|MEMTYPE_WORD );
+		MakeOpcode( LBU,  Load, IS_MEMORY|IS_LOAD|MEMTYPE_BYTE );
+		MakeOpcode( LHU,  Load, IS_MEMORY|IS_LOAD|MEMTYPE_HALF );
+		MakeOpcode( LWR,  Load, IS_MEMORY|IS_LOAD|MEMTYPE_WORD|IS_RIGHT );
+		MakeOpcode( LWU,  Load, IS_MEMORY|IS_LOAD|MEMTYPE_WORD );
+		MakeOpcode( LWC1, Load, IS_MEMORY|IS_LOAD|MEMTYPE_WORD );
+		MakeOpcode( LQC2, Load, IS_MEMORY|IS_LOAD|MEMTYPE_QWORD );
+		MakeOpcode( LD,   Load, IS_MEMORY|IS_LOAD|MEMTYPE_DWORD );
 
 		// Stores!
 
-		MakeOpcode( SQ, Store, 0 );
-		MakeOpcode( SB, Store, 0 );
-		MakeOpcode( SH, Store, 0 );
-		MakeOpcode( SWL, Store, 0 );
-		MakeOpcode( SW, Store, 0 );
-		MakeOpcode( SDL, Store, 0 );
-		MakeOpcode( SDR, Store, 0 );
-		MakeOpcode( SWR, Store, 0 );
-		MakeOpcode( SWC1, Store, 0 );
-		MakeOpcode( SQC2, Store, 0 );
-		MakeOpcode( SD, Store, 0 );
+		MakeOpcode( SQ,   Store, IS_MEMORY|IS_STORE|MEMTYPE_QWORD );
+		MakeOpcode( SB,   Store, IS_MEMORY|IS_STORE|MEMTYPE_BYTE );
+		MakeOpcode( SH,   Store, IS_MEMORY|IS_STORE|MEMTYPE_HALF );
+		MakeOpcode( SWL,  Store, IS_MEMORY|IS_STORE|MEMTYPE_WORD|IS_LEFT );
+		MakeOpcode( SW,   Store, IS_MEMORY|IS_STORE|MEMTYPE_WORD );
+		MakeOpcode( SDL,  Store, IS_MEMORY|IS_STORE|MEMTYPE_DWORD|IS_LEFT );
+		MakeOpcode( SDR,  Store, IS_MEMORY|IS_STORE|MEMTYPE_DWORD|IS_RIGHT );
+		MakeOpcode( SWR,  Store, IS_MEMORY|IS_STORE|MEMTYPE_WORD|IS_RIGHT );
+		MakeOpcode( SWC1, Store, IS_MEMORY|IS_STORE|MEMTYPE_WORD );
+		MakeOpcode( SQC2, Store, IS_MEMORY|IS_STORE|MEMTYPE_QWORD );
+		MakeOpcode( SD,   Store, IS_MEMORY|IS_STORE|MEMTYPE_DWORD );
 
 
 		// Multimedia Instructions!
@@ -403,7 +403,7 @@ namespace R5900
 		MakeOpcode0( TLBWI, CopDefault, 0 );
 		MakeOpcode0( TLBWR, CopDefault, 0 );
 		MakeOpcode0( TLBP, CopDefault, 0 );
-		MakeOpcode0( ERET, CopDefault, 0 );
+		MakeOpcode0( ERET, CopDefault, IS_BRANCH|BRANCHTYPE_ERET );
 		MakeOpcode0( EI, CopDefault, 0 );
 		MakeOpcode0( DI, CopDefault, 0 );
 
@@ -419,10 +419,10 @@ namespace R5900
 		MakeOpcode1( MTC1, CopDefault, 0 );
 		MakeOpcode1( CTC1, CopDefault, 0 );
 
-		MakeOpcode1( BC1F, Branch, 0 );
-		MakeOpcode1( BC1T, Branch, 0 );
-		MakeOpcode1( BC1FL, Branch, 0 );
-		MakeOpcode1( BC1TL, Branch, 0 );
+		MakeOpcode1( BC1F,  Branch, IS_BRANCH|BRANCHTYPE_BC1|CONDTYPE_EQ );
+		MakeOpcode1( BC1T,  Branch, IS_BRANCH|BRANCHTYPE_BC1|CONDTYPE_NE );
+		MakeOpcode1( BC1FL, Branch, IS_BRANCH|BRANCHTYPE_BC1|CONDTYPE_EQ|IS_LIKELY );
+		MakeOpcode1( BC1TL, Branch, IS_BRANCH|BRANCHTYPE_BC1|CONDTYPE_NE|IS_LIKELY );
 
 		MakeOpcode1( ADD_S, CopDefault, 0 );
 		MakeOpcode1( ADDA_S, CopDefault, 0 );
