@@ -35,6 +35,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINDISASM, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPOVER, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPINTO, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_STEPOUT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_BREAKPOINTWINDOW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_MAPLOADED, DisassemblyDialog::onDebuggerEvent )
@@ -196,6 +197,22 @@ void CpuTabPage::loadCycles()
 	lastCycles = cycles;
 }
 
+u32 CpuTabPage::getStepOutAddress()
+{
+	if (threadList == NULL)
+		return (u32)-1;
+
+	EEThread currentThread = threadList->getRunningThread();
+	std::vector<MipsStackWalk::StackFrame> frames =
+		MipsStackWalk::Walk(cpu,cpu->getPC(),cpu->getRegister(0,31),cpu->getRegister(0,29),
+			currentThread.data.entry_init,currentThread.data.stack);
+
+	if (frames.size() < 2)
+		return (u32)-1;
+
+	return frames[1].pc;
+}
+
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
 	currentCpu(NULL)
@@ -225,6 +242,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	
 	stepOutButton = new wxButton( panel, wxID_ANY, L"Step Out" );
 	stepOutButton->Enable(false);
+	Connect( stepOutButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOutClicked ) );
 	topRowSizer->Add(stepOutButton,0,wxRIGHT,8);
 	
 	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
@@ -305,6 +323,11 @@ void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
 void DisassemblyDialog::onStepIntoClicked(wxCommandEvent& evt)
 {	
 	stepInto();
+}
+
+void DisassemblyDialog::onStepOutClicked(wxCommandEvent& evt)
+{
+	stepOut();
 }
 
 void DisassemblyDialog::onPageChanging(wxCommandEvent& evt)
@@ -414,6 +437,18 @@ void DisassemblyDialog::stepInto()
 	r5900Debug.resumeCpu();
 }
 
+void DisassemblyDialog::stepOut()
+{
+	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
+		return;
+
+	u32 addr = currentCpu->getStepOutAddress();
+	if (addr == (u32)-1)
+		return;
+
+	CBreakPoints::AddBreakPoint(addr,true);
+	r5900Debug.resumeCpu();
+}
 
 void DisassemblyDialog::onBreakpointClick(wxCommandEvent& evt)
 {
@@ -485,6 +520,10 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	{
 		eeTab->reloadSymbolMap();
 		iopTab->reloadSymbolMap();
+	} else if (type == debEVT_STEPOUT)
+	{
+		if (currentCpu != NULL)
+			stepOut();
 	}
 }
 
@@ -536,6 +575,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 			stepOverButton->Enable(true);
 			stepIntoButton->Enable(true);
+			stepOutButton->Enable(currentCpu == eeTab);
 
 			if (switchPC || CBreakPoints::GetBreakpointTriggered())
 				gotoPc();
