@@ -5,10 +5,6 @@
 #define ARRAYSIZE(x) (sizeof(x)/sizeof((x)[0]))
 #endif
 
-#if defined (__linux__)  // some distributions are lower case
-#define __LINUX__
-#endif
-
 // Basic types
 #if defined(_MSC_VER)
 typedef __int8  s8;
@@ -39,7 +35,7 @@ typedef u64 uptr;
 #else
 typedef u32 uptr;
 #endif
-#ifdef __LINUX__
+#ifdef __linux__
 typedef union _LARGE_INTEGER
 {
 	long long QuadPart;

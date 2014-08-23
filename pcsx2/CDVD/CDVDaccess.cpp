@@ -292,7 +292,7 @@ void CDVDsys_SetFile( CDVD_SourceType srctype, const wxString& newfile )
 	m_SourceFilename[srctype] = newfile;
 
 	// look for symbol file
-	if (g_Conf->EmuOptions.Debugger.EnableDebugger && symbolMap.IsEmpty())
+	if (symbolMap.IsEmpty())
 	{
 		wxString symName;
 		int n = newfile.Last('.');

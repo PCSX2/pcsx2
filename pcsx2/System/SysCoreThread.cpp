@@ -230,12 +230,9 @@ void SysCoreThread::GameStartingInThread()
 {
 	GetMTGS().SendGameCRC(ElfCRC);
 
-	if (EmuConfig.Debugger.EnableDebugger)
-	{
-		MIPSAnalyst::ScanForFunctions(ElfTextRange.first,ElfTextRange.first+ElfTextRange.second,true);
-		symbolMap.UpdateActiveSymbols();
-		sApp.PostAppMethod(&Pcsx2App::resetDebugger);
-	}
+	MIPSAnalyst::ScanForFunctions(ElfTextRange.first,ElfTextRange.first+ElfTextRange.second,true);
+	symbolMap.UpdateActiveSymbols();
+	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
 	if (EmuConfig.EnablePatches) ApplyPatch(0);
 	if (EmuConfig.EnableCheats)  ApplyCheat(0);

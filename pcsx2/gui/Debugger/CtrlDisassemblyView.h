@@ -67,6 +67,7 @@ private:
 	std::set<std::string> getSelectedLineArguments();
 	void drawArguments(wxDC& dc, const DisassemblyLineInfo &line, int x, int y, wxColor& textColor,
 		const std::set<std::string> &currentArguments);
+	void assembleOpcode(u32 address, std::string defaultText);
 
 	void postEvent(wxEventType type, wxString text);
 	void postEvent(wxEventType type, int value);

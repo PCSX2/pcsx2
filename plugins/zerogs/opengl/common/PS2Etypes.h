@@ -18,43 +18,24 @@
 #ifndef __PS2ETYPES_H__
 #define __PS2ETYPES_H__
 
-#if defined (__linux__) && !defined(__LINUX__)  // some distributions are lower case
-#define __LINUX__
-#endif
-
 #ifdef __CYGWIN__
-#define __LINUX__
+#define __linux__
 #endif
 
 #ifndef ArraySize
 #define ArraySize(x) (sizeof(x)/sizeof((x)[0]))
 #endif
 
-#ifdef __LINUX__
+#ifdef __linux__
 #define CALLBACK
 #else
 #define CALLBACK    __stdcall
 #endif
 
-
-// jASSUME - give hints to the optimizer
-//  This is primarily useful for the default case switch optimizer, which enables VC to
-//  generate more compact switches.
-
-#ifdef NDEBUG
-#	define jBREAKPOINT() ((void) 0)
-#	ifdef _MSC_VER
-#		define jASSUME(exp) (__assume(exp))
-#	else
-#		define jASSUME(exp) ((void) sizeof(exp))
-#	endif
+#ifdef _MSC_VER
+#define UNREACHABLE_CODE __assume(0)
 #else
-#	if defined(_MSC_VER)
-#		define jBREAKPOINT() do { __asm int 3 } while(0)
-#	else
-#		define jBREAKPOINT() ((void) *(volatile char *) 0)
-#	endif
-#	define jASSUME(exp) if(exp) ; else jBREAKPOINT()
+#define UNREACHABLE_CODE __builtin_unreachable()
 #endif
 
 // disable the default case in a switch
@@ -63,7 +44,7 @@
 	break; \
 	\
 default: \
-	jASSUME(0); \
+	UNREACHABLE_CODE; \
 	break; \
 }
 
@@ -87,11 +68,9 @@ typedef unsigned int uint;
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
 #define PCSX2_ALIGNED16_DECL(x) __declspec(align(16)) x
 
-#define __naked __declspec(naked)
-
 #else // _MSC_VER
 
-#ifdef __LINUX__
+#ifdef __linux__
 
 #ifdef HAVE_STDINT_H
 #include "stdint.h"
@@ -135,9 +114,8 @@ typedef union _LARGE_INTEGER
 #define __unused __attribute__((unused))
 #define _inline __inline__ __attribute__((unused))
 #define __forceinline __attribute__((always_inline,unused))
-#define __naked		// GCC lacks the naked specifier
 
-#endif  // __LINUX__
+#endif  // __linux__
 
 #define PCSX2_ALIGNED(alig,x) x __attribute((aligned(alig)))
 #define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
@@ -146,7 +124,7 @@ typedef union _LARGE_INTEGER
 
 #endif // _MSC_VER
 
-#if !defined(__LINUX__) || !defined(HAVE_STDINT_H)
+#if !defined(__linux__) || !defined(HAVE_STDINT_H)
 #if defined(__x86_64__)
 typedef u64 uptr;
 typedef s64 sptr;
@@ -210,10 +188,5 @@ typedef struct {
 	int size;
 	s8 *data;
 } freezeData;
-
-/* common defines */
-#ifndef C_ASSERT
-#define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
-#endif
 
 #endif /* __PS2ETYPES_H__ */

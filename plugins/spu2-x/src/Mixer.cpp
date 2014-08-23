@@ -819,7 +819,7 @@ static int p_cachestat_counter=0;
 
 // Gcc does not want to inline it when lto is enabled because some functions growth too much.
 // The function is big enought to see any speed impact. -- Gregory
-#ifndef __LINUX__
+#ifndef __linux__
 __forceinline
 #endif
 void Mix()

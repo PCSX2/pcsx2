@@ -17,7 +17,7 @@
 #ifndef NAKED_ASM_H
 #define NAKED_ASM_H
 
-#ifdef __LINUX__
+#ifdef __linux__
 
 extern "C"
 {

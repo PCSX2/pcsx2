@@ -389,7 +389,7 @@ EERECOMPILE_CODE0(BNEL, XMMINFO_READS|XMMINFO_READT);
 *********************************************************/
 
 ////////////////////////////////////////////////////
-//void recBLTZAL( void )
+//void recBLTZAL()
 //{
 //	Console.WriteLn("BLTZAL");
 //	_eeFlushAllUnused();
@@ -440,7 +440,7 @@ void recBLTZAL()
 }
 
 ////////////////////////////////////////////////////
-void recBGEZAL( void )
+void recBGEZAL()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -479,7 +479,7 @@ void recBGEZAL( void )
 }
 
 ////////////////////////////////////////////////////
-void recBLTZALL( void )
+void recBLTZALL()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -513,7 +513,7 @@ void recBLTZALL( void )
 }
 
 ////////////////////////////////////////////////////
-void recBGEZALL( void )
+void recBGEZALL()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -548,7 +548,7 @@ void recBGEZALL( void )
 
 
 //// BLEZ
-void recBLEZ( void )
+void recBLEZ()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -594,7 +594,7 @@ void recBLEZ( void )
 }
 
 //// BGTZ
-void recBGTZ( void )
+void recBGTZ()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -673,7 +673,7 @@ void recBLTZ()
 }
 
 ////////////////////////////////////////////////////
-void recBGEZ( void )
+void recBGEZ()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -706,7 +706,7 @@ void recBGEZ( void )
 }
 
 ////////////////////////////////////////////////////
-void recBLTZL( void )
+void recBLTZL()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -736,7 +736,7 @@ void recBLTZL( void )
 
 
 ////////////////////////////////////////////////////
-void recBGEZL( void )
+void recBGEZL()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -773,7 +773,7 @@ void recBGEZL( void )
 *********************************************************/
 
 ////////////////////////////////////////////////////
-void recBLEZL( void )
+void recBLEZL()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
@@ -817,7 +817,7 @@ void recBLEZL( void )
 }
 
 ////////////////////////////////////////////////////
-void recBGTZL( void )
+void recBGTZL()
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 

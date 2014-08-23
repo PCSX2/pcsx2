@@ -22,41 +22,41 @@ namespace Dynarec {
 	namespace OpcodeImpl {
 	namespace COP1
 	{
-		void recMFC1( void );
-		void recCFC1( void );
-		void recMTC1( void );
-		void recCTC1( void );
-		void recCOP1_BC1( void );
-		void recCOP1_S( void );
-		void recCOP1_W( void );
-		void recC_EQ( void );
-		void recC_F( void );
-		void recC_LT( void );
-		void recC_LE( void );
-		void recADD_S( void );
-		void recSUB_S( void );
-		void recMUL_S( void );
-		void recDIV_S( void );
-		void recSQRT_S( void );
-		void recABS_S( void );
-		void recMOV_S( void );
-		void recNEG_S( void );
-		void recRSQRT_S( void );
-		void recADDA_S( void );
-		void recSUBA_S( void );
-		void recMULA_S( void );
-		void recMADD_S( void );
-		void recMSUB_S( void );
-		void recMADDA_S( void );
-		void recMSUBA_S( void );
-		void recCVT_S( void );
-		void recCVT_W( void );
-		void recMAX_S( void );
-		void recMIN_S( void );
-		void recBC1F( void );
-		void recBC1T( void );
-		void recBC1FL( void );
-		void recBC1TL( void );
+		void recMFC1();
+		void recCFC1();
+		void recMTC1();
+		void recCTC1();
+		void recCOP1_BC1();
+		void recCOP1_S();
+		void recCOP1_W();
+		void recC_EQ();
+		void recC_F();
+		void recC_LT();
+		void recC_LE();
+		void recADD_S();
+		void recSUB_S();
+		void recMUL_S();
+		void recDIV_S();
+		void recSQRT_S();
+		void recABS_S();
+		void recMOV_S();
+		void recNEG_S();
+		void recRSQRT_S();
+		void recADDA_S();
+		void recSUBA_S();
+		void recMULA_S();
+		void recMADD_S();
+		void recMSUB_S();
+		void recMADDA_S();
+		void recMSUBA_S();
+		void recCVT_S();
+		void recCVT_W();
+		void recMAX_S();
+		void recMIN_S();
+		void recBC1F();
+		void recBC1T();
+		void recBC1FL();
+		void recBC1TL();
 	} }
 } }
 

@@ -148,7 +148,7 @@
 #else
 	// Ensure the user's defined PS2E_THISPTR retains the correct signature for our
 	// plugin API.
-	C_ASSERT( sizeof(PS2E_THISPTR) == sizeof(void*) );
+	static_assert( sizeof(PS2E_THISPTR) == sizeof(void*), "Incorrect signature for PS2E_THISPTR" );
 #endif
 
 // PS2E_LIB_THISPTR - (library scope version of PS2E_THISPTR)
@@ -157,7 +157,7 @@
 #else
 	// Ensure the user's defined PS2E_THISPTR retains the correct signature for our
 	// plugin API.
-	C_ASSERT( sizeof(PS2E_LIB_THISPTR) == sizeof(void*) );
+	static_assert( sizeof(PS2E_LIB_THISPTR) == sizeof(void*), "Incorrect signature for PS2E_LIB_THISPTR" );
 #endif
 
 // Use fastcall by default, since under most circumstances the object-model approach of the

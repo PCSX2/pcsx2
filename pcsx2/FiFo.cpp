@@ -60,7 +60,7 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 			GUNIT_LOG("ReadFIFO_VIF1");
 			if (vif1.GSLastDownloadSize <= 16)
 				gifRegs.stat.OPH = false;
-			vif1Regs.stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
+			vif1Regs.stat.FQC = std::min((u32)16, vif1.GSLastDownloadSize);
 		}
 	}
 

@@ -299,6 +299,7 @@ CRC::Game CRC::m_games[] =
 	{0xC818BEC2, LordOfTheRingsTwoTowers, US, 0},
 	{0xDC43F2B8, LordOfTheRingsTwoTowers, EU, 0},
 	{0x9ABF90FB, LordOfTheRingsTwoTowers, ES, 0},
+	{0x5FF407EE, LordOfTheRingsTwoTowers, IT, 0},
 	{0xC0E909E9, LordOfTheRingsTwoTowers, JP, 0},
 	{0x6898435D, LordOfTheRingsTwoTowers, KO, 0},
 	{0xDC2F9B98, LordOfTheRingsTwoTowers, CH, 0}, // cutie comment

@@ -105,7 +105,7 @@ void SetFastMemory(int bSetFast)
 //
 void recLoad64( u32 bits, bool sign )
 {
-	jASSUME( bits == 64 || bits == 128 );
+	pxAssume( bits == 64 || bits == 128 );
 
 	// Load EDX with the destination.
 	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
@@ -147,7 +147,7 @@ void recLoad64( u32 bits, bool sign )
 //
 void recLoad32( u32 bits, bool sign )
 {
-	jASSUME( bits <= 32 );
+	pxAssume( bits <= 32 );
 
 	// 8/16/32 bit modes return the loaded value in EAX.
 
@@ -238,24 +238,24 @@ void recStore(u32 bits)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLB( void )  { recLoad32(8,true); }
-void recLBU( void ) { recLoad32(8,false); }
-void recLH( void )  { recLoad32(16,true); }
-void recLHU( void ) { recLoad32(16,false); }
-void recLW( void )  { recLoad32(32,true); }
-void recLWU( void ) { recLoad32(32,false); }
-void recLD( void )  { recLoad64(64,false); }
-void recLQ( void )  { recLoad64(128,false); }
+void recLB()  { recLoad32(8,true); }
+void recLBU() { recLoad32(8,false); }
+void recLH()  { recLoad32(16,true); }
+void recLHU() { recLoad32(16,false); }
+void recLW()  { recLoad32(32,true); }
+void recLWU() { recLoad32(32,false); }
+void recLD()  { recLoad64(64,false); }
+void recLQ()  { recLoad64(128,false); }
 
-void recSB( void )  { recStore(8); }
-void recSH( void )  { recStore(16); }
-void recSW( void )  { recStore(32); }
-void recSQ( void )  { recStore(128); }
-void recSD( void )  { recStore(64); }
+void recSB()  { recStore(8); }
+void recSH()  { recStore(16); }
+void recSW()  { recStore(32); }
+void recSQ()  { recStore(128); }
+void recSD()  { recStore(64); }
 
 ////////////////////////////////////////////////////
 
-void recLWL( void )
+void recLWL()
 {
 #ifdef REC_LOADS
 	iFlushCall(FLUSH_FULLVTLB);
@@ -301,7 +301,7 @@ void recLWL( void )
 }
 
 ////////////////////////////////////////////////////
-void recLWR(void)
+void recLWR()
 {
 #ifdef REC_LOADS
 	iFlushCall(FLUSH_FULLVTLB);
@@ -350,7 +350,7 @@ void recLWR(void)
 }
 
 ////////////////////////////////////////////////////
-void recSWL(void)
+void recSWL()
 {
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
@@ -398,7 +398,7 @@ void recSWL(void)
 }
 
 ////////////////////////////////////////////////////
-void recSWR(void)
+void recSWR()
 {
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
@@ -446,7 +446,7 @@ void recSWR(void)
 }
 
 ////////////////////////////////////////////////////
-void recLDL( void )
+void recLDL()
 {
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -455,7 +455,7 @@ void recLDL( void )
 }
 
 ////////////////////////////////////////////////////
-void recLDR( void )
+void recLDR()
 {
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -465,7 +465,7 @@ void recLDR( void )
 
 ////////////////////////////////////////////////////
 
-void recSDL( void )
+void recSDL()
 {
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -474,7 +474,7 @@ void recSDL( void )
 }
 
 ////////////////////////////////////////////////////
-void recSDR( void )
+void recSDR()
 {
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -490,7 +490,7 @@ void recSDR( void )
 
 ////////////////////////////////////////////////////
 
-void recLWC1( void )
+void recLWC1()
 {
 	_deleteFPtoXMMreg(_Rt_, 2);
 
@@ -515,7 +515,7 @@ void recLWC1( void )
 
 ////////////////////////////////////////////////////
 
-void recSWC1( void )
+void recSWC1()
 {
 	_deleteFPtoXMMreg(_Rt_, 1);
 
@@ -551,7 +551,7 @@ void recSWC1( void )
 
 
 
-void recLQC2( void )
+void recLQC2()
 {
 	_deleteVFtoXMMreg(_Ft_, 0, 2);
 
@@ -580,7 +580,7 @@ void recLQC2( void )
 
 ////////////////////////////////////////////////////
 
-void recSQC2( void )
+void recSQC2()
 {
 	_deleteVFtoXMMreg(_Ft_, 0, 1); //Want to flush it but not clear it
 

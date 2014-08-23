@@ -64,7 +64,7 @@ static __ri void writeXYZW(u32 offnum, u32 &dest, u32 data) {
 			}
 			break;
 		case 1: dest = vif.MaskRow._u32[offnum]; break;
-		case 2: dest = vif.MaskCol._u32[min(vif.cl,3)]; break;
+		case 2: dest = vif.MaskCol._u32[std::min(vif.cl,3)]; break;
 		case 3: break;
 	}
 }

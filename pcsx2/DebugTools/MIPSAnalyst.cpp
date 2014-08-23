@@ -20,6 +20,7 @@
 #include "SymbolMap.h"
 #include "DebugInterface.h"
 #include "../R5900.h"
+#include "../R5900OpcodeTables.h"
 
 static std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 
@@ -160,296 +161,182 @@ namespace MIPSAnalyst
 		}
 	}
 
-
-	enum BranchType { NONE, JUMP, BRANCH };
-	struct BranchInfo
-	{
-		BranchType type;
-		bool link;
-		bool likely;
-		bool toRegister;
-	};
-
-	bool getBranchInfo(MipsOpcodeInfo& info)
-	{
-		BranchType type = NONE;
-		bool link = false;
-		bool likely = false;
-		bool toRegister = false;
-		bool met = false;
-
-		u32 op = info.encodedOpcode;
-
-		u32 opNum = MIPS_GET_OP(op);
-		u32 rsNum = MIPS_GET_RS(op);
-		u32 rtNum = MIPS_GET_RT(op);
-		u32 rs = info.cpu->getRegister(0,rsNum);
-		u32 rt = info.cpu->getRegister(0,rtNum);
-
-		switch (MIPS_GET_OP(op))
-		{
-		case 0x00:		// special
-			switch (MIPS_GET_FUNC(op))
-			{
-			case 0x08:	// jr
-				type = JUMP;
-				toRegister = true;
-				break;
-			case 0x09:	// jalr
-				type = JUMP;
-				toRegister = true;
-				link = true;
-				break;
-			}
-			break;
-		case 0x01:		// regimm
-			switch (MIPS_GET_RT(op))
-			{
-			case 0x00:		// bltz
-			case 0x02:		// bltzl
-			case 0x10:		// bltzal
-			case 0x12:		// bltzall
-				type = BRANCH;
-				met = (((s32)rs) < 0);
-				likely = (rt & 2) != 0;
-				link = rt >= 0x10;
-				break;
-				
-			case 0x01:		// bgez
-			case 0x03:		// bgezl
-			case 0x11:		// bgezal
-			case 0x13:		// bgezall
-				type = BRANCH;
-				met = (((s32)rs) >= 0);
-				likely = (rt & 2) != 0;
-				link = rt >= 0x10;
-				break;
-			}
-			break;
-		case 0x02:		// j
-			type = JUMP;
-			break;
-		case 0x03:		// jal
-			type = JUMP;
-			link = true;
-			break;
-			
-		case 0x04:		// beq
-		case 0x14:		// beql
-			type = BRANCH;
-			met = (rt == rs);
-			if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	// always true
-				info.isConditional = false;
-			likely = opNum >= 0x10;
-			break;
-			
-		case 0x05:		// bne
-		case 0x15:		// bnel
-			type = BRANCH;
-			met = (rt != rs);
-			if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	// always false
-				info.isConditional = false;
-			likely = opNum >= 0x10;
-			break;
-			
-		case 0x06:		// blez
-		case 0x16:		// blezl
-			type = BRANCH;
-			met = (((s32)rs) <= 0);
-			likely = opNum >= 0x10;
-			break;
-
-		case 0x07:		// bgtz
-		case 0x17:		// bgtzl
-			type = BRANCH;
-			met = (((s32)rs) > 0);
-			likely = opNum >= 0x10;
-			break;
-		}
-
-		if (type == NONE)
-			return false;
-
-		info.isBranch = true;
-		info.isLinkedBranch = link;
-		info.isLikelyBranch = true;
-		info.isBranchToRegister = toRegister;
-		info.isConditional = type == BRANCH;
-		info.conditionMet = met;
-
-		switch (type)
-		{
-		case JUMP:
-			if (toRegister)
-			{
-				info.branchRegisterNum = (int)MIPS_GET_RS(op);
-				info.branchTarget = info.cpu->getRegister(0,info.branchRegisterNum)._u32[0];
-			} else {
-				info.branchTarget =  (info.opcodeAddress & 0xF0000000) | ((op&0x03FFFFFF) << 2);
-			}
-			break;
-		case BRANCH:
-			info.branchTarget = info.opcodeAddress + 4 + ((signed short)(op&0xFFFF)<<2);
-			break;
-		case NONE:
-			return false;
-		}
-
-		return true;
-	}
-
-	bool getDataAccessInfo(MipsOpcodeInfo& info)
-	{
-		int size = 0;
-		
-		u32 op = info.encodedOpcode;
-		int off = 0;
-		switch (MIPS_GET_OP(op))
-		{
-		case 0x20:		// lb
-		case 0x24:		// lbu
-		case 0x28:		// sb
-			size = 1;
-			break;
-		case 0x21:		// lh
-		case 0x25:		// lhu
-		case 0x29:		// sh
-			size = 2;
-			break;
-		case 0x23:		// lw
-		case 0x2B:		// sw
-			size = 4;
-			break;
-		case 0x26:		// lwr
-		case 0x2E:		// swr
-			size = 4;
-			info.lrType = LOADSTORE_RIGHT; 
-			break;
-		case 0x22:		// lwl
-		case 0x2A:		// swl
-			size = 4;
-			off = -3;
-			info.lrType = LOADSTORE_LEFT; 
-			break;
-		case 0x37:		// ld
-		case 0x3F:		// sd
-			size = 8;
-			break;
-		case 0x1B:		// ldr
-		case 0x2D:		// sdr
-			size = 8;
-			info.lrType = LOADSTORE_RIGHT; 
-			break;
-		case 0x1A:		// ldl
-		case 0x2C:		// sdl
-			size = 8;
-			off = -7;
-			info.lrType = LOADSTORE_LEFT;
-			break;
-		case 0x1E:		// lq
-		case 0x1F:		// sq
-			size = 16;
-			break;
-		}
-
-		if (size == 0)
-			return false;
-
-		info.isDataAccess = true;
-		info.dataSize = size;
-
-		u32 rs = info.cpu->getRegister(0, (int)MIPS_GET_RS(op));
-		s16 imm16 = op & 0xFFFF;
-		info.dataAddress = rs + imm16 + off;
-
-		info.hasRelevantAddress = true;
-		info.releventAddress = info.dataAddress;
-		return true;
-	}
-
 	MipsOpcodeInfo GetOpcodeInfo(DebugInterface* cpu, u32 address) {
 		MipsOpcodeInfo info;
 		memset(&info, 0, sizeof(info));
 
-		if (cpu->isValidAddress(address) == false) {
+		if (cpu->isValidAddress(address) == false)
 			return info;
-		}
 
 		info.cpu = cpu;
 		info.opcodeAddress = address;
 		info.encodedOpcode = cpu->read32(address);
 		u32 op = info.encodedOpcode;
+		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
-		if (getBranchInfo(info) == true)
-			return info;
+		// extract all the branch related information
+		info.isBranch = (opcode.flags & IS_BRANCH) != 0;
+		if (info.isBranch)
+		{
+			info.isLinkedBranch = (opcode.flags & IS_LINKED) != 0;
+			info.isLikelyBranch = (opcode.flags & IS_LIKELY) != 0;
 
-		if (getDataAccessInfo(info) == true)
-			return info;
-
-		// gather relevant address for alu operations
-		// that's usually the value of the dest register
-		switch (MIPS_GET_OP(op)) {
-		case 0:		// special
-			switch (MIPS_GET_FUNC(op)) {
-			case 0x0C:	// syscall
+			u64 rs,rt;
+			u32 value;
+			switch (opcode.flags & BRANCHTYPE_MASK)
+			{
+			case BRANCHTYPE_JUMP:
+				info.isConditional = false;
+				info.branchTarget =  (info.opcodeAddress & 0xF0000000) | ((op&0x03FFFFFF) << 2);
+				break;
+			case BRANCHTYPE_BRANCH:
+				info.isConditional = true;
+				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
+			
+				rs = info.cpu->getRegister(0,MIPS_GET_RS(op))._u64[0];
+				rt = info.cpu->getRegister(0,MIPS_GET_RT(op))._u64[0];
+				switch (opcode.flags & CONDTYPE_MASK)
+				{
+				case CONDTYPE_EQ:
+					info.conditionMet = (rt == rs);
+					if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	// always true
+						info.isConditional = false;
+					break;
+				case CONDTYPE_NE:
+					info.conditionMet = (rt != rs);
+					if (MIPS_GET_RT(op) == MIPS_GET_RS(op))	// always false
+						info.isConditional = false;
+					break;
+				case CONDTYPE_LEZ:
+					info.conditionMet = (((s64)rs) <= 0);
+					break;
+				case CONDTYPE_GTZ:
+					info.conditionMet = (((s64)rs) > 0);
+					break;
+				case CONDTYPE_LTZ:
+					info.conditionMet = (((s64)rs) < 0);
+					break;
+				case CONDTYPE_GEZ:
+					info.conditionMet = (((s64)rs) >= 0);
+					break;
+				}
+				
+				break;
+			case BRANCHTYPE_REGISTER:
+				info.isConditional = false;
+				info.isBranchToRegister = true;
+				info.branchRegisterNum = (int)MIPS_GET_RS(op);
+				info.branchTarget = info.cpu->getRegister(0,info.branchRegisterNum)._u32[0];
+				break;
+			case BRANCHTYPE_SYSCALL:
+				info.isConditional = false;
 				info.isSyscall = true;
 				info.branchTarget = 0x80000000+0x180;
 				break;
-			case 0x20:	// add
-			case 0x21:	// addu
-				info.hasRelevantAddress = true;
-				info.releventAddress = cpu->getRegister(0,MIPS_GET_RS(op))._u32[0]+cpu->getRegister(0,MIPS_GET_RT(op))._u32[0];
-				break;
-			case 0x22:	// sub
-			case 0x23:	// subu
-				info.hasRelevantAddress = true;
-				info.releventAddress = cpu->getRegister(0,MIPS_GET_RS(op))._u32[0]-cpu->getRegister(0,MIPS_GET_RT(op))._u32[0];
-				break;
-			}
-			break;
-		case 0x08:	// addi
-		case 0x09:	// adiu
-			info.hasRelevantAddress = true;
-			info.releventAddress = cpu->getRegister(0,MIPS_GET_RS(op))._u32[0]+((s16)(op & 0xFFFF));
-			break;
-		case 0x10:	// cop0
-			switch (MIPS_GET_RS(op))
-			{
-			case 0x10:	// tlb
-				switch (MIPS_GET_FUNC(op))
+			case BRANCHTYPE_ERET:
+				info.isConditional = false;
+				// probably shouldn't be hard coded like this...
+				if (cpuRegs.CP0.n.Status.b.ERL)
 				{
-				case 0x18:	// eret
-					info.isBranch = true;
-					info.isConditional = false;
+					info.branchTarget = cpuRegs.CP0.n.ErrorEPC;
+				} else {
+					info.branchTarget = cpuRegs.CP0.n.EPC;
+				}
+				break;
+			case BRANCHTYPE_BC1:
+				info.isConditional = true;
+				value = info.cpu->getRegister(EECAT_FCR,31)._u32[0] & 0x00800000;
+				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
 
-					// probably shouldn't be hard coded like this...
-					if (cpuRegs.CP0.n.Status.b.ERL) {
-						info.branchTarget = cpuRegs.CP0.n.ErrorEPC;
-					} else {
-						info.branchTarget = cpuRegs.CP0.n.EPC;
-					}
+				switch (opcode.flags & CONDTYPE_MASK)
+				{
+				case CONDTYPE_EQ:
+					info.conditionMet = value == 0;
+					break;
+				case CONDTYPE_NE:
+					info.conditionMet = value != 0;
 					break;
 				}
 				break;
 			}
-			break;
 		}
 
-		// TODO: rest
-/*		// movn, movz
-		if (opInfo & IS_CONDMOVE) {
-			info.isConditional = true;
+		// extract the accessed memory address
+		info.isDataAccess = opcode.flags & IS_MEMORY;
+		if (info.isDataAccess)
+		{
+			if (opcode.flags & IS_LEFT)
+				info.lrType = LOADSTORE_LEFT;
+			else if (opcode.flags & IS_RIGHT)
+				info.lrType = LOADSTORE_RIGHT;
+			
+			u32 rs = info.cpu->getRegister(0, (int)MIPS_GET_RS(op));
+			s16 imm16 = op & 0xFFFF;
+			info.dataAddress = rs + imm16;
 
-			u32 rt = cpu->GetRegValue(0, (int)MIPS_GET_RT(op));
-			switch (opInfo & CONDTYPE_MASK) {
-			case CONDTYPE_EQ:
-				info.conditionMet = (rt == 0);
+			switch (opcode.flags & MEMTYPE_MASK)
+			{
+			case MEMTYPE_BYTE:
+				info.dataSize = 1;
 				break;
-			case CONDTYPE_NE:
-				info.conditionMet = (rt != 0);
+			case MEMTYPE_HALF:
+				info.dataSize = 2;
+				break;
+			case MEMTYPE_WORD:
+				info.dataSize = 4;
+				if (info.lrType == LOADSTORE_LEFT)
+					info.dataAddress -= 3;
+				break;
+			case MEMTYPE_DWORD:
+				info.dataSize = 8;
+				if (info.lrType == LOADSTORE_LEFT)
+					info.dataAddress -= 7;
+				break;
+			case MEMTYPE_QWORD:
+				info.dataSize = 16;
 				break;
 			}
-		}*/
+			
+			info.hasRelevantAddress = true;
+			info.releventAddress = info.dataAddress;
+		}
+
+		// gather relevant address for alu operations
+		if (opcode.flags & IS_ALU)
+		{
+			u64 rs,rt;
+			rs = info.cpu->getRegister(0,MIPS_GET_RS(op))._u64[0];
+			rt = info.cpu->getRegister(0,MIPS_GET_RT(op))._u64[0];
+
+			switch (opcode.flags & ALUTYPE_MASK)
+			{
+			case ALUTYPE_ADDI:
+				info.hasRelevantAddress = true;
+				info.releventAddress = rs+((s16)(op & 0xFFFF));
+				break;
+			case ALUTYPE_ADD:
+				info.hasRelevantAddress = true;
+				info.releventAddress = rs+rt;
+				break;
+			case ALUTYPE_SUB:
+				info.hasRelevantAddress = true;
+				info.releventAddress = rs-rt;
+				break;
+			case ALUTYPE_CONDMOVE:
+				info.isConditional = true;
+
+				switch (opcode.flags & CONDTYPE_MASK)
+				{
+				case CONDTYPE_EQ:
+					info.conditionMet = (rt == 0);
+					break;
+				case CONDTYPE_NE:
+					info.conditionMet = (rt != 0);
+					break;
+				}
+				break;
+			}
+		}
 
 		return info;
 	}

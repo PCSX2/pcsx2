@@ -339,13 +339,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menubar.Append( &m_menuCDVD,		_("CD&VD") );
 	m_menubar.Append( &m_menuConfig,	_("&Config") );
 	m_menubar.Append( &m_menuMisc,		_("&Misc") );
-	
-#ifndef PCSX2_DEVBUILD
-	if (g_Conf->EmuOptions.Debugger.EnableDebugger)
-#endif
-	{
-		m_menubar.Append( &m_menuDebug,		_("&Debug") );
-	}
+	m_menubar.Append( &m_menuDebug,		_("&Debug") );
 
 	SetMenuBar( &m_menubar );
 
@@ -490,7 +484,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// ------------------------------------------------------------------------
 
 	m_menuMisc.Append( &m_MenuItem_Console );
-#ifdef __LINUX__
+#ifdef __linux__
 	m_menuMisc.Append( &m_MenuItem_Console_Stdio );
 #endif
 	//Todo: Though not many people need this one :p
@@ -512,14 +506,11 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuMisc.AppendSeparator();
 	m_menuMisc.Append( MenuId_ChangeLang,		L"Change Language" ); // Always in English
 
-#ifndef PCSX2_DEVBUILD
-	if (g_Conf->EmuOptions.Debugger.EnableDebugger)
+	m_menuDebug.Append(MenuId_Debug_Open,		_("Open Debug Window..."),	wxEmptyString);
+
+#ifdef PCSX2_DEVBUILD
+	m_menuDebug.Append(MenuId_Debug_Logging,	_("Logging..."),			wxEmptyString);
 #endif
-	{
-		m_menuDebug.Append(MenuId_Debug_Open,		_("Open Debug Window..."),	wxEmptyString);
-		//m_menuDebug.Append(MenuId_Debug_MemoryDump,	_("Memory Dump..."),		wxEmptyString);
-		m_menuDebug.Append(MenuId_Debug_Logging,	_("Logging..."),			wxEmptyString);
-	}
 
 	m_MenuItem_Console.Check( g_Conf->ProgLogBox.Visible );
 
@@ -681,7 +672,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check( MenuId_EnableCheats,  configToApply.EmuOptions.EnableCheats );
 		menubar.Check( MenuId_EnableWideScreenPatches,  configToApply.EmuOptions.EnableWideScreenPatches );
 		menubar.Check( MenuId_EnableHostFs,  configToApply.EmuOptions.HostFs );
-#ifdef __LINUX__
+#ifdef __linux__
 		menubar.Check( MenuId_Console_Stdio, configToApply.EmuOptions.ConsoleToStdio );
 #endif
 

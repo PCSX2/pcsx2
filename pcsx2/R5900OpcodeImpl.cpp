@@ -921,17 +921,17 @@ void SYSCALL()
 	cpuException(0x20, cpuRegs.branch);
 }
 
-void BREAK(void) {
+void BREAK() {
 	cpuRegs.pc -= 4;
 	cpuException(0x24, cpuRegs.branch);
 }
 
-void MFSA( void ) {
+void MFSA() {
 	if (!_Rd_) return;
 	cpuRegs.GPR.r[_Rd_].SD[0] = (s64)cpuRegs.sa;
 }
 
-void MTSA( void ) {
+void MTSA() {
 	cpuRegs.sa = (s32)cpuRegs.GPR.r[_Rs_].SD[0] & 0xf;
 }
 
@@ -939,14 +939,14 @@ void MTSA( void ) {
 // to the cache) and one which synchronizes the instruction pipeline (effectively
 // a stall in either case).  Our emulation model does not track EE-side pipeline
 // status or stalls, nor does it implement the CACHE.  Thus SYNC need do nothing.
-void SYNC( void )
+void SYNC()
 {
 }
 
 // Used to prefetch data into the EE's cache, or schedule a dirty write-back.
 // CACHE is not emulated at this time (nor is there any need to emulate it), so
 // this function does nothing in the context of our emulator.
-void PREF( void )
+void PREF()
 {
 }
 

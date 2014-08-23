@@ -446,7 +446,7 @@ EXPORT_C_(s32) SPU2open(void *pDsp)
 	{
 		SndBuffer::Init();
 		
-#ifndef __LINUX__
+#ifndef __linux__
 		DspLoadLibrary(dspPlugin,dspPluginModule);
 #endif
 		WaveDump::Open();
@@ -467,7 +467,7 @@ EXPORT_C_(void) SPU2close()
 
 	FileLog("[%10d] SPU2 Close\n",Cycles);
 
-#ifndef __LINUX__
+#ifndef __linux__
 	DspCloseLibrary();
 #endif
 

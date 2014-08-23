@@ -124,7 +124,6 @@ set(pcsx2Sources
 	Gif.cpp
     Gif_Logger.cpp
 	Gif_Unit.cpp
-    Gte.cpp
 	GS.cpp
 	GSState.cpp
 	Hw.cpp
@@ -165,7 +164,6 @@ set(pcsx2Sources
 	Sio.cpp
 	SourceLog.cpp
 	SPR.cpp
-	Stats.cpp
 	System.cpp
 	Vif0_Dma.cpp
 	Vif1_Dma.cpp
@@ -215,7 +213,6 @@ set(pcsx2Headers
 	MemoryTypes.h
 	NakedAsm.h
 	Patch.h
-	Patch_Obsolete.h
 	PathDefs.h
 	Plugins.h
 	PrecompiledHeader.h
@@ -230,7 +227,6 @@ set(pcsx2Headers
 	Sio.h
 	sio_internal.h
 	SPR.h
-	Stats.h
 	SysForwardDefs.h
 	System.h
 	Vif_Dma.h
@@ -278,11 +274,12 @@ set(pcsx2DebugToolsSources
 	DebugTools/DisassemblyManager.cpp
 	DebugTools/ExpressionParser.cpp
 	DebugTools/MIPSAnalyst.cpp
+	DebugTools/MipsAssembler.cpp
+	DebugTools/MipsAssemblerTables.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
 	DebugTools/DisR3000A.cpp
 	DebugTools/DisR5900asm.cpp
-	DebugTools/DisR5900.cpp
 	DebugTools/DisVU0Micro.cpp
 	DebugTools/DisVU1Micro.cpp)
 
@@ -292,6 +289,8 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisassemblyManager.h
 	DebugTools/ExpressionParser.h
 	DebugTools/MIPSAnalyst.h
+	DebugTools/MipsAssembler.h
+	DebugTools/MipsAssemblerTables.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h

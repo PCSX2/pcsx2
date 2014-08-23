@@ -50,7 +50,7 @@ struct sifFifo
 	{
 		if (words > 0)
 		{
-			const int wP0 = min((FIFO_SIF_W - writePos), words);
+			const int wP0 = std::min((FIFO_SIF_W - writePos), words);
 			const int wP1 = words - wP0;
 
 			memcpy_fast(&data[writePos], from, wP0 << 2);
@@ -66,7 +66,7 @@ struct sifFifo
 	{
 		if (words > 0)
 		{
-			const int wP0 = min((FIFO_SIF_W - readPos), words);
+			const int wP0 = std::min((FIFO_SIF_W - readPos), words);
 			const int wP1 = words - wP0;
 
 			memcpy_fast(to, &data[readPos], wP0 << 2);
@@ -124,7 +124,7 @@ struct _sif
 
 extern _sif sif0, sif1, sif2;
 
-extern void sifInit();
+extern void sifReset();
 
 extern void SIF0Dma();
 extern void SIF1Dma();

@@ -284,7 +284,6 @@ static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
 extern __aligned16 tIPU_cmd ipu_cmd;
 extern int coded_block_pattern;
 
-extern int ipuInit();
 extern void ipuReset();
 
 extern u32 ipuRead32(u32 mem);

@@ -31,7 +31,7 @@
  * Since this is still beta things may change.
 
  * OSflags:
-	__LINUX__ (linux OS)
+	__linux__ (linux OS)
 	_WIN32 (win32 OS)
 
  * common return values (for ie. GSinit):
@@ -52,10 +52,6 @@
 
 
 /* common defines */
-#ifndef C_ASSERT
-#define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
-#endif
-
 #if defined(GSdefs)   || defined(PADdefs)  || defined(SIOdefs)  || \
     defined(SPU2defs) || defined(CDVDdefs) || defined(DEV9defs) || \
     defined(USBdefs)  || defined(FWdefs)

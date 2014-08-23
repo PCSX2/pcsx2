@@ -274,7 +274,8 @@ __forceinline bool LoadShadersFromDat()
 		fprintf(stderr, "Failed to read ps2hw.dat. Corrupted file?\n");
 
 	s_lpShaderResources[s] = 0;
-	
+	fclose(fres);
+
 	return true;
 }
 

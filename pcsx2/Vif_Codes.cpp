@@ -503,7 +503,7 @@ vifOp(vifCode_Offset) {
 template<int idx> static __fi int _vifCode_STColRow(const u32* data, u32* pmem2) {
 	vifStruct& vifX = GetVifX;
 
-	int ret = min(4 - vifX.tag.addr, vifX.vifpacketsize);
+	int ret = std::min(4 - vifX.tag.addr, vifX.vifpacketsize);
 	pxAssume(vifX.tag.addr < 4);
 	pxAssume(ret > 0);
 

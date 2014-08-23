@@ -53,7 +53,7 @@ void vif1TransferToMemory()
 	// stuff from the GS.  The *only* way to handle this case safely is to flush the GS
 	// completely and execute the transfer there-after.
 	//Console.Warning("Real QWC %x", vif1ch.qwc);
-	const u32   size = min(vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
+	const u32   size = std::min(vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
 	const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
 	
 	if (size) {
@@ -88,7 +88,7 @@ void vif1TransferToMemory()
 	vif1ch.madr += vif1ch.qwc * 16; // mgs3 scene changes
 	if (vif1.GSLastDownloadSize >= vif1ch.qwc) {
 		vif1.GSLastDownloadSize -= vif1ch.qwc;
-		vif1Regs.stat.FQC = min((u32)16, vif1.GSLastDownloadSize);
+		vif1Regs.stat.FQC = std::min((u32)16, vif1.GSLastDownloadSize);
 	}
 	else {
 		vif1Regs.stat.FQC = 0;
@@ -281,7 +281,7 @@ __fi void vif1Interrupt()
 		//Console.WriteLn("VIFMFIFO\n");
 		// Test changed because the Final Fantasy 12 opening somehow has the tag in *Undefined* mode, which is not in the documentation that I saw.
 		if (vif1ch.chcr.MOD == NORMAL_MODE) Console.WriteLn("MFIFO mode is normal (which isn't normal here)! %x", vif1ch.chcr._u32);
-		vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
+		vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 		vifMFIFOInterrupt();
 		return;
 	}
@@ -299,7 +299,7 @@ __fi void vif1Interrupt()
 			return;
 		}
 		vif1Regs.stat.VGW = 0; //Path 3 isn't busy so we don't need to wait for it.
-		vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
+		vif1Regs.stat.FQC = std::min(vif1ch.qwc, (u16)16);
 		//Simulated GS transfer time done, clear the flags
 	}
 	
@@ -330,7 +330,7 @@ __fi void vif1Interrupt()
 
 			//NFSHPS stalls when the whole packet has gone across (it stalls in the last 32bit cmd)
 			//In this case VIF will end
-			vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
+			vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 			if((vif1ch.qwc > 0 || !vif1.done) && !CHECK_VIF1STALLHACK)	
 			{
 				VIF_LOG("VIF1 Stalled");
@@ -356,7 +356,7 @@ __fi void vif1Interrupt()
             _VIF1chain();
             // VIF_NORMAL_FROM_MEM_MODE is a very slow operation.
             // Timesplitters 2 depends on this beeing a bit higher than 128.
-            if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
+            if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = std::min(vif1ch.qwc, (u16)16);
 		
 			if(!(vif1Regs.stat.VGW && gifUnit.gifPath[GIF_PATH_3].state != GIF_PATH_IDLE)) //If we're waiting on GIF, stop looping, (can be over 1000 loops!)
 				CPU_INT(DMAC_VIF1, g_vif1Cycles);
@@ -373,7 +373,7 @@ __fi void vif1Interrupt()
             }
 
             if ((vif1.inprogress & 0x1) == 0) vif1SetupTransfer();
-            if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
+            if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = std::min(vif1ch.qwc, (u16)16);
 
 			if(!(vif1Regs.stat.VGW && gifUnit.gifPath[GIF_PATH_3].state != GIF_PATH_IDLE)) //If we're waiting on GIF, stop looping, (can be over 1000 loops!)
 	            CPU_INT(DMAC_VIF1, g_vif1Cycles);
@@ -397,7 +397,7 @@ __fi void vif1Interrupt()
 		gifRegs.stat.OPH = false;
 	}
 
-	if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min(vif1ch.qwc, (u16)16);
+	if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = std::min(vif1ch.qwc, (u16)16);
 
 	vif1ch.chcr.STR = false;
 	vif1.vifstalled.enabled = false;
@@ -467,7 +467,7 @@ void dmaVIF1()
 		vif1.inprogress &= ~0x1;
 	}
 
-	if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = min((u16)0x10, vif1ch.qwc);
+	if (vif1ch.chcr.DIR) vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 
 	// Chain Mode
 	CPU_INT(DMAC_VIF1, 4);

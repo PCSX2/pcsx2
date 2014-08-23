@@ -22,8 +22,6 @@
 
 #include "iR5900.h"
 
-using std::min;
-
 // A three-way toggle used to determine if the GIF is stalling (transferring) or done (finished).
 // Should be a gifstate_t rather then int, but I don't feel like possibly interfering with savestates right now.
 static int  gifstate = GIF_STATE_READY;
@@ -34,8 +32,7 @@ static u32 gifqwc = 0;
 static bool gifmfifoirq = false;
 
 static __fi void clearFIFOstuff(bool full) {
-	if (full) CSRreg.FIFO = CSR_FIFO_FULL;
-	else      CSRreg.FIFO = CSR_FIFO_EMPTY;
+	CSRreg.FIFO = full ? CSR_FIFO_FULL : CSR_FIFO_EMPTY;
 }
 
 void incGifChAddr(u32 qwc) {
@@ -157,7 +154,8 @@ static __fi void GIFchain() {
 	// qwc check now done outside this function
 	// Voodoocycles
 	// >> 2 so Drakan and Tekken 5 don't mess up in some PATH3 transfer. Cycles to interrupt were getting huge..
-	/*if (gifch.qwc)*/ gscycles+= ( _GIFchain() * BIAS); /* guessing */
+	/*if (gifch.qwc)*/
+	gscycles+= _GIFchain() * BIAS; /* guessing */
 }
 
 static __fi bool checkTieBit(tDMA_TAG* &ptag)
@@ -187,7 +185,7 @@ static __fi tDMA_TAG* ReadTag2()
 {
 	tDMA_TAG* ptag = dmaGetAddr(gifch.tadr, false);  //Set memory pointer to TADR
 
-    gifch.unsafeTransfer(ptag);
+	gifch.unsafeTransfer(ptag);
 	gifch.madr = ptag[1]._u32;
 
 	gspath3done = hwDmacSrcChainWithStack(gifch, ptag->ID);
@@ -234,7 +232,7 @@ void GIFdma()
         if (ptag == NULL) return;
 		//DevCon.Warning("GIF Reading Tag MSK = %x", vif1Regs.mskpath3);
 		GIF_LOG("gifdmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx tadr=%lx", ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr);
-		gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+		gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 		if (dmacRegs.ctrl.STD == STD_GIF)
 		{
 			// there are still bugs, need to also check if gifch.madr +16*qwc >= stadr, if not, stall
@@ -261,7 +259,7 @@ void GIFdma()
 	}
 
 	clearFIFOstuff(true);
-	gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+	gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 
 #if USE_OLD_GIF == 1 // ...
 	if (vif1Regs.mskpath3 || gifRegs.mode.M3R) {	
@@ -278,7 +276,7 @@ void GIFdma()
 	// Transfer Dn_QWC from Dn_MADR to GIF
 	if (gifch.qwc > 0) // Normal Mode
 	{
-		gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+		gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 
 		if (CheckPaths(DMAC_GIF) == false) return;
 
@@ -289,7 +287,7 @@ void GIFdma()
 
 	prevcycles = 0;
 	CPU_INT(DMAC_GIF, gscycles);
-	gifRegs.stat.FQC = min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // OPH=1 | APATH=3]
+	gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // OPH=1 | APATH=3]
 }
 
 void dmaGIF()
@@ -340,7 +338,7 @@ static u16 QWCinGIFMFIFO(u32 DrainADDR)
 
 static __fi bool mfifoGIFrbTransfer()
 {
-	u16 mfifoqwc = min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
+	u16 mfifoqwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
 	if (mfifoqwc == 0) return true; //Lets skip all this, we don't have the data
 
 	if(!gifUnit.CanDoPath3()) {

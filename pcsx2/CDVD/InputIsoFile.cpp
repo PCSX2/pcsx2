@@ -81,7 +81,7 @@ void InputIsoFile::BeginRead2(uint lsn)
 	{
 		//m_read_lsn   = lsn - (lsn % ReadUnit);
 
-		m_read_count = min(ReadUnit, m_blocks - m_read_lsn);
+		m_read_count = std::min(ReadUnit, m_blocks - m_read_lsn);
 	}
 
 	m_reader->BeginRead(m_readbuffer, m_read_lsn, m_read_count);
@@ -127,7 +127,7 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 
 	int end1 = m_blockofs + m_blocksize;
 	int end2 = _offset + length;
-	int end = min(end1, end2);
+	int end = std::min(end1, end2);
 
 	int diff = m_blockofs - _offset;
 	int ndiff = 0;
@@ -201,7 +201,10 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 	Close();
 	m_filename = srcfile;
 	
-	m_reader = new FlatFileReader();
+	// Allow write sharing of the iso based on the ini settings.
+	// Mostly useful for romhacking, where the disc is frequently
+	// changed and the emulator would block modifications
+	m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
 	m_reader->Open(m_filename);
 
 	bool isBlockdump, isCompressed = false;

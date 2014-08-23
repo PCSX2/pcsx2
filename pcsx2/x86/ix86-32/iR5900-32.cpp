@@ -577,7 +577,7 @@ static void recThrowHardwareDeficiency( const wxChar* extFail )
 {
 	throw Exception::HardwareDeficiency()
 		.SetDiagMsg(pxsFmt( L"R5900-32 recompiler init failed: %s is not available.", extFail))
-		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with MMX, SSE, and SSE2 extensions."), extFail ));
+		.SetUserMsg(pxsFmt(_("%s Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 extensions."), extFail ));
 }
 
 static void recReserveCache()
@@ -600,12 +600,6 @@ static void recReserveCache()
 static void recReserve()
 {
 	// Hardware Requirements Check...
-
-	if ( !x86caps.hasMultimediaExtensions )
-		recThrowHardwareDeficiency( L"MMX" );
-
-	if ( !x86caps.hasStreamingSIMDExtensions )
-		recThrowHardwareDeficiency( L"SSE" );
 
 	if ( !x86caps.hasStreamingSIMD2Extensions )
 		recThrowHardwareDeficiency( L"SSE2" );
@@ -759,7 +753,7 @@ static void recResetEE()
 	recResetRaw();
 }
 
-void recStep( void )
+void recStep()
 {
 }
 
@@ -842,7 +836,7 @@ static void recExecute()
 }
 
 ////////////////////////////////////////////////////
-void R5900::Dynarec::OpcodeImpl::recSYSCALL( void )
+void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::SYSCALL);
 
@@ -855,7 +849,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL( void )
 }
 
 ////////////////////////////////////////////////////
-void R5900::Dynarec::OpcodeImpl::recBREAK( void )
+void R5900::Dynarec::OpcodeImpl::recBREAK()
 {
 	recCall(R5900::Interpreter::OpcodeImpl::BREAK);
 
@@ -907,12 +901,12 @@ void recClear(u32 addr, u32 size)
 		}
 
 		if (blockend <= addr) {
-			lowerextent = max(lowerextent, blockend);
+			lowerextent = std::max(lowerextent, blockend);
 			break;
 		}
 
-		lowerextent = min(lowerextent, blockstart);
-		upperextent = max(upperextent, blockend);
+		lowerextent = std::min(lowerextent, blockstart);
+		upperextent = std::max(upperextent, blockend);
 		// This might end up inside a block that doesn't contain the clearing range,
 		// so set it to recompile now.  This will become JITCompile if we clear it.
 		pblock->SetFnptr((uptr)JITCompileInBlock);
@@ -924,7 +918,7 @@ void recClear(u32 addr, u32 size)
 		recBlocks.Remove((blockidx + 1), toRemoveLast);
 	}
 
-	upperextent = min(upperextent, ceiling);
+	upperextent = std::min(upperextent, ceiling);
 
 	for (int i = 0; pexblock = recBlocks[i]; i++) {
 		if (s_pCurBlock == PC_GETBLOCK(pexblock->startpc))
@@ -1365,45 +1359,9 @@ void recMemcheck(u32 op, u32 bits, bool store)
 inline bool isBranchOrJump(u32 addr)
 {
 	u32 op = memRead32(addr);
+	const OPCODE& opcode = GetInstruction(op);
 
-	switch (op >> 26)
-	{
-	case 0x02:	// j
-	case 0x03:	// jal
-	case 0x04:	// beq
-	case 0x05:	// bne
-	case 0x06:	// blez
-	case 0x07:	// bgtz
-	case 0x14:	// beql
-	case 0x15:	// bnel
-	case 0x16:	// blezl
-	case 0x17:	// bgtzl
-		return true;
-	case 0x00:	// special
-		switch (op & 0x3F)
-		{
-		case 0x08:	// jr
-		case 0x09:	// jalr
-			return true;
-		}
-		break;
-	case 0x01:	// regimm
-		switch ((op >> 16) & 0x1F)
-		{
-		case 0x00:	// bltz
-		case 0x01:	// bgez
-		case 0x02:	// bltzl
-		case 0x03:	// bgezl
-		case 0x10:	// bltzal
-		case 0x11:	// bgezal
-		case 0x12:	// bltzall
-		case 0x13:	// bgezall
-			return true;
-		}
-		break;
-	}
-
-	return false;
+	return (opcode.flags & IS_BRANCH) != 0;
 }
 
 // The next two functions return 0 if no breakpoint is needed,
@@ -1425,39 +1383,18 @@ int isMemcheckNeeded(u32 pc)
 {
 	if (CBreakPoints::GetMemChecks().size() == 0)
 		return 0;
-
+	
 	u32 addr = pc;
 	if (isBranchOrJump(addr))
 		addr += 4;
 
 	u32 op = memRead32(addr);
+	const OPCODE& opcode = GetInstruction(op);
 
-	switch (op >> 26)
-	{
-	case 0x20:		// lb
-	case 0x21:		// lh
-	case 0x22:		// lwl
-	case 0x23:		// lw
-	case 0x24:		// lbu
-	case 0x25:		// lhu
-	case 0x26:		// lwr
-	case 0x28:		// sb
-	case 0x29:		// sh
-	case 0x2A:		// swl
-	case 0x2B:		// sw
-	case 0x2E:		// swr
-	case 0x37:		// ld
-	case 0x1B:		// ldr
-	case 0x3F:		// sd
-	case 0x3D:		// sdr
-	case 0x1A:		// ldl
-	case 0x2C:		// sdl
-	case 0x1E:		// lq
-	case 0x1F:		// sq
+	if ((opcode.flags & IS_MEMORY) && (opcode.flags & MEMTYPE_MASK) != 0)
 		return addr == pc ? 1 : 2;
-	default:
-		return 0;
-	}
+
+	return 0;
 }
 
 void encodeBreakpoint()
@@ -1476,50 +1413,27 @@ void encodeMemcheck()
 		return;
 
 	u32 op = memRead32(needed == 2 ? pc+4 : pc);
-	switch (cpuRegs.code >> 26)
+	const OPCODE& opcode = GetInstruction(op);
+
+	bool store = (opcode.flags & IS_STORE) != 0;
+	switch (opcode.flags & MEMTYPE_MASK)
 	{
-	case 0x20:		// lb
-	case 0x24:		// lbu
-		recMemcheck(op,8,false);
+	case MEMTYPE_BYTE:
+		recMemcheck(op,8,store);
 		break;
-	case 0x28:		// sb
-		recMemcheck(op,8,true);
+	case MEMTYPE_HALF:
+		recMemcheck(op,16,store);
 		break;
-	case 0x21:		// lh
-	case 0x25:		// lhu
-		recMemcheck(op,16,false);
+	case MEMTYPE_WORD:
+		recMemcheck(op,32,store);
 		break;
-	case 0x22:		// lwl
-	case 0x23:		// lw
-	case 0x26:		// lwr
-		recMemcheck(op,32,false);
+	case MEMTYPE_DWORD:
+		recMemcheck(op,64,store);
 		break;
-	case 0x29:		// sh
-		recMemcheck(op,16,true);
-		break;
-	case 0x2A:		// swl
-	case 0x2B:		// sw
-	case 0x2E:		// swr
-		recMemcheck(op,32,true);
-		break;
-	case 0x37:		// ld
-	case 0x1B:		// ldr
-	case 0x1A:		// ldl
-		recMemcheck(op,64,false);
-		break;
-	case 0x3F:		// sd
-	case 0x3D:		// sdr
-	case 0x2C:		// sdl
-		recMemcheck(op,64,true);
-		break;
-	case 0x1E:		// lq
-		recMemcheck(op,128,false);
-		break;
-	case 0x1F:		// sq
-		recMemcheck(op,128,true);
+	case MEMTYPE_QWORD:
+		recMemcheck(op,128,store);
 		break;
 	}
-
 }
 
 void recompileNextInstruction(int delayslot)
@@ -1684,7 +1598,7 @@ void recompileNextInstruction(int delayslot)
 						DevCon.Warning("Possible old value used in COP2 code");
 						for (u32 i = s_pCurBlockEx->startpc; i < s_nEndBlock; i += 4)
 						{
-							disR5900Fasm(disasm, memRead32(i), i);
+							disR5900Fasm(disasm, memRead32(i), i,false);
 							DevCon.Warning("%s%08X %s", i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
 						}
 						break;

@@ -46,15 +46,15 @@ typedef char* (*TdisR5900F)DisFInterface;
 #define dNameU(i)	{ char op[256]; sprintf(op, "%s.%s%s%s%s", i, _X ? "x" : "", _Y ? "y" : "", _Z ? "z" : "", _W ? "w" : ""); sprintf(ostr, "%s %-7s,", ostr, op); }
 
 
-#define dCP2128f(i)		sprintf(ostr, "%s w=%f z=%f y=%f x=%f (%s),", ostr, VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, disRNameCP2f[i])
-#define dCP232x(i)		sprintf(ostr, "%s x=%f (%s),", ostr, VU0.VF[i].f.x, disRNameCP2f[i])
-#define dCP232y(i)		sprintf(ostr, "%s y=%f (%s),", ostr, VU0.VF[i].f.y, disRNameCP2f[i])
-#define dCP232z(i)		sprintf(ostr, "%s z=%f (%s),", ostr, VU0.VF[i].f.z, disRNameCP2f[i])
-#define dCP232w(i)		sprintf(ostr, "%s w=%f (%s),", ostr, VU0.VF[i].f.w, disRNameCP2f[i])
+#define dCP2128f(i)		sprintf(ostr, "%s w=%f z=%f y=%f x=%f (%s),", ostr, VU0.VF[i].f.w, VU0.VF[i].f.z, VU0.VF[i].f.y, VU0.VF[i].f.x, R5900::COP2_REG_FP[i])
+#define dCP232x(i)		sprintf(ostr, "%s x=%f (%s),", ostr, VU0.VF[i].f.x, R5900::COP2_REG_FP[i])
+#define dCP232y(i)		sprintf(ostr, "%s y=%f (%s),", ostr, VU0.VF[i].f.y, R5900::COP2_REG_FP[i])
+#define dCP232z(i)		sprintf(ostr, "%s z=%f (%s),", ostr, VU0.VF[i].f.z, R5900::COP2_REG_FP[i])
+#define dCP232w(i)		sprintf(ostr, "%s w=%f (%s),", ostr, VU0.VF[i].f.w, R5900::COP2_REG_FP[i])
 #define dCP2ACCf()		sprintf(ostr, "%s w=%f z=%f y=%f x=%f (ACC),", ostr, VU0.ACC.f.w, VU0.ACC.f.z, VU0.ACC.f.y, VU0.ACC.f.x)
-#define dCP232i(i)		sprintf(ostr, "%s %8.8x (%s),", ostr, VU0.VI[i].UL, disRNameCP2i[i])
-#define dCP232iF(i)		sprintf(ostr, "%s %f (%s),", ostr, VU0.VI[i].F, disRNameCP2i[i])
-#define dCP232f(i, j)	sprintf(ostr, "%s Q %s=%f (%s),", ostr, CP2VFnames[j], VU0.VF[i].F[j], disRNameCP2f[i])
+#define dCP232i(i)		sprintf(ostr, "%s %8.8x (%s),", ostr, VU0.VI[i].UL, R5900::COP2_REG_CTL[i])
+#define dCP232iF(i)		sprintf(ostr, "%s %f (%s),", ostr, VU0.VI[i].F, R5900::COP2_REG_CTL[i])
+#define dCP232f(i, j)	sprintf(ostr, "%s Q %s=%f (%s),", ostr, R5900::COP2_VFnames[j], VU0.VF[i].F[j], R5900::COP2_REG_FP[i])
 #define dImm5()			sprintf(ostr, "%s %d,", ostr, (code >> 6) & 0x1f)
 #define dImm11()		sprintf(ostr, "%s %d,", ostr, code & 0x7ff)
 #define dImm15()		sprintf(ostr, "%s %d,", ostr, ( ( code >> 10 ) & 0x7800 ) | ( code & 0x7ff ))

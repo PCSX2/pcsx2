@@ -35,13 +35,13 @@ _mVUt void __mVULog(const char* fmt, ...) {
 	mVU.logFile->Flush();
 }
 
-#define commaIf() { if (bitX[6]) { mVUlog(","); bitX[6] = 0; } }
+#define commaIf() { if (bitX[6]) { mVUlog(","); bitX[6] = false; } }
 
 #include "AppConfig.h"
 
 void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 	bool bitX[7];
-	int	delay = 0;
+	int delay = 0;
 	int bBranch = mVUbranch;
 	int bCode	= mVU.code;
 	int bPC		= iPC;
@@ -67,19 +67,19 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 		if (mVUbranch)	{ delay = 1; mVUbranch = 0; }
 		mVU.code = prog.data[i+1];
 
-		bitX[0] = 0;
-		bitX[1] = 0;
-		bitX[2] = 0;
-		bitX[3] = 0;
-		bitX[4] = 0;
-		bitX[5] = 0;
-		bitX[6] = 0;
+		bitX[0] = false;
+		bitX[1] = false;
+		bitX[2] = false;
+		bitX[3] = false;
+		bitX[4] = false;
+		bitX[5] = false;
+		bitX[6] = false;
 
-		if (mVU.code & _Ibit_) { bitX[0] = 1; bitX[5] = 1; }
-		if (mVU.code & _Ebit_) { bitX[1] = 1; bitX[5] = 1; delay = 2; }
-		if (mVU.code & _Mbit_) { bitX[2] = 1; bitX[5] = 1; }
-		if (mVU.code & _Dbit_) { bitX[3] = 1; bitX[5] = 1; }
-		if (mVU.code & _Tbit_) { bitX[4] = 1; bitX[5] = 1; }
+		if (mVU.code & _Ibit_) { bitX[0] = true; bitX[5] = true; }
+		if (mVU.code & _Ebit_) { bitX[1] = true; bitX[5] = true; delay = 2; }
+		if (mVU.code & _Mbit_) { bitX[2] = true; bitX[5] = true; }
+		if (mVU.code & _Dbit_) { bitX[3] = true; bitX[5] = true; }
+		if (mVU.code & _Tbit_) { bitX[4] = true; bitX[5] = true; }
 
 		if (delay == 2) { mVUlog("<font color=\"#FFFF00\">"); }
 		if (delay == 1) { mVUlog("<font color=\"#999999\">"); }
@@ -91,10 +91,10 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 
 		if (bitX[5]) {
 			mVUlog(" (");
-			if (bitX[0]) { mVUlog("I"); bitX[6] = 1; }
-			if (bitX[1]) { commaIf(); mVUlog("E"); bitX[6] = 1; }
-			if (bitX[2]) { commaIf(); mVUlog("M"); bitX[6] = 1; }
-			if (bitX[3]) { commaIf(); mVUlog("D"); bitX[6] = 1; }
+			if (bitX[0]) { mVUlog("I"); bitX[6] = true; }
+			if (bitX[1]) { commaIf(); mVUlog("E"); bitX[6] = true; }
+			if (bitX[2]) { commaIf(); mVUlog("M"); bitX[6] = true; }
+			if (bitX[3]) { commaIf(); mVUlog("D"); bitX[6] = true; }
 			if (bitX[4]) { commaIf(); mVUlog("T"); }
 			mVUlog(")");
 		}

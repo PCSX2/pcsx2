@@ -39,11 +39,6 @@ void hwInit()
 
 	VifUnpackSSE_Init();
 
-	gsInit();
-	sifInit();
-	sprInit();
-	ipuInit();
-
 	hwInitialized = true;
 }
 
@@ -70,8 +65,7 @@ void hwReset()
 
 	SPU2reset();
 
-	sifInit();
-	sprInit();
+	sifReset();
 
 	gsReset();
 	gifUnit.Reset();
@@ -87,7 +81,7 @@ __fi uint intcInterrupt()
 {
 	if ((psHu32(INTC_STAT)) == 0) {
 		//DevCon.Warning("*PCSX2*: intcInterrupt already cleared");
-        return 0;
+		return 0;
 	}
 	if ((psHu32(INTC_STAT) & psHu32(INTC_MASK)) == 0) 
 	{

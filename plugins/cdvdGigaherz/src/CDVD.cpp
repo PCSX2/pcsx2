@@ -46,7 +46,6 @@ int curTrayStatus;
 int csector;
 int cmode;
 
-#define SFY(x) STRFY(x)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin Interface                                                          //
@@ -55,7 +54,7 @@ char *LibName       = "cdvdGigaherz "
 #ifdef PCSX2_DEBUG
 	" Debug "
 #endif
-	"(" SFY(SVN_REV)
+	"(" TOSTR(SVN_REV)
 #if SVN_MODS
 	"/modded"
 #endif

@@ -28,10 +28,6 @@ static bool spr0lastqwc = false;
 static bool spr1lastqwc = false;
 static u32 mfifotransferred = 0;
 
-void sprInit()
-{
-}
-
 static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 {
 	if (madr >= 0x11000000 && (madr < 0x11010000))
@@ -119,8 +115,7 @@ int  _SPR0chain()
 
 __fi void SPR0chain()
 {
-	int cycles = 0;
-	cycles =  _SPR0chain() * BIAS;
+	int cycles = _SPR0chain() * BIAS;
 	CPU_INT(DMAC_FROM_SPR, cycles);
 }
 

@@ -9,12 +9,12 @@ fi
 if [ $# -gt 0 ] && [ $1 = "all" ]
 then
 
-cd ../../3rdparty/SoundTouch/
+cd ../../3rdparty/soundtouch/
 sh build.sh $@
 cd $curdir
 
 rm libSoundTouch.a
-cp ../../3rdparty/SoundTouch/libSoundTouch.a ./
+cp ../../3rdparty/soundtouch/libSoundTouch.a ./
 
 echo -----------------
 echo Building ZeroSPU2

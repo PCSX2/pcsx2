@@ -36,7 +36,7 @@ void FileStream::seek(s64 offset)
 void FileStream::seek(s64 offset, int ref_position)
 {
 	int ret = _fseeki64(handle, offset, ref_position);
-#ifdef __LINUX__
+#ifdef __linux__
 	if (ret) throw "Seek offset out of bounds.";
 #else
 	if (ret)
@@ -76,7 +76,7 @@ int FileStream::read(byte* b, int len)
 {
 	if (b == NULL)
 	{
-#ifdef __LINUX__
+#ifdef __linux__
 		throw "NULL buffer passed.";
 #else
 		throw new exception("NULL buffer passed.");
@@ -85,7 +85,7 @@ int FileStream::read(byte* b, int len)
 
 	if (len < 0)
 	{
-#ifdef __LINUX__
+#ifdef __linux__
 		throw "off<0 or len<0.";
 #else
 		throw new exception("off<0 or len<0.");

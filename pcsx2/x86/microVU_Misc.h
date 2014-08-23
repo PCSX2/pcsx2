@@ -184,7 +184,7 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 //------------------------------------------------------------------
 // Define mVUquickSearch
 //------------------------------------------------------------------
-#ifndef __LINUX__
+#ifndef __linux__
 extern __pagealigned u8 mVUsearchXMM[__pagesize];
 typedef u32 (__fastcall *mVUCall)(void*, void*);
 #define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0xf)
@@ -287,14 +287,14 @@ typedef u32 (__fastcall *mVUCall)(void*, void*);
 //------------------------------------------------------------------
 
 // Reg Alloc
-static const bool doRegAlloc = 1; // Set to 0 to flush every 32bit Instruction
+static const bool doRegAlloc = true; // Set to false to flush every 32bit Instruction
 // This turns off reg alloc for the most part, but reg alloc will still
 // be done within instructions... Also on doSwapOp() regAlloc is needed between
 // Lower and Upper instructions, so in this case it flushes after the full
 // 64bit instruction (lower and upper)
 
 // No Flag Optimizations
-static const bool noFlagOpts = 0; // Set to 1 to disable all flag setting optimizations
+static const bool noFlagOpts = false; // Set to true to disable all flag setting optimizations
 // Note: The flag optimizations this disables should all be harmless, so
 // this option is mainly just for debugging... it effectively forces mVU
 // to always update Mac and Status Flags (both sticky and non-sticky) whenever
@@ -302,16 +302,16 @@ static const bool noFlagOpts = 0; // Set to 1 to disable all flag setting optimi
 // flag instances between blocks...
 
 // Multiple Flag Instances
-static const bool doSFlagInsts = 1; // Set to 1 to enable multiple status flag instances
-static const bool doMFlagInsts = 1; // Set to 1 to enable multiple mac    flag instances
-static const bool doCFlagInsts = 1; // Set to 1 to enable multiple clip   flag instances
+static const bool doSFlagInsts = true; // Set to true to enable multiple status flag instances
+static const bool doMFlagInsts = true; // Set to true to enable multiple mac    flag instances
+static const bool doCFlagInsts = true; // Set to true to enable multiple clip   flag instances
 // This is the correct behavior of the VU's. Due to the pipeline of the VU's
 // there can be up to 4 different instances of values to keep track of
 // for the 3 different types of flags: Status, Mac, Clip flags.
 // Setting one of these to 0 acts as if there is only 1 instance of the
 // corresponding flag, which may be useful when debugging flag pipeline bugs.
 
-static const int doFullFlagOpt = 0; // Set above 0 to enable full flag optimization
+static const int doFullFlagOpt = false; // Set above to false to enable full flag optimization
 // This attempts to eliminate some flag shuffling at the end of blocks, but
 // can end up creating more recompiled code. The max amount of times this optimization
 // is performed per block can be set by changing the doFullFlagOpt value to be that limit.
@@ -320,27 +320,27 @@ static const int doFullFlagOpt = 0; // Set above 0 to enable full flag optimizat
 // Note: This optimization doesn't really seem to be benefitial and is buggy...
 
 // Branch in Branch Delay Slots
-static const bool doBranchInDelaySlot = 1; // Set to 1 to enable evil-branches
+static const bool doBranchInDelaySlot = true; // Set to true to enable evil-branches
 // This attempts to emulate the correct behavior for branches in branch delay
 // slots. It is evil that games do this, and handling the different possible
 // cases is tricky and bug prone. If this option is disabled then the second
 // branch is treated as a NOP and effectively ignored.
 
 // Constant Propagation
-static const bool doConstProp = 0; // Set to 1 to turn on vi15 const propagation
+static const bool doConstProp = false; // Set to true to turn on vi15 const propagation
 // Enables Constant Propagation for Jumps based on vi15 'link-register'
 // allowing us to know many indirect jump target addresses.
 // Makes GoW a lot slower due to extra recompilation time and extra code-gen!
 
 // Indirect Jump Caching
-static const bool doJumpCaching = 1; // Set to 1 to enable jump caching
+static const bool doJumpCaching = true; // Set to true to enable jump caching
 // Indirect jumps (JR/JALR) will remember the entry points to their previously
 // jumped-to addresses. This allows us to skip the microBlockManager::search()
 // routine that is performed every indirect jump in order to find a block within a
 // program that matches the correct pipeline state.
 
 // Indirect Jumps are part of same cached microProgram
-static const bool doJumpAsSameProgram = 0; // Set to 1 to treat jumps as same program
+static const bool doJumpAsSameProgram = false; // Set to true to treat jumps as same program
 // Enabling this treats indirect jumps (JR/JALR) as part of the same microProgram
 // when determining the valid ranges for the microProgram cache. Disabling this
 // counts indirect jumps as separate cached microPrograms which generally leads
@@ -350,7 +350,7 @@ static const bool doJumpAsSameProgram = 0; // Set to 1 to treat jumps as same pr
 // Note: You MUST disable doJumpCaching if you enable this option.
 
 // Handling of D-Bit in Micro Programs
-static const bool doDBitHandling = 0;
+static const bool doDBitHandling = false;
 // This flag shouldn't be enabled in released versions of games. Any games which
 // need this method of pausing the VU should be using the T-Bit instead, however
 // this could prove useful for VU debugging.

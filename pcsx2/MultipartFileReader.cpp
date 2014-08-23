@@ -167,7 +167,7 @@ void MultipartFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 
 	for(uint i = GetFirstPart(sector); i < m_numparts; i++)
 	{
-		uint num = min(count, m_parts[i].end - sector);
+		uint num = std::min(count, m_parts[i].end - sector);
 
 		m_parts[i].reader->BeginRead(lBuffer, sector - m_parts[i].start, num);
 		m_parts[i].isReading = true;
@@ -188,7 +188,7 @@ int MultipartFileReader::FinishRead(void)
 	{
 		if(m_parts[i].isReading)
 		{
-			ret = min(ret, m_parts[i].reader->FinishRead());
+			ret = std::min(ret, m_parts[i].reader->FinishRead());
 			m_parts[i].isReading = false;
 
 			if(ret < 0)

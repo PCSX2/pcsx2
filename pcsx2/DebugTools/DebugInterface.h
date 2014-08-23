@@ -17,6 +17,9 @@
 #include "MemoryTypes.h"
 #include "ExpressionParser.h"
 
+enum { EECAT_GPR, EECAT_CP0, EECAT_FPR, EECAT_FCR, EECAT_VU0F, EECAT_VU0I, EECAT_COUNT };
+enum { IOPCAT_GPR, IOPCAT_COUNT };
+
 class DebugInterface
 {
 public:
@@ -28,6 +31,7 @@ public:
 	virtual u64 read64(u32 address) = 0;
 	virtual u128 read128(u32 address) = 0;
 	virtual void write8(u32 address, u8 value) = 0;
+	virtual void write32(u32 address, u32 value) = 0;
 
 	// register stuff
 	virtual int getRegisterCategoryCount() = 0;
@@ -44,7 +48,7 @@ public:
 	virtual void setPc(u32 newPc) = 0;
 	virtual void setRegister(int cat, int num, u128 newValue) = 0;
 	
-	virtual std::string disasm(u32 address) = 0;
+	virtual std::string disasm(u32 address, bool simplify) = 0;
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
 	
@@ -65,6 +69,7 @@ public:
 	virtual u64 read64(u32 address);
 	virtual u128 read128(u32 address);
 	virtual void write8(u32 address, u8 value);
+	virtual void write32(u32 address, u32 value);
 
 	// register stuff
 	virtual int getRegisterCategoryCount();
@@ -81,7 +86,7 @@ public:
 	virtual void setPc(u32 newPc);
 	virtual void setRegister(int cat, int num, u128 newValue);
 
-	virtual std::string disasm(u32 address);
+	virtual std::string disasm(u32 address, bool simplify);
 	virtual bool isValidAddress(u32 address);
 	virtual u32 getCycles();
 };
@@ -96,6 +101,7 @@ public:
 	virtual u64 read64(u32 address);
 	virtual u128 read128(u32 address);
 	virtual void write8(u32 address, u8 value);
+	virtual void write32(u32 address, u32 value);
 
 	// register stuff
 	virtual int getRegisterCategoryCount();
@@ -112,7 +118,7 @@ public:
 	virtual void setPc(u32 newPc);
 	virtual void setRegister(int cat, int num, u128 newValue);
 
-	virtual std::string disasm(u32 address);
+	virtual std::string disasm(u32 address, bool simplify);
 	virtual bool isValidAddress(u32 address);
 	virtual u32 getCycles();
 };
