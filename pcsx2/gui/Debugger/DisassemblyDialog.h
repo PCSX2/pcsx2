@@ -60,6 +60,7 @@ private:
 	BreakpointList* breakpointList;
 	wxStaticText* cyclesText;
 	ThreadList* threadList;
+	StackFramesList* stackFrames;
 	u32 lastCycles;
 };
 

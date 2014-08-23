@@ -612,3 +612,108 @@ void ThreadList::onDoubleClick(int itemIndex, const wxPoint& point)
 		break;
 	}
 }
+
+EEThread ThreadList::getRunningThread()
+{
+	for (size_t i = 0; i < threads.size(); i++)
+	{
+		if (threads[i].data.status == THS_RUN)
+			return threads[i];
+	}
+
+	EEThread thread;
+	memset(&thread,0,sizeof(thread));
+	thread.tid = -1;
+	return thread;
+}
+
+//
+// StackFramesList
+//
+
+enum { SF_ENTRY, SF_ENTRYNAME, SF_CURPC, SF_CUROPCODE, SF_CURSP, SF_FRAMESIZE, SF_COLUMNCOUNT };
+
+GenericListViewColumn stackFrameolumns[SF_COLUMNCOUNT] = {
+	{ L"Entry",			0.12f },
+	{ L"Name",			0.24f },
+	{ L"PC",			0.12f },
+	{ L"Opcode",		0.28f },
+	{ L"SP",			0.12f },
+	{ L"Frame Size",	0.12f }
+};
+
+StackFramesList::StackFramesList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly)
+	: GenericListView(parent,stackFrameolumns,SF_COLUMNCOUNT), cpu(_cpu), disassembly(_disassembly)
+{
+#ifdef __linux__
+	// On linux wx failed to resize properly the page. I don't know why so for the moment I just create a static size page
+	// Far from ideal but at least I can use the memory window!
+	this->SetSize(wxSize(1000, 200));
+#endif
+}
+
+void StackFramesList::loadStackFrames(EEThread& currentThread)
+{
+	frames = MipsStackWalk::Walk(cpu,cpu->getPC(),cpu->getRegister(0,31),cpu->getRegister(0,29),
+			currentThread.data.entry_init,currentThread.data.stack);
+	update();
+}
+
+int StackFramesList::getRowCount()
+{
+	return frames.size();
+}
+
+wxString StackFramesList::getColumnText(int item, int col) const
+{
+	if (item < 0 || item >= (int)frames.size())
+		return L"";
+
+	FastFormatUnicode dest;
+	const MipsStackWalk::StackFrame& frame = frames[item];
+
+	switch (col)
+	{
+	case SF_ENTRY:
+		dest.Write("0x%08X",frame.entry);
+		break;
+	case SF_ENTRYNAME:
+		{
+			const std::string sym = symbolMap.GetLabelString(frame.entry);
+			if (!sym.empty()) {
+				dest.Write("%s",sym.c_str());
+			} else {
+				dest.Write("-");
+			}
+		}
+		break;
+	case SF_CURPC:
+		dest.Write("0x%08X",frame.pc);
+		break;
+	case SF_CUROPCODE:
+		{
+			char temp[512];
+			disassembly->getOpcodeText(frame.pc,temp);
+			dest.Write("%s",temp);
+		}
+		break;
+	case SF_CURSP:
+		dest.Write("0x%08X",frame.sp);
+		break;
+	case SF_FRAMESIZE:
+		dest.Write("0x%08X",frame.stackSize);
+		break;
+	default:
+		return L"Invalid";
+	}
+
+	return dest;
+}
+
+void StackFramesList::onDoubleClick(int itemIndex, const wxPoint& point)
+{
+	if (itemIndex < 0 || itemIndex >= (int)frames.size())
+		return;
+	
+	postEvent(debEVT_GOTOINDISASM,frames[itemIndex].pc);
+}

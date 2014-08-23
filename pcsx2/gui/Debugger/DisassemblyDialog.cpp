@@ -19,6 +19,7 @@
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/MipsStackWalk.h"
 #include "BreakpointWindow.h"
 #include "PathDefs.h"
 
@@ -109,10 +110,14 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	bottomTabs->AddPage(breakpointList,L"Breakpoints");
 	
 	threadList = NULL;
+	stackFrames = NULL;
 	if (cpu == &r5900Debug)
 	{
 		threadList = new ThreadList(bottomTabs,cpu);
 		bottomTabs->AddPage(threadList,L"Threads");
+
+		stackFrames = new StackFramesList(bottomTabs,cpu,disassembly);
+		bottomTabs->AddPage(stackFrames,L"Stack frames");
 	}
 
 	mainSizer->Add(bottomTabs,1,wxEXPAND);
@@ -171,8 +176,13 @@ void CpuTabPage::update()
 	breakpointList->reloadBreakpoints();
 
 	if (threadList != NULL)
+	{
 		threadList->reloadThreads();
 
+		EEThread thread = threadList->getRunningThread();
+		if (thread.tid != -1)
+			stackFrames->loadStackFrames(thread);
+	}
 	Refresh();
 }
 
