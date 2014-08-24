@@ -21,28 +21,28 @@ set(OptimizationFlags
     )
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(onepadFinalFlags 
-    	${CommonFlags} -g
+    set(onepadFinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(onepadFinalFlags 
+	set(onepadFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(onepadFinalFlags 
+	set(onepadFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 if (SDL2_API)
-    set(onepadFinalFlags 
-    	${onepadFinalFlags}
-    	-DONEPAD_SDL2
-    )
+	set(onepadFinalFlags
+		${onepadFinalFlags}
+		-DONEPAD_SDL2
+	)
 endif()
 
 # onepad sources
@@ -81,22 +81,22 @@ set(onepadWindowsHeaders
 	)
 
 if (SDL2_API)
-	set(onepadFinalLibs 
+	set(onepadFinalLibs
 		${SDL2_LIBRARY}
 	)
 else()
-	set(onepadFinalLibs 
+	set(onepadFinalLibs
 		${SDL_LIBRARY}
 	)
 endif()
 
-set(onepadFinalLibs 
+set(onepadFinalLibs
 	${onepadFinalLibs}
 	${GTK2_LIBRARIES}
 	${X11_LIBRARIES}
 )
 
-set(onepadFinalSources 
+set(onepadFinalSources
 	${onepadSources}
 	${onepadHeaders}
 	${onepadLinuxSources}

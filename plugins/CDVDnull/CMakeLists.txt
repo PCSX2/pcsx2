@@ -22,15 +22,15 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(CDVDnullFinalFlags 
-    	${CommonFlags} -g
+    set(CDVDnullFinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(CDVDnullFinalFlags 
+	set(CDVDnullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -38,7 +38,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(CDVDnullFinalFlags 
+	set(CDVDnullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -60,12 +60,12 @@ set(CDVDnullWindowsSources
 set(CDVDnullWindowsHeaders
 	)
 
-set(CDVDnullFinalSources 
+set(CDVDnullFinalSources
 	${CDVDnullSources}
 	${CDVDnullHeaders}
 )
 
-set(CDVDnullFinalLibs 
+set(CDVDnullFinalLibs
 	${GTK2_LIBRARIES}
 )
 

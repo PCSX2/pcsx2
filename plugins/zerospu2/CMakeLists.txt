@@ -21,15 +21,15 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(zerospu2FinalFlags 
-    	${CommonFlags} -g
+    set(zerospu2FinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(zerospu2FinalFlags 
+	set(zerospu2FinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -37,7 +37,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(zerospu2FinalFlags 
+	set(zerospu2FinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -90,14 +90,14 @@ set(zerospu2WindowsHeaders
 # add additional include directories
 include_directories(Linux Targets)
 
-set(zerospu2FinalSources 
+set(zerospu2FinalSources
 	${zerospu2Sources}
 	${zerospu2Headers}
 	${zerospu2LinuxSources}
 	${zerospu2LinuxHeaders}
 )
 
-set(zerospu2FinalLibs 
+set(zerospu2FinalLibs
 	${ALSA_LIBRARIES}
 	# PortAudio would go here.
 	${SOUNDTOUCH_LIBRARIES}

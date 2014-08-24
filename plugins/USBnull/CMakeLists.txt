@@ -22,15 +22,15 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(USBnullFinalFlags 
-    	${CommonFlags} -g
+	set(USBnullFinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(USBnullFinalFlags 
+	set(USBnullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -38,7 +38,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(USBnullFinalFlags 
+	set(USBnullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -72,14 +72,14 @@ set(USBnullWindowsSources
 set(USBnullWindowsHeaders
 	Windows/resource.h)
 
-set(USBnullFinalSources 
+set(USBnullFinalSources
 	${USBnullSources}
 	${USBnullHeaders}
 	${USBnullLinuxSources}
 	${USBnullLinuxHeaders}
 )
 
-set(USBnullFinalLibs 
+set(USBnullFinalLibs
 	${GTK2_LIBRARIES}
 )
 

@@ -22,15 +22,15 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(SPU2nullFinalFlags 
-    	${CommonFlags} -g
+    set(SPU2nullFinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(SPU2nullFinalFlags 
+	set(SPU2nullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -38,7 +38,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(SPU2nullFinalFlags 
+	set(SPU2nullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -70,14 +70,14 @@ set(SPU2nullWindowsSources
 set(SPU2nullWindowsHeaders
 	Windows/resource.h)
 
-set(SPU2nullFinalSources 
+set(SPU2nullFinalSources
 	${SPU2nullSources}
 	${SPU2nullHeaders}
 	${SPU2nullLinuxSources}
 	${SPU2nullLinuxHeaders}
 )
 
-set(SPU2nullFinalLibs 
+set(SPU2nullFinalLibs
 	${GTK2_LIBRARIES}
 )
 

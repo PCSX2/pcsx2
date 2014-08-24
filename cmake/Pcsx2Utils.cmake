@@ -136,4 +136,3 @@ macro(add_pcsx2_executable exe srcs libs flags)
         install(TARGETS ${exe} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
     endif(PACKAGE_MODE)
 endmacro(add_pcsx2_executable)
-

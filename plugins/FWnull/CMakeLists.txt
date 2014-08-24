@@ -21,15 +21,15 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(FWnullFinalFlags 
-    	${CommonFlags} -g
+    set(FWnullFinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(FWnullFinalFlags 
+	set(FWnullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -37,7 +37,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(FWnullFinalFlags 
+	set(FWnullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -71,7 +71,7 @@ set(FWnullWindowsSources
 set(FWnullWindowsHeaders
 	Windows/resource.h)
 
-set(FWnullFinalSources 
+set(FWnullFinalSources
 	${FWnullSources}
 	${FWnullHeaders}
 	${FWnullLinuxSources}

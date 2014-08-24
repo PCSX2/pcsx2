@@ -22,7 +22,7 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    set(CDVDisoFinalFlags 
+    set(CDVDisoFinalFlags
         ${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -30,7 +30,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-	set(CDVDisoFinalFlags 
+	set(CDVDisoFinalFlags
         ${CommonFlags} ${OptimizationFlags}
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -38,7 +38,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-	set(CDVDisoFinalFlags 
+	set(CDVDisoFinalFlags
         ${CommonFlags} ${OptimizationFlags}
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -82,4 +82,3 @@ set(CDVDisoFinalLibs
 include_directories(Linux)
 
 add_pcsx2_plugin(${Output} "${CDVDisoFinalSources}" "${CDVDisoFinalLibs}" "${CDVDisoFinalFlags}")
-

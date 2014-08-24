@@ -6,7 +6,7 @@ set(bin2cppName bin2cpp)
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-	set(bin2cppFinalFlags 
+	set(bin2cppFinalFlags
 		-O2 -s -Wall -fexceptions
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -14,7 +14,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(bin2cppFinalFlags 
+	set(bin2cppFinalFlags
 		-O2 -s -Wall -fexceptions
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -22,7 +22,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(bin2cppFinalFlags 
+	set(bin2cppFinalFlags
 		-O2 -s -Wall -fexceptions
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -35,8 +35,8 @@ set(bin2cppHeaders
 	)
 
 # add executable
-set(bin2cppFinalSources 
-	${bin2cppSources} 
+set(bin2cppFinalSources
+	${bin2cppSources}
 	${bin2cppHeaders}
 )
 

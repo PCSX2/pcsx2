@@ -22,15 +22,15 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(dev9nullFinalFlags 
-    	${CommonFlags} -g
+    set(dev9nullFinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(dev9nullFinalFlags 
+	set(dev9nullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -38,7 +38,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(dev9nullFinalFlags 
+	set(dev9nullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -76,7 +76,7 @@ set(dev9nullFinalSources
 	${dev9nullLinuxHeaders}
 )
 
-set(dev9nullFinalLibs 
+set(dev9nullFinalLibs
 	${GTK2_LIBRARIES}
 )
 

@@ -17,7 +17,7 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    set(CDVDlinuzFinalFlags 
+    set(CDVDlinuzFinalFlags
         ${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -25,7 +25,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-	set(CDVDlinuzFinalFlags 
+	set(CDVDlinuzFinalFlags
         ${CommonFlags} ${OptimizationFlags}
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -33,7 +33,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-	set(CDVDlinuzFinalFlags 
+	set(CDVDlinuzFinalFlags
         ${CommonFlags} ${OptimizationFlags}
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -82,14 +82,14 @@ set(CDVDlinuzLinuxHeaders
     Linux/logfile.h
     Linux/mainbox.h)
 
-set(CDVDlinuzFinalSources 
+set(CDVDlinuzFinalSources
     ${CDVDlinuzSources}
     ${CDVDlinuzHeaders}
     ${CDVDlinuzLinuxSources}
     ${CDVDlinuzLinuxHeaders}
 )
 
-set(CDVDlinuzFinalLibs 
+set(CDVDlinuzFinalLibs
 )
 
 # add additional include directories

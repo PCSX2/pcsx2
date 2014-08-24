@@ -28,40 +28,40 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG AND _M_X86_32)
-	set(GSdxFinalFlags 
+	set(GSdxFinalFlags
         ${GSdxFinalFlags} ${CommonFlags} -mpreferred-stack-boundary=2
     )
 endif()
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(GSdxFinalFlags 
+    set(GSdxFinalFlags
         ${GSdxFinalFlags} ${CommonFlags} -D_DEBUG -g -Wall
     )
 endif()
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    set(GSdxFinalFlags 
+    set(GSdxFinalFlags
         ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -D_DEVEL -g
     )
 endif()
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GSdxFinalFlags 
+    set(GSdxFinalFlags
         ${GSdxFinalFlags} ${CommonFlags} ${OptimizationFlags} -W
     )
 endif()
 
 if(XDG_STD)
-    set(GSdxFinalFlags 
+    set(GSdxFinalFlags
         ${GSdxFinalFlags} -DXDG_STD
     )
 endif()
 
 if(GLES_API AND GLESV2_FOUND)
-    set(GSdxFinalFlags 
+    set(GSdxFinalFlags
         ${GSdxFinalFlags} -DENABLE_GLES
     )
 endif()
@@ -202,29 +202,29 @@ set(GSdxHeaders
     xbyak/xbyak_util.h
     )
 
-set(GSdxFinalSources 
-    ${GSdxSources} 
+set(GSdxFinalSources
+    ${GSdxSources}
     ${GSdxHeaders}
 )
 
-set(GSdxFinalLibs 
+set(GSdxFinalLibs
     ${X11_LIBRARIES}
 )
 
 if(GLES_API AND GLESV2_FOUND)
-    set(GSdxFinalLibs 
-        ${GSdxFinalLibs} 
+    set(GSdxFinalLibs
+        ${GSdxFinalLibs}
         ${GLESV2_LIBRARIES}
     )
 else()
-    set(GSdxFinalLibs 
-        ${GSdxFinalLibs} 
+    set(GSdxFinalLibs
+        ${GSdxFinalLibs}
         ${OPENGL_LIBRARIES}
     )
 endif()
 
-set(GSdxFinalLibs 
-    ${GSdxFinalLibs} 
+set(GSdxFinalLibs
+    ${GSdxFinalLibs}
     ${EGL_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
@@ -240,7 +240,7 @@ add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinal
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
 	set(Replay pcsx2_GSReplayLoader)
-    set(GSdxReplayLoaderFinalSources 
+    set(GSdxReplayLoaderFinalSources
         ${GSdxFinalSources}
         linux_replay.cpp
     )

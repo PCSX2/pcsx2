@@ -63,7 +63,7 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
-	set(pcsx2FinalFlags 
+	set(pcsx2FinalFlags
 		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
 	)
 endif(NOT USE_CLANG) 
@@ -72,8 +72,8 @@ endif(NOT USE_CLANG)
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(Output pcsx2-dbg)
 
-	set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
+	set(pcsx2FinalFlags
+		${pcsx2FinalFlags}
 		${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -DWX_PRECOMP
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -82,8 +82,8 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	set(Output pcsx2-dev)
 
-	set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
+	set(pcsx2FinalFlags
+		${pcsx2FinalFlags}
 		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD -DWX_PRECOMP -DNDEBUG
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -92,15 +92,15 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	set(Output pcsx2)
 
-	set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
+	set(pcsx2FinalFlags
+		${pcsx2FinalFlags}
 		${CommonFlags} ${OptimizationFlags} -DWX_PRECOMP -DNDEBUG
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 if(XDG_STD)
-    set(pcsx2FinalFlags 
-		${pcsx2FinalFlags} 
+    set(pcsx2FinalFlags
+		${pcsx2FinalFlags}
 		-DXDG_STD
 	)
 endif(XDG_STD)
@@ -671,13 +671,13 @@ if(MacOSX)
 		)
 endif(MacOSX)	
 
-set(pcsx2FinalSources 
+set(pcsx2FinalSources
 	${Common}
 	${Platform}
 )
 
-set(pcsx2FinalLibs 
-	Utilities 
+set(pcsx2FinalLibs
+	Utilities
 	x86emitter
 	${wxWidgets_LIBRARIES}
 	${GTK2_LIBRARIES}

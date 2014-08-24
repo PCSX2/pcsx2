@@ -26,7 +26,7 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    set(zerogsshadersFinalFlags 
+    set(zerogsshadersFinalFlags
         ${CommonFlags} -g -Wall -D_DEBUG
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -34,7 +34,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-    set(zerogsshadersFinalFlags 
+    set(zerogsshadersFinalFlags
         ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -42,17 +42,17 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-    set(zerogsshadersFinalFlags 
+    set(zerogsshadersFinalFlags
         ${CommonFlags} ${OptimizationFlags} -W
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
-set(zerogsshadersFinalSources 
-    zerogsshaders.cpp 
+set(zerogsshadersFinalSources
+    zerogsshaders.cpp
     zpipe.cpp
 )
 
-set(zerogsshadersFinalLibs 
+set(zerogsshadersFinalLibs
     ${ZLIB_LIBRARIES}
     ${CG_LIBRARIES}
     ${OPENGL_LIBRARIES}

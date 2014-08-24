@@ -57,17 +57,16 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
-	set(x86emitterFinalFlags 
+	set(x86emitterFinalFlags
 		${x86emitterFinalFlags}
 		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
 	)
-endif(NOT USE_CLANG) 
+endif(NOT USE_CLANG)
 
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	
 	# add defines
-	set(x86emitterFinalFlags 
+	set(x86emitterFinalFlags
 		${x86emitterFinalFlags}
 		${CommonFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD
 	)
@@ -75,10 +74,9 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	
 	# add defines
 	set(x86emitterFinalFlags
-		${x86emitterFinalFlags} 
+		${x86emitterFinalFlags}
 		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -87,7 +85,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	
 	# add defines
-	set(x86emitterFinalFlags 
+	set(x86emitterFinalFlags
 		${x86emitterFinalFlags}
 		${CommonFlags} ${OptimizationFlags}
 	)
@@ -139,12 +137,12 @@ set(x86emitterHeaders
 	../../include/x86emitter/x86types.h
 	PrecompiledHeader.h)
 
-set(x86emitterFinalSources 
-	${x86emitterSources} 
+set(x86emitterFinalSources
+	${x86emitterSources}
 	${x86emitterHeaders}
 )
 
-set(x86emitterFinalLibs 
+set(x86emitterFinalLibs
 	${wxWidgets_LIBRARIES}
 )
 

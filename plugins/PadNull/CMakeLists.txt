@@ -21,15 +21,15 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(PadNullFinalFlags 
-    	${CommonFlags} -g
+    set(PadNullFinalFlags
+		${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(PadNullFinalFlags 
+	set(PadNullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -37,7 +37,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(PadNullFinalFlags 
+	set(PadNullFinalFlags
 		${CommonFlags} ${OptimizationFlags}
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -75,14 +75,14 @@ set(PadNullWindowsHeaders
 # add additional include directories
 include_directories(Linux)
 
-set(PadNullFinalSources 
+set(PadNullFinalSources
 	${PadNullSources}
 	${PadNullHeaders}
 	${PadNullLinuxSources}
 	${PadNullLinuxHeaders}
 )
 
-set(PadNullFinalLibs 
+set(PadNullFinalLibs
 	${GTK2_LIBRARIES}
 	${X11_LIBRARIES}
 )

@@ -22,7 +22,7 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    set(spu2xFinalFlags 
+    set(spu2xFinalFlags
         ${CommonFlags} -g
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -30,7 +30,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	set(spu2xFinalFlags 
+	set(spu2xFinalFlags
         ${CommonFlags} ${OptimizationFlags}
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -38,7 +38,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	set(spu2xFinalFlags 
+	set(spu2xFinalFlags
         ${CommonFlags} ${OptimizationFlags}
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -119,44 +119,44 @@ include_directories(Linux)
 if(SDL_FOUND)
     list(APPEND spu2xSources SndOut_SDL.cpp)
     if (SDL2_API)
-        set(spu2xFinalFlags 
+        set(spu2xFinalFlags
             ${spu2xFinalFlags}
             -DSPU2X_SDL2
         )
     else()
-        set(spu2xFinalFlags 
+        set(spu2xFinalFlags
             ${spu2xFinalFlags}
             -DSPU2X_SDL
         )
     endif()
 endif()
 
-set(spu2xFinalSources 
+set(spu2xFinalSources
     ${spu2xSources}
     ${spu2xHeaders}
     ${spu2xLinuxSources}
     ${spu2xLinuxHeaders}
 )
 
-set(spu2xFinalLibs 
+set(spu2xFinalLibs
     Utilities
     ${ALSA_LIBRARIES}
     portaudio
 )
 
 if (SDL2_API)
-    set(spu2xFinalLibs 
+    set(spu2xFinalLibs
         ${spu2xFinalLibs}
         ${SDL2_LIBRARY}
     )
 else()
-    set(spu2xFinalLibs 
+    set(spu2xFinalLibs
         ${spu2xFinalLibs}
         ${SDL_LIBRARY}
     )
 endif()
 
-set(spu2xFinalLibs 
+set(spu2xFinalLibs
     ${spu2xFinalLibs}
     SoundTouch
     ${GTK2_LIBRARIES}

@@ -28,8 +28,8 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
-	set(zzoglFinalFlags 
-        ${zzoglFinalFlags} 
+	set(zzoglFinalFlags
+        ${zzoglFinalFlags}
         ${CommonFlags} -fno-regmove
     )
 endif(NOT USE_CLANG) 
@@ -37,8 +37,8 @@ endif(NOT USE_CLANG)
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    set(zzoglFinalFlags 
-        ${zzoglFinalFlags} 
+    set(zzoglFinalFlags
+        ${zzoglFinalFlags}
         ${CommonFlags} -g -Wall -D_DEBUG
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -46,8 +46,8 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-    set(zzoglFinalFlags 
-        ${zzoglFinalFlags} 
+    set(zzoglFinalFlags
+        ${zzoglFinalFlags}
         ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -55,22 +55,22 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-    set(zzoglFinalFlags 
-        ${zzoglFinalFlags} 
+    set(zzoglFinalFlags
+        ${zzoglFinalFlags}
         ${CommonFlags} ${OptimizationFlags} -W
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # Select the shader API 
 if(GLSL_API)
-    set(zzoglFinalFlags 
-        ${zzoglFinalFlags} 
+    set(zzoglFinalFlags
+        ${zzoglFinalFlags}
         -DGLSL4_API -DOGL4_LOG
     )
     #-DGLSL_API
 else(GLSL_API)
-    set(zzoglFinalFlags 
-        ${zzoglFinalFlags} 
+    set(zzoglFinalFlags
+        ${zzoglFinalFlags}
         -DNVIDIA_CG_API
     )
 endif(GLSL_API)
@@ -78,8 +78,8 @@ endif(GLSL_API)
 # Select the EGL API
 if(EGL_API AND EGL_FOUND)
     if (EGL_GL_CONTEXT_SUPPORT)
-        set(zzoglFinalFlags 
-            ${zzoglFinalFlags} 
+        set(zzoglFinalFlags
+            ${zzoglFinalFlags}
             -DEGL_API
         )
     else()
@@ -175,7 +175,7 @@ set(zzoglLinuxSources
 set(zzoglLinuxHeaders
     Linux/Linux.h)
 
-set(zzoglFinalSources 
+set(zzoglFinalSources
     ${zzoglSources}
     ${zzoglHeaders}
     ${zzoglShaderSources}
@@ -183,7 +183,7 @@ set(zzoglFinalSources
     ${zzoglLinuxHeaders}
 )
 
-set(zzoglFinalLibs 
+set(zzoglFinalLibs
     Utilities
     ${OPENGL_LIBRARIES}
 )
@@ -197,20 +197,20 @@ if (REBUILD_SHADER)
 endif()
 
 if(EGL_API AND EGL_FOUND AND EGL_GL_CONTEXT_SUPPORT)
-    set(zzoglFinalLibs 
+    set(zzoglFinalLibs
         ${zzoglFinalLibs}
         ${EGL_LIBRARIES}
     )
 endif()
 
 if(NOT GLSL_API)
-    set(zzoglFinalLibs 
+    set(zzoglFinalLibs
         ${zzoglFinalLibs}
         ${CG_LIBRARIES}
     )
 endif(NOT GLSL_API)
 
-set(zzoglFinalLibs 
+set(zzoglFinalLibs
     ${zzoglFinalLibs}
     ${GLEW_LIBRARY}
     ${X11_LIBRARIES}
@@ -236,7 +236,7 @@ endif()
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
 	set(Replay pcsx2_ZZReplayLoader)
-    set(zzoglReplayLoaderFinalSources 
+    set(zzoglReplayLoaderFinalSources
         ${zzoglFinalSources}
         linux_replay.cpp
     )

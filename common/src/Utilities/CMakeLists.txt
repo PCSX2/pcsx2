@@ -57,7 +57,7 @@ set(OptimizationFlags
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
-	set(UtilitiesFinalFlags 
+	set(UtilitiesFinalFlags
 		${UtilitiesFinalFlags}
 		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
 	)
@@ -67,7 +67,7 @@ endif(NOT USE_CLANG)
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	
 	# add defines
-	set(UtilitiesFinalFlags 
+	set(UtilitiesFinalFlags
 		${UtilitiesFinalFlags}
 		${CommonFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD
 	)
@@ -78,7 +78,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	
 	# add defines
 	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags} 
+		${UtilitiesFinalFlags}
 		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -87,7 +87,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	
 	# add defines
-	set(UtilitiesFinalFlags 
+	set(UtilitiesFinalFlags
 		${UtilitiesFinalFlags}
 		${CommonFlags} ${OptimizationFlags}
 	)
@@ -174,15 +174,14 @@ set(UtilitiesHeaders
 # change language of .S-files to c++
 set_source_files_properties(${UtilitiesSSources} PROPERTIES LANGUAGE CXX)
 
-set(UtilitiesFinalSources 
-	${UtilitiesSources} 
-	${UtilitiesHeaders} 
+set(UtilitiesFinalSources
+	${UtilitiesSources}
+	${UtilitiesHeaders}
 	${UtilitiesSSources}
 )
 
-set(UtilitiesFinalLibs 
+set(UtilitiesFinalLibs
 	${wxWidgets_LIBRARIES}
 )
 
 add_pcsx2_lib(${Output} "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags}")
-

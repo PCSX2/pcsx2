@@ -25,7 +25,7 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    set(zzoglFinalFlags 
+    set(zzoglFinalFlags
         ${CommonFlags} -g -Wall -D_DEBUG
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -33,7 +33,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-    set(zzoglFinalFlags 
+    set(zzoglFinalFlags
         ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
@@ -41,7 +41,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-    set(zzoglFinalFlags 
+    set(zzoglFinalFlags
         ${CommonFlags} ${OptimizationFlags} -W
     )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -132,7 +132,7 @@ set(zzoglLinuxSources
 set(zzoglLinuxHeaders
     Linux/Linux.h)
 
-set(zzoglFinalSources 
+set(zzoglFinalSources
     ${zzoglSources}
     ${zzoglHeaders}
     ${zzoglSSources}
@@ -141,7 +141,7 @@ set(zzoglFinalSources
     ${zzoglLinuxHeaders}
 )
 
-set(zzoglFinalLibs 
+set(zzoglFinalLibs
     Utilities
     ${CG_LIBRARIES}
     ${GLEW_LIBRARY}
@@ -166,7 +166,7 @@ set_target_properties(${Output} PROPERTIES COMPILE_DEFINITIONS USE_GSOPEN2)
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
 	set(Replay pcsx2_ZZCGReplayLoader)
-    set(zzoglReplayLoaderFinalSources 
+    set(zzoglReplayLoaderFinalSources
         ${zzoglFinalSources}
         linux_replay.cpp
     )
