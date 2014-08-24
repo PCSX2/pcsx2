@@ -69,7 +69,7 @@ else()
 endif()
 
 # Print a clear message that 64bits is not supported
-if(_ARCH_64)
+if(_ARCH_64 AND NOT 64BIT_BUILD)
     message(WARNING "
     PCSX2 does not support a 64-bits environment and has no plan to support a 64-bits architecture in the future.
     It would need a complete rewrite of the core emulator and a lot of time.
@@ -95,7 +95,7 @@ if(_ARCH_64 AND 64BIT_BUILD)
     # x86_64 requires -fPIC
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-    set(ARCH_FLAG "-m64 -msse -msse2")
+    set(ARCH_FLAG "-m64 -msse2")
     add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
     set(_ARCH_64 1)
     set(_M_X86 1)
@@ -123,7 +123,7 @@ else()
     #     - Only plugins. No package will link to them.
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
-    set(ARCH_FLAG "-m32 -msse -msse2 -march=i686")
+    set(ARCH_FLAG "-m32 -msse2 -march=i686 -mfpmath=sse")
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
@@ -141,8 +141,8 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
 endif(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
 
 # Initially strip was disabled on release build but it is not stackstrace friendly!
-# It only cost several MB so disbable it by default
-option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
+# It only cost several MB so disable it by default
+option(CMAKE_BUILD_STRIP "Strip binaries to make the filesize much smaller (developer option)")
 
 if(NOT DEFINED CMAKE_BUILD_PO)
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
