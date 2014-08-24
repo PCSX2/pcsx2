@@ -54,33 +54,12 @@
 
 /*** Atomic operations ***/
 
-#define _ReadWriteBarrier() __sync_synchronize()
-
-/* BUGBUG: GCC only supports full barriers */
-#define _ReadBarrier _ReadWriteBarrier
-#define _WriteBarrier _ReadWriteBarrier
-
-static __inline__ __attribute__((always_inline)) char _InterlockedCompareExchange8(volatile char * const Destination, const char Exchange, const char Comperand)
-{
-	return __sync_val_compare_and_swap(Destination, Comperand, Exchange);
-}
-
-static __inline__ __attribute__((always_inline)) short _InterlockedCompareExchange16(volatile short * const Destination, const short Exchange, const short Comperand)
-{
-	return __sync_val_compare_and_swap(Destination, Comperand, Exchange);
-}
-
 static __inline__ __attribute__((always_inline)) long _InterlockedCompareExchange(volatile long * const Destination, const long Exchange, const long Comperand)
 {
 	return __sync_val_compare_and_swap(Destination, Comperand, Exchange);
 }
 
 static __inline__ __attribute__((always_inline)) long long _InterlockedCompareExchange64(volatile long long * const Destination, const long long Exchange, const long long Comperand)
-{
-	return __sync_val_compare_and_swap(Destination, Comperand, Exchange);
-}
-
-static __inline__ __attribute__((always_inline)) void * _InterlockedCompareExchangePointer(void * volatile * const Destination, void * const Exchange, void * const Comperand)
 {
 	return __sync_val_compare_and_swap(Destination, Comperand, Exchange);
 }
@@ -92,77 +71,9 @@ static __inline__ __attribute__((always_inline)) long _InterlockedExchange(volat
 	return __sync_lock_test_and_set(Target, Value);
 }
 
-static __inline__ __attribute__((always_inline)) void * _InterlockedExchangePointer(void * volatile * const Target, void * const Value)
-{
-	/* NOTE: ditto */
-	__sync_synchronize();
-	return __sync_lock_test_and_set(Target, Value);
-}
-
 static __inline__ __attribute__((always_inline)) long _InterlockedExchangeAdd(volatile long * const Addend, const long Value)
 {
 	return __sync_fetch_and_add(Addend, Value);
-}
-
-static __inline__ __attribute__((always_inline)) char _InterlockedAnd8(volatile char * const value, const char mask)
-{
-	return __sync_fetch_and_and(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) short _InterlockedAnd16(volatile short * const value, const short mask)
-{
-	return __sync_fetch_and_and(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) long _InterlockedAnd(volatile long * const value, const long mask)
-{
-	return __sync_fetch_and_and(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) char _InterlockedOr8(volatile char * const value, const char mask)
-{
-	return __sync_fetch_and_or(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) short _InterlockedOr16(volatile short * const value, const short mask)
-{
-	return __sync_fetch_and_or(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) long _InterlockedOr(volatile long * const value, const long mask)
-{
-	return __sync_fetch_and_or(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) char _InterlockedXor8(volatile char * const value, const char mask)
-{
-	return __sync_fetch_and_xor(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) short _InterlockedXor16(volatile short * const value, const short mask)
-{
-	return __sync_fetch_and_xor(value, mask);
-}
-
-static __inline__ __attribute__((always_inline)) long _InterlockedXor(volatile long * const value, const long mask)
-{
-	return __sync_fetch_and_xor(value, mask);
-}
-
-
-static __inline__ __attribute__((always_inline)) long _InterlockedAddLargeStatistic(volatile long long * const Addend, const long Value)
-{
-	__asm__
-	(
-		"lock; add %[Value], %[Lo32];"
-		"jae LABEL%=;"
-		"lock; adc $0, %[Hi32];"
-		"LABEL%=:;" :
-		[Lo32] "=m" (*((volatile long *)(Addend) + 0)), [Hi32] "=m" (*((volatile long *)(Addend) + 1)) :
-		[Value] "ir" (Value)
-	);
-
-	return Value;
 }
 
 static __inline__ __attribute__((always_inline)) long _InterlockedDecrement(volatile long * const lpAddend)
@@ -174,21 +85,6 @@ static __inline__ __attribute__((always_inline)) long _InterlockedIncrement(vola
 {
 	return _InterlockedExchangeAdd(lpAddend, 1) + 1;
 }
-
-static __inline__ __attribute__((always_inline)) unsigned char _interlockedbittestandreset(volatile long * a, const long b)
-{
-	unsigned char retval;
-	__asm__("lock; btrl %k[b], %[a]; setb %b[retval]" : [retval] "=r" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
-	return retval;
-}
-
-static __inline__ __attribute__((always_inline)) unsigned char _interlockedbittestandset(volatile long * a, const long b)
-{
-	unsigned char retval;
-	__asm__("lock; btsl %k[b], %[a]; setc %b[retval]" : [retval] "=r" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
-	return retval;
-}
-
 
 /*** System information ***/
 static __inline__ __attribute__((always_inline)) void __cpuid(int CPUInfo[], const int InfoType)

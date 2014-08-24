@@ -796,13 +796,6 @@ __fi s32 Threading::AtomicRead(volatile s32& Target) {
 	return Target; // Properly-aligned 32-bit reads are atomic
 }
 
-__fi bool Threading::AtomicBitTestAndReset( volatile u32& bitset, u8 bit ) {
-	return _interlockedbittestandreset( (volatile long*)& bitset, bit ) != 0;
-}
-__fi bool Threading::AtomicBitTestAndReset( volatile s32& bitset, u8 bit ) {
-	return _interlockedbittestandreset( (volatile long*)& bitset, bit ) != 0;
-}
-
 __fi u32 Threading::AtomicExchange(volatile u32& Target, u32 value ) {
 	return _InterlockedExchange( (volatile long*)&Target, value );
 }
