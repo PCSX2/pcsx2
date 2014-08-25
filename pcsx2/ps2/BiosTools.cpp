@@ -52,7 +52,13 @@ static_assert( sizeof(romdir) == DIRENTRY_SIZE, "romdir struct not packed to 16 
 u32 BiosVersion;
 u32 BiosChecksum;
 wxString BiosDescription;
+const BiosDebugInformation* CurrentBiosInformation;
 
+const BiosDebugInformation biosVersions[] = {
+	// USA     v02.00(14/06/2004)  Console
+	{ 0x00000200, 0xD778DB8D, 0x8001a640 },
+
+};
 
 // --------------------------------------------------------------------------------------
 //  Exception::BiosLoadFailed  (implementations)
@@ -271,6 +277,16 @@ void LoadBIOS()
 		LoadExtraRom( L"rom1", eeMem->ROM1 );
 		LoadExtraRom( L"rom2", eeMem->ROM2 );
 		LoadExtraRom( L"erom", eeMem->EROM );
+
+		CurrentBiosInformation = NULL;
+		for (int i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)
+		{
+			if (biosVersions[i].biosChecksum == BiosChecksum && biosVersions[i].biosVersion == BiosVersion)
+			{
+				CurrentBiosInformation = &biosVersions[i];
+				break;
+			}
+		}
 	}
 	catch (Exception::BadStream& ex)
 	{

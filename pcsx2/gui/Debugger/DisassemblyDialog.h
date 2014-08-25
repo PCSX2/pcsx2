@@ -59,6 +59,7 @@ private:
 	wxNotebook* leftTabs;
 	BreakpointList* breakpointList;
 	wxStaticText* cyclesText;
+	ThreadList* threadList;
 	u32 lastCycles;
 };
 

@@ -850,6 +850,9 @@
     <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DebugTools\BiosDebugData.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1261,6 +1264,9 @@
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\MipsAssembler.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\BiosDebugData.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
   </ItemGroup>

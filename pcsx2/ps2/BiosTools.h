@@ -28,9 +28,17 @@ namespace Exception
 	};
 }
 
+struct BiosDebugInformation
+{
+	u32 biosVersion;
+	u32 biosChecksum;
+	u32 threadListAddr;
+};
+
 extern u32 BiosVersion;		//  Used by CDVD
 extern u32 BiosChecksum;
 extern wxString BiosDescription;
+extern const BiosDebugInformation* CurrentBiosInformation;
 
 extern void LoadBIOS();
 extern bool IsBIOS(const wxString& filename, wxString& description);
