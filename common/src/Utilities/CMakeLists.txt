@@ -116,13 +116,7 @@ set(UtilitiesSources
 	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
-	x86/MemcpyVibes.cpp
-#	x86/MemcpyFast.cpp
 	)
-
-# collect .S files
-set(UtilitiesSSources
-	x86/MemcpyFast.S)
 
 # variable with all headers of this library
 set(UtilitiesHeaders
@@ -158,6 +152,15 @@ set(UtilitiesHeaders
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h
 	PrecompiledHeader.h)
+
+if (_M_X86_32)
+	set(UtilitiesSources ${UtilitiesSources}
+	    x86/MemcpyVibes.cpp)
+
+	# collect .S files
+	set(UtilitiesSSources
+	    x86/MemcpyFast.S)
+endif()
 
 include_directories(.)
 
