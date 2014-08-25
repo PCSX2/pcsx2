@@ -105,10 +105,6 @@ typedef unsigned long long u64;
 typedef unsigned int uint;
 
 #define LONG long
-typedef union _LARGE_INTEGER
-{
-	long long QuadPart;
-} LARGE_INTEGER;
 
 #define __fastcall __attribute__((fastcall))
 #define __unused __attribute__((unused))

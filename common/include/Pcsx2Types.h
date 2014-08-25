@@ -50,17 +50,11 @@ typedef unsigned int uint;
 
 #else // _MSC_VER*/
 
-#ifdef __linux__
-
-#ifdef HAVE_STDINT_H
 #include "stdint.h"
 
-// note: char and int8_t are not interchangable types on gcc, because int8_t apparently
-// maps to 'signed char' which (due to 1's compliment or something) is its own unique
-// type.  This creates cross-compiler inconsistencies, in addition to being entirely
-// unexpected behavior to any sane programmer, so we typecast s8 to char instead. :)
+// Note: char does not have a default sign, unlike other types. As we actually want
+// char and not signed char in pcsx2, we define s8 to char
 
-//typedef int8_t s8;
 typedef char s8;
 typedef int16_t s16;
 typedef int32_t s32;
@@ -74,40 +68,11 @@ typedef uint64_t u64;
 typedef uintptr_t uptr;
 typedef intptr_t sptr;
 
-#else // HAVE_STDINT_H
-
-typedef char s8;
-typedef short s16;
-typedef int s32;
-typedef long long s64;
-
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
-
-#endif // HAVE_STDINT_H
-
 typedef unsigned int uint;
 
 #define LONG long
-typedef union _LARGE_INTEGER
-{
-	long long QuadPart;
-} LARGE_INTEGER;
 
-#endif // __linux__
 #endif //_MSC_VER
-
-#if !defined(__linux__) || !defined(HAVE_STDINT_H)
-#if defined(__x86_64__)
-typedef u64 uptr;
-typedef s64 sptr;
-#else
-typedef u32 uptr;
-typedef s32 sptr;
-#endif
-#endif
 
 // --------------------------------------------------------------------------------------
 //  u128 / s128 - A rough-and-ready cross platform 128-bit datatype, Non-SSE style.

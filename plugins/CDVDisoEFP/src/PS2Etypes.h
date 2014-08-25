@@ -35,12 +35,6 @@ typedef u64 uptr;
 #else
 typedef u32 uptr;
 #endif
-#ifdef __linux__
-typedef union _LARGE_INTEGER
-{
-	long long QuadPart;
-} LARGE_INTEGER;
-#endif
 #if defined(__MINGW32__)
 #define PCSX2_ALIGNED16(x) __declspec(align(16)) x
 #else
