@@ -43,7 +43,7 @@ enum {
 
 struct EEThread
 {
-	u32 tid;
+	int tid;
 	EEInternalThread data;
 };
 
