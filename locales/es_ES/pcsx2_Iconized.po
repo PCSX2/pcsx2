@@ -5,11 +5,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 0.9.7\n"
+"Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-07-30 09:16+0200\n"
-"PO-Revision-Date: 2014-02-05 18:05+0100\n"
-"Last-Translator: Víctor González Fraile <victor.gonfraile@hotmail.es>\n"
+"PO-Revision-Date: 2014-08-25 15:33+0100\n"
+"Last-Translator: Víctor González <pajaroloco_2@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.6.3\n"
+"X-Generator: Poedit 1.6.4\n"
 
 #: common/src/Utilities/Exceptions.cpp:264
 msgid ""
@@ -471,37 +471,29 @@ msgstr ""
 " * Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:116
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
 "fixes for specific games)"
 msgstr ""
-"Los arreglos para juegos son un arreglo temporal para poder emular algunos "
-"juegos.\n"
-"También pueden provocar problemas de compatibilidad o de rendimiento.\n"
-"\n"
 "Es mejor activar 'Arreglos para juegos automáticos' en el menú principal y "
 "dejar esta sección en blanco.\n"
-"('Automático' significa: utilizar de forma selectiva arreglos ya probados "
+"('Automático' significa utilizar de forma selectiva arreglos ya probados "
 "para juegos concretos)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
 "The safest way to make sure that all game fixes are completely disabled."
 msgstr ""
-"Los arreglos para juegos son un arreglo temporal para poder emular algunos "
+"Los arreglos para juegos arreglan temporalmente la emulación en algunos "
 "juegos.\n"
 "También pueden provocar problemas de compatibilidad o de rendimiento.\n"
 "\n"
-"Es mejor activar 'Arreglos para juegos automáticos' en el menú principal y "
-"dejar esta sección en blanco.\n"
-"('Automático' significa: utilizar de forma selectiva arreglos ya probados "
-"para juegos concretos)"
+"La forma más segura de confirmar que todos los arreglos para juegos están "
+"desactivados."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
