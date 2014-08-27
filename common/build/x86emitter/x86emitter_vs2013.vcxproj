@@ -130,7 +130,6 @@
     <ClInclude Include="..\..\include\x86emitter\legacy_instructions.h" />
     <ClInclude Include="..\..\include\x86emitter\legacy_internal.h" />
     <ClInclude Include="..\..\include\x86emitter\legacy_types.h" />
-    <ClInclude Include="..\..\include\x86emitter\macros.h" />
     <ClInclude Include="..\..\src\x86emitter\PrecompiledHeader.h" />
     <ClInclude Include="..\..\include\x86emitter\sse_helpers.h" />
     <ClInclude Include="..\..\include\x86emitter\tools.h" />
@@ -151,9 +150,6 @@
     <ClInclude Include="..\..\include\x86emitter\implement\simd_helpers.h" />
     <ClInclude Include="..\..\include\x86emitter\implement\simd_moremovs.h" />
     <ClInclude Include="..\..\include\x86emitter\implement\simd_shufflepack.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\include\x86emitter\inlines.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

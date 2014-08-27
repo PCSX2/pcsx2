@@ -83,7 +83,6 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # variable with all sources of this library
 set(x86emitterSources
-	../../include/x86emitter/inlines.inl
 	3dnow.cpp
 	cpudetect.cpp
 	fpu.cpp
@@ -120,7 +119,6 @@ set(x86emitterHeaders
 	../../include/x86emitter/legacy_instructions.h
 	../../include/x86emitter/legacy_internal.h
 	../../include/x86emitter/legacy_types.h
-	../../include/x86emitter/macros.h
 	../../include/x86emitter/sse_helpers.h
 	../../include/x86emitter/tools.h
 	../../include/x86emitter/x86emitter.h

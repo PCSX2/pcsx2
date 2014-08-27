@@ -995,4 +995,3 @@ template< typename T > void xWrite( T val );
 #include "implement/test.h"
 #include "implement/jmpcall.h"
 
-#include "inlines.inl"

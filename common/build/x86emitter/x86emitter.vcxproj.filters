@@ -86,9 +86,6 @@
     <ClInclude Include="..\..\include\x86emitter\legacy_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\x86emitter\macros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\x86emitter\PrecompiledHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -149,10 +146,5 @@
     <ClInclude Include="..\..\include\x86emitter\implement\simd_shufflepack.h">
       <Filter>Header Files\Implement_Simd</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\include\x86emitter\inlines.inl">
-      <Filter>Header Files</Filter>
-    </None>
   </ItemGroup>
 </Project>
