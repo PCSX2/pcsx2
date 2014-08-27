@@ -223,9 +223,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <CustomBuildStep Include="..\..\src\Utilities\x86\MemcpyFast.S">
-      <Filter>Source Files\Linux</Filter>
-    </CustomBuildStep>
-  </ItemGroup>
 </Project>

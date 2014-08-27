@@ -192,8 +192,7 @@ typedef u32 (__fastcall *mVUCall)(void*, void*);
 #else
 // Note: GCC builds crash with custom search function, because
 // they're not guaranteeing 16-byte alignment on the structs :(
-// #define mVUquickSearch(dest, src, size) (!memcmp(dest, src, size))
-#define mVUquickSearch(dest, src, size) (!memcmp_mmx(dest, src, size))
+#define mVUquickSearch(dest, src, size) (!memcmp(dest, src, size))
 #define mVUemitSearch()
 #endif
 //------------------------------------------------------------------
