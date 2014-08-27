@@ -148,7 +148,6 @@
     <ClCompile Include="Conf.cpp" />
     <ClCompile Include="..\GSmain.cpp" />
     <ClCompile Include="..\Mem.cpp" />
-    <ClCompile Include="..\memcpy_amd.cpp" />
     <ClCompile Include="..\Regs.cpp" />
     <ClCompile Include="..\targets.cpp" />
     <ClCompile Include="Win32.cpp" />

@@ -2239,7 +2239,7 @@ void ZeroGS::Flush(int context)
 					}
 
 					if( curvb.tex0.cpsm <= 1 ) { // 32 bit
-						memcpy_amd(lock.pBits, ZeroGS::g_pbyGSClut+nClutOffset, clutsize);
+						memcpy(lock.pBits, ZeroGS::g_pbyGSClut+nClutOffset, clutsize);
 					}
 					else {
 						u16* pClutBuffer = (u16*)(ZeroGS::g_pbyGSClut + nClutOffset);
@@ -5087,7 +5087,7 @@ void ZeroGS::CaptureFrame()
 
 	BYTE* pend = (BYTE*)lock.pBits + (conf.height-1)*width*4;
 	for(int i = 0; i < conf.height; ++i) {
-		memcpy_amd(&mem[width*4*i], pend - width*4*i, width * 4);
+		memcpy(&mem[width*4*i], pend - width*4*i, width * 4);
 	}
 	s_ptexAVICapture->UnlockRect();
 

@@ -436,7 +436,7 @@ namespace ZeroGS {
 			if( nCount + nVerts > nNumVertices ) {
 				// recreate except with a bigger count
 				VertexGPU* ptemp = (VertexGPU*)_aligned_malloc(sizeof(VertexGPU)*nNumVertices*2, 256);
-				memcpy_amd(ptemp, pBufferData, sizeof(VertexGPU) * nCount);
+				memcpy(ptemp, pBufferData, sizeof(VertexGPU) * nCount);
 				nNumVertices *= 2;
 				assert( nCount + nVerts <= nNumVertices );
 				_aligned_free(pBufferData);

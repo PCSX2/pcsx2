@@ -23,7 +23,7 @@ libZeroGSogl_LDFLAGS+=-Wl,-soname,@ZEROGS_SONAME@
 libZeroGSogl_LDADD=$(libZeroGSogl_a_OBJECTS)
 
 libZeroGSogl_a_SOURCES = \
-GSmain.cpp  memcpy_amd.cpp  Regs.cpp     x86.cpp     zpipe.cpp \
+GSmain.cpp  Regs.cpp         x86.cpp     zpipe.cpp \
 Mem.cpp     rasterfont.cpp  targets.cpp  zerogs.cpp GifTransfer.cpp GLWinX11.cpp
 
 libZeroGSogl_a_SOURCES += x86-32.S

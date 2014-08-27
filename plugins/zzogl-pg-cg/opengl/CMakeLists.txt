@@ -49,7 +49,6 @@ set(zzoglSources
     GSmain.cpp
     HostMemory.cpp
     Mem.cpp
-    # memcpy_amd.cpp
     Mem_Swizzle.cpp
     Mem_Tables.cpp
     Profile.cpp
