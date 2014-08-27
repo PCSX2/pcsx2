@@ -657,7 +657,7 @@ inline void FlushSetStream(VB& curvb)
 	g_nCurVBOIndex = (g_nCurVBOIndex + 1) % g_vboBuffers.size();
 	glBufferData(GL_ARRAY_BUFFER, curvb.nCount * sizeof(VertexGPU), curvb.pBufferData, GL_STREAM_DRAW);
 //	void* pdata = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-//	memcpy_amd(pdata, curvb.pBufferData, curvb.nCount * sizeof(VertexGPU));
+//	memcpy(pdata, curvb.pBufferData, curvb.nCount * sizeof(VertexGPU));
 //	glUnmapBuffer(GL_ARRAY_BUFFER);
 	SET_STREAM();
 	

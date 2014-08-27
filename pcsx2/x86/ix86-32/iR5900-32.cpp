@@ -2179,7 +2179,7 @@ StartRecomp:
 			}
 		}
 
-		memcpy_fast(&(*recRAMCopy)[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
+		memcpy(&(*recRAMCopy)[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
 	}
 
 	s_pCurBlock->SetFnptr((uptr)recPtr);

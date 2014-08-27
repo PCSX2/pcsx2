@@ -319,7 +319,7 @@ SIO_WRITE memcardErase(u8 data)
 			{
 			case 0x82: // Erase
 				//siomode = SIO_DUMMY; // Nothing more to do here.
-				memcpy_fast(sio.buf, &header[1], 4);
+				memcpy(sio.buf, &header[1], 4);
 				sio.bufSize = 3;
 				mcd->EraseBlock();
 				break;
@@ -367,7 +367,7 @@ SIO_WRITE memcardWrite(u8 data)
 			switch(data)
 			{
 			case 0x42: // Write
-				memcpy_fast(sio.buf, header, 4);
+				memcpy(sio.buf, header, 4);
 				once = true;
 				break;
 
@@ -375,7 +375,7 @@ SIO_WRITE memcardWrite(u8 data)
 				if(once)
 				{
 					siomode = SIO_DUMMY; // Nothing more to do here.
-					memcpy_fast(sio.buf, &header[1], 4);
+					memcpy(sio.buf, &header[1], 4);
 					sio.bufSize = 3;
 
 					sio2.packet.recvVal1 = 0x1600; // Writing
@@ -454,7 +454,7 @@ SIO_WRITE memcardRead(u8 data)
 			switch(data)
 			{
 			case 0x43: // Read
-				memcpy_fast(sio.buf, header, 4);
+				memcpy(sio.buf, header, 4);
 				once = true;
 				break;
 
@@ -462,7 +462,7 @@ SIO_WRITE memcardRead(u8 data)
 				if(once)
 				{
 					siomode = SIO_DUMMY; // Nothing more to do here.
-					memcpy_fast(sio.buf, &header[1], 4);
+					memcpy(sio.buf, &header[1], 4);
 					sio.bufSize = 3;
 
 					sio2.packet.recvVal1 = 0x1700; // Reading
@@ -624,7 +624,7 @@ SIO_WRITE sioWriteMemcard(u8 data)
 				cmd.mc_xor				= info.Xor;
 				cmd.Z					= mcd->term;
 
-				memcpy_fast(&sio.buf[2], &cmd, sizeof(mc_command_0x26_tag));
+				memcpy(&sio.buf[2], &cmd, sizeof(mc_command_0x26_tag));
 			}
 			break;
 
@@ -698,7 +698,7 @@ SIO_WRITE sioWriteMemcardPSX(u8 data)
 		{
 		case 0x53: // PSX 'S'tate // haven't seen it happen yet
 			sio.buf[1] = mcd->FLAG;
-			memcpy_fast(&sio.buf[2], memcard_psx, 8);
+			memcpy(&sio.buf[2], memcard_psx, 8);
 			siomode = SIO_DUMMY;
 			break;
 

@@ -455,7 +455,7 @@ static s32 CALLBACK CDVD_getBuffer2(u8* buffer)
 	u8* pb = CDVD->getBuffer();
 	if(pb == NULL) return -2;
 
-	memcpy_fast( buffer, pb, lastReadSize );
+	memcpy( buffer, pb, lastReadSize );
 	return 0;
 }
 

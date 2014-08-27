@@ -530,7 +530,7 @@ void mVUDoTBit(microVU& mVU, microFlagCycles* mFC)
 
 void mVUSaveFlags(microVU& mVU,microFlagCycles &mFC, microFlagCycles &mFCBackup)
 {
-	memcpy_fast(&mFCBackup, &mFC, sizeof(microFlagCycles));
+	memcpy(&mFCBackup, &mFC, sizeof(microFlagCycles));
 	mVUsetFlags(mVU, mFCBackup);	   // Sets Up Flag instances
 }
 void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {

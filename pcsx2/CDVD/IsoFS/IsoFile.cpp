@@ -161,7 +161,7 @@ int IsoFile::internalRead(void* dest, int off, int len)
 			slen = (int) (maxOffset - currentOffset);
 		}
 
-		memcpy_fast((u8*)dest + off, currentSector + sectorOffset, slen);
+		memcpy((u8*)dest + off, currentSector + sectorOffset, slen);
 
 		sectorOffset += slen;
 		currentOffset += slen;

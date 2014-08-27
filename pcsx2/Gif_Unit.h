@@ -222,7 +222,7 @@ struct Gif_Path {
 		}
 		//DevCon.WriteLn("Realign Packet [%d]", curSize - offset);
 		if (intersect) memmove(buffer, &buffer[offset], curSize - offset);
-		else       memcpy_fast(buffer, &buffer[offset], curSize - offset);
+		else       memcpy(buffer, &buffer[offset], curSize - offset);
 		curSize      -= offset;
 		curOffset     = gsPack.size;
 		gsPack.offset = 0;

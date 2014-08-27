@@ -422,7 +422,7 @@ s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 		jNO_DEFAULT
 	}
 
-	memcpy_fast(tempbuffer, pbuffer, psize);
+	memcpy(tempbuffer, pbuffer, psize);
 
 	return 0;
 }

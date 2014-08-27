@@ -364,7 +364,7 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
 		assert(targ->ptex->ref > 0);
 	}
 
-	memcpy_amd(targ->ptex->memptr, MemoryAddress(targ->realy), MemorySize(targ->height));
+	memcpy(targ->ptex->memptr, MemoryAddress(targ->realy), MemorySize(targ->height));
 
 	__aligned16 u8* ptexdata = NULL;
 	bool has_data = false;

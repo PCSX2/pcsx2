@@ -493,7 +493,7 @@ template <>
 /*__forceinline*/ void ClutBuffer_to_Array<u32>(u32* dst, u32 csa, u32 clutsize)
 {
     u8* clut = (u8*)GetClutBufferAddress<u32>(csa);
-    memcpy_amd((u8*)dst, clut, clutsize);
+    memcpy((u8*)dst, clut, clutsize);
 }
 
 template <>

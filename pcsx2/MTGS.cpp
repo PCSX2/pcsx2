@@ -626,7 +626,7 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 	if (syncRegs) {
 		ScopedLock lock(m_mtx_WaitGS);
 		// Completely synchronize GS and MTGS register states.
-		memcpy_fast(RingBuffer.Regs, PS2MEM_GS, sizeof(RingBuffer.Regs));
+		memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(RingBuffer.Regs));
 	}
 }
 

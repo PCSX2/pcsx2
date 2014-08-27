@@ -126,7 +126,7 @@ SaveStateBase& SaveStateBase::FreezeBios()
 	pxToUTF8 utf8(BiosDescription);
 
 	memzero( biosdesc );
-	memcpy_fast( biosdesc, utf8, std::min( sizeof(biosdesc), utf8.Length() ) );
+	memcpy( biosdesc, utf8, std::min( sizeof(biosdesc), utf8.Length() ) );
 	
 	Freeze( bioscheck );
 	Freeze( biosdesc );
@@ -282,7 +282,7 @@ void memSavingState::FreezeMem( void* data, int size )
 	if (!size) return;
 
 	m_memory->MakeRoomFor( m_idx + size );
-	memcpy_fast( m_memory->GetPtr(m_idx), data, size );
+	memcpy( m_memory->GetPtr(m_idx), data, size );
 	m_idx += size;
 }
 
@@ -322,7 +322,7 @@ void memLoadingState::FreezeMem( void* data, int size )
 {
 	const u8* const src = m_memory->GetPtr(m_idx);
 	m_idx += size;
-	memcpy_fast( data, src, size );
+	memcpy( data, src, size );
 }
 
 // --------------------------------------------------------------------------------------
