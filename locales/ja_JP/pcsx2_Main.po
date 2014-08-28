@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2014-07-30 09:16+0200\n"
-"PO-Revision-Date: 2014-06-15 12:24+0900\n"
+"PO-Revision-Date: 2014-08-29 03:56+0900\n"
 "Last-Translator: nrusef <nrusef@gmail.com>\n"
 "Language-Team: DeltaHF\n"
 "Language: ja_JP\n"
@@ -695,7 +695,7 @@ msgstr "私が使ってる奴だ（byプログラマの人）。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:419 pcsx2/gui/Panels/CpuPanel.cpp:38
 msgid "Normal"
-msgstr "Normal"
+msgstr "中"
 
 #: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "Its nice and readable."
@@ -1307,7 +1307,7 @@ msgstr "PS2のバイナリを直接実行します"
 
 #: pcsx2/gui/MainFrame.cpp:419
 msgid "Backup before save"
-msgstr "バックアップしてセーブ"
+msgstr "ステートセーブ前にバックアップ"
 
 #: pcsx2/gui/MainFrame.cpp:424
 msgid "Automatic Gamefixes"
@@ -1595,9 +1595,9 @@ msgid "Blockdumps (%s)"
 msgstr "ブロックダンプ (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:267
-#, fuzzy, c-format
+#, c-format
 msgid "Compressed (%s)"
-msgstr "ブロックダンプ (%s)"
+msgstr "圧縮済み (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
 msgid "All Files (*.*)"
@@ -1867,15 +1867,15 @@ msgstr "ウィンドウのリサイズを無効にする"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Always hide mouse cursor"
-msgstr "マウスポインターを非表示にする"
+msgstr "マウスポインターを表示しない"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:48
 msgid "Hide window when paused"
-msgstr "ポーズ中にウィンドウを隠す"
+msgstr "中断時にウィンドウを表示しない"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:49
 msgid "Default to fullscreen mode on open"
-msgstr "ゲーム起動時フルスクリーン"
+msgstr "実行時にフルスクリーンにする"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
@@ -1887,7 +1887,7 @@ msgstr "動的垂直同期（ツールチップをお読みください）"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 msgid "Double-click toggles fullscreen mode"
-msgstr "ダブルクリックでフルスクリーン切り替え"
+msgstr "ダブルクリックでフルスクリーンを切り替える"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:89
 msgid "Aspect Ratio:"
@@ -1930,84 +1930,84 @@ msgid ""
 " * Valkyrie Profile 2"
 msgstr ""
 "このハックが必要なゲーム：\n"
-" * スターオーシャン３\n"
-" * ヴァルキュリープロファイル２\n"
-" * ラジアータストーリーズ"
+" * 『スターオーシャン Till the End of Time』\n"
+" * 『ラジアータ ストーリーズ』\n"
+" * 『ヴァルキリープロファイル2 -シルメリア-』"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:44
 msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
-msgstr ""
-"VU Clip Flag Hack - ペルソナ系のゲーム用（SuperVU リコンパイラー使用の場合の"
-"み）"
+msgstr "VU Clip Flag Hack - ペルソナ3・4用（SuperVU リコンパイラー使用時のみ）"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:48
 msgid "FPU Compare Hack - For Digimon Rumble Arena 2."
-msgstr "FPU Compare Hack - デジモンランブルアリーナ２用"
+msgstr "FPU Compare Hack"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:52
 msgid "FPU Multiply Hack - For Tales of Destiny."
-msgstr "FPU Multiply Hack - テイルズオブデスティニー用"
+msgstr "FPU Multiply Hack - 『テイルズ オブ デスティニー』向け"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:56
 msgid "FPU Negative Div Hack - For Gundam games."
-msgstr "FPU Negative Div Hack - ガンダム系ゲーム用"
+msgstr ""
+"FPU Negative Div Hack - ガンダムシリーズ『アクシズの脅威V』『vs.Z.A.F.T.』"
+"『II PLUS』向け"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:60
 msgid "VU XGkick Hack - For Erementar Gerad."
-msgstr "VU XGkick Hack - エレメンタルジェレイド用"
+msgstr ""
+"VU XGkick Hack - 『SIREN2』『エレメンタルジェレイド-纏え、翠風の剣-』『THE "
+"ALL★STAR格闘祭』向け"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:64
 msgid "FFX videos fix - Fixes bad graphics overlay in FFX videos."
-msgstr "FFX videos fix - FFXのムービーを修正します"
+msgstr "『ファイナルファンタジーX』のムービーを修正する"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:68
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
 msgstr ""
-"EE timing hack - 汎用ハック。他に手が無い場合はこれを使ってみましょう。"
+"EE timing hack - 汎用ハック。他に手がない場合はこれを使ってみてください。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:73
 msgid ""
 "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
 msgstr ""
-"Skip MPEG hack - ムービーをスキップします。イントロムービーがフリーズ、ハング"
-"する場合に使ってください。"
+"Skip MPEG hack - ムービーをスキップします。ムービーでフリーズする場合に使って"
+"ください。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:77
 msgid "OPH Flag hack - Try if your game freezes showing the same frame."
-msgstr ""
-"OPH Flag hack - 毎回同じフレームやシーンでフリーズする時に使ってみてくださ"
-"い。"
+msgstr "OPH Flag hack - 毎回同じシーンでフリーズするときに使ってみてください。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:82
 msgid "Ignore DMAC writes when it is busy."
-msgstr "ビジー状態の時、DMAC書き出しを無視します。"
+msgstr "Ignore DMAC - ビジー状態の時、DMAC書き出しを無視します。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:87
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
-msgstr ""
-"VIF1 FIFO の先読みをシミュレートします。ロードが遅いゲームを修正します。"
+msgstr "VIF1 FIFO の先読みをシミュレートします。遅いローディングを修正します。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-#, fuzzy
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
-msgstr "VIF1ストールにディレイをかけます (VIF1 FIFO) - SOCOM 2のHUD修正。"
+msgstr "Delay VIF1 Stalls (VIF1 FIFO) - 『SOCOM II』向け"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
-msgstr "Path3転送のBus Directionを無視する - Hotwheels用"
+msgstr "Path3転送のBus Directionを無視する"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when a FMV plays"
-msgstr "FMV再生時にGSdxをソフトウェアレンダリングに切り替える"
+msgstr "ムービー再生時にGSdxをソフトウェアレンダリングに切り替える"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr ""
+"TLBミスを避けるため、TLBハックをあらかじめ読み込む - 『冒険時代活劇ゴエモン』"
+"用"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:115
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "ゲームフィックスを手動で設定する[非推奨]"
+msgstr "ゲームフィックスを手動で設定する [非推奨]"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:249
 msgid "Enable Trace Logging"
@@ -2379,8 +2379,7 @@ msgstr "スピードハック有効化"
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
-msgstr ""
-"ゲームフィックスが全て無効化されている事を確認するための最善な方法です。"
+msgstr "スピードハックが全て無効化されている事を確認するための最善な方法です。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
 msgid ""
@@ -2407,7 +2406,7 @@ msgstr "mVU Flag Hack"
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
-msgstr "速度の向上と高い互換性、グラフィック不具合の可能性有り...　[推奨]"
+msgstr "速度が向上しますが、映像が乱れる可能性があります。 [推奨]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
 msgid "MTVU (Multi-Threaded microVU1)"
@@ -2418,8 +2417,7 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"速度が大幅に向上し、互換性の低下もほぼありませんが、フリーズする可能性があり"
-"ます。 [3コア以上推奨]"
+"速度が大幅に向上しますが、フリーズする可能性があります。 [3コア以上推奨]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
 msgid "Other Hacks"
@@ -2552,8 +2550,7 @@ msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
 msgstr ""
-"クラッシュやグラフィックエラーの発生原因として、\n"
-"MTGSスレッドの同期が疑わしい場合は有効にしてください。"
+"不具合の発生原因としてMTGSスレッドの同期が疑わしい場合は有効にしてください。"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:298
 msgid "Disable all GS output"
