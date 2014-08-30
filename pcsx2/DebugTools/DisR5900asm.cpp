@@ -75,7 +75,7 @@ const char * const COP0_REG[32] ={
 const char * const COP1_REG_FP[32] ={
  	"f00","f01","f02","f03","f04","f05","f06","f07",
 	"f08","f09","f10","f11","f12","f13","f14","f15",
-	"f16","f17","f18","f19","f20","f21","f21","f23",
+	"f16","f17","f18","f19","f20","f21","f22","f23",
 	"f24","f25","f26","f27","f28","f29","f30","f31"
 };
 
@@ -83,7 +83,7 @@ const char * const COP1_REG_FP[32] ={
 const char * const COP1_REG_FCR[32] ={
  	"fcr00","fcr01","fcr02","fcr03","fcr04","fcr05","fcr06","fcr07",
 	"fcr08","fcr09","fcr10","fcr11","fcr12","fcr13","fcr14","fcr15",
-	"fcr16","fcr17","fcr18","fcr19","fcr20","fcr21","fcr21","fcr23",
+	"fcr16","fcr17","fcr18","fcr19","fcr20","fcr21","fcr22","fcr23",
 	"fcr24","fcr25","fcr26","fcr27","fcr28","fcr29","fcr30","fcr31"
 };
 
@@ -91,7 +91,7 @@ const char * const COP1_REG_FCR[32] ={
 const char * const COP2_REG_FP[32] ={
 	"vf00","vf01","vf02","vf03","vf04","vf05","vf06","vf07",
 	"vf08","vf09","vf10","vf11","vf12","vf13","vf14","vf15",
-	"vf16","vf17","vf18","vf19","vf20","vf21","vf21","vf23",
+	"vf16","vf17","vf18","vf19","vf20","vf21","vf22","vf23",
 	"vf24","vf25","vf26","vf27","vf28","vf29","vf30","vf31"
 };
 
