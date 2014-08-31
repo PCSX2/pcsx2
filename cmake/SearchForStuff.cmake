@@ -41,7 +41,7 @@ include(FindLibc)
 include(CheckLib)
 check_lib(AIO aio aio.h)
 check_lib(EGL egl EGL/egl.h)
-check_lib(GLESV2 GLESv2 GLES2/gl2.h)
+check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 
