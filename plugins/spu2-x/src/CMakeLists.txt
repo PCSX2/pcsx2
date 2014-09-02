@@ -22,19 +22,25 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# add defines
-    add_definitions(${CommonFlags} -g)
+    set(spu2xFinalFlags
+        ${CommonFlags} -g
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	set(spu2xFinalFlags
+        ${CommonFlags} ${OptimizationFlags}
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	set(spu2xFinalFlags
+        ${CommonFlags} ${OptimizationFlags}
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # spu2x sources
@@ -97,7 +103,7 @@ set(spu2xLinuxHeaders
     Linux/Dialogs.h)
 
 # add additional include directories
-include_directories(.  Linux)
+include_directories(Linux)
 
 ### Don't use yet c11 feature. I will bump gcc requirement to 4.7 when 4.9 is out.
 ### Note: actually it might work on 4.6 too
@@ -112,49 +118,48 @@ include_directories(.  Linux)
 
 if(SDL_FOUND)
     list(APPEND spu2xSources SndOut_SDL.cpp)
-    if(SDL2_API)
-        add_definitions(-DSPU2X_SDL2)
+    if (SDL2_API)
+        set(spu2xFinalFlags
+            ${spu2xFinalFlags}
+            -DSPU2X_SDL2
+        )
     else()
-        add_definitions(-DSPU2X_SDL)
+        set(spu2xFinalFlags
+            ${spu2xFinalFlags}
+            -DSPU2X_SDL
+        )
     endif()
-  #elseif(SDL2_FOUND)
-  #  add_definitions(-DSPU2X_SDL2)
 endif()
 
-# add library
-add_library(${Output} SHARED
-			${spu2xSources}
-			${spu2xHeaders}
-			${spu2xLinuxSources}
-			${spu2xLinuxHeaders})
+set(spu2xFinalSources
+    ${spu2xSources}
+    ${spu2xHeaders}
+    ${spu2xLinuxSources}
+    ${spu2xLinuxHeaders}
+)
 
-# link target with project internal libraries
-target_link_libraries(${Output} Utilities)
+set(spu2xFinalLibs
+    Utilities
+    ${ALSA_LIBRARIES}
+    portaudio
+)
 
-# link target with various backend
-target_link_libraries(${Output} ${ALSA_LIBRARIES})
-target_link_libraries(${Output} ${PORTAUDIO_LIBRARIES})
 if (SDL2_API)
-    target_link_libraries(${Output} ${SDL2_LIBRARY})
+    set(spu2xFinalLibs
+        ${spu2xFinalLibs}
+        ${SDL2_LIBRARY}
+    )
 else()
-    target_link_libraries(${Output} ${SDL_LIBRARY})
+    set(spu2xFinalLibs
+        ${spu2xFinalLibs}
+        ${SDL_LIBRARY}
+    )
 endif()
 
-# link target with SoundTouch
-target_link_libraries(${Output} ${SOUNDTOUCH_LIBRARIES})
+set(spu2xFinalLibs
+    ${spu2xFinalLibs}
+    SoundTouch
+    ${GTK2_LIBRARIES}
+)
 
-if(Linux)
-	# link target with gtk2
-	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
-endif(PACKAGE_MODE)
+add_pcsx2_plugin(${Output} "${spu2xFinalSources}" "${spu2xFinalLibs}" "${spu2xFinalFlags}")
