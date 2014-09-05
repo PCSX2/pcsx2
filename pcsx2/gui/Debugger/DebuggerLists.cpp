@@ -59,7 +59,7 @@ void GenericListView::resizeColumns(int totalWidth)
 
 void GenericListView::sizeEvent(wxSizeEvent& evt)
 {
-	resizeColumns(evt.GetSize().x);
+	resizeColumns(GetClientSize().x);
 }
 
 void GenericListView::keydownEvent(wxKeyEvent& evt)
@@ -87,7 +87,20 @@ void GenericListView::keydownEvent(wxKeyEvent& evt)
 void GenericListView::update()
 {
 	int newRows = getRowCount();
+	int oldRows = GetItemCount();
+
 	SetItemCount(newRows);
+
+	if (newRows != oldRows)
+	{
+		resizeColumns(GetClientSize().x);
+
+		// wx adds the horizontal scrollbar based on the old column width,
+		// which changes the client width. Simply resizing the columns won't
+		// make the scrollbar go away, so let's make it recalculate if it needs it
+		SetItemCount(newRows);
+	}
+
 	Refresh();
 }
 
