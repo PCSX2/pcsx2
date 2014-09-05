@@ -33,17 +33,17 @@ find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
 
 ## Use pcsx2 package to find module
-include(FindAio)
-## Include cg because of zzogl-cg and zerogs
-#if(NOT GLSL_API)
-	include(FindCg)
-#endif()
-include(FindEGL)
-include(FindGLES2)
+include(FindCg)
 include(FindGlew)
 include(FindLibc)
-include(FindPortAudio)
-include(FindSoundTouch)
+
+## Use CheckLib package to find module
+include(CheckLib)
+check_lib(AIO aio aio.h)
+check_lib(EGL egl EGL/egl.h)
+check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
+check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
+check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 
 # Note for include_directory: The order is important to avoid a mess between include file from your system and the one of pcsx2
 # If you include first 3rdparty, all 3rdpary include will have a higer priority...
@@ -69,10 +69,6 @@ if(Linux)
 	endif()
 endif()
 
-if(AIO_FOUND)
-    include_directories(${AIO_INCLUDE_DIR})
-endif()
-
 if(ALSA_FOUND)
 	include_directories(${ALSA_INCLUDE_DIRS})
 endif()
@@ -85,10 +81,6 @@ if(CG_FOUND)
 	include_directories(${CG_INCLUDE_DIRS})
 endif()
 
-if (EGL_FOUND)
-    include_directories(${EGL_INCLUDE_DIR})
-endif()
-
 if(JPEG_FOUND)
 	include_directories(${JPEG_INCLUDE_DIR})
 endif()
@@ -97,24 +89,12 @@ if(GLEW_FOUND)
     include_directories(${GLEW_INCLUDE_DIR})
 endif()
 
-if(GLESV2_FOUND)
-    include_directories(${GLESV2_INCLUDE_DIR})
-endif()
-
 if(OPENGL_FOUND)
 	include_directories(${OPENGL_INCLUDE_DIR})
 endif()
 
-if(PORTAUDIO_FOUND)
-	include_directories(${PORTAUDIO_INCLUDE_DIR})
-endif()
-
 if(SDL_FOUND)
 	include_directories(${SDL_INCLUDE_DIR})
-endif()
-
-if(SOUNDTOUCH_FOUND)
-	include_directories(${SOUNDTOUCH_INCLUDE_DIR})
 endif()
 
 if(wxWidgets_FOUND)

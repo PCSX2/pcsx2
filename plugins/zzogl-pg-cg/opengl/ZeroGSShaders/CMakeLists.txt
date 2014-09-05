@@ -26,36 +26,36 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    add_definitions(${CommonFlags} -g -Wall -D_DEBUG)
+    set(zerogsshadersFinalFlags
+        ${CommonFlags} -g -Wall -D_DEBUG
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-    add_definitions(${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD)
+    set(zerogsshadersFinalFlags
+        ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-    add_definitions(${CommonFlags} ${OptimizationFlags} -W)
+    set(zerogsshadersFinalFlags
+        ${CommonFlags} ${OptimizationFlags} -W
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
-include_directories(.)
+set(zerogsshadersFinalSources
+    zerogsshaders.cpp
+    zpipe.cpp
+)
 
-# add library
-add_executable(${Output} zerogsshaders.cpp zpipe.cpp)
+set(zerogsshadersFinalLibs
+    ${ZLIB_LIBRARIES}
+    ${CG_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+)
 
-# link target with zlib
-target_link_libraries(${Output} ${ZLIB_LIBRARIES})
-
-# link target with Cg
-target_link_libraries(${Output} ${CG_LIBRARIES})
-
-# link target with opengl
-target_link_libraries(${Output} ${OPENGL_LIBRARIES})
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+add_pcsx2_executable(${Output} "${zerogsshadersFinalSources}" "${zerogsshadersFinalLibs}" "${zerogsshadersFinalFlags}")

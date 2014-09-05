@@ -25,19 +25,25 @@ set(OptimizationFlags
 # Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     # add defines
-    add_definitions(${CommonFlags} -g -Wall -D_DEBUG)
+    set(zzoglFinalFlags
+        ${CommonFlags} -g -Wall -D_DEBUG
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
     # add defines
-    add_definitions(${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD)
+    set(zzoglFinalFlags
+        ${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
     # add defines
-    add_definitions(${CommonFlags} ${OptimizationFlags} -W)
+    set(zzoglFinalFlags
+        ${CommonFlags} ${OptimizationFlags} -W
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # zzogl sources
@@ -126,102 +132,44 @@ set(zzoglLinuxSources
 set(zzoglLinuxHeaders
     Linux/Linux.h)
 
-# change language of .S-files to c++
-set_source_files_properties(${zzoglSSources} PROPERTIES LANGUAGE CXX)
-
-# add additional include directories
-include_directories(.
-    Linux)
-
-# add library
-add_library(${Output} SHARED
+set(zzoglFinalSources
     ${zzoglSources}
     ${zzoglHeaders}
     ${zzoglSSources}
     ${zzoglShaderSources}
     ${zzoglLinuxSources}
-    ${zzoglLinuxHeaders})
+    ${zzoglLinuxHeaders}
+)
+
+set(zzoglFinalLibs
+    Utilities
+    ${CG_LIBRARIES}
+    ${GLEW_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    ${X11_LIBRARIES}
+    ${JPEG_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${ZLIB_LIBRARIES}
+    ${LIBC_LIBRARIES}
+)
+
+# change language of .S-files to c++
+set_source_files_properties(${zzoglSSources} PROPERTIES LANGUAGE CXX)
+
+# add additional include directories
+include_directories(Linux)
+
+add_pcsx2_plugin(${Output} "${zzoglFinalSources}" "${zzoglFinalLibs}" "${zzoglFinalFlags}")
 
 # Trick that allow to compile zzogl with GSOPEN2 and the replayer with GSOPEN
 set_target_properties(${Output} PROPERTIES COMPILE_DEFINITIONS USE_GSOPEN2)
 
-# link target with project internal libraries
-target_link_libraries(${Output} Utilities)
-
-# link target with Cg
-target_link_libraries(${Output} ${CG_LIBRARIES})
-
-# link target with glew
-target_link_libraries(${Output} ${GLEW_LIBRARY})
-
-# link target with opengl
-target_link_libraries(${Output} ${OPENGL_LIBRARIES})
-
-# link target with X11
-target_link_libraries(${Output} ${X11_LIBRARIES})
-
-# link target with jpeg
-target_link_libraries(${Output} ${JPEG_LIBRARIES})
-
-if(Linux)
-	# link target with gtk2
-	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
-
-# link target with zlib
-target_link_libraries(${Output} ${ZLIB_LIBRARIES})
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
-endif(PACKAGE_MODE)
-
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
 	set(Replay pcsx2_ZZCGReplayLoader)
-	set(Static zzogl-cg-static)
-
-	add_library(${Static} STATIC
-	    ${zzoglSources}
-	    ${zzoglHeaders}
-	    ${zzoglSSources}
-	    ${zzoglShaderSources}
-	    ${zzoglLinuxSources}
-	    ${zzoglLinuxHeaders})
-
-	target_link_libraries(${Static} Utilities)
-	target_link_libraries(${Static} ${CG_LIBRARIES})
-	target_link_libraries(${Static} ${GLEW_LIBRARY})
-	target_link_libraries(${Static} ${OPENGL_LIBRARIES})
-	target_link_libraries(${Static} ${X11_LIBRARIES})
-	target_link_libraries(${Static} ${JPEG_LIBRARIES})
-
-	add_executable(${Replay} linux_replay.cpp)
-
-	target_link_libraries(${Replay} ${Static})
-	target_link_libraries(${Replay} Utilities)
-	target_link_libraries(${Replay} ${CG_LIBRARIES})
-	target_link_libraries(${Replay} ${GLEW_LIBRARY})
-	target_link_libraries(${Replay} ${OPENGL_LIBRARIES})
-	target_link_libraries(${Replay} ${X11_LIBRARIES})
-	target_link_libraries(${Replay} ${JPEG_LIBRARIES})
-
-	target_link_libraries(${Replay} ${GTK2_LIBRARIES})
-	target_link_libraries(${Replay} ${ZLIB_LIBRARIES})
-
-	if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-	    target_link_libraries(${Replay} "${USER_CMAKE_LD_FLAGS}")
-	endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-	if(PACKAGE_MODE)
-	    install(TARGETS ${Replay} DESTINATION bin)
-	else(PACKAGE_MODE)
-	    install(TARGETS ${Replay} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
-	endif(PACKAGE_MODE)
+    set(zzoglReplayLoaderFinalSources
+        ${zzoglFinalSources}
+        linux_replay.cpp
+    )
+    add_pcsx2_executable(${Replay} "${zzoglReplayLoaderFinalSources}" "${zzoglFinalLibs}" "${zzoglFinalFlags}")
 endif(BUILD_REPLAY_LOADERS)

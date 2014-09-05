@@ -20,6 +20,10 @@ postBuild.cmd
 svnrev.h
 
 build
+
+.DS_Store
+Thumbs.db
+
 Debug
 Release
 Devel
