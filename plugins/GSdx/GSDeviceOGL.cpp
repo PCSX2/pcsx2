@@ -572,8 +572,11 @@ GLuint GSDeviceOGL::CreateSampler(bool bilinear, bool tau, bool tav)
 	// FIXME: seems there is 2 possibility in opengl
 	// DX: sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	// gl_SamplerParameteri(sampler, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+#if 0
+	// Message:Program undefined behavior warning: Sampler object 5 has depth compare enabled. It is being used with non-depth texture 7, by a program that samples it with a regular sampler. This is undefined behavior.
 	gl_SamplerParameteri(sampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	gl_SamplerParameteri(sampler, GL_TEXTURE_COMPARE_FUNC, GL_NEVER);
+#endif
 	// FIXME: need ogl extension sd.MaxAnisotropy = 16;
 
 	return sampler;
