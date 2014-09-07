@@ -1,4 +1,5 @@
 /*
+ *	Copyright (C) 2011-2014 Gregory hainaut
  *	Copyright (C) 2007-2009 Gabest
  *	http://www.gabest.org
  *
@@ -121,6 +122,36 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_ProgramUniformHandleui64vARB) = GetProcAddress("glProgramUniformHandleui64vARB", true);
 
 	*(void**)&(gl_DepthRangedNV) = GetProcAddress("glDepthRangedNV", true);
+
+	// GL4.5
+	*(void**)&(gl_CreateTextures) = GetProcAddress("glCreateTextures", true);
+	*(void**)&(gl_TextureStorage2D) = GetProcAddress("glTextureStorage2D", true);
+	*(void**)&(gl_TextureSubImage2D) = GetProcAddress("glTextureSubImage2D", true);
+	*(void**)&(gl_CopyTextureSubImage2D) = GetProcAddress("glCopyTextureSubImage2D", true);
+	*(void**)&(gl_BindTextureUnit) = GetProcAddress("glBindTextureUnit", true);
+	*(void**)&(gl_GetTextureImage) = GetProcAddress("glGetTextureImage", true);
+
+	*(void**)&(gl_CreateFramebuffers) = GetProcAddress("glCreateFramebuffers", true);
+	*(void**)&(gl_ClearNamedFramebufferfv) = GetProcAddress("glClearNamedFramebufferfv", true);
+	*(void**)&(gl_ClearNamedFramebufferuiv) = GetProcAddress("glClearNamedFramebufferuiv", true);
+	*(void**)&(gl_ClearNamedFramebufferiv) = GetProcAddress("glClearNamedFramebufferiv", true);
+	*(void**)&(gl_NamedFramebufferTexture) = GetProcAddress("glNamedFramebufferTexture", true);
+	*(void**)&(gl_NamedFramebufferDrawBuffers) = GetProcAddress("glNamedFramebufferDrawBuffers", true);
+	*(void**)&(gl_NamedFramebufferReadBuffer) = GetProcAddress("glNamedFramebufferReadBuffer", true);
+	*(void**)&(gl_CheckNamedFramebufferStatus) = GetProcAddress("glCheckNamedFramebufferStatus", true);
+
+	*(void**)&(gl_CreateBuffers) = GetProcAddress("glCreateBuffers", true);
+	*(void**)&(gl_NamedBufferStorage) = GetProcAddress("glNamedBufferStorage", true);
+	*(void**)&(gl_NamedBufferData) = GetProcAddress("glNamedBufferData", true);
+	*(void**)&(gl_NamedBufferSubData) = GetProcAddress("glNamedBufferSubData", true);
+	*(void**)&(gl_MapNamedBuffer) = GetProcAddress("glMapNamedBuffer", true);
+	*(void**)&(gl_MapNamedBufferRange) = GetProcAddress("glMapNamedBufferRange", true);
+	*(void**)&(gl_UnmapNamedBuffer) = GetProcAddress("glUnmapNamedBuffer", true);
+
+	*(void**)&(gl_CreateSamplers) = GetProcAddress("glCreateSamplers", true);
+	*(void**)&(gl_CreateProgramPipelines) = GetProcAddress("glCreateProgramPipelines", true);
+
+	*(void**)&(gl_ClipControl) = GetProcAddress("glClipControl", true);
 
 #endif
 }
