@@ -137,7 +137,7 @@ bool GSWndEGL::Attach(void* handle, bool managed)
 
 #ifdef ENABLE_GLES
 	// FIXME: update it to GLES 3.1 when  they support it
-	CreateContext(3, 0);
+	CreateContext(3, 1);
 #else
 	CreateContext(3, 3);
 #endif
@@ -189,7 +189,7 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 
 #ifdef ENABLE_GLES
 	// FIXME: update it to GLES 3.1 when  they support it
-	CreateContext(3, 0);
+	CreateContext(3, 1);
 #else
 	CreateContext(3, 3);
 #endif

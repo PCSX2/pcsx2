@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2011-2013 Gregory hainaut
+ *	Copyright (C) 2011-2014 Gregory hainaut
  *	Copyright (C) 2007-2009 Gabest
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 //#define ONLY_LINES
 
 static uint32 g_draw_count = 0;
-static uint32 g_frame_count = 1;		
+static uint32 g_frame_count = 1;
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 uint32 g_texture_upload_byte = 0;
 uint32 g_vertex_upload_byte = 0;
@@ -1140,19 +1140,21 @@ void GSDeviceOGL::OMSetBlendState(GSBlendStateOGL* bs, float bf)
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
 {
 	if (rt == NULL || !static_cast<GSTextureOGL*>(rt)->IsBackbuffer()) {
+		OMSetFBO(m_fbo);
 		if (rt) {
-			OMSetFBO(m_fbo);
 			OMSetWriteBuffer();
 			OMAttachRt(static_cast<GSTextureOGL*>(rt)->GetID());
 		} else {
 			// Note: NULL rt is only used in DATE so far.
-			OMSetFBO(m_fbo);
+			OMAttachRt(0);
 			OMSetWriteBuffer(GL_NONE);
 		}
 
 		// Note: it must be done after OMSetFBO
 		if (ds)
 			OMAttachDs(static_cast<GSTextureOGL*>(ds)->GetID());
+		else
+			OMAttachDs(0);
 
 	} else {
 		// Render in the backbuffer
@@ -1209,7 +1211,7 @@ void GSDeviceOGL::CheckDebugLog()
 void GSDeviceOGL::DebugOutputToFile(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, const char* message)
 {
 #ifndef ENABLE_GLES
-	char debType[20], debSev[5];
+	char debType[20], debSev[6];
 	static int sev_counter = 0;
 
 	if(type == GL_DEBUG_TYPE_ERROR_ARB)
@@ -1235,6 +1237,8 @@ void GSDeviceOGL::DebugOutputToFile(unsigned int source, unsigned int type, unsi
 		strcpy(debSev, "Med");
 	else if(severity == GL_DEBUG_SEVERITY_LOW_ARB)
 		strcpy(debSev, "Low");
+	else
+		strcpy(debSev, "None");
 
 	#ifdef LOUD_DEBUGGING
 	fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", debType, g_draw_count, debSev,message);
@@ -1284,7 +1288,7 @@ void GSDeviceOGL::DebugOutputToFile(unsigned int source, unsigned int type, unsi
 #define D3DBLEND_SRCALPHA		GL_SRC1_ALPHA
 #define D3DBLEND_INVSRCALPHA	GL_ONE_MINUS_SRC1_ALPHA
 #endif
-                        
+
 const GSDeviceOGL::D3D9Blend GSDeviceOGL::m_blendMapD3D9[3*3*3*3] =
 {
 	{0, D3DBLENDOP_ADD, D3DBLEND_ONE, D3DBLEND_ZERO},						// 0000: (Cs - Cs)*As + Cs ==> Cs
