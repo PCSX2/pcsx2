@@ -3771,7 +3771,7 @@ Serial = SLUS-20467
 Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
 Region = NTSC-U
 Compat = 5
-OPHFlagHack = 1
+//OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 ---------------------------------------------
 Serial = SLUS-20468
 Name   = Dynasty Tactics
@@ -11335,7 +11335,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20044
 Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
 Region = NTSC-Unk
-OPHFlagHack = 1
+//OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 ---------------------------------------------
 Serial = SCAJ-20045
 Name   = Shadow Tower Abyss
@@ -26731,7 +26731,7 @@ Region = NTSC-J
 Serial = SLPS-25246
 Name   = Tomb Raider - The Angel of Darkness	// aka "TRAOD"
 Region = NTSC-J
-OPHFlagHack = 1
+//OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 ---------------------------------------------
 Serial = SLPS-25247
 Name   = R-Type Final
@@ -34024,7 +34024,7 @@ Serial = SLES-51227
 Name   = Tomb Raider - Angel of Darkness	// aka "TRAOD"
 Region = PAL-Unk	// Multiple languages
 Compat = 5
-OPHFlagHack = 1
+//OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 [patches]
 	comment=- This gamedisc supports multiple languages and widescreen.
 	comment=- Language & widescreen selection is done through the BIOS configuration.
