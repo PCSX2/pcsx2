@@ -40,6 +40,7 @@ endfunction(detectOperatingSystem)
 
 function(write_svnrev_h)
     find_package(Git)
+    set(PCSX2_WC_TIME 0)
     if (GIT_FOUND)
         EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
             OUTPUT_VARIABLE PCSX2_WC_TIME
@@ -47,7 +48,8 @@ function(write_svnrev_h)
         # Output: "YYYY-MM-DD HH:MM:SS +HHMM" (last part is time zone, offset from UTC)
         string(REGEX REPLACE "[%:\\-]" "" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
         string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
-    else()
+    endif()
+    if ("${PCSX2_WC_TIME}" STREQUAL "")
         set(PCSX2_WC_TIME 0)
     endif()
     file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0")
