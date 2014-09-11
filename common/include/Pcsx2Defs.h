@@ -40,6 +40,8 @@ extern "C" unsigned __int64 __xgetbv(int);
 #	include <intrin_x86.h>
 #endif
 
+#include "debugbreak.h"
+
 // Renamed ARRAYSIZE to ArraySize -- looks nice and gets rid of Windows.h conflicts (air)
 // Notes: I'd have used ARRAY_SIZE instead but ran into cross-platform lib conflicts with
 // that as well.  >_<
@@ -65,7 +67,7 @@ extern "C" unsigned __int64 __xgetbv(int);
 #			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
 #		endif
 #	else
-#		define jBREAKPOINT() __debugbreak();
+#		define jBREAKPOINT() debug_break();
 #		ifdef wxASSERT
 #			define jASSUME(exp) wxASSERT(exp)
 #		else
