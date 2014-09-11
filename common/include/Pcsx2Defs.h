@@ -82,32 +82,21 @@ extern "C" unsigned __int64 __xgetbv(int);
 // level conditionals).  Normally not a concern, but if you stick if( IsDevbuild ) in
 // some tight loops it will likely make debug builds unusably slow.
 //
-#ifdef __cplusplus
-#	ifdef PCSX2_DEVBUILD
-		static const bool IsDevBuild = true;
-#	else
-		static const bool IsDevBuild = false;
-#	endif
 
-#	ifdef PCSX2_DEBUG
-		static const bool IsDebugBuild = true;
-#	else
-		static const bool IsDebugBuild = false;
-#	endif
+#ifndef __cplusplus
+#	include <stdbool.h>
+#endif
 
+#ifdef PCSX2_DEVBUILD
+	static const bool IsDevBuild = true;
 #else
+	static const bool IsDevBuild = false;
+#endif
 
-#	ifdef PCSX2_DEVBUILD
-		static const u8 IsDevBuild = 1;
-#	else
-		static const u8 IsDevBuild = 0;
-#	endif
-
-#	ifdef PCSX2_DEBUG
-		static const u8 IsDebugBuild = 1;
-#	else
-		static const u8 IsDebugBuild = 0;
-#	endif
+#ifdef PCSX2_DEBUG
+	static const bool IsDebugBuild = true;
+#else
+	static const bool IsDebugBuild = false;
 #endif
 
 #ifdef PCSX2_DEBUG
