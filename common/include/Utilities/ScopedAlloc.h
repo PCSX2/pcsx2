@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Exceptions.h"
+#include "Pcsx2Defs.h"
 
 // pxUSE_SECURE_MALLOC - enables bounds checking on scoped malloc allocations.
 
