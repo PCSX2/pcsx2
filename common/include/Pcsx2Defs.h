@@ -220,7 +220,14 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
-#	define __fastcall		__attribute__((fastcall))
+// 64-bits builds don't need (nor have) fastcall, as both the Microsoft and
+// System V calling conventions pass a lot of arguments in registers anyway.
+#	ifdef __x86_64__
+#		define __fastcall
+#	else
+#		define __fastcall		__attribute__((fastcall))
+#	endif
+
 #	define _inline			__inline__ __attribute__((unused))
 #	ifdef NDEBUG
 #		define __forceinline	__attribute__((always_inline,unused))
