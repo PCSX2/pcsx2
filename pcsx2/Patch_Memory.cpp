@@ -289,27 +289,136 @@ void handle_extended_t( IniPatch *p)
             }
             else if (p->addr < 0xE0000000)
             {
-                if ((((u32)p->data & 0xFFFF0000) == 0x00000000) ||
-                    (((u32)p->data & 0xFFFF0000) == 0x00100000) ||
-                    (((u32)p->data & 0xFFFF0000) == 0x00200000) ||
-                    (((u32)p->data & 0xFFFF0000) == 0x00300000))
+                if (((u32)p->data & 0xFFFF0000) == 0x00000000)      // Daaaaaaa 0000dddd
                 {
                     u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-                    if (mem != (0x0000FFFF & (u32)p->data)) SkipCount = 1;
+                    if (mem != (0x0000FFFF & (u32)p->data))
+					{
+						SkipCount = 1;
+					}
+                    PrevCheatType = 0;
+                }
+				else if (((u32)p->data & 0xFFFF0000) == 0x00100000) // Daaaaaaa 0010dddd
+                {
+                    u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+                    if (mem == (0x0000FFFF & (u32)p->data))
+					{
+						SkipCount = 1;
+					}
+                    PrevCheatType = 0;
+                }
+                else if (((u32)p->data & 0xFFFF0000) == 0x00200000) // Daaaaaaa 0020dddd
+                {
+                    u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+                    if (mem >= (0x0000FFFF & (u32)p->data))
+					{
+						SkipCount = 1;
+					}
+                    PrevCheatType = 0;
+                }
+				else if (((u32)p->data & 0xFFFF0000) == 0x00300000) // Daaaaaaa 0030dddd
+                {
+                    u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+                    if (mem <= (0x0000FFFF & (u32)p->data))
+					{
+						SkipCount = 1;
+					}
                     PrevCheatType = 0;
                 }
             }
             else if (p->addr < 0xF0000000)
             {
-                if (((u32)p->data & 0xC0000000) == 0x00000000)
-                if ((((u32)p->data & 0xF0000000) == 0x00000000) ||
-                    (((u32)p->data & 0xF0000000) == 0x10000000) ||
-                    (((u32)p->data & 0xF0000000) == 0x20000000) ||
-                    (((u32)p->data & 0xF0000000) == 0x30000000))
+                if ((((u32)p->data & 0xF0000000) == 0x00000000))      // Ezyyvvvv 0aaaaaaa
                 {
-                    u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
-                    if (mem != (0x0000FFFF & (u32)p->addr)) SkipCount = ((u32)p->addr & 0xFFF0000) / 0x10000;
-                    PrevCheatType = 0;
+					u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+					if (z == 0)      // E0yyvvvv 0aaaaaaa 
+					{
+						u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+						if (mem16 != (0x0000FFFF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
+					else if (z == 1) // E1yy00vv 0aaaaaaa
+					{
+	                    u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+						if (mem8 != (0x000000FF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
+                }
+				else if ((((u32)p->data & 0xF0000000) == 0x10000000)) // Ezyyvvvv 1aaaaaaa
+                {
+					u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+					if (z == 0)      // E0yyvvvv 1aaaaaaa 
+					{
+						u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+						if (mem16 == (0x0000FFFF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
+					else if (z == 1) // E1yy00vv 1aaaaaaa
+					{
+	                    u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+						if (mem8 == (0x000000FF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
+                }
+				else if ((((u32)p->data & 0xF0000000) == 0x20000000)) // Ezyyvvvv 2aaaaaaa
+                {
+					u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+					if (z == 0)      // E0yyvvvv 2aaaaaaa 
+					{
+						u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+						if (mem16 >= (0x0000FFFF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
+					else if (z == 1) // E1yy00vv 2aaaaaaa
+					{
+	                    u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+						if (mem8 >= (0x000000FF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
+                }
+				else if ((((u32)p->data & 0xF0000000) == 0x30000000)) // Ezyyvvvv 3aaaaaaa
+                {
+					u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+					if (z == 0)      // E0yyvvvv 3aaaaaaa 
+					{
+						u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+						if (mem16 <= (0x0000FFFF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
+					else if (z == 1) // E1yy00vv 3aaaaaaa
+					{
+	                    u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+						if (mem8 <= (0x000000FF & (u32)p->addr))
+						{
+							SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+						}
+						PrevCheatType = 0;
+					}
                 }
             }
 	}
