@@ -36,6 +36,7 @@ for ARG in "$@"; do
         --asan        ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --wx30        ) flags+=(-DWX28_API=FALSE) ;;
+        --64-bit-dont-work ) flags+=(-D64_BIT_BUILD_DONT_WORK=TRUE) ;;
 
         *)
             # Unknown option
@@ -55,6 +56,8 @@ for ARG in "$@"; do
             echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
             echo "--sdl2          : Build with SDL2 (crash if wx is linked to SDL1)"
             echo "--gles          : Replace openGL backend of GSdx by openGLES3"
+            echo
+            echo "--64-bit-dont-work : Don't use it!"
             exit 1
     esac
 done

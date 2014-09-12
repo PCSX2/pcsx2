@@ -59,7 +59,7 @@ option(USE_ASAN "Enable address sanitizer")
 #-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
-option(64BIT_BUILD "Enable a x86_64 build instead of cross compiling (developer option)" OFF)
+option(64BIT_BUILD_DONT_WORK "Enable a x86_64 build instead of cross compiling (WARNING: NOTHING WORK)" OFF)
 
 # Architecture bitness detection
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -71,7 +71,7 @@ endif()
 # Print a clear message that 64bits is not supported
 if(_ARCH_64)
     message(WARNING "
-    PCSX2 does not support a 64-bits environment and has no plan to support a 64-bits architecture in the future.
+    PCSX2 does not support a 64-bits environment and has no yet a plan to support it.
     It would need a complete rewrite of the core emulator and a lot of time.
 
     You can still run a 32-bits binary if you install all 32-bits libraries (runtime and dev).")
