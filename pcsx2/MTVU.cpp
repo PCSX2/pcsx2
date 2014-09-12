@@ -217,7 +217,7 @@ __fi u32 VU_Thread::Read()
 
 __fi void VU_Thread::Read(void* dest, u32 size)
 {
-	memcpy_fast(dest, &buffer[read_pos], size);
+	memcpy(dest, &buffer[read_pos], size);
 	incReadPos(size_u32(size));
 }
 
@@ -240,7 +240,7 @@ __fi void VU_Thread::Write(u32 val)
 }
 __fi void VU_Thread::Write(void* src, u32 size)
 {
-	memcpy_fast(GetWritePtr(), src, size);
+	memcpy(GetWritePtr(), src, size);
 	write_offset += size_u32(size);
 }
 

@@ -898,7 +898,7 @@ static VuFunctionHeader* SuperVURecompileProgram(u32 startpc, int vuindex)
 #ifdef SUPERVU_CACHING
 		//memxor_mmx(r.checksum, &VU->Micro[r.start], r.size);
 		r.pmem = malloc(r.size);
-		memcpy_fast(r.pmem, &VU->Micro[r.start], r.size);
+		memcpy(r.pmem, &VU->Micro[r.start], r.size);
 #endif
 		s_pFnHeader->ranges.push_back(r);
 	}

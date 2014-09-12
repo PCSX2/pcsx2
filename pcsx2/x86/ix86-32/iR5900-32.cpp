@@ -1016,8 +1016,8 @@ void SaveBranchState()
 	s_psaveInstInfo = g_pCurInstInfo;
 
 	// save all mmx regs
-	memcpy_const(s_saveMMXregs, mmxregs, sizeof(mmxregs));
-	memcpy_const(s_saveXMMregs, xmmregs, sizeof(xmmregs));
+	memcpy(s_saveMMXregs, mmxregs, sizeof(mmxregs));
+	memcpy(s_saveXMMregs, xmmregs, sizeof(xmmregs));
 }
 
 void LoadBranchState()
@@ -1031,8 +1031,8 @@ void LoadBranchState()
 	g_pCurInstInfo = s_psaveInstInfo;
 
 	// restore all mmx regs
-	memcpy_const(mmxregs, s_saveMMXregs, sizeof(mmxregs));
-	memcpy_const(xmmregs, s_saveXMMregs, sizeof(xmmregs));
+	memcpy(mmxregs, s_saveMMXregs, sizeof(mmxregs));
+	memcpy(xmmregs, s_saveXMMregs, sizeof(xmmregs));
 }
 
 void iFlushCall(int flushtype)
@@ -2179,7 +2179,7 @@ StartRecomp:
 			}
 		}
 
-		memcpy_fast(&(*recRAMCopy)[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
+		memcpy(&(*recRAMCopy)[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
 	}
 
 	s_pCurBlock->SetFnptr((uptr)recPtr);

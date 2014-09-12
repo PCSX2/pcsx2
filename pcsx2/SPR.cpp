@@ -97,7 +97,7 @@ int  _SPR0chain()
 			//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
 			//the cycle delay out of the way before the end.
 			partialqwc = spr0ch.qwc;
-			memcpy_qwc(pMem, &psSu128(spr0ch.sadr), partialqwc);
+			memcpy(pMem, &psSu128(spr0ch.sadr), partialqwc*16);
 
 			// clear VU mem also!
 			TestClearVUs(spr0ch.madr, partialqwc, true);
@@ -151,7 +151,7 @@ void _SPR0interleave()
 			case MFD_RESERVED:
 				// clear VU mem also!
 				TestClearVUs(spr0ch.madr, spr0ch.qwc, true);
-				memcpy_qwc(pMem, &psSu128(spr0ch.sadr), spr0ch.qwc);
+				memcpy(pMem, &psSu128(spr0ch.sadr), spr0ch.qwc*16);
 				break;
  		}
 		spr0ch.sadr += spr0ch.qwc * 16;
@@ -322,7 +322,7 @@ __fi static void SPR1transfer(const void* data, int qwc)
 		TestClearVUs(spr1ch.madr, spr1ch.qwc, false);
 	}
 
-	memcpy_qwc(&psSu128(spr1ch.sadr), data, qwc);
+	memcpy(&psSu128(spr1ch.sadr), data, qwc*16);
 	spr1ch.sadr += qwc * 16;
 }
 
@@ -381,7 +381,7 @@ void _SPR1interleave()
 		spr1ch.qwc = std::min(tqwc, qwc);
 		qwc -= spr1ch.qwc;
 		pMem = SPRdmaGetAddr(spr1ch.madr, false);
-		memcpy_qwc(&psSu128(spr1ch.sadr), pMem, spr1ch.qwc);
+		memcpy(&psSu128(spr1ch.sadr), pMem, spr1ch.qwc*16);
 		spr1ch.sadr += spr1ch.qwc * 16;
 		spr1ch.madr += (sqwc + spr1ch.qwc) * 16;
 	}

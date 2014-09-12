@@ -2568,7 +2568,7 @@ void ZeroGS::Flush(int context)
 	g_nCurVBOIndex = (g_nCurVBOIndex+1)%g_vboBuffers.size();
 	glBufferData(GL_ARRAY_BUFFER, curvb.nCount * sizeof(VertexGPU), curvb.pBufferData, GL_STREAM_DRAW);
 //	void* pdata = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-//	memcpy_amd(pdata, curvb.pBufferData, curvb.nCount * sizeof(VertexGPU));
+//	memcpy(pdata, curvb.pBufferData, curvb.nCount * sizeof(VertexGPU));
 //	glUnmapBuffer(GL_ARRAY_BUFFER);
 	SET_STREAM();
 
@@ -2652,7 +2652,7 @@ void ZeroGS::Flush(int context)
 					}
 
 					if( curvb.tex0.cpsm <= 1 ) { // 32 bit
-						memcpy_amd(&data[0], g_pbyGSClut+nClutOffset, clutsize);
+						memcpy(&data[0], g_pbyGSClut+nClutOffset, clutsize);
 					}
 					else {
 						u16* pClutBuffer = (u16*)(g_pbyGSClut + nClutOffset);
@@ -5779,7 +5779,7 @@ void ZeroGS::CaptureFrame()
 
 //  u8* pend = (u8*)&data[0] + (nBackbufferHeight-1)*nBackbufferWidth*4;
 //  for(int i = 0; i < conf.height; ++i) {
-//	  memcpy_amd(&mem[nBackbufferWidth*4*i], pend - nBackbufferWidth*4*i, nBackbufferWidth * 4);
+//	  memcpy(&mem[nBackbufferWidth*4*i], pend - nBackbufferWidth*4*i, nBackbufferWidth * 4);
 //  }
 
 	int fps = SMODE1->CMOD == 3 ? 50 : 60;

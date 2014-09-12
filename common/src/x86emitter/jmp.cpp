@@ -60,7 +60,7 @@ void xSmartJump::SetTarget()
 		u8* destpos = xGetPtr();
 		const int copylen = (sptr)target - (sptr)saveme;
 
-		memcpy_fast( destpos, saveme, copylen );
+		memcpy( destpos, saveme, copylen );
 		xSetPtr( target - spacer );
 	}
 }

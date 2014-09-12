@@ -36,7 +36,6 @@ set(zerogsSources
 	GSmain.cpp
 	GLWinX11.cpp
 	Mem.cpp
-	memcpy_amd.cpp
 	rasterfont.cpp
 	Regs.cpp
 	targets.cpp

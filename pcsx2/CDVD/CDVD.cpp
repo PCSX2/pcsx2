@@ -725,7 +725,7 @@ int cdvdReadSector() {
 		mdest[11] = 0;
 
 		// normal 2048 bytes of sector data
-		memcpy_const(&mdest[12], cdr.Transfer, 2048);
+		memcpy(&mdest[12], cdr.Transfer, 2048);
 
 		// 4 bytes of edc (not calculated at present)
 		mdest[2060] = 0;
@@ -735,7 +735,7 @@ int cdvdReadSector() {
 	}
 	else
 	{
-		memcpy_fast( mdest, cdr.Transfer, cdvd.BlockSize);
+		memcpy( mdest, cdr.Transfer, cdvd.BlockSize);
 	}
 
 	// decrypt sector's bytes
@@ -1567,7 +1567,7 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 				cdvd.Param[cdvd.ParamP-5], cdvd.Param[cdvd.ParamP-3], cdvd.Param[cdvd.ParamP-2], cdvd.Param[cdvd.ParamP-1]);
 			Console.WriteLn("RTC Write Sec %d Min %d Hr %d Day %d Month %d Year %d", cdvd.RTC.second, cdvd.RTC.minute,
 				cdvd.RTC.hour, cdvd.RTC.day, cdvd.RTC.month, cdvd.RTC.year);*/
-			//memcpy_fast((u8*)&cdvd.RTC, cdvd.Param, 7);
+			//memcpy((u8*)&cdvd.RTC, cdvd.Param, 7);
 			break;
 
 		case 0x0A: // sceCdReadNVM (2:3)
@@ -1907,7 +1907,7 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 			}
 			else
 			{
-				memcpy_fast(cdvd.mg_buffer + cdvd.mg_size, cdvd.Param, cdvd.ParamC);
+				memcpy(cdvd.mg_buffer + cdvd.mg_size, cdvd.Param, cdvd.ParamC);
 				cdvd.mg_size += cdvd.ParamC;
 				cdvd.Result[0] = 0; // 0 complete ; 1 busy ; 0x80 error
 			}
@@ -1915,9 +1915,9 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 
 		case 0x8E: // sceMgReadData
 			SetResultSize( std::min(16, cdvd.mg_size) );
-			memcpy_fast(cdvd.Result, cdvd.mg_buffer, cdvd.ResultC);
+			memcpy(cdvd.Result, cdvd.mg_buffer, cdvd.ResultC);
 			cdvd.mg_size -= cdvd.ResultC;
-			memcpy_fast(cdvd.mg_buffer, cdvd.mg_buffer+cdvd.ResultC, cdvd.mg_size);
+			memcpy(cdvd.mg_buffer, cdvd.mg_buffer+cdvd.ResultC, cdvd.mg_size);
 			break;
 
 		case 0x88: // secrman: __mechacon_auth_0x88	//for now it is the same; so, fall;)
@@ -1984,7 +1984,7 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 		{
 			SetResultSize(3);//in:0
 			int bit_ofs = mg_BIToffset(cdvd.mg_buffer);
-			memcpy_fast(cdvd.mg_buffer, &cdvd.mg_buffer[bit_ofs], 8+16*cdvd.mg_buffer[bit_ofs+4]);
+			memcpy(cdvd.mg_buffer, &cdvd.mg_buffer[bit_ofs], 8+16*cdvd.mg_buffer[bit_ofs+4]);
 
 			cdvd.mg_maxsize = 0; // don't allow any write
 			cdvd.mg_size = 8+16*cdvd.mg_buffer[4];//new offset, i just moved the data

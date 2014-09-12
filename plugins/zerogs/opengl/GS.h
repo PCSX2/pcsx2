@@ -728,7 +728,6 @@ char *SysLibError();					// Gets previous error loading sysbols
 void SysCloseLibrary(void *lib);		// Closes Library
 void SysMessage(char *fmt, ...);
 
-extern "C" void * memcpy_amd(void *dest, const void *src, size_t n);
 extern "C" u8 memcmp_mmx(const void *dest, const void *src, int n);
 
 template <typename T>

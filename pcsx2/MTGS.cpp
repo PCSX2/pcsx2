@@ -181,7 +181,7 @@ void SysMtgsThread::OpenPlugin()
 {
 	if( m_PluginOpened ) return;
 
-	memcpy_aligned( RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS) );
+	memcpy( RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS) );
 	GSsetBaseMem( RingBuffer.Regs );
 	GSirqCallback( dummyIrqCallback );
 
@@ -626,7 +626,7 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 	if (syncRegs) {
 		ScopedLock lock(m_mtx_WaitGS);
 		// Completely synchronize GS and MTGS register states.
-		memcpy_fast(RingBuffer.Regs, PS2MEM_GS, sizeof(RingBuffer.Regs));
+		memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(RingBuffer.Regs));
 	}
 }
 

@@ -89,7 +89,7 @@ class VB
 			assert(pBufferData != NULL);
 			nNumVertices *= 2;
 			VertexGPU* ptemp = (VertexGPU*)_aligned_malloc(sizeof(VertexGPU) * nNumVertices, 256);
-			memcpy_amd(ptemp, pBufferData, sizeof(VertexGPU) * nCount);
+			memcpy(ptemp, pBufferData, sizeof(VertexGPU) * nCount);
 			assert(nCount <= nNumVertices);
 			_aligned_free(pBufferData);
 			pBufferData = ptemp;

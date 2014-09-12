@@ -181,8 +181,8 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC) {
 
 // Caches Micro Program
 __ri void mVUcacheProg(microVU& mVU, microProgram& prog) {
-	if (!mVU.index)	memcpy_const(prog.data, mVU.regs().Micro, 0x1000);
-	else			memcpy_const(prog.data, mVU.regs().Micro, 0x4000);
+	if (!mVU.index)	memcpy(prog.data, mVU.regs().Micro, 0x1000);
+	else			memcpy(prog.data, mVU.regs().Micro, 0x4000);
 	mVUdumpProg(mVU, prog);
 }
 

@@ -220,7 +220,7 @@ static void CALLBACK GS_Legacy_gifTransfer( const u32* src, u32 data )
 		// the transfer is most likely wrapped/partial.  We need to queue it into a linear buffer
 		// and then send it on its way on the next copy.
 
-		memcpy_qwc( path1queue, src128, data );
+		memcpy( path1queue, src128, data*16);
 		path1size = data;
 	}
 	else
@@ -235,7 +235,7 @@ static void CALLBACK GS_Legacy_gifTransfer( const u32* src, u32 data )
 			if (src128 == RingBuffer.m_Ring)
 			{
 				pxAssert( (data+path1size) <= 0x400 );
-				memcpy_qwc( &path1queue[path1size], src128, data );
+				memcpy( &path1queue[path1size], src128, data*16);
 				path1size += data;
 			}
 			GSgifTransfer1( (u32*)path1queue, 0 );
@@ -455,7 +455,7 @@ static s32 CALLBACK CDVD_getBuffer2(u8* buffer)
 	u8* pb = CDVD->getBuffer();
 	if(pb == NULL) return -2;
 
-	memcpy_fast( buffer, pb, lastReadSize );
+	memcpy( buffer, pb, lastReadSize );
 	return 0;
 }
 

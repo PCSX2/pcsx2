@@ -222,7 +222,7 @@ struct Gif_Path {
 		}
 		//DevCon.WriteLn("Realign Packet [%d]", curSize - offset);
 		if (intersect) memmove(buffer, &buffer[offset], curSize - offset);
-		else       memcpy_fast(buffer, &buffer[offset], curSize - offset);
+		else       memcpy(buffer, &buffer[offset], curSize - offset);
 		curSize      -= offset;
 		curOffset     = gsPack.size;
 		gsPack.offset = 0;
@@ -241,8 +241,7 @@ struct Gif_Path {
 			mtgsReadWait(); // Let MTGS run to free up buffer space
 		}
 		pxAssertDev(curSize+size<=buffSize, "Gif Path Buffer Overflow!");
-		if (aligned) memcpy_qwc (&buffer[curSize], pMem, size/16);
-		else		 memcpy_fast(&buffer[curSize], pMem, size);
+		memcpy (&buffer[curSize], pMem, size);
 		curSize     += size;
 	}
 

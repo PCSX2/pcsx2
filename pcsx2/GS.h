@@ -442,27 +442,27 @@ extern __aligned(32) MTGS_BufferedData RingBuffer;
 inline void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart, uint destSize, uint len ) {
 	uint endpos = destStart + len;
 	if ( endpos < destSize ) {
-		memcpy_qwc(&destBase[destStart], src, len );
+		memcpy(&destBase[destStart], src, len*16);
 		destStart += len;
 	}
 	else {
 		uint firstcopylen = destSize - destStart;
-		memcpy_qwc(&destBase[destStart], src, firstcopylen );
+		memcpy(&destBase[destStart], src, firstcopylen*16);
 		destStart = endpos % destSize;
-		memcpy_qwc(destBase, src+firstcopylen, destStart );
+		memcpy(destBase, src+firstcopylen, destStart*16);
 	}
 }
 
 inline void MemCopy_WrappedSrc( const u128* srcBase, uint& srcStart, uint srcSize, u128* dest, uint len ) {
 	uint endpos = srcStart + len;
 	if ( endpos < srcSize ) {
-		memcpy_qwc(dest, &srcBase[srcStart], len );
+		memcpy(dest, &srcBase[srcStart], len*16);
 		srcStart += len;
 	}
 	else {
 		uint firstcopylen = srcSize - srcStart;
-		memcpy_qwc(dest, &srcBase[srcStart], firstcopylen );
+		memcpy(dest, &srcBase[srcStart], firstcopylen*16);
 		srcStart = endpos % srcSize;
-		memcpy_qwc(dest+firstcopylen, srcBase, srcStart );
+		memcpy(dest+firstcopylen, srcBase, srcStart*16);
 	}
 }

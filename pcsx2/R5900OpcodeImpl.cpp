@@ -216,7 +216,7 @@ static int __Deci2Call(int call, u32 *addr)
 					pdeciaddr += (d2ptr[4]+0xc) % 16;
 
 				const int copylen = std::min<uint>(255, d2ptr[1]-0xc);
-				memcpy_fast(deci2buffer, pdeciaddr, copylen );
+				memcpy(deci2buffer, pdeciaddr, copylen );
 				deci2buffer[copylen] = '\0';
 
 				eeConLog( ShiftJIS_ConvertString(deci2buffer) );

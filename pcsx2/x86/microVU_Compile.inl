@@ -427,10 +427,10 @@ __fi void mVUinitFirstPass(microVU& mVU, uptr pState, u8* thisPtr) {
 	mVU.p					= 0;	// All blocks start at p index #0
 	mVU.q					= 0;	// All blocks start at q index #0
 	if ((uptr)&mVUregs != pState) {	// Loads up Pipeline State Info
-		memcpy_const((u8*)&mVUregs, (u8*)pState, sizeof(microRegInfo));
+		memcpy((u8*)&mVUregs, (u8*)pState, sizeof(microRegInfo));
 	}
 	if (doEarlyExit(mVU) && ((uptr)&mVU.prog.lpState != pState)) {
-		memcpy_const((u8*)&mVU.prog.lpState, (u8*)pState, sizeof(microRegInfo));
+		memcpy((u8*)&mVU.prog.lpState, (u8*)pState, sizeof(microRegInfo));
 	}
 	mVUblock.x86ptrStart	= thisPtr;
 	mVUpBlock				= mVUblocks[mVUstartPC/2]->add(&mVUblock); // Add this block to block manager
@@ -530,7 +530,7 @@ void mVUDoTBit(microVU& mVU, microFlagCycles* mFC)
 
 void mVUSaveFlags(microVU& mVU,microFlagCycles &mFC, microFlagCycles &mFCBackup)
 {
-	memcpy_fast(&mFCBackup, &mFC, sizeof(microFlagCycles));
+	memcpy(&mFCBackup, &mFC, sizeof(microFlagCycles));
 	mVUsetFlags(mVU, mFCBackup);	   // Sets Up Flag instances
 }
 void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {

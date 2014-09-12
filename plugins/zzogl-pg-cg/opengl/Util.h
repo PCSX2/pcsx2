@@ -68,7 +68,6 @@ extern "C" char* CALLBACK PS2EgetLibName(void);
 #include "GSDump.h"
 
 #include "Utilities/MemcpyFast.h"
-#define memcpy_amd memcpy_fast
 
 extern wxString s_strIniPath; // Air's new (r2361) new constant for ini file path
 

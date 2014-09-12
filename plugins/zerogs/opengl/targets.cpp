@@ -1789,7 +1789,7 @@ ZeroGS::CMemoryTarget* ZeroGS::CMemoryTargetMngr::GetMemoryTarget(const tex0Info
 		targ->clut.resize(clutsize);
 
 		if( tex0.cpsm <= 1 ) { // 32 bit
-			memcpy_amd(&targ->clut[0], g_pbyGSClut+nClutOffset, clutsize);
+			memcpy(&targ->clut[0], g_pbyGSClut+nClutOffset, clutsize);
 		}
 		else {
 			u16* pClutBuffer = (u16*)(g_pbyGSClut + nClutOffset);
@@ -1854,7 +1854,7 @@ ZeroGS::CMemoryTarget* ZeroGS::CMemoryTargetMngr::GetMemoryTarget(const tex0Info
 		assert(targ->ptex->ref > 0 );
 	}
 
-	memcpy_amd(targ->ptex->memptr, g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height);
+	memcpy(targ->ptex->memptr, g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height);
 	vector<u8> texdata;
 	u8* ptexdata = NULL;
 
