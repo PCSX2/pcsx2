@@ -87,7 +87,13 @@ else
     cmake "${flags[@]}" $root 2>&1 | tee -a $log
 fi
 
-make -j "$(grep -w -c processor /proc/cpuinfo)" 2>&1 | tee -a $log
+if [[ $(uname -s) == 'Darwin' ]]; then
+    ncpu=$(sysctl -n hw.ncpu)
+else
+    ncpu=$(grep -w -c processor /proc/cpuinfo)
+fi
+
+make -j"$ncpu" 2>&1 | tee -a $log
 make install 2>&1 | tee -a $log
 
 exit 0
