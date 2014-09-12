@@ -22,39 +22,41 @@ useClang=0
 
 for ARG in "$@"; do
     case "$ARG" in
-        --clean       ) cleanBuild=1 ;;
-        --clang       ) flags+=(-DUSE_CLANG=TRUE); useClang=1; ;;
-        --dev|--devel ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
-        --dbg|--debug ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
-        --strip       ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
-        --release     ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
-        --glsl        ) flags+=(-DGLSL_API=TRUE) ;;
-        --egl         ) flags+=(-DEGL_API=TRUE) ;;
-        --gles        ) flags+=(-DGLES_API=TRUE) ;;
-        --sdl2        ) flags+=(-DSDL2_API=TRUE) ;;
-        --extra       ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
-        --asan        ) flags+=(-DUSE_ASAN=TRUE) ;;
-        --wx28        ) flags+=(-DWX28_API=TRUE) ;;
-        --wx30        ) flags+=(-DWX28_API=FALSE) ;;
+        --clean              ) cleanBuild=1 ;;
+        --clang              ) flags+=(-DUSE_CLANG=TRUE); useClang=1; ;;
+        --dev|--devel        ) flags+=(-DCMAKE_BUILD_TYPE=Devel) ;;
+        --dbg|--debug        ) flags+=(-DCMAKE_BUILD_TYPE=Debug) ;;
+        --strip              ) flags+=(-DCMAKE_BUILD_STRIP=TRUE) ;;
+        --release            ) flags+=(-DCMAKE_BUILD_TYPE=Release) ;;
+        --glsl               ) flags+=(-DGLSL_API=TRUE) ;;
+        --egl                ) flags+=(-DEGL_API=TRUE) ;;
+        --gles               ) flags+=(-DGLES_API=TRUE) ;;
+        --sdl2               ) flags+=(-DSDL2_API=TRUE) ;;
+        --extra              ) flags+=(-DEXTRA_PLUGINS=TRUE) ;;
+        --asan               ) flags+=(-DUSE_ASAN=TRUE) ;;
+        --wx28               ) flags+=(-DWX28_API=TRUE) ;;
+        --wx30               ) flags+=(-DWX28_API=FALSE) ;;
+        --64-bit-unsupported ) flags+=(-D64BIT_BUILD=ON) ;;
 
         *)
             # Unknown option
             echo "** User options **"
-            echo "--dev / --devel : Build PCSX2 as a Development build."
-            echo "--debug         : Build PCSX2 as a Debug build."
-            echo "--release       : Build PCSX2 as a Release build."
-            echo "--clean         : Do a clean build."
-            echo "** Developper option **"
-            echo "--clang         : Build with Clang/llvm"
-            echo "--extra         : Build all plugins"
-            echo "--asan          : Enable with Address sanitizer"
+            echo "--dev / --devel      : Build PCSX2 as a Development build."
+            echo "--debug              : Build PCSX2 as a Debug build."
+            echo "--release            : Build PCSX2 as a Release build."
+            echo "--clean              : Do a clean build."
+            echo "** Developer options **"
+            echo "--clang              : Build with Clang/llvm"
+            echo "--extra              : Build all plugins"
+            echo "--asan               : Enable with Address sanitizer"
             echo
-            echo "--wx28          : Force wxWidget 2.8"
-            echo "--wx30          : Allow to use wxWidget 3.0"
-            echo "--glsl          : Replace CG backend of ZZogl by GLSL"
-            echo "--egl           : Replace GLX by EGL (ZZogl plugins only)"
-            echo "--sdl2          : Build with SDL2 (crash if wx is linked to SDL1)"
-            echo "--gles          : Replace openGL backend of GSdx by openGLES3"
+            echo "--wx28               : Force wxWidget 2.8"
+            echo "--wx30               : Allow to use wxWidget 3.0"
+            echo "--glsl               : Replace CG backend of ZZogl by GLSL"
+            echo "--egl                : Replace GLX by EGL (ZZogl plugins only)"
+            echo "--sdl2               : Build with SDL2 (crash if wx is linked to SDL1)"
+            echo "--gles               : Replace openGL backend of GSdx by openGLES3"
+            echo "--64-bit-unsupported : Compile in 64-bits mode (unsupported, will not work)"
             exit 1
     esac
 done
