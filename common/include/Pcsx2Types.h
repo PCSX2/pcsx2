@@ -36,6 +36,8 @@
 
 #if defined(_MSC_VER)
 
+// In doubt, we keep this define for VS2010
+
 typedef __int8  s8;
 typedef __int16 s16;
 typedef __int32 s32;
@@ -45,8 +47,6 @@ typedef unsigned __int8  u8;
 typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
-
-typedef unsigned int uint;
 
 #else // _MSC_VER*/
 
@@ -65,14 +65,14 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+#define LONG long
+
+#endif //_MSC_VER
+
 typedef uintptr_t uptr;
 typedef intptr_t sptr;
 
 typedef unsigned int uint;
-
-#define LONG long
-
-#endif //_MSC_VER
 
 // --------------------------------------------------------------------------------------
 //  u128 / s128 - A rough-and-ready cross platform 128-bit datatype, Non-SSE style.
