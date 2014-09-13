@@ -16,17 +16,26 @@
 
 #include "../PrecompiledHeader.h"
 #include "PersistentThread.h"
-#include <sys/prctl.h>
 #include <unistd.h>
 
 // We wont need this until we actually have this more then just stubbed out, so I'm commenting this out
 // to remove an unneeded dependency.
 //#include "x86emitter/tools.h"
 
-#if !defined(__linux__) && !defined(__WXMAC__)
+#if defined(HAVE_PTHREAD_SETNAME_NP) || defined(__APPLE__)
+#	define SETTHREADNAME(name) pthread_setname_np(name)
+#else
+#	include <sys/prctl.h>
+// on Linux, pthread_setname_np() also exists, but it takes more
+// arguments (even though they are more or less ignored in glibc).
+// The difference being that calling prctl() directly silently
+// truncates the name to 16 bytes instead of not setting the
+// threadname.
+#	define SETTHREADNAME(name) prctl(PR_SET_NAME, name, 0, 0, 0)
+#endif
 
-#	pragma message( "LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/Mac distros.")
-
+#if !defined(__POSIX__)
+#	error "LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/Mac distros."
 #else
 
 // Note: assuming multicore is safer because it forces the interlocked routines to use
@@ -127,7 +136,7 @@ void Threading::pxThread::_DoSetThreadName( const char* name )
 {
 	// Extract of manpage: "The name can be up to 16 bytes long, and should be
 	//						null-terminated if it contains fewer bytes."
-	prctl(PR_SET_NAME, name, 0, 0, 0);
+	SETTHREADNAME(name);
 }
 
 #endif
