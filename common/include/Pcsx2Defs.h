@@ -23,6 +23,14 @@
 #define __linux__
 #endif
 
+// make sure __POSIX__ is defined for all systems where we assume POSIX
+// compliance
+#if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+#	if !defined(__POSIX__)
+#		define __POSIX__ 1
+#	endif
+#endif
+
 #include "Pcsx2Types.h"
 
 #ifdef _MSC_VER
