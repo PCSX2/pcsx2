@@ -56,38 +56,35 @@ __forceinline void Threading::DisableHiresScheduler()
 {
 }
 
+// Unit of time of GetThreadCpuTime/GetCpuTime
 u64 Threading::GetThreadTicksPerSecond()
 {
-	// Note the value is not correct but I'm not sure we can do better because 
-	// most modern system use a tickless system anyway
-	// Besides x86 architecture always returns 100;
-	/* A Forum post extract
-	   sysconf(SC_CLK_TCK) does not give the frequency of the timer interrupts in Linux. It gives
-	   the frequency of jiffies which is visible to userspace in things like the counters in various directories in /proc
-
-	   The actual frequency is hidden from userspace, deliberately. Indeed, some systems
-	   use dynamic ticks or "tickless" systems, so there aren't really any at all.
-	 */
-	u32 hertz = sysconf(_SC_CLK_TCK);
-	return hertz;
+	return 1000000;
 }
 
-u64 Threading::GetThreadCpuTime()
+// Helper function to get either either the current cpu usage
+// in called thread or in id thread
+static u64 get_thread_time(uptr id = 0)
 {
-	// Get the cpu time for the current thread.  Should be a measure of total time the
-	// thread has used on the CPU (scaled by the value returned by GetThreadTicksPerSecond(),
-	// which typically would be an OS-provided scalar or some sort).
-
 	clockid_t cid;
-	int err = pthread_getcpuclockid(pthread_self(), &cid);
-	if (err) return 0;
+	if (id) {
+		int err = pthread_getcpuclockid(id, &cid);
+		if (err) return 0;
+	} else {
+		cid = CLOCK_THREAD_CPUTIME_ID;
+	}
 
 	struct timespec ts;
-	err = clock_gettime(cid, &ts);
+	int err = clock_gettime(cid, &ts);
 	if (err) return 0;
-    unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
 
-	return timeJiff;
+	return (u64) ts.tv_sec * (u64) 1e6 + (u64) ts.tv_nsec / (u64) 1e3;
+}
+
+// Returns the current timestamp (not relative to a real world clock)
+u64 Threading::GetThreadCpuTime()
+{
+	return get_thread_time();
 }
 
 u64 Threading::pxThread::GetCpuTime() const
@@ -99,16 +96,7 @@ u64 Threading::pxThread::GetCpuTime() const
 
 	if (!m_native_id) return 0;
 
-	clockid_t cid;
-	int err = pthread_getcpuclockid(m_native_id, &cid);
-	if (err) return 0;
-
-	struct timespec ts;
-	err = clock_gettime(cid, &ts);
-	if (err) return 0;
-    unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
-
-	return timeJiff;
+	return get_thread_time(m_native_id);
 }
 
 void Threading::pxThread::_platform_specific_OnStartInThread()
