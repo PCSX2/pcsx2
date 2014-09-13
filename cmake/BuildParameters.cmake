@@ -78,7 +78,7 @@ if(_ARCH_64)
 endif()
 
 # 64 bits cross-compile specific configuration
-if(_ARCH_64 AND 64BIT_BUILD)
+if(_ARCH_64 AND 64BIT_BUILD_DONT_WORK)
     message("Compiling 64bit build on 64bit architecture")
     # Search library in /usr/lib64
     SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
