@@ -65,38 +65,36 @@ __forceinline void Threading::DisableHiresScheduler()
 {
 }
 
+// Returns the number of clock ticks per second, the default for most
+// architectures on linux is 100 (including x86), but the user can
+// configure this when compiling a kernel. Note the value is not correct
+// but I'm not sure we can do better because most modern system use a
+// tickless system anyway.
 u64 Threading::GetThreadTicksPerSecond()
 {
-	// Note the value is not correct but I'm not sure we can do better because 
-	// most modern system use a tickless system anyway
-	// Besides x86 architecture always returns 100;
-	/* A Forum post extract
-	   sysconf(SC_CLK_TCK) does not give the frequency of the timer interrupts in Linux. It gives
-	   the frequency of jiffies which is visible to userspace in things like the counters in various directories in /proc
-
-	   The actual frequency is hidden from userspace, deliberately. Indeed, some systems
-	   use dynamic ticks or "tickless" systems, so there aren't really any at all.
-	 */
-	u32 hertz = sysconf(_SC_CLK_TCK);
+	// A Forum post extract:
+	// sysconf(SC_CLK_TCK) does not give the frequency of the timer
+	// interrupts in Linux. It gives the frequency of jiffies which is
+	// visible to userspace in things like the counters in various
+	// directories in /proc The actual frequency is hidden from userspace,
+	// deliberately. Indeed, some systems use dynamic ticks or "tickless"
+	// systems, so there aren't really any at all.
+	static u32 hertz = sysconf(_SC_CLK_TCK);
 	return hertz;
 }
 
+// Returns the current timestamp (not relative to a real world clock) in
+// units of 100 nanoseconds. The weird units are to mirror the Windows
+// counterpart in WinThreads.cpp, which uses the GetThreadTimes() API.
 u64 Threading::GetThreadCpuTime()
 {
-	// Get the cpu time for the current thread.  Should be a measure of total time the
-	// thread has used on the CPU (scaled by the value returned by GetThreadTicksPerSecond(),
-	// which typically would be an OS-provided scalar or some sort).
-
-	clockid_t cid;
-	int err = pthread_getcpuclockid(pthread_self(), &cid);
-	if (err) return 0;
-
 	struct timespec ts;
-	err = clock_gettime(cid, &ts);
-	if (err) return 0;
-    unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
 
-	return timeJiff;
+	// CLOCK_THREAD_CPUTIME_ID exists since Linux 2.6.12
+	int res = clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+	if (res < 0) return 0;
+
+	return ts.tv_sec * (u64) 1e7 + (u64) ts.tv_nsec / (u64) 1e2;
 }
 
 u64 Threading::pxThread::GetCpuTime() const
@@ -115,9 +113,8 @@ u64 Threading::pxThread::GetCpuTime() const
 	struct timespec ts;
 	err = clock_gettime(cid, &ts);
 	if (err) return 0;
-    unsigned long timeJiff = (ts.tv_sec*1e6 + ts.tv_nsec / 1000)/1e6 * GetThreadTicksPerSecond();
 
-	return timeJiff;
+	return ts.tv_sec * (u64) 1e7 + (u64) ts.tv_nsec / (u64) 1e2;
 }
 
 void Threading::pxThread::_platform_specific_OnStartInThread()
