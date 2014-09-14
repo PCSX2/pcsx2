@@ -129,57 +129,6 @@ GtkWidget* CreateFilterComboBox()
 	return combo_box;
 }
 
-void toggle_widget_states( GtkWidget *widget, gpointer callback_data )
-{
-#if 0
-	int	render_type = gtk_combo_box_get_active(GTK_COMBO_BOX(render_combo_box));
-	bool hardware_render = ((render_type % 3) == 1);
-	
-	if (hardware_render)
-	{
-		gtk_widget_set_sensitive(filter_combo_box, true);
-		gtk_widget_set_sensitive(paltex_check, true);
-		gtk_widget_set_sensitive(fba_check, true);
-		gtk_widget_set_sensitive(native_res_check, true);
-
-		
-		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(native_res_check)))
-		{
-			gtk_widget_set_sensitive(fsaa_combo_box, false);
-			gtk_widget_set_sensitive(resx_spin, false);
-			gtk_widget_set_sensitive(resy_spin, false);
-		}
-		else
-		{
-			gtk_widget_set_sensitive(fsaa_combo_box, true);
-			
-			if (gtk_combo_box_get_active(GTK_COMBO_BOX(fsaa_combo_box)) == 0)
-			{
-				gtk_widget_set_sensitive(resx_spin, true);
-				gtk_widget_set_sensitive(resy_spin, true);
-			}
-			else
-			{
-				gtk_widget_set_sensitive(resx_spin, false);
-				gtk_widget_set_sensitive(resy_spin, false);
-			}
-		}
-
-	}
-	else
-	{
-		gtk_widget_set_sensitive(filter_combo_box, false);
-		gtk_widget_set_sensitive(paltex_check, false);
-		gtk_widget_set_sensitive(fba_check, false);
-		
-		gtk_widget_set_sensitive(native_res_check, false);
-		gtk_widget_set_sensitive(fsaa_combo_box, false);
-		gtk_widget_set_sensitive(resx_spin, false);
-		gtk_widget_set_sensitive(resy_spin, false);
-	}
-#endif
-}
-
 void set_hex_entry(GtkWidget *text_box, int hex_value) {
 	gchar* data=(gchar *)g_malloc(sizeof(gchar)*40);
 	sprintf(data,"%X", hex_value);
@@ -436,17 +385,10 @@ bool RunLinuxDialog()
 	gl_table = gtk_table_new(10, 2, false);
 	gtk_container_add(GTK_CONTAINER(gl_box), gl_table);
 
-	// For later
-#if 0
-	GtkWidget* gl_ct_label = gtk_label_new("Clear Texture:");
-	GtkWidget* gl_ct_combo = CreateGlComboBox("override_GL_ARB_clear_texture");
-	GtkWidget* gl_bt_label = gtk_label_new("Bindless Texture:");
-	GtkWidget* gl_bt_combo = CreateGlComboBox("override_GL_ARB_bindless_texture");
-#endif
 	GtkWidget* gl_bs_label = gtk_label_new("Buffer Storage:");
 	GtkWidget* gl_bs_combo = CreateGlComboBox("override_GL_ARB_buffer_storage");
-	GtkWidget* gl_mb_label = gtk_label_new("Multi bind:");
-	GtkWidget* gl_mb_combo = CreateGlComboBox("override_GL_ARB_multi_bind");
+	GtkWidget* gl_bt_label = gtk_label_new("Bindless Texture:");
+	GtkWidget* gl_bt_combo = CreateGlComboBox("override_GL_ARB_bindless_texture");
 	GtkWidget* gl_sso_label = gtk_label_new("Separate Shader:");
 	GtkWidget* gl_sso_combo = CreateGlComboBox("override_GL_ARB_separate_shader_objects");
 	GtkWidget* gl_ss_label = gtk_label_new("Shader Subroutine:");
@@ -455,23 +397,27 @@ bool RunLinuxDialog()
 	GtkWidget* gl_gs_combo = CreateGlComboBox("override_geometry_shader");
 	GtkWidget* gl_ils_label = gtk_label_new("Image Load Store:");
 	GtkWidget* gl_ils_combo = CreateGlComboBox("override_GL_ARB_shader_image_load_store");
-	GtkWidget* gl_ndbf_label = gtk_label_new("NV Float Depth Buffer:");
-	GtkWidget* gl_ndbf_combo = CreateGlComboBox("override_GL_NV_depth_buffer_float");
+	GtkWidget* gl_cc_label = gtk_label_new("Clip Control (depth accuracy):");
+	GtkWidget* gl_cc_combo = CreateGlComboBox("override_GL_ARB_clip_control");
+	GtkWidget* gl_ct_label = gtk_label_new("Clear Texture:");
+	GtkWidget* gl_ct_combo = CreateGlComboBox("override_GL_ARB_clear_texture");
 
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_gs_label, 0, 1, 0, 1);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_gs_combo, 1, 2, 0, 1);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_bs_label, 0, 1, 1, 2);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_bs_combo, 1, 2, 1, 2);
-	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_mb_label, 0, 1, 2, 3);
-	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_mb_combo, 1, 2, 2, 3);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_bt_label, 0, 1, 2, 3);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_bt_combo, 1, 2, 2, 3);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_sso_label, 0, 1, 3, 4);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_sso_combo, 1, 2, 3, 4);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ss_label, 0, 1, 4, 5);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ss_combo, 1, 2, 4, 5);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ils_label, 0, 1, 5, 6);
 	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ils_combo, 1, 2, 5, 6);
-	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ndbf_label, 0, 1, 6, 7);
-	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ndbf_combo, 1, 2, 6, 7);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_cc_label, 0, 1, 6, 7);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_cc_combo, 1, 2, 6, 7);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ct_label, 0, 1, 7, 8);
+	gtk_table_attach_defaults(GTK_TABLE(gl_table), gl_ct_combo, 1, 2, 7, 8);
 	// those one are properly detected so no need a gui
 #if 0
 override_GL_ARB_copy_image = -1
@@ -501,14 +447,9 @@ override_GL_ARB_shading_language_420pack = -1
 	gtk_container_add(GTK_CONTAINER(advance_box), hack_frame);
 	gtk_container_add(GTK_CONTAINER(advance_box), gl_frame);
 
-	g_signal_connect(render_combo_box, "changed", G_CALLBACK(toggle_widget_states), NULL);
-	g_signal_connect(fsaa_combo_box, "changed", G_CALLBACK(toggle_widget_states), NULL);
-	g_signal_connect(native_res_check, "toggled", G_CALLBACK(toggle_widget_states), NULL);
-
 	// Put the box in the dialog and show it to the world.
 	gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
 	gtk_widget_show_all (dialog);
-	toggle_widget_states(NULL, NULL);
 	return_value = gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (return_value == GTK_RESPONSE_ACCEPT)
@@ -567,18 +508,14 @@ override_GL_ARB_shading_language_420pack = -1
 		theApp.SetConfig("UserHacks", (int)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hack_enble_check)));
 		theApp.SetConfig("UserHacks_TCOffset", get_hex_entry(hack_tco_entry));
 
-	// For later
-#if 0
 		theApp.SetConfig("override_GL_ARB_clear_texture", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_ct_combo)) - 1);
 		theApp.SetConfig("override_GL_ARB_bindless_texture", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_bt_combo)) - 1);
-#endif
 		theApp.SetConfig("override_GL_ARB_buffer_storage", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_bs_combo)) - 1);
-		theApp.SetConfig("override_GL_ARB_multi_bind", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_mb_combo)) - 1);
 		theApp.SetConfig("override_GL_ARB_separate_shader_objects", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_sso_combo)) - 1);
 		theApp.SetConfig("override_GL_ARB_shader_subroutine", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_ss_combo)) - 1);
 		theApp.SetConfig("override_geometry_shader", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_gs_combo)) - 1);
 		theApp.SetConfig("override_GL_ARB_shader_image_load_store", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_ils_combo)) - 1);
-		theApp.SetConfig("override_GL_NV_depth_buffer_float", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_ndbf_combo)) - 1);
+		theApp.SetConfig("override_GL_ARB_clip_control", (int)gtk_combo_box_get_active(GTK_COMBO_BOX(gl_cc_combo)) - 1);
 
 		// NOT supported yet
 		theApp.SetConfig("msaa", 0);
