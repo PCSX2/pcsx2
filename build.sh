@@ -36,7 +36,7 @@ for ARG in "$@"; do
         --asan        ) flags+=(-DUSE_ASAN=TRUE) ;;
         --wx28        ) flags+=(-DWX28_API=TRUE) ;;
         --wx30        ) flags+=(-DWX28_API=FALSE) ;;
-        --64-bit-dont-work ) flags+=(-D64_BIT_BUILD_DONT_WORK=TRUE) ;;
+        --64-bit-dont-work ) flags+=(-D64BIT_BUILD_DONT_WORK=TRUE) ;;
 
         *)
             # Unknown option
