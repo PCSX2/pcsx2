@@ -206,7 +206,7 @@ set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
 set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wstrict-aliasing -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value")
 
-if (USE_CLANG)
+if (USE_CLANG AND NOT APPLE)
     # -Wno-deprecated-register: glib issue...
     set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register")
     set(COMMON_FLAG "${COMMON_FLAG} -no-integrated-as")
