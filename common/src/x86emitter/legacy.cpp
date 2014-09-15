@@ -157,7 +157,7 @@ DEFINE_OPCODE_ONEREG_LEGACY( NEG )
 #define DEFINE_LEGACY_MOVEXTEND( form, destbits, srcbits ) \
 	emitterT void MOV##form##destbits##R##srcbits##toR( x86IntRegType to, x86IntRegType from )				{ xMOV##form( xRegister##destbits( to ), xRegister##srcbits( from ) ); } \
 	emitterT void MOV##form##destbits##Rm##srcbits##toR( x86IntRegType to, x86IntRegType from, int offset )	{ xMOV##form( xRegister##destbits( to ), ptr##srcbits[xAddressReg( from ) + offset] ); } \
-	emitterT void MOV##form##destbits##M##srcbits##toR( x86IntRegType to, u32 from )						{ xMOV##form( xRegister##destbits( to ), ptr##srcbits[(u##srcbits*)from] ); }
+	emitterT void MOV##form##destbits##M##srcbits##toR( x86IntRegType to, uptr from )						{ xMOV##form( xRegister##destbits( to ), ptr##srcbits[(u##srcbits*)from] ); }
 
 DEFINE_LEGACY_MOVEXTEND( SX, 32, 16 )
 DEFINE_LEGACY_MOVEXTEND( ZX, 32, 16 )
@@ -231,9 +231,9 @@ emitterT void MUL32R( x86IntRegType from )		{ xUMUL( xRegister32(from) ); }
 /* imul eax by r32 to edx:eax */
 emitterT void IMUL32R( x86IntRegType from )		{ xMUL( xRegister32(from) ); }
 /* mul eax by m32 to edx:eax */
-emitterT void MUL32M( u32 from )				{ xUMUL( ptr32[(u32*)from] ); }
+emitterT void MUL32M( uptr from )				{ xUMUL( ptr32[(u32*)from] ); }
 /* imul eax by m32 to edx:eax */
-emitterT void IMUL32M( u32 from )				{ xMUL( ptr32[(u32*)from] ); }
+emitterT void IMUL32M( uptr from )				{ xMUL( ptr32[(u32*)from] ); }
 
 /* imul r32 by r32 to r32 */
 emitterT void IMUL32RtoR( x86IntRegType to, x86IntRegType from )
@@ -246,9 +246,9 @@ emitterT void DIV32R( x86IntRegType from )		{ xUDIV( xRegister32(from) ); }
 /* idiv eax by r32 to edx:eax */
 emitterT void IDIV32R( x86IntRegType from )		{ xDIV( xRegister32(from) ); }
 /* div eax by m32 to edx:eax */
-emitterT void DIV32M( u32 from )				{ xUDIV( ptr32[(u32*)from] ); }
+emitterT void DIV32M( uptr from )				{ xUDIV( ptr32[(u32*)from] ); }
 /* idiv eax by m32 to edx:eax */
-emitterT void IDIV32M( u32 from )				{ xDIV( ptr32[(u32*)from] ); }
+emitterT void IDIV32M( uptr from )				{ xDIV( ptr32[(u32*)from] ); }
 
 
 emitterT void LEA32RtoR(x86IntRegType to, x86IntRegType from, s32 offset)
@@ -300,13 +300,13 @@ emitterT void SETZ8R( x86IntRegType to )	{ xSETZ( xRegister8(to) ); }
 emitterT void SETE8R( x86IntRegType to )	{ xSETE( xRegister8(to) ); }
 
 /* push imm32 */
-emitterT void PUSH32I( u32 from ) { xPUSH( from ); }
+emitterT void PUSH32I( uptr from ) { xPUSH( from ); }
 
 /* push r32 */
 emitterT void PUSH32R( x86IntRegType from )  { xPUSH( xRegister32( from ) ); }
 
 /* push m32 */
-emitterT void PUSH32M( u32 from )
+emitterT void PUSH32M( uptr from )
 {
 	xPUSH( ptr[(void*)from] );
 }
@@ -715,7 +715,7 @@ emitterT void CALL32R( x86IntRegType to )
 }
 
 /* call m32 */
-emitterT void CALL32M( u32 to )
+emitterT void CALL32M( uptr to )
 {
 	xCALL( ptr32[(u32*)to] );
 }
