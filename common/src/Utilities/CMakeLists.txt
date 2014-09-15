@@ -143,8 +143,10 @@ LIST(APPEND UtilitiesSources
 	)
 
 # collect .S files
-set(UtilitiesSSources
-	x86/MemcpyFast.S)
+if(NOT APPLE)
+	set(UtilitiesSSources
+		x86/MemcpyFast.S)
+endif()
 
 # variable with all headers of this library
 set(UtilitiesHeaders
