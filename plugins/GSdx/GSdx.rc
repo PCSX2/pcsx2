@@ -51,9 +51,11 @@ BEGIN
     "#include ""res/tfx.fx""\r\n"
     "#include ""res/convert.fx""\r\n"
     "#include ""res/interlace.fx""\r\n"
-    "#include ""res/merge.fx""\r\0"
-    "#include ""res/fxaa.fx""\r\0"
-    "#include ""res/shadeboost.fx""\r\0"
+    "#include ""res/merge.fx""\r\n"
+    "#include ""res/fxaa.fx""\r\n"
+    "#include ""res/cs.fx""\r\n"
+    "#include ""res/shadeboost.fx""\r\n"
+    "#include ""res/tfx.cl""\r\n"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -64,13 +66,14 @@ END
 // RCDATA
 //
 
-IDR_CONVERT_FX          RCDATA                  "res\\convert.fx"
 IDR_TFX_FX              RCDATA                  "res\\tfx.fx"
-IDR_MERGE_FX            RCDATA                  "res\\merge.fx"
+IDR_CONVERT_FX          RCDATA                  "res\\convert.fx"
 IDR_INTERLACE_FX        RCDATA                  "res\\interlace.fx"
+IDR_MERGE_FX            RCDATA                  "res\\merge.fx"
 IDR_FXAA_FX             RCDATA                  "res\\fxaa.fx"
 IDR_CS_FX               RCDATA                  "res\\cs.fx"
 IDR_SHADEBOOST_FX       RCDATA                  "res\\shadeboost.fx"
+IDR_TFX_CL              RCDATA                  "res\\tfx.cl"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -394,6 +397,10 @@ END
 #include "res/convert.fx"
 #include "res/interlace.fx"
 #include "res/merge.fx"
+#include "res/fxaa.fx"
+#include "res/cs.fx"
+#include "res/shadeboost.fx"
+#include "res/tfx.cl"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

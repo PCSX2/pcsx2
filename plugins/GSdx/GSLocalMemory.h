@@ -76,7 +76,7 @@ struct GSPixelOffset4
 	uint32 fbp, zbp, fpsm, zpsm, bw;
 };
 
-class GSLocalMemory : public GSBlock
+class GSLocalMemory : public GSAlignedClass<32>
 {
 public:
 	typedef uint32 (*pixelAddress)(int x, int y, uint32 bp, uint32 bw);

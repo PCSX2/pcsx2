@@ -687,6 +687,7 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release AVX2|Win32'">AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <ClCompile Include="GSRenderer.cpp" />
+    <ClCompile Include="GSRendererCL.cpp" />
     <ClCompile Include="GSRendererCS.cpp" />
     <ClCompile Include="GSRendererDX.cpp" />
     <ClCompile Include="GSRendererDX11.cpp" />
@@ -1970,6 +1971,7 @@
     <ClInclude Include="GSPerfMon.h" />
     <ClInclude Include="GSRasterizer.h" />
     <ClInclude Include="GSRenderer.h" />
+    <ClInclude Include="GSRendererCL.h" />
     <ClInclude Include="GSRendererCS.h" />
     <ClInclude Include="GSRendererDX.h" />
     <ClInclude Include="GSRendererDX11.h" />
@@ -2057,6 +2059,7 @@
     <None Include="res\interlace.fx" />
     <None Include="res\merge.fx" />
     <None Include="res\shadeboost.fx" />
+    <None Include="res\tfx.cl" />
     <None Include="res\tfx.fx" />
     <None Include="baseclasses\activex.rcv" />
     <None Include="baseclasses\activex.ver" />
