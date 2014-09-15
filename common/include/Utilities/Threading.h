@@ -151,8 +151,8 @@ namespace Threading
 // --------------------------------------------------------------------------------------
 //  Platform Specific External APIs
 // --------------------------------------------------------------------------------------
-// The following set of documented functions have Linux/Win32 specific implementations,
-// which are found in WinThreads.cpp and LnxThreads.cpp
+// The following set of documented functions have Linux/Win32/OSX specific implementations,
+// which are found in WinThreads.cpp, LnxThreads.cpp and DarwinThreads.cpp
 
 	// Releases a timeslice to other threads.
 	extern void Timeslice();

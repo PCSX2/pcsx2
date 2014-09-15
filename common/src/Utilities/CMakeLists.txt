@@ -93,8 +93,18 @@ if(CMAKE_BUILD_TYPE STREQUAL Release)
 	)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
+if(APPLE)
+	LIST(APPEND UtilitiesSources
+		Darwin/DarwinThreads.cpp
+	)
+else(APPLE)
+	LIST(APPEND UtilitiesSources
+		Linux/LnxThreads.cpp
+	)
+endif(APPLE)
+
 # variable with all sources of this library
-set(UtilitiesSources
+LIST(APPEND UtilitiesSources
 	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
     ../../include/Utilities/SafeArray.inl
@@ -109,7 +119,6 @@ set(UtilitiesSources
 	IniInterface.cpp
 	Linux/LnxHostSys.cpp
 	Linux/LnxMisc.cpp
-	Linux/LnxThreads.cpp
 	Mutex.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
