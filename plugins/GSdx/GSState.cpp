@@ -1551,7 +1551,8 @@ void GSState::Read(uint8* mem, int len)
 		return;
 	}
 
-	if (!m_init_read_fifo_supported) {
+	if(!m_init_read_fifo_supported)
+	{
 		if(m_tr.x == sx && m_tr.y == sy)
 		{
 			InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
@@ -2316,20 +2317,20 @@ void GSState::GrowVertexBuffer()
 	GSVertex* vertex = (GSVertex*)_aligned_malloc(sizeof(GSVertex) * maxcount, 32);
 	uint32* index = (uint32*)_aligned_malloc(sizeof(uint32) * maxcount * 3, 32); // worst case is slightly less than vertex number * 3
 
-	if (!vertex || !index)
+	if(vertex == NULL || index == NULL)
 	{
 		printf("GSdx: failed to allocate %d bytes for verticles and %d for indices.\n", sizeof(GSVertex) * maxcount, sizeof(uint32) * maxcount * 3);
 		throw GSDXError();
 	}
 
-	if (m_vertex.buff != NULL)
+	if(m_vertex.buff != NULL)
 	{
 		memcpy(vertex, m_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
 
 		_aligned_free(m_vertex.buff);
 	}
 
-	if (m_index.buff != NULL)
+	if(m_index.buff != NULL)
 	{
 		memcpy(index, m_index.buff, sizeof(uint32) * m_index.tail);
 		

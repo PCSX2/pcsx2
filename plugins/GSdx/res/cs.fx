@@ -1,3 +1,5 @@
+#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
+
 #ifndef VS_TME
 #define VS_TME 1
 #define VS_FST 1
@@ -381,3 +383,5 @@ void ps_main1(GS_OUTPUT input)
 	WritePixel(addr.x, c, PS_FPSM);
 	WritePixel(addr.y, z, PS_ZPSM);
 }
+
+#endif

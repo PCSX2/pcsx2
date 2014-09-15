@@ -37,6 +37,7 @@
 #include "GSWndDX.h"
 #include "GSWndWGL.h"
 #include "GSRendererCS.h"
+#include "GSRendererCL.h"
 #include "GSSettingsDlg.h"
 
 static HRESULT s_hr = E_FAIL;
@@ -203,6 +204,7 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 	}
 
 	GSWnd* wnd[2];
+
 	try
 	{
 		if(s_renderer != renderer)
@@ -216,78 +218,72 @@ static int _GSopen(void** dsp, char* title, int renderer, int threads = -1)
 			s_gs = NULL;
 		}
 
-		if(renderer == 15)
+		switch(renderer)
 		{
-			#ifdef _WINDOWS
-	
-			dev = new GSDevice11();
-
-			if(dev == NULL)
-			{
-				return -1;
-			}
-
-			delete s_gs;
-
-			s_gs = new GSRendererCS();
-
-			s_renderer = renderer;
-
-			#endif
+		default:
+#ifdef _WINDOWS
+		case 0: case 1: case 2: case 14:
+			dev = new GSDevice9(); 
+			break;
+		case 3: case 4: case 5: case 15:
+			dev = new GSDevice11(); 
+			break;
+#endif
+		case 9: case 10: case 11: case 16:
+			dev = new GSDeviceNull(); 
+			break;
+		case 12: case 13: case 17:
+			dev = new GSDeviceOGL(); 
+			break;
 		}
-		else
+
+		if(dev == NULL)
 		{
-			switch(renderer / 3)
+			return -1;
+		}
+
+		if(s_gs == NULL)
+		{
+			switch(renderer)
 			{
 			default:
-				#ifdef _WINDOWS
-				case 0: dev = new GSDevice9(); break;
-				case 1: dev = new GSDevice11(); break;
-				#endif
-				case 3: dev = new GSDeviceNull(); break;
-				case 4: dev = new GSDeviceOGL(); break;
-			}
-
-			if(dev == NULL)
-			{
-				return -1;
-			}
-
-			if(s_gs == NULL)
-			{
-				switch(renderer % 3)
-				{
-					default:
-					case 0:
-						switch(renderer) 
-						{ 
-							default:
 #ifdef _WINDOWS
-							case 0: s_gs = (GSRenderer*)new GSRendererDX9(); break;
-							case 3: s_gs = (GSRenderer*)new GSRendererDX11(); break;
+			case 0:
+				s_gs = (GSRenderer*)new GSRendererDX9();
+				break;
+			case 3: 
+				s_gs = (GSRenderer*)new GSRendererDX11(); 
+				break;
 #endif
-							case 12: s_gs = (GSRenderer*)new GSRendererOGL(); break;
-						}
-						break;
-					case 1:
-						s_gs = new GSRendererSW(threads);
-						break;
-					case 2:
-						s_gs = new GSRendererNull();
-						break;
-				}
-
-				s_renderer = renderer;
+			case 12: 
+				s_gs = (GSRenderer*)new GSRendererOGL(); 
+				break;
+			case 1: case 4: case 10: case 13:
+				s_gs = new GSRendererSW(threads);
+				break;
+			case 2: case 5: case 11:
+				s_gs = new GSRendererNull();
+				break;
+			case 14: case 15: case 16: case 17:
+				s_gs = new GSRendererCL();
+				break;
 			}
+
+			s_renderer = renderer;
 		}
 
 		if (s_gs->m_wnd == NULL)
 		{
 #ifdef _WINDOWS
-			if (renderer / 3 == 4)
+			switch(renderer)
+			{
+			case 12: case 13: case 17:
 				s_gs->m_wnd = new GSWndWGL();
-			else
+				break;
+			default:
 				s_gs->m_wnd = new GSWndDX();
+				break;
+			}
 #else
 #ifdef ENABLE_GLES
 			wnd[0] = NULL;
@@ -681,8 +677,10 @@ EXPORT_C GSkeyEvent(GSKeyEventData* e)
 {
 	try
 	{
-		if (gsopen_done)
+		if(gsopen_done)
+		{
 			s_gs->KeyEvent(e);
+		}
 	}
 	catch (GSDXRecoverableError)
 	{
@@ -1218,15 +1216,11 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 {
 	::SetPriorityClass(::GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
-	FILE* file = fopen("c:\\temp1\\log.txt", "a");
-
-	fprintf(file, "-------------------------\n\n");
+	Console console("GSdx", true);
 
 	if(1)
 	{
-		GSLocalMemory * pMem = new GSLocalMemory();
-		GSLocalMemory& mem(*pMem);
-		
+		GSLocalMemory* mem = new GSLocalMemory();		
 
 		static struct {int psm; const char* name;} s_format[] =
 		{
@@ -1258,7 +1252,7 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 			int w = 1 << tbw;
 			int h = 1 << tbw;
 
-			fprintf(file, "%d x %d\n\n", w, h);
+			printf("%d x %d\n\n", w, h);
 
 			for(size_t i = 0; i < countof(s_format); i++)
 			{
@@ -1308,7 +1302,7 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 
 				clock_t start, end;
 
-				_ftprintf(file, _T("[%4s] "), s_format[i].name);
+				printf("[%4s] ", s_format[i].name);
 
 				start = clock();
 
@@ -1317,12 +1311,12 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 					int x = 0;
 					int y = 0;
 
-					(mem.*wi)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
+					(mem->*wi)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
 				}
 
 				end = clock();
 
-				fprintf(file, "%6d %6d | ", (int)((float)trlen * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
+				printf("%6d %6d | ", (int)((float)trlen * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
 
 				start = clock();
 
@@ -1331,25 +1325,25 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 					int x = 0;
 					int y = 0;
 
-					(mem.*ri)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
+					(mem->*ri)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
 				}
 
 				end = clock();
 
-				fprintf(file, "%6d %6d | ", (int)((float)trlen * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
+				printf("%6d %6d | ", (int)((float)trlen * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
 
-				const GSOffset* o = mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+				const GSOffset* o = mem->GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 				start = clock();
 
 				for(int j = 0; j < n; j++)
 				{
-					(mem.*rtx)(o, r, ptr, w * 4, TEXA);
+					(mem->*rtx)(o, r, ptr, w * 4, TEXA);
 				}
 
 				end = clock();
 
-				fprintf(file, "%6d %6d ", (int)((float)len * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
+				printf("%6d %6d ", (int)((float)len * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
 
 				if(psm.pal > 0)
 				{
@@ -1357,32 +1351,30 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 
 					for(int j = 0; j < n; j++)
 					{
-						(mem.*rtxP)(o, r, ptr, w, TEXA);
+						(mem->*rtxP)(o, r, ptr, w, TEXA);
 					}
 
 					end = clock();
 
-					fprintf(file, "| %6d %6d ", (int)((float)len * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
+					printf("| %6d %6d ", (int)((float)len * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
 				}
 
-				fprintf(file, "\n");
-
-				fflush(file);
+				printf("\n");
 			}
 
-			fprintf(file, "\n");
+			printf("\n");
 		}
 
 		_aligned_free(ptr);
-		delete pMem;
+
+		delete mem;
 	}
 
 	//
 
 	if(0)
 	{
-		GSLocalMemory * pMem2 = new GSLocalMemory();
-		GSLocalMemory& mem2(*pMem2);
+		GSLocalMemory* mem = new GSLocalMemory();
 
 		uint8* ptr = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
 
@@ -1413,13 +1405,13 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 		int x = 0;
 		int y = 0;
 
-		(mem2.*wi)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
-		delete pMem2;
+		(mem->*wi)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
+
+		delete mem;
 	}
 
 	//
 
-	fclose(file);
 	PostQuitMessage(0);
 }
 

@@ -173,7 +173,6 @@ public: // TODO
 	// Shaders...
 
 	hash_map<uint32, GSVertexShader9 > m_vs;
-	D3DXHANDLE m_vs_params;
 	hash_map<uint32, CComPtr<IDirect3DPixelShader9> > m_ps;
 	hash_map<uint32, Direct3DSamplerState9* > m_ps_ss;
 	hash_map<uint32, Direct3DDepthStencilState9* > m_om_dss;

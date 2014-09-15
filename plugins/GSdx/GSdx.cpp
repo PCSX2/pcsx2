@@ -41,7 +41,28 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	return TRUE;
 }
 
+bool GSdxApp::LoadResource(int id, vector<unsigned char>& buff, const char* type)
+{
+	buff.clear();
+	HRSRC hRsrc = FindResource((HMODULE)s_hModule, MAKEINTRESOURCE(id), type != NULL ? type : RT_RCDATA);
+	if(!hRsrc) return false;
+	HGLOBAL hGlobal = ::LoadResource((HMODULE)s_hModule, hRsrc);
+	if(!hGlobal) return false;
+	DWORD size = SizeofResource((HMODULE)s_hModule, hRsrc);
+	if(!size) return false;
+	buff.resize(size);
+	memcpy(buff.data(), LockResource(hGlobal), size);
+	return true;
+}
+
 #else
+
+bool GSdxApp::LoadResource(int id, vector<unsigned char>& buff, const char* type)
+{
+	buff.clear();
+	printf("LoadResource not implemented\n");
+	return false;
+}
 
 size_t GSdxApp::GetPrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
 {
@@ -108,10 +129,12 @@ GSdxApp::GSdxApp()
 
 	m_gs_renderers.push_back(GSSetting(0, "Direct3D9", "Hardware"));
 	m_gs_renderers.push_back(GSSetting(1, "Direct3D9", "Software"));
+	m_gs_renderers.push_back(GSSetting(14, "Direct3D9", "OpenCL"));
 	m_gs_renderers.push_back(GSSetting(2, "Direct3D9", "Null"));
-	m_gs_renderers.push_back(GSSetting(3, "Direct3D%d    ", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(4, "Direct3D%d    ", "Software"));
-	m_gs_renderers.push_back(GSSetting(5, "Direct3D%d    ", "Null"));
+	m_gs_renderers.push_back(GSSetting(3, "Direct3D", "Hardware"));
+	m_gs_renderers.push_back(GSSetting(4, "Direct3D", "Software"));
+	m_gs_renderers.push_back(GSSetting(15, "Direct3D", "OpenCL"));
+	m_gs_renderers.push_back(GSSetting(5, "Direct3D", "Null"));
 #ifdef _LINUX
 	// note: SDL was removed. We keep those bits for compatibility of the renderer
 	// position in the linux dialog.
@@ -119,9 +142,11 @@ GSdxApp::GSdxApp()
 	m_gs_renderers.push_back(GSSetting(8, "SDL 1.3", "Null"));
 #endif
 	m_gs_renderers.push_back(GSSetting(10, "Null", "Software"));
+	m_gs_renderers.push_back(GSSetting(16, "Null", "OpenCL"));
 	m_gs_renderers.push_back(GSSetting(11, "Null", "Null"));
 	m_gs_renderers.push_back(GSSetting(12, "OpenGL", "Hardware"));
 	m_gs_renderers.push_back(GSSetting(13, "OpenGL", "Software"));
+	m_gs_renderers.push_back(GSSetting(17, "OpenGL", "OpenCL"));
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
 	m_gs_interlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));

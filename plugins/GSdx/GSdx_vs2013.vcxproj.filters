@@ -348,6 +348,9 @@
     <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GSRendererCL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLLoader.h">
@@ -707,6 +710,9 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GSRendererCL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\logo10.bmp">
@@ -737,10 +743,13 @@
     <None Include="res\fxaa.fx">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="res\shadeboost.fx">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="res\cs.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="res\shadeboost.fx">
+    <None Include="res\tfx.cl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

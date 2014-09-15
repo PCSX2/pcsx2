@@ -329,16 +329,19 @@ void GSSettingsDlg::UpdateRenderers()
 	{
 		GSSetting r = theApp.m_gs_renderers[i];
 
-		if(i >= 3 && i <= 5)
+		if(r.id >= 3 && r.id <= 5 || r.id == 15)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
 
-			r.name = std::string("Direct3D") + (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
+			r.name += (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
 		}
 
 		renderers.push_back(r);
-		if (r.id == renderer_setting)
+
+		if(r.id == renderer_setting)
+		{
 			renderer_sel = renderer_setting;
+		}
 	}
 
 	ComboBoxInit(IDC_RENDERER, renderers, renderer_sel);
@@ -607,13 +610,13 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case IDC_SPRITEHACK:
 				helpstr = "Sprite Hack\n\nHelps getting rid of black inner lines in some filtered sprites."
-						  " Half option is the preferred one. Use it for Mana Khemia or Ar tonelico for example."
+						  " Half option is the preferred one. Use it for Mana Khemia or Ar Tonelico for example."
 						  " Full can be used for Tales of Destiny.";
 				break;
 			case IDC_WILDHACK:
 				helpstr = "WildArms\n\nLowers the GS precision to avoid gaps between pixels when"
 						  " upscaling. Full option fixes the text on WildArms games, while Half option might improve portraits"
-						  " in Ar tonelico.";
+						  " in Ar Tonelico.";
 				break;
 			case IDC_MSAACB:
 			case IDC_STATIC_MSAA:

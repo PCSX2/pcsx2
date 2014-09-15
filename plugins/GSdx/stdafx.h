@@ -43,6 +43,7 @@
 #include <d3dx9.h>
 #include <comutil.h>
 #include "../../common/include/comptr.h"
+#include <CL/cl.hpp>
 
 #define D3DCOLORWRITEENABLE_RGBA (D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA)
 #define D3D11_SHADER_MACRO D3D10_SHADER_MACRO

@@ -429,6 +429,15 @@ void GSRendererSW::Draw()
 
 	GSVector4i scissor = GSVector4i(context->scissor.in);
 	GSVector4i bbox = GSVector4i(m_vt.m_min.p.floor().xyxy(m_vt.m_max.p.ceil()));
+
+	// points and lines may have zero area bbox (single line: 0, 0 - 256, 0)
+
+	if(m_vt.m_primclass == GS_POINT_CLASS || m_vt.m_primclass == GS_LINE_CLASS)
+	{
+		if(bbox.x == bbox.z) bbox.z++;
+		if(bbox.y == bbox.w) bbox.w++;
+	}
+
 	GSVector4i r = bbox.rintersect(scissor);
 
 	scissor.z = std::min<int>(scissor.z, (int)context->FRAME.FBW * 64); // TODO: find a game that overflows and check which one is the right behaviour
@@ -973,7 +982,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	gd.sel.zpsm = 3;
 	gd.sel.atst = ATST_ALWAYS;
 	gd.sel.tfx = TFX_NONE;
-	gd.sel.ababcd = 255;
+	gd.sel.ababcd = 0xff;
 	gd.sel.prim = primclass;
 
 	uint32 fm = context->FRAME.FBMSK;
@@ -1101,7 +1110,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				gd.sel.mmin = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
 				gd.sel.lcm = context->TEX1.LCM;
 
-				int mxl = (std::min<int>((int)context->TEX1.MXL, 6) << 16);
+				int mxl = std::min<int>((int)context->TEX1.MXL, 6) << 16;
 				int k = context->TEX1.K << 12;
 
 				if((int)m_vt.m_lod.x >= (int)context->TEX1.MXL)
