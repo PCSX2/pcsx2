@@ -81,6 +81,7 @@
 #define IDR_CS_FX                       10006
 #define IDD_SHADEBOOST                  10007
 #define IDR_SHADEBOOST_FX               10009
+#define IDR_TFX_CL                      10010
 #define IDD_HACKS                       10011
 #define IDC_STATIC                      -1
 
