@@ -302,8 +302,6 @@ extern PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC gl_MakeTextureHandleNonResidentA
 extern PFNGLUNIFORMHANDLEUI64VARBPROC           gl_UniformHandleui64vARB;
 extern PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC    gl_ProgramUniformHandleui64vARB;
 
-extern PFNGLDEPTHRANGEDNVPROC                   gl_DepthRangedNV;
-
 // GL4.5
 extern PFNGLCREATETEXTURESPROC					gl_CreateTextures;
 extern PFNGLTEXTURESTORAGE2DPROC				gl_TextureStorage2D;
@@ -435,7 +433,6 @@ namespace GLLoader {
 	extern bool found_GL_ARB_shader_subroutine;
 	extern bool found_GL_ARB_bindless_texture;
 	extern bool found_GL_ARB_explicit_uniform_location;
-	extern bool found_GL_NV_depth_buffer_float;
 	extern bool found_GL_ARB_clip_control;
 	extern bool found_GL_ARB_direct_state_access;
 }

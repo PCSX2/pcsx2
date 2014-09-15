@@ -118,8 +118,6 @@ PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC gl_MakeTextureHandleNonResidentARB = NU
 PFNGLUNIFORMHANDLEUI64VARBPROC         gl_UniformHandleui64vARB             = NULL;
 PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC  gl_ProgramUniformHandleui64vARB      = NULL;
 
-PFNGLDEPTHRANGEDNVPROC                 gl_DepthRangedNV                     = NULL;
-
 // GL4.5
 PFNGLCREATETEXTURESPROC				   gl_CreateTextures                    = NULL;
 PFNGLTEXTURESTORAGE2DPROC			   gl_TextureStorage2D                  = NULL;
@@ -173,8 +171,6 @@ namespace GLLoader {
 	bool found_GL_ARB_shader_image_load_store = false; // GLES3.1
 	bool found_GL_ARB_shader_subroutine = false;
 	bool found_GL_ARB_bindless_texture = false; // GL5 GPU?
-	// Surely recent hardware
-	bool found_GL_NV_depth_buffer_float = false;
 
 	// GL4.5 for the future (dx10/dx11 compatibility)
 	bool found_GL_ARB_clip_control = false;
@@ -312,7 +308,9 @@ namespace GLLoader {
 #endif
 #ifdef GLBINDLESS // Need to debug the code first
 				if (ext.compare("GL_ARB_bindless_texture") == 0) found_GL_ARB_bindless_texture = true;
-#endif
+				// GL4.5
+				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
+				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
 
 #ifdef ENABLE_GLES
 				fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
@@ -343,7 +341,6 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_multi_bind,"GL_ARB_multi_bind");
 		status &= status_and_override(found_GL_ARB_bindless_texture,"GL_ARB_bindless_texture");
 
-		status &= status_and_override(found_GL_NV_depth_buffer_float,"GL_NV_depth_buffer_float");
 
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
 		// Mandatory extension in DSA mode

@@ -321,8 +321,6 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	if (GLLoader::found_GL_ARB_clip_control) {
 		// Change depth convention
 		gl_ClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-	} else if (GLLoader::found_GL_NV_depth_buffer_float) {
-		gl_DepthRangedNV(-1.0f, 1.0f);
 	}
 #endif
 
