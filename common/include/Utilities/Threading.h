@@ -19,6 +19,10 @@
 #include <errno.h> // EBUSY
 #include <pthread.h>
 
+#ifdef __APPLE__
+#include <mach/semaphore.h>
+#endif
+
 #include "Pcsx2Defs.h"
 #include "ScopedPtr.h"
 #include "TraceLog.h"
@@ -253,7 +257,12 @@ namespace Threading
 	class Semaphore
 	{
 	protected:
+#ifdef __APPLE__
+		semaphore_t m_sema;
+		int m_counter;
+#else
 		sem_t m_sema;
+#endif
 
 	public:
 		Semaphore();

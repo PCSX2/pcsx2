@@ -96,10 +96,12 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 if(APPLE)
 	LIST(APPEND UtilitiesSources
 		Darwin/DarwinThreads.cpp
+		Darwin/DarwinSemaphore.cpp
 	)
 else(APPLE)
 	LIST(APPEND UtilitiesSources
 		Linux/LnxThreads.cpp
+		Semaphore.cpp
 	)
 endif(APPLE)
 
@@ -128,7 +130,6 @@ LIST(APPEND UtilitiesSources
 	pxStreams.cpp
 	pxTranslate.cpp
 	pxWindowTextWriter.cpp
-	Semaphore.cpp
 	StringHelpers.cpp
 	ThreadingDialogs.cpp
 	ThreadTools.cpp
