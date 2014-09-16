@@ -22,27 +22,27 @@
 
 u32 SkipCount = 0, IterationCount = 0;
 u32 IterationIncrement = 0, ValueIncrement = 0;
-u32 PrevCheatType = 0, PrevCheatAddr = 0,LastType = 0;
+u32 PrevCheatType = 0, PrevCheatAddr = 0, LastType = 0;
 
 void writeCheat()
 {
 	switch (LastType)
 	{
-		case 0x0:
-			memWrite8(PrevCheatAddr,IterationIncrement & 0xFF);
-			break;
-		case 0x1:
-			memWrite16(PrevCheatAddr,IterationIncrement & 0xFFFF);
-			break;
-		case 0x2:
-			memWrite32(PrevCheatAddr,IterationIncrement);
-			break;
-		default:
-			break;
+	case 0x0:
+		memWrite8(PrevCheatAddr, IterationIncrement & 0xFF);
+		break;
+	case 0x1:
+		memWrite16(PrevCheatAddr, IterationIncrement & 0xFFFF);
+		break;
+	case 0x2:
+		memWrite32(PrevCheatAddr, IterationIncrement);
+		break;
+	default:
+		break;
 	}
 }
 
-void handle_extended_t( IniPatch *p)
+void handle_extended_t(IniPatch *p)
 {
 	if (SkipCount > 0)
 	{
@@ -50,117 +50,93 @@ void handle_extended_t( IniPatch *p)
 	}
 	else switch (PrevCheatType)
 	{
-		case 0x3040: // vvvvvvvv  00000000  Inc
+	case 0x3040: // vvvvvvvv  00000000  Inc
+	{
+		u32 mem = memRead32(PrevCheatAddr);
+		memWrite32(PrevCheatAddr, mem + (p->addr));
+		PrevCheatType = 0;
+		break;
+	}
+
+	case 0x3050: // vvvvvvvv  00000000  Dec
+	{
+		u32 mem = memRead32(PrevCheatAddr);
+		memWrite32(PrevCheatAddr, mem - (p->addr));
+		PrevCheatType = 0;
+		break;
+	}
+
+	case 0x4000: // vvvvvvvv  iiiiiiii
+		for (u32 i = 0; i < IterationCount; i++)
 		{
-			u32 mem = memRead32(PrevCheatAddr);
-			memWrite32(PrevCheatAddr, mem + (p->addr));
-			PrevCheatType = 0;
-			break;
+			memWrite32((u32)(PrevCheatAddr + (i * IterationIncrement)), (u32)(p->addr + ((u32)p->data * i)));
 		}
+		PrevCheatType = 0;
+		break;
 
-		case 0x3050: // vvvvvvvv  00000000  Dec
+	case 0x5000: // dddddddd  iiiiiiii
+		for (u32 i = 0; i < IterationCount; i++)
 		{
-			u32 mem = memRead32(PrevCheatAddr);
-			memWrite32(PrevCheatAddr, mem - (p->addr));
-			PrevCheatType = 0;
-			break;
+			u8 mem = memRead8(PrevCheatAddr + i);
+			memWrite8(((u32)p->data) + i, mem);
 		}
+		PrevCheatType = 0;
+		break;
 
-		case 0x4000: // vvvvvvvv  iiiiiiii
-			for(u32 i = 0; i < IterationCount; i++)
+	case 0x6000: // 000Xnnnn  iiiiiiii
+		if (IterationIncrement == 0x0)
+		{
+			//LastType = ((u32)p->addr & 0x000F0000) >> 16;
+			u32 mem = memRead32(PrevCheatAddr);
+			if ((u32)p->addr < 0x100)
 			{
-				memWrite32((u32)(PrevCheatAddr + (i * IterationIncrement)),(u32)(p->addr + ((u32)p->data * i)));
+				LastType = 0x0;
+				PrevCheatAddr = mem + ((u32)p->addr);
 			}
-			PrevCheatType = 0;
-			break;
-
-		case 0x5000: // dddddddd  iiiiiiii
-			for(u32 i = 0; i < IterationCount; i++)
+			else if ((u32)p->addr < 0x1000)
 			{
-				u8 mem = memRead8(PrevCheatAddr + i);
-				memWrite8(((u32)p->data) + i, mem);
-			}
-			PrevCheatType = 0;
-			break;
-
-		case 0x6000: // 000Xnnnn  iiiiiiii
-			if (IterationIncrement == 0x0)
-			{
-				//LastType = ((u32)p->addr & 0x000F0000) >> 16;
-				u32 mem = memRead32(PrevCheatAddr);
-				if ((u32)p->addr < 0x100)
-				{
-					LastType = 0x0;
-					PrevCheatAddr = mem + ((u32)p->addr);
-				}
-				else if ((u32)p->addr < 0x1000)
-				{
-					LastType = 0x1;
-					PrevCheatAddr = mem + ((u32)p->addr * 2);
-				}
-				else
-				{
-					LastType = 0x2;
-					PrevCheatAddr = mem + ((u32)p->addr * 4);
-				}
-
-				// Check if needed to read another pointer
-				PrevCheatType = 0;
-				if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-				{
-				    switch(LastType)
-				    {
-				        case 0x0:
-                            memWrite8(PrevCheatAddr,(u8)p->data & 0xFF);
-                            break;
-				        case 0x1:
-                            memWrite16(PrevCheatAddr,(u16)p->data & 0x0FFFF);
-                            break;
-				        case 0x2:
-                            memWrite32(PrevCheatAddr,(u32)p->data);
-                            break;
-				        default:
-                            break;
-				    }
-				}
+				LastType = 0x1;
+				PrevCheatAddr = mem + ((u32)p->addr * 2);
 			}
 			else
 			{
-				// Get Number of pointers
-				if (((u32)p->addr & 0x0000FFFF) == 0)
-					IterationCount = 1;
-				else
-					IterationCount = (u32)p->addr & 0x0000FFFF;
+				LastType = 0x2;
+				PrevCheatAddr = mem + ((u32)p->addr * 4);
+			}
 
-				// Read first pointer
-				LastType = ((u32)p->addr & 0x000F0000) >> 16;
-				u32 mem = memRead32(PrevCheatAddr);
-
-				PrevCheatAddr = mem + (u32)p->data;
-				IterationCount--;
-
-				// Check if needed to read another pointer
-				if (IterationCount == 0)
+			// Check if needed to read another pointer
+			PrevCheatType = 0;
+			if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
+			{
+				switch (LastType)
 				{
-					PrevCheatType = 0;
-					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0) writeCheat();
-				}
-				else
-				{
-					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-						PrevCheatType = 0;
-					else
-						PrevCheatType = 0x6001;
+				case 0x0:
+					memWrite8(PrevCheatAddr, (u8)p->data & 0xFF);
+					break;
+				case 0x1:
+					memWrite16(PrevCheatAddr, (u16)p->data & 0x0FFFF);
+					break;
+				case 0x2:
+					memWrite32(PrevCheatAddr, (u32)p->data);
+					break;
+				default:
+					break;
 				}
 			}
-			break;
-
-		case 0x6001: // 000Xnnnn  iiiiiiii
+		}
+		else
 		{
-			// Read first pointer
-			u32 mem = memRead32(PrevCheatAddr & 0x0FFFFFFF);
+			// Get Number of pointers
+			if (((u32)p->addr & 0x0000FFFF) == 0)
+				IterationCount = 1;
+			else
+				IterationCount = (u32)p->addr & 0x0000FFFF;
 
-			PrevCheatAddr = mem + (u32)p->addr;
+			// Read first pointer
+			LastType = ((u32)p->addr & 0x000F0000) >> 16;
+			u32 mem = memRead32(PrevCheatAddr);
+
+			PrevCheatAddr = mem + (u32)p->data;
 			IterationCount--;
 
 			// Check if needed to read another pointer
@@ -171,147 +147,280 @@ void handle_extended_t( IniPatch *p)
 			}
 			else
 			{
-				mem = memRead32(PrevCheatAddr);
-
-				PrevCheatAddr = mem + (u32)p->data;
-				IterationCount--;
-				if (IterationCount == 0)
-				{
+				if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
 					PrevCheatType = 0;
-					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0) writeCheat();
-				}
+				else
+					PrevCheatType = 0x6001;
 			}
 		}
 		break;
 
-		default:
-            if ((p->addr & 0xF0000000) == 0x00000000) // 0aaaaaaa 0000000vv
-            {
-                memWrite8(p->addr & 0x0FFFFFFF, (u8)p->data & 0x000000FF);
-                PrevCheatType = 0;
-            }
-            else if ((p->addr & 0xF0000000) == 0x10000000) // 0aaaaaaa 0000vvvv
-            {
-                memWrite16(p->addr & 0x0FFFFFFF, (u16)p->data & 0x0000FFFF);
-                PrevCheatType = 0;
-            }
-            else if ((p->addr & 0xF0000000) == 0x20000000) // 0aaaaaaa vvvvvvvv
-            {
-                memWrite32(p->addr & 0x0FFFFFFF, (u32)p->data);
-                PrevCheatType = 0;
-            }
-            else if ((p->addr & 0xFFFF0000) == 0x30000000) // 300000vv 0aaaaaaa  Inc
-            {
-                u8 mem = memRead8((u32)p->data);
-                memWrite8((u32)p->data, mem + (p->addr & 0x000000FF));
-                PrevCheatType = 0;
-            }
-            else if ((p->addr & 0xFFFF0000) == 0x30100000) // 301000vv 0aaaaaaa  Dec
-            {
-                u8 mem = memRead8((u32)p->data);
-                memWrite8((u32)p->data, mem - (p->addr & 0x000000FF));
-                PrevCheatType = 0;
-            }
-            else if ((p->addr & 0xFFFF0000) == 0x30200000) // 3020vvvv 0aaaaaaa Inc
-            {
-                u16 mem = memRead16((u32)p->data);
-                memWrite16((u32)p->data, mem + (p->addr & 0x0000FFFF));
-                PrevCheatType = 0;
-            }
-            else if ((p->addr & 0xFFFF0000) == 0x30300000) // 3030vvvv 0aaaaaaa Dec
-            {
-                u16 mem = memRead16((u32)p->data);
-                memWrite16((u32)p->data, mem - (p->addr & 0x0000FFFF));
-                PrevCheatType = 0;
-            }
-            else if ((p->addr & 0xFFFF0000) == 0x30400000) // 30400000 0aaaaaaa Inc	+ Another line
-            {
-                PrevCheatType = 0x3040;
-                PrevCheatAddr = (u32)p->data;
-            }
-            else if ((p->addr & 0xFFFF0000) == 0x30500000) // 30500000 0aaaaaaa Inc	+ Another line
-            {
-                PrevCheatType = 0x3050;
-                PrevCheatAddr = (u32)p->data;
-            }
-            else if ((p->addr & 0xF0000000) == 0x40000000) // 4aaaaaaa nnnnssss + Another line
-            {
-                IterationCount = ((u32)p->data & 0xFFFF0000) / 0x10000;
-                IterationIncrement = ((u32)p->data & 0x0000FFFF) * 4;
-                PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
-                PrevCheatType = 0x4000;
-            }
-            else if ((p->addr & 0xF0000000) == 0x50000000) // 5sssssss nnnnnnnn + Another line
-            {
-                PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
-                IterationCount = ((u32)p->data);
-                PrevCheatType = 0x5000;
-            }
-            else if ((p->addr & 0xF0000000) == 0x60000000) // 6aaaaaaa 000000vv + Another line/s
-            {
-                PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
-                IterationIncrement = ((u32)p->data);
-                IterationCount = 0;
-                PrevCheatType = 0x6000;
-            }
-            else if ((p->addr & 0xF0000000) == 0x70000000)
-            {
-                if ((p->data & 0x00F00000) == 0x00000000) // 7aaaaaaa 000000vv
-                {
-                    u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
-                    memWrite8((u32)p->addr & 0x0FFFFFFF,(u8)(mem | (p->data & 0x000000FF)));
-                }
-                else if ((p->data & 0x00F00000) == 0x00100000) // 7aaaaaaa 0010vvvv
-                {
-                    u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-                    memWrite16((u32)p->addr & 0x0FFFFFFF,(u16)(mem | (p->data & 0x0000FFFF)));
-                }
-                else if ((p->data & 0x00F00000) == 0x00200000) // 7aaaaaaa 002000vv
-                {
-                    u8 mem = memRead8((u32)p->addr&0x0FFFFFFF);
-                    memWrite8((u32)p->addr & 0x0FFFFFFF,(u8)(mem & (p->data & 0x000000FF)));
-                }
-                else if ((p->data & 0x00F00000) == 0x00300000) // 7aaaaaaa 0030vvvv
-                {
-                    u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-                    memWrite16((u32)p->addr & 0x0FFFFFFF,(u16)(mem & (p->data & 0x0000FFFF)));
-                }
-                else if ((p->data & 0x00F00000) == 0x00400000) // 7aaaaaaa 004000vv
-                {
-                    u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
-                    memWrite8((u32)p->addr & 0x0FFFFFFF,(u8)(mem ^ (p->data & 0x000000FF)));
-                }
-                else if ((p->data & 0x00F00000) == 0x00500000) // 7aaaaaaa 0050vvvv
-                {
-                    u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-                    memWrite16((u32)p->addr & 0x0FFFFFFF,(u16)(mem ^ (p->data & 0x0000FFFF)));
-                }
-            }
-            else if (p->addr < 0xE0000000)
-            {
-                if ((((u32)p->data & 0xFFFF0000) == 0x00000000) ||
-                    (((u32)p->data & 0xFFFF0000) == 0x00100000) ||
-                    (((u32)p->data & 0xFFFF0000) == 0x00200000) ||
-                    (((u32)p->data & 0xFFFF0000) == 0x00300000))
-                {
-                    u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-                    if (mem != (0x0000FFFF & (u32)p->data)) SkipCount = 1;
-                    PrevCheatType = 0;
-                }
-            }
-            else if (p->addr < 0xF0000000)
-            {
-                if (((u32)p->data & 0xC0000000) == 0x00000000)
-                if ((((u32)p->data & 0xF0000000) == 0x00000000) ||
-                    (((u32)p->data & 0xF0000000) == 0x10000000) ||
-                    (((u32)p->data & 0xF0000000) == 0x20000000) ||
-                    (((u32)p->data & 0xF0000000) == 0x30000000))
-                {
-                    u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
-                    if (mem != (0x0000FFFF & (u32)p->addr)) SkipCount = ((u32)p->addr & 0xFFF0000) / 0x10000;
-                    PrevCheatType = 0;
-                }
-            }
+	case 0x6001: // 000Xnnnn  iiiiiiii
+	{
+		// Read first pointer
+		u32 mem = memRead32(PrevCheatAddr & 0x0FFFFFFF);
+
+		PrevCheatAddr = mem + (u32)p->addr;
+		IterationCount--;
+
+		// Check if needed to read another pointer
+		if (IterationCount == 0)
+		{
+			PrevCheatType = 0;
+			if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0) writeCheat();
+		}
+		else
+		{
+			mem = memRead32(PrevCheatAddr);
+
+			PrevCheatAddr = mem + (u32)p->data;
+			IterationCount--;
+			if (IterationCount == 0)
+			{
+				PrevCheatType = 0;
+				if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0) writeCheat();
+			}
+		}
+	}
+		break;
+
+	default:
+		if ((p->addr & 0xF0000000) == 0x00000000) // 0aaaaaaa 0000000vv
+		{
+			memWrite8(p->addr & 0x0FFFFFFF, (u8)p->data & 0x000000FF);
+			PrevCheatType = 0;
+		}
+		else if ((p->addr & 0xF0000000) == 0x10000000) // 0aaaaaaa 0000vvvv
+		{
+			memWrite16(p->addr & 0x0FFFFFFF, (u16)p->data & 0x0000FFFF);
+			PrevCheatType = 0;
+		}
+		else if ((p->addr & 0xF0000000) == 0x20000000) // 0aaaaaaa vvvvvvvv
+		{
+			memWrite32(p->addr & 0x0FFFFFFF, (u32)p->data);
+			PrevCheatType = 0;
+		}
+		else if ((p->addr & 0xFFFF0000) == 0x30000000) // 300000vv 0aaaaaaa  Inc
+		{
+			u8 mem = memRead8((u32)p->data);
+			memWrite8((u32)p->data, mem + (p->addr & 0x000000FF));
+			PrevCheatType = 0;
+		}
+		else if ((p->addr & 0xFFFF0000) == 0x30100000) // 301000vv 0aaaaaaa  Dec
+		{
+			u8 mem = memRead8((u32)p->data);
+			memWrite8((u32)p->data, mem - (p->addr & 0x000000FF));
+			PrevCheatType = 0;
+		}
+		else if ((p->addr & 0xFFFF0000) == 0x30200000) // 3020vvvv 0aaaaaaa Inc
+		{
+			u16 mem = memRead16((u32)p->data);
+			memWrite16((u32)p->data, mem + (p->addr & 0x0000FFFF));
+			PrevCheatType = 0;
+		}
+		else if ((p->addr & 0xFFFF0000) == 0x30300000) // 3030vvvv 0aaaaaaa Dec
+		{
+			u16 mem = memRead16((u32)p->data);
+			memWrite16((u32)p->data, mem - (p->addr & 0x0000FFFF));
+			PrevCheatType = 0;
+		}
+		else if ((p->addr & 0xFFFF0000) == 0x30400000) // 30400000 0aaaaaaa Inc	+ Another line
+		{
+			PrevCheatType = 0x3040;
+			PrevCheatAddr = (u32)p->data;
+		}
+		else if ((p->addr & 0xFFFF0000) == 0x30500000) // 30500000 0aaaaaaa Inc	+ Another line
+		{
+			PrevCheatType = 0x3050;
+			PrevCheatAddr = (u32)p->data;
+		}
+		else if ((p->addr & 0xF0000000) == 0x40000000) // 4aaaaaaa nnnnssss + Another line
+		{
+			IterationCount = ((u32)p->data & 0xFFFF0000) / 0x10000;
+			IterationIncrement = ((u32)p->data & 0x0000FFFF) * 4;
+			PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
+			PrevCheatType = 0x4000;
+		}
+		else if ((p->addr & 0xF0000000) == 0x50000000) // 5sssssss nnnnnnnn + Another line
+		{
+			PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
+			IterationCount = ((u32)p->data);
+			PrevCheatType = 0x5000;
+		}
+		else if ((p->addr & 0xF0000000) == 0x60000000) // 6aaaaaaa 000000vv + Another line/s
+		{
+			PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
+			IterationIncrement = ((u32)p->data);
+			IterationCount = 0;
+			PrevCheatType = 0x6000;
+		}
+		else if ((p->addr & 0xF0000000) == 0x70000000)
+		{
+			if ((p->data & 0x00F00000) == 0x00000000) // 7aaaaaaa 000000vv
+			{
+				u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
+				memWrite8((u32)p->addr & 0x0FFFFFFF, (u8)(mem | (p->data & 0x000000FF)));
+			}
+			else if ((p->data & 0x00F00000) == 0x00100000) // 7aaaaaaa 0010vvvv
+			{
+				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+				memWrite16((u32)p->addr & 0x0FFFFFFF, (u16)(mem | (p->data & 0x0000FFFF)));
+			}
+			else if ((p->data & 0x00F00000) == 0x00200000) // 7aaaaaaa 002000vv
+			{
+				u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
+				memWrite8((u32)p->addr & 0x0FFFFFFF, (u8)(mem & (p->data & 0x000000FF)));
+			}
+			else if ((p->data & 0x00F00000) == 0x00300000) // 7aaaaaaa 0030vvvv
+			{
+				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+				memWrite16((u32)p->addr & 0x0FFFFFFF, (u16)(mem & (p->data & 0x0000FFFF)));
+			}
+			else if ((p->data & 0x00F00000) == 0x00400000) // 7aaaaaaa 004000vv
+			{
+				u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
+				memWrite8((u32)p->addr & 0x0FFFFFFF, (u8)(mem ^ (p->data & 0x000000FF)));
+			}
+			else if ((p->data & 0x00F00000) == 0x00500000) // 7aaaaaaa 0050vvvv
+			{
+				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+				memWrite16((u32)p->addr & 0x0FFFFFFF, (u16)(mem ^ (p->data & 0x0000FFFF)));
+			}
+		}
+		else if (p->addr < 0xE0000000)
+		{
+			if (((u32)p->data & 0xFFFF0000) == 0x00000000)		// Daaaaaaa 0000dddd
+			{
+				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+				if (mem != (0x0000FFFF & (u32)p->data))
+				{
+					SkipCount = 1;
+				}
+				PrevCheatType = 0;
+			}
+			else if (((u32)p->data & 0xFFFF0000) == 0x00100000) // Daaaaaaa 0010dddd
+			{
+				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+				if (mem == (0x0000FFFF & (u32)p->data))
+				{
+					SkipCount = 1;
+				}
+				PrevCheatType = 0;
+			}
+			else if (((u32)p->data & 0xFFFF0000) == 0x00200000) // Daaaaaaa 0020dddd
+			{
+				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+				if (mem >= (0x0000FFFF & (u32)p->data))
+				{
+					SkipCount = 1;
+				}
+				PrevCheatType = 0;
+			}
+			else if (((u32)p->data & 0xFFFF0000) == 0x00300000) // Daaaaaaa 0030dddd
+			{
+				u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
+				if (mem <= (0x0000FFFF & (u32)p->data))
+				{
+					SkipCount = 1;
+				}
+				PrevCheatType = 0;
+			}
+		}
+		else if (p->addr < 0xF0000000)
+		{
+			if ((((u32)p->data & 0xF0000000) == 0x00000000))	  // Ezyyvvvv 0aaaaaaa
+			{
+				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+				if (z == 0) 	 // E0yyvvvv 0aaaaaaa
+				{
+					u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+					if (mem16 != (0x0000FFFF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+				else if (z == 1) // E1yy00vv 0aaaaaaa
+				{
+					u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+					if (mem8 != (0x000000FF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+			}
+			else if ((((u32)p->data & 0xF0000000) == 0x10000000)) // Ezyyvvvv 1aaaaaaa
+			{
+				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+				if (z == 0) 	 // E0yyvvvv 1aaaaaaa
+				{
+					u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+					if (mem16 == (0x0000FFFF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+				else if (z == 1) // E1yy00vv 1aaaaaaa
+				{
+					u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+					if (mem8 == (0x000000FF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+			}
+			else if ((((u32)p->data & 0xF0000000) == 0x20000000)) // Ezyyvvvv 2aaaaaaa
+			{
+				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+				if (z == 0) 	 // E0yyvvvv 2aaaaaaa
+				{
+					u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+					if (mem16 >= (0x0000FFFF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+				else if (z == 1) // E1yy00vv 2aaaaaaa
+				{
+					u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+					if (mem8 >= (0x000000FF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+			}
+			else if ((((u32)p->data & 0xF0000000) == 0x30000000)) // Ezyyvvvv 3aaaaaaa
+			{
+				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
+
+				if (z == 0) 	 // E0yyvvvv 3aaaaaaa
+				{
+					u16 mem16 = memRead16((u32)p->data & 0x0FFFFFFF);
+					if (mem16 <= (0x0000FFFF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+				else if (z == 1) // E1yy00vv 3aaaaaaa
+				{
+					u8 mem8 = memRead8((u32)p->data & 0x0FFFFFFF);
+					if (mem8 <= (0x000000FF & (u32)p->addr))
+					{
+						SkipCount = ((u32)p->addr & 0x00FF0000) / 0x10000;
+					}
+					PrevCheatType = 0;
+				}
+			}
+		}
 	}
 }
 
@@ -321,61 +430,61 @@ void _ApplyPatch(IniPatch *p)
 
 	switch (p->cpu)
 	{
-		case CPU_EE:
-			switch (p->type)
-			{
-				case BYTE_T:
-					if (memRead8(p->addr) != (u8)p->data)
-						memWrite8(p->addr, (u8)p->data);
-					break;
-
-				case SHORT_T:
-					if (memRead16(p->addr) != (u16)p->data)
-						memWrite16(p->addr, (u16)p->data);
-					break;
-
-				case WORD_T:
-					if (memRead32(p->addr) != (u32)p->data)
-						memWrite32(p->addr, (u32)p->data);
-					break;
-
-				case DOUBLE_T:
-					u64 mem;
-					memRead64(p->addr, &mem);
-					if (mem != p->data)
-						memWrite64(p->addr, &p->data);
-					break;
-
-				case EXTENDED_T:
-					handle_extended_t(p);
-					break;
-
-				default:
-					break;
-			}
+	case CPU_EE:
+		switch (p->type)
+		{
+		case BYTE_T:
+			if (memRead8(p->addr) != (u8)p->data)
+				memWrite8(p->addr, (u8)p->data);
 			break;
 
-		case CPU_IOP:
-			switch (p->type)
-			{
-				case BYTE_T:
-					if (iopMemRead8(p->addr) != (u8)p->data)
-						iopMemWrite8(p->addr, (u8)p->data);
-					break;
-				case SHORT_T:
-					if (iopMemRead16(p->addr) != (u16)p->data)
-						iopMemWrite16(p->addr, (u16)p->data);
-					break;
-				case WORD_T:
-					if (iopMemRead32(p->addr) != (u32)p->data)
-						iopMemWrite32(p->addr, (u32)p->data);
-					break;
-				default:
-					break;
-			}
+		case SHORT_T:
+			if (memRead16(p->addr) != (u16)p->data)
+				memWrite16(p->addr, (u16)p->data);
+			break;
+
+		case WORD_T:
+			if (memRead32(p->addr) != (u32)p->data)
+				memWrite32(p->addr, (u32)p->data);
+			break;
+
+		case DOUBLE_T:
+			u64 mem;
+			memRead64(p->addr, &mem);
+			if (mem != p->data)
+				memWrite64(p->addr, &p->data);
+			break;
+
+		case EXTENDED_T:
+			handle_extended_t(p);
 			break;
 
 		default:
 			break;
+		}
+		break;
+
+	case CPU_IOP:
+		switch (p->type)
+		{
+		case BYTE_T:
+			if (iopMemRead8(p->addr) != (u8)p->data)
+				iopMemWrite8(p->addr, (u8)p->data);
+			break;
+		case SHORT_T:
+			if (iopMemRead16(p->addr) != (u16)p->data)
+				iopMemWrite16(p->addr, (u16)p->data);
+			break;
+		case WORD_T:
+			if (iopMemRead32(p->addr) != (u32)p->data)
+				iopMemWrite32(p->addr, (u32)p->data);
+			break;
+		default:
+			break;
+		}
+		break;
+
+	default:
+		break;
 	}
 }
