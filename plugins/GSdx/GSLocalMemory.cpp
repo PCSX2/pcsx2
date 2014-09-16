@@ -2082,3 +2082,45 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 
 	return pages;
 }
+
+GSVector4i* GSOffset::GetPagesAsBits(const GSVector4i& rect, GSVector4i* pages, GSVector4i* bbox)
+{
+	if(pages == NULL)
+	{
+		pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
+	}
+
+	pages[0] = GSVector4i::zero();
+	pages[1] = GSVector4i::zero();
+	pages[2] = GSVector4i::zero();
+	pages[3] = GSVector4i::zero();
+
+	GSVector2i bs = (bp & 31) == 0 ? GSLocalMemory::m_psm[psm].pgs : GSLocalMemory::m_psm[psm].bs;
+
+	GSVector4i r = rect.ralign<Align_Outside>(bs);
+
+	if(bbox != NULL) *bbox = r;
+
+	r = r.sra32(3);
+
+	bs.x >>= 3;
+	bs.y >>= 3;
+
+	for(int y = r.top; y < r.bottom; y += bs.y)
+	{
+		uint32 base = block.row[y];
+
+		for(int x = r.left; x < r.right; x += bs.x)
+		{
+			uint32 n = (base + block.col[x]) >> 5;
+
+			if(n < MAX_PAGES)
+			{
+				((uint32*)pages)[n >> 5] |= 1 << (n & 31);
+			}
+		}
+	}
+
+	return pages;
+
+}

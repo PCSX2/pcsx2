@@ -47,6 +47,10 @@ GSState::GSState()
 	s_savez = !!theApp.GetConfig("savez", 0);
 	s_saven = theApp.GetConfig("saven", 0);
 
+	//s_dump = 1;
+	//s_save = 1;
+	//s_savez = 1;
+
 	UserHacks_AggressiveCRC = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_AggressiveCRC", 0) : 0;
 	UserHacks_DisableCrcHacks = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig( "UserHacks_DisableCrcHacks", 0 ) : 0;
 	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
