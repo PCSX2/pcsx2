@@ -968,7 +968,8 @@ bool AlphaTest(int alpha, int aref, uint* fm, uint* zm)
 		*fm |= pass ? 0 : 0xffffffff;
 		break;
 	case AFAIL_RGB_ONLY:
-		*fm |= pass ? 0 : 0xff000000;
+		if(is32bit(FPSM)) *fm |= pass ? 0 : 0xff000000;
+		if(is16bit(FPSM)) *fm |= pass ? 0 : 0xffff8000;
 		*zm |= pass ? 0 : 0xffffffff;
 		break;
 	}
@@ -1248,7 +1249,7 @@ __kernel void KERNEL_TFX(
 		fd = ReadFrame(vm, faddr, FPSM);
 	}
 
-	if(ZTEST)
+	if(RZB)
 	{
 		zd = ReadFrame(vm, zaddr, ZPSM);
 	}
@@ -1284,7 +1285,7 @@ __kernel void KERNEL_TFX(
 		wait_group_events(1, &e);
 	}
 
-	if(ZTEST)
+	if(RZB)
 	{
 		event_t e = async_work_group_copy((__local uint4*)zb, (__global uint4*)&vm[zbn << 8], 1024 / sizeof(uint4), 0);
 		
@@ -1409,7 +1410,7 @@ __kernel void KERNEL_TFX(
 
 			int4 ct;
 
-			if(FB && TFX != TFX_NONE)
+			if(TFX != TFX_NONE)
 			{
 				// TODO
 
@@ -1423,13 +1424,20 @@ __kernel void KERNEL_TFX(
 
 					if(!FST)
 					{
-						uv = convert_int2(t.xy * (1.0f / t.z));
+						uv = convert_int2_rte(t.xy * (1.0f / t.z));// * native_recip(t.z));
 
 						if(LTF) uv -= 0x0008;
 					}
 					else
 					{
-						uv = convert_int2(t.xy);
+						// sfex capcom logo third drawing call at (0,223) calculated as:
+						// t0 + (p - p0) * (t - t0) / (p1 - p0)  
+						// 0.5 + (223 - 0) * (112.5 - 0.5) / (224 - 0) = 112
+						// due to rounding errors (multiply-add instruction maybe):
+						// t.y = 111.999..., uv0.y = 111, uvf.y = 15/16, off by 1/16 texel vertically after interpolation
+						// TODO: sw renderer samples at 112 exactly, check which one is correct
+
+						uv = convert_int2(t.xy); 
 					}
 
 					int2 uvf = uv & 0x000f;
@@ -1461,6 +1469,8 @@ __kernel void KERNEL_TFX(
 			}
 
 			// alpha tfx
+
+			int alpha = c.w;
 
 			if(FB)
 			{
@@ -1512,7 +1522,7 @@ __kernel void KERNEL_TFX(
 
 			if(ZWRITE)
 			{
-				zd = bitselect(zs, zd, zm);
+				zd = RZB ? bitselect(zs, zd, zm) : zs;
 			}
 
 			// rgb tfx
@@ -1529,7 +1539,7 @@ __kernel void KERNEL_TFX(
 					break;
 				case TFX_HIGHLIGHT:
 				case TFX_HIGHLIGHT2:					
-					c.xyz = clamp((ct.xyz * c.xyz >> 7) + c.w, 0, 0xff);
+					c.xyz = clamp((ct.xyz * c.xyz >> 7) + alpha, 0, 0xff);
 					break;
 				}
 			}
@@ -1553,10 +1563,10 @@ __kernel void KERNEL_TFX(
 			{
 				if(DTHE && is16bit(FPSM))
 				{
-					// TODO: c += pb->dimx[y & 3]
+					c.xyz += pb->dimx[y & 3][x & 3];
 				}
 
-				c = COLCLAMP ? clamp(c, 0, 0xff) : (c & 0xff);
+				c = COLCLAMP ? clamp(c, 0, 0xff) : c & 0xff;
 				
 				if(FBA && !is24bit(FPSM))
 				{

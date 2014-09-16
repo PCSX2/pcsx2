@@ -64,18 +64,6 @@ class GSRendererCL : public GSRenderer
 		operator uint32() const { return key; }
 	};
 
-	union JobSelector
-	{
-		struct
-		{
-			uint32 dummy:1; // 0
-		};
-
-		uint32 key;
-
-		operator uint32() const { return key; }
-	};
-
 	union TFXSelector
 	{
 		struct
@@ -106,7 +94,7 @@ class GSRendererCL : public GSRenderer
 			uint32 rfb:1; // 36
 			uint32 zwrite:1; // 37
 			uint32 ztest:1; // 38
-			uint32 zoverflow:1; // 39 (z max >= 0x80000000)
+			uint32 rzb:1; // 39
 			uint32 wms:2; // 40
 			uint32 wmt:2; // 42
 			uint32 datm:1; // 44
@@ -114,12 +102,11 @@ class GSRendererCL : public GSRenderer
 			uint32 fba:1; // 46
 			uint32 dthe:1; // 47
 			uint32 prim:2; // 48
-			uint32 tw:3; // 50 (encodes values between 3 -> 10, texture cache makes sure it is at least 3)
-			uint32 lcm:1; // 53
-			uint32 mmin:2; // 54
-			uint32 noscissor:1; // 55
-			uint32 tpsm:4; // 56
-			uint32 aem:1; // 60
+			uint32 lcm:1; // 50
+			uint32 mmin:2; // 51
+			uint32 noscissor:1; // 53
+			uint32 tpsm:4; // 54
+			uint32 aem:1; // 58
 			// TODO
 		};
 
@@ -177,12 +164,57 @@ class GSRendererCL : public GSRenderer
 		uint32 clut[256];
 	};
 
-	struct TFXJob
+	class TFXJob
 	{
-		struct {int x, y, z, w;} rect;
-		TFXSelector sel;
+	public:
+		struct { int x, y, z, w; } rect;
+		TFXSelector sel; // uses primclass, solidrect only
 		uint32 ib_start, ib_count;
 		uint32 pb_start;
+		GSVector4i* src_pages; // read by any texture level
+		GSVector4i* dst_pages; // f/z writes to it
+
+		TFXJob()
+			: src_pages(NULL)
+			, dst_pages(NULL)
+		{
+		}
+
+		virtual ~TFXJob()
+		{
+			if(src_pages != NULL) _aligned_free(src_pages);
+			if(dst_pages != NULL) _aligned_free(dst_pages);
+		}
+
+		GSVector4i* GetSrcPages()
+		{
+			if(src_pages == NULL)
+			{
+				src_pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
+
+				src_pages[0] = GSVector4i::zero();
+				src_pages[1] = GSVector4i::zero();
+				src_pages[2] = GSVector4i::zero();
+				src_pages[3] = GSVector4i::zero();
+			}
+
+			return src_pages;
+		}
+
+		GSVector4i* GetDstPages()
+		{
+			if(dst_pages == NULL)
+			{
+				dst_pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
+
+				dst_pages[0] = GSVector4i::zero();
+				dst_pages[1] = GSVector4i::zero();
+				dst_pages[2] = GSVector4i::zero();
+				dst_pages[3] = GSVector4i::zero();
+			}
+
+			return dst_pages;
+		}
 	};
 
 	class CL
@@ -217,7 +249,7 @@ class GSRendererCL : public GSRenderer
 	};
 
 	CL m_cl;
-	std::list<TFXJob> m_jobs;
+	std::list<shared_ptr<TFXJob>> m_jobs;
 	uint32 m_vb_start;
 	uint32 m_vb_count;
 
@@ -282,10 +314,10 @@ protected:
 //	GSTextureCacheCL* m_tc;
 	GSTexture* m_texture[2];
 	uint8* m_output;
-
-	uint8 m_rw_pages[512]; // TODO: bit array for faster clearing (bit 0: write, bit 1: read)
-	uint8 m_tex_pages[512];
-	uint32 m_tmp_pages[512 + 1];
+	
+	GSVector4i m_rw_pages[2][4]; // pages that may be read or modified by the rendering queue, f/z rw, tex r
+	GSVector4i m_tc_pages[4]; // invalidated texture cache pages
+	GSVector4i m_tmp_pages[4];
 
 	void Reset();
 	void VSync(int field);
@@ -297,12 +329,7 @@ protected:
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);
 
-	void UsePages(const uint32* pages, int type);
-	void ReleasePages(const uint32* pages, int type);
-	
-	//bool CheckSourcePages(RasterizerData* data);
-
-	bool SetupParameter(TFXParameter* pb, GSVertexCL* vertex, size_t vertex_count, const uint32* index, size_t index_count);
+	bool SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* vertex, size_t vertex_count, const uint32* index, size_t index_count);
 
 public:
 	GSRendererCL();
