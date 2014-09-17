@@ -44,8 +44,6 @@ typedef struct
 typedef struct
 {
 	int4 scissor;
-	int4 bbox;
-	int4 rect;
 	char dimx[4][4];
 	ulong sel;
 	uint fbp, zbp, bw;
@@ -663,9 +661,9 @@ __kernel void KERNEL_PRIM(
 
 			env->barycentric[prim_index] = b;
 		}
-		else
+		else // triangle has zero area
 		{
-			// TODO: set b.zero to something that always fails the tests
+			pmax = -1; // won't get included in any tile
 		}
 	}
 	else if(PRIM == GS_SPRITE_CLASS)
@@ -769,7 +767,7 @@ __kernel void KERNEL_TILE(
 
 		uchar4 r = bbox_cache[group_prim_index];
 
-		uint test = (r.x <= x + 1) & (r.z >= x) & (r.y <= y + 1) & (r.w >= y);
+		uint test = (r.x <= x) & (r.z >= x) & (r.y <= y) & (r.w >= y);
 
 		if(PRIM == GS_TRIANGLE_CLASS && test != 0)
 		{
@@ -862,7 +860,7 @@ __kernel void KERNEL_TILE(
 			{
 				uchar4 r = bbox_cache[i];
 
-				BIN_TYPE test = (r.x <= x + 1) & (r.z >= x) & (r.y <= y + 1) & (r.w >= y);
+				BIN_TYPE test = (r.x <= x) & (r.z >= x) & (r.y <= y) & (r.w >= y);
 
 				if(PRIM == GS_TRIANGLE_CLASS && test != 0)
 				{
@@ -1146,7 +1144,7 @@ int4 ReadTexel(__global uchar* vm, int x, int y, int level, __global gs_param* p
 		c = pb->clut[vm[addr]];
 		break;
 	case PSM_PSMT4:
-		c = pb->clut[(vm[addr] >> ((addr & 1) << 2)) & 0x0f];
+		c = pb->clut[(vm[addr >> 1] >> ((addr & 1) << 2)) & 0x0f];
 		break;
 	case PSM_PSMT8H:
 		c = pb->clut[vm32[addr] >> 24];
@@ -1159,10 +1157,19 @@ int4 ReadTexel(__global uchar* vm, int x, int y, int level, __global gs_param* p
 		break;
 	}
 
-	//printf("[%d %d] %05x %d %d %08x | %v4hhd | %08x\n", x, y, pb->tbp[level], pb->tbw[level], TPSM, addr, c, vm32[addr]);
+	//printf("[%d %d] %05x %d %d %08x | %v4hhd | %08x\n", x, y, pb->tbp[level], pb->tbw[level], TPSM, addr, c, vm[addr]);
 
 	return convert_int4(c);
 }
+
+// TODO: 2x2 MSAA idea
+// downsize the rendering tile to 16x8 or 8x8 and render 2x2 sub-pixels to __local
+// hittest and ztest 2x2 (create write mask, only skip if all -1) 
+// calculate color 1x1, alpha tests 1x1
+// use mask to filter failed sub-pixels when writing to __local
+// needs the tile data to be fetched at the beginning, even if rfb/zfb is not set, unless we know the tile is fully covered
+// multiple work-items may render different prims to the same 2x2 sub-pixel, averaging can only be done after a barrier at the very end
+// pb->fm? alpha channel and following alpha tests? some games may depend on exact results, not some average
 
 __kernel void KERNEL_TFX(
 	__global gs_env* env,
@@ -1437,7 +1444,7 @@ __kernel void KERNEL_TFX(
 						// t.y = 111.999..., uv0.y = 111, uvf.y = 15/16, off by 1/16 texel vertically after interpolation
 						// TODO: sw renderer samples at 112 exactly, check which one is correct
 
-						uv = convert_int2(t.xy); 
+						uv = convert_int2_rte(t.xy); 
 					}
 
 					int2 uvf = uv & 0x000f;
@@ -1497,7 +1504,7 @@ __kernel void KERNEL_TFX(
 				{
 					if(!ABE || c.w == 0x80)
 					{
-						// TODO: c.w = coverage; // coverage 0x80 at 100%
+						c.w = /*edge ? coverage :*/ 0x80; // TODO
 					}
 				}
 			}
@@ -1619,7 +1626,6 @@ __kernel void KERNEL_TFX(
 		if(FWRITE)
 		{
 			WriteFrame(vm, faddr, FPSM, fd);
-			//WriteFrame(vm, faddr, FPSM, 0xff202020 * fragments);
 		}
 	}
 }

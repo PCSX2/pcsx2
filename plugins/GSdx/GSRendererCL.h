@@ -146,8 +146,6 @@ class GSRendererCL : public GSRenderer
 	__aligned(struct, 32) TFXParameter
 	{
 		GSVector4i scissor;
-		GSVector4i bbox;
-		GSVector4i rect;
 		GSVector4i dimx; // 4x4 signed char
 		TFXSelector sel;
 		uint32 fbp, zbp, bw;
@@ -173,7 +171,9 @@ class GSRendererCL : public GSRenderer
 		uint32 pb_start;
 		GSVector4i* src_pages; // read by any texture level
 		GSVector4i* dst_pages; // f/z writes to it
-
+#ifdef DEBUG
+		uint32 fbp, fbw, fpsm, zbp, tbp, tbw, tpsm, tw, th;
+#endif
 		TFXJob()
 			: src_pages(NULL)
 			, dst_pages(NULL)
@@ -224,6 +224,8 @@ class GSRendererCL : public GSRenderer
 		std::map<uint32, cl::Kernel> tile_map;
 		std::map<uint64, cl::Kernel> tfx_map;
 
+		cl::Kernel Build(const char* entry, ostringstream& opt);
+
 	public:
 		std::vector<cl::Device> devices;
 		cl::Context context;
@@ -254,6 +256,8 @@ class GSRendererCL : public GSRenderer
 	uint32 m_vb_count;
 
 	void Enqueue();
+	void UpdateTextureCache(TFXJob* job);
+	void InvalidateTextureCache(TFXJob* job);
 
 	/*
 	class RasterizerData : public GSAlignedClass<32>
@@ -311,13 +315,12 @@ class GSRendererCL : public GSRenderer
 	};
 	*/
 protected:
-//	GSTextureCacheCL* m_tc;
 	GSTexture* m_texture[2];
 	uint8* m_output;
 	
 	GSVector4i m_rw_pages[2][4]; // pages that may be read or modified by the rendering queue, f/z rw, tex r
-	GSVector4i m_tc_pages[4]; // invalidated texture cache pages
-	GSVector4i m_tmp_pages[4];
+	GSVector4i m_tc_pages[4]; // invalidated texture cache pages (split this into 8:24?)
+	GSVector4i m_tmp_pages[4]; // TODO: this should be block level, too many overlaps inside pages with render targets
 
 	void Reset();
 	void VSync(int field);

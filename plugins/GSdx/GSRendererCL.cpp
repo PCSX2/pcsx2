@@ -126,11 +126,9 @@ static int tfxcount = 0;
 
 void GSRendererCL::VSync(int field)
 {
-	Sync(0);
-
 	GSRenderer::VSync(field);
 
-	printf("vsync %d/%d/%d\n", pageuploads, pageuploadcount, tfxcount);
+	//printf("vsync %d/%d/%d\n", pageuploads, pageuploadcount, tfxcount);
 	pageuploads = pageuploadcount = tfxcount = 0;
 
 	//if(!field) memset(m_mem.m_vm8, 0, (size_t)m_mem.m_vmsize);
@@ -371,23 +369,9 @@ void GSRendererCL::Draw()
 
 		//
 
-		shared_ptr<TFXJob> job(new TFXJob());
-
-		job->rect.x = rect.x;
-		job->rect.y = rect.y;
-		job->rect.z = rect.z;
-		job->rect.w = rect.w;
-		job->ib_start = m_cl.ib.tail;
-		job->ib_count = m_index.tail;
-		job->pb_start = m_cl.pb.tail;
-
 		GSVertexCL* vb = (GSVertexCL*)(m_cl.vb.ptr + m_cl.vb.tail);
 		uint32* ib = (uint32*)(m_cl.ib.ptr + m_cl.ib.tail);
 		TFXParameter* pb = (TFXParameter*)(m_cl.pb.ptr + m_cl.pb.tail);
-
-		pb->scissor = scissor;
-		pb->bbox = bbox;
-		pb->rect = rect;
 
 		(this->*m_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST])(vb, m_vertex.buff, m_vertex.next); // TODO: upload in GSVertex format and extract the fields in the kernel? 
 
@@ -396,6 +380,7 @@ void GSRendererCL::Draw()
 			memcpy(ib, m_index.buff, m_index.tail * sizeof(uint32));
 
 			m_vb_start = m_cl.vb.tail;
+			m_vb_count = 0;
 		}
 		else
 		{
@@ -409,16 +394,44 @@ void GSRendererCL::Draw()
 			}
 		}
 
-		m_vb_count += m_vertex.next;
+		shared_ptr<TFXJob> job(new TFXJob());
 
 		if(!SetupParameter(job.get(), pb, vb, m_vertex.next, m_index.buff, m_index.tail))
 		{
 			return;
 		}
 
+		pb->scissor = scissor;
+
+		if(bbox.eq(bbox.rintersect(scissor)))
+		{
+			pb->sel.noscissor = 1;
+		}
+
 		job->sel = pb->sel;
+		job->rect.x = rect.x;
+		job->rect.y = rect.y;
+		job->rect.z = rect.z;
+		job->rect.w = rect.w;
+		job->ib_start = m_cl.ib.tail;
+		job->ib_count = m_index.tail;
+		job->pb_start = m_cl.pb.tail;
+
+#ifdef DEBUG
+		job->fbp = context->FRAME.Block();
+		job->fbw = context->FRAME.FBW;
+		job->fpsm = context->FRAME.PSM;
+		job->zbp = context->ZBUF.Block();
+		job->tbp = PRIM->TME ? context->TEX0.TBP0 : 0xfffff;
+		job->tbw = PRIM->TME ? context->TEX0.TBW : 1;
+		job->tpsm = PRIM->TME ? context->TEX0.PSM : 0;
+		job->tw = PRIM->TME ? context->TEX0.TW : 0;
+		job->th = PRIM->TME ? context->TEX0.TH : 0;
+#endif
 
 		m_jobs.push_back(job);
+
+		m_vb_count += m_vertex.next;
 
 		m_cl.vb.tail += vb_size;
 		m_cl.ib.tail += ib_size;
@@ -444,12 +457,9 @@ void GSRendererCL::Draw()
 				{
 					m_rw_pages[1][i] |= m_tmp_pages[i];
 				}
-			}
 
-			GSVector4i* dst_pages = job->GetDstPages();
+				GSVector4i* dst_pages = job->GetDstPages();
 
-			if(pb->sel.fwrite)
-			{
 				for(int i = 0; i < 4; i++)
 				{
 					dst_pages[i] |= m_tmp_pages[i];
@@ -475,15 +485,25 @@ void GSRendererCL::Draw()
 				{
 					m_rw_pages[1][i] |= m_tmp_pages[i];
 				}
-			}
 
-			GSVector4i* dst_pages = job->GetDstPages();
+				GSVector4i* dst_pages = job->GetDstPages();
 
-			if(pb->sel.zwrite)
-			{
 				for(int i = 0; i < 4; i++)
 				{
 					dst_pages[i] |= m_tmp_pages[i];
+				}
+			}
+		}
+
+		if(job->src_pages != NULL)
+		{
+			for(int i = 0; i < 4; i++)
+			{
+				m_rw_pages[0][i] |= job->src_pages[i];
+
+				if(job->dst_pages != NULL && !(job->dst_pages[i] & job->src_pages[i]).eq(GSVector4i::zero()))
+				{
+					//printf("src and dst overlap!\n");
 				}
 			}
 		}
@@ -536,6 +556,8 @@ void GSRendererCL::Draw()
 
 void GSRendererCL::Sync(int reason)
 {
+	if(LOG) { fprintf(s_fp, "Sync (%d)\n", reason); fflush(s_fp); }
+
 	//printf("sync %d\n", reason);
 
 	GSPerfMonAutoTimer pmat(&m_perfmon, GSPerfMon::Sync);
@@ -574,7 +596,12 @@ void GSRendererCL::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 			if(!(pages & m_tmp_pages[i]).eq(GSVector4i::zero()))
 			{
-				Sync(3);
+				// TODO: an awesome idea to avoid this Sync
+				// - call Enqueue() to flush m_jobs 
+				// - append rendering queue with a kernel that writes the incoming data to m_mem.vm and tell the parent class to not do it
+				// - the only problem, clut has to be read directly by the texture sampler, can't attach it to gs_param before being written
+
+				Sync(3); 
 
 				break;
 			}
@@ -800,36 +827,28 @@ void GSRendererCL::Enqueue()
 					{
 						ASSERT(prim_start < MAX_PRIM_COUNT);
 
+						tfxcount++;
+
+						//if(LOG) { fprintf(s_fp, "q %05x %05x %05x\n", (*i)->fbp, (*i)->zbp, (*i)->tbp); fflush(s_fp); }
+
+						UpdateTextureCache((*i).get());
+
 						uint32 prim_count_inner = std::min((*i)->ib_count / n, MAX_PRIM_COUNT - prim_start);
 
-						tfxcount++;
-						if((*i)->src_pages != NULL)
+						/*
+						if(m_perfmon.GetFrame() >= 5036) if((*i)->src_pages != NULL)
 						{
-							int count = 0;
+							m_cl.queue[2].finish();
 
-							for(int j = 0; j < 4; j++)
-							{
-								GSVector4i pages = m_tc_pages[j] & (*i)->src_pages[j];
+							uint64 frame = m_perfmon.GetFrame();
 
-								if(!pages.eq(GSVector4i::zero()))
-								{
-									// TODO: update texture cache with pages where the bits are set, enqueueCopyBuffer or "memcpy" kernel (src=this->vm, dst=this->tex)
-									// TODO: only use the texture cache if there is an overlap between src_pages and dst_pages? (or if already uploaded)
+							std::string s;
 
-									for(int ii = 0; ii < 4; ii++)
-										for(int jj = 0; jj < 32; jj++)
-											if(pages.u32[ii] & (1 << jj)) count++;
+							s = format("c:\\temp1\\_%05d_f%lld_tex2_%05x_%d.bmp", s_n++, frame, (*i)->tbp, (*i)->tpsm);
 
-									m_tc_pages[j] &= ~(*i)->src_pages[j];
-								}
-							}
-
-							if(count > 0)
-							{
-								pageuploads += count;
-								pageuploadcount++;
-							}
+							m_mem.SaveBMP(s, (*i)->tbp, (*i)->tbw, (*i)->tpsm, 1 << (*i)->tw, 1 << (*i)->th);
 						}
+						*/
 
 						// TODO: tile level z test
 
@@ -859,13 +878,22 @@ void GSRendererCL::Enqueue()
 						*/
 						m_cl.queue[2].enqueueNDRangeKernel(tfx, cl::NDRange(r.left, r.top), cl::NDRange(r.width(), r.height()), cl::NDRange(16, 16));
 
-						if((*i)->dst_pages != NULL)
+						/*
+						if(m_perfmon.GetFrame() >= 5036)
 						{
-							for(int j = 0; j < 4; j++)
-							{
-								m_tc_pages[j] |= (*i)->dst_pages[j];
-							}
+							m_cl.queue[2].finish();
+
+							uint64 frame = m_perfmon.GetFrame();
+
+							std::string s;
+
+							s = format("c:\\temp1\\_%05d_f%lld_rt2_%05x_%d.bmp", s_n++, frame, (*i)->fbp, (*i)->fpsm);
+
+							m_mem.SaveBMP(s, (*i)->fbp, (*i)->fbw, (*i)->fpsm, GetFrameRect().width(), 512);
 						}
+						*/
+
+						InvalidateTextureCache((*i).get());
 
 						// TODO: partial job renderings (>MAX_PRIM_COUNT) may invalidate pages unnecessarily
 
@@ -881,9 +909,9 @@ void GSRendererCL::Enqueue()
 						(*job)->ib_start += prim_count * n * sizeof(uint32);
 						(*job)->ib_count -= prim_count * n;
 
-						next = job; // try again for the reminder
+						next = job; // try again for the remainder
 
-						printf("split %d\n", (*job)->ib_count / n);
+						//printf("split %d\n", (*job)->ib_count / n);
 					}
 
 					break;
@@ -907,6 +935,96 @@ void GSRendererCL::Enqueue()
 	m_cl.pb.head = m_cl.pb.tail;
 
 	m_cl.Map();
+}
+
+void GSRendererCL::UpdateTextureCache(TFXJob* job)
+{
+	if(job->src_pages == NULL) return;
+
+	int count = 0;
+
+	for(int i = 0; i < 4; i++)
+	{
+		GSVector4i pages = m_tc_pages[i] & job->src_pages[i];
+
+		if(pages.eq(GSVector4i::zero())) continue;
+
+		size_t page_size = 8192;
+
+		// TODO: only use the texture cache if there is an overlap between src_pages and dst_pages? (or if already uploaded)
+
+		if(0) for(int j = 0; j < 4; j++)
+		{
+			if(pages.u32[j] == 0) continue;
+
+			if(pages.u32[j] == 0xffffffff)
+			{
+				size_t offset = (i * sizeof(GSVector4i) + j * sizeof(uint32)) * 8 * page_size;
+
+				m_cl.queue[2].enqueueCopyBuffer(m_cl.vm, m_cl.tex, offset, offset, page_size * 32);
+
+				if(LOG) { fprintf(s_fp, "tc (%d x32)\n", offset >> 13); fflush(s_fp); }
+
+				pageuploadcount++;
+				count += 32;
+
+				continue;
+			}
+
+			for(int k = 0; k < 4; k++)
+			{
+				uint8 b = pages.u8[j * 4 + k];
+
+				if(b == 0) continue;
+
+				if(b == 0xff)
+				{
+					size_t offset = (i * sizeof(GSVector4i) + (j * 4 + k)) * 8 * page_size;
+
+					m_cl.queue[2].enqueueCopyBuffer(m_cl.vm, m_cl.tex, offset, offset, page_size * 8);
+
+					if(LOG) { fprintf(s_fp, "tc (%d x8)\n", offset >> 13); fflush(s_fp); }
+
+					pageuploadcount++;
+					count += 8;
+
+					continue;
+				}
+
+				for(int l = 0; l < 8; l++)
+				{
+					if(b & (1 << l))
+					{
+						size_t offset = ((i * sizeof(GSVector4i) + (j * 4 + k)) * 8 + l) * page_size;
+
+						m_cl.queue[2].enqueueCopyBuffer(m_cl.vm, m_cl.tex, offset, offset, page_size);
+
+						if(LOG) { fprintf(s_fp, "tc (%d x1)\n", offset >> 13); fflush(s_fp); }
+
+						pageuploadcount++;
+						count++;
+					}
+				}
+			}
+		}
+
+		m_tc_pages[i] &= ~job->src_pages[i];
+	}
+
+	if(count > 0)
+	{
+		pageuploads += count;
+	}
+}
+
+void GSRendererCL::InvalidateTextureCache(TFXJob* job)
+{
+	if(job->dst_pages == NULL) return;
+
+	for(int j = 0; j < 4; j++)
+	{
+		m_tc_pages[j] |= job->dst_pages[j];
+	}
 }
 
 static int RemapPSM(int psm)
@@ -1057,7 +1175,6 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 			for(int i = 0; i < 4; i++)
 			{
 				src_pages[i] |= m_tmp_pages[i];
-				m_rw_pages[0][i] |= m_tmp_pages[i];
 			}
 
 			if(m_mipmap && context->TEX1.MXL > 0 && context->TEX1.MMIN >= 2 && context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0)
@@ -1191,7 +1308,6 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 					for(int i = 0; i < 4; i++)
 					{
 						src_pages[i] |= m_tmp_pages[i];
-						m_rw_pages[0][i] |= m_tmp_pages[i];
 					}
 				}
 
@@ -1428,11 +1544,6 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 		pb->zm |= 0xffff0000;
 	}
 
-	if(pb->bbox.eq(pb->bbox.rintersect(pb->scissor)))
-	{
-		pb->sel.noscissor = 1;
-	}
-
 	pb->fbp = context->FRAME.Block();
 	pb->zbp = context->ZBUF.Block();
 	pb->bw = context->FRAME.FBW;
@@ -1481,8 +1592,10 @@ GSRendererCL::CL::CL()
 #ifdef IOCL_DEBUG
 				if(type == CL_DEVICE_TYPE_CPU && strstr(platform_vendor.c_str(), "Intel") != NULL)
 #else
+				//if(type == CL_DEVICE_TYPE_CPU && strstr(platform_vendor.c_str(), "Intel") != NULL)
 				//if(type == CL_DEVICE_TYPE_GPU && strstr(platform_vendor.c_str(), "Intel") != NULL)
-				if(type == CL_DEVICE_TYPE_GPU && strstr(platform_vendor.c_str(), "Advanced Micro Devices") != NULL)
+				//if(type == CL_DEVICE_TYPE_GPU && strstr(platform_vendor.c_str(), "Advanced Micro Devices") != NULL)
+				if(type == CL_DEVICE_TYPE_GPU)
 #endif
 				{
 					devices.push_back(device);
@@ -1595,28 +1708,16 @@ static void AddDefs(ostringstream& opt)
 #endif
 }
 
-cl::Kernel& GSRendererCL::CL::GetPrimKernel(const PrimSelector& sel)
+cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 {
-	auto i = prim_map.find(sel);
+	// TODO: cache binary on disk
 
-	if(i != prim_map.end())
-	{
-		return i->second;
-	}
-
-	char entry[256];
-
-	sprintf(entry, "prim_%02x", sel);
+	printf("building kernel (%s)\n", entry);
 
 	cl::Program program = cl::Program(context, kernel_str);
 
 	try
 	{
-		ostringstream opt;
-
-		opt << "-D KERNEL_PRIM=" << entry << " ";
-		opt << "-D PRIM=" << sel.prim << " ";
-
 		AddDefs(opt);
 
 		program.build(opt.str().c_str());
@@ -1636,7 +1737,28 @@ cl::Kernel& GSRendererCL::CL::GetPrimKernel(const PrimSelector& sel)
 		throw err;
 	}
 
-	cl::Kernel k(program, entry);
+	return cl::Kernel(program, entry);
+}
+
+cl::Kernel& GSRendererCL::CL::GetPrimKernel(const PrimSelector& sel)
+{
+	auto i = prim_map.find(sel);
+
+	if(i != prim_map.end())
+	{
+		return i->second;
+	}
+
+	char entry[256];
+
+	sprintf(entry, "prim_%02x", sel);
+
+	ostringstream opt;
+
+	opt << "-D KERNEL_PRIM=" << entry << " ";
+	opt << "-D PRIM=" << sel.prim << " ";
+
+	cl::Kernel k = Build(entry, opt);
 
 	prim_map[sel] = k;
 
@@ -1658,37 +1780,14 @@ cl::Kernel& GSRendererCL::CL::GetTileKernel(const TileSelector& sel)
 
 	sprintf(entry, "tile_%02x", sel);
 
-	cl::Program program = cl::Program(context, kernel_str);
+	ostringstream opt;
 
-	try
-	{
-		ostringstream opt;
+	opt << "-D KERNEL_TILE=" << entry << " ";
+	opt << "-D PRIM=" << sel.prim << " ";
+	opt << "-D MODE=" << sel.mode << " ";
+	opt << "-D CLEAR=" << sel.clear << " ";
 
-		opt << "-D KERNEL_TILE=" << entry << " ";
-		opt << "-D PRIM=" << sel.prim << " ";
-		opt << "-D MODE=" << sel.mode << " ";
-		opt << "-D CLEAR=" << sel.clear << " ";
-
-		AddDefs(opt);
-
-		program.build(opt.str().c_str());
-	}
-	catch(cl::Error err)
-	{
-		if(err.err() == CL_BUILD_PROGRAM_FAILURE)
-		{
-			for(auto device : devices)
-			{
-				auto s = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-
-				printf("kernel (%s) build error: %s\n", entry, s.c_str());
-			}
-		}
-
-		throw err;
-	}
-
-	cl::Kernel k(program, entry);
+	cl::Kernel k = Build(entry, opt);
 
 	tile_map[sel] = k;
 
@@ -1708,78 +1807,53 @@ cl::Kernel& GSRendererCL::CL::GetTFXKernel(const TFXSelector& sel)
 
 	char entry[256];
 
-	sprintf(entry, "tfx_%016x", sel);
+	sprintf(entry, "tfx_%016llx", sel);
 
-	cl::Program program = cl::Program(context, kernel_str);
+	ostringstream opt;
 
-	try
-	{
-		ostringstream opt;
+	opt << "-D KERNEL_TFX=" << entry << " ";
+	opt << "-D FPSM=" << sel.fpsm << " ";
+	opt << "-D ZPSM=" << sel.zpsm << " ";
+	opt << "-D ZTST=" << sel.ztst << " ";
+	opt << "-D ATST=" << sel.atst << " ";
+	opt << "-D AFAIL=" << sel.afail << " ";
+	opt << "-D IIP=" << sel.iip << " ";
+	opt << "-D TFX=" << sel.tfx << " ";
+	opt << "-D TCC=" << sel.tcc << " ";
+	opt << "-D FST=" << sel.fst << " ";
+	opt << "-D LTF=" << sel.ltf << " ";
+	opt << "-D TLU=" << sel.tlu << " ";
+	opt << "-D FGE=" << sel.fge << " ";
+	opt << "-D DATE=" << sel.date << " ";
+	opt << "-D ABE=" << sel.abe << " ";
+	opt << "-D ABA=" << sel.aba << " ";
+	opt << "-D ABB=" << sel.abb << " ";
+	opt << "-D ABC=" << sel.abc << " ";
+	opt << "-D ABD=" << sel.abd << " ";
+	opt << "-D PABE=" << sel.pabe << " ";
+	opt << "-D AA1=" << sel.aa1 << " ";
+	opt << "-D FWRITE=" << sel.fwrite << " ";
+	opt << "-D FTEST=" << sel.ftest << " ";
+	opt << "-D RFB=" << sel.rfb << " ";
+	opt << "-D ZWRITE=" << sel.zwrite << " ";
+	opt << "-D ZTEST=" << sel.ztest << " ";
+	opt << "-D RZB=" << sel.rzb << " ";
+	opt << "-D WMS=" << sel.wms << " ";
+	opt << "-D WMT=" << sel.wmt << " ";
+	opt << "-D DATM=" << sel.datm << " ";
+	opt << "-D COLCLAMP=" << sel.colclamp << " ";
+	opt << "-D FBA=" << sel.fba << " ";
+	opt << "-D DTHE=" << sel.dthe << " ";
+	opt << "-D PRIM=" << sel.prim << " ";
+	opt << "-D LCM=" << sel.lcm << " ";
+	opt << "-D MMIN=" << sel.mmin << " ";
+	opt << "-D NOSCISSOR=" << sel.noscissor << " ";
+	opt << "-D TPSM=" << sel.tpsm << " ";
+	opt << "-D AEM=" << sel.aem << " ";
+	opt << "-D FB=" << sel.fb << " ";
+	opt << "-D ZB=" << sel.zb << " ";
 
-		opt << "-D KERNEL_TFX=" << entry << " ";
-		opt << "-D FPSM=" << sel.fpsm << " ";
-		opt << "-D ZPSM=" << sel.zpsm << " ";
-		opt << "-D ZTST=" << sel.ztst << " ";
-		opt << "-D ATST=" << sel.atst << " ";
-		opt << "-D AFAIL=" << sel.afail << " ";
-		opt << "-D IIP=" << sel.iip << " ";
-		opt << "-D TFX=" << sel.tfx << " ";
-		opt << "-D TCC=" << sel.tcc << " ";
-		opt << "-D FST=" << sel.fst << " ";
-		opt << "-D LTF=" << sel.ltf << " ";
-		opt << "-D TLU=" << sel.tlu << " ";
-		opt << "-D FGE=" << sel.fge << " ";
-		opt << "-D DATE=" << sel.date << " ";
-		opt << "-D ABE=" << sel.abe << " ";
-		opt << "-D ABA=" << sel.aba << " ";
-		opt << "-D ABB=" << sel.abb << " ";
-		opt << "-D ABC=" << sel.abc << " ";
-		opt << "-D ABD=" << sel.abd << " ";
-		opt << "-D PABE=" << sel.pabe << " ";
-		opt << "-D AA1=" << sel.aa1 << " ";
-		opt << "-D FWRITE=" << sel.fwrite << " ";
-		opt << "-D FTEST=" << sel.ftest << " ";
-		opt << "-D RFB=" << sel.rfb << " ";
-		opt << "-D ZWRITE=" << sel.zwrite << " ";
-		opt << "-D ZTEST=" << sel.ztest << " ";
-		opt << "-D RZB=" << sel.rzb << " ";
-		opt << "-D WMS=" << sel.wms << " ";
-		opt << "-D WMT=" << sel.wmt << " ";
-		opt << "-D DATM=" << sel.datm << " ";
-		opt << "-D COLCLAMP=" << sel.colclamp << " ";
-		opt << "-D FBA=" << sel.fba << " ";
-		opt << "-D DTHE=" << sel.dthe << " ";
-		opt << "-D PRIM=" << sel.prim << " ";
-		opt << "-D LCM=" << sel.lcm << " ";
-		opt << "-D MMIN=" << sel.mmin << " ";
-		opt << "-D NOSCISSOR=" << sel.noscissor << " ";
-		opt << "-D TPSM=" << sel.tpsm << " ";
-		opt << "-D AEM=" << sel.aem << " ";
-		opt << "-D FB=" << sel.fb << " ";
-		opt << "-D ZB=" << sel.zb << " ";
-
-		AddDefs(opt);
-
-		printf("building kernel (%s)\n", entry);
-
-		program.build(opt.str().c_str());
-	}
-	catch(cl::Error err)
-	{
-		if(err.err() == CL_BUILD_PROGRAM_FAILURE)
-		{
-			for(auto device : devices)
-			{
-				auto s = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-
-				printf("kernel (%s) build error: %s\n", entry, s.c_str());
-			}
-		}
-
-		throw err;
-	}
-
-	cl::Kernel k(program, entry);
+	cl::Kernel k = Build(entry, opt);
 
 	tfx_map[sel] = k;
 
