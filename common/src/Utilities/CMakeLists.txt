@@ -96,11 +96,13 @@ endif(CMAKE_BUILD_TYPE STREQUAL Release)
 if(APPLE)
 	LIST(APPEND UtilitiesSources
 		Darwin/DarwinThreads.cpp
+		Darwin/DarwinMisc.cpp
 		Darwin/DarwinSemaphore.cpp
 	)
 else(APPLE)
 	LIST(APPEND UtilitiesSources
 		Linux/LnxThreads.cpp
+		Linux/LnxMisc.cpp
 		Semaphore.cpp
 	)
 endif(APPLE)
@@ -120,7 +122,6 @@ LIST(APPEND UtilitiesSources
 	HashTools.cpp
 	IniInterface.cpp
 	Linux/LnxHostSys.cpp
-	Linux/LnxMisc.cpp
 	Mutex.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
