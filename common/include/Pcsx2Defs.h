@@ -216,7 +216,12 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 #	define PCSX2_ALIGNED16_EXTERN(x) extern x __attribute((aligned(16)))
 
 #	define __assume(cond)	((void)0)	// GCC has no equivalent for __assume
-#	define CALLBACK			__attribute__((stdcall))
+
+#	if defined(__x86_64__) || defined(__APPLE__)
+#		define CALLBACK
+#	else
+#		define CALLBACK			__attribute__((stdcall))
+#	endif
 
 // Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
 // warnings when a static inlined function isn't used in the scope of a single file (which
