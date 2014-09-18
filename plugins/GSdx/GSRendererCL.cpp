@@ -193,23 +193,9 @@ void GSRendererCL::ConvertVertexBuffer(GSVertexCL* RESTRICT dst, const GSVertex*
 	{
 		GSVector4 stcq = GSVector4::load<true>(&src->m[0]); // s t rgba q
 
-		#if _M_SSE >= 0x401
-
 		GSVector4i xyzuvf(src->m[1]);
 
-		GSVector4i xy = xyzuvf.upl16() - o;
-		GSVector4i zf = xyzuvf.ywww().min_u32(GSVector4i::xffffff00());
-
-		#else
-
-		uint32 z = src->XYZ.Z;
-
-		GSVector4i xy = GSVector4i::load((int)src->XYZ.u32[0]).upl16() - o;
-		GSVector4i zf = GSVector4i((int)std::min<uint32>(z, 0xffffff00), src->FOG); // NOTE: larger values of z may roll over to 0 when converting back to uint32 later
-
-		#endif
-
-		dst->p = GSVector4(xy).xyxy(GSVector4(zf) + (GSVector4::m_x4f800000 & GSVector4::cast(zf.sra32(31)))) * g_pos_scale;
+		dst->p = (GSVector4(xyzuvf.upl16() - o) * g_pos_scale).xyxy(GSVector4::cast(xyzuvf.ywyw())); // pass zf as uints
 
 		GSVector4 t = GSVector4::zero();
 
@@ -233,7 +219,7 @@ void GSRendererCL::ConvertVertexBuffer(GSVertexCL* RESTRICT dst, const GSVertex*
 			}
 		}
 
-		dst->t = t.insert32<2, 3>(stcq);
+		dst->t = t.insert32<2, 3>(stcq); // color as uchar4 in t.w
 	}
 }
 
@@ -871,6 +857,7 @@ void GSRendererCL::Enqueue()
 						GSVector4i r = GSVector4i::load<false>(&(*i)->rect);
 
 						r = r.ralign<Align_Outside>(GSVector2i(BIN_SIZE, BIN_SIZE));
+
 						/*
 						if(i->sel.IsSolidRect()) // TODO: simple mem fill with optional mask
 							;//printf("%d %d %d %d\n", r.left, r.top, r.width(), r.height());
