@@ -249,7 +249,7 @@ emitterT void SSE2_MOVD_Rm_to_XMM( x86SSERegType to, x86IntRegType from, int off
 	xMOVDZX( xRegisterSSE(to), ptr[xAddressReg(from)+offset] );
 }
 
-emitterT void SSE2_MOVD_XMM_to_M32( u32 to, x86SSERegType from )			{ xMOVD( ptr[(void*)to], xRegisterSSE(from) ); }
+emitterT void SSE2_MOVD_XMM_to_M32( uptr to, x86SSERegType from )			{ xMOVD( ptr[(void*)to], xRegisterSSE(from) ); }
 emitterT void SSE2_MOVD_XMM_to_R( x86IntRegType to, x86SSERegType from )	{ xMOVD( xRegister32(to), xRegisterSSE(from) ); }
 emitterT void SSE2_MOVD_XMM_to_Rm( x86IntRegType to, x86SSERegType from, int offset )
 {
@@ -258,30 +258,30 @@ emitterT void SSE2_MOVD_XMM_to_Rm( x86IntRegType to, x86SSERegType from, int off
 
 emitterT void SSE2_MOVQ_M64_to_XMM( x86SSERegType to, uptr from )			{ xMOVQZX( xRegisterSSE(to), ptr[(void*)from] ); }
 emitterT void SSE2_MOVQ_XMM_to_XMM( x86SSERegType to, x86SSERegType from )	{ xMOVQZX( xRegisterSSE(to), xRegisterSSE(from) ); }
-emitterT void SSE2_MOVQ_XMM_to_M64( u32 to, x86SSERegType from )			{ xMOVQ( ptr[(void*)to], xRegisterSSE(from) ); }
+emitterT void SSE2_MOVQ_XMM_to_M64( uptr to, x86SSERegType from )			{ xMOVQ( ptr[(void*)to], xRegisterSSE(from) ); }
 emitterT void SSE2_MOVDQ2Q_XMM_to_MM( x86MMXRegType to, x86SSERegType from)	{ xMOVQ( xRegisterMMX(to), xRegisterSSE(from) ); }
 emitterT void SSE2_MOVQ2DQ_MM_to_XMM( x86SSERegType to, x86MMXRegType from)	{ xMOVQ( xRegisterSSE(to), xRegisterMMX(from) ); }
 
 
 emitterT void SSE_MOVSS_M32_to_XMM( x86SSERegType to, uptr from )						{ xMOVSSZX( xRegisterSSE(to), ptr[(void*)from] ); }
-emitterT void SSE_MOVSS_XMM_to_M32( u32 to, x86SSERegType from )						{ xMOVSS( ptr[(void*)to], xRegisterSSE(from) ); }
+emitterT void SSE_MOVSS_XMM_to_M32( uptr to, x86SSERegType from )						{ xMOVSS( ptr[(void*)to], xRegisterSSE(from) ); }
 emitterT void SSE_MOVSS_XMM_to_XMM( x86SSERegType to, x86SSERegType from )				{ xMOVSS( xRegisterSSE(to), xRegisterSSE(from) ); }
 emitterT void SSE_MOVSS_Rm_to_XMM( x86SSERegType to, x86IntRegType from, int offset )	{ xMOVSSZX( xRegisterSSE(to), ptr[xAddressReg(from)+offset] ); }
 emitterT void SSE_MOVSS_XMM_to_Rm( x86IntRegType to, x86SSERegType from, int offset )	{ xMOVSS( ptr[xAddressReg(to)+offset], xRegisterSSE(from) ); }
 
 emitterT void SSE2_MOVSD_M32_to_XMM( x86SSERegType to, uptr from )						{ xMOVSDZX( xRegisterSSE(to), ptr[(void*)from] ); }
-emitterT void SSE2_MOVSD_XMM_to_M32( u32 to, x86SSERegType from )						{ xMOVSD( ptr[(void*)to], xRegisterSSE(from) ); }
+emitterT void SSE2_MOVSD_XMM_to_M32( uptr to, x86SSERegType from )						{ xMOVSD( ptr[(void*)to], xRegisterSSE(from) ); }
 emitterT void SSE2_MOVSD_XMM_to_XMM( x86SSERegType to, x86SSERegType from )				{ xMOVSD( xRegisterSSE(to), xRegisterSSE(from) ); }
 emitterT void SSE2_MOVSD_Rm_to_XMM( x86SSERegType to, x86IntRegType from, int offset )	{ xMOVSDZX( xRegisterSSE(to), ptr[xAddressReg(from)+offset] ); }
 emitterT void SSE2_MOVSD_XMM_to_Rm( x86IntRegType to, x86SSERegType from, int offset )	{ xMOVSD( ptr[xAddressReg(to)+offset], xRegisterSSE(from) ); }
 
 emitterT void SSE_MOVLPS_M64_to_XMM( x86SSERegType to, uptr from )						{ xMOVL.PS( xRegisterSSE(to), ptr[(void*)from] ); }
-emitterT void SSE_MOVLPS_XMM_to_M64( u32 to, x86SSERegType from )						{ xMOVL.PS( ptr[(void*)to], xRegisterSSE(from) ); }
+emitterT void SSE_MOVLPS_XMM_to_M64( uptr to, x86SSERegType from )						{ xMOVL.PS( ptr[(void*)to], xRegisterSSE(from) ); }
 emitterT void SSE_MOVLPS_Rm_to_XMM( x86SSERegType to, x86IntRegType from, int offset )	{ xMOVL.PS( xRegisterSSE(to), ptr[xAddressReg(from)+offset] ); }
 emitterT void SSE_MOVLPS_XMM_to_Rm( x86IntRegType to, x86SSERegType from, int offset )	{ xMOVL.PS( ptr[xAddressReg(to)+offset], xRegisterSSE(from) ); }
 
 emitterT void SSE_MOVHPS_M64_to_XMM( x86SSERegType to, uptr from )						{ xMOVH.PS( xRegisterSSE(to), ptr[(void*)from] ); }
-emitterT void SSE_MOVHPS_XMM_to_M64( u32 to, x86SSERegType from )						{ xMOVH.PS( ptr[(void*)to], xRegisterSSE(from) ); }
+emitterT void SSE_MOVHPS_XMM_to_M64( uptr to, x86SSERegType from )						{ xMOVH.PS( ptr[(void*)to], xRegisterSSE(from) ); }
 emitterT void SSE_MOVHPS_Rm_to_XMM( x86SSERegType to, x86IntRegType from, int offset )	{ xMOVH.PS( xRegisterSSE(to), ptr[xAddressReg(from)+offset] ); }
 emitterT void SSE_MOVHPS_XMM_to_Rm( x86IntRegType to, x86SSERegType from, int offset )	{ xMOVH.PS( ptr[xAddressReg(to)+offset], xRegisterSSE(from) ); }
 

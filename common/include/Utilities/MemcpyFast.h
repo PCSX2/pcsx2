@@ -15,7 +15,16 @@
 
 #pragma once
 
-#ifdef __linux__
+#ifdef __APPLE__
+
+// OSX has a pretty good, vectorized libc implementation, let's go with that
+// instead of adding extra complexity. Bonus points for memcmp being an
+// intrinsic in many compilers.
+
+#	include "lnx_memzero.h"
+#	define memcmp_mmx memcmp
+
+#elif defined(__linux__)
 
 #	include "lnx_memzero.h"
 

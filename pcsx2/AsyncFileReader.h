@@ -18,8 +18,15 @@
 #ifdef WIN32
 #	include <Windows.h>
 #	undef Yield
-#else
+#elif defined(__linux__)
+// Linux can directly use Kernal AIO through libaio, which is more efficient
+// than POSIX AIO (on Linux at least). The reason is that POSIX AIO is
+// implemented in user space with threadsed in user space with threads.
 #	include <libaio.h>
+#elif defined(__POSIX__)
+#	include <aio.h>
+#else
+#	error "unsupported platform"
 #endif
 
 class AsyncFileReader
@@ -70,9 +77,11 @@ class FlatFileReader : public AsyncFileReader
 	HANDLE hEvent;
 
 	bool asyncInProgress;
-#else
+#elif defined(__linux__)
 	int m_fd; // FIXME don't know if overlap as an equivalent on linux
 	io_context_t m_aio_context;
+#elif defined(__POSIX__)
+	struct aiocb m_aio_context;
 #endif
 
 	bool shareWrite;

@@ -24,6 +24,12 @@
 #include <errno.h>
 #include <unistd.h>
 
+// Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
+// the same thing.
+#if defined(__APPLE__) && !defined(MAP_ANONYMOUS)
+#	define MAP_ANONYMOUS MAP_ANON
+#endif
+
 extern void SignalExit(int sig);
 
 static const uptr m_pagemask = getpagesize()-1;

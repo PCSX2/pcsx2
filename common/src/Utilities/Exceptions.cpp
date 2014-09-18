@@ -18,6 +18,7 @@
 #include <wx/app.h>
 #include "Threading.h"
 #include "TlsVariable.inl"
+#include "debugbreak.h"
 
 #if defined(__UNIX__)
 #include <signal.h>
@@ -69,21 +70,7 @@ wxString DiagnosticOrigin::ToString( const wxChar* msg ) const
 // Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
 void pxTrap()
 {
-#if defined(__WXMSW__) && !defined(__WXMICROWIN__)
-    __debugbreak();
-#elif defined(__WXMAC__) && !defined(__DARWIN__)
-    #if __powerc
-        Debugger();
-    #else
-        SysBreak();
-    #endif
-#elif defined(_MSL_USING_MW_C_HEADERS) && _MSL_USING_MW_C_HEADERS
-    Debugger();
-#elif defined(__UNIX__)
-    raise(SIGTRAP);
-#else
-    // TODO
-#endif // Win/Unix
+	debug_break();
 }
 
 

@@ -98,11 +98,3 @@ static __inline__ __attribute__((always_inline)) unsigned long long __xgetbv(uns
 	__asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
 	return ((unsigned long long)edx << 32) | eax;
 }
-
-/*** Interrupts ***/
-#ifndef __linux__
-static __inline__ __attribute__((always_inline)) void __debugbreak(void)
-{
-	__asm__("int $3");
-}
-#endif

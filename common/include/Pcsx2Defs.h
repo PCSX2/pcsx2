@@ -23,6 +23,14 @@
 #define __linux__
 #endif
 
+// make sure __POSIX__ is defined for all systems where we assume POSIX
+// compliance
+#if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+#	if !defined(__POSIX__)
+#		define __POSIX__ 1
+#	endif
+#endif
+
 #include "Pcsx2Types.h"
 
 #ifdef _MSC_VER
@@ -31,6 +39,8 @@ extern "C" unsigned __int64 __xgetbv(int);
 #else
 #	include <intrin_x86.h>
 #endif
+
+#include "debugbreak.h"
 
 // Renamed ARRAYSIZE to ArraySize -- looks nice and gets rid of Windows.h conflicts (air)
 // Notes: I'd have used ARRAY_SIZE instead but ran into cross-platform lib conflicts with
@@ -57,7 +67,7 @@ extern "C" unsigned __int64 __xgetbv(int);
 #			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
 #		endif
 #	else
-#		define jBREAKPOINT() __debugbreak();
+#		define jBREAKPOINT() debug_break();
 #		ifdef wxASSERT
 #			define jASSUME(exp) wxASSERT(exp)
 #		else
@@ -74,32 +84,21 @@ extern "C" unsigned __int64 __xgetbv(int);
 // level conditionals).  Normally not a concern, but if you stick if( IsDevbuild ) in
 // some tight loops it will likely make debug builds unusably slow.
 //
-#ifdef __cplusplus
-#	ifdef PCSX2_DEVBUILD
-		static const bool IsDevBuild = true;
-#	else
-		static const bool IsDevBuild = false;
-#	endif
 
-#	ifdef PCSX2_DEBUG
-		static const bool IsDebugBuild = true;
-#	else
-		static const bool IsDebugBuild = false;
-#	endif
+#ifndef __cplusplus
+#	include <stdbool.h>
+#endif
 
+#ifdef PCSX2_DEVBUILD
+	static const bool IsDevBuild = true;
 #else
+	static const bool IsDevBuild = false;
+#endif
 
-#	ifdef PCSX2_DEVBUILD
-		static const u8 IsDevBuild = 1;
-#	else
-		static const u8 IsDevBuild = 0;
-#	endif
-
-#	ifdef PCSX2_DEBUG
-		static const u8 IsDebugBuild = 1;
-#	else
-		static const u8 IsDebugBuild = 0;
-#	endif
+#ifdef PCSX2_DEBUG
+	static const bool IsDebugBuild = true;
+#else
+	static const bool IsDebugBuild = false;
 #endif
 
 #ifdef PCSX2_DEBUG
@@ -217,13 +216,25 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 #	define PCSX2_ALIGNED16_EXTERN(x) extern x __attribute((aligned(16)))
 
 #	define __assume(cond)	((void)0)	// GCC has no equivalent for __assume
-#	define CALLBACK			__attribute__((stdcall))
+
+#	if defined(__x86_64__) || defined(__APPLE__)
+#		define CALLBACK
+#	else
+#		define CALLBACK			__attribute__((stdcall))
+#	endif
 
 // Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
-#	define __fastcall		__attribute__((fastcall))
+// 64-bits builds don't need (nor have) fastcall, as both the Microsoft and
+// System V calling conventions pass a lot of arguments in registers anyway.
+#	ifdef __x86_64__
+#		define __fastcall
+#	else
+#		define __fastcall		__attribute__((fastcall))
+#	endif
+
 #	define _inline			__inline__ __attribute__((unused))
 #	ifdef NDEBUG
 #		define __forceinline	__attribute__((always_inline,unused))

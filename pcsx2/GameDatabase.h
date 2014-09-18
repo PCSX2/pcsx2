@@ -128,7 +128,7 @@ struct Game_Data
 
 	// Gets an integer representation of the 'value' for the given key
 	int getInt(const wxChar* key) const {
-		return wxStrtoul(getString(key), NULL, 0);
+		return wxStrtoul(getString(key), (int) NULL, 0);
 	}
 
 	// Gets a u8 representation of the 'value' for the given key

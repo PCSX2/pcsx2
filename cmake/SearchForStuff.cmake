@@ -39,7 +39,12 @@ include(FindLibc)
 
 ## Use CheckLib package to find module
 include(CheckLib)
-check_lib(AIO aio aio.h)
+if(APPLE)
+    # OSX has POSIX AIO builtin to its Libc, header: /usr/include/aio.h
+    set(AIO_FOUND 1)
+else()
+    check_lib(AIO aio aio.h)
+endif()
 check_lib(EGL egl EGL/egl.h)
 check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)

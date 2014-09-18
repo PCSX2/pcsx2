@@ -20,7 +20,7 @@
 
 struct AlignedMallocHeader
 {
-	u32 size;		// size of the allocated buffer (minus alignment and header)
+	size_t size;	// size of the allocated buffer (minus alignment and header)
 	void* baseptr;	// offset of the original allocated pointer
 };
 

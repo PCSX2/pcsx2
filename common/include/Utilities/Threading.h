@@ -19,6 +19,10 @@
 #include <errno.h> // EBUSY
 #include <pthread.h>
 
+#ifdef __APPLE__
+#include <mach/semaphore.h>
+#endif
+
 #include "Pcsx2Defs.h"
 #include "ScopedPtr.h"
 #include "TraceLog.h"
@@ -66,11 +70,7 @@ extern ConsoleLogSource_Threading pxConLog_Thread;
 //#define PCSX2_THREAD_LOCAL 0		// uncomment this line to force-disable native TLS (useful for testing TlsVariabel on windows/linux)
 
 #ifndef PCSX2_THREAD_LOCAL
-#	ifdef __WXMAC__
-#		define PCSX2_THREAD_LOCAL 0
-#	else
-#		define PCSX2_THREAD_LOCAL 1
-#	endif
+#	define PCSX2_THREAD_LOCAL 1
 #endif
 
 class wxTimeSpan;
@@ -151,8 +151,8 @@ namespace Threading
 // --------------------------------------------------------------------------------------
 //  Platform Specific External APIs
 // --------------------------------------------------------------------------------------
-// The following set of documented functions have Linux/Win32 specific implementations,
-// which are found in WinThreads.cpp and LnxThreads.cpp
+// The following set of documented functions have Linux/Win32/OSX specific implementations,
+// which are found in WinThreads.cpp, LnxThreads.cpp and DarwinThreads.cpp
 
 	// Releases a timeslice to other threads.
 	extern void Timeslice();
@@ -253,7 +253,12 @@ namespace Threading
 	class Semaphore
 	{
 	protected:
+#ifdef __APPLE__
+		semaphore_t m_sema;
+		int m_counter;
+#else
 		sem_t m_sema;
+#endif
 
 	public:
 		Semaphore();
