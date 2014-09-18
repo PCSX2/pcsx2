@@ -14,7 +14,7 @@
 
 typedef struct
 {
-	union {float4 p; struct {float x, y, z, f;};};
+	union {float4 p; struct {float x, y; uint z, f;};};
 	union {float4 tc; struct {float s, t, q; uchar4 c;};};
 } gs_vertex;
 
@@ -46,12 +46,12 @@ typedef struct
 	int4 scissor;
 	char dimx[4][4];
 	ulong sel;
-	uint fbp, zbp, bw;
+	int fbp, zbp, bw;
 	uint fm, zm;
 	uchar4 fog; // rgb
 	uchar aref, afix;
 	uchar ta0, ta1;
-	uint tbp[7], tbw[7];
+	int tbp[7], tbw[7];
 	int minu, maxu, minv, maxv;
 	int lod; // lcm == 1
 	int mxl;
@@ -68,7 +68,7 @@ enum GS_PRIM_CLASS
 	GS_SPRITE_CLASS
 };
 
-enum GS_PSM_TARGET
+enum GS_PSM
 {
 	PSM_PSMCT32,
 	PSM_PSMCT24,
@@ -350,87 +350,87 @@ __constant ushort columnTable4[16][32] =
 	  407, 415, 439, 447, 471, 479, 503, 511 },
 };
 
-uint BlockNumber32(int x, int y, uint bp, uint bw)
+int BlockNumber32(int x, int y, int bp, int bw)
 {
-	return bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32[(y >> 3) & 3][(x >> 3) & 7];
+	return bp + mad24(y & ~0x1f, bw, (x >> 1) & ~0x1f) + blockTable32[(y >> 3) & 3][(x >> 3) & 7];
 }
 
-uint BlockNumber16(int x, int y, uint bp, uint bw)
+int BlockNumber16(int x, int y, int bp, int bw)
 {
-	return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16[(y >> 3) & 7][(x >> 4) & 3];
+	return bp + mad24((y >> 1) & ~0x1f, bw, (x >> 1) & ~0x1f) + blockTable16[(y >> 3) & 7][(x >> 4) & 3];
 }
 
-uint BlockNumber16S(int x, int y, uint bp, uint bw)
+int BlockNumber16S(int x, int y, int bp, int bw)
 {
-	return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16S[(y >> 3) & 7][(x >> 4) & 3];
+	return bp + mad24((y >> 1) & ~0x1f, bw, (x >> 1) & ~0x1f) + blockTable16S[(y >> 3) & 7][(x >> 4) & 3];
 }
 
-uint BlockNumber32Z(int x, int y, uint bp, uint bw)
+int BlockNumber32Z(int x, int y, int bp, int bw)
 {
-	return bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32Z[(y >> 3) & 3][(x >> 3) & 7];
+	return bp + mad24(y & ~0x1f, bw, (x >> 1) & ~0x1f) + blockTable32Z[(y >> 3) & 3][(x >> 3) & 7];
 }
 
-uint BlockNumber16Z(int x, int y, uint bp, uint bw)
+int BlockNumber16Z(int x, int y, int bp, int bw)
 {
-	return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16Z[(y >> 3) & 7][(x >> 4) & 3];
+	return bp + mad24((y >> 1) & ~0x1f, bw, (x >> 1) & ~0x1f) + blockTable16Z[(y >> 3) & 7][(x >> 4) & 3];
 }
 
-uint BlockNumber16SZ(int x, int y, uint bp, uint bw)
+int BlockNumber16SZ(int x, int y, int bp, int bw)
 {
-	return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16SZ[(y >> 3) & 7][(x >> 4) & 3];
+	return bp + mad24((y >> 1) & ~0x1f, bw, (x >> 1) & ~0x1f) + blockTable16SZ[(y >> 3) & 7][(x >> 4) & 3];
 }
 
-uint BlockNumber8(int x, int y, uint bp, uint bw)
+int BlockNumber8(int x, int y, int bp, int bw)
 {
-	return bp + ((y >> 1) & ~0x1f) * (bw >> 1) + ((x >> 2) & ~0x1f) + blockTable8[(y >> 4) & 3][(x >> 4) & 7];
+	return bp + mad24((y >> 1) & ~0x1f, bw >> 1, (x >> 2) & ~0x1f) + blockTable8[(y >> 4) & 3][(x >> 4) & 7];
 }
 
-uint BlockNumber4(int x, int y, uint bp, uint bw)
+int BlockNumber4(int x, int y, int bp, int bw)
 {
-	return bp + ((y >> 2) & ~0x1f) * (bw >> 1) + ((x >> 2) & ~0x1f) + blockTable4[(y >> 4) & 7][(x >> 5) & 3];
+	return bp + mad24((y >> 2) & ~0x1f, bw >> 1, (x >> 2) & ~0x1f) + blockTable4[(y >> 4) & 7][(x >> 5) & 3];
 }
 
-uint PixelAddress32(int x, int y, uint bp, uint bw)
+int PixelAddress32(int x, int y, int bp, int bw)
 {
 	return (BlockNumber32(x, y, bp, bw) << 6) + columnTable32[y & 7][x & 7];
 }
 
-uint PixelAddress16(int x, int y, uint bp, uint bw)
+int PixelAddress16(int x, int y, int bp, int bw)
 {
 	return (BlockNumber16(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
 }
 
-uint PixelAddress16S(int x, int y, uint bp, uint bw)
+int PixelAddress16S(int x, int y, int bp, int bw)
 {
 	return (BlockNumber16S(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
 }
 
-uint PixelAddress32Z(int x, int y, uint bp, uint bw)
+int PixelAddress32Z(int x, int y, int bp, int bw)
 {
 	return (BlockNumber32Z(x, y, bp, bw) << 6) + columnTable32[y & 7][x & 7];
 }
 
-uint PixelAddress16Z(int x, int y, uint bp, uint bw)
+int PixelAddress16Z(int x, int y, int bp, int bw)
 {
 	return (BlockNumber16Z(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
 }
 
-uint PixelAddress16SZ(int x, int y, uint bp, uint bw)
+int PixelAddress16SZ(int x, int y, int bp, int bw)
 {
 	return (BlockNumber16SZ(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
 }
 
-uint PixelAddress8(int x, int y, uint bp, uint bw)
+int PixelAddress8(int x, int y, int bp, int bw)
 {
 	return (BlockNumber8(x, y, bp, bw) << 8) + columnTable8[y & 15][x & 15];
 }
 
-uint PixelAddress4(int x, int y, uint bp, uint bw)
+int PixelAddress4(int x, int y, int bp, int bw)
 {
 	return (BlockNumber4(x, y, bp, bw) << 9) + columnTable4[y & 15][x & 31];
 }
 
-uint PixelAddress(int x, int y, uint bp, uint bw, uint psm)
+int PixelAddress(int x, int y, int bp, int bw, int psm)
 {
 	switch(psm)
 	{
@@ -459,49 +459,7 @@ uint PixelAddress(int x, int y, uint bp, uint bw, uint psm)
 	}
 }
 
-uint TileBlockNumber(int x, int y, uint bp, uint bw, uint psm)
-{
-	// TODO: replace blockTable with a subset tileTable
-
-	switch(psm)
-	{
-	default:
-	case PSM_PSMCT32: 
-	case PSM_PSMCT24: 
-		return bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32[(y >> 3) & 2][(x >> 3) & 6];
-	case PSM_PSMCT16: 
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16[(y >> 3) & 2][(x >> 4) & 3];
-	case PSM_PSMCT16S: 
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16S[(y >> 3) & 2][(x >> 4) & 3];
-	case PSM_PSMZ32: 
-	case PSM_PSMZ24: 
-		return bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32Z[(y >> 3) & 2][(x >> 3) & 6];
-	case PSM_PSMZ16: 
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16Z[(y >> 3) & 2][(x >> 4) & 3];
-	case PSM_PSMZ16S: 
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16SZ[(y >> 3) & 2][(x >> 4) & 3];
-	}
-}
-
-uint TilePixelAddress(int x, int y, uint ba, uint psm)
-{
-	switch(psm)
-	{
-	default:
-	case PSM_PSMCT32: 
-	case PSM_PSMCT24: 
-	case PSM_PSMZ32: 
-	case PSM_PSMZ24: 
-		return ((ba + ((y >> 2) & 2) + ((x >> 3) & 1)) << 6) + columnTable32[y & 7][x & 7];
-	case PSM_PSMCT16: 
-	case PSM_PSMCT16S: 
-	case PSM_PSMZ16: 
-	case PSM_PSMZ16S: 
-		return ((ba + ((y >> 3) & 1)) << 7) + columnTable16[y & 7][x & 15];
-	}
-}
-
-uint ReadFrame(__global uchar* vm, uint addr, uint psm)
+uint ReadFrame(__global uchar* vm, int addr, int psm)
 {
 	switch(psm)
 	{
@@ -519,7 +477,7 @@ uint ReadFrame(__global uchar* vm, uint addr, uint psm)
 	}
 }
 
-void WriteFrame(__global uchar* vm, uint addr, uint psm, uint value)
+void WriteFrame(__global uchar* vm, int addr, int psm, uint value)
 {
 	switch(psm)
 	{
@@ -593,7 +551,12 @@ __kernel void KERNEL_PRIM(
 
 	if(PRIM == GS_POINT_CLASS)
 	{
-		pmin = pmax = convert_int2_rte(vb[ib[0]].p.xy);
+		__global gs_vertex* v0 = &vb[ib[0]];
+
+		pmin = pmax = convert_int2_rte(v0->p.xy);
+
+		prim->v[0].p = v0->p;
+		prim->v[0].tc = v0->tc;
 	}
 	else if(PRIM == GS_LINE_CLASS)
 	{
@@ -616,12 +579,20 @@ __kernel void KERNEL_PRIM(
 		pmin = min(min(p0, p1), p2);
 		pmax = max(max(p0, p1), p2);
 
-		prim->v[0].p = v0->p;
+		// z needs special care, since it's a 32 bit unit, float cannot encode it exactly
+		// pass the minimum through the unused 4th padding vector 
+		// only interpolate the relative and hopefully small values
+
+		uint zmin = min(min(v0->z, v1->z), v2->z);
+		
+		prim->v[0].p = (float4)(v0->p.x, v0->p.y, as_float(v0->z - zmin), v0->p.w);
 		prim->v[0].tc = v0->tc;
-		prim->v[1].p = v1->p;
+		prim->v[1].p = (float4)(v1->p.x, v1->p.y, as_float(v1->z - zmin), v1->p.w);
 		prim->v[1].tc = v1->tc;
-		prim->v[2].p = v2->p;
+		prim->v[2].p = (float4)(v2->p.x, v2->p.y, as_float(v2->z - zmin), v2->p.w);
 		prim->v[2].tc = v2->tc;
+
+		prim->v[3].z = zmin;
 
 		float4 dp0 = v1->p - v0->p;
 		float4 dp1 = v0->p - v2->p;
@@ -631,10 +602,10 @@ __kernel void KERNEL_PRIM(
 
 		if(cp != 0.0f)
 		{
-			float cp_rcp = 1.0f / cp;// native_recip(cp);
+			cp = native_recip(cp);
 
-			float2 u = dp0.xy * cp_rcp;
-			float2 v = -dp1.xy * cp_rcp;
+			float2 u = dp0.xy * cp;
+			float2 v = -dp1.xy * cp;
 
 			// v0 has the (0, 0, 1) barycentric coord, v1: (0, 1, 0), v2: (1, 0, 0)
 
@@ -653,9 +624,9 @@ __kernel void KERNEL_PRIM(
 
 			// any barycentric(reject_corner) < 0, tile outside the triangle
 
-			b.reject_corner.x = 0.0f + max(max(max(0.0f, b.dx.x), b.dy.x), b.dx.x + b.dy.x) * BIN_SIZE;
-			b.reject_corner.y = 0.0f + max(max(max(0.0f, b.dx.y), b.dy.y), b.dx.y + b.dy.y) * BIN_SIZE;
-			b.reject_corner.z = 1.0f + max(max(max(0.0f, b.dx.z), b.dy.z), b.dx.z + b.dy.z) * BIN_SIZE;
+			b.reject_corner.x = 0.0f + max(max(max(b.dx.x + b.dy.x, b.dx.x), b.dy.x), 0.0f) * BIN_SIZE;
+			b.reject_corner.y = 0.0f + max(max(max(b.dx.y + b.dy.y, b.dx.y), b.dy.y), 0.0f) * BIN_SIZE;
+			b.reject_corner.z = 1.0f + max(max(max(b.dx.z + b.dy.z, b.dx.z), b.dy.z), 0.0f) * BIN_SIZE;
 
 			// TODO: accept_corner, at min value, all barycentric(accept_corner) >= 0, tile fully inside, no per pixel hittest needed
 
@@ -686,9 +657,9 @@ __kernel void KERNEL_PRIM(
 		prim->v[1].tc.xy = (prim->v[1].tc.xy - prim->v[0].tc.xy) / (prim->v[1].p.xy - prim->v[0].p.xy);
 	}
 
-	int4 pminmax = (int4)(pmin, pmax);
+	int4 r = (int4)(pmin, pmax + (int2)(BIN_SIZE - 1)) >> BIN_SIZE_BITS;
 
-	env->bbox[prim_index] = convert_uchar4_sat(pminmax >> BIN_SIZE_BITS);
+	env->bbox[prim_index] = convert_uchar4_sat(r);
 }
 
 #endif
@@ -767,11 +738,11 @@ __kernel void KERNEL_TILE(
 
 		uchar4 r = bbox_cache[group_prim_index];
 
-		uint test = (r.x <= x) & (r.z >= x) & (r.y <= y) & (r.w >= y);
+		uint test = (r.x <= x) & (r.z > x) & (r.y <= y) & (r.w > y);
 
 		if(PRIM == GS_TRIANGLE_CLASS && test != 0)
 		{
-			test &= tile_in_triangle(convert_float2((int2)(x, y) << BIN_SIZE_BITS), barycentric_cache[group_prim_index]);
+			test = tile_in_triangle(convert_float2((int2)(x, y) << BIN_SIZE_BITS), barycentric_cache[group_prim_index]);
 		}
 
 		atomic_or(&visible[bin_index], test << ((MAX_PRIM_PER_GROUP - 1) - get_local_id(2)));
@@ -848,7 +819,7 @@ __kernel void KERNEL_TILE(
 
 		for(uint bin_index = local_id; bin_index < bin_count; bin_index += local_size)
 		{
-			int y = bin_index / bin_dim.z;
+			int y = bin_index / bin_dim.z; // TODO: very expensive, no integer divider on current hardware
 			int x = bin_index - y * bin_dim.z;
 
 			x += bin_dim.x;
@@ -860,11 +831,11 @@ __kernel void KERNEL_TILE(
 			{
 				uchar4 r = bbox_cache[i];
 
-				BIN_TYPE test = (r.x <= x) & (r.z >= x) & (r.y <= y) & (r.w >= y);
+				BIN_TYPE test = (r.x <= x) & (r.z > x) & (r.y <= y) & (r.w > y);
 
 				if(PRIM == GS_TRIANGLE_CLASS && test != 0)
 				{
-					test &= tile_in_triangle(convert_float2((int2)(x, y) << BIN_SIZE_BITS), barycentric_cache[i]);
+					test = tile_in_triangle(convert_float2((int2)(x, y) << BIN_SIZE_BITS), barycentric_cache[i]);
 				}
 
 				visible |= test << ((MAX_PRIM_PER_BATCH - 1) - i);
@@ -1185,9 +1156,12 @@ __kernel void KERNEL_TFX(
 {
 	// TODO: try it the bin_index = atomic_inc(&env->bin_counter) way
 
-	uint bin_x = (get_global_id(0) >> BIN_SIZE_BITS) - bin_dim.x;
-	uint bin_y = (get_global_id(1) >> BIN_SIZE_BITS) - bin_dim.y;
-	uint bin_index = bin_y * bin_dim.z + bin_x;
+	uint x = get_global_id(0);
+	uint y = get_global_id(1);
+
+	uint bin_x = (x >> BIN_SIZE_BITS) - bin_dim.x;
+	uint bin_y = (y >> BIN_SIZE_BITS) - bin_dim.y;
+	uint bin_index = mad24(bin_y, (uint)bin_dim.z, bin_x);
 
 	uint batch_first = env->bounds[bin_index].first;
 	uint batch_last = env->bounds[bin_index].last;
@@ -1230,26 +1204,21 @@ __kernel void KERNEL_TFX(
 
 	__global gs_param* pb = (__global gs_param*)(pb_base + pb_start);
 
-	uint x = get_global_id(0);
-	uint y = get_global_id(1);
-
 	int2 pi = (int2)(x, y);
 	float2 pf = convert_float2(pi);
 
 	if(!NOSCISSOR)
 	{
-		int4 scissor = pb->scissor;
-
-		if(!all((pi >= scissor.xy) & (pi < scissor.zw)))
+		if(!all((pi >= pb->scissor.xy) & (pi < pb->scissor.zw)))
 		{
 			return;
 		}
 	}
 
-	uint faddr = PixelAddress(x, y, pb->fbp, pb->bw, FPSM);
-	uint zaddr = PixelAddress(x, y, pb->zbp, pb->bw, ZPSM);
+	int faddr = PixelAddress(x, y, pb->fbp, pb->bw, FPSM);
+	int zaddr = PixelAddress(x, y, pb->zbp, pb->bw, ZPSM);
 
-	uint fd, zd;
+	uint fd, zd; // TODO: fd as int4 and only pack before writing out?
 
 	if(RFB) 
 	{
@@ -1260,47 +1229,6 @@ __kernel void KERNEL_TFX(
 	{
 		zd = ReadFrame(vm, zaddr, ZPSM);
 	}
-/*
-	// TODO: lookup top left address of this tile + local offset
-	//
-	// 32bpp: 8x8 block size, 4 blocks, 1024 bytes
-	// 0 1
-	// 2 3
-	// 16bpp: 16x8 block size, 2 blocks, 512 bytes
-	// 0
-	// 1
-	// linear access in memory, this layout is the same for all formats
-
-	__local uint fbn, zbn;
-	__local uchar fb[1024], zb[1024];
-
-	if(get_local_id(0) == 0 && get_local_id(1) == 0)
-	{
-		fbn = TileBlockNumber(x, y, pb->fbp, pb->bw, FPSM);
-		zbn = TileBlockNumber(x, y, pb->fbp, pb->bw, FPSM);
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	uint faddr = TilePixelAddress(x, y, fbn, FPSM);
-	uint zaddr = TilePixelAddress(x, y, zbn, ZPSM);
-
-	if(RFB)
-	{
-		event_t e = async_work_group_copy((__local uint4*)fb, (__global uint4*)&vm[fbn << 8], 1024 / sizeof(uint4), 0);
-		
-		wait_group_events(1, &e);
-	}
-
-	if(RZB)
-	{
-		event_t e = async_work_group_copy((__local uint4*)zb, (__global uint4*)&vm[zbn << 8], 1024 / sizeof(uint4), 0);
-		
-		wait_group_events(1, &e);
-	}
-
-	// not sure if faster
-*/
 
 	// early destination alpha test
 
@@ -1346,30 +1274,44 @@ __kernel void KERNEL_TFX(
 
 			if(PRIM == GS_POINT_CLASS)
 			{
-				// TODO: distance.x < 0.5f || distance.y < 0.5f
+				float2 dpf = pf - prim->v[0].p.xy;
 
-				continue;
+				if(!all((dpf <= 0.5f) & (dpf > -0.5f)))
+				{
+					continue;
+				}
+
+				zf = as_uint2(prim->v[0].p.zw);
+				t.xyz = prim->v[0].tc.xyz;
+				c = convert_int4(prim->v[0].c);
 			}
 			else if(PRIM == GS_LINE_CLASS)
 			{
 				// TODO: find point on line prependicular to (x,y), distance.x < 0.5f || distance.y < 0.5f
+				// TODO: aa1: coverage ~ distance.x/y, slope selects x or y, zwrite disabled
+				// TODO: do not draw last pixel of the line
 
 				continue;
 			}
 			else if(PRIM == GS_TRIANGLE_CLASS)
 			{
+				// TODO: aa1: draw edge as a line
+
 				__global gs_barycentric* b = &barycentric[prim_index + i];
 
 				float3 f = b->dx.xyz * (pf.x - b->dx.w) + b->dy.xyz * (pf.y - b->dy.w) + (float3)(0, 0, 1);
 
-				f = select(f, (float3)(0.0f), fabs(f) < (float3)(CL_FLT_EPSILON * 10));
-
-				if(!all(f >= b->zero.xyz))
+				if(!all(select(f, (float3)(0.0f), fabs(f) < (float3)(CL_FLT_EPSILON * 10)) >= b->zero.xyz))
 				{
 					continue;
 				}
 
-				zf = convert_uint2(prim->v[0].p.zw * f.z + prim->v[1].p.zw * f.x + prim->v[2].p.zw * f.y);
+				float2 zf0 = convert_float2(as_uint2(prim->v[0].p.zw));
+				float2 zf1 = convert_float2(as_uint2(prim->v[1].p.zw));
+				float2 zf2 = convert_float2(as_uint2(prim->v[2].p.zw));
+
+				zf.x = convert_uint_rte(zf0.x * f.z + zf1.x * f.x + zf2.x * f.y) + prim->v[3].z;
+				zf.y = convert_uint_rte(zf0.y * f.z + zf1.y * f.x + zf2.y * f.y);
 
 				t.xyz = prim->v[0].tc.xyz * f.z + prim->v[1].tc.xyz * f.x + prim->v[2].tc.xyz * f.y;
 
@@ -1379,7 +1321,7 @@ __kernel void KERNEL_TFX(
 					float4 c1 = convert_float4(prim->v[1].c);
 					float4 c2 = convert_float4(prim->v[2].c);
 
-					c = convert_int4(c0 * f.z + c1 * f.x + c2 * f.y);
+					c = convert_int4_rte(c0 * f.z + c1 * f.x + c2 * f.y);
 				}
 				else
 				{
@@ -1396,7 +1338,7 @@ __kernel void KERNEL_TFX(
 					continue;
 				}
 
-				zf = convert_uint2(prim->v[1].p.zw); // TODO: send as uint
+				zf = as_uint2(prim->v[1].p.zw);
 				
 				t.xy = prim->v[0].tc.xy + prim->v[1].tc.xy * (pf - prim->v[0].p.xy);
 				t.z = prim->v[0].tc.z;
@@ -1431,7 +1373,7 @@ __kernel void KERNEL_TFX(
 
 					if(!FST)
 					{
-						uv = convert_int2_rte(t.xy * (1.0f / t.z));// * native_recip(t.z));
+						uv = convert_int2_rte(t.xy * native_recip(t.z));
 
 						if(LTF) uv -= 0x0008;
 					}
@@ -1444,7 +1386,9 @@ __kernel void KERNEL_TFX(
 						// t.y = 111.999..., uv0.y = 111, uvf.y = 15/16, off by 1/16 texel vertically after interpolation
 						// TODO: sw renderer samples at 112 exactly, check which one is correct
 
-						uv = convert_int2_rte(t.xy); 
+						// last line error in persona 3 movie clips if rounding is enabled
+
+						uv = convert_int2(t.xy); 
 					}
 
 					int2 uvf = uv & 0x000f;
@@ -1466,9 +1410,9 @@ __kernel void KERNEL_TFX(
 
 					if(LTF)
 					{
-						c00 = ((c01 - c00) * uvf.x >> 4) + c00;
-						c10 = ((c11 - c10) * uvf.x >> 4) + c10;
-						c00 = ((c10 - c00) * uvf.y >> 4) + c00;
+						c00 = (mul24(c01 - c00, uvf.x) >> 4) + c00;
+						c10 = (mul24(c11 - c10, uvf.x) >> 4) + c10;
+						c00 = (mul24(c10 - c00, uvf.y) >> 4) + c00;
 					}
 
 					ct = c00;
@@ -1486,7 +1430,7 @@ __kernel void KERNEL_TFX(
 					switch(TFX)
 					{
 					case TFX_MODULATE:
-						c.w = clamp(ct.w * c.w >> 7, 0, 0xff);
+						c.w = clamp(mul24(ct.w, c.w) >> 7, 0, 0xff);
 						break;
 					case TFX_DECAL:
 						c.w = ct.w;
@@ -1539,14 +1483,14 @@ __kernel void KERNEL_TFX(
 				switch(TFX)
 				{
 				case TFX_MODULATE:
-					c.xyz = clamp(ct.xyz * c.xyz >> 7, 0, 0xff);
+					c.xyz = clamp(mul24(ct.xyz, c.xyz) >> 7, 0, 0xff);
 					break;
 				case TFX_DECAL:
 					c.xyz = ct.xyz;
 					break;
 				case TFX_HIGHLIGHT:
 				case TFX_HIGHLIGHT2:					
-					c.xyz = clamp((ct.xyz * c.xyz >> 7) + alpha, 0, 0xff);
+					c.xyz = clamp((mul24(ct.xyz, c.xyz) >> 7) + alpha, 0, 0xff);
 					break;
 				}
 			}
@@ -1557,7 +1501,10 @@ __kernel void KERNEL_TFX(
 			{
 				int fog = (int)zf.y;
 
-				c.xyz = (c.xyz * fog >> 8) + (convert_int4(pb->fog).xyz * (int3)(0xff - fog) >> 8);				
+				int3 fv = mul24(c.xyz, fog) >> 8;
+				int3 fc = mul24(convert_int4(pb->fog).xyz, 0xff - fog) >> 8;
+
+				c.xyz = fv + fc;
 			}
 
 			// alpha blend
@@ -1614,10 +1561,6 @@ __kernel void KERNEL_TFX(
 
 	if(fragments > 0)
 	{
-		// TODO: write color/z to faddr/zaddr (if 16x16 was cached, barrier local mem, swizzle back to its place)
-
-		// TODO if(fm/zm != 0xffffffff) or whatever masks the output completely for the pixel format)
-
 		if(ZWRITE)
 		{
 			WriteFrame(vm, zaddr, ZPSM, zd);
