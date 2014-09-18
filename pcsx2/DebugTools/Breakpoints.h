@@ -140,6 +140,7 @@ public:
 
 	static const std::vector<MemCheck> GetMemChecks();
 	static const std::vector<BreakPoint> GetBreakpoints();
+	static const size_t GetNumMemchecks() { return memChecks_.size(); }
 
 	static void Update(u32 addr = 0);
 
