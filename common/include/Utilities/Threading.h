@@ -70,11 +70,7 @@ extern ConsoleLogSource_Threading pxConLog_Thread;
 //#define PCSX2_THREAD_LOCAL 0		// uncomment this line to force-disable native TLS (useful for testing TlsVariabel on windows/linux)
 
 #ifndef PCSX2_THREAD_LOCAL
-#	ifdef __WXMAC__
-#		define PCSX2_THREAD_LOCAL 0
-#	else
-#		define PCSX2_THREAD_LOCAL 1
-#	endif
+#	define PCSX2_THREAD_LOCAL 1
 #endif
 
 class wxTimeSpan;
