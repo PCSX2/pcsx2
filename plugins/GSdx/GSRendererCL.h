@@ -172,7 +172,7 @@ class GSRendererCL : public GSRenderer
 		GSVector4i* src_pages; // read by any texture level
 		GSVector4i* dst_pages; // f/z writes to it
 #ifdef DEBUG
-		uint32 fbp, fbw, fpsm, zbp, tbp, tbw, tpsm, tw, th;
+		TFXParameter* param;
 #endif
 		TFXJob()
 			: src_pages(NULL)

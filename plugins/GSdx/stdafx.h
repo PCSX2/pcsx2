@@ -43,6 +43,11 @@
 #include <d3dx9.h>
 #include <comutil.h>
 #include "../../common/include/comptr.h"
+
+#include <CL/cl.h>
+#undef CL_VERSION_1_2
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
+#define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 
 #define D3DCOLORWRITEENABLE_RGBA (D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA)
