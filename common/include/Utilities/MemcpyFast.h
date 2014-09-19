@@ -16,23 +16,17 @@
 #pragma once
 
 #ifdef __linux__
-
 #	include "lnx_memzero.h"
-
-	extern "C" void __fastcall memcpy_amd_(void *dest, const void *src, size_t bytes);
-	extern "C" u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
-	extern "C" void memxor_mmx(void* dst, const void* src1, int cmpsize);
-	extern void memcpy_amd_qwc(void *dest, const void *src, size_t bytes);
-
 #else
-
 #	include "win_memzero.h"
+#endif
 
-	extern void __fastcall memcpy_amd_(void *dest, const void *src, size_t bytes);
-	extern void memcpy_amd_qwc(void *dest, const void *src, size_t bytes);
-	extern u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
-	extern void memxor_mmx(void* dst, const void* src1, int cmpsize);
-
+// For 32-bit MSVC compiles, memcmp performs much worse than memcmp_mmx and
+// other implementations. So for this combination only, prefer memcmp_mmx
+#if defined(_MSC_VER) && !defined(_M_X86_64)
+extern u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
+#else
+#define memcmp_mmx memcmp
 #endif
 
 // Only used in the Windows version of memzero.h. But it's in Misc.cpp for some reason.

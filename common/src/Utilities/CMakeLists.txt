@@ -129,12 +129,7 @@ set(UtilitiesSources
 	wxGuiTools.cpp
 	wxHelpers.cpp
 	x86/MemcpyVibes.cpp
-#	x86/MemcpyFast.cpp
 	)
-
-# collect .S files
-set(UtilitiesSSources
-	x86/MemcpyFast.S)
 
 # variable with all headers of this library
 set(UtilitiesHeaders
@@ -171,13 +166,9 @@ set(UtilitiesHeaders
 	../../include/Utilities/wxGuiTools.h
 	PrecompiledHeader.h)
 
-# change language of .S-files to c++
-set_source_files_properties(${UtilitiesSSources} PROPERTIES LANGUAGE CXX)
-
 set(UtilitiesFinalSources
 	${UtilitiesSources}
 	${UtilitiesHeaders}
-	${UtilitiesSSources}
 )
 
 set(UtilitiesFinalLibs

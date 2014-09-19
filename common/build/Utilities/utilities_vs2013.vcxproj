@@ -150,12 +150,6 @@
     <ClCompile Include="..\..\src\Utilities\ThreadTools.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuildStep Include="..\..\src\Utilities\x86\MemcpyFast.S">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </CustomBuildStep>
     <None Include="..\..\include\Utilities\EventSource.inl" />
     <None Include="..\..\include\Utilities\TlsVariable.inl" />
   </ItemGroup>
