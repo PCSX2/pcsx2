@@ -123,13 +123,14 @@ void GSRendererCL::Reset()
 static int pageuploads = 0;
 static int pageuploadcount = 0;
 static int tfxcount = 0;
+static int64 tfxpixels = 0;
 
 void GSRendererCL::VSync(int field)
 {
 	GSRenderer::VSync(field);
 
-	//printf("vsync %d/%d/%d\n", pageuploads, pageuploadcount, tfxcount);
-	pageuploads = pageuploadcount = tfxcount = 0;
+	//printf("vsync %d/%d/%d/%d\n", pageuploads, pageuploadcount, tfxcount, tfxpixels);
+	pageuploads = pageuploadcount = tfxcount = tfxpixels = 0;
 
 	//if(!field) memset(m_mem.m_vm8, 0, (size_t)m_mem.m_vmsize);
 }
@@ -300,7 +301,7 @@ void GSRendererCL::Draw()
 				m_cl.vb.size = 0;
 				m_cl.ib.size = 0;
 
-				size_t size = std::max(vb_size * 2, 2u << 20);
+				size_t size = std::max(vb_size * 2, (size_t)2 << 20);
 
 				printf("growing vertex/index buffer %d\n", size);
 
@@ -308,7 +309,7 @@ void GSRendererCL::Draw()
 				m_cl.vb.buff[1] = cl::Buffer(m_cl.context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, size);
 				m_cl.vb.size = size;
 
-				size = std::max(size / sizeof(GSVertex) * 3 * sizeof(uint32), 1u << 20); // worst case, three times the vertex count
+				size = std::max(size / sizeof(GSVertex) * 3 * sizeof(uint32), (size_t)1 << 20); // worst case, three times the vertex count
 
 				ASSERT(size >= ib_size);
 
@@ -431,15 +432,12 @@ void GSRendererCL::Draw()
 
 			if(pb->sel.fwrite)
 			{
-				for(int i = 0; i < 4; i++)
-				{
-					m_rw_pages[1][i] |= m_tmp_pages[i];
-				}
-
 				GSVector4i* dst_pages = job->GetDstPages();
 
 				for(int i = 0; i < 4; i++)
 				{
+					m_rw_pages[1][i] |= m_tmp_pages[i];
+
 					dst_pages[i] |= m_tmp_pages[i];
 				}
 			}
@@ -459,15 +457,12 @@ void GSRendererCL::Draw()
 
 			if(pb->sel.zwrite)
 			{
-				for(int i = 0; i < 4; i++)
-				{
-					m_rw_pages[1][i] |= m_tmp_pages[i];
-				}
-
 				GSVector4i* dst_pages = job->GetDstPages();
 
 				for(int i = 0; i < 4; i++)
 				{
+					m_rw_pages[1][i] |= m_tmp_pages[i];
+
 					dst_pages[i] |= m_tmp_pages[i];
 				}
 			}
@@ -810,26 +805,9 @@ void GSRendererCL::Enqueue()
 
 						tfxcount++;
 
-						//if(LOG) { fprintf(s_fp, "q %05x %05x %05x\n", (*i)->fbp, (*i)->zbp, (*i)->tbp); fflush(s_fp); }
-
 						UpdateTextureCache((*i).get());
 
 						uint32 prim_count_inner = std::min((*i)->ib_count / n, MAX_PRIM_COUNT - prim_start);
-
-						/*
-						if(m_perfmon.GetFrame() >= 5036) if((*i)->src_pages != NULL)
-						{
-							m_cl.queue[2].finish();
-
-							uint64 frame = m_perfmon.GetFrame();
-
-							std::string s;
-
-							s = format("c:\\temp1\\_%05d_f%lld_tex2_%05x_%d.bmp", s_n++, frame, (*i)->tbp, (*i)->tpsm);
-
-							m_mem.SaveBMP(s, (*i)->tbp, (*i)->tbw, (*i)->tpsm, 1 << (*i)->tw, 1 << (*i)->th);
-						}
-						*/
 
 						// TODO: tile level z test
 
@@ -851,29 +829,11 @@ void GSRendererCL::Enqueue()
 
 						GSVector4i r = GSVector4i::load<false>(&(*i)->rect);
 
-						r = r.ralign<Align_Outside>(GSVector2i(BIN_SIZE, BIN_SIZE));
+						r = r.ralign<Align_Outside>(GSVector2i(8, 8));
 
-						/*
-						if(i->sel.IsSolidRect()) // TODO: simple mem fill with optional mask
-							;//printf("%d %d %d %d\n", r.left, r.top, r.width(), r.height());
-						else
-						*/
-						m_cl.queue[2].enqueueNDRangeKernel(tfx, cl::NDRange(r.left, r.top), cl::NDRange(r.width(), r.height()), cl::NDRange(16, 16));
+						m_cl.queue[2].enqueueNDRangeKernel(tfx, cl::NDRange(r.left, r.top), cl::NDRange(r.width(), r.height()), cl::NDRange(8, 8));
 
-						/*
-						if(m_perfmon.GetFrame() >= 5036)
-						{
-							m_cl.queue[2].finish();
-
-							uint64 frame = m_perfmon.GetFrame();
-
-							std::string s;
-
-							s = format("c:\\temp1\\_%05d_f%lld_rt2_%05x_%d.bmp", s_n++, frame, (*i)->fbp, (*i)->fpsm);
-
-							m_mem.SaveBMP(s, (*i)->fbp, (*i)->fbw, (*i)->fpsm, GetFrameRect().width(), 512);
-						}
-						*/
+						tfxpixels += r.width() * r.height();
 
 						InvalidateTextureCache((*i).get());
 
@@ -1583,7 +1543,7 @@ GSRendererCL::CL::CL()
 				{
 					devices.push_back(device);
 
-					WIs = std::min(WIs, device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+					WIs = std::min(WIs, (uint32)device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
 
 					printf(" *");
 				}

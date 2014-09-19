@@ -1,7 +1,7 @@
 #if defined(CL_VERSION_1_1) || defined(CL_VERSION_1_2) // make safe to include in resource file to enforce dependency
 
 #ifndef CL_FLT_EPSILON
-#define CL_FLT_EPSILON 1.1920928955078125e-7
+#define CL_FLT_EPSILON 1.1920928955078125e-7f
 #endif
 
 #if MAX_PRIM_PER_BATCH == 64u
@@ -1300,8 +1300,6 @@ __kernel void KERNEL_TFX(
 	//
 
 	uint fragments = 0;
-
-	//__local gs_prim p;
 
 	__global BIN_TYPE* bin = &env->bin[bin_index + batch_start * bin_count]; // TODO: not needed for "one tile case"
 	__global gs_prim* prim_base = &env->prim[batch_start << MAX_PRIM_PER_BATCH_BITS];

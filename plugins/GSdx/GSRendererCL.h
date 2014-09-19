@@ -22,7 +22,6 @@
 #pragma once
 
 #include "GSRenderer.h"
-//#include "GSTextureCacheCL.h"
 
 __aligned(struct, 32) GSVertexCL
 {
@@ -236,7 +235,7 @@ class GSRendererCL : public GSRenderer
 		cl::Buffer env;
 		cl::CommandQueue* wq;
 		int wqidx;
-		size_t WIs;
+		uint32 WIs;
 
 	public:
 		CL();
@@ -259,61 +258,6 @@ class GSRendererCL : public GSRenderer
 	void UpdateTextureCache(TFXJob* job);
 	void InvalidateTextureCache(TFXJob* job);
 
-	/*
-	class RasterizerData : public GSAlignedClass<32>
-	{
-		__aligned(struct, 16) TextureLevel
-		{
-			GSVector4i r;
-			// TODO: GSTextureCacheCL::Texture* t;
-		};
-
-	public:
-		GSRendererCL* m_parent;
-		const uint32* m_fb_pages;
-		const uint32* m_zb_pages;
-
-		//cl::Buffer m_vbuff;
-		//cl::Buffer m_ibuff;
-
-		// TODO: buffers
-		TextureLevel m_tex[7 + 1]; // NULL terminated
-		//cl::Buffer m_clut;
-		//cl::Buffer m_dimx;
-
-		// TODO: struct in a cl::Buffer
-		TFXSelector m_sel;
-		GSVector4i m_scissor;
-		GSVector4i m_bbox;
-		uint32 m_fm, m_zm;
-		int m_aref, m_afix;
-		uint32 m_fog; // rgb
-		int m_lod; // lcm == 1
-		int m_mxl;
-		float m_l; // TEX1.L * -0x10000
-		float m_k; // TEX1.K * 0x10000
-		// TODO: struct { GSVector4i min, max, minmax, mask, invmask; } t; // [u] x 4 [v] x 4
-
-		RasterizerData(GSRendererCL* parent)
-			: m_parent(parent)
-			, m_fb_pages(NULL)
-			, m_zb_pages(NULL)
-		{
-			m_sel.key = 0;
-		}
-
-		virtual ~RasterizerData()
-		{
-			// TODO: ReleasePages();
-		}
-
-		// TODO: void UsePages(const uint32* fb_pages, int fpsm, const uint32* zb_pages, int zpsm);
-		// TODO: void ReleasePages();
-
-		// TODO: void SetSource(GSTextureCacheCL::Texture* t, const GSVector4i& r, int level);
-		// TODO: void UpdateSource();
-	};
-	*/
 protected:
 	GSTexture* m_texture[2];
 	uint8* m_output;
