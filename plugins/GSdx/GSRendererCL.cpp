@@ -328,8 +328,8 @@ void GSRendererCL::Draw()
 
 				std::vector<cl::Event> el(1);
 
-				m_cl.queue[2].enqueueMarkerWithWaitList(NULL, &el[0]);
-				m_cl.wq->enqueueBarrierWithWaitList(&el, NULL);
+				m_cl.queue[2].enqueueMarker(&el[0]);
+				m_cl.wq->enqueueWaitForEvents(el);
 
 				// switch to the other queue/buffer (double buffering)
 
@@ -404,15 +404,7 @@ void GSRendererCL::Draw()
 		job->pb_start = m_cl.pb.tail;
 
 #ifdef DEBUG
-		job->fbp = context->FRAME.Block();
-		job->fbw = context->FRAME.FBW;
-		job->fpsm = context->FRAME.PSM;
-		job->zbp = context->ZBUF.Block();
-		job->tbp = PRIM->TME ? context->TEX0.TBP0 : 0xfffff;
-		job->tbw = PRIM->TME ? context->TEX0.TBW : 1;
-		job->tpsm = PRIM->TME ? context->TEX0.PSM : 0;
-		job->tw = PRIM->TME ? context->TEX0.TW : 0;
-		job->th = PRIM->TME ? context->TEX0.TH : 0;
+		job->param = pb;
 #endif
 
 		m_jobs.push_back(job);
@@ -687,10 +679,10 @@ void GSRendererCL::Enqueue()
 
 		m_cl.Unmap();
 
-		std::vector<cl::Event> el2(1);
+		std::vector<cl::Event> el(1);
 
-		m_cl.wq->enqueueMarkerWithWaitList(NULL, &el2[0]);
-		m_cl.queue[2].enqueueBarrierWithWaitList(&el2, NULL);
+		m_cl.wq->enqueueMarker(&el[0]);
+		m_cl.queue[2].enqueueWaitForEvents(el);
 
 		//
 
@@ -812,6 +804,9 @@ void GSRendererCL::Enqueue()
 					for(auto i = head; i != next; i++)
 					{
 						ASSERT(prim_start < MAX_PRIM_COUNT);
+
+						// TODO: join tfx kernel calls where the selector and fbp/zbp/bw/scissor are the same 
+						// move dimx/fm/zm/fog/aref/afix/ta0/ta1/tbp/tbw/minu/minv/maxu/maxv/lod/mxl/l/k/clut to an indexed array per prim
 
 						tfxcount++;
 
@@ -1574,7 +1569,8 @@ GSRendererCL::CL::CL()
 			case CL_DEVICE_TYPE_CPU: printf(" CPU"); break;
 			}
 
-			if(strstr(version.c_str(), "OpenCL C 1.2") != NULL)
+			if(strstr(version.c_str(), "OpenCL C 1.1") != NULL
+			|| strstr(version.c_str(), "OpenCL C 1.2") != NULL)
 			{
 #ifdef IOCL_DEBUG
 				if(type == CL_DEVICE_TYPE_CPU && strstr(platform_vendor.c_str(), "Intel") != NULL)
@@ -1646,7 +1642,7 @@ void GSRendererCL::CL::Map()
 
 	if(vb.head < vb.size)
 	{
-		vb.mapped_ptr = wq->enqueueMapBuffer(vb.buff[wqidx], CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, vb.head, vb.size - vb.head);
+		vb.mapped_ptr = wq->enqueueMapBuffer(vb.buff[wqidx], CL_TRUE, CL_MAP_WRITE, vb.head, vb.size - vb.head);
 		vb.ptr = (unsigned char*)vb.mapped_ptr - vb.head;
 		ASSERT(((size_t)vb.ptr & 15) == 0);
 		ASSERT((((size_t)vb.ptr + sizeof(GSVertexCL)) & 15) == 0);
@@ -1654,14 +1650,13 @@ void GSRendererCL::CL::Map()
 
 	if(ib.head < ib.size)
 	{
-		ib.mapped_ptr = wq->enqueueMapBuffer(ib.buff[wqidx], CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ib.head, ib.size - ib.head);
+		ib.mapped_ptr = wq->enqueueMapBuffer(ib.buff[wqidx], CL_TRUE, CL_MAP_WRITE, ib.head, ib.size - ib.head);
 		ib.ptr = (unsigned char*)ib.mapped_ptr - ib.head;
-		ASSERT(((size_t)ib.ptr & 15) == 0);
 	}
 
 	if(pb.head < pb.size)
 	{
-		pb.mapped_ptr = wq->enqueueMapBuffer(pb.buff[wqidx], CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, pb.head, pb.size - pb.head);
+		pb.mapped_ptr = wq->enqueueMapBuffer(pb.buff[wqidx], CL_TRUE, CL_MAP_WRITE, pb.head, pb.size - pb.head);
 		pb.ptr = (unsigned char*)pb.mapped_ptr - pb.head;
 		ASSERT(((size_t)pb.ptr & 15) == 0);
 		ASSERT((((size_t)pb.ptr + sizeof(TFXParameter)) & 15) == 0);
@@ -1681,6 +1676,7 @@ void GSRendererCL::CL::Unmap()
 
 static void AddDefs(ostringstream& opt)
 {
+	opt << "-cl-std=CL1.1 ";
 	opt << "-D MAX_FRAME_SIZE=" << MAX_FRAME_SIZE << "u ";
 	opt << "-D MAX_PRIM_COUNT=" << MAX_PRIM_COUNT << "u ";
 	opt << "-D MAX_PRIM_PER_BATCH_BITS=" << MAX_PRIM_PER_BATCH_BITS << "u ";

@@ -1,4 +1,4 @@
-#ifdef __OPENCL_C_VERSION__ // make safe to include in resource file to enforce dependency
+#if defined(CL_VERSION_1_1) || defined(CL_VERSION_1_2) // make safe to include in resource file to enforce dependency
 
 #ifndef CL_FLT_EPSILON
 #define CL_FLT_EPSILON 1.1920928955078125e-7
@@ -1133,6 +1133,66 @@ int4 ReadTexel(__global uchar* vm, int x, int y, int level, __global gs_param* p
 	return convert_int4(c);
 }
 
+int4 SampleTexture(__global uchar* tex, __global gs_param* pb, float3 t)
+{
+	int4 c;
+
+	if(0)//if(MMIN)
+	{
+		// TODO
+	}
+	else
+	{
+		int2 uv;
+
+		if(!FST)
+		{
+			uv = convert_int2_rte(t.xy * native_recip(t.z));
+
+			if(LTF) uv -= 0x0008;
+		}
+		else
+		{
+			// sfex capcom logo third drawing call at (0,223) calculated as:
+			// t0 + (p - p0) * (t - t0) / (p1 - p0)  
+			// 0.5 + (223 - 0) * (112.5 - 0.5) / (224 - 0) = 112
+			// due to rounding errors (multiply-add instruction maybe):
+			// t.y = 111.999..., uv0.y = 111, uvf.y = 15/16, off by 1/16 texel vertically after interpolation
+			// TODO: sw renderer samples at 112 exactly, check which one is correct
+
+			// last line error in persona 3 movie clips if rounding is enabled
+
+			uv = convert_int2(t.xy); 
+		}
+
+		int2 uvf = uv & 0x000f;
+
+		int2 uv0 = uv >> 4;
+		int2 uv1 = uv0 + 1;
+
+		uv0.x = Wrap(uv0.x, pb->minu, pb->maxu, WMS);
+		uv0.y = Wrap(uv0.y, pb->minv, pb->maxv, WMT);
+		uv1.x = Wrap(uv1.x, pb->minu, pb->maxu, WMS);
+		uv1.y = Wrap(uv1.y, pb->minv, pb->maxv, WMT);
+					
+		int4 c00 = ReadTexel(tex, uv0.x, uv0.y, 0, pb);
+		int4 c01 = ReadTexel(tex, uv1.x, uv0.y, 0, pb);
+		int4 c10 = ReadTexel(tex, uv0.x, uv1.y, 0, pb);
+		int4 c11 = ReadTexel(tex, uv1.x, uv1.y, 0, pb);
+
+		if(LTF)
+		{
+			c00 = (mul24(c01 - c00, uvf.x) >> 4) + c00;
+			c10 = (mul24(c11 - c10, uvf.x) >> 4) + c10;
+			c00 = (mul24(c10 - c00, uvf.y) >> 4) + c00;
+		}
+
+		c = c00;
+	}
+
+	return c;
+}
+
 // TODO: 2x2 MSAA idea
 // downsize the rendering tile to 16x8 or 8x8 and render 2x2 sub-pixels to __local
 // hittest and ztest 2x2 (create write mask, only skip if all -1) 
@@ -1249,8 +1309,6 @@ __kernel void KERNEL_TFX(
 
 	BIN_TYPE bin_value = *bin & ((BIN_TYPE)-1 >> skip);
 
-	__local gs_prim prim_cache;
-
 	for(uint prim_index = 0; prim_index < prim_count; prim_index += MAX_PRIM_PER_BATCH)
 	{
 		while(bin_value != 0)
@@ -1267,7 +1325,7 @@ __kernel void KERNEL_TFX(
 			bin_value ^= (BIN_TYPE)1 << ((MAX_PRIM_PER_BATCH - 1) - i); // bin_value &= (ulong)-1 >> (i + 1);
 
 			uint2 zf;
-			float4 t;
+			float3 t;
 			int4 c;
 
 			 // TODO: do not hittest if we know the tile is fully inside the prim
@@ -1282,7 +1340,7 @@ __kernel void KERNEL_TFX(
 				}
 
 				zf = as_uint2(prim->v[0].p.zw);
-				t.xyz = prim->v[0].tc.xyz;
+				t = prim->v[0].tc.xyz;
 				c = convert_int4(prim->v[0].c);
 			}
 			else if(PRIM == GS_LINE_CLASS)
@@ -1313,7 +1371,7 @@ __kernel void KERNEL_TFX(
 				zf.x = convert_uint_rte(zf0.x * f.z + zf1.x * f.x + zf2.x * f.y) + prim->v[3].z;
 				zf.y = convert_uint_rte(zf0.y * f.z + zf1.y * f.x + zf2.y * f.y);
 
-				t.xyz = prim->v[0].tc.xyz * f.z + prim->v[1].tc.xyz * f.x + prim->v[2].tc.xyz * f.y;
+				t = prim->v[0].tc.xyz * f.z + prim->v[1].tc.xyz * f.x + prim->v[2].tc.xyz * f.y;
 
 				if(IIP)
 				{
@@ -1361,62 +1419,9 @@ __kernel void KERNEL_TFX(
 
 			if(TFX != TFX_NONE)
 			{
-				// TODO
+				tex = vm; // TODO: use the texture cache
 
-				if(0)//if(MMIN)
-				{
-					// TODO
-				}
-				else
-				{
-					int2 uv;
-
-					if(!FST)
-					{
-						uv = convert_int2_rte(t.xy * native_recip(t.z));
-
-						if(LTF) uv -= 0x0008;
-					}
-					else
-					{
-						// sfex capcom logo third drawing call at (0,223) calculated as:
-						// t0 + (p - p0) * (t - t0) / (p1 - p0)  
-						// 0.5 + (223 - 0) * (112.5 - 0.5) / (224 - 0) = 112
-						// due to rounding errors (multiply-add instruction maybe):
-						// t.y = 111.999..., uv0.y = 111, uvf.y = 15/16, off by 1/16 texel vertically after interpolation
-						// TODO: sw renderer samples at 112 exactly, check which one is correct
-
-						// last line error in persona 3 movie clips if rounding is enabled
-
-						uv = convert_int2(t.xy); 
-					}
-
-					int2 uvf = uv & 0x000f;
-
-					int2 uv0 = uv >> 4;
-					int2 uv1 = uv0 + 1;
-
-					uv0.x = Wrap(uv0.x, pb->minu, pb->maxu, WMS);
-					uv0.y = Wrap(uv0.y, pb->minv, pb->maxv, WMT);
-					uv1.x = Wrap(uv1.x, pb->minu, pb->maxu, WMS);
-					uv1.y = Wrap(uv1.y, pb->minv, pb->maxv, WMT);
-					
-					tex = vm; // TODO: use the texture cache
-
-					int4 c00 = ReadTexel(tex, uv0.x, uv0.y, 0, pb);
-					int4 c01 = ReadTexel(tex, uv1.x, uv0.y, 0, pb);
-					int4 c10 = ReadTexel(tex, uv0.x, uv1.y, 0, pb);
-					int4 c11 = ReadTexel(tex, uv1.x, uv1.y, 0, pb);
-
-					if(LTF)
-					{
-						c00 = (mul24(c01 - c00, uvf.x) >> 4) + c00;
-						c10 = (mul24(c11 - c10, uvf.x) >> 4) + c10;
-						c00 = (mul24(c10 - c00, uvf.y) >> 4) + c00;
-					}
-
-					ct = c00;
-				}
+				ct = SampleTexture(tex, pb, t);
 			}
 
 			// alpha tfx
