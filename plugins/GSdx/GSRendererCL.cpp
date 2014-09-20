@@ -61,8 +61,6 @@ typedef struct
 
 typedef struct
 {
-	cl_uint batch_counter;
-	cl_uint _pad[7];
 	struct { cl_uint first, last; } bounds[MAX_BIN_PER_BATCH];
 	BIN_TYPE bin[MAX_BIN_COUNT];
 	cl_uchar4 bbox[MAX_PRIM_COUNT];
@@ -392,10 +390,9 @@ void GSRendererCL::Draw()
 
 		if(bbox.eq(bbox.rintersect(scissor)))
 		{
-			pb->sel.noscissor = 1;
+			job->sel.noscissor = 1;
 		}
 
-		job->sel = pb->sel;
 		job->rect.x = rect.x;
 		job->rect.y = rect.y;
 		job->rect.z = rect.z;
@@ -418,11 +415,11 @@ void GSRendererCL::Draw()
 
 		// mark pages used in rendering as source or target
 
-		if(pb->sel.fwrite || pb->sel.rfb)
+		if(job->sel.fwrite || job->sel.rfb)
 		{
 			m_context->offset.fb->GetPagesAsBits(rect, m_tmp_pages);
 
-			if(pb->sel.rfb)
+			if(job->sel.rfb)
 			{
 				for(int i = 0; i < 4; i++)
 				{
@@ -430,7 +427,7 @@ void GSRendererCL::Draw()
 				}
 			}
 
-			if(pb->sel.fwrite)
+			if(job->sel.fwrite)
 			{
 				GSVector4i* dst_pages = job->GetDstPages();
 
@@ -443,11 +440,11 @@ void GSRendererCL::Draw()
 			}
 		}
 
-		if(pb->sel.zwrite || pb->sel.rzb)
+		if(job->sel.zwrite || job->sel.rzb)
 		{
 			m_context->offset.zb->GetPagesAsBits(rect, m_tmp_pages);
 
-			if(pb->sel.rzb)
+			if(job->sel.rzb)
 			{
 				for(int i = 0; i < 4; i++)
 				{
@@ -455,7 +452,7 @@ void GSRendererCL::Draw()
 				}
 			}
 
-			if(pb->sel.zwrite)
+			if(job->sel.zwrite)
 			{
 				GSVector4i* dst_pages = job->GetDstPages();
 
@@ -998,12 +995,12 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 	const GSDrawingContext* context = m_context;
 	const GS_PRIM_CLASS primclass = m_vt.m_primclass;
 
-	pb->sel.key = 0;
+	job->sel.key = 0;
 
-	pb->sel.atst = ATST_ALWAYS;
-	pb->sel.tfx = TFX_NONE;
-	pb->sel.ababcd = 0xff;
-	pb->sel.prim = primclass;
+	job->sel.atst = ATST_ALWAYS;
+	job->sel.tfx = TFX_NONE;
+	job->sel.ababcd = 0xff;
+	job->sel.prim = primclass;
 
 	uint32 fm = context->FRAME.FBMSK;
 	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
@@ -1026,8 +1023,8 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 	{
 		if(!TryAlphaTest(fm, zm))
 		{
-			pb->sel.atst = context->TEST.ATST;
-			pb->sel.afail = context->TEST.AFAIL;
+			job->sel.atst = context->TEST.ATST;
+			job->sel.afail = context->TEST.AFAIL;
 			pb->aref = context->TEST.AREF;
 		}
 	}
@@ -1056,31 +1053,31 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 	if(!fwrite && !zwrite) return false;
 
-	bool ftest = pb->sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
+	bool ftest = job->sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
 
-	pb->sel.fwrite = fwrite;
-	pb->sel.ftest = ftest;
-	pb->sel.zwrite = zwrite;
-	pb->sel.ztest = ztest;
+	job->sel.fwrite = fwrite;
+	job->sel.ftest = ftest;
+	job->sel.zwrite = zwrite;
+	job->sel.ztest = ztest;
 
 	if(fwrite || ftest)
 	{
-		pb->sel.fpsm = RemapPSM(context->FRAME.PSM);
+		job->sel.fpsm = RemapPSM(context->FRAME.PSM);
 
 		if((primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS) && m_vt.m_eq.rgba != 0xffff)
 		{
-			pb->sel.iip = PRIM->IIP;
+			job->sel.iip = PRIM->IIP;
 		}
 
 		if(PRIM->TME)
 		{
-			pb->sel.tfx = context->TEX0.TFX;
-			pb->sel.tcc = context->TEX0.TCC;
-			pb->sel.fst = PRIM->FST;
-			pb->sel.ltf = m_vt.IsLinear();
-			pb->sel.tpsm = RemapPSM(context->TEX0.PSM);
-			pb->sel.aem = m_env.TEXA.AEM;
+			job->sel.tfx = context->TEX0.TFX;
+			job->sel.tcc = context->TEX0.TCC;
+			job->sel.fst = PRIM->FST;
+			job->sel.ltf = m_vt.IsLinear();
+			job->sel.tpsm = RemapPSM(context->TEX0.PSM);
+			job->sel.aem = m_env.TEXA.AEM;
 
 			pb->tbp[0] = context->TEX0.TBP0;
 			pb->tbw[0] = context->TEX0.TBW;
@@ -1089,24 +1086,24 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 			if(GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 			{
-				pb->sel.tlu = 1;
+				job->sel.tlu = 1;
 
 				memcpy(pb->clut, (const uint32*)m_mem.m_clut, sizeof(uint32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
 			}
 
-			pb->sel.wms = context->CLAMP.WMS;
-			pb->sel.wmt = context->CLAMP.WMT;
+			job->sel.wms = context->CLAMP.WMS;
+			job->sel.wmt = context->CLAMP.WMT;
 
-			if(pb->sel.tfx == TFX_MODULATE && pb->sel.tcc && m_vt.m_eq.rgba == 0xffff && m_vt.m_min.c.eq(GSVector4i(128)))
+			if(job->sel.tfx == TFX_MODULATE && job->sel.tcc && m_vt.m_eq.rgba == 0xffff && m_vt.m_min.c.eq(GSVector4i(128)))
 			{
 				// modulate does not do anything when vertex color is 0x80
 
-				pb->sel.tfx = TFX_DECAL;
+				job->sel.tfx = TFX_DECAL;
 			}
 
 			GSVector4i r;
 
-			GetTextureMinMax(r, context->TEX0, context->CLAMP, pb->sel.ltf);
+			GetTextureMinMax(r, context->TEX0, context->CLAMP, job->sel.ltf);
 
 			GSVector4i* src_pages = job->GetSrcPages();
 
@@ -1131,15 +1128,15 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 				if(m_vt.m_lod.x > 0)
 				{
-					pb->sel.ltf = context->TEX1.MMIN >> 2;
+					job->sel.ltf = context->TEX1.MMIN >> 2;
 				}
 				else
 				{
 					// TODO: isbilinear(mmag) != isbilinear(mmin) && m_vt.m_lod.x <= 0 && m_vt.m_lod.y > 0
 				}
 
-				pb->sel.mmin = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
-				pb->sel.lcm = context->TEX1.LCM;
+				job->sel.mmin = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
+				job->sel.lcm = context->TEX1.LCM;
 
 				int mxl = std::min<int>((int)context->TEX1.MXL, 6) << 16;
 				int k = context->TEX1.K << 12;
@@ -1148,28 +1145,28 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 				{
 					k = (int)m_vt.m_lod.x << 16; // set lod to max level
 
-					pb->sel.lcm = 1; // lod is constant
-					pb->sel.mmin = 1; // tri-linear is meaningless
+					job->sel.lcm = 1; // lod is constant
+					job->sel.mmin = 1; // tri-linear is meaningless
 				}
 
-				if(pb->sel.mmin == 2)
+				if(job->sel.mmin == 2)
 				{
 					mxl--; // don't sample beyond the last level (TODO: add a dummy level instead?)
 				}
 
-				if(pb->sel.fst)
+				if(job->sel.fst)
 				{
-					ASSERT(pb->sel.lcm == 1);
+					ASSERT(job->sel.lcm == 1);
 					ASSERT(((m_vt.m_min.t.uph(m_vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
 
-					pb->sel.lcm = 1;
+					job->sel.lcm = 1;
 				}
 
-				if(pb->sel.lcm)
+				if(job->sel.lcm)
 				{
 					int lod = std::max<int>(std::min<int>(k, mxl), 0);
 
-					if(pb->sel.mmin == 1)
+					if(job->sel.mmin == 1)
 					{
 						lod = (lod + 0x8000) & 0xffff0000; // rounding
 					}
@@ -1241,7 +1238,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 					GSVector4i r;
 
-					GetTextureMinMax(r, MIP_TEX0, MIP_CLAMP, pb->sel.ltf);
+					GetTextureMinMax(r, MIP_TEX0, MIP_CLAMP, job->sel.ltf);
 
 					GSOffset* o = m_mem.GetOffset(MIP_TEX0.TBP0, MIP_TEX0.TBW, MIP_TEX0.PSM);
 					
@@ -1260,7 +1257,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 			}
 			else
 			{
-				if(pb->sel.fst == 0)
+				if(job->sel.fst == 0)
 				{
 					// skip per pixel division if q is constant
 
@@ -1268,7 +1265,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 					if(m_vt.m_eq.q)
 					{
-						pb->sel.fst = 1;
+						job->sel.fst = 1;
 
 						const GSVector4& t = v[index[0]].t;
 
@@ -1286,7 +1283,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 					}
 					else if(primclass == GS_SPRITE_CLASS)
 					{
-						pb->sel.fst = 1;
+						job->sel.fst = 1;
 
 						for(int i = 0, j = vertex_count; i < j; i += 2)
 						{
@@ -1301,7 +1298,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 					}
 				}
 
-				if(pb->sel.ltf && pb->sel.fst) // TODO: quite slow, do this in the prim kernel?
+				if(job->sel.ltf && job->sel.fst) // TODO: quite slow, do this in the prim kernel?
 				{
 					// if q is constant we can do the half pel shift for bilinear sampling on the vertices
 
@@ -1378,58 +1375,58 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 		if(PRIM->FGE)
 		{
-			pb->sel.fge = 1;
+			job->sel.fge = 1;
 			pb->fog = env.FOGCOL.u32[0];
 		}
 
 		if(context->FRAME.PSM != PSM_PSMCT24)
 		{
-			pb->sel.date = context->TEST.DATE;
-			pb->sel.datm = context->TEST.DATM;
+			job->sel.date = context->TEST.DATE;
+			job->sel.datm = context->TEST.DATM;
 		}
 
 		if(!IsOpaque())
 		{
-			pb->sel.abe = PRIM->ABE;
-			pb->sel.ababcd = context->ALPHA.u32[0];
+			job->sel.abe = PRIM->ABE;
+			job->sel.ababcd = context->ALPHA.u32[0];
 
 			if(env.PABE.PABE)
 			{
-				pb->sel.pabe = 1;
+				job->sel.pabe = 1;
 			}
 
 			if(m_aa1 && PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
 			{
-				pb->sel.aa1 = 1;
+				job->sel.aa1 = 1;
 			}
 
 			pb->afix = context->ALPHA.FIX;
 		}
 
-		if(pb->sel.date || pb->sel.aba == 1 || pb->sel.abb == 1 || pb->sel.abc == 1 || pb->sel.abd == 1)
+		if(job->sel.date || job->sel.aba == 1 || job->sel.abb == 1 || job->sel.abc == 1 || job->sel.abd == 1)
 		{
-			pb->sel.rfb = 1;
+			job->sel.rfb = 1;
 		}
 		else
 		{
 			if(fwrite)
 			{
-				if(pb->sel.atst != ATST_ALWAYS && pb->sel.afail == AFAIL_RGB_ONLY
-				|| (pb->sel.fpsm & 3) == 0 && fm != 0
-				|| (pb->sel.fpsm & 3) == 1 // always read-merge-write 24bpp, regardless the mask
-				|| (pb->sel.fpsm & 3) >= 2 && (fm & 0x80f8f8f8) != 0)
+				if(job->sel.atst != ATST_ALWAYS && job->sel.afail == AFAIL_RGB_ONLY
+				|| (job->sel.fpsm & 3) == 0 && fm != 0
+				|| (job->sel.fpsm & 3) == 1 // always read-merge-write 24bpp, regardless the mask
+				|| (job->sel.fpsm & 3) >= 2 && (fm & 0x80f8f8f8) != 0)
 				{
-					pb->sel.rfb = 1;
+					job->sel.rfb = 1;
 				}
 			}
 		}
 
-		pb->sel.colclamp = env.COLCLAMP.CLAMP;
-		pb->sel.fba = context->FBA.FBA;
+		job->sel.colclamp = env.COLCLAMP.CLAMP;
+		job->sel.fba = context->FBA.FBA;
 
 		if(env.DTHE.DTHE)
 		{
-			pb->sel.dthe = 1;
+			job->sel.dthe = 1;
 
 			GSVector4i dimx0 = env.dimx[1].sll32(16).sra32(16);
 			GSVector4i dimx1 = env.dimx[3].sll32(16).sra32(16);
@@ -1442,21 +1439,21 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 
 	if(zwrite || ztest)
 	{
-		pb->sel.zpsm = RemapPSM(context->ZBUF.PSM);
-		pb->sel.ztst = ztest ? context->TEST.ZTST : ZTST_ALWAYS;
+		job->sel.zpsm = RemapPSM(context->ZBUF.PSM);
+		job->sel.ztst = ztest ? context->TEST.ZTST : ZTST_ALWAYS;
 
 		if(ztest)
 		{
-			pb->sel.rzb = 1;
+			job->sel.rzb = 1;
 		}
 		else
 		{
 			if(zwrite)
 			{
-				if(pb->sel.atst != ATST_ALWAYS && (pb->sel.afail == AFAIL_FB_ONLY || pb->sel.afail == AFAIL_RGB_ONLY)
-				|| (pb->sel.zpsm & 3) == 1) // always read-merge-write 24bpp, regardless the mask
+				if(job->sel.atst != ATST_ALWAYS && (job->sel.afail == AFAIL_FB_ONLY || job->sel.afail == AFAIL_RGB_ONLY)
+				|| (job->sel.zpsm & 3) == 1) // always read-merge-write 24bpp, regardless the mask
 				{
-					pb->sel.rzb = 1;
+					job->sel.rzb = 1;
 				}
 			}
 		}
@@ -1465,11 +1462,11 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 	pb->fm = fm;
 	pb->zm = zm;
 
-	if((pb->sel.fpsm & 3) == 1)
+	if((job->sel.fpsm & 3) == 1)
 	{
 		pb->fm |= 0xff000000;
 	}
-	else if((pb->sel.fpsm & 3) >= 2)
+	else if((job->sel.fpsm & 3) >= 2)
 	{
 		uint32 rb = pb->fm & 0x00f800f8;
 		uint32 ga = pb->fm & 0x8000f800;
@@ -1477,11 +1474,11 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 		pb->fm = (ga >> 16) | (rb >> 9) | (ga >> 6) | (rb >> 3) | 0xffff0000;
 	}
 
-	if((pb->sel.zpsm & 3) == 1)
+	if((job->sel.zpsm & 3) == 1)
 	{
 		pb->zm |= 0xff000000;
 	}
-	else if((pb->sel.zpsm & 3) >= 2)
+	else if((job->sel.zpsm & 3) >= 2)
 	{
 		pb->zm |= 0xffff0000;
 	}
