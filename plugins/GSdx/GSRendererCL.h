@@ -146,7 +146,6 @@ class GSRendererCL : public GSRenderer
 	{
 		GSVector4i scissor;
 		GSVector4i dimx; // 4x4 signed char
-		TFXSelector sel;
 		uint32 fbp, zbp, bw;
 		uint32 fm, zm;
 		uint32 fog; // rgb

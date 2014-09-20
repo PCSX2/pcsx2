@@ -1,5 +1,21 @@
 #if defined(CL_VERSION_1_1) || defined(CL_VERSION_1_2) // make safe to include in resource file to enforce dependency
 
+#ifdef cl_amd_printf
+#pragma OPENCL EXTENSION cl_amd_printf : enable
+#else
+#define printf(x)
+#endif
+
+#ifdef cl_amd_media_ops
+#pragma OPENCL EXTENSION cl_amd_media_ops : enable
+#else
+#endif
+
+#ifdef cl_amd_media_ops2
+#pragma OPENCL EXTENSION cl_amd_media_ops2 : enable
+#else
+#endif
+
 #ifndef CL_FLT_EPSILON
 #define CL_FLT_EPSILON 1.1920928955078125e-7f
 #endif
@@ -32,8 +48,6 @@ typedef struct
 
 typedef struct
 {
-	uint batch_counter;
-	uint _pad[7];
 	struct {uint first, last;} bounds[MAX_BIN_PER_BATCH];
 	BIN_TYPE bin[MAX_BIN_COUNT];
 	uchar4 bbox[MAX_PRIM_COUNT];
@@ -45,7 +59,6 @@ typedef struct
 {
 	int4 scissor;
 	char dimx[4][4];
-	ulong sel;
 	int fbp, zbp, bw;
 	uint fm, zm;
 	uchar4 fog; // rgb
@@ -679,7 +692,6 @@ int tile_in_triangle(float2 p, gs_barycentric b)
 
 __kernel void KERNEL_TILE(__global gs_env* env)
 {
-	env->batch_counter = 0;
 	env->bounds[get_global_id(0)].first = -1;
 	env->bounds[get_global_id(0)].last = 0;
 }
@@ -777,77 +789,60 @@ __kernel void KERNEL_TILE(
 	uint bin_count, // == bin_dim.z * bin_dim.w
 	uchar4 bin_dim)
 {
-	__local uchar4 bbox_cache[MAX_PRIM_PER_BATCH];
-	__local gs_barycentric barycentric_cache[MAX_PRIM_PER_BATCH];
-	__local uint batch_index;
-
+	size_t batch_index = get_group_id(0);
 	size_t local_id = get_local_id(0);
 	size_t local_size = get_local_size(0);
 
-	while(1)
+	uint batch_prim_count = min(prim_count - (batch_index << MAX_PRIM_PER_BATCH_BITS), MAX_PRIM_PER_BATCH);
+		
+	__global BIN_TYPE* bin = &env->bin[batch_index * bin_count];
+	__global uchar4* bbox = &env->bbox[batch_index << MAX_PRIM_PER_BATCH_BITS];
+	__global gs_barycentric* barycentric = &env->barycentric[batch_index << MAX_PRIM_PER_BATCH_BITS];
+
+	__local uchar4 bbox_cache[MAX_PRIM_PER_BATCH];
+	__local gs_barycentric barycentric_cache[MAX_PRIM_PER_BATCH];
+	
+	event_t e = async_work_group_copy(bbox_cache, bbox, batch_prim_count, 0);
+
+	wait_group_events(1, &e);
+
+	if(PRIM == GS_TRIANGLE_CLASS)
 	{
-		barrier(CLK_LOCAL_MEM_FENCE);
-
-		if(local_id == 0)
-		{
-			batch_index = atomic_inc(&env->batch_counter);
-		}
-
-		barrier(CLK_LOCAL_MEM_FENCE);
-
-		if(batch_index >= batch_count) 
-		{
-			break;
-		}
-
-		uint batch_prim_count = min(prim_count - (batch_index << MAX_PRIM_PER_BATCH_BITS), MAX_PRIM_PER_BATCH);
+		e = async_work_group_copy((__local float4*)barycentric_cache, (__global float4*)barycentric, batch_prim_count * (sizeof(gs_barycentric) / sizeof(float4)), 0);
 		
-		__global BIN_TYPE* bin = &env->bin[batch_index * bin_count];
-		__global uchar4* bbox = &env->bbox[batch_index << MAX_PRIM_PER_BATCH_BITS];
-		__global gs_barycentric* barycentric = &env->barycentric[batch_index << MAX_PRIM_PER_BATCH_BITS];
-
-		event_t e = async_work_group_copy(bbox_cache, bbox, batch_prim_count, 0);
-
 		wait_group_events(1, &e);
+	}
 
-		if(PRIM == GS_TRIANGLE_CLASS)
+	for(uint bin_index = local_id; bin_index < bin_count; bin_index += local_size)
+	{
+		int y = bin_index / bin_dim.z; // TODO: very expensive, no integer divider on current hardware
+		int x = bin_index - y * bin_dim.z;
+
+		x += bin_dim.x;
+		y += bin_dim.y;
+
+		BIN_TYPE visible = 0;
+
+		for(uint i = 0; i < batch_prim_count; i++)
 		{
-			e = async_work_group_copy((__local float4*)barycentric_cache, (__global float4*)barycentric, batch_prim_count * (sizeof(gs_barycentric) / sizeof(float4)), 0);
-		
-			wait_group_events(1, &e);
+			uchar4 r = bbox_cache[i];
+
+			BIN_TYPE test = (r.x <= x) & (r.z > x) & (r.y <= y) & (r.w > y);
+
+			if(PRIM == GS_TRIANGLE_CLASS && test != 0)
+			{
+				test = tile_in_triangle(convert_float2((int2)(x, y) << BIN_SIZE_BITS), barycentric_cache[i]);
+			}
+
+			visible |= test << ((MAX_PRIM_PER_BATCH - 1) - i);
 		}
 
-		for(uint bin_index = local_id; bin_index < bin_count; bin_index += local_size)
+		bin[bin_index] = visible;
+
+		if(visible != 0)
 		{
-			int y = bin_index / bin_dim.z; // TODO: very expensive, no integer divider on current hardware
-			int x = bin_index - y * bin_dim.z;
-
-			x += bin_dim.x;
-			y += bin_dim.y;
-
-			BIN_TYPE visible = 0;
-
-			for(uint i = 0; i < batch_prim_count; i++)
-			{
-				uchar4 r = bbox_cache[i];
-
-				BIN_TYPE test = (r.x <= x) & (r.z > x) & (r.y <= y) & (r.w > y);
-
-				if(PRIM == GS_TRIANGLE_CLASS && test != 0)
-				{
-					test = tile_in_triangle(convert_float2((int2)(x, y) << BIN_SIZE_BITS), barycentric_cache[i]);
-				}
-
-				visible |= test << ((MAX_PRIM_PER_BATCH - 1) - i);
-			}
-
-			bin[bin_index] = visible;
-
-			if(visible != 0)
-			{
-				atomic_min(&env->bounds[bin_index].first, batch_index);
-				atomic_max(&env->bounds[bin_index].last, batch_index);
-			}
+			atomic_min(&env->bounds[bin_index].first, batch_index);
+			atomic_max(&env->bounds[bin_index].last, batch_index);
 		}
 	}
 }
@@ -998,10 +993,10 @@ int4 AlphaBlend(int4 c, int afix, uint fd)
 			}
 			else if(is16bit(FPSM))
 			{
-				cd.x = (fd & 0x001f) << 3;
-				cd.y = (fd & 0x03e0) >> 2;
-				cd.z = (fd & 0x7c00) >> 7;
-				cd.w = (fd & 0x8000) >> 8;
+				cd.x = (fd << 3) & 0xf8;
+				cd.y = (fd >> 2) & 0xf8;
+				cd.z = (fd >> 7) & 0xf8;
+				cd.w = (fd >> 8) & 0x80;
 			}
 		}
 
@@ -1077,9 +1072,9 @@ uchar4 Expand16To32(ushort rgba, uchar ta0, uchar ta1)
 {
 	uchar4 c;
 
-	c.x = (rgba & 0x001f) << 3;
-	c.y = (rgba & 0x03e0) >> 2;
-	c.z = (rgba & 0x7c00) >> 7;
+	c.x = (rgba << 3) & 0xf8;
+	c.y = (rgba >> 2) & 0xf8;
+	c.z = (rgba >> 7) & 0xf8;
 	c.w = !AEM || (rgba & 0x7fff) != 0 ? ((rgba & 0x8000) ? ta1 : ta0) : 0;
 
 	return c;
@@ -1202,7 +1197,7 @@ int4 SampleTexture(__global uchar* tex, __global gs_param* pb, float3 t)
 // multiple work-items may render different prims to the same 2x2 sub-pixel, averaging can only be done after a barrier at the very end
 // pb->fm? alpha channel and following alpha tests? some games may depend on exact results, not some average
 
-__kernel void KERNEL_TFX(
+__kernel __attribute__((reqd_work_group_size(8, 8, 1))) void KERNEL_TFX(
 	__global gs_env* env,
 	__global uchar* vm,
 	__global uchar* tex,
@@ -1214,8 +1209,6 @@ __kernel void KERNEL_TFX(
 	uint bin_count, // == bin_dim.z * bin_dim.w
 	uchar4 bin_dim)
 {
-	// TODO: try it the bin_index = atomic_inc(&env->bin_counter) way
-
 	uint x = get_global_id(0);
 	uint y = get_global_id(1);
 
@@ -1451,7 +1444,7 @@ __kernel void KERNEL_TFX(
 				{
 					if(!ABE || c.w == 0x80)
 					{
-						c.w = /*edge ? coverage :*/ 0x80; // TODO
+						c.w = 0x80; // TODO: edge ? coverage : 0x80
 					}
 				}
 			}
