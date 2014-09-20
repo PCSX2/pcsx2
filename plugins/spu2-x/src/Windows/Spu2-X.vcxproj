@@ -138,7 +138,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch-dev.lib;x86emitter-dev.lib;utilities-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -173,7 +173,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch.lib;x86emitter.lib;utilities.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -209,7 +209,7 @@
       <Culture>0x0c0a</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch.lib;x86emitter.lib;utilities.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdparty\portaudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -248,7 +248,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;soundtouch-dbg.lib;x86emitter-dbg.lib;utilities-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;winmm.lib;dsound.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Spu2-X.def</ModuleDefinitionFile>
@@ -452,7 +452,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads.vcxproj">
       <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads_lib.vcxproj">
       <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
