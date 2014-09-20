@@ -25,9 +25,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <PostBuildEvent>
-      <Command>.\postBuild.cmd "$(TargetPath)" "$(TargetName)" $(TargetExt) $(PcsxSubsection)</Command>
-    </PostBuildEvent>
     <PreBuildEvent>
       <Command>"$(SvnRootDir)\common\vsprops\preBuild.cmd" "$(ProjectRootDir)"</Command>
     </PreBuildEvent>
