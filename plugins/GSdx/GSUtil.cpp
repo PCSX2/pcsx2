@@ -94,6 +94,7 @@ static class GSUtilMaps
 public:
 	uint8 PrimClassField[8];
 	uint8 VertexCountField[8];
+	uint8 ClassVertexCountField[4];
 	uint32 CompatibleBitsField[64][2];
 	uint32 SharedBitsField[64][2];
 
@@ -116,6 +117,11 @@ public:
 		VertexCountField[GS_TRIANGLEFAN] = 3;
 		VertexCountField[GS_SPRITE] = 2;
 		VertexCountField[GS_INVALID] = 1;
+
+		ClassVertexCountField[GS_POINT_CLASS] = 1;
+		ClassVertexCountField[GS_LINE_CLASS] = 2;
+		ClassVertexCountField[GS_TRIANGLE_CLASS] = 3;
+		ClassVertexCountField[GS_SPRITE_CLASS] = 2;
 
 		memset(CompatibleBitsField, 0, sizeof(CompatibleBitsField));
 
@@ -161,6 +167,11 @@ GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
 int GSUtil::GetVertexCount(uint32 prim)
 {
 	return s_maps.VertexCountField[prim];
+}
+
+int GSUtil::GetClassVertexCount(uint32 primclass)
+{
+	return s_maps.ClassVertexCountField[primclass];
 }
 
 const uint32* GSUtil::HasSharedBitsPtr(uint32 dpsm)
