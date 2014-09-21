@@ -1,5 +1,5 @@
-if (OpenSuse)
-    # OpenSuse don't install wx in a standard library system
+if (openSUSE)
+    # openSUSE don't install wx in a standard library system
     # path. Let's bypass the dynamic linker and hardcode the path.
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 endif()

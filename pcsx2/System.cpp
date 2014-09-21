@@ -194,14 +194,20 @@ void SysLogMachineCaps()
 {
 	if ( !PCSX2_isReleaseVersion )
 	{
-		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld %s - compiled on " __DATE__,
-			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld %s"
+#ifndef openSUSE
+			"- compiled on " __DATE__
+#endif
+			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
 			SVN_REV, SVN_MODS ? "(modded)" : ""
 			);
 	}
 	else { // shorter release version string
-		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld - compiled on " __DATE__,
-			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
+#ifndef openSUSE
+			"- compiled on " __DATE__
+#endif
+			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
 			SVN_REV );
 	}
 

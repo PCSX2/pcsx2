@@ -96,7 +96,15 @@ if(PACKAGE_MODE)
     INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${GAMEINDEX_DIR}")
     INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.dbf" DESTINATION "${GAMEINDEX_DIR}")
 
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/pcsx2.desktop" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications")
+    # set categories depending on system/distribution in pcsx2.desktop
+    if(openSUSE)
+        set(PCSX2_MENU_CATEGORIES "System;Emulator;")
+    else()
+        set(PCSX2_MENU_CATEGORIES "Game;Emulator;")
+    endif()
+    configure_file("${CMAKE_SOURCE_DIR}/linux_various/pcsx2.desktop.in" "${CMAKE_BINARY_DIR}/linux_various/pcsx2.desktop" @ONLY)
+
+    INSTALL(FILES "${CMAKE_BINARY_DIR}/linux_various/pcsx2.desktop" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/pcsx2.xpm" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pixmaps")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/doc/pcsx2")
     INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_Readme.pdf" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/doc/pcsx2")

@@ -32,10 +32,17 @@ static LRESULT WINAPI AboutProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			wchar_t outstr[256];
 			if( IsDevBuild )
-				swprintf_s( outstr, L"Build %lld -- Compiled on " _T(__DATE__), SVN_REV );
+				swprintf_s( outstr, L"Build %lld"
+#ifndef openSUSE
+					"-- Compiled on " _T(__DATE__)
+#endif
+					, SVN_REV );
 			else
-				swprintf_s( outstr, L"Release v%d.%d -- Compiled on "  _T(__DATE__),
-					VersionInfo::Release, VersionInfo::Revision );
+				swprintf_s( outstr, L"Release v%d.%d"
+#ifndef openSUSE
+					"-- Compiled on " _T(__DATE__)
+#endif
+					, VersionInfo::Release, VersionInfo::Revision );
 
 			SetWindowText( GetDlgItem(hDlg, IDC_LABEL_VERSION_INFO), outstr );
 			ShowWindow( hDlg, true );
