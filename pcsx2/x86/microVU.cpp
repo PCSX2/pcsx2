@@ -165,7 +165,7 @@ __ri void mVUdeleteProg(microVU& mVU, microProgram*& prog) {
 // Creates a new Micro Program
 __ri microProgram* mVUcreateProg(microVU& mVU, int startPC) {
 	microProgram* prog = (microProgram*)_aligned_malloc(sizeof(microProgram), 64);
-	memzero_ptr<sizeof(microProgram)>(prog);
+	memset(prog, 0, sizeof(microProgram));
 	prog->idx     = mVU.prog.total++;
 	prog->ranges  = new std::deque<microRange>();
 	prog->startPC = startPC;

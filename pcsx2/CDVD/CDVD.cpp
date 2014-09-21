@@ -261,7 +261,7 @@ s32 cdvdReadConfig(u8* config)
 		((cdvd.COffset == 2) && (cdvd.CBlockIndex >= 7))
 		)
 	{
-		memzero_ptr<16>(config);
+		memset(config, 0, 16);
 		return 0;
 	}
 
@@ -430,7 +430,7 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
     cdvdReloadElfInfo();
 
 	// clear key values
-	memzero_ptr<16>(key);
+	memset(key, 0, 16);
 
 	if (!DiscSerial.IsEmpty())
 	{

@@ -448,7 +448,7 @@ void SuperVUReset(int vuindex)
 	DevCon.WriteLn("SuperVU%u: Resetting recompiler cache.", vuindex);
 
 	if (!recVUStack[vuindex]) recVUStack[vuindex] = new u8[SUPERVU_STACKSIZE * 4];
-	memzero_ptr<SUPERVU_STACKSIZE>(recVUStack[vuindex]);
+	memset(recVUStack[vuindex], 0, SUPERVU_STACKSIZE);
 
 	s_recVUMem[vuindex]->Reset();
 	s_recVUPtr[vuindex] = *s_recVUMem[vuindex];
