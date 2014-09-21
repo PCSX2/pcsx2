@@ -36,7 +36,10 @@ typedef struct
 
 typedef struct
 {
-	gs_vertex v[4];
+	gs_vertex v[3];
+	uint zmin;
+	uint pb_index;
+	uint _pad[2];
 } gs_prim;
 
 typedef struct
@@ -560,12 +563,16 @@ __kernel void KERNEL_PRIM(
 	
 	ib += prim_index * VERTEX_PER_PRIM;
 
+	prim->pb_index = ib[0] >> 24;
+
+	__global gs_vertex* v0 = &vb[ib[0] & 0x00ffffff];
+	__global gs_vertex* v1 = &vb[ib[1] & 0x00ffffff];
+	__global gs_vertex* v2 = &vb[ib[2] & 0x00ffffff];
+
 	int2 pmin, pmax;
 
 	if(PRIM == GS_POINT_CLASS)
 	{
-		__global gs_vertex* v0 = &vb[ib[0]];
-
 		pmin = pmax = convert_int2_rte(v0->p.xy);
 
 		prim->v[0].p = v0->p;
@@ -573,18 +580,14 @@ __kernel void KERNEL_PRIM(
 	}
 	else if(PRIM == GS_LINE_CLASS)
 	{
-		int2 p0 = convert_int2_rte(vb[ib[0]].p.xy);
-		int2 p1 = convert_int2_rte(vb[ib[1]].p.xy);
+		int2 p0 = convert_int2_rte(v0->p.xy);
+		int2 p1 = convert_int2_rte(v1->p.xy);
 
 		pmin = min(p0, p1);
 		pmax = max(p0, p1);
 	}
 	else if(PRIM == GS_TRIANGLE_CLASS)
 	{
-		__global gs_vertex* v0 = &vb[ib[0]];
-		__global gs_vertex* v1 = &vb[ib[1]];
-		__global gs_vertex* v2 = &vb[ib[2]];
-
 		int2 p0 = convert_int2_rtp(v0->p.xy);
 		int2 p1 = convert_int2_rtp(v1->p.xy);
 		int2 p2 = convert_int2_rtp(v2->p.xy);
@@ -593,8 +596,7 @@ __kernel void KERNEL_PRIM(
 		pmax = max(max(p0, p1), p2);
 
 		// z needs special care, since it's a 32 bit unit, float cannot encode it exactly
-		// pass the minimum through the unused 4th padding vector 
-		// only interpolate the relative and hopefully small values
+		// only interpolate the relative to zmin and hopefully small values
 
 		uint zmin = min(min(v0->z, v1->z), v2->z);
 		
@@ -605,7 +607,7 @@ __kernel void KERNEL_PRIM(
 		prim->v[2].p = (float4)(v2->p.x, v2->p.y, as_float(v2->z - zmin), v2->p.w);
 		prim->v[2].tc = v2->tc;
 
-		prim->v[3].z = zmin;
+		prim->zmin = zmin;
 
 		float4 dp0 = v1->p - v0->p;
 		float4 dp1 = v0->p - v2->p;
@@ -652,9 +654,6 @@ __kernel void KERNEL_PRIM(
 	}
 	else if(PRIM == GS_SPRITE_CLASS)
 	{
-		__global gs_vertex* v0 = &vb[ib[0]];
-		__global gs_vertex* v1 = &vb[ib[1]];
-
 		int2 p0 = convert_int2_rtp(v0->p.xy);
 		int2 p1 = convert_int2_rtp(v1->p.xy);
 
@@ -785,7 +784,6 @@ __kernel void KERNEL_TILE(
 __kernel void KERNEL_TILE(
 	__global gs_env* env,
 	uint prim_count,
-	uint batch_count,
 	uint bin_count, // == bin_dim.z * bin_dim.w
 	uchar4 bin_dim)
 {
@@ -1205,9 +1203,11 @@ __kernel __attribute__((reqd_work_group_size(8, 8, 1))) void KERNEL_TFX(
 	uint pb_start,
 	uint prim_start, 
 	uint prim_count,
-	uint batch_count,
 	uint bin_count, // == bin_dim.z * bin_dim.w
-	uchar4 bin_dim)
+	uchar4 bin_dim,
+	uint fbp, 
+	uint zbp, 
+	uint bw)
 {
 	uint x = get_global_id(0);
 	uint y = get_global_id(1);
@@ -1255,21 +1255,11 @@ __kernel __attribute__((reqd_work_group_size(8, 8, 1))) void KERNEL_TFX(
 
 	//
 
-	__global gs_param* pb = (__global gs_param*)(pb_base + pb_start);
-
 	int2 pi = (int2)(x, y);
 	float2 pf = convert_float2(pi);
 
-	if(!NOSCISSOR)
-	{
-		if(!all((pi >= pb->scissor.xy) & (pi < pb->scissor.zw)))
-		{
-			return;
-		}
-	}
-
-	int faddr = PixelAddress(x, y, pb->fbp, pb->bw, FPSM);
-	int zaddr = PixelAddress(x, y, pb->zbp, pb->bw, ZPSM);
+	int faddr = PixelAddress(x, y, fbp, bw, FPSM);
+	int zaddr = PixelAddress(x, y, zbp, bw, ZPSM);
 
 	uint fd, zd; // TODO: fd as int4 and only pack before writing out?
 
@@ -1298,6 +1288,8 @@ __kernel __attribute__((reqd_work_group_size(8, 8, 1))) void KERNEL_TFX(
 	__global gs_prim* prim_base = &env->prim[batch_start << MAX_PRIM_PER_BATCH_BITS];
 	__global gs_barycentric* barycentric = &env->barycentric[batch_start << MAX_PRIM_PER_BATCH_BITS];
 
+	pb_base += pb_start;
+
 	BIN_TYPE bin_value = *bin & ((BIN_TYPE)-1 >> skip);
 
 	for(uint prim_index = 0; prim_index < prim_count; prim_index += MAX_PRIM_PER_BATCH)
@@ -1311,10 +1303,19 @@ __kernel __attribute__((reqd_work_group_size(8, 8, 1))) void KERNEL_TFX(
 				break;
 			}
 
-			__global gs_prim* prim = &prim_base[prim_index + i];
-			
 			bin_value ^= (BIN_TYPE)1 << ((MAX_PRIM_PER_BATCH - 1) - i); // bin_value &= (ulong)-1 >> (i + 1);
 
+			__global gs_prim* prim = &prim_base[prim_index + i];
+			__global gs_param* pb = (__global gs_param*)(pb_base + prim->pb_index * TFX_PARAM_SIZE);
+
+			if(!NOSCISSOR)
+			{
+				if(!all((pi >= pb->scissor.xy) & (pi < pb->scissor.zw)))
+				{
+					continue;
+				}
+			}
+			
 			uint2 zf;
 			float3 t;
 			int4 c;
@@ -1359,7 +1360,7 @@ __kernel __attribute__((reqd_work_group_size(8, 8, 1))) void KERNEL_TFX(
 				float2 zf1 = convert_float2(as_uint2(prim->v[1].p.zw));
 				float2 zf2 = convert_float2(as_uint2(prim->v[2].p.zw));
 
-				zf.x = convert_uint_rte(zf0.x * f.z + zf1.x * f.x + zf2.x * f.y) + prim->v[3].z;
+				zf.x = convert_uint_rte(zf0.x * f.z + zf1.x * f.x + zf2.x * f.y) + prim->zmin;
 				zf.y = convert_uint_rte(zf0.y * f.z + zf1.y * f.x + zf2.y * f.y);
 
 				t = prim->v[0].tc.xyz * f.z + prim->v[1].tc.xyz * f.x + prim->v[2].tc.xyz * f.y;
@@ -1449,7 +1450,7 @@ __kernel __attribute__((reqd_work_group_size(8, 8, 1))) void KERNEL_TFX(
 				}
 			}
 
-			// read mask (read once outside the loop if alpha test does not modify, not sure if it does not get optimized there anyway)
+			// read mask
 
 			uint fm = pb->fm;
 			uint zm = pb->zm;

@@ -164,55 +164,20 @@ class GSRendererCL : public GSRenderer
 	{
 	public:
 		struct { int x, y, z, w; } rect;
-		TFXSelector sel; // uses primclass, solidrect only
-		uint32 ib_start, ib_count;
-		uint32 pb_start;
+		TFXSelector sel;
+		uint32 ib_start;
+		uint32 prim_count;
 		GSVector4i* src_pages; // read by any texture level
 		GSVector4i* dst_pages; // f/z writes to it
+		uint32 fbp, zbp, bw;
 #ifdef DEBUG
-		TFXParameter* param;
+		TFXParameter* pb;
 #endif
-		TFXJob()
-			: src_pages(NULL)
-			, dst_pages(NULL)
-		{
-		}
+		TFXJob();
+		virtual ~TFXJob();
 
-		virtual ~TFXJob()
-		{
-			if(src_pages != NULL) _aligned_free(src_pages);
-			if(dst_pages != NULL) _aligned_free(dst_pages);
-		}
-
-		GSVector4i* GetSrcPages()
-		{
-			if(src_pages == NULL)
-			{
-				src_pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
-
-				src_pages[0] = GSVector4i::zero();
-				src_pages[1] = GSVector4i::zero();
-				src_pages[2] = GSVector4i::zero();
-				src_pages[3] = GSVector4i::zero();
-			}
-
-			return src_pages;
-		}
-
-		GSVector4i* GetDstPages()
-		{
-			if(dst_pages == NULL)
-			{
-				dst_pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
-
-				dst_pages[0] = GSVector4i::zero();
-				dst_pages[1] = GSVector4i::zero();
-				dst_pages[2] = GSVector4i::zero();
-				dst_pages[3] = GSVector4i::zero();
-			}
-
-			return dst_pages;
-		}
+		GSVector4i* GetSrcPages();
+		GSVector4i* GetDstPages();
 	};
 
 	class CL
@@ -252,8 +217,12 @@ class GSRendererCL : public GSRenderer
 	std::list<shared_ptr<TFXJob>> m_jobs;
 	uint32 m_vb_start;
 	uint32 m_vb_count;
+	uint32 m_pb_start;
+	uint32 m_pb_count;
+	bool m_synced;
 
 	void Enqueue();
+	void EnqueueTFX(std::list<shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim);
 	void UpdateTextureCache(TFXJob* job);
 	void InvalidateTextureCache(TFXJob* job);
 
