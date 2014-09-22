@@ -31,6 +31,16 @@ GSSettingsDlg::GSSettingsDlg(bool isOpen2)
 	: GSDialog(isOpen2 ? IDD_CONFIG2 : IDD_CONFIG)
 	, m_IsOpen2(isOpen2)
 {
+	list<OCLDevice> ocldevs;
+
+	GSUtil::GetOCLDevices(ocldevs);
+
+	int index = 0;
+
+	for(auto dev : ocldevs)
+	{
+		m_ocl_devs.push_back(GSSetting(index++, dev.name.c_str(), ""));
+	}
 }
 
 void GSSettingsDlg::OnInit()
@@ -153,9 +163,9 @@ void GSSettingsDlg::OnInit()
 
 	unsigned int ocl_sel = 0;
 
-	for(unsigned int i = 0; i < theApp.m_ocl_devs.size(); i++)
+	for(unsigned int i = 0; i < m_ocl_devs.size(); i++)
 	{
-		if(ocldev == theApp.m_ocl_devs[i].name)
+		if(ocldev == m_ocl_devs[i].name)
 		{
 			ocl_sel = i;
 
@@ -164,7 +174,7 @@ void GSSettingsDlg::OnInit()
 	}
 
 	ComboBoxInit(IDC_ADAPTER, adapter_settings, adapter_sel);
-	ComboBoxInit(IDC_OPENCL_DEVICE, theApp.m_ocl_devs, ocl_sel);
+	ComboBoxInit(IDC_OPENCL_DEVICE, m_ocl_devs, ocl_sel);
 
 	UpdateRenderers();
 	
@@ -257,7 +267,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			if(ComboBoxGetSelData(IDC_OPENCL_DEVICE, data))
 			{
-				theApp.SetConfig("ocldev", theApp.m_ocl_devs[(int)data].name.c_str());
+				theApp.SetConfig("ocldev", m_ocl_devs[(int)data].name.c_str());
 			}
 
 			if(!m_IsOpen2 && ComboBoxGetSelData(IDC_RESOLUTION, data))

@@ -258,7 +258,8 @@ void GSUtil::GetOCLDevices(list<OCLDevice>& devs)
 				case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
 				}
 
-				int major, minor;
+				int major = 0;
+				int minor = 0;
 
 				if(!type.empty() && sscanf(version.c_str(), "OpenCL C %d.%d", &major, &minor) == 2 && major == 1 && minor >= 1 || major > 1)
 				{

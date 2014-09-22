@@ -79,7 +79,9 @@ class GSSettingsDlg : public GSDialog
 	};
 	
 	std::vector<const Adapter> adapters;
-	
+
+	vector<GSSetting> m_ocl_devs;
+
 	bool m_IsOpen2;
 	uint32 m_lastValidMsaa; // used to revert to previous dialog value if the user changed to invalid one, or lesser one and canceled
 
