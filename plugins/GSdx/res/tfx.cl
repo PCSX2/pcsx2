@@ -551,9 +551,11 @@ int GetVertexPerPrim(int prim_class)
 __kernel void KERNEL_PRIM(
 	__global gs_env* env,
 	__global uchar* vb_base, 
-	__global uchar* ib_base, 
+	__global uchar* ib_base,
+	__global uchar* pb_base, 
 	uint vb_start,
-	uint ib_start)
+	uint ib_start,
+	uint pb_start)
 {
 	size_t prim_index = get_global_id(0);
 
@@ -563,7 +565,11 @@ __kernel void KERNEL_PRIM(
 	
 	ib += prim_index * VERTEX_PER_PRIM;
 
-	prim->pb_index = ib[0] >> 24;
+	uint pb_index = ib[0] >> 24;
+
+	prim->pb_index = pb_index;
+
+	__global gs_param* pb = (__global gs_param*)(pb_base + pb_start + pb_index * TFX_PARAM_SIZE);
 
 	__global gs_vertex* v0 = &vb[ib[0] & 0x00ffffff];
 	__global gs_vertex* v1 = &vb[ib[1] & 0x00ffffff];
@@ -633,10 +639,10 @@ __kernel void KERNEL_PRIM(
 			dp1.xy = dp1.xy * sign(cp);
 			dp2.xy = dp2.xy * sign(cp);
 
-			b.zero.x = (dp1.y < 0 || dp1.y == 0 && dp1.x > 0) ? CL_FLT_EPSILON : 0;
-			b.zero.y = (dp0.y < 0 || dp0.y == 0 && dp0.x > 0) ? CL_FLT_EPSILON : 0;
-			b.zero.z = (dp2.y < 0 || dp2.y == 0 && dp2.x > 0) ? CL_FLT_EPSILON : 0;
-
+			b.zero.x = select(0.0f, CL_FLT_EPSILON, (dp1.y < 0) | (dp1.y == 0) & (dp1.x > 0));
+			b.zero.y = select(0.0f, CL_FLT_EPSILON, (dp0.y < 0) | (dp0.y == 0) & (dp0.x > 0));
+			b.zero.z = select(0.0f, CL_FLT_EPSILON, (dp2.y < 0) | (dp2.y == 0) & (dp2.x > 0));
+			
 			// any barycentric(reject_corner) < 0, tile outside the triangle
 
 			b.reject_corner.x = 0.0f + max(max(max(b.dx.x + b.dy.x, b.dx.x), b.dy.x), 0.0f) * BIN_SIZE;
@@ -668,6 +674,11 @@ __kernel void KERNEL_PRIM(
 		prim->v[1].tc = select(v1->tc, v0->tc, mask);
 		prim->v[1].tc.xy = (prim->v[1].tc.xy - prim->v[0].tc.xy) / (prim->v[1].p.xy - prim->v[0].p.xy);
 	}
+
+	int4 scissor = pb->scissor;
+
+	pmin = select(pmin, scissor.xy, pmin < scissor.xy);
+	pmax = select(pmax, scissor.zw, pmax > scissor.zw);
 
 	int4 r = (int4)(pmin, pmax + (int2)(BIN_SIZE - 1)) >> BIN_SIZE_BITS;
 
@@ -1167,7 +1178,7 @@ int4 SampleTexture(__global uchar* tex, __global gs_param* pb, float3 t)
 		uv0.y = Wrap(uv0.y, pb->minv, pb->maxv, WMT);
 		uv1.x = Wrap(uv1.x, pb->minu, pb->maxu, WMS);
 		uv1.y = Wrap(uv1.y, pb->minv, pb->maxv, WMT);
-					
+
 		int4 c00 = ReadTexel(tex, uv0.x, uv0.y, 0, pb);
 		int4 c01 = ReadTexel(tex, uv1.x, uv0.y, 0, pb);
 		int4 c10 = ReadTexel(tex, uv0.x, uv1.y, 0, pb);
