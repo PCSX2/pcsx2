@@ -14,6 +14,7 @@ Build-Depends: cmake (>= 2.8.5),
     libglu1-mesa-dev,
     libgtk2.0-dev (>= 2.16),
     libjpeg-dev,
+    libpulse-dev,
     libsdl1.2-dev,
     libsoundtouch-dev,
     libwxbase2.8-dev,
@@ -29,7 +30,8 @@ Homepage: http://pcsx2.net/
 
 Package: pcsx2-unstable
 Architecture: i386
-Depends: ${shlibs:Depends}, ${misc:Depends}
+# -i686 allow to use SSE into libc6
+Depends: ${shlibs:Depends}, ${misc:Depends}, libc6-i686
 # libasound => alsa plugin for pulseaudio
 # libusb    => ps3 controller (and probably others)
 Recommends: libasound2-plugins,
