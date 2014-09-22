@@ -25,48 +25,52 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Utility</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Utility</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Utility</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Utility</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\DefaultProjectRootDir.props" />
     <Import Project="..\3rdparty.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\DefaultProjectRootDir.props" />
     <Import Project="..\3rdparty.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\DefaultProjectRootDir.props" />
     <Import Project="..\3rdparty.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\DefaultProjectRootDir.props" />
     <Import Project="..\3rdparty.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -137,18 +141,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="opencl.def">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">lib /machine:$(PlatformTarget) "/def:%(FullPath)" "/out:$(SolutionDir)$(OutDir)\opencl.lib"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">lib /machine:$(PlatformTarget) "/def:%(FullPath)" "/out:$(SolutionDir)$(OutDir)\opencl.lib"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">lib /machine:$(PlatformTarget) "/def:%(FullPath)" "/out:$(SolutionDir)$(OutDir)\opencl.lib"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">lib /machine:$(PlatformTarget) "/def:%(FullPath)" "/out:$(SolutionDir)$(OutDir)\opencl.lib"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(OutDir)\opencl.lib</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(OutDir)\opencl.lib</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(OutDir)\opencl.lib</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(OutDir)\opencl.lib</Outputs>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="CL\cl.h" />
     <ClInclude Include="CL\cl.hpp" />
     <ClInclude Include="CL\cl_d3d10.h" />
@@ -160,6 +152,9 @@
     <ClInclude Include="CL\cl_gl_ext.h" />
     <ClInclude Include="CL\cl_platform.h" />
     <ClInclude Include="CL\opencl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="opencl.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

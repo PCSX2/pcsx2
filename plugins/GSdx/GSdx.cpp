@@ -21,7 +21,6 @@
 
 #include "stdafx.h"
 #include "GSdx.h"
-#include "GSUtil.h"
 
 static void* s_hModule;
 
@@ -199,19 +198,6 @@ GSdxApp::GSdxApp()
 	m_gpu_scale.push_back(GSSetting(2 | (1 << 2), "H x 4 - V x 2", ""));
 	m_gpu_scale.push_back(GSSetting(1 | (2 << 2), "H x 2 - V x 4", ""));
 	m_gpu_scale.push_back(GSSetting(2 | (2 << 2), "H x 4 - V x 4", ""));
-
-	//
-
-	list<OCLDevice> ocldevs;
-
-	GSUtil::GetOCLDevices(ocldevs);
-
-	int index = 0;
-
-	for(auto dev : ocldevs)
-	{
-		m_ocl_devs.push_back(GSSetting(index++, dev.name.c_str(), ""));
-	}
 }
 
 #ifdef _LINUX

@@ -69,8 +69,6 @@ public:
 	vector<GSSetting> m_gpu_dithering;
 	vector<GSSetting> m_gpu_aspectratio;
 	vector<GSSetting> m_gpu_scale;
-
-	vector<GSSetting> m_ocl_devs;
 };
 
 struct GSDXError {};
