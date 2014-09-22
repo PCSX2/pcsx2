@@ -37,6 +37,7 @@ static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
 #define MAX_BIN_PER_BATCH ((MAX_FRAME_SIZE / BIN_SIZE) * (MAX_FRAME_SIZE / BIN_SIZE))
 #define MAX_BIN_COUNT (MAX_BIN_PER_BATCH * MAX_BATCH_COUNT)
 #define TFX_PARAM_SIZE 2048
+#define TFX_PROGRAM_VERSION 1
 
 #if MAX_PRIM_PER_BATCH == 64u
 #define BIN_TYPE cl_ulong
@@ -1622,6 +1623,7 @@ GSVector4i* GSRendererCL::TFXJob::GetDstPages()
 GSRendererCL::CL::CL()
 {
 	WIs = INT_MAX;
+	version = INT_MAX;
 
 	std::string ocldev = theApp.GetConfig("ocldev", "");
 
@@ -1629,37 +1631,43 @@ GSRendererCL::CL::CL()
 	ocldev = "Intel(R) Corporation Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz OpenCL C 1.2 CPU";
 #endif
 
-	list<OCLDevice> ocldevs;
+	list<OCLDeviceDesc> dl;
 
-	GSUtil::GetOCLDevices(ocldevs);
+	GSUtil::GetDeviceDescs(dl);
 
-	for(auto dev : ocldevs)
+	for(auto d : dl)
 	{
-		if(dev.name == ocldev)
+		if(d.name == ocldev)
 		{
-			devices.push_back(dev.device);
+			devs.push_back(d);
 
-			WIs = std::min(WIs, (uint32)dev.device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+			WIs = std::min(WIs, (uint32)d.device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+			version = std::min(version, d.version);
 
 			break; // TODO: multiple devices?
 		}
 	}
 
-	if(devices.empty() && !ocldevs.empty())
+	if(devs.empty() && !dl.empty())
 	{
-		auto dev = ocldevs.front();
+		auto d = dl.front();
 
-		devices.push_back(dev.device);
+		devs.push_back(d);
 
-		WIs = std::min(WIs, (uint32)dev.device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+		WIs = std::min(WIs, (uint32)d.device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+		version = std::min(version, d.version);
 	}
 
-	if(devices.empty())
+	if(devs.empty())
 	{
 		throw new std::exception("OpenCL device not found");
 	}
 
-	context = cl::Context(devices);
+	vector<cl::Device> tmp;
+
+	for(auto d : devs) tmp.push_back(d.device);
+
+	context = cl::Context(tmp);
 
 	queue[0] = cl::CommandQueue(context);
 	queue[1] = cl::CommandQueue(context);
@@ -1699,24 +1707,24 @@ void GSRendererCL::CL::Map()
 {
 	Unmap();
 
-	// TODO: CL_MAP_WRITE_INVALIDATE_REGION if 1.2+
+	cl_map_flags flags = version >= 120 ? CL_MAP_WRITE_INVALIDATE_REGION : CL_MAP_WRITE;
 
 	if(vb.head < vb.size)
 	{
-		vb.mapped_ptr = wq->enqueueMapBuffer(vb.buff[wqidx], CL_TRUE, CL_MAP_WRITE, vb.head, vb.size - vb.head);
+		vb.mapped_ptr = wq->enqueueMapBuffer(vb.buff[wqidx], CL_TRUE, flags, vb.head, vb.size - vb.head);
 		vb.ptr = (unsigned char*)vb.mapped_ptr - vb.head;
 		ASSERT(((size_t)vb.ptr & 15) == 0);
 	}
 
 	if(ib.head < ib.size)
 	{
-		ib.mapped_ptr = wq->enqueueMapBuffer(ib.buff[wqidx], CL_TRUE, CL_MAP_WRITE, ib.head, ib.size - ib.head);
+		ib.mapped_ptr = wq->enqueueMapBuffer(ib.buff[wqidx], CL_TRUE, flags, ib.head, ib.size - ib.head);
 		ib.ptr = (unsigned char*)ib.mapped_ptr - ib.head;
 	}
 
 	if(pb.head < pb.size)
 	{
-		pb.mapped_ptr = wq->enqueueMapBuffer(pb.buff[wqidx], CL_TRUE, CL_MAP_WRITE, pb.head, pb.size - pb.head);
+		pb.mapped_ptr = wq->enqueueMapBuffer(pb.buff[wqidx], CL_TRUE, flags, pb.head, pb.size - pb.head);
 		pb.ptr = (unsigned char*)pb.mapped_ptr - pb.head;
 		ASSERT(((size_t)pb.ptr & 15) == 0);
 	}
@@ -1733,34 +1741,75 @@ void GSRendererCL::CL::Unmap()
 	pb.mapped_ptr = pb.ptr = NULL;
 }
 
-static void AddDefs(ostringstream& opt)
-{
-	opt << "-cl-std=CL1.1 ";
-	opt << "-D MAX_FRAME_SIZE=" << MAX_FRAME_SIZE << "u ";
-	opt << "-D MAX_PRIM_COUNT=" << MAX_PRIM_COUNT << "u ";
-	opt << "-D MAX_PRIM_PER_BATCH_BITS=" << MAX_PRIM_PER_BATCH_BITS << "u ";
-	opt << "-D MAX_PRIM_PER_BATCH=" << MAX_PRIM_PER_BATCH << "u ";
-	opt << "-D MAX_BATCH_COUNT=" << MAX_BATCH_COUNT << "u ";
-	opt << "-D BIN_SIZE_BITS=" << BIN_SIZE_BITS << " ";
-	opt << "-D BIN_SIZE=" << BIN_SIZE << "u ";
-	opt << "-D MAX_BIN_PER_BATCH=" << MAX_BIN_PER_BATCH << "u ";	
-	opt << "-D MAX_BIN_COUNT=" << MAX_BIN_COUNT << "u ";
-	opt << "-D TFX_PARAM_SIZE=" << TFX_PARAM_SIZE << "u ";
-#ifdef IOCL_DEBUG
-	opt << "-g -s \"E:\\Progs\\pcsx2\\plugins\\GSdx\\res\\tfx.cl\" ";
-#endif
-}
-
 cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 {
 	// TODO: cache binary on disk
 
-	printf("building kernel (%s)\n", entry);
+	cl::Program program;
 
-	cl::Program program = cl::Program(context, kernel_str);
+	if(version >= 120)
+	{
+		cl::Program::Binaries binaries;
+
+		try
+		{
+			for(auto d : devs)
+			{
+				string path = d.tmppath + "/" + entry;
+
+				FILE* f = fopen(path.c_str(), "rb");
+
+				if(f != NULL)
+				{
+					fseek(f, 0, SEEK_END);				
+					long size = ftell(f);
+					pair<void*, size_t> b(new char[size], size);
+					fseek(f, 0, SEEK_SET);
+					fread(b.first, b.second, 1, f);
+					fclose(f);
+
+					binaries.push_back(b);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			if(binaries.size() == devs.size())
+			{
+				vector<cl::Device> tmp;
+
+				for(auto d : devs) tmp.push_back(d.device);
+
+				program = cl::Program(context, tmp, binaries);
+
+				AddDefs(opt);
+
+				program.build(opt.str().c_str());
+
+				cl::Kernel kernel = cl::Kernel(program, entry);
+
+				return kernel;
+			}
+		}
+		catch(cl::Error err)
+		{
+			printf("%s (%d)\n", err.what(), err.err());
+		}
+
+		for(auto b : binaries)
+		{
+			delete [] b.first;
+		}
+	}
 
 	try
 	{
+		printf("building kernel (%s)\n", entry);
+
+		program = cl::Program(context, kernel_str);
+
 		AddDefs(opt);
 
 		program.build(opt.str().c_str());
@@ -1769,9 +1818,9 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 	{
 		if(err.err() == CL_BUILD_PROGRAM_FAILURE)
 		{
-			for(auto device : devices)
+			for(auto d : devs)
 			{
-				auto s = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+				auto s = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(d.device);
 
 				printf("kernel (%s) build error: %s\n", entry, s.c_str());
 			}
@@ -1780,7 +1829,54 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 		throw err;
 	}
 
+	if(version >= 120)
+	{
+		try
+		{
+			vector<size_t> sizes = program.getInfo<CL_PROGRAM_BINARY_SIZES>();
+			vector<char*> binaries = program.getInfo<CL_PROGRAM_BINARIES>();
+
+			for(int i = 0; i < binaries.size(); i++)
+			{
+				string path = devs[i].tmppath + "/" + entry;
+
+				FILE* f = fopen(path.c_str(), "wb");
+
+				if(f != NULL)
+				{
+					fwrite(binaries[i], sizes[i], 1, f);
+					fclose(f);
+				}
+
+				delete[] binaries[i];
+			}
+		}
+		catch(cl::Error err)
+		{
+			printf("%s (%d)\n", err.what(), err.err());
+		}
+	}
+
 	return cl::Kernel(program, entry);
+}
+
+void GSRendererCL::CL::AddDefs(ostringstream& opt)
+{
+	if(version == 110) opt << "-cl-std=CL1.1 ";
+	else opt << "-cl-std=CL1.2 ";
+	opt << "-D MAX_FRAME_SIZE=" << MAX_FRAME_SIZE << "u ";
+	opt << "-D MAX_PRIM_COUNT=" << MAX_PRIM_COUNT << "u ";
+	opt << "-D MAX_PRIM_PER_BATCH_BITS=" << MAX_PRIM_PER_BATCH_BITS << "u ";
+	opt << "-D MAX_PRIM_PER_BATCH=" << MAX_PRIM_PER_BATCH << "u ";
+	opt << "-D MAX_BATCH_COUNT=" << MAX_BATCH_COUNT << "u ";
+	opt << "-D BIN_SIZE_BITS=" << BIN_SIZE_BITS << " ";
+	opt << "-D BIN_SIZE=" << BIN_SIZE << "u ";
+	opt << "-D MAX_BIN_PER_BATCH=" << MAX_BIN_PER_BATCH << "u ";
+	opt << "-D MAX_BIN_COUNT=" << MAX_BIN_COUNT << "u ";
+	opt << "-D TFX_PARAM_SIZE=" << TFX_PARAM_SIZE << "u ";
+#ifdef IOCL_DEBUG
+	opt << "-g -s \"E:\\Progs\\pcsx2\\plugins\\GSdx\\res\\tfx.cl\" ";
+#endif
 }
 
 cl::Kernel& GSRendererCL::CL::GetPrimKernel(const PrimSelector& sel)

@@ -188,9 +188,10 @@ class GSRendererCL : public GSRenderer
 		std::map<uint64, cl::Kernel> tfx_map;
 
 		cl::Kernel Build(const char* entry, ostringstream& opt);
+		void AddDefs(ostringstream& opt);
 
 	public:
-		std::vector<cl::Device> devices;
+		std::vector<OCLDeviceDesc> devs;
 		cl::Context context;
 		cl::CommandQueue queue[3];
 		cl::Buffer vm;
@@ -200,6 +201,7 @@ class GSRendererCL : public GSRenderer
 		cl::CommandQueue* wq;
 		int wqidx;
 		uint32 WIs;
+		int version;
 
 	public:
 		CL();

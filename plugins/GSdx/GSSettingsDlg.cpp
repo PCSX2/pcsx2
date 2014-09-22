@@ -31,9 +31,9 @@ GSSettingsDlg::GSSettingsDlg(bool isOpen2)
 	: GSDialog(isOpen2 ? IDD_CONFIG2 : IDD_CONFIG)
 	, m_IsOpen2(isOpen2)
 {
-	list<OCLDevice> ocldevs;
+	list<OCLDeviceDesc> ocldevs;
 
-	GSUtil::GetOCLDevices(ocldevs);
+	GSUtil::GetDeviceDescs(ocldevs);
 
 	int index = 0;
 

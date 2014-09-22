@@ -2,8 +2,6 @@
 
 #ifdef cl_amd_printf
 #pragma OPENCL EXTENSION cl_amd_printf : enable
-#else
-#define printf(x)
 #endif
 
 #ifdef cl_amd_media_ops
@@ -639,9 +637,9 @@ __kernel void KERNEL_PRIM(
 			dp1.xy = dp1.xy * sign(cp);
 			dp2.xy = dp2.xy * sign(cp);
 
-			b.zero.x = select(0.0f, CL_FLT_EPSILON, (dp1.y < 0) | (dp1.y == 0) & (dp1.x > 0));
-			b.zero.y = select(0.0f, CL_FLT_EPSILON, (dp0.y < 0) | (dp0.y == 0) & (dp0.x > 0));
-			b.zero.z = select(0.0f, CL_FLT_EPSILON, (dp2.y < 0) | (dp2.y == 0) & (dp2.x > 0));
+			b.zero.x = select(0.0f, CL_FLT_EPSILON, (dp1.y < 0) | ((dp1.y == 0) & (dp1.x > 0)));
+			b.zero.y = select(0.0f, CL_FLT_EPSILON, (dp0.y < 0) | ((dp0.y == 0) & (dp0.x > 0)));
+			b.zero.z = select(0.0f, CL_FLT_EPSILON, (dp2.y < 0) | ((dp2.y == 0) & (dp2.x > 0)));
 			
 			// any barycentric(reject_corner) < 0, tile outside the triangle
 

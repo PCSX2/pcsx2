@@ -226,9 +226,11 @@ bool GSUtil::CheckSSE()
 	return true;
 }
 
-void GSUtil::GetOCLDevices(list<OCLDevice>& devs)
+#define OCL_PROGRAM_VERSION 1
+
+void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 {
-	devs.clear();
+	dl.clear();
 
 	try
 	{
@@ -246,10 +248,6 @@ void GSUtil::GetOCLDevices(list<OCLDevice>& devs)
 
 			for(auto& device : ds)
 			{
-				std::string vendor = device.getInfo<CL_DEVICE_VENDOR>();
-				std::string name = device.getInfo<CL_DEVICE_NAME>();
-				std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
-
 				string type;
 
 				switch(device.getInfo<CL_DEVICE_TYPE>())
@@ -258,19 +256,41 @@ void GSUtil::GetOCLDevices(list<OCLDevice>& devs)
 				case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
 				}
 
+				if(type.empty()) continue;
+
+				std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+
 				int major = 0;
 				int minor = 0;
 
 				if(!type.empty() && sscanf(version.c_str(), "OpenCL C %d.%d", &major, &minor) == 2 && major == 1 && minor >= 1 || major > 1)
 				{
-					name = vendor + " " + name + " " + version + type;
+					OCLDeviceDesc desc;
 
-					OCLDevice dev;
+					desc.device = device;
+					desc.name = GetDeviceUniqueName(device);
+					desc.version = major * 100 + minor * 10;
 
-					dev.device = device;
-					dev.name = name;
+					// TODO: linux
 
-					devs.push_back(dev);
+					char* buff = new char[MAX_PATH + 1];
+					GetTempPath(MAX_PATH, buff);
+					desc.tmppath = string(buff) + "/" + desc.name;
+
+					WIN32_FIND_DATA FindFileData;
+					HANDLE hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
+					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
+					else CreateDirectory(desc.tmppath.c_str(), NULL);
+
+					sprintf(buff, "/%d", OCL_PROGRAM_VERSION);
+					desc.tmppath += buff;
+					delete[] buff;
+
+					hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
+					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
+					else CreateDirectory(desc.tmppath.c_str(), NULL);
+
+					dl.push_back(desc);
 				}
 			}
 		}
@@ -279,6 +299,25 @@ void GSUtil::GetOCLDevices(list<OCLDevice>& devs)
 	{
 		printf("%s (%d)\n", err.what(), err.err());
 	}
+}
+
+string GSUtil::GetDeviceUniqueName(cl::Device& device)
+{
+	std::string vendor = device.getInfo<CL_DEVICE_VENDOR>();
+	std::string name = device.getInfo<CL_DEVICE_NAME>();
+	std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+
+	string type;
+
+	switch(device.getInfo<CL_DEVICE_TYPE>())
+	{
+	case CL_DEVICE_TYPE_GPU: type = "GPU"; break;
+	case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
+	}
+
+	version.erase(version.find_last_not_of(' ') + 1);
+
+	return vendor + " " + name + " " + version + " " + type;
 }
 
 #ifdef _WINDOWS
