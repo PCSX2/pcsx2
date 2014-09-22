@@ -282,6 +282,7 @@ set(pcsx2DebugToolsSources
 	DebugTools/MIPSAnalyst.cpp
 	DebugTools/MipsAssembler.cpp
 	DebugTools/MipsAssemblerTables.cpp
+	DebugTools/MipsStackWalk.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
 	DebugTools/DisR3000A.cpp
@@ -298,6 +299,7 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/MIPSAnalyst.h
 	DebugTools/MipsAssembler.h
 	DebugTools/MipsAssemblerTables.h
+	DebugTools/MipsStackWalk.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h

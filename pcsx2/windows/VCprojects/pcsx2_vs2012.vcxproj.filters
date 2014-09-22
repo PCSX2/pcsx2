@@ -853,6 +853,9 @@
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1268,6 +1271,9 @@
     </ClInclude>
     <ClInclude Include="..\..\CDVD\zlib_indexed.h">
       <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\MipsStackWalk.h">
+      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -43,6 +43,7 @@ public:
 	void showMemoryView() { setBottomTabPage(memory); };
 	void loadCycles();
 	void reloadSymbolMap();
+	u32 getStepOutAddress();
 
 	void listBoxHandler(wxCommandEvent& event);
 	DECLARE_EVENT_TABLE()
@@ -60,6 +61,7 @@ private:
 	BreakpointList* breakpointList;
 	wxStaticText* cyclesText;
 	ThreadList* threadList;
+	StackFramesList* stackFrames;
 	u32 lastCycles;
 };
 
@@ -85,12 +87,14 @@ protected:
 	void onBreakRunClicked(wxCommandEvent& evt);
 	void onStepOverClicked(wxCommandEvent& evt);
 	void onStepIntoClicked(wxCommandEvent& evt);
+	void onStepOutClicked(wxCommandEvent& evt);
 	void onDebuggerEvent(wxCommandEvent& evt);
 	void onPageChanging(wxCommandEvent& evt);
 	void onBreakpointClick(wxCommandEvent& evt);
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
 	void stepInto();
+	void stepOut();
 	void gotoPc();
 private:
 	CpuTabPage* eeTab;

@@ -179,6 +179,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
     </CustomBuild>
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
+    <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
     <None Include="..\..\gui\Debugger\DebuggerLists.h" />
     <None Include="..\..\Utilities\folderdesc.txt" />
@@ -718,6 +719,7 @@
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h" />
     <ClInclude Include="..\..\DebugTools\MipsAssembler.h" />
     <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h" />
+    <ClInclude Include="..\..\DebugTools\MipsStackWalk.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />

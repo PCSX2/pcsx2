@@ -18,6 +18,7 @@
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/BiosDebugData.h"
+#include "DebugTools/MipsStackWalk.h"
 #include "CtrlDisassemblyView.h"
 
 struct GenericListViewColumn
@@ -88,6 +89,7 @@ class ThreadList: public GenericListView
 public:
 	ThreadList(wxWindow* parent, DebugInterface* _cpu);
 	void reloadThreads();
+	EEThread getRunningThread();
 protected:
 	void onPopupClick(wxCommandEvent& evt);
 	
@@ -97,4 +99,21 @@ protected:
 private:
 	DebugInterface* cpu;
 	std::vector<EEThread> threads;
+};
+
+class StackFramesList: public GenericListView
+{
+public:
+	StackFramesList(wxWindow* parent, DebugInterface* _cpu,  CtrlDisassemblyView* _disassembly);
+	void loadStackFrames(EEThread& currentThread);
+protected:
+	void onPopupClick(wxCommandEvent& evt);
+	
+	virtual wxString getColumnText(int row, int col) const;
+	virtual int getRowCount();
+	virtual void onDoubleClick(int itemIndex, const wxPoint& point);
+private:
+	DebugInterface* cpu;
+	CtrlDisassemblyView* disassembly;
+	std::vector<MipsStackWalk::StackFrame> frames;
 };
