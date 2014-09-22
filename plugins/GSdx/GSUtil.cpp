@@ -226,6 +226,60 @@ bool GSUtil::CheckSSE()
 	return true;
 }
 
+void GSUtil::GetOCLDevices(list<OCLDevice>& devs)
+{
+	devs.clear();
+
+	try
+	{
+		std::vector<cl::Platform> platforms;
+
+		cl::Platform::get(&platforms);
+
+		for(auto& p : platforms)
+		{
+			std::string platform_vendor = p.getInfo<CL_PLATFORM_VENDOR>();
+
+			std::vector<cl::Device> ds;
+
+			p.getDevices(CL_DEVICE_TYPE_ALL, &ds);
+
+			for(auto& device : ds)
+			{
+				std::string vendor = device.getInfo<CL_DEVICE_VENDOR>();
+				std::string name = device.getInfo<CL_DEVICE_NAME>();
+				std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+
+				string type;
+
+				switch(device.getInfo<CL_DEVICE_TYPE>())
+				{
+				case CL_DEVICE_TYPE_GPU: type = "GPU"; break;
+				case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
+				}
+
+				int major, minor;
+
+				if(!type.empty() && sscanf(version.c_str(), "OpenCL C %d.%d", &major, &minor) == 2 && major == 1 && minor >= 1 || major > 1)
+				{
+					name = vendor + " " + name + " " + version + type;
+
+					OCLDevice dev;
+
+					dev.device = device;
+					dev.name = name;
+
+					devs.push_back(dev);
+				}
+			}
+		}
+	}
+	catch(cl::Error err)
+	{
+		printf("%s (%d)\n", err.what(), err.err());
+	}
+}
+
 #ifdef _WINDOWS
 
 bool GSUtil::CheckDirectX()

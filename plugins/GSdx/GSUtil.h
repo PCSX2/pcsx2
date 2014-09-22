@@ -23,6 +23,12 @@
 
 #include "GS.h"
 
+struct OCLDevice
+{
+	cl::Device device;
+	string name;
+};
+
 class GSUtil
 {
 public:
@@ -39,6 +45,7 @@ public:
 	static bool HasCompatibleBits(uint32 spsm, uint32 dpsm);
 
 	static bool CheckSSE();
+	static void GetOCLDevices(list<OCLDevice>& devs);
 
 #ifdef _WINDOWS
 

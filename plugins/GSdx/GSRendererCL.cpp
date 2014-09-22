@@ -645,6 +645,9 @@ void GSRendererCL::Enqueue()
 
 		pk.setArg(1, m_cl.vb.buff[m_cl.wqidx]);
 		pk.setArg(2, m_cl.ib.buff[m_cl.wqidx]);
+		pk.setArg(3, m_cl.pb.buff[m_cl.wqidx]);
+		pk.setArg(4, (cl_uint)m_vb_start);
+		pk.setArg(6, (cl_uint)m_pb_start);
 
 		TileSelector tsel;
 
@@ -704,8 +707,7 @@ void GSRendererCL::Enqueue()
 				{
 					uint32 prim_count = std::min(total_prim_count, MAX_PRIM_COUNT);					
 
-					pk.setArg(3, (cl_uint)m_vb_start);
-					pk.setArg(4, (cl_uint)(*head)->ib_start);
+					pk.setArg(5, (cl_uint)(*head)->ib_start);
 
 					m_cl.queue[2].enqueueNDRangeKernel(pk, cl::NullRange, cl::NDRange(prim_count), cl::NullRange);
 
@@ -1621,58 +1623,35 @@ GSRendererCL::CL::CL()
 {
 	WIs = INT_MAX;
 
-	std::vector<cl::Platform> platforms;
+	std::string ocldev = theApp.GetConfig("ocldev", "");
 
-	cl::Platform::get(&platforms);
-
-	for(auto& p : platforms)
-	{
-		std::string platform_vendor = p.getInfo<CL_PLATFORM_VENDOR>();
-
-		std::vector<cl::Device> ds;
-
-		p.getDevices(CL_DEVICE_TYPE_ALL, &ds);
-
-		for(auto& device : ds)
-		{
-			std::string vendor = device.getInfo<CL_DEVICE_VENDOR>();
-			std::string name = device.getInfo<CL_DEVICE_NAME>();
-			std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
-
-			printf("%s %s %s", vendor.c_str(), name.c_str(), version.c_str());
-
-			cl_device_type type = device.getInfo<CL_DEVICE_TYPE>();
-
-			switch(type)
-			{
-			case CL_DEVICE_TYPE_GPU: printf(" GPU"); break;
-			case CL_DEVICE_TYPE_CPU: printf(" CPU"); break;
-			}
-
-			if(strstr(version.c_str(), "OpenCL C 1.1") != NULL
-			|| strstr(version.c_str(), "OpenCL C 1.2") != NULL)
-			{
 #ifdef IOCL_DEBUG
-				if(type == CL_DEVICE_TYPE_CPU && strstr(platform_vendor.c_str(), "Intel") != NULL)
-#else
-				//if(type == CL_DEVICE_TYPE_CPU && strstr(platform_vendor.c_str(), "Intel") != NULL)
-				//if(type == CL_DEVICE_TYPE_GPU && strstr(platform_vendor.c_str(), "Intel") != NULL)
-				//if(type == CL_DEVICE_TYPE_GPU && strstr(platform_vendor.c_str(), "Advanced Micro Devices") != NULL)
-				if(type == CL_DEVICE_TYPE_GPU)
+	ocldev = "Intel(R) Corporation Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz OpenCL C 1.2 CPU";
 #endif
-				{
-					devices.push_back(device);
 
-					WIs = std::min(WIs, (uint32)device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+	list<OCLDevice> ocldevs;
 
-					printf(" *");
-				}
-			}
+	GSUtil::GetOCLDevices(ocldevs);
 
-			printf("\n");
+	for(auto dev : ocldevs)
+	{
+		if(dev.name == ocldev)
+		{
+			devices.push_back(dev.device);
+
+			WIs = std::min(WIs, (uint32)dev.device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+
+			break; // TODO: multiple devices?
 		}
+	}
 
-		if(!devices.empty()) break;
+	if(devices.empty() && !ocldevs.empty())
+	{
+		auto dev = ocldevs.front();
+
+		devices.push_back(dev.device);
+
+		WIs = std::min(WIs, (uint32)dev.device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
 	}
 
 	if(devices.empty())

@@ -69,16 +69,19 @@ public:
 class GSSettingsDlg : public GSDialog
 {
 	list<D3DDISPLAYMODE> m_modes;
+
 	struct Adapter
 	{
 		std::string name;
 		std::string id;
 		D3D_FEATURE_LEVEL level;
-		Adapter(const std::string &n, const std::string &i, const D3D_FEATURE_LEVEL &l)
-			: name(n), id(i), level(l) {}
+		Adapter(const std::string &n, const std::string &i, const D3D_FEATURE_LEVEL &l) : name(n), id(i), level(l) {}
 	};
+	
 	std::vector<const Adapter> adapters;
+	
 	bool m_IsOpen2;
+	uint32 m_lastValidMsaa; // used to revert to previous dialog value if the user changed to invalid one, or lesser one and canceled
 
 	void UpdateRenderers();
 	void UpdateControls();
@@ -86,8 +89,6 @@ class GSSettingsDlg : public GSDialog
 protected:
 	void OnInit();
 	bool OnCommand(HWND hWnd, UINT id, UINT code);
-
-	uint32 m_lastValidMsaa; // used to revert to previous dialog value if the user changed to invalid one, or lesser one and canceled
 
 	// Shade Boost
 	GSShadeBostDlg ShadeBoostDlg;

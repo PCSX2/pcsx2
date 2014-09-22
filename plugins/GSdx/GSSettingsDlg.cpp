@@ -40,11 +40,15 @@ void GSSettingsDlg::OnInit()
 	m_modes.clear();
 
 	CComPtr<IDirect3D9> d3d9;
+
 	d3d9.Attach(Direct3DCreate9(D3D_SDK_VERSION));
 
 	CComPtr<IDXGIFactory1> dxgi_factory;
-	if (GSUtil::CheckDXGI())
+	
+	if(GSUtil::CheckDXGI())
+	{
 		CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgi_factory);
+	}
 
 	if(!m_IsOpen2)
 	{
@@ -81,51 +85,49 @@ void GSSettingsDlg::OnInit()
 	adapters.push_back(Adapter("Default Hardware Device", "default", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_HARDWARE)));
 	adapters.push_back(Adapter("Reference Device", "ref", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_REFERENCE)));
 
-	if (dxgi_factory)
+	if(dxgi_factory)
 	{
-		for (int i = 0;; i++)
+		for(int i = 0;; i++)
 		{
 			CComPtr<IDXGIAdapter1> adapter;
-			if (S_OK != dxgi_factory->EnumAdapters1(i, &adapter))
+
+			if(S_OK != dxgi_factory->EnumAdapters1(i, &adapter))
 				break;
+
 			DXGI_ADAPTER_DESC1 desc;
+			
 			HRESULT hr = adapter->GetDesc1(&desc);
-			if (S_OK == hr)
+			
+			if(S_OK == hr)
 			{
 				D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level(adapter, D3D_DRIVER_TYPE_UNKNOWN);
-// GSDX isn't unicode!?
+				// GSDX isn't unicode!?
 #if 1
-				int size = WideCharToMultiByte(CP_ACP, 0,
-					desc.Description, sizeof(desc.Description),
-					NULL, 0,
-					NULL, NULL);
+				int size = WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), NULL, 0, NULL, NULL);
 				char *buf = new char[size];
-				WideCharToMultiByte(CP_ACP, 0,
-					desc.Description, sizeof(desc.Description),
-					buf, size,
-					NULL, NULL);
+				WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), buf, size, NULL, NULL);
 				adapters.push_back(Adapter(buf, GSAdapter(desc), level));
-				delete [] buf;
+				delete[] buf;
 #else
 				adapters.push_back(Adapter(desc.Description, GSAdapter(desc), level));
 #endif
 			}
 		}
 	}
-	else if (d3d9)
+	else if(d3d9)
 	{
 		int n = d3d9->GetAdapterCount();
-		for (int i = 0; i < n; i++)
+		for(int i = 0; i < n; i++)
 		{
 			D3DADAPTER_IDENTIFIER9 desc;
-			if (D3D_OK != d3d9->GetAdapterIdentifier(i, 0, &desc))
+
+			if(D3D_OK != d3d9->GetAdapterIdentifier(i, 0, &desc))
 				break;
-// GSDX isn't unicode!?
+
+			// GSDX isn't unicode!?
 #if 0
 			wchar_t buf[sizeof desc.Description * sizeof(WCHAR)];
-			MultiByteToWideChar(CP_ACP /* I have no idea if this is right */, 0,
-				desc.Description, sizeof(desc.Description),
-				buf, sizeof buf / sizeof *buf);
+			MultiByteToWideChar(CP_ACP /* I have no idea if this is right */, 0, desc.Description, sizeof(desc.Description), buf, sizeof buf / sizeof *buf);
 			adapters.push_back(Adapter(buf, GSAdapter(desc), (D3D_FEATURE_LEVEL)0));
 #else
 			adapters.push_back(Adapter(desc.Description, GSAdapter(desc), (D3D_FEATURE_LEVEL)0));
@@ -135,17 +137,37 @@ void GSSettingsDlg::OnInit()
 
 	std::string adapter_setting = theApp.GetConfig("Adapter", "default");
 	vector<GSSetting> adapter_settings;
-	unsigned adapter_sel = 0;
+	unsigned int adapter_sel = 0;
 
-	for (unsigned i = 0; i < adapters.size(); i++)
+	for(unsigned int i = 0; i < adapters.size(); i++)
 	{
-		if (adapters[i].id == adapter_setting)
+		if(adapters[i].id == adapter_setting)
+		{
 			adapter_sel = i;
+		}
+
 		adapter_settings.push_back(GSSetting(i, adapters[i].name.c_str(), ""));
 	}
 
+	std::string ocldev = theApp.GetConfig("ocldev", "");
+
+	unsigned int ocl_sel = 0;
+
+	for(unsigned int i = 0; i < theApp.m_ocl_devs.size(); i++)
+	{
+		if(ocldev == theApp.m_ocl_devs[i].name)
+		{
+			ocl_sel = i;
+
+			break;
+		}
+	}
+
 	ComboBoxInit(IDC_ADAPTER, adapter_settings, adapter_sel);
+	ComboBoxInit(IDC_OPENCL_DEVICE, theApp.m_ocl_devs, ocl_sel);
+
 	UpdateRenderers();
+	
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfig("Interlace", 7)); // 7 = "auto", detects interlace based on SMODE2 register
 	ComboBoxInit(IDC_ASPECTRATIO, theApp.m_gs_aspectratio, theApp.GetConfig("AspectRatio", 1));
 	ComboBoxInit(IDC_UPSCALE_MULTIPLIER, theApp.m_gs_upscale_multiplier, theApp.GetConfig("upscale_multiplier", 1));
@@ -233,6 +255,11 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("Adapter", adapters[(int)data].id.c_str());
 			}
 
+			if(ComboBoxGetSelData(IDC_OPENCL_DEVICE, data))
+			{
+				theApp.SetConfig("ocldev", theApp.m_ocl_devs[(int)data].name.c_str());
+			}
+
 			if(!m_IsOpen2 && ComboBoxGetSelData(IDC_RESOLUTION, data))
 			{
 				const D3DDISPLAYMODE* mode = (D3DDISPLAYMODE*)data;
@@ -266,7 +293,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("upscale_multiplier", 1);
 			}
 
-			if (ComboBoxGetSelData(IDC_AFCOMBO, data))
+			if(ComboBoxGetSelData(IDC_AFCOMBO, data))
 			{
 				theApp.SetConfig("MaxAnisotropy", (int)data);
 			}
@@ -360,16 +387,19 @@ void GSSettingsDlg::UpdateControls()
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
 	{
-		bool dx9 = (i / 3) == 0;
-		bool dx11 = (i / 3) == 1;
-		bool ogl = (i / 3) == 4;
-		bool hw = (i % 3) == 0;
-		//bool sw = (i % 3) == 1;
+		bool dx9 = i >= 0 && i <= 2 || i == 14;
+		bool dx11 = i >= 3 && i <= 5 || i == 15;
+		bool ogl = i >= 12 && i <= 13 || i == 17;
+		bool hw = i == 0 || i == 3 || i == 12;
+		//bool sw = i == 1 || i == 4 || i == 10 || i == 13;
+		bool ocl = i >= 14 && i <= 17;
+
 		bool native = !!IsDlgButtonChecked(m_hWnd, IDC_NATIVERES);
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
 
+		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_WINDOWED), dx9);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !native && scaling == 1);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !native && scaling == 1);
