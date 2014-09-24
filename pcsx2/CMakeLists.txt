@@ -692,7 +692,7 @@ set(pcsx2FinalLibs
 	${wxWidgets_LIBRARIES}
 	${GTK2_LIBRARIES}
 	${ZLIB_LIBRARIES}
-	aio
+    ${AIO_LIBRARIES}
 )
 
 # additonal include directories

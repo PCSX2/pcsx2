@@ -147,7 +147,9 @@ set(spu2xFinalSources
 set(spu2xFinalLibs
     Utilities
     ${ALSA_LIBRARIES}
-    portaudio
+    ${PORTAUDIO_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${SOUNDTOUCH_LIBRARIES}
 )
 
 if (SDL2_API)
@@ -161,11 +163,5 @@ else()
         ${SDL_LIBRARY}
     )
 endif()
-
-set(spu2xFinalLibs
-    ${spu2xFinalLibs}
-    SoundTouch
-    ${GTK2_LIBRARIES}
-)
 
 add_pcsx2_plugin(${Output} "${spu2xFinalSources}" "${spu2xFinalLibs}" "${spu2xFinalFlags}")
