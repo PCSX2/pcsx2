@@ -56,6 +56,19 @@ then
         export LD_LIBRARY_PATH="./3rdPartyLibs:$LD_LIBRARY_PATH"
     fi 
 fi
+# openSuse don't follow FHS !!!!
+bad_wx_path="/usr/lib/wx-2.8-stl"
+if [ -e "$bad_wx_path" ]
+then
+    if [ -z $LD_LIBRARY_PATH ]
+    then
+        OLD_LD_LIBRARY_PATH=""
+        export LD_LIBRARY_PATH="$bad_wx_path"
+    else
+        OLD_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="$bad_wx_path:$LD_LIBRARY_PATH"
+    fi
+fi
 
 # Test plugin depencencies
 if [ -x `which ldd` ]
