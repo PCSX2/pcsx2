@@ -246,6 +246,7 @@ extern   PFNGLGENSAMPLERSPROC                   gl_GenSamplers;
 extern   PFNGLGENVERTEXARRAYSPROC               gl_GenVertexArrays;
 extern   PFNGLGETBUFFERPARAMETERIVPROC          gl_GetBufferParameteriv;
 extern   PFNGLGETDEBUGMESSAGELOGARBPROC         gl_GetDebugMessageLogARB;
+extern   PFNGLDEBUGMESSAGECALLBACKPROC          gl_DebugMessageCallback;
 extern   PFNGLGETPROGRAMINFOLOGPROC             gl_GetProgramInfoLog;
 extern   PFNGLGETPROGRAMIVPROC                  gl_GetProgramiv;
 extern   PFNGLGETSHADERIVPROC                   gl_GetShaderiv;

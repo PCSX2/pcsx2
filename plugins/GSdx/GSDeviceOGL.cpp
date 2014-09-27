@@ -169,9 +169,17 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	m_window = wnd;
 
 	// ****************************************************************
+	// Debug helper
+	// ****************************************************************
+#ifdef ENABLE_OGL_DEBUG
+	gl_DebugMessageCallback(DebugOutputToFile, NULL);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+#endif
+
+	// ****************************************************************
 	// Various object
 	// ****************************************************************
-	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_ogl_shader", 1));
+	m_shader = new GSShaderOGL(!!theApp.GetConfig("debug_glsl_shader", 0));
 
 	gl_GenFramebuffers(1, &m_fbo);
 	gl_GenFramebuffers(1, &m_fbo_read);
@@ -1218,8 +1226,7 @@ void GSDeviceOGL::CheckDebugLog()
              unsigned int pos = 0;
              for(unsigned int i=0; i<retVal; i++)
              {
-                    DebugOutputToFile(sources[i], types[i], ids[i], severities[i],
- &messageLog[pos]);
+                    DebugOutputToFile(sources[i], types[i], ids[i], severities[i], lengths[i], &messageLog[pos], NULL);
                     pos += lengths[i];
               }
        }
@@ -1228,49 +1235,49 @@ void GSDeviceOGL::CheckDebugLog()
 #endif
 }
 
-void GSDeviceOGL::DebugOutputToFile(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, const char* message)
+// Note: used as a callback of DebugMessageCallback. Don't change the signature
+void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam)
 {
 #ifndef ENABLE_GLES
-	char debType[20], debSev[6];
+	std::string message(gl_message, gl_length);
+	std::string type, severity, source;
 	static int sev_counter = 0;
-
-	if(type == GL_DEBUG_TYPE_ERROR_ARB)
-		strcpy(debType, "Error");
-	else if(type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
-		strcpy(debType, "Deprecated behavior");
-	else if(type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
-		strcpy(debType, "Undefined behavior");
-	else if(type == GL_DEBUG_TYPE_PORTABILITY_ARB)
-		strcpy(debType, "Portability");
-	else if(type == GL_DEBUG_TYPE_PERFORMANCE_ARB)
-		strcpy(debType, "Performance");
-	else if(type == GL_DEBUG_TYPE_OTHER_ARB)
-		strcpy(debType, "Other");
-	else
-		strcpy(debType, "UNKNOWN");
-
-	if(severity == GL_DEBUG_SEVERITY_HIGH_ARB) {
-		strcpy(debSev, "High");
-		sev_counter++;
+	switch(gl_type) {
+		case GL_DEBUG_TYPE_ERROR_ARB               : type = "Error"; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB : type = "Deprecated bhv"; break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB  : type = "Undefined bhv"; break;
+		case GL_DEBUG_TYPE_PORTABILITY_ARB         : type = "Portability"; break;
+		case GL_DEBUG_TYPE_PERFORMANCE_ARB         : type = "Perf"; break;
+		case GL_DEBUG_TYPE_OTHER_ARB               : type = "Others"; break;
+		default                                    : type = "TTT"; break;
 	}
-	else if(severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
-		strcpy(debSev, "Med");
-	else if(severity == GL_DEBUG_SEVERITY_LOW_ARB)
-		strcpy(debSev, "Low");
-	else
-		strcpy(debSev, "None");
+	switch(gl_severity) {
+		case GL_DEBUG_SEVERITY_HIGH_ARB   : severity = "High"; sev_counter++; break;
+		case GL_DEBUG_SEVERITY_MEDIUM_ARB : severity = "Mid"; break;
+		case GL_DEBUG_SEVERITY_LOW_ARB    : severity = "Low"; break;
+		default                           : severity = "Info"; break;
+	}
+	switch(gl_source) {
+		case GL_DEBUG_SOURCE_API_ARB             : source = "API"; break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB   : source = "WINDOW"; break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB : source = "COMPILER"; break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY_ARB     : source = "3rdparty"; break;
+		case GL_DEBUG_SOURCE_APPLICATION_ARB     : source = "Application"; break;
+		case GL_DEBUG_SOURCE_OTHER_ARB           : source = "Others"; break;
+		default                                  : source = "???"; break;
+	}
 
 	#ifdef LOUD_DEBUGGING
-	fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", debType, g_draw_count, debSev,message);
+	fprintf(stderr,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
 	#endif
 
 	FILE* f = fopen("Debug.txt","a");
 	if(f)
 	{
-		fprintf(f,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", debType, g_draw_count, debSev,message);
+		fprintf(f,"Type:%s\tID:%d\tSeverity:%s\tMessage:%s\n", type.c_str(), g_draw_count, severity.c_str(), message.c_str());
 		fclose(f);
 	}
-	ASSERT(sev_counter < 3);
+	ASSERT(sev_counter < 5);
 #endif
 }
 

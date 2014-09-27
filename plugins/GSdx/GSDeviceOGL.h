@@ -559,7 +559,7 @@ class GSDeviceOGL : public GSDevice
 	virtual ~GSDeviceOGL();
 
 	static void CheckDebugLog();
-	static void DebugOutputToFile(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, const char* message);
+	static void DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
 
 	bool HasStencil() { return true; }
 	bool HasDepth32() { return true; }

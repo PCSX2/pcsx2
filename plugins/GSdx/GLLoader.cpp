@@ -62,6 +62,7 @@ PFNGLGENSAMPLERSPROC                   gl_GenSamplers                       = NU
 PFNGLGENVERTEXARRAYSPROC               gl_GenVertexArrays                   = NULL;
 PFNGLGETBUFFERPARAMETERIVPROC          gl_GetBufferParameteriv              = NULL;
 PFNGLGETDEBUGMESSAGELOGARBPROC         gl_GetDebugMessageLogARB             = NULL;
+PFNGLDEBUGMESSAGECALLBACKPROC          gl_DebugMessageCallback              = NULL;
 PFNGLGETPROGRAMINFOLOGPROC             gl_GetProgramInfoLog                 = NULL;
 PFNGLGETPROGRAMIVPROC                  gl_GetProgramiv                      = NULL;
 PFNGLGETSHADERIVPROC                   gl_GetShaderiv                       = NULL;

@@ -59,6 +59,7 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_GenVertexArrays) = GetProcAddress("glGenVertexArrays");
 	*(void**)&(gl_GetBufferParameteriv) = GetProcAddress("glGetBufferParameteriv");
 	*(void**)&(gl_GetDebugMessageLogARB) = GetProcAddress("glGetDebugMessageLogARB");
+	*(void**)&(gl_DebugMessageCallback) = GetProcAddress("glDebugMessageCallback");
 	*(void**)&(gl_GetProgramInfoLog) = GetProcAddress("glGetProgramInfoLog");
 	*(void**)&(gl_GetProgramiv) = GetProcAddress("glGetProgramiv");
 	*(void**)&(gl_GetShaderiv) = GetProcAddress("glGetShaderiv");
