@@ -107,6 +107,7 @@ void GSShaderOGL::PS(GLuint s, GLuint sub_count)
 		GLState::ps = s;
 		GLState::dirty_prog = true;
 		GLState::dirty_subroutine_ps = true;
+		GLState::dirty_ressources = true;
 #ifndef ENABLE_GLES
 		if (GLLoader::found_GL_ARB_separate_shader_objects) {
 			gl_UseProgramStages(m_pipeline, GL_FRAGMENT_SHADER_BIT, s);
@@ -158,13 +159,14 @@ void GSShaderOGL::SetupRessources()
 
 	if (GLState::dirty_ressources) {
 		GLState::dirty_ressources = false;
-		// FIXME count !
-		// FIXME location !
-		GLuint count = (GLState::tex_handle[1]) ? 2 : 1;
 		if (GLLoader::found_GL_ARB_separate_shader_objects) {
-			gl_ProgramUniformHandleui64vARB(GLState::ps, 0, count, GLState::tex_handle);
+			gl_ProgramUniformHandleui64vARB(GLState::ps, 0, 1, &GLState::tex_handle[0]);
+			if (GLState::tex_handle[1])
+				gl_ProgramUniformHandleui64vARB(GLState::ps, 1, 1, &GLState::tex_handle[1]);
 		} else {
-			gl_UniformHandleui64vARB(0, count, GLState::tex_handle);
+			gl_UniformHandleui64vARB(0, 1, &GLState::tex_handle[0]);
+			if (GLState::tex_handle[1])
+				gl_UniformHandleui64vARB(1, 1, &GLState::tex_handle[1]);
 		}
 	}
 #endif
