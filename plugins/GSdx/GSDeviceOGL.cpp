@@ -485,7 +485,7 @@ void GSDeviceOGL::ClearRenderTarget_ui(GSTexture* t, uint32 c)
 void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 {
 	// TODO is it possible with GL44 ClearTexture? no the API is garbage!
-	// Anyway, stencil can be cleared to 0 (it will be only used for date)
+	// It can't be used here because it will clear both depth and stencil
 	if (0 && GLLoader::found_GL_ARB_clear_texture) {
 #ifndef ENABLE_GLES
 		static_cast<GSTextureOGL*>(t)->EnableUnit();
@@ -520,10 +520,10 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
 	// TODO is it possible with GL44 ClearTexture? no the API is garbage!
-	if (GLLoader::found_GL_ARB_clear_texture) {
+	// It can't be used here because it will clear both depth and stencil
+	if (0 && GLLoader::found_GL_ARB_clear_texture) {
 #ifndef ENABLE_GLES
-		static_cast<GSTextureOGL*>(t)->EnableUnit();
-		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), 0, GL_DEPTH_STENCIL, GL_BYTE, &c);
+		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), GL_TEX_LEVEL_0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, &c);
 #endif
 	} else {
 		OMSetFBO(m_fbo);
