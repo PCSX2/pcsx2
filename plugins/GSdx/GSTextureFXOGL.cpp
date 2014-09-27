@@ -59,17 +59,6 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Help to debug FS in apitrace
 	m_apitrace = CompilePS(PSSelector());
-
-	// VS gl_position.z => [-1,-1]
-	// FS depth => [0, 1]
-	// because of -1 we loose lot of precision for small GS value
-	// This extension allow FS depth to range from -1 to 1. So
-	// gl_position.z could range from [0, 1]
-#ifndef ENABLE_GLES
-	if (GLLoader::found_GL_NV_depth_buffer_float) {
-		gl_DepthRangedNV(-1.0f, 1.0f);
-	}
-#endif
 }
 
 GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)

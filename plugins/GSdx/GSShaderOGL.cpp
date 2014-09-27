@@ -403,9 +403,8 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 		header += "#define ENABLE_BINDLESS_TEX\n";
 	}
 
-	if (GLLoader::found_GL_NV_depth_buffer_float) {
-		// Specific nvidia extension that seem to help for z fighting
-		header += "#define NV_DEPTH\n";
+	if (GLLoader::found_GL_NV_depth_buffer_float || GLLoader::found_GL_ARB_clip_control) {
+		header += "#define ZERO_TO_ONE_DEPTH\n";
 	}
 
 #else

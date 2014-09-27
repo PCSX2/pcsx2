@@ -105,8 +105,11 @@ layout(std140, binding = 20) uniform cb20
     vec2 TextureScale;
 };
 
+#ifdef ZERO_TO_ONE_DEPTH
 const float exp_min32 = exp2(-32.0f);
+#else
 const float exp_min31 = exp2(-31.0f);
+#endif
 
 #ifdef SUBROUTINE_GL40
 // Function pointer type
@@ -181,7 +184,7 @@ void vs_main()
     p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
     p.xy = p.xy * VertexScale - VertexOffset;
     p.w = 1.0f;
-#ifdef NV_DEPTH
+#ifdef ZERO_TO_ONE_DEPTH
     if(VS_LOGZ == 1) {
         p.z = log2(float(1u+z)) / 32.0f;
     } else {
