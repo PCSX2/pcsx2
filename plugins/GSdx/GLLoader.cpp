@@ -273,22 +273,13 @@ namespace GLLoader {
 		if (gl_GetStringi && max_ext) {
 			for (GLint i = 0; i < max_ext; i++) {
 				string ext((const char*)gl_GetStringi(GL_EXTENSIONS, i));
+				// GL4.0
+				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
+				// GL4.1
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) {
 					if (!fglrx_buggy_driver && !mesa_amd_buggy_driver && !intel_buggy_driver) found_GL_ARB_separate_shader_objects = true;
 					else fprintf(stderr, "Buggy driver detected, GL_ARB_separate_shader_objects will be disabled\n");
 				}
-				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
-				if (ext.compare("GL_ARB_texture_storage") == 0) found_GL_ARB_texture_storage = true;
-				if (ext.compare("GL_ARB_copy_image") == 0) found_GL_ARB_copy_image = true;
-				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
-				if (ext.compare("GL_NV_depth_buffer_float") == 0) found_GL_NV_depth_buffer_float = true;
-				if (ext.compare("GL_ARB_explicit_uniform_location") == 0) found_GL_ARB_explicit_uniform_location = true;
-				if (ext.compare("GL_ARB_multi_bind") == 0) found_GL_ARB_multi_bind = true;
-				if (ext.compare("GL_ARB_buffer_storage") == 0) found_GL_ARB_buffer_storage = true;
-
-				// Only enable this extension on nvidia
-				if (nvidia_buggy_driver && ext.compare("GL_ARB_shader_image_load_store") == 0) found_GL_ARB_shader_image_load_store = true;
-
 #if 0
 				// Erratum: on nvidia implementation, gain is very nice : 42.5 fps => 46.5 fps
 				//
@@ -302,11 +293,17 @@ namespace GLLoader {
 
 				if (ext.compare("GL_ARB_shader_subroutine") == 0) found_GL_ARB_shader_subroutine = true;
 #endif
-#ifdef GL44 // Need to debug the code first
-				// Need to check the clean (in particular of depth/stencil texture)
+				// GL4.2
+				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
+				if (ext.compare("GL_ARB_texture_storage") == 0) found_GL_ARB_texture_storage = true;
+				// Only enable this extension on nvidia
+				if (nvidia_buggy_driver && ext.compare("GL_ARB_shader_image_load_store") == 0) found_GL_ARB_shader_image_load_store = true;
+				// GL4.3
+				if (ext.compare("GL_ARB_copy_image") == 0) found_GL_ARB_copy_image = true;
+				if (ext.compare("GL_ARB_explicit_uniform_location") == 0) found_GL_ARB_explicit_uniform_location = true;
+				// GL4.4
+				if (ext.compare("GL_ARB_buffer_storage") == 0) found_GL_ARB_buffer_storage = true;
 				if (ext.compare("GL_ARB_clear_texture") == 0) found_GL_ARB_clear_texture = true;
-#endif
-#ifdef GLBINDLESS // Need to debug the code first
 				if (ext.compare("GL_ARB_bindless_texture") == 0) found_GL_ARB_bindless_texture = true;
 				// GL4.5
 				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
@@ -315,10 +312,6 @@ namespace GLLoader {
 #ifdef ENABLE_GLES
 				fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
 #endif
-#ifdef GL45 // need to code it first :p
-				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
-#endif
-				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
 			}
 		}
 #endif
@@ -327,25 +320,25 @@ namespace GLLoader {
 #ifndef ENABLE_GLES
 		fprintf(stderr, "\n");
 
-		status &= status_and_override(found_GL_ARB_separate_shader_objects,"GL_ARB_separate_shader_objects");
+		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5,"GL_ARB_gpu_shader5");
-		status &= status_and_override(found_GL_ARB_shader_image_load_store,"GL_ARB_shader_image_load_store");
-		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
-		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage");
+		// GL4.1
+		status &= status_and_override(found_GL_ARB_separate_shader_objects,"GL_ARB_separate_shader_objects");
 		status &= status_and_override(found_GL_ARB_shader_subroutine,"GL_ARB_shader_subroutine");
-		status &= status_and_override(found_GL_ARB_explicit_uniform_location,"GL_ARB_explicit_uniform_location");
-
+		// GL4.2
+		status &= status_and_override(found_GL_ARB_shader_image_load_store,"GL_ARB_shader_image_load_store");
+		status &= status_and_override(found_GL_ARB_shading_language_420pack,"GL_ARB_shading_language_420pack"); // Mostly mandatory. Some Nvidia driver failed to report it correctly
 		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
-		status &= status_and_override(found_GL_ARB_shading_language_420pack,"GL_ARB_shading_language_420pack");
-
-		status &= status_and_override(found_GL_ARB_multi_bind,"GL_ARB_multi_bind");
-		status &= status_and_override(found_GL_ARB_bindless_texture,"GL_ARB_bindless_texture");
-
-
-		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
-		// Mandatory extension in DSA mode
-		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", false);
+		// GL4.3
+		status &= status_and_override(found_GL_ARB_explicit_uniform_location,"GL_ARB_explicit_uniform_location");
 		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image");
+		// GL4.4
+		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage");
+		status &= status_and_override(found_GL_ARB_bindless_texture,"GL_ARB_bindless_texture");
+		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
+		// GL4.5
+		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
+		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
 
 		fprintf(stderr, "\n");
 #endif
