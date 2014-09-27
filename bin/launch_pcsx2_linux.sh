@@ -56,7 +56,7 @@ then
         export LD_LIBRARY_PATH="./3rdPartyLibs:$LD_LIBRARY_PATH"
     fi 
 fi
-# openSuse don't follow FHS !!!!
+# openSUSE don't follow FHS !!!!
 bad_wx_path="/usr/lib/wx-2.8-stl"
 if [ -e "$bad_wx_path" ]
 then
