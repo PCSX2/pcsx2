@@ -1062,17 +1062,11 @@ void GSDeviceOGL::PSSetShaderResource(GLuint sr)
 	if (GLState::tex_unit[0] != sr) {
 		GLState::tex_unit[0] = sr;
 
-		if (GLLoader::found_GL_ARB_multi_bind) {
-#ifndef ENABLE_GLES
-			gl_BindTextures(0, 1, &sr);
-#endif
-		} else {
-			gl_ActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, sr);
+		gl_ActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, sr);
 
-			// Get back to the expected active texture unit
-			gl_ActiveTexture(GL_TEXTURE0 + 3);
-		}
+		// Get back to the expected active texture unit
+		gl_ActiveTexture(GL_TEXTURE0 + 3);
 	}
 }
 
@@ -1082,20 +1076,14 @@ void GSDeviceOGL::PSSetShaderResources(GLuint tex[2])
 		GLState::tex_unit[0] = tex[0];
 		GLState::tex_unit[1] = tex[1];
 
-		if (GLLoader::found_GL_ARB_multi_bind) {
-#ifndef ENABLE_GLES
-			gl_BindTextures(0, 2, tex);
-#endif
-		} else {
-			gl_ActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, tex[0]);
+		gl_ActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex[0]);
 
-			gl_ActiveTexture(GL_TEXTURE0 + 1);
-			glBindTexture(GL_TEXTURE_2D, tex[1]);
+		gl_ActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, tex[1]);
 
-			// Get back to the expected active texture unit
-			gl_ActiveTexture(GL_TEXTURE0 + 3);
-		}
+		// Get back to the expected active texture unit
+		gl_ActiveTexture(GL_TEXTURE0 + 3);
 	}
 }
 

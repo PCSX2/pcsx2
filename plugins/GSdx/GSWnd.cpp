@@ -113,7 +113,6 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_CopyImageSubData) = GetProcAddress("glCopyImageSubData", true);
 	// GL4.4
 	*(void**)&(gl_ClearTexImage) = GetProcAddress("glClearTexImage", true);
-	*(void**)&(gl_BindTextures) = GetProcAddress("glBindTextures", true);
 	*(void**)&(gl_BufferStorage) = GetProcAddress("glBufferStorage", true);
 	// GL_ARB_bindless_texture (GL5?)
 	*(void**)&(gl_GetTextureSamplerHandleARB) = GetProcAddress("glGetTextureSamplerHandleARB", true);

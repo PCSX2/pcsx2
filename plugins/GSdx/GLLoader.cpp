@@ -110,7 +110,6 @@ PFNGLMEMORYBARRIERPROC                 gl_MemoryBarrier                     = NU
 PFNGLTEXSTORAGE2DPROC                  gl_TexStorage2D                      = NULL;
 // GL4.4
 PFNGLCLEARTEXIMAGEPROC                 gl_ClearTexImage                     = NULL;
-PFNGLBINDTEXTURESPROC                  gl_BindTextures                      = NULL;
 PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage                     = NULL;
 // GL_ARB_bindless_texture (GL5?)
 PFNGLGETTEXTURESAMPLERHANDLEARBPROC    gl_GetTextureSamplerHandleARB        = NULL;
@@ -179,7 +178,6 @@ namespace GLLoader {
 
 
 	// Mandatory for FULL GL (but optional for GLES)
-	bool found_GL_ARB_multi_bind = false; // Not yet. Wait Mesa & AMD drivers.
 	bool found_GL_ARB_shading_language_420pack = false; // GLES 3.1 ???
 
 	// Mandatory

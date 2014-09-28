@@ -294,7 +294,6 @@ extern   PFNGLTEXSTORAGE2DPROC                  gl_TexStorage2D;
 extern   PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData;
 // GL4.4
 extern   PFNGLCLEARTEXIMAGEPROC                 gl_ClearTexImage;
-extern   PFNGLBINDTEXTURESPROC                  gl_BindTextures;
 extern   PFNGLBUFFERSTORAGEPROC                 gl_BufferStorage;
 // GL_ARB_bindless_texture (GL5?)
 extern PFNGLGETTEXTURESAMPLERHANDLEARBPROC      gl_GetTextureSamplerHandleARB;
@@ -429,7 +428,6 @@ namespace GLLoader {
 	extern bool found_GL_ARB_gpu_shader5;
 	extern bool found_GL_ARB_shader_image_load_store;
 	extern bool found_GL_ARB_clear_texture;
-	extern bool found_GL_ARB_multi_bind;
 	extern bool found_GL_ARB_buffer_storage;
 	extern bool found_GL_ARB_shader_subroutine;
 	extern bool found_GL_ARB_bindless_texture;
