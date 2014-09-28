@@ -13,6 +13,10 @@
 *.bsc
 *.mo
 
+*.trace
+*.asm
+*.dump
+
 _ReSharper.*
 pcsx2.snapshot_*
 postBuild.inc.cmd
