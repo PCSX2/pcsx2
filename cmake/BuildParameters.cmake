@@ -46,6 +46,10 @@ if(PACKAGE_MODE)
         set(GAMEINDEX_DIR "${CMAKE_INSTALL_PREFIX}/share/games/pcsx2")
     endif(NOT DEFINED GAMEINDEX_DIR)
 
+    if(NOT DEFINED BIN_DIR)
+        set(BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
+    endif(NOT DEFINED BIN_DIR)
+
     # Compile all source codes with these 2 defines
     add_definitions(-DPLUGIN_DIR_COMPILATION=${PLUGIN_DIR} -DGAMEINDEX_DIR_COMPILATION=${GAMEINDEX_DIR})
 endif(PACKAGE_MODE)
