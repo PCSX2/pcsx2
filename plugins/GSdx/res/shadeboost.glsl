@@ -14,8 +14,6 @@ struct vertex_basic
 
 #ifdef FRAGMENT_SHADER
 
-#if !pGL_ES && __VERSION__ > 140
-
 in SHADER
 {
     vec4 p;
@@ -24,20 +22,6 @@ in SHADER
 
 #define PSin_p (PSin.p)
 #define PSin_t (PSin.t)
-
-#else
-
-#ifdef DISABLE_SSO
-in vec4 SHADERp;
-in vec2 SHADERt;
-#else
-layout(location = 0) in vec4 SHADERp;
-layout(location = 1) in vec2 SHADERt;
-#endif
-#define PSin_p SHADERp
-#define PSin_t SHADERt
-
-#endif
 
 layout(location = 0) out vec4 SV_Target0;
 

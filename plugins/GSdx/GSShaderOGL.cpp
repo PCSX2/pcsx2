@@ -355,7 +355,6 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 {
 	std::string header;
 #ifndef ENABLE_GLES
-
 	if (GLLoader::found_only_gl30) {
 		header = "#version 130\n";
 	} else {
@@ -370,8 +369,6 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
 		// Need GL version 410
 		header += "#extension GL_ARB_separate_shader_objects: require\n";
-	} else {
-		header += "#define DISABLE_SSO\n";
 	}
 	if (GLLoader::found_only_gl30) {
 		// Need version 330
@@ -402,15 +399,13 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 		header += "#extension GL_ARB_bindless_texture: require\n";
 		header += "#define ENABLE_BINDLESS_TEX\n";
 	}
-
 	if (GLLoader::found_GL_ARB_clip_control) {
 		header += "#define ZERO_TO_ONE_DEPTH\n";
 	}
-
-#else
-	header = "#version 300 es\n";
+#else // ENABLE_GLES
+	header = "#version 310 es\n";
+	header += "#extension GL_EXT_shader_io_blocks: require\n";
 	// Disable full GL features
-	header += "#define DISABLE_SSO\n";
 	header += "#define DISABLE_GL42\n";
 	header += "#define DISABLE_GL42_image\n";
 #endif

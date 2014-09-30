@@ -56,8 +56,6 @@ layout(location = 4) in uint  i_z;
 layout(location = 5) in uvec2 i_uv;
 layout(location = 6) in vec4  i_f;
 
-#if !pGL_ES && __VERSION__ > 140
-
 out SHADER
 {
     vec4 t;
@@ -69,30 +67,13 @@ out SHADER
 #define VSout_c (VSout.c)
 #define VSout_fc (VSout.fc)
 
-#else
-
-#ifdef DISABLE_SSO
-out vec4 SHADERt;
-out vec4 SHADERc;
-flat out vec4 SHADERfc;
-#else
-layout(location = 0) out vec4 SHADERt;
-layout(location = 1) out vec4 SHADERc;
-flat layout(location = 2) out vec4 SHADERfc;
-#endif
-#define VSout_t SHADERt
-#define VSout_c SHADERc
-#define VSout_fc SHADERfc
-
-#endif
-
-#if !pGL_ES && __VERSION__ > 140
 out gl_PerVertex {
     invariant vec4 gl_Position;
     float gl_PointSize;
+#if !pGL_ES
     float gl_ClipDistance[];
-};
 #endif
+};
 
 #ifdef DISABLE_GL42
 layout(std140) uniform cb20
@@ -213,14 +194,18 @@ void vs_main()
 in gl_PerVertex {
     invariant vec4 gl_Position;
     float gl_PointSize;
+#if !pGL_ES
     float gl_ClipDistance[];
+#endif
 } gl_in[];
 //in int gl_PrimitiveIDIn;
 
 out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
+#if !pGL_ES
     float gl_ClipDistance[];
+#endif
 };
 //out int gl_PrimitiveID;
 
@@ -307,8 +292,6 @@ void gs_main()
 
 #ifdef FRAGMENT_SHADER
 
-#if !pGL_ES && __VERSION__ > 140
-
 in SHADER
 {
     vec4 t;
@@ -319,23 +302,6 @@ in SHADER
 #define PSin_t (PSin.t)
 #define PSin_c (PSin.c)
 #define PSin_fc (PSin.fc)
-
-#else
-
-#ifdef DISABLE_SSO
-in vec4 SHADERt;
-in vec4 SHADERc;
-flat in vec4 SHADERfc;
-#else
-layout(location = 0) in vec4 SHADERt;
-layout(location = 1) in vec4 SHADERc;
-flat layout(location = 2) in vec4 SHADERfc;
-#endif
-#define PSin_t SHADERt
-#define PSin_c SHADERc
-#define PSin_fc SHADERfc
-
-#endif
 
 // Same buffer but 2 colors for dual source blending
 #if pGL_ES

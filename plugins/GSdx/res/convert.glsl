@@ -9,13 +9,13 @@ struct vertex_basic
 
 #ifdef VERTEX_SHADER
 
-#if !pGL_ES && __VERSION__ > 140
 out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
+#if !pGL_ES
     float gl_ClipDistance[];
-};
 #endif
+};
 
 layout(location = 0) in vec2 POSITION;
 layout(location = 1) in vec2 TEXCOORD0;
@@ -28,8 +28,6 @@ layout(location = 1) in vec2 TEXCOORD0;
 // smooth, the default, means to do perspective-correct interpolation.
 //
 // The centroid qualifier only matters when multisampling. If this qualifier is not present, then the value is interpolated to the pixel's center, anywhere in the pixel, or to one of the pixel's samples. This sample may lie outside of the actual primitive being rendered, since a primitive can cover only part of a pixel's area. The centroid qualifier is used to prevent this; the interpolation point must fall within both the pixel's area and the primitive's area.
-#if !pGL_ES && __VERSION__ > 140
-
 out SHADER
 {
     vec4 p;
@@ -38,20 +36,6 @@ out SHADER
 
 #define VSout_p (VSout.p)
 #define VSout_t (VSout.t)
-
-#else
-
-#ifdef DISABLE_SSO
-out vec4 SHADERp;
-out vec2 SHADERt;
-#else
-layout(location = 0) out vec4 SHADERp;
-layout(location = 1) out vec2 SHADERt;
-#endif
-#define VSout_p SHADERp
-#define VSout_t SHADERt
-
-#endif
 
 void vs_main()
 {
@@ -64,8 +48,6 @@ void vs_main()
 
 #ifdef FRAGMENT_SHADER
 
-#if !pGL_ES && __VERSION__ > 140
-
 in SHADER
 {
     vec4 p;
@@ -74,20 +56,6 @@ in SHADER
 
 #define PSin_p (PSin.p)
 #define PSin_t (PSin.t)
-
-#else
-
-#ifdef DISABLE_SSO
-in vec4 SHADERp;
-in vec2 SHADERt;
-#else
-layout(location = 0) in vec4 SHADERp;
-layout(location = 1) in vec2 SHADERt;
-#endif
-#define PSin_p SHADERp
-#define PSin_t SHADERt
-
-#endif
 
 // Give a different name so I remember there is a special case!
 #ifdef ps_main1

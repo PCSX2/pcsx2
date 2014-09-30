@@ -180,6 +180,9 @@ namespace GLLoader {
 	// Mandatory for FULL GL (but optional for GLES)
 	bool found_GL_ARB_shading_language_420pack = false; // GLES 3.1 ???
 
+	// Mandatory for opengl ES (allow to use GL code)
+	bool found_GL_EXT_shader_io_blocks = false;
+
 	// Mandatory
 	bool found_GL_ARB_texture_storage = false;
 
@@ -268,10 +271,10 @@ namespace GLLoader {
 		int max_ext = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_ext);
 
-#ifndef ENABLE_GLES
 		if (gl_GetStringi && max_ext) {
 			for (GLint i = 0; i < max_ext; i++) {
 				string ext((const char*)gl_GetStringi(GL_EXTENSIONS, i));
+#ifndef ENABLE_GLES
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
 				// GL4.1
@@ -307,18 +310,18 @@ namespace GLLoader {
 				// GL4.5
 				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
 				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
-
-#ifdef ENABLE_GLES
-				fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
+#else // ENABLE_GLES
+				if (ext.compare("GL_EXT_shader_io_blocks") == 0) found_GL_EXT_shader_io_blocks = true;
 #endif
+
+				//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
 			}
 		}
-#endif
 
 		bool status = true;
-#ifndef ENABLE_GLES
 		fprintf(stderr, "\n");
 
+#ifndef ENABLE_GLES
 		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5,"GL_ARB_gpu_shader5");
 		// GL4.1
@@ -338,9 +341,11 @@ namespace GLLoader {
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
+#else // ENABLE_GLES
+		status &= status_and_override(found_GL_EXT_shader_io_blocks, "GL_EXT_shader_io_blocks");
+#endif
 
 		fprintf(stderr, "\n");
-#endif
 
 		return status;
 	}
