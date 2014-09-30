@@ -24,7 +24,6 @@
 
 namespace GLState {
 	GLuint fbo = 0;
-	GLenum draw = GL_NONE;
 	GSVector2i viewport(0, 0);
 	GSVector4i scissor(0, 0, 0, 0);
 
@@ -78,7 +77,6 @@ namespace GLState {
 
 	void Clear() {
 		fbo = 0;
-		draw = GL_NONE;
 		viewport = GSVector2i(0, 0);
 		scissor = GSVector4i(0, 0, 0, 0);
 

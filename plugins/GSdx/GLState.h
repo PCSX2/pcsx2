@@ -26,7 +26,6 @@
 
 namespace GLState {
 	extern GLuint fbo; // frame buffer object
-	extern GLenum draw; // Drawing buffer
 	extern GSVector2i viewport;
 	extern GSVector4i scissor;
 

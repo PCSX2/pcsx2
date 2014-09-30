@@ -475,7 +475,6 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 			gl_ClearBufferfv(GL_COLOR, 0, c.v);
 		} else {
 			OMSetFBO(m_fbo);
-			OMSetWriteBuffer();
 			OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
 
 			gl_ClearBufferfv(GL_COLOR, 0, c.v);
@@ -500,7 +499,6 @@ void GSDeviceOGL::ClearRenderTarget_ui(GSTexture* t, uint32 c)
 		glDisable(GL_SCISSOR_TEST);
 
 		OMSetFBO(m_fbo);
-		OMSetWriteBuffer();
 		OMAttachRt(static_cast<GSTextureOGL*>(t)->GetID());
 
 		gl_ClearBufferuiv(GL_COLOR, 0, col);
@@ -529,7 +527,6 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 #endif
 	} else {
 		OMSetFBO(m_fbo);
-		OMSetWriteBuffer();
 		OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 
 		glDisable(GL_SCISSOR_TEST);
@@ -554,7 +551,6 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 #endif
 	} else {
 		OMSetFBO(m_fbo);
-		OMSetWriteBuffer();
 		OMAttachDs(static_cast<GSTextureOGL*>(t)->GetID());
 		GLint color = c;
 
@@ -1007,9 +1003,14 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPxyT1* v
 
 	//
 
+#ifdef ENABLE_OGL_STENCIL_DEBUG
 	DrawPrimitive();
-
-	//
+#else
+	// normally ok without it if GL_ARB_framebuffer_no_attachments is supported (minus driver bug)
+	OMSetWriteBuffer(GL_NONE);
+	DrawPrimitive();
+	OMSetWriteBuffer();
+#endif
 
 	EndScene();
 
@@ -1123,13 +1124,8 @@ void GSDeviceOGL::OMSetFBO(GLuint fbo)
 
 void GSDeviceOGL::OMSetWriteBuffer(GLenum buffer)
 {
-	// Note if fbo is 0, standard GL_BACK will be used instead
-	if (GLState::fbo && GLState::draw != buffer) {
-		GLState::draw = buffer;
-
-		GLenum target[1] = {buffer};
-		gl_DrawBuffers(1, target);
-	}
+	GLenum target[1] = {buffer};
+	gl_DrawBuffers(1, target);
 }
 
 void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss, uint8 sref)
@@ -1160,12 +1156,10 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	if (rt == NULL || !static_cast<GSTextureOGL*>(rt)->IsBackbuffer()) {
 		OMSetFBO(m_fbo);
 		if (rt) {
-			OMSetWriteBuffer();
 			OMAttachRt(static_cast<GSTextureOGL*>(rt)->GetID());
 		} else {
 			// Note: NULL rt is only used in DATE so far.
 			OMAttachRt(0);
-			OMSetWriteBuffer(GL_NONE);
 		}
 
 		// Note: it must be done after OMSetFBO
@@ -1178,7 +1172,6 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 		// Render in the backbuffer
 		OMSetFBO(0);
 	}
-
 
 
 	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
