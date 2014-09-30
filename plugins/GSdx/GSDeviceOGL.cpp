@@ -161,7 +161,7 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int form
 bool GSDeviceOGL::Create(GSWnd* wnd)
 {
 	if (m_window == NULL) {
-		if (!GLLoader::check_gl_version(3, 0)) return false;
+		if (!GLLoader::check_gl_version(3, 3)) return false;
 
 		if (!GLLoader::check_gl_supported_extension()) return false;
 	}

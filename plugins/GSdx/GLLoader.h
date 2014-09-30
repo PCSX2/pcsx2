@@ -425,7 +425,6 @@ namespace GLLoader {
 	extern bool found_GL_ARB_shading_language_420pack;
 	extern bool found_GL_ARB_copy_image;
 	extern bool found_geometry_shader;
-	extern bool found_only_gl30;
 	extern bool found_GL_ARB_gpu_shader5;
 	extern bool found_GL_ARB_shader_image_load_store;
 	extern bool found_GL_ARB_clear_texture;

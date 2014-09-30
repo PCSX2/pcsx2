@@ -160,8 +160,7 @@ namespace GLLoader {
 
 	// Optional
 	bool found_GL_ARB_separate_shader_objects = false;
-	bool found_geometry_shader = true;
-	bool found_only_gl30	= false; // Drop it when mesa support GLSL330
+	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
 	bool found_GL_ARB_buffer_storage = false;
 	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine
@@ -238,10 +237,6 @@ namespace GLLoader {
 		GLuint minor_gl = s[dot+1]-'0';
 
 #ifndef ENABLE_GLES
-		if ( (major_gl < 3) || ( major_gl == 3 && minor_gl < 2 ) ) {
-			fprintf(stderr, "Geometry shaders are not supported. Required openGL 3.2\n");
-			found_geometry_shader = false;
-		}
 		if (mesa_amd_buggy_driver || intel_buggy_driver) {
 			fprintf(stderr, "Buggy driver detected. Geometry shaders will be disabled\n");
 			found_geometry_shader = false;
@@ -249,10 +244,6 @@ namespace GLLoader {
 		if (theApp.GetConfig("override_geometry_shader", -1) != -1) {
 			found_geometry_shader = !!theApp.GetConfig("override_geometry_shader", -1);
 			fprintf(stderr, "Override geometry shaders detection\n");
-		}
-		if ( (major_gl == 3) && minor_gl < 3) {
-			// Opensource driver spotted
-			found_only_gl30 = true;
 		}
 #else
 		found_geometry_shader = false;

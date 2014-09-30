@@ -355,11 +355,7 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 {
 	std::string header;
 #ifndef ENABLE_GLES
-	if (GLLoader::found_only_gl30) {
-		header = "#version 130\n";
-	} else {
-		header = "#version 330 core\n";
-	}
+	header = "#version 330 core\n";
 	if (GLLoader::found_GL_ARB_shading_language_420pack) {
 		// Need GL version 420
 		header += "#extension GL_ARB_shading_language_420pack: require\n";
@@ -370,12 +366,6 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 		// Need GL version 410
 		header += "#extension GL_ARB_separate_shader_objects: require\n";
 	}
-	if (GLLoader::found_only_gl30) {
-		// Need version 330
-		header += "#extension GL_ARB_explicit_attrib_location: require\n";
-		// Need version 140
-		header += "#extension GL_ARB_uniform_buffer_object: require\n";
-	}
 	if (GLLoader::found_GL_ARB_shader_subroutine && GLLoader::found_GL_ARB_explicit_uniform_location) {
 		// Need GL version 400
 		header += "#define SUBROUTINE_GL40 1\n";
@@ -385,9 +375,6 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 		// Need GL version 430
 		header += "#extension GL_ARB_explicit_uniform_location: require\n";
 	}
-#ifdef ENABLE_OGL_STENCIL_DEBUG
-	header += "#define ENABLE_OGL_STENCIL_DEBUG 1\n";
-#endif
 	if (GLLoader::found_GL_ARB_shader_image_load_store) {
 		// Need GL version 420
 		header += "#extension GL_ARB_shader_image_load_store: require\n";
@@ -395,13 +382,16 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 		header += "#define DISABLE_GL42_image\n";
 	}
 	if (GLLoader::found_GL_ARB_bindless_texture && GLLoader::found_GL_ARB_explicit_uniform_location) {
-		// Future opengl 5?
+		// ARB extension (4.4)
 		header += "#extension GL_ARB_bindless_texture: require\n";
 		header += "#define ENABLE_BINDLESS_TEX\n";
 	}
 	if (GLLoader::found_GL_ARB_clip_control) {
 		header += "#define ZERO_TO_ONE_DEPTH\n";
 	}
+#ifdef ENABLE_OGL_STENCIL_DEBUG
+	header += "#define ENABLE_OGL_STENCIL_DEBUG 1\n";
+#endif
 #else // ENABLE_GLES
 	header = "#version 310 es\n";
 	header += "#extension GL_EXT_shader_io_blocks: require\n";
