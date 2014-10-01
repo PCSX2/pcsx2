@@ -191,10 +191,10 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	GSInputLayoutOGL il_convert[2] =
 	{
-		{0, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPxyT1), (const GLvoid*)offsetof(struct GSVertexPxyT1, p) },
-		{1, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPxyT1), (const GLvoid*)offsetof(struct GSVertexPxyT1, t) },
+		{0, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPT1), (const GLvoid*)offsetof(struct GSVertexPT1, p) },
+		{1, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPT1), (const GLvoid*)offsetof(struct GSVertexPT1, t) },
 	};
-	m_vb_sr = new GSVertexBufferStateOGL(sizeof(GSVertexPxyT1), il_convert, countof(il_convert));
+	m_vb_sr = new GSVertexBufferStateOGL(sizeof(GSVertexPT1), il_convert, countof(il_convert));
 
 	// ****************************************************************
 	// Texture unit state
@@ -851,12 +851,12 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 		flip_sr.w = sr.y;
 	}
 
-	GSVertexPxyT1 vertices[] =
+	GSVertexPT1 vertices[] =
 	{
-		{GSVector2(left  , top   ) , GSVector2(flip_sr.x , flip_sr.y)} ,
-		{GSVector2(right , top   ) , GSVector2(flip_sr.z , flip_sr.y)} ,
-		{GSVector2(left  , bottom) , GSVector2(flip_sr.x , flip_sr.w)} ,
-		{GSVector2(right , bottom) , GSVector2(flip_sr.z , flip_sr.w)} ,
+		{GSVector4(left  , top   , 0.0f, 0.0f) , GSVector2(flip_sr.x , flip_sr.y)} ,
+		{GSVector4(right , top   , 0.0f, 0.0f) , GSVector2(flip_sr.z , flip_sr.y)} ,
+		{GSVector4(left  , bottom, 0.0f, 0.0f) , GSVector2(flip_sr.x , flip_sr.w)} ,
+		{GSVector4(right , bottom, 0.0f, 0.0f) , GSVector2(flip_sr.z , flip_sr.w)} ,
 	};
 
 	IASetVertexState(m_vb_sr);
@@ -956,7 +956,7 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* st, GSTexture* dt)
 	StretchRect(st, sr, dt, dr, m_shadeboost.ps, true);
 }
 
-void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPxyT1* vertices, bool datm)
+void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
 {
 #ifdef ENABLE_OGL_STENCIL_DEBUG
 	const GSVector2i& size = rt->GetSize();
