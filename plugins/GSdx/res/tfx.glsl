@@ -75,11 +75,7 @@ out gl_PerVertex {
 #endif
 };
 
-#ifdef DISABLE_GL42
-layout(std140) uniform cb20
-#else
 layout(std140, binding = 20) uniform cb20
-#endif
 {
     vec2 VertexScale;
     vec2 VertexOffset;
@@ -315,13 +311,8 @@ layout(location = 0, index = 1) out vec4 SV_Target1;
 layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
 layout(bindless_sampler, location = 1) uniform sampler2D PaletteSampler;
 #else
-#ifdef DISABLE_GL42
-uniform sampler2D TextureSampler;
-uniform sampler2D PaletteSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
 layout(binding = 1) uniform sampler2D PaletteSampler;
-#endif
 #endif
 
 #ifndef DISABLE_GL42_image
@@ -341,11 +332,7 @@ layout(pixel_center_integer) in vec4 gl_FragCoord;
 #endif
 #endif
 
-#ifdef DISABLE_GL42
-layout(std140) uniform cb21
-#else
 layout(std140, binding = 21) uniform cb21
-#endif
 {
     vec3 FogColor;
     float AREF;

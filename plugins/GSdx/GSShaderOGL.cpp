@@ -129,29 +129,6 @@ void GSShaderOGL::GS(GLuint s)
 	}
 }
 
-void GSShaderOGL::SetUniformBinding(GLuint prog, const GLchar* name, GLuint binding)
-{
-	GLuint index;
-	index = gl_GetUniformBlockIndex(prog, name);
-	if (index != GL_INVALID_INDEX) {
-		gl_UniformBlockBinding(prog, index, binding);
-	}
-}
-
-void GSShaderOGL::SetSamplerBinding(GLuint prog, const GLchar* name, GLuint binding)
-{
-	GLint loc = gl_GetUniformLocation(prog, name);
-	if (loc != -1) {
-		if (GLLoader::found_GL_ARB_separate_shader_objects) {
-#ifndef ENABLE_GLES
-			gl_ProgramUniform1i(prog, loc, binding);
-#endif
-		} else {
-			gl_Uniform1i(loc, binding);
-		}
-	}
-}
-
 void GSShaderOGL::SetupRessources()
 {
 #ifndef ENABLE_GLES
@@ -170,37 +147,6 @@ void GSShaderOGL::SetupRessources()
 		}
 	}
 #endif
-}
-
-void GSShaderOGL::SetupUniform()
-{
-	if (GLLoader::found_GL_ARB_shading_language_420pack) return;
-
-	if (GLLoader::found_GL_ARB_separate_shader_objects) {
-		SetUniformBinding(GLState::vs, "cb20", 20);
-		SetUniformBinding(GLState::ps, "cb21", 21);
-
-		SetUniformBinding(GLState::ps, "cb10", 10);
-		SetUniformBinding(GLState::ps, "cb11", 11);
-		SetUniformBinding(GLState::ps, "cb12", 12);
-		SetUniformBinding(GLState::ps, "cb13", 13);
-
-		SetSamplerBinding(GLState::ps, "TextureSampler", 0);
-		SetSamplerBinding(GLState::ps, "PaletteSampler", 1);
-		//SetSamplerBinding(GLState::ps, "RTCopySampler", 2);
-	} else {
-		SetUniformBinding(GLState::program, "cb20", 20);
-		SetUniformBinding(GLState::program, "cb21", 21);
-
-		SetUniformBinding(GLState::program, "cb10", 10);
-		SetUniformBinding(GLState::program, "cb11", 11);
-		SetUniformBinding(GLState::program, "cb12", 12);
-		SetUniformBinding(GLState::program, "cb13", 13);
-
-		SetSamplerBinding(GLState::program, "TextureSampler", 0);
-		SetSamplerBinding(GLState::program, "PaletteSampler", 1);
-		//SetSamplerBinding(GLState::program, "RTCopySampler", 2);
-	}
 }
 
 void GSShaderOGL::SetupSubroutineUniform()
@@ -326,9 +272,6 @@ void GSShaderOGL::UseProgram()
 				ValidateProgram(GLState::program);
 
 				gl_UseProgram(GLState::program);
-
-				// warning it must be done after the "setup" of the program
-				SetupUniform();
 			} else {
 				GLuint prog = it->second;
 				if (prog != GLState::program) {
@@ -339,8 +282,6 @@ void GSShaderOGL::UseProgram()
 
 		} else {
 			ValidatePipeline(m_pipeline);
-
-			SetupUniform();
 		}
 	}
 
@@ -356,12 +297,8 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	std::string header;
 #ifndef ENABLE_GLES
 	header = "#version 330 core\n";
-	if (GLLoader::found_GL_ARB_shading_language_420pack) {
-		// Need GL version 420
-		header += "#extension GL_ARB_shading_language_420pack: require\n";
-	} else {
-		header += "#define DISABLE_GL42\n";
-	}
+	// Need GL version 420
+	header += "#extension GL_ARB_shading_language_420pack: require\n";
 	if (GLLoader::found_GL_ARB_separate_shader_objects) {
 		// Need GL version 410
 		header += "#extension GL_ARB_separate_shader_objects: require\n";
@@ -395,8 +332,7 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 #else // ENABLE_GLES
 	header = "#version 310 es\n";
 	header += "#extension GL_EXT_shader_io_blocks: require\n";
-	// Disable full GL features
-	header += "#define DISABLE_GL42\n";
+	// Disable full GL features (actually GLES3.1 could support it)
 	header += "#define DISABLE_GL42_image\n";
 #endif
 

@@ -32,11 +32,7 @@ class GSShaderOGL {
 	GLuint m_ps_sub[5];
 
 	void SetupSubroutineUniform();
-	void SetupUniform();
 	void SetupRessources();
-
-	void SetUniformBinding(GLuint prog, const GLchar* name, GLuint binding);
-	void SetSamplerBinding(GLuint prog, const GLchar* name, GLuint binding);
 
 	bool ValidateShader(GLuint p);
 	bool ValidateProgram(GLuint p);

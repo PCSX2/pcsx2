@@ -101,10 +101,6 @@ void GSWndGL::PopulateGlFunction()
 	*(void**)&(gl_UseProgram) = GetProcAddress("glUseProgram");
 	*(void**)&(gl_GetShaderInfoLog) = GetProcAddress("glGetShaderInfoLog");
 	*(void**)&(gl_LinkProgram) = GetProcAddress("glLinkProgram");
-	// NO GL4.2
-	*(void**)&(gl_GetUniformBlockIndex) = GetProcAddress("glGetUniformBlockIndex");
-	*(void**)&(gl_UniformBlockBinding) = GetProcAddress("glUniformBlockBinding");
-	*(void**)&(gl_GetUniformLocation) = GetProcAddress("glGetUniformLocation");
 	// GL4.2
 	*(void**)&(gl_BindImageTexture) = GetProcAddress("glBindImageTexture", true);
 	*(void**)&(gl_MemoryBarrier) = GetProcAddress("glMemoryBarrier", true);

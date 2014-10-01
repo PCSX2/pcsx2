@@ -19,11 +19,7 @@ in SHADER
 
 layout(location = 0) out vec4 SV_Target0;
 
-#ifdef DISABLE_GL42
-layout(std140) uniform cb11
-#else
 layout(std140, binding = 11) uniform cb11
-#endif
 {
     vec2 ZrH;
     float hH;
@@ -32,11 +28,7 @@ layout(std140, binding = 11) uniform cb11
 #ifdef ENABLE_BINDLESS_TEX
 layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
 #else
-#ifdef DISABLE_GL42
-uniform sampler2D TextureSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
 #endif
 
 // TODO ensure that clip (discard) is < 0 and not <= 0 ???

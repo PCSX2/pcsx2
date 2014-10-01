@@ -25,11 +25,7 @@ in SHADER
 
 layout(location = 0) out vec4 SV_Target0;
 
-#ifdef DISABLE_GL42
-layout(std140) uniform cb12
-#else
 layout(std140, binding = 12) uniform cb12
-#endif
 {
     vec4 BGColor;
 };
@@ -37,11 +33,7 @@ layout(std140, binding = 12) uniform cb12
 #ifdef ENABLE_BINDLESS_TEX
 layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
 #else
-#ifdef DISABLE_GL42
-uniform sampler2D TextureSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
 #endif
 
 // For all settings: 1.0 = 100% 0.5=50% 1.5 = 150% 

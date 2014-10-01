@@ -98,10 +98,6 @@ PFNGLGETPROGRAMPIPELINEINFOLOGPROC     gl_GetProgramPipelineInfoLog         = NU
 PFNGLUSEPROGRAMPROC                    gl_UseProgram                        = NULL;
 PFNGLGETSHADERINFOLOGPROC              gl_GetShaderInfoLog                  = NULL;
 PFNGLPROGRAMUNIFORM1IPROC              gl_ProgramUniform1i                  = NULL;
-// NO GL4.2
-PFNGLGETUNIFORMBLOCKINDEXPROC          gl_GetUniformBlockIndex              = NULL;
-PFNGLUNIFORMBLOCKBINDINGPROC           gl_UniformBlockBinding               = NULL;
-PFNGLGETUNIFORMLOCATIONPROC            gl_GetUniformLocation                = NULL;
 // GL4.3
 PFNGLCOPYIMAGESUBDATAPROC              gl_CopyImageSubData                  = NULL;
 // GL4.2
@@ -159,7 +155,7 @@ namespace GLLoader {
 	bool in_replayer           = false;
 
 	// Optional
-	bool found_GL_ARB_separate_shader_objects = false;
+	bool found_GL_ARB_separate_shader_objects = false; // Issue with Mesa and Catalyst...
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
 	bool found_GL_ARB_buffer_storage = false;
@@ -175,21 +171,22 @@ namespace GLLoader {
 	bool found_GL_ARB_clip_control = false;
 	bool found_GL_ARB_direct_state_access = false;
 
-
-	// Mandatory for FULL GL (but optional for GLES)
-	bool found_GL_ARB_shading_language_420pack = false; // GLES 3.1 ???
-
 	// Mandatory for opengl ES (allow to use GL code)
 	bool found_GL_EXT_shader_io_blocks = false;
 
 	// Mandatory
 	bool found_GL_ARB_texture_storage = false;
+	bool found_GL_ARB_shading_language_420pack = false;
 
 	static bool status_and_override(bool& found, const std::string& name, bool mandatory = false)
 	{
 		if (!found) {
-			fprintf(stderr, "INFO: %s is NOT SUPPORTED\n", name.c_str());
-			if(mandatory) return false;
+			if(mandatory) {
+				fprintf(stderr, "ERROR: %s is NOT SUPPORTED\n", name.c_str());
+				return false;
+			} else {
+				fprintf(stderr, "INFO: %s is NOT SUPPORTED\n", name.c_str());
+			}
 		} else {
 			fprintf(stderr, "INFO: %s is available\n", name.c_str());
 		}
@@ -320,7 +317,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_shader_subroutine,"GL_ARB_shader_subroutine");
 		// GL4.2
 		status &= status_and_override(found_GL_ARB_shader_image_load_store,"GL_ARB_shader_image_load_store");
-		status &= status_and_override(found_GL_ARB_shading_language_420pack,"GL_ARB_shading_language_420pack"); // Mostly mandatory. Some Nvidia driver failed to report it correctly
+		status &= status_and_override(found_GL_ARB_shading_language_420pack,"GL_ARB_shading_language_420pack", true);
 		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
 		// GL4.3
 		status &= status_and_override(found_GL_ARB_explicit_uniform_location,"GL_ARB_explicit_uniform_location");

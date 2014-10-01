@@ -71,11 +71,7 @@ struct vertex_basic
     vec2 t;
 };
 
-#ifdef DISABLE_GL42
-layout(std140) uniform cb13
-#else
 layout(std140, binding = 13) uniform cb13
-#endif
 {
 	vec4 _rcpFrame;
 	vec4 _rcpFrameOpt;
@@ -84,11 +80,7 @@ layout(std140, binding = 13) uniform cb13
 #ifdef ENABLE_BINDLESS_TEX
 layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
 #else
-#ifdef DISABLE_GL42
-uniform sampler2D TextureSampler;
-#else
 layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
 #endif
 
 in SHADER

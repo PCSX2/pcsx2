@@ -282,10 +282,6 @@ extern   PFNGLGETPROGRAMPIPELINEINFOLOGPROC     gl_GetProgramPipelineInfoLog;
 extern   PFNGLUSEPROGRAMPROC                    gl_UseProgram;
 extern   PFNGLGETSHADERINFOLOGPROC              gl_GetShaderInfoLog;
 extern   PFNGLPROGRAMUNIFORM1IPROC              gl_ProgramUniform1i;
-// NO GL4.2
-extern   PFNGLGETUNIFORMBLOCKINDEXPROC          gl_GetUniformBlockIndex;
-extern   PFNGLUNIFORMBLOCKBINDINGPROC           gl_UniformBlockBinding;
-extern   PFNGLGETUNIFORMLOCATIONPROC            gl_GetUniformLocation;
 // GL4.2
 extern   PFNGLBINDIMAGETEXTUREPROC              gl_BindImageTexture;
 extern   PFNGLMEMORYBARRIERPROC                 gl_MemoryBarrier;
@@ -403,9 +399,6 @@ extern PFNGLCLIPCONTROLPROC                     gl_ClipControl;
 #define gl_GetShaderInfoLog glGetShaderInfoLog
 #define gl_ProgramUniform1i glProgramUniform1i
 
-#define gl_GetUniformBlockIndex glGetUniformBlockIndex
-#define gl_UniformBlockBinding glUniformBlockBinding
-#define gl_GetUniformLocation glGetUniformLocation
 #endif
 
 
