@@ -255,13 +255,10 @@ class GSDeviceOGL : public GSDevice
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			GSVector4i b0 = b[0];
-			GSVector4i b1 = b[1];
-
-			if(!((a[0] == b0) & (a[1] == b1)).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1])).alltrue())
 			{
-				a[0] = b0;
-				a[1] = b1;
+				a[0] = b[0];
+				a[1] = b[1];
 
 				return true;
 			}
@@ -320,22 +317,14 @@ class GSDeviceOGL : public GSDevice
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			GSVector4i b0 = b[0];
-			GSVector4i b1 = b[1];
-			GSVector4i b2 = b[2];
-			GSVector4i b3 = b[3];
-			GSVector4i b4 = b[4];
-			GSVector4i b5 = b[5];
-
 			// if WH matches both HalfTexel and TC_OffsetHack do too
-			if(!((a[0] == b0) & (a[2] == b2) & (a[3] == b3) & (a[4] == b4) & (a[5] == b5)).alltrue())
+			// MinMax depends on WH and MskFix so no need to check it too
+			if(!((a[0] == b[0]) & (a[2] == b[2]) & (a[4] == b[4]) & (a[5] == b[5])).alltrue())
 			{
-				a[0] = b0;
-				a[1] = b1;
-				a[2] = b2;
-				a[3] = b3;
-				a[4] = b4;
-				a[5] = b5;
+				a[0] = b[0];
+				a[2] = b[2];
+				a[4] = b[4];
+				a[5] = b[5];
 
 				return true;
 			}
