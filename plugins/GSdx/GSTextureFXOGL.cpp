@@ -35,18 +35,6 @@ void GSDeviceOGL::CreateTextureFX()
 	m_palette_ss = CreateSampler(false, false, false);
 	gl_BindSampler(1, m_palette_ss);
 
-	GSInputLayoutOGL vert_format[] =
-	{
-		{0 , 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex) , (const GLvoid*)(0) }  ,
-		{1 , 4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex) , (const GLvoid*)(8) }  ,
-		{2 , 1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex) , (const GLvoid*)(12) } ,
-		{3 , 2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex) , (const GLvoid*)(16) } ,
-		{4 , 1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex) , (const GLvoid*)(20) } ,
-		{5 , 2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex) , (const GLvoid*)(24) } ,
-		{6 , 4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex) , (const GLvoid*)(28) } ,
-	};
-	m_vb = new GSVertexBufferStateOGL(sizeof(GSVertex), vert_format, countof(vert_format));
-
 	// Pre compile all Geometry & Vertex Shader
 	// It might cost a seconds at startup but it would reduce benchmark pollution
 	m_gs = CompileGS();

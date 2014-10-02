@@ -124,8 +124,6 @@ void GSRendererOGL::SetupIA()
 
 	void* ptr = NULL;
 
-	dev->IASetVertexState();
-
 	if(UserHacks_WildHack && !isPackedUV_HackFlag) {
 		// FIXME: why not put it on the Vertex shader
 		if(dev->IAMapVertexBuffer(&ptr, sizeof(GSVertex), m_vertex.next))

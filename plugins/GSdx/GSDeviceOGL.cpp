@@ -46,7 +46,7 @@ GSDeviceOGL::GSDeviceOGL()
 	  , m_window(NULL)
 	  , m_fbo(0)
 	  , m_fbo_read(0)
-	  , m_vb_sr(NULL)
+	  , m_va(NULL)
 	  , m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
@@ -70,7 +70,7 @@ GSDeviceOGL::~GSDeviceOGL()
 		return;
 
 	// Clean vertex buffer state
-	delete (m_vb_sr);
+	delete (m_va);
 
 	// Clean m_merge_obj
 	for (size_t i = 0; i < countof(m_merge_obj.ps); i++)
@@ -111,7 +111,6 @@ GSDeviceOGL::~GSDeviceOGL()
 	delete m_vs_cb;
 	delete m_ps_cb;
 	gl_DeleteSamplers(1, &m_palette_ss);
-	delete m_vb;
 	m_shader->Delete(m_apitrace);
 
 	for (uint32 key = 0; key < VSSelector::size(); key++) m_shader->Delete(m_vs[key]);
@@ -189,12 +188,19 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	// ****************************************************************
 	// Vertex buffer state
 	// ****************************************************************
-	GSInputLayoutOGL il_convert[2] =
+	ASSERT(sizeof(GSVertexPT1) == sizeof(GSVertex));
+	GSInputLayoutOGL il_convert[] =
 	{
-		{0, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPT1), (const GLvoid*)offsetof(struct GSVertexPT1, p) },
-		{1, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPT1), (const GLvoid*)offsetof(struct GSVertexPT1, t) },
+		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
+		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
+		{4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
+		{1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
+		{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
+		{1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
+		{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(24) } ,
+		{4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(28) } ,
 	};
-	m_vb_sr = new GSVertexBufferStateOGL(sizeof(GSVertexPT1), il_convert, countof(il_convert));
+	m_va = new GSVertexBufferStateOGL(sizeof(GSVertexPT1), il_convert, countof(il_convert));
 
 	// ****************************************************************
 	// Texture unit state
@@ -432,14 +438,14 @@ void GSDeviceOGL::AfterDraw()
 void GSDeviceOGL::DrawPrimitive()
 {
 	BeforeDraw();
-	m_state.vb->DrawPrimitive();
+	m_va->DrawPrimitive();
 	AfterDraw();
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
 	BeforeDraw();
-	m_state.vb->DrawIndexedPrimitive();
+	m_va->DrawIndexedPrimitive();
 	AfterDraw();
 }
 
@@ -448,7 +454,7 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 	ASSERT(offset + count <= (int)m_index.count);
 
 	BeforeDraw();
-	m_state.vb->DrawIndexedPrimitive(offset, count);
+	m_va->DrawIndexedPrimitive(offset, count);
 	AfterDraw();
 }
 
@@ -859,7 +865,6 @@ void GSDeviceOGL::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt,
 		{GSVector4(right , bottom, 0.0f, 0.0f) , GSVector2(flip_sr.z , flip_sr.w)} ,
 	};
 
-	IASetVertexState(m_vb_sr);
 	IASetVertexBuffer(vertices, 4);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
 
@@ -986,7 +991,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	// ia
 
-	IASetVertexState(m_vb_sr);
 	IASetVertexBuffer(vertices, 4);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
 
@@ -1022,42 +1026,32 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 void GSDeviceOGL::EndScene()
 {
-	m_state.vb->EndScene();
-}
-
-void GSDeviceOGL::IASetVertexState(GSVertexBufferStateOGL* vb)
-{
-	if (vb == NULL) vb = m_vb;
-
-	if (m_state.vb != vb) {
-		m_state.vb = vb;
-		vb->bind();
-	}
+	m_va->EndScene();
 }
 
 void GSDeviceOGL::IASetVertexBuffer(const void* vertices, size_t count)
 {
-	m_state.vb->UploadVB(vertices, count);
+	m_va->UploadVB(vertices, count);
 }
 
 bool GSDeviceOGL::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 {
-	return m_state.vb->MapVB(vertex, count);
+	return m_va->MapVB(vertex, count);
 }
 
 void GSDeviceOGL::IAUnmapVertexBuffer()
 {
-	m_state.vb->UnmapVB();
+	m_va->UnmapVB();
 }
 
 void GSDeviceOGL::IASetIndexBuffer(const void* index, size_t count)
 {
-	m_state.vb->UploadIB(index, count);
+	m_va->UploadIB(index, count);
 }
 
 void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 {
-	m_state.vb->SetTopology(topology);
+	m_va->SetTopology(topology);
 }
 
 void GSDeviceOGL::PSSetShaderResource(GLuint sr)

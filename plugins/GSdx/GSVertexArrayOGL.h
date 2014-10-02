@@ -28,7 +28,6 @@ extern uint32 g_vertex_upload_byte;
 #endif
 
 struct GSInputLayoutOGL {
-	GLuint  index;
 	GLint   size;
 	GLenum  type;
 	GLboolean normalize;
@@ -287,19 +286,19 @@ public:
 	{
 		for (uint32 i = 0; i < layout_nbr; i++) {
 			// Note this function need both a vertex array object and a GL_ARRAY_BUFFER buffer
-			gl_EnableVertexAttribArray(layout[i].index);
+			gl_EnableVertexAttribArray(i);
 			switch (layout[i].type) {
 				case GL_UNSIGNED_SHORT:
 				case GL_UNSIGNED_INT:
 					if (layout[i].normalize) {
-						gl_VertexAttribPointer(layout[i].index, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
+						gl_VertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
 					} else {
 						// Rule: when shader use integral (not normalized) you must use gl_VertexAttribIPointer (note the extra I)
-						gl_VertexAttribIPointer(layout[i].index, layout[i].size, layout[i].type, layout[i].stride, layout[i].offset);
+						gl_VertexAttribIPointer(i, layout[i].size, layout[i].type, layout[i].stride, layout[i].offset);
 					}
 					break;
 				default:
-					gl_VertexAttribPointer(layout[i].index, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
+					gl_VertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
 					break;
 			}
 		}

@@ -477,8 +477,7 @@ class GSDeviceOGL : public GSDevice
 	GLuint m_fbo;				// frame buffer container
 	GLuint m_fbo_read;			// frame buffer container only for reading
 
-	GSVertexBufferStateOGL* m_vb;	  // vb_state for HW renderer
-	GSVertexBufferStateOGL* m_vb_sr; // vb_state for StretchRect
+	GSVertexBufferStateOGL* m_va;// state of the vertex buffer/array
 
 	struct {
 		GLuint ps[2];				 // program object
@@ -517,7 +516,6 @@ class GSDeviceOGL : public GSDevice
 	} m_shadeboost;
 
 	struct {
-		GSVertexBufferStateOGL* vb;
 		GSDepthStencilOGL* dss;
 		GSBlendStateOGL* bs;
 		float bf; // blend factor
@@ -608,7 +606,6 @@ class GSDeviceOGL : public GSDevice
 	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
 	void IAUnmapVertexBuffer();
 	void IASetIndexBuffer(const void* index, size_t count);
-	void IASetVertexState(GSVertexBufferStateOGL* vb = NULL);
 
 	void PSSetShaderResource(GLuint sr);
 	void PSSetShaderResources(GLuint tex[2]);
