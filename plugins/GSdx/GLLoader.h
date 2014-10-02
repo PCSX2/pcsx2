@@ -415,7 +415,6 @@ namespace GLLoader {
 
 	// GL
 	extern bool found_GL_ARB_separate_shader_objects;
-	extern bool found_GL_ARB_shading_language_420pack;
 	extern bool found_GL_ARB_copy_image;
 	extern bool found_geometry_shader;
 	extern bool found_GL_ARB_gpu_shader5;
@@ -427,6 +426,4 @@ namespace GLLoader {
 	extern bool found_GL_ARB_explicit_uniform_location;
 	extern bool found_GL_ARB_clip_control;
 	extern bool found_GL_ARB_direct_state_access;
-	// GLES
-	extern bool found_GL_EXT_shader_io_blocks;
 }

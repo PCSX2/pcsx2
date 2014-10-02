@@ -159,7 +159,8 @@ namespace GLLoader {
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false; // Don't know if GL3 GPU can support it
 	bool found_GL_ARB_buffer_storage = false;
-	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine
+	// Note: except Apple, all drivers support explicit uniform location
+	bool found_GL_ARB_explicit_uniform_location = false; // need by subroutine and bindless texture
 	// GL4 hardware
 	bool found_GL_ARB_copy_image = false; // Not sure actually maybe GL3 GPU can do it
 	bool found_GL_ARB_gpu_shader5 = false;
@@ -330,7 +331,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control");
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
 #else // ENABLE_GLES
-		status &= status_and_override(found_GL_EXT_shader_io_blocks, "GL_EXT_shader_io_blocks");
+		status &= status_and_override(found_GL_EXT_shader_io_blocks, "GL_EXT_shader_io_blocks", true);
 #endif
 
 		fprintf(stderr, "\n");
