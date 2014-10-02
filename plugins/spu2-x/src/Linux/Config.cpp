@@ -204,7 +204,7 @@ void DisplayDialog()
 
     /* Create the widgets */
     dialog = gtk_dialog_new_with_buttons (
-		"Spu2-X Config",
+		"SPU2-X Config",
 		NULL, /* parent window*/
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 		GTK_STOCK_OK,
@@ -223,7 +223,7 @@ void DisplayDialog()
     gtk_combo_box_set_active(GTK_COMBO_BOX(int_box), Interpolation);
 
     effects_check = gtk_check_button_new_with_label("Disable Effects Processing");
-    dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter(overemphasizes the highs)");
+    dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter (overemphasizes the highs)");
 
     debug_check = gtk_check_button_new_with_label("Enable Debug Options");
 	debug_button = gtk_button_new_with_label("Debug...");
@@ -232,7 +232,7 @@ void DisplayDialog()
     mod_box = gtk_combo_box_new_text ();
     gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "0 - No Sound (emulate SPU2 only)");
     gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "1 - PortAudio (cross-platform)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "2 - SDL Audio (recommanded for pulseaudio");
+    gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "2 - SDL Audio (recommended for PulseAudio)");
     //gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
@@ -258,7 +258,7 @@ void DisplayDialog()
 	advanced_button = gtk_button_new_with_label("Advanced...");
 
     main_box = gtk_hbox_new(false, 5);
-    main_frame = gtk_frame_new ("Spu2-X Config");
+    main_frame = gtk_frame_new ("SPU2-X Config");
     gtk_container_add (GTK_CONTAINER(main_frame), main_box);
 
     mixing_box = gtk_vbox_new(false, 5);
