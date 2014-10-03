@@ -206,6 +206,12 @@ static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, cons
 		found = dir.GetNext(&buffer);
 	}
 
+	if (before == cheatnumber) {
+		// fileSpec is like "1234abcd*.pnach"
+		wxString pathName = fileSpec.Left(8).Upper() + L".pnach";
+		Console.WriteLn(Color_Gray, L"Not found %s file: '%s\\%s'", WX_STR(friendlyName), WX_STR(folderName.ToString()), WX_STR(pathName));
+	}
+
 	return cheatnumber - before;
 }
 
