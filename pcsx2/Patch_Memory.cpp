@@ -332,7 +332,7 @@ void handle_extended_t(IniPatch *p)
 			{
 				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
 
-				if (z == 0) 										// E0yyvvvv 0aaaaaaa
+				if (z == 0)											// E0yyvvvv 0aaaaaaa
 				{
 					u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
 					if (mem != (0x0000FFFF & (u32)p->addr))
@@ -355,7 +355,7 @@ void handle_extended_t(IniPatch *p)
 			{
 				u8 z = ((u32)p->addr & 0x0F000000) / 0x01000000;
 
-				if (z == 0) 	 									// E0yyvvvv 1aaaaaaa
+				if (z == 0)											// E0yyvvvv 1aaaaaaa
 				{
 					u16 mem = memRead16((u32)p->data & 0x0FFFFFFF);
 					if (mem == (0x0000FFFF & (u32)p->addr))
