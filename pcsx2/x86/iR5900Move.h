@@ -20,7 +20,7 @@ namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
 
-	void recLUI();
+	
 	void recMFLO();
 	void recMFHI();
 	void recMTLO();
