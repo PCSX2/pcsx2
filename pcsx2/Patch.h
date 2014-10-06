@@ -36,7 +36,7 @@ enum patch_data_type {
 	EXTENDED_T
 };
 
-typedef void PATCHTABLEFUNC( const wxString& text1, const wxString& text2 );
+typedef void PATCHTABLEFUNC(const wxString& text1, const wxString& text2);
 
 struct IniPatch
 {
@@ -57,8 +57,11 @@ namespace PatchFunc
 	PATCHTABLEFUNC cheat;
 }
 
+extern const wxString FRIENDLY_NAME_WSPATCHES;
+extern const wxString FRIENDLY_NAME_CHEATS;
+
 extern void ResetCheatsCount();
-extern int  LoadCheats(wxString name, const wxDirName& folderName, const wxString& friendlyName);
+extern int  LoadCheats(wxString name, const wxDirName& folderName, const wxString& friendlyName, int& numberFoundPnachFiles);
 extern int  LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename);
 extern void inifile_command(bool isCheat, const wxString& cmd);
 extern void inifile_trim(wxString& buffer);
