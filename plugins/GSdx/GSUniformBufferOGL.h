@@ -53,6 +53,9 @@ public:
 
 	void attach()
 	{
+		// From the opengl manpage:
+		// glBindBufferBase also binds buffer to the generic buffer binding point specified by target
+		GLState::ubo = buffer;
 		gl_BindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
 	}
 
