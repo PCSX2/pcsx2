@@ -26,7 +26,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
 	m_spritehack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_SpriteHack", 0) : 0;
-	
+
 	UserHacks_HalfPixelOffset = !!theApp.GetConfig("UserHacks", 0) && !!theApp.GetConfig("UserHacks_HalfPixelOffset", 0);
 	UserHacks_NVIDIAHack = !!theApp.GetConfig("UserHacks_NVIDIAHack", 0) && !!theApp.GetConfig("UserHacks", 0);
 	m_paltex = !!theApp.GetConfig("paltex", 0);
@@ -105,10 +105,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
-		
+
 		// (Simply not doing this code at all makes a lot of previsouly missing stuff show (but breaks pretty much everything
 		// else.)
-		
+
 		//for(int type = 0; type < 2 && dst == NULL; type++)
 		for(int type = 0; type < 1 && dst == NULL; type++) // Only look for render target, no depth stencil
 		{
@@ -320,7 +320,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 	GSVector4i r;
 
 	uint32* pages = (uint32*)m_temp;
-	
+
 	o->GetPages(rect, pages, &r);
 
 	bool found = false;
@@ -349,7 +349,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* o, const GSVector4i& rect, boo
 					if(s->m_repeating)
 					{
 						vector<GSVector2i>& l = s->m_p2t[page];
-						
+
 						for(vector<GSVector2i>::iterator k = l.begin(); k != l.end(); k++)
 						{
 							valid[k->x] &= k->y;
@@ -468,7 +468,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* o, const GSVector4i& r)
 			}
 		}
 	}
-	
+
 	//GSTextureCache::Target* rt2 = NULL;
 	//int ymin = INT_MAX;
 	//for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); )
@@ -535,7 +535,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* o, const GSVector4i& r)
 	//	Read(rt2, GSVector4i(r.left, r.top + ymin, r.right, r.bottom + ymin));
 	//}
 
-	
+
 	// TODO: ds
 }
 
@@ -594,13 +594,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 	bool hack = false;
 
-	if(m_spritehack && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT8H)) 
+	if(m_spritehack && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT8H))
 	{
 		src->m_spritehack_t = true;
-		
-		if(m_spritehack == 2 && TEX0.CPSM != PSM_PSMCT16) 
-			src->m_spritehack_t = false;		
-	}			
+
+		if(m_spritehack == 2 && TEX0.CPSM != PSM_PSMCT16)
+			src->m_spritehack_t = false;
+	}
 	else
 		src->m_spritehack_t = false;
 

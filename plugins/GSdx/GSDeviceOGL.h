@@ -294,12 +294,12 @@ class GSDeviceOGL : public GSDevice
 	__aligned(struct, 32) PSConstantBuffer
 	{
 		GSVector4 FogColor_AREF;
-		GSVector4 HalfTexel;
 		GSVector4 WH;
-		GSVector4 MinMax;
 		GSVector4 MinF_TA;
 		GSVector4i MskFix;
 
+		GSVector4 HalfTexel;
+		GSVector4 MinMax;
 		GSVector4 TC_OffsetHack;
 
 		PSConstantBuffer()
@@ -319,12 +319,13 @@ class GSDeviceOGL : public GSDevice
 
 			// if WH matches both HalfTexel and TC_OffsetHack do too
 			// MinMax depends on WH and MskFix so no need to check it too
-			if(!((a[0] == b[0]) & (a[2] == b[2]) & (a[4] == b[4]) & (a[5] == b[5])).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
 			{
+				// Note previous check uses SSE already, a plain copy will be faster than any memcpy
 				a[0] = b[0];
+				a[1] = b[1];
 				a[2] = b[2];
-				a[4] = b[4];
-				a[5] = b[5];
+				a[3] = b[3];
 
 				return true;
 			}
