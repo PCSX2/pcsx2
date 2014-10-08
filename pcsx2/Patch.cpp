@@ -181,8 +181,10 @@ void ResetCheatsCount()
   cheatnumber = 0;
 }
 
-static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, const wxString& friendlyName)
+static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, const wxString& friendlyName, int& numberFoundCheatsFiles)
 {
+	numberFoundCheatsFiles = 0;
+
 	if (!folderName.Exists()) {
 		Console.WriteLn(Color_Red, L"The %s folder ('%s') is inaccessible. Skipping...", WX_STR(friendlyName), WX_STR(folderName.ToString()));
 		return 0;
@@ -195,13 +197,14 @@ static int LoadCheatsFiles(const wxDirName& folderName, wxString& fileSpec, cons
 	bool found = dir.GetFirst(&buffer, L"*", wxDIR_FILES);
 	while (found) {
 		if (buffer.Upper().Matches(fileSpec.Upper())) {
-			Console.WriteLn(Color_Gray, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
+			Console.WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
 			int before = cheatnumber;
 			f.Open(Path::Combine(dir.GetName(), buffer));
 			inifile_process(f);
 			f.Close();
 			int loaded = cheatnumber - before;
 			Console.WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s'", loaded, WX_STR(friendlyName), WX_STR(buffer));
+			numberFoundCheatsFiles ++;
 		}
 		found = dir.GetNext(&buffer);
 	}
@@ -226,7 +229,7 @@ int LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename) {
     wxString name = entry->GetName();
     name.MakeUpper();
     if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
-      Console.WriteLn(Color_Gray, L"Loading patch '%s' from archive '%s'",
+      Console.WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
                       WX_STR(entry->GetName()), WX_STR(cheatsArchiveFilename));
       wxTextInputStream pnach(zip);
       while (!zip.Eof()) {
@@ -245,9 +248,15 @@ int LoadCheatsFromZip(wxString gameCRC, const wxString& cheatsArchiveFilename) {
 int LoadCheats(wxString name, const wxDirName& folderName, const wxString& friendlyName)
 {
 	int loaded = 0;
+	int numberFoundCheatsFiles;
 
 	wxString filespec = name + L"*.pnach";
-	loaded += LoadCheatsFiles(folderName, filespec, friendlyName);
+	loaded += LoadCheatsFiles(folderName, filespec, friendlyName, numberFoundCheatsFiles);
+
+	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().ToString()) && numberFoundCheatsFiles == 0) {
+		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
+		Console.WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
+	}
 
 	Console.WriteLn((loaded ? Color_Green : Color_Gray), L"Overall %d %s loaded", loaded, WX_STR(friendlyName));
 	return loaded;
