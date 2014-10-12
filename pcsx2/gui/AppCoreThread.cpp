@@ -403,7 +403,13 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 		}
 	}
 
-	Console.SetTitle(gameName + gameSerial + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks);
+	wxString consoleTitle = gameName + gameSerial;
+	if (!gameSerial.IsEmpty()) {
+		consoleTitle += L" [" + gameCRC.MakeUpper() + L"]";
+	}
+	consoleTitle += gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
+
+	Console.SetTitle(consoleTitle);
 
 	// Re-entry guard protects against cases where code wants to manually set core settings
 	// which are not part of g_Conf.  The subsequent call to apply g_Conf settings (which is
