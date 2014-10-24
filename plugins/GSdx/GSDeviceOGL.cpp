@@ -519,17 +519,8 @@ void GSDeviceOGL::ClearDepth(GSTexture* t, float c)
 	// It can't be used here because it will clear both depth and stencil
 	if (0 && GLLoader::found_GL_ARB_clear_texture) {
 #ifndef ENABLE_GLES
-		static_cast<GSTextureOGL*>(t)->EnableUnit();
-		// Yes a very nice API to mix float and integer
-		struct clear {
-			float depth;
-			GLuint stencil;
-		} clear;
-
-		clear.depth = c;
-		clear.stencil = 0;
-
-		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, &clear);
+		ASSERT(c == 0.0f);
+		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), GL_TEX_LEVEL_0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
 #endif
 	} else {
 		OMSetFBO(m_fbo);
@@ -553,7 +544,8 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 	// It can't be used here because it will clear both depth and stencil
 	if (0 && GLLoader::found_GL_ARB_clear_texture) {
 #ifndef ENABLE_GLES
-		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), GL_TEX_LEVEL_0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, &c);
+		ASSERT(c == 0);
+		gl_ClearTexImage(static_cast<GSTextureOGL*>(t)->GetID(), GL_TEX_LEVEL_0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
 #endif
 	} else {
 		OMSetFBO(m_fbo);

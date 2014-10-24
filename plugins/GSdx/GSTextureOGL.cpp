@@ -322,7 +322,6 @@ GSTextureOGL::~GSTextureOGL()
 void GSTextureOGL::Clear(const void *data)
 {
 #ifndef ENABLE_GLES
-	EnableUnit();
 	gl_ClearTexImage(m_texture_id, 0,  m_int_format, m_int_type, data);
 #endif
 }
